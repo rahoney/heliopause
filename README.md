@@ -8,7 +8,10 @@
 
 ## 결정 문서
 
-구현 전 언어·프레임워크·구조·기능 범위·사용자 여정·WBS·검사 도구와 미결정 항목은 [`PROJECT-DECISIONS.md`](./PROJECT-DECISIONS.md)에 누적한다.
+- 전체 결정 상태와 상세 문서 색인: [`PROJECT-DECISIONS.md`](./PROJECT-DECISIONS.md)
+- 위협 모델 사용자 원문·상세 정책: [`docs/threat-model.md`](./docs/threat-model.md)
+
+상세 내용은 주제별 문서에 한 번만 기록하고, `PROJECT-DECISIONS.md`에는 상태·핵심 요약·링크만 유지한다.
 
 ## 초기 방향
 
