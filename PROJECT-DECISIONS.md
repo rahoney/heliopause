@@ -17,7 +17,14 @@
 | CLI 명령어 | 결정 후보 | `helox` | 사용 가능 여부와 패키지 충돌은 확인 필요 |
 | 목적 | 초안 | 외부 artifact·패키지를 검역하고 검증된 고정 artifact만 목표 환경에 반입 |  |
 | 1차 사용자 | 미결정 |  | 개인 개발자, 팀, CI 운영자 중 선택 |
-| 지원 운영체제 | 미결정 |  | macOS, Linux, Windows |
+| 지원 운영체제 | MVP 기준 결정 | Linux 격리·동적 실행 환경 | macOS·Windows native backend는 MVP 이후 확장 |
+| CLI Host 지원 OS | MVP 기준 결정 | Linux·macOS 네이티브, Windows는 WSL2 기반 Linux | Windows 네이티브 실행은 MVP 이후 확장 |
+| MVP 지원 Artifact 유형 | MVP 기준 결정 | npm package, Python wheel/source distribution, GitHub Releases binary·archive | GUI installer, OCI image, IDE extension 등은 향후 확장 |
+| MVP 정적 검사 범위 | MVP 기준 결정 | 출처·identity·무결성, 구조·코드·dependency·변경·악성 패턴 | 특정 scanner·database는 MVP Scope에서 미확정 |
+| MVP 동적 설치·실행 검사 | MVP 기준 결정 | 격리 설치·제한 실행과 파일·프로세스·네트워크·자원 행위 관찰 | 실행 불가·필수 검사 미완료 시 자동 `ALLOW` 금지 |
+| MVP Signature·Provenance·무결성 | MVP 기준 결정 | digest, Registry 정보, signature, provenance, attestation을 Evidence로 종합 | 서명·provenance 부재만으로 자동 `BLOCK`하지 않되 필수 정책 누락은 `MANUAL_REVIEW`/`BLOCK` |
+| MVP SBOM·Evidence·결과물 | MVP 기준 결정 | 재현 가능한 검사 기록, SBOM, Staging 검증 세트 Manifest, 요약·구조화 결과 | 저장 방식·보존 기간·세부 schema는 Architecture/Domain Model에서 확정 |
+| MVP 사용자 흐름·완료 기준 | MVP 기준 결정 | 지정→식별→격리 다운로드→검증→정적·동적 검사→Policy→Staging/결과 분기 | npm E2E 완성 및 PyPI/GitHub adapter 공통 흐름 수행, Core 생태계 전용 로직 금지 |
 | 배포 형태 | 미결정 | Docker image, standalone CLI, package | 신뢰·재현성 검토 필요 |
 | 라이선스 | 미결정 |  |  |
 
@@ -38,8 +45,39 @@
 
 ### MVP Scope
 
-- 상태: 미결정
-- 상세 문서: 필요할 때 `docs/mvp-scope.md` 생성
+- 상태: 완료 — MVP-001~MVP-009 확정
+- 최초 지원 생태계: npm, Python/PyPI(pip), GitHub Releases
+- 검사 실행 기준: Linux 격리·동적 실행 환경
+- CLI Host는 Linux·macOS 네이티브 우선 지원, Windows는 WSL2 기반 Linux를 공식 경로로 지원
+- CLI Host OS와 Artifact 검사 격리 환경은 분리하며 macOS Host에서도 Linux 격리 backend를 사용
+- MVP 지원 유형은 npm package, Python wheel/source distribution, GitHub Releases의 단일 binary·archive
+- Python source distribution과 archive는 설치·압축 해제 과정 자체를 검사 대상으로 취급
+- 확장자만으로 형식을 신뢰하지 않으며 중첩 archive·path traversal·압축폭탄 등 위험을 제한
+- OS 전용 GUI installer, Docker/OCI image, IDE extension, MCP server, Git repository, CI component, `curl | sh` 설치 흐름은 MVP 제외
+- 설치·실행 전 출처·identity·무결성·metadata·구조·코드·dependency·변경·악성 패턴을 정적으로 검사
+- 직접·전이 dependency와 manifest/lock 불일치, 이전 버전 대비 주요 변경을 분석하고 공통 Finding/Evidence로 정규화
+- Heliopause 자체 검사와 외부 scanner·database 조합을 허용하되 특정 도구는 아직 확정하지 않음
+- 정적 통과 또는 추가 검증이 필요한 Artifact를 격리 설치·제한 실행하고 파일·프로세스·shell·네트워크·Credential/honeytoken·권한·자원을 관찰
+- 설치 전후 filesystem·주요 상태 diff와 설치 중 lifecycle/build 코드를 Evidence로 기록
+- 실제 Host와 분리된 모의 filesystem·honeytoken·통제 네트워크에서 수행하며 resource limit·timeout·fail-closed 적용
+- Checksum/Digest를 Artifact 동일성·무결성의 기본 식별 수단으로 사용
+- Registry integrity 정보, Publisher signature, provenance, attestation 및 GitHub Releases checksum/signature를 가능한 경우 검증하고 Evidence로 기록
+- Signature/provenance 부재는 자동 `BLOCK`하지 않고 다른 Evidence와 종합하되, 정책상 필수 정보가 없으면 자동 `ALLOW`하지 않음
+- 모든 결과는 Artifact identity·검사·Finding·Evidence·최종 Policy Decision을 연결해 재현 가능한 기록으로 생성
+- dependency·구성요소는 가능한 범위에서 표준 SBOM으로 생성하되 구체 표준·도구는 후속 확정
+- Staging 승격 시 Artifact·dependency digest와 검사 결과·Evidence를 연결한 검증 완료 세트 Manifest 생성
+- 사람이 보는 요약과 CI·MCP·자동화용 machine-readable 결과를 함께 제공
+- 사용자 지정부터 식별·격리 다운로드·검증·정적·동적 검사·Policy 판정·Staging/설치·결과 제공까지의 전체 흐름을 MVP 기준으로 정의
+- `ALLOW`는 원칙적으로 Staging을 거쳐 반입하되 독립 binary/archive는 D-011 digest 재검증 후 직접 반입 가능, `WARN`은 Finding 수준이고 `MANUAL_REVIEW`는 최종 추가 판단 상태, `BLOCK`은 반입 금지
+- npm end-to-end 완성, PyPI/pip·GitHub Releases의 동일 Core·adapter 흐름 수행을 MVP 완료 기준으로 삼음
+- 생태계 추가를 위해 Core에 전용 로직을 넣어야 하면 MVP 완료로 보지 않음
+- npm을 가장 완전한 end-to-end reference implementation으로 구현
+- PyPI/pip와 GitHub Releases로 adapter·공통 Core 확장성을 검증
+- 생태계별 특수 로직은 adapter에 한정하고 Core는 생태계 중립 유지
+- macOS·Windows native dynamic quarantine은 MVP 이후 확장
+- Linux에서 검증할 수 없는 플랫폼 전용 동작은 자동 `ALLOW`하지 않음
+- 범용 계약 확장은 후방호환 범위에서 허용하며, Core 전용 로직이나 기존 adapter 비호환이 필요하면 구조 재검토
+- 상세·사용자 원문: [`docs/mvp-scope.md`](./docs/mvp-scope.md) (MVP-001~MVP-009)
 
 ### Architecture
 
@@ -146,7 +184,7 @@ helox/
 | ID | 작업 | 선행 조건 | 상태 |
 | --- | --- | --- | --- |
 | M0 | 위협 모델·신뢰 경계·성공 기준 확정 | 없음 | 완료 |
-| M1 | MVP Scope 확정 | M0 | 미결정 |
+| M1 | MVP Scope 확정 | M0 | 완료 (MVP-001~MVP-009) |
 | M2 | 언어·runtime·배포 형태 결정 | M1 | 미결정 |
 | M3 | 최소 vertical slice와 디렉터리 구조 구현 | M2 | 미결정 |
 | M4 | 첫 package manager의 다운로드·digest·검역 구현 | M3 | 미결정 |
@@ -170,9 +208,16 @@ AI review는 deterministic 검사 이전의 기본 단계가 아니라, 검사 �
 
 ## 다음 결정 queue
 
-- [ ] MVP Scope 확정
+- [x] MVP Scope 확정 (MVP-001~MVP-009)
+- [x] CLI Host 지원 OS와 격리 검사 환경 분리 정책 확정
+- [x] MVP 지원 Artifact 유형과 제외 범위 확정
+- [x] MVP 정적 검사 범위와 Finding/Evidence 정규화 방향 확정
+- [x] MVP 동적 설치·실행 검사 범위와 관찰 정책 확정
+- [x] Signature·Provenance·무결성 검증 범위와 부재 처리 확정
+- [x] SBOM·Evidence·결과물 범위와 Staging Manifest 방향 확정
+- [x] MVP 사용자 흐름·Policy 분기·완료 기준 확정
 - [ ] 언어와 CLI framework 후보 비교 기준 정의
-- [ ] 첫 지원 package manager 선정
+- [x] 최초 지원 Artifact 생태계 선정: npm, Python/PyPI(pip), GitHub Releases
 - [ ] 첫 번째 정상·악성·변조 fixture 확보
 - [ ] quarantine 신뢰 경계와 반입 계약 정의
 - [ ] checksum/digest/signature/provenance 결과 schema 정의
