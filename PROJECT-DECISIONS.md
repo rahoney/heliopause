@@ -94,13 +94,22 @@
 
 | 항목 | 후보 | 결정 | 이유·검증 메모 |
 | --- | --- | --- | --- |
-| 주 구현 언어 | C++, C#, Go, Rust, Java | 미결정 | 보안, 배포, 생태계, 개발 생산성 비교 |
-| CLI framework | 언어별 후보 | 미결정 | argument parsing, config, terminal UX |
+| 주 구현 언어 | C++, C#, Go, Rust, Java | Go | 보안 도구·CLI·배포 생태계와 개발 생산성의 균형을 고려한 1순위 |
+| CLI framework | 언어별 후보 | Cobra | Go 기반 CLI의 명령 구조·argument parsing·config·terminal UX에 대한 1순위 |
 | 설정 형식 | YAML, TOML, JSON 등 | 미결정 | 스키마 검증과 주석 지원 |
 | plugin/adapter 방식 | 미결정 |  | package manager와 검사 도구 확장 |
 | 동시성 모델 | 미결정 |  | 병렬 다운로드·검사와 자원 제한 |
 | 최소 실행 환경 | 미결정 |  | container image와 standalone binary |
 | MCP 제공 여부 | 미결정 |  | CLI 안정화 후 AI client용 adapter로 검토 |
+
+언어·CLI 선택 결정
+
+- 메인 언어는 Go로 결정한다.
+- CLI framework는 Cobra를 1순위로 사용한다.
+- Rust와 `clap`은 향후 저수준 isolation component를 직접 구현할 경우의 우선 후보로 남긴다.
+- Rust·`clap` 후보는 현재 메인 CLI 구현을 대체하는 결정이 아니라, 저수준 격리 구성요소가 필요할 때 별도 검토할 확장 선택지다.
+
+이 결정은 현재 `PROJECT-DECISIONS.md`에 기록하고, Architecture 문서에서는 Go/Cobra를 전제로 모듈 경계·실행 계층·backend 계약을 설계한다. 저수준 isolation component를 Rust로 분리할 경우의 IPC·배포·권한 경계는 해당 Architecture/ADR 단계에서 별도로 확정한다.
 
 ## 기능 범위 초안
 
@@ -185,7 +194,7 @@ helox/
 | --- | --- | --- | --- |
 | M0 | 위협 모델·신뢰 경계·성공 기준 확정 | 없음 | 완료 |
 | M1 | MVP Scope 확정 | M0 | 완료 (MVP-001~MVP-009) |
-| M2 | 언어·runtime·배포 형태 결정 | M1 | 미결정 |
+| M2 | 언어·CLI framework·runtime·배포 형태 결정 | M1 | 부분 완료 (Go·Cobra 확정, runtime·배포 미결정) |
 | M3 | 최소 vertical slice와 디렉터리 구조 구현 | M2 | 미결정 |
 | M4 | 첫 package manager의 다운로드·digest·검역 구현 | M3 | 미결정 |
 | M5 | 최소 scanner·policy·receipt 구현 | M4 | 미결정 |
@@ -216,7 +225,9 @@ AI review는 deterministic 검사 이전의 기본 단계가 아니라, 검사 �
 - [x] Signature·Provenance·무결성 검증 범위와 부재 처리 확정
 - [x] SBOM·Evidence·결과물 범위와 Staging Manifest 방향 확정
 - [x] MVP 사용자 흐름·Policy 분기·완료 기준 확정
-- [ ] 언어와 CLI framework 후보 비교 기준 정의
+- [x] 메인 언어 Go와 CLI framework Cobra 확정
+- [ ] runtime과 배포 형태 결정
+- [ ] Architecture 설계 시작
 - [x] 최초 지원 Artifact 생태계 선정: npm, Python/PyPI(pip), GitHub Releases
 - [ ] 첫 번째 정상·악성·변조 fixture 확보
 - [ ] quarantine 신뢰 경계와 반입 계약 정의
