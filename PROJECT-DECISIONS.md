@@ -81,9 +81,41 @@
 
 ### Architecture
 
-- 상태: 초안 후보만 존재
-- 방향: 책임이 분리된 모듈식 구조
-- 상세 문서: 필요할 때 `docs/architecture.md` 생성
+- 상태: 완료 — Architecture-001~Architecture-008 확정
+- 방향: Go 기반 Modular Monolith CLI, 하나의 배포 가능한 본체·주 코드베이스, 제한적 Ports/Adapters
+- 핵심 경계: CLI → Application/Workflow → Core/Domain·Policy·Ports/Contracts → Adapters/Backends/Providers, Composition Root wiring
+- 최상위 책임 영역: CLI, Application/Workflow, Core/Domain, Artifact, Verification, Inspection, Sandbox/Runtime, Policy, Evidence/Result, Staging/Promotion
+- Static/Dynamic inspection, ecosystem adapter, Evidence/SBOM/Result는 관련 영역 내부 하위 구성으로 유지하고 Staging/Promotion은 별도 최상위 영역으로 분리
+- Scanner/Inspection은 Finding/Evidence, Verifier/Verification은 Verification Result/Evidence, Sandbox/Runtime은 raw observation/실행 상태를 생성하며 최종 `ALLOW`/`MANUAL_REVIEW`/`BLOCK`은 Policy만 담당
+- Core·Application은 npm·PyPI·GitHub Releases·Cobra·특정 scanner·container runtime에 직접 의존하지 않음
+- MVP는 microservice로 분할하지 않으며, Rust 저수준 isolation component 분리는 향후 선택지로 유지
+- 의존성은 Core·공통 계약을 향하며 Core/Application의 구체 구현 직접 의존을 금지
+- Composition Root/Bootstrap만 구체 구현 생성과 dependency wiring을 담당
+- 순환 의존과 금지된 dependency direction은 architecture test·import rule로 검증
+- Artifact Adapter와 External Tool Provider/Adapter를 분리하고 Capability(지원·미지원), Execution Status(미실행·실패 등), Security Result(Finding·Evidence)를 안전 판정과 구분
+- MVP 동적 plugin loading은 구현하지 않고 Composition Root에서 명시적으로 생성·등록
+- Inspection과 Sandbox/Runtime 책임을 분리하고 공통 Sandbox Port·ephemeral Session·trusted observer를 사용
+- Linux isolation·container·syscall·resource 수치는 후속 backend/tooling 결정으로 유보
+- Verification은 Artifact 출처·identity 신뢰 근거를, Inspection은 내용·행위를 분석하고 각각 정규화 결과를 생성
+- Evidence는 사실·원본 근거, Finding은 Evidence에 대한 검사 계층 해석으로 분리
+- Capability, Execution Status와 실제 Security Result(Finding·Evidence)를 구분하며 검사 불가·결과 없음은 안전으로 해석하지 않음
+- Policy만 최종 `ALLOW`/`MANUAL_REVIEW`/`BLOCK`을 생성하고 severity·score·threshold는 후속 결정
+- Evidence Store와 Staging Area는 논리적으로 분리하고 Inspection Run 중심으로 Raw Evidence·Finding·Policy·SBOM·Manifest를 추적
+- Finding/Decision 근거로 채택된 Raw Evidence는 정해진 retention 동안 보존하고 대용량 원시 telemetry 정책은 후속 결정, trusted control/observer만 Evidence를 기록
+- 저장 engine·layout·schema·retention·cleanup은 후속 Domain Model·Storage/Tooling 설계로 유보
+- Quarantine/Sandbox와 Staging을 분리하고 `ALLOW` Verified Set만 승격·반입
+- Quarantine→Staging 및 Staging→사용자 환경 반입 직전에 digest 재검증
+- Package 설치는 원칙적으로 Verified Set만 사용하고 외부 dependency는 acquisition/verification·필요 시 full quarantine으로 전환
+- 독립 binary/archive는 D-011 기반 digest 재검증 후 Staging 우회 직접 반입 가능
+- Promotion은 Policy 재판정·재검사 없이 Application의 `ALLOW` 확인 후 동일성·승격·반입만 담당
+- `ALLOW` Decision·Verified Set·Verified Manifest의 기준 Inspection Run은 서로 일치해야 하며, 각 Artifact/dependency는 선언된 identity/digest와 정확히 일치하고 자신을 검증한 관련 Inspection Run까지 추적 가능해야 함. 참조 관계를 벗어난 구성요소나 검증되지 않은 Artifact/dependency 혼합 시 Promotion 금지
+- 상세·사용자 원문: [`docs/architecture.md`](./docs/architecture.md) (Architecture-001~Architecture-008)
+
+### User Journey + CLI IA
+
+- 상태: 다음 결정 단계
+- 범위: 주요 사용자 Journey, Artifact 입력 방식, CLI 최상위 Command 구조, 기본 End-to-End 명령, 자동 실행과 사용자 개입 경계, 결과 표시·상세 조회, 실패·재검사·재개, Promotion·Install 사용자 경험
+- 결정 방식: 위 8개 항목을 순차적으로 확정
 
 ### Domain Model
 
@@ -227,7 +259,15 @@ AI review는 deterministic 검사 이전의 기본 단계가 아니라, 검사 �
 - [x] MVP 사용자 흐름·Policy 분기·완료 기준 확정
 - [x] 메인 언어 Go와 CLI framework Cobra 확정
 - [ ] runtime과 배포 형태 결정
-- [ ] Architecture 설계 시작
+- [x] Architecture 설계 시작 (Architecture-001)
+- [x] Architecture-002 최상위 책임 영역과 Policy 판정 책임 확정
+- [x] Architecture-003 Dependency Direction과 Composition Root 확정
+- [x] Architecture-004 Artifact/External Tool Adapter 구조와 Capability 정책 확정
+- [x] Architecture-005 Sandbox/Inspection Backend 구조와 Session lifecycle 확정
+- [x] Architecture-006 Verification/Inspection/Policy 책임 구조와 결과 모델 확정
+- [x] Architecture-007 Evidence/Result 저장 구조와 Inspection Run 추적 확정
+- [x] Architecture-008 Staging/Promotion 구조와 Verified Set·digest 재검증 확정
+- [ ] User Journey + CLI IA 8개 항목 결정
 - [x] 최초 지원 Artifact 생태계 선정: npm, Python/PyPI(pip), GitHub Releases
 - [ ] 첫 번째 정상·악성·변조 fixture 확보
 - [ ] quarantine 신뢰 경계와 반입 계약 정의
