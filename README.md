@@ -4,7 +4,7 @@
 
 - 프로젝트명: Heliopause Artifact Airlock
 - CLI 후보: `helox`
-- 상태: Architecture 확정 (Architecture-001~Architecture-008 완료)
+- 상태: User Journey + CLI IA 확정 (User-Journey-001~008 완료)
 
 ## 결정 문서
 
@@ -12,8 +12,9 @@
 - 위협 모델 사용자 원문·상세 정책: [`docs/threat-model.md`](./docs/threat-model.md)
 - MVP Scope 사용자 원문·상세 결정: [`docs/mvp-scope.md`](./docs/mvp-scope.md)
 - Architecture 사용자 원문·상세 결정: [`docs/architecture.md`](./docs/architecture.md)
+- User Journey + CLI IA 상세 결정: [`docs/user-journey-cli-ia.md`](./docs/user-journey-cli-ia.md)
 
-다음 결정 단계: User Journey + CLI IA 8개 항목
+다음 결정 단계: Domain Model 설계
 
 상세 내용은 주제별 문서에 한 번만 기록하고, `PROJECT-DECISIONS.md`에는 상태·핵심 요약·링크만 유지한다.
 

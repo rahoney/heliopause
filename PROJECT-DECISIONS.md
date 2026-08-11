@@ -113,14 +113,26 @@
 
 ### User Journey + CLI IA
 
-- 상태: 다음 결정 단계
+- 상태: 완료 — User-Journey-001~008 확정
 - 범위: 주요 사용자 Journey, Artifact 입력 방식, CLI 최상위 Command 구조, 기본 End-to-End 명령, 자동 실행과 사용자 개입 경계, 결과 표시·상세 조회, 실패·재검사·재개, Promotion·Install 사용자 경험
 - 결정 방식: 위 8개 항목을 순차적으로 확정
+- User-Journey-001: npm·PyPI/pip·GitHub Releases의 공통 Canonical Journey, `Install / Import Through Heliopause`·`Inspect Only`·`Review / Continue Existing Run` 대표 흐름, 설치·반입 요청 시 `ALLOW` 후 Verified Set·Staging·trusted Promotion 연속 수행 원칙 확정
+- User-Journey-002: Primary Artifact 단일 지정, 생태계별 입력 정보, 모호한 reference 명확화, 가변 reference의 exact identity/digest resolve, MVP 직접 입력 source 제한 확정
+- User-Journey-003: MVP CLI를 `helox <ecosystem/source> <operation> <artifact>` 구조로 구성하고, ecosystem별 `install`·`inspect`와 공통 `review`를 제공하며 내부 workflow 단계와 `promote`를 일반 사용자 Command로 직접 노출하지 않는 원칙 확정
+- User-Journey-004: `install`이 검사 workflow를 선행하고 `ALLOW` 시 별도 `promote` 없이 원래 설치·반입을 계속하며, `inspect`는 반입 없이 종료하는 End-to-End 흐름과 실패·dependency·Dynamic Inspection 처리 원칙 확정
+- User-Journey-005: `ALLOW`는 원래 요청을 자동 계속하고, `MANUAL_REVIEW`는 보류·검토, `BLOCK`은 추가 확인 없이 차단하며 모호한 입력만 사용자에게 요구하는 개입 경계 확정
+- User-Journey-006: 기본 terminal은 결과 중심으로 요약하고 `review`에서 Inspection Run의 Verification·Finding·Evidence·SBOM·Manifest 등을 단계적으로 상세 조회하며 사람용·기계용 결과의 동일성 유지 원칙 확정
+- User-Journey-007: 제한된 retry, 필수 검사 실패의 fail-closed, Sandbox 폐기, Inspection Run 불변성, identity/digest 기반 재검사·Promotion 연결 원칙 확정
+- User-Journey-008: 원래 install context 유지, Verified Set·Manifest·identity/digest 동일성, Promotion 전 재검증, standalone 예외, Policy와 Operation Status 분리 원칙 확정
+- 상세·사용자 원문: [`docs/user-journey-cli-ia.md`](./docs/user-journey-cli-ia.md) (User-Journey-001~008)
 
 ### Domain Model
 
-- 상태: 미결정
-- 상세 문서: 필요할 때 `docs/domain-model.md` 생성
+- 상태: 다음 결정 단계
+- 범위: 핵심 Domain Entity, Artifact Reference/Identity, Inspection Run, Capability/Execution/Policy/Operation 상태, Verification/Finding/Evidence, Dependency/Verified Set/Manifest, Operation Request/Install Context
+- 예정 Contract: Artifact Port, Verification/Inspection/Sandbox/Policy Ports, Evidence/Staging/Promotion Ports
+- 결정 항목: Domain-001~Domain-007, Contract-001~Contract-003
+- 상세 문서: 결정 시작 시 `docs/domain-model.md` 생성
 
 ### 언어·프레임워크·실행 기반
 
@@ -267,7 +279,14 @@ AI review는 deterministic 검사 이전의 기본 단계가 아니라, 검사 �
 - [x] Architecture-006 Verification/Inspection/Policy 책임 구조와 결과 모델 확정
 - [x] Architecture-007 Evidence/Result 저장 구조와 Inspection Run 추적 확정
 - [x] Architecture-008 Staging/Promotion 구조와 Verified Set·digest 재검증 확정
-- [ ] User Journey + CLI IA 8개 항목 결정
+- [x] User-Journey-001 주요 사용자 Journey 확정
+- [x] User-Journey-002 Artifact 입력 방식 확정
+- [x] User-Journey-003 CLI 최상위 Command 구조 확정
+- [x] User-Journey-004 기본 End-to-End 실행 흐름 확정
+- [x] User-Journey-005 자동 실행과 사용자 개입 경계 확정
+- [x] User-Journey-006 결과 표시와 상세 조회 Journey 확정
+- [x] User-Journey-007 실패·재검사·재개 Journey 확정
+- [x] User-Journey-008 설치·반입(Promotion) UX 확정
 - [x] 최초 지원 Artifact 생태계 선정: npm, Python/PyPI(pip), GitHub Releases
 - [ ] 첫 번째 정상·악성·변조 fixture 확보
 - [ ] quarantine 신뢰 경계와 반입 계약 정의
