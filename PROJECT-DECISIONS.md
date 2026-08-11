@@ -128,11 +128,18 @@
 
 ### Domain Model
 
-- 상태: 다음 결정 단계
+- 상태: Domain-001~007 확정 — Interface Contracts 설계 예정
 - 범위: 핵심 Domain Entity, Artifact Reference/Identity, Inspection Run, Capability/Execution/Policy/Operation 상태, Verification/Finding/Evidence, Dependency/Verified Set/Manifest, Operation Request/Install Context
 - 예정 Contract: Artifact Port, Verification/Inspection/Sandbox/Policy Ports, Evidence/Staging/Promotion Ports
 - 결정 항목: Domain-001~Domain-007, Contract-001~Contract-003
-- 상세 문서: 결정 시작 시 `docs/domain-model.md` 생성
+- Domain-001: ecosystem·구현 중립 핵심 Concept, Inspection Run 중심 lifecycle, Verification/Finding/Evidence 분리, Capability/Execution Status/Inspection Limitation, Policy Decision, Verified Set/Manifest, Operation Result 및 Sandbox Session/Observation 역할 확정
+- Domain-002: Artifact Reference·Resolved Artifact Identity·Acquired Artifact를 분리하고 source·exact identity·observed digest binding 및 declared/observed integrity 구분 원칙 확정
+- Domain-003: exact identity resolve 후 Run 생성, acquisition 전 Run ID 발급, 실제 Artifact binding, 결과·context 추적, operational failure와 Policy Decision 분리, Finalized Run 불변성 및 재검사 새 Run 원칙 확정
+- Domain-004: Capability·Execution Status·Run Lifecycle/Outcome·Policy Decision·Operation Status를 독립 축으로 분리하고 fail-closed, Policy 부재, Operation 결과 조합 원칙 확정
+- Domain-005: Verification Result·Evidence·Finding을 구분하고 declared/invalid/failed 상태·Raw/normalized Evidence·Finding 근거·Severity/Policy 분리 및 실제 Artifact 추적 원칙 확정
+- Domain-006: Dependency Requirement·Resolved Dependency·Verified Set·Verified Manifest를 분리하고 exact identity/digest·Run/Policy 추적, Set 일관성 및 양쪽 경계 재검증 원칙 확정
+- Domain-007: Operation Request·Install Context·Operation Result를 분리하고 사용자 의도 보존, install/inspect 분기, Host/Sandbox context 격리, ALLOW·Manifest/exact Artifact·원래 context가 일치하는 trusted Promotion 원칙 확정
+- 상세·사용자 원문: [`docs/domain-model.md`](./docs/domain-model.md) (Domain-001~007)
 
 ### 언어·프레임워크·실행 기반
 
@@ -287,6 +294,16 @@ AI review는 deterministic 검사 이전의 기본 단계가 아니라, 검사 �
 - [x] User-Journey-006 결과 표시와 상세 조회 Journey 확정
 - [x] User-Journey-007 실패·재검사·재개 Journey 확정
 - [x] User-Journey-008 설치·반입(Promotion) UX 확정
+- [x] Domain-001 핵심 Domain Concept 및 역할 확정
+- [x] Domain-002 Artifact Reference / Resolved Identity / Acquired Artifact 모델 확정
+- [x] Domain-003 Inspection Run 모델 확정
+- [x] Domain-004 Capability / Execution / Run / Policy / Operation 상태 모델 확정
+- [x] Domain-005 Verification Result / Evidence / Finding 모델 확정
+- [x] Domain-006 Dependency / Verified Set / Manifest 모델 확정
+- [x] Domain-007 Operation Request / Install Context 모델 확정
+- [ ] Contract-001 Artifact Port 결정
+- [ ] Contract-002 Verification / Inspection / Sandbox / Policy Ports 결정
+- [ ] Contract-003 Evidence / Staging / Promotion Ports 결정
 - [x] 최초 지원 Artifact 생태계 선정: npm, Python/PyPI(pip), GitHub Releases
 - [ ] 첫 번째 정상·악성·변조 fixture 확보
 - [ ] quarantine 신뢰 경계와 반입 계약 정의
