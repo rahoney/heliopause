@@ -18,6 +18,15 @@
 - scaffold와 external dependency는 현재 work item에 필요한 범위만 추가한다.
 - 실제 Secret, credential, 개인 환경 파일과 사용자 식별 가능 정보를 커밋하지 않는다.
 
+## 자동화된 코드 점검
+
+- 코드 점검은 수동 전수 확인보다 repository의 canonical check profile과 고정된 formatter, compiler/type checker, linter, validator를 먼저 실행한다.
+- Go source가 존재하면 `gofmt` format check, `go build`/test build-validity, `go vet`, pinned Staticcheck와 해당 test를 우선 사용하고 결과를 근거로 필요한 부분을 정밀 검토한다.
+- canonical `scripts/check`가 도입된 뒤에는 개별 명령을 임의로 재구성하지 않고 현재 작업에 해당하는 profile을 먼저 실행한다.
+- check profile은 read-only 원칙을 지키며 source 변경은 명시적인 `format` profile에서만 수행한다.
+- 도구가 없거나 version이 다르면 floating `latest`나 임의 PATH binary로 대체하지 않고 repository lock과 bootstrap 절차를 따른다.
+- 자동화 도구의 성공은 Architecture·Domain·Security invariant에 대한 사람 검토를 대체하지 않는다.
+
 ## 상태 기록
 
 - work item을 시작하거나 완료·차단하면 Current Work Queue를 같은 변경에서 갱신한다.

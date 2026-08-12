@@ -9,10 +9,10 @@
 ```text
 Current milestone: M0 — Implementation Foundation
 Milestone status: IN_PROGRESS
-Active work item: 없음
-Next work item: M0-002 — Go·Tool·CI Identity lock
+Active work item: M0-002 — Go·Tool·CI Identity lock
+Next work item: M0-003 — Go module과 최소 process bootstrap
 Next work item status: NOT_STARTED
-Ready: Yes
+Ready: No
 ```
 
 M0-001 착수와 함께 M0가 `IN_PROGRESS`가 되었고, M0-001 완료 후 다음 실행 항목은 M0-002다.
@@ -41,7 +41,7 @@ COMPLETE
 | Order | ID | Work item | Depends on | Status | Ready |
 | --- | --- | --- | --- | --- | --- |
 | 1 | M0-001 | Project Identity 결정 | Step 13 | COMPLETE | No |
-| 2 | M0-002 | Go·Tool·CI Identity lock | M0-001 | NOT_STARTED | Yes |
+| 2 | M0-002 | Go·Tool·CI Identity lock | M0-001 | IN_PROGRESS | No |
 | 3 | M0-003 | Go module과 최소 process bootstrap | M0-002 | NOT_STARTED | No |
 | 4 | M0-004 | Canonical check runner foundation | M0-003 | NOT_STARTED | No |
 | 5 | M0-005 | Static analysis와 Quick profile 활성화 | M0-004 | NOT_STARTED | No |

@@ -110,7 +110,33 @@ release build, checksum, SBOM, signing, provenance/attestation과 publish는 CI 
 - Windows native build는 MVP 대상이 아니다.
 - WSL2는 Linux build 성공으로 검증됐다고 주장하지 않는다. 공식 WSL2 지원을 선언하는 milestone 전 승인된 disposable WSL2 runner에서 CLI E2E qualification을 별도로 수행해야 한다.
 
-exact runner label, Go patch와 tool version은 Step 13~14에서 당시 지원 상태를 확인해 lock한다.
+exact runner label, Go patch와 현재 사용하는 Action/tool version은 아래 M0-002 lock과 Step 14의 실제 consumer에서 일치시킨다.
+
+### M0-002 runner와 Action identity lock
+
+2026-08-12 KST의 GitHub 공식 지원 목록과 release tag를 기준으로 다음 identity를 확정한다.
+
+| Role | Exact identity | 근거와 적용 |
+| --- | --- | --- |
+| Linux runner | `ubuntu-24.04` | GA versioned x64 image; primary, minimum, docs와 required aggregate |
+| macOS runner | `macos-26-intel` | public/private repository에 공통 제공되는 GA versioned x64 image; macOS CLI build/default test |
+| Checkout Action | `actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd` | signed stable release `v6.0.2` |
+| Go setup Action | `actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e` | signed immutable stable release `v7.0.0` |
+
+- `ubuntu-26.04`는 확인 시점에 public preview이므로 required gate에 사용하지 않는다. `ubuntu-24.04`는 최신 GA LTS versioned Ubuntu label이다.
+- `macos-26-intel`은 `-latest` alias 대신 사용하는 최신 GA versioned x64 label이며 public/private repository 표에 공통으로 존재한다. arm64 qualification이 실제 requirement가 되면 repository visibility와 runner 제공 범위를 다시 확인해 별도 matrix로 추가한다.
+- 두 Action은 GitHub-owned이고 MIT license이며 active release와 dependency maintenance가 확인된다. tag 이동에 의존하지 않도록 exact release commit을 full SHA로 사용한다.
+- Checkout은 `persist-credentials: false`, setup-go는 exact Go patch, `check-latest: false`, `cache: false`로 사용한다. 이 input은 각 Action의 implicit network·credential·cache 동작을 Step 11 invariant와 맞춘다.
+- GitHub-hosted runner가 제공하는 current runner application은 두 Node 24 Action의 requirement를 충족한다. self-hosted runner는 M0 required gate에 사용하지 않는다.
+- runner image 또는 Action upgrade는 GA/support 상태, runtime 전환, release note, permission/input default, dependency와 full SHA를 다시 확인한 명시적 변경으로만 수행한다. major tag나 moving label을 자동 추종하지 않는다.
+
+검토 source:
+
+- [GitHub-hosted runners reference](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)
+- [GitHub runner images와 label](https://github.com/actions/runner-images)
+- [Checkout v6.0.2 release](https://github.com/actions/checkout/releases/tag/v6.0.2)
+- [Setup Go v7.0.0 release](https://github.com/actions/setup-go/releases/tag/v7.0.0)
+- [Setup Go exact version guidance](https://github.com/actions/setup-go/blob/v7.0.0/docs/advanced-usage.md)
 
 ## 6. Required CI jobs
 
@@ -403,8 +429,7 @@ Step 14에서 처음부터 모든 job을 placeholder로 만들지 않는다.
 
 ## 유보 사항
 
-- implementation 시점의 exact GitHub-hosted runner label
-- exact Go patch, tool version과 action full SHA
+- 미래 security capability의 exact tool·Action identity
 - repository가 public/private인지에 따른 Actions 기능과 retention 한도
 - WSL2 qualification runner와 절차
 - concrete Linux isolation runtime의 CI 실행 방식

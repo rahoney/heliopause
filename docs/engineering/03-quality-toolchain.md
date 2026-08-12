@@ -93,7 +93,33 @@ deterministic Quality Gate에서 AI 기반 scanner mode, 원격 code upload와 �
 - tool upgrade는 release note, Go version compatibility, rule 변화, 새 false positive와 dependency graph를 검토한 명시적 변경으로 수행한다.
 - Gitleaks는 현재 feature-complete·security-fix maintenance 상태이므로 보안 수정 제공 여부를 upgrade 검토 시 확인하며, 유지보수가 중단되면 대체 도구를 재평가한다.
 
-정확한 Go와 tool version 숫자는 구현 시작 시점에 고정한다. Step 10은 제품명과 실행 계약을 고정하며 미래의 임의 최신 version을 미리 적지 않는다.
+정확한 Go와 현재 사용하는 tool version은 아래 M0-002 lock에서 고정한다. 아직 사용하지 않는 미래 도구의 임의 최신 version은 미리 적지 않는다.
+
+### M0-002 Go와 Staticcheck identity lock
+
+2026-08-12 KST에 공식 release와 지원 상태를 확인해 다음 M0 lock input을 확정한다.
+
+| Role | Exact identity | 사용 위치 |
+| --- | --- | --- |
+| 기본 Go | `go1.26.5` | 개발, primary CI, macOS CI와 quality tool setup |
+| 최소 지원 Go | `go1.25.12` | `go` directive 기준과 Minimum Go build/default test |
+| Staticcheck | package `honnef.co/go/tools/cmd/staticcheck`, release `2026.1`, binary version `2026.1 (v0.7.0)` | M0 Quick profile |
+
+- Go 공식 download API에서 `go1.26.5`가 최신 stable이며, release history상 `go1.26.5`와 `go1.25.12`는 같은 2026-07-07 security patch set을 포함한다. Go의 두 최신 major release 지원 정책에 따라 기본은 최신 지원 계열, 최소는 직전 지원 계열의 최신 patch로 둔다.
+- Staticcheck `2026.1`은 signed release tag `2026.1`의 commit `ff63afafc529279f454e02f1d060210bd4263951`이며 Go 1.25·1.26 지원을 명시한다. 해당 module의 build floor는 `go 1.25.0`이므로 setup Go `1.26.5`와 호환된다.
+- Staticcheck source license는 MIT이고 third-party notices를 제공하며, release·issue·dependency update 활동이 이어지는 maintained project다. primary maintainer 집중과 Go module 기반 transitive build graph는 공급망 risk로 남으므로 checksum database를 유지하고 product module과 격리한다. M0-005에서 source tree 밖 cache에 exact package/release로 설치한다.
+- M0-005의 `scripts/tools.lock.json` entry는 `command`, `package`, `version`, `expectedVersion`, `setupGo`를 각각 `staticcheck`, 위 package path, `2026.1`, `staticcheck 2026.1 (v0.7.0)`, `1.26.5`로 기록한다. lock file 자체는 실제 consumer가 생기는 M0-005에서 생성한다.
+- Go patch에 compiler/runtime/standard library security fix가 있으면 지원 두 계열을 함께 검토해 exact patch를 올린다. 새 Go major는 release note, dependency, Staticcheck와 CI 호환성을 확인한 별도 변경에서만 기본/최소 역할을 이동한다.
+- Staticcheck upgrade는 새 Go language 지원, correctness fix, dependency·license·maintenance와 진단 변화까지 검토하고 exact release와 expected binary version을 함께 갱신한다.
+
+검토 source:
+
+- [Go downloads JSON](https://go.dev/dl/?mode=json)
+- [Go release history와 지원 정책](https://go.dev/doc/devel/release)
+- [Staticcheck 2026.1 release](https://github.com/dominikh/go-tools/releases/tag/2026.1)
+- [Staticcheck 2026.1 release notes](https://staticcheck.dev/changes/2026.1/)
+- [Staticcheck 2026.1 module requirements](https://github.com/dominikh/go-tools/blob/2026.1/go.mod)
+- [Staticcheck license](https://github.com/dominikh/go-tools/blob/2026.1/LICENSE)
 
 ## 4. Canonical local entrypoint
 
@@ -466,9 +492,8 @@ docs
 
 ## 유보 사항
 
-- 구현 시작 시점의 exact Go patch version과 최소 지원 version
-- Staticcheck, gosec, govulncheck와 Gitleaks의 exact pinned version
-- module path와 실제 quality tool lock entry
+- gosec, govulncheck와 Gitleaks의 exact pinned version
+- 실제 quality tool lock file 생성
 - Step 11 CI event별 mandatory profile과 timeout
 - supported OS/architecture compile matrix
 - vulnerability database/cache와 network failure retry
