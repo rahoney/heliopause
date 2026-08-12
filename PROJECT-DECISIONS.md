@@ -27,14 +27,15 @@
 | Coding / Security Rules | Step 9 | Complete | [docs/engineering/02-coding-security-rules.md](./docs/engineering/02-coding-security-rules.md) |
 | Quality Toolchain | Step 10 | Complete | [docs/engineering/03-quality-toolchain.md](./docs/engineering/03-quality-toolchain.md) |
 | CI + Quality Gate | Step 11 | Complete | [docs/engineering/04-ci-quality-gate.md](./docs/engineering/04-ci-quality-gate.md) |
+| Milestones | Step 12 | Complete | [docs/planning/01-milestones.md](./docs/planning/01-milestones.md) |
 
 ## Current Stage
 
-Step 11 — CI + Quality Gate: Complete
+Step 12 — Milestones: Complete
 
 Documentation hierarchy and task routing migration: Complete
 
-Next: Step 12 — Milestones
+Next: Step 13 — Current Work Queue
 
 ## Remaining Stages
 
@@ -44,7 +45,7 @@ Next: Step 12 — Milestones
 | 9 | Coding / Security Rules | Complete | 코드 작성·의존성·비밀값·오류 처리·보안 구현 규칙 |
 | 10 | Formatter / Linter / Type Check / Test / Security Scan | Complete | 로컬 deterministic 검증 도구와 실행 명령 |
 | 11 | CI + Quality Gate | Complete | CI workflow와 merge 차단 기준 |
-| 12 | Milestones | Pending | 구현 단계, 의존 관계와 완료 조건 |
+| 12 | Milestones | Complete | 구현 단계, 의존 관계와 완료 조건 |
 | 13 | Current Work Queue | Pending | 실행 가능한 현재 작업과 우선순위 |
 | 14 | Implementation | Pending | 라우팅된 설계 문서를 기준으로 점진적 구현 |
 
@@ -54,8 +55,7 @@ Next: Step 12 — Milestones
 
 | Item | Planned stage or context |
 | --- | --- |
-| 1차 사용자와 운영 방식 | Step 12 이전 |
-| 구체 runtime/container 기술과 배포 형태 | Step 9~13 또는 backend 구현 직전 |
+| 구체 runtime/container 기술과 배포 형태 | M3 entry decision 또는 backend 구현 직전 |
 | 설정 형식과 schema | 관련 구현 직전 상세 설계 |
 | Adapter 등록과 plugin 확장 방식 | Step 9 또는 구현 직전 ADR |
 | 구체 동시성·resource limit 값과 backend별 제어 | 관련 구현 직전 상세 설계 |

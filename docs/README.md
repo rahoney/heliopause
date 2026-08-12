@@ -12,6 +12,7 @@
 | User Journey + CLI IA | 사용자 흐름, CLI 구조와 실행 경험 | [user-journey-cli-ia/README.md](./user-journey-cli-ia/README.md) |
 | Domain Model | Domain Concept와 Interface Contract | [domain-model/README.md](./domain-model/README.md) |
 | Engineering | 구현 디렉터리, 코딩·보안 규칙과 품질 자동화 | [engineering/README.md](./engineering/README.md) |
+| Planning | 구현 milestone, 의존 순서와 현재 실행 작업 | [planning/README.md](./planning/README.md) |
 
 ## Task Routing
 
@@ -119,6 +120,15 @@ Read:
 - [Step 11 — CI + Quality Gate](./engineering/04-ci-quality-gate.md)
 - [Step 10 — Quality Toolchain](./engineering/03-quality-toolchain.md)
 - [Step 9 — Coding / Security Rules](./engineering/02-coding-security-rules.md)
+
+### Milestone 또는 current work
+
+Read:
+
+- [Planning Index](./planning/README.md)
+- [Step 12 — Milestones](./planning/01-milestones.md)
+- 현재 작업을 실행할 때는 Step 13에서 생성할 Current Work Queue
+- 해당 work item이 가리키는 Architecture·Domain·Engineering leaf 문서
 
 ## Rules
 
