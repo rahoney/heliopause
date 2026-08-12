@@ -104,12 +104,20 @@ Read:
 - [Step 8 — Directory Structure](./engineering/01-directory-structure.md)
 - 구현하려는 책임에 해당하는 위 task route
 
-### Quality toolchain 또는 CI
+### Formatter, linter, test 또는 security scan
+
+Read:
+
+- [Step 10 — Quality Toolchain](./engineering/03-quality-toolchain.md)
+- [Step 9 — Coding / Security Rules](./engineering/02-coding-security-rules.md)
+- 검사 대상 책임에 해당하는 위 task route
+
+### CI 또는 quality gate
 
 Read:
 
 - [Engineering Index](./engineering/README.md)
-- [Step 9 — Coding / Security Rules](./engineering/02-coding-security-rules.md)
+- [Step 10 — Quality Toolchain](./engineering/03-quality-toolchain.md)
 - 해당 단계에서 생성된 Engineering 상세 문서
 
 ## Rules
