@@ -9,7 +9,7 @@ Heliopause 구현에 적용할 저장소 구조, 코딩·보안 규칙과 품질
 | [01-directory-structure.md](./01-directory-structure.md) | Step 8 | Complete | Go package·파일·테스트·fixture 배치 작업 |
 | [02-coding-security-rules.md](./02-coding-security-rules.md) | Step 9 | Complete | 코딩 규칙과 보안 구현 규칙 작업 |
 | [03-quality-toolchain.md](./03-quality-toolchain.md) | Step 10 | Complete | formatter·linter·type check·test·scan 작업 |
-| `04-ci-quality-gate.md` | Step 11 | Pending | CI workflow와 merge gate 작업 |
+| [04-ci-quality-gate.md](./04-ci-quality-gate.md) | Step 11 | Complete | CI workflow와 merge gate 작업 |
 
 ## Rule
 

@@ -26,14 +26,15 @@
 | Directory Structure | Step 8 | Complete | [docs/engineering/01-directory-structure.md](./docs/engineering/01-directory-structure.md) |
 | Coding / Security Rules | Step 9 | Complete | [docs/engineering/02-coding-security-rules.md](./docs/engineering/02-coding-security-rules.md) |
 | Quality Toolchain | Step 10 | Complete | [docs/engineering/03-quality-toolchain.md](./docs/engineering/03-quality-toolchain.md) |
+| CI + Quality Gate | Step 11 | Complete | [docs/engineering/04-ci-quality-gate.md](./docs/engineering/04-ci-quality-gate.md) |
 
 ## Current Stage
 
-Step 10 — Formatter / Linter / Type Check / Test / Security Scan: Complete
+Step 11 — CI + Quality Gate: Complete
 
 Documentation hierarchy and task routing migration: Complete
 
-Next: Step 11 — CI + Quality Gate
+Next: Step 12 — Milestones
 
 ## Remaining Stages
 
@@ -42,7 +43,7 @@ Next: Step 11 — CI + Quality Gate
 | 8 | Directory Structure | Complete | 구현 디렉터리, package 경계와 파일 배치 규칙 |
 | 9 | Coding / Security Rules | Complete | 코드 작성·의존성·비밀값·오류 처리·보안 구현 규칙 |
 | 10 | Formatter / Linter / Type Check / Test / Security Scan | Complete | 로컬 deterministic 검증 도구와 실행 명령 |
-| 11 | CI + Quality Gate | Pending | CI workflow와 merge 차단 기준 |
+| 11 | CI + Quality Gate | Complete | CI workflow와 merge 차단 기준 |
 | 12 | Milestones | Pending | 구현 단계, 의존 관계와 완료 조건 |
 | 13 | Current Work Queue | Pending | 실행 가능한 현재 작업과 우선순위 |
 | 14 | Implementation | Pending | 라우팅된 설계 문서를 기준으로 점진적 구현 |
@@ -61,7 +62,7 @@ Next: Step 11 — CI + Quality Gate
 | Evidence storage·retention·cleanup | 구현 직전 상세 설계 |
 | Policy rule·version·reason code | 구현 직전 상세 설계 |
 | exact Go/tool version과 lock entry | Step 13~14 구현 준비 |
-| CI와 quality gate | Step 11 |
+| exact CI runner/action identity와 repository-wide rule 적용 | Step 13~14 구현 준비 |
 | 라이선스·상표·배포 정책 | 배포 전 |
 | MCP 제공 여부 | CLI 안정화 후 |
 

@@ -6,8 +6,8 @@
 - CLI 후보: `helox`
 - 구현 언어: Go
 - CLI framework: Cobra
-- 현재 상태: Step 10 Formatter / Linter / Type Check / Test / Security Scan 완료
-- 다음 단계: Step 11 CI + Quality Gate
+- 현재 상태: Step 11 CI + Quality Gate 완료
+- 다음 단계: Step 12 Milestones
 
 ## Documentation
 

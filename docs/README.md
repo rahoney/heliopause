@@ -116,9 +116,9 @@ Read:
 
 Read:
 
-- [Engineering Index](./engineering/README.md)
+- [Step 11 — CI + Quality Gate](./engineering/04-ci-quality-gate.md)
 - [Step 10 — Quality Toolchain](./engineering/03-quality-toolchain.md)
-- 해당 단계에서 생성된 Engineering 상세 문서
+- [Step 9 — Coding / Security Rules](./engineering/02-coding-security-rules.md)
 
 ## Rules
 
