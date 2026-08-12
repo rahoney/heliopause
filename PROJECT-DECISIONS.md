@@ -31,6 +31,7 @@
 | CI + Quality Gate | Step 11 | Complete | [docs/engineering/04-ci-quality-gate.md](./docs/engineering/04-ci-quality-gate.md) |
 | Milestones | Step 12 | Complete | [docs/planning/01-milestones.md](./docs/planning/01-milestones.md) |
 | Current Work Queue | Step 13 | Complete | [docs/planning/02-current-work-queue.md](./docs/planning/02-current-work-queue.md) |
+| Go·Tool·CI Identity | M0-002 | Complete | [Quality Toolchain](./docs/engineering/03-quality-toolchain.md), [CI Quality Gate](./docs/engineering/04-ci-quality-gate.md) |
 
 ## Current Stage
 
@@ -38,7 +39,7 @@ Step 14 — Implementation: M0 `IN_PROGRESS`
 
 Documentation hierarchy and task routing migration: Complete
 
-Next: M0-002 — Go·Tool·CI Identity lock
+Next: M0-003 — Go module과 최소 process bootstrap
 
 ## Remaining Stages
 
@@ -64,7 +65,6 @@ Next: M0-002 — Go·Tool·CI Identity lock
 | 구체 동시성·resource limit 값과 backend별 제어 | 관련 구현 직전 상세 설계 |
 | Evidence storage·retention·cleanup | 구현 직전 상세 설계 |
 | Policy rule·version·reason code | 구현 직전 상세 설계 |
-| exact Go/tool/runner/action identity와 lock entry | M0-002 |
 | repository-wide Actions/branch rule 적용 범위 | M0-007; 명시적 owner 승인 필요 |
 | 라이선스·상표·배포 정책 | 배포 전 |
 | MCP 제공 여부 | CLI 안정화 후 |

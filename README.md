@@ -9,7 +9,7 @@
 - 구현 언어: Go
 - CLI framework: Cobra
 - 현재 상태: Step 14 Implementation — M0 진행 중
-- 다음 작업: M0-002 Go·Tool·CI Identity lock
+- 다음 작업: M0-003 Go module과 최소 process bootstrap
 
 ## Documentation
 

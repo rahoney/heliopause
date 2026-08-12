@@ -9,13 +9,13 @@
 ```text
 Current milestone: M0 — Implementation Foundation
 Milestone status: IN_PROGRESS
-Active work item: M0-002 — Go·Tool·CI Identity lock
+Active work item: 없음
 Next work item: M0-003 — Go module과 최소 process bootstrap
 Next work item status: NOT_STARTED
-Ready: No
+Ready: Yes
 ```
 
-M0-001 착수와 함께 M0가 `IN_PROGRESS`가 되었고, M0-001 완료 후 다음 실행 항목은 M0-002다.
+M0-001 착수와 함께 M0가 `IN_PROGRESS`가 되었고, M0-002 완료 후 다음 실행 항목은 M0-003이다.
 
 ## 2. 상태와 queue 규칙
 
@@ -41,8 +41,8 @@ COMPLETE
 | Order | ID | Work item | Depends on | Status | Ready |
 | --- | --- | --- | --- | --- | --- |
 | 1 | M0-001 | Project Identity 결정 | Step 13 | COMPLETE | No |
-| 2 | M0-002 | Go·Tool·CI Identity lock | M0-001 | IN_PROGRESS | No |
-| 3 | M0-003 | Go module과 최소 process bootstrap | M0-002 | NOT_STARTED | No |
+| 2 | M0-002 | Go·Tool·CI Identity lock | M0-001 | COMPLETE | No |
+| 3 | M0-003 | Go module과 최소 process bootstrap | M0-002 | NOT_STARTED | Yes |
 | 4 | M0-004 | Canonical check runner foundation | M0-003 | NOT_STARTED | No |
 | 5 | M0-005 | Static analysis와 Quick profile 활성화 | M0-004 | NOT_STARTED | No |
 | 6 | M0-006 | Quick·Docs·Required CI foundation | M0-005 | NOT_STARTED | No |
@@ -114,6 +114,17 @@ M0 구현에 필요한 기본 Go/minimum Go, 최초 Staticcheck, GitHub-hosted r
 - default/minimum Go의 역할과 runner/Action/tool identity가 서로 구분된다.
 - 아직 사용하지 않는 gosec, Gitleaks, govulncheck 또는 미래 runtime을 미리 pin하지 않는다.
 - source URL, 확인한 release/tag와 exact identity가 review 가능하게 기록된다.
+
+**Completion**
+
+```text
+Status: COMPLETE
+Commit: c6a353b71d5a6659b97e00a17a2e61fbba9ef82a
+Checks: official release/support source review; tag/SHA ls-remote verification; local go/staticcheck version verification; Markdown local link/fence validation; git diff --check
+Decision/Evidence: docs/engineering/03-quality-toolchain.md and docs/engineering/04-ci-quality-gate.md M0-002 identity lock
+Limitations: tools.lock consumer는 M0-005, workflow consumer는 M0-006에서 생성하며 미래 security tool은 capability 활성화 시 별도 pin
+Next: M0-003 — Ready: Yes
+```
 
 ### M0-003 — Go module과 최소 process bootstrap
 
@@ -291,16 +302,17 @@ Next: <다음 ID와 Ready 여부>
 
 ## 6. 현재 재개 지점
 
-M0-001은 완료되었다. 독립 repository에서 재개할 첫 작업은 **M0-002 — Go·Tool·CI Identity lock**이다.
+M0-001과 M0-002는 완료되었다. 다음 작업은 **M0-003 — Go module과 최소 process bootstrap**이다.
 
 ```text
 M0: IN_PROGRESS
-M0-001: COMPLETE
-M0-002: NOT_STARTED → IN_PROGRESS
-Active work item: M0-002
+M0-002: COMPLETE
+M0-003: NOT_STARTED
+Active work item: 없음
+Next work item: M0-003 — Ready: Yes
 ```
 
-M0-002에서는 identity 조사와 lock input만 확정한다. `go.mod`, CLI scaffold, check runner 또는 workflow는 M0-003 이후 Queue 순서에 따라 생성하고, 한 번에 M0 전체를 구현하지 않는다.
+M0-003에서는 M0-002의 Go identity를 적용해 단일 module과 최소 process bootstrap만 구현한다. check runner 또는 workflow는 후속 Queue 순서에 따라 생성하고, 한 번에 M0 전체를 구현하지 않는다.
 
 ## Step 13 Invariant
 
@@ -311,7 +323,7 @@ M0-002에서는 identity 조사와 lock input만 확정한다. `go.mod`, CLI sca
 5. 실제 검증 evidence 없이 `COMPLETE`로 표시하지 않는다.
 6. 외부 상태 변경과 repository-wide 보안 설정은 필요한 명시적 승인을 받는다.
 7. 미래 capability의 placeholder package, config 또는 CI job을 queue가 요구하지 않는다.
-8. 독립 repository에서는 M0-002부터 Queue 순서대로 실행한다.
+8. 독립 repository에서는 현재 next item부터 Queue 순서대로 실행한다.
 
 ## 누락 점검
 
