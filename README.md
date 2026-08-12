@@ -6,8 +6,8 @@
 - CLI 후보: `helox`
 - 구현 언어: Go
 - CLI framework: Cobra
-- 현재 상태: Step 12 Milestones 완료
-- 다음 단계: Step 13 Current Work Queue
+- 현재 상태: Step 13 Current Work Queue 완료
+- 다음 단계: Step 14 Implementation — M0-001 Project Identity 결정
 
 ## Documentation
 

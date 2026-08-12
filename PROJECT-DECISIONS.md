@@ -28,14 +28,15 @@
 | Quality Toolchain | Step 10 | Complete | [docs/engineering/03-quality-toolchain.md](./docs/engineering/03-quality-toolchain.md) |
 | CI + Quality Gate | Step 11 | Complete | [docs/engineering/04-ci-quality-gate.md](./docs/engineering/04-ci-quality-gate.md) |
 | Milestones | Step 12 | Complete | [docs/planning/01-milestones.md](./docs/planning/01-milestones.md) |
+| Current Work Queue | Step 13 | Complete | [docs/planning/02-current-work-queue.md](./docs/planning/02-current-work-queue.md) |
 
 ## Current Stage
 
-Step 12 — Milestones: Complete
+Step 13 — Current Work Queue: Complete
 
 Documentation hierarchy and task routing migration: Complete
 
-Next: Step 13 — Current Work Queue
+Next: Step 14 — Implementation (`M0-001 Project Identity 결정`)
 
 ## Remaining Stages
 
@@ -46,7 +47,7 @@ Next: Step 13 — Current Work Queue
 | 10 | Formatter / Linter / Type Check / Test / Security Scan | Complete | 로컬 deterministic 검증 도구와 실행 명령 |
 | 11 | CI + Quality Gate | Complete | CI workflow와 merge 차단 기준 |
 | 12 | Milestones | Complete | 구현 단계, 의존 관계와 완료 조건 |
-| 13 | Current Work Queue | Pending | 실행 가능한 현재 작업과 우선순위 |
+| 13 | Current Work Queue | Complete | 실행 가능한 현재 작업과 우선순위 |
 | 14 | Implementation | Pending | 라우팅된 설계 문서를 기준으로 점진적 구현 |
 
 ## Open Decisions
@@ -55,14 +56,15 @@ Next: Step 13 — Current Work Queue
 
 | Item | Planned stage or context |
 | --- | --- |
+| Go module path와 CLI command 최종 identity | M0-001 |
 | 구체 runtime/container 기술과 배포 형태 | M3 entry decision 또는 backend 구현 직전 |
 | 설정 형식과 schema | 관련 구현 직전 상세 설계 |
 | Adapter 등록과 plugin 확장 방식 | Step 9 또는 구현 직전 ADR |
 | 구체 동시성·resource limit 값과 backend별 제어 | 관련 구현 직전 상세 설계 |
 | Evidence storage·retention·cleanup | 구현 직전 상세 설계 |
 | Policy rule·version·reason code | 구현 직전 상세 설계 |
-| exact Go/tool version과 lock entry | Step 13~14 구현 준비 |
-| exact CI runner/action identity와 repository-wide rule 적용 | Step 13~14 구현 준비 |
+| exact Go/tool/runner/action identity와 lock entry | M0-002 |
+| repository-wide Actions/branch rule 적용 범위 | M0-007; 명시적 owner 승인 필요 |
 | 라이선스·상표·배포 정책 | 배포 전 |
 | MCP 제공 여부 | CLI 안정화 후 |
 

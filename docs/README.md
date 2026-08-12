@@ -127,7 +127,7 @@ Read:
 
 - [Planning Index](./planning/README.md)
 - [Step 12 — Milestones](./planning/01-milestones.md)
-- 현재 작업을 실행할 때는 Step 13에서 생성할 Current Work Queue
+- [Step 13 — Current Work Queue](./planning/02-current-work-queue.md)
 - 해당 work item이 가리키는 Architecture·Domain·Engineering leaf 문서
 
 ## Rules
