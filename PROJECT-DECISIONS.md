@@ -7,7 +7,9 @@
 | Item | Status | Decision |
 | --- | --- | --- |
 | Project name | Complete | Heliopause Artifact Airlock |
-| CLI name | Candidate | `helox`; 충돌과 배포 가능 여부 확인 필요 |
+| CLI name | Complete | `helox` |
+| Repository | Complete | `github.com/rahoney/heliopause` |
+| Go module path | Complete | `github.com/rahoney/heliopause` |
 | Purpose | Complete | 외부 Artifact를 통제된 환경에서 검사하고 허용된 정확한 Artifact만 목표 환경으로 반입 |
 | Language | Complete | Go |
 | CLI framework | Complete | Cobra |
@@ -32,11 +34,11 @@
 
 ## Current Stage
 
-Step 13 — Current Work Queue: Complete
+Step 14 — Implementation: M0 `IN_PROGRESS`
 
 Documentation hierarchy and task routing migration: Complete
 
-Next: Step 14 — Implementation (`M0-001 Project Identity 결정`)
+Next: M0-002 — Go·Tool·CI Identity lock
 
 ## Remaining Stages
 
@@ -48,7 +50,7 @@ Next: Step 14 — Implementation (`M0-001 Project Identity 결정`)
 | 11 | CI + Quality Gate | Complete | CI workflow와 merge 차단 기준 |
 | 12 | Milestones | Complete | 구현 단계, 의존 관계와 완료 조건 |
 | 13 | Current Work Queue | Complete | 실행 가능한 현재 작업과 우선순위 |
-| 14 | Implementation | Pending | 라우팅된 설계 문서를 기준으로 점진적 구현 |
+| 14 | Implementation | In Progress | 라우팅된 설계 문서를 기준으로 점진적 구현 |
 
 ## Open Decisions
 
@@ -56,7 +58,6 @@ Next: Step 14 — Implementation (`M0-001 Project Identity 결정`)
 
 | Item | Planned stage or context |
 | --- | --- |
-| Go module path와 CLI command 최종 identity | M0-001 |
 | 구체 runtime/container 기술과 배포 형태 | M3 entry decision 또는 backend 구현 직전 |
 | 설정 형식과 schema | 관련 구현 직전 상세 설계 |
 | Adapter 등록과 plugin 확장 방식 | Step 9 또는 구현 직전 ADR |

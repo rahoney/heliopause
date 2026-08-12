@@ -8,14 +8,14 @@
 
 ```text
 Current milestone: M0 — Implementation Foundation
-Milestone status: NOT_STARTED
+Milestone status: IN_PROGRESS
 Active work item: 없음
-Next work item: M0-001 — Project Identity 결정
+Next work item: M0-002 — Go·Tool·CI Identity lock
 Next work item status: NOT_STARTED
 Ready: Yes
 ```
 
-Step 13 문서 완료만으로 M0를 `IN_PROGRESS`로 바꾸지 않는다. Step 14에서 M0-001의 실제 작업을 시작할 때 milestone과 work item을 함께 `IN_PROGRESS`로 갱신한다.
+M0-001 착수와 함께 M0가 `IN_PROGRESS`가 되었고, M0-001 완료 후 다음 실행 항목은 M0-002다.
 
 ## 2. 상태와 queue 규칙
 
@@ -40,8 +40,8 @@ COMPLETE
 
 | Order | ID | Work item | Depends on | Status | Ready |
 | --- | --- | --- | --- | --- | --- |
-| 1 | M0-001 | Project Identity 결정 | Step 13 | NOT_STARTED | Yes |
-| 2 | M0-002 | Go·Tool·CI Identity lock | M0-001 | NOT_STARTED | No |
+| 1 | M0-001 | Project Identity 결정 | Step 13 | COMPLETE | No |
+| 2 | M0-002 | Go·Tool·CI Identity lock | M0-001 | NOT_STARTED | Yes |
 | 3 | M0-003 | Go module과 최소 process bootstrap | M0-002 | NOT_STARTED | No |
 | 4 | M0-004 | Canonical check runner foundation | M0-003 | NOT_STARTED | No |
 | 5 | M0-005 | Static analysis와 Quick profile 활성화 | M0-004 | NOT_STARTED | No |
@@ -73,8 +73,20 @@ COMPLETE
 **Acceptance**
 
 - module path와 CLI command가 하나의 값으로 확정되어 후속 파일에서 추측할 필요가 없다.
-- 현재 monorepo의 Heliopause 디렉터리가 module root라는 Step 8 결정을 유지한다.
+- Heliopause 독립 repository root가 단일 Go module root라는 Step 8 결정을 유지한다.
 - 실제 scaffold, `go.mod` 또는 package는 아직 생성하지 않는다.
+
+**Completion**
+
+```text
+Status: COMPLETE
+CLI command: helox
+Repository: github.com/rahoney/heliopause
+Go module path: github.com/rahoney/heliopause
+Evidence: local repository/PATH와 현실적인 public executable/package namespace 확인
+Limitation: 법적 상표 검토와 최종 배포 channel 등록 가능성은 배포 전 재검토
+Next: M0-002 — Ready: Yes
+```
 
 ### M0-002 — Go·Tool·CI Identity lock
 
@@ -221,7 +233,7 @@ GitHub Actions에서 실제 local profile을 실행하는 첫 required workflow�
 
 - minimum Go Ubuntu와 pinned Go macOS build/default test job을 활성화한다.
 - 두 job을 `Heliopause CI / Required` dependency에 포함한다.
-- 다른 experiment workflow와 Heliopause workflow 이름·repository setting의 영향을 확인한다.
+- 독립 repository의 workflow 이름과 repository setting 적용 영향을 확인한다.
 - branch rule과 Actions SHA/allowlist setting의 적용 범위를 제안하고, repository-wide 변경은 owner의 명시적 승인을 받은 경우에만 적용한다.
 
 **Acceptance**
@@ -277,17 +289,18 @@ Next: <다음 ID와 Ready 여부>
 - 다음 항목이 시작 가능하면 `Ready: Yes`로 바꾸고, 실제 시작 전에는 `IN_PROGRESS`로 표시하지 않는다.
 - 구현 도중 queue 자체를 바꿨다면 변경 이유와 영향을 해당 commit에서 설명한다.
 
-## 6. Step 14 시작점
+## 6. 현재 재개 지점
 
-Step 14의 첫 작업은 **M0-001 — Project Identity 결정**이다.
+M0-001은 완료되었다. 독립 repository에서 재개할 첫 작업은 **M0-002 — Go·Tool·CI Identity lock**이다.
 
 ```text
-M0: NOT_STARTED → IN_PROGRESS
-M0-001: NOT_STARTED → IN_PROGRESS
-Active work item: M0-001
+M0: IN_PROGRESS
+M0-001: COMPLETE
+M0-002: NOT_STARTED → IN_PROGRESS
+Active work item: M0-002
 ```
 
-M0-001 완료 전에는 `go.mod`, CLI scaffold, check runner 또는 workflow를 생성하지 않는다. 이후에도 한 번에 M0 전체를 구현하지 않고 queue 순서대로 각 acceptance와 evidence를 닫는다.
+M0-002에서는 identity 조사와 lock input만 확정한다. `go.mod`, CLI scaffold, check runner 또는 workflow는 M0-003 이후 Queue 순서에 따라 생성하고, 한 번에 M0 전체를 구현하지 않는다.
 
 ## Step 13 Invariant
 
@@ -298,7 +311,7 @@ M0-001 완료 전에는 `go.mod`, CLI scaffold, check runner 또는 workflow를 
 5. 실제 검증 evidence 없이 `COMPLETE`로 표시하지 않는다.
 6. 외부 상태 변경과 repository-wide 보안 설정은 필요한 명시적 승인을 받는다.
 7. 미래 capability의 placeholder package, config 또는 CI job을 queue가 요구하지 않는다.
-8. Step 14는 M0-001부터 순차적으로 실행한다.
+8. 독립 repository에서는 M0-002부터 Queue 순서대로 실행한다.
 
 ## 누락 점검
 
@@ -311,4 +324,4 @@ M0-001 완료 전에는 `go.mod`, CLI scaffold, check runner 또는 workflow를 
 - [x] blocker와 queue 변경 규칙
 - [x] repository-wide 변경 승인 경계
 - [x] M1 이후 작업의 지연 생성 원칙
-- [x] Step 14의 정확한 시작점
+- [x] 독립 repository의 정확한 재개 지점

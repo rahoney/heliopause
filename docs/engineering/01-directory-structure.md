@@ -7,6 +7,7 @@
 ### Module과 실행 단위
 
 - 현재 Heliopause 프로젝트 디렉터리 자체를 단일 Go module root로 사용한다.
+- 독립 repository와 Go module path는 `github.com/rahoney/heliopause`로 확정한다.
 - `go.mod`와 `go.sum`은 프로젝트 루트에 둔다.
 - 별도의 `src/`, 하위 Go 프로젝트 디렉터리 또는 중첩 Go module을 만들지 않는다.
 - MVP의 Heliopause 본체는 단일 `helox` binary다.
@@ -240,7 +241,6 @@ internal/core/ports/
 
 다음은 Step 8에서 고정하지 않는다.
 
-- Go module path
 - 구체 Linux isolation/container/VM runtime
 - runtime image와 CLI의 배포·업데이트 방식
 - source authentication과 credential broker 구조

@@ -7,7 +7,7 @@ Step 11에서도 workflow, branch rule 또는 implementation scaffold를 실제�
 ## 1. CI provider와 repository 위치
 
 - CI provider는 현재 원격 저장소와 일치하는 GitHub Actions를 사용한다.
-- Heliopause project/module root는 `experiments/heliopause-artifact-airlock/`이다.
+- Heliopause project/module root는 독립 `github.com/rahoney/heliopause` repository의 root다.
 - GitHub Actions workflow는 GitHub repository root의 `.github/workflows/`에만 둘 수 있으므로 다음 위치를 사용한다.
 
 ```text
@@ -15,7 +15,7 @@ Step 11에서도 workflow, branch rule 또는 implementation scaffold를 실제�
 .github/workflows/heliopause-security.yml
 ```
 
-- workflow `run` step의 기본 working directory는 Heliopause module root로 고정한다.
+- workflow `run` step의 기본 working directory는 repository/module root로 고정한다.
 - checkout·Go setup 같은 action step과 repository-level path는 working directory가 자동 적용되지 않으므로 입력 path를 명시한다.
 - Heliopause가 향후 독립 repository로 이동하더라도 job/profile 계약과 required gate 이름은 유지하고 path만 조정한다.
 - 초기에는 reusable workflow, composite action 또는 별도 CI framework를 만들지 않는다. 실제 중복이 생긴 뒤에만 추출한다.
@@ -73,16 +73,16 @@ release build, checksum, SBOM, signing, provenance/attestation과 publish는 CI 
 
 ## 4. Path filtering을 기본 사용하지 않는다
 
-현재 Heliopause는 monorepo 하위 실험이지만 초기 CI에는 workflow-level `paths`/`paths-ignore` filter를 두지 않는다.
+초기 CI에는 workflow-level `paths`/`paths-ignore` filter를 두지 않는다.
 
 이유는 다음과 같다.
 
 - required workflow가 아예 생성되지 않아 PR이 pending 상태가 되는 조건을 피한다.
-- 문서 router, root experiment index와 workflow 자체 변경이 누락되지 않는다.
+- 문서 router와 workflow 자체 변경이 누락되지 않는다.
 - change classifier와 third-party path-filter action을 추가하지 않는다.
 - 초기 codebase에서는 항상 실행하는 비용보다 gate 일관성이 중요하다.
 
-따라서 repository의 모든 PR에서 Heliopause aggregate check가 생성된다. Heliopause와 무관한 변경에서도 check는 실제 current Heliopause tree를 검증한다. 실행 비용이 실측상 문제가 되면 repository-owned change classifier를 도입하되 aggregate gate는 항상 생성하고 `not applicable` 판단 근거를 명시적으로 출력한다.
+따라서 repository의 모든 PR에서 Heliopause aggregate check가 생성된다. 실행 비용이 실측상 문제가 되면 repository-owned change classifier를 도입하되 aggregate gate는 항상 생성하고 `not applicable` 판단 근거를 명시적으로 출력한다.
 
 ## 5. Runner와 Go matrix
 
@@ -187,9 +187,9 @@ CI 취약점 검사는 Heliopause가 검사하는 Artifact의 Policy Decision을
 | Push to main | Heliopause current tree + push range의 Heliopause 관련 변경 |
 | Weekly schedule | Heliopause tree와 Heliopause workflow/config path의 full reachable history |
 
-- 이 절의 Heliopause current tree는 module root와 Heliopause 전용 workflow/config file을 포함한다.
+- 이 절의 Heliopause current tree는 repository/module root와 workflow/config file을 포함한다.
 - checkout history depth는 해당 scan 범위를 충족하는 최소값으로 명시한다.
-- history scan은 Heliopause module root와 `heliopause-*.yml` workflow/config path로 제한하고 다른 실험의 과거 기록을 Heliopause suppression으로 소유하지 않는다.
+- history scan은 Heliopause repository의 reachable history를 대상으로 한다.
 - shallow history 때문에 요청 범위를 검사하지 못하면 실패한다.
 - output은 secret 값을 redaction하고 raw patch 또는 전체 environment를 log에 쓰지 않는다.
 - 실제 credential finding은 baseline 승인보다 revoke/rotate와 history 대응을 먼저 수행한다.
@@ -206,7 +206,7 @@ CI 취약점 검사는 Heliopause가 검사하는 Artifact의 Policy Decision을
 - 초기 allowlist는 GitHub-owned `checkout`, `setup-go` 등 실제 필요한 action만 허용한다.
 - third-party action은 동일 기능을 repository-owned Go code 또는 fixed `run` step으로 안전하게 구현하기 어려운 경우만 Step 9 공급망 검토 후 추가한다.
 - floating tag, branch, `@main`, `@master` 또는 marketplace의 자동 최신 version을 사용하지 않는다.
-- Actions allowlist와 SHA requirement는 현재 shared repository 전체에 영향을 주므로 Step 14에서 다른 experiment workflow와 호환성을 확인하고 repository owner의 명시적 적용 범위를 결정한다.
+- Actions allowlist와 SHA requirement는 repository-wide 설정이므로 M0-007에서 repository owner가 적용 범위를 명시적으로 승인한 뒤 설정한다.
 
 ### Token과 permission
 
@@ -317,7 +317,7 @@ review approval 인원수, signed commit과 linear history는 repository 운영 
 
 required check name은 다른 workflow와 충돌하지 않게 project prefix를 포함한다. branch rule에는 expected GitHub Actions source를 지정할 수 있으면 해당 App/source를 고정한다.
 
-현재 `tech-lab`의 branch protection은 다른 experiment에도 영향을 주는 repository-wide 운영 변경이다. Step 11 문서 완료만으로 이를 즉시 변경하지 않으며 Step 14에서 repository owner가 적용 범위를 명시적으로 승인한 뒤 설정한다.
+branch protection은 독립 Heliopause repository의 운영 변경이다. Step 11 문서 완료만으로 이를 즉시 변경하지 않으며 M0-007에서 repository owner가 적용 범위를 명시적으로 승인한 뒤 설정한다. 실제 적용은 M0 완료의 필수 조건이 아니며 CI aggregate 자체의 fail-closed 동작을 별도로 검증한다.
 
 ## 16. Failure 의미와 incident 처리
 
@@ -429,7 +429,7 @@ Step 14에서 처음부터 모든 job을 placeholder로 만들지 않는다.
 
 ## 누락 점검
 
-- [x] GitHub Actions와 monorepo 내 module root
+- [x] GitHub Actions와 독립 repository/module root
 - [x] PR/main/merge queue/manual/schedule trigger
 - [x] required workflow와 scheduled security workflow 분리
 - [x] path filter와 stable status check 정책
