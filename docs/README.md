@@ -96,12 +96,20 @@ Read:
 - [Architecture — Foundation and Dependencies](./architecture/01-foundation-and-dependencies.md)
 - [Architecture — Inspection, Sandbox, and Policy](./architecture/03-inspection-sandbox-policy.md)
 
-### Coding rule, quality toolchain 또는 CI
+### Coding 또는 security rule
+
+Read:
+
+- [Step 9 — Coding / Security Rules](./engineering/02-coding-security-rules.md)
+- [Step 8 — Directory Structure](./engineering/01-directory-structure.md)
+- 구현하려는 책임에 해당하는 위 task route
+
+### Quality toolchain 또는 CI
 
 Read:
 
 - [Engineering Index](./engineering/README.md)
-- [Step 8 — Directory Structure](./engineering/01-directory-structure.md)
+- [Step 9 — Coding / Security Rules](./engineering/02-coding-security-rules.md)
 - 해당 단계에서 생성된 Engineering 상세 문서
 
 ## Rules

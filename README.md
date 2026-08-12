@@ -6,8 +6,8 @@
 - CLI 후보: `helox`
 - 구현 언어: Go
 - CLI framework: Cobra
-- 현재 상태: Step 8 Directory Structure 완료
-- 다음 단계: Step 9 Coding / Security Rules
+- 현재 상태: Step 9 Coding / Security Rules 완료
+- 다음 단계: Step 10 Formatter / Linter / Type Check / Test / Security Scan
 
 ## Documentation
 

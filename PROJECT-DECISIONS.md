@@ -24,21 +24,22 @@
 | Interface Contracts | Contract-001~003 | Complete | [docs/domain-model/README.md](./docs/domain-model/README.md) |
 | Documentation Structure | Navigation migration | Complete | [docs/README.md](./docs/README.md) |
 | Directory Structure | Step 8 | Complete | [docs/engineering/01-directory-structure.md](./docs/engineering/01-directory-structure.md) |
+| Coding / Security Rules | Step 9 | Complete | [docs/engineering/02-coding-security-rules.md](./docs/engineering/02-coding-security-rules.md) |
 
 ## Current Stage
 
-Step 8 — Directory Structure: Complete
+Step 9 — Coding / Security Rules: Complete
 
 Documentation hierarchy and task routing migration: Complete
 
-Next: Step 9 — Coding / Security Rules
+Next: Step 10 — Formatter / Linter / Type Check / Test / Security Scan
 
 ## Remaining Stages
 
 | Step | Stage | Status | Outcome |
 | --- | --- | --- | --- |
 | 8 | Directory Structure | Complete | 구현 디렉터리, package 경계와 파일 배치 규칙 |
-| 9 | Coding / Security Rules | Pending | 코드 작성·의존성·비밀값·오류 처리·보안 구현 규칙 |
+| 9 | Coding / Security Rules | Complete | 코드 작성·의존성·비밀값·오류 처리·보안 구현 규칙 |
 | 10 | Formatter / Linter / Type Check / Test / Security Scan | Pending | 로컬 deterministic 검증 도구와 실행 명령 |
 | 11 | CI + Quality Gate | Pending | CI workflow와 merge 차단 기준 |
 | 12 | Milestones | Pending | 구현 단계, 의존 관계와 완료 조건 |
