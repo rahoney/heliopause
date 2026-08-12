@@ -128,7 +128,7 @@
 
 ### Domain Model
 
-- 상태: Domain-001~007 확정 — Interface Contracts 설계 예정
+- 상태: 완료 — Domain-001~007·Contract-001~003 최종 확정 및 문서 간 일관성 검토 완료
 - 범위: 핵심 Domain Entity, Artifact Reference/Identity, Inspection Run, Capability/Execution/Policy/Operation 상태, Verification/Finding/Evidence, Dependency/Verified Set/Manifest, Operation Request/Install Context
 - 예정 Contract: Artifact Port, Verification/Inspection/Sandbox/Policy Ports, Evidence/Staging/Promotion Ports
 - 결정 항목: Domain-001~Domain-007, Contract-001~Contract-003
@@ -139,7 +139,10 @@
 - Domain-005: Verification Result·Evidence·Finding을 구분하고 declared/invalid/failed 상태·Raw/normalized Evidence·Finding 근거·Severity/Policy 분리 및 실제 Artifact 추적 원칙 확정
 - Domain-006: Dependency Requirement·Resolved Dependency·Verified Set·Verified Manifest를 분리하고 exact identity/digest·Run/Policy 추적, Set 일관성 및 양쪽 경계 재검증 원칙 확정
 - Domain-007: Operation Request·Install Context·Operation Result를 분리하고 사용자 의도 보존, install/inspect 분기, Host/Sandbox context 격리, ALLOW·Manifest/exact Artifact·원래 context가 일치하는 trusted Promotion 원칙 확정
-- 상세·사용자 원문: [`docs/domain-model.md`](./docs/domain-model.md) (Domain-001~007)
+- Contract-001: Artifact Port의 Identify/Parse·Resolve·Acquire 책임, Controlled Intake 경계, observed digest, dependency workflow, Adapter capability와 보안 책임 분리 원칙 확정
+- Contract-002: Verification·Inspection·Sandbox·Policy 책임, raw Observation→Evidence/Finding 해석, Host 격리, fail-closed required check, Application orchestration과 최종 Policy 판정 경계 확정
+- Contract-003: Evidence 기록·Verified Staging 보관·trusted Promotion 책임을 분리하고 필수 Evidence 무결성, 양쪽 신뢰 경계 identity/digest 재확인, Manifest 밖 Artifact 차단, standalone 예외와 Policy/Operation 결과 분리 원칙 확정
+- 상세·사용자 원문: [`docs/domain-model.md`](./docs/domain-model.md) (Domain-001~007, Contract-001~003)
 
 ### 언어·프레임워크·실행 기반
 
@@ -301,9 +304,9 @@ AI review는 deterministic 검사 이전의 기본 단계가 아니라, 검사 �
 - [x] Domain-005 Verification Result / Evidence / Finding 모델 확정
 - [x] Domain-006 Dependency / Verified Set / Manifest 모델 확정
 - [x] Domain-007 Operation Request / Install Context 모델 확정
-- [ ] Contract-001 Artifact Port 결정
-- [ ] Contract-002 Verification / Inspection / Sandbox / Policy Ports 결정
-- [ ] Contract-003 Evidence / Staging / Promotion Ports 결정
+- [x] Contract-001 Artifact Port 결정
+- [x] Contract-002 Verification / Inspection / Sandbox / Policy Ports 결정
+- [x] Contract-003 Evidence / Staging / Promotion Ports 결정
 - [x] 최초 지원 Artifact 생태계 선정: npm, Python/PyPI(pip), GitHub Releases
 - [ ] 첫 번째 정상·악성·변조 fixture 확보
 - [ ] quarantine 신뢰 경계와 반입 계약 정의

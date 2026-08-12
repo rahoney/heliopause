@@ -23,9 +23,9 @@ Artifact Reference
    ↓
 Resolved Artifact Identity
    ↓
-Acquired Artifact
+Inspection Run 생성
    ↓
-Inspection Run
+Acquisition / Acquired Artifact binding
    ├─ Verification Result
    ├─ Finding
    ├─ Evidence
@@ -34,16 +34,40 @@ Inspection Run
    └─ Inspection Limitation
    ↓
 Policy Decision
-   ↓
-ALLOW인 경우
-   ↓
-Verified Set
-   ↓
-Verified Manifest
-   ↓
-Promotion / Operation
-   ↓
-Operation Result
+   ├─ ALLOW + inspect
+   │       ↓
+   │   Promotion 없음
+   │       ↓
+   │   Operation Result
+   │
+   ├─ ALLOW + install
+   │       ↓
+   │   ├─ Package ecosystem
+   │   │      ↓
+   │   │  Verified Set → Verified Manifest
+   │   │      ↓
+   │   │  trusted Promotion
+   │   │
+   │   └─ Standalone
+   │          ↓
+   │      exact identity / digest 재확인
+   │          ↓
+   │      trusted Promotion
+   │
+   │       ↓
+   │   Operation Result
+   │
+   ├─ MANUAL_REVIEW
+   │       ↓
+   │   자동 Promotion 보류
+   │       ↓
+   │   Operation Result
+   │
+   └─ BLOCK
+           ↓
+       Promotion 없음
+           ↓
+       Operation Result
 ```
 
 Sandbox 기반 Dynamic Inspection이 필요한 경우에는 별도의 `Sandbox Session`과 `Observation`이 검사 과정에 참여한다.
@@ -58,7 +82,7 @@ Sandbox 기반 Dynamic Inspection이 필요한 경우에는 별도의 `Sandbox S
 Operation Request
 → 사용자가 무엇을 하려고 했는가
 
-Operation Result는 install/import뿐 아니라 사용자가 요청한 operation 전체의 최종 실행 상태를 나타내며, Promotion이 수행되지 않은 inspect, MANUAL_REVIEW, BLOCK 상태에서도 생성될 수 있다.
+Operation Result는 install뿐 아니라 inspect를 포함한 사용자가 요청한 operation 전체의 실행 상태를 나타내며, MANUAL_REVIEW나 BLOCK으로 Promotion이 수행되지 않은 경우에도 생성될 수 있다.
 ```
 
 ### 2. `Artifact Reference`
@@ -115,7 +139,7 @@ Acquired Artifact
 
 ### 5. `Inspection Run`
 
-하나의 Heliopause 검사 실행을 나타내는 핵심 lifecycle 단위다. Artifact resolution/acquisition 이후 Verification, Inspection, Evidence 수집, Finding 생성, Policy Decision 등 하나의 검사 과정에서 발생한 결과를 연결한다.
+하나의 Heliopause 검사 실행을 나타내는 핵심 lifecycle 단위다. Artifact의 exact `Resolved Artifact Identity`가 확정된 이후 acquisition 전에 생성하며, 이후 Acquisition, Acquired Artifact binding, Verification, Inspection, Evidence 수집, Finding 생성, Policy Decision 등 하나의 검사 과정에서 발생한 결과를 연결한다.
 
 ```text
 Inspection Run
@@ -191,7 +215,7 @@ Finding
 
 ### 9. `Capability`
 
-Artifact, Adapter, verifier, inspector 또는 runtime backend가 어떤 검사를 수행할 수 있는지를 나타낸다.
+`Capability`는 특정 Verification 또는 Inspection check를 현재 Artifact·platform·검사 환경에서 수행할 수 있는지를 나타낸다. Adapter 자체가 일반적으로 어떤 기능을 제공하는지는 별도의 Adapter capability/support 정보로 구분하며 Run-level `Capability`와 동일한 개념으로 취급하지 않는다.
 
 ```text
 Supported
@@ -306,7 +330,7 @@ Policy Decision
 → Artifact의 보안 판정
 
 Operation Result
-→ install/import 같은 실제 사용자 작업 결과
+→ 사용자가 요청한 operation 전체의 실제 실행 결과
 ```
 
 다음과 같은 상태가 가능하다.
@@ -382,9 +406,9 @@ Artifact Reference
        ↓
 Resolved Artifact Identity
        ↓
-Acquired Artifact
+Inspection Run 생성
        ↓
-Inspection Run
+Acquisition / Acquired Artifact binding
    ├─ Verification Result
    ├─ Evidence
    ├─ Finding
@@ -393,19 +417,40 @@ Inspection Run
    └─ Inspection Limitation
        ↓
 Policy Decision
-       ↓
-       ├─ MANUAL_REVIEW → review / 후속 판단
-       ├─ BLOCK         → 반입 금지
-       │
-       └─ ALLOW
-            ↓
-        Verified Set
-            ↓
-        Verified Manifest
-            ↓
-        trusted Promotion
-            ↓
-        Operation Result
+   ├─ ALLOW + inspect
+   │       ↓
+   │   Promotion 없음
+   │       ↓
+   │   Operation Result
+   │
+   ├─ ALLOW + install
+   │       ↓
+   │   ├─ Package ecosystem
+   │   │      ↓
+   │   │  Verified Set → Verified Manifest
+   │   │      ↓
+   │   │  trusted Promotion
+   │   │
+   │   └─ Standalone
+   │          ↓
+   │      exact identity / digest 재확인
+   │          ↓
+   │      trusted Promotion
+   │
+   │       ↓
+   │   Operation Result
+   │
+   ├─ MANUAL_REVIEW
+   │       ↓
+   │   자동 Promotion 보류
+   │       ↓
+   │   Operation Result
+   │
+   └─ BLOCK
+           ↓
+       Promotion 없음
+           ↓
+       Operation Result
 ```
 
 Dynamic Inspection이 필요한 경우:
@@ -916,11 +961,16 @@ Promotion 단계에서 사용자 입력 Reference를 다시 resolve하여 새로
 ```text
 Inspection에서 사용한 Acquired Artifact
         ↓
-Verified Set / Manifest
+Policy = ALLOW
         ↓
-identity / digest 재확인
+Package ecosystem
+→ Verified Set / Manifest
+→ identity / digest 재확인
+
+Standalone
+→ exact identity / digest 재확인
         ↓
-Promotion
+trusted Promotion
 ```
 
 ```text
@@ -933,7 +983,10 @@ Resolved Artifact Identity
 Observed Digest
 → 실제 content 추적용
 
-Verified Set / Manifest
+Package ecosystem의 Verified Set / Manifest
+→ 검증 완료 Artifact 집합 추적용
+
+Standalone의 exact identity / observed digest
 → 검증 완료 Promotion 대상 추적용
 ```
 
@@ -1036,27 +1089,31 @@ kenv@1.2.3
       ↓
 Resolved Artifact Identity
 
+Inspection Run 생성
+      ↓
 Controlled Intake
       ↓
 실제 bytes 획득
       ↓
 observed digest = AAA
       ↓
-Acquired Artifact
+Acquired Artifact binding
 
-검사
+Verification / Inspection
       ↓
-Inspection Run
-      ↓
-Evidence / Finding / Verification / Policy
+Policy
 
-ALLOW
-      ↓
-Verified Set / Manifest
-      ↓
-동일 identity + digest 재확인
-      ↓
-Promotion
+inspect
+→ Promotion 없음
+
+install + ALLOW + Package ecosystem
+→ Verified Set / Manifest
+→ 동일 identity + digest 재확인
+→ Promotion
+
+install + ALLOW + Standalone
+→ exact identity + digest 재확인
+→ trusted Promotion
 ```
 
 핵심 원칙은 다음과 같다.
@@ -1070,13 +1127,21 @@ source가 resolve한 것
 
 그리고
 
+Promotion이 발생하는 경우:
+
 실제로 검사한 것
 =
-Policy가 판정한 것
-=
-Verified Set에 들어가는 것
+Policy가 허용한 것
 =
 실제로 Promotion하는 것
+
+Package ecosystem에서는 추가로:
+
+Policy가 허용한 Artifact 집합
+=
+Verified Set / Manifest가 고정한 Artifact 집합
+=
+실제로 Promotion하는 Artifact 집합
 ```
 
 Heliopause는 Artifact 이름이나 version 문자열만으로 동일성을 판단하지 않고, source에서 resolve된 exact logical identity와 실제 획득한 content digest를 연결하여 검사·Evidence·Policy·Promotion 전체에서 동일한 Artifact를 추적한다.
@@ -1544,9 +1609,15 @@ Inspection Run
       ↓
 Policy = ALLOW
       ↓
-Verified Set / Manifest
+install operation인 경우
       ↓
-trusted Promotion
+Package ecosystem
+→ Verified Set / Manifest
+→ trusted Promotion
+
+Standalone
+→ exact identity / digest 재확인
+→ trusted Promotion
 ```
 
 Promotion 수행이 Run의 Policy Decision을 변경하지 않는다. 실제 설치·반입 결과는 Operation Result 또는 후속 Promotion Record로 Run과 연결한다.
@@ -1632,7 +1703,7 @@ Finalized Run 이후 재검사가 필요하면 새 Run을 만들고 필요한 �
 
 ### Invariant 12 — Promotion 결과와 Run의 Policy를 분리한다
 
-실제 install/import 결과가 실패하더라도 기존 Inspection Run의 `ALLOW`를 자동으로 `BLOCK`으로 변경하지 않는다.
+실제 사용자 operation 수행 결과가 실패하더라도 기존 Inspection Run의 `ALLOW`를 자동으로 `BLOCK`으로 변경하지 않는다.
 
 ## 후속 결정으로 유보한 항목
 
@@ -1731,7 +1802,7 @@ Heliopause는 Inspection Run을 단순 command 실행 로그나 Sandbox Session�
 - 재검사는 새 Run으로 표현하고 이전 Run과 관계를 연결할 수 있지만 정확한 관계 enum은 유보한다.
 - 동일 identity/digest라도 context가 다른 Run은 독립 결과로 유지한다.
 - Evidence Store는 Run과 reference로 연결하고 Raw Evidence 저장·retention은 별도 설계한다.
-- Promotion은 Run의 유효한 ALLOW·Verified Set/Manifest를 사용하며 Operation Result와 분리한다.
+- Promotion은 Run의 유효한 `ALLOW`를 근거로 하며, Package ecosystem에서는 Verified Set/Manifest를, Standalone에서는 검사한 exact identity/digest를 유지하여 수행하고 Operation Result와 분리한다.
 
 ## Domain-003 누락 점검
 
@@ -2281,9 +2352,14 @@ Fail-closed는 모든 실패를 무조건 `BLOCK`으로 바꾸는 규칙이 아�
 ```text
 Policy상 필요한 보안 검사
         ↓
-FAILED / INCOMPLETE / UNAVAILABLE / UNSUPPORTED
+Capability: UNSUPPORTED
+
+또는
+
+Execution Status:
+FAILED / INCOMPLETE / UNAVAILABLE
         ↓
-안전한 것으로 간주하지 않음
+필수 검사 조건 미충족
         ↓
 ALLOW 금지
         ↓
@@ -2470,9 +2546,21 @@ Heliopause는 상태들을 독립적으로 기록하여 검사 실패, 보안 �
 Heliopause는 Artifact 검증·검사 과정에서 생성되는 `Verification Result`, `Evidence`, `Finding`을 서로 다른 의미의 Domain Concept로 구분한다.
 
 ```text
-Verification → Verification Result → Evidence
+Verification
+├─ Verification Result
+└─ Evidence
 
-Inspection / Observation → Evidence → Finding
+Static Inspection
+├─ Evidence
+└─ Finding
+
+Sandbox
+        ↓
+Observation
+        ↓
+Dynamic Inspection
+├─ Evidence
+└─ Finding
 
 Verification Result + Finding + Evidence + Capability
 + Execution Status + Inspection Limitation
@@ -2949,19 +3037,32 @@ Verifier, scanner, inspector 또는 Sandbox가 최종 `ALLOW / MANUAL_REVIEW / B
 ## 압축된 모델
 
 ```text
-Verification
-      ↓
-Verification Result
-      ↓
-Evidence
+Acquired Artifact
       │
-      └──────────────┐
-                     ↓
-Inspection       Finding
-    ↓                │
-Observation          │
-    ↓                 │
-Evidence ────────────┘
+      ├─ Verification
+      │     ├─ Verification Result
+      │     └─ Evidence
+      │
+      ├─ Static Inspection
+      │     ├─ Evidence
+      │     └─ Finding
+      │
+      └─ Dynamic Inspection
+              ↓
+          Sandbox
+              ↓
+          Observation
+              ↓
+       Inspection 해석
+          ├─ Evidence
+          └─ Finding
+
+Verification Result
++ Evidence
++ Finding
++ Capability
++ Execution Status
++ Inspection Limitation
         ↓
 Policy Evaluation
         ↓
@@ -3668,7 +3769,7 @@ Policy Decision
         │    ↓
         │  원래 Operation 확인
         │    ↓
-        │  install/import이면
+        │  install이면
         │  trusted Promotion
         │    ↓
         │  Operation Result
@@ -3871,7 +3972,7 @@ target B에 설치
 
 등으로 조용히 변경하지 않는다.
 
-Artifact identity와 dependency는 Verified Manifest를 따르고, 실행 대상은 원래 trusted Operation/Install Context와 일치해야 한다.
+Package ecosystem에서는 Artifact identity와 dependency가 Verified Manifest와 일치해야 하고, Standalone에서는 검사한 exact Artifact identity/digest와 일치해야 한다. 실행 대상은 두 경우 모두 원래 trusted Operation/Install Context와 일치해야 한다.
 
 ### MANUAL_REVIEW / BLOCK과 Operation
 
@@ -4074,7 +4175,14 @@ inspect → 결과만 반환
 
 install
    ↓
-Verified Manifest
+Package ecosystem
+→ Verified Manifest
+
+또는
+
+Standalone
+→ exact Artifact identity / digest
+
 +
 Original Install Context
    ↓
@@ -4133,4 +4241,1115 @@ Heliopause는 검사를 별도의 사용자 작업으로 끊어버리지 않고,
 - [x] standalone Artifact의 Staging 예외와 trusted Promotion
 - [x] Operation Result의 전체 operation 적용
 - [x] 8개 invariant
+- [x] 후속 결정 항목 유보
+## Contract-001: Artifact Port
+
+### 목적
+
+`Artifact Port`는 Heliopause의 Application/Workflow가 npm, PyPI, GitHub Releases 같은 구체적인 생태계 구현에 직접 의존하지 않고 Artifact를 **해석·resolve·획득**하기 위한 공통 계약이다.
+
+```text
+Application / Workflow
+        ↓
+Artifact Port
+        ↓
+Artifact Adapter
+        ├─ npm
+        ├─ PyPI
+        └─ GitHub Releases
+```
+
+Core/Application은 npm registry API, pip command, GitHub API 등의 구체적인 사용법을 알지 않는다.
+
+### Artifact Port의 책임
+
+Artifact Port는 개념적으로 다음 세 책임을 제공한다.
+
+```text
+Identify / Parse
+→ 사용자 입력을 Artifact Reference로 해석
+
+Resolve
+→ mutable/ambiguous reference를 exact Artifact identity로 확정
+
+Acquire
+→ 확정된 Artifact를 Controlled Intake로 획득
+```
+
+기본 흐름은 다음과 같다.
+
+```text
+사용자 입력
+    ↓
+Artifact Reference
+    ↓
+Resolve
+    ↓
+Resolved Artifact Identity
+    ↓
+Acquire
+    ↓
+Acquired Artifact
+```
+
+구체적인 Go interface와 method signature는 구현 직전 세부 설계에서 확정한다.
+
+### Identify / Parse
+
+Artifact Adapter는 자신이 담당하는 ecosystem/source의 입력을 해석하여 공통 `Artifact Reference`로 변환한다.
+
+예:
+
+```text
+npm + kenv@latest
+        ↓
+Artifact Reference
+
+PyPI + requests
+        ↓
+Artifact Reference
+
+GitHub Releases + repository/release/asset selector
+        ↓
+Artifact Reference
+```
+
+Adapter는 ecosystem-specific 표현을 Core Domain까지 그대로 퍼뜨리지 않고 공통 Domain 의미로 변환한다.
+
+입력이 안전하게 해석되지 않거나 필요한 정보가 모호하면 임의로 추측하지 않고 명시적인 오류 또는 추가 입력 필요 상태를 반환한다.
+
+### Resolve
+
+`Resolve`는 Artifact Reference를 실제 acquisition 대상으로 사용할 exact `Resolved Artifact Identity`로 확정한다.
+
+예:
+
+```text
+kenv@latest
+        ↓
+Resolve
+        ↓
+kenv@1.2.3
+```
+
+또는:
+
+```text
+GitHub Release = latest
+Asset selector
+        ↓
+Resolve
+        ↓
+Exact repository
+Exact release/tag
+Exact asset
+```
+
+Resolve가 끝난 뒤에는 acquisition 대상의 logical identity가 정확하게 결정되어야 한다.
+
+`latest`, version 생략, mutable release reference 등을 최종 identity로 그대로 넘기지 않는다.
+
+### Resolve와 안전성 판정의 구분
+
+Artifact Adapter가 official registry 또는 repository에서 Artifact를 resolve했다고 해서 안전한 Artifact로 판정하지 않는다.
+
+```text
+Resolve 성공
+≠
+Artifact 안전
+```
+
+Artifact Adapter의 역할은:
+
+```text
+무엇을 요청했는가
+→ 정확히 무엇을 받을 것인가
+```
+
+를 결정하는 것이다.
+
+다음은 Artifact Port의 책임이 아니다.
+
+```text
+malicious 여부 판정
+최종 ALLOW / BLOCK 결정
+signature 안전성 정책
+Finding severity 결정
+```
+
+이들은 Verification / Inspection / Policy 영역에서 처리한다.
+
+### Acquire
+
+`Acquire`는 `Resolved Artifact Identity`에 해당하는 실제 Artifact content를 Heliopause의 Controlled Intake 영역으로 획득한다.
+
+```text
+Resolved Artifact Identity
+        ↓
+Acquire
+        ↓
+Controlled Intake
+        ↓
+Observed Digest 계산
+        ↓
+Acquired Artifact
+```
+
+획득된 content는 Domain-002에서 정의한 exact identity와 observed digest에 연결되어야 한다.
+
+### Acquire의 Host 경계
+
+Artifact Adapter가 acquisition을 수행하더라도 임의의 Host filesystem 또는 실제 프로젝트 디렉토리에 Artifact를 직접 설치·전개하지 않는다.
+
+```text
+Artifact Adapter
+        ↓
+Controlled Intake
+
+Artifact Adapter
+        X
+        ↓
+User Project / Host Install
+```
+
+Acquire는 **반입 준비**이지 Promotion이나 install이 아니다.
+
+Archive extraction, install script 실행, package lifecycle 실행 등 실행 위험이 있는 작업을 acquisition 책임에 포함하지 않는다.
+
+필요한 extraction/inspection/install execution은 후속 Inspection/Sandbox workflow에서 통제한다.
+
+### Digest 처리
+
+실제 획득한 content의 observed digest는 Heliopause가 직접 계산할 수 있어야 한다.
+
+```text
+실제 acquired bytes
+        ↓
+Observed Digest
+```
+
+Registry 또는 publisher가 제공한 digest/integrity metadata는 별도의 declared/expected verification input으로 취급한다.
+
+```text
+Declared Digest
+≠
+Observed Digest
+```
+
+Artifact Adapter는 source가 제공하는 integrity metadata를 수집할 수 있지만 이를 실제 observed digest 또는 안전성 판정으로 대체하지 않는다.
+
+### Source Metadata
+
+Artifact Adapter는 Verification 등에 필요한 source metadata를 제공할 수 있다.
+
+예:
+
+```text
+registry integrity metadata
+publisher information
+release metadata
+checksum reference
+signature/provenance location
+dependency metadata
+```
+
+그러나 이러한 정보는:
+
+```text
+Artifact Identity
+또는
+Artifact Safety Decision
+```
+
+과 동일하지 않다.
+
+Artifact Adapter는 source-specific 정보를 공통 계약으로 전달하고 실제 검증과 해석은 해당 책임 영역에 맡긴다.
+
+### Dependency Resolution
+
+Package ecosystem Adapter는 dependency requirement와 resolution 결과를 제공할 수 있어야 한다.
+
+```text
+Primary Artifact
+        ↓
+Dependency Requirements
+        ↓
+Resolve
+        ↓
+Resolved Dependency Graph
+```
+
+각 실제 dependency는 Domain-002와 Domain-006에서 정의한 동일한 Artifact identity 원칙을 따른다.
+
+```text
+Dependency
+→ exact identity
+→ acquired content
+→ observed digest
+```
+
+Artifact Port는 dependency를 발견·resolve하는 역할을 수행할 수 있지만, dependency를 검증되었다고 판정하거나 Verified Set에 자동 편입하지 않는다.
+
+### 새로운 Dependency 발견
+
+검사 또는 실제 install 준비 과정에서 기존 resolution에 없던 Artifact가 발견되면 Adapter가 이를 자동으로 신뢰하여 Host에 설치하지 않는다.
+
+```text
+새 Artifact 발견
+        ↓
+Artifact workflow로 반환
+        ↓
+Resolve / Acquire
+        ↓
+Verification / Inspection
+```
+
+새 Artifact가 Verified Set 경계를 우회하지 못하게 한다.
+
+### Capability 표현
+
+모든 Artifact Adapter가 동일한 기능을 제공해야 하는 것은 아니다.
+
+예:
+
+```text
+npm
+→ dependency resolution 지원
+
+GitHub standalone binary
+→ dependency resolution 해당 없음
+
+특정 source
+→ provenance metadata 조회 미지원
+```
+
+Adapter가 제공하는 기능과 지원 범위는 별도의 Adapter capability/support 정보로 명시적으로 표현할 수 있어야 한다. 이는 Domain-004에서 정의한 Verification/Inspection의 Run-level `Capability`와 동일한 개념으로 취급하지 않는다. 지원하지 않는 기능을 성공 또는 빈 결과로 위장하지 않는다.
+
+```text
+Unsupported
+≠
+Empty
+≠
+Success
+```
+
+정확한 Adapter 기능 지원 정보의 모델과 discovery 방식은 후속 interface 상세 설계에서 확정한다.
+
+### Error와 Domain Result의 구분
+
+다음과 같은 operational failure:
+
+```text
+registry timeout
+network failure
+authentication failure
+malformed response
+download failure
+```
+
+를 Artifact의 보안 판정으로 변환하지 않는다.
+
+예:
+
+```text
+Acquire 실패
+→ operational error
+
+Acquire 실패
+≠
+Policy BLOCK
+```
+
+Application은 해당 오류를 Inspection Run / Operation 상태 모델에 따라 처리한다.
+
+### Artifact Adapter의 금지 책임
+
+Artifact Adapter는 다음 책임을 갖지 않는다.
+
+```text
+최종 Policy Decision
+Finding 생성 정책
+Dynamic Inspection 수행
+Sandbox lifecycle 관리
+Verified Set 승인
+Staging
+Promotion
+Host installation
+```
+
+특히:
+
+```text
+Artifact Adapter
+→ ALLOW
+```
+
+또는:
+
+```text
+Artifact Adapter
+→ User Host에 직접 install
+```
+
+하는 구조를 사용하지 않는다.
+
+### Contract-001 Invariant
+
+#### Invariant 1 — Core는 ecosystem 구현에 직접 의존하지 않는다
+
+npm/PyPI/GitHub 등의 세부 동작은 Artifact Adapter 뒤에 둔다.
+
+#### Invariant 2 — Reference / Resolved Identity / Acquired Artifact를 구분한다
+
+입력, exact logical identity, 실제 획득 content를 하나의 객체로 혼합하지 않는다.
+
+#### Invariant 3 — Mutable Reference는 acquisition 전에 resolve한다
+
+`latest` 등을 그대로 최종 검사 identity로 사용하지 않는다.
+
+#### Invariant 4 — Acquire는 Controlled Intake까지만 담당한다
+
+Artifact Adapter가 Host project/environment에 직접 설치하지 않는다.
+
+#### Invariant 5 — 실제 acquired content에 observed digest를 연결한다
+
+Source가 제공한 digest만으로 실제 획득 content identity를 대신하지 않는다.
+
+#### Invariant 6 — Resolution 성공은 안전 판정이 아니다
+
+Official registry/source에서 정상 획득했다는 사실을 `ALLOW`로 해석하지 않는다.
+
+#### Invariant 7 — Dependency도 동일한 Artifact pipeline을 따른다
+
+새 dependency를 자동 신뢰하거나 Verified Set에 우회 편입하지 않는다.
+
+#### Invariant 8 — Unsupported와 operational failure를 명시적으로 구분한다
+
+지원하지 않는 기능이나 실행 실패를 정상적인 빈 결과로 숨기지 않는다.
+
+#### Invariant 9 — Adapter는 최종 보안 책임을 갖지 않는다
+
+Verification / Inspection / Policy / Promotion 책임을 Artifact Adapter 내부로 끌어들이지 않는다.
+
+### 후속 결정으로 유보한 항목
+
+Contract-001에서는 다음을 아직 확정하지 않는다.
+
+- 실제 Go interface 이름과 method signature
+- request/response struct
+- `context.Context` 사용 방식
+- Artifact Adapter registration 방식
+- source authentication 전달 방식
+- network client 구현
+- retry/timeout 정책
+- acquisition storage handle
+- dependency graph schema
+- source metadata schema
+- Adapter capability/support API
+- error type/code taxonomy
+- npm/PyPI/GitHub별 상세 Adapter Contract
+
+### 압축된 Contract
+
+```text
+Artifact Port
+
+Identify / Parse
+    ↓
+Artifact Reference
+
+Resolve
+    ↓
+Resolved Artifact Identity
+
+Acquire
+    ↓
+Controlled Intake
+    ↓
+Acquired Artifact + Observed Digest
+
+Dependency Resolution
+    ↓
+Resolved Dependency Graph
+```
+
+Artifact Port의 경계는 다음과 같다.
+
+```text
+"무엇인가?"
+"정확히 무엇을 받을 것인가?"
+"그 정확한 content를 통제된 영역으로 가져와라."
+```
+
+까지 담당한다.
+
+```text
+"안전한가?"
+"허용할 것인가?"
+"실제 Host에 설치하라."
+```
+
+는 Artifact Port의 책임이 아니다.
+
+## Contract-001 구조화된 결정과 구현 영향
+
+- Application/Workflow는 Artifact Port만 의존하고 npm·PyPI·GitHub Releases 구현은 Adapter로 격리한다.
+- Port는 Identify/Parse, Resolve, Acquire와 필요 시 dependency resolution을 담당한다.
+- 입력 Reference, exact Resolved Identity, 실제 Acquired Artifact와 observed digest를 분리해 추적한다.
+- mutable 또는 모호한 reference는 acquisition 전에 exact identity로 resolve한다.
+- Acquire는 Controlled Intake까지만 수행하며 Host install·archive extraction·lifecycle script 실행을 수행하지 않는다.
+- source의 declared integrity metadata는 수집할 수 있으나 직접 계산한 observed digest를 대체하지 않는다.
+- source metadata와 dependency resolution 결과는 검증 input일 뿐 Policy 안전 판정이나 Verified Set 편입을 의미하지 않는다.
+- 신규 dependency는 동일한 Resolve/Acquire/Verification/Inspection workflow로 회귀한다.
+- Adapter capability/support와 Run-level Capability를 분리하고 Unsupported·Empty·Success 및 operational error를 명시적으로 구분한다.
+- Artifact Adapter는 Policy, Finding, Sandbox, Staging, Promotion, Host installation 책임을 갖지 않는다.
+- Go interface·schema·authentication·retry·storage·error taxonomy 및 ecosystem별 세부 계약은 구현 직전 설계로 유보한다.
+
+## Contract-001 누락 점검
+
+- [x] Core/Application과 ecosystem Adapter 분리
+- [x] Identify / Parse 책임
+- [x] Resolve 책임과 exact identity 확정
+- [x] Resolve와 안전성 판정 분리
+- [x] Acquire와 Controlled Intake 경계
+- [x] Host installation·실행 위험 작업 제외
+- [x] declared/observed digest 구분
+- [x] source metadata의 역할과 경계
+- [x] dependency resolution과 동일 identity 원칙
+- [x] 신규 dependency의 workflow 회귀
+- [x] Adapter capability/support와 Run-level Capability 구분
+- [x] Unsupported·Empty·Success 및 operational error 구분
+- [x] Artifact Adapter의 금지 책임
+- [x] 9개 invariant
+- [x] 후속 결정 항목 유보
+
+## Contract-002: Verification / Inspection / Sandbox / Policy Contracts
+
+### 목적
+
+Heliopause는 Artifact의 검증, 내용·행동 검사, 격리 실행, 최종 보안 판정을 서로 다른 책임으로 분리한다.
+
+```text
+Acquired Artifact
+      ├─ Verification Port → Verification Result + Evidence
+      └─ Inspection Port → 필요 시 Sandbox Port → Observation
+                                             ↓
+                                    Evidence + Finding
+                                             ↓
+                                     Policy Contract
+                                             ↓
+                           ALLOW / MANUAL_REVIEW / BLOCK
+```
+
+각 영역은 자신보다 뒤 단계의 최종 판단 책임을 가져가지 않는다.
+
+### Verification Port
+
+`Verification Port`는 Artifact의 **identity·source·integrity·signature·provenance·attestation** 등을 검증하기 위한 계약이다.
+
+```text
+Input
+├─ Acquired Artifact
+├─ source / declared integrity metadata
+└─ Verification Context
+
+Output
+├─ Verification Result
+├─ Evidence
+├─ Capability
+├─ Execution Status
+└─ 필요한 Limitation
+```
+
+Integrity, Signature, Provenance, Attestation 등 여러 check가 수행될 수 있다. 구현은 expected digest와 observed digest 비교, signature 및 provenance/attestation 검증, source identity 확인, 외부 verifier 실행, 결과 정규화와 Evidence 생성을 수행할 수 있다.
+
+Artifact 전체의 malicious 여부 최종 판정, Finding severity 정책, `ALLOW` / `MANUAL_REVIEW` / `BLOCK` 결정 및 Promotion은 수행하지 않는다. 외부 verifier 결과도 `Verification Result / Evidence`로 반환하며 Final Policy Decision으로 직접 반환하지 않는다.
+
+### Verification 결과와 실행 실패
+
+Verification Contract는 **검증 결과**와 **검증 작업 실행 상태**를 구분한다.
+
+```text
+Execution Status: COMPLETED
+Verification Result: digest mismatch
+
+Execution Status: FAILED
+Verification Result: 생성되지 않거나 불완전
+```
+
+Verifier 실행 실패를 Artifact의 `INVALID` 판정으로 자동 변환하지 않는다.
+
+### Inspection Port
+
+`Inspection Port`는 Artifact의 **정적 구조와 격리된 실행 중 행동을 검사하고 보안상 의미 있는 Finding/Evidence로 해석**하기 위한 계약이다.
+
+```text
+Acquired Artifact
+        ↓
+Inspection Port
+        ├─ Static Inspection
+        └─ Dynamic Inspection → Sandbox Port → Observation
+                                             ↓
+                                     Evidence / Finding
+```
+
+Inspection은 ecosystem별 또는 scanner별 구현 세부사항을 공통 Domain 결과로 정규화한다.
+
+### Static Inspection
+
+Static Inspection은 Artifact를 실제 Host에서 실행하지 않고 metadata/manifest, archive structure, path traversal, symbolic link, executable content, install/lifecycle script, dependency 이상, credential access pattern, obfuscation, dynamic execution pattern, known vulnerability scanner 결과 등을 검사할 수 있다.
+
+출력은 `Evidence`, `Finding`, `Capability`, `Execution Status`, `Inspection Limitation`에 연결될 수 있다. Static Inspector가 직접 최종 Policy Decision을 반환하지 않는다.
+
+### Dynamic Inspection과 Sandbox Port
+
+Dynamic Inspection은 필요한 Artifact에 대해 Sandbox Port를 사용하여 격리 실행 결과를 검사한다.
+
+```text
+Inspection Port → Dynamic Inspection 필요 → Sandbox Port
+                                             ↓
+                                      Sandbox Session
+                                             ↓
+                                       Observation
+                                             ↓
+                                  Inspection 해석
+                                             ↓
+                                    Evidence / Finding
+```
+
+Dynamic Inspection은 Sandbox의 raw observation을 보안 Domain 의미로 해석한다.
+
+```text
+Observation: process read synthetic ~/.ssh/id_rsa
+        ↓ Inspection
+Evidence: synthetic credential read
+Finding: Credential Access Attempt
+```
+
+Inspection Port는 Sandbox backend 자체 구현, 최종 Policy Decision, Verified Set 승인, Staging, Promotion, Host installation 책임을 갖지 않는다. 외부 scanner verdict는 `Evidence / Finding`으로 정규화한 뒤 Policy에 전달한다.
+
+`Sandbox Port`는 신뢰하지 않는 Artifact를 격리된 환경에서 실행하고 **raw runtime observation과 실행 상태를 제공하는 계약**이다.
+
+```text
+Create → Prepare → Introduce Artifact → Execute / Install / Run
+      → Observe → Terminate → Dispose
+```
+
+각 Dynamic Inspection 실행은 독립적인 ephemeral `Sandbox Session`을 기본으로 한다. Sandbox 구현은 격리 환경 생성, Artifact 투입, 명령/lifecycle 실행, process·filesystem·network/DNS·honeytoken·resource 관찰, timeout/resource limit 적용, process tree 종료와 Session 폐기를 제공할 수 있다.
+
+출력은 주로 `Observation`, `Execution Status`, Sandbox execution metadata다.
+
+```text
+Sandbox
+→ "무엇이 일어났는가"
+
+Inspection
+→ "그 행동이 보안상 무엇을 의미하는가"
+```
+
+### Sandbox의 Host 경계와 실패
+
+Sandbox Port는 실제 Host 자산을 기본적으로 신뢰하지 않는 Artifact에 노출하지 않는다.
+
+```text
+Host credential / token / .env secret / SSH key
+실제 사용자 filesystem / internal network / Host process/service
+```
+
+필요하면 synthetic filesystem, dummy credential, honeytoken, fake DNS/HTTP service, sanitized project data, controlled network를 제공한다. Sandbox backend가 Host isolation 경계를 무시할 수 있는 임의의 실행 API를 제공하는 구조를 사용하지 않는다.
+
+비정상 종료, timeout, resource-limit 초과 또는 강제 종료된 Sandbox Session은 재사용하지 않는다.
+
+```text
+Session A → abnormal termination → terminate → dispose
+Session B → fresh environment
+```
+
+기존 실패 Observation/Evidence는 삭제하지 않는다. Sandbox Port는 Finding, Finding Severity, Verification Result, Policy Decision, Verified Set, Promotion을 직접 결정하지 않는다.
+
+### Policy Contract
+
+`Policy`는 외부 security tool adapter가 아니라 Heliopause 내부의 **최종 보안 판정 책임**이다. 반드시 외부 Adapter를 가진 outbound Port일 필요가 없으며, Application이 의존하는 안정적인 **Policy Contract / Domain Service boundary**로 취급한다.
+
+```text
+Policy Input
+├─ Verification Result
+├─ Finding
+├─ Evidence / Evidence completeness
+├─ Capability
+├─ Execution Status
+├─ Inspection Limitation
+├─ Check Requirement
+└─ 현재 검사 대상 identity / Run context
+
+Output: ALLOW / MANUAL_REVIEW / BLOCK
+```
+
+Policy Evaluation까지 도달하지 못한 operational failure에서는 Policy Decision 자체가 생성되지 않을 수 있다.
+
+Policy는 필수 Verification과 Inspection의 충족 여부, Finding, 검사 한계, 자동 반입 허용 여부를 평가한다.
+
+```text
+Required Dynamic Inspection
+Execution Status: UNAVAILABLE
+        ↓
+ALLOW 금지
+        ↓
+MANUAL_REVIEW 또는 BLOCK
+```
+
+Policy는 Artifact download, signature verification, static/dynamic scanning, Sandbox 실행, Evidence 수집, Staging, Promotion, Host installation을 직접 수행하지 않는다. 특정 scanner/provider의 vendor-specific schema에 직접 의존하지 않는다.
+
+### Policy Decision의 추적성과 Application orchestration
+
+Policy Decision은 주요 판정 근거를 추적 가능하게 해야 한다.
+
+```text
+Policy: BLOCK
+      ↓
+Basis
+├─ Finding: Integrity Mismatch
+│    └─ Evidence ...
+└─ Required Check: COMPLETED
+
+Policy: MANUAL_REVIEW
+      ↓
+Basis
+└─ Required Dynamic Inspection
+     Execution Status: UNAVAILABLE
+```
+
+내부 모든 rule evaluation step을 공개할 필요는 없지만 최종 판정 이유가 black box가 되어서는 안 된다.
+
+Verification / Inspection / Policy의 상위 workflow 순서는 Application/Workflow가 조정한다. Dynamic Inspection에 필요한 격리 실행은 Inspection 영역이 Sandbox Port를 통해 요청하며, Application이 Sandbox lifecycle의 세부 동작을 직접 제어하지 않는다.
+
+```text
+Application
+   ├─ Verification Port 호출
+   ├─ Inspection Port 호출
+   │      └─ 필요 시 Sandbox Port 사용
+   └─ Policy Contract 호출
+```
+
+Verifier 또는 다른 Provider가 Sandbox·Policy·Promotion을 직접 연쇄 호출하지 않는다.
+
+### Contract-002 Invariant
+
+#### Invariant 1 — Verification과 Inspection을 구분한다
+
+Verification은 identity/integrity/authenticity 계열 검증을 담당하고 Inspection은 content/behavior를 검사한다.
+
+#### Invariant 2 — Verification Result와 Execution Status를 구분한다
+
+검증 실행 성공 여부와 검증 대상의 유효성 결과를 하나의 상태로 합치지 않는다.
+
+#### Invariant 3 — Sandbox는 Observation을 제공한다
+
+Sandbox가 Finding 또는 최종 Policy Decision을 직접 생성하지 않는다.
+
+#### Invariant 4 — Inspection이 Observation을 해석한다
+
+Raw observation과 외부 scanner 결과를 Evidence/Finding으로 정규화한다.
+
+#### Invariant 5 — 외부 도구 verdict는 최종 판정이 아니다
+
+Verifier/scanner/backend의 vendor verdict를 `ALLOW / BLOCK`으로 직접 사용하지 않는다.
+
+#### Invariant 6 — Policy만 최종 보안 판정을 소유한다
+
+최종 `ALLOW / MANUAL_REVIEW / BLOCK`은 Policy 책임이다.
+
+#### Invariant 7 — Policy와 operational failure를 구분한다
+
+Policy Evaluation에 도달하지 못한 실행 실패를 임의로 `BLOCK`으로 변환하지 않는다.
+
+#### Invariant 8 — 필수 검사 미충족은 자동 ALLOW하지 않는다
+
+Required check가 `Capability: UNSUPPORTED`이거나 `Execution Status: FAILED / INCOMPLETE / UNAVAILABLE` 등으로 필수 검사를 충족하지 못한 경우 fail-closed 원칙에 따라 `ALLOW`하지 않는다.
+
+#### Invariant 9 — Sandbox Session은 비정상 종료 후 재사용하지 않는다
+
+필요하면 새로운 독립 Session을 생성한다.
+
+#### Invariant 10 — Application이 workflow를 orchestration한다
+
+각 Adapter/Provider가 다른 영역의 책임까지 연쇄적으로 수행하지 않는다.
+
+#### Invariant 11 — Policy는 vendor-specific 구현에 의존하지 않는다
+
+공통 Domain Result와 상태만을 입력으로 사용한다.
+
+### 후속 결정으로 유보한 항목
+
+- 실제 Go interface와 method signature
+- Verification/Inspection/Sandbox/Policy request-result struct
+- Verification Type, Inspection Check, Check Requirement, Observation taxonomy
+- provider/tool registration과 Sandbox backend 선택
+- timeout/resource-limit, retry/attempt, cancellation API
+- Evidence writer 연결 방식
+- Policy rule representation, versioning, reason code
+- concurrent inspection 방식
+
+### 압축된 Contract
+
+```text
+Verification Port
+"Artifact의 identity/integrity/authenticity를 검증하라."
+        ↓
+Verification Result + Evidence
+
+Inspection Port
+"Artifact의 content/behavior를 검사하고 해석하라."
+        ↓
+Evidence + Finding
+
+Sandbox Port
+"격리해서 실행하고 실제로 무엇이 일어났는지 관찰하라."
+        ↓
+Observation + Execution Status
+
+Policy Contract
+"모든 정규화된 검사 결과를 바탕으로 반입 여부를 결정하라."
+        ↓
+ALLOW / MANUAL_REVIEW / BLOCK
+```
+
+```text
+Verification
+≠ Inspection
+≠ Sandbox
+≠ Policy
+```
+
+각 책임을 분리하고 Application이 이 계약들을 조합하여 전체 Inspection Workflow를 수행하는 것을 기본 원칙으로 한다.
+
+## Contract-002 구조화된 결정과 구현 영향
+
+- Verification은 identity·integrity·authenticity 검증 결과와 Evidence를, Inspection은 content·behavior 검사로부터 Finding/Evidence를 생성한다.
+- Verification Result와 각 check의 Execution Status를 독립적으로 기록하며 verifier 실행 실패를 `INVALID`로 임의 변환하지 않는다.
+- Dynamic Inspection은 Sandbox의 raw Observation을 받아 보안 Domain 의미의 Evidence/Finding으로 해석한다.
+- Sandbox는 ephemeral Session에서 관찰과 실행 상태만 반환하고 Finding·severity·Policy Decision을 생성하지 않는다.
+- Sandbox에는 실제 Host credential·secret·filesystem·internal network·process를 노출하지 않으며 합성·정제된 입력만 제공한다.
+- 비정상 종료된 Sandbox Session은 폐기하며 기존 Observation/Evidence를 보존하고 추가 실행에는 새 Session을 사용한다.
+- 외부 verifier/scanner/backend verdict는 정규화 결과일 뿐 최종 Policy Decision이 아니다.
+- Policy는 공통 Domain Result, check requirement, limitation, Run context를 평가하여 최종 `ALLOW`·`MANUAL_REVIEW`·`BLOCK`만 결정한다.
+- Policy Evaluation 이전의 operational failure와 Policy Decision을 구분하며 required check 미충족 시 자동 `ALLOW`하지 않는다.
+- Application/Workflow가 Port 호출 순서를 조정하고, 각 Port가 Sandbox·Policy·Promotion을 임의로 연쇄 호출하지 않는다.
+- 실제 interface/schema·taxonomy·backend·retry/cancellation·Evidence writer·Policy rule/version/reason code는 후속 설계로 유보한다.
+
+## Contract-002 누락 점검
+
+- [x] Verification Port 책임과 입력/출력
+- [x] Verification Result와 Execution Status 구분
+- [x] Static / Dynamic Inspection 구분
+- [x] Observation의 Evidence/Finding 해석 책임
+- [x] Inspection Port의 금지 책임
+- [x] Sandbox lifecycle과 ephemeral Session
+- [x] Sandbox의 raw observation 책임
+- [x] Sandbox Host 경계와 합성 입력
+- [x] 비정상 종료 Session 폐기와 Observation 보존
+- [x] Sandbox Port의 금지 책임
+- [x] Policy Contract의 내부 Domain Service 경계
+- [x] Policy 입력·출력과 operational failure 구분
+- [x] required check 미충족의 fail-closed
+- [x] Policy Decision 근거 추적
+- [x] Application의 orchestration 책임
+- [x] 11개 invariant
+- [x] 후속 결정 항목 유보
+
+## Contract-003: Evidence / Staging / Promotion Ports
+
+### 목적
+
+Heliopause는 검사 결과의 기록, 검증 완료 Artifact의 보관, 실제 사용자 환경으로의 반입을 서로 다른 책임으로 분리한다.
+
+```text
+Inspection Run → Evidence Port → Evidence Store
+
+Package ecosystem:
+Policy = ALLOW
+      → Verified Set / Manifest
+      → Staging Port
+      → Verified Staging Area
+      → Promotion Port
+      → User Environment
+
+Standalone:
+Policy = ALLOW
+      → exact identity / digest 재확인
+      → Promotion Port
+      → User Environment
+```
+
+핵심 경계는 다음과 같다.
+
+```text
+Evidence  → 무엇을 근거로 판정했는가
+Staging   → 정확히 무엇이 반입 허가되었는가
+Promotion → 그 정확한 Artifact를 실제 Host에 반입한다
+```
+
+### Evidence Port
+
+`Evidence Port`는 Inspection Run에서 생성되는 Evidence와 관련 기록을 신뢰 가능한 Evidence Store에 저장·조회하기 위한 계약이다.
+
+개념적인 입력은 Inspection Run, Artifact identity/digest, Verification Result, Evidence, Finding, Execution Status, Inspection Limitation, Policy Decision 및 관련 metadata다. 모든 정보가 하나의 물리적 record에 저장되어야 한다는 뜻은 아니며, 각 결과가 다음에 추적 가능해야 한다.
+
+```text
+Run + 실제 Artifact + 생성 근거
+```
+
+신뢰하지 않는 Artifact 또는 Sandbox 내부 process가 Evidence 기록을 임의로 수정·삭제할 수 없어야 한다. 기록은 trusted controller/observer 측에서 수행한다. Raw Observation/Tool Output과 Normalized Evidence는 분리하여 저장하거나 참조할 수 있다.
+
+Evidence Port는 기록과 추적만 담당하며 Finding 해석, Verification 수행, Policy Decision 생성, Verified Set 승인 또는 Promotion을 수행하지 않는다.
+
+### Evidence 무결성 실패
+
+Policy Decision이나 Promotion의 근거가 되는 필수 Evidence가 누락·손상되거나 무결성을 확인할 수 없다면 정상적인 신뢰 근거로 사용하지 않는다.
+
+```text
+Required Evidence → missing / corrupt / unverifiable
+                  → ALLOW 또는 Promotion 근거로 사용 금지
+```
+
+구체적인 Evidence integrity mechanism은 후속 구현 설계에서 결정한다.
+
+### Staging Port
+
+`Staging Port`는 `ALLOW`된 Verified Set을 실제 Host Promotion 전에 **검증 완료 상태로 보관하는 영역에 반입**하기 위한 계약이다.
+
+```text
+Policy = ALLOW
+        ↓
+Verified Set / Verified Manifest
+        ↓
+identity / digest 재확인
+        ↓
+Staging Port → Verified Staging Area
+```
+
+`MANUAL_REVIEW` 또는 `BLOCK` 상태의 Artifact를 자동 Staging하지 않는다.
+
+Package ecosystem에서 Staging Port는 유효한 `ALLOW`, 현재 Verified Set, Verified Manifest, 실제 Artifact identity/digest 일치를 확인해야 한다. Quarantine/Inspection 영역에서 Staging으로 이동하는 신뢰 경계에서 digest를 다시 확인하며 불일치하면 Staging을 중단하고 기존 `ALLOW`를 다른 content에 적용하지 않는다.
+
+### Verified Staging Area의 성격
+
+Staging은 두 번째 Sandbox가 아니다. Artifact 실행, install/lifecycle script 실행, 외부 network 접근, 실제 credential 제공, 임의 content 변경을 허용하지 않는다.
+
+목적은 다음과 같다.
+
+```text
+검사를 통과한 정확한 Artifact를
+Promotion 직전까지 동일한 상태로 보존한다.
+```
+
+가능한 경우 immutable 또는 변경 탐지 가능한 방식으로 관리한다.
+
+### Promotion Port
+
+`Promotion Port`는 `ALLOW`된 정확한 Artifact 또는 Verified Set을 Heliopause의 신뢰 경계를 넘어 실제 사용자 환경으로 반입하는 계약이다.
+
+```text
+Verified Staging Area
+        ↓
+Verified Manifest 확인
+        ↓
+identity / digest 재확인
+        ↓
+Original Install Context 확인
+        ↓
+Promotion Port → User Environment
+```
+
+Promotion은 Sandbox나 Artifact Adapter가 아닌 trusted Promotion 구현만 수행한다.
+
+Package ecosystem의 Promotion은 다음 조건을 요구한다.
+
+```text
+유효한 ALLOW
++ Verified Manifest
++ Staging의 실제 Artifact identity/digest 일치
++ Original Install Context
+```
+
+따라서 Package ecosystem에서는 `Quarantine → Staging`과 `Staging → Host` 두 신뢰 경계에서 identity/digest를 재확인한다.
+
+### Promotion의 책임 경계
+
+Promotion은 이미 내려진 Policy Decision과 Verified Manifest를 집행한다. Artifact 안전성 재판정, Finding 생성, Policy rule 평가, 새 dependency 승인, mutable reference 재resolve, 임의 Artifact 다운로드를 수행하지 않는다.
+
+```text
+Promotion은 무엇을 허용할지 결정하지 않는다.
+이미 허용된 정확한 것을 반입한다.
+```
+
+Promotion 또는 실제 install 중 Verified Manifest에 없는 Artifact가 필요하면 중단한다. 새 Artifact는 Resolve, Acquire, Verification/Inspection, Policy, 새로운 Verified Set/Manifest 생성 workflow를 거쳐야 한다.
+
+### Standalone Artifact 예외
+
+Package manager가 없는 standalone binary/archive는 기존 Architecture 예외에 따라 Verified Staging Area를 거치지 않고 직접 trusted Promotion할 수 있다.
+
+```text
+Standalone Artifact → Inspection → ALLOW
+                    → exact identity / digest 재확인
+                    → Original target context 확인
+                    → Promotion Port → Host
+```
+
+이 경우에도 검사한 Artifact, `ALLOW`된 Artifact, Promotion하는 Artifact가 동일해야 하며 Sandbox가 Host에 직접 쓰지 않는다.
+
+### Promotion 결과와 Policy의 구분
+
+Promotion 또는 실제 install 실패가 기존 Inspection Run의 `ALLOW`를 자동 변경하지 않는다.
+
+```text
+Policy Decision = ALLOW
+Promotion = Host permission error
+Operation Result = FAILED
+```
+
+보안 판정과 실제 작업 실행 결과를 분리한다.
+
+### Contract-003 Invariant
+
+#### Invariant 1 — Evidence Store와 Staging을 분리한다
+
+검사 근거 저장소와 Promotion 대상 Artifact 보관 영역을 같은 책임으로 취급하지 않는다.
+
+#### Invariant 2 — Evidence는 untrusted Artifact가 변경하지 못한다
+
+Evidence 기록은 trusted observer/controller 경계에서 수행한다.
+
+#### Invariant 3 — 필수 Evidence 무결성이 깨지면 신뢰 근거로 사용하지 않는다
+
+누락·손상된 필수 Evidence를 정상적인 `ALLOW` 근거로 취급하지 않는다.
+
+#### Invariant 4 — Staging에는 `ALLOW`된 Verified Set만 들어간다
+
+`MANUAL_REVIEW / BLOCK` Artifact를 자동 Staging하지 않는다.
+
+#### Invariant 5 — Staging은 실행 환경이 아니다
+
+Artifact 실행·lifecycle·임의 network access를 Staging 책임으로 만들지 않는다.
+
+#### Invariant 6 — 두 신뢰 경계에서 identity/digest를 재확인한다
+
+Package ecosystem에서는 `Quarantine → Staging`, `Staging → Host` 각 경계에서 실제 Artifact와 Verified Manifest의 identity/digest 일치를 확인한다. Staging을 생략하는 Standalone Artifact는 Promotion 직전에 실제 Artifact의 exact identity/digest가 해당 `ALLOW` 검사 대상과 일치하는지 재확인한다.
+
+#### Invariant 7 — Promotion은 Policy를 재판정하지 않는다
+
+Promotion은 이미 허가된 Artifact를 정확하게 반입하는 집행 책임만 가진다.
+
+#### Invariant 8 — Promotion은 새로운 Artifact를 자동 추가하지 않는다
+
+Verified Manifest 밖의 Artifact가 필요하면 검증 workflow로 되돌린다.
+
+#### Invariant 9 — Sandbox는 Host Promotion을 수행하지 않는다
+
+Host 반입은 trusted Promotion 경계를 통해서만 수행한다.
+
+#### Invariant 10 — Promotion 실패와 Policy Decision을 구분한다
+
+실제 설치 실패가 기존 `ALLOW`를 자동 `BLOCK`으로 변경하지 않는다.
+
+#### Invariant 11 — Standalone 예외에서도 identity binding을 유지한다
+
+Staging을 생략할 수는 있지만 검사한 exact identity/digest와 Promotion 대상은 동일해야 한다.
+
+### 후속 결정으로 유보한 항목
+
+- 실제 Go interface와 method signature
+- Evidence writer/reader API와 Evidence ID/reference schema
+- Evidence integrity mechanism, Store 구현/layout, retention/cleanup
+- Staging handle/schema, filesystem/layout, immutable/change-detection 구현
+- Verified Manifest serialization
+- Promotion request/result struct와 ecosystem별 Promotion Adapter
+- npm/pip offline/local install 및 standalone target write 방식
+- atomic Promotion, rollback, partial install 처리
+- Promotion failure code와 Operation Result 연결 schema
+
+### 압축된 Contract
+
+```text
+Evidence Port
+"검사와 판정의 근거를 신뢰 가능한 영역에 기록하라."
+        ↓
+Evidence Store
+
+Staging Port
+"ALLOW된 정확한 Verified Set을 변경 없이 보관하라."
+        ↓
+Verified Staging Area
+
+Promotion Port
+"검증된 정확한 Artifact를 원래 사용자 target으로 반입하라."
+        ↓
+User Environment
+```
+
+Package ecosystem의 기본 신뢰 흐름은 다음과 같다.
+
+```text
+Inspection → Evidence Store → Policy = ALLOW
+           → Verified Set / Manifest → digest 재확인
+           → Staging → digest 재확인
+           → trusted Promotion → Host
+```
+
+```text
+기록하는 것 ≠ 보관하는 것 ≠ 실제 반입하는 것
+```
+
+을 분리하면서 다음 동일성을 끝까지 유지한다.
+
+```text
+Package ecosystem:
+
+실제로 검사한 content
+=
+Policy가 허용한 content
+=
+Staging에 들어간 content
+=
+Host에 Promotion한 content
+
+Standalone:
+
+실제로 검사한 content
+=
+Policy가 허용한 content
+=
+Host에 Promotion한 content
+```
+
+## Contract-003 구조화된 결정과 구현 영향
+
+- Evidence Port, Staging Port, Promotion Port를 각각 기록·보관·반입 책임으로 분리한다.
+- Evidence는 Run·실제 Artifact identity/digest·생성 근거에 추적 가능하며 untrusted 실행 환경이 변경할 수 없다.
+- 필수 Evidence가 누락·손상·검증 불가하면 자동 `ALLOW` 또는 Promotion의 근거로 사용하지 않는다.
+- Staging은 유효한 `ALLOW`, Verified Set/Manifest, 실제 identity/digest가 일치할 때만 허용한다.
+- Verified Staging Area에서는 실행·lifecycle·network·credential 제공·임의 변경을 금지하고 immutable/change-detection을 지향한다.
+- Package ecosystem은 Quarantine→Staging과 Staging→Host 경계에서 identity/digest를 각각 재확인한다.
+- Promotion은 원래 Install Context에 이미 허가된 정확한 Artifact를 집행할 뿐 Policy 재판정·재resolve·신규 Artifact 추가를 하지 않는다.
+- Manifest 밖 새 Artifact는 전체 검증 workflow와 새 Verified Set/Manifest로 회귀한다.
+- Standalone은 Staging 생략을 허용하되 Promotion 직전 identity/digest binding과 trusted Promotion 경계를 유지한다.
+- Promotion 실패는 Operation Result에 반영하며 기존 Policy Decision과 분리한다.
+- 구체적인 API·storage·integrity·serialization·offline install·atomicity·rollback·failure schema는 후속 구현 설계로 유보한다.
+
+## Contract-003 누락 점검
+
+- [x] Evidence Port의 저장·조회와 추적 책임
+- [x] Evidence Store의 trusted write 경계
+- [x] Raw/normalized Evidence 분리 가능성
+- [x] Evidence Port의 금지 책임
+- [x] 필수 Evidence 무결성 실패의 fail-closed
+- [x] Staging 반입 조건과 `ALLOW` 제한
+- [x] Verified Staging Area의 비실행 성격
+- [x] Promotion 입력 조건과 Original Install Context
+- [x] 두 신뢰 경계의 identity/digest 재확인
+- [x] Promotion의 집행 책임과 금지 책임
+- [x] 신규 Artifact 발견 시 workflow 회귀
+- [x] Standalone Staging 예외와 identity binding
+- [x] Promotion 실패와 Policy Decision 분리
+- [x] 11개 invariant
 - [x] 후속 결정 항목 유보

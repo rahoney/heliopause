@@ -4,7 +4,7 @@
 
 - 프로젝트명: Heliopause Artifact Airlock
 - CLI 후보: `helox`
-- 상태: Domain-001~007 확정, Interface Contracts 설계 예정 (Architecture·User Journey + CLI IA 완료)
+- 상태: Domain-001~007·Contract-001~003 최종 확정, Domain Model·Interface Contracts 일관성 검토 완료 (Architecture·User Journey + CLI IA 완료)
 
 ## 결정 문서
 
@@ -15,7 +15,7 @@
 - User Journey + CLI IA 상세 결정: [`docs/user-journey-cli-ia.md`](./docs/user-journey-cli-ia.md)
 - Domain Model / Interface Contracts 상세 결정: [`docs/domain-model.md`](./docs/domain-model.md)
 
-다음 결정 단계: Contract-001~003 설계
+다음 결정 단계: runtime과 배포 형태 결정
 
 상세 내용은 주제별 문서에 한 번만 기록하고, `PROJECT-DECISIONS.md`에는 상태·핵심 요약·링크만 유지한다.
 
