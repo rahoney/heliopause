@@ -51,6 +51,26 @@ module path·release tag·checksum 신뢰성
 - Artifact가 제공한 Go module, executable 또는 script를 Heliopause product dependency로 동적 import·load하지 않는다.
 - MVP에 동적 Go plugin loading을 추가하지 않는다.
 
+### M0-003 Cobra dependency review
+
+2026-08-12 KST에 Heliopause의 확정된 CLI framework를 처음 사용하는 시점의 공식 release와 module graph를 검토해 `github.com/spf13/cobra v1.10.2`를 product dependency로 고정한다.
+
+- `v1.10.2`는 확인 시점의 최신 stable release이며 GitHub에서 verified signature가 확인된 commit `88b30ab89da2d0d0abb153818746c5a2d30eccec`다.
+- module의 Go floor는 `1.15`이므로 Heliopause minimum Go `1.25.12`와 default Go `1.26.5`에서 호환된다.
+- source license는 Apache-2.0이며 실제 build-selected indirect dependency인 `pflag`는 BSD-3-Clause, `mousetrap`은 Apache-2.0이다. 배포 시 각 license/notice 의무를 dependency license 검토에 포함한다.
+- Heliopause source가 직접 사용하는 것은 Cobra뿐이다. build-selected graph는 Cobra, `pflag`, `mousetrap`이고 upstream 전체 module graph에는 `go-md2man`, `blackfriday`, YAML과 check module도 포함된다. exact graph와 checksum은 `go.mod`, `go.sum`, `go list -m all`, `go mod graph`로 검증한다.
+- 확인 시점의 GitHub global advisory API에서 Cobra package에 일치하는 공개 advisory는 없었다. 이는 안전 보증이 아니며 govulncheck가 활성화되기 전까지 dependency 변경 시 advisory source를 다시 확인한다.
+- release와 dependency maintenance, security reporting 문서가 유지되고 있고 CLI framework로 널리 사용된다. 그래도 external parsing/presentation code이므로 Domain/Application에 전파하지 않고 `internal/cli`에만 격리한다.
+- upgrade는 release note, Go floor, transitive graph, license, 공개 취약점과 CLI/error/help 동작 변화를 검토한 명시적 변경으로만 수행한다.
+
+검토 source:
+
+- [Cobra v1.10.2 release](https://github.com/spf13/cobra/releases/tag/v1.10.2)
+- [Cobra v1.10.2 module requirements](https://github.com/spf13/cobra/blob/v1.10.2/go.mod)
+- [Cobra security policy](https://github.com/spf13/cobra/blob/v1.10.2/SECURITY.md)
+- [Cobra Apache-2.0 license](https://github.com/spf13/cobra/blob/v1.10.2/LICENSE.txt)
+- [GitHub global advisory query for Cobra](https://api.github.com/advisories?ecosystem=go&affects=github.com%2Fspf13%2Fcobra&per_page=100)
+
 ## 3. Package와 API 작성
 
 - Step 8의 dependency direction과 package 책임을 따른다.
