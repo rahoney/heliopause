@@ -7,7 +7,7 @@
 3. `docs/planning/02-current-work-queue.md`에서 active/next work item, 선행조건과 acceptance를 확인한다.
 4. 한 번에 하나의 work item만 `IN_PROGRESS`로 두고 그 범위만 수행한다.
 
-현재 재개 지점은 `M0-003 — Go module과 최소 process bootstrap`이다. Queue가 이후 갱신되면 Queue의 현재 상태를 우선한다.
+현재 재개 지점은 `M0-004 — Canonical check runner foundation`이다. Queue가 이후 갱신되면 Queue의 현재 상태를 우선한다.
 
 ## 구현과 문서
 

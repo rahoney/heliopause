@@ -9,13 +9,13 @@
 ```text
 Current milestone: M0 — Implementation Foundation
 Milestone status: IN_PROGRESS
-Active work item: M0-003 — Go module과 최소 process bootstrap
+Active work item: 없음
 Next work item: M0-004 — Canonical check runner foundation
 Next work item status: NOT_STARTED
-Ready: No
+Ready: Yes
 ```
 
-M0-001 착수와 함께 M0가 `IN_PROGRESS`가 되었고, M0-002 완료 후 다음 실행 항목은 M0-003이다.
+M0-001 착수와 함께 M0가 `IN_PROGRESS`가 되었고, M0-003 완료 후 다음 실행 항목은 M0-004다.
 
 ## 2. 상태와 queue 규칙
 
@@ -42,8 +42,8 @@ COMPLETE
 | --- | --- | --- | --- | --- | --- |
 | 1 | M0-001 | Project Identity 결정 | Step 13 | COMPLETE | No |
 | 2 | M0-002 | Go·Tool·CI Identity lock | M0-001 | COMPLETE | No |
-| 3 | M0-003 | Go module과 최소 process bootstrap | M0-002 | IN_PROGRESS | No |
-| 4 | M0-004 | Canonical check runner foundation | M0-003 | NOT_STARTED | No |
+| 3 | M0-003 | Go module과 최소 process bootstrap | M0-002 | COMPLETE | No |
+| 4 | M0-004 | Canonical check runner foundation | M0-003 | NOT_STARTED | Yes |
 | 5 | M0-005 | Static analysis와 Quick profile 활성화 | M0-004 | NOT_STARTED | No |
 | 6 | M0-006 | Quick·Docs·Required CI foundation | M0-005 | NOT_STARTED | No |
 | 7 | M0-007 | Minimum Go·macOS와 repository gate 검증 | M0-006 | NOT_STARTED | No |
@@ -151,6 +151,17 @@ Next: M0-003 — Ready: Yes
 - `cmd/helox`는 bootstrap 호출과 process exit만 소유한다.
 - CLI/bootstrap에 Domain, Policy, Adapter shortcut이 없다.
 - module과 smoke test가 public network·credential·Host project 없이 재현된다.
+
+**Completion**
+
+```text
+Status: COMPLETE
+Commit: 5e99b6028009af9506232e291dbda60a09ca9450
+Checks: gofmt; go mod tidy -diff/verify; go build; compile-only test; go vet; Staticcheck 2026.1; full test; Linux amd64/macOS amd64·arm64 build; offline module list/graph; package import boundary; Markdown local link/fence validation; git diff --check
+Implementation: root go.mod; cmd/helox process entrypoint; internal/bootstrap composition root; internal/cli Cobra boundary; host-independent process smoke test
+Limitations: business workflow·Domain·Policy·Adapter·future package와 canonical check runner는 현재 항목 범위에서 추가하지 않음
+Next: M0-004 — Ready: Yes
+```
 
 ### M0-004 — Canonical check runner foundation
 

@@ -9,7 +9,7 @@
 - 구현 언어: Go
 - CLI framework: Cobra
 - 현재 상태: Step 14 Implementation — M0 진행 중
-- 다음 작업: M0-003 Go module과 최소 process bootstrap
+- 다음 작업: M0-004 Canonical check runner foundation
 
 ## Documentation
 

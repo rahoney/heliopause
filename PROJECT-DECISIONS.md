@@ -32,6 +32,7 @@
 | Milestones | Step 12 | Complete | [docs/planning/01-milestones.md](./docs/planning/01-milestones.md) |
 | Current Work Queue | Step 13 | Complete | [docs/planning/02-current-work-queue.md](./docs/planning/02-current-work-queue.md) |
 | Go·Tool·CI Identity | M0-002 | Complete | [Quality Toolchain](./docs/engineering/03-quality-toolchain.md), [CI Quality Gate](./docs/engineering/04-ci-quality-gate.md) |
+| Go Module·Process Bootstrap | M0-003 | Complete | [Current Work Queue](./docs/planning/02-current-work-queue.md) |
 
 ## Current Stage
 
@@ -39,7 +40,7 @@ Step 14 — Implementation: M0 `IN_PROGRESS`
 
 Documentation hierarchy and task routing migration: Complete
 
-Next: M0-003 — Go module과 최소 process bootstrap
+Next: M0-004 — Canonical check runner foundation
 
 ## Remaining Stages
 
