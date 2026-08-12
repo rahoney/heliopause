@@ -11,11 +11,6 @@
 - 현재 상태: Step 14 Implementation — M0 진행 중
 - 다음 작업: M0-004 Canonical check runner foundation
 
-## Documentation
+## Project Notes
 
-- 결정 상태와 남은 작업: [PROJECT-DECISIONS.md](./PROJECT-DECISIONS.md)
-- 상세 설계와 작업별 읽기 가이드: [docs/README.md](./docs/README.md)
-
-## Documentation Rule
-
-상세 결정은 `docs/`의 canonical leaf 문서에만 기록한다. 이 README에는 프로젝트 소개와 현재 단계만 유지한다.
+상세 설계·결정·작업 계획 문서는 로컬 작업 환경에서 관리하며 이 저장소의 배포 대상에 포함하지 않는다.
