@@ -11,7 +11,7 @@ import (
 )
 
 func TestBackendExecutesOneShotSandboxWithConstrainedDockerCommand(t *testing.T) {
-	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef\n"), nil, nil}}
+	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef\n"), nil, []byte("0\n"), nil}}
 	introducer := &recordingIntroducer{}
 	backend := newTestBackend(t, runner, introducer, &emptyObserver{}, availableProbe)
 
@@ -25,14 +25,17 @@ func TestBackendExecutesOneShotSandboxWithConstrainedDockerCommand(t *testing.T)
 	if introducer.calls != 1 || introducer.containerID != "0123456789abcdef" {
 		t.Fatalf("Introduce calls = %d, container = %q", introducer.calls, introducer.containerID)
 	}
-	if len(runner.calls) != 3 {
-		t.Fatalf("command calls = %d, want 3", len(runner.calls))
+	if len(runner.calls) != 4 {
+		t.Fatalf("command calls = %d, want 4", len(runner.calls))
 	}
 	assertConstrainedCreateCommand(t, runner.calls[0].arguments)
-	if got := runner.calls[1]; got.binary != "docker" || !sameStrings(got.arguments, []string{"start", "--attach", "0123456789abcdef"}) {
+	if got := runner.calls[1]; got.binary != "docker" || !sameStrings(got.arguments, []string{"start", "0123456789abcdef"}) {
 		t.Fatalf("start command = %q %q", got.binary, got.arguments)
 	}
-	if got := runner.calls[2]; got.binary != "docker" || !sameStrings(got.arguments, []string{"rm", "--force", "0123456789abcdef"}) {
+	if got := runner.calls[2]; got.binary != "docker" || !sameStrings(got.arguments, []string{"wait", "0123456789abcdef"}) {
+		t.Fatalf("wait command = %q %q", got.binary, got.arguments)
+	}
+	if got := runner.calls[3]; got.binary != "docker" || !sameStrings(got.arguments, []string{"rm", "--force", "0123456789abcdef"}) {
 		t.Fatalf("cleanup command = %q %q", got.binary, got.arguments)
 	}
 }
@@ -55,7 +58,7 @@ func TestBackendDoesNotExecuteWhenCapabilityIsUnavailable(t *testing.T) {
 }
 
 func TestBackendCollectsTrustedObservationBeforeDisposal(t *testing.T) {
-	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil}}
+	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, []byte("0\n"), nil}}
 	observer := &recordingObserver{reader: &traceReader{records: []TraceRecord{{Kind: "network-attempt", Bytes: 1}}}}
 	backend := newTestBackend(t, runner, &recordingIntroducer{}, observer, availableProbe)
 
@@ -95,8 +98,8 @@ func TestBackendProcessFailureAndCleanupFailureAreIncomplete(t *testing.T) {
 		errors     []error
 		limitation string
 	}{
-		{"process failure", [][]byte{[]byte("0123456789abcdef"), nil, nil}, []error{nil, errors.New("exit 1"), nil}, "M3_DYNAMIC_EXECUTION_FAILED"},
-		{"cleanup failure", [][]byte{[]byte("0123456789abcdef"), nil, nil}, []error{nil, nil, errors.New("cleanup")}, "M3_DYNAMIC_CLEANUP_FAILED"},
+		{"process failure", [][]byte{[]byte("0123456789abcdef"), nil, []byte("1\n"), nil}, nil, "M3_DYNAMIC_EXECUTION_FAILED"},
+		{"cleanup failure", [][]byte{[]byte("0123456789abcdef"), nil, []byte("0\n"), nil}, []error{nil, nil, nil, errors.New("cleanup")}, "M3_DYNAMIC_CLEANUP_FAILED"},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -113,7 +116,7 @@ func TestBackendProcessFailureAndCleanupFailureAreIncomplete(t *testing.T) {
 }
 
 func TestBackendTimeoutIsIncompleteAndStillDisposed(t *testing.T) {
-	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil}, waitForContext: true, waitForContextAt: 1}
+	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil, nil}, waitForContext: true, waitForContextAt: 2}
 	backend := newTestBackend(t, runner, &recordingIntroducer{}, &emptyObserver{}, availableProbe)
 	backend.wallTimeout = time.Millisecond
 
@@ -124,7 +127,7 @@ func TestBackendTimeoutIsIncompleteAndStillDisposed(t *testing.T) {
 	if code, _ := result.LimitationCode(); code != "M3_DYNAMIC_TIMEOUT" {
 		t.Fatalf("LimitationCode() = %q, want timeout", code)
 	}
-	if len(runner.calls) != 3 || !sameStrings(runner.calls[2].arguments, []string{"rm", "--force", "0123456789abcdef"}) {
+	if len(runner.calls) != 4 || !sameStrings(runner.calls[3].arguments, []string{"rm", "--force", "0123456789abcdef"}) {
 		t.Fatalf("cleanup command missing after timeout: %#v", runner.calls)
 	}
 }

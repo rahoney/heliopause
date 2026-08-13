@@ -99,7 +99,15 @@ func (b *Backend) Execute(ctx context.Context, request domain.SandboxRequest) (d
 		return incomplete(sessionID, "M3_DYNAMIC_OBSERVER_FAILED")
 	}
 
-	if err := b.introducer.Introduce(ctx, containerID, request.Artifact()); err != nil {
+	runContext, cancel := context.WithTimeout(ctx, b.wallTimeout)
+	defer cancel()
+	if _, err := b.runner.Output(runContext, "docker", "start", containerID); err != nil {
+		if b.cleanup(containerID) != nil {
+			return incomplete(sessionID, "M3_DYNAMIC_CLEANUP_FAILED")
+		}
+		return incomplete(sessionID, "M3_DYNAMIC_SETUP_FAILED")
+	}
+	if err := b.introducer.Introduce(runContext, containerID, request.Artifact()); err != nil {
 		cleanupErr := b.cleanup(containerID)
 		if cleanupErr != nil {
 			return incomplete(sessionID, "M3_DYNAMIC_CLEANUP_FAILED")
@@ -107,10 +115,8 @@ func (b *Backend) Execute(ctx context.Context, request domain.SandboxRequest) (d
 		return incomplete(sessionID, "M3_DYNAMIC_ARTIFACT_INTRODUCTION_FAILED")
 	}
 
-	runContext, cancel := context.WithTimeout(ctx, b.wallTimeout)
-	_, runErr := b.runner.Output(runContext, "docker", "start", "--attach", containerID)
+	waitOutput, runErr := b.runner.Output(runContext, "docker", "wait", containerID)
 	timedOut := runContext.Err() == context.DeadlineExceeded || ctx.Err() == context.DeadlineExceeded
-	cancel()
 	collectContext, collectCancel := context.WithTimeout(context.Background(), b.cleanupWait)
 	observations, observationLimitation := collectTrace(collectContext, trace)
 	collectCancel()
@@ -118,7 +124,7 @@ func (b *Backend) Execute(ctx context.Context, request domain.SandboxRequest) (d
 	if cleanupErr != nil {
 		return incomplete(sessionID, "M3_DYNAMIC_CLEANUP_FAILED")
 	}
-	if runErr != nil {
+	if runErr != nil || strings.TrimSpace(string(waitOutput)) != "0" {
 		if timedOut {
 			return incomplete(sessionID, "M3_DYNAMIC_TIMEOUT")
 		}
@@ -163,6 +169,6 @@ func createArguments(sessionID domain.SandboxSessionID) []string {
 		"--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=256m,uid=1000,gid=1000,mode=0700",
 		"--name", "heliopause-" + sessionID.String(),
 		nodeImageReference,
-		"/bin/sh", "-ceu", "mkdir -p /work/package && npm install --ignore-scripts=false --no-audit --no-fund /artifact.tgz",
+		"/bin/sh", "-ceu", "while [ ! -f /work/artifact.tgz ]; do sleep 0.05; done; mkdir -p /work/package; npm install --ignore-scripts=false --no-audit --no-fund /work/artifact.tgz",
 	}
 }
