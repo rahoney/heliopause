@@ -19,7 +19,7 @@ func main() {
 
 func run(args []string, stdout, stderr io.Writer) int {
 	if len(args) != 1 {
-		_, _ = fmt.Fprintln(stderr, "usage: go run ./scripts/check <foundation|docs|format>")
+		_, _ = fmt.Fprintln(stderr, "usage: go run ./scripts/check <bootstrap|foundation|quick|docs|format>")
 		return exitUsage
 	}
 

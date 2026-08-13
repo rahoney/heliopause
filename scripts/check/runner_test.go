@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -56,7 +57,7 @@ func TestDeterministicGoEnvironment(t *testing.T) {
 
 	environment := deterministicGoEnvironment([]string{"HOME=/tmp/home", "GOPROXY=https://proxy.invalid", "GOFLAGS=-mod=mod"})
 	joined := strings.Join(environment, "\n")
-	for _, expected := range []string{"HOME=/tmp/home", "GOPROXY=off", "GOFLAGS=", "GOTOOLCHAIN=local", "GOWORK=off"} {
+	for _, expected := range []string{"HOME=/tmp/home", "GOENV=off", "GOPROXY=off", "GOFLAGS=", "GOTOOLCHAIN=local", "GOWORK=off"} {
 		if !strings.Contains(joined, expected) {
 			t.Errorf("environment missing %q: %q", expected, environment)
 		}
@@ -106,10 +107,36 @@ func TestRunSequentialPreservesFirstFailure(t *testing.T) {
 	}
 }
 
+func TestQuickStepComposition(t *testing.T) {
+	t.Parallel()
+
+	checker := checker{}
+	steps := checker.quickSteps()
+	var names []string
+	for _, step := range steps {
+		names = append(names, step.name)
+	}
+	want := []string{
+		"format check",
+		"module drift",
+		"module integrity",
+		"production build",
+		"test build validity",
+		"architecture",
+		"go vet",
+		"Staticcheck",
+		"default test",
+	}
+	if !slices.Equal(names, want) {
+		t.Fatalf("quick steps = %q, want %q", names, want)
+	}
+}
+
 func TestFormatCheckAndExplicitFormatProfile(t *testing.T) {
 	t.Parallel()
 
 	root := t.TempDir()
+	writeTestToolLock(t, root)
 	path := filepath.Join(root, "main.go")
 	writeTestFile(t, path, "package main\nfunc main(){println(\"hello\")}\n")
 	checker, err := newChecker(root, io.Discard)
@@ -132,6 +159,7 @@ func TestModuleDriftIsFinding(t *testing.T) {
 	t.Parallel()
 
 	root := t.TempDir()
+	writeTestToolLock(t, root)
 	writeTestFile(t, filepath.Join(root, "go.mod"), "module example.test/project\n\ngo 1.25.12\n\nrequire ()\n")
 	writeTestFile(t, filepath.Join(root, "main.go"), "package main\n\nfunc main() {}\n")
 	checker, err := newChecker(root, io.Discard)
@@ -152,4 +180,9 @@ func writeTestFile(t *testing.T, path, contents string) {
 	if err := os.WriteFile(path, []byte(contents), 0o600); err != nil {
 		t.Fatalf("write %s: %v", path, err)
 	}
+}
+
+func writeTestToolLock(t *testing.T, root string) {
+	t.Helper()
+	writeTestFile(t, filepath.Join(root, "scripts", "tools.lock.json"), validTestToolLock)
 }

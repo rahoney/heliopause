@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"sort"
@@ -44,7 +43,7 @@ func (c *checker) listPackages() ([]packageMetadata, error) {
 
 	command := exec.CommandContext(ctx, c.goExecutable, "list", "-json", "./...")
 	command.Dir = c.root
-	command.Env = deterministicGoEnvironment(os.Environ())
+	command.Env = c.offlineEnvironment()
 	stdout, err := command.StdoutPipe()
 	if err != nil {
 		return nil, &checkFailure{class: executionFailure, step: "architecture package inventory", cause: err}

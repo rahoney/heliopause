@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"strings"
 	"time"
 )
@@ -52,6 +53,8 @@ type checker struct {
 	stdout       io.Writer
 	goExecutable string
 	gofmt        string
+	toolCache    string
+	toolLock     toolLock
 }
 
 type checkStep struct {
@@ -93,6 +96,15 @@ func validateModuleRoot(workingDirectory string) (string, error) {
 }
 
 func newChecker(root string, stdout io.Writer) (*checker, error) {
+	lock, err := readToolLock(filepath.Join(root, "scripts", "tools.lock.json"))
+	if err != nil {
+		return nil, err
+	}
+	toolCache, err := resolveToolCache(root, os.Getenv("HELOX_TOOL_CACHE"))
+	if err != nil {
+		return nil, err
+	}
+
 	goExecutable, err := exec.LookPath(executableName("go"))
 	if err != nil {
 		return nil, errors.New("go executable is unavailable")
@@ -131,7 +143,14 @@ func newChecker(root string, stdout io.Writer) (*checker, error) {
 		return nil, err
 	}
 
-	return &checker{root: root, stdout: stdout, goExecutable: goExecutable, gofmt: gofmt}, nil
+	return &checker{
+		root:         root,
+		stdout:       stdout,
+		goExecutable: goExecutable,
+		gofmt:        gofmt,
+		toolCache:    toolCache,
+		toolLock:     lock,
+	}, nil
 }
 
 func requireRegularExecutable(path string) error {
@@ -168,16 +187,12 @@ func executableName(name string) string {
 
 func (c *checker) runProfile(profile string) error {
 	switch profile {
+	case "bootstrap":
+		return c.bootstrap()
 	case "foundation":
-		return c.runSequential([]checkStep{
-			{"format check", c.checkFormat},
-			{"module drift", c.checkModuleDrift},
-			{"module integrity", func() error { return c.runGo("module integrity", "mod", "verify") }},
-			{"production build", func() error { return c.runGo("production build", "build", "./...") }},
-			{"test build validity", func() error { return c.runGo("test build validity", "test", "-run", "^$", "./...") }},
-			{"architecture", c.checkArchitecture},
-			{"documentation", func() error { return checkMarkdownTree(c.root) }},
-		})
+		return c.runSequential(c.foundationSteps(true))
+	case "quick":
+		return c.runSequential(c.quickSteps())
 	case "docs":
 		return c.runStep("documentation", func() error { return checkMarkdownTree(c.root) })
 	case "format":
@@ -185,6 +200,32 @@ func (c *checker) runProfile(profile string) error {
 	default:
 		return &checkFailure{class: unavailable, step: "profile", detail: fmt.Sprintf("unknown profile %q", profile)}
 	}
+}
+
+func (c *checker) quickSteps() []checkStep {
+	steps := c.foundationSteps(false)
+	return append(steps,
+		checkStep{"go vet", func() error { return c.runAnalysis("go vet", c.goExecutable, "vet", "./...") }},
+		checkStep{"Staticcheck", c.runStaticcheck},
+		checkStep{"default test", func() error {
+			return c.runGoWithTimeout("default test", 6*time.Minute, "test", "-timeout=5m", "./...")
+		}},
+	)
+}
+
+func (c *checker) foundationSteps(includeDocs bool) []checkStep {
+	steps := []checkStep{
+		{"format check", c.checkFormat},
+		{"module drift", c.checkModuleDrift},
+		{"module integrity", func() error { return c.runGo("module integrity", "mod", "verify") }},
+		{"production build", func() error { return c.runGo("production build", "build", "./...") }},
+		{"test build validity", func() error { return c.runGo("test build validity", "test", "-run", "^$", "./...") }},
+		{"architecture", c.checkArchitecture},
+	}
+	if includeDocs {
+		steps = append(steps, checkStep{"documentation", func() error { return checkMarkdownTree(c.root) }})
+	}
+	return steps
 }
 
 func (c *checker) runSequential(steps []checkStep) error {
@@ -204,7 +245,11 @@ func (c *checker) runStep(name string, action func() error) error {
 }
 
 func (c *checker) runGo(step string, args ...string) error {
-	output, err := c.runCommand(step, c.goExecutable, args...)
+	return c.runGoWithTimeout(step, commandTimeout, args...)
+}
+
+func (c *checker) runGoWithTimeout(step string, timeout time.Duration, args ...string) error {
+	output, err := c.runCommandWithTimeout(step, timeout, c.offlineEnvironment(), c.goExecutable, args...)
 	if err != nil && strings.Contains(output, "GOPROXY=off") {
 		return &checkFailure{class: unavailable, step: step, detail: "offline module cache prerequisite is missing", cause: err}
 	}
@@ -224,16 +269,20 @@ func (c *checker) checkModuleDrift() error {
 }
 
 func (c *checker) runCommand(step, executable string, args ...string) (string, error) {
+	return c.runCommandWithTimeout(step, commandTimeout, c.offlineEnvironment(), executable, args...)
+}
+
+func (c *checker) runCommandWithTimeout(step string, timeout time.Duration, environment []string, executable string, args ...string) (string, error) {
 	if !filepath.IsAbs(executable) {
 		return "", &checkFailure{class: unavailable, step: step, detail: "executable path is not absolute"}
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), commandTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
 	command := exec.CommandContext(ctx, executable, args...)
 	command.Dir = c.root
-	command.Env = deterministicGoEnvironment(os.Environ())
+	command.Env = environment
 	var output boundedBuffer
 	output.limit = outputLimit
 	command.Stdout = &output
@@ -254,13 +303,30 @@ func (c *checker) runCommand(step, executable string, args ...string) (string, e
 	return output.String(), nil
 }
 
+func (c *checker) offlineEnvironment() []string {
+	return overrideEnvironment(os.Environ(), map[string]string{
+		"GOCACHE":           filepath.Join(c.toolCache, "go-build"),
+		"GOENV":             "off",
+		"GOMODCACHE":        filepath.Join(c.toolCache, "go-mod"),
+		"GOFLAGS":           "",
+		"GOPROXY":           "off",
+		"GOTOOLCHAIN":       "local",
+		"GOWORK":            "off",
+		"STATICCHECK_CACHE": filepath.Join(c.toolCache, "staticcheck"),
+	})
+}
+
 func deterministicGoEnvironment(current []string) []string {
-	overrides := map[string]string{
+	return overrideEnvironment(current, map[string]string{
+		"GOENV":       "off",
 		"GOFLAGS":     "",
 		"GOPROXY":     "off",
 		"GOTOOLCHAIN": "local",
 		"GOWORK":      "off",
-	}
+	})
+}
+
+func overrideEnvironment(current []string, overrides map[string]string) []string {
 	result := make([]string, 0, len(current)+len(overrides))
 	for _, entry := range current {
 		key, _, found := strings.Cut(entry, "=")
@@ -269,7 +335,12 @@ func deterministicGoEnvironment(current []string) []string {
 		}
 		result = append(result, entry)
 	}
-	for _, key := range []string{"GOFLAGS", "GOPROXY", "GOTOOLCHAIN", "GOWORK"} {
+	keys := make([]string, 0, len(overrides))
+	for key := range overrides {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	for _, key := range keys {
 		result = append(result, key+"="+overrides[key])
 	}
 	return result
