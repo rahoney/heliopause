@@ -65,9 +65,9 @@ func collectTrace(ctx context.Context, reader TraceReader) ([]domain.SandboxObse
 
 func traceObservation(kind string) (domain.ObservationCategory, string, bool) {
 	switch kind {
-	case "process-exec", "process-clone":
+	case "process-exec", "process-clone", "process-unexpected":
 		return domain.ObservationProcess, kind, true
-	case "filesystem-open", "filesystem-write", "filesystem-rename", "filesystem-unlink":
+	case "filesystem-open", "filesystem-write", "filesystem-rename", "filesystem-unlink", "filesystem-violation":
 		return domain.ObservationFilesystem, kind, true
 	case "network-attempt":
 		return domain.ObservationNetwork, kind, true

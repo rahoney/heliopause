@@ -8,8 +8,8 @@
 - Go module path: `github.com/rahoney/heliopause`
 - 구현 언어: Go
 - CLI framework: Cobra
-- 현재 상태: Step 14 Implementation — M3 raw observation collector 완료
-- 다음 작업: M3-006 Dynamic observation normalization
+- 현재 상태: Step 14 Implementation — M3 dynamic observation normalization 완료
+- 다음 작업: M3-007 M3 Policy와 npm inspect wiring
 
 ## Project Notes
 
