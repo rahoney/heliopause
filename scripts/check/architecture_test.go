@@ -19,7 +19,7 @@ func TestValidateCurrentImports(t *testing.T) {
 		{ImportPath: modulePath + "/internal/policy", Imports: []string{modulePath + "/internal/core/domain"}},
 		{ImportPath: modulePath + "/internal/artifact/npm", Imports: []string{"net/http", modulePath + "/internal/core/domain"}},
 		{ImportPath: modulePath + "/internal/verification/npm", Imports: []string{"crypto/subtle", modulePath + "/internal/core/domain"}},
-		{ImportPath: modulePath + "/internal/sandbox", Imports: []string{"os/exec"}},
+		{ImportPath: modulePath + "/internal/sandbox", Imports: []string{"os/exec", modulePath + "/internal/core/domain"}},
 		{ImportPath: modulePath + "/internal/testutil/fakeworkflow", Imports: []string{modulePath + "/internal/core/domain", modulePath + "/internal/core/ports"}},
 		{ImportPath: modulePath + "/scripts/check", Imports: []string{"os"}},
 	}
