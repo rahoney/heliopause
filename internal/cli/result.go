@@ -18,6 +18,12 @@ type Inspector interface {
 	Inspect(context.Context, application.InspectRequest) (domain.OperationResult, error)
 }
 
+// ExitError carries an intentional completed-operation process exit code.
+type ExitError struct{ Code int }
+
+func (e ExitError) Error() string { return fmt.Sprintf("inspect completed with exit code %d", e.Code) }
+func (e ExitError) ExitCode() int { return e.Code }
+
 // ExecuteInspect invokes an injected use case and always presents a returned partial result.
 func ExecuteInspect(ctx context.Context, inspector Inspector, request application.InspectRequest, machine bool, output io.Writer) (int, error) {
 	if ctx == nil || inspector == nil || output == nil {

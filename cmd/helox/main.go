@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -25,6 +26,10 @@ func main() {
 
 func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	if err := bootstrap.Run(ctx, args, stdout, stderr); err != nil {
+		var exitError interface{ ExitCode() int }
+		if errors.As(err, &exitError) {
+			return exitError.ExitCode()
+		}
 		if _, writeErr := fmt.Fprintf(stderr, "helox: %v\n", err); writeErr != nil {
 			return exitFailure
 		}
