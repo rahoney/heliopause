@@ -8,8 +8,8 @@
 - Go module path: `github.com/rahoney/heliopause`
 - 구현 언어: Go
 - CLI framework: Cobra
-- 현재 상태: Step 14 Implementation — M3 Sandbox Session lifecycle 완료
-- 다음 작업: M3-005 gVisor raw observation collector
+- 현재 상태: Step 14 Implementation — M3 raw observation collector 완료
+- 다음 작업: M3-006 Dynamic observation normalization
 
 ## Project Notes
 

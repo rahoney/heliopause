@@ -38,6 +38,7 @@ type CapabilityProbe func(context.Context) (Capability, error)
 type Backend struct {
 	runner       CommandRunner
 	introducer   ArtifactIntroducer
+	observer     TraceObserver
 	probe        CapabilityProbe
 	newSessionID func() (domain.SandboxSessionID, error)
 	wallTimeout  time.Duration
@@ -45,23 +46,26 @@ type Backend struct {
 }
 
 // NewBackend constructs the M3 Linux dynamic-inspection backend.
-func NewBackend(runner CommandRunner, introducer ArtifactIntroducer, probe CapabilityProbe) (*Backend, error) {
+func NewBackend(runner CommandRunner, introducer ArtifactIntroducer, observer TraceObserver, probe CapabilityProbe) (*Backend, error) {
 	if runner == nil {
 		return nil, errors.New("sandbox command runner is required")
 	}
 	if introducer == nil {
 		return nil, errors.New("sandbox artifact introducer is required")
 	}
+	if observer == nil {
+		return nil, errors.New("sandbox trace observer is required")
+	}
 	if probe == nil {
 		return nil, errors.New("sandbox capability probe is required")
 	}
-	return &Backend{runner: runner, introducer: introducer, probe: probe, newSessionID: domain.NewSandboxSessionID, wallTimeout: sandboxWallTimeout, cleanupWait: cleanupTimeout}, nil
+	return &Backend{runner: runner, introducer: introducer, observer: observer, probe: probe, newSessionID: domain.NewSandboxSessionID, wallTimeout: sandboxWallTimeout, cleanupWait: cleanupTimeout}, nil
 }
 
 // Execute introduces the acquired artifact exactly once, runs it under gVisor,
 // and disposes of the container before returning a bounded raw result.
 func (b *Backend) Execute(ctx context.Context, request domain.SandboxRequest) (domain.SandboxResult, error) {
-	if b == nil || b.runner == nil || b.introducer == nil || b.probe == nil || b.newSessionID == nil {
+	if b == nil || b.runner == nil || b.introducer == nil || b.observer == nil || b.probe == nil || b.newSessionID == nil {
 		return domain.SandboxResult{}, errors.New("sandbox backend is not configured")
 	}
 	if ctx == nil {
@@ -87,6 +91,13 @@ func (b *Backend) Execute(ctx context.Context, request domain.SandboxRequest) (d
 	if !containerIDPattern.MatchString(containerID) {
 		return incomplete(sessionID, "M3_DYNAMIC_SETUP_FAILED")
 	}
+	trace, err := b.observer.Start(ctx, containerID)
+	if err != nil {
+		if b.cleanup(containerID) != nil {
+			return incomplete(sessionID, "M3_DYNAMIC_CLEANUP_FAILED")
+		}
+		return incomplete(sessionID, "M3_DYNAMIC_OBSERVER_FAILED")
+	}
 
 	if err := b.introducer.Introduce(ctx, containerID, request.Artifact()); err != nil {
 		cleanupErr := b.cleanup(containerID)
@@ -100,6 +111,9 @@ func (b *Backend) Execute(ctx context.Context, request domain.SandboxRequest) (d
 	_, runErr := b.runner.Output(runContext, "docker", "start", "--attach", containerID)
 	timedOut := runContext.Err() == context.DeadlineExceeded || ctx.Err() == context.DeadlineExceeded
 	cancel()
+	collectContext, collectCancel := context.WithTimeout(context.Background(), b.cleanupWait)
+	observations, observationLimitation := collectTrace(collectContext, trace)
+	collectCancel()
 	cleanupErr := b.cleanup(containerID)
 	if cleanupErr != nil {
 		return incomplete(sessionID, "M3_DYNAMIC_CLEANUP_FAILED")
@@ -110,11 +124,15 @@ func (b *Backend) Execute(ctx context.Context, request domain.SandboxRequest) (d
 		}
 		return incomplete(sessionID, "M3_DYNAMIC_EXECUTION_FAILED")
 	}
+	if observationLimitation != "" {
+		return incomplete(sessionID, observationLimitation)
+	}
 	observation, err := domain.NewSandboxObservation(domain.ObservationProcess, "lifecycle-completed")
 	if err != nil {
 		return domain.SandboxResult{}, fmt.Errorf("create Sandbox observation: %w", err)
 	}
-	return domain.NewSandboxResult(sessionID, domain.SandboxCompleted, "", []domain.SandboxObservation{observation})
+	observations = append(observations, observation)
+	return domain.NewSandboxResult(sessionID, domain.SandboxCompleted, "", observations)
 }
 
 func (b *Backend) cleanup(containerID string) error {

@@ -13,7 +13,7 @@ import (
 func TestBackendExecutesOneShotSandboxWithConstrainedDockerCommand(t *testing.T) {
 	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef\n"), nil, nil}}
 	introducer := &recordingIntroducer{}
-	backend := newTestBackend(t, runner, introducer, availableProbe)
+	backend := newTestBackend(t, runner, introducer, &emptyObserver{}, availableProbe)
 
 	result, err := backend.Execute(context.Background(), sandboxRequest(t))
 	if err != nil {
@@ -39,7 +39,7 @@ func TestBackendExecutesOneShotSandboxWithConstrainedDockerCommand(t *testing.T)
 
 func TestBackendDoesNotExecuteWhenCapabilityIsUnavailable(t *testing.T) {
 	runner := &recordingRunner{}
-	backend := newTestBackend(t, runner, &recordingIntroducer{}, func(context.Context) (Capability, error) {
+	backend := newTestBackend(t, runner, &recordingIntroducer{}, &emptyObserver{}, func(context.Context) (Capability, error) {
 		return Capability{LimitationCode: "M3_LINUX_ONLY"}, nil
 	})
 	result, err := backend.Execute(context.Background(), sandboxRequest(t))
@@ -51,6 +51,40 @@ func TestBackendDoesNotExecuteWhenCapabilityIsUnavailable(t *testing.T) {
 	}
 	if len(runner.calls) != 0 {
 		t.Fatalf("runtime commands = %d, want 0", len(runner.calls))
+	}
+}
+
+func TestBackendCollectsTrustedObservationBeforeDisposal(t *testing.T) {
+	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil}}
+	observer := &recordingObserver{reader: &traceReader{records: []TraceRecord{{Kind: "network-attempt", Bytes: 1}}}}
+	backend := newTestBackend(t, runner, &recordingIntroducer{}, observer, availableProbe)
+
+	result, err := backend.Execute(context.Background(), sandboxRequest(t))
+	if err != nil || result.Status() != domain.SandboxCompleted {
+		t.Fatalf("Execute() = (%q, %v)", result.Status(), err)
+	}
+	if observer.containerID != "0123456789abcdef" {
+		t.Fatalf("observer container ID = %q", observer.containerID)
+	}
+	observations := result.Observations()
+	if len(observations) != 2 || observations[0].Category() != domain.ObservationNetwork {
+		t.Fatalf("observations = %#v", observations)
+	}
+}
+
+func TestBackendObserverFailureIsIncompleteAndDisposesContainer(t *testing.T) {
+	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil}}
+	backend := newTestBackend(t, runner, &recordingIntroducer{}, &recordingObserver{err: errors.New("observer unavailable")}, availableProbe)
+
+	result, err := backend.Execute(context.Background(), sandboxRequest(t))
+	if err != nil || result.Status() != domain.SandboxIncomplete {
+		t.Fatalf("Execute() = (%q, %v)", result.Status(), err)
+	}
+	if code, _ := result.LimitationCode(); code != "M3_DYNAMIC_OBSERVER_FAILED" {
+		t.Fatalf("LimitationCode() = %q", code)
+	}
+	if len(runner.calls) != 2 || !sameStrings(runner.calls[1].arguments, []string{"rm", "--force", "0123456789abcdef"}) {
+		t.Fatalf("container not disposed: %#v", runner.calls)
 	}
 }
 
@@ -66,7 +100,7 @@ func TestBackendProcessFailureAndCleanupFailureAreIncomplete(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			backend := newTestBackend(t, &recordingRunner{responses: test.responses, errors: test.errors}, &recordingIntroducer{}, availableProbe)
+			backend := newTestBackend(t, &recordingRunner{responses: test.responses, errors: test.errors}, &recordingIntroducer{}, &emptyObserver{}, availableProbe)
 			result, err := backend.Execute(context.Background(), sandboxRequest(t))
 			if err != nil || result.Status() != domain.SandboxIncomplete {
 				t.Fatalf("Execute() = (%q, %v), want incomplete", result.Status(), err)
@@ -80,7 +114,7 @@ func TestBackendProcessFailureAndCleanupFailureAreIncomplete(t *testing.T) {
 
 func TestBackendTimeoutIsIncompleteAndStillDisposed(t *testing.T) {
 	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil}, waitForContext: true, waitForContextAt: 1}
-	backend := newTestBackend(t, runner, &recordingIntroducer{}, availableProbe)
+	backend := newTestBackend(t, runner, &recordingIntroducer{}, &emptyObserver{}, availableProbe)
 	backend.wallTimeout = time.Millisecond
 
 	result, err := backend.Execute(context.Background(), sandboxRequest(t))
@@ -110,9 +144,9 @@ func assertConstrainedCreateCommand(t *testing.T, arguments []string) {
 	}
 }
 
-func newTestBackend(t *testing.T, runner CommandRunner, introducer ArtifactIntroducer, probe CapabilityProbe) *Backend {
+func newTestBackend(t *testing.T, runner CommandRunner, introducer ArtifactIntroducer, observer TraceObserver, probe CapabilityProbe) *Backend {
 	t.Helper()
-	backend, err := NewBackend(runner, introducer, probe)
+	backend, err := NewBackend(runner, introducer, observer, probe)
 	if err != nil {
 		t.Fatalf("NewBackend() error = %v", err)
 	}
@@ -152,6 +186,24 @@ func (r *recordingRunner) Output(ctx context.Context, binary string, arguments .
 type recordingIntroducer struct {
 	calls       int
 	containerID string
+}
+
+type emptyObserver struct{}
+
+func (emptyObserver) Start(context.Context, string) (TraceReader, error) { return &traceReader{}, nil }
+
+type recordingObserver struct {
+	containerID string
+	reader      TraceReader
+	err         error
+}
+
+func (o *recordingObserver) Start(_ context.Context, containerID string) (TraceReader, error) {
+	o.containerID = containerID
+	if o.err != nil {
+		return nil, o.err
+	}
+	return o.reader, nil
 }
 
 func (r *recordingIntroducer) Introduce(_ context.Context, containerID string, _ domain.AcquiredArtifact) error {
