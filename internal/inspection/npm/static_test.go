@@ -19,7 +19,7 @@ func TestInspector(t *testing.T) {
 		entries []tarEntry
 		finding string
 	}{
-		{"safe", []tarEntry{{name: "package/package.json", body: `{"name":"tiny","version":"1.2.3"}`}}, ""},
+		{"safe", []tarEntry{{name: "package/package.json", body: `{"name":"tiny","version":"1.2.3","scripts":{"install":"node secret.js"}}`}}, ""},
 		{"link", []tarEntry{{name: "package/package.json", body: `{"name":"tiny","version":"1.2.3"}`}, {name: "package/link", typeflag: tar.TypeSymlink}}, "M2_ARCHIVE_TYPE_INVALID"},
 		{"path escape", []tarEntry{{name: "../package.json", body: `{}`}}, "M2_ARCHIVE_PATH_INVALID"},
 	} {
@@ -45,6 +45,9 @@ func TestInspector(t *testing.T) {
 			}
 			if test.finding != "" && (len(findings) != 1 || findings[0].Code() != test.finding) {
 				t.Fatalf("Findings() = %#v", findings)
+			}
+			if test.finding == "" && (!strings.Contains(report.Evidence()[0].Summary(), "install(14)") || strings.Contains(report.Evidence()[0].Summary(), "node secret.js")) {
+				t.Fatalf("Evidence summary = %q", report.Evidence()[0].Summary())
 			}
 		})
 	}

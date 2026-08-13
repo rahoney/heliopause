@@ -63,6 +63,7 @@ func (i *Inspector) Inspect(ctx context.Context, artifact domain.AcquiredArtifac
 	reader := tar.NewReader(io.LimitReader(gzipReader, decodedLimit+1))
 	seen := map[string]bool{}
 	entries, manifests := 0, 0
+	lifecycle := []string{}
 	for {
 		header, nextErr := reader.Next()
 		if nextErr == io.EOF {
@@ -95,15 +96,21 @@ func (i *Inspector) Inspect(ctx context.Context, artifact domain.AcquiredArtifac
 			if readErr != nil {
 				return i.violationReport(artifact, "M2_MANIFEST_INVALID", "npm package manifest is invalid or exceeds its limit.")
 			}
-			if err := validateManifest(body, artifact.Identity()); err != nil {
+			keys, err := validateManifest(body, artifact.Identity())
+			if err != nil {
 				return i.violationReport(artifact, "M2_MANIFEST_INVALID", "npm package manifest does not match the resolved artifact identity.")
 			}
+			lifecycle = keys
 		}
 	}
 	if manifests != 1 {
 		return i.violationReport(artifact, "M2_MANIFEST_INVALID", "npm tarball must contain exactly one package manifest.")
 	}
-	return i.report(artifact, nil, fmt.Sprintf("npm static archive inspection completed with %d entries.", entries))
+	summary := fmt.Sprintf("npm static archive inspection completed with %d entries.", entries)
+	if len(lifecycle) != 0 {
+		summary += " Lifecycle script keys: " + strings.Join(lifecycle, ", ") + "."
+	}
+	return i.report(artifact, nil, summary)
 }
 
 func (i *Inspector) tarballPath(handle string) (string, error) {
@@ -134,15 +141,22 @@ func readBounded(reader io.Reader, limit int64) ([]byte, error) {
 	return b, nil
 }
 
-func validateManifest(body []byte, identity domain.ResolvedArtifactIdentity) error {
+func validateManifest(body []byte, identity domain.ResolvedArtifactIdentity) ([]string, error) {
 	var manifest struct {
-		Name    string `json:"name"`
-		Version string `json:"version"`
+		Name    string            `json:"name"`
+		Version string            `json:"version"`
+		Scripts map[string]string `json:"scripts"`
 	}
 	if err := json.Unmarshal(body, &manifest); err != nil || manifest.Name != identity.Name() || manifest.Version != identity.Version() {
-		return errors.New("manifest identity mismatch")
+		return nil, errors.New("manifest identity mismatch")
 	}
-	return nil
+	keys := []string{}
+	for _, key := range []string{"preinstall", "install", "postinstall", "prepublish", "preprepare", "prepare"} {
+		if script, ok := manifest.Scripts[key]; ok {
+			keys = append(keys, fmt.Sprintf("%s(%d)", key, len(script)))
+		}
+	}
+	return keys, nil
 }
 
 func (i *Inspector) violationReport(artifact domain.AcquiredArtifact, code, summary string) (domain.InspectionReport, error) {
