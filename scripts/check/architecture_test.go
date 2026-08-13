@@ -19,6 +19,7 @@ func TestValidateCurrentImports(t *testing.T) {
 		{ImportPath: modulePath + "/internal/policy", Imports: []string{modulePath + "/internal/core/domain"}},
 		{ImportPath: modulePath + "/internal/artifact/npm", Imports: []string{"net/http", modulePath + "/internal/core/domain"}},
 		{ImportPath: modulePath + "/internal/verification/npm", Imports: []string{"crypto/subtle", modulePath + "/internal/core/domain"}},
+		{ImportPath: modulePath + "/internal/sandbox", Imports: []string{"os/exec"}},
 		{ImportPath: modulePath + "/internal/testutil/fakeworkflow", Imports: []string{modulePath + "/internal/core/domain", modulePath + "/internal/core/ports"}},
 		{ImportPath: modulePath + "/scripts/check", Imports: []string{"os"}},
 	}
@@ -40,11 +41,12 @@ func TestValidateCurrentImportsRejectsBoundaryShortcut(t *testing.T) {
 		{ImportPath: modulePath + "/internal/policy", Imports: []string{modulePath + "/internal/core/ports", "example.com/policy"}},
 		{ImportPath: modulePath + "/internal/artifact/npm", Imports: []string{modulePath + "/internal/application", "example.com/npm"}},
 		{ImportPath: modulePath + "/internal/verification/npm", Imports: []string{modulePath + "/internal/application", "example.com/npm-verification"}},
+		{ImportPath: modulePath + "/internal/sandbox", Imports: []string{modulePath + "/internal/application", "example.com/sandbox"}},
 		{ImportPath: modulePath + "/internal/testutil/fakeworkflow", Imports: []string{modulePath + "/internal/cli", "example.com/fake", "net/http"}},
 		{ImportPath: modulePath + "/scripts/check", Imports: []string{modulePath + "/internal/cli"}},
 	}
 	findings := strings.Join(validateCurrentImports(modulePath, packages), "\n")
-	for _, expected := range []string{"cmd/helox", "example.com/sdk", "internal/cli", "internal/core/domain", "example.com/domain", "forbidden concrete package os", "internal/core/ports", "example.com/ports", "internal/application", "example.com/application", "internal/policy", "example.com/policy", "internal/artifact/npm", "example.com/npm", "internal/verification/npm", "example.com/npm-verification", "internal/testutil/fakeworkflow", "example.com/fake", "forbidden concrete package net/http", "scripts/check"} {
+	for _, expected := range []string{"cmd/helox", "example.com/sdk", "internal/cli", "internal/core/domain", "example.com/domain", "forbidden concrete package os", "internal/core/ports", "example.com/ports", "internal/application", "example.com/application", "internal/policy", "example.com/policy", "internal/artifact/npm", "example.com/npm", "internal/verification/npm", "example.com/npm-verification", "internal/sandbox", "example.com/sandbox", "internal/testutil/fakeworkflow", "example.com/fake", "forbidden concrete package net/http", "scripts/check"} {
 		if !strings.Contains(findings, expected) {
 			t.Errorf("findings missing %q: %s", expected, findings)
 		}
