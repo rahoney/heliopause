@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"compress/gzip"
 	"context"
+	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -57,11 +58,12 @@ func TestLinuxGVisorLifecycleIntegration(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer func() { _ = helper.Process.Kill(); _ = helper.Wait() }()
-	introducer, err := NewDockerArtifactIntroducer(root, systemExecutor{})
+	runner := integrationRunner{t: t}
+	introducer, err := NewDockerArtifactIntroducer(root, runner)
 	if err != nil {
 		t.Fatal(err)
 	}
-	backend, err := NewBackend(systemExecutor{}, introducer, observer, Probe)
+	backend, err := NewBackend(runner, introducer, observer, Probe)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -73,6 +75,25 @@ func TestLinuxGVisorLifecycleIntegration(t *testing.T) {
 		code, _ := result.LimitationCode()
 		t.Fatalf("Sandbox result = %q/%q", result.Status(), code)
 	}
+}
+
+type integrationRunner struct {
+	t *testing.T
+}
+
+func (r integrationRunner) Output(ctx context.Context, binary string, arguments ...string) ([]byte, error) {
+	r.t.Helper()
+	command := exec.CommandContext(ctx, binary, arguments...)
+	output, err := command.Output()
+	if err != nil {
+		stderr := ""
+		var exitError *exec.ExitError
+		if errors.As(err, &exitError) {
+			stderr = strings.TrimSpace(string(exitError.Stderr))
+		}
+		r.t.Logf("command failed: %s %q: %v; stderr=%q", binary, arguments, err, stderr)
+	}
+	return output, err
 }
 
 func integrationRequest(t *testing.T) domain.SandboxRequest {
