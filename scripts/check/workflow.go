@@ -81,7 +81,7 @@ func validateCIWorkflow(contents string) []string {
 	}
 
 	allowedActions := map[string]int{
-		"actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd": 5,
+		"actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1": 5,
 		"actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e": 5,
 	}
 	actualActions := make(map[string]int)

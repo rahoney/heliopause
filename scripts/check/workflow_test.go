@@ -32,7 +32,7 @@ func TestValidateCIWorkflowRejectsSecurityRegressions(t *testing.T) {
 	}
 
 	tests := map[string]string{
-		"floating action":        strings.Replace(string(contents), "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd", "actions/checkout@main", 1),
+		"floating action":        strings.Replace(string(contents), "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", "actions/checkout@main", 1),
 		"missing always":         strings.Replace(string(contents), "    if: ${{ always() }}\n", "", 1),
 		"write token":            strings.Replace(string(contents), "  contents: read", "  contents: write", 1),
 		"moving macOS runner":    strings.Replace(string(contents), "runs-on: macos-26-intel", "runs-on: macos-latest", 1),
