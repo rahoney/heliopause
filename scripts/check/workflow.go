@@ -48,7 +48,7 @@ func validateCIWorkflow(contents string) []string {
 		"go-version: '1.26.5'",
 		"go-version: '1.25.12'",
 		"docker_package_version=5:29.6.2-1~ubuntu.24.04~noble",
-		"containerd_package_version=2.1.5-1~ubuntu.24.04~noble",
+		"containerd_package_version=2.3.3-1~ubuntu.24.04~noble",
 		"test \"$(docker version --format '{{.Server.Version}}')\" = 29.6.2",
 		"check-latest: false",
 		"cache: false",
