@@ -13,7 +13,8 @@ import (
 
 // DockerArtifactIntroducer is trusted control-plane code that copies exactly
 // one acquired tarball into a newly created container. The Artifact only sees
-// /work/artifact.tgz; no Host path is added to its runtime command.
+// /artifact.tgz in the container's private layer; no Host path is added to its
+// runtime command. The layer becomes read-only when the container starts.
 type DockerArtifactIntroducer struct {
 	intakeRoot string
 	runner     CommandRunner
@@ -44,7 +45,7 @@ func (i *DockerArtifactIntroducer) Introduce(ctx context.Context, containerID st
 	if err != nil || !info.Mode().IsRegular() {
 		return errors.New("controlled Sandbox Artifact is unavailable")
 	}
-	if _, err := i.runner.Output(ctx, "docker", "cp", source, containerID+":/work/artifact.tgz"); err != nil {
+	if _, err := i.runner.Output(ctx, "docker", "cp", source, containerID+":/artifact.tgz"); err != nil {
 		return fmt.Errorf("introduce controlled Sandbox Artifact: %w", err)
 	}
 	return nil

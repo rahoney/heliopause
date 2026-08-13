@@ -163,6 +163,6 @@ func createArguments(sessionID domain.SandboxSessionID) []string {
 		"--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=256m,uid=1000,gid=1000,mode=0700",
 		"--name", "heliopause-" + sessionID.String(),
 		nodeImageReference,
-		"/bin/sh", "-ceu", "mkdir -p /work/package && npm install --ignore-scripts=false --no-audit --no-fund /work/artifact.tgz",
+		"/bin/sh", "-ceu", "mkdir -p /work/package && npm install --ignore-scripts=false --no-audit --no-fund /artifact.tgz",
 	}
 }
