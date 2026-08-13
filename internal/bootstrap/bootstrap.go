@@ -6,11 +6,13 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"github.com/rahoney/heliopause/internal/application"
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	"github.com/rahoney/heliopause/internal/cli"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 	"github.com/rahoney/heliopause/internal/evidence/local"
 	inspectionnpm "github.com/rahoney/heliopause/internal/inspection/npm"
 	"github.com/rahoney/heliopause/internal/policy"
@@ -38,11 +40,22 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		if err != nil {
 			return err
 		}
-		probedSandbox, err := sandbox.NewProbedSandbox(sandbox.Probe)
-		if err != nil {
-			return err
+		var dynamicSandbox ports.Sandbox
+		if runtime.GOOS == "linux" {
+			backend, observer, err := sandbox.NewLinuxBackend(filepath.Join(root, "intake"))
+			if err != nil {
+				return err
+			}
+			defer observer.Close()
+			dynamicSandbox = backend
+		} else {
+			probedSandbox, err := sandbox.NewProbedSandbox(sandbox.Probe)
+			if err != nil {
+				return err
+			}
+			dynamicSandbox = probedSandbox
 		}
-		dynamicInspection, err := inspectionnpm.NewDynamicInspector(probedSandbox)
+		dynamicInspection, err := inspectionnpm.NewDynamicInspector(dynamicSandbox)
 		if err != nil {
 			return err
 		}

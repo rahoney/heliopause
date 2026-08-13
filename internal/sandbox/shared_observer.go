@@ -13,10 +13,12 @@ import (
 // SharedObserver receives only the helper's normalized records over a trusted
 // Host-only datagram socket and attributes each record to exactly one container.
 type SharedObserver struct {
-	listener *net.UnixConn
-	mu       sync.Mutex
-	streams  map[string]*sharedTraceReader
-	fault    error
+	listener  *net.UnixConn
+	mu        sync.Mutex
+	streams   map[string]*sharedTraceReader
+	fault     error
+	closeOnce sync.Once
+	closeErr  error
 }
 
 type helperRecord struct {
@@ -39,6 +41,16 @@ func NewSharedObserver(endpoint string) (*SharedObserver, error) {
 	observer := &SharedObserver{listener: listener, streams: make(map[string]*sharedTraceReader)}
 	go observer.receive()
 	return observer, nil
+}
+
+// Close stops the trusted listener and removes its local endpoint. It is safe
+// to call more than once.
+func (o *SharedObserver) Close() error {
+	if o == nil || o.listener == nil {
+		return nil
+	}
+	o.closeOnce.Do(func() { o.closeErr = o.listener.Close() })
+	return o.closeErr
 }
 
 func (o *SharedObserver) Start(_ context.Context, containerID string) (TraceReader, error) {
