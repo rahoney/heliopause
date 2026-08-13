@@ -173,7 +173,8 @@ jobs:
           test "$(sha512sum "$RUNNER_TEMP/runsc" | awk '{print $1}')" = "$runsc_sha512"
           chmod 0755 "$RUNNER_TEMP/runsc"
           sudo install -m 0755 "$RUNNER_TEMP/runsc" /usr/local/bin/runsc
-          sudo install -d -m 0700 /run/heliopause-observer /etc/heliopause
+          sudo install -d -m 0700 -o "$USER" -g "$(id -gn)" /run/heliopause-observer
+          sudo install -d -m 0700 /etc/heliopause
           sudo install -m 0600 tools/gvisor-observer/pod-init.json /etc/heliopause/pod-init.json
           sudo runsc install --runtime=runsc-trace -- --pod-init-config=/etc/heliopause/pod-init.json
           sudo systemctl restart docker
