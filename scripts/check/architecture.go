@@ -86,7 +86,10 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 		modulePath + "/cmd/helox": {
 			modulePath + "/internal/bootstrap": true,
 		},
-		modulePath + "/internal/cli":         {},
+		modulePath + "/internal/cli": {
+			modulePath + "/internal/application": true,
+			modulePath + "/internal/core/domain": true,
+		},
 		modulePath + "/internal/core/domain": {},
 		modulePath + "/internal/core/ports": {
 			modulePath + "/internal/core/domain": true,
