@@ -59,7 +59,7 @@ func probe(ctx context.Context, operatingSystem string, executor Executor) (Capa
 	if !atLeastVersion(strings.TrimSpace(string(dockerVersion)), minimumDockerEngine) {
 		return Capability{LimitationCode: "M3_RUNTIME_VERSION_UNSUPPORTED"}, nil
 	}
-	runscVersion, err := executor.Output(ctx, "runsc", "version")
+	runscVersion, err := executor.Output(ctx, "runsc", "--version")
 	if err != nil || !strings.Contains(string(runscVersion), gVisorRelease) {
 		return Capability{LimitationCode: "M3_RUNTIME_VERSION_UNSUPPORTED"}, nil
 	}
