@@ -2,9 +2,12 @@
 package cli
 
 import (
+	"context"
 	"errors"
 	"io"
 
+	"github.com/rahoney/heliopause/internal/application"
+	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	"github.com/spf13/cobra"
 )
 
@@ -35,4 +38,40 @@ func New(stdout, stderr io.Writer) (*cobra.Command, error) {
 	command.SetErr(stderr)
 
 	return command, nil
+}
+
+// AddNPMInspect adds the injected npm Inspect use case to a root command.
+func AddNPMInspect(root *cobra.Command, inspector Inspector) error {
+	if root == nil || inspector == nil {
+		return errors.New("npm inspect command requires root and use case")
+	}
+	npmCommand := &cobra.Command{Use: "npm", Short: "Inspect npm registry packages"}
+	inspectCommand := &cobra.Command{Use: "inspect <package-reference>", Args: cobra.ExactArgs(1), RunE: func(command *cobra.Command, args []string) error {
+		reference, err := artifactnpm.ParseReference(args[0])
+		if err != nil {
+			return err
+		}
+		request, err := application.NewInspectRequest(reference)
+		if err != nil {
+			return err
+		}
+		exitCode, operationErr := ExecuteInspect(contextOrBackground(command.Context()), inspector, request, true, command.OutOrStdout())
+		if operationErr != nil {
+			return operationErr
+		}
+		if exitCode != 0 {
+			return ExitError{Code: exitCode}
+		}
+		return nil
+	}}
+	npmCommand.AddCommand(inspectCommand)
+	root.AddCommand(npmCommand)
+	return nil
+}
+
+func contextOrBackground(ctx context.Context) context.Context {
+	if ctx == nil {
+		return context.Background()
+	}
+	return ctx
 }

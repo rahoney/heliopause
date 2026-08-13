@@ -104,11 +104,17 @@ const (
 type VerificationReport struct {
 	execution CheckExecution
 	outcome   VerificationOutcome
+	findings  []Finding
 	evidence  []Evidence
 }
 
 // NewVerificationReport constructs a normalized Verification report.
 func NewVerificationReport(execution CheckExecution, outcome VerificationOutcome, evidence []Evidence) (VerificationReport, error) {
+	return NewVerificationReportWithFindings(execution, outcome, nil, evidence)
+}
+
+// NewVerificationReportWithFindings constructs a normalized Verification report with supporting findings.
+func NewVerificationReportWithFindings(execution CheckExecution, outcome VerificationOutcome, findings []Finding, evidence []Evidence) (VerificationReport, error) {
 	if execution.kind != CheckVerification {
 		return VerificationReport{}, errors.New("verification report requires a Verification check")
 	}
@@ -119,17 +125,26 @@ func NewVerificationReport(execution CheckExecution, outcome VerificationOutcome
 		if len(evidence) == 0 {
 			return VerificationReport{}, errors.New("completed verification requires Evidence")
 		}
+		if outcome == VerificationVerified && len(findings) != 0 {
+			return VerificationReport{}, errors.New("verified verification cannot claim Findings")
+		}
 	} else if outcome != "" {
 		return VerificationReport{}, errors.New("non-completed verification cannot claim an outcome")
+	} else if len(findings) != 0 {
+		return VerificationReport{}, errors.New("non-completed verification cannot claim final Findings")
 	}
 	if err := validateEvidenceForCheck(execution.id, evidence); err != nil {
 		return VerificationReport{}, err
 	}
-	return VerificationReport{execution: execution, outcome: outcome, evidence: append([]Evidence(nil), evidence...)}, nil
+	if err := validateFindingsForEvidence(findings, evidence); err != nil {
+		return VerificationReport{}, err
+	}
+	return VerificationReport{execution: execution, outcome: outcome, findings: append([]Finding(nil), findings...), evidence: append([]Evidence(nil), evidence...)}, nil
 }
 
 func (r VerificationReport) Execution() CheckExecution    { return r.execution }
 func (r VerificationReport) Outcome() VerificationOutcome { return r.outcome }
+func (r VerificationReport) Findings() []Finding          { return append([]Finding(nil), r.findings...) }
 func (r VerificationReport) Evidence() []Evidence         { return append([]Evidence(nil), r.evidence...) }
 
 // InspectionReport records a completed or limited inspection and its Findings.
@@ -153,19 +168,8 @@ func NewInspectionReport(execution CheckExecution, findings []Finding, evidence 
 	if err := validateEvidenceForCheck(execution.id, evidence); err != nil {
 		return InspectionReport{}, err
 	}
-	evidenceIDs := make(map[EvidenceID]bool, len(evidence))
-	for _, item := range evidence {
-		evidenceIDs[item.id] = true
-	}
-	for findingIndex, finding := range findings {
-		if finding.code == "" || len(finding.evidenceID) == 0 {
-			return InspectionReport{}, fmt.Errorf("finding %d is invalid", findingIndex)
-		}
-		for _, evidenceID := range finding.evidenceID {
-			if !evidenceIDs[evidenceID] {
-				return InspectionReport{}, fmt.Errorf("finding %d references Evidence outside its report", findingIndex)
-			}
-		}
+	if err := validateFindingsForEvidence(findings, evidence); err != nil {
+		return InspectionReport{}, err
 	}
 	return InspectionReport{execution: execution, findings: append([]Finding(nil), findings...), evidence: append([]Evidence(nil), evidence...)}, nil
 }
@@ -178,6 +182,24 @@ func validateEvidenceForCheck(id CheckID, evidence []Evidence) error {
 	for index, item := range evidence {
 		if item.id.value == "" || item.checkID != id {
 			return fmt.Errorf("evidence %d does not belong to check %q", index, id.value)
+		}
+	}
+	return nil
+}
+
+func validateFindingsForEvidence(findings []Finding, evidence []Evidence) error {
+	evidenceIDs := make(map[EvidenceID]bool, len(evidence))
+	for _, item := range evidence {
+		evidenceIDs[item.id] = true
+	}
+	for findingIndex, finding := range findings {
+		if finding.code == "" || len(finding.evidenceID) == 0 {
+			return fmt.Errorf("finding %d is invalid", findingIndex)
+		}
+		for _, evidenceID := range finding.evidenceID {
+			if !evidenceIDs[evidenceID] {
+				return fmt.Errorf("finding %d references Evidence outside its report", findingIndex)
+			}
 		}
 	}
 	return nil

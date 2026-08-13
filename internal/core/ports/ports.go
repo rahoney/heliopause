@@ -9,8 +9,8 @@ import (
 
 // Artifact resolves an Artifact Reference and acquires its exact content subject.
 type Artifact interface {
-	Resolve(context.Context, domain.ArtifactReference) (domain.ResolvedArtifactIdentity, error)
-	Acquire(context.Context, domain.ResolvedArtifactIdentity) (domain.AcquiredArtifact, error)
+	Resolve(context.Context, domain.ArtifactReference) (domain.ResolvedArtifact, error)
+	Acquire(context.Context, domain.RunID, domain.ResolvedArtifact) (domain.AcquiredArtifact, error)
 }
 
 // Verification verifies identity and integrity properties of acquired content.
