@@ -70,7 +70,7 @@ func TestSharedObserverFailsClosedForUnknownContainer(t *testing.T) {
 
 func observerEndpoint(t *testing.T) string {
 	t.Helper()
-	directory, err := os.MkdirTemp("/private/tmp", "haa-observer-")
+	directory, err := os.MkdirTemp("/tmp", "haa-observer-")
 	if err != nil {
 		t.Fatal(err)
 	}
