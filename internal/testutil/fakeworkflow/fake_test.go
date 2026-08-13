@@ -36,7 +36,7 @@ func TestSyntheticScenarioContracts(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			artifact, err := fake.Acquire(context.Background(), identity)
+			artifact, err := fake.Acquire(context.Background(), mustRunID(t), identity)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -98,12 +98,21 @@ func TestSyntheticOperationalFailuresStopAtOwningPort(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := acquireFake.Acquire(context.Background(), identity); !errors.Is(err, fakeworkflow.ErrAcquire) {
+	if _, err := acquireFake.Acquire(context.Background(), mustRunID(t), identity); !errors.Is(err, fakeworkflow.ErrAcquire) {
 		t.Fatalf("Acquire() error = %v", err)
 	}
 	if got := acquireFake.Calls(); !reflect.DeepEqual(got, []string{"resolve", "acquire"}) {
 		t.Fatalf("acquire calls = %v", got)
 	}
+}
+
+func mustRunID(t *testing.T) domain.RunID {
+	t.Helper()
+	id, err := domain.ParseRunID("run_aaaaaaaaaaaaaaaaaaaaaaaaaa")
+	if err != nil {
+		t.Fatal(err)
+	}
+	return id
 }
 
 func TestSyntheticPortsRejectCancellation(t *testing.T) {

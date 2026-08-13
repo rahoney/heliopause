@@ -76,7 +76,7 @@ func (s *InspectService) Inspect(ctx context.Context, request InspectRequest) (d
 	if err := run.Activate(); err != nil {
 		return failRun(run, request.reference, domain.AcquiredArtifact{}, nil, nil, "RUN_ACTIVATION_FAILED", "Inspection Run activation failed.", fmt.Errorf("activate Inspection Run: %w", err))
 	}
-	artifact, err := s.artifact.Acquire(ctx, resolvedArtifact)
+	artifact, err := s.artifact.Acquire(ctx, runID, resolvedArtifact)
 	if err != nil {
 		return failRun(run, request.reference, domain.AcquiredArtifact{}, nil, nil, "ARTIFACT_ACQUIRE_FAILED", "Artifact acquisition failed.", fmt.Errorf("acquire Artifact: %w", err))
 	}

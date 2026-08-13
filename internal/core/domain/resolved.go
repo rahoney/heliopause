@@ -23,8 +23,10 @@ func NewResolvedArtifact(identity ResolvedArtifactIdentity, acquisitionLocator, 
 	if err := validateBoundedText(acquisitionLocator, maxAcquisitionLocatorLength, "acquisition locator"); err != nil {
 		return ResolvedArtifact{}, err
 	}
-	if err := validateBoundedText(declaredIntegrity, maxDeclaredIntegrityLength, "declared integrity"); err != nil {
-		return ResolvedArtifact{}, err
+	if declaredIntegrity != "" {
+		if err := validateBoundedText(declaredIntegrity, maxDeclaredIntegrityLength, "declared integrity"); err != nil {
+			return ResolvedArtifact{}, err
+		}
 	}
 	return ResolvedArtifact{identity: identity, acquisitionLocator: acquisitionLocator, declaredIntegrity: declaredIntegrity}, nil
 }

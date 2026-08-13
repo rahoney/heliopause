@@ -97,14 +97,26 @@ func (d ContentDigest) String() string    { return d.value }
 
 // AcquiredArtifact binds an exact identity to observed content in controlled intake.
 type AcquiredArtifact struct {
-	identity ResolvedArtifactIdentity
-	digest   ContentDigest
-	handle   string
-	size     uint64
+	identity          ResolvedArtifactIdentity
+	digest            ContentDigest
+	handle            string
+	size              uint64
+	declaredIntegrity string
+	observedIntegrity string
 }
 
 // NewAcquiredArtifact constructs a validated acquired content subject.
 func NewAcquiredArtifact(identity ResolvedArtifactIdentity, digest ContentDigest, handle string, sizeBytes uint64) (AcquiredArtifact, error) {
+	return NewAcquiredArtifactWithIntegrity(identity, digest, handle, sizeBytes, "", "")
+}
+
+// NewAcquiredArtifactWithDeclaredIntegrity constructs an acquired subject and bounded source integrity input.
+func NewAcquiredArtifactWithDeclaredIntegrity(identity ResolvedArtifactIdentity, digest ContentDigest, handle string, sizeBytes uint64, declaredIntegrity string) (AcquiredArtifact, error) {
+	return NewAcquiredArtifactWithIntegrity(identity, digest, handle, sizeBytes, declaredIntegrity, "")
+}
+
+// NewAcquiredArtifactWithIntegrity binds declared and observed source-integrity values without replacing content identity.
+func NewAcquiredArtifactWithIntegrity(identity ResolvedArtifactIdentity, digest ContentDigest, handle string, sizeBytes uint64, declaredIntegrity, observedIntegrity string) (AcquiredArtifact, error) {
 	if identity.source.value == "" {
 		return AcquiredArtifact{}, errors.New("resolved artifact identity is required")
 	}
@@ -114,13 +126,29 @@ func NewAcquiredArtifact(identity ResolvedArtifactIdentity, digest ContentDigest
 	if err := validateBoundedText(handle, maxContentHandleLength, "content handle"); err != nil {
 		return AcquiredArtifact{}, err
 	}
-	return AcquiredArtifact{identity: identity, digest: digest, handle: handle, size: sizeBytes}, nil
+	if declaredIntegrity != "" {
+		if err := validateBoundedText(declaredIntegrity, maxDeclaredIntegrityLength, "declared integrity"); err != nil {
+			return AcquiredArtifact{}, err
+		}
+	}
+	if observedIntegrity != "" {
+		if err := validateBoundedText(observedIntegrity, maxDeclaredIntegrityLength, "observed integrity"); err != nil {
+			return AcquiredArtifact{}, err
+		}
+	}
+	return AcquiredArtifact{identity: identity, digest: digest, handle: handle, size: sizeBytes, declaredIntegrity: declaredIntegrity, observedIntegrity: observedIntegrity}, nil
 }
 
 func (a AcquiredArtifact) Identity() ResolvedArtifactIdentity { return a.identity }
 func (a AcquiredArtifact) Digest() ContentDigest              { return a.digest }
 func (a AcquiredArtifact) ContentHandle() string              { return a.handle }
 func (a AcquiredArtifact) SizeBytes() uint64                  { return a.size }
+func (a AcquiredArtifact) DeclaredIntegrity() (string, bool) {
+	return a.declaredIntegrity, a.declaredIntegrity != ""
+}
+func (a AcquiredArtifact) ObservedIntegrity() (string, bool) {
+	return a.observedIntegrity, a.observedIntegrity != ""
+}
 
 func validateNormalizedIdentifier(value string, maximum int, label string) error {
 	if len(value) == 0 || len(value) > maximum || !utf8.ValidString(value) || !normalizedIdentifier.MatchString(value) {

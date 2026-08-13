@@ -90,10 +90,13 @@ func (p *Ports) Resolve(ctx context.Context, reference domain.ArtifactReference)
 	return domain.NewResolvedArtifact(identity, "fixture-artifact:"+string(p.scenario), "sha512-fixture")
 }
 
-func (p *Ports) Acquire(ctx context.Context, resolved domain.ResolvedArtifact) (domain.AcquiredArtifact, error) {
+func (p *Ports) Acquire(ctx context.Context, runID domain.RunID, resolved domain.ResolvedArtifact) (domain.AcquiredArtifact, error) {
 	p.record("acquire")
 	if err := validContext(ctx); err != nil {
 		return domain.AcquiredArtifact{}, err
+	}
+	if runID.String() == "" {
+		return domain.AcquiredArtifact{}, errors.New("fake acquire requires Run ID")
 	}
 	want, err := p.expectedIdentity()
 	if err != nil {

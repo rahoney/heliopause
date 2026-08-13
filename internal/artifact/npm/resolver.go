@@ -3,12 +3,18 @@ package npm
 
 import (
 	"context"
+	"crypto/sha256"
+	"crypto/sha512"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"mime"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
@@ -20,6 +26,8 @@ const (
 	publicRegistryURL = "https://registry.npmjs.org/"
 	metadataLimit     = 2 << 20
 	metadataTimeout   = 10 * time.Second
+	tarballLimit      = 50 << 20
+	tarballTimeout    = 60 * time.Second
 	metadataAccept    = "application/vnd.npm.install-v1+json"
 )
 
@@ -31,18 +39,19 @@ var (
 
 // Resolver resolves only unauthenticated package references against the public npm registry.
 type Resolver struct {
-	registry *url.URL
-	client   *http.Client
+	registry   *url.URL
+	client     *http.Client
+	intakeRoot string
 }
 
 // NewPublicResolver constructs the production public-registry resolver.
-func NewPublicResolver() (*Resolver, error) {
+func NewPublicResolver(intakeRoot string) (*Resolver, error) {
 	registry, err := url.Parse(publicRegistryURL)
 	if err != nil {
 		return nil, fmt.Errorf("parse public npm registry URL: %w", err)
 	}
 	client := &http.Client{
-		Timeout: metadataTimeout,
+		Timeout: 0,
 		CheckRedirect: func(*http.Request, []*http.Request) error {
 			return errors.New("npm registry redirects are not permitted")
 		},
@@ -57,10 +66,10 @@ func NewPublicResolver() (*Resolver, error) {
 			ExpectContinueTimeout: time.Second,
 		},
 	}
-	return newResolver(registry, client, true)
+	return newResolver(registry, client, intakeRoot, true)
 }
 
-func newResolver(registry *url.URL, client *http.Client, requirePublicHTTPS bool) (*Resolver, error) {
+func newResolver(registry *url.URL, client *http.Client, intakeRoot string, requirePublicHTTPS bool) (*Resolver, error) {
 	if registry == nil || client == nil || registry.User != nil || registry.RawQuery != "" || registry.Fragment != "" || (registry.Path != "" && registry.Path != "/") {
 		return nil, errors.New("npm registry configuration is invalid")
 	}
@@ -69,7 +78,143 @@ func newResolver(registry *url.URL, client *http.Client, requirePublicHTTPS bool
 	}
 	configuredRegistry := *registry
 	configuredRegistry.Path = "/"
-	return &Resolver{registry: &configuredRegistry, client: client}, nil
+	return &Resolver{registry: &configuredRegistry, client: client, intakeRoot: intakeRoot}, nil
+}
+
+// Acquire streams a resolved npm tarball into the configured Run-local controlled intake root.
+func (r *Resolver) Acquire(ctx context.Context, runID domain.RunID, resolved domain.ResolvedArtifact) (domain.AcquiredArtifact, error) {
+	if ctx == nil {
+		return domain.AcquiredArtifact{}, errors.New("context is required")
+	}
+	if err := ctx.Err(); err != nil {
+		return domain.AcquiredArtifact{}, err
+	}
+	if r == nil || r.client == nil || r.intakeRoot == "" {
+		return domain.AcquiredArtifact{}, errors.New("npm intake is not configured")
+	}
+	if resolved.Identity().Source().String() != "npm" {
+		return domain.AcquiredArtifact{}, errors.New("npm intake requires npm resolved Artifact")
+	}
+	if err := r.validateTarballURL(resolved.AcquisitionLocator()); err != nil {
+		return domain.AcquiredArtifact{}, err
+	}
+	if runID.String() == "" {
+		return domain.AcquiredArtifact{}, errors.New("npm intake requires Run ID")
+	}
+	runDirectory, err := createRunDirectory(r.intakeRoot, runID.String())
+	if err != nil {
+		return domain.AcquiredArtifact{}, err
+	}
+	path, digest, observedIntegrity, size, err := r.downloadTarball(ctx, resolved.AcquisitionLocator(), runDirectory)
+	if err != nil {
+		if cleanupErr := os.RemoveAll(runDirectory); cleanupErr != nil {
+			return domain.AcquiredArtifact{}, errors.Join(err, fmt.Errorf("remove incomplete npm intake: %w", cleanupErr))
+		}
+		return domain.AcquiredArtifact{}, err
+	}
+	_ = path
+	return domain.NewAcquiredArtifactWithIntegrity(resolved.Identity(), digest, "intake:"+runID.String()+":tarball", size, resolved.DeclaredIntegrity(), observedIntegrity)
+}
+
+func createRunDirectory(root, runID string) (string, error) {
+	cleanRoot := filepath.Clean(root)
+	if !filepath.IsAbs(cleanRoot) {
+		return "", errors.New("npm intake root must be absolute")
+	}
+	if err := rejectSymlinkComponents(cleanRoot, true); err != nil {
+		return "", err
+	}
+	if err := os.MkdirAll(cleanRoot, 0o700); err != nil {
+		return "", fmt.Errorf("create npm intake root: %w", err)
+	}
+	if err := rejectSymlinkComponents(cleanRoot, false); err != nil {
+		return "", err
+	}
+	info, err := os.Lstat(cleanRoot)
+	if err != nil || !info.IsDir() {
+		return "", errors.New("npm intake root is not a trusted directory")
+	}
+	runDirectory := filepath.Join(cleanRoot, runID)
+	if filepath.Dir(runDirectory) != cleanRoot {
+		return "", errors.New("npm intake Run directory escapes root")
+	}
+	if err := os.Mkdir(runDirectory, 0o700); err != nil {
+		return "", fmt.Errorf("create npm intake Run directory: %w", err)
+	}
+	return runDirectory, nil
+}
+
+func rejectSymlinkComponents(path string, allowMissing bool) error {
+	volume := filepath.VolumeName(path)
+	filesystemRoot := volume + string(filepath.Separator)
+	relative, err := filepath.Rel(filesystemRoot, path)
+	if err != nil || relative == "." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
+		return errors.New("npm intake root is not a trusted directory")
+	}
+	current := filesystemRoot
+	for _, component := range strings.Split(relative, string(filepath.Separator)) {
+		current = filepath.Join(current, component)
+		info, err := os.Lstat(current)
+		if errors.Is(err, os.ErrNotExist) && allowMissing {
+			return nil
+		}
+		if err != nil || info.Mode()&os.ModeSymlink != 0 {
+			return errors.New("npm intake root contains a symbolic link or unavailable component")
+		}
+	}
+	return nil
+}
+
+func (r *Resolver) downloadTarball(ctx context.Context, rawURL, directory string) (string, domain.ContentDigest, string, uint64, error) {
+	timeoutContext, cancel := context.WithTimeout(ctx, tarballTimeout)
+	defer cancel()
+	request, err := http.NewRequestWithContext(timeoutContext, http.MethodGet, rawURL, nil)
+	if err != nil {
+		return "", domain.ContentDigest{}, "", 0, fmt.Errorf("create npm tarball request: %w", err)
+	}
+	response, err := r.client.Do(request)
+	if err != nil {
+		return "", domain.ContentDigest{}, "", 0, fmt.Errorf("request npm tarball: %w", err)
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusOK {
+		return "", domain.ContentDigest{}, "", 0, fmt.Errorf("npm tarball returned unexpected status %d", response.StatusCode)
+	}
+	if !isTarballContentType(response.Header.Get("Content-Type")) {
+		return "", domain.ContentDigest{}, "", 0, errors.New("npm tarball response has an unsupported content type")
+	}
+	temporary, err := os.OpenFile(filepath.Join(directory, ".tarball.tmp"), os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+	if err != nil {
+		return "", domain.ContentDigest{}, "", 0, fmt.Errorf("create npm intake temporary file: %w", err)
+	}
+	temporaryPath := temporary.Name()
+	defer func() { _ = os.Remove(temporaryPath) }()
+	hash := sha256.New()
+	integrityHash := sha512.New()
+	limited := io.LimitReader(response.Body, tarballLimit+1)
+	written, copyErr := io.Copy(io.MultiWriter(temporary, hash, integrityHash), limited)
+	syncErr := temporary.Sync()
+	closeErr := temporary.Close()
+	if copyErr != nil {
+		return "", domain.ContentDigest{}, "", 0, fmt.Errorf("stream npm tarball: %w", copyErr)
+	}
+	if written > tarballLimit {
+		return "", domain.ContentDigest{}, "", 0, errors.New("npm tarball exceeds configured limit")
+	}
+	if syncErr != nil {
+		return "", domain.ContentDigest{}, "", 0, fmt.Errorf("sync npm intake temporary file: %w", syncErr)
+	}
+	if closeErr != nil {
+		return "", domain.ContentDigest{}, "", 0, fmt.Errorf("close npm intake temporary file: %w", closeErr)
+	}
+	if err := os.Rename(temporaryPath, filepath.Join(directory, "tarball.tgz")); err != nil {
+		return "", domain.ContentDigest{}, "", 0, fmt.Errorf("finalize npm intake tarball: %w", err)
+	}
+	digest, err := domain.NewSHA256Digest(fmt.Sprintf("%x", hash.Sum(nil)))
+	if err != nil {
+		return "", domain.ContentDigest{}, "", 0, err
+	}
+	return filepath.Join(directory, "tarball.tgz"), digest, "sha512-" + base64.StdEncoding.EncodeToString(integrityHash.Sum(nil)), uint64(written), nil
 }
 
 // ParseReference parses one supported npm package locator without resolving it.
@@ -196,7 +341,9 @@ func (r *Resolver) fetchMetadata(ctx context.Context, packageName string) (packu
 	endpoint := *r.registry
 	endpoint.Path = "/" + packageName
 	endpoint.RawPath = "/" + url.PathEscape(packageName)
-	request, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint.String(), nil)
+	timeoutContext, cancel := context.WithTimeout(ctx, metadataTimeout)
+	defer cancel()
+	request, err := http.NewRequestWithContext(timeoutContext, http.MethodGet, endpoint.String(), nil)
 	if err != nil {
 		return packument{}, fmt.Errorf("create npm metadata request: %w", err)
 	}
@@ -231,10 +378,23 @@ func (r *Resolver) fetchMetadata(ctx context.Context, packageName string) (packu
 
 func (r *Resolver) validateTarballURL(rawURL string) error {
 	tarball, err := url.Parse(rawURL)
-	if err != nil || tarball.User != nil || tarball.RawQuery != "" || tarball.Fragment != "" || tarball.Scheme != r.registry.Scheme || !strings.EqualFold(tarball.Host, r.registry.Host) {
+	if err != nil || tarball.User != nil || tarball.RawQuery != "" || tarball.Fragment != "" || tarball.Path == "" || tarball.Scheme != r.registry.Scheme || !strings.EqualFold(tarball.Host, r.registry.Host) {
 		return errors.New("npm tarball URL is outside the configured registry")
 	}
 	return nil
+}
+
+func isTarballContentType(value string) bool {
+	mediaType, _, err := mime.ParseMediaType(value)
+	if err != nil {
+		return false
+	}
+	switch strings.ToLower(mediaType) {
+	case "application/octet-stream", "application/gzip", "application/x-gzip":
+		return true
+	default:
+		return false
+	}
 }
 
 func readLimited(reader io.Reader, limit int64) ([]byte, error) {

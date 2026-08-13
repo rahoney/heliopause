@@ -9,7 +9,7 @@
 - 구현 언어: Go
 - CLI framework: Cobra
 - 현재 상태: Step 14 Implementation — M1 Domain Workflow Skeleton 완료
-- 다음 작업: M2-003 Controlled Intake와 declared integrity verification
+- 다음 작업: M2-004 npm tarball static inspection과 Evidence Store
 
 ## Project Notes
 
