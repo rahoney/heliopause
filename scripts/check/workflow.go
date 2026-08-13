@@ -47,13 +47,16 @@ func validateCIWorkflow(contents string) []string {
 		"persist-credentials: false",
 		"go-version: '1.26.5'",
 		"go-version: '1.25.12'",
+		"docker_package_version=5:29.6.2-1~ubuntu.24.04~noble",
+		"containerd_package_version=2.3.3-1~ubuntu.24.04~noble",
+		"test \"$(docker version --format '{{.Server.Version}}')\" = 29.6.2",
 		"check-latest: false",
 		"cache: false",
 		"    if: ${{ always() }}",
-		"    needs:\n      - quick\n      - docs\n      - minimum-go\n      - macos",
+		"    needs:\n      - quick\n      - docs\n      - minimum-go\n      - macos\n      - gvisor-observer\n      - gvisor-integration",
 		"run: go run ./scripts/check bootstrap-modules",
 		"run: go run ./scripts/check platform",
-		`run: go run ./scripts/check required "$QUICK_RESULT" "$DOCS_RESULT" "$MINIMUM_GO_RESULT" "$MACOS_RESULT"`,
+		`run: go run ./scripts/check required "$QUICK_RESULT" "$DOCS_RESULT" "$MINIMUM_GO_RESULT" "$MACOS_RESULT" "$GVISOR_OBSERVER_RESULT" "$GVISOR_INTEGRATION_RESULT"`,
 	}
 	for _, snippet := range requiredSnippets {
 		if !strings.Contains(contents, snippet) {
@@ -81,8 +84,8 @@ func validateCIWorkflow(contents string) []string {
 	}
 
 	allowedActions := map[string]int{
-		"actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1": 5,
-		"actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e": 5,
+		"actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1": 7,
+		"actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e": 6,
 	}
 	actualActions := make(map[string]int)
 	for _, match := range actionReference.FindAllStringSubmatch(contents, -1) {
@@ -104,7 +107,7 @@ func validateCIWorkflow(contents string) []string {
 	}
 
 	jobs := workflowJobIDs(contents)
-	wantJobs := []string{"docs", "macos", "minimum-go", "quick", "required"}
+	wantJobs := []string{"docs", "gvisor-integration", "gvisor-observer", "macos", "minimum-go", "quick", "required"}
 	if strings.Join(jobs, ",") != strings.Join(wantJobs, ",") {
 		findings = append(findings, fmt.Sprintf("workflow jobs are %q, require %q", jobs, wantJobs))
 	}

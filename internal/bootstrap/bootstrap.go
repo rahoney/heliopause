@@ -6,14 +6,17 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"github.com/rahoney/heliopause/internal/application"
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	"github.com/rahoney/heliopause/internal/cli"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 	"github.com/rahoney/heliopause/internal/evidence/local"
 	inspectionnpm "github.com/rahoney/heliopause/internal/inspection/npm"
 	"github.com/rahoney/heliopause/internal/policy"
+	"github.com/rahoney/heliopause/internal/sandbox"
 	verificationnpm "github.com/rahoney/heliopause/internal/verification/npm"
 )
 
@@ -33,7 +36,30 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		if err != nil {
 			return err
 		}
-		inspection, err := inspectionnpm.NewInspector(filepath.Join(root, "intake"))
+		staticInspection, err := inspectionnpm.NewInspector(filepath.Join(root, "intake"))
+		if err != nil {
+			return err
+		}
+		var dynamicSandbox ports.Sandbox
+		if runtime.GOOS == "linux" {
+			backend, observer, err := sandbox.NewLinuxBackend(filepath.Join(root, "intake"))
+			if err != nil {
+				return err
+			}
+			defer observer.Close()
+			dynamicSandbox = backend
+		} else {
+			probedSandbox, err := sandbox.NewProbedSandbox(sandbox.Probe)
+			if err != nil {
+				return err
+			}
+			dynamicSandbox = probedSandbox
+		}
+		dynamicInspection, err := inspectionnpm.NewDynamicInspector(dynamicSandbox)
+		if err != nil {
+			return err
+		}
+		inspection, err := inspectionnpm.NewCompositeInspector(staticInspection, dynamicInspection)
 		if err != nil {
 			return err
 		}
@@ -41,7 +67,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		if err != nil {
 			return err
 		}
-		service, err := application.NewInspectService(artifact, verificationnpm.IntegrityVerifier{}, inspection, evidence, policy.M2{}, domain.NewOperationID, domain.NewRunID)
+		service, err := application.NewInspectService(artifact, verificationnpm.IntegrityVerifier{}, inspection, evidence, policy.M3{}, domain.NewOperationID, domain.NewRunID)
 		if err != nil {
 			return err
 		}

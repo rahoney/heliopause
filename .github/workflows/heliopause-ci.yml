@@ -120,6 +120,106 @@ jobs:
           HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-platform-tools
         run: go run ./scripts/check platform
 
+  gvisor-observer:
+    name: gVisor Observer Helper
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build exact gVisor observer helper with Bazel
+        run: |
+          set -eu
+          observer_lock=scripts/gvisor-observer.lock.json
+          gvisor_commit=5ceb9a5fd5750d6c73dd166441f28306039300d0
+          bazel_sha512=c876a1619c885f44f3bdc87998eca59c79581954631c9d7fab4eb53cc0409b68e4be74c08ef3fe599c51b75d56262070f0c314f9908336221e7764fdf981b7f5
+          test -f "$observer_lock"
+          git clone --filter=blob:none https://github.com/google/gvisor.git "$RUNNER_TEMP/gvisor"
+          git -C "$RUNNER_TEMP/gvisor" checkout --detach "$gvisor_commit"
+          test "$(git -C "$RUNNER_TEMP/gvisor" rev-parse HEAD)" = "$gvisor_commit"
+          curl --fail --location --silent --show-error --output "$RUNNER_TEMP/bazel" https://github.com/bazelbuild/bazel/releases/download/8.3.1/bazel-8.3.1-linux-x86_64
+          test "$(sha512sum "$RUNNER_TEMP/bazel" | awk '{print $1}')" = "$bazel_sha512"
+          chmod 0755 "$RUNNER_TEMP/bazel"
+          cp -R tools/gvisor-observer "$RUNNER_TEMP/gvisor/tools/haa_gvisor_observer"
+          cd "$RUNNER_TEMP/gvisor"
+          "$RUNNER_TEMP/bazel" build -c opt //tools/haa_gvisor_observer:haa_gvisor_observer
+
+  gvisor-integration:
+    name: gVisor Linux Integration
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      GOTOOLCHAIN: local
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: '1.26.5'
+          check-latest: false
+          cache: false
+      - name: Install pinned runtime and run lifecycle integration
+        run: |
+          set -eu
+          docker_package_version=5:29.6.2-1~ubuntu.24.04~noble
+          containerd_package_version=2.3.3-1~ubuntu.24.04~noble
+          gvisor_commit=5ceb9a5fd5750d6c73dd166441f28306039300d0
+          runsc_sha512=4463ce276e207f5a516a08ec627a768a19cf7bed0094d522b0810bee3424585caa8d344e093204012b974f5c508ab2362dcb0d7236f0c1992fccc426beeb7ffc
+          bazel_sha512=c876a1619c885f44f3bdc87998eca59c79581954631c9d7fab4eb53cc0409b68e4be74c08ef3fe599c51b75d56262070f0c314f9908336221e7764fdf981b7f5
+          conflicting_packages=()
+          for package in docker.io docker-compose docker-compose-v2 docker-doc podman-docker containerd runc moby-engine moby-cli; do
+            if dpkg-query -W -f='${db:Status-Abbrev}' "$package" 2>/dev/null | grep -q '^ii'; then
+              conflicting_packages+=("$package")
+            fi
+          done
+          if ((${#conflicting_packages[@]})); then
+            sudo apt-get remove -y "${conflicting_packages[@]}"
+          fi
+          sudo install -m 0755 -d /etc/apt/keyrings
+          curl --fail --location --silent --show-error https://download.docker.com/linux/ubuntu/gpg | sudo tee /etc/apt/keyrings/docker.asc >/dev/null
+          sudo chmod a+r /etc/apt/keyrings/docker.asc
+          printf '%s\n' \
+            'Types: deb' \
+            'URIs: https://download.docker.com/linux/ubuntu' \
+            'Suites: noble' \
+            'Components: stable' \
+            'Architectures: amd64' \
+            'Signed-By: /etc/apt/keyrings/docker.asc' | sudo tee /etc/apt/sources.list.d/docker.sources >/dev/null
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            "docker-ce=$docker_package_version" \
+            "docker-ce-cli=$docker_package_version" \
+            "containerd.io=$containerd_package_version"
+          test "$(docker version --format '{{.Server.Version}}')" = 29.6.2
+          curl --fail --location --silent --show-error --output "$RUNNER_TEMP/runsc" https://storage.googleapis.com/gvisor/releases/release/20260810.0/x86_64/runsc
+          test "$(sha512sum "$RUNNER_TEMP/runsc" | awk '{print $1}')" = "$runsc_sha512"
+          chmod 0755 "$RUNNER_TEMP/runsc"
+          sudo install -m 0755 "$RUNNER_TEMP/runsc" /usr/local/bin/runsc
+          sudo install -d -m 0700 -o "$USER" -g "$(id -gn)" /run/heliopause-observer
+          sudo install -d -m 0700 /etc/heliopause
+          sudo install -m 0600 tools/gvisor-observer/pod-init.json /etc/heliopause/pod-init.json
+          sudo runsc install --runtime=runsc-trace -- --pod-init-config=/etc/heliopause/pod-init.json
+          sudo systemctl restart docker
+          docker pull node:22.23.1-slim@sha256:6c74791e557ce11fc957704f6d4fe134a7bc8d6f5ca4403205b2966bd488f6b3
+          git clone --filter=blob:none https://github.com/google/gvisor.git "$RUNNER_TEMP/gvisor"
+          git -C "$RUNNER_TEMP/gvisor" checkout --detach "$gvisor_commit"
+          curl --fail --location --silent --show-error --output "$RUNNER_TEMP/bazel" https://github.com/bazelbuild/bazel/releases/download/8.3.1/bazel-8.3.1-linux-x86_64
+          test "$(sha512sum "$RUNNER_TEMP/bazel" | awk '{print $1}')" = "$bazel_sha512"
+          chmod 0755 "$RUNNER_TEMP/bazel"
+          cp -R tools/gvisor-observer "$RUNNER_TEMP/gvisor/tools/haa_gvisor_observer"
+          cd "$RUNNER_TEMP/gvisor"
+          "$RUNNER_TEMP/bazel" build -c opt //tools/haa_gvisor_observer:haa_gvisor_observer
+          cd "$GITHUB_WORKSPACE"
+          runsc --version
+          docker version --format '{{.Server.Version}}'
+          docker info --format '{{json (index .Runtimes "runsc-trace")}}'
+          HELOX_GVISOR_INTEGRATION=1 HELOX_GVISOR_HELPER="$RUNNER_TEMP/gvisor/bazel-bin/tools/haa_gvisor_observer/haa_gvisor_observer" go test -timeout=5m ./internal/sandbox -run TestLinuxGVisorLifecycleIntegration
+
   required:
     name: Required
     if: ${{ always() }}
@@ -128,6 +228,8 @@ jobs:
       - docs
       - minimum-go
       - macos
+      - gvisor-observer
+      - gvisor-integration
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     env:
@@ -136,6 +238,8 @@ jobs:
       DOCS_RESULT: ${{ needs.docs.result }}
       MINIMUM_GO_RESULT: ${{ needs.minimum-go.result }}
       MACOS_RESULT: ${{ needs.macos.result }}
+      GVISOR_OBSERVER_RESULT: ${{ needs.gvisor-observer.result }}
+      GVISOR_INTEGRATION_RESULT: ${{ needs.gvisor-integration.result }}
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -148,4 +252,4 @@ jobs:
           check-latest: false
           cache: false
       - name: Aggregate required job results
-        run: go run ./scripts/check required "$QUICK_RESULT" "$DOCS_RESULT" "$MINIMUM_GO_RESULT" "$MACOS_RESULT"
+        run: go run ./scripts/check required "$QUICK_RESULT" "$DOCS_RESULT" "$MINIMUM_GO_RESULT" "$MACOS_RESULT" "$GVISOR_OBSERVER_RESULT" "$GVISOR_INTEGRATION_RESULT"

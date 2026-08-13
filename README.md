@@ -8,8 +8,8 @@
 - Go module path: `github.com/rahoney/heliopause`
 - 구현 언어: Go
 - CLI framework: Cobra
-- 현재 상태: Step 14 Implementation — M2 npm Static Inspect 완료
-- 다음 작업: M3-001 Linux Dynamic Inspect entry decision
+- 현재 상태: Step 14 Implementation — M3 Linux Dynamic Inspect qualification 완료
+- 다음 작업: M4-001 npm Install and Promotion entry decision
 
 ## Project Notes
 

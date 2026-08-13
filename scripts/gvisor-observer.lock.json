@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "gvisor_source": {
+    "repository": "https://github.com/google/gvisor.git",
+    "commit": "5ceb9a5fd5750d6c73dd166441f28306039300d0"
+  },
+  "bazel": {
+    "version": "8.3.1",
+    "linux_x86_64_url": "https://github.com/bazelbuild/bazel/releases/download/8.3.1/bazel-8.3.1-linux-x86_64",
+    "linux_x86_64_sha512": "c876a1619c885f44f3bdc87998eca59c79581954631c9d7fab4eb53cc0409b68e4be74c08ef3fe599c51b75d56262070f0c314f9908336221e7764fdf981b7f5"
+  }
+}
