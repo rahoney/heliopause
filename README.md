@@ -9,7 +9,7 @@
 - 구현 언어: Go
 - CLI framework: Cobra
 - 현재 상태: Step 14 Implementation — M1 Domain Workflow Skeleton 진행 중
-- 다음 작업: M1-002 Domain identity와 Run state foundation
+- 다음 작업: M1-003 Check result·Port와 deterministic fake
 
 ## Project Notes
 

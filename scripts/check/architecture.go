@@ -86,15 +86,17 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 		modulePath + "/cmd/helox": {
 			modulePath + "/internal/bootstrap": true,
 		},
-		modulePath + "/internal/cli":  {},
-		modulePath + "/scripts/check": {},
+		modulePath + "/internal/cli":         {},
+		modulePath + "/internal/core/domain": {},
+		modulePath + "/scripts/check":        {},
 	}
 	allowedExternalImports := map[string]map[string]bool{
 		modulePath + "/cmd/helox": {},
 		modulePath + "/internal/cli": {
 			"github.com/spf13/cobra": true,
 		},
-		modulePath + "/scripts/check": {},
+		modulePath + "/internal/core/domain": {},
+		modulePath + "/scripts/check":        {},
 	}
 
 	var findings []string

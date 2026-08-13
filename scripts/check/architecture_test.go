@@ -13,6 +13,7 @@ func TestValidateCurrentImports(t *testing.T) {
 		{ImportPath: modulePath + "/cmd/helox", Imports: []string{"context", modulePath + "/internal/bootstrap"}},
 		{ImportPath: modulePath + "/internal/bootstrap", Imports: []string{modulePath + "/internal/cli"}},
 		{ImportPath: modulePath + "/internal/cli", Imports: []string{"github.com/spf13/cobra"}},
+		{ImportPath: modulePath + "/internal/core/domain", Imports: []string{"crypto/rand"}},
 		{ImportPath: modulePath + "/scripts/check", Imports: []string{"os"}},
 	}
 	if findings := validateCurrentImports(modulePath, packages); len(findings) != 0 {
@@ -27,10 +28,11 @@ func TestValidateCurrentImportsRejectsBoundaryShortcut(t *testing.T) {
 	packages := []packageMetadata{
 		{ImportPath: modulePath + "/cmd/helox", Imports: []string{modulePath + "/internal/cli", "example.com/sdk"}},
 		{ImportPath: modulePath + "/internal/cli", Imports: []string{modulePath + "/internal/bootstrap"}},
+		{ImportPath: modulePath + "/internal/core/domain", Imports: []string{modulePath + "/internal/cli", "example.com/domain"}},
 		{ImportPath: modulePath + "/scripts/check", Imports: []string{modulePath + "/internal/cli"}},
 	}
 	findings := strings.Join(validateCurrentImports(modulePath, packages), "\n")
-	for _, expected := range []string{"cmd/helox", "example.com/sdk", "internal/cli", "scripts/check"} {
+	for _, expected := range []string{"cmd/helox", "example.com/sdk", "internal/cli", "internal/core/domain", "example.com/domain", "scripts/check"} {
 		if !strings.Contains(findings, expected) {
 			t.Errorf("findings missing %q: %s", expected, findings)
 		}
