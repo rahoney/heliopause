@@ -18,8 +18,15 @@ func main() {
 }
 
 func run(args []string, stdout, stderr io.Writer) int {
+	if len(args) > 0 && args[0] == "required" {
+		if err := validateRequiredResults(args[1:]); err != nil {
+			_, _ = fmt.Fprintf(stderr, "check: %v\n", err)
+			return exitFailure
+		}
+		return exitSuccess
+	}
 	if len(args) != 1 {
-		_, _ = fmt.Fprintln(stderr, "usage: go run ./scripts/check <bootstrap|foundation|quick|docs|format>")
+		_, _ = fmt.Fprintln(stderr, "usage: go run ./scripts/check <bootstrap|foundation|quick|docs|format|required RESULTS...>")
 		return exitUsage
 	}
 

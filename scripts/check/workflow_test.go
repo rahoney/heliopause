@@ -1,0 +1,48 @@
+package main
+
+import (
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+)
+
+func TestRepositoryCIWorkflow(t *testing.T) {
+	t.Parallel()
+
+	root, err := filepath.Abs(filepath.Join("..", ".."))
+	if err != nil {
+		t.Fatalf("resolve repository root: %v", err)
+	}
+	if err := checkCIWorkflow(root); err != nil {
+		t.Fatalf("checkCIWorkflow error: %v", err)
+	}
+}
+
+func TestValidateCIWorkflowRejectsSecurityRegressions(t *testing.T) {
+	t.Parallel()
+
+	root, err := filepath.Abs(filepath.Join("..", ".."))
+	if err != nil {
+		t.Fatalf("resolve repository root: %v", err)
+	}
+	contents, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(workflowRelativePath)))
+	if err != nil {
+		t.Fatalf("read workflow: %v", err)
+	}
+
+	tests := map[string]string{
+		"floating action": strings.Replace(string(contents), "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd", "actions/checkout@main", 1),
+		"missing always":  strings.Replace(string(contents), "    if: ${{ always() }}\n", "", 1),
+		"write token":     strings.Replace(string(contents), "  contents: read", "  contents: write", 1),
+		"extra job":       string(contents) + "\n  security:\n    runs-on: ubuntu-24.04\n",
+	}
+	for name, fixture := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			if findings := validateCIWorkflow(fixture); len(findings) == 0 {
+				t.Fatal("validateCIWorkflow findings = none, want non-empty")
+			}
+		})
+	}
+}

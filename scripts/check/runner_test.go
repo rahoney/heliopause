@@ -123,6 +123,7 @@ func TestQuickStepComposition(t *testing.T) {
 		"production build",
 		"test build validity",
 		"architecture",
+		"CI configuration",
 		"go vet",
 		"Staticcheck",
 		"default test",

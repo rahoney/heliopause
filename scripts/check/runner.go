@@ -205,6 +205,7 @@ func (c *checker) runProfile(profile string) error {
 func (c *checker) quickSteps() []checkStep {
 	steps := c.foundationSteps(false)
 	return append(steps,
+		checkStep{"CI configuration", func() error { return checkCIWorkflow(c.root) }},
 		checkStep{"go vet", func() error { return c.runAnalysis("go vet", c.goExecutable, "vet", "./...") }},
 		checkStep{"Staticcheck", c.runStaticcheck},
 		checkStep{"default test", func() error {
