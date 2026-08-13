@@ -133,6 +133,21 @@ func TestQuickStepComposition(t *testing.T) {
 	}
 }
 
+func TestPlatformStepComposition(t *testing.T) {
+	t.Parallel()
+
+	checker := checker{}
+	steps := checker.platformSteps()
+	var names []string
+	for _, step := range steps {
+		names = append(names, step.name)
+	}
+	want := []string{"production build", "default test"}
+	if !slices.Equal(names, want) {
+		t.Fatalf("platform steps = %q, want %q", names, want)
+	}
+}
+
 func TestFormatCheckAndExplicitFormatProfile(t *testing.T) {
 	t.Parallel()
 

@@ -32,10 +32,13 @@ func TestValidateCIWorkflowRejectsSecurityRegressions(t *testing.T) {
 	}
 
 	tests := map[string]string{
-		"floating action": strings.Replace(string(contents), "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd", "actions/checkout@main", 1),
-		"missing always":  strings.Replace(string(contents), "    if: ${{ always() }}\n", "", 1),
-		"write token":     strings.Replace(string(contents), "  contents: read", "  contents: write", 1),
-		"extra job":       string(contents) + "\n  security:\n    runs-on: ubuntu-24.04\n",
+		"floating action":        strings.Replace(string(contents), "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd", "actions/checkout@main", 1),
+		"missing always":         strings.Replace(string(contents), "    if: ${{ always() }}\n", "", 1),
+		"write token":            strings.Replace(string(contents), "  contents: read", "  contents: write", 1),
+		"moving macOS runner":    strings.Replace(string(contents), "runs-on: macos-26-intel", "runs-on: macos-latest", 1),
+		"missing minimum Go":     strings.Replace(string(contents), "go-version: '1.25.12'", "go-version: '1.26.5'", 1),
+		"missing platform check": strings.ReplaceAll(string(contents), "run: go run ./scripts/check platform", "run: go test ./..."),
+		"extra job":              string(contents) + "\n  security:\n    runs-on: ubuntu-24.04\n",
 	}
 	for name, fixture := range tests {
 		t.Run(name, func(t *testing.T) {

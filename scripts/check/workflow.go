@@ -43,13 +43,17 @@ func validateCIWorkflow(contents string) []string {
 		"  workflow_dispatch:",
 		"permissions:\n  contents: read",
 		"runs-on: ubuntu-24.04",
+		"runs-on: macos-26-intel",
 		"persist-credentials: false",
 		"go-version: '1.26.5'",
+		"go-version: '1.25.12'",
 		"check-latest: false",
 		"cache: false",
 		"    if: ${{ always() }}",
-		"    needs:\n      - quick\n      - docs",
-		`run: go run ./scripts/check required "$QUICK_RESULT" "$DOCS_RESULT"`,
+		"    needs:\n      - quick\n      - docs\n      - minimum-go\n      - macos",
+		"run: go run ./scripts/check bootstrap-modules",
+		"run: go run ./scripts/check platform",
+		`run: go run ./scripts/check required "$QUICK_RESULT" "$DOCS_RESULT" "$MINIMUM_GO_RESULT" "$MACOS_RESULT"`,
 	}
 	for _, snippet := range requiredSnippets {
 		if !strings.Contains(contents, snippet) {
@@ -76,8 +80,8 @@ func validateCIWorkflow(contents string) []string {
 	}
 
 	allowedActions := map[string]int{
-		"actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd": 3,
-		"actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e": 3,
+		"actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd": 5,
+		"actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e": 5,
 	}
 	actualActions := make(map[string]int)
 	for _, match := range actionReference.FindAllStringSubmatch(contents, -1) {
@@ -99,7 +103,7 @@ func validateCIWorkflow(contents string) []string {
 	}
 
 	jobs := workflowJobIDs(contents)
-	wantJobs := []string{"docs", "quick", "required"}
+	wantJobs := []string{"docs", "macos", "minimum-go", "quick", "required"}
 	if strings.Join(jobs, ",") != strings.Join(wantJobs, ",") {
 		findings = append(findings, fmt.Sprintf("workflow jobs are %q, require %q", jobs, wantJobs))
 	}

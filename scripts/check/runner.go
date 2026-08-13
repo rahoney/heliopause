@@ -189,8 +189,12 @@ func (c *checker) runProfile(profile string) error {
 	switch profile {
 	case "bootstrap":
 		return c.bootstrap()
+	case "bootstrap-modules":
+		return c.bootstrapModules()
 	case "foundation":
 		return c.runSequential(c.foundationSteps(true))
+	case "platform":
+		return c.runSequential(c.platformSteps())
 	case "quick":
 		return c.runSequential(c.quickSteps())
 	case "docs":
@@ -199,6 +203,15 @@ func (c *checker) runProfile(profile string) error {
 		return c.runStep("format", c.applyFormat)
 	default:
 		return &checkFailure{class: unavailable, step: "profile", detail: fmt.Sprintf("unknown profile %q", profile)}
+	}
+}
+
+func (c *checker) platformSteps() []checkStep {
+	return []checkStep{
+		{"production build", func() error { return c.runGo("production build", "build", "./...") }},
+		{"default test", func() error {
+			return c.runGoWithTimeout("default test", 6*time.Minute, "test", "-timeout=5m", "./...")
+		}},
 	}
 }
 

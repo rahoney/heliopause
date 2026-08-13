@@ -116,6 +116,26 @@ func TestBootstrapRejectsSetupGoMismatchBeforeMutation(t *testing.T) {
 	}
 }
 
+func TestPrepareModuleCacheExcludesQualityTools(t *testing.T) {
+	t.Parallel()
+
+	cache := filepath.Join(t.TempDir(), "cache")
+	checker := checker{toolCache: cache}
+	if err := checker.prepareModuleCache(); err != nil {
+		t.Fatalf("prepareModuleCache error: %v", err)
+	}
+	for _, name := range []string{"go-build", "go-mod"} {
+		if info, err := os.Stat(filepath.Join(cache, name)); err != nil || !info.IsDir() {
+			t.Fatalf("module cache directory %q unavailable: %v", name, err)
+		}
+	}
+	for _, name := range []string{"bin", "staticcheck"} {
+		if _, err := os.Stat(filepath.Join(cache, name)); !os.IsNotExist(err) {
+			t.Fatalf("quality tool directory %q created by module bootstrap: %v", name, err)
+		}
+	}
+}
+
 func TestVerifyToolRejectsMissingPinnedExecutable(t *testing.T) {
 	t.Parallel()
 
