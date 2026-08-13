@@ -120,6 +120,32 @@ jobs:
           HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-platform-tools
         run: go run ./scripts/check platform
 
+  gvisor-observer:
+    name: gVisor Observer Helper
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build exact gVisor observer helper with Bazel
+        run: |
+          set -eu
+          observer_lock=scripts/gvisor-observer.lock.json
+          gvisor_commit=5ceb9a5fd5750d6c73dd166441f28306039300d0
+          bazel_sha512=c876a1619c885f44f3bdc87998eca59c79581954631c9d7fab4eb53cc0409b68e4be74c08ef3fe599c51b75d56262070f0c314f9908336221e7764fdf981b7f5
+          test -f "$observer_lock"
+          git clone --filter=blob:none https://github.com/google/gvisor.git "$RUNNER_TEMP/gvisor"
+          git -C "$RUNNER_TEMP/gvisor" checkout --detach "$gvisor_commit"
+          test "$(git -C "$RUNNER_TEMP/gvisor" rev-parse HEAD)" = "$gvisor_commit"
+          curl --fail --location --silent --show-error --output "$RUNNER_TEMP/bazel" https://github.com/bazelbuild/bazel/releases/download/8.3.1/bazel-8.3.1-linux-x86_64
+          test "$(sha512sum "$RUNNER_TEMP/bazel" | awk '{print $1}')" = "$bazel_sha512"
+          chmod 0755 "$RUNNER_TEMP/bazel"
+          cp -R tools/gvisor-observer "$RUNNER_TEMP/gvisor/tools/haa_gvisor_observer"
+          cd "$RUNNER_TEMP/gvisor"
+          "$RUNNER_TEMP/bazel" build -c opt //tools/haa_gvisor_observer:haa_gvisor_observer
+
   required:
     name: Required
     if: ${{ always() }}
@@ -128,6 +154,7 @@ jobs:
       - docs
       - minimum-go
       - macos
+      - gvisor-observer
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     env:
@@ -136,6 +163,7 @@ jobs:
       DOCS_RESULT: ${{ needs.docs.result }}
       MINIMUM_GO_RESULT: ${{ needs.minimum-go.result }}
       MACOS_RESULT: ${{ needs.macos.result }}
+      GVISOR_OBSERVER_RESULT: ${{ needs.gvisor-observer.result }}
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -148,4 +176,4 @@ jobs:
           check-latest: false
           cache: false
       - name: Aggregate required job results
-        run: go run ./scripts/check required "$QUICK_RESULT" "$DOCS_RESULT" "$MINIMUM_GO_RESULT" "$MACOS_RESULT"
+        run: go run ./scripts/check required "$QUICK_RESULT" "$DOCS_RESULT" "$MINIMUM_GO_RESULT" "$MACOS_RESULT" "$GVISOR_OBSERVER_RESULT"

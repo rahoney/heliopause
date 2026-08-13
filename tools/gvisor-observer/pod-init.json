@@ -1,0 +1,20 @@
+{
+  "trace_session": {
+    "name": "Default",
+    "points": [
+      {"name": "container/start", "context_fields": ["container_id"]},
+      {"name": "sentry/clone", "context_fields": ["container_id"]},
+      {"name": "sentry/execve", "context_fields": ["container_id"]},
+      {"name": "syscall/openat/enter", "context_fields": ["container_id"]},
+      {"name": "syscall/connect/enter", "context_fields": ["container_id"]},
+      {"name": "syscall/socket/enter", "context_fields": ["container_id"]}
+    ],
+    "sinks": [
+      {
+        "name": "remote",
+        "config": {"endpoint": "/run/heliopause-observer/gvisor-remote.sock", "retries": 3},
+        "ignore_setup_error": false
+      }
+    ]
+  }
+}
