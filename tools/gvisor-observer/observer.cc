@@ -40,14 +40,13 @@ bool ParseAndSend(const char* payload, size_t payload_size, int output, const ch
 
 bool Handle(const Header& header, const char* payload, size_t payload_size, int output, std::string* container_id) {
   if (header.dropped_count != 0) return false;
-  using gvisor::common::MessageType;
-  switch (static_cast<MessageType>(header.message_type)) {
-    case MessageType::MESSAGE_CONTAINER_START: return ParseAndSend<gvisor::container::Start>(payload, payload_size, output, "container-start", container_id);
-    case MessageType::MESSAGE_SENTRY_CLONE: return ParseAndSend<gvisor::sentry::CloneInfo>(payload, payload_size, output, "process-clone", container_id);
-    case MessageType::MESSAGE_SENTRY_EXEC: return ParseAndSend<gvisor::sentry::ExecveInfo>(payload, payload_size, output, "process-exec", container_id);
-    case MessageType::MESSAGE_SYSCALL_OPEN: return ParseAndSend<gvisor::syscall::Open>(payload, payload_size, output, "filesystem-open", container_id);
-    case MessageType::MESSAGE_SYSCALL_CONNECT: return ParseAndSend<gvisor::syscall::Connect>(payload, payload_size, output, "network-attempt", container_id);
-    case MessageType::MESSAGE_SYSCALL_SOCKET: return ParseAndSend<gvisor::syscall::Socket>(payload, payload_size, output, "network-attempt", container_id);
+  switch (static_cast<gvisor::common::MessageType>(header.message_type)) {
+    case gvisor::common::MESSAGE_CONTAINER_START: return ParseAndSend<gvisor::container::Start>(payload, payload_size, output, "container-start", container_id);
+    case gvisor::common::MESSAGE_SENTRY_CLONE: return ParseAndSend<gvisor::sentry::CloneInfo>(payload, payload_size, output, "process-clone", container_id);
+    case gvisor::common::MESSAGE_SENTRY_EXEC: return ParseAndSend<gvisor::sentry::ExecveInfo>(payload, payload_size, output, "process-exec", container_id);
+    case gvisor::common::MESSAGE_SYSCALL_OPEN: return ParseAndSend<gvisor::syscall::Open>(payload, payload_size, output, "filesystem-open", container_id);
+    case gvisor::common::MESSAGE_SYSCALL_CONNECT: return ParseAndSend<gvisor::syscall::Connect>(payload, payload_size, output, "network-attempt", container_id);
+    case gvisor::common::MESSAGE_SYSCALL_SOCKET: return ParseAndSend<gvisor::syscall::Socket>(payload, payload_size, output, "network-attempt", container_id);
     default: return false;
   }
 }
