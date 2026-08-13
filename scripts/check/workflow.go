@@ -72,6 +72,7 @@ func validateCIWorkflow(contents string) []string {
 		"@master",
 		"@latest",
 		"ubuntu-latest",
+		"    env:\n      HELOX_TOOL_CACHE: ${{ runner.temp }}",
 	}
 	for _, token := range forbidden {
 		if strings.Contains(contents, token) {

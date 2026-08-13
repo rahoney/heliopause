@@ -38,7 +38,13 @@ func TestValidateCIWorkflowRejectsSecurityRegressions(t *testing.T) {
 		"moving macOS runner":    strings.Replace(string(contents), "runs-on: macos-26-intel", "runs-on: macos-latest", 1),
 		"missing minimum Go":     strings.Replace(string(contents), "go-version: '1.25.12'", "go-version: '1.26.5'", 1),
 		"missing platform check": strings.ReplaceAll(string(contents), "run: go run ./scripts/check platform", "run: go test ./..."),
-		"extra job":              string(contents) + "\n  security:\n    runs-on: ubuntu-24.04\n",
+		"runner context at job env": strings.Replace(
+			string(contents),
+			"    env:\n      GOTOOLCHAIN: local",
+			"    env:\n      HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-quality-tools\n      GOTOOLCHAIN: local",
+			1,
+		),
+		"extra job": string(contents) + "\n  security:\n    runs-on: ubuntu-24.04\n",
 	}
 	for name, fixture := range tests {
 		t.Run(name, func(t *testing.T) {

@@ -25,7 +25,6 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     env:
-      HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-quality-tools
       GOTOOLCHAIN: local
     steps:
       - name: Check out source
@@ -39,8 +38,12 @@ jobs:
           check-latest: false
           cache: false
       - name: Bootstrap pinned dependencies and tools
+        env:
+          HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-quality-tools
         run: go run ./scripts/check bootstrap
       - name: Run canonical Quick profile offline
+        env:
+          HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-quality-tools
         run: go run ./scripts/check quick
 
   docs:
@@ -48,7 +51,6 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     env:
-      HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-quality-tools
       GOTOOLCHAIN: local
     steps:
       - name: Check out source
@@ -62,6 +64,8 @@ jobs:
           check-latest: false
           cache: false
       - name: Run canonical Docs profile
+        env:
+          HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-quality-tools
         run: go run ./scripts/check docs
 
   minimum-go:
@@ -69,7 +73,6 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     env:
-      HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-platform-tools
       GOTOOLCHAIN: local
     steps:
       - name: Check out source
@@ -83,8 +86,12 @@ jobs:
           check-latest: false
           cache: false
       - name: Bootstrap product modules
+        env:
+          HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-platform-tools
         run: go run ./scripts/check bootstrap-modules
       - name: Run canonical platform profile offline
+        env:
+          HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-platform-tools
         run: go run ./scripts/check platform
 
   macos:
@@ -92,7 +99,6 @@ jobs:
     runs-on: macos-26-intel
     timeout-minutes: 15
     env:
-      HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-platform-tools
       GOTOOLCHAIN: local
     steps:
       - name: Check out source
@@ -106,8 +112,12 @@ jobs:
           check-latest: false
           cache: false
       - name: Bootstrap product modules
+        env:
+          HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-platform-tools
         run: go run ./scripts/check bootstrap-modules
       - name: Run canonical platform profile offline
+        env:
+          HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-platform-tools
         run: go run ./scripts/check platform
 
   required:
