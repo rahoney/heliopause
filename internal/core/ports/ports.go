@@ -23,6 +23,11 @@ type Inspection interface {
 	Inspect(context.Context, domain.AcquiredArtifact) (domain.InspectionReport, error)
 }
 
+// Sandbox executes exact controlled content in one ephemeral Session and returns raw observations.
+type Sandbox interface {
+	Execute(context.Context, domain.SandboxRequest) (domain.SandboxResult, error)
+}
+
 // Evidence records a bounded batch and returns trusted references.
 type Evidence interface {
 	Record(context.Context, domain.RunID, []domain.Evidence) ([]domain.EvidenceReference, error)
