@@ -9,7 +9,7 @@
 - 구현 언어: Go
 - CLI framework: Cobra
 - 현재 상태: Step 14 Implementation — M2 npm Static Inspect 완료
-- 다음 작업: M3-003 Sandbox Session·Observation Domain과 Port
+- 다음 작업: M3-004 gVisor Sandbox Session lifecycle
 
 ## Project Notes
 
