@@ -189,8 +189,12 @@ func (c *checker) runProfile(profile string) error {
 	switch profile {
 	case "bootstrap":
 		return c.bootstrap()
+	case "bootstrap-modules":
+		return c.bootstrapModules()
 	case "foundation":
 		return c.runSequential(c.foundationSteps(true))
+	case "platform":
+		return c.runSequential(c.platformSteps())
 	case "quick":
 		return c.runSequential(c.quickSteps())
 	case "docs":
@@ -202,9 +206,19 @@ func (c *checker) runProfile(profile string) error {
 	}
 }
 
+func (c *checker) platformSteps() []checkStep {
+	return []checkStep{
+		{"production build", func() error { return c.runGo("production build", "build", "./...") }},
+		{"default test", func() error {
+			return c.runGoWithTimeout("default test", 6*time.Minute, "test", "-timeout=5m", "./...")
+		}},
+	}
+}
+
 func (c *checker) quickSteps() []checkStep {
 	steps := c.foundationSteps(false)
 	return append(steps,
+		checkStep{"CI configuration", func() error { return checkCIWorkflow(c.root) }},
 		checkStep{"go vet", func() error { return c.runAnalysis("go vet", c.goExecutable, "vet", "./...") }},
 		checkStep{"Staticcheck", c.runStaticcheck},
 		checkStep{"default test", func() error {

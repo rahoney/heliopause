@@ -123,12 +123,28 @@ func TestQuickStepComposition(t *testing.T) {
 		"production build",
 		"test build validity",
 		"architecture",
+		"CI configuration",
 		"go vet",
 		"Staticcheck",
 		"default test",
 	}
 	if !slices.Equal(names, want) {
 		t.Fatalf("quick steps = %q, want %q", names, want)
+	}
+}
+
+func TestPlatformStepComposition(t *testing.T) {
+	t.Parallel()
+
+	checker := checker{}
+	steps := checker.platformSteps()
+	var names []string
+	for _, step := range steps {
+		names = append(names, step.name)
+	}
+	want := []string{"production build", "default test"}
+	if !slices.Equal(names, want) {
+		t.Fatalf("platform steps = %q, want %q", names, want)
 	}
 }
 

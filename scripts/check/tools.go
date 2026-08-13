@@ -144,18 +144,36 @@ func (c *checker) bootstrap() error {
 		return &checkFailure{class: unavailable, step: "bootstrap", detail: fmt.Sprintf("setup Go is %s, require go%s", runtime.Version(), tool.SetupGo)}
 	}
 	return c.runSequential([]checkStep{
-		{name: "prepare tool cache", run: c.prepareToolCache},
+		{name: "prepare module cache", run: c.prepareModuleCache},
 		{name: "download product modules", run: c.downloadProductModules},
+		{name: "prepare quality tool cache", run: c.prepareQualityToolCache},
 		{name: "install Staticcheck", run: func() error { return c.installTool(tool) }},
 		{name: "verify Staticcheck identity", run: func() error { return c.verifyTool(tool) }},
 	})
 }
 
-func (c *checker) prepareToolCache() error {
+func (c *checker) bootstrapModules() error {
+	return c.runSequential([]checkStep{
+		{name: "prepare module cache", run: c.prepareModuleCache},
+		{name: "download product modules", run: c.downloadProductModules},
+	})
+}
+
+func (c *checker) prepareModuleCache() error {
 	for _, directory := range []string{
-		filepath.Join(c.toolCache, "bin"),
 		filepath.Join(c.toolCache, "go-build"),
 		filepath.Join(c.toolCache, "go-mod"),
+	} {
+		if err := os.MkdirAll(directory, 0o700); err != nil {
+			return &checkFailure{class: executionFailure, step: "bootstrap", detail: "create project tool cache", cause: err}
+		}
+	}
+	return nil
+}
+
+func (c *checker) prepareQualityToolCache() error {
+	for _, directory := range []string{
+		filepath.Join(c.toolCache, "bin"),
 		filepath.Join(c.toolCache, "staticcheck"),
 	} {
 		if err := os.MkdirAll(directory, 0o700); err != nil {

@@ -1,0 +1,151 @@
+name: Heliopause CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  merge_group:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: .
+
+concurrency:
+  group: heliopause-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  quick:
+    name: Quick
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      GOTOOLCHAIN: local
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: '1.26.5'
+          check-latest: false
+          cache: false
+      - name: Bootstrap pinned dependencies and tools
+        env:
+          HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-quality-tools
+        run: go run ./scripts/check bootstrap
+      - name: Run canonical Quick profile offline
+        env:
+          HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-quality-tools
+        run: go run ./scripts/check quick
+
+  docs:
+    name: Docs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      GOTOOLCHAIN: local
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: '1.26.5'
+          check-latest: false
+          cache: false
+      - name: Run canonical Docs profile
+        env:
+          HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-quality-tools
+        run: go run ./scripts/check docs
+
+  minimum-go:
+    name: Minimum Go
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      GOTOOLCHAIN: local
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up minimum Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: '1.25.12'
+          check-latest: false
+          cache: false
+      - name: Bootstrap product modules
+        env:
+          HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-platform-tools
+        run: go run ./scripts/check bootstrap-modules
+      - name: Run canonical platform profile offline
+        env:
+          HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-platform-tools
+        run: go run ./scripts/check platform
+
+  macos:
+    name: macOS
+    runs-on: macos-26-intel
+    timeout-minutes: 15
+    env:
+      GOTOOLCHAIN: local
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: '1.26.5'
+          check-latest: false
+          cache: false
+      - name: Bootstrap product modules
+        env:
+          HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-platform-tools
+        run: go run ./scripts/check bootstrap-modules
+      - name: Run canonical platform profile offline
+        env:
+          HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-platform-tools
+        run: go run ./scripts/check platform
+
+  required:
+    name: Required
+    if: ${{ always() }}
+    needs:
+      - quick
+      - docs
+      - minimum-go
+      - macos
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      GOTOOLCHAIN: local
+      QUICK_RESULT: ${{ needs.quick.result }}
+      DOCS_RESULT: ${{ needs.docs.result }}
+      MINIMUM_GO_RESULT: ${{ needs.minimum-go.result }}
+      MACOS_RESULT: ${{ needs.macos.result }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: '1.26.5'
+          check-latest: false
+          cache: false
+      - name: Aggregate required job results
+        run: go run ./scripts/check required "$QUICK_RESULT" "$DOCS_RESULT" "$MINIMUM_GO_RESULT" "$MACOS_RESULT"
