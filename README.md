@@ -9,7 +9,7 @@
 - 구현 언어: Go
 - CLI framework: Cobra
 - 현재 상태: Step 14 Implementation — M1 Domain Workflow Skeleton 진행 중
-- 다음 작업: M1-004 Inspect orchestration과 Policy v1
+- 다음 작업: M1-005 CLI result contract와 synthetic vertical test
 
 ## Project Notes
 
