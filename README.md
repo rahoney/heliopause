@@ -9,7 +9,7 @@
 - 구현 언어: Go
 - CLI framework: Cobra
 - 현재 상태: Step 14 Implementation — M0 진행 중
-- 다음 작업: M0-006 Quick·Docs·Required CI foundation
+- 다음 작업: M0-007 Minimum Go·macOS와 repository gate 검증
 
 ## Project Notes
 
