@@ -9,7 +9,7 @@
 - 구현 언어: Go
 - CLI framework: Cobra
 - 현재 상태: Step 14 Implementation — M0 진행 중
-- 다음 작업: M0-005 Static analysis와 Quick profile 활성화
+- 다음 작업: M0-006 Quick·Docs·Required CI foundation
 
 ## Project Notes
 
