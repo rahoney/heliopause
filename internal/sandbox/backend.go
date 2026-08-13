@@ -165,10 +165,9 @@ func createArguments(sessionID domain.SandboxSessionID) []string {
 		"--memory", "512m",
 		"--cpus", "1",
 		"--ulimit", "cpu=30:30",
-		"--tmpfs", "/work:rw,nosuid,nodev,size=256m,uid=1000,gid=1000,mode=0700",
 		"--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=256m,uid=1000,gid=1000,mode=0700",
 		"--name", "heliopause-" + sessionID.String(),
 		nodeImageReference,
-		"/bin/sh", "-ceu", "while [ ! -f /work/artifact.tgz ]; do sleep 0.05; done; mkdir -p /work/package; npm install --ignore-scripts=false --no-audit --no-fund /work/artifact.tgz",
+		"/bin/sh", "-ceu", "while [ ! -f /tmp/artifact.tgz ]; do sleep 0.05; done; mkdir -p /tmp/package; npm install --ignore-scripts=false --no-audit --no-fund /tmp/artifact.tgz",
 	}
 }

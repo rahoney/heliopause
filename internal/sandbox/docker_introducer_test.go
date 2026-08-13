@@ -24,7 +24,7 @@ func TestDockerArtifactIntroducerCopiesOnlyControlledTarball(t *testing.T) {
 	if err := introducer.Introduce(context.Background(), "0123456789abcdef", sandboxRequest(t).Artifact()); err != nil {
 		t.Fatal(err)
 	}
-	if len(runner.calls) != 1 || !sameStrings(runner.calls[0].arguments, []string{"cp", path, "0123456789abcdef:/work/artifact.tgz"}) {
+	if len(runner.calls) != 1 || !sameStrings(runner.calls[0].arguments, []string{"cp", path, "0123456789abcdef:/tmp/artifact.tgz"}) {
 		t.Fatalf("docker cp = %#v", runner.calls)
 	}
 }
