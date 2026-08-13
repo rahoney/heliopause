@@ -188,6 +188,9 @@ jobs:
           cd "$RUNNER_TEMP/gvisor"
           "$RUNNER_TEMP/bazel" build -c opt //tools/haa_gvisor_observer:haa_gvisor_observer
           cd "$GITHUB_WORKSPACE"
+          runsc --version
+          docker version --format '{{.Server.Version}}'
+          docker info --format '{{json (index .Runtimes "runsc-trace")}}'
           HELOX_GVISOR_INTEGRATION=1 HELOX_GVISOR_HELPER="$RUNNER_TEMP/gvisor/bazel-bin/tools/haa_gvisor_observer/haa_gvisor_observer" go test -timeout=5m ./internal/sandbox -run TestLinuxGVisorLifecycleIntegration
 
   required:
