@@ -69,6 +69,16 @@ func NewPublicResolver(intakeRoot string) (*Resolver, error) {
 	return newResolver(registry, client, intakeRoot, true)
 }
 
+// NewResolver creates an explicitly injected registry resolver for controlled tests.
+// Production callers must use NewPublicResolver to retain the public-registry boundary.
+func NewResolver(registryURL string, client *http.Client, intakeRoot string) (*Resolver, error) {
+	registry, err := url.Parse(registryURL)
+	if err != nil {
+		return nil, fmt.Errorf("parse npm registry URL: %w", err)
+	}
+	return newResolver(registry, client, intakeRoot, false)
+}
+
 func newResolver(registry *url.URL, client *http.Client, intakeRoot string, requirePublicHTTPS bool) (*Resolver, error) {
 	if registry == nil || client == nil || registry.User != nil || registry.RawQuery != "" || registry.Fragment != "" || (registry.Path != "" && registry.Path != "/") {
 		return nil, errors.New("npm registry configuration is invalid")
