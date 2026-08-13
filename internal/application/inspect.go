@@ -92,7 +92,7 @@ func (s *InspectService) Inspect(ctx context.Context, request InspectRequest) (d
 	if err != nil {
 		return failRun(run, request.reference, artifact, checks, nil, "INSPECTION_PROVIDER_FAILED", "Artifact inspection failed operationally.", fmt.Errorf("inspect Artifact: %w", err))
 	}
-	checks = append(checks, inspection.Execution())
+	checks = append(checks, inspection.Executions()...)
 	evidence := append(verification.Evidence(), inspection.Evidence()...)
 	references, err := s.evidence.Record(ctx, runID, evidence)
 	if err != nil {

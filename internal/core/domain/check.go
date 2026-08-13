@@ -149,34 +149,55 @@ func (r VerificationReport) Evidence() []Evidence         { return append([]Evid
 
 // InspectionReport records a completed or limited inspection and its Findings.
 type InspectionReport struct {
-	execution CheckExecution
-	findings  []Finding
-	evidence  []Evidence
+	execution  CheckExecution
+	executions []CheckExecution
+	findings   []Finding
+	evidence   []Evidence
 }
 
 // NewInspectionReport constructs a normalized Inspection report.
 func NewInspectionReport(execution CheckExecution, findings []Finding, evidence []Evidence) (InspectionReport, error) {
-	if execution.kind != CheckInspection {
-		return InspectionReport{}, errors.New("inspection report requires an Inspection check")
+	return NewCompositeInspectionReport([]InspectionReport{{execution: execution, executions: []CheckExecution{execution}, findings: findings, evidence: evidence}})
+}
+
+// NewCompositeInspectionReport combines independently completed or limited Inspection checks for one Artifact.
+func NewCompositeInspectionReport(reports []InspectionReport) (InspectionReport, error) {
+	if len(reports) == 0 {
+		return InspectionReport{}, errors.New("inspection report requires at least one check")
 	}
-	if execution.status != ExecutionCompleted && len(findings) != 0 {
-		return InspectionReport{}, errors.New("non-completed inspection cannot claim final Findings")
+	executions := make([]CheckExecution, 0, len(reports))
+	findings := make([]Finding, 0)
+	evidence := make([]Evidence, 0)
+	for _, report := range reports {
+		execution := report.execution
+		if execution.kind != CheckInspection {
+			return InspectionReport{}, errors.New("inspection report requires an Inspection check")
+		}
+		if execution.status != ExecutionCompleted && len(report.findings) != 0 {
+			return InspectionReport{}, errors.New("non-completed inspection cannot claim final Findings")
+		}
+		if execution.status == ExecutionCompleted && len(report.evidence) == 0 {
+			return InspectionReport{}, errors.New("completed inspection requires Evidence")
+		}
+		if err := validateEvidenceForCheck(execution.id, report.evidence); err != nil {
+			return InspectionReport{}, err
+		}
+		if err := validateFindingsForEvidence(report.findings, report.evidence); err != nil {
+			return InspectionReport{}, err
+		}
+		executions = append(executions, execution)
+		findings = append(findings, report.findings...)
+		evidence = append(evidence, report.evidence...)
 	}
-	if execution.status == ExecutionCompleted && len(evidence) == 0 {
-		return InspectionReport{}, errors.New("completed inspection requires Evidence")
-	}
-	if err := validateEvidenceForCheck(execution.id, evidence); err != nil {
-		return InspectionReport{}, err
-	}
-	if err := validateFindingsForEvidence(findings, evidence); err != nil {
-		return InspectionReport{}, err
-	}
-	return InspectionReport{execution: execution, findings: append([]Finding(nil), findings...), evidence: append([]Evidence(nil), evidence...)}, nil
+	return InspectionReport{execution: executions[0], executions: executions, findings: findings, evidence: evidence}, nil
 }
 
 func (r InspectionReport) Execution() CheckExecution { return r.execution }
-func (r InspectionReport) Findings() []Finding       { return append([]Finding(nil), r.findings...) }
-func (r InspectionReport) Evidence() []Evidence      { return append([]Evidence(nil), r.evidence...) }
+func (r InspectionReport) Executions() []CheckExecution {
+	return append([]CheckExecution(nil), r.executions...)
+}
+func (r InspectionReport) Findings() []Finding  { return append([]Finding(nil), r.findings...) }
+func (r InspectionReport) Evidence() []Evidence { return append([]Evidence(nil), r.evidence...) }
 
 func validateEvidenceForCheck(id CheckID, evidence []Evidence) error {
 	for index, item := range evidence {
