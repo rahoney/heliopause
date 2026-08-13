@@ -8,8 +8,8 @@
 - Go module path: `github.com/rahoney/heliopause`
 - 구현 언어: Go
 - CLI framework: Cobra
-- 현재 상태: Step 14 Implementation — M0 완료
-- 다음 작업: M1-001 Domain workflow entry decision
+- 현재 상태: Step 14 Implementation — M1 Domain Workflow Skeleton 완료
+- 다음 작업: M2-001 npm Static Inspect entry decision
 
 ## Project Notes
 
