@@ -60,10 +60,11 @@ func (s *InspectService) Inspect(ctx context.Context, request InspectRequest) (d
 	if err != nil {
 		return domain.OperationResult{}, fmt.Errorf("generate operation ID: %w", err)
 	}
-	identity, err := s.artifact.Resolve(ctx, request.reference)
+	resolvedArtifact, err := s.artifact.Resolve(ctx, request.reference)
 	if err != nil {
 		return failedBeforeRun(operationID, request.reference, domain.ResolvedArtifactIdentity{}, "ARTIFACT_RESOLVE_FAILED", "Artifact identity resolution failed.", fmt.Errorf("resolve Artifact: %w", err))
 	}
+	identity := resolvedArtifact.Identity()
 	runID, err := s.newRunID()
 	if err != nil {
 		return failedBeforeRun(operationID, request.reference, identity, "RUN_ID_GENERATION_FAILED", "Inspection Run identifier generation failed.", fmt.Errorf("generate Run ID: %w", err))
@@ -75,7 +76,7 @@ func (s *InspectService) Inspect(ctx context.Context, request InspectRequest) (d
 	if err := run.Activate(); err != nil {
 		return failRun(run, request.reference, domain.AcquiredArtifact{}, nil, nil, "RUN_ACTIVATION_FAILED", "Inspection Run activation failed.", fmt.Errorf("activate Inspection Run: %w", err))
 	}
-	artifact, err := s.artifact.Acquire(ctx, identity)
+	artifact, err := s.artifact.Acquire(ctx, resolvedArtifact)
 	if err != nil {
 		return failRun(run, request.reference, domain.AcquiredArtifact{}, nil, nil, "ARTIFACT_ACQUIRE_FAILED", "Artifact acquisition failed.", fmt.Errorf("acquire Artifact: %w", err))
 	}

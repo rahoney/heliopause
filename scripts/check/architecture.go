@@ -101,6 +101,9 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 		modulePath + "/internal/policy": {
 			modulePath + "/internal/core/domain": true,
 		},
+		modulePath + "/internal/artifact/npm": {
+			modulePath + "/internal/core/domain": true,
+		},
 		modulePath + "/internal/testutil/fakeworkflow": {
 			modulePath + "/internal/core/domain": true,
 			modulePath + "/internal/core/ports":  true,
@@ -116,6 +119,7 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 		modulePath + "/internal/core/ports":            {},
 		modulePath + "/internal/application":           {},
 		modulePath + "/internal/policy":                {},
+		modulePath + "/internal/artifact/npm":          {},
 		modulePath + "/internal/testutil/fakeworkflow": {},
 		modulePath + "/scripts/check":                  {},
 	}

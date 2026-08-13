@@ -68,25 +68,29 @@ func (p *Ports) Calls() []string {
 	return append([]string(nil), p.calls...)
 }
 
-func (p *Ports) Resolve(ctx context.Context, reference domain.ArtifactReference) (domain.ResolvedArtifactIdentity, error) {
+func (p *Ports) Resolve(ctx context.Context, reference domain.ArtifactReference) (domain.ResolvedArtifact, error) {
 	p.record("resolve")
 	if err := validContext(ctx); err != nil {
-		return domain.ResolvedArtifactIdentity{}, err
+		return domain.ResolvedArtifact{}, err
 	}
 	want, err := p.Reference()
 	if err != nil {
-		return domain.ResolvedArtifactIdentity{}, err
+		return domain.ResolvedArtifact{}, err
 	}
 	if reference != want {
-		return domain.ResolvedArtifactIdentity{}, errors.New("fake resolve reference mismatch")
+		return domain.ResolvedArtifact{}, errors.New("fake resolve reference mismatch")
 	}
 	if p.scenario == ResolveError {
-		return domain.ResolvedArtifactIdentity{}, ErrResolve
+		return domain.ResolvedArtifact{}, ErrResolve
 	}
-	return domain.NewResolvedArtifactIdentity(reference.Source(), string(p.scenario), "1.0.0", "default")
+	identity, err := domain.NewResolvedArtifactIdentity(reference.Source(), string(p.scenario), "1.0.0", "default")
+	if err != nil {
+		return domain.ResolvedArtifact{}, err
+	}
+	return domain.NewResolvedArtifact(identity, "fixture-artifact:"+string(p.scenario), "sha512-fixture")
 }
 
-func (p *Ports) Acquire(ctx context.Context, identity domain.ResolvedArtifactIdentity) (domain.AcquiredArtifact, error) {
+func (p *Ports) Acquire(ctx context.Context, resolved domain.ResolvedArtifact) (domain.AcquiredArtifact, error) {
 	p.record("acquire")
 	if err := validContext(ctx); err != nil {
 		return domain.AcquiredArtifact{}, err
@@ -95,7 +99,7 @@ func (p *Ports) Acquire(ctx context.Context, identity domain.ResolvedArtifactIde
 	if err != nil {
 		return domain.AcquiredArtifact{}, err
 	}
-	if identity != want {
+	if resolved.Identity() != want {
 		return domain.AcquiredArtifact{}, errors.New("fake acquire identity mismatch")
 	}
 	if p.scenario == AcquireError {
@@ -105,7 +109,7 @@ func (p *Ports) Acquire(ctx context.Context, identity domain.ResolvedArtifactIde
 	if err != nil {
 		return domain.AcquiredArtifact{}, err
 	}
-	return domain.NewAcquiredArtifact(identity, digest, "fixture-content:"+string(p.scenario), 128)
+	return domain.NewAcquiredArtifact(resolved.Identity(), digest, "fixture-content:"+string(p.scenario), 128)
 }
 
 func (p *Ports) Verify(ctx context.Context, artifact domain.AcquiredArtifact) (domain.VerificationReport, error) {
