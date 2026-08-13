@@ -88,15 +88,32 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 		},
 		modulePath + "/internal/cli":         {},
 		modulePath + "/internal/core/domain": {},
-		modulePath + "/scripts/check":        {},
+		modulePath + "/internal/core/ports": {
+			modulePath + "/internal/core/domain": true,
+		},
+		modulePath + "/internal/testutil/fakeworkflow": {
+			modulePath + "/internal/core/domain": true,
+			modulePath + "/internal/core/ports":  true,
+		},
+		modulePath + "/scripts/check": {},
 	}
 	allowedExternalImports := map[string]map[string]bool{
 		modulePath + "/cmd/helox": {},
 		modulePath + "/internal/cli": {
 			"github.com/spf13/cobra": true,
 		},
-		modulePath + "/internal/core/domain": {},
-		modulePath + "/scripts/check":        {},
+		modulePath + "/internal/core/domain":           {},
+		modulePath + "/internal/core/ports":            {},
+		modulePath + "/internal/testutil/fakeworkflow": {},
+		modulePath + "/scripts/check":                  {},
+	}
+	forbiddenConcreteImports := map[string]map[string]bool{
+		modulePath + "/internal/core/domain": {
+			"database/sql": true, "net": true, "net/http": true, "os": true, "os/exec": true, "path/filepath": true,
+		},
+		modulePath + "/internal/testutil/fakeworkflow": {
+			"database/sql": true, "net": true, "net/http": true, "os": true, "os/exec": true, "path/filepath": true,
+		},
 	}
 
 	var findings []string
@@ -106,6 +123,9 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			continue
 		}
 		for _, imported := range metadata.Imports {
+			if forbiddenConcreteImports[metadata.ImportPath][imported] {
+				findings = append(findings, fmt.Sprintf("%s imports forbidden concrete package %s", metadata.ImportPath, imported))
+			}
 			if imported == modulePath || strings.HasPrefix(imported, modulePath+"/") {
 				if !allowedProduct[imported] {
 					findings = append(findings, fmt.Sprintf("%s imports disallowed product package %s", metadata.ImportPath, imported))
