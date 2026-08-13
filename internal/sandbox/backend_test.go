@@ -132,7 +132,7 @@ func TestBackendTimeoutIsIncompleteAndStillDisposed(t *testing.T) {
 func assertConstrainedCreateCommand(t *testing.T, arguments []string) {
 	t.Helper()
 	joined := strings.Join(arguments, " ")
-	for _, required := range []string{"--runtime runsc", "--user 1000:1000", "--network none", "--read-only", "--cap-drop ALL", "no-new-privileges", "--pids-limit 64", "--memory 512m", "--cpus 1", "--ulimit cpu=30:30", nodeImageReference} {
+	for _, required := range []string{"--runtime " + gVisorRuntimeName, "--user 1000:1000", "--network none", "--read-only", "--cap-drop ALL", "no-new-privileges", "--pids-limit 64", "--memory 512m", "--cpus 1", "--ulimit cpu=30:30", nodeImageReference} {
 		if !strings.Contains(joined, required) {
 			t.Errorf("create command missing %q: %q", required, joined)
 		}

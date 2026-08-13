@@ -149,7 +149,7 @@ func incomplete(sessionID domain.SandboxSessionID, limitation string) (domain.Sa
 func createArguments(sessionID domain.SandboxSessionID) []string {
 	return []string{
 		"create",
-		"--runtime", "runsc",
+		"--runtime", gVisorRuntimeName,
 		"--user", "1000:1000",
 		"--network", "none",
 		"--read-only",

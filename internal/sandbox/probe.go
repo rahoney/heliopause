@@ -13,6 +13,7 @@ import (
 const (
 	minimumDockerEngine = "29.6.0"
 	gVisorRelease       = "release-20260810.0"
+	gVisorRuntimeName   = "runsc-trace"
 	nodeImageReference  = "node:22.23.1-slim@sha256:6c74791e557ce11fc957704f6d4fe134a7bc8d6f5ca4403205b2966bd488f6b3"
 )
 
@@ -62,7 +63,7 @@ func probe(ctx context.Context, operatingSystem string, executor Executor) (Capa
 	if err != nil || !strings.Contains(string(runscVersion), gVisorRelease) {
 		return Capability{LimitationCode: "M3_RUNTIME_VERSION_UNSUPPORTED"}, nil
 	}
-	runtimeRegistration, err := executor.Output(ctx, "docker", "info", "--format", "{{json .Runtimes.runsc}}")
+	runtimeRegistration, err := executor.Output(ctx, "docker", "info", "--format", "{{json (index .Runtimes \"runsc-trace\")}}")
 	if err != nil || strings.TrimSpace(string(runtimeRegistration)) == "" || strings.Contains(string(runtimeRegistration), "<no value>") {
 		return Capability{LimitationCode: "M3_RUNTIME_UNAVAILABLE"}, nil
 	}
