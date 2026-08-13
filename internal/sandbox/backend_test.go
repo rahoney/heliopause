@@ -164,6 +164,8 @@ type commandCall struct {
 }
 type recordingRunner struct {
 	calls            []commandCall
+	inputCalls       []commandCall
+	input            []byte
 	responses        [][]byte
 	errors           []error
 	waitForContext   bool

@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os/exec"
 	"runtime"
 	"strings"
@@ -90,4 +91,10 @@ type systemExecutor struct{}
 func (systemExecutor) LookPath(binary string) (string, error) { return exec.LookPath(binary) }
 func (systemExecutor) Output(ctx context.Context, binary string, arguments ...string) ([]byte, error) {
 	return exec.CommandContext(ctx, binary, arguments...).Output()
+}
+
+func (systemExecutor) RunInput(ctx context.Context, input io.Reader, binary string, arguments ...string) error {
+	command := exec.CommandContext(ctx, binary, arguments...)
+	command.Stdin = input
+	return command.Run()
 }

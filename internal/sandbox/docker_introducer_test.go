@@ -2,6 +2,7 @@ package sandbox
 
 import (
 	"context"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -24,7 +25,13 @@ func TestDockerArtifactIntroducerCopiesOnlyControlledTarball(t *testing.T) {
 	if err := introducer.Introduce(context.Background(), "0123456789abcdef", sandboxRequest(t).Artifact()); err != nil {
 		t.Fatal(err)
 	}
-	if len(runner.calls) != 1 || !sameStrings(runner.calls[0].arguments, []string{"cp", path, "0123456789abcdef:/tmp/artifact.tgz"}) {
-		t.Fatalf("docker cp = %#v", runner.calls)
+	if len(runner.inputCalls) != 1 || !sameStrings(runner.inputCalls[0].arguments, []string{"exec", "-i", "0123456789abcdef", "/bin/sh", "-ceu", "umask 077; cat > /tmp/artifact.tgz"}) || string(runner.input) != "fixture" {
+		t.Fatalf("docker input stream = %#v/%q", runner.inputCalls, runner.input)
 	}
+}
+
+func (r *recordingRunner) RunInput(_ context.Context, input io.Reader, binary string, arguments ...string) error {
+	r.inputCalls = append(r.inputCalls, commandCall{binary: binary, arguments: arguments})
+	r.input, _ = io.ReadAll(input)
+	return nil
 }

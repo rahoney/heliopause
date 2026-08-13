@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -18,6 +19,10 @@ import (
 type DockerArtifactIntroducer struct {
 	intakeRoot string
 	runner     CommandRunner
+}
+
+type inputCommandRunner interface {
+	RunInput(context.Context, io.Reader, string, ...string) error
 }
 
 func NewDockerArtifactIntroducer(intakeRoot string, runner CommandRunner) (*DockerArtifactIntroducer, error) {
@@ -41,11 +46,20 @@ func (i *DockerArtifactIntroducer) Introduce(ctx context.Context, containerID st
 	if err != nil {
 		return err
 	}
-	info, err := os.Stat(source)
+	file, err := os.Open(source)
+	if err != nil {
+		return errors.New("controlled Sandbox Artifact is unavailable")
+	}
+	defer file.Close()
+	info, err := file.Stat()
 	if err != nil || !info.Mode().IsRegular() {
 		return errors.New("controlled Sandbox Artifact is unavailable")
 	}
-	if _, err := i.runner.Output(ctx, "docker", "cp", source, containerID+":/tmp/artifact.tgz"); err != nil {
+	inputRunner, ok := i.runner.(inputCommandRunner)
+	if !ok {
+		return errors.New("sandbox artifact stream runner is not configured")
+	}
+	if err := inputRunner.RunInput(ctx, file, "docker", "exec", "-i", containerID, "/bin/sh", "-ceu", "umask 077; cat > /tmp/artifact.tgz"); err != nil {
 		return fmt.Errorf("introduce controlled Sandbox Artifact: %w", err)
 	}
 	return nil

@@ -5,6 +5,7 @@ import (
 	"compress/gzip"
 	"context"
 	"errors"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -94,6 +95,17 @@ func (r integrationRunner) Output(ctx context.Context, binary string, arguments 
 		r.t.Logf("command failed: %s %q: %v; stderr=%q", binary, arguments, err, stderr)
 	}
 	return output, err
+}
+
+func (r integrationRunner) RunInput(ctx context.Context, input io.Reader, binary string, arguments ...string) error {
+	r.t.Helper()
+	command := exec.CommandContext(ctx, binary, arguments...)
+	command.Stdin = input
+	output, err := command.CombinedOutput()
+	if err != nil {
+		r.t.Logf("input command failed: %s %q: %v; output=%q", binary, arguments, err, strings.TrimSpace(string(output)))
+	}
+	return err
 }
 
 func integrationRequest(t *testing.T) domain.SandboxRequest {
