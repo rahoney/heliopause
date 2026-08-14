@@ -3,6 +3,7 @@ package bootstrap
 
 import (
 	"context"
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -76,7 +77,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		if err := cli.AddNPMInspect(command, service); err != nil {
 			return err
 		}
-		dependencyResolver, err := sandbox.NewLinuxNPMResolver()
+		dependencyResolver, err := installDependencyResolver(runtime.GOOS, runtime.GOARCH)
 		if err != nil {
 			return err
 		}
@@ -103,4 +104,17 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 	command.SetArgs(args)
 
 	return command.ExecuteContext(ctx)
+}
+
+func installDependencyResolver(goos, goarch string) (ports.DependencyResolver, error) {
+	if goos == "linux" && goarch == "amd64" {
+		return sandbox.NewLinuxNPMResolver()
+	}
+	return unsupportedInstallResolver{}, nil
+}
+
+type unsupportedInstallResolver struct{}
+
+func (unsupportedInstallResolver) ResolveDependencies(context.Context, domain.ArtifactReference, domain.InstallContext) (domain.DependencyResolution, error) {
+	return domain.DependencyResolution{}, errors.New("automatic npm install requires Linux amd64")
 }
