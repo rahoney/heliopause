@@ -20,6 +20,9 @@ func TestResolverNetworkPolicyIPTablesCreatesVerifiesAndCleansUp(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if got := runner.calls[0]; got.binary != "docker" || !sameStrings(got.arguments, []string{"info", "--format", "{{.FirewallBackend.Driver}}"}) {
+		t.Fatalf("firewall backend query = %#v", got)
+	}
 	name, err := policy.Prepare(context.Background(), []netip.Addr{netip.MustParseAddr("1.1.1.1")})
 	if err != nil || name == "" {
 		t.Fatalf("Prepare() = %q, %v", name, err)

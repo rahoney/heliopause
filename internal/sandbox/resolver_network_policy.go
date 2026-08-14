@@ -45,7 +45,9 @@ func NewResolverNetworkPolicy(ctx context.Context, runner CommandRunner) (*Resol
 	if runner == nil {
 		return nil, errors.New("resolver network policy requires a command runner")
 	}
-	output, err := runner.Output(ctx, "docker", "info", "--format", "{{.FirewallBackend}}")
+	// FirewallBackend is a structured value in Docker 29. Read its documented
+	// driver member rather than formatting the structure itself.
+	output, err := runner.Output(ctx, "docker", "info", "--format", "{{.FirewallBackend.Driver}}")
 	if err != nil {
 		return nil, errors.New("resolver firewall backend is unavailable")
 	}
