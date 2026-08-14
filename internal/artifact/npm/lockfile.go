@@ -203,8 +203,9 @@ func validSHA512SRI(value string) bool {
 	if !strings.HasPrefix(value, "sha512-") {
 		return false
 	}
-	decoded, err := base64.StdEncoding.DecodeString(strings.TrimPrefix(value, "sha512-"))
-	return err == nil && len(decoded) == sha256.Size*2
+	encoded := strings.TrimPrefix(value, "sha512-")
+	decoded, err := base64.StdEncoding.DecodeString(encoded)
+	return err == nil && len(decoded) == sha256.Size*2 && base64.StdEncoding.EncodeToString(decoded) == encoded
 }
 
 func resolveLockedDependencyPath(fromPath, name string, entries map[string]parsedLockPackage) (string, bool) {
