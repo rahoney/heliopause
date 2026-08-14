@@ -148,9 +148,9 @@ func TestNPMResolverReturnsOnlyParsedGraphAfterPolicyProtectedLifecycle(t *testi
 	}
 	target, _ := domain.NewInstallTarget("/tmp/target")
 	installContext, _ := domain.NewInstallContext(target)
-	graph, err := resolver.ResolveDependencies(context.Background(), reference, installContext)
-	if err != nil || len(graph.Nodes()) != 1 {
-		t.Fatalf("ResolveDependencies() = %#v, %v", graph, err)
+	resolution, err := resolver.ResolveDependencies(context.Background(), reference, installContext)
+	if err != nil || len(resolution.Graph().Nodes()) != 1 || resolution.RuntimeIdentity() != resolverRuntimeIdentity || resolution.LockfileDigest().String() == "" {
+		t.Fatalf("ResolveDependencies() = %#v, %v", resolution, err)
 	}
 	if len(runner.inputCalls) != 1 || runner.inputCalls[0].binary != "docker" {
 		t.Fatalf("manifest input = %#v", runner.inputCalls)

@@ -208,3 +208,28 @@ func (g LockedDependencyGraph) Nodes() []LockedDependency {
 func (g LockedDependencyGraph) Edges() []DependencyEdge {
 	return append([]DependencyEdge(nil), g.edges...)
 }
+
+// DependencyResolution binds an exact graph to the resolver runtime and raw
+// lockfile content identity that produced it. Raw lockfile bytes stay inside
+// the resolver adapter.
+type DependencyResolution struct {
+	graph           LockedDependencyGraph
+	runtimeIdentity string
+	lockfileDigest  ContentDigest
+}
+
+func NewDependencyResolution(graph LockedDependencyGraph, runtimeIdentity string, lockfileDigest ContentDigest) (DependencyResolution, error) {
+	if len(graph.nodes) == 0 || lockfileDigest.String() == "" {
+		return DependencyResolution{}, errors.New("dependency resolution requires graph and lockfile digest")
+	}
+	if err := validateBoundedText(runtimeIdentity, maxInstallTargetLength, "resolver runtime identity"); err != nil {
+		return DependencyResolution{}, err
+	}
+	return DependencyResolution{graph: graph, runtimeIdentity: runtimeIdentity, lockfileDigest: lockfileDigest}, nil
+}
+
+func (r DependencyResolution) Graph() LockedDependencyGraph { return r.graph }
+func (r DependencyResolution) RuntimeIdentity() string      { return r.runtimeIdentity }
+func (r DependencyResolution) LockfileDigest() ContentDigest {
+	return r.lockfileDigest
+}

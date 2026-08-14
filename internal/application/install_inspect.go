@@ -45,41 +45,42 @@ func NewInstallInspectService(resolver ports.DependencyResolver, artifact ports.
 // Inspect resolves one exact graph and returns only after every locked entry
 // has completed its own inspection. Any resolver or entry failure stops the
 // workflow before a set-level decision can be produced.
-func (s *InstallInspectService) Inspect(ctx context.Context, request InstallRequest) (domain.InspectedDependencySet, domain.PolicyDecision, error) {
+func (s *InstallInspectService) Inspect(ctx context.Context, request InstallRequest) (InspectedInstall, error) {
 	if ctx == nil {
-		return domain.InspectedDependencySet{}, domain.PolicyDecision{}, errors.New("context is required")
+		return InspectedInstall{}, errors.New("context is required")
 	}
 	if err := ctx.Err(); err != nil {
-		return domain.InspectedDependencySet{}, domain.PolicyDecision{}, err
+		return InspectedInstall{}, err
 	}
 	if request.reference.Source().String() == "" || request.context.Target().String() == "" || !request.context.RequiresNewTarget() {
-		return domain.InspectedDependencySet{}, domain.PolicyDecision{}, errors.New("validated Install request is required")
+		return InspectedInstall{}, errors.New("validated Install request is required")
 	}
 	operationID, err := s.newOperationID()
 	if err != nil {
-		return domain.InspectedDependencySet{}, domain.PolicyDecision{}, fmt.Errorf("generate operation ID: %w", err)
+		return InspectedInstall{}, fmt.Errorf("generate operation ID: %w", err)
 	}
-	graph, err := s.resolver.ResolveDependencies(ctx, request.reference, request.context)
+	resolution, err := s.resolver.ResolveDependencies(ctx, request.reference, request.context)
 	if err != nil {
-		return domain.InspectedDependencySet{}, domain.PolicyDecision{}, fmt.Errorf("resolve locked dependency graph: %w", err)
+		return InspectedInstall{}, fmt.Errorf("resolve locked dependency graph: %w", err)
 	}
+	graph := resolution.Graph()
 	inspections := make([]domain.DependencyInspection, 0, len(graph.Nodes()))
 	for _, dependency := range graph.Nodes() {
 		inspection, inspectionErr := s.inspectDependency(ctx, operationID, dependency)
 		if inspectionErr != nil {
-			return domain.InspectedDependencySet{}, domain.PolicyDecision{}, inspectionErr
+			return InspectedInstall{}, inspectionErr
 		}
 		inspections = append(inspections, inspection)
 	}
 	set, err := domain.NewInspectedDependencySet(graph, inspections)
 	if err != nil {
-		return domain.InspectedDependencySet{}, domain.PolicyDecision{}, fmt.Errorf("construct inspected dependency set: %w", err)
+		return InspectedInstall{}, fmt.Errorf("construct inspected dependency set: %w", err)
 	}
 	decision, err := s.setPolicy.EvaluateSet(set)
 	if err != nil {
-		return domain.InspectedDependencySet{}, domain.PolicyDecision{}, fmt.Errorf("evaluate dependency set policy: %w", err)
+		return InspectedInstall{}, fmt.Errorf("evaluate dependency set policy: %w", err)
 	}
-	return set, decision, nil
+	return newInspectedInstall(operationID, request, resolution, set, decision), nil
 }
 
 func (s *InstallInspectService) inspectDependency(ctx context.Context, operationID domain.OperationID, dependency domain.LockedDependency) (domain.DependencyInspection, error) {

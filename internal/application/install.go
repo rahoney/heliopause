@@ -22,3 +22,23 @@ func NewInstallRequest(reference domain.ArtifactReference, context domain.Instal
 
 func (r InstallRequest) Reference() domain.ArtifactReference { return r.reference }
 func (r InstallRequest) Context() domain.InstallContext      { return r.context }
+
+// InspectedInstall preserves the exact operation and resolver context needed
+// to build a Manifest after the complete set-level Policy decision.
+type InspectedInstall struct {
+	operationID domain.OperationID
+	request     InstallRequest
+	resolution  domain.DependencyResolution
+	set         domain.InspectedDependencySet
+	decision    domain.PolicyDecision
+}
+
+func newInspectedInstall(operationID domain.OperationID, request InstallRequest, resolution domain.DependencyResolution, set domain.InspectedDependencySet, decision domain.PolicyDecision) InspectedInstall {
+	return InspectedInstall{operationID: operationID, request: request, resolution: resolution, set: set, decision: decision}
+}
+
+func (i InspectedInstall) OperationID() domain.OperationID         { return i.operationID }
+func (i InspectedInstall) Request() InstallRequest                 { return i.request }
+func (i InspectedInstall) Resolution() domain.DependencyResolution { return i.resolution }
+func (i InspectedInstall) Set() domain.InspectedDependencySet      { return i.set }
+func (i InspectedInstall) Decision() domain.PolicyDecision         { return i.decision }

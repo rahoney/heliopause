@@ -100,12 +100,12 @@ func TestLinuxNPMResolverNetworkPolicyIntegration(t *testing.T) {
 	installContext, _ := domain.NewInstallContext(target)
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
-	graph, err := resolver.ResolveDependencies(ctx, reference, installContext)
+	resolution, err := resolver.ResolveDependencies(ctx, reference, installContext)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(graph.Nodes()) == 0 || graph.Primary().String() == "" {
-		t.Fatalf("resolver graph = %#v", graph)
+	if len(resolution.Graph().Nodes()) == 0 || resolution.Graph().Primary().String() == "" || resolution.RuntimeIdentity() == "" || resolution.LockfileDigest().String() == "" {
+		t.Fatalf("resolver resolution = %#v", resolution)
 	}
 }
 

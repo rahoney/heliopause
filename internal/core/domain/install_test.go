@@ -51,6 +51,27 @@ func TestLockedDependencyGraphRejectsIncompleteOrUnsafeShape(t *testing.T) {
 	}
 }
 
+func TestDependencyResolutionBindsRuntimeAndLockfileDigest(t *testing.T) {
+	t.Parallel()
+	source := mustSource(t, "npm")
+	primary := lockedDependency(t, "primary", domain.DependencyPrimary, source, "root", "1.0.0")
+	graph, err := domain.NewLockedDependencyGraph([]domain.LockedDependency{primary}, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	digest, _ := domain.NewSHA256Digest(strings.Repeat("c", 64))
+	resolution, err := domain.NewDependencyResolution(graph, "node:22.23.1;npm:10.9.8", digest)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resolution.Graph().Primary() != graph.Primary() || resolution.RuntimeIdentity() != "node:22.23.1;npm:10.9.8" || resolution.LockfileDigest() != digest {
+		t.Fatalf("DependencyResolution = %#v", resolution)
+	}
+	if _, err := domain.NewDependencyResolution(graph, "", digest); err == nil {
+		t.Fatal("NewDependencyResolution() accepted empty runtime identity")
+	}
+}
+
 func lockedDependency(t *testing.T, node string, role domain.DependencyRole, source domain.SourceID, name, version string) domain.LockedDependency {
 	t.Helper()
 	nodeID, err := domain.NewDependencyNodeID(node)

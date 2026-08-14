@@ -37,15 +37,15 @@ func TestInstallInspectResolvesLockedGraphBeforeInspectingEveryEntry(t *testing.
 	if err != nil {
 		t.Fatal(err)
 	}
-	set, decision, err := service.Inspect(context.Background(), request)
+	result, err := service.Inspect(context.Background(), request)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !resolver.called || !set.Valid() || len(set.Inspections()) != 1 {
-		t.Fatalf("resolver called=%v set=%#v", resolver.called, set)
+	if !resolver.called || !result.Set().Valid() || len(result.Set().Inspections()) != 1 || result.OperationID().String() == "" || result.Resolution().RuntimeIdentity() == "" {
+		t.Fatalf("resolver called=%v result=%#v", resolver.called, result)
 	}
-	if decision.Decision() != domain.DecisionAllow || !reflect.DeepEqual(decision.Reasons(), []string{"M4_VERIFIED_SET_COMPLETED"}) {
-		t.Fatalf("set decision = %#v", decision)
+	if result.Decision().Decision() != domain.DecisionAllow || !reflect.DeepEqual(result.Decision().Reasons(), []string{"M4_VERIFIED_SET_COMPLETED"}) {
+		t.Fatalf("set decision = %#v", result.Decision())
 	}
 	if got, want := fake.Calls(), []string{"acquire", "verify", "inspect", "evidence"}; !reflect.DeepEqual(got, want) {
 		t.Fatalf("calls = %v, want %v", got, want)
@@ -70,7 +70,7 @@ func TestInstallInspectFailsClosedWhenLockedResolutionFails(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, _, err := service.Inspect(context.Background(), request); !errors.Is(err, resolver.err) {
+	if _, err := service.Inspect(context.Background(), request); !errors.Is(err, resolver.err) {
 		t.Fatalf("Inspect() error = %v, want resolver error", err)
 	}
 	if got := fake.Calls(); len(got) != 0 {
@@ -95,14 +95,14 @@ func TestInstallInspectCreatesIndependentCompletedRecordsForEveryLockedNode(t *t
 	if err != nil {
 		t.Fatal(err)
 	}
-	set, decision, err := service.Inspect(context.Background(), request)
+	result, err := service.Inspect(context.Background(), request)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if decision.Decision() != domain.DecisionAllow || len(set.Inspections()) != 2 {
-		t.Fatalf("set decision=%#v inspections=%#v", decision, set.Inspections())
+	if result.Decision().Decision() != domain.DecisionAllow || len(result.Set().Inspections()) != 2 {
+		t.Fatalf("set decision=%#v inspections=%#v", result.Decision(), result.Set().Inspections())
 	}
-	for _, inspection := range set.Inspections() {
+	for _, inspection := range result.Set().Inspections() {
 		if inspection.RunID().String() == "" || len(inspection.Evidence()) != 2 || inspection.PolicyDecision().Decision() != domain.DecisionAllow {
 			t.Fatalf("incomplete dependency record: %#v", inspection)
 		}
@@ -118,12 +118,13 @@ type lockedResolver struct {
 	called bool
 }
 
-func (r *lockedResolver) ResolveDependencies(_ context.Context, _ domain.ArtifactReference, _ domain.InstallContext) (domain.LockedDependencyGraph, error) {
+func (r *lockedResolver) ResolveDependencies(_ context.Context, _ domain.ArtifactReference, _ domain.InstallContext) (domain.DependencyResolution, error) {
 	r.called = true
 	if r.err != nil {
-		return domain.LockedDependencyGraph{}, r.err
+		return domain.DependencyResolution{}, r.err
 	}
-	return r.graph, nil
+	digest, _ := domain.NewSHA256Digest(strings.Repeat("c", 64))
+	return domain.NewDependencyResolution(r.graph, "fixture-runtime", digest)
 }
 
 func fixtureLockedGraph(t *testing.T) domain.LockedDependencyGraph {

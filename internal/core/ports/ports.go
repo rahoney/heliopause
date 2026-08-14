@@ -37,7 +37,7 @@ type Evidence interface {
 // Implementations own package-manager lockfile/runtime details and must return
 // only parser-normalized Domain values.
 type DependencyResolver interface {
-	ResolveDependencies(context.Context, domain.ArtifactReference, domain.InstallContext) (domain.LockedDependencyGraph, error)
+	ResolveDependencies(context.Context, domain.ArtifactReference, domain.InstallContext) (domain.DependencyResolution, error)
 }
 
 // Staging persists one immutable Manifest/SBOM-bound Verified Set after
