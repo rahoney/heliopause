@@ -55,18 +55,29 @@ func TestExecuteInstallPresentsCompletedAndFailedPromotionWithoutLosingPolicy(t 
 	}
 }
 
-func TestExecuteInstallDoesNotStageManualReview(t *testing.T) {
+func TestExecuteInstallReportsNonAllowWithoutVerifiedSet(t *testing.T) {
 	t.Parallel()
-	service, request := installCLIFixture(t, manualSetPolicy{}, nil)
-	var output bytes.Buffer
-	exitCode, err := cli.ExecuteInstall(context.Background(), service, request, true, &output)
-	if err != nil || exitCode != 10 {
-		t.Fatalf("ExecuteInstall() exit=%d error=%v", exitCode, err)
-	}
-	var document map[string]any
-	_ = json.Unmarshal(output.Bytes(), &document)
-	if document["operation_status"] != "NOT_PERFORMED" || document["promotion_status"] != "NOT_PERFORMED" || document["verified_set"] != nil {
-		t.Fatalf("manual result = %#v", document)
+	for _, test := range []struct {
+		decision domain.Decision
+		exit     int
+	}{
+		{decision: domain.DecisionManualReview, exit: 10},
+		{decision: domain.DecisionBlock, exit: 20},
+	} {
+		t.Run(string(test.decision), func(t *testing.T) {
+			service, request := installCLIFixture(t, fixedCLISetPolicy{decision: test.decision}, nil)
+			var output bytes.Buffer
+			exitCode, err := cli.ExecuteInstall(context.Background(), service, request, true, &output)
+			if err != nil || exitCode != test.exit {
+				t.Fatalf("ExecuteInstall() exit=%d error=%v", exitCode, err)
+			}
+			var document map[string]any
+			_ = json.Unmarshal(output.Bytes(), &document)
+			policyDocument, _ := document["policy"].(map[string]any)
+			if document["operation_status"] != "NOT_PERFORMED" || document["promotion_status"] != "NOT_PERFORMED" || document["verified_set"] != nil || policyDocument["decision"] != string(test.decision) {
+				t.Fatalf("non-ALLOW result = %#v", document)
+			}
+		})
 	}
 }
 
@@ -157,10 +168,10 @@ func (p installCLIPromotion) Promote(_ context.Context, staged domain.StagedSet,
 	return domain.NewPromotedInstall(bundle.ManifestID(), installContext.Target())
 }
 
-type manualSetPolicy struct{}
+type fixedCLISetPolicy struct{ decision domain.Decision }
 
-func (manualSetPolicy) EvaluateSet(domain.InspectedDependencySet) (domain.PolicyDecision, error) {
-	return domain.NewPolicyDecision(domain.DecisionManualReview, "manual-set", 1, []string{"MANUAL_REVIEW"})
+func (p fixedCLISetPolicy) EvaluateSet(domain.InspectedDependencySet) (domain.PolicyDecision, error) {
+	return domain.NewPolicyDecision(p.decision, "non-allow-set", 1, []string{"NON_ALLOW"})
 }
 
 func mustCLIInstallEvidenceID(value string) domain.EvidenceID {
