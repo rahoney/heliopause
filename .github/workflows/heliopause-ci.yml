@@ -204,7 +204,10 @@ jobs:
           sudo install -d -m 0700 /etc/heliopause
           sudo install -m 0600 tools/gvisor-observer/pod-init.json /etc/heliopause/pod-init.json
           sudo runsc install --runtime=runsc-trace -- --pod-init-config=/etc/heliopause/pod-init.json
+          sudo python3 -c 'import json; from pathlib import Path; path = Path("/etc/docker/daemon.json"); config = json.loads(path.read_text()) if path.exists() else {}; config.update({"firewall-backend": "iptables", "iptables": True, "ip6tables": False}); path.write_text(json.dumps(config, sort_keys=True) + "\n")'
           sudo systemctl restart docker
+          test "$(docker info --format '{{.FirewallBackend}}')" = iptables
+          sudo iptables -S DOCKER-USER
           docker pull node:22.23.1-slim@sha256:6c74791e557ce11fc957704f6d4fe134a7bc8d6f5ca4403205b2966bd488f6b3
           git clone --filter=blob:none https://github.com/google/gvisor.git "$RUNNER_TEMP/gvisor"
           git -C "$RUNNER_TEMP/gvisor" checkout --detach "$gvisor_commit"
