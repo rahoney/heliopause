@@ -116,7 +116,8 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/core/domain": true,
 		},
 		modulePath + "/internal/sandbox": {
-			modulePath + "/internal/core/domain": true,
+			modulePath + "/internal/artifact/npm": true,
+			modulePath + "/internal/core/domain":  true,
 		},
 		modulePath + "/internal/testutil/fakeworkflow": {
 			modulePath + "/internal/core/domain": true,

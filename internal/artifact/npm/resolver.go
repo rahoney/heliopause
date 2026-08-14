@@ -240,6 +240,19 @@ func ParseReference(locator string) (domain.ArtifactReference, error) {
 	return domain.NewArtifactReference(source, parsed.locator)
 }
 
+// RequestedPackageName returns the normalized npm package name from a validated
+// caller reference without exposing npm parser internals to Application.
+func RequestedPackageName(reference domain.ArtifactReference) (string, error) {
+	if reference.Source().String() != "npm" {
+		return "", errors.New("npm package reference is required")
+	}
+	parsed, err := parseLocator(reference.Locator())
+	if err != nil {
+		return "", err
+	}
+	return parsed.name, nil
+}
+
 // Resolve converts an npm reference into an exact target and declared integrity descriptor.
 func (r *Resolver) Resolve(ctx context.Context, reference domain.ArtifactReference) (domain.ResolvedArtifact, error) {
 	if ctx == nil {
