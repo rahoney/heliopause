@@ -8,8 +8,8 @@
 - Go module path: `github.com/rahoney/heliopause`
 - 구현 언어: Go
 - CLI framework: Cobra
-- 현재 상태: Step 14 Implementation — M4 Install Context와 locked npm resolver boundary 완료
-- 다음 작업: M4-003 recursive dependency inspection과 set-level Policy
+- 현재 상태: Step 14 Implementation — M4 recursive dependency inspection과 set-level Policy 완료
+- 다음 작업: M4-004 Verified Manifest·SBOM과 trusted Staging
 
 ## Project Notes
 
