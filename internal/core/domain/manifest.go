@@ -79,3 +79,20 @@ func NewStagedSet(manifestID ContentDigest, handle string) (StagedSet, error) {
 
 func (s StagedSet) ManifestID() ContentDigest { return s.manifestID }
 func (s StagedSet) Handle() string            { return s.handle }
+
+// PromotedInstall identifies one fully published new target. It carries no
+// mutable filesystem authority.
+type PromotedInstall struct {
+	manifestID ContentDigest
+	target     InstallTarget
+}
+
+func NewPromotedInstall(manifestID ContentDigest, target InstallTarget) (PromotedInstall, error) {
+	if manifestID.String() == "" || target.String() == "" {
+		return PromotedInstall{}, errors.New("promoted install requires Manifest identity and target")
+	}
+	return PromotedInstall{manifestID: manifestID, target: target}, nil
+}
+
+func (i PromotedInstall) ManifestID() ContentDigest { return i.manifestID }
+func (i PromotedInstall) Target() InstallTarget     { return i.target }

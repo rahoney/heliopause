@@ -45,3 +45,13 @@ type DependencyResolver interface {
 type Staging interface {
 	Stage(context.Context, domain.VerifiedBundle) (domain.StagedSet, error)
 }
+
+// Manifest creates deterministic records from one complete ALLOW set.
+type Manifest interface {
+	Build(context.Context, domain.OperationID, domain.InstallContext, domain.DependencyResolution, domain.VerifiedSet) (domain.VerifiedBundle, error)
+}
+
+// Promotion installs only an already-staged exact bundle into a new target.
+type Promotion interface {
+	Promote(context.Context, domain.StagedSet, domain.VerifiedBundle, domain.InstallContext) (domain.PromotedInstall, error)
+}

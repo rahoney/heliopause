@@ -4,6 +4,7 @@ package evidence
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -28,6 +29,20 @@ type ManifestContext struct {
 	InstallContext  domain.InstallContext
 	ResolverRuntime string
 	LockfileDigest  domain.ContentDigest
+}
+
+// Generator adapts deterministic record generation to the Application-owned
+// Manifest Port.
+type Generator struct{}
+
+func (Generator) Build(ctx context.Context, operationID domain.OperationID, installContext domain.InstallContext, resolution domain.DependencyResolution, set domain.VerifiedSet) (domain.VerifiedBundle, error) {
+	if ctx == nil {
+		return domain.VerifiedBundle{}, errors.New("context is required")
+	}
+	if err := ctx.Err(); err != nil {
+		return domain.VerifiedBundle{}, err
+	}
+	return BuildVerifiedBundle(ManifestContext{OperationID: operationID, InstallContext: installContext, ResolverRuntime: resolution.RuntimeIdentity(), LockfileDigest: resolution.LockfileDigest()}, set)
 }
 
 // BuildVerifiedBundle emits compact deterministic UTF-8 JSON for both the HAA
