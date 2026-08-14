@@ -131,7 +131,11 @@ func (r *NPMResolver) ResolveDependencies(ctx context.Context, reference domain.
 	if err != nil {
 		return domain.LockedDependencyGraph{}, errors.New("resolver package reference is invalid")
 	}
-	manifest := []byte("{\"name\":\"haa-resolver\",\"version\":\"1.0.0\",\"private\":true,\"dependencies\":{\"" + packageName + "\":\"" + reference.Locator() + "\"}}")
+	packageSpec, err := artifactnpm.RequestedPackageSpec(reference)
+	if err != nil {
+		return domain.LockedDependencyGraph{}, errors.New("resolver package reference is invalid")
+	}
+	manifest := []byte("{\"name\":\"haa-resolver\",\"version\":\"1.0.0\",\"private\":true,\"dependencies\":{\"" + packageName + "\":\"" + packageSpec + "\"}}")
 	if err := input.RunInput(ctx, bytes.NewReader(manifest), "docker", "exec", "-i", containerID, "/bin/sh", "-ceu", "umask 077; mkdir -p "+resolverProjectDir+"; cat > "+resolverProjectDir+"/package.json"); err != nil {
 		return domain.LockedDependencyGraph{}, errors.New("write resolver manifest failed")
 	}

@@ -253,6 +253,22 @@ func RequestedPackageName(reference domain.ArtifactReference) (string, error) {
 	return parsed.name, nil
 }
 
+// RequestedPackageSpec returns the npm dependency spec without the package
+// name. A package.json dependency already carries the name in its key.
+func RequestedPackageSpec(reference domain.ArtifactReference) (string, error) {
+	if reference.Source().String() != "npm" {
+		return "", errors.New("npm package reference is required")
+	}
+	parsed, err := parseLocator(reference.Locator())
+	if err != nil {
+		return "", err
+	}
+	if parsed.selector == "" {
+		return "latest", nil
+	}
+	return parsed.selector, nil
+}
+
 // Resolve converts an npm reference into an exact target and declared integrity descriptor.
 func (r *Resolver) Resolve(ctx context.Context, reference domain.ArtifactReference) (domain.ResolvedArtifact, error) {
 	if ctx == nil {

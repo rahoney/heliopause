@@ -155,7 +155,7 @@ func TestNPMResolverReturnsOnlyParsedGraphAfterPolicyProtectedLifecycle(t *testi
 	if len(runner.inputCalls) != 1 || runner.inputCalls[0].binary != "docker" {
 		t.Fatalf("manifest input = %#v", runner.inputCalls)
 	}
-	if got := string(runner.input); !strings.Contains(got, "\"primary\":\"primary@1.0.0\"") {
+	if got := string(runner.input); !strings.Contains(got, "\"primary\":\"1.0.0\"") {
 		t.Fatalf("manifest = %q", got)
 	}
 	if got := runner.calls[len(runner.calls)-1]; got.binary != "docker" || got.arguments[0] != "network" {
