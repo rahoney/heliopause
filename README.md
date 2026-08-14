@@ -8,8 +8,8 @@
 - Go module path: `github.com/rahoney/heliopause`
 - 구현 언어: Go
 - CLI framework: Cobra
-- 현재 상태: Step 14 Implementation — M4 npm Install and Promotion 완료
-- 다음 작업: M5-001 PyPI/pip Expansion entry decision
+- 현재 상태: Step 14 Implementation — M5 PyPI/pip Expansion entry decision 완료
+- 다음 작업: M5-002 Python/pip runtime identity lock과 PyPI reference foundation
 
 ## Project Notes
 
