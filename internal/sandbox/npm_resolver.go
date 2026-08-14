@@ -14,7 +14,9 @@ import (
 )
 
 const (
-	resolverNPMVersion = "11.15.0"
+	// nodeImageReference is the M3-pinned Node 22.23.1 image. Its upstream
+	// bundled npm version is part of that exact runtime identity.
+	resolverNPMVersion = "10.9.8"
 	resolverProjectDir = "/tmp/haa-resolver"
 )
 
