@@ -11,7 +11,9 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
+	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
@@ -75,6 +77,34 @@ func TestLinuxGVisorLifecycleIntegration(t *testing.T) {
 	if result.Status() != domain.SandboxCompleted {
 		code, _ := result.LimitationCode()
 		t.Fatalf("Sandbox result = %q/%q", result.Status(), code)
+	}
+}
+
+func TestLinuxNPMResolverNetworkPolicyIntegration(t *testing.T) {
+	if os.Getenv("HELOX_NPM_RESOLVER_INTEGRATION") != "1" {
+		t.Skip("requires privileged Linux Docker firewall integration")
+	}
+	if os.Geteuid() != 0 {
+		t.Fatal("resolver network policy integration requires explicit CAP_NET_ADMIN elevation")
+	}
+	resolver, err := NewLinuxNPMResolver()
+	if err != nil {
+		t.Fatal(err)
+	}
+	reference, err := artifactnpm.ParseReference("is-number@7.0.0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	target, _ := domain.NewInstallTarget("/tmp/heliopause-resolver-target")
+	installContext, _ := domain.NewInstallContext(target)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
+	graph, err := resolver.ResolveDependencies(ctx, reference, installContext)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(graph.Nodes()) == 0 || graph.Primary().String() == "" {
+		t.Fatalf("resolver graph = %#v", graph)
 	}
 }
 
