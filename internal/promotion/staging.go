@@ -113,7 +113,7 @@ func (s *LocalStaging) Stage(ctx context.Context, bundle domain.VerifiedBundle) 
 	if err := syncDirectory(temporary); err != nil {
 		return domain.StagedSet{}, err
 	}
-	if err := os.Rename(temporary, final); err != nil {
+	if err := renameNoReplace(temporary, final); err != nil {
 		return domain.StagedSet{}, fmt.Errorf("atomically finalize staged set: %w", err)
 	}
 	cleanup = false
