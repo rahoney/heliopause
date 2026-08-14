@@ -88,7 +88,7 @@ func TestLinuxNPMResolverNetworkPolicyIntegration(t *testing.T) {
 	if os.Geteuid() != 0 {
 		t.Fatal("resolver network policy integration requires explicit CAP_NET_ADMIN elevation")
 	}
-	resolver, err := NewLinuxNPMResolver()
+	resolver, err := NewNPMResolver(integrationRunner{t: t}, systemEndpointResolver{})
 	if err != nil {
 		t.Fatal(err)
 	}
