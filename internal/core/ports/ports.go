@@ -32,3 +32,10 @@ type Sandbox interface {
 type Evidence interface {
 	Record(context.Context, domain.RunID, []domain.Evidence) ([]domain.EvidenceReference, error)
 }
+
+// DependencyResolver resolves one requested Artifact into a bounded exact graph.
+// Implementations own package-manager lockfile/runtime details and must return
+// only parser-normalized Domain values.
+type DependencyResolver interface {
+	ResolveDependencies(context.Context, domain.ArtifactReference, domain.InstallContext) (domain.LockedDependencyGraph, error)
+}
