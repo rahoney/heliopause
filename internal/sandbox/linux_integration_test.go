@@ -122,7 +122,7 @@ func (r integrationRunner) Output(ctx context.Context, binary string, arguments 
 		if errors.As(err, &exitError) {
 			stderr = strings.TrimSpace(string(exitError.Stderr))
 		}
-		r.t.Logf("command failed: %s %q: %v; stderr=%q", binary, arguments, err, stderr)
+		r.t.Logf("command failed: %s %q: %v; stdout=%q; stderr=%q", binary, arguments, err, strings.TrimSpace(string(output)), stderr)
 	}
 	if err == nil && binary == "docker" && len(arguments) == 2 && arguments[0] == "wait" && strings.TrimSpace(string(output)) != "0" {
 		logs, logsErr := exec.CommandContext(ctx, "docker", "logs", arguments[1]).CombinedOutput()
