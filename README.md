@@ -8,8 +8,8 @@
 - Go module path: `github.com/rahoney/heliopause`
 - 구현 언어: Go
 - CLI framework: Cobra
-- 현재 상태: Step 14 Implementation — M4 Verified Manifest·SBOM과 trusted Staging 완료
-- 다음 작업: M4-005 offline npm Promotion과 atomic target
+- 현재 상태: Step 14 Implementation — M4 offline npm Promotion 구현 완료, qualification 진행
+- 다음 작업: M4-006 qualification과 M5/M6 handoff
 
 ## Project Notes
 

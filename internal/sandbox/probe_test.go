@@ -2,9 +2,32 @@ package sandbox
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"os"
+	"path/filepath"
 	"testing"
 )
+
+func TestRuntimeLockMatchesSandboxRuntimeIdentity(t *testing.T) {
+	t.Parallel()
+	body, err := os.ReadFile(filepath.Join("..", "..", "scripts", "runtimes.lock.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var lock struct {
+		NodeImage struct {
+			Reference  string `json:"reference"`
+			NPMVersion string `json:"npm_version"`
+		} `json:"node_image"`
+	}
+	if err := json.Unmarshal(body, &lock); err != nil {
+		t.Fatal(err)
+	}
+	if lock.NodeImage.Reference != nodeImageReference || lock.NodeImage.NPMVersion != resolverNPMVersion {
+		t.Fatalf("runtime lock=%#v image=%q npm=%q", lock.NodeImage, nodeImageReference, resolverNPMVersion)
+	}
+}
 
 func TestProbe(t *testing.T) {
 	t.Parallel()

@@ -21,7 +21,9 @@ type Inspector interface {
 // ExitError carries an intentional completed-operation process exit code.
 type ExitError struct{ Code int }
 
-func (e ExitError) Error() string { return fmt.Sprintf("inspect completed with exit code %d", e.Code) }
+func (e ExitError) Error() string {
+	return fmt.Sprintf("operation completed with exit code %d", e.Code)
+}
 func (e ExitError) ExitCode() int { return e.Code }
 
 // ExecuteInspect invokes an injected use case and always presents a returned partial result.

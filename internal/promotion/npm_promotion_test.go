@@ -105,6 +105,25 @@ func TestNPMPromotionRejectsExistingTargetAndUnsupportedPlatform(t *testing.T) {
 	}
 }
 
+func TestPromotionImageMatchesRuntimeLock(t *testing.T) {
+	t.Parallel()
+	body, err := os.ReadFile(filepath.Join("..", "..", "scripts", "runtimes.lock.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var lock struct {
+		NodeImage struct {
+			Reference string `json:"reference"`
+		} `json:"node_image"`
+	}
+	if err := json.Unmarshal(body, &lock); err != nil {
+		t.Fatal(err)
+	}
+	if lock.NodeImage.Reference != promotionNodeImage {
+		t.Fatalf("Promotion image=%q runtime lock=%q", promotionNodeImage, lock.NodeImage.Reference)
+	}
+}
+
 type fixturePromotionRunner struct {
 	bundle      domain.VerifiedBundle
 	arguments   []string

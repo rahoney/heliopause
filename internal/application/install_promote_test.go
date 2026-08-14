@@ -46,7 +46,32 @@ func TestInstallPreservesAllowAndStopsAfterStagingFailure(t *testing.T) {
 	}
 }
 
+func TestInstallNeverBuildsManifestOrStagesNonAllowSet(t *testing.T) {
+	t.Parallel()
+	for _, decision := range []domain.Decision{domain.DecisionManualReview, domain.DecisionBlock} {
+		t.Run(string(decision), func(t *testing.T) {
+			request, inspection := installWorkflowFixtureWithPolicy(t, fixedSetPolicy{decision: decision})
+			calls := []string{}
+			service, err := application.NewInstallService(inspection, &manifestPort{calls: &calls}, &stagingPort{calls: &calls}, &promotionPort{calls: &calls})
+			if err != nil {
+				t.Fatal(err)
+			}
+			outcome, err := service.Install(context.Background(), request)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if outcome.Inspection().Decision().Decision() != decision || len(calls) != 0 {
+				t.Fatalf("decision=%s calls=%v", outcome.Inspection().Decision().Decision(), calls)
+			}
+		})
+	}
+}
+
 func installWorkflowFixture(t *testing.T) (application.InstallRequest, *application.InstallInspectService) {
+	return installWorkflowFixtureWithPolicy(t, policy.M4{})
+}
+
+func installWorkflowFixtureWithPolicy(t *testing.T, setPolicy application.DependencySetPolicy) (application.InstallRequest, *application.InstallInspectService) {
 	t.Helper()
 	graph := twoNodeGraph(t)
 	ports := newMultiInspectionPorts(t, graph)
@@ -55,11 +80,17 @@ func installWorkflowFixture(t *testing.T) (application.InstallRequest, *applicat
 	target, _ := domain.NewInstallTarget("/tmp/heliopause-promoted-target")
 	installContext, _ := domain.NewInstallContext(target)
 	request, _ := application.NewInstallRequest(reference, installContext)
-	inspection, err := application.NewInstallInspectService(&lockedResolver{graph: graph}, ports, ports, ports, ports, policy.M1{}, policy.M4{}, domain.NewOperationID, domain.NewRunID)
+	inspection, err := application.NewInstallInspectService(&lockedResolver{graph: graph}, ports, ports, ports, ports, policy.M1{}, setPolicy, domain.NewOperationID, domain.NewRunID)
 	if err != nil {
 		t.Fatal(err)
 	}
 	return request, inspection
+}
+
+type fixedSetPolicy struct{ decision domain.Decision }
+
+func (p fixedSetPolicy) EvaluateSet(domain.InspectedDependencySet) (domain.PolicyDecision, error) {
+	return domain.NewPolicyDecision(p.decision, "qualification-set", 1, []string{"QUALIFICATION_NON_ALLOW"})
 }
 
 type manifestPort struct{ calls *[]string }
