@@ -63,22 +63,22 @@ func TestResolverNetworkPolicyRejectsUnknownBackendAndFailedCleanup(t *testing.T
 	}
 }
 
-func TestResolverNetworkPolicyProbesDockerRulesWhenInfoOmitsBackend(t *testing.T) {
-	runner := &recordingRunner{errors: []error{nil, nil}}
+func TestResolverNetworkPolicyDefersBackendProbeUntilBridgeExists(t *testing.T) {
+	runner := &recordingRunner{responses: [][]byte{[]byte("<no value>")}}
 	policy, err := NewResolverNetworkPolicy(context.Background(), runner)
-	if err != nil || policy.backend != firewallBackendIPTables {
+	if err != nil || policy.backend != "" {
 		t.Fatalf("NewResolverNetworkPolicy() = %#v, %v", policy, err)
 	}
-	if len(runner.calls) != 2 || runner.calls[1].binary != "iptables" {
+	if len(runner.calls) != 1 || runner.calls[0].binary != "docker" {
 		t.Fatalf("backend probe calls = %#v", runner.calls)
 	}
 }
 
 func TestResolverNetworkPolicyUsesNFTablesOnlyWhenIPTablesHookIsUnavailable(t *testing.T) {
-	runner := &recordingRunner{errors: []error{nil, errors.New("DOCKER-USER unavailable"), nil}}
-	policy, err := NewResolverNetworkPolicy(context.Background(), runner)
-	if err != nil || policy.backend != firewallBackendNFTables {
-		t.Fatalf("NewResolverNetworkPolicy() = %#v, %v", policy, err)
+	runner := &recordingRunner{errors: []error{errors.New("DOCKER-USER unavailable"), nil}}
+	backend, err := probeDockerFirewallBackend(context.Background(), runner)
+	if err != nil || backend != firewallBackendNFTables {
+		t.Fatalf("probeDockerFirewallBackend() = %q, %v", backend, err)
 	}
 }
 

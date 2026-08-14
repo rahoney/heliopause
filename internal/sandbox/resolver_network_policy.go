@@ -50,13 +50,10 @@ func NewResolverNetworkPolicy(ctx context.Context, runner CommandRunner) (*Resol
 		return nil, errors.New("resolver firewall backend is unavailable")
 	}
 	backend := firewallBackend(strings.TrimSpace(string(output)))
-	if backend == "" || backend == "<no value>" {
-		backend, err = probeDockerFirewallBackend(ctx, runner)
-		if err != nil {
-			return nil, err
-		}
+	if backend == "<no value>" {
+		backend = ""
 	}
-	if backend != firewallBackendIPTables && backend != firewallBackendNFTables {
+	if backend != "" && backend != firewallBackendIPTables && backend != firewallBackendNFTables {
 		return nil, errors.New("resolver firewall backend is unsupported")
 	}
 	return &ResolverNetworkPolicy{runner: runner, newID: domain.NewSandboxSessionID, backend: backend}, nil
@@ -105,8 +102,19 @@ func (p *ResolverNetworkPolicy) Prepare(ctx context.Context, endpoints []netip.A
 		_ = p.removeNetwork(context.Background(), name)
 		return "", errors.New("resolver Docker network subnet is unavailable")
 	}
+	backend := p.backend
+	if backend == "" {
+		// Docker creates its firewall hooks lazily when the first bridge network
+		// is created. Probe only after that network exists; no resolver container
+		// has been started at this point, so this ordering cannot expose egress.
+		backend, err = probeDockerFirewallBackend(ctx, p.runner)
+		if err != nil {
+			_ = p.removeNetwork(context.Background(), name)
+			return "", err
+		}
+	}
 	chainSuffix := strings.ToUpper(strings.TrimPrefix(id.String(), "sbx_"))
-	network := &resolverNetwork{name: name, subnet: subnet, chainName: "HAA_R_" + chainSuffix[:16], backend: p.backend}
+	network := &resolverNetwork{name: name, subnet: subnet, chainName: "HAA_R_" + chainSuffix[:16], backend: backend}
 	if err := p.applyAndVerify(ctx, network, endpoints); err != nil {
 		cleanupErr := p.cleanupNetwork(context.Background(), network)
 		if cleanupErr != nil {
