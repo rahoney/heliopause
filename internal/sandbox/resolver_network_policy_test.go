@@ -58,6 +58,38 @@ func TestResolverNetworkPolicyRejectsUnknownBackendAndFailedCleanup(t *testing.T
 	}
 }
 
+func TestResolverNetworkPolicyNFTablesUsesSeparateTable(t *testing.T) {
+	runner := &recordingRunner{responses: [][]byte{
+		[]byte("nftables"), []byte("network-id"), []byte("172.30.0.0/24"),
+	}}
+	policy, err := NewResolverNetworkPolicy(context.Background(), runner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	name, err := policy.Prepare(context.Background(), []netip.Addr{netip.MustParseAddr("1.1.1.1")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := runner.calls[3]; got.binary != "nft" || !sameStrings(got.arguments[:4], []string{"add", "table", "ip", got.arguments[3]}) {
+		t.Fatalf("nft table create = %#v", got)
+	}
+	if got := runner.calls[4]; got.binary != "nft" || got.arguments[0] != "add" || got.arguments[1] != "chain" {
+		t.Fatalf("nft chain create = %#v", got)
+	}
+	if got := runner.calls[6]; got.binary != "nft" || got.arguments[len(got.arguments)-1] != "drop" {
+		t.Fatalf("nft default deny = %#v", got)
+	}
+	if err := policy.Close(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if got := runner.calls[len(runner.calls)-2]; got.binary != "nft" || !sameStrings(got.arguments[:3], []string{"delete", "table", "ip"}) {
+		t.Fatalf("nft table cleanup = %#v", got)
+	}
+	if got := runner.calls[len(runner.calls)-1]; got.binary != "docker" || !sameStrings(got.arguments, []string{"network", "rm", name}) {
+		t.Fatalf("network cleanup = %#v", got)
+	}
+}
+
 func TestValidateResolverEndpointsRejectsUnsafeOrAmbiguousInputs(t *testing.T) {
 	for _, endpoints := range [][]netip.Addr{
 		nil,
