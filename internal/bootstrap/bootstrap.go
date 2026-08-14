@@ -3,6 +3,7 @@ package bootstrap
 
 import (
 	"context"
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -13,9 +14,11 @@ import (
 	"github.com/rahoney/heliopause/internal/cli"
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/core/ports"
+	evidencerecord "github.com/rahoney/heliopause/internal/evidence"
 	"github.com/rahoney/heliopause/internal/evidence/local"
 	inspectionnpm "github.com/rahoney/heliopause/internal/inspection/npm"
 	"github.com/rahoney/heliopause/internal/policy"
+	"github.com/rahoney/heliopause/internal/promotion"
 	"github.com/rahoney/heliopause/internal/sandbox"
 	verificationnpm "github.com/rahoney/heliopause/internal/verification/npm"
 )
@@ -74,8 +77,44 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		if err := cli.AddNPMInspect(command, service); err != nil {
 			return err
 		}
+		dependencyResolver, err := installDependencyResolver(runtime.GOOS, runtime.GOARCH)
+		if err != nil {
+			return err
+		}
+		installInspection, err := application.NewInstallInspectService(dependencyResolver, artifact, verificationnpm.IntegrityVerifier{}, inspection, evidence, policy.M3{}, policy.M4{}, domain.NewOperationID, domain.NewRunID)
+		if err != nil {
+			return err
+		}
+		staging, err := promotion.NewLocalStaging(filepath.Join(root, "intake"), filepath.Join(root, "evidence"), filepath.Join(root, "staging"))
+		if err != nil {
+			return err
+		}
+		promoter, err := promotion.NewNPMPromotion(filepath.Join(root, "staging"))
+		if err != nil {
+			return err
+		}
+		installer, err := application.NewInstallService(installInspection, evidencerecord.Generator{}, staging, promoter)
+		if err != nil {
+			return err
+		}
+		if err := cli.AddNPMInstall(command, installer); err != nil {
+			return err
+		}
 	}
 	command.SetArgs(args)
 
 	return command.ExecuteContext(ctx)
+}
+
+func installDependencyResolver(goos, goarch string) (ports.DependencyResolver, error) {
+	if goos == "linux" && goarch == "amd64" {
+		return sandbox.NewLinuxNPMResolver()
+	}
+	return unsupportedInstallResolver{}, nil
+}
+
+type unsupportedInstallResolver struct{}
+
+func (unsupportedInstallResolver) ResolveDependencies(context.Context, domain.ArtifactReference, domain.InstallContext) (domain.DependencyResolution, error) {
+	return domain.DependencyResolution{}, errors.New("automatic npm install requires Linux amd64")
 }

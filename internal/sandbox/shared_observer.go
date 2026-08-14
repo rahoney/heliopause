@@ -138,10 +138,22 @@ type sharedTraceReader struct {
 }
 
 func (r *sharedTraceReader) Next(ctx context.Context) (TraceRecord, error) {
+	// A stream-end datagram can arrive immediately after a final observation.
+	// Preserve already accepted observations before reporting normal EOF.
+	select {
+	case record := <-r.records:
+		return record, nil
+	default:
+	}
 	select {
 	case record := <-r.records:
 		return record, nil
 	case <-r.done:
+		select {
+		case record := <-r.records:
+			return record, nil
+		default:
+		}
 		r.observer.mu.Lock()
 		err := r.observer.fault
 		r.observer.mu.Unlock()

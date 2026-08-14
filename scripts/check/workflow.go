@@ -50,6 +50,7 @@ func validateCIWorkflow(contents string) []string {
 		"docker_package_version=5:29.6.2-1~ubuntu.24.04~noble",
 		"containerd_package_version=2.3.3-1~ubuntu.24.04~noble",
 		"test \"$(docker version --format '{{.Server.Version}}')\" = 29.6.2",
+		"HELOX_PROMOTION_INTEGRATION=1 go test -v -timeout=5m ./internal/promotion -run TestLinuxNPMPromotionIntegration",
 		"check-latest: false",
 		"cache: false",
 		"    if: ${{ always() }}",

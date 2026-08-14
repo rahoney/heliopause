@@ -112,7 +112,7 @@ func (p *Ports) Acquire(ctx context.Context, runID domain.RunID, resolved domain
 	if err != nil {
 		return domain.AcquiredArtifact{}, err
 	}
-	return domain.NewAcquiredArtifact(resolved.Identity(), digest, "fixture-content:"+string(p.scenario), 128)
+	return domain.NewAcquiredArtifactWithDeclaredIntegrity(resolved.Identity(), digest, "fixture-content:"+string(p.scenario), 128, resolved.DeclaredIntegrity())
 }
 
 func (p *Ports) Verify(ctx context.Context, artifact domain.AcquiredArtifact) (domain.VerificationReport, error) {

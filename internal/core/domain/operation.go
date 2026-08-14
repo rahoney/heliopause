@@ -8,7 +8,10 @@ import (
 // OperationType identifies a user-requested workflow without encoding its result.
 type OperationType string
 
-const OperationInspect OperationType = "INSPECT"
+const (
+	OperationInspect OperationType = "INSPECT"
+	OperationInstall OperationType = "INSTALL"
+)
 
 // OperationStatus is independent from Run Outcome and Policy Decision.
 type OperationStatus string

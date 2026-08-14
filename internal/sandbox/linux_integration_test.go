@@ -5,13 +5,16 @@ import (
 	"compress/gzip"
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
+	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
@@ -78,6 +81,34 @@ func TestLinuxGVisorLifecycleIntegration(t *testing.T) {
 	}
 }
 
+func TestLinuxNPMResolverNetworkPolicyIntegration(t *testing.T) {
+	if os.Getenv("HELOX_NPM_RESOLVER_INTEGRATION") != "1" {
+		t.Skip("requires privileged Linux Docker firewall integration")
+	}
+	if os.Geteuid() != 0 {
+		t.Fatal("resolver network policy integration requires explicit CAP_NET_ADMIN elevation")
+	}
+	resolver, err := NewNPMResolver(integrationRunner{t: t}, systemEndpointResolver{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	reference, err := artifactnpm.ParseReference("is-number@7.0.0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	target, _ := domain.NewInstallTarget("/tmp/heliopause-resolver-target")
+	installContext, _ := domain.NewInstallContext(target)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
+	resolution, err := resolver.ResolveDependencies(ctx, reference, installContext)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(resolution.Graph().Nodes()) == 0 || resolution.Graph().Primary().String() == "" || resolution.RuntimeIdentity() == "" || resolution.LockfileDigest().String() == "" {
+		t.Fatalf("resolver resolution = %#v", resolution)
+	}
+}
+
 type integrationRunner struct {
 	t *testing.T
 }
@@ -92,7 +123,10 @@ func (r integrationRunner) Output(ctx context.Context, binary string, arguments 
 		if errors.As(err, &exitError) {
 			stderr = strings.TrimSpace(string(exitError.Stderr))
 		}
-		r.t.Logf("command failed: %s %q: %v; stderr=%q", binary, arguments, err, stderr)
+		r.t.Logf("command failed: %s %q: %v; stdout=%q; stderr=%q", binary, arguments, err, strings.TrimSpace(string(output)), stderr)
+		// This is integration-test-only diagnostic output. Production adapter
+		// errors remain sanitized and never carry command output.
+		fmt.Fprintf(os.Stderr, "integration command failed: %s %q: %v; stdout=%q; stderr=%q\n", binary, arguments, err, strings.TrimSpace(string(output)), stderr)
 	}
 	if err == nil && binary == "docker" && len(arguments) == 2 && arguments[0] == "wait" && strings.TrimSpace(string(output)) != "0" {
 		logs, logsErr := exec.CommandContext(ctx, "docker", "logs", arguments[1]).CombinedOutput()

@@ -32,3 +32,26 @@ type Sandbox interface {
 type Evidence interface {
 	Record(context.Context, domain.RunID, []domain.Evidence) ([]domain.EvidenceReference, error)
 }
+
+// DependencyResolver resolves one requested Artifact into a bounded exact graph.
+// Implementations own package-manager lockfile/runtime details and must return
+// only parser-normalized Domain values.
+type DependencyResolver interface {
+	ResolveDependencies(context.Context, domain.ArtifactReference, domain.InstallContext) (domain.DependencyResolution, error)
+}
+
+// Staging persists one immutable Manifest/SBOM-bound Verified Set after
+// rechecking every intake artifact at the Quarantine-to-Staging boundary.
+type Staging interface {
+	Stage(context.Context, domain.VerifiedBundle) (domain.StagedSet, error)
+}
+
+// Manifest creates deterministic records from one complete ALLOW set.
+type Manifest interface {
+	Build(context.Context, domain.OperationID, domain.InstallContext, domain.DependencyResolution, domain.VerifiedSet) (domain.VerifiedBundle, error)
+}
+
+// Promotion installs only an already-staged exact bundle into a new target.
+type Promotion interface {
+	Promote(context.Context, domain.StagedSet, domain.VerifiedBundle, domain.InstallContext) (domain.PromotedInstall, error)
+}
