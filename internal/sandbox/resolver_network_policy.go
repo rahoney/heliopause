@@ -54,7 +54,7 @@ func NewResolverNetworkPolicy(ctx context.Context, runner CommandRunner) (*Resol
 		backend = ""
 	}
 	if backend != "" && backend != firewallBackendIPTables && backend != firewallBackendNFTables {
-		return nil, errors.New("resolver firewall backend is unsupported")
+		return nil, fmt.Errorf("resolver firewall backend is unsupported: docker info reported %q", backend)
 	}
 	return &ResolverNetworkPolicy{runner: runner, newID: domain.NewSandboxSessionID, backend: backend}, nil
 }
