@@ -63,16 +63,19 @@ func NewResolverNetworkPolicy(ctx context.Context, runner CommandRunner) (*Resol
 }
 
 func probeDockerFirewallBackend(ctx context.Context, runner CommandRunner) (firewallBackend, error) {
-	_, iptablesErr := runner.Output(ctx, "iptables", "-S", "DOCKER-USER")
-	_, nftablesErr := runner.Output(ctx, "nft", "list", "table", "ip", "docker-bridges")
-	hasIPTables, hasNFTables := iptablesErr == nil, nftablesErr == nil
-	if hasIPTables == hasNFTables {
-		return "", errors.New("resolver firewall backend is unsupported")
-	}
-	if hasIPTables {
+	// Docker's documented default is iptables. Some Docker 29 installations do
+	// not expose FirewallBackend in `docker info`, while iptables-nft can make
+	// unrelated nftables tables visible at the same time. DOCKER-USER is the
+	// authoritative, Docker-owned insertion point for the iptables backend, so
+	// prefer it when it is present and directly queryable. Do not infer a
+	// backend from the mere presence of an nftables table.
+	if _, err := runner.Output(ctx, "iptables", "-S", "DOCKER-USER"); err == nil {
 		return firewallBackendIPTables, nil
 	}
-	return firewallBackendNFTables, nil
+	if _, err := runner.Output(ctx, "nft", "list", "table", "ip", "docker-bridges"); err == nil {
+		return firewallBackendNFTables, nil
+	}
+	return "", errors.New("resolver firewall backend is unsupported")
 }
 
 // Prepare creates an isolated Docker network then applies and verifies a
