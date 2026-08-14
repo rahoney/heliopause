@@ -25,6 +25,11 @@ func (M4) EvaluateSet(set domain.InspectedDependencySet) (domain.PolicyDecision,
 			return m4Decision(domain.DecisionBlock, "M4_DEPENDENCY_BLOCKED")
 		}
 	}
+	for _, dependency := range set.Graph().Nodes() {
+		if dependency.HostInstallAction() {
+			return m4Decision(domain.DecisionManualReview, "M4_HOST_LIFECYCLE_UNSUPPORTED")
+		}
+	}
 	for _, inspection := range inspections {
 		if inspection.PolicyDecision().Decision() != domain.DecisionAllow {
 			return m4Decision(domain.DecisionManualReview, "M4_DEPENDENCY_REVIEW_REQUIRED")

@@ -69,24 +69,32 @@ const (
 // ResolvedArtifact retains the source-neutral identity, locator and declared
 // integrity needed by the existing Artifact Port.
 type LockedDependency struct {
-	node     DependencyNodeID
-	role     DependencyRole
-	artifact ResolvedArtifact
+	node              DependencyNodeID
+	role              DependencyRole
+	artifact          ResolvedArtifact
+	hostInstallAction bool
 }
 
 func NewLockedDependency(node DependencyNodeID, role DependencyRole, artifact ResolvedArtifact) (LockedDependency, error) {
+	return NewLockedDependencyWithHostInstallAction(node, role, artifact, false)
+}
+
+// NewLockedDependencyWithHostInstallAction preserves parser-normalized Host
+// lifecycle/native-install metadata for set-level Policy evaluation only.
+func NewLockedDependencyWithHostInstallAction(node DependencyNodeID, role DependencyRole, artifact ResolvedArtifact, hostInstallAction bool) (LockedDependency, error) {
 	if node.value == "" || artifact.identity.source.value == "" || artifact.declaredIntegrity == "" {
 		return LockedDependency{}, errors.New("locked dependency requires node, exact artifact, and declared integrity")
 	}
 	if role != DependencyPrimary && role != DependencyTransitive {
 		return LockedDependency{}, errors.New("locked dependency role is invalid")
 	}
-	return LockedDependency{node: node, role: role, artifact: artifact}, nil
+	return LockedDependency{node: node, role: role, artifact: artifact, hostInstallAction: hostInstallAction}, nil
 }
 
 func (d LockedDependency) Node() DependencyNodeID     { return d.node }
 func (d LockedDependency) Role() DependencyRole       { return d.role }
 func (d LockedDependency) Artifact() ResolvedArtifact { return d.artifact }
+func (d LockedDependency) HostInstallAction() bool    { return d.hostInstallAction }
 
 // DependencyEdge declares a graph relation using opaque node IDs.
 type DependencyEdge struct{ from, to DependencyNodeID }
