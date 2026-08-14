@@ -50,10 +50,29 @@ func NewResolverNetworkPolicy(ctx context.Context, runner CommandRunner) (*Resol
 		return nil, errors.New("resolver firewall backend is unavailable")
 	}
 	backend := firewallBackend(strings.TrimSpace(string(output)))
+	if backend == "" || backend == "<no value>" {
+		backend, err = probeDockerFirewallBackend(ctx, runner)
+		if err != nil {
+			return nil, err
+		}
+	}
 	if backend != firewallBackendIPTables && backend != firewallBackendNFTables {
 		return nil, errors.New("resolver firewall backend is unsupported")
 	}
 	return &ResolverNetworkPolicy{runner: runner, newID: domain.NewSandboxSessionID, backend: backend}, nil
+}
+
+func probeDockerFirewallBackend(ctx context.Context, runner CommandRunner) (firewallBackend, error) {
+	_, iptablesErr := runner.Output(ctx, "iptables", "-S", "DOCKER-USER")
+	_, nftablesErr := runner.Output(ctx, "nft", "list", "table", "ip", "docker-bridges")
+	hasIPTables, hasNFTables := iptablesErr == nil, nftablesErr == nil
+	if hasIPTables == hasNFTables {
+		return "", errors.New("resolver firewall backend is unsupported")
+	}
+	if hasIPTables {
+		return firewallBackendIPTables, nil
+	}
+	return firewallBackendNFTables, nil
 }
 
 // Prepare creates an isolated Docker network then applies and verifies a
