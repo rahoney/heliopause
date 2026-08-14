@@ -39,3 +39,9 @@ type Evidence interface {
 type DependencyResolver interface {
 	ResolveDependencies(context.Context, domain.ArtifactReference, domain.InstallContext) (domain.LockedDependencyGraph, error)
 }
+
+// Staging persists one immutable Manifest/SBOM-bound Verified Set after
+// rechecking every intake artifact at the Quarantine-to-Staging boundary.
+type Staging interface {
+	Stage(context.Context, domain.VerifiedBundle) (domain.StagedSet, error)
+}

@@ -91,7 +91,7 @@ func ParsePackageLockV3(reference domain.ArtifactReference, body []byte) (domain
 		if packagePath == primaryPath {
 			role = domain.DependencyPrimary
 		}
-		node, err := domain.NewLockedDependencyWithHostInstallAction(nodeID, role, resolved, entry.value.HasInstallScript || entry.value.Gypfile)
+		node, err := domain.NewLockedDependencyWithRecordPath(nodeID, role, resolved, packagePath, entry.value.HasInstallScript || entry.value.Gypfile)
 		if err != nil {
 			return domain.LockedDependencyGraph{}, err
 		}

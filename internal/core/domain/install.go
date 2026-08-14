@@ -72,28 +72,39 @@ type LockedDependency struct {
 	node              DependencyNodeID
 	role              DependencyRole
 	artifact          ResolvedArtifact
+	recordPath        string
 	hostInstallAction bool
 }
 
 func NewLockedDependency(node DependencyNodeID, role DependencyRole, artifact ResolvedArtifact) (LockedDependency, error) {
-	return NewLockedDependencyWithHostInstallAction(node, role, artifact, false)
+	return NewLockedDependencyWithRecordPath(node, role, artifact, node.String(), false)
 }
 
 // NewLockedDependencyWithHostInstallAction preserves parser-normalized Host
 // lifecycle/native-install metadata for set-level Policy evaluation only.
 func NewLockedDependencyWithHostInstallAction(node DependencyNodeID, role DependencyRole, artifact ResolvedArtifact, hostInstallAction bool) (LockedDependency, error) {
+	return NewLockedDependencyWithRecordPath(node, role, artifact, node.String(), hostInstallAction)
+}
+
+// NewLockedDependencyWithRecordPath preserves a bounded resolver record path
+// for Manifest traceability without exposing its ecosystem-specific semantics.
+func NewLockedDependencyWithRecordPath(node DependencyNodeID, role DependencyRole, artifact ResolvedArtifact, recordPath string, hostInstallAction bool) (LockedDependency, error) {
 	if node.value == "" || artifact.identity.source.value == "" || artifact.declaredIntegrity == "" {
 		return LockedDependency{}, errors.New("locked dependency requires node, exact artifact, and declared integrity")
 	}
 	if role != DependencyPrimary && role != DependencyTransitive {
 		return LockedDependency{}, errors.New("locked dependency role is invalid")
 	}
-	return LockedDependency{node: node, role: role, artifact: artifact, hostInstallAction: hostInstallAction}, nil
+	if err := validateBoundedText(recordPath, maxInstallTargetLength, "dependency record path"); err != nil {
+		return LockedDependency{}, err
+	}
+	return LockedDependency{node: node, role: role, artifact: artifact, recordPath: recordPath, hostInstallAction: hostInstallAction}, nil
 }
 
 func (d LockedDependency) Node() DependencyNodeID     { return d.node }
 func (d LockedDependency) Role() DependencyRole       { return d.role }
 func (d LockedDependency) Artifact() ResolvedArtifact { return d.artifact }
+func (d LockedDependency) RecordPath() string         { return d.recordPath }
 func (d LockedDependency) HostInstallAction() bool    { return d.hostInstallAction }
 
 // DependencyEdge declares a graph relation using opaque node IDs.
