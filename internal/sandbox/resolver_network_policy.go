@@ -66,13 +66,19 @@ func probeDockerFirewallBackend(ctx context.Context, runner CommandRunner) (fire
 	// authoritative, Docker-owned insertion point for the iptables backend, so
 	// prefer it when it is present and directly queryable. Do not infer a
 	// backend from the mere presence of an nftables table.
-	if _, err := runner.Output(ctx, "iptables", "-S", "DOCKER-USER"); err == nil {
+	_, iptablesErr := runner.Output(ctx, "iptables", "-S", "DOCKER-USER")
+	if iptablesErr == nil {
 		return firewallBackendIPTables, nil
 	}
-	if _, err := runner.Output(ctx, "nft", "list", "table", "ip", "docker-bridges"); err == nil {
+	_, nftablesErr := runner.Output(ctx, "nft", "list", "table", "ip", "docker-bridges")
+	if nftablesErr == nil {
 		return firewallBackendNFTables, nil
 	}
-	return "", errors.New("resolver firewall backend is unsupported")
+	return "", errors.Join(
+		errors.New("resolver firewall backend is unsupported"),
+		fmt.Errorf("iptables DOCKER-USER probe: %w", iptablesErr),
+		fmt.Errorf("nftables docker-bridges probe: %w", nftablesErr),
+	)
 }
 
 // Prepare creates an isolated Docker network then applies and verifies a
