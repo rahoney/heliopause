@@ -8,8 +8,8 @@
   "properties": {
     "schema_version": { "const": "helox.operation-result/v1" },
     "operation_id": { "type": "string", "pattern": "^op_[a-z2-7]{26}$" },
-    "operation": { "const": "INSPECT" },
-    "operation_status": { "enum": ["COMPLETED", "FAILED"] },
+    "operation": { "enum": ["INSPECT", "INSTALL"] },
+    "operation_status": { "enum": ["COMPLETED", "FAILED", "NOT_PERFORMED"] },
     "run": {
       "type": "object",
       "additionalProperties": false,
@@ -38,13 +38,36 @@
       "items": { "$ref": "#/$defs/evidence_reference" }
     },
     "policy": { "$ref": "#/$defs/policy" },
+    "target": { "type": "string", "minLength": 2, "maxLength": 2048 },
+    "promotion_status": { "enum": ["COMPLETED", "FAILED", "NOT_PERFORMED"] },
+    "verified_set": { "$ref": "#/$defs/verified_set" },
     "error": { "$ref": "#/$defs/error" }
   },
   "allOf": [
     {
-      "if": { "properties": { "operation_status": { "const": "COMPLETED" } }, "required": ["operation_status"] },
-      "then": { "required": ["run", "policy"], "not": { "required": ["error"] } },
-      "else": { "required": ["error"], "not": { "required": ["policy"] } }
+      "if": { "properties": { "operation": { "const": "INSPECT" } }, "required": ["operation"] },
+      "then": {
+        "if": { "properties": { "operation_status": { "const": "COMPLETED" } }, "required": ["operation_status"] },
+        "then": { "required": ["run", "policy"], "not": { "anyOf": [{ "required": ["error"] }, { "required": ["target"] }, { "required": ["verified_set"] }, { "required": ["promotion_status"] }] } },
+        "else": { "required": ["error"], "not": { "required": ["policy"] } }
+      },
+      "else": {
+        "required": ["target", "promotion_status"],
+        "allOf": [
+          {
+            "if": { "properties": { "operation_status": { "const": "COMPLETED" } }, "required": ["operation_status"] },
+            "then": { "required": ["policy", "verified_set"], "not": { "anyOf": [{ "required": ["error"] }, { "required": ["run"] }] } }
+          },
+          {
+            "if": { "properties": { "operation_status": { "const": "NOT_PERFORMED" } }, "required": ["operation_status"] },
+            "then": { "required": ["policy"], "not": { "anyOf": [{ "required": ["error"] }, { "required": ["verified_set"] }, { "required": ["run"] }] } }
+          },
+          {
+            "if": { "properties": { "operation_status": { "const": "FAILED" } }, "required": ["operation_status"] },
+            "then": { "required": ["error"], "not": { "required": ["run"] } }
+          }
+        ]
+      }
     }
   ],
   "$defs": {
@@ -111,6 +134,17 @@
         "id": { "$ref": "#/$defs/normalized_id" },
         "version": { "type": "integer", "minimum": 1 },
         "reasons": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/reason_code" } }
+      }
+    },
+    "verified_set": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["manifest_id", "sbom_handle", "entry_count"],
+      "properties": {
+        "manifest_id": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "sbom_handle": { "type": "string", "minLength": 1, "maxLength": 512 },
+        "staging_handle": { "type": "string", "minLength": 1, "maxLength": 512 },
+        "entry_count": { "type": "integer", "minimum": 1, "maximum": 4096 }
       }
     },
     "error": {

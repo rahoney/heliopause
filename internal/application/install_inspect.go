@@ -61,24 +61,25 @@ func (s *InstallInspectService) Inspect(ctx context.Context, request InstallRequ
 	}
 	resolution, err := s.resolver.ResolveDependencies(ctx, request.reference, request.context)
 	if err != nil {
-		return InspectedInstall{}, fmt.Errorf("resolve locked dependency graph: %w", err)
+		return newPartialInspectedInstall(operationID, request, domain.DependencyResolution{}), fmt.Errorf("resolve locked dependency graph: %w", err)
 	}
+	partial := newPartialInspectedInstall(operationID, request, resolution)
 	graph := resolution.Graph()
 	inspections := make([]domain.DependencyInspection, 0, len(graph.Nodes()))
 	for _, dependency := range graph.Nodes() {
 		inspection, inspectionErr := s.inspectDependency(ctx, operationID, dependency)
 		if inspectionErr != nil {
-			return InspectedInstall{}, inspectionErr
+			return partial, inspectionErr
 		}
 		inspections = append(inspections, inspection)
 	}
 	set, err := domain.NewInspectedDependencySet(graph, inspections)
 	if err != nil {
-		return InspectedInstall{}, fmt.Errorf("construct inspected dependency set: %w", err)
+		return partial, fmt.Errorf("construct inspected dependency set: %w", err)
 	}
 	decision, err := s.setPolicy.EvaluateSet(set)
 	if err != nil {
-		return InspectedInstall{}, fmt.Errorf("evaluate dependency set policy: %w", err)
+		return partial, fmt.Errorf("evaluate dependency set policy: %w", err)
 	}
 	return newInspectedInstall(operationID, request, resolution, set, decision), nil
 }

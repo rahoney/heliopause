@@ -37,6 +37,10 @@ func newInspectedInstall(operationID domain.OperationID, request InstallRequest,
 	return InspectedInstall{operationID: operationID, request: request, resolution: resolution, set: set, decision: decision}
 }
 
+func newPartialInspectedInstall(operationID domain.OperationID, request InstallRequest, resolution domain.DependencyResolution) InspectedInstall {
+	return InspectedInstall{operationID: operationID, request: request, resolution: resolution}
+}
+
 func (i InspectedInstall) OperationID() domain.OperationID         { return i.operationID }
 func (i InspectedInstall) Request() InstallRequest                 { return i.request }
 func (i InspectedInstall) Resolution() domain.DependencyResolution { return i.resolution }
