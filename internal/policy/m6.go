@@ -31,10 +31,13 @@ func (M6) Evaluate(input domain.PolicyInput) (domain.PolicyDecision, error) {
 			return m6Decision(domain.DecisionManualReview, "M6_REQUIRED_CHECK_INCOMPLETE")
 		}
 	}
+	elf, dynamic := false, false
 	for _, evidence := range input.Inspection().Evidence() {
-		if evidence.Kind() == "github-release-elf-static" {
-			return m6Decision(domain.DecisionManualReview, "M6_DYNAMIC_INSPECTION_REQUIRED")
-		}
+		elf = elf || evidence.Kind() == "github-release-elf-static"
+		dynamic = dynamic || evidence.Kind() == "github-release-elf-dynamic"
+	}
+	if elf && !dynamic {
+		return m6Decision(domain.DecisionManualReview, "M6_DYNAMIC_INSPECTION_REQUIRED")
 	}
 	return m6Decision(domain.DecisionAllow, "M6_REQUIRED_CHECKS_COMPLETED")
 }
