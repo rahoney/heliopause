@@ -60,7 +60,7 @@ func pythonWheelPath(artifact domain.AcquiredArtifact) string {
 		}
 		return '_'
 	}, artifact.Identity().Version())
-	return "/tmp/haa-" + name + "-" + version + "-py3-none-any.whl"
+	return "/tmp/" + name + "-" + version + "-py3-none-any.whl"
 }
 
 // PythonDynamicBackend creates one network-isolated runsc-trace container for

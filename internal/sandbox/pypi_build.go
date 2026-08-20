@@ -108,8 +108,8 @@ func (b *PythonSdistBuilder) Build(ctx context.Context, source domain.AcquiredAr
 		return fail("M5_PYPI_BUILD_INTRODUCTION_FAILED")
 	}
 	wheelPaths := make([]string, 0, len(buildWheels))
-	for index, wheel := range buildWheels {
-		destination := fmt.Sprintf("%s/%02d.whl", pythonBuildInput, index)
+	for _, wheel := range buildWheels {
+		destination := pythonBuildInput + "/" + filepath.Base(pythonWheelPath(wheel))
 		if err := b.introducer.introduce(runCtx, containerID, wheel, destination, "wheel"); err != nil {
 			return fail("M5_PYPI_BUILD_INTRODUCTION_FAILED")
 		}
@@ -228,7 +228,7 @@ func pythonSdistPath(artifact domain.AcquiredArtifact) string {
 		}
 		return '_'
 	}, artifact.Identity().Version())
-	return "/tmp/haa-" + name + "-" + version + ".tar.gz"
+	return "/tmp/" + name + "-" + version + ".tar.gz"
 }
 
 func (b *PythonSdistBuilder) disposeAndCollect(containerID string, trace TraceReader) ([]domain.SandboxObservation, string) {
