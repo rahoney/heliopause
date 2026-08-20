@@ -205,7 +205,10 @@ func pypiCreateArguments(network string, hostArguments []string) []string {
 		"--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=128m,uid=1000,gid=1000,mode=0700",
 	}
 	arguments = append(arguments, hostArguments...)
-	arguments = append(arguments, pythonImageReference, "sleep", "infinity")
+	// Prepare the bounded report directory on the container tmpfs before pip runs.
+	// The command is fixed infrastructure wiring; no request-controlled input is
+	// interpolated into it.
+	arguments = append(arguments, pythonImageReference, "sh", "-ceu", "umask 077; mkdir -p "+pypiResolverProjectDir+"; exec sleep infinity")
 	return arguments
 }
 
