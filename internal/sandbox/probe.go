@@ -42,37 +42,51 @@ func probe(ctx context.Context, operatingSystem string, executor Executor) (Capa
 	if err := ctx.Err(); err != nil {
 		return Capability{}, err
 	}
-	if operatingSystem != "linux" {
-		return Capability{LimitationCode: "M3_LINUX_ONLY"}, nil
-	}
-	if executor == nil {
-		return Capability{}, errors.New("runtime probe executor is required")
-	}
-	for _, binary := range []string{"docker", "runsc"} {
-		if _, err := executor.LookPath(binary); err != nil {
-			return Capability{LimitationCode: "M3_RUNTIME_UNAVAILABLE"}, nil
-		}
-	}
-	dockerVersion, err := executor.Output(ctx, "docker", "version", "--format", "{{.Server.Version}}")
-	if err != nil {
-		return Capability{LimitationCode: "M3_RUNTIME_UNAVAILABLE"}, nil
-	}
-	if !atLeastVersion(strings.TrimSpace(string(dockerVersion)), minimumDockerEngine) {
-		return Capability{LimitationCode: "M3_RUNTIME_VERSION_UNSUPPORTED"}, nil
-	}
-	runscVersion, err := executor.Output(ctx, "runsc", "--version")
-	if err != nil || !strings.Contains(string(runscVersion), gVisorRelease) {
-		return Capability{LimitationCode: "M3_RUNTIME_VERSION_UNSUPPORTED"}, nil
-	}
-	runtimeRegistration, err := executor.Output(ctx, "docker", "info", "--format", "{{json (index .Runtimes \"runsc-trace\")}}")
-	if err != nil || strings.TrimSpace(string(runtimeRegistration)) == "" || strings.Contains(string(runtimeRegistration), "<no value>") {
-		return Capability{LimitationCode: "M3_RUNTIME_UNAVAILABLE"}, nil
+	limitation, err := probeGVisorRuntime(ctx, operatingSystem, executor, "M3_LINUX_ONLY", "M3_RUNTIME_UNAVAILABLE", "M3_RUNTIME_VERSION_UNSUPPORTED")
+	if err != nil || limitation != "" {
+		return Capability{LimitationCode: limitation}, err
 	}
 	image, err := executor.Output(ctx, "docker", "image", "inspect", nodeImageReference, "--format", "{{.Id}}")
 	if err != nil || strings.TrimSpace(string(image)) == "" {
 		return Capability{LimitationCode: "M3_IMAGE_UNAVAILABLE"}, nil
 	}
 	return Capability{Available: true}, nil
+}
+
+func probeGVisorRuntime(ctx context.Context, operatingSystem string, executor Executor, linuxOnly, unavailable, unsupported string) (string, error) {
+	if ctx == nil {
+		return "", errors.New("context is required")
+	}
+	if err := ctx.Err(); err != nil {
+		return "", err
+	}
+	if operatingSystem != "linux" {
+		return linuxOnly, nil
+	}
+	if executor == nil {
+		return "", errors.New("runtime probe executor is required")
+	}
+	for _, binary := range []string{"docker", "runsc"} {
+		if _, err := executor.LookPath(binary); err != nil {
+			return unavailable, nil
+		}
+	}
+	dockerVersion, err := executor.Output(ctx, "docker", "version", "--format", "{{.Server.Version}}")
+	if err != nil {
+		return unavailable, nil
+	}
+	if !atLeastVersion(strings.TrimSpace(string(dockerVersion)), minimumDockerEngine) {
+		return unsupported, nil
+	}
+	runscVersion, err := executor.Output(ctx, "runsc", "--version")
+	if err != nil || !strings.Contains(string(runscVersion), gVisorRelease) {
+		return unsupported, nil
+	}
+	runtimeRegistration, err := executor.Output(ctx, "docker", "info", "--format", "{{json (index .Runtimes \"runsc-trace\")}}")
+	if err != nil || strings.TrimSpace(string(runtimeRegistration)) == "" || strings.Contains(string(runtimeRegistration), "<no value>") {
+		return unavailable, nil
+	}
+	return "", nil
 }
 
 func atLeastVersion(actual, minimum string) bool {
