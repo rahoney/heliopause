@@ -428,6 +428,19 @@ func (r integrationRunner) RunDiscard(ctx context.Context, binary string, argume
 	return err
 }
 
+func (r integrationRunner) RunOutput(ctx context.Context, output io.Writer, binary string, arguments ...string) error {
+	r.t.Helper()
+	command := exec.CommandContext(ctx, binary, arguments...)
+	command.Stdout = output
+	stderr := &boundedIntegrationOutput{remaining: 16 << 10}
+	command.Stderr = stderr
+	err := command.Run()
+	if err != nil {
+		r.t.Logf("output command failed: %s %q: %v; bounded stderr=%q", binary, arguments, err, stderr.String())
+	}
+	return err
+}
+
 type boundedIntegrationOutput struct {
 	bytes.Buffer
 	remaining int
