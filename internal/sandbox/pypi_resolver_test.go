@@ -151,7 +151,7 @@ func (pypiUnsafeEndpoints) Resolve(context.Context, []string) (map[string][]neti
 }
 
 func pypiResolverSimpleJSON(project, filename, requiresPython string) string {
-	return `{"meta":{"api-version":"1.4"},"name":"` + project + `","files":[{"filename":"` + filename + `","url":"https://files.pythonhosted.org/packages/` + filename + `#sha256=` + resolverTestSHA256 + `","hashes":{"sha256":"` + resolverTestSHA256 + `"},"requires-python":"` + requiresPython + `","yanked":false,"size":123}]}`
+	return `{"meta":{"api-version":"1.4"},"name":"` + project + `","files":[{"filename":"` + filename + `","url":"https://files.pythonhosted.org/packages/` + filename + `","hashes":{"sha256":"` + resolverTestSHA256 + `"},"requires-python":"` + requiresPython + `","yanked":false,"size":123}]}`
 }
 
 func pypiResolverReportJSON() string {

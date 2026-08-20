@@ -111,7 +111,7 @@ const (
 )
 
 func sampleSimpleJSON(project, filename, requiresPython string) string {
-	return `{"meta":{"api-version":"1.4"},"name":"` + project + `","files":[{"filename":"` + filename + `","url":"https://files.pythonhosted.org/packages/` + filename + `#sha256=` + sampleSHA256 + `","hashes":{"sha256":"` + sampleSHA256 + `"},"requires-python":"` + requiresPython + `","yanked":false,"size":123}]}`
+	return `{"meta":{"api-version":"1.4"},"name":"` + project + `","files":[{"filename":"` + filename + `","url":"https://files.pythonhosted.org/packages/` + filename + `","hashes":{"sha256":"` + sampleSHA256 + `"},"requires-python":"` + requiresPython + `","yanked":false,"size":123}]}`
 }
 
 func sampleReportJSON() string {

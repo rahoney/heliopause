@@ -146,13 +146,12 @@ func parseSimpleFile(raw simpleFile) (SimpleFile, error) {
 	if raw.Filename == "" || raw.Size == 0 || !sha256HexPattern.MatchString(raw.Hashes["sha256"]) || !validRequiresPython(raw.RequiresPython) {
 		return SimpleFile{}, errors.New("invalid file metadata")
 	}
-	parsed, err := parseDistributionURL(raw.URL, raw.Filename, true)
+	_, err := parseDistributionURL(raw.URL, raw.Filename, false)
 	if err != nil {
 		return SimpleFile{}, err
 	}
-	if parsed.Fragment != "sha256="+raw.Hashes["sha256"] {
-		return SimpleFile{}, errors.New("invalid distribution hash fragment")
-	}
+	// Simple API v1 carries the digest in hashes.sha256; its canonical URL has
+	// no legacy hash fragment. The report is cross-checked against this field.
 	yanked, err := parseYanked(raw.Yanked)
 	if err != nil {
 		return SimpleFile{}, err
