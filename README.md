@@ -8,8 +8,8 @@
 - Go module path: `github.com/rahoney/heliopause`
 - 구현 언어: Go
 - CLI framework: Cobra
-- 현재 상태: Step 14 Implementation — M5 Python dynamic inspection·PEP 517 sdist build 진행
-- 다음 작업: M5-005 Python dynamic inspection·PEP 517 sdist build
+- 현재 상태: Step 14 Implementation — M5 generic staging·offline pip Promotion·CLI integration 진행
+- 다음 작업: M5-006 generic staging·offline pip Promotion·CLI integration
 
 ## Project Notes
 
