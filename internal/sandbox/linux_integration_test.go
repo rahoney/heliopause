@@ -418,9 +418,32 @@ func (r integrationRunner) RunInput(ctx context.Context, input io.Reader, binary
 func (r integrationRunner) RunDiscard(ctx context.Context, binary string, arguments ...string) error {
 	r.t.Helper()
 	command := exec.CommandContext(ctx, binary, arguments...)
-	command.Stdout = io.Discard
-	command.Stderr = io.Discard
-	return command.Run()
+	output := &boundedIntegrationOutput{remaining: 16 << 10}
+	command.Stdout = output
+	command.Stderr = output
+	err := command.Run()
+	if err != nil {
+		r.t.Logf("discard command failed: %s %q: %v; bounded output=%q", binary, arguments, err, output.String())
+	}
+	return err
+}
+
+type boundedIntegrationOutput struct {
+	bytes.Buffer
+	remaining int
+}
+
+func (b *boundedIntegrationOutput) Write(data []byte) (int, error) {
+	count := len(data)
+	if b.remaining > 0 {
+		accepted := data
+		if len(accepted) > b.remaining {
+			accepted = accepted[:b.remaining]
+		}
+		_, _ = b.Buffer.Write(accepted)
+		b.remaining -= len(accepted)
+	}
+	return count, nil
 }
 
 func integrationRequest(t *testing.T) domain.SandboxRequest {

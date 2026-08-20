@@ -28,7 +28,7 @@ func TestPythonSdistBuilderUsesOnlyVerifiedBuildWheels(t *testing.T) {
 	if len(runner.inputCalls) != 2 || len(runner.calls) != 7 {
 		t.Fatalf("commands = %#v; inputs = %#v", runner.calls, runner.inputCalls)
 	}
-	if joined := strings.Join(runner.calls[4].arguments, " "); !strings.Contains(joined, "pip wheel --no-index --no-deps --no-build-isolation") || !strings.Contains(joined, pythonSdistPath) {
+	if joined := strings.Join(runner.calls[4].arguments, " "); !strings.Contains(joined, "pip wheel --no-index --no-deps --no-build-isolation") || !strings.Contains(joined, pythonSdistPath(source)) {
 		t.Fatalf("build command = %#v", runner.calls[4])
 	}
 	if _, err := os.Stat(filepath.Join(root, "run_aaaaaaaaaaaaaaaaaaaaaaaaaa", "derived.whl")); err != nil {

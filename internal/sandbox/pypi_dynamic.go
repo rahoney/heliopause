@@ -3,8 +3,6 @@ package sandbox
 import (
 	"context"
 	"errors"
-	"fmt"
-	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -15,7 +13,6 @@ import (
 
 const (
 	pythonDynamicTimeout = 45 * time.Second
-	pythonWheelPath      = "/tmp/haa-input.whl"
 	pythonSitePath       = "/tmp/haa-site"
 )
 
@@ -47,51 +44,24 @@ func NewPythonArtifactIntroducer(intakeRoot string, runner CommandRunner) (*Pyth
 }
 
 func (i *PythonArtifactIntroducer) IntroduceWheel(ctx context.Context, containerID string, artifact domain.AcquiredArtifact) error {
-	if i == nil || i.runner == nil || ctx == nil || !containerIDPattern.MatchString(containerID) || artifact.Identity().Source().String() != "pypi" || !pythonWheelVariant(artifact.Identity().Variant()) {
+	if !pythonWheelVariant(artifact.Identity().Variant()) {
 		return errors.New("python wheel introduction request is invalid")
 	}
-	path, err := i.wheelPath(artifact.ContentHandle())
-	if err != nil {
-		return err
-	}
-	file, err := os.Open(path)
-	if err != nil {
-		return errors.New("verified wheel intake is unavailable")
-	}
-	defer file.Close()
-	info, err := file.Stat()
-	if err != nil || !info.Mode().IsRegular() || uint64(info.Size()) != artifact.SizeBytes() {
-		return errors.New("verified wheel intake is unavailable")
-	}
-	input, ok := i.runner.(inputCommandRunner)
-	if !ok {
-		return errors.New("sandbox artifact stream runner is not configured")
-	}
-	if err := input.RunInput(ctx, file, "docker", "exec", "-i", containerID, "python", "-I", "-c", pythonCopyWheelScript); err != nil {
-		return fmt.Errorf("introduce verified wheel: %w", err)
-	}
-	return nil
-}
-
-func (i *PythonArtifactIntroducer) wheelPath(handle string) (string, error) {
-	parts := strings.Split(handle, ":")
-	if len(parts) != 3 || parts[0] != "intake" || !pythonWheelVariant(parts[2]) {
-		return "", errors.New("python wheel content handle is invalid")
-	}
-	runID, err := domain.ParseRunID(parts[1])
-	if err != nil {
-		return "", errors.New("python wheel content handle is invalid")
-	}
-	name := map[string]string{"wheel": "wheel.whl", "derived-wheel": "derived.whl"}[parts[2]]
-	path := filepath.Join(i.intakeRoot, runID.String(), name)
-	relative, err := filepath.Rel(i.intakeRoot, path)
-	if err != nil || relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
-		return "", errors.New("python wheel path escapes intake root")
-	}
-	return path, nil
+	return i.introduce(ctx, containerID, artifact, pythonWheelPath(artifact), artifact.Identity().Variant())
 }
 
 func pythonWheelVariant(variant string) bool { return variant == "wheel" || variant == "derived-wheel" }
+
+func pythonWheelPath(artifact domain.AcquiredArtifact) string {
+	name := strings.ReplaceAll(artifact.Identity().Name(), "-", "_")
+	version := strings.Map(func(r rune) rune {
+		if r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9' || r == '.' {
+			return r
+		}
+		return '_'
+	}, artifact.Identity().Version())
+	return "/tmp/haa-" + name + "-" + version + "-py3-none-any.whl"
+}
 
 // PythonDynamicBackend creates one network-isolated runsc-trace container for
 // importing a statically declared wheel surface. It returns observations only;
@@ -145,10 +115,11 @@ func (b *PythonDynamicBackend) InspectWheel(ctx context.Context, artifact domain
 	if err := discardCommand(runCtx, b.runner, "docker", "start", containerID); err != nil {
 		return b.finishIncomplete(sessionID, containerID, trace, "M5_PYPI_DYNAMIC_SETUP_FAILED")
 	}
+	wheelPath := pythonWheelPath(artifact)
 	if err := b.introducer.IntroduceWheel(runCtx, containerID, artifact); err != nil {
 		return b.finishIncomplete(sessionID, containerID, trace, "M5_PYPI_DYNAMIC_INTRODUCTION_FAILED")
 	}
-	if err := discardCommand(runCtx, b.runner, "docker", "exec", containerID, "python", "-I", "-m", "pip", "install", "--no-index", "--no-deps", "--no-compile", "--disable-pip-version-check", "--target", pythonSitePath, pythonWheelPath); err != nil {
+	if err := discardCommand(runCtx, b.runner, "docker", "exec", containerID, "python", "-I", "-m", "pip", "install", "--no-index", "--no-deps", "--no-compile", "--disable-pip-version-check", "--target", pythonSitePath, wheelPath); err != nil {
 		return b.finishIncomplete(sessionID, containerID, trace, "M5_PYPI_DYNAMIC_INSTALL_FAILED")
 	}
 	arguments := append([]string{"exec", containerID, "python", "-I", "-c", pythonImportScript}, imports...)
@@ -221,5 +192,4 @@ func pythonDynamicCreateArguments(sessionID domain.SandboxSessionID) []string {
 	return []string{"create", "--pull", "never", "--runtime", gVisorRuntimeName, "--user", "1000:1000", "--network", "none", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "64", "--memory", "512m", "--cpus", "1", "--ulimit", "cpu=30:30", "--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=256m,uid=1000,gid=1000,mode=0700", "--name", "heliopause-pypi-" + sessionID.String(), pythonImageReference, "sleep", "infinity"}
 }
 
-const pythonCopyWheelScript = "import sys\np='/tmp/haa-input.whl'\nout=open(p,'xb')\nwhile True:\n chunk=sys.stdin.buffer.read(65536)\n if not chunk: break\n out.write(chunk)\nout.close()\n"
 const pythonImportScript = "import importlib,sys\nsys.path.insert(0,'/tmp/haa-site')\nfor name in sys.argv[1:]: importlib.import_module(name)\n"

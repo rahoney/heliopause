@@ -19,7 +19,6 @@ import (
 )
 
 const (
-	pythonSdistPath   = "/tmp/haa-source.tar.gz"
 	pythonBuildInput  = "/tmp/haa-build-input"
 	pythonDerivedPath = "/tmp/haa-derived"
 	derivedWheelLimit = 64 << 20
@@ -104,7 +103,8 @@ func (b *PythonSdistBuilder) Build(ctx context.Context, source domain.AcquiredAr
 	if err := discardCommand(runCtx, b.runner, "docker", "start", containerID); err != nil {
 		return fail("M5_PYPI_BUILD_SETUP_FAILED")
 	}
-	if err := b.introducer.introduce(runCtx, containerID, source, pythonSdistPath, "sdist"); err != nil {
+	sdistPath := pythonSdistPath(source)
+	if err := b.introducer.introduce(runCtx, containerID, source, sdistPath, "sdist"); err != nil {
 		return fail("M5_PYPI_BUILD_INTRODUCTION_FAILED")
 	}
 	wheelPaths := make([]string, 0, len(buildWheels))
@@ -122,7 +122,7 @@ func (b *PythonSdistBuilder) Build(ctx context.Context, source domain.AcquiredAr
 	if err := discardCommand(runCtx, b.runner, "docker", installArgs...); err != nil {
 		return fail("M5_PYPI_BUILD_REQUIREMENTS_FAILED")
 	}
-	if err := discardCommand(runCtx, b.runner, "docker", "exec", containerID, "/tmp/haa-buildenv/bin/python", "-I", "-m", "pip", "wheel", "--no-index", "--no-deps", "--no-build-isolation", "--wheel-dir", pythonDerivedPath, pythonSdistPath); err != nil {
+	if err := discardCommand(runCtx, b.runner, "docker", "exec", containerID, "/tmp/haa-buildenv/bin/python", "-I", "-m", "pip", "wheel", "--no-index", "--no-deps", "--no-build-isolation", "--wheel-dir", pythonDerivedPath, sdistPath); err != nil {
 		if errors.Is(runCtx.Err(), context.DeadlineExceeded) {
 			return fail("M5_PYPI_BUILD_TIMEOUT")
 		}
@@ -208,7 +208,7 @@ func (i *PythonArtifactIntroducer) artifactPath(handle, variant string) (string,
 	if err != nil {
 		return "", errors.New("python content handle is invalid")
 	}
-	name := map[string]string{"wheel": "wheel.whl", "sdist": "sdist.tar.gz"}[variant]
+	name := map[string]string{"wheel": "wheel.whl", "derived-wheel": "derived.whl", "sdist": "sdist.tar.gz"}[variant]
 	if name == "" {
 		return "", errors.New("python content handle is invalid")
 	}
@@ -218,6 +218,17 @@ func (i *PythonArtifactIntroducer) artifactPath(handle, variant string) (string,
 		return "", errors.New("python intake path escapes root")
 	}
 	return path, nil
+}
+
+func pythonSdistPath(artifact domain.AcquiredArtifact) string {
+	name := strings.ReplaceAll(artifact.Identity().Name(), "-", "_")
+	version := strings.Map(func(r rune) rune {
+		if r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9' || r == '.' {
+			return r
+		}
+		return '_'
+	}, artifact.Identity().Version())
+	return "/tmp/haa-" + name + "-" + version + ".tar.gz"
 }
 
 func (b *PythonSdistBuilder) disposeAndCollect(containerID string, trace TraceReader) ([]domain.SandboxObservation, string) {

@@ -32,7 +32,7 @@ func TestPythonDynamicBackendRunsOnlyLocalWheelAndDeclaredImports(t *testing.T) 
 		t.Fatalf("commands = %#v", runner.calls)
 	}
 	assertPythonDynamicCreate(t, runner.calls[0].arguments)
-	if !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "--no-index --no-deps --no-compile") || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), pythonWheelPath) {
+	if !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "--no-index --no-deps --no-compile") || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), pythonWheelPath(artifact)) {
 		t.Fatalf("pip install command = %#v", runner.calls[2])
 	}
 	if !sameStrings(runner.calls[3].arguments[len(runner.calls[3].arguments)-1:], []string{"example"}) {
