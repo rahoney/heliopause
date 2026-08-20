@@ -12,7 +12,7 @@ func TestValidateCurrentImports(t *testing.T) {
 	packages := []packageMetadata{
 		{ImportPath: modulePath + "/cmd/helox", Imports: []string{"context", modulePath + "/internal/bootstrap"}},
 		{ImportPath: modulePath + "/internal/bootstrap", Imports: []string{modulePath + "/internal/cli"}},
-		{ImportPath: modulePath + "/internal/cli", Imports: []string{"github.com/spf13/cobra"}},
+		{ImportPath: modulePath + "/internal/cli", Imports: []string{"github.com/spf13/cobra", modulePath + "/internal/artifact/pypi"}},
 		{ImportPath: modulePath + "/internal/core/domain", Imports: []string{"crypto/rand"}},
 		{ImportPath: modulePath + "/internal/core/ports", Imports: []string{"context", modulePath + "/internal/core/domain"}},
 		{ImportPath: modulePath + "/internal/application", Imports: []string{modulePath + "/internal/core/domain", modulePath + "/internal/core/ports"}},
@@ -20,7 +20,9 @@ func TestValidateCurrentImports(t *testing.T) {
 		{ImportPath: modulePath + "/internal/artifact/npm", Imports: []string{"net/http", modulePath + "/internal/core/domain"}},
 		{ImportPath: modulePath + "/internal/artifact/pypi", Imports: []string{"net/url", modulePath + "/internal/core/domain"}},
 		{ImportPath: modulePath + "/internal/verification/npm", Imports: []string{"crypto/subtle", modulePath + "/internal/core/domain"}},
+		{ImportPath: modulePath + "/internal/verification/pypi", Imports: []string{"crypto/subtle", modulePath + "/internal/core/domain"}},
 		{ImportPath: modulePath + "/internal/inspection/npm", Imports: []string{modulePath + "/internal/core/domain", modulePath + "/internal/core/ports"}},
+		{ImportPath: modulePath + "/internal/inspection/pypi", Imports: []string{modulePath + "/internal/artifact/pypi", modulePath + "/internal/core/domain", modulePath + "/internal/sandbox"}},
 		{ImportPath: modulePath + "/internal/sandbox", Imports: []string{"os/exec", modulePath + "/internal/core/domain"}},
 		{ImportPath: modulePath + "/internal/testutil/fakeworkflow", Imports: []string{modulePath + "/internal/core/domain", modulePath + "/internal/core/ports"}},
 		{ImportPath: modulePath + "/scripts/check", Imports: []string{"os"}},
