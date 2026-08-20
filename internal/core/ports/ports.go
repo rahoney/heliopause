@@ -40,6 +40,13 @@ type DependencyResolver interface {
 	ResolveDependencies(context.Context, domain.ArtifactReference, domain.InstallContext) (domain.DependencyResolution, error)
 }
 
+// Derivation produces controller-owned derived Artifacts from an already
+// inspected set. The Application re-runs verification, inspection, Evidence
+// recording and entry Policy on each returned Artifact.
+type Derivation interface {
+	Derive(context.Context, []domain.DependencyInspection) ([]domain.DerivedDependency, error)
+}
+
 // Staging persists one immutable Manifest/SBOM-bound Verified Set after
 // rechecking every intake artifact at the Quarantine-to-Staging boundary.
 type Staging interface {

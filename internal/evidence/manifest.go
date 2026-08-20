@@ -51,7 +51,7 @@ func BuildVerifiedBundle(context ManifestContext, set domain.VerifiedSet) (domai
 	if context.OperationID.String() == "" || context.InstallContext.Target().String() == "" || !context.InstallContext.RequiresNewTarget() || context.LockfileDigest.String() == "" || !validContextText(context.ResolverRuntime) || !set.Valid() {
 		return domain.VerifiedBundle{}, errors.New("manifest generation requires verified set and complete context")
 	}
-	entries, edges, err := manifestEntries(set)
+	entries, edges, derivations, err := manifestEntries(set)
 	if err != nil {
 		return domain.VerifiedBundle{}, err
 	}
@@ -67,6 +67,7 @@ func BuildVerifiedBundle(context ManifestContext, set domain.VerifiedSet) (domai
 		Policy:      manifestPolicy{Decision: string(decision.Decision()), ID: decision.PolicyID(), Version: decision.Version(), Reasons: reasons},
 		Entries:     entries,
 		Edges:       edges,
+		Derivations: derivations,
 	}
 	unsigned, err := canonicalManifestPayload(payload)
 	if err != nil {
@@ -112,14 +113,15 @@ type manifestDocument struct {
 }
 
 type manifestPayload struct {
-	Schema      string           `json:"schema"`
-	OperationID string           `json:"operation_id"`
-	Target      manifestTarget   `json:"target"`
-	Resolver    manifestResolver `json:"resolver"`
-	Primary     string           `json:"primary"`
-	Policy      manifestPolicy   `json:"policy"`
-	Entries     []manifestEntry  `json:"entries"`
-	Edges       []manifestEdge   `json:"edges"`
+	Schema      string               `json:"schema"`
+	OperationID string               `json:"operation_id"`
+	Target      manifestTarget       `json:"target"`
+	Resolver    manifestResolver     `json:"resolver"`
+	Primary     string               `json:"primary"`
+	Policy      manifestPolicy       `json:"policy"`
+	Entries     []manifestEntry      `json:"entries"`
+	Edges       []manifestEdge       `json:"edges"`
+	Derivations []manifestDerivation `json:"derivations,omitempty"`
 }
 
 type manifestTarget struct {
@@ -159,7 +161,16 @@ type manifestEdge struct {
 	To   string `json:"to"`
 }
 
-func manifestEntries(set domain.VerifiedSet) ([]manifestEntry, []manifestEdge, error) {
+type manifestDerivation struct {
+	Source       string   `json:"source"`
+	Derived      string   `json:"derived"`
+	SourceSHA256 string   `json:"source_sha256"`
+	InputSHA256s []string `json:"input_sha256s"`
+	Executor     string   `json:"executor"`
+	ConfigSHA256 string   `json:"config_sha256"`
+}
+
+func manifestEntries(set domain.VerifiedSet) ([]manifestEntry, []manifestEdge, []manifestDerivation, error) {
 	inspections := make(map[domain.DependencyNodeID]domain.DependencyInspection)
 	for _, inspection := range set.Inspected().Inspections() {
 		inspections[inspection.Node()] = inspection
@@ -168,11 +179,11 @@ func manifestEntries(set domain.VerifiedSet) ([]manifestEntry, []manifestEdge, e
 	for _, dependency := range set.Inspected().Graph().Nodes() {
 		inspection, ok := inspections[dependency.Node()]
 		if !ok || inspection.Artifact().Identity() != dependency.Artifact().Identity() {
-			return nil, nil, errors.New("manifest entry does not match verified set")
+			return nil, nil, nil, errors.New("manifest entry does not match verified set")
 		}
 		declared, ok := inspection.Artifact().DeclaredIntegrity()
 		if !ok {
-			return nil, nil, errors.New("manifest entry lacks declared integrity")
+			return nil, nil, nil, errors.New("manifest entry lacks declared integrity")
 		}
 		evidence := make([]string, 0, len(inspection.Evidence()))
 		for _, reference := range inspection.Evidence() {
@@ -194,7 +205,16 @@ func manifestEntries(set domain.VerifiedSet) ([]manifestEntry, []manifestEdge, e
 	for _, edge := range set.Inspected().Graph().Edges() {
 		edges = append(edges, manifestEdge{From: edge.From().String(), To: edge.To().String()})
 	}
-	return entries, edges, nil
+	derivations := make([]manifestDerivation, 0, len(set.Inspected().Graph().Derivations()))
+	for _, derivation := range set.Inspected().Graph().Derivations() {
+		binding := derivation.Binding()
+		inputs := make([]string, 0, len(binding.InputDigests()))
+		for _, digest := range binding.InputDigests() {
+			inputs = append(inputs, digest.String())
+		}
+		derivations = append(derivations, manifestDerivation{Source: derivation.Source().String(), Derived: derivation.Derived().String(), SourceSHA256: binding.SourceDigest().String(), InputSHA256s: inputs, Executor: binding.Executor(), ConfigSHA256: binding.ConfigDigest().String()})
+	}
+	return entries, edges, derivations, nil
 }
 
 type cycloneDXBOM struct {

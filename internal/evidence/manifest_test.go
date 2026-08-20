@@ -67,6 +67,75 @@ func TestBuildVerifiedBundleIsDeterministicAndComplete(t *testing.T) {
 	}
 }
 
+func TestBuildVerifiedBundleEmitsDerivedRecipeBinding(t *testing.T) {
+	t.Parallel()
+	source, _ := domain.NewSourceID("pypi")
+	sdist := pypiDependency(t, source, "example", "example", "1.0", "sdist", domain.DependencyPrimary, "a")
+	build := pypiDependency(t, source, "setuptools", "setuptools", "70.0", "wheel", domain.DependencyTransitive, "b")
+	edge, _ := domain.NewDependencyEdge(sdist.Node(), build.Node())
+	base, _ := domain.NewLockedDependencyGraph([]domain.LockedDependency{sdist, build}, []domain.DependencyEdge{edge})
+	derivedIdentity, _ := domain.NewResolvedArtifactIdentity(source, "example", "1.0", "derived-wheel")
+	derivedDigest, _ := domain.NewSHA256Digest(strings.Repeat("c", 64))
+	derivedResolved, _ := domain.NewResolvedArtifact(derivedIdentity, "derived:example", "sha256:"+derivedDigest.String())
+	derivedNode, _ := domain.NewDependencyNodeID("example-derived")
+	derivedDependency, _ := domain.NewLockedDependencyWithRecordPath(derivedNode, domain.DependencyTransitive, derivedResolved, "example-1.0-py3-none-any.whl", false)
+	artifact, _ := domain.NewAcquiredArtifactWithDeclaredIntegrity(derivedIdentity, derivedDigest, "intake:run_aaaaaaaaaaaaaaaaaaaaaaaaaa:derived-wheel", 1, "sha256:"+derivedDigest.String())
+	sourceDigest, _ := domain.NewSHA256Digest(strings.Repeat("a", 64))
+	inputDigest, _ := domain.NewSHA256Digest(strings.Repeat("b", 64))
+	configDigest, _ := domain.NewSHA256Digest(strings.Repeat("d", 64))
+	binding, _ := domain.NewDerivationBinding(sourceDigest, []domain.ContentDigest{inputDigest}, "pep517-gvisor", configDigest)
+	checkID, _ := domain.NewCheckID("pypi-pep517-build")
+	check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+	evidenceID, _ := domain.NewEvidenceID("pypi-pep517-build-result")
+	buildEvidence, _ := domain.NewEvidence(evidenceID, checkID, derivedIdentity, derivedDigest, "pypi-pep517-build", "Trusted build completed.")
+	derived, _ := domain.NewDerivedDependency(sdist.Node(), derivedDependency, artifact, binding, check, buildEvidence)
+	graph, err := domain.ExtendLockedDependencyGraph(base, []domain.DerivedDependency{derived})
+	if err != nil {
+		t.Fatal(err)
+	}
+	inspections := []domain.DependencyInspection{inspectionFixture(t, sdist, "a"), inspectionFixture(t, build, "b"), inspectionFixture(t, derivedDependency, "c")}
+	inspected, _ := domain.NewInspectedDependencySet(graph, inspections)
+	allow, _ := domain.NewPolicyDecision(domain.DecisionAllow, "m5-pypi-pip", 1, []string{"M5_VERIFIED_SET_COMPLETED"})
+	set, _ := domain.NewVerifiedSet(inspected, allow)
+	operationID, _ := domain.NewOperationID()
+	target, _ := domain.NewInstallTarget("/tmp/haa-derived-target")
+	context, _ := domain.NewInstallContext(target)
+	lockDigest, _ := domain.NewSHA256Digest(strings.Repeat("e", 64))
+	bundle, err := evidence.BuildVerifiedBundle(evidence.ManifestContext{OperationID: operationID, InstallContext: context, ResolverRuntime: "python@3.14.7+pip@26.2.1", LockfileDigest: lockDigest}, set)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var manifest struct {
+		Derivations []struct {
+			Source       string   `json:"source"`
+			Derived      string   `json:"derived"`
+			SourceSHA256 string   `json:"source_sha256"`
+			InputSHA256s []string `json:"input_sha256s"`
+			Executor     string   `json:"executor"`
+			ConfigSHA256 string   `json:"config_sha256"`
+		} `json:"derivations"`
+	}
+	if err := json.Unmarshal(bundle.ManifestDocument(), &manifest); err != nil {
+		t.Fatal(err)
+	}
+	if len(manifest.Derivations) != 1 || manifest.Derivations[0].Source != "example" || manifest.Derivations[0].Derived != "example-derived" || manifest.Derivations[0].SourceSHA256 != sourceDigest.String() || manifest.Derivations[0].Executor != "pep517-gvisor" || manifest.Derivations[0].ConfigSHA256 != configDigest.String() || strings.Join(manifest.Derivations[0].InputSHA256s, ",") != inputDigest.String() {
+		t.Fatalf("derived Manifest binding = %#v", manifest.Derivations)
+	}
+}
+
+func pypiDependency(t *testing.T, source domain.SourceID, node, name, version, variant string, role domain.DependencyRole, digestByte string) domain.LockedDependency {
+	t.Helper()
+	identity, _ := domain.NewResolvedArtifactIdentity(source, name, version, variant)
+	digest := strings.Repeat(digestByte, 64)
+	resolved, _ := domain.NewResolvedArtifact(identity, "https://files.pythonhosted.org/fixture", "sha256:"+digest)
+	nodeID, _ := domain.NewDependencyNodeID(node)
+	dependency, err := domain.NewLockedDependencyWithRecordPath(nodeID, role, resolved, name+"-"+version, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return dependency
+}
+
 func verifiedFixture(t *testing.T) domain.VerifiedSet {
 	t.Helper()
 	source, _ := domain.NewSourceID("npm")

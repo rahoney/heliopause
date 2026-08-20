@@ -188,6 +188,11 @@ func (r *recordingRunner) Output(ctx context.Context, binary string, arguments .
 	return nil, nil
 }
 
+func (r *recordingRunner) RunDiscard(ctx context.Context, binary string, arguments ...string) error {
+	_, err := r.Output(ctx, binary, arguments...)
+	return err
+}
+
 type recordingIntroducer struct {
 	calls       int
 	containerID string

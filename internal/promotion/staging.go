@@ -136,7 +136,11 @@ func (s *LocalStaging) stageArtifact(directory string, inspection domain.Depende
 	if err != nil || runID != inspection.RunID().String() {
 		return errors.New("intake handle does not match inspection Run")
 	}
-	source := filepath.Join(s.intakeRoot, runID, "tarball.tgz")
+	sourceName, stagedName, err := stagedArtifactNames(artifact)
+	if err != nil {
+		return err
+	}
+	source := filepath.Join(s.intakeRoot, runID, sourceName)
 	if err := rejectSymlinkPath(source); err != nil {
 		return err
 	}
@@ -152,7 +156,7 @@ func (s *LocalStaging) stageArtifact(directory string, inspection domain.Depende
 	digest := sha256.New()
 	var output *os.File
 	if !written[artifact.Digest().String()] {
-		output, err = os.OpenFile(filepath.Join(directory, artifact.Digest().String()+".tgz"), os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+		output, err = os.OpenFile(filepath.Join(directory, stagedName), os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
 		if err != nil {
 			return fmt.Errorf("create staged artifact: %w", err)
 		}
@@ -219,7 +223,7 @@ func verifyDocuments(bundle domain.VerifiedBundle) error {
 
 func intakeRunID(handle string) (string, error) {
 	parts := strings.Split(handle, ":")
-	if len(parts) != 3 || parts[0] != "intake" || parts[2] != "tarball" {
+	if len(parts) != 3 || parts[0] != "intake" || !validIntakeVariant(parts[2]) {
 		return "", errors.New("invalid controlled intake handle")
 	}
 	runID, err := domain.ParseRunID(parts[1])
@@ -227,6 +231,31 @@ func intakeRunID(handle string) (string, error) {
 		return "", errors.New("invalid controlled intake handle")
 	}
 	return runID.String(), nil
+}
+
+func stagedArtifactNames(artifact domain.AcquiredArtifact) (string, string, error) {
+	variant := artifact.Identity().Variant()
+	if !validIntakeVariant(variant) {
+		return "", "", errors.New("unsupported controlled intake artifact variant")
+	}
+	if artifact.Identity().Source().String() == "npm" && variant == "tarball" {
+		return "tarball.tgz", artifact.Digest().String() + ".tgz", nil
+	}
+	if artifact.Identity().Source().String() == "pypi" {
+		switch variant {
+		case "wheel":
+			return "wheel.whl", artifact.Digest().String() + ".whl", nil
+		case "derived-wheel":
+			return "derived.whl", artifact.Digest().String() + ".whl", nil
+		case "sdist":
+			return "sdist.tar.gz", artifact.Digest().String() + ".tar.gz", nil
+		}
+	}
+	return "", "", errors.New("controlled intake source and variant are incompatible")
+}
+
+func validIntakeVariant(value string) bool {
+	return value == "tarball" || value == "wheel" || value == "derived-wheel" || value == "sdist"
 }
 
 func separateRoots(roots []string) bool {
