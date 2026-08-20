@@ -292,7 +292,10 @@ func (b *PythonSdistBuilder) streamDerivedWheel(ctx context.Context, containerID
 	if err != nil {
 		return DerivedWheel{}, err
 	}
-	artifact, err := domain.NewAcquiredArtifact(identity, digest, "intake:"+runID.String()+":derived-wheel", uint64(writer.size))
+	if err := os.WriteFile(filepath.Join(directory, "derived-filename"), []byte(filename), 0o400); err != nil {
+		return DerivedWheel{}, err
+	}
+	artifact, err := domain.NewAcquiredArtifactWithDeclaredIntegrity(identity, digest, "intake:"+runID.String()+":derived-wheel", uint64(writer.size), "sha256:"+digest.String())
 	if err != nil {
 		return DerivedWheel{}, err
 	}

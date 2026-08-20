@@ -91,7 +91,11 @@ func (i *StaticInspector) artifactPath(artifact domain.AcquiredArtifact) (string
 		return "", "", errors.New("PyPI intake handle is invalid")
 	}
 	directory := filepath.Join(i.intakeRoot, runID.String())
-	filenameBytes, err := os.ReadFile(filepath.Join(directory, "filename"))
+	filenameRecord := "filename"
+	if artifact.Identity().Variant() == "derived-wheel" {
+		filenameRecord = "derived-filename"
+	}
+	filenameBytes, err := os.ReadFile(filepath.Join(directory, filenameRecord))
 	filename := string(filenameBytes)
 	if err != nil || filename == "" || strings.ContainsAny(filename, `/\\`) {
 		return "", "", errors.New("PyPI intake filename is invalid")

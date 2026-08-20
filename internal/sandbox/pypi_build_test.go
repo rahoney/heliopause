@@ -34,6 +34,11 @@ func TestPythonSdistBuilderUsesOnlyVerifiedBuildWheels(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(root, "run_aaaaaaaaaaaaaaaaaaaaaaaaaa", "derived.whl")); err != nil {
 		t.Fatal(err)
 	}
+	filename, err := os.ReadFile(filepath.Join(root, "run_aaaaaaaaaaaaaaaaaaaaaaaaaa", "derived-filename"))
+	declared, declaredOK := derived.Artifact.DeclaredIntegrity()
+	if err != nil || string(filename) != derived.Filename || !declaredOK || declared != "sha256:"+derived.Artifact.Digest().String() {
+		t.Fatalf("derived wheel binding filename=%q declared=%q ok=%v err=%v", filename, declared, declaredOK, err)
+	}
 }
 
 func TestPythonSdistBuilderRejectsGraphExpansionBeforeDocker(t *testing.T) {
