@@ -117,7 +117,12 @@ func TestLinuxPyPIResolverIntegration(t *testing.T) {
 	if os.Geteuid() != 0 {
 		t.Fatal("PyPI resolver network policy integration requires explicit CAP_NET_ADMIN elevation")
 	}
-	resolver, err := NewLinuxPyPIResolver()
+	observer, err := NewSharedObserver(ObserverOutputEndpoint)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = observer.Close() }()
+	resolver, err := NewPyPIResolver(integrationRunner{t: t}, systemNamedEndpointResolver{}, observer, ProbePython)
 	if err != nil {
 		t.Fatal(err)
 	}
