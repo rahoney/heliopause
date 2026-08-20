@@ -39,10 +39,40 @@ func (i *DynamicInspector) Inspect(ctx context.Context, artifact domain.Acquired
 		check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, capability, status, limitation)
 		return domain.NewInspectionReport(check, nil, nil)
 	}
+	for _, observation := range result.Observations() {
+		if observation.Category() == domain.ObservationResource {
+			check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionIncomplete, "M6_DYNAMIC_RESOURCE_LIMIT")
+			return domain.NewInspectionReport(check, nil, nil)
+		}
+	}
 	check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
 	evidenceID, _ := domain.NewEvidenceID("github-release-elf-dynamic-result")
 	evidence, _ := domain.NewEvidence(evidenceID, checkID, artifact.Identity(), artifact.Digest(), "github-release-elf-dynamic", "GitHub Release ELF dynamic inspection completed.")
-	return domain.NewInspectionReport(check, nil, []domain.Evidence{evidence})
+	findings := []domain.Finding{}
+	seen := map[string]bool{}
+	for _, observation := range result.Observations() {
+		code := ""
+		switch observation.Category() {
+		case domain.ObservationHoneytoken:
+			code = "M3_HONEYTOKEN_ACCESS"
+		case domain.ObservationNetwork:
+			code = "M3_NETWORK_ATTEMPT"
+		case domain.ObservationFilesystem:
+			if observation.Subject() == "filesystem-violation" {
+				code = "M3_FILESYSTEM_VIOLATION"
+			}
+		case domain.ObservationProcess:
+			if observation.Subject() == "process-unexpected" {
+				code = "M3_UNEXPECTED_PROCESS"
+			}
+		}
+		if code != "" && !seen[code] {
+			finding, _ := domain.NewFinding(code, []domain.EvidenceID{evidenceID})
+			findings = append(findings, finding)
+			seen[code] = true
+		}
+	}
+	return domain.NewInspectionReport(check, findings, []domain.Evidence{evidence})
 }
 
 type CompositeInspector struct {
