@@ -145,6 +145,17 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 			return err
 		}
 		defer closeResolver()
+		directArtifact, err := artifactpypi.NewGraphArtifact(resolver, intake)
+		if err != nil {
+			return err
+		}
+		directInspect, err := application.NewInspectService(directArtifact, verificationpypi.IntegrityVerifier{}, inspection, evidence, policy.M3{}, domain.NewOperationID, domain.NewRunID)
+		if err != nil {
+			return err
+		}
+		if err := cli.AddPyPIInspect(command, directInspect); err != nil {
+			return err
+		}
 		installInspection, err := application.NewInstallInspectService(resolver, intake, verificationpypi.IntegrityVerifier{}, inspection, evidence, policy.M3{}, policy.M5{}, domain.NewOperationID, domain.NewRunID)
 		if err != nil {
 			return err

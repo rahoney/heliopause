@@ -82,6 +82,34 @@ func AddPyPIInstall(root *cobra.Command, installer Installer) error {
 	return nil
 }
 
+// AddPyPIInspect adds the isolated PyPI primary-distribution inspect path.
+func AddPyPIInspect(root *cobra.Command, inspector Inspector) error {
+	if root == nil || inspector == nil {
+		return errors.New("pypi inspect command requires root and use case")
+	}
+	pypiCommand := ensurePyPICommand(root)
+	inspectCommand := &cobra.Command{Use: "inspect <project>[@<version>]", Args: cobra.ExactArgs(1), RunE: func(command *cobra.Command, args []string) error {
+		reference, err := artifactpypi.ParseReference(args[0])
+		if err != nil {
+			return err
+		}
+		request, err := application.NewInspectRequest(reference)
+		if err != nil {
+			return err
+		}
+		exitCode, operationErr := ExecuteInspect(contextOrBackground(command.Context()), inspector, request, true, command.OutOrStdout())
+		if operationErr != nil {
+			return operationErr
+		}
+		if exitCode != 0 {
+			return ExitError{Code: exitCode}
+		}
+		return nil
+	}}
+	pypiCommand.AddCommand(inspectCommand)
+	return nil
+}
+
 // AddNPMInspect adds the injected npm Inspect use case to a root command.
 func AddNPMInspect(root *cobra.Command, inspector Inspector) error {
 	if root == nil || inspector == nil {
