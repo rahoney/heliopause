@@ -226,6 +226,7 @@ jobs:
           HELOX_PYPI_RESOLVER_INTEGRATION=1 HELOX_GVISOR_HELPER="$RUNNER_TEMP/gvisor/bazel-bin/tools/haa_gvisor_observer/haa_gvisor_observer" sudo --preserve-env=HELOX_PYPI_RESOLVER_INTEGRATION,HELOX_GVISOR_HELPER,GOTOOLCHAIN "$(command -v go)" test -v -timeout=5m ./internal/sandbox -run TestLinuxPyPIResolverIntegration
           HELOX_PYPI_DYNAMIC_INTEGRATION=1 HELOX_GVISOR_HELPER="$RUNNER_TEMP/gvisor/bazel-bin/tools/haa_gvisor_observer/haa_gvisor_observer" go test -v -timeout=5m ./internal/sandbox -run 'TestLinuxPyPI(WheelDynamic|SdistBuild)Integration'
           HELOX_PROMOTION_INTEGRATION=1 go test -v -timeout=5m ./internal/promotion -run TestLinuxNPMPromotionIntegration
+          HELOX_PYPI_PROMOTION_INTEGRATION=1 go test -v -timeout=5m ./internal/promotion -run TestLinuxPyPIPromotionIntegration
 
   required:
     name: Required

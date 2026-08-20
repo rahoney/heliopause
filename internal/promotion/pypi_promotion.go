@@ -2,6 +2,7 @@ package promotion
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/csv"
 	"errors"
@@ -187,7 +188,7 @@ func validatePyPIOutput(site string, expected map[string]pypiExpected, requireme
 				if !ok || expected[name].version != version || installed[name] {
 					return errors.New("PyPI installed distribution set is invalid")
 				}
-				if err := validateInstalledRecord(path); err != nil {
+				if err := validateInstalledRecord(site, path, expected[name]); err != nil {
 					return err
 				}
 				installed[name] = true
@@ -219,10 +220,14 @@ func installedDistInfo(value string) (string, string, bool) {
 	version, err := artifactpypi.NormalizeVersion(value[at+1:])
 	return name, version, err == nil
 }
-func validateInstalledRecord(directory string) error {
+func validateInstalledRecord(site, directory string, expected pypiExpected) error {
 	metadata, err := os.ReadFile(filepath.Join(directory, "METADATA"))
 	if err != nil || len(metadata) == 0 {
 		return errors.New("PyPI installed metadata is unavailable")
+	}
+	metadataText := string(metadata)
+	if !strings.Contains(metadataText, "Name: "+expected.name+"\n") || !strings.Contains(metadataText, "Version: "+expected.version+"\n") {
+		return errors.New("PyPI installed metadata does not match expected distribution")
 	}
 	record, err := os.Open(filepath.Join(directory, "RECORD"))
 	if err != nil {
@@ -244,8 +249,18 @@ func validateInstalledRecord(directory string) error {
 			if !strings.HasPrefix(row[1], "sha256=") {
 				return errors.New("PyPI installed RECORD hash is invalid")
 			}
-			if _, err := base64.RawURLEncoding.DecodeString(strings.TrimPrefix(row[1], "sha256=")); err != nil {
+			digest, err := base64.RawURLEncoding.DecodeString(strings.TrimPrefix(row[1], "sha256="))
+			if err != nil || len(digest) != sha256.Size {
 				return errors.New("PyPI installed RECORD hash is invalid")
+			}
+			path := filepath.Join(site, filepath.FromSlash(row[0]))
+			if relative, err := filepath.Rel(site, path); err != nil || relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
+				return errors.New("PyPI installed RECORD escapes target")
+			}
+			body, readErr := os.ReadFile(path)
+			sum := sha256.Sum256(body)
+			if readErr != nil || !infoRegular(path) || !strings.EqualFold(base64.RawURLEncoding.EncodeToString(sum[:]), strings.TrimPrefix(row[1], "sha256=")) {
+				return errors.New("PyPI installed RECORD content hash is invalid")
 			}
 		}
 		count++
@@ -254,4 +269,9 @@ func validateInstalledRecord(directory string) error {
 		return errors.New("PyPI installed RECORD is empty")
 	}
 	return nil
+}
+
+func infoRegular(path string) bool {
+	info, err := os.Lstat(path)
+	return err == nil && info.Mode().IsRegular()
 }
