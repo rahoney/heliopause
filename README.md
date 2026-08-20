@@ -9,7 +9,7 @@
 - 구현 언어: Go
 - CLI framework: Cobra
 - 현재 상태: Step 14 Implementation — M6 GitHub Releases Standalone 시작
-- 다음 작업: M6-003 GitHub Release resolve·Acquire·integrity
+- 다음 작업: M6-004 standalone static inspection·M6 Policy
 
 ## Project Notes
 
