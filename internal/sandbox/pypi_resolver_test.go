@@ -20,7 +20,7 @@ func TestPyPIResolverUsesGVisorDefaultDenyLifecycleAndCrossChecks(t *testing.T) 
 	runner := &recordingRunner{responses: [][]byte{
 		[]byte("iptables"), []byte("network-id"), []byte("172.30.0.0/24"),
 		nil, nil, nil, nil, nil, nil, nil,
-		[]byte("0123456789abcdef"), nil, []byte("3.14.7\n"), []byte("26.2.1 from /usr/local/lib/python3.14/site-packages/pip\n"), []byte("Compatible tags:\n  cp314-cp314-manylinux_2_36_x86_64\n"), nil,
+		[]byte("0123456789abcdef"), nil, []byte("3.14.7\n"), []byte("pip 26.2.1 from /usr/local/lib/python3.14/site-packages/pip\n"), []byte("Compatible tags:\n  cp314-cp314-manylinux_2_36_x86_64\n"), nil,
 		[]byte(report), []byte(pypiResolverSimpleJSON("child", "child-2.0-py3-none-any.whl", "")), []byte(pypiResolverSimpleJSON("primary", "primary-1.0-py3-none-any.whl", ">=3.14")),
 	}}
 	observer := &recordingObserver{reader: &traceReader{records: []TraceRecord{{Kind: "network-attempt", Bytes: 1}}}}
@@ -77,7 +77,7 @@ func TestPyPIResolverFailsClosedForObserverOrEndpointFailure(t *testing.T) {
 			name:      "observer stream incomplete",
 			endpoints: pypiStaticEndpoints{},
 			observer:  &recordingObserver{reader: &traceReader{err: errors.New("observer ended")}},
-			responses: [][]byte{[]byte("iptables"), []byte("network-id"), []byte("172.30.0.0/24"), nil, nil, nil, nil, nil, nil, nil, []byte("0123456789abcdef"), nil, []byte("3.14.7"), []byte("26.2.1 from pip"), []byte("cp314-cp314-manylinux_2_36_x86_64"), nil, []byte(pypiResolverReportJSON()), []byte(pypiResolverSimpleJSON("child", "child-2.0-py3-none-any.whl", "")), []byte(pypiResolverSimpleJSON("primary", "primary-1.0-py3-none-any.whl", ">=3.14"))},
+			responses: [][]byte{[]byte("iptables"), []byte("network-id"), []byte("172.30.0.0/24"), nil, nil, nil, nil, nil, nil, nil, []byte("0123456789abcdef"), nil, []byte("3.14.7"), []byte("pip 26.2.1 from pip"), []byte("cp314-cp314-manylinux_2_36_x86_64"), nil, []byte(pypiResolverReportJSON()), []byte(pypiResolverSimpleJSON("child", "child-2.0-py3-none-any.whl", "")), []byte(pypiResolverSimpleJSON("primary", "primary-1.0-py3-none-any.whl", ">=3.14"))},
 		},
 	}
 	for _, test := range tests {

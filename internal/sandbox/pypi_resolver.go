@@ -215,7 +215,7 @@ func verifyPyPIResolverRuntime(ctx context.Context, runner CommandRunner, contai
 		return errors.New("PyPI resolver Python runtime version mismatch")
 	}
 	pip, err := runner.Output(ctx, "docker", "exec", containerID, "python", "-I", "-m", "pip", "--version")
-	if err != nil || !strings.HasPrefix(strings.TrimSpace(string(pip)), runtime.PipVersion+" ") {
+	if err != nil || !strings.HasPrefix(strings.TrimSpace(string(pip)), "pip "+runtime.PipVersion+" ") {
 		return errors.New("PyPI resolver pip runtime version mismatch")
 	}
 	tags, err := runner.Output(ctx, "docker", "exec", containerID, "python", "-I", "-m", "pip", "debug", "--verbose")
