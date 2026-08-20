@@ -8,8 +8,8 @@
 - Go module path: `github.com/rahoney/heliopause`
 - 구현 언어: Go
 - CLI framework: Cobra
-- 현재 상태: Step 14 Implementation — M5 generic staging·offline pip Promotion·CLI integration 진행
-- 다음 작업: M5-006 generic staging·offline pip Promotion·CLI integration
+- 현재 상태: Step 14 Implementation — M5 qualification·npm regression·M6 handoff 진행
+- 다음 작업: M5-007 M5 qualification·npm regression·M6 handoff
 
 ## Project Notes
 
