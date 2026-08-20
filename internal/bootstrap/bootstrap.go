@@ -160,6 +160,18 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		if err != nil {
 			return err
 		}
+		if runtime.GOOS == "linux" {
+			builder, closeBuilderObserver, factoryErr := sandbox.NewLinuxPyPISdistBuilder(filepath.Join(root, "intake"))
+			if factoryErr != nil {
+				return factoryErr
+			}
+			defer closeBuilderObserver()
+			deriver, deriveErr := inspectionpypi.NewDeriver(static, builder)
+			if deriveErr != nil {
+				return deriveErr
+			}
+			installInspection.WithDerivation(deriver)
+		}
 		staging, err := promotion.NewLocalStaging(filepath.Join(root, "intake"), filepath.Join(root, "evidence"), filepath.Join(root, "staging"))
 		if err != nil {
 			return err

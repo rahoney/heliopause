@@ -48,7 +48,7 @@ func TestPyPIResolverUsesGVisorDefaultDenyLifecycleAndCrossChecks(t *testing.T) 
 		t.Fatalf("command calls = %d: %#v", len(runner.calls), runner.calls)
 	}
 	assertPyPIResolverCreate(t, runner.calls[10].arguments)
-	if got := runner.calls[15]; got.binary != "docker" || !strings.Contains(strings.Join(got.arguments, " "), "--only-binary=:all:") || !strings.Contains(strings.Join(got.arguments, " "), "primary==1.0") {
+	if got := runner.calls[15]; got.binary != "docker" || strings.Contains(strings.Join(got.arguments, " "), "--only-binary") || !strings.Contains(strings.Join(got.arguments, " "), "primary==1.0") {
 		t.Fatalf("pip resolution command = %#v", got)
 	}
 	if got := runner.calls[len(runner.calls)-1]; got.binary != "docker" || got.arguments[0] != "network" || got.arguments[1] != "rm" {

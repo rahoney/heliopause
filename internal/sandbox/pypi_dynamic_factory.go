@@ -26,6 +26,24 @@ func NewLinuxPyPIDynamicBackend(intakeRoot string) (*PythonDynamicBackend, func(
 	return backend, observer.Close, nil
 }
 
+func NewLinuxPyPISdistBuilder(intakeRoot string) (*PythonSdistBuilder, func() error, error) {
+	observer, err := NewSharedObserver(ObserverOutputEndpoint)
+	if err != nil {
+		return nil, nil, err
+	}
+	introducer, err := NewPythonArtifactIntroducer(intakeRoot, systemExecutor{})
+	if err != nil {
+		_ = observer.Close()
+		return nil, nil, err
+	}
+	builder, err := NewPythonSdistBuilder(systemExecutor{}, introducer, observer, ProbePython)
+	if err != nil {
+		_ = observer.Close()
+		return nil, nil, err
+	}
+	return builder, observer.Close, nil
+}
+
 // UnavailablePythonWheelRunner makes unsupported hosts explicit incomplete
 // inspection results without attempting Docker, Python, or Host execution.
 type UnavailablePythonWheelRunner struct{}

@@ -150,7 +150,7 @@ func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain
 	}
 	resolveCtx, cancel := context.WithTimeout(ctx, pypiResolverTimeout)
 	defer cancel()
-	if _, err := r.runner.Output(resolveCtx, "docker", "exec", containerID, "python", "-I", "-m", "pip", "install", "--dry-run", "--report", pypiResolverProjectDir+"/report.json", "--disable-pip-version-check", "--no-input", "--no-cache-dir", "--isolated", "--only-binary=:all:", "--index-url", "https://pypi.org/simple/", request); err != nil {
+	if _, err := r.runner.Output(resolveCtx, "docker", "exec", containerID, "python", "-I", "-m", "pip", "install", "--dry-run", "--report", pypiResolverProjectDir+"/report.json", "--disable-pip-version-check", "--no-input", "--no-cache-dir", "--isolated", "--index-url", "https://pypi.org/simple/", request); err != nil {
 		return domain.DependencyResolution{}, errors.New("run locked pip resolution failed")
 	}
 	reportBytes, err := r.runner.Output(resolveCtx, "docker", "exec", containerID, "python", "-I", "-c", boundedReadScript, pypiResolverProjectDir+"/report.json", "4194304")

@@ -42,6 +42,18 @@ func (i *StaticInspector) InspectWheel(ctx context.Context, artifact domain.Acqu
 	return wheel, report, nil
 }
 
+func (i *StaticInspector) InspectSdist(ctx context.Context, artifact domain.AcquiredArtifact) (artifactpypi.SdistInspection, error) {
+	inspection, _, err := i.inspect(ctx, artifact)
+	if err != nil || artifact.Identity().Variant() != "sdist" {
+		return artifactpypi.SdistInspection{}, err
+	}
+	sdist, ok := inspection.(artifactpypi.SdistInspection)
+	if !ok {
+		return artifactpypi.SdistInspection{}, errors.New("PyPI sdist static inspection is unavailable")
+	}
+	return sdist, nil
+}
+
 func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredArtifact) (any, domain.InspectionReport, error) {
 	if ctx == nil || ctx.Err() != nil || i == nil || artifact.Identity().Source().String() != "pypi" {
 		return nil, domain.InspectionReport{}, errors.New("PyPI static inspection request is invalid")
@@ -105,6 +117,9 @@ func (i *StaticInspector) artifactPath(artifact domain.AcquiredArtifact) (string
 		return "", "", errors.New("PyPI intake filename does not match Artifact")
 	}
 	name := map[string]string{"wheel": "wheel.whl", "derived-wheel": "derived.whl", "sdist": "sdist.tar.gz"}[variant]
+	if artifact.Identity().Variant() == "derived-wheel" {
+		name = "derived.whl"
+	}
 	if name == "" {
 		return "", "", errors.New("PyPI intake variant is unsupported")
 	}

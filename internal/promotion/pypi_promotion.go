@@ -130,7 +130,10 @@ func preparePyPIProject(project, stagedRoot string, bundle domain.VerifiedBundle
 	lines := make([]string, 0)
 	for _, node := range bundle.Set().Inspected().Graph().Nodes() {
 		resolved := node.Artifact()
-		if resolved.Identity().Source().String() != "pypi" || resolved.Identity().Variant() != "wheel" {
+		if resolved.Identity().Variant() == "sdist" {
+			continue
+		}
+		if resolved.Identity().Source().String() != "pypi" || (resolved.Identity().Variant() != "wheel" && resolved.Identity().Variant() != "derived-wheel") {
 			return nil, nil, errors.New("PyPI Promotion requires exact wheels only")
 		}
 		filename := filepath.Base(node.RecordPath())

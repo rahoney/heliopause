@@ -28,6 +28,17 @@ type InstallInspectService struct {
 	setPolicy      DependencySetPolicy
 	newOperationID func() (domain.OperationID, error)
 	newRunID       func() (domain.RunID, error)
+	derivation     ports.Derivation
+}
+
+// WithDerivation enables a controller-owned derived-Artifact phase after all
+// resolver nodes have completed their normal inspection. It is opt-in so npm
+// retains its existing workflow unchanged.
+func (s *InstallInspectService) WithDerivation(derivation ports.Derivation) *InstallInspectService {
+	if s != nil {
+		s.derivation = derivation
+	}
+	return s
 }
 
 // NewInstallInspectService constructs the M4 recursive inspection workflow
@@ -73,6 +84,23 @@ func (s *InstallInspectService) Inspect(ctx context.Context, request InstallRequ
 		}
 		inspections = append(inspections, inspection)
 	}
+	if s.derivation != nil {
+		derived, deriveErr := s.derivation.Derive(ctx, inspections)
+		if deriveErr != nil {
+			return partial, fmt.Errorf("derive verified Artifact: %w", deriveErr)
+		}
+		graph, err = domain.ExtendLockedDependencyGraph(graph, derived)
+		if err != nil {
+			return partial, fmt.Errorf("extend derived dependency graph: %w", err)
+		}
+		for _, item := range derived {
+			inspection, inspectErr := s.inspectAcquiredDependency(ctx, operationID, item.Node(), item.Artifact())
+			if inspectErr != nil {
+				return partial, inspectErr
+			}
+			inspections = append(inspections, inspection)
+		}
+	}
 	set, err := domain.NewInspectedDependencySet(graph, inspections)
 	if err != nil {
 		return partial, fmt.Errorf("construct inspected dependency set: %w", err)
@@ -82,6 +110,51 @@ func (s *InstallInspectService) Inspect(ctx context.Context, request InstallRequ
 		return partial, fmt.Errorf("evaluate dependency set policy: %w", err)
 	}
 	return newInspectedInstall(operationID, request, resolution, set, decision), nil
+}
+
+func (s *InstallInspectService) inspectAcquiredDependency(ctx context.Context, operationID domain.OperationID, dependency domain.LockedDependency, artifact domain.AcquiredArtifact) (domain.DependencyInspection, error) {
+	runID, err := s.newRunID()
+	if err != nil {
+		return domain.DependencyInspection{}, err
+	}
+	reference, err := lockedReference(dependency.Artifact())
+	if err != nil {
+		return domain.DependencyInspection{}, err
+	}
+	run, err := domain.NewInspectionRun(runID, operationID, reference, dependency.Artifact().Identity())
+	if err != nil {
+		return domain.DependencyInspection{}, err
+	}
+	if err := run.Activate(); err != nil {
+		return domain.DependencyInspection{}, failDependencyRun(run, "RUN_ACTIVATION_FAILED", err)
+	}
+	if err := run.BindAcquiredArtifact(artifact); err != nil {
+		return domain.DependencyInspection{}, failDependencyRun(run, "ARTIFACT_BINDING_FAILED", err)
+	}
+	verification, err := s.verification.Verify(ctx, artifact)
+	if err != nil {
+		return domain.DependencyInspection{}, failDependencyRun(run, "VERIFICATION_PROVIDER_FAILED", err)
+	}
+	inspection, err := s.inspection.Inspect(ctx, artifact)
+	if err != nil {
+		return domain.DependencyInspection{}, failDependencyRun(run, "INSPECTION_PROVIDER_FAILED", err)
+	}
+	references, err := s.evidence.Record(ctx, runID, append(verification.Evidence(), inspection.Evidence()...))
+	if err != nil {
+		return domain.DependencyInspection{}, failDependencyRun(run, "EVIDENCE_RECORD_FAILED", err)
+	}
+	input, err := domain.NewPolicyInput(runID, artifact, verification, inspection, references)
+	if err != nil {
+		return domain.DependencyInspection{}, failDependencyRun(run, "POLICY_INPUT_INVALID", err)
+	}
+	decision, err := s.entryPolicy.Evaluate(input)
+	if err != nil {
+		return domain.DependencyInspection{}, failDependencyRun(run, "POLICY_EVALUATION_FAILED", err)
+	}
+	if err := run.FinalizeCompleted(decision); err != nil {
+		return domain.DependencyInspection{}, failDependencyRun(run, "RUN_FINALIZATION_FAILED", err)
+	}
+	return domain.NewDependencyInspection(dependency.Node(), runID, artifact, append([]domain.CheckExecution{verification.Execution()}, inspection.Executions()...), references, decision)
 }
 
 func (s *InstallInspectService) inspectDependency(ctx context.Context, operationID domain.OperationID, dependency domain.LockedDependency) (domain.DependencyInspection, error) {

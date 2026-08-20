@@ -19,8 +19,17 @@ func (M5) EvaluateSet(set domain.InspectedDependencySet) (domain.PolicyDecision,
 			return m5Decision(domain.DecisionBlock, "M5_DISTRIBUTION_BLOCKED")
 		}
 	}
+	derived := map[domain.DependencyNodeID]bool{}
+	for _, edge := range set.Graph().Edges() {
+		for _, node := range set.Graph().Nodes() {
+			if node.Node() == edge.To() && node.Artifact().Identity().Variant() == "derived-wheel" {
+				derived[edge.From()] = true
+			}
+		}
+	}
 	for _, dependency := range set.Graph().Nodes() {
-		if dependency.Artifact().Identity().Source().String() != "pypi" || dependency.Artifact().Identity().Variant() != "wheel" {
+		variant := dependency.Artifact().Identity().Variant()
+		if dependency.Artifact().Identity().Source().String() != "pypi" || (variant != "wheel" && variant != "derived-wheel" && !(variant == "sdist" && derived[dependency.Node()])) {
 			return m5Decision(domain.DecisionManualReview, "M5_NON_WHEEL_PROMOTION_UNAVAILABLE")
 		}
 	}
