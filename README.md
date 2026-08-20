@@ -8,7 +8,7 @@
 - Go module path: `github.com/rahoney/heliopause`
 - 구현 언어: Go
 - CLI framework: Cobra
-- 현재 상태: Step 14 Implementation — M5 Python/pip runtime identity lock과 PyPI reference foundation 완료
+- 현재 상태: Step 14 Implementation — M5 isolated PyPI resolver·target tag·egress policy 진행
 - 다음 작업: M5-003 isolated PyPI resolver·target tag·egress policy
 
 ## Project Notes

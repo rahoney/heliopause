@@ -105,6 +105,9 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 		modulePath + "/internal/artifact/npm": {
 			modulePath + "/internal/core/domain": true,
 		},
+		modulePath + "/internal/artifact/pypi": {
+			modulePath + "/internal/core/domain": true,
+		},
 		modulePath + "/internal/verification/npm": {
 			modulePath + "/internal/core/domain": true,
 		},
@@ -116,8 +119,9 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/core/domain": true,
 		},
 		modulePath + "/internal/sandbox": {
-			modulePath + "/internal/artifact/npm": true,
-			modulePath + "/internal/core/domain":  true,
+			modulePath + "/internal/artifact/npm":  true,
+			modulePath + "/internal/artifact/pypi": true,
+			modulePath + "/internal/core/domain":   true,
 		},
 		modulePath + "/internal/testutil/fakeworkflow": {
 			modulePath + "/internal/core/domain": true,
@@ -135,6 +139,7 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 		modulePath + "/internal/application":           {},
 		modulePath + "/internal/policy":                {},
 		modulePath + "/internal/artifact/npm":          {},
+		modulePath + "/internal/artifact/pypi":         {},
 		modulePath + "/internal/verification/npm":      {},
 		modulePath + "/internal/inspection/npm":        {},
 		modulePath + "/internal/evidence/local":        {},

@@ -15,6 +15,7 @@ import (
 	"time"
 
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
+	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
@@ -106,6 +107,44 @@ func TestLinuxNPMResolverNetworkPolicyIntegration(t *testing.T) {
 	}
 	if len(resolution.Graph().Nodes()) == 0 || resolution.Graph().Primary().String() == "" || resolution.RuntimeIdentity() == "" || resolution.LockfileDigest().String() == "" {
 		t.Fatalf("resolver resolution = %#v", resolution)
+	}
+}
+
+func TestLinuxPyPIResolverIntegration(t *testing.T) {
+	if os.Getenv("HELOX_PYPI_RESOLVER_INTEGRATION") != "1" {
+		t.Skip("requires pinned Linux Python/gVisor and Docker firewall integration")
+	}
+	if os.Geteuid() != 0 {
+		t.Fatal("PyPI resolver network policy integration requires explicit CAP_NET_ADMIN elevation")
+	}
+	resolver, err := NewLinuxPyPIResolver()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = resolver.Close() }()
+	helperPath := os.Getenv("HELOX_GVISOR_HELPER")
+	if helperPath == "" {
+		t.Fatal("HELOX_GVISOR_HELPER is required")
+	}
+	helper := exec.Command(helperPath, "/run/heliopause-observer/gvisor-remote.sock", ObserverOutputEndpoint)
+	if err := helper.Start(); err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = helper.Process.Kill(); _ = helper.Wait() }()
+	reference, err := artifactpypi.ParseReference("packaging@25.0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	target, _ := domain.NewInstallTarget("/tmp/heliopause-pypi-resolver-target")
+	installContext, _ := domain.NewInstallContext(target)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
+	resolution, err := resolver.ResolveDependencies(ctx, reference, installContext)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(resolution.Graph().Nodes()) != 1 || resolution.Graph().Primary().String() == "" || resolution.RuntimeIdentity() == "" || resolution.LockfileDigest().String() == "" {
+		t.Fatalf("PyPI resolver resolution = %#v", resolution)
 	}
 }
 

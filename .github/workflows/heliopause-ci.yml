@@ -208,6 +208,7 @@ jobs:
           sudo systemctl restart docker || { sudo systemctl status docker --no-pager || true; sudo journalctl -u docker --no-pager -n 100 || true; exit 1; }
           sudo iptables -S DOCKER-USER
           docker pull node:22.23.1-slim@sha256:6c74791e557ce11fc957704f6d4fe134a7bc8d6f5ca4403205b2966bd488f6b3
+          docker pull python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52
           git clone --filter=blob:none https://github.com/google/gvisor.git "$RUNNER_TEMP/gvisor"
           git -C "$RUNNER_TEMP/gvisor" checkout --detach "$gvisor_commit"
           curl --fail --location --silent --show-error --output "$RUNNER_TEMP/bazel" https://github.com/bazelbuild/bazel/releases/download/8.3.1/bazel-8.3.1-linux-x86_64
@@ -222,6 +223,7 @@ jobs:
           docker info --format '{{json (index .Runtimes "runsc-trace")}}'
           HELOX_GVISOR_INTEGRATION=1 HELOX_GVISOR_HELPER="$RUNNER_TEMP/gvisor/bazel-bin/tools/haa_gvisor_observer/haa_gvisor_observer" go test -timeout=5m ./internal/sandbox -run TestLinuxGVisorLifecycleIntegration
           HELOX_NPM_RESOLVER_INTEGRATION=1 sudo --preserve-env=HELOX_NPM_RESOLVER_INTEGRATION,GOTOOLCHAIN "$(command -v go)" test -v -timeout=5m ./internal/sandbox -run TestLinuxNPMResolverNetworkPolicyIntegration
+          HELOX_PYPI_RESOLVER_INTEGRATION=1 HELOX_GVISOR_HELPER="$RUNNER_TEMP/gvisor/bazel-bin/tools/haa_gvisor_observer/haa_gvisor_observer" sudo --preserve-env=HELOX_PYPI_RESOLVER_INTEGRATION,HELOX_GVISOR_HELPER,GOTOOLCHAIN "$(command -v go)" test -v -timeout=5m ./internal/sandbox -run TestLinuxPyPIResolverIntegration
           HELOX_PROMOTION_INTEGRATION=1 go test -v -timeout=5m ./internal/promotion -run TestLinuxNPMPromotionIntegration
 
   required:

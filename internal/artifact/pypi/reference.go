@@ -48,6 +48,27 @@ func RequestedVersion(reference domain.ArtifactReference) (string, bool, error) 
 	return version, present, err
 }
 
+// NormalizeProjectName applies the PyPA normalized-name algorithm to an
+// externally supplied project name without constructing an ArtifactReference.
+// Resolver metadata uses this helper before it can enter a Domain graph.
+func NormalizeProjectName(value string) (string, error) {
+	if !projectNamePattern.MatchString(value) {
+		return "", errors.New("PyPI project name is invalid")
+	}
+	return strings.ToLower(separatorPattern.ReplaceAllString(value, "-")), nil
+}
+
+// NormalizeVersion accepts one exact public PEP 440 version and returns its
+// canonical form. It deliberately excludes local versions and specifiers.
+func NormalizeVersion(value string) (string, error) { return normalizeVersion(value) }
+
+// IsFinalVersion reports whether an already canonical public PEP 440 version
+// has no pre-release or development-release segment.
+func IsFinalVersion(value string) bool {
+	canonical, err := normalizeVersion(value)
+	return err == nil && !strings.Contains(canonical, "a") && !strings.Contains(canonical, "b") && !strings.Contains(canonical, "rc") && !strings.Contains(canonical, ".dev")
+}
+
 func parsePypiReference(reference domain.ArtifactReference) (string, string, bool, error) {
 	if reference.Source().String() != "pypi" {
 		return "", "", false, errors.New("PyPI project reference is required")
@@ -63,10 +84,11 @@ func parseReference(input string) (string, string, bool, error) {
 	if at := strings.LastIndexByte(input, '@'); at >= 0 {
 		project, version, hasVersion = input[:at], input[at+1:], true
 	}
-	if !projectNamePattern.MatchString(project) {
-		return "", "", false, errors.New("PyPI project name is invalid")
+	normalizedProject, err := NormalizeProjectName(project)
+	if err != nil {
+		return "", "", false, err
 	}
-	project = strings.ToLower(separatorPattern.ReplaceAllString(project, "-"))
+	project = normalizedProject
 	if !hasVersion {
 		return project, "", false, nil
 	}
