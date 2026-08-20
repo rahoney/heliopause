@@ -112,3 +112,16 @@ func (systemExecutor) RunInput(ctx context.Context, input io.Reader, binary stri
 	command.Stdin = input
 	return command.Run()
 }
+
+func (systemExecutor) RunOutput(ctx context.Context, output io.Writer, binary string, arguments ...string) error {
+	command := exec.CommandContext(ctx, binary, arguments...)
+	command.Stdout = output
+	return command.Run()
+}
+
+func (systemExecutor) RunDiscard(ctx context.Context, binary string, arguments ...string) error {
+	command := exec.CommandContext(ctx, binary, arguments...)
+	command.Stdout = io.Discard
+	command.Stderr = io.Discard
+	return command.Run()
+}

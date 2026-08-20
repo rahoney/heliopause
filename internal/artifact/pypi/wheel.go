@@ -341,6 +341,12 @@ func parseWheelFilename(filename string) (string, string, []string, []string, []
 	}
 	return "", "", nil, nil, nil, errors.New("wheel name/version is invalid")
 }
+
+// ParseWheelFilename returns the normalized identity and declared compatibility
+// tags of one wheel filename without inspecting archive bytes.
+func ParseWheelFilename(filename string) (string, string, []string, []string, []string, error) {
+	return parseWheelFilename(filename)
+}
 func wheelTagsCompatible(py, abi, platform []string, target WheelTarget) bool {
 	if target.Python == "" || target.ABI == "" || target.Platform == "" {
 		return false
