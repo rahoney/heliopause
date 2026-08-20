@@ -8,8 +8,8 @@
 - Go module path: `github.com/rahoney/heliopause`
 - 구현 언어: Go
 - CLI framework: Cobra
-- 현재 상태: Step 14 Implementation — M5 qualification·npm regression·M6 handoff 진행
-- 다음 작업: M5-007 M5 qualification·npm regression·M6 handoff
+- 현재 상태: Step 14 Implementation — M5 PyPI/pip Expansion 완료, M6 시작 전
+- 다음 작업: M6-001 GitHub Releases Standalone entry decision
 
 ## Project Notes
 
