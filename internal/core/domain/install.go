@@ -123,12 +123,30 @@ func (e DependencyEdge) To() DependencyNodeID   { return e.to }
 // LockedDependencyGraph is a bounded, connected exact graph emitted by a
 // trusted resolver after it has parsed ecosystem-specific lock data.
 type LockedDependencyGraph struct {
-	primary DependencyNodeID
-	nodes   []LockedDependency
-	edges   []DependencyEdge
+	primary     DependencyNodeID
+	nodes       []LockedDependency
+	edges       []DependencyEdge
+	derivations []DerivedGraphBinding
 }
 
 func NewLockedDependencyGraph(nodes []LockedDependency, edges []DependencyEdge) (LockedDependencyGraph, error) {
+	return newLockedDependencyGraph(nodes, edges, nil)
+}
+
+// DerivedGraphBinding is the graph-owned relation between a source node and a
+// controller-derived node. It is generic: only bounded recipe metadata is
+// retained, never ecosystem build APIs or raw sandbox payloads.
+type DerivedGraphBinding struct {
+	source  DependencyNodeID
+	derived DependencyNodeID
+	binding DerivationBinding
+}
+
+func (b DerivedGraphBinding) Source() DependencyNodeID   { return b.source }
+func (b DerivedGraphBinding) Derived() DependencyNodeID  { return b.derived }
+func (b DerivedGraphBinding) Binding() DerivationBinding { return b.binding }
+
+func newLockedDependencyGraph(nodes []LockedDependency, edges []DependencyEdge, derivations []DerivedGraphBinding) (LockedDependencyGraph, error) {
 	if len(nodes) == 0 || len(nodes) > maxDependencyNodes || len(edges) > maxDependencyEdges {
 		return LockedDependencyGraph{}, errors.New("locked dependency graph exceeds bounds")
 	}
@@ -198,7 +216,18 @@ func NewLockedDependencyGraph(nodes []LockedDependency, edges []DependencyEdge) 
 		}
 		return copyEdges[i].from.value < copyEdges[j].from.value
 	})
-	return LockedDependencyGraph{primary: primary, nodes: copyNodes, edges: copyEdges}, nil
+	copyDerivations := append([]DerivedGraphBinding(nil), derivations...)
+	seenDerivations := map[DependencyNodeID]bool{}
+	for _, derivation := range copyDerivations {
+		source, sourceOK := byNode[derivation.source]
+		derived, derivedOK := byNode[derivation.derived]
+		if !sourceOK || !derivedOK || source.artifact.identity.variant != "sdist" || derived.artifact.identity.variant != "derived-wheel" || derivation.binding.sourceDigest.value == "" || seenDerivations[derivation.derived] {
+			return LockedDependencyGraph{}, errors.New("locked dependency graph contains an invalid derived binding")
+		}
+		seenDerivations[derivation.derived] = true
+	}
+	sort.Slice(copyDerivations, func(i, j int) bool { return copyDerivations[i].derived.value < copyDerivations[j].derived.value })
+	return LockedDependencyGraph{primary: primary, nodes: copyNodes, edges: copyEdges, derivations: copyDerivations}, nil
 }
 
 func (g LockedDependencyGraph) Primary() DependencyNodeID { return g.primary }
@@ -207,6 +236,9 @@ func (g LockedDependencyGraph) Nodes() []LockedDependency {
 }
 func (g LockedDependencyGraph) Edges() []DependencyEdge {
 	return append([]DependencyEdge(nil), g.edges...)
+}
+func (g LockedDependencyGraph) Derivations() []DerivedGraphBinding {
+	return append([]DerivedGraphBinding(nil), g.derivations...)
 }
 
 // DependencyResolution binds an exact graph to the resolver runtime and raw

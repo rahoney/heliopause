@@ -24,6 +24,9 @@ func (d *Deriver) Derive(ctx context.Context, inspections []domain.DependencyIns
 		if source.Artifact().Identity().Variant() != "sdist" {
 			continue
 		}
+		if !allowComplete(source) {
+			return nil, errors.New("PyPI sdist source is not a complete ALLOW inspection")
+		}
 		recipe, err := d.static.InspectSdist(ctx, source.Artifact())
 		if err != nil {
 			return nil, err
@@ -32,6 +35,12 @@ func (d *Deriver) Derive(ctx context.Context, inspections []domain.DependencyIns
 		for _, in := range inspections {
 			a := in.Artifact()
 			if a.Identity().Variant() == "wheel" {
+				if !allowComplete(in) {
+					continue
+				}
+				if _, duplicate := wheels[a.Identity().Name()]; duplicate {
+					return nil, errors.New("PyPI verified build wheel is ambiguous")
+				}
 				wheels[a.Identity().Name()] = a
 			}
 		}
@@ -44,7 +53,7 @@ func (d *Deriver) Derive(ctx context.Context, inspections []domain.DependencyIns
 			inputs = append(inputs, a)
 		}
 		built, result, err := d.builder.Build(ctx, source.Artifact(), recipe, inputs)
-		if err != nil || result.Status() != domain.SandboxCompleted {
+		if err != nil || result.Status() != domain.SandboxCompleted || built.SourceDigest != source.Artifact().Digest() || len(built.BuildRequirementDigests) != len(inputs) {
 			return nil, errors.New("PyPI sdist build is incomplete")
 		}
 		nodeID, err := domain.NewDependencyNodeID(source.Node().String() + "-derived")
@@ -59,11 +68,47 @@ func (d *Deriver) Derive(ctx context.Context, inspections []domain.DependencyIns
 		if err != nil {
 			return nil, err
 		}
-		item, err := domain.NewDerivedDependency(source.Node(), node, built.Artifact)
+		configDigest, err := domain.NewSHA256Digest(built.BuildConfigSHA256)
+		if err != nil {
+			return nil, err
+		}
+		binding, err := domain.NewDerivationBinding(built.SourceDigest, built.BuildRequirementDigests, "pep517-gvisor", configDigest)
+		if err != nil {
+			return nil, err
+		}
+		checkID, err := domain.NewCheckID("pypi-pep517-build")
+		if err != nil {
+			return nil, err
+		}
+		check, err := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+		if err != nil {
+			return nil, err
+		}
+		evidenceID, err := domain.NewEvidenceID("pypi-pep517-build-result")
+		if err != nil {
+			return nil, err
+		}
+		evidence, err := domain.NewEvidence(evidenceID, checkID, built.Artifact.Identity(), built.Artifact.Digest(), "pypi-pep517-build", "Trusted gVisor PEP 517 build and observation collection completed.")
+		if err != nil {
+			return nil, err
+		}
+		item, err := domain.NewDerivedDependency(source.Node(), node, built.Artifact, binding, check, evidence)
 		if err != nil {
 			return nil, err
 		}
 		out = append(out, item)
 	}
 	return out, nil
+}
+
+func allowComplete(inspection domain.DependencyInspection) bool {
+	if inspection.PolicyDecision().Decision() != domain.DecisionAllow {
+		return false
+	}
+	for _, check := range inspection.Checks() {
+		if check.Required() && (check.Capability() != domain.CapabilitySupported || check.Status() != domain.ExecutionCompleted) {
+			return false
+		}
+	}
+	return true
 }

@@ -94,7 +94,7 @@ func (s *InstallInspectService) Inspect(ctx context.Context, request InstallRequ
 			return partial, fmt.Errorf("extend derived dependency graph: %w", err)
 		}
 		for _, item := range derived {
-			inspection, inspectErr := s.inspectAcquiredDependency(ctx, operationID, item.Node(), item.Artifact())
+			inspection, inspectErr := s.inspectAcquiredDependency(ctx, operationID, item.Node(), item.Artifact(), []domain.CheckExecution{item.Check()}, []domain.Evidence{item.Evidence()})
 			if inspectErr != nil {
 				return partial, inspectErr
 			}
@@ -112,7 +112,7 @@ func (s *InstallInspectService) Inspect(ctx context.Context, request InstallRequ
 	return newInspectedInstall(operationID, request, resolution, set, decision), nil
 }
 
-func (s *InstallInspectService) inspectAcquiredDependency(ctx context.Context, operationID domain.OperationID, dependency domain.LockedDependency, artifact domain.AcquiredArtifact) (domain.DependencyInspection, error) {
+func (s *InstallInspectService) inspectAcquiredDependency(ctx context.Context, operationID domain.OperationID, dependency domain.LockedDependency, artifact domain.AcquiredArtifact, additionalChecks []domain.CheckExecution, additionalEvidence []domain.Evidence) (domain.DependencyInspection, error) {
 	runID, err := s.newRunID()
 	if err != nil {
 		return domain.DependencyInspection{}, err
@@ -139,7 +139,11 @@ func (s *InstallInspectService) inspectAcquiredDependency(ctx context.Context, o
 	if err != nil {
 		return domain.DependencyInspection{}, failDependencyRun(run, "INSPECTION_PROVIDER_FAILED", err)
 	}
-	references, err := s.evidence.Record(ctx, runID, append(verification.Evidence(), inspection.Evidence()...))
+	checks := append([]domain.CheckExecution{verification.Execution()}, inspection.Executions()...)
+	checks = append(checks, additionalChecks...)
+	evidence := append(verification.Evidence(), inspection.Evidence()...)
+	evidence = append(evidence, additionalEvidence...)
+	references, err := s.evidence.Record(ctx, runID, evidence)
 	if err != nil {
 		return domain.DependencyInspection{}, failDependencyRun(run, "EVIDENCE_RECORD_FAILED", err)
 	}
@@ -154,7 +158,7 @@ func (s *InstallInspectService) inspectAcquiredDependency(ctx context.Context, o
 	if err := run.FinalizeCompleted(decision); err != nil {
 		return domain.DependencyInspection{}, failDependencyRun(run, "RUN_FINALIZATION_FAILED", err)
 	}
-	return domain.NewDependencyInspection(dependency.Node(), runID, artifact, append([]domain.CheckExecution{verification.Execution()}, inspection.Executions()...), references, decision)
+	return domain.NewDependencyInspection(dependency.Node(), runID, artifact, checks, references, decision)
 }
 
 func (s *InstallInspectService) inspectDependency(ctx context.Context, operationID domain.OperationID, dependency domain.LockedDependency) (domain.DependencyInspection, error) {
