@@ -9,7 +9,7 @@
 - 구현 언어: Go
 - CLI framework: Cobra
 - 현재 상태: Step 14 Implementation — M7 MVP Qualification 진행 중
-- 다음 작업: M7-002 ecosystem flow·fixture regression
+- 다음 작업: M7-003 Linux·macOS·WSL2 CLI qualification
 
 ## Project Notes
 
