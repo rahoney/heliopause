@@ -8,8 +8,8 @@
 - Go module path: `github.com/rahoney/heliopause`
 - 구현 언어: Go
 - CLI framework: Cobra
-- 현재 상태: Step 14 Implementation — M6 GitHub Releases Standalone 완료
-- 다음 작업: M7 MVP Qualification entry decision
+- 현재 상태: Step 14 Implementation — M7 MVP Qualification 진행 중
+- 다음 작업: M7-002 ecosystem flow·fixture regression
 
 ## Project Notes
 
