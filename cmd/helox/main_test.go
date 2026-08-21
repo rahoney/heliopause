@@ -5,6 +5,7 @@ import (
 	"context"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -35,6 +36,53 @@ func TestProcessHelpSmoke(t *testing.T) {
 	}
 	if !strings.Contains(string(output), "Usage:\n  helox") {
 		t.Fatalf("help output missing usage: %q", output)
+	}
+}
+
+func TestNativeBinaryDefaultPaths(t *testing.T) {
+	packageDirectory, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("resolve package directory: %v", err)
+	}
+	moduleRoot := filepath.Clean(filepath.Join(packageDirectory, "..", ".."))
+	if _, err := os.Stat(filepath.Join(moduleRoot, "go.mod")); err != nil {
+		t.Fatalf("validate module root: %v", err)
+	}
+
+	goExecutable, err := exec.LookPath("go")
+	if err != nil {
+		t.Fatalf("find Go executable: %v", err)
+	}
+	binaryPath := filepath.Join(t.TempDir(), "helox")
+
+	buildContext, cancelBuild := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancelBuild()
+	build := exec.CommandContext(buildContext, goExecutable, "build", "-trimpath", "-o", binaryPath, "./cmd/helox")
+	build.Dir = moduleRoot
+	buildOutput, err := build.CombinedOutput()
+	if err != nil {
+		t.Fatalf("build native helox executable: %v\n%s", err, buildOutput)
+	}
+	if buildContext.Err() != nil {
+		t.Fatalf("native build context: %v", buildContext.Err())
+	}
+
+	for _, arguments := range [][]string{nil, {"--help"}} {
+		runContext, cancelRun := context.WithTimeout(context.Background(), 10*time.Second)
+		command := exec.CommandContext(runContext, binaryPath, arguments...)
+		command.Dir = t.TempDir()
+		output, err := command.CombinedOutput()
+		contextErr := runContext.Err()
+		cancelRun()
+		if err != nil {
+			t.Fatalf("run native helox %q: %v\n%s", arguments, err, output)
+		}
+		if contextErr != nil {
+			t.Fatalf("native helox %q context: %v", arguments, contextErr)
+		}
+		if !strings.Contains(string(output), "Usage:\n  helox") {
+			t.Fatalf("native helox %q output missing usage: %q", arguments, output)
+		}
 	}
 }
 
