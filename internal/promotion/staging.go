@@ -235,6 +235,9 @@ func intakeRunID(handle string) (string, error) {
 
 func stagedArtifactNames(artifact domain.AcquiredArtifact) (string, string, error) {
 	variant := artifact.Identity().Variant()
+	if artifact.Identity().Source().String() == "github-release" && variant != "" {
+		return "asset", artifact.Digest().String() + ".asset", nil
+	}
 	if !validIntakeVariant(variant) {
 		return "", "", errors.New("unsupported controlled intake artifact variant")
 	}
