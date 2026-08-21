@@ -55,6 +55,9 @@ func TestSyntheticInspectCLIContracts(t *testing.T) {
 			} else if _, ok := document["policy"]; ok {
 				t.Fatal("operational failure JSON contains Policy")
 			}
+			if test.operationError != nil && strings.Contains(machine.String(), test.operationError.Error()) {
+				t.Fatalf("machine result disclosed raw operational cause: %q", machine.String())
+			}
 
 			service, request = cliInspectFixture(t, test.scenario)
 			var human bytes.Buffer
@@ -82,6 +85,9 @@ func TestSyntheticInspectCLIContracts(t *testing.T) {
 			}
 			if test.decision != "" && !strings.Contains(human.String(), test.decision) {
 				t.Fatalf("human result missing decision: %q", human.String())
+			}
+			if test.operationError != nil && strings.Contains(human.String(), test.operationError.Error()) {
+				t.Fatalf("human result disclosed raw operational cause: %q", human.String())
 			}
 		})
 	}
