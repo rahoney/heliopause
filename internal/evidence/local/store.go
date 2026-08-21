@@ -25,8 +25,9 @@ func NewStore(root string) (*Store, error) {
 	return &Store{root: filepath.Clean(root)}, nil
 }
 
-// Record atomically writes a batch of normalized Evidence and returns opaque references.
-func (s *Store) Record(ctx context.Context, runID domain.RunID, evidence []domain.Evidence) ([]domain.EvidenceReference, error) {
+// Record atomically publishes one complete normalized Evidence batch and
+// returns opaque references only after its Run directory is durable.
+func (s *Store) Record(ctx context.Context, runID domain.RunID, evidence []domain.Evidence) (references []domain.EvidenceReference, resultErr error) {
 	if ctx == nil {
 		return nil, errors.New("context is required")
 	}
@@ -36,6 +37,13 @@ func (s *Store) Record(ctx context.Context, runID domain.RunID, evidence []domai
 	if s == nil || s.root == "" || runID.String() == "" || len(evidence) == 0 {
 		return nil, errors.New("evidence store requires root, Run ID, and a non-empty batch")
 	}
+	seen := make(map[domain.EvidenceID]bool, len(evidence))
+	for _, item := range evidence {
+		if seen[item.ID()] {
+			return nil, errors.New("evidence batch contains duplicate IDs")
+		}
+		seen[item.ID()] = true
+	}
 	if err := os.MkdirAll(s.root, 0o700); err != nil {
 		return nil, fmt.Errorf("create Evidence root: %w", err)
 	}
@@ -43,17 +51,27 @@ func (s *Store) Record(ctx context.Context, runID domain.RunID, evidence []domai
 	if filepath.Dir(runDirectory) != s.root {
 		return nil, errors.New("evidence Run directory escapes root")
 	}
-	if err := os.Mkdir(runDirectory, 0o700); err != nil {
-		return nil, fmt.Errorf("create Evidence Run directory: %w", err)
+	if _, err := os.Lstat(runDirectory); !errors.Is(err, os.ErrNotExist) {
+		return nil, errors.New("Evidence Run directory already exists or cannot be verified")
 	}
-	references := make([]domain.EvidenceReference, 0, len(evidence))
-	seen := make(map[domain.EvidenceID]bool, len(evidence))
-	for _, item := range evidence {
-		if seen[item.ID()] {
-			return nil, errors.New("evidence batch contains duplicate IDs")
+	temporary, err := os.MkdirTemp(s.root, "."+runID.String()+".tmp-")
+	if err != nil {
+		return nil, fmt.Errorf("create Evidence temporary Run directory: %w", err)
+	}
+	cleanup := true
+	defer func() {
+		if cleanup {
+			if err := os.RemoveAll(temporary); err != nil {
+				resultErr = errors.Join(resultErr, fmt.Errorf("remove incomplete Evidence Run: %w", err))
+			}
 		}
-		seen[item.ID()] = true
-		if err := s.write(runDirectory, runID, item); err != nil {
+	}()
+	if err := os.Chmod(temporary, 0o700); err != nil {
+		return nil, fmt.Errorf("protect Evidence temporary Run directory: %w", err)
+	}
+	references = make([]domain.EvidenceReference, 0, len(evidence))
+	for _, item := range evidence {
+		if err := s.write(temporary, runID, item); err != nil {
 			return nil, err
 		}
 		reference, err := domain.NewEvidenceReference(item.ID(), "evidence:"+runID.String()+":"+item.ID().String())
@@ -61,6 +79,20 @@ func (s *Store) Record(ctx context.Context, runID domain.RunID, evidence []domai
 			return nil, err
 		}
 		references = append(references, reference)
+	}
+	if err := syncDirectory(temporary); err != nil {
+		return nil, err
+	}
+	if err := os.Rename(temporary, runDirectory); err != nil {
+		return nil, fmt.Errorf("finalize Evidence Run: %w", err)
+	}
+	cleanup = false
+	if err := syncDirectory(s.root); err != nil {
+		cleanupErr := os.RemoveAll(runDirectory)
+		if cleanupErr != nil {
+			return nil, errors.Join(err, fmt.Errorf("remove uncertain Evidence Run: %w", cleanupErr))
+		}
+		return nil, err
 	}
 	return references, nil
 }
@@ -112,4 +144,17 @@ type record struct {
 	Variant      string `json:"variant"`
 	SHA256       string `json:"sha256"`
 	RecordSHA256 string `json:"record_sha256"`
+}
+
+func syncDirectory(path string) error {
+	directory, err := os.Open(path)
+	if err != nil {
+		return fmt.Errorf("open Evidence directory for sync: %w", err)
+	}
+	err = directory.Sync()
+	closeErr := directory.Close()
+	if err != nil {
+		return fmt.Errorf("sync Evidence directory: %w", err)
+	}
+	return closeErr
 }
