@@ -223,7 +223,7 @@ func verifyDocuments(bundle domain.VerifiedBundle) error {
 
 func intakeRunID(handle string) (string, error) {
 	parts := strings.Split(handle, ":")
-	if len(parts) != 3 || parts[0] != "intake" || !validIntakeVariant(parts[2]) {
+	if len(parts) != 3 || parts[0] != "intake" || (!validIntakeVariant(parts[2]) && parts[2] != "github-release") {
 		return "", errors.New("invalid controlled intake handle")
 	}
 	runID, err := domain.ParseRunID(parts[1])
@@ -235,6 +235,9 @@ func intakeRunID(handle string) (string, error) {
 
 func stagedArtifactNames(artifact domain.AcquiredArtifact) (string, string, error) {
 	variant := artifact.Identity().Variant()
+	if artifact.Identity().Source().String() == "github-release" && variant != "" {
+		return "asset", artifact.Digest().String() + ".asset", nil
+	}
 	if !validIntakeVariant(variant) {
 		return "", "", errors.New("unsupported controlled intake artifact variant")
 	}
@@ -250,6 +253,9 @@ func stagedArtifactNames(artifact domain.AcquiredArtifact) (string, string, erro
 		case "sdist":
 			return "sdist.tar.gz", artifact.Digest().String() + ".tar.gz", nil
 		}
+	}
+	if artifact.Identity().Source().String() == "github-release" && variant != "" {
+		return "asset", artifact.Digest().String() + ".asset", nil
 	}
 	return "", "", errors.New("controlled intake source and variant are incompatible")
 }
