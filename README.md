@@ -9,7 +9,7 @@
 - 구현 언어: Go
 - CLI framework: Cobra
 - 현재 상태: Step 14 Implementation — M6 GitHub Releases Standalone 시작
-- 다음 작업: M6-006 standalone Promotion·CLI·Linux E2E
+- 다음 작업: M6-007 M6 qualification·regression·M7 handoff
 
 ## Project Notes
 

@@ -87,6 +87,62 @@ func TestLinuxGVisorLifecycleIntegration(t *testing.T) {
 	}
 }
 
+func TestLinuxGitHubReleaseELFDynamicIntegration(t *testing.T) {
+	if os.Getenv("HELOX_GITHUB_RELEASE_INTEGRATION") != "1" {
+		t.Skip("requires pinned Linux gVisor runtime for GitHub Release ELF")
+	}
+	root := t.TempDir()
+	runID, _ := domain.NewRunID()
+	directory := filepath.Join(root, runID.String())
+	if err := os.MkdirAll(directory, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	content, err := os.ReadFile("/bin/true")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(directory, "asset"), content, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	sum := sha256.Sum256(content)
+	digest, _ := domain.NewSHA256Digest(hex.EncodeToString(sum[:]))
+	source, _ := domain.NewSourceID("github-release")
+	identity, _ := domain.NewResolvedArtifactIdentity(source, "owner-repo", "v1", "tool")
+	artifact, err := domain.NewAcquiredArtifact(identity, digest, "intake:"+runID.String()+":github-release", uint64(len(content)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	request, err := domain.NewSandboxRequest(artifact)
+	if err != nil {
+		t.Fatal(err)
+	}
+	observer, err := NewSharedObserver(ObserverOutputEndpoint)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer observer.Close()
+	helperPath := os.Getenv("HELOX_GVISOR_HELPER")
+	if helperPath == "" {
+		t.Fatal("HELOX_GVISOR_HELPER is required")
+	}
+	helper := exec.Command(helperPath, "/run/heliopause-observer/gvisor-remote.sock", ObserverOutputEndpoint)
+	if err := helper.Start(); err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = helper.Process.Kill(); _ = helper.Wait() }()
+	backend, err := NewGitHubELFBackend(integrationRunner{t: t}, root, observer, Probe)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
+	result, err := backend.Execute(ctx, request)
+	if err != nil || result.Status() != domain.SandboxCompleted {
+		code, _ := result.LimitationCode()
+		t.Fatalf("GitHub ELF dynamic result = %q/%q, %v", result.Status(), code, err)
+	}
+}
+
 func TestLinuxNPMResolverNetworkPolicyIntegration(t *testing.T) {
 	if os.Getenv("HELOX_NPM_RESOLVER_INTEGRATION") != "1" {
 		t.Skip("requires privileged Linux Docker firewall integration")
