@@ -42,6 +42,73 @@ func New(stdout, stderr io.Writer) (*cobra.Command, error) {
 	return command, nil
 }
 
+type ReferenceParser func(string) (domain.ArtifactReference, error)
+
+func AddGitHubReleaseInspect(root *cobra.Command, parser ReferenceParser, inspector Inspector) error {
+	if root == nil || parser == nil || inspector == nil {
+		return errors.New("github inspect command requires root and use case")
+	}
+	command := ensureGitHubCommand(root)
+	inspect := &cobra.Command{Use: "inspect <owner>/<repo>@<tag>#<asset>", Args: cobra.ExactArgs(1), RunE: func(command *cobra.Command, args []string) error {
+		reference, err := parser(args[0])
+		if err != nil {
+			return err
+		}
+		request, err := application.NewInspectRequest(reference)
+		if err != nil {
+			return err
+		}
+		code, err := ExecuteInspect(contextOrBackground(command.Context()), inspector, request, true, command.OutOrStdout())
+		if err != nil {
+			return err
+		}
+		if code != 0 {
+			return ExitError{Code: code}
+		}
+		return nil
+	}}
+	command.AddCommand(inspect)
+	return nil
+}
+
+func AddGitHubReleaseInstall(root *cobra.Command, parser ReferenceParser, installer Installer) error {
+	if root == nil || parser == nil || installer == nil {
+		return errors.New("github install command requires root and use case")
+	}
+	command := ensureGitHubCommand(root)
+	var target string
+	install := &cobra.Command{Use: "install <owner>/<repo>@<tag>#<asset>", Args: cobra.ExactArgs(1), RunE: func(command *cobra.Command, args []string) error {
+		reference, err := parser(args[0])
+		if err != nil {
+			return err
+		}
+		targetValue, err := domain.NewInstallTarget(target)
+		if err != nil {
+			return err
+		}
+		installContext, err := domain.NewInstallContext(targetValue)
+		if err != nil {
+			return err
+		}
+		request, err := application.NewInstallRequest(reference, installContext)
+		if err != nil {
+			return err
+		}
+		code, err := ExecuteInstall(contextOrBackground(command.Context()), installer, request, true, command.OutOrStdout())
+		if err != nil {
+			return err
+		}
+		if code != 0 {
+			return ExitError{Code: code}
+		}
+		return nil
+	}}
+	install.Flags().StringVar(&target, "target", "", "new absolute installation target (required)")
+	_ = install.MarkFlagRequired("target")
+	command.AddCommand(install)
+	return nil
+}
+
 // AddPyPIInstall adds the injected PyPI Install/Promotion use case. The
 // generic JSON/human result contract is intentionally shared with npm.
 func AddPyPIInstall(root *cobra.Command, installer Installer) error {
@@ -195,6 +262,17 @@ func ensurePyPICommand(root *cobra.Command) *cobra.Command {
 		}
 	}
 	command := &cobra.Command{Use: "pypi", Short: "Inspect and install PyPI distributions"}
+	root.AddCommand(command)
+	return command
+}
+
+func ensureGitHubCommand(root *cobra.Command) *cobra.Command {
+	for _, command := range root.Commands() {
+		if command.Name() == "github" {
+			return command
+		}
+	}
+	command := &cobra.Command{Use: "github", Short: "Inspect and install public GitHub Release assets"}
 	root.AddCommand(command)
 	return command
 }

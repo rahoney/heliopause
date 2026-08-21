@@ -10,6 +10,7 @@ import (
 	"runtime"
 
 	"github.com/rahoney/heliopause/internal/application"
+	artifactgithub "github.com/rahoney/heliopause/internal/artifact/githubrelease"
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/cli"
@@ -17,11 +18,13 @@ import (
 	"github.com/rahoney/heliopause/internal/core/ports"
 	evidencerecord "github.com/rahoney/heliopause/internal/evidence"
 	"github.com/rahoney/heliopause/internal/evidence/local"
+	inspectiongithub "github.com/rahoney/heliopause/internal/inspection/githubrelease"
 	inspectionnpm "github.com/rahoney/heliopause/internal/inspection/npm"
 	inspectionpypi "github.com/rahoney/heliopause/internal/inspection/pypi"
 	"github.com/rahoney/heliopause/internal/policy"
 	"github.com/rahoney/heliopause/internal/promotion"
 	"github.com/rahoney/heliopause/internal/sandbox"
+	verificationgithub "github.com/rahoney/heliopause/internal/verification/githubrelease"
 	verificationnpm "github.com/rahoney/heliopause/internal/verification/npm"
 	verificationpypi "github.com/rahoney/heliopause/internal/verification/pypi"
 )
@@ -185,6 +188,74 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 			return err
 		}
 		if err := cli.AddPyPIInstall(command, installer); err != nil {
+			return err
+		}
+	}
+	if len(args) > 0 && args[0] == "github" {
+		cacheRoot, err := os.UserCacheDir()
+		if err != nil {
+			return err
+		}
+		root := filepath.Join(cacheRoot, "heliopause")
+		artifact, err := artifactgithub.NewPublicClient(filepath.Join(root, "intake"))
+		if err != nil {
+			return err
+		}
+		static, err := inspectiongithub.NewStaticInspector(filepath.Join(root, "intake"))
+		if err != nil {
+			return err
+		}
+		var dynamicSandbox ports.Sandbox
+		if runtime.GOOS == "linux" {
+			backend, closeObserver, err := sandbox.NewLinuxGitHubELFBackend(filepath.Join(root, "intake"))
+			if err != nil {
+				return err
+			}
+			defer closeObserver()
+			dynamicSandbox = backend
+		} else {
+			unavailable, err := sandbox.NewProbedSandbox(sandbox.Probe)
+			if err != nil {
+				return err
+			}
+			dynamicSandbox = unavailable
+		}
+		dynamic, err := inspectiongithub.NewDynamicInspector(dynamicSandbox)
+		if err != nil {
+			return err
+		}
+		inspection, err := inspectiongithub.NewCompositeInspector(static, dynamic)
+		if err != nil {
+			return err
+		}
+		evidence, err := local.NewStore(filepath.Join(root, "evidence"))
+		if err != nil {
+			return err
+		}
+		inspect, err := application.NewInspectService(artifact, verificationgithub.IntegrityVerifier{}, inspection, evidence, policy.M6{}, domain.NewOperationID, domain.NewRunID)
+		if err != nil {
+			return err
+		}
+		if err := cli.AddGitHubReleaseInspect(command, artifactgithub.ParseReference, inspect); err != nil {
+			return err
+		}
+		installInspect, err := application.NewInstallInspectService(artifact, artifact, verificationgithub.IntegrityVerifier{}, inspection, evidence, policy.M6{}, policy.M6{}, domain.NewOperationID, domain.NewRunID)
+		if err != nil {
+			return err
+		}
+		staging, err := promotion.NewLocalStaging(filepath.Join(root, "intake"), filepath.Join(root, "evidence"), filepath.Join(root, "staging"))
+		if err != nil {
+			return err
+		}
+		promoter, err := promotion.NewGitHubReleasePromotion(filepath.Join(root, "staging"))
+		if err != nil {
+			return err
+		}
+		installer, err := application.NewInstallService(installInspect, evidencerecord.Generator{}, staging, promoter)
+		if err != nil {
+			return err
+		}
+		if err := cli.AddGitHubReleaseInstall(command, artifactgithub.ParseReference, installer); err != nil {
 			return err
 		}
 	}

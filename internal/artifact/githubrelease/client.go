@@ -87,6 +87,26 @@ func (c *Client) Resolve(ctx context.Context, reference domain.ArtifactReference
 	return domain.NewResolvedArtifact(identity, assetLocator(asset), "sha256:"+asset.Digest().String())
 }
 
+// ResolveDependencies adapts one standalone Release asset to the existing
+// complete-set workflow without adding a package dependency resolver.
+func (c *Client) ResolveDependencies(ctx context.Context, reference domain.ArtifactReference, _ domain.InstallContext) (domain.DependencyResolution, error) {
+	resolved, err := c.Resolve(ctx, reference)
+	if err != nil {
+		return domain.DependencyResolution{}, err
+	}
+	nodeID, _ := domain.NewDependencyNodeID("github-release-primary")
+	node, err := domain.NewLockedDependencyWithRecordPath(nodeID, domain.DependencyPrimary, resolved, resolved.Identity().Variant(), false)
+	if err != nil {
+		return domain.DependencyResolution{}, err
+	}
+	graph, err := domain.NewLockedDependencyGraph([]domain.LockedDependency{node}, nil)
+	if err != nil {
+		return domain.DependencyResolution{}, err
+	}
+	declared, _ := domain.NewSHA256Digest(strings.TrimPrefix(resolved.DeclaredIntegrity(), "sha256:"))
+	return domain.NewDependencyResolution(graph, "github-release-standalone", declared)
+}
+
 // Acquire streams the asset selected during Resolve into a Run-private intake
 // directory. API-declared size and SHA-256 must both match observed bytes.
 func (c *Client) Acquire(ctx context.Context, runID domain.RunID, resolved domain.ResolvedArtifact) (domain.AcquiredArtifact, error) {

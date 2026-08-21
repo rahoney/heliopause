@@ -11,6 +11,20 @@ import (
 // findings are blocking.
 type M6 struct{}
 
+func (M6) EvaluateSet(set domain.InspectedDependencySet) (domain.PolicyDecision, error) {
+	if !set.Valid() || len(set.Graph().Nodes()) != 1 {
+		return domain.PolicyDecision{}, errors.New("one complete GitHub Release inspection is required")
+	}
+	inspection := set.Inspections()[0]
+	if inspection.Artifact().Identity().Source().String() != "github-release" {
+		return domain.PolicyDecision{}, errors.New("GitHub Release inspection is required")
+	}
+	if inspection.PolicyDecision().Decision() != domain.DecisionAllow {
+		return m6Decision(inspection.PolicyDecision().Decision(), "M6_RELEASE_REVIEW_REQUIRED")
+	}
+	return m6Decision(domain.DecisionAllow, "M6_VERIFIED_SET_COMPLETED")
+}
+
 func (M6) Evaluate(input domain.PolicyInput) (domain.PolicyDecision, error) {
 	if !input.Valid() || input.Artifact().Identity().Source().String() != "github-release" {
 		return domain.PolicyDecision{}, errors.New("valid GitHub Release Policy input is required")

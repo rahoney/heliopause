@@ -30,6 +30,21 @@ func NewGitHubELFBackend(runner CommandRunner, intakeRoot string, observer Trace
 	return &GitHubELFBackend{runner: runner, intakeRoot: filepath.Clean(intakeRoot), observer: observer, probe: probe, newSessionID: domain.NewSandboxSessionID}, nil
 }
 
+// NewLinuxGitHubELFBackend composes the trusted shared observer without
+// leaking Docker or gVisor details into bootstrap/Application.
+func NewLinuxGitHubELFBackend(intakeRoot string) (*GitHubELFBackend, func() error, error) {
+	observer, err := NewSharedObserver(ObserverOutputEndpoint)
+	if err != nil {
+		return nil, nil, err
+	}
+	backend, err := NewGitHubELFBackend(systemExecutor{}, intakeRoot, observer, Probe)
+	if err != nil {
+		_ = observer.Close()
+		return nil, nil, err
+	}
+	return backend, observer.Close, nil
+}
+
 func (b *GitHubELFBackend) Execute(ctx context.Context, request domain.SandboxRequest) (domain.SandboxResult, error) {
 	if b == nil || b.runner == nil || b.observer == nil || b.probe == nil || b.newSessionID == nil || ctx == nil || request.Artifact().Identity().Source().String() != "github-release" {
 		return domain.SandboxResult{}, errors.New("GitHub ELF sandbox request is invalid")
