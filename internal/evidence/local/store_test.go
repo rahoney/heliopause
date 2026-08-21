@@ -52,3 +52,72 @@ func TestStoreRecordsOpaqueReference(t *testing.T) {
 		t.Fatalf("record = %#v, %v", document, err)
 	}
 }
+
+func TestStoreRejectsDuplicateBatchWithoutPublishingPartialRun(t *testing.T) {
+	t.Parallel()
+
+	parent := t.TempDir()
+	root := filepath.Join(parent, "evidence")
+	store, err := NewStore(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	runID, evidence := storeFixture(t)
+	if _, err := store.Record(context.Background(), runID, []domain.Evidence{evidence, evidence}); err == nil {
+		t.Fatal("Record() accepted a duplicate Evidence batch")
+	}
+	if _, err := os.Stat(root); !os.IsNotExist(err) {
+		t.Fatalf("duplicate batch published Evidence root: %v", err)
+	}
+}
+
+func TestStoreRetainsCommittedRunWhenRetryIsRejected(t *testing.T) {
+	t.Parallel()
+
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	store, err := NewStore(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	runID, evidence := storeFixture(t)
+	if _, err := store.Record(context.Background(), runID, []domain.Evidence{evidence}); err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(root, runID.String(), evidence.ID().String()+".json")
+	before, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.Record(context.Background(), runID, []domain.Evidence{evidence}); err == nil {
+		t.Fatal("Record() overwrote a retained Evidence Run")
+	}
+	after, err := os.ReadFile(path)
+	if err != nil || string(after) != string(before) {
+		t.Fatalf("retained Evidence changed after rejected retry: %q, %v", after, err)
+	}
+	entries, err := os.ReadDir(root)
+	if err != nil || len(entries) != 1 || entries[0].Name() != runID.String() {
+		t.Fatalf("Evidence root entries after rejected retry = %#v, %v", entries, err)
+	}
+}
+
+func storeFixture(t *testing.T) (domain.RunID, domain.Evidence) {
+	t.Helper()
+	runID, err := domain.NewRunID()
+	if err != nil {
+		t.Fatal(err)
+	}
+	source, _ := domain.NewSourceID("npm")
+	identity, _ := domain.NewResolvedArtifactIdentity(source, "fixture", "1.2.3", "tarball")
+	digest, _ := domain.NewSHA256Digest(strings.Repeat("b", 64))
+	checkID, _ := domain.NewCheckID("fixture-check")
+	evidenceID, _ := domain.NewEvidenceID("fixture-evidence")
+	evidence, err := domain.NewEvidence(evidenceID, checkID, identity, digest, "fixture", "normalized evidence")
+	if err != nil {
+		t.Fatal(err)
+	}
+	return runID, evidence
+}
