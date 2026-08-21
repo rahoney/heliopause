@@ -179,9 +179,11 @@ func (c *Client) release(ctx context.Context, selector Selector) ([]byte, error)
 }
 
 func (c *Client) downloadAsset(ctx context.Context, asset resolvedLocator, directory string) (string, uint64, error) {
+	requestCtx, cancel := context.WithTimeout(ctx, assetTimeout)
+	defer cancel()
 	endpoint := *c.api
 	endpoint.Path = "/repos/" + asset.selector.Owner() + "/" + asset.selector.Repo() + "/releases/assets/" + strconv.FormatUint(asset.assetID, 10)
-	response, err := c.assetRequest(ctx, endpoint.String())
+	response, err := c.assetRequest(requestCtx, endpoint.String())
 	if err != nil {
 		return "", 0, err
 	}

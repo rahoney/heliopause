@@ -64,6 +64,35 @@ func TestStaticInspectorRejectsUnsupportedAndMismatchedAssets(t *testing.T) {
 	}
 }
 
+func TestStaticInspectorRejectsZIPSymbolicLink(t *testing.T) {
+	root := t.TempDir()
+	runID, _ := domain.NewRunID()
+	assetPath := filepath.Join(root, runID.String(), "asset")
+	if err := os.MkdirAll(filepath.Dir(assetPath), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	var body bytes.Buffer
+	writer := zip.NewWriter(&body)
+	header := &zip.FileHeader{Name: "link"}
+	header.SetMode(os.ModeSymlink | 0o777)
+	entry, err := writer.CreateHeader(header)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, _ = entry.Write([]byte("target"))
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(assetPath, body.Bytes(), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	inspector, _ := NewStaticInspector(root)
+	report, err := inspector.Inspect(context.Background(), testArtifact(t, runID, "tool.zip", uint64(body.Len())))
+	if err != nil || len(report.Findings()) != 1 || report.Findings()[0].Code() != "M6_ARCHIVE_INVALID" {
+		t.Fatalf("Inspect() = %#v, %v", report, err)
+	}
+}
+
 func testArtifact(t *testing.T, runID domain.RunID, variant string, size uint64) domain.AcquiredArtifact {
 	t.Helper()
 	source, _ := domain.NewSourceID("github-release")

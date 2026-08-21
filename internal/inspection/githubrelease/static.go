@@ -116,7 +116,8 @@ func inspectZIP(file *os.File, size int64) error {
 	var total uint64
 	seen := map[string]bool{}
 	for _, entry := range reader.File {
-		if !safeArchivePath(entry.Name) || seen[entry.Name] || entry.Mode()&os.ModeSymlink != 0 || entry.UncompressedSize64 > archiveFileLimit {
+		mode := entry.Mode()
+		if !safeArchivePath(entry.Name) || seen[entry.Name] || entry.UncompressedSize64 > archiveFileLimit || (mode&os.ModeSymlink != 0) || (!entry.FileInfo().IsDir() && !mode.IsRegular()) {
 			return errors.New("unsafe ZIP entry")
 		}
 		seen[entry.Name] = true
@@ -147,8 +148,11 @@ func inspectTarGZ(file *os.File) error {
 			return err
 		}
 		entries++
+		if header.Size < 0 || header.Size > archiveFileLimit || total > archiveTotalLimit-header.Size {
+			return errors.New("unsafe tar entry")
+		}
 		total += header.Size
-		if entries > archiveEntryLimit || total > archiveTotalLimit || header.Size > archiveFileLimit || !safeArchivePath(header.Name) || seen[header.Name] || (header.Typeflag != tar.TypeReg && header.Typeflag != tar.TypeDir) {
+		if entries > archiveEntryLimit || total > archiveTotalLimit || !safeArchivePath(header.Name) || seen[header.Name] || (header.Typeflag != tar.TypeReg && header.Typeflag != tar.TypeDir) {
 			return errors.New("unsafe tar entry")
 		}
 		seen[header.Name] = true
