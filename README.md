@@ -9,7 +9,7 @@
 - 구현 언어: Go
 - CLI framework: Cobra
 - 현재 상태: Step 14 Implementation — M7 MVP Qualification 진행 중
-- 현재 작업: M7-004 evidence·result·resilience qualification
+- 현재 작업: M7-005 security workflow·scheduled gate qualification
 
 ## Project Notes
 
