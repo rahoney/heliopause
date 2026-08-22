@@ -1,8 +1,8 @@
 module github.com/rahoney/heliopause
 
-go 1.25.12
+go 1.25.13
 
-toolchain go1.26.5
+toolchain go1.26.7
 
 require github.com/spf13/cobra v1.10.2
 

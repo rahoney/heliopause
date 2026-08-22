@@ -10,7 +10,7 @@ import (
 func TestValidateRequiredResults(t *testing.T) {
 	t.Parallel()
 
-	if err := validateRequiredResults([]string{"success", "success", "success", "success", "success", "success"}); err != nil {
+	if err := validateRequiredResults([]string{"success", "success", "success", "success", "success", "success", "success", "success"}); err != nil {
 		t.Fatalf("validateRequiredResults success error: %v", err)
 	}
 
@@ -19,7 +19,7 @@ func TestValidateRequiredResults(t *testing.T) {
 		t.Run(result, func(t *testing.T) {
 			t.Parallel()
 			var failure *checkFailure
-			err := validateRequiredResults([]string{"success", "success", "success", "success", "success", result})
+			err := validateRequiredResults([]string{"success", "success", "success", "success", "success", "success", "success", result})
 			if !errors.As(err, &failure) || failure.class != findingFailure {
 				t.Fatalf("validateRequiredResults(%q) error = %v, want finding", result, err)
 			}
@@ -43,11 +43,11 @@ func TestValidateRequiredResultsRejectsMissingChild(t *testing.T) {
 func TestRunRequiredExit(t *testing.T) {
 	t.Parallel()
 
-	if code := run([]string{"required", "success", "success", "success", "success", "success", "success"}, io.Discard, io.Discard); code != exitSuccess {
+	if code := run([]string{"required", "success", "success", "success", "success", "success", "success", "success", "success"}, io.Discard, io.Discard); code != exitSuccess {
 		t.Fatalf("run success code = %d", code)
 	}
 	var stderr strings.Builder
-	if code := run([]string{"required", "success", "success", "success", "success", "success", "cancelled"}, io.Discard, &stderr); code != exitFailure {
+	if code := run([]string{"required", "success", "success", "success", "success", "success", "success", "success", "cancelled"}, io.Discard, &stderr); code != exitFailure {
 		t.Fatalf("run cancelled code = %d", code)
 	}
 	if !strings.Contains(stderr.String(), "cancelled") {

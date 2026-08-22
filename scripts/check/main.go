@@ -26,7 +26,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return exitSuccess
 	}
 	if len(args) != 1 {
-		_, _ = fmt.Fprintln(stderr, "usage: go run ./scripts/check <bootstrap|bootstrap-modules|foundation|platform|quick|docs|format|required RESULTS...>")
+		_, _ = fmt.Fprintln(stderr, "usage: go run ./scripts/check <bootstrap|bootstrap-modules|foundation|platform|quick|security|security-history|vulnerability|fuzz|docs|format|required RESULTS...>")
 		return exitUsage
 	}
 
