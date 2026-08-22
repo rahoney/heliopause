@@ -8,8 +8,8 @@
 - Go module path: `github.com/rahoney/heliopause`
 - 구현 언어: Go
 - CLI framework: Cobra
-- 현재 상태: Step 14 Implementation — M7 MVP Qualification 진행 중
-- 현재 작업: M7-006 MVP final audit·documentation·completion
+- 현재 상태: Step 14 Implementation — M0–M7 MVP qualification 완료
+- 현재 작업: 없음 — post-MVP scope와 queue 결정 필요
 
 ## Project Notes
 
