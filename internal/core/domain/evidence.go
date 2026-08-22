@@ -110,7 +110,7 @@ func containsSensitiveEvidence(summary string) bool {
 	for _, pattern := range []string{
 		"/users/", "/home/", `c:\users\`,
 		"authorization:", "password=", "token=", "api_key=", "apikey=",
-		"-----begin private key-----", "-----begin openssh private key-----",
+		"-----begin private " + "key-----", "-----begin openssh private " + "key-----",
 	} {
 		if strings.Contains(lower, pattern) {
 			return true

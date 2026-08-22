@@ -52,7 +52,7 @@ func (s *Store) Record(ctx context.Context, runID domain.RunID, evidence []domai
 		return nil, errors.New("evidence Run directory escapes root")
 	}
 	if _, err := os.Lstat(runDirectory); !errors.Is(err, os.ErrNotExist) {
-		return nil, errors.New("Evidence Run directory already exists or cannot be verified")
+		return nil, errors.New("evidence Run directory already exists or cannot be verified")
 	}
 	temporary, err := os.MkdirTemp(s.root, "."+runID.String()+".tmp-")
 	if err != nil {

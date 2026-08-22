@@ -6,7 +6,52 @@
       "package": "honnef.co/go/tools/cmd/staticcheck",
       "version": "2026.1",
       "expectedVersion": "staticcheck 2026.1 (v0.7.0)",
-      "setupGo": "1.26.5"
+      "setupGo": "1.26.7"
+    },
+    {
+      "command": "gosec",
+      "package": "github.com/securego/gosec/v2/cmd/gosec",
+      "version": "v2.28.0",
+      "expectedVersion": "Version: dev\nGit tag: \nBuild date:",
+      "versionArguments": ["-version"],
+      "setupGo": "1.26.7"
+    },
+    {
+      "command": "govulncheck",
+      "package": "golang.org/x/vuln/cmd/govulncheck",
+      "version": "v1.7.0",
+      "expectedVersion": "Scanner: govulncheck@v1.7.0",
+      "versionArguments": ["-version"],
+      "versionMatch": "contains",
+      "setupGo": "1.26.7"
+    },
+    {
+      "command": "gitleaks",
+      "version": "v8.18.4",
+      "expectedVersion": "8.18.4",
+      "versionArguments": ["version"],
+      "install": "archive",
+      "setupGo": "1.26.7",
+      "assets": [
+        {
+          "goos": "linux",
+          "goarch": "amd64",
+          "url": "https://github.com/gitleaks/gitleaks/releases/download/v8.18.4/gitleaks_8.18.4_linux_x64.tar.gz",
+          "sha256": "ba6dbb656933921c775ee5a2d1c13a91046e7952e9d919f9bac4cec61d628e7d"
+        },
+        {
+          "goos": "darwin",
+          "goarch": "amd64",
+          "url": "https://github.com/gitleaks/gitleaks/releases/download/v8.18.4/gitleaks_8.18.4_darwin_x64.tar.gz",
+          "sha256": "1a69e5666b13cd374889cbcb1939ed1573b63b551251283d5d2329a53cf58e2f"
+        },
+        {
+          "goos": "darwin",
+          "goarch": "arm64",
+          "url": "https://github.com/gitleaks/gitleaks/releases/download/v8.18.4/gitleaks_8.18.4_darwin_arm64.tar.gz",
+          "sha256": "a480d8593acd8215b22402cf0f3f88b01dcd3610c63b5391db640f7767e62104"
+        }
+      ]
     }
   ]
 }

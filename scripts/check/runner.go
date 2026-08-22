@@ -197,6 +197,14 @@ func (c *checker) runProfile(profile string) error {
 		return c.runSequential(c.platformSteps())
 	case "quick":
 		return c.runSequential(c.quickSteps())
+	case "security":
+		return c.runSecurity()
+	case "security-history":
+		return c.runSecurityHistory()
+	case "vulnerability":
+		return c.runVulnerability()
+	case "fuzz":
+		return c.runFuzz()
 	case "docs":
 		return c.runStep("documentation", func() error { return checkMarkdownTree(c.root) })
 	case "format":

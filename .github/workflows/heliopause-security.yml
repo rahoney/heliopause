@@ -1,0 +1,53 @@
+name: Heliopause Scheduled Security
+
+on:
+  schedule:
+    - cron: '17 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: .
+
+concurrency:
+  group: heliopause-scheduled-security-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  scheduled-security:
+    name: Scheduled Security
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      GOTOOLCHAIN: local
+    steps:
+      - name: Check out full reachable history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: '1.26.7'
+          check-latest: false
+          cache: false
+      - name: Bootstrap pinned dependencies and tools
+        env:
+          HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-quality-tools
+        run: go run ./scripts/check bootstrap
+      - name: Scan reachable history for secrets
+        env:
+          HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-quality-tools
+        run: go run ./scripts/check security-history
+      - name: Refresh vulnerability analysis
+        env:
+          HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-quality-tools
+        run: go run ./scripts/check vulnerability
+      - name: Run bounded fuzz targets
+        env:
+          HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-quality-tools
+        run: go run ./scripts/check fuzz

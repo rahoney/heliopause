@@ -10,14 +10,22 @@ import (
 )
 
 const workflowRelativePath = ".github/workflows/heliopause-ci.yml"
+const securityWorkflowRelativePath = ".github/workflows/heliopause-security.yml"
 
 var actionReference = regexp.MustCompile(`(?m)^\s*uses:\s*(\S+)\s*(?:#.*)?$`)
 
 func checkCIWorkflow(root string) error {
-	path := filepath.Join(root, filepath.FromSlash(workflowRelativePath))
+	if err := checkWorkflow(root, workflowRelativePath, validateCIWorkflow); err != nil {
+		return err
+	}
+	return checkWorkflow(root, securityWorkflowRelativePath, validateSecurityWorkflow)
+}
+
+func checkWorkflow(root, relativePath string, validate func(string) []string) error {
+	path := filepath.Join(root, filepath.FromSlash(relativePath))
 	info, err := os.Lstat(path)
 	if err != nil || !info.Mode().IsRegular() {
-		return &checkFailure{class: unavailable, step: "CI configuration", detail: workflowRelativePath + " is not a regular file"}
+		return &checkFailure{class: unavailable, step: "CI configuration", detail: relativePath + " is not a regular file"}
 	}
 	if info.Size() > outputLimit {
 		return &checkFailure{class: executionFailure, step: "CI configuration", detail: "workflow exceeds size limit"}
@@ -26,7 +34,7 @@ func checkCIWorkflow(root string) error {
 	if err != nil {
 		return &checkFailure{class: executionFailure, step: "CI configuration", cause: err}
 	}
-	findings := validateCIWorkflow(string(contents))
+	findings := validate(string(contents))
 	if len(findings) != 0 {
 		return &checkFailure{class: findingFailure, step: "CI configuration", detail: strings.Join(findings, "\n")}
 	}
@@ -45,8 +53,8 @@ func validateCIWorkflow(contents string) []string {
 		"runs-on: ubuntu-24.04",
 		"runs-on: macos-26-intel",
 		"persist-credentials: false",
-		"go-version: '1.26.5'",
-		"go-version: '1.25.12'",
+		"go-version: '1.26.7'",
+		"go-version: '1.25.13'",
 		"docker_package_version=5:29.6.2-1~ubuntu.24.04~noble",
 		"containerd_package_version=2.3.3-1~ubuntu.24.04~noble",
 		"test \"$(docker version --format '{{.Server.Version}}')\" = 29.6.2",
@@ -54,10 +62,12 @@ func validateCIWorkflow(contents string) []string {
 		"check-latest: false",
 		"cache: false",
 		"    if: ${{ always() }}",
-		"    needs:\n      - quick\n      - docs\n      - minimum-go\n      - macos\n      - gvisor-observer\n      - gvisor-integration",
+		"    needs:\n      - quick\n      - docs\n      - security\n      - vulnerability\n      - minimum-go\n      - macos\n      - gvisor-observer\n      - gvisor-integration",
 		"run: go run ./scripts/check bootstrap-modules",
 		"run: go run ./scripts/check platform",
-		`run: go run ./scripts/check required "$QUICK_RESULT" "$DOCS_RESULT" "$MINIMUM_GO_RESULT" "$MACOS_RESULT" "$GVISOR_OBSERVER_RESULT" "$GVISOR_INTEGRATION_RESULT"`,
+		"run: go run ./scripts/check security",
+		"run: go run ./scripts/check vulnerability",
+		`run: go run ./scripts/check required "$QUICK_RESULT" "$DOCS_RESULT" "$SECURITY_RESULT" "$VULNERABILITY_RESULT" "$MINIMUM_GO_RESULT" "$MACOS_RESULT" "$GVISOR_OBSERVER_RESULT" "$GVISOR_INTEGRATION_RESULT"`,
 	}
 	for _, snippet := range requiredSnippets {
 		if !strings.Contains(contents, snippet) {
@@ -85,8 +95,8 @@ func validateCIWorkflow(contents string) []string {
 	}
 
 	allowedActions := map[string]int{
-		"actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1": 7,
-		"actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e": 6,
+		"actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1": 9,
+		"actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e": 8,
 	}
 	actualActions := make(map[string]int)
 	for _, match := range actionReference.FindAllStringSubmatch(contents, -1) {
@@ -108,9 +118,44 @@ func validateCIWorkflow(contents string) []string {
 	}
 
 	jobs := workflowJobIDs(contents)
-	wantJobs := []string{"docs", "gvisor-integration", "gvisor-observer", "macos", "minimum-go", "quick", "required"}
+	wantJobs := []string{"docs", "gvisor-integration", "gvisor-observer", "macos", "minimum-go", "quick", "required", "security", "vulnerability"}
 	if strings.Join(jobs, ",") != strings.Join(wantJobs, ",") {
 		findings = append(findings, fmt.Sprintf("workflow jobs are %q, require %q", jobs, wantJobs))
+	}
+	sort.Strings(findings)
+	return findings
+}
+
+func validateSecurityWorkflow(contents string) []string {
+	var findings []string
+	for _, snippet := range []string{
+		"name: Heliopause Scheduled Security",
+		"  schedule:\n    - cron: '17 3 * * 1'",
+		"  workflow_dispatch:",
+		"permissions:\n  contents: read",
+		"fetch-depth: 0",
+		"persist-credentials: false",
+		"runs-on: ubuntu-24.04",
+		"go-version: '1.26.7'",
+		"run: go run ./scripts/check security-history",
+		"run: go run ./scripts/check vulnerability",
+		"run: go run ./scripts/check fuzz",
+	} {
+		if !strings.Contains(contents, snippet) {
+			findings = append(findings, fmt.Sprintf("missing required scheduled security workflow contract %q", snippet))
+		}
+	}
+	for _, token := range []string{"pull_request:", "pull_request_target:", "push:", "secrets:", "contents: write", "@main", "@master", "@latest", "ubuntu-latest"} {
+		if strings.Contains(contents, token) {
+			findings = append(findings, fmt.Sprintf("forbidden scheduled security workflow token %q", token))
+		}
+	}
+	actions := actionReference.FindAllStringSubmatch(contents, -1)
+	if len(actions) != 2 || actions[0][1] != "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1" || actions[1][1] != "actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e" {
+		findings = append(findings, "scheduled security workflow action allowlist or pin is unexpected")
+	}
+	if jobs := workflowJobIDs(contents); strings.Join(jobs, ",") != "scheduled-security" {
+		findings = append(findings, fmt.Sprintf("scheduled security workflow jobs are %q, require %q", jobs, "scheduled-security"))
 	}
 	sort.Strings(findings)
 	return findings

@@ -36,7 +36,7 @@ func TestValidateCIWorkflowRejectsSecurityRegressions(t *testing.T) {
 		"missing always":         strings.Replace(string(contents), "    if: ${{ always() }}\n", "", 1),
 		"write token":            strings.Replace(string(contents), "  contents: read", "  contents: write", 1),
 		"moving macOS runner":    strings.Replace(string(contents), "runs-on: macos-26-intel", "runs-on: macos-latest", 1),
-		"missing minimum Go":     strings.Replace(string(contents), "go-version: '1.25.12'", "go-version: '1.26.5'", 1),
+		"missing minimum Go":     strings.Replace(string(contents), "go-version: '1.25.13'", "go-version: '1.26.7'", 1),
 		"missing platform check": strings.ReplaceAll(string(contents), "run: go run ./scripts/check platform", "run: go test ./..."),
 		"runner context at job env": strings.Replace(
 			string(contents),

@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-const requiredResultCount = 6
+const requiredResultCount = 8
 
 func validateRequiredResults(results []string) error {
 	if len(results) != requiredResultCount {

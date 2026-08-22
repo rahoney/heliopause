@@ -176,7 +176,7 @@ func TestModuleDriftIsFinding(t *testing.T) {
 
 	root := t.TempDir()
 	writeTestToolLock(t, root)
-	writeTestFile(t, filepath.Join(root, "go.mod"), "module example.test/project\n\ngo 1.25.12\n\nrequire ()\n")
+	writeTestFile(t, filepath.Join(root, "go.mod"), "module example.test/project\n\ngo 1.25.13\n\nrequire ()\n")
 	writeTestFile(t, filepath.Join(root, "main.go"), "package main\n\nfunc main() {}\n")
 	checker, err := newChecker(root, io.Discard)
 	if err != nil {
