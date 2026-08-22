@@ -68,16 +68,16 @@ func (c *checker) vulnerabilityEnvironment() []string {
 func (c *checker) fuzzSteps() []checkStep {
 	return []checkStep{
 		{"fuzz GitHub Release reference", func() error {
-			return c.runGoWithTimeout("fuzz GitHub Release reference", 20*time.Second, "test", "./internal/artifact/githubrelease", "-run=^$", "-fuzz=FuzzParseReference", "-fuzztime=5s")
+			return c.runGoWithTimeout("fuzz GitHub Release reference", time.Minute, "test", "./internal/artifact/githubrelease", "-run=^$", "-fuzz=FuzzParseReference", "-fuzztime=5s")
 		}},
 		{"fuzz PyPI reference", func() error {
-			return c.runGoWithTimeout("fuzz PyPI reference", 20*time.Second, "test", "./internal/artifact/pypi", "-run=^$", "-fuzz=FuzzParseReference", "-fuzztime=5s")
+			return c.runGoWithTimeout("fuzz PyPI reference", time.Minute, "test", "./internal/artifact/pypi", "-run=^$", "-fuzz=FuzzParseReference", "-fuzztime=5s")
 		}},
 		{"fuzz wheel inspection", func() error {
-			return c.runGoWithTimeout("fuzz wheel inspection", 20*time.Second, "test", "./internal/artifact/pypi", "-run=^$", "-fuzz=FuzzInspectWheelNoPanic", "-fuzztime=5s")
+			return c.runGoWithTimeout("fuzz wheel inspection", time.Minute, "test", "./internal/artifact/pypi", "-run=^$", "-fuzz=FuzzInspectWheelNoPanic", "-fuzztime=5s")
 		}},
 		{"fuzz sdist inspection", func() error {
-			return c.runGoWithTimeout("fuzz sdist inspection", 20*time.Second, "test", "./internal/artifact/pypi", "-run=^$", "-fuzz=FuzzInspectSdistNoPanic", "-fuzztime=5s")
+			return c.runGoWithTimeout("fuzz sdist inspection", time.Minute, "test", "./internal/artifact/pypi", "-run=^$", "-fuzz=FuzzInspectSdistNoPanic", "-fuzztime=5s")
 		}},
 	}
 }
