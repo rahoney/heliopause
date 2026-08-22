@@ -161,6 +161,7 @@ func availableProbe(context.Context) (Capability, error) { return Capability{Ava
 type commandCall struct {
 	binary    string
 	arguments []string
+	bounded   bool
 }
 type recordingRunner struct {
 	calls            []commandCall
@@ -173,7 +174,8 @@ type recordingRunner struct {
 }
 
 func (r *recordingRunner) Output(ctx context.Context, binary string, arguments ...string) ([]byte, error) {
-	r.calls = append(r.calls, commandCall{binary: binary, arguments: append([]string(nil), arguments...)})
+	_, bounded := ctx.Deadline()
+	r.calls = append(r.calls, commandCall{binary: binary, arguments: append([]string(nil), arguments...), bounded: bounded})
 	index := len(r.calls) - 1
 	if r.waitForContext && index == r.waitForContextAt {
 		<-ctx.Done()

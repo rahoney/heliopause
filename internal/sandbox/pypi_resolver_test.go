@@ -54,6 +54,11 @@ func TestPyPIResolverUsesGVisorDefaultDenyLifecycleAndCrossChecks(t *testing.T) 
 	if got := runner.calls[len(runner.calls)-1]; got.binary != "docker" || got.arguments[0] != "network" || got.arguments[1] != "rm" {
 		t.Fatalf("network policy cleanup missing: %#v", got)
 	}
+	for _, call := range runner.calls[len(runner.calls)-5:] {
+		if !call.bounded {
+			t.Fatalf("cleanup call is unbounded: %#v", call)
+		}
+	}
 }
 
 func TestPyPIResolverFailsClosedForObserverOrEndpointFailure(t *testing.T) {

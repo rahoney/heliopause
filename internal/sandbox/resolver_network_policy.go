@@ -107,8 +107,10 @@ func (p *ResolverNetworkPolicy) Prepare(ctx context.Context, endpoints []netip.A
 	subnetOutput, err := p.runner.Output(ctx, "docker", "network", "inspect", "--format", "{{range .IPAM.Config}}{{.Subnet}}{{end}}", name)
 	subnet, parseErr := netip.ParsePrefix(strings.TrimSpace(string(subnetOutput)))
 	if err != nil || parseErr != nil || !subnet.Addr().Is4() {
-		_ = p.removeNetwork(context.Background(), name)
-		return "", errors.New("resolver Docker network subnet is unavailable")
+		cleanupCtx, cancel := resolverCleanupContext()
+		cleanupErr := p.removeNetwork(cleanupCtx, name)
+		cancel()
+		return "", errors.Join(errors.New("resolver Docker network subnet is unavailable"), cleanupErr)
 	}
 	backend := p.backend
 	if backend == "" {
@@ -117,14 +119,18 @@ func (p *ResolverNetworkPolicy) Prepare(ctx context.Context, endpoints []netip.A
 		// has been started at this point, so this ordering cannot expose egress.
 		backend, err = probeDockerFirewallBackend(ctx, p.runner)
 		if err != nil {
-			_ = p.removeNetwork(context.Background(), name)
-			return "", err
+			cleanupCtx, cancel := resolverCleanupContext()
+			cleanupErr := p.removeNetwork(cleanupCtx, name)
+			cancel()
+			return "", errors.Join(err, cleanupErr)
 		}
 	}
 	chainSuffix := strings.ToUpper(strings.TrimPrefix(id.String(), "sbx_"))
 	network := &resolverNetwork{name: name, subnet: subnet, chainName: "HAA_R_" + chainSuffix[:16], backend: backend}
 	if err := p.applyAndVerify(ctx, network, endpoints); err != nil {
-		cleanupErr := p.cleanupNetwork(context.Background(), network)
+		cleanupCtx, cancel := resolverCleanupContext()
+		cleanupErr := p.cleanupNetwork(cleanupCtx, network)
+		cancel()
 		if cleanupErr != nil {
 			return "", errors.Join(err, cleanupErr)
 		}
@@ -132,6 +138,10 @@ func (p *ResolverNetworkPolicy) Prepare(ctx context.Context, endpoints []netip.A
 	}
 	p.prepared = network
 	return name, nil
+}
+
+func resolverCleanupContext() (context.Context, context.CancelFunc) {
+	return context.WithTimeout(context.Background(), cleanupTimeout)
 }
 
 // Close removes the firewall policy before deleting its Docker network. A
