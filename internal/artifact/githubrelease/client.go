@@ -235,8 +235,8 @@ func (c *Client) assetRequest(ctx context.Context, rawURL string) (*http.Respons
 			return response, nil
 		}
 		location, err := response.Location()
-		response.Body.Close()
-		if err != nil || redirects >= maximumRedirects || !c.allowedAssetRedirect(location) {
+		closeErr := response.Body.Close()
+		if err != nil || closeErr != nil || redirects >= maximumRedirects || !c.allowedAssetRedirect(location) {
 			return nil, errors.New("GitHub Release asset redirect is invalid")
 		}
 		rawURL = location.String()

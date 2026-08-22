@@ -116,18 +116,23 @@ func (s *Store) write(directory string, runID domain.RunID, evidence domain.Evid
 	temporaryPath := temporary.Name()
 	defer os.Remove(temporaryPath)
 	if _, err := temporary.Write(document); err != nil {
-		temporary.Close()
-		return fmt.Errorf("write Evidence record: %w", err)
+		return errors.Join(fmt.Errorf("write Evidence record: %w", err), closeEvidenceTemporary(temporary))
 	}
 	if err := temporary.Sync(); err != nil {
-		temporary.Close()
-		return fmt.Errorf("sync Evidence record: %w", err)
+		return errors.Join(fmt.Errorf("sync Evidence record: %w", err), closeEvidenceTemporary(temporary))
 	}
 	if err := temporary.Close(); err != nil {
 		return fmt.Errorf("close Evidence record: %w", err)
 	}
 	if err := os.Rename(temporaryPath, filepath.Join(directory, evidence.ID().String()+".json")); err != nil {
 		return fmt.Errorf("finalize Evidence record: %w", err)
+	}
+	return nil
+}
+
+func closeEvidenceTemporary(file *os.File) error {
+	if err := file.Close(); err != nil {
+		return fmt.Errorf("close Evidence temporary record: %w", err)
 	}
 	return nil
 }
