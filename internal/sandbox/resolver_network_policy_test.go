@@ -161,6 +161,11 @@ func TestNPMResolverReturnsOnlyParsedGraphAfterPolicyProtectedLifecycle(t *testi
 	if got := runner.calls[len(runner.calls)-1]; got.binary != "docker" || got.arguments[0] != "network" {
 		t.Fatalf("policy cleanup missing: %#v", got)
 	}
+	for _, call := range runner.calls[len(runner.calls)-5:] {
+		if !call.bounded {
+			t.Fatalf("cleanup call is unbounded: %#v", call)
+		}
+	}
 }
 
 type staticEndpoints struct{ addresses []netip.Addr }

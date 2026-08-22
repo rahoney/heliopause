@@ -108,7 +108,10 @@ func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain
 	defer func() {
 		var cleanupErr error
 		if containerID != "" {
-			if _, removeErr := r.runner.Output(context.Background(), "docker", "rm", "--force", containerID); removeErr != nil {
+			cleanupCtx, cleanupCancel := resolverCleanupContext()
+			_, removeErr := r.runner.Output(cleanupCtx, "docker", "rm", "--force", containerID)
+			cleanupCancel()
+			if removeErr != nil {
 				cleanupErr = errors.New("PyPI resolver container cleanup failed")
 			}
 			if trace != nil {
@@ -120,7 +123,10 @@ func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain
 				}
 			}
 		}
-		if closeErr := policy.Close(context.Background()); closeErr != nil {
+		cleanupCtx, cleanupCancel := resolverCleanupContext()
+		closeErr := policy.Close(cleanupCtx)
+		cleanupCancel()
+		if closeErr != nil {
 			cleanupErr = errors.Join(cleanupErr, closeErr)
 		}
 		if cleanupErr != nil {

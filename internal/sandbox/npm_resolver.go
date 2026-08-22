@@ -100,12 +100,17 @@ func (r *NPMResolver) ResolveDependencies(ctx context.Context, reference domain.
 	containerID := ""
 	defer func() {
 		if containerID != "" {
-			_, removeErr := r.runner.Output(context.Background(), "docker", "rm", "--force", containerID)
+			cleanupCtx, cancel := resolverCleanupContext()
+			_, removeErr := r.runner.Output(cleanupCtx, "docker", "rm", "--force", containerID)
+			cancel()
 			if removeErr != nil {
 				cleanupErr = errors.New("resolver container cleanup failed")
 			}
 		}
-		if closeErr := policy.Close(context.Background()); closeErr != nil {
+		cleanupCtx, cancel := resolverCleanupContext()
+		closeErr := policy.Close(cleanupCtx)
+		cancel()
+		if closeErr != nil {
 			cleanupErr = errors.Join(cleanupErr, closeErr)
 		}
 		if cleanupErr != nil {
