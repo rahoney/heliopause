@@ -111,3 +111,19 @@ func hasNPMDependencies(path string) bool {
 	}
 	return len(document.Dependencies) != 0 || len(document.Packages) > 1
 }
+
+func (p npmProjectPlan) privateWorkspace() (string, error) {
+	parent := filepath.Dir(p.root)
+	workspace, err := os.MkdirTemp(parent, "."+filepath.Base(p.root)+".haa-work-")
+	if err != nil {
+		return "", errors.New("create npm private transaction workspace")
+	}
+	for _, name := range []string{"package.json", "package-lock.json"} {
+		body, readErr := os.ReadFile(filepath.Join(p.root, name))
+		if readErr != nil || os.WriteFile(filepath.Join(workspace, name), body, 0o600) != nil {
+			_ = os.RemoveAll(workspace)
+			return "", errors.New("copy npm transaction control files")
+		}
+	}
+	return workspace, nil
+}

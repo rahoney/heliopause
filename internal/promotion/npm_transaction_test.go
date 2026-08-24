@@ -62,3 +62,29 @@ func TestNPMProjectMetadataBindsCommittedControlFiles(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestNPMProjectPrivateWorkspaceDoesNotMutateSource(t *testing.T) {
+	root := realPromotionRoot(t)
+	if err := os.WriteFile(filepath.Join(root, "package.json"), []byte(`{"dependencies":{}}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, "package-lock.json"), []byte(`{"packages":{"":{}}}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	plan, err := freezeNPMProject(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	workspace, err := plan.privateWorkspace()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(workspace)
+	if err := os.WriteFile(filepath.Join(workspace, "package.json"), []byte(`{"changed":true}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	body, err := os.ReadFile(filepath.Join(root, "package.json"))
+	if err != nil || string(body) != `{"dependencies":{}}` {
+		t.Fatalf("source project changed: %q, %v", body, err)
+	}
+}
