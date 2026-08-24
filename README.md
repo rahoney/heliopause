@@ -8,8 +8,8 @@
 - Go module path: `github.com/rahoney/heliopause`
 - 구현 언어: Go
 - CLI framework: Cobra
-- 현재 상태: Step 14 Implementation — M0–M7 MVP qualification 완료
-- 현재 작업: 없음 — post-MVP scope와 queue 결정 필요
+- 현재 상태: M0–M7 MVP qualification 완료. External security review에서 확인된 production trust-boundary hardening을 M8에서 진행 중이며 production-ready release는 보류
+- 현재 작업: M8 — Production Trust Hardening
 
 ## Project Notes
 
