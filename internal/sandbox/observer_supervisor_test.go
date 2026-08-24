@@ -93,6 +93,31 @@ func TestObserverSupervisorStartupFailureReleasesKnownOwnership(t *testing.T) {
 	}
 }
 
+func TestObserverSupervisorRetainsLockWhenEndpointCleanupIdentityChanges(t *testing.T) {
+	paths := supervisorPaths(t)
+	launcher := &fakeObserverLauncher{}
+	supervisor, err := newObserverSupervisor(context.Background(), launcher.StartObserver, paths.remote, paths.output, paths.lock)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := os.Remove(paths.remote); err != nil {
+		t.Fatalf("remove owned endpoint: %v", err)
+	}
+	replacement, err := net.ListenUnixgram("unixgram", &net.UnixAddr{Name: paths.remote, Net: "unixgram"})
+	if err != nil {
+		t.Fatalf("replace endpoint: %v", err)
+	}
+	defer replacement.Close()
+
+	if err := supervisor.Close(); err == nil {
+		t.Fatal("supervisor accepted endpoint cleanup identity change")
+	}
+	if _, err := os.Lstat(paths.lock); err != nil {
+		t.Fatalf("supervisor released lock after uncertain cleanup: %v", err)
+	}
+}
+
 type supervisorTestPaths struct{ remote, output, lock string }
 
 func supervisorPaths(t *testing.T) supervisorTestPaths {
