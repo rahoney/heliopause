@@ -53,12 +53,6 @@ func NewPyPIResolver(runner CommandRunner, endpoints NamedEndpointResolver, obse
 	return &PyPIResolver{runner: runner, endpoints: endpoints, observer: observer, probe: probe, policy: policy}, nil
 }
 
-// NewLinuxPyPIResolverWithExecutor uses one composition-root validated Host
-// executor for Docker, runtime probing, and resolver policy commands.
-func NewLinuxPyPIResolverWithExecutor(executor TrustedExecutor, observer TraceObserver) (*PyPIResolver, error) {
-	return nil, errors.New("Linux PyPI resolver requires network policy service")
-}
-
 // NewLinuxPyPIResolverWithExecutorAndPolicy constructs the production
 // resolver with the ordinary-to-privileged typed network policy port.
 func NewLinuxPyPIResolverWithExecutorAndPolicy(executor TrustedExecutor, observer TraceObserver, policy ResolverPolicyService) (*PyPIResolver, error) {

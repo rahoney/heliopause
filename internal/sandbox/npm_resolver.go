@@ -63,15 +63,6 @@ func NewNPMResolverWithObserver(runner CommandRunner, endpoints EndpointResolver
 	return resolver, nil
 }
 
-// NewLinuxNPMResolverWithExecutor uses the composition-root validated Host
-// executor instead of ambient process state.
-func NewLinuxNPMResolverWithExecutor(executor interface {
-	CommandRunner
-	inputCommandRunner
-}, observer TraceObserver) (*NPMResolver, error) {
-	return nil, errors.New("Linux npm resolver requires network policy service")
-}
-
 // NewLinuxNPMResolverWithExecutorAndPolicy constructs the production resolver
 // with the ordinary-to-privileged typed network policy port.
 func NewLinuxNPMResolverWithExecutorAndPolicy(executor interface {
