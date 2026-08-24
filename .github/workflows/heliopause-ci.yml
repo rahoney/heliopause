@@ -196,7 +196,8 @@ jobs:
           chmod 0755 "$RUNNER_TEMP/bazel"
           cp -R tools/gvisor-observer "$RUNNER_TEMP/gvisor/tools/haa_gvisor_observer"
           cd "$RUNNER_TEMP/gvisor"
-          "$RUNNER_TEMP/bazel" build -c opt //tools/haa_gvisor_observer:haa_gvisor_observer
+          "$RUNNER_TEMP/bazel" build -c opt //tools/haa_gvisor_observer:haa_gvisor_observer //tools/haa_gvisor_observer:haa_gvisor_observer_latch_test
+          bazel-bin/tools/haa_gvisor_observer/haa_gvisor_observer_latch_test
 
   gvisor-integration:
     name: gVisor Linux Integration
