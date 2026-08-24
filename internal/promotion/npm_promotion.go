@@ -83,6 +83,24 @@ func (p *NPMPromotion) Promote(ctx context.Context, staged domain.StagedSet, bun
 	if err := verifyStagedRecords(stagedRoot, bundle); err != nil {
 		return domain.PromotedInstall{}, err
 	}
+	if installContext.Mode() == domain.InstallNPMProject {
+		guard, err := acquireNPMProjectGuard(installContext.Target().String())
+		if err != nil {
+			return domain.PromotedInstall{}, err
+		}
+		defer func() { resultErr = errors.Join(resultErr, guard.release()) }()
+		plan, err := freezeNPMProject(installContext.Target().String())
+		if err != nil {
+			return domain.PromotedInstall{}, err
+		}
+		if err := plan.verifyUnchanged(); err != nil {
+			return domain.PromotedInstall{}, err
+		}
+		return domain.PromotedInstall{}, errors.New("npm project transaction commit is not yet available")
+	}
+	if installContext.Mode() != domain.InstallNewTarget {
+		return domain.PromotedInstall{}, errors.New("npm install context is unsupported")
+	}
 	target := installContext.Target().String()
 	if target == "" || strings.Contains(target, ",") {
 		return domain.PromotedInstall{}, errors.New("install target is unsupported by the Docker mount boundary")

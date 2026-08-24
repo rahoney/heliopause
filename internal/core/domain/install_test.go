@@ -27,6 +27,18 @@ func TestInstallContextRequiresCanonicalNewTarget(t *testing.T) {
 	}
 }
 
+func TestNPMProjectInstallContextIsDistinctFromNewTarget(t *testing.T) {
+	t.Parallel()
+	root, err := domain.NewInstallTarget("/tmp/heliopause-project")
+	if err != nil {
+		t.Fatal(err)
+	}
+	context, err := domain.NewNPMProjectInstallContext(root)
+	if err != nil || context.Target() != root || context.Mode() != domain.InstallNPMProject || context.RequiresNewTarget() {
+		t.Fatalf("npm project context = %#v, %v", context, err)
+	}
+}
+
 func TestLockedDependencyGraphRejectsIncompleteOrUnsafeShape(t *testing.T) {
 	t.Parallel()
 	source := mustSource(t, "npm")
