@@ -42,3 +42,23 @@ func TestNPMProjectGuardRejectsConcurrentMutation(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestNPMProjectMetadataBindsCommittedControlFiles(t *testing.T) {
+	root := realPromotionRoot(t)
+	if err := os.WriteFile(filepath.Join(root, "package.json"), []byte(`{"dependencies":{}}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, "package-lock.json"), []byte(`{"packages":{"":{}}}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	plan, err := freezeNPMProject(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := plan.writeMetadata(); err != nil {
+		t.Fatal(err)
+	}
+	if err := plan.verifyManagedOrEmpty(); err != nil {
+		t.Fatal(err)
+	}
+}

@@ -93,6 +93,9 @@ func (p *NPMPromotion) Promote(ctx context.Context, staged domain.StagedSet, bun
 		if err != nil {
 			return domain.PromotedInstall{}, err
 		}
+		if err := plan.verifyManagedOrEmpty(); err != nil {
+			return domain.PromotedInstall{}, err
+		}
 		if err := plan.verifyUnchanged(); err != nil {
 			return domain.PromotedInstall{}, err
 		}

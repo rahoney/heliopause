@@ -2,10 +2,14 @@ package promotion
 
 import (
 	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
 )
+
+const npmTransactionMetadata = ".heliopause/npm-transaction.json"
 
 // npmProjectPlan freezes the small project-control surface before any later
 // mutation. A changed or missing control file invalidates the transaction.
@@ -61,4 +65,49 @@ func (p npmProjectPlan) verifyUnchanged() error {
 		return errors.New("npm project changed during transaction")
 	}
 	return nil
+}
+
+func (p npmProjectPlan) verifyManagedOrEmpty() error {
+	body, err := os.ReadFile(filepath.Join(p.root, npmTransactionMetadata))
+	if err == nil {
+		want := hex.EncodeToString(p.packageJSON[:]) + ":" + hex.EncodeToString(p.packageLock[:])
+		if string(body) == want+"\n" {
+			return nil
+		}
+		return errors.New("npm managed project metadata does not match current state")
+	}
+	if !errors.Is(err, os.ErrNotExist) {
+		return errors.New("read npm project transaction metadata")
+	}
+	if hasNPMDependencies(filepath.Join(p.root, "package.json")) || hasNPMDependencies(filepath.Join(p.root, "package-lock.json")) {
+		return errors.New("npm project has unmanaged dependencies")
+	}
+	return nil
+}
+
+func (p npmProjectPlan) writeMetadata() error {
+	directory := filepath.Join(p.root, ".heliopause")
+	if err := os.Mkdir(directory, 0o700); err != nil && !errors.Is(err, os.ErrExist) {
+		return errors.New("create npm transaction metadata directory")
+	}
+	value := hex.EncodeToString(p.packageJSON[:]) + ":" + hex.EncodeToString(p.packageLock[:]) + "\n"
+	if err := os.WriteFile(filepath.Join(p.root, npmTransactionMetadata), []byte(value), 0o600); err != nil {
+		return errors.New("write npm transaction metadata")
+	}
+	return nil
+}
+
+func hasNPMDependencies(path string) bool {
+	body, err := os.ReadFile(path)
+	if err != nil {
+		return true
+	}
+	var document struct {
+		Dependencies map[string]json.RawMessage `json:"dependencies"`
+		Packages     map[string]json.RawMessage `json:"packages"`
+	}
+	if json.Unmarshal(body, &document) != nil {
+		return true
+	}
+	return len(document.Dependencies) != 0 || len(document.Packages) > 1
 }
