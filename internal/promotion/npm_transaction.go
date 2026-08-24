@@ -127,3 +127,79 @@ func (p npmProjectPlan) privateWorkspace() (string, error) {
 	}
 	return workspace, nil
 }
+
+func (p npmProjectPlan) commitControlFiles(workspace string) error {
+	if err := p.verifyUnchanged(); err != nil {
+		return err
+	}
+	original := make(map[string][]byte, 2)
+	for _, name := range []string{"package.json", "package-lock.json"} {
+		body, err := os.ReadFile(filepath.Join(p.root, name))
+		if err != nil {
+			return errors.New("backup npm control files")
+		}
+		original[name] = body
+	}
+	committed := []string{}
+	rollback := func() error {
+		for _, name := range committed {
+			if err := os.WriteFile(filepath.Join(p.root, name), original[name], 0o600); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	for _, name := range []string{"package.json", "package-lock.json"} {
+		body, err := os.ReadFile(filepath.Join(workspace, name))
+		if err != nil || len(body) == 0 {
+			return errors.New("read verified npm transaction output")
+		}
+		temporary, err := os.CreateTemp(p.root, "."+name+".haa-")
+		if err != nil {
+			return errors.New("create npm control file transaction")
+		}
+		path := temporary.Name()
+		if _, err := temporary.Write(body); err != nil || temporary.Sync() != nil || temporary.Close() != nil {
+			_ = os.Remove(path)
+			return errors.New("write npm control file transaction")
+		}
+		if err := os.Rename(path, filepath.Join(p.root, name)); err != nil {
+			_ = os.Remove(path)
+			_ = rollback()
+			return errors.New("commit npm control file transaction")
+		}
+		committed = append(committed, name)
+	}
+	return nil
+}
+
+func (p npmProjectPlan) swapNodeModules(workspace string) error {
+	staged := filepath.Join(workspace, "node_modules")
+	if err := trustedExistingDirectory(staged); err != nil {
+		return errors.New("verified npm node_modules is unavailable")
+	}
+	target := filepath.Join(p.root, "node_modules")
+	backup := filepath.Join(p.root, ".node_modules.haa-backup")
+	if _, err := os.Lstat(backup); !errors.Is(err, os.ErrNotExist) {
+		return errors.New("npm node_modules backup already exists")
+	}
+	hadTarget := false
+	if _, err := os.Lstat(target); err == nil {
+		if err := os.Rename(target, backup); err != nil {
+			return errors.New("backup npm node_modules")
+		}
+		hadTarget = true
+	} else if !errors.Is(err, os.ErrNotExist) {
+		return errors.New("inspect npm node_modules")
+	}
+	if err := os.Rename(staged, target); err != nil {
+		if hadTarget {
+			_ = os.Rename(backup, target)
+		}
+		return errors.New("commit npm node_modules")
+	}
+	if hadTarget && os.RemoveAll(backup) != nil {
+		return errors.New("remove npm node_modules rollback backup")
+	}
+	return nil
+}

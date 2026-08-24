@@ -96,10 +96,38 @@ func (p *NPMPromotion) Promote(ctx context.Context, staged domain.StagedSet, bun
 		if err := plan.verifyManagedOrEmpty(); err != nil {
 			return domain.PromotedInstall{}, err
 		}
+		workspace, err := plan.privateWorkspace()
+		if err != nil {
+			return domain.PromotedInstall{}, err
+		}
+		defer os.RemoveAll(workspace)
+		manifest, lock, err := preparePromotionProject(workspace, stagedRoot, bundle)
+		if err != nil {
+			return domain.PromotedInstall{}, err
+		}
+		if err := p.runner.Run(ctx, workspace, promotionArguments(workspace)); err != nil {
+			return domain.PromotedInstall{}, err
+		}
+		if err := validatePromotionOutput(workspace, bundle, manifest, lock); err != nil {
+			return domain.PromotedInstall{}, err
+		}
 		if err := plan.verifyUnchanged(); err != nil {
 			return domain.PromotedInstall{}, err
 		}
-		return domain.PromotedInstall{}, errors.New("npm project transaction commit is not yet available")
+		if err := plan.swapNodeModules(workspace); err != nil {
+			return domain.PromotedInstall{}, err
+		}
+		if err := plan.commitControlFiles(workspace); err != nil {
+			return domain.PromotedInstall{}, err
+		}
+		committed, err := freezeNPMProject(installContext.Target().String())
+		if err != nil {
+			return domain.PromotedInstall{}, err
+		}
+		if err := committed.writeMetadata(); err != nil {
+			return domain.PromotedInstall{}, err
+		}
+		return domain.NewPromotedInstall(bundle.ManifestID(), installContext.Target())
 	}
 	if installContext.Mode() != domain.InstallNewTarget {
 		return domain.PromotedInstall{}, errors.New("npm install context is unsupported")

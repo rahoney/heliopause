@@ -88,3 +88,40 @@ func TestNPMProjectPrivateWorkspaceDoesNotMutateSource(t *testing.T) {
 		t.Fatalf("source project changed: %q, %v", body, err)
 	}
 }
+
+func TestNPMProjectNodeModulesSwapReplacesOnlyAfterWorkspaceReady(t *testing.T) {
+	root := realPromotionRoot(t)
+	if err := os.WriteFile(filepath.Join(root, "package.json"), []byte(`{"dependencies":{}}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, "package-lock.json"), []byte(`{"packages":{"":{}}}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Mkdir(filepath.Join(root, "node_modules"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, "node_modules", "old"), []byte("old"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	plan, _ := freezeNPMProject(root)
+	workspace, err := plan.privateWorkspace()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(workspace)
+	if err := os.Mkdir(filepath.Join(workspace, "node_modules"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(workspace, "node_modules", "new"), []byte("new"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := plan.swapNodeModules(workspace); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(root, "node_modules", "new")); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(root, "node_modules", "old")); !os.IsNotExist(err) {
+		t.Fatal("old node_modules survived")
+	}
+}
