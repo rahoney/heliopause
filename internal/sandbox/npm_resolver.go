@@ -146,7 +146,7 @@ func (r *NPMResolver) ResolveDependencies(ctx context.Context, reference domain.
 		}
 	}()
 
-	created, err := r.runner.Output(ctx, "docker", "create", "--network", network, "--user", "1000:1000", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "64", "--memory", "512m", "--cpus", "1", "--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=128m,uid=1000,gid=1000,mode=0700", nodeImageReference, "/bin/sh", "-ceu", "sleep infinity")
+	created, err := r.runner.Output(ctx, "docker", "create", "--runtime", gVisorRuntimeName, "--network", network, "--user", "1000:1000", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "64", "--memory", "512m", "--cpus", "1", "--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=128m,uid=1000,gid=1000,mode=0700", nodeImageReference, "/bin/sh", "-ceu", "sleep infinity")
 	if err != nil || !containerIDPattern.MatchString(strings.TrimSpace(string(created))) {
 		return domain.DependencyResolution{}, errors.New("create resolver container failed")
 	}

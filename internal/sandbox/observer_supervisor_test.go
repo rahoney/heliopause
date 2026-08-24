@@ -3,6 +3,7 @@ package sandbox
 import (
 	"context"
 	"errors"
+	"io"
 	"net"
 	"os"
 	"path/filepath"
@@ -125,7 +126,7 @@ type fakeObserverLauncher struct {
 
 func (l *fakeObserverLauncher) StartObserver(_ context.Context, remote, _ string) (ObserverProcess, error) {
 	l.starts++
-	listener, err := net.ListenUnix("unixpacket", &net.UnixAddr{Name: remote, Net: "unixpacket"})
+	listener, err := net.ListenUnixgram("unixgram", &net.UnixAddr{Name: remote, Net: "unixgram"})
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +141,7 @@ func (failingObserverLauncher) StartObserver(context.Context, string, string) (O
 }
 
 type fakeObserverProcess struct {
-	listener *net.UnixListener
+	listener io.Closer
 	done     chan struct{}
 	err      error
 	once     sync.Once
