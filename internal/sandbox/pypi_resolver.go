@@ -7,6 +7,7 @@ import (
 	"errors"
 	"net"
 	"net/netip"
+	"runtime"
 	"sort"
 	"strings"
 	"time"
@@ -51,14 +52,21 @@ func NewPyPIResolver(runner CommandRunner, endpoints NamedEndpointResolver, obse
 	return &PyPIResolver{runner: runner, endpoints: endpoints, observer: observer, probe: probe}, nil
 }
 
-// NewLinuxPyPIResolver composes the Linux-only production adapter. The caller
-// owns Close for the trusted shared observer endpoint.
-func NewLinuxPyPIResolver() (*PyPIResolver, error) {
+// NewLinuxPyPIResolverWithExecutor uses one composition-root validated Host
+// executor for Docker, runtime probing, and resolver policy commands.
+func NewLinuxPyPIResolverWithExecutor(executor TrustedExecutor) (*PyPIResolver, error) {
+	return newLinuxPyPIResolver(executor)
+}
+
+func newLinuxPyPIResolver(executor TrustedExecutor) (*PyPIResolver, error) {
 	observer, err := NewSharedObserver(ObserverOutputEndpoint)
 	if err != nil {
 		return nil, err
 	}
-	resolver, err := NewPyPIResolver(systemExecutor{}, systemNamedEndpointResolver{}, observer, ProbePython)
+	capabilityProbe := func(ctx context.Context) (PythonCapability, error) {
+		return probePython(ctx, runtime.GOOS, runtime.GOARCH, executor)
+	}
+	resolver, err := NewPyPIResolver(executor, systemNamedEndpointResolver{}, observer, capabilityProbe)
 	if err != nil {
 		_ = observer.Close()
 		return nil, err

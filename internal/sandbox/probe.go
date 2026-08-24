@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os/exec"
 	"runtime"
 	"strings"
 )
@@ -30,9 +29,19 @@ type Executor interface {
 	Output(context.Context, string, ...string) ([]byte, error)
 }
 
+// TrustedExecutor is the complete process capability injected by production
+// bootstrap. It carries no method for environment or arbitrary shell control.
+type TrustedExecutor interface {
+	Executor
+	CommandRunner
+	inputCommandRunner
+	discardCommandRunner
+	RunOutput(context.Context, io.Writer, string, ...string) error
+}
+
 // Probe checks the local host without starting a sandbox or downloading an image.
 func Probe(ctx context.Context) (Capability, error) {
-	return probe(ctx, runtime.GOOS, systemExecutor{})
+	return probe(ctx, runtime.GOOS, nil)
 }
 
 func probe(ctx context.Context, operatingSystem string, executor Executor) (Capability, error) {
@@ -98,30 +107,4 @@ func atLeastVersion(actual, minimum string) bool {
 		return false
 	}
 	return actualMajor > minimumMajor || actualMajor == minimumMajor && (actualMinor > minimumMinor || actualMinor == minimumMinor && actualPatch >= minimumPatch)
-}
-
-type systemExecutor struct{}
-
-func (systemExecutor) LookPath(binary string) (string, error) { return exec.LookPath(binary) }
-func (systemExecutor) Output(ctx context.Context, binary string, arguments ...string) ([]byte, error) {
-	return exec.CommandContext(ctx, binary, arguments...).Output()
-}
-
-func (systemExecutor) RunInput(ctx context.Context, input io.Reader, binary string, arguments ...string) error {
-	command := exec.CommandContext(ctx, binary, arguments...)
-	command.Stdin = input
-	return command.Run()
-}
-
-func (systemExecutor) RunOutput(ctx context.Context, output io.Writer, binary string, arguments ...string) error {
-	command := exec.CommandContext(ctx, binary, arguments...)
-	command.Stdout = output
-	return command.Run()
-}
-
-func (systemExecutor) RunDiscard(ctx context.Context, binary string, arguments ...string) error {
-	command := exec.CommandContext(ctx, binary, arguments...)
-	command.Stdout = io.Discard
-	command.Stderr = io.Discard
-	return command.Run()
 }

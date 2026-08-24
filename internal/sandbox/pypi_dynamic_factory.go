@@ -2,23 +2,31 @@ package sandbox
 
 import (
 	"context"
+	"runtime"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
-// NewLinuxPyPIDynamicBackend composes the PyPI wheel observer boundary without
-// leaking the process runner or gVisor types into bootstrap/Application.
-func NewLinuxPyPIDynamicBackend(intakeRoot string) (*PythonDynamicBackend, func() error, error) {
+// NewLinuxPyPIDynamicBackendWithExecutor uses the composition-root validated
+// Host executor for every Docker operation.
+func NewLinuxPyPIDynamicBackendWithExecutor(intakeRoot string, executor TrustedExecutor) (*PythonDynamicBackend, func() error, error) {
+	return newLinuxPyPIDynamicBackend(intakeRoot, executor)
+}
+
+func newLinuxPyPIDynamicBackend(intakeRoot string, executor TrustedExecutor) (*PythonDynamicBackend, func() error, error) {
 	observer, err := NewSharedObserver(ObserverOutputEndpoint)
 	if err != nil {
 		return nil, nil, err
 	}
-	introducer, err := NewPythonArtifactIntroducer(intakeRoot, systemExecutor{})
+	introducer, err := NewPythonArtifactIntroducer(intakeRoot, executor)
 	if err != nil {
 		_ = observer.Close()
 		return nil, nil, err
 	}
-	backend, err := NewPythonDynamicBackend(systemExecutor{}, introducer, observer, ProbePython)
+	capabilityProbe := func(ctx context.Context) (PythonCapability, error) {
+		return probePython(ctx, runtime.GOOS, runtime.GOARCH, executor)
+	}
+	backend, err := NewPythonDynamicBackend(executor, introducer, observer, capabilityProbe)
 	if err != nil {
 		_ = observer.Close()
 		return nil, nil, err
@@ -26,17 +34,26 @@ func NewLinuxPyPIDynamicBackend(intakeRoot string) (*PythonDynamicBackend, func(
 	return backend, observer.Close, nil
 }
 
-func NewLinuxPyPISdistBuilder(intakeRoot string) (*PythonSdistBuilder, func() error, error) {
+// NewLinuxPyPISdistBuilderWithExecutor uses the composition-root validated
+// Host executor for the build lifecycle.
+func NewLinuxPyPISdistBuilderWithExecutor(intakeRoot string, executor TrustedExecutor) (*PythonSdistBuilder, func() error, error) {
+	return newLinuxPyPISdistBuilder(intakeRoot, executor)
+}
+
+func newLinuxPyPISdistBuilder(intakeRoot string, executor TrustedExecutor) (*PythonSdistBuilder, func() error, error) {
 	observer, err := NewSharedObserver(ObserverOutputEndpoint)
 	if err != nil {
 		return nil, nil, err
 	}
-	introducer, err := NewPythonArtifactIntroducer(intakeRoot, systemExecutor{})
+	introducer, err := NewPythonArtifactIntroducer(intakeRoot, executor)
 	if err != nil {
 		_ = observer.Close()
 		return nil, nil, err
 	}
-	builder, err := NewPythonSdistBuilder(systemExecutor{}, introducer, observer, ProbePython)
+	capabilityProbe := func(ctx context.Context) (PythonCapability, error) {
+		return probePython(ctx, runtime.GOOS, runtime.GOARCH, executor)
+	}
+	builder, err := NewPythonSdistBuilder(executor, introducer, observer, capabilityProbe)
 	if err != nil {
 		_ = observer.Close()
 		return nil, nil, err

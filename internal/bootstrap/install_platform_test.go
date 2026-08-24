@@ -9,7 +9,7 @@ import (
 
 func TestUnsupportedInstallResolverFailsBeforeHostResolution(t *testing.T) {
 	t.Parallel()
-	resolver, err := installDependencyResolver("darwin", "arm64")
+	resolver, err := installDependencyResolver("darwin", "arm64", nil)
 	if err != nil {
 		t.Fatal(err)
 	}

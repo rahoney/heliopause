@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
@@ -30,14 +31,21 @@ func NewGitHubELFBackend(runner CommandRunner, intakeRoot string, observer Trace
 	return &GitHubELFBackend{runner: runner, intakeRoot: filepath.Clean(intakeRoot), observer: observer, probe: probe, newSessionID: domain.NewSandboxSessionID}, nil
 }
 
-// NewLinuxGitHubELFBackend composes the trusted shared observer without
-// leaking Docker or gVisor details into bootstrap/Application.
-func NewLinuxGitHubELFBackend(intakeRoot string) (*GitHubELFBackend, func() error, error) {
+// NewLinuxGitHubELFBackendWithExecutor uses the composition-root validated
+// Host executor for the complete lifecycle.
+func NewLinuxGitHubELFBackendWithExecutor(intakeRoot string, executor TrustedExecutor) (*GitHubELFBackend, func() error, error) {
+	return newLinuxGitHubELFBackend(intakeRoot, executor)
+}
+
+func newLinuxGitHubELFBackend(intakeRoot string, executor TrustedExecutor) (*GitHubELFBackend, func() error, error) {
 	observer, err := NewSharedObserver(ObserverOutputEndpoint)
 	if err != nil {
 		return nil, nil, err
 	}
-	backend, err := NewGitHubELFBackend(systemExecutor{}, intakeRoot, observer, Probe)
+	capabilityProbe := func(ctx context.Context) (Capability, error) {
+		return probe(ctx, runtime.GOOS, executor)
+	}
+	backend, err := NewGitHubELFBackend(executor, intakeRoot, observer, capabilityProbe)
 	if err != nil {
 		_ = observer.Close()
 		return nil, nil, err

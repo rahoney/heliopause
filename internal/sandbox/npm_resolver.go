@@ -46,10 +46,13 @@ func NewNPMResolver(runner CommandRunner, endpoints EndpointResolver) (*NPMResol
 	return &NPMResolver{runner: runner, endpoints: endpoints}, nil
 }
 
-// NewLinuxNPMResolver composes the production command and trusted DNS
-// preflight adapters. It is wired only by the Linux composition root.
-func NewLinuxNPMResolver() (*NPMResolver, error) {
-	return NewNPMResolver(systemExecutor{}, systemEndpointResolver{})
+// NewLinuxNPMResolverWithExecutor uses the composition-root validated Host
+// executor instead of ambient process state.
+func NewLinuxNPMResolverWithExecutor(executor interface {
+	CommandRunner
+	inputCommandRunner
+}) (*NPMResolver, error) {
+	return NewNPMResolver(executor, systemEndpointResolver{})
 }
 
 type systemEndpointResolver struct{}

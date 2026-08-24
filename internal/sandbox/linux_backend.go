@@ -1,16 +1,31 @@
 package sandbox
 
-import "errors"
+import (
+	"context"
+	"errors"
+	"runtime"
+)
 
 // ObserverOutputEndpoint is the HAA-only normalized-record endpoint. The
 // separately installed gVisor observer helper sends to it; it is never mounted
 // into an Artifact container.
 const ObserverOutputEndpoint = "/run/heliopause-observer/haa-output.sock"
 
-// NewLinuxBackend composes the production Docker backend with the fixed,
-// trusted observer endpoint mandated by the installed runsc-trace runtime.
-// The caller owns observer.Close and must keep it alive for the inspection.
-func NewLinuxBackend(intakeRoot string) (*Backend, *SharedObserver, error) {
+// NewLinuxBackendWithExecutor composes the production Docker backend from a
+// composition-root validated Host executor. The caller owns observer.Close.
+func NewLinuxBackendWithExecutor(intakeRoot string, executor interface {
+	Executor
+	CommandRunner
+	inputCommandRunner
+}) (*Backend, *SharedObserver, error) {
+	return newLinuxBackend(intakeRoot, executor)
+}
+
+func newLinuxBackend(intakeRoot string, executor interface {
+	Executor
+	CommandRunner
+	inputCommandRunner
+}) (*Backend, *SharedObserver, error) {
 	if intakeRoot == "" {
 		return nil, nil, errors.New("sandbox intake root is required")
 	}
@@ -18,12 +33,15 @@ func NewLinuxBackend(intakeRoot string) (*Backend, *SharedObserver, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	introducer, err := NewDockerArtifactIntroducer(intakeRoot, systemExecutor{})
+	introducer, err := NewDockerArtifactIntroducer(intakeRoot, executor)
 	if err != nil {
 		_ = observer.Close()
 		return nil, nil, err
 	}
-	backend, err := NewBackend(systemExecutor{}, introducer, observer, Probe)
+	capabilityProbe := func(ctx context.Context) (Capability, error) {
+		return probe(ctx, runtime.GOOS, executor)
+	}
+	backend, err := NewBackend(executor, introducer, observer, capabilityProbe)
 	if err != nil {
 		_ = observer.Close()
 		return nil, nil, err

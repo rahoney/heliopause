@@ -18,6 +18,7 @@ import (
 	"github.com/rahoney/heliopause/internal/core/ports"
 	evidencerecord "github.com/rahoney/heliopause/internal/evidence"
 	"github.com/rahoney/heliopause/internal/evidence/local"
+	"github.com/rahoney/heliopause/internal/hosttool"
 	inspectiongithub "github.com/rahoney/heliopause/internal/inspection/githubrelease"
 	inspectionnpm "github.com/rahoney/heliopause/internal/inspection/npm"
 	inspectionpypi "github.com/rahoney/heliopause/internal/inspection/pypi"
@@ -30,10 +31,18 @@ import (
 )
 
 // Run constructs and executes the CLI with process-owned dependencies.
-func Run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
+func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultErr error) {
 	command, err := cli.New(stdout, stderr)
 	if err != nil {
 		return err
+	}
+	var trustedExecutor *hosttool.Executor
+	if runtime.GOOS == "linux" && len(args) > 0 && (args[0] == "npm" || args[0] == "pypi" || args[0] == "github") {
+		trustedExecutor, err = hosttool.NewSystem(ctx)
+		if err != nil {
+			return err
+		}
+		defer func() { resultErr = errors.Join(resultErr, trustedExecutor.Close()) }()
 	}
 	if len(args) > 0 && args[0] == "npm" {
 		cacheRoot, err := os.UserCacheDir()
@@ -51,7 +60,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		}
 		var dynamicSandbox ports.Sandbox
 		if runtime.GOOS == "linux" {
-			backend, observer, err := sandbox.NewLinuxBackend(filepath.Join(root, "intake"))
+			backend, observer, err := sandbox.NewLinuxBackendWithExecutor(filepath.Join(root, "intake"), trustedExecutor)
 			if err != nil {
 				return err
 			}
@@ -83,7 +92,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		if err := cli.AddNPMInspect(command, service); err != nil {
 			return err
 		}
-		dependencyResolver, err := installDependencyResolver(runtime.GOOS, runtime.GOARCH)
+		dependencyResolver, err := installDependencyResolver(runtime.GOOS, runtime.GOARCH, trustedExecutor)
 		if err != nil {
 			return err
 		}
@@ -95,7 +104,12 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		if err != nil {
 			return err
 		}
-		promoter, err := promotion.NewNPMPromotion(filepath.Join(root, "staging"))
+		var promoter ports.Promotion
+		if runtime.GOOS == "linux" {
+			promoter, err = promotion.NewNPMPromotionWithRunner(filepath.Join(root, "staging"), trustedExecutor)
+		} else {
+			promoter, err = promotion.NewNPMPromotion(filepath.Join(root, "staging"))
+		}
 		if err != nil {
 			return err
 		}
@@ -124,7 +138,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		}
 		var wheelRunner sandbox.PythonWheelRunner = sandbox.UnavailablePythonWheelRunner{}
 		if runtime.GOOS == "linux" {
-			backend, closeObserver, factoryErr := sandbox.NewLinuxPyPIDynamicBackend(filepath.Join(root, "intake"))
+			backend, closeObserver, factoryErr := sandbox.NewLinuxPyPIDynamicBackendWithExecutor(filepath.Join(root, "intake"), trustedExecutor)
 			if factoryErr != nil {
 				return factoryErr
 			}
@@ -143,7 +157,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		if err != nil {
 			return err
 		}
-		resolver, closeResolver, err := pypiInstallDependencyResolver(runtime.GOOS, runtime.GOARCH)
+		resolver, closeResolver, err := pypiInstallDependencyResolver(runtime.GOOS, runtime.GOARCH, trustedExecutor)
 		if err != nil {
 			return err
 		}
@@ -164,7 +178,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 			return err
 		}
 		if runtime.GOOS == "linux" {
-			builder, closeBuilderObserver, factoryErr := sandbox.NewLinuxPyPISdistBuilder(filepath.Join(root, "intake"))
+			builder, closeBuilderObserver, factoryErr := sandbox.NewLinuxPyPISdistBuilderWithExecutor(filepath.Join(root, "intake"), trustedExecutor)
 			if factoryErr != nil {
 				return factoryErr
 			}
@@ -179,7 +193,12 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		if err != nil {
 			return err
 		}
-		promoter, err := promotion.NewPyPIPromotion(filepath.Join(root, "staging"))
+		var promoter ports.Promotion
+		if runtime.GOOS == "linux" {
+			promoter, err = promotion.NewPyPIPromotionWithRunner(filepath.Join(root, "staging"), trustedExecutor)
+		} else {
+			promoter, err = promotion.NewPyPIPromotion(filepath.Join(root, "staging"))
+		}
 		if err != nil {
 			return err
 		}
@@ -207,7 +226,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 		}
 		var dynamicSandbox ports.Sandbox
 		if runtime.GOOS == "linux" {
-			backend, closeObserver, err := sandbox.NewLinuxGitHubELFBackend(filepath.Join(root, "intake"))
+			backend, closeObserver, err := sandbox.NewLinuxGitHubELFBackendWithExecutor(filepath.Join(root, "intake"), trustedExecutor)
 			if err != nil {
 				return err
 			}
@@ -264,9 +283,9 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 	return command.ExecuteContext(ctx)
 }
 
-func pypiInstallDependencyResolver(goos, goarch string) (ports.DependencyResolver, func() error, error) {
+func pypiInstallDependencyResolver(goos, goarch string, executor sandbox.TrustedExecutor) (ports.DependencyResolver, func() error, error) {
 	if goos == "linux" && goarch == "amd64" {
-		resolver, err := sandbox.NewLinuxPyPIResolver()
+		resolver, err := sandbox.NewLinuxPyPIResolverWithExecutor(executor)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -275,9 +294,9 @@ func pypiInstallDependencyResolver(goos, goarch string) (ports.DependencyResolve
 	return unsupportedPyPIInstallResolver{}, func() error { return nil }, nil
 }
 
-func installDependencyResolver(goos, goarch string) (ports.DependencyResolver, error) {
+func installDependencyResolver(goos, goarch string, executor sandbox.TrustedExecutor) (ports.DependencyResolver, error) {
 	if goos == "linux" && goarch == "amd64" {
-		return sandbox.NewLinuxNPMResolver()
+		return sandbox.NewLinuxNPMResolverWithExecutor(executor)
 	}
 	return unsupportedInstallResolver{}, nil
 }

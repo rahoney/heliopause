@@ -25,14 +25,21 @@ import (
 // implementation so pip/Docker details cannot reach Application or Domain.
 type PyPIPromotion struct {
 	stagingRoot  string
-	runner       promotionRunner
+	runner       DockerRunner
 	goos, goarch string
 }
 
 func NewPyPIPromotion(stagingRoot string) (*PyPIPromotion, error) {
-	return newPyPIPromotion(stagingRoot, dockerPromotionRunner{}, runtime.GOOS, runtime.GOARCH)
+	return newPyPIPromotion(stagingRoot, unavailableDockerRunner{}, runtime.GOOS, runtime.GOARCH)
 }
-func newPyPIPromotion(stagingRoot string, runner promotionRunner, goos, goarch string) (*PyPIPromotion, error) {
+
+// NewPyPIPromotionWithRunner composes production Promotion with a validated
+// Docker capability instead of resolving a Host binary itself.
+func NewPyPIPromotionWithRunner(stagingRoot string, runner DockerRunner) (*PyPIPromotion, error) {
+	return newPyPIPromotion(stagingRoot, runner, runtime.GOOS, runtime.GOARCH)
+}
+
+func newPyPIPromotion(stagingRoot string, runner DockerRunner, goos, goarch string) (*PyPIPromotion, error) {
 	if !filepath.IsAbs(stagingRoot) || runner == nil {
 		return nil, errors.New("PyPI Promotion requires absolute staging root and runtime runner")
 	}
