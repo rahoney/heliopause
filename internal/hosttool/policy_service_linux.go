@@ -119,7 +119,12 @@ func ServeNetworkPolicy(ctx context.Context) error {
 		_ = listener.Close()
 		return err
 	}
-	defer func() { _ = os.Remove(config.SocketPath) }()
+	defer func(socketID os.FileInfo) {
+		current, err := os.Lstat(config.SocketPath)
+		if err == nil && os.SameFile(socketID, current) {
+			_ = os.Remove(config.SocketPath)
+		}
+	}(info)
 	return server.Serve(ctx)
 }
 
