@@ -34,6 +34,7 @@ type EndpointResolver interface {
 type NPMResolver struct {
 	runner    CommandRunner
 	endpoints EndpointResolver
+	observer  TraceObserver
 }
 
 func NewNPMResolver(runner CommandRunner, endpoints EndpointResolver) (*NPMResolver, error) {
@@ -46,13 +47,27 @@ func NewNPMResolver(runner CommandRunner, endpoints EndpointResolver) (*NPMResol
 	return &NPMResolver{runner: runner, endpoints: endpoints}, nil
 }
 
+// NewNPMResolverWithObserver constructs the production resolver with the
+// process-scoped trace receiver required for its runsc-trace container.
+func NewNPMResolverWithObserver(runner CommandRunner, endpoints EndpointResolver, observer TraceObserver) (*NPMResolver, error) {
+	resolver, err := NewNPMResolver(runner, endpoints)
+	if err != nil || observer == nil {
+		if err != nil {
+			return nil, err
+		}
+		return nil, errors.New("npm resolver requires process-scoped observer")
+	}
+	resolver.observer = observer
+	return resolver, nil
+}
+
 // NewLinuxNPMResolverWithExecutor uses the composition-root validated Host
 // executor instead of ambient process state.
 func NewLinuxNPMResolverWithExecutor(executor interface {
 	CommandRunner
 	inputCommandRunner
-}) (*NPMResolver, error) {
-	return NewNPMResolver(executor, systemEndpointResolver{})
+}, observer TraceObserver) (*NPMResolver, error) {
+	return NewNPMResolverWithObserver(executor, systemEndpointResolver{}, observer)
 }
 
 type systemEndpointResolver struct{}
@@ -101,6 +116,7 @@ func (r *NPMResolver) ResolveDependencies(ctx context.Context, reference domain.
 	}
 	var cleanupErr error
 	containerID := ""
+	var trace TraceReader
 	defer func() {
 		if containerID != "" {
 			cleanupCtx, cancel := resolverCleanupContext()
@@ -108,6 +124,14 @@ func (r *NPMResolver) ResolveDependencies(ctx context.Context, reference domain.
 			cancel()
 			if removeErr != nil {
 				cleanupErr = errors.New("resolver container cleanup failed")
+			}
+			if trace != nil {
+				collectCtx, collectCancel := context.WithTimeout(context.Background(), cleanupTimeout)
+				_, limitation := collectTrace(collectCtx, trace)
+				collectCancel()
+				if limitation != "" {
+					cleanupErr = errors.Join(cleanupErr, errors.New("resolver observation is incomplete"))
+				}
 			}
 		}
 		cleanupCtx, cancel := resolverCleanupContext()
@@ -127,6 +151,13 @@ func (r *NPMResolver) ResolveDependencies(ctx context.Context, reference domain.
 		return domain.DependencyResolution{}, errors.New("create resolver container failed")
 	}
 	containerID = strings.TrimSpace(string(created))
+	if r.observer == nil {
+		return domain.DependencyResolution{}, errors.New("resolver observation is unavailable")
+	}
+	trace, err = r.observer.Start(ctx, containerID)
+	if err != nil {
+		return domain.DependencyResolution{}, errors.New("start resolver observer failed")
+	}
 	if _, err := r.runner.Output(ctx, "docker", "start", containerID); err != nil {
 		return domain.DependencyResolution{}, errors.New("start resolver container failed")
 	}

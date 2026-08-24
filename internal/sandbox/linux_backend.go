@@ -12,39 +12,33 @@ import (
 const ObserverOutputEndpoint = "/run/heliopause-observer/haa-output.sock"
 
 // NewLinuxBackendWithExecutor composes the production Docker backend from a
-// composition-root validated Host executor. The caller owns observer.Close.
+// composition-root validated Host executor and its process-scoped observer.
 func NewLinuxBackendWithExecutor(intakeRoot string, executor interface {
 	Executor
 	CommandRunner
 	inputCommandRunner
-}) (*Backend, *SharedObserver, error) {
-	return newLinuxBackend(intakeRoot, executor)
+}, observer TraceObserver) (*Backend, error) {
+	return newLinuxBackend(intakeRoot, executor, observer)
 }
 
 func newLinuxBackend(intakeRoot string, executor interface {
 	Executor
 	CommandRunner
 	inputCommandRunner
-}) (*Backend, *SharedObserver, error) {
-	if intakeRoot == "" {
-		return nil, nil, errors.New("sandbox intake root is required")
-	}
-	observer, err := NewSharedObserver(ObserverOutputEndpoint)
-	if err != nil {
-		return nil, nil, err
+}, observer TraceObserver) (*Backend, error) {
+	if intakeRoot == "" || observer == nil {
+		return nil, errors.New("sandbox intake root and process-scoped observer are required")
 	}
 	introducer, err := NewDockerArtifactIntroducer(intakeRoot, executor)
 	if err != nil {
-		_ = observer.Close()
-		return nil, nil, err
+		return nil, err
 	}
 	capabilityProbe := func(ctx context.Context) (Capability, error) {
 		return probe(ctx, runtime.GOOS, executor)
 	}
 	backend, err := NewBackend(executor, introducer, observer, capabilityProbe)
 	if err != nil {
-		_ = observer.Close()
-		return nil, nil, err
+		return nil, err
 	}
-	return backend, observer, nil
+	return backend, nil
 }

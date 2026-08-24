@@ -54,24 +54,21 @@ func NewPyPIResolver(runner CommandRunner, endpoints NamedEndpointResolver, obse
 
 // NewLinuxPyPIResolverWithExecutor uses one composition-root validated Host
 // executor for Docker, runtime probing, and resolver policy commands.
-func NewLinuxPyPIResolverWithExecutor(executor TrustedExecutor) (*PyPIResolver, error) {
-	return newLinuxPyPIResolver(executor)
+func NewLinuxPyPIResolverWithExecutor(executor TrustedExecutor, observer TraceObserver) (*PyPIResolver, error) {
+	return newLinuxPyPIResolver(executor, observer)
 }
 
-func newLinuxPyPIResolver(executor TrustedExecutor) (*PyPIResolver, error) {
-	observer, err := NewSharedObserver(ObserverOutputEndpoint)
-	if err != nil {
-		return nil, err
+func newLinuxPyPIResolver(executor TrustedExecutor, observer TraceObserver) (*PyPIResolver, error) {
+	if observer == nil {
+		return nil, errors.New("process-scoped observer is required")
 	}
 	capabilityProbe := func(ctx context.Context) (PythonCapability, error) {
 		return probePython(ctx, runtime.GOOS, runtime.GOARCH, executor)
 	}
 	resolver, err := NewPyPIResolver(executor, systemNamedEndpointResolver{}, observer, capabilityProbe)
 	if err != nil {
-		_ = observer.Close()
 		return nil, err
 	}
-	resolver.close = observer.Close
 	return resolver, nil
 }
 

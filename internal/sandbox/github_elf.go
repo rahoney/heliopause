@@ -33,24 +33,22 @@ func NewGitHubELFBackend(runner CommandRunner, intakeRoot string, observer Trace
 
 // NewLinuxGitHubELFBackendWithExecutor uses the composition-root validated
 // Host executor for the complete lifecycle.
-func NewLinuxGitHubELFBackendWithExecutor(intakeRoot string, executor TrustedExecutor) (*GitHubELFBackend, func() error, error) {
-	return newLinuxGitHubELFBackend(intakeRoot, executor)
+func NewLinuxGitHubELFBackendWithExecutor(intakeRoot string, executor TrustedExecutor, observer TraceObserver) (*GitHubELFBackend, error) {
+	return newLinuxGitHubELFBackend(intakeRoot, executor, observer)
 }
 
-func newLinuxGitHubELFBackend(intakeRoot string, executor TrustedExecutor) (*GitHubELFBackend, func() error, error) {
-	observer, err := NewSharedObserver(ObserverOutputEndpoint)
-	if err != nil {
-		return nil, nil, err
+func newLinuxGitHubELFBackend(intakeRoot string, executor TrustedExecutor, observer TraceObserver) (*GitHubELFBackend, error) {
+	if observer == nil {
+		return nil, errors.New("process-scoped observer is required")
 	}
 	capabilityProbe := func(ctx context.Context) (Capability, error) {
 		return probe(ctx, runtime.GOOS, executor)
 	}
 	backend, err := NewGitHubELFBackend(executor, intakeRoot, observer, capabilityProbe)
 	if err != nil {
-		_ = observer.Close()
-		return nil, nil, err
+		return nil, err
 	}
-	return backend, observer.Close, nil
+	return backend, nil
 }
 
 func (b *GitHubELFBackend) Execute(ctx context.Context, request domain.SandboxRequest) (domain.SandboxResult, error) {

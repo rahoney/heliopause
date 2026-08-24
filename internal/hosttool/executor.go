@@ -23,6 +23,7 @@ import (
 const (
 	defaultDockerEndpoint = "unix:///run/docker.sock"
 	systemConfigPath      = "/etc/heliopause/host-tools.json"
+	defaultObserverHelper = "/usr/libexec/heliopause/haa_gvisor_observer"
 	minimumDockerEngine   = "29.6.0"
 	gVisorRelease         = "release-20260810.0"
 )
@@ -35,8 +36,9 @@ var runscSHA512 = map[string]string{
 // Config is trusted installation configuration, not user request data. Paths
 // are absolute and the Docker endpoint must use a local Unix socket.
 type Config struct {
-	DockerPath     string `json:"docker_path"`
-	DockerEndpoint string `json:"docker_endpoint"`
+	DockerPath         string `json:"docker_path"`
+	DockerEndpoint     string `json:"docker_endpoint"`
+	ObserverHelperPath string `json:"observer_helper_path"`
 }
 
 type identity struct {
@@ -69,7 +71,7 @@ func NewSystem(ctx context.Context) (*Executor, error) {
 }
 
 func loadSystemConfig() (Config, error) {
-	config := Config{DockerPath: firstExisting("/usr/bin/docker", "/usr/local/bin/docker"), DockerEndpoint: defaultDockerEndpoint}
+	config := Config{DockerPath: firstExisting("/usr/bin/docker", "/usr/local/bin/docker"), DockerEndpoint: defaultDockerEndpoint, ObserverHelperPath: defaultObserverHelper}
 	if _, err := os.Lstat(systemConfigPath); errors.Is(err, os.ErrNotExist) {
 		return config, nil
 	} else if err != nil {

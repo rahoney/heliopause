@@ -8,6 +8,8 @@
 #include <unistd.h>
 
 #include <cstdint>
+#include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <string>
 
@@ -17,6 +19,9 @@
 #include "pkg/sentry/seccheck/points/syscall.pb.h"
 
 namespace {
+#ifndef HAA_GVISOR_COMMIT
+#error "HAA_GVISOR_COMMIT must be set by the pinned observer build"
+#endif
 constexpr uint32_t kProtocolVersion = 1;
 constexpr size_t kMaxEventSize = 1024 * 1024;
 #pragma pack(push, 1)
@@ -63,16 +68,32 @@ int ConnectDatagram(const char* path) {
 }
 
 int main(int argc, char** argv) {
-  if (argc != 3) errx(2, "usage: haa_gvisor_observer REMOTE_SEQPACKET_SOCKET HAA_OUTPUT_DGRAM_SOCKET");
+  if (argc == 2 && strcmp(argv[1], "--identity") == 0) {
+    printf("gvisor-commit=%s\n", HAA_GVISOR_COMMIT);
+    return 0;
+  }
+  if (argc != 3 && argc != 4) errx(2, "usage: haa_gvisor_observer REMOTE_SEQPACKET_SOCKET HAA_OUTPUT_DGRAM_SOCKET [--ready-fd=FD]");
+  int ready_fd = -1;
+  if (argc == 4) {
+    if (strncmp(argv[3], "--ready-fd=", 11) != 0) errx(2, "invalid readiness option");
+    char* end = nullptr;
+    const long parsed_ready_fd = strtol(argv[3] + 11, &end, 10);
+    if (end == argv[3] + 11 || *end != '\0' || parsed_ready_fd < 0 || parsed_ready_fd > INT32_MAX) errx(2, "invalid readiness file descriptor");
+    ready_fd = static_cast<int>(parsed_ready_fd);
+  }
   int listener = socket(AF_UNIX, SOCK_SEQPACKET, 0);
   if (listener < 0) err(1, "socket remote");
-  unlink(argv[1]);
   sockaddr_un address{}; address.sun_family = AF_UNIX;
   if (strlen(argv[1]) >= sizeof(address.sun_path)) errx(1, "remote endpoint too long");
   strcpy(address.sun_path, argv[1]);
   if (bind(listener, reinterpret_cast<sockaddr*>(&address), sizeof(address)) < 0) err(1, "bind remote");
   if (listen(listener, 16) < 0) err(1, "listen remote");
   const int output = ConnectDatagram(argv[2]);
+  if (ready_fd >= 0) {
+    const char ready = 'R';
+    if (write(ready_fd, &ready, 1) != 1) err(1, "signal readiness");
+    close(ready_fd);
+  }
   for (;;) {
     int client = accept(listener, nullptr, nullptr); if (client < 0) err(1, "accept remote");
     char handshake[1024]; ssize_t size = recv(client, handshake, sizeof(handshake), 0);

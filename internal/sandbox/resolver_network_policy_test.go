@@ -138,7 +138,8 @@ func TestNPMResolverReturnsOnlyParsedGraphAfterPolicyProtectedLifecycle(t *testi
 		nil, nil, nil, nil, nil, nil,
 		[]byte("0123456789ab"), nil, []byte(resolverNPMVersion), nil, []byte(lock),
 	}}
-	resolver, err := NewNPMResolver(runner, staticEndpoints{addresses: []netip.Addr{netip.MustParseAddr("1.1.1.1")}})
+	observer := &recordingObserver{reader: &traceReader{records: []TraceRecord{{Kind: "network-attempt", Bytes: 1}}}}
+	resolver, err := NewNPMResolverWithObserver(runner, staticEndpoints{addresses: []netip.Addr{netip.MustParseAddr("1.1.1.1")}}, observer)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -154,6 +155,9 @@ func TestNPMResolverReturnsOnlyParsedGraphAfterPolicyProtectedLifecycle(t *testi
 	}
 	if len(runner.inputCalls) != 1 || runner.inputCalls[0].binary != "docker" {
 		t.Fatalf("manifest input = %#v", runner.inputCalls)
+	}
+	if observer.containerID != "0123456789ab" {
+		t.Fatalf("resolver observer container = %q", observer.containerID)
 	}
 	if got := string(runner.input); !strings.Contains(got, "\"primary\":\"1.0.0\"") {
 		t.Fatalf("manifest = %q", got)
