@@ -39,20 +39,20 @@ type NPMResolver struct {
 	policy    ResolverPolicyService
 }
 
-func NewNPMResolver(runner CommandRunner, endpoints EndpointResolver) (*NPMResolver, error) {
-	if runner == nil || endpoints == nil {
-		return nil, errors.New("npm resolver requires command runner and endpoint resolver")
+func NewNPMResolver(runner CommandRunner, endpoints EndpointResolver, policy ResolverPolicyService) (*NPMResolver, error) {
+	if runner == nil || endpoints == nil || policy == nil {
+		return nil, errors.New("npm resolver requires command runner, endpoint resolver and network policy service")
 	}
 	if _, ok := runner.(inputCommandRunner); !ok {
 		return nil, errors.New("npm resolver requires input stream runner")
 	}
-	return &NPMResolver{runner: runner, endpoints: endpoints}, nil
+	return &NPMResolver{runner: runner, endpoints: endpoints, policy: policy}, nil
 }
 
 // NewNPMResolverWithObserver constructs the production resolver with the
 // process-scoped trace receiver required for its runsc-trace container.
-func NewNPMResolverWithObserver(runner CommandRunner, endpoints EndpointResolver, observer TraceObserver) (*NPMResolver, error) {
-	resolver, err := NewNPMResolver(runner, endpoints)
+func NewNPMResolverWithObserver(runner CommandRunner, endpoints EndpointResolver, observer TraceObserver, policy ResolverPolicyService) (*NPMResolver, error) {
+	resolver, err := NewNPMResolver(runner, endpoints, policy)
 	if err != nil || observer == nil {
 		if err != nil {
 			return nil, err
@@ -69,7 +69,7 @@ func NewLinuxNPMResolverWithExecutor(executor interface {
 	CommandRunner
 	inputCommandRunner
 }, observer TraceObserver) (*NPMResolver, error) {
-	return NewNPMResolverWithObserver(executor, systemEndpointResolver{}, observer)
+	return nil, errors.New("Linux npm resolver requires network policy service")
 }
 
 // NewLinuxNPMResolverWithExecutorAndPolicy constructs the production resolver
@@ -81,7 +81,7 @@ func NewLinuxNPMResolverWithExecutorAndPolicy(executor interface {
 	if policy == nil {
 		return nil, errors.New("npm resolver requires network policy service")
 	}
-	resolver, err := NewNPMResolverWithObserver(executor, systemEndpointResolver{}, observer)
+	resolver, err := NewNPMResolverWithObserver(executor, systemEndpointResolver{}, observer, policy)
 	if err != nil {
 		return nil, err
 	}
@@ -129,12 +129,7 @@ func (r *NPMResolver) ResolveDependencies(ctx context.Context, reference domain.
 	if err != nil {
 		return domain.DependencyResolution{}, errors.New("resolver endpoint preflight failed")
 	}
-	var policy *ResolverNetworkPolicy
-	if r.policy != nil {
-		policy, err = NewResolverNetworkPolicyWithService(r.runner, r.policy)
-	} else {
-		policy, err = NewResolverNetworkPolicy(ctx, r.runner)
-	}
+	policy, err := NewResolverNetworkPolicy(r.runner, r.policy)
 	if err != nil {
 		return domain.DependencyResolution{}, err
 	}

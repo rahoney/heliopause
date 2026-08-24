@@ -46,17 +46,17 @@ type PyPIResolver struct {
 // NewPyPIResolver constructs the narrow M5 resolver boundary. Every injected
 // collaborator is required because missing network, runtime or observation
 // controls must fail closed before a graph can be emitted.
-func NewPyPIResolver(runner CommandRunner, endpoints NamedEndpointResolver, observer TraceObserver, probe func(context.Context) (PythonCapability, error)) (*PyPIResolver, error) {
-	if runner == nil || endpoints == nil || observer == nil || probe == nil {
-		return nil, errors.New("PyPI resolver requires runner, endpoint resolver, observer and runtime probe")
+func NewPyPIResolver(runner CommandRunner, endpoints NamedEndpointResolver, observer TraceObserver, probe func(context.Context) (PythonCapability, error), policy ResolverPolicyService) (*PyPIResolver, error) {
+	if runner == nil || endpoints == nil || observer == nil || probe == nil || policy == nil {
+		return nil, errors.New("PyPI resolver requires runner, endpoint resolver, observer, runtime probe and network policy service")
 	}
-	return &PyPIResolver{runner: runner, endpoints: endpoints, observer: observer, probe: probe}, nil
+	return &PyPIResolver{runner: runner, endpoints: endpoints, observer: observer, probe: probe, policy: policy}, nil
 }
 
 // NewLinuxPyPIResolverWithExecutor uses one composition-root validated Host
 // executor for Docker, runtime probing, and resolver policy commands.
 func NewLinuxPyPIResolverWithExecutor(executor TrustedExecutor, observer TraceObserver) (*PyPIResolver, error) {
-	return newLinuxPyPIResolver(executor, observer)
+	return nil, errors.New("Linux PyPI resolver requires network policy service")
 }
 
 // NewLinuxPyPIResolverWithExecutorAndPolicy constructs the production
@@ -65,7 +65,7 @@ func NewLinuxPyPIResolverWithExecutorAndPolicy(executor TrustedExecutor, observe
 	if policy == nil {
 		return nil, errors.New("PyPI resolver requires network policy service")
 	}
-	resolver, err := newLinuxPyPIResolver(executor, observer)
+	resolver, err := newLinuxPyPIResolver(executor, observer, policy)
 	if err != nil {
 		return nil, err
 	}
@@ -73,14 +73,14 @@ func NewLinuxPyPIResolverWithExecutorAndPolicy(executor TrustedExecutor, observe
 	return resolver, nil
 }
 
-func newLinuxPyPIResolver(executor TrustedExecutor, observer TraceObserver) (*PyPIResolver, error) {
+func newLinuxPyPIResolver(executor TrustedExecutor, observer TraceObserver, policy ResolverPolicyService) (*PyPIResolver, error) {
 	if observer == nil {
 		return nil, errors.New("process-scoped observer is required")
 	}
 	capabilityProbe := func(ctx context.Context) (PythonCapability, error) {
 		return probePython(ctx, runtime.GOOS, runtime.GOARCH, executor)
 	}
-	resolver, err := NewPyPIResolver(executor, systemNamedEndpointResolver{}, observer, capabilityProbe)
+	resolver, err := NewPyPIResolver(executor, systemNamedEndpointResolver{}, observer, capabilityProbe, policy)
 	if err != nil {
 		return nil, err
 	}
@@ -115,12 +115,7 @@ func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain
 	if err != nil {
 		return domain.DependencyResolution{}, errors.New("PyPI resolver endpoint preflight is unsafe")
 	}
-	var policy *ResolverNetworkPolicy
-	if r.policy != nil {
-		policy, err = NewResolverNetworkPolicyWithService(r.runner, r.policy)
-	} else {
-		policy, err = NewResolverNetworkPolicy(ctx, r.runner)
-	}
+	policy, err := NewResolverNetworkPolicy(r.runner, r.policy)
 	if err != nil {
 		return domain.DependencyResolution{}, err
 	}

@@ -132,7 +132,7 @@ func TestLinuxNPMResolverNetworkPolicyIntegration(t *testing.T) {
 	}
 	supervisor := integrationObserverSupervisor(t)
 	defer supervisor.Close()
-	resolver, err := NewNPMResolverWithObserver(integrationRunner{t: t}, systemEndpointResolver{}, supervisor.Observer())
+	resolver, err := NewNPMResolverWithObserver(integrationRunner{t: t}, systemEndpointResolver{}, supervisor.Observer(), integrationResolverPolicyService(t))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -163,7 +163,7 @@ func TestLinuxPyPIResolverIntegration(t *testing.T) {
 	supervisor := integrationObserverSupervisor(t)
 	defer supervisor.Close()
 	runner := integrationRunner{t: t}
-	resolver, err := NewPyPIResolver(runner, systemNamedEndpointResolver{}, supervisor.Observer(), integrationPythonCapabilityProbe(runner))
+	resolver, err := NewPyPIResolver(runner, systemNamedEndpointResolver{}, supervisor.Observer(), integrationPythonCapabilityProbe(runner), integrationResolverPolicyService(t))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -183,6 +183,11 @@ func TestLinuxPyPIResolverIntegration(t *testing.T) {
 	if len(resolution.Graph().Nodes()) != 1 || resolution.Graph().Primary().String() == "" || resolution.RuntimeIdentity() == "" || resolution.LockfileDigest().String() == "" {
 		t.Fatalf("PyPI resolver resolution = %#v", resolution)
 	}
+}
+
+func integrationResolverPolicyService(t *testing.T) ResolverPolicyService {
+	t.Helper()
+	return &recordingResolverPolicyService{}
 }
 
 func TestLinuxPyPIWheelDynamicIntegration(t *testing.T) {
