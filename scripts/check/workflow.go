@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -35,10 +36,55 @@ func checkWorkflow(root, relativePath string, validate func(string) []string) er
 		return &checkFailure{class: executionFailure, step: "CI configuration", cause: err}
 	}
 	findings := validate(string(contents))
+	if relativePath == workflowRelativePath {
+		findings = append(findings, validateRuntimeLockWorkflow(root, string(contents))...)
+	}
 	if len(findings) != 0 {
 		return &checkFailure{class: findingFailure, step: "CI configuration", detail: strings.Join(findings, "\n")}
 	}
 	return nil
+}
+
+// validateRuntimeLockWorkflow prevents CI from becoming a second owner of an
+// exact runtime identity. The workflow may name lock keys, never their values.
+func validateRuntimeLockWorkflow(root, contents string) []string {
+	body, err := os.ReadFile(filepath.Join(root, "scripts", "runtimes.lock.json"))
+	if err != nil {
+		return []string{"cannot read canonical runtime lock for workflow validation"}
+	}
+	var value any
+	if err := json.Unmarshal(body, &value); err != nil {
+		return []string{"cannot parse canonical runtime lock for workflow validation"}
+	}
+	var findings []string
+	for _, identity := range runtimeLockStrings(value) {
+		if len(identity) >= 12 && strings.Contains(contents, identity) {
+			findings = append(findings, fmt.Sprintf("workflow hand-copies runtime lock identity %q", identity))
+		}
+	}
+	sort.Strings(findings)
+	return findings
+}
+
+func runtimeLockStrings(value any) []string {
+	var values []string
+	var visit func(any)
+	visit = func(current any) {
+		switch typed := current.(type) {
+		case map[string]any:
+			for _, child := range typed {
+				visit(child)
+			}
+		case []any:
+			for _, child := range typed {
+				visit(child)
+			}
+		case string:
+			values = append(values, typed)
+		}
+	}
+	visit(value)
+	return values
 }
 
 func validateCIWorkflow(contents string) []string {
@@ -55,9 +101,11 @@ func validateCIWorkflow(contents string) []string {
 		"persist-credentials: false",
 		"go-version: '1.26.7'",
 		"go-version: '1.25.13'",
-		"docker_package_version=5:29.6.2-1~ubuntu.24.04~noble",
-		"containerd_package_version=2.3.3-1~ubuntu.24.04~noble",
-		"test \"$(docker version --format '{{.Server.Version}}')\" = 29.6.2",
+		".docker.ci_ubuntu_24_04_amd64.docker_ce_package",
+		".docker.ci_ubuntu_24_04_amd64.containerd_package",
+		"test \"$(docker version --format '{{.Server.Version}}')\" = \"$docker_engine_version\"",
+		"runtime_lock=scripts/runtimes.lock.json",
+		"jq -er",
 		"HELOX_PROMOTION_INTEGRATION=1 go test -v -timeout=5m ./internal/promotion -run TestLinuxNPMPromotionIntegration",
 		"check-latest: false",
 		"cache: false",
@@ -87,6 +135,11 @@ func validateCIWorkflow(contents string) []string {
 		"@latest",
 		"ubuntu-latest",
 		"    env:\n      HELOX_TOOL_CACHE: ${{ runner.temp }}",
+		"5ceb9a5fd5750d6c73dd166441f28306039300d0",
+		"4463ce276e207f5a516a08ec627a768a19cf7bed0094d522b0810bee3424585caa8d344e093204012b974f5c508ab2362dcb0d7236f0c1992fccc426beeb7ffc",
+		"c876a1619c885f44f3bdc87998eca59c79581954631c9d7fab4eb53cc0409b68e4be74c08ef3fe599c51b75d56262070f0c314f9908336221e7764fdf981b7f5",
+		"node:22.23.1-slim@sha256:",
+		"python:3.14.7-slim-bookworm@sha256:",
 	}
 	for _, token := range forbidden {
 		if strings.Contains(contents, token) {

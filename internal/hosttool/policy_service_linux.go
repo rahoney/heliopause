@@ -92,7 +92,9 @@ func ServeNetworkPolicy(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	executor, err := newPolicyExecutor(ctx, hostConfig)
+	// Only the root-owned policy service requests firewall identities; the
+	// ordinary product executor is always constructed without them.
+	executor, err := newExecutor(ctx, hostConfig, true)
 	if err != nil {
 		return err
 	}

@@ -3,6 +3,7 @@
   "gvisor": {
     "release": "release-20260810.0",
     "commit": "5ceb9a5fd5750d6c73dd166441f28306039300d0",
+    "source_repository": "https://github.com/google/gvisor.git",
     "binaries": {
       "x86_64": {
         "url": "https://storage.googleapis.com/gvisor/releases/release/20260810.0/x86_64/runsc",
@@ -15,7 +16,12 @@
     }
   },
   "docker": {
-    "minimum_engine": "29.6.0"
+    "minimum_engine": "29.6.0",
+    "ci_engine_version": "29.6.2",
+    "ci_ubuntu_24_04_amd64": {
+      "docker_ce_package": "5:29.6.2-1~ubuntu.24.04~noble",
+      "containerd_package": "2.3.3-1~ubuntu.24.04~noble"
+    }
   },
   "node_image": {
     "reference": "node:22.23.1-slim@sha256:6c74791e557ce11fc957704f6d4fe134a7bc8d6f5ca4403205b2966bd488f6b3",
@@ -30,5 +36,10 @@
       "abi": "cp314",
       "platform": "manylinux_2_36_x86_64"
     }
+  },
+  "bazel": {
+    "version": "8.3.1",
+    "linux_x86_64_url": "https://github.com/bazelbuild/bazel/releases/download/8.3.1/bazel-8.3.1-linux-x86_64",
+    "linux_x86_64_sha512": "c876a1619c885f44f3bdc87998eca59c79581954631c9d7fab4eb53cc0409b68e4be74c08ef3fe599c51b75d56262070f0c314f9908336221e7764fdf981b7f5"
   }
 }

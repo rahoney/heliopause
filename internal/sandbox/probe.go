@@ -8,13 +8,17 @@ import (
 	"io"
 	"runtime"
 	"strings"
+
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 const (
-	minimumDockerEngine = "29.6.0"
-	gVisorRelease       = "release-20260810.0"
-	gVisorRuntimeName   = "runsc-trace"
-	nodeImageReference  = "node:22.23.1-slim@sha256:6c74791e557ce11fc957704f6d4fe134a7bc8d6f5ca4403205b2966bd488f6b3"
+	gVisorRuntimeName = "runsc-trace"
+)
+
+var (
+	gVisorRelease      = runtimeidentity.GVisorRelease
+	nodeImageReference = runtimeidentity.NodeImageReference
 )
 
 // Capability describes whether this host can run M3's gVisor backend.
@@ -55,7 +59,7 @@ func probe(ctx context.Context, operatingSystem string, executor Executor) (Capa
 	if err != nil || limitation != "" {
 		return Capability{LimitationCode: limitation}, err
 	}
-	image, err := executor.Output(ctx, "docker", "image", "inspect", nodeImageReference, "--format", "{{.Id}}")
+	image, err := executor.Output(ctx, "docker", "image", "inspect", runtimeidentity.NodeImageReference, "--format", "{{.Id}}")
 	if err != nil || strings.TrimSpace(string(image)) == "" {
 		return Capability{LimitationCode: "M3_IMAGE_UNAVAILABLE"}, nil
 	}
@@ -84,11 +88,11 @@ func probeGVisorRuntime(ctx context.Context, operatingSystem string, executor Ex
 	if err != nil {
 		return unavailable, nil
 	}
-	if !atLeastVersion(strings.TrimSpace(string(dockerVersion)), minimumDockerEngine) {
+	if !atLeastVersion(strings.TrimSpace(string(dockerVersion)), runtimeidentity.DockerMinimumEngine) {
 		return unsupported, nil
 	}
 	runscVersion, err := executor.Output(ctx, "runsc", "--version")
-	if err != nil || !strings.Contains(string(runscVersion), gVisorRelease) {
+	if err != nil || !strings.Contains(string(runscVersion), runtimeidentity.GVisorRelease) {
 		return unsupported, nil
 	}
 	runtimeRegistration, err := executor.Output(ctx, "docker", "info", "--format", "{{json (index .Runtimes \"runsc-trace\")}}")

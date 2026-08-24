@@ -18,20 +18,20 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 const (
 	defaultDockerEndpoint = "unix:///run/docker.sock"
 	systemConfigPath      = "/etc/heliopause/host-tools.json"
 	defaultObserverHelper = "/usr/libexec/heliopause/haa_gvisor_observer"
-	minimumDockerEngine   = "29.6.0"
-	gVisorRelease         = "release-20260810.0"
 )
 
-var runscSHA512 = map[string]string{
-	"amd64": "4463ce276e207f5a516a08ec627a768a19cf7bed0094d522b0810bee3424585caa8d344e093204012b974f5c508ab2362dcb0d7236f0c1992fccc426beeb7ffc",
-	"arm64": "26a306b4c51a54dd5c44f4c602d5326b92c1ba02757c591847d53f2cad448c0f838b1d8f7bd93cc50eb8d6ec88073c5d4b4a14b53bc572338ced49f42d618f9f",
-}
+var (
+	minimumDockerEngine = runtimeidentity.DockerMinimumEngine
+	gVisorRelease       = runtimeidentity.GVisorRelease
+)
 
 // Config is trusted installation configuration, not user request data. Paths
 // are absolute and the Docker endpoint must use a local Unix socket.
@@ -107,12 +107,6 @@ func New(ctx context.Context, config Config) (*Executor, error) {
 	return newExecutor(ctx, config, false)
 }
 
-// newPolicyExecutor is only reachable by the root-owned network-policy
-// helper. The ordinary product executor deliberately has no firewall tools.
-func newPolicyExecutor(ctx context.Context, config Config) (*Executor, error) {
-	return newExecutor(ctx, config, true)
-}
-
 func newExecutor(ctx context.Context, config Config, includeFirewall bool) (*Executor, error) {
 	if ctx == nil {
 		return nil, errors.New("trusted Host tool context is required")
@@ -180,7 +174,7 @@ func (e *Executor) validateDaemon(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	expected, ok := runscSHA512[runtime.GOARCH]
+	expected, ok := runtimeidentity.RunscSHA512(runtime.GOARCH)
 	if !ok {
 		return errors.New("runsc-trace architecture is unsupported")
 	}

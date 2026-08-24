@@ -16,9 +16,10 @@ import (
 	"strings"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
-const promotionNodeImage = "node:22.23.1-slim@sha256:6c74791e557ce11fc957704f6d4fe134a7bc8d6f5ca4403205b2966bd488f6b3"
+var promotionNodeImage = runtimeidentity.NodeImageReference
 
 // DockerRunner is a prevalidated, minimal-environment Docker execution
 // capability supplied by production bootstrap.

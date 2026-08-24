@@ -11,11 +11,13 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 const observerReadinessTimeout = 5 * time.Second
 
-const gVisorObserverCommit = "5ceb9a5fd5750d6c73dd166441f28306039300d0"
+var gVisorObserverCommit = runtimeidentity.GVisorCommit
 
 // ObserverProcess is the bounded lifecycle capability returned after the
 // helper has explicitly confirmed that its remote endpoint is ready.

@@ -238,6 +238,9 @@ func (c *checker) quickSteps() []checkStep {
 func (c *checker) foundationSteps(includeDocs bool) []checkStep {
 	steps := []checkStep{
 		{"format check", c.checkFormat},
+		{"runtime lock drift", func() error {
+			return c.runGo("runtime lock drift", "run", "./scripts/generate-runtime-lock.go", "-check")
+		}},
 		{"module drift", c.checkModuleDrift},
 		{"module integrity", func() error { return c.runGo("module integrity", "mod", "verify") }},
 		{"production build", func() error { return c.runGo("production build", "build", "./...") }},

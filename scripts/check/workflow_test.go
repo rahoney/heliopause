@@ -19,6 +19,22 @@ func TestRepositoryCIWorkflow(t *testing.T) {
 	}
 }
 
+func TestRuntimeLockWorkflowRejectsCopiedIdentity(t *testing.T) {
+	t.Parallel()
+	root, err := filepath.Abs(filepath.Join("..", ".."))
+	if err != nil {
+		t.Fatal(err)
+	}
+	contents, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(workflowRelativePath)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	fixture := string(contents) + "\n# node:22.23.1-slim@sha256:6c74791e557ce11fc957704f6d4fe134a7bc8d6f5ca4403205b2966bd488f6b3\n"
+	if findings := validateRuntimeLockWorkflow(root, fixture); len(findings) == 0 {
+		t.Fatal("hand-copied runtime identity was accepted")
+	}
+}
+
 func TestValidateCIWorkflowRejectsSecurityRegressions(t *testing.T) {
 	t.Parallel()
 

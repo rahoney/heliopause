@@ -14,14 +14,16 @@ import (
 
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 const (
-	// nodeImageReference is the M3-pinned Node 22.23.1 image. Its upstream
-	// bundled npm version is part of that exact runtime identity.
-	resolverNPMVersion      = "10.9.8"
-	resolverProjectDir      = "/tmp/haa-resolver"
-	resolverRuntimeIdentity = "node:22.23.1-slim@sha256:6c74791e557ce11fc957704f6d4fe134a7bc8d6f5ca4403205b2966bd488f6b3;npm:10.9.8"
+	resolverProjectDir = "/tmp/haa-resolver"
+)
+
+var (
+	resolverNPMVersion      = runtimeidentity.NodeNPMVersion
+	resolverRuntimeIdentity = runtimeidentity.NodeImageReference + ";npm:" + runtimeidentity.NodeNPMVersion
 )
 
 // EndpointResolver supplies the trusted, preflight-resolved address set for
@@ -162,7 +164,7 @@ func (r *NPMResolver) ResolveDependencies(ctx context.Context, reference domain.
 
 	createArguments := []string{"create", "--runtime", gVisorRuntimeName, "--network", network, "--user", "1000:1000", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "64", "--memory", "512m", "--cpus", "1", "--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=128m,uid=1000,gid=1000,mode=0700"}
 	createArguments = append(createArguments, hostArguments...)
-	createArguments = append(createArguments, nodeImageReference, "/bin/sh", "-ceu", "sleep infinity")
+	createArguments = append(createArguments, runtimeidentity.NodeImageReference, "/bin/sh", "-ceu", "sleep infinity")
 	created, err := r.runner.Output(ctx, "docker", createArguments...)
 	if err != nil || !containerIDPattern.MatchString(strings.TrimSpace(string(created))) {
 		return domain.DependencyResolution{}, errors.New("create resolver container failed")
