@@ -114,17 +114,11 @@ func (p *NPMPromotion) Promote(ctx context.Context, staged domain.StagedSet, bun
 		if err := plan.verifyUnchanged(); err != nil {
 			return domain.PromotedInstall{}, err
 		}
-		if err := plan.swapNodeModules(workspace); err != nil {
-			return domain.PromotedInstall{}, err
-		}
-		if err := plan.commitControlFiles(workspace); err != nil {
-			return domain.PromotedInstall{}, err
-		}
-		committed, err := freezeNPMProject(installContext.Target().String())
+		transaction, err := beginNPMProjectTransaction(plan, workspace)
 		if err != nil {
 			return domain.PromotedInstall{}, err
 		}
-		if err := committed.writeMetadata(); err != nil {
+		if err := transaction.commit(); err != nil {
 			return domain.PromotedInstall{}, err
 		}
 		return domain.NewPromotedInstall(bundle.ManifestID(), installContext.Target())

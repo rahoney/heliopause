@@ -86,15 +86,23 @@ func (p npmProjectPlan) verifyManagedOrEmpty() error {
 }
 
 func (p npmProjectPlan) writeMetadata() error {
-	directory := filepath.Join(p.root, ".heliopause")
-	if err := os.Mkdir(directory, 0o700); err != nil && !errors.Is(err, os.ErrExist) {
-		return errors.New("create npm transaction metadata directory")
+	directory, err := ensureNPMMetadataDirectory(p.root)
+	if err != nil {
+		return err
 	}
 	value := hex.EncodeToString(p.packageJSON[:]) + ":" + hex.EncodeToString(p.packageLock[:]) + "\n"
-	if err := os.WriteFile(filepath.Join(p.root, npmTransactionMetadata), []byte(value), 0o600); err != nil {
-		return errors.New("write npm transaction metadata")
+	return writeNPMTransactionMetadata(directory, filepath.Join(directory, "npm-transaction.json"), []byte(value))
+}
+
+func ensureNPMMetadataDirectory(root string) (string, error) {
+	directory := filepath.Join(root, ".heliopause")
+	if err := os.Mkdir(directory, 0o700); err != nil && !errors.Is(err, os.ErrExist) {
+		return "", errors.New("create npm transaction metadata directory")
 	}
-	return nil
+	if err := trustedExistingDirectory(directory); err != nil {
+		return "", errors.New("npm transaction metadata directory is untrusted")
+	}
+	return directory, nil
 }
 
 func hasNPMDependencies(path string) bool {
@@ -128,78 +136,187 @@ func (p npmProjectPlan) privateWorkspace() (string, error) {
 	return workspace, nil
 }
 
-func (p npmProjectPlan) commitControlFiles(workspace string) error {
-	if err := p.verifyUnchanged(); err != nil {
-		return err
+// npmProjectTransaction keeps every old project member until the new exact
+// Verified Set and its binding metadata have both been made durable.  It never
+// reports a successful promotion while a rollback backup remains.
+type npmProjectTransaction struct {
+	plan      npmProjectPlan
+	workspace string
+	backup    string
+	moved     map[string]bool
+	published map[string]bool
+}
+
+func beginNPMProjectTransaction(plan npmProjectPlan, workspace string) (*npmProjectTransaction, error) {
+	if err := plan.verifyUnchanged(); err != nil {
+		return nil, err
 	}
-	original := make(map[string][]byte, 2)
-	for _, name := range []string{"package.json", "package-lock.json"} {
-		body, err := os.ReadFile(filepath.Join(p.root, name))
-		if err != nil {
-			return errors.New("backup npm control files")
-		}
-		original[name] = body
+	if err := rejectInterruptedNPMTransaction(plan.root); err != nil {
+		return nil, err
 	}
-	committed := []string{}
-	rollback := func() error {
-		for _, name := range committed {
-			if err := os.WriteFile(filepath.Join(p.root, name), original[name], 0o600); err != nil {
-				return err
-			}
-		}
-		return nil
+	if err := trustedExistingDirectory(workspace); err != nil {
+		return nil, errors.New("npm private transaction workspace is untrusted")
 	}
-	for _, name := range []string{"package.json", "package-lock.json"} {
-		body, err := os.ReadFile(filepath.Join(workspace, name))
-		if err != nil || len(body) == 0 {
-			return errors.New("read verified npm transaction output")
+	backup, err := os.MkdirTemp(plan.root, ".heliopause-npm-commit-")
+	if err != nil {
+		return nil, errors.New("create npm rollback transaction")
+	}
+	return &npmProjectTransaction{plan: plan, workspace: workspace, backup: backup, moved: map[string]bool{}, published: map[string]bool{}}, nil
+}
+
+func rejectInterruptedNPMTransaction(root string) error {
+	entries, err := os.ReadDir(root)
+	if err != nil {
+		return errors.New("read npm project transaction state")
+	}
+	for _, entry := range entries {
+		if len(entry.Name()) > len(".heliopause-npm-commit-") && entry.Name()[:len(".heliopause-npm-commit-")] == ".heliopause-npm-commit-" {
+			return errors.New("interrupted npm transaction requires explicit recovery")
 		}
-		temporary, err := os.CreateTemp(p.root, "."+name+".haa-")
-		if err != nil {
-			return errors.New("create npm control file transaction")
-		}
-		path := temporary.Name()
-		if _, err := temporary.Write(body); err != nil || temporary.Sync() != nil || temporary.Close() != nil {
-			_ = os.Remove(path)
-			return errors.New("write npm control file transaction")
-		}
-		if err := os.Rename(path, filepath.Join(p.root, name)); err != nil {
-			_ = os.Remove(path)
-			_ = rollback()
-			return errors.New("commit npm control file transaction")
-		}
-		committed = append(committed, name)
 	}
 	return nil
 }
 
-func (p npmProjectPlan) swapNodeModules(workspace string) error {
-	staged := filepath.Join(workspace, "node_modules")
-	if err := trustedExistingDirectory(staged); err != nil {
-		return errors.New("verified npm node_modules is unavailable")
+func (t *npmProjectTransaction) commit() (resultErr error) {
+	if err := t.plan.verifyUnchanged(); err != nil {
+		return err
 	}
-	target := filepath.Join(p.root, "node_modules")
-	backup := filepath.Join(p.root, ".node_modules.haa-backup")
-	if _, err := os.Lstat(backup); !errors.Is(err, os.ErrNotExist) {
-		return errors.New("npm node_modules backup already exists")
+	if err := syncTree(t.workspace); err != nil {
+		return errors.New("sync verified npm transaction workspace")
 	}
-	hadTarget := false
-	if _, err := os.Lstat(target); err == nil {
-		if err := os.Rename(target, backup); err != nil {
-			return errors.New("backup npm node_modules")
-		}
-		hadTarget = true
-	} else if !errors.Is(err, os.ErrNotExist) {
-		return errors.New("inspect npm node_modules")
+	if err := t.backupCurrent(); err != nil {
+		return t.fail(err)
 	}
-	if err := os.Rename(staged, target); err != nil {
-		if hadTarget {
-			_ = os.Rename(backup, target)
-		}
-		return errors.New("commit npm node_modules")
+	if err := t.publishWorkspace(); err != nil {
+		return t.fail(err)
 	}
-	if hadTarget && os.RemoveAll(backup) != nil {
-		return errors.New("remove npm node_modules rollback backup")
+	if err := t.publishMetadata(); err != nil {
+		return t.fail(err)
+	}
+	if err := syncDirectory(t.plan.root); err != nil {
+		return t.fail(errors.New("sync committed npm project"))
+	}
+	if err := os.RemoveAll(t.backup); err != nil {
+		return errors.New("remove committed npm rollback backup; project is fail-closed")
+	}
+	if err := syncDirectory(t.plan.root); err != nil {
+		return errors.New("sync completed npm transaction; project is fail-closed")
 	}
 	return nil
+}
+
+func (t *npmProjectTransaction) fail(cause error) error {
+	rollbackErr := t.rollback()
+	if rollbackErr != nil {
+		return errors.Join(cause, rollbackErr, errors.New("npm transaction rollback is incomplete; project is fail-closed"))
+	}
+	if err := os.RemoveAll(t.backup); err != nil {
+		return errors.Join(cause, err, errors.New("remove rolled back npm transaction; project is fail-closed"))
+	}
+	return cause
+}
+
+func (t *npmProjectTransaction) backupCurrent() error {
+	for _, name := range []string{"package.json", "package-lock.json", "node_modules", "haa"} {
+		source := t.target(name)
+		info, err := os.Lstat(source)
+		if errors.Is(err, os.ErrNotExist) && (name == "node_modules" || name == "haa") {
+			continue
+		}
+		if err != nil || info.Mode()&os.ModeSymlink != 0 {
+			return errors.New("inspect current npm transaction member")
+		}
+		if ((name == "node_modules" || name == "haa") && !info.IsDir()) || (name != "node_modules" && name != "haa" && !info.Mode().IsRegular()) {
+			return errors.New("current npm transaction member has unsupported type")
+		}
+		if err := os.Rename(source, filepath.Join(t.backup, name)); err != nil {
+			return errors.New("backup current npm transaction member")
+		}
+		t.moved[name] = true
+	}
+	return nil
+}
+
+func (t *npmProjectTransaction) publishWorkspace() error {
+	for _, name := range []string{"package.json", "package-lock.json", "node_modules", "haa"} {
+		source := filepath.Join(t.workspace, name)
+		if name == "haa" {
+			source = filepath.Join(t.workspace, ".heliopause")
+		}
+		info, err := os.Lstat(source)
+		if err != nil || info.Mode()&os.ModeSymlink != 0 || ((name == "node_modules" || name == "haa") && !info.IsDir()) || (name != "node_modules" && name != "haa" && !info.Mode().IsRegular()) {
+			return errors.New("verified npm transaction output is unavailable")
+		}
+		if err := os.Rename(source, t.target(name)); err != nil {
+			return errors.New("publish verified npm transaction member")
+		}
+		t.published[name] = true
+	}
+	return nil
+}
+
+func (t *npmProjectTransaction) publishMetadata() error {
+	directory, err := ensureNPMMetadataDirectory(t.plan.root)
+	if err != nil {
+		return err
+	}
+	current, err := freezeNPMProject(t.plan.root)
+	if err != nil {
+		return errors.New("freeze committed npm project state")
+	}
+	value := hex.EncodeToString(current.packageJSON[:]) + ":" + hex.EncodeToString(current.packageLock[:]) + "\n"
+	if err := writeNPMTransactionMetadata(directory, t.target("metadata"), []byte(value)); err != nil {
+		return err
+	}
+	if err := syncDirectory(directory); err != nil {
+		return errors.New("sync npm transaction metadata")
+	}
+	return nil
+}
+
+func writeNPMTransactionMetadata(directory, target string, value []byte) error {
+	temporary, err := os.CreateTemp(directory, ".npm-transaction-")
+	if err != nil {
+		return errors.New("create npm transaction metadata")
+	}
+	path := temporary.Name()
+	if _, err := temporary.Write(value); err != nil || temporary.Sync() != nil || temporary.Close() != nil {
+		_ = os.Remove(path)
+		return errors.New("write npm transaction metadata")
+	}
+	if err := renameNoReplace(path, target); err != nil {
+		_ = os.Remove(path)
+		return errors.New("publish npm transaction metadata")
+	}
+	return nil
+}
+
+func (t *npmProjectTransaction) rollback() error {
+	var result error
+	for _, name := range []string{"haa", "node_modules", "package-lock.json", "package.json"} {
+		if t.published[name] {
+			if err := os.RemoveAll(t.target(name)); err != nil {
+				result = errors.Join(result, errors.New("remove uncommitted npm transaction member"))
+			}
+		}
+		if t.moved[name] {
+			if err := os.Rename(filepath.Join(t.backup, name), t.target(name)); err != nil {
+				result = errors.Join(result, errors.New("restore npm transaction member"))
+			}
+		}
+	}
+	if err := syncDirectory(t.plan.root); err != nil {
+		result = errors.Join(result, errors.New("sync rolled back npm transaction"))
+	}
+	return result
+}
+
+func (t *npmProjectTransaction) target(name string) string {
+	if name == "metadata" {
+		return filepath.Join(t.plan.root, npmTransactionMetadata)
+	}
+	if name == "haa" {
+		return filepath.Join(t.plan.root, ".heliopause")
+	}
+	return filepath.Join(t.plan.root, name)
 }
