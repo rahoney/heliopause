@@ -298,8 +298,18 @@ jobs:
           HELOX_HOSTTOOL_INTEGRATION=1 go test -v -timeout=2m ./internal/hosttool -run TestLinuxTrustedHostExecutorIntegration
           HELOX_GVISOR_INTEGRATION=1 go test -timeout=5m ./internal/sandbox -run TestLinuxGVisorLifecycleIntegration
           HELOX_GITHUB_RELEASE_INTEGRATION=1 go test -timeout=5m ./internal/sandbox -run TestLinuxGitHubReleaseELFDynamicIntegration
+          # M4/M5 intentionally return 10 for a completed inspection whose
+          # policy decision is MANUAL_REVIEW. This proves the ordinary-user
+          # typed-helper path ran without treating an unpromoted package as a
+          # successful installation.
+          set +e
           /usr/libexec/heliopause/helox npm install is-number@7.0.0 --target "$RUNNER_TEMP/npm-target"
+          npm_status=$?
           /usr/libexec/heliopause/helox pypi install packaging@25.0 --target "$RUNNER_TEMP/pypi-target"
+          pypi_status=$?
+          set -e
+          test "$npm_status" = 10
+          test "$pypi_status" = 10
           HELOX_PYPI_DYNAMIC_INTEGRATION=1 go test -v -timeout=5m ./internal/sandbox -run 'TestLinuxPyPI(WheelDynamic|SdistBuild)Integration'
           HELOX_PROMOTION_INTEGRATION=1 go test -v -timeout=5m ./internal/promotion -run TestLinuxNPMPromotionIntegration
           HELOX_PYPI_PROMOTION_INTEGRATION=1 go test -v -timeout=5m ./internal/promotion -run TestLinuxPyPIPromotionIntegration
