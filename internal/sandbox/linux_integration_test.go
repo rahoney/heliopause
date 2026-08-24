@@ -444,12 +444,22 @@ type integrationRunner struct {
 
 func (r integrationRunner) LookPath(binary string) (string, error) {
 	r.t.Helper()
-	return exec.LookPath(binary)
+	return exec.LookPath(integrationBinary(binary))
+}
+
+func integrationBinary(binary string) string {
+	// The canonical CI installs the pinned runtime outside PATH so that every
+	// parent directory has a trusted identity. Production resolves this through
+	// hosttool; this raw integration runner mirrors only that exact test path.
+	if binary == "runsc" {
+		return "/usr/libexec/heliopause/runsc"
+	}
+	return binary
 }
 
 func (r integrationRunner) Output(ctx context.Context, binary string, arguments ...string) ([]byte, error) {
 	r.t.Helper()
-	command := exec.CommandContext(ctx, binary, arguments...)
+	command := exec.CommandContext(ctx, integrationBinary(binary), arguments...)
 	output, err := command.Output()
 	if err != nil {
 		stderr := ""
@@ -471,7 +481,7 @@ func (r integrationRunner) Output(ctx context.Context, binary string, arguments 
 
 func (r integrationRunner) RunInput(ctx context.Context, input io.Reader, binary string, arguments ...string) error {
 	r.t.Helper()
-	command := exec.CommandContext(ctx, binary, arguments...)
+	command := exec.CommandContext(ctx, integrationBinary(binary), arguments...)
 	command.Stdin = input
 	output, err := command.CombinedOutput()
 	if err != nil {
@@ -482,7 +492,7 @@ func (r integrationRunner) RunInput(ctx context.Context, input io.Reader, binary
 
 func (r integrationRunner) RunDiscard(ctx context.Context, binary string, arguments ...string) error {
 	r.t.Helper()
-	command := exec.CommandContext(ctx, binary, arguments...)
+	command := exec.CommandContext(ctx, integrationBinary(binary), arguments...)
 	output := &boundedIntegrationOutput{remaining: 16 << 10}
 	command.Stdout = output
 	command.Stderr = output
@@ -495,7 +505,7 @@ func (r integrationRunner) RunDiscard(ctx context.Context, binary string, argume
 
 func (r integrationRunner) RunOutput(ctx context.Context, output io.Writer, binary string, arguments ...string) error {
 	r.t.Helper()
-	command := exec.CommandContext(ctx, binary, arguments...)
+	command := exec.CommandContext(ctx, integrationBinary(binary), arguments...)
 	command.Stdout = output
 	stderr := &boundedIntegrationOutput{remaining: 16 << 10}
 	command.Stderr = stderr
