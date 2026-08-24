@@ -28,6 +28,16 @@ type helperRecord struct {
 	Kind        string `json:"kind"`
 }
 
+// decodeHelperRecord validates only the fixed, normalized helper envelope. It
+// intentionally does not expose or retain remote-sink protobuf payloads.
+func decodeHelperRecord(payload []byte) (helperRecord, error) {
+	var record helperRecord
+	if err := json.Unmarshal(payload, &record); err != nil || !containerIDPattern.MatchString(record.ContainerID) {
+		return helperRecord{}, errors.New("observer record is invalid")
+	}
+	return record, nil
+}
+
 // NewSharedObserver binds the HAA-only output endpoint used by the pinned helper.
 func NewSharedObserver(endpoint string) (*SharedObserver, error) {
 	return newSharedObserver(endpoint, true)
@@ -117,9 +127,9 @@ func (o *SharedObserver) receive() {
 			o.fail(errors.New("observer stream failed"))
 			return
 		}
-		var record helperRecord
-		if err := json.Unmarshal(buffer[:size], &record); err != nil || !containerIDPattern.MatchString(record.ContainerID) {
-			o.fail(errors.New("observer record is invalid"))
+		record, err := decodeHelperRecord(buffer[:size])
+		if err != nil {
+			o.fail(err)
 			return
 		}
 		o.mu.Lock()

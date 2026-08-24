@@ -97,6 +97,18 @@ func TestSharedObserverFailsClosedForLatchedStreamFault(t *testing.T) {
 	}
 }
 
+func FuzzDecodeHelperRecord(f *testing.F) {
+	f.Add([]byte(`{"container_id":"0123456789abcdef","kind":"network-attempt"}`))
+	f.Add([]byte(`{"container_id":"invalid","kind":"network-attempt"}`))
+	f.Add([]byte(`not-json`))
+	f.Fuzz(func(t *testing.T, body []byte) {
+		record, err := decodeHelperRecord(body)
+		if err == nil && !containerIDPattern.MatchString(record.ContainerID) {
+			t.Fatalf("accepted invalid container ID %q", record.ContainerID)
+		}
+	})
+}
+
 func observerEndpoint(t *testing.T) string {
 	t.Helper()
 	directory, err := os.MkdirTemp("/tmp", "haa-observer-")
