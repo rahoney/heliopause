@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
-	"github.com/rahoney/heliopause/internal/networkpolicy"
 )
 
 const maxResolverEndpoints = 32
@@ -25,7 +24,6 @@ const (
 // package-manager details remain outside this infrastructure boundary.
 type ResolverNetworkPolicy struct {
 	runner   CommandRunner
-	service  networkpolicy.Service
 	newID    func() (domain.SandboxSessionID, error)
 	backend  firewallBackend
 	prepared *resolverNetwork
@@ -36,7 +34,6 @@ type resolverNetwork struct {
 	subnet    netip.Prefix
 	chainName string
 	backend   firewallBackend
-	policy    networkpolicy.ResolverPolicy
 }
 
 // NewResolverNetworkPolicy probes Docker's active firewall backend. Unknown,
@@ -62,21 +59,6 @@ func NewResolverNetworkPolicy(ctx context.Context, runner CommandRunner) (*Resol
 		return nil, fmt.Errorf("resolver firewall backend is unsupported: docker info reported %q", backend)
 	}
 	return &ResolverNetworkPolicy{runner: runner, newID: domain.NewSandboxSessionID, backend: backend}, nil
-}
-
-// NewResolverNetworkPolicyWithService is the Linux production path. Firewall
-// mutation is delegated to the root-owned typed service; the direct runner
-// remains only as an explicit legacy test seam until its fixtures migrate.
-func NewResolverNetworkPolicyWithService(ctx context.Context, runner CommandRunner, service networkpolicy.Service) (*ResolverNetworkPolicy, error) {
-	policy, err := NewResolverNetworkPolicy(ctx, runner)
-	if err != nil || service == nil {
-		if err != nil {
-			return nil, err
-		}
-		return nil, errors.New("resolver privileged policy service is required")
-	}
-	policy.service = service
-	return policy, nil
 }
 
 func probeDockerFirewallBackend(ctx context.Context, runner CommandRunner) (firewallBackend, error) {
@@ -118,13 +100,7 @@ func (p *ResolverNetworkPolicy) Prepare(ctx context.Context, endpoints []netip.A
 		return "", fmt.Errorf("create resolver network identity: %w", err)
 	}
 	name := "haa-resolver-" + id.String()
-	createArguments := []string{"network", "create", "--driver", "bridge", "--opt", "com.docker.network.bridge.enable_ipv6=false"}
-	if p.service != nil {
-		labels := networkpolicy.NetworkLabels(id)
-		createArguments = append(createArguments, "--label", networkpolicy.NetworkLabelKey()+"="+labels[networkpolicy.NetworkLabelKey()], "--label", networkpolicy.SessionLabelKey()+"="+labels[networkpolicy.SessionLabelKey()])
-	}
-	createArguments = append(createArguments, name)
-	created, err := p.runner.Output(ctx, "docker", createArguments...)
+	created, err := p.runner.Output(ctx, "docker", "network", "create", "--driver", "bridge", "--opt", "com.docker.network.bridge.enable_ipv6=false", name)
 	if err != nil || strings.TrimSpace(string(created)) == "" {
 		return "", errors.New("create resolver Docker network failed")
 	}
@@ -151,18 +127,6 @@ func (p *ResolverNetworkPolicy) Prepare(ctx context.Context, endpoints []netip.A
 	}
 	chainSuffix := strings.ToUpper(strings.TrimPrefix(id.String(), "sbx_"))
 	network := &resolverNetwork{name: name, subnet: subnet, chainName: "HAA_R_" + chainSuffix[:16], backend: backend}
-	if p.service != nil {
-		policy, policyErr := networkpolicy.NewResolverPolicy(id, strings.TrimSpace(string(created)), subnet, endpoints)
-		if policyErr != nil || p.service.Create(ctx, policy) != nil || p.service.Verify(ctx, policy) != nil {
-			cleanupCtx, cancel := resolverCleanupContext()
-			cleanupErr := p.removeNetwork(cleanupCtx, name)
-			cancel()
-			return "", errors.Join(errors.New("create resolver privileged policy failed"), cleanupErr)
-		}
-		network.policy = policy
-		p.prepared = network
-		return name, nil
-	}
 	if err := p.applyAndVerify(ctx, network, endpoints); err != nil {
 		cleanupCtx, cancel := resolverCleanupContext()
 		cleanupErr := p.cleanupNetwork(cleanupCtx, network)
@@ -191,14 +155,6 @@ func (p *ResolverNetworkPolicy) Close(ctx context.Context) error {
 	}
 	network := p.prepared
 	p.prepared = nil
-	if p.service != nil {
-		policyErr := p.service.Remove(ctx, network.policy)
-		networkErr := p.removeNetwork(ctx, network.name)
-		if policyErr != nil || networkErr != nil {
-			return errors.New("resolver network policy cleanup failed")
-		}
-		return nil
-	}
 	return p.cleanupNetwork(ctx, network)
 }
 

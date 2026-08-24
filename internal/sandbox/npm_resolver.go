@@ -14,8 +14,6 @@ import (
 
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	"github.com/rahoney/heliopause/internal/core/domain"
-	"github.com/rahoney/heliopause/internal/hosttool"
-	"github.com/rahoney/heliopause/internal/networkpolicy"
 )
 
 const (
@@ -38,7 +36,6 @@ type NPMResolver struct {
 	runner    CommandRunner
 	endpoints EndpointResolver
 	observer  TraceObserver
-	policy    networkpolicy.Service
 }
 
 func NewNPMResolver(runner CommandRunner, endpoints EndpointResolver) (*NPMResolver, error) {
@@ -71,16 +68,7 @@ func NewLinuxNPMResolverWithExecutor(executor interface {
 	CommandRunner
 	inputCommandRunner
 }, observer TraceObserver) (*NPMResolver, error) {
-	resolver, err := NewNPMResolverWithObserver(executor, systemEndpointResolver{}, observer)
-	if err != nil {
-		return nil, err
-	}
-	service, err := hosttool.NewSystemNetworkPolicyClient()
-	if err != nil {
-		return nil, err
-	}
-	resolver.policy = service
-	return resolver, nil
+	return NewNPMResolverWithObserver(executor, systemEndpointResolver{}, observer)
 }
 
 type systemEndpointResolver struct{}
@@ -123,12 +111,7 @@ func (r *NPMResolver) ResolveDependencies(ctx context.Context, reference domain.
 	if err != nil {
 		return domain.DependencyResolution{}, errors.New("resolver endpoint preflight failed")
 	}
-	var policy *ResolverNetworkPolicy
-	if r.policy != nil {
-		policy, err = NewResolverNetworkPolicyWithService(ctx, r.runner, r.policy)
-	} else {
-		policy, err = NewResolverNetworkPolicy(ctx, r.runner)
-	}
+	policy, err := NewResolverNetworkPolicy(ctx, r.runner)
 	if err != nil {
 		return domain.DependencyResolution{}, err
 	}
