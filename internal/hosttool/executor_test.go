@@ -80,6 +80,20 @@ func TestExecutorRejectsChangedExecutableIdentity(t *testing.T) {
 	}
 }
 
+func TestOrdinaryExecutorDoesNotRegisterFirewallTools(t *testing.T) {
+	t.Parallel()
+	tool, err := verifyExecutable(trustedFixtureExecutable(t), "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	executor := &Executor{tools: map[string]identity{"docker": tool}, clientHome: t.TempDir()}
+	for _, name := range []string{"iptables", "nft"} {
+		if _, err := executor.LookPath(name); err == nil {
+			t.Fatalf("ordinary executor exposed %s", name)
+		}
+	}
+}
+
 func TestCommandUsesAbsoluteIdentityMinimalEnvironmentAndExplicitDockerEndpoint(t *testing.T) {
 	t.Setenv("PATH", "/tmp/hostile-path")
 	t.Setenv("DOCKER_HOST", "tcp://attacker.invalid:2375")
