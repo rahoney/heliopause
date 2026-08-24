@@ -40,6 +40,7 @@ type PyPIResolver struct {
 	observer  TraceObserver
 	probe     func(context.Context) (PythonCapability, error)
 	close     func() error
+	policy    ResolverPolicyService
 }
 
 // NewPyPIResolver constructs the narrow M5 resolver boundary. Every injected
@@ -56,6 +57,20 @@ func NewPyPIResolver(runner CommandRunner, endpoints NamedEndpointResolver, obse
 // executor for Docker, runtime probing, and resolver policy commands.
 func NewLinuxPyPIResolverWithExecutor(executor TrustedExecutor, observer TraceObserver) (*PyPIResolver, error) {
 	return newLinuxPyPIResolver(executor, observer)
+}
+
+// NewLinuxPyPIResolverWithExecutorAndPolicy constructs the production
+// resolver with the ordinary-to-privileged typed network policy port.
+func NewLinuxPyPIResolverWithExecutorAndPolicy(executor TrustedExecutor, observer TraceObserver, policy ResolverPolicyService) (*PyPIResolver, error) {
+	if policy == nil {
+		return nil, errors.New("PyPI resolver requires network policy service")
+	}
+	resolver, err := newLinuxPyPIResolver(executor, observer)
+	if err != nil {
+		return nil, err
+	}
+	resolver.policy = policy
+	return resolver, nil
 }
 
 func newLinuxPyPIResolver(executor TrustedExecutor, observer TraceObserver) (*PyPIResolver, error) {
@@ -100,7 +115,12 @@ func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain
 	if err != nil {
 		return domain.DependencyResolution{}, errors.New("PyPI resolver endpoint preflight is unsafe")
 	}
-	policy, err := NewResolverNetworkPolicy(ctx, r.runner)
+	var policy *ResolverNetworkPolicy
+	if r.policy != nil {
+		policy, err = NewResolverNetworkPolicyWithService(r.runner, r.policy)
+	} else {
+		policy, err = NewResolverNetworkPolicy(ctx, r.runner)
+	}
 	if err != nil {
 		return domain.DependencyResolution{}, err
 	}

@@ -26,6 +26,7 @@ type ResolverNetworkPolicy struct {
 	runner   CommandRunner
 	newID    func() (domain.SandboxSessionID, error)
 	backend  firewallBackend
+	service  ResolverPolicyService
 	prepared *resolverNetwork
 }
 
@@ -34,6 +35,20 @@ type resolverNetwork struct {
 	subnet    netip.Prefix
 	chainName string
 	backend   firewallBackend
+	session   domain.SandboxSessionID
+	networkID string
+	endpoints []netip.Addr
+}
+
+// NewResolverNetworkPolicyWithService constructs the production resolver
+// policy path. Firewall selection and mutation remain in the root-owned
+// policy service; this ordinary process can only create a labelled bridge and
+// make typed Create, Verify and Remove requests.
+func NewResolverNetworkPolicyWithService(runner CommandRunner, service ResolverPolicyService) (*ResolverNetworkPolicy, error) {
+	if runner == nil || service == nil {
+		return nil, errors.New("resolver network policy service is required")
+	}
+	return &ResolverNetworkPolicy{runner: runner, newID: domain.NewSandboxSessionID, service: service}, nil
 }
 
 // NewResolverNetworkPolicy probes Docker's active firewall backend. Unknown,
@@ -100,7 +115,21 @@ func (p *ResolverNetworkPolicy) Prepare(ctx context.Context, endpoints []netip.A
 		return "", fmt.Errorf("create resolver network identity: %w", err)
 	}
 	name := "haa-resolver-" + id.String()
-	created, err := p.runner.Output(ctx, "docker", "network", "create", "--driver", "bridge", "--opt", "com.docker.network.bridge.enable_ipv6=false", name)
+	arguments := []string{"network", "create", "--driver", "bridge", "--opt", "com.docker.network.bridge.enable_ipv6=false"}
+	if p.service != nil {
+		labels := p.service.NetworkLabels(id)
+		if len(labels) != 2 {
+			return "", errors.New("resolver network ownership labels are unavailable")
+		}
+		for key, value := range labels {
+			if key == "" || value == "" {
+				return "", errors.New("resolver network ownership labels are unavailable")
+			}
+			arguments = append(arguments, "--label", key+"="+value)
+		}
+	}
+	arguments = append(arguments, name)
+	created, err := p.runner.Output(ctx, "docker", arguments...)
 	if err != nil || strings.TrimSpace(string(created)) == "" {
 		return "", errors.New("create resolver Docker network failed")
 	}
@@ -112,7 +141,26 @@ func (p *ResolverNetworkPolicy) Prepare(ctx context.Context, endpoints []netip.A
 		cancel()
 		return "", errors.Join(errors.New("resolver Docker network subnet is unavailable"), cleanupErr)
 	}
+	createdID := strings.TrimSpace(string(created))
 	backend := p.backend
+	if p.service != nil {
+		network := &resolverNetwork{name: name, subnet: subnet, session: id, networkID: createdID, endpoints: append([]netip.Addr(nil), endpoints...)}
+		if err := p.service.Create(ctx, id, createdID, subnet, endpoints); err != nil {
+			cleanupCtx, cancel := resolverCleanupContext()
+			cleanupErr := p.removeNetwork(cleanupCtx, name)
+			cancel()
+			return "", errors.Join(errors.New("create resolver network policy failed"), cleanupErr)
+		}
+		if err := p.service.Verify(ctx, id, createdID, subnet, endpoints); err != nil {
+			cleanupCtx, cancel := resolverCleanupContext()
+			cleanupErr := p.service.Remove(cleanupCtx, id, createdID, subnet, endpoints)
+			cleanupErr = errors.Join(cleanupErr, p.removeNetwork(cleanupCtx, name))
+			cancel()
+			return "", errors.Join(errors.New("verify resolver network policy failed"), cleanupErr)
+		}
+		p.prepared = network
+		return name, nil
+	}
 	if backend == "" {
 		// Docker creates its firewall hooks lazily when the first bridge network
 		// is created. Probe only after that network exists; no resolver container
@@ -231,6 +279,14 @@ func (p *ResolverNetworkPolicy) applyNFTables(ctx context.Context, network *reso
 }
 
 func (p *ResolverNetworkPolicy) cleanupNetwork(ctx context.Context, network *resolverNetwork) error {
+	if p.service != nil {
+		policyErr := p.service.Remove(ctx, network.session, network.networkID, network.subnet, network.endpoints)
+		networkErr := p.removeNetwork(ctx, network.name)
+		if policyErr != nil || networkErr != nil {
+			return errors.New("resolver network policy cleanup failed")
+		}
+		return nil
+	}
 	var policyErr error
 	if network.backend == firewallBackendIPTables {
 		_, policyErr = p.runner.Output(ctx, "iptables", "-D", "DOCKER-USER", "-s", network.subnet.String(), "-j", network.chainName)

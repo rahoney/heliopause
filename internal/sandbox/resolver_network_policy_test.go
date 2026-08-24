@@ -47,6 +47,56 @@ func TestResolverNetworkPolicyIPTablesCreatesVerifiesAndCleansUp(t *testing.T) {
 	}
 }
 
+func TestResolverNetworkPolicyDelegatesFirewallLifecycleToTypedService(t *testing.T) {
+	runner := &recordingRunner{responses: [][]byte{
+		[]byte("0123456789abcdef"), []byte("172.30.0.0/24"),
+	}}
+	service := &recordingResolverPolicyService{}
+	policy, err := NewResolverNetworkPolicyWithService(runner, service)
+	if err != nil {
+		t.Fatal(err)
+	}
+	policy.newID = func() (domain.SandboxSessionID, error) {
+		return domain.ParseSandboxSessionID("sbx_aaaaaaaaaaaaaaaaaaaaaaaaaa")
+	}
+	name, err := policy.Prepare(context.Background(), []netip.Addr{netip.MustParseAddr("1.1.1.1")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if name != "haa-resolver-sbx_aaaaaaaaaaaaaaaaaaaaaaaaaa" || service.create != 1 || service.verify != 1 {
+		t.Fatalf("typed lifecycle name=%q calls=%#v", name, service)
+	}
+	for _, call := range runner.calls {
+		if call.binary == "iptables" || call.binary == "nft" {
+			t.Fatalf("ordinary resolver executed firewall tool: %#v", call)
+		}
+	}
+	if err := policy.Close(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if service.remove != 1 {
+		t.Fatalf("typed cleanup calls=%#v", service)
+	}
+}
+
+type recordingResolverPolicyService struct{ create, verify, remove int }
+
+func (s *recordingResolverPolicyService) NetworkLabels(session domain.SandboxSessionID) map[string]string {
+	return map[string]string{"io.heliopause.resolver-policy": "m8", "io.heliopause.resolver-session": session.String()}
+}
+func (s *recordingResolverPolicyService) Create(context.Context, domain.SandboxSessionID, string, netip.Prefix, []netip.Addr) error {
+	s.create++
+	return nil
+}
+func (s *recordingResolverPolicyService) Verify(context.Context, domain.SandboxSessionID, string, netip.Prefix, []netip.Addr) error {
+	s.verify++
+	return nil
+}
+func (s *recordingResolverPolicyService) Remove(context.Context, domain.SandboxSessionID, string, netip.Prefix, []netip.Addr) error {
+	s.remove++
+	return nil
+}
+
 func TestResolverNetworkPolicyRejectsUnknownBackendAndFailedCleanup(t *testing.T) {
 	unknown := &recordingRunner{responses: [][]byte{[]byte("unknown")}}
 	if _, err := NewResolverNetworkPolicy(context.Background(), unknown); err == nil {

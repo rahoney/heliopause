@@ -294,7 +294,11 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 
 func pypiInstallDependencyResolver(goos, goarch string, executor sandbox.TrustedExecutor, observer sandbox.TraceObserver) (ports.DependencyResolver, error) {
 	if goos == "linux" && goarch == "amd64" {
-		resolver, err := sandbox.NewLinuxPyPIResolverWithExecutor(executor, observer)
+		policyService, err := newSystemResolverPolicyAdapter()
+		if err != nil {
+			return nil, err
+		}
+		resolver, err := sandbox.NewLinuxPyPIResolverWithExecutorAndPolicy(executor, observer, policyService)
 		if err != nil {
 			return nil, err
 		}
@@ -305,7 +309,11 @@ func pypiInstallDependencyResolver(goos, goarch string, executor sandbox.Trusted
 
 func installDependencyResolver(goos, goarch string, executor sandbox.TrustedExecutor, observer sandbox.TraceObserver) (ports.DependencyResolver, error) {
 	if goos == "linux" && goarch == "amd64" {
-		return sandbox.NewLinuxNPMResolverWithExecutor(executor, observer)
+		policyService, err := newSystemResolverPolicyAdapter()
+		if err != nil {
+			return nil, err
+		}
+		return sandbox.NewLinuxNPMResolverWithExecutorAndPolicy(executor, observer, policyService)
 	}
 	return unsupportedInstallResolver{}, nil
 }

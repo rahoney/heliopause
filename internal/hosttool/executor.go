@@ -104,6 +104,16 @@ func loadSystemConfig() (Config, error) {
 
 // New constructs a validated executor from trusted installation config.
 func New(ctx context.Context, config Config) (*Executor, error) {
+	return newExecutor(ctx, config, false)
+}
+
+// newPolicyExecutor is only reachable by the root-owned network-policy
+// helper. The ordinary product executor deliberately has no firewall tools.
+func newPolicyExecutor(ctx context.Context, config Config) (*Executor, error) {
+	return newExecutor(ctx, config, true)
+}
+
+func newExecutor(ctx context.Context, config Config, includeFirewall bool) (*Executor, error) {
 	if ctx == nil {
 		return nil, errors.New("trusted Host tool context is required")
 	}
@@ -135,6 +145,9 @@ func New(ctx context.Context, config Config) (*Executor, error) {
 	if err := executor.validateDaemon(ctx); err != nil {
 		_ = executor.Close()
 		return nil, err
+	}
+	if !includeFirewall {
+		return executor, nil
 	}
 	for name, candidates := range map[string][]string{
 		"iptables": {"/usr/sbin/iptables", "/usr/bin/iptables"},

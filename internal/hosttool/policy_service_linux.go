@@ -54,7 +54,11 @@ func ServeNetworkPolicy(ctx context.Context) error {
 	if _, err := os.Lstat(config.SocketPath); !errors.Is(err, os.ErrNotExist) {
 		return errors.New("network policy socket is already owned")
 	}
-	executor, err := NewSystem(ctx)
+	hostConfig, err := loadSystemConfig()
+	if err != nil {
+		return err
+	}
+	executor, err := newPolicyExecutor(ctx, hostConfig)
 	if err != nil {
 		return err
 	}

@@ -36,6 +36,7 @@ type NPMResolver struct {
 	runner    CommandRunner
 	endpoints EndpointResolver
 	observer  TraceObserver
+	policy    ResolverPolicyService
 }
 
 func NewNPMResolver(runner CommandRunner, endpoints EndpointResolver) (*NPMResolver, error) {
@@ -69,6 +70,23 @@ func NewLinuxNPMResolverWithExecutor(executor interface {
 	inputCommandRunner
 }, observer TraceObserver) (*NPMResolver, error) {
 	return NewNPMResolverWithObserver(executor, systemEndpointResolver{}, observer)
+}
+
+// NewLinuxNPMResolverWithExecutorAndPolicy constructs the production resolver
+// with the ordinary-to-privileged typed network policy port.
+func NewLinuxNPMResolverWithExecutorAndPolicy(executor interface {
+	CommandRunner
+	inputCommandRunner
+}, observer TraceObserver, policy ResolverPolicyService) (*NPMResolver, error) {
+	if policy == nil {
+		return nil, errors.New("npm resolver requires network policy service")
+	}
+	resolver, err := NewNPMResolverWithObserver(executor, systemEndpointResolver{}, observer)
+	if err != nil {
+		return nil, err
+	}
+	resolver.policy = policy
+	return resolver, nil
 }
 
 type systemEndpointResolver struct{}
@@ -111,7 +129,12 @@ func (r *NPMResolver) ResolveDependencies(ctx context.Context, reference domain.
 	if err != nil {
 		return domain.DependencyResolution{}, errors.New("resolver endpoint preflight failed")
 	}
-	policy, err := NewResolverNetworkPolicy(ctx, r.runner)
+	var policy *ResolverNetworkPolicy
+	if r.policy != nil {
+		policy, err = NewResolverNetworkPolicyWithService(r.runner, r.policy)
+	} else {
+		policy, err = NewResolverNetworkPolicy(ctx, r.runner)
+	}
 	if err != nil {
 		return domain.DependencyResolution{}, err
 	}
