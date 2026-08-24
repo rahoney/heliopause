@@ -15,6 +15,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -73,7 +74,10 @@ func TestLinuxGVisorLifecycleIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	backend, err := NewBackend(runner, introducer, observer, Probe)
+	capabilityProbe := func(ctx context.Context) (Capability, error) {
+		return probe(ctx, runtime.GOOS, runner)
+	}
+	backend, err := NewBackend(runner, introducer, observer, capabilityProbe)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -436,6 +440,11 @@ func linuxBuildBackendWheel(t *testing.T) []byte {
 
 type integrationRunner struct {
 	t *testing.T
+}
+
+func (r integrationRunner) LookPath(binary string) (string, error) {
+	r.t.Helper()
+	return exec.LookPath(binary)
 }
 
 func (r integrationRunner) Output(ctx context.Context, binary string, arguments ...string) ([]byte, error) {
