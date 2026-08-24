@@ -9,18 +9,21 @@ import (
 	"fmt"
 	"net"
 	"net/netip"
+	"sort"
 	"strings"
 
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 const (
-	// nodeImageReference is the M3-pinned Node 22.23.1 image. Its upstream
-	// bundled npm version is part of that exact runtime identity.
-	resolverNPMVersion      = "10.9.8"
-	resolverProjectDir      = "/tmp/haa-resolver"
-	resolverRuntimeIdentity = "node:22.23.1-slim@sha256:6c74791e557ce11fc957704f6d4fe134a7bc8d6f5ca4403205b2966bd488f6b3;npm:10.9.8"
+	resolverProjectDir = "/tmp/haa-resolver"
+)
+
+var (
+	resolverNPMVersion      = runtimeidentity.NodeNPMVersion
+	resolverRuntimeIdentity = runtimeidentity.NodeImageReference + ";npm:" + runtimeidentity.NodeNPMVersion
 )
 
 // EndpointResolver supplies the trusted, preflight-resolved address set for
@@ -34,22 +37,49 @@ type EndpointResolver interface {
 type NPMResolver struct {
 	runner    CommandRunner
 	endpoints EndpointResolver
+	observer  TraceObserver
+	policy    ResolverPolicyService
 }
 
-func NewNPMResolver(runner CommandRunner, endpoints EndpointResolver) (*NPMResolver, error) {
-	if runner == nil || endpoints == nil {
-		return nil, errors.New("npm resolver requires command runner and endpoint resolver")
+func NewNPMResolver(runner CommandRunner, endpoints EndpointResolver, policy ResolverPolicyService) (*NPMResolver, error) {
+	if runner == nil || endpoints == nil || policy == nil {
+		return nil, errors.New("npm resolver requires command runner, endpoint resolver and network policy service")
 	}
 	if _, ok := runner.(inputCommandRunner); !ok {
 		return nil, errors.New("npm resolver requires input stream runner")
 	}
-	return &NPMResolver{runner: runner, endpoints: endpoints}, nil
+	return &NPMResolver{runner: runner, endpoints: endpoints, policy: policy}, nil
 }
 
-// NewLinuxNPMResolver composes the production command and trusted DNS
-// preflight adapters. It is wired only by the Linux composition root.
-func NewLinuxNPMResolver() (*NPMResolver, error) {
-	return NewNPMResolver(systemExecutor{}, systemEndpointResolver{})
+// NewNPMResolverWithObserver constructs the production resolver with the
+// process-scoped trace receiver required for its runsc-trace container.
+func NewNPMResolverWithObserver(runner CommandRunner, endpoints EndpointResolver, observer TraceObserver, policy ResolverPolicyService) (*NPMResolver, error) {
+	resolver, err := NewNPMResolver(runner, endpoints, policy)
+	if err != nil || observer == nil {
+		if err != nil {
+			return nil, err
+		}
+		return nil, errors.New("npm resolver requires process-scoped observer")
+	}
+	resolver.observer = observer
+	return resolver, nil
+}
+
+// NewLinuxNPMResolverWithExecutorAndPolicy constructs the production resolver
+// with the ordinary-to-privileged typed network policy port.
+func NewLinuxNPMResolverWithExecutorAndPolicy(executor interface {
+	CommandRunner
+	inputCommandRunner
+}, observer TraceObserver, policy ResolverPolicyService) (*NPMResolver, error) {
+	if policy == nil {
+		return nil, errors.New("npm resolver requires network policy service")
+	}
+	resolver, err := NewNPMResolverWithObserver(executor, systemEndpointResolver{}, observer, policy)
+	if err != nil {
+		return nil, err
+	}
+	resolver.policy = policy
+	return resolver, nil
 }
 
 type systemEndpointResolver struct{}
@@ -88,7 +118,11 @@ func (r *NPMResolver) ResolveDependencies(ctx context.Context, reference domain.
 	if err != nil {
 		return domain.DependencyResolution{}, errors.New("resolver endpoint preflight failed")
 	}
-	policy, err := NewResolverNetworkPolicy(ctx, r.runner)
+	hostArguments, err := npmNetworkArguments(addresses)
+	if err != nil {
+		return domain.DependencyResolution{}, errors.New("resolver endpoint preflight failed")
+	}
+	policy, err := NewResolverNetworkPolicy(r.runner, r.policy)
 	if err != nil {
 		return domain.DependencyResolution{}, err
 	}
@@ -98,6 +132,7 @@ func (r *NPMResolver) ResolveDependencies(ctx context.Context, reference domain.
 	}
 	var cleanupErr error
 	containerID := ""
+	var trace TraceReader
 	defer func() {
 		if containerID != "" {
 			cleanupCtx, cancel := resolverCleanupContext()
@@ -105,6 +140,14 @@ func (r *NPMResolver) ResolveDependencies(ctx context.Context, reference domain.
 			cancel()
 			if removeErr != nil {
 				cleanupErr = errors.New("resolver container cleanup failed")
+			}
+			if trace != nil {
+				collectCtx, collectCancel := context.WithTimeout(context.Background(), cleanupTimeout)
+				_, limitation := collectTrace(collectCtx, trace)
+				collectCancel()
+				if limitation != "" {
+					cleanupErr = errors.Join(cleanupErr, errors.New("resolver observation is incomplete"))
+				}
 			}
 		}
 		cleanupCtx, cancel := resolverCleanupContext()
@@ -119,11 +162,21 @@ func (r *NPMResolver) ResolveDependencies(ctx context.Context, reference domain.
 		}
 	}()
 
-	created, err := r.runner.Output(ctx, "docker", "create", "--network", network, "--user", "1000:1000", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "64", "--memory", "512m", "--cpus", "1", "--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=128m,uid=1000,gid=1000,mode=0700", nodeImageReference, "/bin/sh", "-ceu", "sleep infinity")
+	createArguments := []string{"create", "--runtime", gVisorRuntimeName, "--network", network, "--user", "1000:1000", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "64", "--memory", "512m", "--cpus", "1", "--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=128m,uid=1000,gid=1000,mode=0700"}
+	createArguments = append(createArguments, hostArguments...)
+	createArguments = append(createArguments, runtimeidentity.NodeImageReference, "/bin/sh", "-ceu", "sleep infinity")
+	created, err := r.runner.Output(ctx, "docker", createArguments...)
 	if err != nil || !containerIDPattern.MatchString(strings.TrimSpace(string(created))) {
 		return domain.DependencyResolution{}, errors.New("create resolver container failed")
 	}
 	containerID = strings.TrimSpace(string(created))
+	if r.observer == nil {
+		return domain.DependencyResolution{}, errors.New("resolver observation is unavailable")
+	}
+	trace, err = r.observer.Start(ctx, containerID)
+	if err != nil {
+		return domain.DependencyResolution{}, errors.New("start resolver observer failed")
+	}
 	if _, err := r.runner.Output(ctx, "docker", "start", containerID); err != nil {
 		return domain.DependencyResolution{}, errors.New("start resolver container failed")
 	}
@@ -165,4 +218,20 @@ func (r *NPMResolver) ResolveDependencies(ctx context.Context, reference domain.
 		return domain.DependencyResolution{}, err
 	}
 	return domain.NewDependencyResolution(graph, resolverRuntimeIdentity, digest)
+}
+
+// npmNetworkArguments fixes the preflight-resolved registry address set into
+// the sandbox. Resolver egress deliberately denies DNS, so registry lookup
+// cannot be deferred to the untrusted container network namespace.
+func npmNetworkArguments(addresses []netip.Addr) ([]string, error) {
+	if err := validateResolverEndpoints(addresses); err != nil {
+		return nil, err
+	}
+	ordered := append([]netip.Addr(nil), addresses...)
+	sort.Slice(ordered, func(i, j int) bool { return ordered[i].Less(ordered[j]) })
+	arguments := make([]string, 0, len(ordered)*2)
+	for _, address := range ordered {
+		arguments = append(arguments, "--add-host", "registry.npmjs.org:"+address.String())
+	}
+	return arguments, nil
 }

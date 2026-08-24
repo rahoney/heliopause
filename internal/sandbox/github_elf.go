@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
@@ -30,19 +31,24 @@ func NewGitHubELFBackend(runner CommandRunner, intakeRoot string, observer Trace
 	return &GitHubELFBackend{runner: runner, intakeRoot: filepath.Clean(intakeRoot), observer: observer, probe: probe, newSessionID: domain.NewSandboxSessionID}, nil
 }
 
-// NewLinuxGitHubELFBackend composes the trusted shared observer without
-// leaking Docker or gVisor details into bootstrap/Application.
-func NewLinuxGitHubELFBackend(intakeRoot string) (*GitHubELFBackend, func() error, error) {
-	observer, err := NewSharedObserver(ObserverOutputEndpoint)
-	if err != nil {
-		return nil, nil, err
+// NewLinuxGitHubELFBackendWithExecutor uses the composition-root validated
+// Host executor for the complete lifecycle.
+func NewLinuxGitHubELFBackendWithExecutor(intakeRoot string, executor TrustedExecutor, observer TraceObserver) (*GitHubELFBackend, error) {
+	return newLinuxGitHubELFBackend(intakeRoot, executor, observer)
+}
+
+func newLinuxGitHubELFBackend(intakeRoot string, executor TrustedExecutor, observer TraceObserver) (*GitHubELFBackend, error) {
+	if observer == nil {
+		return nil, errors.New("process-scoped observer is required")
 	}
-	backend, err := NewGitHubELFBackend(systemExecutor{}, intakeRoot, observer, Probe)
-	if err != nil {
-		_ = observer.Close()
-		return nil, nil, err
+	capabilityProbe := func(ctx context.Context) (Capability, error) {
+		return probe(ctx, runtime.GOOS, executor)
 	}
-	return backend, observer.Close, nil
+	backend, err := NewGitHubELFBackend(executor, intakeRoot, observer, capabilityProbe)
+	if err != nil {
+		return nil, err
+	}
+	return backend, nil
 }
 
 func (b *GitHubELFBackend) Execute(ctx context.Context, request domain.SandboxRequest) (domain.SandboxResult, error) {

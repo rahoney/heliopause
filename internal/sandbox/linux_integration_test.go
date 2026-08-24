@@ -15,6 +15,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -22,6 +23,7 @@ import (
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/hosttool"
 )
 
 func TestLinuxGVisorLifecycleIntegration(t *testing.T) {
@@ -55,25 +57,14 @@ func TestLinuxGVisorLifecycleIntegration(t *testing.T) {
 	if err := file.Close(); err != nil {
 		t.Fatal(err)
 	}
-	observer, err := NewSharedObserver("/run/heliopause-observer/haa-output.sock")
-	if err != nil {
-		t.Fatal(err)
-	}
-	helperPath := os.Getenv("HELOX_GVISOR_HELPER")
-	if helperPath == "" {
-		t.Fatal("HELOX_GVISOR_HELPER is required")
-	}
-	helper := exec.Command(helperPath, "/run/heliopause-observer/gvisor-remote.sock", "/run/heliopause-observer/haa-output.sock")
-	if err := helper.Start(); err != nil {
-		t.Fatal(err)
-	}
-	defer func() { _ = helper.Process.Kill(); _ = helper.Wait() }()
+	supervisor := integrationObserverSupervisor(t)
+	defer supervisor.Close()
 	runner := integrationRunner{t: t}
 	introducer, err := NewDockerArtifactIntroducer(root, runner)
 	if err != nil {
 		t.Fatal(err)
 	}
-	backend, err := NewBackend(runner, introducer, observer, Probe)
+	backend, err := NewBackend(runner, introducer, supervisor.Observer(), integrationCapabilityProbe(runner))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -116,21 +107,10 @@ func TestLinuxGitHubReleaseELFDynamicIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	observer, err := NewSharedObserver(ObserverOutputEndpoint)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer observer.Close()
-	helperPath := os.Getenv("HELOX_GVISOR_HELPER")
-	if helperPath == "" {
-		t.Fatal("HELOX_GVISOR_HELPER is required")
-	}
-	helper := exec.Command(helperPath, "/run/heliopause-observer/gvisor-remote.sock", ObserverOutputEndpoint)
-	if err := helper.Start(); err != nil {
-		t.Fatal(err)
-	}
-	defer func() { _ = helper.Process.Kill(); _ = helper.Wait() }()
-	backend, err := NewGitHubELFBackend(integrationRunner{t: t}, root, observer, Probe)
+	supervisor := integrationObserverSupervisor(t)
+	defer supervisor.Close()
+	runner := integrationRunner{t: t}
+	backend, err := NewGitHubELFBackend(runner, root, supervisor.Observer(), integrationCapabilityProbe(runner))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -150,7 +130,9 @@ func TestLinuxNPMResolverNetworkPolicyIntegration(t *testing.T) {
 	if os.Geteuid() != 0 {
 		t.Fatal("resolver network policy integration requires explicit CAP_NET_ADMIN elevation")
 	}
-	resolver, err := NewNPMResolver(integrationRunner{t: t}, systemEndpointResolver{})
+	supervisor := integrationObserverSupervisor(t)
+	defer supervisor.Close()
+	resolver, err := NewNPMResolverWithObserver(integrationRunner{t: t}, systemEndpointResolver{}, supervisor.Observer(), integrationResolverPolicyService(t))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -178,25 +160,14 @@ func TestLinuxPyPIResolverIntegration(t *testing.T) {
 	if os.Geteuid() != 0 {
 		t.Fatal("PyPI resolver network policy integration requires explicit CAP_NET_ADMIN elevation")
 	}
-	observer, err := NewSharedObserver(ObserverOutputEndpoint)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() { _ = observer.Close() }()
-	resolver, err := NewPyPIResolver(integrationRunner{t: t}, systemNamedEndpointResolver{}, observer, ProbePython)
+	supervisor := integrationObserverSupervisor(t)
+	defer supervisor.Close()
+	runner := integrationRunner{t: t}
+	resolver, err := NewPyPIResolver(runner, systemNamedEndpointResolver{}, supervisor.Observer(), integrationPythonCapabilityProbe(runner), integrationResolverPolicyService(t))
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer func() { _ = resolver.Close() }()
-	helperPath := os.Getenv("HELOX_GVISOR_HELPER")
-	if helperPath == "" {
-		t.Fatal("HELOX_GVISOR_HELPER is required")
-	}
-	helper := exec.Command(helperPath, "/run/heliopause-observer/gvisor-remote.sock", ObserverOutputEndpoint)
-	if err := helper.Start(); err != nil {
-		t.Fatal(err)
-	}
-	defer func() { _ = helper.Process.Kill(); _ = helper.Wait() }()
 	reference, err := artifactpypi.ParseReference("packaging@25.0")
 	if err != nil {
 		t.Fatal(err)
@@ -212,6 +183,11 @@ func TestLinuxPyPIResolverIntegration(t *testing.T) {
 	if len(resolution.Graph().Nodes()) != 1 || resolution.Graph().Primary().String() == "" || resolution.RuntimeIdentity() == "" || resolution.LockfileDigest().String() == "" {
 		t.Fatalf("PyPI resolver resolution = %#v", resolution)
 	}
+}
+
+func integrationResolverPolicyService(t *testing.T) ResolverPolicyService {
+	t.Helper()
+	return &recordingResolverPolicyService{}
 }
 
 func TestLinuxPyPIWheelDynamicIntegration(t *testing.T) {
@@ -239,28 +215,17 @@ func TestLinuxPyPIWheelDynamicIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	observer, err := NewSharedObserver(ObserverOutputEndpoint)
+	supervisor := integrationObserverSupervisor(t)
+	defer supervisor.Close()
+	runner := integrationRunner{t: t}
+	introducer, err := NewPythonArtifactIntroducer(root, runner)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer observer.Close()
-	introducer, err := NewPythonArtifactIntroducer(root, integrationRunner{t: t})
+	backend, err := NewPythonDynamicBackend(runner, introducer, supervisor.Observer(), integrationPythonCapabilityProbe(runner))
 	if err != nil {
 		t.Fatal(err)
 	}
-	backend, err := NewPythonDynamicBackend(integrationRunner{t: t}, introducer, observer, ProbePython)
-	if err != nil {
-		t.Fatal(err)
-	}
-	helperPath := os.Getenv("HELOX_GVISOR_HELPER")
-	if helperPath == "" {
-		t.Fatal("HELOX_GVISOR_HELPER is required")
-	}
-	helper := exec.Command(helperPath, "/run/heliopause-observer/gvisor-remote.sock", ObserverOutputEndpoint)
-	if err := helper.Start(); err != nil {
-		t.Fatal(err)
-	}
-	defer func() { _ = helper.Process.Kill(); _ = helper.Wait() }()
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 	result, err := backend.InspectWheel(ctx, artifact, static.ImportNames)
@@ -305,26 +270,14 @@ func TestLinuxPyPISdistBuildIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	observer, err := NewSharedObserver(ObserverOutputEndpoint)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer observer.Close()
-	helperPath := os.Getenv("HELOX_GVISOR_HELPER")
-	if helperPath == "" {
-		t.Fatal("HELOX_GVISOR_HELPER is required")
-	}
-	helper := exec.Command(helperPath, "/run/heliopause-observer/gvisor-remote.sock", ObserverOutputEndpoint)
-	if err := helper.Start(); err != nil {
-		t.Fatal(err)
-	}
-	defer func() { _ = helper.Process.Kill(); _ = helper.Wait() }()
+	supervisor := integrationObserverSupervisor(t)
+	defer supervisor.Close()
 	runner := integrationRunner{t: t}
 	introducer, err := NewPythonArtifactIntroducer(root, runner)
 	if err != nil {
 		t.Fatal(err)
 	}
-	builder, err := NewPythonSdistBuilder(runner, introducer, observer, ProbePython)
+	builder, err := NewPythonSdistBuilder(runner, introducer, supervisor.Observer(), integrationPythonCapabilityProbe(runner))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -434,13 +387,55 @@ func linuxBuildBackendWheel(t *testing.T) []byte {
 	return output.Bytes()
 }
 
+func integrationObserverSupervisor(t *testing.T) *ObserverSupervisor {
+	t.Helper()
+	launcher, err := hosttool.NewObserverLauncher("/usr/libexec/heliopause/haa_gvisor_observer")
+	if err != nil {
+		t.Fatalf("load pinned observer helper: %v", err)
+	}
+	supervisor, err := NewObserverSupervisor(context.Background(), func(ctx context.Context, remoteEndpoint, outputEndpoint string) (ObserverProcess, error) {
+		return launcher.StartObserver(ctx, remoteEndpoint, outputEndpoint)
+	})
+	if err != nil {
+		t.Fatalf("start observer supervisor: %v", err)
+	}
+	return supervisor
+}
+
 type integrationRunner struct {
 	t *testing.T
 }
 
+func integrationCapabilityProbe(executor Executor) CapabilityProbe {
+	return func(ctx context.Context) (Capability, error) {
+		return probe(ctx, runtime.GOOS, executor)
+	}
+}
+
+func integrationPythonCapabilityProbe(executor Executor) func(context.Context) (PythonCapability, error) {
+	return func(ctx context.Context) (PythonCapability, error) {
+		return probePython(ctx, runtime.GOOS, runtime.GOARCH, executor)
+	}
+}
+
+func (r integrationRunner) LookPath(binary string) (string, error) {
+	r.t.Helper()
+	return exec.LookPath(integrationBinary(binary))
+}
+
+func integrationBinary(binary string) string {
+	// The canonical CI installs the pinned runtime outside PATH so that every
+	// parent directory has a trusted identity. Production resolves this through
+	// hosttool; this raw integration runner mirrors only that exact test path.
+	if binary == "runsc" {
+		return "/usr/libexec/heliopause/runsc"
+	}
+	return binary
+}
+
 func (r integrationRunner) Output(ctx context.Context, binary string, arguments ...string) ([]byte, error) {
 	r.t.Helper()
-	command := exec.CommandContext(ctx, binary, arguments...)
+	command := exec.CommandContext(ctx, integrationBinary(binary), arguments...)
 	output, err := command.Output()
 	if err != nil {
 		stderr := ""
@@ -462,7 +457,7 @@ func (r integrationRunner) Output(ctx context.Context, binary string, arguments 
 
 func (r integrationRunner) RunInput(ctx context.Context, input io.Reader, binary string, arguments ...string) error {
 	r.t.Helper()
-	command := exec.CommandContext(ctx, binary, arguments...)
+	command := exec.CommandContext(ctx, integrationBinary(binary), arguments...)
 	command.Stdin = input
 	output, err := command.CombinedOutput()
 	if err != nil {
@@ -473,7 +468,7 @@ func (r integrationRunner) RunInput(ctx context.Context, input io.Reader, binary
 
 func (r integrationRunner) RunDiscard(ctx context.Context, binary string, arguments ...string) error {
 	r.t.Helper()
-	command := exec.CommandContext(ctx, binary, arguments...)
+	command := exec.CommandContext(ctx, integrationBinary(binary), arguments...)
 	output := &boundedIntegrationOutput{remaining: 16 << 10}
 	command.Stdout = output
 	command.Stderr = output
@@ -486,7 +481,7 @@ func (r integrationRunner) RunDiscard(ctx context.Context, binary string, argume
 
 func (r integrationRunner) RunOutput(ctx context.Context, output io.Writer, binary string, arguments ...string) error {
 	r.t.Helper()
-	command := exec.CommandContext(ctx, binary, arguments...)
+	command := exec.CommandContext(ctx, integrationBinary(binary), arguments...)
 	command.Stdout = output
 	stderr := &boundedIntegrationOutput{remaining: 16 << 10}
 	command.Stderr = stderr

@@ -68,6 +68,47 @@ func TestSharedObserverFailsClosedForUnknownContainer(t *testing.T) {
 	t.Fatal("unknown container did not fail closed")
 }
 
+func TestSharedObserverFailsClosedForLatchedStreamFault(t *testing.T) {
+	endpoint := observerEndpoint(t)
+	observer, err := NewSharedObserver(endpoint)
+	if err != nil {
+		t.Fatal(err)
+	}
+	reader, err := observer.Start(context.Background(), "0123456789abcdef")
+	if err != nil {
+		t.Fatal(err)
+	}
+	writer, err := net.DialUnix("unixgram", nil, &net.UnixAddr{Name: endpoint, Net: "unixgram"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer writer.Close()
+	body, _ := json.Marshal(helperRecord{ContainerID: "0123456789abcdef", Kind: "stream-fault"})
+	if _, err := writer.Write(body); err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	if _, err := reader.Next(ctx); err == nil {
+		t.Fatal("faulted stream completed without an incomplete error")
+	}
+	if _, err := observer.Start(context.Background(), "fedcba9876543210"); err == nil {
+		t.Fatal("faulted observer accepted a subsequent container mapping")
+	}
+}
+
+func FuzzDecodeHelperRecord(f *testing.F) {
+	f.Add([]byte(`{"container_id":"0123456789abcdef","kind":"network-attempt"}`))
+	f.Add([]byte(`{"container_id":"invalid","kind":"network-attempt"}`))
+	f.Add([]byte(`not-json`))
+	f.Fuzz(func(t *testing.T, body []byte) {
+		record, err := decodeHelperRecord(body)
+		if err == nil && !containerIDPattern.MatchString(record.ContainerID) {
+			t.Fatalf("accepted invalid container ID %q", record.ContainerID)
+		}
+	})
+}
+
 func observerEndpoint(t *testing.T) string {
 	t.Helper()
 	directory, err := os.MkdirTemp("/tmp", "haa-observer-")

@@ -11,6 +11,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -188,7 +189,55 @@ func parseWheelMetadata(project, version, filename string, metadata, wheel, reco
 	if err != nil {
 		return WheelInspection{}, err
 	}
-	return WheelInspection{Project: project, Version: version, Filename: filename, WheelVersion: wheelHeaders["wheel-version"], Tags: splitHeaders(wheelHeaders["tag"]), Files: files, RequiresPython: meta["requires-python"], RequiresDist: splitHeaders(meta["requires-dist"]), ImportNames: splitHeaders(meta["import-name"]), EntryPoints: splitHeaders(meta["entry-points"]), License: meta["license"], LicenseFile: meta["license-file"]}, nil
+	imports := splitHeaders(meta["import-name"])
+	if len(imports) == 0 {
+		imports = importNamesFromWheelFiles(files, distInfo)
+	}
+	return WheelInspection{Project: project, Version: version, Filename: filename, WheelVersion: wheelHeaders["wheel-version"], Tags: splitHeaders(wheelHeaders["tag"]), Files: files, RequiresPython: meta["requires-python"], RequiresDist: splitHeaders(meta["requires-dist"]), ImportNames: imports, EntryPoints: splitHeaders(meta["entry-points"]), License: meta["license"], LicenseFile: meta["license-file"]}, nil
+}
+
+// importNamesFromWheelFiles is a bounded static fallback for widely deployed
+// wheels that predate the optional Import-Name metadata. Only a valid Python
+// identifier observed as a top-level module or package is returned; the
+// dynamic backend never receives package-manager or caller-supplied names.
+func importNamesFromWheelFiles(files []WheelFile, distInfo string) []string {
+	seen := map[string]struct{}{}
+	for _, file := range files {
+		name := file.Path
+		if strings.HasPrefix(name, distInfo+"/") || strings.Contains(name, ".data/") {
+			continue
+		}
+		parts := strings.Split(name, "/")
+		if len(parts) == 1 && strings.HasSuffix(parts[0], ".py") {
+			module := strings.TrimSuffix(parts[0], ".py")
+			if module != "__init__" && validPythonImportComponent(module) {
+				seen[module] = struct{}{}
+			}
+			continue
+		}
+		if len(parts) > 1 && strings.HasSuffix(name, ".py") && validPythonImportComponent(parts[0]) {
+			seen[parts[0]] = struct{}{}
+		}
+	}
+	imports := make([]string, 0, len(seen))
+	for name := range seen {
+		imports = append(imports, name)
+	}
+	sort.Strings(imports)
+	return imports
+}
+
+func validPythonImportComponent(value string) bool {
+	if value == "" {
+		return false
+	}
+	for index, character := range value {
+		if character == '_' || character >= 'a' && character <= 'z' || character >= 'A' && character <= 'Z' || index > 0 && character >= '0' && character <= '9' {
+			continue
+		}
+		return false
+	}
+	return true
 }
 
 func validateRecord(body []byte, regular []string, entries map[string]*zip.File, limit int64) ([]WheelFile, error) {

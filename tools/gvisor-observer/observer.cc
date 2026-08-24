@@ -8,6 +8,8 @@
 #include <unistd.h>
 
 #include <cstdint>
+#include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <string>
 
@@ -17,15 +19,23 @@
 #include "pkg/sentry/seccheck/points/syscall.pb.h"
 
 namespace {
+#ifndef HAA_GVISOR_COMMIT
+#error "HAA_GVISOR_COMMIT must be set by the pinned observer build"
+#endif
 constexpr uint32_t kProtocolVersion = 1;
 constexpr size_t kMaxEventSize = 1024 * 1024;
 #pragma pack(push, 1)
 struct Header { uint16_t header_size; uint16_t message_type; uint32_t dropped_count; };
 #pragma pack(pop)
 
-bool Send(int output, const std::string& container_id, const char* kind) {
+bool ValidContainerID(const std::string& container_id) {
   if (container_id.size() < 12 || container_id.size() > 64) return false;
   for (const char character : container_id) if ((character < 'a' || character > 'f') && (character < '0' || character > '9')) return false;
+  return true;
+}
+
+bool Send(int output, const std::string& container_id, const char* kind) {
+  if (!ValidContainerID(container_id)) return false;
   const std::string message = "{\"container_id\":\"" + container_id + "\",\"kind\":\"" + kind + "\"}";
   return send(output, message.data(), message.size(), 0) == static_cast<ssize_t>(message.size());
 }
@@ -34,7 +44,13 @@ template <typename Message>
 bool ParseAndSend(const char* payload, size_t payload_size, int output, const char* kind, std::string* container_id) {
   Message message;
   if (!message.ParseFromArray(payload, payload_size)) return false;
-  *container_id = message.context_data().container_id();
+  const std::string& candidate = message.context_data().container_id();
+  if (!ValidContainerID(candidate)) return false;
+  if (container_id->empty()) {
+    *container_id = candidate;
+  } else if (*container_id != candidate) {
+    return false;
+  }
   return Send(output, *container_id, kind);
 }
 
@@ -63,16 +79,32 @@ int ConnectDatagram(const char* path) {
 }
 
 int main(int argc, char** argv) {
-  if (argc != 3) errx(2, "usage: haa_gvisor_observer REMOTE_SEQPACKET_SOCKET HAA_OUTPUT_DGRAM_SOCKET");
+  if (argc == 2 && strcmp(argv[1], "--identity") == 0) {
+    printf("gvisor-commit=%s\n", HAA_GVISOR_COMMIT);
+    return 0;
+  }
+  if (argc != 3 && argc != 4) errx(2, "usage: haa_gvisor_observer REMOTE_SEQPACKET_SOCKET HAA_OUTPUT_DGRAM_SOCKET [--ready-fd=FD]");
+  int ready_fd = -1;
+  if (argc == 4) {
+    if (strncmp(argv[3], "--ready-fd=", 11) != 0) errx(2, "invalid readiness option");
+    char* end = nullptr;
+    const long parsed_ready_fd = strtol(argv[3] + 11, &end, 10);
+    if (end == argv[3] + 11 || *end != '\0' || parsed_ready_fd < 0 || parsed_ready_fd > INT32_MAX) errx(2, "invalid readiness file descriptor");
+    ready_fd = static_cast<int>(parsed_ready_fd);
+  }
   int listener = socket(AF_UNIX, SOCK_SEQPACKET, 0);
   if (listener < 0) err(1, "socket remote");
-  unlink(argv[1]);
   sockaddr_un address{}; address.sun_family = AF_UNIX;
   if (strlen(argv[1]) >= sizeof(address.sun_path)) errx(1, "remote endpoint too long");
   strcpy(address.sun_path, argv[1]);
   if (bind(listener, reinterpret_cast<sockaddr*>(&address), sizeof(address)) < 0) err(1, "bind remote");
   if (listen(listener, 16) < 0) err(1, "listen remote");
   const int output = ConnectDatagram(argv[2]);
+  if (ready_fd >= 0) {
+    const char ready = 'R';
+    if (write(ready_fd, &ready, 1) != 1) err(1, "signal readiness");
+    close(ready_fd);
+  }
   for (;;) {
     int client = accept(listener, nullptr, nullptr); if (client < 0) err(1, "accept remote");
     char handshake[1024]; ssize_t size = recv(client, handshake, sizeof(handshake), 0);
@@ -80,13 +112,14 @@ int main(int argc, char** argv) {
     if (size <= 0 || !incoming.ParseFromArray(handshake, size) || incoming.version() != kProtocolVersion) { close(client); continue; }
     gvisor::common::Handshake outgoing; outgoing.set_version(kProtocolVersion); std::string encoded; outgoing.SerializeToString(&encoded);
     if (send(client, encoded.data(), encoded.size(), 0) != static_cast<ssize_t>(encoded.size())) { close(client); continue; }
-    std::string container_id; char event[kMaxEventSize];
+    std::string container_id; char event[kMaxEventSize]; bool fault = false;
     while ((size = recv(client, event, sizeof(event), 0)) > 0) {
-      if (static_cast<size_t>(size) < sizeof(Header)) { close(client); break; }
+      if (static_cast<size_t>(size) < sizeof(Header)) { fault = true; break; }
       Header header{}; memcpy(&header, event, sizeof(header));
-      if (header.header_size < sizeof(Header) || header.header_size > static_cast<uint16_t>(size) || !Handle(header, event + header.header_size, size - header.header_size, output, &container_id)) { close(client); break; }
+      if (header.header_size < sizeof(Header) || header.header_size > static_cast<uint16_t>(size) || !Handle(header, event + header.header_size, size - header.header_size, output, &container_id)) { fault = true; break; }
     }
-    if (!container_id.empty()) Send(output, container_id, "stream-end");
+    if (size < 0) fault = true;
+    if (!container_id.empty()) Send(output, container_id, fault ? "stream-fault" : "stream-end");
     close(client);
   }
 }

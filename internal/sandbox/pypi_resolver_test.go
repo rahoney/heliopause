@@ -18,13 +18,12 @@ func TestPyPIResolverUsesGVisorDefaultDenyLifecycleAndCrossChecks(t *testing.T) 
 
 	report := pypiResolverReportJSON()
 	runner := &recordingRunner{responses: [][]byte{
-		[]byte("iptables"), []byte("network-id"), []byte("172.30.0.0/24"),
-		nil, nil, nil, nil, nil, nil, nil,
+		[]byte("0123456789abcdef"), []byte("172.30.0.0/24"),
 		[]byte("0123456789abcdef"), nil, []byte("3.14.7\n"), []byte("pip 26.2.1 from /usr/local/lib/python3.14/site-packages/pip\n"), []byte("Compatible tags:\n  cp314-cp314-manylinux_2_36_x86_64\n"), nil,
 		[]byte(report), []byte(pypiResolverSimpleJSON("child", "child-2.0-py3-none-any.whl", "")), []byte(pypiResolverSimpleJSON("primary", "primary-1.0-py3-none-any.whl", ">=3.14")),
 	}}
 	observer := &recordingObserver{reader: &traceReader{records: []TraceRecord{{Kind: "network-attempt", Bytes: 1}}}}
-	resolver, err := NewPyPIResolver(runner, pypiStaticEndpoints{}, observer, availablePythonProbe)
+	resolver, err := NewPyPIResolver(runner, pypiStaticEndpoints{}, observer, availablePythonProbe, &recordingResolverPolicyService{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -44,11 +43,11 @@ func TestPyPIResolverUsesGVisorDefaultDenyLifecycleAndCrossChecks(t *testing.T) 
 	if observer.containerID != "0123456789abcdef" {
 		t.Fatalf("observer container = %q", observer.containerID)
 	}
-	if len(runner.calls) != 24 {
+	if len(runner.calls) != 13 {
 		t.Fatalf("command calls = %d: %#v", len(runner.calls), runner.calls)
 	}
-	assertPyPIResolverCreate(t, runner.calls[10].arguments)
-	if got := runner.calls[15]; got.binary != "docker" || strings.Contains(strings.Join(got.arguments, " "), "--only-binary") || !strings.Contains(strings.Join(got.arguments, " "), "primary==1.0") {
+	assertPyPIResolverCreate(t, runner.calls[2].arguments)
+	if got := runner.calls[7]; got.binary != "docker" || strings.Contains(strings.Join(got.arguments, " "), "--only-binary") || !strings.Contains(strings.Join(got.arguments, " "), "primary==1.0") {
 		t.Fatalf("pip resolution command = %#v", got)
 	}
 	if got := runner.calls[len(runner.calls)-1]; got.binary != "docker" || got.arguments[0] != "network" || got.arguments[1] != "rm" {
@@ -82,14 +81,14 @@ func TestPyPIResolverFailsClosedForObserverOrEndpointFailure(t *testing.T) {
 			name:      "observer stream incomplete",
 			endpoints: pypiStaticEndpoints{},
 			observer:  &recordingObserver{reader: &traceReader{err: errors.New("observer ended")}},
-			responses: [][]byte{[]byte("iptables"), []byte("network-id"), []byte("172.30.0.0/24"), nil, nil, nil, nil, nil, nil, nil, []byte("0123456789abcdef"), nil, []byte("3.14.7"), []byte("pip 26.2.1 from pip"), []byte("cp314-cp314-manylinux_2_36_x86_64"), nil, []byte(pypiResolverReportJSON()), []byte(pypiResolverSimpleJSON("child", "child-2.0-py3-none-any.whl", "")), []byte(pypiResolverSimpleJSON("primary", "primary-1.0-py3-none-any.whl", ">=3.14"))},
+			responses: [][]byte{[]byte("0123456789abcdef"), []byte("172.30.0.0/24"), []byte("0123456789abcdef"), nil, []byte("3.14.7"), []byte("pip 26.2.1 from pip"), []byte("cp314-cp314-manylinux_2_36_x86_64"), nil, []byte(pypiResolverReportJSON()), []byte(pypiResolverSimpleJSON("child", "child-2.0-py3-none-any.whl", "")), []byte(pypiResolverSimpleJSON("primary", "primary-1.0-py3-none-any.whl", ">=3.14"))},
 		},
 	}
 	for _, test := range tests {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			runner := &recordingRunner{responses: test.responses}
-			resolver, err := NewPyPIResolver(runner, test.endpoints, test.observer, availablePythonProbe)
+			resolver, err := NewPyPIResolver(runner, test.endpoints, test.observer, availablePythonProbe, &recordingResolverPolicyService{})
 			if err != nil {
 				t.Fatal(err)
 			}

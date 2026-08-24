@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"sort"
@@ -17,49 +16,43 @@ import (
 	"strings"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
-const promotionNodeImage = "node:22.23.1-slim@sha256:6c74791e557ce11fc957704f6d4fe134a7bc8d6f5ca4403205b2966bd488f6b3"
+var promotionNodeImage = runtimeidentity.NodeImageReference
 
-type promotionRunner interface {
+// DockerRunner is a prevalidated, minimal-environment Docker execution
+// capability supplied by production bootstrap.
+type DockerRunner interface {
 	Run(context.Context, string, []string) error
 }
 
-type dockerPromotionRunner struct{}
+type unavailableDockerRunner struct{}
 
-func (dockerPromotionRunner) Run(ctx context.Context, project string, arguments []string) error {
-	docker, err := exec.LookPath("docker")
-	if err != nil {
-		return errors.New("docker is unavailable for npm Promotion")
-	}
-	config, err := os.MkdirTemp(filepath.Dir(project), ".haa-docker-config-")
-	if err != nil {
-		return fmt.Errorf("create isolated Docker client config: %w", err)
-	}
-	defer os.RemoveAll(config)
-	command := exec.CommandContext(ctx, docker, arguments...)
-	command.Env = []string{"PATH=/usr/local/bin:/usr/bin:/bin", "HOME=" + config, "DOCKER_CONFIG=" + config}
-	if output, err := command.CombinedOutput(); err != nil {
-		_ = output
-		return errors.New("pinned offline npm Promotion runtime failed")
-	}
-	return nil
+func (unavailableDockerRunner) Run(context.Context, string, []string) error {
+	return errors.New("trusted Docker executor is unavailable")
 }
 
 // NPMPromotion installs a staged npm graph in a disposable pinned Docker
 // runtime, validates its output, and atomically publishes a new target.
 type NPMPromotion struct {
 	stagingRoot string
-	runner      promotionRunner
+	runner      DockerRunner
 	goos        string
 	goarch      string
 }
 
 func NewNPMPromotion(stagingRoot string) (*NPMPromotion, error) {
-	return newNPMPromotion(stagingRoot, dockerPromotionRunner{}, runtime.GOOS, runtime.GOARCH)
+	return newNPMPromotion(stagingRoot, unavailableDockerRunner{}, runtime.GOOS, runtime.GOARCH)
 }
 
-func newNPMPromotion(stagingRoot string, runner promotionRunner, goos, goarch string) (*NPMPromotion, error) {
+// NewNPMPromotionWithRunner composes production Promotion with a validated
+// Docker capability instead of resolving a Host binary itself.
+func NewNPMPromotionWithRunner(stagingRoot string, runner DockerRunner) (*NPMPromotion, error) {
+	return newNPMPromotion(stagingRoot, runner, runtime.GOOS, runtime.GOARCH)
+}
+
+func newNPMPromotion(stagingRoot string, runner DockerRunner, goos, goarch string) (*NPMPromotion, error) {
 	root := filepath.Clean(stagingRoot)
 	if !filepath.IsAbs(root) || runner == nil {
 		return nil, errors.New("npm Promotion requires absolute staging root and runtime runner")

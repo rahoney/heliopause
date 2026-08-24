@@ -37,6 +37,24 @@ func TestInspectWheelValidatesIntegrityAndStaticSurface(t *testing.T) {
 	}
 }
 
+func TestInspectWheelDerivesImportNameWhenMetadataOmitsIt(t *testing.T) {
+	data := []byte("value = 1\n")
+	sum := sha256.Sum256(data)
+	metadata := []byte("Metadata-Version: 2.4\nName: packaging\nVersion: 25.0\n")
+	wheel := []byte("Wheel-Version: 1.0\nTag: cp314-cp314-manylinux_2_36_x86_64\n")
+	metadataSum, wheelSum := sha256.Sum256(metadata), sha256.Sum256(wheel)
+	record := "packaging/__init__.py,sha256=" + base64.RawURLEncoding.EncodeToString(sum[:]) + ",10\n" +
+		"packaging-25.0.dist-info/METADATA,sha256=" + base64.RawURLEncoding.EncodeToString(metadataSum[:]) + "," + itoa(len(metadata)) + "\n" +
+		"packaging-25.0.dist-info/WHEEL,sha256=" + base64.RawURLEncoding.EncodeToString(wheelSum[:]) + "," + itoa(len(wheel)) + "\n" +
+		"packaging-25.0.dist-info/RECORD,,\n"
+	archive := makeWheel(t, map[string][]byte{"packaging/__init__.py": data, "packaging-25.0.dist-info/METADATA": metadata, "packaging-25.0.dist-info/WHEEL": wheel, "packaging-25.0.dist-info/RECORD": []byte(record)})
+	digest := sha256.Sum256(archive)
+	inspection, err := InspectWheel(bytes.NewReader(archive), int64(len(archive)), "packaging-25.0-cp314-cp314-manylinux_2_36_x86_64.whl", hex.EncodeToString(digest[:]), WheelTarget{"cp314", "cp314", "manylinux_2_36_x86_64"}, DefaultWheelLimits())
+	if err != nil || len(inspection.ImportNames) != 1 || inspection.ImportNames[0] != "packaging" {
+		t.Fatalf("fallback imports=%q error=%v", inspection.ImportNames, err)
+	}
+}
+
 func itoa(value int) string { return fmt.Sprintf("%d", value) }
 
 func TestInspectWheelRejectsUnsafeAndMismatchedInputs(t *testing.T) {

@@ -184,19 +184,22 @@ jobs:
       - name: Build exact gVisor observer helper with Bazel
         run: |
           set -eu
-          observer_lock=scripts/gvisor-observer.lock.json
-          gvisor_commit=5ceb9a5fd5750d6c73dd166441f28306039300d0
-          bazel_sha512=c876a1619c885f44f3bdc87998eca59c79581954631c9d7fab4eb53cc0409b68e4be74c08ef3fe599c51b75d56262070f0c314f9908336221e7764fdf981b7f5
-          test -f "$observer_lock"
-          git clone --filter=blob:none https://github.com/google/gvisor.git "$RUNNER_TEMP/gvisor"
+          runtime_lock=scripts/runtimes.lock.json
+          test -f "$runtime_lock"
+          gvisor_repository="$(jq -er '.gvisor.source_repository' "$runtime_lock")"
+          gvisor_commit="$(jq -er '.gvisor.commit' "$runtime_lock")"
+          bazel_url="$(jq -er '.bazel.linux_x86_64_url' "$runtime_lock")"
+          bazel_sha512="$(jq -er '.bazel.linux_x86_64_sha512' "$runtime_lock")"
+          git clone --filter=blob:none "$gvisor_repository" "$RUNNER_TEMP/gvisor"
           git -C "$RUNNER_TEMP/gvisor" checkout --detach "$gvisor_commit"
           test "$(git -C "$RUNNER_TEMP/gvisor" rev-parse HEAD)" = "$gvisor_commit"
-          curl --fail --location --silent --show-error --output "$RUNNER_TEMP/bazel" https://github.com/bazelbuild/bazel/releases/download/8.3.1/bazel-8.3.1-linux-x86_64
+          curl --fail --location --silent --show-error --output "$RUNNER_TEMP/bazel" "$bazel_url"
           test "$(sha512sum "$RUNNER_TEMP/bazel" | awk '{print $1}')" = "$bazel_sha512"
           chmod 0755 "$RUNNER_TEMP/bazel"
           cp -R tools/gvisor-observer "$RUNNER_TEMP/gvisor/tools/haa_gvisor_observer"
           cd "$RUNNER_TEMP/gvisor"
-          "$RUNNER_TEMP/bazel" build -c opt //tools/haa_gvisor_observer:haa_gvisor_observer
+          "$RUNNER_TEMP/bazel" build -c opt //tools/haa_gvisor_observer:haa_gvisor_observer //tools/haa_gvisor_observer:haa_gvisor_observer_latch_test
+          bazel-bin/tools/haa_gvisor_observer/haa_gvisor_observer_latch_test
 
   gvisor-integration:
     name: gVisor Linux Integration
@@ -218,11 +221,19 @@ jobs:
       - name: Install pinned runtime and run lifecycle integration
         run: |
           set -eu
-          docker_package_version=5:29.6.2-1~ubuntu.24.04~noble
-          containerd_package_version=2.3.3-1~ubuntu.24.04~noble
-          gvisor_commit=5ceb9a5fd5750d6c73dd166441f28306039300d0
-          runsc_sha512=4463ce276e207f5a516a08ec627a768a19cf7bed0094d522b0810bee3424585caa8d344e093204012b974f5c508ab2362dcb0d7236f0c1992fccc426beeb7ffc
-          bazel_sha512=c876a1619c885f44f3bdc87998eca59c79581954631c9d7fab4eb53cc0409b68e4be74c08ef3fe599c51b75d56262070f0c314f9908336221e7764fdf981b7f5
+          runtime_lock=scripts/runtimes.lock.json
+          test -f "$runtime_lock"
+          docker_package_version="$(jq -er '.docker.ci_ubuntu_24_04_amd64.docker_ce_package' "$runtime_lock")"
+          containerd_package_version="$(jq -er '.docker.ci_ubuntu_24_04_amd64.containerd_package' "$runtime_lock")"
+          docker_engine_version="$(jq -er '.docker.ci_engine_version' "$runtime_lock")"
+          gvisor_repository="$(jq -er '.gvisor.source_repository' "$runtime_lock")"
+          gvisor_commit="$(jq -er '.gvisor.commit' "$runtime_lock")"
+          runsc_url="$(jq -er '.gvisor.binaries.x86_64.url' "$runtime_lock")"
+          runsc_sha512="$(jq -er '.gvisor.binaries.x86_64.sha512' "$runtime_lock")"
+          bazel_url="$(jq -er '.bazel.linux_x86_64_url' "$runtime_lock")"
+          bazel_sha512="$(jq -er '.bazel.linux_x86_64_sha512' "$runtime_lock")"
+          node_image="$(jq -er '.node_image.reference' "$runtime_lock")"
+          python_image="$(jq -er '.python_image.reference' "$runtime_lock")"
           conflicting_packages=()
           for package in docker.io docker-compose docker-compose-v2 docker-doc podman-docker containerd runc moby-engine moby-cli; do
             if dpkg-query -W -f='${db:Status-Abbrev}' "$package" 2>/dev/null | grep -q '^ii'; then
@@ -247,37 +258,69 @@ jobs:
             "docker-ce=$docker_package_version" \
             "docker-ce-cli=$docker_package_version" \
             "containerd.io=$containerd_package_version"
-          test "$(docker version --format '{{.Server.Version}}')" = 29.6.2
-          curl --fail --location --silent --show-error --output "$RUNNER_TEMP/runsc" https://storage.googleapis.com/gvisor/releases/release/20260810.0/x86_64/runsc
+          test "$(docker version --format '{{.Server.Version}}')" = "$docker_engine_version"
+          curl --fail --location --silent --show-error --output "$RUNNER_TEMP/runsc" "$runsc_url"
           test "$(sha512sum "$RUNNER_TEMP/runsc" | awk '{print $1}')" = "$runsc_sha512"
           chmod 0755 "$RUNNER_TEMP/runsc"
-          sudo install -m 0755 "$RUNNER_TEMP/runsc" /usr/local/bin/runsc
+          sudo install -d -m 0755 /usr/libexec/heliopause
+          sudo install -m 0755 "$RUNNER_TEMP/runsc" /usr/libexec/heliopause/runsc
           sudo install -d -m 0700 -o "$USER" -g "$(id -gn)" /run/heliopause-observer
-          sudo install -d -m 0700 /etc/heliopause
+          sudo install -d -m 0755 /etc/heliopause
           sudo install -m 0600 tools/gvisor-observer/pod-init.json /etc/heliopause/pod-init.json
-          sudo runsc install --runtime=runsc-trace -- --pod-init-config=/etc/heliopause/pod-init.json
+          sudo /usr/libexec/heliopause/runsc install --runtime=runsc-trace -- --pod-init-config=/etc/heliopause/pod-init.json
           sudo python3 -c 'import json; from pathlib import Path; path = Path("/etc/docker/daemon.json"); config = json.loads(path.read_text()) if path.exists() else {}; config.update({"firewall-backend": "iptables", "iptables": True, "ip6tables": False}); path.write_text(json.dumps(config, sort_keys=True) + "\n")'
           sudo systemctl restart docker || { sudo systemctl status docker --no-pager || true; sudo journalctl -u docker --no-pager -n 100 || true; exit 1; }
           sudo iptables -S DOCKER-USER
-          docker pull node:22.23.1-slim@sha256:6c74791e557ce11fc957704f6d4fe134a7bc8d6f5ca4403205b2966bd488f6b3
-          docker pull python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52
-          git clone --filter=blob:none https://github.com/google/gvisor.git "$RUNNER_TEMP/gvisor"
+          docker pull "$node_image"
+          docker pull "$python_image"
+          git clone --filter=blob:none "$gvisor_repository" "$RUNNER_TEMP/gvisor"
           git -C "$RUNNER_TEMP/gvisor" checkout --detach "$gvisor_commit"
-          curl --fail --location --silent --show-error --output "$RUNNER_TEMP/bazel" https://github.com/bazelbuild/bazel/releases/download/8.3.1/bazel-8.3.1-linux-x86_64
+          curl --fail --location --silent --show-error --output "$RUNNER_TEMP/bazel" "$bazel_url"
           test "$(sha512sum "$RUNNER_TEMP/bazel" | awk '{print $1}')" = "$bazel_sha512"
           chmod 0755 "$RUNNER_TEMP/bazel"
           cp -R tools/gvisor-observer "$RUNNER_TEMP/gvisor/tools/haa_gvisor_observer"
           cd "$RUNNER_TEMP/gvisor"
           "$RUNNER_TEMP/bazel" build -c opt //tools/haa_gvisor_observer:haa_gvisor_observer
           cd "$GITHUB_WORKSPACE"
-          runsc --version
+          sudo install -m 0755 "$RUNNER_TEMP/gvisor/bazel-bin/tools/haa_gvisor_observer/haa_gvisor_observer" /usr/libexec/heliopause/haa_gvisor_observer
+
+          go build -trimpath -o "$RUNNER_TEMP/helox" ./cmd/helox
+          go build -trimpath -o "$RUNNER_TEMP/haa-network-policy-helper" ./cmd/haa-network-policy-helper
+          sudo install -m 0755 "$RUNNER_TEMP/helox" /usr/libexec/heliopause/helox
+          sudo install -m 0755 "$RUNNER_TEMP/haa-network-policy-helper" /usr/libexec/heliopause/haa-network-policy-helper
+          sudo install -d -m 0755 -o root -g root /run/heliopause-network-policy
+          printf '{"socket_path":"/run/heliopause-network-policy/helper.sock","client_path":"/usr/libexec/heliopause/helox","client_uid":%s,"client_gid":%s}\n' "$(id -u)" "$(id -g)" | sudo tee /etc/heliopause/network-policy.json >/dev/null
+          # The ordinary client must read the root-owned, non-writable public
+          # identity contract; it contains no credential or secret.
+          sudo chmod 0644 /etc/heliopause/network-policy.json
+          sudo /usr/libexec/heliopause/haa-network-policy-helper >/tmp/haa-network-policy-helper.log 2>&1 &
+          policy_helper_pid=$!
+          trap 'sudo kill "$policy_helper_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 50); do
+            test -S /run/heliopause-network-policy/helper.sock && break
+            sleep 0.1
+          done
+          test -S /run/heliopause-network-policy/helper.sock
+          /usr/libexec/heliopause/runsc --version
           docker version --format '{{.Server.Version}}'
           docker info --format '{{json (index .Runtimes "runsc-trace")}}'
-          HELOX_GVISOR_INTEGRATION=1 HELOX_GVISOR_HELPER="$RUNNER_TEMP/gvisor/bazel-bin/tools/haa_gvisor_observer/haa_gvisor_observer" go test -timeout=5m ./internal/sandbox -run TestLinuxGVisorLifecycleIntegration
-          HELOX_GITHUB_RELEASE_INTEGRATION=1 HELOX_GVISOR_HELPER="$RUNNER_TEMP/gvisor/bazel-bin/tools/haa_gvisor_observer/haa_gvisor_observer" go test -timeout=5m ./internal/sandbox -run TestLinuxGitHubReleaseELFDynamicIntegration
-          HELOX_NPM_RESOLVER_INTEGRATION=1 sudo --preserve-env=HELOX_NPM_RESOLVER_INTEGRATION,GOTOOLCHAIN "$(command -v go)" test -v -timeout=5m ./internal/sandbox -run TestLinuxNPMResolverNetworkPolicyIntegration
-          HELOX_PYPI_RESOLVER_INTEGRATION=1 HELOX_GVISOR_HELPER="$RUNNER_TEMP/gvisor/bazel-bin/tools/haa_gvisor_observer/haa_gvisor_observer" sudo --preserve-env=HELOX_PYPI_RESOLVER_INTEGRATION,HELOX_GVISOR_HELPER,GOTOOLCHAIN "$(command -v go)" test -v -timeout=5m ./internal/sandbox -run TestLinuxPyPIResolverIntegration
-          HELOX_PYPI_DYNAMIC_INTEGRATION=1 HELOX_GVISOR_HELPER="$RUNNER_TEMP/gvisor/bazel-bin/tools/haa_gvisor_observer/haa_gvisor_observer" go test -v -timeout=5m ./internal/sandbox -run 'TestLinuxPyPI(WheelDynamic|SdistBuild)Integration'
+          go test -run='^$' -fuzz=FuzzDecodeHelperRecord -fuzztime=2s ./internal/sandbox
+          HELOX_HOSTTOOL_INTEGRATION=1 go test -v -timeout=2m ./internal/hosttool -run TestLinuxTrustedHostExecutorIntegration
+          HELOX_GVISOR_INTEGRATION=1 go test -timeout=5m ./internal/sandbox -run TestLinuxGVisorLifecycleIntegration
+          HELOX_GITHUB_RELEASE_INTEGRATION=1 go test -timeout=5m ./internal/sandbox -run TestLinuxGitHubReleaseELFDynamicIntegration
+          # M4/M5 intentionally return 10 for a completed inspection whose
+          # policy decision is MANUAL_REVIEW. This proves the ordinary-user
+          # typed-helper path ran without treating an unpromoted package as a
+          # successful installation.
+          set +e
+          /usr/libexec/heliopause/helox npm install is-number@7.0.0 --target "$RUNNER_TEMP/npm-target"
+          npm_status=$?
+          /usr/libexec/heliopause/helox pypi install packaging@25.0 --target "$RUNNER_TEMP/pypi-target"
+          pypi_status=$?
+          set -e
+          test "$npm_status" = 10
+          test "$pypi_status" = 10
+          HELOX_PYPI_DYNAMIC_INTEGRATION=1 go test -v -timeout=5m ./internal/sandbox -run 'TestLinuxPyPI(WheelDynamic|SdistBuild)Integration'
           HELOX_PROMOTION_INTEGRATION=1 go test -v -timeout=5m ./internal/promotion -run TestLinuxNPMPromotionIntegration
           HELOX_PYPI_PROMOTION_INTEGRATION=1 go test -v -timeout=5m ./internal/promotion -run TestLinuxPyPIPromotionIntegration
 

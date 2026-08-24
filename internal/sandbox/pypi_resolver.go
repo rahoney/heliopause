@@ -7,6 +7,7 @@ import (
 	"errors"
 	"net"
 	"net/netip"
+	"runtime"
 	"sort"
 	"strings"
 	"time"
@@ -39,31 +40,44 @@ type PyPIResolver struct {
 	observer  TraceObserver
 	probe     func(context.Context) (PythonCapability, error)
 	close     func() error
+	policy    ResolverPolicyService
 }
 
 // NewPyPIResolver constructs the narrow M5 resolver boundary. Every injected
 // collaborator is required because missing network, runtime or observation
 // controls must fail closed before a graph can be emitted.
-func NewPyPIResolver(runner CommandRunner, endpoints NamedEndpointResolver, observer TraceObserver, probe func(context.Context) (PythonCapability, error)) (*PyPIResolver, error) {
-	if runner == nil || endpoints == nil || observer == nil || probe == nil {
-		return nil, errors.New("PyPI resolver requires runner, endpoint resolver, observer and runtime probe")
+func NewPyPIResolver(runner CommandRunner, endpoints NamedEndpointResolver, observer TraceObserver, probe func(context.Context) (PythonCapability, error), policy ResolverPolicyService) (*PyPIResolver, error) {
+	if runner == nil || endpoints == nil || observer == nil || probe == nil || policy == nil {
+		return nil, errors.New("PyPI resolver requires runner, endpoint resolver, observer, runtime probe and network policy service")
 	}
-	return &PyPIResolver{runner: runner, endpoints: endpoints, observer: observer, probe: probe}, nil
+	return &PyPIResolver{runner: runner, endpoints: endpoints, observer: observer, probe: probe, policy: policy}, nil
 }
 
-// NewLinuxPyPIResolver composes the Linux-only production adapter. The caller
-// owns Close for the trusted shared observer endpoint.
-func NewLinuxPyPIResolver() (*PyPIResolver, error) {
-	observer, err := NewSharedObserver(ObserverOutputEndpoint)
+// NewLinuxPyPIResolverWithExecutorAndPolicy constructs the production
+// resolver with the ordinary-to-privileged typed network policy port.
+func NewLinuxPyPIResolverWithExecutorAndPolicy(executor TrustedExecutor, observer TraceObserver, policy ResolverPolicyService) (*PyPIResolver, error) {
+	if policy == nil {
+		return nil, errors.New("PyPI resolver requires network policy service")
+	}
+	resolver, err := newLinuxPyPIResolver(executor, observer, policy)
 	if err != nil {
 		return nil, err
 	}
-	resolver, err := NewPyPIResolver(systemExecutor{}, systemNamedEndpointResolver{}, observer, ProbePython)
+	resolver.policy = policy
+	return resolver, nil
+}
+
+func newLinuxPyPIResolver(executor TrustedExecutor, observer TraceObserver, policy ResolverPolicyService) (*PyPIResolver, error) {
+	if observer == nil {
+		return nil, errors.New("process-scoped observer is required")
+	}
+	capabilityProbe := func(ctx context.Context) (PythonCapability, error) {
+		return probePython(ctx, runtime.GOOS, runtime.GOARCH, executor)
+	}
+	resolver, err := NewPyPIResolver(executor, systemNamedEndpointResolver{}, observer, capabilityProbe, policy)
 	if err != nil {
-		_ = observer.Close()
 		return nil, err
 	}
-	resolver.close = observer.Close
 	return resolver, nil
 }
 
@@ -95,7 +109,7 @@ func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain
 	if err != nil {
 		return domain.DependencyResolution{}, errors.New("PyPI resolver endpoint preflight is unsafe")
 	}
-	policy, err := NewResolverNetworkPolicy(ctx, r.runner)
+	policy, err := NewResolverNetworkPolicy(r.runner, r.policy)
 	if err != nil {
 		return domain.DependencyResolution{}, err
 	}

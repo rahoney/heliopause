@@ -5,16 +5,12 @@ import (
 	"errors"
 	"runtime"
 	"strings"
+
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 const (
-	pythonImageReference = "python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52"
-	pythonRuntimeVersion = "3.14.7"
-	pipRuntimeVersion    = "26.2.1"
-
-	pythonInterpreterTag = "cp314"
-	pythonABITag         = "cp314"
-	pythonPlatformTag    = "manylinux_2_36_x86_64"
+	pythonImageReference = runtimeidentity.PythonImageReference
 )
 
 // PythonRuntime identifies the immutable runtime used by M5 resolver and
@@ -32,11 +28,11 @@ type PythonRuntime struct {
 func PinnedPythonRuntime() PythonRuntime {
 	return PythonRuntime{
 		ImageReference: pythonImageReference,
-		PythonVersion:  pythonRuntimeVersion,
-		PipVersion:     pipRuntimeVersion,
-		InterpreterTag: pythonInterpreterTag,
-		ABITag:         pythonABITag,
-		PlatformTag:    pythonPlatformTag,
+		PythonVersion:  runtimeidentity.PythonVersion,
+		PipVersion:     runtimeidentity.PipVersion,
+		InterpreterTag: runtimeidentity.PythonInterpreterTag,
+		ABITag:         runtimeidentity.PythonABITag,
+		PlatformTag:    runtimeidentity.PythonPlatformTag,
 	}
 }
 
@@ -51,7 +47,7 @@ type PythonCapability struct {
 // ProbePython checks M5's Linux amd64 gVisor prerequisites and the presence of
 // the exact immutable Python runtime image without downloading it.
 func ProbePython(ctx context.Context) (PythonCapability, error) {
-	return probePython(ctx, runtime.GOOS, runtime.GOARCH, systemExecutor{})
+	return probePython(ctx, runtime.GOOS, runtime.GOARCH, nil)
 }
 
 func probePython(ctx context.Context, operatingSystem, architecture string, executor Executor) (PythonCapability, error) {

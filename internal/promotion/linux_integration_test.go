@@ -17,6 +17,7 @@ import (
 
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/evidence"
+	"github.com/rahoney/heliopause/internal/hosttool"
 )
 
 func TestLinuxPyPIPromotionIntegration(t *testing.T) {
@@ -29,7 +30,12 @@ func TestLinuxPyPIPromotionIntegration(t *testing.T) {
 	}
 	bundle, staged := validStagedPyPIFixture(t, root)
 	target := filepath.Join(root, "target")
-	adapter, err := NewPyPIPromotion(filepath.Join(root, "staging"))
+	executor, err := hosttool.NewSystem(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = executor.Close() })
+	adapter, err := NewPyPIPromotionWithRunner(filepath.Join(root, "staging"), executor)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -134,7 +140,12 @@ func TestLinuxNPMPromotionIntegration(t *testing.T) {
 	}
 	bundle, staged := validStagedNPMFixture(t, root)
 	target := filepath.Join(root, "target")
-	adapter, err := NewNPMPromotion(filepath.Join(root, "staging"))
+	executor, err := hosttool.NewSystem(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = executor.Close() })
+	adapter, err := NewNPMPromotionWithRunner(filepath.Join(root, "staging"), executor)
 	if err != nil {
 		t.Fatal(err)
 	}

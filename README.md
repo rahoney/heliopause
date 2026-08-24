@@ -8,8 +8,8 @@
 - Go module path: `github.com/rahoney/heliopause`
 - 구현 언어: Go
 - CLI framework: Cobra
-- 현재 상태: Step 14 Implementation — M0–M7 MVP qualification 완료
-- 현재 작업: 없음 — post-MVP scope와 queue 결정 필요
+- 현재 상태: M0–M7 MVP qualification 완료. External security review에서 확인된 production trust-boundary hardening을 M8에서 진행 중이며 production-ready release는 보류
+- 현재 작업: M8-005 — least-privilege typed resolver network-policy helper
 
 ## Project Notes
 
@@ -65,9 +65,7 @@ helox github install '<owner>/<repo>@<tag>#<asset>' --target /absolute/new-targe
 | 기타 OS/architecture/runtime | 지원하지 않으며 누락된 capability를 안전으로 간주하지 않음 |
 
 전체 Linux 경로는 [runtime lock](./scripts/runtimes.lock.json)의 exact Docker,
-gVisor, Node 및 Python identity와
-[observer lock](./scripts/gvisor-observer.lock.json)의 exact gVisor source/Bazel
-경계를 요구한다. `runsc-trace`는
+gVisor source·runsc, Bazel, Node 및 Python identity 경계를 요구한다. `runsc-trace`는
 [pod-init config](./tools/gvisor-observer/pod-init.json)로 보호된 shared observer
 socket을 sandbox 시작 전에 연결해야 한다. 현재 저장소는 일반 Host용 runtime
 installer를 제공하지 않는다. 이 구성이 없는 Host에서 동적 검사나 automatic
