@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net"
 	"net/netip"
+	"sort"
 	"strings"
 
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
@@ -106,6 +107,10 @@ func (r *NPMResolver) ResolveDependencies(ctx context.Context, reference domain.
 	if err != nil {
 		return domain.DependencyResolution{}, errors.New("resolver endpoint preflight failed")
 	}
+	hostArguments, err := npmNetworkArguments(addresses)
+	if err != nil {
+		return domain.DependencyResolution{}, errors.New("resolver endpoint preflight failed")
+	}
 	policy, err := NewResolverNetworkPolicy(ctx, r.runner)
 	if err != nil {
 		return domain.DependencyResolution{}, err
@@ -146,7 +151,10 @@ func (r *NPMResolver) ResolveDependencies(ctx context.Context, reference domain.
 		}
 	}()
 
-	created, err := r.runner.Output(ctx, "docker", "create", "--runtime", gVisorRuntimeName, "--network", network, "--user", "1000:1000", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "64", "--memory", "512m", "--cpus", "1", "--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=128m,uid=1000,gid=1000,mode=0700", nodeImageReference, "/bin/sh", "-ceu", "sleep infinity")
+	createArguments := []string{"create", "--runtime", gVisorRuntimeName, "--network", network, "--user", "1000:1000", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "64", "--memory", "512m", "--cpus", "1", "--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=128m,uid=1000,gid=1000,mode=0700"}
+	createArguments = append(createArguments, hostArguments...)
+	createArguments = append(createArguments, nodeImageReference, "/bin/sh", "-ceu", "sleep infinity")
+	created, err := r.runner.Output(ctx, "docker", createArguments...)
 	if err != nil || !containerIDPattern.MatchString(strings.TrimSpace(string(created))) {
 		return domain.DependencyResolution{}, errors.New("create resolver container failed")
 	}
@@ -199,4 +207,20 @@ func (r *NPMResolver) ResolveDependencies(ctx context.Context, reference domain.
 		return domain.DependencyResolution{}, err
 	}
 	return domain.NewDependencyResolution(graph, resolverRuntimeIdentity, digest)
+}
+
+// npmNetworkArguments fixes the preflight-resolved registry address set into
+// the sandbox. Resolver egress deliberately denies DNS, so registry lookup
+// cannot be deferred to the untrusted container network namespace.
+func npmNetworkArguments(addresses []netip.Addr) ([]string, error) {
+	if err := validateResolverEndpoints(addresses); err != nil {
+		return nil, err
+	}
+	ordered := append([]netip.Addr(nil), addresses...)
+	sort.Slice(ordered, func(i, j int) bool { return ordered[i].Less(ordered[j]) })
+	arguments := make([]string, 0, len(ordered)*2)
+	for _, address := range ordered {
+		arguments = append(arguments, "--add-host", "registry.npmjs.org:"+address.String())
+	}
+	return arguments, nil
 }

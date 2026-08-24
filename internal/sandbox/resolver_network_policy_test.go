@@ -159,6 +159,16 @@ func TestNPMResolverReturnsOnlyParsedGraphAfterPolicyProtectedLifecycle(t *testi
 	if observer.containerID != "0123456789ab" {
 		t.Fatalf("resolver observer container = %q", observer.containerID)
 	}
+	var create commandCall
+	for _, call := range runner.calls {
+		if call.binary == "docker" && len(call.arguments) > 1 && call.arguments[0] == "create" {
+			create = call
+			break
+		}
+	}
+	if !containsSubsequence(create.arguments, []string{"--add-host", "registry.npmjs.org:1.1.1.1"}) {
+		t.Fatalf("resolver container does not pin preflight registry address: %#v", create)
+	}
 	if got := string(runner.input); !strings.Contains(got, "\"primary\":\"1.0.0\"") {
 		t.Fatalf("manifest = %q", got)
 	}
@@ -170,6 +180,32 @@ func TestNPMResolverReturnsOnlyParsedGraphAfterPolicyProtectedLifecycle(t *testi
 			t.Fatalf("cleanup call is unbounded: %#v", call)
 		}
 	}
+}
+
+func TestNPMNetworkArgumentsPinsOnlyValidatedAddressesInStableOrder(t *testing.T) {
+	arguments, err := npmNetworkArguments([]netip.Addr{netip.MustParseAddr("1.1.1.2"), netip.MustParseAddr("1.1.1.1")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []string{"--add-host", "registry.npmjs.org:1.1.1.1", "--add-host", "registry.npmjs.org:1.1.1.2"}
+	if !sameStrings(arguments, want) {
+		t.Fatalf("npm network arguments = %#v, want %#v", arguments, want)
+	}
+	if _, err := npmNetworkArguments([]netip.Addr{netip.MustParseAddr("127.0.0.1")}); err == nil {
+		t.Fatal("npm network arguments accepted unsafe address")
+	}
+}
+
+func containsSubsequence(values, want []string) bool {
+	if len(want) == 0 {
+		return true
+	}
+	for offset := 0; offset+len(want) <= len(values); offset++ {
+		if sameStrings(values[offset:offset+len(want)], want) {
+			return true
+		}
+	}
+	return false
 }
 
 type staticEndpoints struct{ addresses []netip.Addr }
