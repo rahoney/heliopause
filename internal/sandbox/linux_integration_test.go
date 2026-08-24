@@ -74,10 +74,7 @@ func TestLinuxGVisorLifecycleIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	capabilityProbe := func(ctx context.Context) (Capability, error) {
-		return probe(ctx, runtime.GOOS, runner)
-	}
-	backend, err := NewBackend(runner, introducer, observer, capabilityProbe)
+	backend, err := NewBackend(runner, introducer, observer, integrationCapabilityProbe(runner))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -134,7 +131,8 @@ func TestLinuxGitHubReleaseELFDynamicIntegration(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer func() { _ = helper.Process.Kill(); _ = helper.Wait() }()
-	backend, err := NewGitHubELFBackend(integrationRunner{t: t}, root, observer, Probe)
+	runner := integrationRunner{t: t}
+	backend, err := NewGitHubELFBackend(runner, root, observer, integrationCapabilityProbe(runner))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -187,7 +185,8 @@ func TestLinuxPyPIResolverIntegration(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer func() { _ = observer.Close() }()
-	resolver, err := NewPyPIResolver(integrationRunner{t: t}, systemNamedEndpointResolver{}, observer, ProbePython)
+	runner := integrationRunner{t: t}
+	resolver, err := NewPyPIResolver(runner, systemNamedEndpointResolver{}, observer, integrationPythonCapabilityProbe(runner))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -248,11 +247,12 @@ func TestLinuxPyPIWheelDynamicIntegration(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer observer.Close()
-	introducer, err := NewPythonArtifactIntroducer(root, integrationRunner{t: t})
+	runner := integrationRunner{t: t}
+	introducer, err := NewPythonArtifactIntroducer(root, runner)
 	if err != nil {
 		t.Fatal(err)
 	}
-	backend, err := NewPythonDynamicBackend(integrationRunner{t: t}, introducer, observer, ProbePython)
+	backend, err := NewPythonDynamicBackend(runner, introducer, observer, integrationPythonCapabilityProbe(runner))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -328,7 +328,7 @@ func TestLinuxPyPISdistBuildIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	builder, err := NewPythonSdistBuilder(runner, introducer, observer, ProbePython)
+	builder, err := NewPythonSdistBuilder(runner, introducer, observer, integrationPythonCapabilityProbe(runner))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -440,6 +440,18 @@ func linuxBuildBackendWheel(t *testing.T) []byte {
 
 type integrationRunner struct {
 	t *testing.T
+}
+
+func integrationCapabilityProbe(executor Executor) CapabilityProbe {
+	return func(ctx context.Context) (Capability, error) {
+		return probe(ctx, runtime.GOOS, executor)
+	}
+}
+
+func integrationPythonCapabilityProbe(executor Executor) func(context.Context) (PythonCapability, error) {
+	return func(ctx context.Context) (PythonCapability, error) {
+		return probePython(ctx, runtime.GOOS, runtime.GOARCH, executor)
+	}
 }
 
 func (r integrationRunner) LookPath(binary string) (string, error) {
