@@ -273,6 +273,22 @@ jobs:
           "$RUNNER_TEMP/bazel" build -c opt //tools/haa_gvisor_observer:haa_gvisor_observer
           cd "$GITHUB_WORKSPACE"
           sudo install -m 0755 "$RUNNER_TEMP/gvisor/bazel-bin/tools/haa_gvisor_observer/haa_gvisor_observer" /usr/libexec/heliopause/haa_gvisor_observer
+
+          go build -trimpath -o "$RUNNER_TEMP/helox" ./cmd/helox
+          go build -trimpath -o "$RUNNER_TEMP/haa-network-policy-helper" ./cmd/haa-network-policy-helper
+          sudo install -m 0755 "$RUNNER_TEMP/helox" /usr/libexec/heliopause/helox
+          sudo install -m 0755 "$RUNNER_TEMP/haa-network-policy-helper" /usr/libexec/heliopause/haa-network-policy-helper
+          sudo install -d -m 0755 -o root -g root /run/heliopause-network-policy
+          printf '{"socket_path":"/run/heliopause-network-policy/helper.sock","client_path":"/usr/libexec/heliopause/helox","client_uid":%s,"client_gid":%s}\n' "$(id -u)" "$(id -g)" | sudo tee /etc/heliopause/network-policy.json >/dev/null
+          sudo chmod 0600 /etc/heliopause/network-policy.json
+          sudo /usr/libexec/heliopause/haa-network-policy-helper >/tmp/haa-network-policy-helper.log 2>&1 &
+          policy_helper_pid=$!
+          trap 'sudo kill "$policy_helper_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 50); do
+            test -S /run/heliopause-network-policy/helper.sock && break
+            sleep 0.1
+          done
+          test -S /run/heliopause-network-policy/helper.sock
           /usr/libexec/heliopause/runsc --version
           docker version --format '{{.Server.Version}}'
           docker info --format '{{json (index .Runtimes "runsc-trace")}}'
@@ -280,10 +296,8 @@ jobs:
           HELOX_HOSTTOOL_INTEGRATION=1 go test -v -timeout=2m ./internal/hosttool -run TestLinuxTrustedHostExecutorIntegration
           HELOX_GVISOR_INTEGRATION=1 go test -timeout=5m ./internal/sandbox -run TestLinuxGVisorLifecycleIntegration
           HELOX_GITHUB_RELEASE_INTEGRATION=1 go test -timeout=5m ./internal/sandbox -run TestLinuxGitHubReleaseELFDynamicIntegration
-          sudo install -d -m 0700 -o root -g root /run/heliopause-observer
-          HELOX_NPM_RESOLVER_INTEGRATION=1 sudo --preserve-env=HELOX_NPM_RESOLVER_INTEGRATION,GOTOOLCHAIN "$(command -v go)" test -v -timeout=5m ./internal/sandbox -run TestLinuxNPMResolverNetworkPolicyIntegration
-          HELOX_PYPI_RESOLVER_INTEGRATION=1 sudo --preserve-env=HELOX_PYPI_RESOLVER_INTEGRATION,GOTOOLCHAIN "$(command -v go)" test -v -timeout=5m ./internal/sandbox -run TestLinuxPyPIResolverIntegration
-          sudo install -d -m 0700 -o "$USER" -g "$(id -gn)" /run/heliopause-observer
+          /usr/libexec/heliopause/helox npm install is-number@7.0.0 --target "$RUNNER_TEMP/npm-target"
+          /usr/libexec/heliopause/helox pypi install packaging@25.0 --target "$RUNNER_TEMP/pypi-target"
           HELOX_PYPI_DYNAMIC_INTEGRATION=1 go test -v -timeout=5m ./internal/sandbox -run 'TestLinuxPyPI(WheelDynamic|SdistBuild)Integration'
           HELOX_PROMOTION_INTEGRATION=1 go test -v -timeout=5m ./internal/promotion -run TestLinuxNPMPromotionIntegration
           HELOX_PYPI_PROMOTION_INTEGRATION=1 go test -v -timeout=5m ./internal/promotion -run TestLinuxPyPIPromotionIntegration

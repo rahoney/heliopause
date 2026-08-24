@@ -35,7 +35,41 @@ func NewSystemNetworkPolicyClient() (networkpolicy.Service, error) {
 	if err := verifyPolicySocket(config.SocketPath, config.ClientGID); err != nil {
 		return nil, err
 	}
-	return networkpolicy.NewClient(config.SocketPath)
+	client, err := networkpolicy.NewClient(config.SocketPath)
+	if err != nil {
+		return nil, err
+	}
+	return verifiedPolicyClient{config: config, client: client}, nil
+}
+
+// verifiedPolicyClient rechecks the protected socket around every request.
+// A replacement, permission change or failed helper connection is always a
+// resolver failure rather than a reason to continue with stale trust.
+type verifiedPolicyClient struct {
+	config policyServiceConfig
+	client networkpolicy.Service
+}
+
+func (c verifiedPolicyClient) Create(ctx context.Context, policy networkpolicy.ResolverPolicy) error {
+	return c.call(ctx, policy, c.client.Create)
+}
+func (c verifiedPolicyClient) Verify(ctx context.Context, policy networkpolicy.ResolverPolicy) error {
+	return c.call(ctx, policy, c.client.Verify)
+}
+func (c verifiedPolicyClient) Remove(ctx context.Context, policy networkpolicy.ResolverPolicy) error {
+	return c.call(ctx, policy, c.client.Remove)
+}
+func (c verifiedPolicyClient) call(ctx context.Context, policy networkpolicy.ResolverPolicy, operation func(context.Context, networkpolicy.ResolverPolicy) error) error {
+	if ctx == nil || operation == nil || verifyPolicySocket(c.config.SocketPath, c.config.ClientGID) != nil {
+		return errors.New("network policy service identity is unavailable")
+	}
+	if err := operation(ctx, policy); err != nil {
+		return err
+	}
+	if err := verifyPolicySocket(c.config.SocketPath, c.config.ClientGID); err != nil {
+		return errors.New("network policy service identity changed")
+	}
+	return nil
 }
 
 // ServeNetworkPolicy is the root-owned service entry point. It has no CLI
