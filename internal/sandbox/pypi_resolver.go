@@ -14,6 +14,8 @@ import (
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/hosttool"
+	"github.com/rahoney/heliopause/internal/networkpolicy"
 )
 
 const (
@@ -40,6 +42,7 @@ type PyPIResolver struct {
 	observer  TraceObserver
 	probe     func(context.Context) (PythonCapability, error)
 	close     func() error
+	policy    networkpolicy.Service
 }
 
 // NewPyPIResolver constructs the narrow M5 resolver boundary. Every injected
@@ -69,6 +72,11 @@ func newLinuxPyPIResolver(executor TrustedExecutor, observer TraceObserver) (*Py
 	if err != nil {
 		return nil, err
 	}
+	service, err := hosttool.NewSystemNetworkPolicyClient()
+	if err != nil {
+		return nil, err
+	}
+	resolver.policy = service
 	return resolver, nil
 }
 
@@ -100,7 +108,12 @@ func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain
 	if err != nil {
 		return domain.DependencyResolution{}, errors.New("PyPI resolver endpoint preflight is unsafe")
 	}
-	policy, err := NewResolverNetworkPolicy(ctx, r.runner)
+	var policy *ResolverNetworkPolicy
+	if r.policy != nil {
+		policy, err = NewResolverNetworkPolicyWithService(ctx, r.runner, r.policy)
+	} else {
+		policy, err = NewResolverNetworkPolicy(ctx, r.runner)
+	}
 	if err != nil {
 		return domain.DependencyResolution{}, err
 	}
