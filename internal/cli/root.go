@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"os"
 
 	"github.com/rahoney/heliopause/internal/application"
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
@@ -149,6 +150,25 @@ func AddPyPIInstall(root *cobra.Command, installer Installer) error {
 	return nil
 }
 
+func npmInstallContext(target string) (domain.InstallContext, error) {
+	if target != "" {
+		value, err := domain.NewInstallTarget(target)
+		if err != nil {
+			return domain.InstallContext{}, err
+		}
+		return domain.NewInstallContext(value)
+	}
+	workingDirectory, err := os.Getwd()
+	if err != nil {
+		return domain.InstallContext{}, errors.New("resolve npm project directory")
+	}
+	project, err := domain.NewInstallTarget(workingDirectory)
+	if err != nil {
+		return domain.InstallContext{}, errors.New("npm project directory is unsupported")
+	}
+	return domain.NewNPMProjectInstallContext(project)
+}
+
 // AddPyPIInspect adds the isolated PyPI primary-distribution inspect path.
 func AddPyPIInspect(root *cobra.Command, inspector Inspector) error {
 	if root == nil || inspector == nil {
@@ -217,11 +237,7 @@ func AddNPMInstall(root *cobra.Command, installer Installer) error {
 		if err != nil {
 			return err
 		}
-		installTarget, err := domain.NewInstallTarget(target)
-		if err != nil {
-			return err
-		}
-		installContext, err := domain.NewInstallContext(installTarget)
+		installContext, err := npmInstallContext(target)
 		if err != nil {
 			return err
 		}
@@ -238,8 +254,7 @@ func AddNPMInstall(root *cobra.Command, installer Installer) error {
 		}
 		return nil
 	}}
-	installCommand.Flags().StringVar(&target, "target", "", "new absolute installation target (required)")
-	_ = installCommand.MarkFlagRequired("target")
+	installCommand.Flags().StringVar(&target, "target", "", "advanced new absolute installation target")
 	npmCommand.AddCommand(installCommand)
 	return nil
 }

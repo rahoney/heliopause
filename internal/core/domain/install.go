@@ -31,19 +31,41 @@ func NewInstallTarget(value string) (InstallTarget, error) {
 
 func (t InstallTarget) String() string { return t.value }
 
-// InstallContext preserves the only M4 MVP installation choice. It has no
-// package-manager option passthrough and always requires a new target.
-type InstallContext struct{ target InstallTarget }
+// InstallMode declares the bounded Host mutation model selected before any
+// resolution or inspection. It never carries package-manager options.
+type InstallMode string
+
+const (
+	InstallNewTarget  InstallMode = "NEW_TARGET"
+	InstallNPMProject InstallMode = "NPM_PROJECT"
+)
+
+// InstallContext identifies either the M4 explicit new target or an M9 npm
+// project transaction root. Existing Promoters must reject unsupported modes.
+type InstallContext struct {
+	target InstallTarget
+	mode   InstallMode
+}
 
 func NewInstallContext(target InstallTarget) (InstallContext, error) {
 	if target.value == "" {
 		return InstallContext{}, errors.New("install target is required")
 	}
-	return InstallContext{target: target}, nil
+	return InstallContext{target: target, mode: InstallNewTarget}, nil
+}
+
+// NewNPMProjectInstallContext selects an existing canonical project root.
+// Discovery, locking and atomic mutation remain Infrastructure responsibilities.
+func NewNPMProjectInstallContext(projectRoot InstallTarget) (InstallContext, error) {
+	if projectRoot.value == "" {
+		return InstallContext{}, errors.New("npm project root is required")
+	}
+	return InstallContext{target: projectRoot, mode: InstallNPMProject}, nil
 }
 
 func (c InstallContext) Target() InstallTarget   { return c.target }
-func (c InstallContext) RequiresNewTarget() bool { return true }
+func (c InstallContext) Mode() InstallMode       { return c.mode }
+func (c InstallContext) RequiresNewTarget() bool { return c.mode == InstallNewTarget }
 
 // DependencyNodeID is an adapter-generated opaque identifier for one exact
 // graph node. It is not a package-manager lockfile path.
