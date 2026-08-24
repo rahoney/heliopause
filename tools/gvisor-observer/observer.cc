@@ -28,9 +28,14 @@ constexpr size_t kMaxEventSize = 1024 * 1024;
 struct Header { uint16_t header_size; uint16_t message_type; uint32_t dropped_count; };
 #pragma pack(pop)
 
-bool Send(int output, const std::string& container_id, const char* kind) {
+bool ValidContainerID(const std::string& container_id) {
   if (container_id.size() < 12 || container_id.size() > 64) return false;
   for (const char character : container_id) if ((character < 'a' || character > 'f') && (character < '0' || character > '9')) return false;
+  return true;
+}
+
+bool Send(int output, const std::string& container_id, const char* kind) {
+  if (!ValidContainerID(container_id)) return false;
   const std::string message = "{\"container_id\":\"" + container_id + "\",\"kind\":\"" + kind + "\"}";
   return send(output, message.data(), message.size(), 0) == static_cast<ssize_t>(message.size());
 }
@@ -39,7 +44,13 @@ template <typename Message>
 bool ParseAndSend(const char* payload, size_t payload_size, int output, const char* kind, std::string* container_id) {
   Message message;
   if (!message.ParseFromArray(payload, payload_size)) return false;
-  *container_id = message.context_data().container_id();
+  const std::string& candidate = message.context_data().container_id();
+  if (!ValidContainerID(candidate)) return false;
+  if (container_id->empty()) {
+    *container_id = candidate;
+  } else if (*container_id != candidate) {
+    return false;
+  }
   return Send(output, *container_id, kind);
 }
 
@@ -101,13 +112,14 @@ int main(int argc, char** argv) {
     if (size <= 0 || !incoming.ParseFromArray(handshake, size) || incoming.version() != kProtocolVersion) { close(client); continue; }
     gvisor::common::Handshake outgoing; outgoing.set_version(kProtocolVersion); std::string encoded; outgoing.SerializeToString(&encoded);
     if (send(client, encoded.data(), encoded.size(), 0) != static_cast<ssize_t>(encoded.size())) { close(client); continue; }
-    std::string container_id; char event[kMaxEventSize];
+    std::string container_id; char event[kMaxEventSize]; bool fault = false;
     while ((size = recv(client, event, sizeof(event), 0)) > 0) {
-      if (static_cast<size_t>(size) < sizeof(Header)) { close(client); break; }
+      if (static_cast<size_t>(size) < sizeof(Header)) { fault = true; break; }
       Header header{}; memcpy(&header, event, sizeof(header));
-      if (header.header_size < sizeof(Header) || header.header_size > static_cast<uint16_t>(size) || !Handle(header, event + header.header_size, size - header.header_size, output, &container_id)) { close(client); break; }
+      if (header.header_size < sizeof(Header) || header.header_size > static_cast<uint16_t>(size) || !Handle(header, event + header.header_size, size - header.header_size, output, &container_id)) { fault = true; break; }
     }
-    if (!container_id.empty()) Send(output, container_id, "stream-end");
+    if (size < 0) fault = true;
+    if (!container_id.empty()) Send(output, container_id, fault ? "stream-fault" : "stream-end");
     close(client);
   }
 }

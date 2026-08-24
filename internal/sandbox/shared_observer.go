@@ -129,6 +129,11 @@ func (o *SharedObserver) receive() {
 			o.fail(errors.New("observer mapping is unconfirmed"))
 			return
 		}
+		if record.Kind == "stream-fault" {
+			o.mu.Unlock()
+			o.fail(errors.New("observer stream is incomplete"))
+			return
+		}
 		if record.Kind == "stream-end" {
 			delete(o.streams, record.ContainerID)
 			close(reader.done)
