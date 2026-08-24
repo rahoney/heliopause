@@ -4,6 +4,8 @@
 #include "tools/haa_gvisor_observer/observer.cc"
 #undef main
 
+#include <signal.h>
+#include <sys/time.h>
 #include <sys/wait.h>
 
 namespace {
