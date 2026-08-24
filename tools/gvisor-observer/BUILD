@@ -22,7 +22,7 @@ cc_library(
 cc_binary(
     name = "haa_gvisor_observer_latch_test",
     srcs = ["observer_latch_test.cc"],
-    defines = ["HAA_GVISOR_COMMIT=\"5ceb9a5fd5750d6c73dd166441f28306039300d0\""],
+    defines = ["HAA_GVISOR_COMMIT=\\\"5ceb9a5fd5750d6c73dd166441f28306039300d0\\\""],
     visibility = ["//visibility:public"],
     deps = [
 		":observer_test_source",
