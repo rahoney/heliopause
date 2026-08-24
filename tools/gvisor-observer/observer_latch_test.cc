@@ -1,7 +1,7 @@
 // Exercises the exact pinned remote-sink protobuf framing through the helper.
 // It deliberately checks only normalized records and never retains payloads.
 #define main observer_main
-#include "observer.cc"
+#include "tools/haa_gvisor_observer/observer.cc"
 #undef main
 
 #include <signal.h>
