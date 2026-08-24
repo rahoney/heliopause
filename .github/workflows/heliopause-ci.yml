@@ -280,7 +280,9 @@ jobs:
           sudo install -m 0755 "$RUNNER_TEMP/haa-network-policy-helper" /usr/libexec/heliopause/haa-network-policy-helper
           sudo install -d -m 0755 -o root -g root /run/heliopause-network-policy
           printf '{"socket_path":"/run/heliopause-network-policy/helper.sock","client_path":"/usr/libexec/heliopause/helox","client_uid":%s,"client_gid":%s}\n' "$(id -u)" "$(id -g)" | sudo tee /etc/heliopause/network-policy.json >/dev/null
-          sudo chmod 0600 /etc/heliopause/network-policy.json
+          # The ordinary client must read the root-owned, non-writable public
+          # identity contract; it contains no credential or secret.
+          sudo chmod 0644 /etc/heliopause/network-policy.json
           sudo /usr/libexec/heliopause/haa-network-policy-helper >/tmp/haa-network-policy-helper.log 2>&1 &
           policy_helper_pid=$!
           trap 'sudo kill "$policy_helper_pid" 2>/dev/null || true' EXIT
