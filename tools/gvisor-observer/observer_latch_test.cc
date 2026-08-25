@@ -5,6 +5,7 @@
 #undef main
 
 #include <signal.h>
+#include <fstream>
 #include <sys/time.h>
 #include <sys/wait.h>
 
@@ -65,6 +66,49 @@ bool ExpectRecord(int output, const char* kind) {
   return std::string(buffer, size) == expected;
 }
 
+bool HasPinnedPodInitProfile() {
+  std::ifstream input("tools/haa_gvisor_observer/pod-init.json");
+  if (!input.is_open()) return false;
+  const std::string profile((std::istreambuf_iterator<char>(input)), std::istreambuf_iterator<char>());
+  return profile.find("syscall/execve/enter") != std::string::npos &&
+      profile.find("syscall/openat/enter") != std::string::npos &&
+      profile.find("syscall/connect/enter") != std::string::npos &&
+      profile.find("syscall/socket/enter") != std::string::npos &&
+      profile.find("\"group_id\"") != std::string::npos &&
+      profile.find("\"process_name\"") != std::string::npos &&
+      profile.find("ignore_missing") == std::string::npos;
+}
+
+bool VerifyPinnedAccessors(int output, const std::string& remote) {
+  const int client = ConnectRemote(remote);
+  if (client < 0 || !Handshake(client)) return false;
+  gvisor::container::Start start;
+  start.mutable_context_data()->set_container_id(kFirstID);
+  if (!SendEvent(client, gvisor::common::MESSAGE_CONTAINER_START, start) || !ExpectRecord(output, "container-start")) return false;
+  gvisor::syscall::Execve execve;
+  execve.mutable_context_data()->set_container_id(kFirstID);
+  execve.mutable_context_data()->set_thread_group_id(7);
+  execve.mutable_context_data()->set_process_name("trusted-test-process");
+  execve.set_pathname("/raw/pathname-must-not-leave-helper");
+  execve.add_argv("raw-argv-must-not-leave-helper");
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, execve) || !ExpectRecord(output, "process-exec")) return false;
+  gvisor::syscall::Open open;
+  open.mutable_context_data()->set_container_id(kFirstID);
+  open.mutable_context_data()->set_thread_group_id(7);
+  open.mutable_context_data()->set_process_name("trusted-test-process");
+  open.set_pathname("/raw/open-path-must-not-leave-helper");
+  open.set_flags(1); open.set_mode(0600); open.set_sysno(257);
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_OPEN, open) || !ExpectRecord(output, "filesystem-open")) return false;
+  gvisor::syscall::Socket socket;
+  socket.mutable_context_data()->set_container_id(kFirstID);
+  socket.mutable_context_data()->set_thread_group_id(7);
+  socket.mutable_context_data()->set_process_name("trusted-test-process");
+  socket.set_domain(2); socket.set_type(1); socket.set_protocol(0);
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_SOCKET, socket) || !ExpectRecord(output, "network-attempt")) return false;
+  close(client);
+  return ExpectRecord(output, "stream-end");
+}
+
 bool RunFaultCase(int output, const std::string& remote, bool mismatch) {
   const int client = ConnectRemote(remote);
   if (client < 0 || !Handshake(client)) return false;
@@ -106,7 +150,7 @@ int main() {
   char ready = '\0';
   const bool running = child > 0 && read(readiness[0], &ready, 1) == 1 && ready == 'R';
   close(readiness[0]);
-  const bool passed = running && RunFaultCase(output, remote, true) && RunFaultCase(output, remote, false);
+  const bool passed = running && HasPinnedPodInitProfile() && VerifyPinnedAccessors(output, remote) && RunFaultCase(output, remote, true) && RunFaultCase(output, remote, false);
   if (child > 0) { kill(child, SIGTERM); waitpid(child, nullptr, 0); }
   close(output); unlink(remote.c_str()); unlink(output_path.c_str()); rmdir(directory);
   return passed ? 0 : 1;

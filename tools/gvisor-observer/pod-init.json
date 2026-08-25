@@ -3,11 +3,12 @@
     "name": "Default",
     "points": [
       {"name": "container/start", "context_fields": ["container_id"]},
-      {"name": "sentry/clone", "context_fields": ["container_id"]},
-      {"name": "sentry/execve", "context_fields": ["container_id"]},
-      {"name": "syscall/openat/enter", "context_fields": ["container_id"]},
-      {"name": "syscall/connect/enter", "context_fields": ["container_id"]},
-      {"name": "syscall/socket/enter", "context_fields": ["container_id"]}
+      {"name": "sentry/clone", "context_fields": ["container_id", "group_id", "process_name"]},
+      {"name": "sentry/execve", "context_fields": ["container_id", "group_id", "process_name"]},
+      {"name": "syscall/execve/enter", "context_fields": ["container_id", "group_id", "process_name"]},
+      {"name": "syscall/openat/enter", "context_fields": ["container_id", "group_id", "process_name"]},
+      {"name": "syscall/connect/enter", "context_fields": ["container_id", "group_id", "process_name"]},
+      {"name": "syscall/socket/enter", "context_fields": ["container_id", "group_id", "process_name"]}
     ],
     "sinks": [
       {

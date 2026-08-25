@@ -24,6 +24,7 @@ namespace {
 #endif
 constexpr uint32_t kProtocolVersion = 1;
 constexpr size_t kMaxEventSize = 1024 * 1024;
+constexpr size_t kMaxNormalizedRecordsPerConnection = 10000;
 #pragma pack(push, 1)
 struct Header { uint16_t header_size; uint16_t message_type; uint32_t dropped_count; };
 #pragma pack(pop)
@@ -60,6 +61,10 @@ bool Handle(const Header& header, const char* payload, size_t payload_size, int 
     case gvisor::common::MESSAGE_CONTAINER_START: return ParseAndSend<gvisor::container::Start>(payload, payload_size, output, "container-start", container_id);
     case gvisor::common::MESSAGE_SENTRY_CLONE: return ParseAndSend<gvisor::sentry::CloneInfo>(payload, payload_size, output, "process-clone", container_id);
     case gvisor::common::MESSAGE_SENTRY_EXEC: return ParseAndSend<gvisor::sentry::ExecveInfo>(payload, payload_size, output, "process-exec", container_id);
+    // pathname, argv and envv are parsed by protobuf but are deliberately never
+    // copied to the HAA envelope. M11-003 supplies the trusted profile required
+    // to classify this bounded process fact as expected or unexpected.
+    case gvisor::common::MESSAGE_SYSCALL_EXECVE: return ParseAndSend<gvisor::syscall::Execve>(payload, payload_size, output, "process-exec", container_id);
     case gvisor::common::MESSAGE_SYSCALL_OPEN: return ParseAndSend<gvisor::syscall::Open>(payload, payload_size, output, "filesystem-open", container_id);
     case gvisor::common::MESSAGE_SYSCALL_CONNECT: return ParseAndSend<gvisor::syscall::Connect>(payload, payload_size, output, "network-attempt", container_id);
     case gvisor::common::MESSAGE_SYSCALL_SOCKET: return ParseAndSend<gvisor::syscall::Socket>(payload, payload_size, output, "network-attempt", container_id);
@@ -113,10 +118,13 @@ int main(int argc, char** argv) {
     gvisor::common::Handshake outgoing; outgoing.set_version(kProtocolVersion); std::string encoded; outgoing.SerializeToString(&encoded);
     if (send(client, encoded.data(), encoded.size(), 0) != static_cast<ssize_t>(encoded.size())) { close(client); continue; }
     std::string container_id; char event[kMaxEventSize]; bool fault = false;
-    while ((size = recv(client, event, sizeof(event), 0)) > 0) {
+    size_t normalized_records = 0;
+    while ((size = recv(client, event, sizeof(event), MSG_TRUNC)) > 0) {
+      if (static_cast<size_t>(size) > sizeof(event)) { fault = true; break; }
       if (static_cast<size_t>(size) < sizeof(Header)) { fault = true; break; }
       Header header{}; memcpy(&header, event, sizeof(header));
-      if (header.header_size < sizeof(Header) || header.header_size > static_cast<uint16_t>(size) || !Handle(header, event + header.header_size, size - header.header_size, output, &container_id)) { fault = true; break; }
+      if (normalized_records == kMaxNormalizedRecordsPerConnection || header.header_size < sizeof(Header) || header.header_size > static_cast<uint16_t>(size) || !Handle(header, event + header.header_size, size - header.header_size, output, &container_id)) { fault = true; break; }
+      ++normalized_records;
     }
     if (size < 0) fault = true;
     if (!container_id.empty()) Send(output, container_id, fault ? "stream-fault" : "stream-end");
