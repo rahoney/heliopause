@@ -8,6 +8,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -76,6 +77,15 @@ func TestInstallFailurePreservesExistingActiveVersion(t *testing.T) {
 	current, err := os.Readlink(filepath.Join(installRoot, "current"))
 	if err != nil || current != "versions/v1.2.3" {
 		t.Fatalf("current=%q err=%v", current, err)
+	}
+	entries, err := os.ReadDir(filepath.Join(installRoot, "versions"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, entry := range entries {
+		if strings.HasPrefix(entry.Name(), ".pending-") {
+			t.Fatalf("failed install left pending stage %q", entry.Name())
+		}
 	}
 }
 

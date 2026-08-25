@@ -209,6 +209,8 @@ func (c *checker) runProfile(profile string) error {
 		return c.runStep("documentation", func() error { return checkMarkdownTree(c.root) })
 	case "format":
 		return c.runStep("format", c.applyFormat)
+	case "release-gate":
+		return c.runStep("release gate", func() error { return checkReleaseGate(c.root) })
 	default:
 		return &checkFailure{class: unavailable, step: "profile", detail: fmt.Sprintf("unknown profile %q", profile)}
 	}
