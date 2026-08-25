@@ -76,6 +76,9 @@ func NewPythonVenvInstallContext(venvRoot InstallTarget) (InstallContext, error)
 func (c InstallContext) Target() InstallTarget   { return c.target }
 func (c InstallContext) Mode() InstallMode       { return c.mode }
 func (c InstallContext) RequiresNewTarget() bool { return c.mode == InstallNewTarget }
+func (c InstallContext) Valid() bool {
+	return c.target.value != "" && (c.mode == InstallNewTarget || c.mode == InstallNPMProject || c.mode == InstallPythonVenv)
+}
 
 // DependencyNodeID is an adapter-generated opaque identifier for one exact
 // graph node. It is not a package-manager lockfile path.

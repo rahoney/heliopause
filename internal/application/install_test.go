@@ -33,3 +33,14 @@ func TestNewInstallRequestPreservesNPMProjectContext(t *testing.T) {
 		t.Fatalf("request = %#v, %v", request, err)
 	}
 }
+
+func TestNewInstallRequestPreservesPythonVenvContext(t *testing.T) {
+	source, _ := domain.NewSourceID("pypi")
+	reference, _ := domain.NewArtifactReference(source, "demo@1.0")
+	root, _ := domain.NewInstallTarget("/tmp/heliopause-venv")
+	context, _ := domain.NewPythonVenvInstallContext(root)
+	request, err := application.NewInstallRequest(reference, context)
+	if err != nil || request.Context().Mode() != domain.InstallPythonVenv {
+		t.Fatalf("request=%#v error=%v", request, err)
+	}
+}

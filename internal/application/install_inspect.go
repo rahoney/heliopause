@@ -63,7 +63,7 @@ func (s *InstallInspectService) Inspect(ctx context.Context, request InstallRequ
 	if err := ctx.Err(); err != nil {
 		return InspectedInstall{}, err
 	}
-	if request.reference.Source().String() == "" || request.context.Target().String() == "" || !request.context.RequiresNewTarget() {
+	if request.reference.Source().String() == "" || !request.context.Valid() {
 		return InspectedInstall{}, errors.New("validated Install request is required")
 	}
 	operationID, err := s.newOperationID()
