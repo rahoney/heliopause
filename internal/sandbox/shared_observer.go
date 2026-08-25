@@ -23,6 +23,8 @@ type SharedObserver struct {
 	closeErr   error
 }
 
+const ObserverControlEndpoint = "/run/heliopause-observer/haa-control.sock"
+
 type helperRecord struct {
 	ContainerID string `json:"container_id"`
 	Kind        string `json:"kind"`
@@ -117,6 +119,38 @@ func (o *SharedObserver) Start(_ context.Context, containerID string) (TraceRead
 	reader := &sharedTraceReader{observer: o, records: make(chan TraceRecord, maximumTraceEvents+1), done: make(chan struct{})}
 	o.streams[containerID] = reader
 	return reader, nil
+}
+
+func (o *SharedObserver) StartProfile(ctx context.Context, containerID, profile string) (TraceReader, error) {
+	if ctx == nil || profile == "" {
+		return nil, errors.New("observer profile is required")
+	}
+	if err := registerObserverProfile(ctx, containerID, profile); err != nil {
+		return nil, err
+	}
+	return o.Start(ctx, containerID)
+}
+
+func registerObserverProfile(ctx context.Context, containerID, profile string) error {
+	if !containerIDPattern.MatchString(containerID) || profile != "npm-lifecycle" && profile != "pypi-wheel" && profile != "github-elf" {
+		return errors.New("observer profile registration is invalid")
+	}
+	body, err := json.Marshal(struct {
+		ContainerID string `json:"container_id"`
+		Profile     string `json:"profile"`
+	}{containerID, profile})
+	if err != nil {
+		return errors.New("encode observer profile registration")
+	}
+	connection, err := net.DialUnix("unixgram", nil, &net.UnixAddr{Name: ObserverControlEndpoint, Net: "unixgram"})
+	if err != nil {
+		return errors.New("connect observer profile control")
+	}
+	defer connection.Close()
+	if _, err := connection.Write(body); err != nil {
+		return errors.New("send observer profile registration")
+	}
+	return nil
 }
 
 func (o *SharedObserver) receive() {

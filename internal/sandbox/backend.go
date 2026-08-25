@@ -91,7 +91,7 @@ func (b *Backend) Execute(ctx context.Context, request domain.SandboxRequest) (d
 	if !containerIDPattern.MatchString(containerID) {
 		return incomplete(sessionID, "M3_DYNAMIC_SETUP_FAILED")
 	}
-	trace, err := b.observer.Start(ctx, containerID)
+	trace, err := startTrace(ctx, b.observer, containerID, "npm-lifecycle")
 	if err != nil {
 		if b.cleanup(containerID) != nil {
 			return incomplete(sessionID, "M3_DYNAMIC_CLEANUP_FAILED")

@@ -74,7 +74,7 @@ func (b *GitHubELFBackend) Execute(ctx context.Context, request domain.SandboxRe
 	if !containerIDPattern.MatchString(containerID) {
 		return incomplete(sessionID, "M6_DYNAMIC_SETUP_FAILED")
 	}
-	trace, err := b.observer.Start(ctx, containerID)
+	trace, err := startTrace(ctx, b.observer, containerID, "github-elf")
 	if err != nil {
 		if b.cleanup(containerID) != nil {
 			return incomplete(sessionID, "M6_DYNAMIC_CLEANUP_FAILED")

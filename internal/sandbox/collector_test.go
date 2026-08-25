@@ -40,7 +40,7 @@ func TestCollectTraceFailsClosedOnUntrustedOrOversizedInput(t *testing.T) {
 }
 
 func TestTraceObservationRejectsKindsTheProductionHelperCannotEmit(t *testing.T) {
-	for _, kind := range []string{"honeytoken-access", "process-unexpected", "filesystem-violation", "filesystem-write", "resource-limit"} {
+	for _, kind := range []string{"process-unexpected", "filesystem-violation", "filesystem-write", "resource-limit"} {
 		if _, _, ok := traceObservation(kind); ok {
 			t.Fatalf("production trace accepted unsupported kind %q", kind)
 		}

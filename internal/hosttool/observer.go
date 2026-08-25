@@ -82,7 +82,7 @@ func (l *Launcher) StartObserver(ctx context.Context, remoteEndpoint, outputEndp
 	if err != nil {
 		return nil, errors.New("create observer readiness channel")
 	}
-	command := exec.CommandContext(ctx, current.path, remoteEndpoint, outputEndpoint, "--ready-fd=3")
+	command := exec.CommandContext(ctx, current.path, remoteEndpoint, outputEndpoint, "/run/heliopause-observer/haa-control.sock", "--ready-fd=3")
 	command.Env = []string{"LANG=C", "LC_ALL=C"}
 	command.ExtraFiles = []*os.File{readinessWrite}
 	if err := command.Start(); err != nil {

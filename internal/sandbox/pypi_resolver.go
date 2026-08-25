@@ -154,7 +154,7 @@ func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain
 		return domain.DependencyResolution{}, errors.New("create PyPI resolver container failed")
 	}
 	containerID = strings.TrimSpace(string(created))
-	trace, err = r.observer.Start(ctx, containerID)
+	trace, err = startTrace(ctx, r.observer, containerID, "pypi-wheel")
 	if err != nil {
 		return domain.DependencyResolution{}, errors.New("start PyPI resolver observer failed")
 	}

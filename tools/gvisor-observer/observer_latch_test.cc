@@ -39,6 +39,18 @@ int ConnectRemote(const std::string& path) {
   return connect(fd, reinterpret_cast<sockaddr*>(&address), sizeof(address)) == 0 ? fd : -1;
 }
 
+bool RegisterProfile(const std::string& path, const char* profile) {
+  const int fd = socket(AF_UNIX, SOCK_DGRAM, 0);
+  if (fd < 0) return false;
+  sockaddr_un address{}; address.sun_family = AF_UNIX;
+  if (path.size() >= sizeof(address.sun_path)) return false;
+  strcpy(address.sun_path, path.c_str());
+  const std::string body = std::string("{\"container_id\":\"") + kFirstID + "\",\"profile\":\"" + profile + "\"}";
+  const bool sent = sendto(fd, body.data(), body.size(), 0, reinterpret_cast<sockaddr*>(&address), sizeof(address)) == static_cast<ssize_t>(body.size());
+  close(fd);
+  return sent;
+}
+
 bool Handshake(int client) {
   gvisor::common::Handshake incoming;
   incoming.set_version(kProtocolVersion);
@@ -80,7 +92,8 @@ bool HasPinnedPodInitProfile() {
       profile.find("ignore_missing") == std::string::npos;
 }
 
-bool VerifyPinnedAccessors(int output, const std::string& remote) {
+bool VerifyPinnedAccessors(int output, const std::string& remote, const std::string& control) {
+  if (!RegisterProfile(control, kProfileNPM)) return false;
   const int client = ConnectRemote(remote);
   if (client < 0 || !Handshake(client)) return false;
   gvisor::container::Start start;
@@ -90,16 +103,16 @@ bool VerifyPinnedAccessors(int output, const std::string& remote) {
   execve.mutable_context_data()->set_container_id(kFirstID);
   execve.mutable_context_data()->set_thread_group_id(7);
   execve.mutable_context_data()->set_process_name("trusted-test-process");
-  execve.set_pathname("/raw/pathname-must-not-leave-helper");
+  execve.set_pathname("/usr/local/bin/node");
   execve.add_argv("raw-argv-must-not-leave-helper");
-  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, execve) || !ExpectRecord(output, "process-exec")) return false;
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, execve) || !ExpectRecord(output, "process-exec-expected")) return false;
   gvisor::syscall::Open open;
   open.mutable_context_data()->set_container_id(kFirstID);
   open.mutable_context_data()->set_thread_group_id(7);
   open.mutable_context_data()->set_process_name("trusted-test-process");
-  open.set_pathname("/raw/open-path-must-not-leave-helper");
+  open.set_pathname("/root/.ssh/authorized_keys");
   open.set_flags(1); open.set_mode(0600); open.set_sysno(257);
-  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_OPEN, open) || !ExpectRecord(output, "filesystem-open")) return false;
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_OPEN, open) || !ExpectRecord(output, "filesystem-outside-workspace")) return false;
   gvisor::syscall::Socket socket;
   socket.mutable_context_data()->set_container_id(kFirstID);
   socket.mutable_context_data()->set_thread_group_id(7);
@@ -110,7 +123,8 @@ bool VerifyPinnedAccessors(int output, const std::string& remote) {
   return ExpectRecord(output, "stream-end");
 }
 
-bool RunFaultCase(int output, const std::string& remote, bool mismatch) {
+bool RunFaultCase(int output, const std::string& remote, const std::string& control, bool mismatch) {
+  (void)control;
   const int client = ConnectRemote(remote);
   if (client < 0 || !Handshake(client)) return false;
   gvisor::container::Start start;
@@ -137,6 +151,7 @@ int main() {
   if (mkdtemp(directory) == nullptr) return 1;
   const std::string remote = std::string(directory) + "/remote.sock";
   const std::string output_path = std::string(directory) + "/output.sock";
+  const std::string control = std::string(directory) + "/control.sock";
   const int output = BindDatagram(output_path);
   int readiness[2];
   if (output < 0 || pipe(readiness) != 0) return 1;
@@ -144,15 +159,15 @@ int main() {
   if (child == 0) {
     close(readiness[0]);
     char ready_arg[32]; snprintf(ready_arg, sizeof(ready_arg), "--ready-fd=%d", readiness[1]);
-    char* arguments[] = {const_cast<char*>("haa_gvisor_observer"), const_cast<char*>(remote.c_str()), const_cast<char*>(output_path.c_str()), ready_arg, nullptr};
-    _exit(observer_main(4, arguments));
+    char* arguments[] = {const_cast<char*>("haa_gvisor_observer"), const_cast<char*>(remote.c_str()), const_cast<char*>(output_path.c_str()), const_cast<char*>(control.c_str()), ready_arg, nullptr};
+    _exit(observer_main(5, arguments));
   }
   close(readiness[1]);
   char ready = '\0';
   const bool running = child > 0 && read(readiness[0], &ready, 1) == 1 && ready == 'R';
   close(readiness[0]);
-  const bool passed = running && HasPinnedPodInitProfile() && VerifyPinnedAccessors(output, remote) && RunFaultCase(output, remote, true) && RunFaultCase(output, remote, false);
+  const bool passed = running && HasPinnedPodInitProfile() && VerifyPinnedAccessors(output, remote, control) && RunFaultCase(output, remote, control, true) && RunFaultCase(output, remote, control, false);
   if (child > 0) { kill(child, SIGTERM); waitpid(child, nullptr, 0); }
-  close(output); unlink(remote.c_str()); unlink(output_path.c_str()); rmdir(directory);
+  close(output); unlink(remote.c_str()); unlink(output_path.c_str()); unlink(control.c_str()); rmdir(directory);
   return passed ? 0 : 1;
 }

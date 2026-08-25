@@ -81,7 +81,7 @@ func (b *PythonSdistBuilder) Build(ctx context.Context, source domain.AcquiredAr
 		return DerivedWheel{}, result, resultErr
 	}
 	containerID := strings.TrimSpace(string(created))
-	trace, err := b.observer.Start(ctx, containerID)
+	trace, err := startTrace(ctx, b.observer, containerID, "pypi-wheel")
 	if err != nil {
 		if b.remove(containerID) != nil {
 			result, resultErr := pythonIncomplete(sessionID, "M5_PYPI_BUILD_CLEANUP_FAILED")

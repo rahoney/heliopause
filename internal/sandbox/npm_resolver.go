@@ -173,7 +173,7 @@ func (r *NPMResolver) ResolveDependencies(ctx context.Context, reference domain.
 	if r.observer == nil {
 		return domain.DependencyResolution{}, errors.New("resolver observation is unavailable")
 	}
-	trace, err = r.observer.Start(ctx, containerID)
+	trace, err = startTrace(ctx, r.observer, containerID, "npm-lifecycle")
 	if err != nil {
 		return domain.DependencyResolution{}, errors.New("start resolver observer failed")
 	}

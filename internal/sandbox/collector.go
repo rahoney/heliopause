@@ -30,6 +30,17 @@ type TraceObserver interface {
 	Start(context.Context, string) (TraceReader, error)
 }
 
+type profiledTraceObserver interface {
+	StartProfile(context.Context, string, string) (TraceReader, error)
+}
+
+func startTrace(ctx context.Context, observer TraceObserver, containerID, profile string) (TraceReader, error) {
+	if profiled, ok := observer.(profiledTraceObserver); ok {
+		return profiled.StartProfile(ctx, containerID, profile)
+	}
+	return observer.Start(ctx, containerID)
+}
+
 // collectTrace normalizes trusted gVisor observer kinds without retaining raw
 // paths, argv, environment, file contents, or process output.
 func collectTrace(ctx context.Context, reader TraceReader) ([]domain.SandboxObservation, string) {
@@ -65,12 +76,14 @@ func collectTrace(ctx context.Context, reader TraceReader) ([]domain.SandboxObse
 
 func traceObservation(kind string) (domain.ObservationCategory, string, bool) {
 	switch kind {
-	case "process-exec", "process-clone":
+	case "process-exec", "process-exec-expected", "process-exec-unexpected", "process-clone":
 		return domain.ObservationProcess, kind, true
-	case "filesystem-open":
+	case "filesystem-open", "filesystem-workspace-access", "filesystem-outside-workspace":
 		return domain.ObservationFilesystem, kind, true
 	case "network-attempt":
 		return domain.ObservationNetwork, kind, true
+	case "honeytoken-access":
+		return domain.ObservationHoneytoken, kind, true
 	default:
 		return "", "", false
 	}

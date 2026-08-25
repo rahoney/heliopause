@@ -103,7 +103,7 @@ func (b *PythonDynamicBackend) InspectWheel(ctx context.Context, artifact domain
 		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_SETUP_FAILED")
 	}
 	containerID := strings.TrimSpace(string(created))
-	trace, err := b.observer.Start(ctx, containerID)
+	trace, err := startTrace(ctx, b.observer, containerID, "pypi-wheel")
 	if err != nil {
 		if b.remove(containerID) != nil {
 			return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_CLEANUP_FAILED")
