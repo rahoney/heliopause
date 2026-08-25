@@ -39,6 +39,7 @@ func New(stdout, stderr io.Writer) (*cobra.Command, error) {
 	}
 	command.SetOut(stdout)
 	command.SetErr(stderr)
+	initializeCommandTree(command)
 
 	return command, nil
 }
@@ -49,65 +50,68 @@ func AddGitHubReleaseInspect(root *cobra.Command, parser ReferenceParser, inspec
 	if root == nil || parser == nil || inspector == nil {
 		return errors.New("github inspect command requires root and use case")
 	}
-	command := ensureGitHubCommand(root)
-	inspect := &cobra.Command{Use: "inspect <owner>/<repo>@<tag>#<asset>", Args: cobra.ExactArgs(1), RunE: func(command *cobra.Command, args []string) error {
-		reference, err := parser(args[0])
-		if err != nil {
-			return err
-		}
-		request, err := application.NewInspectRequest(reference)
-		if err != nil {
-			return err
-		}
-		code, err := ExecuteInspect(contextOrBackground(command.Context()), inspector, request, true, command.OutOrStdout())
-		if err != nil {
-			return err
-		}
-		if code != 0 {
-			return ExitError{Code: code}
+	if command := findLeaf(root, "github", "inspect"); command != nil {
+		command.RunE = func(command *cobra.Command, args []string) error {
+			reference, err := parser(args[0])
+			if err != nil {
+				return err
+			}
+			request, err := application.NewInspectRequest(reference)
+			if err != nil {
+				return err
+			}
+			code, err := ExecuteInspect(contextOrBackground(command.Context()), inspector, request, true, command.OutOrStdout())
+			if err != nil {
+				return err
+			}
+			if code != 0 {
+				return ExitError{Code: code}
+			}
+			return nil
 		}
 		return nil
-	}}
-	command.AddCommand(inspect)
-	return nil
+	}
+	return errors.New("github inspect command is not registered")
 }
 
 func AddGitHubReleaseInstall(root *cobra.Command, parser ReferenceParser, installer Installer) error {
 	if root == nil || parser == nil || installer == nil {
 		return errors.New("github install command requires root and use case")
 	}
-	command := ensureGitHubCommand(root)
-	var target string
-	install := &cobra.Command{Use: "install <owner>/<repo>@<tag>#<asset>", Args: cobra.ExactArgs(1), RunE: func(command *cobra.Command, args []string) error {
-		reference, err := parser(args[0])
-		if err != nil {
-			return err
-		}
-		targetValue, err := domain.NewInstallTarget(target)
-		if err != nil {
-			return err
-		}
-		installContext, err := domain.NewInstallContext(targetValue)
-		if err != nil {
-			return err
-		}
-		request, err := application.NewInstallRequest(reference, installContext)
-		if err != nil {
-			return err
-		}
-		code, err := ExecuteInstall(contextOrBackground(command.Context()), installer, request, true, command.OutOrStdout())
-		if err != nil {
-			return err
-		}
-		if code != 0 {
-			return ExitError{Code: code}
+	if install := findLeaf(root, "github", "install"); install != nil {
+		install.RunE = func(command *cobra.Command, args []string) error {
+			reference, err := parser(args[0])
+			if err != nil {
+				return err
+			}
+			target, err := command.Flags().GetString("target")
+			if err != nil {
+				return err
+			}
+			targetValue, err := domain.NewInstallTarget(target)
+			if err != nil {
+				return err
+			}
+			installContext, err := domain.NewInstallContext(targetValue)
+			if err != nil {
+				return err
+			}
+			request, err := application.NewInstallRequest(reference, installContext)
+			if err != nil {
+				return err
+			}
+			code, err := ExecuteInstall(contextOrBackground(command.Context()), installer, request, true, command.OutOrStdout())
+			if err != nil {
+				return err
+			}
+			if code != 0 {
+				return ExitError{Code: code}
+			}
+			return nil
 		}
 		return nil
-	}}
-	install.Flags().StringVar(&target, "target", "", "new absolute installation target (required)")
-	_ = install.MarkFlagRequired("target")
-	command.AddCommand(install)
-	return nil
+	}
+	return errors.New("github install command is not registered")
 }
 
 // AddPyPIInstall adds the injected PyPI Install/Promotion use case. The
@@ -116,37 +120,40 @@ func AddPyPIInstall(root *cobra.Command, installer Installer) error {
 	if root == nil || installer == nil {
 		return errors.New("pypi install command requires root and use case")
 	}
-	pypiCommand := ensurePipCommand(root)
-	var target string
-	installCommand := &cobra.Command{Use: "install <project>[@<version>]", Args: cobra.ExactArgs(1), RunE: func(command *cobra.Command, args []string) error {
-		reference, err := artifactpypi.ParseReference(args[0])
-		if err != nil {
-			return err
-		}
-		installTarget, err := activePythonVenv(target)
-		if err != nil {
-			return err
-		}
-		installContext, err := domain.NewPythonVenvInstallContext(installTarget)
-		if err != nil {
-			return err
-		}
-		request, err := application.NewInstallRequest(reference, installContext)
-		if err != nil {
-			return err
-		}
-		exitCode, operationErr := ExecuteInstall(contextOrBackground(command.Context()), installer, request, true, command.OutOrStdout())
-		if operationErr != nil {
-			return operationErr
-		}
-		if exitCode != 0 {
-			return ExitError{Code: exitCode}
+	if installCommand := findLeaf(root, "pip", "install"); installCommand != nil {
+		installCommand.RunE = func(command *cobra.Command, args []string) error {
+			reference, err := artifactpypi.ParseReference(args[0])
+			if err != nil {
+				return err
+			}
+			target, err := command.Flags().GetString("target")
+			if err != nil {
+				return err
+			}
+			installTarget, err := activePythonVenv(target)
+			if err != nil {
+				return err
+			}
+			installContext, err := domain.NewPythonVenvInstallContext(installTarget)
+			if err != nil {
+				return err
+			}
+			request, err := application.NewInstallRequest(reference, installContext)
+			if err != nil {
+				return err
+			}
+			exitCode, operationErr := ExecuteInstall(contextOrBackground(command.Context()), installer, request, true, command.OutOrStdout())
+			if operationErr != nil {
+				return operationErr
+			}
+			if exitCode != 0 {
+				return ExitError{Code: exitCode}
+			}
+			return nil
 		}
 		return nil
-	}}
-	installCommand.Flags().StringVar(&target, "target", "", "advanced active virtual environment root")
-	pypiCommand.AddCommand(installCommand)
-	return nil
+	}
+	return errors.New("pip install command is not registered")
 }
 
 func activePythonVenv(target string) (domain.InstallTarget, error) {
@@ -187,27 +194,28 @@ func AddPyPIInspect(root *cobra.Command, inspector Inspector) error {
 	if root == nil || inspector == nil {
 		return errors.New("pypi inspect command requires root and use case")
 	}
-	pypiCommand := ensurePyPICommand(root)
-	inspectCommand := &cobra.Command{Use: "inspect <project>[@<version>]", Args: cobra.ExactArgs(1), RunE: func(command *cobra.Command, args []string) error {
-		reference, err := artifactpypi.ParseReference(args[0])
-		if err != nil {
-			return err
-		}
-		request, err := application.NewInspectRequest(reference)
-		if err != nil {
-			return err
-		}
-		exitCode, operationErr := ExecuteInspect(contextOrBackground(command.Context()), inspector, request, true, command.OutOrStdout())
-		if operationErr != nil {
-			return operationErr
-		}
-		if exitCode != 0 {
-			return ExitError{Code: exitCode}
+	if inspectCommand := findLeaf(root, "pypi", "inspect"); inspectCommand != nil {
+		inspectCommand.RunE = func(command *cobra.Command, args []string) error {
+			reference, err := artifactpypi.ParseReference(args[0])
+			if err != nil {
+				return err
+			}
+			request, err := application.NewInspectRequest(reference)
+			if err != nil {
+				return err
+			}
+			exitCode, operationErr := ExecuteInspect(contextOrBackground(command.Context()), inspector, request, true, command.OutOrStdout())
+			if operationErr != nil {
+				return operationErr
+			}
+			if exitCode != 0 {
+				return ExitError{Code: exitCode}
+			}
+			return nil
 		}
 		return nil
-	}}
-	pypiCommand.AddCommand(inspectCommand)
-	return nil
+	}
+	return errors.New("pypi inspect command is not registered")
 }
 
 // AddNPMInspect adds the injected npm Inspect use case to a root command.
@@ -215,27 +223,28 @@ func AddNPMInspect(root *cobra.Command, inspector Inspector) error {
 	if root == nil || inspector == nil {
 		return errors.New("npm inspect command requires root and use case")
 	}
-	npmCommand := ensureNPMCommand(root)
-	inspectCommand := &cobra.Command{Use: "inspect <package-reference>", Args: cobra.ExactArgs(1), RunE: func(command *cobra.Command, args []string) error {
-		reference, err := artifactnpm.ParseReference(args[0])
-		if err != nil {
-			return err
-		}
-		request, err := application.NewInspectRequest(reference)
-		if err != nil {
-			return err
-		}
-		exitCode, operationErr := ExecuteInspect(contextOrBackground(command.Context()), inspector, request, true, command.OutOrStdout())
-		if operationErr != nil {
-			return operationErr
-		}
-		if exitCode != 0 {
-			return ExitError{Code: exitCode}
+	if inspectCommand := findLeaf(root, "npm", "inspect"); inspectCommand != nil {
+		inspectCommand.RunE = func(command *cobra.Command, args []string) error {
+			reference, err := artifactnpm.ParseReference(args[0])
+			if err != nil {
+				return err
+			}
+			request, err := application.NewInspectRequest(reference)
+			if err != nil {
+				return err
+			}
+			exitCode, operationErr := ExecuteInspect(contextOrBackground(command.Context()), inspector, request, true, command.OutOrStdout())
+			if operationErr != nil {
+				return operationErr
+			}
+			if exitCode != 0 {
+				return ExitError{Code: exitCode}
+			}
+			return nil
 		}
 		return nil
-	}}
-	npmCommand.AddCommand(inspectCommand)
-	return nil
+	}
+	return errors.New("npm inspect command is not registered")
 }
 
 // AddNPMInstall adds the injected npm Install/Promotion use case.
@@ -243,32 +252,79 @@ func AddNPMInstall(root *cobra.Command, installer Installer) error {
 	if root == nil || installer == nil {
 		return errors.New("npm install command requires root and use case")
 	}
-	npmCommand := ensureNPMCommand(root)
-	var target string
-	installCommand := &cobra.Command{Use: "install <package-reference>", Args: cobra.ExactArgs(1), RunE: func(command *cobra.Command, args []string) error {
-		reference, err := artifactnpm.ParseReference(args[0])
-		if err != nil {
-			return err
-		}
-		installContext, err := npmInstallContext(target)
-		if err != nil {
-			return err
-		}
-		request, err := application.NewInstallRequest(reference, installContext)
-		if err != nil {
-			return err
-		}
-		exitCode, operationErr := ExecuteInstall(contextOrBackground(command.Context()), installer, request, true, command.OutOrStdout())
-		if operationErr != nil {
-			return operationErr
-		}
-		if exitCode != 0 {
-			return ExitError{Code: exitCode}
+	if installCommand := findLeaf(root, "npm", "install"); installCommand != nil {
+		installCommand.RunE = func(command *cobra.Command, args []string) error {
+			reference, err := artifactnpm.ParseReference(args[0])
+			if err != nil {
+				return err
+			}
+			target, err := command.Flags().GetString("target")
+			if err != nil {
+				return err
+			}
+			installContext, err := npmInstallContext(target)
+			if err != nil {
+				return err
+			}
+			request, err := application.NewInstallRequest(reference, installContext)
+			if err != nil {
+				return err
+			}
+			exitCode, operationErr := ExecuteInstall(contextOrBackground(command.Context()), installer, request, true, command.OutOrStdout())
+			if operationErr != nil {
+				return operationErr
+			}
+			if exitCode != 0 {
+				return ExitError{Code: exitCode}
+			}
+			return nil
 		}
 		return nil
-	}}
-	installCommand.Flags().StringVar(&target, "target", "", "advanced new absolute installation target")
-	npmCommand.AddCommand(installCommand)
+	}
+	return errors.New("npm install command is not registered")
+}
+
+func initializeCommandTree(root *cobra.Command) {
+	npm := ensureNPMCommand(root)
+	npm.AddCommand(newStaticLeaf("inspect <package-reference>", "Inspect an npm package", false))
+	npm.AddCommand(newStaticLeaf("install <package-reference>", "Install an npm package into the current project", true))
+	pypi := ensurePyPICommand(root)
+	pypi.AddCommand(newStaticLeaf("inspect <project>[@<version>]", "Inspect a PyPI distribution", false))
+	pip := ensurePipCommand(root)
+	pip.AddCommand(newStaticLeaf("install <project>[@<version>]", "Install a PyPI distribution into the active virtual environment", true))
+	github := ensureGitHubCommand(root)
+	github.AddCommand(newStaticLeaf("inspect <owner>/<repo>@<tag>#<asset>", "Inspect a GitHub Release asset", false))
+	githubInstall := newStaticLeaf("install <owner>/<repo>@<tag>#<asset>", "Install a GitHub Release asset", true)
+	_ = githubInstall.MarkFlagRequired("target")
+	github.AddCommand(githubInstall)
+}
+
+func newStaticLeaf(use, short string, withTarget bool) *cobra.Command {
+	command := &cobra.Command{
+		Use:   use,
+		Short: short,
+		Args:  cobra.ExactArgs(1),
+		RunE: func(*cobra.Command, []string) error {
+			return errors.New("command is not configured")
+		},
+	}
+	if withTarget {
+		command.Flags().String("target", "", "advanced absolute destination (optional unless required by this command)")
+	}
+	return command
+}
+
+func findLeaf(root *cobra.Command, parent, leaf string) *cobra.Command {
+	for _, command := range root.Commands() {
+		if command.Name() != parent {
+			continue
+		}
+		for _, child := range command.Commands() {
+			if child.Name() == leaf {
+				return child
+			}
+		}
+	}
 	return nil
 }
 

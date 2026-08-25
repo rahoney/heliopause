@@ -38,6 +38,23 @@ func TestPyPIInstallParsesOnlyCanonicalReferenceAndTarget(t *testing.T) {
 	}
 }
 
+func TestPyPIInstallWithoutActiveVenvFailsClosed(t *testing.T) {
+	t.Setenv("VIRTUAL_ENV", "")
+
+	var stdout, stderr bytes.Buffer
+	root, err := cli.New(&stdout, &stderr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := cli.AddPyPIInstall(root, &pypiCLIInstaller{}); err != nil {
+		t.Fatal(err)
+	}
+	root.SetArgs([]string{"pip", "install", "demo-package@1.0"})
+	if err := root.ExecuteContext(context.Background()); err == nil || !strings.Contains(err.Error(), "active virtual environment") {
+		t.Fatalf("error = %v, want missing active venv", err)
+	}
+}
+
 type pypiCLIInstaller struct{ request application.InstallRequest }
 
 func (p *pypiCLIInstaller) Install(_ context.Context, request application.InstallRequest) (application.InstallOutcome, error) {
