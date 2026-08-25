@@ -8,8 +8,8 @@
 - Go module path: `github.com/rahoney/heliopause`
 - 구현 언어: Go
 - CLI framework: Cobra
-- 현재 상태: M0–M9 완료. M10 Verified Distribution & Bootstrap을 진행 중이며 production-ready release는 보류
-- 현재 작업: M10-007 — verified public release publication과 attestation qualification
+- 현재 상태: M0–M10 완료. M11 Dynamic Detection Depth를 진행 중이며 production-ready release는 M12까지 보류
+- 현재 작업: M11-001 — dynamic detection depth entry decision
 
 Heliopause는 Apache-2.0으로 배포한다. 외부 기여는 `CLA.md`의 Harmony
 Copyright License 및 Option Five 조건과 자동 CLA status check를 충족해야 하며,
