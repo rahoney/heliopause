@@ -35,6 +35,30 @@ func TestGitHubReleasePromotionPublishesExactStagedAsset(t *testing.T) {
 	}
 }
 
+func TestGitHubReleasePromotionNeverOverwritesExistingTarget(t *testing.T) {
+	root := realPromotionRoot(t)
+	bundle, staged, _ := githubReleasePromotionFixture(t, root)
+	target := filepath.Join(root, "target")
+	if err := os.MkdirAll(target, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	marker := filepath.Join(target, "keep")
+	if err := os.WriteFile(marker, []byte("untouched"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	promoter, err := NewGitHubReleasePromotion(filepath.Join(root, "staging"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := promoter.Promote(context.Background(), staged, bundle, installContextFor(t, target)); err == nil {
+		t.Fatal("Promote error = nil, want existing-target rejection")
+	}
+	content, err := os.ReadFile(marker)
+	if err != nil || string(content) != "untouched" {
+		t.Fatalf("existing target changed: %q, %v", content, err)
+	}
+}
+
 func githubReleasePromotionFixture(t *testing.T, root string) (domain.VerifiedBundle, domain.StagedSet, []byte) {
 	t.Helper()
 	content := []byte("github release promotion fixture")
