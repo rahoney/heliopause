@@ -6,6 +6,7 @@
 
 #include <signal.h>
 #include <fstream>
+#include <iterator>
 #include <sys/time.h>
 #include <sys/wait.h>
 
