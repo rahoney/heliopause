@@ -13,6 +13,7 @@ import (
 const workflowRelativePath = ".github/workflows/heliopause-ci.yml"
 const securityWorkflowRelativePath = ".github/workflows/heliopause-security.yml"
 const releaseWorkflowRelativePath = ".github/workflows/heliopause-release-build.yml"
+const releasePublishWorkflowRelativePath = ".github/workflows/heliopause-release-publish.yml"
 
 var actionReference = regexp.MustCompile(`(?m)^\s*uses:\s*(\S+)\s*(?:#.*)?$`)
 
@@ -23,7 +24,10 @@ func checkCIWorkflow(root string) error {
 	if err := checkWorkflow(root, securityWorkflowRelativePath, validateSecurityWorkflow); err != nil {
 		return err
 	}
-	return checkWorkflow(root, releaseWorkflowRelativePath, validateReleaseWorkflow)
+	if err := checkWorkflow(root, releaseWorkflowRelativePath, validateReleaseWorkflow); err != nil {
+		return err
+	}
+	return checkWorkflow(root, releasePublishWorkflowRelativePath, validateReleasePublishWorkflow)
 }
 
 func checkWorkflow(root, relativePath string, validate func(string) []string) error {
@@ -280,6 +284,76 @@ func validateReleaseWorkflow(contents string) []string {
 	}
 	if jobs := workflowJobIDs(contents); strings.Join(jobs, ",") != "build-and-attest" {
 		findings = append(findings, fmt.Sprintf("release workflow jobs are %q, require %q", jobs, "build-and-attest"))
+	}
+	sort.Strings(findings)
+	return findings
+}
+
+func validateReleasePublishWorkflow(contents string) []string {
+	var findings []string
+	for _, snippet := range []string{
+		"name: Heliopause Verified Release Publish",
+		"  workflow_dispatch:",
+		"release_tag:",
+		"source_run_id:",
+		"permissions:\n  contents: write\n  attestations: read",
+		"runs-on: ubuntu-24.04",
+		"environment: release",
+		"persist-credentials: false",
+		"go-version: '1.26.7'",
+		"gh run view \"$SOURCE_RUN_ID\" -R \"$GH_REPO\"",
+		"test \"$(jq -er '.workflowName' <<<\"$run_json\")\" = 'Heliopause Release Build'",
+		"gh run download \"$SOURCE_RUN_ID\" -R \"$GH_REPO\" -n \"$artifact_name\"",
+		"sha256sum -c helox-release-checksums.txt",
+		"gh attestation verify",
+		"--signer-workflow \"$signer\"",
+		"--source-digest",
+		"go run ./scripts/check release-gate",
+		"gh api --include \"repos/$GH_REPO/releases/tags/$RELEASE_TAG\"",
+		"release already exists; refusing overwrite",
+		"gh release create \"$RELEASE_TAG\"",
+		"--verify-tag",
+		"--draft",
+		"gh release edit \"$RELEASE_TAG\" -R \"$GH_REPO\" --draft=false",
+		"gh release verify \"$RELEASE_TAG\" -R \"$GH_REPO\"",
+		"gh release verify-asset \"$RELEASE_TAG\"",
+	} {
+		if !strings.Contains(contents, snippet) {
+			findings = append(findings, fmt.Sprintf("missing required release publication contract %q", snippet))
+		}
+	}
+	for _, token := range []string{
+		"push:", "pull_request:", "pull_request_target:", "schedule:", "workflow_run:",
+		"contents: read", "packages: write", "secrets:", "@main", "@master", "@latest",
+		"ubuntu-latest", "--clobber", "--target", "--force",
+	} {
+		if strings.Contains(contents, token) {
+			findings = append(findings, fmt.Sprintf("forbidden release publication workflow token %q", token))
+		}
+	}
+	allowedActions := map[string]int{
+		"actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1": 1,
+		"actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e": 1,
+	}
+	actualActions := make(map[string]int)
+	for _, match := range actionReference.FindAllStringSubmatch(contents, -1) {
+		actualActions[match[1]]++
+	}
+	for action := range actualActions {
+		if _, allowed := allowedActions[action]; !allowed {
+			findings = append(findings, fmt.Sprintf("unapproved release publication action reference %q", action))
+		}
+		if strings.Count(action, "@") != 1 || len(strings.SplitN(action, "@", 2)[1]) != 40 {
+			findings = append(findings, fmt.Sprintf("release publication action reference is not pinned to a full SHA: %q", action))
+		}
+	}
+	for action, expectedCount := range allowedActions {
+		if actualActions[action] != expectedCount {
+			findings = append(findings, fmt.Sprintf("release publication action %q appears %d times, require %d", action, actualActions[action], expectedCount))
+		}
+	}
+	if jobs := workflowJobIDs(contents); strings.Join(jobs, ",") != "publish" {
+		findings = append(findings, fmt.Sprintf("release publication workflow jobs are %q, require %q", jobs, "publish"))
 	}
 	sort.Strings(findings)
 	return findings

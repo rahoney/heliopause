@@ -1,0 +1,138 @@
+name: Heliopause Verified Release Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing immutable source tag to publish (for example v1.2.3)
+        required: true
+        type: string
+      source_run_id:
+        description: Successful Heliopause Release Build run that produced the candidate
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  attestations: read
+
+concurrency:
+  group: heliopause-release-publish-${{ inputs.release_tag }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Verify and publish release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: release
+    env:
+      GOTOOLCHAIN: local
+      RELEASE_TAG: ${{ inputs.release_tag }}
+      SOURCE_RUN_ID: ${{ inputs.source_run_id }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Check out the exact release tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.release_tag }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: '1.26.7'
+          check-latest: false
+          cache: false
+      - name: Verify candidate identity and download immutable artifact
+        run: |
+          set -euo pipefail
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          [[ "$SOURCE_RUN_ID" =~ ^[0-9]+$ ]]
+          tag_sha="$(git rev-list -n 1 "$RELEASE_TAG^{commit}")"
+          run_json="$(gh run view "$SOURCE_RUN_ID" -R "$GH_REPO" --json databaseId,workflowName,status,conclusion,event,headSha,headBranch)"
+          test "$(jq -er '.workflowName' <<<"$run_json")" = 'Heliopause Release Build'
+          test "$(jq -er '.status' <<<"$run_json")" = completed
+          test "$(jq -er '.conclusion' <<<"$run_json")" = success
+          test "$(jq -er '.event' <<<"$run_json")" = push
+          source_sha="$(jq -er '.headSha' <<<"$run_json")"
+          test "$source_sha" = "$tag_sha"
+          artifact_name="helox-${RELEASE_TAG}-${source_sha}"
+          candidate="$RUNNER_TEMP/helox-release-candidate"
+          mkdir -m 0700 "$candidate"
+          gh run download "$SOURCE_RUN_ID" -R "$GH_REPO" -n "$artifact_name" -D "$candidate"
+          test "$(find "$candidate" -mindepth 1 -maxdepth 1 -type f | wc -l)" -eq 10
+          test "$(jq -er '.version' "$candidate/helox-release-manifest.json")" = "$RELEASE_TAG"
+          test "$(jq -er '.source_commit' "$candidate/helox-release-manifest.json")" = "$source_sha"
+          test "$(jq -er '.workflow_run' "$candidate/helox-release-manifest.json")" = "$GITHUB_SERVER_URL/$GH_REPO/actions/runs/$SOURCE_RUN_ID"
+          test "$(wc -l < "$candidate/helox-release-checksums.txt")" -eq 9
+          (cd "$candidate" && sha256sum -c helox-release-checksums.txt)
+      - name: Verify manifest asset bindings
+        run: |
+          set -euo pipefail
+          candidate="$RUNNER_TEMP/helox-release-candidate"
+          while IFS=$'\t' read -r name expected_sha expected_size; do
+            test -f "$candidate/$name"
+            actual_sha="$(sha256sum "$candidate/$name" | awk '{print $1}')"
+            actual_size="$(stat -c '%s' "$candidate/$name")"
+            test "$actual_sha" = "$expected_sha"
+            test "$actual_size" = "$expected_size"
+          done < <(jq -er '.assets[] | [.name, .sha256, (.size | tostring)] | @tsv' "$candidate/helox-release-manifest.json")
+      - name: Verify GitHub artifact provenance
+        run: |
+          set -euo pipefail
+          candidate="$RUNNER_TEMP/helox-release-candidate"
+          signer="$GH_REPO/.github/workflows/heliopause-release-build.yml"
+          while IFS= read -r name; do
+            gh attestation verify "$candidate/$name" \
+              -R "$GH_REPO" \
+              --signer-workflow "$signer" \
+              --source-digest "$(jq -er '.source_commit' "$candidate/helox-release-manifest.json")" \
+              --predicate-type 'https://slsa.dev/provenance/v1' \
+              --deny-self-hosted-runners
+          done < <(jq -er '.assets[].name' "$candidate/helox-release-manifest.json")
+      - name: Re-run canonical release gate
+        run: go run ./scripts/check release-gate
+      - name: Refuse an existing release and create a draft
+        run: |
+          set -euo pipefail
+          candidate="$RUNNER_TEMP/helox-release-candidate"
+          release_probe="$RUNNER_TEMP/release-probe.txt"
+          set +e
+          gh api --include "repos/$GH_REPO/releases/tags/$RELEASE_TAG" >"$release_probe" 2>&1
+          probe_status=$?
+          set -e
+          if test "$probe_status" -eq 0; then
+            echo "release already exists; refusing overwrite" >&2
+            exit 1
+          fi
+          grep -Eq '^HTTP/[0-9.]+ 404 ' "$release_probe" || {
+            cat "$release_probe" >&2
+            echo "release existence probe was unavailable; refusing publication" >&2
+            exit 1
+          }
+          gh release create "$RELEASE_TAG" \
+            -R "$GH_REPO" \
+            --verify-tag \
+            --draft \
+            --generate-notes \
+            --latest=false \
+            "$candidate/haa_gvisor_observer-linux-amd64" \
+            "$candidate/haa-network-policy-helper-linux-amd64" \
+            "$candidate/helox-darwin-amd64" \
+            "$candidate/helox-darwin-arm64" \
+            "$candidate/helox-linux-amd64" \
+            "$candidate/helox-linux-arm64" \
+            "$candidate/helox-runtime-images.json" \
+            "$candidate/helox-release-manifest.json" \
+            "$candidate/helox-release-sbom.cdx.json" \
+            "$candidate/helox-release-checksums.txt"
+      - name: Publish and verify immutable release
+        run: |
+          set -euo pipefail
+          candidate="$RUNNER_TEMP/helox-release-candidate"
+          gh release edit "$RELEASE_TAG" -R "$GH_REPO" --draft=false
+          gh release verify "$RELEASE_TAG" -R "$GH_REPO"
+          for name in $(jq -er '.assets[].name' "$candidate/helox-release-manifest.json") helox-release-checksums.txt; do
+            gh release verify-asset "$RELEASE_TAG" "$candidate/$name" -R "$GH_REPO"
+          done
