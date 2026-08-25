@@ -162,10 +162,9 @@ OUT OF THIS AGREEMENT REGARDLESS OF THE LEGAL OR EQUITABLE THEORY.
 ## 6. Miscellaneous
 
 6.1 This Agreement will be governed by and construed in accordance with the
-laws of **[PROJECT GOVERNING JURISDICTION — MUST BE CONFIRMED BEFORE
-PRODUCTION PUBLIC RELEASE]**, excluding its conflicts-of-law provisions. The
-United Nations Convention on Contracts for the International Sale of Goods is
-excluded in its entirety.
+laws of the Republic of Korea, excluding its conflicts-of-law provisions.
+The United Nations Convention on Contracts for the International Sale of Goods
+is excluded in its entirety.
 
 6.2 This Agreement sets out the entire agreement between You and Us for Your
 Contributions to Us and overrides all other agreements or understandings.
