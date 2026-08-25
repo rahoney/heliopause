@@ -64,6 +64,34 @@ func TestValidateReleaseWorkflowRejectsSecurityRegressions(t *testing.T) {
 	}
 }
 
+func TestValidateReleasePublishWorkflowRejectsSecurityRegressions(t *testing.T) {
+	t.Parallel()
+
+	root, err := filepath.Abs(filepath.Join("..", ".."))
+	if err != nil {
+		t.Fatalf("resolve repository root: %v", err)
+	}
+	contents, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(releasePublishWorkflowRelativePath)))
+	if err != nil {
+		t.Fatalf("read release publication workflow: %v", err)
+	}
+
+	tests := map[string]string{
+		"floating action":     strings.Replace(string(contents), "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", "actions/checkout@main", 1),
+		"push trigger":        strings.Replace(string(contents), "  workflow_dispatch:\n", "  push:\n    tags:\n      - 'v*'\n  workflow_dispatch:\n", 1),
+		"clobber":             string(contents) + "\n      --clobber\n",
+		"missing attestation": strings.Replace(string(contents), "          gh attestation verify", "          echo skipped", 1),
+	}
+	for name, fixture := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			if findings := validateReleasePublishWorkflow(fixture); len(findings) == 0 {
+				t.Fatal("validateReleasePublishWorkflow findings = none, want non-empty")
+			}
+		})
+	}
+}
+
 func TestValidateCIWorkflowRejectsSecurityRegressions(t *testing.T) {
 	t.Parallel()
 

@@ -49,6 +49,10 @@ func checkReleaseGate(root string) error {
 	publishInfo, err := os.Lstat(publishPath)
 	if err != nil || !publishInfo.Mode().IsRegular() || publishInfo.Size() == 0 {
 		findings = append(findings, "public release publication workflow is not configured")
+	} else if publishBody, readErr := os.ReadFile(publishPath); readErr != nil {
+		findings = append(findings, "public release publication workflow is unreadable")
+	} else if workflowFindings := validateReleasePublishWorkflow(string(publishBody)); len(workflowFindings) != 0 {
+		findings = append(findings, workflowFindings...)
 	}
 	if len(findings) == 0 {
 		return nil
