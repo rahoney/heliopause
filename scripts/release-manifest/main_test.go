@@ -19,9 +19,13 @@ func TestBuildReleaseProducesBoundManifestAndSBOM(t *testing.T) {
 		t.Fatal(err)
 	}
 	sbomPath := filepath.Join(root, "helox-release-sbom.cdx.json")
+	runtimeImagesPath := filepath.Join(root, "helox-runtime-images.json")
+	if err := os.WriteFile(runtimeImagesPath, []byte(`{"schema":"helox.runtime-image-manifest/v1"}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
 	manifestPath := filepath.Join(root, "helox-release-manifest.json")
 	workflowRun := "https://github.com/rahoney/heliopause/actions/runs/123"
-	if err := buildRelease("v1.2.3", strings.Repeat("b", 40), workflowRun, runtimeLock, sbomPath, manifestPath, assets); err != nil {
+	if err := buildRelease("v1.2.3", strings.Repeat("b", 40), workflowRun, runtimeLock, sbomPath, runtimeImagesPath, manifestPath, assets); err != nil {
 		t.Fatal(err)
 	}
 	var manifest releaseManifest
@@ -34,6 +38,9 @@ func TestBuildReleaseProducesBoundManifestAndSBOM(t *testing.T) {
 	}
 	if manifest.RuntimeLock.GVisorCommit != strings.Repeat("a", 40) || manifest.SBOM.Name != filepath.Base(sbomPath) || manifest.SBOM.SHA256 == "" {
 		t.Fatalf("manifest bindings = %#v", manifest)
+	}
+	if manifest.RuntimeImages.Name != filepath.Base(runtimeImagesPath) || manifest.RuntimeImages.SHA256 == "" {
+		t.Fatalf("runtime image binding = %#v", manifest.RuntimeImages)
 	}
 	var sbom cyclonedxSBOM
 	sbomBody, err := os.ReadFile(sbomPath)
@@ -55,16 +62,20 @@ func TestBuildReleaseRejectsIncompleteOrPreexistingOutput(t *testing.T) {
 		t.Fatal(err)
 	}
 	workflowRun := "https://github.com/rahoney/heliopause/actions/runs/123"
-	if err := buildRelease("v1.2.3", strings.Repeat("b", 40), workflowRun, runtimeLock, filepath.Join(root, "sbom.json"), filepath.Join(root, "manifest.json"), assets[:5]); err == nil {
+	runtimeImagesPath := filepath.Join(root, "runtime-images.json")
+	if err := os.WriteFile(runtimeImagesPath, []byte("runtime-images"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := buildRelease("v1.2.3", strings.Repeat("b", 40), workflowRun, runtimeLock, filepath.Join(root, "sbom.json"), runtimeImagesPath, filepath.Join(root, "manifest.json"), assets[:5]); err == nil {
 		t.Fatal("incomplete asset set was accepted")
 	}
 	if err := os.WriteFile(filepath.Join(root, "existing.json"), []byte("existing"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := buildRelease("v1.2.3", strings.Repeat("b", 40), workflowRun, runtimeLock, filepath.Join(root, "sbom.json"), filepath.Join(root, "existing.json"), assets); err == nil {
+	if err := buildRelease("v1.2.3", strings.Repeat("b", 40), workflowRun, runtimeLock, filepath.Join(root, "sbom.json"), runtimeImagesPath, filepath.Join(root, "existing.json"), assets); err == nil {
 		t.Fatal("preexisting manifest output was accepted")
 	}
-	if err := buildRelease("v1.2.3", strings.Repeat("b", 40), "https://attacker.invalid/run/123", runtimeLock, filepath.Join(root, "other-sbom.json"), filepath.Join(root, "other-manifest.json"), assets); err == nil {
+	if err := buildRelease("v1.2.3", strings.Repeat("b", 40), "https://attacker.invalid/run/123", runtimeLock, filepath.Join(root, "other-sbom.json"), runtimeImagesPath, filepath.Join(root, "other-manifest.json"), assets); err == nil {
 		t.Fatal("unexpected workflow run URL was accepted")
 	}
 }
