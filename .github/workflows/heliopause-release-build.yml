@@ -48,12 +48,20 @@ jobs:
           CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -trimpath -buildvcs=true -o "$dist/helox-darwin-arm64" ./cmd/helox
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -buildvcs=true -o "$dist/haa-network-policy-helper-linux-amd64" ./cmd/haa-network-policy-helper
           scripts/build-gvisor-observer-release.sh "$dist/haa_gvisor_observer-linux-amd64"
+          go run ./scripts/runtime-image-manifest \
+            --runtime-lock scripts/runtimes.lock.json \
+            --output "$dist/helox-runtime-images.json"
+          node_image="$(jq -er '.node_image.reference' scripts/runtimes.lock.json)"
+          python_image="$(jq -er '.python_image.reference' scripts/runtimes.lock.json)"
+          docker buildx imagetools inspect "$node_image" >/dev/null
+          docker buildx imagetools inspect "$python_image" >/dev/null
           go run ./scripts/release-manifest \
             --version "$GITHUB_REF_NAME" \
             --commit "$GITHUB_SHA" \
             --workflow-run "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
             --runtime-lock scripts/runtimes.lock.json \
             --sbom-output "$dist/helox-release-sbom.cdx.json" \
+            --runtime-images "$dist/helox-runtime-images.json" \
             --output "$dist/helox-release-manifest.json" \
             --asset "$dist/helox-linux-amd64" \
             --asset "$dist/helox-linux-arm64" \
@@ -70,6 +78,7 @@ jobs:
               helox-darwin-arm64 \
               helox-linux-amd64 \
               helox-linux-arm64 \
+              helox-runtime-images.json \
               helox-release-manifest.json \
               helox-release-sbom.cdx.json > helox-release-checksums.txt
           )

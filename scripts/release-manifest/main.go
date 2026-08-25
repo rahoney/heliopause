@@ -55,13 +55,14 @@ type releaseAsset struct {
 }
 
 type releaseManifest struct {
-	Schema       string          `json:"schema"`
-	Version      string          `json:"version"`
-	SourceCommit string          `json:"source_commit"`
-	WorkflowRun  string          `json:"workflow_run"`
-	RuntimeLock  runtimeIdentity `json:"runtime_lock"`
-	SBOM         releaseRecord   `json:"sbom"`
-	Assets       []releaseAsset  `json:"assets"`
+	Schema        string          `json:"schema"`
+	Version       string          `json:"version"`
+	SourceCommit  string          `json:"source_commit"`
+	WorkflowRun   string          `json:"workflow_run"`
+	RuntimeLock   runtimeIdentity `json:"runtime_lock"`
+	SBOM          releaseRecord   `json:"sbom"`
+	RuntimeImages releaseRecord   `json:"runtime_images"`
+	Assets        []releaseAsset  `json:"assets"`
 }
 
 type runtimeIdentity struct {
@@ -115,6 +116,7 @@ func run(arguments []string) error {
 	workflowRun := flags.String("workflow-run", "", "GitHub Actions workflow run URL")
 	runtimeLockPath := flags.String("runtime-lock", "", "canonical runtime lock")
 	sbomPath := flags.String("sbom-output", "", "CycloneDX SBOM output")
+	runtimeImagesPath := flags.String("runtime-images", "", "runtime image manifest")
 	manifestPath := flags.String("output", "", "release manifest output")
 	var assets stringList
 	flags.Var(&assets, "asset", "release asset path (repeatable)")
@@ -124,10 +126,10 @@ func run(arguments []string) error {
 	if flags.NArg() != 0 {
 		return errors.New("positional arguments are not supported")
 	}
-	return buildRelease(*version, *commit, *workflowRun, *runtimeLockPath, *sbomPath, *manifestPath, assets)
+	return buildRelease(*version, *commit, *workflowRun, *runtimeLockPath, *sbomPath, *runtimeImagesPath, *manifestPath, assets)
 }
 
-func buildRelease(version, commit, workflowRun, runtimeLockPath, sbomPath, manifestPath string, assetPaths []string) error {
+func buildRelease(version, commit, workflowRun, runtimeLockPath, sbomPath, runtimeImagesPath, manifestPath string, assetPaths []string) error {
 	if !releaseVersion.MatchString(version) {
 		return errors.New("release version is invalid")
 	}
@@ -156,6 +158,10 @@ func buildRelease(version, commit, workflowRun, runtimeLockPath, sbomPath, manif
 	if err != nil {
 		return fmt.Errorf("read release SBOM: %w", err)
 	}
+	runtimeImages, err := fileRecord(runtimeImagesPath)
+	if err != nil {
+		return fmt.Errorf("read runtime image manifest: %w", err)
+	}
 	lockDigest := sha256.Sum256(lockBody)
 	manifest := releaseManifest{
 		Schema:       manifestSchema,
@@ -167,8 +173,9 @@ func buildRelease(version, commit, workflowRun, runtimeLockPath, sbomPath, manif
 			GVisorRelease: lock.GVisor.Release,
 			GVisorCommit:  lock.GVisor.Commit,
 		},
-		SBOM:   sbom,
-		Assets: assets,
+		SBOM:          sbom,
+		RuntimeImages: runtimeImages,
+		Assets:        assets,
 	}
 	body, err := json.MarshalIndent(manifest, "", "  ")
 	if err != nil {
