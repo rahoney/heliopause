@@ -3,9 +3,13 @@ package cli
 
 import (
 	"context"
+	"crypto/sha256"
 	"errors"
+	"fmt"
 	"io"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/rahoney/heliopause/internal/application"
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
@@ -88,7 +92,7 @@ func AddGitHubReleaseInstall(root *cobra.Command, parser ReferenceParser, instal
 			if err != nil {
 				return err
 			}
-			targetValue, err := domain.NewInstallTarget(target)
+			targetValue, err := githubInstallTarget(target, reference)
 			if err != nil {
 				return err
 			}
@@ -187,6 +191,65 @@ func npmInstallContext(target string) (domain.InstallContext, error) {
 		return domain.InstallContext{}, errors.New("npm project directory is unsupported")
 	}
 	return domain.NewNPMProjectInstallContext(project)
+}
+
+func githubInstallTarget(target string, reference domain.ArtifactReference) (domain.InstallTarget, error) {
+	if target != "" {
+		return domain.NewInstallTarget(target)
+	}
+	owner, repo, tag, asset, err := splitGitHubLocator(reference)
+	if err != nil {
+		return domain.InstallTarget{}, errors.New("GitHub Release default target cannot be derived")
+	}
+	workingDirectory, err := os.Getwd()
+	if err != nil {
+		return domain.InstallTarget{}, errors.New("resolve GitHub Release default target directory")
+	}
+	// Keep the default destination directly below the already-existing working
+	// directory. The selector digest prevents collisions after safe segment
+	// normalization while the directory remains recognizable to the user.
+	selectorDigest := sha256.Sum256([]byte(reference.Locator()))
+	name := fmt.Sprintf(".helox-github-%s-%s-%s-%s-%x",
+		safeTargetSegment(owner),
+		safeTargetSegment(repo),
+		safeTargetSegment(tag),
+		safeTargetSegment(asset),
+		selectorDigest[:6],
+	)
+	return domain.NewInstallTarget(filepath.Join(workingDirectory, name))
+}
+
+func splitGitHubLocator(reference domain.ArtifactReference) (owner, repo, tag, asset string, err error) {
+	if reference.Source().String() != "github-release" {
+		return "", "", "", "", errors.New("unsupported GitHub Release source")
+	}
+	locator := reference.Locator()
+	at := strings.IndexByte(locator, '@')
+	hash := strings.LastIndexByte(locator, '#')
+	if at <= 0 || hash <= at+1 || hash == len(locator)-1 || strings.Count(locator, "@") != 1 || strings.Count(locator, "#") != 1 {
+		return "", "", "", "", errors.New("GitHub Release locator is invalid")
+	}
+	repository := locator[:at]
+	if strings.Count(repository, "/") != 1 {
+		return "", "", "", "", errors.New("GitHub Release repository is invalid")
+	}
+	parts := strings.SplitN(repository, "/", 2)
+	return parts[0], parts[1], locator[at+1 : hash], locator[hash+1:], nil
+}
+
+func safeTargetSegment(value string) string {
+	var builder strings.Builder
+	for _, character := range value {
+		if (character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z') || (character >= '0' && character <= '9') || character == '.' || character == '_' || character == '-' {
+			builder.WriteRune(character)
+			continue
+		}
+		builder.WriteByte('_')
+	}
+	if builder.Len() == 0 {
+		return "unknown"
+	}
+	return builder.String()
 }
 
 // AddPyPIInspect adds the isolated PyPI primary-distribution inspect path.
@@ -295,7 +358,6 @@ func initializeCommandTree(root *cobra.Command) {
 	github := ensureGitHubCommand(root)
 	github.AddCommand(newStaticLeaf("inspect <owner>/<repo>@<tag>#<asset>", "Inspect a GitHub Release asset", false))
 	githubInstall := newStaticLeaf("install <owner>/<repo>@<tag>#<asset>", "Install a GitHub Release asset", true)
-	_ = githubInstall.MarkFlagRequired("target")
 	github.AddCommand(githubInstall)
 }
 
@@ -309,7 +371,7 @@ func newStaticLeaf(use, short string, withTarget bool) *cobra.Command {
 		},
 	}
 	if withTarget {
-		command.Flags().String("target", "", "advanced absolute destination (optional unless required by this command)")
+		command.Flags().String("target", "", "advanced absolute destination (optional; existing paths are never overwritten)")
 	}
 	return command
 }

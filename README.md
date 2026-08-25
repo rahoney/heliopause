@@ -9,7 +9,7 @@
 - 구현 언어: Go
 - CLI framework: Cobra
 - 현재 상태: M0–M8 및 M9-001~003 완료. M9 Product Install UX를 진행 중이며 production-ready release는 보류
-- 현재 작업: M9-004 — complete root CLI tree, defaults and advanced target UX
+- 현재 작업: M9-005 — GitHub standalone default destination and overwrite policy
 
 ## Project Notes
 
@@ -50,6 +50,7 @@ helox pip install '<project>[@<version>]'
 helox pip install '<project>[@<version>]' --target /absolute/venv
 
 helox github inspect '<owner>/<repo>@<tag>#<asset>'
+helox github install '<owner>/<repo>@<tag>#<asset>'
 helox github install '<owner>/<repo>@<tag>#<asset>' --target /absolute/new-target
 ```
 
