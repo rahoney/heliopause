@@ -9,7 +9,7 @@
 - 구현 언어: Go
 - CLI framework: Cobra
 - 현재 상태: M0–M9 완료. M10 Verified Distribution & Bootstrap을 진행 중이며 production-ready release는 보류
-- 현재 작업: M10-004 — installer·atomic activation·`helox doctor`
+- 현재 작업: M10-005 — bootstrap rollback·qualification·release gate
 
 ## Project Notes
 
@@ -41,6 +41,8 @@ active virtual environment를 사용하며, `--target`은 고급 absolute destin
 override다. GitHub install은 M9-005 전까지 `--target`을 요구한다.
 
 ```sh
+helox doctor
+
 helox npm inspect '<package>[@<version>]'
 helox npm install '<package>[@<version>]'
 helox npm install '<package>[@<version>]' --target /absolute/project

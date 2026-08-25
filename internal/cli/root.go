@@ -50,6 +50,52 @@ func New(stdout, stderr io.Writer) (*cobra.Command, error) {
 
 type ReferenceParser func(string) (domain.ArtifactReference, error)
 
+// Doctor reports bounded installation and Host readiness checks. A false
+// Healthy result is never rendered as a successful diagnosis.
+type Doctor interface {
+	Diagnose(context.Context) DoctorReport
+}
+
+type DoctorReport struct {
+	Healthy bool
+	Checks  []DoctorCheck
+}
+
+type DoctorCheck struct {
+	Name    string
+	Healthy bool
+	Detail  string
+}
+
+// AddDoctor connects the composition-root health boundary to the static root
+// command. It performs no work while help is rendered.
+func AddDoctor(root *cobra.Command, doctor Doctor) error {
+	if root == nil || doctor == nil {
+		return errors.New("doctor command requires health service")
+	}
+	command := findRootCommand(root, "doctor")
+	if command == nil {
+		return errors.New("doctor command is not registered")
+	}
+	command.RunE = func(command *cobra.Command, _ []string) error {
+		report := doctor.Diagnose(contextOrBackground(command.Context()))
+		for _, check := range report.Checks {
+			status := "UNAVAILABLE"
+			if check.Healthy {
+				status = "OK"
+			}
+			if _, err := fmt.Fprintf(command.OutOrStdout(), "%s=%s (%s)\n", check.Name, status, check.Detail); err != nil {
+				return err
+			}
+		}
+		if !report.Healthy {
+			return ExitError{Code: 1}
+		}
+		return nil
+	}
+	return nil
+}
+
 func AddGitHubReleaseInspect(root *cobra.Command, parser ReferenceParser, inspector Inspector) error {
 	if root == nil || parser == nil || inspector == nil {
 		return errors.New("github inspect command requires root and use case")
@@ -348,6 +394,7 @@ func AddNPMInstall(root *cobra.Command, installer Installer) error {
 }
 
 func initializeCommandTree(root *cobra.Command) {
+	root.AddCommand(&cobra.Command{Use: "doctor", Short: "Check installed release and trusted Host runtime readiness", Args: cobra.NoArgs, RunE: func(*cobra.Command, []string) error { return errors.New("doctor command is not configured") }})
 	npm := ensureNPMCommand(root)
 	npm.AddCommand(newStaticLeaf("inspect <package-reference>", "Inspect an npm package", false))
 	npm.AddCommand(newStaticLeaf("install <package-reference>", "Install an npm package into the current project", true))
@@ -359,6 +406,15 @@ func initializeCommandTree(root *cobra.Command) {
 	github.AddCommand(newStaticLeaf("inspect <owner>/<repo>@<tag>#<asset>", "Inspect a GitHub Release asset", false))
 	githubInstall := newStaticLeaf("install <owner>/<repo>@<tag>#<asset>", "Install a GitHub Release asset", true)
 	github.AddCommand(githubInstall)
+}
+
+func findRootCommand(root *cobra.Command, name string) *cobra.Command {
+	for _, command := range root.Commands() {
+		if command.Name() == name {
+			return command
+		}
+	}
+	return nil
 }
 
 func newStaticLeaf(use, short string, withTarget bool) *cobra.Command {
