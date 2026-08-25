@@ -36,6 +36,10 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 	if err != nil {
 		return err
 	}
+	command.SetArgs(args)
+	if helpRequested(args) {
+		return command.ExecuteContext(ctx)
+	}
 	var trustedExecutor *hosttool.Executor
 	var observerSupervisor *sandbox.ObserverSupervisor
 	var processObserver sandbox.TraceObserver
@@ -287,9 +291,16 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 			return err
 		}
 	}
-	command.SetArgs(args)
-
 	return command.ExecuteContext(ctx)
+}
+
+func helpRequested(args []string) bool {
+	for _, arg := range args {
+		if arg == "--help" || arg == "-h" {
+			return true
+		}
+	}
+	return false
 }
 
 func pypiInstallDependencyResolver(goos, goarch string, executor sandbox.TrustedExecutor, observer sandbox.TraceObserver) (ports.DependencyResolver, error) {

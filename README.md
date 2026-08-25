@@ -8,8 +8,8 @@
 - Go module path: `github.com/rahoney/heliopause`
 - 구현 언어: Go
 - CLI framework: Cobra
-- 현재 상태: M0–M7 MVP qualification 완료. External security review에서 확인된 production trust-boundary hardening을 M8에서 진행 중이며 production-ready release는 보류
-- 현재 작업: M8-005 — least-privilege typed resolver network-policy helper
+- 현재 상태: M0–M8 및 M9-001~003 완료. M9 Product Install UX를 진행 중이며 production-ready release는 보류
+- 현재 작업: M9-004 — complete root CLI tree, defaults and advanced target UX
 
 ## Project Notes
 
@@ -36,15 +36,18 @@ go run ./scripts/check quick
 ## Commands
 
 지원하는 공개 입력은 anonymous public npm Registry, PyPI와 public GitHub
-Release asset이다. `install`의 `--target`은 아직 존재하지 않는 absolute
-path여야 한다.
+Release asset이다. npm/pip install은 기본적으로 현재 managed project 또는
+active virtual environment를 사용하며, `--target`은 고급 absolute destination
+override다. GitHub install은 M9-005 전까지 `--target`을 요구한다.
 
 ```sh
 helox npm inspect '<package>[@<version>]'
-helox npm install '<package>[@<version>]' --target /absolute/new-target
+helox npm install '<package>[@<version>]'
+helox npm install '<package>[@<version>]' --target /absolute/project
 
 helox pypi inspect '<project>[@<version>]'
-helox pypi install '<project>[@<version>]' --target /absolute/new-target
+helox pip install '<project>[@<version>]'
+helox pip install '<project>[@<version>]' --target /absolute/venv
 
 helox github inspect '<owner>/<repo>@<tag>#<asset>'
 helox github install '<owner>/<repo>@<tag>#<asset>' --target /absolute/new-target
