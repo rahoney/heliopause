@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
@@ -184,13 +185,21 @@ func (p *observerProcess) Stop(ctx context.Context) error {
 		return p.ExitError()
 	default:
 	}
-	if err := p.command.Process.Kill(); err != nil && !errors.Is(err, os.ErrProcessDone) {
-		return errors.New("terminate observer helper")
+	if err := p.command.Process.Signal(syscall.SIGTERM); err != nil && !errors.Is(err, os.ErrProcessDone) {
+		return errors.New("request observer helper termination")
 	}
 	select {
 	case <-p.done:
 		return nil
 	case <-ctx.Done():
-		return errors.New("observer helper termination timed out")
+		if err := p.command.Process.Kill(); err != nil && !errors.Is(err, os.ErrProcessDone) {
+			return errors.New("terminate observer helper")
+		}
+		select {
+		case <-p.done:
+			return errors.New("observer helper termination timed out")
+		case <-time.After(time.Second):
+			return errors.New("observer helper termination did not complete")
+		}
 	}
 }
