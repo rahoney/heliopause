@@ -3,12 +3,14 @@
 // HAA's trusted datagram boundary; it never logs trace payloads.
 #include <arpa/inet.h>
 #include <err.h>
+#include <poll.h>
 #include <signal.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
 
 #include <cstdint>
+#include <cerrno>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -33,6 +35,7 @@ void CleanupControlSocket(int) {
 constexpr uint32_t kProtocolVersion = 1;
 constexpr size_t kMaxEventSize = 1024 * 1024;
 constexpr size_t kMaxNormalizedRecordsPerConnection = 10000;
+constexpr int kProfileRegistrationWaitMilliseconds = 2000;
 constexpr char kProfileNPM[] = "npm-lifecycle";
 constexpr char kProfilePyPI[] = "pypi-wheel";
 constexpr char kProfileGitHub[] = "github-elf";
@@ -98,6 +101,27 @@ bool ParseControlRecord(const char* payload, size_t size, std::map<std::string, 
   if (profiles->find(id) != profiles->end()) return false;
   (*profiles)[id] = profile;
   return true;
+}
+
+bool DrainProfiles(int control, std::map<std::string, std::string>* profiles) {
+  char control_message[512];
+  ssize_t control_size;
+  while ((control_size = recv(control, control_message, sizeof(control_message), MSG_DONTWAIT)) > 0) {
+    if (!ParseControlRecord(control_message, static_cast<size_t>(control_size), profiles)) return false;
+  }
+  return control_size == 0 || (control_size < 0 && (errno == EAGAIN || errno == EWOULDBLOCK));
+}
+
+const char* AwaitProfile(int control, const std::string& container_id, std::map<std::string, std::string>* profiles) {
+  for (int waited = 0; waited < kProfileRegistrationWaitMilliseconds; waited += 50) {
+    if (!DrainProfiles(control, profiles)) return nullptr;
+    auto profile = profiles->find(container_id);
+    if (profile != profiles->end()) return profile->second.c_str();
+    pollfd descriptor{control, POLLIN, 0};
+    const int result = poll(&descriptor, 1, 50);
+    if (result <= 0) return nullptr;
+  }
+  return nullptr;
 }
 
 template <typename Message>
@@ -213,11 +237,7 @@ int main(int argc, char** argv) {
     close(ready_fd);
   }
   for (;;) {
-    char control_message[512];
-    ssize_t control_size;
-    while ((control_size = recv(control, control_message, sizeof(control_message), MSG_DONTWAIT)) > 0) {
-      if (!ParseControlRecord(control_message, static_cast<size_t>(control_size), &profiles)) errx(1, "invalid observer profile registration");
-    }
+    if (!DrainProfiles(control, &profiles)) errx(1, "invalid observer profile registration");
     int client = accept(listener, nullptr, nullptr); if (client < 0) err(1, "accept remote");
     char handshake[1024]; ssize_t size = recv(client, handshake, sizeof(handshake), 0);
     gvisor::common::Handshake incoming;
@@ -232,9 +252,8 @@ int main(int argc, char** argv) {
       if (static_cast<size_t>(size) < sizeof(Header)) { fault = true; break; }
       Header header{}; memcpy(&header, event, sizeof(header));
       if (profile == nullptr && !container_id.empty()) {
-        auto profile_it = profiles.find(container_id);
-        if (profile_it == profiles.end()) { fault = true; break; }
-        profile = profile_it->second.c_str();
+        profile = AwaitProfile(control, container_id, &profiles);
+        if (profile == nullptr) { fault = true; break; }
       }
       if (normalized_records == kMaxNormalizedRecordsPerConnection || header.header_size < sizeof(Header) || header.header_size > static_cast<uint16_t>(size) || !Handle(header, event + header.header_size, size - header.header_size, output, &container_id, profile)) { fault = true; break; }
       ++normalized_records;

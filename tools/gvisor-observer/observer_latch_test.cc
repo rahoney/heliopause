@@ -14,6 +14,8 @@ namespace {
 
 constexpr char kFirstID[] = "0123456789abcdef";
 constexpr char kSecondID[] = "fedcba9876543210";
+constexpr char kThirdID[] = "abcdef0123456789";
+constexpr char kFourthID[] = "9876543210fedcba";
 
 bool SendAll(int fd, const std::string& value) {
   return send(fd, value.data(), value.size(), 0) == static_cast<ssize_t>(value.size());
@@ -39,13 +41,13 @@ int ConnectRemote(const std::string& path) {
   return connect(fd, reinterpret_cast<sockaddr*>(&address), sizeof(address)) == 0 ? fd : -1;
 }
 
-bool RegisterProfile(const std::string& path, const char* profile) {
+bool RegisterProfile(const std::string& path, const char* container_id, const char* profile) {
   const int fd = socket(AF_UNIX, SOCK_DGRAM, 0);
   if (fd < 0) return false;
   sockaddr_un address{}; address.sun_family = AF_UNIX;
   if (path.size() >= sizeof(address.sun_path)) return false;
   strcpy(address.sun_path, path.c_str());
-  const std::string body = std::string("{\"container_id\":\"") + kFirstID + "\",\"profile\":\"" + profile + "\"}";
+  const std::string body = std::string("{\"container_id\":\"") + container_id + "\",\"profile\":\"" + profile + "\"}";
   const bool sent = sendto(fd, body.data(), body.size(), 0, reinterpret_cast<sockaddr*>(&address), sizeof(address)) == static_cast<ssize_t>(body.size());
   close(fd);
   return sent;
@@ -71,11 +73,11 @@ bool SendEvent(int client, gvisor::common::MessageType type, const Message& mess
   return SendAll(client, packet);
 }
 
-bool ExpectRecord(int output, const char* kind) {
+bool ExpectRecord(int output, const char* container_id, const char* kind) {
   char buffer[1024];
   const ssize_t size = recv(output, buffer, sizeof(buffer), 0);
   if (size <= 0) return false;
-  const std::string expected = std::string("{\"container_id\":\"") + kFirstID + "\",\"kind\":\"" + kind + "\"}";
+  const std::string expected = std::string("{\"container_id\":\"") + container_id + "\",\"kind\":\"" + kind + "\"}";
   return std::string(buffer, size) == expected;
 }
 
@@ -93,53 +95,54 @@ bool HasPinnedPodInitProfile() {
 }
 
 bool VerifyPinnedAccessors(int output, const std::string& remote, const std::string& control) {
-  if (!RegisterProfile(control, kProfileNPM)) return false;
+  if (!RegisterProfile(control, kFirstID, kProfileNPM)) return false;
   const int client = ConnectRemote(remote);
   if (client < 0 || !Handshake(client)) return false;
   gvisor::container::Start start;
   start.mutable_context_data()->set_container_id(kFirstID);
-  if (!SendEvent(client, gvisor::common::MESSAGE_CONTAINER_START, start) || !ExpectRecord(output, "container-start")) return false;
+  if (!SendEvent(client, gvisor::common::MESSAGE_CONTAINER_START, start) || !ExpectRecord(output, kFirstID, "container-start")) return false;
   gvisor::syscall::Execve execve;
   execve.mutable_context_data()->set_container_id(kFirstID);
   execve.mutable_context_data()->set_thread_group_id(7);
   execve.mutable_context_data()->set_process_name("trusted-test-process");
   execve.set_pathname("/usr/local/bin/node");
   execve.add_argv("raw-argv-must-not-leave-helper");
-  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, execve) || !ExpectRecord(output, "process-exec-expected")) return false;
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, execve) || !ExpectRecord(output, kFirstID, "process-exec-expected")) return false;
   gvisor::syscall::Open open;
   open.mutable_context_data()->set_container_id(kFirstID);
   open.mutable_context_data()->set_thread_group_id(7);
   open.mutable_context_data()->set_process_name("trusted-test-process");
   open.set_pathname("/root/.ssh/authorized_keys");
   open.set_flags(1); open.set_mode(0600); open.set_sysno(257);
-  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_OPEN, open) || !ExpectRecord(output, "filesystem-outside-workspace")) return false;
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_OPEN, open) || !ExpectRecord(output, kFirstID, "filesystem-outside-workspace")) return false;
   gvisor::syscall::Socket socket;
   socket.mutable_context_data()->set_container_id(kFirstID);
   socket.mutable_context_data()->set_thread_group_id(7);
   socket.mutable_context_data()->set_process_name("trusted-test-process");
   socket.set_domain(2); socket.set_type(1); socket.set_protocol(0);
-  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_SOCKET, socket) || !ExpectRecord(output, "network-attempt")) return false;
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_SOCKET, socket) || !ExpectRecord(output, kFirstID, "network-attempt")) return false;
   close(client);
-  return ExpectRecord(output, "stream-end");
+  return ExpectRecord(output, kFirstID, "stream-end");
 }
 
 bool RunFaultCase(int output, const std::string& remote, const std::string& control, bool mismatch) {
-  if (!RegisterProfile(control, mismatch ? kProfilePyPI : kProfileGitHub)) return false;
+  const char* container_id = mismatch ? kSecondID : kThirdID;
+  if (!RegisterProfile(control, container_id, mismatch ? kProfilePyPI : kProfileGitHub)) return false;
   const int client = ConnectRemote(remote);
   if (client < 0 || !Handshake(client)) return false;
   gvisor::container::Start start;
-  start.mutable_context_data()->set_container_id(kFirstID);
-  if (!SendEvent(client, gvisor::common::MESSAGE_CONTAINER_START, start) || !ExpectRecord(output, "container-start")) return false;
+  start.mutable_context_data()->set_container_id(container_id);
+  if (!SendEvent(client, gvisor::common::MESSAGE_CONTAINER_START, start) || !ExpectRecord(output, container_id, "container-start")) return false;
   if (mismatch) {
     gvisor::sentry::ExecveInfo exec;
-    exec.mutable_context_data()->set_container_id(kSecondID);
+    exec.mutable_context_data()->set_container_id(kFourthID);
     if (!SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, exec)) return false;
   } else {
     gvisor::sentry::ExecveInfo exec;
-    exec.mutable_context_data()->set_container_id(kFirstID);
+    exec.mutable_context_data()->set_container_id(container_id);
     if (!SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, exec, 1)) return false;
   }
-  const bool faulted = ExpectRecord(output, "stream-fault");
+  const bool faulted = ExpectRecord(output, container_id, "stream-fault");
   close(client);
   return faulted;
 }
@@ -166,7 +169,16 @@ int main() {
   char ready = '\0';
   const bool running = child > 0 && read(readiness[0], &ready, 1) == 1 && ready == 'R';
   close(readiness[0]);
-  const bool passed = running && HasPinnedPodInitProfile() && VerifyPinnedAccessors(output, remote, control) && RunFaultCase(output, remote, control, true) && RunFaultCase(output, remote, control, false);
+  const bool profile = HasPinnedPodInitProfile();
+  if (!running) fprintf(stderr, "observer latch failure: readiness\n");
+  if (!profile) fprintf(stderr, "observer latch failure: pod-init profile\n");
+  const bool accessors = running && profile && VerifyPinnedAccessors(output, remote, control);
+  if (!accessors) fprintf(stderr, "observer latch failure: normalized accessors\n");
+  const bool mismatch = accessors && RunFaultCase(output, remote, control, true);
+  if (!mismatch) fprintf(stderr, "observer latch failure: container mismatch\n");
+  const bool dropped = mismatch && RunFaultCase(output, remote, control, false);
+  if (!dropped) fprintf(stderr, "observer latch failure: dropped events\n");
+  const bool passed = dropped;
   if (child > 0) { kill(child, SIGTERM); waitpid(child, nullptr, 0); }
   close(output); unlink(remote.c_str()); unlink(output_path.c_str()); unlink(control.c_str()); rmdir(directory);
   return passed ? 0 : 1;
