@@ -38,6 +38,7 @@ type InstallMode string
 const (
 	InstallNewTarget  InstallMode = "NEW_TARGET"
 	InstallNPMProject InstallMode = "NPM_PROJECT"
+	InstallPythonVenv InstallMode = "PYTHON_VENV"
 )
 
 // InstallContext identifies either the M4 explicit new target or an M9 npm
@@ -63,9 +64,21 @@ func NewNPMProjectInstallContext(projectRoot InstallTarget) (InstallContext, err
 	return InstallContext{target: projectRoot, mode: InstallNPMProject}, nil
 }
 
+// NewPythonVenvInstallContext selects the active virtual environment root.
+// Layout validation and ownership tracking remain Infrastructure concerns.
+func NewPythonVenvInstallContext(venvRoot InstallTarget) (InstallContext, error) {
+	if venvRoot.value == "" {
+		return InstallContext{}, errors.New("python virtual environment root is required")
+	}
+	return InstallContext{target: venvRoot, mode: InstallPythonVenv}, nil
+}
+
 func (c InstallContext) Target() InstallTarget   { return c.target }
 func (c InstallContext) Mode() InstallMode       { return c.mode }
 func (c InstallContext) RequiresNewTarget() bool { return c.mode == InstallNewTarget }
+func (c InstallContext) Valid() bool {
+	return c.target.value != "" && (c.mode == InstallNewTarget || c.mode == InstallNPMProject || c.mode == InstallPythonVenv)
+}
 
 // DependencyNodeID is an adapter-generated opaque identifier for one exact
 // graph node. It is not a package-manager lockfile path.

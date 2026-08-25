@@ -315,7 +315,7 @@ jobs:
           set +e
           /usr/libexec/heliopause/helox npm install is-number@7.0.0 --target "$RUNNER_TEMP/npm-target"
           npm_status=$?
-          /usr/libexec/heliopause/helox pypi install packaging@25.0 --target "$RUNNER_TEMP/pypi-target"
+          /usr/libexec/heliopause/helox pip install packaging@25.0 --target "$RUNNER_TEMP/pypi-target"
           pypi_status=$?
           set -e
           test "$npm_status" = 10

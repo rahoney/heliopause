@@ -116,18 +116,18 @@ func AddPyPIInstall(root *cobra.Command, installer Installer) error {
 	if root == nil || installer == nil {
 		return errors.New("pypi install command requires root and use case")
 	}
-	pypiCommand := ensurePyPICommand(root)
+	pypiCommand := ensurePipCommand(root)
 	var target string
 	installCommand := &cobra.Command{Use: "install <project>[@<version>]", Args: cobra.ExactArgs(1), RunE: func(command *cobra.Command, args []string) error {
 		reference, err := artifactpypi.ParseReference(args[0])
 		if err != nil {
 			return err
 		}
-		installTarget, err := domain.NewInstallTarget(target)
+		installTarget, err := activePythonVenv(target)
 		if err != nil {
 			return err
 		}
-		installContext, err := domain.NewInstallContext(installTarget)
+		installContext, err := domain.NewPythonVenvInstallContext(installTarget)
 		if err != nil {
 			return err
 		}
@@ -144,10 +144,23 @@ func AddPyPIInstall(root *cobra.Command, installer Installer) error {
 		}
 		return nil
 	}}
-	installCommand.Flags().StringVar(&target, "target", "", "new absolute installation target (required)")
-	_ = installCommand.MarkFlagRequired("target")
+	installCommand.Flags().StringVar(&target, "target", "", "advanced active virtual environment root")
 	pypiCommand.AddCommand(installCommand)
 	return nil
+}
+
+func activePythonVenv(target string) (domain.InstallTarget, error) {
+	if target == "" {
+		target = os.Getenv("VIRTUAL_ENV")
+	}
+	if target == "" {
+		return domain.InstallTarget{}, errors.New("pip install requires an active virtual environment")
+	}
+	value, err := domain.NewInstallTarget(target)
+	if err != nil {
+		return domain.InstallTarget{}, errors.New("active virtual environment is unsupported")
+	}
+	return value, nil
 }
 
 func npmInstallContext(target string) (domain.InstallContext, error) {
@@ -277,6 +290,17 @@ func ensurePyPICommand(root *cobra.Command) *cobra.Command {
 		}
 	}
 	command := &cobra.Command{Use: "pypi", Short: "Inspect and install PyPI distributions"}
+	root.AddCommand(command)
+	return command
+}
+
+func ensurePipCommand(root *cobra.Command) *cobra.Command {
+	for _, command := range root.Commands() {
+		if command.Name() == "pip" {
+			return command
+		}
+	}
+	command := &cobra.Command{Use: "pip", Short: "Inspect and install PyPI distributions"}
 	root.AddCommand(command)
 	return command
 }

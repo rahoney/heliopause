@@ -39,7 +39,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 	var trustedExecutor *hosttool.Executor
 	var observerSupervisor *sandbox.ObserverSupervisor
 	var processObserver sandbox.TraceObserver
-	if runtime.GOOS == "linux" && len(args) > 0 && (args[0] == "npm" || args[0] == "pypi" || args[0] == "github") {
+	if runtime.GOOS == "linux" && len(args) > 0 && (args[0] == "npm" || args[0] == "pypi" || args[0] == "pip" || args[0] == "github") {
 		trustedExecutor, err = hosttool.NewSystem(ctx)
 		if err != nil {
 			return err
@@ -134,7 +134,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 			return err
 		}
 	}
-	if len(args) > 0 && args[0] == "pypi" {
+	if len(args) > 0 && (args[0] == "pypi" || args[0] == "pip") {
 		cacheRoot, err := os.UserCacheDir()
 		if err != nil {
 			return err
