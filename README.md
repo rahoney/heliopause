@@ -9,7 +9,7 @@
 - 구현 언어: Go
 - CLI framework: Cobra
 - 현재 상태: M0–M9 완료. M10 Verified Distribution & Bootstrap을 진행 중이며 production-ready release는 보류
-- 현재 작업: M10-001 — release identity, manifest and bootstrap trust contract
+- 현재 작업: M10-002 — reproducible native/helper build and provenance-bound release manifest
 
 ## Project Notes
 

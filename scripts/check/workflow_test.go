@@ -35,6 +35,35 @@ func TestRuntimeLockWorkflowRejectsCopiedIdentity(t *testing.T) {
 	}
 }
 
+func TestValidateReleaseWorkflowRejectsSecurityRegressions(t *testing.T) {
+	t.Parallel()
+
+	root, err := filepath.Abs(filepath.Join("..", ".."))
+	if err != nil {
+		t.Fatalf("resolve repository root: %v", err)
+	}
+	contents, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(releaseWorkflowRelativePath)))
+	if err != nil {
+		t.Fatalf("read release workflow: %v", err)
+	}
+
+	tests := map[string]string{
+		"floating attestation action": strings.Replace(string(contents), "actions/attest@a1948c3f048ba23858d222213b7c278aabede763", "actions/attest@v4", 1),
+		"write content permission":    strings.Replace(string(contents), "  contents: read", "  contents: write", 1),
+		"PR trigger":                  strings.Replace(string(contents), "  push:\n", "  pull_request:\n  push:\n", 1),
+		"non-tag trigger":             strings.Replace(string(contents), "      - 'v*'", "      - '*'", 1),
+		"release publishing":          string(contents) + "\n      - run: gh release create $GITHUB_REF_NAME\n",
+	}
+	for name, fixture := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			if findings := validateReleaseWorkflow(fixture); len(findings) == 0 {
+				t.Fatal("validateReleaseWorkflow findings = none, want non-empty")
+			}
+		})
+	}
+}
+
 func TestValidateCIWorkflowRejectsSecurityRegressions(t *testing.T) {
 	t.Parallel()
 
