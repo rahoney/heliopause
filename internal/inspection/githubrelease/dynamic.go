@@ -58,11 +58,11 @@ func (i *DynamicInspector) Inspect(ctx context.Context, artifact domain.Acquired
 		case domain.ObservationNetwork:
 			code = "M3_NETWORK_ATTEMPT"
 		case domain.ObservationFilesystem:
-			if observation.Subject() == "filesystem-violation" {
+			if observation.Subject() == "filesystem-violation" || observation.Subject() == "filesystem-outside-workspace" {
 				code = "M3_FILESYSTEM_VIOLATION"
 			}
 		case domain.ObservationProcess:
-			if observation.Subject() == "process-unexpected" {
+			if observation.Subject() == "process-unexpected" || observation.Subject() == "process-exec-unexpected" {
 				code = "M3_UNEXPECTED_PROCESS"
 			}
 		}

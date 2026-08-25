@@ -124,7 +124,7 @@ bool VerifyPinnedAccessors(int output, const std::string& remote, const std::str
 }
 
 bool RunFaultCase(int output, const std::string& remote, const std::string& control, bool mismatch) {
-  (void)control;
+  if (!RegisterProfile(control, mismatch ? kProfilePyPI : kProfileGitHub)) return false;
   const int client = ConnectRemote(remote);
   if (client < 0 || !Handshake(client)) return false;
   gvisor::container::Start start;
