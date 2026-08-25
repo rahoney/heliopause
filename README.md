@@ -8,8 +8,8 @@
 - Go module path: `github.com/rahoney/heliopause`
 - 구현 언어: Go
 - CLI framework: Cobra
-- 현재 상태: M0–M8 및 M9-001~003 완료. M9 Product Install UX를 진행 중이며 production-ready release는 보류
-- 현재 작업: M9-006 — transaction hostile-boundary regression and qualification
+- 현재 상태: M0–M9 완료. M10 Verified Distribution & Bootstrap을 진행 중이며 production-ready release는 보류
+- 현재 작업: M10-001 — release identity, manifest and bootstrap trust contract
 
 ## Project Notes
 
