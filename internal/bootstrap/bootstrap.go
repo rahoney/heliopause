@@ -134,7 +134,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 			return err
 		}
 	}
-	if len(args) > 0 && args[0] == "pypi" {
+	if len(args) > 0 && (args[0] == "pypi" || args[0] == "pip") {
 		cacheRoot, err := os.UserCacheDir()
 		if err != nil {
 			return err

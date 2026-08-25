@@ -57,6 +57,12 @@ func (p *PyPIPromotion) Promote(ctx context.Context, staged domain.StagedSet, bu
 	if filepath.Dir(stagedRoot) != p.stagingRoot || rejectSymlinkPath(stagedRoot) != nil || verifyStagedRecords(stagedRoot, bundle) != nil {
 		return domain.PromotedInstall{}, errors.New("PyPI staged records are unavailable or untrusted")
 	}
+	if installContext.Mode() == domain.InstallPythonVenv {
+		return p.promoteActiveVenv(ctx, stagedRoot, bundle, installContext)
+	}
+	if installContext.Mode() != domain.InstallNewTarget {
+		return domain.PromotedInstall{}, errors.New("PyPI install context is unsupported")
+	}
 	target := installContext.Target().String()
 	parent := filepath.Dir(target)
 	if target == "" || trustedExistingDirectory(parent) != nil {
@@ -109,6 +115,40 @@ func (p *PyPIPromotion) Promote(ctx context.Context, staged domain.StagedSet, bu
 	}
 	cleanup = false
 	if err := syncDirectory(parent); err != nil {
+		return domain.PromotedInstall{}, err
+	}
+	return domain.NewPromotedInstall(bundle.ManifestID(), installContext.Target())
+}
+
+func (p *PyPIPromotion) promoteActiveVenv(ctx context.Context, stagedRoot string, bundle domain.VerifiedBundle, installContext domain.InstallContext) (domain.PromotedInstall, error) {
+	plan, err := discoverPythonVenv(installContext.Target().String())
+	if err != nil {
+		return domain.PromotedInstall{}, err
+	}
+	temporary, err := os.MkdirTemp(plan.root, ".haa-pypi-work-")
+	if err != nil {
+		return domain.PromotedInstall{}, errors.New("create private PyPI virtual environment workspace")
+	}
+	defer os.RemoveAll(temporary)
+	if err := os.Chmod(temporary, 0o700); err != nil {
+		return domain.PromotedInstall{}, err
+	}
+	requirements, expected, err := preparePyPIProject(temporary, stagedRoot, bundle)
+	if err != nil {
+		return domain.PromotedInstall{}, err
+	}
+	if err := p.runner.Run(ctx, temporary, pypiPromotionArguments(temporary)); err != nil {
+		return domain.PromotedInstall{}, err
+	}
+	output := filepath.Join(temporary, "site")
+	if err := validatePyPIOutput(output, expected, requirements); err != nil {
+		return domain.PromotedInstall{}, err
+	}
+	desired, err := plan.outputState(output)
+	if err != nil {
+		return domain.PromotedInstall{}, err
+	}
+	if err := plan.commit(output, desired); err != nil {
 		return domain.PromotedInstall{}, err
 	}
 	return domain.NewPromotedInstall(bundle.ManifestID(), installContext.Target())

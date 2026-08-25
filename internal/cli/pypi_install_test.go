@@ -8,6 +8,7 @@ import (
 
 	"github.com/rahoney/heliopause/internal/application"
 	"github.com/rahoney/heliopause/internal/cli"
+	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
 func TestPyPIInstallParsesOnlyCanonicalReferenceAndTarget(t *testing.T) {
@@ -21,14 +22,17 @@ func TestPyPIInstallParsesOnlyCanonicalReferenceAndTarget(t *testing.T) {
 	if err := cli.AddPyPIInstall(root, installer); err != nil {
 		t.Fatal(err)
 	}
-	root.SetArgs([]string{"pypi", "install", "Demo_Package@1.0", "--target", "/tmp/haa-pypi-cli-target"})
+	root.SetArgs([]string{"pip", "install", "Demo_Package@1.0", "--target", "/tmp/haa-pypi-cli-target"})
 	// The minimal installer intentionally has no completed result to render,
 	// but receives the parsed request before presentation is attempted.
 	_ = root.ExecuteContext(context.Background())
 	if installer.request.Reference().Source().String() != "pypi" || installer.request.Reference().Locator() != "demo-package@1.0" || installer.request.Context().Target().String() != "/tmp/haa-pypi-cli-target" {
 		t.Fatalf("request = %#v", installer.request)
 	}
-	root.SetArgs([]string{"pypi", "install", "demo-package[extra]", "--target", "/tmp/other"})
+	if installer.request.Context().Mode() != domain.InstallPythonVenv {
+		t.Fatalf("install mode = %s", installer.request.Context().Mode())
+	}
+	root.SetArgs([]string{"pip", "install", "demo-package[extra]", "--target", "/tmp/other"})
 	if err := root.ExecuteContext(context.Background()); err == nil || !strings.Contains(err.Error(), "PyPI") {
 		t.Fatalf("unsafe reference error = %v", err)
 	}

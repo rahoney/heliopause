@@ -14,7 +14,7 @@ type InstallRequest struct {
 }
 
 func NewInstallRequest(reference domain.ArtifactReference, context domain.InstallContext) (InstallRequest, error) {
-	if reference.Source().String() == "" || context.Target().String() == "" || (context.Mode() != domain.InstallNewTarget && context.Mode() != domain.InstallNPMProject) {
+	if reference.Source().String() == "" || context.Target().String() == "" || (context.Mode() != domain.InstallNewTarget && context.Mode() != domain.InstallNPMProject && context.Mode() != domain.InstallPythonVenv) {
 		return InstallRequest{}, errors.New("install request requires Artifact Reference and supported Install Context")
 	}
 	return InstallRequest{reference: reference, context: context}, nil
