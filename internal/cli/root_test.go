@@ -27,7 +27,7 @@ func TestRootHelp(t *testing.T) {
 	if !strings.Contains(stdout.String(), "Usage:\n  helox") {
 		t.Fatalf("help output missing usage: %q", stdout.String())
 	}
-	for _, commandName := range []string{"npm", "pip", "pypi", "github"} {
+	for _, commandName := range []string{"npm", "pip", "pypi", "github", "doctor"} {
 		if !strings.Contains(stdout.String(), commandName) {
 			t.Fatalf("help output missing %q command: %q", commandName, stdout.String())
 		}
@@ -91,4 +91,34 @@ func TestNewRejectsNilWriters(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestDoctorRendersEveryCheckAndFailsClosed(t *testing.T) {
+	t.Parallel()
+	var stdout bytes.Buffer
+	command, err := cli.New(&stdout, io.Discard)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := cli.AddDoctor(command, testDoctor{}); err != nil {
+		t.Fatal(err)
+	}
+	command.SetArgs([]string{"doctor"})
+	if err := command.ExecuteContext(context.Background()); err == nil {
+		t.Fatal("incomplete doctor report returned success")
+	}
+	for _, want := range []string{"release-installation=OK (OK)", "trusted-host-runtime=UNAVAILABLE (TRUSTED_HOST_RUNTIME_UNAVAILABLE)"} {
+		if !strings.Contains(stdout.String(), want) {
+			t.Fatalf("doctor output missing %q: %q", want, stdout.String())
+		}
+	}
+}
+
+type testDoctor struct{}
+
+func (testDoctor) Diagnose(context.Context) cli.DoctorReport {
+	return cli.DoctorReport{Healthy: false, Checks: []cli.DoctorCheck{
+		{Name: "release-installation", Healthy: true, Detail: "OK"},
+		{Name: "trusted-host-runtime", Detail: "TRUSTED_HOST_RUNTIME_UNAVAILABLE"},
+	}}
 }

@@ -24,6 +24,7 @@ import (
 	inspectionpypi "github.com/rahoney/heliopause/internal/inspection/pypi"
 	"github.com/rahoney/heliopause/internal/policy"
 	"github.com/rahoney/heliopause/internal/promotion"
+	"github.com/rahoney/heliopause/internal/releaseinstall"
 	"github.com/rahoney/heliopause/internal/sandbox"
 	verificationgithub "github.com/rahoney/heliopause/internal/verification/githubrelease"
 	verificationnpm "github.com/rahoney/heliopause/internal/verification/npm"
@@ -38,6 +39,16 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 	}
 	command.SetArgs(args)
 	if helpRequested(args) {
+		return command.ExecuteContext(ctx)
+	}
+	if len(args) > 0 && args[0] == "doctor" {
+		root, rootErr := releaseinstall.DefaultRoot()
+		if rootErr != nil {
+			return rootErr
+		}
+		if err := cli.AddDoctor(command, doctorService{installRoot: root}); err != nil {
+			return err
+		}
 		return command.ExecuteContext(ctx)
 	}
 	var trustedExecutor *hosttool.Executor
@@ -339,4 +350,16 @@ type unsupportedPyPIInstallResolver struct{}
 
 func (unsupportedPyPIInstallResolver) ResolveDependencies(context.Context, domain.ArtifactReference, domain.InstallContext) (domain.DependencyResolution, error) {
 	return domain.DependencyResolution{}, errors.New("automatic PyPI install requires Linux amd64")
+}
+
+type doctorService struct{ installRoot string }
+
+func (s doctorService) Diagnose(ctx context.Context) cli.DoctorReport {
+	installation := releaseinstall.CheckInstallation(s.installRoot)
+	checks := append([]cli.DoctorCheck{{Name: installation.Name, Healthy: installation.Healthy, Detail: installation.Detail}}, doctorHostChecks(ctx)...)
+	healthy := true
+	for _, check := range checks {
+		healthy = healthy && check.Healthy
+	}
+	return cli.DoctorReport{Healthy: healthy, Checks: checks}
 }
