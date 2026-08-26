@@ -30,9 +30,14 @@ type helperRecord struct {
 	Kind        string `json:"kind"`
 }
 
+const maximumHelperRecordBytes = 1024
+
 // decodeHelperRecord validates only the fixed, normalized helper envelope. It
 // intentionally does not expose or retain remote-sink protobuf payloads.
 func decodeHelperRecord(payload []byte) (helperRecord, error) {
+	if len(payload) == 0 || len(payload) > maximumHelperRecordBytes {
+		return helperRecord{}, errors.New("observer record is invalid")
+	}
 	var record helperRecord
 	if err := json.Unmarshal(payload, &record); err != nil || !containerIDPattern.MatchString(record.ContainerID) {
 		return helperRecord{}, errors.New("observer record is invalid")

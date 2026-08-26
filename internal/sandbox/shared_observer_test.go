@@ -109,6 +109,12 @@ func FuzzDecodeHelperRecord(f *testing.F) {
 	})
 }
 
+func TestDecodeHelperRecordRejectsOversizedPayload(t *testing.T) {
+	if _, err := decodeHelperRecord(make([]byte, maximumHelperRecordBytes+1)); err == nil {
+		t.Fatal("oversized observer record was accepted")
+	}
+}
+
 func observerEndpoint(t *testing.T) string {
 	t.Helper()
 	directory, err := os.MkdirTemp("/tmp", "haa-observer-")
