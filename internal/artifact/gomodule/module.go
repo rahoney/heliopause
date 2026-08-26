@@ -125,6 +125,21 @@ func BuildEnvironmentForCache(cache string) ([]string, error) {
 	}, nil
 }
 
+// ValidateBuildEnvironmentForCache rejects resolver settings, ambient source
+// policy, or a substituted cache from the network-disabled build boundary.
+func ValidateBuildEnvironmentForCache(environment []string, cache string) error {
+	expected, err := BuildEnvironmentForCache(cache)
+	if err != nil || len(environment) != len(expected) {
+		return errors.New("go module build environment is not canonical")
+	}
+	for index := range expected {
+		if environment[index] != expected[index] {
+			return errors.New("go module build environment is not canonical")
+		}
+	}
+	return nil
+}
+
 // Reference is an exact module path and semantic version request.
 func ParseReference(value string) (domain.ArtifactReference, error) {
 	if strings.Count(value, "@") != 1 {

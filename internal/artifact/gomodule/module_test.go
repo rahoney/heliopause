@@ -64,6 +64,14 @@ func TestBuildEnvironmentDisablesNetworkAndModuleMutation(t *testing.T) {
 			t.Fatalf("build environment is missing %q: %#v", required, environment)
 		}
 	}
+	if err := ValidateBuildEnvironmentForCache(environment, "/private/tmp/haa-go-cache"); err != nil {
+		t.Fatal(err)
+	}
+	unsafe := append([]string(nil), environment...)
+	unsafe[0] = "GOPROXY=https://proxy.golang.org"
+	if err := ValidateBuildEnvironmentForCache(unsafe, "/private/tmp/haa-go-cache"); err == nil {
+		t.Fatal("accepted a network-enabled Go build environment")
+	}
 }
 
 func TestDownloadRecordsRejectDirectVCSAndInvalidChecksum(t *testing.T) {
