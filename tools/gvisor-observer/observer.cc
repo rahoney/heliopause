@@ -119,7 +119,12 @@ const char* AwaitProfile(int control, const std::string& container_id, std::map<
     if (profile != profiles->end()) return profile->second.c_str();
     pollfd descriptor{control, POLLIN, 0};
     const int result = poll(&descriptor, 1, 50);
-    if (result <= 0) return nullptr;
+    if (result < 0) {
+      if (errno == EINTR) continue;
+      return nullptr;
+    }
+    if (result == 0) continue;
+    if ((descriptor.revents & POLLIN) == 0) return nullptr;
   }
   return nullptr;
 }

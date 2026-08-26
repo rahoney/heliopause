@@ -77,10 +77,26 @@ func TestValidateReleasePublishWorkflowRejectsSecurityRegressions(t *testing.T) 
 	}
 
 	tests := map[string]string{
-		"floating action":     strings.Replace(string(contents), "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", "actions/checkout@main", 1),
-		"push trigger":        strings.Replace(string(contents), "  workflow_dispatch:\n", "  push:\n    tags:\n      - 'v*'\n  workflow_dispatch:\n", 1),
-		"clobber":             string(contents) + "\n      --clobber\n",
-		"missing attestation": strings.Replace(string(contents), "          gh attestation verify", "          echo skipped", 1),
+		"floating action":          strings.Replace(string(contents), "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", "actions/checkout@main", 1),
+		"push trigger":             strings.Replace(string(contents), "  workflow_dispatch:\n", "  push:\n    tags:\n      - 'v*'\n  workflow_dispatch:\n", 1),
+		"clobber":                  string(contents) + "\n      --clobber\n",
+		"missing attestation":      strings.Replace(string(contents), "          gh attestation verify", "          echo skipped", 1),
+		"missing main provenance":  strings.Replace(string(contents), "repos/$GH_REPO/compare/$tag_sha...$main_sha", "repos/$GH_REPO/compare/skipped", 1),
+		"missing Required success": strings.Replace(string(contents), ".name == \"Required\" and .status == \"completed\" and .conclusion == \"success\" and .app.slug == \"github-actions\"", ".name == \"Skipped\"", 1),
+		"missing draft binding":    strings.Replace(string(contents), "Verify draft release asset bindings before publication", "Verify skipped release assets", 1),
+		"missing quarantine":       strings.Replace(string(contents), "PUBLISHED_BUT_QUARANTINED", "PUBLISHED", 1),
+		"missing exact candidate asset": strings.Replace(
+			string(contents),
+			"            helox-release-sbom.cdx.json\n",
+			"",
+			1,
+		),
+		"draft verification after publication": strings.Replace(
+			strings.Replace(string(contents), "Verify draft release asset bindings before publication", "Draft binding skipped", 1),
+			"          gh release edit \"$RELEASE_TAG\" -R \"$GH_REPO\" --draft=false",
+			"          gh release edit \"$RELEASE_TAG\" -R \"$GH_REPO\" --draft=false\n          # Verify draft release asset bindings before publication",
+			1,
+		),
 	}
 	for name, fixture := range tests {
 		t.Run(name, func(t *testing.T) {

@@ -242,30 +242,72 @@ func activate(root, version string, manifestBody []byte, selected []asset, bundl
 }
 
 func activateCurrent(root, version string) error {
+	return activateCurrentWithSync(root, version, syncDirectory)
+}
+
+func activateCurrentWithSync(root, version string, syncFn func(string) error) error {
+	if syncFn == nil {
+		return errors.New("sync active release pointer")
+	}
 	current := filepath.Join(root, "current")
+	previous := ""
+	hadPrevious := false
 	if info, err := os.Lstat(current); err == nil {
 		if info.Mode()&os.ModeSymlink == 0 || !validCurrentTarget(root, current) {
 			return errors.New("existing active release pointer is invalid")
 		}
+		previous, err = os.Readlink(current)
+		if err != nil {
+			return errors.New("inspect active release pointer")
+		}
+		hadPrevious = true
 	} else if !errors.Is(err, os.ErrNotExist) {
 		return errors.New("inspect active release pointer")
 	}
-	next, err := os.CreateTemp(root, ".current-")
+	nextPath, err := temporaryPointer(root, filepath.Join("versions", version), ".current-")
 	if err != nil {
-		return errors.New("create active release pointer")
-	}
-	nextPath := next.Name()
-	if err := next.Close(); err != nil || os.Remove(nextPath) != nil || os.Symlink(filepath.Join("versions", version), nextPath) != nil {
 		return errors.New("create active release pointer")
 	}
 	if err := os.Rename(nextPath, current); err != nil {
 		_ = os.Remove(nextPath)
 		return errors.New("activate release pointer")
 	}
-	if err := syncDirectory(root); err != nil {
+	if err := syncFn(root); err != nil {
+		if rollbackActivePointer(root, current, previous, hadPrevious, syncFn) != nil {
+			return errors.New("active release pointer state is uncertain")
+		}
 		return errors.New("sync active release pointer")
 	}
 	return nil
+}
+
+func temporaryPointer(root, target, prefix string) (string, error) {
+	next, err := os.CreateTemp(root, prefix)
+	if err != nil {
+		return "", err
+	}
+	nextPath := next.Name()
+	if err := next.Close(); err != nil || os.Remove(nextPath) != nil || os.Symlink(target, nextPath) != nil {
+		_ = os.Remove(nextPath)
+		return "", errors.New("create pointer")
+	}
+	return nextPath, nil
+}
+
+func rollbackActivePointer(root, current, previous string, hadPrevious bool, syncFn func(string) error) error {
+	if hadPrevious {
+		rollback, err := temporaryPointer(root, previous, ".rollback-")
+		if err != nil {
+			return err
+		}
+		if err := os.Rename(rollback, current); err != nil {
+			_ = os.Remove(rollback)
+			return err
+		}
+	} else if err := os.Remove(current); err != nil && !errors.Is(err, os.ErrNotExist) {
+		return err
+	}
+	return syncFn(root)
 }
 
 func validCurrentTarget(root, current string) bool {

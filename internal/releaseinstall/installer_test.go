@@ -109,6 +109,81 @@ func TestInstallRefusesUnverifiedBundleOrPointerReplacement(t *testing.T) {
 	}
 }
 
+func TestActivateCurrentRollsBackExistingPointerWhenPrimarySyncFails(t *testing.T) {
+	root := activationRoot(t)
+	current := filepath.Join(root, "current")
+	if err := os.Symlink("versions/v1.2.3", current); err != nil {
+		t.Fatal(err)
+	}
+	calls := 0
+	err := activateCurrentWithSync(root, "v1.2.4", func(string) error {
+		calls++
+		if calls == 1 {
+			return errors.New("primary sync failed")
+		}
+		return nil
+	})
+	if err == nil || !strings.Contains(err.Error(), "sync active release pointer") {
+		t.Fatalf("activation error = %v", err)
+	}
+	target, readErr := os.Readlink(current)
+	if readErr != nil || target != "versions/v1.2.3" {
+		t.Fatalf("current=%q err=%v", target, readErr)
+	}
+}
+
+func TestActivateCurrentRemovesInitialPointerWhenPrimarySyncFails(t *testing.T) {
+	root := activationRoot(t)
+	calls := 0
+	err := activateCurrentWithSync(root, "v1.2.4", func(string) error {
+		calls++
+		if calls == 1 {
+			return errors.New("primary sync failed")
+		}
+		return nil
+	})
+	if err == nil || !strings.Contains(err.Error(), "sync active release pointer") {
+		t.Fatalf("activation error = %v", err)
+	}
+	if _, statErr := os.Lstat(filepath.Join(root, "current")); !errors.Is(statErr, os.ErrNotExist) {
+		t.Fatalf("current exists after failed initial activation: %v", statErr)
+	}
+}
+
+func TestActivateCurrentReportsUncertaintyWhenRollbackSyncFails(t *testing.T) {
+	root := activationRoot(t)
+	current := filepath.Join(root, "current")
+	if err := os.Symlink("versions/v1.2.3", current); err != nil {
+		t.Fatal(err)
+	}
+	calls := 0
+	err := activateCurrentWithSync(root, "v1.2.4", func(string) error {
+		calls++
+		return errors.New("sync failed")
+	})
+	if err == nil || !strings.Contains(err.Error(), "state is uncertain") {
+		t.Fatalf("activation error = %v", err)
+	}
+	target, readErr := os.Readlink(current)
+	if readErr != nil || target != "versions/v1.2.3" {
+		t.Fatalf("rollback current=%q err=%v", target, readErr)
+	}
+	if calls != 2 {
+		t.Fatalf("sync calls = %d, want 2", calls)
+	}
+}
+
+func activationRoot(t *testing.T) string {
+	t.Helper()
+	root := t.TempDir()
+	for _, version := range []string{"v1.2.3", "v1.2.4"} {
+		if err := os.MkdirAll(filepath.Join(root, "versions", version), 0o700); err != nil {
+			t.Fatal(err)
+		}
+	}
+	return root
+}
+
 type allowVerifier struct{}
 
 func (allowVerifier) Verify(context.Context, string) error { return nil }
