@@ -22,6 +22,8 @@ var providerSegment = regexp.MustCompile(`^[a-z0-9][a-z0-9_-]{0,127}$`)
 var providerVersion = regexp.MustCompile(`^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?$`)
 var providerSource = mustSource("terraform-registry")
 
+var defaultDownloadHosts = map[string]bool{"releases.hashicorp.com": true}
+
 func Source() domain.SourceID  { return providerSource }
 func RegistryEndpoint() string { return registryEndpoint }
 
@@ -126,6 +128,12 @@ func BuildLockedGraph(artifact ProviderArtifact) (domain.LockedDependencyGraph, 
 }
 
 func ParsePackageResponse(reference domain.ArtifactReference, body []byte, platform Platform) (ProviderArtifact, error) {
+	return ParsePackageResponseWithAllowedHosts(reference, body, platform, defaultDownloadHosts)
+}
+
+// ParsePackageResponseWithAllowedHosts applies the caller's canonical vendor
+// endpoint policy to the exact host returned by the Registry response.
+func ParsePackageResponseWithAllowedHosts(reference domain.ArtifactReference, body []byte, platform Platform, allowedHosts map[string]bool) (ProviderArtifact, error) {
 	if reference.Source() != providerSource || len(body) == 0 || len(body) > 1<<20 {
 		return ProviderArtifact{}, errors.New("Terraform Provider package request is invalid")
 	}
@@ -152,7 +160,7 @@ func ParsePackageResponse(reference domain.ArtifactReference, body []byte, platf
 	download, _ := url.Parse(document.DownloadURL)
 	sums, _ := url.Parse(document.ShasumsURL)
 	signature, _ := url.Parse(document.ShasumsSignatureURL)
-	if download.Hostname() == "registry.terraform.io" || sums.Hostname() != signature.Hostname() {
+	if download.Hostname() == "registry.terraform.io" || sums.Hostname() != signature.Hostname() || download.Hostname() != sums.Hostname() || !allowedHosts[strings.ToLower(download.Hostname())] {
 		return ProviderArtifact{}, errors.New("Terraform Provider download endpoint identity is invalid")
 	}
 	keys := make([]string, 0, len(document.SigningKeys))
