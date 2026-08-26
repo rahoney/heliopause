@@ -26,6 +26,11 @@ Copyright License 및 Option Five 조건과 자동 CLA status check를 충족해
 Heliopause는 Go `1.25.13` 이상이 필요하며, 검증된 개발 toolchain은
 Go `1.26.7`이다.
 
+다음 build 명령은 source checkout을 가진 개발자·검증자가 사용하는 경로다. 일반
+사용자는 최종적으로 GitHub Release의 검증된 bootstrap entrance를 사용해야 하며,
+그 public installer와 runtime/helper bundle activation은 M12-004 완료 전까지
+제공된다고 주장하지 않는다.
+
 ```sh
 go build -trimpath -o ./bin/helox ./cmd/helox
 ./bin/helox --help
@@ -80,8 +85,10 @@ helox github install '<owner>/<repo>@<tag>#<asset>' --target /absolute/new-targe
 gVisor source·runsc, Bazel, Node 및 Python identity 경계를 요구한다. `runsc-trace`는
 [pod-init config](./tools/gvisor-observer/pod-init.json)로 보호된 shared observer
 socket을 sandbox 시작 전에 연결해야 한다. 현재 저장소는 일반 Host용 runtime
-installer를 제공하지 않는다. 이 구성이 없는 Host에서 동적 검사나 automatic
-Promotion을 지원한다고 간주해서는 안 된다.
+installer/bootstrap entrance를 아직 제공하지 않는다. M12-004에서 GitHub Release
+검증부터 helox/runtime/helper atomic activation, `doctor`, 실제 npm/PyPI/GitHub
+smoke와 quarantine 절차를 완료하기 전에는 이 구성이 없는 Host에서 동적 검사나
+automatic Promotion을 지원한다고 간주해서는 안 된다.
 
 ## Data and network boundaries
 
