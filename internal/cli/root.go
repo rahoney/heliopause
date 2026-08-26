@@ -57,6 +57,12 @@ type GoModuleResolver interface {
 	Resolve(context.Context, domain.ArtifactReference, domain.InstallContext) (domain.DependencyResolution, error)
 }
 
+// GoModuleProjectResolver resolves a complete current-project snapshot for
+// commands that do not name one primary module.
+type GoModuleProjectResolver interface {
+	Resolve(context.Context, domain.InstallContext) (domain.ProjectDependencySnapshot, error)
+}
+
 // Doctor reports bounded installation and Host readiness checks. A false
 // Healthy result is never rendered as a successful diagnosis.
 type Doctor interface {
@@ -465,6 +471,49 @@ func AddGoModuleGet(root *cobra.Command, resolver GoModuleResolver) error {
 		return err
 	}
 	return nil
+}
+
+// AddGoModuleDownload binds the complete project snapshot boundary to `go mod
+// download`. It reports a frozen state; verified-cache promotion is separate.
+func AddGoModuleDownload(root *cobra.Command, resolver GoModuleProjectResolver) error {
+	if root == nil || resolver == nil {
+		return errors.New("go mod download command requires a project resolution use case")
+	}
+	goCommand := findRootCommand(root, "go")
+	modCommand := findRootCommand(goCommand, "mod")
+	command := findRootCommand(modCommand, "download")
+	if command == nil {
+		return errors.New("go mod download command is not registered")
+	}
+	command.RunE = func(command *cobra.Command, _ []string) error {
+		installContext, err := currentGoProjectContext()
+		if err != nil {
+			return err
+		}
+		snapshot, err := resolver.Resolve(contextOrBackground(command.Context()), installContext)
+		if err != nil {
+			return err
+		}
+		_, err = fmt.Fprintf(command.OutOrStdout(), "Source: %s\nModules: %d\nGraph digest: %s\n", snapshot.Source(), len(snapshot.Dependencies()), snapshot.GraphDigest())
+		return err
+	}
+	return nil
+}
+
+func currentGoProjectContext() (domain.InstallContext, error) {
+	workingDirectory, err := os.Getwd()
+	if err != nil {
+		return domain.InstallContext{}, errors.New("resolve Go project directory")
+	}
+	target, err := domain.NewInstallTarget(workingDirectory)
+	if err != nil {
+		return domain.InstallContext{}, errors.New("go project directory is unsupported")
+	}
+	installContext, err := domain.NewInstallContext(target)
+	if err != nil {
+		return domain.InstallContext{}, err
+	}
+	return installContext, nil
 }
 
 func initializeCommandTree(root *cobra.Command) {

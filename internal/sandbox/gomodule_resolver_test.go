@@ -3,6 +3,8 @@ package sandbox
 import (
 	"context"
 	"encoding/base64"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -56,5 +58,28 @@ func TestGoModuleResolverRejectsOtherSource(t *testing.T) {
 	install, _ := domain.NewInstallContext(target)
 	if _, err := resolver.ResolveDependencies(context.Background(), reference, install); err == nil {
 		t.Fatal("Go resolver accepted another source")
+	}
+}
+
+func TestGoModuleResolverFreezesWholeProjectWithoutPrimaryArtifact(t *testing.T) {
+	project := t.TempDir()
+	if err := os.WriteFile(filepath.Join(project, "go.mod"), []byte("module example.com/app\n\ngo 1.25\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(project, "go.sum"), []byte("example.com/mod v1.2.3 h1:fixture\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	target, _ := domain.NewInstallTarget(project)
+	install, _ := domain.NewInstallContext(target)
+	resolver, err := NewGoModuleResolver(&goModuleRunnerFixture{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	snapshot, err := resolver.ResolveProjectDependencies(context.Background(), install)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !snapshot.Valid() || snapshot.Source() != artifactgomodule.Source() || len(snapshot.Dependencies()) != 1 || len(snapshot.ControlDigests()) != 2 {
+		t.Fatalf("project snapshot = %#v", snapshot)
 	}
 }

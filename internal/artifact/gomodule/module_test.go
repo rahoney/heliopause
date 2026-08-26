@@ -4,6 +4,8 @@ import (
 	"encoding/base64"
 	"strings"
 	"testing"
+
+	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
 func testH1(byteValue byte) string {
@@ -75,5 +77,21 @@ func TestBuildLockedGraphPreservesSourceAndEdges(t *testing.T) {
 		if node.Artifact().Identity().Source() != Source() || node.Artifact().AcquisitionLocator() == "" {
 			t.Fatalf("node lost Go source identity: %#v", node)
 		}
+	}
+}
+
+func TestBuildProjectSnapshotBindsAllRecordsAndControlFiles(t *testing.T) {
+	records, err := ParseDownloadJSON([]byte(`{"Path":"example.com/mod","Version":"v1.2.3","GoMod":"/mod.mod","Zip":"/mod.zip","Sum":"` + testH1('a') + `","GoModSum":"` + testH1('b') + `","Origin":null}` + "\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	target, _ := domain.NewInstallTarget("/workspace/project")
+	installContext, _ := domain.NewInstallContext(target)
+	snapshot, err := BuildProjectSnapshot(installContext, records, []byte("example.com/app@v1.0.0 example.com/mod@v1.2.3\n"), []byte("module example.com/app\n"), []byte("example.com/mod v1.2.3 h1:fixture\n"))
+	if err != nil || !snapshot.Valid() || len(snapshot.Dependencies()) != 1 || len(snapshot.ControlDigests()) != 2 {
+		t.Fatalf("snapshot = %#v, error = %v", snapshot, err)
+	}
+	if _, err := BuildProjectSnapshot(installContext, records, []byte("example.com/app@v1.0.0 example.com/other@v1.2.3\n"), []byte("module example.com/app\n"), []byte("sum\n")); err == nil {
+		t.Fatal("accepted project graph that omits downloaded module")
 	}
 }

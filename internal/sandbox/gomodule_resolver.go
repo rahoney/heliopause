@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -28,6 +29,49 @@ func NewGoModuleResolver(runner GoModuleRunner) (*GoModuleResolver, error) {
 		return nil, errors.New("go module resolver requires trusted Go runner")
 	}
 	return &GoModuleResolver{runner: runner}, nil
+}
+
+// ResolveProjectDependencies freezes the complete current-project module
+// state. It is separate from exact user-requested module resolution and never
+// creates an arbitrary primary artifact.
+func (r *GoModuleResolver) ResolveProjectDependencies(ctx context.Context, installContext domain.InstallContext) (domain.ProjectDependencySnapshot, error) {
+	if r == nil || r.runner == nil || ctx == nil || !installContext.Valid() {
+		return domain.ProjectDependencySnapshot{}, errors.New("valid Go project resolver request is required")
+	}
+	project := filepath.Clean(installContext.Target().String())
+	if !filepath.IsAbs(project) || project == "/" {
+		return domain.ProjectDependencySnapshot{}, errors.New("go project path is invalid")
+	}
+	goMod, err := os.ReadFile(filepath.Join(project, "go.mod"))
+	if err != nil || len(goMod) == 0 {
+		return domain.ProjectDependencySnapshot{}, errors.New("go project go.mod is unavailable")
+	}
+	goSum, err := os.ReadFile(filepath.Join(project, "go.sum"))
+	if err != nil || len(goSum) == 0 {
+		return domain.ProjectDependencySnapshot{}, errors.New("go project go.sum is unavailable")
+	}
+	environment := artifactgomodule.ResolverEnvironment()
+	if err := artifactgomodule.ValidateResolverEnvironment(environment); err != nil {
+		return domain.ProjectDependencySnapshot{}, err
+	}
+	jsonBody, err := r.runner.RunGo(ctx, project, environment, "mod", "download", "-json", "all")
+	if err != nil {
+		return domain.ProjectDependencySnapshot{}, errors.New("go module download failed")
+	}
+	records, err := artifactgomodule.ParseDownloadJSON(jsonBody)
+	if err != nil {
+		return domain.ProjectDependencySnapshot{}, err
+	}
+	graphBody, err := r.runner.RunGo(ctx, project, environment, "mod", "graph")
+	if err != nil {
+		return domain.ProjectDependencySnapshot{}, errors.New("go module graph failed")
+	}
+	currentMod, modErr := os.ReadFile(filepath.Join(project, "go.mod"))
+	currentSum, sumErr := os.ReadFile(filepath.Join(project, "go.sum"))
+	if modErr != nil || sumErr != nil || string(currentMod) != string(goMod) || string(currentSum) != string(goSum) {
+		return domain.ProjectDependencySnapshot{}, errors.New("go project changed during resolution")
+	}
+	return artifactgomodule.BuildProjectSnapshot(installContext, records, graphBody, goMod, goSum)
 }
 
 func (r *GoModuleResolver) ResolveDependencies(ctx context.Context, reference domain.ArtifactReference, installContext domain.InstallContext) (domain.DependencyResolution, error) {

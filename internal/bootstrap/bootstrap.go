@@ -85,7 +85,14 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if serviceErr != nil {
 			return serviceErr
 		}
+		projectService, projectServiceErr := application.NewGoModuleProjectResolutionService(resolver)
+		if projectServiceErr != nil {
+			return projectServiceErr
+		}
 		if err := cli.AddGoModuleGet(command, service); err != nil {
+			return err
+		}
+		if err := cli.AddGoModuleDownload(command, projectService); err != nil {
 			return err
 		}
 	}

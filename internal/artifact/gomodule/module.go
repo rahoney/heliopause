@@ -244,6 +244,101 @@ func BuildLockedGraph(reference domain.ArtifactReference, records []DownloadReco
 	return domain.NewLockedDependencyGraph(nodes, domainEdges)
 }
 
+// BuildProjectSnapshot freezes every exact public module selected by a Go
+// project. The local main module is not an acquired artifact, so this does
+// not weaken LockedDependencyGraph's exactly-one-primary invariant.
+func BuildProjectSnapshot(installContext domain.InstallContext, records []DownloadRecord, graphOutput, goMod, goSum []byte) (domain.ProjectDependencySnapshot, error) {
+	if !installContext.Valid() || len(records) == 0 || len(goMod) == 0 || len(goSum) == 0 {
+		return domain.ProjectDependencySnapshot{}, errors.New("go project snapshot request is invalid")
+	}
+	byKey := make(map[string]DownloadRecord, len(records))
+	for _, record := range records {
+		key := recordKey(record.Path, record.Version)
+		if _, exists := byKey[key]; exists {
+			return domain.ProjectDependencySnapshot{}, errors.New("go project snapshot contains duplicate module")
+		}
+		byKey[key] = record
+	}
+	if err := validateCompleteProjectGraph(graphOutput, byKey); err != nil {
+		return domain.ProjectDependencySnapshot{}, err
+	}
+	dependencies := make([]domain.ResolvedArtifact, 0, len(records))
+	for _, record := range records {
+		identity, err := domain.NewResolvedArtifactIdentity(goModuleSource, record.Path, record.Version, "module")
+		if err != nil {
+			return domain.ProjectDependencySnapshot{}, err
+		}
+		locator, err := ProxyURL(record.Path, record.Version, ".zip")
+		if err != nil {
+			return domain.ProjectDependencySnapshot{}, err
+		}
+		artifact, err := domain.NewResolvedArtifact(identity, locator, "h1="+record.Sum+";go.mod="+record.GoModSum)
+		if err != nil {
+			return domain.ProjectDependencySnapshot{}, err
+		}
+		dependencies = append(dependencies, artifact)
+	}
+	modHash, sumHash, graphHash := sha256.Sum256(goMod), sha256.Sum256(goSum), sha256.Sum256(graphOutput)
+	modDigest, err := domain.NewSHA256Digest(hex.EncodeToString(modHash[:]))
+	if err != nil {
+		return domain.ProjectDependencySnapshot{}, err
+	}
+	sumDigest, err := domain.NewSHA256Digest(hex.EncodeToString(sumHash[:]))
+	if err != nil {
+		return domain.ProjectDependencySnapshot{}, err
+	}
+	graphDigest, err := domain.NewSHA256Digest(hex.EncodeToString(graphHash[:]))
+	if err != nil {
+		return domain.ProjectDependencySnapshot{}, err
+	}
+	modControl, err := domain.NewProjectControlDigest("go.mod", modDigest)
+	if err != nil {
+		return domain.ProjectDependencySnapshot{}, err
+	}
+	sumControl, err := domain.NewProjectControlDigest("go.sum", sumDigest)
+	if err != nil {
+		return domain.ProjectDependencySnapshot{}, err
+	}
+	return domain.NewProjectDependencySnapshot(installContext, goModuleSource, []domain.ProjectControlDigest{modControl, sumControl}, dependencies, graphDigest)
+}
+
+func validateCompleteProjectGraph(body []byte, records map[string]DownloadRecord) error {
+	if len(body) == 0 || len(body) > maxDownloadOutput {
+		return errors.New("go project graph is invalid")
+	}
+	scanner := bufio.NewScanner(bytes.NewReader(body))
+	seen := map[string]bool{}
+	for scanner.Scan() {
+		parts := strings.Fields(scanner.Text())
+		if len(parts) != 2 {
+			return errors.New("go module graph edge is invalid")
+		}
+		from, err := parseModuleKey(parts[0])
+		if err != nil {
+			return err
+		}
+		to, err := parseModuleKey(parts[1])
+		if err != nil {
+			return err
+		}
+		if _, known := records[from]; known {
+			seen[from] = true
+		}
+		if _, known := records[to]; known {
+			seen[to] = true
+		}
+		if _, fromKnown := records[from]; fromKnown {
+			if _, toKnown := records[to]; !toKnown {
+				return errors.New("go module graph references unknown target")
+			}
+		}
+	}
+	if err := scanner.Err(); err != nil || len(seen) != len(records) {
+		return errors.New("go project graph is incomplete")
+	}
+	return nil
+}
+
 type graphEdge struct{ from, to string }
 
 func parseGraphEdges(body []byte, records map[string]DownloadRecord) ([]graphEdge, error) {
