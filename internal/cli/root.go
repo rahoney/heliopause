@@ -16,6 +16,7 @@ import (
 	artifactgomodule "github.com/rahoney/heliopause/internal/artifact/gomodule"
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
+	artifactterraform "github.com/rahoney/heliopause/internal/artifact/terraformprovider"
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/spf13/cobra"
 )
@@ -65,6 +66,10 @@ type GoModuleProjectResolver interface {
 }
 
 type CargoResolver interface {
+	Resolve(context.Context, domain.ArtifactReference, domain.InstallContext) (domain.DependencyResolution, error)
+}
+
+type TerraformResolver interface {
 	Resolve(context.Context, domain.ArtifactReference, domain.InstallContext) (domain.DependencyResolution, error)
 }
 
@@ -540,6 +545,41 @@ func AddCargoAdd(root *cobra.Command, resolver CargoResolver) error {
 	return nil
 }
 
+func AddTerraformInit(root *cobra.Command, resolver TerraformResolver) error {
+	if root == nil || resolver == nil {
+		return errors.New("terraform init command requires a resolution use case")
+	}
+	command := findLeaf(root, "terraform", "init")
+	if command == nil {
+		return errors.New("terraform init command is not registered")
+	}
+	command.RunE = func(command *cobra.Command, args []string) error {
+		reference, err := artifactterraform.ParseReference(args[0])
+		if err != nil {
+			return err
+		}
+		workingDirectory, err := os.Getwd()
+		if err != nil {
+			return errors.New("resolve Terraform project directory")
+		}
+		target, err := domain.NewInstallTarget(workingDirectory)
+		if err != nil {
+			return errors.New("terraform project directory is unsupported")
+		}
+		installContext, err := domain.NewInstallContext(target)
+		if err != nil {
+			return err
+		}
+		resolution, err := resolver.Resolve(contextOrBackground(command.Context()), reference, installContext)
+		if err != nil {
+			return err
+		}
+		_, err = fmt.Fprintf(command.OutOrStdout(), "Source: %s\nProviders: %d\nLock digest: %s\n", reference.Source(), len(resolution.Graph().Nodes()), resolution.LockfileDigest())
+		return err
+	}
+	return nil
+}
+
 func currentGoProjectContext() (domain.InstallContext, error) {
 	workingDirectory, err := os.Getwd()
 	if err != nil {
@@ -581,7 +621,7 @@ func initializeCommandTree(root *cobra.Command) {
 	cargo.AddCommand(newStaticLeaf("add <crate>@<version>", "Resolve and transactionally add a public crates.io crate", false))
 	cargo.AddCommand(newStaticNoArgLeaf("build", "Build a Cargo project from the HAA-verified crate cache"))
 	terraform := ensureTerraformCommand(root)
-	terraform.AddCommand(newStaticNoArgLeaf("init", "Install exact public Terraform Providers"))
+	terraform.AddCommand(newStaticLeaf("init <namespace/type@version>", "Resolve an exact public Terraform Provider", false))
 }
 
 func pythonSourceHelp() string {

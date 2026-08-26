@@ -13,6 +13,7 @@ import (
 	artifactgithub "github.com/rahoney/heliopause/internal/artifact/githubrelease"
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
+	artifactterraform "github.com/rahoney/heliopause/internal/artifact/terraformprovider"
 	"github.com/rahoney/heliopause/internal/cli"
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/core/ports"
@@ -113,6 +114,22 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 			return serviceErr
 		}
 		if err := cli.AddCargoAdd(command, service); err != nil {
+			return err
+		}
+	}
+	if len(args) > 0 && args[0] == "terraform" {
+		if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" {
+			return errors.New("automatic Terraform Provider resolution requires Linux amd64")
+		}
+		resolver, resolverErr := artifactterraform.NewPublicResolver()
+		if resolverErr != nil {
+			return resolverErr
+		}
+		service, serviceErr := application.NewTerraformResolutionService(resolver)
+		if serviceErr != nil {
+			return serviceErr
+		}
+		if err := cli.AddTerraformInit(command, service); err != nil {
 			return err
 		}
 	}
