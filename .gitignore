@@ -1,3 +1,6 @@
-/docs/
+/docs/*
+!/docs/planning/
+/docs/planning/*
+!/docs/planning/02-current-work-queue.md
 /PROJECT-DECISIONS.md
 /AGENTS.md
