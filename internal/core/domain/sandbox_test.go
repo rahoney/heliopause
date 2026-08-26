@@ -68,6 +68,19 @@ func TestSandboxObservationSummaryIsBoundedAndDoesNotRetainPayloads(t *testing.T
 	if _, err := result.ObservationSummary(); err == nil {
 		t.Fatal("summary accepted more than the unique-subject bound")
 	}
+
+	repeated := make([]domain.SandboxObservation, 10001)
+	for index := range repeated {
+		repeated[index] = mustObservation(t, domain.ObservationNetwork, "network-attempt")
+	}
+	result, err = domain.NewSandboxResult(sessionID, domain.SandboxCompleted, "", repeated)
+	if err != nil {
+		t.Fatal(err)
+	}
+	summary, err = result.ObservationSummary()
+	if err != nil || !strings.Contains(summary, `"total":10000`) || !strings.Contains(summary, `"NETWORK:network-attempt":10000`) {
+		t.Fatalf("summary count did not saturate: %q, err = %v", summary, err)
+	}
 }
 
 func mustObservation(t *testing.T, category domain.ObservationCategory, subject string) domain.SandboxObservation {
