@@ -3,6 +3,7 @@ package sandbox
 import (
 	"context"
 	"encoding/base64"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -12,7 +13,10 @@ import (
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
-type goModuleRunnerFixture struct{ calls []string }
+type goModuleRunnerFixture struct {
+	calls  []string
+	caches []string
+}
 
 func (r *goModuleRunnerFixture) RunGo(_ context.Context, _ string, environment []string, arguments ...string) ([]byte, error) {
 	cache := ""
@@ -24,6 +28,10 @@ func (r *goModuleRunnerFixture) RunGo(_ context.Context, _ string, environment [
 	if err := artifactgomodule.ValidateResolverEnvironmentForCache(environment, cache); err != nil {
 		return nil, err
 	}
+	if info, err := os.Stat(cache); err != nil || !info.IsDir() {
+		return nil, errors.New("private Go module cache is unavailable")
+	}
+	r.caches = append(r.caches, cache)
 	r.calls = append(r.calls, strings.Join(arguments, " "))
 	h1 := func(value byte) string {
 		return "h1:" + base64.StdEncoding.EncodeToString([]byte(strings.Repeat(string([]byte{value}), 32)))
@@ -77,7 +85,8 @@ func TestGoModuleResolverFreezesWholeProjectWithoutPrimaryArtifact(t *testing.T)
 	}
 	target, _ := domain.NewInstallTarget(project)
 	install, _ := domain.NewInstallContext(target)
-	resolver, err := NewGoModuleResolver(&goModuleRunnerFixture{})
+	runner := &goModuleRunnerFixture{}
+	resolver, err := NewGoModuleResolver(runner)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -87,5 +96,10 @@ func TestGoModuleResolverFreezesWholeProjectWithoutPrimaryArtifact(t *testing.T)
 	}
 	if !snapshot.Valid() || snapshot.Source() != artifactgomodule.Source() || len(snapshot.Dependencies()) != 1 || len(snapshot.ControlDigests()) != 2 {
 		t.Fatalf("project snapshot = %#v", snapshot)
+	}
+	for _, cache := range runner.caches {
+		if _, err := os.Stat(cache); !os.IsNotExist(err) {
+			t.Fatalf("private Go module cache remained after resolution: %s (%v)", cache, err)
+		}
 	}
 }
