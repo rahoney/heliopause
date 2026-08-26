@@ -94,6 +94,33 @@ func (e *Executor) RunCargo(ctx context.Context, directory string, environment [
 	return command.Output()
 }
 
+// RunTerraform executes the verified Terraform CLI with an explicit isolated
+// CLI configuration. Provider credentials, mirrors and ambient config are not
+// inherited by this boundary.
+func (e *Executor) RunTerraform(ctx context.Context, directory string, environment []string, arguments ...string) ([]byte, error) {
+	if e == nil || !filepath.IsAbs(directory) || filepath.Clean(directory) != directory || verifyNoSymlinkPath(directory, false) != nil {
+		return nil, errors.New("trusted Terraform working directory is unavailable")
+	}
+	if _, err := os.Stat(directory); err != nil {
+		return nil, errors.New("trusted Terraform working directory is unavailable")
+	}
+	if _, err := e.tool("terraform"); err != nil {
+		for _, candidate := range []string{"/usr/local/bin/terraform", "/usr/bin/terraform", "/bin/terraform"} {
+			if verified, verifyErr := verifySystemExecutable(candidate); verifyErr == nil {
+				e.tools["terraform"] = verified
+				break
+			}
+		}
+	}
+	command, err := e.command(ctx, "terraform", arguments...)
+	if err != nil {
+		return nil, err
+	}
+	command.Dir = directory
+	command.Env = append(minimalEnvironment(e.clientHome), append([]string(nil), environment...)...)
+	return command.Output()
+}
+
 type identity struct {
 	path          string
 	info          os.FileInfo
