@@ -4,11 +4,13 @@
 #include "tools/haa_gvisor_observer/observer.cc"
 #undef main
 
+#include <chrono>
 #include <signal.h>
 #include <fstream>
 #include <iterator>
 #include <sys/time.h>
 #include <sys/wait.h>
+#include <thread>
 
 namespace {
 
@@ -125,6 +127,28 @@ bool VerifyPinnedAccessors(int output, const std::string& remote, const std::str
   return ExpectRecord(output, kFirstID, "stream-end");
 }
 
+bool VerifyDelayedProfileRegistration(int output, const std::string& remote, const std::string& control) {
+  const int client = ConnectRemote(remote);
+  if (client < 0 || !Handshake(client)) return false;
+  gvisor::container::Start start;
+  start.mutable_context_data()->set_container_id(kFourthID);
+  if (!SendEvent(client, gvisor::common::MESSAGE_CONTAINER_START, start) || !ExpectRecord(output, kFourthID, "container-start")) return false;
+  gvisor::syscall::Execve execve;
+  execve.mutable_context_data()->set_container_id(kFourthID);
+  execve.mutable_context_data()->set_thread_group_id(7);
+  execve.mutable_context_data()->set_process_name("trusted-test-process");
+  execve.set_pathname("/usr/local/bin/node");
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, execve)) return false;
+  std::thread registration([&control] {
+    std::this_thread::sleep_for(std::chrono::milliseconds(150));
+    RegisterProfile(control, kFourthID, kProfileNPM);
+  });
+  const bool classified = ExpectRecord(output, kFourthID, "process-exec-expected");
+  registration.join();
+  close(client);
+  return classified && ExpectRecord(output, kFourthID, "stream-end");
+}
+
 bool RunFaultCase(int output, const std::string& remote, const std::string& control, bool mismatch) {
   const char* container_id = mismatch ? kSecondID : kThirdID;
   if (!RegisterProfile(control, container_id, mismatch ? kProfilePyPI : kProfileGitHub)) return false;
@@ -174,7 +198,9 @@ int main() {
   if (!profile) fprintf(stderr, "observer latch failure: pod-init profile\n");
   const bool accessors = running && profile && VerifyPinnedAccessors(output, remote, control);
   if (!accessors) fprintf(stderr, "observer latch failure: normalized accessors\n");
-  const bool mismatch = accessors && RunFaultCase(output, remote, control, true);
+  const bool delayed = accessors && VerifyDelayedProfileRegistration(output, remote, control);
+  if (!delayed) fprintf(stderr, "observer latch failure: delayed profile registration\n");
+  const bool mismatch = delayed && RunFaultCase(output, remote, control, true);
   if (!mismatch) fprintf(stderr, "observer latch failure: container mismatch\n");
   const bool dropped = mismatch && RunFaultCase(output, remote, control, false);
   if (!dropped) fprintf(stderr, "observer latch failure: dropped events\n");
