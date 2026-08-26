@@ -8,8 +8,8 @@
 - Go module path: `github.com/rahoney/heliopause`
 - 구현 언어: Go
 - CLI framework: Cobra
-- 현재 상태: M0–M11 qualification 완료. M12 Production Release & Operations를 진행 중이며 public release는 activation 승인 전까지 보류
-- 현재 작업: M12-001 — release environment·`v*` tag policy·main Ruleset activation
+- 현재 상태: M0–M11 qualification 완료. M11 post-qualification release hardening을 진행 중이며 public release는 M11-FIX-01..05와 M12 activation 완료 전까지 보류
+- 현재 작업: M11-FIX-05 — observer profile wait timing regression
 
 Heliopause는 Apache-2.0으로 배포한다. 외부 기여는 `CLA.md`의 Harmony
 Copyright License 및 Option Five 조건과 자동 CLA status check를 충족해야 하며,
