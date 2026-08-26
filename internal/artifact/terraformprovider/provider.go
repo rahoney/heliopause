@@ -5,7 +5,6 @@ package terraformprovider
 
 import (
 	"crypto/sha256"
-	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -180,14 +179,11 @@ func VerifyLockHash(lockHashes []string, sha256Hex string) error {
 		return errors.New("Terraform Provider checksum is invalid")
 	}
 	for _, value := range lockHashes {
+		// zh is the archive SHA-256 form. h1 is Terraform's directory hash and
+		// cannot be equated to the Registry shasum without inspecting the
+		// extracted archive, so h1-only locks fail closed at this boundary.
 		if strings.HasPrefix(value, "zh:") && strings.EqualFold(strings.TrimPrefix(value, "zh:"), sha256Hex) {
 			return nil
-		}
-		if strings.HasPrefix(value, "h1:") {
-			decoded, err := base64.StdEncoding.DecodeString(strings.TrimPrefix(value, "h1:"))
-			if err == nil && hex.EncodeToString(decoded) == sha256Hex {
-				return nil
-			}
 		}
 	}
 	return errors.New("Terraform Provider checksum is absent from lock file")
