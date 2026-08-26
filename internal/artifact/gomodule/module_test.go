@@ -43,6 +43,16 @@ func TestResolverEnvironmentRejectsAmbientOverrides(t *testing.T) {
 	}
 }
 
+func TestResolverEnvironmentRequiresOperationPrivateCache(t *testing.T) {
+	environment, err := ResolverEnvironmentForCache("/private/tmp/haa-go-cache")
+	if err != nil || ValidateResolverEnvironmentForCache(environment, "/private/tmp/haa-go-cache") != nil {
+		t.Fatalf("private cache environment = %#v, error = %v", environment, err)
+	}
+	if err := ValidateResolverEnvironmentForCache(environment, "/private/tmp/other-cache"); err == nil {
+		t.Fatal("accepted substituted Go module cache")
+	}
+}
+
 func TestDownloadRecordsRejectDirectVCSAndInvalidChecksum(t *testing.T) {
 	valid := `{"Path":"example.com/mod","Version":"v1.2.3","Info":"/tmp/mod.info","GoMod":"/tmp/mod.mod","Zip":"/tmp/mod.zip","Sum":"` + testH1('a') + `","GoModSum":"` + testH1('b') + `","Origin":null}`
 	records, err := ParseDownloadJSON([]byte(valid + "\n"))

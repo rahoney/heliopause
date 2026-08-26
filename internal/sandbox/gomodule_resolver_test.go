@@ -15,7 +15,13 @@ import (
 type goModuleRunnerFixture struct{ calls []string }
 
 func (r *goModuleRunnerFixture) RunGo(_ context.Context, _ string, environment []string, arguments ...string) ([]byte, error) {
-	if err := artifactgomodule.ValidateResolverEnvironment(environment); err != nil {
+	cache := ""
+	for _, entry := range environment {
+		if strings.HasPrefix(entry, "GOMODCACHE=") {
+			cache = strings.TrimPrefix(entry, "GOMODCACHE=")
+		}
+	}
+	if err := artifactgomodule.ValidateResolverEnvironmentForCache(environment, cache); err != nil {
 		return nil, err
 	}
 	r.calls = append(r.calls, strings.Join(arguments, " "))

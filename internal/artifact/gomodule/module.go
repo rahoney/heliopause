@@ -12,6 +12,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/url"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
@@ -73,6 +74,32 @@ func ValidateResolverEnvironment(environment []string) error {
 	for key := range allowed {
 		if !seen[key] {
 			return errors.New("go module resolver environment is incomplete")
+		}
+	}
+	return nil
+}
+
+// ResolverEnvironmentForCache extends the fixed source policy with an
+// operation-private module cache. The cache path is infrastructure-selected,
+// never inherited from the caller's GOPATH or GOMODCACHE.
+func ResolverEnvironmentForCache(cache string) ([]string, error) {
+	if !filepath.IsAbs(cache) || filepath.Clean(cache) != cache || cache == "/" {
+		return nil, errors.New("go module cache path is invalid")
+	}
+	environment := append([]string(nil), ResolverEnvironment()...)
+	return append(environment, "GOMODCACHE="+cache), nil
+}
+
+// ValidateResolverEnvironmentForCache rejects a substituted or missing cache
+// while retaining the canonical resolver source policy.
+func ValidateResolverEnvironmentForCache(environment []string, cache string) error {
+	expected, err := ResolverEnvironmentForCache(cache)
+	if err != nil || len(environment) != len(expected) {
+		return errors.New("go module resolver environment is not canonical")
+	}
+	for index := range expected {
+		if environment[index] != expected[index] {
+			return errors.New("go module resolver environment is not canonical")
 		}
 	}
 	return nil

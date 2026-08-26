@@ -50,10 +50,11 @@ func (r *GoModuleResolver) ResolveProjectDependencies(ctx context.Context, insta
 	if err != nil || len(goSum) == 0 {
 		return domain.ProjectDependencySnapshot{}, errors.New("go project go.sum is unavailable")
 	}
-	environment := artifactgomodule.ResolverEnvironment()
-	if err := artifactgomodule.ValidateResolverEnvironment(environment); err != nil {
+	environment, cleanup, err := privateGoResolverEnvironment()
+	if err != nil {
 		return domain.ProjectDependencySnapshot{}, err
 	}
+	defer cleanup()
 	jsonBody, err := r.runner.RunGo(ctx, project, environment, "mod", "download", "-json", "all")
 	if err != nil {
 		return domain.ProjectDependencySnapshot{}, errors.New("go module download failed")
@@ -82,10 +83,11 @@ func (r *GoModuleResolver) ResolveDependencies(ctx context.Context, reference do
 	if !filepath.IsAbs(project) || project == "/" {
 		return domain.DependencyResolution{}, errors.New("go project path is invalid")
 	}
-	if err := artifactgomodule.ValidateResolverEnvironment(artifactgomodule.ResolverEnvironment()); err != nil {
+	environment, cleanup, err := privateGoResolverEnvironment()
+	if err != nil {
 		return domain.DependencyResolution{}, err
 	}
-	environment := artifactgomodule.ResolverEnvironment()
+	defer cleanup()
 	jsonBody, err := r.runner.RunGo(ctx, project, environment, "mod", "download", "-json", "all")
 	if err != nil {
 		return domain.DependencyResolution{}, errors.New("go module download failed")
@@ -108,4 +110,17 @@ func (r *GoModuleResolver) ResolveDependencies(ctx context.Context, reference do
 		return domain.DependencyResolution{}, err
 	}
 	return domain.NewDependencyResolution(graph, "go:proxy.golang.org;sumdb:sum.golang.org;env:"+strings.Join(environment, ";"), digest)
+}
+
+func privateGoResolverEnvironment() ([]string, func(), error) {
+	cache, err := os.MkdirTemp("", "haa-go-module-cache-")
+	if err != nil {
+		return nil, nil, errors.New("create private Go module cache")
+	}
+	environment, err := artifactgomodule.ResolverEnvironmentForCache(cache)
+	if err != nil {
+		_ = os.RemoveAll(cache)
+		return nil, nil, err
+	}
+	return environment, func() { _ = os.RemoveAll(cache) }, nil
 }
