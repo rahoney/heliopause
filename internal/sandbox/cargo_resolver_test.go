@@ -78,3 +78,41 @@ func TestCargoResolverRejectsNonCargoSource(t *testing.T) {
 		t.Fatal("Cargo resolver accepted another source")
 	}
 }
+
+func TestCargoResolverRejectsControlFileDrift(t *testing.T) {
+	project := t.TempDir()
+	if err := os.WriteFile(filepath.Join(project, "Cargo.toml"), []byte("[package]\nname = \"app\"\nversion = \"0.1.0\"\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(project, "Cargo.lock"), []byte("version = 3\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	target, _ := domain.NewInstallTarget(project)
+	install, _ := domain.NewInstallContext(target)
+	reference, _ := artifactcargo.ParseReference("serde@1.0.200")
+	resolver, err := NewCargoResolver(&cargoDriftRunner{project: project})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := resolver.ResolveDependencies(context.Background(), reference, install); err == nil || !strings.Contains(err.Error(), "changed during resolution") {
+		t.Fatalf("Cargo drift error = %v", err)
+	}
+}
+
+type cargoDriftRunner struct{ project string }
+
+func (r *cargoDriftRunner) RunCargo(_ context.Context, _ string, environment []string, _ ...string) ([]byte, error) {
+	home := ""
+	for _, entry := range environment {
+		if strings.HasPrefix(entry, "CARGO_HOME=") {
+			home = strings.TrimPrefix(entry, "CARGO_HOME=")
+		}
+	}
+	if err := ValidateCargoResolverEnvironment(environment, home); err != nil {
+		return nil, err
+	}
+	if err := os.WriteFile(filepath.Join(r.project, "Cargo.lock"), []byte("changed\n"), 0o600); err != nil {
+		return nil, err
+	}
+	return []byte(`{"packages":[{"id":"registry+https://github.com/rust-lang/crates.io-index#serde@1.0.200","name":"serde","version":"1.0.200","source":"registry+https://github.com/rust-lang/crates.io-index","checksum":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}],"resolve":{"nodes":[{"id":"registry+https://github.com/rust-lang/crates.io-index#serde@1.0.200","deps":[]}]}}`), nil
+}
