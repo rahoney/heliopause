@@ -12,7 +12,14 @@ import (
 type cargoRunnerFixture struct{ calls []string }
 
 func (r *cargoRunnerFixture) RunCargo(_ context.Context, _ string, environment []string, arguments ...string) ([]byte, error) {
-	if strings.Join(environment, "\n") != strings.Join(CargoResolverEnvironment(), "\n") {
+	home := ""
+	for _, entry := range environment {
+		if strings.HasPrefix(entry, "CARGO_HOME=") {
+			home = strings.TrimPrefix(entry, "CARGO_HOME=")
+		}
+	}
+	expected, err := CargoResolverEnvironmentForHome(home)
+	if err != nil || strings.Join(environment, "\n") != strings.Join(expected, "\n") {
 		return nil, context.Canceled
 	}
 	r.calls = append(r.calls, strings.Join(arguments, " "))

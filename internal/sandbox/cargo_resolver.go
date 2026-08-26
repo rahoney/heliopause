@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -35,6 +36,15 @@ func CargoResolverEnvironment() []string {
 	}
 }
 
+func CargoResolverEnvironmentForHome(home string) ([]string, error) {
+	if !filepath.IsAbs(home) || filepath.Clean(home) != home || home == "/" {
+		return nil, errors.New("cargo resolver home is invalid")
+	}
+	environment := CargoResolverEnvironment()
+	environment[0] = "CARGO_HOME=" + home
+	return environment, nil
+}
+
 func (r *CargoResolver) ResolveDependencies(ctx context.Context, reference domain.ArtifactReference, installContext domain.InstallContext) (domain.DependencyResolution, error) {
 	if r == nil || r.runner == nil || ctx == nil || reference.Source() != artifactcargo.Source() || !installContext.Valid() {
 		return domain.DependencyResolution{}, errors.New("valid Cargo resolver request is required")
@@ -43,7 +53,15 @@ func (r *CargoResolver) ResolveDependencies(ctx context.Context, reference domai
 	if !filepath.IsAbs(project) || project == "/" {
 		return domain.DependencyResolution{}, errors.New("cargo project path is invalid")
 	}
-	environment := CargoResolverEnvironment()
+	home, err := os.MkdirTemp("", "haa-cargo-home-")
+	if err != nil {
+		return domain.DependencyResolution{}, errors.New("create private Cargo resolver home")
+	}
+	defer os.RemoveAll(home)
+	environment, err := CargoResolverEnvironmentForHome(home)
+	if err != nil {
+		return domain.DependencyResolution{}, err
+	}
 	body, err := r.runner.RunCargo(ctx, project, environment, "metadata", "--locked", "--format-version", "1")
 	if err != nil {
 		return domain.DependencyResolution{}, errors.New("cargo metadata resolution failed")
