@@ -185,6 +185,46 @@ func TestLinuxPyPIResolverIntegration(t *testing.T) {
 	}
 }
 
+func TestLinuxPyTorchResolverIntegration(t *testing.T) {
+	if os.Getenv("HELOX_PYTORCH_RESOLVER_INTEGRATION") != "1" {
+		t.Skip("requires pinned Linux Python/gVisor and Docker firewall integration")
+	}
+	if os.Geteuid() != 0 {
+		t.Fatal("PyTorch resolver network policy integration requires explicit CAP_NET_ADMIN elevation")
+	}
+	profile, ok := artifactpypi.PyTorchProfile("cpu")
+	if !ok {
+		t.Fatal("locked PyTorch CPU profile is unavailable")
+	}
+	supervisor := integrationObserverSupervisor(t)
+	defer supervisor.Close()
+	runner := integrationRunner{t: t}
+	resolver, err := NewPyTorchResolver(runner, systemNamedEndpointResolver{}, supervisor.Observer(), integrationPythonCapabilityProbe(runner), integrationResolverPolicyService(t), profile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	reference, err := artifactpypi.ParseReferenceForSource("torch", profile.Source())
+	if err != nil {
+		t.Fatal(err)
+	}
+	target, _ := domain.NewInstallTarget("/tmp/heliopause-pytorch-resolver-target")
+	installContext, _ := domain.NewInstallContext(target)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
+	resolution, err := resolver.ResolveDependencies(ctx, reference, installContext)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, node := range resolution.Graph().Nodes() {
+		if node.Node() == resolution.Graph().Primary() && node.Artifact().Identity().Source() != profile.Source() {
+			t.Fatalf("PyTorch root source = %s, want %s", node.Artifact().Identity().Source(), profile.Source())
+		}
+		if node.Artifact().Identity().Source() != profile.Source() && node.Artifact().Identity().Source() != artifactpypi.PublicPyPIProfile().Source() {
+			t.Fatalf("PyTorch graph contains unowned source %s", node.Artifact().Identity().Source())
+		}
+	}
+}
+
 func integrationResolverPolicyService(t *testing.T) ResolverPolicyService {
 	t.Helper()
 	return &recordingResolverPolicyService{}
