@@ -17,6 +17,17 @@ const (
 	PythonPlatformTag      = "manylinux_2_36_x86_64"
 )
 
+type PythonSourceProfileLock struct {
+	Name, SourceID, IndexURL, IndexHost string
+	DistributionHosts, OwnedProjects    []string
+}
+
+var PythonSourceProfiles = map[string]PythonSourceProfileLock{
+	"pytorch:cpu":   {Name: "pytorch:cpu", SourceID: "pytorch-cpu", IndexURL: "https://download.pytorch.org/whl/cpu/", IndexHost: "download.pytorch.org", DistributionHosts: []string{"download.pytorch.org", "download-r2.pytorch.org"}, OwnedProjects: []string{"torch", "torchvision", "torchaudio"}},
+	"pytorch:cu126": {Name: "pytorch:cu126", SourceID: "pytorch-cu126", IndexURL: "https://download.pytorch.org/whl/cu126/", IndexHost: "download.pytorch.org", DistributionHosts: []string{"download.pytorch.org", "download-r2.pytorch.org"}, OwnedProjects: []string{"torch", "torchvision", "torchaudio"}},
+	"pytorch:cu128": {Name: "pytorch:cu128", SourceID: "pytorch-cu128", IndexURL: "https://download.pytorch.org/whl/cu128/", IndexHost: "download.pytorch.org", DistributionHosts: []string{"download.pytorch.org", "download-r2.pytorch.org"}, OwnedProjects: []string{"torch", "torchvision", "torchaudio"}},
+}
+
 var runscSHA512 = map[string]string{
 	"arm64": "26a306b4c51a54dd5c44f4c602d5326b92c1ba02757c591847d53f2cad448c0f838b1d8f7bd93cc50eb8d6ec88073c5d4b4a14b53bc572338ced49f42d618f9f",
 	"amd64": "4463ce276e207f5a516a08ec627a768a19cf7bed0094d522b0810bee3424585caa8d344e093204012b974f5c508ab2362dcb0d7236f0c1992fccc426beeb7ffc",

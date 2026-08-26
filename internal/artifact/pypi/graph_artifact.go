@@ -30,8 +30,11 @@ func NewGraphArtifact(resolver DependencyGraphResolver, intake *Intake) (*GraphA
 }
 
 func (a *GraphArtifact) Resolve(ctx context.Context, reference domain.ArtifactReference) (domain.ResolvedArtifact, error) {
-	if a == nil || a.resolver == nil || ctx == nil || reference.Source().String() != "pypi" {
+	if a == nil || a.resolver == nil || ctx == nil {
 		return domain.ResolvedArtifact{}, errors.New("PyPI graph Artifact resolve request is invalid")
+	}
+	if _, ok := ProfileForSource(reference.Source()); !ok {
+		return domain.ResolvedArtifact{}, errors.New("PyPI graph Artifact source is unsupported")
 	}
 	target, _ := domain.NewInstallTarget("/tmp/heliopause-pypi-inspect")
 	install, _ := domain.NewInstallContext(target)

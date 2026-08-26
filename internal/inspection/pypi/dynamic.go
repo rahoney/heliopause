@@ -25,8 +25,11 @@ func NewDynamicInspector(runner sandbox.PythonWheelRunner) (*DynamicInspector, e
 // evidence. An unavailable, failed or incomplete session is deliberately not a
 // successful inspection report.
 func (i *DynamicInspector) InspectWheel(ctx context.Context, artifact domain.AcquiredArtifact, static artifactpypi.WheelInspection) (domain.InspectionReport, error) {
-	if i == nil || i.runner == nil || ctx == nil || artifact.Identity().Source().String() != "pypi" || (artifact.Identity().Variant() != "wheel" && artifact.Identity().Variant() != "derived-wheel") || static.Project != artifact.Identity().Name() || static.Version != artifact.Identity().Version() || len(static.ImportNames) == 0 {
+	if i == nil || i.runner == nil || ctx == nil || (artifact.Identity().Variant() != "wheel" && artifact.Identity().Variant() != "derived-wheel") || static.Project != artifact.Identity().Name() || static.Version != artifact.Identity().Version() || len(static.ImportNames) == 0 {
 		return domain.InspectionReport{}, errors.New("pypi dynamic inspection request is invalid")
+	}
+	if _, ok := artifactpypi.ProfileForSource(artifact.Identity().Source()); !ok {
+		return domain.InspectionReport{}, errors.New("pypi dynamic inspection source is unsupported")
 	}
 	result, err := i.runner.InspectWheel(ctx, artifact, static.ImportNames)
 	if err != nil {

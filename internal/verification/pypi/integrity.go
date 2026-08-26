@@ -7,14 +7,18 @@ import (
 	"errors"
 	"strings"
 
+	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
 type IntegrityVerifier struct{}
 
 func (IntegrityVerifier) Verify(ctx context.Context, artifact domain.AcquiredArtifact) (domain.VerificationReport, error) {
-	if ctx == nil || ctx.Err() != nil || artifact.Identity().Source().String() != "pypi" {
+	if ctx == nil || ctx.Err() != nil {
 		return domain.VerificationReport{}, errors.New("PyPI integrity verification request is invalid")
+	}
+	if _, ok := artifactpypi.ProfileForSource(artifact.Identity().Source()); !ok {
+		return domain.VerificationReport{}, errors.New("PyPI integrity source is unsupported")
 	}
 	checkID, _ := domain.NewCheckID("pypi-declared-sha256")
 	check, _ := domain.NewCheckExecution(checkID, domain.CheckVerification, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")

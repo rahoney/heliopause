@@ -117,6 +117,24 @@ func TestPyPINetworkArgumentsPinOnlyExpectedIPv4Addresses(t *testing.T) {
 	}
 }
 
+func TestPyTorchNetworkArgumentsIncludeOnlyCanonicalHosts(t *testing.T) {
+	profile, ok := artifactpypi.PyTorchProfile("cu126")
+	if !ok {
+		t.Fatal("cu126 profile is missing")
+	}
+	addresses := map[string][]netip.Addr{}
+	for _, host := range artifactpypiProfileEndpoints(profile) {
+		addresses[host] = []netip.Addr{netip.MustParseAddr("1.1.1.1")}
+	}
+	all, arguments, err := resolverNetworkArguments(profile, addresses)
+	if err != nil || len(all) != 1 || len(arguments) != len(addresses)*2 {
+		t.Fatalf("PyTorch network arguments = %v, %v, %v", all, arguments, err)
+	}
+	if _, _, err := resolverNetworkArguments(profile, map[string][]netip.Addr{"download.pytorch.org": {netip.MustParseAddr("1.1.1.1")}}); err == nil {
+		t.Fatal("PyTorch network arguments accepted an incomplete endpoint set")
+	}
+}
+
 func assertPyPIResolverCreate(t *testing.T, arguments []string) {
 	t.Helper()
 	joined := strings.Join(arguments, " ")

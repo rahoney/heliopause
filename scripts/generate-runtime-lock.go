@@ -56,6 +56,14 @@ type runtimeLock struct {
 			Platform    string `json:"platform"`
 		} `json:"target"`
 	} `json:"python_image"`
+	PythonSources []struct {
+		Name              string   `json:"name"`
+		SourceID          string   `json:"source_id"`
+		IndexURL          string   `json:"index_url"`
+		IndexHost         string   `json:"index_host"`
+		DistributionHosts []string `json:"distribution_hosts"`
+		OwnedProjects     []string `json:"owned_projects"`
+	} `json:"python_sources"`
 	Bazel struct {
 		Version string `json:"version"`
 		URL     string `json:"linux_x86_64_url"`
@@ -129,6 +137,16 @@ func validate(lock runtimeLock) error {
 	if len(lock.GVisor.Binaries) != 2 {
 		return errors.New("require exactly two gVisor architectures")
 	}
+	if len(lock.PythonSources) == 0 {
+		return errors.New("python source profiles are missing")
+	}
+	seenSources := map[string]bool{}
+	for _, source := range lock.PythonSources {
+		if source.Name == "" || source.SourceID == "" || source.IndexHost == "" || !strings.HasPrefix(source.IndexURL, "https://") || len(source.DistributionHosts) == 0 || len(source.OwnedProjects) == 0 || seenSources[source.SourceID] {
+			return errors.New("python source profile is invalid")
+		}
+		seenSources[source.SourceID] = true
+	}
 	for _, architecture := range []string{"x86_64", "aarch64"} {
 		binary, ok := lock.GVisor.Binaries[architecture]
 		if !ok || !strings.HasPrefix(binary.URL, "https://") || !hex512.MatchString(binary.SHA512) {
@@ -154,7 +172,11 @@ func render(lock runtimeLock) []byte {
 	} {
 		fmt.Fprintf(&output, "\t%s = %q\n", item.name, item.value)
 	}
-	output.WriteString(")\n\nvar runscSHA512 = map[string]string{\n")
+	output.WriteString(")\n\ntype PythonSourceProfileLock struct { Name, SourceID, IndexURL, IndexHost string; DistributionHosts, OwnedProjects []string }\n\nvar PythonSourceProfiles = map[string]PythonSourceProfileLock{\n")
+	for _, source := range lock.PythonSources {
+		fmt.Fprintf(&output, "%q: {Name: %q, SourceID: %q, IndexURL: %q, IndexHost: %q, DistributionHosts: %#v, OwnedProjects: %#v},\n", source.Name, source.Name, source.SourceID, source.IndexURL, source.IndexHost, source.DistributionHosts, source.OwnedProjects)
+	}
+	output.WriteString("}\n\nvar runscSHA512 = map[string]string{\n")
 	for _, architecture := range architectures {
 		goarch := map[string]string{"x86_64": "amd64", "aarch64": "arm64"}[architecture]
 		fmt.Fprintf(&output, "\t%q: %q,\n", goarch, lock.GVisor.Binaries[architecture].SHA512)

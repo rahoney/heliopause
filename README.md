@@ -8,8 +8,8 @@
 - Go module path: `github.com/rahoney/heliopause`
 - 구현 언어: Go
 - CLI framework: Cobra
-- 현재 상태: M0–M11 qualification 및 post-qualification release hardening 완료. M12 Production Release & Operations는 repository owner의 activation 승인 전까지 보류
-- 현재 작업: M12-001 — protected main/develop/tag/release environment/immutable release activation
+- 현재 상태: M0–M11 qualification 및 post-qualification release hardening 완료. M12 생태계 확장과 M12-02 최종 red-team/fix gate는 아직 시작하지 않았으며, M13 Production Release & Operations는 M12 완료 후 진행
+- 현재 작업: M12-001 — Official PyTorch source support
 
 Heliopause는 Apache-2.0으로 배포한다. 외부 기여는 `CLA.md`의 Harmony
 Copyright License 및 Option Five 조건과 자동 CLA status check를 충족해야 하며,
@@ -28,7 +28,7 @@ Go `1.26.7`이다.
 
 다음 build 명령은 source checkout을 가진 개발자·검증자가 사용하는 경로다. 일반
 사용자는 최종적으로 GitHub Release의 검증된 bootstrap entrance를 사용해야 하며,
-그 public installer와 runtime/helper bundle activation은 M12-004 완료 전까지
+그 public installer와 runtime/helper bundle activation은 M13-005 완료 전까지
 제공된다고 주장하지 않는다.
 
 ```sh
@@ -81,14 +81,31 @@ helox github install '<owner>/<repo>@<tag>#<asset>' --target /absolute/new-targe
 | Windows 11 + WSL2 Ubuntu 24.04 | WSL2 내부 Linux CLI build와 기본 실행만 검증됨. Windows-native backend가 아니며 dynamic/Promotion support를 뜻하지 않음 |
 | 기타 OS/architecture/runtime | 지원하지 않으며 누락된 capability를 안전으로 간주하지 않음 |
 
+## Planned pre-release expansion
+
+현재 구현된 MVP 지원 범위와 다음 생태계 확장 범위를 구분한다. 아래 경로는 M12
+qualification이 완료되기 전까지 공개 지원으로 간주하지 않는다.
+
+| Milestone | Planned path |
+| --- | --- |
+| M12-001 | 공식 PyTorch source profile을 통한 `helox pip install` |
+| M12-002 | public Go Modules: `helox go get`, `helox go mod download`, `helox go build` |
+| M12-003 | public crates.io: `helox cargo add`, `helox cargo build` |
+| M12-004 | public Terraform Provider 설치: `helox terraform init` |
+| M12-005 | 전체 생태계 qualification 및 feature freeze |
+| M12-02 | 최종 red-team/fix gate |
+
+M12-001~005와 M12-02가 완료되면 기능 개발을 동결하고 M13에서 검증된 GitHub
+Release, OS package, npm/PyPI/pipx 및 Homebrew bootstrap·운영 절차를 진행한다.
+
 전체 Linux 경로는 [runtime lock](./scripts/runtimes.lock.json)의 exact Docker,
 gVisor source·runsc, Bazel, Node 및 Python identity 경계를 요구한다. `runsc-trace`는
 [pod-init config](./tools/gvisor-observer/pod-init.json)로 보호된 shared observer
 socket을 sandbox 시작 전에 연결해야 한다. 현재 저장소는 일반 Host용 runtime
-installer/bootstrap entrance를 아직 제공하지 않는다. M12-004에서 GitHub Release
-검증부터 helox/runtime/helper atomic activation, `doctor`, 실제 npm/PyPI/GitHub
-smoke와 quarantine 절차를 완료하기 전에는 이 구성이 없는 Host에서 동적 검사나
-automatic Promotion을 지원한다고 간주해서는 안 된다.
+installer/bootstrap entrance를 아직 제공하지 않는다. M13-005에서 GitHub Release
+검증부터 helox/runtime/helper atomic activation, `doctor`, 실제 전체 생태계 smoke와
+quarantine 절차를 완료하기 전에는 이 구성이 없는 Host에서 동적 검사나 automatic
+Promotion을 지원한다고 간주해서는 안 된다.
 
 ## Data and network boundaries
 

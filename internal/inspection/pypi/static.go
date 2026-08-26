@@ -55,8 +55,11 @@ func (i *StaticInspector) InspectSdist(ctx context.Context, artifact domain.Acqu
 }
 
 func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredArtifact) (any, domain.InspectionReport, error) {
-	if ctx == nil || ctx.Err() != nil || i == nil || artifact.Identity().Source().String() != "pypi" {
+	if ctx == nil || ctx.Err() != nil || i == nil {
 		return nil, domain.InspectionReport{}, errors.New("PyPI static inspection request is invalid")
+	}
+	if _, ok := artifactpypi.ProfileForSource(artifact.Identity().Source()); !ok {
+		return nil, domain.InspectionReport{}, errors.New("PyPI static inspection source is unsupported")
 	}
 	path, filename, err := i.artifactPath(artifact)
 	if err != nil {
@@ -75,7 +78,7 @@ func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredA
 	var summary string
 	switch artifact.Identity().Variant() {
 	case "wheel", "derived-wheel":
-		info, inspectErr := artifactpypi.InspectWheel(file, int64(artifact.SizeBytes()), filename, declared, i.target, artifactpypi.DefaultWheelLimits())
+		info, inspectErr := artifactpypi.InspectWheelForSource(file, int64(artifact.SizeBytes()), filename, declared, i.target, artifactpypi.DefaultWheelLimits(), artifact.Identity().Source())
 		if inspectErr != nil {
 			return nil, i.violation(artifact, "M5_WHEEL_STATIC_INVALID"), nil
 		}

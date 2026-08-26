@@ -37,6 +37,32 @@
       "platform": "manylinux_2_36_x86_64"
     }
   },
+  "python_sources": [
+    {
+      "name": "pytorch:cpu",
+      "source_id": "pytorch-cpu",
+      "index_url": "https://download.pytorch.org/whl/cpu/",
+      "index_host": "download.pytorch.org",
+      "distribution_hosts": ["download.pytorch.org", "download-r2.pytorch.org"],
+      "owned_projects": ["torch", "torchvision", "torchaudio"]
+    },
+    {
+      "name": "pytorch:cu126",
+      "source_id": "pytorch-cu126",
+      "index_url": "https://download.pytorch.org/whl/cu126/",
+      "index_host": "download.pytorch.org",
+      "distribution_hosts": ["download.pytorch.org", "download-r2.pytorch.org"],
+      "owned_projects": ["torch", "torchvision", "torchaudio"]
+    },
+    {
+      "name": "pytorch:cu128",
+      "source_id": "pytorch-cu128",
+      "index_url": "https://download.pytorch.org/whl/cu128/",
+      "index_host": "download.pytorch.org",
+      "distribution_hosts": ["download.pytorch.org", "download-r2.pytorch.org"],
+      "owned_projects": ["torch", "torchvision", "torchaudio"]
+    }
+  ],
   "bazel": {
     "version": "8.3.1",
     "linux_x86_64_url": "https://github.com/bazelbuild/bazel/releases/download/8.3.1/bazel-8.3.1-linux-x86_64",

@@ -180,11 +180,11 @@ func preparePyPIProject(project, stagedRoot string, bundle domain.VerifiedBundle
 		if resolved.Identity().Variant() == "sdist" {
 			continue
 		}
-		if resolved.Identity().Source().String() != "pypi" || (resolved.Identity().Variant() != "wheel" && resolved.Identity().Variant() != "derived-wheel") {
+		if _, supported := artifactpypi.ProfileForSource(resolved.Identity().Source()); !supported || (resolved.Identity().Variant() != "wheel" && resolved.Identity().Variant() != "derived-wheel") {
 			return nil, nil, errors.New("PyPI Promotion requires exact wheels only")
 		}
 		filename := filepath.Base(node.RecordPath())
-		projectName, version, _, _, _, err := artifactpypi.ParseWheelFilename(filename)
+		projectName, version, _, _, _, err := artifactpypi.ParseWheelFilenameForSource(filename, resolved.Identity().Source())
 		if err != nil || projectName != resolved.Identity().Name() || version != resolved.Identity().Version() || expected[projectName].name != "" {
 			return nil, nil, errors.New("PyPI Promotion wheel filename is invalid or ambiguous")
 		}

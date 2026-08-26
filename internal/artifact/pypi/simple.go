@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"html"
 	"io"
 	"net/url"
 	"path"
@@ -32,10 +33,12 @@ var (
 // It never contains a raw HTTP response or unvalidated endpoint.
 type SimpleProject struct {
 	project string
+	source  domain.SourceID
 	files   []SimpleFile
 }
 
-func (p SimpleProject) Project() string { return p.project }
+func (p SimpleProject) Project() string         { return p.project }
+func (p SimpleProject) Source() domain.SourceID { return p.source }
 func (p SimpleProject) Files() []SimpleFile {
 	return append([]SimpleFile(nil), p.files...)
 }
@@ -62,6 +65,7 @@ func (f SimpleFile) Size() uint64           { return f.size }
 // declared dependency names have been normalized. It is adapter-only data.
 type Candidate struct {
 	project        string
+	source         domain.SourceID
 	version        string
 	filename       string
 	url            string
@@ -71,14 +75,15 @@ type Candidate struct {
 	dependencies   []string
 }
 
-func (c Candidate) Project() string        { return c.project }
-func (c Candidate) Version() string        { return c.version }
-func (c Candidate) Filename() string       { return c.filename }
-func (c Candidate) URL() string            { return c.url }
-func (c Candidate) SHA256() string         { return c.sha256 }
-func (c Candidate) RequiresPython() string { return c.requiresPython }
-func (c Candidate) Primary() bool          { return c.primary }
-func (c Candidate) Dependencies() []string { return append([]string(nil), c.dependencies...) }
+func (c Candidate) Project() string         { return c.project }
+func (c Candidate) Source() domain.SourceID { return c.source }
+func (c Candidate) Version() string         { return c.version }
+func (c Candidate) Filename() string        { return c.filename }
+func (c Candidate) URL() string             { return c.url }
+func (c Candidate) SHA256() string          { return c.sha256 }
+func (c Candidate) RequiresPython() string  { return c.requiresPython }
+func (c Candidate) Primary() bool           { return c.primary }
+func (c Candidate) Dependencies() []string  { return append([]string(nil), c.dependencies...) }
 
 // InstallationReport is the bounded, normalized result of a stable pip
 // installation report v1. Its raw bytes remain in the Sandbox adapter.
@@ -108,6 +113,22 @@ type simpleFile struct {
 // ParseSimpleProject accepts only a PyPI Simple API JSON v1 project page and
 // enforces the public PyPI distribution endpoint for every listed file.
 func ParseSimpleProject(project string, body []byte) (SimpleProject, error) {
+	return parseJSONSimpleProject(project, body, PublicPyPIProfile())
+}
+
+// ParseSimpleProjectForProfile selects the canonical parser for a named
+// source profile. It never accepts a caller-provided endpoint or format.
+func ParseSimpleProjectForProfile(project string, body []byte, profile SourceProfile) (SimpleProject, error) {
+	if IsPyTorchSource(profile.source) {
+		return ParsePyTorchSimpleProject(project, body, profile)
+	}
+	if profile.source == PublicPyPIProfile().source {
+		return parseJSONSimpleProject(project, body, profile)
+	}
+	return SimpleProject{}, errors.New("unsupported Python source profile")
+}
+
+func parseJSONSimpleProject(project string, body []byte, profile SourceProfile) (SimpleProject, error) {
 	project, err := NormalizeProjectName(project)
 	if err != nil {
 		return SimpleProject{}, errors.New("PyPI Simple project is invalid")
@@ -131,7 +152,7 @@ func ParseSimpleProject(project string, body []byte) (SimpleProject, error) {
 	files := make([]SimpleFile, 0, len(response.Files))
 	seen := make(map[string]bool, len(response.Files))
 	for _, raw := range response.Files {
-		file, err := parseSimpleFile(raw)
+		file, err := parseSimpleFileForProfile(raw, profile)
 		if err != nil || seen[file.url] {
 			return SimpleProject{}, errors.New("PyPI Simple file metadata is invalid")
 		}
@@ -139,15 +160,18 @@ func ParseSimpleProject(project string, body []byte) (SimpleProject, error) {
 		files = append(files, file)
 	}
 	sort.Slice(files, func(i, j int) bool { return files[i].url < files[j].url })
-	return SimpleProject{project: project, files: files}, nil
+	return SimpleProject{project: project, source: profile.source, files: files}, nil
 }
 
 func parseSimpleFile(raw simpleFile) (SimpleFile, error) {
+	return parseSimpleFileForProfile(raw, PublicPyPIProfile())
+}
+
+func parseSimpleFileForProfile(raw simpleFile, profile SourceProfile) (SimpleFile, error) {
 	if raw.Filename == "" || raw.Size == 0 || !sha256HexPattern.MatchString(raw.Hashes["sha256"]) || !validRequiresPython(raw.RequiresPython) {
 		return SimpleFile{}, errors.New("invalid file metadata")
 	}
-	_, err := parseDistributionURL(raw.URL, raw.Filename, false)
-	if err != nil {
+	if err := validateDistributionURLForSource(raw.URL, raw.Filename, profile, false); err != nil {
 		return SimpleFile{}, err
 	}
 	// Simple API v1 carries the digest in hashes.sha256; its canonical URL has
@@ -157,6 +181,56 @@ func parseSimpleFile(raw simpleFile) (SimpleFile, error) {
 		return SimpleFile{}, err
 	}
 	return SimpleFile{filename: raw.Filename, url: raw.URL, sha256: raw.Hashes["sha256"], requiresPython: raw.RequiresPython, yanked: yanked, size: raw.Size}, nil
+}
+
+var pytorchAnchorPattern = regexp.MustCompile(`(?is)<a\b[^>]*href\s*=\s*["']([^"']+)["'][^>]*>`)
+
+// ParsePyTorchSimpleProject parses the bounded HTML Simple API served by the
+// official PyTorch index. The page contributes only filename, URL and
+// sha256-fragment identity; package metadata remains sourced from pip's
+// normalized report.
+func ParsePyTorchSimpleProject(project string, body []byte, profile SourceProfile) (SimpleProject, error) {
+	if !IsPyTorchSource(profile.source) {
+		return SimpleProject{}, errors.New("PyTorch source profile is required")
+	}
+	project, err := NormalizeProjectName(project)
+	if err != nil || len(body) == 0 || len(body) > maxSimpleResponseBytes {
+		return SimpleProject{}, errors.New("PyTorch Simple project is invalid")
+	}
+	base, err := url.Parse(profile.indexURL + project + "/")
+	if err != nil {
+		return SimpleProject{}, errors.New("PyTorch index URL is invalid")
+	}
+	matches := pytorchAnchorPattern.FindAllSubmatch(body, maxPyPIReportEntries+1)
+	if len(matches) == 0 || len(matches) > maxPyPIReportEntries {
+		return SimpleProject{}, errors.New("PyTorch Simple project has no bounded files")
+	}
+	files := make([]SimpleFile, 0, len(matches))
+	seen := make(map[string]bool, len(matches))
+	for _, match := range matches {
+		href := html.UnescapeString(string(match[1]))
+		parsed, err := base.Parse(href)
+		if err != nil || parsed.Fragment == "" || !strings.HasPrefix(parsed.Fragment, "sha256=") {
+			return SimpleProject{}, errors.New("PyTorch Simple file hash is missing")
+		}
+		filename := path.Base(parsed.Path)
+		digest := strings.TrimPrefix(parsed.Fragment, "sha256=")
+		if !sha256HexPattern.MatchString(digest) || filename == "." || filename == "/" || seen[parsed.String()] {
+			return SimpleProject{}, errors.New("PyTorch Simple file metadata is invalid")
+		}
+		parsed.Fragment = ""
+		if err := validateDistributionURLForSource(parsed.String(), filename, profile, true); err != nil {
+			return SimpleProject{}, err
+		}
+		canonicalURL := parsed.String()
+		if seen[canonicalURL] {
+			return SimpleProject{}, errors.New("PyTorch Simple file metadata is ambiguous")
+		}
+		seen[canonicalURL] = true
+		files = append(files, SimpleFile{filename: filename, url: canonicalURL, sha256: digest, requiresPython: "", size: 1})
+	}
+	sort.Slice(files, func(i, j int) bool { return files[i].url < files[j].url })
+	return SimpleProject{project: project, source: profile.source, files: files}, nil
 }
 
 func parseYanked(raw json.RawMessage) (bool, error) {
@@ -210,6 +284,20 @@ type pipInstall struct {
 // locked runtime. It intentionally rejects direct sources, unsupported
 // dependency markers/extras and any target-environment mismatch.
 func ParseInstallationReport(reference domain.ArtifactReference, body []byte, expectedPip, expectedPython string) (InstallationReport, error) {
+	profile, ok := ProfileForSource(reference.Source())
+	if !ok {
+		return InstallationReport{}, errors.New("Python source profile is invalid")
+	}
+	return ParseInstallationReportForProfile(reference, body, expectedPip, expectedPython, profile)
+}
+
+// ParseInstallationReportForProfile preserves source identity for every
+// selected node and rejects source confusion between PyTorch-owned and
+// ordinary PyPI projects.
+func ParseInstallationReportForProfile(reference domain.ArtifactReference, body []byte, expectedPip, expectedPython string, profile SourceProfile) (InstallationReport, error) {
+	if reference.Source() != profile.source {
+		return InstallationReport{}, errors.New("Python report source profile mismatch")
+	}
 	requestedProject, err := RequestedProject(reference)
 	if err != nil {
 		return InstallationReport{}, errors.New("PyPI report reference is invalid")
@@ -233,17 +321,17 @@ func ParseInstallationReport(reference domain.ArtifactReference, body []byte, ex
 	seenProjects := make(map[string]bool, len(report.Install))
 	primaryCount := 0
 	for _, item := range report.Install {
-		candidate, err := parseReportCandidate(item)
+		candidate, err := parseReportCandidate(item, profile)
 		if err != nil || seenProjects[candidate.project] {
 			return InstallationReport{}, errors.New("pip installation report candidate is invalid")
 		}
 		seenProjects[candidate.project] = true
 		if candidate.primary {
 			primaryCount++
-			if candidate.project != requestedProject || versionRequested && candidate.version != requestedVersion {
+			if candidate.project != requestedProject || candidate.source != profile.source || versionRequested && candidate.version != requestedVersion {
 				return InstallationReport{}, errors.New("pip installation report primary candidate is invalid")
 			}
-			if !versionRequested && !IsFinalVersion(candidate.version) {
+			if !versionRequested && !isFinalVersionForProfile(candidate.version, profile) {
 				return InstallationReport{}, errors.New("pip installation report selected a non-final release")
 			}
 		}
@@ -256,7 +344,15 @@ func ParseInstallationReport(reference domain.ArtifactReference, body []byte, ex
 	return InstallationReport{candidates: candidates}, nil
 }
 
-func parseReportCandidate(item pipInstall) (Candidate, error) {
+func isFinalVersionForProfile(value string, profile SourceProfile) bool {
+	if IsPyTorchSource(profile.source) && strings.Contains(value, "+") {
+		base := strings.SplitN(value, "+", 2)[0]
+		return IsFinalVersion(base)
+	}
+	return IsFinalVersion(value)
+}
+
+func parseReportCandidate(item pipInstall, profile SourceProfile) (Candidate, error) {
 	if item.IsDirect || !item.Requested && item.Metadata.Name == "" || !sha256HexPattern.MatchString(item.DownloadInfo.ArchiveInfo.Hashes["sha256"]) || item.DownloadInfo.ArchiveInfo.Hash != "sha256="+item.DownloadInfo.ArchiveInfo.Hashes["sha256"] {
 		return Candidate{}, errors.New("invalid pip candidate")
 	}
@@ -264,13 +360,17 @@ func parseReportCandidate(item pipInstall) (Candidate, error) {
 	if err != nil {
 		return Candidate{}, err
 	}
-	version, err := NormalizeVersion(item.Metadata.Version)
+	version, err := normalizeVersionForProfile(item.Metadata.Version, IsPyTorchSource(profile.source))
 	if err != nil || !validRequiresPython(item.Metadata.RequiresPython) {
 		return Candidate{}, errors.New("invalid pip candidate metadata")
 	}
 	filename := path.Base(item.DownloadInfo.URL)
-	if _, err := parseDistributionURL(item.DownloadInfo.URL, filename, false); err != nil {
+	source, err := sourceForDistributionURL(item.DownloadInfo.URL, profile)
+	if err != nil {
 		return Candidate{}, err
+	}
+	if !sourceOwnsProject(profile, source, project) {
+		return Candidate{}, errors.New("Python candidate source ownership is ambiguous")
 	}
 	dependencies := make([]string, 0, len(item.Metadata.RequiresDist))
 	seenDependencies := make(map[string]bool, len(item.Metadata.RequiresDist))
@@ -283,7 +383,7 @@ func parseReportCandidate(item pipInstall) (Candidate, error) {
 		dependencies = append(dependencies, dependency)
 	}
 	sort.Strings(dependencies)
-	return Candidate{project: project, version: version, filename: filename, url: item.DownloadInfo.URL, sha256: item.DownloadInfo.ArchiveInfo.Hashes["sha256"], requiresPython: item.Metadata.RequiresPython, primary: item.Requested, dependencies: dependencies}, nil
+	return Candidate{project: project, source: source, version: version, filename: filename, url: item.DownloadInfo.URL, sha256: item.DownloadInfo.ArchiveInfo.Hashes["sha256"], requiresPython: item.Metadata.RequiresPython, primary: item.Requested, dependencies: dependencies}, nil
 }
 
 func parseDeclaredDependency(value string) (string, error) {
@@ -313,7 +413,7 @@ func CrossCheckReport(report InstallationReport, pages []SimpleProject) ([]Candi
 	}
 	for _, candidate := range report.candidates {
 		page, ok := byProject[candidate.project]
-		if !ok || !matchesSimpleFile(candidate, page.files) {
+		if !ok || candidate.source != page.source || !matchesSimpleFile(candidate, page.files) {
 			return nil, errors.New("pip candidate does not match PyPI Simple metadata")
 		}
 	}
@@ -323,7 +423,7 @@ func CrossCheckReport(report InstallationReport, pages []SimpleProject) ([]Candi
 func matchesSimpleFile(candidate Candidate, files []SimpleFile) bool {
 	matches := 0
 	for _, file := range files {
-		if file.filename != candidate.filename || file.sha256 != candidate.sha256 || file.requiresPython != candidate.requiresPython || file.yanked || !sameDistributionURL(file.url, candidate.url) {
+		if file.filename != candidate.filename || file.sha256 != candidate.sha256 || file.yanked || !sameDistributionURL(file.url, candidate.url) || file.requiresPython != "" && file.requiresPython != candidate.requiresPython {
 			continue
 		}
 		matches++
@@ -335,7 +435,7 @@ func matchesSimpleFile(candidate Candidate, files []SimpleFile) bool {
 // Domain values. Dependency edges come only from normalized selected report
 // metadata; unknown or unreachable requirements remain fail-closed.
 func BuildLockedGraph(reference domain.ArtifactReference, candidates []Candidate) (domain.LockedDependencyGraph, error) {
-	if reference.Source().String() != "pypi" || len(candidates) == 0 || len(candidates) > maxPyPIReportEntries {
+	if _, ok := ProfileForSource(reference.Source()); !ok || len(candidates) == 0 || len(candidates) > maxPyPIReportEntries {
 		return domain.LockedDependencyGraph{}, errors.New("PyPI candidate graph is invalid")
 	}
 	nodes := make(map[string]domain.LockedDependency, len(candidates))
@@ -349,7 +449,7 @@ func BuildLockedGraph(reference domain.ArtifactReference, candidates []Candidate
 			return domain.LockedDependencyGraph{}, errors.New("PyPI distribution type is unsupported")
 		}
 		nodeID := candidateNodeID(candidate)
-		identity, err := domain.NewResolvedArtifactIdentity(reference.Source(), candidate.project, candidate.version, variant)
+		identity, err := domain.NewResolvedArtifactIdentity(candidate.source, candidate.project, candidate.version, variant)
 		if err != nil {
 			return domain.LockedDependencyGraph{}, err
 		}
@@ -422,19 +522,11 @@ func sameDistributionURL(simpleURL, reportURL string) bool {
 	if err != nil {
 		return false
 	}
-	simpleParsed, err := parseDistributionURL(simpleURL, path.Base(simpleRaw.Path), true)
-	if err != nil {
-		return false
-	}
 	reportRaw, err := url.Parse(reportURL)
 	if err != nil {
 		return false
 	}
-	reportParsed, err := parseDistributionURL(reportURL, path.Base(reportRaw.Path), false)
-	if err != nil {
-		return false
-	}
-	return simpleParsed.Scheme == reportParsed.Scheme && strings.EqualFold(simpleParsed.Host, reportParsed.Host) && simpleParsed.EscapedPath() == reportParsed.EscapedPath()
+	return simpleRaw.Scheme == "https" && reportRaw.Scheme == "https" && simpleRaw.User == nil && reportRaw.User == nil && simpleRaw.RawQuery == "" && reportRaw.RawQuery == "" && strings.EqualFold(simpleRaw.Host, reportRaw.Host) && simpleRaw.Path == reportRaw.Path
 }
 
 func validRequiresPython(value string) bool {

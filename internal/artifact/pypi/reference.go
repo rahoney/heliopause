@@ -19,17 +19,24 @@ var (
 // version. It deliberately excludes extras, specifier ranges, markers, direct
 // URLs, local versions and all pip option syntax from the automatic path.
 func ParseReference(input string) (domain.ArtifactReference, error) {
-	project, version, hasVersion, err := parseReference(input)
+	return ParseReferenceForSource(input, PublicPyPIProfile().Source())
+}
+
+// ParseReferenceForSource parses a package reference for one canonical PyPI
+// or named PyTorch profile. The profile source is part of the Artifact
+// identity and cannot be supplied as an arbitrary URL.
+func ParseReferenceForSource(input string, source domain.SourceID) (domain.ArtifactReference, error) {
+	profile, ok := ProfileForSource(source)
+	if !ok {
+		return domain.ArtifactReference{}, errors.New("unsupported Python source profile")
+	}
+	project, version, hasVersion, err := parseReferenceForProfile(input, IsPyTorchSource(profile.source))
 	if err != nil {
 		return domain.ArtifactReference{}, err
 	}
 	locator := project
 	if hasVersion {
 		locator += "@" + version
-	}
-	source, err := domain.NewSourceID("pypi")
-	if err != nil {
-		return domain.ArtifactReference{}, err
 	}
 	return domain.NewArtifactReference(source, locator)
 }
@@ -70,14 +77,18 @@ func IsFinalVersion(value string) bool {
 }
 
 func parsePypiReference(reference domain.ArtifactReference) (string, string, bool, error) {
-	if reference.Source().String() != "pypi" {
+	if _, ok := ProfileForSource(reference.Source()); !ok {
 		return "", "", false, errors.New("PyPI project reference is required")
 	}
-	return parseReference(reference.Locator())
+	return parseReferenceForProfile(reference.Locator(), IsPyTorchSource(reference.Source()))
 }
 
 func parseReference(input string) (string, string, bool, error) {
-	if input == "" || input != strings.TrimSpace(input) || strings.Count(input, "@") > 1 || strings.ContainsAny(input, "[]<>~=;\\/:?#+") {
+	return parseReferenceForProfile(input, false)
+}
+
+func parseReferenceForProfile(input string, allowLocal bool) (string, string, bool, error) {
+	if input == "" || input != strings.TrimSpace(input) || strings.Count(input, "@") > 1 || strings.ContainsAny(input, "[]<>~=;\\/:?") || !allowLocal && strings.Contains(input, "+") {
 		return "", "", false, errors.New("PyPI project reference is invalid")
 	}
 	project, version, hasVersion := input, "", false
@@ -92,11 +103,26 @@ func parseReference(input string) (string, string, bool, error) {
 	if !hasVersion {
 		return project, "", false, nil
 	}
-	canonical, err := normalizeVersion(version)
+	canonical, err := normalizeVersionForProfile(version, allowLocal)
 	if err != nil {
 		return "", "", false, err
 	}
 	return project, canonical, true, nil
+}
+
+func normalizeVersionForProfile(value string, allowLocal bool) (string, error) {
+	if !allowLocal || !strings.Contains(value, "+") {
+		return normalizeVersion(value)
+	}
+	if strings.Count(value, "+") != 1 {
+		return "", errors.New("Python local version is invalid")
+	}
+	parts := strings.SplitN(value, "+", 2)
+	base, err := normalizeVersion(parts[0])
+	if err != nil || parts[1] == "" || !regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9.-]*$`).MatchString(parts[1]) {
+		return "", errors.New("PyTorch local version is invalid")
+	}
+	return base + "+" + strings.ToLower(parts[1]), nil
 }
 
 func normalizeVersion(value string) (string, error) {

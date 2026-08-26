@@ -14,6 +14,8 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
 const (
@@ -59,10 +61,20 @@ type WheelInspection struct {
 
 // InspectWheel validates one selected wheel without extracting or executing it.
 func InspectWheel(reader io.ReaderAt, size int64, filename, declaredSHA256 string, target WheelTarget, limits WheelLimits) (WheelInspection, error) {
+	return inspectWheel(reader, size, filename, declaredSHA256, target, limits, false)
+}
+
+// InspectWheelForSource permits PyTorch's canonical PEP 440 local build
+// suffixes while retaining the ordinary PyPI parser's stricter contract.
+func InspectWheelForSource(reader io.ReaderAt, size int64, filename, declaredSHA256 string, target WheelTarget, limits WheelLimits, source domain.SourceID) (WheelInspection, error) {
+	return inspectWheel(reader, size, filename, declaredSHA256, target, limits, IsPyTorchSource(source))
+}
+
+func inspectWheel(reader io.ReaderAt, size int64, filename, declaredSHA256 string, target WheelTarget, limits WheelLimits, allowLocalVersion bool) (WheelInspection, error) {
 	if reader == nil || size <= 0 || filename == "" || !validSHA256(declaredSHA256) || limits.MaxCompressed <= 0 || limits.MaxUncompressed <= 0 || limits.MaxFiles <= 0 || limits.MaxMetadata <= 0 {
 		return WheelInspection{}, errors.New("wheel intake input is invalid")
 	}
-	project, version, pyTags, abiTags, platformTags, err := parseWheelFilename(filename)
+	project, version, pyTags, abiTags, platformTags, err := parseWheelFilenameWithLocal(filename, allowLocalVersion)
 	if err != nil || !wheelTagsCompatible(pyTags, abiTags, platformTags, target) {
 		return WheelInspection{}, errors.New("wheel filename or target tags are invalid")
 	}
@@ -373,6 +385,10 @@ func splitHeaders(value string) []string {
 	return out
 }
 func parseWheelFilename(filename string) (string, string, []string, []string, []string, error) {
+	return parseWheelFilenameWithLocal(filename, false)
+}
+
+func parseWheelFilenameWithLocal(filename string, allowLocalVersion bool) (string, string, []string, []string, []string, error) {
 	if !strings.HasSuffix(filename, ".whl") {
 		return "", "", nil, nil, nil, errors.New("not a wheel")
 	}
@@ -383,7 +399,7 @@ func parseWheelFilename(filename string) (string, string, []string, []string, []
 	py, abi, platform := strings.Split(parts[len(parts)-3], "."), strings.Split(parts[len(parts)-2], "."), strings.Split(parts[len(parts)-1], ".")
 	for split := 1; split < len(parts)-3; split++ {
 		project, err := NormalizeProjectName(strings.Join(parts[:split], "-"))
-		version, versionErr := NormalizeVersion(parts[split])
+		version, versionErr := normalizeVersionForProfile(parts[split], allowLocalVersion)
 		if err == nil && versionErr == nil {
 			return project, version, py, abi, platform, nil
 		}
@@ -395,6 +411,10 @@ func parseWheelFilename(filename string) (string, string, []string, []string, []
 // tags of one wheel filename without inspecting archive bytes.
 func ParseWheelFilename(filename string) (string, string, []string, []string, []string, error) {
 	return parseWheelFilename(filename)
+}
+
+func ParseWheelFilenameForSource(filename string, source domain.SourceID) (string, string, []string, []string, []string, error) {
+	return parseWheelFilenameWithLocal(filename, IsPyTorchSource(source))
 }
 func wheelTagsCompatible(py, abi, platform []string, target WheelTarget) bool {
 	if target.Python == "" || target.ABI == "" || target.Platform == "" {

@@ -52,8 +52,12 @@ func (i *Intake) Resolve(context.Context, domain.ArtifactReference) (domain.Reso
 }
 
 func (i *Intake) Acquire(ctx context.Context, runID domain.RunID, resolved domain.ResolvedArtifact) (domain.AcquiredArtifact, error) {
-	if ctx == nil || ctx.Err() != nil || i == nil || i.client == nil || runID.String() == "" || resolved.Identity().Source().String() != "pypi" {
+	if ctx == nil || ctx.Err() != nil || i == nil || i.client == nil || runID.String() == "" {
 		return domain.AcquiredArtifact{}, errors.New("PyPI intake request is invalid")
+	}
+	profile, ok := ProfileForSource(resolved.Identity().Source())
+	if !ok {
+		return domain.AcquiredArtifact{}, errors.New("PyPI intake source profile is unsupported")
 	}
 	filename, err := pypiResolvedFilename(resolved)
 	if err != nil {
@@ -82,7 +86,7 @@ func (i *Intake) Acquire(ctx context.Context, runID domain.RunID, resolved domai
 		}
 		return domain.AcquiredArtifact{}, cause
 	}
-	file, digest, size, err := i.download(ctx, resolved.AcquisitionLocator(), directory, filename)
+	file, digest, size, err := i.download(ctx, resolved.AcquisitionLocator(), directory, filename, profile)
 	if err != nil {
 		return cleanup(err)
 	}
@@ -102,8 +106,8 @@ func (i *Intake) Acquire(ctx context.Context, runID domain.RunID, resolved domai
 	return artifact, nil
 }
 
-func (i *Intake) download(ctx context.Context, rawURL, directory, filename string) (string, string, uint64, error) {
-	if _, err := parseDistributionURL(rawURL, filename, false); err != nil {
+func (i *Intake) download(ctx context.Context, rawURL, directory, filename string, profile SourceProfile) (string, string, uint64, error) {
+	if err := validateDistributionURLForSource(rawURL, filename, profile, false); err != nil {
 		return "", "", 0, errors.New("PyPI distribution URL is invalid")
 	}
 	requestCtx, cancel := context.WithTimeout(ctx, pypiDistributionTimeout)

@@ -231,7 +231,13 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err != nil {
 			return err
 		}
-		if err := cli.AddPyPIInstall(command, installer); err != nil {
+		installers := map[string]cli.Installer{"pypi": installer}
+		for _, profileName := range []string{"cpu", "cu126", "cu128"} {
+			if profile, ok := artifactpypi.PyTorchProfile(profileName); ok {
+				installers[profile.Source().String()] = installer
+			}
+		}
+		if err := cli.AddPyPIInstallSources(command, installers); err != nil {
 			return err
 		}
 	}
@@ -324,9 +330,32 @@ func pypiInstallDependencyResolver(goos, goarch string, executor sandbox.Trusted
 		if err != nil {
 			return nil, err
 		}
-		return resolver, nil
+		routes := map[string]ports.DependencyResolver{artifactpypi.PublicPyPIProfile().Source().String(): resolver}
+		for _, profileName := range []string{"cpu", "cu126", "cu128"} {
+			profile, ok := artifactpypi.PyTorchProfile(profileName)
+			if !ok {
+				return nil, errors.New("PyTorch source profile is missing")
+			}
+			pytorchResolver, resolverErr := sandbox.NewLinuxPyTorchResolverWithExecutorAndPolicy(executor, observer, policyService, profile)
+			if resolverErr != nil {
+				return nil, resolverErr
+			}
+			routes[profile.Source().String()] = pytorchResolver
+		}
+		return pythonSourceResolver{routes: routes}, nil
 	}
 	return unsupportedPyPIInstallResolver{}, nil
+}
+
+type pythonSourceResolver struct {
+	routes map[string]ports.DependencyResolver
+}
+
+func (r pythonSourceResolver) ResolveDependencies(ctx context.Context, reference domain.ArtifactReference, installContext domain.InstallContext) (domain.DependencyResolution, error) {
+	if resolver := r.routes[reference.Source().String()]; resolver != nil {
+		return resolver.ResolveDependencies(ctx, reference, installContext)
+	}
+	return domain.DependencyResolution{}, errors.New("selected Python source profile is unsupported")
 }
 
 func installDependencyResolver(goos, goarch string, executor sandbox.TrustedExecutor, observer sandbox.TraceObserver) (ports.DependencyResolver, error) {

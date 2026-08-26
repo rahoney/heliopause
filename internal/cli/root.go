@@ -167,12 +167,41 @@ func AddGitHubReleaseInstall(root *cobra.Command, parser ReferenceParser, instal
 // AddPyPIInstall adds the injected PyPI Install/Promotion use case. The
 // generic JSON/human result contract is intentionally shared with npm.
 func AddPyPIInstall(root *cobra.Command, installer Installer) error {
-	if root == nil || installer == nil {
+	return AddPyPIInstallSources(root, map[string]Installer{"pypi": installer})
+}
+
+// AddPyPIInstallSources wires one bounded pip install command to the
+// canonical PyPI and named PyTorch source profiles.
+func AddPyPIInstallSources(root *cobra.Command, installers map[string]Installer) error {
+	if root == nil || len(installers) == 0 {
 		return errors.New("pypi install command requires root and use case")
 	}
 	if installCommand := findLeaf(root, "pip", "install"); installCommand != nil {
 		installCommand.RunE = func(command *cobra.Command, args []string) error {
-			reference, err := artifactpypi.ParseReference(args[0])
+			source, err := command.Flags().GetString("source")
+			if err != nil {
+				return err
+			}
+			if source == "" {
+				source = "pypi"
+			}
+			sourceID := artifactpypi.PublicPyPIProfile().Source()
+			if source != "pypi" {
+				profileName := strings.TrimPrefix(source, "pytorch:")
+				if profileName == source {
+					return errors.New("pip source must be pypi or a named pytorch profile")
+				}
+				profile, ok := artifactpypi.PyTorchProfile(profileName)
+				if !ok {
+					return errors.New("unknown PyTorch source profile")
+				}
+				sourceID = profile.Source()
+			}
+			installer, ok := installers[sourceID.String()]
+			if !ok || installer == nil {
+				return errors.New("selected Python source is unavailable on this Host")
+			}
+			reference, err := artifactpypi.ParseReferenceForSource(args[0], sourceID)
 			if err != nil {
 				return err
 			}
@@ -401,7 +430,9 @@ func initializeCommandTree(root *cobra.Command) {
 	pypi := ensurePyPICommand(root)
 	pypi.AddCommand(newStaticLeaf("inspect <project>[@<version>]", "Inspect a PyPI distribution", false))
 	pip := ensurePipCommand(root)
-	pip.AddCommand(newStaticLeaf("install <project>[@<version>]", "Install a PyPI distribution into the active virtual environment", true))
+	pipInstall := newStaticLeaf("install <project>[@<version>]", "Install a PyPI distribution into the active virtual environment", true)
+	pipInstall.Flags().String("source", "pypi", "named source profile: pypi or pytorch:cpu/cu126/cu128")
+	pip.AddCommand(pipInstall)
 	github := ensureGitHubCommand(root)
 	github.AddCommand(newStaticLeaf("inspect <owner>/<repo>@<tag>#<asset>", "Inspect a GitHub Release asset", false))
 	githubInstall := newStaticLeaf("install <owner>/<repo>@<tag>#<asset>", "Install a GitHub Release asset", true)
