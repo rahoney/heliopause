@@ -148,6 +148,13 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/core/domain":       true,
 			modulePath + "/internal/runtimeidentity":   true,
 		},
+		modulePath + "/internal/promotion": {
+			modulePath + "/internal/artifact/gomodule": true,
+			modulePath + "/internal/artifact/pypi":     true,
+			modulePath + "/internal/core/domain":       true,
+			modulePath + "/internal/runtimeidentity":   true,
+			modulePath + "/internal/sandbox":           true,
+		},
 		modulePath + "/internal/runtimeidentity": {},
 		modulePath + "/internal/testutil/fakeworkflow": {
 			modulePath + "/internal/core/domain": true,
@@ -174,6 +181,7 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 		modulePath + "/internal/inspection/npm":             {},
 		modulePath + "/internal/evidence/local":             {},
 		modulePath + "/internal/sandbox":                    {},
+		modulePath + "/internal/promotion":                  {},
 		modulePath + "/internal/runtimeidentity":            {},
 		modulePath + "/internal/testutil/fakeworkflow":      {},
 		modulePath + "/scripts/check":                       {},
