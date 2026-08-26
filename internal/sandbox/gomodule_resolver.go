@@ -83,12 +83,20 @@ func (r *GoModuleResolver) ResolveDependencies(ctx context.Context, reference do
 	if !filepath.IsAbs(project) || project == "/" {
 		return domain.DependencyResolution{}, errors.New("go project path is invalid")
 	}
+	workspace, cleanupWorkspace, err := privateGoProjectWorkspace(project)
+	if err != nil {
+		return domain.DependencyResolution{}, err
+	}
+	defer cleanupWorkspace()
 	environment, cleanup, err := privateGoResolverEnvironment()
 	if err != nil {
 		return domain.DependencyResolution{}, err
 	}
 	defer cleanup()
-	jsonBody, err := r.runner.RunGo(ctx, project, environment, "mod", "download", "-json", "all")
+	if _, err := r.runner.RunGo(ctx, workspace, environment, "get", reference.Locator()); err != nil {
+		return domain.DependencyResolution{}, errors.New("private go module selection failed")
+	}
+	jsonBody, err := r.runner.RunGo(ctx, workspace, environment, "mod", "download", "-json", "all")
 	if err != nil {
 		return domain.DependencyResolution{}, errors.New("go module download failed")
 	}
@@ -96,7 +104,7 @@ func (r *GoModuleResolver) ResolveDependencies(ctx context.Context, reference do
 	if err != nil {
 		return domain.DependencyResolution{}, err
 	}
-	graphBody, err := r.runner.RunGo(ctx, project, environment, "mod", "graph")
+	graphBody, err := r.runner.RunGo(ctx, workspace, environment, "mod", "graph")
 	if err != nil {
 		return domain.DependencyResolution{}, errors.New("go module graph failed")
 	}
@@ -110,6 +118,21 @@ func (r *GoModuleResolver) ResolveDependencies(ctx context.Context, reference do
 		return domain.DependencyResolution{}, err
 	}
 	return domain.NewDependencyResolution(graph, "go:proxy.golang.org;sumdb:sum.golang.org;env:"+strings.Join(environment, ";"), digest)
+}
+
+func privateGoProjectWorkspace(project string) (string, func(), error) {
+	workspace, err := os.MkdirTemp("", "haa-go-resolve-project-")
+	if err != nil {
+		return "", nil, errors.New("create private Go project workspace")
+	}
+	for _, name := range []string{"go.mod", "go.sum"} {
+		body, readErr := os.ReadFile(filepath.Join(project, name))
+		if readErr != nil || len(body) == 0 || os.WriteFile(filepath.Join(workspace, name), body, 0o600) != nil {
+			_ = os.RemoveAll(workspace)
+			return "", nil, errors.New("copy Go project control files")
+		}
+	}
+	return workspace, func() { _ = os.RemoveAll(workspace) }, nil
 }
 
 func privateGoResolverEnvironment() ([]string, func(), error) {

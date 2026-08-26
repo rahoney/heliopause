@@ -36,6 +36,9 @@ func (r *goModuleRunnerFixture) RunGo(_ context.Context, _ string, environment [
 	h1 := func(value byte) string {
 		return "h1:" + base64.StdEncoding.EncodeToString([]byte(strings.Repeat(string([]byte{value}), 32)))
 	}
+	if strings.Join(arguments, " ") == "get example.com/mod@v1.2.3" {
+		return nil, nil
+	}
 	if strings.Join(arguments, " ") == "mod download -json all" {
 		return []byte(`{"Path":"example.com/mod","Version":"v1.2.3","GoMod":"/tmp/mod.mod","Zip":"/tmp/mod.zip","Sum":"` + h1('a') + `","GoModSum":"` + h1('b') + `","Origin":null}` + "\n"), nil
 	}
@@ -49,7 +52,14 @@ func TestGoModuleResolverUsesCanonicalCommandsAndSource(t *testing.T) {
 		t.Fatal(err)
 	}
 	reference, _ := artifactgomodule.ParseReference("example.com/mod@v1.2.3")
-	target, _ := domain.NewInstallTarget("/workspace/project")
+	project := t.TempDir()
+	if err := os.WriteFile(filepath.Join(project, "go.mod"), []byte("module example.com/app\n\ngo 1.25\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(project, "go.sum"), []byte("example.com/mod v1.2.3 h1:fixture\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	target, _ := domain.NewInstallTarget(project)
 	install, _ := domain.NewInstallContext(target)
 	resolution, err := resolver.ResolveDependencies(context.Background(), reference, install)
 	if err != nil {
@@ -58,7 +68,7 @@ func TestGoModuleResolverUsesCanonicalCommandsAndSource(t *testing.T) {
 	if len(resolution.Graph().Nodes()) != 1 || resolution.Graph().Nodes()[0].Artifact().Identity().Source() != artifactgomodule.Source() {
 		t.Fatalf("resolution graph = %#v", resolution.Graph())
 	}
-	if len(runner.calls) != 2 || runner.calls[0] != "mod download -json all" || runner.calls[1] != "mod graph" {
+	if len(runner.calls) != 3 || runner.calls[0] != "get example.com/mod@v1.2.3" || runner.calls[1] != "mod download -json all" || runner.calls[2] != "mod graph" {
 		t.Fatalf("Go commands = %#v", runner.calls)
 	}
 }
