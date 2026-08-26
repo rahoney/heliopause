@@ -73,6 +73,7 @@ type Candidate struct {
 	requiresPython string
 	primary        bool
 	dependencies   []string
+	requirements   []string
 }
 
 func (c Candidate) Project() string         { return c.project }
@@ -84,6 +85,15 @@ func (c Candidate) SHA256() string          { return c.sha256 }
 func (c Candidate) RequiresPython() string  { return c.requiresPython }
 func (c Candidate) Primary() bool           { return c.primary }
 func (c Candidate) Dependencies() []string  { return append([]string(nil), c.dependencies...) }
+func (c Candidate) DependencyRequirements() []string {
+	return append([]string(nil), c.requirements...)
+}
+
+// WithPrimary returns a copy with the graph role selected by the resolver.
+func (c Candidate) WithPrimary(primary bool) Candidate {
+	c.primary = primary
+	return c
+}
 
 // InstallationReport is the bounded, normalized result of a stable pip
 // installation report v1. Its raw bytes remain in the Sandbox adapter.
@@ -375,6 +385,7 @@ func parseReportCandidate(item pipInstall, profile SourceProfile) (Candidate, er
 		return Candidate{}, errors.New("python candidate source ownership is ambiguous")
 	}
 	dependencies := make([]string, 0, len(item.Metadata.RequiresDist))
+	requirements := make([]string, 0, len(item.Metadata.RequiresDist))
 	seenDependencies := make(map[string]bool, len(item.Metadata.RequiresDist))
 	for _, requirement := range item.Metadata.RequiresDist {
 		dependency, err := parseDeclaredDependency(requirement)
@@ -383,9 +394,17 @@ func parseReportCandidate(item pipInstall, profile SourceProfile) (Candidate, er
 		}
 		seenDependencies[dependency] = true
 		dependencies = append(dependencies, dependency)
+		requirements = append(requirements, requirement)
 	}
 	sort.Strings(dependencies)
-	return Candidate{project: project, source: source, version: version, filename: filename, url: item.DownloadInfo.URL, sha256: item.DownloadInfo.ArchiveInfo.Hashes["sha256"], requiresPython: item.Metadata.RequiresPython, primary: item.Requested, dependencies: dependencies}, nil
+	sort.Strings(requirements)
+	return Candidate{project: project, source: source, version: version, filename: filename, url: item.DownloadInfo.URL, sha256: item.DownloadInfo.ArchiveInfo.Hashes["sha256"], requiresPython: item.Metadata.RequiresPython, primary: item.Requested, dependencies: dependencies, requirements: requirements}, nil
+}
+
+// DependencyProject normalizes the project portion of a bounded requirement.
+// The resolver retains the original requirement only for its fixed pip call.
+func DependencyProject(requirement string) (string, error) {
+	return parseDeclaredDependency(requirement)
 }
 
 func parseDeclaredDependency(value string) (string, error) {

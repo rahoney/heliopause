@@ -39,6 +39,14 @@ func TestPyTorchHTMLIndexAndReportPreserveSourceIdentity(t *testing.T) {
 	if len(report.Candidates()) != 2 || report.Candidates()[0].Source() == report.Candidates()[1].Source() {
 		t.Fatalf("candidate source identities = %#v", report.Candidates())
 	}
+	for _, candidate := range report.Candidates() {
+		if candidate.Project() != "torch" {
+			continue
+		}
+		if requirements := candidate.DependencyRequirements(); len(requirements) != 1 || requirements[0] != "numpy>=1" {
+			t.Fatalf("PyTorch dependency requirements = %#v", requirements)
+		}
+	}
 	torchPage, err := ParseSimpleProjectForProfile("torch", []byte(`<html><body><a href="https://download.pytorch.org/whl/cpu/torch/torch-2.0.0%2Bcpu-cp314-cp314-linux_x86_64.whl#sha256=`+strings.Repeat("a", 64)+`">torch</a></body></html>`), profile)
 	if err != nil {
 		t.Fatal(err)

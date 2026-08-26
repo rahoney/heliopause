@@ -200,6 +200,23 @@ func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain
 	}
 	resolveCtx, cancel := context.WithTimeout(ctx, pypiResolverTimeout)
 	defer cancel()
+	if artifactpypi.IsPyTorchSource(r.profile.Source()) {
+		candidates, reportBytes, resolveErr := r.resolvePyTorchGraph(resolveCtx, containerID, capability.Runtime, reference)
+		if resolveErr != nil {
+			return domain.DependencyResolution{}, resolveErr
+		}
+		graph, graphErr := artifactpypi.BuildLockedGraph(reference, candidates)
+		if graphErr != nil {
+			return domain.DependencyResolution{}, graphErr
+		}
+		sum := sha256.Sum256(reportBytes)
+		digest, digestErr := domain.NewSHA256Digest(hex.EncodeToString(sum[:]))
+		if digestErr != nil {
+			return domain.DependencyResolution{}, digestErr
+		}
+		runtimeIdentity := "python:" + capability.Runtime.PythonVersion + ";pip:" + capability.Runtime.PipVersion + ";target:" + capability.Runtime.InterpreterTag + "/" + capability.Runtime.ABITag + "/" + capability.Runtime.PlatformTag + ";source:" + r.profile.Name()
+		return domain.NewDependencyResolution(graph, runtimeIdentity, digest)
+	}
 	pipArguments := pypiResolveArguments(r.profile, request)
 	if _, err := r.runner.Output(resolveCtx, "docker", append([]string{"exec", containerID, "python", "-I", "-m", "pip"}, pipArguments...)...); err != nil {
 		return domain.DependencyResolution{}, errors.New("run locked pip resolution failed")
@@ -247,6 +264,95 @@ func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain
 	}
 	runtimeIdentity := "python:" + capability.Runtime.PythonVersion + ";pip:" + capability.Runtime.PipVersion + ";target:" + capability.Runtime.InterpreterTag + "/" + capability.Runtime.ABITag + "/" + capability.Runtime.PlatformTag + ";source:" + r.profile.Name()
 	return domain.NewDependencyResolution(graph, runtimeIdentity, digest)
+}
+
+func (r *PyPIResolver) resolvePyTorchGraph(ctx context.Context, containerID string, runtime PythonRuntime, reference domain.ArtifactReference) ([]artifactpypi.Candidate, []byte, error) {
+	request, err := pypiRequirement(reference)
+	if err != nil {
+		return nil, nil, errors.New("PyTorch resolver reference is invalid")
+	}
+	type pending struct {
+		request string
+		profile artifactpypi.SourceProfile
+		primary bool
+	}
+	queue := []pending{{request: request, profile: r.profile, primary: true}}
+	candidates := make(map[string]artifactpypi.Candidate)
+	requests := make(map[string]string)
+	reports := make([]byte, 0)
+	for len(queue) > 0 {
+		current := queue[0]
+		queue = queue[1:]
+		project, err := artifactpypi.DependencyProject(current.request)
+		if err != nil {
+			return nil, nil, errors.New("PyTorch dependency requirement is invalid")
+		}
+		if existing, seen := requests[project]; seen {
+			if existing != current.request {
+				return nil, nil, errors.New("PyTorch dependency requirements are ambiguous")
+			}
+			continue
+		}
+		requests[project] = current.request
+		candidateReference, err := artifactpypi.ParseReferenceForSource(project, current.profile.Source())
+		if err != nil {
+			return nil, nil, err
+		}
+		candidate, report, err := r.resolvePyTorchCandidate(ctx, containerID, runtime, candidateReference, current.profile, current.request)
+		if err != nil {
+			return nil, nil, err
+		}
+		candidates[project] = candidate.WithPrimary(current.primary)
+		reports = append(reports, report...)
+		for _, requirement := range candidate.DependencyRequirements() {
+			dependency, err := artifactpypi.DependencyProject(requirement)
+			if err != nil {
+				return nil, nil, err
+			}
+			profile := artifactpypi.PublicPyPIProfile()
+			if artifactpypi.IsPyTorchOwnedProject(dependency) {
+				profile = r.profile
+			}
+			queue = append(queue, pending{request: requirement, profile: profile})
+		}
+	}
+	result := make([]artifactpypi.Candidate, 0, len(candidates))
+	for _, candidate := range candidates {
+		result = append(result, candidate)
+	}
+	return result, reports, nil
+}
+
+func (r *PyPIResolver) resolvePyTorchCandidate(ctx context.Context, containerID string, runtime PythonRuntime, reference domain.ArtifactReference, profile artifactpypi.SourceProfile, requirement string) (artifactpypi.Candidate, []byte, error) {
+	arguments := append([]string{"install", "--dry-run", "--report", pypiResolverProjectDir + "/report.json", "--disable-pip-version-check", "--no-input", "--no-cache-dir", "--isolated", "--no-deps", "--index-url", profile.IndexURL()}, requirement)
+	if _, err := r.runner.Output(ctx, "docker", append([]string{"exec", containerID, "python", "-I", "-m", "pip"}, arguments...)...); err != nil {
+		return artifactpypi.Candidate{}, nil, errors.New("run source-pinned pip resolution failed")
+	}
+	reportBytes, err := r.runner.Output(ctx, "docker", "exec", containerID, "python", "-I", "-c", boundedReadScript, pypiResolverProjectDir+"/report.json", "4194304")
+	if err != nil {
+		return artifactpypi.Candidate{}, nil, errors.New("read source-pinned pip report failed")
+	}
+	report, err := artifactpypi.ParseInstallationReportForProfile(reference, reportBytes, runtime.PipVersion, runtime.PythonVersion, profile)
+	if err != nil || len(report.Candidates()) != 1 {
+		return artifactpypi.Candidate{}, nil, errors.New("source-pinned pip report is invalid")
+	}
+	candidate := report.Candidates()[0]
+	fetchScript, fetchArguments := simpleJSONFetchScript, []string{candidate.Project()}
+	if artifactpypi.IsPyTorchSource(profile.Source()) {
+		fetchScript, fetchArguments = pytorchHTMLFetchScript, []string{profile.IndexURL(), candidate.Project()}
+	}
+	body, err := r.runner.Output(ctx, "docker", append([]string{"exec", containerID, "python", "-I", "-c", fetchScript}, fetchArguments...)...)
+	if err != nil {
+		return artifactpypi.Candidate{}, nil, errors.New("fetch source-pinned Simple metadata failed")
+	}
+	page, err := artifactpypi.ParseSimpleProjectForProfile(candidate.Project(), body, profile)
+	if err != nil {
+		return artifactpypi.Candidate{}, nil, err
+	}
+	if _, err := artifactpypi.CrossCheckReport(report, []artifactpypi.SimpleProject{page}); err != nil {
+		return artifactpypi.Candidate{}, nil, err
+	}
+	return candidate, reportBytes, nil
 }
 
 // pypiResolveArguments binds a PyTorch-owned root to exactly one official
