@@ -14,59 +14,36 @@ type cargoProjectPlan struct {
 	root                 string
 	cargoToml, cargoLock [32]byte
 }
-type cargoProjectGuard struct{ path string }
-
-func acquireCargoProjectGuard(root string) (cargoProjectGuard, error) {
-	path := filepath.Join(root, ".heliopause-cargo-transaction.lock")
-	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
-	if err != nil {
-		return cargoProjectGuard{}, errors.New("Cargo project is already being mutated or lock is unavailable")
-	}
-	if err := file.Close(); err != nil {
-		_ = os.Remove(path)
-		return cargoProjectGuard{}, errors.New("close Cargo project transaction lock")
-	}
-	return cargoProjectGuard{path: path}, nil
-}
-func (g cargoProjectGuard) release() error {
-	if g.path == "" {
-		return errors.New("Cargo project transaction lock is unavailable")
-	}
-	if err := os.Remove(g.path); err != nil {
-		return errors.New("remove Cargo project transaction lock")
-	}
-	return nil
-}
 
 func freezeCargoProject(root string) (cargoProjectPlan, error) {
 	if !filepath.IsAbs(root) || trustedExistingDirectory(root) != nil {
-		return cargoProjectPlan{}, errors.New("Cargo project root is untrusted")
+		return cargoProjectPlan{}, errors.New("cargo project root is untrusted")
 	}
 	toml, err := os.ReadFile(filepath.Join(root, "Cargo.toml"))
 	if err != nil || len(toml) == 0 {
-		return cargoProjectPlan{}, errors.New("Cargo.toml is unavailable")
+		return cargoProjectPlan{}, errors.New("cargo.toml is unavailable")
 	}
 	lock, err := os.ReadFile(filepath.Join(root, "Cargo.lock"))
 	if err != nil || len(lock) == 0 {
-		return cargoProjectPlan{}, errors.New("Cargo.lock is unavailable")
+		return cargoProjectPlan{}, errors.New("cargo.lock is unavailable")
 	}
 	return cargoProjectPlan{root: root, cargoToml: sha256.Sum256(toml), cargoLock: sha256.Sum256(lock)}, nil
 }
 func (p cargoProjectPlan) verifyUnchanged() error {
 	current, err := freezeCargoProject(p.root)
 	if err != nil || current.cargoToml != p.cargoToml || current.cargoLock != p.cargoLock {
-		return errors.New("Cargo project changed during transaction")
+		return errors.New("cargo project changed during transaction")
 	}
 	return nil
 }
 func (p cargoProjectPlan) verifyManaged() error {
 	body, err := os.ReadFile(filepath.Join(p.root, cargoTransactionMetadata))
 	if err != nil {
-		return errors.New("Cargo project is not HAA-managed")
+		return errors.New("cargo project is not HAA-managed")
 	}
 	want := "{\"cargo_toml_sha256\":\"" + hex.EncodeToString(p.cargoToml[:]) + "\",\"cargo_lock_sha256\":\"" + hex.EncodeToString(p.cargoLock[:]) + "\"}\n"
 	if string(body) != want {
-		return errors.New("Cargo managed project metadata does not match current state")
+		return errors.New("cargo managed project metadata does not match current state")
 	}
 	return nil
 }
@@ -100,7 +77,7 @@ func beginCargoProjectTransaction(plan cargoProjectPlan, workspace string) (*car
 		return nil, err
 	}
 	if err := trustedExistingDirectory(workspace); err != nil {
-		return nil, errors.New("Cargo private transaction workspace is untrusted")
+		return nil, errors.New("cargo private transaction workspace is untrusted")
 	}
 	backup, err := os.MkdirTemp(plan.root, ".heliopause-cargo-commit-")
 	if err != nil {
@@ -131,7 +108,7 @@ func (t *cargoProjectTransaction) commit() error {
 }
 func (t *cargoProjectTransaction) fail(cause error) error {
 	if rollbackErr := t.rollback(); rollbackErr != nil {
-		return errors.Join(cause, rollbackErr, errors.New("Cargo transaction rollback is incomplete; project is fail-closed"))
+		return errors.Join(cause, rollbackErr, errors.New("cargo transaction rollback is incomplete; project is fail-closed"))
 	}
 	if err := os.RemoveAll(t.backup); err != nil {
 		return errors.Join(cause, errors.New("remove rolled back Cargo transaction; project is fail-closed"))
@@ -173,7 +150,7 @@ func (t *cargoProjectTransaction) publishMetadata() error {
 		return errors.New("create Cargo transaction metadata directory")
 	}
 	if err := trustedExistingDirectory(directory); err != nil {
-		return errors.New("Cargo transaction metadata directory is untrusted")
+		return errors.New("cargo transaction metadata directory is untrusted")
 	}
 	current, err := freezeCargoProject(t.plan.root)
 	if err != nil {

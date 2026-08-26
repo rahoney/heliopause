@@ -6,7 +6,6 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 const goTransactionMetadata = ".heliopause/go-transaction.json"
@@ -24,7 +23,7 @@ func acquireGoProjectGuard(root string) (goProjectGuard, error) {
 	path := filepath.Join(root, ".heliopause-go-transaction.lock")
 	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
 	if err != nil {
-		return goProjectGuard{}, errors.New("Go project is already being mutated or lock is unavailable")
+		return goProjectGuard{}, errors.New("go project is already being mutated or lock is unavailable")
 	}
 	if err := file.Close(); err != nil {
 		_ = os.Remove(path)
@@ -35,7 +34,7 @@ func acquireGoProjectGuard(root string) (goProjectGuard, error) {
 
 func (g goProjectGuard) release() error {
 	if g.path == "" {
-		return errors.New("Go project transaction lock is unavailable")
+		return errors.New("go project transaction lock is unavailable")
 	}
 	if err := os.Remove(g.path); err != nil {
 		return errors.New("remove Go project transaction lock")
@@ -45,15 +44,15 @@ func (g goProjectGuard) release() error {
 
 func freezeGoProject(root string) (goProjectPlan, error) {
 	if !filepath.IsAbs(root) || trustedExistingDirectory(root) != nil {
-		return goProjectPlan{}, errors.New("Go project root is untrusted")
+		return goProjectPlan{}, errors.New("go project root is untrusted")
 	}
 	mod, err := os.ReadFile(filepath.Join(root, "go.mod"))
 	if err != nil || len(mod) == 0 {
-		return goProjectPlan{}, errors.New("Go project go.mod is unavailable")
+		return goProjectPlan{}, errors.New("go project go.mod is unavailable")
 	}
 	sum, err := os.ReadFile(filepath.Join(root, "go.sum"))
 	if err != nil || len(sum) == 0 {
-		return goProjectPlan{}, errors.New("Go project go.sum is unavailable")
+		return goProjectPlan{}, errors.New("go project go.sum is unavailable")
 	}
 	return goProjectPlan{root: root, goModHash: sha256.Sum256(mod), goSumHash: sha256.Sum256(sum)}, nil
 }
@@ -61,7 +60,7 @@ func freezeGoProject(root string) (goProjectPlan, error) {
 func (p goProjectPlan) verifyUnchanged() error {
 	current, err := freezeGoProject(p.root)
 	if err != nil || current.goModHash != p.goModHash || current.goSumHash != p.goSumHash {
-		return errors.New("Go project changed during transaction")
+		return errors.New("go project changed during transaction")
 	}
 	return nil
 }
@@ -69,11 +68,11 @@ func (p goProjectPlan) verifyUnchanged() error {
 func (p goProjectPlan) verifyManaged() error {
 	body, err := os.ReadFile(filepath.Join(p.root, goTransactionMetadata))
 	if err != nil {
-		return errors.New("Go project is not HAA-managed")
+		return errors.New("go project is not HAA-managed")
 	}
 	want := "{\"go_mod_sha256\":\"" + hex.EncodeToString(p.goModHash[:]) + "\",\"go_sum_sha256\":\"" + hex.EncodeToString(p.goSumHash[:]) + "\"}\n"
 	if string(body) != want {
-		return errors.New("Go managed project metadata does not match current state")
+		return errors.New("go managed project metadata does not match current state")
 	}
 	return nil
 }
@@ -111,7 +110,7 @@ func beginGoProjectTransaction(plan goProjectPlan, workspace string) (*goProject
 		return nil, err
 	}
 	if err := trustedExistingDirectory(workspace); err != nil {
-		return nil, errors.New("Go private transaction workspace is untrusted")
+		return nil, errors.New("go private transaction workspace is untrusted")
 	}
 	backup, err := os.MkdirTemp(plan.root, ".heliopause-go-commit-")
 	if err != nil {
@@ -145,7 +144,7 @@ func (t *goProjectTransaction) commit() (resultErr error) {
 func (t *goProjectTransaction) fail(cause error) error {
 	rollbackErr := t.rollback()
 	if rollbackErr != nil {
-		return errors.Join(cause, rollbackErr, errors.New("Go transaction rollback is incomplete; project is fail-closed"))
+		return errors.Join(cause, rollbackErr, errors.New("go transaction rollback is incomplete; project is fail-closed"))
 	}
 	if err := os.RemoveAll(t.backup); err != nil {
 		return errors.Join(cause, errors.New("remove rolled back Go transaction; project is fail-closed"))
@@ -199,7 +198,7 @@ func (t *goProjectTransaction) publishMetadata() error {
 		return errors.New("create Go transaction metadata directory")
 	}
 	if err := trustedExistingDirectory(directory); err != nil {
-		return errors.New("Go transaction metadata directory is untrusted")
+		return errors.New("go transaction metadata directory is untrusted")
 	}
 	current, err := freezeGoProject(t.plan.root)
 	if err != nil {
@@ -241,14 +240,4 @@ func (t *goProjectTransaction) rollback() error {
 		result = errors.Join(result, errors.New("sync rolled back Go transaction"))
 	}
 	return result
-}
-
-func hasGoDependencyDirectives(body string) bool {
-	for _, line := range strings.Split(body, "\n") {
-		line = strings.TrimSpace(line)
-		if strings.HasPrefix(line, "require ") || line == "require (" {
-			return true
-		}
-	}
-	return false
 }

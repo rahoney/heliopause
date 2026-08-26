@@ -166,25 +166,6 @@ func validateDistributionURLForSource(rawURL, filename string, profile SourcePro
 	return nil
 }
 
-func profileEndpointNames(profile SourceProfile) []string {
-	set := map[string]bool{profile.indexHost: true}
-	for _, host := range profile.distributionHosts {
-		set[host] = true
-	}
-	if IsPyTorchSource(profile.source) {
-		set[publicPyPIProfile.indexHost] = true
-		for _, host := range publicPyPIProfile.distributionHosts {
-			set[host] = true
-		}
-	}
-	endpoints := make([]string, 0, len(set))
-	for endpoint := range set {
-		endpoints = append(endpoints, endpoint)
-	}
-	sort.Strings(endpoints)
-	return endpoints
-}
-
 func sourceOwnsProject(profile SourceProfile, source domain.SourceID, project string) bool {
 	if IsPyTorchSource(source) {
 		normalized, err := NormalizeProjectName(project)

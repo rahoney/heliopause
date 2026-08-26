@@ -61,7 +61,7 @@ func RequestedVersion(reference domain.ArtifactReference) (string, bool, error) 
 // Resolver metadata uses this helper before it can enter a Domain graph.
 func NormalizeProjectName(value string) (string, error) {
 	if !projectNamePattern.MatchString(value) {
-		return "", errors.New("PyPI project name is invalid")
+		return "", errors.New("invalid PyPI project name is invalid")
 	}
 	return strings.ToLower(separatorPattern.ReplaceAllString(value, "-")), nil
 }
@@ -79,18 +79,14 @@ func IsFinalVersion(value string) bool {
 
 func parsePypiReference(reference domain.ArtifactReference) (string, string, bool, error) {
 	if _, ok := ProfileForSource(reference.Source()); !ok {
-		return "", "", false, errors.New("PyPI project reference is required")
+		return "", "", false, errors.New("invalid PyPI project reference is required")
 	}
 	return parseReferenceForProfile(reference.Locator(), IsPyTorchSource(reference.Source()))
 }
 
-func parseReference(input string) (string, string, bool, error) {
-	return parseReferenceForProfile(input, false)
-}
-
 func parseReferenceForProfile(input string, allowLocal bool) (string, string, bool, error) {
 	if input == "" || input != strings.TrimSpace(input) || strings.Count(input, "@") > 1 || strings.ContainsAny(input, "[]<>~=;\\/:?") || !allowLocal && strings.Contains(input, "+") {
-		return "", "", false, errors.New("PyPI project reference is invalid")
+		return "", "", false, errors.New("invalid PyPI project reference is invalid")
 	}
 	project, version, hasVersion := input, "", false
 	if at := strings.LastIndexByte(input, '@'); at >= 0 {
@@ -116,23 +112,23 @@ func normalizeVersionForProfile(value string, allowLocal bool) (string, error) {
 		return normalizeVersion(value)
 	}
 	if strings.Count(value, "+") != 1 {
-		return "", errors.New("Python local version is invalid")
+		return "", errors.New("python local version is invalid")
 	}
 	parts := strings.SplitN(value, "+", 2)
 	base, err := normalizeVersion(parts[0])
 	if err != nil || parts[1] == "" || !localVersionSuffix.MatchString(parts[1]) {
-		return "", errors.New("PyTorch local version is invalid")
+		return "", errors.New("invalid PyTorch local version is invalid")
 	}
 	return base + "+" + strings.ToLower(parts[1]), nil
 }
 
 func normalizeVersion(value string) (string, error) {
 	if value == "" || value != strings.TrimSpace(value) || strings.Contains(value, "+") {
-		return "", errors.New("PyPI version must be an exact public PEP 440 version")
+		return "", errors.New("invalid PyPI version must be an exact public PEP 440 version")
 	}
 	matches := versionPattern.FindStringSubmatch(value)
 	if matches == nil {
-		return "", errors.New("PyPI version must be an exact public PEP 440 version")
+		return "", errors.New("invalid PyPI version must be an exact public PEP 440 version")
 	}
 	epoch := canonicalNumber(matches[1])
 	releaseParts := strings.Split(matches[2], ".")

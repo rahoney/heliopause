@@ -17,29 +17,29 @@ type terraformProjectPlan struct {
 
 func freezeTerraformProject(root string) (terraformProjectPlan, error) {
 	if !filepath.IsAbs(root) || trustedExistingDirectory(root) != nil {
-		return terraformProjectPlan{}, errors.New("Terraform project root is untrusted")
+		return terraformProjectPlan{}, errors.New("terraform project root is untrusted")
 	}
 	body, err := os.ReadFile(filepath.Join(root, ".terraform.lock.hcl"))
 	if err != nil || len(body) == 0 {
-		return terraformProjectPlan{}, errors.New("Terraform lock file is unavailable")
+		return terraformProjectPlan{}, errors.New("terraform lock file is unavailable")
 	}
 	return terraformProjectPlan{root: root, lockHash: sha256.Sum256(body)}, nil
 }
 func (p terraformProjectPlan) verifyUnchanged() error {
 	current, err := freezeTerraformProject(p.root)
 	if err != nil || current.lockHash != p.lockHash {
-		return errors.New("Terraform lock file changed during transaction")
+		return errors.New("terraform lock file changed during transaction")
 	}
 	return nil
 }
 func (p terraformProjectPlan) verifyManaged() error {
 	body, err := os.ReadFile(filepath.Join(p.root, terraformTransactionMetadata))
 	if err != nil {
-		return errors.New("Terraform project is not HAA-managed")
+		return errors.New("terraform project is not HAA-managed")
 	}
 	want := "{\"lock_sha256\":\"" + hex.EncodeToString(p.lockHash[:]) + "\"}\n"
 	if string(body) != want {
-		return errors.New("Terraform managed metadata does not match current state")
+		return errors.New("terraform managed metadata does not match current state")
 	}
 	return nil
 }
@@ -70,7 +70,7 @@ func beginTerraformProjectTransaction(plan terraformProjectPlan, workspace strin
 		return nil, err
 	}
 	if err := trustedExistingDirectory(workspace); err != nil {
-		return nil, errors.New("Terraform private transaction workspace is untrusted")
+		return nil, errors.New("terraform private transaction workspace is untrusted")
 	}
 	backup, err := os.MkdirTemp(plan.root, ".heliopause-terraform-commit-")
 	if err != nil {
@@ -101,7 +101,7 @@ func (t *terraformProjectTransaction) commit() error {
 }
 func (t *terraformProjectTransaction) fail(cause error) error {
 	if rollbackErr := t.rollback(); rollbackErr != nil {
-		return errors.Join(cause, rollbackErr, errors.New("Terraform transaction rollback is incomplete; project is fail-closed"))
+		return errors.Join(cause, rollbackErr, errors.New("terraform transaction rollback is incomplete; project is fail-closed"))
 	}
 	if err := os.RemoveAll(t.backup); err != nil {
 		return errors.Join(cause, errors.New("remove rolled back Terraform transaction; project is fail-closed"))
@@ -138,7 +138,7 @@ func (t *terraformProjectTransaction) publishMetadata() error {
 		return errors.New("create Terraform transaction metadata directory")
 	}
 	if err := trustedExistingDirectory(directory); err != nil {
-		return errors.New("Terraform transaction metadata directory is untrusted")
+		return errors.New("terraform transaction metadata directory is untrusted")
 	}
 	current, err := freezeTerraformProject(t.plan.root)
 	if err != nil {

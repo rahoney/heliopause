@@ -25,7 +25,7 @@ type GoModuleResolver struct{ runner GoModuleRunner }
 
 func NewGoModuleResolver(runner GoModuleRunner) (*GoModuleResolver, error) {
 	if runner == nil {
-		return nil, errors.New("Go module resolver requires trusted Go runner")
+		return nil, errors.New("go module resolver requires trusted Go runner")
 	}
 	return &GoModuleResolver{runner: runner}, nil
 }
@@ -36,7 +36,7 @@ func (r *GoModuleResolver) ResolveDependencies(ctx context.Context, reference do
 	}
 	project := filepath.Clean(installContext.Target().String())
 	if !filepath.IsAbs(project) || project == "/" {
-		return domain.DependencyResolution{}, errors.New("Go project path is invalid")
+		return domain.DependencyResolution{}, errors.New("go project path is invalid")
 	}
 	if err := artifactgomodule.ValidateResolverEnvironment(artifactgomodule.ResolverEnvironment()); err != nil {
 		return domain.DependencyResolution{}, err
@@ -44,7 +44,7 @@ func (r *GoModuleResolver) ResolveDependencies(ctx context.Context, reference do
 	environment := artifactgomodule.ResolverEnvironment()
 	jsonBody, err := r.runner.RunGo(ctx, project, environment, "mod", "download", "-json", "all")
 	if err != nil {
-		return domain.DependencyResolution{}, errors.New("Go module download failed")
+		return domain.DependencyResolution{}, errors.New("go module download failed")
 	}
 	records, err := artifactgomodule.ParseDownloadJSON(jsonBody)
 	if err != nil {
@@ -52,7 +52,7 @@ func (r *GoModuleResolver) ResolveDependencies(ctx context.Context, reference do
 	}
 	graphBody, err := r.runner.RunGo(ctx, project, environment, "mod", "graph")
 	if err != nil {
-		return domain.DependencyResolution{}, errors.New("Go module graph failed")
+		return domain.DependencyResolution{}, errors.New("go module graph failed")
 	}
 	graph, err := artifactgomodule.BuildLockedGraph(reference, records, graphBody)
 	if err != nil {

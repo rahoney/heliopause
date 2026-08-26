@@ -20,7 +20,7 @@ type CargoResolver struct{ runner CargoRunner }
 
 func NewCargoResolver(runner CargoRunner) (*CargoResolver, error) {
 	if runner == nil {
-		return nil, errors.New("Cargo resolver requires trusted Cargo runner")
+		return nil, errors.New("cargo resolver requires trusted Cargo runner")
 	}
 	return &CargoResolver{runner: runner}, nil
 }
@@ -41,12 +41,12 @@ func (r *CargoResolver) ResolveDependencies(ctx context.Context, reference domai
 	}
 	project := filepath.Clean(installContext.Target().String())
 	if !filepath.IsAbs(project) || project == "/" {
-		return domain.DependencyResolution{}, errors.New("Cargo project path is invalid")
+		return domain.DependencyResolution{}, errors.New("cargo project path is invalid")
 	}
 	environment := CargoResolverEnvironment()
 	body, err := r.runner.RunCargo(ctx, project, environment, "metadata", "--locked", "--format-version", "1")
 	if err != nil {
-		return domain.DependencyResolution{}, errors.New("Cargo metadata resolution failed")
+		return domain.DependencyResolution{}, errors.New("cargo metadata resolution failed")
 	}
 	records, edges, err := artifactcargo.ParseMetadata(body)
 	if err != nil {

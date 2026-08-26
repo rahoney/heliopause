@@ -29,11 +29,11 @@ func RegistryEndpoint() string { return registryEndpoint }
 func ParseReference(value string) (domain.ArtifactReference, error) {
 	parts := strings.Split(value, "@")
 	if len(parts) != 2 {
-		return domain.ArtifactReference{}, errors.New("Terraform Provider reference requires namespace/type@version")
+		return domain.ArtifactReference{}, errors.New("terraform Provider reference requires namespace/type@version")
 	}
 	path := strings.Split(parts[0], "/")
 	if len(path) != 2 || !providerSegment.MatchString(path[0]) || !providerSegment.MatchString(path[1]) || !providerVersion.MatchString(parts[1]) {
-		return domain.ArtifactReference{}, errors.New("Terraform Provider reference is invalid")
+		return domain.ArtifactReference{}, errors.New("terraform Provider reference is invalid")
 	}
 	return domain.NewArtifactReference(providerSource, parts[0]+"@"+parts[1])
 }
@@ -66,11 +66,11 @@ type packageDocument struct {
 
 func ParseVersionResponse(body []byte, requestedVersion string, platform Platform) error {
 	if len(body) == 0 || len(body) > 2<<20 || !providerVersion.MatchString(requestedVersion) || !providerSegment.MatchString(platform.OS) || !providerSegment.MatchString(platform.Arch) {
-		return errors.New("Terraform Provider version request is invalid")
+		return errors.New("terraform Provider version request is invalid")
 	}
 	var document versionDocument
 	if err := json.Unmarshal(body, &document); err != nil {
-		return errors.New("Terraform Registry version response is invalid")
+		return errors.New("terraform Registry version response is invalid")
 	}
 	for _, entry := range document.Versions {
 		if entry.Version != requestedVersion {
@@ -81,9 +81,9 @@ func ParseVersionResponse(body []byte, requestedVersion string, platform Platfor
 				return nil
 			}
 		}
-		return errors.New("Terraform Provider platform is unavailable")
+		return errors.New("terraform Provider platform is unavailable")
 	}
-	return errors.New("Terraform Provider version is unavailable")
+	return errors.New("terraform Provider version is unavailable")
 }
 
 // ProviderArtifact binds the Registry response to an exact source artifact.
@@ -99,11 +99,11 @@ type ProviderArtifact struct {
 // dependency graph used by verification and Promotion.
 func BuildLockedGraph(artifact ProviderArtifact) (domain.LockedDependencyGraph, error) {
 	if artifact.Reference.Source() != providerSource || artifact.DownloadURL == "" || !isSHA256(artifact.SHA256) || len(artifact.SignerKeyIDs) == 0 {
-		return domain.LockedDependencyGraph{}, errors.New("Terraform Provider artifact is incomplete")
+		return domain.LockedDependencyGraph{}, errors.New("terraform Provider artifact is incomplete")
 	}
 	parts := strings.SplitN(artifact.Reference.Locator(), "@", 2)
 	if len(parts) != 2 {
-		return domain.LockedDependencyGraph{}, errors.New("Terraform Provider artifact reference is invalid")
+		return domain.LockedDependencyGraph{}, errors.New("terraform Provider artifact reference is invalid")
 	}
 	name := strings.ReplaceAll(parts[0], "/", "_")
 	identity, err := domain.NewResolvedArtifactIdentity(providerSource, name, parts[1], artifact.Platform.OS+"/"+artifact.Platform.Arch)
@@ -134,33 +134,33 @@ func ParsePackageResponse(reference domain.ArtifactReference, body []byte, platf
 // endpoint policy to the exact host returned by the Registry response.
 func ParsePackageResponseWithAllowedHosts(reference domain.ArtifactReference, body []byte, platform Platform, allowedHosts map[string]bool) (ProviderArtifact, error) {
 	if reference.Source() != providerSource || len(body) == 0 || len(body) > 1<<20 {
-		return ProviderArtifact{}, errors.New("Terraform Provider package request is invalid")
+		return ProviderArtifact{}, errors.New("terraform Provider package request is invalid")
 	}
 	parts := strings.SplitN(reference.Locator(), "@", 2)
 	if len(parts) != 2 {
-		return ProviderArtifact{}, errors.New("Terraform Provider reference is invalid")
+		return ProviderArtifact{}, errors.New("terraform Provider reference is invalid")
 	}
 	var document packageDocument
 	if err := json.Unmarshal(body, &document); err != nil {
-		return ProviderArtifact{}, errors.New("Terraform Registry package response is invalid")
+		return ProviderArtifact{}, errors.New("terraform Registry package response is invalid")
 	}
 	if document.OS != platform.OS || document.Arch != platform.Arch || !providerVersion.MatchString(parts[1]) || document.Filename == "" || !isSHA256(document.Shasum) || document.DownloadURL == "" || document.ShasumsURL == "" || document.ShasumsSignatureURL == "" {
-		return ProviderArtifact{}, errors.New("Terraform Provider package binding is incomplete")
+		return ProviderArtifact{}, errors.New("terraform Provider package binding is incomplete")
 	}
 	if err := trustedURL(document.DownloadURL); err != nil {
-		return ProviderArtifact{}, errors.New("Terraform Provider package endpoint is untrusted")
+		return ProviderArtifact{}, errors.New("terraform Provider package endpoint is untrusted")
 	}
 	if err := trustedURL(document.ShasumsURL); err != nil {
-		return ProviderArtifact{}, errors.New("Terraform Provider package endpoint is untrusted")
+		return ProviderArtifact{}, errors.New("terraform Provider package endpoint is untrusted")
 	}
 	if err := trustedURL(document.ShasumsSignatureURL); err != nil {
-		return ProviderArtifact{}, errors.New("Terraform Provider package endpoint is untrusted")
+		return ProviderArtifact{}, errors.New("terraform Provider package endpoint is untrusted")
 	}
 	download, _ := url.Parse(document.DownloadURL)
 	sums, _ := url.Parse(document.ShasumsURL)
 	signature, _ := url.Parse(document.ShasumsSignatureURL)
 	if download.Hostname() == "registry.terraform.io" || sums.Hostname() != signature.Hostname() || download.Hostname() != sums.Hostname() || !allowedHosts[strings.ToLower(download.Hostname())] {
-		return ProviderArtifact{}, errors.New("Terraform Provider download endpoint identity is invalid")
+		return ProviderArtifact{}, errors.New("terraform Provider download endpoint identity is invalid")
 	}
 	keys := make([]string, 0, len(document.SigningKeys))
 	for _, key := range document.SigningKeys {
@@ -169,14 +169,14 @@ func ParsePackageResponseWithAllowedHosts(reference domain.ArtifactReference, bo
 		}
 	}
 	if len(keys) == 0 {
-		return ProviderArtifact{}, errors.New("Terraform Provider signer identity is missing")
+		return ProviderArtifact{}, errors.New("terraform Provider signer identity is missing")
 	}
 	return ProviderArtifact{Reference: reference, Platform: platform, DownloadURL: document.DownloadURL, SHA256: strings.ToLower(document.Shasum), SignerKeyIDs: keys}, nil
 }
 
 func VerifyLockHash(lockHashes []string, sha256Hex string) error {
 	if !isSHA256(sha256Hex) {
-		return errors.New("Terraform Provider checksum is invalid")
+		return errors.New("terraform Provider checksum is invalid")
 	}
 	for _, value := range lockHashes {
 		// zh is the archive SHA-256 form. h1 is Terraform's directory hash and
@@ -186,13 +186,13 @@ func VerifyLockHash(lockHashes []string, sha256Hex string) error {
 			return nil
 		}
 	}
-	return errors.New("Terraform Provider checksum is absent from lock file")
+	return errors.New("terraform Provider checksum is absent from lock file")
 }
 
 func trustedURL(value string) error {
 	parsed, err := url.Parse(value)
 	if err != nil || parsed.Scheme != "https" || parsed.User != nil || parsed.RawQuery != "" || parsed.Fragment != "" || parsed.Hostname() == "" || parsed.Path == "" {
-		return errors.New("URL is not canonical HTTPS")
+		return errors.New("uRL is not canonical HTTPS")
 	}
 	return nil
 }

@@ -131,40 +131,36 @@ func ParseSimpleProjectForProfile(project string, body []byte, profile SourcePro
 func parseJSONSimpleProject(project string, body []byte, profile SourceProfile) (SimpleProject, error) {
 	project, err := NormalizeProjectName(project)
 	if err != nil {
-		return SimpleProject{}, errors.New("PyPI Simple project is invalid")
+		return SimpleProject{}, errors.New("invalid PyPI Simple project is invalid")
 	}
 	if len(body) == 0 || len(body) > maxSimpleResponseBytes {
-		return SimpleProject{}, errors.New("PyPI Simple response exceeds supported bounds")
+		return SimpleProject{}, errors.New("invalid PyPI Simple response exceeds supported bounds")
 	}
 	var response simpleResponse
 	decoder := json.NewDecoder(bytes.NewReader(body))
 	if err := decoder.Decode(&response); err != nil || ensureSingleJSONValue(decoder) != nil {
-		return SimpleProject{}, errors.New("PyPI Simple response is invalid JSON")
+		return SimpleProject{}, errors.New("invalid PyPI Simple response is invalid JSON")
 	}
 	version := simpleAPIVersion.FindStringSubmatch(response.Meta.APIVersion)
 	if version == nil || version[1] != "1" {
-		return SimpleProject{}, errors.New("PyPI Simple API version is unsupported")
+		return SimpleProject{}, errors.New("invalid PyPI Simple API version is unsupported")
 	}
 	responseProject, err := NormalizeProjectName(response.Name)
 	if err != nil || responseProject != project || len(response.Files) == 0 || len(response.Files) > maxPyPIReportEntries {
-		return SimpleProject{}, errors.New("PyPI Simple project metadata is invalid")
+		return SimpleProject{}, errors.New("invalid PyPI Simple project metadata is invalid")
 	}
 	files := make([]SimpleFile, 0, len(response.Files))
 	seen := make(map[string]bool, len(response.Files))
 	for _, raw := range response.Files {
 		file, err := parseSimpleFileForProfile(raw, profile)
 		if err != nil || seen[file.url] {
-			return SimpleProject{}, errors.New("PyPI Simple file metadata is invalid")
+			return SimpleProject{}, errors.New("invalid PyPI Simple file metadata is invalid")
 		}
 		seen[file.url] = true
 		files = append(files, file)
 	}
 	sort.Slice(files, func(i, j int) bool { return files[i].url < files[j].url })
 	return SimpleProject{project: project, source: profile.source, files: files}, nil
-}
-
-func parseSimpleFile(raw simpleFile) (SimpleFile, error) {
-	return parseSimpleFileForProfile(raw, PublicPyPIProfile())
 }
 
 func parseSimpleFileForProfile(raw simpleFile, profile SourceProfile) (SimpleFile, error) {
@@ -191,19 +187,19 @@ var pytorchAnchorPattern = regexp.MustCompile(`(?is)<a\b[^>]*href\s*=\s*["']([^"
 // normalized report.
 func ParsePyTorchSimpleProject(project string, body []byte, profile SourceProfile) (SimpleProject, error) {
 	if !IsPyTorchSource(profile.source) {
-		return SimpleProject{}, errors.New("PyTorch source profile is required")
+		return SimpleProject{}, errors.New("invalid PyTorch source profile is required")
 	}
 	project, err := NormalizeProjectName(project)
 	if err != nil || len(body) == 0 || len(body) > maxSimpleResponseBytes {
-		return SimpleProject{}, errors.New("PyTorch Simple project is invalid")
+		return SimpleProject{}, errors.New("invalid PyTorch Simple project is invalid")
 	}
 	base, err := url.Parse(profile.indexURL + project + "/")
 	if err != nil {
-		return SimpleProject{}, errors.New("PyTorch index URL is invalid")
+		return SimpleProject{}, errors.New("invalid PyTorch index URL is invalid")
 	}
 	matches := pytorchAnchorPattern.FindAllSubmatch(body, maxPyPIReportEntries+1)
 	if len(matches) == 0 || len(matches) > maxPyPIReportEntries {
-		return SimpleProject{}, errors.New("PyTorch Simple project has no bounded files")
+		return SimpleProject{}, errors.New("invalid PyTorch Simple project has no bounded files")
 	}
 	files := make([]SimpleFile, 0, len(matches))
 	seen := make(map[string]bool, len(matches))
@@ -211,12 +207,12 @@ func ParsePyTorchSimpleProject(project string, body []byte, profile SourceProfil
 		href := html.UnescapeString(string(match[1]))
 		parsed, err := base.Parse(href)
 		if err != nil || parsed.Fragment == "" || !strings.HasPrefix(parsed.Fragment, "sha256=") {
-			return SimpleProject{}, errors.New("PyTorch Simple file hash is missing")
+			return SimpleProject{}, errors.New("invalid PyTorch Simple file hash is missing")
 		}
 		filename := path.Base(parsed.Path)
 		digest := strings.TrimPrefix(parsed.Fragment, "sha256=")
 		if !sha256HexPattern.MatchString(digest) || filename == "." || filename == "/" || seen[parsed.String()] {
-			return SimpleProject{}, errors.New("PyTorch Simple file metadata is invalid")
+			return SimpleProject{}, errors.New("invalid PyTorch Simple file metadata is invalid")
 		}
 		parsed.Fragment = ""
 		if err := validateDistributionURLForSource(parsed.String(), filename, profile, true); err != nil {
@@ -224,7 +220,7 @@ func ParsePyTorchSimpleProject(project string, body []byte, profile SourceProfil
 		}
 		canonicalURL := parsed.String()
 		if seen[canonicalURL] {
-			return SimpleProject{}, errors.New("PyTorch Simple file metadata is ambiguous")
+			return SimpleProject{}, errors.New("invalid PyTorch Simple file metadata is ambiguous")
 		}
 		seen[canonicalURL] = true
 		files = append(files, SimpleFile{filename: filename, url: canonicalURL, sha256: digest, requiresPython: "", size: 1})
@@ -286,7 +282,7 @@ type pipInstall struct {
 func ParseInstallationReport(reference domain.ArtifactReference, body []byte, expectedPip, expectedPython string) (InstallationReport, error) {
 	profile, ok := ProfileForSource(reference.Source())
 	if !ok {
-		return InstallationReport{}, errors.New("Python source profile is invalid")
+		return InstallationReport{}, errors.New("python source profile is invalid")
 	}
 	return ParseInstallationReportForProfile(reference, body, expectedPip, expectedPython, profile)
 }
@@ -296,15 +292,15 @@ func ParseInstallationReport(reference domain.ArtifactReference, body []byte, ex
 // ordinary PyPI projects.
 func ParseInstallationReportForProfile(reference domain.ArtifactReference, body []byte, expectedPip, expectedPython string, profile SourceProfile) (InstallationReport, error) {
 	if reference.Source() != profile.source {
-		return InstallationReport{}, errors.New("Python report source profile mismatch")
+		return InstallationReport{}, errors.New("python report source profile mismatch")
 	}
 	requestedProject, err := RequestedProject(reference)
 	if err != nil {
-		return InstallationReport{}, errors.New("PyPI report reference is invalid")
+		return InstallationReport{}, errors.New("invalid PyPI report reference is invalid")
 	}
 	requestedVersion, versionRequested, err := RequestedVersion(reference)
 	if err != nil {
-		return InstallationReport{}, errors.New("PyPI report reference is invalid")
+		return InstallationReport{}, errors.New("invalid PyPI report reference is invalid")
 	}
 	if len(body) == 0 || len(body) > maxReportBytes {
 		return InstallationReport{}, errors.New("pip installation report exceeds supported bounds")
@@ -376,7 +372,7 @@ func parseReportCandidate(item pipInstall, profile SourceProfile) (Candidate, er
 		return Candidate{}, err
 	}
 	if !sourceOwnsProject(profile, source, project) {
-		return Candidate{}, errors.New("Python candidate source ownership is ambiguous")
+		return Candidate{}, errors.New("python candidate source ownership is ambiguous")
 	}
 	dependencies := make([]string, 0, len(item.Metadata.RequiresDist))
 	seenDependencies := make(map[string]bool, len(item.Metadata.RequiresDist))
@@ -408,12 +404,12 @@ func parseDeclaredDependency(value string) (string, error) {
 // Requires-Python metadata.
 func CrossCheckReport(report InstallationReport, pages []SimpleProject) ([]Candidate, error) {
 	if len(report.candidates) == 0 || len(pages) != len(report.candidates) {
-		return nil, errors.New("PyPI Simple cross-check is incomplete")
+		return nil, errors.New("invalid PyPI Simple cross-check is incomplete")
 	}
 	byProject := make(map[string]SimpleProject, len(pages))
 	for _, page := range pages {
 		if page.project == "" || byProject[page.project].project != "" {
-			return nil, errors.New("PyPI Simple cross-check is ambiguous")
+			return nil, errors.New("invalid PyPI Simple cross-check is ambiguous")
 		}
 		byProject[page.project] = page
 	}
@@ -442,17 +438,17 @@ func matchesSimpleFile(candidate Candidate, files []SimpleFile) bool {
 // metadata; unknown or unreachable requirements remain fail-closed.
 func BuildLockedGraph(reference domain.ArtifactReference, candidates []Candidate) (domain.LockedDependencyGraph, error) {
 	if _, ok := ProfileForSource(reference.Source()); !ok || len(candidates) == 0 || len(candidates) > maxPyPIReportEntries {
-		return domain.LockedDependencyGraph{}, errors.New("PyPI candidate graph is invalid")
+		return domain.LockedDependencyGraph{}, errors.New("invalid PyPI candidate graph is invalid")
 	}
 	nodes := make(map[string]domain.LockedDependency, len(candidates))
 	edgesByProject := make(map[string][]string, len(candidates))
 	for _, candidate := range candidates {
 		if candidate.project == "" || nodes[candidate.project].Node().String() != "" {
-			return domain.LockedDependencyGraph{}, errors.New("PyPI candidate graph is ambiguous")
+			return domain.LockedDependencyGraph{}, errors.New("invalid PyPI candidate graph is ambiguous")
 		}
 		variant, ok := distributionVariant(candidate.filename)
 		if !ok {
-			return domain.LockedDependencyGraph{}, errors.New("PyPI distribution type is unsupported")
+			return domain.LockedDependencyGraph{}, errors.New("invalid PyPI distribution type is unsupported")
 		}
 		nodeID := candidateNodeID(candidate)
 		identity, err := domain.NewResolvedArtifactIdentity(candidate.source, candidate.project, candidate.version, variant)
@@ -510,17 +506,6 @@ func distributionVariant(filename string) (string, bool) {
 	default:
 		return "", false
 	}
-}
-
-func parseDistributionURL(rawURL, filename string, allowHashFragment bool) (*url.URL, error) {
-	parsed, err := url.Parse(rawURL)
-	if err != nil || parsed.Scheme != "https" || !strings.EqualFold(parsed.Host, "files.pythonhosted.org") || parsed.Port() != "" || parsed.User != nil || parsed.RawQuery != "" || parsed.Path == "" || path.Base(parsed.Path) != filename || filename == "." || filename == "/" {
-		return nil, errors.New("PyPI distribution URL is invalid")
-	}
-	if !allowHashFragment && parsed.Fragment != "" {
-		return nil, errors.New("pip distribution URL must not have a fragment")
-	}
-	return parsed, nil
 }
 
 func sameDistributionURL(simpleURL, reportURL string) bool {

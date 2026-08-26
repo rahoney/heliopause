@@ -76,27 +76,27 @@ type metadataEdge struct {
 // registry packages. The root package may be absent from the returned records.
 func ParseMetadata(body []byte) ([]PackageRecord, []byte, error) {
 	if len(body) == 0 || len(body) > maxMetadataBytes {
-		return nil, nil, errors.New("Cargo metadata exceeds bound")
+		return nil, nil, errors.New("cargo metadata exceeds bound")
 	}
 	var document metadataDocument
 	decoder := json.NewDecoder(strings.NewReader(string(body)))
 	if err := decoder.Decode(&document); err != nil || len(document.Packages) == 0 {
-		return nil, nil, errors.New("Cargo metadata is invalid")
+		return nil, nil, errors.New("cargo metadata is invalid")
 	}
 	seen := map[string]bool{}
 	records := make([]PackageRecord, 0, len(document.Packages))
 	for _, packageValue := range document.Packages {
 		if packageValue.ID == "" || !crateNamePattern.MatchString(packageValue.Name) || !crateVersionPattern.MatchString(packageValue.Version) {
-			return nil, nil, errors.New("Cargo metadata contains an unsupported or unverified package")
+			return nil, nil, errors.New("cargo metadata contains an unsupported or unverified package")
 		}
 		if packageValue.Source == nil && packageValue.Checksum == nil {
 			continue // local root package; it is not an acquired registry artifact
 		}
 		if packageValue.Source == nil || *packageValue.Source != registrySourceURL || packageValue.Checksum == nil || !isSHA256(*packageValue.Checksum) {
-			return nil, nil, errors.New("Cargo metadata contains an unsupported or unverified package")
+			return nil, nil, errors.New("cargo metadata contains an unsupported or unverified package")
 		}
 		if seen[packageValue.ID] {
-			return nil, nil, errors.New("Cargo metadata contains duplicate package IDs")
+			return nil, nil, errors.New("cargo metadata contains duplicate package IDs")
 		}
 		seen[packageValue.ID] = true
 		records = append(records, PackageRecord{ID: packageValue.ID, Name: packageValue.Name, Version: packageValue.Version, Checksum: *packageValue.Checksum})
@@ -108,14 +108,14 @@ func ParseMetadata(body []byte) ([]PackageRecord, []byte, error) {
 		}
 		for _, dependency := range node.Deps {
 			if !seen[dependency.Pkg] {
-				return nil, nil, errors.New("Cargo graph references unknown package")
+				return nil, nil, errors.New("cargo graph references unknown package")
 			}
 			edges = append(edges, metadataEdge{From: node.ID, To: dependency.Pkg})
 		}
 	}
 	edgeBytes, err := json.Marshal(edges)
 	if err != nil {
-		return nil, nil, errors.New("Cargo graph normalization failed")
+		return nil, nil, errors.New("cargo graph normalization failed")
 	}
 	sort.Slice(records, func(i, j int) bool { return records[i].ID < records[j].ID })
 	return records, edgeBytes, nil
@@ -124,11 +124,11 @@ func ParseMetadata(body []byte) ([]PackageRecord, []byte, error) {
 // BuildLockedGraph creates the generic exact graph for one requested crate.
 func BuildLockedGraph(reference domain.ArtifactReference, records []PackageRecord, edgeBytes []byte) (domain.LockedDependencyGraph, error) {
 	if reference.Source() != crateSource {
-		return domain.LockedDependencyGraph{}, errors.New("Cargo graph source is invalid")
+		return domain.LockedDependencyGraph{}, errors.New("cargo graph source is invalid")
 	}
 	parts := strings.SplitN(reference.Locator(), "@", 2)
 	if len(parts) != 2 {
-		return domain.LockedDependencyGraph{}, errors.New("Cargo graph reference is invalid")
+		return domain.LockedDependencyGraph{}, errors.New("cargo graph reference is invalid")
 	}
 	byKey := map[string]PackageRecord{}
 	for _, record := range records {
@@ -142,7 +142,7 @@ func BuildLockedGraph(reference domain.ArtifactReference, records []PackageRecor
 	_ = primary
 	var edges []metadataEdge
 	if err := json.Unmarshal(edgeBytes, &edges); err != nil {
-		return domain.LockedDependencyGraph{}, errors.New("Cargo graph edges are invalid")
+		return domain.LockedDependencyGraph{}, errors.New("cargo graph edges are invalid")
 	}
 	byID := map[string]PackageRecord{}
 	for _, record := range records {
@@ -155,7 +155,7 @@ func BuildLockedGraph(reference domain.ArtifactReference, records []PackageRecor
 			from, fromOK := byID[edge.From]
 			to, toOK := byID[edge.To]
 			if !fromOK || !toOK {
-				return domain.LockedDependencyGraph{}, errors.New("Cargo graph edge references unknown package")
+				return domain.LockedDependencyGraph{}, errors.New("cargo graph edge references unknown package")
 			}
 			fromKey, toKey := from.Name+"@"+from.Version, to.Name+"@"+to.Version
 			if selected[fromKey] && !selected[toKey] {
@@ -175,7 +175,7 @@ func BuildLockedGraph(reference domain.ArtifactReference, records []PackageRecor
 		parts := strings.SplitN(key, "@", 2)
 		record, found := byKey[key]
 		if !found || len(parts) != 2 {
-			return domain.LockedDependencyGraph{}, errors.New("Cargo selected package is invalid")
+			return domain.LockedDependencyGraph{}, errors.New("cargo selected package is invalid")
 		}
 		node, err := newNodeID(record.ID)
 		if err != nil {
@@ -209,7 +209,7 @@ func BuildLockedGraph(reference domain.ArtifactReference, records []PackageRecor
 		from, fromOK := byID[edge.From]
 		to, toOK := byID[edge.To]
 		if !fromOK || !toOK {
-			return domain.LockedDependencyGraph{}, errors.New("Cargo graph edge is invalid")
+			return domain.LockedDependencyGraph{}, errors.New("cargo graph edge is invalid")
 		}
 		fromKey, toKey := from.Name+"@"+from.Version, to.Name+"@"+to.Version
 		if !selected[fromKey] || !selected[toKey] {
