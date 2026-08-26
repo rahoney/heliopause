@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/rahoney/heliopause/internal/application"
+	artifactgomodule "github.com/rahoney/heliopause/internal/artifact/gomodule"
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
@@ -49,6 +50,12 @@ func New(stdout, stderr io.Writer) (*cobra.Command, error) {
 }
 
 type ReferenceParser func(string) (domain.ArtifactReference, error)
+
+// GoModuleResolver is the M12 application boundary used by `helox go get`.
+// The CLI only parses user input and renders the bounded resolution summary.
+type GoModuleResolver interface {
+	Resolve(context.Context, domain.ArtifactReference, domain.InstallContext) (domain.DependencyResolution, error)
+}
 
 // Doctor reports bounded installation and Host readiness checks. A false
 // Healthy result is never rendered as a successful diagnosis.
@@ -422,6 +429,44 @@ func AddNPMInstall(root *cobra.Command, installer Installer) error {
 	return errors.New("npm install command is not registered")
 }
 
+// AddGoModuleGet binds exact public module resolution to the static command
+// tree. Project mutation remains a later transaction step and is never implied
+// by a successful graph resolution.
+func AddGoModuleGet(root *cobra.Command, resolver GoModuleResolver) error {
+	if root == nil || resolver == nil {
+		return errors.New("go get command requires a resolution use case")
+	}
+	command := findLeaf(root, "go", "get")
+	if command == nil {
+		return errors.New("go get command is not registered")
+	}
+	command.RunE = func(command *cobra.Command, args []string) error {
+		reference, err := artifactgomodule.ParseReference(args[0])
+		if err != nil {
+			return err
+		}
+		workingDirectory, err := os.Getwd()
+		if err != nil {
+			return errors.New("resolve Go project directory")
+		}
+		target, err := domain.NewInstallTarget(workingDirectory)
+		if err != nil {
+			return errors.New("Go project directory is unsupported")
+		}
+		installContext, err := domain.NewInstallContext(target)
+		if err != nil {
+			return err
+		}
+		resolution, err := resolver.Resolve(contextOrBackground(command.Context()), reference, installContext)
+		if err != nil {
+			return err
+		}
+		_, err = fmt.Fprintf(command.OutOrStdout(), "Source: %s\nModules: %d\nLock digest: %s\n", reference.Source(), len(resolution.Graph().Nodes()), resolution.LockfileDigest())
+		return err
+	}
+	return nil
+}
+
 func initializeCommandTree(root *cobra.Command) {
 	root.AddCommand(&cobra.Command{Use: "doctor", Short: "Check installed release and trusted Host runtime readiness", Args: cobra.NoArgs, RunE: func(*cobra.Command, []string) error { return errors.New("doctor command is not configured") }})
 	npm := ensureNPMCommand(root)
@@ -438,7 +483,7 @@ func initializeCommandTree(root *cobra.Command) {
 	githubInstall := newStaticLeaf("install <owner>/<repo>@<tag>#<asset>", "Install a GitHub Release asset", true)
 	github.AddCommand(githubInstall)
 	goCommand := ensureGoCommand(root)
-	goCommand.AddCommand(newStaticLeaf("get <module>@<version>", "Resolve and transactionally add a public Go Module", false))
+	goCommand.AddCommand(newStaticLeaf("get <module>@<version>", "Resolve an exact public Go Module graph before transaction", false))
 	goCommand.AddCommand(newStaticLeaf("build <package>", "Build a Go project from the HAA-verified module cache", false))
 	goMod := &cobra.Command{Use: "mod", Short: "Resolve public Go Modules with the canonical proxy and SumDB"}
 	goMod.AddCommand(newStaticNoArgLeaf("download", "Resolve the current project's exact Go Module graph"))
