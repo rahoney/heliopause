@@ -53,6 +53,19 @@ func TestResolverEnvironmentRequiresOperationPrivateCache(t *testing.T) {
 	}
 }
 
+func TestBuildEnvironmentDisablesNetworkAndModuleMutation(t *testing.T) {
+	environment, err := BuildEnvironmentForCache("/private/tmp/haa-go-cache")
+	if err != nil {
+		t.Fatal(err)
+	}
+	joined := strings.Join(environment, "\n")
+	for _, required := range []string{"GOPROXY=off", "GOSUMDB=off", "GOFLAGS=-mod=readonly", "GOMODCACHE=/private/tmp/haa-go-cache"} {
+		if !strings.Contains(joined, required) {
+			t.Fatalf("build environment is missing %q: %#v", required, environment)
+		}
+	}
+}
+
 func TestDownloadRecordsRejectDirectVCSAndInvalidChecksum(t *testing.T) {
 	valid := `{"Path":"example.com/mod","Version":"v1.2.3","Info":"/tmp/mod.info","GoMod":"/tmp/mod.mod","Zip":"/tmp/mod.zip","Sum":"` + testH1('a') + `","GoModSum":"` + testH1('b') + `","Origin":null}`
 	records, err := ParseDownloadJSON([]byte(valid + "\n"))

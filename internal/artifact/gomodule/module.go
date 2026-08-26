@@ -105,6 +105,26 @@ func ValidateResolverEnvironmentForCache(environment []string, cache string) err
 	return nil
 }
 
+// BuildEnvironmentForCache is intentionally separate from resolver policy:
+// builds cannot acquire dependencies and must fail if the verified cache is
+// incomplete. The cache path remains infrastructure-selected.
+func BuildEnvironmentForCache(cache string) ([]string, error) {
+	if !filepath.IsAbs(cache) || filepath.Clean(cache) != cache || cache == "/" {
+		return nil, errors.New("go module cache path is invalid")
+	}
+	return []string{
+		"GOPROXY=off",
+		"GOSUMDB=off",
+		"GOPRIVATE=",
+		"GONOPROXY=",
+		"GONOSUMDB=*",
+		"GOVCS=*:off",
+		"GOTOOLCHAIN=local",
+		"GOFLAGS=-mod=readonly",
+		"GOMODCACHE=" + cache,
+	}, nil
+}
+
 // Reference is an exact module path and semantic version request.
 func ParseReference(value string) (domain.ArtifactReference, error) {
 	if strings.Count(value, "@") != 1 {
