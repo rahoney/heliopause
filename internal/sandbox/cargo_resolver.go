@@ -66,6 +66,10 @@ func (r *CargoResolver) ResolveDependencies(ctx context.Context, reference domai
 	if !filepath.IsAbs(project) || project == "/" {
 		return domain.DependencyResolution{}, errors.New("cargo project path is invalid")
 	}
+	manifest, lock, err := readCargoControlFiles(project)
+	if err != nil {
+		return domain.DependencyResolution{}, err
+	}
 	home, err := os.MkdirTemp("", "haa-cargo-home-")
 	if err != nil {
 		return domain.DependencyResolution{}, errors.New("create private Cargo resolver home")
@@ -78,6 +82,10 @@ func (r *CargoResolver) ResolveDependencies(ctx context.Context, reference domai
 	body, err := r.runner.RunCargo(ctx, project, environment, "metadata", "--locked", "--format-version", "1")
 	if err != nil {
 		return domain.DependencyResolution{}, errors.New("cargo metadata resolution failed")
+	}
+	currentManifest, currentLock, currentErr := readCargoControlFiles(project)
+	if currentErr != nil || string(currentManifest) != string(manifest) || string(currentLock) != string(lock) {
+		return domain.DependencyResolution{}, errors.New("cargo project changed during resolution")
 	}
 	records, edges, err := artifactcargo.ParseMetadata(body)
 	if err != nil {
@@ -93,4 +101,16 @@ func (r *CargoResolver) ResolveDependencies(ctx context.Context, reference domai
 		return domain.DependencyResolution{}, err
 	}
 	return domain.NewDependencyResolution(graph, "cargo:crates.io;sparse:index.crates.io;env:"+strings.Join(environment, ";"), digest)
+}
+
+func readCargoControlFiles(project string) ([]byte, []byte, error) {
+	manifest, err := os.ReadFile(filepath.Join(project, "Cargo.toml"))
+	if err != nil || len(manifest) == 0 {
+		return nil, nil, errors.New("cargo manifest is unavailable")
+	}
+	lock, err := os.ReadFile(filepath.Join(project, "Cargo.lock"))
+	if err != nil || len(lock) == 0 {
+		return nil, nil, errors.New("cargo lock file is unavailable")
+	}
+	return manifest, lock, nil
 }

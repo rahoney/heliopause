@@ -2,6 +2,8 @@ package sandbox
 
 import (
 	"context"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -44,7 +46,14 @@ func TestCargoResolverPinsCanonicalSparseRegistry(t *testing.T) {
 		t.Fatal(err)
 	}
 	reference, _ := artifactcargo.ParseReference("serde@1.0.200")
-	target, _ := domain.NewInstallTarget("/workspace/project")
+	project := t.TempDir()
+	if err := os.WriteFile(filepath.Join(project, "Cargo.toml"), []byte("[package]\nname = \"app\"\nversion = \"0.1.0\"\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(project, "Cargo.lock"), []byte("version = 3\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	target, _ := domain.NewInstallTarget(project)
 	install, _ := domain.NewInstallContext(target)
 	resolution, err := resolver.ResolveDependencies(context.Background(), reference, install)
 	if err != nil {
