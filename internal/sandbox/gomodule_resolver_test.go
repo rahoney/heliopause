@@ -103,3 +103,50 @@ func TestGoModuleResolverFreezesWholeProjectWithoutPrimaryArtifact(t *testing.T)
 		}
 	}
 }
+
+func TestGoModuleResolverRejectsProjectControlFileDrift(t *testing.T) {
+	project := t.TempDir()
+	if err := os.WriteFile(filepath.Join(project, "go.mod"), []byte("module example.com/app\n\ngo 1.25\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(project, "go.sum"), []byte("example.com/mod v1.2.3 h1:fixture\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	target, _ := domain.NewInstallTarget(project)
+	install, _ := domain.NewInstallContext(target)
+	resolver, err := NewGoModuleResolver(&goModuleDriftRunner{project: project})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := resolver.ResolveProjectDependencies(context.Background(), install); err == nil || !strings.Contains(err.Error(), "changed during resolution") {
+		t.Fatalf("project drift error = %v", err)
+	}
+}
+
+type goModuleDriftRunner struct {
+	project string
+	calls   int
+}
+
+func (r *goModuleDriftRunner) RunGo(_ context.Context, _ string, environment []string, arguments ...string) ([]byte, error) {
+	cache := ""
+	for _, entry := range environment {
+		if strings.HasPrefix(entry, "GOMODCACHE=") {
+			cache = strings.TrimPrefix(entry, "GOMODCACHE=")
+		}
+	}
+	if err := artifactgomodule.ValidateResolverEnvironmentForCache(environment, cache); err != nil {
+		return nil, err
+	}
+	r.calls++
+	if r.calls == 2 {
+		if err := os.WriteFile(filepath.Join(r.project, "go.sum"), []byte("changed\n"), 0o600); err != nil {
+			return nil, err
+		}
+		return []byte("example.com/mod@v1.2.3 example.com/mod@v1.2.3\n"), nil
+	}
+	h1 := func(value byte) string {
+		return "h1:" + base64.StdEncoding.EncodeToString([]byte(strings.Repeat(string([]byte{value}), 32)))
+	}
+	return []byte(`{"Path":"example.com/mod","Version":"v1.2.3","GoMod":"/tmp/mod.mod","Zip":"/tmp/mod.zip","Sum":"` + h1('a') + `","GoModSum":"` + h1('b') + `","Origin":null}` + "\n"), nil
+}
