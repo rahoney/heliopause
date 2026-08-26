@@ -57,11 +57,39 @@ jobs:
           test "$(jq -er '.event' <<<"$run_json")" = push
           source_sha="$(jq -er '.headSha' <<<"$run_json")"
           test "$source_sha" = "$tag_sha"
+          main_sha="$(gh api "repos/$GH_REPO/branches/main" --jq '.commit.sha')"
+          compare_status="$(gh api "repos/$GH_REPO/compare/$tag_sha...$main_sha" --jq '.status')"
+          case "$compare_status" in
+            ahead|identical) ;;
+            *)
+              echo "release tag commit is not in protected main history" >&2
+              exit 1
+              ;;
+          esac
+          required_count="$(
+            gh api -H "Accept: application/vnd.github+json" \
+              "repos/$GH_REPO/commits/$tag_sha/check-runs?per_page=100" \
+              --jq '[.check_runs[] | select(.name == "Required" and .status == "completed" and .conclusion == "success" and .app.slug == "github-actions")] | length'
+          )"
+          test "$required_count" -ge 1
           artifact_name="helox-${RELEASE_TAG}-${source_sha}"
           candidate="$RUNNER_TEMP/helox-release-candidate"
           mkdir -m 0700 "$candidate"
           gh run download "$SOURCE_RUN_ID" -R "$GH_REPO" -n "$artifact_name" -D "$candidate"
-          test "$(find "$candidate" -mindepth 1 -maxdepth 1 -type f | wc -l)" -eq 10
+          expected_files=(
+            haa_gvisor_observer-linux-amd64
+            haa-network-policy-helper-linux-amd64
+            helox-darwin-amd64
+            helox-darwin-arm64
+            helox-linux-amd64
+            helox-linux-arm64
+            helox-runtime-images.json
+            helox-release-manifest.json
+            helox-release-sbom.cdx.json
+            helox-release-checksums.txt
+          )
+          test -z "$(find "$candidate" -mindepth 1 -maxdepth 1 ! -type f -print -quit)"
+          test -z "$(comm -3 <(printf '%s\n' "${expected_files[@]}" | LC_ALL=C sort) <(find "$candidate" -mindepth 1 -maxdepth 1 -type f -printf '%f\n' | LC_ALL=C sort))"
           test "$(jq -er '.version' "$candidate/helox-release-manifest.json")" = "$RELEASE_TAG"
           test "$(jq -er '.source_commit' "$candidate/helox-release-manifest.json")" = "$source_sha"
           test "$(jq -er '.workflow_run' "$candidate/helox-release-manifest.json")" = "$GITHUB_SERVER_URL/$GH_REPO/actions/runs/$SOURCE_RUN_ID"
@@ -83,14 +111,27 @@ jobs:
           set -euo pipefail
           candidate="$RUNNER_TEMP/helox-release-candidate"
           signer="$GH_REPO/.github/workflows/heliopause-release-build.yml"
-          while IFS= read -r name; do
+          expected_files=(
+            haa_gvisor_observer-linux-amd64
+            haa-network-policy-helper-linux-amd64
+            helox-darwin-amd64
+            helox-darwin-arm64
+            helox-linux-amd64
+            helox-linux-arm64
+            helox-runtime-images.json
+            helox-release-manifest.json
+            helox-release-sbom.cdx.json
+            helox-release-checksums.txt
+          )
+          for name in "${expected_files[@]}"; do
+            test -f "$candidate/$name"
             gh attestation verify "$candidate/$name" \
               -R "$GH_REPO" \
               --signer-workflow "$signer" \
               --source-digest "$(jq -er '.source_commit' "$candidate/helox-release-manifest.json")" \
               --predicate-type 'https://slsa.dev/provenance/v1' \
               --deny-self-hosted-runners
-          done < <(jq -er '.assets[].name' "$candidate/helox-release-manifest.json")
+          done
       - name: Re-run canonical release gate
         run: go run ./scripts/check release-gate
       - name: Refuse an existing release and create a draft
@@ -127,12 +168,63 @@ jobs:
             "$candidate/helox-release-manifest.json" \
             "$candidate/helox-release-sbom.cdx.json" \
             "$candidate/helox-release-checksums.txt"
+      - name: Verify draft release asset bindings before publication
+        run: |
+          set -euo pipefail
+          candidate="$RUNNER_TEMP/helox-release-candidate"
+          expected_files=(
+            haa_gvisor_observer-linux-amd64
+            haa-network-policy-helper-linux-amd64
+            helox-darwin-amd64
+            helox-darwin-arm64
+            helox-linux-amd64
+            helox-linux-arm64
+            helox-runtime-images.json
+            helox-release-manifest.json
+            helox-release-sbom.cdx.json
+            helox-release-checksums.txt
+          )
+          release_json="$(gh api "repos/$GH_REPO/releases/tags/$RELEASE_TAG")"
+          test "$(jq -er '.draft' <<<"$release_json")" = true
+          test "$(jq -er '.tag_name' <<<"$release_json")" = "$RELEASE_TAG"
+          test "$(jq -er '.assets | length' <<<"$release_json")" -eq 10
+          test -z "$(comm -3 <(printf '%s\n' "${expected_files[@]}" | LC_ALL=C sort) <(jq -er '.assets[].name' <<<"$release_json" | LC_ALL=C sort))"
+          for name in "${expected_files[@]}"; do
+            expected_size="$(stat -c '%s' "$candidate/$name")"
+            expected_digest="sha256:$(sha256sum "$candidate/$name" | awk '{print $1}')"
+            asset_json="$(jq -ce --arg name "$name" '.assets[] | select(.name == $name)' <<<"$release_json")"
+            test "$(jq -er '.state' <<<"$asset_json")" = uploaded
+            test "$(jq -er '.size' <<<"$asset_json")" = "$expected_size"
+            test "$(jq -er '.digest' <<<"$asset_json")" = "$expected_digest"
+          done
       - name: Publish and verify immutable release
         run: |
           set -euo pipefail
           candidate="$RUNNER_TEMP/helox-release-candidate"
           gh release edit "$RELEASE_TAG" -R "$GH_REPO" --draft=false
-          gh release verify "$RELEASE_TAG" -R "$GH_REPO"
-          for name in $(jq -er '.assets[].name' "$candidate/helox-release-manifest.json") helox-release-checksums.txt; do
-            gh release verify-asset "$RELEASE_TAG" "$candidate/$name" -R "$GH_REPO"
+          expected_files=(
+            haa_gvisor_observer-linux-amd64
+            haa-network-policy-helper-linux-amd64
+            helox-darwin-amd64
+            helox-darwin-arm64
+            helox-linux-amd64
+            helox-linux-arm64
+            helox-runtime-images.json
+            helox-release-manifest.json
+            helox-release-sbom.cdx.json
+            helox-release-checksums.txt
+          )
+          status=0
+          gh release verify "$RELEASE_TAG" -R "$GH_REPO" || status=1
+          for name in "${expected_files[@]}"; do
+            gh release verify-asset "$RELEASE_TAG" "$candidate/$name" -R "$GH_REPO" || status=1
           done
+          if test "$status" -ne 0; then
+            cat >>"$GITHUB_STEP_SUMMARY" <<'EOF'
+            ## PUBLISHED_BUT_QUARANTINED
+
+            Post-publish verification failed. Do not overwrite, delete, or re-tag this release.
+            Quarantine this version, notify consumers not to use it, investigate the evidence, and publish a corrected new SemVer version.
+            EOF
+            exit 1
+          fi

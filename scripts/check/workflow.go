@@ -291,6 +291,18 @@ func validateReleaseWorkflow(contents string) []string {
 
 func validateReleasePublishWorkflow(contents string) []string {
 	var findings []string
+	expectedFiles := []string{
+		"haa_gvisor_observer-linux-amd64",
+		"haa-network-policy-helper-linux-amd64",
+		"helox-darwin-amd64",
+		"helox-darwin-arm64",
+		"helox-linux-amd64",
+		"helox-linux-arm64",
+		"helox-runtime-images.json",
+		"helox-release-manifest.json",
+		"helox-release-sbom.cdx.json",
+		"helox-release-checksums.txt",
+	}
 	for _, snippet := range []string{
 		"name: Heliopause Verified Release Publish",
 		"  workflow_dispatch:",
@@ -303,8 +315,15 @@ func validateReleasePublishWorkflow(contents string) []string {
 		"go-version: '1.26.7'",
 		"gh run view \"$SOURCE_RUN_ID\" -R \"$GH_REPO\"",
 		"test \"$(jq -er '.workflowName' <<<\"$run_json\")\" = 'Heliopause Release Build'",
+		"repos/$GH_REPO/branches/main",
+		"repos/$GH_REPO/compare/$tag_sha...$main_sha",
+		"repos/$GH_REPO/commits/$tag_sha/check-runs?per_page=100",
+		".name == \"Required\" and .status == \"completed\" and .conclusion == \"success\" and .app.slug == \"github-actions\"",
 		"gh run download \"$SOURCE_RUN_ID\" -R \"$GH_REPO\" -n \"$artifact_name\"",
 		"sha256sum -c helox-release-checksums.txt",
+		"haa_gvisor_observer-linux-amd64",
+		"helox-release-checksums.txt",
+		"test -z \"$(comm -3",
 		"gh attestation verify",
 		"--signer-workflow \"$signer\"",
 		"--source-digest",
@@ -314,13 +333,44 @@ func validateReleasePublishWorkflow(contents string) []string {
 		"gh release create \"$RELEASE_TAG\"",
 		"--verify-tag",
 		"--draft",
+		"Verify draft release asset bindings before publication",
+		".draft",
+		".digest",
 		"gh release edit \"$RELEASE_TAG\" -R \"$GH_REPO\" --draft=false",
 		"gh release verify \"$RELEASE_TAG\" -R \"$GH_REPO\"",
 		"gh release verify-asset \"$RELEASE_TAG\"",
+		"PUBLISHED_BUT_QUARANTINED",
 	} {
 		if !strings.Contains(contents, snippet) {
 			findings = append(findings, fmt.Sprintf("missing required release publication contract %q", snippet))
 		}
+	}
+	for _, section := range []struct {
+		name  string
+		start string
+		end   string
+	}{
+		{"candidate exact set", "Verify candidate identity and download immutable artifact", "Verify manifest asset bindings"},
+		{"candidate provenance", "Verify GitHub artifact provenance", "Re-run canonical release gate"},
+		{"draft asset binding", "Verify draft release asset bindings before publication", "Publish and verify immutable release"},
+	} {
+		start := strings.Index(contents, section.start)
+		end := strings.Index(contents, section.end)
+		if start < 0 || end <= start {
+			findings = append(findings, "release publication "+section.name+" section is unavailable")
+			continue
+		}
+		body := contents[start:end]
+		for _, name := range expectedFiles {
+			if !strings.Contains(body, name) {
+				findings = append(findings, fmt.Sprintf("release publication %s omits %q", section.name, name))
+			}
+		}
+	}
+	draftVerification := strings.Index(contents, "Verify draft release asset bindings before publication")
+	publish := strings.Index(contents, "gh release edit \"$RELEASE_TAG\" -R \"$GH_REPO\" --draft=false")
+	if draftVerification < 0 || publish < 0 || draftVerification > publish {
+		findings = append(findings, "draft asset verification does not precede public release transition")
 	}
 	for _, token := range []string{
 		"push:", "pull_request:", "pull_request_target:", "schedule:", "workflow_run:",
