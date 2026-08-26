@@ -67,3 +67,7 @@ func (p *GoProjectPromotion) PromoteGet(ctx context.Context, reference domain.Ar
 	}
 	return transaction.commit()
 }
+
+func (p *GoProjectPromotion) PromoteProjectDependency(ctx context.Context, reference domain.ArtifactReference, installContext domain.InstallContext) error {
+	return p.PromoteGet(ctx, reference, installContext)
+}

@@ -14,6 +14,34 @@ import (
 // isolated, source-pinned dependency resolver.
 type GoModuleResolutionService struct{ resolver ports.DependencyResolver }
 
+// GoModuleGetService composes immutable resolution with the separate project
+// mutation port. Promotion is unreachable when resolution fails.
+type GoModuleGetService struct {
+	resolver ports.DependencyResolver
+	promoter ports.ProjectDependencyPromoter
+}
+
+func NewGoModuleGetService(resolver ports.DependencyResolver, promoter ports.ProjectDependencyPromoter) (*GoModuleGetService, error) {
+	if resolver == nil || promoter == nil {
+		return nil, errors.New("go get service requires resolver and project promoter")
+	}
+	return &GoModuleGetService{resolver: resolver, promoter: promoter}, nil
+}
+
+func (s *GoModuleGetService) Get(ctx context.Context, reference domain.ArtifactReference, installContext domain.InstallContext) (domain.DependencyResolution, error) {
+	if s == nil || s.resolver == nil || s.promoter == nil || ctx == nil || reference.Source().String() != "go-proxy" || !installContext.Valid() {
+		return domain.DependencyResolution{}, errors.New("valid Go get request is required")
+	}
+	resolution, err := s.resolver.ResolveDependencies(ctx, reference, installContext)
+	if err != nil {
+		return domain.DependencyResolution{}, fmt.Errorf("resolve exact Go module graph: %w", err)
+	}
+	if err := s.promoter.PromoteProjectDependency(ctx, reference, installContext); err != nil {
+		return domain.DependencyResolution{}, fmt.Errorf("promote exact Go module graph: %w", err)
+	}
+	return resolution, nil
+}
+
 // GoModuleProjectResolutionService is the application boundary for commands
 // that operate on the complete current project rather than one requested
 // module.

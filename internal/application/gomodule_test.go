@@ -39,6 +39,23 @@ func TestGoModuleProjectResolutionRejectsInvalidSnapshot(t *testing.T) {
 	}
 }
 
+func TestGoModuleGetDoesNotPromoteWhenResolutionFails(t *testing.T) {
+	reference, _ := artifactgomodule.ParseReference("example.com/module@v1.2.3")
+	target, _ := domain.NewInstallTarget("/tmp/haa-go-project")
+	installContext, _ := domain.NewInstallContext(target)
+	promoter := &goModulePromoterFixture{}
+	service, err := application.NewGoModuleGetService(&goModuleResolverFixture{}, promoter)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := service.Get(context.Background(), reference, installContext); err == nil || !errors.Is(err, errGoModuleResolver) {
+		t.Fatalf("Get error = %v", err)
+	}
+	if promoter.called {
+		t.Fatal("Go project promotion ran after failed resolution")
+	}
+}
+
 var errGoModuleResolver = errors.New("resolver failed")
 
 type goModuleResolverFixture struct{}
@@ -51,4 +68,11 @@ type goModuleProjectResolverFixture struct{}
 
 func (goModuleProjectResolverFixture) ResolveProjectDependencies(context.Context, domain.InstallContext) (domain.ProjectDependencySnapshot, error) {
 	return domain.ProjectDependencySnapshot{}, nil
+}
+
+type goModulePromoterFixture struct{ called bool }
+
+func (p *goModulePromoterFixture) PromoteProjectDependency(context.Context, domain.ArtifactReference, domain.InstallContext) error {
+	p.called = true
+	return nil
 }

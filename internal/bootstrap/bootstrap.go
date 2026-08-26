@@ -81,7 +81,11 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if resolverErr != nil {
 			return resolverErr
 		}
-		service, serviceErr := application.NewGoModuleResolutionService(resolver)
+		promoter, promoterErr := promotion.NewGoProjectPromotion(trustedExecutor)
+		if promoterErr != nil {
+			return promoterErr
+		}
+		service, serviceErr := application.NewGoModuleGetService(resolver, promoter)
 		if serviceErr != nil {
 			return serviceErr
 		}

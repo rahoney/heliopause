@@ -54,7 +54,7 @@ type ReferenceParser func(string) (domain.ArtifactReference, error)
 // GoModuleResolver is the M12 application boundary used by `helox go get`.
 // The CLI only parses user input and renders the bounded resolution summary.
 type GoModuleResolver interface {
-	Resolve(context.Context, domain.ArtifactReference, domain.InstallContext) (domain.DependencyResolution, error)
+	Get(context.Context, domain.ArtifactReference, domain.InstallContext) (domain.DependencyResolution, error)
 }
 
 // GoModuleProjectResolver resolves a complete current-project snapshot for
@@ -463,7 +463,7 @@ func AddGoModuleGet(root *cobra.Command, resolver GoModuleResolver) error {
 		if err != nil {
 			return err
 		}
-		resolution, err := resolver.Resolve(contextOrBackground(command.Context()), reference, installContext)
+		resolution, err := resolver.Get(contextOrBackground(command.Context()), reference, installContext)
 		if err != nil {
 			return err
 		}
