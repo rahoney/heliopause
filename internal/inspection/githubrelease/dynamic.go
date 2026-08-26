@@ -46,8 +46,16 @@ func (i *DynamicInspector) Inspect(ctx context.Context, artifact domain.Acquired
 		}
 	}
 	check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+	summary, err := result.ObservationSummary()
+	if err != nil {
+		incomplete, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionIncomplete, "M11_DYNAMIC_SUMMARY_INVALID")
+		return domain.NewInspectionReport(incomplete, nil, nil)
+	}
 	evidenceID, _ := domain.NewEvidenceID("github-release-elf-dynamic-result")
-	evidence, _ := domain.NewEvidence(evidenceID, checkID, artifact.Identity(), artifact.Digest(), "github-release-elf-dynamic", "GitHub Release ELF dynamic inspection completed.")
+	evidence, err := domain.NewEvidence(evidenceID, checkID, artifact.Identity(), artifact.Digest(), "github-release-elf-dynamic", summary)
+	if err != nil {
+		return domain.InspectionReport{}, err
+	}
 	findings := []domain.Finding{}
 	seen := map[string]bool{}
 	for _, observation := range result.Observations() {

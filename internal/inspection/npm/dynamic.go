@@ -68,11 +68,19 @@ func normalizeDynamicResult(artifact domain.AcquiredArtifact, result domain.Sand
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
+	summary, err := result.ObservationSummary()
+	if err != nil {
+		incomplete, checkErr := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionIncomplete, "M11_DYNAMIC_SUMMARY_INVALID")
+		if checkErr != nil {
+			return domain.InspectionReport{}, checkErr
+		}
+		return domain.NewInspectionReport(incomplete, nil, nil)
+	}
 	evidenceID, err := domain.NewEvidenceID("npm-dynamic-lifecycle-result")
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
-	evidence, err := domain.NewEvidence(evidenceID, checkID, artifact.Identity(), artifact.Digest(), "npm-dynamic-lifecycle", "npm dynamic lifecycle inspection completed.")
+	evidence, err := domain.NewEvidence(evidenceID, checkID, artifact.Identity(), artifact.Digest(), "npm-dynamic-lifecycle", summary)
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}

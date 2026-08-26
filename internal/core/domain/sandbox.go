@@ -2,8 +2,15 @@ package domain
 
 import (
 	"crypto/rand"
+	"encoding/json"
 	"errors"
 	"fmt"
+)
+
+const (
+	observationSummarySchema                = "m11-004"
+	maximumObservationSummaryUniqueSubjects = 32
+	maximumObservationSummaryCount          = 10000
 )
 
 // SandboxSessionID identifies one ephemeral dynamic-inspection session.
@@ -121,4 +128,57 @@ func (r SandboxResult) Status() SandboxStatus          { return r.status }
 func (r SandboxResult) LimitationCode() (string, bool) { return r.limitation, r.limitation != "" }
 func (r SandboxResult) Observations() []SandboxObservation {
 	return append([]SandboxObservation(nil), r.observed...)
+}
+
+// ObservationSummary returns the bounded, normalized representation retained by
+// Evidence. It never includes raw runtime payloads, paths, arguments or IDs.
+func (r SandboxResult) ObservationSummary() (string, error) {
+	if r.sessionID.value == "" {
+		return "", errors.New("observation summary requires a Sandbox Session")
+	}
+	if r.status != SandboxCompleted && r.status != SandboxIncomplete {
+		return "", errors.New("observation summary status is invalid")
+	}
+	counts := make(map[string]uint64)
+	var total uint64
+	for _, observation := range r.observed {
+		key := string(observation.category) + ":" + observation.subject
+		if _, exists := counts[key]; !exists {
+			if len(counts) >= maximumObservationSummaryUniqueSubjects {
+				return "", errors.New("observation summary unique-subject bound exceeded")
+			}
+			counts[key] = 0
+		}
+		if counts[key] < maximumObservationSummaryCount {
+			counts[key]++
+		}
+		if total < maximumObservationSummaryCount {
+			total++
+		}
+	}
+	value := struct {
+		Schema         string            `json:"schema"`
+		Session        string            `json:"session"`
+		Status         SandboxStatus     `json:"status"`
+		Limitation     string            `json:"limitation,omitempty"`
+		UniqueSubjects int               `json:"unique_subjects"`
+		Total          uint64            `json:"total"`
+		Counts         map[string]uint64 `json:"counts"`
+	}{
+		Schema:         observationSummarySchema,
+		Session:        r.sessionID.String(),
+		Status:         r.status,
+		Limitation:     r.limitation,
+		UniqueSubjects: len(counts),
+		Total:          total,
+		Counts:         counts,
+	}
+	encoded, err := json.Marshal(value)
+	if err != nil {
+		return "", fmt.Errorf("encode observation summary: %w", err)
+	}
+	if len(encoded) > maxEvidenceSummaryLength {
+		return "", errors.New("observation summary byte bound exceeded")
+	}
+	return string(encoded), nil
 }

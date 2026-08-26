@@ -97,6 +97,41 @@ func (s *Store) Record(ctx context.Context, runID domain.RunID, evidence []domai
 	return references, nil
 }
 
+// DeleteRun removes one committed Evidence Run as an explicit retention action.
+// It refuses symlinks, non-directories and paths outside the configured root.
+func (s *Store) DeleteRun(ctx context.Context, runID domain.RunID) error {
+	if ctx == nil {
+		return errors.New("context is required")
+	}
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	if s == nil || s.root == "" || runID.String() == "" {
+		return errors.New("evidence retention requires root and Run ID")
+	}
+	runDirectory := filepath.Join(s.root, runID.String())
+	if filepath.Dir(runDirectory) != s.root {
+		return errors.New("evidence retention path escapes root")
+	}
+	info, err := os.Lstat(runDirectory)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("inspect Evidence Run for deletion: %w", err)
+	}
+	if info.Mode()&os.ModeSymlink != 0 || !info.IsDir() {
+		return errors.New("evidence retention target is not a trusted Run directory")
+	}
+	if err := os.RemoveAll(runDirectory); err != nil {
+		return fmt.Errorf("remove Evidence Run: %w", err)
+	}
+	if err := syncDirectory(s.root); err != nil {
+		return fmt.Errorf("sync Evidence root after deletion: %w", err)
+	}
+	return nil
+}
+
 func (s *Store) write(directory string, runID domain.RunID, evidence domain.Evidence) error {
 	payload := record{EvidenceID: evidence.ID().String(), RunID: runID.String(), CheckID: evidence.CheckID().String(), Kind: evidence.Kind(), Summary: evidence.Summary(), SourceID: evidence.Identity().Source().String(), Name: evidence.Identity().Name(), Version: evidence.Identity().Version(), Variant: evidence.Identity().Variant(), SHA256: evidence.Digest().String()}
 	canonical, err := json.Marshal(payload)

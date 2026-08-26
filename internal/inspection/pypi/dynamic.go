@@ -57,11 +57,15 @@ func (i *DynamicInspector) InspectWheel(ctx context.Context, artifact domain.Acq
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
+	summary, err := result.ObservationSummary()
+	if err != nil {
+		return incompleteReport(checkID, "M11_DYNAMIC_SUMMARY_INVALID")
+	}
 	evidenceID, err := domain.NewEvidenceID("pypi-dynamic-import-result")
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
-	evidence, err := domain.NewEvidence(evidenceID, checkID, artifact.Identity(), artifact.Digest(), "pypi-dynamic-import", "PyPI wheel declared import inspection completed.")
+	evidence, err := domain.NewEvidence(evidenceID, checkID, artifact.Identity(), artifact.Digest(), "pypi-dynamic-import", summary)
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}

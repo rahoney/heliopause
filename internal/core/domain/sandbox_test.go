@@ -1,6 +1,7 @@
 package domain_test
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -31,6 +32,51 @@ func TestSandboxResultSeparatesRawObservationFromVerdict(t *testing.T) {
 	if _, err := domain.NewSandboxResult(sessionID, domain.SandboxCompleted, "M3_TIMEOUT", nil); err == nil {
 		t.Fatal("completed Sandbox result accepted with limitation")
 	}
+}
+
+func TestSandboxObservationSummaryIsBoundedAndDoesNotRetainPayloads(t *testing.T) {
+	t.Parallel()
+	sessionID, err := domain.ParseSandboxSessionID("sbx_aaaaaaaaaaaaaaaaaaaaaaaaaa")
+	if err != nil {
+		t.Fatal(err)
+	}
+	observations := []domain.SandboxObservation{
+		mustObservation(t, domain.ObservationProcess, "process-exec-expected"),
+		mustObservation(t, domain.ObservationProcess, "process-exec-expected"),
+		mustObservation(t, domain.ObservationHoneytoken, "honeytoken-access"),
+	}
+	result, err := domain.NewSandboxResult(sessionID, domain.SandboxCompleted, "", observations)
+	if err != nil {
+		t.Fatal(err)
+	}
+	summary, err := result.ObservationSummary()
+	if err != nil || !strings.Contains(summary, `"schema":"m11-004"`) || !strings.Contains(summary, `"total":3`) {
+		t.Fatalf("summary = %q, err = %v", summary, err)
+	}
+	if strings.Contains(summary, "/") || strings.Contains(summary, "argv") || strings.Contains(summary, "pathname") {
+		t.Fatalf("summary retained an unnormalized payload: %q", summary)
+	}
+
+	tooMany := make([]domain.SandboxObservation, 0, 33)
+	for index := 0; index < 33; index++ {
+		tooMany = append(tooMany, mustObservation(t, domain.ObservationProcess, fmt.Sprintf("subject-%02d", index)))
+	}
+	result, err = domain.NewSandboxResult(sessionID, domain.SandboxCompleted, "", tooMany)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := result.ObservationSummary(); err == nil {
+		t.Fatal("summary accepted more than the unique-subject bound")
+	}
+}
+
+func mustObservation(t *testing.T, category domain.ObservationCategory, subject string) domain.SandboxObservation {
+	t.Helper()
+	observation, err := domain.NewSandboxObservation(category, subject)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return observation
 }
 
 func TestSandboxRequestRequiresAcquiredContent(t *testing.T) {

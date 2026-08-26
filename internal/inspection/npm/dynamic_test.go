@@ -25,12 +25,36 @@ func TestDynamicInspectorNormalizesOnlyBoundedM3Findings(t *testing.T) {
 	if report.Execution().Status() != domain.ExecutionCompleted || len(report.Evidence()) != 1 {
 		t.Fatalf("report = %#v", report)
 	}
+	if summary := report.Evidence()[0].Summary(); !strings.Contains(summary, `"schema":"m11-004"`) || !strings.Contains(summary, `"total":3`) {
+		t.Fatalf("Evidence summary = %q", summary)
+	}
 	got := []string{}
 	for _, finding := range report.Findings() {
 		got = append(got, finding.Code())
 	}
 	if strings.Join(got, ",") != "M3_HONEYTOKEN_ACCESS,M3_NETWORK_ATTEMPT,M3_UNEXPECTED_PROCESS" {
 		t.Fatalf("findings = %q", got)
+	}
+}
+
+func TestDynamicInspectorFailsClosedOnSummaryOverflow(t *testing.T) {
+	observations := make([]domain.SandboxObservation, 0, 33)
+	for index := 0; index < 33; index++ {
+		observations = append(observations, observation(t, domain.ObservationProcess, "subject-"+strings.Repeat("a", index+1)))
+	}
+	inspector, err := NewDynamicInspector(fakeSandbox{result: sandboxResult(t, domain.SandboxCompleted, "", observations)})
+	if err != nil {
+		t.Fatal(err)
+	}
+	report, err := inspector.Inspect(context.Background(), dynamicArtifact(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if report.Execution().Status() != domain.ExecutionIncomplete || len(report.Evidence()) != 0 {
+		t.Fatalf("summary overflow was not fail-closed: %#v", report)
+	}
+	if code, _ := report.Execution().LimitationCode(); code != "M11_DYNAMIC_SUMMARY_INVALID" {
+		t.Fatalf("limitation = %q", code)
 	}
 }
 
