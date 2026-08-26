@@ -68,6 +68,32 @@ func (e *Executor) RunGo(ctx context.Context, directory string, environment []st
 	return command.Output()
 }
 
+// RunCargo executes the verified absolute Cargo binary with a caller-supplied
+// canonical registry environment. It never inherits Cargo config or proxies.
+func (e *Executor) RunCargo(ctx context.Context, directory string, environment []string, arguments ...string) ([]byte, error) {
+	if e == nil || !filepath.IsAbs(directory) || filepath.Clean(directory) != directory || verifyNoSymlinkPath(directory, false) != nil {
+		return nil, errors.New("trusted Cargo working directory is unavailable")
+	}
+	if _, err := os.Stat(directory); err != nil {
+		return nil, errors.New("trusted Cargo working directory is unavailable")
+	}
+	if _, err := e.tool("cargo"); err != nil {
+		for _, candidate := range []string{"/usr/local/bin/cargo", "/usr/bin/cargo", "/bin/cargo"} {
+			if verified, verifyErr := verifySystemExecutable(candidate); verifyErr == nil {
+				e.tools["cargo"] = verified
+				break
+			}
+		}
+	}
+	command, err := e.command(ctx, "cargo", arguments...)
+	if err != nil {
+		return nil, err
+	}
+	command.Dir = directory
+	command.Env = append(minimalEnvironment(e.clientHome), append([]string(nil), environment...)...)
+	return command.Output()
+}
+
 type identity struct {
 	path          string
 	info          os.FileInfo

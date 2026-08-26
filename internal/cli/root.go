@@ -443,6 +443,11 @@ func initializeCommandTree(root *cobra.Command) {
 	goMod := &cobra.Command{Use: "mod", Short: "Resolve public Go Modules with the canonical proxy and SumDB"}
 	goMod.AddCommand(newStaticNoArgLeaf("download", "Resolve the current project's exact Go Module graph"))
 	goCommand.AddCommand(goMod)
+	cargo := ensureCargoCommand(root)
+	cargo.AddCommand(newStaticLeaf("add <crate>@<version>", "Resolve and transactionally add a public crates.io crate", false))
+	cargo.AddCommand(newStaticNoArgLeaf("build", "Build a Cargo project from the HAA-verified crate cache"))
+	terraform := ensureTerraformCommand(root)
+	terraform.AddCommand(newStaticNoArgLeaf("init", "Install exact public Terraform Providers"))
 }
 
 func pythonSourceHelp() string {
@@ -553,6 +558,28 @@ func ensureGoCommand(root *cobra.Command) *cobra.Command {
 		}
 	}
 	command := &cobra.Command{Use: "go", Short: "Inspect and build public Go Modules"}
+	root.AddCommand(command)
+	return command
+}
+
+func ensureCargoCommand(root *cobra.Command) *cobra.Command {
+	for _, command := range root.Commands() {
+		if command.Name() == "cargo" {
+			return command
+		}
+	}
+	command := &cobra.Command{Use: "cargo", Short: "Inspect and build public crates.io packages"}
+	root.AddCommand(command)
+	return command
+}
+
+func ensureTerraformCommand(root *cobra.Command) *cobra.Command {
+	for _, command := range root.Commands() {
+		if command.Name() == "terraform" {
+			return command
+		}
+	}
+	command := &cobra.Command{Use: "terraform", Short: "Install public Terraform Providers"}
 	root.AddCommand(command)
 	return command
 }
