@@ -45,6 +45,19 @@ func CargoResolverEnvironmentForHome(home string) ([]string, error) {
 	return environment, nil
 }
 
+func ValidateCargoResolverEnvironment(environment []string, home string) error {
+	expected, err := CargoResolverEnvironmentForHome(home)
+	if err != nil || len(environment) != len(expected) {
+		return errors.New("cargo resolver environment is not canonical")
+	}
+	for index := range expected {
+		if environment[index] != expected[index] {
+			return errors.New("cargo resolver environment is not canonical")
+		}
+	}
+	return nil
+}
+
 func (r *CargoResolver) ResolveDependencies(ctx context.Context, reference domain.ArtifactReference, installContext domain.InstallContext) (domain.DependencyResolution, error) {
 	if r == nil || r.runner == nil || ctx == nil || reference.Source() != artifactcargo.Source() || !installContext.Valid() {
 		return domain.DependencyResolution{}, errors.New("valid Cargo resolver request is required")

@@ -18,12 +18,23 @@ func (r *cargoRunnerFixture) RunCargo(_ context.Context, _ string, environment [
 			home = strings.TrimPrefix(entry, "CARGO_HOME=")
 		}
 	}
-	expected, err := CargoResolverEnvironmentForHome(home)
-	if err != nil || strings.Join(environment, "\n") != strings.Join(expected, "\n") {
+	if err := ValidateCargoResolverEnvironment(environment, home); err != nil {
 		return nil, context.Canceled
 	}
 	r.calls = append(r.calls, strings.Join(arguments, " "))
 	return []byte(`{"packages":[{"id":"registry+https://github.com/rust-lang/crates.io-index#serde@1.0.200","name":"serde","version":"1.0.200","source":"registry+https://github.com/rust-lang/crates.io-index","checksum":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}],"resolve":{"nodes":[{"id":"registry+https://github.com/rust-lang/crates.io-index#serde@1.0.200","deps":[]}]}}`), nil
+}
+
+func TestCargoResolverEnvironmentRejectsRegistrySubstitution(t *testing.T) {
+	environment, err := CargoResolverEnvironmentForHome("/private/tmp/haa-cargo-home")
+	if err != nil || ValidateCargoResolverEnvironment(environment, "/private/tmp/haa-cargo-home") != nil {
+		t.Fatalf("environment = %#v, error = %v", environment, err)
+	}
+	unsafe := append([]string(nil), environment...)
+	unsafe[len(unsafe)-1] = "CARGO_REGISTRIES_CRATES_IO_INDEX=https://evil.example/"
+	if err := ValidateCargoResolverEnvironment(unsafe, "/private/tmp/haa-cargo-home"); err == nil {
+		t.Fatal("accepted substituted Cargo registry")
+	}
 }
 
 func TestCargoResolverPinsCanonicalSparseRegistry(t *testing.T) {
