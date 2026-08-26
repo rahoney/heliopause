@@ -19,29 +19,42 @@ const maximumPackageResponseBytes = 1 << 20
 
 // Resolver reads only the fixed public Terraform Registry package endpoint.
 // It neither follows user-supplied registry URLs nor inherits proxy settings.
-type Resolver struct{ client *http.Client }
+type Resolver struct {
+	client   *http.Client
+	endpoint *url.URL
+	platform Platform
+}
 
 func NewPublicResolver() (*Resolver, error) {
 	endpoint, err := url.Parse(registryEndpoint)
 	if err != nil || endpoint.Scheme != "https" || endpoint.Hostname() != "registry.terraform.io" {
 		return nil, errors.New("terraform Registry endpoint is invalid")
 	}
-	return &Resolver{client: &http.Client{Timeout: 15 * time.Second, Transport: &http.Transport{
+	return newResolver(endpoint, &http.Client{Timeout: 15 * time.Second, Transport: &http.Transport{
 		Proxy: nil, ForceAttemptHTTP2: true, MaxIdleConns: 2, MaxIdleConnsPerHost: 2,
 		IdleConnTimeout: 30 * time.Second, TLSHandshakeTimeout: 5 * time.Second, ResponseHeaderTimeout: 10 * time.Second,
-	}}}, nil
+	}})
+}
+
+func newResolver(endpoint *url.URL, client *http.Client) (*Resolver, error) {
+	if endpoint == nil || client == nil || endpoint.User != nil || endpoint.RawQuery != "" || endpoint.Fragment != "" || (endpoint.Path != "" && endpoint.Path != "/") {
+		return nil, errors.New("terraform Registry resolver configuration is invalid")
+	}
+	copyEndpoint := *endpoint
+	return &Resolver{client: client, endpoint: &copyEndpoint, platform: Platform{OS: "linux", Arch: "amd64"}}, nil
 }
 
 func (r *Resolver) ResolveDependencies(ctx context.Context, reference domain.ArtifactReference, _ domain.InstallContext) (domain.DependencyResolution, error) {
-	if r == nil || r.client == nil || ctx == nil || reference.Source() != providerSource || runtime.GOOS != "linux" || runtime.GOARCH != "amd64" {
+	if r == nil || r.client == nil || r.endpoint == nil || ctx == nil || reference.Source() != providerSource || runtime.GOOS != "linux" || runtime.GOARCH != "amd64" {
 		return domain.DependencyResolution{}, errors.New("valid Terraform Provider resolver request is required")
 	}
 	parts := strings.SplitN(reference.Locator(), "@", 2)
 	if len(parts) != 2 {
 		return domain.DependencyResolution{}, errors.New("terraform Provider reference is invalid")
 	}
-	endpoint := registryEndpoint + "/v1/providers/" + parts[0] + "/" + parts[1] + "/download/linux/amd64"
-	request, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	endpoint := *r.endpoint
+	endpoint.Path = "/v1/providers/" + parts[0] + "/" + parts[1] + "/download/" + r.platform.OS + "/" + r.platform.Arch
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint.String(), nil)
 	if err != nil {
 		return domain.DependencyResolution{}, errors.New("create terraform Registry request")
 	}
@@ -57,7 +70,7 @@ func (r *Resolver) ResolveDependencies(ctx context.Context, reference domain.Art
 	if err != nil || len(body) == 0 || len(body) > maximumPackageResponseBytes {
 		return domain.DependencyResolution{}, errors.New("read terraform Registry package response")
 	}
-	artifact, err := ParsePackageResponse(reference, body, Platform{OS: "linux", Arch: "amd64"})
+	artifact, err := ParsePackageResponse(reference, body, r.platform)
 	if err != nil {
 		return domain.DependencyResolution{}, err
 	}

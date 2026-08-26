@@ -1,6 +1,20 @@
 package terraformprovider
 
-import "testing"
+import (
+	"net/http"
+	"net/url"
+	"testing"
+)
+
+func TestResolverRejectsNonCanonicalEndpoint(t *testing.T) {
+	client := &http.Client{}
+	for _, raw := range []string{"https://registry.terraform.io/path", "https://user@registry.terraform.io"} {
+		endpoint, _ := url.Parse(raw)
+		if _, err := newResolver(endpoint, client); err == nil {
+			t.Fatalf("accepted resolver endpoint %q", raw)
+		}
+	}
+}
 
 func TestProviderReferenceAndPackageBinding(t *testing.T) {
 	reference, err := ParseReference("hashicorp/aws@5.50.0")
