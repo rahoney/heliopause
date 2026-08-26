@@ -100,6 +100,22 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 			return err
 		}
 	}
+	if len(args) > 0 && args[0] == "cargo" {
+		if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" {
+			return errors.New("automatic Cargo resolution requires Linux amd64")
+		}
+		resolver, resolverErr := sandbox.NewCargoResolver(trustedExecutor)
+		if resolverErr != nil {
+			return resolverErr
+		}
+		service, serviceErr := application.NewCargoResolutionService(resolver)
+		if serviceErr != nil {
+			return serviceErr
+		}
+		if err := cli.AddCargoAdd(command, service); err != nil {
+			return err
+		}
+	}
 	if len(args) > 0 && args[0] == "npm" {
 		cacheRoot, err := os.UserCacheDir()
 		if err != nil {

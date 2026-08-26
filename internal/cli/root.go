@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/rahoney/heliopause/internal/application"
+	artifactcargo "github.com/rahoney/heliopause/internal/artifact/cargo"
 	artifactgomodule "github.com/rahoney/heliopause/internal/artifact/gomodule"
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
@@ -61,6 +62,10 @@ type GoModuleResolver interface {
 // commands that do not name one primary module.
 type GoModuleProjectResolver interface {
 	Resolve(context.Context, domain.InstallContext) (domain.ProjectDependencySnapshot, error)
+}
+
+type CargoResolver interface {
+	Resolve(context.Context, domain.ArtifactReference, domain.InstallContext) (domain.DependencyResolution, error)
 }
 
 // Doctor reports bounded installation and Host readiness checks. A false
@@ -495,6 +500,41 @@ func AddGoModuleDownload(root *cobra.Command, resolver GoModuleProjectResolver) 
 			return err
 		}
 		_, err = fmt.Fprintf(command.OutOrStdout(), "Source: %s\nModules: %d\nGraph digest: %s\n", snapshot.Source(), len(snapshot.Dependencies()), snapshot.GraphDigest())
+		return err
+	}
+	return nil
+}
+
+func AddCargoAdd(root *cobra.Command, resolver CargoResolver) error {
+	if root == nil || resolver == nil {
+		return errors.New("cargo add command requires a resolution use case")
+	}
+	command := findLeaf(root, "cargo", "add")
+	if command == nil {
+		return errors.New("cargo add command is not registered")
+	}
+	command.RunE = func(command *cobra.Command, args []string) error {
+		reference, err := artifactcargo.ParseReference(args[0])
+		if err != nil {
+			return err
+		}
+		workingDirectory, err := os.Getwd()
+		if err != nil {
+			return errors.New("resolve Cargo project directory")
+		}
+		target, err := domain.NewInstallTarget(workingDirectory)
+		if err != nil {
+			return errors.New("cargo project directory is unsupported")
+		}
+		installContext, err := domain.NewInstallContext(target)
+		if err != nil {
+			return err
+		}
+		resolution, err := resolver.Resolve(contextOrBackground(command.Context()), reference, installContext)
+		if err != nil {
+			return err
+		}
+		_, err = fmt.Fprintf(command.OutOrStdout(), "Source: %s\nCrates: %d\nLock digest: %s\n", reference.Source(), len(resolution.Graph().Nodes()), resolution.LockfileDigest())
 		return err
 	}
 	return nil
