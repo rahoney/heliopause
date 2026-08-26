@@ -83,6 +83,10 @@ func (r *GoModuleResolver) ResolveDependencies(ctx context.Context, reference do
 	if !filepath.IsAbs(project) || project == "/" {
 		return domain.DependencyResolution{}, errors.New("go project path is invalid")
 	}
+	originalMod, originalSum, err := readGoProjectControlFiles(project)
+	if err != nil {
+		return domain.DependencyResolution{}, err
+	}
 	workspace, cleanupWorkspace, err := privateGoProjectWorkspace(project)
 	if err != nil {
 		return domain.DependencyResolution{}, err
@@ -108,6 +112,10 @@ func (r *GoModuleResolver) ResolveDependencies(ctx context.Context, reference do
 	if err != nil {
 		return domain.DependencyResolution{}, errors.New("go module graph failed")
 	}
+	currentMod, currentSum, currentErr := readGoProjectControlFiles(project)
+	if currentErr != nil || string(currentMod) != string(originalMod) || string(currentSum) != string(originalSum) {
+		return domain.DependencyResolution{}, errors.New("go project changed during resolution")
+	}
 	graph, err := artifactgomodule.BuildLockedGraph(reference, records, graphBody)
 	if err != nil {
 		return domain.DependencyResolution{}, err
@@ -118,6 +126,18 @@ func (r *GoModuleResolver) ResolveDependencies(ctx context.Context, reference do
 		return domain.DependencyResolution{}, err
 	}
 	return domain.NewDependencyResolution(graph, "go:proxy.golang.org;sumdb:sum.golang.org;env:"+strings.Join(environment, ";"), digest)
+}
+
+func readGoProjectControlFiles(project string) ([]byte, []byte, error) {
+	goMod, err := os.ReadFile(filepath.Join(project, "go.mod"))
+	if err != nil || len(goMod) == 0 {
+		return nil, nil, errors.New("go project go.mod is unavailable")
+	}
+	goSum, err := os.ReadFile(filepath.Join(project, "go.sum"))
+	if err != nil || len(goSum) == 0 {
+		return nil, nil, errors.New("go project go.sum is unavailable")
+	}
+	return goMod, goSum, nil
 }
 
 func privateGoProjectWorkspace(project string) (string, func(), error) {
