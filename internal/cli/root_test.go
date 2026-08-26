@@ -27,7 +27,7 @@ func TestRootHelp(t *testing.T) {
 	if !strings.Contains(stdout.String(), "Usage:\n  helox") {
 		t.Fatalf("help output missing usage: %q", stdout.String())
 	}
-	for _, commandName := range []string{"npm", "pip", "pypi", "github", "doctor"} {
+	for _, commandName := range []string{"npm", "pip", "pypi", "github", "go", "doctor"} {
 		if !strings.Contains(stdout.String(), commandName) {
 			t.Fatalf("help output missing %q command: %q", commandName, stdout.String())
 		}
@@ -45,6 +45,7 @@ func TestSourceHelpShowsStaticSubcommands(t *testing.T) {
 		"pip":    {"pip", "--help"},
 		"pypi":   {"pypi", "--help"},
 		"github": {"github", "--help"},
+		"go":     {"go", "--help"},
 	}
 	for name, args := range tests {
 		t.Run(name, func(t *testing.T) {
@@ -64,8 +65,11 @@ func TestSourceHelpShowsStaticSubcommands(t *testing.T) {
 			if name == "pip" && !strings.Contains(stdout.String(), "install") {
 				t.Fatalf("pip help missing install: %q", stdout.String())
 			}
-			if name != "pip" && !strings.Contains(stdout.String(), "inspect") {
+			if name != "pip" && name != "go" && !strings.Contains(stdout.String(), "inspect") {
 				t.Fatalf("%s help missing inspect: %q", name, stdout.String())
+			}
+			if name == "go" && (!strings.Contains(stdout.String(), "get") || !strings.Contains(stdout.String(), "mod")) {
+				t.Fatalf("go help missing module commands: %q", stdout.String())
 			}
 		})
 	}

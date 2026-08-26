@@ -266,7 +266,10 @@ func parseGraphEdges(body []byte, records map[string]DownloadRecord) ([]graphEdg
 			return nil, err
 		}
 		if _, ok := records[from]; !ok {
-			return nil, errors.New("Go module graph references unknown source")
+			// `go mod graph` includes the local main module, which is not an
+			// acquired public module record. Its outgoing edge is outside this
+			// source graph; dependency records remain subject to exact checks.
+			continue
 		}
 		if _, ok := records[to]; !ok {
 			return nil, errors.New("Go module graph references unknown target")

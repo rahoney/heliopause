@@ -437,6 +437,12 @@ func initializeCommandTree(root *cobra.Command) {
 	github.AddCommand(newStaticLeaf("inspect <owner>/<repo>@<tag>#<asset>", "Inspect a GitHub Release asset", false))
 	githubInstall := newStaticLeaf("install <owner>/<repo>@<tag>#<asset>", "Install a GitHub Release asset", true)
 	github.AddCommand(githubInstall)
+	goCommand := ensureGoCommand(root)
+	goCommand.AddCommand(newStaticLeaf("get <module>@<version>", "Resolve and transactionally add a public Go Module", false))
+	goCommand.AddCommand(newStaticLeaf("build <package>", "Build a Go project from the HAA-verified module cache", false))
+	goMod := &cobra.Command{Use: "mod", Short: "Resolve public Go Modules with the canonical proxy and SumDB"}
+	goMod.AddCommand(newStaticNoArgLeaf("download", "Resolve the current project's exact Go Module graph"))
+	goCommand.AddCommand(goMod)
 }
 
 func pythonSourceHelp() string {
@@ -469,6 +475,17 @@ func newStaticLeaf(use, short string, withTarget bool) *cobra.Command {
 		command.Flags().String("target", "", "advanced absolute destination (optional; existing paths are never overwritten)")
 	}
 	return command
+}
+
+func newStaticNoArgLeaf(use, short string) *cobra.Command {
+	return &cobra.Command{
+		Use:   use,
+		Short: short,
+		Args:  cobra.NoArgs,
+		RunE: func(*cobra.Command, []string) error {
+			return errors.New("command is not configured")
+		},
+	}
 }
 
 func findLeaf(root *cobra.Command, parent, leaf string) *cobra.Command {
@@ -525,6 +542,17 @@ func ensureGitHubCommand(root *cobra.Command) *cobra.Command {
 		}
 	}
 	command := &cobra.Command{Use: "github", Short: "Inspect and install public GitHub Release assets"}
+	root.AddCommand(command)
+	return command
+}
+
+func ensureGoCommand(root *cobra.Command) *cobra.Command {
+	for _, command := range root.Commands() {
+		if command.Name() == "go" {
+			return command
+		}
+	}
+	command := &cobra.Command{Use: "go", Short: "Inspect and build public Go Modules"}
 	root.AddCommand(command)
 	return command
 }
