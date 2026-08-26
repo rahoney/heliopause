@@ -36,5 +36,11 @@ type goModuleProjectResolverFixture struct {
 func (r *goModuleProjectResolverFixture) Resolve(_ context.Context, installContext domain.InstallContext) (domain.ProjectDependencySnapshot, error) {
 	r.called = true
 	r.context = installContext
-	return domain.ProjectDependencySnapshot{}, nil
+	digest, _ := domain.NewSHA256Digest("0000000000000000000000000000000000000000000000000000000000000000")
+	source, _ := domain.NewSourceID("go-proxy")
+	identity, _ := domain.NewResolvedArtifactIdentity(source, "example.com/module", "v1.2.3", "module")
+	artifact, _ := domain.NewResolvedArtifact(identity, "https://proxy.golang.org/example.com/module/@v/v1.2.3.zip", "h1:fixture")
+	mod, _ := domain.NewProjectControlDigest("go.mod", digest)
+	sum, _ := domain.NewProjectControlDigest("go.sum", digest)
+	return domain.NewProjectDependencySnapshot(installContext, source, []domain.ProjectControlDigest{mod, sum}, []domain.ResolvedArtifact{artifact}, digest)
 }

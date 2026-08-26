@@ -27,10 +27,28 @@ func TestGoModuleResolutionServiceUsesOnlyDependencyResolver(t *testing.T) {
 	}
 }
 
+func TestGoModuleProjectResolutionRejectsInvalidSnapshot(t *testing.T) {
+	target, _ := domain.NewInstallTarget("/tmp/haa-go-project")
+	installContext, _ := domain.NewInstallContext(target)
+	service, err := application.NewGoModuleProjectResolutionService(goModuleProjectResolverFixture{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := service.Resolve(context.Background(), installContext); err == nil {
+		t.Fatal("accepted invalid project snapshot")
+	}
+}
+
 var errGoModuleResolver = errors.New("resolver failed")
 
 type goModuleResolverFixture struct{}
 
 func (*goModuleResolverFixture) ResolveDependencies(context.Context, domain.ArtifactReference, domain.InstallContext) (domain.DependencyResolution, error) {
 	return domain.DependencyResolution{}, errGoModuleResolver
+}
+
+type goModuleProjectResolverFixture struct{}
+
+func (goModuleProjectResolverFixture) ResolveProjectDependencies(context.Context, domain.InstallContext) (domain.ProjectDependencySnapshot, error) {
+	return domain.ProjectDependencySnapshot{}, nil
 }

@@ -36,6 +36,9 @@ func (s *GoModuleProjectResolutionService) Resolve(ctx context.Context, installC
 	if err != nil {
 		return domain.ProjectDependencySnapshot{}, fmt.Errorf("resolve complete Go project graph: %w", err)
 	}
+	if !snapshot.Valid() || snapshot.Context() != installContext || snapshot.Source().String() != "go-proxy" {
+		return domain.ProjectDependencySnapshot{}, errors.New("go project resolver returned an invalid snapshot")
+	}
 	return snapshot, nil
 }
 
