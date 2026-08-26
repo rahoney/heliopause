@@ -135,6 +135,20 @@ func TestPyTorchNetworkArgumentsIncludeOnlyCanonicalHosts(t *testing.T) {
 	}
 }
 
+func TestPyTorchResolveArgumentsDoNotEnableCrossIndexSelection(t *testing.T) {
+	profile, ok := artifactpypi.PyTorchProfile("cpu")
+	if !ok {
+		t.Fatal("cpu profile is missing")
+	}
+	arguments := strings.Join(pypiResolveArguments(profile, "torch==2.0.0+cpu"), " ")
+	if !strings.Contains(arguments, "--index-url "+profile.IndexURL()) || !strings.Contains(arguments, "--no-deps") {
+		t.Fatalf("PyTorch resolve arguments = %q", arguments)
+	}
+	if strings.Contains(arguments, "--extra-index-url") || strings.Contains(arguments, artifactpypi.PublicPyPIProfile().IndexURL()) {
+		t.Fatalf("PyTorch resolve arguments enable cross-index selection: %q", arguments)
+	}
+}
+
 func assertPyPIResolverCreate(t *testing.T, arguments []string) {
 	t.Helper()
 	joined := strings.Join(arguments, " ")

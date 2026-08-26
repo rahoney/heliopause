@@ -200,11 +200,7 @@ func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain
 	}
 	resolveCtx, cancel := context.WithTimeout(ctx, pypiResolverTimeout)
 	defer cancel()
-	pipArguments := []string{"install", "--dry-run", "--report", pypiResolverProjectDir + "/report.json", "--disable-pip-version-check", "--no-input", "--no-cache-dir", "--isolated", "--index-url", r.profile.IndexURL()}
-	if artifactpypi.IsPyTorchSource(r.profile.Source()) {
-		pipArguments = append(pipArguments, "--extra-index-url", artifactpypi.PublicPyPIProfile().IndexURL())
-	}
-	pipArguments = append(pipArguments, request)
+	pipArguments := pypiResolveArguments(r.profile, request)
 	if _, err := r.runner.Output(resolveCtx, "docker", append([]string{"exec", containerID, "python", "-I", "-m", "pip"}, pipArguments...)...); err != nil {
 		return domain.DependencyResolution{}, errors.New("run locked pip resolution failed")
 	}
@@ -251,6 +247,17 @@ func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain
 	}
 	runtimeIdentity := "python:" + capability.Runtime.PythonVersion + ";pip:" + capability.Runtime.PipVersion + ";target:" + capability.Runtime.InterpreterTag + "/" + capability.Runtime.ABITag + "/" + capability.Runtime.PlatformTag + ";source:" + r.profile.Name()
 	return domain.NewDependencyResolution(graph, runtimeIdentity, digest)
+}
+
+// pypiResolveArguments binds a PyTorch-owned root to exactly one official
+// profile. Dependencies are deliberately not delegated to pip's multi-index
+// selector: the resolver adds them through the canonical ownership table.
+func pypiResolveArguments(profile artifactpypi.SourceProfile, request string) []string {
+	arguments := []string{"install", "--dry-run", "--report", pypiResolverProjectDir + "/report.json", "--disable-pip-version-check", "--no-input", "--no-cache-dir", "--isolated", "--index-url", profile.IndexURL()}
+	if artifactpypi.IsPyTorchSource(profile.Source()) {
+		arguments = append(arguments, "--no-deps")
+	}
+	return append(arguments, request)
 }
 
 func pypiCreateArguments(network string, hostArguments []string) []string {
