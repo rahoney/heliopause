@@ -16,6 +16,9 @@ func TestDynamicInspectorNormalizesAndFailsClosed(t *testing.T) {
 	if err != nil || report.Execution().Status() != domain.ExecutionCompleted {
 		t.Fatalf("Inspect() = %#v, %v", report, err)
 	}
+	if summary := report.Evidence()[0].Summary(); !strings.Contains(summary, `"schema":"m11-004"`) || !strings.Contains(summary, `"total":3`) {
+		t.Fatalf("Evidence summary = %q", summary)
+	}
 	got := []string{}
 	for _, finding := range report.Findings() {
 		got = append(got, finding.Code())
