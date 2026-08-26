@@ -82,6 +82,17 @@ func PyTorchProfile(name string) (SourceProfile, bool) {
 	return profile, ok
 }
 
+// AllSourceProfiles returns the immutable Python source profile set in stable
+// order for endpoint validation and composition wiring.
+func AllSourceProfiles() []SourceProfile {
+	profiles := []SourceProfile{publicPyPIProfile}
+	for _, profile := range pyTorchProfiles {
+		profiles = append(profiles, profile)
+	}
+	sort.Slice(profiles, func(i, j int) bool { return profiles[i].name < profiles[j].name })
+	return profiles
+}
+
 // ProfileForSource returns the canonical profile for a normalized source ID.
 func ProfileForSource(source domain.SourceID) (SourceProfile, bool) {
 	if source == publicPyPIProfile.source {
@@ -142,10 +153,11 @@ func validateDistributionURLForSource(rawURL, filename string, profile SourcePro
 	if !allowHashFragment && parsed.Fragment != "" {
 		return errors.New("distribution URL must not have a fragment")
 	}
-	if _, err := sourceForDistributionURL(rawURL, profile); err != nil {
+	source, err := sourceForDistributionURL(rawURL, profile)
+	if err != nil {
 		return err
 	}
-	if IsPyTorchSource(profile.source) {
+	if source == profile.source && IsPyTorchSource(profile.source) {
 		base, err := url.Parse(profile.indexURL)
 		if err != nil || !strings.HasPrefix(parsed.Path, base.Path) {
 			return errors.New("PyTorch distribution URL is outside the selected profile")

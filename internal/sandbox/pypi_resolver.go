@@ -323,6 +323,9 @@ func artifactpypiProfileEndpoints(profile artifactpypi.SourceProfile) []string {
 	if profile.Source() == (artifactpypi.SourceProfile{}).Source() {
 		return nil
 	}
+	if profile.Source() == artifactpypi.PublicPyPIProfile().Source() {
+		return append([]string(nil), pypiResolverEndpoints...)
+	}
 	// The profile owns the endpoint set; PyTorch additionally reaches the
 	// canonical PyPI endpoints for ordinary transitive dependencies.
 	names := []string{profile.IndexHost()}
@@ -385,7 +388,17 @@ func (systemNamedEndpointResolver) Resolve(ctx context.Context, names []string) 
 	}
 	resolved := make(map[string][]netip.Addr, len(names))
 	for _, name := range names {
-		trusted := name == "pypi.org" || name == "files.pythonhosted.org" || name == "download.pytorch.org" || name == "download-r2.pytorch.org"
+		trusted := false
+		for _, profile := range artifactpypi.AllSourceProfiles() {
+			if profile.IndexHost() == name {
+				trusted = true
+			}
+			for _, host := range profile.DistributionHosts() {
+				if host == name {
+					trusted = true
+				}
+			}
+		}
 		if !trusted {
 			return nil, errors.New("endpoint is not trusted")
 		}

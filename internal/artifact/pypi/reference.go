@@ -12,6 +12,7 @@ import (
 var (
 	projectNamePattern = regexp.MustCompile(`^[A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?$`)
 	separatorPattern   = regexp.MustCompile(`[-_.]+`)
+	localVersionSuffix = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9.-]*$`)
 	versionPattern     = regexp.MustCompile(`(?i)^(?:v)?(?:(\d+)!)?(\d+(?:\.\d+)*)(?:(?:[-_.]?)(a|b|c|rc|alpha|beta|pre|preview)(?:[-_.]?)(\d*)?)?(?:(?:[-_.]?)(post|rev|r)(?:[-_.]?)(\d*)?|-(\d+))?(?:(?:[-_.]?)(dev)(?:[-_.]?)(\d*)?)?$`)
 )
 
@@ -119,7 +120,7 @@ func normalizeVersionForProfile(value string, allowLocal bool) (string, error) {
 	}
 	parts := strings.SplitN(value, "+", 2)
 	base, err := normalizeVersion(parts[0])
-	if err != nil || parts[1] == "" || !regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9.-]*$`).MatchString(parts[1]) {
+	if err != nil || parts[1] == "" || !localVersionSuffix.MatchString(parts[1]) {
 		return "", errors.New("PyTorch local version is invalid")
 	}
 	return base + "+" + strings.ToLower(parts[1]), nil

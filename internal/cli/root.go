@@ -431,12 +431,20 @@ func initializeCommandTree(root *cobra.Command) {
 	pypi.AddCommand(newStaticLeaf("inspect <project>[@<version>]", "Inspect a PyPI distribution", false))
 	pip := ensurePipCommand(root)
 	pipInstall := newStaticLeaf("install <project>[@<version>]", "Install a PyPI distribution into the active virtual environment", true)
-	pipInstall.Flags().String("source", "pypi", "named source profile: pypi or pytorch:cpu/cu126/cu128")
+	pipInstall.Flags().String("source", "pypi", pythonSourceHelp())
 	pip.AddCommand(pipInstall)
 	github := ensureGitHubCommand(root)
 	github.AddCommand(newStaticLeaf("inspect <owner>/<repo>@<tag>#<asset>", "Inspect a GitHub Release asset", false))
 	githubInstall := newStaticLeaf("install <owner>/<repo>@<tag>#<asset>", "Install a GitHub Release asset", true)
 	github.AddCommand(githubInstall)
+}
+
+func pythonSourceHelp() string {
+	names := make([]string, 0)
+	for _, profile := range artifactpypi.AllSourceProfiles() {
+		names = append(names, profile.Name())
+	}
+	return "named source profile: " + strings.Join(names, "/")
 }
 
 func findRootCommand(root *cobra.Command, name string) *cobra.Command {

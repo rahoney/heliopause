@@ -29,6 +29,9 @@ func TestPyTorchHTMLIndexAndReportPreserveSourceIdentity(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if err := validateDistributionURLForSource("https://download.pytorch.org/whl/cpu/torch/torch-2.0.0+cpu-cp314-cp314-linux_x86_64.whl", "torch-2.0.0+cpu-cp314-cp314-linux_x86_64.whl", profile, false); err != nil {
+		t.Fatalf("profile URL validation before report = %v", err)
+	}
 	report, err := ParseInstallationReportForProfile(reference, []byte(`{"version":"1","pip_version":"26.2.1","environment":{"implementation_name":"cpython","implementation_version":"3.14.7","python_full_version":"3.14.7","platform_machine":"x86_64","sys_platform":"linux"},"install":[{"download_info":{"url":"https://download.pytorch.org/whl/cpu/torch/torch-2.0.0+cpu-cp314-cp314-linux_x86_64.whl","archive_info":{"hash":"sha256=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","hashes":{"sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}},"is_direct":false,"requested":true,"metadata":{"name":"torch","version":"2.0.0+cpu","requires_python":">=3.9","requires_dist":["numpy>=1"]}},{"download_info":{"url":"https://files.pythonhosted.org/packages/numpy-1.0-py3-none-any.whl","archive_info":{"hash":"sha256=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","hashes":{"sha256":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}}},"is_direct":false,"requested":false,"metadata":{"name":"numpy","version":"1.0","requires_python":"","requires_dist":[]}}]}`), "26.2.1", "3.14.7", profile)
 	if err != nil {
 		t.Fatal(err)
@@ -55,6 +58,19 @@ func TestPyTorchHTMLIndexAndReportPreserveSourceIdentity(t *testing.T) {
 		if node.Artifact().Identity().Name() == "torch" && node.Artifact().Identity().Source() == PublicPyPIProfile().Source() {
 			t.Fatal("torch graph node lost PyTorch source identity")
 		}
+	}
+}
+
+func TestPyTorchWheelLocalVersionAndPathAreProfileBound(t *testing.T) {
+	profile := mustPyTorchProfile(t, "cpu")
+	if _, _, _, _, _, err := ParseWheelFilenameForSource("torch-2.0.0+cpu-cp314-cp314-linux_x86_64.whl", profile.Source()); err != nil {
+		t.Fatalf("PyTorch local wheel was rejected: %v", err)
+	}
+	if _, _, _, _, _, err := ParseWheelFilename("torch-2.0.0+cpu-cp314-cp314-linux_x86_64.whl"); err == nil {
+		t.Fatal("ordinary PyPI parser accepted a PyTorch local wheel")
+	}
+	if err := validateDistributionURLForSource("https://download.pytorch.org/whl/cu126/torch/torch-2.0.0+cpu-cp314-cp314-linux_x86_64.whl", "torch-2.0.0+cpu-cp314-cp314-linux_x86_64.whl", profile, false); err == nil {
+		t.Fatal("CPU profile accepted a wheel from another PyTorch profile")
 	}
 }
 

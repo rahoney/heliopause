@@ -322,7 +322,10 @@ func ParseInstallationReportForProfile(reference domain.ArtifactReference, body 
 	primaryCount := 0
 	for _, item := range report.Install {
 		candidate, err := parseReportCandidate(item, profile)
-		if err != nil || seenProjects[candidate.project] {
+		if err != nil {
+			return InstallationReport{}, errors.Join(errors.New("pip installation report candidate is invalid"), err)
+		}
+		if seenProjects[candidate.project] {
 			return InstallationReport{}, errors.New("pip installation report candidate is invalid")
 		}
 		seenProjects[candidate.project] = true
@@ -365,6 +368,9 @@ func parseReportCandidate(item pipInstall, profile SourceProfile) (Candidate, er
 		return Candidate{}, errors.New("invalid pip candidate metadata")
 	}
 	filename := path.Base(item.DownloadInfo.URL)
+	if err := validateDistributionURLForSource(item.DownloadInfo.URL, filename, profile, false); err != nil {
+		return Candidate{}, err
+	}
 	source, err := sourceForDistributionURL(item.DownloadInfo.URL, profile)
 	if err != nil {
 		return Candidate{}, err

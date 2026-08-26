@@ -232,8 +232,8 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 			return err
 		}
 		installers := map[string]cli.Installer{"pypi": installer}
-		for _, profileName := range []string{"cpu", "cu126", "cu128"} {
-			if profile, ok := artifactpypi.PyTorchProfile(profileName); ok {
+		for _, profile := range artifactpypi.AllSourceProfiles() {
+			if artifactpypi.IsPyTorchSource(profile.Source()) {
 				installers[profile.Source().String()] = installer
 			}
 		}
@@ -331,10 +331,9 @@ func pypiInstallDependencyResolver(goos, goarch string, executor sandbox.Trusted
 			return nil, err
 		}
 		routes := map[string]ports.DependencyResolver{artifactpypi.PublicPyPIProfile().Source().String(): resolver}
-		for _, profileName := range []string{"cpu", "cu126", "cu128"} {
-			profile, ok := artifactpypi.PyTorchProfile(profileName)
-			if !ok {
-				return nil, errors.New("PyTorch source profile is missing")
+		for _, profile := range artifactpypi.AllSourceProfiles() {
+			if !artifactpypi.IsPyTorchSource(profile.Source()) {
+				continue
 			}
 			pytorchResolver, resolverErr := sandbox.NewLinuxPyTorchResolverWithExecutorAndPolicy(executor, observer, policyService, profile)
 			if resolverErr != nil {
