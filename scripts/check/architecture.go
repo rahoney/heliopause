@@ -87,10 +87,11 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/bootstrap": true,
 		},
 		modulePath + "/internal/cli": {
-			modulePath + "/internal/application":   true,
-			modulePath + "/internal/artifact/npm":  true,
-			modulePath + "/internal/artifact/pypi": true,
-			modulePath + "/internal/core/domain":   true,
+			modulePath + "/internal/application":       true,
+			modulePath + "/internal/artifact/gomodule": true,
+			modulePath + "/internal/artifact/npm":      true,
+			modulePath + "/internal/artifact/pypi":     true,
+			modulePath + "/internal/core/domain":       true,
 		},
 		modulePath + "/internal/core/domain": {},
 		modulePath + "/internal/core/ports": {

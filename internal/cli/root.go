@@ -451,7 +451,7 @@ func AddGoModuleGet(root *cobra.Command, resolver GoModuleResolver) error {
 		}
 		target, err := domain.NewInstallTarget(workingDirectory)
 		if err != nil {
-			return errors.New("Go project directory is unsupported")
+			return errors.New("go project directory is unsupported")
 		}
 		installContext, err := domain.NewInstallContext(target)
 		if err != nil {
