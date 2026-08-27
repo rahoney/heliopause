@@ -75,7 +75,7 @@ func TestPyTorchReportEvaluatesPinnedLinuxDependencyMarkers(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	body := strings.Replace(`{"version":"1","pip_version":"26.2.1","environment":{"implementation_name":"cpython","implementation_version":"3.14.7","python_full_version":"3.14.7","platform_machine":"x86_64","sys_platform":"linux"},"install":[{"download_info":{"url":"https://download-r2.pytorch.org/whl/cpu/torch-2.9.1%2Bcpu-cp314-cp314-manylinux_2_28_x86_64.whl","archive_info":{"hashes":{"sha256":"`+strings.Repeat("a", 64)+`"}}},"is_direct":false,"requested":true,"metadata":{"name":"torch","version":"2.9.1+cpu","requires_python":">=3.9","requires_dist":["filelock; sys_platform != 'darwin'","typing-extensions; sys_platform == 'darwin'"]}}]}`, "typing-extensions; sys_platform == 'darwin'", "typing-extensions; sys_platform != 'linux'", 1)
+	body := strings.Replace(`{"version":"1","pip_version":"26.2.1","environment":{"implementation_name":"cpython","implementation_version":"3.14.7","python_full_version":"3.14.7","platform_machine":"x86_64","sys_platform":"linux"},"install":[{"download_info":{"url":"https://download-r2.pytorch.org/whl/cpu/torch-2.9.1%2Bcpu-cp314-cp314-manylinux_2_28_x86_64.whl","archive_info":{"hashes":{"sha256":"`+strings.Repeat("a", 64)+`"}}},"is_direct":false,"requested":true,"metadata":{"name":"torch","version":"2.9.1+cpu","requires_python":">=3.9","requires_dist":["filelock; sys_platform != 'darwin'","typing-extensions; sys_platform == 'darwin'","optree>=0.13.0; extra == \"optree\""]}}]}`, "typing-extensions; sys_platform == 'darwin'", "typing-extensions; sys_platform != 'linux'", 1)
 	report, err := ParseInstallationReportForProfile(reference, []byte(body), "26.2.1", "3.14.7", profile)
 	if err != nil {
 		t.Fatal(err)

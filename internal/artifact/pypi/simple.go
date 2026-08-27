@@ -442,6 +442,9 @@ func evaluatePinnedLinuxMarker(value string) (bool, error) {
 	for strings.HasPrefix(value, "(") && strings.HasSuffix(value, ")") {
 		value = strings.TrimSpace(value[1 : len(value)-1])
 	}
+	if active, ok := evaluatePinnedExtraMarker(value); ok {
+		return active, nil
+	}
 	switch value {
 	case `sys_platform == "linux"`, `sys_platform == 'linux'`, `platform_system == "Linux"`, `platform_system == 'Linux'`, `platform_machine == "x86_64"`, `platform_machine == 'x86_64'`, `sys_platform != "darwin"`, `sys_platform != 'darwin'`:
 		return true, nil
@@ -450,6 +453,24 @@ func evaluatePinnedLinuxMarker(value string) (bool, error) {
 	default:
 		return false, errors.New("unsupported dependency requirement marker")
 	}
+}
+
+// evaluatePinnedExtraMarker treats extras as absent for the resolver request.
+// Only a single quoted equality/inequality is accepted; compound or malformed
+// markers remain fail-closed.
+func evaluatePinnedExtraMarker(value string) (bool, bool) {
+	for _, operator := range []string{"==", "!="} {
+		prefix := "extra " + operator + " "
+		if !strings.HasPrefix(value, prefix) {
+			continue
+		}
+		literal := strings.TrimSpace(strings.TrimPrefix(value, prefix))
+		if len(literal) < 2 || (literal[0] != '\'' && literal[0] != '"') || literal[len(literal)-1] != literal[0] || strings.ContainsAny(literal[1:len(literal)-1], "'\"") {
+			return false, false
+		}
+		return operator == "!=", true
+	}
+	return false, false
 }
 
 // DependencyProject normalizes the project portion of a bounded requirement.
