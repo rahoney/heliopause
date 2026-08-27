@@ -10,11 +10,10 @@ import (
 
 func writeManagedTerraformProject(t *testing.T) string {
 	t.Helper()
-	root, err := os.MkdirTemp("/private/tmp", "haa-terraform-test-")
+	root, err := filepath.EvalSymlinks(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = os.RemoveAll(root) })
 	lock := []byte("provider \"registry.terraform.io/hashicorp/aws\" {}\n")
 	if err := os.WriteFile(filepath.Join(root, ".terraform.lock.hcl"), lock, 0o600); err != nil {
 		t.Fatal(err)
@@ -62,11 +61,10 @@ func TestTerraformTransactionPublishesLockAtomically(t *testing.T) {
 }
 
 func TestTerraformTransactionRejectsUnmanagedProject(t *testing.T) {
-	root, err := os.MkdirTemp("/private/tmp", "haa-terraform-test-")
+	root, err := filepath.EvalSymlinks(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = os.RemoveAll(root) })
 	if err := os.WriteFile(filepath.Join(root, ".terraform.lock.hcl"), []byte("lock\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}

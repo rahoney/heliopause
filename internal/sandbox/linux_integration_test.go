@@ -189,9 +189,6 @@ func TestLinuxPyTorchResolverIntegration(t *testing.T) {
 	if os.Getenv("HELOX_PYTORCH_RESOLVER_INTEGRATION") != "1" {
 		t.Skip("requires pinned Linux Python/gVisor and Docker firewall integration")
 	}
-	if os.Geteuid() != 0 {
-		t.Fatal("PyTorch resolver network policy integration requires explicit CAP_NET_ADMIN elevation")
-	}
 	profile, ok := artifactpypi.PyTorchProfile("cpu")
 	if !ok {
 		t.Fatal("locked PyTorch CPU profile is unavailable")
@@ -227,7 +224,7 @@ func TestLinuxPyTorchResolverIntegration(t *testing.T) {
 
 func integrationResolverPolicyService(t *testing.T) ResolverPolicyService {
 	t.Helper()
-	return &recordingResolverPolicyService{}
+	return newIntegrationResolverPolicyService(t)
 }
 
 func TestLinuxPyPIWheelDynamicIntegration(t *testing.T) {

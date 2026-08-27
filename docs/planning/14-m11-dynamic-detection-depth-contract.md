@@ -1,0 +1,136 @@
+# M11 Entry Decision — Dynamic Detection Depth
+
+M11은 M8에서 truthfulness와 fail-closed completeness를 확보한 observer boundary
+위에서만 bounded behavior detection을 추가한다. raw gVisor protobuf, arbitrary
+argv/path/content, Host log와 target-controlled data는 Core·Application·Policy·CLI와
+일반 Evidence로 넘어가지 않는다.
+
+## 1. Exact upstream schema boundary
+
+M11의 sole upstream schema owner는 `scripts/runtimes.lock.json`의 gVisor
+`release-20260810.0` / commit `5ceb9a5fd5750d6c73dd166441f28306039300d0`이다.
+helper, runsc와 test source checkout은 이 identity를 함께 사용한다.
+
+- gVisor seccheck의 remote sink protobuf framing/protocol은 그대로 사용한다.
+- `runsc trace metadata`의 human-readable output은 upstream이 안정성을 보장하지
+  않으므로 schema lock의 canonical source가 아니다.
+- M11-002는 pinned source를 Bazel로 build한 helper contract test에서 point,
+  message type, field accessor와 pod-init JSON을 함께 검증한다. 존재하지 않는
+  point/field 또는 protobuf parse mismatch는 capability unavailable이며 ALLOW하지
+  않는다.
+- `ignore_missing`은 사용하지 않는다. 누락을 숨기면 required behavior가 clean으로
+  보일 수 있기 때문이다.
+- remote sink setup failure, handshake/version mismatch, dropped count, malformed
+  event, identity mismatch, stream end/fault 또는 summary mismatch는 required
+  observation incomplete다.
+
+공식 gVisor seccheck 문서는 points마다 optional/context field가 있으며, remote
+sink가 protobuf를 UDS로 보낸다고 설명한다. init-time `--pod-init-config` session은
+초기 event 누락을 막는 공식 방식이다. M11은 이 M3/M8 transport 결정을 바꾸지
+않는다.
+
+## 2. M11 field profile
+
+M11-002가 exact pinned source에서 compile-time으로 확인할 requested profile은
+다음이다. logical field 명칭은 이 문서가 소유하며 C++ protobuf type/accessor는
+upstream exact source test가 소유한다.
+
+| Trace point | Required context | Required point data | Retained outside helper |
+| --- | --- | --- | --- |
+| `container/start` | `container_id` | none | session attribution only |
+| `sentry/clone` | `container_id`, `group_id`, `process_name` | clone identity | bounded process relation/count only |
+| `sentry/execve` | `container_id`, `group_id`, `process_name` | exec identity | bounded lifecycle/count only |
+| `syscall/execve/enter` | `container_id`, `group_id`, `process_name` | pathname, argv | expected/unexpected process class only |
+| `syscall/openat/enter` | `container_id`, `group_id`, `process_name` | pathname, flags, mode, sysno | workspace/honeytoken/outside class only |
+| `syscall/connect/enter`, `syscall/socket/enter` | `container_id`, `group_id`, `process_name` | syscall class | bounded network-attempt class only |
+
+`fd_path`, `cwd`, `credentials`, `env`, read/write data, raw socket address와 raw
+process identifier are intentionally excluded. `pathname`과 `argv`는 helper가
+transiently classifying할 때만 읽을 수 있으며 output envelope, Domain object,
+Evidence, policy reason, test golden, stdout/stderr에 보존·로그·전달하지 않는다.
+
+## 3. Normalized detection contract
+
+helper는 raw data를 HAA boundary에 보내지 않고 per-session bounded kinds와 aggregate
+summary만 전송한다. M11-002가 추가할 normalized vocabulary는 다음으로 고정한다.
+
+| Category | Normalized subject | Meaning |
+| --- | --- | --- |
+| PROCESS | `process-exec-expected` | trusted backend command plan 또는 pinned runtime allowlist와 일치 |
+| PROCESS | `process-exec-unexpected` | allowlist 밖 executable/path class 또는 classification ambiguity |
+| FILESYSTEM | `filesystem-workspace-access` | approved transient workspace 안의 access |
+| FILESYSTEM | `filesystem-outside-workspace` | approved workspace 밖 access |
+| HONEYTOKEN | `honeytoken-access` | HAA-controlled honeytoken class access |
+| NETWORK | `network-attempt` | socket/connect attempt; destination is retained하지 않음 |
+
+expected process allowlist와 workspace/honeytoken class map은 artifact가 제공하는
+input이 아니라 trusted backend가 exact sandbox command, image, mount와 controlled
+honeytoken placement로 생성한다. unknown path, unsupported syscall semantics,
+ambiguous normalization 또는 class map mismatch는 `process-exec-unexpected` 또는
+required observation incomplete로 처리한다. generic synthetic fixture만으로 위
+production kinds를 주장할 수 없다.
+
+### M11-003 trusted profile attribution
+
+raw `pathname`/`argv`를 Go process나 일반 HAA envelope로 보내지 않는다. 대신
+helper binary 안에는 `npm-lifecycle`, `pypi-wheel`, `github-elf`별로 audit되는
+고정 process/runtime/workspace/honeytoken profile table만 둔다. 각 Linux backend는
+Docker가 만든 container ID에 대해 그 backend가 선택한 **profile selector만** trusted
+helper control socket으로 등록한 뒤 Sandbox를 start한다. selector, container ID,
+profile 등록 순서는 HAA control-plane이 만들며 Artifact input, OCI metadata 또는
+container environment에서 유도하지 않는다.
+
+- control socket은 remote seccheck sink와 별도인 protected Host-only UDS이며 target
+  container에 mount·environment·network로 전달하지 않는다. 이 control IPC는
+  gVisor remote protobuf framing의 대체가 아니며 event transport는 여전히 upstream
+  protocol만 사용한다.
+- helper는 connection의 첫 `container/start` 전에 exact one profile registration이
+  있어야 한다. missing, malformed, duplicate, unknown selector, container/profile
+  mismatch 또는 control channel failure는 stream fault/incomplete로 처리한다.
+- profile table의 raw path/command 값은 helper build source에만 존재한다. helper는
+  comparison 후 normalized kind만 output하고, profile 값·matched pathname·argv를
+  Go Domain, Evidence, CLI, log 또는 test golden에 내보내지 않는다.
+- profile 내부에서는 Honeytoken match를 먼저 처리하고, pinned runtime read-only
+  roots는 actionable workspace violation으로 오인하지 않는다. profile이 어떤
+  pathname class도 확정할 수 없으면 normal observation을 생략하지 않고 incomplete로
+  처리한다.
+
+`process-exec-expected`와 `filesystem-workspace-access`는 Evidence summary의 count로
+집계할 수 있지만, actionable Finding은 `process-exec-unexpected`,
+`filesystem-outside-workspace`, `honeytoken-access`, `network-attempt`에만 만든다.
+M11-003은 각 source adapter의 actual gVisor integration evidence가 확인된 뒤
+Finding을 활성화했으며, M11-005가 cross-ecosystem qualification을 마무리한다.
+
+## 4. Privacy, bounds and Evidence
+
+- helper input message, argv element, pathname 및 output datagram은 per-event,
+  per-session count/byte bound를 가진다. bound 초과, truncation 또는 aggregate
+  overflow는 incomplete다.
+- HAA는 session별 normalized unique subject와 saturating count만 retain한다. raw
+  path, argv, environment, credential, file content, network destination, Host path,
+  PID/UID/GID는 retain하지 않는다.
+- summary에는 schema revision, session/container attribution, normalized count,
+  dropped/fault/completeness 상태만 포함한다. raw trace artifact나 replay input은
+  만들지 않는다.
+- retention은 existing Evidence lifecycle을 따르며 M11-004가 summary schema,
+  maximum unique subjects/count와 deletion regression을 canonical test로 고정한다.
+
+## 5. Work breakdown and acceptance
+
+| Order | ID | Scope | Status |
+| --- | --- | --- | --- |
+| 1 | M11-001 | field profile·normalization·privacy/fail-closed entry decision | COMPLETE |
+| 2 | M11-002 | pinned helper/parser와 bounded observation normalization | COMPLETE |
+| 3 | M11-003 | production Finding/policy wiring과 honeytoken/workspace fixtures | COMPLETE |
+| 4 | M11-004 | Evidence summary/retention·hostile regression | COMPLETE |
+| 5 | M11-005 | actual gVisor integration·cross-ecosystem qualification·M12 handoff | COMPLETE |
+
+M11 is complete only when every active detection has an exact pinned-source schema
+test, production gVisor integration fixture and fail-closed regression. Raw payload
+non-retention, stream completeness and M8/M9 boundaries must be independently
+checked before M12 production activation.
+
+Status: COMPLETE
+Evidence: pinned M3/M8 observer transport; gVisor seccheck remote-sink and pod-init-config documentation; M11-001 field/normalization/privacy contract; M11-002 exact-source Bazel helper contract; M11-003 helper latch and Linux lifecycle/Required CI run 32836463839; M11-004 bounded summary, retention deletion and hostile regression with Required CI run 32919553761; M11-005 npm/PyPI/GitHub cross-ecosystem summary/Finding regression and actual gVisor qualification with Required CI run 32920407746
+Blocker: none for M11.
+Next: M12-001 — release environment·tag policy·Ruleset activation

@@ -10,11 +10,10 @@ import (
 
 func writeManagedCargoProject(t *testing.T) string {
 	t.Helper()
-	root, err := os.MkdirTemp("/private/tmp", "haa-cargo-test-")
+	root, err := filepath.EvalSymlinks(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = os.RemoveAll(root) })
 	toml, lock := []byte("[package]\nname = \"app\"\nversion = \"0.1.0\"\n"), []byte("version = 3\n")
 	if err := os.WriteFile(filepath.Join(root, "Cargo.toml"), toml, 0o600); err != nil {
 		t.Fatal(err)
@@ -65,11 +64,10 @@ func TestCargoProjectTransactionPublishesBothControlFiles(t *testing.T) {
 }
 
 func TestCargoProjectTransactionRejectsUnmanagedProject(t *testing.T) {
-	root, err := os.MkdirTemp("/private/tmp", "haa-cargo-test-")
+	root, err := filepath.EvalSymlinks(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = os.RemoveAll(root) })
 	if err := os.WriteFile(filepath.Join(root, "Cargo.toml"), []byte("[package]\nname=\"app\"\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}

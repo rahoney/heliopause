@@ -10,11 +10,10 @@ import (
 
 func writeManagedGoProject(t *testing.T) string {
 	t.Helper()
-	root, err := os.MkdirTemp("/private/tmp", "haa-go-test-")
+	root, err := filepath.EvalSymlinks(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = os.RemoveAll(root) })
 	mod := []byte("module example.com/app\n\ngo 1.25\n")
 	sum := []byte("example.com/dep v1.0.0 h1:abc\n")
 	if err := os.WriteFile(filepath.Join(root, "go.mod"), mod, 0o600); err != nil {
@@ -93,11 +92,10 @@ func TestGoProjectTransactionRejectsDriftAndConcurrentLock(t *testing.T) {
 }
 
 func TestGoProjectRequiresManagedMetadata(t *testing.T) {
-	root, err := os.MkdirTemp("/private/tmp", "haa-go-test-")
+	root, err := filepath.EvalSymlinks(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = os.RemoveAll(root) })
 	if err := os.WriteFile(filepath.Join(root, "go.mod"), []byte("module example.com/app\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}

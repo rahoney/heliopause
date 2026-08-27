@@ -299,14 +299,26 @@ jobs:
           # The ordinary client must read the root-owned, non-writable public
           # identity contract; it contains no credential or secret.
           sudo chmod 0644 /etc/heliopause/network-policy.json
-          sudo /usr/libexec/heliopause/haa-network-policy-helper >/tmp/haa-network-policy-helper.log 2>&1 &
-          policy_helper_pid=$!
+          policy_helper_pid=""
+          start_policy_helper() {
+            if [ -n "$policy_helper_pid" ]; then
+              sudo kill "$policy_helper_pid" 2>/dev/null || true
+              for attempt in $(seq 1 50); do
+                test ! -e /run/heliopause-network-policy/helper.sock && break
+                sleep 0.1
+              done
+            fi
+            printf '{"socket_path":"/run/heliopause-network-policy/helper.sock","client_path":"/usr/libexec/heliopause/helox","client_uid":%s,"client_gid":%s}\n' "$(id -u)" "$(id -g)" | sudo tee /etc/heliopause/network-policy.json >/dev/null
+            sudo /usr/libexec/heliopause/haa-network-policy-helper >/tmp/haa-network-policy-helper.log 2>&1 &
+            policy_helper_pid=$!
+            for attempt in $(seq 1 50); do
+              test -S /run/heliopause-network-policy/helper.sock && break
+              sleep 0.1
+            done
+            test -S /run/heliopause-network-policy/helper.sock
+          }
           trap 'sudo kill "$policy_helper_pid" 2>/dev/null || true' EXIT
-          for attempt in $(seq 1 50); do
-            test -S /run/heliopause-network-policy/helper.sock && break
-            sleep 0.1
-          done
-          test -S /run/heliopause-network-policy/helper.sock
+          start_policy_helper
           /usr/libexec/heliopause/runsc --version
           docker version --format '{{.Server.Version}}'
           docker info --format '{{json (index .Runtimes "runsc-trace")}}'
@@ -326,10 +338,16 @@ jobs:
           set -e
           test "$npm_status" = 10
           test "$pypi_status" = 10
-          HELOX_PYTORCH_RESOLVER_INTEGRATION=1 go test -v -timeout=10m ./internal/sandbox -run TestLinuxPyTorchResolverIntegration
-          HELOX_PYTORCH_FULL_INTEGRATION=1 HELOX_PYTORCH_PROFILE=cpu go test -v -timeout=20m ./internal/bootstrap -run TestLinuxPyTorchFullIntegration
+          go test -c -o "$RUNNER_TEMP/helox-sandbox-test" ./internal/sandbox
+          sudo install -m 0755 "$RUNNER_TEMP/helox-sandbox-test" /usr/libexec/heliopause/helox
+          start_policy_helper
+          HELOX_PYTORCH_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.run '^TestLinuxPyTorchResolverIntegration$'
+          go test -c -o "$RUNNER_TEMP/helox-bootstrap-test" ./internal/bootstrap
+          sudo install -m 0755 "$RUNNER_TEMP/helox-bootstrap-test" /usr/libexec/heliopause/helox
+          start_policy_helper
+          HELOX_PYTORCH_FULL_INTEGRATION=1 HELOX_PYTORCH_PROFILE=cpu /usr/libexec/heliopause/helox -test.v -test.timeout=15m -test.run '^TestLinuxPyTorchFullIntegration$'
           if [ "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cuda_qualification }}" = true ]; then
-            HELOX_PYTORCH_FULL_INTEGRATION=1 HELOX_PYTORCH_PROFILE=cu126 go test -v -timeout=45m ./internal/bootstrap -run TestLinuxPyTorchFullIntegration
+            HELOX_PYTORCH_FULL_INTEGRATION=1 HELOX_PYTORCH_PROFILE=cu126 /usr/libexec/heliopause/helox -test.v -test.timeout=40m -test.run '^TestLinuxPyTorchFullIntegration$'
           fi
           HELOX_PYPI_DYNAMIC_INTEGRATION=1 go test -v -timeout=5m ./internal/sandbox -run 'TestLinuxPyPI(WheelDynamic|SdistBuild)Integration'
           HELOX_PROMOTION_INTEGRATION=1 go test -v -timeout=5m ./internal/promotion -run TestLinuxNPMPromotionIntegration

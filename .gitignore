@@ -1,7 +1,4 @@
-/docs/*
-!/docs/planning/
-/docs/planning/*
-!/docs/planning/01-milestones.md
-!/docs/planning/02-current-work-queue.md
-/PROJECT-DECISIONS.md
+# Canonical project documentation is version-controlled with source changes.
+# Keep local filesystem metadata out of commits.
+**/.DS_Store
 /AGENTS.md

@@ -1,0 +1,100 @@
+# M3 Entry Decision — Linux Dynamic Inspect Contract
+
+M3는 M2의 exact npm Artifact에 Linux 전용 dynamic lifecycle inspection을 추가한다. Sandbox는 raw runtime observation과 execution status만 제공하며, `internal/inspection`이 이를 Evidence/Finding으로 정규화하고 `internal/policy`만 최종 Decision을 만든다.
+
+## 1. Runtime identity와 지원 경계
+
+M3 production backend는 Docker Engine의 OCI runtime integration 위에서 **gVisor `runsc` release-20260810.0**을 사용한다. exact annotated upstream commit은 `5ceb9a5fd5750d6c73dd166441f28306039300d0`이다. gVisor는 일반 container가 아닌 userspace application kernel을 제공하며 Docker와 통합되는 OCI runtime이다. Docker Engine 29.6.0은 이 결정을 확인한 시점의 최신 stable line이다. M3-002에서 binary archive SHA-512와 Docker runtime registration을 lock으로 구현한다.
+
+- supported host: Linux x86_64 또는 arm64, kernel `>= 4.14.77`, Docker Engine `>= 29.6.0`, installed `runsc` release-20260810.0.
+- unsupported host: macOS, Windows, Docker/runc-only host, rootless/cgroup capability 또는 gVisor trace capability가 없는 Linux host. 이 경우 required dynamic inspection은 `UNAVAILABLE / M3_DYNAMIC_CAPABILITY_UNAVAILABLE`이며 자동 `ALLOW`가 없다.
+- M3 CI는 `ubuntu-24.04` pinned runner에서 explicit runtime probe가 성공할 때만 Linux dynamic integration job을 실행한다. probe 실패는 skipped success가 아니라 failure다.
+- workload image는 `node:22.23.1-slim@sha256:6c74791e557ce11fc957704f6d4fe134a7bc8d6f5ca4403205b2966bd488f6b3` index digest로 고정한다. runtime image pull이나 package registry 상태는 unit/contract test success input이 아니다.
+
+공식 근거: [gVisor installation](https://gvisor.dev/docs/user_guide/install/), [gVisor Docker quick start](https://gvisor.dev/docs/user_guide/quick_start/docker/), [gVisor security model](https://github.com/google/gvisor), [gVisor trace/seccheck](https://github.com/google/gvisor/blob/master/pkg/sentry/seccheck/README.md), [Docker Engine 29.6 release](https://docs.docker.com/engine/release-notes/29/), [Node 22 slim image digest](https://hub.docker.com/layers/library/node/22-slim/).
+
+## 2. Sandbox Session contract
+
+M3 `Sandbox Port`는 following lifecycle의 one-shot Session만 제공한다.
+
+```text
+Create → Prepare → Introduce controlled tarball → Execute npm lifecycle
+      → collect raw observations → Terminate → Dispose
+```
+
+- every attempt receives a new session ID, private runtime root and fresh writable filesystem. successful, timed out, limited or failed session is never reused.
+- no Host bind mount is allowed. After observer attribution, the container starts in a fixed waiting state so the image-provided `/tmp` tmpfs mount target is active; the trusted controller then streams the exact tarball once through `docker exec -i` stdin to `/tmp/artifact.tgz`, after which the fixed lifecycle command proceeds. No Host path enters container argv or environment. The image root remains read-only and `/tmp` is bounded, `noexec`, `nosuid`, and `nodev` tmpfs.
+- no Host environment, home directory, Docker socket, process namespace, PID socket, secret, project or internal service is exposed.
+- process runs non-root `node` user, `--network none`, no added capability, `no-new-privileges`, read-only root filesystem, pids/memory/CPU/tmpfs limits. Sandbox never receives an arbitrary host command API.
+- separate trusted observer socket receives gVisor trace records. Artifact processes cannot write Evidence Store, observer records or Policy state.
+
+### Seccheck remote observer transport
+
+M3의 canonical observation transport는 gVisor seccheck `remote` sink뿐이다. HAA trusted observer가 보호된 shared Unix-domain `SOCK_SEQPACKET` socket을 생성·listen하고, Docker에 설치한 `runsc-trace` runtime의 고정 `--pod-init-config` trace session이 그 endpoint에 접속한다. 이는 gVisor가 문서화한 Docker runtime 설치 경로이며, trace session은 Sandbox start 전에 구성하고 remote sink setup 오류를 무시하지 않는다.
+
+- gVisor가 정의한 handshake, header, protobuf payload와 protocol version을 그대로 사용한다. HAA는 자체 message framing을 만들거나 raw payload를 Evidence/CLI에 기록하지 않는다.
+- observer는 Sentry input을 untrusted로 취급하고 protocol/version·길이·drop count·event bound를 검증한다. 필요한 trace point에는 `container_id` context field를 활성화하고, connection·container ID와 HAA가 생성한 Docker container/Sandbox Session mapping이 정확히 하나로 일치할 때만 Observation을 귀속한다. 연결 실패, handshake/protocol 오류, stream 종료·손실, remote dropped event, mapping 불일치·중복·미확정 또는 필수 trace session 구성 실패는 `INCOMPLETE`다.
+- 하나의 UDS를 여러 Sandbox가 공유해도 observer runtime state, Observation, Evidence와 결과는 container/Sandbox Session별로 완전히 분리한다. observer socket은 Artifact container에 mount·전달·노출하지 않으며, Evidence Store·controller socket과 별도 trusted runtime directory에 둔다.
+- run별 동적 endpoint와 direct `runsc` OCI bundle은 MVP 범위에 넣지 않는다.
+- `--strace`, stdout/stderr scraping, Host 일반 파일 로그는 canonical observation transport 또는 fallback이 아니다.
+
+공식 근거: [gVisor seccheck](https://github.com/google/gvisor/blob/release-20260810.0/pkg/sentry/seccheck/README.md), [remote sink protocol](https://github.com/google/gvisor/blob/release-20260810.0/pkg/sentry/seccheck/sinks/remote/README.md).
+
+## 3. Fixed limits and execution plan
+
+| Boundary | M3 value |
+| --- | --- |
+| lifecycle command | `npm install --ignore-scripts=false --no-audit --no-fund --offline` from the controlled tarball only |
+| wall timeout | 45 s |
+| graceful termination | 3 s, then forced session termination and disposal |
+| CPU | 1 CPU, 30 CPU-s |
+| memory | 512 MiB |
+| PID count | 64 |
+| writable tmpfs | 256 MiB |
+| stdout/stderr raw capture | 256 KiB each, never normal Evidence/output |
+| trace event capture | 10,000 events / 2 MiB normalized input; overflow is `INCOMPLETE` |
+| network | `none`; a later controlled fake DNS/HTTP network requires a distinct entry decision |
+
+M3 runs npm lifecycle installation only. post-install application invocation, external dependency resolution, real registry/network access, Promotion and Host installation are out of scope.
+
+## 4. Raw observation and normalized interpretation
+
+The backend records bounded raw facts, not findings. M8-004 기준 production gVisor
+remote helper가 실제 emit하는 범위는 session lifecycle, process exec/clone, file
+open, network socket/connect attempt뿐이다. Trace is enabled at Session
+initialization so pre-observer events cannot be missed. Raw path, argv,
+environment, file contents, output and trace payload never enter human result
+or normal Evidence.
+
+The inspector's production-emittable capability matrix is below. Synthetic
+Domain/Policy fixtures may still exercise generic finding rules, but they do not
+prove that the pinned helper provides those signals and must not change this
+matrix or make an unsupported capability appear clean.
+
+| Observation | Normalized Evidence / Finding |
+| --- | --- |
+| process exec/clone; file open | bounded observation only; no process/filesystem Finding is claimed in M8 |
+| network/DNS/socket attempt with network disabled | `M3_NETWORK_ATTEMPT` MANUAL_REVIEW |
+| read/open synthetic honeytoken | `UNSUPPORTED` in production helper; M11 candidate |
+| execute unexpected program outside npm/node allowlist | `UNSUPPORTED` in production helper; M11 candidate |
+| write outside the bounded `/tmp` workspace or excessive file operation | `UNSUPPORTED` in production helper; M11 candidate |
+| timeout/resource/event-limit, helper drop/malformed/mismatched stream or observer failure | required dynamic check `INCOMPLETE` / no ALLOW |
+| clean completed observation | dynamic check `COMPLETED`; Policy may allow only after all M3 required checks are complete |
+
+## 5. M3 Policy v3 direction
+
+M3 Policy identity is `m3-npm-dynamic-inspect`, version 1.
+
+1. integrity mismatch or blocking static/dynamic Finding → `BLOCK`.
+2. required static, integrity or dynamic check unsupported/unavailable/failed/incomplete → `MANUAL_REVIEW / M3_REQUIRED_CHECK_INCOMPLETE`.
+3. completed clean static and dynamic checks → `ALLOW / M3_REQUIRED_CHECKS_COMPLETED`.
+4. suspicious dynamic behavior with no blocking finding → `MANUAL_REVIEW` with its normalized reason.
+
+This does not change M2 results retroactively. M3 Policy is only wired when the M3 backend capability is available.
+
+## 6. Fixtures, retention and exclusions
+
+- fixture packages are generated tarballs only: clean lifecycle, honeytoken access, network attempt, unexpected process, timeout/resource limit, and fresh retry after abnormal termination.
+- fake credential/honeytoken is a non-secret fixed sentinel inside the Sandbox only; it is never committed as a realistic credential.
+- raw observation is retained only until normalized Evidence writing finishes, then securely discarded with the session; bounded summaries and store-computed record digest follow the existing Evidence Store policy.
+- gVisor runtime installation, image pull, runtime root and cleanup are M3-002 implementation concerns. No M3 package, CI job or runtime config is created by this entry decision.
