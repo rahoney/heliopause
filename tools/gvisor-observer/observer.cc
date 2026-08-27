@@ -110,6 +110,7 @@ bool ParseControlRecord(const char* payload, size_t size, std::map<std::string, 
 }
 
 size_t MaximumRecords(const char* profile) {
+  if (profile == nullptr) return kMaxNormalizedRecordsPerConnection;
   if (strcmp(profile, kProfilePyTorchCPU) == 0) return kMaxPyTorchCPURecordsPerConnection;
   if (strcmp(profile, kProfilePyTorchCU126) == 0) return kMaxPyTorchCU126RecordsPerConnection;
   return kMaxNormalizedRecordsPerConnection;
