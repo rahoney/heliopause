@@ -378,7 +378,11 @@ func parseReportCandidate(item pipInstall, profile SourceProfile) (Candidate, er
 	if err != nil || !validRequiresPython(item.Metadata.RequiresPython) {
 		return Candidate{}, errors.New("invalid pip candidate metadata")
 	}
-	filename := path.Base(item.DownloadInfo.URL)
+	distributionURL, err := url.Parse(item.DownloadInfo.URL)
+	if err != nil {
+		return Candidate{}, errors.New("invalid pip candidate distribution URL")
+	}
+	filename := path.Base(distributionURL.Path)
 	if err := validateDistributionURLForSource(item.DownloadInfo.URL, filename, profile, false); err != nil {
 		return Candidate{}, err
 	}
@@ -393,8 +397,14 @@ func parseReportCandidate(item pipInstall, profile SourceProfile) (Candidate, er
 	requirements := make([]string, 0, len(item.Metadata.RequiresDist))
 	seenDependencies := make(map[string]bool, len(item.Metadata.RequiresDist))
 	for _, requirement := range item.Metadata.RequiresDist {
-		dependency, err := parseDeclaredDependency(requirement)
-		if err != nil || dependency == project || seenDependencies[dependency] {
+		dependency, active, err := parseDeclaredDependencyForProfile(requirement, profile)
+		if err != nil {
+			return Candidate{}, errors.New("unsupported pip dependency metadata")
+		}
+		if !active {
+			continue
+		}
+		if dependency == project || seenDependencies[dependency] {
 			return Candidate{}, errors.New("unsupported pip dependency metadata")
 		}
 		seenDependencies[dependency] = true
@@ -404,6 +414,41 @@ func parseReportCandidate(item pipInstall, profile SourceProfile) (Candidate, er
 	sort.Strings(dependencies)
 	sort.Strings(requirements)
 	return Candidate{project: project, source: source, version: version, filename: filename, url: item.DownloadInfo.URL, sha256: sha256, requiresPython: item.Metadata.RequiresPython, primary: item.Requested, dependencies: dependencies, requirements: requirements}, nil
+}
+
+func parseDeclaredDependencyForProfile(value string, profile SourceProfile) (string, bool, error) {
+	if !strings.Contains(value, ";") {
+		dependency, err := parseDeclaredDependency(value)
+		return dependency, true, err
+	}
+	if !IsPyTorchSource(profile.source) || strings.Count(value, ";") != 1 {
+		return "", false, errors.New("unsupported dependency requirement marker")
+	}
+	parts := strings.SplitN(value, ";", 2)
+	dependency, err := parseDeclaredDependency(strings.TrimSpace(parts[0]))
+	if err != nil {
+		return "", false, err
+	}
+	active, err := evaluatePinnedLinuxMarker(strings.TrimSpace(parts[1]))
+	if err != nil {
+		return "", false, err
+	}
+	return dependency, active, nil
+}
+
+func evaluatePinnedLinuxMarker(value string) (bool, error) {
+	value = strings.TrimSpace(value)
+	for strings.HasPrefix(value, "(") && strings.HasSuffix(value, ")") {
+		value = strings.TrimSpace(value[1 : len(value)-1])
+	}
+	switch value {
+	case `sys_platform == "linux"`, `sys_platform == 'linux'`, `platform_system == "Linux"`, `platform_system == 'Linux'`, `platform_machine == "x86_64"`, `platform_machine == 'x86_64'`, `sys_platform != "darwin"`, `sys_platform != 'darwin'`:
+		return true, nil
+	case `sys_platform != "linux"`, `sys_platform != 'linux'`, `platform_system != "Linux"`, `platform_system != 'Linux'`, `platform_machine != "x86_64"`, `platform_machine != 'x86_64'`, `sys_platform == "darwin"`, `sys_platform == 'darwin'`:
+		return false, nil
+	default:
+		return false, errors.New("unsupported dependency requirement marker")
+	}
 }
 
 // DependencyProject normalizes the project portion of a bounded requirement.

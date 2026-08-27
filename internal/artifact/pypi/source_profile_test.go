@@ -69,6 +69,23 @@ func TestPyTorchHTMLIndexAndReportPreserveSourceIdentity(t *testing.T) {
 	}
 }
 
+func TestPyTorchReportEvaluatesPinnedLinuxDependencyMarkers(t *testing.T) {
+	profile := mustPyTorchProfile(t, "cpu")
+	reference, err := ParseReferenceForSource("torch", profile.Source())
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := strings.Replace(`{"version":"1","pip_version":"26.2.1","environment":{"implementation_name":"cpython","implementation_version":"3.14.7","python_full_version":"3.14.7","platform_machine":"x86_64","sys_platform":"linux"},"install":[{"download_info":{"url":"https://download-r2.pytorch.org/whl/cpu/torch-2.9.1%2Bcpu-cp314-cp314-manylinux_2_28_x86_64.whl","archive_info":{"hashes":{"sha256":"`+strings.Repeat("a", 64)+`"}}},"is_direct":false,"requested":true,"metadata":{"name":"torch","version":"2.9.1+cpu","requires_python":">=3.9","requires_dist":["filelock; sys_platform != 'darwin'","typing-extensions; sys_platform == 'darwin'"]}}]}`, "typing-extensions; sys_platform == 'darwin'", "typing-extensions; sys_platform != 'linux'", 1)
+	report, err := ParseInstallationReportForProfile(reference, []byte(body), "26.2.1", "3.14.7", profile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	candidates := report.Candidates()
+	if len(candidates) != 1 || len(candidates[0].Dependencies()) != 1 || candidates[0].Dependencies()[0] != "filelock" {
+		t.Fatalf("PyTorch marker dependencies = %#v", candidates)
+	}
+}
+
 func TestPyTorchWheelLocalVersionAndPathAreProfileBound(t *testing.T) {
 	profile := mustPyTorchProfile(t, "cpu")
 	if _, _, _, _, _, err := ParseWheelFilenameForSource("torch-2.0.0+cpu-cp314-cp314-linux_x86_64.whl", profile.Source()); err != nil {
