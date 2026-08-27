@@ -210,7 +210,11 @@ func ParsePyTorchSimpleProject(project string, body []byte, profile SourceProfil
 	}
 	matches := pytorchAnchorPattern.FindAllSubmatch(body, maxPyPIReportEntries+1)
 	if len(matches) == 0 || len(matches) > maxPyPIReportEntries {
-		return SimpleProject{}, errors.New("invalid PyTorch Simple project has no bounded files")
+		preview := strings.TrimSpace(string(body))
+		if len(preview) > 256 {
+			preview = preview[:256]
+		}
+		return SimpleProject{}, fmt.Errorf("invalid PyTorch Simple project has no bounded files (body_bytes=%d prefix=%q)", len(body), preview)
 	}
 	files := make([]SimpleFile, 0, len(matches))
 	seen := make(map[string]bool, len(matches))
