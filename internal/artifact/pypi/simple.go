@@ -444,7 +444,7 @@ func parseReportCandidate(item pipInstall, profile SourceProfile, expectedPython
 	for _, requirement := range item.Metadata.RequiresDist {
 		dependency, active, err := parseDeclaredDependencyForProfile(requirement, profile, expectedPython)
 		if err != nil {
-			return Candidate{}, fmt.Errorf("unsupported pip dependency metadata %q: %w", requirement, err)
+			return Candidate{}, fmt.Errorf("unsupported pip dependency metadata: %w", unsupportedRequirementDiagnostic(project, requirement, err))
 		}
 		if !active {
 			continue
@@ -459,6 +459,32 @@ func parseReportCandidate(item pipInstall, profile SourceProfile, expectedPython
 	sort.Strings(dependencies)
 	sort.Strings(requirements)
 	return Candidate{project: project, source: source, version: version, filename: filename, url: item.DownloadInfo.URL, sha256: sha256, requiresPython: item.Metadata.RequiresPython, primary: item.Requested, dependencies: dependencies, requirements: requirements}, nil
+}
+
+func unsupportedRequirementDiagnostic(parent, requirement string, cause error) error {
+	dependency := "<invalid>"
+	namePart := strings.TrimSpace(strings.SplitN(requirement, ";", 2)[0])
+	if parsed, err := parseDeclaredDependency(namePart); err == nil {
+		dependency = parsed
+	}
+	shape := "specifier"
+	if strings.Contains(requirement, ";") {
+		shape = "marker"
+	}
+	if strings.Contains(requirement, "extra") {
+		shape = "extras"
+	}
+	if strings.Contains(requirement, " and ") || strings.Contains(requirement, " or ") {
+		shape = "compound"
+	}
+	detail := "UNSUPPORTED"
+	if strings.Contains(cause.Error(), "marker") {
+		detail = "MARKER"
+	}
+	if strings.Contains(cause.Error(), "requirement") && dependency == "<invalid>" {
+		detail = "NAME"
+	}
+	return fmt.Errorf("reason=UNSUPPORTED_REQUIREMENT package=%s dependency=%s shape=%s detail=%s", parent, dependency, shape, detail)
 }
 
 func parseDeclaredDependencyForProfile(value string, profile SourceProfile, expectedPython string) (string, bool, error) {

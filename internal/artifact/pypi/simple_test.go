@@ -1,6 +1,7 @@
 package pypi
 
 import (
+	"errors"
 	"strings"
 	"testing"
 )
@@ -110,6 +111,19 @@ func TestSimpleFilesLimitIsSelectedOnlyByCanonicalPyTorchRoot(t *testing.T) {
 	}
 	if simpleFilesLimit(cpu) != 8192 || simpleFilesLimit(cu126) != 8192 {
 		t.Fatalf("PyTorch root limits = %d/%d", simpleFilesLimit(cpu), simpleFilesLimit(cu126))
+	}
+}
+
+func TestUnsupportedRequirementDiagnosticIsSanitized(t *testing.T) {
+	err := unsupportedRequirementDiagnostic("parent", "setuptools; python_version < '3.14' and extra == 'test'", errors.New("unsupported dependency requirement marker"))
+	got := err.Error()
+	for _, want := range []string{"reason=UNSUPPORTED_REQUIREMENT", "package=parent", "dependency=setuptools", "shape=compound", "detail=MARKER"} {
+		if !strings.Contains(got, want) {
+			t.Fatalf("diagnostic %q missing %q", got, want)
+		}
+	}
+	if strings.Contains(got, "python_version") || strings.Contains(got, "test") {
+		t.Fatalf("diagnostic leaked raw marker: %q", got)
 	}
 }
 
