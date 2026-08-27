@@ -436,19 +436,23 @@ func parseDeclaredDependencyForProfile(value string, profile SourceProfile, expe
 		return "", false, errors.New("unsupported dependency requirement marker")
 	}
 	parts := strings.SplitN(value, ";", 2)
-	dependency, err := parseDeclaredDependency(strings.TrimSpace(parts[0]))
-	if err != nil {
-		return "", false, err
-	}
 	marker := strings.TrimSpace(parts[1])
 	// pip includes optional-extra requirements in every package's report even
 	// when no extras were requested. They are inactive for this transaction
 	// and can be handled without broadening the profile's platform semantics.
 	if active, recognized := evaluatePinnedExtraMarker(marker); recognized {
-		return dependency, active, nil
+		if !active {
+			return "", false, nil
+		}
+		dependency, err := parseDeclaredDependency(strings.TrimSpace(parts[0]))
+		return dependency, true, err
 	}
 	if !IsPyTorchSource(profile.source) {
 		return "", false, errors.New("unsupported dependency requirement marker")
+	}
+	dependency, err := parseDeclaredDependency(strings.TrimSpace(parts[0]))
+	if err != nil {
+		return "", false, err
 	}
 	active, err := evaluatePinnedLinuxMarker(marker, expectedPython)
 	if err != nil {
