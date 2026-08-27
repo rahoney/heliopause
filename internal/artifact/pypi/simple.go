@@ -209,6 +209,10 @@ func ParsePyTorchSimpleProject(project string, body []byte, profile SourceProfil
 	if err != nil {
 		return SimpleProject{}, errors.New("invalid PyTorch index URL is invalid")
 	}
+	profileBase, err := url.Parse(profile.indexURL)
+	if err != nil {
+		return SimpleProject{}, errors.New("invalid PyTorch index URL is invalid")
+	}
 	matches := pytorchAnchorPattern.FindAllSubmatch(body, maxPyTorchSimpleEntries+1)
 	if len(matches) == 0 || len(matches) > maxPyTorchSimpleEntries {
 		return SimpleProject{}, errors.New("invalid PyTorch Simple project has no bounded files")
@@ -227,6 +231,9 @@ func ParsePyTorchSimpleProject(project string, body []byte, profile SourceProfil
 			return SimpleProject{}, errors.New("invalid PyTorch Simple file metadata is invalid")
 		}
 		parsed.Fragment = ""
+		if !strings.HasPrefix(parsed.Path, profileBase.Path) {
+			continue
+		}
 		if err := validateDistributionURLForSource(parsed.String(), filename, profile, true); err != nil {
 			return SimpleProject{}, err
 		}

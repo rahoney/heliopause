@@ -102,6 +102,19 @@ func TestPyTorchSimpleProjectAllowsBoundedLargeIndexPage(t *testing.T) {
 	}
 }
 
+func TestPyTorchSimpleProjectIgnoresOutOfProfileLinks(t *testing.T) {
+	profile := mustPyTorchProfile(t, "cpu")
+	body := `<a href="https://download-r2.pytorch.org/whl/torch-0.1-cp27-cp27m-macosx_10_6_x86_64.whl#sha256=` + strings.Repeat("a", 64) + `">old</a>` +
+		`<a href="https://download-r2.pytorch.org/whl/cpu/torch/torch-2.9.1%2Bcpu-cp314-cp314-manylinux_2_28_x86_64.whl#sha256=` + strings.Repeat("b", 64) + `">current</a>`
+	page, err := ParsePyTorchSimpleProject("torch", []byte(body), profile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(page.Files()) != 1 || page.Files()[0].SHA256() != strings.Repeat("b", 64) {
+		t.Fatalf("PyTorch profile links = %#v", page.Files())
+	}
+}
+
 func TestPyTorchWheelLocalVersionAndPathAreProfileBound(t *testing.T) {
 	profile := mustPyTorchProfile(t, "cpu")
 	if _, _, _, _, _, err := ParseWheelFilenameForSource("torch-2.0.0+cpu-cp314-cp314-linux_x86_64.whl", profile.Source()); err != nil {

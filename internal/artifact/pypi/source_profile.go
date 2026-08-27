@@ -2,7 +2,6 @@ package pypi
 
 import (
 	"errors"
-	"fmt"
 	"net/url"
 	"path"
 	"sort"
@@ -172,7 +171,7 @@ func validateDistributionURLForSource(rawURL, filename string, profile SourcePro
 	if source == profile.source && IsPyTorchSource(profile.source) {
 		base, err := url.Parse(profile.indexURL)
 		if err != nil || !strings.HasPrefix(parsed.Path, base.Path) {
-			return fmt.Errorf("PyTorch distribution URL is outside the selected profile: url=%q index=%q", parsed.String(), profile.indexURL)
+			return errors.New("PyTorch distribution URL is outside the selected profile")
 		}
 	}
 	return nil
