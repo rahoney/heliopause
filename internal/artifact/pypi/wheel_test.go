@@ -65,6 +65,29 @@ func TestInspectWheelRejectsUnsafeAndMismatchedInputs(t *testing.T) {
 	}
 }
 
+func TestWheelTagsCompatibleManylinuxSemantics(t *testing.T) {
+	target := WheelTarget{"cp314", "cp314", "manylinux_2_36_x86_64"}
+	tests := []struct {
+		name     string
+		platform string
+		target   WheelTarget
+		want     bool
+	}{
+		{name: "exact", platform: "manylinux_2_36_x86_64", target: target, want: true},
+		{name: "older glibc baseline", platform: "manylinux_2_28_x86_64", target: target, want: true},
+		{name: "newer wheel baseline", platform: "manylinux_2_36_x86_64", target: WheelTarget{"cp314", "cp314", "manylinux_2_28_x86_64"}, want: false},
+		{name: "architecture mismatch", platform: "manylinux_2_28_aarch64", target: target, want: false},
+		{name: "malformed", platform: "manylinux_x86_64", target: target, want: false},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got := wheelTagsCompatible([]string{"cp314"}, []string{"cp314"}, []string{test.platform}, test.target); got != test.want {
+				t.Fatalf("wheelTagsCompatible(%q, %q) = %v, want %v", test.platform, test.target.Platform, got, test.want)
+			}
+		})
+	}
+}
+
 func FuzzInspectWheelNoPanic(f *testing.F) {
 	f.Add([]byte("not a zip"))
 	f.Fuzz(func(t *testing.T, body []byte) {

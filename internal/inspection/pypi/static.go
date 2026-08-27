@@ -37,6 +37,12 @@ func (i *StaticInspector) InspectWheel(ctx context.Context, artifact domain.Acqu
 	}
 	wheel, ok := inspection.(artifactpypi.WheelInspection)
 	if !ok {
+		// Finding-only static results intentionally have no typed inspection.
+		// Preserve them so CompositeInspector can fail closed before dynamic
+		// inspection instead of masking the concrete finding.
+		if len(report.Findings()) != 0 {
+			return artifactpypi.WheelInspection{}, report, nil
+		}
 		return artifactpypi.WheelInspection{}, domain.InspectionReport{}, errors.New("PyPI wheel static inspection is unavailable")
 	}
 	return wheel, report, nil

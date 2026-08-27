@@ -11,6 +11,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -422,13 +423,42 @@ func wheelTagsCompatible(py, abi, platform []string, target WheelTarget) bool {
 	}
 	has := func(values []string, want string, kind string) bool {
 		for _, value := range values {
-			if value == "any" || value == want || kind == "python" && value == "py3" && strings.HasPrefix(want, "cp3") || kind == "abi" && value == "none" {
+			if value == "any" || value == want || kind == "python" && value == "py3" && strings.HasPrefix(want, "cp3") || kind == "abi" && value == "none" || kind == "platform" && manylinuxTagCompatible(value, want) {
 				return true
 			}
 		}
 		return false
 	}
 	return has(py, target.Python, "python") && has(abi, target.ABI, "abi") && has(platform, target.Platform, "platform")
+}
+
+var manylinuxPlatformPattern = regexp.MustCompile(`^manylinux_([0-9]+)_([0-9]+)_(.+)$`)
+
+// manylinuxTagCompatible permits a target with equal-or-newer glibc on the
+// same architecture to run a wheel built for an older manylinux baseline.
+func manylinuxTagCompatible(wheel, target string) bool {
+	wheelMatch := manylinuxPlatformPattern.FindStringSubmatch(wheel)
+	targetMatch := manylinuxPlatformPattern.FindStringSubmatch(target)
+	if len(wheelMatch) != 4 || len(targetMatch) != 4 || wheelMatch[3] != targetMatch[3] {
+		return false
+	}
+	wheelMajor, err := strconv.Atoi(wheelMatch[1])
+	if err != nil {
+		return false
+	}
+	wheelMinor, err := strconv.Atoi(wheelMatch[2])
+	if err != nil {
+		return false
+	}
+	targetMajor, err := strconv.Atoi(targetMatch[1])
+	if err != nil {
+		return false
+	}
+	targetMinor, err := strconv.Atoi(targetMatch[2])
+	if err != nil {
+		return false
+	}
+	return targetMajor > wheelMajor || targetMajor == wheelMajor && targetMinor >= wheelMinor
 }
 func wheelMetadataTagsMatch(tags, py, abi, platform []string) bool {
 	if len(tags) == 0 {
