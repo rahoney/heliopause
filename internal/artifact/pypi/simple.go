@@ -13,6 +13,7 @@ import (
 	"path"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
@@ -337,7 +338,7 @@ func ParseInstallationReportForProfile(reference domain.ArtifactReference, body 
 	seenProjects := make(map[string]bool, len(report.Install))
 	primaryCount := 0
 	for _, item := range report.Install {
-		candidate, err := parseReportCandidate(item, profile)
+		candidate, err := parseReportCandidate(item, profile, expectedPython)
 		if err != nil {
 			return InstallationReport{}, errors.Join(errors.New("pip installation report candidate is invalid"), err)
 		}
@@ -371,7 +372,7 @@ func isFinalVersionForProfile(value string, profile SourceProfile) bool {
 	return IsFinalVersion(value)
 }
 
-func parseReportCandidate(item pipInstall, profile SourceProfile) (Candidate, error) {
+func parseReportCandidate(item pipInstall, profile SourceProfile, expectedPython string) (Candidate, error) {
 	sha256 := item.DownloadInfo.ArchiveInfo.Hashes["sha256"]
 	// pip's stable installation-report schema requires archive_info.hashes.
 	// Older pip versions also emitted the legacy singular hash field; when it
@@ -407,7 +408,7 @@ func parseReportCandidate(item pipInstall, profile SourceProfile) (Candidate, er
 	requirements := make([]string, 0, len(item.Metadata.RequiresDist))
 	seenDependencies := make(map[string]bool, len(item.Metadata.RequiresDist))
 	for _, requirement := range item.Metadata.RequiresDist {
-		dependency, active, err := parseDeclaredDependencyForProfile(requirement, profile)
+		dependency, active, err := parseDeclaredDependencyForProfile(requirement, profile, expectedPython)
 		if err != nil {
 			return Candidate{}, fmt.Errorf("unsupported pip dependency metadata %q: %w", requirement, err)
 		}
@@ -426,12 +427,12 @@ func parseReportCandidate(item pipInstall, profile SourceProfile) (Candidate, er
 	return Candidate{project: project, source: source, version: version, filename: filename, url: item.DownloadInfo.URL, sha256: sha256, requiresPython: item.Metadata.RequiresPython, primary: item.Requested, dependencies: dependencies, requirements: requirements}, nil
 }
 
-func parseDeclaredDependencyForProfile(value string, profile SourceProfile) (string, bool, error) {
+func parseDeclaredDependencyForProfile(value string, profile SourceProfile, expectedPython string) (string, bool, error) {
 	if !strings.Contains(value, ";") {
 		dependency, err := parseDeclaredDependency(value)
 		return dependency, true, err
 	}
-	if !IsPyTorchSource(profile.source) || strings.Count(value, ";") != 1 {
+	if strings.Count(value, ";") != 1 {
 		return "", false, errors.New("unsupported dependency requirement marker")
 	}
 	parts := strings.SplitN(value, ";", 2)
@@ -439,20 +440,33 @@ func parseDeclaredDependencyForProfile(value string, profile SourceProfile) (str
 	if err != nil {
 		return "", false, err
 	}
-	active, err := evaluatePinnedLinuxMarker(strings.TrimSpace(parts[1]))
+	marker := strings.TrimSpace(parts[1])
+	// pip includes optional-extra requirements in every package's report even
+	// when no extras were requested. They are inactive for this transaction
+	// and can be handled without broadening the profile's platform semantics.
+	if active, recognized := evaluatePinnedExtraMarker(marker); recognized {
+		return dependency, active, nil
+	}
+	if !IsPyTorchSource(profile.source) {
+		return "", false, errors.New("unsupported dependency requirement marker")
+	}
+	active, err := evaluatePinnedLinuxMarker(marker, expectedPython)
 	if err != nil {
 		return "", false, err
 	}
 	return dependency, active, nil
 }
 
-func evaluatePinnedLinuxMarker(value string) (bool, error) {
+func evaluatePinnedLinuxMarker(value, expectedPython string) (bool, error) {
 	value = strings.TrimSpace(value)
 	for strings.HasPrefix(value, "(") && strings.HasSuffix(value, ")") {
 		value = strings.TrimSpace(value[1 : len(value)-1])
 	}
 	if active, ok := evaluatePinnedExtraMarker(value); ok {
 		return active, nil
+	}
+	if active, recognized, err := evaluatePinnedPythonVersionMarker(value, expectedPython); recognized {
+		return active, err
 	}
 	switch value {
 	case `sys_platform == "linux"`, `sys_platform == 'linux'`, `platform_system == "Linux"`, `platform_system == 'Linux'`, `platform_machine == "x86_64"`, `platform_machine == 'x86_64'`, `sys_platform != "darwin"`, `sys_platform != 'darwin'`:
@@ -462,6 +476,90 @@ func evaluatePinnedLinuxMarker(value string) (bool, error) {
 	default:
 		return false, errors.New("unsupported dependency requirement marker")
 	}
+}
+
+// evaluatePinnedPythonVersionMarker evaluates the one runtime marker emitted
+// by the pinned PyTorch wheel metadata. pip's python_version value is the
+// major.minor portion of the locked runtime (for example, 3.14.7 -> 3.14).
+// Other marker variables and malformed expressions remain fail-closed.
+func evaluatePinnedPythonVersionMarker(value, expectedPython string) (bool, bool, error) {
+	operators := []string{"==", "!=", "<=", ">=", "<", ">"}
+	for _, operator := range operators {
+		prefix := "python_version " + operator + " "
+		if !strings.HasPrefix(value, prefix) {
+			continue
+		}
+		literal := strings.TrimSpace(strings.TrimPrefix(value, prefix))
+		if len(literal) < 2 || (literal[0] != '\'' && literal[0] != '"') || literal[len(literal)-1] != literal[0] || strings.ContainsAny(literal[1:len(literal)-1], "'\"") {
+			return false, true, errors.New("unsupported dependency requirement marker")
+		}
+		want, err := parsePythonVersionTuple(literal[1 : len(literal)-1])
+		if err != nil {
+			return false, true, errors.New("unsupported dependency requirement marker")
+		}
+		have, err := parsePythonRuntimeTuple(expectedPython)
+		if err != nil {
+			return false, true, errors.New("unsupported dependency requirement marker")
+		}
+		comparison := 0
+		if have[0] != want[0] {
+			if have[0] < want[0] {
+				comparison = -1
+			} else {
+				comparison = 1
+			}
+		} else if have[1] != want[1] {
+			if have[1] < want[1] {
+				comparison = -1
+			} else {
+				comparison = 1
+			}
+		}
+		active := false
+		switch operator {
+		case "==":
+			active = comparison == 0
+		case "!=":
+			active = comparison != 0
+		case "<":
+			active = comparison < 0
+		case "<=":
+			active = comparison <= 0
+		case ">":
+			active = comparison > 0
+		case ">=":
+			active = comparison >= 0
+		}
+		return active, true, nil
+	}
+	if strings.HasPrefix(value, "python_version ") {
+		return false, true, errors.New("unsupported dependency requirement marker")
+	}
+	return false, false, nil
+}
+
+func parsePythonVersionTuple(value string) ([2]int, error) {
+	parts := strings.Split(value, ".")
+	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+		return [2]int{}, errors.New("invalid Python version")
+	}
+	major, err := strconv.Atoi(parts[0])
+	if err != nil || major < 0 {
+		return [2]int{}, errors.New("invalid Python version")
+	}
+	minor, err := strconv.Atoi(parts[1])
+	if err != nil || minor < 0 {
+		return [2]int{}, errors.New("invalid Python version")
+	}
+	return [2]int{major, minor}, nil
+}
+
+func parsePythonRuntimeTuple(value string) ([2]int, error) {
+	parts := strings.Split(value, ".")
+	if len(parts) < 2 {
+		return [2]int{}, errors.New("invalid Python runtime version")
+	}
+	return parsePythonVersionTuple(strings.Join(parts[:2], "."))
 }
 
 // evaluatePinnedExtraMarker treats extras as absent for the resolver request.

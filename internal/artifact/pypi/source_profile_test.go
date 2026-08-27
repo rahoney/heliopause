@@ -87,6 +87,23 @@ func TestPyTorchReportEvaluatesPinnedLinuxDependencyMarkers(t *testing.T) {
 	}
 }
 
+func TestPyTorchReportAcceptsPinnedPythonVersionMarker(t *testing.T) {
+	profile := mustPyTorchProfile(t, "cpu")
+	reference, err := ParseReferenceForSource("torch", profile.Source())
+	if err != nil {
+		t.Fatal(err)
+	}
+	reportJSON := `{"version":"1","pip_version":"26.2.1","environment":{"implementation_name":"cpython","implementation_version":"3.14.7","python_full_version":"3.14.7","platform_machine":"x86_64","sys_platform":"linux"},"install":[{"download_info":{"url":"https://download.pytorch.org/whl/cpu/torch/torch-2.9.1%2Bcpu-cp314-cp314-manylinux_2_28_x86_64.whl","archive_info":{"hashes":{"sha256":"` + strings.Repeat("a", 64) + `"}}},"is_direct":false,"requested":true,"metadata":{"name":"torch","version":"2.9.1+cpu","requires_python":">=3.10","requires_dist":["setuptools; python_version >= \"3.12\"","oldpkg; python_version < \"3.14\""]}}]}`
+	report, err := ParseInstallationReportForProfile(reference, []byte(reportJSON), "26.2.1", "3.14.7", profile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	deps := report.Candidates()[0].Dependencies()
+	if len(deps) != 1 || deps[0] != "setuptools" {
+		t.Fatalf("PyTorch python_version marker dependencies = %#v", deps)
+	}
+}
+
 func TestPyTorchSimpleProjectAllowsBoundedLargeIndexPage(t *testing.T) {
 	profile := mustPyTorchProfile(t, "cpu")
 	var body strings.Builder

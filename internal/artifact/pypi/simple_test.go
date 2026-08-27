@@ -85,6 +85,28 @@ func TestInstallationReportAcceptsCanonicalHashesWithoutLegacyHash(t *testing.T)
 	}
 }
 
+func TestInstallationReportIgnoresUnrequestedExtras(t *testing.T) {
+	t.Parallel()
+
+	reference, err := ParseReference("Primary@1.0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := strings.Replace(sampleReportJSON(), `"requires_dist":["child>=2"]`, `"requires_dist":["child>=2","adlfs; extra == 'abfs'"]`, 1)
+	report, err := ParseInstallationReport(reference, []byte(body), pipRuntimeVersionForTest, pythonRuntimeVersionForTest)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, candidate := range report.Candidates() {
+		if candidate.Project() != "primary" {
+			continue
+		}
+		if deps := candidate.Dependencies(); len(deps) != 1 || deps[0] != "child" {
+			t.Fatalf("inactive extra dependency was retained: %#v", deps)
+		}
+	}
+}
+
 func TestCrossCheckRejectsYankedAndMismatchedFiles(t *testing.T) {
 	t.Parallel()
 
