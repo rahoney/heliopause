@@ -72,6 +72,19 @@ func TestSimpleAPIAndReportRejectIncompleteOrUnsafeMetadata(t *testing.T) {
 	}
 }
 
+func TestInstallationReportAcceptsCanonicalHashesWithoutLegacyHash(t *testing.T) {
+	t.Parallel()
+
+	reference, err := ParseReference("primary@1.0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := strings.ReplaceAll(sampleReportJSON(), `"hash":"sha256=`+sampleSHA256+`",`, "")
+	if _, err := ParseInstallationReport(reference, []byte(body), pipRuntimeVersionForTest, pythonRuntimeVersionForTest); err != nil {
+		t.Fatalf("ParseInstallationReport rejected pip schema hashes without legacy hash: %v", err)
+	}
+}
+
 func TestCrossCheckRejectsYankedAndMismatchedFiles(t *testing.T) {
 	t.Parallel()
 

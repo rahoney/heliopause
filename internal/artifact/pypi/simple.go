@@ -362,7 +362,12 @@ func isFinalVersionForProfile(value string, profile SourceProfile) bool {
 }
 
 func parseReportCandidate(item pipInstall, profile SourceProfile) (Candidate, error) {
-	if item.IsDirect || !item.Requested && item.Metadata.Name == "" || !sha256HexPattern.MatchString(item.DownloadInfo.ArchiveInfo.Hashes["sha256"]) || item.DownloadInfo.ArchiveInfo.Hash != "sha256="+item.DownloadInfo.ArchiveInfo.Hashes["sha256"] {
+	sha256 := item.DownloadInfo.ArchiveInfo.Hashes["sha256"]
+	// pip's stable installation-report schema requires archive_info.hashes.
+	// Older pip versions also emitted the legacy singular hash field; when it
+	// is present, retain the consistency check without requiring that optional
+	// compatibility field from current reports.
+	if item.IsDirect || !item.Requested && item.Metadata.Name == "" || !sha256HexPattern.MatchString(sha256) || item.DownloadInfo.ArchiveInfo.Hash != "" && item.DownloadInfo.ArchiveInfo.Hash != "sha256="+sha256 {
 		return Candidate{}, errors.New("invalid pip candidate")
 	}
 	project, err := NormalizeProjectName(item.Metadata.Name)
@@ -398,7 +403,7 @@ func parseReportCandidate(item pipInstall, profile SourceProfile) (Candidate, er
 	}
 	sort.Strings(dependencies)
 	sort.Strings(requirements)
-	return Candidate{project: project, source: source, version: version, filename: filename, url: item.DownloadInfo.URL, sha256: item.DownloadInfo.ArchiveInfo.Hashes["sha256"], requiresPython: item.Metadata.RequiresPython, primary: item.Requested, dependencies: dependencies, requirements: requirements}, nil
+	return Candidate{project: project, source: source, version: version, filename: filename, url: item.DownloadInfo.URL, sha256: sha256, requiresPython: item.Metadata.RequiresPython, primary: item.Requested, dependencies: dependencies, requirements: requirements}, nil
 }
 
 // DependencyProject normalizes the project portion of a bounded requirement.
