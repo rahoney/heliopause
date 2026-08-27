@@ -92,7 +92,7 @@ func TestInstallationReportIgnoresUnrequestedExtras(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	body := strings.Replace(sampleReportJSON(), `"requires_dist":["child>=2"]`, `"requires_dist":["child>=2","dask[dataframe,test]; extra == 'test-downstream'"]`, 1)
+	body := strings.Replace(sampleReportJSON(), `"requires_dist":["child>=2"]`, `"requires_dist":["child>=2","dask[dataframe,test]; extra == 'test-downstream'","backports-zstd; (python_version < '3.14') and extra == 'test-full'"]`, 1)
 	report, err := ParseInstallationReport(reference, []byte(body), pipRuntimeVersionForTest, pythonRuntimeVersionForTest)
 	if err != nil {
 		t.Fatal(err)

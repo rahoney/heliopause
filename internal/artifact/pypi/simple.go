@@ -447,6 +447,9 @@ func parseDeclaredDependencyForProfile(value string, profile SourceProfile, expe
 		dependency, err := parseDeclaredDependency(strings.TrimSpace(parts[0]))
 		return dependency, true, err
 	}
+	if markerContainsInactiveExtraConjunction(marker) {
+		return "", false, nil
+	}
 	if !IsPyTorchSource(profile.source) {
 		return "", false, errors.New("unsupported dependency requirement marker")
 	}
@@ -466,6 +469,15 @@ func evaluatePinnedLinuxMarker(value, expectedPython string) (bool, error) {
 	for strings.HasPrefix(value, "(") && strings.HasSuffix(value, ")") {
 		value = strings.TrimSpace(value[1 : len(value)-1])
 	}
+	if parts := strings.Split(value, " and "); len(parts) > 1 {
+		for _, part := range parts {
+			active, err := evaluatePinnedLinuxMarker(strings.TrimSpace(part), expectedPython)
+			if err != nil || !active {
+				return active, err
+			}
+		}
+		return true, nil
+	}
 	if active, ok := evaluatePinnedExtraMarker(value); ok {
 		return active, nil
 	}
@@ -480,6 +492,26 @@ func evaluatePinnedLinuxMarker(value, expectedPython string) (bool, error) {
 	default:
 		return false, errors.New("unsupported dependency requirement marker")
 	}
+}
+
+// markerContainsInactiveExtraConjunction recognizes the safe fail-closed
+// shortcut for metadata such as `(python_version < '3.14') and extra ==
+// 'test-full'`. With no extras requested, a false extra atom makes the whole
+// conjunction inactive even when the other atom is not otherwise supported.
+func markerContainsInactiveExtraConjunction(value string) bool {
+	if !strings.Contains(value, " and ") {
+		return false
+	}
+	for _, part := range strings.Split(value, " and ") {
+		part = strings.TrimSpace(part)
+		for strings.HasPrefix(part, "(") && strings.HasSuffix(part, ")") {
+			part = strings.TrimSpace(part[1 : len(part)-1])
+		}
+		if active, recognized := evaluatePinnedExtraMarker(part); recognized && !active {
+			return true
+		}
+	}
+	return false
 }
 
 // evaluatePinnedPythonVersionMarker evaluates the one runtime marker emitted
