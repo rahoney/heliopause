@@ -198,7 +198,11 @@ func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain
 	if err != nil {
 		return domain.DependencyResolution{}, errors.New("PyPI resolver reference is invalid")
 	}
-	resolveCtx, cancel := context.WithTimeout(ctx, pypiResolverTimeout)
+	resolveTimeout := pypiResolverTimeout
+	if resourcePolicy := artifactpypi.ResourcePolicyFromContext(ctx); resourcePolicy.Duration() > defaultPyPIResolverDuration {
+		resolveTimeout = resourcePolicy.Duration()
+	}
+	resolveCtx, cancel := context.WithTimeout(ctx, resolveTimeout)
 	defer cancel()
 	if artifactpypi.IsPyTorchSource(r.profile.Source()) {
 		candidates, reportBytes, resolveErr := r.resolvePyTorchGraph(resolveCtx, containerID, capability.Runtime, reference)
@@ -265,6 +269,8 @@ func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain
 	runtimeIdentity := "python:" + capability.Runtime.PythonVersion + ";pip:" + capability.Runtime.PipVersion + ";target:" + capability.Runtime.InterpreterTag + "/" + capability.Runtime.ABITag + "/" + capability.Runtime.PlatformTag + ";source:" + r.profile.Name()
 	return domain.NewDependencyResolution(graph, runtimeIdentity, digest)
 }
+
+const defaultPyPIResolverDuration = 5 * time.Minute
 
 func (r *PyPIResolver) resolvePyTorchGraph(ctx context.Context, containerID string, runtime PythonRuntime, reference domain.ArtifactReference) ([]artifactpypi.Candidate, []byte, error) {
 	request, err := pypiRequirement(reference)

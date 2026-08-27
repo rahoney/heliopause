@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
@@ -54,6 +55,25 @@ func TestPythonDynamicBackendFailsClosedForIncompleteObservation(t *testing.T) {
 	}
 }
 
+func TestPythonDynamicBackendUsesNamedRootProfileResources(t *testing.T) {
+	root, artifact := pythonWheelFixture(t)
+	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil}}
+	introducer, _ := NewPythonArtifactIntroducer(root, runner)
+	backend, _ := NewPythonDynamicBackend(runner, introducer, &recordingObserver{reader: &traceReader{}}, availablePythonProbe)
+	profile, _ := artifactpypi.PyTorchProfile("cpu")
+	ctx, err := artifactpypi.ContextWithResourcePolicy(context.Background(), profile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := backend.InspectWheel(ctx, artifact, []string{"example"}); err != nil {
+		t.Fatal(err)
+	}
+	joined := strings.Join(runner.calls[0].arguments, " ")
+	if !strings.Contains(joined, "--memory 2147483648") || !strings.Contains(joined, "size=2147483648") {
+		t.Fatalf("CPU resource policy did not reach dynamic sandbox: %q", joined)
+	}
+}
+
 func TestPythonDynamicBackendRejectsEmptyOrArbitraryImportSurface(t *testing.T) {
 	root, artifact := pythonWheelFixture(t)
 	introducer, _ := NewPythonArtifactIntroducer(root, &recordingRunner{})
@@ -89,7 +109,7 @@ func pythonWheelFixture(t *testing.T) (string, domain.AcquiredArtifact) {
 func assertPythonDynamicCreate(t *testing.T, arguments []string) {
 	t.Helper()
 	joined := strings.Join(arguments, " ")
-	for _, required := range []string{"--pull never", "--runtime " + gVisorRuntimeName, "--network none", "--read-only", "--cap-drop ALL", "no-new-privileges", "--pids-limit 64", "--memory 512m", pythonImageReference} {
+	for _, required := range []string{"--pull never", "--runtime " + gVisorRuntimeName, "--network none", "--read-only", "--cap-drop ALL", "no-new-privileges", "--pids-limit 64", "--memory 536870912", pythonImageReference} {
 		if !strings.Contains(joined, required) {
 			t.Errorf("create command missing %q: %q", required, joined)
 		}

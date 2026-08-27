@@ -23,10 +23,7 @@ import (
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
-const (
-	pypiDistributionLimit   = 64 << 20
-	pypiDistributionTimeout = 90 * time.Second
-)
+const pypiDistributionTimeout = 90 * time.Second
 
 // Intake acquires only already-resolved public PyPI distributions.
 type Intake struct {
@@ -110,7 +107,12 @@ func (i *Intake) download(ctx context.Context, rawURL, directory, filename strin
 	if err := validateDistributionURLForSource(rawURL, filename, profile, false); err != nil {
 		return "", "", 0, errors.New("PyPI distribution URL is invalid")
 	}
-	requestCtx, cancel := context.WithTimeout(ctx, pypiDistributionTimeout)
+	policy, session := resourcePolicyFromContext(ctx)
+	timeout := pypiDistributionTimeout
+	if policy.Duration() > defaultResourcePolicy().Duration() {
+		timeout = policy.Duration()
+	}
+	requestCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 	request, err := http.NewRequestWithContext(requestCtx, http.MethodGet, rawURL, nil)
 	if err != nil {
@@ -124,6 +126,9 @@ func (i *Intake) download(ctx context.Context, rawURL, directory, filename strin
 	if response.StatusCode != http.StatusOK {
 		return "", "", 0, errors.New("PyPI distribution returned unexpected status")
 	}
+	if CheckTemporaryDisk(directory, policy) != nil || response.ContentLength > policy.MaxArtifactCompressed() || session.beginArtifact(response.ContentLength) != nil {
+		return "", "", 0, errors.New("PyPI distribution exceeds resource budget")
+	}
 	variantFile := map[string]string{"wheel": "wheel.whl", "sdist": "sdist.tar.gz"}[distributionVariantName(filename)]
 	if variantFile == "" {
 		return "", "", 0, errors.New("PyPI distribution type is unsupported")
@@ -135,15 +140,25 @@ func (i *Intake) download(ctx context.Context, rawURL, directory, filename strin
 	temporaryPath := temporary.Name()
 	defer os.Remove(temporaryPath)
 	hash := sha256.New()
-	written, copyErr := io.Copy(io.MultiWriter(temporary, hash), io.LimitReader(response.Body, pypiDistributionLimit+1))
+	writer := io.MultiWriter(temporary, hash, resourceBudgetWriter{session: session})
+	written, copyErr := io.Copy(writer, io.LimitReader(response.Body, policy.MaxArtifactCompressed()+1))
 	syncErr, closeErr := temporary.Sync(), temporary.Close()
-	if copyErr != nil || syncErr != nil || closeErr != nil || written == 0 || written > pypiDistributionLimit {
+	if copyErr != nil || syncErr != nil || closeErr != nil || written == 0 || written > policy.MaxArtifactCompressed() {
 		return "", "", 0, errors.New("stream PyPI distribution failed or exceeded bounds")
 	}
 	if err := os.Rename(temporaryPath, filepath.Join(directory, variantFile)); err != nil {
 		return "", "", 0, err
 	}
 	return variantFile, hex.EncodeToString(hash.Sum(nil)), uint64(written), nil
+}
+
+type resourceBudgetWriter struct{ session *resourceSession }
+
+func (w resourceBudgetWriter) Write(body []byte) (int, error) {
+	if err := w.session.charge(int64(len(body))); err != nil {
+		return 0, err
+	}
+	return len(body), nil
 }
 
 func pypiResolvedFilename(resolved domain.ResolvedArtifact) (string, error) {

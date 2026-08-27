@@ -294,7 +294,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		installers := map[string]cli.Installer{"pypi": installer}
 		for _, profile := range artifactpypi.AllSourceProfiles() {
 			if artifactpypi.IsPyTorchSource(profile.Source()) {
-				installers[profile.Source().String()] = installer
+				installers[profile.Source().String()] = pyTorchResourceInstaller{installer: installer, profile: profile}
 			}
 		}
 		if err := cli.AddPyPIInstallSources(command, installers); err != nil {
@@ -408,6 +408,27 @@ func pypiInstallDependencyResolver(goos, goarch string, executor sandbox.Trusted
 
 type pythonSourceResolver struct {
 	routes map[string]ports.DependencyResolver
+}
+
+// pyTorchResourceInstaller selects one immutable root resource policy before
+// the existing generic install workflow begins. Node identities remain owned
+// by the locked dependency graph and are not rewritten here.
+type pyTorchResourceInstaller struct {
+	installer cli.Installer
+	profile   artifactpypi.SourceProfile
+}
+
+func (i pyTorchResourceInstaller) Install(ctx context.Context, request application.InstallRequest) (application.InstallOutcome, error) {
+	if i.installer == nil || request.Reference().Source() != i.profile.Source() {
+		return application.InstallOutcome{}, errors.New("PyTorch resource installer request is invalid")
+	}
+	resourceContext, err := artifactpypi.ContextWithResourcePolicy(ctx, i.profile)
+	if err != nil {
+		return application.InstallOutcome{}, err
+	}
+	timedContext, cancel := context.WithTimeout(resourceContext, i.profile.ResourcePolicy().Duration())
+	defer cancel()
+	return i.installer.Install(timedContext, request)
 }
 
 func (r pythonSourceResolver) ResolveDependencies(ctx context.Context, reference domain.ArtifactReference, installContext domain.InstallContext) (domain.DependencyResolution, error) {

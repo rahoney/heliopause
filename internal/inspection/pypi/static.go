@@ -78,9 +78,20 @@ func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredA
 	var summary string
 	switch artifact.Identity().Variant() {
 	case "wheel", "derived-wheel":
-		info, inspectErr := artifactpypi.InspectWheelForSource(file, int64(artifact.SizeBytes()), filename, declared, i.target, artifactpypi.DefaultWheelLimits(), artifact.Identity().Source())
+		resourcePolicy := artifactpypi.ResourcePolicyFromContext(ctx)
+		info, inspectErr := artifactpypi.InspectWheelForSource(file, int64(artifact.SizeBytes()), filename, declared, i.target, resourcePolicy.WheelLimits(), artifact.Identity().Source())
 		if inspectErr != nil {
 			return nil, i.violation(artifact, "M5_WHEEL_STATIC_INVALID"), nil
+		}
+		var uncompressed int64
+		for _, item := range info.Files {
+			if item.Size < 0 || uncompressed > resourcePolicy.WheelLimits().MaxUncompressed-item.Size {
+				return nil, i.violation(artifact, "M5_WHEEL_RESOURCE_EXCEEDED"), nil
+			}
+			uncompressed += item.Size
+		}
+		if artifactpypi.ChargeUncompressedFromContext(ctx, uncompressed) != nil {
+			return nil, i.violation(artifact, "M5_WHEEL_RESOURCE_EXCEEDED"), nil
 		}
 		summary = fmt.Sprintf("PyPI wheel static inspection completed with %d RECORD entries.", len(info.Files))
 		return info, i.complete(artifact, "pypi-wheel-static", summary), nil

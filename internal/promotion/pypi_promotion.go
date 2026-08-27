@@ -53,6 +53,9 @@ func (p *PyPIPromotion) Promote(ctx context.Context, staged domain.StagedSet, bu
 	if !bundle.Valid() || staged.ManifestID() != bundle.ManifestID() || staged.Handle() != "staging:"+bundle.ManifestID().String() || verifyDocuments(bundle) != nil {
 		return domain.PromotedInstall{}, errors.New("PyPI staged bundle binding is invalid")
 	}
+	if err := artifactpypi.CheckTemporaryDisk(p.stagingRoot, artifactpypi.ResourcePolicyFromContext(ctx)); err != nil {
+		return domain.PromotedInstall{}, err
+	}
 	stagedRoot := filepath.Join(p.stagingRoot, bundle.ManifestID().String())
 	if filepath.Dir(stagedRoot) != p.stagingRoot || rejectSymlinkPath(stagedRoot) != nil || verifyStagedRecords(stagedRoot, bundle) != nil {
 		return domain.PromotedInstall{}, errors.New("PyPI staged records are unavailable or untrusted")
@@ -94,7 +97,7 @@ func (p *PyPIPromotion) Promote(ctx context.Context, staged domain.StagedSet, bu
 	if err != nil {
 		return domain.PromotedInstall{}, err
 	}
-	if err := p.runner.Run(ctx, temporary, pypiPromotionArguments(temporary)); err != nil {
+	if err := p.runner.Run(ctx, temporary, pypiPromotionArguments(temporary, artifactpypi.ResourcePolicyFromContext(ctx))); err != nil {
 		return domain.PromotedInstall{}, err
 	}
 	if err := validatePyPIOutput(filepath.Join(temporary, "site"), expected, requirements); err != nil {
@@ -137,7 +140,7 @@ func (p *PyPIPromotion) promoteActiveVenv(ctx context.Context, stagedRoot string
 	if err != nil {
 		return domain.PromotedInstall{}, err
 	}
-	if err := p.runner.Run(ctx, temporary, pypiPromotionArguments(temporary)); err != nil {
+	if err := p.runner.Run(ctx, temporary, pypiPromotionArguments(temporary, artifactpypi.ResourcePolicyFromContext(ctx))); err != nil {
 		return domain.PromotedInstall{}, err
 	}
 	output := filepath.Join(temporary, "site")
@@ -154,10 +157,10 @@ func (p *PyPIPromotion) promoteActiveVenv(ctx context.Context, stagedRoot string
 	return domain.NewPromotedInstall(bundle.ManifestID(), installContext.Target())
 }
 
-func pypiPromotionArguments(project string) []string {
+func pypiPromotionArguments(project string, resourcePolicy artifactpypi.ResourcePolicy) []string {
 	identity := strconv.Itoa(os.Getuid()) + ":" + strconv.Itoa(os.Getgid())
 	mount := "type=bind,src=" + project + ",dst=/workspace"
-	return []string{"run", "--rm", "--pull", "never", "--network", "none", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "128", "--memory", "512m", "--cpus", "1", "--user", identity, "--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=128m", "--mount", mount, "--workdir", "/workspace", "--env", "HOME=/tmp", "--env", "PIP_CACHE_DIR=/tmp/pip-cache", "--env", "PIP_CONFIG_FILE=/dev/null", "--entrypoint", "python", sandbox.PinnedPythonRuntime().ImageReference, "-I", "-m", "pip", "install", "--no-index", "--find-links", "/workspace/wheels", "--require-hashes", "--only-binary", ":all:", "--no-deps", "--no-compile", "--disable-pip-version-check", "--target", "/workspace/site", "--requirement", "/workspace/requirements.txt"}
+	return []string{"run", "--rm", "--pull", "never", "--network", "none", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "128", "--memory", strconv.FormatInt(resourcePolicy.RuntimeMemory(), 10), "--cpus", "1", "--user", identity, "--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=" + strconv.FormatInt(resourcePolicy.PromotionTmpfs(), 10), "--mount", mount, "--workdir", "/workspace", "--env", "HOME=/tmp", "--env", "PIP_CACHE_DIR=/tmp/pip-cache", "--env", "PIP_CONFIG_FILE=/dev/null", "--entrypoint", "python", sandbox.PinnedPythonRuntime().ImageReference, "-I", "-m", "pip", "install", "--no-index", "--find-links", "/workspace/wheels", "--require-hashes", "--only-binary", ":all:", "--no-deps", "--no-compile", "--disable-pip-version-check", "--target", "/workspace/site", "--requirement", "/workspace/requirements.txt"}
 }
 
 type pypiExpected struct{ name, version, digest string }

@@ -75,7 +75,7 @@ func (b *PythonSdistBuilder) Build(ctx context.Context, source domain.AcquiredAr
 		result, resultErr := pythonIncomplete(sessionID, "M5_PYPI_BUILD_RUNTIME_UNAVAILABLE")
 		return DerivedWheel{}, result, resultErr
 	}
-	created, err := b.runner.Output(ctx, "docker", pythonDynamicCreateArguments(sessionID)...)
+	created, err := b.runner.Output(ctx, "docker", pythonDynamicCreateArguments(sessionID, artifactpypi.ResourcePolicyFromContext(ctx))...)
 	if err != nil || !containerIDPattern.MatchString(strings.TrimSpace(string(created))) {
 		result, resultErr := pythonIncomplete(sessionID, "M5_PYPI_BUILD_SETUP_FAILED")
 		return DerivedWheel{}, result, resultErr
@@ -173,7 +173,8 @@ func validSdistBuildInput(source domain.AcquiredArtifact, recipe artifactpypi.Sd
 }
 
 func (i *PythonArtifactIntroducer) introduce(ctx context.Context, containerID string, artifact domain.AcquiredArtifact, destination, variant string) error {
-	if i == nil || i.runner == nil || ctx == nil || !containerIDPattern.MatchString(containerID) || artifact.Identity().Source().String() != "pypi" || artifact.Identity().Variant() != variant || !strings.HasPrefix(destination, "/tmp/") {
+	_, supported := artifactpypi.ProfileForSource(artifact.Identity().Source())
+	if i == nil || i.runner == nil || ctx == nil || !containerIDPattern.MatchString(containerID) || !supported || artifact.Identity().Variant() != variant || !strings.HasPrefix(destination, "/tmp/") {
 		return errors.New("python artifact introduction request is invalid")
 	}
 	source, err := i.artifactPath(artifact.ContentHandle(), variant)

@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
@@ -61,6 +62,9 @@ func (s *LocalStaging) Stage(ctx context.Context, bundle domain.VerifiedBundle) 
 		return domain.StagedSet{}, err
 	}
 	if err := ensureTrustedRoot(s.stagingRoot); err != nil {
+		return domain.StagedSet{}, err
+	}
+	if err := artifactpypi.CheckTemporaryDisk(s.stagingRoot, artifactpypi.ResourcePolicyFromContext(ctx)); err != nil {
 		return domain.StagedSet{}, err
 	}
 	final := filepath.Join(s.stagingRoot, bundle.ManifestID().String())
@@ -244,7 +248,7 @@ func stagedArtifactNames(artifact domain.AcquiredArtifact) (string, string, erro
 	if artifact.Identity().Source().String() == "npm" && variant == "tarball" {
 		return "tarball.tgz", artifact.Digest().String() + ".tgz", nil
 	}
-	if artifact.Identity().Source().String() == "pypi" {
+	if _, supported := artifactpypi.ProfileForSource(artifact.Identity().Source()); supported {
 		switch variant {
 		case "wheel":
 			return "wheel.whl", artifact.Digest().String() + ".whl", nil

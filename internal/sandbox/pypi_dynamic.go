@@ -5,9 +5,11 @@ import (
 	"errors"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
+	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
@@ -98,7 +100,8 @@ func (b *PythonDynamicBackend) InspectWheel(ctx context.Context, artifact domain
 	if err != nil || !capability.Available || capability.Runtime != PinnedPythonRuntime() {
 		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_RUNTIME_UNAVAILABLE")
 	}
-	created, err := b.runner.Output(ctx, "docker", pythonDynamicCreateArguments(sessionID)...)
+	resourcePolicy := artifactpypi.ResourcePolicyFromContext(ctx)
+	created, err := b.runner.Output(ctx, "docker", pythonDynamicCreateArguments(sessionID, resourcePolicy)...)
 	if err != nil || !containerIDPattern.MatchString(strings.TrimSpace(string(created))) {
 		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_SETUP_FAILED")
 	}
@@ -110,7 +113,11 @@ func (b *PythonDynamicBackend) InspectWheel(ctx context.Context, artifact domain
 		}
 		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_OBSERVER_FAILED")
 	}
-	runCtx, cancel := context.WithTimeout(ctx, b.timeout)
+	timeout := b.timeout
+	if resourcePolicy.Duration() > defaultPyPIDynamicDuration {
+		timeout = resourcePolicy.Duration()
+	}
+	runCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 	if err := discardCommand(runCtx, b.runner, "docker", "start", containerID); err != nil {
 		return b.finishIncomplete(sessionID, containerID, trace, "M5_PYPI_DYNAMIC_SETUP_FAILED")
@@ -139,6 +146,8 @@ func (b *PythonDynamicBackend) InspectWheel(ctx context.Context, artifact domain
 	}
 	return domain.NewSandboxResult(sessionID, domain.SandboxCompleted, "", append(observations, completed))
 }
+
+const defaultPyPIDynamicDuration = 5 * time.Minute
 
 func (b *PythonDynamicBackend) finishIncomplete(sessionID domain.SandboxSessionID, containerID string, trace TraceReader, limitation string) (domain.SandboxResult, error) {
 	_, collectLimitation := b.disposeAndCollect(containerID, trace)
@@ -188,8 +197,8 @@ func validImportSurface(imports []string) bool {
 	}
 	return true
 }
-func pythonDynamicCreateArguments(sessionID domain.SandboxSessionID) []string {
-	return []string{"create", "--pull", "never", "--runtime", gVisorRuntimeName, "--user", "1000:1000", "--network", "none", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "64", "--memory", "512m", "--cpus", "1", "--ulimit", "cpu=30:30", "--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=256m,uid=1000,gid=1000,mode=0700", "--name", "heliopause-pypi-" + sessionID.String(), pythonImageReference, "sleep", "infinity"}
+func pythonDynamicCreateArguments(sessionID domain.SandboxSessionID, resourcePolicy artifactpypi.ResourcePolicy) []string {
+	return []string{"create", "--pull", "never", "--runtime", gVisorRuntimeName, "--user", "1000:1000", "--network", "none", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "64", "--memory", strconv.FormatInt(resourcePolicy.RuntimeMemory(), 10), "--cpus", "1", "--ulimit", "cpu=30:30", "--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=" + strconv.FormatInt(resourcePolicy.RuntimeTmpfs(), 10) + ",uid=1000,gid=1000,mode=0700", "--name", "heliopause-pypi-" + sessionID.String(), pythonImageReference, "sleep", "infinity"}
 }
 
 const pythonImportScript = "import importlib,sys\nsys.path.insert(0,'/tmp/haa-site')\nfor name in sys.argv[1:]: importlib.import_module(name)\n"

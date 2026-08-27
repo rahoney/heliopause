@@ -20,12 +20,14 @@ type SourceProfile struct {
 	indexHost         string
 	distributionHosts []string
 	ownedProjects     map[string]bool
+	resourcePolicy    ResourcePolicy
 }
 
-func (p SourceProfile) Name() string            { return p.name }
-func (p SourceProfile) Source() domain.SourceID { return p.source }
-func (p SourceProfile) IndexURL() string        { return p.indexURL }
-func (p SourceProfile) IndexHost() string       { return p.indexHost }
+func (p SourceProfile) Name() string                   { return p.name }
+func (p SourceProfile) Source() domain.SourceID        { return p.source }
+func (p SourceProfile) IndexURL() string               { return p.indexURL }
+func (p SourceProfile) IndexHost() string              { return p.indexHost }
+func (p SourceProfile) ResourcePolicy() ResourcePolicy { return p.resourcePolicy }
 func (p SourceProfile) DistributionHosts() []string {
 	return append([]string(nil), p.distributionHosts...)
 }
@@ -37,6 +39,7 @@ var (
 		indexURL:          "https://pypi.org/simple/",
 		indexHost:         "pypi.org",
 		distributionHosts: []string{"files.pythonhosted.org"},
+		resourcePolicy:    defaultResourcePolicy(),
 	})
 	pyTorchProfiles = map[string]SourceProfile{}
 )
@@ -47,14 +50,22 @@ func init() {
 		for _, project := range locked.OwnedProjects {
 			owned[project] = true
 		}
-		pyTorchProfiles[strings.TrimPrefix(name, "pytorch:")] = mustSourceProfile(SourceProfile{
+		profile := SourceProfile{
 			name:              locked.Name,
 			source:            mustSourceID(locked.SourceID),
 			indexURL:          locked.IndexURL,
 			indexHost:         locked.IndexHost,
 			distributionHosts: append([]string(nil), locked.DistributionHosts...),
 			ownedProjects:     owned,
-		})
+			resourcePolicy:    defaultResourcePolicy(),
+		}
+		switch profile.name {
+		case "pytorch:cpu":
+			profile.resourcePolicy = pyTorchCPUResourcePolicy()
+		case "pytorch:cu126":
+			profile.resourcePolicy = pyTorchCU126ResourcePolicy()
+		}
+		pyTorchProfiles[strings.TrimPrefix(name, "pytorch:")] = mustSourceProfile(profile)
 	}
 }
 
@@ -67,7 +78,7 @@ func mustSourceID(value string) domain.SourceID {
 }
 
 func mustSourceProfile(profile SourceProfile) SourceProfile {
-	if profile.name == "" || profile.source.String() == "" || profile.indexURL == "" || profile.indexHost == "" || len(profile.distributionHosts) == 0 {
+	if profile.name == "" || profile.source.String() == "" || profile.indexURL == "" || profile.indexHost == "" || len(profile.distributionHosts) == 0 || !profile.resourcePolicy.valid() {
 		panic("invalid source profile")
 	}
 	return profile

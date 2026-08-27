@@ -10,6 +10,7 @@
 - CLI framework: Cobra
 - 현재 상태: M0–M11 qualification 및 post-qualification release hardening 완료. M12 생태계 확장을 진행 중이며, 현재 M12-001 공식 PyTorch source support를 구현·qualification한다. M12-02 최종 red-team/fix gate와 M13 Production Release & Operations는 선행 작업 완료 후 진행
 - 현재 작업: M12-001 — Official PyTorch source support
+- 진행 상태의 canonical owner: [`docs/planning/02-current-work-queue.md`](docs/planning/02-current-work-queue.md)
 
 Heliopause는 Apache-2.0으로 배포한다. 외부 기여는 `CLA.md`의 Harmony
 Copyright License 및 Option Five 조건과 자동 CLA status check를 충족해야 하며,

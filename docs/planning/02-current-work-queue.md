@@ -9,9 +9,9 @@
 ```text
 Current milestone: M12 — Ecosystem Expansion Before Public Release
 Milestone status: IN_PROGRESS
-Active work item: M12-002 — public Go Modules
-Next work item: M12-003 — Rust/Cargo and public crates.io
-Next work item status: NOT_STARTED
+Active work item: M12-001 — Official PyTorch source support
+Next work item: M12-002 — public Go Modules
+Next work item status: NOT_STARTED (blocked until M12-001 acceptance closes)
 Ready: Yes
 ```
 
@@ -36,8 +36,8 @@ M10-006은 Apache-2.0 outbound license, Harmony copyright-license CLA Option Fiv
 individual/entity contribution 절차와 pre-CLA source provenance를 확정했다.
 M10-007은 exact tag/build-run candidate, manifest/checksum과 GitHub attestation을
 검증하는 protected publication workflow implementation과 PR/CI qualification을
-완료했다. 실제 release environment·tag policy·main Ruleset activation·`develop`
-branch 전환과 public release는 M11 완료 후 M12에서 수행한다.
+완료했다. 실제 production release environment·tag policy·main Ruleset activation·
+`develop` branch 전환과 public release는 M12 및 M12-02 완료 후 M13에서 수행한다.
 
 M11-001은 [M11 Dynamic Detection Depth Contract](./14-m11-dynamic-detection-depth-contract.md)에서
 exact gVisor schema lock, bounded normalized vocabulary와 raw payload non-retention
@@ -2075,10 +2075,11 @@ Next: <다음 ID와 Ready 여부>
 - 다음 항목이 시작 가능하면 `Ready: Yes`로 바꾸고, 실제 시작 전에는 `IN_PROGRESS`로 표시하지 않는다.
 - 구현 도중 queue 자체를 바꿨다면 변경 이유와 영향을 해당 commit에서 설명한다.
 
-## 6. 현재 재개 지점
+## 6. Historical state records and current M12 status
 
-M0~M8과 M9-001~003은 완료되었다. 현재는 **M9-004 — complete root CLI tree,
-defaults and advanced target UX**를 실행한다.
+아래 M0~M11 항목은 과거 완료·qualification 기록이다. 과거 work item의
+`현재 재개 지점` 표현은 현재 실행 상태가 아니며, 현재 실행 상태는 이 절의
+M12 canonical block만 소유한다.
 
 ```text
 M0: COMPLETE
@@ -2119,7 +2120,7 @@ M10-004: COMPLETE
 M10-005: COMPLETE
 M10-006: COMPLETE
 M10-007: COMPLETE
-M11: IN_PROGRESS
+M11: COMPLETE
 M11-001: COMPLETE
 M11-002: COMPLETE
 M11-003: COMPLETE
@@ -2132,14 +2133,14 @@ M11-FIX-04: COMPLETE
 M11-FIX-05: COMPLETE
 M12: IN_PROGRESS
 M12-001: IN_PROGRESS
-M12-002: IN_PROGRESS
+M12-002: NOT_STARTED
 M12-003: NOT_STARTED
 M12-004: NOT_STARTED
 M12-005: NOT_STARTED
 M12-02: RESERVED
 M13: BLOCKED
-Active work item: M12-002 — Ready: Yes
-Next work item: M12-003 — Ready: No (M12-002 prerequisite)
+Active work item: M12-001 — Ready: Yes
+Next work item: M12-002 — Ready: No (M12-001 acceptance prerequisite)
 ```
 
 M9-006까지 qualification을 완료했다. M10-001은 release identity·manifest 및
@@ -2153,9 +2154,9 @@ copyright-license CLA Option Five, hosted GitHub CLA Assistant status 정책,
 individual/entity contribution과 third-party provenance 절차를 기록했다.
 CLA governing jurisdiction은 Republic of Korea로 확정되었다. remote PR/CI
 qualification과 protected `release` environment 설정이 끝날 때까지 public release는
-게시하지 않는다. M10의 verified distribution implementation은 완료되었고, M11
-detection depth를 먼저 완성한 뒤 M12에서 production activation과 최종 배포를
-수행한다.
+게시하지 않는다. M10의 verified distribution implementation과 M11 detection depth는
+완료되었고, M12 ecosystem expansion 및 M12-02 final red-team/fix gate 이후 M13에서
+production activation과 최종 배포를 수행한다.
 
 ### M11 work breakdown
 
@@ -2172,7 +2173,7 @@ detection depth를 먼저 완성한 뒤 M12에서 production activation과 최�
 | Order | ID | Scope | Status |
 | --- | --- | --- | --- |
 | 1 | M12-001 | Official PyTorch source support | IN_PROGRESS |
-| 2 | M12-002 | public Go Modules | IN_PROGRESS |
+| 2 | M12-002 | public Go Modules | NOT_STARTED |
 | 3 | M12-003 | Rust/Cargo and public crates.io | NOT_STARTED |
 | 4 | M12-004 | Terraform Provider installation | NOT_STARTED |
 | 5 | M12-005 | cross-ecosystem qualification and feature freeze | NOT_STARTED |
@@ -2187,6 +2188,50 @@ detection depth를 먼저 완성한 뒤 M12에서 production activation과 최�
 | 3 | M13-003 | canonical release build·manifest·attestation·OS package assets | NOT_STARTED |
 | 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | NOT_STARTED |
 | 5 | M13-005 | exact publication·clean Host bootstrap·doctor·cross-ecosystem smoke·quarantine | NOT_STARTED |
+
+### M12 baseline audit status
+
+```text
+M12-001 — PyTorch
+IMPLEMENTED: YES
+WIRED: YES
+QUALIFIED: NO
+ACCEPTANCE_CLOSED: NO
+Status: IN_PROGRESS
+MISSING:
+- PyTorch profile-specific bounded resource policy implementation/qualification
+- CPU profile 실제 qualification
+- 최소 1개 supported CUDA profile qualification
+- graph node source identity가 install/Promotion boundary까지 유지되는 evidence
+- Linux gVisor qualification
+- CI qualification evidence
+
+M12-002 — Go
+IMPLEMENTED: YES
+WIRED: NO
+QUALIFIED: NO
+ACCEPTANCE_CLOSED: NO
+Status: NOT_STARTED
+
+M12-003 — Cargo
+IMPLEMENTED: YES
+WIRED: NO
+QUALIFIED: NO
+ACCEPTANCE_CLOSED: NO
+Status: NOT_STARTED
+
+M12-004 — Terraform
+IMPLEMENTED: NO
+WIRED: NO
+QUALIFIED: NO
+ACCEPTANCE_CLOSED: NO
+Status: NOT_STARTED
+```
+
+`WIRED: NO`는 코드가 전혀 존재하지 않는다는 뜻이 아니라, 해당 work item의
+required user/runtime path 전체가 acceptance 수준으로 연결되지 않았다는 뜻이다.
+M12-002~004의 상세 MISSING은 해당 work item이 시작될 때 별도 baseline audit로
+확정하며, 현재는 M12-001 하나만 `IN_PROGRESS`다.
 
 ### M11 post-qualification release hardening
 
