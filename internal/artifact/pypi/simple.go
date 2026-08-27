@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"html"
 	"io"
 	"net/url"
@@ -408,7 +409,7 @@ func parseReportCandidate(item pipInstall, profile SourceProfile) (Candidate, er
 	for _, requirement := range item.Metadata.RequiresDist {
 		dependency, active, err := parseDeclaredDependencyForProfile(requirement, profile)
 		if err != nil {
-			return Candidate{}, errors.New("unsupported pip dependency metadata")
+			return Candidate{}, fmt.Errorf("unsupported pip dependency metadata %q: %w", requirement, err)
 		}
 		if !active {
 			continue
