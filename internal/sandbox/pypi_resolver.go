@@ -259,7 +259,7 @@ func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain
 		if err != nil {
 			return domain.DependencyResolution{}, errors.New("fetch PyPI Simple metadata failed")
 		}
-		page, err := artifactpypi.ParseSimpleProjectForProfile(candidate.Project(), body, profile)
+		page, err := artifactpypi.ParseSimpleProjectForRootProfile(candidate.Project(), body, profile, r.profile)
 		if err != nil {
 			return domain.DependencyResolution{}, err
 		}
@@ -366,7 +366,7 @@ func (r *PyPIResolver) resolvePyTorchCandidate(ctx context.Context, containerID 
 	if err != nil {
 		return artifactpypi.Candidate{}, nil, errors.New("fetch source-pinned Simple metadata failed")
 	}
-	page, err := artifactpypi.ParseSimpleProjectForProfile(candidate.Project(), body, profile)
+	page, err := artifactpypi.ParseSimpleProjectForRootProfile(candidate.Project(), body, profile, r.profile)
 	if err != nil {
 		return artifactpypi.Candidate{}, nil, err
 	}

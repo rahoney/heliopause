@@ -102,6 +102,17 @@ func TestSimpleProjectMetadataDiagnosticsAreBounded(t *testing.T) {
 	}
 }
 
+func TestSimpleFilesLimitIsSelectedOnlyByCanonicalPyTorchRoot(t *testing.T) {
+	cpu, _ := PyTorchProfile("cpu")
+	cu126, _ := PyTorchProfile("cu126")
+	if simpleFilesLimit(PublicPyPIProfile()) != 1024 || simpleFilesLimit(SourceProfile{}) != 1024 {
+		t.Fatal("default root acquired enlarged Simple limit")
+	}
+	if simpleFilesLimit(cpu) != 8192 || simpleFilesLimit(cu126) != 8192 {
+		t.Fatalf("PyTorch root limits = %d/%d", simpleFilesLimit(cpu), simpleFilesLimit(cu126))
+	}
+}
+
 func TestInstallationReportAcceptsCanonicalHashesWithoutLegacyHash(t *testing.T) {
 	t.Parallel()
 

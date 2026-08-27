@@ -139,22 +139,35 @@ func (d simpleMetadataDiagnostic) Error() string {
 // ParseSimpleProject accepts only a PyPI Simple API JSON v1 project page and
 // enforces the public PyPI distribution endpoint for every listed file.
 func ParseSimpleProject(project string, body []byte) (SimpleProject, error) {
-	return parseJSONSimpleProject(project, body, PublicPyPIProfile())
+	return parseJSONSimpleProject(project, body, PublicPyPIProfile(), maxPyPIReportEntries)
 }
 
 // ParseSimpleProjectForProfile selects the canonical parser for a named
 // source profile. It never accepts a caller-provided endpoint or format.
 func ParseSimpleProjectForProfile(project string, body []byte, profile SourceProfile) (SimpleProject, error) {
+	return ParseSimpleProjectForRootProfile(project, body, profile, PublicPyPIProfile())
+}
+
+// ParseSimpleProjectForRootProfile keeps node source validation independent
+// from the bounded Simple-page budget selected by a canonical root profile.
+func ParseSimpleProjectForRootProfile(project string, body []byte, profile, root SourceProfile) (SimpleProject, error) {
 	if IsPyTorchSource(profile.source) {
 		return ParsePyTorchSimpleProject(project, body, profile)
 	}
 	if profile.source == PublicPyPIProfile().source {
-		return parseJSONSimpleProject(project, body, profile)
+		return parseJSONSimpleProject(project, body, profile, simpleFilesLimit(root))
 	}
 	return SimpleProject{}, errors.New("unsupported Python source profile")
 }
 
-func parseJSONSimpleProject(project string, body []byte, profile SourceProfile) (SimpleProject, error) {
+func simpleFilesLimit(root SourceProfile) int {
+	if root.name == "pytorch:cpu" || root.name == "pytorch:cu126" {
+		return 8192
+	}
+	return maxPyPIReportEntries
+}
+
+func parseJSONSimpleProject(project string, body []byte, profile SourceProfile, filesLimit int) (SimpleProject, error) {
 	project, err := NormalizeProjectName(project)
 	if err != nil {
 		return SimpleProject{}, errors.New("invalid PyPI Simple project is invalid")
@@ -173,16 +186,16 @@ func parseJSONSimpleProject(project string, body []byte, profile SourceProfile) 
 	}
 	responseProject, err := NormalizeProjectName(response.Name)
 	if err != nil {
-		return SimpleProject{}, simpleMetadataDiagnostic{reason: "NAME_INVALID", project: project, files: len(response.Files), limit: maxPyPIReportEntries}
+		return SimpleProject{}, simpleMetadataDiagnostic{reason: "NAME_INVALID", project: project, files: len(response.Files), limit: filesLimit}
 	}
 	if responseProject != project {
-		return SimpleProject{}, simpleMetadataDiagnostic{reason: "NAME_MISMATCH", project: project, response: responseProject, files: len(response.Files), limit: maxPyPIReportEntries}
+		return SimpleProject{}, simpleMetadataDiagnostic{reason: "NAME_MISMATCH", project: project, response: responseProject, files: len(response.Files), limit: filesLimit}
 	}
 	if len(response.Files) == 0 {
-		return SimpleProject{}, simpleMetadataDiagnostic{reason: "FILES_EMPTY", project: project, response: responseProject, limit: maxPyPIReportEntries}
+		return SimpleProject{}, simpleMetadataDiagnostic{reason: "FILES_EMPTY", project: project, response: responseProject, limit: filesLimit}
 	}
-	if len(response.Files) > maxPyPIReportEntries {
-		return SimpleProject{}, simpleMetadataDiagnostic{reason: "FILES_LIMIT", project: project, response: responseProject, files: len(response.Files), limit: maxPyPIReportEntries}
+	if len(response.Files) > filesLimit {
+		return SimpleProject{}, simpleMetadataDiagnostic{reason: "FILES_LIMIT", project: project, response: responseProject, files: len(response.Files), limit: filesLimit}
 	}
 	files := make([]SimpleFile, 0, len(response.Files))
 	seen := make(map[string]bool, len(response.Files))
