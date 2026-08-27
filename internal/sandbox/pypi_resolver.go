@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"net"
 	"net/netip"
 	"runtime"
@@ -339,8 +340,11 @@ func (r *PyPIResolver) resolvePyTorchCandidate(ctx context.Context, containerID 
 		return artifactpypi.Candidate{}, nil, errors.New("read source-pinned pip report failed")
 	}
 	report, err := artifactpypi.ParseInstallationReportForProfile(reference, reportBytes, runtime.PipVersion, runtime.PythonVersion, profile)
-	if err != nil || len(report.Candidates()) != 1 {
-		return artifactpypi.Candidate{}, nil, errors.New("source-pinned pip report is invalid")
+	if err != nil {
+		return artifactpypi.Candidate{}, nil, fmt.Errorf("source-pinned pip report is invalid: %w", err)
+	}
+	if len(report.Candidates()) != 1 {
+		return artifactpypi.Candidate{}, nil, errors.New("source-pinned pip report candidate count is invalid")
 	}
 	candidate := report.Candidates()[0]
 	fetchScript, fetchArguments := simpleJSONFetchScript, []string{candidate.Project()}
