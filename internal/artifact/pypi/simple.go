@@ -124,6 +124,18 @@ type simpleFile struct {
 	Size           uint64            `json:"size"`
 }
 
+type simpleMetadataDiagnostic struct {
+	reason   string
+	project  string
+	response string
+	files    int
+	limit    int
+}
+
+func (d simpleMetadataDiagnostic) Error() string {
+	return fmt.Sprintf("invalid PyPI Simple project metadata is invalid: reason=%s project=%s response=%s files=%d limit=%d", d.reason, d.project, d.response, d.files, d.limit)
+}
+
 // ParseSimpleProject accepts only a PyPI Simple API JSON v1 project page and
 // enforces the public PyPI distribution endpoint for every listed file.
 func ParseSimpleProject(project string, body []byte) (SimpleProject, error) {
@@ -160,8 +172,17 @@ func parseJSONSimpleProject(project string, body []byte, profile SourceProfile) 
 		return SimpleProject{}, errors.New("invalid PyPI Simple API version is unsupported")
 	}
 	responseProject, err := NormalizeProjectName(response.Name)
-	if err != nil || responseProject != project || len(response.Files) == 0 || len(response.Files) > maxPyPIReportEntries {
-		return SimpleProject{}, errors.New("invalid PyPI Simple project metadata is invalid")
+	if err != nil {
+		return SimpleProject{}, simpleMetadataDiagnostic{reason: "NAME_INVALID", project: project, files: len(response.Files), limit: maxPyPIReportEntries}
+	}
+	if responseProject != project {
+		return SimpleProject{}, simpleMetadataDiagnostic{reason: "NAME_MISMATCH", project: project, response: responseProject, files: len(response.Files), limit: maxPyPIReportEntries}
+	}
+	if len(response.Files) == 0 {
+		return SimpleProject{}, simpleMetadataDiagnostic{reason: "FILES_EMPTY", project: project, response: responseProject, limit: maxPyPIReportEntries}
+	}
+	if len(response.Files) > maxPyPIReportEntries {
+		return SimpleProject{}, simpleMetadataDiagnostic{reason: "FILES_LIMIT", project: project, response: responseProject, files: len(response.Files), limit: maxPyPIReportEntries}
 	}
 	files := make([]SimpleFile, 0, len(response.Files))
 	seen := make(map[string]bool, len(response.Files))

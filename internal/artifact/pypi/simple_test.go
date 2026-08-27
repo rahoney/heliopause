@@ -72,6 +72,36 @@ func TestSimpleAPIAndReportRejectIncompleteOrUnsafeMetadata(t *testing.T) {
 	}
 }
 
+func TestSimpleProjectMetadataDiagnosticsAreBounded(t *testing.T) {
+	base := sampleSimpleJSON("primary", "primary-1.0-py3-none-any.whl", "")
+	cases := []struct{ name, body, want string }{
+		{"name invalid", strings.Replace(base, `"name":"primary"`, `"name":"!!!"`, 1), "reason=NAME_INVALID project=primary response= files=1 limit=1024"},
+		{"name mismatch", strings.Replace(base, `"name":"primary"`, `"name":"other"`, 1), "reason=NAME_MISMATCH project=primary response=other files=1 limit=1024"},
+		{"files empty", `{"meta":{"api-version":"1.4"},"name":"primary","files":[]}`, "reason=FILES_EMPTY project=primary response=primary files=0 limit=1024"},
+	}
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
+			_, err := ParseSimpleProject("primary", []byte(test.body))
+			if err == nil || !strings.Contains(err.Error(), test.want) {
+				t.Fatalf("error = %v, want %q", err, test.want)
+			}
+		})
+	}
+	var body strings.Builder
+	body.WriteString(`{"meta":{"api-version":"1.4"},"name":"numpy","files":[`)
+	for i := 0; i < maxPyPIReportEntries+1; i++ {
+		if i > 0 {
+			body.WriteByte(',')
+		}
+		body.WriteString(`{}`)
+	}
+	body.WriteString(`]}`)
+	_, err := ParseSimpleProject("numpy", []byte(body.String()))
+	if err == nil || !strings.Contains(err.Error(), "reason=FILES_LIMIT project=numpy response=numpy files=1025 limit=1024") {
+		t.Fatalf("files limit diagnostic = %v", err)
+	}
+}
+
 func TestInstallationReportAcceptsCanonicalHashesWithoutLegacyHash(t *testing.T) {
 	t.Parallel()
 
