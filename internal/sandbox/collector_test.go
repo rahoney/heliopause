@@ -52,6 +52,21 @@ func TestCollectTraceDiagnosticIsBoundedAndClassifiesFailure(t *testing.T) {
 	}
 }
 
+func TestTraceBudgetsAreProfileBoundedAndFailClosed(t *testing.T) {
+	for _, test := range []struct {
+		profile string
+		events  int
+		bytes   uint64
+	}{
+		{"pypi-wheel", 10_000, 2 << 20}, {"pypi-wheel-pytorch-cpu", 50_000, 8 << 20}, {"pypi-wheel-pytorch-cu126", 100_000, 16 << 20}, {"untrusted", 10_000, 2 << 20},
+	} {
+		budget := traceBudgetForProfile(test.profile)
+		if budget.events != test.events || budget.bytes != test.bytes {
+			t.Fatalf("%s budget = %#v", test.profile, budget)
+		}
+	}
+}
+
 func TestTraceObservationRejectsKindsTheProductionHelperCannotEmit(t *testing.T) {
 	for _, kind := range []string{"process-unexpected", "filesystem-violation", "filesystem-write", "resource-limit"} {
 		if _, _, ok := traceObservation(kind); ok {

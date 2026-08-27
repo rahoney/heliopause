@@ -136,7 +136,7 @@ func (o *SharedObserver) Start(_ context.Context, containerID string) (TraceRead
 	if _, exists := o.streams[containerID]; exists {
 		return nil, errors.New("duplicate Sandbox observer mapping")
 	}
-	reader := &sharedTraceReader{observer: o, records: make(chan TraceRecord, maximumTraceEvents+1), done: make(chan struct{})}
+	reader := &sharedTraceReader{observer: o, records: make(chan TraceRecord, defaultTraceBudget.events+1), done: make(chan struct{}), budget: defaultTraceBudget}
 	o.streams[containerID] = reader
 	return reader, nil
 }
@@ -148,11 +148,21 @@ func (o *SharedObserver) StartProfile(ctx context.Context, containerID, profile 
 	if err := registerObserverProfile(ctx, containerID, profile); err != nil {
 		return nil, err
 	}
-	return o.Start(ctx, containerID)
+	reader, err := o.Start(ctx, containerID)
+	if err != nil {
+		return nil, err
+	}
+	shared := reader.(*sharedTraceReader)
+	budget := traceBudgetForProfile(profile)
+	if budget != defaultTraceBudget {
+		shared.records = make(chan TraceRecord, budget.events+1)
+		shared.budget = budget
+	}
+	return shared, nil
 }
 
 func registerObserverProfile(ctx context.Context, containerID, profile string) error {
-	if !containerIDPattern.MatchString(containerID) || profile != "npm-lifecycle" && profile != "pypi-wheel" && profile != "github-elf" {
+	if !containerIDPattern.MatchString(containerID) || !validObserverProfile(profile) {
 		return errors.New("observer profile registration is invalid")
 	}
 	body, err := json.Marshal(struct {
@@ -171,6 +181,10 @@ func registerObserverProfile(ctx context.Context, containerID, profile string) e
 		return errors.New("send observer profile registration")
 	}
 	return nil
+}
+
+func validObserverProfile(profile string) bool {
+	return profile == "npm-lifecycle" || profile == "pypi-wheel" || profile == "pypi-wheel-pytorch-cpu" || profile == "pypi-wheel-pytorch-cu126" || profile == "github-elf"
 }
 
 func (o *SharedObserver) receive() {
@@ -247,7 +261,10 @@ type sharedTraceReader struct {
 	observer *SharedObserver
 	records  chan TraceRecord
 	done     chan struct{}
+	budget   traceBudget
 }
+
+func (r *sharedTraceReader) traceBudget() traceBudget { return r.budget }
 
 func (r *sharedTraceReader) Next(ctx context.Context) (TraceRecord, error) {
 	// A stream-end datagram can arrive immediately after a final observation.

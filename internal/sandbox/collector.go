@@ -27,6 +27,24 @@ const (
 	maximumTraceBytes  = 2 << 20
 )
 
+type traceBudget struct {
+	events int
+	bytes  uint64
+}
+
+var defaultTraceBudget = traceBudget{events: maximumTraceEvents, bytes: maximumTraceBytes}
+
+func traceBudgetForProfile(profile string) traceBudget {
+	switch profile {
+	case "pypi-wheel-pytorch-cpu":
+		return traceBudget{events: 50_000, bytes: 8 << 20}
+	case "pypi-wheel-pytorch-cu126":
+		return traceBudget{events: 100_000, bytes: 16 << 20}
+	default:
+		return defaultTraceBudget
+	}
+}
+
 // TraceRecord is an already transport-framed observer event. Payloads are
 // intentionally excluded: normal Sandbox results retain only bounded kinds.
 type TraceRecord struct {
@@ -67,9 +85,13 @@ func collectTraceDiagnostic(ctx context.Context, reader TraceReader) ([]domain.S
 	if reader == nil {
 		return nil, "M3_DYNAMIC_OBSERVER_FAILED", diagnostic
 	}
+	budget := defaultTraceBudget
+	if configured, ok := reader.(interface{ traceBudget() traceBudget }); ok {
+		budget = configured.traceBudget()
+	}
 	var totalBytes uint64
 	observations := make([]domain.SandboxObservation, 0)
-	for eventCount := 0; eventCount < maximumTraceEvents; eventCount++ {
+	for eventCount := 0; eventCount < budget.events; eventCount++ {
 		record, err := reader.Next(ctx)
 		if errors.Is(err, io.EOF) {
 			diagnostic.Reason, diagnostic.SessionComplete = "", true
@@ -87,7 +109,7 @@ func collectTraceDiagnostic(ctx context.Context, reader TraceReader) ([]domain.S
 			diagnostic.Events, diagnostic.Bytes = uint64(eventCount), totalBytes
 			return nil, "M3_DYNAMIC_OBSERVER_FAILED", diagnostic
 		}
-		if record.Bytes > maximumTraceBytes-totalBytes {
+		if record.Bytes > budget.bytes-totalBytes {
 			diagnostic.Reason, diagnostic.Events, diagnostic.Bytes, diagnostic.LastKind = "BYTE_LIMIT", uint64(eventCount), totalBytes, record.Kind
 			return nil, "M3_DYNAMIC_OBSERVATION_LIMIT", diagnostic
 		}
@@ -104,7 +126,7 @@ func collectTraceDiagnostic(ctx context.Context, reader TraceReader) ([]domain.S
 		observations = append(observations, observation)
 		diagnostic.LastKind = record.Kind
 	}
-	diagnostic.Reason, diagnostic.Events, diagnostic.Bytes = "EVENT_LIMIT", maximumTraceEvents, totalBytes
+	diagnostic.Reason, diagnostic.Events, diagnostic.Bytes = "EVENT_LIMIT", uint64(budget.events), totalBytes
 	return nil, "M3_DYNAMIC_OBSERVATION_LIMIT", diagnostic
 }
 

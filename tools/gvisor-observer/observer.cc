@@ -35,9 +35,13 @@ void CleanupControlSocket(int) {
 constexpr uint32_t kProtocolVersion = 1;
 constexpr size_t kMaxEventSize = 1024 * 1024;
 constexpr size_t kMaxNormalizedRecordsPerConnection = 10000;
+constexpr size_t kMaxPyTorchCPURecordsPerConnection = 50000;
+constexpr size_t kMaxPyTorchCU126RecordsPerConnection = 100000;
 constexpr int kProfileRegistrationWaitMilliseconds = 2000;
 constexpr char kProfileNPM[] = "npm-lifecycle";
 constexpr char kProfilePyPI[] = "pypi-wheel";
+constexpr char kProfilePyTorchCPU[] = "pypi-wheel-pytorch-cpu";
+constexpr char kProfilePyTorchCU126[] = "pypi-wheel-pytorch-cu126";
 constexpr char kProfileGitHub[] = "github-elf";
 #pragma pack(push, 1)
 struct Header { uint16_t header_size; uint16_t message_type; uint32_t dropped_count; };
@@ -74,7 +78,7 @@ bool IsExpectedProcess(const std::string& path, const char* profile) {
   if (strcmp(profile, kProfileNPM) == 0) {
     return path == "/bin/sh" || path == "/usr/local/bin/node" || path == "/usr/local/bin/npm";
   }
-  if (strcmp(profile, kProfilePyPI) == 0) {
+  if (strcmp(profile, kProfilePyPI) == 0 || strcmp(profile, kProfilePyTorchCPU) == 0 || strcmp(profile, kProfilePyTorchCU126) == 0) {
     return path == "/bin/sh" || path == "/usr/local/bin/python" || path == "/usr/local/bin/pip";
   }
   return path == "/bin/sh" || path == "/work/artifact";
@@ -99,10 +103,16 @@ bool ParseControlRecord(const char* payload, size_t size, std::map<std::string, 
   if (id_end == std::string::npos || profile_end == std::string::npos) return false;
   const std::string id = body.substr(id_start + id_key.size(), id_end - id_start - id_key.size());
   const std::string profile = body.substr(profile_start + profile_key.size(), profile_end - profile_start - profile_key.size());
-  if (!ValidContainerID(id) || (profile != kProfileNPM && profile != kProfilePyPI && profile != kProfileGitHub)) return false;
+  if (!ValidContainerID(id) || (profile != kProfileNPM && profile != kProfilePyPI && profile != kProfilePyTorchCPU && profile != kProfilePyTorchCU126 && profile != kProfileGitHub)) return false;
   if (profiles->find(id) != profiles->end()) return false;
   (*profiles)[id] = profile;
   return true;
+}
+
+size_t MaximumRecords(const char* profile) {
+  if (strcmp(profile, kProfilePyTorchCPU) == 0) return kMaxPyTorchCPURecordsPerConnection;
+  if (strcmp(profile, kProfilePyTorchCU126) == 0) return kMaxPyTorchCU126RecordsPerConnection;
+  return kMaxNormalizedRecordsPerConnection;
 }
 
 bool DrainProfiles(int control, std::map<std::string, std::string>* profiles) {
@@ -266,7 +276,7 @@ int main(int argc, char** argv) {
         profile = AwaitProfile(control, container_id, &profiles);
         if (profile == nullptr) { fault = true; fault_reason = "PROFILE_LOOKUP_FAILURE"; break; }
       }
-      if (normalized_records == kMaxNormalizedRecordsPerConnection) { fault = true; fault_reason = "EVENT_LIMIT"; break; }
+      if (normalized_records == MaximumRecords(profile)) { fault = true; fault_reason = "EVENT_LIMIT"; break; }
       if (header.header_size < sizeof(Header) || header.header_size > static_cast<uint16_t>(size)) { fault = true; fault_reason = "STREAM_FAULT"; break; }
       if (!Handle(header, event + header.header_size, size - header.header_size, output, &container_id, profile, &fault_reason)) { fault = true; if (fault_reason == nullptr) fault_reason = "STREAM_FAULT"; break; }
       ++normalized_records;

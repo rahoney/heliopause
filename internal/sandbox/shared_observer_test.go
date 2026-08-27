@@ -120,6 +120,17 @@ func TestDecodeHelperRecordRejectsOversizedPayload(t *testing.T) {
 	}
 }
 
+func TestObserverProfileAllowlistRejectsUntrustedBudgetSelection(t *testing.T) {
+	if !validObserverProfile("pypi-wheel-pytorch-cpu") || !validObserverProfile("pypi-wheel-pytorch-cu126") {
+		t.Fatal("canonical PyTorch profiles rejected")
+	}
+	for _, profile := range []string{"pytorch:cpu", "pypi-wheel-pytorch-other", "https://example.test"} {
+		if validObserverProfile(profile) {
+			t.Fatalf("untrusted profile accepted: %s", profile)
+		}
+	}
+}
+
 func observerEndpoint(t *testing.T) string {
 	t.Helper()
 	directory, err := os.MkdirTemp("/tmp", "haa-observer-")

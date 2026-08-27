@@ -68,6 +68,17 @@ func NewPyTorchResolver(runner CommandRunner, endpoints NamedEndpointResolver, o
 	return newPythonResolver(runner, endpoints, observer, probe, policy, profile)
 }
 
+func resolverObserverProfile(profile artifactpypi.SourceProfile) string {
+	switch profile.Name() {
+	case "pytorch:cpu":
+		return "pypi-wheel-pytorch-cpu"
+	case "pytorch:cu126":
+		return "pypi-wheel-pytorch-cu126"
+	default:
+		return "pypi-wheel"
+	}
+}
+
 // NewLinuxPyPIResolverWithExecutorAndPolicy constructs the production
 // resolver with the ordinary-to-privileged typed network policy port.
 func NewLinuxPyPIResolverWithExecutorAndPolicy(executor TrustedExecutor, observer TraceObserver, policy ResolverPolicyService) (*PyPIResolver, error) {
@@ -185,7 +196,7 @@ func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain
 		return domain.DependencyResolution{}, errors.New("create PyPI resolver container failed")
 	}
 	containerID = strings.TrimSpace(string(created))
-	trace, err = startTrace(ctx, r.observer, containerID, "pypi-wheel")
+	trace, err = startTrace(ctx, r.observer, containerID, resolverObserverProfile(r.profile))
 	if err != nil {
 		return domain.DependencyResolution{}, errors.New("start PyPI resolver observer failed")
 	}
