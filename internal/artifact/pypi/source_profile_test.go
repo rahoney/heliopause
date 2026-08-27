@@ -1,6 +1,7 @@
 package pypi
 
 import (
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -83,6 +84,21 @@ func TestPyTorchReportEvaluatesPinnedLinuxDependencyMarkers(t *testing.T) {
 	candidates := report.Candidates()
 	if len(candidates) != 1 || len(candidates[0].Dependencies()) != 1 || candidates[0].Dependencies()[0] != "filelock" {
 		t.Fatalf("PyTorch marker dependencies = %#v", candidates)
+	}
+}
+
+func TestPyTorchSimpleProjectAllowsBoundedLargeIndexPage(t *testing.T) {
+	profile := mustPyTorchProfile(t, "cpu")
+	var body strings.Builder
+	for i := 0; i < 1025; i++ {
+		body.WriteString(`<a href="https://download-r2.pytorch.org/whl/cpu/torch/torch-0.0.`)
+		body.WriteString(strconv.Itoa(i))
+		body.WriteString(`-cp314-cp314-manylinux_2_28_x86_64.whl#sha256=`)
+		body.WriteString(strings.Repeat("b", 64))
+		body.WriteString(`">torch</a>`)
+	}
+	if _, err := ParsePyTorchSimpleProject("torch", []byte(body.String()), profile); err != nil {
+		t.Fatalf("bounded PyTorch Simple page was rejected: %v", err)
 	}
 }
 

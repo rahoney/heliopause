@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"html"
 	"io"
 	"net/url"
@@ -29,6 +28,8 @@ var (
 	simpleAPIVersion      = regexp.MustCompile(`^([0-9]+)\.([0-9]+)$`)
 	requirementNamePrefix = regexp.MustCompile(`^([A-Za-z0-9][A-Za-z0-9._-]*)(?:\s*(?:\([^)]*\)|[<>=!~].*)?)?$`)
 )
+
+const maxPyTorchSimpleEntries = 20_000
 
 // SimpleProject is a bounded, parser-normalized PyPI Simple API project page.
 // It never contains a raw HTTP response or unvalidated endpoint.
@@ -208,13 +209,9 @@ func ParsePyTorchSimpleProject(project string, body []byte, profile SourceProfil
 	if err != nil {
 		return SimpleProject{}, errors.New("invalid PyTorch index URL is invalid")
 	}
-	matches := pytorchAnchorPattern.FindAllSubmatch(body, maxPyPIReportEntries+1)
-	if len(matches) == 0 || len(matches) > maxPyPIReportEntries {
-		preview := strings.TrimSpace(string(body))
-		if len(preview) > 256 {
-			preview = preview[:256]
-		}
-		return SimpleProject{}, fmt.Errorf("invalid PyTorch Simple project has no bounded files (body_bytes=%d prefix=%q)", len(body), preview)
+	matches := pytorchAnchorPattern.FindAllSubmatch(body, maxPyTorchSimpleEntries+1)
+	if len(matches) == 0 || len(matches) > maxPyTorchSimpleEntries {
+		return SimpleProject{}, errors.New("invalid PyTorch Simple project has no bounded files")
 	}
 	files := make([]SimpleFile, 0, len(matches))
 	seen := make(map[string]bool, len(matches))
@@ -404,7 +401,7 @@ func parseReportCandidate(item pipInstall, profile SourceProfile) (Candidate, er
 	for _, requirement := range item.Metadata.RequiresDist {
 		dependency, active, err := parseDeclaredDependencyForProfile(requirement, profile)
 		if err != nil {
-			return Candidate{}, fmt.Errorf("unsupported pip dependency metadata %q: %w", requirement, err)
+			return Candidate{}, errors.New("unsupported pip dependency metadata")
 		}
 		if !active {
 			continue
