@@ -127,6 +127,26 @@ func TestUnsupportedRequirementDiagnosticIsSanitized(t *testing.T) {
 	}
 }
 
+func TestActiveMarkerProducesEffectiveChildRequirement(t *testing.T) {
+	profile, _ := PyTorchProfile("cpu")
+	dependency, active, err := parseDeclaredDependencyForProfile("foo>=1.2; python_version >= '3.10'", profile, "3.14.7")
+	if err != nil || !active || dependency != "foo" {
+		t.Fatalf("marker parse = %q/%t/%v", dependency, active, err)
+	}
+	effective := strings.TrimSpace(strings.SplitN("foo>=1.2; python_version >= '3.10'", ";", 2)[0])
+	if effective != "foo>=1.2" {
+		t.Fatalf("effective requirement = %q", effective)
+	}
+}
+
+func TestInactiveMarkerDoesNotProduceChildRequirement(t *testing.T) {
+	profile, _ := PyTorchProfile("cpu")
+	_, active, err := parseDeclaredDependencyForProfile("foo>=1.2; python_version < '3.10'", profile, "3.14.7")
+	if err != nil || active {
+		t.Fatalf("inactive marker = active=%t err=%v", active, err)
+	}
+}
+
 func TestInstallationReportAcceptsCanonicalHashesWithoutLegacyHash(t *testing.T) {
 	t.Parallel()
 

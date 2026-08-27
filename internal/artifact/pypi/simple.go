@@ -455,6 +455,9 @@ func parseReportCandidate(item pipInstall, profile SourceProfile, expectedPython
 		seenDependencies[dependency] = true
 		dependencies = append(dependencies, dependency)
 		requirements = append(requirements, requirement)
+		if strings.Contains(requirement, ";") {
+			requirements[len(requirements)-1] = strings.TrimSpace(strings.SplitN(requirement, ";", 2)[0])
+		}
 	}
 	sort.Strings(dependencies)
 	sort.Strings(requirements)
