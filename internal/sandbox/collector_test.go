@@ -39,6 +39,19 @@ func TestCollectTraceFailsClosedOnUntrustedOrOversizedInput(t *testing.T) {
 	}
 }
 
+func TestCollectTraceDiagnosticIsBoundedAndClassifiesFailure(t *testing.T) {
+	observations, limitation, diagnostic := collectTraceDiagnostic(context.Background(), &traceReader{records: []TraceRecord{{Kind: "network-attempt", Bytes: 7}}, errAfter: 1, err: errors.New("transport")})
+	if observations != nil || limitation != "M3_DYNAMIC_OBSERVER_FAILED" {
+		t.Fatalf("collectTraceDiagnostic() = (%#v, %q)", observations, limitation)
+	}
+	if got, want := diagnostic.String(), "reason=READER_ERROR events=1 bytes=7 session_complete=false last_kind=network-attempt"; got != want {
+		t.Fatalf("diagnostic = %q, want %q", got, want)
+	}
+	if contains := diagnostic.String(); contains == "" || diagnostic.LastKind == "raw-path:/secret" {
+		t.Fatalf("diagnostic retained unsafe data: %q", contains)
+	}
+}
+
 func TestTraceObservationRejectsKindsTheProductionHelperCannotEmit(t *testing.T) {
 	for _, kind := range []string{"process-unexpected", "filesystem-violation", "filesystem-write", "resource-limit"} {
 		if _, _, ok := traceObservation(kind); ok {
@@ -48,13 +61,14 @@ func TestTraceObservationRejectsKindsTheProductionHelperCannotEmit(t *testing.T)
 }
 
 type traceReader struct {
-	records []TraceRecord
-	index   int
-	err     error
+	records  []TraceRecord
+	index    int
+	err      error
+	errAfter int
 }
 
 func (r *traceReader) Next(context.Context) (TraceRecord, error) {
-	if r.err != nil {
+	if r.err != nil && r.index >= r.errAfter {
 		return TraceRecord{}, r.err
 	}
 	if r.index == len(r.records) {

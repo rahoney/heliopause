@@ -75,11 +75,13 @@ bool SendEvent(int client, gvisor::common::MessageType type, const Message& mess
   return SendAll(client, packet);
 }
 
-bool ExpectRecord(int output, const char* container_id, const char* kind) {
+bool ExpectRecord(int output, const char* container_id, const char* kind, const char* reason = nullptr) {
   char buffer[1024];
   const ssize_t size = recv(output, buffer, sizeof(buffer), 0);
   if (size <= 0) return false;
-  const std::string expected = std::string("{\"container_id\":\"") + container_id + "\",\"kind\":\"" + kind + "\"}";
+  std::string expected = std::string("{\"container_id\":\"") + container_id + "\",\"kind\":\"" + kind + "\"";
+  if (reason != nullptr) expected += ",\"reason\":\"" + std::string(reason) + "\"";
+  expected += "}";
   return std::string(buffer, size) == expected;
 }
 
@@ -166,7 +168,7 @@ bool RunFaultCase(int output, const std::string& remote, const std::string& cont
     exec.mutable_context_data()->set_container_id(container_id);
     if (!SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, exec, 1)) return false;
   }
-  const bool faulted = ExpectRecord(output, container_id, "stream-fault");
+  const bool faulted = ExpectRecord(output, container_id, "stream-fault", mismatch ? "CONTAINER_MISMATCH" : "STREAM_FAULT");
   close(client);
   return faulted;
 }

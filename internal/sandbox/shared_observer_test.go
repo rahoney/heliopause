@@ -83,7 +83,7 @@ func TestSharedObserverFailsClosedForLatchedStreamFault(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer writer.Close()
-	body, _ := json.Marshal(helperRecord{ContainerID: "0123456789abcdef", Kind: "stream-fault"})
+	body, _ := json.Marshal(helperRecord{ContainerID: "0123456789abcdef", Kind: "stream-fault", Reason: "EVENT_LIMIT"})
 	if _, err := writer.Write(body); err != nil {
 		t.Fatal(err)
 	}
@@ -91,6 +91,11 @@ func TestSharedObserverFailsClosedForLatchedStreamFault(t *testing.T) {
 	defer cancel()
 	if _, err := reader.Next(ctx); err == nil {
 		t.Fatal("faulted stream completed without an incomplete error")
+	} else {
+		fault, ok := err.(traceFault)
+		if !ok || fault.TraceFaultReason() != "EVENT_LIMIT" {
+			t.Fatalf("fault = %v, want typed EVENT_LIMIT", err)
+		}
 	}
 	if _, err := observer.Start(context.Background(), "fedcba9876543210"); err == nil {
 		t.Fatal("faulted observer accepted a subsequent container mapping")

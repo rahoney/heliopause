@@ -161,10 +161,10 @@ func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain
 			}
 			if trace != nil {
 				collectCtx, cancel := context.WithTimeout(context.Background(), cleanupTimeout)
-				_, limitation := collectTrace(collectCtx, trace)
+				_, limitation, diagnostic := collectTraceDiagnostic(collectCtx, trace)
 				cancel()
 				if limitation != "" {
-					cleanupErr = errors.Join(cleanupErr, errors.New("PyPI resolver observation is incomplete"))
+					cleanupErr = errors.Join(cleanupErr, fmt.Errorf("PyPI resolver observation is incomplete: %s", diagnostic))
 				}
 			}
 		}

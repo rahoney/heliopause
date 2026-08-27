@@ -28,7 +28,13 @@ const ObserverControlEndpoint = "/run/heliopause-observer/haa-control.sock"
 type helperRecord struct {
 	ContainerID string `json:"container_id"`
 	Kind        string `json:"kind"`
+	Reason      string `json:"reason,omitempty"`
 }
+
+type observerFault struct{ reason string }
+
+func (e observerFault) Error() string            { return "observer stream is incomplete" }
+func (e observerFault) TraceFaultReason() string { return e.reason }
 
 const maximumHelperRecordBytes = 1024
 
@@ -39,10 +45,19 @@ func decodeHelperRecord(payload []byte) (helperRecord, error) {
 		return helperRecord{}, errors.New("observer record is invalid")
 	}
 	var record helperRecord
-	if err := json.Unmarshal(payload, &record); err != nil || !containerIDPattern.MatchString(record.ContainerID) {
+	if err := json.Unmarshal(payload, &record); err != nil || !containerIDPattern.MatchString(record.ContainerID) || (record.Reason != "" && !validObserverReason(record.Reason)) {
 		return helperRecord{}, errors.New("observer record is invalid")
 	}
 	return record, nil
+}
+
+func validObserverReason(reason string) bool {
+	switch reason {
+	case "EVENT_LIMIT", "BYTE_LIMIT", "READER_ERROR", "READER_TIMEOUT", "STREAM_FAULT", "ATTRIBUTION_FAILURE", "FINALIZATION_TIMEOUT", "UNKNOWN_EVENT_KIND", "CHANNEL_OVERFLOW", "CONTAINER_MISMATCH", "PROFILE_LOOKUP_FAILURE":
+		return true
+	default:
+		return false
+	}
 }
 
 // NewSharedObserver binds the HAA-only output endpoint used by the pinned helper.
@@ -175,12 +190,16 @@ func (o *SharedObserver) receive() {
 		reader := o.streams[record.ContainerID]
 		if reader == nil {
 			o.mu.Unlock()
-			o.fail(errors.New("observer mapping is unconfirmed"))
+			o.fail(observerFault{reason: "ATTRIBUTION_FAILURE"})
 			return
 		}
 		if record.Kind == "stream-fault" {
 			o.mu.Unlock()
-			o.fail(errors.New("observer stream is incomplete"))
+			reason := record.Reason
+			if reason == "" {
+				reason = "STREAM_FAULT"
+			}
+			o.fail(observerFault{reason: reason})
 			return
 		}
 		if record.Kind == "stream-end" {
@@ -195,14 +214,14 @@ func (o *SharedObserver) receive() {
 		}
 		if _, _, ok := traceObservation(record.Kind); !ok {
 			o.mu.Unlock()
-			o.fail(errors.New("observer record kind is invalid"))
+			o.fail(observerFault{reason: "UNKNOWN_EVENT_KIND"})
 			return
 		}
 		select {
 		case reader.records <- TraceRecord{Kind: record.Kind, Bytes: uint64(size)}:
 		default:
 			o.mu.Unlock()
-			o.fail(errors.New("observer event limit exceeded"))
+			o.fail(observerFault{reason: "CHANNEL_OVERFLOW"})
 			return
 		}
 		o.mu.Unlock()

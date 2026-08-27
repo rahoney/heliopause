@@ -3,10 +3,24 @@ package sandbox
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
+
+// TraceDiagnostic is a bounded, payload-free account of a trace collection.
+// It is retained only to explain a fail-closed decision; observations remain
+// the sole policy input.
+type TraceDiagnostic struct {
+	Reason          string
+	Events          uint64
+	Bytes           uint64
+	SessionComplete bool
+	LastKind        string
+}
+
+type traceFault interface{ TraceFaultReason() string }
 
 const (
 	maximumTraceEvents = 10_000
@@ -44,34 +58,58 @@ func startTrace(ctx context.Context, observer TraceObserver, containerID, profil
 // collectTrace normalizes trusted gVisor observer kinds without retaining raw
 // paths, argv, environment, file contents, or process output.
 func collectTrace(ctx context.Context, reader TraceReader) ([]domain.SandboxObservation, string) {
+	observations, limitation, _ := collectTraceDiagnostic(ctx, reader)
+	return observations, limitation
+}
+
+func collectTraceDiagnostic(ctx context.Context, reader TraceReader) ([]domain.SandboxObservation, string, TraceDiagnostic) {
+	diagnostic := TraceDiagnostic{Reason: "READER_ERROR"}
 	if reader == nil {
-		return nil, "M3_DYNAMIC_OBSERVER_FAILED"
+		return nil, "M3_DYNAMIC_OBSERVER_FAILED", diagnostic
 	}
 	var totalBytes uint64
 	observations := make([]domain.SandboxObservation, 0)
 	for eventCount := 0; eventCount < maximumTraceEvents; eventCount++ {
 		record, err := reader.Next(ctx)
 		if errors.Is(err, io.EOF) {
-			return observations, ""
+			diagnostic.Reason, diagnostic.SessionComplete = "", true
+			diagnostic.Events, diagnostic.Bytes = uint64(eventCount), totalBytes
+			return observations, "", diagnostic
 		}
 		if err != nil {
-			return nil, "M3_DYNAMIC_OBSERVER_FAILED"
+			if errors.Is(err, context.DeadlineExceeded) {
+				diagnostic.Reason = "READER_TIMEOUT"
+			}
+			var fault traceFault
+			if errors.As(err, &fault) {
+				diagnostic.Reason = fault.TraceFaultReason()
+			}
+			diagnostic.Events, diagnostic.Bytes = uint64(eventCount), totalBytes
+			return nil, "M3_DYNAMIC_OBSERVER_FAILED", diagnostic
 		}
 		if record.Bytes > maximumTraceBytes-totalBytes {
-			return nil, "M3_DYNAMIC_OBSERVATION_LIMIT"
+			diagnostic.Reason, diagnostic.Events, diagnostic.Bytes, diagnostic.LastKind = "BYTE_LIMIT", uint64(eventCount), totalBytes, record.Kind
+			return nil, "M3_DYNAMIC_OBSERVATION_LIMIT", diagnostic
 		}
 		totalBytes += record.Bytes
 		category, subject, ok := traceObservation(record.Kind)
 		if !ok {
-			return nil, "M3_DYNAMIC_OBSERVER_FAILED"
+			diagnostic.Reason, diagnostic.Events, diagnostic.Bytes = "UNKNOWN_EVENT_KIND", uint64(eventCount), totalBytes
+			return nil, "M3_DYNAMIC_OBSERVER_FAILED", diagnostic
 		}
 		observation, err := domain.NewSandboxObservation(category, subject)
 		if err != nil {
-			return nil, "M3_DYNAMIC_OBSERVER_FAILED"
+			return nil, "M3_DYNAMIC_OBSERVER_FAILED", diagnostic
 		}
 		observations = append(observations, observation)
+		diagnostic.LastKind = record.Kind
 	}
-	return nil, "M3_DYNAMIC_OBSERVATION_LIMIT"
+	diagnostic.Reason, diagnostic.Events, diagnostic.Bytes = "EVENT_LIMIT", maximumTraceEvents, totalBytes
+	return nil, "M3_DYNAMIC_OBSERVATION_LIMIT", diagnostic
+}
+
+func (d TraceDiagnostic) String() string {
+	return fmt.Sprintf("reason=%s events=%d bytes=%d session_complete=%t last_kind=%s", d.Reason, d.Events, d.Bytes, d.SessionComplete, d.LastKind)
 }
 
 func traceObservation(kind string) (domain.ObservationCategory, string, bool) {
