@@ -7,6 +7,12 @@ on:
       - main
   merge_group:
   workflow_dispatch:
+    inputs:
+      pytorch_cuda_qualification:
+        description: Run the bounded cu126 full qualification after disk/resource preflight.
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -204,7 +210,7 @@ jobs:
   gvisor-integration:
     name: gVisor Linux Integration
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 60
     env:
       GOTOOLCHAIN: local
     steps:
@@ -321,6 +327,10 @@ jobs:
           test "$npm_status" = 10
           test "$pypi_status" = 10
           HELOX_PYTORCH_RESOLVER_INTEGRATION=1 go test -v -timeout=10m ./internal/sandbox -run TestLinuxPyTorchResolverIntegration
+          HELOX_PYTORCH_FULL_INTEGRATION=1 HELOX_PYTORCH_PROFILE=cpu go test -v -timeout=20m ./internal/bootstrap -run TestLinuxPyTorchFullIntegration
+          if [ "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cuda_qualification }}" = true ]; then
+            HELOX_PYTORCH_FULL_INTEGRATION=1 HELOX_PYTORCH_PROFILE=cu126 go test -v -timeout=45m ./internal/bootstrap -run TestLinuxPyTorchFullIntegration
+          fi
           HELOX_PYPI_DYNAMIC_INTEGRATION=1 go test -v -timeout=5m ./internal/sandbox -run 'TestLinuxPyPI(WheelDynamic|SdistBuild)Integration'
           HELOX_PROMOTION_INTEGRATION=1 go test -v -timeout=5m ./internal/promotion -run TestLinuxNPMPromotionIntegration
           HELOX_PYPI_PROMOTION_INTEGRATION=1 go test -v -timeout=5m ./internal/promotion -run TestLinuxPyPIPromotionIntegration
