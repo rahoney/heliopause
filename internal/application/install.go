@@ -31,7 +31,40 @@ type InspectedInstall struct {
 	resolution  domain.DependencyResolution
 	set         domain.InspectedDependencySet
 	decision    domain.PolicyDecision
+	diagnostics []GraphStaticDiagnostic
 }
+
+// GraphStaticDiagnostic is the application-owned bounded qualification
+// record for a node that prevented graph static readiness. It contains only
+// validated Domain identity fields and the bounded diagnostic vocabulary.
+type GraphStaticDiagnostic struct {
+	node        domain.DependencyNodeID
+	packageName string
+	version     string
+	source      domain.SourceID
+	variant     string
+	cause       domain.InspectionDiagnosticCause
+	stage       domain.InspectionDiagnosticStage
+}
+
+func newGraphStaticDiagnostic(dependency domain.LockedDependency, diagnostic domain.InspectionDiagnostic) (GraphStaticDiagnostic, error) {
+	identity := dependency.Artifact().Identity()
+	if dependency.Node().String() == "" || identity.Name() == "" || identity.Version() == "" || identity.Source().String() == "" || identity.Variant() == "" {
+		return GraphStaticDiagnostic{}, errors.New("graph static diagnostic identity is invalid")
+	}
+	if _, err := domain.NewInspectionDiagnostic(diagnostic.Cause(), diagnostic.Stage()); err != nil {
+		return GraphStaticDiagnostic{}, err
+	}
+	return GraphStaticDiagnostic{node: dependency.Node(), packageName: identity.Name(), version: identity.Version(), source: identity.Source(), variant: identity.Variant(), cause: diagnostic.Cause(), stage: diagnostic.Stage()}, nil
+}
+
+func (d GraphStaticDiagnostic) Node() domain.DependencyNodeID           { return d.node }
+func (d GraphStaticDiagnostic) Package() string                         { return d.packageName }
+func (d GraphStaticDiagnostic) Version() string                         { return d.version }
+func (d GraphStaticDiagnostic) Source() domain.SourceID                 { return d.source }
+func (d GraphStaticDiagnostic) Variant() string                         { return d.variant }
+func (d GraphStaticDiagnostic) Cause() domain.InspectionDiagnosticCause { return d.cause }
+func (d GraphStaticDiagnostic) Stage() domain.InspectionDiagnosticStage { return d.stage }
 
 func newInspectedInstall(operationID domain.OperationID, request InstallRequest, resolution domain.DependencyResolution, set domain.InspectedDependencySet, decision domain.PolicyDecision) InspectedInstall {
 	return InspectedInstall{operationID: operationID, request: request, resolution: resolution, set: set, decision: decision}
@@ -41,8 +74,16 @@ func newPartialInspectedInstall(operationID domain.OperationID, request InstallR
 	return InspectedInstall{operationID: operationID, request: request, resolution: resolution}
 }
 
+func (i InspectedInstall) withGraphStaticDiagnostics(diagnostics []GraphStaticDiagnostic) InspectedInstall {
+	i.diagnostics = append([]GraphStaticDiagnostic(nil), diagnostics...)
+	return i
+}
+
 func (i InspectedInstall) OperationID() domain.OperationID         { return i.operationID }
 func (i InspectedInstall) Request() InstallRequest                 { return i.request }
 func (i InspectedInstall) Resolution() domain.DependencyResolution { return i.resolution }
 func (i InspectedInstall) Set() domain.InspectedDependencySet      { return i.set }
 func (i InspectedInstall) Decision() domain.PolicyDecision         { return i.decision }
+func (i InspectedInstall) GraphStaticDiagnostics() []GraphStaticDiagnostic {
+	return append([]GraphStaticDiagnostic(nil), i.diagnostics...)
+}

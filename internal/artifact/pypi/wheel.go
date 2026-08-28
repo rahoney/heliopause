@@ -38,6 +38,42 @@ func DefaultWheelLimits() WheelLimits {
 // WheelTarget is the locked interpreter/ABI/platform compatibility tuple.
 type WheelTarget struct{ Python, ABI, Platform string }
 
+// WheelValidationStage is a bounded parser-stage classification exposed only
+// so the PyPI inspection adapter can produce qualification diagnostics. It is
+// never used to alter parser acceptance.
+type WheelValidationStage string
+
+const (
+	WheelValidationFilename         WheelValidationStage = "FILENAME"
+	WheelValidationCompatibility    WheelValidationStage = "COMPATIBILITY"
+	WheelValidationZIP              WheelValidationStage = "ZIP"
+	WheelValidationDigest           WheelValidationStage = "DIGEST"
+	WheelValidationMetadataIdentity WheelValidationStage = "METADATA_IDENTITY"
+	WheelValidationDistInfoIdentity WheelValidationStage = "DIST_INFO_IDENTITY"
+	WheelValidationWheelTag         WheelValidationStage = "WHEEL_TAG"
+	WheelValidationRecord           WheelValidationStage = "RECORD"
+	WheelValidationFileType         WheelValidationStage = "FILE_TYPE"
+	WheelValidationOther            WheelValidationStage = "OTHER"
+	WheelValidationCompressed       WheelValidationStage = "PER_ARTIFACT_COMPRESSED"
+	WheelValidationUncompressed     WheelValidationStage = "PER_ARTIFACT_UNCOMPRESSED"
+	WheelValidationFileCount        WheelValidationStage = "FILE_COUNT"
+	WheelValidationMetadata         WheelValidationStage = "METADATA"
+	WheelValidationMetadataInvalid  WheelValidationStage = "METADATA_INVALID"
+)
+
+type wheelValidationError struct{ stage WheelValidationStage }
+
+func (e wheelValidationError) Error() string { return "wheel validation failed" }
+
+func wheelValidation(stage WheelValidationStage) error { return wheelValidationError{stage: stage} }
+
+// WheelValidationStageOf returns only the bounded stage, never parser error
+// text.
+func WheelValidationStageOf(err error) (WheelValidationStage, bool) {
+	validation, ok := err.(wheelValidationError)
+	return validation.stage, ok
+}
+
 // WheelFile is normalized RECORD evidence for one regular installed file.
 type WheelFile struct {
 	Path   string
@@ -73,18 +109,24 @@ func InspectWheelForSource(reader io.ReaderAt, size int64, filename, declaredSHA
 
 func inspectWheel(reader io.ReaderAt, size int64, filename, declaredSHA256 string, target WheelTarget, limits WheelLimits, allowLocalVersion bool) (WheelInspection, error) {
 	if reader == nil || size <= 0 || filename == "" || !validSHA256(declaredSHA256) || limits.MaxCompressed <= 0 || limits.MaxUncompressed <= 0 || limits.MaxFiles <= 0 || limits.MaxMetadata <= 0 {
-		return WheelInspection{}, errors.New("wheel intake input is invalid")
+		return WheelInspection{}, wheelValidation(WheelValidationOther)
 	}
 	project, version, pyTags, abiTags, platformTags, err := parseWheelFilenameWithLocal(filename, allowLocalVersion)
-	if err != nil || !wheelTagsCompatible(pyTags, abiTags, platformTags, target) {
-		return WheelInspection{}, errors.New("wheel filename or target tags are invalid")
+	if err != nil {
+		return WheelInspection{}, wheelValidation(WheelValidationFilename)
+	}
+	if !wheelTagsCompatible(pyTags, abiTags, platformTags, target) {
+		return WheelInspection{}, wheelValidation(WheelValidationCompatibility)
 	}
 	if size > limits.MaxCompressed {
-		return WheelInspection{}, errors.New("wheel compressed size exceeds bound")
+		return WheelInspection{}, wheelValidation(WheelValidationCompressed)
 	}
 	archive, err := zip.NewReader(reader, size)
-	if err != nil || int64(len(archive.File)) > limits.MaxFiles {
-		return WheelInspection{}, errors.New("wheel ZIP structure is invalid")
+	if err != nil {
+		return WheelInspection{}, wheelValidation(WheelValidationZIP)
+	}
+	if int64(len(archive.File)) > limits.MaxFiles {
+		return WheelInspection{}, wheelValidation(WheelValidationFileCount)
 	}
 	seen := make(map[string]*zip.File, len(archive.File))
 	var uncompressed int64
@@ -93,23 +135,23 @@ func inspectWheel(reader io.ReaderAt, size int64, filename, declaredSHA256 strin
 	var regularFiles []string
 	hash := sha256.New()
 	if err := hashReaderAt(reader, size, hash); err != nil {
-		return WheelInspection{}, errors.New("wheel digest could not be computed")
+		return WheelInspection{}, wheelValidation(WheelValidationDigest)
 	}
 	observed := hex.EncodeToString(hash.Sum(nil))
 	if observed != declaredSHA256 {
-		return WheelInspection{}, errors.New("wheel declared and observed SHA-256 differ")
+		return WheelInspection{}, wheelValidation(WheelValidationDigest)
 	}
 	for _, entry := range archive.File {
 		name, ok := wheelPath(entry.Name)
 		if !ok || seen[name] != nil {
-			return WheelInspection{}, errors.New("wheel contains unsafe or duplicate path")
+			return WheelInspection{}, wheelValidation(WheelValidationFileType)
 		}
 		seen[name] = entry
 		if entry.FileInfo().Mode()&os.ModeSymlink != 0 || entry.FileInfo().Mode().IsDir() && entry.UncompressedSize64 != 0 {
-			return WheelInspection{}, errors.New("wheel contains unsupported file type")
+			return WheelInspection{}, wheelValidation(WheelValidationFileType)
 		}
 		if entry.UncompressedSize64 > uint64(limits.MaxUncompressed) || uncompressed > limits.MaxUncompressed-int64(entry.UncompressedSize64) {
-			return WheelInspection{}, errors.New("wheel uncompressed size exceeds bound")
+			return WheelInspection{}, wheelValidation(WheelValidationUncompressed)
 		}
 		uncompressed += int64(entry.UncompressedSize64)
 		if entry.FileInfo().Mode().IsRegular() {
@@ -118,17 +160,17 @@ func inspectWheel(reader io.ReaderAt, size int64, filename, declaredSHA256 strin
 		if strings.HasSuffix(name, ".dist-info/METADATA") || strings.HasSuffix(name, ".dist-info/WHEEL") || strings.HasSuffix(name, ".dist-info/RECORD") {
 			metadataCount[path.Base(name)]++
 			if entry.UncompressedSize64 > uint64(limits.MaxMetadata) {
-				return WheelInspection{}, errors.New("wheel metadata exceeds bound")
+				return WheelInspection{}, wheelValidation(WheelValidationMetadata)
 			}
 			body, readErr := readZipEntry(entry, limits.MaxMetadata)
 			if readErr != nil {
-				return WheelInspection{}, errors.New("wheel metadata is unreadable")
+				return WheelInspection{}, wheelValidation(WheelValidationMetadata)
 			}
 			metadataFiles[path.Base(name)] = body
 		}
 	}
 	if metadataCount["METADATA"] != 1 || metadataCount["WHEEL"] != 1 || metadataCount["RECORD"] != 1 {
-		return WheelInspection{}, errors.New("wheel requires one metadata set")
+		return WheelInspection{}, wheelValidation(WheelValidationMetadataInvalid)
 	}
 	info, err := parseWheelMetadata(project, version, filename, metadataFiles["METADATA"], metadataFiles["WHEEL"], metadataFiles["RECORD"], regularFiles, seen, limits)
 	if err != nil {
@@ -136,7 +178,7 @@ func inspectWheel(reader io.ReaderAt, size int64, filename, declaredSHA256 strin
 	}
 	info.PythonTags, info.ABITags, info.PlatformTags = pyTags, abiTags, platformTags
 	if !wheelMetadataTagsMatch(info.Tags, pyTags, abiTags, platformTags) {
-		return WheelInspection{}, errors.New("wheel WHEEL tags do not match filename")
+		return WheelInspection{}, wheelValidation(WheelValidationWheelTag)
 	}
 	info.ObservedSHA256 = observed
 	info.DeclaredSHA256 = declaredSHA256
@@ -156,12 +198,15 @@ func inspectWheel(reader io.ReaderAt, size int64, filename, declaredSHA256 strin
 
 func parseWheelMetadata(project, version, filename string, metadata, wheel, record []byte, regular []string, entries map[string]*zip.File, limits WheelLimits) (WheelInspection, error) {
 	if len(metadata) == 0 || len(wheel) == 0 || len(record) == 0 {
-		return WheelInspection{}, errors.New("wheel requires METADATA, WHEEL and RECORD")
+		return WheelInspection{}, wheelValidation(WheelValidationMetadataInvalid)
 	}
 	meta := headerValues(metadata, limits.MaxMetadata)
 	wheelHeaders := headerValues(wheel, limits.MaxMetadata)
-	if meta["name"] != project || meta["version"] != version || wheelHeaders["wheel-version"] == "" || !supportedWheelVersion(wheelHeaders["wheel-version"]) {
-		return WheelInspection{}, errors.New("wheel embedded metadata does not match filename")
+	if meta["name"] != project || meta["version"] != version {
+		return WheelInspection{}, wheelValidation(WheelValidationMetadataIdentity)
+	}
+	if wheelHeaders["wheel-version"] == "" || !supportedWheelVersion(wheelHeaders["wheel-version"]) {
+		return WheelInspection{}, wheelValidation(WheelValidationMetadataInvalid)
 	}
 	distInfo := ""
 	for name := range entries {
@@ -171,19 +216,19 @@ func parseWheelMetadata(project, version, filename string, metadata, wheel, reco
 		}
 	}
 	if distInfo != project+"-"+version+".dist-info" {
-		return WheelInspection{}, errors.New("wheel dist-info directory is invalid")
+		return WheelInspection{}, wheelValidation(WheelValidationDistInfoIdentity)
 	}
 	if _, ok := entries[distInfo+"/WHEEL"]; !ok {
-		return WheelInspection{}, errors.New("wheel dist-info files are incomplete")
+		return WheelInspection{}, wheelValidation(WheelValidationDistInfoIdentity)
 	}
 	for _, name := range []string{distInfo + "/METADATA", distInfo + "/WHEEL", distInfo + "/RECORD"} {
 		entry, ok := entries[name]
 		if !ok {
-			return WheelInspection{}, errors.New("wheel dist-info files are incomplete")
+			return WheelInspection{}, wheelValidation(WheelValidationDistInfoIdentity)
 		}
 		body, readErr := readZipEntry(entry, limits.MaxMetadata)
 		if readErr != nil {
-			return WheelInspection{}, errors.New("wheel metadata is unreadable")
+			return WheelInspection{}, wheelValidation(WheelValidationMetadataInvalid)
 		}
 		var expected []byte
 		switch path.Base(name) {
@@ -195,12 +240,12 @@ func parseWheelMetadata(project, version, filename string, metadata, wheel, reco
 			expected = record
 		}
 		if !bytes.Equal(body, expected) {
-			return WheelInspection{}, errors.New("wheel metadata set is inconsistent")
+			return WheelInspection{}, wheelValidation(WheelValidationDistInfoIdentity)
 		}
 	}
 	files, err := validateRecord(record, regular, entries, limits.MaxMetadata)
 	if err != nil {
-		return WheelInspection{}, err
+		return WheelInspection{}, wheelValidation(WheelValidationRecord)
 	}
 	imports := splitHeaders(meta["import-name"])
 	if len(imports) == 0 {

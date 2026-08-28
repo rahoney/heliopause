@@ -127,6 +127,13 @@ func (i *CompositeInspector) InspectGraph(ctx context.Context, graph domain.Lock
 func (i *CompositeInspector) inspectGraphStatic(ctx context.Context, artifact domain.AcquiredArtifact) (graphStaticState, domain.InspectionReport, error) {
 	if artifact.Identity().Variant() == "sdist" {
 		report, err := i.static.Inspect(ctx, artifact)
+		if err == nil && len(report.Diagnostics()) == 0 && len(report.Findings()) == 0 {
+			diagnostic, diagnosticErr := domain.NewInspectionDiagnostic(domain.InspectionDiagnosticSdistDynamicUnavailable, "")
+			if diagnosticErr != nil {
+				return graphStaticState{}, domain.InspectionReport{}, diagnosticErr
+			}
+			report, err = domain.NewInspectionReportWithDiagnostic(report.Execution(), report.Findings(), report.Evidence(), diagnostic)
+		}
 		return graphStaticState{}, report, err
 	}
 	wheel, report, err := i.static.InspectWheel(ctx, artifact)

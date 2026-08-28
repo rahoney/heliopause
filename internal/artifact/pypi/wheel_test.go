@@ -65,6 +65,33 @@ func TestInspectWheelRejectsUnsafeAndMismatchedInputs(t *testing.T) {
 	}
 }
 
+func TestInspectWheelReportsIdentityStageWithoutChangingNormalizationSemantics(t *testing.T) {
+	data := []byte("print('safe')\n")
+	dataSum := sha256.Sum256(data)
+	metadata := []byte("Metadata-Version: 2.4\nName: typing_extensions\nVersion: 1.0\n")
+	wheel := []byte("Wheel-Version: 1.0\nTag: cp314-cp314-manylinux_2_36_x86_64\n")
+	metadataSum, wheelSum := sha256.Sum256(metadata), sha256.Sum256(wheel)
+	record := "typing_extensions/__init__.py,sha256=" + base64.RawURLEncoding.EncodeToString(dataSum[:]) + ",14\n" +
+		"typing_extensions-1.0.dist-info/METADATA,sha256=" + base64.RawURLEncoding.EncodeToString(metadataSum[:]) + "," + itoa(len(metadata)) + "\n" +
+		"typing_extensions-1.0.dist-info/WHEEL,sha256=" + base64.RawURLEncoding.EncodeToString(wheelSum[:]) + "," + itoa(len(wheel)) + "\n" +
+		"typing_extensions-1.0.dist-info/RECORD,,\n"
+	archive := makeWheel(t, map[string][]byte{
+		"typing_extensions/__init__.py":            data,
+		"typing_extensions-1.0.dist-info/METADATA": metadata,
+		"typing_extensions-1.0.dist-info/WHEEL":    wheel,
+		"typing_extensions-1.0.dist-info/RECORD":   []byte(record),
+	})
+	digest := sha256.Sum256(archive)
+	_, err := InspectWheel(bytes.NewReader(archive), int64(len(archive)), "typing_extensions-1.0-cp314-cp314-manylinux_2_36_x86_64.whl", hex.EncodeToString(digest[:]), WheelTarget{"cp314", "cp314", "manylinux_2_36_x86_64"}, DefaultWheelLimits())
+	if err == nil {
+		t.Fatal("normalization-equivalent wheel was accepted")
+	}
+	stage, ok := WheelValidationStageOf(err)
+	if !ok || stage != WheelValidationMetadataIdentity {
+		t.Fatalf("WheelValidationStageOf() = %q, %v; want METADATA_IDENTITY", stage, ok)
+	}
+}
+
 func TestWheelTagsCompatibleManylinuxSemantics(t *testing.T) {
 	target := WheelTarget{"cp314", "cp314", "manylinux_2_36_x86_64"}
 	tests := []struct {

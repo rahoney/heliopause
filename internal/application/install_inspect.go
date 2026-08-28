@@ -253,7 +253,11 @@ func (s *InstallInspectService) inspectGraphAware(ctx context.Context, operation
 	if err != nil {
 		return partial, fmt.Errorf("evaluate dependency set policy: %w", err)
 	}
-	return newInspectedInstall(operationID, request, partial.Resolution(), set, decision), nil
+	diagnostics, err := graphStaticDiagnostics(graph, reports)
+	if err != nil {
+		return partial, fmt.Errorf("construct graph static diagnostics: %w", err)
+	}
+	return newInspectedInstall(operationID, request, partial.Resolution(), set, decision).withGraphStaticDiagnostics(diagnostics), nil
 }
 
 func acquiredMatchesLocked(acquired domain.AcquiredArtifact, dependency domain.LockedDependency, runID domain.RunID) bool {
@@ -277,6 +281,23 @@ func validateGraphReports(graph domain.LockedDependencyGraph, reports map[domain
 		}
 	}
 	return nil
+}
+
+func graphStaticDiagnostics(graph domain.LockedDependencyGraph, reports map[domain.DependencyNodeID]domain.InspectionReport) ([]GraphStaticDiagnostic, error) {
+	diagnostics := make([]GraphStaticDiagnostic, 0)
+	for _, dependency := range graph.Nodes() {
+		report := reports[dependency.Node()]
+		reportDiagnostics := report.Diagnostics()
+		if len(reportDiagnostics) == 0 {
+			continue
+		}
+		diagnostic, err := newGraphStaticDiagnostic(dependency, reportDiagnostics[0])
+		if err != nil {
+			return nil, err
+		}
+		diagnostics = append(diagnostics, diagnostic)
+	}
+	return diagnostics, nil
 }
 
 func (s *InstallInspectService) inspectAcquiredDependency(ctx context.Context, operationID domain.OperationID, dependency domain.LockedDependency, artifact domain.AcquiredArtifact, additionalChecks []domain.CheckExecution, additionalEvidence []domain.Evidence) (domain.DependencyInspection, error) {

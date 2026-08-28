@@ -22,7 +22,7 @@ func TestInspectWheelPreservesBlockingFindingAndCompositeSkipsDynamic(t *testing
 	if err := os.MkdirAll(directory, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	filename := "example-1.0-cp314-cp314-linux_x86_64.whl"
+	filename := "example-1.0-cp314-cp314-manylinux_2_36_x86_64.whl"
 	body := []byte("not a compatible wheel")
 	digest := sha256.Sum256(body)
 	if err := os.WriteFile(filepath.Join(directory, "filename"), []byte(filename), 0o600); err != nil {
@@ -45,6 +45,9 @@ func TestInspectWheelPreservesBlockingFindingAndCompositeSkipsDynamic(t *testing
 	wheel, report, err := static.InspectWheel(context.Background(), artifact)
 	if err != nil || len(report.Findings()) != 1 || report.Findings()[0].Code() != "M5_WHEEL_STATIC_INVALID" || wheel.Project != "" {
 		t.Fatalf("InspectWheel() = wheel=%#v report=%#v err=%v", wheel, report, err)
+	}
+	if diagnostics := report.Diagnostics(); len(diagnostics) != 1 || diagnostics[0].Cause() != domain.InspectionDiagnosticInvalidWheel || diagnostics[0].Stage() != domain.InspectionDiagnosticStageZIP {
+		t.Fatalf("InspectWheel() diagnostics = %#v", diagnostics)
 	}
 	dynamic, err := NewDynamicInspector(panicWheelRunner{})
 	if err != nil {
