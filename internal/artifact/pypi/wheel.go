@@ -228,7 +228,7 @@ func parseWheelMetadata(project, version, filename string, metadata, wheel, reco
 			return WheelInspection{}, wheelValidation(WheelValidationDistInfoIdentity)
 		}
 	}
-	files, err := validateRecord(record, regular, entries, limits.MaxMetadata)
+	files, err := validateRecord(record, regular, entries, distInfo)
 	if err != nil {
 		return WheelInspection{}, wheelValidation(WheelValidationRecord)
 	}
@@ -283,7 +283,8 @@ func validPythonImportComponent(value string) bool {
 	return true
 }
 
-func validateRecord(body []byte, regular []string, entries map[string]*zip.File, limit int64) ([]WheelFile, error) {
+func validateRecord(body []byte, regular []string, entries map[string]*zip.File, primaryDistInfo string) ([]WheelFile, error) {
+	primaryRecord := primaryDistInfo + "/RECORD"
 	r := csv.NewReader(bytes.NewReader(body))
 	r.FieldsPerRecord = 3
 	recorded := map[string]WheelFile{}
@@ -300,8 +301,14 @@ func validateRecord(body []byte, regular []string, entries map[string]*zip.File,
 			return nil, errors.New("wheel RECORD path is invalid")
 		}
 		if row[1] == "" && row[2] == "" {
+			if name != primaryRecord {
+				return nil, errors.New("wheel RECORD exemption is invalid")
+			}
 			recorded[name] = WheelFile{Path: name}
 			continue
+		}
+		if name == primaryRecord {
+			return nil, errors.New("wheel RECORD self-entry must be empty")
 		}
 		if !strings.HasPrefix(row[1], "sha256=") {
 			return nil, errors.New("wheel RECORD digest is invalid")
@@ -311,7 +318,7 @@ func validateRecord(body []byte, regular []string, entries map[string]*zip.File,
 			return nil, errors.New("wheel RECORD digest is invalid")
 		}
 		n, err := strconv.ParseInt(row[2], 10, 64)
-		if err != nil || n < 0 || int64(len(recorded)) > limit {
+		if err != nil || n < 0 {
 			return nil, errors.New("wheel RECORD size is invalid")
 		}
 		recorded[name] = WheelFile{Path: name, Size: n, SHA256: hex.EncodeToString(digest)}
@@ -320,27 +327,32 @@ func validateRecord(body []byte, regular []string, entries map[string]*zip.File,
 		if name == "" {
 			continue
 		}
+		if name == primaryDistInfo+"/RECORD.jws" || name == primaryDistInfo+"/RECORD.p7s" {
+			continue
+		}
 		file, ok := recorded[name]
 		if !ok || file.Path == "" {
 			return nil, errors.New("wheel contains unrecorded file")
 		}
-		if strings.HasSuffix(name, ".dist-info/RECORD") && file.Size == 0 && file.SHA256 == "" {
-			continue
-		}
-		if name != path.Base(name) && strings.HasSuffix(name, "/RECORD") {
+		if name == primaryRecord && file.Size == 0 && file.SHA256 == "" {
 			continue
 		}
 		entry := entries[name]
-		body, err := readZipEntry(entry, limit)
-		if err != nil || int64(len(body)) != file.Size {
+		actualSize, actualDigest, err := streamRecordFile(entry)
+		if err != nil || actualSize != file.Size {
 			return nil, errors.New("wheel RECORD size mismatch")
 		}
-		sum := sha256.Sum256(body)
-		if hex.EncodeToString(sum[:]) != file.SHA256 && name != path.Base(name) {
+		if actualDigest != file.SHA256 {
 			return nil, errors.New("wheel RECORD digest mismatch")
 		}
 	}
-	if len(recorded) != len(regular) {
+	expected := 0
+	for _, name := range regular {
+		if name != primaryDistInfo+"/RECORD.jws" && name != primaryDistInfo+"/RECORD.p7s" {
+			expected++
+		}
+	}
+	if len(recorded) != expected {
 		return nil, errors.New("wheel RECORD contains unknown file")
 	}
 	files := make([]WheelFile, 0, len(recorded))
@@ -350,6 +362,29 @@ func validateRecord(body []byte, regular []string, entries map[string]*zip.File,
 		}
 	}
 	return files, nil
+}
+
+func streamRecordFile(file *zip.File) (int64, string, error) {
+	if file == nil {
+		return 0, "", errors.New("wheel RECORD file is missing")
+	}
+	r, err := file.Open()
+	if err != nil {
+		return 0, "", err
+	}
+	defer r.Close()
+	hash := sha256.New()
+	if file.UncompressedSize64 > uint64(1<<63-2) {
+		return 0, "", errors.New("wheel RECORD file exceeds streaming bound")
+	}
+	size, err := io.Copy(hash, io.LimitReader(r, int64(file.UncompressedSize64)+1))
+	if err != nil {
+		return 0, "", err
+	}
+	if size > int64(file.UncompressedSize64) {
+		return 0, "", errors.New("wheel RECORD file exceeds declared archive size")
+	}
+	return size, hex.EncodeToString(hash.Sum(nil)), nil
 }
 
 func (i WheelInspection) distInfo() string {
@@ -520,16 +555,71 @@ func manylinuxTagCompatible(wheel, target string) bool {
 	return targetMajor > wheelMajor || targetMajor == wheelMajor && targetMinor >= wheelMinor
 }
 func wheelMetadataTagsMatch(tags, py, abi, platform []string) bool {
-	if len(tags) == 0 {
+	expanded, ok := expandWheelTags(py, abi, platform)
+	if !ok || len(tags) == 0 || len(tags) != len(expanded) {
 		return false
 	}
-	want := strings.Join(py, ".") + "-" + strings.Join(abi, ".") + "-" + strings.Join(platform, ".")
+	want := make(map[string]struct{}, len(expanded))
+	for _, tag := range expanded {
+		want[tag] = struct{}{}
+	}
+	got := make(map[string]struct{}, len(tags))
 	for _, tag := range tags {
-		if tag == want {
-			return true
+		if !validExpandedWheelTag(tag) {
+			return false
+		}
+		if _, duplicate := got[tag]; duplicate {
+			return false
+		}
+		got[tag] = struct{}{}
+		if _, present := want[tag]; !present {
+			return false
 		}
 	}
-	return false
+	return len(got) == len(want)
+}
+
+func expandWheelTags(py, abi, platform []string) ([]string, bool) {
+	if len(py) == 0 || len(abi) == 0 || len(platform) == 0 {
+		return nil, false
+	}
+	seen := map[string]struct{}{}
+	expanded := make([]string, 0, len(py)*len(abi)*len(platform))
+	for _, python := range py {
+		for _, applicationBinaryInterface := range abi {
+			for _, operatingSystem := range platform {
+				tag := python + "-" + applicationBinaryInterface + "-" + operatingSystem
+				if !validExpandedWheelTag(tag) {
+					return nil, false
+				}
+				if _, duplicate := seen[tag]; duplicate {
+					return nil, false
+				}
+				seen[tag] = struct{}{}
+				expanded = append(expanded, tag)
+			}
+		}
+	}
+	return expanded, true
+}
+
+func validExpandedWheelTag(tag string) bool {
+	parts := strings.Split(tag, "-")
+	if len(parts) != 3 {
+		return false
+	}
+	for _, part := range parts {
+		if part == "" || strings.Contains(part, ".") {
+			return false
+		}
+		for _, character := range part {
+			if character >= 'a' && character <= 'z' || character >= 'A' && character <= 'Z' || character >= '0' && character <= '9' || character == '_' {
+				continue
+			}
+			return false
+		}
+	}
+	return true
 }
 func hashReaderAt(reader io.ReaderAt, size int64, hash io.Writer) error {
 	buf := make([]byte, 64<<10)

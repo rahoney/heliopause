@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"strings"
 	"testing"
 )
 
@@ -223,6 +224,147 @@ func TestWheelTagsCompatibleManylinuxSemantics(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestWheelMetadataTagsMatchExpandedFilenameTags(t *testing.T) {
+	filenamePython := []string{"cp314"}
+	filenameABI := []string{"cp314"}
+	tests := []struct {
+		name string
+		tags []string
+		want bool
+	}{
+		{name: "single tag", tags: []string{"cp314-cp314-manylinux_2_36_x86_64"}, want: true},
+		{name: "compressed platform expansion", tags: []string{
+			"cp314-cp314-manylinux_2_17_x86_64",
+			"cp314-cp314-manylinux2014_x86_64",
+			"cp314-cp314-manylinux_2_28_x86_64",
+		}, want: true},
+		{name: "ordering ignored", tags: []string{
+			"cp314-cp314-manylinux_2_28_x86_64",
+			"cp314-cp314-manylinux2014_x86_64",
+			"cp314-cp314-manylinux_2_17_x86_64",
+		}, want: true},
+		{name: "missing expanded tag", tags: []string{
+			"cp314-cp314-manylinux_2_17_x86_64",
+			"cp314-cp314-manylinux_2_28_x86_64",
+		}, want: false},
+		{name: "extra tag", tags: []string{
+			"cp314-cp314-manylinux_2_36_x86_64",
+			"cp314-cp314-manylinux_2_28_x86_64",
+		}, want: false},
+		{name: "malformed tag", tags: []string{"cp314.cp314-manylinux_2_36_x86_64"}, want: false},
+		{name: "duplicate tag", tags: []string{
+			"cp314-cp314-manylinux_2_36_x86_64",
+			"cp314-cp314-manylinux_2_36_x86_64",
+		}, want: false},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			platform := []string{"manylinux_2_36_x86_64"}
+			if strings.Contains(test.name, "expansion") || strings.Contains(test.name, "ordering") || strings.Contains(test.name, "missing") {
+				platform = []string{"manylinux2014_x86_64", "manylinux_2_17_x86_64", "manylinux_2_28_x86_64"}
+			}
+			if got := wheelMetadataTagsMatch(test.tags, filenamePython, filenameABI, platform); got != test.want {
+				t.Fatalf("wheelMetadataTagsMatch() = %v, want %v", got, test.want)
+			}
+		})
+	}
+}
+
+func TestInspectWheelStreamsLargeRecordPayload(t *testing.T) {
+	payload := bytes.Repeat([]byte("p"), int(DefaultWheelLimits().MaxMetadata)+1)
+	archive := recordedWheelArchive(t, "packaging", "25.0", "packaging-25.0.dist-info", []wheelTestEntry{{name: "packaging/payload.bin", body: payload}}, []string{"cp314-cp314-manylinux_2_36_x86_64"}, nil)
+	if _, err := inspectTestWheelResult(archive, "packaging-25.0-cp314-cp314-manylinux_2_36_x86_64.whl"); err != nil {
+		t.Fatalf("large valid RECORD payload rejected: %v", err)
+	}
+}
+
+func TestInspectWheelRejectsRecordIntegrityAndExemptionBypasses(t *testing.T) {
+	payload := []byte("payload")
+	tests := []struct {
+		name      string
+		content   []wheelTestEntry
+		transform func([]string) []string
+	}{
+		{name: "top-level digest mismatch", content: []wheelTestEntry{{name: "payload.bin", body: payload}}, transform: replaceRecordRow(func(parts []string) []string { parts[1] = "sha256=" + strings.Repeat("0", 43); return parts })},
+		{name: "nested digest mismatch", content: []wheelTestEntry{{name: "pkg/payload.bin", body: payload}}, transform: replaceRecordRow(func(parts []string) []string { parts[1] = "sha256=" + strings.Repeat("0", 43); return parts })},
+		{name: "size mismatch", content: []wheelTestEntry{{name: "pkg/payload.bin", body: payload}}, transform: replaceRecordRow(func(parts []string) []string { parts[2] = "0"; return parts })},
+		{name: "nested RECORD exemption", content: []wheelTestEntry{{name: "vendor/example.dist-info/RECORD", body: payload}}, transform: replaceRecordRow(func(parts []string) []string { parts[1], parts[2] = "", ""; return parts })},
+		{name: "unrecorded file", content: []wheelTestEntry{{name: "pkg/payload.bin", body: payload}}, transform: func(rows []string) []string { return rows[1:] }},
+		{name: "unknown RECORD file", content: []wheelTestEntry{{name: "pkg/payload.bin", body: payload}}, transform: func(rows []string) []string { return append(rows, "unknown.bin,,") }},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			archive := recordedWheelArchive(t, "packaging", "25.0", "packaging-25.0.dist-info", test.content, []string{"cp314-cp314-manylinux_2_36_x86_64"}, test.transform)
+			if _, err := inspectTestWheelResult(archive, "packaging-25.0-cp314-cp314-manylinux_2_36_x86_64.whl"); err == nil {
+				t.Fatal("invalid RECORD accepted")
+			}
+		})
+	}
+}
+
+func TestInspectWheelAllowsOnlyExactPrimaryRecordJWSOmission(t *testing.T) {
+	archive := recordedWheelArchive(t, "packaging", "25.0", "packaging-25.0.dist-info", []wheelTestEntry{
+		{name: "packaging/__init__.py", body: []byte("safe")},
+		{name: "packaging-25.0.dist-info/RECORD.jws", body: []byte("signature")},
+		{name: "packaging-25.0.dist-info/RECORD.p7s", body: []byte("signature")},
+	}, []string{"cp314-cp314-manylinux_2_36_x86_64"}, nil)
+	if _, err := inspectTestWheelResult(archive, "packaging-25.0-cp314-cp314-manylinux_2_36_x86_64.whl"); err != nil {
+		t.Fatalf("primary RECORD signature omission rejected: %v", err)
+	}
+}
+
+func inspectTestWheelResult(archive []byte, filename string) (WheelInspection, error) {
+	digest := sha256.Sum256(archive)
+	return InspectWheel(bytes.NewReader(archive), int64(len(archive)), filename, hex.EncodeToString(digest[:]), WheelTarget{"cp314", "cp314", "manylinux_2_36_x86_64"}, DefaultWheelLimits())
+}
+
+func replaceRecordRow(update func([]string) []string) func([]string) []string {
+	return func(rows []string) []string {
+		for index, row := range rows {
+			parts := strings.Split(row, ",")
+			if len(parts) == 3 && parts[1] != "" && !strings.HasSuffix(parts[0], "/METADATA") && !strings.HasSuffix(parts[0], "/WHEEL") {
+				rows[index] = strings.Join(update(parts), ",")
+				break
+			}
+		}
+		return rows
+	}
+}
+
+func recordedWheelArchive(t *testing.T, metadataName, version, distInfo string, content []wheelTestEntry, tags []string, transform func([]string) []string) []byte {
+	t.Helper()
+	metadata := []byte("Metadata-Version: 2.4\nName: " + metadataName + "\nVersion: " + version + "\n")
+	wheel := []byte("Wheel-Version: 1.0\n")
+	for _, tag := range tags {
+		wheel = append(wheel, []byte("Tag: "+tag+"\n")...)
+	}
+	entries := append([]wheelTestEntry(nil), content...)
+	metadataSum, wheelSum := sha256.Sum256(metadata), sha256.Sum256(wheel)
+	rows := make([]string, 0, len(content)+3)
+	for _, entry := range content {
+		if entry.mode != 0 || entry.name == distInfo+"/RECORD.jws" || entry.name == distInfo+"/RECORD.p7s" {
+			continue
+		}
+		sum := sha256.Sum256(entry.body)
+		rows = append(rows, entry.name+",sha256="+base64.RawURLEncoding.EncodeToString(sum[:])+","+itoa(len(entry.body)))
+	}
+	rows = append(rows,
+		distInfo+"/METADATA,sha256="+base64.RawURLEncoding.EncodeToString(metadataSum[:])+","+itoa(len(metadata)),
+		distInfo+"/WHEEL,sha256="+base64.RawURLEncoding.EncodeToString(wheelSum[:])+","+itoa(len(wheel)),
+		distInfo+"/RECORD,,",
+	)
+	if transform != nil {
+		rows = transform(rows)
+	}
+	record := []byte(strings.Join(rows, "\n") + "\n")
+	entries = append(entries,
+		wheelTestEntry{name: distInfo + "/METADATA", body: metadata},
+		wheelTestEntry{name: distInfo + "/WHEEL", body: wheel},
+		wheelTestEntry{name: distInfo + "/RECORD", body: record},
+	)
+	return makeWheelEntries(t, entries...)
 }
 
 func FuzzInspectWheelNoPanic(f *testing.F) {
