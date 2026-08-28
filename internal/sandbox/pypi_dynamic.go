@@ -204,7 +204,7 @@ func (b *PythonDynamicBackend) InspectWheelWithClosure(ctx context.Context, arti
 		if b.remove(containerID) != nil {
 			return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_CLEANUP_FAILED")
 		}
-		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_OBSERVER_FAILED")
+		return pythonIncomplete(sessionID, dynamicObserverFailureCode("START", classifyDynamicObserverFailure(err)))
 	}
 	timeout := b.timeout
 	if resourcePolicy.Duration() > defaultPyPIDynamicDuration {
@@ -221,15 +221,12 @@ func (b *PythonDynamicBackend) InspectWheelWithClosure(ctx context.Context, arti
 		}
 	}
 	installArguments := append([]string{"exec", containerID, "python", "-I", "-m", "pip", "install", "--no-index", "--no-deps", "--no-compile", "--disable-pip-version-check", "--target", pythonSitePath}, wheelPaths...)
-	if failureClass, err := runBoundedCommand(runCtx, b.runner, "docker", installArguments...); err != nil {
+	if failureClass, err := runBoundedCommand(runCtx, b.runner, classifyDynamicInstallFailure, "docker", installArguments...); err != nil {
 		return b.finishIncomplete(sessionID, containerID, trace, dynamicInstallFailureCode(failureClass))
 	}
 	arguments := append([]string{"exec", containerID, "python", "-I", "-c", pythonImportScript}, imports...)
-	if err := discardCommand(runCtx, b.runner, "docker", arguments...); err != nil {
-		if errors.Is(runCtx.Err(), context.DeadlineExceeded) {
-			return b.finishIncomplete(sessionID, containerID, trace, "M5_PYPI_DYNAMIC_TIMEOUT")
-		}
-		return b.finishIncomplete(sessionID, containerID, trace, "M5_PYPI_DYNAMIC_IMPORT_FAILED")
+	if failureClass, err := runBoundedCommand(runCtx, b.runner, classifyDynamicImportFailure, "docker", arguments...); err != nil {
+		return b.finishIncomplete(sessionID, containerID, trace, dynamicImportFailureCode(failureClass))
 	}
 	observations, limitation := b.disposeAndCollect(containerID, trace)
 	if limitation != "" {
@@ -286,16 +283,16 @@ func discardCommand(ctx context.Context, runner CommandRunner, binary string, ar
 	return discarder.RunDiscard(ctx, binary, arguments...)
 }
 
-func runBoundedCommand(ctx context.Context, runner CommandRunner, binary string, arguments ...string) (string, error) {
+func runBoundedCommand(ctx context.Context, runner CommandRunner, classify func(context.Context, string) string, binary string, arguments ...string) (string, error) {
 	if bounded, ok := runner.(boundedCommandRunner); ok {
 		output, err := bounded.RunBounded(ctx, binary, arguments...)
 		if err != nil {
-			return classifyDynamicInstallFailure(ctx, string(output)), err
+			return classify(ctx, string(output)), err
 		}
 		return "", nil
 	}
 	if err := discardCommand(ctx, runner, binary, arguments...); err != nil {
-		return dynamicInstallFailureOther, err
+		return classify(ctx, ""), err
 	}
 	return "", nil
 }
@@ -313,10 +310,32 @@ const (
 	dynamicInstallFailurePermission      = "PERMISSION"
 	dynamicInstallFailureSandboxRuntime  = "SANDBOX_RUNTIME"
 	dynamicInstallFailureOther           = "OTHER"
+	dynamicImportFailurePrefix           = "M5_PYPI_DYNAMIC_IMPORT_FAILED_"
+	dynamicImportFailureMissingLibrary   = "MISSING_SHARED_LIBRARY"
+	dynamicImportFailureDlopenPermission = "DLOPEN_PERMISSION"
+	dynamicImportFailureELFLoader        = "ELF_LOADER"
+	dynamicImportFailureSymbolVersion    = "SYMBOL_VERSION"
+	dynamicImportFailurePythonABI        = "PYTHON_ABI"
+	dynamicImportFailureException        = "IMPORT_EXCEPTION"
+	dynamicImportFailureMemory           = "MEMORY_LIMIT"
+	dynamicImportFailureCPU              = "CPU_LIMIT"
+	dynamicImportFailurePID              = "PID_LIMIT"
+	dynamicImportFailureTimeout          = "TIMEOUT"
+	dynamicImportFailureSandboxRuntime   = "SANDBOX_RUNTIME"
+	dynamicImportFailureOther            = "OTHER"
+	dynamicObserverFailurePrefix         = "M5_PYPI_DYNAMIC_OBSERVER_FAILED_"
 )
 
 func dynamicInstallFailureCode(class string) string {
 	return dynamicInstallFailurePrefix + class
+}
+
+func dynamicImportFailureCode(class string) string {
+	return dynamicImportFailurePrefix + class
+}
+
+func dynamicObserverFailureCode(phase, class string) string {
+	return dynamicObserverFailurePrefix + phase + "_" + class
 }
 
 func classifyDynamicInstallFailure(ctx context.Context, output string) string {
@@ -345,6 +364,67 @@ func classifyDynamicInstallFailure(ctx context.Context, output string) string {
 		return dynamicInstallFailurePipArgument
 	default:
 		return dynamicInstallFailureOther
+	}
+}
+
+func classifyDynamicImportFailure(ctx context.Context, output string) string {
+	if ctx != nil && errors.Is(ctx.Err(), context.DeadlineExceeded) {
+		return dynamicImportFailureTimeout
+	}
+	output = strings.ToLower(output)
+	switch {
+	case strings.Contains(output, "no such file or directory"), strings.Contains(output, "cannot open shared object file"):
+		return dynamicImportFailureMissingLibrary
+	case strings.Contains(output, "failed to map segment"), strings.Contains(output, "permission denied"), strings.Contains(output, "operation not permitted"):
+		return dynamicImportFailureDlopenPermission
+	case strings.Contains(output, "wrong elf class"), strings.Contains(output, "exec format error"), strings.Contains(output, "invalid elf"):
+		return dynamicImportFailureELFLoader
+	case strings.Contains(output, "glibc_"), strings.Contains(output, "glibcxx_"), strings.Contains(output, "cxxabi_"):
+		return dynamicImportFailureSymbolVersion
+	case strings.Contains(output, "python abi"), strings.Contains(output, "abi version"), strings.Contains(output, "pyinit_"):
+		return dynamicImportFailurePythonABI
+	case strings.Contains(output, "cannot allocate memory"), strings.Contains(output, "out of memory"), strings.Contains(output, "memory limit"):
+		return dynamicImportFailureMemory
+	case strings.Contains(output, "resource temporarily unavailable"), strings.Contains(output, "pids limit"):
+		return dynamicImportFailurePID
+	case strings.Contains(output, "cpu time limit"):
+		return dynamicImportFailureCPU
+	case strings.Contains(output, "oci runtime"), strings.Contains(output, "runsc"), strings.Contains(output, "containerd"):
+		return dynamicImportFailureSandboxRuntime
+	case strings.Contains(output, "traceback"), strings.Contains(output, "importerror"), strings.Contains(output, "modulenotfounderror"):
+		return dynamicImportFailureException
+	default:
+		return dynamicImportFailureOther
+	}
+}
+
+func classifyDynamicObserverFailure(err error) string {
+	if err == nil {
+		return "OTHER"
+	}
+	var fault traceFault
+	if !errors.As(err, &fault) {
+		return "OTHER"
+	}
+	switch fault.TraceFaultReason() {
+	case "PREVIOUS_TRACE_NOT_FINALIZED":
+		return "PREVIOUS_TRACE_NOT_FINALIZED"
+	case "HELPER_UNAVAILABLE":
+		return "HELPER_UNAVAILABLE"
+	case "HELPER_CRASHED":
+		return "HELPER_CRASHED"
+	case "EVENT_LIMIT":
+		return "EVENT_LIMIT"
+	case "BYTE_LIMIT":
+		return "BYTE_LIMIT"
+	case "CHANNEL_OVERFLOW":
+		return "SESSION_LIMIT"
+	case "READER_ERROR", "READER_TIMEOUT", "STREAM_FAULT", "FINALIZATION_TIMEOUT":
+		return "TRACE_COLLECTION_FAILED"
+	case "ATTRIBUTION_FAILURE", "CONTAINER_MISMATCH", "PROFILE_LOOKUP_FAILURE", "UNKNOWN_EVENT_KIND", "LIFECYCLE_ERROR":
+		return "LIFECYCLE_ERROR"
+	default:
+		return "OTHER"
 	}
 }
 func pythonIncomplete(sessionID domain.SandboxSessionID, code string) (domain.SandboxResult, error) {

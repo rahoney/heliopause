@@ -162,7 +162,7 @@ func TestInstallInspectUsesNeutralGraphCapabilityForEveryDependencyGraph(t *test
 
 func TestInstallInspectRecordsBoundedGraphDynamicInstallDiagnostic(t *testing.T) {
 	graph := twoNodeGraphForSource(t, "pypi")
-	ports := &graphInspectionPorts{multiInspectionPorts: newMultiInspectionPorts(t, graph), dynamicFailure: "M5_PYPI_DYNAMIC_INSTALL_FAILED_ENOSPC"}
+	ports := &graphInspectionPorts{multiInspectionPorts: newMultiInspectionPorts(t, graph), dynamicFailure: "M5_PYPI_DYNAMIC_IMPORT_FAILED_MISSING_SHARED_LIBRARY"}
 	source, _ := domain.NewSourceID("pypi")
 	reference, _ := domain.NewArtifactReference(source, "first")
 	target, _ := domain.NewInstallTarget("/tmp/heliopause-install-target")
@@ -177,7 +177,7 @@ func TestInstallInspectRecordsBoundedGraphDynamicInstallDiagnostic(t *testing.T)
 		t.Fatal(err)
 	}
 	diagnostics := result.GraphDynamicInstallDiagnostics()
-	if len(diagnostics) != 1 || diagnostics[0].Node().String() != "first" || diagnostics[0].Package() != "first" || diagnostics[0].FailureClass() != "ENOSPC" {
+	if len(diagnostics) != 1 || diagnostics[0].Node().String() != "first" || diagnostics[0].Package() != "first" || diagnostics[0].Reason() != "PYPI_DYNAMIC_IMPORT_FAILED" || diagnostics[0].Phase() != "" || diagnostics[0].FailureClass() != "MISSING_SHARED_LIBRARY" {
 		t.Fatalf("dynamic diagnostics = %#v", diagnostics)
 	}
 }

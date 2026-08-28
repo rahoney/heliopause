@@ -516,6 +516,16 @@ func (r integrationRunner) RunDiscard(ctx context.Context, binary string, argume
 	return err
 }
 
+func (r integrationRunner) RunBounded(ctx context.Context, binary string, arguments ...string) ([]byte, error) {
+	r.t.Helper()
+	command := exec.CommandContext(ctx, integrationBinary(binary), arguments...)
+	output := &boundedIntegrationOutput{remaining: 16 << 10}
+	command.Stdout = output
+	command.Stderr = output
+	err := command.Run()
+	return append([]byte(nil), output.Bytes()...), err
+}
+
 func (r integrationRunner) RunOutput(ctx context.Context, output io.Writer, binary string, arguments ...string) error {
 	r.t.Helper()
 	command := exec.CommandContext(ctx, integrationBinary(binary), arguments...)

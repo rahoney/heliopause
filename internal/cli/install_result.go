@@ -96,7 +96,7 @@ func WriteJSONInstallResult(output io.Writer, outcome application.InstallOutcome
 	}
 	for _, diagnostic := range inspection.GraphDynamicInstallDiagnostics() {
 		document.GraphDynamicInstallFailures = append(document.GraphDynamicInstallFailures, machineGraphDynamicInstallDiagnostic{
-			Node: diagnostic.Node().String(), Package: diagnostic.Package(), Version: diagnostic.Version(), Source: diagnostic.Source().String(), Variant: diagnostic.Variant(), Reason: "PYPI_DYNAMIC_INSTALL_FAILED", FailureClass: diagnostic.FailureClass(),
+			Node: diagnostic.Node().String(), Package: diagnostic.Package(), Version: diagnostic.Version(), Source: diagnostic.Source().String(), Variant: diagnostic.Variant(), Reason: diagnostic.Reason(), Phase: diagnostic.Phase(), FailureClass: diagnostic.FailureClass(),
 		})
 	}
 	if inspection.Set().Valid() {
@@ -170,6 +170,7 @@ type machineGraphDynamicInstallDiagnostic struct {
 	Source       string `json:"source"`
 	Variant      string `json:"variant"`
 	Reason       string `json:"reason"`
+	Phase        string `json:"phase,omitempty"`
 	FailureClass string `json:"failure_class"`
 }
 

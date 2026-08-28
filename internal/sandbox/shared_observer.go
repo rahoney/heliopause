@@ -126,7 +126,7 @@ func (o *SharedObserver) Close() error {
 
 func (o *SharedObserver) Start(_ context.Context, containerID string) (TraceReader, error) {
 	if o == nil || o.listener == nil || !containerIDPattern.MatchString(containerID) {
-		return nil, errors.New("shared observer is not configured")
+		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
 	}
 	o.mu.Lock()
 	defer o.mu.Unlock()
@@ -134,7 +134,7 @@ func (o *SharedObserver) Start(_ context.Context, containerID string) (TraceRead
 		return nil, o.fault
 	}
 	if _, exists := o.streams[containerID]; exists {
-		return nil, errors.New("duplicate Sandbox observer mapping")
+		return nil, observerFault{reason: "PREVIOUS_TRACE_NOT_FINALIZED"}
 	}
 	reader := &sharedTraceReader{observer: o, records: make(chan TraceRecord, defaultTraceBudget.events+1), done: make(chan struct{}), budget: defaultTraceBudget}
 	o.streams[containerID] = reader
@@ -143,7 +143,7 @@ func (o *SharedObserver) Start(_ context.Context, containerID string) (TraceRead
 
 func (o *SharedObserver) StartProfile(ctx context.Context, containerID, profile string) (TraceReader, error) {
 	if ctx == nil || profile == "" {
-		return nil, errors.New("observer profile is required")
+		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
 	}
 	if err := registerObserverProfile(ctx, containerID, profile); err != nil {
 		return nil, err
@@ -163,22 +163,22 @@ func (o *SharedObserver) StartProfile(ctx context.Context, containerID, profile 
 
 func registerObserverProfile(ctx context.Context, containerID, profile string) error {
 	if !containerIDPattern.MatchString(containerID) || !validObserverProfile(profile) {
-		return errors.New("observer profile registration is invalid")
+		return observerFault{reason: "LIFECYCLE_ERROR"}
 	}
 	body, err := json.Marshal(struct {
 		ContainerID string `json:"container_id"`
 		Profile     string `json:"profile"`
 	}{containerID, profile})
 	if err != nil {
-		return errors.New("encode observer profile registration")
+		return observerFault{reason: "LIFECYCLE_ERROR"}
 	}
 	connection, err := net.DialUnix("unixgram", nil, &net.UnixAddr{Name: ObserverControlEndpoint, Net: "unixgram"})
 	if err != nil {
-		return errors.New("connect observer profile control")
+		return observerFault{reason: "HELPER_UNAVAILABLE"}
 	}
 	defer connection.Close()
 	if _, err := connection.Write(body); err != nil {
-		return errors.New("send observer profile registration")
+		return observerFault{reason: "LIFECYCLE_ERROR"}
 	}
 	return nil
 }

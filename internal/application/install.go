@@ -68,7 +68,7 @@ func (d GraphStaticDiagnostic) Cause() domain.InspectionDiagnosticCause { return
 func (d GraphStaticDiagnostic) Stage() domain.InspectionDiagnosticStage { return d.stage }
 
 // GraphDynamicInstallDiagnostic is a bounded qualification record for a
-// graph node whose offline dynamic wheel installation did not complete.
+// graph node whose dynamic wheel operation did not complete.
 // It deliberately carries no subprocess output or Host path.
 type GraphDynamicInstallDiagnostic struct {
 	node         domain.DependencyNodeID
@@ -76,15 +76,17 @@ type GraphDynamicInstallDiagnostic struct {
 	version      string
 	source       domain.SourceID
 	variant      string
+	reason       string
+	phase        string
 	failureClass string
 }
 
-func newGraphDynamicInstallDiagnostic(dependency domain.LockedDependency, failureClass string) (GraphDynamicInstallDiagnostic, error) {
+func newGraphDynamicInstallDiagnostic(dependency domain.LockedDependency, reason, phase, failureClass string) (GraphDynamicInstallDiagnostic, error) {
 	identity := dependency.Artifact().Identity()
-	if dependency.Node().String() == "" || identity.Name() == "" || identity.Version() == "" || identity.Source().String() == "" || identity.Variant() == "" || !validDynamicInstallFailureClass(failureClass) {
+	if dependency.Node().String() == "" || identity.Name() == "" || identity.Version() == "" || identity.Source().String() == "" || identity.Variant() == "" || !validDynamicFailure(reason, phase, failureClass) {
 		return GraphDynamicInstallDiagnostic{}, errors.New("graph dynamic install diagnostic is invalid")
 	}
-	return GraphDynamicInstallDiagnostic{node: dependency.Node(), packageName: identity.Name(), version: identity.Version(), source: identity.Source(), variant: identity.Variant(), failureClass: failureClass}, nil
+	return GraphDynamicInstallDiagnostic{node: dependency.Node(), packageName: identity.Name(), version: identity.Version(), source: identity.Source(), variant: identity.Variant(), reason: reason, phase: phase, failureClass: failureClass}, nil
 }
 
 func (d GraphDynamicInstallDiagnostic) Node() domain.DependencyNodeID { return d.node }
@@ -92,6 +94,8 @@ func (d GraphDynamicInstallDiagnostic) Package() string               { return d
 func (d GraphDynamicInstallDiagnostic) Version() string               { return d.version }
 func (d GraphDynamicInstallDiagnostic) Source() domain.SourceID       { return d.source }
 func (d GraphDynamicInstallDiagnostic) Variant() string               { return d.variant }
+func (d GraphDynamicInstallDiagnostic) Reason() string                { return d.reason }
+func (d GraphDynamicInstallDiagnostic) Phase() string                 { return d.phase }
 func (d GraphDynamicInstallDiagnostic) FailureClass() string          { return d.failureClass }
 
 func newInspectedInstall(operationID domain.OperationID, request InstallRequest, resolution domain.DependencyResolution, set domain.InspectedDependencySet, decision domain.PolicyDecision) InspectedInstall {

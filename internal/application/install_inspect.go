@@ -305,7 +305,14 @@ func graphStaticDiagnostics(graph domain.LockedDependencyGraph, reports map[doma
 	return diagnostics, nil
 }
 
-const dynamicInstallFailurePrefix = "M5_PYPI_DYNAMIC_INSTALL_FAILED_"
+const (
+	dynamicInstallFailurePrefix  = "M5_PYPI_DYNAMIC_INSTALL_FAILED_"
+	dynamicImportFailurePrefix   = "M5_PYPI_DYNAMIC_IMPORT_FAILED_"
+	dynamicObserverFailurePrefix = "M5_PYPI_DYNAMIC_OBSERVER_FAILED_"
+	dynamicReasonInstall         = "PYPI_DYNAMIC_INSTALL_FAILED"
+	dynamicReasonImport          = "PYPI_DYNAMIC_IMPORT_FAILED"
+	dynamicReasonObserver        = "PYPI_DYNAMIC_OBSERVER_FAILED"
+)
 
 func graphDynamicInstallDiagnostics(graph domain.LockedDependencyGraph, reports map[domain.DependencyNodeID]domain.InspectionReport) ([]GraphDynamicInstallDiagnostic, error) {
 	diagnostics := make([]GraphDynamicInstallDiagnostic, 0)
@@ -315,11 +322,11 @@ func graphDynamicInstallDiagnostics(graph domain.LockedDependencyGraph, reports 
 				continue
 			}
 			limitation, limited := execution.LimitationCode()
-			failureClass, matched := strings.CutPrefix(limitation, dynamicInstallFailurePrefix)
+			reason, phase, failureClass, matched := dynamicFailureParts(limitation)
 			if !limited || !matched {
 				continue
 			}
-			diagnostic, err := newGraphDynamicInstallDiagnostic(dependency, failureClass)
+			diagnostic, err := newGraphDynamicInstallDiagnostic(dependency, reason, phase, failureClass)
 			if err != nil {
 				return nil, err
 			}
@@ -329,9 +336,63 @@ func graphDynamicInstallDiagnostics(graph domain.LockedDependencyGraph, reports 
 	return diagnostics, nil
 }
 
+func dynamicFailureParts(limitation string) (reason, phase, failureClass string, matched bool) {
+	if failureClass, matched = strings.CutPrefix(limitation, dynamicInstallFailurePrefix); matched {
+		return dynamicReasonInstall, "", failureClass, true
+	}
+	if failureClass, matched = strings.CutPrefix(limitation, dynamicImportFailurePrefix); matched {
+		return dynamicReasonImport, "", failureClass, true
+	}
+	remaining, matched := strings.CutPrefix(limitation, dynamicObserverFailurePrefix)
+	if !matched {
+		return "", "", "", false
+	}
+	for _, candidate := range []string{"START", "FINALIZE", "COLLECT", "NEXT_SESSION"} {
+		if failureClass, matched = strings.CutPrefix(remaining, candidate+"_"); matched {
+			return dynamicReasonObserver, candidate, failureClass, true
+		}
+	}
+	return "", "", "", false
+}
+
+func validDynamicFailure(reason, phase, failureClass string) bool {
+	switch reason {
+	case dynamicReasonInstall:
+		return phase == "" && validDynamicInstallFailureClass(failureClass)
+	case dynamicReasonImport:
+		return phase == "" && validDynamicImportFailureClass(failureClass)
+	case dynamicReasonObserver:
+		return validDynamicObserverPhase(phase) && validDynamicObserverFailureClass(failureClass)
+	default:
+		return false
+	}
+}
+
 func validDynamicInstallFailureClass(value string) bool {
 	switch value {
 	case "PIP_ARGUMENT_ERROR", "WHEEL_PLATFORM_REJECTED", "WHEEL_METADATA_REJECTED", "PACKAGE_CONFLICT", "DUPLICATE_DISTRIBUTION", "ENOSPC", "MEMORY_LIMIT", "TIMEOUT", "PERMISSION", "SANDBOX_RUNTIME", "OTHER":
+		return true
+	default:
+		return false
+	}
+}
+
+func validDynamicImportFailureClass(value string) bool {
+	switch value {
+	case "MISSING_SHARED_LIBRARY", "DLOPEN_PERMISSION", "ELF_LOADER", "SYMBOL_VERSION", "PYTHON_ABI", "IMPORT_EXCEPTION", "MEMORY_LIMIT", "CPU_LIMIT", "PID_LIMIT", "TIMEOUT", "SANDBOX_RUNTIME", "OTHER":
+		return true
+	default:
+		return false
+	}
+}
+
+func validDynamicObserverPhase(value string) bool {
+	return value == "START" || value == "FINALIZE" || value == "COLLECT" || value == "NEXT_SESSION"
+}
+
+func validDynamicObserverFailureClass(value string) bool {
+	switch value {
+	case "PREVIOUS_TRACE_NOT_FINALIZED", "HELPER_UNAVAILABLE", "HELPER_CRASHED", "EVENT_LIMIT", "BYTE_LIMIT", "SESSION_LIMIT", "TRACE_COLLECTION_FAILED", "CLEANUP_ORDERING", "LIFECYCLE_ERROR", "OTHER":
 		return true
 	default:
 		return false

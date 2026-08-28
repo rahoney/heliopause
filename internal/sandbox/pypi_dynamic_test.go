@@ -141,6 +141,52 @@ func TestPythonDynamicBackendClassifiesBoundedInstallFailureWithoutExposingOutpu
 	}
 }
 
+func TestPythonDynamicBackendClassifiesBoundedImportFailureWithoutExposingOutput(t *testing.T) {
+	root, artifact := pythonWheelFixture(t)
+	runner := &recordingRunner{
+		responses:     [][]byte{[]byte("0123456789abcdef")},
+		errors:        []error{nil, nil, nil, errors.New("exit status 1")},
+		boundedOutput: []byte("ImportError: libtorch_cpu.so: cannot open shared object file"),
+	}
+	introducer, err := NewPythonArtifactIntroducer(root, runner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	backend, err := NewPythonDynamicBackend(runner, introducer, &recordingObserver{reader: &traceReader{}}, availablePythonProbe)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := backend.InspectWheel(context.Background(), artifact, []string{"example"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	limitation, _ := result.LimitationCode()
+	if result.Status() != domain.SandboxIncomplete || limitation != "M5_PYPI_DYNAMIC_IMPORT_FAILED_MISSING_SHARED_LIBRARY" || strings.Contains(limitation, "libtorch") {
+		t.Fatalf("result = %#v", result)
+	}
+}
+
+func TestPythonDynamicBackendClassifiesObserverStartFailure(t *testing.T) {
+	root, artifact := pythonWheelFixture(t)
+	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef")}}
+	introducer, err := NewPythonArtifactIntroducer(root, runner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	backend, err := NewPythonDynamicBackend(runner, introducer, &recordingObserver{err: observerFault{reason: "HELPER_CRASHED"}}, availablePythonProbe)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := backend.InspectWheel(context.Background(), artifact, []string{"example"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	limitation, _ := result.LimitationCode()
+	if result.Status() != domain.SandboxIncomplete || limitation != "M5_PYPI_DYNAMIC_OBSERVER_FAILED_START_HELPER_CRASHED" {
+		t.Fatalf("result = %#v", result)
+	}
+}
+
 func TestClassifyDynamicInstallFailureUsesBoundedVocabulary(t *testing.T) {
 	for _, test := range []struct {
 		output string
@@ -171,6 +217,52 @@ func TestClassifyDynamicInstallFailureUsesBoundedVocabulary(t *testing.T) {
 	<-deadline.Done()
 	if got := classifyDynamicInstallFailure(deadline, ""); got != dynamicInstallFailureTimeout {
 		t.Fatalf("deadline class = %q", got)
+	}
+}
+
+func TestClassifyDynamicImportAndObserverFailureUseBoundedVocabulary(t *testing.T) {
+	for _, test := range []struct {
+		output string
+		want   string
+	}{
+		{"ImportError: cannot open shared object file", dynamicImportFailureMissingLibrary},
+		{"ImportError: failed to map segment from shared object: Operation not permitted", dynamicImportFailureDlopenPermission},
+		{"ImportError: wrong ELF class", dynamicImportFailureELFLoader},
+		{"ImportError: GLIBCXX_3.4.99 not found", dynamicImportFailureSymbolVersion},
+		{"ImportError: Python ABI version mismatch", dynamicImportFailurePythonABI},
+		{"MemoryError: cannot allocate memory", dynamicImportFailureMemory},
+		{"Resource temporarily unavailable", dynamicImportFailurePID},
+		{"CPU time limit exceeded", dynamicImportFailureCPU},
+		{"OCI runtime runsc failure", dynamicImportFailureSandboxRuntime},
+		{"Traceback (most recent call last)", dynamicImportFailureException},
+		{"unrecognized", dynamicImportFailureOther},
+	} {
+		if got := classifyDynamicImportFailure(context.Background(), test.output); got != test.want {
+			t.Fatalf("classifyDynamicImportFailure(%q) = %q, want %q", test.output, got, test.want)
+		}
+	}
+	deadline, cancel := context.WithTimeout(context.Background(), 0)
+	defer cancel()
+	<-deadline.Done()
+	if got := classifyDynamicImportFailure(deadline, ""); got != dynamicImportFailureTimeout {
+		t.Fatalf("deadline class = %q", got)
+	}
+	for _, test := range []struct {
+		reason string
+		want   string
+	}{
+		{"HELPER_UNAVAILABLE", "HELPER_UNAVAILABLE"},
+		{"HELPER_CRASHED", "HELPER_CRASHED"},
+		{"EVENT_LIMIT", "EVENT_LIMIT"},
+		{"BYTE_LIMIT", "BYTE_LIMIT"},
+		{"CHANNEL_OVERFLOW", "SESSION_LIMIT"},
+		{"STREAM_FAULT", "TRACE_COLLECTION_FAILED"},
+		{"ATTRIBUTION_FAILURE", "LIFECYCLE_ERROR"},
+		{"unrecognized", "OTHER"},
+	} {
+		if got := classifyDynamicObserverFailure(observerFault{reason: test.reason}); got != test.want {
+			t.Fatalf("classifyDynamicObserverFailure(%q) = %q, want %q", test.reason, got, test.want)
+		}
 	}
 }
 
