@@ -16,7 +16,7 @@ import (
 
 const (
 	pythonDynamicTimeout = 45 * time.Second
-	pythonSitePath       = "/tmp/haa-site"
+	pythonSitePath       = "/haa-site"
 )
 
 var pythonImportName = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*$`)
@@ -444,7 +444,8 @@ func validImportSurface(imports []string) bool {
 	return true
 }
 func pythonDynamicCreateArguments(sessionID domain.SandboxSessionID, resourcePolicy artifactpypi.ResourcePolicy) []string {
-	return []string{"create", "--pull", "never", "--runtime", gVisorRuntimeName, "--user", "1000:1000", "--network", "none", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "64", "--memory", strconv.FormatInt(resourcePolicy.RuntimeMemory(), 10), "--cpus", "1", "--ulimit", "cpu=30:30", "--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=" + strconv.FormatInt(resourcePolicy.RuntimeTmpfs(), 10) + ",uid=1000,gid=1000,mode=0700", "--name", "heliopause-pypi-" + sessionID.String(), pythonImageReference, "sleep", "infinity"}
+	size := strconv.FormatInt(resourcePolicy.RuntimeTmpfs(), 10)
+	return []string{"create", "--pull", "never", "--runtime", gVisorRuntimeName, "--user", "1000:1000", "--network", "none", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "64", "--memory", strconv.FormatInt(resourcePolicy.RuntimeMemory(), 10), "--cpus", "1", "--ulimit", "cpu=30:30", "--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=" + size + ",uid=1000,gid=1000,mode=0700", "--tmpfs", pythonSitePath + ":rw,exec,nosuid,nodev,size=" + size + ",uid=1000,gid=1000,mode=0700", "--name", "heliopause-pypi-" + sessionID.String(), pythonImageReference, "sleep", "infinity"}
 }
 
-const pythonImportScript = "import importlib,sys\nsys.path.insert(0,'/tmp/haa-site')\nfor name in sys.argv[1:]: importlib.import_module(name)\n"
+const pythonImportScript = "import importlib,sys\nsys.path.insert(0,'/haa-site')\nfor name in sys.argv[1:]: importlib.import_module(name)\n"

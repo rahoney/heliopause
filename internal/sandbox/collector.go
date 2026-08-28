@@ -23,8 +23,10 @@ type TraceDiagnostic struct {
 type traceFault interface{ TraceFaultReason() string }
 
 const (
-	maximumTraceEvents = 10_000
-	maximumTraceBytes  = 2 << 20
+	maximumTraceEvents           = 10_000
+	maximumTraceBytes            = 2 << 20
+	maximumPyTorchCPUTraceEvents = 500_000
+	maximumPyTorchCPUTraceBytes  = 128 << 20
 )
 
 type traceBudget struct {
@@ -37,7 +39,7 @@ var defaultTraceBudget = traceBudget{events: maximumTraceEvents, bytes: maximumT
 func traceBudgetForProfile(profile string) traceBudget {
 	switch profile {
 	case "pypi-wheel-pytorch-cpu":
-		return traceBudget{events: 50_000, bytes: 8 << 20}
+		return traceBudget{events: maximumPyTorchCPUTraceEvents, bytes: maximumPyTorchCPUTraceBytes}
 	case "pypi-wheel-pytorch-cu126":
 		return traceBudget{events: 100_000, bytes: 16 << 20}
 	default:

@@ -58,7 +58,7 @@ func TestTraceBudgetsAreProfileBoundedAndFailClosed(t *testing.T) {
 		events  int
 		bytes   uint64
 	}{
-		{"pypi-wheel", 10_000, 2 << 20}, {"pypi-wheel-pytorch-cpu", 50_000, 8 << 20}, {"pypi-wheel-pytorch-cu126", 100_000, 16 << 20}, {"untrusted", 10_000, 2 << 20},
+		{"pypi-wheel", 10_000, 2 << 20}, {"pypi-wheel-pytorch-cpu", 500_000, 128 << 20}, {"pypi-wheel-pytorch-cu126", 100_000, 16 << 20}, {"untrusted", 10_000, 2 << 20},
 	} {
 		budget := traceBudgetForProfile(test.profile)
 		if budget.events != test.events || budget.bytes != test.bytes {

@@ -34,10 +34,10 @@ func TestPythonDynamicBackendRunsOnlyLocalWheelAndDeclaredImports(t *testing.T) 
 		t.Fatalf("commands = %#v", runner.calls)
 	}
 	assertPythonDynamicCreate(t, runner.calls[0].arguments)
-	if !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "--no-index --no-deps --no-compile") || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "/tmp/example-1.0-py3-none-any.whl") {
+	if !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "--no-index --no-deps --no-compile") || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "--target /haa-site") || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "/tmp/example-1.0-py3-none-any.whl") {
 		t.Fatalf("pip install command = %#v", runner.calls[2])
 	}
-	if !sameStrings(runner.calls[3].arguments[len(runner.calls[3].arguments)-1:], []string{"example"}) {
+	if !strings.Contains(strings.Join(runner.calls[3].arguments, " "), "/haa-site") || strings.Contains(strings.Join(runner.calls[3].arguments, " "), "/tmp/haa-site") || !sameStrings(runner.calls[3].arguments[len(runner.calls[3].arguments)-1:], []string{"example"}) {
 		t.Fatalf("import command = %#v", runner.calls[3])
 	}
 }
@@ -72,6 +72,12 @@ func TestPythonDynamicBackendUsesNamedRootProfileResources(t *testing.T) {
 	joined := strings.Join(runner.calls[0].arguments, " ")
 	if !strings.Contains(joined, "--memory 2147483648") || !strings.Contains(joined, "size=2147483648") {
 		t.Fatalf("CPU resource policy did not reach dynamic sandbox: %q", joined)
+	}
+	if !strings.Contains(joined, "--tmpfs /tmp:rw,noexec,nosuid,nodev,size=2147483648") {
+		t.Fatalf("general temporary space is not noexec: %q", joined)
+	}
+	if !strings.Contains(joined, "--tmpfs /haa-site:rw,exec,nosuid,nodev,size=2147483648") {
+		t.Fatalf("dedicated Python site is not bounded exec tmpfs: %q", joined)
 	}
 }
 
@@ -111,7 +117,7 @@ func TestPythonDynamicBackendInstallsExactClosureInOneOfflineInvocation(t *testi
 	if len(runner.inputCalls) != 2 {
 		t.Fatalf("introduced closure artifacts = %#v", runner.inputCalls)
 	}
-	if len(runner.calls) < 3 || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "--no-index --no-deps") || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "/tmp/example-1.0-py3-none-any.whl") || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "/tmp/dependency-1.0-py3-none-any.whl") {
+	if len(runner.calls) < 3 || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "--no-index --no-deps") || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "--target /haa-site") || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "/tmp/example-1.0-py3-none-any.whl") || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "/tmp/dependency-1.0-py3-none-any.whl") {
 		t.Fatalf("closure install command = %#v", runner.calls)
 	}
 }
