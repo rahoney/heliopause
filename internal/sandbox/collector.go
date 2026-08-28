@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
@@ -18,6 +19,7 @@ type TraceDiagnostic struct {
 	Bytes           uint64
 	SessionComplete bool
 	LastKind        string
+	KindCounts      map[string]uint64
 }
 
 type traceFault interface{ TraceFaultReason() string }
@@ -82,8 +84,47 @@ func collectTrace(ctx context.Context, reader TraceReader) ([]domain.SandboxObse
 	return observations, limitation
 }
 
+var recognizedTraceKinds = []string{
+	"process-exec",
+	"process-exec-expected",
+	"process-exec-unexpected",
+	"process-clone",
+	"filesystem-open",
+	"filesystem-workspace-access",
+	"filesystem-outside-workspace",
+	"network-attempt",
+	"honeytoken-access",
+}
+
+func cloneKindCounts(counts map[string]uint64) map[string]uint64 {
+	if counts == nil {
+		return nil
+	}
+	cloned := make(map[string]uint64, len(counts))
+	for k, v := range counts {
+		cloned[k] = v
+	}
+	return cloned
+}
+
+func formatKindCounts(counts map[string]uint64) string {
+	if len(counts) == 0 {
+		return "none"
+	}
+	var entries []string
+	for _, kind := range recognizedTraceKinds {
+		if count := counts[kind]; count > 0 {
+			entries = append(entries, fmt.Sprintf("%s:%d", kind, count))
+		}
+	}
+	if len(entries) == 0 {
+		return "none"
+	}
+	return strings.Join(entries, ",")
+}
+
 func collectTraceDiagnostic(ctx context.Context, reader TraceReader) ([]domain.SandboxObservation, string, TraceDiagnostic) {
-	diagnostic := TraceDiagnostic{Reason: "READER_ERROR"}
+	diagnostic := TraceDiagnostic{Reason: "READER_ERROR", KindCounts: make(map[string]uint64)}
 	if reader == nil {
 		return nil, "M3_DYNAMIC_OBSERVER_FAILED", diagnostic
 	}
@@ -92,12 +133,14 @@ func collectTraceDiagnostic(ctx context.Context, reader TraceReader) ([]domain.S
 		budget = configured.traceBudget()
 	}
 	var totalBytes uint64
+	kindCounts := make(map[string]uint64)
 	observations := make([]domain.SandboxObservation, 0)
 	for eventCount := 0; eventCount < budget.events; eventCount++ {
 		record, err := reader.Next(ctx)
 		if errors.Is(err, io.EOF) {
 			diagnostic.Reason, diagnostic.SessionComplete = "", true
 			diagnostic.Events, diagnostic.Bytes = uint64(eventCount), totalBytes
+			diagnostic.KindCounts = cloneKindCounts(kindCounts)
 			return observations, "", diagnostic
 		}
 		if err != nil {
@@ -109,31 +152,40 @@ func collectTraceDiagnostic(ctx context.Context, reader TraceReader) ([]domain.S
 				diagnostic.Reason = fault.TraceFaultReason()
 			}
 			diagnostic.Events, diagnostic.Bytes = uint64(eventCount), totalBytes
+			diagnostic.KindCounts = cloneKindCounts(kindCounts)
 			return nil, "M3_DYNAMIC_OBSERVER_FAILED", diagnostic
 		}
 		if record.Bytes > budget.bytes-totalBytes {
-			diagnostic.Reason, diagnostic.Events, diagnostic.Bytes, diagnostic.LastKind = "BYTE_LIMIT", uint64(eventCount), totalBytes, record.Kind
+			diagnostic.Reason, diagnostic.Events, diagnostic.Bytes = "BYTE_LIMIT", uint64(eventCount), totalBytes
+			if _, _, ok := traceObservation(record.Kind); ok {
+				diagnostic.LastKind = record.Kind
+			}
+			diagnostic.KindCounts = cloneKindCounts(kindCounts)
 			return nil, "M3_DYNAMIC_OBSERVATION_LIMIT", diagnostic
 		}
 		totalBytes += record.Bytes
 		category, subject, ok := traceObservation(record.Kind)
 		if !ok {
 			diagnostic.Reason, diagnostic.Events, diagnostic.Bytes = "UNKNOWN_EVENT_KIND", uint64(eventCount), totalBytes
+			diagnostic.KindCounts = cloneKindCounts(kindCounts)
 			return nil, "M3_DYNAMIC_OBSERVER_FAILED", diagnostic
 		}
+		kindCounts[record.Kind]++
 		observation, err := domain.NewSandboxObservation(category, subject)
 		if err != nil {
+			diagnostic.KindCounts = cloneKindCounts(kindCounts)
 			return nil, "M3_DYNAMIC_OBSERVER_FAILED", diagnostic
 		}
 		observations = append(observations, observation)
 		diagnostic.LastKind = record.Kind
 	}
 	diagnostic.Reason, diagnostic.Events, diagnostic.Bytes = "EVENT_LIMIT", uint64(budget.events), totalBytes
+	diagnostic.KindCounts = cloneKindCounts(kindCounts)
 	return nil, "M3_DYNAMIC_OBSERVATION_LIMIT", diagnostic
 }
 
 func (d TraceDiagnostic) String() string {
-	return fmt.Sprintf("reason=%s events=%d bytes=%d session_complete=%t last_kind=%s", d.Reason, d.Events, d.Bytes, d.SessionComplete, d.LastKind)
+	return fmt.Sprintf("reason=%s events=%d bytes=%d session_complete=%t last_kind=%s kinds=%s", d.Reason, d.Events, d.Bytes, d.SessionComplete, d.LastKind, formatKindCounts(d.KindCounts))
 }
 
 func traceObservation(kind string) (domain.ObservationCategory, string, bool) {
