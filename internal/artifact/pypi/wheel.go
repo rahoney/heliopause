@@ -131,8 +131,8 @@ func inspectWheel(reader io.ReaderAt, size int64, filename, declaredSHA256 strin
 	seen := make(map[string]*zip.File, len(archive.File))
 	var uncompressed int64
 	var metadataFiles = map[string][]byte{}
-	metadataCount := map[string]int{}
 	var regularFiles []string
+	primaryDistInfo := wheelDistInfo(project, version)
 	hash := sha256.New()
 	if err := hashReaderAt(reader, size, hash); err != nil {
 		return WheelInspection{}, wheelValidation(WheelValidationDigest)
@@ -142,23 +142,19 @@ func inspectWheel(reader io.ReaderAt, size int64, filename, declaredSHA256 strin
 		return WheelInspection{}, wheelValidation(WheelValidationDigest)
 	}
 	for _, entry := range archive.File {
-		name, ok := wheelPath(entry.Name)
+		name, directory, ok := wheelEntryPath(entry)
 		if !ok || seen[name] != nil {
 			return WheelInspection{}, wheelValidation(WheelValidationFileType)
 		}
 		seen[name] = entry
-		if entry.FileInfo().Mode()&os.ModeSymlink != 0 || entry.FileInfo().Mode().IsDir() && entry.UncompressedSize64 != 0 {
-			return WheelInspection{}, wheelValidation(WheelValidationFileType)
-		}
 		if entry.UncompressedSize64 > uint64(limits.MaxUncompressed) || uncompressed > limits.MaxUncompressed-int64(entry.UncompressedSize64) {
 			return WheelInspection{}, wheelValidation(WheelValidationUncompressed)
 		}
 		uncompressed += int64(entry.UncompressedSize64)
-		if entry.FileInfo().Mode().IsRegular() {
+		if !directory {
 			regularFiles = append(regularFiles, name)
 		}
-		if strings.HasSuffix(name, ".dist-info/METADATA") || strings.HasSuffix(name, ".dist-info/WHEEL") || strings.HasSuffix(name, ".dist-info/RECORD") {
-			metadataCount[path.Base(name)]++
+		if isPrimaryWheelMetadata(name, primaryDistInfo) {
 			if entry.UncompressedSize64 > uint64(limits.MaxMetadata) {
 				return WheelInspection{}, wheelValidation(WheelValidationMetadata)
 			}
@@ -169,7 +165,7 @@ func inspectWheel(reader io.ReaderAt, size int64, filename, declaredSHA256 strin
 			metadataFiles[path.Base(name)] = body
 		}
 	}
-	if metadataCount["METADATA"] != 1 || metadataCount["WHEEL"] != 1 || metadataCount["RECORD"] != 1 {
+	if len(metadataFiles) != 3 {
 		return WheelInspection{}, wheelValidation(WheelValidationMetadataInvalid)
 	}
 	info, err := parseWheelMetadata(project, version, filename, metadataFiles["METADATA"], metadataFiles["WHEEL"], metadataFiles["RECORD"], regularFiles, seen, limits)
@@ -202,25 +198,14 @@ func parseWheelMetadata(project, version, filename string, metadata, wheel, reco
 	}
 	meta := headerValues(metadata, limits.MaxMetadata)
 	wheelHeaders := headerValues(wheel, limits.MaxMetadata)
-	if meta["name"] != project || meta["version"] != version {
+	metadataProject, nameErr := NormalizeProjectName(meta["name"])
+	if nameErr != nil || metadataProject != project || meta["version"] != version {
 		return WheelInspection{}, wheelValidation(WheelValidationMetadataIdentity)
 	}
 	if wheelHeaders["wheel-version"] == "" || !supportedWheelVersion(wheelHeaders["wheel-version"]) {
 		return WheelInspection{}, wheelValidation(WheelValidationMetadataInvalid)
 	}
-	distInfo := ""
-	for name := range entries {
-		if strings.HasSuffix(name, ".dist-info/METADATA") {
-			distInfo = strings.TrimSuffix(name, "/METADATA")
-			break
-		}
-	}
-	if distInfo != project+"-"+version+".dist-info" {
-		return WheelInspection{}, wheelValidation(WheelValidationDistInfoIdentity)
-	}
-	if _, ok := entries[distInfo+"/WHEEL"]; !ok {
-		return WheelInspection{}, wheelValidation(WheelValidationDistInfoIdentity)
-	}
+	distInfo := wheelDistInfo(project, version)
 	for _, name := range []string{distInfo + "/METADATA", distInfo + "/WHEEL", distInfo + "/RECORD"} {
 		entry, ok := entries[name]
 		if !ok {
@@ -368,8 +353,17 @@ func validateRecord(body []byte, regular []string, entries map[string]*zip.File,
 }
 
 func (i WheelInspection) distInfo() string {
-	return i.Project + "-" + strings.ReplaceAll(i.Version, ".", ".") + ".dist-info"
+	return wheelDistInfo(i.Project, i.Version)
 }
+
+func wheelDistInfo(project, version string) string {
+	return strings.ReplaceAll(project, "-", "_") + "-" + strings.ReplaceAll(version, "-", "_") + ".dist-info"
+}
+
+func isPrimaryWheelMetadata(name, distInfo string) bool {
+	return name == distInfo+"/METADATA" || name == distInfo+"/WHEEL" || name == distInfo+"/RECORD"
+}
+
 func supportedWheelVersion(v string) bool {
 	return v == "1.0" || v == "1.1" || v == "1.2" || v == "2.0"
 }
@@ -390,6 +384,26 @@ func wheelPath(name string) (string, bool) {
 	}
 	return clean, true
 }
+
+func wheelEntryPath(entry *zip.File) (string, bool, bool) {
+	if entry == nil {
+		return "", false, false
+	}
+	mode := entry.FileInfo().Mode()
+	if strings.HasSuffix(entry.Name, "/") {
+		name, ok := wheelPath(strings.TrimSuffix(entry.Name, "/"))
+		if !ok || !mode.IsDir() || mode&os.ModeSymlink != 0 || entry.UncompressedSize64 != 0 {
+			return "", false, false
+		}
+		return name, true, true
+	}
+	if mode&os.ModeSymlink != 0 || mode.IsDir() || !mode.IsRegular() {
+		return "", false, false
+	}
+	name, ok := wheelPath(entry.Name)
+	return name, false, ok
+}
+
 func readZipEntry(file *zip.File, limit int64) ([]byte, error) {
 	if file == nil || file.UncompressedSize64 > uint64(limit) {
 		return nil, errors.New("entry exceeds bound")
