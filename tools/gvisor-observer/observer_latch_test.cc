@@ -98,6 +98,13 @@ bool HasPinnedPodInitProfile() {
       profile.find("ignore_missing") == std::string::npos;
 }
 
+bool HasBoundedProfileRecordLimits() {
+  return MaximumRecords(kProfilePyTorchCPU) == 500000 &&
+      MaximumRecords(kProfilePyTorchCU126) == 100000 &&
+      MaximumRecords(kProfilePyPI) == 10000 &&
+      MaximumRecords(nullptr) == 10000;
+}
+
 bool VerifyPinnedAccessors(int output, const std::string& remote, const std::string& control) {
   if (!RegisterProfile(control, kFirstID, kProfileNPM)) return false;
   const int client = ConnectRemote(remote);
@@ -196,9 +203,11 @@ int main() {
   const bool running = child > 0 && read(readiness[0], &ready, 1) == 1 && ready == 'R';
   close(readiness[0]);
   const bool profile = HasPinnedPodInitProfile();
+  const bool profile_limits = HasBoundedProfileRecordLimits();
   if (!running) fprintf(stderr, "observer latch failure: readiness\n");
   if (!profile) fprintf(stderr, "observer latch failure: pod-init profile\n");
-  const bool accessors = running && profile && VerifyPinnedAccessors(output, remote, control);
+  if (!profile_limits) fprintf(stderr, "observer latch failure: profile record limits\n");
+  const bool accessors = running && profile && profile_limits && VerifyPinnedAccessors(output, remote, control);
   if (!accessors) fprintf(stderr, "observer latch failure: normalized accessors\n");
   const bool delayed = accessors && VerifyDelayedProfileRegistration(output, remote, control);
   if (!delayed) fprintf(stderr, "observer latch failure: delayed profile registration\n");

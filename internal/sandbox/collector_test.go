@@ -4,6 +4,11 @@ import (
 	"context"
 	"errors"
 	"io"
+	"os"
+	"path/filepath"
+	"runtime"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
@@ -64,6 +69,33 @@ func TestTraceBudgetsAreProfileBoundedAndFailClosed(t *testing.T) {
 		if budget.events != test.events || budget.bytes != test.bytes {
 			t.Fatalf("%s budget = %#v", test.profile, budget)
 		}
+	}
+}
+
+func TestPyTorchCPUHelperRecordLimitDoesNotUndercutCollectorBudget(t *testing.T) {
+	_, currentFile, _, ok := runtime.Caller(0)
+	if !ok {
+		t.Fatal("locate collector test source")
+	}
+	helperSource, err := os.ReadFile(filepath.Join(filepath.Dir(currentFile), "..", "..", "tools", "gvisor-observer", "observer.cc"))
+	if err != nil {
+		t.Fatalf("read observer helper source: %v", err)
+	}
+	const declaration = "constexpr size_t kMaxPyTorchCPURecordsPerConnection = "
+	_, remainder, found := strings.Cut(string(helperSource), declaration)
+	if !found {
+		t.Fatal("PyTorch CPU helper record limit declaration is missing")
+	}
+	encodedLimit, _, found := strings.Cut(remainder, ";")
+	if !found {
+		t.Fatal("PyTorch CPU helper record limit declaration is malformed")
+	}
+	helperLimit, err := strconv.Atoi(strings.TrimSpace(encodedLimit))
+	if err != nil {
+		t.Fatalf("parse PyTorch CPU helper record limit: %v", err)
+	}
+	if helperLimit < maximumPyTorchCPUTraceEvents {
+		t.Fatalf("PyTorch CPU helper record limit = %d, below collector event budget %d", helperLimit, maximumPyTorchCPUTraceEvents)
 	}
 }
 

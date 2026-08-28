@@ -35,7 +35,7 @@ void CleanupControlSocket(int) {
 constexpr uint32_t kProtocolVersion = 1;
 constexpr size_t kMaxEventSize = 1024 * 1024;
 constexpr size_t kMaxNormalizedRecordsPerConnection = 10000;
-constexpr size_t kMaxPyTorchCPURecordsPerConnection = 50000;
+constexpr size_t kMaxPyTorchCPURecordsPerConnection = 500000;
 constexpr size_t kMaxPyTorchCU126RecordsPerConnection = 100000;
 constexpr int kProfileRegistrationWaitMilliseconds = 2000;
 constexpr char kProfileNPM[] = "npm-lifecycle";
