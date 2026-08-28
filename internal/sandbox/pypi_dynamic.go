@@ -3,6 +3,7 @@ package sandbox
 import (
 	"context"
 	"errors"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -61,23 +62,88 @@ func NewPythonArtifactIntroducer(intakeRoot string, runner CommandRunner) (*Pyth
 }
 
 func (i *PythonArtifactIntroducer) IntroduceWheel(ctx context.Context, containerID string, artifact domain.AcquiredArtifact) error {
-	if !pythonWheelVariant(artifact.Identity().Variant()) {
-		return errors.New("python wheel introduction request is invalid")
+	destination, err := i.validatedWheelDestination(artifact)
+	if err != nil {
+		return err
 	}
-	return i.introduce(ctx, containerID, artifact, pythonWheelPath(artifact), artifact.Identity().Variant())
+	return i.introduceWheelAt(ctx, containerID, artifact, destination)
 }
 
 func pythonWheelVariant(variant string) bool { return variant == "wheel" || variant == "derived-wheel" }
 
-func pythonWheelPath(artifact domain.AcquiredArtifact) string {
-	name := strings.ReplaceAll(artifact.Identity().Name(), "-", "_")
-	version := strings.Map(func(r rune) rune {
-		if r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9' || r == '.' {
-			return r
+func (i *PythonArtifactIntroducer) validatedWheelFilename(artifact domain.AcquiredArtifact) (string, error) {
+	if i == nil || !pythonWheelVariant(artifact.Identity().Variant()) {
+		return "", errors.New("python wheel filename request is invalid")
+	}
+	source, err := i.artifactPath(artifact.ContentHandle(), artifact.Identity().Variant())
+	if err != nil {
+		return "", err
+	}
+	recordName := "filename"
+	if artifact.Identity().Variant() == "derived-wheel" {
+		recordName = "derived-filename"
+	}
+	recordPath := filepath.Join(filepath.Dir(source), recordName)
+	info, err := os.Lstat(recordPath)
+	if err != nil || !info.Mode().IsRegular() || info.Mode()&os.ModeSymlink != 0 {
+		return "", errors.New("verified Python intake filename is unavailable")
+	}
+	filenameBytes, err := os.ReadFile(recordPath)
+	if err != nil {
+		return "", errors.New("verified Python intake filename is unavailable")
+	}
+	filename := string(filenameBytes)
+	if filename == "" || filename == "." || filename == ".." || filepath.IsAbs(filename) || filepath.Base(filename) != filename || strings.ContainsAny(filename, `/\\`) {
+		return "", errors.New("verified Python intake filename is invalid")
+	}
+	project, version, _, _, _, err := artifactpypi.ParseWheelFilenameForSource(filename, artifact.Identity().Source())
+	if err != nil || project != artifact.Identity().Name() || version != artifact.Identity().Version() {
+		return "", errors.New("verified Python intake filename does not match Artifact")
+	}
+	return filename, nil
+}
+
+func (i *PythonArtifactIntroducer) validatedWheelDestination(artifact domain.AcquiredArtifact) (string, error) {
+	filename, err := i.validatedWheelFilename(artifact)
+	if err != nil {
+		return "", err
+	}
+	return "/tmp/" + filename, nil
+}
+
+type validatedWheel struct {
+	artifact    domain.AcquiredArtifact
+	destination string
+}
+
+func (i *PythonArtifactIntroducer) validatedWheelDestinations(target domain.AcquiredArtifact, closure []domain.AcquiredArtifact) ([]validatedWheel, error) {
+	if len(closure) == 0 {
+		return nil, errors.New("python dynamic dependency closure is empty")
+	}
+	targetSeen := false
+	validated := make([]validatedWheel, 0, len(closure))
+	seen := make(map[string]bool, len(closure))
+	for _, item := range closure {
+		if !pythonWheelVariant(item.Identity().Variant()) || item.ContentHandle() == "" || item.Digest().String() == "" {
+			return nil, errors.New("python dynamic dependency closure contains unsupported artifact")
 		}
-		return '_'
-	}, artifact.Identity().Version())
-	return "/tmp/" + name + "-" + version + "-py3-none-any.whl"
+		destination, err := i.validatedWheelDestination(item)
+		if err != nil {
+			return nil, err
+		}
+		if seen[destination] {
+			return nil, errors.New("python dynamic dependency closure contains duplicate artifact path")
+		}
+		seen[destination] = true
+		validated = append(validated, validatedWheel{artifact: item, destination: destination})
+		if sameArtifactIdentity(item, target) {
+			targetSeen = true
+		}
+	}
+	if !targetSeen {
+		return nil, errors.New("python dynamic dependency closure omits target artifact")
+	}
+	return validated, nil
 }
 
 // PythonDynamicBackend creates one network-isolated runsc-trace container for
@@ -111,9 +177,13 @@ func (b *PythonDynamicBackend) InspectWheelWithClosure(ctx context.Context, arti
 	if b == nil || b.runner == nil || b.introducer == nil || b.observer == nil || b.probe == nil || b.newSessionID == nil || ctx == nil || !validImportSurface(imports) {
 		return domain.SandboxResult{}, errors.New("python dynamic inspection request is invalid")
 	}
-	wheelPaths, err := closureWheelPaths(artifact, closure)
+	validated, err := b.introducer.validatedWheelDestinations(artifact, closure)
 	if err != nil {
 		return domain.SandboxResult{}, err
+	}
+	wheelPaths := make([]string, 0, len(validated))
+	for _, item := range validated {
+		wheelPaths = append(wheelPaths, item.destination)
 	}
 	sessionID, err := b.newSessionID()
 	if err != nil {
@@ -145,8 +215,8 @@ func (b *PythonDynamicBackend) InspectWheelWithClosure(ctx context.Context, arti
 	if err := discardCommand(runCtx, b.runner, "docker", "start", containerID); err != nil {
 		return b.finishIncomplete(sessionID, containerID, trace, "M5_PYPI_DYNAMIC_SETUP_FAILED")
 	}
-	for _, item := range closure {
-		if err := b.introducer.IntroduceWheel(runCtx, containerID, item); err != nil {
+	for _, item := range validated {
+		if err := b.introducer.introduceWheelAt(runCtx, containerID, item.artifact, item.destination); err != nil {
 			return b.finishIncomplete(sessionID, containerID, trace, "M5_PYPI_DYNAMIC_INTRODUCTION_FAILED")
 		}
 	}
@@ -172,31 +242,8 @@ func (b *PythonDynamicBackend) InspectWheelWithClosure(ctx context.Context, arti
 	return domain.NewSandboxResult(sessionID, domain.SandboxCompleted, "", append(observations, completed))
 }
 
-func closureWheelPaths(target domain.AcquiredArtifact, closure []domain.AcquiredArtifact) ([]string, error) {
-	if len(closure) == 0 {
-		return nil, errors.New("python dynamic dependency closure is empty")
-	}
-	targetSeen := false
-	paths := make([]string, 0, len(closure))
-	seen := make(map[string]bool, len(closure))
-	for _, item := range closure {
-		if !pythonWheelVariant(item.Identity().Variant()) || item.ContentHandle() == "" || item.Digest().String() == "" {
-			return nil, errors.New("python dynamic dependency closure contains unsupported artifact")
-		}
-		path := pythonWheelPath(item)
-		if seen[path] {
-			return nil, errors.New("python dynamic dependency closure contains duplicate artifact path")
-		}
-		seen[path] = true
-		paths = append(paths, path)
-		if sameArtifactIdentity(item, target) {
-			targetSeen = true
-		}
-	}
-	if !targetSeen {
-		return nil, errors.New("python dynamic dependency closure omits target artifact")
-	}
-	return paths, nil
+func (i *PythonArtifactIntroducer) introduceWheelAt(ctx context.Context, containerID string, artifact domain.AcquiredArtifact, destination string) error {
+	return i.introduce(ctx, containerID, artifact, destination, artifact.Identity().Variant())
 }
 
 func sameArtifactIdentity(left, right domain.AcquiredArtifact) bool {

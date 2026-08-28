@@ -109,7 +109,11 @@ func (b *PythonSdistBuilder) Build(ctx context.Context, source domain.AcquiredAr
 	}
 	wheelPaths := make([]string, 0, len(buildWheels))
 	for _, wheel := range buildWheels {
-		destination := pythonBuildInput + "/" + filepath.Base(pythonWheelPath(wheel))
+		filename, filenameErr := b.introducer.validatedWheelFilename(wheel)
+		if filenameErr != nil {
+			return fail("M5_PYPI_BUILD_INTRODUCTION_FAILED")
+		}
+		destination := pythonBuildInput + "/" + filename
 		if err := b.introducer.introduce(runCtx, containerID, wheel, destination, "wheel"); err != nil {
 			return fail("M5_PYPI_BUILD_INTRODUCTION_FAILED")
 		}

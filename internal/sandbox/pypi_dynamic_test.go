@@ -34,7 +34,7 @@ func TestPythonDynamicBackendRunsOnlyLocalWheelAndDeclaredImports(t *testing.T) 
 		t.Fatalf("commands = %#v", runner.calls)
 	}
 	assertPythonDynamicCreate(t, runner.calls[0].arguments)
-	if !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "--no-index --no-deps --no-compile") || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), pythonWheelPath(artifact)) {
+	if !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "--no-index --no-deps --no-compile") || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "/tmp/example-1.0-py3-none-any.whl") {
 		t.Fatalf("pip install command = %#v", runner.calls[2])
 	}
 	if !sameStrings(runner.calls[3].arguments[len(runner.calls[3].arguments)-1:], []string{"example"}) {
@@ -85,6 +85,9 @@ func TestPythonDynamicBackendInstallsExactClosureInOneOfflineInvocation(t *testi
 	if err := os.WriteFile(filepath.Join(dependencyRun, "wheel.whl"), []byte("dependency wheel"), 0o600); err != nil {
 		t.Fatal(err)
 	}
+	if err := os.WriteFile(filepath.Join(dependencyRun, "filename"), []byte("dependency-1.0-py3-none-any.whl"), 0o400); err != nil {
+		t.Fatal(err)
+	}
 	source, _ := domain.NewSourceID("pypi")
 	identity, _ := domain.NewResolvedArtifactIdentity(source, "dependency", "1.0", "wheel")
 	digest, _ := domain.NewSHA256Digest(strings.Repeat("b", 64))
@@ -108,7 +111,7 @@ func TestPythonDynamicBackendInstallsExactClosureInOneOfflineInvocation(t *testi
 	if len(runner.inputCalls) != 2 {
 		t.Fatalf("introduced closure artifacts = %#v", runner.inputCalls)
 	}
-	if len(runner.calls) < 3 || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "--no-index --no-deps") || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), pythonWheelPath(target)) || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), pythonWheelPath(dependency)) {
+	if len(runner.calls) < 3 || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "--no-index --no-deps") || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "/tmp/example-1.0-py3-none-any.whl") || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "/tmp/dependency-1.0-py3-none-any.whl") {
 		t.Fatalf("closure install command = %#v", runner.calls)
 	}
 }
@@ -196,6 +199,135 @@ func TestPythonDynamicBackendRejectsEmptyOrArbitraryImportSurface(t *testing.T) 
 	}
 }
 
+func TestPythonArtifactIntroducerPreservesExactVerifiedWheelFilename(t *testing.T) {
+	tests := []struct {
+		name, source, project, version, filename string
+	}{
+		{"torch local version and tags", "pytorch-cpu", "torch", "2.9.1+cpu", "torch-2.9.1+cpu-cp314-cp314-manylinux_2_28_x86_64.whl"},
+		{"MarkupSafe compressed platform tags", "pypi", "markupsafe", "3.0.3", "MarkupSafe-3.0.3-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl"},
+		{"ordinary universal wheel", "pypi", "example", "1.0", "example-1.0-py3-none-any.whl"},
+		{"build tag", "pypi", "example", "1.0", "example-1.0-1-cp314-cp314-manylinux_2_28_x86_64.whl"},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			root, artifact := wheelArtifactWithFilename(t, "run_"+strings.Repeat("a", 26), test.source, test.project, test.version, test.filename)
+			introducer, err := NewPythonArtifactIntroducer(root, &recordingRunner{})
+			if err != nil {
+				t.Fatal(err)
+			}
+			got, err := introducer.validatedWheelDestination(artifact)
+			if err != nil || got != "/tmp/"+test.filename {
+				t.Fatalf("validatedWheelDestination() = %q, %v", got, err)
+			}
+		})
+	}
+}
+
+func TestPythonArtifactIntroducerRejectsUntrustedWheelFilenameRecord(t *testing.T) {
+	tests := []struct {
+		name, filename string
+	}{
+		{"empty", ""},
+		{"absolute", "/tmp/example-1.0-py3-none-any.whl"},
+		{"traversal", "../example-1.0-py3-none-any.whl"},
+		{"backslash escape", `..\\example-1.0-py3-none-any.whl`},
+		{"invalid wheel filename", "example-not-a-wheel"},
+		{"project mismatch", "other-1.0-py3-none-any.whl"},
+		{"version mismatch", "example-2.0-py3-none-any.whl"},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			root, artifact := wheelArtifactWithFilename(t, "run_"+strings.Repeat("a", 26), "pypi", "example", "1.0", test.filename)
+			introducer, err := NewPythonArtifactIntroducer(root, &recordingRunner{})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if _, err := introducer.validatedWheelDestination(artifact); err == nil {
+				t.Fatalf("filename %q was accepted", test.filename)
+			}
+		})
+	}
+}
+
+func TestPythonArtifactIntroducerRejectsFilenameFromWrongRun(t *testing.T) {
+	root := t.TempDir()
+	wheelArtifactInRoot(t, root, "run_"+strings.Repeat("a", 26), "pypi", "example", "1.0", "example-1.0-py3-none-any.whl")
+
+	wrongRun := "run_" + strings.Repeat("b", 26)
+	identity, err := domain.NewResolvedArtifactIdentity(mustSourceID(t, "pypi"), "example", "1.0", "wheel")
+	if err != nil {
+		t.Fatal(err)
+	}
+	digest, _ := domain.NewSHA256Digest(strings.Repeat("a", 64))
+	wrongArtifact, err := domain.NewAcquiredArtifact(identity, digest, "intake:"+wrongRun+":wheel", uint64(len("wheel fixture")))
+	if err != nil {
+		t.Fatal(err)
+	}
+	introducer, err := NewPythonArtifactIntroducer(root, &recordingRunner{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := introducer.validatedWheelDestination(wrongArtifact); err == nil {
+		t.Fatal("filename record from another run was accepted")
+	}
+}
+
+func TestPythonArtifactIntroducerRejectsDuplicateExactDestinations(t *testing.T) {
+	root := t.TempDir()
+	filename := "example-1.0-py3-none-any.whl"
+	targetRun := "run_" + strings.Repeat("a", 26)
+	dependencyRun := "run_" + strings.Repeat("b", 26)
+	target := wheelArtifactInRoot(t, root, targetRun, "pypi", "example", "1.0", filename)
+	dependency := wheelArtifactInRoot(t, root, dependencyRun, "pypi", "example", "1.0", filename)
+	introducer, err := NewPythonArtifactIntroducer(root, &recordingRunner{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := introducer.validatedWheelDestinations(target, []domain.AcquiredArtifact{target, dependency}); err == nil {
+		t.Fatal("duplicate destination basename was accepted")
+	}
+}
+
+func wheelArtifactWithFilename(t *testing.T, runID, sourceName, project, version, filename string) (string, domain.AcquiredArtifact) {
+	t.Helper()
+	root := t.TempDir()
+	return root, wheelArtifactInRoot(t, root, runID, sourceName, project, version, filename)
+}
+
+func wheelArtifactInRoot(t *testing.T, root, runID, sourceName, project, version, filename string) domain.AcquiredArtifact {
+	t.Helper()
+	if err := os.MkdirAll(filepath.Join(root, runID), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	body := []byte("wheel fixture")
+	if err := os.WriteFile(filepath.Join(root, runID, "wheel.whl"), body, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, runID, "filename"), []byte(filename), 0o400); err != nil {
+		t.Fatal(err)
+	}
+	source := mustSourceID(t, sourceName)
+	identity, err := domain.NewResolvedArtifactIdentity(source, project, version, "wheel")
+	if err != nil {
+		t.Fatal(err)
+	}
+	digest, _ := domain.NewSHA256Digest(strings.Repeat("a", 64))
+	artifact, err := domain.NewAcquiredArtifact(identity, digest, "intake:"+runID+":wheel", uint64(len(body)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	return artifact
+}
+
+func mustSourceID(t *testing.T, value string) domain.SourceID {
+	t.Helper()
+	source, err := domain.NewSourceID(value)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return source
+}
+
 func pythonWheelFixture(t *testing.T) (string, domain.AcquiredArtifact) {
 	t.Helper()
 	root := t.TempDir()
@@ -204,6 +336,9 @@ func pythonWheelFixture(t *testing.T) (string, domain.AcquiredArtifact) {
 		t.Fatal(err)
 	}
 	if err := os.WriteFile(path, []byte("wheel fixture"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(filepath.Dir(path), "filename"), []byte("example-1.0-py3-none-any.whl"), 0o400); err != nil {
 		t.Fatal(err)
 	}
 	source, _ := domain.NewSourceID("pypi")

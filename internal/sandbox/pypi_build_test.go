@@ -65,6 +65,9 @@ func pythonBuildFixtures(t *testing.T) (string, domain.AcquiredArtifact, domain.
 			t.Fatal(err)
 		}
 	}
+	if err := os.WriteFile(filepath.Join(filepath.Dir(wheelPath), "filename"), []byte("setuptools-70.0-py3-none-any.whl"), 0o400); err != nil {
+		t.Fatal(err)
+	}
 	sourceID, _ := domain.NewSourceID("pypi")
 	digest, _ := domain.NewSHA256Digest(strings.Repeat("a", 64))
 	sourceIdentity, _ := domain.NewResolvedArtifactIdentity(sourceID, "example", "1.0", "sdist")
