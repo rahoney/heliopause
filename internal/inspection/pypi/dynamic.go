@@ -25,13 +25,49 @@ func NewDynamicInspector(runner sandbox.PythonWheelRunner) (*DynamicInspector, e
 // evidence. An unavailable, failed or incomplete session is deliberately not a
 // successful inspection report.
 func (i *DynamicInspector) InspectWheel(ctx context.Context, artifact domain.AcquiredArtifact, static artifactpypi.WheelInspection) (domain.InspectionReport, error) {
+	return i.inspectWheel(ctx, artifact, static, []domain.AcquiredArtifact{artifact})
+}
+
+// InspectWheelWithClosure runs the same required dynamic check with a
+// caller-provided exact graph closure installed as a network-disabled fixture.
+// The report remains attributed only to the target artifact.
+func (i *DynamicInspector) InspectWheelWithClosure(ctx context.Context, artifact domain.AcquiredArtifact, static artifactpypi.WheelInspection, closure []domain.AcquiredArtifact) (domain.InspectionReport, error) {
+	runner, ok := i.runner.(sandbox.DependencyAwarePythonWheelRunner)
+	if !ok {
+		return domain.InspectionReport{}, errors.New("pypi dynamic runner does not support dependency closure")
+	}
+	return i.inspectWheelWithRunner(ctx, artifact, static, closure, runner)
+}
+
+func (i *DynamicInspector) inspectWheel(ctx context.Context, artifact domain.AcquiredArtifact, static artifactpypi.WheelInspection, closure []domain.AcquiredArtifact) (domain.InspectionReport, error) {
+	if runner, ok := i.runner.(sandbox.DependencyAwarePythonWheelRunner); ok && len(closure) > 1 {
+		return i.inspectWheelWithRunner(ctx, artifact, static, closure, runner)
+	}
+	return i.inspectWheelWithRunner(ctx, artifact, static, []domain.AcquiredArtifact{artifact}, i.runner)
+}
+
+type pythonWheelInspectionRunner interface {
+	InspectWheel(context.Context, domain.AcquiredArtifact, []string) (domain.SandboxResult, error)
+}
+
+type pythonWheelClosureRunner interface {
+	InspectWheelWithClosure(context.Context, domain.AcquiredArtifact, []string, []domain.AcquiredArtifact) (domain.SandboxResult, error)
+}
+
+func (i *DynamicInspector) inspectWheelWithRunner(ctx context.Context, artifact domain.AcquiredArtifact, static artifactpypi.WheelInspection, closure []domain.AcquiredArtifact, runner pythonWheelInspectionRunner) (domain.InspectionReport, error) {
 	if i == nil || i.runner == nil || ctx == nil || (artifact.Identity().Variant() != "wheel" && artifact.Identity().Variant() != "derived-wheel") || static.Project != artifact.Identity().Name() || static.Version != artifact.Identity().Version() || len(static.ImportNames) == 0 {
 		return domain.InspectionReport{}, errors.New("pypi dynamic inspection request is invalid")
 	}
 	if _, ok := artifactpypi.ProfileForSource(artifact.Identity().Source()); !ok {
 		return domain.InspectionReport{}, errors.New("pypi dynamic inspection source is unsupported")
 	}
-	result, err := i.runner.InspectWheel(ctx, artifact, static.ImportNames)
+	var result domain.SandboxResult
+	var err error
+	if closureRunner, ok := runner.(pythonWheelClosureRunner); ok {
+		result, err = closureRunner.InspectWheelWithClosure(ctx, artifact, static.ImportNames, closure)
+	} else {
+		result, err = runner.InspectWheel(ctx, artifact, static.ImportNames)
+	}
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}

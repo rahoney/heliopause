@@ -74,6 +74,57 @@ func TestPythonDynamicBackendUsesNamedRootProfileResources(t *testing.T) {
 	}
 }
 
+func TestPythonDynamicBackendInstallsExactClosureInOneOfflineInvocation(t *testing.T) {
+	root, target := pythonWheelFixture(t)
+	dependencyRunID := "run_" + strings.Repeat("a", 25) + "i"
+	dependencyRun := filepath.Join(root, dependencyRunID)
+	if err := os.MkdirAll(dependencyRun, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dependencyRun, "wheel.whl"), []byte("dependency wheel"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	source, _ := domain.NewSourceID("pypi")
+	identity, _ := domain.NewResolvedArtifactIdentity(source, "dependency", "1.0", "wheel")
+	digest, _ := domain.NewSHA256Digest(strings.Repeat("b", 64))
+	dependency, err := domain.NewAcquiredArtifact(identity, digest, "intake:"+dependencyRunID+":wheel", uint64(len("dependency wheel")))
+	if err != nil {
+		t.Fatal(err)
+	}
+	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil}}
+	introducer, err := NewPythonArtifactIntroducer(root, runner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	backend, err := NewPythonDynamicBackend(runner, introducer, &recordingObserver{reader: &traceReader{}}, availablePythonProbe)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := backend.InspectWheelWithClosure(context.Background(), target, []string{"example"}, []domain.AcquiredArtifact{target, dependency})
+	if err != nil || result.Status() != domain.SandboxCompleted {
+		t.Fatalf("InspectWheelWithClosure() = %#v, %v", result, err)
+	}
+	if len(runner.inputCalls) != 2 {
+		t.Fatalf("introduced closure artifacts = %#v", runner.inputCalls)
+	}
+	if len(runner.calls) < 3 || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "--no-index --no-deps") || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), pythonWheelPath(target)) || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), pythonWheelPath(dependency)) {
+		t.Fatalf("closure install command = %#v", runner.calls)
+	}
+}
+
+func TestPythonDynamicBackendRejectsNonWheelClosure(t *testing.T) {
+	root, target := pythonWheelFixture(t)
+	source, _ := domain.NewSourceID("pypi")
+	identity, _ := domain.NewResolvedArtifactIdentity(source, "source", "1.0", "sdist")
+	digest, _ := domain.NewSHA256Digest(strings.Repeat("b", 64))
+	sdist, _ := domain.NewAcquiredArtifact(identity, digest, "intake:run_bbbbbbbbbbbbbbbbbbbbbbbbbb:sdist", 1)
+	introducer, _ := NewPythonArtifactIntroducer(root, &recordingRunner{})
+	backend, _ := NewPythonDynamicBackend(&recordingRunner{}, introducer, &recordingObserver{reader: &traceReader{}}, availablePythonProbe)
+	if _, err := backend.InspectWheelWithClosure(context.Background(), target, []string{"example"}, []domain.AcquiredArtifact{target, sdist}); err == nil {
+		t.Fatal("non-wheel closure accepted")
+	}
+}
+
 func TestPythonDynamicBackendRejectsEmptyOrArbitraryImportSurface(t *testing.T) {
 	root, artifact := pythonWheelFixture(t)
 	introducer, _ := NewPythonArtifactIntroducer(root, &recordingRunner{})

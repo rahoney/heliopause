@@ -67,6 +67,8 @@ func (p ResourcePolicy) WheelLimits() WheelLimits {
 
 func (p ResourcePolicy) MaxArtifactCompressed() int64 { return p.maxArtifactCompressed }
 func (p ResourcePolicy) MaxGraphCompressed() int64    { return p.maxGraphCompressed }
+func (p ResourcePolicy) MaxGraphUncompressed() int64  { return p.maxGraphUncompressed }
+func (p ResourcePolicy) MaxFilesPerArtifact() int64   { return p.maxFilesPerArtifact }
 func (p ResourcePolicy) MaxTemporaryDisk() int64      { return p.maxTemporaryDisk }
 func (p ResourcePolicy) Duration() time.Duration      { return p.qualificationDuration }
 func (p ResourcePolicy) RuntimeMemory() int64         { return p.runtimeMemory }

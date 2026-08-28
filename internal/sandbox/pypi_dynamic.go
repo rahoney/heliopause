@@ -27,6 +27,14 @@ type PythonWheelRunner interface {
 	InspectWheel(context.Context, domain.AcquiredArtifact, []string) (domain.SandboxResult, error)
 }
 
+// DependencyAwarePythonWheelRunner is the optional graph-install capability
+// used when a Python node must import with its already-acquired dependency
+// closure present. The legacy single-wheel method remains unchanged.
+type DependencyAwarePythonWheelRunner interface {
+	PythonWheelRunner
+	InspectWheelWithClosure(context.Context, domain.AcquiredArtifact, []string, []domain.AcquiredArtifact) (domain.SandboxResult, error)
+}
+
 type discardCommandRunner interface {
 	RunDiscard(context.Context, string, ...string) error
 }
@@ -89,8 +97,16 @@ func NewPythonDynamicBackend(runner CommandRunner, introducer *PythonArtifactInt
 }
 
 func (b *PythonDynamicBackend) InspectWheel(ctx context.Context, artifact domain.AcquiredArtifact, imports []string) (domain.SandboxResult, error) {
+	return b.InspectWheelWithClosure(ctx, artifact, imports, []domain.AcquiredArtifact{artifact})
+}
+
+func (b *PythonDynamicBackend) InspectWheelWithClosure(ctx context.Context, artifact domain.AcquiredArtifact, imports []string, closure []domain.AcquiredArtifact) (domain.SandboxResult, error) {
 	if b == nil || b.runner == nil || b.introducer == nil || b.observer == nil || b.probe == nil || b.newSessionID == nil || ctx == nil || !validImportSurface(imports) {
 		return domain.SandboxResult{}, errors.New("python dynamic inspection request is invalid")
+	}
+	wheelPaths, err := closureWheelPaths(artifact, closure)
+	if err != nil {
+		return domain.SandboxResult{}, err
 	}
 	sessionID, err := b.newSessionID()
 	if err != nil {
@@ -122,11 +138,13 @@ func (b *PythonDynamicBackend) InspectWheel(ctx context.Context, artifact domain
 	if err := discardCommand(runCtx, b.runner, "docker", "start", containerID); err != nil {
 		return b.finishIncomplete(sessionID, containerID, trace, "M5_PYPI_DYNAMIC_SETUP_FAILED")
 	}
-	wheelPath := pythonWheelPath(artifact)
-	if err := b.introducer.IntroduceWheel(runCtx, containerID, artifact); err != nil {
-		return b.finishIncomplete(sessionID, containerID, trace, "M5_PYPI_DYNAMIC_INTRODUCTION_FAILED")
+	for _, item := range closure {
+		if err := b.introducer.IntroduceWheel(runCtx, containerID, item); err != nil {
+			return b.finishIncomplete(sessionID, containerID, trace, "M5_PYPI_DYNAMIC_INTRODUCTION_FAILED")
+		}
 	}
-	if err := discardCommand(runCtx, b.runner, "docker", "exec", containerID, "python", "-I", "-m", "pip", "install", "--no-index", "--no-deps", "--no-compile", "--disable-pip-version-check", "--target", pythonSitePath, wheelPath); err != nil {
+	installArguments := append([]string{"exec", containerID, "python", "-I", "-m", "pip", "install", "--no-index", "--no-deps", "--no-compile", "--disable-pip-version-check", "--target", pythonSitePath}, wheelPaths...)
+	if err := discardCommand(runCtx, b.runner, "docker", installArguments...); err != nil {
 		return b.finishIncomplete(sessionID, containerID, trace, "M5_PYPI_DYNAMIC_INSTALL_FAILED")
 	}
 	arguments := append([]string{"exec", containerID, "python", "-I", "-c", pythonImportScript}, imports...)
@@ -145,6 +163,38 @@ func (b *PythonDynamicBackend) InspectWheel(ctx context.Context, artifact domain
 		return domain.SandboxResult{}, err
 	}
 	return domain.NewSandboxResult(sessionID, domain.SandboxCompleted, "", append(observations, completed))
+}
+
+func closureWheelPaths(target domain.AcquiredArtifact, closure []domain.AcquiredArtifact) ([]string, error) {
+	if len(closure) == 0 {
+		return nil, errors.New("python dynamic dependency closure is empty")
+	}
+	targetSeen := false
+	paths := make([]string, 0, len(closure))
+	seen := make(map[string]bool, len(closure))
+	for _, item := range closure {
+		if !pythonWheelVariant(item.Identity().Variant()) || item.ContentHandle() == "" || item.Digest().String() == "" {
+			return nil, errors.New("python dynamic dependency closure contains unsupported artifact")
+		}
+		path := pythonWheelPath(item)
+		if seen[path] {
+			return nil, errors.New("python dynamic dependency closure contains duplicate artifact path")
+		}
+		seen[path] = true
+		paths = append(paths, path)
+		if sameArtifactIdentity(item, target) {
+			targetSeen = true
+		}
+	}
+	if !targetSeen {
+		return nil, errors.New("python dynamic dependency closure omits target artifact")
+	}
+	return paths, nil
+}
+
+func sameArtifactIdentity(left, right domain.AcquiredArtifact) bool {
+	leftIdentity, rightIdentity := left.Identity(), right.Identity()
+	return leftIdentity.Source() == rightIdentity.Source() && leftIdentity.Name() == rightIdentity.Name() && leftIdentity.Version() == rightIdentity.Version() && leftIdentity.Variant() == rightIdentity.Variant() && left.Digest() == right.Digest()
 }
 
 const defaultPyPIDynamicDuration = 5 * time.Minute
