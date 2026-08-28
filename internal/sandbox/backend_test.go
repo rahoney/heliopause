@@ -169,6 +169,7 @@ type recordingRunner struct {
 	input            []byte
 	responses        [][]byte
 	errors           []error
+	boundedOutput    []byte
 	waitForContext   bool
 	waitForContextAt int
 }
@@ -193,6 +194,11 @@ func (r *recordingRunner) Output(ctx context.Context, binary string, arguments .
 func (r *recordingRunner) RunDiscard(ctx context.Context, binary string, arguments ...string) error {
 	_, err := r.Output(ctx, binary, arguments...)
 	return err
+}
+
+func (r *recordingRunner) RunBounded(ctx context.Context, binary string, arguments ...string) ([]byte, error) {
+	_, err := r.Output(ctx, binary, arguments...)
+	return append([]byte(nil), r.boundedOutput...), err
 }
 
 type recordingIntroducer struct {

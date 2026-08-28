@@ -2,6 +2,7 @@ package sandbox
 
 import (
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -109,6 +110,64 @@ func TestPythonDynamicBackendInstallsExactClosureInOneOfflineInvocation(t *testi
 	}
 	if len(runner.calls) < 3 || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "--no-index --no-deps") || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), pythonWheelPath(target)) || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), pythonWheelPath(dependency)) {
 		t.Fatalf("closure install command = %#v", runner.calls)
+	}
+}
+
+func TestPythonDynamicBackendClassifiesBoundedInstallFailureWithoutExposingOutput(t *testing.T) {
+	root, artifact := pythonWheelFixture(t)
+	runner := &recordingRunner{
+		responses:     [][]byte{[]byte("0123456789abcdef")},
+		errors:        []error{nil, nil, errors.New("exit status 1")},
+		boundedOutput: []byte("ERROR: package installation failed: No space left on device"),
+	}
+	introducer, err := NewPythonArtifactIntroducer(root, runner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	backend, err := NewPythonDynamicBackend(runner, introducer, &recordingObserver{reader: &traceReader{}}, availablePythonProbe)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := backend.InspectWheel(context.Background(), artifact, []string{"example"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	limitation, _ := result.LimitationCode()
+	if result.Status() != domain.SandboxIncomplete || limitation != "M5_PYPI_DYNAMIC_INSTALL_FAILED_ENOSPC" || strings.Contains(limitation, "No space") {
+		t.Fatalf("result = %#v", result)
+	}
+}
+
+func TestClassifyDynamicInstallFailureUsesBoundedVocabulary(t *testing.T) {
+	for _, test := range []struct {
+		output string
+		want   string
+	}{
+		{"ERROR: invalid requirement", dynamicInstallFailurePipArgument},
+		{"ERROR: not a supported wheel on this platform", dynamicInstallFailureWheelPlatform},
+		{"ERROR: invalid wheel metadata", dynamicInstallFailureWheelMetadata},
+		{"ERROR: ResolutionImpossible: conflicting dependencies", dynamicInstallFailurePackageConflict},
+		{"ERROR: duplicate distribution", dynamicInstallFailureDuplicate},
+		{"ERROR: No space left on device", dynamicInstallFailureENOSPC},
+		{"ERROR: Cannot allocate memory", dynamicInstallFailureMemory},
+		{"ERROR: Permission denied", dynamicInstallFailurePermission},
+		{"ERROR: OCI runtime runsc failure", dynamicInstallFailureSandboxRuntime},
+		{"unrecognized", dynamicInstallFailureOther},
+	} {
+		if got := classifyDynamicInstallFailure(context.Background(), test.output); got != test.want {
+			t.Fatalf("classifyDynamicInstallFailure(%q) = %q, want %q", test.output, got, test.want)
+		}
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	if got := classifyDynamicInstallFailure(ctx, ""); got != dynamicInstallFailureOther {
+		t.Fatalf("canceled context class = %q", got)
+	}
+	deadline, cancel := context.WithTimeout(context.Background(), 0)
+	defer cancel()
+	<-deadline.Done()
+	if got := classifyDynamicInstallFailure(deadline, ""); got != dynamicInstallFailureTimeout {
+		t.Fatalf("deadline class = %q", got)
 	}
 }
 

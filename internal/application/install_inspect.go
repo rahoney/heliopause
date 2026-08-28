@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/core/ports"
@@ -257,7 +258,11 @@ func (s *InstallInspectService) inspectGraphAware(ctx context.Context, operation
 	if err != nil {
 		return partial, fmt.Errorf("construct graph static diagnostics: %w", err)
 	}
-	return newInspectedInstall(operationID, request, partial.Resolution(), set, decision).withGraphStaticDiagnostics(diagnostics), nil
+	dynamicDiagnostics, err := graphDynamicInstallDiagnostics(graph, reports)
+	if err != nil {
+		return partial, fmt.Errorf("construct graph dynamic install diagnostics: %w", err)
+	}
+	return newInspectedInstall(operationID, request, partial.Resolution(), set, decision).withGraphStaticDiagnostics(diagnostics).withGraphDynamicInstallDiagnostics(dynamicDiagnostics), nil
 }
 
 func acquiredMatchesLocked(acquired domain.AcquiredArtifact, dependency domain.LockedDependency, runID domain.RunID) bool {
@@ -298,6 +303,39 @@ func graphStaticDiagnostics(graph domain.LockedDependencyGraph, reports map[doma
 		diagnostics = append(diagnostics, diagnostic)
 	}
 	return diagnostics, nil
+}
+
+const dynamicInstallFailurePrefix = "M5_PYPI_DYNAMIC_INSTALL_FAILED_"
+
+func graphDynamicInstallDiagnostics(graph domain.LockedDependencyGraph, reports map[domain.DependencyNodeID]domain.InspectionReport) ([]GraphDynamicInstallDiagnostic, error) {
+	diagnostics := make([]GraphDynamicInstallDiagnostic, 0)
+	for _, dependency := range graph.Nodes() {
+		for _, execution := range reports[dependency.Node()].Executions() {
+			if execution.ID().String() != "pypi-dynamic-import" {
+				continue
+			}
+			limitation, limited := execution.LimitationCode()
+			failureClass, matched := strings.CutPrefix(limitation, dynamicInstallFailurePrefix)
+			if !limited || !matched {
+				continue
+			}
+			diagnostic, err := newGraphDynamicInstallDiagnostic(dependency, failureClass)
+			if err != nil {
+				return nil, err
+			}
+			diagnostics = append(diagnostics, diagnostic)
+		}
+	}
+	return diagnostics, nil
+}
+
+func validDynamicInstallFailureClass(value string) bool {
+	switch value {
+	case "PIP_ARGUMENT_ERROR", "WHEEL_PLATFORM_REJECTED", "WHEEL_METADATA_REJECTED", "PACKAGE_CONFLICT", "DUPLICATE_DISTRIBUTION", "ENOSPC", "MEMORY_LIMIT", "TIMEOUT", "PERMISSION", "SANDBOX_RUNTIME", "OTHER":
+		return true
+	default:
+		return false
+	}
 }
 
 func (s *InstallInspectService) inspectAcquiredDependency(ctx context.Context, operationID domain.OperationID, dependency domain.LockedDependency, artifact domain.AcquiredArtifact, additionalChecks []domain.CheckExecution, additionalEvidence []domain.Evidence) (domain.DependencyInspection, error) {

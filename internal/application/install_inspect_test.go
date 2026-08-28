@@ -160,6 +160,28 @@ func TestInstallInspectUsesNeutralGraphCapabilityForEveryDependencyGraph(t *test
 	}
 }
 
+func TestInstallInspectRecordsBoundedGraphDynamicInstallDiagnostic(t *testing.T) {
+	graph := twoNodeGraphForSource(t, "pypi")
+	ports := &graphInspectionPorts{multiInspectionPorts: newMultiInspectionPorts(t, graph), dynamicFailure: "M5_PYPI_DYNAMIC_INSTALL_FAILED_ENOSPC"}
+	source, _ := domain.NewSourceID("pypi")
+	reference, _ := domain.NewArtifactReference(source, "first")
+	target, _ := domain.NewInstallTarget("/tmp/heliopause-install-target")
+	installContext, _ := domain.NewInstallContext(target)
+	request, _ := application.NewInstallRequest(reference, installContext)
+	service, err := application.NewInstallInspectService(&lockedResolver{graph: graph}, ports, ports, ports, ports, policy.M1{}, policy.M4{}, domain.NewOperationID, domain.NewRunID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := service.Inspect(context.Background(), request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	diagnostics := result.GraphDynamicInstallDiagnostics()
+	if len(diagnostics) != 1 || diagnostics[0].Node().String() != "first" || diagnostics[0].Package() != "first" || diagnostics[0].FailureClass() != "ENOSPC" {
+		t.Fatalf("dynamic diagnostics = %#v", diagnostics)
+	}
+}
+
 func TestInstallInspectRejectsGraphReportKeySetMismatch(t *testing.T) {
 	graph := twoNodeGraphForSource(t, "pypi")
 	ports := &graphInspectionPorts{multiInspectionPorts: newMultiInspectionPorts(t, graph), omitReport: true}
@@ -255,8 +277,9 @@ type multiInspectionPorts struct {
 
 type graphInspectionPorts struct {
 	*multiInspectionPorts
-	graphCalls int
-	omitReport bool
+	graphCalls     int
+	omitReport     bool
+	dynamicFailure string
 }
 
 func (p *graphInspectionPorts) InspectGraph(_ context.Context, graph domain.LockedDependencyGraph, artifacts map[domain.DependencyNodeID]domain.AcquiredArtifact) (map[domain.DependencyNodeID]domain.InspectionReport, error) {
@@ -269,7 +292,12 @@ func (p *graphInspectionPorts) InspectGraph(_ context.Context, graph domain.Lock
 			return nil, errors.New("missing graph artifact")
 		}
 		checkID, _ := domain.NewCheckID("graph-inspection-" + artifact.Identity().Name())
-		check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
+		status, limitation := domain.ExecutionCompleted, ""
+		if p.dynamicFailure != "" && artifact.Identity().Name() == "first" {
+			checkID, _ = domain.NewCheckID("pypi-dynamic-import")
+			status, limitation = domain.ExecutionIncomplete, p.dynamicFailure
+		}
+		check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, status, limitation)
 		evidence, _ := domain.NewEvidence(mustEvidenceID("graph-inspection-"+artifact.Identity().Name()), checkID, artifact.Identity(), artifact.Digest(), "fixture", "graph inspection completed")
 		report, _ := domain.NewInspectionReport(check, nil, []domain.Evidence{evidence})
 		reports[dependency.Node()] = report

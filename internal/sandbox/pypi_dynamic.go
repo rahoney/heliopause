@@ -39,6 +39,13 @@ type discardCommandRunner interface {
 	RunDiscard(context.Context, string, ...string) error
 }
 
+// boundedCommandRunner retains a short process-local diagnostic window. The
+// Dynamic backend classifies it before returning, and never exposes it in a
+// Sandbox Result, Evidence, or CLI output.
+type boundedCommandRunner interface {
+	RunBounded(context.Context, string, ...string) ([]byte, error)
+}
+
 // PythonArtifactIntroducer streams one verified wheel from the HAA intake root
 // into a running container. It never puts the Host path into a Docker command.
 type PythonArtifactIntroducer struct {
@@ -144,8 +151,8 @@ func (b *PythonDynamicBackend) InspectWheelWithClosure(ctx context.Context, arti
 		}
 	}
 	installArguments := append([]string{"exec", containerID, "python", "-I", "-m", "pip", "install", "--no-index", "--no-deps", "--no-compile", "--disable-pip-version-check", "--target", pythonSitePath}, wheelPaths...)
-	if err := discardCommand(runCtx, b.runner, "docker", installArguments...); err != nil {
-		return b.finishIncomplete(sessionID, containerID, trace, "M5_PYPI_DYNAMIC_INSTALL_FAILED")
+	if failureClass, err := runBoundedCommand(runCtx, b.runner, "docker", installArguments...); err != nil {
+		return b.finishIncomplete(sessionID, containerID, trace, dynamicInstallFailureCode(failureClass))
 	}
 	arguments := append([]string{"exec", containerID, "python", "-I", "-c", pythonImportScript}, imports...)
 	if err := discardCommand(runCtx, b.runner, "docker", arguments...); err != nil {
@@ -230,6 +237,68 @@ func discardCommand(ctx context.Context, runner CommandRunner, binary string, ar
 		return errors.New("sandbox command runner must discard command output")
 	}
 	return discarder.RunDiscard(ctx, binary, arguments...)
+}
+
+func runBoundedCommand(ctx context.Context, runner CommandRunner, binary string, arguments ...string) (string, error) {
+	if bounded, ok := runner.(boundedCommandRunner); ok {
+		output, err := bounded.RunBounded(ctx, binary, arguments...)
+		if err != nil {
+			return classifyDynamicInstallFailure(ctx, string(output)), err
+		}
+		return "", nil
+	}
+	if err := discardCommand(ctx, runner, binary, arguments...); err != nil {
+		return dynamicInstallFailureOther, err
+	}
+	return "", nil
+}
+
+const (
+	dynamicInstallFailurePrefix          = "M5_PYPI_DYNAMIC_INSTALL_FAILED_"
+	dynamicInstallFailurePipArgument     = "PIP_ARGUMENT_ERROR"
+	dynamicInstallFailureWheelPlatform   = "WHEEL_PLATFORM_REJECTED"
+	dynamicInstallFailureWheelMetadata   = "WHEEL_METADATA_REJECTED"
+	dynamicInstallFailurePackageConflict = "PACKAGE_CONFLICT"
+	dynamicInstallFailureDuplicate       = "DUPLICATE_DISTRIBUTION"
+	dynamicInstallFailureENOSPC          = "ENOSPC"
+	dynamicInstallFailureMemory          = "MEMORY_LIMIT"
+	dynamicInstallFailureTimeout         = "TIMEOUT"
+	dynamicInstallFailurePermission      = "PERMISSION"
+	dynamicInstallFailureSandboxRuntime  = "SANDBOX_RUNTIME"
+	dynamicInstallFailureOther           = "OTHER"
+)
+
+func dynamicInstallFailureCode(class string) string {
+	return dynamicInstallFailurePrefix + class
+}
+
+func classifyDynamicInstallFailure(ctx context.Context, output string) string {
+	if ctx != nil && errors.Is(ctx.Err(), context.DeadlineExceeded) {
+		return dynamicInstallFailureTimeout
+	}
+	output = strings.ToLower(output)
+	switch {
+	case strings.Contains(output, "no space left on device"):
+		return dynamicInstallFailureENOSPC
+	case strings.Contains(output, "cannot allocate memory"), strings.Contains(output, "out of memory"), strings.Contains(output, "memory limit"):
+		return dynamicInstallFailureMemory
+	case strings.Contains(output, "permission denied"):
+		return dynamicInstallFailurePermission
+	case strings.Contains(output, "oci runtime"), strings.Contains(output, "runsc"), strings.Contains(output, "containerd"):
+		return dynamicInstallFailureSandboxRuntime
+	case strings.Contains(output, "not a supported wheel"), strings.Contains(output, "not supported wheel"):
+		return dynamicInstallFailureWheelPlatform
+	case strings.Contains(output, "invalid wheel"), strings.Contains(output, "bad wheel filename"), strings.Contains(output, "invalid metadata"):
+		return dynamicInstallFailureWheelMetadata
+	case strings.Contains(output, "resolutionimpossible"), strings.Contains(output, "conflicting dependencies"):
+		return dynamicInstallFailurePackageConflict
+	case strings.Contains(output, "already exists"), strings.Contains(output, "duplicate"):
+		return dynamicInstallFailureDuplicate
+	case strings.Contains(output, "no such option"), strings.Contains(output, "invalid requirement"), strings.Contains(output, "usage: pip"):
+		return dynamicInstallFailurePipArgument
+	default:
+		return dynamicInstallFailureOther
+	}
 }
 func pythonIncomplete(sessionID domain.SandboxSessionID, code string) (domain.SandboxResult, error) {
 	return domain.NewSandboxResult(sessionID, domain.SandboxIncomplete, code, nil)

@@ -23,9 +23,10 @@ import (
 )
 
 const (
-	defaultDockerEndpoint = "unix:///run/docker.sock"
-	systemConfigPath      = "/etc/heliopause/host-tools.json"
-	defaultObserverHelper = "/usr/libexec/heliopause/haa_gvisor_observer"
+	defaultDockerEndpoint   = "unix:///run/docker.sock"
+	systemConfigPath        = "/etc/heliopause/host-tools.json"
+	defaultObserverHelper   = "/usr/libexec/heliopause/haa_gvisor_observer"
+	maxBoundedCommandOutput = 16 << 10
 )
 
 var (
@@ -341,6 +342,39 @@ func (e *Executor) RunDiscard(ctx context.Context, name string, arguments ...str
 	command.Stdout = io.Discard
 	command.Stderr = io.Discard
 	return command.Run()
+}
+
+// RunBounded executes a trusted command while retaining only a small,
+// process-local diagnostic window. Callers must classify and discard the
+// returned bytes; they must never serialize them as operation output.
+func (e *Executor) RunBounded(ctx context.Context, name string, arguments ...string) ([]byte, error) {
+	command, err := e.command(ctx, name, arguments...)
+	if err != nil {
+		return nil, err
+	}
+	output := &boundedCommandOutput{remaining: maxBoundedCommandOutput}
+	command.Stdout = output
+	command.Stderr = output
+	err = command.Run()
+	return output.Bytes(), err
+}
+
+type boundedCommandOutput struct {
+	bytes.Buffer
+	remaining int
+}
+
+func (b *boundedCommandOutput) Write(data []byte) (int, error) {
+	count := len(data)
+	if b.remaining > 0 {
+		accepted := data
+		if len(accepted) > b.remaining {
+			accepted = accepted[:b.remaining]
+		}
+		_, _ = b.Buffer.Write(accepted)
+		b.remaining -= len(accepted)
+	}
+	return count, nil
 }
 
 // Run executes one Docker Promotion command. The project argument is already
