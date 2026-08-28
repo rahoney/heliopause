@@ -45,3 +45,41 @@ func TestRootResourceSessionKeepsDefaultAndPyTorchBudgetsSeparate(t *testing.T) 
 		t.Fatal("default PyPI inherited a PyTorch budget")
 	}
 }
+
+func TestRootSourceProfileNameFromContext(t *testing.T) {
+	if got, want := RootSourceProfileNameFromContext(context.TODO()), "pypi"; got != want {
+		t.Fatalf("TODO context profile = %q, want %q", got, want)
+	}
+	if got, want := RootSourceProfileNameFromContext(context.Background()), "pypi"; got != want {
+		t.Fatalf("background context profile = %q, want %q", got, want)
+	}
+	defaultCtx, err := ContextWithResourcePolicy(context.Background(), PublicPyPIProfile())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := RootSourceProfileNameFromContext(defaultCtx), "pypi"; got != want {
+		t.Fatalf("explicit default profile = %q, want %q", got, want)
+	}
+	cpu, ok := PyTorchProfile("cpu")
+	if !ok {
+		t.Fatal("missing cpu profile")
+	}
+	cpuCtx, err := ContextWithResourcePolicy(context.Background(), cpu)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := RootSourceProfileNameFromContext(cpuCtx), "pytorch:cpu"; got != want {
+		t.Fatalf("cpu profile = %q, want %q", got, want)
+	}
+	cu126, ok := PyTorchProfile("cu126")
+	if !ok {
+		t.Fatal("missing cu126 profile")
+	}
+	cu126Ctx, err := ContextWithResourcePolicy(context.Background(), cu126)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := RootSourceProfileNameFromContext(cu126Ctx), "pytorch:cu126"; got != want {
+		t.Fatalf("cu126 profile = %q, want %q", got, want)
+	}
+}

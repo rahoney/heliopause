@@ -212,12 +212,22 @@ func (emptyObserver) Start(context.Context, string) (TraceReader, error) { retur
 
 type recordingObserver struct {
 	containerID string
+	profile     string
 	reader      TraceReader
 	err         error
 }
 
 func (o *recordingObserver) Start(_ context.Context, containerID string) (TraceReader, error) {
 	o.containerID = containerID
+	if o.err != nil {
+		return nil, o.err
+	}
+	return o.reader, nil
+}
+
+func (o *recordingObserver) StartProfile(_ context.Context, containerID, profile string) (TraceReader, error) {
+	o.containerID = containerID
+	o.profile = profile
 	if o.err != nil {
 		return nil, o.err
 	}

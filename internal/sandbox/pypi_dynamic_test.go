@@ -81,6 +81,135 @@ func TestPythonDynamicBackendUsesNamedRootProfileResources(t *testing.T) {
 	}
 }
 
+func TestPythonDynamicObserverProfileSelectsRootTransactionPolicyNotNodeSource(t *testing.T) {
+	transitiveRunID := "run_" + strings.Repeat("a", 26)
+	root, transitiveArtifact := wheelArtifactWithFilename(t, transitiveRunID, "pypi", "networkx", "3.6.1", "networkx-3.6.1-py3-none-any.whl")
+	if transitiveArtifact.Identity().Source().String() != "pypi" {
+		t.Fatalf("transitive artifact source = %s, want pypi", transitiveArtifact.Identity().Source())
+	}
+
+	// 1. Root transaction is pytorch:cpu, current node is ordinary PyPI transitive dependency
+	cpuProfile, ok := artifactpypi.PyTorchProfile("cpu")
+	if !ok {
+		t.Fatal("missing cpu profile")
+	}
+	cpuCtx, err := artifactpypi.ContextWithResourcePolicy(context.Background(), cpuProfile)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil}}
+	introducer, err := NewPythonArtifactIntroducer(root, runner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	observer := &recordingObserver{reader: &traceReader{}}
+	backend, err := NewPythonDynamicBackend(runner, introducer, observer, availablePythonProbe)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	result, err := backend.InspectWheel(cpuCtx, transitiveArtifact, []string{"networkx"})
+	if err != nil || result.Status() != domain.SandboxCompleted {
+		t.Fatalf("InspectWheel() under CPU root = %#v, %v", result, err)
+	}
+	if observer.profile != "pypi-wheel-pytorch-cpu" {
+		t.Fatalf("observer profile for PyPI node under CPU root = %q, want %q", observer.profile, "pypi-wheel-pytorch-cpu")
+	}
+	cpuBudget := traceBudgetForProfile(observer.profile)
+	if cpuBudget.events != 500_000 || cpuBudget.bytes != 128<<20 {
+		t.Fatalf("CPU trace budget = %#v, want 500k/128MiB", cpuBudget)
+	}
+
+	// 2. Root transaction is ordinary PyPI (or default background context)
+	defaultRunner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil}}
+	defaultIntroducer, err := NewPythonArtifactIntroducer(root, defaultRunner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defaultObserver := &recordingObserver{reader: &traceReader{}}
+	defaultBackend, err := NewPythonDynamicBackend(defaultRunner, defaultIntroducer, defaultObserver, availablePythonProbe)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err = defaultBackend.InspectWheel(context.Background(), transitiveArtifact, []string{"networkx"})
+	if err != nil || result.Status() != domain.SandboxCompleted {
+		t.Fatalf("InspectWheel() under default root = %#v, %v", result, err)
+	}
+	if defaultObserver.profile != "pypi-wheel" {
+		t.Fatalf("observer profile under default root = %q, want %q", defaultObserver.profile, "pypi-wheel")
+	}
+	defaultBudget := traceBudgetForProfile(defaultObserver.profile)
+	if defaultBudget.events != 10_000 || defaultBudget.bytes != 2<<20 {
+		t.Fatalf("default trace budget = %#v, want 10k/2MiB", defaultBudget)
+	}
+
+	// 3. Root transaction is pytorch:cu126
+	cu126Profile, ok := artifactpypi.PyTorchProfile("cu126")
+	if !ok {
+		t.Fatal("missing cu126 profile")
+	}
+	cu126Ctx, err := artifactpypi.ContextWithResourcePolicy(context.Background(), cu126Profile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cu126Runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil}}
+	cu126Introducer, err := NewPythonArtifactIntroducer(root, cu126Runner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cu126Observer := &recordingObserver{reader: &traceReader{}}
+	cu126Backend, err := NewPythonDynamicBackend(cu126Runner, cu126Introducer, cu126Observer, availablePythonProbe)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err = cu126Backend.InspectWheel(cu126Ctx, transitiveArtifact, []string{"networkx"})
+	if err != nil || result.Status() != domain.SandboxCompleted {
+		t.Fatalf("InspectWheel() under cu126 root = %#v, %v", result, err)
+	}
+	if cu126Observer.profile != "pypi-wheel-pytorch-cu126" {
+		t.Fatalf("observer profile under cu126 root = %q, want %q", cu126Observer.profile, "pypi-wheel-pytorch-cu126")
+	}
+	cu126Budget := traceBudgetForProfile(cu126Observer.profile)
+	if cu126Budget.events != 100_000 || cu126Budget.bytes != 16<<20 {
+		t.Fatalf("cu126 trace budget = %#v, want 100k/16MiB", cu126Budget)
+	}
+}
+
+func TestPythonDynamicObserverProfileMapping(t *testing.T) {
+	tests := []struct {
+		rootProfile string
+		wantProfile string
+		wantEvents  int
+		wantBytes   uint64
+		wantErr     bool
+	}{
+		{"pypi", "pypi-wheel", 10_000, 2 << 20, false},
+		{"pytorch:cpu", "pypi-wheel-pytorch-cpu", 500_000, 128 << 20, false},
+		{"pytorch:cu126", "pypi-wheel-pytorch-cu126", 100_000, 16 << 20, false},
+		{"unknown", "", 0, 0, true},
+		{"", "", 0, 0, true},
+	}
+	for _, test := range tests {
+		t.Run(test.rootProfile, func(t *testing.T) {
+			profile, err := pythonDynamicObserverProfile(test.rootProfile)
+			if test.wantErr {
+				if err == nil {
+					t.Fatalf("pythonDynamicObserverProfile(%q) unexpectedly succeeded with %q", test.rootProfile, profile)
+				}
+				return
+			}
+			if err != nil || profile != test.wantProfile {
+				t.Fatalf("pythonDynamicObserverProfile(%q) = (%q, %v), want %q", test.rootProfile, profile, err, test.wantProfile)
+			}
+			budget := traceBudgetForProfile(profile)
+			if budget.events != test.wantEvents || budget.bytes != test.wantBytes {
+				t.Fatalf("budget for %q = %#v, want events=%d bytes=%d", profile, budget, test.wantEvents, test.wantBytes)
+			}
+		})
+	}
+}
+
 func TestPythonDynamicBackendInstallsExactClosureInOneOfflineInvocation(t *testing.T) {
 	root, target := pythonWheelFixture(t)
 	dependencyRunID := "run_" + strings.Repeat("a", 25) + "i"

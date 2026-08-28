@@ -80,11 +80,12 @@ func (p ResourcePolicy) valid() bool {
 }
 
 type resourceSession struct {
-	policy   ResourcePolicy
-	mu       sync.Mutex
-	count    int
-	bytes    int64
-	expanded int64
+	profileName string
+	policy      ResourcePolicy
+	mu          sync.Mutex
+	count       int
+	bytes       int64
+	expanded    int64
 }
 
 func (s *resourceSession) chargeUncompressed(bytes int64) error {
@@ -148,10 +149,13 @@ type resourcePolicyContextKey struct{}
 // ContextWithResourcePolicy creates transaction-local accounting for one
 // canonical root profile. Bootstrap composition, not user input, selects it.
 func ContextWithResourcePolicy(ctx context.Context, profile SourceProfile) (context.Context, error) {
-	if ctx == nil || !profile.resourcePolicy.valid() {
+	if ctx == nil || !profile.resourcePolicy.valid() || profile.name == "" {
 		return nil, errors.New("PyPI root resource profile is invalid")
 	}
-	return context.WithValue(ctx, resourcePolicyContextKey{}, &resourceSession{policy: profile.resourcePolicy}), nil
+	return context.WithValue(ctx, resourcePolicyContextKey{}, &resourceSession{
+		profileName: profile.name,
+		policy:      profile.resourcePolicy,
+	}), nil
 }
 
 func resourcePolicyFromContext(ctx context.Context) (ResourcePolicy, *resourceSession) {
@@ -161,7 +165,7 @@ func resourcePolicyFromContext(ctx context.Context) (ResourcePolicy, *resourceSe
 		}
 	}
 	policy := defaultResourcePolicy()
-	return policy, &resourceSession{policy: policy}
+	return policy, &resourceSession{profileName: publicPyPIProfile.name, policy: policy}
 }
 
 // ResourcePolicyFromContext returns the root-profile policy selected by the
@@ -169,6 +173,16 @@ func resourcePolicyFromContext(ctx context.Context) (ResourcePolicy, *resourceSe
 func ResourcePolicyFromContext(ctx context.Context) ResourcePolicy {
 	policy, _ := resourcePolicyFromContext(ctx)
 	return policy
+}
+
+// RootSourceProfileNameFromContext returns the canonical root profile name
+// selected by the bootstrap transaction, or "pypi" for default context.
+func RootSourceProfileNameFromContext(ctx context.Context) string {
+	_, session := resourcePolicyFromContext(ctx)
+	if session.profileName != "" {
+		return session.profileName
+	}
+	return publicPyPIProfile.name
 }
 
 // ChargeUncompressedFromContext accounts the bounded file-backed archive

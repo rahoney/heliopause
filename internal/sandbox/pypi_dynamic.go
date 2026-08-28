@@ -193,13 +193,17 @@ func (b *PythonDynamicBackend) InspectWheelWithClosure(ctx context.Context, arti
 	if err != nil || !capability.Available || capability.Runtime != PinnedPythonRuntime() {
 		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_RUNTIME_UNAVAILABLE")
 	}
+	observerProfile, err := pythonDynamicObserverProfile(artifactpypi.RootSourceProfileNameFromContext(ctx))
+	if err != nil {
+		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_SETUP_FAILED")
+	}
 	resourcePolicy := artifactpypi.ResourcePolicyFromContext(ctx)
 	created, err := b.runner.Output(ctx, "docker", pythonDynamicCreateArguments(sessionID, resourcePolicy)...)
 	if err != nil || !containerIDPattern.MatchString(strings.TrimSpace(string(created))) {
 		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_SETUP_FAILED")
 	}
 	containerID := strings.TrimSpace(string(created))
-	trace, err := startTrace(ctx, b.observer, containerID, "pypi-wheel")
+	trace, err := startTrace(ctx, b.observer, containerID, observerProfile)
 	if err != nil {
 		if b.remove(containerID) != nil {
 			return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_CLEANUP_FAILED")
@@ -449,3 +453,16 @@ func pythonDynamicCreateArguments(sessionID domain.SandboxSessionID, resourcePol
 }
 
 const pythonImportScript = "import importlib,sys\nsys.path.insert(0,'/haa-site')\nfor name in sys.argv[1:]: importlib.import_module(name)\n"
+
+func pythonDynamicObserverProfile(rootProfileName string) (string, error) {
+	switch rootProfileName {
+	case "pypi":
+		return "pypi-wheel", nil
+	case "pytorch:cpu":
+		return "pypi-wheel-pytorch-cpu", nil
+	case "pytorch:cu126":
+		return "pypi-wheel-pytorch-cu126", nil
+	default:
+		return "", errors.New("unsupported Python root source profile for dynamic observer")
+	}
+}
