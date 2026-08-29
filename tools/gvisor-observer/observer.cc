@@ -3,6 +3,7 @@
 // HAA's trusted datagram boundary; it never logs trace payloads.
 #include <arpa/inet.h>
 #include <err.h>
+#include <netinet/in.h>
 #include <poll.h>
 #include <signal.h>
 #include <sys/socket.h>
@@ -14,6 +15,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <cstddef>
 #include <string>
 #include <map>
 
@@ -37,6 +39,7 @@ constexpr size_t kMaxEventSize = 1024 * 1024;
 constexpr size_t kMaxNormalizedRecordsPerConnection = 10000;
 constexpr size_t kMaxPyTorchCPURecordsPerConnection = 500000;
 constexpr size_t kMaxPyTorchCU126RecordsPerConnection = 100000;
+constexpr size_t kMaxTrackedProcessGroups = 64;
 constexpr int kProfileRegistrationWaitMilliseconds = 2000;
 constexpr char kProfileNPM[] = "npm-lifecycle";
 constexpr char kProfilePyPI[] = "pypi-wheel";
@@ -74,14 +77,179 @@ bool IsClearlyOutsideWorkspace(const std::string& path) {
       HasPrefix(path, "/run/secrets/") || path == "/root" || path == "/home";
 }
 
-bool IsExpectedProcess(const std::string& path, const char* profile) {
+enum class ProcessClass {
+  kUnknown,
+  kShell,
+  kPython,
+  kPip,
+  kNode,
+  kNpm,
+  kArtifact,
+  kSleep,
+  kMkdir,
+  kCat,
+  kChmod,
+};
+
+struct ProcessState {
+  bool bootstrap_active = true;
+  bool bootstrap_group_set = false;
+  int32_t bootstrap_group_id = 0;
+  int64_t bootstrap_group_start_time_ns = 0;
+  struct ExpectedGroup {
+    int64_t start_time_ns;
+    ProcessClass process_class;
+  };
+  std::map<int32_t, ExpectedGroup> expected_groups;
+};
+
+ProcessClass ProcessClassForPath(const std::string& path, const char* profile) {
+  if (path == "/bin/sh" || path == "sh" || path == "/usr/bin/dash") return ProcessClass::kShell;
+  if (path == "/usr/bin/sleep" || path == "/bin/sleep" || path == "sleep") return ProcessClass::kSleep;
+  if (path == "/usr/bin/mkdir" || path == "/bin/mkdir" || path == "mkdir") return ProcessClass::kMkdir;
+  if (path == "/usr/bin/cat" || path == "/bin/cat" || path == "cat") return ProcessClass::kCat;
+  if (path == "/usr/bin/chmod" || path == "/bin/chmod" || path == "chmod") return ProcessClass::kChmod;
   if (strcmp(profile, kProfileNPM) == 0) {
-    return path == "/bin/sh" || path == "/usr/local/bin/node" || path == "/usr/local/bin/npm";
+    if (path == "/usr/local/bin/node" || path == "node") return ProcessClass::kNode;
+    if (path == "/usr/local/bin/npm" || path == "npm") return ProcessClass::kNpm;
   }
   if (strcmp(profile, kProfilePyPI) == 0 || strcmp(profile, kProfilePyTorchCPU) == 0 || strcmp(profile, kProfilePyTorchCU126) == 0) {
-    return path == "/bin/sh" || path == "/usr/local/bin/python" || path == "/usr/local/bin/pip";
+    if (path == "/usr/local/bin/python" || path == "/usr/local/bin/python3" || path == "/usr/local/bin/python3.14" || path == "python") return ProcessClass::kPython;
+    if (path == "/usr/local/bin/pip" || path == "pip") return ProcessClass::kPip;
   }
-  return path == "/bin/sh" || path == "/work/artifact";
+  if (strcmp(profile, kProfileGitHub) == 0 && path == "/work/artifact") return ProcessClass::kArtifact;
+  return ProcessClass::kUnknown;
+}
+
+bool IsProfileExpectedClass(ProcessClass process_class, const char* profile) {
+  if (process_class == ProcessClass::kShell) return true;
+  if (strcmp(profile, kProfileNPM) == 0) return process_class == ProcessClass::kNode || process_class == ProcessClass::kNpm;
+  if (strcmp(profile, kProfilePyPI) == 0 || strcmp(profile, kProfilePyTorchCPU) == 0 || strcmp(profile, kProfilePyTorchCU126) == 0) {
+    return process_class == ProcessClass::kPython || process_class == ProcessClass::kPip;
+  }
+  return process_class == ProcessClass::kArtifact;
+}
+
+bool IsBootstrapRootClass(ProcessClass process_class) {
+  return process_class == ProcessClass::kShell || process_class == ProcessClass::kSleep;
+}
+
+bool IsBootstrapChildClass(ProcessClass process_class) {
+  return process_class == ProcessClass::kSleep || process_class == ProcessClass::kMkdir ||
+      process_class == ProcessClass::kCat || process_class == ProcessClass::kChmod;
+}
+
+bool IsBootstrapHandoffClass(ProcessClass process_class, const char* profile) {
+  if (strcmp(profile, kProfileNPM) == 0) return process_class == ProcessClass::kNode || process_class == ProcessClass::kNpm;
+  return strcmp(profile, kProfileGitHub) == 0 && process_class == ProcessClass::kArtifact;
+}
+
+bool ValidProcessIdentity(const gvisor::common::ContextData& context) {
+  return context.thread_group_id() > 0 && context.thread_group_start_time_ns() > 0;
+}
+
+bool IsBootstrapRoot(const gvisor::common::ContextData& context, const ProcessState& state) {
+  return !context.is_exec_session() && context.parent_thread_group_id() == 0 &&
+      (!state.bootstrap_group_set || context.thread_group_id() == state.bootstrap_group_id) &&
+      (!state.bootstrap_group_set || context.thread_group_start_time_ns() == state.bootstrap_group_start_time_ns);
+}
+
+bool IsBootstrapChild(const gvisor::common::ContextData& context, const ProcessState& state) {
+  return state.bootstrap_group_set && !context.is_exec_session() &&
+      context.parent_thread_group_id() == state.bootstrap_group_id;
+}
+
+bool IsTrustedShellChild(const gvisor::common::ContextData& context, ProcessClass process_class, const ProcessState& state) {
+  if (!IsBootstrapChildClass(process_class)) return false;
+  auto parent = state.expected_groups.find(context.parent_thread_group_id());
+  return parent != state.expected_groups.end() && parent->second.process_class == ProcessClass::kShell;
+}
+
+bool TrackExpectedProcessGroup(const gvisor::common::ContextData& context, ProcessClass process_class, ProcessState* state) {
+  if (!ValidProcessIdentity(context) || state == nullptr) return false;
+  auto existing = state->expected_groups.find(context.thread_group_id());
+  if (existing != state->expected_groups.end()) {
+    return existing->second.start_time_ns == context.thread_group_start_time_ns() && existing->second.process_class == process_class;
+  }
+  if (state->expected_groups.size() >= kMaxTrackedProcessGroups) return false;
+  state->expected_groups[context.thread_group_id()] = ProcessState::ExpectedGroup{context.thread_group_start_time_ns(), process_class};
+  return true;
+}
+
+bool IsExpectedProcess(const std::string& path, const gvisor::common::ContextData& context, const char* profile, ProcessState* state) {
+  if (state == nullptr || !ValidProcessIdentity(context)) return false;
+  const ProcessClass process_class = ProcessClassForPath(path, profile);
+  auto tracked = state->expected_groups.find(context.thread_group_id());
+  if (tracked != state->expected_groups.end() && tracked->second.start_time_ns != context.thread_group_start_time_ns()) return false;
+
+  if (tracked != state->expected_groups.end()) {
+    if (tracked->second.process_class == process_class) return true;
+    if (state->bootstrap_active && context.thread_group_id() == state->bootstrap_group_id &&
+        IsBootstrapRootClass(tracked->second.process_class) && IsBootstrapRootClass(process_class)) {
+      tracked->second.process_class = process_class;
+      return true;
+    }
+    if (state->bootstrap_active && context.thread_group_id() == state->bootstrap_group_id &&
+        IsBootstrapHandoffClass(process_class, profile)) {
+      tracked->second.process_class = process_class;
+      state->bootstrap_active = false;
+      return true;
+    }
+    return false;
+  }
+
+  if (state->bootstrap_active && !context.is_exec_session() && IsBootstrapRoot(context, *state) && IsBootstrapRootClass(process_class)) {
+    if (!state->bootstrap_group_set) {
+      state->bootstrap_group_set = true;
+      state->bootstrap_group_id = context.thread_group_id();
+      state->bootstrap_group_start_time_ns = context.thread_group_start_time_ns();
+    }
+    return TrackExpectedProcessGroup(context, process_class, state);
+  }
+  if (state->bootstrap_active && IsBootstrapChild(context, *state) && IsBootstrapChildClass(process_class)) {
+    return TrackExpectedProcessGroup(context, process_class, state);
+  }
+  if (IsTrustedShellChild(context, process_class, *state)) {
+    return TrackExpectedProcessGroup(context, process_class, state);
+  }
+  if (state->bootstrap_active && IsBootstrapChild(context, *state) && IsBootstrapHandoffClass(process_class, profile)) {
+    state->bootstrap_active = false;
+    return TrackExpectedProcessGroup(context, process_class, state);
+  }
+  if (context.is_exec_session() && context.parent_thread_group_id() == 0 && IsProfileExpectedClass(process_class, profile)) {
+    state->bootstrap_active = false;
+    return TrackExpectedProcessGroup(context, process_class, state);
+  }
+  return false;
+}
+
+enum class SocketClassification {
+  kLocal,
+  kNetwork,
+  kUnknown,
+};
+
+SocketClassification ClassifySocketFamily(int family) {
+  if (family == AF_UNIX) return SocketClassification::kLocal;
+  if (family == AF_INET || family == AF_INET6) return SocketClassification::kNetwork;
+  return SocketClassification::kUnknown;
+}
+
+bool ReadSocketFamily(const std::string& address, int* family) {
+  if (family == nullptr || address.size() < sizeof(sa_family_t)) return false;
+  sa_family_t parsed = 0;
+  memcpy(&parsed, address.data(), sizeof(parsed));
+  *family = static_cast<int>(parsed);
+  return true;
+}
+
+bool ValidSocketAddressLength(int family, size_t length) {
+  switch (family) {
+    case AF_UNIX: return length >= offsetof(sockaddr_un, sun_path) + 1 && length <= sizeof(sockaddr_un);
+    case AF_INET: return length >= sizeof(sockaddr_in);
+    case AF_INET6: return length >= sizeof(sockaddr_in6);
+    default: return false;
+  }
 }
 
 const char* ProfileKind(const std::string& path, const char* profile) {
@@ -158,7 +326,7 @@ bool ParseAndSend(const char* payload, size_t payload_size, int output, const ch
 }
 
 template <typename Message>
-bool ParseProcessAndSend(const char* payload, size_t payload_size, int output, std::string* container_id, const char* profile, const char** reason) {
+bool ParseProcessAndSend(const char* payload, size_t payload_size, int output, std::string* container_id, const char* profile, ProcessState* process_state, const char** reason) {
   if (profile == nullptr) return false;
   Message message;
   if (!message.ParseFromArray(payload, payload_size)) return false;
@@ -167,10 +335,10 @@ bool ParseProcessAndSend(const char* payload, size_t payload_size, int output, s
   if (!container_id->empty() && *container_id != candidate) { *reason = "CONTAINER_MISMATCH"; return false; }
   if (container_id->empty()) *container_id = candidate;
   const std::string path = message.pathname();
-  return Send(output, *container_id, IsExpectedProcess(path, profile) ? "process-exec-expected" : "process-exec-unexpected");
+  return Send(output, *container_id, IsExpectedProcess(path, message.context_data(), profile, process_state) ? "process-exec-expected" : "process-exec-unexpected");
 }
 
-bool ParseSentryProcessAndSend(const char* payload, size_t payload_size, int output, std::string* container_id, const char* profile, const char** reason) {
+bool ParseSentryProcessAndSend(const char* payload, size_t payload_size, int output, std::string* container_id, const char* profile, ProcessState* process_state, const char** reason) {
   if (profile == nullptr) return false;
   gvisor::sentry::ExecveInfo message;
   if (!message.ParseFromArray(payload, payload_size)) return false;
@@ -178,7 +346,7 @@ bool ParseSentryProcessAndSend(const char* payload, size_t payload_size, int out
   if (!ValidContainerID(candidate)) { *reason = "STREAM_FAULT"; return false; }
   if (!container_id->empty() && *container_id != candidate) { *reason = "CONTAINER_MISMATCH"; return false; }
   if (container_id->empty()) *container_id = candidate;
-  return Send(output, *container_id, IsExpectedProcess(message.binary_path(), profile) ? "process-exec-expected" : "process-exec-unexpected");
+  return Send(output, *container_id, IsExpectedProcess(message.binary_path(), message.context_data(), profile, process_state) ? "process-exec-expected" : "process-exec-unexpected");
 }
 
 bool ParseOpenAndSend(const char* payload, size_t payload_size, int output, std::string* container_id, const char* profile, const char** reason) {
@@ -192,19 +360,55 @@ bool ParseOpenAndSend(const char* payload, size_t payload_size, int output, std:
   return Send(output, *container_id, ProfileKind(message.pathname(), profile));
 }
 
-bool Handle(const Header& header, const char* payload, size_t payload_size, int output, std::string* container_id, const char* profile, const char** reason) {
+template <typename Message>
+bool ParseSocketAndSend(const char* payload, size_t payload_size, int output, std::string* container_id, const char** reason) {
+  Message message;
+  if (!message.ParseFromArray(payload, payload_size)) return false;
+  const std::string& candidate = message.context_data().container_id();
+  if (!ValidContainerID(candidate)) { *reason = "STREAM_FAULT"; return false; }
+  if (!container_id->empty() && *container_id != candidate) { *reason = "CONTAINER_MISMATCH"; return false; }
+  if (container_id->empty()) *container_id = candidate;
+  switch (ClassifySocketFamily(message.domain())) {
+    case SocketClassification::kLocal: return true;
+    case SocketClassification::kNetwork: return Send(output, *container_id, "network-attempt");
+    case SocketClassification::kUnknown: *reason = "STREAM_FAULT"; return false;
+  }
+  *reason = "STREAM_FAULT";
+  return false;
+}
+
+bool ParseConnectAndSend(const char* payload, size_t payload_size, int output, std::string* container_id, const char** reason) {
+  gvisor::syscall::Connect message;
+  if (!message.ParseFromArray(payload, payload_size)) return false;
+  const std::string& candidate = message.context_data().container_id();
+  if (!ValidContainerID(candidate)) { *reason = "STREAM_FAULT"; return false; }
+  if (!container_id->empty() && *container_id != candidate) { *reason = "CONTAINER_MISMATCH"; return false; }
+  if (container_id->empty()) *container_id = candidate;
+  int family = 0;
+  if (!ReadSocketFamily(message.address(), &family)) { *reason = "STREAM_FAULT"; return false; }
+  if (!ValidSocketAddressLength(family, message.address().size())) { *reason = "STREAM_FAULT"; return false; }
+  switch (ClassifySocketFamily(family)) {
+    case SocketClassification::kLocal: return true;
+    case SocketClassification::kNetwork: return Send(output, *container_id, "network-attempt");
+    case SocketClassification::kUnknown: *reason = "STREAM_FAULT"; return false;
+  }
+  *reason = "STREAM_FAULT";
+  return false;
+}
+
+bool Handle(const Header& header, const char* payload, size_t payload_size, int output, std::string* container_id, const char* profile, ProcessState* process_state, const char** reason) {
   if (header.dropped_count != 0) { *reason = "STREAM_FAULT"; return false; }
   switch (static_cast<gvisor::common::MessageType>(header.message_type)) {
     case gvisor::common::MESSAGE_CONTAINER_START: return ParseAndSend<gvisor::container::Start>(payload, payload_size, output, "container-start", container_id, profile, reason);
     case gvisor::common::MESSAGE_SENTRY_CLONE: return ParseAndSend<gvisor::sentry::CloneInfo>(payload, payload_size, output, "process-clone", container_id, profile, reason);
-    case gvisor::common::MESSAGE_SENTRY_EXEC: return ParseSentryProcessAndSend(payload, payload_size, output, container_id, profile, reason);
+    case gvisor::common::MESSAGE_SENTRY_EXEC: return ParseSentryProcessAndSend(payload, payload_size, output, container_id, profile, process_state, reason);
     // pathname, argv and envv are parsed by protobuf but are deliberately never
     // copied to the HAA envelope. M11-003 supplies the trusted profile required
     // to classify this bounded process fact as expected or unexpected.
-    case gvisor::common::MESSAGE_SYSCALL_EXECVE: return ParseProcessAndSend<gvisor::syscall::Execve>(payload, payload_size, output, container_id, profile, reason);
+    case gvisor::common::MESSAGE_SYSCALL_EXECVE: return ParseProcessAndSend<gvisor::syscall::Execve>(payload, payload_size, output, container_id, profile, process_state, reason);
     case gvisor::common::MESSAGE_SYSCALL_OPEN: return ParseOpenAndSend(payload, payload_size, output, container_id, profile, reason);
-    case gvisor::common::MESSAGE_SYSCALL_CONNECT: return ParseAndSend<gvisor::syscall::Connect>(payload, payload_size, output, "network-attempt", container_id, profile, reason);
-    case gvisor::common::MESSAGE_SYSCALL_SOCKET: return ParseAndSend<gvisor::syscall::Socket>(payload, payload_size, output, "network-attempt", container_id, profile, reason);
+    case gvisor::common::MESSAGE_SYSCALL_CONNECT: return ParseConnectAndSend(payload, payload_size, output, container_id, reason);
+    case gvisor::common::MESSAGE_SYSCALL_SOCKET: return ParseSocketAndSend<gvisor::syscall::Socket>(payload, payload_size, output, container_id, reason);
     default: *reason = "UNKNOWN_EVENT_KIND"; return false;
   }
 }
@@ -266,6 +470,7 @@ int main(int argc, char** argv) {
     gvisor::common::Handshake outgoing; outgoing.set_version(kProtocolVersion); std::string encoded; outgoing.SerializeToString(&encoded);
     if (send(client, encoded.data(), encoded.size(), 0) != static_cast<ssize_t>(encoded.size())) { close(client); continue; }
     std::string container_id; char event[kMaxEventSize]; bool fault = false;
+    ProcessState process_state;
     const char* fault_reason = nullptr;
     const char* profile = nullptr;
     size_t normalized_records = 0;
@@ -279,7 +484,7 @@ int main(int argc, char** argv) {
       }
       if (normalized_records == MaximumRecords(profile)) { fault = true; fault_reason = "EVENT_LIMIT"; break; }
       if (header.header_size < sizeof(Header) || header.header_size > static_cast<uint16_t>(size)) { fault = true; fault_reason = "STREAM_FAULT"; break; }
-      if (!Handle(header, event + header.header_size, size - header.header_size, output, &container_id, profile, &fault_reason)) { fault = true; if (fault_reason == nullptr) fault_reason = "STREAM_FAULT"; break; }
+      if (!Handle(header, event + header.header_size, size - header.header_size, output, &container_id, profile, &process_state, &fault_reason)) { fault = true; if (fault_reason == nullptr) fault_reason = "STREAM_FAULT"; break; }
       ++normalized_records;
     }
     if (size < 0) { fault = true; fault_reason = "STREAM_FAULT"; }

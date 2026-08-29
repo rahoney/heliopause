@@ -18,6 +18,9 @@ constexpr char kFirstID[] = "0123456789abcdef";
 constexpr char kSecondID[] = "fedcba9876543210";
 constexpr char kThirdID[] = "abcdef0123456789";
 constexpr char kFourthID[] = "9876543210fedcba";
+constexpr char kFifthID[] = "0011223344556677";
+constexpr char kSixthID[] = "7766554433221100";
+constexpr char kSeventhID[] = "1122334455667788";
 
 bool SendAll(int fd, const std::string& value) {
   return send(fd, value.data(), value.size(), 0) == static_cast<ssize_t>(value.size());
@@ -85,6 +88,11 @@ bool ExpectRecord(int output, const char* container_id, const char* kind, const 
   return std::string(buffer, size) == expected;
 }
 
+bool ExpectNoRecord(int output) {
+  pollfd descriptor{output, POLLIN, 0};
+  return poll(&descriptor, 1, 50) == 0;
+}
+
 bool HasPinnedPodInitProfile() {
   std::ifstream input("tools/haa_gvisor_observer/pod-init.json");
   if (!input.is_open()) return false;
@@ -93,6 +101,9 @@ bool HasPinnedPodInitProfile() {
       profile.find("syscall/openat/enter") != std::string::npos &&
       profile.find("syscall/connect/enter") != std::string::npos &&
       profile.find("syscall/socket/enter") != std::string::npos &&
+      profile.find("thread_group_start_time") != std::string::npos &&
+      profile.find("parent_thread_group_id") != std::string::npos &&
+      profile.find("is_exec_session") != std::string::npos &&
       profile.find("\"group_id\"") != std::string::npos &&
       profile.find("\"process_name\"") != std::string::npos &&
       profile.find("ignore_missing") == std::string::npos;
@@ -115,6 +126,9 @@ bool VerifyPinnedAccessors(int output, const std::string& remote, const std::str
   gvisor::syscall::Execve execve;
   execve.mutable_context_data()->set_container_id(kFirstID);
   execve.mutable_context_data()->set_thread_group_id(7);
+  execve.mutable_context_data()->set_thread_group_start_time_ns(1);
+  execve.mutable_context_data()->set_parent_thread_group_id(0);
+  execve.mutable_context_data()->set_is_exec_session(true);
   execve.mutable_context_data()->set_process_name("trusted-test-process");
   execve.set_pathname("/usr/local/bin/node");
   execve.add_argv("raw-argv-must-not-leave-helper");
@@ -136,6 +150,154 @@ bool VerifyPinnedAccessors(int output, const std::string& remote, const std::str
   return ExpectRecord(output, kFirstID, "stream-end");
 }
 
+std::string SocketAddress(sa_family_t family, size_t length) {
+  std::string address(length, '\0');
+  memcpy(&address[0], &family, sizeof(family));
+  return address;
+}
+
+bool VerifyNetworkFamilies(int output, const std::string& remote, const std::string& control) {
+  if (!RegisterProfile(control, kFifthID, kProfilePyPI)) return false;
+  const int client = ConnectRemote(remote);
+  if (client < 0 || !Handshake(client)) return false;
+  gvisor::container::Start start;
+  start.mutable_context_data()->set_container_id(kFifthID);
+  if (!SendEvent(client, gvisor::common::MESSAGE_CONTAINER_START, start) || !ExpectRecord(output, kFifthID, "container-start")) return false;
+
+  gvisor::syscall::Socket socket;
+  socket.mutable_context_data()->set_container_id(kFifthID);
+  socket.set_domain(AF_UNIX); socket.set_type(1); socket.set_protocol(0);
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_SOCKET, socket) || !ExpectNoRecord(output)) return false;
+  socket.set_domain(AF_INET);
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_SOCKET, socket) || !ExpectRecord(output, kFifthID, "network-attempt")) return false;
+  socket.set_domain(AF_INET6);
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_SOCKET, socket) || !ExpectRecord(output, kFifthID, "network-attempt")) return false;
+
+  gvisor::syscall::Connect connect;
+  connect.mutable_context_data()->set_container_id(kFifthID);
+  connect.set_address(SocketAddress(AF_UNIX, sizeof(sockaddr_un)));
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_CONNECT, connect) || !ExpectNoRecord(output)) return false;
+  connect.set_address(SocketAddress(AF_INET, sizeof(sockaddr_in)));
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_CONNECT, connect) || !ExpectRecord(output, kFifthID, "network-attempt")) return false;
+  connect.set_address(SocketAddress(AF_INET6, sizeof(sockaddr_in6)));
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_CONNECT, connect) || !ExpectRecord(output, kFifthID, "network-attempt")) return false;
+  close(client);
+  return ExpectRecord(output, kFifthID, "stream-end");
+}
+
+bool VerifyMalformedNetworkFamilies(int output, const std::string& remote, const std::string& control) {
+  if (!RegisterProfile(control, kSixthID, kProfilePyPI)) return false;
+  const int client = ConnectRemote(remote);
+  if (client < 0 || !Handshake(client)) return false;
+  gvisor::container::Start start;
+  start.mutable_context_data()->set_container_id(kSixthID);
+  if (!SendEvent(client, gvisor::common::MESSAGE_CONTAINER_START, start) || !ExpectRecord(output, kSixthID, "container-start")) return false;
+  gvisor::syscall::Socket socket;
+  socket.mutable_context_data()->set_container_id(kSixthID);
+  socket.set_domain(0x7fff);
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_SOCKET, socket) || !ExpectRecord(output, kSixthID, "stream-fault", "STREAM_FAULT")) return false;
+  close(client);
+  return true;
+}
+
+bool VerifyMalformedConnect(int output, const std::string& remote, const std::string& control) {
+  if (!RegisterProfile(control, kSeventhID, kProfilePyPI)) return false;
+  const int client = ConnectRemote(remote);
+  if (client < 0 || !Handshake(client)) return false;
+  gvisor::container::Start start;
+  start.mutable_context_data()->set_container_id(kSeventhID);
+  if (!SendEvent(client, gvisor::common::MESSAGE_CONTAINER_START, start) || !ExpectRecord(output, kSeventhID, "container-start")) return false;
+  gvisor::syscall::Connect connect;
+  connect.mutable_context_data()->set_container_id(kSeventhID);
+  connect.set_address("\x02");
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_CONNECT, connect) || !ExpectRecord(output, kSeventhID, "stream-fault", "STREAM_FAULT")) return false;
+  close(client);
+  return true;
+}
+
+bool VerifyProcessTrustBoundary(int output, const std::string& remote, const std::string& control) {
+  if (!RegisterProfile(control, kSecondID, kProfilePyPI)) return false;
+  const int client = ConnectRemote(remote);
+  if (client < 0 || !Handshake(client)) return false;
+  gvisor::container::Start start;
+  start.mutable_context_data()->set_container_id(kSecondID);
+  if (!SendEvent(client, gvisor::common::MESSAGE_CONTAINER_START, start) || !ExpectRecord(output, kSecondID, "container-start")) return false;
+
+  gvisor::syscall::Execve bootstrap;
+  bootstrap.mutable_context_data()->set_container_id(kSecondID);
+  bootstrap.mutable_context_data()->set_thread_group_id(10);
+  bootstrap.mutable_context_data()->set_thread_group_start_time_ns(100);
+  bootstrap.mutable_context_data()->set_parent_thread_group_id(0);
+  bootstrap.set_pathname("/usr/bin/sleep");
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, bootstrap) || !ExpectRecord(output, kSecondID, "process-exec-expected")) return false;
+
+  gvisor::sentry::ExecveInfo bootstrapResolved;
+  bootstrapResolved.mutable_context_data()->set_container_id(kSecondID);
+  bootstrapResolved.mutable_context_data()->set_thread_group_id(10);
+  bootstrapResolved.mutable_context_data()->set_thread_group_start_time_ns(100);
+  bootstrapResolved.mutable_context_data()->set_parent_thread_group_id(0);
+  bootstrapResolved.set_binary_path("/bin/sleep");
+  if (!SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, bootstrapResolved) || !ExpectRecord(output, kSecondID, "process-exec-expected")) return false;
+
+  gvisor::syscall::Execve python;
+  python.mutable_context_data()->set_container_id(kSecondID);
+  python.mutable_context_data()->set_thread_group_id(20);
+  python.mutable_context_data()->set_thread_group_start_time_ns(200);
+  python.mutable_context_data()->set_parent_thread_group_id(0);
+  python.mutable_context_data()->set_is_exec_session(true);
+  python.set_pathname("python");
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, python) || !ExpectRecord(output, kSecondID, "process-exec-expected")) return false;
+
+  gvisor::sentry::ExecveInfo pythonResolved;
+  pythonResolved.mutable_context_data()->set_container_id(kSecondID);
+  pythonResolved.mutable_context_data()->set_thread_group_id(20);
+  pythonResolved.mutable_context_data()->set_thread_group_start_time_ns(200);
+  pythonResolved.mutable_context_data()->set_parent_thread_group_id(0);
+  pythonResolved.mutable_context_data()->set_is_exec_session(true);
+  pythonResolved.set_binary_path("/usr/local/bin/python3.14");
+  if (!SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, pythonResolved) || !ExpectRecord(output, kSecondID, "process-exec-expected")) return false;
+
+  gvisor::syscall::Execve pip;
+  pip.mutable_context_data()->set_container_id(kSecondID);
+  pip.mutable_context_data()->set_thread_group_id(30);
+  pip.mutable_context_data()->set_thread_group_start_time_ns(300);
+  pip.mutable_context_data()->set_parent_thread_group_id(0);
+  pip.mutable_context_data()->set_is_exec_session(true);
+  pip.set_pathname("pip");
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, pip) || !ExpectRecord(output, kSecondID, "process-exec-expected")) return false;
+
+  gvisor::syscall::Execve child;
+  child.mutable_context_data()->set_container_id(kSecondID);
+  child.mutable_context_data()->set_thread_group_id(21);
+  child.mutable_context_data()->set_thread_group_start_time_ns(210);
+  child.mutable_context_data()->set_parent_thread_group_id(20);
+  child.mutable_context_data()->set_is_exec_session(true);
+  child.set_pathname("/usr/bin/curl");
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, child) || !ExpectRecord(output, kSecondID, "process-exec-unexpected")) return false;
+
+  child.mutable_context_data()->set_thread_group_id(22);
+  child.mutable_context_data()->set_thread_group_start_time_ns(220);
+  child.set_pathname("/usr/local/bin/python");
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, child) || !ExpectRecord(output, kSecondID, "process-exec-unexpected")) return false;
+
+  gvisor::syscall::Execve shell;
+  shell.mutable_context_data()->set_container_id(kSecondID);
+  shell.mutable_context_data()->set_thread_group_id(40);
+  shell.mutable_context_data()->set_thread_group_start_time_ns(400);
+  shell.mutable_context_data()->set_parent_thread_group_id(0);
+  shell.mutable_context_data()->set_is_exec_session(true);
+  shell.set_pathname("/bin/sh");
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, shell) || !ExpectRecord(output, kSecondID, "process-exec-expected")) return false;
+
+  child.mutable_context_data()->set_thread_group_id(41);
+  child.mutable_context_data()->set_thread_group_start_time_ns(410);
+  child.mutable_context_data()->set_parent_thread_group_id(40);
+  child.set_pathname("/usr/bin/cat");
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, child) || !ExpectRecord(output, kSecondID, "process-exec-expected")) return false;
+  close(client);
+  return ExpectRecord(output, kSecondID, "stream-end");
+}
+
 bool VerifyDelayedProfileRegistration(int output, const std::string& remote, const std::string& control) {
   const int client = ConnectRemote(remote);
   if (client < 0 || !Handshake(client)) return false;
@@ -145,6 +307,9 @@ bool VerifyDelayedProfileRegistration(int output, const std::string& remote, con
   gvisor::syscall::Execve execve;
   execve.mutable_context_data()->set_container_id(kFourthID);
   execve.mutable_context_data()->set_thread_group_id(7);
+  execve.mutable_context_data()->set_thread_group_start_time_ns(1);
+  execve.mutable_context_data()->set_parent_thread_group_id(0);
+  execve.mutable_context_data()->set_is_exec_session(true);
   execve.mutable_context_data()->set_process_name("trusted-test-process");
   execve.set_pathname("/usr/local/bin/node");
   if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, execve)) return false;
@@ -209,7 +374,15 @@ int main() {
   if (!profile_limits) fprintf(stderr, "observer latch failure: profile record limits\n");
   const bool accessors = running && profile && profile_limits && VerifyPinnedAccessors(output, remote, control);
   if (!accessors) fprintf(stderr, "observer latch failure: normalized accessors\n");
-  const bool delayed = accessors && VerifyDelayedProfileRegistration(output, remote, control);
+  const bool network = accessors && VerifyNetworkFamilies(output, remote, control);
+  if (!network) fprintf(stderr, "observer latch failure: socket family classification\n");
+  const bool malformed_socket = network && VerifyMalformedNetworkFamilies(output, remote, control);
+  if (!malformed_socket) fprintf(stderr, "observer latch failure: unknown socket family\n");
+  const bool malformed_connect = malformed_socket && VerifyMalformedConnect(output, remote, control);
+  if (!malformed_connect) fprintf(stderr, "observer latch failure: malformed socket address\n");
+  const bool process = malformed_connect && VerifyProcessTrustBoundary(output, remote, control);
+  if (!process) fprintf(stderr, "observer latch failure: process trust boundary\n");
+  const bool delayed = process && VerifyDelayedProfileRegistration(output, remote, control);
   if (!delayed) fprintf(stderr, "observer latch failure: delayed profile registration\n");
   const bool mismatch = delayed && RunFaultCase(output, remote, control, true);
   if (!mismatch) fprintf(stderr, "observer latch failure: container mismatch\n");

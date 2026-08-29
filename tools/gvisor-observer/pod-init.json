@@ -4,8 +4,8 @@
     "points": [
       {"name": "container/start", "context_fields": ["container_id"]},
       {"name": "sentry/clone", "context_fields": ["container_id", "group_id", "process_name"]},
-      {"name": "sentry/execve", "context_fields": ["container_id", "group_id", "process_name"]},
-      {"name": "syscall/execve/enter", "context_fields": ["container_id", "group_id", "process_name"]},
+      {"name": "sentry/execve", "context_fields": ["container_id", "group_id", "thread_group_start_time", "parent_thread_group_id", "is_exec_session", "process_name"]},
+      {"name": "syscall/execve/enter", "context_fields": ["container_id", "group_id", "thread_group_start_time", "parent_thread_group_id", "is_exec_session", "process_name"]},
       {"name": "syscall/openat/enter", "context_fields": ["container_id", "group_id", "process_name"]},
       {"name": "syscall/connect/enter", "context_fields": ["container_id", "group_id", "process_name"]},
       {"name": "syscall/socket/enter", "context_fields": ["container_id", "group_id", "process_name"]}
