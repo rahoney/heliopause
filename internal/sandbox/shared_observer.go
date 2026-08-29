@@ -4,9 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net"
 	"os"
+	"sort"
+	"strings"
 	"sync"
 )
 
@@ -18,6 +21,8 @@ type SharedObserver struct {
 	endpointID os.FileInfo
 	mu         sync.Mutex
 	streams    map[string]*sharedTraceReader
+	diagnostic io.Writer
+	sequence   uint64
 	fault      error
 	closeOnce  sync.Once
 	closeErr   error
@@ -26,9 +31,15 @@ type SharedObserver struct {
 const ObserverControlEndpoint = "/run/heliopause-observer/haa-control.sock"
 
 type helperRecord struct {
-	ContainerID string `json:"container_id"`
-	Kind        string `json:"kind"`
-	Reason      string `json:"reason,omitempty"`
+	ContainerID          string `json:"container_id"`
+	Kind                 string `json:"kind"`
+	Reason               string `json:"reason,omitempty"`
+	EventSource          string `json:"event_source,omitempty"`
+	Family               string `json:"family,omitempty"`
+	ProcessRelation      string `json:"process_relation,omitempty"`
+	ProcessClass         string `json:"process_class,omitempty"`
+	ClassificationReason string `json:"classification_reason,omitempty"`
+	ParentRelation       string `json:"parent_relation,omitempty"`
 }
 
 type observerFault struct{ reason string }
@@ -45,10 +56,36 @@ func decodeHelperRecord(payload []byte) (helperRecord, error) {
 		return helperRecord{}, errors.New("observer record is invalid")
 	}
 	var record helperRecord
-	if err := json.Unmarshal(payload, &record); err != nil || !containerIDPattern.MatchString(record.ContainerID) || (record.Reason != "" && !validObserverReason(record.Reason)) {
+	if err := json.Unmarshal(payload, &record); err != nil || !containerIDPattern.MatchString(record.ContainerID) || (record.Reason != "" && !validObserverReason(record.Reason)) || !validAttribution(record) {
 		return helperRecord{}, errors.New("observer record is invalid")
 	}
 	return record, nil
+}
+
+func validAttribution(record helperRecord) bool {
+	hasAttribution := record.EventSource != "" || record.Family != "" || record.ProcessRelation != "" || record.ProcessClass != "" || record.ClassificationReason != "" || record.ParentRelation != ""
+	switch record.Kind {
+	case "network-attempt":
+		return validFixed(record.EventSource, "SOCKET", "CONNECT") && validFixed(record.Family, "INET", "INET6", "PACKET") &&
+			validFixed(record.ProcessRelation, "BOOTSTRAP_ROOT", "BOOTSTRAP_CHILD", "DIRECT_EXEC_SESSION", "TRACKED_EXPECTED_GROUP", "TRACKED_UNEXPECTED_GROUP", "UNKNOWN") &&
+			validFixed(record.ProcessClass, "SHELL", "PYTHON", "PIP", "NODE", "NPM", "ARTIFACT", "OTHER") && record.ClassificationReason == "" && record.ParentRelation == ""
+	case "process-exec-unexpected":
+		return validFixed(record.EventSource, "SENTRY_EXEC", "SYSCALL_EXECVE") && record.Family == "" && record.ProcessRelation == "" &&
+			validFixed(record.ProcessClass, "SHELL", "PYTHON", "PIP", "NODE", "NPM", "ARTIFACT", "SLEEP", "MKDIR", "CAT", "CHMOD", "OTHER") &&
+			validFixed(record.ClassificationReason, "INVALID_PROCESS_IDENTITY", "START_TIME_MISMATCH", "CLASS_MISMATCH", "UNMODELED_PARENT", "BOOTSTRAP_ENDED", "DIRECT_EXEC_NOT_ALLOWED", "TRACKING_LIMIT", "UNKNOWN_CLASS", "OTHER") &&
+			validFixed(record.ParentRelation, "BOOTSTRAP_ROOT", "BOOTSTRAP_CHILD", "TRACKED_PARENT", "TRACKED_GROUP", "DIRECT_EXEC_SESSION", "ROOT", "UNTRACKED_PARENT", "UNKNOWN")
+	default:
+		return !hasAttribution
+	}
+}
+
+func validFixed(value string, allowed ...string) bool {
+	for _, candidate := range allowed {
+		if value == candidate {
+			return true
+		}
+	}
+	return false
 }
 
 func validObserverReason(reason string) bool {
@@ -95,7 +132,7 @@ func newSharedObserver(endpoint string, removeStale bool) (*SharedObserver, erro
 		_ = listener.Close()
 		return nil, errors.New("capture observer output endpoint identity")
 	}
-	observer := &SharedObserver{listener: listener, endpoint: endpoint, endpointID: endpointID, streams: make(map[string]*sharedTraceReader)}
+	observer := &SharedObserver{listener: listener, endpoint: endpoint, endpointID: endpointID, streams: make(map[string]*sharedTraceReader), diagnostic: os.Stderr}
 	go observer.receive()
 	return observer, nil
 }
@@ -136,7 +173,7 @@ func (o *SharedObserver) Start(_ context.Context, containerID string) (TraceRead
 	if _, exists := o.streams[containerID]; exists {
 		return nil, observerFault{reason: "PREVIOUS_TRACE_NOT_FINALIZED"}
 	}
-	reader := &sharedTraceReader{observer: o, records: make(chan TraceRecord, defaultTraceBudget.events+1), done: make(chan struct{}), budget: defaultTraceBudget}
+	reader := &sharedTraceReader{observer: o, records: make(chan TraceRecord, defaultTraceBudget.events+1), done: make(chan struct{}), budget: defaultTraceBudget, profile: "default", attributionCounts: make(map[string]uint64)}
 	o.streams[containerID] = reader
 	return reader, nil
 }
@@ -153,6 +190,7 @@ func (o *SharedObserver) StartProfile(ctx context.Context, containerID, profile 
 		return nil, err
 	}
 	shared := reader.(*sharedTraceReader)
+	shared.profile = profile
 	budget := traceBudgetForProfile(profile)
 	if budget != defaultTraceBudget {
 		shared.records = make(chan TraceRecord, budget.events+1)
@@ -218,6 +256,8 @@ func (o *SharedObserver) receive() {
 		}
 		if record.Kind == "stream-end" {
 			delete(o.streams, record.ContainerID)
+			o.sequence++
+			o.writeAttributionDiagnostic(sharedAttributionDiagnostic{o.sequence, reader.profile, reader.attributionCounts})
 			close(reader.done)
 			o.mu.Unlock()
 			continue
@@ -230,6 +270,9 @@ func (o *SharedObserver) receive() {
 			o.mu.Unlock()
 			o.fail(observerFault{reason: "UNKNOWN_EVENT_KIND"})
 			return
+		}
+		if key := attributionKey(record); key != "" {
+			reader.attributionCounts[key]++
 		}
 		select {
 		case reader.records <- TraceRecord{Kind: record.Kind, Bytes: uint64(size)}:
@@ -258,10 +301,45 @@ func (o *SharedObserver) fail(err error) {
 }
 
 type sharedTraceReader struct {
-	observer *SharedObserver
-	records  chan TraceRecord
-	done     chan struct{}
-	budget   traceBudget
+	observer          *SharedObserver
+	records           chan TraceRecord
+	done              chan struct{}
+	budget            traceBudget
+	profile           string
+	attributionCounts map[string]uint64
+}
+
+type sharedAttributionDiagnostic struct {
+	sequence uint64
+	profile  string
+	counts   map[string]uint64
+}
+
+func attributionKey(record helperRecord) string {
+	switch record.Kind {
+	case "network-attempt":
+		return strings.Join([]string{"NETWORK", record.EventSource, record.Family, record.ProcessRelation, record.ProcessClass}, "/")
+	case "process-exec-unexpected":
+		return strings.Join([]string{"PROCESS", record.EventSource, record.ProcessClass, record.ClassificationReason, record.ParentRelation}, "/")
+	default:
+		return ""
+	}
+}
+
+func (o *SharedObserver) writeAttributionDiagnostic(d sharedAttributionDiagnostic) {
+	if o.diagnostic == nil || len(d.counts) == 0 {
+		return
+	}
+	keys := make([]string, 0, len(d.counts))
+	for key := range d.counts {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	parts := make([]string, 0, len(keys))
+	for _, key := range keys {
+		parts = append(parts, fmt.Sprintf("%s:%d", key, d.counts[key]))
+	}
+	_, _ = fmt.Fprintf(o.diagnostic, "observer_attribution sequence=%d profile=%s counts=%s\n", d.sequence, d.profile, strings.Join(parts, ","))
 }
 
 func (r *sharedTraceReader) traceBudget() traceBudget { return r.budget }

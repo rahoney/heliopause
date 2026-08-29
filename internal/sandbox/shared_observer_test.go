@@ -1,6 +1,7 @@
 package sandbox
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"io"
@@ -27,8 +28,14 @@ func TestSharedObserverAttributesOneContainerAndClosesItsStream(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer writer.Close()
-	for _, kind := range []string{"container-start", "network-attempt", "stream-end"} {
-		body, _ := json.Marshal(helperRecord{ContainerID: "0123456789abcdef", Kind: kind})
+	var diagnostic bytes.Buffer
+	observer.diagnostic = &diagnostic
+	for _, record := range []helperRecord{
+		{ContainerID: "0123456789abcdef", Kind: "container-start"},
+		{ContainerID: "0123456789abcdef", Kind: "network-attempt", EventSource: "SOCKET", Family: "INET", ProcessRelation: "DIRECT_EXEC_SESSION", ProcessClass: "PYTHON"},
+		{ContainerID: "0123456789abcdef", Kind: "stream-end"},
+	} {
+		body, _ := json.Marshal(record)
 		if _, err := writer.Write(body); err != nil {
 			t.Fatal(err)
 		}
@@ -39,6 +46,9 @@ func TestSharedObserverAttributesOneContainerAndClosesItsStream(t *testing.T) {
 	}
 	if _, err := reader.Next(context.Background()); err != io.EOF {
 		t.Fatalf("stream end = %v, want EOF", err)
+	}
+	if got, want := diagnostic.String(), "observer_attribution sequence=1 profile=default counts=NETWORK/SOCKET/INET/DIRECT_EXEC_SESSION/PYTHON:1\n"; got != want {
+		t.Fatalf("diagnostic = %q, want %q", got, want)
 	}
 }
 
@@ -53,7 +63,7 @@ func TestSharedObserverFailsClosedForUnknownContainer(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer writer.Close()
-	body, _ := json.Marshal(helperRecord{ContainerID: "0123456789abcdef", Kind: "network-attempt"})
+	body, _ := json.Marshal(helperRecord{ContainerID: "0123456789abcdef", Kind: "network-attempt", EventSource: "CONNECT", Family: "INET6", ProcessRelation: "UNKNOWN", ProcessClass: "OTHER"})
 	if _, err := writer.Write(body); err != nil {
 		t.Fatal(err)
 	}
@@ -104,7 +114,7 @@ func TestSharedObserverFailsClosedForLatchedStreamFault(t *testing.T) {
 }
 
 func FuzzDecodeHelperRecord(f *testing.F) {
-	f.Add([]byte(`{"container_id":"0123456789abcdef","kind":"network-attempt"}`))
+	f.Add([]byte(`{"container_id":"0123456789abcdef","kind":"network-attempt","event_source":"SOCKET","family":"INET","process_relation":"UNKNOWN","process_class":"OTHER"}`))
 	f.Add([]byte(`{"container_id":"invalid","kind":"network-attempt"}`))
 	f.Add([]byte(`not-json`))
 	f.Fuzz(func(t *testing.T, body []byte) {
@@ -113,6 +123,53 @@ func FuzzDecodeHelperRecord(f *testing.F) {
 			t.Fatalf("accepted invalid container ID %q", record.ContainerID)
 		}
 	})
+}
+
+func TestDecodeHelperRecordAcceptsOnlyBoundedAttribution(t *testing.T) {
+	valid := []helperRecord{
+		{ContainerID: "0123456789abcdef", Kind: "network-attempt", EventSource: "CONNECT", Family: "PACKET", ProcessRelation: "TRACKED_EXPECTED_GROUP", ProcessClass: "NPM"},
+		{ContainerID: "0123456789abcdef", Kind: "process-exec-unexpected", EventSource: "SENTRY_EXEC", ProcessClass: "SHELL", ClassificationReason: "UNMODELED_PARENT", ParentRelation: "UNTRACKED_PARENT"},
+	}
+	for _, record := range valid {
+		payload, _ := json.Marshal(record)
+		if _, err := decodeHelperRecord(payload); err != nil {
+			t.Fatalf("valid attribution rejected: %#v: %v", record, err)
+		}
+	}
+	invalid := []helperRecord{
+		{ContainerID: "0123456789abcdef", Kind: "network-attempt"},
+		{ContainerID: "0123456789abcdef", Kind: "network-attempt", EventSource: "SENDTO", Family: "INET", ProcessRelation: "UNKNOWN", ProcessClass: "OTHER"},
+		{ContainerID: "0123456789abcdef", Kind: "process-exec-unexpected", EventSource: "SYSCALL_EXECVE", ProcessClass: "/usr/bin/sh", ClassificationReason: "OTHER", ParentRelation: "ROOT"},
+		{ContainerID: "0123456789abcdef", Kind: "filesystem-open", EventSource: "SOCKET"},
+	}
+	for _, record := range invalid {
+		payload, _ := json.Marshal(record)
+		if _, err := decodeHelperRecord(payload); err == nil {
+			t.Fatalf("invalid attribution accepted: %#v", record)
+		}
+	}
+}
+
+func TestSharedObserverAttributionAggregationIsBoundedAndDeterministic(t *testing.T) {
+	observer := &SharedObserver{diagnostic: io.Discard}
+	counts := make(map[string]uint64)
+	for iteration := 0; iteration < maximumPyTorchCPUTraceEvents; iteration++ {
+		record := helperRecord{Kind: "network-attempt", EventSource: "SOCKET", Family: "INET", ProcessRelation: "TRACKED_EXPECTED_GROUP", ProcessClass: "PYTHON"}
+		counts[attributionKey(record)]++
+	}
+	if len(counts) != 1 || counts["NETWORK/SOCKET/INET/TRACKED_EXPECTED_GROUP/PYTHON"] != maximumPyTorchCPUTraceEvents {
+		t.Fatalf("bounded counts = %#v", counts)
+	}
+	var output bytes.Buffer
+	observer.diagnostic = &output
+	observer.writeAttributionDiagnostic(sharedAttributionDiagnostic{sequence: 2, profile: "pypi-wheel-pytorch-cpu", counts: map[string]uint64{
+		"PROCESS/SYSCALL_EXECVE/OTHER/UNKNOWN_CLASS/UNTRACKED_PARENT": 2,
+		"NETWORK/CONNECT/INET6/DIRECT_EXEC_SESSION/PYTHON":            1,
+	}})
+	const want = "observer_attribution sequence=2 profile=pypi-wheel-pytorch-cpu counts=NETWORK/CONNECT/INET6/DIRECT_EXEC_SESSION/PYTHON:1,PROCESS/SYSCALL_EXECVE/OTHER/UNKNOWN_CLASS/UNTRACKED_PARENT:2\n"
+	if output.String() != want {
+		t.Fatalf("diagnostic = %q, want %q", output.String(), want)
+	}
 }
 
 func TestDecodeHelperRecordRejectsOversizedPayload(t *testing.T) {

@@ -88,6 +88,30 @@ bool ExpectRecord(int output, const char* container_id, const char* kind, const 
   return std::string(buffer, size) == expected;
 }
 
+bool ExpectNetworkRecord(int output, const char* container_id, const char* source, const char* family,
+                         const char* relation = "UNKNOWN", const char* process_class = "OTHER") {
+  char buffer[1024];
+  const ssize_t size = recv(output, buffer, sizeof(buffer), 0);
+  if (size <= 0) return false;
+  const std::string expected = std::string("{\"container_id\":\"") + container_id +
+      "\",\"kind\":\"network-attempt\",\"event_source\":\"" + source +
+      "\",\"family\":\"" + family + "\",\"process_relation\":\"" + relation +
+      "\",\"process_class\":\"" + process_class + "\"}";
+  return std::string(buffer, size) == expected;
+}
+
+bool ExpectUnexpectedProcessRecord(int output, const char* container_id, const char* source,
+                                   const char* process_class, const char* reason, const char* parent_relation) {
+  char buffer[1024];
+  const ssize_t size = recv(output, buffer, sizeof(buffer), 0);
+  if (size <= 0) return false;
+  const std::string expected = std::string("{\"container_id\":\"") + container_id +
+      "\",\"kind\":\"process-exec-unexpected\",\"event_source\":\"" + source +
+      "\",\"process_class\":\"" + process_class + "\",\"classification_reason\":\"" + reason +
+      "\",\"parent_relation\":\"" + parent_relation + "\"}";
+  return std::string(buffer, size) == expected;
+}
+
 bool ExpectNoRecord(int output) {
   pollfd descriptor{output, POLLIN, 0};
   return poll(&descriptor, 1, 50) == 0;
@@ -97,6 +121,8 @@ bool HasPinnedPodInitProfile() {
   std::ifstream input("tools/haa_gvisor_observer/pod-init.json");
   if (!input.is_open()) return false;
   const std::string profile((std::istreambuf_iterator<char>(input)), std::istreambuf_iterator<char>());
+  const std::string connect_context = "\"name\": \"syscall/connect/enter\", \"context_fields\": [\"container_id\", \"group_id\", \"thread_group_start_time\", \"parent_thread_group_id\", \"is_exec_session\", \"process_name\"]";
+  const std::string socket_context = "\"name\": \"syscall/socket/enter\", \"context_fields\": [\"container_id\", \"group_id\", \"thread_group_start_time\", \"parent_thread_group_id\", \"is_exec_session\", \"process_name\"]";
   return profile.find("syscall/execve/enter") != std::string::npos &&
       profile.find("syscall/openat/enter") != std::string::npos &&
       profile.find("syscall/connect/enter") != std::string::npos &&
@@ -106,6 +132,7 @@ bool HasPinnedPodInitProfile() {
       profile.find("is_exec_session") != std::string::npos &&
       profile.find("\"group_id\"") != std::string::npos &&
       profile.find("\"process_name\"") != std::string::npos &&
+      profile.find(connect_context) != std::string::npos && profile.find(socket_context) != std::string::npos &&
       profile.find("ignore_missing") == std::string::npos;
 }
 
@@ -143,9 +170,12 @@ bool VerifyPinnedAccessors(int output, const std::string& remote, const std::str
   gvisor::syscall::Socket socket;
   socket.mutable_context_data()->set_container_id(kFirstID);
   socket.mutable_context_data()->set_thread_group_id(7);
+  socket.mutable_context_data()->set_thread_group_start_time_ns(1);
+  socket.mutable_context_data()->set_parent_thread_group_id(0);
+  socket.mutable_context_data()->set_is_exec_session(true);
   socket.mutable_context_data()->set_process_name("trusted-test-process");
   socket.set_domain(2); socket.set_type(1); socket.set_protocol(0);
-  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_SOCKET, socket) || !ExpectRecord(output, kFirstID, "network-attempt")) return false;
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_SOCKET, socket) || !ExpectNetworkRecord(output, kFirstID, "SOCKET", "INET", "TRACKED_EXPECTED_GROUP")) return false;
   close(client);
   return ExpectRecord(output, kFirstID, "stream-end");
 }
@@ -157,7 +187,7 @@ std::string SocketAddress(sa_family_t family, size_t length) {
 }
 
 std::string PacketSocketAddress() {
-  std::string address = SocketAddress(AF_PACKET, 20);
+  std::string address = SocketAddress(kLinuxAFPacket, 20);
   // Pinned gVisor's AF_PACKET parser requires an Ethernet hardware address.
   address[11] = 6;
   return address;
@@ -173,31 +203,41 @@ bool VerifyNetworkFamilies(int output, const std::string& remote, const std::str
 
   gvisor::syscall::Socket socket;
   socket.mutable_context_data()->set_container_id(kFifthID);
+  socket.mutable_context_data()->set_thread_group_id(50);
+  socket.mutable_context_data()->set_thread_group_start_time_ns(500);
+  socket.mutable_context_data()->set_parent_thread_group_id(0);
+  socket.mutable_context_data()->set_is_exec_session(true);
+  socket.mutable_context_data()->set_process_name("python");
   socket.set_domain(AF_UNIX); socket.set_type(1); socket.set_protocol(0);
   if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_SOCKET, socket) || !ExpectNoRecord(output)) return false;
   socket.set_domain(AF_INET);
-  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_SOCKET, socket) || !ExpectRecord(output, kFifthID, "network-attempt")) return false;
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_SOCKET, socket) || !ExpectNetworkRecord(output, kFifthID, "SOCKET", "INET", "DIRECT_EXEC_SESSION", "PYTHON")) return false;
   socket.set_domain(AF_INET6);
-  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_SOCKET, socket) || !ExpectRecord(output, kFifthID, "network-attempt")) return false;
-  socket.set_domain(AF_NETLINK);
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_SOCKET, socket) || !ExpectNetworkRecord(output, kFifthID, "SOCKET", "INET6", "DIRECT_EXEC_SESSION", "PYTHON")) return false;
+  socket.set_domain(kLinuxAFNetlink);
   if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_SOCKET, socket) || !ExpectNoRecord(output)) return false;
-  socket.set_domain(AF_PACKET);
-  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_SOCKET, socket) || !ExpectRecord(output, kFifthID, "network-attempt")) return false;
+  socket.set_domain(kLinuxAFPacket);
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_SOCKET, socket) || !ExpectNetworkRecord(output, kFifthID, "SOCKET", "PACKET", "DIRECT_EXEC_SESSION", "PYTHON")) return false;
 
   gvisor::syscall::Connect connect;
   connect.mutable_context_data()->set_container_id(kFifthID);
+  connect.mutable_context_data()->set_thread_group_id(50);
+  connect.mutable_context_data()->set_thread_group_start_time_ns(500);
+  connect.mutable_context_data()->set_parent_thread_group_id(0);
+  connect.mutable_context_data()->set_is_exec_session(true);
+  connect.mutable_context_data()->set_process_name("python");
   connect.set_address(SocketAddress(AF_UNIX, sizeof(sa_family_t)));
   if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_CONNECT, connect) || !ExpectNoRecord(output)) return false;
   connect.set_address(SocketAddress(AF_UNIX, sizeof(sockaddr_un)));
   if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_CONNECT, connect) || !ExpectNoRecord(output)) return false;
   connect.set_address(SocketAddress(AF_INET, sizeof(sockaddr_in)));
-  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_CONNECT, connect) || !ExpectRecord(output, kFifthID, "network-attempt")) return false;
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_CONNECT, connect) || !ExpectNetworkRecord(output, kFifthID, "CONNECT", "INET", "DIRECT_EXEC_SESSION", "PYTHON")) return false;
   connect.set_address(SocketAddress(AF_INET6, sizeof(sockaddr_in6)));
-  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_CONNECT, connect) || !ExpectRecord(output, kFifthID, "network-attempt")) return false;
-  connect.set_address(SocketAddress(AF_NETLINK, 12));
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_CONNECT, connect) || !ExpectNetworkRecord(output, kFifthID, "CONNECT", "INET6", "DIRECT_EXEC_SESSION", "PYTHON")) return false;
+  connect.set_address(SocketAddress(kLinuxAFNetlink, 12));
   if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_CONNECT, connect) || !ExpectNoRecord(output)) return false;
   connect.set_address(PacketSocketAddress());
-  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_CONNECT, connect) || !ExpectRecord(output, kFifthID, "network-attempt")) return false;
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_CONNECT, connect) || !ExpectNetworkRecord(output, kFifthID, "CONNECT", "PACKET", "DIRECT_EXEC_SESSION", "PYTHON")) return false;
   connect.set_address(SocketAddress(AF_UNSPEC, sizeof(sa_family_t)));
   if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_CONNECT, connect) || !ExpectNoRecord(output)) return false;
   close(client);
@@ -244,9 +284,9 @@ bool VerifyMalformedConnect(int output, const std::string& remote, const std::st
       VerifyConnectFault(output, remote, control, SocketAddress(AF_UNIX, sizeof(sockaddr_un) + 1), "CONNECT_AF_UNIX_INVALID_LENGTH") &&
       VerifyConnectFault(output, remote, control, SocketAddress(AF_INET, sizeof(sockaddr_in) - 1), "CONNECT_AF_INET_INVALID_LENGTH") &&
       VerifyConnectFault(output, remote, control, SocketAddress(AF_INET6, sizeof(sockaddr_in6) - 1), "CONNECT_AF_INET6_INVALID_LENGTH") &&
-      VerifyConnectFault(output, remote, control, SocketAddress(AF_NETLINK, 2), "CONNECT_AF_NETLINK_INVALID_LENGTH") &&
-      VerifyConnectFault(output, remote, control, SocketAddress(AF_PACKET, 2), "CONNECT_AF_PACKET_INVALID_LENGTH") &&
-      VerifyConnectFault(output, remote, control, SocketAddress(0x7fff, sizeof(sa_family_t)), "CONNECT_UNKNOWN_FAMILY");
+      VerifyConnectFault(output, remote, control, SocketAddress(kLinuxAFNetlink, 2), "CONNECT_AF_NETLINK_INVALID_LENGTH") &&
+      VerifyConnectFault(output, remote, control, SocketAddress(kLinuxAFPacket, 2), "CONNECT_AF_PACKET_INVALID_LENGTH") &&
+      VerifyConnectFault(output, remote, control, SocketAddress(0x7f, sizeof(sa_family_t)), "CONNECT_UNKNOWN_FAMILY");
 }
 
 bool VerifyProcessTrustBoundary(int output, const std::string& remote, const std::string& control) {
@@ -307,12 +347,12 @@ bool VerifyProcessTrustBoundary(int output, const std::string& remote, const std
   child.mutable_context_data()->set_parent_thread_group_id(20);
   child.mutable_context_data()->set_is_exec_session(true);
   child.set_pathname("/usr/bin/curl");
-  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, child) || !ExpectRecord(output, kSecondID, "process-exec-unexpected")) return false;
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, child) || !ExpectUnexpectedProcessRecord(output, kSecondID, "SYSCALL_EXECVE", "OTHER", "BOOTSTRAP_ENDED", "UNTRACKED_PARENT")) return false;
 
   child.mutable_context_data()->set_thread_group_id(22);
   child.mutable_context_data()->set_thread_group_start_time_ns(220);
   child.set_pathname("/usr/local/bin/python");
-  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, child) || !ExpectRecord(output, kSecondID, "process-exec-unexpected")) return false;
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, child) || !ExpectUnexpectedProcessRecord(output, kSecondID, "SYSCALL_EXECVE", "PYTHON", "BOOTSTRAP_ENDED", "UNTRACKED_PARENT")) return false;
 
   gvisor::syscall::Execve shell;
   shell.mutable_context_data()->set_container_id(kSecondID);
@@ -379,9 +419,40 @@ bool RunFaultCase(int output, const std::string& remote, const std::string& cont
   return faulted;
 }
 
+bool VerifyBoundedClassificationSemantics() {
+  if (ClassifySocketFamily(AF_UNIX) != SocketClassification::kLocal ||
+      ClassifySocketFamily(AF_INET) != SocketClassification::kNetwork ||
+      ClassifySocketFamily(AF_INET6) != SocketClassification::kNetwork ||
+      ClassifySocketFamily(kLinuxAFNetlink) != SocketClassification::kSpecialKernelLocal ||
+      ClassifySocketFamily(kLinuxAFPacket) != SocketClassification::kNetwork ||
+      ClassifySocketFamily(0x7fff) != SocketClassification::kUnknown) return false;
+
+  ProcessState state;
+  gvisor::common::ContextData direct;
+  direct.set_thread_group_id(20);
+  direct.set_thread_group_start_time_ns(200);
+  direct.set_parent_thread_group_id(0);
+  direct.set_is_exec_session(true);
+  ProcessClassification expected = IsExpectedProcess("python", direct, kProfilePyPI, &state);
+  if (!expected.expected || expected.process_class != ProcessClass::kPython) return false;
+
+  gvisor::common::ContextData child;
+  child.set_thread_group_id(21);
+  child.set_thread_group_start_time_ns(210);
+  child.set_parent_thread_group_id(20);
+  child.set_is_exec_session(true);
+  ProcessClassification unexpected = IsExpectedProcess("/usr/bin/curl", child, kProfilePyPI, &state);
+  return !unexpected.expected && unexpected.process_class == ProcessClass::kUnknown &&
+      strcmp(unexpected.reason, "BOOTSTRAP_ENDED") == 0 && strcmp(unexpected.parent_relation, "UNTRACKED_PARENT") == 0;
+}
+
 }  // namespace
 
-int main() {
+int main(int argc, char** argv) {
+  if (argc == 2 && strcmp(argv[1], "--semantic-only") == 0) {
+    return HasPinnedPodInitProfile() && HasBoundedProfileRecordLimits() && VerifyBoundedClassificationSemantics() ? 0 : 1;
+  }
+  if (argc != 1) return 2;
   char directory[] = "/tmp/haa-observer-latch-XXXXXX";
   if (mkdtemp(directory) == nullptr) return 1;
   const std::string remote = std::string(directory) + "/remote.sock";

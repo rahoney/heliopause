@@ -45,6 +45,10 @@ constexpr size_t kMaxTrackedProcessGroups = 64;
 // retains address bytes.
 constexpr size_t kSockAddrNetlinkSize = 12;
 constexpr size_t kSockAddrPacketSize = 20;
+// Linux UAPI values consumed from pinned gVisor protobufs. Keep these explicit
+// so observer tests do not inherit the build Host's socket-family surface.
+constexpr int kLinuxAFNetlink = 16;
+constexpr int kLinuxAFPacket = 17;
 constexpr int kProfileRegistrationWaitMilliseconds = 2000;
 constexpr char kProfileNPM[] = "npm-lifecycle";
 constexpr char kProfilePyPI[] = "pypi-wheel";
@@ -61,10 +65,27 @@ bool ValidContainerID(const std::string& container_id) {
   return true;
 }
 
-bool Send(int output, const std::string& container_id, const char* kind, const char* reason = nullptr) {
+struct Attribution {
+  const char* event_source = nullptr;
+  const char* family = nullptr;
+  const char* process_relation = nullptr;
+  const char* process_class = nullptr;
+  const char* classification_reason = nullptr;
+  const char* parent_relation = nullptr;
+};
+
+bool Send(int output, const std::string& container_id, const char* kind, const char* reason = nullptr, const Attribution* attribution = nullptr) {
   if (!ValidContainerID(container_id)) return false;
   std::string message = "{\"container_id\":\"" + container_id + "\",\"kind\":\"" + kind + "\"";
   if (reason != nullptr) message += ",\"reason\":\"" + std::string(reason) + "\"";
+  if (attribution != nullptr) {
+    if (attribution->event_source != nullptr) message += ",\"event_source\":\"" + std::string(attribution->event_source) + "\"";
+    if (attribution->family != nullptr) message += ",\"family\":\"" + std::string(attribution->family) + "\"";
+    if (attribution->process_relation != nullptr) message += ",\"process_relation\":\"" + std::string(attribution->process_relation) + "\"";
+    if (attribution->process_class != nullptr) message += ",\"process_class\":\"" + std::string(attribution->process_class) + "\"";
+    if (attribution->classification_reason != nullptr) message += ",\"classification_reason\":\"" + std::string(attribution->classification_reason) + "\"";
+    if (attribution->parent_relation != nullptr) message += ",\"parent_relation\":\"" + std::string(attribution->parent_relation) + "\"";
+  }
   message += "}";
   return send(output, message.data(), message.size(), 0) == static_cast<ssize_t>(message.size());
 }
@@ -108,12 +129,30 @@ struct ProcessState {
   std::map<int32_t, ExpectedGroup> expected_groups;
 };
 
+const char* ProcessClassName(ProcessClass process_class) {
+  switch (process_class) {
+    case ProcessClass::kShell: return "SHELL";
+    case ProcessClass::kPython: return "PYTHON";
+    case ProcessClass::kPip: return "PIP";
+    case ProcessClass::kNode: return "NODE";
+    case ProcessClass::kNpm: return "NPM";
+    case ProcessClass::kArtifact: return "ARTIFACT";
+    case ProcessClass::kSleep: return "SLEEP";
+    case ProcessClass::kMkdir: return "MKDIR";
+    case ProcessClass::kCat: return "CAT";
+    case ProcessClass::kChmod: return "CHMOD";
+    case ProcessClass::kUnknown: return "OTHER";
+  }
+  return "OTHER";
+}
+
 ProcessClass ProcessClassForPath(const std::string& path, const char* profile) {
   if (path == "/bin/sh" || path == "sh" || path == "/usr/bin/dash") return ProcessClass::kShell;
   if (path == "/usr/bin/sleep" || path == "/bin/sleep" || path == "sleep") return ProcessClass::kSleep;
   if (path == "/usr/bin/mkdir" || path == "/bin/mkdir" || path == "mkdir") return ProcessClass::kMkdir;
   if (path == "/usr/bin/cat" || path == "/bin/cat" || path == "cat") return ProcessClass::kCat;
   if (path == "/usr/bin/chmod" || path == "/bin/chmod" || path == "chmod") return ProcessClass::kChmod;
+  if (profile == nullptr) return ProcessClass::kUnknown;
   if (strcmp(profile, kProfileNPM) == 0) {
     if (path == "/usr/local/bin/node" || path == "node") return ProcessClass::kNode;
     if (path == "/usr/local/bin/npm" || path == "npm") return ProcessClass::kNpm;
@@ -170,62 +209,133 @@ bool IsTrustedShellChild(const gvisor::common::ContextData& context, ProcessClas
   return parent != state.expected_groups.end() && parent->second.process_class == ProcessClass::kShell;
 }
 
-bool TrackExpectedProcessGroup(const gvisor::common::ContextData& context, ProcessClass process_class, ProcessState* state) {
-  if (!ValidProcessIdentity(context) || state == nullptr) return false;
+enum class TrackResult { kTracked, kIdentityInvalid, kStartTimeMismatch, kClassMismatch, kLimit };
+
+TrackResult TrackExpectedProcessGroup(const gvisor::common::ContextData& context, ProcessClass process_class, ProcessState* state) {
+  if (!ValidProcessIdentity(context) || state == nullptr) return TrackResult::kIdentityInvalid;
   auto existing = state->expected_groups.find(context.thread_group_id());
   if (existing != state->expected_groups.end()) {
-    return existing->second.start_time_ns == context.thread_group_start_time_ns() && existing->second.process_class == process_class;
+    if (existing->second.start_time_ns != context.thread_group_start_time_ns()) return TrackResult::kStartTimeMismatch;
+    return existing->second.process_class == process_class ? TrackResult::kTracked : TrackResult::kClassMismatch;
   }
-  if (state->expected_groups.size() >= kMaxTrackedProcessGroups) return false;
+  if (state->expected_groups.size() >= kMaxTrackedProcessGroups) return TrackResult::kLimit;
   state->expected_groups[context.thread_group_id()] = ProcessState::ExpectedGroup{context.thread_group_start_time_ns(), process_class};
-  return true;
+  return TrackResult::kTracked;
 }
 
-bool IsExpectedProcess(const std::string& path, const gvisor::common::ContextData& context, const char* profile, ProcessState* state) {
-  if (state == nullptr || !ValidProcessIdentity(context)) return false;
+struct ProcessClassification {
+  bool expected = false;
+  ProcessClass process_class = ProcessClass::kUnknown;
+  const char* reason = "OTHER";
+  const char* parent_relation = "UNKNOWN";
+};
+
+const char* TrackFailureReason(TrackResult result) {
+  switch (result) {
+    case TrackResult::kIdentityInvalid: return "INVALID_PROCESS_IDENTITY";
+    case TrackResult::kStartTimeMismatch: return "START_TIME_MISMATCH";
+    case TrackResult::kClassMismatch: return "CLASS_MISMATCH";
+    case TrackResult::kLimit: return "TRACKING_LIMIT";
+    case TrackResult::kTracked: return "OTHER";
+  }
+  return "OTHER";
+}
+
+ProcessClassification IsExpectedProcess(const std::string& path, const gvisor::common::ContextData& context, const char* profile, ProcessState* state) {
+  ProcessClassification result;
+  result.process_class = ProcessClassForPath(path, profile);
+  if (state == nullptr || !ValidProcessIdentity(context)) {
+    result.reason = "INVALID_PROCESS_IDENTITY";
+    return result;
+  }
   const ProcessClass process_class = ProcessClassForPath(path, profile);
+  result.process_class = process_class;
   auto tracked = state->expected_groups.find(context.thread_group_id());
-  if (tracked != state->expected_groups.end() && tracked->second.start_time_ns != context.thread_group_start_time_ns()) return false;
+  if (tracked != state->expected_groups.end() && tracked->second.start_time_ns != context.thread_group_start_time_ns()) {
+    result.reason = "START_TIME_MISMATCH";
+    result.parent_relation = "TRACKED_GROUP";
+    return result;
+  }
 
   if (tracked != state->expected_groups.end()) {
-    if (tracked->second.process_class == process_class) return true;
+    result.parent_relation = "TRACKED_GROUP";
+    if (tracked->second.process_class == process_class) { result.expected = true; return result; }
     if (state->bootstrap_active && context.thread_group_id() == state->bootstrap_group_id &&
         IsBootstrapRootClass(tracked->second.process_class) && IsBootstrapRootClass(process_class)) {
       tracked->second.process_class = process_class;
-      return true;
+      result.expected = true; return result;
     }
     if (state->bootstrap_active && context.thread_group_id() == state->bootstrap_group_id &&
         IsBootstrapHandoffClass(process_class, profile)) {
       tracked->second.process_class = process_class;
       state->bootstrap_active = false;
-      return true;
+      result.expected = true; return result;
     }
-    return false;
+    result.reason = "CLASS_MISMATCH";
+    return result;
   }
 
   if (state->bootstrap_active && !context.is_exec_session() && IsBootstrapRoot(context, *state) && IsBootstrapRootClass(process_class)) {
+    result.parent_relation = "BOOTSTRAP_ROOT";
     if (!state->bootstrap_group_set) {
       state->bootstrap_group_set = true;
       state->bootstrap_group_id = context.thread_group_id();
       state->bootstrap_group_start_time_ns = context.thread_group_start_time_ns();
     }
-    return TrackExpectedProcessGroup(context, process_class, state);
+    const TrackResult tracked_result = TrackExpectedProcessGroup(context, process_class, state);
+    result.expected = tracked_result == TrackResult::kTracked;
+    result.reason = TrackFailureReason(tracked_result);
+    return result;
   }
   if (state->bootstrap_active && IsBootstrapChild(context, *state) && IsBootstrapChildClass(process_class)) {
-    return TrackExpectedProcessGroup(context, process_class, state);
+    result.parent_relation = "BOOTSTRAP_CHILD";
+    const TrackResult tracked_result = TrackExpectedProcessGroup(context, process_class, state);
+    result.expected = tracked_result == TrackResult::kTracked;
+    result.reason = TrackFailureReason(tracked_result);
+    return result;
   }
   if (IsTrustedShellChild(context, process_class, *state)) {
-    return TrackExpectedProcessGroup(context, process_class, state);
+    result.parent_relation = "TRACKED_PARENT";
+    const TrackResult tracked_result = TrackExpectedProcessGroup(context, process_class, state);
+    result.expected = tracked_result == TrackResult::kTracked;
+    result.reason = TrackFailureReason(tracked_result);
+    return result;
   }
   if (state->bootstrap_active && IsBootstrapChild(context, *state) && IsBootstrapHandoffClass(process_class, profile)) {
+    result.parent_relation = "BOOTSTRAP_CHILD";
     state->bootstrap_active = false;
-    return TrackExpectedProcessGroup(context, process_class, state);
+    const TrackResult tracked_result = TrackExpectedProcessGroup(context, process_class, state);
+    result.expected = tracked_result == TrackResult::kTracked;
+    result.reason = TrackFailureReason(tracked_result);
+    return result;
   }
   if (context.is_exec_session() && context.parent_thread_group_id() == 0 && IsProfileExpectedClass(process_class, profile)) {
+    result.parent_relation = "DIRECT_EXEC_SESSION";
     state->bootstrap_active = false;
-    return TrackExpectedProcessGroup(context, process_class, state);
+    const TrackResult tracked_result = TrackExpectedProcessGroup(context, process_class, state);
+    result.expected = tracked_result == TrackResult::kTracked;
+    result.reason = TrackFailureReason(tracked_result);
+    return result;
   }
-  return false;
+  if (process_class == ProcessClass::kUnknown) result.reason = "UNKNOWN_CLASS";
+  else if (context.is_exec_session() && context.parent_thread_group_id() == 0) result.reason = "DIRECT_EXEC_NOT_ALLOWED";
+  else if (!state->bootstrap_active) result.reason = "BOOTSTRAP_ENDED";
+  else result.reason = "UNMODELED_PARENT";
+  result.parent_relation = context.parent_thread_group_id() == 0 ? "ROOT" : "UNTRACKED_PARENT";
+  return result;
+}
+
+const char* NetworkProcessRelation(const gvisor::common::ContextData& context, const ProcessState& state) {
+  if (!ValidProcessIdentity(context)) return "UNKNOWN";
+  auto tracked = state.expected_groups.find(context.thread_group_id());
+  if (tracked != state.expected_groups.end()) {
+    if (tracked->second.start_time_ns == context.thread_group_start_time_ns()) return "TRACKED_EXPECTED_GROUP";
+    return "TRACKED_UNEXPECTED_GROUP";
+  }
+  if (state.bootstrap_active && IsBootstrapRoot(context, state)) return "BOOTSTRAP_ROOT";
+  if (state.bootstrap_active && IsBootstrapChild(context, state)) return "BOOTSTRAP_CHILD";
+  if (context.is_exec_session() && context.parent_thread_group_id() == 0) return "DIRECT_EXEC_SESSION";
+  return "UNKNOWN";
 }
 
 enum class SocketClassification {
@@ -237,17 +347,17 @@ enum class SocketClassification {
 
 SocketClassification ClassifySocketFamily(int family) {
   if (family == AF_UNIX) return SocketClassification::kLocal;
-  if (family == AF_NETLINK) return SocketClassification::kSpecialKernelLocal;
+  if (family == kLinuxAFNetlink) return SocketClassification::kSpecialKernelLocal;
   if (family == AF_INET || family == AF_INET6) return SocketClassification::kNetwork;
-  if (family == AF_PACKET) return SocketClassification::kNetwork;
+  if (family == kLinuxAFPacket) return SocketClassification::kNetwork;
   return SocketClassification::kUnknown;
 }
 
 const char* SocketUnknownFamilyReason(int family) {
   switch (family) {
     case AF_UNSPEC: return "SOCKET_AF_UNSPEC";
-    case AF_NETLINK: return "SOCKET_AF_NETLINK";
-    case AF_PACKET: return "SOCKET_AF_PACKET";
+    case kLinuxAFNetlink: return "SOCKET_AF_NETLINK";
+    case kLinuxAFPacket: return "SOCKET_AF_PACKET";
     default: return "SOCKET_OTHER_FAMILY";
   }
 }
@@ -266,8 +376,8 @@ bool ValidSocketAddressLength(int family, size_t length) {
     case AF_UNIX: return length >= sizeof(sa_family_t) && length <= sizeof(sockaddr_un);
     case AF_INET: return length >= sizeof(sockaddr_in);
     case AF_INET6: return length >= sizeof(sockaddr_in6);
-    case AF_NETLINK: return length >= kSockAddrNetlinkSize;
-    case AF_PACKET: return length >= kSockAddrPacketSize;
+    case kLinuxAFNetlink: return length >= kSockAddrNetlinkSize;
+    case kLinuxAFPacket: return length >= kSockAddrPacketSize;
     default: return false;
   }
 }
@@ -355,7 +465,10 @@ bool ParseProcessAndSend(const char* payload, size_t payload_size, int output, s
   if (!container_id->empty() && *container_id != candidate) { *reason = "CONTAINER_MISMATCH"; return false; }
   if (container_id->empty()) *container_id = candidate;
   const std::string path = message.pathname();
-  return Send(output, *container_id, IsExpectedProcess(path, message.context_data(), profile, process_state) ? "process-exec-expected" : "process-exec-unexpected");
+  const ProcessClassification classification = IsExpectedProcess(path, message.context_data(), profile, process_state);
+  if (classification.expected) return Send(output, *container_id, "process-exec-expected");
+  const Attribution attribution{"SYSCALL_EXECVE", nullptr, nullptr, ProcessClassName(classification.process_class), classification.reason, classification.parent_relation};
+  return Send(output, *container_id, "process-exec-unexpected", nullptr, &attribution);
 }
 
 bool ParseSentryProcessAndSend(const char* payload, size_t payload_size, int output, std::string* container_id, const char* profile, ProcessState* process_state, const char** reason) {
@@ -366,7 +479,10 @@ bool ParseSentryProcessAndSend(const char* payload, size_t payload_size, int out
   if (!ValidContainerID(candidate)) { *reason = "STREAM_FAULT"; return false; }
   if (!container_id->empty() && *container_id != candidate) { *reason = "CONTAINER_MISMATCH"; return false; }
   if (container_id->empty()) *container_id = candidate;
-  return Send(output, *container_id, IsExpectedProcess(message.binary_path(), message.context_data(), profile, process_state) ? "process-exec-expected" : "process-exec-unexpected");
+  const ProcessClassification classification = IsExpectedProcess(message.binary_path(), message.context_data(), profile, process_state);
+  if (classification.expected) return Send(output, *container_id, "process-exec-expected");
+  const Attribution attribution{"SENTRY_EXEC", nullptr, nullptr, ProcessClassName(classification.process_class), classification.reason, classification.parent_relation};
+  return Send(output, *container_id, "process-exec-unexpected", nullptr, &attribution);
 }
 
 bool ParseOpenAndSend(const char* payload, size_t payload_size, int output, std::string* container_id, const char* profile, const char** reason) {
@@ -381,30 +497,38 @@ bool ParseOpenAndSend(const char* payload, size_t payload_size, int output, std:
 }
 
 template <typename Message>
-bool ParseSocketAndSend(const char* payload, size_t payload_size, int output, std::string* container_id, const char** reason) {
+bool ParseSocketAndSend(const char* payload, size_t payload_size, int output, std::string* container_id, const char* profile, const ProcessState& process_state, const char** reason) {
   Message message;
   if (!message.ParseFromArray(payload, payload_size)) return false;
   const std::string& candidate = message.context_data().container_id();
   if (!ValidContainerID(candidate)) { *reason = "STREAM_FAULT"; return false; }
   if (!container_id->empty() && *container_id != candidate) { *reason = "CONTAINER_MISMATCH"; return false; }
   if (container_id->empty()) *container_id = candidate;
+  const ProcessClass process_class = ProcessClassForPath(message.context_data().process_name(), profile);
+  const char* relation = NetworkProcessRelation(message.context_data(), process_state);
   switch (ClassifySocketFamily(message.domain())) {
     case SocketClassification::kLocal: return true;
     case SocketClassification::kSpecialKernelLocal: return true;
-    case SocketClassification::kNetwork: return Send(output, *container_id, "network-attempt");
+    case SocketClassification::kNetwork: {
+      const char* family = message.domain() == AF_INET ? "INET" : message.domain() == AF_INET6 ? "INET6" : "PACKET";
+      const Attribution attribution{"SOCKET", family, relation, ProcessClassName(process_class), nullptr, nullptr};
+      return Send(output, *container_id, "network-attempt", nullptr, &attribution);
+    }
     case SocketClassification::kUnknown: *reason = SocketUnknownFamilyReason(message.domain()); return false;
   }
   *reason = "STREAM_FAULT";
   return false;
 }
 
-bool ParseConnectAndSend(const char* payload, size_t payload_size, int output, std::string* container_id, const char** reason) {
+bool ParseConnectAndSend(const char* payload, size_t payload_size, int output, std::string* container_id, const char* profile, const ProcessState& process_state, const char** reason) {
   gvisor::syscall::Connect message;
   if (!message.ParseFromArray(payload, payload_size)) return false;
   const std::string& candidate = message.context_data().container_id();
   if (!ValidContainerID(candidate)) { *reason = "STREAM_FAULT"; return false; }
   if (!container_id->empty() && *container_id != candidate) { *reason = "CONTAINER_MISMATCH"; return false; }
   if (container_id->empty()) *container_id = candidate;
+  const ProcessClass process_class = ProcessClassForPath(message.context_data().process_name(), profile);
+  const char* relation = NetworkProcessRelation(message.context_data(), process_state);
   int family = 0;
   if (!ReadSocketFamily(message.address(), &family)) { *reason = "CONNECT_ADDRESS_TOO_SHORT"; return false; }
   switch (family) {
@@ -416,16 +540,16 @@ bool ParseConnectAndSend(const char* payload, size_t payload_size, int output, s
       return true;
     case AF_INET:
       if (!ValidSocketAddressLength(family, message.address().size())) { *reason = "CONNECT_AF_INET_INVALID_LENGTH"; return false; }
-      return Send(output, *container_id, "network-attempt");
+      { const Attribution attribution{"CONNECT", "INET", relation, ProcessClassName(process_class), nullptr, nullptr}; return Send(output, *container_id, "network-attempt", nullptr, &attribution); }
     case AF_INET6:
       if (!ValidSocketAddressLength(family, message.address().size())) { *reason = "CONNECT_AF_INET6_INVALID_LENGTH"; return false; }
-      return Send(output, *container_id, "network-attempt");
-    case AF_NETLINK:
+      { const Attribution attribution{"CONNECT", "INET6", relation, ProcessClassName(process_class), nullptr, nullptr}; return Send(output, *container_id, "network-attempt", nullptr, &attribution); }
+    case kLinuxAFNetlink:
       if (!ValidSocketAddressLength(family, message.address().size())) { *reason = "CONNECT_AF_NETLINK_INVALID_LENGTH"; return false; }
       return true;
-    case AF_PACKET:
+    case kLinuxAFPacket:
       if (!ValidSocketAddressLength(family, message.address().size())) { *reason = "CONNECT_AF_PACKET_INVALID_LENGTH"; return false; }
-      return Send(output, *container_id, "network-attempt");
+      { const Attribution attribution{"CONNECT", "PACKET", relation, ProcessClassName(process_class), nullptr, nullptr}; return Send(output, *container_id, "network-attempt", nullptr, &attribution); }
     default:
       *reason = "CONNECT_UNKNOWN_FAMILY";
       return false;
@@ -443,8 +567,8 @@ bool Handle(const Header& header, const char* payload, size_t payload_size, int 
     // to classify this bounded process fact as expected or unexpected.
     case gvisor::common::MESSAGE_SYSCALL_EXECVE: return ParseProcessAndSend<gvisor::syscall::Execve>(payload, payload_size, output, container_id, profile, process_state, reason);
     case gvisor::common::MESSAGE_SYSCALL_OPEN: return ParseOpenAndSend(payload, payload_size, output, container_id, profile, reason);
-    case gvisor::common::MESSAGE_SYSCALL_CONNECT: return ParseConnectAndSend(payload, payload_size, output, container_id, reason);
-    case gvisor::common::MESSAGE_SYSCALL_SOCKET: return ParseSocketAndSend<gvisor::syscall::Socket>(payload, payload_size, output, container_id, reason);
+    case gvisor::common::MESSAGE_SYSCALL_CONNECT: return ParseConnectAndSend(payload, payload_size, output, container_id, profile, *process_state, reason);
+    case gvisor::common::MESSAGE_SYSCALL_SOCKET: return ParseSocketAndSend<gvisor::syscall::Socket>(payload, payload_size, output, container_id, profile, *process_state, reason);
     default: *reason = "UNKNOWN_EVENT_KIND"; return false;
   }
 }
