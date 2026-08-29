@@ -40,6 +40,11 @@ constexpr size_t kMaxNormalizedRecordsPerConnection = 10000;
 constexpr size_t kMaxPyTorchCPURecordsPerConnection = 500000;
 constexpr size_t kMaxPyTorchCU126RecordsPerConnection = 100000;
 constexpr size_t kMaxTrackedProcessGroups = 64;
+// These sizes match the pinned gVisor ABI structures used by the socket
+// providers. They bound only address-shape validation; the observer never
+// retains address bytes.
+constexpr size_t kSockAddrNetlinkSize = 12;
+constexpr size_t kSockAddrPacketSize = 20;
 constexpr int kProfileRegistrationWaitMilliseconds = 2000;
 constexpr char kProfileNPM[] = "npm-lifecycle";
 constexpr char kProfilePyPI[] = "pypi-wheel";
@@ -225,13 +230,16 @@ bool IsExpectedProcess(const std::string& path, const gvisor::common::ContextDat
 
 enum class SocketClassification {
   kLocal,
+  kSpecialKernelLocal,
   kNetwork,
   kUnknown,
 };
 
 SocketClassification ClassifySocketFamily(int family) {
   if (family == AF_UNIX) return SocketClassification::kLocal;
+  if (family == AF_NETLINK) return SocketClassification::kSpecialKernelLocal;
   if (family == AF_INET || family == AF_INET6) return SocketClassification::kNetwork;
+  if (family == AF_PACKET) return SocketClassification::kNetwork;
   return SocketClassification::kUnknown;
 }
 
@@ -254,9 +262,12 @@ bool ReadSocketFamily(const std::string& address, int* family) {
 
 bool ValidSocketAddressLength(int family, size_t length) {
   switch (family) {
-    case AF_UNIX: return length >= offsetof(sockaddr_un, sun_path) + 1 && length <= sizeof(sockaddr_un);
+    case AF_UNSPEC: return length >= sizeof(sa_family_t);
+    case AF_UNIX: return length >= sizeof(sa_family_t) && length <= sizeof(sockaddr_un);
     case AF_INET: return length >= sizeof(sockaddr_in);
     case AF_INET6: return length >= sizeof(sockaddr_in6);
+    case AF_NETLINK: return length >= kSockAddrNetlinkSize;
+    case AF_PACKET: return length >= kSockAddrPacketSize;
     default: return false;
   }
 }
@@ -379,6 +390,7 @@ bool ParseSocketAndSend(const char* payload, size_t payload_size, int output, st
   if (container_id->empty()) *container_id = candidate;
   switch (ClassifySocketFamily(message.domain())) {
     case SocketClassification::kLocal: return true;
+    case SocketClassification::kSpecialKernelLocal: return true;
     case SocketClassification::kNetwork: return Send(output, *container_id, "network-attempt");
     case SocketClassification::kUnknown: *reason = SocketUnknownFamilyReason(message.domain()); return false;
   }
@@ -397,8 +409,8 @@ bool ParseConnectAndSend(const char* payload, size_t payload_size, int output, s
   if (!ReadSocketFamily(message.address(), &family)) { *reason = "CONNECT_ADDRESS_TOO_SHORT"; return false; }
   switch (family) {
     case AF_UNSPEC:
-      *reason = "CONNECT_AF_UNSPEC";
-      return false;
+      if (!ValidSocketAddressLength(family, message.address().size())) { *reason = "CONNECT_AF_UNSPEC"; return false; }
+      return true;
     case AF_UNIX:
       if (!ValidSocketAddressLength(family, message.address().size())) { *reason = "CONNECT_AF_UNIX_INVALID_LENGTH"; return false; }
       return true;
@@ -407,6 +419,12 @@ bool ParseConnectAndSend(const char* payload, size_t payload_size, int output, s
       return Send(output, *container_id, "network-attempt");
     case AF_INET6:
       if (!ValidSocketAddressLength(family, message.address().size())) { *reason = "CONNECT_AF_INET6_INVALID_LENGTH"; return false; }
+      return Send(output, *container_id, "network-attempt");
+    case AF_NETLINK:
+      if (!ValidSocketAddressLength(family, message.address().size())) { *reason = "CONNECT_AF_NETLINK_INVALID_LENGTH"; return false; }
+      return true;
+    case AF_PACKET:
+      if (!ValidSocketAddressLength(family, message.address().size())) { *reason = "CONNECT_AF_PACKET_INVALID_LENGTH"; return false; }
       return Send(output, *container_id, "network-attempt");
     default:
       *reason = "CONNECT_UNKNOWN_FAMILY";

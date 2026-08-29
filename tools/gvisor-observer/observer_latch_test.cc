@@ -156,6 +156,13 @@ std::string SocketAddress(sa_family_t family, size_t length) {
   return address;
 }
 
+std::string PacketSocketAddress() {
+  std::string address = SocketAddress(AF_PACKET, 20);
+  // Pinned gVisor's AF_PACKET parser requires an Ethernet hardware address.
+  address[11] = 6;
+  return address;
+}
+
 bool VerifyNetworkFamilies(int output, const std::string& remote, const std::string& control) {
   if (!RegisterProfile(control, kFifthID, kProfilePyPI)) return false;
   const int client = ConnectRemote(remote);
@@ -172,15 +179,27 @@ bool VerifyNetworkFamilies(int output, const std::string& remote, const std::str
   if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_SOCKET, socket) || !ExpectRecord(output, kFifthID, "network-attempt")) return false;
   socket.set_domain(AF_INET6);
   if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_SOCKET, socket) || !ExpectRecord(output, kFifthID, "network-attempt")) return false;
+  socket.set_domain(AF_NETLINK);
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_SOCKET, socket) || !ExpectNoRecord(output)) return false;
+  socket.set_domain(AF_PACKET);
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_SOCKET, socket) || !ExpectRecord(output, kFifthID, "network-attempt")) return false;
 
   gvisor::syscall::Connect connect;
   connect.mutable_context_data()->set_container_id(kFifthID);
+  connect.set_address(SocketAddress(AF_UNIX, sizeof(sa_family_t)));
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_CONNECT, connect) || !ExpectNoRecord(output)) return false;
   connect.set_address(SocketAddress(AF_UNIX, sizeof(sockaddr_un)));
   if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_CONNECT, connect) || !ExpectNoRecord(output)) return false;
   connect.set_address(SocketAddress(AF_INET, sizeof(sockaddr_in)));
   if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_CONNECT, connect) || !ExpectRecord(output, kFifthID, "network-attempt")) return false;
   connect.set_address(SocketAddress(AF_INET6, sizeof(sockaddr_in6)));
   if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_CONNECT, connect) || !ExpectRecord(output, kFifthID, "network-attempt")) return false;
+  connect.set_address(SocketAddress(AF_NETLINK, 12));
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_CONNECT, connect) || !ExpectNoRecord(output)) return false;
+  connect.set_address(PacketSocketAddress());
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_CONNECT, connect) || !ExpectRecord(output, kFifthID, "network-attempt")) return false;
+  connect.set_address(SocketAddress(AF_UNSPEC, sizeof(sa_family_t)));
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_CONNECT, connect) || !ExpectNoRecord(output)) return false;
   close(client);
   return ExpectRecord(output, kFifthID, "stream-end");
 }
@@ -202,8 +221,6 @@ bool VerifySocketFault(int output, const std::string& remote, const std::string&
 
 bool VerifyMalformedNetworkFamilies(int output, const std::string& remote, const std::string& control) {
   return VerifySocketFault(output, remote, control, AF_UNSPEC, "SOCKET_AF_UNSPEC") &&
-      VerifySocketFault(output, remote, control, AF_NETLINK, "SOCKET_AF_NETLINK") &&
-      VerifySocketFault(output, remote, control, AF_PACKET, "SOCKET_AF_PACKET") &&
       VerifySocketFault(output, remote, control, 0x7fff, "SOCKET_OTHER_FAMILY");
 }
 
@@ -224,10 +241,11 @@ bool VerifyConnectFault(int output, const std::string& remote, const std::string
 
 bool VerifyMalformedConnect(int output, const std::string& remote, const std::string& control) {
   return VerifyConnectFault(output, remote, control, "\x02", "CONNECT_ADDRESS_TOO_SHORT") &&
-      VerifyConnectFault(output, remote, control, SocketAddress(AF_UNSPEC, sizeof(sa_family_t)), "CONNECT_AF_UNSPEC") &&
-      VerifyConnectFault(output, remote, control, SocketAddress(AF_UNIX, offsetof(sockaddr_un, sun_path)), "CONNECT_AF_UNIX_INVALID_LENGTH") &&
+      VerifyConnectFault(output, remote, control, SocketAddress(AF_UNIX, sizeof(sockaddr_un) + 1), "CONNECT_AF_UNIX_INVALID_LENGTH") &&
       VerifyConnectFault(output, remote, control, SocketAddress(AF_INET, sizeof(sockaddr_in) - 1), "CONNECT_AF_INET_INVALID_LENGTH") &&
       VerifyConnectFault(output, remote, control, SocketAddress(AF_INET6, sizeof(sockaddr_in6) - 1), "CONNECT_AF_INET6_INVALID_LENGTH") &&
+      VerifyConnectFault(output, remote, control, SocketAddress(AF_NETLINK, 2), "CONNECT_AF_NETLINK_INVALID_LENGTH") &&
+      VerifyConnectFault(output, remote, control, SocketAddress(AF_PACKET, 2), "CONNECT_AF_PACKET_INVALID_LENGTH") &&
       VerifyConnectFault(output, remote, control, SocketAddress(0x7fff, sizeof(sa_family_t)), "CONNECT_UNKNOWN_FAMILY");
 }
 
