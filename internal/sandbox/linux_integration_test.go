@@ -74,8 +74,21 @@ func TestLinuxGVisorLifecycleIntegration(t *testing.T) {
 	}
 	if result.Status() != domain.SandboxCompleted {
 		code, _ := result.LimitationCode()
-		t.Fatalf("Sandbox result = %q/%q", result.Status(), code)
+		t.Fatalf("Sandbox result = %q/%q observer_reason=%s", result.Status(), code, integrationObserverFaultReason(supervisor))
 	}
+}
+
+func integrationObserverFaultReason(supervisor *ObserverSupervisor) string {
+	if supervisor == nil || supervisor.observer == nil {
+		return ""
+	}
+	supervisor.observer.mu.Lock()
+	defer supervisor.observer.mu.Unlock()
+	var fault traceFault
+	if !errors.As(supervisor.observer.fault, &fault) {
+		return ""
+	}
+	return fault.TraceFaultReason()
 }
 
 func TestLinuxGitHubReleaseELFDynamicIntegration(t *testing.T) {

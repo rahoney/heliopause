@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
@@ -117,6 +118,39 @@ func FuzzDecodeHelperRecord(f *testing.F) {
 func TestDecodeHelperRecordRejectsOversizedPayload(t *testing.T) {
 	if _, err := decodeHelperRecord(make([]byte, maximumHelperRecordBytes+1)); err == nil {
 		t.Fatal("oversized observer record was accepted")
+	}
+	payload, err := json.Marshal(helperRecord{ContainerID: "0123456789abcdef", Kind: "stream-fault", Reason: strings.Repeat("A", maximumHelperRecordBytes)})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := decodeHelperRecord(payload); err == nil {
+		t.Fatal("oversized observer reason was accepted")
+	}
+}
+
+func TestDecodeHelperRecordAcceptsBoundedSocketFaultReasons(t *testing.T) {
+	for _, reason := range []string{
+		"SOCKET_AF_UNSPEC", "SOCKET_AF_NETLINK", "SOCKET_AF_PACKET", "SOCKET_OTHER_FAMILY",
+		"CONNECT_ADDRESS_TOO_SHORT", "CONNECT_AF_UNSPEC", "CONNECT_AF_UNIX_INVALID_LENGTH",
+		"CONNECT_AF_INET_INVALID_LENGTH", "CONNECT_AF_INET6_INVALID_LENGTH", "CONNECT_UNKNOWN_FAMILY",
+	} {
+		payload, err := json.Marshal(helperRecord{ContainerID: "0123456789abcdef", Kind: "stream-fault", Reason: reason})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := decodeHelperRecord(payload); err != nil {
+			t.Fatalf("reason %q rejected: %v", reason, err)
+		}
+	}
+}
+
+func TestDecodeHelperRecordRejectsUntrustedFaultReason(t *testing.T) {
+	payload, err := json.Marshal(helperRecord{ContainerID: "0123456789abcdef", Kind: "stream-fault", Reason: "SOCKET_AF_123"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := decodeHelperRecord(payload); err == nil {
+		t.Fatal("untrusted observer reason was accepted")
 	}
 }
 

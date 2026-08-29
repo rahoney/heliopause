@@ -185,7 +185,7 @@ bool VerifyNetworkFamilies(int output, const std::string& remote, const std::str
   return ExpectRecord(output, kFifthID, "stream-end");
 }
 
-bool VerifyMalformedNetworkFamilies(int output, const std::string& remote, const std::string& control) {
+bool VerifySocketFault(int output, const std::string& remote, const std::string& control, int domain, const char* reason) {
   if (!RegisterProfile(control, kSixthID, kProfilePyPI)) return false;
   const int client = ConnectRemote(remote);
   if (client < 0 || !Handshake(client)) return false;
@@ -194,13 +194,20 @@ bool VerifyMalformedNetworkFamilies(int output, const std::string& remote, const
   if (!SendEvent(client, gvisor::common::MESSAGE_CONTAINER_START, start) || !ExpectRecord(output, kSixthID, "container-start")) return false;
   gvisor::syscall::Socket socket;
   socket.mutable_context_data()->set_container_id(kSixthID);
-  socket.set_domain(0x7fff);
-  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_SOCKET, socket) || !ExpectRecord(output, kSixthID, "stream-fault", "STREAM_FAULT")) return false;
+  socket.set_domain(domain);
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_SOCKET, socket) || !ExpectRecord(output, kSixthID, "stream-fault", reason)) return false;
   close(client);
   return true;
 }
 
-bool VerifyMalformedConnect(int output, const std::string& remote, const std::string& control) {
+bool VerifyMalformedNetworkFamilies(int output, const std::string& remote, const std::string& control) {
+  return VerifySocketFault(output, remote, control, AF_UNSPEC, "SOCKET_AF_UNSPEC") &&
+      VerifySocketFault(output, remote, control, AF_NETLINK, "SOCKET_AF_NETLINK") &&
+      VerifySocketFault(output, remote, control, AF_PACKET, "SOCKET_AF_PACKET") &&
+      VerifySocketFault(output, remote, control, 0x7fff, "SOCKET_OTHER_FAMILY");
+}
+
+bool VerifyConnectFault(int output, const std::string& remote, const std::string& control, const std::string& address, const char* reason) {
   if (!RegisterProfile(control, kSeventhID, kProfilePyPI)) return false;
   const int client = ConnectRemote(remote);
   if (client < 0 || !Handshake(client)) return false;
@@ -209,10 +216,19 @@ bool VerifyMalformedConnect(int output, const std::string& remote, const std::st
   if (!SendEvent(client, gvisor::common::MESSAGE_CONTAINER_START, start) || !ExpectRecord(output, kSeventhID, "container-start")) return false;
   gvisor::syscall::Connect connect;
   connect.mutable_context_data()->set_container_id(kSeventhID);
-  connect.set_address("\x02");
-  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_CONNECT, connect) || !ExpectRecord(output, kSeventhID, "stream-fault", "STREAM_FAULT")) return false;
+  connect.set_address(address);
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_CONNECT, connect) || !ExpectRecord(output, kSeventhID, "stream-fault", reason)) return false;
   close(client);
   return true;
+}
+
+bool VerifyMalformedConnect(int output, const std::string& remote, const std::string& control) {
+  return VerifyConnectFault(output, remote, control, "\x02", "CONNECT_ADDRESS_TOO_SHORT") &&
+      VerifyConnectFault(output, remote, control, SocketAddress(AF_UNSPEC, sizeof(sa_family_t)), "CONNECT_AF_UNSPEC") &&
+      VerifyConnectFault(output, remote, control, SocketAddress(AF_UNIX, offsetof(sockaddr_un, sun_path)), "CONNECT_AF_UNIX_INVALID_LENGTH") &&
+      VerifyConnectFault(output, remote, control, SocketAddress(AF_INET, sizeof(sockaddr_in) - 1), "CONNECT_AF_INET_INVALID_LENGTH") &&
+      VerifyConnectFault(output, remote, control, SocketAddress(AF_INET6, sizeof(sockaddr_in6) - 1), "CONNECT_AF_INET6_INVALID_LENGTH") &&
+      VerifyConnectFault(output, remote, control, SocketAddress(0x7fff, sizeof(sa_family_t)), "CONNECT_UNKNOWN_FAMILY");
 }
 
 bool VerifyProcessTrustBoundary(int output, const std::string& remote, const std::string& control) {

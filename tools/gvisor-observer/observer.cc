@@ -235,6 +235,15 @@ SocketClassification ClassifySocketFamily(int family) {
   return SocketClassification::kUnknown;
 }
 
+const char* SocketUnknownFamilyReason(int family) {
+  switch (family) {
+    case AF_UNSPEC: return "SOCKET_AF_UNSPEC";
+    case AF_NETLINK: return "SOCKET_AF_NETLINK";
+    case AF_PACKET: return "SOCKET_AF_PACKET";
+    default: return "SOCKET_OTHER_FAMILY";
+  }
+}
+
 bool ReadSocketFamily(const std::string& address, int* family) {
   if (family == nullptr || address.size() < sizeof(sa_family_t)) return false;
   sa_family_t parsed = 0;
@@ -371,7 +380,7 @@ bool ParseSocketAndSend(const char* payload, size_t payload_size, int output, st
   switch (ClassifySocketFamily(message.domain())) {
     case SocketClassification::kLocal: return true;
     case SocketClassification::kNetwork: return Send(output, *container_id, "network-attempt");
-    case SocketClassification::kUnknown: *reason = "STREAM_FAULT"; return false;
+    case SocketClassification::kUnknown: *reason = SocketUnknownFamilyReason(message.domain()); return false;
   }
   *reason = "STREAM_FAULT";
   return false;
@@ -385,15 +394,24 @@ bool ParseConnectAndSend(const char* payload, size_t payload_size, int output, s
   if (!container_id->empty() && *container_id != candidate) { *reason = "CONTAINER_MISMATCH"; return false; }
   if (container_id->empty()) *container_id = candidate;
   int family = 0;
-  if (!ReadSocketFamily(message.address(), &family)) { *reason = "STREAM_FAULT"; return false; }
-  if (!ValidSocketAddressLength(family, message.address().size())) { *reason = "STREAM_FAULT"; return false; }
-  switch (ClassifySocketFamily(family)) {
-    case SocketClassification::kLocal: return true;
-    case SocketClassification::kNetwork: return Send(output, *container_id, "network-attempt");
-    case SocketClassification::kUnknown: *reason = "STREAM_FAULT"; return false;
+  if (!ReadSocketFamily(message.address(), &family)) { *reason = "CONNECT_ADDRESS_TOO_SHORT"; return false; }
+  switch (family) {
+    case AF_UNSPEC:
+      *reason = "CONNECT_AF_UNSPEC";
+      return false;
+    case AF_UNIX:
+      if (!ValidSocketAddressLength(family, message.address().size())) { *reason = "CONNECT_AF_UNIX_INVALID_LENGTH"; return false; }
+      return true;
+    case AF_INET:
+      if (!ValidSocketAddressLength(family, message.address().size())) { *reason = "CONNECT_AF_INET_INVALID_LENGTH"; return false; }
+      return Send(output, *container_id, "network-attempt");
+    case AF_INET6:
+      if (!ValidSocketAddressLength(family, message.address().size())) { *reason = "CONNECT_AF_INET6_INVALID_LENGTH"; return false; }
+      return Send(output, *container_id, "network-attempt");
+    default:
+      *reason = "CONNECT_UNKNOWN_FAMILY";
+      return false;
   }
-  *reason = "STREAM_FAULT";
-  return false;
 }
 
 bool Handle(const Header& header, const char* payload, size_t payload_size, int output, std::string* container_id, const char* profile, ProcessState* process_state, const char** reason) {
