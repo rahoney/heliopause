@@ -2,6 +2,7 @@ package application
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
@@ -33,6 +34,46 @@ type InspectedInstall struct {
 	decision           domain.PolicyDecision
 	diagnostics        []GraphStaticDiagnostic
 	dynamicDiagnostics []GraphDynamicInstallDiagnostic
+	policyDiagnostics  []DependencyPolicyDiagnostic
+}
+
+// DependencyPolicyDiagnostic is bounded qualification metadata explaining
+// which completed dependency entry prevented an aggregate ALLOW decision.
+type DependencyPolicyDiagnostic struct {
+	node                domain.DependencyNodeID
+	packageName         string
+	version             string
+	source              domain.SourceID
+	decision            domain.Decision
+	reasons             []string
+	dynamicFindingCodes []string
+}
+
+func newDependencyPolicyDiagnostic(dependency domain.LockedDependency, decision domain.PolicyDecision, findings []domain.Finding) (DependencyPolicyDiagnostic, error) {
+	identity := dependency.Artifact().Identity()
+	if dependency.Node().String() == "" || identity.Name() == "" || identity.Version() == "" || identity.Source().String() == "" || decision.PolicyID() == "" || len(decision.Reasons()) == 0 {
+		return DependencyPolicyDiagnostic{}, errors.New("dependency policy diagnostic is invalid")
+	}
+	codes := make([]string, 0)
+	seen := make(map[string]bool)
+	for _, finding := range findings {
+		code := finding.Code()
+		if strings.HasPrefix(code, "M3_") && !seen[code] {
+			seen[code] = true
+			codes = append(codes, code)
+		}
+	}
+	return DependencyPolicyDiagnostic{node: dependency.Node(), packageName: identity.Name(), version: identity.Version(), source: identity.Source(), decision: decision.Decision(), reasons: decision.Reasons(), dynamicFindingCodes: codes}, nil
+}
+
+func (d DependencyPolicyDiagnostic) Node() domain.DependencyNodeID { return d.node }
+func (d DependencyPolicyDiagnostic) Package() string               { return d.packageName }
+func (d DependencyPolicyDiagnostic) Version() string               { return d.version }
+func (d DependencyPolicyDiagnostic) Source() domain.SourceID       { return d.source }
+func (d DependencyPolicyDiagnostic) Decision() domain.Decision     { return d.decision }
+func (d DependencyPolicyDiagnostic) Reasons() []string             { return append([]string(nil), d.reasons...) }
+func (d DependencyPolicyDiagnostic) DynamicFindingCodes() []string {
+	return append([]string(nil), d.dynamicFindingCodes...)
 }
 
 // GraphStaticDiagnostic is the application-owned bounded qualification
@@ -116,6 +157,11 @@ func (i InspectedInstall) withGraphDynamicInstallDiagnostics(diagnostics []Graph
 	return i
 }
 
+func (i InspectedInstall) withDependencyPolicyDiagnostics(diagnostics []DependencyPolicyDiagnostic) InspectedInstall {
+	i.policyDiagnostics = append([]DependencyPolicyDiagnostic(nil), diagnostics...)
+	return i
+}
+
 func (i InspectedInstall) OperationID() domain.OperationID         { return i.operationID }
 func (i InspectedInstall) Request() InstallRequest                 { return i.request }
 func (i InspectedInstall) Resolution() domain.DependencyResolution { return i.resolution }
@@ -126,4 +172,7 @@ func (i InspectedInstall) GraphStaticDiagnostics() []GraphStaticDiagnostic {
 }
 func (i InspectedInstall) GraphDynamicInstallDiagnostics() []GraphDynamicInstallDiagnostic {
 	return append([]GraphDynamicInstallDiagnostic(nil), i.dynamicDiagnostics...)
+}
+func (i InspectedInstall) DependencyPolicyDiagnostics() []DependencyPolicyDiagnostic {
+	return append([]DependencyPolicyDiagnostic(nil), i.policyDiagnostics...)
 }

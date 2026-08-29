@@ -182,6 +182,31 @@ func TestInstallInspectRecordsBoundedGraphDynamicInstallDiagnostic(t *testing.T)
 	}
 }
 
+func TestInstallInspectRecordsBoundedPerNodePolicyAttribution(t *testing.T) {
+	graph := twoNodeGraphForSource(t, "pypi")
+	ports := &graphInspectionPorts{multiInspectionPorts: newMultiInspectionPorts(t, graph), dynamicFinding: "M3_NETWORK_ATTEMPT"}
+	source, _ := domain.NewSourceID("pypi")
+	reference, _ := domain.NewArtifactReference(source, "first")
+	target, _ := domain.NewInstallTarget("/tmp/heliopause-install-target")
+	installContext, _ := domain.NewInstallContext(target)
+	request, _ := application.NewInstallRequest(reference, installContext)
+	service, err := application.NewInstallInspectService(&lockedResolver{graph: graph}, ports, ports, ports, ports, policy.M3{}, policy.M5{}, domain.NewOperationID, domain.NewRunID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := service.Inspect(context.Background(), request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	diagnostics := result.DependencyPolicyDiagnostics()
+	if len(diagnostics) != 2 || diagnostics[0].Node().String() != "first" || diagnostics[0].Package() != "first" || diagnostics[0].Decision() != domain.DecisionManualReview || !reflect.DeepEqual(diagnostics[0].Reasons(), []string{"M3_NETWORK_ATTEMPT"}) || !reflect.DeepEqual(diagnostics[0].DynamicFindingCodes(), []string{"M3_NETWORK_ATTEMPT"}) {
+		t.Fatalf("first policy diagnostic = %#v", diagnostics)
+	}
+	if diagnostics[1].Node().String() != "second" || diagnostics[1].Decision() != domain.DecisionAllow || len(diagnostics[1].DynamicFindingCodes()) != 0 {
+		t.Fatalf("second policy diagnostic = %#v", diagnostics[1])
+	}
+}
+
 func TestInstallInspectRejectsGraphReportKeySetMismatch(t *testing.T) {
 	graph := twoNodeGraphForSource(t, "pypi")
 	ports := &graphInspectionPorts{multiInspectionPorts: newMultiInspectionPorts(t, graph), omitReport: true}
@@ -280,6 +305,7 @@ type graphInspectionPorts struct {
 	graphCalls     int
 	omitReport     bool
 	dynamicFailure string
+	dynamicFinding string
 }
 
 func (p *graphInspectionPorts) InspectGraph(_ context.Context, graph domain.LockedDependencyGraph, artifacts map[domain.DependencyNodeID]domain.AcquiredArtifact) (map[domain.DependencyNodeID]domain.InspectionReport, error) {
@@ -299,7 +325,12 @@ func (p *graphInspectionPorts) InspectGraph(_ context.Context, graph domain.Lock
 		}
 		check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, status, limitation)
 		evidence, _ := domain.NewEvidence(mustEvidenceID("graph-inspection-"+artifact.Identity().Name()), checkID, artifact.Identity(), artifact.Digest(), "fixture", "graph inspection completed")
-		report, _ := domain.NewInspectionReport(check, nil, []domain.Evidence{evidence})
+		var findings []domain.Finding
+		if p.dynamicFinding != "" && artifact.Identity().Name() == "first" {
+			finding, _ := domain.NewFinding(p.dynamicFinding, []domain.EvidenceID{evidence.ID()})
+			findings = []domain.Finding{finding}
+		}
+		report, _ := domain.NewInspectionReport(check, findings, []domain.Evidence{evidence})
 		reports[dependency.Node()] = report
 	}
 	if p.omitReport {

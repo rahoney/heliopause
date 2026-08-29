@@ -99,6 +99,11 @@ func WriteJSONInstallResult(output io.Writer, outcome application.InstallOutcome
 			Node: diagnostic.Node().String(), Package: diagnostic.Package(), Version: diagnostic.Version(), Source: diagnostic.Source().String(), Variant: diagnostic.Variant(), Reason: diagnostic.Reason(), Phase: diagnostic.Phase(), FailureClass: diagnostic.FailureClass(),
 		})
 	}
+	for _, diagnostic := range inspection.DependencyPolicyDiagnostics() {
+		document.DependencyPolicyAttribution = append(document.DependencyPolicyAttribution, machineDependencyPolicyDiagnostic{
+			Node: diagnostic.Node().String(), Package: diagnostic.Package(), Version: diagnostic.Version(), Source: diagnostic.Source().String(), EntryPolicyDecision: string(diagnostic.Decision()), EntryPolicyReasons: diagnostic.Reasons(), DynamicFindingCodes: diagnostic.DynamicFindingCodes(),
+		})
+	}
 	if inspection.Set().Valid() {
 		for _, item := range inspection.Set().Inspections() {
 			for _, check := range item.Checks() {
@@ -146,11 +151,22 @@ type installMachineResult struct {
 	EvidenceReferences          []machineEvidenceReference             `json:"evidence_references"`
 	GraphStaticNotReady         []machineGraphStaticDiagnostic         `json:"graph_static_not_ready,omitempty"`
 	GraphDynamicInstallFailures []machineGraphDynamicInstallDiagnostic `json:"graph_dynamic_install_failures,omitempty"`
+	DependencyPolicyAttribution []machineDependencyPolicyDiagnostic    `json:"dependency_policy_attribution,omitempty"`
 	Policy                      *machinePolicy                         `json:"policy,omitempty"`
 	Target                      string                                 `json:"target"`
 	VerifiedSet                 *machineVerifiedSet                    `json:"verified_set,omitempty"`
 	PromotionStatus             string                                 `json:"promotion_status"`
 	Error                       *machineError                          `json:"error,omitempty"`
+}
+
+type machineDependencyPolicyDiagnostic struct {
+	Node                string   `json:"node"`
+	Package             string   `json:"package"`
+	Version             string   `json:"version"`
+	Source              string   `json:"source"`
+	EntryPolicyDecision string   `json:"entry_policy_decision"`
+	EntryPolicyReasons  []string `json:"entry_policy_reasons"`
+	DynamicFindingCodes []string `json:"dynamic_finding_codes"`
 }
 
 type machineGraphStaticDiagnostic struct {
