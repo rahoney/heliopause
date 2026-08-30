@@ -158,6 +158,16 @@ trusted-control attribution은 exact HAA-created one-shot control root처럼
 별도 contract가 검증한 좁은 사실에만 근거해야 하며, child·re-exec·unknown
 attribution으로 상속되지 않는다.
 
+그 좁은 사실의 provenance는 M3/M11 contract가 정의한다. OCI root는 검증된
+`container/start` ContextData로, Docker exec root는 검증된 HAA direct-exec
+launcher와 complete clone provenance로만 확정한다. `OriginExec`,
+`parent_thread_group_id == 0`, pathname 또는 process class만으로는 trusted
+root가 되지 않는다. HAA handoff helper는 privilege를 부여하는 인증 marker가
+아니라 `CONTROL → ARTIFACT`만 수행하는 irreversible trust-removal marker다.
+따라서 Artifact가 이를 다시 호출해도 trust를 얻지 못한다. 이 문서는
+helper의 검증·고정·최소권한 원칙을 소유하고, M3/M11은 그 원칙을 반복하지
+않고 관찰 귀속 계약만 소유한다.
+
 구체 lifecycle, API bound와 M8 acceptance는
 [M8 Production Trust Hardening Contract](../planning/11-m8-production-trust-hardening-contract.md)가
 소유한다.

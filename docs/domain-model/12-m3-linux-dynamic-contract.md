@@ -97,12 +97,36 @@ execution. Failed pathname lookup without Sentry, including explicit syscall
 failure, remains bounded attempt telemetry. Malformed or invalid Sentry
 observation and observer stream-integrity failure are `INCOMPLETE`.
 
-An exact HAA-created direct exec session may consume exactly one valid Sentry
-initial transition as trusted launch plumbing. That trust is
-one-shot: a same-group re-exec, any child group, same-path execution, lifecycle
-descendant or unknown attribution does not regain or inherit it. npm lifecycle
-scripts run in a spawned child/process subtree; that child and every descendant
-are Artifact-controlled regardless of executable pathname.
+Process attribution separates execution role from root provenance. The bounded
+role state is `UNKNOWN → CONTROL → ARTIFACT`; `ARTIFACT` is irreversible.
+Provenance is separately `OCI_ROOT`, `DIRECT_EXEC_ROOT` or `CLONE_CHILD`, and
+root eligibility is tracked and consumed separately.
+
+The OCI root is established from exact `container/start` ContextData
+(`container_id`, thread-group ID and thread-group start time) and begins in
+`CONTROL`. Every HAA Docker exec begins through the verified HAA direct-exec
+launcher, which immediately execs its target. Complete `sentry/clone`
+provenance is required before accepting the first valid Sentry transition for
+an untracked direct-exec group as its launch boundary. Clone-created groups
+are permanently ineligible to become direct roots, including `CLONE_PARENT`
+children whose reported parent group ID may be zero. `is_exec_session` or a
+zero parent group ID alone never creates control trust, and the target
+pathname is not a trust anchor.
+
+A valid direct root consumes root eligibility exactly once. Same-group re-exec,
+any child group, same-path execution, lifecycle descendant or unknown
+attribution does not regain or inherit root eligibility. A CONTROL child may
+inherit only bounded control-role context; an ARTIFACT child remains
+ARTIFACT.
+
+The verified HAA handoff executable is recognized only as a trust-removal
+marker. It performs `CONTROL → ARTIFACT` (or leaves `ARTIFACT` unchanged) and
+has no reverse transition. Python package import passes this handoff before
+`importlib.import_module`; npm lifecycle execution uses it as its
+`script-shell` trampoline; and GitHub ELF execution passes through it before
+`/work/artifact`. Artifact-controlled network operations and executable
+transitions remain actionable after handoff. No pathname, process class,
+child ancestry or handoff marker can create or restore CONTROL trust.
 
 The same non-inheritance rule applies to `TRUSTED_CONTROL_NETWORK`: it is
 available only to the exact pinned/verified one-shot HAA control root, never to

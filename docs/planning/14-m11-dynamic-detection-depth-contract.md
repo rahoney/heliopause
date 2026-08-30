@@ -37,8 +37,8 @@ upstream exact source test가 소유한다.
 
 | Trace point | Required context | Required point data | Retained outside helper |
 | --- | --- | --- | --- |
-| `container/start` | `container_id` | none | session attribution only |
-| `sentry/clone` | `container_id`, `group_id`, `process_name` | clone identity | bounded process relation/count only |
+| `container/start` | `container_id`, `group_id`, `thread_group_start_time`, `parent_thread_group_id`, `is_exec_session` | none | exact OCI-root identity and session attribution only |
+| `sentry/clone` | `container_id`, `group_id`, `thread_group_start_time`, `parent_thread_group_id`, `is_exec_session` | created group ID/start and creator context | bounded process provenance/role only |
 | `sentry/execve` | `container_id`, `group_id`, `process_name` | exec identity after `LoadTaskImage` succeeds | authoritative image-load boundary; bounded context validation only |
 | `syscall/execve` and `syscall/execveat` enter/exit | `container_id`, `group_id`, `process_name` | pathname, argv, bounded attempt/exit telemetry | telemetry only; EXIT is not final success evidence |
 | `syscall/openat/enter` | `container_id`, `group_id`, `process_name` | pathname, flags, mode, sysno | workspace/honeytoken/outside class only |
@@ -89,12 +89,25 @@ Finding. A valid bounded Sentry observation may produce
 ENTER, without claiming final process-image commit or userspace execution.
 Failed pathname lookup without Sentry, including explicit syscall failure,
 remains bounded telemetry. Malformed or invalid Sentry observation and observer
-stream-integrity failure are `INCOMPLETE`. An exact HAA-created direct exec
-session may consume only its first valid Sentry transition as trusted launch
-plumbing. Same-group re-exec, child
-groups, same-path execution and unknown attribution do not regain or inherit
-that trust. npm lifecycle child processes and their descendants are
-Artifact-controlled regardless of pathname.
+stream-integrity failure are `INCOMPLETE`.
+
+Role and provenance are separate. `UNKNOWN → CONTROL → ARTIFACT` is the
+monotonic role state; `OCI_ROOT`, `DIRECT_EXEC_ROOT` and `CLONE_CHILD` are
+provenance categories, and root eligibility is consumed separately. The exact
+OCI root is seeded from `container/start`. Each HAA Docker exec uses the
+verified direct-exec launcher, and its first valid Sentry transition is
+eligible to establish one direct root only when complete clone provenance
+shows that the group was not created by a clone. `OriginExec` and
+`parent_thread_group_id == 0` alone are insufficient. Clone-created groups,
+including `CLONE_PARENT` children, are permanently root-ineligible; a
+same-group re-exec cannot reacquire root eligibility.
+
+The verified HAA handoff executable is a one-way trust-removal marker:
+`CONTROL → ARTIFACT`, or `ARTIFACT → ARTIFACT`. It never grants trust and
+cannot restore CONTROL. Python import, npm lifecycle script-shell execution,
+and GitHub ELF execution cross this marker before artifact-controlled code
+runs. Artifact descendants and re-execs remain Artifact-controlled regardless
+of pathname.
 
 ### M11-003 trusted profile attribution
 
