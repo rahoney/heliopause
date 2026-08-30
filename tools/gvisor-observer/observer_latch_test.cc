@@ -113,7 +113,7 @@ bool SendDirectLaunchExec(int output, int client, const gvisor::syscall::Execve&
   launcher.set_execfn(kBoundaryHelperPath);
   launcher.clear_argv();
   launcher.add_argv(kBoundaryHelperPath);
-  launcher.add_argv(boundaryLaunchMode);
+  launcher.add_argv(kLaunchMode);
   if (!SendSuccessfulExec(client, enter, launcher) ||
       !ExpectRecord(output, enter.context_data().container_id().c_str(), "process-exec-expected")) return false;
   return SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, target);
@@ -715,7 +715,7 @@ bool VerifySentryAuthoritativeBoundary(int output, const std::string& remote, co
   launcher.set_execfn(kBoundaryHelperPath);
   launcher.clear_argv();
   launcher.add_argv(kBoundaryHelperPath);
-  launcher.add_argv(boundaryLaunchMode);
+  launcher.add_argv(kLaunchMode);
   if (!SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, launcher) ||
       !ExpectRecord(output, kTenthID, "process-exec-expected") ||
       !SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, make_sentry(next)) ||
@@ -789,7 +789,7 @@ bool VerifyDelayedProfileRegistration(int output, const std::string& remote, con
   resolved.set_binary_path("/usr/local/bin/node");
   resolved.set_execfn(kBoundaryHelperPath);
   resolved.add_argv(kBoundaryHelperPath);
-  resolved.add_argv(boundaryLaunchMode);
+  resolved.add_argv(kLaunchMode);
   gvisor::syscall::Execve exit = execve;
   exit.mutable_exit()->set_result(0);
   exit.mutable_exit()->set_errorno(0);
