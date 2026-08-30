@@ -11,6 +11,11 @@ M11의 sole upstream schema owner는 `scripts/runtimes.lock.json`의 gVisor
 `release-20260810.0` / commit `5ceb9a5fd5750d6c73dd166441f28306039300d0`이다.
 helper, runsc와 test source checkout은 이 identity를 함께 사용한다.
 
+M3/M11 dynamic inspection image의 base/derived digest, 고정 helper content와
+build provenance/signature는 [Trusted Tooling and Evidence](../threat-model/04-trusted-tooling-and-evidence.md)의
+D-012/D-015 owner contract로 lock·검증한다. runtime helper 설치, writable helper
+mount와 persistent UID 0 bootstrap은 허용하지 않는다.
+
 - gVisor seccheck의 remote sink protobuf framing/protocol은 그대로 사용한다.
 - `runsc trace metadata`의 human-readable output은 upstream이 안정성을 보장하지
   않으므로 schema lock의 canonical source가 아니다.
@@ -134,13 +139,23 @@ container environment에서 유도하지 않는다.
   pathname class도 확정할 수 없으면 normal observation을 생략하지 않고 incomplete로
   처리한다.
 
-`trusted-control-network` is equally narrow: only the exact pinned/verified
-one-shot HAA direct control root may produce it after exact attribution.
-Lifecycle children, descendants, re-exec, same-path execution and unknown or
-missing attribution never inherit it. Their `connect`/send communication
-attempts remain `network-attempt`. The trusted-tool compromise scope belongs to
+`trusted-control-network` is equally narrow: it is active only for the exact
+pinned/verified one-shot HAA direct-control target after its first accepted
+launch target transition. OCI root, the launch marker, lifecycle children,
+descendants, clone/control children, same-group re-exec, same-path execution
+and unknown or missing attribution never receive or regain it. The active state
+is cleared before a later successful executable transition and at handoff;
+their `connect`/send communication attempts remain `network-attempt`. The
+trusted-tool compromise scope belongs to
 D-012/D-015 in [Trusted Tooling and Evidence](../threat-model/04-trusted-tooling-and-evidence.md);
 this document does not suppress trusted-tool behavior broadly.
+
+The C++ normalized producer and Go fixed decoder are one finite helper
+envelope: every emitted relation, class, reason and parent category must be a
+canonical value accepted by the decoder. Unknown or mismatched values are
+stream-integrity failure, not a reason to widen the decoder indiscriminately;
+decoder rejection must preserve a bounded fault reason rather than silently
+becoming a blank diagnostic.
 
 `process-exec-expected`와 `filesystem-workspace-access`는 Evidence summary의 count로
 집계할 수 있지만, actionable Finding은 `process-exec-unexpected`,
