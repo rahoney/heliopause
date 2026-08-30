@@ -39,10 +39,12 @@ upstream exact source test가 소유한다.
 | --- | --- | --- | --- |
 | `container/start` | `container_id` | none | session attribution only |
 | `sentry/clone` | `container_id`, `group_id`, `process_name` | clone identity | bounded process relation/count only |
-| `sentry/execve` | `container_id`, `group_id`, `process_name` | exec identity | bounded lifecycle/count only |
-| `syscall/execve/enter` | `container_id`, `group_id`, `process_name` | pathname, argv | expected/unexpected process class only |
+| `sentry/execve` | `container_id`, `group_id`, `process_name` | exec identity | bounded exec-transition correlation only |
+| `syscall/execve` and `syscall/execveat` enter/exit | `container_id`, `group_id`, `process_name` | pathname, argv, bounded exit success state | enter/Sentry/successful-exit correlation only |
 | `syscall/openat/enter` | `container_id`, `group_id`, `process_name` | pathname, flags, mode, sysno | workspace/honeytoken/outside class only |
-| `syscall/connect/enter`, `syscall/socket/enter` | `container_id`, `group_id`, `process_name` | syscall class | bounded network-attempt class only |
+| `syscall/socket` enter/exit; close/dup/fcntl and clone/exec lifecycle | `container_id`, `group_id`, `process_name` | bounded socket FD-family lifecycle state | helper-only bounded correlation; unknown state is incomplete |
+| `syscall/connect/enter` | `container_id`, `group_id`, `process_name` | socket family | bounded communication-attempt class only |
+| raw `sendto`/`sendmsg`/`sendmmsg` enter where applicable | `container_id`, `group_id`, `process_name` | socket FD only | helper-only FD-family lookup; no payload/destination retention |
 
 `fd_path`, `cwd`, `credentials`, `env`, read/write data, raw socket address와 raw
 process identifier are intentionally excluded. `pathname`과 `argv`는 helper가
@@ -56,12 +58,15 @@ summary만 전송한다. M11-002가 추가할 normalized vocabulary는 다음으
 
 | Category | Normalized subject | Meaning |
 | --- | --- | --- |
-| PROCESS | `process-exec-expected` | trusted backend command plan 또는 pinned runtime allowlist와 일치 |
-| PROCESS | `process-exec-unexpected` | allowlist 밖 executable/path class 또는 classification ambiguity |
+| PROCESS | execution-attempt telemetry | syscall exec enter; bounded only and never directly a Finding |
+| PROCESS | `process-exec-expected` | exact trusted launch/control transition confirmed by bounded success correlation |
+| PROCESS | `process-exec-unexpected` | successfully correlated unexpected executable transition; pathname alone does not grant trust |
 | FILESYSTEM | `filesystem-workspace-access` | approved transient workspace 안의 access |
 | FILESYSTEM | `filesystem-outside-workspace` | approved workspace 밖 access |
 | HONEYTOKEN | `honeytoken-access` | HAA-controlled honeytoken class access |
-| NETWORK | `network-attempt` | socket/connect attempt; destination is retained하지 않음 |
+| NETWORK | socket capability telemetry | ordinary AF_INET/AF_INET6 socket creation; bounded raw observation only |
+| NETWORK | `trusted-control-network` | exact pinned/verified one-shot HAA direct control root의 bounded raw network operation; artifact Finding이 아님 |
+| NETWORK | `network-attempt` | `connect`, `sendto`, `sendmsg`, `sendmmsg` communication attempt, and conservative AF_PACKET socket creation; destination is retained하지 않음 |
 
 expected process allowlist와 workspace/honeytoken class map은 artifact가 제공하는
 input이 아니라 trusted backend가 exact sandbox command, image, mount와 controlled
@@ -69,6 +74,21 @@ honeytoken placement로 생성한다. unknown path, unsupported syscall semantic
 ambiguous normalization 또는 class map mismatch는 `process-exec-unexpected` 또는
 required observation incomplete로 처리한다. generic synthetic fixture만으로 위
 production kinds를 주장할 수 없다.
+
+ordinary INET socket capability does not itself become `network-attempt`.
+AF_PACKET socket creation remains a conservative actionable exception. Unknown,
+malformed, dropped, unclassifiable FD-family state, or missing required network
+correlation is fail-closed `INCOMPLETE` rather than a clean observation.
+
+exec enter is not successful execution. A process Finding requires matching
+syscall enter, `sentry/execve`, and successful syscall exit for `execve` or
+`execveat`. Failed attempts remain bounded telemetry; missing, duplicate,
+ambiguous, mismatched or out-of-order required correlation is `INCOMPLETE`.
+An exact HAA-created direct exec session may consume only its first successfully
+correlated transition as trusted launch plumbing. Same-group re-exec, child
+groups, same-path execution and unknown attribution do not regain or inherit
+that trust. npm lifecycle child processes and their descendants are
+Artifact-controlled regardless of pathname.
 
 ### M11-003 trusted profile attribution
 
@@ -95,11 +115,22 @@ container environment에서 유도하지 않는다.
   pathname class도 확정할 수 없으면 normal observation을 생략하지 않고 incomplete로
   처리한다.
 
+`trusted-control-network` is equally narrow: only the exact pinned/verified
+one-shot HAA direct control root may produce it after exact attribution.
+Lifecycle children, descendants, re-exec, same-path execution and unknown or
+missing attribution never inherit it. Their `connect`/send communication
+attempts remain `network-attempt`. The trusted-tool compromise scope belongs to
+D-012/D-015 in [Trusted Tooling and Evidence](../threat-model/04-trusted-tooling-and-evidence.md);
+this document does not suppress trusted-tool behavior broadly.
+
 `process-exec-expected`와 `filesystem-workspace-access`는 Evidence summary의 count로
 집계할 수 있지만, actionable Finding은 `process-exec-unexpected`,
 `filesystem-outside-workspace`, `honeytoken-access`, `network-attempt`에만 만든다.
 M11-003은 각 source adapter의 actual gVisor integration evidence가 확인된 뒤
 Finding을 활성화했으며, M11-005가 cross-ecosystem qualification을 마무리한다.
+`network-attempt`와 `process-exec-unexpected`의 existing M3/M5 policy mapping은
+변경하지 않는다. 이 contract는 raw observation, successful-transition proof 및
+trusted attribution의 조건만 정의한다.
 
 ## 4. Privacy, bounds and Evidence
 

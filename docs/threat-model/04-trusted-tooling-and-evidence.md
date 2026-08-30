@@ -142,6 +142,22 @@ Evidence completeness가 성립하지 않는다.
 - production transport가 생성하지 못하는 observation은 clean Evidence가 아니며
   required capability 누락은 fail-closed다.
 
+### D-012/D-015 trusted-tool behavioral attribution scope
+
+digest·provenance와 identity가 검증된 installer/runtime 및 HAA control runtime은
+이 문서가 정의하는 trusted-tool boundary 안에 있다. M3/M11의 behavioral
+attribution은 우선적으로 Artifact-controlled execution을 대상으로 한다. 따라서
+검증된 installer/runtime이 hostile Artifact bytes를 처리하는 중 그 도구 자체가
+exploit되는 경우는 trusted-tooling residual risk이며, M3/M11이 그 원인을 Artifact
+lifecycle과 구별해 보장하는 범위는 아니다.
+
+이는 도구 행위를 광범위하게 suppress하는 권한이 아니다. sandbox containment,
+tool identity·pinning·provenance 검증, external observation 및 evidence
+completeness의 fail-closed 요구는 그대로 적용된다. M3/M11에서 허용되는
+trusted-control attribution은 exact HAA-created one-shot control root처럼
+별도 contract가 검증한 좁은 사실에만 근거해야 하며, child·re-exec·unknown
+attribution으로 상속되지 않는다.
+
 구체 lifecycle, API bound와 M8 acceptance는
 [M8 Production Trust Hardening Contract](../planning/11-m8-production-trust-hardening-contract.md)가
 소유한다.

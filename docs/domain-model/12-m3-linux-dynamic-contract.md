@@ -61,7 +61,7 @@ M3 runs npm lifecycle installation only. post-install application invocation, ex
 
 The backend records bounded raw facts, not findings. M8-004 기준 production gVisor
 remote helper가 실제 emit하는 범위는 session lifecycle, process exec/clone, file
-open, network socket/connect attempt뿐이다. Trace is enabled at Session
+open, network capability와 communication attempt다. Trace is enabled at Session
 initialization so pre-observer events cannot be missed. Raw path, argv,
 environment, file contents, output and trace payload never enter human result
 or normal Evidence.
@@ -73,13 +73,39 @@ matrix or make an unsupported capability appear clean.
 
 | Observation | Normalized Evidence / Finding |
 | --- | --- |
-| process exec/clone; file open | bounded observation only; no process/filesystem Finding is claimed in M8 |
-| network/DNS/socket attempt with network disabled | `M3_NETWORK_ATTEMPT` MANUAL_REVIEW |
+| ordinary AF_INET/AF_INET6 socket creation | bounded raw capability observation only; it is not by itself `M3_NETWORK_ATTEMPT` |
+| AF_PACKET socket creation | conservative `M3_NETWORK_ATTEMPT` MANUAL_REVIEW because raw-packet/network capability is security-relevant |
+| `connect`, `sendto`, `sendmsg`, `sendmmsg` communication attempt | `M3_NETWORK_ATTEMPT` MANUAL_REVIEW |
+| exact pinned HAA one-shot direct control root network operation | bounded `TRUSTED_CONTROL_NETWORK` raw observation only when exact control-root attribution is confirmed; it is not an artifact network Finding |
+| network FD-family/event attribution unknown, malformed, dropped or unclassifiable | required dynamic check `INCOMPLETE` / no ALLOW |
+| exec enter attempt; file open; process clone | bounded raw telemetry only |
+| successfully correlated unexpected executable transition | `M3_UNEXPECTED_PROCESS` MANUAL_REVIEW |
 | read/open synthetic honeytoken | `UNSUPPORTED` in production helper; M11 candidate |
-| execute unexpected program outside npm/node allowlist | `UNSUPPORTED` in production helper; M11 candidate |
 | write outside the bounded `/tmp` workspace or excessive file operation | `UNSUPPORTED` in production helper; M11 candidate |
 | timeout/resource/event-limit, helper drop/malformed/mismatched stream or observer failure | required dynamic check `INCOMPLETE` / no ALLOW |
 | clean completed observation | dynamic check `COMPLETED`; Policy may allow only after all M3 required checks are complete |
+
+`syscall/execve/enter` and `execveat` enter are execution-attempt telemetry;
+they do not alone prove an executable-image transition. An actionable process
+observation requires bounded correlation of syscall enter, `sentry/execve`, and
+successful syscall exit. Failed attempts remain bounded telemetry. Missing,
+ambiguous, mismatched or incomplete required correlation is `INCOMPLETE`.
+
+An exact HAA-created direct exec session may consume exactly one successfully
+correlated initial transition as trusted launch plumbing. That trust is
+one-shot: a same-group re-exec, any child group, same-path execution, lifecycle
+descendant or unknown attribution does not regain or inherit it. npm lifecycle
+scripts run in a spawned child/process subtree; that child and every descendant
+are Artifact-controlled regardless of executable pathname.
+
+The same non-inheritance rule applies to `TRUSTED_CONTROL_NETWORK`: it is
+available only to the exact pinned/verified one-shot HAA control root, never to
+a lifecycle child, descendant, re-exec, same-path execution or unknown/missing
+correlation. Artifact-controlled communication attempts remain
+`M3_NETWORK_ATTEMPT`. D-012/D-015 in
+[Trusted Tooling and Evidence](../threat-model/04-trusted-tooling-and-evidence.md)
+own the trusted-tool compromise scope; this M3 contract owns only observation
+interpretation.
 
 ## 5. M3 Policy v3 direction
 
@@ -91,6 +117,9 @@ M3 Policy identity is `m3-npm-dynamic-inspect`, version 1.
 4. suspicious dynamic behavior with no blocking finding → `MANUAL_REVIEW` with its normalized reason.
 
 This does not change M2 results retroactively. M3 Policy is only wired when the M3 backend capability is available.
+`M3_NETWORK_ATTEMPT` and `M3_UNEXPECTED_PROCESS` remain `MANUAL_REVIEW` reasons;
+this contract changes only the raw-observation-to-Finding and attribution
+conditions that may produce them.
 
 ## 6. Fixtures, retention and exclusions
 
