@@ -26,10 +26,13 @@ constexpr char kNinthID[] = "33445566778899aa";
 constexpr char kTenthID[] = "445566778899aabb";
 constexpr char kEleventhID[] = "5566778899aabbcc";
 constexpr char kTwelfthID[] = "66778899aabbccdd";
+constexpr char kThirteenthID[] = "778899aabbccddee";
 
 bool SendAll(int fd, const std::string& value) {
   return send(fd, value.data(), value.size(), 0) == static_cast<ssize_t>(value.size());
 }
+
+bool ExpectRecord(int output, const char* container_id, const char* kind, const char* reason = nullptr);
 
 int BindDatagram(const std::string& path) {
   int fd = socket(AF_UNIX, SOCK_DGRAM, 0);
@@ -83,6 +86,16 @@ bool SendEvent(int client, gvisor::common::MessageType type, const Message& mess
   return SendAll(client, packet);
 }
 
+bool SendEvent(int client, gvisor::common::MessageType type,
+               const gvisor::container::Start& original, uint32_t dropped_count = 0) {
+  gvisor::container::Start message = original;
+  auto* context = message.mutable_context_data();
+  if (context->thread_group_id() == 0) context->set_thread_group_id(1);
+  if (context->thread_group_start_time_ns() == 0) context->set_thread_group_start_time_ns(1);
+	context->set_parent_thread_group_id(0);
+  return SendEvent<gvisor::container::Start>(client, type, message, dropped_count);
+}
+
 bool SendSuccessfulExec(int client, const gvisor::syscall::Execve& enter,
                         const gvisor::sentry::ExecveInfo& sentry) {
   if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, enter)) return false;
@@ -93,7 +106,35 @@ bool SendSuccessfulExec(int client, const gvisor::syscall::Execve& enter,
   return SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, sentry);
 }
 
-bool ExpectRecord(int output, const char* container_id, const char* kind, const char* reason = nullptr) {
+bool SendDirectLaunchExec(int output, int client, const gvisor::syscall::Execve& enter,
+                          const gvisor::sentry::ExecveInfo& target) {
+  gvisor::sentry::ExecveInfo launcher = target;
+  launcher.set_binary_path(kBoundaryHelperPath);
+  launcher.set_execfn(kBoundaryHelperPath);
+  launcher.clear_argv();
+  launcher.add_argv(kBoundaryHelperPath);
+  launcher.add_argv(boundaryLaunchMode);
+  if (!SendSuccessfulExec(client, enter, launcher) ||
+      !ExpectRecord(output, enter.context_data().container_id().c_str(), "process-exec-expected")) return false;
+  return SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, target);
+}
+
+bool SendProcessClone(int output, int client, const char* container_id,
+                      int32_t parent_group, int64_t parent_start,
+                      int32_t child_group, int64_t child_start) {
+  gvisor::sentry::CloneInfo clone;
+  clone.mutable_context_data()->set_container_id(container_id);
+  clone.mutable_context_data()->set_thread_group_id(parent_group);
+  clone.mutable_context_data()->set_thread_group_start_time_ns(parent_start);
+  clone.mutable_context_data()->set_parent_thread_group_id(0);
+  clone.mutable_context_data()->set_is_exec_session(true);
+  clone.set_created_thread_group_id(child_group);
+  clone.set_created_thread_start_time_ns(child_start);
+  return SendEvent(client, gvisor::common::MESSAGE_SENTRY_CLONE, clone) &&
+      ExpectRecord(output, container_id, "process-clone");
+}
+
+bool ExpectRecord(int output, const char* container_id, const char* kind, const char* reason) {
   char buffer[1024];
   const ssize_t size = recv(output, buffer, sizeof(buffer), 0);
   if (size <= 0) return false;
@@ -205,7 +246,7 @@ bool VerifyPinnedAccessors(int output, const std::string& remote, const std::str
   gvisor::sentry::ExecveInfo execResolved;
   *execResolved.mutable_context_data() = execve.context_data();
   execResolved.set_binary_path("/usr/local/bin/node");
-  if (!SendSuccessfulExec(client, execve, execResolved) || !ExpectRecord(output, kFirstID, "process-exec-expected")) return false;
+  if (!SendDirectLaunchExec(output, client, execve, execResolved) || !ExpectRecord(output, kFirstID, "process-exec-expected")) return false;
   gvisor::syscall::Open open;
   open.mutable_context_data()->set_container_id(kFirstID);
   open.mutable_context_data()->set_thread_group_id(7);
@@ -275,7 +316,7 @@ bool VerifyNetworkFamilies(int output, const std::string& remote, const std::str
   gvisor::sentry::ExecveInfo rootResolved;
   *rootResolved.mutable_context_data() = root.context_data();
   rootResolved.set_binary_path("/usr/local/bin/python3.14");
-  if (!SendSuccessfulExec(client, root, rootResolved) || !ExpectRecord(output, kFifthID, "process-exec-expected")) return false;
+  if (!SendDirectLaunchExec(output, client, root, rootResolved) || !ExpectRecord(output, kFifthID, "process-exec-expected")) return false;
 
   gvisor::syscall::Socket socket;
   socket.mutable_context_data()->set_container_id(kFifthID);
@@ -329,6 +370,12 @@ bool VerifyNetworkFamilies(int output, const std::string& remote, const std::str
   clone.mutable_exit()->set_result(51);
   clone.mutable_exit()->set_errorno(0);
   if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_CLONE, clone)) return false;
+  gvisor::sentry::CloneInfo sentry_clone;
+  *sentry_clone.mutable_context_data() = socket.context_data();
+  sentry_clone.set_created_thread_group_id(51);
+  sentry_clone.set_created_thread_start_time_ns(510);
+  if (!SendEvent(client, gvisor::common::MESSAGE_SENTRY_CLONE, sentry_clone) ||
+      !ExpectRecord(output, kFifthID, "process-clone")) return false;
   *raw.mutable_context_data() = socket.context_data();
   raw.mutable_context_data()->set_thread_group_id(51);
   raw.mutable_context_data()->set_thread_group_start_time_ns(510);
@@ -341,6 +388,12 @@ bool VerifyNetworkFamilies(int output, const std::string& remote, const std::str
   fork.mutable_exit()->set_result(52);
   fork.mutable_exit()->set_errorno(0);
   if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_FORK, fork)) return false;
+  sentry_clone.clear_context_data();
+  *sentry_clone.mutable_context_data() = socket.context_data();
+  sentry_clone.set_created_thread_group_id(52);
+  sentry_clone.set_created_thread_start_time_ns(520);
+  if (!SendEvent(client, gvisor::common::MESSAGE_SENTRY_CLONE, sentry_clone) ||
+      !ExpectRecord(output, kFifthID, "process-clone")) return false;
   raw.mutable_context_data()->set_thread_group_id(52);
   raw.mutable_context_data()->set_thread_group_start_time_ns(520);
   if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_RAW, raw) ||
@@ -387,8 +440,8 @@ bool VerifySocketFault(int output, const std::string& remote, const std::string&
   if (!SendEvent(client, gvisor::common::MESSAGE_CONTAINER_START, start) || !ExpectRecord(output, kSixthID, "container-start")) return false;
   gvisor::syscall::Socket socket;
   socket.mutable_context_data()->set_container_id(kSixthID);
-  socket.mutable_context_data()->set_thread_group_id(60);
-  socket.mutable_context_data()->set_thread_group_start_time_ns(600);
+  socket.mutable_context_data()->set_thread_group_id(1);
+  socket.mutable_context_data()->set_thread_group_start_time_ns(1);
   socket.set_domain(domain);
   if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_SOCKET, socket) || !ExpectRecord(output, kSixthID, "stream-fault", reason)) return false;
   close(client);
@@ -409,6 +462,8 @@ bool VerifyConnectFault(int output, const std::string& remote, const std::string
   if (!SendEvent(client, gvisor::common::MESSAGE_CONTAINER_START, start) || !ExpectRecord(output, kSeventhID, "container-start")) return false;
   gvisor::syscall::Connect connect;
   connect.mutable_context_data()->set_container_id(kSeventhID);
+  connect.mutable_context_data()->set_thread_group_id(1);
+  connect.mutable_context_data()->set_thread_group_start_time_ns(1);
   connect.set_address(address);
   if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_CONNECT, connect) || !ExpectRecord(output, kSeventhID, "stream-fault", reason)) return false;
   close(client);
@@ -434,8 +489,8 @@ bool VerifyUnknownFDState(int output, const std::string& remote, const std::stri
   if (!SendEvent(client, gvisor::common::MESSAGE_CONTAINER_START, start) || !ExpectRecord(output, kEighthID, "container-start")) return false;
   gvisor::syscall::Syscall raw;
   raw.mutable_context_data()->set_container_id(kEighthID);
-  raw.mutable_context_data()->set_thread_group_id(80);
-  raw.mutable_context_data()->set_thread_group_start_time_ns(800);
+  raw.mutable_context_data()->set_thread_group_id(1);
+  raw.mutable_context_data()->set_thread_group_start_time_ns(1);
   raw.set_sysno(kSyscallSendtoX86);
   raw.set_arg1(99);
   if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_RAW, raw) || !ExpectRecord(output, kEighthID, "stream-fault", "FD_STATE_UNKNOWN")) return false;
@@ -461,7 +516,7 @@ bool VerifyCloexecReexec(int output, const std::string& remote, const std::strin
   gvisor::sentry::ExecveInfo resolved;
   *resolved.mutable_context_data() = root.context_data();
   resolved.set_binary_path("/usr/local/bin/python3.14");
-  if (!SendSuccessfulExec(client, root, resolved) || !ExpectRecord(output, kNinthID, "process-exec-expected")) return false;
+  if (!SendDirectLaunchExec(output, client, root, resolved) || !ExpectRecord(output, kNinthID, "process-exec-expected")) return false;
   gvisor::syscall::Socket socket;
   *socket.mutable_context_data() = root.context_data();
   socket.set_domain(AF_INET);
@@ -491,16 +546,16 @@ bool VerifyProcessTrustBoundary(int output, const std::string& remote, const std
 
   gvisor::syscall::Execve bootstrap;
   bootstrap.mutable_context_data()->set_container_id(kSecondID);
-  bootstrap.mutable_context_data()->set_thread_group_id(10);
-  bootstrap.mutable_context_data()->set_thread_group_start_time_ns(100);
+  bootstrap.mutable_context_data()->set_thread_group_id(1);
+  bootstrap.mutable_context_data()->set_thread_group_start_time_ns(1);
   bootstrap.mutable_context_data()->set_parent_thread_group_id(0);
   bootstrap.set_sysno(kSyscallExecve);
   bootstrap.set_pathname("/usr/bin/sleep");
 
   gvisor::sentry::ExecveInfo bootstrapResolved;
   bootstrapResolved.mutable_context_data()->set_container_id(kSecondID);
-  bootstrapResolved.mutable_context_data()->set_thread_group_id(10);
-  bootstrapResolved.mutable_context_data()->set_thread_group_start_time_ns(100);
+  bootstrapResolved.mutable_context_data()->set_thread_group_id(1);
+  bootstrapResolved.mutable_context_data()->set_thread_group_start_time_ns(1);
   bootstrapResolved.mutable_context_data()->set_parent_thread_group_id(0);
   bootstrapResolved.set_binary_path("/bin/sleep");
   if (!SendSuccessfulExec(client, bootstrap, bootstrapResolved) || !ExpectRecord(output, kSecondID, "process-exec-expected")) return false;
@@ -521,7 +576,7 @@ bool VerifyProcessTrustBoundary(int output, const std::string& remote, const std
   pythonResolved.mutable_context_data()->set_parent_thread_group_id(0);
   pythonResolved.mutable_context_data()->set_is_exec_session(true);
   pythonResolved.set_binary_path("/usr/local/bin/python3.14");
-  if (!SendSuccessfulExec(client, python, pythonResolved) || !ExpectRecord(output, kSecondID, "process-exec-expected")) return false;
+  if (!SendDirectLaunchExec(output, client, python, pythonResolved) || !ExpectRecord(output, kSecondID, "process-exec-expected")) return false;
 
   gvisor::syscall::Execve pip;
   pip.mutable_context_data()->set_container_id(kSecondID);
@@ -534,7 +589,7 @@ bool VerifyProcessTrustBoundary(int output, const std::string& remote, const std
   gvisor::sentry::ExecveInfo pipResolved;
   *pipResolved.mutable_context_data() = pip.context_data();
   pipResolved.set_binary_path("/usr/local/bin/pip");
-  if (!SendSuccessfulExec(client, pip, pipResolved) || !ExpectRecord(output, kSecondID, "process-exec-expected")) return false;
+  if (!SendDirectLaunchExec(output, client, pip, pipResolved) || !ExpectRecord(output, kSecondID, "process-exec-expected")) return false;
 
   gvisor::syscall::Execve failed;
   failed.mutable_context_data()->set_container_id(kSecondID);
@@ -564,7 +619,7 @@ bool VerifyProcessTrustBoundary(int output, const std::string& remote, const std
   gvisor::sentry::ExecveInfo execveatResolved;
   *execveatResolved.mutable_context_data() = execveat.context_data();
   execveatResolved.set_binary_path("/usr/local/bin/python3.14");
-  if (!SendSuccessfulExec(client, execveat, execveatResolved) || !ExpectRecord(output, kSecondID, "process-exec-expected")) return false;
+  if (!SendDirectLaunchExec(output, client, execveat, execveatResolved) || !ExpectRecord(output, kSecondID, "process-exec-expected")) return false;
 
   gvisor::syscall::Execve child;
   child.mutable_context_data()->set_container_id(kSecondID);
@@ -577,7 +632,8 @@ bool VerifyProcessTrustBoundary(int output, const std::string& remote, const std
   gvisor::sentry::ExecveInfo childResolved;
   *childResolved.mutable_context_data() = child.context_data();
   childResolved.set_binary_path("/usr/bin/curl");
-  if (!SendSuccessfulExec(client, child, childResolved) || !ExpectUnexpectedProcessRecord(output, kSecondID, "SENTRY_EXEC", "OTHER", "UNKNOWN_CLASS", "UNTRACKED_PARENT")) return false;
+  if (!SendProcessClone(output, client, kSecondID, 20, 200, 21, 210)) return false;
+  if (!SendSuccessfulExec(client, child, childResolved) || !ExpectRecord(output, kSecondID, "process-exec-expected")) return false;
 
   child.mutable_context_data()->set_thread_group_id(22);
   child.mutable_context_data()->set_thread_group_start_time_ns(220);
@@ -585,7 +641,8 @@ bool VerifyProcessTrustBoundary(int output, const std::string& remote, const std
   childResolved.mutable_context_data()->set_thread_group_id(22);
   childResolved.mutable_context_data()->set_thread_group_start_time_ns(220);
   childResolved.set_binary_path("/usr/local/bin/python");
-  if (!SendSuccessfulExec(client, child, childResolved) || !ExpectUnexpectedProcessRecord(output, kSecondID, "SENTRY_EXEC", "PYTHON", "BOOTSTRAP_ENDED", "UNTRACKED_PARENT")) return false;
+  if (!SendProcessClone(output, client, kSecondID, 20, 200, 22, 220)) return false;
+  if (!SendSuccessfulExec(client, child, childResolved) || !ExpectRecord(output, kSecondID, "process-exec-expected")) return false;
 
   gvisor::syscall::Execve shell;
   shell.mutable_context_data()->set_container_id(kSecondID);
@@ -598,7 +655,7 @@ bool VerifyProcessTrustBoundary(int output, const std::string& remote, const std
   gvisor::sentry::ExecveInfo shellResolved;
   *shellResolved.mutable_context_data() = shell.context_data();
   shellResolved.set_binary_path("/bin/sh");
-  if (!SendSuccessfulExec(client, shell, shellResolved) || !ExpectRecord(output, kSecondID, "process-exec-expected")) return false;
+  if (!SendDirectLaunchExec(output, client, shell, shellResolved) || !ExpectRecord(output, kSecondID, "process-exec-expected")) return false;
 
   child.mutable_context_data()->set_thread_group_id(41);
   child.mutable_context_data()->set_thread_group_start_time_ns(410);
@@ -608,7 +665,8 @@ bool VerifyProcessTrustBoundary(int output, const std::string& remote, const std
   childResolved.mutable_context_data()->set_thread_group_start_time_ns(410);
   childResolved.mutable_context_data()->set_parent_thread_group_id(40);
   childResolved.set_binary_path("/usr/bin/cat");
-  if (!SendSuccessfulExec(client, child, childResolved) || !ExpectUnexpectedProcessRecord(output, kSecondID, "SENTRY_EXEC", "CAT", "BOOTSTRAP_ENDED", "UNTRACKED_PARENT")) return false;
+  if (!SendProcessClone(output, client, kSecondID, 40, 400, 41, 410)) return false;
+  if (!SendSuccessfulExec(client, child, childResolved) || !ExpectRecord(output, kSecondID, "process-exec-expected")) return false;
   close(client);
   return ExpectRecord(output, kSecondID, "stream-end");
 }
@@ -651,7 +709,15 @@ bool VerifySentryAuthoritativeBoundary(int output, const std::string& remote, co
       !SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, early_exit) ||
       !SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, next) ||
       !SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, next_exit) ||
-      !ExpectNoRecord(output) ||
+      !ExpectNoRecord(output)) return false;
+  gvisor::sentry::ExecveInfo launcher = make_sentry(next);
+  launcher.set_binary_path(kBoundaryHelperPath);
+  launcher.set_execfn(kBoundaryHelperPath);
+  launcher.clear_argv();
+  launcher.add_argv(kBoundaryHelperPath);
+  launcher.add_argv(boundaryLaunchMode);
+  if (!SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, launcher) ||
+      !ExpectRecord(output, kTenthID, "process-exec-expected") ||
       !SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, make_sentry(next)) ||
       !ExpectRecord(output, kTenthID, "process-exec-expected")) return false;
 
@@ -721,6 +787,9 @@ bool VerifyDelayedProfileRegistration(int output, const std::string& remote, con
   gvisor::sentry::ExecveInfo resolved;
   *resolved.mutable_context_data() = execve.context_data();
   resolved.set_binary_path("/usr/local/bin/node");
+  resolved.set_execfn(kBoundaryHelperPath);
+  resolved.add_argv(kBoundaryHelperPath);
+  resolved.add_argv(boundaryLaunchMode);
   gvisor::syscall::Execve exit = execve;
   exit.mutable_exit()->set_result(0);
   exit.mutable_exit()->set_errorno(0);
@@ -729,6 +798,67 @@ bool VerifyDelayedProfileRegistration(int output, const std::string& remote, con
       ExpectRecord(output, kFourthID, "process-exec-expected");
   close(client);
   return classified && ExpectRecord(output, kFourthID, "stream-end");
+}
+
+bool VerifyRoleHandoffAndCloneProvenance(int output, const std::string& remote, const std::string& control) {
+  if (!RegisterProfile(control, kThirteenthID, kProfilePyPI)) return false;
+  const int client = ConnectRemote(remote);
+  if (client < 0 || !Handshake(client)) return false;
+  gvisor::container::Start start;
+  start.mutable_context_data()->set_container_id(kThirteenthID);
+  if (!SendEvent(client, gvisor::common::MESSAGE_CONTAINER_START, start) ||
+      !ExpectRecord(output, kThirteenthID, "container-start")) return false;
+
+  gvisor::syscall::Execve launch;
+  launch.mutable_context_data()->set_container_id(kThirteenthID);
+  launch.mutable_context_data()->set_thread_group_id(130);
+  launch.mutable_context_data()->set_thread_group_start_time_ns(1300);
+  launch.mutable_context_data()->set_parent_thread_group_id(0);
+  launch.mutable_context_data()->set_is_exec_session(true);
+  launch.set_sysno(kSyscallExecve);
+  launch.set_pathname("python");
+  gvisor::sentry::ExecveInfo python;
+  *python.mutable_context_data() = launch.context_data();
+  python.set_binary_path("/usr/local/bin/python3.14");
+  if (!SendDirectLaunchExec(output, client, launch, python) ||
+      !ExpectRecord(output, kThirteenthID, "process-exec-expected")) return false;
+
+  gvisor::sentry::ExecveInfo handoff = python;
+  handoff.set_binary_path(kBoundaryHelperPath);
+  handoff.set_execfn(kBoundaryHelperPath);
+  handoff.clear_argv();
+  handoff.add_argv(kBoundaryHelperPath);
+  handoff.add_argv(kPythonHandoffMode);
+  if (!SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, handoff) ||
+      !ExpectRecord(output, kThirteenthID, "process-exec-expected") ||
+      !SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, python) ||
+      !ExpectRecord(output, kThirteenthID, "process-exec-expected")) return false;
+
+  if (!SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, python) ||
+      !ExpectUnexpectedProcessRecord(output, kThirteenthID, "SENTRY_EXEC", "PYTHON", "ARTIFACT_ROLE", "ARTIFACT_GROUP")) return false;
+
+  if (!SendProcessClone(output, client, kThirteenthID, 130, 1300, 131, 1310)) return false;
+  gvisor::sentry::ExecveInfo child = python;
+  child.mutable_context_data()->set_thread_group_id(131);
+  child.mutable_context_data()->set_thread_group_start_time_ns(1310);
+  child.mutable_context_data()->set_parent_thread_group_id(130);
+  child.set_binary_path("/bin/sh");
+  if (!SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, child) ||
+      !ExpectUnexpectedProcessRecord(output, kThirteenthID, "SENTRY_EXEC", "SHELL", "ARTIFACT_ROLE", "ARTIFACT_GROUP")) return false;
+
+  gvisor::syscall::Socket socket;
+  *socket.mutable_context_data() = python.context_data();
+  socket.set_domain(AF_INET);
+  socket.set_type(1);
+  if (!SendSocketCreate(output, client, socket, 3, false, kThirteenthID, "INET")) return false;
+  gvisor::syscall::Syscall raw;
+  *raw.mutable_context_data() = python.context_data();
+  raw.set_sysno(kSyscallSendtoX86);
+  raw.set_arg1(3);
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_RAW, raw) ||
+      !ExpectNetworkRecord(output, kThirteenthID, "SENDTO", "INET", "ARTIFACT_GROUP", "PYTHON")) return false;
+  close(client);
+  return ExpectRecord(output, kThirteenthID, "stream-end");
 }
 
 bool RunFaultCase(int output, const std::string& remote, const std::string& control, bool mismatch) {
@@ -767,6 +897,8 @@ bool VerifyBoundedClassificationSemantics() {
   direct.set_thread_group_start_time_ns(200);
   direct.set_parent_thread_group_id(0);
   direct.set_is_exec_session(true);
+  if (!RegisterGroup(&state, direct, ProcessState::Role::kControl,
+                     ProcessState::Provenance::kDirectExecRoot, true, true)) return false;
   ProcessClassification expected = IsExpectedProcess("python", direct, kProfilePyPI, &state);
   if (!expected.expected || expected.process_class != ProcessClass::kPython) return false;
 
@@ -829,7 +961,9 @@ int main(int argc, char** argv) {
   if (!cloexec) fprintf(stderr, "observer latch failure: CLOEXEC/re-exec boundary\n");
   const bool delayed = cloexec && VerifyDelayedProfileRegistration(output, remote, control);
   if (!delayed) fprintf(stderr, "observer latch failure: delayed profile registration\n");
-  const bool mismatch = delayed && RunFaultCase(output, remote, control, true);
+  const bool roles = delayed && VerifyRoleHandoffAndCloneProvenance(output, remote, control);
+  if (!roles) fprintf(stderr, "observer latch failure: role handoff/provenance\n");
+  const bool mismatch = roles && RunFaultCase(output, remote, control, true);
   if (!mismatch) fprintf(stderr, "observer latch failure: container mismatch\n");
   const bool dropped = mismatch && RunFaultCase(output, remote, control, false);
   if (!dropped) fprintf(stderr, "observer latch failure: dropped events\n");

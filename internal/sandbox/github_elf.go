@@ -87,6 +87,10 @@ func (b *GitHubELFBackend) Execute(ctx context.Context, request domain.SandboxRe
 		_ = b.cleanup(containerID)
 		return incomplete(sessionID, "M6_DYNAMIC_SETUP_FAILED")
 	}
+	if err := installBoundaryHelper(runContext, b.runner, containerID); err != nil {
+		_ = b.cleanup(containerID)
+		return incomplete(sessionID, "M6_DYNAMIC_SETUP_FAILED")
+	}
 	if err := b.introduce(runContext, containerID, request.Artifact()); err != nil {
 		if b.cleanup(containerID) != nil {
 			return incomplete(sessionID, "M6_DYNAMIC_CLEANUP_FAILED")
@@ -156,9 +160,9 @@ func (b *GitHubELFBackend) introduce(ctx context.Context, containerID string, ar
 	if !ok {
 		return errors.New("GitHub ELF stream runner is unavailable")
 	}
-	return input.RunInput(ctx, file, "docker", "exec", "-i", containerID, "/bin/sh", "-ceu", "umask 077; cat > /work/artifact")
+	return input.RunInput(ctx, file, "docker", "exec", "-i", containerID, boundaryHelperPath, boundaryLaunchMode, "/bin/sh", "-ceu", "umask 077; cat > /work/artifact")
 }
 
 func githubELFCreateArguments(sessionID domain.SandboxSessionID) []string {
-	return []string{"create", "--runtime", gVisorRuntimeName, "--user", "1000:1000", "--network", "none", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "64", "--memory", "512m", "--cpus", "1", "--ulimit", "cpu=30:30", "--tmpfs", "/work:rw,exec,nosuid,nodev,size=256m,uid=1000,gid=1000,mode=0700", "--name", "heliopause-github-elf-" + sessionID.String(), nodeImageReference, "/bin/sh", "-ceu", "while [ ! -f /work/artifact ]; do sleep 0.05; done; chmod 500 /work/artifact; exec /work/artifact"}
+	return []string{"create", "--runtime", gVisorRuntimeName, "--user", "1000:1000", "--network", "none", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "64", "--memory", "512m", "--cpus", "1", "--ulimit", "cpu=30:30", "--tmpfs", "/work:rw,exec,nosuid,nodev,size=256m,uid=1000,gid=1000,mode=0700", "--tmpfs", boundaryHelperMount, "--name", "heliopause-github-elf-" + sessionID.String(), nodeImageReference, "/bin/sh", "-ceu", "while [ ! -f /work/artifact ]; do sleep 0.05; done; chmod 500 /work/artifact; exec " + boundaryHelperPath + " " + boundaryELFHandoffMode + " /work/artifact"}
 }

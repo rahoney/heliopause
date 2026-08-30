@@ -107,6 +107,12 @@ func (b *Backend) Execute(ctx context.Context, request domain.SandboxRequest) (d
 		}
 		return incomplete(sessionID, "M3_DYNAMIC_SETUP_FAILED")
 	}
+	if err := installBoundaryHelper(runContext, b.runner, containerID); err != nil {
+		if b.cleanup(containerID) != nil {
+			return incomplete(sessionID, "M3_DYNAMIC_CLEANUP_FAILED")
+		}
+		return incomplete(sessionID, "M3_DYNAMIC_SETUP_FAILED")
+	}
 	if err := b.introducer.Introduce(runContext, containerID, request.Artifact()); err != nil {
 		cleanupErr := b.cleanup(containerID)
 		if cleanupErr != nil {
@@ -166,8 +172,9 @@ func createArguments(sessionID domain.SandboxSessionID) []string {
 		"--cpus", "1",
 		"--ulimit", "cpu=30:30",
 		"--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=256m,uid=1000,gid=1000,mode=0700",
+		"--tmpfs", boundaryHelperMount,
 		"--name", "heliopause-" + sessionID.String(),
 		nodeImageReference,
-		"/bin/sh", "-ceu", "while [ ! -f /tmp/artifact.tgz ]; do sleep 0.05; done; mkdir -p /tmp/package /tmp/.npm; cd /tmp/package; HOME=/tmp npm_config_cache=/tmp/.npm npm install --ignore-scripts=false --no-audit --no-fund --offline /tmp/artifact.tgz",
+		"/bin/sh", "-ceu", "while [ ! -f /tmp/artifact.tgz ]; do sleep 0.05; done; mkdir -p /tmp/package /tmp/.npm; cd /tmp/package; HOME=/tmp npm_config_cache=/tmp/.npm npm_config_script_shell=/haa-runtime/haa-boundary npm install --ignore-scripts=false --no-audit --no-fund --offline /tmp/artifact.tgz",
 	}
 }

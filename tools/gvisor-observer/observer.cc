@@ -57,6 +57,10 @@ constexpr int kFcntlDupFDCloexec = 1030;
 constexpr int kFcntlSetFD = 2;
 constexpr int kFD_CLOEXEC = 1;
 constexpr uint64_t kCloneThread = 0x00010000;
+constexpr char kBoundaryHelperPath[] = "/haa-runtime/haa-boundary";
+constexpr char kLaunchMode[] = "--launch";
+constexpr char kPythonHandoffMode[] = "--handoff-python";
+constexpr char kELFHandoffMode[] = "--handoff-elf";
 // These sizes match the pinned gVisor ABI structures used by the socket
 // providers. They bound only address-shape validation; the observer never
 // retains address bytes.
@@ -142,6 +146,18 @@ enum class SocketClassification {
 };
 
 struct ProcessState {
+  enum class Role { kUnknown, kControl, kArtifact };
+  enum class Provenance { kUnknown, kOCIRoot, kDirectExecRoot, kCloneChild };
+  struct GroupState {
+    int64_t start_time_ns;
+    Role role;
+    Provenance provenance;
+    bool root_eligible;
+    bool root_consumed;
+    bool launch_target_pending;
+    bool handoff_target_pending;
+    ProcessClass handoff_target_class;
+  };
   bool bootstrap_active = true;
   bool bootstrap_group_set = false;
   int32_t bootstrap_group_id = 0;
@@ -163,7 +179,55 @@ struct ProcessState {
   int32_t launch_root_group_id = 0;
   int64_t launch_root_group_start_time_ns = 0;
   std::map<int32_t, int64_t> launch_roots;
+  std::map<int32_t, GroupState> groups;
 };
+
+enum class BoundaryMode { kNone, kLaunch, kHandoff, kPythonHandoff, kELFHandoff };
+
+bool ValidProcessIdentity(const gvisor::common::ContextData& context);
+bool ValidateContextContainer(const gvisor::common::ContextData& context,
+                              std::string* container_id, const char** reason);
+
+bool SameGroup(const ProcessState::GroupState& group, const gvisor::common::ContextData& context) {
+  return group.start_time_ns == context.thread_group_start_time_ns();
+}
+
+BoundaryMode BoundaryInvocation(const gvisor::sentry::ExecveInfo& message) {
+  if (message.execfn() != kBoundaryHelperPath && message.binary_path() != kBoundaryHelperPath) return BoundaryMode::kNone;
+  int mode_index = -1;
+  const int bounded_argc = message.argv_size() < 8 ? message.argv_size() : 8;
+  for (int index = 0; index + 1 < bounded_argc; ++index) {
+    if (message.argv(index) == kBoundaryHelperPath) {
+      mode_index = index + 1;
+      break;
+    }
+  }
+  if (mode_index < 0) return BoundaryMode::kNone;
+  const std::string& mode = message.argv(mode_index);
+  if (mode == kLaunchMode) return BoundaryMode::kLaunch;
+  if (mode == kPythonHandoffMode) return BoundaryMode::kPythonHandoff;
+  if (mode == kELFHandoffMode) return BoundaryMode::kELFHandoff;
+  // npm invokes script-shell as <path> -c <script>; the fixed helper path is
+  // the only trust-removal marker, while the script remains opaque.
+  if (mode == "-c") return BoundaryMode::kHandoff;
+  return BoundaryMode::kNone;
+}
+
+bool IsNewGroup(const ProcessState& state, const gvisor::common::ContextData& context) {
+  return state.groups.find(context.thread_group_id()) == state.groups.end();
+}
+
+bool RegisterGroup(ProcessState* state, const gvisor::common::ContextData& context,
+                   ProcessState::Role role, ProcessState::Provenance provenance,
+                   bool root_eligible, bool root_consumed) {
+  if (state == nullptr || !ValidProcessIdentity(context)) return false;
+  if (state->groups.size() >= kMaxTrackedProcessGroups) return false;
+  if (!IsNewGroup(*state, context)) return false;
+  state->groups.emplace(context.thread_group_id(), ProcessState::GroupState{
+      context.thread_group_start_time_ns(), role, provenance, root_eligible,
+      root_consumed, false, false, ProcessClass::kUnknown});
+  return true;
+}
 
 const char* ProcessClassName(ProcessClass process_class) {
   switch (process_class) {
@@ -199,15 +263,6 @@ ProcessClass ProcessClassForPath(const std::string& path, const char* profile) {
   }
   if (strcmp(profile, kProfileGitHub) == 0 && path == "/work/artifact") return ProcessClass::kArtifact;
   return ProcessClass::kUnknown;
-}
-
-bool IsProfileExpectedClass(ProcessClass process_class, const char* profile) {
-  if (process_class == ProcessClass::kShell) return true;
-  if (strcmp(profile, kProfileNPM) == 0) return process_class == ProcessClass::kNode || process_class == ProcessClass::kNpm;
-  if (strcmp(profile, kProfilePyPI) == 0 || strcmp(profile, kProfilePyTorchCPU) == 0 || strcmp(profile, kProfilePyTorchCU126) == 0) {
-    return process_class == ProcessClass::kPython || process_class == ProcessClass::kPip;
-  }
-  return process_class == ProcessClass::kArtifact;
 }
 
 bool IsBootstrapRootClass(ProcessClass process_class) {
@@ -286,6 +341,25 @@ ProcessClassification IsExpectedProcess(const std::string& path, const gvisor::c
   }
   const ProcessClass process_class = ProcessClassForPath(path, profile);
   result.process_class = process_class;
+  auto group = state->groups.find(context.thread_group_id());
+  if (group == state->groups.end() || !SameGroup(group->second, context)) {
+    result.reason = "PROCESS_PROVENANCE_UNKNOWN";
+    result.parent_relation = "UNTRACKED_PARENT";
+    return result;
+  }
+  if (group->second.role == ProcessState::Role::kArtifact) {
+    result.reason = "ARTIFACT_ROLE";
+    result.parent_relation = "ARTIFACT_GROUP";
+    return result;
+  }
+  if (group->second.provenance == ProcessState::Provenance::kDirectExecRoot &&
+      group->second.root_consumed && state->expected_groups.find(context.thread_group_id()) == state->expected_groups.end()) {
+    result.expected = true;
+    result.parent_relation = "DIRECT_EXEC_ROOT";
+    result.reason = "OTHER";
+    TrackExpectedProcessGroup(context, process_class, state);
+    return result;
+  }
   auto tracked = state->expected_groups.find(context.thread_group_id());
   if (tracked != state->expected_groups.end() && tracked->second.start_time_ns != context.thread_group_start_time_ns()) {
     result.reason = "START_TIME_MISMATCH";
@@ -350,9 +424,8 @@ ProcessClassification IsExpectedProcess(const std::string& path, const gvisor::c
     result.reason = TrackFailureReason(tracked_result);
     return result;
   }
-  if (context.is_exec_session() && context.parent_thread_group_id() == 0 && IsProfileExpectedClass(process_class, profile)) {
-    result.parent_relation = "DIRECT_EXEC_SESSION";
-    state->bootstrap_active = false;
+  if (group->second.role == ProcessState::Role::kControl) {
+    result.parent_relation = group->second.provenance == ProcessState::Provenance::kCloneChild ? "CONTROL_CHILD" : "CONTROL_ROOT";
     const TrackResult tracked_result = TrackExpectedProcessGroup(context, process_class, state);
     result.expected = tracked_result == TrackResult::kTracked;
     result.reason = TrackFailureReason(tracked_result);
@@ -368,6 +441,14 @@ ProcessClassification IsExpectedProcess(const std::string& path, const gvisor::c
 
 const char* NetworkProcessRelation(const gvisor::common::ContextData& context, const ProcessState& state) {
   if (!ValidProcessIdentity(context)) return "UNKNOWN";
+  auto group = state.groups.find(context.thread_group_id());
+  if (group == state.groups.end() || !SameGroup(group->second, context)) return "UNKNOWN";
+  if (group->second.role == ProcessState::Role::kArtifact) return "ARTIFACT_GROUP";
+  if (group->second.provenance == ProcessState::Provenance::kOCIRoot ||
+      group->second.provenance == ProcessState::Provenance::kDirectExecRoot) {
+    return "DIRECT_EXEC_SESSION";
+  }
+  if (group->second.role == ProcessState::Role::kControl) return "CONTROL_GROUP";
   auto launch_root = state.launch_roots.find(context.thread_group_id());
   if (launch_root != state.launch_roots.end() && launch_root->second == context.thread_group_start_time_ns()) {
     return "DIRECT_EXEC_SESSION";
@@ -380,6 +461,12 @@ const char* NetworkProcessRelation(const gvisor::common::ContextData& context, c
   if (state.bootstrap_active && IsBootstrapRoot(context, state)) return "BOOTSTRAP_ROOT";
   if (state.bootstrap_active && IsBootstrapChild(context, state)) return "BOOTSTRAP_CHILD";
   return "UNKNOWN";
+}
+
+bool IsTrustedControlRelation(const char* relation) {
+  return relation != nullptr &&
+      (strcmp(relation, "DIRECT_EXEC_SESSION") == 0 ||
+       strcmp(relation, "CONTROL_GROUP") == 0);
 }
 
 SocketClassification ClassifySocketFamily(int family) {
@@ -442,6 +529,66 @@ bool ParseControlRecord(const char* payload, size_t size, std::map<std::string, 
   if (profiles->find(id) != profiles->end()) return false;
   (*profiles)[id] = profile;
   return true;
+}
+
+bool ParseContainerStart(const char* payload, size_t payload_size, int output,
+                         std::string* container_id, ProcessState* state,
+                         const char** reason) {
+  if (state == nullptr) return false;
+  gvisor::container::Start message;
+  if (!message.ParseFromArray(payload, payload_size)) return false;
+  if (!ValidateContextContainer(message.context_data(), container_id, reason) ||
+      !ValidProcessIdentity(message.context_data()) ||
+      message.context_data().is_exec_session() ||
+      message.context_data().parent_thread_group_id() != 0) {
+    *reason = "CONTAINER_ROOT_INVALID";
+    return false;
+  }
+  if (!RegisterGroup(state, message.context_data(), ProcessState::Role::kControl,
+                     ProcessState::Provenance::kOCIRoot, false, true)) {
+    *reason = "CONTAINER_ROOT_DUPLICATE";
+    return false;
+  }
+  state->bootstrap_group_set = true;
+  state->bootstrap_group_id = message.context_data().thread_group_id();
+  state->bootstrap_group_start_time_ns = message.context_data().thread_group_start_time_ns();
+  return Send(output, *container_id, "container-start");
+}
+
+bool ParseSentryClone(const char* payload, size_t payload_size,
+                      int output, std::string* container_id, ProcessState* state,
+                      const char** reason) {
+  if (state == nullptr) return false;
+  gvisor::sentry::CloneInfo message;
+  if (!message.ParseFromArray(payload, payload_size) ||
+      !ValidateContextContainer(message.context_data(), container_id, reason) ||
+      !ValidProcessIdentity(message.context_data()) ||
+      message.created_thread_group_id() <= 0 ||
+      message.created_thread_start_time_ns() <= 0) {
+    *reason = "CLONE_PROVENANCE_INVALID";
+    return false;
+  }
+  const int32_t creator_group = message.context_data().thread_group_id();
+  const int32_t child_group = message.created_thread_group_id();
+  auto creator = state->groups.find(creator_group);
+  if (creator == state->groups.end() || !SameGroup(creator->second, message.context_data())) {
+    *reason = "CLONE_PROVENANCE_INVALID";
+    return false;
+  }
+  if ((message.flags() & kCloneThread) != 0) {
+    if (child_group != creator_group) *reason = "CLONE_PROVENANCE_INVALID";
+    return child_group == creator_group && Send(output, *container_id, "process-clone");
+  }
+  if (state->groups.find(child_group) != state->groups.end() ||
+      state->groups.size() >= kMaxTrackedProcessGroups) {
+    *reason = state->groups.size() >= kMaxTrackedProcessGroups ? "PROCESS_STATE_LIMIT" : "CLONE_PROVENANCE_INVALID";
+    return false;
+  }
+  state->groups.emplace(child_group, ProcessState::GroupState{
+      message.created_thread_start_time_ns(), creator->second.role,
+      ProcessState::Provenance::kCloneChild, false, true, false, false,
+      ProcessClass::kUnknown});
+  return Send(output, *container_id, "process-clone");
 }
 
 size_t MaximumRecords(const char* profile) {
@@ -538,7 +685,91 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     return false;
   }
   ProcessState candidate = *process_state;
-  candidate.fd_states.clear();
+  const int32_t group_id = message.context_data().thread_group_id();
+  const BoundaryMode boundary_mode = BoundaryInvocation(message);
+  auto group = candidate.groups.find(group_id);
+  if (group != candidate.groups.end() && !SameGroup(group->second, message.context_data())) {
+    *reason = "PROCESS_IDENTITY_REUSED";
+    return false;
+  }
+  if (group == candidate.groups.end()) {
+    if (!message.context_data().is_exec_session() || message.context_data().parent_thread_group_id() != 0 ||
+        boundary_mode == BoundaryMode::kNone ||
+        candidate.groups.size() >= kMaxTrackedProcessGroups ||
+        !RegisterGroup(&candidate, message.context_data(), ProcessState::Role::kControl,
+                       ProcessState::Provenance::kDirectExecRoot, true, false)) {
+      *reason = "PROCESS_PROVENANCE_UNKNOWN";
+      return false;
+    }
+    group = candidate.groups.find(group_id);
+  }
+  if (group->second.role == ProcessState::Role::kControl &&
+      boundary_mode == BoundaryMode::kLaunch) {
+    if (group->second.provenance != ProcessState::Provenance::kDirectExecRoot ||
+        !group->second.root_eligible || group->second.root_consumed || group->second.launch_target_pending) {
+      *reason = "PROCESS_PROVENANCE_UNKNOWN";
+      return false;
+    }
+    group->second.root_eligible = false;
+    group->second.root_consumed = true;
+    group->second.launch_target_pending = true;
+    ApplyExecCloexec(&candidate, group_id);
+    process_state->groups = candidate.groups;
+    process_state->fd_states = candidate.fd_states;
+    return Send(output, *container_id, "process-exec-expected");
+  }
+  if (boundary_mode == BoundaryMode::kHandoff || boundary_mode == BoundaryMode::kPythonHandoff ||
+      boundary_mode == BoundaryMode::kELFHandoff) {
+    if (group->second.role == ProcessState::Role::kControl) {
+      if (group->second.provenance == ProcessState::Provenance::kDirectExecRoot) {
+        if (!group->second.root_eligible || group->second.root_consumed) {
+          *reason = "PROCESS_PROVENANCE_UNKNOWN";
+          return false;
+        }
+        group->second.root_eligible = false;
+        group->second.root_consumed = true;
+      }
+      group->second.role = ProcessState::Role::kArtifact;
+      group->second.handoff_target_pending = boundary_mode != BoundaryMode::kHandoff;
+      group->second.handoff_target_class = boundary_mode == BoundaryMode::kPythonHandoff
+          ? ProcessClass::kPython : ProcessClass::kArtifact;
+      ApplyExecCloexec(&candidate, group_id);
+      process_state->groups = candidate.groups;
+      process_state->fd_states = candidate.fd_states;
+      return Send(output, *container_id, "process-exec-expected");
+    }
+  }
+  if (group->second.role == ProcessState::Role::kControl &&
+      group->second.launch_target_pending) {
+    const ProcessClass process_class = ProcessClassForPath(message.binary_path(), profile);
+    const TrackResult tracked_result = TrackExpectedProcessGroup(message.context_data(), process_class, &candidate);
+    if (tracked_result != TrackResult::kTracked) {
+      *reason = TrackFailureReason(tracked_result);
+      return false;
+    }
+    group->second.launch_target_pending = false;
+    ApplyExecCloexec(&candidate, group_id);
+    process_state->groups = candidate.groups;
+    process_state->expected_groups = candidate.expected_groups;
+    process_state->fd_states = candidate.fd_states;
+    return Send(output, *container_id, "process-exec-expected");
+  }
+  if (group->second.role == ProcessState::Role::kArtifact) {
+    const ProcessClass process_class = ProcessClassForPath(message.binary_path(), profile);
+    if (group->second.handoff_target_pending && process_class == group->second.handoff_target_class) {
+      group->second.handoff_target_pending = false;
+      ApplyExecCloexec(&candidate, group_id);
+      process_state->groups = candidate.groups;
+      process_state->fd_states = candidate.fd_states;
+      return Send(output, *container_id, "process-exec-expected");
+    }
+    ApplyExecCloexec(&candidate, group_id);
+    const Attribution attribution{"SENTRY_EXEC", nullptr, "ARTIFACT_GROUP",
+                                  ProcessClassName(process_class), "ARTIFACT_ROLE", "ARTIFACT_GROUP"};
+    process_state->groups = candidate.groups;
+    process_state->fd_states = candidate.fd_states;
+    return Send(output, *container_id, "process-exec-unexpected", nullptr, &attribution);
+  }
   const ProcessClassification classification = IsExpectedProcess(message.binary_path(), message.context_data(), profile, &candidate);
   process_state->bootstrap_active = candidate.bootstrap_active;
   process_state->bootstrap_group_set = candidate.bootstrap_group_set;
@@ -546,9 +777,9 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
   process_state->bootstrap_group_start_time_ns = candidate.bootstrap_group_start_time_ns;
   process_state->expected_groups = std::move(candidate.expected_groups);
   process_state->launch_roots = std::move(candidate.launch_roots);
-  const int32_t group_id = message.context_data().thread_group_id();
+  process_state->groups = std::move(candidate.groups);
   const int64_t group_start_time_ns = message.context_data().thread_group_start_time_ns();
-  if (strcmp(classification.parent_relation, "DIRECT_EXEC_SESSION") == 0 && classification.expected) {
+  if (strcmp(classification.parent_relation, "DIRECT_EXEC_ROOT") == 0 && classification.expected) {
     process_state->launch_root_set = true;
     process_state->launch_root_active = true;
     process_state->launch_root_group_id = group_id;
@@ -585,6 +816,11 @@ bool ParseSocketAndTrack(const char* payload, size_t payload_size, int output, s
   if (!message.ParseFromArray(payload, payload_size)) return false;
   if (!ValidateContextContainer(message.context_data(), container_id, reason) || !ValidProcessIdentity(message.context_data())) {
     if (*reason == nullptr) *reason = "FD_STATE_UNKNOWN";
+    return false;
+  }
+  auto group_state = process_state->groups.find(message.context_data().thread_group_id());
+  if (group_state == process_state->groups.end() || !SameGroup(group_state->second, message.context_data())) {
+    *reason = "PROCESS_PROVENANCE_UNKNOWN";
     return false;
   }
   const ProcessClass process_class = ProcessClassForPath(message.context_data().process_name(), profile);
@@ -715,6 +951,11 @@ bool ParseRawAndSend(const char* payload, size_t payload_size, int output, std::
     *reason = "RAW_SYSCALL_INVALID";
     return false;
   }
+  auto group_state = state->groups.find(message.context_data().thread_group_id());
+  if (group_state == state->groups.end() || !SameGroup(group_state->second, message.context_data())) {
+    *reason = "PROCESS_PROVENANCE_UNKNOWN";
+    return false;
+  }
   const uint64_t sysno = message.sysno();
   if (sysno == kSyscallCloseRange) {
     state->fd_states.erase(message.context_data().thread_group_id());
@@ -737,7 +978,7 @@ bool ParseRawAndSend(const char* payload, size_t payload_size, int output, std::
   const char* relation = NetworkProcessRelation(message.context_data(), *state);
   const ProcessClass process_class = ProcessClassForPath(message.context_data().process_name(), profile);
   const Attribution attribution{source, family, relation, ProcessClassName(process_class), nullptr, nullptr};
-  const bool trusted = relation != nullptr && strcmp(relation, "DIRECT_EXEC_SESSION") == 0;
+  const bool trusted = IsTrustedControlRelation(relation);
   return Send(output, *container_id, trusted ? "trusted-control-network" : "network-attempt", nullptr, &attribution);
 }
 
@@ -745,6 +986,11 @@ bool ParseConnectAndSend(const char* payload, size_t payload_size, int output, s
   gvisor::syscall::Connect message;
   if (!message.ParseFromArray(payload, payload_size)) return false;
   if (!ValidateContextContainer(message.context_data(), container_id, reason)) return false;
+  auto group_state = process_state.groups.find(message.context_data().thread_group_id());
+  if (group_state == process_state.groups.end() || !SameGroup(group_state->second, message.context_data())) {
+    *reason = "PROCESS_PROVENANCE_UNKNOWN";
+    return false;
+  }
   const ProcessClass process_class = ProcessClassForPath(message.context_data().process_name(), profile);
   const char* relation = NetworkProcessRelation(message.context_data(), process_state);
   int family = 0;
@@ -760,11 +1006,11 @@ bool ParseConnectAndSend(const char* payload, size_t payload_size, int output, s
     case AF_INET:
       if (!ValidSocketAddressLength(family, message.address().size())) { *reason = "CONNECT_AF_INET_INVALID_LENGTH"; return false; }
       { const Attribution attribution{"CONNECT", "INET", relation, ProcessClassName(process_class), nullptr, nullptr};
-        return Send(output, *container_id, relation != nullptr && strcmp(relation, "DIRECT_EXEC_SESSION") == 0 ? "trusted-control-network" : "network-attempt", nullptr, &attribution); }
+        return Send(output, *container_id, IsTrustedControlRelation(relation) ? "trusted-control-network" : "network-attempt", nullptr, &attribution); }
     case AF_INET6:
       if (!ValidSocketAddressLength(family, message.address().size())) { *reason = "CONNECT_AF_INET6_INVALID_LENGTH"; return false; }
       { const Attribution attribution{"CONNECT", "INET6", relation, ProcessClassName(process_class), nullptr, nullptr};
-        return Send(output, *container_id, relation != nullptr && strcmp(relation, "DIRECT_EXEC_SESSION") == 0 ? "trusted-control-network" : "network-attempt", nullptr, &attribution); }
+        return Send(output, *container_id, IsTrustedControlRelation(relation) ? "trusted-control-network" : "network-attempt", nullptr, &attribution); }
     case kLinuxAFNetlink:
       if (!ValidSocketAddressLength(family, message.address().size())) { *reason = "CONNECT_AF_NETLINK_INVALID_LENGTH"; return false; }
       return true;
@@ -780,8 +1026,8 @@ bool ParseConnectAndSend(const char* payload, size_t payload_size, int output, s
 bool Handle(const Header& header, const char* payload, size_t payload_size, int output, std::string* container_id, const char* profile, ProcessState* process_state, const char** reason) {
   if (header.dropped_count != 0) { *reason = "STREAM_FAULT"; return false; }
   switch (static_cast<gvisor::common::MessageType>(header.message_type)) {
-    case gvisor::common::MESSAGE_CONTAINER_START: return ParseAndSend<gvisor::container::Start>(payload, payload_size, output, "container-start", container_id, profile, reason);
-    case gvisor::common::MESSAGE_SENTRY_CLONE: return ParseAndSend<gvisor::sentry::CloneInfo>(payload, payload_size, output, "process-clone", container_id, profile, reason);
+    case gvisor::common::MESSAGE_CONTAINER_START: return ParseContainerStart(payload, payload_size, output, container_id, process_state, reason);
+    case gvisor::common::MESSAGE_SENTRY_CLONE: return ParseSentryClone(payload, payload_size, output, container_id, process_state, reason);
     case gvisor::common::MESSAGE_SENTRY_EXEC: return ParseSentryProcessAndClassify(payload, payload_size, output, container_id, profile, process_state, reason);
     // pathname, argv and envv are parsed by protobuf but are deliberately never
     // copied to the HAA envelope. M11-003 supplies the trusted profile required

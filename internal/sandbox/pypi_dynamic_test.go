@@ -27,7 +27,7 @@ func TestPythonDynamicBackendRunsOnlyLocalWheelAndDeclaredImports(t *testing.T) 
 	if err != nil || result.Status() != domain.SandboxCompleted {
 		t.Fatalf("InspectWheel() = %#v, %v", result, err)
 	}
-	if len(runner.inputCalls) != 1 || string(runner.input) != "wheel fixture" {
+	if len(runner.inputCalls) != 2 || !sameStrings(runner.inputCalls[0].arguments, []string{"cp", "-", "0123456789abcdef:/haa-runtime"}) || string(runner.input) != "wheel fixture" {
 		t.Fatalf("wheel stream = %#v/%q", runner.inputCalls, runner.input)
 	}
 	if len(runner.calls) != 5 {
@@ -243,7 +243,7 @@ func TestPythonDynamicBackendInstallsExactClosureInOneOfflineInvocation(t *testi
 	if err != nil || result.Status() != domain.SandboxCompleted {
 		t.Fatalf("InspectWheelWithClosure() = %#v, %v", result, err)
 	}
-	if len(runner.inputCalls) != 2 {
+	if len(runner.inputCalls) != 3 {
 		t.Fatalf("introduced closure artifacts = %#v", runner.inputCalls)
 	}
 	if len(runner.calls) < 3 || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "--no-index --no-deps") || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "--target /haa-site") || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "/tmp/example-1.0-py3-none-any.whl") || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "/tmp/dependency-1.0-py3-none-any.whl") {
@@ -581,7 +581,7 @@ func pythonWheelFixture(t *testing.T) (string, domain.AcquiredArtifact) {
 func assertPythonDynamicCreate(t *testing.T, arguments []string) {
 	t.Helper()
 	joined := strings.Join(arguments, " ")
-	for _, required := range []string{"--pull never", "--runtime " + gVisorRuntimeName, "--network none", "--read-only", "--cap-drop ALL", "no-new-privileges", "--pids-limit 64", "--memory 536870912", pythonImageReference} {
+	for _, required := range []string{"--pull never", "--runtime " + gVisorRuntimeName, "--network none", "--read-only", "--cap-drop ALL", "no-new-privileges", "--pids-limit 64", "--memory 536870912", "--tmpfs " + boundaryHelperMount, pythonImageReference} {
 		if !strings.Contains(joined, required) {
 			t.Errorf("create command missing %q: %q", required, joined)
 		}
