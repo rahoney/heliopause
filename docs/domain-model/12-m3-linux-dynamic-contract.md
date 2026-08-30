@@ -78,26 +78,27 @@ matrix or make an unsupported capability appear clean.
 | `connect`, `sendto`, `sendmsg`, `sendmmsg` communication attempt | `M3_NETWORK_ATTEMPT` MANUAL_REVIEW |
 | exact pinned HAA one-shot direct control root network operation | bounded `TRUSTED_CONTROL_NETWORK` raw observation only when exact control-root attribution is confirmed; it is not an artifact network Finding |
 | network FD-family/event attribution unknown, malformed, dropped or unclassifiable | required dynamic check `INCOMPLETE` / no ALLOW |
-| exec enter attempt; file open; process clone | bounded raw telemetry only |
-| validly correlated unexpected executable-image transition boundary | `M3_UNEXPECTED_PROCESS` MANUAL_REVIEW |
+| exec ENTER/EXIT attempt; file open; process clone | bounded raw telemetry only |
+| valid Sentry unexpected executable-image transition boundary | `M3_UNEXPECTED_PROCESS` MANUAL_REVIEW |
 | read/open synthetic honeytoken | `UNSUPPORTED` in production helper; M11 candidate |
 | write outside the bounded `/tmp` workspace or excessive file operation | `UNSUPPORTED` in production helper; M11 candidate |
 | timeout/resource/event-limit, helper drop/malformed/mismatched stream or observer failure | required dynamic check `INCOMPLETE` / no ALLOW |
 | clean completed observation | dynamic check `COMPLETED`; Policy may allow only after all M3 required checks are complete |
 
-`syscall/execve/enter` and `execveat` enter are execution-attempt telemetry;
-they do not alone prove an executable-image transition. In pinned gVisor,
-`syscall` EXIT is not final exec-success evidence because the exec continuation
-may run after that event. The `sentry/execve` checkpoint is emitted only after
-`LoadTaskImage` succeeds and is the authoritative executable-image transition
-boundary for M3 observation. A valid bounded Sentry observation may produce
-`process-exec-expected` or `process-exec-unexpected`; this does not claim final
-process-image commit or userspace execution. Explicit syscall failure remains
-bounded attempt telemetry. Missing, invalid, ambiguous, mismatched or
-incomplete required boundary correlation is `INCOMPLETE`.
+`syscall/execve` and `syscall/execveat` ENTER/EXIT are execution-attempt
+telemetry only; they do not alone prove an executable-image transition. In
+pinned gVisor, syscall EXIT is not final exec-success evidence because the exec
+continuation may run after that event. The `sentry/execve` checkpoint is emitted
+only after `LoadTaskImage` succeeds and is the authoritative executable-image
+transition boundary for M3 observation. A valid bounded Sentry observation may
+produce `process-exec-expected` or `process-exec-unexpected` without a retained
+matching ENTER; this does not claim final process-image commit or userspace
+execution. Failed pathname lookup without Sentry, including explicit syscall
+failure, remains bounded attempt telemetry. Malformed or invalid Sentry
+observation and observer stream-integrity failure are `INCOMPLETE`.
 
-An exact HAA-created direct exec session may consume exactly one successfully
-correlated initial transition as trusted launch plumbing. That trust is
+An exact HAA-created direct exec session may consume exactly one valid Sentry
+initial transition as trusted launch plumbing. That trust is
 one-shot: a same-group re-exec, any child group, same-path execution, lifecycle
 descendant or unknown attribution does not regain or inherit it. npm lifecycle
 scripts run in a spawned child/process subtree; that child and every descendant

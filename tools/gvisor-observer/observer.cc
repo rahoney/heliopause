@@ -43,7 +43,6 @@ constexpr size_t kMaxPyTorchCPURecordsPerConnection = 500000;
 constexpr size_t kMaxPyTorchCU126RecordsPerConnection = 100000;
 constexpr size_t kMaxTrackedProcessGroups = 64;
 constexpr size_t kMaxTrackedFileDescriptorsPerGroup = 4096;
-constexpr size_t kMaxPendingExecs = 64;
 constexpr uint64_t kSyscallExecve = 59;
 constexpr uint64_t kSyscallExecveat = 322;
 constexpr uint64_t kSyscallSendtoX86 = 44;
@@ -157,27 +156,8 @@ struct ProcessState {
     int raw_family;
     bool cloexec;
   };
-  struct PendingExec {
-    uint64_t syscall_number;
-    int32_t group_id;
-    int64_t group_start_time_ns;
-    int32_t parent_group_id;
-    bool is_exec_session;
-    bool sentry_seen;
-    ProcessClass sentry_class;
-    bool expected;
-    const char* classification_reason;
-    const char* parent_relation;
-    bool projected_bootstrap_active;
-    bool projected_bootstrap_group_set;
-    int32_t projected_bootstrap_group_id;
-    int64_t projected_bootstrap_group_start_time_ns;
-    std::map<int32_t, ExpectedGroup> projected_expected_groups;
-    std::map<int32_t, int64_t> projected_launch_roots;
-  };
   std::map<int32_t, std::map<int32_t, FDEntry>> fd_states;
   std::map<int32_t, uint32_t> pending_sockets;
-  std::map<int32_t, PendingExec> pending_execs;
   bool launch_root_set = false;
   bool launch_root_active = false;
   int32_t launch_root_group_id = 0;
@@ -402,13 +382,6 @@ const char* NetworkProcessRelation(const gvisor::common::ContextData& context, c
   return "UNKNOWN";
 }
 
-bool SameProcessIdentity(const gvisor::common::ContextData& context, const ProcessState::PendingExec& pending) {
-  return context.thread_group_id() == pending.group_id &&
-      context.thread_group_start_time_ns() == pending.group_start_time_ns &&
-      context.parent_thread_group_id() == pending.parent_group_id &&
-      context.is_exec_session() == pending.is_exec_session;
-}
-
 SocketClassification ClassifySocketFamily(int family) {
   if (family == AF_UNIX) return SocketClassification::kLocal;
   if (family == kLinuxAFNetlink) return SocketClassification::kSpecialKernelLocal;
@@ -527,26 +500,6 @@ bool ValidateContextContainer(const gvisor::common::ContextData& context, std::s
   return true;
 }
 
-void CommitProjectedProcessState(const ProcessState::PendingExec& pending, ProcessState* state) {
-  state->bootstrap_active = pending.projected_bootstrap_active;
-  state->bootstrap_group_set = pending.projected_bootstrap_group_set;
-  state->bootstrap_group_id = pending.projected_bootstrap_group_id;
-  state->bootstrap_group_start_time_ns = pending.projected_bootstrap_group_start_time_ns;
-  state->expected_groups = pending.projected_expected_groups;
-  state->launch_roots = pending.projected_launch_roots;
-  if (pending.parent_relation != nullptr && strcmp(pending.parent_relation, "DIRECT_EXEC_SESSION") == 0 && pending.expected) {
-    state->launch_root_set = true;
-    state->launch_root_active = true;
-    state->launch_root_group_id = pending.group_id;
-    state->launch_root_group_start_time_ns = pending.group_start_time_ns;
-    state->launch_roots[pending.group_id] = pending.group_start_time_ns;
-  } else if (state->launch_root_set && state->launch_root_group_id == pending.group_id &&
-             state->launch_root_group_start_time_ns == pending.group_start_time_ns) {
-    state->launch_root_active = false;
-    state->launch_roots.erase(pending.group_id);
-  }
-}
-
 void ApplyExecCloexec(ProcessState* state, int32_t group_id) {
   auto table = state->fd_states.find(group_id);
   if (table == state->fd_states.end()) return;
@@ -557,9 +510,7 @@ void ApplyExecCloexec(ProcessState* state, int32_t group_id) {
 }
 
 template <typename Message>
-bool ParseExecSyscallAndCorrelate(const char* payload, size_t payload_size, int output, std::string* container_id,
-                                  const char* profile, ProcessState* process_state, const char** reason) {
-  if (profile == nullptr || process_state == nullptr) return false;
+bool ParseExecSyscallTelemetry(const char* payload, size_t payload_size, std::string* container_id, const char** reason) {
   Message message;
   if (!message.ParseFromArray(payload, payload_size)) return false;
   if (!ValidateContextContainer(message.context_data(), container_id, reason) || !ValidProcessIdentity(message.context_data())) {
@@ -571,38 +522,14 @@ bool ParseExecSyscallAndCorrelate(const char* payload, size_t payload_size, int 
     *reason = "EXEC_CORRELATION_INVALID";
     return false;
   }
-  const int32_t group_id = message.context_data().thread_group_id();
-  auto pending = process_state->pending_execs.find(group_id);
-  if (!message.has_exit()) {
-    if (pending != process_state->pending_execs.end()) { *reason = "EXEC_CORRELATION_DUPLICATE"; return false; }
-    if (process_state->pending_execs.size() >= kMaxPendingExecs) { *reason = "EXEC_CORRELATION_LIMIT"; return false; }
-    ProcessState::PendingExec new_pending{
-        syscall_number, group_id, message.context_data().thread_group_start_time_ns(),
-        message.context_data().parent_thread_group_id(), message.context_data().is_exec_session(),
-        false, ProcessClass::kUnknown, false,
-        "OTHER", "UNKNOWN", false, false, 0, 0, {}};
-    process_state->pending_execs.emplace(group_id, std::move(new_pending));
-    return true;
-  }
-
-  if (pending == process_state->pending_execs.end()) { *reason = "EXEC_CORRELATION_OUT_OF_ORDER"; return false; }
-  if (pending->second.syscall_number != syscall_number || !SameProcessIdentity(message.context_data(), pending->second)) {
-    *reason = "EXEC_CORRELATION_MISMATCH";
-    return false;
-  }
-  if (message.exit().errorno() != 0 || message.exit().result() < 0) {
-    process_state->pending_execs.erase(pending);
-    return true;
-  }
-  // gVisor may emit syscall EXIT before the exec continuation loads the new
-  // image and emits sentry/execve. Keep the bounded attempt state for that
-  // later authoritative checkpoint; EXIT is not final exec evidence.
+  // In pinned gVisor syscall EXIT precedes the exec continuation. ENTER and
+  // EXIT are bounded attempt telemetry only; sentry/execve is the image-load
+  // boundary that classifies an executable transition.
   return true;
 }
 
-bool ParseSentryProcessAndCorrelate(const char* payload, size_t payload_size, int output, std::string* container_id,
-                                    const char* profile, ProcessState* process_state, const char** reason) {
-  (void)output;
+bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int output, std::string* container_id,
+                                   const char* profile, ProcessState* process_state, const char** reason) {
   if (profile == nullptr || process_state == nullptr) return false;
   gvisor::sentry::ExecveInfo message;
   if (!message.ParseFromArray(payload, payload_size)) return false;
@@ -610,35 +537,33 @@ bool ParseSentryProcessAndCorrelate(const char* payload, size_t payload_size, in
     if (*reason == nullptr) *reason = "EXEC_CORRELATION_INVALID";
     return false;
   }
-  auto pending = process_state->pending_execs.find(message.context_data().thread_group_id());
-  if (pending == process_state->pending_execs.end()) { *reason = "EXEC_CORRELATION_MISSING"; return false; }
-  if (!SameProcessIdentity(message.context_data(), pending->second)) { *reason = "EXEC_CORRELATION_MISMATCH"; return false; }
-  if (pending->second.sentry_seen) { *reason = "EXEC_CORRELATION_DUPLICATE"; return false; }
-  const ProcessClass sentry_class = ProcessClassForPath(message.binary_path(), profile);
-
   ProcessState candidate = *process_state;
-  candidate.pending_execs.clear();
   candidate.fd_states.clear();
   const ProcessClassification classification = IsExpectedProcess(message.binary_path(), message.context_data(), profile, &candidate);
-  pending->second.sentry_seen = true;
-  pending->second.sentry_class = sentry_class;
-  pending->second.expected = classification.expected;
-  pending->second.classification_reason = classification.reason;
-  pending->second.parent_relation = classification.parent_relation;
-  pending->second.projected_bootstrap_active = candidate.bootstrap_active;
-  pending->second.projected_bootstrap_group_set = candidate.bootstrap_group_set;
-  pending->second.projected_bootstrap_group_id = candidate.bootstrap_group_id;
-  pending->second.projected_bootstrap_group_start_time_ns = candidate.bootstrap_group_start_time_ns;
-  pending->second.projected_expected_groups = std::move(candidate.expected_groups);
-  pending->second.projected_launch_roots = std::move(candidate.launch_roots);
-
-  const ProcessState::PendingExec completed = pending->second;
-  CommitProjectedProcessState(completed, process_state);
-  ApplyExecCloexec(process_state, completed.group_id);
-  process_state->pending_execs.erase(pending);
-  const char* source = completed.syscall_number == kSyscallExecveat ? "EXECVEAT" : "EXECVE";
-  if (completed.expected) return Send(output, *container_id, "process-exec-expected");
-  const Attribution attribution{source, nullptr, nullptr, ProcessClassName(completed.sentry_class), completed.classification_reason, completed.parent_relation};
+  process_state->bootstrap_active = candidate.bootstrap_active;
+  process_state->bootstrap_group_set = candidate.bootstrap_group_set;
+  process_state->bootstrap_group_id = candidate.bootstrap_group_id;
+  process_state->bootstrap_group_start_time_ns = candidate.bootstrap_group_start_time_ns;
+  process_state->expected_groups = std::move(candidate.expected_groups);
+  process_state->launch_roots = std::move(candidate.launch_roots);
+  const int32_t group_id = message.context_data().thread_group_id();
+  const int64_t group_start_time_ns = message.context_data().thread_group_start_time_ns();
+  if (strcmp(classification.parent_relation, "DIRECT_EXEC_SESSION") == 0 && classification.expected) {
+    process_state->launch_root_set = true;
+    process_state->launch_root_active = true;
+    process_state->launch_root_group_id = group_id;
+    process_state->launch_root_group_start_time_ns = group_start_time_ns;
+    process_state->launch_roots[group_id] = group_start_time_ns;
+  } else if (process_state->launch_root_set && process_state->launch_root_group_id == group_id &&
+             process_state->launch_root_group_start_time_ns == group_start_time_ns) {
+    process_state->launch_root_active = false;
+    process_state->launch_roots.erase(group_id);
+  }
+  ApplyExecCloexec(process_state, group_id);
+  if (classification.expected) return Send(output, *container_id, "process-exec-expected");
+  const Attribution attribution{"SENTRY_EXEC", nullptr, nullptr,
+                                ProcessClassName(classification.process_class), classification.reason,
+                                classification.parent_relation};
   return Send(output, *container_id, "process-exec-unexpected", nullptr, &attribution);
 }
 
@@ -857,11 +782,11 @@ bool Handle(const Header& header, const char* payload, size_t payload_size, int 
   switch (static_cast<gvisor::common::MessageType>(header.message_type)) {
     case gvisor::common::MESSAGE_CONTAINER_START: return ParseAndSend<gvisor::container::Start>(payload, payload_size, output, "container-start", container_id, profile, reason);
     case gvisor::common::MESSAGE_SENTRY_CLONE: return ParseAndSend<gvisor::sentry::CloneInfo>(payload, payload_size, output, "process-clone", container_id, profile, reason);
-    case gvisor::common::MESSAGE_SENTRY_EXEC: return ParseSentryProcessAndCorrelate(payload, payload_size, output, container_id, profile, process_state, reason);
+    case gvisor::common::MESSAGE_SENTRY_EXEC: return ParseSentryProcessAndClassify(payload, payload_size, output, container_id, profile, process_state, reason);
     // pathname, argv and envv are parsed by protobuf but are deliberately never
     // copied to the HAA envelope. M11-003 supplies the trusted profile required
     // to classify this bounded process fact as expected or unexpected.
-    case gvisor::common::MESSAGE_SYSCALL_EXECVE: return ParseExecSyscallAndCorrelate<gvisor::syscall::Execve>(payload, payload_size, output, container_id, profile, process_state, reason);
+    case gvisor::common::MESSAGE_SYSCALL_EXECVE: return ParseExecSyscallTelemetry<gvisor::syscall::Execve>(payload, payload_size, container_id, reason);
     case gvisor::common::MESSAGE_SYSCALL_OPEN: return ParseOpenAndSend(payload, payload_size, output, container_id, profile, reason);
     case gvisor::common::MESSAGE_SYSCALL_CONNECT: return ParseConnectAndSend(payload, payload_size, output, container_id, profile, *process_state, reason);
     case gvisor::common::MESSAGE_SYSCALL_SOCKET: return ParseSocketAndTrack<gvisor::syscall::Socket>(payload, payload_size, output, container_id, profile, process_state, reason);
@@ -950,7 +875,7 @@ int main(int argc, char** argv) {
       ++normalized_records;
     }
     if (size < 0) { fault = true; fault_reason = "STREAM_FAULT"; }
-    if (!fault && (!process_state.pending_execs.empty() || !process_state.pending_sockets.empty())) {
+    if (!fault && !process_state.pending_sockets.empty()) {
       fault = true;
       fault_reason = "EXEC_CORRELATION_MISSING";
     }

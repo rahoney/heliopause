@@ -39,8 +39,8 @@ upstream exact source test가 소유한다.
 | --- | --- | --- | --- |
 | `container/start` | `container_id` | none | session attribution only |
 | `sentry/clone` | `container_id`, `group_id`, `process_name` | clone identity | bounded process relation/count only |
-| `sentry/execve` | `container_id`, `group_id`, `process_name` | exec identity after `LoadTaskImage` succeeds | authoritative image-load boundary; bounded correlation only |
-| `syscall/execve` and `syscall/execveat` enter/exit | `container_id`, `group_id`, `process_name` | pathname, argv, bounded attempt/exit telemetry | enter/Sentry boundary correlation; EXIT is not final success evidence |
+| `sentry/execve` | `container_id`, `group_id`, `process_name` | exec identity after `LoadTaskImage` succeeds | authoritative image-load boundary; bounded context validation only |
+| `syscall/execve` and `syscall/execveat` enter/exit | `container_id`, `group_id`, `process_name` | pathname, argv, bounded attempt/exit telemetry | telemetry only; EXIT is not final success evidence |
 | `syscall/openat/enter` | `container_id`, `group_id`, `process_name` | pathname, flags, mode, sysno | workspace/honeytoken/outside class only |
 | `syscall/socket` enter/exit; close/dup/fcntl and clone/exec lifecycle | `container_id`, `group_id`, `process_name` | bounded socket FD-family lifecycle state | helper-only bounded correlation; unknown state is incomplete |
 | `syscall/connect/enter` | `container_id`, `group_id`, `process_name` | socket family | bounded communication-attempt class only |
@@ -59,8 +59,8 @@ summary만 전송한다. M11-002가 추가할 normalized vocabulary는 다음으
 | Category | Normalized subject | Meaning |
 | --- | --- | --- |
 | PROCESS | execution-attempt telemetry | syscall exec enter; bounded only and never directly a Finding |
-| PROCESS | `process-exec-expected` | exact trusted launch/control transition confirmed by bounded success correlation |
-| PROCESS | `process-exec-unexpected` | successfully correlated unexpected executable transition; pathname alone does not grant trust |
+| PROCESS | `process-exec-expected` | exact trusted launch/control transition at the valid Sentry image-load boundary |
+| PROCESS | `process-exec-unexpected` | unexpected executable-image transition at the valid Sentry image-load boundary; pathname alone does not grant trust |
 | FILESYSTEM | `filesystem-workspace-access` | approved transient workspace 안의 access |
 | FILESYSTEM | `filesystem-outside-workspace` | approved workspace 밖 access |
 | HONEYTOKEN | `honeytoken-access` | HAA-controlled honeytoken class access |
@@ -80,17 +80,18 @@ AF_PACKET socket creation remains a conservative actionable exception. Unknown,
 malformed, dropped, unclassifiable FD-family state, or missing required network
 correlation is fail-closed `INCOMPLETE` rather than a clean observation.
 
-exec enter is not successful execution. In pinned gVisor, syscall EXIT is not
-final exec-success evidence: the exec continuation may execute after the
+exec ENTER/EXIT is not successful execution. In pinned gVisor, syscall EXIT is
+not final exec-success evidence: the exec continuation may execute after the
 syscall EXIT event. `sentry/execve` is emitted after `LoadTaskImage` succeeds
 and is the authoritative executable-image transition boundary for a process
 Finding. A valid bounded Sentry observation may produce
-`process-exec-expected` or `process-exec-unexpected`, without claiming final
-process-image commit or userspace execution. Failed attempts remain bounded
-telemetry; missing, duplicate, ambiguous, mismatched or out-of-order required
-boundary correlation is `INCOMPLETE`.
-An exact HAA-created direct exec session may consume only its first successfully
-correlated transition as trusted launch plumbing. Same-group re-exec, child
+`process-exec-expected` or `process-exec-unexpected` without a retained matching
+ENTER, without claiming final process-image commit or userspace execution.
+Failed pathname lookup without Sentry, including explicit syscall failure,
+remains bounded telemetry. Malformed or invalid Sentry observation and observer
+stream-integrity failure are `INCOMPLETE`. An exact HAA-created direct exec
+session may consume only its first valid Sentry transition as trusted launch
+plumbing. Same-group re-exec, child
 groups, same-path execution and unknown attribution do not regain or inherit
 that trust. npm lifecycle child processes and their descendants are
 Artifact-controlled regardless of pathname.

@@ -471,7 +471,7 @@ bool VerifyCloexecReexec(int output, const std::string& remote, const std::strin
   gvisor::syscall::Execve reexec = root;
   gvisor::sentry::ExecveInfo reexec_resolved = resolved;
   if (!SendSuccessfulExec(client, reexec, reexec_resolved) ||
-      !ExpectUnexpectedProcessRecord(output, kNinthID, "EXECVE", "PYTHON", "BOOTSTRAP_ENDED", "TRACKED_GROUP")) return false;
+      !ExpectUnexpectedProcessRecord(output, kNinthID, "SENTRY_EXEC", "PYTHON", "BOOTSTRAP_ENDED", "TRACKED_GROUP")) return false;
   gvisor::syscall::Syscall raw;
   *raw.mutable_context_data() = root.context_data();
   raw.set_sysno(kSyscallSendtoX86);
@@ -549,6 +549,14 @@ bool VerifyProcessTrustBoundary(int output, const std::string& remote, const std
   failed.mutable_exit()->set_errorno(2);
   if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, failed) || !ExpectNoRecord(output)) return false;
 
+  gvisor::syscall::Execve failed_execveat = failed;
+  failed_execveat.clear_exit();
+  failed_execveat.set_sysno(kSyscallExecveat);
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, failed_execveat) || !ExpectNoRecord(output)) return false;
+  failed_execveat.mutable_exit()->set_result(-1);
+  failed_execveat.mutable_exit()->set_errorno(2);
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, failed_execveat) || !ExpectNoRecord(output)) return false;
+
   gvisor::syscall::Execve execveat = failed;
   execveat.clear_exit();
   execveat.set_sysno(kSyscallExecveat);
@@ -569,7 +577,7 @@ bool VerifyProcessTrustBoundary(int output, const std::string& remote, const std
   gvisor::sentry::ExecveInfo childResolved;
   *childResolved.mutable_context_data() = child.context_data();
   childResolved.set_binary_path("/usr/bin/curl");
-  if (!SendSuccessfulExec(client, child, childResolved) || !ExpectUnexpectedProcessRecord(output, kSecondID, "EXECVE", "OTHER", "UNKNOWN_CLASS", "UNTRACKED_PARENT")) return false;
+  if (!SendSuccessfulExec(client, child, childResolved) || !ExpectUnexpectedProcessRecord(output, kSecondID, "SENTRY_EXEC", "OTHER", "UNKNOWN_CLASS", "UNTRACKED_PARENT")) return false;
 
   child.mutable_context_data()->set_thread_group_id(22);
   child.mutable_context_data()->set_thread_group_start_time_ns(220);
@@ -577,7 +585,7 @@ bool VerifyProcessTrustBoundary(int output, const std::string& remote, const std
   childResolved.mutable_context_data()->set_thread_group_id(22);
   childResolved.mutable_context_data()->set_thread_group_start_time_ns(220);
   childResolved.set_binary_path("/usr/local/bin/python");
-  if (!SendSuccessfulExec(client, child, childResolved) || !ExpectUnexpectedProcessRecord(output, kSecondID, "EXECVE", "PYTHON", "BOOTSTRAP_ENDED", "UNTRACKED_PARENT")) return false;
+  if (!SendSuccessfulExec(client, child, childResolved) || !ExpectUnexpectedProcessRecord(output, kSecondID, "SENTRY_EXEC", "PYTHON", "BOOTSTRAP_ENDED", "UNTRACKED_PARENT")) return false;
 
   gvisor::syscall::Execve shell;
   shell.mutable_context_data()->set_container_id(kSecondID);
@@ -600,12 +608,12 @@ bool VerifyProcessTrustBoundary(int output, const std::string& remote, const std
   childResolved.mutable_context_data()->set_thread_group_start_time_ns(410);
   childResolved.mutable_context_data()->set_parent_thread_group_id(40);
   childResolved.set_binary_path("/usr/bin/cat");
-  if (!SendSuccessfulExec(client, child, childResolved) || !ExpectUnexpectedProcessRecord(output, kSecondID, "EXECVE", "CAT", "BOOTSTRAP_ENDED", "UNTRACKED_PARENT")) return false;
+  if (!SendSuccessfulExec(client, child, childResolved) || !ExpectUnexpectedProcessRecord(output, kSecondID, "SENTRY_EXEC", "CAT", "BOOTSTRAP_ENDED", "UNTRACKED_PARENT")) return false;
   close(client);
   return ExpectRecord(output, kSecondID, "stream-end");
 }
 
-bool VerifyExecCorrelationBoundary(int output, const std::string& remote, const std::string& control) {
+bool VerifySentryAuthoritativeBoundary(int output, const std::string& remote, const std::string& control) {
   auto make_exec = [](const char* container_id, int32_t group_id, int64_t start_time) {
     gvisor::syscall::Execve exec;
     exec.mutable_context_data()->set_container_id(container_id);
@@ -635,9 +643,16 @@ bool VerifyExecCorrelationBoundary(int output, const std::string& remote, const 
   gvisor::syscall::Execve early_exit = early;
   early_exit.mutable_exit()->set_result(0);
   early_exit.mutable_exit()->set_errorno(0);
+  gvisor::syscall::Execve next = early;
+  gvisor::syscall::Execve next_exit = next;
+  next_exit.mutable_exit()->set_result(0);
+  next_exit.mutable_exit()->set_errorno(0);
   if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, early) ||
       !SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, early_exit) ||
-      !SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, make_sentry(early)) ||
+      !SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, next) ||
+      !SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, next_exit) ||
+      !ExpectNoRecord(output) ||
+      !SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, make_sentry(next)) ||
       !ExpectRecord(output, kTenthID, "process-exec-expected")) return false;
 
   gvisor::syscall::Execve failed = make_exec(kTenthID, 101, 1001);
@@ -648,19 +663,10 @@ bool VerifyExecCorrelationBoundary(int output, const std::string& remote, const 
       !SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, failed_exit) ||
       !ExpectNoRecord(output)) return false;
 
-  gvisor::syscall::Execve duplicate = make_exec(kTenthID, 102, 1002);
-  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, duplicate) ||
-      !SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, [&] {
-        gvisor::syscall::Execve exit = duplicate;
-        exit.mutable_exit()->set_result(0);
-        exit.mutable_exit()->set_errorno(0);
-        return exit;
-      }()) ||
-      !SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, make_sentry(duplicate)) ||
-      !ExpectRecord(output, kTenthID, "process-exec-expected") ||
-      !SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, make_sentry(duplicate))) return false;
-  if (!ExpectRecord(output, kTenthID, "stream-fault", "EXEC_CORRELATION_MISSING")) return false;
+  if (!SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, make_sentry(next)) ||
+      !ExpectUnexpectedProcessRecord(output, kTenthID, "SENTRY_EXEC", "PYTHON", "BOOTSTRAP_ENDED", "TRACKED_GROUP")) return false;
   close(client);
+  if (!ExpectRecord(output, kTenthID, "stream-end")) return false;
 
   if (!RegisterProfile(control, kEleventhID, kProfilePyPI)) return false;
   client = ConnectRemote(remote);
@@ -668,18 +674,25 @@ bool VerifyExecCorrelationBoundary(int output, const std::string& remote, const 
   start.mutable_context_data()->set_container_id(kEleventhID);
   if (!SendEvent(client, gvisor::common::MESSAGE_CONTAINER_START, start) || !ExpectRecord(output, kEleventhID, "container-start")) return false;
   gvisor::syscall::Execve unresolved = make_exec(kEleventhID, 103, 1003);
-  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, unresolved)) return false;
+  gvisor::syscall::Execve unresolved_exit = unresolved;
+  unresolved_exit.mutable_exit()->set_result(-1);
+  unresolved_exit.mutable_exit()->set_errorno(2);
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, unresolved) ||
+      !SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, unresolved_exit) ||
+      !ExpectNoRecord(output)) return false;
   close(client);
-  if (!ExpectRecord(output, kEleventhID, "stream-fault", "EXEC_CORRELATION_MISSING")) return false;
+  if (!ExpectRecord(output, kEleventhID, "stream-end")) return false;
 
   if (!RegisterProfile(control, kTwelfthID, kProfilePyPI)) return false;
   client = ConnectRemote(remote);
   if (client < 0 || !Handshake(client)) return false;
   start.mutable_context_data()->set_container_id(kTwelfthID);
   if (!SendEvent(client, gvisor::common::MESSAGE_CONTAINER_START, start) || !ExpectRecord(output, kTwelfthID, "container-start")) return false;
-  gvisor::syscall::Execve missing = make_exec(kTwelfthID, 104, 1004);
-  if (!SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, make_sentry(missing))) return false;
-  if (!ExpectRecord(output, kTwelfthID, "stream-fault", "EXEC_CORRELATION_MISSING")) return false;
+  gvisor::sentry::ExecveInfo malformed;
+  malformed.mutable_context_data()->set_container_id(kTwelfthID);
+  malformed.set_binary_path("/usr/local/bin/python3.14");
+  if (!SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, malformed)) return false;
+  if (!ExpectRecord(output, kTwelfthID, "stream-fault", "EXEC_CORRELATION_INVALID")) return false;
   close(client);
   return true;
 }
@@ -810,7 +823,7 @@ int main(int argc, char** argv) {
   if (!unknown_fd) fprintf(stderr, "observer latch failure: unknown FD state\n");
   const bool process = unknown_fd && VerifyProcessTrustBoundary(output, remote, control);
   if (!process) fprintf(stderr, "observer latch failure: process trust boundary\n");
-  const bool correlation = process && VerifyExecCorrelationBoundary(output, remote, control);
+  const bool correlation = process && VerifySentryAuthoritativeBoundary(output, remote, control);
   if (!correlation) fprintf(stderr, "observer latch failure: exec correlation boundary\n");
   const bool cloexec = correlation && VerifyCloexecReexec(output, remote, control);
   if (!cloexec) fprintf(stderr, "observer latch failure: CLOEXEC/re-exec boundary\n");
