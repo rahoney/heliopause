@@ -39,8 +39,8 @@ upstream exact source test가 소유한다.
 | --- | --- | --- | --- |
 | `container/start` | `container_id` | none | session attribution only |
 | `sentry/clone` | `container_id`, `group_id`, `process_name` | clone identity | bounded process relation/count only |
-| `sentry/execve` | `container_id`, `group_id`, `process_name` | exec identity | bounded exec-transition correlation only |
-| `syscall/execve` and `syscall/execveat` enter/exit | `container_id`, `group_id`, `process_name` | pathname, argv, bounded exit success state | enter/Sentry/successful-exit correlation only |
+| `sentry/execve` | `container_id`, `group_id`, `process_name` | exec identity after `LoadTaskImage` succeeds | authoritative image-load boundary; bounded correlation only |
+| `syscall/execve` and `syscall/execveat` enter/exit | `container_id`, `group_id`, `process_name` | pathname, argv, bounded attempt/exit telemetry | enter/Sentry boundary correlation; EXIT is not final success evidence |
 | `syscall/openat/enter` | `container_id`, `group_id`, `process_name` | pathname, flags, mode, sysno | workspace/honeytoken/outside class only |
 | `syscall/socket` enter/exit; close/dup/fcntl and clone/exec lifecycle | `container_id`, `group_id`, `process_name` | bounded socket FD-family lifecycle state | helper-only bounded correlation; unknown state is incomplete |
 | `syscall/connect/enter` | `container_id`, `group_id`, `process_name` | socket family | bounded communication-attempt class only |
@@ -80,10 +80,15 @@ AF_PACKET socket creation remains a conservative actionable exception. Unknown,
 malformed, dropped, unclassifiable FD-family state, or missing required network
 correlation is fail-closed `INCOMPLETE` rather than a clean observation.
 
-exec enter is not successful execution. A process Finding requires matching
-syscall enter, `sentry/execve`, and successful syscall exit for `execve` or
-`execveat`. Failed attempts remain bounded telemetry; missing, duplicate,
-ambiguous, mismatched or out-of-order required correlation is `INCOMPLETE`.
+exec enter is not successful execution. In pinned gVisor, syscall EXIT is not
+final exec-success evidence: the exec continuation may execute after the
+syscall EXIT event. `sentry/execve` is emitted after `LoadTaskImage` succeeds
+and is the authoritative executable-image transition boundary for a process
+Finding. A valid bounded Sentry observation may produce
+`process-exec-expected` or `process-exec-unexpected`, without claiming final
+process-image commit or userspace execution. Failed attempts remain bounded
+telemetry; missing, duplicate, ambiguous, mismatched or out-of-order required
+boundary correlation is `INCOMPLETE`.
 An exact HAA-created direct exec session may consume only its first successfully
 correlated transition as trusted launch plumbing. Same-group re-exec, child
 groups, same-path execution and unknown attribution do not regain or inherit

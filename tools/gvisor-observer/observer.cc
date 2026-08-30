@@ -594,16 +594,10 @@ bool ParseExecSyscallAndCorrelate(const char* payload, size_t payload_size, int 
     process_state->pending_execs.erase(pending);
     return true;
   }
-  if (!pending->second.sentry_seen) { *reason = "EXEC_CORRELATION_MISSING"; return false; }
-
-  const ProcessState::PendingExec completed = pending->second;
-  CommitProjectedProcessState(completed, process_state);
-  ApplyExecCloexec(process_state, group_id);
-  process_state->pending_execs.erase(pending);
-  const char* source = syscall_number == kSyscallExecveat ? "EXECVEAT" : "EXECVE";
-  if (completed.expected) return Send(output, *container_id, "process-exec-expected");
-  const Attribution attribution{source, nullptr, nullptr, ProcessClassName(completed.sentry_class), completed.classification_reason, completed.parent_relation};
-  return Send(output, *container_id, "process-exec-unexpected", nullptr, &attribution);
+  // gVisor may emit syscall EXIT before the exec continuation loads the new
+  // image and emits sentry/execve. Keep the bounded attempt state for that
+  // later authoritative checkpoint; EXIT is not final exec evidence.
+  return true;
 }
 
 bool ParseSentryProcessAndCorrelate(const char* payload, size_t payload_size, int output, std::string* container_id,
@@ -637,7 +631,15 @@ bool ParseSentryProcessAndCorrelate(const char* payload, size_t payload_size, in
   pending->second.projected_bootstrap_group_start_time_ns = candidate.bootstrap_group_start_time_ns;
   pending->second.projected_expected_groups = std::move(candidate.expected_groups);
   pending->second.projected_launch_roots = std::move(candidate.launch_roots);
-  return true;
+
+  const ProcessState::PendingExec completed = pending->second;
+  CommitProjectedProcessState(completed, process_state);
+  ApplyExecCloexec(process_state, completed.group_id);
+  process_state->pending_execs.erase(pending);
+  const char* source = completed.syscall_number == kSyscallExecveat ? "EXECVEAT" : "EXECVE";
+  if (completed.expected) return Send(output, *container_id, "process-exec-expected");
+  const Attribution attribution{source, nullptr, nullptr, ProcessClassName(completed.sentry_class), completed.classification_reason, completed.parent_relation};
+  return Send(output, *container_id, "process-exec-unexpected", nullptr, &attribution);
 }
 
 bool ParseOpenAndSend(const char* payload, size_t payload_size, int output, std::string* container_id, const char* profile, const char** reason) {
