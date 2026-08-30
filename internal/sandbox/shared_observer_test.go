@@ -33,6 +33,7 @@ func TestSharedObserverAttributesOneContainerAndClosesItsStream(t *testing.T) {
 	for _, record := range []helperRecord{
 		{ContainerID: "0123456789abcdef", Kind: "container-start"},
 		{ContainerID: "0123456789abcdef", Kind: "network-attempt", EventSource: "SOCKET", Family: "INET", ProcessRelation: "DIRECT_EXEC_SESSION", ProcessClass: "PYTHON"},
+		{ContainerID: "0123456789abcdef", Kind: "trusted-control-network", EventSource: "CONNECT", Family: "INET6", ProcessRelation: "DIRECT_EXEC_SESSION", ProcessClass: "PYTHON"},
 		{ContainerID: "0123456789abcdef", Kind: "stream-end"},
 	} {
 		body, _ := json.Marshal(record)
@@ -47,7 +48,7 @@ func TestSharedObserverAttributesOneContainerAndClosesItsStream(t *testing.T) {
 	if _, err := reader.Next(context.Background()); err != io.EOF {
 		t.Fatalf("stream end = %v, want EOF", err)
 	}
-	if got, want := diagnostic.String(), "observer_attribution sequence=1 profile=default counts=NETWORK/SOCKET/INET/DIRECT_EXEC_SESSION/PYTHON:1\n"; got != want {
+	if got, want := diagnostic.String(), "observer_attribution sequence=1 profile=default counts=NETWORK/SOCKET/INET/DIRECT_EXEC_SESSION/PYTHON:1,NETWORK/TRUSTED_CONTROL/CONNECT/INET6/DIRECT_EXEC_SESSION/PYTHON:1\n"; got != want {
 		t.Fatalf("diagnostic = %q, want %q", got, want)
 	}
 }
@@ -128,6 +129,7 @@ func FuzzDecodeHelperRecord(f *testing.F) {
 func TestDecodeHelperRecordAcceptsOnlyBoundedAttribution(t *testing.T) {
 	valid := []helperRecord{
 		{ContainerID: "0123456789abcdef", Kind: "network-attempt", EventSource: "CONNECT", Family: "PACKET", ProcessRelation: "TRACKED_EXPECTED_GROUP", ProcessClass: "NPM"},
+		{ContainerID: "0123456789abcdef", Kind: "trusted-control-network", EventSource: "CONNECT", Family: "INET6", ProcessRelation: "DIRECT_EXEC_SESSION", ProcessClass: "PYTHON"},
 		{ContainerID: "0123456789abcdef", Kind: "process-exec-unexpected", EventSource: "SENTRY_EXEC", ProcessClass: "SHELL", ClassificationReason: "UNMODELED_PARENT", ParentRelation: "UNTRACKED_PARENT"},
 	}
 	for _, record := range valid {
@@ -138,7 +140,8 @@ func TestDecodeHelperRecordAcceptsOnlyBoundedAttribution(t *testing.T) {
 	}
 	invalid := []helperRecord{
 		{ContainerID: "0123456789abcdef", Kind: "network-attempt"},
-		{ContainerID: "0123456789abcdef", Kind: "network-attempt", EventSource: "SENDTO", Family: "INET", ProcessRelation: "UNKNOWN", ProcessClass: "OTHER"},
+		{ContainerID: "0123456789abcdef", Kind: "network-attempt", EventSource: "SENDTO", Family: "INET", ProcessRelation: "UNKNOWN", ProcessClass: "OTHER", ClassificationReason: "OTHER"},
+		{ContainerID: "0123456789abcdef", Kind: "trusted-control-network", EventSource: "SOCKET", Family: "INET", ProcessRelation: "DIRECT_EXEC_SESSION", ProcessClass: "PYTHON"},
 		{ContainerID: "0123456789abcdef", Kind: "process-exec-unexpected", EventSource: "SYSCALL_EXECVE", ProcessClass: "/usr/bin/sh", ClassificationReason: "OTHER", ParentRelation: "ROOT"},
 		{ContainerID: "0123456789abcdef", Kind: "filesystem-open", EventSource: "SOCKET"},
 	}

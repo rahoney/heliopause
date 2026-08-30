@@ -6,9 +6,24 @@
       {"name": "sentry/clone", "context_fields": ["container_id", "group_id", "process_name"]},
       {"name": "sentry/execve", "context_fields": ["container_id", "group_id", "thread_group_start_time", "parent_thread_group_id", "is_exec_session", "process_name"]},
       {"name": "syscall/execve/enter", "context_fields": ["container_id", "group_id", "thread_group_start_time", "parent_thread_group_id", "is_exec_session", "process_name"]},
+      {"name": "syscall/execve/exit", "context_fields": ["container_id", "group_id", "thread_group_start_time", "parent_thread_group_id", "is_exec_session", "process_name"]},
+      {"name": "syscall/execveat/enter", "context_fields": ["container_id", "group_id", "thread_group_start_time", "parent_thread_group_id", "is_exec_session", "process_name"]},
+      {"name": "syscall/execveat/exit", "context_fields": ["container_id", "group_id", "thread_group_start_time", "parent_thread_group_id", "is_exec_session", "process_name"]},
       {"name": "syscall/openat/enter", "context_fields": ["container_id", "group_id", "process_name"]},
       {"name": "syscall/connect/enter", "context_fields": ["container_id", "group_id", "thread_group_start_time", "parent_thread_group_id", "is_exec_session", "process_name"]},
-      {"name": "syscall/socket/enter", "context_fields": ["container_id", "group_id", "thread_group_start_time", "parent_thread_group_id", "is_exec_session", "process_name"]}
+      {"name": "syscall/socket/enter", "context_fields": ["container_id", "group_id", "thread_group_start_time", "parent_thread_group_id", "is_exec_session", "process_name"]},
+      {"name": "syscall/socket/exit", "context_fields": ["container_id", "group_id", "thread_group_start_time", "parent_thread_group_id", "is_exec_session", "process_name"]},
+      {"name": "syscall/close/exit", "context_fields": ["container_id", "group_id", "thread_group_start_time", "parent_thread_group_id", "is_exec_session", "process_name"]},
+      {"name": "syscall/dup/exit", "context_fields": ["container_id", "group_id", "thread_group_start_time", "parent_thread_group_id", "is_exec_session", "process_name"]},
+      {"name": "syscall/dup2/exit", "context_fields": ["container_id", "group_id", "thread_group_start_time", "parent_thread_group_id", "is_exec_session", "process_name"]},
+      {"name": "syscall/dup3/exit", "context_fields": ["container_id", "group_id", "thread_group_start_time", "parent_thread_group_id", "is_exec_session", "process_name"]},
+      {"name": "syscall/fcntl/exit", "context_fields": ["container_id", "group_id", "thread_group_start_time", "parent_thread_group_id", "is_exec_session", "process_name"]},
+      {"name": "syscall/clone/exit", "context_fields": ["container_id", "group_id", "thread_group_start_time", "parent_thread_group_id", "is_exec_session", "process_name"]},
+      {"name": "syscall/fork/exit", "context_fields": ["container_id", "group_id", "thread_group_start_time", "parent_thread_group_id", "is_exec_session", "process_name"]},
+      {"name": "syscall/sysno/44/enter", "context_fields": ["container_id", "group_id", "thread_group_start_time", "parent_thread_group_id", "is_exec_session", "process_name"]},
+      {"name": "syscall/sysno/46/enter", "context_fields": ["container_id", "group_id", "thread_group_start_time", "parent_thread_group_id", "is_exec_session", "process_name"]},
+      {"name": "syscall/sysno/307/enter", "context_fields": ["container_id", "group_id", "thread_group_start_time", "parent_thread_group_id", "is_exec_session", "process_name"]},
+      {"name": "syscall/sysno/436/enter", "context_fields": ["container_id", "group_id", "thread_group_start_time", "parent_thread_group_id", "is_exec_session", "process_name"]}
     ],
     "sinks": [
       {
