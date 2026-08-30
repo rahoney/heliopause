@@ -1,11 +1,10 @@
 package sandbox
 
 import (
-	"archive/tar"
-	"bytes"
 	"context"
 	"errors"
-	"io"
+	"strings"
+	"time"
 )
 
 const (
@@ -14,6 +13,7 @@ const (
 	boundaryLaunchMode        = "--launch"
 	boundaryPythonHandoffMode = "--handoff-python"
 	boundaryELFHandoffMode    = "--handoff-elf"
+	boundaryExecUser          = "1000:1000"
 )
 
 // boundaryHelper is installed by the trusted controller into a root-owned,
@@ -23,22 +23,41 @@ const (
 // interprets artifact input.
 const boundaryHelper = "#!/bin/sh\nset -eu\ncase \"${1-}\" in\n  --launch) shift; exec \"$@\" ;;\n  --handoff-python|--handoff-elf) shift; exec \"$@\" ;;\n  -c) exec /bin/sh \"$@\" ;;\n  *) exit 125 ;;\nesac\n"
 
-type boundaryInputRunner interface {
-	RunInput(context.Context, io.Reader, string, ...string) error
+// boundaryContainerCommand runs as the OCI init root solely long enough to
+// install the fixed controller helper into its root-owned tmpfs. The helper is
+// moved into place atomically before any user-1000 exec is accepted.
+func boundaryContainerCommand() string {
+	quoted := strings.ReplaceAll(boundaryHelper, "'", "'\\\"'\\\"'")
+	return "set -eu; tmp=/haa-runtime/.haa-boundary.tmp; printf '%s' '" + quoted +
+		"' > \"$tmp\"; chown 0:0 \"$tmp\"; chmod 0555 \"$tmp\"; mv \"$tmp\" " +
+		boundaryHelperPath + "; exec sleep infinity"
 }
 
-func installBoundaryHelper(ctx context.Context, runner interface{}, containerID string) error {
-	input, ok := runner.(boundaryInputRunner)
-	if !ok || !containerIDPattern.MatchString(containerID) {
+func boundaryExecArguments(containerID, mode string, command ...string) []string {
+	arguments := []string{"exec", "--user", boundaryExecUser, containerID, boundaryHelperPath, mode}
+	return append(arguments, command...)
+}
+
+// awaitBoundaryHelper is a bounded readiness check. It never invokes an
+// unwrapped docker exec: the first executable transition is the HAA helper.
+func awaitBoundaryHelper(ctx context.Context, runner CommandRunner, containerID string) error {
+	if runner == nil || !containerIDPattern.MatchString(containerID) {
 		return errors.New("sandbox boundary helper runner is unavailable")
 	}
-	var archive bytes.Buffer
-	tw := tar.NewWriter(&archive)
-	if err := tw.WriteHeader(&tar.Header{Name: "haa-boundary", Mode: 0555, Uid: 0, Gid: 0, Size: int64(len(boundaryHelper))}); err != nil {
-		return errors.New("sandbox boundary helper archive failed")
+	for attempt := 0; attempt < 20; attempt++ {
+		if _, err := runner.Output(ctx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "/bin/true")...); err == nil {
+			return nil
+		}
+		if attempt == 19 {
+			break
+		}
+		timer := time.NewTimer(50 * time.Millisecond)
+		select {
+		case <-ctx.Done():
+			timer.Stop()
+			return errors.New("sandbox boundary helper is unavailable")
+		case <-timer.C:
+		}
 	}
-	if _, err := tw.Write([]byte(boundaryHelper)); err != nil || tw.Close() != nil {
-		return errors.New("sandbox boundary helper archive failed")
-	}
-	return input.RunInput(ctx, &archive, "docker", "cp", "-", containerID+":/haa-runtime")
+	return errors.New("sandbox boundary helper is unavailable")
 }

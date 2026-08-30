@@ -382,7 +382,7 @@ bool VerifyNetworkFamilies(int output, const std::string& remote, const std::str
   raw.mutable_context_data()->set_parent_thread_group_id(50);
   raw.set_arg1(4);
   if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_RAW, raw) ||
-      !ExpectNetworkRecord(output, kFifthID, "SENDMSG", "INET", "UNKNOWN", "PYTHON")) return false;
+      !ExpectTrustedNetworkRecord(output, kFifthID, "SENDMSG", "INET", "CONTROL_GROUP", "PYTHON")) return false;
   gvisor::syscall::Fork fork;
   *fork.mutable_context_data() = socket.context_data();
   fork.mutable_exit()->set_result(52);
@@ -397,7 +397,7 @@ bool VerifyNetworkFamilies(int output, const std::string& remote, const std::str
   raw.mutable_context_data()->set_thread_group_id(52);
   raw.mutable_context_data()->set_thread_group_start_time_ns(520);
   if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_RAW, raw) ||
-      !ExpectNetworkRecord(output, kFifthID, "SENDMSG", "INET", "UNKNOWN", "PYTHON")) return false;
+      !ExpectTrustedNetworkRecord(output, kFifthID, "SENDMSG", "INET", "CONTROL_GROUP", "PYTHON")) return false;
 
   *raw.mutable_context_data() = socket.context_data();
   raw.set_arg1(8);
@@ -940,34 +940,31 @@ int main(int argc, char** argv) {
   close(readiness[0]);
   const bool profile = HasPinnedPodInitProfile();
   const bool profile_limits = HasBoundedProfileRecordLimits();
-  if (!running) fprintf(stderr, "observer latch failure: readiness\n");
-  if (!profile) fprintf(stderr, "observer latch failure: pod-init profile\n");
-  if (!profile_limits) fprintf(stderr, "observer latch failure: profile record limits\n");
   const bool accessors = running && profile && profile_limits && VerifyPinnedAccessors(output, remote, control);
-  if (!accessors) fprintf(stderr, "observer latch failure: normalized accessors\n");
   const bool network = accessors && VerifyNetworkFamilies(output, remote, control);
-  if (!network) fprintf(stderr, "observer latch failure: socket family classification\n");
   const bool malformed_socket = network && VerifyMalformedNetworkFamilies(output, remote, control);
-  if (!malformed_socket) fprintf(stderr, "observer latch failure: unknown socket family\n");
   const bool malformed_connect = malformed_socket && VerifyMalformedConnect(output, remote, control);
-  if (!malformed_connect) fprintf(stderr, "observer latch failure: malformed socket address\n");
   const bool unknown_fd = malformed_connect && VerifyUnknownFDState(output, remote, control);
-  if (!unknown_fd) fprintf(stderr, "observer latch failure: unknown FD state\n");
   const bool process = unknown_fd && VerifyProcessTrustBoundary(output, remote, control);
-  if (!process) fprintf(stderr, "observer latch failure: process trust boundary\n");
   const bool correlation = process && VerifySentryAuthoritativeBoundary(output, remote, control);
-  if (!correlation) fprintf(stderr, "observer latch failure: exec correlation boundary\n");
   const bool cloexec = correlation && VerifyCloexecReexec(output, remote, control);
-  if (!cloexec) fprintf(stderr, "observer latch failure: CLOEXEC/re-exec boundary\n");
   const bool delayed = cloexec && VerifyDelayedProfileRegistration(output, remote, control);
-  if (!delayed) fprintf(stderr, "observer latch failure: delayed profile registration\n");
   const bool roles = delayed && VerifyRoleHandoffAndCloneProvenance(output, remote, control);
-  if (!roles) fprintf(stderr, "observer latch failure: role handoff/provenance\n");
   const bool mismatch = roles && RunFaultCase(output, remote, control, true);
-  if (!mismatch) fprintf(stderr, "observer latch failure: container mismatch\n");
   const bool dropped = mismatch && RunFaultCase(output, remote, control, false);
-  if (!dropped) fprintf(stderr, "observer latch failure: dropped events\n");
   const bool passed = dropped;
+  if (!passed) {
+    const char* first = !running ? "readiness" : !profile ? "pod-init profile" :
+        !profile_limits ? "profile record limits" : !accessors ? "normalized accessors" :
+        !network ? "socket family classification" : !malformed_socket ? "unknown socket family" :
+        !malformed_connect ? "malformed socket address" : !unknown_fd ? "unknown FD state" :
+        !process ? "process trust boundary" : !correlation ? "exec correlation boundary" :
+        !cloexec ? "CLOEXEC/re-exec boundary" : !delayed ? "delayed profile registration" :
+        !roles ? "role handoff/provenance" : !mismatch ? "container mismatch" : "dropped events";
+    fprintf(stderr, "observer latch FAIL: %s\nobserver latch NOT_RUN: all checks after first failure\n", first);
+  } else {
+    fprintf(stderr, "observer latch PASS: all checks\n");
+  }
   if (child > 0) { kill(child, SIGTERM); waitpid(child, nullptr, 0); }
   close(output); unlink(remote.c_str()); unlink(output_path.c_str()); unlink(control.c_str()); rmdir(directory);
   return passed ? 0 : 1;

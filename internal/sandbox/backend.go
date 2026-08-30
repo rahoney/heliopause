@@ -107,7 +107,7 @@ func (b *Backend) Execute(ctx context.Context, request domain.SandboxRequest) (d
 		}
 		return incomplete(sessionID, "M3_DYNAMIC_SETUP_FAILED")
 	}
-	if err := installBoundaryHelper(runContext, b.runner, containerID); err != nil {
+	if err := awaitBoundaryHelper(runContext, b.runner, containerID); err != nil {
 		if b.cleanup(containerID) != nil {
 			return incomplete(sessionID, "M3_DYNAMIC_CLEANUP_FAILED")
 		}
@@ -121,7 +121,8 @@ func (b *Backend) Execute(ctx context.Context, request domain.SandboxRequest) (d
 		return incomplete(sessionID, "M3_DYNAMIC_ARTIFACT_INTRODUCTION_FAILED")
 	}
 
-	waitOutput, runErr := b.runner.Output(runContext, "docker", "wait", containerID)
+	_, runErr := b.runner.Output(runContext, "docker", boundaryExecArguments(containerID, boundaryLaunchMode,
+		"/bin/sh", "-ceu", npmLifecycleCommand)...)
 	timedOut := runContext.Err() == context.DeadlineExceeded || ctx.Err() == context.DeadlineExceeded
 	collectContext, collectCancel := context.WithTimeout(context.Background(), b.cleanupWait)
 	observations, observationLimitation := collectTrace(collectContext, trace)
@@ -130,7 +131,7 @@ func (b *Backend) Execute(ctx context.Context, request domain.SandboxRequest) (d
 	if cleanupErr != nil {
 		return incomplete(sessionID, "M3_DYNAMIC_CLEANUP_FAILED")
 	}
-	if runErr != nil || strings.TrimSpace(string(waitOutput)) != "0" {
+	if runErr != nil {
 		if timedOut {
 			return incomplete(sessionID, "M3_DYNAMIC_TIMEOUT")
 		}
@@ -162,7 +163,6 @@ func createArguments(sessionID domain.SandboxSessionID) []string {
 	return []string{
 		"create",
 		"--runtime", gVisorRuntimeName,
-		"--user", "1000:1000",
 		"--network", "none",
 		"--read-only",
 		"--cap-drop", "ALL",
@@ -175,6 +175,8 @@ func createArguments(sessionID domain.SandboxSessionID) []string {
 		"--tmpfs", boundaryHelperMount,
 		"--name", "heliopause-" + sessionID.String(),
 		nodeImageReference,
-		"/bin/sh", "-ceu", "while [ ! -f /tmp/artifact.tgz ]; do sleep 0.05; done; mkdir -p /tmp/package /tmp/.npm; cd /tmp/package; HOME=/tmp npm_config_cache=/tmp/.npm npm_config_script_shell=/haa-runtime/haa-boundary npm install --ignore-scripts=false --no-audit --no-fund --offline /tmp/artifact.tgz",
+		"/bin/sh", "-ceu", boundaryContainerCommand(),
 	}
 }
+
+const npmLifecycleCommand = "mkdir -p /tmp/package /tmp/.npm; cd /tmp/package; HOME=/tmp npm_config_cache=/tmp/.npm npm_config_script_shell=/haa-runtime/haa-boundary npm install --ignore-scripts=false --no-audit --no-fund --offline /tmp/artifact.tgz"

@@ -11,7 +11,7 @@ import (
 )
 
 func TestBackendExecutesOneShotSandboxWithConstrainedDockerCommand(t *testing.T) {
-	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef\n"), nil, []byte("0\n"), nil}}
+	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef\n"), nil, nil, nil, nil}}
 	introducer := &recordingIntroducer{}
 	backend := newTestBackend(t, runner, introducer, &emptyObserver{}, availableProbe)
 
@@ -25,17 +25,20 @@ func TestBackendExecutesOneShotSandboxWithConstrainedDockerCommand(t *testing.T)
 	if introducer.calls != 1 || introducer.containerID != "0123456789abcdef" {
 		t.Fatalf("Introduce calls = %d, container = %q", introducer.calls, introducer.containerID)
 	}
-	if len(runner.calls) != 4 {
-		t.Fatalf("command calls = %d, want 4", len(runner.calls))
+	if len(runner.calls) != 5 {
+		t.Fatalf("command calls = %d, want 5", len(runner.calls))
 	}
 	assertConstrainedCreateCommand(t, runner.calls[0].arguments)
 	if got := runner.calls[1]; got.binary != "docker" || !sameStrings(got.arguments, []string{"start", "0123456789abcdef"}) {
 		t.Fatalf("start command = %q %q", got.binary, got.arguments)
 	}
-	if got := runner.calls[2]; got.binary != "docker" || !sameStrings(got.arguments, []string{"wait", "0123456789abcdef"}) {
-		t.Fatalf("wait command = %q %q", got.binary, got.arguments)
+	if got := runner.calls[2]; got.binary != "docker" || !sameStrings(got.arguments, boundaryExecArguments("0123456789abcdef", boundaryLaunchMode, "/bin/true")) {
+		t.Fatalf("helper readiness command = %q %q", got.binary, got.arguments)
 	}
-	if got := runner.calls[3]; got.binary != "docker" || !sameStrings(got.arguments, []string{"rm", "--force", "0123456789abcdef"}) {
+	if got := runner.calls[3]; got.binary != "docker" || !sameStrings(got.arguments, boundaryExecArguments("0123456789abcdef", boundaryLaunchMode, "/bin/sh", "-ceu", npmLifecycleCommand)) {
+		t.Fatalf("npm command = %q %q", got.binary, got.arguments)
+	}
+	if got := runner.calls[4]; got.binary != "docker" || !sameStrings(got.arguments, []string{"rm", "--force", "0123456789abcdef"}) {
 		t.Fatalf("cleanup command = %q %q", got.binary, got.arguments)
 	}
 }
@@ -58,7 +61,7 @@ func TestBackendDoesNotExecuteWhenCapabilityIsUnavailable(t *testing.T) {
 }
 
 func TestBackendCollectsTrustedObservationBeforeDisposal(t *testing.T) {
-	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, []byte("0\n"), nil}}
+	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil}}
 	observer := &recordingObserver{reader: &traceReader{records: []TraceRecord{{Kind: "network-attempt", Bytes: 1}}}}
 	backend := newTestBackend(t, runner, &recordingIntroducer{}, observer, availableProbe)
 
@@ -98,8 +101,8 @@ func TestBackendProcessFailureAndCleanupFailureAreIncomplete(t *testing.T) {
 		errors     []error
 		limitation string
 	}{
-		{"process failure", [][]byte{[]byte("0123456789abcdef"), nil, []byte("1\n"), nil}, nil, "M3_DYNAMIC_EXECUTION_FAILED"},
-		{"cleanup failure", [][]byte{[]byte("0123456789abcdef"), nil, []byte("0\n"), nil}, []error{nil, nil, nil, errors.New("cleanup")}, "M3_DYNAMIC_CLEANUP_FAILED"},
+		{"process failure", [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil}, []error{nil, nil, nil, errors.New("exit status 1")}, "M3_DYNAMIC_EXECUTION_FAILED"},
+		{"cleanup failure", [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil}, []error{nil, nil, nil, nil, errors.New("cleanup")}, "M3_DYNAMIC_CLEANUP_FAILED"},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -116,7 +119,7 @@ func TestBackendProcessFailureAndCleanupFailureAreIncomplete(t *testing.T) {
 }
 
 func TestBackendTimeoutIsIncompleteAndStillDisposed(t *testing.T) {
-	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil, nil}, waitForContext: true, waitForContextAt: 2}
+	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil}, waitForContext: true, waitForContextAt: 3}
 	backend := newTestBackend(t, runner, &recordingIntroducer{}, &emptyObserver{}, availableProbe)
 	backend.wallTimeout = time.Millisecond
 
@@ -127,7 +130,7 @@ func TestBackendTimeoutIsIncompleteAndStillDisposed(t *testing.T) {
 	if code, _ := result.LimitationCode(); code != "M3_DYNAMIC_TIMEOUT" {
 		t.Fatalf("LimitationCode() = %q, want timeout", code)
 	}
-	if len(runner.calls) != 4 || !sameStrings(runner.calls[3].arguments, []string{"rm", "--force", "0123456789abcdef"}) {
+	if len(runner.calls) != 5 || !sameStrings(runner.calls[4].arguments, []string{"rm", "--force", "0123456789abcdef"}) {
 		t.Fatalf("cleanup command missing after timeout: %#v", runner.calls)
 	}
 }
@@ -135,10 +138,13 @@ func TestBackendTimeoutIsIncompleteAndStillDisposed(t *testing.T) {
 func assertConstrainedCreateCommand(t *testing.T, arguments []string) {
 	t.Helper()
 	joined := strings.Join(arguments, " ")
-	for _, required := range []string{"--runtime " + gVisorRuntimeName, "--user 1000:1000", "--network none", "--read-only", "--cap-drop ALL", "no-new-privileges", "--pids-limit 64", "--memory 512m", "--cpus 1", "--ulimit cpu=30:30", "--tmpfs " + boundaryHelperMount, nodeImageReference} {
+	for _, required := range []string{"--runtime " + gVisorRuntimeName, "--network none", "--read-only", "--cap-drop ALL", "no-new-privileges", "--pids-limit 64", "--memory 512m", "--cpus 1", "--ulimit cpu=30:30", "--tmpfs " + boundaryHelperMount, nodeImageReference, boundaryContainerCommand()} {
 		if !strings.Contains(joined, required) {
 			t.Errorf("create command missing %q: %q", required, joined)
 		}
+	}
+	if strings.Contains(joined, "--user 1000:1000") {
+		t.Errorf("OCI helper initializer must run as root: %q", joined)
 	}
 	for _, forbidden := range []string{"--mount", "--volume", "-v ", "--env", "--privileged", "--pid host", "--network host", "/var/run/docker.sock"} {
 		if strings.Contains(joined, forbidden) {
@@ -166,6 +172,7 @@ type commandCall struct {
 type recordingRunner struct {
 	calls            []commandCall
 	inputCalls       []commandCall
+	timeline         []commandCall
 	input            []byte
 	responses        [][]byte
 	errors           []error
@@ -177,6 +184,7 @@ type recordingRunner struct {
 func (r *recordingRunner) Output(ctx context.Context, binary string, arguments ...string) ([]byte, error) {
 	_, bounded := ctx.Deadline()
 	r.calls = append(r.calls, commandCall{binary: binary, arguments: append([]string(nil), arguments...), bounded: bounded})
+	r.timeline = append(r.timeline, commandCall{binary: binary, arguments: append([]string(nil), arguments...), bounded: bounded})
 	index := len(r.calls) - 1
 	if r.waitForContext && index == r.waitForContextAt {
 		<-ctx.Done()

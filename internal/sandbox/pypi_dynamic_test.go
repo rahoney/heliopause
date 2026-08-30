@@ -14,7 +14,7 @@ import (
 
 func TestPythonDynamicBackendRunsOnlyLocalWheelAndDeclaredImports(t *testing.T) {
 	root, artifact := pythonWheelFixture(t)
-	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil}}
+	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil, nil}}
 	introducer, err := NewPythonArtifactIntroducer(root, runner)
 	if err != nil {
 		t.Fatal(err)
@@ -27,24 +27,27 @@ func TestPythonDynamicBackendRunsOnlyLocalWheelAndDeclaredImports(t *testing.T) 
 	if err != nil || result.Status() != domain.SandboxCompleted {
 		t.Fatalf("InspectWheel() = %#v, %v", result, err)
 	}
-	if len(runner.inputCalls) != 2 || !sameStrings(runner.inputCalls[0].arguments, []string{"cp", "-", "0123456789abcdef:/haa-runtime"}) || string(runner.input) != "wheel fixture" {
+	if len(runner.inputCalls) != 1 || string(runner.input) != "wheel fixture" {
 		t.Fatalf("wheel stream = %#v/%q", runner.inputCalls, runner.input)
 	}
-	if len(runner.calls) != 5 {
+	if len(runner.calls) != 6 {
 		t.Fatalf("commands = %#v", runner.calls)
 	}
-	assertPythonDynamicCreate(t, runner.calls[0].arguments)
-	if !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "--no-index --no-deps --no-compile") || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "--target /haa-site") || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "/tmp/example-1.0-py3-none-any.whl") {
-		t.Fatalf("pip install command = %#v", runner.calls[2])
+	if len(runner.timeline) < 4 || !sameStrings(runner.timeline[2].arguments, boundaryExecArguments("0123456789abcdef", boundaryLaunchMode, "/bin/true")) || runner.timeline[3].binary != "docker" || !strings.Contains(strings.Join(runner.timeline[3].arguments, " "), "python -I -c") {
+		t.Fatalf("helper was not ready before artifact introduction: %#v", runner.timeline)
 	}
-	if !strings.Contains(strings.Join(runner.calls[3].arguments, " "), "/haa-site") || strings.Contains(strings.Join(runner.calls[3].arguments, " "), "/tmp/haa-site") || !sameStrings(runner.calls[3].arguments[len(runner.calls[3].arguments)-1:], []string{"example"}) {
-		t.Fatalf("import command = %#v", runner.calls[3])
+	assertPythonDynamicCreate(t, runner.calls[0].arguments)
+	if !strings.Contains(strings.Join(runner.calls[3].arguments, " "), "--no-index --no-deps --no-compile") || !strings.Contains(strings.Join(runner.calls[3].arguments, " "), "--target /haa-site") || !strings.Contains(strings.Join(runner.calls[3].arguments, " "), "/tmp/example-1.0-py3-none-any.whl") {
+		t.Fatalf("pip install command = %#v", runner.calls[3])
+	}
+	if !strings.Contains(strings.Join(runner.calls[4].arguments, " "), "/haa-site") || strings.Contains(strings.Join(runner.calls[4].arguments, " "), "/tmp/haa-site") || !sameStrings(runner.calls[4].arguments[len(runner.calls[4].arguments)-1:], []string{"example"}) {
+		t.Fatalf("import command = %#v", runner.calls[4])
 	}
 }
 
 func TestPythonDynamicBackendFailsClosedForIncompleteObservation(t *testing.T) {
 	root, artifact := pythonWheelFixture(t)
-	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil}}
+	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil, nil}}
 	introducer, _ := NewPythonArtifactIntroducer(root, runner)
 	backend, _ := NewPythonDynamicBackend(runner, introducer, &recordingObserver{reader: &traceReader{err: os.ErrClosed}}, availablePythonProbe)
 	result, err := backend.InspectWheel(context.Background(), artifact, []string{"example"})
@@ -58,7 +61,7 @@ func TestPythonDynamicBackendFailsClosedForIncompleteObservation(t *testing.T) {
 
 func TestPythonDynamicBackendUsesNamedRootProfileResources(t *testing.T) {
 	root, artifact := pythonWheelFixture(t)
-	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil}}
+	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil, nil}}
 	introducer, _ := NewPythonArtifactIntroducer(root, runner)
 	backend, _ := NewPythonDynamicBackend(runner, introducer, &recordingObserver{reader: &traceReader{}}, availablePythonProbe)
 	profile, _ := artifactpypi.PyTorchProfile("cpu")
@@ -98,7 +101,7 @@ func TestPythonDynamicObserverProfileSelectsRootTransactionPolicyNotNodeSource(t
 		t.Fatal(err)
 	}
 
-	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil}}
+	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil, nil}}
 	introducer, err := NewPythonArtifactIntroducer(root, runner)
 	if err != nil {
 		t.Fatal(err)
@@ -122,7 +125,7 @@ func TestPythonDynamicObserverProfileSelectsRootTransactionPolicyNotNodeSource(t
 	}
 
 	// 2. Root transaction is ordinary PyPI (or default background context)
-	defaultRunner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil}}
+	defaultRunner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil, nil}}
 	defaultIntroducer, err := NewPythonArtifactIntroducer(root, defaultRunner)
 	if err != nil {
 		t.Fatal(err)
@@ -153,7 +156,7 @@ func TestPythonDynamicObserverProfileSelectsRootTransactionPolicyNotNodeSource(t
 	if err != nil {
 		t.Fatal(err)
 	}
-	cu126Runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil}}
+	cu126Runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil, nil}}
 	cu126Introducer, err := NewPythonArtifactIntroducer(root, cu126Runner)
 	if err != nil {
 		t.Fatal(err)
@@ -230,7 +233,7 @@ func TestPythonDynamicBackendInstallsExactClosureInOneOfflineInvocation(t *testi
 	if err != nil {
 		t.Fatal(err)
 	}
-	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil}}
+	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil, nil}}
 	introducer, err := NewPythonArtifactIntroducer(root, runner)
 	if err != nil {
 		t.Fatal(err)
@@ -243,10 +246,10 @@ func TestPythonDynamicBackendInstallsExactClosureInOneOfflineInvocation(t *testi
 	if err != nil || result.Status() != domain.SandboxCompleted {
 		t.Fatalf("InspectWheelWithClosure() = %#v, %v", result, err)
 	}
-	if len(runner.inputCalls) != 3 {
+	if len(runner.inputCalls) != 2 {
 		t.Fatalf("introduced closure artifacts = %#v", runner.inputCalls)
 	}
-	if len(runner.calls) < 3 || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "--no-index --no-deps") || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "--target /haa-site") || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "/tmp/example-1.0-py3-none-any.whl") || !strings.Contains(strings.Join(runner.calls[2].arguments, " "), "/tmp/dependency-1.0-py3-none-any.whl") {
+	if len(runner.calls) < 4 || !strings.Contains(strings.Join(runner.calls[3].arguments, " "), "--no-index --no-deps") || !strings.Contains(strings.Join(runner.calls[3].arguments, " "), "--target /haa-site") || !strings.Contains(strings.Join(runner.calls[3].arguments, " "), "/tmp/example-1.0-py3-none-any.whl") || !strings.Contains(strings.Join(runner.calls[3].arguments, " "), "/tmp/dependency-1.0-py3-none-any.whl") {
 		t.Fatalf("closure install command = %#v", runner.calls)
 	}
 }
@@ -255,7 +258,7 @@ func TestPythonDynamicBackendClassifiesBoundedInstallFailureWithoutExposingOutpu
 	root, artifact := pythonWheelFixture(t)
 	runner := &recordingRunner{
 		responses:     [][]byte{[]byte("0123456789abcdef")},
-		errors:        []error{nil, nil, errors.New("exit status 1")},
+		errors:        []error{nil, nil, nil, errors.New("exit status 1")},
 		boundedOutput: []byte("ERROR: package installation failed: No space left on device"),
 	}
 	introducer, err := NewPythonArtifactIntroducer(root, runner)
@@ -280,7 +283,7 @@ func TestPythonDynamicBackendClassifiesBoundedImportFailureWithoutExposingOutput
 	root, artifact := pythonWheelFixture(t)
 	runner := &recordingRunner{
 		responses:     [][]byte{[]byte("0123456789abcdef")},
-		errors:        []error{nil, nil, nil, errors.New("exit status 1")},
+		errors:        []error{nil, nil, nil, nil, errors.New("exit status 1")},
 		boundedOutput: []byte("ImportError: libtorch_cpu.so: cannot open shared object file"),
 	}
 	introducer, err := NewPythonArtifactIntroducer(root, runner)
@@ -585,6 +588,9 @@ func assertPythonDynamicCreate(t *testing.T, arguments []string) {
 		if !strings.Contains(joined, required) {
 			t.Errorf("create command missing %q: %q", required, joined)
 		}
+	}
+	if strings.Contains(joined, "--user 1000:1000") || !strings.Contains(joined, boundaryContainerCommand()) {
+		t.Errorf("create command does not establish root-owned boundary helper: %q", joined)
 	}
 	for _, forbidden := range []string{"--mount", "--volume", "-v ", "--env", "--privileged", "--network host", "/var/run/docker.sock"} {
 		if strings.Contains(joined, forbidden) {

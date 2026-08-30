@@ -219,7 +219,7 @@ func (b *PythonDynamicBackend) InspectWheelWithClosure(ctx context.Context, arti
 	if err := discardCommand(runCtx, b.runner, "docker", "start", containerID); err != nil {
 		return b.finishIncomplete(sessionID, containerID, trace, "M5_PYPI_DYNAMIC_SETUP_FAILED")
 	}
-	if err := installBoundaryHelper(runCtx, b.runner, containerID); err != nil {
+	if err := awaitBoundaryHelper(runCtx, b.runner, containerID); err != nil {
 		return b.finishIncomplete(sessionID, containerID, trace, "M5_PYPI_DYNAMIC_SETUP_FAILED")
 	}
 	for _, item := range validated {
@@ -227,11 +227,11 @@ func (b *PythonDynamicBackend) InspectWheelWithClosure(ctx context.Context, arti
 			return b.finishIncomplete(sessionID, containerID, trace, "M5_PYPI_DYNAMIC_INTRODUCTION_FAILED")
 		}
 	}
-	installArguments := append([]string{"exec", containerID, boundaryHelperPath, boundaryLaunchMode, "python", "-I", "-m", "pip", "install", "--no-index", "--no-deps", "--no-compile", "--disable-pip-version-check", "--target", pythonSitePath}, wheelPaths...)
+	installArguments := append(boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-m", "pip", "install", "--no-index", "--no-deps", "--no-compile", "--disable-pip-version-check", "--target", pythonSitePath), wheelPaths...)
 	if failureClass, err := runBoundedCommand(runCtx, b.runner, classifyDynamicInstallFailure, "docker", installArguments...); err != nil {
 		return b.finishIncomplete(sessionID, containerID, trace, dynamicInstallFailureCode(failureClass))
 	}
-	arguments := append([]string{"exec", containerID, boundaryHelperPath, boundaryPythonHandoffMode, "python", "-I", "-c", pythonImportScript}, imports...)
+	arguments := append(boundaryExecArguments(containerID, boundaryPythonHandoffMode, "python", "-I", "-c", pythonImportScript), imports...)
 	if failureClass, err := runBoundedCommand(runCtx, b.runner, classifyDynamicImportFailure, "docker", arguments...); err != nil {
 		return b.finishIncomplete(sessionID, containerID, trace, dynamicImportFailureCode(failureClass))
 	}
@@ -452,7 +452,7 @@ func validImportSurface(imports []string) bool {
 }
 func pythonDynamicCreateArguments(sessionID domain.SandboxSessionID, resourcePolicy artifactpypi.ResourcePolicy) []string {
 	size := strconv.FormatInt(resourcePolicy.RuntimeTmpfs(), 10)
-	return []string{"create", "--pull", "never", "--runtime", gVisorRuntimeName, "--user", "1000:1000", "--network", "none", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "64", "--memory", strconv.FormatInt(resourcePolicy.RuntimeMemory(), 10), "--cpus", "1", "--ulimit", "cpu=30:30", "--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=" + size + ",uid=1000,gid=1000,mode=0700", "--tmpfs", pythonSitePath + ":rw,exec,nosuid,nodev,size=" + size + ",uid=1000,gid=1000,mode=0700", "--tmpfs", boundaryHelperMount, "--name", "heliopause-pypi-" + sessionID.String(), pythonImageReference, "sleep", "infinity"}
+	return []string{"create", "--pull", "never", "--runtime", gVisorRuntimeName, "--network", "none", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "64", "--memory", strconv.FormatInt(resourcePolicy.RuntimeMemory(), 10), "--cpus", "1", "--ulimit", "cpu=30:30", "--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=" + size + ",uid=1000,gid=1000,mode=0700", "--tmpfs", pythonSitePath + ":rw,exec,nosuid,nodev,size=" + size + ",uid=1000,gid=1000,mode=0700", "--tmpfs", boundaryHelperMount, "--name", "heliopause-pypi-" + sessionID.String(), pythonImageReference, "/bin/sh", "-ceu", boundaryContainerCommand()}
 }
 
 const pythonImportScript = "import importlib,sys\nsys.path.insert(0,'/haa-site')\nfor name in sys.argv[1:]: importlib.import_module(name)\n"
