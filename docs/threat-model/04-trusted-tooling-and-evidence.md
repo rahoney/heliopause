@@ -142,19 +142,6 @@ Evidence completeness가 성립하지 않는다.
 - production transport가 생성하지 못하는 observation은 clean Evidence가 아니며
   required capability 누락은 fail-closed다.
 
-M3/M11 dynamic inspection은 runtime 중 helper를 설치하거나 UID 0 bootstrap을
-유지하지 않는다. HAA는 exact upstream runtime image digest를 base로 재현적으로
-빌드한 HAA-owned immutable inspection image를 사용한다. Node inspection image는
-npm과 GitHub ELF가 공유하고, Python inspection image는 PyPI, PyTorch와 active
-sdist builder가 공유한다. 각 image에는 고정된 `/haa-runtime/haa-boundary`가
-`root:root`, mode `0555`로 baked-in 되며, derived image digest, upstream base
-digest, helper content, build provenance/signature와 release identity를 기존
-trusted-tool distribution contract로 검증·고정한다. Sandbox는 image start부터
-`1000:1000`으로 실행하고, writable `/haa-runtime`, runtime `docker cp`, Host bind
-mount 및 persistent privileged init을 사용하지 않는다. 이 image identity와
-provenance는 M3/M11 canonical contract가 참조하며, trusted-tool 검증 원칙 자체는
-이 문서가 소유한다.
-
 ### D-012/D-015 trusted-tool behavioral attribution scope
 
 digest·provenance와 identity가 검증된 installer/runtime 및 HAA control runtime은

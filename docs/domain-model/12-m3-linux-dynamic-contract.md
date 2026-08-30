@@ -10,11 +10,6 @@ M3 production backend는 Docker Engine의 OCI runtime integration 위에서 **gV
 - unsupported host: macOS, Windows, Docker/runc-only host, rootless/cgroup capability 또는 gVisor trace capability가 없는 Linux host. 이 경우 required dynamic inspection은 `UNAVAILABLE / M3_DYNAMIC_CAPABILITY_UNAVAILABLE`이며 자동 `ALLOW`가 없다.
 - M3 CI는 `ubuntu-24.04` pinned runner에서 explicit runtime probe가 성공할 때만 Linux dynamic integration job을 실행한다. probe 실패는 skipped success가 아니라 failure다.
 - workload image는 `node:22.23.1-slim@sha256:6c74791e557ce11fc957704f6d4fe134a7bc8d6f5ca4403205b2966bd488f6b3` index digest로 고정한다. runtime image pull이나 package registry 상태는 unit/contract test success input이 아니다.
-- dynamic inspection은 [Trusted Tooling and Evidence](../threat-model/04-trusted-tooling-and-evidence.md)가
-  정의한 HAA-owned immutable inspection image를 사용하며 runtime 중 helper를
-  설치하거나 privileged bootstrap을 유지하지 않는다. Container create부터
-  `--user 1000:1000`을 사용하고 writable `/haa-runtime`, runtime `docker cp`,
-  Host bind mount와 persistent UID 0 init은 허용하지 않는다.
 
 공식 근거: [gVisor installation](https://gvisor.dev/docs/user_guide/install/), [gVisor Docker quick start](https://gvisor.dev/docs/user_guide/quick_start/docker/), [gVisor security model](https://github.com/google/gvisor), [gVisor trace/seccheck](https://github.com/google/gvisor/blob/master/pkg/sentry/seccheck/README.md), [Docker Engine 29.6 release](https://docs.docker.com/engine/release-notes/29/), [Node 22 slim image digest](https://hub.docker.com/layers/library/node/22-slim/).
 
@@ -125,9 +120,8 @@ inherit only bounded control-role context; an ARTIFACT child remains
 ARTIFACT.
 
 The verified HAA handoff executable is recognized only as a trust-removal
-marker. It may occur after the direct root has consumed launch eligibility; it
-does not grant or restore trust. It performs `CONTROL → ARTIFACT` (or leaves
-`ARTIFACT` unchanged) and has no reverse transition. Python package import passes this handoff before
+marker. It performs `CONTROL → ARTIFACT` (or leaves `ARTIFACT` unchanged) and
+has no reverse transition. Python package import passes this handoff before
 `importlib.import_module`; npm lifecycle execution uses it as its
 `script-shell` trampoline; and GitHub ELF execution passes through it before
 `/work/artifact`. Artifact-controlled network operations and executable
@@ -135,13 +129,9 @@ transitions remain actionable after handoff. No pathname, process class,
 child ancestry or handoff marker can create or restore CONTROL trust.
 
 The same non-inheritance rule applies to `TRUSTED_CONTROL_NETWORK`: it is
-available only while the exact pinned/verified one-shot HAA direct-control
-target is active. OCI root, a newly registered direct root, the launch marker
-itself, clone/control children, lifecycle descendants, re-exec, same-path
-execution and unknown/missing correlation are not trusted network sources. The
-state becomes active only after the first exact accepted launch target and is
-cleared before any later successful Sentry transition or handoff; it can never
-be restored for that group. Artifact-controlled communication attempts remain
+available only to the exact pinned/verified one-shot HAA control root, never to
+a lifecycle child, descendant, re-exec, same-path execution or unknown/missing
+correlation. Artifact-controlled communication attempts remain
 `M3_NETWORK_ATTEMPT`. D-012/D-015 in
 [Trusted Tooling and Evidence](../threat-model/04-trusted-tooling-and-evidence.md)
 own the trusted-tool compromise scope; this M3 contract owns only observation
