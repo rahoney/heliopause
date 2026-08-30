@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net"
 	"os"
@@ -129,8 +130,11 @@ func FuzzDecodeHelperRecord(f *testing.F) {
 func TestDecodeHelperRecordAcceptsOnlyBoundedAttribution(t *testing.T) {
 	valid := []helperRecord{
 		{ContainerID: "0123456789abcdef", Kind: "network-attempt", EventSource: "CONNECT", Family: "PACKET", ProcessRelation: "TRACKED_EXPECTED_GROUP", ProcessClass: "NPM"},
+		{ContainerID: "0123456789abcdef", Kind: "network-attempt", EventSource: "SENDMSG", Family: "INET", ProcessRelation: "CONTROL_GROUP", ProcessClass: "OTHER"},
+		{ContainerID: "0123456789abcdef", Kind: "network-attempt", EventSource: "CONNECT", Family: "INET6", ProcessRelation: "ARTIFACT_GROUP", ProcessClass: "PYTHON"},
 		{ContainerID: "0123456789abcdef", Kind: "trusted-control-network", EventSource: "CONNECT", Family: "INET6", ProcessRelation: "DIRECT_EXEC_SESSION", ProcessClass: "PYTHON"},
 		{ContainerID: "0123456789abcdef", Kind: "process-exec-unexpected", EventSource: "SENTRY_EXEC", ProcessClass: "SHELL", ClassificationReason: "UNMODELED_PARENT", ParentRelation: "UNTRACKED_PARENT"},
+		{ContainerID: "0123456789abcdef", Kind: "process-exec-unexpected", EventSource: "SENTRY_EXEC", ProcessClass: "OTHER", ClassificationReason: "ARTIFACT_ROLE", ParentRelation: "ARTIFACT_GROUP"},
 	}
 	for _, record := range valid {
 		payload, _ := json.Marshal(record)
@@ -142,6 +146,7 @@ func TestDecodeHelperRecordAcceptsOnlyBoundedAttribution(t *testing.T) {
 		{ContainerID: "0123456789abcdef", Kind: "network-attempt"},
 		{ContainerID: "0123456789abcdef", Kind: "network-attempt", EventSource: "SENDTO", Family: "INET", ProcessRelation: "UNKNOWN", ProcessClass: "OTHER", ClassificationReason: "OTHER"},
 		{ContainerID: "0123456789abcdef", Kind: "trusted-control-network", EventSource: "SOCKET", Family: "INET", ProcessRelation: "DIRECT_EXEC_SESSION", ProcessClass: "PYTHON"},
+		{ContainerID: "0123456789abcdef", Kind: "trusted-control-network", EventSource: "CONNECT", Family: "INET", ProcessRelation: "CONTROL_GROUP", ProcessClass: "PYTHON"},
 		{ContainerID: "0123456789abcdef", Kind: "process-exec-unexpected", EventSource: "SYSCALL_EXECVE", ProcessClass: "/usr/bin/sh", ClassificationReason: "OTHER", ParentRelation: "ROOT"},
 		{ContainerID: "0123456789abcdef", Kind: "filesystem-open", EventSource: "SOCKET"},
 	}
@@ -194,6 +199,8 @@ func TestDecodeHelperRecordAcceptsBoundedSocketFaultReasons(t *testing.T) {
 		"CONNECT_ADDRESS_TOO_SHORT", "CONNECT_AF_UNSPEC", "CONNECT_AF_UNIX_INVALID_LENGTH",
 		"CONNECT_AF_INET_INVALID_LENGTH", "CONNECT_AF_INET6_INVALID_LENGTH", "CONNECT_AF_NETLINK_INVALID_LENGTH",
 		"CONNECT_AF_PACKET_INVALID_LENGTH", "CONNECT_UNKNOWN_FAMILY",
+		"PROCESS_PROVENANCE_UNKNOWN", "PROCESS_IDENTITY_REUSED", "CLONE_PROVENANCE_INVALID",
+		"PROCESS_STATE_LIMIT", "CONTAINER_ROOT_INVALID", "CONTAINER_ROOT_DUPLICATE",
 	} {
 		payload, err := json.Marshal(helperRecord{ContainerID: "0123456789abcdef", Kind: "stream-fault", Reason: reason})
 		if err != nil {
@@ -201,6 +208,16 @@ func TestDecodeHelperRecordAcceptsBoundedSocketFaultReasons(t *testing.T) {
 		}
 		if _, err := decodeHelperRecord(payload); err != nil {
 			t.Fatalf("reason %q rejected: %v", reason, err)
+		}
+	}
+}
+
+func TestDecodeHelperRecordPreservesBoundedFailureReason(t *testing.T) {
+	for _, payload := range [][]byte{[]byte(`not-json`), make([]byte, maximumHelperRecordBytes+1)} {
+		_, err := decodeHelperRecord(payload)
+		var fault observerFault
+		if !errors.As(err, &fault) || fault.reason != "ATTRIBUTION_FAILURE" {
+			t.Fatalf("error = %#v, want bounded ATTRIBUTION_FAILURE observer fault", err)
 		}
 	}
 }

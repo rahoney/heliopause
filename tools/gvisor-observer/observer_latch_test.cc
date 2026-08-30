@@ -27,6 +27,10 @@ constexpr char kTenthID[] = "445566778899aabb";
 constexpr char kEleventhID[] = "5566778899aabbcc";
 constexpr char kTwelfthID[] = "66778899aabbccdd";
 constexpr char kThirteenthID[] = "778899aabbccddee";
+constexpr char kFourteenthID[] = "8899aabbccddeeff";
+constexpr char kFifteenthID[] = "99aabbccddeeff00";
+constexpr char kSixteenthID[] = "aabbccddeeff0011";
+constexpr char kSeventeenthID[] = "bbccddeeff001122";
 
 bool SendAll(int fd, const std::string& value) {
   return send(fd, value.data(), value.size(), 0) == static_cast<ssize_t>(value.size());
@@ -116,7 +120,43 @@ bool SendDirectLaunchExec(int output, int client, const gvisor::syscall::Execve&
   launcher.add_argv(kLaunchMode);
   if (!SendSuccessfulExec(client, enter, launcher) ||
       !ExpectRecord(output, enter.context_data().container_id().c_str(), "process-exec-expected")) return false;
+  gvisor::sentry::ExecveInfo demotion = target;
+  demotion.set_binary_path(kSetprivPath);
+  demotion.set_execfn(kSetprivPath);
+  demotion.clear_argv();
+  demotion.add_argv(kSetprivPath);
+  demotion.add_argv("--reuid=1000");
+  demotion.add_argv("--regid=1000");
+  demotion.add_argv("--clear-groups");
+  demotion.add_argv("--inh-caps=-all");
+  demotion.add_argv("--ambient-caps=-all");
+  demotion.add_argv("--bounding-set=-all");
+  demotion.add_argv("--no-new-privs");
+  demotion.add_argv("--");
+  demotion.add_argv(target.binary_path());
+  if (!SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, demotion) ||
+      !ExpectRecord(output, enter.context_data().container_id().c_str(), "process-exec-expected")) return false;
   return SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, target);
+}
+
+bool SendExactSetprivDemotion(int output, int client, const char* container_id,
+                              const gvisor::sentry::ExecveInfo& target) {
+  gvisor::sentry::ExecveInfo demotion = target;
+  demotion.set_binary_path(kSetprivPath);
+  demotion.set_execfn(kSetprivPath);
+  demotion.clear_argv();
+  demotion.add_argv(kSetprivPath);
+  demotion.add_argv("--reuid=1000");
+  demotion.add_argv("--regid=1000");
+  demotion.add_argv("--clear-groups");
+  demotion.add_argv("--inh-caps=-all");
+  demotion.add_argv("--ambient-caps=-all");
+  demotion.add_argv("--bounding-set=-all");
+  demotion.add_argv("--no-new-privs");
+  demotion.add_argv("--");
+  demotion.add_argv(target.binary_path());
+  return SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, demotion) &&
+      ExpectRecord(output, container_id, "process-exec-expected");
 }
 
 bool SendProcessClone(int output, int client, const char* container_id,
@@ -305,6 +345,18 @@ bool VerifyNetworkFamilies(int output, const std::string& remote, const std::str
   start.mutable_context_data()->set_container_id(kFifthID);
   if (!SendEvent(client, gvisor::common::MESSAGE_CONTAINER_START, start) || !ExpectRecord(output, kFifthID, "container-start")) return false;
 
+  // OCI init is CONTROL for provenance, but it is never the bounded direct
+  // launch target that may receive trusted-control-network attribution.
+  gvisor::syscall::Connect oci_connect;
+  oci_connect.mutable_context_data()->set_container_id(kFifthID);
+  oci_connect.mutable_context_data()->set_thread_group_id(1);
+  oci_connect.mutable_context_data()->set_thread_group_start_time_ns(1);
+  oci_connect.mutable_context_data()->set_parent_thread_group_id(0);
+  oci_connect.mutable_context_data()->set_process_name("/bin/sh");
+  oci_connect.set_address(SocketAddress(AF_INET, sizeof(sockaddr_in)));
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_CONNECT, oci_connect) ||
+      !ExpectNetworkRecord(output, kFifthID, "CONNECT", "INET", "CONTROL_GROUP", "SHELL")) return false;
+
   gvisor::syscall::Execve root;
   root.mutable_context_data()->set_container_id(kFifthID);
   root.mutable_context_data()->set_thread_group_id(50);
@@ -382,7 +434,7 @@ bool VerifyNetworkFamilies(int output, const std::string& remote, const std::str
   raw.mutable_context_data()->set_parent_thread_group_id(50);
   raw.set_arg1(4);
   if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_RAW, raw) ||
-      !ExpectTrustedNetworkRecord(output, kFifthID, "SENDMSG", "INET", "CONTROL_GROUP", "PYTHON")) return false;
+      !ExpectNetworkRecord(output, kFifthID, "SENDMSG", "INET", "CONTROL_GROUP", "PYTHON")) return false;
   gvisor::syscall::Fork fork;
   *fork.mutable_context_data() = socket.context_data();
   fork.mutable_exit()->set_result(52);
@@ -397,7 +449,7 @@ bool VerifyNetworkFamilies(int output, const std::string& remote, const std::str
   raw.mutable_context_data()->set_thread_group_id(52);
   raw.mutable_context_data()->set_thread_group_start_time_ns(520);
   if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_RAW, raw) ||
-      !ExpectTrustedNetworkRecord(output, kFifthID, "SENDMSG", "INET", "CONTROL_GROUP", "PYTHON")) return false;
+      !ExpectNetworkRecord(output, kFifthID, "SENDMSG", "INET", "CONTROL_GROUP", "PYTHON")) return false;
 
   *raw.mutable_context_data() = socket.context_data();
   raw.set_arg1(8);
@@ -527,6 +579,11 @@ bool VerifyCloexecReexec(int output, const std::string& remote, const std::strin
   gvisor::sentry::ExecveInfo reexec_resolved = resolved;
   if (!SendSuccessfulExec(client, reexec, reexec_resolved) ||
       !ExpectUnexpectedProcessRecord(output, kNinthID, "SENTRY_EXEC", "PYTHON", "BOOTSTRAP_ENDED", "TRACKED_GROUP")) return false;
+  gvisor::syscall::Connect after_reexec;
+  *after_reexec.mutable_context_data() = root.context_data();
+  after_reexec.set_address(SocketAddress(AF_INET, sizeof(sockaddr_in)));
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_CONNECT, after_reexec) ||
+      !ExpectNetworkRecord(output, kNinthID, "CONNECT", "INET", "DIRECT_EXEC_SESSION", "PYTHON")) return false;
   gvisor::syscall::Syscall raw;
   *raw.mutable_context_data() = root.context_data();
   raw.set_sysno(kSyscallSendtoX86);
@@ -831,6 +888,7 @@ bool VerifyRoleHandoffAndCloneProvenance(int output, const std::string& remote, 
   handoff.add_argv(kPythonHandoffMode);
   if (!SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, handoff) ||
       !ExpectRecord(output, kThirteenthID, "process-exec-expected") ||
+      !SendExactSetprivDemotion(output, client, kThirteenthID, python) ||
       !SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, python) ||
       !ExpectRecord(output, kThirteenthID, "process-exec-expected")) return false;
 
@@ -846,6 +904,34 @@ bool VerifyRoleHandoffAndCloneProvenance(int output, const std::string& remote, 
   if (!SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, child) ||
       !ExpectUnexpectedProcessRecord(output, kThirteenthID, "SENTRY_EXEC", "SHELL", "ARTIFACT_ROLE", "ARTIFACT_GROUP")) return false;
 
+  // A fresh Docker exec may use a handoff as its first Sentry transition. It
+  // establishes provenance and immediately removes trust without ever
+  // activating the direct-root network exception.
+  gvisor::sentry::ExecveInfo direct_handoff = python;
+  direct_handoff.mutable_context_data()->set_thread_group_id(132);
+  direct_handoff.mutable_context_data()->set_thread_group_start_time_ns(1320);
+  direct_handoff.mutable_context_data()->set_parent_thread_group_id(0);
+  direct_handoff.mutable_context_data()->set_is_exec_session(true);
+  direct_handoff.set_binary_path(kBoundaryHelperPath);
+  direct_handoff.set_execfn(kBoundaryHelperPath);
+  direct_handoff.clear_argv();
+  direct_handoff.add_argv(kBoundaryHelperPath);
+  direct_handoff.add_argv(kPythonHandoffMode);
+  gvisor::sentry::ExecveInfo direct_python = direct_handoff;
+  direct_python.set_binary_path("/usr/local/bin/python3.14");
+  direct_python.clear_execfn();
+  direct_python.clear_argv();
+  if (!SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, direct_handoff) ||
+      !ExpectRecord(output, kThirteenthID, "process-exec-expected") ||
+      !SendExactSetprivDemotion(output, client, kThirteenthID, direct_python) ||
+      !SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, direct_python) ||
+      !ExpectRecord(output, kThirteenthID, "process-exec-expected")) return false;
+  gvisor::syscall::Connect direct_artifact_connect;
+  *direct_artifact_connect.mutable_context_data() = direct_python.context_data();
+  direct_artifact_connect.set_address(SocketAddress(AF_INET6, sizeof(sockaddr_in6)));
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_CONNECT, direct_artifact_connect) ||
+      !ExpectNetworkRecord(output, kThirteenthID, "CONNECT", "INET6", "ARTIFACT_GROUP", "PYTHON")) return false;
+
   gvisor::syscall::Socket socket;
   *socket.mutable_context_data() = python.context_data();
   socket.set_domain(AF_INET);
@@ -859,6 +945,87 @@ bool VerifyRoleHandoffAndCloneProvenance(int output, const std::string& remote, 
       !ExpectNetworkRecord(output, kThirteenthID, "SENDTO", "INET", "ARTIFACT_GROUP", "PYTHON")) return false;
   close(client);
   return ExpectRecord(output, kThirteenthID, "stream-end");
+}
+
+bool VerifyDemotionTransitionFaults(int output, const std::string& remote, const std::string& control) {
+  auto direct_context = [](const char* container_id, int32_t group_id, int64_t start_time) {
+    gvisor::common::ContextData context;
+    context.set_container_id(container_id);
+    context.set_thread_group_id(group_id);
+    context.set_thread_group_start_time_ns(start_time);
+    context.set_parent_thread_group_id(0);
+    context.set_is_exec_session(true);
+    return context;
+  };
+  auto boundary_launch = [](const gvisor::common::ContextData& context) {
+    gvisor::sentry::ExecveInfo message;
+    *message.mutable_context_data() = context;
+    message.set_binary_path(kBoundaryHelperPath);
+    message.set_execfn(kBoundaryHelperPath);
+    message.add_argv(kBoundaryHelperPath);
+    message.add_argv(kLaunchMode);
+    return message;
+  };
+  auto python_target = [](const gvisor::common::ContextData& context) {
+    gvisor::sentry::ExecveInfo message;
+    *message.mutable_context_data() = context;
+    message.set_binary_path("/usr/local/bin/python3.14");
+    return message;
+  };
+  auto start_session = [&](const char* container_id) {
+    if (!RegisterProfile(control, container_id, kProfilePyPI)) return -1;
+    const int client = ConnectRemote(remote);
+    if (client < 0 || !Handshake(client)) return -1;
+    gvisor::container::Start start;
+    start.mutable_context_data()->set_container_id(container_id);
+    return SendEvent(client, gvisor::common::MESSAGE_CONTAINER_START, start) &&
+        ExpectRecord(output, container_id, "container-start") ? client : -1;
+  };
+
+  int client = start_session(kFourteenthID);
+  if (client < 0) return false;
+  const auto missing_context = direct_context(kFourteenthID, 140, 1400);
+  const auto missing_target = python_target(missing_context);
+  if (!SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, boundary_launch(missing_context)) ||
+      !ExpectRecord(output, kFourteenthID, "process-exec-expected") ||
+      !SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, missing_target) ||
+      !ExpectRecord(output, kFourteenthID, "stream-fault", "PROCESS_PROVENANCE_UNKNOWN")) return false;
+  close(client);
+
+  client = start_session(kFifteenthID);
+  if (client < 0) return false;
+  const auto duplicate_context = direct_context(kFifteenthID, 150, 1500);
+  const auto duplicate_target = python_target(duplicate_context);
+  if (!SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, boundary_launch(duplicate_context)) ||
+      !ExpectRecord(output, kFifteenthID, "process-exec-expected") ||
+      !SendExactSetprivDemotion(output, client, kFifteenthID, duplicate_target) ||
+      !SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, duplicate_target) ||
+      !ExpectRecord(output, kFifteenthID, "process-exec-expected")) return false;
+  if (!SendExactSetprivDemotion(output, client, kFifteenthID, duplicate_target) ||
+      !ExpectRecord(output, kFifteenthID, "stream-fault", "PROCESS_PROVENANCE_UNKNOWN")) return false;
+  close(client);
+
+  client = start_session(kSixteenthID);
+  if (client < 0) return false;
+  const auto bare_context = direct_context(kSixteenthID, 160, 1600);
+  const auto bare_target = python_target(bare_context);
+  if (!SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, boundary_launch(bare_context)) ||
+      !ExpectRecord(output, kSixteenthID, "process-exec-expected") ||
+      !SendExactSetprivDemotion(output, client, kSixteenthID, bare_target) ||
+      !SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, bare_target) ||
+      !ExpectRecord(output, kSixteenthID, "process-exec-expected") ||
+      !SendExactSetprivDemotion(output, client, kSixteenthID, bare_target) ||
+      !ExpectRecord(output, kSixteenthID, "stream-fault", "PROCESS_PROVENANCE_UNKNOWN")) return false;
+  close(client);
+
+  client = start_session(kSeventeenthID);
+  if (client < 0) return false;
+  const auto reordered_context = direct_context(kSeventeenthID, 170, 1700);
+  const auto reordered_target = python_target(reordered_context);
+  if (!SendExactSetprivDemotion(output, client, kSeventeenthID, reordered_target) ||
+      !ExpectRecord(output, kSeventeenthID, "stream-fault", "PROCESS_PROVENANCE_UNKNOWN")) return false;
+  close(client);
+  return true;
 }
 
 bool RunFaultCase(int output, const std::string& remote, const std::string& control, bool mismatch) {
@@ -950,7 +1117,8 @@ int main(int argc, char** argv) {
   const bool cloexec = correlation && VerifyCloexecReexec(output, remote, control);
   const bool delayed = cloexec && VerifyDelayedProfileRegistration(output, remote, control);
   const bool roles = delayed && VerifyRoleHandoffAndCloneProvenance(output, remote, control);
-  const bool mismatch = roles && RunFaultCase(output, remote, control, true);
+  const bool demotion = roles && VerifyDemotionTransitionFaults(output, remote, control);
+  const bool mismatch = demotion && RunFaultCase(output, remote, control, true);
   const bool dropped = mismatch && RunFaultCase(output, remote, control, false);
   const bool passed = dropped;
   if (!passed) {
@@ -960,7 +1128,8 @@ int main(int argc, char** argv) {
         !malformed_connect ? "malformed socket address" : !unknown_fd ? "unknown FD state" :
         !process ? "process trust boundary" : !correlation ? "exec correlation boundary" :
         !cloexec ? "CLOEXEC/re-exec boundary" : !delayed ? "delayed profile registration" :
-        !roles ? "role handoff/provenance" : !mismatch ? "container mismatch" : "dropped events";
+        !roles ? "role handoff/provenance" : !demotion ? "setpriv demotion boundary" :
+        !mismatch ? "container mismatch" : "dropped events";
     fprintf(stderr, "observer latch FAIL: %s\nobserver latch NOT_RUN: all checks after first failure\n", first);
   } else {
     fprintf(stderr, "observer latch PASS: all checks\n");

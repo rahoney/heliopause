@@ -25,7 +25,7 @@ Create → Prepare → Introduce controlled tarball → Execute npm lifecycle
 - every attempt receives a new session ID, private runtime root and fresh writable filesystem. successful, timed out, limited or failed session is never reused.
 - no Host bind mount is allowed. After observer attribution, the container starts in a fixed waiting state so the image-provided `/tmp` tmpfs mount target is active; the trusted controller then streams the exact tarball once through `docker exec -i` stdin to `/tmp/artifact.tgz`, after which the fixed lifecycle command proceeds. No Host path enters container argv or environment. The image root remains read-only and `/tmp` is bounded, `noexec`, `nosuid`, and `nodev` tmpfs.
 - no Host environment, home directory, Docker socket, process namespace, PID socket, secret, project or internal service is exposed.
-- process runs non-root `node` user, `--network none`, no added capability, `no-new-privileges`, read-only root filesystem, pids/memory/CPU/tmpfs limits. Sandbox never receives an arbitrary host command API.
+- container creation keeps `--cap-drop ALL`, `--network none`, `no-new-privileges`, a read-only root filesystem and the existing pids/memory/CPU/tmpfs limits. A narrow HAA-owned pre-readiness bootstrap may hold only `CAP_SETUID`, `CAP_SETGID` and `CAP_SETPCAP` while atomically installing its immutable boundary helper; before readiness, PID1 irreversibly drops to uid/gid 1000 with empty supplementary groups, all five capability sets zero and `NoNewPrivs=1`. Every requested dynamic target traverses that helper and reaches the same non-root, capability-free state before its command bytes run. The Sandbox never receives an arbitrary Host command API. D-012/D-015 own the helper identity, provenance and minimum-privilege requirements.
 - separate trusted observer socket receives gVisor trace records. Artifact processes cannot write Evidence Store, observer records or Policy state.
 
 ### Seccheck remote observer transport
@@ -127,11 +127,19 @@ has no reverse transition. Python package import passes this handoff before
 `/work/artifact`. Artifact-controlled network operations and executable
 transitions remain actionable after handoff. No pathname, process class,
 child ancestry or handoff marker can create or restore CONTROL trust.
+After a direct root has consumed launch eligibility and established its valid
+CONTROL lifecycle, that exact group may still execute the verified handoff:
+handoff removes trust and does not consume, grant or recreate root eligibility.
+A first valid direct-root Sentry may also be that handoff; it records bounded
+root provenance while immediately consuming eligibility into ARTIFACT without
+ever activating CONTROL-target trust.
 
 The same non-inheritance rule applies to `TRUSTED_CONTROL_NETWORK`: it is
-available only to the exact pinned/verified one-shot HAA control root, never to
-a lifecycle child, descendant, re-exec, same-path execution or unknown/missing
-correlation. Artifact-controlled communication attempts remain
+available only while the exact pinned/verified one-shot DirectExecRoot launch
+target is currently active in CONTROL. It is false for the OCI root, boundary
+marker, capability-demotion transition, clone/lifecycle child, descendant,
+handoff, ARTIFACT role, re-exec, same-path execution and unknown/missing
+correlation; it cannot be restored. Artifact-controlled communication attempts remain
 `M3_NETWORK_ATTEMPT`. D-012/D-015 in
 [Trusted Tooling and Evidence](../threat-model/04-trusted-tooling-and-evidence.md)
 own the trusted-tool compromise scope; this M3 contract owns only observation

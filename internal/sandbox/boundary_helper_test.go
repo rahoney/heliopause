@@ -14,7 +14,7 @@ func TestBoundaryContainerCommandInstallsImmutableHelperBeforeServingExecs(t *te
 		"chown 0:0 \"$tmp\"",
 		"chmod 0555 \"$tmp\"",
 		"mv \"$tmp\" " + boundaryHelperPath,
-		"exec sleep infinity",
+		"exec " + boundarySetprivPath + " " + boundaryDemotionArguments + " /bin/sleep infinity",
 	} {
 		if !strings.Contains(command, required) {
 			t.Fatalf("initializer missing %q: %q", required, command)
@@ -30,7 +30,7 @@ func TestAwaitBoundaryHelperUsesOnlyWrappedUserExecAndFailsClosed(t *testing.T) 
 	if err := awaitBoundaryHelper(context.Background(), runner, "0123456789abcdef"); err != nil {
 		t.Fatalf("awaitBoundaryHelper() = %v", err)
 	}
-	if len(runner.calls) != 2 || !sameStrings(runner.calls[0].arguments, boundaryExecArguments("0123456789abcdef", boundaryLaunchMode, "/bin/true")) || !sameStrings(runner.calls[1].arguments, boundaryExecArguments("0123456789abcdef", boundaryLaunchMode, "/bin/true")) {
+	if len(runner.calls) != 2 || !sameStrings(runner.calls[0].arguments, boundaryReadinessArguments("0123456789abcdef")) || !sameStrings(runner.calls[1].arguments, boundaryReadinessArguments("0123456789abcdef")) {
 		t.Fatalf("helper readiness calls = %#v", runner.calls)
 	}
 

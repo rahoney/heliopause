@@ -106,8 +106,13 @@ The verified HAA handoff executable is a one-way trust-removal marker:
 `CONTROL → ARTIFACT`, or `ARTIFACT → ARTIFACT`. It never grants trust and
 cannot restore CONTROL. Python import, npm lifecycle script-shell execution,
 and GitHub ELF execution cross this marker before artifact-controlled code
-runs. Artifact descendants and re-execs remain Artifact-controlled regardless
-of pathname.
+runs. A DirectExecRoot that has consumed its one-shot launch eligibility may
+still cross the verified handoff after its CONTROL lifecycle is established:
+the transition only removes trust and cannot create or restore root
+eligibility. A first valid direct-root Sentry may likewise be handoff itself;
+it establishes bounded provenance and immediately enters ARTIFACT without
+activating CONTROL target trust. Artifact descendants and re-execs remain
+Artifact-controlled regardless of pathname.
 
 ### M11-003 trusted profile attribution
 
@@ -134,11 +139,12 @@ container environment에서 유도하지 않는다.
   pathname class도 확정할 수 없으면 normal observation을 생략하지 않고 incomplete로
   처리한다.
 
-`trusted-control-network` is equally narrow: only the exact pinned/verified
-one-shot HAA direct control root may produce it after exact attribution.
-Lifecycle children, descendants, re-exec, same-path execution and unknown or
-missing attribution never inherit it. Their `connect`/send communication
-attempts remain `network-attempt`. The trusted-tool compromise scope belongs to
+`trusted-control-network` is equally narrow: only the currently active target
+of the exact pinned/verified one-shot DirectExecRoot CONTROL launch may produce
+it after exact attribution. OCI root, boundary marker, capability-demotion
+transition, clone/lifecycle child, descendant, handoff, ARTIFACT role, re-exec,
+same-path execution and unknown or missing attribution never inherit or regain
+it. Their `connect`/send communication attempts remain `network-attempt`. The trusted-tool compromise scope belongs to
 D-012/D-015 in [Trusted Tooling and Evidence](../threat-model/04-trusted-tooling-and-evidence.md);
 this document does not suppress trusted-tool behavior broadly.
 

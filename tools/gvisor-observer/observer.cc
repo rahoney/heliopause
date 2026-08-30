@@ -58,6 +58,7 @@ constexpr int kFcntlSetFD = 2;
 constexpr int kFD_CLOEXEC = 1;
 constexpr uint64_t kCloneThread = 0x00010000;
 constexpr char kBoundaryHelperPath[] = "/haa-runtime/haa-boundary";
+constexpr char kSetprivPath[] = "/usr/bin/setpriv";
 constexpr char kLaunchMode[] = "--launch";
 constexpr char kPythonHandoffMode[] = "--handoff-python";
 constexpr char kELFHandoffMode[] = "--handoff-elf";
@@ -154,6 +155,11 @@ struct ProcessState {
     Provenance provenance;
     bool root_eligible;
     bool root_consumed;
+    // This is deliberately distinct from role/provenance. Only the actual
+    // target of one accepted direct-control launch may use the narrow network
+    // exception, and the bit is cleared before every later image transition.
+    bool trusted_control_network_active;
+    bool demotion_pending;
     bool launch_target_pending;
     bool handoff_target_pending;
     ProcessClass handoff_target_class;
@@ -213,6 +219,19 @@ BoundaryMode BoundaryInvocation(const gvisor::sentry::ExecveInfo& message) {
   return BoundaryMode::kNone;
 }
 
+bool IsExactSetprivDemotion(const gvisor::sentry::ExecveInfo& message) {
+  if (message.binary_path() != kSetprivPath || message.execfn() != kSetprivPath ||
+      message.argv_size() < 10) return false;
+  static constexpr const char* kRequired[] = {
+      kSetprivPath, "--reuid=1000", "--regid=1000", "--clear-groups",
+      "--inh-caps=-all", "--ambient-caps=-all", "--bounding-set=-all",
+      "--no-new-privs", "--"};
+  for (size_t index = 0; index < sizeof(kRequired) / sizeof(kRequired[0]); ++index) {
+    if (message.argv(static_cast<int>(index)) != kRequired[index]) return false;
+  }
+  return true;
+}
+
 bool IsNewGroup(const ProcessState& state, const gvisor::common::ContextData& context) {
   return state.groups.find(context.thread_group_id()) == state.groups.end();
 }
@@ -225,7 +244,7 @@ bool RegisterGroup(ProcessState* state, const gvisor::common::ContextData& conte
   if (!IsNewGroup(*state, context)) return false;
   state->groups.emplace(context.thread_group_id(), ProcessState::GroupState{
       context.thread_group_start_time_ns(), role, provenance, root_eligible,
-      root_consumed, false, false, ProcessClass::kUnknown});
+      root_consumed, false, false, false, false, ProcessClass::kUnknown});
   return true;
 }
 
@@ -444,8 +463,7 @@ const char* NetworkProcessRelation(const gvisor::common::ContextData& context, c
   auto group = state.groups.find(context.thread_group_id());
   if (group == state.groups.end() || !SameGroup(group->second, context)) return "UNKNOWN";
   if (group->second.role == ProcessState::Role::kArtifact) return "ARTIFACT_GROUP";
-  if (group->second.provenance == ProcessState::Provenance::kOCIRoot ||
-      group->second.provenance == ProcessState::Provenance::kDirectExecRoot) {
+  if (group->second.provenance == ProcessState::Provenance::kDirectExecRoot) {
     return "DIRECT_EXEC_SESSION";
   }
   if (group->second.role == ProcessState::Role::kControl) return "CONTROL_GROUP";
@@ -463,10 +481,14 @@ const char* NetworkProcessRelation(const gvisor::common::ContextData& context, c
   return "UNKNOWN";
 }
 
-bool IsTrustedControlRelation(const char* relation) {
-  return relation != nullptr &&
-      (strcmp(relation, "DIRECT_EXEC_SESSION") == 0 ||
-       strcmp(relation, "CONTROL_GROUP") == 0);
+bool IsTrustedControlNetwork(const gvisor::common::ContextData& context,
+                             const ProcessState& state) {
+  if (!ValidProcessIdentity(context)) return false;
+  auto group = state.groups.find(context.thread_group_id());
+  return group != state.groups.end() && SameGroup(group->second, context) &&
+      group->second.role == ProcessState::Role::kControl &&
+      group->second.provenance == ProcessState::Provenance::kDirectExecRoot &&
+      group->second.trusted_control_network_active;
 }
 
 SocketClassification ClassifySocketFamily(int family) {
@@ -586,7 +608,7 @@ bool ParseSentryClone(const char* payload, size_t payload_size,
   }
   state->groups.emplace(child_group, ProcessState::GroupState{
       message.created_thread_start_time_ns(), creator->second.role,
-      ProcessState::Provenance::kCloneChild, false, true, false, false,
+      ProcessState::Provenance::kCloneChild, false, true, false, false, false, false,
       ProcessClass::kUnknown});
   return Send(output, *container_id, "process-clone");
 }
@@ -688,6 +710,7 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
   const int32_t group_id = message.context_data().thread_group_id();
   const BoundaryMode boundary_mode = BoundaryInvocation(message);
   auto group = candidate.groups.find(group_id);
+  bool new_direct_root = false;
   if (group != candidate.groups.end() && !SameGroup(group->second, message.context_data())) {
     *reason = "PROCESS_IDENTITY_REUSED";
     return false;
@@ -702,6 +725,7 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
       return false;
     }
     group = candidate.groups.find(group_id);
+    new_direct_root = true;
   }
   if (group->second.role == ProcessState::Role::kControl &&
       boundary_mode == BoundaryMode::kLaunch) {
@@ -712,7 +736,7 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     }
     group->second.root_eligible = false;
     group->second.root_consumed = true;
-    group->second.launch_target_pending = true;
+    group->second.demotion_pending = true;
     ApplyExecCloexec(&candidate, group_id);
     process_state->groups = candidate.groups;
     process_state->fd_states = candidate.fd_states;
@@ -722,14 +746,21 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
       boundary_mode == BoundaryMode::kELFHandoff) {
     if (group->second.role == ProcessState::Role::kControl) {
       if (group->second.provenance == ProcessState::Provenance::kDirectExecRoot) {
-        if (!group->second.root_eligible || group->second.root_consumed) {
+        if (new_direct_root) {
+          // A Docker exec may enter the verified handoff directly. It creates
+          // one root provenance record but never activates CONTROL target
+          // trust, then consumes eligibility as it irreversibly demotes.
+          group->second.root_eligible = false;
+          group->second.root_consumed = true;
+        } else if (!group->second.root_consumed || group->second.launch_target_pending ||
+                   group->second.demotion_pending) {
           *reason = "PROCESS_PROVENANCE_UNKNOWN";
           return false;
         }
-        group->second.root_eligible = false;
-        group->second.root_consumed = true;
       }
       group->second.role = ProcessState::Role::kArtifact;
+      group->second.trusted_control_network_active = false;
+      group->second.demotion_pending = true;
       group->second.handoff_target_pending = boundary_mode != BoundaryMode::kHandoff;
       group->second.handoff_target_class = boundary_mode == BoundaryMode::kPythonHandoff
           ? ProcessClass::kPython : ProcessClass::kArtifact;
@@ -738,6 +769,24 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
       process_state->fd_states = candidate.fd_states;
       return Send(output, *container_id, "process-exec-expected");
     }
+  }
+  if (group->second.demotion_pending) {
+    if (!IsExactSetprivDemotion(message)) {
+      *reason = "PROCESS_PROVENANCE_UNKNOWN";
+      return false;
+    }
+    group->second.demotion_pending = false;
+    if (group->second.role == ProcessState::Role::kControl) {
+      group->second.launch_target_pending = true;
+    }
+    ApplyExecCloexec(&candidate, group_id);
+    process_state->groups = candidate.groups;
+    process_state->fd_states = candidate.fd_states;
+    return Send(output, *container_id, "process-exec-expected");
+  }
+  if (IsExactSetprivDemotion(message)) {
+    *reason = "PROCESS_PROVENANCE_UNKNOWN";
+    return false;
   }
   if (group->second.role == ProcessState::Role::kControl &&
       group->second.launch_target_pending) {
@@ -748,6 +797,7 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
       return false;
     }
     group->second.launch_target_pending = false;
+    group->second.trusted_control_network_active = true;
     ApplyExecCloexec(&candidate, group_id);
     process_state->groups = candidate.groups;
     process_state->expected_groups = candidate.expected_groups;
@@ -764,11 +814,16 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
       return Send(output, *container_id, "process-exec-expected");
     }
     ApplyExecCloexec(&candidate, group_id);
-    const Attribution attribution{"SENTRY_EXEC", nullptr, "ARTIFACT_GROUP",
+    const Attribution attribution{"SENTRY_EXEC", nullptr, nullptr,
                                   ProcessClassName(process_class), "ARTIFACT_ROLE", "ARTIFACT_GROUP"};
     process_state->groups = candidate.groups;
     process_state->fd_states = candidate.fd_states;
     return Send(output, *container_id, "process-exec-unexpected", nullptr, &attribution);
+  }
+  // A later successful image transition in the direct root cannot retain the
+  // narrow trusted-control network exception.
+  if (group->second.provenance == ProcessState::Provenance::kDirectExecRoot) {
+    group->second.trusted_control_network_active = false;
   }
   const ProcessClassification classification = IsExpectedProcess(message.binary_path(), message.context_data(), profile, &candidate);
   process_state->bootstrap_active = candidate.bootstrap_active;
@@ -978,7 +1033,7 @@ bool ParseRawAndSend(const char* payload, size_t payload_size, int output, std::
   const char* relation = NetworkProcessRelation(message.context_data(), *state);
   const ProcessClass process_class = ProcessClassForPath(message.context_data().process_name(), profile);
   const Attribution attribution{source, family, relation, ProcessClassName(process_class), nullptr, nullptr};
-  const bool trusted = IsTrustedControlRelation(relation);
+  const bool trusted = IsTrustedControlNetwork(message.context_data(), *state);
   return Send(output, *container_id, trusted ? "trusted-control-network" : "network-attempt", nullptr, &attribution);
 }
 
@@ -1006,11 +1061,11 @@ bool ParseConnectAndSend(const char* payload, size_t payload_size, int output, s
     case AF_INET:
       if (!ValidSocketAddressLength(family, message.address().size())) { *reason = "CONNECT_AF_INET_INVALID_LENGTH"; return false; }
       { const Attribution attribution{"CONNECT", "INET", relation, ProcessClassName(process_class), nullptr, nullptr};
-        return Send(output, *container_id, IsTrustedControlRelation(relation) ? "trusted-control-network" : "network-attempt", nullptr, &attribution); }
+        return Send(output, *container_id, IsTrustedControlNetwork(message.context_data(), process_state) ? "trusted-control-network" : "network-attempt", nullptr, &attribution); }
     case AF_INET6:
       if (!ValidSocketAddressLength(family, message.address().size())) { *reason = "CONNECT_AF_INET6_INVALID_LENGTH"; return false; }
       { const Attribution attribution{"CONNECT", "INET6", relation, ProcessClassName(process_class), nullptr, nullptr};
-        return Send(output, *container_id, IsTrustedControlRelation(relation) ? "trusted-control-network" : "network-attempt", nullptr, &attribution); }
+        return Send(output, *container_id, IsTrustedControlNetwork(message.context_data(), process_state) ? "trusted-control-network" : "network-attempt", nullptr, &attribution); }
     case kLinuxAFNetlink:
       if (!ValidSocketAddressLength(family, message.address().size())) { *reason = "CONNECT_AF_NETLINK_INVALID_LENGTH"; return false; }
       return true;
@@ -1123,7 +1178,10 @@ int main(int argc, char** argv) {
     if (size < 0) { fault = true; fault_reason = "STREAM_FAULT"; }
     if (!fault && !process_state.pending_sockets.empty()) {
       fault = true;
-      fault_reason = "EXEC_CORRELATION_MISSING";
+      // Socket enter events without their required exit leave FD-family state
+      // unclassifiable. This is a network-state fault, not obsolete exec
+      // correlation state.
+      fault_reason = "FD_STATE_UNKNOWN";
     }
     if (!container_id.empty()) {
       Send(output, container_id, fault ? "stream-fault" : "stream-end", fault_reason);

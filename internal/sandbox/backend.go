@@ -166,6 +166,7 @@ func createArguments(sessionID domain.SandboxSessionID) []string {
 		"--network", "none",
 		"--read-only",
 		"--cap-drop", "ALL",
+		"--cap-add", "SETUID", "--cap-add", "SETGID", "--cap-add", "SETPCAP",
 		"--security-opt", "no-new-privileges",
 		"--pids-limit", "64",
 		"--memory", "512m",

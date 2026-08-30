@@ -19,6 +19,10 @@ func TestGitHubELFCreateUsesRootInitializerAndUserArtifactExec(t *testing.T) {
 		boundaryContainerCommand(),
 		"--read-only",
 		"--network none",
+		"--cap-drop ALL",
+		"--cap-add SETUID",
+		"--cap-add SETGID",
+		"--cap-add SETPCAP",
 	} {
 		if !strings.Contains(joined, required) {
 			t.Fatalf("GitHub ELF create command missing %q: %q", required, joined)

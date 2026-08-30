@@ -32,7 +32,7 @@ func TestBackendExecutesOneShotSandboxWithConstrainedDockerCommand(t *testing.T)
 	if got := runner.calls[1]; got.binary != "docker" || !sameStrings(got.arguments, []string{"start", "0123456789abcdef"}) {
 		t.Fatalf("start command = %q %q", got.binary, got.arguments)
 	}
-	if got := runner.calls[2]; got.binary != "docker" || !sameStrings(got.arguments, boundaryExecArguments("0123456789abcdef", boundaryLaunchMode, "/bin/true")) {
+	if got := runner.calls[2]; got.binary != "docker" || !sameStrings(got.arguments, boundaryReadinessArguments("0123456789abcdef")) {
 		t.Fatalf("helper readiness command = %q %q", got.binary, got.arguments)
 	}
 	if got := runner.calls[3]; got.binary != "docker" || !sameStrings(got.arguments, boundaryExecArguments("0123456789abcdef", boundaryLaunchMode, "/bin/sh", "-ceu", npmLifecycleCommand)) {
@@ -138,7 +138,7 @@ func TestBackendTimeoutIsIncompleteAndStillDisposed(t *testing.T) {
 func assertConstrainedCreateCommand(t *testing.T, arguments []string) {
 	t.Helper()
 	joined := strings.Join(arguments, " ")
-	for _, required := range []string{"--runtime " + gVisorRuntimeName, "--network none", "--read-only", "--cap-drop ALL", "no-new-privileges", "--pids-limit 64", "--memory 512m", "--cpus 1", "--ulimit cpu=30:30", "--tmpfs " + boundaryHelperMount, nodeImageReference, boundaryContainerCommand()} {
+	for _, required := range []string{"--runtime " + gVisorRuntimeName, "--network none", "--read-only", "--cap-drop ALL", "--cap-add SETUID", "--cap-add SETGID", "--cap-add SETPCAP", "no-new-privileges", "--pids-limit 64", "--memory 512m", "--cpus 1", "--ulimit cpu=30:30", "--tmpfs " + boundaryHelperMount, nodeImageReference, boundaryContainerCommand()} {
 		if !strings.Contains(joined, required) {
 			t.Errorf("create command missing %q: %q", required, joined)
 		}

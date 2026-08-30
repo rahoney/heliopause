@@ -168,6 +168,18 @@ root가 되지 않는다. HAA handoff helper는 privilege를 부여하는 인증
 helper의 검증·고정·최소권한 원칙을 소유하고, M3/M11은 그 원칙을 반복하지
 않고 관찰 귀속 계약만 소유한다.
 
+HAA-owned boundary helper의 pre-readiness bootstrap은 immutable helper를
+원자적으로 설치하는 동안에만 `CAP_SETUID`, `CAP_SETGID`, `CAP_SETPCAP`을
+사용할 수 있다. 그 뒤 PID1은 pinned privilege-drop tool로 uid/gid 1000,
+empty supplementary groups, zero inheritable/permitted/effective/bounding/
+ambient capabilities 및 `NoNewPrivs=1` 상태로 irreversibly exec한다. Docker
+exec spec이 create-time capability set을 다시 제공할 수 있으므로, 모든 HAA
+wrapped dynamic exec도 요청 target 전에 같은 capability demotion을 수행한다.
+Artifact-controlled bytes는 이 readiness와 target demotion 이전에 실행될 수
+없다. 이 예외는 helper 설치·demotion에만 한정되며 persistent Unix root,
+privileged service, Host bind mount 또는 Artifact-writable trust path를
+허용하지 않는다.
+
 구체 lifecycle, API bound와 M8 acceptance는
 [M8 Production Trust Hardening Contract](../planning/11-m8-production-trust-hardening-contract.md)가
 소유한다.

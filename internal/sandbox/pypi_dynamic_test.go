@@ -33,7 +33,7 @@ func TestPythonDynamicBackendRunsOnlyLocalWheelAndDeclaredImports(t *testing.T) 
 	if len(runner.calls) != 6 {
 		t.Fatalf("commands = %#v", runner.calls)
 	}
-	if len(runner.timeline) < 4 || !sameStrings(runner.timeline[2].arguments, boundaryExecArguments("0123456789abcdef", boundaryLaunchMode, "/bin/true")) || runner.timeline[3].binary != "docker" || !strings.Contains(strings.Join(runner.timeline[3].arguments, " "), "python -I -c") {
+	if len(runner.timeline) < 4 || !sameStrings(runner.timeline[2].arguments, boundaryReadinessArguments("0123456789abcdef")) || runner.timeline[3].binary != "docker" || !strings.Contains(strings.Join(runner.timeline[3].arguments, " "), "python -I -c") {
 		t.Fatalf("helper was not ready before artifact introduction: %#v", runner.timeline)
 	}
 	assertPythonDynamicCreate(t, runner.calls[0].arguments)
@@ -584,7 +584,7 @@ func pythonWheelFixture(t *testing.T) (string, domain.AcquiredArtifact) {
 func assertPythonDynamicCreate(t *testing.T, arguments []string) {
 	t.Helper()
 	joined := strings.Join(arguments, " ")
-	for _, required := range []string{"--pull never", "--runtime " + gVisorRuntimeName, "--network none", "--read-only", "--cap-drop ALL", "no-new-privileges", "--pids-limit 64", "--memory 536870912", "--tmpfs " + boundaryHelperMount, pythonImageReference} {
+	for _, required := range []string{"--pull never", "--runtime " + gVisorRuntimeName, "--network none", "--read-only", "--cap-drop ALL", "--cap-add SETUID", "--cap-add SETGID", "--cap-add SETPCAP", "no-new-privileges", "--pids-limit 64", "--memory 536870912", "--tmpfs " + boundaryHelperMount, pythonImageReference} {
 		if !strings.Contains(joined, required) {
 			t.Errorf("create command missing %q: %q", required, joined)
 		}
