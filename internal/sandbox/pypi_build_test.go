@@ -31,6 +31,9 @@ func TestPythonSdistBuilderUsesOnlyVerifiedBuildWheels(t *testing.T) {
 	if joined := strings.Join(runner.calls[5].arguments, " "); !strings.Contains(joined, "pip wheel --no-index --no-deps --no-build-isolation") || !strings.Contains(joined, pythonSdistPath(source)) {
 		t.Fatalf("build command = %#v", runner.calls[5])
 	}
+	if got := runner.calls[5].arguments; len(got) < 6 || got[5] != boundaryOriginPythonHandoffMode {
+		t.Fatalf("build command does not use the Python artifact handoff: %#v", got)
+	}
 	if _, err := os.Stat(filepath.Join(root, "run_aaaaaaaaaaaaaaaaaaaaaaaaaa", "derived.whl")); err != nil {
 		t.Fatal(err)
 	}

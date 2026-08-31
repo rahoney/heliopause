@@ -8,12 +8,15 @@ import (
 )
 
 const (
-	boundaryHelperPath        = "/haa-runtime/haa-boundary"
-	boundarySetprivPath       = "/usr/bin/setpriv"
-	boundaryHelperMount       = "/haa-runtime:rw,exec,nosuid,nodev,size=1m,uid=0,gid=0,mode=0755"
-	boundaryLaunchMode        = "--launch"
-	boundaryPythonHandoffMode = "--handoff-python"
-	boundaryELFHandoffMode    = "--handoff-elf"
+	boundaryHelperPath              = "/haa-runtime/haa-boundary"
+	boundarySetprivPath             = "/usr/bin/setpriv"
+	boundaryHelperMount             = "/haa-runtime:rw,exec,nosuid,nodev,size=1m,uid=0,gid=0,mode=0755"
+	boundaryLaunchMode              = "--launch"
+	boundaryPythonHandoffMode       = "--handoff-python"
+	boundaryELFHandoffMode          = "--handoff-elf"
+	boundaryOriginLaunchMode        = "--origin-launch"
+	boundaryOriginPythonHandoffMode = "--origin-handoff-python"
+	boundaryOriginELFHandoffMode    = "--origin-handoff-elf"
 	// Docker exec starts only this fixed, root-owned HAA helper as root. The
 	// helper immediately uses setpriv before it execs every requested target.
 	// No artifact-selected executable is a Docker exec entrypoint.
@@ -27,7 +30,7 @@ const boundaryDemotionArguments = "--reuid=1000 --regid=1000 --clear-groups --in
 // operations: launch establishes the Sentry boundary for a direct exec, while
 // handoff only removes trust before artifact execution. The helper never
 // interprets artifact input.
-const boundaryHelper = "#!/bin/sh\nset -eu\ndemote() { exec " + boundarySetprivPath + " " + boundaryDemotionArguments + " \"$@\"; }\ncase \"${1-}\" in\n  --launch|--handoff-python|--handoff-elf) shift; demote \"$@\" ;;\n  -c) shift; demote /bin/sh -c \"$@\" ;;\n  *) exit 125 ;;\nesac\n"
+const boundaryHelper = "#!/bin/sh\nset -eu\ndemote() { exec " + boundarySetprivPath + " " + boundaryDemotionArguments + " \"$@\"; }\ncase \"${1-}\" in\n  --origin-launch) shift; exec " + boundaryHelperPath + " --launch \"$@\" ;;\n  --origin-handoff-python) shift; exec " + boundaryHelperPath + " --handoff-python \"$@\" ;;\n  --origin-handoff-elf) shift; exec " + boundaryHelperPath + " --handoff-elf \"$@\" ;;\n  --launch|--handoff-python|--handoff-elf) shift; demote \"$@\" ;;\n  -c) shift; demote /bin/sh -c \"$@\" ;;\n  *) exit 125 ;;\nesac\n"
 
 // boundaryContainerCommand runs as the OCI init root solely long enough to
 // install the fixed controller helper into its root-owned tmpfs. The helper is
@@ -39,10 +42,28 @@ func boundaryContainerCommand() string {
 		boundaryHelperPath + "; exec " + boundarySetprivPath + " " + boundaryDemotionArguments + " /bin/sleep infinity"
 }
 
-const boundaryReadinessScript = "test \"$(id -u)\" = 1000; test \"$(id -g)\" = 1000; grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/1/status; grep -Eq '^Gid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/1/status; grep -Eq '^Groups:[[:space:]]*$' /proc/1/status; for field in CapInh CapPrm CapEff CapBnd CapAmb; do grep -Eq \"^${field}:[[:space:]]+0000000000000000$\" /proc/1/status; done; grep -Eq '^NoNewPrivs:[[:space:]]+1$' /proc/1/status; grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/self/status; grep -Eq '^Gid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/self/status; grep -Eq '^Groups:[[:space:]]*$' /proc/self/status; for field in CapInh CapPrm CapEff CapBnd CapAmb; do grep -Eq \"^${field}:[[:space:]]+0000000000000000$\" /proc/self/status; done; grep -Eq '^NoNewPrivs:[[:space:]]+1$' /proc/self/status"
+const boundaryReadinessScript = "test \"$(id -u)\" = 1000; test \"$(id -g)\" = 1000; grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/1/status; grep -Eq '^Gid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/1/status; grep -Eq '^Groups:[[:space:]]*$' /proc/1/status; for field in CapInh CapPrm CapEff CapBnd CapAmb; do grep -Eq \"^${field}:[[:space:]]+0000000000000000$\" /proc/1/status; done; grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/self/status; grep -Eq '^Gid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/self/status; grep -Eq '^Groups:[[:space:]]*$' /proc/self/status; for field in CapInh CapPrm CapEff CapBnd CapAmb; do grep -Eq \"^${field}:[[:space:]]+0000000000000000$\" /proc/self/status; done"
+
+func boundaryOriginMode(mode string) string {
+	switch mode {
+	case boundaryLaunchMode:
+		return boundaryOriginLaunchMode
+	case boundaryPythonHandoffMode:
+		return boundaryOriginPythonHandoffMode
+	case boundaryELFHandoffMode:
+		return boundaryOriginELFHandoffMode
+	default:
+		panic("invalid Docker boundary mode")
+	}
+}
 
 func boundaryExecArguments(containerID, mode string, command ...string) []string {
-	arguments := []string{"exec", "--user", boundaryBootstrapUser, containerID, boundaryHelperPath, mode}
+	arguments := []string{"exec", "--user", boundaryBootstrapUser, containerID, boundaryHelperPath, boundaryOriginMode(mode)}
+	return append(arguments, command...)
+}
+
+func boundaryInputExecArguments(containerID, mode string, command ...string) []string {
+	arguments := []string{"exec", "-i", "--user", boundaryBootstrapUser, containerID, boundaryHelperPath, boundaryOriginMode(mode)}
 	return append(arguments, command...)
 }
 

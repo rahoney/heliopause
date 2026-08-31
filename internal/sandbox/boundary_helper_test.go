@@ -26,13 +26,38 @@ func TestBoundaryContainerCommandInstallsImmutableHelperBeforeServingExecs(t *te
 }
 
 func TestBoundaryExecUsesFixedRootBootstrapBeforeDemotingTarget(t *testing.T) {
-	arguments := boundaryExecArguments("0123456789abcdef", boundaryLaunchMode, "/bin/true")
-	want := []string{"exec", "--user", boundaryBootstrapUser, "0123456789abcdef", boundaryHelperPath, boundaryLaunchMode, "/bin/true"}
-	if !sameStrings(arguments, want) {
-		t.Fatalf("boundary exec = %#v, want %#v", arguments, want)
+	for _, test := range []struct {
+		mode   string
+		origin string
+	}{
+		{boundaryLaunchMode, boundaryOriginLaunchMode},
+		{boundaryPythonHandoffMode, boundaryOriginPythonHandoffMode},
+		{boundaryELFHandoffMode, boundaryOriginELFHandoffMode},
+	} {
+		arguments := boundaryExecArguments("0123456789abcdef", test.mode, "/bin/true")
+		want := []string{"exec", "--user", boundaryBootstrapUser, "0123456789abcdef", boundaryHelperPath, test.origin, "/bin/true"}
+		if !sameStrings(arguments, want) {
+			t.Fatalf("boundary exec for %q = %#v, want %#v", test.mode, arguments, want)
+		}
 	}
 	if !strings.Contains(boundaryHelper, "exec "+boundarySetprivPath+" "+boundaryDemotionArguments) {
 		t.Fatalf("boundary helper does not irreversibly demote requested targets: %q", boundaryHelper)
+	}
+	for _, required := range []string{
+		"exec " + boundaryHelperPath + " " + boundaryLaunchMode,
+		"exec " + boundaryHelperPath + " " + boundaryPythonHandoffMode,
+		"exec " + boundaryHelperPath + " " + boundaryELFHandoffMode,
+	} {
+		if !strings.Contains(boundaryHelper, required) {
+			t.Fatalf("boundary helper does not self-exec canonical mode %q: %q", required, boundaryHelper)
+		}
+	}
+	if strings.Contains(boundaryReadinessScript, "NoNewPrivs") {
+		t.Fatalf("readiness relies on unsupported /proc NoNewPrivs: %q", boundaryReadinessScript)
+	}
+	if !strings.Contains(boundaryHelper, "  -c) shift; demote /bin/sh -c") ||
+		strings.Contains(boundaryHelper, "--origin-c") {
+		t.Fatalf("npm script-shell is not a direct in-container handoff: %q", boundaryHelper)
 	}
 }
 

@@ -129,7 +129,7 @@ func (b *PythonSdistBuilder) Build(ctx context.Context, source domain.AcquiredAr
 	if err := discardCommand(runCtx, b.runner, "docker", installArgs...); err != nil {
 		return fail("M5_PYPI_BUILD_REQUIREMENTS_FAILED")
 	}
-	if err := discardCommand(runCtx, b.runner, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "/tmp/haa-buildenv/bin/python", "-I", "-m", "pip", "wheel", "--no-index", "--no-deps", "--no-build-isolation", "--wheel-dir", pythonDerivedPath, sdistPath)...); err != nil {
+	if err := discardCommand(runCtx, b.runner, "docker", boundaryExecArguments(containerID, boundaryPythonHandoffMode, "/tmp/haa-buildenv/bin/python", "-I", "-m", "pip", "wheel", "--no-index", "--no-deps", "--no-build-isolation", "--wheel-dir", pythonDerivedPath, sdistPath)...); err != nil {
 		if errors.Is(runCtx.Err(), context.DeadlineExceeded) {
 			return fail("M5_PYPI_BUILD_TIMEOUT")
 		}
@@ -201,7 +201,7 @@ func (i *PythonArtifactIntroducer) introduce(ctx context.Context, containerID st
 	if !ok {
 		return errors.New("sandbox artifact stream runner is not configured")
 	}
-	if err := input.RunInput(ctx, file, "docker", append([]string{"exec", "-i", "--user", boundaryBootstrapUser, containerID, boundaryHelperPath, boundaryLaunchMode}, "python", "-I", "-c", pythonCopyArtifactScript, destination)...); err != nil {
+	if err := input.RunInput(ctx, file, "docker", boundaryInputExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", pythonCopyArtifactScript, destination)...); err != nil {
 		return fmt.Errorf("introduce verified Python artifact: %w", err)
 	}
 	return nil

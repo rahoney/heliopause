@@ -569,6 +569,7 @@ bool VerifyCloexecReexec(int output, const std::string& remote, const std::strin
   root.mutable_context_data()->set_thread_group_start_time_ns(900);
   root.mutable_context_data()->set_parent_thread_group_id(0);
   root.mutable_context_data()->set_is_exec_session(true);
+  root.mutable_context_data()->set_process_name("python");
   root.set_sysno(kSyscallExecve);
   root.set_pathname("python");
   gvisor::sentry::ExecveInfo resolved;

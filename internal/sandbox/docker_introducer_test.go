@@ -25,7 +25,7 @@ func TestDockerArtifactIntroducerCopiesOnlyControlledTarball(t *testing.T) {
 	if err := introducer.Introduce(context.Background(), "0123456789abcdef", sandboxRequest(t).Artifact()); err != nil {
 		t.Fatal(err)
 	}
-	if len(runner.inputCalls) != 1 || !sameStrings(runner.inputCalls[0].arguments, []string{"exec", "-i", "--user", boundaryBootstrapUser, "0123456789abcdef", boundaryHelperPath, boundaryLaunchMode, "/bin/sh", "-ceu", "umask 077; cat > /tmp/artifact.tgz"}) || string(runner.input) != "fixture" {
+	if len(runner.inputCalls) != 1 || !sameStrings(runner.inputCalls[0].arguments, []string{"exec", "-i", "--user", boundaryBootstrapUser, "0123456789abcdef", boundaryHelperPath, boundaryOriginLaunchMode, "/bin/sh", "-ceu", "umask 077; cat > /tmp/artifact.tgz"}) || string(runner.input) != "fixture" {
 		t.Fatalf("docker input stream = %#v/%q", runner.inputCalls, runner.input)
 	}
 }

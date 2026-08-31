@@ -31,7 +31,7 @@ func TestGitHubELFCreateUsesRootInitializerAndBoundaryBootstrapExec(t *testing.T
 	if strings.Contains(joined, "--user "+boundaryBootstrapUser) || strings.Contains(joined, "docker cp") {
 		t.Fatalf("GitHub ELF helper initializer is not root-owned OCI setup: %q", joined)
 	}
-	if !sameStrings(boundaryExecArguments("0123456789abcdef", boundaryELFHandoffMode, "/work/artifact"), []string{"exec", "--user", boundaryBootstrapUser, "0123456789abcdef", boundaryHelperPath, boundaryELFHandoffMode, "/work/artifact"}) {
+	if !sameStrings(boundaryExecArguments("0123456789abcdef", boundaryELFHandoffMode, "/work/artifact"), []string{"exec", "--user", boundaryBootstrapUser, "0123456789abcdef", boundaryHelperPath, boundaryOriginELFHandoffMode, "/work/artifact"}) {
 		t.Fatal("ELF handoff is not a fixed boundary bootstrap exec")
 	}
 }
