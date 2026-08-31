@@ -265,6 +265,28 @@ const char* ProcessClassName(ProcessClass process_class) {
   return "OTHER";
 }
 
+// The helper envelope's network schema intentionally has a smaller process
+// class vocabulary than process-exec diagnostics. Keep control utilities as
+// bounded OTHER metadata rather than widening the Go decoder.
+const char* NetworkProcessClassName(ProcessClass process_class) {
+  switch (process_class) {
+    case ProcessClass::kShell:
+    case ProcessClass::kPython:
+    case ProcessClass::kPip:
+    case ProcessClass::kNode:
+    case ProcessClass::kNpm:
+    case ProcessClass::kArtifact:
+    case ProcessClass::kUnknown:
+      return ProcessClassName(process_class);
+    case ProcessClass::kSleep:
+    case ProcessClass::kMkdir:
+    case ProcessClass::kCat:
+    case ProcessClass::kChmod:
+      return "OTHER";
+  }
+  return "OTHER";
+}
+
 ProcessClass ProcessClassForPath(const std::string& path, const char* profile) {
   if (path == "/bin/sh" || path == "sh" || path == "/usr/bin/dash") return ProcessClass::kShell;
   if (path == "/usr/bin/sleep" || path == "/bin/sleep" || path == "sleep") return ProcessClass::kSleep;
@@ -889,7 +911,7 @@ bool ParseSocketAndTrack(const char* payload, size_t payload_size, int output, s
     }
     ++process_state->pending_sockets[message.context_data().thread_group_id()];
     if (family_class == SocketClassification::kNetwork && message.domain() == kLinuxAFPacket) {
-      const Attribution attribution{"SOCKET", "PACKET", relation, ProcessClassName(process_class), nullptr, nullptr};
+      const Attribution attribution{"SOCKET", "PACKET", relation, NetworkProcessClassName(process_class), nullptr, nullptr};
       return Send(output, *container_id, "network-attempt", nullptr, &attribution);
     }
     return true;
@@ -1032,7 +1054,7 @@ bool ParseRawAndSend(const char* payload, size_t payload_size, int output, std::
   if (family == nullptr) { *reason = "FD_STATE_UNKNOWN"; return false; }
   const char* relation = NetworkProcessRelation(message.context_data(), *state);
   const ProcessClass process_class = ProcessClassForPath(message.context_data().process_name(), profile);
-  const Attribution attribution{source, family, relation, ProcessClassName(process_class), nullptr, nullptr};
+  const Attribution attribution{source, family, relation, NetworkProcessClassName(process_class), nullptr, nullptr};
   const bool trusted = IsTrustedControlNetwork(message.context_data(), *state);
   return Send(output, *container_id, trusted ? "trusted-control-network" : "network-attempt", nullptr, &attribution);
 }
@@ -1060,18 +1082,18 @@ bool ParseConnectAndSend(const char* payload, size_t payload_size, int output, s
       return true;
     case AF_INET:
       if (!ValidSocketAddressLength(family, message.address().size())) { *reason = "CONNECT_AF_INET_INVALID_LENGTH"; return false; }
-      { const Attribution attribution{"CONNECT", "INET", relation, ProcessClassName(process_class), nullptr, nullptr};
+      { const Attribution attribution{"CONNECT", "INET", relation, NetworkProcessClassName(process_class), nullptr, nullptr};
         return Send(output, *container_id, IsTrustedControlNetwork(message.context_data(), process_state) ? "trusted-control-network" : "network-attempt", nullptr, &attribution); }
     case AF_INET6:
       if (!ValidSocketAddressLength(family, message.address().size())) { *reason = "CONNECT_AF_INET6_INVALID_LENGTH"; return false; }
-      { const Attribution attribution{"CONNECT", "INET6", relation, ProcessClassName(process_class), nullptr, nullptr};
+      { const Attribution attribution{"CONNECT", "INET6", relation, NetworkProcessClassName(process_class), nullptr, nullptr};
         return Send(output, *container_id, IsTrustedControlNetwork(message.context_data(), process_state) ? "trusted-control-network" : "network-attempt", nullptr, &attribution); }
     case kLinuxAFNetlink:
       if (!ValidSocketAddressLength(family, message.address().size())) { *reason = "CONNECT_AF_NETLINK_INVALID_LENGTH"; return false; }
       return true;
     case kLinuxAFPacket:
       if (!ValidSocketAddressLength(family, message.address().size())) { *reason = "CONNECT_AF_PACKET_INVALID_LENGTH"; return false; }
-      { const Attribution attribution{"CONNECT", "PACKET", relation, ProcessClassName(process_class), nullptr, nullptr}; return Send(output, *container_id, "network-attempt", nullptr, &attribution); }
+      { const Attribution attribution{"CONNECT", "PACKET", relation, NetworkProcessClassName(process_class), nullptr, nullptr}; return Send(output, *container_id, "network-attempt", nullptr, &attribution); }
     default:
       (void)classification;
       *reason = "CONNECT_UNKNOWN_FAMILY";

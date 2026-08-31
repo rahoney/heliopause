@@ -174,7 +174,8 @@ HAA-owned boundary helper의 pre-readiness bootstrap은 immutable helper를
 empty supplementary groups, zero inheritable/permitted/effective/bounding/
 ambient capabilities 및 `NoNewPrivs=1` 상태로 irreversibly exec한다. Docker
 exec spec이 create-time capability set을 다시 제공할 수 있으므로, 모든 HAA
-wrapped dynamic exec도 요청 target 전에 같은 capability demotion을 수행한다.
+wrapped dynamic exec는 fixed root-owned boundary helper만 transient root entry로
+사용하고, 요청 target 전에 같은 capability demotion을 수행한다.
 Artifact-controlled bytes는 이 readiness와 target demotion 이전에 실행될 수
 없다. 이 예외는 helper 설치·demotion에만 한정되며 persistent Unix root,
 privileged service, Host bind mount 또는 Artifact-writable trust path를

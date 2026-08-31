@@ -451,6 +451,12 @@ bool VerifyNetworkFamilies(int output, const std::string& remote, const std::str
   if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_RAW, raw) ||
       !ExpectNetworkRecord(output, kFifthID, "SENDMSG", "INET", "CONTROL_GROUP", "PYTHON")) return false;
 
+  // Utility process classes are valid process telemetry but intentionally use
+  // the bounded OTHER value in a network attribution envelope.
+  raw.mutable_context_data()->set_process_name("/bin/cat");
+  if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_RAW, raw) ||
+      !ExpectNetworkRecord(output, kFifthID, "SENDMSG", "INET", "CONTROL_GROUP", "OTHER")) return false;
+
   *raw.mutable_context_data() = socket.context_data();
   raw.set_arg1(8);
   socket.set_domain(kLinuxAFNetlink);
@@ -773,9 +779,11 @@ bool VerifySentryAuthoritativeBoundary(int output, const std::string& remote, co
   launcher.clear_argv();
   launcher.add_argv(kBoundaryHelperPath);
   launcher.add_argv(kLaunchMode);
+  const gvisor::sentry::ExecveInfo target = make_sentry(next);
   if (!SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, launcher) ||
       !ExpectRecord(output, kTenthID, "process-exec-expected") ||
-      !SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, make_sentry(next)) ||
+      !SendExactSetprivDemotion(output, client, kTenthID, target) ||
+      !SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, target) ||
       !ExpectRecord(output, kTenthID, "process-exec-expected")) return false;
 
   gvisor::syscall::Execve failed = make_exec(kTenthID, 101, 1001);
@@ -786,7 +794,7 @@ bool VerifySentryAuthoritativeBoundary(int output, const std::string& remote, co
       !SendEvent(client, gvisor::common::MESSAGE_SYSCALL_EXECVE, failed_exit) ||
       !ExpectNoRecord(output)) return false;
 
-  if (!SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, make_sentry(next)) ||
+  if (!SendEvent(client, gvisor::common::MESSAGE_SENTRY_EXEC, target) ||
       !ExpectUnexpectedProcessRecord(output, kTenthID, "SENTRY_EXEC", "PYTHON", "BOOTSTRAP_ENDED", "TRACKED_GROUP")) return false;
   close(client);
   if (!ExpectRecord(output, kTenthID, "stream-end")) return false;

@@ -160,7 +160,7 @@ func (b *GitHubELFBackend) introduce(ctx context.Context, containerID string, ar
 	if !ok {
 		return errors.New("GitHub ELF stream runner is unavailable")
 	}
-	return input.RunInput(ctx, file, "docker", "exec", "-i", "--user", boundaryExecUser, containerID, boundaryHelperPath, boundaryLaunchMode, "/bin/sh", "-ceu", "umask 077; cat > /work/artifact; chmod 500 /work/artifact")
+	return input.RunInput(ctx, file, "docker", "exec", "-i", "--user", boundaryBootstrapUser, containerID, boundaryHelperPath, boundaryLaunchMode, "/bin/sh", "-ceu", "umask 077; cat > /work/artifact; chmod 500 /work/artifact")
 }
 
 func githubELFCreateArguments(sessionID domain.SandboxSessionID) []string {

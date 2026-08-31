@@ -201,7 +201,7 @@ func (i *PythonArtifactIntroducer) introduce(ctx context.Context, containerID st
 	if !ok {
 		return errors.New("sandbox artifact stream runner is not configured")
 	}
-	if err := input.RunInput(ctx, file, "docker", append([]string{"exec", "-i", "--user", boundaryExecUser, containerID, boundaryHelperPath, boundaryLaunchMode}, "python", "-I", "-c", pythonCopyArtifactScript, destination)...); err != nil {
+	if err := input.RunInput(ctx, file, "docker", append([]string{"exec", "-i", "--user", boundaryBootstrapUser, containerID, boundaryHelperPath, boundaryLaunchMode}, "python", "-I", "-c", pythonCopyArtifactScript, destination)...); err != nil {
 		return fmt.Errorf("introduce verified Python artifact: %w", err)
 	}
 	return nil

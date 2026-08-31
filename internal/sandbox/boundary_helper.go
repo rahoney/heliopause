@@ -14,7 +14,10 @@ const (
 	boundaryLaunchMode        = "--launch"
 	boundaryPythonHandoffMode = "--handoff-python"
 	boundaryELFHandoffMode    = "--handoff-elf"
-	boundaryExecUser          = "1000:1000"
+	// Docker exec starts only this fixed, root-owned HAA helper as root. The
+	// helper immediately uses setpriv before it execs every requested target.
+	// No artifact-selected executable is a Docker exec entrypoint.
+	boundaryBootstrapUser = "0:0"
 )
 
 const boundaryDemotionArguments = "--reuid=1000 --regid=1000 --clear-groups --inh-caps=-all --ambient-caps=-all --bounding-set=-all --no-new-privs --"
@@ -39,7 +42,7 @@ func boundaryContainerCommand() string {
 const boundaryReadinessScript = "test \"$(id -u)\" = 1000; test \"$(id -g)\" = 1000; grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/1/status; grep -Eq '^Gid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/1/status; grep -Eq '^Groups:[[:space:]]*$' /proc/1/status; for field in CapInh CapPrm CapEff CapBnd CapAmb; do grep -Eq \"^${field}:[[:space:]]+0000000000000000$\" /proc/1/status; done; grep -Eq '^NoNewPrivs:[[:space:]]+1$' /proc/1/status; grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/self/status; grep -Eq '^Gid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/self/status; grep -Eq '^Groups:[[:space:]]*$' /proc/self/status; for field in CapInh CapPrm CapEff CapBnd CapAmb; do grep -Eq \"^${field}:[[:space:]]+0000000000000000$\" /proc/self/status; done; grep -Eq '^NoNewPrivs:[[:space:]]+1$' /proc/self/status"
 
 func boundaryExecArguments(containerID, mode string, command ...string) []string {
-	arguments := []string{"exec", "--user", boundaryExecUser, containerID, boundaryHelperPath, mode}
+	arguments := []string{"exec", "--user", boundaryBootstrapUser, containerID, boundaryHelperPath, mode}
 	return append(arguments, command...)
 }
 

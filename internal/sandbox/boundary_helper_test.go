@@ -20,8 +20,19 @@ func TestBoundaryContainerCommandInstallsImmutableHelperBeforeServingExecs(t *te
 			t.Fatalf("initializer missing %q: %q", required, command)
 		}
 	}
-	if strings.Contains(command, "docker cp") || strings.Contains(command, "--user "+boundaryExecUser) {
+	if strings.Contains(command, "docker cp") || strings.Contains(command, "--user "+boundaryBootstrapUser) {
 		t.Fatalf("initializer has an invalid helper installation surface: %q", command)
+	}
+}
+
+func TestBoundaryExecUsesFixedRootBootstrapBeforeDemotingTarget(t *testing.T) {
+	arguments := boundaryExecArguments("0123456789abcdef", boundaryLaunchMode, "/bin/true")
+	want := []string{"exec", "--user", boundaryBootstrapUser, "0123456789abcdef", boundaryHelperPath, boundaryLaunchMode, "/bin/true"}
+	if !sameStrings(arguments, want) {
+		t.Fatalf("boundary exec = %#v, want %#v", arguments, want)
+	}
+	if !strings.Contains(boundaryHelper, "exec "+boundarySetprivPath+" "+boundaryDemotionArguments) {
+		t.Fatalf("boundary helper does not irreversibly demote requested targets: %q", boundaryHelper)
 	}
 }
 
