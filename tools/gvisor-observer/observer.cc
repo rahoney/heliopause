@@ -149,6 +149,7 @@ enum class SocketClassification {
 struct ProcessState {
   enum class Role { kUnknown, kControl, kArtifact };
   enum class Provenance { kUnknown, kOCIRoot, kDirectExecRoot, kCloneChild };
+  enum class OCIBootstrapStage { kNotOCI, kAwaitingDemotion, kAwaitingSleep, kComplete };
   struct GroupState {
     int64_t start_time_ns;
     Role role;
@@ -163,6 +164,7 @@ struct ProcessState {
     bool launch_target_pending;
     bool handoff_target_pending;
     ProcessClass handoff_target_class;
+    OCIBootstrapStage oci_bootstrap_stage;
   };
   bool bootstrap_active = true;
   bool bootstrap_group_set = false;
@@ -232,6 +234,17 @@ bool IsExactSetprivDemotion(const gvisor::sentry::ExecveInfo& message) {
   return true;
 }
 
+bool IsExactOCIBootstrapDemotion(const gvisor::sentry::ExecveInfo& message) {
+  return IsExactSetprivDemotion(message) && message.argv_size() == 11 &&
+      message.argv(9) == "/bin/sleep" && message.argv(10) == "infinity";
+}
+
+bool IsExactOCIBootstrapSleep(const gvisor::sentry::ExecveInfo& message) {
+  return message.binary_path() == "/bin/sleep" && message.execfn() == "/bin/sleep" &&
+      message.argv_size() == 2 && message.argv(0) == "/bin/sleep" &&
+      message.argv(1) == "infinity";
+}
+
 bool IsNewGroup(const ProcessState& state, const gvisor::common::ContextData& context) {
   return state.groups.find(context.thread_group_id()) == state.groups.end();
 }
@@ -244,7 +257,8 @@ bool RegisterGroup(ProcessState* state, const gvisor::common::ContextData& conte
   if (!IsNewGroup(*state, context)) return false;
   state->groups.emplace(context.thread_group_id(), ProcessState::GroupState{
       context.thread_group_start_time_ns(), role, provenance, root_eligible,
-      root_consumed, false, false, false, false, ProcessClass::kUnknown});
+      root_consumed, false, false, false, false, ProcessClass::kUnknown,
+      ProcessState::OCIBootstrapStage::kNotOCI});
   return true;
 }
 
@@ -593,6 +607,8 @@ bool ParseContainerStart(const char* payload, size_t payload_size, int output,
     *reason = "CONTAINER_ROOT_DUPLICATE";
     return false;
   }
+  state->groups.find(message.context_data().thread_group_id())->second.oci_bootstrap_stage =
+      ProcessState::OCIBootstrapStage::kAwaitingDemotion;
   state->bootstrap_group_set = true;
   state->bootstrap_group_id = message.context_data().thread_group_id();
   state->bootstrap_group_start_time_ns = message.context_data().thread_group_start_time_ns();
@@ -631,7 +647,7 @@ bool ParseSentryClone(const char* payload, size_t payload_size,
   state->groups.emplace(child_group, ProcessState::GroupState{
       message.created_thread_start_time_ns(), creator->second.role,
       ProcessState::Provenance::kCloneChild, false, true, false, false, false, false,
-      ProcessClass::kUnknown});
+      ProcessClass::kUnknown, ProcessState::OCIBootstrapStage::kNotOCI});
   return Send(output, *container_id, "process-clone");
 }
 
@@ -749,6 +765,40 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     group = candidate.groups.find(group_id);
     new_direct_root = true;
   }
+  if (group->second.provenance == ProcessState::Provenance::kOCIRoot) {
+    if (group->second.role != ProcessState::Role::kControl ||
+        !candidate.bootstrap_active || group->second.trusted_control_network_active) {
+      *reason = "PROCESS_PROVENANCE_UNKNOWN";
+      return false;
+    }
+    if (group->second.oci_bootstrap_stage == ProcessState::OCIBootstrapStage::kAwaitingDemotion) {
+      if (!IsExactOCIBootstrapDemotion(message)) {
+        *reason = "PROCESS_PROVENANCE_UNKNOWN";
+        return false;
+      }
+      group->second.oci_bootstrap_stage = ProcessState::OCIBootstrapStage::kAwaitingSleep;
+      ApplyExecCloexec(&candidate, group_id);
+      process_state->groups = candidate.groups;
+      process_state->fd_states = candidate.fd_states;
+      return Send(output, *container_id, "process-exec-expected");
+    }
+    if (group->second.oci_bootstrap_stage == ProcessState::OCIBootstrapStage::kAwaitingSleep) {
+      if (!IsExactOCIBootstrapSleep(message)) {
+        *reason = "PROCESS_PROVENANCE_UNKNOWN";
+        return false;
+      }
+      group->second.oci_bootstrap_stage = ProcessState::OCIBootstrapStage::kComplete;
+      ApplyExecCloexec(&candidate, group_id);
+      process_state->groups = candidate.groups;
+      process_state->fd_states = candidate.fd_states;
+      return Send(output, *container_id, "process-exec-expected");
+    }
+    if (group->second.oci_bootstrap_stage == ProcessState::OCIBootstrapStage::kComplete &&
+        (IsExactOCIBootstrapDemotion(message) || IsExactOCIBootstrapSleep(message))) {
+      *reason = "PROCESS_PROVENANCE_UNKNOWN";
+      return false;
+    }
+  }
   if (group->second.role == ProcessState::Role::kControl &&
       boundary_mode == BoundaryMode::kLaunch) {
     if (group->second.provenance != ProcessState::Provenance::kDirectExecRoot ||
@@ -793,7 +843,7 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     }
   }
   if (group->second.demotion_pending) {
-    if (!IsExactSetprivDemotion(message)) {
+    if (!IsExactSetprivDemotion(message) || IsExactOCIBootstrapDemotion(message)) {
       *reason = "PROCESS_PROVENANCE_UNKNOWN";
       return false;
     }
