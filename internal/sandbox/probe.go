@@ -3,9 +3,11 @@ package sandbox
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"path/filepath"
 	"runtime"
 	"strings"
 
@@ -13,7 +15,8 @@ import (
 )
 
 const (
-	gVisorRuntimeName = "runsc-trace"
+	gVisorRuntimeName   = "runsc-trace"
+	registeredRunscPath = "/usr/libexec/heliopause/runsc"
 )
 
 var (
@@ -79,10 +82,8 @@ func probeGVisorRuntime(ctx context.Context, operatingSystem string, executor Ex
 	if executor == nil {
 		return "", errors.New("runtime probe executor is required")
 	}
-	for _, binary := range []string{"docker", "runsc"} {
-		if _, err := executor.LookPath(binary); err != nil {
-			return unavailable, nil
-		}
+	if _, err := executor.LookPath("docker"); err != nil {
+		return unavailable, nil
 	}
 	dockerVersion, err := executor.Output(ctx, "docker", "version", "--format", "{{.Server.Version}}")
 	if err != nil {
@@ -91,19 +92,33 @@ func probeGVisorRuntime(ctx context.Context, operatingSystem string, executor Ex
 	if !atLeastVersion(strings.TrimSpace(string(dockerVersion)), runtimeidentity.DockerMinimumEngine) {
 		return unsupported, nil
 	}
-	runscVersion, err := executor.Output(ctx, "runsc", "--version")
+	runtimeRegistration, err := executor.Output(ctx, "docker", "info", "--format", "{{json (index .Runtimes \"runsc-trace\")}}")
+	if err != nil {
+		return unavailable, nil
+	}
+	registeredPath, err := parseRegisteredRunscPath(runtimeRegistration)
+	if err != nil || registeredPath != registeredRunscPath {
+		return unavailable, nil
+	}
+	runscVersion, err := executor.Output(ctx, registeredPath, "--version")
 	if err != nil || !strings.Contains(string(runscVersion), runtimeidentity.GVisorRelease) {
 		return unsupported, nil
 	}
-	runscTraceMeta, err := executor.Output(ctx, "runsc", "trace", "metadata")
+	runscTraceMeta, err := executor.Output(ctx, registeredPath, "trace", "metadata")
 	if err != nil || VerifyPatchCapability(string(runscTraceMeta)) != nil {
 		return unsupported, nil
 	}
-	runtimeRegistration, err := executor.Output(ctx, "docker", "info", "--format", "{{json (index .Runtimes \"runsc-trace\")}}")
-	if err != nil || strings.TrimSpace(string(runtimeRegistration)) == "" || strings.Contains(string(runtimeRegistration), "<no value>") {
-		return unavailable, nil
-	}
 	return "", nil
+}
+
+func parseRegisteredRunscPath(body []byte) (string, error) {
+	var registration struct {
+		Path string `json:"path"`
+	}
+	if err := json.Unmarshal(body, &registration); err != nil || !filepath.IsAbs(registration.Path) || filepath.Clean(registration.Path) != registration.Path {
+		return "", errors.New("runsc-trace registration has no canonical absolute executable identity")
+	}
+	return registration.Path, nil
 }
 
 // RequiredObservationPoints defines the observation point schemas required by

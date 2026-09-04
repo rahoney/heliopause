@@ -89,18 +89,14 @@ func InspectSourceTree(gvisorDir, patchAbsPath, expectedCommit string) (SourceTr
 	if err != nil {
 		return SourceTreeStateUnexpectedDirty, fmt.Errorf("git status failed: %w", err)
 	}
-	status := strings.TrimSpace(string(out))
-	if status == "" {
+	if strings.TrimSpace(string(out)) == "" {
 		return SourceTreeStateCleanUnpatched, nil
 	}
-
-	// Test if already patched: reversing patch must succeed and leave tree matching clean state
-	cmd = exec.Command("git", "-C", gvisorDir, "apply", "--check", "--reverse", patchAbsPath)
-	if err := cmd.Run(); err == nil {
-		return SourceTreeStateAlreadyPatched, nil
-	}
-
-	return SourceTreeStateUnexpectedDirty, errors.New("gVisor source tree is dirty with unexpected modifications")
+	// Release builds always use a fresh pinned clone and apply the exact patch
+	// once. A dirty source tree cannot prove that it contains only this patch:
+	// reverse-apply may succeed while unrelated tracked or untracked changes
+	// remain. Reject all dirty source trees rather than accepting TOFU state.
+	return SourceTreeStateUnexpectedDirty, errors.New("gVisor source tree is dirty")
 }
 
 // ApplyPatchDeterministic applies the verified patch to the gVisor working tree,

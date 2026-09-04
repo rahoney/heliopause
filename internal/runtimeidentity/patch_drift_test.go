@@ -167,6 +167,25 @@ func TestPatchDrift_G_DirtyUnexpectedSourceRejected(t *testing.T) {
 	}
 }
 
+func TestPatchDrift_DirtyExactPatchPlusUnrelatedModificationRejected(t *testing.T) {
+	t.Parallel()
+	tempGit := t.TempDir()
+	initGitRepo(t, tempGit)
+	commit := getHeadCommit(t, tempGit)
+	patch := filepath.Join(tempGit, "exact.patch")
+	if err := os.WriteFile(patch, []byte("diff --git a/README.md b/README.md\nindex 9d4a6f7..13d1e5d 100644\n--- a/README.md\n+++ b/README.md\n@@ -1 +1 @@\n-# Test Repo\n+# Exact Patch\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	runGit(t, tempGit, "apply", patch)
+	if err := os.WriteFile(filepath.Join(tempGit, "unrelated.txt"), []byte("unrelated"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	state, err := runtimeidentity.InspectSourceTree(tempGit, patch, commit)
+	if state != runtimeidentity.SourceTreeStateUnexpectedDirty || err == nil {
+		t.Fatalf("dirty exact patch plus unrelated modification accepted: state=%v err=%v", state, err)
+	}
+}
+
 // H. unpatched runtime cannot satisfy required patched capability
 func TestPatchDrift_H_UnpatchedRuntimeCannotSatisfyCapability(t *testing.T) {
 	t.Parallel()
