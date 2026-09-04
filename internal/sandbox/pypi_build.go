@@ -106,6 +106,9 @@ func (b *PythonSdistBuilder) Build(ctx context.Context, source domain.AcquiredAr
 	if err := awaitBoundaryHelper(runCtx, b.runner, containerID); err != nil {
 		return fail("M5_PYPI_BUILD_SETUP_FAILED")
 	}
+	if err := awaitMountAnchors(runCtx, b.observer, containerID); err != nil {
+		return fail("M5_PYPI_BUILD_OBSERVER_FAILED")
+	}
 	sdistPath := pythonSdistPath(source)
 	if err := b.introducer.introduce(runCtx, containerID, source, sdistPath, "sdist"); err != nil {
 		return fail("M5_PYPI_BUILD_INTRODUCTION_FAILED")
@@ -122,20 +125,20 @@ func (b *PythonSdistBuilder) Build(ctx context.Context, source domain.AcquiredAr
 		}
 		wheelPaths = append(wheelPaths, destination)
 	}
-	if err := discardCommand(runCtx, b.runner, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-m", "venv", "/tmp/haa-buildenv")...); err != nil {
+	if err := discardCommand(runCtx, b.runner, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-B", "-m", "venv", "/tmp/haa-buildenv")...); err != nil {
 		return fail("M5_PYPI_BUILD_ENVIRONMENT_FAILED")
 	}
-	installArgs := append(boundaryExecArguments(containerID, boundaryLaunchMode, "/tmp/haa-buildenv/bin/python", "-I", "-m", "pip", "install", "--no-index", "--no-deps", "--no-compile", "--disable-pip-version-check"), wheelPaths...)
+	installArgs := append(boundaryExecArguments(containerID, boundaryLaunchMode, "/tmp/haa-buildenv/bin/python", "-I", "-B", "-m", "pip", "install", "--no-index", "--no-deps", "--no-compile", "--disable-pip-version-check", "--no-cache-dir"), wheelPaths...)
 	if err := discardCommand(runCtx, b.runner, "docker", installArgs...); err != nil {
 		return fail("M5_PYPI_BUILD_REQUIREMENTS_FAILED")
 	}
-	if err := discardCommand(runCtx, b.runner, "docker", boundaryExecArguments(containerID, boundaryPythonHandoffMode, "/tmp/haa-buildenv/bin/python", "-I", "-m", "pip", "wheel", "--no-index", "--no-deps", "--no-build-isolation", "--wheel-dir", pythonDerivedPath, sdistPath)...); err != nil {
+	if err := discardCommand(runCtx, b.runner, "docker", boundaryExecArguments(containerID, boundaryPythonHandoffMode, "/tmp/haa-buildenv/bin/python", "-I", "-B", "-m", "pip", "wheel", "--no-index", "--no-deps", "--no-build-isolation", "--no-cache-dir", "--wheel-dir", pythonDerivedPath, sdistPath)...); err != nil {
 		if errors.Is(runCtx.Err(), context.DeadlineExceeded) {
 			return fail("M5_PYPI_BUILD_TIMEOUT")
 		}
 		return fail("M5_PYPI_BUILD_FAILED")
 	}
-	filenameBytes, err := b.runner.Output(runCtx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", pythonSingleWheelNameScript, pythonDerivedPath)...)
+	filenameBytes, err := b.runner.Output(runCtx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-B", "-c", pythonSingleWheelNameScript, pythonDerivedPath)...)
 	filename := strings.TrimSpace(string(filenameBytes))
 	if err != nil || len(filename) > 256 {
 		return fail("M5_PYPI_BUILD_OUTPUT_AMBIGUOUS")
@@ -201,7 +204,7 @@ func (i *PythonArtifactIntroducer) introduce(ctx context.Context, containerID st
 	if !ok {
 		return errors.New("sandbox artifact stream runner is not configured")
 	}
-	if err := input.RunInput(ctx, file, "docker", boundaryInputExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", pythonCopyArtifactScript, destination)...); err != nil {
+	if err := input.RunInput(ctx, file, "docker", boundaryInputExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-B", "-c", pythonCopyArtifactScript, destination)...); err != nil {
 		return fmt.Errorf("introduce verified Python artifact: %w", err)
 	}
 	return nil
@@ -283,7 +286,7 @@ func (b *PythonSdistBuilder) streamDerivedWheel(ctx context.Context, containerID
 	temporaryPath := temporary.Name()
 	defer os.Remove(temporaryPath)
 	writer := &limitedFileWriter{writer: temporary, limit: derivedWheelLimit, hasher: sha256.New()}
-	err = output.RunOutput(ctx, writer, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", pythonStreamFileScript, pythonDerivedPath+"/"+filename)...)
+	err = output.RunOutput(ctx, writer, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-B", "-c", pythonStreamFileScript, pythonDerivedPath+"/"+filename)...)
 	syncErr := temporary.Sync()
 	closeErr := temporary.Close()
 	if err != nil || writer.exceeded || syncErr != nil || closeErr != nil {

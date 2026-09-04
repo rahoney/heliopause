@@ -33,7 +33,7 @@ func TestPythonDynamicBackendRunsOnlyLocalWheelAndDeclaredImports(t *testing.T) 
 	if len(runner.calls) != 6 {
 		t.Fatalf("commands = %#v", runner.calls)
 	}
-	if len(runner.timeline) < 4 || !sameStrings(runner.timeline[2].arguments, boundaryReadinessArguments("0123456789abcdef")) || runner.timeline[3].binary != "docker" || !strings.Contains(strings.Join(runner.timeline[3].arguments, " "), "python -I -c") {
+	if len(runner.timeline) < 4 || !sameStrings(runner.timeline[2].arguments, boundaryReadinessArguments("0123456789abcdef")) || runner.timeline[3].binary != "docker" || !strings.Contains(strings.Join(runner.timeline[3].arguments, " "), "python -I -B -c") {
 		t.Fatalf("helper was not ready before artifact introduction: %#v", runner.timeline)
 	}
 	assertPythonDynamicCreate(t, runner.calls[0].arguments)

@@ -303,6 +303,33 @@ E2E qualification evidence가 반드시 존재해야 한다.
 - observer incomplete는 ALLOW가 아님
 - Core/Policy/Evidence architecture 변경 없음
 
+### M12-001 authoritative filesystem-attribution reconciliation
+
+Python wheel 및 sdist/build qualification은 M11의 authoritative filesystem
+attribution extension을 소비한다. 이 절은 PyTorch source-profile architecture를
+바꾸거나 M3/M8/M11의 historical completion evidence를 다시 쓰지 않는다.
+
+- relative `AT_FDCWD`와 real-dirfd open은 final successful object의 sealed mount
+  identity와 reachable resolved path가 모두 검증될 때만 workspace 또는 pinned
+  runtime/runtime-support로 분류된다. basename, Python role, lifecycle phase 또는
+  Artifact-controlled filesystem activity는 trust anchor가 아니다.
+- wheel과 sdist/build는 concurrent same-TG Task open, failed relative open,
+  missing/dropped/duplicate RESULT, symlink/nested symlink, `..`, rename, hardlink,
+  deleted/unreachable object, wrong Task generation, wrong/unknown mount ID,
+  path/mount disagreement, writable OCI root, unexpected nested mount,
+  missing/duplicate/truncated topology snapshot 및 post-ready topology mutation을
+  fail-closed regression으로 qualification한다.
+- actual pinned-gVisor runtime에서 wheel과 sdist/build가 completion해야 하며,
+  unpatched/wrong-patch/capability-missing runtime은 successful qualification이
+  아니라 incomplete다. CU126은 이 reconciliation qualification에서 실행하지
+  않는다.
+- Python command는 `-B`를 유지한다. 이는 immutable image-root `.pyc`
+  create/write attempt를 제거하는 deterministic noise-reduction configuration이며
+  filesystem attribution의 security substitute가 아니다.
+- pip command는 `--no-cache-dir`를 유지한다. 이는 disposable offline inspection의
+  불필요한 persistent cache activity를 줄이는 deterministic configuration이며
+  filesystem trust predicate가 아니다.
+
 Execution status: see [Step 13 — Current Work Queue](./02-current-work-queue.md)
 
 ---

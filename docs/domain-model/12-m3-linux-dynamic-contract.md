@@ -40,6 +40,37 @@ M3의 canonical observation transport는 gVisor seccheck `remote` sink뿐이다.
 
 공식 근거: [gVisor seccheck](https://github.com/google/gvisor/blob/release-20260810.0/pkg/sentry/seccheck/README.md), [remote sink protocol](https://github.com/google/gvisor/blob/release-20260810.0/pkg/sentry/seccheck/sinks/remote/README.md).
 
+### M12-001 authoritative filesystem transport extension
+
+M12-001은 M3의 profile별 filesystem policy를 바꾸지 않는다. 다만 relative
+`openat`을 pathname text, `cwd`, `fd_path` 또는 descriptor 재구성으로 추측하지
+않기 위해, dynamic runtime capability에 다음 patched-gVisor observation contract를
+추가한다.
+
+- supported runtime identity는 exact upstream gVisor commit뿐 아니라 그 commit에
+  적용된 exact HAA-owned observation patch identity/digest를 함께 lock해야 한다.
+  unpatched, wrong-patch, partially patched 또는 required point/schema가 없는
+  `runsc`는 required dynamic inspection을 `INCOMPLETE`로 만든다.
+- existing `syscall/openat/enter`는 attempt telemetry로 남는다. patched runtime은
+  모든 relevant open invocation마다 정확히 한 번 `OPEN_RESULT`를 방출한다.
+  failure는 errno만 가지며 nonexistent target의 filesystem class를 추측하지 않는다.
+  success는 actual VFS resolution과 FileDescription creation/FD installation 뒤,
+  held `FileDescription.VirtualDentry()`, actual Mount와 namespace-root-relative
+  reachable pathname에서 얻은 final-object identity를 가진다.
+- patched runtime은 Artifact execution 전에 정확히 한 번의 bounded atomic
+  `MOUNT_TOPOLOGY_SNAPSHOT`을 방출한다. snapshot은 mount namespace ID, mount ID,
+  parent mount ID, namespace-root-relative mountpoint, filesystem type, read-only
+  state 및 필요한 `noexec`/`nosuid`/`nodev` flags를 포함한다. mount count는 64,
+  mountpoint는 512 bytes, filesystem type은 32 bytes, encoded snapshot은 64 KiB를
+  넘지 않는다. existing project-wide bound가 더 엄격하면 그것을 사용한다.
+- snapshot은 explicit complete marker, exactly one root와 valid acyclic parent
+  graph를 가져야 한다. duplicate, truncated, overflowed 또는 malformed snapshot,
+  required result의 missing/malformed event, remote drop, stream fault 또는
+  post-ready topology mutation notification은 `INCOMPLETE`다.
+- remote sink framing 자체는 계속 upstream protocol을 사용한다. HAA는 separate
+  framing이나 target-container `/proc` parsing을 authoritative topology source로
+  사용하지 않는다.
+
 ## 3. Fixed limits and execution plan
 
 | Boundary | M3 value |

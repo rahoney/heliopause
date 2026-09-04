@@ -55,9 +55,28 @@ func TestBoundaryExecUsesFixedRootBootstrapBeforeDemotingTarget(t *testing.T) {
 	if strings.Contains(boundaryReadinessScript, "NoNewPrivs") {
 		t.Fatalf("readiness relies on unsupported /proc NoNewPrivs: %q", boundaryReadinessScript)
 	}
-	if !strings.Contains(boundaryHelper, "  -c) shift; demote /bin/sh -c") ||
+	if !strings.Contains(boundaryHelper, "  -c) shift; already_demoted; exec /bin/sh -c") ||
 		strings.Contains(boundaryHelper, "--origin-c") {
 		t.Fatalf("npm script-shell is not a direct in-container handoff: %q", boundaryHelper)
+	}
+	for _, required := range []string{
+		"done < /proc/self/status",
+		`Uid) [ "$#" -eq 4 ]`,
+		`Gid) [ "$#" -eq 4 ]`,
+		`Groups) [ "$#" -eq 0 ]`,
+		`CapInh) [ "$#" -eq 1 ]`,
+		`CapPrm) [ "$#" -eq 1 ]`,
+		`CapEff) [ "$#" -eq 1 ]`,
+		`CapBnd) [ "$#" -eq 1 ]`,
+		`CapAmb) [ "$#" -eq 1 ]`,
+		`1:1:1:1:1:1:1:1`,
+	} {
+		if !strings.Contains(boundaryHelper, required) {
+			t.Fatalf("already-demoted npm handoff validation missing %q: %q", required, boundaryHelper)
+		}
+	}
+	if strings.Contains(boundaryHelper, "-c) shift; demote") {
+		t.Fatalf("already-demoted npm handoff still invokes privileged demotion: %q", boundaryHelper)
 	}
 }
 

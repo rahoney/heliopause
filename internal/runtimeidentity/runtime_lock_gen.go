@@ -6,6 +6,8 @@ const (
 	GVisorRelease          = "release-20260810.0"
 	GVisorCommit           = "5ceb9a5fd5750d6c73dd166441f28306039300d0"
 	GVisorSourceRepository = "https://github.com/google/gvisor.git"
+	GVisorPatchPath        = "tools/gvisor/release-20260810.0.patch"
+	GVisorPatchSHA256      = "d98f802d74a6ee42e4090957373ec30c432b64b7106a589f94bfdd1f384f8162"
 	DockerMinimumEngine    = "29.6.0"
 	NodeImageReference     = "node:22.23.1-slim@sha256:6c74791e557ce11fc957704f6d4fe134a7bc8d6f5ca4403205b2966bd488f6b3"
 	NodeNPMVersion         = "10.9.8"

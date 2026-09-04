@@ -95,11 +95,34 @@ func probeGVisorRuntime(ctx context.Context, operatingSystem string, executor Ex
 	if err != nil || !strings.Contains(string(runscVersion), runtimeidentity.GVisorRelease) {
 		return unsupported, nil
 	}
+	runscTraceMeta, err := executor.Output(ctx, "runsc", "trace", "metadata")
+	if err != nil || VerifyPatchCapability(string(runscTraceMeta)) != nil {
+		return unsupported, nil
+	}
 	runtimeRegistration, err := executor.Output(ctx, "docker", "info", "--format", "{{json (index .Runtimes \"runsc-trace\")}}")
 	if err != nil || strings.TrimSpace(string(runtimeRegistration)) == "" || strings.Contains(string(runtimeRegistration), "<no value>") {
 		return unavailable, nil
 	}
 	return "", nil
+}
+
+// RequiredObservationPoints defines the observation point schemas required by
+// M12-001 filesystem attribution.
+var RequiredObservationPoints = []string{
+	"syscall/open_result",
+	"sentry/mount_topology_snapshot",
+	"sentry/mount_topology_mutation",
+}
+
+// VerifyPatchCapability confirms that runsc trace metadata advertises all
+// required HAA filesystem-observation capabilities.
+func VerifyPatchCapability(traceMetadata string) error {
+	for _, point := range RequiredObservationPoints {
+		if !strings.Contains(traceMetadata, "Name: "+point) && !strings.Contains(traceMetadata, point) {
+			return fmt.Errorf("missing required observation point %q", point)
+		}
+	}
+	return nil
 }
 
 func atLeastVersion(actual, minimum string) bool {

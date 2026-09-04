@@ -222,16 +222,19 @@ func (b *PythonDynamicBackend) InspectWheelWithClosure(ctx context.Context, arti
 	if err := awaitBoundaryHelper(runCtx, b.runner, containerID); err != nil {
 		return b.finishIncomplete(sessionID, containerID, trace, "M5_PYPI_DYNAMIC_SETUP_FAILED")
 	}
+	if err := awaitMountAnchors(runCtx, b.observer, containerID); err != nil {
+		return b.finishIncomplete(sessionID, containerID, trace, "M5_PYPI_DYNAMIC_OBSERVER_FAILED")
+	}
 	for _, item := range validated {
 		if err := b.introducer.introduceWheelAt(runCtx, containerID, item.artifact, item.destination); err != nil {
 			return b.finishIncomplete(sessionID, containerID, trace, "M5_PYPI_DYNAMIC_INTRODUCTION_FAILED")
 		}
 	}
-	installArguments := append(boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-m", "pip", "install", "--no-index", "--no-deps", "--no-compile", "--disable-pip-version-check", "--target", pythonSitePath), wheelPaths...)
+	installArguments := append(boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-B", "-m", "pip", "install", "--no-index", "--no-deps", "--no-compile", "--disable-pip-version-check", "--no-cache-dir", "--target", pythonSitePath), wheelPaths...)
 	if failureClass, err := runBoundedCommand(runCtx, b.runner, classifyDynamicInstallFailure, "docker", installArguments...); err != nil {
 		return b.finishIncomplete(sessionID, containerID, trace, dynamicInstallFailureCode(failureClass))
 	}
-	arguments := append(boundaryExecArguments(containerID, boundaryPythonHandoffMode, "python", "-I", "-c", pythonImportScript), imports...)
+	arguments := append(boundaryExecArguments(containerID, boundaryPythonHandoffMode, "python", "-I", "-B", "-c", pythonImportScript), imports...)
 	if failureClass, err := runBoundedCommand(runCtx, b.runner, classifyDynamicImportFailure, "docker", arguments...); err != nil {
 		return b.finishIncomplete(sessionID, containerID, trace, dynamicImportFailureCode(failureClass))
 	}

@@ -132,7 +132,7 @@ func TestLinuxGitHubReleaseELFDynamicIntegration(t *testing.T) {
 	result, err := backend.Execute(ctx, request)
 	if err != nil || result.Status() != domain.SandboxCompleted {
 		code, _ := result.LimitationCode()
-		t.Fatalf("GitHub ELF dynamic result = %q/%q, %v", result.Status(), code, err)
+		t.Fatalf("GitHub ELF dynamic result = %q/%q observer_reason=%s, %v", result.Status(), code, integrationObserverFaultReason(supervisor), err)
 	}
 }
 
@@ -253,6 +253,11 @@ func TestLinuxPyPIWheelDynamicIntegration(t *testing.T) {
 	if err := os.WriteFile(path, wheel, 0o600); err != nil {
 		t.Fatal(err)
 	}
+	// The dynamic introducer binds the in-container name to the verified intake
+	// filename record, exactly as production intake does.
+	if err := os.WriteFile(filepath.Join(filepath.Dir(path), "filename"), []byte("example-1.0-py3-none-any.whl"), 0o400); err != nil {
+		t.Fatal(err)
+	}
 	sum := sha256.Sum256(wheel)
 	static, err := artifactpypi.InspectWheel(bytes.NewReader(wheel), int64(len(wheel)), "example-1.0-py3-none-any.whl", hex.EncodeToString(sum[:]), artifactpypi.WheelTarget{Python: "cp314", ABI: "cp314", Platform: "manylinux_2_36_x86_64"}, artifactpypi.DefaultWheelLimits())
 	if err != nil {
@@ -280,7 +285,7 @@ func TestLinuxPyPIWheelDynamicIntegration(t *testing.T) {
 	defer cancel()
 	result, err := backend.InspectWheel(ctx, artifact, static.ImportNames)
 	if err != nil || result.Status() != domain.SandboxCompleted {
-		t.Fatalf("dynamic result = %#v, %v", result, err)
+		t.Fatalf("dynamic result = %#v observer_reason=%s, %v", result, integrationObserverFaultReason(supervisor), err)
 	}
 }
 
@@ -300,6 +305,11 @@ func TestLinuxPyPISdistBuildIntegration(t *testing.T) {
 		if err := os.WriteFile(path, body, 0o600); err != nil {
 			t.Fatal(err)
 		}
+	}
+	// Build requirements use the same verified wheel filename record as the
+	// production intake boundary.
+	if err := os.WriteFile(filepath.Join(root, runID, "filename"), []byte("backend-1.0-py3-none-any.whl"), 0o400); err != nil {
+		t.Fatal(err)
 	}
 	sourceSum := sha256.Sum256(sourceBytes)
 	recipe, err := artifactpypi.InspectSdist(bytes.NewReader(sourceBytes), "example-1.0.tar.gz", hex.EncodeToString(sourceSum[:]), artifactpypi.DefaultSdistLimits())
@@ -335,7 +345,7 @@ func TestLinuxPyPISdistBuildIntegration(t *testing.T) {
 	defer cancel()
 	derived, result, err := builder.Build(ctx, sourceArtifact, recipe, []domain.AcquiredArtifact{backendArtifact})
 	if err != nil || result.Status() != domain.SandboxCompleted {
-		t.Fatalf("build result = %#v, %v", result, err)
+		t.Fatalf("build result = %#v observer_reason=%s, %v", result, integrationObserverFaultReason(supervisor), err)
 	}
 	derivedBytes, err := os.ReadFile(filepath.Join(root, runID, "derived.whl"))
 	if err != nil {

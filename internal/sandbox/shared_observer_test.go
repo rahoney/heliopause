@@ -158,6 +158,31 @@ func TestDecodeHelperRecordAcceptsOnlyBoundedAttribution(t *testing.T) {
 	}
 }
 
+func TestDecodeHelperRecordValidatesNormalizedCounts(t *testing.T) {
+	count := uint64(1153)
+	valid := helperRecord{ContainerID: "0123456789abcdef", Kind: "filesystem-workspace-access", Count: &count}
+	payload, err := json.Marshal(valid)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := decodeHelperRecord(payload); err != nil {
+		t.Fatalf("valid aggregate rejected: %v", err)
+	}
+	for _, payload := range [][]byte{
+		[]byte(`{"container_id":"0123456789abcdef","kind":"filesystem-workspace-access"}`),
+		[]byte(`{"container_id":"0123456789abcdef","kind":"filesystem-workspace-access","count":0}`),
+		[]byte(`{"container_id":"0123456789abcdef","kind":"filesystem-workspace-access","count":-1}`),
+		[]byte(`{"container_id":"0123456789abcdef","kind":"filesystem-workspace-access","count":1.5}`),
+		[]byte(`{"container_id":"0123456789abcdef","kind":"filesystem-workspace-access","count":10001}`),
+		[]byte(`{"container_id":"0123456789abcdef","kind":"stream-end","count":1}`),
+		[]byte(`{"container_id":"0123456789abcdef","kind":"network-attempt","event_source":"CONNECT","family":"INET","process_relation":"CONTROL_GROUP","process_class":"OTHER","count":2}`),
+	} {
+		if _, err := decodeHelperRecord(payload); err == nil {
+			t.Fatalf("invalid count payload accepted: %s", payload)
+		}
+	}
+}
+
 func TestSharedObserverAttributionAggregationIsBoundedAndDeterministic(t *testing.T) {
 	observer := &SharedObserver{diagnostic: io.Discard}
 	counts := make(map[string]uint64)
@@ -241,6 +266,130 @@ func TestObserverProfileAllowlistRejectsUntrustedBudgetSelection(t *testing.T) {
 			t.Fatalf("untrusted profile accepted: %s", profile)
 		}
 	}
+}
+
+func TestObserverExpectedTopologyIsProfileBoundedAndArtifactFree(t *testing.T) {
+	for _, profile := range []string{"npm-lifecycle", "pypi-wheel", "github-elf"} {
+		topology, ok := observerExpectedTopology(profile)
+		if !ok || len(topology) < 3 {
+			t.Fatalf("expected topology unavailable for %q: %#v", profile, topology)
+		}
+		encoded, ok := encodeExpectedTopology(topology)
+		if !ok || !strings.Contains(encoded, "/|oci-root|/||1|0|0|0") || strings.Contains(encoded, "..") {
+			t.Fatalf("topology for %q is not a bounded trusted encoding: %q", profile, encoded)
+		}
+	}
+	if _, ok := observerExpectedTopology("artifact-provided"); ok {
+		t.Fatal("untrusted profile supplied expected topology")
+	}
+	if _, ok := encodeExpectedTopology([]observerMountExpectation{{Mountpoint: "/tmp/../work", Class: "workspace", Parent: "/", FSType: "tmpfs"}}); ok {
+		t.Fatal("non-normalized mountpoint was encoded")
+	}
+}
+
+func TestSharedObserverAwaitMountAnchors(t *testing.T) {
+	t.Run("blocks until mount anchors ready", func(t *testing.T) {
+		endpoint := observerEndpoint(t)
+		observer, err := NewSharedObserver(endpoint)
+		if err != nil {
+			t.Fatal(err)
+		}
+		const containerID = "0123456789abcdef"
+		_, err = observer.Start(context.Background(), containerID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		writer, err := net.DialUnix("unixgram", nil, &net.UnixAddr{Name: endpoint, Net: "unixgram"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer writer.Close()
+
+		// Socket ready != mount anchors ready: AwaitMountAnchors must not unblock yet
+		shortCtx, cancel := context.WithTimeout(context.Background(), 20*time.Millisecond)
+		defer cancel()
+		if err := observer.AwaitMountAnchors(shortCtx, containerID); err == nil {
+			t.Fatal("AwaitMountAnchors unblocked before mount-anchors-ready record was received")
+		}
+
+		// Now send container-start and mount-anchors-ready
+		for _, record := range []helperRecord{
+			{ContainerID: containerID, Kind: "container-start"},
+			{ContainerID: containerID, Kind: "mount-anchors-ready"},
+		} {
+			body, _ := json.Marshal(record)
+			if _, err := writer.Write(body); err != nil {
+				t.Fatal(err)
+			}
+		}
+
+		longCtx, cancelLong := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancelLong()
+		if err := observer.AwaitMountAnchors(longCtx, containerID); err != nil {
+			t.Fatalf("AwaitMountAnchors failed after mount-anchors-ready: %v", err)
+		}
+	})
+
+	t.Run("duplicate readiness rejected", func(t *testing.T) {
+		endpoint := observerEndpoint(t)
+		observer, err := NewSharedObserver(endpoint)
+		if err != nil {
+			t.Fatal(err)
+		}
+		const containerID = "0123456789abcdef"
+		_, err = observer.Start(context.Background(), containerID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		writer, err := net.DialUnix("unixgram", nil, &net.UnixAddr{Name: endpoint, Net: "unixgram"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer writer.Close()
+
+		body, _ := json.Marshal(helperRecord{ContainerID: containerID, Kind: "mount-anchors-ready"})
+		if _, err := writer.Write(body); err != nil {
+			t.Fatal(err)
+		}
+		if err := observer.AwaitMountAnchors(context.Background(), containerID); err != nil {
+			t.Fatal(err)
+		}
+
+		// Second mount-anchors-ready must fail closed as TOPOLOGY_INVALID
+		if _, err := writer.Write(body); err != nil {
+			t.Fatal(err)
+		}
+		for attempt := 0; attempt < 100; attempt++ {
+			observer.mu.Lock()
+			fault := observer.fault
+			observer.mu.Unlock()
+			if fault != nil {
+				var of observerFault
+				if errors.As(fault, &of) && of.reason == "TOPOLOGY_INVALID" {
+					return
+				}
+				t.Fatalf("unexpected fault: %v", fault)
+			}
+			time.Sleep(time.Millisecond)
+		}
+		t.Fatal("duplicate mount-anchors-ready did not fail closed")
+	})
+
+	t.Run("unknown container rejected", func(t *testing.T) {
+		endpoint := observerEndpoint(t)
+		observer, err := NewSharedObserver(endpoint)
+		if err != nil {
+			t.Fatal(err)
+		}
+		err = observer.AwaitMountAnchors(context.Background(), "fedcba9876543210")
+		if err == nil {
+			t.Fatal("AwaitMountAnchors accepted unknown container ID")
+		}
+		var of observerFault
+		if !errors.As(err, &of) || of.reason != "TOPOLOGY_NOT_READY" {
+			t.Fatalf("error = %v, want TOPOLOGY_NOT_READY", err)
+		}
+	})
 }
 
 func observerEndpoint(t *testing.T) string {

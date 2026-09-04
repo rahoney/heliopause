@@ -3,6 +3,7 @@ package sandbox
 import (
 	"context"
 	"errors"
+	"io"
 	"strings"
 	"testing"
 	"time"
@@ -43,6 +44,18 @@ func TestBackendExecutesOneShotSandboxWithConstrainedDockerCommand(t *testing.T)
 	}
 }
 
+func TestNPMLifecycleCommandIsExactOfflineNonNotifyingInvocation(t *testing.T) {
+	const want = "mkdir -p /tmp/package /tmp/.npm; cd /tmp/package; HOME=/tmp npm_config_cache=/tmp/.npm npm_config_script_shell=/haa-runtime/haa-boundary npm install --ignore-scripts=false --no-audit --no-fund --offline --no-update-notifier /tmp/artifact.tgz"
+	if npmLifecycleCommand != want {
+		t.Fatalf("npm lifecycle command = %q, want %q", npmLifecycleCommand, want)
+	}
+	for _, forbidden := range []string{"--online", "--prefer-online", "npm_config_registry=", "CI=true"} {
+		if strings.Contains(npmLifecycleCommand, forbidden) {
+			t.Fatalf("npm lifecycle command must not contain %q: %q", forbidden, npmLifecycleCommand)
+		}
+	}
+}
+
 func TestBackendDoesNotExecuteWhenCapabilityIsUnavailable(t *testing.T) {
 	runner := &recordingRunner{}
 	backend := newTestBackend(t, runner, &recordingIntroducer{}, &emptyObserver{}, func(context.Context) (Capability, error) {
@@ -60,9 +73,14 @@ func TestBackendDoesNotExecuteWhenCapabilityIsUnavailable(t *testing.T) {
 	}
 }
 
-func TestBackendCollectsTrustedObservationBeforeDisposal(t *testing.T) {
+func TestBackendTerminatesContainerBeforeCollectingFinalizedTrace(t *testing.T) {
+	cleanup := make(chan struct{})
 	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil}}
-	observer := &recordingObserver{reader: &traceReader{records: []TraceRecord{{Kind: "network-attempt", Bytes: 1}}}}
+	runner.cleanupSignal = cleanup
+	observer := &recordingObserver{reader: &cleanupGatedTraceReader{
+		cleanup: cleanup,
+		records: []TraceRecord{{Kind: "network-attempt", Bytes: 1}},
+	}}
 	backend := newTestBackend(t, runner, &recordingIntroducer{}, observer, availableProbe)
 
 	result, err := backend.Execute(context.Background(), sandboxRequest(t))
@@ -135,6 +153,57 @@ func TestBackendTimeoutIsIncompleteAndStillDisposed(t *testing.T) {
 	}
 }
 
+func TestBackendArtifactIntroductionBlockedUntilMountAnchorsReady(t *testing.T) {
+	t.Run("blocked when observer fails topology reconciliation", func(t *testing.T) {
+		runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil}}
+		introducer := &recordingIntroducer{}
+		observer := &recordingObserver{err: errors.New("topology reconciliation failed")}
+		backend := newTestBackend(t, runner, introducer, observer, availableProbe)
+
+		result, err := backend.Execute(context.Background(), sandboxRequest(t))
+		if err != nil || result.Status() != domain.SandboxIncomplete {
+			t.Fatalf("Execute() = (%q, %v), want Incomplete", result.Status(), err)
+		}
+		if introducer.calls != 0 {
+			t.Fatalf("introducer called %d times, want 0 when mount anchors not ready", introducer.calls)
+		}
+	})
+
+	t.Run("blocked when observer does not implement mountAnchorReadyObserver", func(t *testing.T) {
+		runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil}}
+		introducer := &recordingIntroducer{}
+		observer := &plainObserver{}
+		backend := newTestBackend(t, runner, introducer, observer, availableProbe)
+
+		result, err := backend.Execute(context.Background(), sandboxRequest(t))
+		if err != nil || result.Status() != domain.SandboxIncomplete {
+			t.Fatalf("Execute() = (%q, %v), want Incomplete", result.Status(), err)
+		}
+		if introducer.calls != 0 {
+			t.Fatalf("introducer called %d times, want 0 when observer lacks topology readiness", introducer.calls)
+		}
+	})
+
+	t.Run("ordered strictly before artifact introduction", func(t *testing.T) {
+		runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil}}
+		introducer := &sequencedIntroducer{}
+		var order []string
+		observer := &sequencedObserver{
+			onAwait: func() { order = append(order, "mount-anchors-ready") },
+		}
+		introducer.onIntroduce = func() { order = append(order, "artifact-introduced") }
+		backend := newTestBackend(t, runner, introducer, observer, availableProbe)
+
+		result, err := backend.Execute(context.Background(), sandboxRequest(t))
+		if err != nil || result.Status() != domain.SandboxCompleted {
+			t.Fatalf("Execute() = (%q, %v)", result.Status(), err)
+		}
+		if len(order) < 2 || order[0] != "mount-anchors-ready" || order[1] != "artifact-introduced" {
+			t.Fatalf("execution order = %#v, want [mount-anchors-ready, artifact-introduced]", order)
+		}
+	})
+}
+
 func assertConstrainedCreateCommand(t *testing.T, arguments []string) {
 	t.Helper()
 	joined := strings.Join(arguments, " ")
@@ -179,12 +248,18 @@ type recordingRunner struct {
 	boundedOutput    []byte
 	waitForContext   bool
 	waitForContextAt int
+	cleanupSignal    chan struct{}
 }
 
 func (r *recordingRunner) Output(ctx context.Context, binary string, arguments ...string) ([]byte, error) {
 	_, bounded := ctx.Deadline()
 	r.calls = append(r.calls, commandCall{binary: binary, arguments: append([]string(nil), arguments...), bounded: bounded})
 	r.timeline = append(r.timeline, commandCall{binary: binary, arguments: append([]string(nil), arguments...), bounded: bounded})
+	if r.cleanupSignal != nil && binary == "docker" && len(arguments) == 3 &&
+		arguments[0] == "rm" && arguments[1] == "--force" {
+		close(r.cleanupSignal)
+		r.cleanupSignal = nil
+	}
 	index := len(r.calls) - 1
 	if r.waitForContext && index == r.waitForContextAt {
 		<-ctx.Done()
@@ -217,6 +292,55 @@ type recordingIntroducer struct {
 type emptyObserver struct{}
 
 func (emptyObserver) Start(context.Context, string) (TraceReader, error) { return &traceReader{}, nil }
+func (emptyObserver) AwaitMountAnchors(context.Context, string) error    { return nil }
+
+type plainObserver struct{}
+
+func (plainObserver) Start(context.Context, string) (TraceReader, error) { return &traceReader{}, nil }
+
+type sequencedObserver struct {
+	onAwait func()
+}
+
+func (s *sequencedObserver) Start(context.Context, string) (TraceReader, error) {
+	return &traceReader{}, nil
+}
+func (s *sequencedObserver) AwaitMountAnchors(context.Context, string) error {
+	if s.onAwait != nil {
+		s.onAwait()
+	}
+	return nil
+}
+
+type sequencedIntroducer struct {
+	onIntroduce func()
+}
+
+func (s *sequencedIntroducer) Introduce(context.Context, string, domain.AcquiredArtifact) error {
+	if s.onIntroduce != nil {
+		s.onIntroduce()
+	}
+	return nil
+}
+
+type cleanupGatedTraceReader struct {
+	cleanup <-chan struct{}
+	records []TraceRecord
+}
+
+func (r *cleanupGatedTraceReader) Next(ctx context.Context) (TraceRecord, error) {
+	select {
+	case <-r.cleanup:
+	case <-ctx.Done():
+		return TraceRecord{}, ctx.Err()
+	}
+	if len(r.records) == 0 {
+		return TraceRecord{}, io.EOF
+	}
+	record := r.records[0]
+	r.records = r.records[1:]
+	return record, nil
+}
 
 type recordingObserver struct {
 	containerID string
@@ -241,6 +365,8 @@ func (o *recordingObserver) StartProfile(_ context.Context, containerID, profile
 	}
 	return o.reader, nil
 }
+
+func (o *recordingObserver) AwaitMountAnchors(_ context.Context, _ string) error { return o.err }
 
 func (r *recordingIntroducer) Introduce(_ context.Context, containerID string, _ domain.AcquiredArtifact) error {
 	r.calls++

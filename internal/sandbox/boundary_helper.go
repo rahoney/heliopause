@@ -18,19 +18,37 @@ const (
 	boundaryOriginPythonHandoffMode = "--origin-handoff-python"
 	boundaryOriginELFHandoffMode    = "--origin-handoff-elf"
 	// Docker exec starts only this fixed, root-owned HAA helper as root. The
-	// helper immediately uses setpriv before it execs every requested target.
+	// helper immediately uses setpriv before it execs every root-entry target.
 	// No artifact-selected executable is a Docker exec entrypoint.
 	boundaryBootstrapUser = "0:0"
 )
 
 const boundaryDemotionArguments = "--reuid=1000 --regid=1000 --clear-groups --inh-caps=-all --ambient-caps=-all --bounding-set=-all --no-new-privs --"
 
+const boundaryAlreadyDemotedValidation = `already_demoted() {
+  uid= gid= groups= cap_inh= cap_prm= cap_eff= cap_bnd= cap_amb=
+  while IFS=: read -r key value; do
+    set -- $value
+    case "$key" in
+      Uid) [ "$#" -eq 4 ] && [ "$1" = 1000 ] && [ "$2" = 1000 ] && [ "$3" = 1000 ] && [ "$4" = 1000 ] && uid=1 ;;
+      Gid) [ "$#" -eq 4 ] && [ "$1" = 1000 ] && [ "$2" = 1000 ] && [ "$3" = 1000 ] && [ "$4" = 1000 ] && gid=1 ;;
+      Groups) [ "$#" -eq 0 ] && groups=1 ;;
+      CapInh) [ "$#" -eq 1 ] && [ "$1" = 0000000000000000 ] && cap_inh=1 ;;
+      CapPrm) [ "$#" -eq 1 ] && [ "$1" = 0000000000000000 ] && cap_prm=1 ;;
+      CapEff) [ "$#" -eq 1 ] && [ "$1" = 0000000000000000 ] && cap_eff=1 ;;
+      CapBnd) [ "$#" -eq 1 ] && [ "$1" = 0000000000000000 ] && cap_bnd=1 ;;
+      CapAmb) [ "$#" -eq 1 ] && [ "$1" = 0000000000000000 ] && cap_amb=1 ;;
+    esac
+  done < /proc/self/status
+  [ "$uid:$gid:$groups:$cap_inh:$cap_prm:$cap_eff:$cap_bnd:$cap_amb" = 1:1:1:1:1:1:1:1 ]
+}`
+
 // boundaryHelper is installed by the trusted controller into a root-owned,
 // container-private executable tmpfs. It has two deliberately asymmetric
 // operations: launch establishes the Sentry boundary for a direct exec, while
 // handoff only removes trust before artifact execution. The helper never
 // interprets artifact input.
-const boundaryHelper = "#!/bin/sh\nset -eu\ndemote() { exec " + boundarySetprivPath + " " + boundaryDemotionArguments + " \"$@\"; }\ncase \"${1-}\" in\n  --origin-launch) shift; exec " + boundaryHelperPath + " --launch \"$@\" ;;\n  --origin-handoff-python) shift; exec " + boundaryHelperPath + " --handoff-python \"$@\" ;;\n  --origin-handoff-elf) shift; exec " + boundaryHelperPath + " --handoff-elf \"$@\" ;;\n  --launch|--handoff-python|--handoff-elf) shift; demote \"$@\" ;;\n  -c) shift; demote /bin/sh -c \"$@\" ;;\n  *) exit 125 ;;\nesac\n"
+const boundaryHelper = "#!/bin/sh\nset -eu\ndemote() { exec " + boundarySetprivPath + " " + boundaryDemotionArguments + " \"$@\"; }\n" + boundaryAlreadyDemotedValidation + "\ncase \"${1-}\" in\n  --origin-launch) shift; exec " + boundaryHelperPath + " --launch \"$@\" ;;\n  --origin-handoff-python) shift; exec " + boundaryHelperPath + " --handoff-python \"$@\" ;;\n  --origin-handoff-elf) shift; exec " + boundaryHelperPath + " --handoff-elf \"$@\" ;;\n  --launch|--handoff-python|--handoff-elf) shift; demote \"$@\" ;;\n  -c) shift; already_demoted; exec /bin/sh -c \"$@\" ;;\n  *) exit 125 ;;\nesac\n"
 
 // boundaryContainerCommand runs as the OCI init root solely long enough to
 // install the fixed controller helper into its root-owned tmpfs. The helper is

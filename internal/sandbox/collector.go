@@ -54,6 +54,9 @@ func traceBudgetForProfile(profile string) traceBudget {
 type TraceRecord struct {
 	Kind  string
 	Bytes uint64
+	// Count is omitted for an immediate helper event and therefore means one.
+	// Aggregated normalized records carry an explicit bounded count.
+	Count uint64
 }
 
 // TraceReader belongs to the trusted observer boundary, never to the Artifact.
@@ -70,11 +73,26 @@ type profiledTraceObserver interface {
 	StartProfile(context.Context, string, string) (TraceReader, error)
 }
 
+type mountAnchorReadyObserver interface {
+	AwaitMountAnchors(context.Context, string) error
+}
+
 func startTrace(ctx context.Context, observer TraceObserver, containerID, profile string) (TraceReader, error) {
 	if profiled, ok := observer.(profiledTraceObserver); ok {
 		return profiled.StartProfile(ctx, containerID, profile)
 	}
 	return observer.Start(ctx, containerID)
+}
+
+// awaitMountAnchors is a mandatory production gate. Test observers must opt
+// in explicitly so a future production observer cannot silently bypass the
+// topology-reconciliation boundary.
+func awaitMountAnchors(ctx context.Context, observer TraceObserver, containerID string) error {
+	ready, ok := observer.(mountAnchorReadyObserver)
+	if !ok {
+		return observerFault{reason: "TOPOLOGY_NOT_READY"}
+	}
+	return ready.AwaitMountAnchors(ctx, containerID)
 }
 
 // collectTrace normalizes trusted gVisor observer kinds without retaining raw
@@ -88,8 +106,6 @@ var recognizedTraceKinds = []string{
 	"process-exec",
 	"process-exec-expected",
 	"process-exec-unexpected",
-	"process-clone",
-	"filesystem-open",
 	"filesystem-workspace-access",
 	"filesystem-outside-workspace",
 	"network-attempt",
@@ -135,6 +151,7 @@ func collectTraceDiagnostic(ctx context.Context, reader TraceReader) ([]domain.S
 	var totalBytes uint64
 	kindCounts := make(map[string]uint64)
 	observations := make([]domain.SandboxObservation, 0)
+	indices := make(map[string]int)
 	for eventCount := 0; eventCount < budget.events; eventCount++ {
 		record, err := reader.Next(ctx)
 		if errors.Is(err, io.EOF) {
@@ -170,12 +187,48 @@ func collectTraceDiagnostic(ctx context.Context, reader TraceReader) ([]domain.S
 			diagnostic.KindCounts = cloneKindCounts(kindCounts)
 			return nil, "M3_DYNAMIC_OBSERVER_FAILED", diagnostic
 		}
-		kindCounts[record.Kind]++
-		observation, err := domain.NewSandboxObservation(category, subject)
+		count := record.Count
+		if count == 0 {
+			count = 1
+		}
+		if count > domain.MaximumObservationSummaryCount {
+			diagnostic.Reason, diagnostic.Events, diagnostic.Bytes = "INVALID_COUNT", uint64(eventCount), totalBytes
+			diagnostic.KindCounts = cloneKindCounts(kindCounts)
+			return nil, "M3_DYNAMIC_OBSERVER_FAILED", diagnostic
+		}
+		if domain.MaximumObservationSummaryCount-kindCounts[record.Kind] < count {
+			kindCounts[record.Kind] = domain.MaximumObservationSummaryCount
+		} else {
+			kindCounts[record.Kind] += count
+		}
+		key := string(category) + ":" + subject
+		if existing, exists := indices[key]; exists {
+			current := observations[existing].Count()
+			if domain.MaximumObservationSummaryCount-current < count {
+				count = domain.MaximumObservationSummaryCount
+			} else {
+				count += current
+			}
+			observation, err := domain.NewCountedSandboxObservation(category, subject, count)
+			if err != nil {
+				diagnostic.KindCounts = cloneKindCounts(kindCounts)
+				return nil, "M3_DYNAMIC_OBSERVER_FAILED", diagnostic
+			}
+			observations[existing] = observation
+			diagnostic.LastKind = record.Kind
+			continue
+		}
+		if len(indices) >= domain.MaximumObservationSummaryUniqueSubjects {
+			diagnostic.Reason, diagnostic.Events, diagnostic.Bytes = "UNIQUE_SUBJECT_LIMIT", uint64(eventCount), totalBytes
+			diagnostic.KindCounts = cloneKindCounts(kindCounts)
+			return nil, "M3_DYNAMIC_OBSERVATION_LIMIT", diagnostic
+		}
+		observation, err := domain.NewCountedSandboxObservation(category, subject, count)
 		if err != nil {
 			diagnostic.KindCounts = cloneKindCounts(kindCounts)
 			return nil, "M3_DYNAMIC_OBSERVER_FAILED", diagnostic
 		}
+		indices[key] = len(observations)
 		observations = append(observations, observation)
 		diagnostic.LastKind = record.Kind
 	}
@@ -190,9 +243,9 @@ func (d TraceDiagnostic) String() string {
 
 func traceObservation(kind string) (domain.ObservationCategory, string, bool) {
 	switch kind {
-	case "process-exec", "process-exec-expected", "process-exec-unexpected", "process-clone":
+	case "process-exec", "process-exec-expected", "process-exec-unexpected":
 		return domain.ObservationProcess, kind, true
-	case "filesystem-open", "filesystem-workspace-access", "filesystem-outside-workspace":
+	case "filesystem-workspace-access", "filesystem-outside-workspace":
 		return domain.ObservationFilesystem, kind, true
 	case "network-attempt":
 		return domain.ObservationNetwork, kind, true

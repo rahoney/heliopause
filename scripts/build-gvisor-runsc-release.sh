@@ -1,7 +1,8 @@
 #!/usr/bin/env sh
-# Build the release observer against the exact gVisor/Bazel identities in the
-# canonical runtime lock. This script intentionally produces one Linux amd64
-# helper and does not install or activate it on the Host.
+# Build the patched runsc container runtime against the exact gVisor/Bazel
+# and HAA patch identities in the canonical runtime lock.
+# This script produces one Linux amd64 binary, verifies its capability probe,
+# and does not install or activate it on the Host.
 set -eu
 
 if [ "$#" -ne 1 ]; then
@@ -12,7 +13,7 @@ fi
 output_path=$1
 case "$output_path" in
   /*) ;;
-  *) echo "release observer output must be absolute" >&2; exit 2 ;;
+  *) echo "runsc output must be absolute" >&2; exit 2 ;;
 esac
 
 runtime_lock=scripts/runtimes.lock.json
@@ -46,13 +47,14 @@ test -f "$gvisor_patch_path" || {
   echo "runtime lock gVisor patch file missing: $gvisor_patch_path" >&2
   exit 1
 }
-test "$(sha256sum "$gvisor_patch_path" | awk '{print $1}')" = "$gvisor_patch_sha256" || {
-  echo "runtime lock gVisor patch sha256 mismatch" >&2
+actual_patch_sha256="$(sha256sum "$gvisor_patch_path" | awk '{print $1}')"
+test "$actual_patch_sha256" = "$gvisor_patch_sha256" || {
+  echo "runtime lock gVisor patch sha256 mismatch: expected $gvisor_patch_sha256, got $actual_patch_sha256" >&2
   exit 1
 }
 patch_abs="$(cd "$(dirname "$gvisor_patch_path")" && pwd)/$(basename "$gvisor_patch_path")"
 
-work_root=$(mktemp -d "${TMPDIR:-/tmp}/helox-release-observer.XXXXXX")
+work_root=$(mktemp -d "${TMPDIR:-/tmp}/helox-release-runsc.XXXXXX")
 cleanup() { rm -rf "$work_root"; }
 trap cleanup EXIT HUP INT TERM
 
@@ -86,11 +88,29 @@ fi
 test "$(sha512sum "$work_root/bazel" | awk '{print $1}')" = "$bazel_sha512"
 chmod 0755 "$work_root/bazel"
 
-cp -R tools/gvisor-observer "$work_root/gvisor/tools/haa_gvisor_observer"
+bazel_output_args=""
+if [ -n "${BAZEL_OUTPUT_USER_ROOT:-}" ]; then
+  bazel_output_args="--output_user_root=${BAZEL_OUTPUT_USER_ROOT}"
+fi
+
 (
   cd "$work_root/gvisor"
-  "$work_root/bazel" build -c opt //tools/haa_gvisor_observer:haa_gvisor_observer
+  # shellcheck disable=SC2086
+  "$work_root/bazel" $bazel_output_args build -c opt //runsc:runsc
 )
 
+built_binary="$work_root/gvisor/bazel-bin/runsc/runsc_/runsc"
+test -f "$built_binary"
+
+# Capability probe verification:
+# Built binary MUST advertise all required observation points in trace metadata.
+meta_output="$("$built_binary" trace metadata)"
+for point in "syscall/open_result" "sentry/mount_topology_snapshot" "sentry/mount_topology_mutation"; do
+  case "$meta_output" in
+    *"$point"*) ;;
+    *) echo "built runsc binary missing required capability point: $point" >&2; exit 1 ;;
+  esac
+done
+
 test ! -e "$output_path"
-install -m 0755 "$work_root/gvisor/bazel-bin/tools/haa_gvisor_observer/haa_gvisor_observer" "$output_path"
+install -m 0755 "$built_binary" "$output_path"

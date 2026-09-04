@@ -63,33 +63,27 @@ func TestCollectTraceDiagnosticPerKindCountsAndPreservation(t *testing.T) {
 		records: []TraceRecord{
 			{Kind: "process-exec", Bytes: 10},
 			{Kind: "process-exec", Bytes: 10},
-			{Kind: "filesystem-open", Bytes: 20},
-			{Kind: "filesystem-open", Bytes: 20},
-			{Kind: "filesystem-open", Bytes: 20},
 			{Kind: "network-attempt", Bytes: 15},
-			{Kind: "process-clone", Bytes: 12},
-			{Kind: "filesystem-workspace-access", Bytes: 18},
+			{Kind: "filesystem-workspace-access", Bytes: 18, Count: 1153},
 		},
 	}
 	observations, limitation, diagnostic := collectTraceDiagnostic(context.Background(), reader)
-	if limitation != "" || len(observations) != 8 {
+	if limitation != "" || len(observations) != 3 {
 		t.Fatalf("collectTraceDiagnostic() = (%d observations, %q)", len(observations), limitation)
 	}
 	if !diagnostic.SessionComplete || diagnostic.Reason != "" {
 		t.Fatalf("diagnostic session = complete:%t reason:%q", diagnostic.SessionComplete, diagnostic.Reason)
 	}
-	if diagnostic.Events != 8 || diagnostic.Bytes != 125 {
-		t.Fatalf("diagnostic events=%d bytes=%d, want 8 and 125", diagnostic.Events, diagnostic.Bytes)
+	if diagnostic.Events != 4 || diagnostic.Bytes != 53 {
+		t.Fatalf("diagnostic events=%d bytes=%d, want 4 and 53", diagnostic.Events, diagnostic.Bytes)
 	}
 	if diagnostic.LastKind != "filesystem-workspace-access" {
 		t.Fatalf("last kind = %q, want %q", diagnostic.LastKind, "filesystem-workspace-access")
 	}
 	expectedCounts := map[string]uint64{
 		"process-exec":                2,
-		"filesystem-open":             3,
 		"network-attempt":             1,
-		"process-clone":               1,
-		"filesystem-workspace-access": 1,
+		"filesystem-workspace-access": 1153,
 	}
 	for kind, want := range expectedCounts {
 		if got := diagnostic.KindCounts[kind]; got != want {
@@ -99,7 +93,10 @@ func TestCollectTraceDiagnosticPerKindCountsAndPreservation(t *testing.T) {
 	if diagnostic.KindCounts["honeytoken-access"] != 0 {
 		t.Fatalf("honeytoken-access count = %d, want 0", diagnostic.KindCounts["honeytoken-access"])
 	}
-	const wantString = "reason= events=8 bytes=125 session_complete=true last_kind=filesystem-workspace-access kinds=process-exec:2,process-clone:1,filesystem-open:3,filesystem-workspace-access:1,network-attempt:1"
+	if observations[2].Count() != 1153 {
+		t.Fatalf("workspace count = %d, want 1153", observations[2].Count())
+	}
+	const wantString = "reason= events=4 bytes=53 session_complete=true last_kind=filesystem-workspace-access kinds=process-exec:2,filesystem-workspace-access:1153,network-attempt:1"
 	if got := diagnostic.String(); got != wantString {
 		t.Fatalf("diagnostic.String() = %q, want %q", got, wantString)
 	}
@@ -115,10 +112,9 @@ func TestCollectTraceDiagnosticPreservesCountsOnHelperFault(t *testing.T) {
 		budget: &traceBudget{events: 10, bytes: 1024},
 		records: []TraceRecord{
 			{Kind: "process-exec-expected", Bytes: 10},
-			{Kind: "filesystem-open", Bytes: 20},
-			{Kind: "filesystem-open", Bytes: 20},
+			{Kind: "filesystem-workspace-access", Bytes: 20, Count: 2},
 		},
-		errAfter: 3,
+		errAfter: 2,
 		err:      testFault("EVENT_LIMIT"),
 	}
 	observations, limitation, diagnostic := collectTraceDiagnostic(context.Background(), reader)
@@ -128,16 +124,16 @@ func TestCollectTraceDiagnosticPreservesCountsOnHelperFault(t *testing.T) {
 	if diagnostic.Reason != "EVENT_LIMIT" {
 		t.Fatalf("diagnostic.Reason = %q, want %q", diagnostic.Reason, "EVENT_LIMIT")
 	}
-	if diagnostic.Events != 3 || diagnostic.Bytes != 50 {
-		t.Fatalf("diagnostic events=%d bytes=%d, want 3 and 50", diagnostic.Events, diagnostic.Bytes)
+	if diagnostic.Events != 2 || diagnostic.Bytes != 30 {
+		t.Fatalf("diagnostic events=%d bytes=%d, want 2 and 30", diagnostic.Events, diagnostic.Bytes)
 	}
-	if diagnostic.LastKind != "filesystem-open" {
-		t.Fatalf("diagnostic.LastKind = %q, want %q", diagnostic.LastKind, "filesystem-open")
+	if diagnostic.LastKind != "filesystem-workspace-access" {
+		t.Fatalf("diagnostic.LastKind = %q, want %q", diagnostic.LastKind, "filesystem-workspace-access")
 	}
-	if diagnostic.KindCounts["process-exec-expected"] != 1 || diagnostic.KindCounts["filesystem-open"] != 2 {
+	if diagnostic.KindCounts["process-exec-expected"] != 1 || diagnostic.KindCounts["filesystem-workspace-access"] != 2 {
 		t.Fatalf("diagnostic.KindCounts = %#v", diagnostic.KindCounts)
 	}
-	const wantString = "reason=EVENT_LIMIT events=3 bytes=50 session_complete=false last_kind=filesystem-open kinds=process-exec-expected:1,filesystem-open:2"
+	const wantString = "reason=EVENT_LIMIT events=2 bytes=30 session_complete=false last_kind=filesystem-workspace-access kinds=process-exec-expected:1,filesystem-workspace-access:2"
 	if got := diagnostic.String(); got != wantString {
 		t.Fatalf("diagnostic.String() = %q, want %q", got, wantString)
 	}
@@ -148,7 +144,6 @@ func TestCollectTraceDiagnosticOnlyCountsValidatedKindsAndFailsClosed(t *testing
 		budget: &traceBudget{events: 10, bytes: 1024},
 		records: []TraceRecord{
 			{Kind: "process-exec", Bytes: 10},
-			{Kind: "filesystem-open", Bytes: 20},
 			{Kind: "raw-path:/root/.ssh/id_rsa", Bytes: 30},
 		},
 	}
@@ -159,10 +154,10 @@ func TestCollectTraceDiagnosticOnlyCountsValidatedKindsAndFailsClosed(t *testing
 	if diagnostic.Reason != "UNKNOWN_EVENT_KIND" {
 		t.Fatalf("diagnostic.Reason = %q, want %q", diagnostic.Reason, "UNKNOWN_EVENT_KIND")
 	}
-	if diagnostic.Events != 2 {
-		t.Fatalf("diagnostic.Events = %d, want 2", diagnostic.Events)
+	if diagnostic.Events != 1 {
+		t.Fatalf("diagnostic.Events = %d, want 1", diagnostic.Events)
 	}
-	if diagnostic.KindCounts["process-exec"] != 1 || diagnostic.KindCounts["filesystem-open"] != 1 {
+	if diagnostic.KindCounts["process-exec"] != 1 {
 		t.Fatalf("diagnostic.KindCounts = %#v", diagnostic.KindCounts)
 	}
 	if _, exists := diagnostic.KindCounts["raw-path:/root/.ssh/id_rsa"]; exists {
@@ -181,7 +176,7 @@ func TestCollectTraceDiagnosticByteLimitPreservesCountsAndBehavior(t *testing.T)
 		budget: &traceBudget{events: 10, bytes: 50},
 		records: []TraceRecord{
 			{Kind: "process-exec", Bytes: 20},
-			{Kind: "filesystem-open", Bytes: 20},
+			{Kind: "filesystem-workspace-access", Bytes: 20},
 			{Kind: "network-attempt", Bytes: 20},
 		},
 	}
@@ -195,7 +190,7 @@ func TestCollectTraceDiagnosticByteLimitPreservesCountsAndBehavior(t *testing.T)
 	if diagnostic.Events != 2 || diagnostic.Bytes != 40 {
 		t.Fatalf("diagnostic events=%d bytes=%d, want 2 and 40", diagnostic.Events, diagnostic.Bytes)
 	}
-	if diagnostic.KindCounts["process-exec"] != 1 || diagnostic.KindCounts["filesystem-open"] != 1 {
+	if diagnostic.KindCounts["process-exec"] != 1 || diagnostic.KindCounts["filesystem-workspace-access"] != 1 {
 		t.Fatalf("diagnostic.KindCounts = %#v", diagnostic.KindCounts)
 	}
 	if diagnostic.KindCounts["network-attempt"] != 0 {
@@ -220,14 +215,39 @@ func TestCollectTraceDiagnosticDeterministicFormatting(t *testing.T) {
 		LastKind:        "process-exec",
 		KindCounts: map[string]uint64{
 			"honeytoken-access":           1,
-			"filesystem-open":             2,
 			"process-exec":                1,
 			"filesystem-workspace-access": 1,
 		},
 	}
-	const wantPopulated = "reason= events=5 bytes=100 session_complete=true last_kind=process-exec kinds=process-exec:1,filesystem-open:2,filesystem-workspace-access:1,honeytoken-access:1"
+	const wantPopulated = "reason= events=5 bytes=100 session_complete=true last_kind=process-exec kinds=process-exec:1,filesystem-workspace-access:1,honeytoken-access:1"
 	if got := populatedDiagnostic.String(); got != wantPopulated {
 		t.Fatalf("populated diagnostic = %q, want %q", got, wantPopulated)
+	}
+}
+
+func TestCollectTraceRetainsUniqueSubjectsWithSaturatingCounts(t *testing.T) {
+	observations, limitation := collectTrace(context.Background(), &traceReader{records: []TraceRecord{
+		{Kind: "filesystem-workspace-access", Bytes: 10, Count: 6000},
+		{Kind: "filesystem-workspace-access", Bytes: 10, Count: 6000},
+		{Kind: "network-attempt", Bytes: 10},
+	}})
+	if limitation != "" || len(observations) != 2 {
+		t.Fatalf("collectTrace() = (%#v, %q)", observations, limitation)
+	}
+	if observations[0].Subject() != "filesystem-workspace-access" || observations[0].Count() != domain.MaximumObservationSummaryCount {
+		t.Fatalf("workspace observation = %#v", observations[0])
+	}
+	if observations[1].Subject() != "network-attempt" || observations[1].Count() != 1 {
+		t.Fatalf("network observation = %#v", observations[1])
+	}
+}
+
+func TestCollectTraceFailsClosedOnInvalidAggregateCount(t *testing.T) {
+	for _, count := range []uint64{domain.MaximumObservationSummaryCount + 1, ^uint64(0)} {
+		_, limitation := collectTrace(context.Background(), &traceReader{records: []TraceRecord{{Kind: "filesystem-workspace-access", Bytes: 1, Count: count}}})
+		if limitation != "M3_DYNAMIC_OBSERVER_FAILED" {
+			t.Fatalf("count %d limitation = %q", count, limitation)
+		}
 	}
 }
 

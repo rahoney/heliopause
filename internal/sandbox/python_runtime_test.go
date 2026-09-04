@@ -42,7 +42,8 @@ func TestProbePython(t *testing.T) {
 
 	base := map[string]string{
 		"docker version --format {{.Server.Version}}": "29.6.0",
-		"runsc --version": gVisorRelease,
+		"runsc --version":      gVisorRelease,
+		"runsc trace metadata": "Name: syscall/open_result\nName: sentry/mount_topology_snapshot\nName: sentry/mount_topology_mutation\n",
 		"docker info --format {{json (index .Runtimes \"runsc-trace\")}}":    "{\"path\":\"/usr/local/bin/runsc\"}",
 		"docker image inspect " + pythonImageReference + " --format {{.Id}}": "sha256:example",
 	}
@@ -58,7 +59,7 @@ func TestProbePython(t *testing.T) {
 		{name: "non amd64", operatingSystem: "linux", architecture: "arm64", limitation: "M5_PYPI_LINUX_AMD64_ONLY"},
 		{name: "missing runtime", operatingSystem: "linux", architecture: "amd64", executor: fakeExecutor{lookupError: errors.New("missing")}, limitation: "M5_PYPI_RUNTIME_UNAVAILABLE"},
 		{name: "old Docker", operatingSystem: "linux", architecture: "amd64", executor: fakeExecutor{outputs: map[string]string{"docker version --format {{.Server.Version}}": "29.5.3"}}, limitation: "M5_PYPI_RUNTIME_VERSION_UNSUPPORTED"},
-		{name: "missing image", operatingSystem: "linux", architecture: "amd64", executor: fakeExecutor{outputs: map[string]string{"docker version --format {{.Server.Version}}": "29.6.0", "runsc --version": gVisorRelease, "docker info --format {{json (index .Runtimes \"runsc-trace\")}}": "{\"path\":\"/usr/local/bin/runsc\"}"}}, limitation: "M5_PYPI_IMAGE_UNAVAILABLE"},
+		{name: "missing image", operatingSystem: "linux", architecture: "amd64", executor: fakeExecutor{outputs: map[string]string{"docker version --format {{.Server.Version}}": "29.6.0", "runsc --version": gVisorRelease, "runsc trace metadata": "Name: syscall/open_result\nName: sentry/mount_topology_snapshot\nName: sentry/mount_topology_mutation\n", "docker info --format {{json (index .Runtimes \"runsc-trace\")}}": "{\"path\":\"/usr/local/bin/runsc\"}"}}, limitation: "M5_PYPI_IMAGE_UNAVAILABLE"},
 		{name: "available", operatingSystem: "linux", architecture: "amd64", executor: fakeExecutor{outputs: base}, available: true},
 	}
 	for _, test := range tests {

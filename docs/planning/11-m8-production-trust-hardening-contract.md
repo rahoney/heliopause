@@ -235,6 +235,43 @@ CI shell과 workflow validator에 값을 사람이 반복 입력하지 않는다
 - runtime probe는 Docker가 실제 등록한 runsc path/identity를 검증하며, PATH의
   다른 runsc version 출력만으로 daemon runtime을 신뢰하지 않는다.
 
+### M12-001 patched observation capability and mount readiness extension
+
+M12-001 filesystem attribution은 기존 M8 lifecycle ownership을 확장하지만 M8의
+historical completion evidence를 대체하지 않는다. runtime/observer lock은 upstream
+gVisor commit과 함께 exact HAA-owned filesystem-observation patch identity/digest를
+소유한다. probe는 Docker가 실제 등록한 `runsc`가 그 exact patched identity이고
+`OPEN_RESULT` 및 `MOUNT_TOPOLOGY_SNAPSHOT` schema/capability를 제공함을 확인해야
+한다. 어느 하나라도 확인할 수 없으면 dynamic result는 clean이 아니라
+`INCOMPLETE`다.
+
+backend는 trusted profile selector로부터 expected logical mount topology를
+등록한다. 이 정보는 expected mountpoint/class, required filesystem type,
+read-only/security flags와 parent relation만 포함하며, gVisor-internal mount ID를
+추측하지 않는다. helper는 gVisor startup topology snapshot으로부터 actual
+namespace topology를 받아 exact reconciliation을 수행한다.
+
+```text
+profile and expected topology registered
+→ observer/session registration
+→ container start and actual topology snapshot
+→ helper reconciliation and sealed anchors
+→ MOUNT_ANCHORS_READY
+→ ordinary boundary readiness
+→ Artifact introduction and Artifact-bearing execution
+```
+
+- `MOUNT_ANCHORS_READY`는 observer process readiness와 다른 session-specific
+  acknowledgement다. backend는 두 readiness가 모두 성공하기 전 Artifact를
+  introduce하거나 Artifact-bearing execution을 허용하지 않는다.
+- Artifact pathname, role, provenance, process identity, first observed mount ID
+  또는 first filesystem event는 mount anchor를 등록하거나 변경할 수 없다.
+- reconciliation 뒤 anchor table은 session 동안 sealed다. mount, bind mount,
+  remount, unmount, move mount, pivot/root namespace replacement, unexpected nested
+  mount 또는 다른 topology mutation은 table을 갱신하지 않고 `INCOMPLETE`다.
+- capability drop, 특히 Artifact의 `CAP_SYS_ADMIN` 부재는 defense-in-depth이며
+  topology completeness의 대체 증거가 아니다.
+
 ## 6. M8 work breakdown
 
 | Order | ID | Scope |

@@ -41,13 +41,17 @@ upstream exact source test가 소유한다.
 | `sentry/clone` | `container_id`, `group_id`, `thread_group_start_time`, `parent_thread_group_id`, `is_exec_session` | created group ID/start and creator context | bounded process provenance/role only |
 | `sentry/execve` | `container_id`, `group_id`, `process_name` | exec identity after `LoadTaskImage` succeeds | authoritative image-load boundary; bounded context validation only |
 | `syscall/execve` and `syscall/execveat` enter/exit | `container_id`, `group_id`, `process_name` | pathname, argv, bounded attempt/exit telemetry | telemetry only; EXIT is not final success evidence |
-| `syscall/openat/enter` | `container_id`, `group_id`, `process_name` | pathname, flags, mode, sysno | workspace/honeytoken/outside class only |
+| `syscall/openat/enter` | `container_id`, `group_id`, `thread_id`, `thread_start_time_ns`, `process_name` | pathname, flags, mode, sysno | attempt telemetry only; final filesystem class requires matching `OPEN_RESULT` |
+| patched `OPEN_RESULT` | `container_id`, `group_id`, `thread_id`, `thread_start_time_ns`, `process_name` | syscall kind, effective flags, success/failure errno, and on success final resolved namespace path plus Mount identity | helper-local final-object classification and bounded correlation only |
+| patched `MOUNT_TOPOLOGY_SNAPSHOT` | `container_id` | mount namespace ID and bounded initial mount graph | helper-local sealed mount anchors only |
 | `syscall/socket` enter/exit; close/dup/fcntl and clone/exec lifecycle | `container_id`, `group_id`, `process_name` | bounded socket FD-family lifecycle state | helper-only bounded correlation; unknown state is incomplete |
 | `syscall/connect/enter` | `container_id`, `group_id`, `process_name` | socket family | bounded communication-attempt class only |
 | raw `sendto`/`sendmsg`/`sendmmsg` enter where applicable | `container_id`, `group_id`, `process_name` | socket FD only | helper-only FD-family lookup; no payload/destination retention |
 
 `fd_path`, `cwd`, `credentials`, `env`, read/write data, raw socket address와 raw
-process identifier are intentionally excluded. `pathname`과 `argv`는 helper가
+process identifier are intentionally excluded. `thread_id`와 `thread_start_time_ns`는
+filesystem result correlation을 위한 helper-local transient key일 뿐 retained
+identifier가 아니다. `pathname`과 `argv`는 helper가
 transiently classifying할 때만 읽을 수 있으며 output envelope, Domain object,
 Evidence, policy reason, test golden, stdout/stderr에 보존·로그·전달하지 않는다.
 
@@ -139,6 +143,60 @@ container environment에서 유도하지 않는다.
   pathname class도 확정할 수 없으면 normal observation을 생략하지 않고 incomplete로
   처리한다.
 
+### M12-001 authoritative filesystem attribution extension
+
+이 extension은 M11의 Honeytoken-first, trusted-profile, raw-path helper-local 및
+unknown fail-closed semantics를 보존한다. raw pathname, basename, Python process
+identity, lifecycle phase, `cwd`, `fd_path`와 returned FD는 filesystem trust anchor가
+아니다.
+
+For every relevant open, helper-local pending identity is
+`(container/session, thread_id, thread_start_time_ns)`. Existing TG/start remains
+separately required for session and provenance validation. A Task has at most one
+pending relevant syscall. The required state machine is:
+
+```text
+OPEN ENTER → exactly one matching OPEN_RESULT → final classification
+```
+
+- a read-only relative ENTER followed by matching failure RESULT such as
+  `ENOENT` or `ENOTDIR` is bounded failed-attempt telemetry. It does not guess
+  a workspace or outside final object.
+- write-capable attempt, exact Honeytoken attempt and malformed request retain
+  existing pre-resolution semantics, but a RESULT is still required for stream
+  completeness.
+- missing, duplicate or orphan RESULT, Task-generation or TG/start mismatch,
+  syscall/flag mismatch, malformed result, dropped required event, pending-state
+  overflow or pending entry at stream end is `INCOMPLETE`.
+
+For successful OPEN_RESULT, the helper may classify only an object whose sealed
+mount identity is `(container/session, mount_namespace_id, mount_id)` and whose
+reachable resolved path agrees with the registered anchor: the path must be at or
+below that anchor's mountpoint, no more-specific registered mount may own it, and
+the result Mount must equal that anchor. A path/mount disagreement, unknown mount,
+wrong mount ID, missing anchor, unknown nested mount or topology mismatch is
+`INCOMPLETE`; path alone never overrides mount identity and mount identity alone
+never determines a path class.
+
+The helper creates anchors only by reconciling one complete, bounded,
+gVisor-authoritative startup topology snapshot with the trusted backend's expected
+profile topology. Artifact events cannot teach, register or change an anchor. After
+`MOUNT_ANCHORS_READY`, the table is immutable. Any topology mutation or namespace
+replacement is `INCOMPLETE`, not an anchor-table update.
+
+Final successful-object classification remains:
+
+```text
+Honeytoken → workspace → pinned runtime/runtime-support → outside
+```
+
+OCI-root membership is an origin prerequisite, never broad rootfs trust. Runtime
+telemetry additionally requires the registered immutable OCI-root anchor, exact
+pinned image/runtime identity, an approved narrow runtime/runtime-support path or
+class, a read-only operation and no Honeytoken match. No broad `/etc/*`, `/usr/*`,
+`/lib/*`, `/proc/*` or `/sys/*` rule is implied. This filesystem classification
+changes no role, provenance, root eligibility or trusted-control-network state.
+
 `trusted-control-network` is equally narrow: only the currently active target
 of the exact pinned/verified one-shot DirectExecRoot CONTROL launch may produce
 it after exact attribution. OCI root, boundary marker, capability-demotion
@@ -164,7 +222,8 @@ trusted attribution의 조건만 정의한다.
   overflow는 incomplete다.
 - HAA는 session별 normalized unique subject와 saturating count만 retain한다. raw
   path, argv, environment, credential, file content, network destination, Host path,
-  PID/UID/GID는 retain하지 않는다.
+  PID/UID/GID, thread/task identifier, mount ID, mount namespace ID, mountpoint,
+  parent mount ID와 topology detail은 retain하지 않는다.
 - summary에는 schema revision, session/container attribution, normalized count,
   dropped/fault/completeness 상태만 포함한다. raw trace artifact나 replay input은
   만들지 않는다.
