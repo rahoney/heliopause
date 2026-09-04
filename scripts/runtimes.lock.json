@@ -8,7 +8,7 @@
       "path": "tools/gvisor/release-20260810.0.patch",
       "sha256": "d98f802d74a6ee42e4090957373ec30c432b64b7106a589f94bfdd1f384f8162"
     },
-    "binaries": {
+    "upstream_binaries": {
       "x86_64": {
         "url": "https://storage.googleapis.com/gvisor/releases/release/20260810.0/x86_64/runsc",
         "sha512": "4463ce276e207f5a516a08ec627a768a19cf7bed0094d522b0810bee3424585caa8d344e093204012b974f5c508ab2362dcb0d7236f0c1992fccc426beeb7ffc"

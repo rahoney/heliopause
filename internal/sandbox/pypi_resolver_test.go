@@ -157,7 +157,7 @@ func assertPyPIResolverCreate(t *testing.T, arguments []string) {
 			t.Errorf("create command missing %q: %q", required, joined)
 		}
 	}
-	for _, forbidden := range []string{"--mount", "--volume", "-v ", "--env", "--privileged", "--network host", "/var/run/docker.sock"} {
+	for _, forbidden := range []string{"--mount", "--volume", "-v ", "--privileged", "--network host", "/var/run/docker.sock"} {
 		if strings.Contains(joined, forbidden) {
 			t.Errorf("create command contains forbidden %q: %q", forbidden, joined)
 		}

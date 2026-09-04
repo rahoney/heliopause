@@ -8,6 +8,8 @@ const (
 	GVisorSourceRepository = "https://github.com/google/gvisor.git"
 	GVisorPatchPath        = "tools/gvisor/release-20260810.0.patch"
 	GVisorPatchSHA256      = "d98f802d74a6ee42e4090957373ec30c432b64b7106a589f94bfdd1f384f8162"
+	BazelVersion           = "8.3.1"
+	BazelLinuxX8664SHA512  = "c876a1619c885f44f3bdc87998eca59c79581954631c9d7fab4eb53cc0409b68e4be74c08ef3fe599c51b75d56262070f0c314f9908336221e7764fdf981b7f5"
 	DockerMinimumEngine    = "29.6.0"
 	NodeImageReference     = "node:22.23.1-slim@sha256:6c74791e557ce11fc957704f6d4fe134a7bc8d6f5ca4403205b2966bd488f6b3"
 	NodeNPMVersion         = "10.9.8"
@@ -30,10 +32,14 @@ var PythonSourceProfiles = map[string]PythonSourceProfileLock{
 	"pytorch:cu128": {Name: "pytorch:cu128", SourceID: "pytorch-cu128", IndexURL: "https://download.pytorch.org/whl/cu128/", IndexHost: "download.pytorch.org", DistributionHosts: []string{"download.pytorch.org", "download-r2.pytorch.org"}, OwnedProjects: []string{"torch", "torchvision", "torchaudio"}},
 }
 
-var runscSHA512 = map[string]string{
+var upstreamRunscSHA512 = map[string]string{
 	"arm64": "26a306b4c51a54dd5c44f4c602d5326b92c1ba02757c591847d53f2cad448c0f838b1d8f7bd93cc50eb8d6ec88073c5d4b4a14b53bc572338ced49f42d618f9f",
 	"amd64": "4463ce276e207f5a516a08ec627a768a19cf7bed0094d522b0810bee3424585caa8d344e093204012b974f5c508ab2362dcb0d7236f0c1992fccc426beeb7ffc",
 }
 
-// RunscSHA512 returns the exact gVisor binary identity for Go architecture.
-func RunscSHA512(goarch string) (string, bool) { value, ok := runscSHA512[goarch]; return value, ok }
+// UpstreamRunscSHA512 returns the official unpatched upstream release digest.
+// It is not an identity for the HAA-patched runtime.
+func UpstreamRunscSHA512(goarch string) (string, bool) {
+	value, ok := upstreamRunscSHA512[goarch]
+	return value, ok
+}

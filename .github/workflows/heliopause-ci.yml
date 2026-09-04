@@ -234,8 +234,6 @@ jobs:
           docker_engine_version="$(jq -er '.docker.ci_engine_version' "$runtime_lock")"
           gvisor_repository="$(jq -er '.gvisor.source_repository' "$runtime_lock")"
           gvisor_commit="$(jq -er '.gvisor.commit' "$runtime_lock")"
-          runsc_url="$(jq -er '.gvisor.binaries.x86_64.url' "$runtime_lock")"
-          runsc_sha512="$(jq -er '.gvisor.binaries.x86_64.sha512' "$runtime_lock")"
           bazel_url="$(jq -er '.bazel.linux_x86_64_url' "$runtime_lock")"
           bazel_sha512="$(jq -er '.bazel.linux_x86_64_sha512' "$runtime_lock")"
           node_image="$(jq -er '.node_image.reference' "$runtime_lock")"
@@ -265,11 +263,12 @@ jobs:
             "docker-ce-cli=$docker_package_version" \
             "containerd.io=$containerd_package_version"
           test "$(docker version --format '{{.Server.Version}}')" = "$docker_engine_version"
-          curl --fail --location --silent --show-error --output "$RUNNER_TEMP/runsc" "$runsc_url"
-          test "$(sha512sum "$RUNNER_TEMP/runsc" | awk '{print $1}')" = "$runsc_sha512"
-          chmod 0755 "$RUNNER_TEMP/runsc"
+          scripts/build-gvisor-runsc-release.sh "$RUNNER_TEMP/runsc"
           sudo install -d -m 0755 /usr/libexec/heliopause
           sudo install -m 0755 "$RUNNER_TEMP/runsc" /usr/libexec/heliopause/runsc
+          sudo install -m 0644 "$RUNNER_TEMP/runsc.manifest.json" /usr/libexec/heliopause/runsc.manifest.json
+          manifest_runsc_sha512="$(jq -er '.runsc_binary_sha512' "$RUNNER_TEMP/runsc.manifest.json")"
+          test "$(sudo sha512sum /usr/libexec/heliopause/runsc | awk '{print $1}')" = "$manifest_runsc_sha512"
           sudo install -d -m 0700 -o "$USER" -g "$(id -gn)" /run/heliopause-observer
           sudo install -d -m 0755 /etc/heliopause
           sudo install -m 0600 tools/gvisor-observer/pod-init.json /etc/heliopause/pod-init.json

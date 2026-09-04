@@ -215,7 +215,7 @@ func assertConstrainedCreateCommand(t *testing.T, arguments []string) {
 	if strings.Contains(joined, "--user 1000:1000") {
 		t.Errorf("OCI helper initializer must run as root: %q", joined)
 	}
-	for _, forbidden := range []string{"--mount", "--volume", "-v ", "--env", "--privileged", "--pid host", "--network host", "/var/run/docker.sock"} {
+	for _, forbidden := range []string{"--mount", "--volume", "-v ", "--privileged", "--pid host", "--network host", "/var/run/docker.sock"} {
 		if strings.Contains(joined, forbidden) {
 			t.Errorf("create command contains forbidden %q: %q", forbidden, joined)
 		}

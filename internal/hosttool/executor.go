@@ -132,10 +132,11 @@ type identity struct {
 // Executor executes only registered trusted tools with a fresh minimal
 // environment. It never searches PATH or consumes Docker context variables.
 type Executor struct {
-	tools      map[string]identity
-	endpoint   string
-	endpointID os.FileInfo
-	clientHome string
+	tools         map[string]identity
+	runscManifest identity
+	endpoint      string
+	endpointID    os.FileInfo
+	clientHome    string
 }
 
 // NewSystem validates the supported Host installation and the daemon's actual
@@ -263,19 +264,30 @@ func (e *Executor) validateDaemon(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	expected, ok := runtimeidentity.RunscSHA512(runtime.GOARCH)
-	if !ok {
-		return errors.New("runsc-trace architecture is unsupported")
+	if err := validateRegisteredRunscPath(registeredPath); err != nil {
+		return errors.New("runsc-trace registration does not use the canonical HAA runtime")
 	}
-	runsc, err := verifyExecutable(registeredPath, expected)
+	manifestIdentity, manifest, err := verifyLocalRunscManifest(runtimeidentity.LocalRunscManifestPath, runtime.GOARCH, "")
+	if err != nil {
+		return fmt.Errorf("verify registered runsc-trace manifest: %w", err)
+	}
+	runsc, err := verifyExecutable(registeredPath, manifest.RunscBinarySHA512)
 	if err != nil {
 		return fmt.Errorf("verify registered runsc-trace executable: %w", err)
 	}
+	e.runscManifest = manifestIdentity
 	e.tools["runsc"] = runsc
 	output, err := e.output(ctx, "runsc", "--version")
 	if err != nil || !strings.Contains(string(output), gVisorRelease) {
 		delete(e.tools, "runsc")
 		return errors.New("registered runsc-trace release mismatch")
+	}
+	return nil
+}
+
+func validateRegisteredRunscPath(path string) error {
+	if path != runtimeidentity.LocalRunscPath {
+		return errors.New("runsc-trace registration path mismatch")
 	}
 	return nil
 }
@@ -424,10 +436,17 @@ func minimalEnvironment(clientHome string) []string {
 }
 
 func parseRunscRegistration(body []byte) (string, error) {
-	var registered struct {
-		Path string `json:"path"`
+	if len(body) == 0 || len(body) > maxBoundedCommandOutput {
+		return "", errors.New("runsc-trace registration exceeds its bound")
 	}
-	if json.Unmarshal(body, &registered) != nil || !filepath.IsAbs(registered.Path) || filepath.Clean(registered.Path) != registered.Path {
+	var registered struct {
+		Path        string          `json:"path"`
+		RuntimeArgs json.RawMessage `json:"runtimeArgs,omitempty"`
+		Status      json.RawMessage `json:"status,omitempty"`
+	}
+	decoder := json.NewDecoder(bytes.NewReader(body))
+	decoder.DisallowUnknownFields()
+	if decoder.Decode(&registered) != nil || decoder.Decode(&struct{}{}) != io.EOF || !filepath.IsAbs(registered.Path) || filepath.Clean(registered.Path) != registered.Path {
 		return "", errors.New("runsc-trace registration has no canonical absolute executable identity")
 	}
 	return registered.Path, nil
@@ -440,6 +459,12 @@ func (e *Executor) tool(name string) (identity, error) {
 	tool, ok := e.tools[name]
 	if !ok {
 		return identity{}, errors.New("host tool is not registered")
+	}
+	if name == "runsc" {
+		_, manifest, manifestErr := verifyLocalRunscManifest(runtimeidentity.LocalRunscManifestPath, runtime.GOARCH, e.runscManifest.digest)
+		if manifestErr != nil || manifest.RunscBinarySHA512 != tool.digest {
+			return identity{}, errors.New("local runsc manifest changed after validation")
+		}
 	}
 	var current identity
 	var err error
@@ -526,6 +551,45 @@ func verifyExecutable(path, expectedDigest string) (identity, error) {
 		}
 	}
 	return identity{path: clean, info: info, digest: digest}, nil
+}
+
+func verifyLocalRunscManifest(path, goarch, expectedDigest string) (identity, runtimeidentity.LocalRunscManifest, error) {
+	verified, err := verifyExecutable(path, "")
+	if err != nil {
+		return identity{}, runtimeidentity.LocalRunscManifest{}, err
+	}
+	file, err := os.Open(verified.path)
+	if err != nil {
+		return identity{}, runtimeidentity.LocalRunscManifest{}, errors.New("open local runsc manifest")
+	}
+	body, readErr := io.ReadAll(io.LimitReader(file, runtimeidentity.LocalRunscManifestSize+1))
+	closeErr := file.Close()
+	if readErr != nil || closeErr != nil || len(body) > runtimeidentity.LocalRunscManifestSize {
+		return identity{}, runtimeidentity.LocalRunscManifest{}, errors.New("read bounded local runsc manifest")
+	}
+	current, err := os.Lstat(verified.path)
+	if err != nil || !os.SameFile(verified.info, current) {
+		return identity{}, runtimeidentity.LocalRunscManifest{}, errors.New("local runsc manifest changed while reading")
+	}
+	manifestDigest, manifest, err := validateLocalRunscManifestBody(body, goarch, expectedDigest)
+	if err != nil {
+		return identity{}, runtimeidentity.LocalRunscManifest{}, err
+	}
+	verified.digest = manifestDigest
+	return verified, manifest, nil
+}
+
+func validateLocalRunscManifestBody(body []byte, goarch, expectedDigest string) (string, runtimeidentity.LocalRunscManifest, error) {
+	hash := sha512.Sum512(body)
+	digest := hex.EncodeToString(hash[:])
+	if expectedDigest != "" && digest != expectedDigest {
+		return "", runtimeidentity.LocalRunscManifest{}, errors.New("local runsc manifest digest mismatch")
+	}
+	manifest, err := runtimeidentity.ParseLocalRunscManifest(body, goarch)
+	if err != nil {
+		return "", runtimeidentity.LocalRunscManifest{}, err
+	}
+	return digest, manifest, nil
 }
 
 func verifyLocalSocket(endpoint string) (string, error) {

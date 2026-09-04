@@ -76,8 +76,12 @@ convenience factory는 Host command를 찾지 않고 fail-closed한다.
   `--host`와 fresh owner-only `--config`를 앞에 붙인다. child environment는 그
   isolated `HOME`/`DOCKER_CONFIG`와 `LANG=C`, `LC_ALL=C`만 가진다.
 - daemon version을 확인한 뒤 daemon이 `runsc-trace`에 등록한 canonical absolute
-  path를 읽는다. 그 exact executable이 runtime lock의 architecture별 SHA-512와
-  release를 모두 만족해야 하며 별도 PATH `runsc`는 사용하지 않는다.
+  path를 읽는다. M12-001 local qualification에서는 그 path가
+  `/usr/libexec/heliopause/runsc`와 정확히 같고, protected companion manifest가
+  canonical upstream commit, HAA patch SHA-256, architecture와 실제 lock된
+  Bazel version/binary SHA-512를 일치시키며, installed executable SHA-512가
+  manifest의 freshly-built output SHA-512와 같아야 한다. upstream release의
+  stock binary SHA-512는 이 patched executable의 identity가 아니다.
 - controlled Linux 설치는 runsc를 root-owned, non-writable
   `/usr/libexec/heliopause/runsc`에 설치하고 그 exact path를 Docker runtime에
   등록한다. 일반 사용자가 쓸 수 있는 `/usr/local/bin`이 writable한 Host에서는
@@ -129,6 +133,27 @@ exclusive runtime ownership
 
 target container에는 remote/output endpoint, helper process, Evidence Store나
 supervisor control channel을 mount·전달하지 않는다.
+
+### Zero real authority at Artifact introduction
+
+Artifact-controlled execution 직전에는 reusable Host/control/acquisition authority가
+없어야 한다. 이는 credential pathname blacklist가 아니라 containment invariant다.
+
+- Artifact container environment는 Host caller environment를 상속하지 않고,
+  controller가 만든 최소 non-secret allowlist만 가진다. real credential, agent,
+  proxy, Docker context, publishing 또는 future private-acquisition credential은
+  Artifact environment에 전달하지 않는다.
+- Host credential file, Docker/SSH/GPG/cloud/AI agent socket, observer/control UDS,
+  inherited Host descriptor/pipe 및 Host/internal credential authority endpoint는
+  Artifact mount, environment, descriptor 또는 network namespace로 도달할 수 없다.
+  Artifact lane의 normal network mode는 `none`이며 resolver/acquisition authority는
+  Artifact introduction 전에 끝나고 transfer되지 않는다.
+- trusted acquisition or publishing credential이 향후 필요해도 trusted control
+  phase에만 존재한다. Artifact filesystem, inherited FD/socket, lifecycle/build/install
+  descendant로 복사·전달되지 않는다.
+- known credential path corpus는 adversarial regression data일 뿐 production trust
+  predicate나 filesystem allow/deny list가 아니다. uncertainty는 existing
+  fail-closed behavior를 따른다.
 
 ## 3. Connection attribution and truthful observation capability
 
@@ -244,6 +269,15 @@ gVisor commit과 함께 exact HAA-owned filesystem-observation patch identity/di
 `OPEN_RESULT` 및 `MOUNT_TOPOLOGY_SNAPSHOT` schema/capability를 제공함을 확인해야
 한다. 어느 하나라도 확인할 수 없으면 dynamic result는 clean이 아니라
 `INCOMPLETE`다.
+
+Local M12 custody는 clean exact source와 patch로 build한 output의 SHA-512를 bounded
+strict manifest에 기록하고, binary와 manifest를 protected fixed installation으로
+함께 전달한 뒤 installed bytes를 다시 hash한다. `internal/hosttool`만 Docker
+registration, canonical path, owner/mode/parent chain, manifest, executable digest와
+replacement revalidation을 소유하고 logical `runsc`를 등록한다. Sandbox는 그 logical
+tool의 release/capability만 검사하며 registered absolute path를 직접 실행하지 않는다.
+Architecture별 HAA-published final artifact digest와 distribution manifest는 M10
+Verified Distribution의 소유이며 이 local manifest가 그것을 대신하지 않는다.
 
 backend는 trusted profile selector로부터 expected logical mount topology를
 등록한다. 이 정보는 expected mountpoint/class, required filesystem type,

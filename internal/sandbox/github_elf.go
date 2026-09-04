@@ -168,5 +168,7 @@ func (b *GitHubELFBackend) introduce(ctx context.Context, containerID string, ar
 }
 
 func githubELFCreateArguments(sessionID domain.SandboxSessionID) []string {
-	return []string{"create", "--runtime", gVisorRuntimeName, "--network", "none", "--read-only", "--cap-drop", "ALL", "--cap-add", "SETUID", "--cap-add", "SETGID", "--cap-add", "SETPCAP", "--security-opt", "no-new-privileges", "--pids-limit", "64", "--memory", "512m", "--cpus", "1", "--ulimit", "cpu=30:30", "--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=256m,uid=1000,gid=1000,mode=0700", "--tmpfs", "/work:rw,exec,nosuid,nodev,size=256m,uid=1000,gid=1000,mode=0700", "--tmpfs", boundaryHelperMount, "--name", "heliopause-github-elf-" + sessionID.String(), nodeImageReference, "/bin/sh", "-ceu", boundaryContainerCommand()}
+	arguments := []string{"create", "--runtime", gVisorRuntimeName, "--network", "none", "--read-only", "--cap-drop", "ALL", "--cap-add", "SETUID", "--cap-add", "SETGID", "--cap-add", "SETPCAP", "--security-opt", "no-new-privileges", "--pids-limit", "64", "--memory", "512m", "--cpus", "1", "--ulimit", "cpu=30:30", "--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=256m,uid=1000,gid=1000,mode=0700", "--tmpfs", "/work:rw,exec,nosuid,nodev,size=256m,uid=1000,gid=1000,mode=0700", "--tmpfs", boundaryHelperMount}
+	arguments = append(arguments, isolatedContainerEnvironmentArguments()...)
+	return append(arguments, "--name", "heliopause-github-elf-"+sessionID.String(), nodeImageReference, "/bin/sh", "-ceu", boundaryContainerCommand())
 }

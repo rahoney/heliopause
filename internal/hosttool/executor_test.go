@@ -1,6 +1,7 @@
 package hosttool
 
 import (
+	"encoding/json"
 	"errors"
 	"net"
 	"os"
@@ -10,6 +11,8 @@ import (
 	"strings"
 	"syscall"
 	"testing"
+
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func TestVerifyExecutableRejectsHostileIdentity(t *testing.T) {
@@ -44,6 +47,8 @@ func TestParseRunscRegistrationRejectsDaemonRuntimeMismatch(t *testing.T) {
 		[]byte(`{"path":"runsc"}`),
 		[]byte(`{"path":"/usr/local/bin/../bin/runsc"}`),
 		[]byte(`{"path":"/usr/local/bin/runsc"`),
+		[]byte(`{"path":"/usr/local/bin/runsc","unknown":true}`),
+		[]byte(`{"path":"/usr/local/bin/runsc"} {}`),
 	} {
 		if _, err := parseRunscRegistration(body); err == nil {
 			t.Fatalf("parseRunscRegistration(%q) accepted mismatched registration", body)
@@ -51,6 +56,70 @@ func TestParseRunscRegistrationRejectsDaemonRuntimeMismatch(t *testing.T) {
 	}
 	if got, err := parseRunscRegistration([]byte(`{"path":"/usr/local/bin/runsc"}`)); err != nil || got != "/usr/local/bin/runsc" {
 		t.Fatalf("valid registration path=%q error=%v", got, err)
+	}
+	if got, err := parseRunscRegistration([]byte(`{"path":"/usr/local/bin/runsc","runtimeArgs":[],"status":{"features":"bounded-daemon-data"}}`)); err != nil || got != "/usr/local/bin/runsc" {
+		t.Fatalf("valid Docker registration path=%q error=%v", got, err)
+	}
+}
+
+func TestRegisteredRunscPathMustBeCanonicalHAAInstallation(t *testing.T) {
+	if err := validateRegisteredRunscPath("/usr/local/bin/runsc"); err == nil {
+		t.Fatal("non-canonical Docker runtime path accepted")
+	}
+	if err := validateRegisteredRunscPath(runtimeidentity.LocalRunscPath); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestStockRunscDigestCannotIdentifyLocalPatchedRuntime(t *testing.T) {
+	stock, ok := runtimeidentity.UpstreamRunscSHA512(runtime.GOARCH)
+	if !ok {
+		t.Skip("no upstream digest for test architecture")
+	}
+	if _, err := verifyExecutable(trustedFixtureExecutable(t), stock); err == nil {
+		t.Fatal("stock upstream digest identified a different executable as the local patched runtime")
+	}
+}
+
+func TestManifestBinaryDigestMismatchRejected(t *testing.T) {
+	manifest := runtimeidentity.LocalRunscManifest{
+		SchemaVersion: runtimeidentity.LocalRunscSchema, Architecture: runtime.GOARCH,
+		GVisorCommit: runtimeidentity.GVisorCommit, GVisorPatchSHA256: runtimeidentity.GVisorPatchSHA256,
+		BazelVersion: runtimeidentity.BazelVersion, BazelBinarySHA512: runtimeidentity.BazelLinuxX8664SHA512,
+		RunscBinarySHA512: strings.Repeat("0", 128),
+	}
+	body, err := json.Marshal(manifest)
+	if err != nil {
+		t.Fatal(err)
+	}
+	parsed, err := runtimeidentity.ParseLocalRunscManifest(body, runtime.GOARCH)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := verifyExecutable(trustedFixtureExecutable(t), parsed.RunscBinarySHA512); err == nil {
+		t.Fatal("changed installed binary matched the manifest")
+	}
+}
+
+func TestChangedManifestRejectedDuringRevalidation(t *testing.T) {
+	manifest := runtimeidentity.LocalRunscManifest{
+		SchemaVersion: runtimeidentity.LocalRunscSchema, Architecture: "amd64",
+		GVisorCommit: runtimeidentity.GVisorCommit, GVisorPatchSHA256: runtimeidentity.GVisorPatchSHA256,
+		BazelVersion: runtimeidentity.BazelVersion, BazelBinarySHA512: runtimeidentity.BazelLinuxX8664SHA512,
+		RunscBinarySHA512: strings.Repeat("a", 128),
+	}
+	body, err := json.Marshal(manifest)
+	if err != nil {
+		t.Fatal(err)
+	}
+	digest, _, err := validateLocalRunscManifestBody(body, "amd64", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	changed := append([]byte(nil), body...)
+	changed[len(changed)-2] ^= 1
+	if _, _, err := validateLocalRunscManifestBody(changed, "amd64", digest); err == nil {
+		t.Fatal("changed manifest retained its validated identity")
 	}
 }
 

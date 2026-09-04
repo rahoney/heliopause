@@ -455,7 +455,9 @@ func validImportSurface(imports []string) bool {
 }
 func pythonDynamicCreateArguments(sessionID domain.SandboxSessionID, resourcePolicy artifactpypi.ResourcePolicy) []string {
 	size := strconv.FormatInt(resourcePolicy.RuntimeTmpfs(), 10)
-	return []string{"create", "--pull", "never", "--runtime", gVisorRuntimeName, "--network", "none", "--read-only", "--cap-drop", "ALL", "--cap-add", "SETUID", "--cap-add", "SETGID", "--cap-add", "SETPCAP", "--security-opt", "no-new-privileges", "--pids-limit", "64", "--memory", strconv.FormatInt(resourcePolicy.RuntimeMemory(), 10), "--cpus", "1", "--ulimit", "cpu=30:30", "--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=" + size + ",uid=1000,gid=1000,mode=0700", "--tmpfs", pythonSitePath + ":rw,exec,nosuid,nodev,size=" + size + ",uid=1000,gid=1000,mode=0700", "--tmpfs", boundaryHelperMount, "--name", "heliopause-pypi-" + sessionID.String(), pythonImageReference, "/bin/sh", "-ceu", boundaryContainerCommand()}
+	arguments := []string{"create", "--pull", "never", "--runtime", gVisorRuntimeName, "--network", "none", "--read-only", "--cap-drop", "ALL", "--cap-add", "SETUID", "--cap-add", "SETGID", "--cap-add", "SETPCAP", "--security-opt", "no-new-privileges", "--pids-limit", "64", "--memory", strconv.FormatInt(resourcePolicy.RuntimeMemory(), 10), "--cpus", "1", "--ulimit", "cpu=30:30", "--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=" + size + ",uid=1000,gid=1000,mode=0700", "--tmpfs", pythonSitePath + ":rw,exec,nosuid,nodev,size=" + size + ",uid=1000,gid=1000,mode=0700", "--tmpfs", boundaryHelperMount}
+	arguments = append(arguments, isolatedContainerEnvironmentArguments()...)
+	return append(arguments, "--name", "heliopause-pypi-"+sessionID.String(), pythonImageReference, "/bin/sh", "-ceu", boundaryContainerCommand())
 }
 
 const pythonImportScript = "import importlib,sys\nsys.path.insert(0,'/haa-site')\nfor name in sys.argv[1:]: importlib.import_module(name)\n"

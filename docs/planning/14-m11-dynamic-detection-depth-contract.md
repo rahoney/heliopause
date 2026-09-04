@@ -150,6 +150,17 @@ unknown fail-closed semantics를 보존한다. raw pathname, basename, Python pr
 identity, lifecycle phase, `cwd`, `fd_path`와 returned FD는 filesystem trust anchor가
 아니다.
 
+Patched point acknowledgement와 release output은 semantic capability 확인일 뿐
+executable identity가 아니다. Host executable identity는 M8의 fixed path,
+protected local build manifest, installed digest와 Docker registration 검증을 모두
+통과한 logical `runsc`에 의해서만 성립한다.
+
+Honey credential surface는 trusted backend가 만든 inert detection object일 뿐
+credential authority나 trust source가 아니다. Honey access는 existing Honeytoken-first
+classification을 따르며 role, provenance, root eligibility 또는 trusted-control-network를
+부여하지 않는다. `getenv()` 자체는 current filesystem telemetry가 아니므로 honey
+environment value만으로 direct access detection을 주장하지 않는다.
+
 For every relevant open, helper-local pending identity is
 `(container/session, thread_id, thread_start_time_ns)`. Existing TG/start remains
 separately required for session and provenance validation. A Task has at most one

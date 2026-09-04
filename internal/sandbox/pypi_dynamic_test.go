@@ -592,7 +592,7 @@ func assertPythonDynamicCreate(t *testing.T, arguments []string) {
 	if strings.Contains(joined, "--user 1000:1000") || !strings.Contains(joined, boundaryContainerCommand()) {
 		t.Errorf("create command does not establish root-owned boundary helper: %q", joined)
 	}
-	for _, forbidden := range []string{"--mount", "--volume", "-v ", "--env", "--privileged", "--network host", "/var/run/docker.sock"} {
+	for _, forbidden := range []string{"--mount", "--volume", "-v ", "--privileged", "--network host", "/var/run/docker.sock"} {
 		if strings.Contains(joined, forbidden) {
 			t.Errorf("create command contains forbidden %q: %q", forbidden, joined)
 		}

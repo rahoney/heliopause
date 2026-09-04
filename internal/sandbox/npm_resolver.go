@@ -163,6 +163,7 @@ func (r *NPMResolver) ResolveDependencies(ctx context.Context, reference domain.
 	}()
 
 	createArguments := []string{"create", "--runtime", gVisorRuntimeName, "--network", network, "--user", "1000:1000", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "64", "--memory", "512m", "--cpus", "1", "--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=128m,uid=1000,gid=1000,mode=0700"}
+	createArguments = append(createArguments, isolatedContainerEnvironmentArguments()...)
 	createArguments = append(createArguments, hostArguments...)
 	createArguments = append(createArguments, runtimeidentity.NodeImageReference, "/bin/sh", "-ceu", "sleep infinity")
 	created, err := r.runner.Output(ctx, "docker", createArguments...)

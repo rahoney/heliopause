@@ -34,10 +34,10 @@ type runtimeLock struct {
 			Path   string `json:"path"`
 			SHA256 string `json:"sha256"`
 		} `json:"patch"`
-		Binaries map[string]struct {
+		UpstreamBinaries map[string]struct {
 			URL    string `json:"url"`
 			SHA512 string `json:"sha512"`
-		} `json:"binaries"`
+		} `json:"upstream_binaries"`
 	} `json:"gvisor"`
 	Docker struct {
 		MinimumEngine string `json:"minimum_engine"`
@@ -142,7 +142,7 @@ func validate(lock runtimeLock) error {
 	if !strings.Contains(lock.PythonImage.Reference, "@sha256:") || !exactVersion.MatchString(lock.PythonImage.PythonVersion) || !exactVersion.MatchString(lock.PythonImage.PipVersion) || lock.PythonImage.Target.Interpreter == "" || lock.PythonImage.Target.ABI == "" || lock.PythonImage.Target.Platform == "" {
 		return errors.New("python identity is invalid")
 	}
-	if len(lock.GVisor.Binaries) != 2 {
+	if len(lock.GVisor.UpstreamBinaries) != 2 {
 		return errors.New("require exactly two gVisor architectures")
 	}
 	if len(lock.PythonSources) == 0 {
@@ -156,7 +156,7 @@ func validate(lock runtimeLock) error {
 		seenSources[source.SourceID] = true
 	}
 	for _, architecture := range []string{"x86_64", "aarch64"} {
-		binary, ok := lock.GVisor.Binaries[architecture]
+		binary, ok := lock.GVisor.UpstreamBinaries[architecture]
 		if !ok || !strings.HasPrefix(binary.URL, "https://") || !hex512.MatchString(binary.SHA512) {
 			return errors.New("gVisor binary identity is invalid")
 		}
@@ -165,8 +165,8 @@ func validate(lock runtimeLock) error {
 }
 
 func render(lock runtimeLock) []byte {
-	architectures := make([]string, 0, len(lock.GVisor.Binaries))
-	for architecture := range lock.GVisor.Binaries {
+	architectures := make([]string, 0, len(lock.GVisor.UpstreamBinaries))
+	for architecture := range lock.GVisor.UpstreamBinaries {
 		architectures = append(architectures, architecture)
 	}
 	sort.Strings(architectures)
@@ -175,6 +175,7 @@ func render(lock runtimeLock) []byte {
 	for _, item := range []struct{ name, value string }{
 		{"GVisorRelease", lock.GVisor.Release}, {"GVisorCommit", lock.GVisor.Commit}, {"GVisorSourceRepository", lock.GVisor.SourceRepository},
 		{"GVisorPatchPath", lock.GVisor.Patch.Path}, {"GVisorPatchSHA256", lock.GVisor.Patch.SHA256},
+		{"BazelVersion", lock.Bazel.Version}, {"BazelLinuxX8664SHA512", lock.Bazel.SHA512},
 		{"DockerMinimumEngine", lock.Docker.MinimumEngine}, {"NodeImageReference", lock.NodeImage.Reference}, {"NodeNPMVersion", lock.NodeImage.NPMVersion},
 		{"PythonImageReference", lock.PythonImage.Reference}, {"PythonVersion", lock.PythonImage.PythonVersion}, {"PipVersion", lock.PythonImage.PipVersion},
 		{"PythonInterpreterTag", lock.PythonImage.Target.Interpreter}, {"PythonABITag", lock.PythonImage.Target.ABI}, {"PythonPlatformTag", lock.PythonImage.Target.Platform},
@@ -185,12 +186,12 @@ func render(lock runtimeLock) []byte {
 	for _, source := range lock.PythonSources {
 		fmt.Fprintf(&output, "%q: {Name: %q, SourceID: %q, IndexURL: %q, IndexHost: %q, DistributionHosts: %#v, OwnedProjects: %#v},\n", source.Name, source.Name, source.SourceID, source.IndexURL, source.IndexHost, source.DistributionHosts, source.OwnedProjects)
 	}
-	output.WriteString("}\n\nvar runscSHA512 = map[string]string{\n")
+	output.WriteString("}\n\nvar upstreamRunscSHA512 = map[string]string{\n")
 	for _, architecture := range architectures {
 		goarch := map[string]string{"x86_64": "amd64", "aarch64": "arm64"}[architecture]
-		fmt.Fprintf(&output, "\t%q: %q,\n", goarch, lock.GVisor.Binaries[architecture].SHA512)
+		fmt.Fprintf(&output, "\t%q: %q,\n", goarch, lock.GVisor.UpstreamBinaries[architecture].SHA512)
 	}
-	output.WriteString("}\n\n// RunscSHA512 returns the exact gVisor binary identity for Go architecture.\nfunc RunscSHA512(goarch string) (string, bool) { value, ok := runscSHA512[goarch]; return value, ok }\n")
+	output.WriteString("}\n\n// UpstreamRunscSHA512 returns the official unpatched upstream release digest.\n// It is not an identity for the HAA-patched runtime.\nfunc UpstreamRunscSHA512(goarch string) (string, bool) { value, ok := upstreamRunscSHA512[goarch]; return value, ok }\n")
 	formatted, err := format.Source([]byte(output.String()))
 	if err != nil {
 		panic("internal runtime lock generator error: " + err.Error())

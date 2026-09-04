@@ -170,7 +170,7 @@ func incomplete(sessionID domain.SandboxSessionID, limitation string) (domain.Sa
 }
 
 func createArguments(sessionID domain.SandboxSessionID) []string {
-	return []string{
+	arguments := []string{
 		"create",
 		"--runtime", gVisorRuntimeName,
 		"--network", "none",
@@ -184,10 +184,10 @@ func createArguments(sessionID domain.SandboxSessionID) []string {
 		"--ulimit", "cpu=30:30",
 		"--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=256m,uid=1000,gid=1000,mode=0700",
 		"--tmpfs", boundaryHelperMount,
-		"--name", "heliopause-" + sessionID.String(),
-		nodeImageReference,
-		"/bin/sh", "-ceu", boundaryContainerCommand(),
 	}
+	arguments = append(arguments, isolatedContainerEnvironmentArguments()...)
+	arguments = append(arguments, "--name", "heliopause-"+sessionID.String(), nodeImageReference, "/bin/sh", "-ceu", boundaryContainerCommand())
+	return arguments
 }
 
 const npmLifecycleCommand = "mkdir -p /tmp/package /tmp/.npm; cd /tmp/package; HOME=/tmp npm_config_cache=/tmp/.npm npm_config_script_shell=/haa-runtime/haa-boundary npm install --ignore-scripts=false --no-audit --no-fund --offline --no-update-notifier /tmp/artifact.tgz"

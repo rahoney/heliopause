@@ -42,4 +42,17 @@ func TestLinuxTrustedHostExecutorIntegration(t *testing.T) {
 	if _, err := parseRunscRegistration(registration); err != nil {
 		t.Fatal(err)
 	}
+	runscVersion, err := executor.Output(context.Background(), "runsc", "--version")
+	if err != nil || !strings.Contains(string(runscVersion), gVisorRelease) {
+		t.Fatalf("runsc --version = %q, %v", runscVersion, err)
+	}
+	traceMeta, err := executor.Output(context.Background(), "runsc", "trace", "metadata")
+	if err != nil {
+		t.Fatalf("runsc trace metadata = %v", err)
+	}
+	for _, point := range []string{"syscall/open_result", "sentry/mount_topology_snapshot", "sentry/mount_topology_mutation"} {
+		if !strings.Contains(string(traceMeta), point) {
+			t.Fatalf("runsc trace metadata missing required point %q", point)
+		}
+	}
 }

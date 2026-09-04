@@ -1,9 +1,14 @@
 #!/usr/bin/env sh
 # Build the patched runsc container runtime against the exact gVisor/Bazel
 # and HAA patch identities in the canonical runtime lock.
-# This script produces one Linux amd64 binary, verifies its capability probe,
-# and does not install or activate it on the Host.
+# This script produces one Linux amd64 binary and its bounded local-custody
+# manifest, verifies the capability probe, and does not install or activate it.
 set -eu
+
+test "$(uname -s)" = Linux && test "$(uname -m)" = x86_64 || {
+  echo "local patched runsc build supports Linux amd64 only" >&2
+  exit 1
+}
 
 if [ "$#" -ne 1 ]; then
   echo "usage: $0 ABSOLUTE_OUTPUT_PATH" >&2
@@ -11,6 +16,7 @@ if [ "$#" -ne 1 ]; then
 fi
 
 output_path=$1
+manifest_path="${output_path}.manifest.json"
 case "$output_path" in
   /*) ;;
   *) echo "runsc output must be absolute" >&2; exit 2 ;;
@@ -24,6 +30,7 @@ gvisor_patch_path=$(jq -er '.gvisor.patch.path' "$runtime_lock")
 gvisor_patch_sha256=$(jq -er '.gvisor.patch.sha256' "$runtime_lock")
 bazel_url=$(jq -er '.bazel.linux_x86_64_url' "$runtime_lock")
 bazel_sha512=$(jq -er '.bazel.linux_x86_64_sha512' "$runtime_lock")
+bazel_version=$(jq -er '.bazel.version' "$runtime_lock")
 
 case "$gvisor_commit" in
   *[!0-9a-f]*)
@@ -87,6 +94,10 @@ else
 fi
 test "$(sha512sum "$work_root/bazel" | awk '{print $1}')" = "$bazel_sha512"
 chmod 0755 "$work_root/bazel"
+test "$("$work_root/bazel" --version)" = "bazel $bazel_version" || {
+  echo "pinned Bazel version mismatch" >&2
+  exit 1
+}
 
 bazel_output_args=""
 if [ -n "${BAZEL_OUTPUT_USER_ROOT:-}" ]; then
@@ -113,4 +124,17 @@ for point in "syscall/open_result" "sentry/mount_topology_snapshot" "sentry/moun
 done
 
 test ! -e "$output_path"
+test ! -e "$manifest_path"
 install -m 0755 "$built_binary" "$output_path"
+runsc_sha512=$(sha512sum "$output_path" | awk '{print $1}')
+umask 022
+printf '%s\n' \
+  '{' \
+  '  "schema_version": 1,' \
+  '  "architecture": "amd64",' \
+  "  \"gvisor_commit\": \"$gvisor_commit\"," \
+  "  \"gvisor_patch_sha256\": \"$gvisor_patch_sha256\"," \
+  "  \"bazel_version\": \"$bazel_version\"," \
+  "  \"bazel_binary_sha512\": \"$bazel_sha512\"," \
+  "  \"runsc_binary_sha512\": \"$runsc_sha512\"" \
+  '}' >"$manifest_path"

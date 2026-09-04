@@ -401,6 +401,7 @@ func pypiCreateArguments(network string, hostArguments []string) []string {
 		"--ulimit", "cpu=60:60",
 		"--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=128m,uid=1000,gid=1000,mode=0700",
 	}
+	arguments = append(arguments, isolatedContainerEnvironmentArguments()...)
 	arguments = append(arguments, hostArguments...)
 	// Prepare the bounded report directory on the container tmpfs before pip runs.
 	// The command is fixed infrastructure wiring; no request-controlled input is

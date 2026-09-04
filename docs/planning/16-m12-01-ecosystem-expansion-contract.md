@@ -323,12 +323,29 @@ attribution extension을 소비한다. 이 절은 PyTorch source-profile archite
   unpatched/wrong-patch/capability-missing runtime은 successful qualification이
   아니라 incomplete다. CU126은 이 reconciliation qualification에서 실행하지
   않는다.
+- local M12 runtime identity는 exact upstream commit, clean source, exact HAA patch
+  digest, runtime lock의 실제 pinned Bazel identity, controlled build output
+  SHA-512, protected companion manifest, installed-byte equality, fixed root-owned
+  path와 exact Docker registration의 custody chain이다. `internal/hosttool`이 이를
+  검증해 logical `runsc`를 등록하고 Sandbox는 release와 required patched points만
+  확인한다. Architecture별 published HAA patched-runsc artifact와 canonical final
+  digest는 M10 Verified Distribution으로 이관하며 local manifest를 release
+  identity로 승격하지 않는다.
+  현재 local build/manifest profile은 lock에 Bazel binary가 고정된 Linux amd64만
+  지원하며 다른 architecture는 fail closed다.
 - Python command는 `-B`를 유지한다. 이는 immutable image-root `.pyc`
   create/write attempt를 제거하는 deterministic noise-reduction configuration이며
   filesystem attribution의 security substitute가 아니다.
 - pip command는 `--no-cache-dir`를 유지한다. 이는 disposable offline inspection의
   불필요한 persistent cache activity를 줄이는 deterministic configuration이며
   filesystem trust predicate가 아니다.
+- supported npm, PyPI wheel/sdist and GitHub ELF Artifact lanes는 zero-real-authority
+  regression으로 qualification한다. fake Host credential sentinels must not enter
+  the explicit Artifact container environment; Host credential files/agents/control
+  sockets/FDs and Host/internal credential endpoints are not mounted, inherited or
+  reachable. This is containment evidence, not a credential pathname blacklist.
+  Representative honey files and honey environment remain optional; no honey surface
+  is required to establish the absence of real authority.
 
 Execution status: see [Step 13 — Current Work Queue](./02-current-work-queue.md)
 

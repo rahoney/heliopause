@@ -30,6 +30,30 @@ func TestLinuxGVisorLifecycleIntegration(t *testing.T) {
 	if os.Getenv("HELOX_GVISOR_INTEGRATION") != "1" {
 		t.Skip("requires pinned Linux gVisor runtime")
 	}
+	runLinuxGVisorLifecycleIntegration(t, `{"name":"tiny","version":"1.2.3"}`)
+}
+
+func TestLinuxGVisorArtifactEnvironmentIsolationIntegration(t *testing.T) {
+	if os.Getenv("HELOX_GVISOR_INTEGRATION") != "1" {
+		t.Skip("requires pinned Linux gVisor runtime")
+	}
+	for key, value := range map[string]string{
+		"GITHUB_TOKEN":          "fake-github-token",
+		"NPM_TOKEN":             "fake-npm-token",
+		"PYPI_TOKEN":            "fake-pypi-token",
+		"AWS_SECRET_ACCESS_KEY": "fake-aws-secret",
+		"OPENAI_API_KEY":        "fake-openai-key",
+		"CI_SECRET":             "fake-ci-secret",
+		"ARBITRARY_TOKEN":       "fake-arbitrary-token",
+		"SSH_AUTH_SOCK":         "/tmp/fake-ssh-agent.sock",
+	} {
+		t.Setenv(key, value)
+	}
+	runLinuxGVisorLifecycleIntegration(t, `{"name":"tiny","version":"1.2.3","scripts":{"preinstall":"test -z \"$GITHUB_TOKEN\" && test -z \"$NPM_TOKEN\" && test -z \"$PYPI_TOKEN\" && test -z \"$AWS_SECRET_ACCESS_KEY\" && test -z \"$OPENAI_API_KEY\" && test -z \"$CI_SECRET\" && test -z \"$ARBITRARY_TOKEN\" && test -z \"$SSH_AUTH_SOCK\""}}`)
+}
+
+func runLinuxGVisorLifecycleIntegration(t *testing.T, body string) {
+	t.Helper()
 	root := t.TempDir()
 	path := filepath.Join(root, "run_aaaaaaaaaaaaaaaaaaaaaaaaaa", "tarball.tgz")
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
@@ -41,7 +65,6 @@ func TestLinuxGVisorLifecycleIntegration(t *testing.T) {
 	}
 	gzipWriter := gzip.NewWriter(file)
 	writer := tar.NewWriter(gzipWriter)
-	body := `{"name":"tiny","version":"1.2.3"}`
 	if err := writer.WriteHeader(&tar.Header{Name: "package/package.json", Size: int64(len(body)), Mode: 0o600}); err != nil {
 		t.Fatal(err)
 	}

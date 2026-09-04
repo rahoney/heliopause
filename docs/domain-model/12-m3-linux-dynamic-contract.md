@@ -4,7 +4,7 @@ M3는 M2의 exact npm Artifact에 Linux 전용 dynamic lifecycle inspection을 �
 
 ## 1. Runtime identity와 지원 경계
 
-M3 production backend는 Docker Engine의 OCI runtime integration 위에서 **gVisor `runsc` release-20260810.0**을 사용한다. exact annotated upstream commit은 `5ceb9a5fd5750d6c73dd166441f28306039300d0`이다. gVisor는 일반 container가 아닌 userspace application kernel을 제공하며 Docker와 통합되는 OCI runtime이다. Docker Engine 29.6.0은 이 결정을 확인한 시점의 최신 stable line이다. M3-002에서 binary archive SHA-512와 Docker runtime registration을 lock으로 구현한다.
+M3 production backend는 Docker Engine의 OCI runtime integration 위에서 **gVisor `runsc` release-20260810.0**을 사용한다. exact annotated upstream commit은 `5ceb9a5fd5750d6c73dd166441f28306039300d0`이다. gVisor는 일반 container가 아닌 userspace application kernel을 제공하며 Docker와 통합되는 OCI runtime이다. Docker Engine 29.6.0은 이 결정을 확인한 시점의 최신 stable line이다. M3-002의 stock upstream binary archive SHA-512는 upstream reference identity이고, M12-001 local patched runtime은 exact source/patch/build-input manifest와 installed-byte SHA-512 custody 및 Docker registration으로 별도 식별한다. Distributed patched artifact의 architecture별 final digest는 M10이 소유한다.
 
 - supported host: Linux x86_64 또는 arm64, kernel `>= 4.14.77`, Docker Engine `>= 29.6.0`, installed `runsc` release-20260810.0.
 - unsupported host: macOS, Windows, Docker/runc-only host, rootless/cgroup capability 또는 gVisor trace capability가 없는 Linux host. 이 경우 required dynamic inspection은 `UNAVAILABLE / M3_DYNAMIC_CAPABILITY_UNAVAILABLE`이며 자동 `ALLOW`가 없다.
