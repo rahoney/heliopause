@@ -356,10 +356,14 @@ jobs:
           HELOX_HOSTTOOL_INTEGRATION=1 go test -v -timeout=2m ./internal/hosttool -run TestLinuxTrustedHostExecutorIntegration
           HELOX_GVISOR_INTEGRATION=1 go test -timeout=5m ./internal/sandbox -run TestLinuxGVisorLifecycleIntegration
           HELOX_GITHUB_RELEASE_INTEGRATION=1 go test -timeout=5m ./internal/sandbox -run TestLinuxGitHubReleaseELFDynamicIntegration
-          # M4/M5 intentionally return 10 for a completed inspection whose
-          # policy decision is MANUAL_REVIEW. This proves the ordinary-user
-          # typed-helper path ran without treating an unpromoted package as a
-          # successful installation.
+          # The typed-helper ordinary-user path is exercised for both npm and pip.
+          # npm evaluates is-number@7.0.0 to MANUAL_REVIEW (exit 10), proving that
+          # an unpromoted package is not treated as a successful installation.
+          # pip installs packaging@25.0 into an initialized Python 3.14 venv fixture,
+          # proving complete ALLOW inspection and atomic offline promotion (exit 0).
+          mkdir -p "$RUNNER_TEMP/pypi-target/lib/python3.14/site-packages" "$RUNNER_TEMP/pypi-target/bin"
+          printf 'version = 3.14.7\n' > "$RUNNER_TEMP/pypi-target/pyvenv.cfg"
+          chmod 0600 "$RUNNER_TEMP/pypi-target/pyvenv.cfg"
           set +e
           /usr/libexec/heliopause/helox npm install is-number@7.0.0 --target "$RUNNER_TEMP/npm-target"
           npm_status=$?
@@ -367,7 +371,8 @@ jobs:
           pypi_status=$?
           set -e
           test "$npm_status" = 10
-          test "$pypi_status" = 10
+          test "$pypi_status" = 0
+          test -d "$RUNNER_TEMP/pypi-target/lib/python3.14/site-packages/packaging"
           go test -c -o "$RUNNER_TEMP/helox-sandbox-test" ./internal/sandbox
           sudo install -m 0755 "$RUNNER_TEMP/helox-sandbox-test" /usr/libexec/heliopause/helox
           start_policy_helper
