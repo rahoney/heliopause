@@ -271,15 +271,17 @@ jobs:
             "containerd.io=$containerd_package_version" \
             binutils-aarch64-linux-gnu \
             gcc-aarch64-linux-gnu \
+            g++-aarch64-linux-gnu \
             libbpf-dev \
             libc6-dev-i386 \
             libc6-dev-arm64-cross
           test -f /usr/include/bpf/bpf_helpers.h
           test -f /usr/include/x86_64-linux-gnu/gnu/stubs-32.h
           command -v clang >/dev/null
-          for tool in gcc as ld objcopy; do
+          for tool in gcc g++ as ld objcopy; do
             command -v "aarch64-linux-gnu-$tool" >/dev/null
           done
+          test -x "$(aarch64-linux-gnu-g++ -print-prog-name=cc1plus)"
           for header in \
             asm/sigcontext.h \
             asm/unistd.h \
