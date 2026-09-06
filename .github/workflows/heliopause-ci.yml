@@ -361,9 +361,10 @@ jobs:
           # an unpromoted package is not treated as a successful installation.
           # pip installs packaging@25.0 into an initialized Python 3.14 venv fixture,
           # proving complete ALLOW inspection and atomic offline promotion (exit 0).
-          mkdir -p "$RUNNER_TEMP/pypi-target/lib/python3.14/site-packages" "$RUNNER_TEMP/pypi-target/bin"
-          printf 'version = 3.14.7\n' > "$RUNNER_TEMP/pypi-target/pyvenv.cfg"
-          chmod 0600 "$RUNNER_TEMP/pypi-target/pyvenv.cfg"
+          mkdir -p "$RUNNER_TEMP/pypi-target"
+          docker run --rm --network none --user "$(id -u):$(id -g)" \
+            -v "$RUNNER_TEMP/pypi-target:/target" \
+            "$python_image" python -m venv --without-pip /target
           set +e
           /usr/libexec/heliopause/helox npm install is-number@7.0.0 --target "$RUNNER_TEMP/npm-target"
           npm_status=$?

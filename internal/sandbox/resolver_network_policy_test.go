@@ -57,7 +57,7 @@ func TestValidateResolverEndpointsRejectsUnsafeOrAmbiguousInputs(t *testing.T) {
 
 func TestNPMResolverReturnsOnlyParsedGraphAfterTypedPolicyLifecycle(t *testing.T) {
 	lock := resolverLockJSON()
-	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), []byte("172.30.0.0/24"), []byte("0123456789ab"), nil, []byte(resolverNPMVersion), nil, []byte(lock)}}
+	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), []byte("172.30.0.0/24"), []byte("0123456789ab"), nil, nil, []byte(resolverNPMVersion), nil, []byte(lock)}}
 	observer := &recordingObserver{reader: &traceReader{records: []TraceRecord{{Kind: "network-attempt", Bytes: 1}}}}
 	service := &recordingResolverPolicyService{}
 	resolver, err := NewNPMResolverWithObserver(runner, staticEndpoints{addresses: []netip.Addr{netip.MustParseAddr("1.1.1.1")}}, observer, service)
