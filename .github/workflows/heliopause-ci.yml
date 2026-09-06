@@ -269,11 +269,36 @@ jobs:
             "docker-ce=$docker_package_version" \
             "docker-ce-cli=$docker_package_version" \
             "containerd.io=$containerd_package_version" \
+            binutils-aarch64-linux-gnu \
+            gcc-aarch64-linux-gnu \
             libbpf-dev \
-            libc6-dev-i386
+            libc6-dev-i386 \
+            libc6-dev-arm64-cross
           test -f /usr/include/bpf/bpf_helpers.h
           test -f /usr/include/x86_64-linux-gnu/gnu/stubs-32.h
           command -v clang >/dev/null
+          for tool in gcc as ld objcopy; do
+            command -v "aarch64-linux-gnu-$tool" >/dev/null
+          done
+          for header in \
+            asm/sigcontext.h \
+            asm/unistd.h \
+            errno.h \
+            linux/audit.h \
+            linux/futex.h \
+            linux/unistd.h \
+            signal.h \
+            stdint.h \
+            stdlib.h \
+            sys/prctl.h \
+            sys/types.h \
+            sys/ucontext.h \
+            sys/user.h; do
+            test -f "/usr/aarch64-linux-gnu/include/$header"
+          done
+          aarch64_gcc_include="$(aarch64-linux-gnu-gcc -print-file-name=include)"
+          test -f "$aarch64_gcc_include/stdbool.h"
+          test -f "$aarch64_gcc_include/stddef.h"
           test "$(docker version --format '{{.Server.Version}}')" = "$docker_engine_version"
           scripts/build-gvisor-runsc-release.sh "$RUNNER_TEMP/runsc"
           sudo install -d -m 0755 /usr/libexec/heliopause
