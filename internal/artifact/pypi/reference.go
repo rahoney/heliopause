@@ -70,6 +70,12 @@ func NormalizeProjectName(value string) (string, error) {
 // canonical form. It deliberately excludes local versions and specifiers.
 func NormalizeVersion(value string) (string, error) { return normalizeVersion(value) }
 
+// NormalizeInstalledVersion accepts an exact PEP 440 version from installed
+// distribution metadata or dist-info path, permitting PyTorch local build suffixes.
+func NormalizeInstalledVersion(value string) (string, error) {
+	return normalizeVersionForProfile(value, true)
+}
+
 // IsFinalVersion reports whether an already canonical public PEP 440 version
 // has no pre-release or development-release segment.
 func IsFinalVersion(value string) bool {

@@ -25,6 +25,7 @@ type ResourcePolicy struct {
 	runtimeMemory           int64
 	runtimeTmpfs            int64
 	promotionTmpfs          int64
+	runtimeCPUSecs          int
 }
 
 func defaultResourcePolicy() ResourcePolicy {
@@ -36,6 +37,7 @@ func defaultResourcePolicy() ResourcePolicy {
 		maxGraphArtifacts: 64, maxTemporaryDisk: 512 << 20,
 		qualificationDuration: 5 * time.Minute, runtimeMemory: 512 << 20,
 		runtimeTmpfs: 256 << 20, promotionTmpfs: 128 << 20,
+		runtimeCPUSecs: 30,
 	}
 }
 
@@ -46,7 +48,8 @@ func pyTorchCPUResourcePolicy() ResourcePolicy {
 		maxGraphCompressed: 512 << 20, maxGraphUncompressed: 2 << 30,
 		maxGraphArtifacts: 64, maxTemporaryDisk: 4 << 30,
 		qualificationDuration: 15 * time.Minute, runtimeMemory: 2 << 30,
-		runtimeTmpfs: 2 << 30, promotionTmpfs: 512 << 20,
+		runtimeTmpfs: 2 << 30, promotionTmpfs: 1 << 30,
+		runtimeCPUSecs: 180,
 	}
 }
 
@@ -58,6 +61,7 @@ func pyTorchCU126ResourcePolicy() ResourcePolicy {
 		maxGraphArtifacts: 64, maxTemporaryDisk: 24 << 30,
 		qualificationDuration: 40 * time.Minute, runtimeMemory: 4 << 30,
 		runtimeTmpfs: 3 << 30, promotionTmpfs: 1 << 30,
+		runtimeCPUSecs: 300,
 	}
 }
 
@@ -74,9 +78,15 @@ func (p ResourcePolicy) Duration() time.Duration      { return p.qualificationDu
 func (p ResourcePolicy) RuntimeMemory() int64         { return p.runtimeMemory }
 func (p ResourcePolicy) RuntimeTmpfs() int64          { return p.runtimeTmpfs }
 func (p ResourcePolicy) PromotionTmpfs() int64        { return p.promotionTmpfs }
+func (p ResourcePolicy) RuntimeCPUSecs() int {
+	if p.runtimeCPUSecs <= 0 {
+		return 30
+	}
+	return p.runtimeCPUSecs
+}
 
 func (p ResourcePolicy) valid() bool {
-	return p.maxArtifactCompressed > 0 && p.maxArtifactUncompressed > 0 && p.maxFilesPerArtifact > 0 && p.maxMetadataFile > 0 && p.maxGraphCompressed > 0 && p.maxGraphUncompressed > 0 && p.maxGraphArtifacts > 0 && p.maxTemporaryDisk > 0 && p.qualificationDuration > 0 && p.runtimeMemory > 0 && p.runtimeTmpfs > 0 && p.promotionTmpfs > 0
+	return p.maxArtifactCompressed > 0 && p.maxArtifactUncompressed > 0 && p.maxFilesPerArtifact > 0 && p.maxMetadataFile > 0 && p.maxGraphCompressed > 0 && p.maxGraphUncompressed > 0 && p.maxGraphArtifacts > 0 && p.maxTemporaryDisk > 0 && p.qualificationDuration > 0 && p.runtimeMemory > 0 && p.runtimeTmpfs > 0 && p.promotionTmpfs > 0 && p.runtimeCPUSecs > 0
 }
 
 type resourceSession struct {

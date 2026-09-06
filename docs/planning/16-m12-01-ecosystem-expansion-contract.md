@@ -237,6 +237,12 @@ staging과 dynamic introduction의 `source == "pypi"` 전용 허용은
 확장하지 않는다. 기존 canonical `SourceProfile`/`ProfileForSource` policy로
 지원되는 official Python source identity를 판정한다.
 
+M12-001 CPU qualification의 offline promotion tmpfs observed peak는 724.72 MiB다.
+따라서 `pytorch:cpu` promotion tmpfs maximum은 1 GiB로 제한한다. 이는 measured
+CPU closure에만 적용하는 fail-closed bound이며 default PyPI와 다른 ecosystem에는
+전파되지 않는다. `pytorch:cu126` resource profile은 이 CPU decision으로 변경·
+qualification되지 않는다.
+
 ### Resource preflight
 
 대용량 acquisition 전에 가능한 범위에서 graph declared/content-length total,

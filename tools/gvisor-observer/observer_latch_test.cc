@@ -719,6 +719,30 @@ bool VerifyFilesystemClassification() {
   python_runtime_open.set_flags(0);
   python_runtime_open.set_pathname("/tmp/.haa-honeytoken");
   if (ClassifyFilesystemOpen(python_runtime_open, python_runtime_state, kProfilePyPI) != FilesystemClass::kHoneytoken) return false;
+  for (const char* path : {
+            "/proc/cpuinfo", "/proc/mounts", "/proc/self/environ",
+            "/proc/self/maps", "/proc/self/status", "/proc/self/mounts",
+            "/proc/111/environ", "/proc/111/maps", "/proc/111/status", "/proc/111/mounts",
+            "/proc/sys/vm/overcommit_memory", "/proc/sys/kernel/random/boot_id", "/sys/devices/system/cpu/possible",
+            "/dev/null", "/dev/urandom"}) {
+    python_runtime_open.set_pathname(path);
+    if (ClassifyFilesystemOpen(python_runtime_open, python_runtime_state, kProfilePyPI) !=
+        FilesystemClass::kRuntimeRoot) return false;
+  }
+  for (const char* path : {
+           "/proc/self/fd/1", "/proc/self/fdinfo/1", "/proc/self/root/etc/passwd",
+           "/proc/self/task/111/status", "/proc/self/ns/mnt", "/proc/1/status",
+           "/proc/112/maps", "/proc/112/mounts", "/sys/devices/system/cpu/cpu0/online",
+           "/sys/devices/system/node/node0/meminfo"}) {
+    python_runtime_open.set_pathname(path);
+    if (ClassifyFilesystemOpen(python_runtime_open, python_runtime_state, kProfilePyPI) ==
+        FilesystemClass::kRuntimeRoot) return false;
+  }
+  for (const char* path : {"/tmp/libstdc++.so.6", "/haa-site/libgomp.so"}) {
+    python_runtime_open.set_pathname(path);
+    if (ClassifyFilesystemOpen(python_runtime_open, python_runtime_state, kProfilePyPI) ==
+        FilesystemClass::kRuntimeRoot) return false;
+  }
   const auto& python_after = python_runtime_state.groups.find(111)->second;
   if (python_after.role != ProcessState::Role::kArtifact ||
       python_after.provenance != python_before.provenance ||

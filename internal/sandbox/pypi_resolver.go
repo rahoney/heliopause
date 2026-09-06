@@ -187,7 +187,11 @@ func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain
 		}
 		if cleanupErr != nil {
 			resolution = domain.DependencyResolution{}
-			resultErr = cleanupErr
+			if resultErr != nil {
+				resultErr = errors.Join(resultErr, cleanupErr)
+			} else {
+				resultErr = cleanupErr
+			}
 		}
 	}()
 
@@ -203,7 +207,13 @@ func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain
 	if _, err := r.runner.Output(ctx, "docker", "start", containerID); err != nil {
 		return domain.DependencyResolution{}, errors.New("start PyPI resolver container failed")
 	}
+	if err := awaitMountAnchors(ctx, r.observer, containerID); err != nil {
+		return domain.DependencyResolution{}, errors.New("PyPI resolver observer mount anchors failed")
+	}
 	if err := verifyPyPIResolverRuntime(ctx, r.runner, containerID, capability.Runtime); err != nil {
+		return domain.DependencyResolution{}, err
+	}
+	if err := preparePyPIResolverProject(ctx, r.runner, containerID); err != nil {
 		return domain.DependencyResolution{}, err
 	}
 	request, err := pypiRequirement(reference)
@@ -234,10 +244,10 @@ func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain
 		return domain.NewDependencyResolution(graph, runtimeIdentity, digest)
 	}
 	pipArguments := pypiResolveArguments(r.profile, request)
-	if _, err := r.runner.Output(resolveCtx, "docker", append([]string{"exec", containerID, "python", "-I", "-m", "pip"}, pipArguments...)...); err != nil {
+	if _, err := r.runner.Output(resolveCtx, "docker", append(boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-m", "pip"), pipArguments...)...); err != nil {
 		return domain.DependencyResolution{}, errors.New("run locked pip resolution failed")
 	}
-	reportBytes, err := r.runner.Output(resolveCtx, "docker", "exec", containerID, "python", "-I", "-c", boundedReadScript, pypiResolverProjectDir+"/report.json", "4194304")
+	reportBytes, err := r.runner.Output(resolveCtx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", boundedReadScript, pypiResolverProjectDir+"/report.json", "4194304")...)
 	if err != nil {
 		return domain.DependencyResolution{}, errors.New("read pip installation report failed")
 	}
@@ -255,7 +265,7 @@ func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain
 			fetchArguments = []string{r.profile.IndexURL(), candidate.Project()}
 			profile = r.profile
 		}
-		body, err := r.runner.Output(resolveCtx, "docker", append([]string{"exec", containerID, "python", "-I", "-c", fetchScript}, fetchArguments...)...)
+		body, err := r.runner.Output(resolveCtx, "docker", append(boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", fetchScript), fetchArguments...)...)
 		if err != nil {
 			return domain.DependencyResolution{}, errors.New("fetch PyPI Simple metadata failed")
 		}
@@ -280,6 +290,13 @@ func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain
 	}
 	runtimeIdentity := "python:" + capability.Runtime.PythonVersion + ";pip:" + capability.Runtime.PipVersion + ";target:" + capability.Runtime.InterpreterTag + "/" + capability.Runtime.ABITag + "/" + capability.Runtime.PlatformTag + ";source:" + r.profile.Name()
 	return domain.NewDependencyResolution(graph, runtimeIdentity, digest)
+}
+
+func preparePyPIResolverProject(ctx context.Context, runner CommandRunner, containerID string) error {
+	if _, err := runner.Output(ctx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", "import os; os.makedirs('"+pypiResolverProjectDir+"', mode=0o700, exist_ok=True)")...); err != nil {
+		return errors.New("prepare PyPI resolver private workspace failed")
+	}
+	return nil
 }
 
 const defaultPyPIResolverDuration = 5 * time.Minute
@@ -343,26 +360,26 @@ func (r *PyPIResolver) resolvePyTorchGraph(ctx context.Context, containerID stri
 
 func (r *PyPIResolver) resolvePyTorchCandidate(ctx context.Context, containerID string, runtime PythonRuntime, reference domain.ArtifactReference, profile artifactpypi.SourceProfile, requirement string) (artifactpypi.Candidate, []byte, error) {
 	arguments := append([]string{"install", "--dry-run", "--report", pypiResolverProjectDir + "/report.json", "--disable-pip-version-check", "--no-input", "--no-cache-dir", "--isolated", "--no-deps", "--index-url", profile.IndexURL()}, requirement)
-	if _, err := r.runner.Output(ctx, "docker", append([]string{"exec", containerID, "python", "-I", "-m", "pip"}, arguments...)...); err != nil {
+	if _, err := r.runner.Output(ctx, "docker", append(boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-m", "pip"), arguments...)...); err != nil {
 		return artifactpypi.Candidate{}, nil, errors.New("run source-pinned pip resolution failed")
 	}
-	reportBytes, err := r.runner.Output(ctx, "docker", "exec", containerID, "python", "-I", "-c", boundedReadScript, pypiResolverProjectDir+"/report.json", "4194304")
+	reportBytes, err := r.runner.Output(ctx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", boundedReadScript, pypiResolverProjectDir+"/report.json", "4194304")...)
 	if err != nil {
 		return artifactpypi.Candidate{}, nil, errors.New("read source-pinned pip report failed")
 	}
 	report, err := artifactpypi.ParseInstallationReportForProfile(reference, reportBytes, runtime.PipVersion, runtime.PythonVersion, profile)
 	if err != nil {
-		return artifactpypi.Candidate{}, nil, fmt.Errorf("source-pinned pip report is invalid: %w", err)
+		return artifactpypi.Candidate{}, nil, fmt.Errorf("source-pinned pip report for %s is invalid: %w", requirement, err)
 	}
 	if len(report.Candidates()) != 1 {
-		return artifactpypi.Candidate{}, nil, errors.New("source-pinned pip report candidate count is invalid")
+		return artifactpypi.Candidate{}, nil, fmt.Errorf("source-pinned pip report candidate count for %s is invalid: %d", requirement, len(report.Candidates()))
 	}
 	candidate := report.Candidates()[0]
 	fetchScript, fetchArguments := simpleJSONFetchScript, []string{candidate.Project()}
 	if artifactpypi.IsPyTorchSource(profile.Source()) {
 		fetchScript, fetchArguments = pytorchHTMLFetchScript, []string{profile.IndexURL(), candidate.Project()}
 	}
-	body, err := r.runner.Output(ctx, "docker", append([]string{"exec", containerID, "python", "-I", "-c", fetchScript}, fetchArguments...)...)
+	body, err := r.runner.Output(ctx, "docker", append(boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", fetchScript), fetchArguments...)...)
 	if err != nil {
 		return artifactpypi.Candidate{}, nil, errors.New("fetch source-pinned Simple metadata failed")
 	}
@@ -391,35 +408,34 @@ func pypiCreateArguments(network string, hostArguments []string) []string {
 	arguments := []string{
 		"create", "--pull", "never", "--runtime", gVisorRuntimeName,
 		"--network", network,
-		"--user", "1000:1000",
 		"--read-only",
 		"--cap-drop", "ALL",
+		"--cap-add", "SETUID", "--cap-add", "SETGID", "--cap-add", "SETPCAP",
 		"--security-opt", "no-new-privileges",
 		"--pids-limit", "64",
 		"--memory", "512m",
 		"--cpus", "1",
 		"--ulimit", "cpu=60:60",
 		"--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=128m,uid=1000,gid=1000,mode=0700",
+		"--tmpfs", pythonSitePath + ":rw,exec,nosuid,nodev,size=128m,uid=1000,gid=1000,mode=0700",
+		"--tmpfs", boundaryHelperMount,
 	}
 	arguments = append(arguments, isolatedContainerEnvironmentArguments()...)
 	arguments = append(arguments, hostArguments...)
-	// Prepare the bounded report directory on the container tmpfs before pip runs.
-	// The command is fixed infrastructure wiring; no request-controlled input is
-	// interpolated into it.
-	arguments = append(arguments, pythonImageReference, "sh", "-ceu", "umask 077; mkdir -p "+pypiResolverProjectDir+"; exec sleep infinity")
+	arguments = append(arguments, pythonImageReference, "/bin/sh", "-ceu", boundaryContainerCommand())
 	return arguments
 }
 
 func verifyPyPIResolverRuntime(ctx context.Context, runner CommandRunner, containerID string, runtime PythonRuntime) error {
-	python, err := runner.Output(ctx, "docker", "exec", containerID, "python", "-I", "-c", "import sys; print('.'.join(map(str, sys.version_info[:3])))")
+	python, err := runner.Output(ctx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", "import sys; print('.'.join(map(str, sys.version_info[:3])))")...)
 	if err != nil || strings.TrimSpace(string(python)) != runtime.PythonVersion {
 		return errors.New("PyPI resolver Python runtime version mismatch")
 	}
-	pip, err := runner.Output(ctx, "docker", "exec", containerID, "python", "-I", "-m", "pip", "--version")
+	pip, err := runner.Output(ctx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-m", "pip", "--version")...)
 	if err != nil || !strings.HasPrefix(strings.TrimSpace(string(pip)), "pip "+runtime.PipVersion+" ") {
 		return errors.New("PyPI resolver pip runtime version mismatch")
 	}
-	tags, err := runner.Output(ctx, "docker", "exec", containerID, "python", "-I", "-m", "pip", "debug", "--verbose")
+	tags, err := runner.Output(ctx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-m", "pip", "debug", "--verbose")...)
 	if err != nil || !containsExactLine(string(tags), runtime.InterpreterTag+"-"+runtime.ABITag+"-"+runtime.PlatformTag) {
 		return errors.New("PyPI resolver target tags are unavailable")
 	}

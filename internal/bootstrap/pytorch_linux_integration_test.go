@@ -28,6 +28,14 @@ func TestLinuxPyTorchFullIntegration(t *testing.T) {
 	root := t.TempDir()
 	t.Setenv("XDG_CACHE_HOME", filepath.Join(root, "cache"))
 	target := filepath.Join(root, "target")
+	for _, relative := range []string{"lib/python3.14/site-packages", "bin", "share"} {
+		if err := os.MkdirAll(filepath.Join(target, relative), 0o700); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := os.WriteFile(filepath.Join(target, "pyvenv.cfg"), []byte("version = 3.14.7\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), map[string]time.Duration{"cpu": 15 * time.Minute, "cu126": 40 * time.Minute}[profile])
 	defer cancel()
 	var stdout, stderr bytes.Buffer
@@ -35,8 +43,15 @@ func TestLinuxPyTorchFullIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("PyTorch %s install failed: %v\nstdout=%s\nstderr=%s", profile, err, stdout.String(), stderr.String())
 	}
-	if info, statErr := os.Stat(filepath.Join(target, "site", "torch")); statErr != nil || !info.IsDir() {
+	if info, statErr := os.Stat(filepath.Join(target, "lib", "python3.14", "site-packages", "torch")); statErr != nil || !info.IsDir() {
 		t.Fatalf("PyTorch %s target is missing: %v", profile, statErr)
+	}
+	if profile == "cpu" {
+		for _, relative := range []string{"bin/isympy", "share/man/man1/isympy.1"} {
+			if info, err := os.Lstat(filepath.Join(target, relative)); err != nil || !info.Mode().IsRegular() {
+				t.Fatalf("scheme output %s unavailable: %v", relative, err)
+			}
+		}
 	}
 	staged, globErr := filepath.Glob(filepath.Join(root, "cache", "heliopause", "staging", "*", "manifest.json"))
 	if globErr != nil || len(staged) != 1 {

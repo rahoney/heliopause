@@ -35,6 +35,7 @@ void CleanupControlSocket(int) {
   if (gControlPath != nullptr) unlink(gControlPath);
   _exit(0);
 }
+
 #ifndef HAA_GVISOR_COMMIT
 #error "HAA_GVISOR_COMMIT must be set by the pinned observer build"
 #endif
@@ -91,6 +92,13 @@ constexpr char kProfilePyPI[] = "pypi-wheel";
 constexpr char kProfilePyTorchCPU[] = "pypi-wheel-pytorch-cpu";
 constexpr char kProfilePyTorchCU126[] = "pypi-wheel-pytorch-cu126";
 constexpr char kProfileGitHub[] = "github-elf";
+
+bool IsPythonProfile(const char* profile) {
+  return profile != nullptr &&
+      (strcmp(profile, kProfilePyPI) == 0 ||
+       strcmp(profile, kProfilePyTorchCPU) == 0 ||
+       strcmp(profile, kProfilePyTorchCU126) == 0);
+}
 #pragma pack(push, 1)
 struct Header { uint16_t header_size; uint16_t message_type; uint32_t dropped_count; };
 #pragma pack(pop)
@@ -497,7 +505,7 @@ ProcessClass ProcessClassForPath(const std::string& path, const char* profile) {
     if (path == "/usr/local/bin/npm" || path == "npm") return ProcessClass::kNpm;
     if (path == "/usr/local/lib/node_modules/npm/bin/npm-cli.js") return ProcessClass::kNpm;
   }
-  if (strcmp(profile, kProfilePyPI) == 0 || strcmp(profile, kProfilePyTorchCPU) == 0 || strcmp(profile, kProfilePyTorchCU126) == 0) {
+  if (IsPythonProfile(profile)) {
     if (path == "/usr/local/bin/python" || path == "/usr/local/bin/python3" || path == "/usr/local/bin/python3.14" || path == "python") return ProcessClass::kPython;
     if (path == "/usr/local/bin/pip" || path == "pip") return ProcessClass::kPip;
   }
@@ -754,7 +762,7 @@ enum class FilesystemClass { kWorkspace, kOutside, kHoneytoken, kRuntimeRoot, kH
 bool IsWorkspacePath(const std::string& path, const char* profile) {
   if (profile == nullptr) return false;
   if (strcmp(profile, kProfileGitHub) == 0) return HasPrefix(path, "/work/");
-  if (strcmp(profile, kProfilePyPI) == 0) {
+  if (IsPythonProfile(profile)) {
     return path == "/tmp" || HasPrefix(path, "/tmp/") ||
         path == "/haa-site" || HasPrefix(path, "/haa-site/");
   }
@@ -796,7 +804,7 @@ bool IsExactBootstrapHelperWrite(const gvisor::common::ContextData& context,
       group->oci_bootstrap_stage == ProcessState::OCIBootstrapStage::kAwaitingDemotion &&
       state.bootstrap_active && !group->root_eligible && group->root_consumed &&
       !group->trusted_control_network_active &&
-      path == "/haa-runtime/.haa-boundary.tmp" && flags == 577;
+      path == "/haa-runtime/.haa-boundary.tmp" && (flags & ~kOpenLargefile) == 577;
 }
 
 ProcessClass FilesystemProcessClass(const gvisor::common::ContextData& context,
@@ -917,15 +925,20 @@ bool IsExactPinnedPythonSystemLibrary(const std::string& path) {
       "/lib/x86_64-linux-gnu/libc.so.6",
       "/lib/x86_64-linux-gnu/libcrypto.so.3",
       "/lib/x86_64-linux-gnu/libdb-5.3.so",
+      "/lib/x86_64-linux-gnu/libdl.so.2",
       "/lib/x86_64-linux-gnu/libffi.so.8",
+      "/lib/x86_64-linux-gnu/libgcc_s.so.1",
       "/lib/x86_64-linux-gnu/libgdbm.so.6",
       "/lib/x86_64-linux-gnu/liblzma.so.5",
       "/lib/x86_64-linux-gnu/libm.so.6",
       "/lib/x86_64-linux-gnu/libncursesw.so.6",
       "/lib/x86_64-linux-gnu/libpanelw.so.6",
+      "/lib/x86_64-linux-gnu/libpthread.so.0",
       "/lib/x86_64-linux-gnu/libreadline.so.8",
+      "/lib/x86_64-linux-gnu/librt.so.1",
       "/lib/x86_64-linux-gnu/libsqlite3.so.0",
       "/lib/x86_64-linux-gnu/libssl.so.3",
+      "/lib/x86_64-linux-gnu/libstdc++.so.6",
       "/lib/x86_64-linux-gnu/libtinfo.so.6",
       "/lib/x86_64-linux-gnu/libuuid.so.1",
       "/lib/x86_64-linux-gnu/libz.so.1",
@@ -941,18 +954,19 @@ bool IsPinnedRuntimeRootRead(const gvisor::common::ContextData& context,
                              const ProcessState& state,
                              const std::string& path, uint64_t flags,
                              const char* profile) {
-  if (profile == nullptr || IsWriteCapableOpen(flags)) return false;
+  if (profile == nullptr) return false;
+  std::string normalized;
+  if (!NormalizeAbsolutePath(path, &normalized)) return false;
+  if (IsWriteCapableOpen(flags) && normalized != "/dev/null") return false;
   const auto* group = FindFilesystemGroup(context, state);
   if (group == nullptr ||
       (group->provenance != ProcessState::Provenance::kDirectExecRoot &&
        group->provenance != ProcessState::Provenance::kCloneChild)) return false;
-  std::string normalized;
-  if (!NormalizeAbsolutePath(path, &normalized)) return false;
   if (strcmp(profile, kProfileGitHub) == 0) {
     return normalized == "/etc/ld.so.cache" ||
         IsExactLibc6(normalized);
   }
-  if (strcmp(profile, kProfilePyPI) != 0) return false;
+  if (!IsPythonProfile(profile)) return false;
   if (context.process_name() != "python" && context.process_name() != "python3.14" &&
       context.process_name() != "uname" && context.process_name() != "sh") return false;
   static constexpr const char* kLoaderCandidates[] = {
@@ -987,16 +1001,20 @@ bool IsPinnedRuntimeRootRead(const gvisor::common::ContextData& context,
       normalized == "/usr/lib/gconv" || HasPrefix(normalized, "/usr/lib/gconv/") ||
       IsExactPinnedPythonSystemLibrary(normalized)) return true;
   const std::string pid_str = std::to_string(context.thread_group_id());
-  if (normalized == "/proc/self/maps" || normalized == "/proc/" + pid_str + "/maps" ||
-      normalized == "/proc/self/status" || normalized == "/proc/" + pid_str + "/status" ||
-      normalized == "/proc/self/cgroup" || normalized == "/proc/" + pid_str + "/cgroup" ||
-      normalized == "/proc/mounts" || normalized == "/proc/self/mounts" || normalized == "/proc/" + pid_str + "/mounts" ||
-      normalized == "/proc/stat" || normalized == "/proc/self/stat" || normalized == "/proc/" + pid_str + "/stat" ||
-      normalized == "/proc/version" || normalized == "/proc/version_signature" ||
-      normalized == "/proc/meminfo" || normalized == "/proc/cpuinfo" ||
-      normalized == "/proc/filesystems" ||
+  const std::string proc_pid = "/proc/" + pid_str;
+  const bool exact_self_proc =
+      normalized == "/proc/self/environ" || normalized == "/proc/self/maps" ||
+      normalized == "/proc/self/status" || normalized == "/proc/self/mounts" ||
+      normalized == proc_pid + "/environ" || normalized == proc_pid + "/maps" ||
+      normalized == proc_pid + "/status" || normalized == proc_pid + "/mounts";
+  if (exact_self_proc || normalized == "/proc/cpuinfo" ||
+      normalized == "/proc/mounts" ||
+      normalized == "/proc/sys/vm/overcommit_memory" ||
+      normalized == "/proc/sys/kernel/random/boot_id" ||
       normalized == "/dev/null" || normalized == "/dev/urandom" ||
       normalized == "/etc/nsswitch.conf" || normalized == "/etc/passwd" || normalized == "/etc/group" ||
+      normalized == "/etc/resolv.conf" || normalized == "/etc/hosts" || normalized == "/etc/host.conf" || normalized == "/etc/gai.conf" ||
+      normalized == "/etc/services" || normalized == "/etc/protocols" ||
       normalized == "/etc/pip.conf" ||
       normalized == "/etc/os-release" || normalized == "/usr/lib/os-release" ||
       normalized == "/etc/debian_version" || normalized == "/etc/issue" ||
@@ -1005,7 +1023,7 @@ bool IsPinnedRuntimeRootRead(const gvisor::common::ContextData& context,
       normalized == "/usr/lib/ssl" || HasPrefix(normalized, "/usr/lib/ssl/") ||
       normalized == "/etc/ca-certificates" || HasPrefix(normalized, "/etc/ca-certificates/") ||
       normalized == "/usr/share/ca-certificates" || HasPrefix(normalized, "/usr/share/ca-certificates/") ||
-      normalized == "/sys/devices/system/cpu/online") return true;
+      normalized == "/sys/devices/system/cpu/possible") return true;
   constexpr char kStdlibRoot[] = "/usr/local/lib/python3.14/";
   constexpr char kSiteRoot[] = "/usr/local/lib/python3.14/site-packages";
   if (normalized == kSiteRoot || normalized == "/usr/local/lib/python3.14") return true;
@@ -1132,7 +1150,7 @@ bool IsPinnedNpmRuntimeRead(const gvisor::common::ContextData& context,
 bool IsExactHAAELFHandoffDemotionRead(
     const gvisor::common::ContextData& context, const ProcessState& state,
     const std::string& path, uint64_t flags, const char* profile) {
-  if (profile == nullptr || (strcmp(profile, kProfileGitHub) != 0 && strcmp(profile, kProfilePyPI) != 0) ||
+  if (profile == nullptr || (strcmp(profile, kProfileGitHub) != 0 && !IsPythonProfile(profile)) ||
       IsWriteCapableOpen(flags)) return false;
   const auto* group = FindFilesystemGroup(context, state);
   if (group == nullptr || group->role != ProcessState::Role::kArtifact ||
@@ -1203,7 +1221,7 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
   if (exact_artifact_shell_loader) return FilesystemClass::kHelperOnly;
   if (IsWorkspacePath(path, profile)) return FilesystemClass::kWorkspace;
   if (IsClearlyOutsideWorkspace(path) ||
-      (IsWriteCapableOpen(message.flags()) &&
+      (IsWriteCapableOpen(message.flags()) && path != "/dev/null" &&
        !IsExactBootstrapHelperWrite(message.context_data(), state, path, message.flags()))) {
     return FilesystemClass::kOutside;
   }
@@ -1211,7 +1229,7 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
       IsPinnedRuntimeRootRead(message.context_data(), state, path,
                               message.flags(), profile) ||
       IsPinnedNpmRuntimeRead(message.context_data(), state, path, message.flags(), profile)) {
-    return profile != nullptr && strcmp(profile, kProfilePyPI) == 0 &&
+    return profile != nullptr && IsPythonProfile(profile) &&
             IsPinnedRuntimeRootRead(message.context_data(), state, path,
                                     message.flags(), profile)
         ? FilesystemClass::kRuntimeRoot : FilesystemClass::kHelperOnly;
@@ -1654,7 +1672,7 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
 }
 
 bool ParseOpenAndSend(const char* payload, size_t payload_size, int output, std::string* container_id,
-                      ProcessState* state, NormalizedCounts* counts, const char** reason) {
+                      const char* profile, ProcessState* state, NormalizedCounts* counts, const char** reason) {
   if (state == nullptr || counts == nullptr) return false;
   gvisor::syscall::Open message;
   if (!message.ParseFromArray(payload, payload_size)) return false;
@@ -1683,7 +1701,13 @@ bool ParseOpenAndSend(const char* payload, size_t payload_size, int output, std:
     if (!Send(output, *container_id, "honeytoken-access")) return false;
     ++counts->immediate_records;
     emitted = true;
-  } else if (IsWriteCapableOpen(message.flags())) {
+  } else if (IsClearlyOutsideWorkspace(message.pathname()) ||
+             (IsWriteCapableOpen(message.flags()) && message.pathname() != "/dev/null" &&
+              !message.pathname().empty() && message.pathname()[0] == '/' &&
+              !IsWorkspacePath(message.pathname(), profile) &&
+              !IsExactBootstrapHelperWrite(message.context_data(), *state, message.pathname(), message.flags()) &&
+              !(HasPrefix(message.pathname(), "/usr/local/lib/python3.14/") &&
+                message.pathname().find("/__pycache__/") != std::string::npos))) {
     if (!Send(output, *container_id, "filesystem-outside-workspace")) return false;
     ++counts->immediate_records;
     emitted = true;
@@ -1749,9 +1773,6 @@ bool ParseOpenResultAndSend(const char* payload, size_t payload_size, int output
     ++counts->immediate_records; return true;
   }
   if (anchor->second.mount_class == "workspace") {
-    if (IsWriteCapableOpen(result.flags())) {
-      *reason = "STREAM_FAULT"; return false;
-    }
     if (counts->workspace_access < kMaxNormalizedObservationCount) ++counts->workspace_access;
     return true;
   }
@@ -1761,9 +1782,11 @@ bool ParseOpenResultAndSend(const char* payload, size_t payload_size, int output
   switch (ClassifyFilesystemOpen(final_open, *state, profile)) {
     case FilesystemClass::kRuntimeRoot: if (counts->runtime_root_access < kMaxNormalizedObservationCount) ++counts->runtime_root_access; return true;
     case FilesystemClass::kHelperOnly: return true;
-    case FilesystemClass::kOutside: if (!Send(output, *container_id, "filesystem-outside-workspace")) return false; ++counts->immediate_records; return true;
-    default:
-      *reason = "STREAM_FAULT"; return false;
+    case FilesystemClass::kOutside:
+      if (!Send(output, *container_id, "filesystem-outside-workspace")) return false;
+      ++counts->immediate_records;
+      return true;
+    default: *reason = "STREAM_FAULT"; return false;
   }
 }
 
@@ -2095,7 +2118,7 @@ bool Handle(const Header& header, const char* payload, size_t payload_size, int 
     // copied to the HAA envelope. M11-003 supplies the trusted profile required
     // to classify this bounded process fact as expected or unexpected.
     case gvisor::common::MESSAGE_SYSCALL_EXECVE: return ParseExecSyscallTelemetry<gvisor::syscall::Execve>(payload, payload_size, container_id, reason);
-    case gvisor::common::MESSAGE_SYSCALL_OPEN: return ParseOpenAndSend(payload, payload_size, output, container_id, process_state, counts, reason);
+    case gvisor::common::MESSAGE_SYSCALL_OPEN: return ParseOpenAndSend(payload, payload_size, output, container_id, profile, process_state, counts, reason);
     case gvisor::common::MESSAGE_SYSCALL_OPEN_RESULT: return ParseOpenResultAndSend(payload, payload_size, output, container_id, profile, process_state, counts, *topology, reason);
     case gvisor::common::MESSAGE_SENTRY_MOUNT_TOPOLOGY_SNAPSHOT:
       if (!process_state->bootstrap_group_set) { *reason = "TOPOLOGY_INVALID"; return false; }

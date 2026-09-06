@@ -1,19 +1,23 @@
 package promotion
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/csv"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
 	"os"
+	"path"
 	"path/filepath"
 	"runtime"
 	"sort"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
@@ -97,10 +101,14 @@ func (p *PyPIPromotion) Promote(ctx context.Context, staged domain.StagedSet, bu
 	if err != nil {
 		return domain.PromotedInstall{}, err
 	}
-	if err := p.runner.Run(ctx, temporary, pypiPromotionArguments(temporary, artifactpypi.ResourcePolicyFromContext(ctx))); err != nil {
+	resourcePolicy := artifactpypi.ResourcePolicyFromContext(ctx)
+	if err := p.runner.Run(ctx, temporary, pypiPromotionArguments(temporary, resourcePolicy)); err != nil {
 		return domain.PromotedInstall{}, err
 	}
-	if err := validatePyPIOutput(filepath.Join(temporary, "site"), expected, requirements); err != nil {
+	if err := relocateStagedSchemeRoots(temporary); err != nil {
+		return domain.PromotedInstall{}, err
+	}
+	if err := validatePyPIOutput(filepath.Join(temporary, "site"), expected, requirements, resourcePolicy.WheelLimits().MaxMetadata); err != nil {
 		return domain.PromotedInstall{}, err
 	}
 	if err := syncTree(temporary); err != nil {
@@ -123,16 +131,25 @@ func (p *PyPIPromotion) Promote(ctx context.Context, staged domain.StagedSet, bu
 	return domain.NewPromotedInstall(bundle.ManifestID(), installContext.Target())
 }
 
-func (p *PyPIPromotion) promoteActiveVenv(ctx context.Context, stagedRoot string, bundle domain.VerifiedBundle, installContext domain.InstallContext) (domain.PromotedInstall, error) {
+func (p *PyPIPromotion) promoteActiveVenv(ctx context.Context, stagedRoot string, bundle domain.VerifiedBundle, installContext domain.InstallContext) (promoted domain.PromotedInstall, resultErr error) {
 	plan, err := discoverPythonVenv(installContext.Target().String())
 	if err != nil {
 		return domain.PromotedInstall{}, err
 	}
+	transaction, err := beginPyPIVenvTransaction(plan)
+	if err != nil {
+		return domain.PromotedInstall{}, err
+	}
+	defer func() { resultErr = errors.Join(resultErr, transaction.close()) }()
 	temporary, err := os.MkdirTemp(plan.root, ".haa-pypi-work-")
 	if err != nil {
 		return domain.PromotedInstall{}, errors.New("create private PyPI virtual environment workspace")
 	}
-	defer os.RemoveAll(temporary)
+	defer func() {
+		if !transaction.recovery {
+			resultErr = errors.Join(resultErr, os.RemoveAll(temporary))
+		}
+	}()
 	if err := os.Chmod(temporary, 0o700); err != nil {
 		return domain.PromotedInstall{}, err
 	}
@@ -140,18 +157,19 @@ func (p *PyPIPromotion) promoteActiveVenv(ctx context.Context, stagedRoot string
 	if err != nil {
 		return domain.PromotedInstall{}, err
 	}
-	if err := p.runner.Run(ctx, temporary, pypiPromotionArguments(temporary, artifactpypi.ResourcePolicyFromContext(ctx))); err != nil {
+	resourcePolicy := artifactpypi.ResourcePolicyFromContext(ctx)
+	if err := p.runner.Run(ctx, temporary, pypiPromotionArguments(temporary, resourcePolicy)); err != nil {
+		return domain.PromotedInstall{}, err
+	}
+	if err := relocateStagedSchemeRoots(temporary); err != nil {
 		return domain.PromotedInstall{}, err
 	}
 	output := filepath.Join(temporary, "site")
-	if err := validatePyPIOutput(output, expected, requirements); err != nil {
-		return domain.PromotedInstall{}, err
-	}
-	desired, err := plan.outputState(output)
+	desired, err := validatedPyPIDestinations(output, expected, requirements, resourcePolicy.WheelLimits().MaxMetadata)
 	if err != nil {
 		return domain.PromotedInstall{}, err
 	}
-	if err := plan.commit(output, desired); err != nil {
+	if err := transaction.commit(desired); err != nil {
 		return domain.PromotedInstall{}, err
 	}
 	return domain.NewPromotedInstall(bundle.ManifestID(), installContext.Target())
@@ -160,7 +178,73 @@ func (p *PyPIPromotion) promoteActiveVenv(ctx context.Context, stagedRoot string
 func pypiPromotionArguments(project string, resourcePolicy artifactpypi.ResourcePolicy) []string {
 	identity := strconv.Itoa(os.Getuid()) + ":" + strconv.Itoa(os.Getgid())
 	mount := "type=bind,src=" + project + ",dst=/workspace"
-	return []string{"run", "--rm", "--pull", "never", "--network", "none", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "128", "--memory", strconv.FormatInt(resourcePolicy.RuntimeMemory(), 10), "--cpus", "1", "--user", identity, "--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=" + strconv.FormatInt(resourcePolicy.PromotionTmpfs(), 10), "--mount", mount, "--workdir", "/workspace", "--env", "HOME=/tmp", "--env", "PIP_CACHE_DIR=/tmp/pip-cache", "--env", "PIP_CONFIG_FILE=/dev/null", "--entrypoint", "python", sandbox.PinnedPythonRuntime().ImageReference, "-I", "-m", "pip", "install", "--no-index", "--find-links", "/workspace/wheels", "--require-hashes", "--only-binary", ":all:", "--no-deps", "--no-compile", "--disable-pip-version-check", "--target", "/workspace/site", "--requirement", "/workspace/requirements.txt"}
+	return []string{"run", "--rm", "--pull", "never", "--network", "none", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "128", "--memory", strconv.FormatInt(resourcePolicy.RuntimeMemory(), 10), "--cpus", "1", "--user", identity, "--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=" + strconv.FormatInt(resourcePolicy.PromotionTmpfs(), 10), "--mount", mount, "--workdir", "/workspace", "--env", "HOME=/tmp", "--env", "PIP_CACHE_DIR=/tmp/pip-cache", "--env", "PIP_CONFIG_FILE=/dev/null", "--entrypoint", "python", sandbox.PinnedPythonRuntime().ImageReference, "-I", "-m", "pip", "install", "--no-cache-dir", "--no-index", "--find-links", "/workspace/wheels", "--require-hashes", "--only-binary", ":all:", "--no-deps", "--no-compile", "--disable-pip-version-check", "--target", "/workspace/site", "--requirement", "/workspace/requirements.txt"}
+}
+
+func relocateStagedSchemeRoots(transactionRoot string) error {
+	// Validate ancestors before inspecting children: Lstat alone follows links
+	// in intermediate components. The caller owns this private workspace.
+	if !filepath.IsAbs(transactionRoot) || filepath.Clean(transactionRoot) != transactionRoot || trustedExistingDirectory(transactionRoot) != nil {
+		return errors.New("PyPI private staging root is invalid")
+	}
+	rootInfo, err := os.Lstat(transactionRoot)
+	if err != nil {
+		return err
+	}
+	site := filepath.Join(transactionRoot, "site")
+	if !pathWithin(transactionRoot, site) || trustedExistingDirectory(site) != nil {
+		return errors.New("PyPI installed site root is invalid")
+	}
+	siteInfo, err := os.Lstat(site)
+	if err != nil {
+		return err
+	}
+	type move struct {
+		src, dst string
+		info     os.FileInfo
+	}
+	var moves []move
+	// Preflight BOTH schemes before the first mutation, including when only
+	// the second scheme is hostile or has a destination collision.
+	for _, scheme := range []string{"bin", "share"} {
+		src := filepath.Join(site, scheme)
+		dst := filepath.Join(transactionRoot, scheme)
+		if !pathWithin(site, src) || !pathWithin(transactionRoot, dst) {
+			return errors.New("PyPI scheme root escapes private staging")
+		}
+		if _, err := os.Lstat(dst); !errors.Is(err, os.ErrNotExist) {
+			return errors.New("PyPI scheme root already exists")
+		}
+		info, err := os.Lstat(src)
+		if errors.Is(err, os.ErrNotExist) {
+			continue
+		}
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
+			return errors.New("PyPI installed scheme root is invalid")
+		}
+		moves = append(moves, move{src, dst, info})
+	}
+	for _, planned := range moves {
+		for _, identity := range []struct {
+			path string
+			info os.FileInfo
+		}{{transactionRoot, rootInfo}, {site, siteInfo}, {planned.src, planned.info}} {
+			if trustedExistingDirectory(identity.path) != nil {
+				return errors.New("PyPI staging directory became unsafe")
+			}
+			now, err := os.Lstat(identity.path)
+			if err != nil || !os.SameFile(identity.info, now) {
+				return errors.New("PyPI staging directory identity changed")
+			}
+		}
+		if err := renameNoReplace(planned.src, planned.dst); err != nil {
+			return fmt.Errorf("relocate PyPI scheme: %w", err)
+		}
+	}
+	return nil
 }
 
 type pypiExpected struct{ name, version, digest string }
@@ -223,11 +307,28 @@ func findInspection(bundle domain.VerifiedBundle, node domain.DependencyNodeID) 
 	return domain.DependencyInspection{}, false
 }
 
-func validatePyPIOutput(site string, expected map[string]pypiExpected, requirements []byte) error {
+func validatePyPIOutput(site string, expected map[string]pypiExpected, requirements []byte, maxMetadata ...int64) error {
+	_, err := validatedPyPIDestinations(site, expected, requirements, maxMetadata...)
+	return err
+}
+
+// validatedPyPIDestinations is the sole source of transaction destinations.
+// Both new-target and existing-venv promotion consume this RECORD validation.
+func validatedPyPIDestinations(site string, expected map[string]pypiExpected, requirements []byte, maxMetadata ...int64) ([]pypiDestination, error) {
+	limit := artifactpypi.DefaultWheelLimits().MaxMetadata
+	if len(maxMetadata) > 0 && maxMetadata[0] > 0 {
+		limit = maxMetadata[0]
+	}
 	if len(requirements) == 0 || len(expected) == 0 || rejectSymlinkPath(site) != nil {
-		return errors.New("PyPI Promotion output is unavailable")
+		return nil, errors.New("PyPI Promotion output is unavailable")
+	}
+	transactionRoot := filepath.Dir(filepath.Clean(site))
+	if transactionRoot == site || !filepath.IsAbs(site) {
+		return nil, errors.New("PyPI Promotion output root is invalid")
 	}
 	installed := map[string]bool{}
+	recorded := map[string]bool{}
+	destinations := []pypiDestination{}
 	err := filepath.WalkDir(site, func(path string, entry os.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -236,15 +337,16 @@ func validatePyPIOutput(site string, expected map[string]pypiExpected, requireme
 			return errors.New("PyPI Promotion output contains symbolic link")
 		}
 		if entry.IsDir() {
-			if strings.HasSuffix(entry.Name(), ".dist-info") {
+			if strings.HasSuffix(entry.Name(), ".dist-info") && filepath.Clean(filepath.Dir(path)) == filepath.Clean(site) {
 				name, version, ok := installedDistInfo(entry.Name())
 				if !ok || expected[name].version != version || installed[name] {
 					return errors.New("PyPI installed distribution set is invalid")
 				}
-				if err := validateInstalledRecord(site, path, expected[name]); err != nil {
+				if err := validateInstalledRecord(site, path, expected[name], recorded, &destinations, limit); err != nil {
 					return err
 				}
 				installed[name] = true
+				return filepath.SkipDir
 			}
 			return nil
 		}
@@ -254,10 +356,17 @@ func validatePyPIOutput(site string, expected map[string]pypiExpected, requireme
 		}
 		return nil
 	})
-	if err != nil || len(installed) != len(expected) {
-		return errors.New("PyPI Promotion output does not match exact distribution set")
+	if err != nil {
+		return nil, err
 	}
-	return nil
+	if len(installed) != len(expected) {
+		return nil, errors.New("PyPI Promotion output does not match exact distribution set")
+	}
+	if err := validateRecordedOutputRoots(site, transactionRoot, recorded); err != nil {
+		return nil, err
+	}
+	sort.Slice(destinations, func(i, j int) bool { return destinations[i].key() < destinations[j].key() })
+	return destinations, nil
 }
 
 func installedDistInfo(value string) (string, string, bool) {
@@ -270,35 +379,47 @@ func installedDistInfo(value string) (string, string, bool) {
 	if err != nil {
 		return "", "", false
 	}
-	version, err := artifactpypi.NormalizeVersion(value[at+1:])
+	version, err := artifactpypi.NormalizeInstalledVersion(value[at+1:])
 	return name, version, err == nil
 }
-func validateInstalledRecord(site, directory string, expected pypiExpected) error {
-	metadata, err := os.ReadFile(filepath.Join(directory, "METADATA"))
+
+func validateInstalledRecord(site, directory string, expected pypiExpected, recorded map[string]bool, destinations *[]pypiDestination, limit int64) error {
+	metadata, err := readBoundedPromotionFile(filepath.Join(directory, "METADATA"), limit)
 	if err != nil || len(metadata) == 0 {
 		return errors.New("PyPI installed metadata is unavailable")
 	}
-	metadataText := string(metadata)
-	if !strings.Contains(metadataText, "Name: "+expected.name+"\n") || !strings.Contains(metadataText, "Version: "+expected.version+"\n") {
+	name, version, err := parseInstalledMetadata(metadata)
+	if err != nil || name != expected.name || version != expected.version {
 		return errors.New("PyPI installed metadata does not match expected distribution")
 	}
-	record, err := os.Open(filepath.Join(directory, "RECORD"))
+	recordBody, err := readBoundedPromotionFile(filepath.Join(directory, "RECORD"), limit)
 	if err != nil {
 		return errors.New("PyPI installed RECORD is unavailable")
 	}
-	defer record.Close()
-	r := csv.NewReader(record)
+	r := csv.NewReader(bytes.NewReader(recordBody))
 	r.FieldsPerRecord = 3
+	r.ReuseRecord = false
 	count := 0
 	for {
 		row, err := r.Read()
 		if errors.Is(err, io.EOF) {
 			break
 		}
-		if err != nil || row[0] == "" || strings.HasPrefix(row[0], "/") || strings.Contains(row[0], "..") {
+		if err != nil || row[0] == "" {
 			return errors.New("PyPI installed RECORD is invalid")
 		}
-		if row[1] != "" {
+		destination, err := resolveInstalledRecordPath(site, directory, row[0])
+		entryPath := destination.Source
+		if err != nil || recorded[entryPath] {
+			return errors.New("PyPI installed RECORD is invalid")
+		}
+		recorded[entryPath] = true
+		self := entryPath == filepath.Join(directory, "RECORD")
+		if row[1] == "" {
+			if !self || row[2] != "" {
+				return errors.New("PyPI installed RECORD hash is invalid")
+			}
+		} else {
 			if !strings.HasPrefix(row[1], "sha256=") {
 				return errors.New("PyPI installed RECORD hash is invalid")
 			}
@@ -306,16 +427,40 @@ func validateInstalledRecord(site, directory string, expected pypiExpected) erro
 			if err != nil || len(digest) != sha256.Size {
 				return errors.New("PyPI installed RECORD hash is invalid")
 			}
-			path := filepath.Join(site, filepath.FromSlash(row[0]))
-			if relative, err := filepath.Rel(site, path); err != nil || relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
-				return errors.New("PyPI installed RECORD escapes target")
-			}
-			body, readErr := os.ReadFile(path)
+			body, readErr := os.ReadFile(entryPath)
 			sum := sha256.Sum256(body)
-			if readErr != nil || !infoRegular(path) || !strings.EqualFold(base64.RawURLEncoding.EncodeToString(sum[:]), strings.TrimPrefix(row[1], "sha256=")) {
+			if readErr != nil || !infoRegular(entryPath) || !bytes.Equal(sum[:], digest) {
 				return errors.New("PyPI installed RECORD content hash is invalid")
 			}
 		}
+		if row[2] != "" {
+			size, sizeErr := strconv.ParseInt(row[2], 10, 64)
+			info, infoErr := os.Lstat(entryPath)
+			if sizeErr != nil || size < 0 || infoErr != nil || !info.Mode().IsRegular() || info.Size() != size {
+				return errors.New("PyPI installed RECORD size is invalid")
+			}
+		}
+		destination.Distribution = expected.name
+		destination.Version = expected.version
+		destination.ArtifactDigest = expected.digest
+		fingerprint, err := snapshotPyPIFile(entryPath)
+		if err != nil {
+			return errors.New("PyPI installed output identity is unsafe")
+		}
+		if row[1] != "" {
+			declared, err := base64.RawURLEncoding.DecodeString(strings.TrimPrefix(row[1], "sha256="))
+			if err != nil || hex.EncodeToString(declared) != fingerprint.Digest {
+				return errors.New("PyPI RECORD output changed before destination binding")
+			}
+		}
+		if row[2] != "" {
+			size, err := strconv.ParseInt(row[2], 10, 64)
+			if err != nil || size != fingerprint.Size {
+				return errors.New("PyPI RECORD size changed before destination binding")
+			}
+		}
+		destination.Digest, destination.Size = fingerprint.Digest, fingerprint.Size
+		*destinations = append(*destinations, destination)
 		count++
 	}
 	if count == 0 {
@@ -324,7 +469,175 @@ func validateInstalledRecord(site, directory string, expected pypiExpected) erro
 	return nil
 }
 
+// resolveInstalledRecordPath implements the bounded HAA install scheme.  It
+// does not treat parent traversal as inherently trusted: normal entries are
+// rooted at site-packages, while the only permitted cross-scheme entries are
+// scripts and data under the transaction's private bin and share roots.
+func resolveInstalledRecordPath(site, distInfo, value string) (pypiDestination, error) {
+	if value == "" || strings.ContainsRune(value, '\x00') || strings.Contains(value, "\\") ||
+		strings.HasPrefix(value, "/") || path.IsAbs(value) || (len(value) >= 2 && value[1] == ':') {
+		return pypiDestination{}, errors.New("PyPI installed RECORD path is invalid")
+	}
+	parts := strings.Split(value, "/")
+	for _, part := range parts {
+		if part == "" || part == "." {
+			return pypiDestination{}, errors.New("PyPI installed RECORD path is invalid")
+		}
+	}
+	parents := 0
+	for parents < len(parts) && parts[parents] == ".." {
+		parents++
+	}
+	for _, part := range parts[parents:] {
+		if part == ".." {
+			return pypiDestination{}, errors.New("PyPI installed RECORD path is invalid")
+		}
+	}
+	var candidate, root string
+	scheme := "site"
+	switch parents {
+	case 0:
+		candidate, root = filepath.Join(site, filepath.FromSlash(value)), site
+	case 1:
+		if len(parts) == 1 {
+			return pypiDestination{}, errors.New("PyPI installed RECORD path is invalid")
+		}
+		candidate, root = filepath.Join(distInfo, filepath.FromSlash(strings.Join(parts, "/"))), site
+	case 2:
+		if len(parts) < 3 || (parts[2] != "bin" && parts[2] != "share") {
+			return pypiDestination{}, errors.New("PyPI installed RECORD path is invalid")
+		}
+		candidate = filepath.Join(distInfo, filepath.FromSlash(strings.Join(parts, "/")))
+		root = filepath.Join(filepath.Dir(site), parts[2])
+		if parts[2] == "bin" {
+			scheme = "scripts"
+		} else {
+			scheme = "data"
+		}
+	default:
+		return pypiDestination{}, errors.New("PyPI installed RECORD path is invalid")
+	}
+	candidate = filepath.Clean(candidate)
+	root = filepath.Clean(root)
+	if !pathWithin(root, candidate) {
+		return pypiDestination{}, errors.New("PyPI installed RECORD escapes transaction")
+	}
+	relative, err := filepath.Rel(root, candidate)
+	if err != nil {
+		return pypiDestination{}, err
+	}
+	return pypiDestination{Scheme: scheme, Relative: filepath.ToSlash(relative), Source: candidate}, nil
+}
+
+func pathWithin(root, value string) bool {
+	relative, err := filepath.Rel(root, value)
+	return err == nil && relative != "." && relative != ".." && !strings.HasPrefix(relative, ".."+string(filepath.Separator))
+}
+
+func validateRecordedOutputRoots(site, transactionRoot string, recorded map[string]bool) error {
+	entries, err := os.ReadDir(transactionRoot)
+	if err != nil {
+		return errors.New("private output root unavailable")
+	}
+	for _, entry := range entries {
+		switch entry.Name() {
+		case filepath.Base(site), "bin", "share", "wheels", manifestFilename, sbomFilename, "requirements.txt":
+			// These are the exact scheme roots and preparePyPIProject inputs.
+		default:
+			return errors.New("private output outside the controlled installation scheme")
+		}
+	}
+	for _, root := range []string{site, filepath.Join(transactionRoot, "bin"), filepath.Join(transactionRoot, "share")} {
+		if _, err := os.Lstat(root); errors.Is(err, os.ErrNotExist) {
+			continue
+		} else if err != nil || rejectSymlinkPath(root) != nil {
+			return errors.New("PyPI Promotion output root is unsafe")
+		}
+		if err := filepath.WalkDir(root, func(value string, entry os.DirEntry, walkErr error) error {
+			if walkErr != nil {
+				return walkErr
+			}
+			if entry.IsDir() {
+				return nil
+			}
+			if entry.Type()&os.ModeSymlink != 0 || !recorded[filepath.Clean(value)] {
+				return errors.New("PyPI Promotion output is unrecorded or unsafe")
+			}
+			info, err := entry.Info()
+			if err != nil || !info.Mode().IsRegular() {
+				return errors.New("PyPI Promotion output contains special file")
+			}
+			return nil
+		}); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func infoRegular(path string) bool {
 	info, err := os.Lstat(path)
 	return err == nil && info.Mode().IsRegular()
+}
+
+func parseInstalledMetadata(body []byte) (string, string, error) {
+	if len(body) == 0 || !utf8.Valid(body) || bytes.IndexByte(body, 0) >= 0 {
+		return "", "", errors.New("installed metadata is invalid")
+	}
+	var name, version string
+	for _, raw := range strings.Split(string(body), "\n") {
+		line := strings.TrimSuffix(raw, "\r")
+		if line == "" {
+			break
+		}
+		if strings.HasPrefix(line, " ") || strings.HasPrefix(line, "\t") {
+			continue
+		}
+		at := strings.IndexByte(line, ':')
+		if at <= 0 {
+			return "", "", errors.New("installed metadata header is invalid")
+		}
+		key := strings.ToLower(strings.TrimSpace(line[:at]))
+		val := strings.TrimSpace(line[at+1:])
+		switch key {
+		case "name":
+			if name != "" {
+				return "", "", errors.New("installed metadata Name is duplicated")
+			}
+			normalized, err := artifactpypi.NormalizeProjectName(val)
+			if err != nil {
+				return "", "", err
+			}
+			name = normalized
+		case "version":
+			if version != "" {
+				return "", "", errors.New("installed metadata Version is duplicated")
+			}
+			normalized, err := artifactpypi.NormalizeInstalledVersion(val)
+			if err != nil {
+				return "", "", err
+			}
+			version = normalized
+		}
+	}
+	if name == "" || version == "" {
+		return "", "", errors.New("installed metadata missing Name or Version")
+	}
+	return name, version, nil
+}
+
+func readBoundedPromotionFile(filename string, limit int64) ([]byte, error) {
+	if limit <= 0 {
+		return nil, errors.New("promotion file limit is invalid")
+	}
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	body, err := io.ReadAll(io.LimitReader(file, limit+1))
+	if err != nil || int64(len(body)) > limit {
+		return nil, errors.New("promotion file exceeds metadata bound")
+	}
+	return body, nil
 }

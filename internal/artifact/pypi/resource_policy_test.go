@@ -22,8 +22,14 @@ func TestNamedPyTorchProfilesHaveBoundedRootResourcePolicies(t *testing.T) {
 	if cpu.ResourcePolicy().MaxArtifactCompressed() != 256<<20 || cpu.ResourcePolicy().MaxGraphCompressed() != 512<<20 || cpu.ResourcePolicy().Duration() != 15*time.Minute {
 		t.Fatalf("CPU resource policy = %#v", cpu.ResourcePolicy())
 	}
+	if cpu.ResourcePolicy().PromotionTmpfs() != 1<<30 {
+		t.Fatalf("CPU promotion tmpfs = %d, want 1 GiB", cpu.ResourcePolicy().PromotionTmpfs())
+	}
 	if cu126.ResourcePolicy().MaxArtifactCompressed() != 1<<30 || cu126.ResourcePolicy().MaxGraphCompressed() != (9<<30)/2 || cu126.ResourcePolicy().Duration() != 40*time.Minute {
 		t.Fatalf("cu126 resource policy = %#v", cu126.ResourcePolicy())
+	}
+	if cu126.ResourcePolicy().PromotionTmpfs() != 1<<30 {
+		t.Fatalf("cu126 promotion tmpfs changed = %d, want committed 1 GiB", cu126.ResourcePolicy().PromotionTmpfs())
 	}
 }
 

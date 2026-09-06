@@ -2195,15 +2195,30 @@ production activation과 최종 배포를 수행한다.
 M12-001 — PyTorch
 IMPLEMENTED: YES
 WIRED: YES
-QUALIFIED: NO
+QUALIFIED: PARTIAL (CPU: QUALIFIED / CUDA: UNQUALIFIED)
 ACCEPTANCE_CLOSED: NO
-Status: IN_PROGRESS
+Status: IN_PROGRESS (CPU qualification checkpoint complete)
+Evidence (PyTorch CPU):
+- target: torch@2.9.1+cpu (source: pytorch:cpu)
+- exact 10-distribution closure (torch owned by pytorch-cpu; 9 transitives owned by pypi)
+- production CLI promotion PASS via helox pip install into active Python 3.14 venv
+- 14,480 promoted files (site: 14,476, scripts: 3, data: 1)
+- site/bin/share multi-root transaction reconciliation PASS
+- real scheme outputs verified (bin/isympy mode 0755, share/man/man1/isympy.1)
+- unrelated baseline adoption = 0, unrelated baseline files preserved unchanged
+- Artifact network attempts = 0 (--network none verified)
+- Zero Real Authority = PASS (cap-drop ALL, no-new-privileges, non-root user, read-only root)
+- final security invariants = PASS
+- functional check: torch import, version 2.9.1+cpu, CPU tensor op PASS, cuda.is_available() == False
+- canonical tests/gates = PASS (go test ./..., format, quick, security, foundation, docs, diff --check)
+- PyTorch CPU promotion tmpfs = 1 GiB, dynamic CPU limit = 30 CPU-seconds
+- observation event cap = 10,000 (configured observation budget/cap, not measured runtime usage; raw numeric observer counters not all retained)
+Explicit limitations:
+- CU126 remains unauthorized and unqualified.
+- CU128 remains unqualified.
+- CUDA/GPU qualification was NOT performed; CPU qualification does not authorize CUDA work.
 MISSING:
-- PyTorch profile-specific bounded resource policy implementation/qualification
-- CPU profile 실제 qualification
-- 최소 1개 supported CUDA profile qualification
-- graph node source identity가 install/Promotion boundary까지 유지되는 evidence
-- Linux gVisor qualification
+- CUDA profile qualification (cu126/cu128 remain unauthorized/unqualified; deferred or separate authorization)
 - CI qualification evidence
 
 M12-002 — Go

@@ -589,6 +589,9 @@ func assertPythonDynamicCreate(t *testing.T, arguments []string) {
 			t.Errorf("create command missing %q: %q", required, joined)
 		}
 	}
+	if !strings.Contains(joined, "--ulimit cpu=30:30") {
+		t.Errorf("create command must retain 30 CPU-second bound: %q", joined)
+	}
 	if strings.Contains(joined, "--user 1000:1000") || !strings.Contains(joined, boundaryContainerCommand()) {
 		t.Errorf("create command does not establish root-owned boundary helper: %q", joined)
 	}
