@@ -194,11 +194,22 @@ jobs:
           test -f "$runtime_lock"
           gvisor_repository="$(jq -er '.gvisor.source_repository' "$runtime_lock")"
           gvisor_commit="$(jq -er '.gvisor.commit' "$runtime_lock")"
+          gvisor_patch_path="$(jq -er '.gvisor.patch.path' "$runtime_lock")"
+          gvisor_patch_sha256="$(jq -er '.gvisor.patch.sha256' "$runtime_lock")"
           bazel_url="$(jq -er '.bazel.linux_x86_64_url' "$runtime_lock")"
           bazel_sha512="$(jq -er '.bazel.linux_x86_64_sha512' "$runtime_lock")"
+          case "$gvisor_patch_path" in
+            tools/gvisor/*.patch) ;;
+            *) echo "runtime lock gVisor patch path is invalid" >&2; exit 1 ;;
+          esac
+          test -f "$gvisor_patch_path"
+          test "$(sha256sum "$gvisor_patch_path" | awk '{print $1}')" = "$gvisor_patch_sha256"
+          patch_abs="$PWD/$gvisor_patch_path"
           git clone --filter=blob:none "$gvisor_repository" "$RUNNER_TEMP/gvisor"
           git -C "$RUNNER_TEMP/gvisor" checkout --detach "$gvisor_commit"
           test "$(git -C "$RUNNER_TEMP/gvisor" rev-parse HEAD)" = "$gvisor_commit"
+          git -C "$RUNNER_TEMP/gvisor" apply --check "$patch_abs"
+          git -C "$RUNNER_TEMP/gvisor" apply "$patch_abs"
           curl --fail --location --silent --show-error --output "$RUNNER_TEMP/bazel" "$bazel_url"
           test "$(sha512sum "$RUNNER_TEMP/bazel" | awk '{print $1}')" = "$bazel_sha512"
           chmod 0755 "$RUNNER_TEMP/bazel"
@@ -232,10 +243,6 @@ jobs:
           docker_package_version="$(jq -er '.docker.ci_ubuntu_24_04_amd64.docker_ce_package' "$runtime_lock")"
           containerd_package_version="$(jq -er '.docker.ci_ubuntu_24_04_amd64.containerd_package' "$runtime_lock")"
           docker_engine_version="$(jq -er '.docker.ci_engine_version' "$runtime_lock")"
-          gvisor_repository="$(jq -er '.gvisor.source_repository' "$runtime_lock")"
-          gvisor_commit="$(jq -er '.gvisor.commit' "$runtime_lock")"
-          bazel_url="$(jq -er '.bazel.linux_x86_64_url' "$runtime_lock")"
-          bazel_sha512="$(jq -er '.bazel.linux_x86_64_sha512' "$runtime_lock")"
           node_image="$(jq -er '.node_image.reference' "$runtime_lock")"
           python_image="$(jq -er '.python_image.reference' "$runtime_lock")"
           conflicting_packages=()
@@ -258,7 +265,7 @@ jobs:
             'Architectures: amd64' \
             'Signed-By: /etc/apt/keyrings/docker.asc' | sudo tee /etc/apt/sources.list.d/docker.sources >/dev/null
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
+          sudo apt-get install -y --allow-downgrades --no-install-recommends \
             "docker-ce=$docker_package_version" \
             "docker-ce-cli=$docker_package_version" \
             "containerd.io=$containerd_package_version"
@@ -278,16 +285,8 @@ jobs:
           sudo iptables -S DOCKER-USER
           docker pull "$node_image"
           docker pull "$python_image"
-          git clone --filter=blob:none "$gvisor_repository" "$RUNNER_TEMP/gvisor"
-          git -C "$RUNNER_TEMP/gvisor" checkout --detach "$gvisor_commit"
-          curl --fail --location --silent --show-error --output "$RUNNER_TEMP/bazel" "$bazel_url"
-          test "$(sha512sum "$RUNNER_TEMP/bazel" | awk '{print $1}')" = "$bazel_sha512"
-          chmod 0755 "$RUNNER_TEMP/bazel"
-          cp -R tools/gvisor-observer "$RUNNER_TEMP/gvisor/tools/haa_gvisor_observer"
-          cd "$RUNNER_TEMP/gvisor"
-          "$RUNNER_TEMP/bazel" build -c opt //tools/haa_gvisor_observer:haa_gvisor_observer
-          cd "$GITHUB_WORKSPACE"
-          sudo install -m 0755 "$RUNNER_TEMP/gvisor/bazel-bin/tools/haa_gvisor_observer/haa_gvisor_observer" /usr/libexec/heliopause/haa_gvisor_observer
+          scripts/build-gvisor-observer-release.sh "$RUNNER_TEMP/haa_gvisor_observer"
+          sudo install -m 0755 "$RUNNER_TEMP/haa_gvisor_observer" /usr/libexec/heliopause/haa_gvisor_observer
 
           go build -trimpath -o "$RUNNER_TEMP/helox" ./cmd/helox
           go build -trimpath -o "$RUNNER_TEMP/haa-network-policy-helper" ./cmd/haa-network-policy-helper

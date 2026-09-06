@@ -188,7 +188,7 @@ func TestPreparePyPIProjectBindsExactWheelAndHashRequirement(t *testing.T) {
 
 func TestValidatePyPIOutputRejectsUnrecordedOrMismatchedOutput(t *testing.T) {
 	t.Parallel()
-	root := t.TempDir()
+	root := realPromotionRoot(t)
 	site := filepath.Join(root, "site")
 	dist := filepath.Join(site, "haa_promotion_fixture-1.0.0.dist-info")
 	if err := os.MkdirAll(dist, 0o700); err != nil {
@@ -208,7 +208,7 @@ func TestValidatePyPIOutputRejectsUnrecordedOrMismatchedOutput(t *testing.T) {
 
 func TestValidatePyPIOutputAcceptsWheelDataScript(t *testing.T) {
 	t.Parallel()
-	root := t.TempDir()
+	root := realPromotionRoot(t)
 	site := filepath.Join(root, "site")
 	dist := filepath.Join(site, "haa_promotion_fixture-1.0.0.dist-info")
 	binDir := filepath.Join(root, "bin")
@@ -260,7 +260,7 @@ func TestValidatePyPIOutputRejectsUnsafeRecordForms(t *testing.T) {
 		"..\\..\\bin\\escape",
 	} {
 		t.Run(recordPath, func(t *testing.T) {
-			root := t.TempDir()
+			root := realPromotionRoot(t)
 			site := filepath.Join(root, "site")
 			dist := filepath.Join(site, "fixture-1.0.0.dist-info")
 			if err := os.MkdirAll(dist, 0o700); err != nil {
@@ -347,7 +347,7 @@ func TestValidatePyPIOutputRejectsRecordIntegrityAndOutputMismatches(t *testing.
 
 func TestPromotionMetadataReadIsBounded(t *testing.T) {
 	t.Parallel()
-	filename := filepath.Join(t.TempDir(), "METADATA")
+	filename := filepath.Join(realPromotionRoot(t), "METADATA")
 	if err := os.WriteFile(filename, make([]byte, artifactpypi.DefaultWheelLimits().MaxMetadata+1), 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -362,7 +362,7 @@ func fixtureExpected() map[string]pypiExpected {
 
 func validPromotionOutputFixture(t *testing.T) (string, string, string) {
 	t.Helper()
-	root := t.TempDir()
+	root := realPromotionRoot(t)
 	site := filepath.Join(root, "site")
 	dist := filepath.Join(site, "fixture-1.0.0.dist-info")
 	if err := os.MkdirAll(filepath.Join(site, "fixture"), 0o700); err != nil {
@@ -443,7 +443,7 @@ func replaceRecord(t *testing.T, dist, old, replacement string) {
 
 func TestRelocateStagedSchemeRoots(t *testing.T) {
 	t.Parallel()
-	root := t.TempDir()
+	root := realPromotionRoot(t)
 	site := filepath.Join(root, "site")
 	bin := filepath.Join(site, "bin")
 	share := filepath.Join(site, "share", "man")
@@ -476,7 +476,7 @@ func TestRelocateStagedSchemeRoots(t *testing.T) {
 	}
 
 	// No-op when neither exists
-	emptyRoot := t.TempDir()
+	emptyRoot := realPromotionRoot(t)
 	if err := os.Mkdir(filepath.Join(emptyRoot, "site"), 0o700); err != nil {
 		t.Fatal(err)
 	}
@@ -485,7 +485,7 @@ func TestRelocateStagedSchemeRoots(t *testing.T) {
 	}
 
 	// Rejects pre-existing destination
-	collisionRoot := t.TempDir()
+	collisionRoot := realPromotionRoot(t)
 	if err := os.MkdirAll(filepath.Join(collisionRoot, "site", "bin"), 0o700); err != nil {
 		t.Fatal(err)
 	}
@@ -500,7 +500,7 @@ func TestRelocateStagedSchemeRoots(t *testing.T) {
 func TestRelocateStagedSchemeRootsRejectsHostilePathsBeforeMutation(t *testing.T) {
 	for _, kind := range []string{"root-symlink", "site-symlink", "bin-symlink", "share-symlink", "share-fifo", "share-file", "share-collision"} {
 		t.Run(kind, func(t *testing.T) {
-			root, external := t.TempDir(), t.TempDir()
+			root, external := realPromotionRoot(t), realPromotionRoot(t)
 			for _, base := range []string{filepath.Join(root, "site"), external} {
 				for _, scheme := range []string{"bin", "share"} {
 					dir := filepath.Join(base, scheme)
@@ -515,7 +515,7 @@ func TestRelocateStagedSchemeRootsRejectsHostilePathsBeforeMutation(t *testing.T
 			argument := root
 			switch kind {
 			case "root-symlink":
-				argument = filepath.Join(t.TempDir(), "root")
+				argument = filepath.Join(realPromotionRoot(t), "root")
 				if err := os.Symlink(root, argument); err != nil {
 					t.Fatal(err)
 				}
