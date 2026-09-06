@@ -269,8 +269,11 @@ jobs:
             "docker-ce=$docker_package_version" \
             "docker-ce-cli=$docker_package_version" \
             "containerd.io=$containerd_package_version" \
-            libbpf-dev
+            libbpf-dev \
+            libc6-dev-i386
           test -f /usr/include/bpf/bpf_helpers.h
+          test -f /usr/include/x86_64-linux-gnu/gnu/stubs-32.h
+          command -v clang >/dev/null
           test "$(docker version --format '{{.Server.Version}}')" = "$docker_engine_version"
           scripts/build-gvisor-runsc-release.sh "$RUNNER_TEMP/runsc"
           sudo install -d -m 0755 /usr/libexec/heliopause
