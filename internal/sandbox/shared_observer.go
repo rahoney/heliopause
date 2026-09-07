@@ -343,12 +343,25 @@ func (o *SharedObserver) receive() {
 			return
 		}
 		if record.Kind == "stream-fault" {
-			o.mu.Unlock()
+			delete(o.streams, record.ContainerID)
+			o.sequence++
+			o.writeAttributionDiagnostic(sharedAttributionDiagnostic{o.sequence, reader.profile, reader.attributionCounts})
 			reason := record.Reason
 			if reason == "" {
 				reason = "STREAM_FAULT"
 			}
-			o.fail(observerFault{reason: reason})
+			if o.fault == nil {
+				o.fault = observerFault{reason: reason}
+			}
+			close(reader.done)
+			for _, remaining := range o.streams {
+				select {
+				case <-remaining.done:
+				default:
+					close(remaining.done)
+				}
+			}
+			o.mu.Unlock()
 			return
 		}
 		if record.Kind == "stream-end" {

@@ -81,7 +81,7 @@ func (p *ResolverNetworkPolicy) Prepare(ctx context.Context, endpoints []netip.A
 	}
 	network := &resolverNetwork{name: name, session: session, networkID: networkID, subnet: subnet, endpoints: append([]netip.Addr(nil), endpoints...)}
 	if err := p.service.Create(ctx, session, networkID, subnet, endpoints); err != nil {
-		return "", errors.Join(errors.New("create resolver network policy failed"), p.removeCreatedNetwork(name))
+		return "", errors.Join(fmt.Errorf("create resolver network policy failed [code=%s]", resolverPolicyCreateDiagnostic(err)), p.removeCreatedNetwork(name))
 	}
 	if err := p.service.Verify(ctx, session, networkID, subnet, endpoints); err != nil {
 		cleanupCtx, cancel := resolverCleanupContext()
@@ -91,6 +91,38 @@ func (p *ResolverNetworkPolicy) Prepare(ctx context.Context, endpoints []netip.A
 	}
 	p.prepared = network
 	return name, nil
+}
+
+// resolverPolicyCreateDiagnostic accepts only exact sanitized failure forms.
+// Never wrap or emit the service error: implementations may return arbitrary text.
+func resolverPolicyCreateDiagnostic(err error) string {
+	if err == nil {
+		return "UNKNOWN"
+	}
+	switch err.Error() {
+	case "resolver policy identity is invalid":
+		return "POLICY_IDENTITY_INVALID"
+	case "resolver policy endpoint set is invalid":
+		return "POLICY_ENDPOINTS_INVALID"
+	case "network policy service identity is unavailable":
+		return "SERVICE_IDENTITY_UNAVAILABLE"
+	case "network policy service identity changed":
+		return "SERVICE_IDENTITY_CHANGED"
+	case "network policy service is unavailable":
+		return "SERVICE_UNAVAILABLE"
+	case "network policy operation is invalid":
+		return "OPERATION_INVALID"
+	case "network policy service connection failed":
+		return "CONNECTION_FAILED"
+	case "network policy service deadline failed":
+		return "DEADLINE_FAILED"
+	case "network policy request failed":
+		return "REQUEST_FAILED"
+	case "network policy service rejected request":
+		return "REQUEST_REJECTED"
+	default:
+		return "UNKNOWN"
+	}
 }
 
 func resolverCleanupContext() (context.Context, context.CancelFunc) {

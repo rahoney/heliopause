@@ -115,6 +115,57 @@ func TestSharedObserverFailsClosedForLatchedStreamFault(t *testing.T) {
 	}
 }
 
+func TestSharedObserverFlushesAttributionOnStreamFault(t *testing.T) {
+	endpoint := observerEndpoint(t)
+	observer, err := NewSharedObserver(endpoint)
+	if err != nil {
+		t.Fatal(err)
+	}
+	reader, err := observer.Start(context.Background(), "0123456789abcdef")
+	if err != nil {
+		t.Fatal(err)
+	}
+	writer, err := net.DialUnix("unixgram", nil, &net.UnixAddr{Name: endpoint, Net: "unixgram"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer writer.Close()
+	var diagnostic bytes.Buffer
+	observer.diagnostic = &diagnostic
+	for _, record := range []helperRecord{
+		{ContainerID: "0123456789abcdef", Kind: "container-start"},
+		{ContainerID: "0123456789abcdef", Kind: "process-exec-unexpected", EventSource: "SENTRY_EXEC", ProcessClass: "NODE", ClassificationReason: "CLASS_MISMATCH", ParentRelation: "TRACKED_GROUP"},
+		{ContainerID: "0123456789abcdef", Kind: "stream-fault", Reason: "STREAM_FAULT"},
+	} {
+		body, _ := json.Marshal(record)
+		if _, err := writer.Write(body); err != nil {
+			t.Fatal(err)
+		}
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	record, err := reader.Next(ctx)
+	if err != nil || record.Kind != "process-exec-unexpected" {
+		t.Fatalf("Next() = (%#v, %v), want process-exec-unexpected", record, err)
+	}
+	if _, err := reader.Next(ctx); err == nil {
+		t.Fatal("stream-fault did not return error")
+	} else {
+		fault, ok := err.(traceFault)
+		if !ok || fault.TraceFaultReason() != "STREAM_FAULT" {
+			t.Fatalf("fault = %v, want typed STREAM_FAULT", err)
+		}
+	}
+	got := diagnostic.String()
+	want := "observer_attribution sequence=1 profile=default counts=PROCESS/SENTRY_EXEC/NODE/CLASS_MISMATCH/TRACKED_GROUP:1\n"
+	if got != want {
+		t.Fatalf("diagnostic = %q, want %q", got, want)
+	}
+	if strings.Count(got, "observer_attribution") != 1 {
+		t.Fatalf("attribution emitted %d times, want exactly 1", strings.Count(got, "observer_attribution"))
+	}
+}
+
 func FuzzDecodeHelperRecord(f *testing.F) {
 	f.Add([]byte(`{"container_id":"0123456789abcdef","kind":"network-attempt","event_source":"SOCKET","family":"INET","process_relation":"UNKNOWN","process_class":"OTHER"}`))
 	f.Add([]byte(`{"container_id":"invalid","kind":"network-attempt"}`))

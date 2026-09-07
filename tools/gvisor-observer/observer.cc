@@ -170,10 +170,135 @@ enum class SocketClassification {
   kUnknown,
 };
 
+// Diagnostic identities never participate in classification.
+enum class DiagnosticImage { kUnknown, kBoundary, kSetpriv, kShell, kEnv, kNpmCLI, kNode };
+DiagnosticImage DiagnosticImageForPath(const std::string& path) {
+  if (path == "/haa-runtime/haa-boundary") return DiagnosticImage::kBoundary;
+  if (path == "/usr/bin/setpriv") return DiagnosticImage::kSetpriv;
+  if (path == "/bin/sh" || path == "/usr/bin/dash") return DiagnosticImage::kShell;
+  if (path == "/usr/bin/env") return DiagnosticImage::kEnv;
+  if (path == "/usr/local/lib/node_modules/npm/bin/npm-cli.js" || path == "/usr/local/bin/npm") return DiagnosticImage::kNpmCLI;
+  if (path == "/usr/local/bin/node") return DiagnosticImage::kNode;
+  return DiagnosticImage::kUnknown;
+}
+const char* DiagnosticImageName(DiagnosticImage image) {
+  switch (image) {
+    case DiagnosticImage::kBoundary: return "BOUNDARY";
+    case DiagnosticImage::kSetpriv: return "SETPRIV";
+    case DiagnosticImage::kShell: return "SHELL";
+    case DiagnosticImage::kEnv: return "ENV";
+    case DiagnosticImage::kNpmCLI: return "NPM_CLI";
+    case DiagnosticImage::kNode: return "NODE";
+    default: return "UNKNOWN";
+  }
+}
+
+enum class CommandPhase {
+  kUnknown,
+  kNpmVersion,
+  kManifestWrite,
+  kLockGeneration,
+  kLockRead,
+  kReadinessCheck,
+  kOther,
+};
+
+const char* CommandPhaseName(CommandPhase phase) {
+  switch (phase) {
+    case CommandPhase::kNpmVersion: return "NPM_VERSION";
+    case CommandPhase::kManifestWrite: return "MANIFEST_WRITE";
+    case CommandPhase::kLockGeneration: return "LOCK_GENERATION";
+    case CommandPhase::kLockRead: return "LOCK_READ";
+    case CommandPhase::kReadinessCheck: return "READINESS_CHECK";
+    case CommandPhase::kOther: return "OTHER";
+    default: return "UNKNOWN";
+  }
+}
+
+enum class FaultSite {
+  kNone,
+  kRecvTrunc,
+  kRecvShort,
+  kProfileLookup,
+  kEventLimit,
+  kHeaderSize,
+  kDroppedCount,
+  kContainerStart,
+  kSentryClone,
+  kSentryExec,
+  kExecSyscall,
+  kOpen,
+  kOpenResult,
+  kTopologySnapshot,
+  kTopologyMutation,
+  kConnect,
+  kSocket,
+  kRaw,
+  kFdTrack,
+  kUnknownMessage,
+  kRecvError,
+  kUnsealedTopology,
+  kPendingSockets,
+  kPendingOpens,
+  kWorkspaceSend,
+};
+
+const char* FaultSiteName(FaultSite site) {
+  switch (site) {
+    case FaultSite::kRecvTrunc: return "RECV_TRUNC";
+    case FaultSite::kRecvShort: return "RECV_SHORT";
+    case FaultSite::kProfileLookup: return "PROFILE_LOOKUP";
+    case FaultSite::kEventLimit: return "EVENT_LIMIT";
+    case FaultSite::kHeaderSize: return "HEADER_SIZE";
+    case FaultSite::kDroppedCount: return "DROPPED_COUNT";
+    case FaultSite::kContainerStart: return "CONTAINER_START";
+    case FaultSite::kSentryClone: return "SENTRY_CLONE";
+    case FaultSite::kSentryExec: return "SENTRY_EXEC";
+    case FaultSite::kExecSyscall: return "EXEC_SYSCALL";
+    case FaultSite::kOpen: return "OPEN";
+    case FaultSite::kOpenResult: return "OPEN_RESULT";
+    case FaultSite::kTopologySnapshot: return "TOPOLOGY_SNAPSHOT";
+    case FaultSite::kTopologyMutation: return "TOPOLOGY_MUTATION";
+    case FaultSite::kConnect: return "CONNECT";
+    case FaultSite::kSocket: return "SOCKET";
+    case FaultSite::kRaw: return "RAW";
+    case FaultSite::kFdTrack: return "FD_TRACK";
+    case FaultSite::kUnknownMessage: return "UNKNOWN_MESSAGE";
+    case FaultSite::kRecvError: return "RECV_ERROR";
+    case FaultSite::kUnsealedTopology: return "UNSEALED_TOPOLOGY";
+    case FaultSite::kPendingSockets: return "PENDING_SOCKETS";
+    case FaultSite::kPendingOpens: return "PENDING_OPENS";
+    case FaultSite::kWorkspaceSend: return "WORKSPACE_SEND";
+    case FaultSite::kNone:
+    default: return "NONE";
+  }
+}
+
 struct ProcessState {
   enum class Role { kUnknown, kControl, kArtifact };
   enum class Provenance { kUnknown, kOCIRoot, kDirectExecRoot, kCloneChild };
   enum class OCIBootstrapStage { kNotOCI, kAwaitingBootstrapShell, kAwaitingDemotion, kAwaitingSleep, kComplete };
+  struct UnexpectedExecDiagnostic {
+    bool present = false;
+    DiagnosticImage previous_image = DiagnosticImage::kUnknown;
+    DiagnosticImage current_image = DiagnosticImage::kUnknown;
+    CommandPhase phase = CommandPhase::kUnknown;
+    int32_t process_id = 0;
+    int32_t parent_id = 0;
+    ProcessClass previous_class = ProcessClass::kUnknown;
+    ProcessClass current_class = ProcessClass::kUnknown;
+    const char* classification_reason = "NONE";
+    Role role = Role::kUnknown;
+    Provenance provenance = Provenance::kUnknown;
+    const char* parent_relation = "NONE";
+    bool root_eligible = false;
+    bool root_consumed = false;
+    bool trusted_control_network_active = false;
+    bool demotion_pending = false;
+    bool launch_target_pending = false;
+    bool handoff_target_pending = false;
+    bool npm_node_transition_pending = false;
+  };
   struct GroupState {
     int64_t start_time_ns;
     Role role;
@@ -193,6 +318,8 @@ struct ProcessState {
     bool npm_node_transition_pending;
     ProcessClass handoff_target_class;
     OCIBootstrapStage oci_bootstrap_stage;
+    CommandPhase command_phase = CommandPhase::kUnknown;
+    DiagnosticImage diagnostic_image = DiagnosticImage::kUnknown;
   };
   bool bootstrap_active = true;
   bool bootstrap_group_set = false;
@@ -224,6 +351,8 @@ struct ProcessState {
     bool early_finding_emitted;
   };
   std::map<std::pair<int32_t, int64_t>, PendingOpen> pending_opens;
+  UnexpectedExecDiagnostic first_unexpected_exec;
+  FaultSite terminal_fault_site = FaultSite::kNone;
 };
 
 struct NormalizedCounts {
@@ -294,6 +423,50 @@ BoundaryMode BoundaryInvocation(const gvisor::sentry::ExecveInfo& message) {
   // the only trust-removal marker, while the script remains opaque.
   if (mode == "-c") return BoundaryMode::kHandoff;
   return BoundaryMode::kNone;
+}
+
+// These are the exact pinned npm launcher and Node interpreter argv tuples
+// emitted by the fixed HAA npm lifecycle command. They are intentionally
+// duplicated here so a Go-side command drift fails closed at observation.
+constexpr char kNpmCLIPath[] = "/usr/local/lib/node_modules/npm/bin/npm-cli.js";
+constexpr char kNpmPath[] = "/usr/local/bin/npm";
+constexpr char kNodePath[] = "/usr/local/bin/node";
+
+CommandPhase ClassifyCommandShape(const gvisor::sentry::ExecveInfo& message) {
+  for (int index = 0; index < message.argv_size(); ++index) {
+    const std::string& arg = message.argv(index);
+    if (arg.find("package-lock-only") != std::string::npos ||
+        (arg.find("npm install") != std::string::npos && arg.find("--offline") == std::string::npos)) {
+      return CommandPhase::kLockGeneration;
+    }
+    if (arg.find("package.json") != std::string::npos ||
+        arg.find("mkdir -p /tmp/haa-resolver") != std::string::npos) {
+      return CommandPhase::kManifestWrite;
+    }
+    if (arg.find("package-lock.json") != std::string::npos) {
+      return CommandPhase::kLockRead;
+    }
+    if (arg.find("CapInh") != std::string::npos ||
+        arg.find("/proc/1/status") != std::string::npos ||
+        arg.find("CapAmb") != std::string::npos) {
+      return CommandPhase::kReadinessCheck;
+    }
+  }
+  bool has_npm = false;
+  bool has_version = false;
+  for (int index = 0; index < message.argv_size(); ++index) {
+    const std::string& arg = message.argv(index);
+    if (arg == "npm" || arg == kNpmPath || arg == kNpmCLIPath) {
+      has_npm = true;
+    }
+    if (arg == "--version" || arg == "-v") {
+      has_version = true;
+    }
+  }
+  if (has_npm && has_version) {
+    return CommandPhase::kNpmVersion;
+  }
+  return CommandPhase::kOther;
 }
 
 bool IsExactSetprivDemotion(const gvisor::sentry::ExecveInfo& message) {
@@ -376,13 +549,6 @@ bool IsExactOCIBootstrapSleep(const gvisor::sentry::ExecveInfo& message) {
       message.argv(1) == "infinity";
 }
 
-// These are the exact pinned npm launcher and Node interpreter argv tuples
-// emitted by the fixed HAA npm lifecycle command. They are intentionally
-// duplicated here so a Go-side command drift fails closed at observation.
-constexpr char kNpmCLIPath[] = "/usr/local/lib/node_modules/npm/bin/npm-cli.js";
-constexpr char kNpmPath[] = "/usr/local/bin/npm";
-constexpr char kNodePath[] = "/usr/local/bin/node";
-
 bool IsExactNpmLifecycleArguments(const gvisor::sentry::ExecveInfo& message,
                                   int first_argument) {
   static constexpr const char* kArguments[] = {
@@ -437,20 +603,47 @@ bool IsExactNpmNodeTransition(const gvisor::sentry::ExecveInfo& message,
       expected.process_class == ProcessClass::kNpm && IsExactNpmNodeInterpreter(message);
 }
 
+bool IsExactNpmVersionNodeInterpreter(const gvisor::sentry::ExecveInfo& message) {
+  return message.binary_path() == kNodePath && message.execfn() == kNodePath &&
+      message.argv_size() == 3 && message.argv(0) == "node" &&
+      message.argv(1) == kNpmPath && message.argv(2) == "--version";
+}
+
+bool IsExactResolverNpmVersionNodeTransition(const gvisor::sentry::ExecveInfo& message,
+                                            const char* profile,
+                                            int32_t group_id,
+                                            const ProcessState::GroupState& group,
+                                            const ProcessState::ExpectedGroup& expected) {
+  const auto& context = message.context_data();
+  return profile != nullptr && strcmp(profile, kProfileNPM) == 0 &&
+      context.thread_group_id() == group_id &&
+      group.role == ProcessState::Role::kControl &&
+      group.provenance == ProcessState::Provenance::kDirectExecRoot &&
+      !group.root_eligible && group.root_consumed &&
+      group.trusted_control_network_active && !group.demotion_pending &&
+      !group.launch_target_pending && !group.handoff_target_pending &&
+      group.command_phase == CommandPhase::kNpmVersion &&
+      group.diagnostic_image == DiagnosticImage::kNpmCLI &&
+      expected.start_time_ns == context.thread_group_start_time_ns() &&
+      expected.process_class == ProcessClass::kNpm &&
+      IsExactNpmVersionNodeInterpreter(message);
+}
+
 bool IsNewGroup(const ProcessState& state, const gvisor::common::ContextData& context) {
   return state.groups.find(context.thread_group_id()) == state.groups.end();
 }
 
 bool RegisterGroup(ProcessState* state, const gvisor::common::ContextData& context,
                    ProcessState::Role role, ProcessState::Provenance provenance,
-                   bool root_eligible, bool root_consumed) {
+                   bool root_eligible, bool root_consumed,
+                   CommandPhase command_phase = CommandPhase::kUnknown) {
   if (state == nullptr || !ValidProcessIdentity(context)) return false;
   if (state->groups.size() >= kMaxTrackedProcessGroups) return false;
   if (!IsNewGroup(*state, context)) return false;
   state->groups.emplace(context.thread_group_id(), ProcessState::GroupState{
       context.thread_group_start_time_ns(), role, provenance, root_eligible,
       root_consumed, false, false, false, false, false, ProcessClass::kUnknown,
-      ProcessState::OCIBootstrapStage::kNotOCI});
+      ProcessState::OCIBootstrapStage::kNotOCI, command_phase});
   return true;
 }
 
@@ -491,6 +684,61 @@ const char* NetworkProcessClassName(ProcessClass process_class) {
       return "OTHER";
   }
   return "OTHER";
+}
+
+const char* RoleName(ProcessState::Role role) {
+  switch (role) {
+    case ProcessState::Role::kControl: return "CONTROL";
+    case ProcessState::Role::kArtifact: return "ARTIFACT";
+    default: return "UNKNOWN";
+  }
+}
+
+const char* ProvenanceName(ProcessState::Provenance provenance) {
+  switch (provenance) {
+    case ProcessState::Provenance::kOCIRoot: return "OCI_ROOT";
+    case ProcessState::Provenance::kDirectExecRoot: return "DIRECT_EXEC_ROOT";
+    case ProcessState::Provenance::kCloneChild: return "CLONE_CHILD";
+    default: return "UNKNOWN";
+  }
+}
+
+ProcessState::UnexpectedExecDiagnostic CaptureExecDiagnostic(
+                          const ProcessState::GroupState& group,
+                          const gvisor::common::ContextData& context,
+                          ProcessClass prev_class,
+                          ProcessClass curr_class,
+                          DiagnosticImage current_image) {
+  ProcessState::UnexpectedExecDiagnostic snapshot;
+  auto* diag = &snapshot;
+  diag->previous_image = group.diagnostic_image;
+  diag->current_image = current_image;
+  diag->phase = group.command_phase;
+  diag->process_id = context.thread_group_id();
+  diag->parent_id = context.parent_thread_group_id();
+  diag->previous_class = prev_class;
+  diag->current_class = curr_class;
+  diag->role = group.role;
+  diag->provenance = group.provenance;
+  diag->root_eligible = group.root_eligible;
+  diag->root_consumed = group.root_consumed;
+  diag->trusted_control_network_active = group.trusted_control_network_active;
+  diag->demotion_pending = group.demotion_pending;
+  diag->launch_target_pending = group.launch_target_pending;
+  diag->handoff_target_pending = group.handoff_target_pending;
+  diag->npm_node_transition_pending = group.npm_node_transition_pending;
+
+  return snapshot;
+}
+
+void RecordUnexpectedExec(ProcessState::UnexpectedExecDiagnostic* diag,
+                          const ProcessState::UnexpectedExecDiagnostic& snapshot,
+                          const char* reason, const char* parent_relation) {
+  if (diag == nullptr || diag->present) return;
+  *diag = snapshot;
+  diag->present = true;
+  diag->classification_reason = reason;
+  diag->parent_relation = parent_relation;
 }
 
 ProcessClass ProcessClassForPath(const std::string& path, const char* profile) {
@@ -1362,7 +1610,8 @@ bool ParseSentryClone(const char* payload, size_t payload_size,
   state->groups.emplace(child_group, ProcessState::GroupState{
       message.created_thread_start_time_ns(), creator->second.role,
       ProcessState::Provenance::kCloneChild, false, true, false, false, false, false,
-      false, ProcessClass::kUnknown, ProcessState::OCIBootstrapStage::kNotOCI});
+      false, ProcessClass::kUnknown, ProcessState::OCIBootstrapStage::kNotOCI,
+      creator->second.command_phase});
   return true;
 }
 
@@ -1459,8 +1708,16 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     if (*reason == nullptr) *reason = "EXEC_CORRELATION_INVALID";
     return false;
   }
-  ProcessState candidate = *process_state;
   const int32_t group_id = message.context_data().thread_group_id();
+  const auto prior_group = process_state->groups.find(group_id);
+  const auto prior_expected = process_state->expected_groups.find(group_id);
+  const ProcessState::GroupState empty_group{};
+  const auto snapshot = CaptureExecDiagnostic(
+      prior_group == process_state->groups.end() ? empty_group : prior_group->second,
+      message.context_data(),
+      prior_expected == process_state->expected_groups.end() ? ProcessClass::kUnknown : prior_expected->second.process_class,
+      ProcessClassForPath(message.binary_path(), profile), DiagnosticImageForPath(message.binary_path()));
+  ProcessState candidate = *process_state;
   const BoundaryMode boundary_mode = BoundaryInvocation(message);
   auto group = candidate.groups.find(group_id);
   bool new_direct_root = false;
@@ -1469,17 +1726,19 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     return false;
   }
   if (group == candidate.groups.end()) {
+    const CommandPhase phase = ClassifyCommandShape(message);
     if (!message.context_data().is_exec_session() || message.context_data().parent_thread_group_id() != 0 ||
         boundary_mode == BoundaryMode::kNone ||
         candidate.groups.size() >= kMaxTrackedProcessGroups ||
         !RegisterGroup(&candidate, message.context_data(), ProcessState::Role::kControl,
-                       ProcessState::Provenance::kDirectExecRoot, true, false)) {
+                       ProcessState::Provenance::kDirectExecRoot, true, false, phase)) {
       *reason = "PROCESS_PROVENANCE_UNKNOWN";
       return false;
     }
     group = candidate.groups.find(group_id);
     new_direct_root = true;
   }
+  group->second.diagnostic_image = DiagnosticImageForPath(message.binary_path());
   if (group->second.provenance == ProcessState::Provenance::kOCIRoot) {
     if (group->second.role != ProcessState::Role::kControl ||
         !candidate.bootstrap_active || group->second.trusted_control_network_active) {
@@ -1620,11 +1879,14 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
                                   ProcessClassName(process_class), "ARTIFACT_ROLE", "ARTIFACT_GROUP"};
     process_state->groups = candidate.groups;
     process_state->fd_states = candidate.fd_states;
+    RecordUnexpectedExec(&process_state->first_unexpected_exec, snapshot,
+                         "ARTIFACT_ROLE", "ARTIFACT_GROUP");
     return Send(output, *container_id, "process-exec-unexpected", nullptr, &attribution);
   }
   auto tracked_group = candidate.expected_groups.find(group_id);
   if (tracked_group != candidate.expected_groups.end() &&
-      IsExactNpmNodeTransition(message, profile, group_id, group->second, tracked_group->second)) {
+      (IsExactNpmNodeTransition(message, profile, group_id, group->second, tracked_group->second) ||
+       IsExactResolverNpmVersionNodeTransition(message, profile, group_id, group->second, tracked_group->second))) {
     tracked_group->second.process_class = ProcessClass::kNode;
     group->second.npm_node_transition_pending = false;
     ApplyExecCloexec(&candidate, group_id);
@@ -1668,6 +1930,8 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
   const Attribution attribution{"SENTRY_EXEC", nullptr, nullptr,
                                 ProcessClassName(classification.process_class), classification.reason,
                                 classification.parent_relation};
+  RecordUnexpectedExec(&process_state->first_unexpected_exec, snapshot,
+                       classification.reason, classification.parent_relation);
   return Send(output, *container_id, "process-exec-unexpected", nullptr, &attribution);
 }
 
@@ -2108,31 +2372,124 @@ bool ParseTopologyMutation(const char* payload, size_t payload_size, std::string
 
 bool Handle(const Header& header, const char* payload, size_t payload_size, int output, std::string* container_id,
             const char* profile, ProcessState* process_state, NormalizedCounts* counts, TopologyState* topology,
-            const char** reason) {
-  if (header.dropped_count != 0) { *reason = "STREAM_FAULT"; return false; }
+            const char** reason, FaultSite* fault_site = nullptr) {
+  auto set_fault_site = [fault_site](FaultSite site) {
+    if (fault_site != nullptr) *fault_site = site;
+  };
+  if (header.dropped_count != 0) {
+    *reason = "STREAM_FAULT";
+    set_fault_site(FaultSite::kDroppedCount);
+    return false;
+  }
   switch (static_cast<gvisor::common::MessageType>(header.message_type)) {
-    case gvisor::common::MESSAGE_CONTAINER_START: return ParseContainerStart(payload, payload_size, output, container_id, process_state, reason);
-    case gvisor::common::MESSAGE_SENTRY_CLONE: return ParseSentryClone(payload, payload_size, output, container_id, process_state, reason);
-    case gvisor::common::MESSAGE_SENTRY_EXEC: return ParseSentryProcessAndClassify(payload, payload_size, output, container_id, profile, process_state, reason);
+    case gvisor::common::MESSAGE_CONTAINER_START:
+      if (!ParseContainerStart(payload, payload_size, output, container_id, process_state, reason)) {
+        set_fault_site(FaultSite::kContainerStart);
+        return false;
+      }
+      return true;
+    case gvisor::common::MESSAGE_SENTRY_CLONE:
+      if (!ParseSentryClone(payload, payload_size, output, container_id, process_state, reason)) {
+        set_fault_site(FaultSite::kSentryClone);
+        return false;
+      }
+      return true;
+    case gvisor::common::MESSAGE_SENTRY_EXEC:
+      if (!ParseSentryProcessAndClassify(payload, payload_size, output, container_id, profile, process_state, reason)) {
+        set_fault_site(FaultSite::kSentryExec);
+        return false;
+      }
+      return true;
     // pathname, argv and envv are parsed by protobuf but are deliberately never
     // copied to the HAA envelope. M11-003 supplies the trusted profile required
     // to classify this bounded process fact as expected or unexpected.
-    case gvisor::common::MESSAGE_SYSCALL_EXECVE: return ParseExecSyscallTelemetry<gvisor::syscall::Execve>(payload, payload_size, container_id, reason);
-    case gvisor::common::MESSAGE_SYSCALL_OPEN: return ParseOpenAndSend(payload, payload_size, output, container_id, profile, process_state, counts, reason);
-    case gvisor::common::MESSAGE_SYSCALL_OPEN_RESULT: return ParseOpenResultAndSend(payload, payload_size, output, container_id, profile, process_state, counts, *topology, reason);
+    case gvisor::common::MESSAGE_SYSCALL_EXECVE:
+      if (!ParseExecSyscallTelemetry<gvisor::syscall::Execve>(payload, payload_size, container_id, reason)) {
+        set_fault_site(FaultSite::kExecSyscall);
+        return false;
+      }
+      return true;
+    case gvisor::common::MESSAGE_SYSCALL_OPEN:
+      if (!ParseOpenAndSend(payload, payload_size, output, container_id, profile, process_state, counts, reason)) {
+        set_fault_site(FaultSite::kOpen);
+        return false;
+      }
+      return true;
+    case gvisor::common::MESSAGE_SYSCALL_OPEN_RESULT:
+      if (!ParseOpenResultAndSend(payload, payload_size, output, container_id, profile, process_state, counts, *topology, reason)) {
+        set_fault_site(FaultSite::kOpenResult);
+        return false;
+      }
+      return true;
     case gvisor::common::MESSAGE_SENTRY_MOUNT_TOPOLOGY_SNAPSHOT:
-      if (!process_state->bootstrap_group_set) { *reason = "TOPOLOGY_INVALID"; return false; }
-      return ParseTopologySnapshot(payload, payload_size, output, container_id, topology, reason);
-    case gvisor::common::MESSAGE_SENTRY_MOUNT_TOPOLOGY_MUTATION: return ParseTopologyMutation(payload, payload_size, container_id, *topology, reason);
-    case gvisor::common::MESSAGE_SYSCALL_CONNECT: return ParseConnectAndSend(payload, payload_size, output, container_id, profile, *process_state, reason);
-    case gvisor::common::MESSAGE_SYSCALL_SOCKET: return ParseSocketAndTrack<gvisor::syscall::Socket>(payload, payload_size, output, container_id, profile, process_state, reason);
-    case gvisor::common::MESSAGE_SYSCALL_RAW: return ParseRawAndSend(payload, payload_size, output, container_id, profile, process_state, reason);
-    case gvisor::common::MESSAGE_SYSCALL_CLOSE: return ParseCloseAndTrack(payload, payload_size, container_id, process_state, reason);
-    case gvisor::common::MESSAGE_SYSCALL_DUP: return ParseDupAndTrack(payload, payload_size, container_id, process_state, reason);
-    case gvisor::common::MESSAGE_SYSCALL_FCNTL: return ParseFcntlAndTrack(payload, payload_size, container_id, process_state, reason);
-    case gvisor::common::MESSAGE_SYSCALL_CLONE: return ParseCloneAndTrack(payload, payload_size, container_id, process_state, reason);
-    case gvisor::common::MESSAGE_SYSCALL_FORK: return ParseForkAndTrack(payload, payload_size, container_id, process_state, reason);
-    default: *reason = "UNKNOWN_EVENT_KIND"; return false;
+      if (!process_state->bootstrap_group_set) {
+        *reason = "TOPOLOGY_INVALID";
+        set_fault_site(FaultSite::kTopologySnapshot);
+        return false;
+      }
+      if (!ParseTopologySnapshot(payload, payload_size, output, container_id, topology, reason)) {
+        set_fault_site(FaultSite::kTopologySnapshot);
+        return false;
+      }
+      return true;
+    case gvisor::common::MESSAGE_SENTRY_MOUNT_TOPOLOGY_MUTATION:
+      if (!ParseTopologyMutation(payload, payload_size, container_id, *topology, reason)) {
+        set_fault_site(FaultSite::kTopologyMutation);
+        return false;
+      }
+      return true;
+    case gvisor::common::MESSAGE_SYSCALL_CONNECT:
+      if (!ParseConnectAndSend(payload, payload_size, output, container_id, profile, *process_state, reason)) {
+        set_fault_site(FaultSite::kConnect);
+        return false;
+      }
+      return true;
+    case gvisor::common::MESSAGE_SYSCALL_SOCKET:
+      if (!ParseSocketAndTrack<gvisor::syscall::Socket>(payload, payload_size, output, container_id, profile, process_state, reason)) {
+        set_fault_site(FaultSite::kSocket);
+        return false;
+      }
+      return true;
+    case gvisor::common::MESSAGE_SYSCALL_RAW:
+      if (!ParseRawAndSend(payload, payload_size, output, container_id, profile, process_state, reason)) {
+        set_fault_site(FaultSite::kRaw);
+        return false;
+      }
+      return true;
+    case gvisor::common::MESSAGE_SYSCALL_CLOSE:
+      if (!ParseCloseAndTrack(payload, payload_size, container_id, process_state, reason)) {
+        set_fault_site(FaultSite::kFdTrack);
+        return false;
+      }
+      return true;
+    case gvisor::common::MESSAGE_SYSCALL_DUP:
+      if (!ParseDupAndTrack(payload, payload_size, container_id, process_state, reason)) {
+        set_fault_site(FaultSite::kFdTrack);
+        return false;
+      }
+      return true;
+    case gvisor::common::MESSAGE_SYSCALL_FCNTL:
+      if (!ParseFcntlAndTrack(payload, payload_size, container_id, process_state, reason)) {
+        set_fault_site(FaultSite::kFdTrack);
+        return false;
+      }
+      return true;
+    case gvisor::common::MESSAGE_SYSCALL_CLONE:
+      if (!ParseCloneAndTrack(payload, payload_size, container_id, process_state, reason)) {
+        set_fault_site(FaultSite::kFdTrack);
+        return false;
+      }
+      return true;
+    case gvisor::common::MESSAGE_SYSCALL_FORK:
+      if (!ParseForkAndTrack(payload, payload_size, container_id, process_state, reason)) {
+        set_fault_site(FaultSite::kFdTrack);
+        return false;
+      }
+      return true;
+    default:
+      *reason = "UNKNOWN_EVENT_KIND";
+      set_fault_site(FaultSite::kUnknownMessage);
+      return false;
   }
 }
 
@@ -2200,21 +2557,44 @@ int main(int argc, char** argv) {
     const char* profile = nullptr;
     size_t normalized_records = 0;
     while ((size = recv(client, event, sizeof(event), MSG_TRUNC)) > 0) {
-      if (static_cast<size_t>(size) > sizeof(event)) { fault = true; fault_reason = "STREAM_FAULT"; break; }
-      if (static_cast<size_t>(size) < sizeof(Header)) { fault = true; fault_reason = "STREAM_FAULT"; break; }
+      if (static_cast<size_t>(size) > sizeof(event)) {
+        fault = true;
+        fault_reason = "STREAM_FAULT";
+        process_state.terminal_fault_site = FaultSite::kRecvTrunc;
+        break;
+      }
+      if (static_cast<size_t>(size) < sizeof(Header)) {
+        fault = true;
+        fault_reason = "STREAM_FAULT";
+        process_state.terminal_fault_site = FaultSite::kRecvShort;
+        break;
+      }
       Header header{}; memcpy(&header, event, sizeof(header));
       if (profile == nullptr && !container_id.empty()) {
         const ProfileRegistration* registration = AwaitProfile(control, container_id, &profiles);
-        if (registration == nullptr) { fault = true; fault_reason = "PROFILE_LOOKUP_FAILURE"; break; }
+        if (registration == nullptr) {
+          fault = true;
+          fault_reason = "PROFILE_LOOKUP_FAILURE";
+          process_state.terminal_fault_site = FaultSite::kProfileLookup;
+          break;
+        }
         profile = registration->profile.c_str();
         topology_state.expected = registration->expected;
       }
       if (normalized_records + normalized_counts.immediate_records == MaximumRecords(profile)) {
-        fault = true; fault_reason = "EVENT_LIMIT"; break;
+        fault = true;
+        fault_reason = "EVENT_LIMIT";
+        process_state.terminal_fault_site = FaultSite::kEventLimit;
+        break;
       }
-      if (header.header_size < sizeof(Header) || header.header_size > static_cast<uint16_t>(size)) { fault = true; fault_reason = "STREAM_FAULT"; break; }
+      if (header.header_size < sizeof(Header) || header.header_size > static_cast<uint16_t>(size)) {
+        fault = true;
+        fault_reason = "STREAM_FAULT";
+        process_state.terminal_fault_site = FaultSite::kHeaderSize;
+        break;
+      }
       if (!Handle(header, event + header.header_size, size - header.header_size, output, &container_id, profile,
-                  &process_state, &normalized_counts, &topology_state, &fault_reason)) {
+                  &process_state, &normalized_counts, &topology_state, &fault_reason, &process_state.terminal_fault_site)) {
         fault = true;
         if (fault_reason == nullptr) fault_reason = "STREAM_FAULT";
         break;
@@ -2225,22 +2605,34 @@ int main(int argc, char** argv) {
       if (header.message_type != gvisor::common::MESSAGE_SYSCALL_OPEN &&
           header.message_type != gvisor::common::MESSAGE_SYSCALL_OPEN_RESULT) ++normalized_records;
     }
-    if (size < 0) { fault = true; fault_reason = "STREAM_FAULT"; }
+    if (size < 0) {
+      fault = true;
+      fault_reason = "STREAM_FAULT";
+      process_state.terminal_fault_site = FaultSite::kRecvError;
+    }
     if (!fault && (!topology_state.sealed || !process_state.pending_sockets.empty() || !process_state.pending_opens.empty())) {
       fault = true;
-      // Socket enter events without their required exit leave FD-family state
-      // unclassifiable. This is a network-state fault, not obsolete exec
-      // correlation state.
-      fault_reason = !topology_state.sealed ? "TOPOLOGY_NOT_READY" : (!process_state.pending_sockets.empty() ? "FD_STATE_UNKNOWN" : "STREAM_FAULT");
+      if (!topology_state.sealed) {
+        fault_reason = "TOPOLOGY_NOT_READY";
+        process_state.terminal_fault_site = FaultSite::kUnsealedTopology;
+      } else if (!process_state.pending_sockets.empty()) {
+        fault_reason = "FD_STATE_UNKNOWN";
+        process_state.terminal_fault_site = FaultSite::kPendingSockets;
+      } else {
+        fault_reason = "STREAM_FAULT";
+        process_state.terminal_fault_site = FaultSite::kPendingOpens;
+      }
     }
     if (!fault && !container_id.empty() && normalized_counts.workspace_access != 0) {
       if (normalized_records + normalized_counts.immediate_records == MaximumRecords(profile)) {
         fault = true;
         fault_reason = "EVENT_LIMIT";
+        process_state.terminal_fault_site = FaultSite::kEventLimit;
       } else if (!Send(output, container_id, "filesystem-workspace-access", nullptr, nullptr,
                        normalized_counts.workspace_access)) {
         fault = true;
         fault_reason = "STREAM_FAULT";
+        process_state.terminal_fault_site = FaultSite::kWorkspaceSend;
       }
     }
     if (!container_id.empty()) {

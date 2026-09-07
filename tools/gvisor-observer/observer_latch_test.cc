@@ -2632,12 +2632,351 @@ bool VerifyNoBasenameTrust(int output, const std::string& remote, const std::str
   return ExpectRecordExact(output, kSixtySixthID, "stream-end");
 }
 
+bool VerifyUnexpectedExecDiagnosticRetention() {
+  // 1. Verify ClassifyCommandShape
+  gvisor::sentry::ExecveInfo lock_exec;
+  lock_exec.add_argv("sh");
+  lock_exec.add_argv("-c");
+  lock_exec.add_argv("npm install --package-lock-only");
+  if (ClassifyCommandShape(lock_exec) != CommandPhase::kLockGeneration) return false;
+
+  gvisor::sentry::ExecveInfo manifest_exec;
+  manifest_exec.add_argv("sh");
+  manifest_exec.add_argv("-c");
+  manifest_exec.add_argv("echo '{\"name\":\"test\"}' > /tmp/haa-resolver/package.json");
+  if (ClassifyCommandShape(manifest_exec) != CommandPhase::kManifestWrite) return false;
+
+  gvisor::sentry::ExecveInfo lock_read_exec;
+  lock_read_exec.add_argv("cat");
+  lock_read_exec.add_argv("/tmp/haa-resolver/package-lock.json");
+  if (ClassifyCommandShape(lock_read_exec) != CommandPhase::kLockRead) return false;
+
+  gvisor::sentry::ExecveInfo readiness_exec;
+  readiness_exec.add_argv("grep");
+  readiness_exec.add_argv("CapInh");
+  readiness_exec.add_argv("/proc/1/status");
+  if (ClassifyCommandShape(readiness_exec) != CommandPhase::kReadinessCheck) return false;
+
+  gvisor::sentry::ExecveInfo version_exec;
+  version_exec.add_argv("npm");
+  version_exec.add_argv("--version");
+  if (ClassifyCommandShape(version_exec) != CommandPhase::kNpmVersion) return false;
+
+  gvisor::sentry::ExecveInfo other_exec;
+  other_exec.add_argv("ls");
+  if (ClassifyCommandShape(other_exec) != CommandPhase::kOther) return false;
+
+  // 2. Direct exec root group creation with CommandPhase
+  ProcessState state;
+  gvisor::common::ContextData root_ctx;
+  root_ctx.set_container_id(kFirstID);
+  root_ctx.set_thread_group_id(500);
+  root_ctx.set_thread_group_start_time_ns(5000);
+  root_ctx.set_parent_thread_group_id(0);
+  root_ctx.set_is_exec_session(true);
+  root_ctx.set_process_name("haa-boundary");
+  if (!RegisterGroup(&state, root_ctx, ProcessState::Role::kControl,
+                     ProcessState::Provenance::kDirectExecRoot, false, false,
+                     CommandPhase::kLockGeneration)) return false;
+  auto root_group = state.groups.find(500);
+  if (root_group == state.groups.end() || root_group->second.command_phase != CommandPhase::kLockGeneration) return false;
+
+  // 3. Sentry clone inherits CommandPhase
+  gvisor::sentry::CloneInfo clone_msg;
+  *clone_msg.mutable_context_data() = root_ctx;
+  clone_msg.set_created_thread_group_id(501);
+  clone_msg.set_created_thread_start_time_ns(5010);
+  std::string clone_bytes;
+  clone_msg.SerializeToString(&clone_bytes);
+  std::string cid = kFirstID;
+  const char* clone_reason = nullptr;
+  if (!ParseSentryClone(clone_bytes.data(), clone_bytes.size(), -1, &cid, &state, &clone_reason)) return false;
+  auto child_group = state.groups.find(501);
+  if (child_group == state.groups.end() ||
+      child_group->second.command_phase != CommandPhase::kLockGeneration ||
+      child_group->second.provenance != ProcessState::Provenance::kCloneChild) return false;
+
+  // 4. RecordUnexpectedExec latches the first unexpected exec
+  if (state.first_unexpected_exec.present) return false;
+  gvisor::common::ContextData child_ctx = root_ctx;
+  child_ctx.set_thread_group_id(501);
+  child_ctx.set_parent_thread_group_id(500);
+  child_ctx.set_thread_group_start_time_ns(5010);
+  child_group->second.diagnostic_image = DiagnosticImage::kEnv;
+  child_group->second.trusted_control_network_active = true;
+  state.expected_groups.emplace(501, ProcessState::ExpectedGroup{5010, ProcessClass::kNpm});
+  const auto snapshot = CaptureExecDiagnostic(child_group->second, child_ctx,
+      state.expected_groups.at(501).process_class, ProcessClass::kNode, DiagnosticImage::kNode);
+  auto moved_expected = std::move(state.expected_groups);
+  child_group->second.trusted_control_network_active = false;
+  child_group->second.diagnostic_image = DiagnosticImage::kNode;
+  RecordUnexpectedExec(&state.first_unexpected_exec, snapshot, "UNEXPECTED_INTERPRETER", "PARENT_CHILD");
+  if (!state.first_unexpected_exec.trusted_control_network_active ||
+      state.first_unexpected_exec.previous_image != DiagnosticImage::kEnv ||
+      state.first_unexpected_exec.current_image != DiagnosticImage::kNode ||
+      moved_expected.at(501).process_class != state.first_unexpected_exec.previous_class) return false;
+  if (DiagnosticImageForPath("/tmp/private-secret-node") != DiagnosticImage::kUnknown ||
+      strcmp(DiagnosticImageName(DiagnosticImageForPath("/tmp/private-secret-node")), "UNKNOWN") != 0) return false;
+  if (!state.first_unexpected_exec.present ||
+      state.first_unexpected_exec.phase != CommandPhase::kLockGeneration ||
+      state.first_unexpected_exec.process_id != 501 ||
+      state.first_unexpected_exec.parent_id != 500 ||
+      state.first_unexpected_exec.previous_class != ProcessClass::kNpm ||
+      state.first_unexpected_exec.current_class != ProcessClass::kNode ||
+      strcmp(state.first_unexpected_exec.classification_reason, "UNEXPECTED_INTERPRETER") != 0 ||
+      state.first_unexpected_exec.role != ProcessState::Role::kControl ||
+      state.first_unexpected_exec.provenance != ProcessState::Provenance::kCloneChild ||
+      strcmp(state.first_unexpected_exec.parent_relation, "PARENT_CHILD") != 0) return false;
+
+  // 5. Subsequent unexpected execs do NOT overwrite the latched first unexpected exec
+  ProcessState::GroupState other_group = child_group->second;
+  other_group.command_phase = CommandPhase::kOther;
+  gvisor::common::ContextData other_ctx = child_ctx;
+  other_ctx.set_thread_group_id(999);
+  other_ctx.set_parent_thread_group_id(0);
+  const auto later = CaptureExecDiagnostic(other_group, other_ctx,
+      ProcessClass::kShell, ProcessClass::kShell, DiagnosticImage::kShell);
+  RecordUnexpectedExec(&state.first_unexpected_exec, later, "SECOND_EXEC", "NONE");
+  if (!state.first_unexpected_exec.present ||
+      state.first_unexpected_exec.process_id != 501 ||
+      state.first_unexpected_exec.phase != CommandPhase::kLockGeneration ||
+      strcmp(state.first_unexpected_exec.classification_reason, "UNEXPECTED_INTERPRETER") != 0) return false;
+
+  // Diagnostic state cannot affect policy classification.
+  ProcessState plain = state;
+  plain.expected_groups = moved_expected;
+  ProcessState diagnosed = plain;
+  diagnosed.groups.at(501).diagnostic_image = DiagnosticImage::kBoundary;
+  diagnosed.first_unexpected_exec = snapshot;
+  const auto plain_result = IsExpectedProcess(kNodePath, child_ctx, kProfileNPM, &plain);
+  const auto diagnosed_result = IsExpectedProcess(kNodePath, child_ctx, kProfileNPM, &diagnosed);
+  if (plain_result.expected != diagnosed_result.expected ||
+      plain_result.process_class != diagnosed_result.process_class ||
+      strcmp(plain_result.reason, diagnosed_result.reason) != 0 ||
+      strcmp(plain_result.parent_relation, diagnosed_result.parent_relation) != 0) return false;
+
+  // 6. Verify enum names: bounded, non-empty, and free of whitespace / slashes
+  const CommandPhase phases[] = {
+      CommandPhase::kUnknown, CommandPhase::kNpmVersion, CommandPhase::kManifestWrite,
+      CommandPhase::kLockGeneration, CommandPhase::kLockRead, CommandPhase::kReadinessCheck,
+      CommandPhase::kOther};
+  for (const auto phase : phases) {
+    const char* name = CommandPhaseName(phase);
+    if (name == nullptr || strlen(name) == 0 || strchr(name, ' ') != nullptr || strchr(name, '/') != nullptr) return false;
+  }
+
+  const FaultSite sites[] = {
+      FaultSite::kNone, FaultSite::kRecvTrunc, FaultSite::kRecvShort,
+      FaultSite::kProfileLookup, FaultSite::kEventLimit, FaultSite::kHeaderSize,
+      FaultSite::kDroppedCount, FaultSite::kContainerStart, FaultSite::kSentryClone,
+      FaultSite::kSentryExec, FaultSite::kExecSyscall, FaultSite::kOpen,
+      FaultSite::kOpenResult, FaultSite::kTopologySnapshot, FaultSite::kTopologyMutation,
+      FaultSite::kConnect, FaultSite::kSocket, FaultSite::kRaw, FaultSite::kFdTrack,
+      FaultSite::kUnknownMessage, FaultSite::kRecvError, FaultSite::kUnsealedTopology,
+      FaultSite::kPendingSockets, FaultSite::kPendingOpens, FaultSite::kWorkspaceSend};
+  for (const auto site : sites) {
+    const char* name = FaultSiteName(site);
+    if (name == nullptr || strlen(name) == 0 || strchr(name, ' ') != nullptr || strchr(name, '/') != nullptr) return false;
+  }
+
+  // 7. Verify terminal fault site retention
+  state.terminal_fault_site = FaultSite::kRecvError;
+  if (strcmp(FaultSiteName(state.terminal_fault_site), "RECV_ERROR") != 0) return false;
+  state.terminal_fault_site = FaultSite::kSentryExec;
+  if (strcmp(FaultSiteName(state.terminal_fault_site), "SENTRY_EXEC") != 0) return false;
+
+  return true;
+}
+
+bool VerifyResolverNpmVersionNodeTransition() {
+  gvisor::common::ContextData context;
+  context.set_container_id(kThirtyFirstID);
+  context.set_thread_group_id(300);
+  context.set_thread_group_start_time_ns(3000);
+  context.set_parent_thread_group_id(0);
+  context.set_is_exec_session(true);
+  context.set_process_name("node");
+
+  // 1. Exact canonical NPM_VERSION transition message
+  gvisor::sentry::ExecveInfo node;
+  *node.mutable_context_data() = context;
+  node.set_binary_path(kNodePath);
+  node.set_execfn(kNodePath);
+  node.add_argv("node");
+  node.add_argv(kNpmPath);
+  node.add_argv("--version");
+
+  if (ProcessClassForPath(node.binary_path(), kProfileNPM) != ProcessClass::kNode ||
+      !IsExactNpmVersionNodeInterpreter(node)) return false;
+
+  ProcessState state;
+  if (!RegisterGroup(&state, context, ProcessState::Role::kControl,
+                     ProcessState::Provenance::kDirectExecRoot, false, true,
+                     CommandPhase::kNpmVersion)) return false;
+  auto group = state.groups.find(context.thread_group_id());
+  if (group == state.groups.end()) return false;
+  group->second.trusted_control_network_active = true;
+  group->second.diagnostic_image = DiagnosticImage::kNpmCLI;
+  state.expected_groups.emplace(context.thread_group_id(),
+      ProcessState::ExpectedGroup{context.thread_group_start_time_ns(), ProcessClass::kNpm});
+
+  auto expected = state.expected_groups.find(context.thread_group_id());
+  if (expected == state.expected_groups.end() ||
+      !IsExactResolverNpmVersionNodeTransition(node, kProfileNPM, context.thread_group_id(),
+                                               group->second, expected->second)) return false;
+
+  // 2. Changed command shape is rejected
+  auto wrong_version = node; wrong_version.set_argv(2, "--help");
+  auto missing_version = node; missing_version.mutable_argv()->DeleteSubrange(2, 1);
+  auto extra_argv = node; extra_argv.add_argv("extra");
+  auto empty_argv = node; empty_argv.clear_argv();
+  if (IsExactNpmVersionNodeInterpreter(wrong_version) ||
+      IsExactNpmVersionNodeInterpreter(missing_version) ||
+      IsExactNpmVersionNodeInterpreter(extra_argv) ||
+      IsExactNpmVersionNodeInterpreter(empty_argv)) return false;
+  if (IsExactResolverNpmVersionNodeTransition(wrong_version, kProfileNPM, context.thread_group_id(),
+                                              group->second, expected->second) ||
+      IsExactResolverNpmVersionNodeTransition(missing_version, kProfileNPM, context.thread_group_id(),
+                                              group->second, expected->second) ||
+      IsExactResolverNpmVersionNodeTransition(extra_argv, kProfileNPM, context.thread_group_id(),
+                                              group->second, expected->second)) return false;
+
+  // 3. Wrong predecessor identity is rejected
+  auto invalid_group = group->second;
+  invalid_group.diagnostic_image = DiagnosticImage::kShell;
+  if (IsExactResolverNpmVersionNodeTransition(node, kProfileNPM, context.thread_group_id(),
+                                              invalid_group, expected->second)) return false;
+  invalid_group.diagnostic_image = DiagnosticImage::kBoundary;
+  if (IsExactResolverNpmVersionNodeTransition(node, kProfileNPM, context.thread_group_id(),
+                                              invalid_group, expected->second)) return false;
+  invalid_group.diagnostic_image = DiagnosticImage::kNode;
+  if (IsExactResolverNpmVersionNodeTransition(node, kProfileNPM, context.thread_group_id(),
+                                              invalid_group, expected->second)) return false;
+  invalid_group.diagnostic_image = DiagnosticImage::kUnknown;
+  if (IsExactResolverNpmVersionNodeTransition(node, kProfileNPM, context.thread_group_id(),
+                                              invalid_group, expected->second)) return false;
+
+  // 4. Wrong predecessor class is rejected
+  auto invalid_expected = expected->second;
+  invalid_expected.process_class = ProcessClass::kNode;
+  if (IsExactResolverNpmVersionNodeTransition(node, kProfileNPM, context.thread_group_id(),
+                                              group->second, invalid_expected)) return false;
+  invalid_expected.process_class = ProcessClass::kShell;
+  if (IsExactResolverNpmVersionNodeTransition(node, kProfileNPM, context.thread_group_id(),
+                                              group->second, invalid_expected)) return false;
+
+  // 5. Wrong current identity is rejected
+  auto wrong_node_path = node; wrong_node_path.set_binary_path("/usr/bin/node");
+  auto wrong_node_execfn = node; wrong_node_execfn.set_execfn("/usr/bin/node");
+  auto wrong_node_argv0 = node; wrong_node_argv0.set_argv(0, "/usr/bin/node");
+  auto wrong_node_argv1 = node; wrong_node_argv1.set_argv(1, "/tmp/npm");
+  if (IsExactNpmVersionNodeInterpreter(wrong_node_path) ||
+      IsExactNpmVersionNodeInterpreter(wrong_node_execfn) ||
+      IsExactNpmVersionNodeInterpreter(wrong_node_argv0) ||
+      IsExactNpmVersionNodeInterpreter(wrong_node_argv1)) return false;
+  if (IsExactResolverNpmVersionNodeTransition(wrong_node_path, kProfileNPM, context.thread_group_id(),
+                                              group->second, expected->second) ||
+      IsExactResolverNpmVersionNodeTransition(wrong_node_execfn, kProfileNPM, context.thread_group_id(),
+                                              group->second, expected->second) ||
+      IsExactResolverNpmVersionNodeTransition(wrong_node_argv0, kProfileNPM, context.thread_group_id(),
+                                              group->second, expected->second) ||
+      IsExactResolverNpmVersionNodeTransition(wrong_node_argv1, kProfileNPM, context.thread_group_id(),
+                                              group->second, expected->second)) return false;
+
+  // 6. Wrong role is rejected
+  invalid_group = group->second;
+  invalid_group.role = ProcessState::Role::kArtifact;
+  if (IsExactResolverNpmVersionNodeTransition(node, kProfileNPM, context.thread_group_id(),
+                                              invalid_group, expected->second)) return false;
+  invalid_group.role = ProcessState::Role::kUnknown;
+  if (IsExactResolverNpmVersionNodeTransition(node, kProfileNPM, context.thread_group_id(),
+                                              invalid_group, expected->second)) return false;
+
+  // 7. Wrong provenance is rejected
+  invalid_group = group->second;
+  invalid_group.provenance = ProcessState::Provenance::kCloneChild;
+  if (IsExactResolverNpmVersionNodeTransition(node, kProfileNPM, context.thread_group_id(),
+                                              invalid_group, expected->second)) return false;
+  invalid_group.provenance = ProcessState::Provenance::kOCIRoot;
+  if (IsExactResolverNpmVersionNodeTransition(node, kProfileNPM, context.thread_group_id(),
+                                              invalid_group, expected->second)) return false;
+  invalid_group.provenance = ProcessState::Provenance::kUnknown;
+  if (IsExactResolverNpmVersionNodeTransition(node, kProfileNPM, context.thread_group_id(),
+                                              invalid_group, expected->second)) return false;
+
+  // 8. Wrong tracked-group / parent state is rejected
+  auto different_group = node; different_group.mutable_context_data()->set_thread_group_id(999);
+  auto different_start = node; different_start.mutable_context_data()->set_thread_group_start_time_ns(9999);
+  if (IsExactResolverNpmVersionNodeTransition(different_group, kProfileNPM, context.thread_group_id(),
+                                              group->second, expected->second) ||
+      IsExactResolverNpmVersionNodeTransition(different_start, kProfileNPM, context.thread_group_id(),
+                                              group->second, expected->second)) return false;
+
+  // 9. Artifact role cannot use this transition
+  invalid_group = group->second;
+  invalid_group.role = ProcessState::Role::kArtifact;
+  if (IsExactResolverNpmVersionNodeTransition(node, kProfileNPM, context.thread_group_id(),
+                                              invalid_group, expected->second)) return false;
+
+  // 10. Handoff state cannot regain CONTROL
+  invalid_group = group->second;
+  invalid_group.handoff_target_pending = true;
+  if (IsExactResolverNpmVersionNodeTransition(node, kProfileNPM, context.thread_group_id(),
+                                              invalid_group, expected->second)) return false;
+
+  // 11. Descendant / reexec / same-path trust regain remains rejected
+  expected->second.process_class = ProcessClass::kNode;
+  group->second.diagnostic_image = DiagnosticImage::kNode;
+  if (IsExactResolverNpmVersionNodeTransition(node, kProfileNPM, context.thread_group_id(),
+                                              group->second, expected->second)) return false;
+  const ProcessClassification reexec = IsExpectedProcess(kNodePath, context, kProfileNPM, &state);
+  if (reexec.expected || strcmp(reexec.reason, "BOOTSTRAP_ENDED") != 0) return false;
+
+  // 12. Existing frozen Artifact npm lifecycle transition still behaves identically
+  if (IsExactResolverNpmVersionNodeTransition(node, kProfileNPM, context.thread_group_id(),
+                                              group->second, expected->second)) return false;
+
+  // 13. Unrelated node transitions still fail closed
+  invalid_group = group->second;
+  invalid_group.command_phase = CommandPhase::kLockGeneration;
+  if (IsExactResolverNpmVersionNodeTransition(node, kProfileNPM, context.thread_group_id(),
+                                              invalid_group, expected->second)) return false;
+  invalid_group.command_phase = CommandPhase::kOther;
+  if (IsExactResolverNpmVersionNodeTransition(node, kProfileNPM, context.thread_group_id(),
+                                              invalid_group, expected->second)) return false;
+  invalid_group = group->second;
+  invalid_group.root_eligible = true;
+  if (IsExactResolverNpmVersionNodeTransition(node, kProfileNPM, context.thread_group_id(),
+                                              invalid_group, expected->second)) return false;
+  invalid_group = group->second;
+  invalid_group.root_consumed = false;
+  if (IsExactResolverNpmVersionNodeTransition(node, kProfileNPM, context.thread_group_id(),
+                                              invalid_group, expected->second)) return false;
+  invalid_group = group->second;
+  invalid_group.trusted_control_network_active = false;
+  if (IsExactResolverNpmVersionNodeTransition(node, kProfileNPM, context.thread_group_id(),
+                                              invalid_group, expected->second)) return false;
+  invalid_group = group->second;
+  invalid_group.demotion_pending = true;
+  if (IsExactResolverNpmVersionNodeTransition(node, kProfileNPM, context.thread_group_id(),
+                                              invalid_group, expected->second)) return false;
+  invalid_group = group->second;
+  invalid_group.launch_target_pending = true;
+  if (IsExactResolverNpmVersionNodeTransition(node, kProfileNPM, context.thread_group_id(),
+                                              invalid_group, expected->second)) return false;
+  if (IsExactResolverNpmVersionNodeTransition(node, kProfilePyPI, context.thread_group_id(),
+                                              group->second, expected->second)) return false;
+
+  return true;
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
   if (argc == 2 && strcmp(argv[1], "--semantic-only") == 0) {
     return HasPinnedPodInitProfile() && HasBoundedProfileRecordLimits() && VerifyBoundedClassificationSemantics() &&
-        VerifyFilesystemClassification() && VerifyExactNpmNodeInterpreterTransition() ? 0 : 1;
+        VerifyFilesystemClassification() && VerifyExactNpmNodeInterpreterTransition() &&
+        VerifyUnexpectedExecDiagnosticRetention() && VerifyResolverNpmVersionNodeTransition() ? 0 : 1;
   }
   if (argc != 1) return 2;
   char directory[] = "/tmp/haa-observer-latch-XXXXXX";
@@ -2701,10 +3040,15 @@ int main(int argc, char** argv) {
   const bool open_result_positive_ok = running && VerifyOpenResultPositiveMatrix(output, remote, control);
   fprintf(stderr, "STARTING no_basename_trust\n");
   const bool no_basename_trust_ok = running && VerifyNoBasenameTrust(output, remote, control);
+  fprintf(stderr, "STARTING unexpected_exec_diagnostic\n");
+  const bool unexpected_exec_diagnostic_ok = VerifyUnexpectedExecDiagnosticRetention();
+  fprintf(stderr, "STARTING resolver_npm_version_node\n");
+  const bool resolver_npm_version_node = VerifyResolverNpmVersionNodeTransition();
   const bool passed = running && profile && profile_limits && accessors && network && malformed_socket &&
       malformed_connect && unknown_fd && process && correlation && cloexec && delayed && roles &&
       oci_bootstrap && demotion && mismatch && dropped && topology_ok && filesystem && npm_node &&
-      open_result_negative_ok && open_result_positive_ok && no_basename_trust_ok;
+      open_result_negative_ok && open_result_positive_ok && no_basename_trust_ok &&
+      unexpected_exec_diagnostic_ok && resolver_npm_version_node;
   const std::pair<const char*, bool> latches[] = {
       {"readiness", running}, {"pod-init profile", profile},
       {"profile record limits", profile_limits}, {"normalized accessors", accessors},
@@ -2720,6 +3064,8 @@ int main(int argc, char** argv) {
       {"OPEN_RESULT negative matrix", open_result_negative_ok},
       {"OPEN_RESULT positive matrix", open_result_positive_ok},
       {"no-basename-trust", no_basename_trust_ok},
+      {"unexpected exec diagnostic retention", unexpected_exec_diagnostic_ok},
+      {"exact resolver npm-version-to-Node", resolver_npm_version_node},
   };
   for (const auto& latch : latches) {
     fprintf(stderr, "observer latch %s: %s\n", latch.second ? "PASS" : "FAIL", latch.first);
