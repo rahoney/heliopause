@@ -298,6 +298,9 @@ struct ProcessState {
     bool launch_target_pending = false;
     bool handoff_target_pending = false;
     bool npm_node_transition_pending = false;
+    bool lock_generation_npm_node_transition_pending = false;
+    bool npm_version_node_transition_pending = false;
+    bool npm_version_node_transition_consumed = false;
   };
   struct GroupState {
     int64_t start_time_ns;
@@ -316,10 +319,25 @@ struct ProcessState {
     // in a bounded control clone child. It permits one exact interpreter
     // image transition; it never grants or restores trust.
     bool npm_node_transition_pending;
+    // This is a distinct one-shot authority for the fixed GenerateLockfile
+    // boundary command. It is armed only by that command's exact clone-child
+    // npm launcher and consumed by its exact Node interpreter transition.
+    bool lock_generation_npm_node_transition_pending;
+    // This is set only after the exact direct-exec npm --version launcher is
+    // accepted for the exact boundary command. It authorizes one exact Node
+    // interpreter image transition and is cleared as it is consumed.
+    bool npm_version_node_transition_pending;
+    // This is set only while that exact interpreter image remains current.
+    // It records the completed transition for the one NPM_VERSION runtime-read
+    // exception below; a later image transition clears it and never regains it.
+    bool npm_version_node_transition_consumed;
     ProcessClass handoff_target_class;
     OCIBootstrapStage oci_bootstrap_stage;
     CommandPhase command_phase = CommandPhase::kUnknown;
     DiagnosticImage diagnostic_image = DiagnosticImage::kUnknown;
+    // Sentry clone provenance establishes this bounded parent relation. It is
+    // used only by the LOCK_GENERATION transition predicate.
+    int32_t clone_creator_group_id = 0;
   };
   bool bootstrap_active = true;
   bool bootstrap_group_set = false;
@@ -431,6 +449,11 @@ BoundaryMode BoundaryInvocation(const gvisor::sentry::ExecveInfo& message) {
 constexpr char kNpmCLIPath[] = "/usr/local/lib/node_modules/npm/bin/npm-cli.js";
 constexpr char kNpmPath[] = "/usr/local/bin/npm";
 constexpr char kNodePath[] = "/usr/local/bin/node";
+constexpr char kLockGenerationCommand[] =
+    "cd /tmp/haa-resolver; HOME=/tmp npm_config_cache=/tmp/cache npm install "
+    "--package-lock-only --ignore-scripts --no-audit --no-fund "
+    "--registry=https://registry.npmjs.org/ --userconfig=/tmp/haa-user.npmrc "
+    "--globalconfig=/tmp/haa-global.npmrc";
 
 CommandPhase ClassifyCommandShape(const gvisor::sentry::ExecveInfo& message) {
   for (int index = 0; index < message.argv_size(); ++index) {
@@ -609,6 +632,92 @@ bool IsExactNpmVersionNodeInterpreter(const gvisor::sentry::ExecveInfo& message)
       message.argv(1) == kNpmPath && message.argv(2) == "--version";
 }
 
+bool IsExactResolverNpmVersionBoundary(const gvisor::sentry::ExecveInfo& message) {
+  return message.binary_path() == kBoundaryHelperPath && message.execfn() == kBoundaryHelperPath &&
+      message.argv_size() == 4 && message.argv(0) == kBoundaryHelperPath &&
+      message.argv(1) == kLaunchMode && message.argv(2) == "npm" &&
+      message.argv(3) == "--version";
+}
+
+bool IsExactNpmVersionLauncher(const gvisor::sentry::ExecveInfo& message) {
+  return message.binary_path() == kNpmCLIPath && message.execfn() == kNpmPath &&
+      message.argv_size() == 2 && message.argv(0) == kNpmPath &&
+      message.argv(1) == "--version";
+}
+
+// This is the complete boundary invocation emitted only by
+// NPMResolver.GenerateLockfile. The command string is trusted controller
+// source, not artifact input; any resolver-side drift fails closed here.
+bool IsExactResolverLockGenerationBoundary(const gvisor::sentry::ExecveInfo& message) {
+  return message.binary_path() == kBoundaryHelperPath && message.execfn() == kBoundaryHelperPath &&
+      message.argv_size() == 5 && message.argv(0) == kBoundaryHelperPath &&
+      message.argv(1) == kLaunchMode && message.argv(2) == "/bin/sh" &&
+      message.argv(3) == "-ceu" && message.argv(4) == kLockGenerationCommand;
+}
+
+bool IsExactLockGenerationArguments(const gvisor::sentry::ExecveInfo& message,
+                                    int first_argument) {
+  static constexpr const char* kArguments[] = {
+      "install", "--package-lock-only", "--ignore-scripts", "--no-audit", "--no-fund",
+      "--registry=https://registry.npmjs.org/", "--userconfig=/tmp/haa-user.npmrc",
+      "--globalconfig=/tmp/haa-global.npmrc",
+  };
+  if (message.argv_size() != first_argument +
+      static_cast<int>(sizeof(kArguments) / sizeof(kArguments[0]))) return false;
+  for (size_t index = 0; index < sizeof(kArguments) / sizeof(kArguments[0]); ++index) {
+    if (message.argv(first_argument + static_cast<int>(index)) != kArguments[index]) return false;
+  }
+  return true;
+}
+
+bool IsExactLockGenerationNpmLauncher(const gvisor::sentry::ExecveInfo& message) {
+  return message.binary_path() == kNpmCLIPath && message.execfn() == kNpmPath &&
+      message.argv_size() == 9 && message.argv(0) == kNpmPath &&
+      IsExactLockGenerationArguments(message, 1);
+}
+
+bool IsExactLockGenerationNpmNodeInterpreter(const gvisor::sentry::ExecveInfo& message) {
+  return message.binary_path() == kNodePath && message.execfn() == kNodePath &&
+      message.argv_size() == 10 && message.argv(0) == "node" && message.argv(1) == kNpmPath &&
+      IsExactLockGenerationArguments(message, 2);
+}
+
+bool MayArmExactLockGenerationNpmNodeTransition(
+    const gvisor::sentry::ExecveInfo& message, const char* profile,
+    const ProcessState::GroupState& group) {
+  const auto& context = message.context_data();
+  return profile != nullptr && strcmp(profile, kProfileNPM) == 0 &&
+      group.command_phase == CommandPhase::kLockGeneration &&
+      group.role == ProcessState::Role::kControl &&
+      group.provenance == ProcessState::Provenance::kCloneChild &&
+      group.clone_creator_group_id > 0 &&
+      context.parent_thread_group_id() == group.clone_creator_group_id &&
+      !group.root_eligible && group.root_consumed &&
+      !group.trusted_control_network_active && !group.demotion_pending &&
+      !group.launch_target_pending && !group.handoff_target_pending &&
+      IsExactLockGenerationNpmLauncher(message);
+}
+
+bool IsExactResolverLockGenerationNpmNodeTransition(
+    const gvisor::sentry::ExecveInfo& message, const char* profile, int32_t group_id,
+    const ProcessState::GroupState& group, const ProcessState::ExpectedGroup& expected) {
+  const auto& context = message.context_data();
+  return profile != nullptr && strcmp(profile, kProfileNPM) == 0 &&
+      context.thread_group_id() == group_id &&
+      group.command_phase == CommandPhase::kLockGeneration &&
+      group.role == ProcessState::Role::kControl &&
+      group.provenance == ProcessState::Provenance::kCloneChild &&
+      group.clone_creator_group_id > 0 &&
+      context.parent_thread_group_id() == group.clone_creator_group_id &&
+      !group.root_eligible && group.root_consumed &&
+      !group.trusted_control_network_active && !group.demotion_pending &&
+      !group.launch_target_pending && !group.handoff_target_pending &&
+      group.lock_generation_npm_node_transition_pending &&
+      expected.start_time_ns == context.thread_group_start_time_ns() &&
+      expected.process_class == ProcessClass::kNpm &&
+      IsExactLockGenerationNpmNodeInterpreter(message);
+}
+
 bool IsExactResolverNpmVersionNodeTransition(const gvisor::sentry::ExecveInfo& message,
                                             const char* profile,
                                             int32_t group_id,
@@ -617,13 +726,14 @@ bool IsExactResolverNpmVersionNodeTransition(const gvisor::sentry::ExecveInfo& m
   const auto& context = message.context_data();
   return profile != nullptr && strcmp(profile, kProfileNPM) == 0 &&
       context.thread_group_id() == group_id &&
+      context.is_exec_session() && context.parent_thread_group_id() == 0 &&
       group.role == ProcessState::Role::kControl &&
       group.provenance == ProcessState::Provenance::kDirectExecRoot &&
       !group.root_eligible && group.root_consumed &&
       group.trusted_control_network_active && !group.demotion_pending &&
       !group.launch_target_pending && !group.handoff_target_pending &&
       group.command_phase == CommandPhase::kNpmVersion &&
-      group.diagnostic_image == DiagnosticImage::kNpmCLI &&
+      group.npm_version_node_transition_pending &&
       expected.start_time_ns == context.thread_group_start_time_ns() &&
       expected.process_class == ProcessClass::kNpm &&
       IsExactNpmVersionNodeInterpreter(message);
@@ -642,7 +752,7 @@ bool RegisterGroup(ProcessState* state, const gvisor::common::ContextData& conte
   if (!IsNewGroup(*state, context)) return false;
   state->groups.emplace(context.thread_group_id(), ProcessState::GroupState{
       context.thread_group_start_time_ns(), role, provenance, root_eligible,
-      root_consumed, false, false, false, false, false, ProcessClass::kUnknown,
+      root_consumed, false, false, false, false, false, false, false, false, ProcessClass::kUnknown,
       ProcessState::OCIBootstrapStage::kNotOCI, command_phase});
   return true;
 }
@@ -1380,8 +1490,35 @@ bool IsPinnedNpmRuntimeRead(const gvisor::common::ContextData& context,
        path == "/etc/svc.conf" || path == "/usr/bin/ldd")) {
     return true;
   }
+  // glibc resolver initialization reads these exact immutable OCI-root files
+  // during the fixed GenerateLockfile Node transition. Keep it narrower than
+  // the pre-existing common name-service identities: this is not a generic
+  // NODE, CONTROL, clone-child, or OCI-root filesystem allowance.
+  if (process_class == ProcessClass::kNode &&
+      group->provenance == ProcessState::Provenance::kCloneChild &&
+      group->command_phase == CommandPhase::kLockGeneration &&
+      (path == "/etc/host.conf" || path == "/etc/gai.conf")) {
+    return true;
+  }
+  const auto expected = state.expected_groups.find(context.thread_group_id());
+  const bool exact_npm_version_node =
+      strcmp(profile, kProfileNPM) == 0 &&
+      process_class == ProcessClass::kNode &&
+      context.is_exec_session() && context.parent_thread_group_id() == 0 &&
+      group->role == ProcessState::Role::kControl &&
+      group->provenance == ProcessState::Provenance::kDirectExecRoot &&
+      !group->root_eligible && group->root_consumed &&
+      group->trusted_control_network_active && !group->demotion_pending &&
+      !group->launch_target_pending && !group->handoff_target_pending &&
+      group->command_phase == CommandPhase::kNpmVersion &&
+      !group->npm_version_node_transition_pending &&
+      group->npm_version_node_transition_consumed &&
+      expected != state.expected_groups.end() &&
+      expected->second.start_time_ns == context.thread_group_start_time_ns() &&
+      expected->second.process_class == ProcessClass::kNode;
   if (process_class != ProcessClass::kNode ||
-      group->provenance != ProcessState::Provenance::kCloneChild) return false;
+      (group->provenance != ProcessState::Provenance::kCloneChild &&
+       !exact_npm_version_node)) return false;
   const std::string cgroup = "/sys/fs/cgroup/memory/" + context.container_id();
   return path == "/proc/version_signature" || path == "/proc/meminfo" ||
       path == "/proc/self/cgroup" || path == "/proc/self/maps" ||
@@ -1423,8 +1560,46 @@ bool IsExactHAAELFHandoffDemotionRead(
       path == "/proc/" + std::to_string(context.thread_group_id()) + "/status";
 }
 
+// Docker supplies this file as a distinct runtime mount, not as pinned OCI
+// content. Keep the mount fact at the authorization boundary: a pathname-only
+// /etc/hosts rule would also accept a replaced rootfs identity.
+bool IsExactDockerHostsMount(const MountAnchor* anchor) {
+  return anchor != nullptr && anchor->mount_class == "system" &&
+      anchor->mountpoint == "/etc/hosts";
+}
+
+bool IsExactDockerEtcHostsLockGenerationRead(
+    const gvisor::common::ContextData& context, const ProcessState& state,
+    const std::string& path, uint64_t flags, const char* profile,
+    const MountAnchor* anchor) {
+  if (profile == nullptr || strcmp(profile, kProfileNPM) != 0 ||
+      path != "/etc/hosts" || IsWriteCapableOpen(flags) ||
+      !IsExactDockerHostsMount(anchor)) {
+    return false;
+  }
+  const auto* group = FindFilesystemGroup(context, state);
+  const auto expected = state.expected_groups.find(context.thread_group_id());
+  const auto creator = group == nullptr ? state.groups.end() :
+      state.groups.find(group->clone_creator_group_id);
+  return group != nullptr && expected != state.expected_groups.end() &&
+      expected->second.start_time_ns == context.thread_group_start_time_ns() &&
+      expected->second.process_class == ProcessClass::kNode &&
+      group->role == ProcessState::Role::kControl &&
+      group->provenance == ProcessState::Provenance::kCloneChild &&
+      group->command_phase == CommandPhase::kLockGeneration &&
+      !group->root_eligible && group->root_consumed &&
+      // The clone must not inherit the direct-root network exception.
+      !group->trusted_control_network_active && !group->demotion_pending &&
+      !group->launch_target_pending && !group->handoff_target_pending &&
+      group->clone_creator_group_id > 0 &&
+      context.parent_thread_group_id() == group->clone_creator_group_id &&
+      creator != state.groups.end() &&
+      creator->second.role == ProcessState::Role::kControl;
+}
+
 FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
-                                       const ProcessState& state, const char* profile) {
+                                       const ProcessState& state, const char* profile,
+                                       const MountAnchor* anchor = nullptr) {
   const std::string& path = message.pathname();
   // This precedence is deliberately before every runtime/helper exception:
   // a decoy access is always actionable, irrespective of role or image.
@@ -1474,6 +1649,8 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
     return FilesystemClass::kOutside;
   }
   if (IsExactBootstrapHelperWrite(message.context_data(), state, path, message.flags()) ||
+      IsExactDockerEtcHostsLockGenerationRead(message.context_data(), state, path,
+                                              message.flags(), profile, anchor) ||
       IsPinnedRuntimeRootRead(message.context_data(), state, path,
                               message.flags(), profile) ||
       IsPinnedNpmRuntimeRead(message.context_data(), state, path, message.flags(), profile)) {
@@ -1610,8 +1787,9 @@ bool ParseSentryClone(const char* payload, size_t payload_size,
   state->groups.emplace(child_group, ProcessState::GroupState{
       message.created_thread_start_time_ns(), creator->second.role,
       ProcessState::Provenance::kCloneChild, false, true, false, false, false, false,
-      false, ProcessClass::kUnknown, ProcessState::OCIBootstrapStage::kNotOCI,
+      false, false, false, false, ProcessClass::kUnknown, ProcessState::OCIBootstrapStage::kNotOCI,
       creator->second.command_phase});
+  state->groups.find(child_group)->second.clone_creator_group_id = creator_group;
   return true;
 }
 
@@ -1726,7 +1904,13 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     return false;
   }
   if (group == candidate.groups.end()) {
-    const CommandPhase phase = ClassifyCommandShape(message);
+    CommandPhase phase = ClassifyCommandShape(message);
+    // NPM_VERSION is an authorization-relevant phase only for the complete
+    // canonical helper invocation. Other command shapes are not authorization-relevant.
+    if ((phase == CommandPhase::kNpmVersion && !IsExactResolverNpmVersionBoundary(message)) ||
+        (phase == CommandPhase::kLockGeneration && !IsExactResolverLockGenerationBoundary(message))) {
+      phase = CommandPhase::kOther;
+    }
     if (!message.context_data().is_exec_session() || message.context_data().parent_thread_group_id() != 0 ||
         boundary_mode == BoundaryMode::kNone ||
         candidate.groups.size() >= kMaxTrackedProcessGroups ||
@@ -1859,6 +2043,11 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     }
     group->second.launch_target_pending = false;
     group->second.trusted_control_network_active = true;
+    group->second.npm_version_node_transition_pending =
+        group->second.provenance == ProcessState::Provenance::kDirectExecRoot &&
+        group->second.command_phase == CommandPhase::kNpmVersion &&
+        process_class == ProcessClass::kNpm && IsExactNpmVersionLauncher(message);
+    group->second.npm_version_node_transition_consumed = false;
     ApplyExecCloexec(&candidate, group_id);
     process_state->groups = candidate.groups;
     process_state->expected_groups = candidate.expected_groups;
@@ -1884,11 +2073,24 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     return Send(output, *container_id, "process-exec-unexpected", nullptr, &attribution);
   }
   auto tracked_group = candidate.expected_groups.find(group_id);
-  if (tracked_group != candidate.expected_groups.end() &&
-      (IsExactNpmNodeTransition(message, profile, group_id, group->second, tracked_group->second) ||
-       IsExactResolverNpmVersionNodeTransition(message, profile, group_id, group->second, tracked_group->second))) {
+  const bool exact_npm_node_transition =
+      tracked_group != candidate.expected_groups.end() &&
+      IsExactNpmNodeTransition(message, profile, group_id, group->second, tracked_group->second);
+  const bool exact_npm_version_node_transition =
+      tracked_group != candidate.expected_groups.end() &&
+      IsExactResolverNpmVersionNodeTransition(message, profile, group_id, group->second,
+                                              tracked_group->second);
+  const bool exact_lock_generation_npm_node_transition =
+      tracked_group != candidate.expected_groups.end() &&
+      IsExactResolverLockGenerationNpmNodeTransition(message, profile, group_id, group->second,
+                                                      tracked_group->second);
+  if (exact_npm_node_transition || exact_npm_version_node_transition ||
+      exact_lock_generation_npm_node_transition) {
     tracked_group->second.process_class = ProcessClass::kNode;
     group->second.npm_node_transition_pending = false;
+    group->second.lock_generation_npm_node_transition_pending = false;
+    group->second.npm_version_node_transition_pending = false;
+    group->second.npm_version_node_transition_consumed = exact_npm_version_node_transition;
     ApplyExecCloexec(&candidate, group_id);
     process_state->expected_groups = candidate.expected_groups;
     process_state->groups = candidate.groups;
@@ -1896,9 +2098,11 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     return Send(output, *container_id, "process-exec-expected");
   }
   // A later successful image transition in the direct root cannot retain the
-  // narrow trusted-control network exception.
+  // narrow trusted-control network exception or the NPM_VERSION runtime-read
+  // exception.
   if (group->second.provenance == ProcessState::Provenance::kDirectExecRoot) {
     group->second.trusted_control_network_active = false;
+    group->second.npm_version_node_transition_consumed = false;
   }
   const ProcessClassification classification = IsExpectedProcess(message.binary_path(), message.context_data(), profile, &candidate);
   process_state->bootstrap_active = candidate.bootstrap_active;
@@ -1924,6 +2128,10 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
   if (classification.expected && updated_group != process_state->groups.end() &&
       MayArmExactNpmNodeTransition(message, profile, updated_group->second)) {
     updated_group->second.npm_node_transition_pending = true;
+  }
+  if (classification.expected && updated_group != process_state->groups.end() &&
+      MayArmExactLockGenerationNpmNodeTransition(message, profile, updated_group->second)) {
+    updated_group->second.lock_generation_npm_node_transition_pending = true;
   }
   ApplyExecCloexec(process_state, group_id);
   if (classification.expected) return Send(output, *container_id, "process-exec-expected");
@@ -2043,7 +2251,9 @@ bool ParseOpenResultAndSend(const char* payload, size_t payload_size, int output
   gvisor::syscall::Open final_open;
   *final_open.mutable_context_data() = result.context_data();
   final_open.set_pathname(result.resolved_pathname()); final_open.set_flags(result.flags()); final_open.set_sysno(result.sysno());
-  switch (ClassifyFilesystemOpen(final_open, *state, profile)) {
+  const FilesystemClass filesystem_class = ClassifyFilesystemOpen(
+      final_open, *state, profile, &anchor->second);
+  switch (filesystem_class) {
     case FilesystemClass::kRuntimeRoot: if (counts->runtime_root_access < kMaxNormalizedObservationCount) ++counts->runtime_root_access; return true;
     case FilesystemClass::kHelperOnly: return true;
     case FilesystemClass::kOutside:

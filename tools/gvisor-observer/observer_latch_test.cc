@@ -2816,7 +2816,7 @@ bool VerifyResolverNpmVersionNodeTransition() {
   auto group = state.groups.find(context.thread_group_id());
   if (group == state.groups.end()) return false;
   group->second.trusted_control_network_active = true;
-  group->second.diagnostic_image = DiagnosticImage::kNpmCLI;
+  group->second.npm_version_node_transition_pending = true;
   state.expected_groups.emplace(context.thread_group_id(),
       ProcessState::ExpectedGroup{context.thread_group_start_time_ns(), ProcessClass::kNpm});
 
@@ -2841,18 +2841,9 @@ bool VerifyResolverNpmVersionNodeTransition() {
       IsExactResolverNpmVersionNodeTransition(extra_argv, kProfileNPM, context.thread_group_id(),
                                               group->second, expected->second)) return false;
 
-  // 3. Wrong predecessor identity is rejected
+  // 3. A consumed transition cannot be reused.
   auto invalid_group = group->second;
-  invalid_group.diagnostic_image = DiagnosticImage::kShell;
-  if (IsExactResolverNpmVersionNodeTransition(node, kProfileNPM, context.thread_group_id(),
-                                              invalid_group, expected->second)) return false;
-  invalid_group.diagnostic_image = DiagnosticImage::kBoundary;
-  if (IsExactResolverNpmVersionNodeTransition(node, kProfileNPM, context.thread_group_id(),
-                                              invalid_group, expected->second)) return false;
-  invalid_group.diagnostic_image = DiagnosticImage::kNode;
-  if (IsExactResolverNpmVersionNodeTransition(node, kProfileNPM, context.thread_group_id(),
-                                              invalid_group, expected->second)) return false;
-  invalid_group.diagnostic_image = DiagnosticImage::kUnknown;
+  invalid_group.npm_version_node_transition_pending = false;
   if (IsExactResolverNpmVersionNodeTransition(node, kProfileNPM, context.thread_group_id(),
                                               invalid_group, expected->second)) return false;
 
@@ -2926,7 +2917,6 @@ bool VerifyResolverNpmVersionNodeTransition() {
 
   // 11. Descendant / reexec / same-path trust regain remains rejected
   expected->second.process_class = ProcessClass::kNode;
-  group->second.diagnostic_image = DiagnosticImage::kNode;
   if (IsExactResolverNpmVersionNodeTransition(node, kProfileNPM, context.thread_group_id(),
                                               group->second, expected->second)) return false;
   const ProcessClassification reexec = IsExpectedProcess(kNodePath, context, kProfileNPM, &state);
@@ -2970,13 +2960,594 @@ bool VerifyResolverNpmVersionNodeTransition() {
   return true;
 }
 
+// This drives the production SENTRY_EXEC classifier rather than testing the
+// transition predicate in isolation. Each rejection below starts from the
+// complete accepted boundary -> setpriv -> npm launcher path and changes one
+// relevant fact only.
+bool VerifyResolverNpmVersionProductionPath() {
+  struct Path {
+    gvisor::sentry::ExecveInfo boundary;
+    gvisor::sentry::ExecveInfo demotion;
+    gvisor::sentry::ExecveInfo npm;
+    gvisor::sentry::ExecveInfo node;
+  } path;
+  gvisor::common::ContextData context;
+  context.set_container_id(kThirtySecondID);
+  context.set_thread_group_id(320);
+  context.set_thread_group_start_time_ns(3200);
+  context.set_parent_thread_group_id(0);
+  context.set_is_exec_session(true);
+
+  *path.boundary.mutable_context_data() = context;
+  path.boundary.mutable_context_data()->set_process_name("haa-boundary");
+  path.boundary.set_binary_path(kBoundaryHelperPath);
+  path.boundary.set_execfn(kBoundaryHelperPath);
+  path.boundary.add_argv(kBoundaryHelperPath);
+  path.boundary.add_argv(kLaunchMode);
+  path.boundary.add_argv("npm");
+  path.boundary.add_argv("--version");
+
+  path.demotion = path.boundary;
+  path.demotion.mutable_context_data()->set_process_name("setpriv");
+  path.demotion.set_binary_path(kSetprivPath);
+  path.demotion.set_execfn(kSetprivPath);
+  path.demotion.clear_argv();
+  path.demotion.add_argv(kSetprivPath);
+  path.demotion.add_argv("--reuid=1000");
+  path.demotion.add_argv("--regid=1000");
+  path.demotion.add_argv("--clear-groups");
+  path.demotion.add_argv("--inh-caps=-all");
+  path.demotion.add_argv("--ambient-caps=-all");
+  path.demotion.add_argv("--bounding-set=-all");
+  path.demotion.add_argv("--no-new-privs");
+  path.demotion.add_argv("--");
+  path.demotion.add_argv(kNpmCLIPath);
+
+  path.npm = path.boundary;
+  path.npm.mutable_context_data()->set_process_name("npm");
+  path.npm.set_binary_path(kNpmCLIPath);
+  path.npm.set_execfn(kNpmPath);
+  path.npm.clear_argv();
+  path.npm.add_argv(kNpmPath);
+  path.npm.add_argv("--version");
+
+  path.node = path.npm;
+  path.node.mutable_context_data()->set_process_name("node");
+  path.node.set_binary_path(kNodePath);
+  path.node.set_execfn(kNodePath);
+  path.node.clear_argv();
+  path.node.add_argv("node");
+  path.node.add_argv(kNpmPath);
+  path.node.add_argv("--version");
+
+  int sockets[2];
+  if (socketpair(AF_UNIX, SOCK_DGRAM, 0, sockets) != 0) return false;
+  auto parse_expected = [&](const gvisor::sentry::ExecveInfo& event, ProcessState* state,
+                            const char* kind, const char* reason = nullptr) {
+    std::string payload;
+    std::string container_id;
+    const char* parse_reason = nullptr;
+    const bool serialized = event.SerializeToString(&payload);
+    const bool parsed = serialized && ParseSentryProcessAndClassify(
+        payload.data(), payload.size(), sockets[0], &container_id, kProfileNPM, state, &parse_reason);
+    return parsed && ExpectRecord(sockets[1], kThirtySecondID, kind, reason);
+  };
+  auto parse_unexpected = [&](const gvisor::sentry::ExecveInfo& event, ProcessState* state,
+                              const char* reason) {
+    std::string payload;
+    std::string container_id;
+    const char* parse_reason = nullptr;
+    const bool serialized = event.SerializeToString(&payload);
+    const bool parsed = serialized && ParseSentryProcessAndClassify(
+        payload.data(), payload.size(), sockets[0], &container_id, kProfileNPM, state, &parse_reason);
+    return parsed && ExpectUnexpectedProcessRecord(sockets[1], kThirtySecondID, "SENTRY_EXEC", "NODE",
+                                                   reason, "TRACKED_GROUP");
+  };
+  auto parse_rejected = [&](const gvisor::sentry::ExecveInfo& event, ProcessState* state) {
+    std::string payload;
+    std::string container_id;
+    const char* parse_reason = nullptr;
+    return event.SerializeToString(&payload) &&
+        !ParseSentryProcessAndClassify(payload.data(), payload.size(), sockets[0], &container_id,
+                                       kProfileNPM, state, &parse_reason);
+  };
+  auto baseline = [&](ProcessState* state, gvisor::sentry::ExecveInfo* node,
+                      const gvisor::sentry::ExecveInfo* boundary,
+                      const gvisor::sentry::ExecveInfo* npm) {
+    const auto& initial = boundary == nullptr ? path.boundary : *boundary;
+    const auto& launcher = npm == nullptr ? path.npm : *npm;
+    if (!parse_expected(initial, state, "process-exec-expected") ||
+        !parse_expected(path.demotion, state, "process-exec-expected") ||
+        !parse_expected(launcher, state, "process-exec-expected")) return false;
+    *node = path.node;
+    return true;
+  };
+
+  bool ok = true;
+  ProcessState state;
+  gvisor::sentry::ExecveInfo node;
+  ok = baseline(&state, &node, nullptr, nullptr) && parse_expected(node, &state, "process-exec-expected");
+  const auto tracked = state.expected_groups.find(context.thread_group_id());
+  const auto group = state.groups.find(context.thread_group_id());
+  ok = ok && tracked != state.expected_groups.end() && group != state.groups.end() &&
+      tracked->second.process_class == ProcessClass::kNode &&
+      !group->second.npm_version_node_transition_pending &&
+      group->second.npm_version_node_transition_consumed;
+  // This begins with the real accepted resolver production path above. Each
+  // negative changes one authorization fact for the exact pinned runtime
+  // identity; no diagnostic state participates in the decision.
+  auto runtime_open = BuildOpen(kThirtySecondID, "/proc/meminfo", 0, 320, 3200);
+  *runtime_open.mutable_context_data() = node.context_data();
+  ok = ok && ClassifyFilesystemOpen(runtime_open, state, kProfileNPM) ==
+      FilesystemClass::kHelperOnly;
+  ProcessState runtime_changed = state;
+  runtime_changed.groups[320].command_phase = CommandPhase::kOther;
+  ok = ok && ClassifyFilesystemOpen(runtime_open, runtime_changed, kProfileNPM) ==
+      FilesystemClass::kUnknown;
+  runtime_changed = state;
+  runtime_changed.expected_groups[320].process_class = ProcessClass::kNpm;
+  ok = ok && ClassifyFilesystemOpen(runtime_open, runtime_changed, kProfileNPM) ==
+      FilesystemClass::kUnknown;
+  runtime_changed = state;
+  runtime_changed.groups[320].role = ProcessState::Role::kArtifact;
+  ok = ok && ClassifyFilesystemOpen(runtime_open, runtime_changed, kProfileNPM) ==
+      FilesystemClass::kUnknown;
+  runtime_changed = state;
+  runtime_changed.groups[320].provenance = ProcessState::Provenance::kOCIRoot;
+  ok = ok && ClassifyFilesystemOpen(runtime_open, runtime_changed, kProfileNPM) ==
+      FilesystemClass::kUnknown;
+  auto write_runtime_open = runtime_open;
+  write_runtime_open.set_flags(kOpenWriteOnly);
+  ok = ok && ClassifyFilesystemOpen(write_runtime_open, state, kProfileNPM) ==
+      FilesystemClass::kOutside;
+  auto unpinned_runtime_open = runtime_open;
+  unpinned_runtime_open.set_pathname("/proc/unpinned-runtime-proof");
+  ok = ok && ClassifyFilesystemOpen(unpinned_runtime_open, state, kProfileNPM) ==
+      FilesystemClass::kUnknown;
+  auto workspace_runtime_open = runtime_open;
+  workspace_runtime_open.set_pathname("/tmp/npm-runtime-proof");
+  ok = ok && ClassifyFilesystemOpen(workspace_runtime_open, state, kProfileNPM) ==
+      FilesystemClass::kWorkspace;
+  runtime_changed = state;
+  runtime_changed.groups[320].handoff_target_pending = true;
+  ok = ok && ClassifyFilesystemOpen(runtime_open, runtime_changed, kProfileNPM) ==
+      FilesystemClass::kUnknown;
+  runtime_changed = state;
+  runtime_changed.groups[320].demotion_pending = true;
+  ok = ok && ClassifyFilesystemOpen(runtime_open, runtime_changed, kProfileNPM) ==
+      FilesystemClass::kUnknown;
+  runtime_changed = state;
+  runtime_changed.groups[320].launch_target_pending = true;
+  ok = ok && ClassifyFilesystemOpen(runtime_open, runtime_changed, kProfileNPM) ==
+      FilesystemClass::kUnknown;
+  runtime_changed = state;
+  runtime_changed.groups[320].npm_version_node_transition_consumed = false;
+  ok = ok && ClassifyFilesystemOpen(runtime_open, runtime_changed, kProfileNPM) ==
+      FilesystemClass::kUnknown;
+  auto descendant_runtime_open = runtime_open;
+  descendant_runtime_open.mutable_context_data()->set_parent_thread_group_id(321);
+  ok = ok && ClassifyFilesystemOpen(descendant_runtime_open, state, kProfileNPM) ==
+      FilesystemClass::kUnknown;
+  ok = ok && parse_unexpected(node, &state, "BOOTSTRAP_ENDED");  // one-shot/re-exec
+  ok = ok && !state.groups.at(context.thread_group_id()).npm_version_node_transition_consumed;
+
+  ProcessState changed;
+  gvisor::sentry::ExecveInfo changed_node;
+  ok = ok && baseline(&changed, &changed_node, nullptr, nullptr);
+  changed_node.set_argv(2, "--help");
+  ok = ok && parse_unexpected(changed_node, &changed, "CLASS_MISMATCH");
+  changed = ProcessState{}; ok = ok && baseline(&changed, &changed_node, nullptr, nullptr);
+  changed_node.add_argv("extra");
+  ok = ok && parse_unexpected(changed_node, &changed, "CLASS_MISMATCH");
+  changed = ProcessState{}; ok = ok && baseline(&changed, &changed_node, nullptr, nullptr);
+  changed_node.set_argv(1, "--version"); changed_node.set_argv(2, kNpmPath);
+  ok = ok && parse_unexpected(changed_node, &changed, "CLASS_MISMATCH");
+  changed = ProcessState{}; ok = ok && baseline(&changed, &changed_node, nullptr, nullptr);
+  changed_node.mutable_context_data()->set_parent_thread_group_id(77);
+  ok = ok && parse_unexpected(changed_node, &changed, "CLASS_MISMATCH");
+  changed = ProcessState{}; ok = ok && baseline(&changed, &changed_node, nullptr, nullptr);
+  changed_node.mutable_context_data()->set_thread_group_start_time_ns(3201);
+  ok = ok && parse_rejected(changed_node, &changed);
+  changed = ProcessState{}; ok = ok && baseline(&changed, &changed_node, nullptr, nullptr);
+  changed_node.mutable_context_data()->set_thread_group_id(321);
+  ok = ok && parse_rejected(changed_node, &changed);
+
+  changed = ProcessState{}; ok = ok && baseline(&changed, &changed_node, nullptr, nullptr);
+  changed.expected_groups[context.thread_group_id()].process_class = ProcessClass::kNode;
+  ok = ok && parse_unexpected(changed_node, &changed, "BOOTSTRAP_ENDED");
+  changed = ProcessState{}; ok = ok && baseline(&changed, &changed_node, nullptr, nullptr);
+  changed.groups[context.thread_group_id()].role = ProcessState::Role::kArtifact;
+  {
+    std::string payload, container_id; const char* parse_reason = nullptr;
+    ok = ok && changed_node.SerializeToString(&payload) &&
+        ParseSentryProcessAndClassify(payload.data(), payload.size(), sockets[0], &container_id,
+                                      kProfileNPM, &changed, &parse_reason) &&
+        ExpectUnexpectedProcessRecord(sockets[1], kThirtySecondID, "SENTRY_EXEC", "NODE",
+                                      "ARTIFACT_ROLE", "ARTIFACT_GROUP");
+  }
+  changed = ProcessState{}; ok = ok && baseline(&changed, &changed_node, nullptr, nullptr);
+  changed.groups[context.thread_group_id()].provenance = ProcessState::Provenance::kCloneChild;
+  ok = ok && parse_unexpected(changed_node, &changed, "CLASS_MISMATCH");
+  changed = ProcessState{}; ok = ok && baseline(&changed, &changed_node, nullptr, nullptr);
+  changed.groups[context.thread_group_id()].command_phase = CommandPhase::kOther;
+  ok = ok && parse_unexpected(changed_node, &changed, "CLASS_MISMATCH");
+  changed = ProcessState{}; ok = ok && baseline(&changed, &changed_node, nullptr, nullptr);
+  changed.groups[context.thread_group_id()].trusted_control_network_active = false;
+  ok = ok && parse_unexpected(changed_node, &changed, "CLASS_MISMATCH");
+  changed = ProcessState{}; ok = ok && baseline(&changed, &changed_node, nullptr, nullptr);
+  changed.groups[context.thread_group_id()].handoff_target_pending = true;
+  ok = ok && parse_unexpected(changed_node, &changed, "CLASS_MISMATCH");
+  changed = ProcessState{}; ok = ok && baseline(&changed, &changed_node, nullptr, nullptr);
+  changed.groups[context.thread_group_id()].demotion_pending = true;
+  ok = ok && parse_rejected(changed_node, &changed);
+  changed = ProcessState{}; ok = ok && baseline(&changed, &changed_node, nullptr, nullptr);
+  changed.groups[context.thread_group_id()].launch_target_pending = true;
+  ok = ok && parse_rejected(changed_node, &changed);
+
+  gvisor::sentry::ExecveInfo altered_boundary = path.boundary;
+  altered_boundary.add_argv("extra");
+  changed = ProcessState{}; ok = ok && baseline(&changed, &changed_node, &altered_boundary, nullptr);
+  ok = ok && parse_unexpected(changed_node, &changed, "CLASS_MISMATCH");
+  gvisor::sentry::ExecveInfo altered_npm = path.npm;
+  altered_npm.add_argv("extra");
+  changed = ProcessState{}; ok = ok && baseline(&changed, &changed_node, nullptr, &altered_npm);
+  ok = ok && parse_unexpected(changed_node, &changed, "CLASS_MISMATCH");
+
+  // A descendant cannot create a fresh direct-root authorization record.
+  changed = ProcessState{}; ok = ok && baseline(&changed, &changed_node, nullptr, nullptr);
+  changed_node.mutable_context_data()->set_thread_group_id(321);
+  changed_node.mutable_context_data()->set_thread_group_start_time_ns(3201);
+  changed_node.mutable_context_data()->set_parent_thread_group_id(context.thread_group_id());
+  changed_node.mutable_context_data()->set_is_exec_session(false);
+  ok = ok && parse_rejected(changed_node, &changed);
+
+  close(sockets[0]);
+  close(sockets[1]);
+  return ok;
+}
+
+// Drives the actual SENTRY_EXEC and SENTRY_CLONE path for the one fixed
+// GenerateLockfile command. Each negative starts from the full valid boundary
+// lineage and changes exactly one authorization-relevant condition.
+bool VerifyResolverLockGenerationProductionPath() {
+  struct Path {
+    gvisor::sentry::ExecveInfo boundary;
+    gvisor::sentry::ExecveInfo demotion;
+    gvisor::sentry::ExecveInfo shell;
+    gvisor::sentry::CloneInfo clone;
+    gvisor::sentry::ExecveInfo npm;
+    gvisor::sentry::ExecveInfo node;
+  } path;
+  gvisor::common::ContextData root;
+  root.set_container_id(kThirtySecondID);
+  root.set_thread_group_id(340);
+  root.set_thread_group_start_time_ns(3400);
+  root.set_parent_thread_group_id(0);
+  root.set_is_exec_session(true);
+
+  *path.boundary.mutable_context_data() = root;
+  path.boundary.mutable_context_data()->set_process_name("haa-boundary");
+  path.boundary.set_binary_path(kBoundaryHelperPath);
+  path.boundary.set_execfn(kBoundaryHelperPath);
+  path.boundary.add_argv(kBoundaryHelperPath);
+  path.boundary.add_argv(kLaunchMode);
+  path.boundary.add_argv("/bin/sh");
+  path.boundary.add_argv("-ceu");
+  path.boundary.add_argv(kLockGenerationCommand);
+
+  path.demotion = path.boundary;
+  path.demotion.mutable_context_data()->set_process_name("setpriv");
+  path.demotion.set_binary_path(kSetprivPath);
+  path.demotion.set_execfn(kSetprivPath);
+  path.demotion.clear_argv();
+  const char* demotion[] = {kSetprivPath, "--reuid=1000", "--regid=1000", "--clear-groups",
+      "--inh-caps=-all", "--ambient-caps=-all", "--bounding-set=-all", "--no-new-privs", "--", "/bin/sh"};
+  for (const char* argument : demotion) path.demotion.add_argv(argument);
+
+  path.shell = path.boundary;
+  path.shell.mutable_context_data()->set_process_name("sh");
+  path.shell.set_binary_path("/usr/bin/dash");
+  path.shell.set_execfn("/bin/sh");
+  path.shell.clear_argv();
+  path.shell.add_argv("/bin/sh");
+  path.shell.add_argv("-ceu");
+  path.shell.add_argv(kLockGenerationCommand);
+
+  *path.clone.mutable_context_data() = root;
+  path.clone.set_created_thread_group_id(341);
+  path.clone.set_created_thread_start_time_ns(3410);
+
+  gvisor::common::ContextData child = root;
+  child.set_thread_group_id(341);
+  child.set_thread_group_start_time_ns(3410);
+  child.set_parent_thread_group_id(340);
+  // gVisor preserves the Docker-exec origin across the shell's clone. This is
+  // deliberately not an authorization condition for the exact one-shot path.
+  child.set_is_exec_session(true);
+  child.set_process_name("npm");
+  *path.npm.mutable_context_data() = child;
+  path.npm.set_binary_path(kNpmCLIPath);
+  path.npm.set_execfn(kNpmPath);
+  path.npm.add_argv(kNpmPath);
+  const char* lock_args[] = {"install", "--package-lock-only", "--ignore-scripts", "--no-audit", "--no-fund",
+      "--registry=https://registry.npmjs.org/", "--userconfig=/tmp/haa-user.npmrc",
+      "--globalconfig=/tmp/haa-global.npmrc"};
+  for (const char* argument : lock_args) path.npm.add_argv(argument);
+
+  path.node = path.npm;
+  path.node.mutable_context_data()->set_process_name("node");
+  path.node.set_binary_path(kNodePath);
+  path.node.set_execfn(kNodePath);
+  path.node.clear_argv();
+  path.node.add_argv("node");
+  path.node.add_argv(kNpmPath);
+  for (const char* argument : lock_args) path.node.add_argv(argument);
+
+  int sockets[2];
+  if (socketpair(AF_UNIX, SOCK_DGRAM, 0, sockets) != 0) return false;
+  auto parse = [&](const gvisor::sentry::ExecveInfo& event, ProcessState* state,
+                   const char* expected_kind, const char* expected_class = nullptr,
+                   const char* expected_reason = nullptr) {
+    std::string payload, container_id;
+    const char* reason = nullptr;
+    const bool serialized = event.SerializeToString(&payload);
+    const bool parsed = serialized && ParseSentryProcessAndClassify(
+        payload.data(), payload.size(), sockets[0], &container_id, kProfileNPM, state, &reason);
+    if (!parsed) return false;
+    if (strcmp(expected_kind, "process-exec-unexpected") == 0) {
+      return ExpectUnexpectedProcessRecord(sockets[1], kThirtySecondID, "SENTRY_EXEC", expected_class,
+                                           expected_reason, "TRACKED_GROUP");
+    }
+    return ExpectRecord(sockets[1], kThirtySecondID, expected_kind);
+  };
+  auto parse_clone = [&](ProcessState* state) {
+    std::string payload, container_id;
+    const char* reason = nullptr;
+    return path.clone.SerializeToString(&payload) &&
+        ParseSentryClone(payload.data(), payload.size(), -1, &container_id, state, &reason);
+  };
+  auto baseline = [&](ProcessState* state, const gvisor::sentry::ExecveInfo* boundary = nullptr,
+                      const gvisor::sentry::ExecveInfo* npm = nullptr) {
+    const auto& initial = boundary == nullptr ? path.boundary : *boundary;
+    const auto& launcher = npm == nullptr ? path.npm : *npm;
+    return parse(initial, state, "process-exec-expected") &&
+        parse(path.demotion, state, "process-exec-expected") &&
+        parse(path.shell, state, "process-exec-expected") && parse_clone(state) &&
+        parse(launcher, state, "process-exec-expected");
+  };
+  auto reject = [&](const gvisor::sentry::ExecveInfo& event, ProcessState* state) {
+    std::string payload, container_id;
+    const char* reason = nullptr;
+    return event.SerializeToString(&payload) && !ParseSentryProcessAndClassify(
+        payload.data(), payload.size(), sockets[0], &container_id, kProfileNPM, state, &reason);
+  };
+
+  bool ok = true;
+  ProcessState state;
+  ok = baseline(&state) &&
+      state.groups.at(341).lock_generation_npm_node_transition_pending &&
+      state.expected_groups.at(341).process_class == ProcessClass::kNpm &&
+      state.groups.at(341).command_phase == CommandPhase::kLockGeneration &&
+      state.groups.at(341).clone_creator_group_id == 340 &&
+      parse(path.node, &state, "process-exec-expected") &&
+      state.expected_groups.at(341).process_class == ProcessClass::kNode &&
+      !state.groups.at(341).lock_generation_npm_node_transition_pending;
+
+  // The exact immutable glibc resolver configuration read observed during the
+  // Node lock-generation transition is accepted only in that complete state.
+  auto host_conf_open = BuildOpen(kThirtySecondID, "/etc/host.conf", 0, 341, 3410);
+  *host_conf_open.mutable_context_data() = path.node.context_data();
+  ok = ok && ClassifyFilesystemOpen(host_conf_open, state, kProfileNPM) ==
+      FilesystemClass::kHelperOnly;
+  ProcessState host_conf_changed = state;
+  host_conf_changed.groups.at(341).role = ProcessState::Role::kArtifact;
+  ok = ok && ClassifyFilesystemOpen(host_conf_open, host_conf_changed, kProfileNPM) ==
+      FilesystemClass::kUnknown;
+  host_conf_changed = state;
+  host_conf_changed.groups.at(341).provenance = ProcessState::Provenance::kDirectExecRoot;
+  ok = ok && ClassifyFilesystemOpen(host_conf_open, host_conf_changed, kProfileNPM) ==
+      FilesystemClass::kUnknown;
+  host_conf_changed = state;
+  host_conf_changed.groups.at(341).command_phase = CommandPhase::kOther;
+  ok = ok && ClassifyFilesystemOpen(host_conf_open, host_conf_changed, kProfileNPM) ==
+      FilesystemClass::kUnknown;
+  host_conf_open.set_flags(kOpenWriteOnly);
+  ok = ok && ClassifyFilesystemOpen(host_conf_open, state, kProfileNPM) ==
+      FilesystemClass::kOutside;
+  host_conf_open.set_flags(0);
+  ok = ok && ClassifyFilesystemOpen(host_conf_open, state, kProfileGitHub) ==
+      FilesystemClass::kUnknown;
+  host_conf_open.set_pathname("/etc/nsswitch.conf");
+  ok = ok && ClassifyFilesystemOpen(host_conf_open, state, kProfileNPM) ==
+      FilesystemClass::kHelperOnly;
+  host_conf_open.set_pathname("/etc/resolv.conf");
+  ok = ok && ClassifyFilesystemOpen(host_conf_open, state, kProfileNPM) ==
+      FilesystemClass::kHelperOnly;
+  host_conf_open.set_pathname("/etc/host.conf.unrecognized");
+  ok = ok && ClassifyFilesystemOpen(host_conf_open, state, kProfileNPM) ==
+      FilesystemClass::kUnknown;
+
+  // /etc/gai.conf is a separate exact immutable glibc address-selection
+  // configuration identity. It uses the same complete Node lock-generation
+  // state as /etc/host.conf and is not a broader /etc allowance.
+  auto gai_conf_open = BuildOpen(kThirtySecondID, "/etc/gai.conf", 0, 341, 3410);
+  *gai_conf_open.mutable_context_data() = path.node.context_data();
+  ok = ok && ClassifyFilesystemOpen(gai_conf_open, state, kProfileNPM) ==
+      FilesystemClass::kHelperOnly;
+  ProcessState gai_conf_changed = state;
+  gai_conf_changed.groups.at(341).role = ProcessState::Role::kArtifact;
+  ok = ok && ClassifyFilesystemOpen(gai_conf_open, gai_conf_changed, kProfileNPM) ==
+      FilesystemClass::kUnknown;
+  gai_conf_changed = state;
+  gai_conf_changed.expected_groups.at(341).process_class = ProcessClass::kNpm;
+  ok = ok && ClassifyFilesystemOpen(gai_conf_open, gai_conf_changed, kProfileNPM) ==
+      FilesystemClass::kUnknown;
+  gai_conf_changed = state;
+  gai_conf_changed.groups.at(341).provenance = ProcessState::Provenance::kDirectExecRoot;
+  ok = ok && ClassifyFilesystemOpen(gai_conf_open, gai_conf_changed, kProfileNPM) ==
+      FilesystemClass::kUnknown;
+  gai_conf_changed = state;
+  gai_conf_changed.groups.at(341).command_phase = CommandPhase::kOther;
+  ok = ok && ClassifyFilesystemOpen(gai_conf_open, gai_conf_changed, kProfileNPM) ==
+      FilesystemClass::kUnknown;
+  gai_conf_open.set_flags(kOpenWriteOnly);
+  ok = ok && ClassifyFilesystemOpen(gai_conf_open, state, kProfileNPM) ==
+      FilesystemClass::kOutside;
+  gai_conf_open.set_flags(0);
+  ok = ok && ClassifyFilesystemOpen(gai_conf_open, state, kProfileGitHub) ==
+      FilesystemClass::kUnknown;
+  gai_conf_open.set_pathname("/etc/gai.conf.unrecognized");
+  ok = ok && ClassifyFilesystemOpen(gai_conf_open, state, kProfileNPM) ==
+      FilesystemClass::kUnknown;
+
+  // Docker's generated /etc/hosts is a distinct SYSTEM mount. The exact
+  // LOCK_GENERATION Node read is accepted only after production topology
+  // reconciliation supplies that independent anchor fact.
+  auto hosts_open = BuildOpen(kThirtySecondID, "/etc/hosts", 0, 341, 3410);
+  *hosts_open.mutable_context_data() = path.node.context_data();
+  const MountAnchor docker_hosts{41, "/etc/hosts", "system"};
+  ok = ok && ClassifyFilesystemOpen(hosts_open, state, kProfileNPM, &docker_hosts) ==
+      FilesystemClass::kHelperOnly;
+  // The lexical path alone never authorizes the access.
+  ok = ok && ClassifyFilesystemOpen(hosts_open, state, kProfileNPM) ==
+      FilesystemClass::kUnknown;
+  const MountAnchor oci_hosts{1, "/", "oci-root"};
+  ok = ok && ClassifyFilesystemOpen(hosts_open, state, kProfileNPM, &oci_hosts) ==
+      FilesystemClass::kUnknown;
+  const MountAnchor wrong_system_mount{42, "/etc/hostname", "system"};
+  ok = ok && ClassifyFilesystemOpen(hosts_open, state, kProfileNPM, &wrong_system_mount) ==
+      FilesystemClass::kUnknown;
+  hosts_open.set_pathname("/etc/hostname");
+  ok = ok && ClassifyFilesystemOpen(hosts_open, state, kProfileNPM, &docker_hosts) ==
+      FilesystemClass::kUnknown;
+  hosts_open.set_pathname("/etc/hosts");
+  ProcessState hosts_changed = state;
+  hosts_changed.groups.at(341).role = ProcessState::Role::kArtifact;
+  ok = ok && ClassifyFilesystemOpen(hosts_open, hosts_changed, kProfileNPM, &docker_hosts) ==
+      FilesystemClass::kUnknown;
+  hosts_changed = state;
+  hosts_changed.groups.at(341).provenance = ProcessState::Provenance::kDirectExecRoot;
+  ok = ok && ClassifyFilesystemOpen(hosts_open, hosts_changed, kProfileNPM, &docker_hosts) ==
+      FilesystemClass::kUnknown;
+  hosts_changed = state;
+  hosts_changed.groups.at(341).command_phase = CommandPhase::kOther;
+  ok = ok && ClassifyFilesystemOpen(hosts_open, hosts_changed, kProfileNPM, &docker_hosts) ==
+      FilesystemClass::kUnknown;
+  hosts_changed = state;
+  hosts_changed.expected_groups.at(341).process_class = ProcessClass::kNpm;
+  ok = ok && ClassifyFilesystemOpen(hosts_open, hosts_changed, kProfileNPM, &docker_hosts) ==
+      FilesystemClass::kUnknown;
+  hosts_open.set_flags(kOpenWriteOnly);
+  ok = ok && ClassifyFilesystemOpen(hosts_open, state, kProfileNPM, &docker_hosts) ==
+      FilesystemClass::kOutside;
+  hosts_open.set_flags(0);
+  ok = ok && ClassifyFilesystemOpen(hosts_open, state, kProfileGitHub, &docker_hosts) ==
+      FilesystemClass::kUnknown;
+  // A clone carrying the direct-root network exception is not a valid
+  // LOCK_GENERATION resolver state.
+  hosts_changed = state;
+  hosts_changed.groups.at(341).trusted_control_network_active = true;
+  ok = ok && ClassifyFilesystemOpen(hosts_open, hosts_changed, kProfileNPM, &docker_hosts) ==
+      FilesystemClass::kUnknown;
+  hosts_open.set_pathname("/etc/nearby-unrecognized");
+  ok = ok && ClassifyFilesystemOpen(hosts_open, state, kProfileNPM, &docker_hosts) ==
+      FilesystemClass::kUnknown;
+
+  // Re-exec cannot consume the already-cleared one-shot again.
+  ok = ok && parse(path.node, &state, "process-exec-unexpected", "NODE", "BOOTSTRAP_ENDED");
+
+  ProcessState changed;
+  // Exec-session origin is inherited in production, but origin itself does
+  // not authorize this path. The same exact lineage is accepted with the
+  // opposite bounded origin value when every authorization condition remains
+  // unchanged.
+  auto non_exec_npm = path.npm;
+  auto non_exec_node = path.node;
+  non_exec_npm.mutable_context_data()->set_is_exec_session(false);
+  non_exec_node.mutable_context_data()->set_is_exec_session(false);
+  changed = ProcessState{};
+  ok = ok && baseline(&changed, nullptr, &non_exec_npm) &&
+      changed.groups.at(341).lock_generation_npm_node_transition_pending &&
+      parse(non_exec_node, &changed, "process-exec-expected") &&
+      !changed.groups.at(341).lock_generation_npm_node_transition_pending;
+
+  auto changed_node = path.node;
+  changed = ProcessState{};
+  ok = ok && baseline(&changed);
+  changed.groups[341].command_phase = CommandPhase::kOther;
+  ok = ok && parse(changed_node, &changed, "process-exec-unexpected", "NODE", "CLASS_MISMATCH");
+  changed = ProcessState{}; ok = ok && baseline(&changed);
+  changed.expected_groups[341].process_class = ProcessClass::kShell;
+  ok = ok && parse(changed_node, &changed, "process-exec-unexpected", "NODE", "CLASS_MISMATCH");
+  changed = ProcessState{}; ok = ok && baseline(&changed);
+  changed_node.set_binary_path(kNpmCLIPath);
+  ok = ok && parse(changed_node, &changed, "process-exec-unexpected", "NPM", "BOOTSTRAP_ENDED");
+  changed_node = path.node; changed = ProcessState{}; ok = ok && baseline(&changed);
+  changed.groups[341].provenance = ProcessState::Provenance::kDirectExecRoot;
+  ok = ok && parse(changed_node, &changed, "process-exec-unexpected", "NODE", "CLASS_MISMATCH");
+  changed = ProcessState{}; ok = ok && baseline(&changed);
+  changed_node.mutable_context_data()->set_parent_thread_group_id(342);
+  ok = ok && parse(changed_node, &changed, "process-exec-unexpected", "NODE", "CLASS_MISMATCH");
+  changed_node = path.node; changed = ProcessState{}; ok = ok && baseline(&changed);
+  changed_node.mutable_context_data()->set_thread_group_start_time_ns(3411);
+  ok = ok && reject(changed_node, &changed);
+  changed_node = path.node; changed = ProcessState{}; ok = ok && baseline(&changed);
+  changed.groups[341].role = ProcessState::Role::kArtifact;
+  {
+    std::string payload, container_id; const char* reason = nullptr;
+    ok = ok && changed_node.SerializeToString(&payload) && ParseSentryProcessAndClassify(
+        payload.data(), payload.size(), sockets[0], &container_id, kProfileNPM, &changed, &reason) &&
+        ExpectUnexpectedProcessRecord(sockets[1], kThirtySecondID, "SENTRY_EXEC", "NODE",
+                                      "ARTIFACT_ROLE", "ARTIFACT_GROUP");
+  }
+  changed = ProcessState{}; ok = ok && baseline(&changed);
+  changed.groups[341].handoff_target_pending = true;
+  ok = ok && parse(changed_node, &changed, "process-exec-unexpected", "NODE", "CLASS_MISMATCH");
+  changed = ProcessState{}; ok = ok && baseline(&changed);
+  changed.groups[341].demotion_pending = true;
+  ok = ok && reject(changed_node, &changed);
+  changed = ProcessState{}; ok = ok && baseline(&changed);
+  changed.groups[341].launch_target_pending = true;
+  ok = ok && reject(changed_node, &changed);
+  changed = ProcessState{}; ok = ok && baseline(&changed);
+  changed.groups[341].trusted_control_network_active = true;
+  ok = ok && parse(changed_node, &changed, "process-exec-unexpected", "NODE", "CLASS_MISMATCH");
+  changed = ProcessState{}; ok = ok && baseline(&changed);
+  changed_node.add_argv("extra");
+  ok = ok && parse(changed_node, &changed, "process-exec-unexpected", "NODE", "CLASS_MISMATCH");
+  changed_node = path.node; changed = ProcessState{}; ok = ok && baseline(&changed);
+  changed_node.set_argv(2, "--no-audit"); changed_node.set_argv(4, "--package-lock-only");
+  ok = ok && parse(changed_node, &changed, "process-exec-unexpected", "NODE", "CLASS_MISMATCH");
+  changed_node = path.node; changed = ProcessState{}; ok = ok && baseline(&changed);
+  changed.groups[341].lock_generation_npm_node_transition_pending = false;
+  ok = ok && parse(changed_node, &changed, "process-exec-unexpected", "NODE", "CLASS_MISMATCH");
+
+  // A phase lookalike and altered launcher cannot arm the special state.
+  auto altered_boundary = path.boundary;
+  altered_boundary.add_argv("extra");
+  changed = ProcessState{}; ok = ok && baseline(&changed, &altered_boundary) &&
+      !changed.groups.at(341).lock_generation_npm_node_transition_pending &&
+      parse(path.node, &changed, "process-exec-unexpected", "NODE", "CLASS_MISMATCH");
+  auto altered_npm = path.npm;
+  altered_npm.add_argv("extra");
+  changed = ProcessState{}; ok = ok && baseline(&changed, nullptr, &altered_npm) &&
+      !changed.groups.at(341).lock_generation_npm_node_transition_pending &&
+      parse(path.node, &changed, "process-exec-unexpected", "NODE", "CLASS_MISMATCH");
+
+  close(sockets[0]);
+  close(sockets[1]);
+  return ok;
+}
+
+
 }  // namespace
 
 int main(int argc, char** argv) {
   if (argc == 2 && strcmp(argv[1], "--semantic-only") == 0) {
     return HasPinnedPodInitProfile() && HasBoundedProfileRecordLimits() && VerifyBoundedClassificationSemantics() &&
         VerifyFilesystemClassification() && VerifyExactNpmNodeInterpreterTransition() &&
-        VerifyUnexpectedExecDiagnosticRetention() && VerifyResolverNpmVersionNodeTransition() ? 0 : 1;
+        VerifyUnexpectedExecDiagnosticRetention() && VerifyResolverNpmVersionNodeTransition() &&
+        VerifyResolverNpmVersionProductionPath() && VerifyResolverLockGenerationProductionPath() ? 0 : 1;
   }
   if (argc != 1) return 2;
   char directory[] = "/tmp/haa-observer-latch-XXXXXX";
@@ -3044,11 +3615,16 @@ int main(int argc, char** argv) {
   const bool unexpected_exec_diagnostic_ok = VerifyUnexpectedExecDiagnosticRetention();
   fprintf(stderr, "STARTING resolver_npm_version_node\n");
   const bool resolver_npm_version_node = VerifyResolverNpmVersionNodeTransition();
+  fprintf(stderr, "STARTING resolver_npm_version_production_path\n");
+  const bool resolver_npm_version_production_path = VerifyResolverNpmVersionProductionPath();
+  fprintf(stderr, "STARTING resolver_lock_generation_production_path\n");
+  const bool resolver_lock_generation_production_path = VerifyResolverLockGenerationProductionPath();
   const bool passed = running && profile && profile_limits && accessors && network && malformed_socket &&
       malformed_connect && unknown_fd && process && correlation && cloexec && delayed && roles &&
       oci_bootstrap && demotion && mismatch && dropped && topology_ok && filesystem && npm_node &&
       open_result_negative_ok && open_result_positive_ok && no_basename_trust_ok &&
-      unexpected_exec_diagnostic_ok && resolver_npm_version_node;
+      unexpected_exec_diagnostic_ok && resolver_npm_version_node && resolver_npm_version_production_path &&
+      resolver_lock_generation_production_path;
   const std::pair<const char*, bool> latches[] = {
       {"readiness", running}, {"pod-init profile", profile},
       {"profile record limits", profile_limits}, {"normalized accessors", accessors},
@@ -3066,6 +3642,8 @@ int main(int argc, char** argv) {
       {"no-basename-trust", no_basename_trust_ok},
       {"unexpected exec diagnostic retention", unexpected_exec_diagnostic_ok},
       {"exact resolver npm-version-to-Node", resolver_npm_version_node},
+      {"resolver npm-version production path", resolver_npm_version_production_path},
+      {"resolver lock-generation production path", resolver_lock_generation_production_path},
   };
   for (const auto& latch : latches) {
     fprintf(stderr, "observer latch %s: %s\n", latch.second ? "PASS" : "FAIL", latch.first);
