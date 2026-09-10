@@ -3,6 +3,7 @@ package sandbox
 import (
 	"context"
 	"errors"
+	"io"
 	"strings"
 	"testing"
 	"time"
@@ -11,7 +12,7 @@ import (
 )
 
 func TestBackendExecutesOneShotSandboxWithConstrainedDockerCommand(t *testing.T) {
-	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef\n"), nil, []byte("0\n"), nil}}
+	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef\n"), nil, nil, nil, nil}}
 	introducer := &recordingIntroducer{}
 	backend := newTestBackend(t, runner, introducer, &emptyObserver{}, availableProbe)
 
@@ -25,18 +26,33 @@ func TestBackendExecutesOneShotSandboxWithConstrainedDockerCommand(t *testing.T)
 	if introducer.calls != 1 || introducer.containerID != "0123456789abcdef" {
 		t.Fatalf("Introduce calls = %d, container = %q", introducer.calls, introducer.containerID)
 	}
-	if len(runner.calls) != 4 {
-		t.Fatalf("command calls = %d, want 4", len(runner.calls))
+	if len(runner.calls) != 5 {
+		t.Fatalf("command calls = %d, want 5", len(runner.calls))
 	}
 	assertConstrainedCreateCommand(t, runner.calls[0].arguments)
 	if got := runner.calls[1]; got.binary != "docker" || !sameStrings(got.arguments, []string{"start", "0123456789abcdef"}) {
 		t.Fatalf("start command = %q %q", got.binary, got.arguments)
 	}
-	if got := runner.calls[2]; got.binary != "docker" || !sameStrings(got.arguments, []string{"wait", "0123456789abcdef"}) {
-		t.Fatalf("wait command = %q %q", got.binary, got.arguments)
+	if got := runner.calls[2]; got.binary != "docker" || !sameStrings(got.arguments, boundaryReadinessArguments("0123456789abcdef")) {
+		t.Fatalf("helper readiness command = %q %q", got.binary, got.arguments)
 	}
-	if got := runner.calls[3]; got.binary != "docker" || !sameStrings(got.arguments, []string{"rm", "--force", "0123456789abcdef"}) {
+	if got := runner.calls[3]; got.binary != "docker" || !sameStrings(got.arguments, boundaryExecArguments("0123456789abcdef", boundaryLaunchMode, "/bin/sh", "-ceu", npmLifecycleCommand)) {
+		t.Fatalf("npm command = %q %q", got.binary, got.arguments)
+	}
+	if got := runner.calls[4]; got.binary != "docker" || !sameStrings(got.arguments, []string{"rm", "--force", "0123456789abcdef"}) {
 		t.Fatalf("cleanup command = %q %q", got.binary, got.arguments)
+	}
+}
+
+func TestNPMLifecycleCommandIsExactOfflineNonNotifyingInvocation(t *testing.T) {
+	const want = "mkdir -p /tmp/package /tmp/.npm; cd /tmp/package; HOME=/tmp npm_config_cache=/tmp/.npm npm_config_script_shell=/haa-runtime/haa-boundary npm install --ignore-scripts=false --no-audit --no-fund --offline --no-update-notifier /tmp/artifact.tgz"
+	if npmLifecycleCommand != want {
+		t.Fatalf("npm lifecycle command = %q, want %q", npmLifecycleCommand, want)
+	}
+	for _, forbidden := range []string{"--online", "--prefer-online", "npm_config_registry=", "CI=true"} {
+		if strings.Contains(npmLifecycleCommand, forbidden) {
+			t.Fatalf("npm lifecycle command must not contain %q: %q", forbidden, npmLifecycleCommand)
+		}
 	}
 }
 
@@ -57,9 +73,14 @@ func TestBackendDoesNotExecuteWhenCapabilityIsUnavailable(t *testing.T) {
 	}
 }
 
-func TestBackendCollectsTrustedObservationBeforeDisposal(t *testing.T) {
-	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, []byte("0\n"), nil}}
-	observer := &recordingObserver{reader: &traceReader{records: []TraceRecord{{Kind: "network-attempt", Bytes: 1}}}}
+func TestBackendTerminatesContainerBeforeCollectingFinalizedTrace(t *testing.T) {
+	cleanup := make(chan struct{})
+	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil}}
+	runner.cleanupSignal = cleanup
+	observer := &recordingObserver{reader: &cleanupGatedTraceReader{
+		cleanup: cleanup,
+		records: []TraceRecord{{Kind: "network-attempt", Bytes: 1}},
+	}}
 	backend := newTestBackend(t, runner, &recordingIntroducer{}, observer, availableProbe)
 
 	result, err := backend.Execute(context.Background(), sandboxRequest(t))
@@ -98,8 +119,8 @@ func TestBackendProcessFailureAndCleanupFailureAreIncomplete(t *testing.T) {
 		errors     []error
 		limitation string
 	}{
-		{"process failure", [][]byte{[]byte("0123456789abcdef"), nil, []byte("1\n"), nil}, nil, "M3_DYNAMIC_EXECUTION_FAILED"},
-		{"cleanup failure", [][]byte{[]byte("0123456789abcdef"), nil, []byte("0\n"), nil}, []error{nil, nil, nil, errors.New("cleanup")}, "M3_DYNAMIC_CLEANUP_FAILED"},
+		{"process failure", [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil}, []error{nil, nil, nil, errors.New("exit status 1")}, "M3_DYNAMIC_EXECUTION_FAILED"},
+		{"cleanup failure", [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil}, []error{nil, nil, nil, nil, errors.New("cleanup")}, "M3_DYNAMIC_CLEANUP_FAILED"},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -116,7 +137,7 @@ func TestBackendProcessFailureAndCleanupFailureAreIncomplete(t *testing.T) {
 }
 
 func TestBackendTimeoutIsIncompleteAndStillDisposed(t *testing.T) {
-	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil, nil}, waitForContext: true, waitForContextAt: 2}
+	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil}, waitForContext: true, waitForContextAt: 3}
 	backend := newTestBackend(t, runner, &recordingIntroducer{}, &emptyObserver{}, availableProbe)
 	backend.wallTimeout = time.Millisecond
 
@@ -127,20 +148,74 @@ func TestBackendTimeoutIsIncompleteAndStillDisposed(t *testing.T) {
 	if code, _ := result.LimitationCode(); code != "M3_DYNAMIC_TIMEOUT" {
 		t.Fatalf("LimitationCode() = %q, want timeout", code)
 	}
-	if len(runner.calls) != 4 || !sameStrings(runner.calls[3].arguments, []string{"rm", "--force", "0123456789abcdef"}) {
+	if len(runner.calls) != 5 || !sameStrings(runner.calls[4].arguments, []string{"rm", "--force", "0123456789abcdef"}) {
 		t.Fatalf("cleanup command missing after timeout: %#v", runner.calls)
 	}
+}
+
+func TestBackendArtifactIntroductionBlockedUntilMountAnchorsReady(t *testing.T) {
+	t.Run("blocked when observer fails topology reconciliation", func(t *testing.T) {
+		runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil}}
+		introducer := &recordingIntroducer{}
+		observer := &recordingObserver{err: errors.New("topology reconciliation failed")}
+		backend := newTestBackend(t, runner, introducer, observer, availableProbe)
+
+		result, err := backend.Execute(context.Background(), sandboxRequest(t))
+		if err != nil || result.Status() != domain.SandboxIncomplete {
+			t.Fatalf("Execute() = (%q, %v), want Incomplete", result.Status(), err)
+		}
+		if introducer.calls != 0 {
+			t.Fatalf("introducer called %d times, want 0 when mount anchors not ready", introducer.calls)
+		}
+	})
+
+	t.Run("blocked when observer does not implement mountAnchorReadyObserver", func(t *testing.T) {
+		runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil}}
+		introducer := &recordingIntroducer{}
+		observer := &plainObserver{}
+		backend := newTestBackend(t, runner, introducer, observer, availableProbe)
+
+		result, err := backend.Execute(context.Background(), sandboxRequest(t))
+		if err != nil || result.Status() != domain.SandboxIncomplete {
+			t.Fatalf("Execute() = (%q, %v), want Incomplete", result.Status(), err)
+		}
+		if introducer.calls != 0 {
+			t.Fatalf("introducer called %d times, want 0 when observer lacks topology readiness", introducer.calls)
+		}
+	})
+
+	t.Run("ordered strictly before artifact introduction", func(t *testing.T) {
+		runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), nil, nil, nil, nil}}
+		introducer := &sequencedIntroducer{}
+		var order []string
+		observer := &sequencedObserver{
+			onAwait: func() { order = append(order, "mount-anchors-ready") },
+		}
+		introducer.onIntroduce = func() { order = append(order, "artifact-introduced") }
+		backend := newTestBackend(t, runner, introducer, observer, availableProbe)
+
+		result, err := backend.Execute(context.Background(), sandboxRequest(t))
+		if err != nil || result.Status() != domain.SandboxCompleted {
+			t.Fatalf("Execute() = (%q, %v)", result.Status(), err)
+		}
+		if len(order) < 2 || order[0] != "mount-anchors-ready" || order[1] != "artifact-introduced" {
+			t.Fatalf("execution order = %#v, want [mount-anchors-ready, artifact-introduced]", order)
+		}
+	})
 }
 
 func assertConstrainedCreateCommand(t *testing.T, arguments []string) {
 	t.Helper()
 	joined := strings.Join(arguments, " ")
-	for _, required := range []string{"--runtime " + gVisorRuntimeName, "--user 1000:1000", "--network none", "--read-only", "--cap-drop ALL", "no-new-privileges", "--pids-limit 64", "--memory 512m", "--cpus 1", "--ulimit cpu=30:30", nodeImageReference} {
+	for _, required := range []string{"--runtime " + gVisorRuntimeName, "--network none", "--read-only", "--cap-drop ALL", "--cap-add SETUID", "--cap-add SETGID", "--cap-add SETPCAP", "no-new-privileges", "--pids-limit 64", "--memory 512m", "--cpus 1", "--ulimit cpu=30:30", "--tmpfs " + boundaryHelperMount, nodeImageReference, boundaryContainerCommand()} {
 		if !strings.Contains(joined, required) {
 			t.Errorf("create command missing %q: %q", required, joined)
 		}
 	}
-	for _, forbidden := range []string{"--mount", "--volume", "-v ", "--env", "--privileged", "--pid host", "--network host", "/var/run/docker.sock"} {
+	if strings.Contains(joined, "--user 1000:1000") {
+		t.Errorf("OCI helper initializer must run as root: %q", joined)
+	}
+	for _, forbidden := range []string{"--mount", "--volume", "-v ", "--privileged", "--pid host", "--network host", "/var/run/docker.sock"} {
 		if strings.Contains(joined, forbidden) {
 			t.Errorf("create command contains forbidden %q: %q", forbidden, joined)
 		}
@@ -166,16 +241,25 @@ type commandCall struct {
 type recordingRunner struct {
 	calls            []commandCall
 	inputCalls       []commandCall
+	timeline         []commandCall
 	input            []byte
 	responses        [][]byte
 	errors           []error
+	boundedOutput    []byte
 	waitForContext   bool
 	waitForContextAt int
+	cleanupSignal    chan struct{}
 }
 
 func (r *recordingRunner) Output(ctx context.Context, binary string, arguments ...string) ([]byte, error) {
 	_, bounded := ctx.Deadline()
 	r.calls = append(r.calls, commandCall{binary: binary, arguments: append([]string(nil), arguments...), bounded: bounded})
+	r.timeline = append(r.timeline, commandCall{binary: binary, arguments: append([]string(nil), arguments...), bounded: bounded})
+	if r.cleanupSignal != nil && binary == "docker" && len(arguments) == 3 &&
+		arguments[0] == "rm" && arguments[1] == "--force" {
+		close(r.cleanupSignal)
+		r.cleanupSignal = nil
+	}
 	index := len(r.calls) - 1
 	if r.waitForContext && index == r.waitForContextAt {
 		<-ctx.Done()
@@ -195,6 +279,11 @@ func (r *recordingRunner) RunDiscard(ctx context.Context, binary string, argumen
 	return err
 }
 
+func (r *recordingRunner) RunBounded(ctx context.Context, binary string, arguments ...string) ([]byte, error) {
+	_, err := r.Output(ctx, binary, arguments...)
+	return append([]byte(nil), r.boundedOutput...), err
+}
+
 type recordingIntroducer struct {
 	calls       int
 	containerID string
@@ -203,9 +292,59 @@ type recordingIntroducer struct {
 type emptyObserver struct{}
 
 func (emptyObserver) Start(context.Context, string) (TraceReader, error) { return &traceReader{}, nil }
+func (emptyObserver) AwaitMountAnchors(context.Context, string) error    { return nil }
+
+type plainObserver struct{}
+
+func (plainObserver) Start(context.Context, string) (TraceReader, error) { return &traceReader{}, nil }
+
+type sequencedObserver struct {
+	onAwait func()
+}
+
+func (s *sequencedObserver) Start(context.Context, string) (TraceReader, error) {
+	return &traceReader{}, nil
+}
+func (s *sequencedObserver) AwaitMountAnchors(context.Context, string) error {
+	if s.onAwait != nil {
+		s.onAwait()
+	}
+	return nil
+}
+
+type sequencedIntroducer struct {
+	onIntroduce func()
+}
+
+func (s *sequencedIntroducer) Introduce(context.Context, string, domain.AcquiredArtifact) error {
+	if s.onIntroduce != nil {
+		s.onIntroduce()
+	}
+	return nil
+}
+
+type cleanupGatedTraceReader struct {
+	cleanup <-chan struct{}
+	records []TraceRecord
+}
+
+func (r *cleanupGatedTraceReader) Next(ctx context.Context) (TraceRecord, error) {
+	select {
+	case <-r.cleanup:
+	case <-ctx.Done():
+		return TraceRecord{}, ctx.Err()
+	}
+	if len(r.records) == 0 {
+		return TraceRecord{}, io.EOF
+	}
+	record := r.records[0]
+	r.records = r.records[1:]
+	return record, nil
+}
 
 type recordingObserver struct {
 	containerID string
+	profile     string
 	reader      TraceReader
 	err         error
 }
@@ -217,6 +356,17 @@ func (o *recordingObserver) Start(_ context.Context, containerID string) (TraceR
 	}
 	return o.reader, nil
 }
+
+func (o *recordingObserver) StartProfile(_ context.Context, containerID, profile string) (TraceReader, error) {
+	o.containerID = containerID
+	o.profile = profile
+	if o.err != nil {
+		return nil, o.err
+	}
+	return o.reader, nil
+}
+
+func (o *recordingObserver) AwaitMountAnchors(_ context.Context, _ string) error { return o.err }
 
 func (r *recordingIntroducer) Introduce(_ context.Context, containerID string, _ domain.AcquiredArtifact) error {
 	r.calls++

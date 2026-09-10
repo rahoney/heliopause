@@ -40,6 +40,18 @@ type DependencyResolver interface {
 	ResolveDependencies(context.Context, domain.ArtifactReference, domain.InstallContext) (domain.DependencyResolution, error)
 }
 
+// ProjectDependencyResolver resolves a complete project state without an
+// arbitrary primary artifact.
+type ProjectDependencyResolver interface {
+	ResolveProjectDependencies(context.Context, domain.InstallContext) (domain.ProjectDependencySnapshot, error)
+}
+
+// ProjectDependencyPromoter applies an already-resolved exact dependency to a
+// project through an ecosystem-specific transactional boundary.
+type ProjectDependencyPromoter interface {
+	PromoteProjectDependency(context.Context, domain.ArtifactReference, domain.InstallContext) error
+}
+
 // Derivation produces controller-owned derived Artifacts from an already
 // inspected set. The Application re-runs verification, inspection, Evidence
 // recording and entry Policy on each returned Artifact.

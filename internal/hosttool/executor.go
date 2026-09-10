@@ -23,9 +23,10 @@ import (
 )
 
 const (
-	defaultDockerEndpoint = "unix:///run/docker.sock"
-	systemConfigPath      = "/etc/heliopause/host-tools.json"
-	defaultObserverHelper = "/usr/libexec/heliopause/haa_gvisor_observer"
+	defaultDockerEndpoint   = "unix:///run/docker.sock"
+	systemConfigPath        = "/etc/heliopause/host-tools.json"
+	defaultObserverHelper   = "/usr/libexec/heliopause/haa_gvisor_observer"
+	maxBoundedCommandOutput = 16 << 10
 )
 
 var (
@@ -39,6 +40,86 @@ type Config struct {
 	DockerPath         string `json:"docker_path"`
 	DockerEndpoint     string `json:"docker_endpoint"`
 	ObserverHelperPath string `json:"observer_helper_path"`
+	GoPath             string `json:"go_path,omitempty"`
+}
+
+// GoCommandRunner is the explicit environment/working-directory boundary
+// consumed by ecosystem adapters. It never inherits the caller environment.
+func (e *Executor) RunGo(ctx context.Context, directory string, environment []string, arguments ...string) ([]byte, error) {
+	if e == nil || !filepath.IsAbs(directory) || filepath.Clean(directory) != directory || verifyNoSymlinkPath(directory, false) != nil {
+		return nil, errors.New("trusted Go working directory is unavailable")
+	}
+	if _, err := os.Stat(directory); err != nil {
+		return nil, errors.New("trusted Go working directory is unavailable")
+	}
+	if _, err := e.tool("go"); err != nil {
+		for _, candidate := range []string{"/usr/local/go/bin/go", "/usr/bin/go", "/bin/go"} {
+			if verified, verifyErr := verifySystemExecutable(candidate); verifyErr == nil {
+				e.tools["go"] = verified
+				break
+			}
+		}
+	}
+	command, err := e.command(ctx, "go", arguments...)
+	if err != nil {
+		return nil, err
+	}
+	command.Dir = directory
+	command.Env = append(minimalEnvironment(e.clientHome), append([]string(nil), environment...)...)
+	return command.Output()
+}
+
+// RunCargo executes the verified absolute Cargo binary with a caller-supplied
+// canonical registry environment. It never inherits Cargo config or proxies.
+func (e *Executor) RunCargo(ctx context.Context, directory string, environment []string, arguments ...string) ([]byte, error) {
+	if e == nil || !filepath.IsAbs(directory) || filepath.Clean(directory) != directory || verifyNoSymlinkPath(directory, false) != nil {
+		return nil, errors.New("trusted Cargo working directory is unavailable")
+	}
+	if _, err := os.Stat(directory); err != nil {
+		return nil, errors.New("trusted Cargo working directory is unavailable")
+	}
+	if _, err := e.tool("cargo"); err != nil {
+		for _, candidate := range []string{"/usr/local/bin/cargo", "/usr/bin/cargo", "/bin/cargo"} {
+			if verified, verifyErr := verifySystemExecutable(candidate); verifyErr == nil {
+				e.tools["cargo"] = verified
+				break
+			}
+		}
+	}
+	command, err := e.command(ctx, "cargo", arguments...)
+	if err != nil {
+		return nil, err
+	}
+	command.Dir = directory
+	command.Env = append(minimalEnvironment(e.clientHome), append([]string(nil), environment...)...)
+	return command.Output()
+}
+
+// RunTerraform executes the verified Terraform CLI with an explicit isolated
+// CLI configuration. Provider credentials, mirrors and ambient config are not
+// inherited by this boundary.
+func (e *Executor) RunTerraform(ctx context.Context, directory string, environment []string, arguments ...string) ([]byte, error) {
+	if e == nil || !filepath.IsAbs(directory) || filepath.Clean(directory) != directory || verifyNoSymlinkPath(directory, false) != nil {
+		return nil, errors.New("trusted Terraform working directory is unavailable")
+	}
+	if _, err := os.Stat(directory); err != nil {
+		return nil, errors.New("trusted Terraform working directory is unavailable")
+	}
+	if _, err := e.tool("terraform"); err != nil {
+		for _, candidate := range []string{"/usr/local/bin/terraform", "/usr/bin/terraform", "/bin/terraform"} {
+			if verified, verifyErr := verifySystemExecutable(candidate); verifyErr == nil {
+				e.tools["terraform"] = verified
+				break
+			}
+		}
+	}
+	command, err := e.command(ctx, "terraform", arguments...)
+	if err != nil {
+		return nil, err
+	}
+	command.Dir = directory
+	command.Env = append(minimalEnvironment(e.clientHome), append([]string(nil), environment...)...)
+	return command.Output()
 }
 
 type identity struct {
@@ -51,10 +132,11 @@ type identity struct {
 // Executor executes only registered trusted tools with a fresh minimal
 // environment. It never searches PATH or consumes Docker context variables.
 type Executor struct {
-	tools      map[string]identity
-	endpoint   string
-	endpointID os.FileInfo
-	clientHome string
+	tools         map[string]identity
+	runscManifest identity
+	endpoint      string
+	endpointID    os.FileInfo
+	clientHome    string
 }
 
 // NewSystem validates the supported Host installation and the daemon's actual
@@ -136,6 +218,14 @@ func newExecutor(ctx context.Context, config Config, includeFirewall bool) (*Exe
 		return nil, errors.New("capture local Docker endpoint identity")
 	}
 	executor := &Executor{tools: map[string]identity{"docker": docker}, endpoint: endpoint, endpointID: endpointInfo, clientHome: clientHome}
+	if config.GoPath != "" {
+		goTool, goErr := verifySystemExecutable(config.GoPath)
+		if goErr != nil {
+			_ = executor.Close()
+			return nil, fmt.Errorf("verify Go executable: %w", goErr)
+		}
+		executor.tools["go"] = goTool
+	}
 	if err := executor.validateDaemon(ctx); err != nil {
 		_ = executor.Close()
 		return nil, err
@@ -174,19 +264,30 @@ func (e *Executor) validateDaemon(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	expected, ok := runtimeidentity.RunscSHA512(runtime.GOARCH)
-	if !ok {
-		return errors.New("runsc-trace architecture is unsupported")
+	if err := validateRegisteredRunscPath(registeredPath); err != nil {
+		return errors.New("runsc-trace registration does not use the canonical HAA runtime")
 	}
-	runsc, err := verifyExecutable(registeredPath, expected)
+	manifestIdentity, manifest, err := verifyLocalRunscManifest(runtimeidentity.LocalRunscManifestPath, runtime.GOARCH, "")
+	if err != nil {
+		return fmt.Errorf("verify registered runsc-trace manifest: %w", err)
+	}
+	runsc, err := verifyExecutable(registeredPath, manifest.RunscBinarySHA512)
 	if err != nil {
 		return fmt.Errorf("verify registered runsc-trace executable: %w", err)
 	}
+	e.runscManifest = manifestIdentity
 	e.tools["runsc"] = runsc
 	output, err := e.output(ctx, "runsc", "--version")
 	if err != nil || !strings.Contains(string(output), gVisorRelease) {
 		delete(e.tools, "runsc")
 		return errors.New("registered runsc-trace release mismatch")
+	}
+	return nil
+}
+
+func validateRegisteredRunscPath(path string) error {
+	if path != runtimeidentity.LocalRunscPath {
+		return errors.New("runsc-trace registration path mismatch")
 	}
 	return nil
 }
@@ -255,6 +356,39 @@ func (e *Executor) RunDiscard(ctx context.Context, name string, arguments ...str
 	return command.Run()
 }
 
+// RunBounded executes a trusted command while retaining only a small,
+// process-local diagnostic window. Callers must classify and discard the
+// returned bytes; they must never serialize them as operation output.
+func (e *Executor) RunBounded(ctx context.Context, name string, arguments ...string) ([]byte, error) {
+	command, err := e.command(ctx, name, arguments...)
+	if err != nil {
+		return nil, err
+	}
+	output := &boundedCommandOutput{remaining: maxBoundedCommandOutput}
+	command.Stdout = output
+	command.Stderr = output
+	err = command.Run()
+	return output.Bytes(), err
+}
+
+type boundedCommandOutput struct {
+	bytes.Buffer
+	remaining int
+}
+
+func (b *boundedCommandOutput) Write(data []byte) (int, error) {
+	count := len(data)
+	if b.remaining > 0 {
+		accepted := data
+		if len(accepted) > b.remaining {
+			accepted = accepted[:b.remaining]
+		}
+		_, _ = b.Buffer.Write(accepted)
+		b.remaining -= len(accepted)
+	}
+	return count, nil
+}
+
 // Run executes one Docker Promotion command. The project argument is already
 // validated by Promotion and is not inherited as process working directory.
 func (e *Executor) Run(ctx context.Context, _ string, arguments []string) error {
@@ -302,10 +436,17 @@ func minimalEnvironment(clientHome string) []string {
 }
 
 func parseRunscRegistration(body []byte) (string, error) {
-	var registered struct {
-		Path string `json:"path"`
+	if len(body) == 0 || len(body) > maxBoundedCommandOutput {
+		return "", errors.New("runsc-trace registration exceeds its bound")
 	}
-	if json.Unmarshal(body, &registered) != nil || !filepath.IsAbs(registered.Path) || filepath.Clean(registered.Path) != registered.Path {
+	var registered struct {
+		Path        string          `json:"path"`
+		RuntimeArgs json.RawMessage `json:"runtimeArgs,omitempty"`
+		Status      json.RawMessage `json:"status,omitempty"`
+	}
+	decoder := json.NewDecoder(bytes.NewReader(body))
+	decoder.DisallowUnknownFields()
+	if decoder.Decode(&registered) != nil || decoder.Decode(&struct{}{}) != io.EOF || !filepath.IsAbs(registered.Path) || filepath.Clean(registered.Path) != registered.Path {
 		return "", errors.New("runsc-trace registration has no canonical absolute executable identity")
 	}
 	return registered.Path, nil
@@ -318,6 +459,12 @@ func (e *Executor) tool(name string) (identity, error) {
 	tool, ok := e.tools[name]
 	if !ok {
 		return identity{}, errors.New("host tool is not registered")
+	}
+	if name == "runsc" {
+		_, manifest, manifestErr := verifyLocalRunscManifest(runtimeidentity.LocalRunscManifestPath, runtime.GOARCH, e.runscManifest.digest)
+		if manifestErr != nil || manifest.RunscBinarySHA512 != tool.digest {
+			return identity{}, errors.New("local runsc manifest changed after validation")
+		}
 	}
 	var current identity
 	var err error
@@ -404,6 +551,45 @@ func verifyExecutable(path, expectedDigest string) (identity, error) {
 		}
 	}
 	return identity{path: clean, info: info, digest: digest}, nil
+}
+
+func verifyLocalRunscManifest(path, goarch, expectedDigest string) (identity, runtimeidentity.LocalRunscManifest, error) {
+	verified, err := verifyExecutable(path, "")
+	if err != nil {
+		return identity{}, runtimeidentity.LocalRunscManifest{}, err
+	}
+	file, err := os.Open(verified.path)
+	if err != nil {
+		return identity{}, runtimeidentity.LocalRunscManifest{}, errors.New("open local runsc manifest")
+	}
+	body, readErr := io.ReadAll(io.LimitReader(file, runtimeidentity.LocalRunscManifestSize+1))
+	closeErr := file.Close()
+	if readErr != nil || closeErr != nil || len(body) > runtimeidentity.LocalRunscManifestSize {
+		return identity{}, runtimeidentity.LocalRunscManifest{}, errors.New("read bounded local runsc manifest")
+	}
+	current, err := os.Lstat(verified.path)
+	if err != nil || !os.SameFile(verified.info, current) {
+		return identity{}, runtimeidentity.LocalRunscManifest{}, errors.New("local runsc manifest changed while reading")
+	}
+	manifestDigest, manifest, err := validateLocalRunscManifestBody(body, goarch, expectedDigest)
+	if err != nil {
+		return identity{}, runtimeidentity.LocalRunscManifest{}, err
+	}
+	verified.digest = manifestDigest
+	return verified, manifest, nil
+}
+
+func validateLocalRunscManifestBody(body []byte, goarch, expectedDigest string) (string, runtimeidentity.LocalRunscManifest, error) {
+	hash := sha512.Sum512(body)
+	digest := hex.EncodeToString(hash[:])
+	if expectedDigest != "" && digest != expectedDigest {
+		return "", runtimeidentity.LocalRunscManifest{}, errors.New("local runsc manifest digest mismatch")
+	}
+	manifest, err := runtimeidentity.ParseLocalRunscManifest(body, goarch)
+	if err != nil {
+		return "", runtimeidentity.LocalRunscManifest{}, err
+	}
+	return digest, manifest, nil
 }
 
 func verifyLocalSocket(endpoint string) (string, error) {

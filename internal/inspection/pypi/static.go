@@ -37,6 +37,12 @@ func (i *StaticInspector) InspectWheel(ctx context.Context, artifact domain.Acqu
 	}
 	wheel, ok := inspection.(artifactpypi.WheelInspection)
 	if !ok {
+		// Finding-only static results intentionally have no typed inspection.
+		// Preserve them so CompositeInspector can fail closed before dynamic
+		// inspection instead of masking the concrete finding.
+		if len(report.Findings()) != 0 {
+			return artifactpypi.WheelInspection{}, report, nil
+		}
 		return artifactpypi.WheelInspection{}, domain.InspectionReport{}, errors.New("PyPI wheel static inspection is unavailable")
 	}
 	return wheel, report, nil
@@ -55,8 +61,11 @@ func (i *StaticInspector) InspectSdist(ctx context.Context, artifact domain.Acqu
 }
 
 func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredArtifact) (any, domain.InspectionReport, error) {
-	if ctx == nil || ctx.Err() != nil || i == nil || artifact.Identity().Source().String() != "pypi" {
+	if ctx == nil || ctx.Err() != nil || i == nil {
 		return nil, domain.InspectionReport{}, errors.New("PyPI static inspection request is invalid")
+	}
+	if _, ok := artifactpypi.ProfileForSource(artifact.Identity().Source()); !ok {
+		return nil, domain.InspectionReport{}, errors.New("PyPI static inspection source is unsupported")
 	}
 	path, filename, err := i.artifactPath(artifact)
 	if err != nil {
@@ -75,16 +84,28 @@ func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredA
 	var summary string
 	switch artifact.Identity().Variant() {
 	case "wheel", "derived-wheel":
-		info, inspectErr := artifactpypi.InspectWheel(file, int64(artifact.SizeBytes()), filename, declared, i.target, artifactpypi.DefaultWheelLimits())
+		resourcePolicy := artifactpypi.ResourcePolicyFromContext(ctx)
+		info, inspectErr := artifactpypi.InspectWheelForSource(file, int64(artifact.SizeBytes()), filename, declared, i.target, resourcePolicy.WheelLimits(), artifact.Identity().Source())
 		if inspectErr != nil {
-			return nil, i.violation(artifact, "M5_WHEEL_STATIC_INVALID"), nil
+			cause, stage := wheelDiagnostic(inspectErr)
+			return nil, i.violation(artifact, "M5_WHEEL_STATIC_INVALID", cause, stage), nil
+		}
+		var uncompressed int64
+		for _, item := range info.Files {
+			if item.Size < 0 || uncompressed > resourcePolicy.WheelLimits().MaxUncompressed-item.Size {
+				return nil, i.violation(artifact, "M5_WHEEL_RESOURCE_EXCEEDED", domain.InspectionDiagnosticResourceExceeded, domain.InspectionDiagnosticStagePerArtifactUncompressed), nil
+			}
+			uncompressed += item.Size
+		}
+		if artifactpypi.ChargeUncompressedFromContext(ctx, uncompressed) != nil {
+			return nil, i.violation(artifact, "M5_WHEEL_RESOURCE_EXCEEDED", domain.InspectionDiagnosticResourceExceeded, domain.InspectionDiagnosticStageGraphUncompressed), nil
 		}
 		summary = fmt.Sprintf("PyPI wheel static inspection completed with %d RECORD entries.", len(info.Files))
 		return info, i.complete(artifact, "pypi-wheel-static", summary), nil
 	case "sdist":
 		info, inspectErr := artifactpypi.InspectSdist(file, filename, declared, artifactpypi.DefaultSdistLimits())
 		if inspectErr != nil {
-			return nil, i.violation(artifact, "M5_SDIST_STATIC_INVALID"), nil
+			return nil, i.violation(artifact, "M5_SDIST_STATIC_INVALID", domain.InspectionDiagnosticStaticFinding, ""), nil
 		}
 		summary = "PyPI PEP 517 source distribution static inspection completed."
 		return info, i.complete(artifact, "pypi-sdist-static", summary), nil
@@ -145,12 +166,50 @@ func (i *StaticInspector) complete(artifact domain.AcquiredArtifact, kind, summa
 	return report
 }
 
-func (i *StaticInspector) violation(artifact domain.AcquiredArtifact, code string) domain.InspectionReport {
+func (i *StaticInspector) violation(artifact domain.AcquiredArtifact, code string, cause domain.InspectionDiagnosticCause, stage domain.InspectionDiagnosticStage) domain.InspectionReport {
 	checkID, _ := domain.NewCheckID("pypi-static-archive")
 	check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
 	evidenceID, _ := domain.NewEvidenceID("pypi-static-archive-result")
 	evidence, _ := domain.NewEvidence(evidenceID, checkID, artifact.Identity(), artifact.Digest(), "pypi-static-archive", "PyPI static archive inspection rejected the distribution.")
 	finding, _ := domain.NewFinding(code, []domain.EvidenceID{evidenceID})
-	report, _ := domain.NewInspectionReport(check, []domain.Finding{finding}, []domain.Evidence{evidence})
+	diagnostic, _ := domain.NewInspectionDiagnostic(cause, stage)
+	report, _ := domain.NewInspectionReportWithDiagnostic(check, []domain.Finding{finding}, []domain.Evidence{evidence}, diagnostic)
 	return report
+}
+
+func wheelDiagnostic(err error) (domain.InspectionDiagnosticCause, domain.InspectionDiagnosticStage) {
+	stage, ok := artifactpypi.WheelValidationStageOf(err)
+	if !ok {
+		return domain.InspectionDiagnosticInvalidWheel, domain.InspectionDiagnosticStageOther
+	}
+	switch stage {
+	case artifactpypi.WheelValidationCompressed:
+		return domain.InspectionDiagnosticResourceExceeded, domain.InspectionDiagnosticStagePerArtifactCompressed
+	case artifactpypi.WheelValidationUncompressed:
+		return domain.InspectionDiagnosticResourceExceeded, domain.InspectionDiagnosticStagePerArtifactUncompressed
+	case artifactpypi.WheelValidationFileCount:
+		return domain.InspectionDiagnosticResourceExceeded, domain.InspectionDiagnosticStageFileCount
+	case artifactpypi.WheelValidationMetadata:
+		return domain.InspectionDiagnosticResourceExceeded, domain.InspectionDiagnosticStageMetadata
+	case artifactpypi.WheelValidationFilename:
+		return domain.InspectionDiagnosticInvalidWheel, domain.InspectionDiagnosticStageFilename
+	case artifactpypi.WheelValidationCompatibility:
+		return domain.InspectionDiagnosticInvalidWheel, domain.InspectionDiagnosticStageCompatibility
+	case artifactpypi.WheelValidationZIP:
+		return domain.InspectionDiagnosticInvalidWheel, domain.InspectionDiagnosticStageZIP
+	case artifactpypi.WheelValidationDigest:
+		return domain.InspectionDiagnosticInvalidWheel, domain.InspectionDiagnosticStageDigest
+	case artifactpypi.WheelValidationMetadataIdentity:
+		return domain.InspectionDiagnosticInvalidWheel, domain.InspectionDiagnosticStageMetadataIdentity
+	case artifactpypi.WheelValidationDistInfoIdentity:
+		return domain.InspectionDiagnosticInvalidWheel, domain.InspectionDiagnosticStageDistInfoIdentity
+	case artifactpypi.WheelValidationWheelTag:
+		return domain.InspectionDiagnosticInvalidWheel, domain.InspectionDiagnosticStageWheelTag
+	case artifactpypi.WheelValidationRecord:
+		return domain.InspectionDiagnosticInvalidWheel, domain.InspectionDiagnosticStageRecord
+	case artifactpypi.WheelValidationFileType:
+		return domain.InspectionDiagnosticInvalidWheel, domain.InspectionDiagnosticStageFileType
+	default:
+		return domain.InspectionDiagnosticInvalidWheel, domain.InspectionDiagnosticStageOther
+	}
 }

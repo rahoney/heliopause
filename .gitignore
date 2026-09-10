@@ -1,3 +1,4 @@
-/docs/
-/PROJECT-DECISIONS.md
+# Canonical project documentation is version-controlled with source changes.
+# Keep local filesystem metadata out of commits.
+**/.DS_Store
 /AGENTS.md

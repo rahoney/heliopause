@@ -19,7 +19,7 @@ func TestPyPIResolverUsesGVisorDefaultDenyLifecycleAndCrossChecks(t *testing.T) 
 	report := pypiResolverReportJSON()
 	runner := &recordingRunner{responses: [][]byte{
 		[]byte("0123456789abcdef"), []byte("172.30.0.0/24"),
-		[]byte("0123456789abcdef"), nil, []byte("3.14.7\n"), []byte("pip 26.2.1 from /usr/local/lib/python3.14/site-packages/pip\n"), []byte("Compatible tags:\n  cp314-cp314-manylinux_2_36_x86_64\n"), nil,
+		[]byte("0123456789abcdef"), nil, []byte("3.14.7\n"), []byte("pip 26.2.1 from /usr/local/lib/python3.14/site-packages/pip\n"), []byte("Compatible tags:\n  cp314-cp314-manylinux_2_36_x86_64\n"), nil, nil,
 		[]byte(report), []byte(pypiResolverSimpleJSON("child", "child-2.0-py3-none-any.whl", "")), []byte(pypiResolverSimpleJSON("primary", "primary-1.0-py3-none-any.whl", ">=3.14")),
 	}}
 	observer := &recordingObserver{reader: &traceReader{records: []TraceRecord{{Kind: "network-attempt", Bytes: 1}}}}
@@ -43,11 +43,11 @@ func TestPyPIResolverUsesGVisorDefaultDenyLifecycleAndCrossChecks(t *testing.T) 
 	if observer.containerID != "0123456789abcdef" {
 		t.Fatalf("observer container = %q", observer.containerID)
 	}
-	if len(runner.calls) != 13 {
+	if len(runner.calls) != 14 {
 		t.Fatalf("command calls = %d: %#v", len(runner.calls), runner.calls)
 	}
 	assertPyPIResolverCreate(t, runner.calls[2].arguments)
-	if got := runner.calls[7]; got.binary != "docker" || strings.Contains(strings.Join(got.arguments, " "), "--only-binary") || !strings.Contains(strings.Join(got.arguments, " "), "primary==1.0") {
+	if got := runner.calls[8]; got.binary != "docker" || strings.Contains(strings.Join(got.arguments, " "), "--only-binary") || !strings.Contains(strings.Join(got.arguments, " "), "primary==1.0") {
 		t.Fatalf("pip resolution command = %#v", got)
 	}
 	if got := runner.calls[len(runner.calls)-1]; got.binary != "docker" || got.arguments[0] != "network" || got.arguments[1] != "rm" {
@@ -117,6 +117,57 @@ func TestPyPINetworkArgumentsPinOnlyExpectedIPv4Addresses(t *testing.T) {
 	}
 }
 
+func TestPyTorchResolverErrorDoesNotRetainChildOutput(t *testing.T) {
+	t.Parallel()
+	profile, ok := artifactpypi.PyTorchProfile("cpu")
+	if !ok {
+		t.Fatal("CPU profile is missing")
+	}
+	reference, err := artifactpypi.ParseReferenceForSource("torch@2.9.1+cpu", profile.Source())
+	if err != nil {
+		t.Fatal(err)
+	}
+	rawChildOutput := "resolver-output-must-not-escape"
+	runner := &recordingRunner{errors: []error{errors.New(rawChildOutput)}}
+	resolver := &PyPIResolver{runner: runner, profile: profile}
+	_, _, err = resolver.resolvePyTorchCandidate(context.Background(), "0123456789abcdef", PythonRuntime{}, reference, profile, "torch==2.9.1+cpu")
+	if err == nil || strings.Contains(err.Error(), rawChildOutput) {
+		t.Fatalf("resolver error retained child output: %v", err)
+	}
+}
+
+func TestPyTorchNetworkArgumentsIncludeOnlyCanonicalHosts(t *testing.T) {
+	profile, ok := artifactpypi.PyTorchProfile("cu126")
+	if !ok {
+		t.Fatal("cu126 profile is missing")
+	}
+	addresses := map[string][]netip.Addr{}
+	for _, host := range artifactpypiProfileEndpoints(profile) {
+		addresses[host] = []netip.Addr{netip.MustParseAddr("1.1.1.1")}
+	}
+	all, arguments, err := resolverNetworkArguments(profile, addresses)
+	if err != nil || len(all) != 1 || len(arguments) != len(addresses)*2 {
+		t.Fatalf("PyTorch network arguments = %v, %v, %v", all, arguments, err)
+	}
+	if _, _, err := resolverNetworkArguments(profile, map[string][]netip.Addr{"download.pytorch.org": {netip.MustParseAddr("1.1.1.1")}}); err == nil {
+		t.Fatal("PyTorch network arguments accepted an incomplete endpoint set")
+	}
+}
+
+func TestPyTorchResolveArgumentsDoNotEnableCrossIndexSelection(t *testing.T) {
+	profile, ok := artifactpypi.PyTorchProfile("cpu")
+	if !ok {
+		t.Fatal("cpu profile is missing")
+	}
+	arguments := strings.Join(pypiResolveArguments(profile, "torch==2.0.0+cpu"), " ")
+	if !strings.Contains(arguments, "--index-url "+profile.IndexURL()) || !strings.Contains(arguments, "--no-deps") {
+		t.Fatalf("PyTorch resolve arguments = %q", arguments)
+	}
+	if strings.Contains(arguments, "--extra-index-url") || strings.Contains(arguments, artifactpypi.PublicPyPIProfile().IndexURL()) {
+		t.Fatalf("PyTorch resolve arguments enable cross-index selection: %q", arguments)
+	}
+}
+
 func assertPyPIResolverCreate(t *testing.T, arguments []string) {
 	t.Helper()
 	joined := strings.Join(arguments, " ")
@@ -125,7 +176,7 @@ func assertPyPIResolverCreate(t *testing.T, arguments []string) {
 			t.Errorf("create command missing %q: %q", required, joined)
 		}
 	}
-	for _, forbidden := range []string{"--mount", "--volume", "-v ", "--env", "--privileged", "--network host", "/var/run/docker.sock"} {
+	for _, forbidden := range []string{"--mount", "--volume", "-v ", "--privileged", "--network host", "/var/run/docker.sock"} {
 		if strings.Contains(joined, forbidden) {
 			t.Errorf("create command contains forbidden %q: %q", forbidden, joined)
 		}

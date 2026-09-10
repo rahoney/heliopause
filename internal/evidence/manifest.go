@@ -48,7 +48,7 @@ func (Generator) Build(ctx context.Context, operationID domain.OperationID, inst
 // BuildVerifiedBundle emits compact deterministic UTF-8 JSON for both the HAA
 // Manifest and CycloneDX 1.7 SBOM, then seals them into one immutable bundle.
 func BuildVerifiedBundle(context ManifestContext, set domain.VerifiedSet) (domain.VerifiedBundle, error) {
-	if context.OperationID.String() == "" || context.InstallContext.Target().String() == "" || !context.InstallContext.RequiresNewTarget() || context.LockfileDigest.String() == "" || !validContextText(context.ResolverRuntime) || !set.Valid() {
+	if context.OperationID.String() == "" || context.InstallContext.Target().String() == "" || !context.InstallContext.Valid() || context.LockfileDigest.String() == "" || !validContextText(context.ResolverRuntime) || !set.Valid() {
 		return domain.VerifiedBundle{}, errors.New("manifest generation requires verified set and complete context")
 	}
 	entries, edges, derivations, err := manifestEntries(set)
@@ -61,7 +61,7 @@ func BuildVerifiedBundle(context ManifestContext, set domain.VerifiedSet) (domai
 	payload := manifestPayload{
 		Schema:      verifiedManifestSchema,
 		OperationID: context.OperationID.String(),
-		Target:      manifestTarget{Path: context.InstallContext.Target().String(), RequiresNew: true},
+		Target:      manifestTarget{Path: context.InstallContext.Target().String(), RequiresNew: context.InstallContext.RequiresNewTarget()},
 		Resolver:    manifestResolver{RuntimeIdentity: context.ResolverRuntime, LockfileSHA256: context.LockfileDigest.String()},
 		Primary:     set.Inspected().Graph().Primary().String(),
 		Policy:      manifestPolicy{Decision: string(decision.Decision()), ID: decision.PolicyID(), Version: decision.Version(), Reasons: reasons},

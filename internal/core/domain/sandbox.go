@@ -9,8 +9,8 @@ import (
 
 const (
 	observationSummarySchema                = "m11-004"
-	maximumObservationSummaryUniqueSubjects = 32
-	maximumObservationSummaryCount          = 10000
+	MaximumObservationSummaryUniqueSubjects = 32
+	MaximumObservationSummaryCount          = uint64(10000)
 )
 
 // SandboxSessionID identifies one ephemeral dynamic-inspection session.
@@ -58,10 +58,17 @@ const (
 type SandboxObservation struct {
 	category ObservationCategory
 	subject  string
+	count    uint64
 }
 
 // NewSandboxObservation constructs a bounded fact without raw runtime output or Host paths.
 func NewSandboxObservation(category ObservationCategory, subject string) (SandboxObservation, error) {
+	return NewCountedSandboxObservation(category, subject, 1)
+}
+
+// NewCountedSandboxObservation constructs one bounded normalized subject with
+// its retained saturating event count.
+func NewCountedSandboxObservation(category ObservationCategory, subject string, count uint64) (SandboxObservation, error) {
 	switch category {
 	case ObservationProcess, ObservationFilesystem, ObservationNetwork, ObservationHoneytoken, ObservationResource:
 	default:
@@ -70,11 +77,15 @@ func NewSandboxObservation(category ObservationCategory, subject string) (Sandbo
 	if err := validateNormalizedIdentifier(subject, 64, "Sandbox Observation subject"); err != nil {
 		return SandboxObservation{}, err
 	}
-	return SandboxObservation{category: category, subject: subject}, nil
+	if count == 0 || count > MaximumObservationSummaryCount {
+		return SandboxObservation{}, errors.New("sandbox observation count is invalid")
+	}
+	return SandboxObservation{category: category, subject: subject, count: count}, nil
 }
 
 func (o SandboxObservation) Category() ObservationCategory { return o.category }
 func (o SandboxObservation) Subject() string               { return o.subject }
+func (o SandboxObservation) Count() uint64                 { return o.count }
 
 // SandboxRequest gives a backend only the exact acquired content subject to execute.
 type SandboxRequest struct{ artifact AcquiredArtifact }
@@ -114,11 +125,28 @@ func NewSandboxResult(sessionID SandboxSessionID, status SandboxStatus, limitati
 	default:
 		return SandboxResult{}, fmt.Errorf("invalid sandbox status %q", status)
 	}
-	owned := append([]SandboxObservation(nil), observations...)
-	for index, observation := range owned {
+	owned := make([]SandboxObservation, 0, len(observations))
+	indices := make(map[string]int)
+	for index, observation := range observations {
 		if observation.subject == "" {
 			return SandboxResult{}, fmt.Errorf("sandbox observation %d is invalid", index)
 		}
+		if observation.count == 0 || observation.count > MaximumObservationSummaryCount {
+			return SandboxResult{}, fmt.Errorf("sandbox observation %d has an invalid count", index)
+		}
+		key := string(observation.category) + ":" + observation.subject
+		if existing, ok := indices[key]; ok {
+			count := owned[existing].count
+			if MaximumObservationSummaryCount-count < observation.count {
+				count = MaximumObservationSummaryCount
+			} else {
+				count += observation.count
+			}
+			owned[existing].count = count
+			continue
+		}
+		indices[key] = len(owned)
+		owned = append(owned, observation)
 	}
 	return SandboxResult{sessionID: sessionID, status: status, limitation: limitationCode, observed: owned}, nil
 }
@@ -144,16 +172,26 @@ func (r SandboxResult) ObservationSummary() (string, error) {
 	for _, observation := range r.observed {
 		key := string(observation.category) + ":" + observation.subject
 		if _, exists := counts[key]; !exists {
-			if len(counts) >= maximumObservationSummaryUniqueSubjects {
+			if len(counts) >= MaximumObservationSummaryUniqueSubjects {
 				return "", errors.New("observation summary unique-subject bound exceeded")
 			}
 			counts[key] = 0
 		}
-		if counts[key] < maximumObservationSummaryCount {
-			counts[key]++
+		if counts[key] < MaximumObservationSummaryCount {
+			remaining := MaximumObservationSummaryCount - counts[key]
+			if observation.count > remaining {
+				counts[key] = MaximumObservationSummaryCount
+			} else {
+				counts[key] += observation.count
+			}
 		}
-		if total < maximumObservationSummaryCount {
-			total++
+		if total < MaximumObservationSummaryCount {
+			remaining := MaximumObservationSummaryCount - total
+			if observation.count > remaining {
+				total = MaximumObservationSummaryCount
+			} else {
+				total += observation.count
+			}
 		}
 	}
 	value := struct {

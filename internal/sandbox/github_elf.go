@@ -87,21 +87,29 @@ func (b *GitHubELFBackend) Execute(ctx context.Context, request domain.SandboxRe
 		_ = b.cleanup(containerID)
 		return incomplete(sessionID, "M6_DYNAMIC_SETUP_FAILED")
 	}
+	if err := awaitBoundaryHelper(runContext, b.runner, containerID); err != nil {
+		_ = b.cleanup(containerID)
+		return incomplete(sessionID, "M6_DYNAMIC_SETUP_FAILED")
+	}
+	if err := awaitMountAnchors(runContext, b.observer, containerID); err != nil {
+		_ = b.cleanup(containerID)
+		return incomplete(sessionID, "M6_DYNAMIC_OBSERVER_FAILED")
+	}
 	if err := b.introduce(runContext, containerID, request.Artifact()); err != nil {
 		if b.cleanup(containerID) != nil {
 			return incomplete(sessionID, "M6_DYNAMIC_CLEANUP_FAILED")
 		}
 		return incomplete(sessionID, "M6_DYNAMIC_ARTIFACT_INTRODUCTION_FAILED")
 	}
-	wait, waitErr := b.runner.Output(runContext, "docker", "wait", containerID)
+	_, waitErr := b.runner.Output(runContext, "docker", boundaryExecArguments(containerID, boundaryELFHandoffMode, "/work/artifact")...)
+	cleanupErr := b.cleanup(containerID)
 	collectCtx, collectCancel := context.WithTimeout(context.Background(), cleanupTimeout)
 	observations, limitation := collectTrace(collectCtx, trace)
 	collectCancel()
-	cleanupErr := b.cleanup(containerID)
 	if cleanupErr != nil {
 		return incomplete(sessionID, "M6_DYNAMIC_CLEANUP_FAILED")
 	}
-	if waitErr != nil || strings.TrimSpace(string(wait)) != "0" {
+	if waitErr != nil {
 		if runContext.Err() == context.DeadlineExceeded || ctx.Err() == context.DeadlineExceeded {
 			return incomplete(sessionID, "M6_DYNAMIC_TIMEOUT")
 		}
@@ -156,9 +164,11 @@ func (b *GitHubELFBackend) introduce(ctx context.Context, containerID string, ar
 	if !ok {
 		return errors.New("GitHub ELF stream runner is unavailable")
 	}
-	return input.RunInput(ctx, file, "docker", "exec", "-i", containerID, "/bin/sh", "-ceu", "umask 077; cat > /work/artifact")
+	return input.RunInput(ctx, file, "docker", boundaryInputExecArguments(containerID, boundaryLaunchMode, "/bin/sh", "-ceu", "umask 077; cat > /work/artifact; chmod 500 /work/artifact")...)
 }
 
 func githubELFCreateArguments(sessionID domain.SandboxSessionID) []string {
-	return []string{"create", "--runtime", gVisorRuntimeName, "--user", "1000:1000", "--network", "none", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "64", "--memory", "512m", "--cpus", "1", "--ulimit", "cpu=30:30", "--tmpfs", "/work:rw,exec,nosuid,nodev,size=256m,uid=1000,gid=1000,mode=0700", "--name", "heliopause-github-elf-" + sessionID.String(), nodeImageReference, "/bin/sh", "-ceu", "while [ ! -f /work/artifact ]; do sleep 0.05; done; chmod 500 /work/artifact; exec /work/artifact"}
+	arguments := []string{"create", "--runtime", gVisorRuntimeName, "--network", "none", "--read-only", "--cap-drop", "ALL", "--cap-add", "SETUID", "--cap-add", "SETGID", "--cap-add", "SETPCAP", "--security-opt", "no-new-privileges", "--pids-limit", "64", "--memory", "512m", "--cpus", "1", "--ulimit", "cpu=30:30", "--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=256m,uid=1000,gid=1000,mode=0700", "--tmpfs", "/work:rw,exec,nosuid,nodev,size=256m,uid=1000,gid=1000,mode=0700", "--tmpfs", boundaryHelperMount}
+	arguments = append(arguments, isolatedContainerEnvironmentArguments()...)
+	return append(arguments, "--name", "heliopause-github-elf-"+sessionID.String(), nodeImageReference, "/bin/sh", "-ceu", boundaryContainerCommand())
 }

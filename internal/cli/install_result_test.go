@@ -45,6 +45,14 @@ func TestExecuteInstallPresentsCompletedAndFailedPromotionWithoutLosingPolicy(t 
 			if policyDocument["decision"] != "ALLOW" || verified["entry_count"] != float64(1) || verified["manifest_id"] == "" {
 				t.Fatalf("Policy/Verified Set = %#v / %#v", policyDocument, verified)
 			}
+			attribution, _ := document["dependency_policy_attribution"].([]any)
+			if len(attribution) != 1 {
+				t.Fatalf("dependency policy attribution = %#v", attribution)
+			}
+			entry, _ := attribution[0].(map[string]any)
+			if entry["node"] != "safe" || entry["package"] != "safe" || entry["entry_policy_decision"] != "ALLOW" {
+				t.Fatalf("dependency policy attribution entry = %#v", entry)
+			}
 			if test.promotion != nil {
 				failure := document["error"].(map[string]any)
 				if failure["code"] != "PROMOTION_FAILED" || strings.Contains(output.String(), test.promotion.Error()) {

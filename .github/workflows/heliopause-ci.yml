@@ -7,6 +7,12 @@ on:
       - main
   merge_group:
   workflow_dispatch:
+    inputs:
+      pytorch_cuda_qualification:
+        description: Run the bounded cu126 full qualification after disk/resource preflight.
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -188,11 +194,22 @@ jobs:
           test -f "$runtime_lock"
           gvisor_repository="$(jq -er '.gvisor.source_repository' "$runtime_lock")"
           gvisor_commit="$(jq -er '.gvisor.commit' "$runtime_lock")"
+          gvisor_patch_path="$(jq -er '.gvisor.patch.path' "$runtime_lock")"
+          gvisor_patch_sha256="$(jq -er '.gvisor.patch.sha256' "$runtime_lock")"
           bazel_url="$(jq -er '.bazel.linux_x86_64_url' "$runtime_lock")"
           bazel_sha512="$(jq -er '.bazel.linux_x86_64_sha512' "$runtime_lock")"
+          case "$gvisor_patch_path" in
+            tools/gvisor/*.patch) ;;
+            *) echo "runtime lock gVisor patch path is invalid" >&2; exit 1 ;;
+          esac
+          test -f "$gvisor_patch_path"
+          test "$(sha256sum "$gvisor_patch_path" | awk '{print $1}')" = "$gvisor_patch_sha256"
+          patch_abs="$PWD/$gvisor_patch_path"
           git clone --filter=blob:none "$gvisor_repository" "$RUNNER_TEMP/gvisor"
           git -C "$RUNNER_TEMP/gvisor" checkout --detach "$gvisor_commit"
           test "$(git -C "$RUNNER_TEMP/gvisor" rev-parse HEAD)" = "$gvisor_commit"
+          git -C "$RUNNER_TEMP/gvisor" apply --check "$patch_abs"
+          git -C "$RUNNER_TEMP/gvisor" apply "$patch_abs"
           curl --fail --location --silent --show-error --output "$RUNNER_TEMP/bazel" "$bazel_url"
           test "$(sha512sum "$RUNNER_TEMP/bazel" | awk '{print $1}')" = "$bazel_sha512"
           chmod 0755 "$RUNNER_TEMP/bazel"
@@ -204,7 +221,7 @@ jobs:
   gvisor-integration:
     name: gVisor Linux Integration
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 60
     env:
       GOTOOLCHAIN: local
     steps:
@@ -226,12 +243,6 @@ jobs:
           docker_package_version="$(jq -er '.docker.ci_ubuntu_24_04_amd64.docker_ce_package' "$runtime_lock")"
           containerd_package_version="$(jq -er '.docker.ci_ubuntu_24_04_amd64.containerd_package' "$runtime_lock")"
           docker_engine_version="$(jq -er '.docker.ci_engine_version' "$runtime_lock")"
-          gvisor_repository="$(jq -er '.gvisor.source_repository' "$runtime_lock")"
-          gvisor_commit="$(jq -er '.gvisor.commit' "$runtime_lock")"
-          runsc_url="$(jq -er '.gvisor.binaries.x86_64.url' "$runtime_lock")"
-          runsc_sha512="$(jq -er '.gvisor.binaries.x86_64.sha512' "$runtime_lock")"
-          bazel_url="$(jq -er '.bazel.linux_x86_64_url' "$runtime_lock")"
-          bazel_sha512="$(jq -er '.bazel.linux_x86_64_sha512' "$runtime_lock")"
           node_image="$(jq -er '.node_image.reference' "$runtime_lock")"
           python_image="$(jq -er '.python_image.reference' "$runtime_lock")"
           conflicting_packages=()
@@ -254,16 +265,49 @@ jobs:
             'Architectures: amd64' \
             'Signed-By: /etc/apt/keyrings/docker.asc' | sudo tee /etc/apt/sources.list.d/docker.sources >/dev/null
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
+          sudo apt-get install -y --allow-downgrades --no-install-recommends \
             "docker-ce=$docker_package_version" \
             "docker-ce-cli=$docker_package_version" \
-            "containerd.io=$containerd_package_version"
+            "containerd.io=$containerd_package_version" \
+            binutils-aarch64-linux-gnu \
+            gcc-aarch64-linux-gnu \
+            g++-aarch64-linux-gnu \
+            libbpf-dev \
+            libc6-dev-i386 \
+            libc6-dev-arm64-cross
+          test -f /usr/include/bpf/bpf_helpers.h
+          test -f /usr/include/x86_64-linux-gnu/gnu/stubs-32.h
+          command -v clang >/dev/null
+          for tool in gcc g++ as ld objcopy; do
+            command -v "aarch64-linux-gnu-$tool" >/dev/null
+          done
+          test -x "$(aarch64-linux-gnu-g++ -print-prog-name=cc1plus)"
+          for header in \
+            asm/sigcontext.h \
+            asm/unistd.h \
+            errno.h \
+            linux/audit.h \
+            linux/futex.h \
+            linux/unistd.h \
+            signal.h \
+            stdint.h \
+            stdlib.h \
+            sys/prctl.h \
+            sys/types.h \
+            sys/ucontext.h \
+            sys/user.h; do
+            test -f "/usr/aarch64-linux-gnu/include/$header"
+          done
+          aarch64_gcc_include="$(aarch64-linux-gnu-gcc -print-file-name=include)"
+          test -f "$aarch64_gcc_include/stdbool.h"
+          test -f "$aarch64_gcc_include/stddef.h"
           test "$(docker version --format '{{.Server.Version}}')" = "$docker_engine_version"
-          curl --fail --location --silent --show-error --output "$RUNNER_TEMP/runsc" "$runsc_url"
-          test "$(sha512sum "$RUNNER_TEMP/runsc" | awk '{print $1}')" = "$runsc_sha512"
-          chmod 0755 "$RUNNER_TEMP/runsc"
+          scripts/build-gvisor-runsc-release.sh "$RUNNER_TEMP/runsc"
           sudo install -d -m 0755 /usr/libexec/heliopause
           sudo install -m 0755 "$RUNNER_TEMP/runsc" /usr/libexec/heliopause/runsc
+          sudo install -m 0644 "$RUNNER_TEMP/runsc.manifest.json" /usr/libexec/heliopause/runsc.manifest.json
+          manifest_runsc_sha512="$(jq -er '.runsc_binary_sha512' "$RUNNER_TEMP/runsc.manifest.json")"
+          test "$(sudo sha512sum /usr/libexec/heliopause/runsc | awk '{print $1}')" = "$manifest_runsc_sha512"
           sudo install -d -m 0700 -o "$USER" -g "$(id -gn)" /run/heliopause-observer
           sudo install -d -m 0755 /etc/heliopause
           sudo install -m 0600 tools/gvisor-observer/pod-init.json /etc/heliopause/pod-init.json
@@ -273,16 +317,8 @@ jobs:
           sudo iptables -S DOCKER-USER
           docker pull "$node_image"
           docker pull "$python_image"
-          git clone --filter=blob:none "$gvisor_repository" "$RUNNER_TEMP/gvisor"
-          git -C "$RUNNER_TEMP/gvisor" checkout --detach "$gvisor_commit"
-          curl --fail --location --silent --show-error --output "$RUNNER_TEMP/bazel" "$bazel_url"
-          test "$(sha512sum "$RUNNER_TEMP/bazel" | awk '{print $1}')" = "$bazel_sha512"
-          chmod 0755 "$RUNNER_TEMP/bazel"
-          cp -R tools/gvisor-observer "$RUNNER_TEMP/gvisor/tools/haa_gvisor_observer"
-          cd "$RUNNER_TEMP/gvisor"
-          "$RUNNER_TEMP/bazel" build -c opt //tools/haa_gvisor_observer:haa_gvisor_observer
-          cd "$GITHUB_WORKSPACE"
-          sudo install -m 0755 "$RUNNER_TEMP/gvisor/bazel-bin/tools/haa_gvisor_observer/haa_gvisor_observer" /usr/libexec/heliopause/haa_gvisor_observer
+          scripts/build-gvisor-observer-release.sh "$RUNNER_TEMP/haa_gvisor_observer"
+          sudo install -m 0755 "$RUNNER_TEMP/haa_gvisor_observer" /usr/libexec/heliopause/haa_gvisor_observer
 
           go build -trimpath -o "$RUNNER_TEMP/helox" ./cmd/helox
           go build -trimpath -o "$RUNNER_TEMP/haa-network-policy-helper" ./cmd/haa-network-policy-helper
@@ -293,14 +329,26 @@ jobs:
           # The ordinary client must read the root-owned, non-writable public
           # identity contract; it contains no credential or secret.
           sudo chmod 0644 /etc/heliopause/network-policy.json
-          sudo /usr/libexec/heliopause/haa-network-policy-helper >/tmp/haa-network-policy-helper.log 2>&1 &
-          policy_helper_pid=$!
+          policy_helper_pid=""
+          start_policy_helper() {
+            if [ -n "$policy_helper_pid" ]; then
+              sudo kill "$policy_helper_pid" 2>/dev/null || true
+              for attempt in $(seq 1 50); do
+                test ! -e /run/heliopause-network-policy/helper.sock && break
+                sleep 0.1
+              done
+            fi
+            printf '{"socket_path":"/run/heliopause-network-policy/helper.sock","client_path":"/usr/libexec/heliopause/helox","client_uid":%s,"client_gid":%s}\n' "$(id -u)" "$(id -g)" | sudo tee /etc/heliopause/network-policy.json >/dev/null
+            sudo /usr/libexec/heliopause/haa-network-policy-helper >/tmp/haa-network-policy-helper.log 2>&1 &
+            policy_helper_pid=$!
+            for attempt in $(seq 1 50); do
+              test -S /run/heliopause-network-policy/helper.sock && break
+              sleep 0.1
+            done
+            test -S /run/heliopause-network-policy/helper.sock
+          }
           trap 'sudo kill "$policy_helper_pid" 2>/dev/null || true' EXIT
-          for attempt in $(seq 1 50); do
-            test -S /run/heliopause-network-policy/helper.sock && break
-            sleep 0.1
-          done
-          test -S /run/heliopause-network-policy/helper.sock
+          start_policy_helper
           /usr/libexec/heliopause/runsc --version
           docker version --format '{{.Server.Version}}'
           docker info --format '{{json (index .Runtimes "runsc-trace")}}'
@@ -308,18 +356,38 @@ jobs:
           HELOX_HOSTTOOL_INTEGRATION=1 go test -v -timeout=2m ./internal/hosttool -run TestLinuxTrustedHostExecutorIntegration
           HELOX_GVISOR_INTEGRATION=1 go test -timeout=5m ./internal/sandbox -run TestLinuxGVisorLifecycleIntegration
           HELOX_GITHUB_RELEASE_INTEGRATION=1 go test -timeout=5m ./internal/sandbox -run TestLinuxGitHubReleaseELFDynamicIntegration
-          # M4/M5 intentionally return 10 for a completed inspection whose
-          # policy decision is MANUAL_REVIEW. This proves the ordinary-user
-          # typed-helper path ran without treating an unpromoted package as a
-          # successful installation.
+          # The typed-helper ordinary-user path is exercised for both npm and pip.
+          # npm installs is-number@7.0.0 with complete ALLOW inspection and atomic
+          # offline promotion (exit 0).
+          # pip installs packaging@25.0 into an initialized Python 3.14 venv fixture,
+          # proving complete ALLOW inspection and atomic offline promotion (exit 0).
+          mkdir -p "$RUNNER_TEMP/pypi-target"
+          docker run --rm --network none --user "$(id -u):$(id -g)" \
+            -v "$RUNNER_TEMP/pypi-target:/target" \
+            "$python_image" python -m venv --without-pip /target
           set +e
           /usr/libexec/heliopause/helox npm install is-number@7.0.0 --target "$RUNNER_TEMP/npm-target"
           npm_status=$?
           /usr/libexec/heliopause/helox pip install packaging@25.0 --target "$RUNNER_TEMP/pypi-target"
           pypi_status=$?
           set -e
-          test "$npm_status" = 10
-          test "$pypi_status" = 10
+          test "$npm_status" = 0
+          test -f "$RUNNER_TEMP/npm-target/node_modules/is-number/package.json"
+          jq -e '.name == "is-number" and .version == "7.0.0"' \
+            "$RUNNER_TEMP/npm-target/node_modules/is-number/package.json" >/dev/null
+          test "$pypi_status" = 0
+          test -d "$RUNNER_TEMP/pypi-target/lib/python3.14/site-packages/packaging"
+          go test -c -o "$RUNNER_TEMP/helox-sandbox-test" ./internal/sandbox
+          sudo install -m 0755 "$RUNNER_TEMP/helox-sandbox-test" /usr/libexec/heliopause/helox
+          start_policy_helper
+          HELOX_PYTORCH_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.run '^TestLinuxPyTorchResolverIntegration$'
+          go test -c -o "$RUNNER_TEMP/helox-bootstrap-test" ./internal/bootstrap
+          sudo install -m 0755 "$RUNNER_TEMP/helox-bootstrap-test" /usr/libexec/heliopause/helox
+          start_policy_helper
+          HELOX_PYTORCH_FULL_INTEGRATION=1 HELOX_PYTORCH_PROFILE=cpu /usr/libexec/heliopause/helox -test.v -test.timeout=15m -test.run '^TestLinuxPyTorchFullIntegration$'
+          if [ "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cuda_qualification }}" = true ]; then
+            HELOX_PYTORCH_FULL_INTEGRATION=1 HELOX_PYTORCH_PROFILE=cu126 /usr/libexec/heliopause/helox -test.v -test.timeout=40m -test.run '^TestLinuxPyTorchFullIntegration$'
+          fi
           HELOX_PYPI_DYNAMIC_INTEGRATION=1 go test -v -timeout=5m ./internal/sandbox -run 'TestLinuxPyPI(WheelDynamic|SdistBuild)Integration'
           HELOX_PROMOTION_INTEGRATION=1 go test -v -timeout=5m ./internal/promotion -run TestLinuxNPMPromotionIntegration
           HELOX_PYPI_PROMOTION_INTEGRATION=1 go test -v -timeout=5m ./internal/promotion -run TestLinuxPyPIPromotionIntegration

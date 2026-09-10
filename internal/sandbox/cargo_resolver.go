@@ -1,0 +1,116 @@
+package sandbox
+
+import (
+	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"errors"
+	"os"
+	"path/filepath"
+	"strings"
+
+	artifactcargo "github.com/rahoney/heliopause/internal/artifact/cargo"
+	"github.com/rahoney/heliopause/internal/core/domain"
+)
+
+type CargoRunner interface {
+	RunCargo(context.Context, string, []string, ...string) ([]byte, error)
+}
+
+type CargoResolver struct{ runner CargoRunner }
+
+func NewCargoResolver(runner CargoRunner) (*CargoResolver, error) {
+	if runner == nil {
+		return nil, errors.New("cargo resolver requires trusted Cargo runner")
+	}
+	return &CargoResolver{runner: runner}, nil
+}
+
+func CargoResolverEnvironment() []string {
+	return []string{
+		"CARGO_HOME=/tmp/heliopause-cargo-home",
+		"CARGO_NET_OFFLINE=false",
+		"CARGO_NET_GIT_FETCH_WITH_CLI=false",
+		"CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse",
+		"CARGO_REGISTRIES_CRATES_IO_INDEX=https://index.crates.io/",
+	}
+}
+
+func CargoResolverEnvironmentForHome(home string) ([]string, error) {
+	if !filepath.IsAbs(home) || filepath.Clean(home) != home || home == "/" {
+		return nil, errors.New("cargo resolver home is invalid")
+	}
+	environment := CargoResolverEnvironment()
+	environment[0] = "CARGO_HOME=" + home
+	return environment, nil
+}
+
+func ValidateCargoResolverEnvironment(environment []string, home string) error {
+	expected, err := CargoResolverEnvironmentForHome(home)
+	if err != nil || len(environment) != len(expected) {
+		return errors.New("cargo resolver environment is not canonical")
+	}
+	for index := range expected {
+		if environment[index] != expected[index] {
+			return errors.New("cargo resolver environment is not canonical")
+		}
+	}
+	return nil
+}
+
+func (r *CargoResolver) ResolveDependencies(ctx context.Context, reference domain.ArtifactReference, installContext domain.InstallContext) (domain.DependencyResolution, error) {
+	if r == nil || r.runner == nil || ctx == nil || reference.Source() != artifactcargo.Source() || !installContext.Valid() {
+		return domain.DependencyResolution{}, errors.New("valid Cargo resolver request is required")
+	}
+	project := filepath.Clean(installContext.Target().String())
+	if !filepath.IsAbs(project) || project == "/" {
+		return domain.DependencyResolution{}, errors.New("cargo project path is invalid")
+	}
+	manifest, lock, err := readCargoControlFiles(project)
+	if err != nil {
+		return domain.DependencyResolution{}, err
+	}
+	home, err := os.MkdirTemp("", "haa-cargo-home-")
+	if err != nil {
+		return domain.DependencyResolution{}, errors.New("create private Cargo resolver home")
+	}
+	defer os.RemoveAll(home)
+	environment, err := CargoResolverEnvironmentForHome(home)
+	if err != nil {
+		return domain.DependencyResolution{}, err
+	}
+	body, err := r.runner.RunCargo(ctx, project, environment, "metadata", "--locked", "--format-version", "1")
+	if err != nil {
+		return domain.DependencyResolution{}, errors.New("cargo metadata resolution failed")
+	}
+	currentManifest, currentLock, currentErr := readCargoControlFiles(project)
+	if currentErr != nil || string(currentManifest) != string(manifest) || string(currentLock) != string(lock) {
+		return domain.DependencyResolution{}, errors.New("cargo project changed during resolution")
+	}
+	records, edges, err := artifactcargo.ParseMetadata(body)
+	if err != nil {
+		return domain.DependencyResolution{}, err
+	}
+	graph, err := artifactcargo.BuildLockedGraph(reference, records, edges)
+	if err != nil {
+		return domain.DependencyResolution{}, err
+	}
+	digestBytes := sha256.Sum256(body)
+	digest, err := domain.NewSHA256Digest(hex.EncodeToString(digestBytes[:]))
+	if err != nil {
+		return domain.DependencyResolution{}, err
+	}
+	return domain.NewDependencyResolution(graph, "cargo:crates.io;sparse:index.crates.io;env:"+strings.Join(environment, ";"), digest)
+}
+
+func readCargoControlFiles(project string) ([]byte, []byte, error) {
+	manifest, err := os.ReadFile(filepath.Join(project, "Cargo.toml"))
+	if err != nil || len(manifest) == 0 {
+		return nil, nil, errors.New("cargo manifest is unavailable")
+	}
+	lock, err := os.ReadFile(filepath.Join(project, "Cargo.lock"))
+	if err != nil || len(lock) == 0 {
+		return nil, nil, errors.New("cargo lock file is unavailable")
+	}
+	return manifest, lock, nil
+}

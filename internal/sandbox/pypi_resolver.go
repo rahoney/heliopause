@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"net"
 	"net/netip"
 	"runtime"
@@ -23,7 +24,7 @@ const (
 	pypiResolverTimeout      = 2 * time.Minute
 )
 
-var pypiResolverEndpoints = []string{pypiIndexEndpoint, pypiDistributionEndpoint}
+var pypiResolverEndpoints = []string{"pypi.org", "files.pythonhosted.org"}
 
 // NamedEndpointResolver supplies trusted Host-resolved IPv4 addresses keyed
 // by the only public endpoints an isolated PyPI resolver may contact.
@@ -41,16 +42,41 @@ type PyPIResolver struct {
 	probe     func(context.Context) (PythonCapability, error)
 	close     func() error
 	policy    ResolverPolicyService
+	profile   artifactpypi.SourceProfile
 }
 
 // NewPyPIResolver constructs the narrow M5 resolver boundary. Every injected
 // collaborator is required because missing network, runtime or observation
 // controls must fail closed before a graph can be emitted.
 func NewPyPIResolver(runner CommandRunner, endpoints NamedEndpointResolver, observer TraceObserver, probe func(context.Context) (PythonCapability, error), policy ResolverPolicyService) (*PyPIResolver, error) {
+	return newPythonResolver(runner, endpoints, observer, probe, policy, artifactpypi.PublicPyPIProfile())
+}
+
+func newPythonResolver(runner CommandRunner, endpoints NamedEndpointResolver, observer TraceObserver, probe func(context.Context) (PythonCapability, error), policy ResolverPolicyService, profile artifactpypi.SourceProfile) (*PyPIResolver, error) {
 	if runner == nil || endpoints == nil || observer == nil || probe == nil || policy == nil {
 		return nil, errors.New("PyPI resolver requires runner, endpoint resolver, observer, runtime probe and network policy service")
 	}
-	return &PyPIResolver{runner: runner, endpoints: endpoints, observer: observer, probe: probe, policy: policy}, nil
+	return &PyPIResolver{runner: runner, endpoints: endpoints, observer: observer, probe: probe, policy: policy, profile: profile}, nil
+}
+
+// NewPyTorchResolver constructs a resolver for one immutable official
+// PyTorch source profile. It shares the PyPI runtime but not source identity.
+func NewPyTorchResolver(runner CommandRunner, endpoints NamedEndpointResolver, observer TraceObserver, probe func(context.Context) (PythonCapability, error), policy ResolverPolicyService, profile artifactpypi.SourceProfile) (*PyPIResolver, error) {
+	if !artifactpypi.IsPyTorchSource(profile.Source()) {
+		return nil, errors.New("PyTorch resolver requires an official source profile")
+	}
+	return newPythonResolver(runner, endpoints, observer, probe, policy, profile)
+}
+
+func resolverObserverProfile(profile artifactpypi.SourceProfile) string {
+	switch profile.Name() {
+	case "pytorch:cpu":
+		return "pypi-wheel-pytorch-cpu"
+	case "pytorch:cu126":
+		return "pypi-wheel-pytorch-cu126"
+	default:
+		return "pypi-wheel"
+	}
 }
 
 // NewLinuxPyPIResolverWithExecutorAndPolicy constructs the production
@@ -65,6 +91,21 @@ func NewLinuxPyPIResolverWithExecutorAndPolicy(executor TrustedExecutor, observe
 	}
 	resolver.policy = policy
 	return resolver, nil
+}
+
+// NewLinuxPyTorchResolverWithExecutorAndPolicy binds one named PyTorch source
+// profile to the same trusted Linux resolver infrastructure.
+func NewLinuxPyTorchResolverWithExecutorAndPolicy(executor TrustedExecutor, observer TraceObserver, policy ResolverPolicyService, profile artifactpypi.SourceProfile) (*PyPIResolver, error) {
+	if policy == nil || !artifactpypi.IsPyTorchSource(profile.Source()) {
+		return nil, errors.New("PyTorch resolver requires network policy and official profile")
+	}
+	if observer == nil {
+		return nil, errors.New("process-scoped observer is required")
+	}
+	capabilityProbe := func(ctx context.Context) (PythonCapability, error) {
+		return probePython(ctx, runtime.GOOS, runtime.GOARCH, executor)
+	}
+	return newPythonResolver(executor, systemNamedEndpointResolver{}, observer, capabilityProbe, policy, profile)
 }
 
 func newLinuxPyPIResolver(executor TrustedExecutor, observer TraceObserver, policy ResolverPolicyService) (*PyPIResolver, error) {
@@ -94,18 +135,19 @@ func (r *PyPIResolver) Close() error {
 // Any failure to create, verify, attribute, collect or clean up that lifecycle
 // clears the result and returns an error.
 func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain.ArtifactReference, _ domain.InstallContext) (resolution domain.DependencyResolution, resultErr error) {
-	if r == nil || r.runner == nil || r.endpoints == nil || r.observer == nil || r.probe == nil || ctx == nil || reference.Source().String() != "pypi" {
+	if r == nil || r.runner == nil || r.endpoints == nil || r.observer == nil || r.probe == nil || ctx == nil || reference.Source() != r.profile.Source() {
 		return domain.DependencyResolution{}, errors.New("valid PyPI resolver request is required")
 	}
 	capability, err := r.probe(ctx)
 	if err != nil || !capability.Available || capability.Runtime != PinnedPythonRuntime() {
 		return domain.DependencyResolution{}, errors.New("PyPI resolver runtime is unavailable")
 	}
-	addressesByName, err := r.endpoints.Resolve(ctx, append([]string(nil), pypiResolverEndpoints...))
+	endpointNames := artifactpypiProfileEndpoints(r.profile)
+	addressesByName, err := r.endpoints.Resolve(ctx, endpointNames)
 	if err != nil {
 		return domain.DependencyResolution{}, errors.New("PyPI resolver endpoint preflight failed")
 	}
-	addresses, hostArguments, err := pypiNetworkArguments(addressesByName)
+	addresses, hostArguments, err := resolverNetworkArguments(r.profile, addressesByName)
 	if err != nil {
 		return domain.DependencyResolution{}, errors.New("PyPI resolver endpoint preflight is unsafe")
 	}
@@ -130,10 +172,10 @@ func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain
 			}
 			if trace != nil {
 				collectCtx, cancel := context.WithTimeout(context.Background(), cleanupTimeout)
-				_, limitation := collectTrace(collectCtx, trace)
+				_, limitation, diagnostic := collectTraceDiagnostic(collectCtx, trace)
 				cancel()
 				if limitation != "" {
-					cleanupErr = errors.Join(cleanupErr, errors.New("PyPI resolver observation is incomplete"))
+					cleanupErr = errors.Join(cleanupErr, fmt.Errorf("PyPI resolver observation is incomplete: %s", diagnostic))
 				}
 			}
 		}
@@ -145,7 +187,11 @@ func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain
 		}
 		if cleanupErr != nil {
 			resolution = domain.DependencyResolution{}
-			resultErr = cleanupErr
+			if resultErr != nil {
+				resultErr = errors.Join(resultErr, cleanupErr)
+			} else {
+				resultErr = cleanupErr
+			}
 		}
 	}()
 
@@ -154,26 +200,54 @@ func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain
 		return domain.DependencyResolution{}, errors.New("create PyPI resolver container failed")
 	}
 	containerID = strings.TrimSpace(string(created))
-	trace, err = startTrace(ctx, r.observer, containerID, "pypi-wheel")
+	trace, err = startTrace(ctx, r.observer, containerID, resolverObserverProfile(r.profile))
 	if err != nil {
 		return domain.DependencyResolution{}, errors.New("start PyPI resolver observer failed")
 	}
 	if _, err := r.runner.Output(ctx, "docker", "start", containerID); err != nil {
 		return domain.DependencyResolution{}, errors.New("start PyPI resolver container failed")
 	}
+	if err := awaitMountAnchors(ctx, r.observer, containerID); err != nil {
+		return domain.DependencyResolution{}, errors.New("PyPI resolver observer mount anchors failed")
+	}
 	if err := verifyPyPIResolverRuntime(ctx, r.runner, containerID, capability.Runtime); err != nil {
+		return domain.DependencyResolution{}, err
+	}
+	if err := preparePyPIResolverProject(ctx, r.runner, containerID); err != nil {
 		return domain.DependencyResolution{}, err
 	}
 	request, err := pypiRequirement(reference)
 	if err != nil {
 		return domain.DependencyResolution{}, errors.New("PyPI resolver reference is invalid")
 	}
-	resolveCtx, cancel := context.WithTimeout(ctx, pypiResolverTimeout)
+	resolveTimeout := pypiResolverTimeout
+	if resourcePolicy := artifactpypi.ResourcePolicyFromContext(ctx); resourcePolicy.Duration() > defaultPyPIResolverDuration {
+		resolveTimeout = resourcePolicy.Duration()
+	}
+	resolveCtx, cancel := context.WithTimeout(ctx, resolveTimeout)
 	defer cancel()
-	if _, err := r.runner.Output(resolveCtx, "docker", "exec", containerID, "python", "-I", "-m", "pip", "install", "--dry-run", "--report", pypiResolverProjectDir+"/report.json", "--disable-pip-version-check", "--no-input", "--no-cache-dir", "--isolated", "--index-url", "https://pypi.org/simple/", request); err != nil {
+	if artifactpypi.IsPyTorchSource(r.profile.Source()) {
+		candidates, reportBytes, resolveErr := r.resolvePyTorchGraph(resolveCtx, containerID, capability.Runtime, reference)
+		if resolveErr != nil {
+			return domain.DependencyResolution{}, resolveErr
+		}
+		graph, graphErr := artifactpypi.BuildLockedGraph(reference, candidates)
+		if graphErr != nil {
+			return domain.DependencyResolution{}, graphErr
+		}
+		sum := sha256.Sum256(reportBytes)
+		digest, digestErr := domain.NewSHA256Digest(hex.EncodeToString(sum[:]))
+		if digestErr != nil {
+			return domain.DependencyResolution{}, digestErr
+		}
+		runtimeIdentity := "python:" + capability.Runtime.PythonVersion + ";pip:" + capability.Runtime.PipVersion + ";target:" + capability.Runtime.InterpreterTag + "/" + capability.Runtime.ABITag + "/" + capability.Runtime.PlatformTag + ";source:" + r.profile.Name()
+		return domain.NewDependencyResolution(graph, runtimeIdentity, digest)
+	}
+	pipArguments := pypiResolveArguments(r.profile, request)
+	if _, err := r.runner.Output(resolveCtx, "docker", append(boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-m", "pip"), pipArguments...)...); err != nil {
 		return domain.DependencyResolution{}, errors.New("run locked pip resolution failed")
 	}
-	reportBytes, err := r.runner.Output(resolveCtx, "docker", "exec", containerID, "python", "-I", "-c", boundedReadScript, pypiResolverProjectDir+"/report.json", "4194304")
+	reportBytes, err := r.runner.Output(resolveCtx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", boundedReadScript, pypiResolverProjectDir+"/report.json", "4194304")...)
 	if err != nil {
 		return domain.DependencyResolution{}, errors.New("read pip installation report failed")
 	}
@@ -183,11 +257,19 @@ func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain
 	}
 	pages := make([]artifactpypi.SimpleProject, 0, len(report.Candidates()))
 	for _, candidate := range report.Candidates() {
-		body, err := r.runner.Output(resolveCtx, "docker", "exec", containerID, "python", "-I", "-c", simpleJSONFetchScript, candidate.Project())
+		fetchScript := simpleJSONFetchScript
+		fetchArguments := []string{candidate.Project()}
+		profile := artifactpypi.PublicPyPIProfile()
+		if candidate.Source() != artifactpypi.PublicPyPIProfile().Source() {
+			fetchScript = pytorchHTMLFetchScript
+			fetchArguments = []string{r.profile.IndexURL(), candidate.Project()}
+			profile = r.profile
+		}
+		body, err := r.runner.Output(resolveCtx, "docker", append(boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", fetchScript), fetchArguments...)...)
 		if err != nil {
 			return domain.DependencyResolution{}, errors.New("fetch PyPI Simple metadata failed")
 		}
-		page, err := artifactpypi.ParseSimpleProject(candidate.Project(), body)
+		page, err := artifactpypi.ParseSimpleProjectForRootProfile(candidate.Project(), body, profile, r.profile)
 		if err != nil {
 			return domain.DependencyResolution{}, err
 		}
@@ -206,42 +288,154 @@ func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain
 	if err != nil {
 		return domain.DependencyResolution{}, err
 	}
-	runtimeIdentity := "python:" + capability.Runtime.PythonVersion + ";pip:" + capability.Runtime.PipVersion + ";target:" + capability.Runtime.InterpreterTag + "/" + capability.Runtime.ABITag + "/" + capability.Runtime.PlatformTag
+	runtimeIdentity := "python:" + capability.Runtime.PythonVersion + ";pip:" + capability.Runtime.PipVersion + ";target:" + capability.Runtime.InterpreterTag + "/" + capability.Runtime.ABITag + "/" + capability.Runtime.PlatformTag + ";source:" + r.profile.Name()
 	return domain.NewDependencyResolution(graph, runtimeIdentity, digest)
+}
+
+func preparePyPIResolverProject(ctx context.Context, runner CommandRunner, containerID string) error {
+	if _, err := runner.Output(ctx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", "import os; os.makedirs('"+pypiResolverProjectDir+"', mode=0o700, exist_ok=True)")...); err != nil {
+		return errors.New("prepare PyPI resolver private workspace failed")
+	}
+	return nil
+}
+
+const defaultPyPIResolverDuration = 5 * time.Minute
+
+func (r *PyPIResolver) resolvePyTorchGraph(ctx context.Context, containerID string, runtime PythonRuntime, reference domain.ArtifactReference) ([]artifactpypi.Candidate, []byte, error) {
+	request, err := pypiRequirement(reference)
+	if err != nil {
+		return nil, nil, errors.New("PyTorch resolver reference is invalid")
+	}
+	type pending struct {
+		request string
+		profile artifactpypi.SourceProfile
+		primary bool
+	}
+	queue := []pending{{request: request, profile: r.profile, primary: true}}
+	candidates := make(map[string]artifactpypi.Candidate)
+	requests := make(map[string]string)
+	reports := make([]byte, 0)
+	for len(queue) > 0 {
+		current := queue[0]
+		queue = queue[1:]
+		project, err := artifactpypi.DependencyProject(current.request)
+		if err != nil {
+			return nil, nil, errors.New("PyTorch dependency requirement is invalid")
+		}
+		if existing, seen := requests[project]; seen {
+			if existing != current.request {
+				return nil, nil, errors.New("PyTorch dependency requirements are ambiguous")
+			}
+			continue
+		}
+		requests[project] = current.request
+		candidateReference, err := artifactpypi.ParseReferenceForSource(project, current.profile.Source())
+		if err != nil {
+			return nil, nil, err
+		}
+		candidate, report, err := r.resolvePyTorchCandidate(ctx, containerID, runtime, candidateReference, current.profile, current.request)
+		if err != nil {
+			return nil, nil, err
+		}
+		candidates[project] = candidate.WithPrimary(current.primary)
+		reports = append(reports, report...)
+		for _, requirement := range candidate.DependencyRequirements() {
+			dependency, err := artifactpypi.DependencyProject(requirement)
+			if err != nil {
+				return nil, nil, err
+			}
+			profile := artifactpypi.PublicPyPIProfile()
+			if artifactpypi.IsPyTorchOwnedProject(dependency) {
+				profile = r.profile
+			}
+			queue = append(queue, pending{request: requirement, profile: profile})
+		}
+	}
+	result := make([]artifactpypi.Candidate, 0, len(candidates))
+	for _, candidate := range candidates {
+		result = append(result, candidate)
+	}
+	return result, reports, nil
+}
+
+func (r *PyPIResolver) resolvePyTorchCandidate(ctx context.Context, containerID string, runtime PythonRuntime, reference domain.ArtifactReference, profile artifactpypi.SourceProfile, requirement string) (artifactpypi.Candidate, []byte, error) {
+	arguments := append([]string{"install", "--dry-run", "--report", pypiResolverProjectDir + "/report.json", "--disable-pip-version-check", "--no-input", "--no-cache-dir", "--isolated", "--no-deps", "--index-url", profile.IndexURL()}, requirement)
+	if _, err := r.runner.Output(ctx, "docker", append(boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-m", "pip"), arguments...)...); err != nil {
+		return artifactpypi.Candidate{}, nil, errors.New("run source-pinned pip resolution failed")
+	}
+	reportBytes, err := r.runner.Output(ctx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", boundedReadScript, pypiResolverProjectDir+"/report.json", "4194304")...)
+	if err != nil {
+		return artifactpypi.Candidate{}, nil, errors.New("read source-pinned pip report failed")
+	}
+	report, err := artifactpypi.ParseInstallationReportForProfile(reference, reportBytes, runtime.PipVersion, runtime.PythonVersion, profile)
+	if err != nil {
+		return artifactpypi.Candidate{}, nil, fmt.Errorf("source-pinned pip report for %s is invalid: %w", requirement, err)
+	}
+	if len(report.Candidates()) != 1 {
+		return artifactpypi.Candidate{}, nil, fmt.Errorf("source-pinned pip report candidate count for %s is invalid: %d", requirement, len(report.Candidates()))
+	}
+	candidate := report.Candidates()[0]
+	fetchScript, fetchArguments := simpleJSONFetchScript, []string{candidate.Project()}
+	if artifactpypi.IsPyTorchSource(profile.Source()) {
+		fetchScript, fetchArguments = pytorchHTMLFetchScript, []string{profile.IndexURL(), candidate.Project()}
+	}
+	body, err := r.runner.Output(ctx, "docker", append(boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", fetchScript), fetchArguments...)...)
+	if err != nil {
+		return artifactpypi.Candidate{}, nil, errors.New("fetch source-pinned Simple metadata failed")
+	}
+	page, err := artifactpypi.ParseSimpleProjectForRootProfile(candidate.Project(), body, profile, r.profile)
+	if err != nil {
+		return artifactpypi.Candidate{}, nil, err
+	}
+	if _, err := artifactpypi.CrossCheckReport(report, []artifactpypi.SimpleProject{page}); err != nil {
+		return artifactpypi.Candidate{}, nil, err
+	}
+	return candidate, reportBytes, nil
+}
+
+// pypiResolveArguments binds a PyTorch-owned root to exactly one official
+// profile. Dependencies are deliberately not delegated to pip's multi-index
+// selector: the resolver adds them through the canonical ownership table.
+func pypiResolveArguments(profile artifactpypi.SourceProfile, request string) []string {
+	arguments := []string{"install", "--dry-run", "--report", pypiResolverProjectDir + "/report.json", "--disable-pip-version-check", "--no-input", "--no-cache-dir", "--isolated", "--index-url", profile.IndexURL()}
+	if artifactpypi.IsPyTorchSource(profile.Source()) {
+		arguments = append(arguments, "--no-deps")
+	}
+	return append(arguments, request)
 }
 
 func pypiCreateArguments(network string, hostArguments []string) []string {
 	arguments := []string{
 		"create", "--pull", "never", "--runtime", gVisorRuntimeName,
 		"--network", network,
-		"--user", "1000:1000",
 		"--read-only",
 		"--cap-drop", "ALL",
+		"--cap-add", "SETUID", "--cap-add", "SETGID", "--cap-add", "SETPCAP",
 		"--security-opt", "no-new-privileges",
 		"--pids-limit", "64",
 		"--memory", "512m",
 		"--cpus", "1",
 		"--ulimit", "cpu=60:60",
 		"--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=128m,uid=1000,gid=1000,mode=0700",
+		"--tmpfs", pythonSitePath + ":rw,exec,nosuid,nodev,size=128m,uid=1000,gid=1000,mode=0700",
+		"--tmpfs", boundaryHelperMount,
 	}
+	arguments = append(arguments, isolatedContainerEnvironmentArguments()...)
 	arguments = append(arguments, hostArguments...)
-	// Prepare the bounded report directory on the container tmpfs before pip runs.
-	// The command is fixed infrastructure wiring; no request-controlled input is
-	// interpolated into it.
-	arguments = append(arguments, pythonImageReference, "sh", "-ceu", "umask 077; mkdir -p "+pypiResolverProjectDir+"; exec sleep infinity")
+	arguments = append(arguments, pythonImageReference, "/bin/sh", "-ceu", boundaryContainerCommand())
 	return arguments
 }
 
 func verifyPyPIResolverRuntime(ctx context.Context, runner CommandRunner, containerID string, runtime PythonRuntime) error {
-	python, err := runner.Output(ctx, "docker", "exec", containerID, "python", "-I", "-c", "import sys; print('.'.join(map(str, sys.version_info[:3])))")
+	python, err := runner.Output(ctx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", "import sys; print('.'.join(map(str, sys.version_info[:3])))")...)
 	if err != nil || strings.TrimSpace(string(python)) != runtime.PythonVersion {
 		return errors.New("PyPI resolver Python runtime version mismatch")
 	}
-	pip, err := runner.Output(ctx, "docker", "exec", containerID, "python", "-I", "-m", "pip", "--version")
+	pip, err := runner.Output(ctx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-m", "pip", "--version")...)
 	if err != nil || !strings.HasPrefix(strings.TrimSpace(string(pip)), "pip "+runtime.PipVersion+" ") {
 		return errors.New("PyPI resolver pip runtime version mismatch")
 	}
-	tags, err := runner.Output(ctx, "docker", "exec", containerID, "python", "-I", "-m", "pip", "debug", "--verbose")
+	tags, err := runner.Output(ctx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-m", "pip", "debug", "--verbose")...)
 	if err != nil || !containsExactLine(string(tags), runtime.InterpreterTag+"-"+runtime.ABITag+"-"+runtime.PlatformTag) {
 		return errors.New("PyPI resolver target tags are unavailable")
 	}
@@ -273,13 +467,43 @@ func pypiRequirement(reference domain.ArtifactReference) (string, error) {
 }
 
 func pypiNetworkArguments(addressesByName map[string][]netip.Addr) ([]netip.Addr, []string, error) {
-	if len(addressesByName) != len(pypiResolverEndpoints) {
+	return resolverNetworkArguments(artifactpypi.PublicPyPIProfile(), addressesByName)
+}
+
+func artifactpypiProfileEndpoints(profile artifactpypi.SourceProfile) []string {
+	if profile.Source() == (artifactpypi.SourceProfile{}).Source() {
+		return nil
+	}
+	if profile.Source() == artifactpypi.PublicPyPIProfile().Source() {
+		return append([]string(nil), pypiResolverEndpoints...)
+	}
+	// The profile owns the endpoint set; PyTorch additionally reaches the
+	// canonical PyPI endpoints for ordinary transitive dependencies.
+	names := []string{profile.IndexHost()}
+	names = append(names, profile.DistributionHosts()...)
+	if artifactpypi.IsPyTorchSource(profile.Source()) {
+		names = append(names, artifactpypi.PublicPyPIProfile().IndexHost())
+		names = append(names, artifactpypi.PublicPyPIProfile().DistributionHosts()...)
+	}
+	sort.Strings(names)
+	unique := names[:0]
+	for _, name := range names {
+		if len(unique) == 0 || unique[len(unique)-1] != name {
+			unique = append(unique, name)
+		}
+	}
+	return unique
+}
+
+func resolverNetworkArguments(profile artifactpypi.SourceProfile, addressesByName map[string][]netip.Addr) ([]netip.Addr, []string, error) {
+	endpoints := artifactpypiProfileEndpoints(profile)
+	if len(addressesByName) != len(endpoints) {
 		return nil, nil, errors.New("unexpected endpoint set")
 	}
 	all := make([]netip.Addr, 0)
 	seen := make(map[netip.Addr]bool)
 	arguments := make([]string, 0)
-	for _, name := range pypiResolverEndpoints {
+	for _, name := range endpoints {
 		addresses := append([]netip.Addr(nil), addressesByName[name]...)
 		if len(addresses) == 0 {
 			return nil, nil, errors.New("endpoint address is missing")
@@ -310,12 +534,23 @@ func pypiNetworkArguments(addressesByName map[string][]netip.Addr) ([]netip.Addr
 type systemNamedEndpointResolver struct{}
 
 func (systemNamedEndpointResolver) Resolve(ctx context.Context, names []string) (map[string][]netip.Addr, error) {
-	if ctx == nil || len(names) != len(pypiResolverEndpoints) {
+	if ctx == nil || len(names) == 0 {
 		return nil, errors.New("endpoint names are required")
 	}
 	resolved := make(map[string][]netip.Addr, len(names))
 	for _, name := range names {
-		if name != pypiIndexEndpoint && name != pypiDistributionEndpoint {
+		trusted := false
+		for _, profile := range artifactpypi.AllSourceProfiles() {
+			if profile.IndexHost() == name {
+				trusted = true
+			}
+			for _, host := range profile.DistributionHosts() {
+				if host == name {
+					trusted = true
+				}
+			}
+		}
+		if !trusted {
 			return nil, errors.New("endpoint is not trusted")
 		}
 		addresses, err := net.DefaultResolver.LookupNetIP(ctx, "ip4", name)
@@ -330,3 +565,5 @@ func (systemNamedEndpointResolver) Resolve(ctx context.Context, names []string) 
 const boundedReadScript = "import os,sys\np=sys.argv[1]\nlimit=int(sys.argv[2])\nsize=os.stat(p).st_size\nif size < 1 or size > limit: raise SystemExit(1)\nwith open(p, 'rb') as f: data=f.read(limit+1)\nif len(data) != size or len(data) > limit: raise SystemExit(1)\nsys.stdout.buffer.write(data)\n"
 
 const simpleJSONFetchScript = "import sys,urllib.error,urllib.request\nclass NoRedirect(urllib.request.HTTPRedirectHandler):\n def redirect_request(self, req, fp, code, msg, headers, newurl): return None\nproject=sys.argv[1]\nurl='https://pypi.org/simple/'+project+'/'\nrequest=urllib.request.Request(url, headers={'Accept':'application/vnd.pypi.simple.v1+json'})\nresponse=urllib.request.build_opener(NoRedirect).open(request, timeout=15)\nif response.status != 200 or response.geturl() != url: raise SystemExit(1)\nif response.headers.get_content_type().lower() != 'application/vnd.pypi.simple.v1+json': raise SystemExit(1)\nlength=response.headers.get('Content-Length')\nif length is not None and (not length.isdigit() or int(length) < 1 or int(length) > 4194304): raise SystemExit(1)\nbody=response.read(4194305)\nif len(body) < 1 or len(body) > 4194304: raise SystemExit(1)\nsys.stdout.buffer.write(body)\n"
+
+const pytorchHTMLFetchScript = "import sys,urllib.request\nclass NoRedirect(urllib.request.HTTPRedirectHandler):\n def redirect_request(self, req, fp, code, msg, headers, newurl): return None\nbase=sys.argv[1]\nproject=sys.argv[2]\nurl=base+project+'/'\nrequest=urllib.request.Request(url, headers={'Accept':'text/html'})\nresponse=urllib.request.build_opener(NoRedirect).open(request, timeout=15)\nif response.status != 200 or response.geturl() != url: raise SystemExit(1)\nif response.headers.get_content_type().lower() != 'text/html': raise SystemExit(1)\nlength=response.headers.get('Content-Length')\nif length is not None and (not length.isdigit() or int(length) < 1 or int(length) > 4194304): raise SystemExit(1)\nbody=response.read(4194305)\nif len(body) < 1 or len(body) > 4194304: raise SystemExit(1)\nsys.stdout.buffer.write(body)\n"

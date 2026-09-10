@@ -103,7 +103,7 @@ func (s *ObserverSupervisor) watchHelper() {
 	closing := s.closing
 	s.mu.Unlock()
 	if !closing {
-		s.observer.Fail(errors.New("observer helper exited unexpectedly"))
+		s.observer.Fail(observerFault{reason: "HELPER_CRASHED"})
 	}
 }
 

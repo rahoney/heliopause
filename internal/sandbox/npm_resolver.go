@@ -142,11 +142,11 @@ func (r *NPMResolver) ResolveDependencies(ctx context.Context, reference domain.
 				cleanupErr = errors.New("resolver container cleanup failed")
 			}
 			if trace != nil {
-				collectCtx, collectCancel := context.WithTimeout(context.Background(), cleanupTimeout)
-				_, limitation := collectTrace(collectCtx, trace)
-				collectCancel()
+				collectCtx, cancel := context.WithTimeout(context.Background(), cleanupTimeout)
+				_, limitation, diagnostic := collectTraceDiagnostic(collectCtx, trace)
+				cancel()
 				if limitation != "" {
-					cleanupErr = errors.Join(cleanupErr, errors.New("resolver observation is incomplete"))
+					cleanupErr = errors.Join(cleanupErr, fmt.Errorf("npm resolver observation is incomplete: %s", diagnostic))
 				}
 			}
 		}
@@ -158,14 +158,15 @@ func (r *NPMResolver) ResolveDependencies(ctx context.Context, reference domain.
 		}
 		if cleanupErr != nil {
 			resolution = domain.DependencyResolution{}
-			resultErr = cleanupErr
+			if resultErr != nil {
+				resultErr = errors.Join(resultErr, cleanupErr)
+			} else {
+				resultErr = cleanupErr
+			}
 		}
 	}()
 
-	createArguments := []string{"create", "--runtime", gVisorRuntimeName, "--network", network, "--user", "1000:1000", "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "64", "--memory", "512m", "--cpus", "1", "--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=128m,uid=1000,gid=1000,mode=0700"}
-	createArguments = append(createArguments, hostArguments...)
-	createArguments = append(createArguments, runtimeidentity.NodeImageReference, "/bin/sh", "-ceu", "sleep infinity")
-	created, err := r.runner.Output(ctx, "docker", createArguments...)
+	created, err := r.runner.Output(ctx, "docker", npmCreateArguments(network, hostArguments)...)
 	if err != nil || !containerIDPattern.MatchString(strings.TrimSpace(string(created))) {
 		return domain.DependencyResolution{}, errors.New("create resolver container failed")
 	}
@@ -180,7 +181,13 @@ func (r *NPMResolver) ResolveDependencies(ctx context.Context, reference domain.
 	if _, err := r.runner.Output(ctx, "docker", "start", containerID); err != nil {
 		return domain.DependencyResolution{}, errors.New("start resolver container failed")
 	}
-	version, err := r.runner.Output(ctx, "docker", "exec", containerID, "npm", "--version")
+	if err := awaitBoundaryHelper(ctx, r.runner, containerID); err != nil {
+		return domain.DependencyResolution{}, errors.New("resolver boundary helper failed")
+	}
+	if err := awaitMountAnchors(ctx, r.observer, containerID); err != nil {
+		return domain.DependencyResolution{}, errors.New("resolver observer mount anchors failed")
+	}
+	version, err := r.runner.Output(ctx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "npm", "--version")...)
 	if err != nil || strings.TrimSpace(string(version)) != resolverNPMVersion {
 		return domain.DependencyResolution{}, errors.New("resolver npm runtime version mismatch")
 	}
@@ -197,14 +204,14 @@ func (r *NPMResolver) ResolveDependencies(ctx context.Context, reference domain.
 		return domain.DependencyResolution{}, errors.New("resolver package reference is invalid")
 	}
 	manifest := []byte("{\"name\":\"haa-resolver\",\"version\":\"1.0.0\",\"private\":true,\"dependencies\":{\"" + packageName + "\":\"" + packageSpec + "\"}}")
-	if err := input.RunInput(ctx, bytes.NewReader(manifest), "docker", "exec", "-i", containerID, "/bin/sh", "-ceu", "umask 077; mkdir -p "+resolverProjectDir+"; cat > "+resolverProjectDir+"/package.json"); err != nil {
+	if err := input.RunInput(ctx, bytes.NewReader(manifest), "docker", boundaryInputExecArguments(containerID, boundaryLaunchMode, "/bin/sh", "-ceu", "umask 077; mkdir -p "+resolverProjectDir+"; cat > "+resolverProjectDir+"/package.json")...); err != nil {
 		return domain.DependencyResolution{}, errors.New("write resolver manifest failed")
 	}
 	command := "cd " + resolverProjectDir + "; HOME=/tmp npm_config_cache=/tmp/cache npm install --package-lock-only --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org/ --userconfig=/tmp/haa-user.npmrc --globalconfig=/tmp/haa-global.npmrc"
-	if _, err := r.runner.Output(ctx, "docker", "exec", containerID, "/bin/sh", "-ceu", command); err != nil {
+	if _, err := r.runner.Output(ctx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "/bin/sh", "-ceu", command)...); err != nil {
 		return domain.DependencyResolution{}, errors.New("run locked npm resolution failed")
 	}
-	lock, err := r.runner.Output(ctx, "docker", "exec", containerID, "cat", resolverProjectDir+"/package-lock.json")
+	lock, err := r.runner.Output(ctx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "cat", resolverProjectDir+"/package-lock.json")...)
 	if err != nil {
 		return domain.DependencyResolution{}, errors.New("read resolver lockfile failed")
 	}
@@ -218,6 +225,26 @@ func (r *NPMResolver) ResolveDependencies(ctx context.Context, reference domain.
 		return domain.DependencyResolution{}, err
 	}
 	return domain.NewDependencyResolution(graph, resolverRuntimeIdentity, digest)
+}
+
+func npmCreateArguments(network string, hostArguments []string) []string {
+	arguments := []string{
+		"create", "--pull", "never", "--runtime", gVisorRuntimeName,
+		"--network", network,
+		"--read-only",
+		"--cap-drop", "ALL",
+		"--cap-add", "SETUID", "--cap-add", "SETGID", "--cap-add", "SETPCAP",
+		"--security-opt", "no-new-privileges",
+		"--pids-limit", "64",
+		"--memory", "512m",
+		"--cpus", "1",
+		"--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=128m,uid=1000,gid=1000,mode=0700",
+		"--tmpfs", boundaryHelperMount,
+	}
+	arguments = append(arguments, isolatedContainerEnvironmentArguments()...)
+	arguments = append(arguments, hostArguments...)
+	arguments = append(arguments, runtimeidentity.NodeImageReference, "/bin/sh", "-ceu", boundaryContainerCommand())
+	return arguments
 }
 
 // npmNetworkArguments fixes the preflight-resolved registry address set into

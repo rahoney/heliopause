@@ -100,6 +100,40 @@ func TestEvidenceRejectsObviousSensitiveOrUnboundedSummary(t *testing.T) {
 	}
 }
 
+func TestInspectionDiagnosticVocabularyIsBounded(t *testing.T) {
+	t.Parallel()
+
+	valid := []struct {
+		cause domain.InspectionDiagnosticCause
+		stage domain.InspectionDiagnosticStage
+	}{
+		{domain.InspectionDiagnosticStaticFinding, ""},
+		{domain.InspectionDiagnosticStaticIncomplete, ""},
+		{domain.InspectionDiagnosticSdistDynamicUnavailable, ""},
+		{domain.InspectionDiagnosticResourceExceeded, domain.InspectionDiagnosticStageGraphUncompressed},
+		{domain.InspectionDiagnosticInvalidWheel, domain.InspectionDiagnosticStageMetadataIdentity},
+	}
+	for _, test := range valid {
+		if _, err := domain.NewInspectionDiagnostic(test.cause, test.stage); err != nil {
+			t.Fatalf("NewInspectionDiagnostic(%q, %q) error = %v", test.cause, test.stage, err)
+		}
+	}
+	invalid := []struct {
+		cause domain.InspectionDiagnosticCause
+		stage domain.InspectionDiagnosticStage
+	}{
+		{"RAW_PARSER_ERROR", ""},
+		{domain.InspectionDiagnosticInvalidWheel, "RAW_ERROR"},
+		{domain.InspectionDiagnosticResourceExceeded, domain.InspectionDiagnosticStageMetadataIdentity},
+		{domain.InspectionDiagnosticStaticFinding, domain.InspectionDiagnosticStageOther},
+	}
+	for _, test := range invalid {
+		if _, err := domain.NewInspectionDiagnostic(test.cause, test.stage); err == nil {
+			t.Fatalf("NewInspectionDiagnostic(%q, %q) accepted", test.cause, test.stage)
+		}
+	}
+}
+
 func mustCheckID(t *testing.T, value string) domain.CheckID {
 	t.Helper()
 	id, err := domain.NewCheckID(value)

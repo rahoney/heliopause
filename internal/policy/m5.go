@@ -3,6 +3,7 @@ package policy
 import (
 	"errors"
 
+	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
@@ -29,7 +30,7 @@ func (M5) EvaluateSet(set domain.InspectedDependencySet) (domain.PolicyDecision,
 	}
 	for _, dependency := range set.Graph().Nodes() {
 		variant := dependency.Artifact().Identity().Variant()
-		if dependency.Artifact().Identity().Source().String() != "pypi" || (variant != "wheel" && variant != "derived-wheel" && !(variant == "sdist" && derived[dependency.Node()])) {
+		if _, supported := artifactpypi.ProfileForSource(dependency.Artifact().Identity().Source()); !supported || (variant != "wheel" && variant != "derived-wheel" && !(variant == "sdist" && derived[dependency.Node()])) {
 			return m5Decision(domain.DecisionManualReview, "M5_NON_WHEEL_PROMOTION_UNAVAILABLE")
 		}
 	}

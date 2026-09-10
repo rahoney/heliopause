@@ -1,6 +1,7 @@
 package pypi
 
 import (
+	"errors"
 	"strings"
 	"testing"
 )
@@ -68,6 +69,115 @@ func TestSimpleAPIAndReportRejectIncompleteOrUnsafeMetadata(t *testing.T) {
 	} {
 		if _, err := ParseInstallationReport(reference, []byte(body), pipRuntimeVersionForTest, pythonRuntimeVersionForTest); err == nil {
 			t.Fatalf("ParseInstallationReport accepted %s", body)
+		}
+	}
+}
+
+func TestSimpleProjectMetadataDiagnosticsAreBounded(t *testing.T) {
+	base := sampleSimpleJSON("primary", "primary-1.0-py3-none-any.whl", "")
+	cases := []struct{ name, body, want string }{
+		{"name invalid", strings.Replace(base, `"name":"primary"`, `"name":"!!!"`, 1), "reason=NAME_INVALID project=primary response= files=1 limit=1024"},
+		{"name mismatch", strings.Replace(base, `"name":"primary"`, `"name":"other"`, 1), "reason=NAME_MISMATCH project=primary response=other files=1 limit=1024"},
+		{"files empty", `{"meta":{"api-version":"1.4"},"name":"primary","files":[]}`, "reason=FILES_EMPTY project=primary response=primary files=0 limit=1024"},
+	}
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
+			_, err := ParseSimpleProject("primary", []byte(test.body))
+			if err == nil || !strings.Contains(err.Error(), test.want) {
+				t.Fatalf("error = %v, want %q", err, test.want)
+			}
+		})
+	}
+	var body strings.Builder
+	body.WriteString(`{"meta":{"api-version":"1.4"},"name":"numpy","files":[`)
+	for i := 0; i < maxPyPIReportEntries+1; i++ {
+		if i > 0 {
+			body.WriteByte(',')
+		}
+		body.WriteString(`{}`)
+	}
+	body.WriteString(`]}`)
+	_, err := ParseSimpleProject("numpy", []byte(body.String()))
+	if err == nil || !strings.Contains(err.Error(), "reason=FILES_LIMIT project=numpy response=numpy files=1025 limit=1024") {
+		t.Fatalf("files limit diagnostic = %v", err)
+	}
+}
+
+func TestSimpleFilesLimitIsSelectedOnlyByCanonicalPyTorchRoot(t *testing.T) {
+	cpu, _ := PyTorchProfile("cpu")
+	cu126, _ := PyTorchProfile("cu126")
+	if simpleFilesLimit(PublicPyPIProfile()) != 1024 || simpleFilesLimit(SourceProfile{}) != 1024 {
+		t.Fatal("default root acquired enlarged Simple limit")
+	}
+	if simpleFilesLimit(cpu) != 8192 || simpleFilesLimit(cu126) != 8192 {
+		t.Fatalf("PyTorch root limits = %d/%d", simpleFilesLimit(cpu), simpleFilesLimit(cu126))
+	}
+}
+
+func TestUnsupportedRequirementDiagnosticIsSanitized(t *testing.T) {
+	err := unsupportedRequirementDiagnostic("parent", "setuptools; python_version < '3.14' and extra == 'test'", errors.New("unsupported dependency requirement marker"))
+	got := err.Error()
+	for _, want := range []string{"reason=UNSUPPORTED_REQUIREMENT", "package=parent", "dependency=setuptools", "shape=compound", "detail=MARKER"} {
+		if !strings.Contains(got, want) {
+			t.Fatalf("diagnostic %q missing %q", got, want)
+		}
+	}
+	if strings.Contains(got, "python_version") || strings.Contains(got, "test") {
+		t.Fatalf("diagnostic leaked raw marker: %q", got)
+	}
+}
+
+func TestActiveMarkerProducesEffectiveChildRequirement(t *testing.T) {
+	profile, _ := PyTorchProfile("cpu")
+	dependency, active, err := parseDeclaredDependencyForProfile("foo>=1.2; python_version >= '3.10'", profile, "3.14.7")
+	if err != nil || !active || dependency != "foo" {
+		t.Fatalf("marker parse = %q/%t/%v", dependency, active, err)
+	}
+	effective := strings.TrimSpace(strings.SplitN("foo>=1.2; python_version >= '3.10'", ";", 2)[0])
+	if effective != "foo>=1.2" {
+		t.Fatalf("effective requirement = %q", effective)
+	}
+}
+
+func TestInactiveMarkerDoesNotProduceChildRequirement(t *testing.T) {
+	profile, _ := PyTorchProfile("cpu")
+	_, active, err := parseDeclaredDependencyForProfile("foo>=1.2; python_version < '3.10'", profile, "3.14.7")
+	if err != nil || active {
+		t.Fatalf("inactive marker = active=%t err=%v", active, err)
+	}
+}
+
+func TestInstallationReportAcceptsCanonicalHashesWithoutLegacyHash(t *testing.T) {
+	t.Parallel()
+
+	reference, err := ParseReference("primary@1.0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := strings.ReplaceAll(sampleReportJSON(), `"hash":"sha256=`+sampleSHA256+`",`, "")
+	if _, err := ParseInstallationReport(reference, []byte(body), pipRuntimeVersionForTest, pythonRuntimeVersionForTest); err != nil {
+		t.Fatalf("ParseInstallationReport rejected pip schema hashes without legacy hash: %v", err)
+	}
+}
+
+func TestInstallationReportIgnoresUnrequestedExtras(t *testing.T) {
+	t.Parallel()
+
+	reference, err := ParseReference("Primary@1.0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := strings.Replace(sampleReportJSON(), `"requires_dist":["child>=2"]`, `"requires_dist":["child>=2","dask[dataframe,test]; extra == 'test-downstream'","backports-zstd; (python_version < '3.14') and extra == 'test-full'"]`, 1)
+	report, err := ParseInstallationReport(reference, []byte(body), pipRuntimeVersionForTest, pythonRuntimeVersionForTest)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, candidate := range report.Candidates() {
+		if candidate.Project() != "primary" {
+			continue
+		}
+		if deps := candidate.Dependencies(); len(deps) != 1 || deps[0] != "child" {
+			t.Fatalf("inactive extra dependency was retained: %#v", deps)
 		}
 	}
 }

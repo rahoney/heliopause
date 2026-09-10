@@ -107,6 +107,18 @@ func (b *Backend) Execute(ctx context.Context, request domain.SandboxRequest) (d
 		}
 		return incomplete(sessionID, "M3_DYNAMIC_SETUP_FAILED")
 	}
+	if err := awaitBoundaryHelper(runContext, b.runner, containerID); err != nil {
+		if b.cleanup(containerID) != nil {
+			return incomplete(sessionID, "M3_DYNAMIC_CLEANUP_FAILED")
+		}
+		return incomplete(sessionID, "M3_DYNAMIC_SETUP_FAILED")
+	}
+	if err := awaitMountAnchors(runContext, b.observer, containerID); err != nil {
+		if b.cleanup(containerID) != nil {
+			return incomplete(sessionID, "M3_DYNAMIC_CLEANUP_FAILED")
+		}
+		return incomplete(sessionID, "M3_DYNAMIC_OBSERVER_FAILED")
+	}
 	if err := b.introducer.Introduce(runContext, containerID, request.Artifact()); err != nil {
 		cleanupErr := b.cleanup(containerID)
 		if cleanupErr != nil {
@@ -115,16 +127,21 @@ func (b *Backend) Execute(ctx context.Context, request domain.SandboxRequest) (d
 		return incomplete(sessionID, "M3_DYNAMIC_ARTIFACT_INTRODUCTION_FAILED")
 	}
 
-	waitOutput, runErr := b.runner.Output(runContext, "docker", "wait", containerID)
+	_, runErr := b.runner.Output(runContext, "docker", boundaryExecArguments(containerID, boundaryLaunchMode,
+		"/bin/sh", "-ceu", npmLifecycleCommand)...)
 	timedOut := runContext.Err() == context.DeadlineExceeded || ctx.Err() == context.DeadlineExceeded
+	// The pinned gVisor remote session is container-scoped, while the npm
+	// command is a Docker exec inside the still-running PID1 container. End the
+	// container session first so the helper can flush its aggregate and emit
+	// stream-end; only then can collection reach a truthful EOF.
+	cleanupErr := b.cleanup(containerID)
 	collectContext, collectCancel := context.WithTimeout(context.Background(), b.cleanupWait)
 	observations, observationLimitation := collectTrace(collectContext, trace)
 	collectCancel()
-	cleanupErr := b.cleanup(containerID)
 	if cleanupErr != nil {
 		return incomplete(sessionID, "M3_DYNAMIC_CLEANUP_FAILED")
 	}
-	if runErr != nil || strings.TrimSpace(string(waitOutput)) != "0" {
+	if runErr != nil {
 		if timedOut {
 			return incomplete(sessionID, "M3_DYNAMIC_TIMEOUT")
 		}
@@ -153,21 +170,24 @@ func incomplete(sessionID domain.SandboxSessionID, limitation string) (domain.Sa
 }
 
 func createArguments(sessionID domain.SandboxSessionID) []string {
-	return []string{
+	arguments := []string{
 		"create",
 		"--runtime", gVisorRuntimeName,
-		"--user", "1000:1000",
 		"--network", "none",
 		"--read-only",
 		"--cap-drop", "ALL",
+		"--cap-add", "SETUID", "--cap-add", "SETGID", "--cap-add", "SETPCAP",
 		"--security-opt", "no-new-privileges",
 		"--pids-limit", "64",
 		"--memory", "512m",
 		"--cpus", "1",
 		"--ulimit", "cpu=30:30",
 		"--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=256m,uid=1000,gid=1000,mode=0700",
-		"--name", "heliopause-" + sessionID.String(),
-		nodeImageReference,
-		"/bin/sh", "-ceu", "while [ ! -f /tmp/artifact.tgz ]; do sleep 0.05; done; mkdir -p /tmp/package /tmp/.npm; cd /tmp/package; HOME=/tmp npm_config_cache=/tmp/.npm npm install --ignore-scripts=false --no-audit --no-fund --offline /tmp/artifact.tgz",
+		"--tmpfs", boundaryHelperMount,
 	}
+	arguments = append(arguments, isolatedContainerEnvironmentArguments()...)
+	arguments = append(arguments, "--name", "heliopause-"+sessionID.String(), nodeImageReference, "/bin/sh", "-ceu", boundaryContainerCommand())
+	return arguments
 }
+
+const npmLifecycleCommand = "mkdir -p /tmp/package /tmp/.npm; cd /tmp/package; HOME=/tmp npm_config_cache=/tmp/.npm npm_config_script_shell=/haa-runtime/haa-boundary npm install --ignore-scripts=false --no-audit --no-fund --offline --no-update-notifier /tmp/artifact.tgz"

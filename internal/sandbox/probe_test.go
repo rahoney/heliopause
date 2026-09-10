@@ -6,6 +6,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -42,9 +43,9 @@ func TestProbe(t *testing.T) {
 		{name: "missing runtime", operatingSystem: "linux", executor: fakeExecutor{lookupError: errors.New("missing")}, limitation: "M3_RUNTIME_UNAVAILABLE"},
 		{name: "old Docker", operatingSystem: "linux", executor: fakeExecutor{outputs: map[string]string{"docker version --format {{.Server.Version}}": "29.5.3"}}, limitation: "M3_RUNTIME_VERSION_UNSUPPORTED"},
 		{name: "wrong gVisor", operatingSystem: "linux", executor: fakeExecutor{outputs: map[string]string{"docker version --format {{.Server.Version}}": "29.6.0", "runsc --version": "release-20260727.0"}}, limitation: "M3_RUNTIME_VERSION_UNSUPPORTED"},
-		{name: "unregistered runtime", operatingSystem: "linux", executor: fakeExecutor{outputs: map[string]string{"docker version --format {{.Server.Version}}": "29.6.0", "runsc --version": gVisorRelease}}, limitation: "M3_RUNTIME_UNAVAILABLE"},
-		{name: "missing image", operatingSystem: "linux", executor: fakeExecutor{outputs: map[string]string{"docker version --format {{.Server.Version}}": "29.6.0", "runsc --version": gVisorRelease, "docker info --format {{json (index .Runtimes \"runsc-trace\")}}": "{\"path\":\"/usr/local/bin/runsc\"}"}}, limitation: "M3_IMAGE_UNAVAILABLE"},
-		{name: "available", operatingSystem: "linux", executor: fakeExecutor{outputs: map[string]string{"docker version --format {{.Server.Version}}": "29.6.0", "runsc --version": gVisorRelease, "docker info --format {{json (index .Runtimes \"runsc-trace\")}}": "{\"path\":\"/usr/local/bin/runsc\"}", "docker image inspect " + nodeImageReference + " --format {{.Id}}": "sha256:example"}}, available: true},
+		{name: "unpatched gVisor lacking observation points", operatingSystem: "linux", executor: fakeExecutor{outputs: map[string]string{"docker version --format {{.Server.Version}}": "29.6.0", "runsc --version": gVisorRelease, "runsc trace metadata": "Name: sentry/clone\nName: sentry/execve\n"}}, limitation: "M3_RUNTIME_VERSION_UNSUPPORTED"},
+		{name: "missing image", operatingSystem: "linux", executor: fakeExecutor{outputs: map[string]string{"docker version --format {{.Server.Version}}": "29.6.0", "runsc --version": gVisorRelease, "runsc trace metadata": "Name: syscall/open_result\nName: sentry/mount_topology_snapshot\nName: sentry/mount_topology_mutation\n", "docker info --format {{json (index .Runtimes \"runsc-trace\")}}": "{\"path\":\"/usr/libexec/heliopause/runsc\"}"}}, limitation: "M3_IMAGE_UNAVAILABLE"},
+		{name: "available", operatingSystem: "linux", executor: fakeExecutor{outputs: map[string]string{"docker version --format {{.Server.Version}}": "29.6.0", "runsc --version": gVisorRelease, "runsc trace metadata": "Name: syscall/open_result\nName: sentry/mount_topology_snapshot\nName: sentry/mount_topology_mutation\n", "docker info --format {{json (index .Runtimes \"runsc-trace\")}}": "{\"path\":\"/usr/libexec/heliopause/runsc\"}", "docker image inspect " + nodeImageReference + " --format {{.Id}}": "sha256:example"}}, available: true},
 	}
 	for _, test := range tests {
 		test := test
@@ -56,6 +57,39 @@ func TestProbe(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestProbeUsesOnlyTrustedLogicalRunsc(t *testing.T) {
+	patched := "Name: syscall/open_result\nName: sentry/mount_topology_snapshot\nName: sentry/mount_topology_mutation\n"
+	executor := &recordingProbeExecutor{fakeExecutor: fakeExecutor{outputs: map[string]string{
+		"docker version --format {{.Server.Version}}": "29.6.0",
+		"runsc --version":      gVisorRelease,
+		"runsc trace metadata": patched,
+	}}}
+	got, err := probeGVisorRuntime(context.Background(), "linux", executor, "linux", "unavailable", "unsupported")
+	if err != nil || got != "" {
+		t.Fatalf("probe=%q err=%v", got, err)
+	}
+	for _, call := range executor.calls {
+		if call == "docker info --format {{json (index .Runtimes \"runsc-trace\")}}" || strings.HasPrefix(call, "/") {
+			t.Fatalf("sandbox selected Host runtime identity directly: %q", call)
+		}
+	}
+}
+
+type recordingProbeExecutor struct {
+	fakeExecutor
+	calls []string
+}
+
+func (f *recordingProbeExecutor) LookPath(name string) (string, error) {
+	f.calls = append(f.calls, "lookup "+name)
+	return f.fakeExecutor.LookPath(name)
+}
+
+func (f *recordingProbeExecutor) Output(ctx context.Context, binary string, arguments ...string) ([]byte, error) {
+	f.calls = append(f.calls, binary+" "+join(arguments))
+	return f.fakeExecutor.Output(ctx, binary, arguments...)
 }
 
 type fakeExecutor struct {

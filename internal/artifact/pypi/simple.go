@@ -6,11 +6,14 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"html"
 	"io"
 	"net/url"
 	"path"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
@@ -28,14 +31,18 @@ var (
 	requirementNamePrefix = regexp.MustCompile(`^([A-Za-z0-9][A-Za-z0-9._-]*)(?:\s*(?:\([^)]*\)|[<>=!~].*)?)?$`)
 )
 
+const maxPyTorchSimpleEntries = 20_000
+
 // SimpleProject is a bounded, parser-normalized PyPI Simple API project page.
 // It never contains a raw HTTP response or unvalidated endpoint.
 type SimpleProject struct {
 	project string
+	source  domain.SourceID
 	files   []SimpleFile
 }
 
-func (p SimpleProject) Project() string { return p.project }
+func (p SimpleProject) Project() string         { return p.project }
+func (p SimpleProject) Source() domain.SourceID { return p.source }
 func (p SimpleProject) Files() []SimpleFile {
 	return append([]SimpleFile(nil), p.files...)
 }
@@ -62,6 +69,7 @@ func (f SimpleFile) Size() uint64           { return f.size }
 // declared dependency names have been normalized. It is adapter-only data.
 type Candidate struct {
 	project        string
+	source         domain.SourceID
 	version        string
 	filename       string
 	url            string
@@ -69,16 +77,27 @@ type Candidate struct {
 	requiresPython string
 	primary        bool
 	dependencies   []string
+	requirements   []string
 }
 
-func (c Candidate) Project() string        { return c.project }
-func (c Candidate) Version() string        { return c.version }
-func (c Candidate) Filename() string       { return c.filename }
-func (c Candidate) URL() string            { return c.url }
-func (c Candidate) SHA256() string         { return c.sha256 }
-func (c Candidate) RequiresPython() string { return c.requiresPython }
-func (c Candidate) Primary() bool          { return c.primary }
-func (c Candidate) Dependencies() []string { return append([]string(nil), c.dependencies...) }
+func (c Candidate) Project() string         { return c.project }
+func (c Candidate) Source() domain.SourceID { return c.source }
+func (c Candidate) Version() string         { return c.version }
+func (c Candidate) Filename() string        { return c.filename }
+func (c Candidate) URL() string             { return c.url }
+func (c Candidate) SHA256() string          { return c.sha256 }
+func (c Candidate) RequiresPython() string  { return c.requiresPython }
+func (c Candidate) Primary() bool           { return c.primary }
+func (c Candidate) Dependencies() []string  { return append([]string(nil), c.dependencies...) }
+func (c Candidate) DependencyRequirements() []string {
+	return append([]string(nil), c.requirements...)
+}
+
+// WithPrimary returns a copy with the graph role selected by the resolver.
+func (c Candidate) WithPrimary(primary bool) Candidate {
+	c.primary = primary
+	return c
+}
 
 // InstallationReport is the bounded, normalized result of a stable pip
 // installation report v1. Its raw bytes remain in the Sandbox adapter.
@@ -105,49 +124,98 @@ type simpleFile struct {
 	Size           uint64            `json:"size"`
 }
 
+type simpleMetadataDiagnostic struct {
+	reason   string
+	project  string
+	response string
+	files    int
+	limit    int
+}
+
+func (d simpleMetadataDiagnostic) Error() string {
+	return fmt.Sprintf("invalid PyPI Simple project metadata is invalid: reason=%s project=%s response=%s files=%d limit=%d", d.reason, d.project, d.response, d.files, d.limit)
+}
+
 // ParseSimpleProject accepts only a PyPI Simple API JSON v1 project page and
 // enforces the public PyPI distribution endpoint for every listed file.
 func ParseSimpleProject(project string, body []byte) (SimpleProject, error) {
+	return parseJSONSimpleProject(project, body, PublicPyPIProfile(), maxPyPIReportEntries)
+}
+
+// ParseSimpleProjectForProfile selects the canonical parser for a named
+// source profile. It never accepts a caller-provided endpoint or format.
+func ParseSimpleProjectForProfile(project string, body []byte, profile SourceProfile) (SimpleProject, error) {
+	return ParseSimpleProjectForRootProfile(project, body, profile, PublicPyPIProfile())
+}
+
+// ParseSimpleProjectForRootProfile keeps node source validation independent
+// from the bounded Simple-page budget selected by a canonical root profile.
+func ParseSimpleProjectForRootProfile(project string, body []byte, profile, root SourceProfile) (SimpleProject, error) {
+	if IsPyTorchSource(profile.source) {
+		return ParsePyTorchSimpleProject(project, body, profile)
+	}
+	if profile.source == PublicPyPIProfile().source {
+		return parseJSONSimpleProject(project, body, profile, simpleFilesLimit(root))
+	}
+	return SimpleProject{}, errors.New("unsupported Python source profile")
+}
+
+func simpleFilesLimit(root SourceProfile) int {
+	if root.name == "pytorch:cpu" || root.name == "pytorch:cu126" {
+		return 8192
+	}
+	return maxPyPIReportEntries
+}
+
+func parseJSONSimpleProject(project string, body []byte, profile SourceProfile, filesLimit int) (SimpleProject, error) {
 	project, err := NormalizeProjectName(project)
 	if err != nil {
-		return SimpleProject{}, errors.New("PyPI Simple project is invalid")
+		return SimpleProject{}, errors.New("invalid PyPI Simple project is invalid")
 	}
 	if len(body) == 0 || len(body) > maxSimpleResponseBytes {
-		return SimpleProject{}, errors.New("PyPI Simple response exceeds supported bounds")
+		return SimpleProject{}, errors.New("invalid PyPI Simple response exceeds supported bounds")
 	}
 	var response simpleResponse
 	decoder := json.NewDecoder(bytes.NewReader(body))
 	if err := decoder.Decode(&response); err != nil || ensureSingleJSONValue(decoder) != nil {
-		return SimpleProject{}, errors.New("PyPI Simple response is invalid JSON")
+		return SimpleProject{}, errors.New("invalid PyPI Simple response is invalid JSON")
 	}
 	version := simpleAPIVersion.FindStringSubmatch(response.Meta.APIVersion)
 	if version == nil || version[1] != "1" {
-		return SimpleProject{}, errors.New("PyPI Simple API version is unsupported")
+		return SimpleProject{}, errors.New("invalid PyPI Simple API version is unsupported")
 	}
 	responseProject, err := NormalizeProjectName(response.Name)
-	if err != nil || responseProject != project || len(response.Files) == 0 || len(response.Files) > maxPyPIReportEntries {
-		return SimpleProject{}, errors.New("PyPI Simple project metadata is invalid")
+	if err != nil {
+		return SimpleProject{}, simpleMetadataDiagnostic{reason: "NAME_INVALID", project: project, files: len(response.Files), limit: filesLimit}
+	}
+	if responseProject != project {
+		return SimpleProject{}, simpleMetadataDiagnostic{reason: "NAME_MISMATCH", project: project, response: responseProject, files: len(response.Files), limit: filesLimit}
+	}
+	if len(response.Files) == 0 {
+		return SimpleProject{}, simpleMetadataDiagnostic{reason: "FILES_EMPTY", project: project, response: responseProject, limit: filesLimit}
+	}
+	if len(response.Files) > filesLimit {
+		return SimpleProject{}, simpleMetadataDiagnostic{reason: "FILES_LIMIT", project: project, response: responseProject, files: len(response.Files), limit: filesLimit}
 	}
 	files := make([]SimpleFile, 0, len(response.Files))
 	seen := make(map[string]bool, len(response.Files))
 	for _, raw := range response.Files {
-		file, err := parseSimpleFile(raw)
+		file, err := parseSimpleFileForProfile(raw, profile)
 		if err != nil || seen[file.url] {
-			return SimpleProject{}, errors.New("PyPI Simple file metadata is invalid")
+			return SimpleProject{}, errors.New("invalid PyPI Simple file metadata is invalid")
 		}
 		seen[file.url] = true
 		files = append(files, file)
 	}
 	sort.Slice(files, func(i, j int) bool { return files[i].url < files[j].url })
-	return SimpleProject{project: project, files: files}, nil
+	return SimpleProject{project: project, source: profile.source, files: files}, nil
 }
 
-func parseSimpleFile(raw simpleFile) (SimpleFile, error) {
+func parseSimpleFileForProfile(raw simpleFile, profile SourceProfile) (SimpleFile, error) {
 	if raw.Filename == "" || raw.Size == 0 || !sha256HexPattern.MatchString(raw.Hashes["sha256"]) || !validRequiresPython(raw.RequiresPython) {
 		return SimpleFile{}, errors.New("invalid file metadata")
 	}
-	_, err := parseDistributionURL(raw.URL, raw.Filename, false)
-	if err != nil {
+	if err := validateDistributionURLForSource(raw.URL, raw.Filename, profile, false); err != nil {
 		return SimpleFile{}, err
 	}
 	// Simple API v1 carries the digest in hashes.sha256; its canonical URL has
@@ -157,6 +225,70 @@ func parseSimpleFile(raw simpleFile) (SimpleFile, error) {
 		return SimpleFile{}, err
 	}
 	return SimpleFile{filename: raw.Filename, url: raw.URL, sha256: raw.Hashes["sha256"], requiresPython: raw.RequiresPython, yanked: yanked, size: raw.Size}, nil
+}
+
+var pytorchAnchorPattern = regexp.MustCompile(`(?is)<a\b[^>]*href\s*=\s*["']([^"']+)["'][^>]*>`)
+
+// ParsePyTorchSimpleProject parses the bounded HTML Simple API served by the
+// official PyTorch index. The page contributes only filename, URL and
+// sha256-fragment identity; package metadata remains sourced from pip's
+// normalized report.
+func ParsePyTorchSimpleProject(project string, body []byte, profile SourceProfile) (SimpleProject, error) {
+	if !IsPyTorchSource(profile.source) {
+		return SimpleProject{}, errors.New("invalid PyTorch source profile is required")
+	}
+	project, err := NormalizeProjectName(project)
+	if err != nil || len(body) == 0 || len(body) > maxSimpleResponseBytes {
+		return SimpleProject{}, errors.New("invalid PyTorch Simple project is invalid")
+	}
+	base, err := url.Parse(profile.indexURL + project + "/")
+	if err != nil {
+		return SimpleProject{}, errors.New("invalid PyTorch index URL is invalid")
+	}
+	profileBase, err := url.Parse(profile.indexURL)
+	if err != nil {
+		return SimpleProject{}, errors.New("invalid PyTorch index URL is invalid")
+	}
+	matches := pytorchAnchorPattern.FindAllSubmatch(body, maxPyTorchSimpleEntries+1)
+	if len(matches) == 0 || len(matches) > maxPyTorchSimpleEntries {
+		return SimpleProject{}, errors.New("invalid PyTorch Simple project has no bounded files")
+	}
+	files := make([]SimpleFile, 0, len(matches))
+	seen := make(map[string]bool, len(matches))
+	for _, match := range matches {
+		href := html.UnescapeString(string(match[1]))
+		parsed, err := base.Parse(href)
+		if err != nil {
+			return SimpleProject{}, errors.New("invalid PyTorch Simple file hash is missing")
+		}
+		// A PyTorch page can list unrelated files without a wheel digest. They
+		// are intentionally excluded rather than trusted: CrossCheckReport
+		// still requires the pip-selected candidate to match exactly one
+		// retained SimpleFile with the same SHA-256.
+		if parsed.Fragment == "" || !strings.HasPrefix(parsed.Fragment, "sha256=") {
+			continue
+		}
+		filename := path.Base(parsed.Path)
+		digest := strings.TrimPrefix(parsed.Fragment, "sha256=")
+		if !sha256HexPattern.MatchString(digest) || filename == "." || filename == "/" || seen[parsed.String()] {
+			return SimpleProject{}, errors.New("invalid PyTorch Simple file metadata is invalid")
+		}
+		parsed.Fragment = ""
+		if !strings.HasPrefix(parsed.Path, profileBase.Path) {
+			continue
+		}
+		if err := validateDistributionURLForSource(parsed.String(), filename, profile, true); err != nil {
+			return SimpleProject{}, err
+		}
+		canonicalURL := parsed.String()
+		if seen[canonicalURL] {
+			return SimpleProject{}, errors.New("invalid PyTorch Simple file metadata is ambiguous")
+		}
+		seen[canonicalURL] = true
+		files = append(files, SimpleFile{filename: filename, url: canonicalURL, sha256: digest, requiresPython: "", size: 1})
+	}
+	sort.Slice(files, func(i, j int) bool { return files[i].url < files[j].url })
+	return SimpleProject{project: project, source: profile.source, files: files}, nil
 }
 
 func parseYanked(raw json.RawMessage) (bool, error) {
@@ -210,13 +342,27 @@ type pipInstall struct {
 // locked runtime. It intentionally rejects direct sources, unsupported
 // dependency markers/extras and any target-environment mismatch.
 func ParseInstallationReport(reference domain.ArtifactReference, body []byte, expectedPip, expectedPython string) (InstallationReport, error) {
+	profile, ok := ProfileForSource(reference.Source())
+	if !ok {
+		return InstallationReport{}, errors.New("python source profile is invalid")
+	}
+	return ParseInstallationReportForProfile(reference, body, expectedPip, expectedPython, profile)
+}
+
+// ParseInstallationReportForProfile preserves source identity for every
+// selected node and rejects source confusion between PyTorch-owned and
+// ordinary PyPI projects.
+func ParseInstallationReportForProfile(reference domain.ArtifactReference, body []byte, expectedPip, expectedPython string, profile SourceProfile) (InstallationReport, error) {
+	if reference.Source() != profile.source {
+		return InstallationReport{}, errors.New("python report source profile mismatch")
+	}
 	requestedProject, err := RequestedProject(reference)
 	if err != nil {
-		return InstallationReport{}, errors.New("PyPI report reference is invalid")
+		return InstallationReport{}, errors.New("invalid PyPI report reference is invalid")
 	}
 	requestedVersion, versionRequested, err := RequestedVersion(reference)
 	if err != nil {
-		return InstallationReport{}, errors.New("PyPI report reference is invalid")
+		return InstallationReport{}, errors.New("invalid PyPI report reference is invalid")
 	}
 	if len(body) == 0 || len(body) > maxReportBytes {
 		return InstallationReport{}, errors.New("pip installation report exceeds supported bounds")
@@ -233,17 +379,20 @@ func ParseInstallationReport(reference domain.ArtifactReference, body []byte, ex
 	seenProjects := make(map[string]bool, len(report.Install))
 	primaryCount := 0
 	for _, item := range report.Install {
-		candidate, err := parseReportCandidate(item)
-		if err != nil || seenProjects[candidate.project] {
+		candidate, err := parseReportCandidate(item, profile, expectedPython)
+		if err != nil {
+			return InstallationReport{}, errors.Join(errors.New("pip installation report candidate is invalid"), err)
+		}
+		if seenProjects[candidate.project] {
 			return InstallationReport{}, errors.New("pip installation report candidate is invalid")
 		}
 		seenProjects[candidate.project] = true
 		if candidate.primary {
 			primaryCount++
-			if candidate.project != requestedProject || versionRequested && candidate.version != requestedVersion {
+			if candidate.project != requestedProject || candidate.source != profile.source || versionRequested && candidate.version != requestedVersion {
 				return InstallationReport{}, errors.New("pip installation report primary candidate is invalid")
 			}
-			if !versionRequested && !IsFinalVersion(candidate.version) {
+			if !versionRequested && !isFinalVersionForProfile(candidate.version, profile) {
 				return InstallationReport{}, errors.New("pip installation report selected a non-final release")
 			}
 		}
@@ -256,34 +405,291 @@ func ParseInstallationReport(reference domain.ArtifactReference, body []byte, ex
 	return InstallationReport{candidates: candidates}, nil
 }
 
-func parseReportCandidate(item pipInstall) (Candidate, error) {
-	if item.IsDirect || !item.Requested && item.Metadata.Name == "" || !sha256HexPattern.MatchString(item.DownloadInfo.ArchiveInfo.Hashes["sha256"]) || item.DownloadInfo.ArchiveInfo.Hash != "sha256="+item.DownloadInfo.ArchiveInfo.Hashes["sha256"] {
+func isFinalVersionForProfile(value string, profile SourceProfile) bool {
+	if IsPyTorchSource(profile.source) && strings.Contains(value, "+") {
+		base := strings.SplitN(value, "+", 2)[0]
+		return IsFinalVersion(base)
+	}
+	return IsFinalVersion(value)
+}
+
+func parseReportCandidate(item pipInstall, profile SourceProfile, expectedPython string) (Candidate, error) {
+	sha256 := item.DownloadInfo.ArchiveInfo.Hashes["sha256"]
+	// pip's stable installation-report schema requires archive_info.hashes.
+	// Older pip versions also emitted the legacy singular hash field; when it
+	// is present, retain the consistency check without requiring that optional
+	// compatibility field from current reports.
+	if item.IsDirect || !item.Requested && item.Metadata.Name == "" || !sha256HexPattern.MatchString(sha256) || item.DownloadInfo.ArchiveInfo.Hash != "" && item.DownloadInfo.ArchiveInfo.Hash != "sha256="+sha256 {
 		return Candidate{}, errors.New("invalid pip candidate")
 	}
 	project, err := NormalizeProjectName(item.Metadata.Name)
 	if err != nil {
 		return Candidate{}, err
 	}
-	version, err := NormalizeVersion(item.Metadata.Version)
+	version, err := normalizeVersionForProfile(item.Metadata.Version, IsPyTorchSource(profile.source))
 	if err != nil || !validRequiresPython(item.Metadata.RequiresPython) {
 		return Candidate{}, errors.New("invalid pip candidate metadata")
 	}
-	filename := path.Base(item.DownloadInfo.URL)
-	if _, err := parseDistributionURL(item.DownloadInfo.URL, filename, false); err != nil {
+	distributionURL, err := url.Parse(item.DownloadInfo.URL)
+	if err != nil {
+		return Candidate{}, errors.New("invalid pip candidate distribution URL")
+	}
+	filename := path.Base(distributionURL.Path)
+	if err := validateDistributionURLForSource(item.DownloadInfo.URL, filename, profile, false); err != nil {
 		return Candidate{}, err
 	}
+	source, err := sourceForDistributionURL(item.DownloadInfo.URL, profile)
+	if err != nil {
+		return Candidate{}, err
+	}
+	if !sourceOwnsProject(profile, source, project) {
+		return Candidate{}, errors.New("python candidate source ownership is ambiguous")
+	}
 	dependencies := make([]string, 0, len(item.Metadata.RequiresDist))
+	requirements := make([]string, 0, len(item.Metadata.RequiresDist))
 	seenDependencies := make(map[string]bool, len(item.Metadata.RequiresDist))
 	for _, requirement := range item.Metadata.RequiresDist {
-		dependency, err := parseDeclaredDependency(requirement)
-		if err != nil || dependency == project || seenDependencies[dependency] {
+		dependency, active, err := parseDeclaredDependencyForProfile(requirement, profile, expectedPython)
+		if err != nil {
+			return Candidate{}, fmt.Errorf("unsupported pip dependency metadata: %w", unsupportedRequirementDiagnostic(project, requirement, err))
+		}
+		if !active {
+			continue
+		}
+		if dependency == project || seenDependencies[dependency] {
 			return Candidate{}, errors.New("unsupported pip dependency metadata")
 		}
 		seenDependencies[dependency] = true
 		dependencies = append(dependencies, dependency)
+		requirements = append(requirements, requirement)
+		if strings.Contains(requirement, ";") {
+			requirements[len(requirements)-1] = strings.TrimSpace(strings.SplitN(requirement, ";", 2)[0])
+		}
 	}
 	sort.Strings(dependencies)
-	return Candidate{project: project, version: version, filename: filename, url: item.DownloadInfo.URL, sha256: item.DownloadInfo.ArchiveInfo.Hashes["sha256"], requiresPython: item.Metadata.RequiresPython, primary: item.Requested, dependencies: dependencies}, nil
+	sort.Strings(requirements)
+	return Candidate{project: project, source: source, version: version, filename: filename, url: item.DownloadInfo.URL, sha256: sha256, requiresPython: item.Metadata.RequiresPython, primary: item.Requested, dependencies: dependencies, requirements: requirements}, nil
+}
+
+func unsupportedRequirementDiagnostic(parent, requirement string, cause error) error {
+	dependency := "<invalid>"
+	namePart := strings.TrimSpace(strings.SplitN(requirement, ";", 2)[0])
+	if parsed, err := parseDeclaredDependency(namePart); err == nil {
+		dependency = parsed
+	}
+	shape := "specifier"
+	if strings.Contains(requirement, ";") {
+		shape = "marker"
+	}
+	if strings.Contains(requirement, "extra") {
+		shape = "extras"
+	}
+	if strings.Contains(requirement, " and ") || strings.Contains(requirement, " or ") {
+		shape = "compound"
+	}
+	detail := "UNSUPPORTED"
+	if strings.Contains(cause.Error(), "marker") {
+		detail = "MARKER"
+	}
+	if strings.Contains(cause.Error(), "requirement") && dependency == "<invalid>" {
+		detail = "NAME"
+	}
+	return fmt.Errorf("reason=UNSUPPORTED_REQUIREMENT package=%s dependency=%s shape=%s detail=%s", parent, dependency, shape, detail)
+}
+
+func parseDeclaredDependencyForProfile(value string, profile SourceProfile, expectedPython string) (string, bool, error) {
+	if !strings.Contains(value, ";") {
+		dependency, err := parseDeclaredDependency(value)
+		return dependency, true, err
+	}
+	if strings.Count(value, ";") != 1 {
+		return "", false, errors.New("unsupported dependency requirement marker")
+	}
+	parts := strings.SplitN(value, ";", 2)
+	marker := strings.TrimSpace(parts[1])
+	// pip includes optional-extra requirements in every package's report even
+	// when no extras were requested. They are inactive for this transaction
+	// and can be handled without broadening the profile's platform semantics.
+	if active, recognized := evaluatePinnedExtraMarker(marker); recognized {
+		if !active {
+			return "", false, nil
+		}
+		dependency, err := parseDeclaredDependency(strings.TrimSpace(parts[0]))
+		return dependency, true, err
+	}
+	if markerContainsInactiveExtraConjunction(marker) {
+		return "", false, nil
+	}
+	if !IsPyTorchSource(profile.source) {
+		return "", false, errors.New("unsupported dependency requirement marker")
+	}
+	dependency, err := parseDeclaredDependency(strings.TrimSpace(parts[0]))
+	if err != nil {
+		return "", false, err
+	}
+	active, err := evaluatePinnedLinuxMarker(marker, expectedPython)
+	if err != nil {
+		return "", false, err
+	}
+	return dependency, active, nil
+}
+
+func evaluatePinnedLinuxMarker(value, expectedPython string) (bool, error) {
+	value = strings.TrimSpace(value)
+	for strings.HasPrefix(value, "(") && strings.HasSuffix(value, ")") {
+		value = strings.TrimSpace(value[1 : len(value)-1])
+	}
+	if parts := strings.Split(value, " and "); len(parts) > 1 {
+		for _, part := range parts {
+			active, err := evaluatePinnedLinuxMarker(strings.TrimSpace(part), expectedPython)
+			if err != nil || !active {
+				return active, err
+			}
+		}
+		return true, nil
+	}
+	if active, ok := evaluatePinnedExtraMarker(value); ok {
+		return active, nil
+	}
+	if active, recognized, err := evaluatePinnedPythonVersionMarker(value, expectedPython); recognized {
+		return active, err
+	}
+	switch value {
+	case `sys_platform == "linux"`, `sys_platform == 'linux'`, `platform_system == "Linux"`, `platform_system == 'Linux'`, `platform_machine == "x86_64"`, `platform_machine == 'x86_64'`, `sys_platform != "darwin"`, `sys_platform != 'darwin'`:
+		return true, nil
+	case `sys_platform != "linux"`, `sys_platform != 'linux'`, `platform_system != "Linux"`, `platform_system != 'Linux'`, `platform_machine != "x86_64"`, `platform_machine != 'x86_64'`, `sys_platform == "darwin"`, `sys_platform == 'darwin'`:
+		return false, nil
+	default:
+		return false, errors.New("unsupported dependency requirement marker")
+	}
+}
+
+// markerContainsInactiveExtraConjunction recognizes the safe fail-closed
+// shortcut for metadata such as `(python_version < '3.14') and extra ==
+// 'test-full'`. With no extras requested, a false extra atom makes the whole
+// conjunction inactive even when the other atom is not otherwise supported.
+func markerContainsInactiveExtraConjunction(value string) bool {
+	if !strings.Contains(value, " and ") {
+		return false
+	}
+	for _, part := range strings.Split(value, " and ") {
+		part = strings.TrimSpace(part)
+		for strings.HasPrefix(part, "(") && strings.HasSuffix(part, ")") {
+			part = strings.TrimSpace(part[1 : len(part)-1])
+		}
+		if active, recognized := evaluatePinnedExtraMarker(part); recognized && !active {
+			return true
+		}
+	}
+	return false
+}
+
+// evaluatePinnedPythonVersionMarker evaluates the one runtime marker emitted
+// by the pinned PyTorch wheel metadata. pip's python_version value is the
+// major.minor portion of the locked runtime (for example, 3.14.7 -> 3.14).
+// Other marker variables and malformed expressions remain fail-closed.
+func evaluatePinnedPythonVersionMarker(value, expectedPython string) (bool, bool, error) {
+	operators := []string{"==", "!=", "<=", ">=", "<", ">"}
+	for _, operator := range operators {
+		prefix := "python_version " + operator + " "
+		if !strings.HasPrefix(value, prefix) {
+			continue
+		}
+		literal := strings.TrimSpace(strings.TrimPrefix(value, prefix))
+		if len(literal) < 2 || (literal[0] != '\'' && literal[0] != '"') || literal[len(literal)-1] != literal[0] || strings.ContainsAny(literal[1:len(literal)-1], "'\"") {
+			return false, true, errors.New("unsupported dependency requirement marker")
+		}
+		want, err := parsePythonVersionTuple(literal[1 : len(literal)-1])
+		if err != nil {
+			return false, true, errors.New("unsupported dependency requirement marker")
+		}
+		have, err := parsePythonRuntimeTuple(expectedPython)
+		if err != nil {
+			return false, true, errors.New("unsupported dependency requirement marker")
+		}
+		comparison := 0
+		if have[0] != want[0] {
+			if have[0] < want[0] {
+				comparison = -1
+			} else {
+				comparison = 1
+			}
+		} else if have[1] != want[1] {
+			if have[1] < want[1] {
+				comparison = -1
+			} else {
+				comparison = 1
+			}
+		}
+		active := false
+		switch operator {
+		case "==":
+			active = comparison == 0
+		case "!=":
+			active = comparison != 0
+		case "<":
+			active = comparison < 0
+		case "<=":
+			active = comparison <= 0
+		case ">":
+			active = comparison > 0
+		case ">=":
+			active = comparison >= 0
+		}
+		return active, true, nil
+	}
+	if strings.HasPrefix(value, "python_version ") {
+		return false, true, errors.New("unsupported dependency requirement marker")
+	}
+	return false, false, nil
+}
+
+func parsePythonVersionTuple(value string) ([2]int, error) {
+	parts := strings.Split(value, ".")
+	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+		return [2]int{}, errors.New("invalid Python version")
+	}
+	major, err := strconv.Atoi(parts[0])
+	if err != nil || major < 0 {
+		return [2]int{}, errors.New("invalid Python version")
+	}
+	minor, err := strconv.Atoi(parts[1])
+	if err != nil || minor < 0 {
+		return [2]int{}, errors.New("invalid Python version")
+	}
+	return [2]int{major, minor}, nil
+}
+
+func parsePythonRuntimeTuple(value string) ([2]int, error) {
+	parts := strings.Split(value, ".")
+	if len(parts) < 2 {
+		return [2]int{}, errors.New("invalid Python runtime version")
+	}
+	return parsePythonVersionTuple(strings.Join(parts[:2], "."))
+}
+
+// evaluatePinnedExtraMarker treats extras as absent for the resolver request.
+// Only a single quoted equality/inequality is accepted; compound or malformed
+// markers remain fail-closed.
+func evaluatePinnedExtraMarker(value string) (bool, bool) {
+	for _, operator := range []string{"==", "!="} {
+		prefix := "extra " + operator + " "
+		if !strings.HasPrefix(value, prefix) {
+			continue
+		}
+		literal := strings.TrimSpace(strings.TrimPrefix(value, prefix))
+		if len(literal) < 2 || (literal[0] != '\'' && literal[0] != '"') || literal[len(literal)-1] != literal[0] || strings.ContainsAny(literal[1:len(literal)-1], "'\"") {
+			return false, false
+		}
+		return operator == "!=", true
+	}
+	return false, false
+}
+
+// DependencyProject normalizes the project portion of a bounded requirement.
+// The resolver retains the original requirement only for its fixed pip call.
+func DependencyProject(requirement string) (string, error) {
+	return parseDeclaredDependency(requirement)
 }
 
 func parseDeclaredDependency(value string) (string, error) {
@@ -302,18 +708,18 @@ func parseDeclaredDependency(value string) (string, error) {
 // Requires-Python metadata.
 func CrossCheckReport(report InstallationReport, pages []SimpleProject) ([]Candidate, error) {
 	if len(report.candidates) == 0 || len(pages) != len(report.candidates) {
-		return nil, errors.New("PyPI Simple cross-check is incomplete")
+		return nil, errors.New("invalid PyPI Simple cross-check is incomplete")
 	}
 	byProject := make(map[string]SimpleProject, len(pages))
 	for _, page := range pages {
 		if page.project == "" || byProject[page.project].project != "" {
-			return nil, errors.New("PyPI Simple cross-check is ambiguous")
+			return nil, errors.New("invalid PyPI Simple cross-check is ambiguous")
 		}
 		byProject[page.project] = page
 	}
 	for _, candidate := range report.candidates {
 		page, ok := byProject[candidate.project]
-		if !ok || !matchesSimpleFile(candidate, page.files) {
+		if !ok || candidate.source != page.source || !matchesSimpleFile(candidate, page.files) {
 			return nil, errors.New("pip candidate does not match PyPI Simple metadata")
 		}
 	}
@@ -323,7 +729,7 @@ func CrossCheckReport(report InstallationReport, pages []SimpleProject) ([]Candi
 func matchesSimpleFile(candidate Candidate, files []SimpleFile) bool {
 	matches := 0
 	for _, file := range files {
-		if file.filename != candidate.filename || file.sha256 != candidate.sha256 || file.requiresPython != candidate.requiresPython || file.yanked || !sameDistributionURL(file.url, candidate.url) {
+		if file.filename != candidate.filename || file.sha256 != candidate.sha256 || file.yanked || !sameDistributionURL(file.url, candidate.url) || file.requiresPython != "" && file.requiresPython != candidate.requiresPython {
 			continue
 		}
 		matches++
@@ -335,21 +741,21 @@ func matchesSimpleFile(candidate Candidate, files []SimpleFile) bool {
 // Domain values. Dependency edges come only from normalized selected report
 // metadata; unknown or unreachable requirements remain fail-closed.
 func BuildLockedGraph(reference domain.ArtifactReference, candidates []Candidate) (domain.LockedDependencyGraph, error) {
-	if reference.Source().String() != "pypi" || len(candidates) == 0 || len(candidates) > maxPyPIReportEntries {
-		return domain.LockedDependencyGraph{}, errors.New("PyPI candidate graph is invalid")
+	if _, ok := ProfileForSource(reference.Source()); !ok || len(candidates) == 0 || len(candidates) > maxPyPIReportEntries {
+		return domain.LockedDependencyGraph{}, errors.New("invalid PyPI candidate graph is invalid")
 	}
 	nodes := make(map[string]domain.LockedDependency, len(candidates))
 	edgesByProject := make(map[string][]string, len(candidates))
 	for _, candidate := range candidates {
 		if candidate.project == "" || nodes[candidate.project].Node().String() != "" {
-			return domain.LockedDependencyGraph{}, errors.New("PyPI candidate graph is ambiguous")
+			return domain.LockedDependencyGraph{}, errors.New("invalid PyPI candidate graph is ambiguous")
 		}
 		variant, ok := distributionVariant(candidate.filename)
 		if !ok {
-			return domain.LockedDependencyGraph{}, errors.New("PyPI distribution type is unsupported")
+			return domain.LockedDependencyGraph{}, errors.New("invalid PyPI distribution type is unsupported")
 		}
 		nodeID := candidateNodeID(candidate)
-		identity, err := domain.NewResolvedArtifactIdentity(reference.Source(), candidate.project, candidate.version, variant)
+		identity, err := domain.NewResolvedArtifactIdentity(candidate.source, candidate.project, candidate.version, variant)
 		if err != nil {
 			return domain.LockedDependencyGraph{}, err
 		}
@@ -406,23 +812,8 @@ func distributionVariant(filename string) (string, bool) {
 	}
 }
 
-func parseDistributionURL(rawURL, filename string, allowHashFragment bool) (*url.URL, error) {
-	parsed, err := url.Parse(rawURL)
-	if err != nil || parsed.Scheme != "https" || !strings.EqualFold(parsed.Host, "files.pythonhosted.org") || parsed.Port() != "" || parsed.User != nil || parsed.RawQuery != "" || parsed.Path == "" || path.Base(parsed.Path) != filename || filename == "." || filename == "/" {
-		return nil, errors.New("PyPI distribution URL is invalid")
-	}
-	if !allowHashFragment && parsed.Fragment != "" {
-		return nil, errors.New("pip distribution URL must not have a fragment")
-	}
-	return parsed, nil
-}
-
 func sameDistributionURL(simpleURL, reportURL string) bool {
 	simpleRaw, err := url.Parse(simpleURL)
-	if err != nil {
-		return false
-	}
-	simpleParsed, err := parseDistributionURL(simpleURL, path.Base(simpleRaw.Path), true)
 	if err != nil {
 		return false
 	}
@@ -430,11 +821,7 @@ func sameDistributionURL(simpleURL, reportURL string) bool {
 	if err != nil {
 		return false
 	}
-	reportParsed, err := parseDistributionURL(reportURL, path.Base(reportRaw.Path), false)
-	if err != nil {
-		return false
-	}
-	return simpleParsed.Scheme == reportParsed.Scheme && strings.EqualFold(simpleParsed.Host, reportParsed.Host) && simpleParsed.EscapedPath() == reportParsed.EscapedPath()
+	return simpleRaw.Scheme == "https" && reportRaw.Scheme == "https" && simpleRaw.User == nil && reportRaw.User == nil && simpleRaw.RawQuery == "" && reportRaw.RawQuery == "" && strings.EqualFold(simpleRaw.Host, reportRaw.Host) && simpleRaw.Path == reportRaw.Path
 }
 
 func validRequiresPython(value string) bool {
