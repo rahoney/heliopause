@@ -258,8 +258,15 @@ func ParsePyTorchSimpleProject(project string, body []byte, profile SourceProfil
 	for _, match := range matches {
 		href := html.UnescapeString(string(match[1]))
 		parsed, err := base.Parse(href)
-		if err != nil || parsed.Fragment == "" || !strings.HasPrefix(parsed.Fragment, "sha256=") {
+		if err != nil {
 			return SimpleProject{}, errors.New("invalid PyTorch Simple file hash is missing")
+		}
+		// A PyTorch page can list unrelated files without a wheel digest. They
+		// are intentionally excluded rather than trusted: CrossCheckReport
+		// still requires the pip-selected candidate to match exactly one
+		// retained SimpleFile with the same SHA-256.
+		if parsed.Fragment == "" || !strings.HasPrefix(parsed.Fragment, "sha256=") {
+			continue
 		}
 		filename := path.Base(parsed.Path)
 		digest := strings.TrimPrefix(parsed.Fragment, "sha256=")

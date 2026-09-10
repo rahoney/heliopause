@@ -132,6 +132,71 @@ func TestPyTorchSimpleProjectIgnoresOutOfProfileLinks(t *testing.T) {
 	}
 }
 
+func TestPyTorchSimpleProjectRequiresWheelHashForSelectedCandidate(t *testing.T) {
+	profile := mustPyTorchProfile(t, "cpu")
+	filename := "torch-2.9.1+cpu-cp314-cp314-manylinux_2_28_x86_64.whl"
+	selectedURL := "https://download-r2.pytorch.org/whl/cpu/" + strings.ReplaceAll(filename, "+", "%2B")
+	selectedDigest := strings.Repeat("a", 64)
+	candidate := Candidate{
+		project:  "torch",
+		source:   profile.Source(),
+		filename: filename,
+		url:      selectedURL,
+		sha256:   selectedDigest,
+		primary:  true,
+	}
+	parse := func(t *testing.T, body string) SimpleProject {
+		t.Helper()
+		page, err := ParsePyTorchSimpleProject("torch", []byte(body), profile)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return page
+	}
+
+	t.Run("unrelated hashless link is excluded", func(t *testing.T) {
+		body := `<a href="https://download-r2.pytorch.org/whl/cpu/torch-2.10.0.dev1%2Bcpu-cp310-cp310-manylinux_2_28_x86_64.whl">unrelated</a>` +
+			`<a href="` + selectedURL + `#sha256=` + selectedDigest + `">selected</a>`
+		page := parse(t, body)
+		if files := page.Files(); len(files) != 1 || files[0].URL() != selectedURL || files[0].SHA256() != selectedDigest {
+			t.Fatalf("retained PyTorch files = %#v", files)
+		}
+		if _, err := CrossCheckReport(InstallationReport{candidates: []Candidate{candidate}}, []SimpleProject{page}); err != nil {
+			t.Fatalf("CrossCheckReport() accepted hashed selected candidate incorrectly: %v", err)
+		}
+	})
+
+	t.Run("selected hashless link is rejected", func(t *testing.T) {
+		page := parse(t, `<a href="`+selectedURL+`">selected</a>`)
+		if _, err := CrossCheckReport(InstallationReport{candidates: []Candidate{candidate}}, []SimpleProject{page}); err == nil {
+			t.Fatal("CrossCheckReport accepted selected PyTorch link without a wheel hash")
+		}
+	})
+
+	t.Run("selected digest mismatch is rejected", func(t *testing.T) {
+		page := parse(t, `<a href="`+selectedURL+`#sha256=`+strings.Repeat("b", 64)+`">selected</a>`)
+		if _, err := CrossCheckReport(InstallationReport{candidates: []Candidate{candidate}}, []SimpleProject{page}); err == nil {
+			t.Fatal("CrossCheckReport accepted mismatched PyTorch wheel digest")
+		}
+	})
+
+	t.Run("duplicate selected links are rejected", func(t *testing.T) {
+		body := `<a href="` + selectedURL + `#sha256=` + selectedDigest + `">selected</a>` +
+			`<a href="` + selectedURL + `#sha256=` + selectedDigest + `">selected duplicate</a>`
+		if _, err := ParsePyTorchSimpleProject("torch", []byte(body), profile); err == nil {
+			t.Fatal("ParsePyTorchSimpleProject accepted duplicate selected links")
+		}
+	})
+
+	t.Run("metadata digest does not substitute for wheel digest", func(t *testing.T) {
+		body := `<a href="` + selectedURL + `" data-dist-info-metadata="sha256=` + selectedDigest + `" data-core-metadata="sha256=` + selectedDigest + `">selected</a>`
+		page := parse(t, body)
+		if _, err := CrossCheckReport(InstallationReport{candidates: []Candidate{candidate}}, []SimpleProject{page}); err == nil {
+			t.Fatal("CrossCheckReport accepted metadata digest in place of wheel digest")
+		}
+	})
+}
+
 func TestPyTorchWheelLocalVersionAndPathAreProfileBound(t *testing.T) {
 	profile := mustPyTorchProfile(t, "cpu")
 	if _, _, _, _, _, err := ParseWheelFilenameForSource("torch-2.0.0+cpu-cp314-cp314-linux_x86_64.whl", profile.Source()); err != nil {
