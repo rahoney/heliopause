@@ -2179,6 +2179,12 @@ production activation과 최종 배포를 수행한다.
 | 5 | M12-005 | cross-ecosystem qualification and feature freeze | NOT_STARTED |
 | 6 | M12-02 | final red-team/fix gate | RESERVED |
 
+Deferred planning note: M12-001은 기존 representative pinned CUDA qualification
+기준으로 닫고, broader first-release PyTorch/CUDA release support matrix 확정은
+M12-005 feature freeze에서 수행한다. canonical lock 등록만으로 release support를
+주장하지 않는다. 상세 계약은
+`16-m12-01-ecosystem-expansion-contract.md`를 따른다.
+
 ### M13 Production Release & Operations queue (M12 완료 후)
 
 | Order | ID | Scope | Status |

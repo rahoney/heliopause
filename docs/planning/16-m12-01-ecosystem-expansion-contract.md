@@ -111,6 +111,66 @@ helox pip install torch --source pytorch:cuXXX
 실제 허용 source profile 이름과 CUDA profile 목록은 코드에 흩어놓지 않고
 canonical source/runtime lock에서 관리한다.
 
+### PyTorch/CUDA release support matrix lifecycle
+
+M12-001의 CUDA qualification은 `cu126`을 현재 pinned representative CUDA
+full-E2E profile로 사용한다. `cu126` 성공은 M12-001을 닫는 데 필요한 첫 CUDA
+lifecycle path를 입증하지만, Heliopause 지원이 CUDA 12.6에 영구 고정된다는 뜻도,
+canonical lock에 등록된 모든 profile이 자동으로 release-supported라는 뜻도 아니다.
+M12-001의 acceptance는 기존과 같이 **최소 하나의 pinned CUDA full E2E**이며 모든
+CUDA profile의 full E2E로 확대하지 않는다.
+
+PyTorch source profile의 support state는 다음과 같이 구분한다.
+
+- `REGISTERED`: canonical source/runtime lock에 named profile, exact official
+  endpoint, source ID와 ownership metadata가 존재한다.
+- `QUALIFIED`: deterministic resolver/source/integrity/resource test와 해당
+  profile에 적용되는 bounded integration evidence가 존재한다.
+- `RELEASE_SUPPORTED`: profile/version/runtime 조합에 대한 명시적 release support
+  결정, explicit bounded resource policy와 필요한 qualification evidence가 모두
+  존재한다.
+
+`REGISTERED`만으로 profile을 `RELEASE_SUPPORTED`로 광고하거나 취급하지 않는다.
+support matrix의 identity unit은 다음 bounded compatibility tuple이다.
+
+```text
+PyTorch package/version
++ named official PyTorch source profile
++ Python interpreter/ABI/platform target
++ explicit resource policy
++ required qualification state
+```
+
+이 matrix는 프로젝트가 실제로 지원하기로 결정한 official PyTorch wheel/source
+profile을 나타낸다. 개발자 장비에 설치된 CUDA Toolkit version이나 `11.8~13.x` 같은
+포괄적인 Toolkit 범위를 support identity로 사용하지 않는다.
+
+새 CUDA profile은 official PyTorch가 게시한 source profile/endpoint를 deliberate
+review하고 canonical lock에 고정한 경우에만 등록·지원할 수 있다. 사용자 입력
+`cuXXX`에서 trusted index URL을 조합하거나 arbitrary index, mirror, direct URL로
+fallback하지 않는다. 기존 source boundary 금지 사항은 그대로 유지한다.
+
+모든 `RELEASE_SUPPORTED` GPU profile은 explicit bounded resource policy를 가져야
+한다. `PythonSourceProfiles`에 존재한다는 이유로 default PyPI conservative policy를
+조용히 상속해서는 안 된다. unknown, newly registered 또는 unbudgeted profile은
+resource decision과 qualification이 완료될 때까지 non-release-supported이며
+fail-closed 상태다.
+
+향후 GPU profile이 `RELEASE_SUPPORTED`가 되려면 최소한 다음을 갖춘다.
+
+- exact official source endpoint/profile identity
+- supported PyTorch package/version combination
+- ownership 및 source-confusion 방지 규칙
+- explicit bounded artifact/graph/disk/runtime resource policy
+- deterministic resolver/Simple/hash/source test
+- selected-candidate integrity fail-closed test
+- 해당 profile에 적용되는 integration qualification
+- default PyPI limit 비확대
+- arbitrary URL/source fallback 부재
+
+모든 PR에서 multi-GiB full E2E를 실행할 필요는 없다. M12-001의 최소 하나의 real
+pinned CUDA full E2E 요구사항은 그대로 유지한다.
+
 일반 PyPI는 기존처럼:
 
 ```bash
@@ -856,12 +916,27 @@ CLI exit/result contract
 
 그리고 기존 M7/M8/M9/M11 hostile regression을 다시 실행한다.
 
+## PyTorch/CUDA support matrix freeze
+
+M12-005 feature freeze 전에 first-release PyTorch/CUDA `RELEASE_SUPPORTED` matrix를
+확정한다. registered이지만 unqualified인 profile은 release-supported로 표시하지
+않고, 모든 release-supported GPU profile은 explicit resource bound와 필요한
+deterministic qualification evidence를 가져야 한다. support claim 및 문서와
+canonical runtime/source lock의 identity가 일치해야 한다.
+
+feature freeze 이후 새 CUDA profile 추가는 upstream이 새 CUDA/PyTorch version을
+게시했다는 사실만으로 암묵적으로 발생하지 않는다. official endpoint review,
+resource decision, qualification과 release support 결정을 포함하는 deliberate
+post-freeze 변경으로 취급한다.
+
 ## Feature freeze condition
 
 다음이 모두 만족되면 M12 기능 개발을 종료한다.
 
 - [ ] PyTorch official source supported without arbitrary index fallback
 - [ ] PyTorch canonical source-ownership table prevents cross-index dependency confusion
+- [ ] first-release PyTorch/CUDA release support matrix finalized with explicit bounds and qualification evidence
+- [ ] registered-but-unqualified PyTorch profiles are not represented as release-supported
 - [ ] Go proxy + SumDB exact graph qualification
 - [ ] `helox go build` uses only HAA-managed verified modules and passes build-time observation qualification
 - [ ] Cargo add/build and build-time observation qualification
