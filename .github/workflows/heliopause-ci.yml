@@ -357,8 +357,8 @@ jobs:
           HELOX_GVISOR_INTEGRATION=1 go test -timeout=5m ./internal/sandbox -run TestLinuxGVisorLifecycleIntegration
           HELOX_GITHUB_RELEASE_INTEGRATION=1 go test -timeout=5m ./internal/sandbox -run TestLinuxGitHubReleaseELFDynamicIntegration
           # The typed-helper ordinary-user path is exercised for both npm and pip.
-          # npm evaluates is-number@7.0.0 to MANUAL_REVIEW (exit 10), proving that
-          # an unpromoted package is not treated as a successful installation.
+          # npm installs is-number@7.0.0 with complete ALLOW inspection and atomic
+          # offline promotion (exit 0).
           # pip installs packaging@25.0 into an initialized Python 3.14 venv fixture,
           # proving complete ALLOW inspection and atomic offline promotion (exit 0).
           mkdir -p "$RUNNER_TEMP/pypi-target"
@@ -371,7 +371,10 @@ jobs:
           /usr/libexec/heliopause/helox pip install packaging@25.0 --target "$RUNNER_TEMP/pypi-target"
           pypi_status=$?
           set -e
-          test "$npm_status" = 10
+          test "$npm_status" = 0
+          test -f "$RUNNER_TEMP/npm-target/node_modules/is-number/package.json"
+          jq -e '.name == "is-number" and .version == "7.0.0"' \
+            "$RUNNER_TEMP/npm-target/node_modules/is-number/package.json" >/dev/null
           test "$pypi_status" = 0
           test -d "$RUNNER_TEMP/pypi-target/lib/python3.14/site-packages/packaging"
           go test -c -o "$RUNNER_TEMP/helox-sandbox-test" ./internal/sandbox
