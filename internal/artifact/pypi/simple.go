@@ -497,7 +497,7 @@ func unsupportedRequirementDiagnostic(parent, requirement string, cause error) e
 	return fmt.Errorf("reason=UNSUPPORTED_REQUIREMENT package=%s dependency=%s shape=%s detail=%s", parent, dependency, shape, detail)
 }
 
-func parseDeclaredDependencyForProfile(value string, profile SourceProfile, expectedPython string) (string, bool, error) {
+func parseDeclaredDependencyForProfile(value string, _ SourceProfile, expectedPython string) (string, bool, error) {
 	if !strings.Contains(value, ";") {
 		dependency, err := parseDeclaredDependency(value)
 		return dependency, true, err
@@ -519,9 +519,6 @@ func parseDeclaredDependencyForProfile(value string, profile SourceProfile, expe
 	}
 	if markerContainsInactiveExtraConjunction(marker) {
 		return "", false, nil
-	}
-	if !IsPyTorchSource(profile.source) {
-		return "", false, errors.New("unsupported dependency requirement marker")
 	}
 	dependency, err := parseDeclaredDependency(strings.TrimSpace(parts[0]))
 	if err != nil {

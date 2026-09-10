@@ -64,13 +64,60 @@ func TestSimpleAPIAndReportRejectIncompleteOrUnsafeMetadata(t *testing.T) {
 	for _, body := range []string{
 		strings.Replace(sampleReportJSON(), `"pip_version":"26.2.1"`, `"pip_version":"26.1"`, 1),
 		strings.Replace(sampleReportJSON(), `"is_direct":false`, `"is_direct":true`, 1),
-		strings.Replace(sampleReportJSON(), `"requires_dist":["child>=2"]`, `"requires_dist":["child; python_version < '3.14'"]`, 1),
+		strings.Replace(sampleReportJSON(), `"requires_dist":["child>=2"]`, `"requires_dist":["child; os_name == 'posix'"]`, 1),
 		strings.Replace(sampleReportJSON(), `"url":"https://files.pythonhosted.org/packages/primary-1.0-py3-none-any.whl"`, `"url":"https://files.pythonhosted.org/packages/primary-1.0-py3-none-any.whl?bad=1"`, 1),
 	} {
 		if _, err := ParseInstallationReport(reference, []byte(body), pipRuntimeVersionForTest, pythonRuntimeVersionForTest); err == nil {
 			t.Fatalf("ParseInstallationReport accepted %s", body)
 		}
 	}
+}
+
+func TestPublicPyPIEvaluatesSupportedDeterministicMarkers(t *testing.T) {
+	profile := PublicPyPIProfile()
+
+	t.Run("exact triton false marker omits dependency", func(t *testing.T) {
+		dep, active, err := parseDeclaredDependencyForProfile(`importlib-metadata; python_version < "3.10"`, profile, "3.14.7")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if active {
+			t.Fatalf("expected inactive dependency, got active=true (dep=%q)", dep)
+		}
+	})
+
+	t.Run("supported true marker retains dependency", func(t *testing.T) {
+		dep, active, err := parseDeclaredDependencyForProfile(`filelock; sys_platform == 'linux'`, profile, "3.14.7")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if !active || dep != "filelock" {
+			t.Fatalf("expected active filelock, got dep=%q active=%t", dep, active)
+		}
+
+		dep, active, err = parseDeclaredDependencyForProfile(`typing-extensions>=4.0.0; python_version >= '3.10'`, profile, "3.14.7")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if !active || dep != "typing-extensions" {
+			t.Fatalf("expected active typing-extensions, got dep=%q active=%t", dep, active)
+		}
+	})
+
+	t.Run("unsupported marker fails closed", func(t *testing.T) {
+		for _, invalid := range []string{
+			"pkg; os_name == 'posix'",
+			"pkg; python_version == 3.14",
+			"pkg; extra == 'foo' or extra == 'bar'",
+			"pkg; implementation_name == 'cpython'",
+			"pkg; sys_platform == 'linux'; extra == 'test'",
+		} {
+			_, _, err := parseDeclaredDependencyForProfile(invalid, profile, "3.14.7")
+			if err == nil {
+				t.Fatalf("parseDeclaredDependencyForProfile accepted unsupported marker: %q", invalid)
+			}
+		}
+	})
 }
 
 func TestSimpleProjectMetadataDiagnosticsAreBounded(t *testing.T) {

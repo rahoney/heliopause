@@ -70,6 +70,37 @@ func TestPyTorchHTMLIndexAndReportPreserveSourceIdentity(t *testing.T) {
 	}
 }
 
+func TestPyTorchMixedSourceTransitiveDependencyEvaluatesMarkers(t *testing.T) {
+	profile := mustPyTorchProfile(t, "cpu")
+	reference, err := ParseReferenceForSource("torch", profile.Source())
+	if err != nil {
+		t.Fatal(err)
+	}
+	reportJSON := `{"version":"1","pip_version":"26.2.1","environment":{"implementation_name":"cpython","implementation_version":"3.14.7","python_full_version":"3.14.7","platform_machine":"x86_64","sys_platform":"linux"},"install":[{"download_info":{"url":"https://download.pytorch.org/whl/cpu/torch/torch-2.0.0+cpu-cp314-cp314-linux_x86_64.whl","archive_info":{"hashes":{"sha256":"` + strings.Repeat("a", 64) + `"}}},"is_direct":false,"requested":true,"metadata":{"name":"torch","version":"2.0.0+cpu","requires_python":">=3.9","requires_dist":["triton==3.5.0"]}},{"download_info":{"url":"https://files.pythonhosted.org/packages/triton-3.5.0-cp314-cp314-manylinux_2_17_x86_64.whl","archive_info":{"hashes":{"sha256":"` + strings.Repeat("b", 64) + `"}}},"is_direct":false,"requested":false,"metadata":{"name":"triton","version":"3.5.0","requires_python":">=3.9","requires_dist":["importlib-metadata; python_version < \"3.10\"","filelock; sys_platform == 'linux'"]}},{"download_info":{"url":"https://files.pythonhosted.org/packages/filelock-3.13.1-py3-none-any.whl","archive_info":{"hashes":{"sha256":"` + strings.Repeat("c", 64) + `"}}},"is_direct":false,"requested":false,"metadata":{"name":"filelock","version":"3.13.1","requires_python":">=3.8","requires_dist":[]}}]}`
+	report, err := ParseInstallationReportForProfile(reference, []byte(reportJSON), "26.2.1", "3.14.7", profile)
+	if err != nil {
+		t.Fatalf("ParseInstallationReportForProfile failed for mixed-source report: %v", err)
+	}
+	var tritonCandidate Candidate
+	found := false
+	for _, candidate := range report.Candidates() {
+		if candidate.Project() == "triton" {
+			tritonCandidate = candidate
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Fatal("triton candidate not found in report")
+	}
+	if deps := tritonCandidate.Dependencies(); len(deps) != 1 || deps[0] != "filelock" {
+		t.Fatalf("triton candidate dependencies = %#v, expected only [filelock]", deps)
+	}
+	if reqs := tritonCandidate.DependencyRequirements(); len(reqs) != 1 || reqs[0] != "filelock" {
+		t.Fatalf("triton candidate requirements = %#v, expected only [filelock]", reqs)
+	}
+}
+
 func TestPyTorchReportEvaluatesPinnedLinuxDependencyMarkers(t *testing.T) {
 	profile := mustPyTorchProfile(t, "cpu")
 	reference, err := ParseReferenceForSource("torch", profile.Source())
