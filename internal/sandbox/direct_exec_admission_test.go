@@ -210,14 +210,9 @@ func buildSentryExecPayload(containerID, mode, nonce string) []byte {
 
 func findObserverBinary(t *testing.T) string {
 	t.Helper()
-	candidates := []string{
-		"/usr/libexec/heliopause/haa_gvisor_observer",
-		"/tmp/haa-pr28-observer.z4L4Z4/gvisor/bazel-bin/tools/haa_gvisor_observer/haa_gvisor_observer",
-	}
-	for _, c := range candidates {
-		if st, err := os.Stat(c); err == nil && st.Mode().IsRegular() && st.Mode()&0o111 != 0 {
-			return c
-		}
+	candidate := "/usr/libexec/heliopause/haa_gvisor_observer"
+	if st, err := os.Stat(candidate); err == nil && st.Mode().IsRegular() && st.Mode()&0o111 != 0 {
+		return candidate
 	}
 	t.Skip("observer binary not found")
 	return ""

@@ -220,7 +220,10 @@ Name: sentry/task_exit, optional fields: []
 	}
 
 	// Also verify against the real candidate runsc binary if available on the system
-	candidateRunsc := "/tmp/m12-runtime-root.F9NzjR/gvisor/bazel-bin/runsc/runsc_/runsc"
+	candidateRunsc := os.Getenv("HELOX_RUNSC_BINARY")
+	if candidateRunsc == "" {
+		candidateRunsc = runtimeidentity.LocalRunscPath
+	}
 	if _, err := os.Stat(candidateRunsc); err == nil {
 		out, err := exec.CommandContext(context.Background(), candidateRunsc, "trace", "metadata").Output()
 		if err != nil {
