@@ -58,7 +58,7 @@ func NewPythonArtifactIntroducer(intakeRoot string, runner CommandRunner) (*Pyth
 	if !filepath.IsAbs(intakeRoot) || runner == nil {
 		return nil, errors.New("python wheel introducer is not configured")
 	}
-	return &PythonArtifactIntroducer{intakeRoot: filepath.Clean(intakeRoot), runner: runner}, nil
+	return &PythonArtifactIntroducer{intakeRoot: filepath.Clean(intakeRoot), runner: admissionAwareRunner(runner)}, nil
 }
 
 func (i *PythonArtifactIntroducer) IntroduceWheel(ctx context.Context, containerID string, artifact domain.AcquiredArtifact) error {
@@ -166,7 +166,7 @@ func NewPythonDynamicBackend(runner CommandRunner, introducer *PythonArtifactInt
 	if _, ok := runner.(discardCommandRunner); !ok {
 		return nil, errors.New("python dynamic runner must discard command output")
 	}
-	return &PythonDynamicBackend{runner: runner, introducer: introducer, observer: observer, probe: probe, newSessionID: domain.NewSandboxSessionID, timeout: pythonDynamicTimeout, cleanupWait: cleanupTimeout}, nil
+	return &PythonDynamicBackend{runner: admissionAwareRunner(runner), introducer: introducer, observer: observer, probe: probe, newSessionID: domain.NewSandboxSessionID, timeout: pythonDynamicTimeout, cleanupWait: cleanupTimeout}, nil
 }
 
 func (b *PythonDynamicBackend) InspectWheel(ctx context.Context, artifact domain.AcquiredArtifact, imports []string) (domain.SandboxResult, error) {

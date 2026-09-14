@@ -52,6 +52,15 @@ func TestBoundaryExecUsesFixedRootBootstrapBeforeDemotingTarget(t *testing.T) {
 			t.Fatalf("boundary helper does not self-exec canonical mode %q: %q", required, boundaryHelper)
 		}
 	}
+	for _, required := range []string{
+		`admission "${1-}"`,
+		`token="$1"; shift; exec ` + boundaryHelperPath,
+		`--launch|--handoff-python|--handoff-elf) shift; admission "${1-}"; shift; demote "$@"`,
+	} {
+		if !strings.Contains(boundaryHelper, required) {
+			t.Fatalf("boundary helper does not validate then strip admission capability %q: %q", required, boundaryHelper)
+		}
+	}
 	if strings.Contains(boundaryReadinessScript, "NoNewPrivs") {
 		t.Fatalf("readiness relies on unsupported /proc NoNewPrivs: %q", boundaryReadinessScript)
 	}

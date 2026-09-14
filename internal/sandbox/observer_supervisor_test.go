@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -80,6 +81,39 @@ func TestObserverSupervisorHelperDeathFaultsObservation(t *testing.T) {
 	}
 }
 
+func TestObserverSupervisorFailStopUsesOwnedProcessAndPoisonsAllSessions(t *testing.T) {
+	paths := supervisorPaths(t)
+	launcher := &fakeObserverLauncher{}
+	supervisor, err := newObserverSupervisor(context.Background(), launcher.StartObserver, paths.remote, paths.output, paths.lock)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer supervisor.Close()
+	first := &observerSecuritySession{containerID: "0123456789abcdef", generation: strings.Repeat("a", 64)}
+	second := &observerSecuritySession{containerID: "fedcba9876543210", generation: strings.Repeat("b", 64)}
+	if !activateObserverSession(first) || !activateObserverSession(second) {
+		t.Fatal("activate test security sessions")
+	}
+	supervisor.observer.mu.Lock()
+	supervisor.observer.sessions[first.containerID] = first
+	supervisor.observer.sessions[second.containerID] = second
+	supervisor.observer.mu.Unlock()
+	if err := supervisor.failStopHelper(context.Background()); err != nil {
+		t.Fatalf("failStopHelper() error = %v", err)
+	}
+	select {
+	case <-launcher.process.Done():
+	default:
+		t.Fatal("fail-stop returned before exact helper termination")
+	}
+	if activeObserverSession(first.containerID) != nil || activeObserverSession(second.containerID) != nil {
+		t.Fatal("fail-stop retained observer security session")
+	}
+	if _, err := supervisor.Observer().Start(context.Background(), "0011223344556677"); err == nil {
+		t.Fatal("fail-stopped observer accepted a new stream")
+	}
+}
+
 func TestObserverSupervisorStartupFailureReleasesKnownOwnership(t *testing.T) {
 	paths := supervisorPaths(t)
 	_, err := newObserverSupervisor(context.Background(), failingObserverLauncher{}.StartObserver, paths.remote, paths.output, paths.lock)
@@ -122,7 +156,7 @@ type supervisorTestPaths struct{ remote, output, lock string }
 
 func supervisorPaths(t *testing.T) supervisorTestPaths {
 	t.Helper()
-	directory, err := os.MkdirTemp(".", "observer-supervisor-")
+	directory, err := os.MkdirTemp("/run/user/1000", "observer-supervisor-")
 	if err != nil {
 		t.Fatal(err)
 	}

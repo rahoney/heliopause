@@ -56,7 +56,7 @@ func NewPythonSdistBuilder(runner CommandRunner, introducer *PythonArtifactIntro
 	if _, ok := runner.(discardCommandRunner); !ok {
 		return nil, errors.New("python sdist runner must discard command output")
 	}
-	return &PythonSdistBuilder{runner: runner, introducer: introducer, observer: observer, probe: probe, newSessionID: domain.NewSandboxSessionID, timeout: pythonDynamicTimeout, cleanupWait: cleanupTimeout}, nil
+	return &PythonSdistBuilder{runner: admissionAwareRunner(runner), introducer: introducer, observer: observer, probe: probe, newSessionID: domain.NewSandboxSessionID, timeout: pythonDynamicTimeout, cleanupWait: cleanupTimeout}, nil
 }
 
 // Build creates exactly one derived wheel in a fresh gVisor session. Any

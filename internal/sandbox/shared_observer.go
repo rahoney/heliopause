@@ -23,6 +23,8 @@ type SharedObserver struct {
 	endpointID os.FileInfo
 	mu         sync.Mutex
 	streams    map[string]*sharedTraceReader
+	sessions   map[string]*observerSecuritySession
+	failStop   func(context.Context) error
 	diagnostic io.Writer
 	sequence   uint64
 	fault      error
@@ -104,6 +106,11 @@ func normalizedObserverMountpoint(path string) bool {
 }
 
 const ObserverControlEndpoint = "/run/heliopause-observer/haa-control.sock"
+
+// observerControlEndpoint is immutable in production. Tests substitute a
+// private Unixgram endpoint to exercise the request/ack protocol without
+// exposing any test seam outside this package.
+var observerControlEndpoint = ObserverControlEndpoint
 
 type helperRecord struct {
 	ContainerID          string  `json:"container_id"`
@@ -226,7 +233,7 @@ func newSharedObserver(endpoint string, removeStale bool) (*SharedObserver, erro
 		_ = listener.Close()
 		return nil, errors.New("capture observer output endpoint identity")
 	}
-	observer := &SharedObserver{listener: listener, endpoint: endpoint, endpointID: endpointID, streams: make(map[string]*sharedTraceReader), diagnostic: os.Stderr}
+	observer := &SharedObserver{listener: listener, endpoint: endpoint, endpointID: endpointID, streams: make(map[string]*sharedTraceReader), sessions: make(map[string]*observerSecuritySession), diagnostic: os.Stderr}
 	go observer.receive()
 	return observer, nil
 }
@@ -245,13 +252,45 @@ func (o *SharedObserver) Fail(err error) {
 	o.fail(err)
 }
 
+// setFailStop binds the observer to its owning supervisor's exact helper
+// process handle. It is configured only during trusted composition.
+func (o *SharedObserver) setFailStop(failStop func(context.Context) error) {
+	if o == nil || failStop == nil {
+		return
+	}
+	o.mu.Lock()
+	o.failStop = failStop
+	o.mu.Unlock()
+}
+
+func (o *SharedObserver) failStopHelper(ctx context.Context) error {
+	if o == nil || ctx == nil {
+		return observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	o.mu.Lock()
+	stop := o.failStop
+	o.mu.Unlock()
+	if stop == nil {
+		return observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	return stop(ctx)
+}
+
 // Close stops the trusted listener and removes its local endpoint. It is safe
 // to call more than once.
 func (o *SharedObserver) Close() error {
 	if o == nil || o.listener == nil {
 		return nil
 	}
-	o.closeOnce.Do(func() { o.closeErr = o.listener.Close() })
+	o.closeOnce.Do(func() {
+		o.mu.Lock()
+		for _, session := range o.sessions {
+			forgetObserverSession(session)
+		}
+		o.sessions = make(map[string]*observerSecuritySession)
+		o.mu.Unlock()
+		o.closeErr = o.listener.Close()
+	})
 	return o.closeErr
 }
 
@@ -276,14 +315,23 @@ func (o *SharedObserver) StartProfile(ctx context.Context, containerID, profile 
 	if ctx == nil || profile == "" {
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
 	}
-	if err := registerObserverProfile(ctx, containerID, profile); err != nil {
-		return nil, err
-	}
-	reader, err := o.Start(ctx, containerID)
+	session, err := registerObserverProfile(ctx, containerID, profile)
 	if err != nil {
 		return nil, err
 	}
+	session.mu.Lock()
+	session.failStop = o.failStopHelper
+	session.mu.Unlock()
+	reader, err := o.Start(ctx, containerID)
+	if err != nil {
+		_ = invalidateObserverSession(ctx, session)
+		return nil, err
+	}
 	shared := reader.(*sharedTraceReader)
+	shared.session = session
+	o.mu.Lock()
+	o.sessions[containerID] = session
+	o.mu.Unlock()
 	shared.profile = profile
 	budget := traceBudgetForProfile(profile)
 	if budget != defaultTraceBudget {
@@ -291,31 +339,6 @@ func (o *SharedObserver) StartProfile(ctx context.Context, containerID, profile 
 		shared.budget = budget
 	}
 	return shared, nil
-}
-
-func registerObserverProfile(ctx context.Context, containerID, profile string) error {
-	topology, ok := observerExpectedTopology(profile)
-	encodedTopology, encoded := encodeExpectedTopology(topology)
-	if !containerIDPattern.MatchString(containerID) || !validObserverProfile(profile) || !ok || !encoded {
-		return observerFault{reason: "LIFECYCLE_ERROR"}
-	}
-	body, err := json.Marshal(struct {
-		ContainerID string `json:"container_id"`
-		Profile     string `json:"profile"`
-		Topology    string `json:"expected_topology"`
-	}{containerID, profile, encodedTopology})
-	if err != nil {
-		return observerFault{reason: "LIFECYCLE_ERROR"}
-	}
-	connection, err := net.DialUnix("unixgram", nil, &net.UnixAddr{Name: ObserverControlEndpoint, Net: "unixgram"})
-	if err != nil {
-		return observerFault{reason: "HELPER_UNAVAILABLE"}
-	}
-	defer connection.Close()
-	if _, err := connection.Write(body); err != nil {
-		return observerFault{reason: "LIFECYCLE_ERROR"}
-	}
-	return nil
 }
 
 func validObserverProfile(profile string) bool {
@@ -344,6 +367,7 @@ func (o *SharedObserver) receive() {
 		}
 		if record.Kind == "stream-fault" {
 			delete(o.streams, record.ContainerID)
+			delete(o.sessions, record.ContainerID)
 			o.sequence++
 			o.writeAttributionDiagnostic(sharedAttributionDiagnostic{o.sequence, reader.profile, reader.attributionCounts})
 			reason := record.Reason
@@ -354,6 +378,7 @@ func (o *SharedObserver) receive() {
 				o.fault = observerFault{reason: reason}
 			}
 			close(reader.done)
+			forgetObserverSession(reader.session)
 			for _, remaining := range o.streams {
 				select {
 				case <-remaining.done:
@@ -366,9 +391,11 @@ func (o *SharedObserver) receive() {
 		}
 		if record.Kind == "stream-end" {
 			delete(o.streams, record.ContainerID)
+			delete(o.sessions, record.ContainerID)
 			o.sequence++
 			o.writeAttributionDiagnostic(sharedAttributionDiagnostic{o.sequence, reader.profile, reader.attributionCounts})
 			close(reader.done)
+			forgetObserverSession(reader.session)
 			o.mu.Unlock()
 			continue
 		}
@@ -430,7 +457,12 @@ func (o *SharedObserver) fail(err error) {
 		default:
 			close(reader.done)
 		}
+		forgetObserverSession(reader.session)
 	}
+	for _, session := range o.sessions {
+		forgetObserverSession(session)
+	}
+	o.sessions = make(map[string]*observerSecuritySession)
 }
 
 type sharedTraceReader struct {
@@ -441,6 +473,7 @@ type sharedTraceReader struct {
 	budget            traceBudget
 	profile           string
 	attributionCounts map[string]uint64
+	session           *observerSecuritySession
 }
 
 // AwaitMountAnchors is intentionally available only on the trusted shared

@@ -30,6 +30,7 @@ type ObserverSupervisor struct {
 
 	mu        sync.Mutex
 	closing   bool
+	failStop  bool
 	closeOnce sync.Once
 	closeErr  error
 }
@@ -70,6 +71,7 @@ func newObserverSupervisor(ctx context.Context, launcher ObserverLauncher, remot
 		return nil, err
 	}
 	supervisor.observer = observer
+	observer.setFailStop(supervisor.failStopHelper)
 	helper, err := launcher(ctx, remotePath, outputPath)
 	if err != nil {
 		return nil, errors.Join(errors.New("start observer supervisor helper"), err, supervisor.Close())
@@ -107,6 +109,40 @@ func (s *ObserverSupervisor) watchHelper() {
 	}
 }
 
+// failStopHelper terminates only the exact ObserverProcess instance started
+// and retained by this supervisor. A closed Done channel is the required
+// confirmation that its in-memory registrations and admissions are gone.
+func (s *ObserverSupervisor) failStopHelper(ctx context.Context) error {
+	if s == nil || ctx == nil || s.helper == nil || s.observer == nil {
+		return errors.New("observer helper fail-stop is unavailable")
+	}
+	s.mu.Lock()
+	alreadyStopped := s.failStop
+	s.failStop = true
+	s.closing = true
+	helper := s.helper
+	s.mu.Unlock()
+	if !alreadyStopped {
+		s.observer.Fail(observerFault{reason: "HELPER_FAIL_STOP"})
+	}
+	if !alreadyStopped {
+		if err := helper.Stop(ctx); err != nil {
+			select {
+			case <-helper.Done():
+				return nil
+			default:
+				return errors.New("observer helper fail-stop was not confirmed")
+			}
+		}
+	}
+	select {
+	case <-helper.Done():
+		return nil
+	default:
+		return errors.New("observer helper fail-stop was not confirmed")
+	}
+}
+
 // Close terminates the helper and removes only socket and lock identities this
 // supervisor created. If identity or cleanup is uncertain, the lock is kept so
 // the next process fails closed instead of assuming ownership.
@@ -123,7 +159,7 @@ func (s *ObserverSupervisor) close() error {
 	s.closing = true
 	s.mu.Unlock()
 	var cleanupErr error
-	if s.helper != nil {
+	if s.helper != nil && !s.failStop {
 		stopContext, cancel := context.WithTimeout(context.Background(), supervisorStopTimeout)
 		if err := s.helper.Stop(stopContext); err != nil {
 			cleanupErr = errors.Join(cleanupErr, errors.New("observer helper cleanup failed"))

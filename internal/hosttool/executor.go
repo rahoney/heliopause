@@ -139,6 +139,11 @@ type Executor struct {
 	clientHome    string
 }
 
+// RequiresDirectExecAdmission marks this production Host executor as the only
+// command runner that may create a direct Docker exec root in the observer.
+// Sandbox wraps it with the bounded observer-admission gate.
+func (*Executor) RequiresDirectExecAdmission() {}
+
 // NewSystem validates the supported Host installation and the daemon's actual
 // runsc-trace registration before returning an executor.
 func NewSystem(ctx context.Context) (*Executor, error) {

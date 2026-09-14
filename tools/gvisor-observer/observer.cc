@@ -17,6 +17,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cstddef>
+#include <initializer_list>
 #include <string>
 #include <map>
 #include <set>
@@ -45,6 +46,10 @@ constexpr size_t kMaxNormalizedRecordsPerConnection = 10000;
 constexpr size_t kMaxPyTorchCPURecordsPerConnection = 500000;
 constexpr size_t kMaxPyTorchCU126RecordsPerConnection = 100000;
 constexpr size_t kMaxTrackedProcessGroups = 64;
+constexpr size_t kMaxPendingDirectExecAdmissions = 64;
+constexpr size_t kDirectExecAdmissionNonceChars = 64;
+constexpr size_t kControlSessionGenerationChars = 64;
+constexpr size_t kMaxControlRecordBytes = 4096;
 constexpr size_t kMaxTrackedFileDescriptorsPerGroup = 4096;
 constexpr uint64_t kMaxNormalizedObservationCount = 10000;
 constexpr uint64_t kSyscallExecve = 59;
@@ -225,6 +230,7 @@ enum class FaultSite {
   kDroppedCount,
   kContainerStart,
   kSentryClone,
+  kSentryExitNotifyParent,
   kSentryExec,
   kExecSyscall,
   kOpen,
@@ -253,6 +259,7 @@ const char* FaultSiteName(FaultSite site) {
     case FaultSite::kDroppedCount: return "DROPPED_COUNT";
     case FaultSite::kContainerStart: return "CONTAINER_START";
     case FaultSite::kSentryClone: return "SENTRY_CLONE";
+    case FaultSite::kSentryExitNotifyParent: return "SENTRY_EXIT_NOTIFY_PARENT";
     case FaultSite::kSentryExec: return "SENTRY_EXEC";
     case FaultSite::kExecSyscall: return "EXEC_SYSCALL";
     case FaultSite::kOpen: return "OPEN";
@@ -338,6 +345,7 @@ struct ProcessState {
     // Sentry clone provenance establishes this bounded parent relation. It is
     // used only by the LOCK_GENERATION transition predicate.
     int32_t clone_creator_group_id = 0;
+    int64_t clone_creator_group_start_time_ns = 0;
   };
   bool bootstrap_active = true;
   bool bootstrap_group_set = false;
@@ -407,6 +415,25 @@ struct TopologyState {
 struct ProfileRegistration {
   std::string profile;
   std::vector<ExpectedMount> expected;
+  std::string session_generation;
+	int control_fd = -1;
+  enum class AdmissionState { kPending, kConsumed };
+  struct PendingAdmission {
+		std::string session_generation;
+    std::string mode;
+    std::string nonce;
+    AdmissionState state = AdmissionState::kPending;
+  };
+  std::vector<PendingAdmission> pending_admissions;
+};
+
+struct ControlPeer {
+  int fd = -1;
+  bool request_seen = false;
+  bool registered = false;
+  bool terminal = false;
+  std::string container_id;
+  std::string session_generation;
 };
 
 enum class BoundaryMode { kNone, kLaunch, kHandoff, kPythonHandoff, kELFHandoff };
@@ -422,18 +449,17 @@ bool SameGroup(const ProcessState::GroupState& group, const gvisor::common::Cont
   return group.start_time_ns == context.thread_group_start_time_ns();
 }
 
+bool HasExactCloneCreator(const ProcessState::GroupState& group, const ProcessState& state) {
+  if (group.clone_creator_group_id <= 0 || group.clone_creator_group_start_time_ns <= 0) return false;
+  const auto creator = state.groups.find(group.clone_creator_group_id);
+  return creator != state.groups.end() &&
+      creator->second.start_time_ns == group.clone_creator_group_start_time_ns;
+}
+
 BoundaryMode BoundaryInvocation(const gvisor::sentry::ExecveInfo& message) {
   if (message.execfn() != kBoundaryHelperPath && message.binary_path() != kBoundaryHelperPath) return BoundaryMode::kNone;
-  int mode_index = -1;
-  const int bounded_argc = message.argv_size() < 8 ? message.argv_size() : 8;
-  for (int index = 0; index + 1 < bounded_argc; ++index) {
-    if (message.argv(index) == kBoundaryHelperPath) {
-      mode_index = index + 1;
-      break;
-    }
-  }
-  if (mode_index < 0) return BoundaryMode::kNone;
-  const std::string& mode = message.argv(mode_index);
+  if (message.argv_size() < 2 || message.argv(0) != kBoundaryHelperPath) return BoundaryMode::kNone;
+  const std::string& mode = message.argv(1);
   if (mode == kLaunchMode) return BoundaryMode::kLaunch;
   if (mode == kPythonHandoffMode) return BoundaryMode::kPythonHandoff;
   if (mode == kELFHandoffMode) return BoundaryMode::kELFHandoff;
@@ -441,6 +467,55 @@ BoundaryMode BoundaryInvocation(const gvisor::sentry::ExecveInfo& message) {
   // the only trust-removal marker, while the script remains opaque.
   if (mode == "-c") return BoundaryMode::kHandoff;
   return BoundaryMode::kNone;
+}
+
+const char* BoundaryModeName(BoundaryMode mode) {
+  switch (mode) {
+    case BoundaryMode::kLaunch: return kLaunchMode;
+    case BoundaryMode::kPythonHandoff: return kPythonHandoffMode;
+    case BoundaryMode::kELFHandoff: return kELFHandoffMode;
+    default: return nullptr;
+  }
+}
+
+bool ValidAdmissionNonce(const std::string& nonce) {
+  if (nonce.size() != kDirectExecAdmissionNonceChars) return false;
+  for (const char character : nonce) {
+    if ((character < '0' || character > '9') && (character < 'a' || character > 'f')) return false;
+  }
+  return true;
+}
+
+bool ValidSessionGeneration(const std::string& generation) {
+  if (generation.size() != kControlSessionGenerationChars) return false;
+  for (const char character : generation) {
+    if ((character < '0' || character > '9') && (character < 'a' || character > 'f')) return false;
+  }
+  return true;
+}
+
+bool ExtractBoundaryAdmissionNonce(const gvisor::sentry::ExecveInfo& message,
+                                  BoundaryMode mode, std::string* nonce) {
+  const char* expected_mode = BoundaryModeName(mode);
+  if (expected_mode == nullptr || nonce == nullptr || message.argv_size() < 3 ||
+      message.argv(0) != kBoundaryHelperPath || message.argv(1) != expected_mode) return false;
+  *nonce = message.argv(2);
+  return ValidAdmissionNonce(*nonce);
+}
+
+bool ConsumeDirectExecAdmission(ProfileRegistration* registration, BoundaryMode mode,
+                                const std::string& nonce) {
+  const char* expected_mode = BoundaryModeName(mode);
+  if (registration == nullptr || expected_mode == nullptr || !ValidAdmissionNonce(nonce)) return false;
+  for (auto pending = registration->pending_admissions.begin(); pending != registration->pending_admissions.end(); ++pending) {
+    if (pending->session_generation == registration->session_generation &&
+        pending->mode == expected_mode && pending->nonce == nonce &&
+        pending->state == ProfileRegistration::AdmissionState::kPending) {
+      pending->state = ProfileRegistration::AdmissionState::kConsumed;
+      return true;
+    }
+  }
+  return false;
 }
 
 // These are the exact pinned npm launcher and Node interpreter argv tuples
@@ -634,9 +709,9 @@ bool IsExactNpmVersionNodeInterpreter(const gvisor::sentry::ExecveInfo& message)
 
 bool IsExactResolverNpmVersionBoundary(const gvisor::sentry::ExecveInfo& message) {
   return message.binary_path() == kBoundaryHelperPath && message.execfn() == kBoundaryHelperPath &&
-      message.argv_size() == 4 && message.argv(0) == kBoundaryHelperPath &&
-      message.argv(1) == kLaunchMode && message.argv(2) == "npm" &&
-      message.argv(3) == "--version";
+      message.argv_size() == 5 && message.argv(0) == kBoundaryHelperPath &&
+      message.argv(1) == kLaunchMode && ValidAdmissionNonce(message.argv(2)) &&
+      message.argv(3) == "npm" && message.argv(4) == "--version";
 }
 
 bool IsExactNpmVersionLauncher(const gvisor::sentry::ExecveInfo& message) {
@@ -650,9 +725,10 @@ bool IsExactNpmVersionLauncher(const gvisor::sentry::ExecveInfo& message) {
 // source, not artifact input; any resolver-side drift fails closed here.
 bool IsExactResolverLockGenerationBoundary(const gvisor::sentry::ExecveInfo& message) {
   return message.binary_path() == kBoundaryHelperPath && message.execfn() == kBoundaryHelperPath &&
-      message.argv_size() == 5 && message.argv(0) == kBoundaryHelperPath &&
-      message.argv(1) == kLaunchMode && message.argv(2) == "/bin/sh" &&
-      message.argv(3) == "-ceu" && message.argv(4) == kLockGenerationCommand;
+      message.argv_size() == 6 && message.argv(0) == kBoundaryHelperPath &&
+      message.argv(1) == kLaunchMode && ValidAdmissionNonce(message.argv(2)) &&
+      message.argv(3) == "/bin/sh" && message.argv(4) == "-ceu" &&
+      message.argv(5) == kLockGenerationCommand;
 }
 
 bool IsExactLockGenerationArguments(const gvisor::sentry::ExecveInfo& message,
@@ -684,13 +760,14 @@ bool IsExactLockGenerationNpmNodeInterpreter(const gvisor::sentry::ExecveInfo& m
 
 bool MayArmExactLockGenerationNpmNodeTransition(
     const gvisor::sentry::ExecveInfo& message, const char* profile,
-    const ProcessState::GroupState& group) {
+    const ProcessState::GroupState& group, const ProcessState& state) {
   const auto& context = message.context_data();
   return profile != nullptr && strcmp(profile, kProfileNPM) == 0 &&
       group.command_phase == CommandPhase::kLockGeneration &&
       group.role == ProcessState::Role::kControl &&
       group.provenance == ProcessState::Provenance::kCloneChild &&
       group.clone_creator_group_id > 0 &&
+      HasExactCloneCreator(group, state) &&
       context.parent_thread_group_id() == group.clone_creator_group_id &&
       !group.root_eligible && group.root_consumed &&
       !group.trusted_control_network_active && !group.demotion_pending &&
@@ -700,7 +777,8 @@ bool MayArmExactLockGenerationNpmNodeTransition(
 
 bool IsExactResolverLockGenerationNpmNodeTransition(
     const gvisor::sentry::ExecveInfo& message, const char* profile, int32_t group_id,
-    const ProcessState::GroupState& group, const ProcessState::ExpectedGroup& expected) {
+    const ProcessState::GroupState& group, const ProcessState::ExpectedGroup& expected,
+    const ProcessState& state) {
   const auto& context = message.context_data();
   return profile != nullptr && strcmp(profile, kProfileNPM) == 0 &&
       context.thread_group_id() == group_id &&
@@ -708,6 +786,7 @@ bool IsExactResolverLockGenerationNpmNodeTransition(
       group.role == ProcessState::Role::kControl &&
       group.provenance == ProcessState::Provenance::kCloneChild &&
       group.clone_creator_group_id > 0 &&
+      HasExactCloneCreator(group, state) &&
       context.parent_thread_group_id() == group.clone_creator_group_id &&
       !group.root_eligible && group.root_consumed &&
       !group.trusted_control_network_active && !group.demotion_pending &&
@@ -1438,7 +1517,9 @@ bool IsPinnedNpmRuntimeRead(const gvisor::common::ContextData& context,
       group->provenance == ProcessState::Provenance::kCloneChild &&
       !group->root_eligible && group->root_consumed &&
       !group->trusted_control_network_active &&
+      HasExactCloneCreator(*group, state) &&
       direct_parent != state.groups.end() &&
+      direct_parent->second.start_time_ns == group->clone_creator_group_start_time_ns &&
       direct_parent->second.role == ProcessState::Role::kControl &&
       direct_parent->second.provenance == ProcessState::Provenance::kDirectExecRoot &&
       !direct_parent->second.root_eligible && direct_parent->second.root_consumed;
@@ -1592,8 +1673,10 @@ bool IsExactDockerEtcHostsLockGenerationRead(
       !group->trusted_control_network_active && !group->demotion_pending &&
       !group->launch_target_pending && !group->handoff_target_pending &&
       group->clone_creator_group_id > 0 &&
+      HasExactCloneCreator(*group, state) &&
       context.parent_thread_group_id() == group->clone_creator_group_id &&
       creator != state.groups.end() &&
+      creator->second.start_time_ns == group->clone_creator_group_start_time_ns &&
       creator->second.role == ProcessState::Role::kControl;
 }
 
@@ -1702,28 +1785,150 @@ bool ParseExpectedTopology(const std::string& encoded, std::vector<ExpectedMount
   return !expected->empty();
 }
 
-bool ParseControlRecord(const char* payload, size_t size, std::map<std::string, ProfileRegistration>* profiles) {
-  std::string body(payload, size);
-  const std::string id_key = "\"container_id\":\"";
-  const std::string profile_key = "\"profile\":\"";
-  const std::string topology_key = "\"expected_topology\":\"";
-  const size_t id_start = body.find(id_key);
-  const size_t profile_start = body.find(profile_key);
-  const size_t topology_start = body.find(topology_key);
-  if (id_start == std::string::npos || profile_start == std::string::npos || topology_start == std::string::npos) return false;
-  const size_t id_end = body.find('"', id_start + id_key.size());
-  const size_t profile_end = body.find('"', profile_start + profile_key.size());
-  const size_t topology_end = body.find('"', topology_start + topology_key.size());
-  if (id_end == std::string::npos || profile_end == std::string::npos || topology_end == std::string::npos) return false;
-  const std::string id = body.substr(id_start + id_key.size(), id_end - id_start - id_key.size());
-  const std::string profile = body.substr(profile_start + profile_key.size(), profile_end - profile_start - profile_key.size());
-  const std::string topology = body.substr(topology_start + topology_key.size(), topology_end - topology_start - topology_key.size());
-  if (!ValidContainerID(id) || (profile != kProfileNPM && profile != kProfilePyPI && profile != kProfilePyTorchCPU && profile != kProfilePyTorchCU126 && profile != kProfileGitHub)) return false;
-  if (profiles->find(id) != profiles->end()) return false;
-  std::vector<ExpectedMount> expected;
-  if (!ParseExpectedTopology(topology, &expected)) return false;
-  (*profiles)[id] = ProfileRegistration{profile, std::move(expected)};
+bool SendControlBody(int control, const std::string& body) {
+  return control >= 0 && body.size() <= kMaxControlRecordBytes &&
+      send(control, body.data(), body.size(), 0) == static_cast<ssize_t>(body.size());
+}
+
+bool SendAdmissionAck(int control,
+                      const std::string& operation, const std::string& container_id,
+                      const std::string& generation, const std::string& mode,
+                      const std::string& nonce, const char* status) {
+  if (status == nullptr || !ValidContainerID(container_id) || !ValidSessionGeneration(generation) ||
+      !ValidAdmissionNonce(nonce)) return false;
+  return SendControlBody(control, "{\"op\":\"ack\",\"ack_op\":\"" + operation +
+      "\",\"status\":\"" + status + "\",\"container_id\":\"" + container_id +
+      "\",\"session_generation\":\"" + generation + "\",\"mode\":\"" + mode +
+      "\",\"nonce\":\"" + nonce + "\"}");
+}
+
+bool SendProfileAck(int control,
+                    const std::string& container_id, const std::string& profile,
+                    const std::string& topology, const std::string& generation, const char* status) {
+  if (status == nullptr || !ValidContainerID(container_id) || !ValidSessionGeneration(generation)) return false;
+  return SendControlBody(control, std::string("{\"op\":\"ack\",\"ack_op\":\"profile\",\"status\":\"") +
+      status + "\",\"container_id\":\"" + container_id + "\",\"profile\":\"" + profile +
+      "\",\"expected_topology\":\"" + topology + "\",\"session_generation\":\"" + generation + "\"}");
+}
+
+bool SendInvalidateAck(int control,
+                       const std::string& container_id, const std::string& generation, const char* status) {
+  if (status == nullptr || !ValidContainerID(container_id) || !ValidSessionGeneration(generation)) return false;
+  return SendControlBody(control, "{\"op\":\"ack\",\"ack_op\":\"invalidate\",\"status\":\"" +
+      std::string(status) + "\",\"container_id\":\"" + container_id + "\",\"session_generation\":\"" + generation + "\"}");
+}
+
+bool ParseStrictStringObject(const char* payload, size_t size, std::map<std::string, std::string>* fields) {
+  if (payload == nullptr || fields == nullptr || size == 0 || size > kMaxControlRecordBytes) return false;
+  size_t position = 0;
+  auto whitespace = [&]() { while (position < size && (payload[position] == ' ' || payload[position] == '\n' || payload[position] == '\r' || payload[position] == '\t')) ++position; };
+  auto string = [&](std::string* out) {
+    if (out == nullptr || position >= size || payload[position++] != '"') return false;
+    out->clear();
+    while (position < size && payload[position] != '"') {
+      const unsigned char character = static_cast<unsigned char>(payload[position++]);
+      if (character < 0x20 || character == '\\') return false;
+      out->push_back(static_cast<char>(character));
+    }
+    return position < size && payload[position++] == '"';
+  };
+  whitespace(); if (position >= size || payload[position++] != '{') return false; whitespace();
+  if (position < size && payload[position] == '}') { ++position; whitespace(); return position == size; }
+  for (;;) {
+    std::string key, value; if (!string(&key)) return false; whitespace();
+    if (position >= size || payload[position++] != ':') return false;
+    whitespace();
+    if (!string(&value) || !fields->emplace(key, value).second) return false;
+    whitespace();
+    if (position >= size) return false;
+    if (payload[position] == '}') { ++position; whitespace(); return position == size; }
+    if (payload[position++] != ',') return false;
+    whitespace();
+  }
+}
+
+bool ExactControlFields(const std::map<std::string, std::string>& fields,
+                        std::initializer_list<const char*> required) {
+  if (fields.size() != required.size()) return false;
+  for (const char* key : required) if (fields.find(key) == fields.end()) return false;
   return true;
+}
+
+bool ParseControlRecord(const char* payload, size_t size, ControlPeer* peer,
+                        std::map<std::string, ProfileRegistration>* profiles) {
+  if (peer == nullptr || peer->fd < 0 || profiles == nullptr) return false;
+  std::map<std::string, std::string> fields;
+  if (!ParseStrictStringObject(payload, size, &fields)) return false;
+  const auto op = fields.find("op");
+  if (op == fields.end()) return false;
+  if (op->second == "profile") {
+    if (!ExactControlFields(fields, {"op", "container_id", "profile", "expected_topology", "session_generation"})) return false;
+    const std::string& id = fields["container_id"]; const std::string& profile = fields["profile"];
+    const std::string& topology = fields["expected_topology"]; const std::string& generation = fields["session_generation"];
+    if (!ValidContainerID(id) || !ValidSessionGeneration(generation) ||
+        (profile != kProfileNPM && profile != kProfilePyPI && profile != kProfilePyTorchCPU && profile != kProfilePyTorchCU126 && profile != kProfileGitHub) ||
+        peer->request_seen || peer->registered || peer->terminal || profiles->find(id) != profiles->end()) {
+      return SendProfileAck(peer->fd, id, profile, topology, generation, "rejected");
+    }
+    std::vector<ExpectedMount> expected; if (!ParseExpectedTopology(topology, &expected)) return false;
+    peer->request_seen = true;
+    (*profiles)[id] = ProfileRegistration{profile, std::move(expected), generation, peer->fd, {}};
+    peer->registered = true;
+    peer->container_id = id;
+    peer->session_generation = generation;
+    return SendProfileAck(peer->fd, id, profile, topology, generation, "registered");
+  }
+  if (op->second == "invalidate") {
+    if (!ExactControlFields(fields, {"op", "container_id", "session_generation"})) return false;
+    const std::string& id = fields["container_id"]; const std::string& generation = fields["session_generation"];
+    if (!ValidContainerID(id) || !ValidSessionGeneration(generation)) return false;
+    peer->request_seen = true;
+    auto profile = profiles->find(id); const char* status = "rejected";
+    if (peer->registered && !peer->terminal && peer->container_id == id &&
+        peer->session_generation == generation && profile != profiles->end() &&
+        profile->second.session_generation == generation && profile->second.control_fd == peer->fd) {
+      profiles->erase(profile);
+      peer->terminal = true;
+      status = "invalidated";
+    }
+    return SendInvalidateAck(peer->fd, id, generation, status);
+  }
+  if (op->second != "arm" && op->second != "cancel" && op->second != "status" && op->second != "complete") return false;
+  if (!ExactControlFields(fields, {"op", "container_id", "session_generation", "mode", "nonce"})) return false;
+  const std::string& id = fields["container_id"]; const std::string& generation = fields["session_generation"];
+  const std::string& mode = fields["mode"]; const std::string& nonce = fields["nonce"];
+  if (!ValidContainerID(id) || !ValidSessionGeneration(generation) ||
+      (mode != kLaunchMode && mode != kPythonHandoffMode && mode != kELFHandoffMode) || !ValidAdmissionNonce(nonce)) return false;
+  peer->request_seen = true;
+  auto profile = profiles->find(id); const char* status = "rejected";
+  if (peer->registered && !peer->terminal && peer->container_id == id &&
+      peer->session_generation == generation && profile != profiles->end() &&
+      profile->second.session_generation == generation && profile->second.control_fd == peer->fd) {
+    auto pending = profile->second.pending_admissions.end();
+    for (auto entry = profile->second.pending_admissions.begin(); entry != profile->second.pending_admissions.end(); ++entry) {
+      if (entry->session_generation == generation && entry->mode == mode && entry->nonce == nonce) { pending = entry; break; }
+    }
+    if (op->second == "arm") {
+      if (pending == profile->second.pending_admissions.end() && profile->second.pending_admissions.size() < kMaxPendingDirectExecAdmissions) {
+        profile->second.pending_admissions.push_back(ProfileRegistration::PendingAdmission{generation, mode, nonce}); status = "armed";
+      }
+    } else if (pending != profile->second.pending_admissions.end()) {
+      if (op->second == "status") {
+        status = pending->state == ProfileRegistration::AdmissionState::kPending ? "pending" : "consumed";
+      } else if (op->second == "cancel") {
+        if (pending->state == ProfileRegistration::AdmissionState::kPending) {
+          profile->second.pending_admissions.erase(pending);
+          status = "cancelled";
+        } else {
+          status = "consumed";
+        }
+      } else if (op->second == "complete" && pending->state == ProfileRegistration::AdmissionState::kConsumed) {
+        profile->second.pending_admissions.erase(pending);
+        status = "completed";
+      }
+    }
+  }
+  return SendAdmissionAck(peer->fd, op->second, id, generation, mode, nonce, status);
 }
 
 bool ParseContainerStart(const char* payload, size_t payload_size, int output,
@@ -1790,6 +1995,76 @@ bool ParseSentryClone(const char* payload, size_t payload_size,
       false, false, false, false, ProcessClass::kUnknown, ProcessState::OCIBootstrapStage::kNotOCI,
       creator->second.command_phase});
   state->groups.find(child_group)->second.clone_creator_group_id = creator_group;
+  state->groups.find(child_group)->second.clone_creator_group_start_time_ns =
+      creator->second.start_time_ns;
+  return true;
+}
+
+bool ParseSentryExitNotifyParent(const char* payload, size_t payload_size,
+                                 std::string* container_id, ProcessState* state,
+                                 const char** reason) {
+  if (state == nullptr) return false;
+  gvisor::sentry::ExitNotifyParentInfo message;
+  if (!message.ParseFromArray(payload, payload_size) ||
+      !ValidateContextContainer(message.context_data(), container_id, reason) ||
+      !ValidProcessIdentity(message.context_data())) {
+    *reason = "PROCESS_EXIT_INVALID";
+    return false;
+  }
+  const auto& context = message.context_data();
+  const int32_t group_id = context.thread_group_id();
+  const int64_t start_time_ns = context.thread_group_start_time_ns();
+  const auto group = state->groups.find(group_id);
+  if (group == state->groups.end()) {
+    *reason = "PROCESS_EXIT_UNKNOWN";
+    return false;
+  }
+  if (!SameGroup(group->second, context)) {
+    *reason = "PROCESS_EXIT_IDENTITY_REUSED";
+    return false;
+  }
+
+  const auto expected = state->expected_groups.find(group_id);
+  if (expected != state->expected_groups.end()) {
+    if (expected->second.start_time_ns != start_time_ns) {
+      *reason = "PROCESS_EXIT_IDENTITY_REUSED";
+      return false;
+    }
+    state->expected_groups.erase(expected);
+  }
+  state->fd_states.erase(group_id);
+  state->pending_sockets.erase(group_id);
+  const auto launch = state->launch_roots.find(group_id);
+  if (launch != state->launch_roots.end()) {
+    if (launch->second != start_time_ns) {
+      *reason = "PROCESS_EXIT_IDENTITY_REUSED";
+      return false;
+    }
+    state->launch_roots.erase(launch);
+  }
+  for (auto pending = state->pending_opens.begin(); pending != state->pending_opens.end();) {
+    if (pending->second.thread_group_id == group_id &&
+        pending->second.thread_group_start_time_ns == start_time_ns) {
+      pending = state->pending_opens.erase(pending);
+    } else {
+      ++pending;
+    }
+  }
+  if (state->launch_root_set && state->launch_root_group_id == group_id &&
+      state->launch_root_group_start_time_ns == start_time_ns) {
+    state->launch_root_set = false;
+    state->launch_root_active = false;
+    state->launch_root_group_id = 0;
+    state->launch_root_group_start_time_ns = 0;
+  }
+  if (state->bootstrap_group_set && state->bootstrap_group_id == group_id &&
+      state->bootstrap_group_start_time_ns == start_time_ns) {
+    state->bootstrap_active = false;
+    state->bootstrap_group_set = false;
+    state->bootstrap_group_id = 0;
+    state->bootstrap_group_start_time_ns = 0;
+  }
+  state->groups.erase(group);
   return true;
 }
 
@@ -1800,28 +2075,65 @@ size_t MaximumRecords(const char* profile) {
   return kMaxNormalizedRecordsPerConnection;
 }
 
-bool DrainProfiles(int control, std::map<std::string, ProfileRegistration>* profiles) {
-  char control_message[4096];
-  ssize_t control_size;
-  while ((control_size = recv(control, control_message, sizeof(control_message), MSG_DONTWAIT)) > 0) {
-    if (!ParseControlRecord(control_message, static_cast<size_t>(control_size), profiles)) return false;
+bool RemoveControlPeer(int fd, std::map<int, ControlPeer>* peers,
+                       std::map<std::string, ProfileRegistration>* profiles) {
+  if (peers == nullptr || profiles == nullptr) return false;
+  auto peer = peers->find(fd);
+  if (peer == peers->end()) return false;
+  if (peer->second.registered) {
+    auto profile = profiles->find(peer->second.container_id);
+    if (profile != profiles->end() && profile->second.control_fd == fd &&
+        profile->second.session_generation == peer->second.session_generation) {
+      profiles->erase(profile);
+    }
   }
-  return control_size == 0 || (control_size < 0 && (errno == EAGAIN || errno == EWOULDBLOCK));
+  close(fd);
+  peers->erase(peer);
+  return true;
 }
 
-const ProfileRegistration* AwaitProfile(int control, const std::string& container_id, std::map<std::string, ProfileRegistration>* profiles) {
+bool ServiceControlPeer(int fd, short revents, std::map<int, ControlPeer>* peers,
+                        std::map<std::string, ProfileRegistration>* profiles) {
+  if ((revents & (POLLERR | POLLHUP | POLLNVAL)) != 0) return RemoveControlPeer(fd, peers, profiles);
+  if ((revents & POLLIN) == 0) return true;
+  char control_message[kMaxControlRecordBytes];
+  const ssize_t control_size = recv(fd, control_message, sizeof(control_message), MSG_TRUNC);
+  if (control_size <= 0 || static_cast<size_t>(control_size) > sizeof(control_message)) {
+    return RemoveControlPeer(fd, peers, profiles);
+  }
+  auto peer = peers->find(fd);
+  return peer != peers->end() && ParseControlRecord(control_message, static_cast<size_t>(control_size),
+                                                     &peer->second, profiles);
+}
+
+bool AcceptControlPeer(int listener, std::map<int, ControlPeer>* peers) {
+  if (peers == nullptr) return false;
+  const int accepted = accept(listener, nullptr, nullptr);
+  if (accepted < 0) return false;
+  peers->emplace(accepted, ControlPeer{accepted, false, false, false, "", ""});
+  return true;
+}
+
+ProfileRegistration* AwaitProfile(int control, const std::string& container_id,
+                                  std::map<int, ControlPeer>* peers,
+                                  std::map<std::string, ProfileRegistration>* profiles) {
+  if (control < 0 || peers == nullptr || profiles == nullptr) return nullptr;
   for (int waited = 0; waited < kProfileRegistrationWaitMilliseconds; waited += 50) {
-    if (!DrainProfiles(control, profiles)) return nullptr;
     auto profile = profiles->find(container_id);
     if (profile != profiles->end()) return &profile->second;
-    pollfd descriptor{control, POLLIN, 0};
-    const int result = poll(&descriptor, 1, 50);
+    std::vector<pollfd> descriptors{{control, POLLIN, 0}};
+    for (const auto& peer : *peers) descriptors.push_back(pollfd{peer.first, POLLIN, 0});
+    const int result = poll(descriptors.data(), descriptors.size(), 50);
     if (result < 0) {
       if (errno == EINTR) continue;
       return nullptr;
     }
     if (result == 0) continue;
-    if ((descriptor.revents & POLLIN) == 0) return nullptr;
+    if ((descriptors[0].revents & POLLIN) != 0 && !AcceptControlPeer(control, peers)) return nullptr;
+    for (size_t index = 1; index < descriptors.size(); ++index) {
+      if (descriptors[index].revents != 0 &&
+          !ServiceControlPeer(descriptors[index].fd, descriptors[index].revents, peers, profiles)) return nullptr;
+    }
   }
   return nullptr;
 }
@@ -1878,8 +2190,9 @@ bool ParseExecSyscallTelemetry(const char* payload, size_t payload_size, std::st
 }
 
 bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int output, std::string* container_id,
-                                   const char* profile, ProcessState* process_state, const char** reason) {
-  if (profile == nullptr || process_state == nullptr) return false;
+                                   const char* profile, ProfileRegistration* registration,
+                                   ProcessState* process_state, const char** reason) {
+  if (profile == nullptr || registration == nullptr || process_state == nullptr) return false;
   gvisor::sentry::ExecveInfo message;
   if (!message.ParseFromArray(payload, payload_size)) return false;
   if (!ValidateContextContainer(message.context_data(), container_id, reason) || !ValidProcessIdentity(message.context_data())) {
@@ -1911,8 +2224,11 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
         (phase == CommandPhase::kLockGeneration && !IsExactResolverLockGenerationBoundary(message))) {
       phase = CommandPhase::kOther;
     }
+    std::string admission_nonce;
     if (!message.context_data().is_exec_session() || message.context_data().parent_thread_group_id() != 0 ||
         boundary_mode == BoundaryMode::kNone ||
+        !ExtractBoundaryAdmissionNonce(message, boundary_mode, &admission_nonce) ||
+        !ConsumeDirectExecAdmission(registration, boundary_mode, admission_nonce) ||
         candidate.groups.size() >= kMaxTrackedProcessGroups ||
         !RegisterGroup(&candidate, message.context_data(), ProcessState::Role::kControl,
                        ProcessState::Provenance::kDirectExecRoot, true, false, phase)) {
@@ -2083,7 +2399,7 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
   const bool exact_lock_generation_npm_node_transition =
       tracked_group != candidate.expected_groups.end() &&
       IsExactResolverLockGenerationNpmNodeTransition(message, profile, group_id, group->second,
-                                                      tracked_group->second);
+                                                      tracked_group->second, candidate);
   if (exact_npm_node_transition || exact_npm_version_node_transition ||
       exact_lock_generation_npm_node_transition) {
     tracked_group->second.process_class = ProcessClass::kNode;
@@ -2130,7 +2446,8 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     updated_group->second.npm_node_transition_pending = true;
   }
   if (classification.expected && updated_group != process_state->groups.end() &&
-      MayArmExactLockGenerationNpmNodeTransition(message, profile, updated_group->second)) {
+      MayArmExactLockGenerationNpmNodeTransition(message, profile, updated_group->second,
+                                                  *process_state)) {
     updated_group->second.lock_generation_npm_node_transition_pending = true;
   }
   ApplyExecCloexec(process_state, group_id);
@@ -2141,6 +2458,16 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
   RecordUnexpectedExec(&process_state->first_unexpected_exec, snapshot,
                        classification.reason, classification.parent_relation);
   return Send(output, *container_id, "process-exec-unexpected", nullptr, &attribution);
+}
+
+// Unit parser callers without a trusted control registration intentionally
+// receive no direct-root authority. This compatibility overload cannot arm an
+// admission and therefore preserves fail-closed behavior.
+bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int output, std::string* container_id,
+                                   const char* profile, ProcessState* process_state, const char** reason) {
+  ProfileRegistration no_admissions{profile == nullptr ? "" : profile, {}, std::string(64, '0'), {}};
+  return ParseSentryProcessAndClassify(payload, payload_size, output, container_id, profile,
+                                       &no_admissions, process_state, reason);
 }
 
 bool ParseOpenAndSend(const char* payload, size_t payload_size, int output, std::string* container_id,
@@ -2581,7 +2908,7 @@ bool ParseTopologyMutation(const char* payload, size_t payload_size, std::string
 }
 
 bool Handle(const Header& header, const char* payload, size_t payload_size, int output, std::string* container_id,
-            const char* profile, ProcessState* process_state, NormalizedCounts* counts, TopologyState* topology,
+            const char* profile, ProfileRegistration* registration, ProcessState* process_state, NormalizedCounts* counts, TopologyState* topology,
             const char** reason, FaultSite* fault_site = nullptr) {
   auto set_fault_site = [fault_site](FaultSite site) {
     if (fault_site != nullptr) *fault_site = site;
@@ -2604,8 +2931,14 @@ bool Handle(const Header& header, const char* payload, size_t payload_size, int 
         return false;
       }
       return true;
+    case gvisor::common::MESSAGE_SENTRY_EXIT_NOTIFY_PARENT:
+      if (!ParseSentryExitNotifyParent(payload, payload_size, container_id, process_state, reason)) {
+        set_fault_site(FaultSite::kSentryExitNotifyParent);
+        return false;
+      }
+      return true;
     case gvisor::common::MESSAGE_SENTRY_EXEC:
-      if (!ParseSentryProcessAndClassify(payload, payload_size, output, container_id, profile, process_state, reason)) {
+      if (!ParseSentryProcessAndClassify(payload, payload_size, output, container_id, profile, registration, process_state, reason)) {
         set_fault_site(FaultSite::kSentryExec);
         return false;
       }
@@ -2703,6 +3036,14 @@ bool Handle(const Header& header, const char* payload, size_t payload_size, int 
   }
 }
 
+bool Handle(const Header& header, const char* payload, size_t payload_size, int output, std::string* container_id,
+            const char* profile, ProcessState* process_state, NormalizedCounts* counts, TopologyState* topology,
+            const char** reason, FaultSite* fault_site = nullptr) {
+  ProfileRegistration no_admissions{profile == nullptr ? "" : profile, {}, std::string(64, '0'), {}};
+  return Handle(header, payload, payload_size, output, container_id, profile, &no_admissions,
+                process_state, counts, topology, reason, fault_site);
+}
+
 int ConnectDatagram(const char* path) {
   int fd = socket(AF_UNIX, SOCK_DGRAM, 0);
   if (fd < 0) err(1, "socket output");
@@ -2719,7 +3060,7 @@ int main(int argc, char** argv) {
     printf("gvisor-commit=%s\n", HAA_GVISOR_COMMIT);
     return 0;
   }
-  if (argc != 4 && argc != 5) errx(2, "usage: haa_gvisor_observer REMOTE_SEQPACKET_SOCKET HAA_OUTPUT_DGRAM_SOCKET HAA_CONTROL_DGRAM_SOCKET [--ready-fd=FD]");
+  if (argc != 4 && argc != 5) errx(2, "usage: haa_gvisor_observer REMOTE_SEQPACKET_SOCKET HAA_OUTPUT_DGRAM_SOCKET HAA_CONTROL_SEQPACKET_SOCKET [--ready-fd=FD]");
   int ready_fd = -1;
   if (argc == 5) {
     if (strncmp(argv[4], "--ready-fd=", 11) != 0) errx(2, "invalid readiness option");
@@ -2735,16 +3076,18 @@ int main(int argc, char** argv) {
   strcpy(address.sun_path, argv[1]);
   if (bind(listener, reinterpret_cast<sockaddr*>(&address), sizeof(address)) < 0) err(1, "bind remote");
   if (listen(listener, 16) < 0) err(1, "listen remote");
-  int control = socket(AF_UNIX, SOCK_DGRAM, 0);
+  int control = socket(AF_UNIX, SOCK_SEQPACKET, 0);
   if (control < 0) err(1, "socket control");
   sockaddr_un control_address{}; control_address.sun_family = AF_UNIX;
   if (strlen(argv[3]) >= sizeof(control_address.sun_path)) errx(1, "control endpoint too long");
   strcpy(control_address.sun_path, argv[3]);
   gControlPath = argv[3];
   if (bind(control, reinterpret_cast<sockaddr*>(&control_address), sizeof(control_address)) < 0) err(1, "bind control");
+  if (listen(control, 64) < 0) err(1, "listen control");
   signal(SIGTERM, CleanupControlSocket);
   signal(SIGINT, CleanupControlSocket);
   std::map<std::string, ProfileRegistration> profiles;
+  std::map<int, ControlPeer> control_peers;
   const int output = ConnectDatagram(argv[2]);
   if (ready_fd >= 0) {
     const char ready = 'R';
@@ -2752,7 +3095,21 @@ int main(int argc, char** argv) {
     close(ready_fd);
   }
   for (;;) {
-    if (!DrainProfiles(control, &profiles)) errx(1, "invalid observer profile registration");
+    std::vector<pollfd> listeners{{listener, POLLIN, 0}, {control, POLLIN, 0}};
+    for (const auto& peer : control_peers) listeners.push_back(pollfd{peer.first, POLLIN, 0});
+    const int ready = poll(listeners.data(), listeners.size(), -1);
+    if (ready < 0) {
+      if (errno == EINTR) continue;
+      err(1, "poll observer listener");
+    }
+    if ((listeners[1].revents & POLLIN) != 0 && !AcceptControlPeer(control, &control_peers)) errx(1, "accept control");
+    for (size_t index = 2; index < listeners.size(); ++index) {
+      if (listeners[index].revents != 0 &&
+          !ServiceControlPeer(listeners[index].fd, listeners[index].revents, &control_peers, &profiles)) {
+        errx(1, "invalid observer control connection");
+      }
+    }
+    if ((listeners[0].revents & POLLIN) == 0) continue;
     int client = accept(listener, nullptr, nullptr); if (client < 0) err(1, "accept remote");
     char handshake[1024]; ssize_t size = recv(client, handshake, sizeof(handshake), 0);
     gvisor::common::Handshake incoming;
@@ -2765,8 +3122,54 @@ int main(int argc, char** argv) {
     TopologyState topology_state;
     const char* fault_reason = nullptr;
     const char* profile = nullptr;
+    ProfileRegistration* registration = nullptr;
+		std::string registration_generation;
     size_t normalized_records = 0;
-    while ((size = recv(client, event, sizeof(event), MSG_TRUNC)) > 0) {
+    for (;;) {
+      std::vector<pollfd> descriptors{{client, POLLIN, 0}, {control, POLLIN, 0}};
+      for (const auto& peer : control_peers) descriptors.push_back(pollfd{peer.first, POLLIN, 0});
+      const int ready = poll(descriptors.data(), descriptors.size(), -1);
+      if (ready < 0) {
+        if (errno == EINTR) continue;
+        size = -1;
+        break;
+      }
+
+      if ((descriptors[1].revents & POLLIN) != 0 && !AcceptControlPeer(control, &control_peers)) {
+        fault = true;
+        fault_reason = "STREAM_FAULT";
+        process_state.terminal_fault_site = FaultSite::kProfileLookup;
+        break;
+      }
+      for (size_t index = 2; index < descriptors.size(); ++index) {
+        if (descriptors[index].revents != 0 &&
+            !ServiceControlPeer(descriptors[index].fd, descriptors[index].revents, &control_peers, &profiles)) {
+          fault = true;
+          fault_reason = "STREAM_FAULT";
+          process_state.terminal_fault_site = FaultSite::kProfileLookup;
+          break;
+        }
+      }
+      if (fault) break;
+		if (registration != nullptr) {
+			auto current = profiles.find(container_id);
+			if (current == profiles.end() || current->second.session_generation != registration_generation) {
+				fault = true;
+				fault_reason = "PROFILE_LOOKUP_FAILURE";
+				process_state.terminal_fault_site = FaultSite::kProfileLookup;
+				break;
+			}
+			registration = &current->second;
+		}
+      if ((descriptors[0].revents & POLLIN) == 0) {
+        if ((descriptors[0].revents & (POLLERR | POLLHUP | POLLNVAL)) != 0) {
+          size = 0;
+          break;
+        }
+        continue;
+      }
+      size = recv(client, event, sizeof(event), MSG_TRUNC);
+      if (size <= 0) break;
       if (static_cast<size_t>(size) > sizeof(event)) {
         fault = true;
         fault_reason = "STREAM_FAULT";
@@ -2781,7 +3184,7 @@ int main(int argc, char** argv) {
       }
       Header header{}; memcpy(&header, event, sizeof(header));
       if (profile == nullptr && !container_id.empty()) {
-        const ProfileRegistration* registration = AwaitProfile(control, container_id, &profiles);
+        registration = AwaitProfile(control, container_id, &control_peers, &profiles);
         if (registration == nullptr) {
           fault = true;
           fault_reason = "PROFILE_LOOKUP_FAILURE";
@@ -2789,6 +3192,7 @@ int main(int argc, char** argv) {
           break;
         }
         profile = registration->profile.c_str();
+		registration_generation = registration->session_generation;
         topology_state.expected = registration->expected;
       }
       if (normalized_records + normalized_counts.immediate_records == MaximumRecords(profile)) {
@@ -2803,7 +3207,7 @@ int main(int argc, char** argv) {
         process_state.terminal_fault_site = FaultSite::kHeaderSize;
         break;
       }
-      if (!Handle(header, event + header.header_size, size - header.header_size, output, &container_id, profile,
+      if (!Handle(header, event + header.header_size, size - header.header_size, output, &container_id, profile, registration,
                   &process_state, &normalized_counts, &topology_state, &fault_reason, &process_state.terminal_fault_site)) {
         fault = true;
         if (fault_reason == nullptr) fault_reason = "STREAM_FAULT";
@@ -2820,7 +3224,26 @@ int main(int argc, char** argv) {
       fault_reason = "STREAM_FAULT";
       process_state.terminal_fault_site = FaultSite::kRecvError;
     }
-    if (!fault && (!topology_state.sealed || !process_state.pending_sockets.empty() || !process_state.pending_opens.empty())) {
+		// A peer that passed the remote handshake is an accepted observer stream.
+		// If it disconnects before authoritative container attribution, selective
+		// registration cleanup cannot be proved. Exiting destroys every profile
+		// and admission in this helper; malformed pre-accept handshakes continue
+		// above without reaching this fail-stop path.
+		if (container_id.empty()) {
+			close(client);
+			errx(1, "accepted remote stream ended before attribution");
+		}
+    bool unresolved_pending_admission = false;
+    if (registration != nullptr) {
+      for (const auto& admission : registration->pending_admissions) {
+        if (admission.state == ProfileRegistration::AdmissionState::kPending) {
+          unresolved_pending_admission = true;
+          break;
+        }
+      }
+    }
+    if (!fault && (!topology_state.sealed || !process_state.pending_sockets.empty() || !process_state.pending_opens.empty() ||
+                   unresolved_pending_admission)) {
       fault = true;
       if (!topology_state.sealed) {
         fault_reason = "TOPOLOGY_NOT_READY";
@@ -2828,9 +3251,12 @@ int main(int argc, char** argv) {
       } else if (!process_state.pending_sockets.empty()) {
         fault_reason = "FD_STATE_UNKNOWN";
         process_state.terminal_fault_site = FaultSite::kPendingSockets;
-      } else {
+      } else if (!process_state.pending_opens.empty()) {
         fault_reason = "STREAM_FAULT";
         process_state.terminal_fault_site = FaultSite::kPendingOpens;
+      } else {
+        fault_reason = "PROCESS_PROVENANCE_UNKNOWN";
+        process_state.terminal_fault_site = FaultSite::kSentryExec;
       }
     }
     if (!fault && !container_id.empty() && normalized_counts.workspace_access != 0) {
@@ -2847,7 +3273,13 @@ int main(int argc, char** argv) {
     }
     if (!container_id.empty()) {
       Send(output, container_id, fault ? "stream-fault" : "stream-end", fault_reason);
-      profiles.erase(container_id);
+		// An INVALIDATE may have removed this registration and a new security
+		// session for the same container may already be registered. Never let
+		// old stream cleanup erase that newer generation.
+		auto current = profiles.find(container_id);
+		if (current != profiles.end() && current->second.session_generation == registration_generation) {
+			profiles.erase(current);
+		}
     }
     close(client);
   }

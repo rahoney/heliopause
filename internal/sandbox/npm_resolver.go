@@ -48,7 +48,7 @@ func NewNPMResolver(runner CommandRunner, endpoints EndpointResolver, policy Res
 	if _, ok := runner.(inputCommandRunner); !ok {
 		return nil, errors.New("npm resolver requires input stream runner")
 	}
-	return &NPMResolver{runner: runner, endpoints: endpoints, policy: policy}, nil
+	return &NPMResolver{runner: admissionAwareRunner(runner), endpoints: endpoints, policy: policy}, nil
 }
 
 // NewNPMResolverWithObserver constructs the production resolver with the

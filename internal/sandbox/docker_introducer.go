@@ -32,7 +32,7 @@ func NewDockerArtifactIntroducer(intakeRoot string, runner CommandRunner) (*Dock
 	if runner == nil {
 		return nil, errors.New("sandbox command runner is required")
 	}
-	return &DockerArtifactIntroducer{intakeRoot: filepath.Clean(intakeRoot), runner: runner}, nil
+	return &DockerArtifactIntroducer{intakeRoot: filepath.Clean(intakeRoot), runner: admissionAwareRunner(runner)}, nil
 }
 
 func (i *DockerArtifactIntroducer) Introduce(ctx context.Context, containerID string, artifact domain.AcquiredArtifact) error {

@@ -48,7 +48,7 @@ const boundaryAlreadyDemotedValidation = `already_demoted() {
 // operations: launch establishes the Sentry boundary for a direct exec, while
 // handoff only removes trust before artifact execution. The helper never
 // interprets artifact input.
-const boundaryHelper = "#!/bin/sh\nset -eu\ndemote() { exec " + boundarySetprivPath + " " + boundaryDemotionArguments + " \"$@\"; }\n" + boundaryAlreadyDemotedValidation + "\ncase \"${1-}\" in\n  --origin-launch) shift; exec " + boundaryHelperPath + " --launch \"$@\" ;;\n  --origin-handoff-python) shift; exec " + boundaryHelperPath + " --handoff-python \"$@\" ;;\n  --origin-handoff-elf) shift; exec " + boundaryHelperPath + " --handoff-elf \"$@\" ;;\n  --launch|--handoff-python|--handoff-elf) shift; demote \"$@\" ;;\n  -c) shift; already_demoted; exec /bin/sh -c \"$@\" ;;\n  *) exit 125 ;;\nesac\n"
+const boundaryHelper = "#!/bin/sh\nset -eu\ndemote() { exec " + boundarySetprivPath + " " + boundaryDemotionArguments + " \"$@\"; }\nadmission() { [ \"${#1}\" -eq 64 ] || exit 125; case \"$1\" in *[!0123456789abcdef]*|'') exit 125 ;; esac; }\n" + boundaryAlreadyDemotedValidation + "\ncase \"${1-}\" in\n  --origin-launch) shift; admission \"${1-}\"; token=\"$1\"; shift; exec " + boundaryHelperPath + " --launch \"$token\" \"$@\" ;;\n  --origin-handoff-python) shift; admission \"${1-}\"; token=\"$1\"; shift; exec " + boundaryHelperPath + " --handoff-python \"$token\" \"$@\" ;;\n  --origin-handoff-elf) shift; admission \"${1-}\"; token=\"$1\"; shift; exec " + boundaryHelperPath + " --handoff-elf \"$token\" \"$@\" ;;\n  --launch|--handoff-python|--handoff-elf) shift; admission \"${1-}\"; shift; demote \"$@\" ;;\n  -c) shift; already_demoted; exec /bin/sh -c \"$@\" ;;\n  *) exit 125 ;;\nesac\n"
 
 // boundaryContainerCommand runs as the OCI init root solely long enough to
 // install the fixed controller helper into its root-owned tmpfs. The helper is
@@ -98,6 +98,10 @@ func awaitBoundaryHelper(ctx context.Context, runner CommandRunner, containerID 
 	for attempt := 0; attempt < 20; attempt++ {
 		if _, err := runner.Output(ctx, "docker", boundaryReadinessArguments(containerID)...); err == nil {
 			return nil
+		} else if errors.Is(err, errObserverAuthorityAmbiguous) {
+			// An ARM/CANCEL uncertainty poisons this registration. Retrying the
+			// same container/session cannot re-establish its ordering guarantee.
+			return errors.New("sandbox boundary helper is unavailable")
 		}
 		if attempt == 19 {
 			break

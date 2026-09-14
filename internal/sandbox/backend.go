@@ -59,7 +59,7 @@ func NewBackend(runner CommandRunner, introducer ArtifactIntroducer, observer Tr
 	if probe == nil {
 		return nil, errors.New("sandbox capability probe is required")
 	}
-	return &Backend{runner: runner, introducer: introducer, observer: observer, probe: probe, newSessionID: domain.NewSandboxSessionID, wallTimeout: sandboxWallTimeout, cleanupWait: cleanupTimeout}, nil
+	return &Backend{runner: admissionAwareRunner(runner), introducer: introducer, observer: observer, probe: probe, newSessionID: domain.NewSandboxSessionID, wallTimeout: sandboxWallTimeout, cleanupWait: cleanupTimeout}, nil
 }
 
 // Execute introduces the acquired artifact exactly once, runs it under gVisor,

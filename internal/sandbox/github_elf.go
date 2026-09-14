@@ -28,7 +28,7 @@ func NewGitHubELFBackend(runner CommandRunner, intakeRoot string, observer Trace
 	if runner == nil || observer == nil || probe == nil || !filepath.IsAbs(intakeRoot) {
 		return nil, errors.New("GitHub ELF backend configuration is invalid")
 	}
-	return &GitHubELFBackend{runner: runner, intakeRoot: filepath.Clean(intakeRoot), observer: observer, probe: probe, newSessionID: domain.NewSandboxSessionID}, nil
+	return &GitHubELFBackend{runner: admissionAwareRunner(runner), intakeRoot: filepath.Clean(intakeRoot), observer: observer, probe: probe, newSessionID: domain.NewSandboxSessionID}, nil
 }
 
 // NewLinuxGitHubELFBackendWithExecutor uses the composition-root validated

@@ -56,7 +56,7 @@ func newPythonResolver(runner CommandRunner, endpoints NamedEndpointResolver, ob
 	if runner == nil || endpoints == nil || observer == nil || probe == nil || policy == nil {
 		return nil, errors.New("PyPI resolver requires runner, endpoint resolver, observer, runtime probe and network policy service")
 	}
-	return &PyPIResolver{runner: runner, endpoints: endpoints, observer: observer, probe: probe, policy: policy, profile: profile}, nil
+	return &PyPIResolver{runner: admissionAwareRunner(runner), endpoints: endpoints, observer: observer, probe: probe, policy: policy, profile: profile}, nil
 }
 
 // NewPyTorchResolver constructs a resolver for one immutable official
