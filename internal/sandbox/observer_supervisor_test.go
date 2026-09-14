@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -156,20 +157,51 @@ type supervisorTestPaths struct{ remote, output, lock string }
 
 func supervisorPaths(t *testing.T) supervisorTestPaths {
 	t.Helper()
-	directory, err := os.MkdirTemp("/run/user/1000", "observer-supervisor-")
-	if err != nil {
-		t.Fatal(err)
+	var candidates []string
+	if xdg := os.Getenv("XDG_RUNTIME_DIR"); xdg != "" {
+		candidates = append(candidates, xdg)
+	}
+	candidates = append(candidates, filepath.Join("/run/user", strconv.Itoa(os.Getuid())))
+	if cache, err := os.UserCacheDir(); err == nil && cache != "" {
+		candidates = append(candidates, cache)
+	}
+	if home, err := os.UserHomeDir(); err == nil && home != "" {
+		candidates = append(candidates, home)
+	}
+	candidates = append(candidates, ".")
+
+	var directory string
+	for _, base := range candidates {
+		if base == "" {
+			continue
+		}
+		if err := verifyObserverRuntimeDirectory(base); err != nil {
+			continue
+		}
+		d, err := os.MkdirTemp(base, "obs-sup-")
+		if err != nil {
+			continue
+		}
+		if err := os.Chmod(d, 0o700); err != nil {
+			_ = os.RemoveAll(d)
+			continue
+		}
+		if verifyObserverRuntimeDirectory(d) == nil {
+			directory = d
+			break
+		}
+		_ = os.RemoveAll(d)
+	}
+	if directory == "" {
+		t.Skip("host Unix socket path limit or runtime directory permissions leave no protected short test directory")
 	}
 	t.Cleanup(func() { _ = os.RemoveAll(directory) })
-	directory, err = filepath.Abs(directory)
+	directory, err := filepath.Abs(directory)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(filepath.Join(directory, "output.sock")) >= 100 {
 		t.Skip("host Unix socket path limit leaves no protected short test directory")
-	}
-	if err := os.Chmod(directory, 0o700); err != nil {
-		t.Fatal(err)
 	}
 	return supervisorTestPaths{
 		remote: filepath.Join(directory, "remote.sock"),
@@ -189,6 +221,7 @@ func (l *fakeObserverLauncher) StartObserver(_ context.Context, remote, _ string
 	if err != nil {
 		return nil, err
 	}
+	_ = os.Chmod(remote, 0o700)
 	l.process = &fakeObserverProcess{listener: listener, done: make(chan struct{})}
 	return l.process, nil
 }

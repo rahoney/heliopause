@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -93,11 +94,15 @@ func attachTestFailStop(session *observerSecuritySession, failStop func(context.
 
 func withAdmissionControl(t *testing.T, respond func(*net.UnixConn, admissionRequest)) {
 	t.Helper()
+	if runtime.GOOS != "linux" {
+		t.Skip("SOCK_SEQPACKET test transport requires Linux")
+	}
 	endpoint := filepath.Join(t.TempDir(), "control.sock")
 	listener, err := net.ListenUnix("unixpacket", &net.UnixAddr{Name: endpoint, Net: "unixpacket"})
 	if err != nil {
 		t.Fatal(err)
 	}
+	_ = os.Chmod(endpoint, 0o700)
 	previous := observerControlEndpoint
 	observerControlEndpoint = endpoint
 	t.Cleanup(func() {
@@ -230,10 +235,13 @@ type realObserverTestFixture struct {
 
 func startRealObserverForTest(t *testing.T, containerID string) *realObserverTestFixture {
 	t.Helper()
+	if runtime.GOOS != "linux" {
+		t.Skip("real gVisor observer tests require Linux")
+	}
 	binary := findObserverBinary(t)
-	dir, err := os.MkdirTemp("/run/user/1000", "haa-real-obs-")
+	dir, err := os.MkdirTemp("/tmp", "haa-real-obs-")
 	if err != nil {
-		dir, err = os.MkdirTemp("/tmp", "haa-real-obs-")
+		dir, err = os.MkdirTemp("", "haa-real-obs-")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -855,6 +863,7 @@ func TestInvalidateAckLossFailStopsExactSessionOwner(t *testing.T) {
 		if err != nil {
 			return nil, err
 		}
+		_ = os.Chmod(remote, 0o700)
 		cmd := exec.Command("sleep", "60")
 		if err := cmd.Start(); err != nil {
 			_ = listener.Close()
@@ -1101,6 +1110,7 @@ func TestAdmissionAckFailurePreventsDockerExecAndCancellationIsExact(t *testing.
 	if err != nil {
 		t.Fatal(err)
 	}
+	_ = os.Chmod(observerControlEndpoint, 0o700)
 	defer listener.Close()
 	go func() {
 		for {
