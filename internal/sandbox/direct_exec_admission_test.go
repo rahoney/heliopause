@@ -23,6 +23,22 @@ type admissionRunner struct {
 	err   error
 }
 
+type gatedAdmissionRunner struct {
+	called  chan struct{}
+	release chan struct{}
+	once    sync.Once
+	calls   atomic.Int32
+}
+
+func (*gatedAdmissionRunner) RequiresDirectExecAdmission() {}
+
+func (r *gatedAdmissionRunner) Output(_ context.Context, _ string, _ ...string) ([]byte, error) {
+	r.calls.Add(1)
+	r.once.Do(func() { close(r.called) })
+	<-r.release
+	return nil, nil
+}
+
 type sequenceAdmissionRunner struct {
 	calls  [][]string
 	errors []error
@@ -84,6 +100,13 @@ func withShortAdmissionTimeout(t *testing.T) {
 	previous := directExecAdmissionTimeout
 	directExecAdmissionTimeout = 100 * time.Millisecond
 	t.Cleanup(func() { directExecAdmissionTimeout = previous })
+}
+
+func withShortAdmissionCompletionTimeout(t *testing.T) {
+	t.Helper()
+	previous := directExecAdmissionCompletionTimeout
+	directExecAdmissionCompletionTimeout = 100 * time.Millisecond
+	t.Cleanup(func() { directExecAdmissionCompletionTimeout = previous })
 }
 
 func attachTestFailStop(session *observerSecuritySession, failStop func(context.Context) error) {
@@ -677,13 +700,182 @@ func TestWaitingNormalOperationRechecksPoisonedSessionBeforeControlWrite(t *test
 	}
 }
 
-func TestWaitingArmRejectsLifecycleSemanticAmbiguityBeforePeerUnlock(t *testing.T) {
-	var mu sync.Mutex
-	var operations []string
+func TestDirectExecLifecycleSerializesSameSessionAdmissions(t *testing.T) {
+	const containerID = "0123456789abcdef"
+	var arms atomic.Int32
+	secondArm := make(chan struct{})
 	withAdmissionControl(t, func(listener *net.UnixConn, request admissionRequest) {
-		mu.Lock()
-		operations = append(operations, request.Op)
-		mu.Unlock()
+		switch request.Op {
+		case "profile":
+			_, _ = listener.Write(profileACK(request))
+		case "arm":
+			if arms.Add(1) == 2 {
+				close(secondArm)
+			}
+			_, _ = listener.Write(admissionACK(request, "armed"))
+		case "status":
+			_, _ = listener.Write(admissionACK(request, "consumed"))
+		case "complete":
+			_, _ = listener.Write(admissionACK(request, "completed"))
+		}
+	})
+	session := registerAdmissionSession(t, containerID)
+	contended := make(chan struct{})
+	var once sync.Once
+	session.mu.Lock()
+	session.lifecycleGateContended = func() { once.Do(func() { close(contended) }) }
+	session.mu.Unlock()
+	runner := &gatedAdmissionRunner{called: make(chan struct{}), release: make(chan struct{})}
+	wrapped := admissionAwareRunner(runner)
+	first := make(chan error, 1)
+	go func() {
+		_, err := wrapped.Output(context.Background(), "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "/bin/true")...)
+		first <- err
+	}()
+	<-runner.called
+	second := make(chan error, 1)
+	go func() {
+		_, err := wrapped.Output(context.Background(), "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "/bin/true")...)
+		second <- err
+	}()
+	<-contended
+	if got := arms.Load(); got != 1 {
+		t.Fatalf("ARM requests before first lifecycle completed = %d", got)
+	}
+	close(runner.release)
+	if err := <-first; err != nil {
+		t.Fatalf("first direct exec: %v", err)
+	}
+	<-secondArm
+	if err := <-second; err != nil {
+		t.Fatalf("second direct exec: %v", err)
+	}
+	if runner.calls.Load() != 2 {
+		t.Fatalf("runner calls = %d", runner.calls.Load())
+	}
+}
+
+func TestExternalTeardownWaitsBehindDirectExecLifecycle(t *testing.T) {
+	const containerID = "0123456789abcdef"
+	beforeRunner := make(chan struct{})
+	releaseRunner := make(chan struct{})
+	teardownContended := make(chan struct{})
+	invalidateReceived := make(chan struct{})
+	var once sync.Once
+	withAdmissionControl(t, func(listener *net.UnixConn, request admissionRequest) {
+		switch request.Op {
+		case "profile":
+			_, _ = listener.Write(profileACK(request))
+		case "arm":
+			_, _ = listener.Write(admissionACK(request, "armed"))
+		case "status":
+			_, _ = listener.Write(admissionACK(request, "consumed"))
+		case "complete":
+			_, _ = listener.Write(admissionACK(request, "completed"))
+		case "invalidate":
+			close(invalidateReceived)
+			response, _ := json.Marshal(map[string]string{"op": "ack", "ack_op": "invalidate", "status": "invalidated", "container_id": request.ContainerID, "session_generation": request.Generation})
+			_, _ = listener.Write(response)
+		}
+	})
+	session := registerAdmissionSession(t, containerID)
+	session.mu.Lock()
+	session.lifecycleAfterArmBeforeRunner = func() {
+		close(beforeRunner)
+		<-releaseRunner
+	}
+	session.lifecycleGateContended = func() { once.Do(func() { close(teardownContended) }) }
+	session.mu.Unlock()
+	runner := &admissionRunner{}
+	runResult := make(chan error, 1)
+	go func() {
+		_, err := admissionAwareRunner(runner).Output(context.Background(), "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "/bin/true")...)
+		runResult <- err
+	}()
+	<-beforeRunner
+	teardownResult := make(chan error, 1)
+	go func() { teardownResult <- invalidateObserverSession(context.Background(), session) }()
+	<-teardownContended
+	select {
+	case <-invalidateReceived:
+		t.Fatal("external teardown erased admission before runner invocation")
+	default:
+	}
+	close(releaseRunner)
+	if err := <-runResult; err != nil {
+		t.Fatalf("lifecycle owner: %v", err)
+	}
+	if err := <-teardownResult; err != nil {
+		t.Fatalf("external invalidate: %v", err)
+	}
+	<-invalidateReceived
+	if len(runner.calls) != 1 {
+		t.Fatalf("runner calls = %#v", runner.calls)
+	}
+}
+
+func TestWaitingLifecycleContextCancellationDoesNotPoisonOwner(t *testing.T) {
+	const containerID = "0123456789abcdef"
+	beforeRunner := make(chan struct{})
+	releaseRunner := make(chan struct{})
+	contended := make(chan struct{})
+	var once sync.Once
+	var arms atomic.Int32
+	withAdmissionControl(t, func(listener *net.UnixConn, request admissionRequest) {
+		switch request.Op {
+		case "profile":
+			_, _ = listener.Write(profileACK(request))
+		case "arm":
+			arms.Add(1)
+			_, _ = listener.Write(admissionACK(request, "armed"))
+		case "status":
+			_, _ = listener.Write(admissionACK(request, "consumed"))
+		case "complete":
+			_, _ = listener.Write(admissionACK(request, "completed"))
+		}
+	})
+	session := registerAdmissionSession(t, containerID)
+	session.mu.Lock()
+	session.lifecycleAfterArmBeforeRunner = func() {
+		close(beforeRunner)
+		<-releaseRunner
+	}
+	session.lifecycleGateContended = func() { once.Do(func() { close(contended) }) }
+	session.mu.Unlock()
+	first := make(chan error, 1)
+	go func() {
+		_, err := admissionAwareRunner(&admissionRunner{}).Output(context.Background(), "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "/bin/true")...)
+		first <- err
+	}()
+	<-beforeRunner
+	secondContext, cancel := context.WithCancel(context.Background())
+	second := make(chan error, 1)
+	go func() {
+		_, err := admissionAwareRunner(&admissionRunner{}).Output(secondContext, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "/bin/true")...)
+		second <- err
+	}()
+	<-contended
+	cancel()
+	if err := <-second; !errors.Is(err, context.Canceled) {
+		t.Fatalf("waiting caller error = %v", err)
+	}
+	if arms.Load() != 1 {
+		t.Fatalf("cancelled waiter sent ARM: %d", arms.Load())
+	}
+	close(releaseRunner)
+	if err := <-first; err != nil {
+		t.Fatalf("active owner: %v", err)
+	}
+	if activeObserverSession(containerID) != session {
+		t.Fatal("cancelled waiter poisoned active session")
+	}
+}
+
+func TestOwnerTimeoutCleansUpBeforeLifecycleRelease(t *testing.T) {
+	withShortAdmissionCompletionTimeout(t)
+	const containerID = "0123456789abcdef"
+	cancelCount := atomic.Int32{}
+	withAdmissionControl(t, func(listener *net.UnixConn, request admissionRequest) {
 		switch request.Op {
 		case "profile":
 			_, _ = listener.Write(profileACK(request))
@@ -692,82 +884,81 @@ func TestWaitingArmRejectsLifecycleSemanticAmbiguityBeforePeerUnlock(t *testing.
 		case "status":
 			_, _ = listener.Write(admissionACK(request, "pending"))
 		case "cancel":
+			cancelCount.Add(1)
 			_, _ = listener.Write(admissionACK(request, "cancelled"))
 		case "invalidate":
 			response, _ := json.Marshal(map[string]string{"op": "ack", "ack_op": "invalidate", "status": "invalidated", "container_id": request.ContainerID, "session_generation": request.Generation})
 			_, _ = listener.Write(response)
 		}
 	})
-	const containerID = "0123456789abcdef"
 	session := registerAdmissionSession(t, containerID)
-	attachTestFailStop(session, func(context.Context) error {
-		t.Fatal("acknowledged INVALIDATE unexpectedly fail-stopped helper")
-		return nil
-	})
-	semanticNonce, err := newDirectExecAdmissionNonce()
-	if err != nil {
-		t.Fatal(err)
+	if _, err := admissionAwareRunner(&admissionRunner{}).Output(context.Background(), "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "/bin/true")...); !errors.Is(err, errObserverAuthorityAmbiguous) {
+		t.Fatalf("pending timeout = %v", err)
 	}
-	waitingNonce, err := newDirectExecAdmissionNonce()
-	if err != nil {
-		t.Fatal(err)
-	}
-	semanticAdmission := directExecAdmission{containerID: containerID, generation: session.generation, mode: boundaryLaunchMode, nonce: semanticNonce, session: session}
-	waitingAdmission := directExecAdmission{containerID: containerID, generation: session.generation, mode: boundaryLaunchMode, nonce: waitingNonce, session: session}
-	if err := controlDirectExecAdmission(context.Background(), "arm", semanticAdmission); err != nil {
-		t.Fatalf("arm semantic admission: %v", err)
-	}
-
-	// STATUS is the first normal exchange. Pause the second (CANCEL) only after
-	// it owns the real peer mutex, then prove ARM's TryLock observed contention.
-	cancelOwnsPeerLock := make(chan struct{})
-	releaseCancelExchange := make(chan struct{})
-	armContendedPeerLock := make(chan struct{})
-	releaseArmIntoPeerLock := make(chan struct{})
-	poisonedBeforePeerUnlock := make(chan struct{})
-	releaseAmbiguousExchange := make(chan struct{})
-	var peerAcquisitions atomic.Int32
-	session.peer.normalPeerLockAcquired = func() {
-		if peerAcquisitions.Add(1) == 2 {
-			close(cancelOwnsPeerLock)
-			<-releaseCancelExchange
-		}
-	}
-	session.peer.normalPeerLockContended = func() {
-		close(armContendedPeerLock)
-		<-releaseArmIntoPeerLock
-	}
-	session.mu.Lock()
-	session.normalAfterAmbiguityPoisonBeforePeerUnlock = func() {
-		close(poisonedBeforePeerUnlock)
-		<-releaseAmbiguousExchange
-	}
-	session.mu.Unlock()
-
-	semanticResult := make(chan error, 1)
-	go func() { semanticResult <- finalizeDirectExecAdmission(context.Background(), semanticAdmission, true) }()
-	<-cancelOwnsPeerLock
-	armResult := make(chan error, 1)
-	go func() { armResult <- controlDirectExecAdmission(context.Background(), "arm", waitingAdmission) }()
-	<-armContendedPeerLock
-	close(releaseArmIntoPeerLock)
-	close(releaseCancelExchange)
-	<-poisonedBeforePeerUnlock
-	close(releaseAmbiguousExchange)
-
-	if err := <-semanticResult; err == nil {
-		t.Fatal("successful runner with cancelled admission did not fail closed")
-	}
-	if err := <-armResult; err == nil {
-		t.Fatal("waiting ARM sent after lifecycle-semantic ambiguity")
-	}
-	mu.Lock()
-	defer mu.Unlock()
-	if strings.Join(operations, ",") != "profile,arm,status,cancel,invalidate" {
-		t.Fatalf("control operations = %v; waiting ARM was emitted or teardown was skipped", operations)
+	if cancelCount.Load() != 0 {
+		t.Fatalf("successful pending lifecycle sent CANCEL %d times", cancelCount.Load())
 	}
 	if activeObserverSession(containerID) != nil {
-		t.Fatal("invalidated session remained usable")
+		t.Fatal("timeout session remained active")
+	}
+	lifecycle, err := acquireDirectExecLifecycle(context.Background(), session)
+	if err != nil {
+		t.Fatalf("lifecycle gate remained held after terminal cleanup: %v", err)
+	}
+	lifecycle.release()
+}
+
+func TestWaitingLifecycleRevalidatesAfterOwnerPoison(t *testing.T) {
+	withShortAdmissionCompletionTimeout(t)
+	const containerID = "0123456789abcdef"
+	pendingObserved := make(chan struct{})
+	releasePending := make(chan struct{})
+	contended := make(chan struct{})
+	var once sync.Once
+	var arms atomic.Int32
+	withAdmissionControl(t, func(listener *net.UnixConn, request admissionRequest) {
+		switch request.Op {
+		case "profile":
+			_, _ = listener.Write(profileACK(request))
+		case "arm":
+			arms.Add(1)
+			_, _ = listener.Write(admissionACK(request, "armed"))
+		case "status":
+			_, _ = listener.Write(admissionACK(request, "pending"))
+		case "invalidate":
+			response, _ := json.Marshal(map[string]string{"op": "ack", "ack_op": "invalidate", "status": "invalidated", "container_id": request.ContainerID, "session_generation": request.Generation})
+			_, _ = listener.Write(response)
+		}
+	})
+	session := registerAdmissionSession(t, containerID)
+	session.mu.Lock()
+	session.normalAfterSuccessfulPendingStatus = func() {
+		close(pendingObserved)
+		<-releasePending
+	}
+	session.lifecycleGateContended = func() { once.Do(func() { close(contended) }) }
+	session.mu.Unlock()
+	first := make(chan error, 1)
+	go func() {
+		_, err := admissionAwareRunner(&admissionRunner{}).Output(context.Background(), "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "/bin/true")...)
+		first <- err
+	}()
+	<-pendingObserved
+	second := make(chan error, 1)
+	go func() {
+		_, err := admissionAwareRunner(&admissionRunner{}).Output(context.Background(), "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "/bin/true")...)
+		second <- err
+	}()
+	<-contended
+	close(releasePending)
+	if err := <-first; !errors.Is(err, errObserverAuthorityAmbiguous) {
+		t.Fatalf("owner timeout = %v", err)
+	}
+	if err := <-second; err == nil {
+		t.Fatal("waiter acquired authority after owner poison")
+	}
+	if arms.Load() != 1 {
+		t.Fatalf("waiter sent ARM after poison: %d", arms.Load())
 	}
 }
 
@@ -1278,5 +1469,64 @@ func TestAmbiguousCompletePoisonsSession(t *testing.T) {
 	}
 	if invalidations != 1 || activeObserverSession(containerID) != nil || !session.poisoned {
 		t.Fatalf("invalidations=%d session=%#v poisoned=%t", invalidations, activeObserverSession(containerID), session.poisoned)
+	}
+}
+
+func TestSuccessfulRunnerWaitsForDelayedSentryExecWithoutCancel(t *testing.T) {
+	var (
+		armCount      int
+		statusCount   int
+		cancelCount   int
+		completeCount int
+	)
+	withAdmissionControl(t, func(listener *net.UnixConn, request admissionRequest) {
+		switch request.Op {
+		case "profile":
+			_, _ = listener.Write(profileACK(request))
+		case "arm":
+			armCount++
+			_, _ = listener.Write(admissionACK(request, "armed"))
+		case "status":
+			statusCount++
+			status := "pending"
+			if statusCount == 2 {
+				status = "consumed"
+			}
+			_, _ = listener.Write(admissionACK(request, status))
+		case "cancel":
+			cancelCount++
+			_, _ = listener.Write(admissionACK(request, "cancelled"))
+		case "complete":
+			completeCount++
+			_, _ = listener.Write(admissionACK(request, "completed"))
+		}
+	})
+	const containerID = "0123456789abcdef"
+	session := registerAdmissionSession(t, containerID)
+	runner := &admissionRunner{err: nil}
+	_, err := admissionAwareRunner(runner).Output(context.Background(), "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "/bin/true")...)
+	if err != nil {
+		t.Fatalf("successful runner did not converge after delayed SENTRY_EXEC: %v", err)
+	}
+	if armCount != 1 {
+		t.Fatalf("expected 1 ARM, got %d", armCount)
+	}
+	if statusCount != 2 {
+		t.Fatalf("expected pending then consumed STATUS, got %d requests", statusCount)
+	}
+	if cancelCount != 0 {
+		t.Fatalf("successful pending admission sent CANCEL %d times", cancelCount)
+	}
+	if completeCount != 1 {
+		t.Fatalf("expected one COMPLETE, got %d", completeCount)
+	}
+	session.mu.Lock()
+	poisoned := session.poisoned
+	session.mu.Unlock()
+	if poisoned {
+		t.Fatal("successful delayed SENTRY_EXEC poisoned session")
+	}
+	if activeObserverSession(containerID) != session {
+		t.Fatal("successful delayed SENTRY_EXEC did not retain active session")
 	}
 }

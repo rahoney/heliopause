@@ -22,6 +22,15 @@ const (
 
 var directExecAdmissionTimeout = 2 * time.Second
 
+// directExecAdmissionCompletionTimeout bounds only the post-success wait for
+// the asynchronous remote SENTRY_EXEC consumer. It is separate from the
+// per-control-exchange I/O deadline above: a successful docker exec proves
+// neither that the observer has consumed the matching event nor that it is
+// safe to cancel the exact pending admission.
+var directExecAdmissionCompletionTimeout = 2 * time.Second
+
+const directExecAdmissionPollInterval = 10 * time.Millisecond
+
 var errObserverAuthorityAmbiguous = errors.New("observer direct-exec authority is ambiguous")
 
 // sessionEntropy is kept behind this narrow seam solely to prove that an
@@ -136,6 +145,7 @@ func (r *admissionAwareCommandRunner) RunOutput(ctx context.Context, output io.W
 type directExecAdmission struct {
 	containerID, generation, mode, nonce string
 	session                              *observerSecuritySession
+	lifecycle                            *directExecLifecycleLease
 }
 
 func prepareDirectExecAdmission(ctx context.Context, binary string, arguments []string) ([]string, func(context.Context, bool) error, error) {
@@ -147,19 +157,39 @@ func prepareDirectExecAdmission(ctx context.Context, binary string, arguments []
 	if session == nil {
 		return nil, nil, observerFault{reason: "LIFECYCLE_ERROR"}
 	}
+	// A lifecycle owner must not recursively initiate another admission-aware
+	// direct exec for this session. Production runners execute the Host command
+	// synchronously and do not re-enter this wrapper.
+	lifecycle, err := acquireDirectExecLifecycle(ctx, session)
+	if err != nil {
+		return nil, nil, err
+	}
+	if !activeExactObserverSession(containerID, session) {
+		lifecycle.release()
+		return nil, nil, observerFault{reason: "LIFECYCLE_ERROR"}
+	}
 	nonce, err := newDirectExecAdmissionNonce()
 	if err != nil {
+		lifecycle.release()
 		return nil, nil, errors.New("generate direct-exec admission")
 	}
-	admission := directExecAdmission{containerID: containerID, generation: session.generation, mode: mode, nonce: nonce, session: session}
+	admission := directExecAdmission{containerID: containerID, generation: session.generation, mode: mode, nonce: nonce, session: session, lifecycle: lifecycle}
 	if err := controlDirectExecAdmission(ctx, "arm", admission); err != nil {
+		lifecycle.release()
 		return nil, nil, err
+	}
+	session.mu.Lock()
+	beforeRunner := session.lifecycleAfterArmBeforeRunner
+	session.mu.Unlock()
+	if beforeRunner != nil {
+		beforeRunner()
 	}
 	prepared := make([]string, 0, len(arguments)+1)
 	prepared = append(prepared, arguments[:nonceIndex]...)
 	prepared = append(prepared, nonce)
 	prepared = append(prepared, arguments[nonceIndex:]...)
 	return prepared, func(releaseCtx context.Context, runnerSucceeded bool) error {
+		defer lifecycle.release()
 		return finalizeDirectExecAdmission(releaseCtx, admission, runnerSucceeded)
 	}, nil
 }
@@ -275,37 +305,31 @@ func (p *observerControlPeer) exchangeAckAuthorized(ctx context.Context, request
 	if err != nil || len(body) == 0 || len(body) > maximumControlDatagramBytes {
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
 	}
-	if session != nil && p.normalPeerLockContended != nil {
-		if !p.mu.TryLock() {
-			p.normalPeerLockContended()
-			p.mu.Lock()
-		}
-	} else {
-		p.mu.Lock()
-	}
-	defer p.mu.Unlock()
-	if session != nil && p.normalPeerLockAcquired != nil {
-		p.normalPeerLockAcquired()
-	}
-	poisonAmbiguous := func() {
+	poisonAmbiguous := func(peerLocked bool) {
 		if session == nil {
 			return
 		}
 		session.mu.Lock()
-		newlyPoisoned := !session.poisoned
-		session.poisoned = true
-		hook := session.normalAfterAmbiguityPoisonBeforePeerUnlock
+		newlyPoisoned := markObserverSessionPoisonedLocked(session)
+		afterPeerLockedPoison := session.normalAfterAmbiguityPoisonBeforePeerUnlock
 		session.mu.Unlock()
-		if newlyPoisoned && hook != nil {
-			hook()
+		if newlyPoisoned && peerLocked && afterPeerLockedPoison != nil {
+			afterPeerLockedPoison()
 		}
+	}
+	if err := p.lockAuthorizedPeer(ctx, session, poisonAmbiguous); err != nil {
+		return nil, err
+	}
+	defer p.mu.Unlock()
+	if session != nil && p.normalPeerLockAcquired != nil {
+		p.normalPeerLockAcquired()
 	}
 	deadline := time.Now().Add(directExecAdmissionTimeout)
 	if fromContext, ok := ctx.Deadline(); ok && fromContext.Before(deadline) {
 		deadline = fromContext
 	}
 	if err := p.connection.SetDeadline(deadline); err != nil {
-		poisonAmbiguous()
+		poisonAmbiguous(true)
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
 	}
 	if session != nil {
@@ -322,25 +346,97 @@ func (p *observerControlPeer) exchangeAckAuthorized(ctx context.Context, request
 		session.mu.Unlock()
 	}
 	if writeErr != nil {
-		poisonAmbiguous()
+		poisonAmbiguous(true)
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
 	}
 	response := make([]byte, maximumControlDatagramBytes)
 	size, _, flags, _, err := p.connection.ReadMsgUnix(response, nil)
 	if err != nil || size <= 0 || flags&syscall.MSG_TRUNC != 0 {
-		poisonAmbiguous()
+		poisonAmbiguous(true)
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
 	}
 	acknowledgement, err := decodeStrictControlAck(response[:size])
 	if err != nil {
-		poisonAmbiguous()
+		poisonAmbiguous(true)
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
 	}
 	if validate != nil && !validate(acknowledgement) {
-		poisonAmbiguous()
+		poisonAmbiguous(true)
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
 	}
+	if session != nil {
+		session.mu.Lock()
+		usable := !session.poisoned && !session.invalidated &&
+			session.containerID == request.Container && session.generation == request.Session
+		if !usable {
+			session.mu.Unlock()
+			poisonAmbiguous(true)
+			return nil, errNormalAuthorityUnavailable
+		}
+		session.mu.Unlock()
+	}
 	return acknowledgement, nil
+}
+
+// lockAuthorizedPeer acquires the persistent normal-operation turn without
+// allowing a caller context deadline to be extended by mutex contention.  The
+// timeout path poisons without the peer lock: INVALIDATE deliberately takes the
+// peer lock only after poisoning, so it cannot be blocked from making the
+// authority decision by an in-flight normal exchange.
+func (p *observerControlPeer) lockAuthorizedPeer(ctx context.Context, session *observerSecuritySession, poison func(bool)) error {
+	if session == nil {
+		p.mu.Lock()
+		return nil
+	}
+	if p.mu.TryLock() {
+		if err := ctx.Err(); err == nil {
+			return nil
+		}
+		p.mu.Unlock()
+		poison(false)
+		return ctx.Err()
+	}
+	if p.normalPeerLockContended != nil {
+		p.normalPeerLockContended()
+	}
+	for {
+		if err := ctx.Err(); err != nil {
+			poison(false)
+			return err
+		}
+		wait := directExecAdmissionPollInterval
+		if deadline, ok := ctx.Deadline(); ok {
+			remaining := time.Until(deadline)
+			if remaining <= 0 {
+				poison(false)
+				return context.DeadlineExceeded
+			}
+			if remaining < wait {
+				wait = remaining
+			}
+		}
+		timer := time.NewTimer(wait)
+		select {
+		case <-ctx.Done():
+			if !timer.Stop() {
+				select {
+				case <-timer.C:
+				default:
+				}
+			}
+			poison(false)
+			return ctx.Err()
+		case <-timer.C:
+		}
+		if p.mu.TryLock() {
+			if err := ctx.Err(); err == nil {
+				return nil
+			}
+			p.mu.Unlock()
+			poison(false)
+			return ctx.Err()
+		}
+	}
 }
 
 func exactControlAck(acknowledgement strictControlAck, required map[string]string) bool {
@@ -403,6 +499,9 @@ type observerSecuritySession struct {
 	mu                                         sync.Mutex
 	poisoned                                   bool
 	invalidated                                bool
+	teardownRequested                          bool
+	terminalCleanupOwned                       bool
+	lifecycleGate                              chan struct{}
 	failStop                                   func(context.Context) error
 	// normalBeforePeerLock is an unexported test synchronization seam. It is
 	// called only after the ordinary fast-path validation and cannot alter the
@@ -413,12 +512,99 @@ type observerSecuritySession struct {
 	// production has made poisoning authoritative and while the peer lock is
 	// still held.
 	normalAfterAmbiguityPoisonBeforePeerUnlock func()
+	// normalAfterSuccessfulPendingStatus is an unexported test synchronization
+	// seam after a successful finalizer has received its first PENDING status.
+	// Production leaves it nil.
+	normalAfterSuccessfulPendingStatus func()
+	// lifecycleAfterArmBeforeRunner is an unexported test seam. It runs after
+	// ARM and before the synchronous runner while the lifecycle lease is held.
+	lifecycleAfterArmBeforeRunner func()
+	// lifecycleGateContended observes a waiter before it blocks on the session
+	// lifecycle gate. Production leaves it nil.
+	lifecycleGateContended func()
 }
 
 var observerSessions = struct {
 	sync.Mutex
 	byContainer map[string]*observerSecuritySession
 }{byContainer: make(map[string]*observerSecuritySession)}
+
+// directExecLifecycleLease is held from ARM through synchronous runner
+// execution and terminal observer resolution. It is deliberately non-copyable
+// in use: only release is exposed and sync.Once makes duplicate finish calls
+// harmless.
+type directExecLifecycleLease struct {
+	session *observerSecuritySession
+	gate    chan struct{}
+	once    sync.Once
+}
+
+func (l *directExecLifecycleLease) release() {
+	if l != nil {
+		l.once.Do(func() { l.gate <- struct{}{} })
+	}
+}
+
+func sessionLifecycleGate(session *observerSecuritySession) chan struct{} {
+	session.mu.Lock()
+	defer session.mu.Unlock()
+	if session.lifecycleGate == nil {
+		session.lifecycleGate = make(chan struct{}, 1)
+		session.lifecycleGate <- struct{}{}
+	}
+	return session.lifecycleGate
+}
+
+// acquireDirectExecLifecycle waits without a helper goroutine. A waiter whose
+// context ends has not touched observer authority and cannot affect the owner.
+func acquireDirectExecLifecycle(ctx context.Context, session *observerSecuritySession) (*directExecLifecycleLease, error) {
+	if ctx == nil || session == nil {
+		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	gate := sessionLifecycleGate(session)
+	select {
+	case <-gate:
+		return &directExecLifecycleLease{session: session, gate: gate}, nil
+	default:
+	}
+	session.mu.Lock()
+	contended := session.lifecycleGateContended
+	session.mu.Unlock()
+	if contended != nil {
+		contended()
+	}
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	case <-gate:
+		return &directExecLifecycleLease{session: session, gate: gate}, nil
+	}
+}
+
+// markObserverSessionPoisonedLocked is irreversible. Callers hold session.mu.
+func markObserverSessionPoisonedLocked(session *observerSecuritySession) bool {
+	newlyPoisoned := !session.poisoned
+	session.poisoned = true
+	return newlyPoisoned
+}
+
+// requestObserverSessionTeardownLocked records irreversible external terminal
+// intent. It blocks new lifecycle ownership, but an owner which already holds
+// lifecycleGate keeps its exact session pointer only to reach terminal state.
+func requestObserverSessionTeardownLocked(session *observerSecuritySession) {
+	if session != nil {
+		session.teardownRequested = true
+	}
+}
+
+func requestObserverSessionTeardown(session *observerSecuritySession) {
+	if session == nil {
+		return
+	}
+	session.mu.Lock()
+	requestObserverSessionTeardownLocked(session)
+	session.mu.Unlock()
+}
 
 func activeObserverSession(containerID string) *observerSecuritySession {
 	observerSessions.Lock()
@@ -428,13 +614,31 @@ func activeObserverSession(containerID string) *observerSecuritySession {
 		return nil
 	}
 	session.mu.Lock()
-	valid := !session.poisoned && !session.invalidated
+	valid := !session.teardownRequested && !session.poisoned && !session.invalidated
 	session.mu.Unlock()
 	if !valid {
 		return nil
 	}
 	return session
 }
+
+func activeExactObserverSession(containerID string, expected *observerSecuritySession) bool {
+	return expected != nil && activeObserverSession(containerID) == expected
+}
+
+// registeredExactObserverSession deliberately ignores teardownRequested. It
+// is for a lifecycle owner that already holds lifecycleGate and must finish an
+// armed admission after external teardown intent. It grants no new authority.
+func registeredExactObserverSession(containerID string, expected *observerSecuritySession) bool {
+	if expected == nil {
+		return false
+	}
+	observerSessions.Lock()
+	current := observerSessions.byContainer[containerID]
+	observerSessions.Unlock()
+	return current == expected
+}
+
 func activateObserverSession(session *observerSecuritySession) bool {
 	observerSessions.Lock()
 	defer observerSessions.Unlock()
@@ -444,12 +648,47 @@ func activateObserverSession(session *observerSecuritySession) bool {
 	observerSessions.byContainer[session.containerID] = session
 	return true
 }
+
+// forgetObserverSession is external teardown. It waits behind an active
+// direct-exec lifecycle, so it cannot erase an armed admission before its
+// runner and terminal resolution complete.
 func forgetObserverSession(session *observerSecuritySession) {
 	if session == nil {
 		return
 	}
+	// Exact helper fail-stop synchronously calls SharedObserver.Fail, which in
+	// turn forgets every session. The owner marks this narrow terminal state
+	// before invoking fail-stop so that same-session re-entry cannot wait on
+	// the lifecycle lease that the fail-stop owner must retain until confirmed.
+	requestObserverSessionTeardown(session)
 	session.mu.Lock()
-	session.poisoned = true
+	terminalOwner := session.terminalCleanupOwned
+	session.mu.Unlock()
+	if terminalOwner {
+		forgetObserverSessionOwned(session)
+		return
+	}
+	lifecycle, err := acquireDirectExecLifecycle(context.Background(), session)
+	if err != nil {
+		return
+	}
+	defer lifecycle.release()
+	forgetObserverSessionOwned(session)
+}
+
+// forgetObserverSessionOwned requires the caller to own session's lifecycle
+// lease. It is intentionally narrow so owner cleanup never reacquires its gate.
+func forgetObserverSessionOwned(session *observerSecuritySession) {
+	if session == nil {
+		return
+	}
+	session.mu.Lock()
+	if session.invalidated {
+		session.mu.Unlock()
+		return
+	}
+	requestObserverSessionTeardownLocked(session)
+	markObserverSessionPoisonedLocked(session)
 	session.invalidated = true
 	session.mu.Unlock()
 	observerSessions.Lock()
@@ -474,7 +713,8 @@ func registerObserverProfile(ctx context.Context, containerID, profile string) (
 	if err != nil {
 		return nil, err
 	}
-	session := &observerSecuritySession{containerID: containerID, generation: generation, profile: profile, topology: encodedTopology, peer: peer}
+	session := &observerSecuritySession{containerID: containerID, generation: generation, profile: profile, topology: encodedTopology, peer: peer, lifecycleGate: make(chan struct{}, 1)}
+	session.lifecycleGate <- struct{}{}
 	required := map[string]string{"op": "ack", "ack_op": "profile", "status": "registered", "container_id": containerID, "profile": profile, "expected_topology": encodedTopology, "session_generation": generation}
 	if err := peer.exchange(ctx, controlRequest{Op: "profile", Container: containerID, Profile: profile, Topology: encodedTopology, Session: generation}, required); err != nil {
 		peer.Close()
@@ -491,39 +731,57 @@ func invalidateObserverSession(ctx context.Context, session *observerSecuritySes
 	if session == nil || ctx == nil {
 		return observerFault{reason: "LIFECYCLE_ERROR"}
 	}
+	requestObserverSessionTeardown(session)
+	lifecycle, err := acquireDirectExecLifecycle(ctx, session)
+	if err != nil {
+		return err
+	}
+	defer lifecycle.release()
+	return invalidateObserverSessionOwned(ctx, session)
+}
+
+// invalidateObserverSessionOwned requires the caller to own session's
+// lifecycle lease. It poisons before the peer turn and never reacquires the
+// lifecycle gate.
+func invalidateObserverSessionOwned(ctx context.Context, session *observerSecuritySession) error {
+	if session == nil || ctx == nil {
+		return observerFault{reason: "LIFECYCLE_ERROR"}
+	}
 	session.mu.Lock()
 	invalidated := session.invalidated
 	if !invalidated {
-		session.poisoned = true
+		requestObserverSessionTeardownLocked(session)
+		markObserverSessionPoisonedLocked(session)
 	}
 	session.mu.Unlock()
 	if invalidated {
 		return observerFault{reason: "LIFECYCLE_ERROR"}
 	}
-	return invalidatePoisonedObserverSession(ctx, session)
+	return invalidatePoisonedObserverSessionOwned(ctx, session)
 }
 
-func invalidatePoisonedObserverSession(ctx context.Context, session *observerSecuritySession) error {
+func invalidatePoisonedObserverSessionOwned(ctx context.Context, session *observerSecuritySession) error {
 	if session == nil || ctx == nil {
 		return observerFault{reason: "LIFECYCLE_ERROR"}
 	}
 	required := map[string]string{"op": "ack", "ack_op": "invalidate", "status": "invalidated", "container_id": session.containerID, "session_generation": session.generation}
 	if err := session.peer.exchange(ctx, controlRequest{Op: "invalidate", Container: session.containerID, Session: session.generation}, required); err != nil {
-		return failStopAmbiguousObserverSession(session, err)
+		return failStopAmbiguousObserverSessionOwned(session, err)
 	}
-	forgetObserverSession(session)
+	forgetObserverSessionOwned(session)
 	return nil
 }
 
 // failStopAmbiguousObserverSession is the terminal authority resolution path:
 // an exact INVALIDATE ACK proves cleanup; otherwise only termination of the
 // exact helper that owns the in-memory admission state can prove it.
-func failStopAmbiguousObserverSession(session *observerSecuritySession, cause error) error {
+func failStopAmbiguousObserverSessionOwned(session *observerSecuritySession, cause error) error {
 	if session == nil {
 		return observerFault{reason: "LIFECYCLE_ERROR"}
 	}
 	session.mu.Lock()
-	session.poisoned = true
+	markObserverSessionPoisonedLocked(session)
+	session.terminalCleanupOwned = true
 	stop := session.failStop
 	session.mu.Unlock()
 	if stop == nil {
@@ -535,7 +793,7 @@ func failStopAmbiguousObserverSession(session *observerSecuritySession, cause er
 	if stopErr != nil {
 		return errors.Join(cause, errObserverAuthorityAmbiguous, stopErr)
 	}
-	forgetObserverSession(session)
+	forgetObserverSessionOwned(session)
 	return errors.Join(cause, errObserverAuthorityAmbiguous)
 }
 
@@ -551,6 +809,14 @@ func controlDirectExecAdmission(ctx context.Context, operation string, admission
 // retained, exact slot. A target's non-zero exit after PENDING->CONSUMED is not
 // security ambiguity and therefore returns to the caller unchanged.
 func finalizeDirectExecAdmission(ctx context.Context, admission directExecAdmission, runnerSucceeded bool) error {
+	if ctx == nil {
+		return observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	if runnerSucceeded {
+		completionContext, cancel := directExecAdmissionCompletionContext(ctx)
+		defer cancel()
+		return finalizeSuccessfulDirectExecAdmission(completionContext, admission)
+	}
 	state, err := directExecAdmissionStatus(ctx, admission)
 	if err != nil {
 		return err
@@ -571,6 +837,82 @@ func finalizeDirectExecAdmission(ctx context.Context, admission directExecAdmiss
 		return nil
 	default:
 		return observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+}
+
+func directExecAdmissionCompletionContext(ctx context.Context) (context.Context, context.CancelFunc) {
+	deadline := time.Now().Add(directExecAdmissionCompletionTimeout)
+	if fromContext, ok := ctx.Deadline(); ok && fromContext.Before(deadline) {
+		deadline = fromContext
+	}
+	return context.WithDeadline(ctx, deadline)
+}
+
+func finalizeSuccessfulDirectExecAdmission(ctx context.Context, admission directExecAdmission) error {
+	state, err := directExecAdmissionStatus(ctx, admission)
+	if err != nil {
+		return err
+	}
+	switch state {
+	case "consumed":
+		return completeDirectExecAdmission(ctx, admission)
+	case "pending":
+		admission.session.mu.Lock()
+		hook := admission.session.normalAfterSuccessfulPendingStatus
+		admission.session.mu.Unlock()
+		if hook != nil {
+			hook()
+		}
+		return awaitConsumedDirectExecAdmission(ctx, admission)
+	default:
+		return ambiguousDirectExecAdmission(ctx, admission, observerFault{reason: "LIFECYCLE_ERROR"})
+	}
+}
+
+// awaitConsumedDirectExecAdmission gives the observer a bounded opportunity
+// to consume an event already queued on its independent remote socket. Each
+// STATUS remains an exact, peer-serialized normal-authority exchange. On
+// expiry, ambiguousDirectExecAdmission poisons before INVALIDATE/fail-stop, so
+// no later normal operation can obtain authority from this session.
+func awaitConsumedDirectExecAdmission(ctx context.Context, admission directExecAdmission) error {
+	for {
+		if err := ctx.Err(); err != nil {
+			return ambiguousDirectExecAdmission(ctx, admission, err)
+		}
+		deadline, hasDeadline := ctx.Deadline()
+		if !hasDeadline {
+			return ambiguousDirectExecAdmission(ctx, admission, observerFault{reason: "LIFECYCLE_ERROR"})
+		}
+		remaining := time.Until(deadline)
+		if remaining <= 0 {
+			return ambiguousDirectExecAdmission(ctx, admission, context.DeadlineExceeded)
+		}
+		wait := directExecAdmissionPollInterval
+		if remaining < wait {
+			wait = remaining
+		}
+		timer := time.NewTimer(wait)
+		select {
+		case <-ctx.Done():
+			if !timer.Stop() {
+				select {
+				case <-timer.C:
+				default:
+				}
+			}
+			return ambiguousDirectExecAdmission(ctx, admission, ctx.Err())
+		case <-timer.C:
+		}
+		state, err := directExecAdmissionStatus(ctx, admission)
+		if err != nil {
+			return err
+		}
+		if state == "consumed" {
+			return completeDirectExecAdmission(ctx, admission)
+		}
+		if state != "pending" {
+			return ambiguousDirectExecAdmission(ctx, admission, observerFault{reason: "LIFECYCLE_ERROR"})
+		}
 	}
 }
 
@@ -610,7 +952,8 @@ func exchangeDirectExecAdmission(ctx context.Context, operation string, admissio
 	admission.session.mu.Lock()
 	valid := !admission.session.poisoned && !admission.session.invalidated && admission.session.containerID == admission.containerID && admission.session.generation == admission.generation
 	admission.session.mu.Unlock()
-	if !valid || activeObserverSession(admission.containerID) != admission.session {
+	owner := admission.lifecycle != nil
+	if !valid || (owner && !registeredExactObserverSession(admission.containerID, admission.session)) || (!owner && activeObserverSession(admission.containerID) != admission.session) {
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
 	}
 	// This is a diagnostic-only test seam.  The decision that authorizes the
@@ -673,7 +1016,17 @@ func exactControlAckExceptStatus(acknowledgement strictControlAck, required map[
 }
 
 func ambiguousDirectExecAdmission(ctx context.Context, admission directExecAdmission, cause error) error {
-	if cleanupErr := invalidateObserverSession(ctx, admission.session); cleanupErr != nil {
+	cleanupContext := ctx
+	cancel := func() {}
+	if cleanupContext == nil || cleanupContext.Err() != nil {
+		cleanupContext, cancel = context.WithTimeout(context.Background(), directExecAdmissionTimeout)
+	}
+	defer cancel()
+	cleanup := invalidateObserverSession
+	if admission.lifecycle != nil {
+		cleanup = invalidateObserverSessionOwned
+	}
+	if cleanupErr := cleanup(cleanupContext, admission.session); cleanupErr != nil {
 		return errors.Join(cause, errObserverAuthorityAmbiguous, cleanupErr)
 	}
 	return errors.Join(cause, errObserverAuthorityAmbiguous)

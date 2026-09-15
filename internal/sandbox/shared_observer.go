@@ -28,8 +28,19 @@ type SharedObserver struct {
 	diagnostic io.Writer
 	sequence   uint64
 	fault      error
+	closing    bool
 	closeOnce  sync.Once
 	closeErr   error
+	// teardownAfterPhase1, teardownBeforePhase2, and teardownAfterPhase2 are
+	// unexported test seams.
+	// Production leaves them nil. All run after SharedObserver.mu is released.
+	teardownAfterPhase1  func()
+	teardownBeforePhase2 func(*observerSecuritySession)
+	teardownAfterPhase2  func(*observerSecuritySession)
+	// startProfileBeforePublication pauses only a fully constructed but not yet
+	// published profile session. Production leaves it nil; it never runs while
+	// SharedObserver.mu is held.
+	startProfileBeforePublication func(*observerSecuritySession)
 }
 
 // observerMountExpectation is trusted backend configuration. It is serialized
@@ -284,11 +295,16 @@ func (o *SharedObserver) Close() error {
 	}
 	o.closeOnce.Do(func() {
 		o.mu.Lock()
-		for _, session := range o.sessions {
-			forgetObserverSession(session)
+		o.closing = true
+		batch := o.beginTeardownLocked()
+		for _, reader := range o.streams {
+			closeSharedTraceReaderDone(reader)
+			batch.add(reader.session)
 		}
+		o.streams = make(map[string]*sharedTraceReader)
 		o.sessions = make(map[string]*observerSecuritySession)
 		o.mu.Unlock()
+		o.completeTeardown(batch)
 		o.closeErr = o.listener.Close()
 	})
 	return o.closeErr
@@ -303,6 +319,9 @@ func (o *SharedObserver) Start(_ context.Context, containerID string) (TraceRead
 	if o.fault != nil {
 		return nil, o.fault
 	}
+	if o.closing {
+		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
+	}
 	if _, exists := o.streams[containerID]; exists {
 		return nil, observerFault{reason: "PREVIOUS_TRACE_NOT_FINALIZED"}
 	}
@@ -315,6 +334,12 @@ func (o *SharedObserver) StartProfile(ctx context.Context, containerID, profile 
 	if ctx == nil || profile == "" {
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
 	}
+	o.mu.Lock()
+	active := o.fault == nil && !o.closing
+	o.mu.Unlock()
+	if !active {
+		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
+	}
 	session, err := registerObserverProfile(ctx, containerID, profile)
 	if err != nil {
 		return nil, err
@@ -322,21 +347,52 @@ func (o *SharedObserver) StartProfile(ctx context.Context, containerID, profile 
 	session.mu.Lock()
 	session.failStop = o.failStopHelper
 	session.mu.Unlock()
-	reader, err := o.Start(ctx, containerID)
-	if err != nil {
-		_ = invalidateObserverSession(ctx, session)
-		return nil, err
-	}
-	shared := reader.(*sharedTraceReader)
-	shared.session = session
-	o.mu.Lock()
-	o.sessions[containerID] = session
-	o.mu.Unlock()
-	shared.profile = profile
 	budget := traceBudgetForProfile(profile)
-	if budget != defaultTraceBudget {
-		shared.records = make(chan TraceRecord, budget.events+1)
-		shared.budget = budget
+	shared := &sharedTraceReader{
+		observer:          o,
+		records:           make(chan TraceRecord, budget.events+1),
+		done:              make(chan struct{}),
+		mountReady:        make(chan struct{}),
+		budget:            budget,
+		profile:           profile,
+		attributionCounts: make(map[string]uint64),
+		session:           session,
+	}
+	// The reader/session relationship is complete before either is reachable
+	// through SharedObserver maps. This closes the profile-publication race with
+	// Phase 1 teardown.
+	o.mu.Lock()
+	hook := o.startProfileBeforePublication
+	o.mu.Unlock()
+	if hook != nil {
+		hook(session)
+	}
+
+	var publicationErr error
+	o.mu.Lock()
+	switch {
+	case o.fault != nil:
+		publicationErr = o.fault
+	case o.closing:
+		publicationErr = observerFault{reason: "LIFECYCLE_ERROR"}
+	case o.streams[containerID] != nil || o.sessions[containerID] != nil:
+		publicationErr = observerFault{reason: "PREVIOUS_TRACE_NOT_FINALIZED"}
+	default:
+		// This is the sole publication point for a profiled reader. Phase 1
+		// teardown either observes this complete relationship or rejects this
+		// publication after it has detached the observer maps.
+		o.streams[containerID] = shared
+		o.sessions[containerID] = session
+	}
+	o.mu.Unlock()
+	if publicationErr != nil {
+		// registerObserverProfile already created exact observer authority. It
+		// must be terminally invalidated outside SharedObserver.mu, because this
+		// cleanup can wait for lifecycleGate and use the control peer.
+		if cleanupErr := invalidateObserverSession(ctx, session); cleanupErr != nil {
+			return nil, errors.Join(publicationErr, cleanupErr)
+		}
+		return nil, publicationErr
 	}
 	return shared, nil
 }
@@ -366,8 +422,6 @@ func (o *SharedObserver) receive() {
 			return
 		}
 		if record.Kind == "stream-fault" {
-			delete(o.streams, record.ContainerID)
-			delete(o.sessions, record.ContainerID)
 			o.sequence++
 			o.writeAttributionDiagnostic(sharedAttributionDiagnostic{o.sequence, reader.profile, reader.attributionCounts})
 			reason := record.Reason
@@ -377,16 +431,16 @@ func (o *SharedObserver) receive() {
 			if o.fault == nil {
 				o.fault = observerFault{reason: reason}
 			}
-			close(reader.done)
-			forgetObserverSession(reader.session)
+			batch := o.beginTeardownLocked(reader.session)
+			closeSharedTraceReaderDone(reader)
 			for _, remaining := range o.streams {
-				select {
-				case <-remaining.done:
-				default:
-					close(remaining.done)
-				}
+				closeSharedTraceReaderDone(remaining)
+				batch.add(remaining.session)
 			}
+			o.streams = make(map[string]*sharedTraceReader)
+			o.sessions = make(map[string]*observerSecuritySession)
 			o.mu.Unlock()
+			o.completeTeardown(batch)
 			return
 		}
 		if record.Kind == "stream-end" {
@@ -394,9 +448,10 @@ func (o *SharedObserver) receive() {
 			delete(o.sessions, record.ContainerID)
 			o.sequence++
 			o.writeAttributionDiagnostic(sharedAttributionDiagnostic{o.sequence, reader.profile, reader.attributionCounts})
-			close(reader.done)
-			forgetObserverSession(reader.session)
+			batch := o.beginTeardownLocked(reader.session)
+			closeSharedTraceReaderDone(reader)
 			o.mu.Unlock()
+			o.completeTeardown(batch)
 			continue
 		}
 		if record.Kind == "container-start" {
@@ -447,22 +502,91 @@ func (o *SharedObserver) receive() {
 
 func (o *SharedObserver) fail(err error) {
 	o.mu.Lock()
-	defer o.mu.Unlock()
 	if o.fault == nil {
 		o.fault = err
 	}
+	batch := o.beginTeardownLocked()
 	for _, reader := range o.streams {
-		select {
-		case <-reader.done:
-		default:
-			close(reader.done)
-		}
-		forgetObserverSession(reader.session)
+		closeSharedTraceReaderDone(reader)
+		batch.add(reader.session)
 	}
 	for _, session := range o.sessions {
-		forgetObserverSession(session)
+		batch.add(session)
 	}
+	o.streams = make(map[string]*sharedTraceReader)
 	o.sessions = make(map[string]*observerSecuritySession)
+	o.mu.Unlock()
+	o.completeTeardown(batch)
+}
+
+type sharedObserverTeardownBatch struct {
+	sessions     []*observerSecuritySession
+	seen         map[*observerSecuritySession]struct{}
+	afterPhase1  func()
+	beforePhase2 func(*observerSecuritySession)
+	afterPhase2  func(*observerSecuritySession)
+}
+
+// beginTeardownLocked is Phase 1. SharedObserver.mu is held. It records
+// irreversible session intent but never waits for a lifecycle gate or peer.
+func (o *SharedObserver) beginTeardownLocked(initial ...*observerSecuritySession) sharedObserverTeardownBatch {
+	batch := sharedObserverTeardownBatch{
+		seen:         make(map[*observerSecuritySession]struct{}),
+		afterPhase1:  o.teardownAfterPhase1,
+		beforePhase2: o.teardownBeforePhase2,
+		afterPhase2:  o.teardownAfterPhase2,
+	}
+	for _, session := range initial {
+		batch.add(session)
+	}
+	for _, session := range o.sessions {
+		batch.add(session)
+	}
+	return batch
+}
+
+func (b *sharedObserverTeardownBatch) add(session *observerSecuritySession) {
+	if session == nil {
+		return
+	}
+	if _, exists := b.seen[session]; exists {
+		return
+	}
+	b.seen[session] = struct{}{}
+	requestObserverSessionTeardown(session)
+	b.sessions = append(b.sessions, session)
+}
+
+// completeTeardown is Phase 2. SharedObserver.mu is not held, so an external
+// teardown can wait for an owner without creating a SharedObserver.mu to
+// lifecycleGate lock edge.
+func (o *SharedObserver) completeTeardown(batch sharedObserverTeardownBatch) {
+	if len(batch.sessions) == 0 {
+		return
+	}
+	if batch.afterPhase1 != nil {
+		batch.afterPhase1()
+	}
+	for _, session := range batch.sessions {
+		if batch.beforePhase2 != nil {
+			batch.beforePhase2(session)
+		}
+		forgetObserverSession(session)
+		if batch.afterPhase2 != nil {
+			batch.afterPhase2(session)
+		}
+	}
+}
+
+func closeSharedTraceReaderDone(reader *sharedTraceReader) {
+	if reader == nil {
+		return
+	}
+	select {
+	case <-reader.done:
+	default:
+		close(reader.done)
+	}
 }
 
 type sharedTraceReader struct {
