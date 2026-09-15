@@ -679,17 +679,6 @@ func ambiguousDirectExecAdmission(ctx context.Context, admission directExecAdmis
 	return errors.Join(cause, errObserverAuthorityAmbiguous)
 }
 
-func controlOperationStatus(operation string) string {
-	switch operation {
-	case "cancel":
-		return "cancelled"
-	case "arm":
-		return "armed"
-	default:
-		return ""
-	}
-}
-
 func validBoundaryMode(mode string) bool {
 	return mode == boundaryLaunchMode || mode == boundaryPythonHandoffMode || mode == boundaryELFHandoffMode
 }

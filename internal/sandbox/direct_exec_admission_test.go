@@ -155,7 +155,7 @@ func encodeField(fieldNum int, wireType int, data []byte) []byte {
 }
 
 func encodeVarintField(fieldNum int, val uint64) []byte {
-	tag := uint64((fieldNum << 3) | 0)
+	tag := uint64(fieldNum << 3)
 	var buf []byte
 	buf = append(buf, encodeVarint(tag)...)
 	buf = append(buf, encodeVarint(val)...)
