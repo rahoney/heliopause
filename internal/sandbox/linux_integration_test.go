@@ -9,6 +9,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -17,6 +18,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -82,7 +84,7 @@ func runLinuxGVisorLifecycleIntegration(t *testing.T, body string) {
 	}
 	supervisor := integrationObserverSupervisor(t)
 	defer supervisor.Close()
-	runner := integrationRunner{t: t}
+	runner := integrationRunner{t: t, diag: &lifecycleDiagState{}}
 	introducer, err := NewDockerArtifactIntroducer(root, runner)
 	if err != nil {
 		t.Fatal(err)
@@ -485,8 +487,78 @@ func integrationObserverSupervisor(t *testing.T) *ObserverSupervisor {
 	return supervisor
 }
 
+type containerDiagSnapshot struct {
+	inspect      *dockerInspectDiag
+	inspectErr   error
+	unmarshalErr error
+	inspectRaw   string
+	logs         string
+	logsErr      error
+}
+
+type lifecycleDiagState struct {
+	mu              sync.Mutex
+	containerID     string
+	runtime         string
+	tmpfs           []string
+	started         bool
+	preExecDone     bool
+	execAttempted   bool
+	execFailed      bool
+	execSucceeded   bool
+	preExecSnap     containerDiagSnapshot
+	postFailureSnap containerDiagSnapshot
+}
+
+type dockerInspectDiag struct {
+	ID    string `json:"Id"`
+	State struct {
+		Status     string `json:"Status"`
+		Running    bool   `json:"Running"`
+		ExitCode   int    `json:"ExitCode"`
+		Error      string `json:"Error"`
+		StartedAt  string `json:"StartedAt"`
+		FinishedAt string `json:"FinishedAt"`
+		Pid        int    `json:"Pid"`
+	} `json:"State"`
+	HostConfig struct {
+		Runtime string            `json:"Runtime"`
+		Tmpfs   map[string]string `json:"Tmpfs"`
+	} `json:"HostConfig"`
+}
+
+func (s *lifecycleDiagState) inspectContainer(ctx context.Context, containerID string) containerDiagSnapshot {
+	var snap containerDiagSnapshot
+	if containerID == "" {
+		snap.inspectErr = errors.New("empty container ID")
+		snap.logsErr = errors.New("empty container ID")
+		return snap
+	}
+	inspectOut, err := exec.CommandContext(ctx, "docker", "inspect", containerID).CombinedOutput()
+	snap.inspectRaw = strings.TrimSpace(string(inspectOut))
+	if err != nil {
+		snap.inspectErr = fmt.Errorf("docker inspect error: %w (output=%q)", err, snap.inspectRaw)
+	} else {
+		var items []dockerInspectDiag
+		if unmarshalErr := json.Unmarshal(inspectOut, &items); unmarshalErr != nil {
+			snap.unmarshalErr = fmt.Errorf("docker inspect decode error: %w (raw=%q)", unmarshalErr, snap.inspectRaw)
+		} else if len(items) == 0 {
+			snap.unmarshalErr = errors.New("docker inspect returned empty items array")
+		} else {
+			snap.inspect = &items[0]
+		}
+	}
+	logsOut, logsErr := exec.CommandContext(ctx, "docker", "logs", containerID).CombinedOutput()
+	snap.logs = strings.TrimSpace(string(logsOut))
+	if logsErr != nil {
+		snap.logsErr = fmt.Errorf("docker logs error: %w (output=%q)", logsErr, snap.logs)
+	}
+	return snap
+}
+
 type integrationRunner struct {
-	t *testing.T
+	t    *testing.T
+	diag *lifecycleDiagState
 }
 
 func integrationCapabilityProbe(executor Executor) CapabilityProbe {
@@ -518,6 +590,142 @@ func integrationBinary(binary string) string {
 
 func (r integrationRunner) Output(ctx context.Context, binary string, arguments ...string) ([]byte, error) {
 	r.t.Helper()
+	if r.diag != nil && binary == "docker" && len(arguments) > 0 {
+		switch arguments[0] {
+		case "create":
+			var runtime string
+			var tmpfs []string
+			for i := 0; i < len(arguments); i++ {
+				if arguments[i] == "--runtime" && i+1 < len(arguments) {
+					runtime = arguments[i+1]
+				}
+				if arguments[i] == "--tmpfs" && i+1 < len(arguments) {
+					tmpfs = append(tmpfs, arguments[i+1])
+				}
+			}
+			r.diag.mu.Lock()
+			r.diag.runtime = runtime
+			r.diag.tmpfs = tmpfs
+			r.diag.mu.Unlock()
+
+			fmt.Fprintf(os.Stderr, "HAA_BOUNDARY_DIAG create.runtime=%s\n", runtime)
+			fmt.Fprintf(os.Stderr, "HAA_BOUNDARY_DIAG create.tmpfs=%s\n", strings.Join(tmpfs, "; "))
+			r.t.Logf("HAA_BOUNDARY_DIAG create.runtime=%s", runtime)
+			r.t.Logf("HAA_BOUNDARY_DIAG create.tmpfs=%s", strings.Join(tmpfs, "; "))
+
+		case "exec":
+			r.diag.mu.Lock()
+			needPreExec := !r.diag.preExecDone
+			if needPreExec {
+				r.diag.preExecDone = true
+			}
+			cid := r.diag.containerID
+			if cid == "" {
+				for i := 1; i < len(arguments); i++ {
+					if !strings.HasPrefix(arguments[i], "-") {
+						cid = arguments[i]
+						break
+					}
+				}
+			}
+			r.diag.mu.Unlock()
+
+			if needPreExec {
+				if cid != "" {
+					snap := r.diag.inspectContainer(ctx, cid)
+					r.diag.mu.Lock()
+					r.diag.preExecSnap = snap
+					r.diag.mu.Unlock()
+
+					if snap.inspectErr != nil {
+						fmt.Fprintf(os.Stderr, "HAA_BOUNDARY_DIAG pre_direct_exec.inspect_error=%v\n", snap.inspectErr)
+						r.t.Logf("HAA_BOUNDARY_DIAG pre_direct_exec.inspect_error=%v", snap.inspectErr)
+					} else if snap.unmarshalErr != nil {
+						fmt.Fprintf(os.Stderr, "HAA_BOUNDARY_DIAG pre_direct_exec.inspect_decode_error=%v\n", snap.unmarshalErr)
+						r.t.Logf("HAA_BOUNDARY_DIAG pre_direct_exec.inspect_decode_error=%v", snap.unmarshalErr)
+					} else if snap.inspect != nil {
+						inspect := snap.inspect
+						fmt.Fprintf(os.Stderr, "HAA_BOUNDARY_DIAG pre_direct_exec.container_state=Status=%s Running=%t ExitCode=%d Error=%q StartedAt=%s FinishedAt=%s Pid=%d\n",
+							inspect.State.Status, inspect.State.Running, inspect.State.ExitCode, inspect.State.Error, inspect.State.StartedAt, inspect.State.FinishedAt, inspect.State.Pid)
+						fmt.Fprintf(os.Stderr, "HAA_BOUNDARY_DIAG pre_direct_exec.inspect=Runtime=%s\n", inspect.HostConfig.Runtime)
+						r.t.Logf("HAA_BOUNDARY_DIAG pre_direct_exec.container_state=Status=%s Running=%t ExitCode=%d Error=%q StartedAt=%s FinishedAt=%s Pid=%d",
+							inspect.State.Status, inspect.State.Running, inspect.State.ExitCode, inspect.State.Error, inspect.State.StartedAt, inspect.State.FinishedAt, inspect.State.Pid)
+						r.t.Logf("HAA_BOUNDARY_DIAG pre_direct_exec.inspect=Runtime=%s", inspect.HostConfig.Runtime)
+					}
+
+					if snap.logsErr != nil {
+						fmt.Fprintf(os.Stderr, "HAA_BOUNDARY_DIAG container_logs_error=%v\n", snap.logsErr)
+						r.t.Logf("HAA_BOUNDARY_DIAG container_logs_error=%v", snap.logsErr)
+					} else if snap.logs != "" {
+						fmt.Fprintf(os.Stderr, "HAA_BOUNDARY_DIAG container_logs=%s\n", snap.logs)
+						r.t.Logf("HAA_BOUNDARY_DIAG container_logs=%s", snap.logs)
+					} else {
+						fmt.Fprintf(os.Stderr, "HAA_BOUNDARY_DIAG container_logs=<empty>\n")
+						r.t.Logf("HAA_BOUNDARY_DIAG container_logs=<empty>")
+					}
+				} else {
+					fmt.Fprintf(os.Stderr, "HAA_BOUNDARY_DIAG pre_direct_exec.error=no container ID available\n")
+					r.t.Logf("HAA_BOUNDARY_DIAG pre_direct_exec.error=no container ID available")
+				}
+			}
+
+		case "rm":
+			r.diag.mu.Lock()
+			cid := r.diag.containerID
+			if cid == "" && len(arguments) > 1 {
+				cid = arguments[len(arguments)-1]
+			}
+			hadFailure := r.diag.execFailed || !r.diag.execSucceeded
+			r.diag.mu.Unlock()
+
+			fmt.Fprintf(os.Stderr, "HAA_BOUNDARY_DIAG lifecycle.cleanup_ordering=before_rm container_id=%s\n", cid)
+			r.t.Logf("HAA_BOUNDARY_DIAG lifecycle.cleanup_ordering=before_rm container_id=%s", cid)
+
+			if hadFailure {
+				if cid != "" {
+					snap := r.diag.inspectContainer(ctx, cid)
+					r.diag.mu.Lock()
+					r.diag.postFailureSnap = snap
+					r.diag.mu.Unlock()
+
+					if snap.inspectErr != nil {
+						fmt.Fprintf(os.Stderr, "HAA_BOUNDARY_DIAG post_failure.inspect_error=%v\n", snap.inspectErr)
+						r.t.Logf("HAA_BOUNDARY_DIAG post_failure.inspect_error=%v", snap.inspectErr)
+					} else if snap.unmarshalErr != nil {
+						fmt.Fprintf(os.Stderr, "HAA_BOUNDARY_DIAG post_failure.inspect_decode_error=%v\n", snap.unmarshalErr)
+						r.t.Logf("HAA_BOUNDARY_DIAG post_failure.inspect_decode_error=%v", snap.unmarshalErr)
+					} else if snap.inspect != nil {
+						inspect := snap.inspect
+						fmt.Fprintf(os.Stderr, "HAA_BOUNDARY_DIAG post_failure.container_state=Status=%s Running=%t ExitCode=%d Error=%q StartedAt=%s FinishedAt=%s Pid=%d\n",
+							inspect.State.Status, inspect.State.Running, inspect.State.ExitCode, inspect.State.Error, inspect.State.StartedAt, inspect.State.FinishedAt, inspect.State.Pid)
+						fmt.Fprintf(os.Stderr, "HAA_BOUNDARY_DIAG post_failure.runtime=%s\n", inspect.HostConfig.Runtime)
+						var tmpfsEntries []string
+						for k, v := range inspect.HostConfig.Tmpfs {
+							tmpfsEntries = append(tmpfsEntries, fmt.Sprintf("%s:%s", k, v))
+						}
+						fmt.Fprintf(os.Stderr, "HAA_BOUNDARY_DIAG post_failure.tmpfs=%s\n", strings.Join(tmpfsEntries, "; "))
+						r.t.Logf("HAA_BOUNDARY_DIAG post_failure.container_state=Status=%s Running=%t ExitCode=%d Error=%q",
+							inspect.State.Status, inspect.State.Running, inspect.State.ExitCode, inspect.State.Error)
+					}
+
+					if snap.logsErr != nil {
+						fmt.Fprintf(os.Stderr, "HAA_BOUNDARY_DIAG post_failure.container_logs_error=%v\n", snap.logsErr)
+						r.t.Logf("HAA_BOUNDARY_DIAG post_failure.container_logs_error=%v", snap.logsErr)
+					} else if snap.logs != "" {
+						fmt.Fprintf(os.Stderr, "HAA_BOUNDARY_DIAG post_failure.container_logs=%s\n", snap.logs)
+						r.t.Logf("HAA_BOUNDARY_DIAG post_failure.container_logs=%s", snap.logs)
+					} else {
+						fmt.Fprintf(os.Stderr, "HAA_BOUNDARY_DIAG post_failure.container_logs=<empty>\n")
+						r.t.Logf("HAA_BOUNDARY_DIAG post_failure.container_logs=<empty>")
+					}
+				} else {
+					fmt.Fprintf(os.Stderr, "HAA_BOUNDARY_DIAG post_failure.error=no container ID available\n")
+					r.t.Logf("HAA_BOUNDARY_DIAG post_failure.error=no container ID available")
+				}
+			}
+		}
+	}
+
 	command := exec.CommandContext(ctx, integrationBinary(binary), arguments...)
 	output, err := command.Output()
 	if err != nil {
@@ -531,6 +739,39 @@ func (r integrationRunner) Output(ctx context.Context, binary string, arguments 
 		// errors remain sanitized and never carry command output.
 		fmt.Fprintf(os.Stderr, "integration command failed: %s %q: %v; stdout=%q; stderr=%q\n", binary, arguments, err, strings.TrimSpace(string(output)), stderr)
 	}
+
+	if r.diag != nil && binary == "docker" && len(arguments) > 0 {
+		switch arguments[0] {
+		case "create":
+			if err == nil {
+				cid := strings.TrimSpace(string(output))
+				r.diag.mu.Lock()
+				r.diag.containerID = cid
+				r.diag.mu.Unlock()
+				fmt.Fprintf(os.Stderr, "HAA_BOUNDARY_DIAG create.container_id=%s\n", cid)
+				r.t.Logf("HAA_BOUNDARY_DIAG create.container_id=%s", cid)
+			}
+		case "start":
+			r.diag.mu.Lock()
+			r.diag.started = (err == nil)
+			r.diag.mu.Unlock()
+			fmt.Fprintf(os.Stderr, "HAA_BOUNDARY_DIAG container.started=%t err=%v\n", err == nil, err)
+			r.t.Logf("HAA_BOUNDARY_DIAG container.started=%t err=%v", err == nil, err)
+		case "exec":
+			r.diag.mu.Lock()
+			r.diag.execAttempted = true
+			if err == nil {
+				r.diag.execSucceeded = true
+			} else {
+				r.diag.execFailed = true
+			}
+			r.diag.mu.Unlock()
+		case "rm":
+			fmt.Fprintf(os.Stderr, "HAA_BOUNDARY_DIAG lifecycle.cleanup_ordering=after_rm err=%v\n", err)
+			r.t.Logf("HAA_BOUNDARY_DIAG lifecycle.cleanup_ordering=after_rm err=%v", err)
+		}
+	}
+
 	if err == nil && binary == "docker" && len(arguments) == 2 && arguments[0] == "wait" && strings.TrimSpace(string(output)) != "0" {
 		logs, logsErr := exec.CommandContext(ctx, "docker", "logs", arguments[1]).CombinedOutput()
 		r.t.Logf("container exited with %q; logs=%q; logs error=%v", strings.TrimSpace(string(output)), strings.TrimSpace(string(logs)), logsErr)
