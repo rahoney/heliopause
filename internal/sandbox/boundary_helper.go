@@ -55,17 +55,9 @@ const boundaryHelper = "#!/bin/sh\nset -eu\ndemote() { exec " + boundarySetprivP
 // moved into place atomically before any user-1000 exec is accepted.
 func boundaryContainerCommand() string {
 	quoted := strings.ReplaceAll(boundaryHelper, "'", "'\\\"'\\\"'")
-	return "set -eu; echo 'HAA_BOUNDARY_INIT begin' >&2; " +
-		"tmp=/haa-runtime/.haa-boundary.tmp; echo 'HAA_BOUNDARY_INIT temp_created' >&2; " +
-		"printf '%s' '" + quoted + "' > \"$tmp\"; echo 'HAA_BOUNDARY_INIT write_complete' >&2; " +
-		"chown 0:0 \"$tmp\"; echo 'HAA_BOUNDARY_INIT ownership_complete' >&2; " +
-		"chmod 0555 \"$tmp\"; echo 'HAA_BOUNDARY_INIT chmod_complete' >&2; " +
-		"mv \"$tmp\" " + boundaryHelperPath + "; echo 'HAA_BOUNDARY_INIT rename_complete' >&2; " +
-		"final_stat=$(ls -ld " + boundaryHelperPath + " 2>&1) || { rc=$?; printf 'HAA_BOUNDARY_INIT final_stat_error rc=%d output=%s\\n' \"$rc\" \"$final_stat\" >&2; exit \"$rc\"; }; " +
-		"printf 'HAA_BOUNDARY_INIT final_stat=%s\\n' \"$final_stat\" >&2; " +
-		"echo 'HAA_BOUNDARY_INIT demote_begin' >&2; " +
-		"echo 'HAA_BOUNDARY_INIT target_exec_begin' >&2; " +
-		"exec " + boundarySetprivPath + " " + boundaryDemotionArguments + " /bin/sleep infinity"
+	return "set -eu; tmp=/haa-runtime/.haa-boundary.tmp; printf '%s' '" + quoted +
+		"' > \"$tmp\"; chown 0:0 \"$tmp\"; chmod 0555 \"$tmp\"; mv \"$tmp\" " +
+		boundaryHelperPath + "; exec " + boundarySetprivPath + " " + boundaryDemotionArguments + " /bin/sleep infinity"
 }
 
 const boundaryReadinessScript = "test \"$(id -u)\" = 1000; test \"$(id -g)\" = 1000; grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/1/status; grep -Eq '^Gid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/1/status; grep -Eq '^Groups:[[:space:]]*$' /proc/1/status; for field in CapInh CapPrm CapEff CapBnd CapAmb; do grep -Eq \"^${field}:[[:space:]]+0000000000000000$\" /proc/1/status; done; grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/self/status; grep -Eq '^Gid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/self/status; grep -Eq '^Groups:[[:space:]]*$' /proc/self/status; for field in CapInh CapPrm CapEff CapBnd CapAmb; do grep -Eq \"^${field}:[[:space:]]+0000000000000000$\" /proc/self/status; done"

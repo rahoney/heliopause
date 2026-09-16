@@ -590,6 +590,7 @@ bool IsExactOCIBootstrapDemotion(const gvisor::sentry::ExecveInfo& message) {
 constexpr char kOCIBootstrapCommand[] = R"HAA(set -eu; tmp=/haa-runtime/.haa-boundary.tmp; printf '%s' '#!/bin/sh
 set -eu
 demote() { exec /usr/bin/setpriv --reuid=1000 --regid=1000 --clear-groups --inh-caps=-all --ambient-caps=-all --bounding-set=-all --no-new-privs -- "$@"; }
+admission() { [ "${#1}" -eq 64 ] || exit 125; case "$1" in *[!0123456789abcdef]*|'\"'\"''\"'\"') exit 125 ;; esac; }
 already_demoted() {
   uid= gid= groups= cap_inh= cap_prm= cap_eff= cap_bnd= cap_amb=
   while IFS=: read -r key value; do
@@ -608,10 +609,10 @@ already_demoted() {
   [ "$uid:$gid:$groups:$cap_inh:$cap_prm:$cap_eff:$cap_bnd:$cap_amb" = 1:1:1:1:1:1:1:1 ]
 }
 case "${1-}" in
-  --origin-launch) shift; exec /haa-runtime/haa-boundary --launch "$@" ;;
-  --origin-handoff-python) shift; exec /haa-runtime/haa-boundary --handoff-python "$@" ;;
-  --origin-handoff-elf) shift; exec /haa-runtime/haa-boundary --handoff-elf "$@" ;;
-  --launch|--handoff-python|--handoff-elf) shift; demote "$@" ;;
+  --origin-launch) shift; admission "${1-}"; token="$1"; shift; exec /haa-runtime/haa-boundary --launch "$token" "$@" ;;
+  --origin-handoff-python) shift; admission "${1-}"; token="$1"; shift; exec /haa-runtime/haa-boundary --handoff-python "$token" "$@" ;;
+  --origin-handoff-elf) shift; admission "${1-}"; token="$1"; shift; exec /haa-runtime/haa-boundary --handoff-elf "$token" "$@" ;;
+  --launch|--handoff-python|--handoff-elf) shift; admission "${1-}"; shift; demote "$@" ;;
   -c) shift; already_demoted; exec /bin/sh -c "$@" ;;
   *) exit 125 ;;
 esac

@@ -1,8 +1,13 @@
 package sandbox
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -22,6 +27,280 @@ func TestBoundaryContainerCommandInstallsImmutableHelperBeforeServingExecs(t *te
 	}
 	if strings.Contains(command, "docker cp") || strings.Contains(command, "--user "+boundaryBootstrapUser) {
 		t.Fatalf("initializer has an invalid helper installation surface: %q", command)
+	}
+}
+
+func isCPPIdentStart(b byte) bool {
+	return (b >= 'a' && b <= 'z') || (b >= 'A' && b <= 'Z') || b == '_'
+}
+
+func isCPPIdentChar(b byte) bool {
+	return isCPPIdentStart(b) || (b >= '0' && b <= '9')
+}
+
+type cppToken struct {
+	typ   int
+	val   string
+	delim string
+	body  string
+}
+
+const (
+	cppTokIdent = 1
+	cppTokPunct = 2
+	cppTokRaw   = 3
+)
+
+func tokenizeCPPSource(source []byte) ([]cppToken, error) {
+	var tokens []cppToken
+	i := 0
+	n := len(source)
+	for i < n {
+		b := source[i]
+		if b == ' ' || b == '\t' || b == '\r' || b == '\n' {
+			i++
+			continue
+		}
+		// Line comment: skip through newline
+		if b == '/' && i+1 < n && source[i+1] == '/' {
+			i += 2
+			for i < n && source[i] != '\n' {
+				i++
+			}
+			continue
+		}
+		// Block comment: skip through */
+		if b == '/' && i+1 < n && source[i+1] == '*' {
+			i += 2
+			idx := bytes.Index(source[i:], []byte("*/"))
+			if idx == -1 {
+				return nil, errors.New("unterminated block comment in C++ source")
+			}
+			i += idx + 2
+			continue
+		}
+		// Character literal
+		if b == '\'' {
+			i++
+			for i < n {
+				if source[i] == '\\' && i+1 < n {
+					i += 2
+					continue
+				}
+				if source[i] == '\'' {
+					i++
+					break
+				}
+				i++
+			}
+			continue
+		}
+		// Raw string literal: R"delim(...)delim"
+		if b == 'R' && i+1 < n && source[i+1] == '"' {
+			start := i + 2
+			paren := bytes.IndexByte(source[start:], '(')
+			if paren >= 0 && paren <= 16 {
+				delim := string(source[start : start+paren])
+				if !strings.ContainsAny(delim, " \t\r\n\\)") {
+					bodyStart := start + paren + 1
+					closeSeq := []byte(")" + delim + "\"")
+					endIdx := bytes.Index(source[bodyStart:], closeSeq)
+					if endIdx >= 0 {
+						body := string(source[bodyStart : bodyStart+endIdx])
+						tokens = append(tokens, cppToken{
+							typ:   cppTokRaw,
+							val:   string(source[i : bodyStart+endIdx+len(closeSeq)]),
+							delim: delim,
+							body:  body,
+						})
+						i = bodyStart + endIdx + len(closeSeq)
+						continue
+					}
+				}
+			}
+		}
+		// Ordinary string literal: skip
+		if b == '"' {
+			i++
+			for i < n {
+				if source[i] == '\\' && i+1 < n {
+					i += 2
+					continue
+				}
+				if source[i] == '"' {
+					i++
+					break
+				}
+				i++
+			}
+			continue
+		}
+		// Identifier or keyword
+		if isCPPIdentStart(b) {
+			start := i
+			for i < n && isCPPIdentChar(source[i]) {
+				i++
+			}
+			tokens = append(tokens, cppToken{typ: cppTokIdent, val: string(source[start:i])})
+			continue
+		}
+		// Punctuation / operator
+		tokens = append(tokens, cppToken{typ: cppTokPunct, val: string(b)})
+		i++
+	}
+	return tokens, nil
+}
+
+func extractOCIBootstrapCommand(source []byte) (string, error) {
+	tokens, err := tokenizeCPPSource(source)
+	if err != nil {
+		return "", fmt.Errorf("tokenize C++ source: %w", err)
+	}
+
+	var candidates []string
+	for k := 0; k+7 < len(tokens); k++ {
+		if tokens[k].typ == cppTokIdent && tokens[k].val == "constexpr" &&
+			tokens[k+1].typ == cppTokIdent && tokens[k+1].val == "char" &&
+			tokens[k+2].typ == cppTokIdent && tokens[k+2].val == "kOCIBootstrapCommand" &&
+			tokens[k+3].typ == cppTokPunct && tokens[k+3].val == "[" &&
+			tokens[k+4].typ == cppTokPunct && tokens[k+4].val == "]" &&
+			tokens[k+5].typ == cppTokPunct && tokens[k+5].val == "=" &&
+			tokens[k+6].typ == cppTokRaw && tokens[k+6].delim == "HAA" &&
+			tokens[k+7].typ == cppTokPunct && tokens[k+7].val == ";" {
+			candidates = append(candidates, tokens[k+6].body)
+		}
+	}
+
+	if len(candidates) == 0 {
+		return "", errors.New("no valid kOCIBootstrapCommand declaration found in observer source")
+	}
+	if len(candidates) > 1 {
+		return "", fmt.Errorf("multiple (%d) kOCIBootstrapCommand declarations found in observer source", len(candidates))
+	}
+	return candidates[0], nil
+}
+
+func TestObserverOCIBootstrapCommandMatchesBoundaryContainerCommand(t *testing.T) {
+	_, currentFile, _, ok := runtime.Caller(0)
+	if !ok {
+		t.Fatal("locate boundary helper test source")
+	}
+	source, err := os.ReadFile(filepath.Join(filepath.Dir(currentFile), "..", "..", "tools", "gvisor-observer", "observer.cc"))
+	if err != nil {
+		t.Fatalf("read observer source: %v", err)
+	}
+	observerCommand, err := extractOCIBootstrapCommand(source)
+	if err != nil {
+		t.Fatalf("extract observer OCI bootstrap command: %v", err)
+	}
+	if observerCommand != boundaryContainerCommand() {
+		t.Fatalf("observer OCI bootstrap command drifted from Go boundaryContainerCommand()")
+	}
+}
+
+func TestExtractOCIBootstrapCommand_UniqueDeclaration(t *testing.T) {
+	snippet := []byte(`
+// Comment header
+constexpr char kOCIBootstrapCommand[] = R"HAA(exact payload test)HAA";
+`)
+	extracted, err := extractOCIBootstrapCommand(snippet)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if extracted != "exact payload test" {
+		t.Fatalf("extracted %q, want %q", extracted, "exact payload test")
+	}
+}
+
+func TestExtractOCIBootstrapCommand_IgnoresLineComment(t *testing.T) {
+	commentOnly := []byte(`// constexpr char kOCIBootstrapCommand[] = R"HAA(fake in line comment)HAA";`)
+	if _, err := extractOCIBootstrapCommand(commentOnly); err == nil {
+		t.Fatal("expected error when declaration is only in a line comment, got nil")
+	}
+
+	withComment := []byte(`
+// constexpr char kOCIBootstrapCommand[] = R"HAA(fake in line comment)HAA";
+constexpr char kOCIBootstrapCommand[] = R"HAA(real payload)HAA";
+`)
+	extracted, err := extractOCIBootstrapCommand(withComment)
+	if err != nil {
+		t.Fatalf("unexpected error with preceding line comment: %v", err)
+	}
+	if extracted != "real payload" {
+		t.Fatalf("extracted %q, want %q", extracted, "real payload")
+	}
+}
+
+func TestExtractOCIBootstrapCommand_IgnoresBlockComment(t *testing.T) {
+	commentOnly := []byte(`/* constexpr char kOCIBootstrapCommand[] = R"HAA(fake in block comment)HAA"; */`)
+	if _, err := extractOCIBootstrapCommand(commentOnly); err == nil {
+		t.Fatal("expected error when declaration is only in a block comment, got nil")
+	}
+
+	withComment := []byte(`
+/*
+constexpr char kOCIBootstrapCommand[] = R"HAA(fake in block comment)HAA";
+*/
+constexpr char kOCIBootstrapCommand[] = R"HAA(real payload)HAA";
+`)
+	extracted, err := extractOCIBootstrapCommand(withComment)
+	if err != nil {
+		t.Fatalf("unexpected error with preceding block comment: %v", err)
+	}
+	if extracted != "real payload" {
+		t.Fatalf("extracted %q, want %q", extracted, "real payload")
+	}
+}
+
+func TestExtractOCIBootstrapCommand_IgnoresUnrelatedLiterals(t *testing.T) {
+	inStringLit := []byte(`const char* s = "constexpr char kOCIBootstrapCommand[] = R\"HAA(fake in string)HAA\";";`)
+	if _, err := extractOCIBootstrapCommand(inStringLit); err == nil {
+		t.Fatal("expected error when declaration is inside a string literal, got nil")
+	}
+
+	inRawLit := []byte(`const char* s = R"UNRELATED(
+constexpr char kOCIBootstrapCommand[] = R"HAA(fake in raw literal)HAA";
+)UNRELATED";`)
+	if _, err := extractOCIBootstrapCommand(inRawLit); err == nil {
+		t.Fatal("expected error when declaration is inside an unrelated raw string literal, got nil")
+	}
+
+	similarIdent := []byte(`constexpr char kOCIBootstrapCommand_other[] = R"HAA(payload)HAA";`)
+	if _, err := extractOCIBootstrapCommand(similarIdent); err == nil {
+		t.Fatal("expected error for similar identifier name, got nil")
+	}
+}
+
+func TestExtractOCIBootstrapCommand_MultipleCandidatesFails(t *testing.T) {
+	duplicate := []byte(`
+constexpr char kOCIBootstrapCommand[] = R"HAA(first)HAA";
+constexpr char kOCIBootstrapCommand[] = R"HAA(second)HAA";
+`)
+	_, err := extractOCIBootstrapCommand(duplicate)
+	if err == nil {
+		t.Fatal("expected error on multiple candidate definitions, got nil")
+	}
+	if !strings.Contains(err.Error(), "multiple (2)") {
+		t.Fatalf("expected error mentioning multiple candidates, got %v", err)
+	}
+}
+
+func TestExtractOCIBootstrapCommand_MissingCandidateFails(t *testing.T) {
+	missing := []byte(`int main() { return 0; }`)
+	_, err := extractOCIBootstrapCommand(missing)
+	if err == nil {
+		t.Fatal("expected error on missing candidate definition, got nil")
+	}
+}
+
+func TestObserverOCIBootstrapCommandDriftDetected(t *testing.T) {
+	driftedSnippet := []byte(fmt.Sprintf("constexpr char kOCIBootstrapCommand[] = R\"HAA(%s-drift)HAA\";", boundaryContainerCommand()))
+	extracted, err := extractOCIBootstrapCommand(driftedSnippet)
+	if err != nil {
+		t.Fatalf("unexpected extract error: %v", err)
+	}
+	if extracted == boundaryContainerCommand() {
+		t.Fatal("expected payload byte difference to be detected as drift")
 	}
 }
 
