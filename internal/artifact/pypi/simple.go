@@ -20,15 +20,17 @@ import (
 )
 
 const (
-	maxSimpleResponseBytes = 4 << 20
-	maxReportBytes         = 4 << 20
-	maxPyPIReportEntries   = 1024
+	maxSimpleResponseBytes      = 4 << 20
+	maxReportBytes              = 4 << 20
+	maxPyPIReportEntries        = 1024
+	maxRequiresPythonComponents = 64
 )
 
 var (
-	sha256HexPattern      = regexp.MustCompile(`^[a-f0-9]{64}$`)
-	simpleAPIVersion      = regexp.MustCompile(`^([0-9]+)\.([0-9]+)$`)
-	requirementNamePrefix = regexp.MustCompile(`^([A-Za-z0-9][A-Za-z0-9._-]*)(?:\s*(?:\([^)]*\)|[<>=!~].*)?)?$`)
+	sha256HexPattern               = regexp.MustCompile(`^[a-f0-9]{64}$`)
+	simpleAPIVersion               = regexp.MustCompile(`^([0-9]+)\.([0-9]+)$`)
+	requirementNamePrefix          = regexp.MustCompile(`^([A-Za-z0-9][A-Za-z0-9._-]*)(?:\s*(?:\([^)]*\)|[<>=!~].*)?)?$`)
+	requiresPythonSpecifierPattern = regexp.MustCompile(`^(===|==|!=|<=|>=|~=|<|>)\s*([A-Za-z0-9][A-Za-z0-9._*+!-]*)$`)
 )
 
 const maxPyTorchSimpleEntries = 20_000
@@ -726,7 +728,7 @@ func CrossCheckReport(report InstallationReport, pages []SimpleProject) ([]Candi
 func matchesSimpleFile(candidate Candidate, files []SimpleFile) bool {
 	matches := 0
 	for _, file := range files {
-		if file.filename != candidate.filename || file.sha256 != candidate.sha256 || file.yanked || !sameDistributionURL(file.url, candidate.url) || file.requiresPython != "" && file.requiresPython != candidate.requiresPython {
+		if file.filename != candidate.filename || file.sha256 != candidate.sha256 || file.yanked || !sameDistributionURL(file.url, candidate.url) || !requiresPythonMetadataMatches(file.requiresPython, candidate.requiresPython) {
 			continue
 		}
 		matches++
@@ -823,6 +825,48 @@ func sameDistributionURL(simpleURL, reportURL string) bool {
 
 func validRequiresPython(value string) bool {
 	return len(value) <= 1024 && value == strings.TrimSpace(value) && strings.IndexFunc(value, func(r rune) bool { return r < 0x20 || r == 0x7f }) < 0
+}
+
+func requiresPythonMetadataMatches(simple, candidate string) bool {
+	if simple == "" {
+		return true
+	}
+	simpleComponents, ok := canonicalizeRequiresPythonComponents(simple)
+	if !ok {
+		return false
+	}
+	candidateComponents, ok := canonicalizeRequiresPythonComponents(candidate)
+	if !ok {
+		return false
+	}
+	if len(simpleComponents) != len(candidateComponents) {
+		return false
+	}
+	for i := range simpleComponents {
+		if simpleComponents[i] != candidateComponents[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func canonicalizeRequiresPythonComponents(value string) ([]string, bool) {
+	if !validRequiresPython(value) || value == "" {
+		return nil, false
+	}
+	parts := strings.Split(value, ",")
+	if len(parts) == 0 || len(parts) > maxRequiresPythonComponents {
+		return nil, false
+	}
+	components := make([]string, 0, len(parts))
+	for _, part := range parts {
+		if len(part) == 0 || !requiresPythonSpecifierPattern.MatchString(part) {
+			return nil, false
+		}
+		components = append(components, part)
+	}
+	sort.Strings(components)
+	return components, true
 }
 
 func ensureSingleJSONValue(decoder *json.Decoder) error {

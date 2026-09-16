@@ -249,6 +249,194 @@ func TestCrossCheckRejectsYankedAndMismatchedFiles(t *testing.T) {
 	if _, err := CrossCheckReport(report, []SimpleProject{yanked, child}); err == nil {
 		t.Fatal("CrossCheckReport accepted yanked selection")
 	}
+	badURL, err := ParseSimpleProject("primary", []byte(strings.Replace(sampleSimpleJSON("primary", "primary-1.0-py3-none-any.whl", ">=3.14"), `packages/primary-1.0-py3-none-any.whl`, `packages/other/primary-1.0-py3-none-any.whl`, 1)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := CrossCheckReport(report, []SimpleProject{badURL, child}); err == nil {
+		t.Fatal("CrossCheckReport accepted mismatched URL")
+	}
+	badHash, err := ParseSimpleProject("primary", []byte(strings.Replace(sampleSimpleJSON("primary", "primary-1.0-py3-none-any.whl", ">=3.14"), sampleSHA256, "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", 1)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := CrossCheckReport(report, []SimpleProject{badHash, child}); err == nil {
+		t.Fatal("CrossCheckReport accepted mismatched hash")
+	}
+	badFilename, err := ParseSimpleProject("primary", []byte(sampleSimpleJSON("primary", "primary-2.0-py3-none-any.whl", ">=3.14")))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := CrossCheckReport(report, []SimpleProject{badFilename, child}); err == nil {
+		t.Fatal("CrossCheckReport accepted mismatched filename")
+	}
+}
+
+func TestCrossCheckRequiresPythonSerializationOrderAndFailClosed(t *testing.T) {
+	t.Parallel()
+
+	reference, err := ParseReference("primary@1.0")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Proven triton condition:
+	// candidate has ">=3.10,<3.15"
+	// simple page has "<3.15,>=3.10"
+	reportJSON := strings.Replace(sampleReportJSON(), `">=3.14"`, `">=3.10,<3.15"`, 1)
+	report, err := ParseInstallationReport(reference, []byte(reportJSON), pipRuntimeVersionForTest, pythonRuntimeVersionForTest)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	primaryTritonOrder, err := ParseSimpleProject("primary", []byte(sampleSimpleJSON("primary", "primary-1.0-py3-none-any.whl", "<3.15,>=3.10")))
+	if err != nil {
+		t.Fatal(err)
+	}
+	child, err := ParseSimpleProject("child", []byte(sampleSimpleJSON("child", "child-2.0-py3-none-any.whl", "")))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	candidates, err := CrossCheckReport(report, []SimpleProject{primaryTritonOrder, child})
+	if err != nil {
+		t.Fatalf("CrossCheckReport rejected order-equivalent requires-python: %v", err)
+	}
+	if len(candidates) != 2 {
+		t.Fatalf("expected 2 candidates, got %d", len(candidates))
+	}
+
+	// Operator mismatch: ">=3.10,<=3.15" vs ">=3.10,<3.15"
+	opMismatch, err := ParseSimpleProject("primary", []byte(sampleSimpleJSON("primary", "primary-1.0-py3-none-any.whl", ">=3.10,<=3.15")))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := CrossCheckReport(report, []SimpleProject{opMismatch, child}); err == nil {
+		t.Fatal("CrossCheckReport accepted operator mismatch >=3.10,<=3.15")
+	}
+
+	// Additional constraint: ">=3.10,<3.15,!=3.12" vs ">=3.10,<3.15"
+	extraConstraint, err := ParseSimpleProject("primary", []byte(sampleSimpleJSON("primary", "primary-1.0-py3-none-any.whl", ">=3.10,<3.15,!=3.12")))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := CrossCheckReport(report, []SimpleProject{extraConstraint, child}); err == nil {
+		t.Fatal("CrossCheckReport accepted extra constraint !=3.12")
+	}
+
+	// Duplicate multiplicity: ">=3.10,<3.15,<3.15" vs ">=3.10,<3.15"
+	duplicateConstraint, err := ParseSimpleProject("primary", []byte(sampleSimpleJSON("primary", "primary-1.0-py3-none-any.whl", ">=3.10,<3.15,<3.15")))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := CrossCheckReport(report, []SimpleProject{duplicateConstraint, child}); err == nil {
+		t.Fatal("CrossCheckReport accepted duplicate constraint preserving multiplicity")
+	}
+
+	// Whitespace difference: ">=3.10, <3.15" vs ">=3.10,<3.15"
+	wsMismatch, err := ParseSimpleProject("primary", []byte(sampleSimpleJSON("primary", "primary-1.0-py3-none-any.whl", ">=3.10, <3.15")))
+	if err == nil {
+		if _, err := CrossCheckReport(report, []SimpleProject{wsMismatch, child}); err == nil {
+			t.Fatal("CrossCheckReport accepted whitespace difference >=3.10, <3.15")
+		}
+	}
+}
+
+func TestRequiresPythonMetadataMatches(t *testing.T) {
+	t.Parallel()
+
+	// 1. Proven triton order equivalence
+	if !requiresPythonMetadataMatches("<3.15,>=3.10", ">=3.10,<3.15") {
+		t.Fatal("triton condition <3.15,>=3.10 did not match >=3.10,<3.15")
+	}
+	if !requiresPythonMetadataMatches(">=3.10,<3.15", "<3.15,>=3.10") {
+		t.Fatal("triton condition >=3.10,<3.15 did not match <3.15,>=3.10")
+	}
+
+	// 2. Whitespace normalization is strictly forbidden
+	if requiresPythonMetadataMatches(">=3.10,<3.15", ">=3.10, <3.15") {
+		t.Fatal("whitespace after comma must not compare equal")
+	}
+	if requiresPythonMetadataMatches(">=3.10,<3.15", ">= 3.10,<3.15") {
+		t.Fatal("operator whitespace must not compare equal")
+	}
+
+	// 3. Exact match
+	if !requiresPythonMetadataMatches(">=3.10,<3.15", ">=3.10,<3.15") {
+		t.Fatal("exact byte-equal specifiers did not match")
+	}
+
+	// 4. Empty simple preserves no equality comparison
+	if !requiresPythonMetadataMatches("", ">=3.10,<3.15") {
+		t.Fatal("empty simple requires-python must match any candidate")
+	}
+	if !requiresPythonMetadataMatches("", "") {
+		t.Fatal("empty simple and candidate must match")
+	}
+
+	// 5. Non-empty simple requires non-empty candidate
+	if requiresPythonMetadataMatches(">=3.10,<3.15", "") {
+		t.Fatal("non-empty simple must not match empty candidate")
+	}
+
+	// 6. Operator mismatch fails closed
+	if requiresPythonMetadataMatches(">=3.10,<=3.15", ">=3.10,<3.15") {
+		t.Fatal("operator mismatch >=3.10,<=3.15 matched >=3.10,<3.15")
+	}
+
+	// 7. Extra constraint fails closed
+	if requiresPythonMetadataMatches(">=3.10,<3.15,!=3.12", ">=3.10,<3.15") {
+		t.Fatal("extra constraint !=3.12 matched >=3.10,<3.15")
+	}
+
+	// 8. Empty/malformed components fail closed even when identical on both sides
+	if requiresPythonMetadataMatches(">=3.10,,<3.15", ">=3.10,,<3.15") {
+		t.Fatal("identical empty component >=3.10,,<3.15 must fail closed")
+	}
+	if requiresPythonMetadataMatches(">=3.10,,<3.15", ">=3.10,<3.15") {
+		t.Fatal("empty component >=3.10,,<3.15 matched >=3.10,<3.15")
+	}
+	if requiresPythonMetadataMatches(",>=3.10", ",>=3.10") {
+		t.Fatal("identical leading comma must fail closed")
+	}
+	if requiresPythonMetadataMatches(",>=3.10,<3.15", ">=3.10,<3.15") {
+		t.Fatal("leading comma matched >=3.10,<3.15")
+	}
+	if requiresPythonMetadataMatches(">=3.10,", ">=3.10,") {
+		t.Fatal("identical trailing comma must fail closed")
+	}
+	if requiresPythonMetadataMatches(">=3.10,<3.15,", ">=3.10,<3.15") {
+		t.Fatal("trailing comma matched >=3.10,<3.15")
+	}
+
+	// 9. Multiplicity preserved (duplicates fail closed)
+	if requiresPythonMetadataMatches(">=3.10,<3.15,<3.15", ">=3.10,<3.15") {
+		t.Fatal("multiplicity difference matched")
+	}
+	if requiresPythonMetadataMatches(">=3.10,<3.15", ">=3.10,<3.15,<3.15") {
+		t.Fatal("multiplicity difference matched")
+	}
+
+	// 10. No range simplification (solver not present)
+	if requiresPythonMetadataMatches(">=3.11", ">=3.10,>=3.11") {
+		t.Fatal("range simplification incorrectly matched")
+	}
+
+	// 11. Malformed component missing operator fails closed
+	if requiresPythonMetadataMatches("<3.15,3.10", "3.10,<3.15") {
+		t.Fatal("specifier without operator matched")
+	}
+	if requiresPythonMetadataMatches("3.10,<3.15", "3.10,<3.15") {
+		t.Fatal("identical specifier without operator must fail closed")
+	}
+
+	// 12. Arbitrary non-specifier strings fail closed
+	if requiresPythonMetadataMatches("foo,bar", "bar,foo") {
+		t.Fatal("arbitrary non-specifier comma string matched")
+	}
+	if requiresPythonMetadataMatches("foo,bar", "foo,bar") {
+		t.Fatal("identical arbitrary non-specifier comma string must fail closed")
+	}
 }
 
 func TestNormalizeProjectAndFinalVersion(t *testing.T) {
