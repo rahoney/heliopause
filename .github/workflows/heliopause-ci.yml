@@ -8,8 +8,18 @@ on:
   merge_group:
   workflow_dispatch:
     inputs:
-      pytorch_cuda_qualification:
-        description: Run the bounded cu126 full qualification after disk/resource preflight.
+      pytorch_cu126_qualification:
+        description: Run only the bounded cu126 full qualification.
+        required: false
+        default: false
+        type: boolean
+      pytorch_cu130_qualification:
+        description: Run only the bounded cu130 full qualification.
+        required: false
+        default: false
+        type: boolean
+      pytorch_cu132_qualification:
+        description: Run only the bounded cu132 full qualification.
         required: false
         default: false
         type: boolean
@@ -40,7 +50,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '1.26.7'
+          go-version: '1.26.8'
           check-latest: false
           cache: false
       - name: Bootstrap pinned dependencies and tools
@@ -66,7 +76,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '1.26.7'
+          go-version: '1.26.8'
           check-latest: false
           cache: false
       - name: Run canonical Docs profile
@@ -88,7 +98,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '1.26.7'
+          go-version: '1.26.8'
           check-latest: false
           cache: false
       - name: Bootstrap pinned dependencies and tools
@@ -114,7 +124,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '1.26.7'
+          go-version: '1.26.8'
           check-latest: false
           cache: false
       - name: Bootstrap pinned dependencies and tools
@@ -140,7 +150,7 @@ jobs:
       - name: Set up minimum Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '1.25.13'
+          go-version: '1.26.8'
           check-latest: false
           cache: false
       - name: Bootstrap product modules
@@ -166,7 +176,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '1.26.7'
+          go-version: '1.26.8'
           check-latest: false
           cache: false
       - name: Bootstrap product modules
@@ -232,7 +242,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '1.26.7'
+          go-version: '1.26.8'
           check-latest: false
           cache: false
       - name: Install pinned runtime and run lifecycle integration
@@ -302,16 +312,22 @@ jobs:
           test -f "$aarch64_gcc_include/stdbool.h"
           test -f "$aarch64_gcc_include/stddef.h"
           test "$(docker version --format '{{.Server.Version}}')" = "$docker_engine_version"
-          scripts/build-gvisor-runsc-release.sh "$RUNNER_TEMP/runsc"
-          sudo install -d -m 0755 /usr/libexec/heliopause
-          sudo install -m 0755 "$RUNNER_TEMP/runsc" /usr/libexec/heliopause/runsc
-          sudo install -m 0644 "$RUNNER_TEMP/runsc.manifest.json" /usr/libexec/heliopause/runsc.manifest.json
-          manifest_runsc_sha512="$(jq -er '.runsc_binary_sha512' "$RUNNER_TEMP/runsc.manifest.json")"
-          test "$(sudo sha512sum /usr/libexec/heliopause/runsc | awk '{print $1}')" = "$manifest_runsc_sha512"
+          scripts/build-gvisor-runtime-bundle.sh "$RUNNER_TEMP/gvisor"
+          sudo install -d -m 0755 /usr/libexec/heliopause/gvisor/gvisor-bin
+          jq -er '.gvisor.runtime_bundle.members[].path' "$runtime_lock" | while IFS= read -r member; do
+            sudo install -m 0755 "$RUNNER_TEMP/gvisor/$member" "/usr/libexec/heliopause/gvisor/$member"
+          done
+          sudo install -m 0644 "$RUNNER_TEMP/gvisor/gvisor-bundle.manifest.json" /usr/libexec/heliopause/gvisor/gvisor-bundle.manifest.json
+          test "$(jq -er '.members | length' "$RUNNER_TEMP/gvisor/gvisor-bundle.manifest.json")" = 6
+          while IFS=' ' read -r member sha512; do
+            test "$(sudo sha512sum "/usr/libexec/heliopause/gvisor/$member" | awk '{print $1}')" = "$sha512"
+          done <<EOF
+          $(jq -er '.members[] | "\(.path) \(.sha512)"' "$RUNNER_TEMP/gvisor/gvisor-bundle.manifest.json")
+          EOF
           sudo install -d -m 0700 -o "$USER" -g "$(id -gn)" /run/heliopause-observer
           sudo install -d -m 0755 /etc/heliopause
           sudo install -m 0600 tools/gvisor-observer/pod-init.json /etc/heliopause/pod-init.json
-          sudo /usr/libexec/heliopause/runsc install --runtime=runsc-trace -- --pod-init-config=/etc/heliopause/pod-init.json
+          sudo /usr/libexec/heliopause/gvisor/runsc install --download-sidecars=NEVER --require-sidecars=ALWAYS --runtime=runsc-trace -- --sidecar-usage-policy=STRICT --pod-init-config=/etc/heliopause/pod-init.json
           sudo python3 -c 'import json; from pathlib import Path; path = Path("/etc/docker/daemon.json"); config = json.loads(path.read_text()) if path.exists() else {}; config.update({"firewall-backend": "iptables", "iptables": True, "ip6tables": False}); path.write_text(json.dumps(config, sort_keys=True) + "\n")'
           sudo systemctl restart docker || { sudo systemctl status docker --no-pager || true; sudo journalctl -u docker --no-pager -n 100 || true; exit 1; }
           sudo iptables -S DOCKER-USER
@@ -349,7 +365,7 @@ jobs:
           }
           trap 'sudo kill "$policy_helper_pid" 2>/dev/null || true' EXIT
           start_policy_helper
-          /usr/libexec/heliopause/runsc --version
+          /usr/libexec/heliopause/gvisor/runsc --version
           docker version --format '{{.Server.Version}}'
           docker info --format '{{json (index .Runtimes "runsc-trace")}}'
           go test -run='^$' -fuzz=FuzzDecodeHelperRecord -fuzztime=2s ./internal/sandbox
@@ -384,9 +400,26 @@ jobs:
           go test -c -o "$RUNNER_TEMP/helox-bootstrap-test" ./internal/bootstrap
           sudo install -m 0755 "$RUNNER_TEMP/helox-bootstrap-test" /usr/libexec/heliopause/helox
           start_policy_helper
+          selected_cuda_profiles=0
+          if [ "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cu126_qualification }}" = true ]; then selected_cuda_profiles=$((selected_cuda_profiles + 1)); fi
+          if [ "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cu130_qualification }}" = true ]; then selected_cuda_profiles=$((selected_cuda_profiles + 1)); fi
+          if [ "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cu132_qualification }}" = true ]; then selected_cuda_profiles=$((selected_cuda_profiles + 1)); fi
+          if [ "$selected_cuda_profiles" -gt 1 ]; then
+            echo "select at most one CUDA PyTorch qualification profile" >&2
+            exit 1
+          fi
+          if [ "$selected_cuda_profiles" -gt 0 ]; then
+            go run ./scripts/check qualification-freshness
+          fi
           HELOX_PYTORCH_FULL_INTEGRATION=1 HELOX_PYTORCH_PROFILE=cpu /usr/libexec/heliopause/helox -test.v -test.timeout=15m -test.run '^TestLinuxPyTorchFullIntegration$'
-          if [ "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cuda_qualification }}" = true ]; then
+          if [ "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cu126_qualification }}" = true ]; then
             HELOX_PYTORCH_FULL_INTEGRATION=1 HELOX_PYTORCH_PROFILE=cu126 /usr/libexec/heliopause/helox -test.v -test.timeout=40m -test.run '^TestLinuxPyTorchFullIntegration$'
+          fi
+          if [ "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cu130_qualification }}" = true ]; then
+            HELOX_PYTORCH_FULL_INTEGRATION=1 HELOX_PYTORCH_PROFILE=cu130 /usr/libexec/heliopause/helox -test.v -test.timeout=40m -test.run '^TestLinuxPyTorchFullIntegration$'
+          fi
+          if [ "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cu132_qualification }}" = true ]; then
+            HELOX_PYTORCH_FULL_INTEGRATION=1 HELOX_PYTORCH_PROFILE=cu132 /usr/libexec/heliopause/helox -test.v -test.timeout=40m -test.run '^TestLinuxPyTorchFullIntegration$'
           fi
           HELOX_PYPI_DYNAMIC_INTEGRATION=1 go test -v -timeout=5m ./internal/sandbox -run 'TestLinuxPyPI(WheelDynamic|SdistBuild)Integration'
           HELOX_PROMOTION_INTEGRATION=1 go test -v -timeout=5m ./internal/promotion -run TestLinuxNPMPromotionIntegration
@@ -424,7 +457,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '1.26.7'
+          go-version: '1.26.8'
           check-latest: false
           cache: false
       - name: Aggregate required job results

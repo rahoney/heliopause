@@ -42,7 +42,7 @@ func traceBudgetForProfile(profile string) traceBudget {
 	switch profile {
 	case "pypi-wheel-pytorch-cpu":
 		return traceBudget{events: maximumPyTorchCPUTraceEvents, bytes: maximumPyTorchCPUTraceBytes}
-	case "pypi-wheel-pytorch-cu126":
+	case "pypi-wheel-pytorch-cu126", "pypi-wheel-pytorch-cu130", "pypi-wheel-pytorch-cu132":
 		return traceBudget{events: 100_000, bytes: 16 << 20}
 	default:
 		return defaultTraceBudget

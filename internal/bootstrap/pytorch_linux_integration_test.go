@@ -21,7 +21,7 @@ func TestLinuxPyTorchFullIntegration(t *testing.T) {
 		t.Fatal("PyTorch full qualification requires Linux")
 	}
 	profile := os.Getenv("HELOX_PYTORCH_PROFILE")
-	version := map[string]string{"cpu": "2.9.1+cpu", "cu126": "2.9.0+cu126"}[profile]
+	version := map[string]string{"cpu": "2.14.0+cpu", "cu126": "2.14.0+cu126", "cu130": "2.14.0+cu130", "cu132": "2.14.0+cu132"}[profile]
 	if version == "" {
 		t.Fatalf("unsupported PyTorch qualification profile %q", profile)
 	}
@@ -36,7 +36,7 @@ func TestLinuxPyTorchFullIntegration(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(target, "pyvenv.cfg"), []byte("version = 3.14.7\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), map[string]time.Duration{"cpu": 15 * time.Minute, "cu126": 40 * time.Minute}[profile])
+	ctx, cancel := context.WithTimeout(context.Background(), map[string]time.Duration{"cpu": 15 * time.Minute, "cu126": 40 * time.Minute, "cu130": 40 * time.Minute, "cu132": 40 * time.Minute}[profile])
 	defer cancel()
 	var stdout, stderr bytes.Buffer
 	err := bootstrap.Run(ctx, []string{"pip", "install", "torch@" + version, "--source", "pytorch:" + profile, "--target", target}, &stdout, &stderr)

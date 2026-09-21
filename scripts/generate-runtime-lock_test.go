@@ -41,9 +41,9 @@ func TestRuntimeLockRejectsUnknownFieldAndMissingPlatform(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	delete(lock.GVisor.UpstreamBinaries, "aarch64")
+	lock.GVisor.RuntimeBundle.Architecture = "aarch64"
 	if err := validate(lock); err == nil {
-		t.Fatal("missing runtime architecture was accepted")
+		t.Fatal("unexpected runtime bundle architecture was accepted")
 	}
 }
 

@@ -216,7 +216,7 @@ func validateRuntimeClosure(ctx context.Context, closure []domain.AcquiredArtifa
 		expanded += size
 		files += count
 	}
-	if expanded > policy.MaxGraphUncompressed() || expanded > policy.RuntimeTmpfs() || files < 0 || compressed > uint64(policy.RuntimeTmpfs()-expanded) {
+	if expanded > policy.MaxGraphUncompressed() || expanded > policy.RuntimeTmpfs() || files < 0 || files > policy.MaxGraphFiles() || compressed > uint64(policy.RuntimeTmpfs()-expanded) {
 		return errors.New("PyPI dependency closure runtime resource budget exceeds bound")
 	}
 	return nil

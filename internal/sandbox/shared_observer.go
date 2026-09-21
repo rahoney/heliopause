@@ -64,7 +64,7 @@ func observerExpectedTopology(profile string) ([]observerMountExpectation, bool)
 	switch profile {
 	case "npm-lifecycle":
 		return []observerMountExpectation{root, tmp, runtime}, true
-	case "pypi-wheel", "pypi-wheel-pytorch-cpu", "pypi-wheel-pytorch-cu126":
+	case "pypi-wheel", "pypi-wheel-pytorch-cpu", "pypi-wheel-pytorch-cu126", "pypi-wheel-pytorch-cu130", "pypi-wheel-pytorch-cu132":
 		site := observerMountExpectation{"/haa-site", "workspace", "/", "tmpfs", false, false, true, false}
 		return []observerMountExpectation{root, tmp, site, runtime}, true
 	case "github-elf":
@@ -398,7 +398,7 @@ func (o *SharedObserver) StartProfile(ctx context.Context, containerID, profile 
 }
 
 func validObserverProfile(profile string) bool {
-	return profile == "npm-lifecycle" || profile == "pypi-wheel" || profile == "pypi-wheel-pytorch-cpu" || profile == "pypi-wheel-pytorch-cu126" || profile == "github-elf"
+	return profile == "npm-lifecycle" || profile == "pypi-wheel" || profile == "pypi-wheel-pytorch-cpu" || profile == "pypi-wheel-pytorch-cu126" || profile == "pypi-wheel-pytorch-cu130" || profile == "pypi-wheel-pytorch-cu132" || profile == "github-elf"
 }
 
 func (o *SharedObserver) receive() {

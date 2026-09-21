@@ -1,6 +1,8 @@
 package pypi
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"strings"
 	"testing"
@@ -108,7 +110,6 @@ func TestPublicPyPIEvaluatesSupportedDeterministicMarkers(t *testing.T) {
 		for _, invalid := range []string{
 			"pkg; os_name == 'posix'",
 			"pkg; python_version == 3.14",
-			"pkg; extra == 'foo' or extra == 'bar'",
 			"pkg; implementation_name == 'cpython'",
 			"pkg; sys_platform == 'linux'; extra == 'test'",
 		} {
@@ -191,6 +192,190 @@ func TestInactiveMarkerDoesNotProduceChildRequirement(t *testing.T) {
 	_, active, err := parseDeclaredDependencyForProfile("foo>=1.2; python_version < '3.10'", profile, "3.14.7")
 	if err != nil || active {
 		t.Fatalf("inactive marker = active=%t err=%v", active, err)
+	}
+}
+
+func TestBoundedMarkerBooleanPrecedenceAndExtras(t *testing.T) {
+	profile := PublicPyPIProfile()
+	dependency, active, err := parseDeclaredDependencyForProfile(`child; sys_platform == 'linux' or platform_system == 'Windows' and platform_machine == 'arm64'`, profile, "3.14.7")
+	if err != nil || !active || dependency != "child" {
+		t.Fatalf("precedence marker = %q/%t/%v", dependency, active, err)
+	}
+	dependency, active, err = parseDeclaredDependencyForProfileWithExtras(`nvidia-cublas==1.0.0.*; extra == 'cublas'`, profile, "3.14.7", []string{"cublas"})
+	if err != nil || !active || dependency != "nvidia-cublas" {
+		t.Fatalf("extra activated dependency = %q/%t/%v", dependency, active, err)
+	}
+	if _, active, err = parseDeclaredDependencyForProfileWithExtras(`nvidia-cublas==1.0.0.*; extra == 'cublas'`, profile, "3.14.7", nil); err != nil || active {
+		t.Fatalf("unrequested extra = active=%t err=%v", active, err)
+	}
+	dependency, active, err = parseDeclaredDependencyForProfileWithExtras(`nvidia-cublas==1.0.0.*; extra != 'cublas'`, profile, "3.14.7", []string{"cublas", "cudart"})
+	if err != nil || !active || dependency != "nvidia-cublas" {
+		t.Fatalf("multi-extra activation = %q/%t/%v", dependency, active, err)
+	}
+	dependency, active, err = parseDeclaredDependencyForProfileWithExtras(`child; platform_system == 'Linux' or extra == 'foo' and extra == 'bar'`, profile, "3.14.7", []string{"cublas", "cudart"})
+	if err != nil || !active || dependency != "child" {
+		t.Fatalf("extra precedence marker = %q/%t/%v", dependency, active, err)
+	}
+	dependency, active, err = parseDeclaredDependencyForProfileWithExtras(`child; (extra == 'cublas' or extra == 'cudart') and platform_system == 'Linux'`, profile, "3.14.7", []string{"cublas", "cudart"})
+	if err != nil || !active || dependency != "child" {
+		t.Fatalf("parenthesized extra marker = %q/%t/%v", dependency, active, err)
+	}
+	if _, _, err = parseDeclaredDependencyForProfile(`child; os_name == 'posix' or extra == 'unused'`, profile, "3.14.7"); err == nil {
+		t.Fatal("unsupported disjunctive marker was accepted")
+	}
+}
+
+func TestBoundedMarkerGrammarValidationBeforeEvaluation(t *testing.T) {
+	profile := PublicPyPIProfile()
+
+	// 1. Unsupported atom on left of AND (right would evaluate false)
+	if _, _, err := parseDeclaredDependencyForProfile(`child; os_name == "posix" and platform_system == "Windows"`, profile, "3.14.7"); err == nil {
+		t.Fatal("expected unsupported left atom in AND to be rejected even though right is false")
+	}
+
+	// 2. Unsupported atom on right of AND (left would evaluate false)
+	if _, _, err := parseDeclaredDependencyForProfile(`child; platform_system == "Windows" and os_name == "posix"`, profile, "3.14.7"); err == nil {
+		t.Fatal("expected unsupported right atom in AND to be rejected even though left is false")
+	}
+
+	// 3. Unsupported atom on left of OR (right would evaluate true)
+	if _, _, err := parseDeclaredDependencyForProfile(`child; os_name == "posix" or platform_system == "Linux"`, profile, "3.14.7"); err == nil {
+		t.Fatal("expected unsupported left atom in OR to be rejected even though right is true")
+	}
+
+	// 4. Unsupported atom on right of OR (left would evaluate true)
+	if _, _, err := parseDeclaredDependencyForProfile(`child; platform_system == "Linux" or os_name == "posix"`, profile, "3.14.7"); err == nil {
+		t.Fatal("expected unsupported right atom in OR to be rejected even though left is true")
+	}
+
+	// 5. Extra-dependent AND: inactive extra on left, unsupported on right
+	if _, _, err := parseDeclaredDependencyForProfileWithExtras(`child; extra == "foo" and unsupported_name == "x"`, profile, "3.14.7", []string{"cublas"}); err == nil {
+		t.Fatal("expected unsupported right atom in AND to be rejected even though extra is inactive")
+	}
+
+	// 6. Extra-dependent OR: active extra on right, unsupported on left
+	if _, _, err := parseDeclaredDependencyForProfileWithExtras(`child; unsupported_name == "x" or extra == "cublas"`, profile, "3.14.7", []string{"cublas"}); err == nil {
+		t.Fatal("expected unsupported left atom in OR to be rejected even though extra is active")
+	}
+
+	// 7. Nested/grouped unsupported atom where outer branch is true
+	if _, _, err := parseDeclaredDependencyForProfileWithExtras(`child; platform_system == "Linux" or (extra == "cublas" and unsupported_name == "x")`, profile, "3.14.7", []string{"cublas"}); err == nil {
+		t.Fatal("expected nested unsupported atom in OR branch to be rejected even though outer left is true")
+	}
+	if _, _, err := parseDeclaredDependencyForProfileWithExtras(`child; (extra == "cublas" and unsupported_name == "x") or platform_system == "Linux"`, profile, "3.14.7", []string{"cublas"}); err == nil {
+		t.Fatal("expected nested unsupported atom in grouped AND to be rejected even though outer right is true")
+	}
+	if _, _, err := parseDeclaredDependencyForProfile(`child; (platform_system == "Windows" and os_name == "posix") and sys_platform == "linux"`, profile, "3.14.7"); err == nil {
+		t.Fatal("expected nested unsupported atom in grouped left to be rejected")
+	}
+
+	// 8. Production report path: unsupported requirement does not disappear as inactive, it fails candidate processing
+	reference, err := ParseReference("parent@1.0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	reportJSON := `{"version":"1","pip_version":"26.2.1","environment":{"implementation_name":"cpython","implementation_version":"3.14.7","python_full_version":"3.14.7","platform_machine":"x86_64","sys_platform":"linux"},"install":[{"download_info":{"url":"https://files.pythonhosted.org/packages/parent-1.0-py3-none-any.whl","archive_info":{"hashes":{"sha256":"` + sampleSHA256 + `"}}},"is_direct":false,"requested":true,"metadata":{"name":"parent","version":"1.0","requires_python":"","requires_dist":["child; platform_system == 'Windows' and os_name == 'posix'"]}}]}`
+	if _, err := ParseInstallationReportForProfile(reference, []byte(reportJSON), "26.2.1", "3.14.7", profile); err == nil {
+		t.Fatal("expected production report with short-circuited unsupported marker to fail closed rather than disappearing as inactive")
+	}
+}
+
+func TestReportExtrasActivateEdges(t *testing.T) {
+	reference, err := ParseReference("cuda-toolkit@1.0.0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	body := strings.Replace(sampleReportJSON(), `"name":"Primary","version":"1.0","requires_python":">=3.14","requires_dist":["child>=2"]`, `"name":"cuda-toolkit","version":"1.0.0","requires_python":"","requires_dist":["nvidia-cublas==1.0.0.*; extra != 'cublas'"]`, 1)
+	body = strings.Replace(body, "primary-1.0-py3-none-any.whl", "cuda-toolkit-1.0.0-py3-none-any.whl", 2)
+	report, err := ParseInstallationReportForProfileWithExtras(reference, []byte(body), pipRuntimeVersionForTest, pythonRuntimeVersionForTest, PublicPyPIProfile(), []string{"cublas", "cudart"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if deps := report.Candidates()[1].Dependencies(); len(deps) != 1 || deps[0] != "nvidia-cublas" {
+		t.Fatalf("extra dependency edges = %#v", deps)
+	}
+}
+
+func TestPyTorchSimpleLinkMetadataIsIndependentAuthority(t *testing.T) {
+	profile, ok := PyTorchProfile("cpu")
+	if !ok {
+		t.Fatal("CPU profile is missing")
+	}
+	filename := "torch-2.14.0+cpu-cp314-cp314-manylinux_2_28_x86_64.whl"
+	linkURL := profile.IndexURL() + "torch/" + filename
+	candidate := Candidate{
+		project: "torch", source: profile.Source(), filename: filename,
+		url: linkURL, sha256: sampleSHA256, requiresPython: ">=3.10",
+	}
+	coreMetadata := []byte("Metadata-Version: 2.4\nName: torch\nVersion: 2.14.0+cpu\nRequires-Python: >=3.10\n\n")
+	coreSum := sha256.Sum256(coreMetadata)
+	coreDigest := hex.EncodeToString(coreSum[:])
+	// This is a minimized official-shaped link: PyTorch's selected 2.14 links
+	// carry the hash-bound Core Metadata attributes but omit optional
+	// data-requires-python and data-yanked attributes.
+	page, err := ParsePyTorchSimpleProject("torch", []byte(`<a href="`+linkURL+`#sha256=`+sampleSHA256+`" data-core-metadata="sha256=`+coreDigest+`" data-dist-info-metadata="sha256=`+coreDigest+`">torch</a>`), profile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	metadataURL, err := PyTorchCoreMetadataURL(candidate, page)
+	if err != nil || metadataURL != linkURL+".metadata" {
+		t.Fatalf("Core Metadata URL = %q / %v", metadataURL, err)
+	}
+	if err := VerifyPyTorchCoreMetadata(candidate, page, coreMetadata); err != nil {
+		t.Fatalf("hash-bound Core Metadata rejected: %v", err)
+	}
+	if err := VerifyPyTorchCoreMetadata(candidate, page, []byte("Metadata-Version: 2.4\nRequires-Python: >=3.10\n\n")); err == nil {
+		t.Fatal("unhashed Core Metadata was accepted")
+	}
+	mismatch := candidate
+	mismatch.requiresPython = ">=3.11"
+	if err := VerifyPyTorchCoreMetadata(mismatch, page, coreMetadata); err == nil {
+		t.Fatal("pip Requires-Python disagreement was accepted")
+	}
+	metadataWithoutRequiresPython := []byte("Metadata-Version: 2.4\nName: torch\n\n")
+	withoutRequiresSum := sha256.Sum256(metadataWithoutRequiresPython)
+	withoutRequiresPage, err := ParsePyTorchSimpleProject("torch", []byte(`<a href="`+linkURL+`#sha256=`+sampleSHA256+`" data-core-metadata="sha256=`+hex.EncodeToString(withoutRequiresSum[:])+`">torch</a>`), profile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := VerifyPyTorchCoreMetadata(candidate, withoutRequiresPage, metadataWithoutRequiresPython); err == nil {
+		t.Fatal("authenticated Requires-Python absence authorized pip metadata")
+	}
+
+	present, err := ParsePyTorchSimpleProject("torch", []byte(`<a href="`+linkURL+`#sha256=`+sampleSHA256+`" data-requires-python=">=3.10">torch</a>`), profile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if metadataURL, err := PyTorchCoreMetadataURL(candidate, present); err != nil || metadataURL != "" {
+		t.Fatalf("present Requires-Python authentication = %q / %v", metadataURL, err)
+	}
+	if _, err := PyTorchCoreMetadataURL(mismatch, present); err == nil {
+		t.Fatal("Simple Requires-Python mismatch was accepted")
+	}
+	emptyPresent, err := ParsePyTorchSimpleProject("torch", []byte(`<a href="`+linkURL+`#sha256=`+sampleSHA256+`" data-requires-python="">torch</a>`), profile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := PyTorchCoreMetadataURL(candidate, emptyPresent); err == nil {
+		t.Fatal("empty Simple Requires-Python authorized pip metadata")
+	}
+
+	for _, attribute := range []string{"data-yanked", `data-yanked=""`, `data-yanked="false"`, `data-yanked="withdrawn"`} {
+		yanked, err := ParsePyTorchSimpleProject("torch", []byte(`<a href="`+linkURL+`#sha256=`+sampleSHA256+`" `+attribute+`>torch</a>`), profile)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := PyTorchCoreMetadataURL(candidate, yanked); err == nil {
+			t.Fatalf("yanked link %q was accepted", attribute)
+		}
+	}
+
+	absent, err := ParsePyTorchSimpleProject("torch", []byte(`<a href="`+linkURL+`#sha256=`+sampleSHA256+`">torch</a>`), profile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := PyTorchCoreMetadataURL(candidate, absent); err == nil {
+		t.Fatal("missing Requires-Python and Core Metadata authentication was accepted")
 	}
 }
 

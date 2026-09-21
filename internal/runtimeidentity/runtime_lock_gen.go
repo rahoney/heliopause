@@ -3,16 +3,20 @@
 package runtimeidentity
 
 const (
-	GVisorRelease          = "release-20260810.0"
-	GVisorCommit           = "5ceb9a5fd5750d6c73dd166441f28306039300d0"
+	GVisorRelease          = "release-20260907.0"
+	GVisorCommit           = "7c6199801fd233d6d55309af4645d4746a077de7"
 	GVisorSourceRepository = "https://github.com/google/gvisor.git"
-	GVisorPatchPath        = "tools/gvisor/release-20260810.0.patch"
-	GVisorPatchSHA256      = "d98f802d74a6ee42e4090957373ec30c432b64b7106a589f94bfdd1f384f8162"
+	GVisorPatchPath        = "tools/gvisor/release-20260907.0.patch"
+	GVisorPatchSHA256      = "71c91db97608fa4968bdde6e0ab6e865287d59b5ea1f5efcf8c99e3d0c753c4f"
 	BazelVersion           = "8.3.1"
 	BazelLinuxX8664SHA512  = "c876a1619c885f44f3bdc87998eca59c79581954631c9d7fab4eb53cc0409b68e4be74c08ef3fe599c51b75d56262070f0c314f9908336221e7764fdf981b7f5"
-	DockerMinimumEngine    = "29.6.0"
-	NodeImageReference     = "node:22.23.1-slim@sha256:6c74791e557ce11fc957704f6d4fe134a7bc8d6f5ca4403205b2966bd488f6b3"
-	NodeNPMVersion         = "10.9.8"
+	DockerMinimumEngine    = "29.8.1"
+	DockerCIEngine         = "29.8.1"
+	DockerCEPackage        = "5:29.8.1-1~ubuntu.24.04~noble"
+	DockerCECLIPackage     = "5:29.8.1-1~ubuntu.24.04~noble"
+	ContainerdPackage      = "2.3.5-1~ubuntu.24.04~noble"
+	NodeImageReference     = "node:24.21.0-slim@sha256:713cfbf4a0ac19f40e1bb9919893e126b74a5c8cf5d0623c9f89515c8f74c6fa"
+	NodeNPMVersion         = "11.19.0"
 	PythonImageReference   = "python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52"
 	PythonVersion          = "3.14.7"
 	PipVersion             = "26.2.1"
@@ -29,17 +33,21 @@ type PythonSourceProfileLock struct {
 var PythonSourceProfiles = map[string]PythonSourceProfileLock{
 	"pytorch:cpu":   {Name: "pytorch:cpu", SourceID: "pytorch-cpu", IndexURL: "https://download.pytorch.org/whl/cpu/", IndexHost: "download.pytorch.org", DistributionHosts: []string{"download.pytorch.org", "download-r2.pytorch.org"}, OwnedProjects: []string{"torch", "torchvision", "torchaudio"}},
 	"pytorch:cu126": {Name: "pytorch:cu126", SourceID: "pytorch-cu126", IndexURL: "https://download.pytorch.org/whl/cu126/", IndexHost: "download.pytorch.org", DistributionHosts: []string{"download.pytorch.org", "download-r2.pytorch.org"}, OwnedProjects: []string{"torch", "torchvision", "torchaudio"}},
-	"pytorch:cu128": {Name: "pytorch:cu128", SourceID: "pytorch-cu128", IndexURL: "https://download.pytorch.org/whl/cu128/", IndexHost: "download.pytorch.org", DistributionHosts: []string{"download.pytorch.org", "download-r2.pytorch.org"}, OwnedProjects: []string{"torch", "torchvision", "torchaudio"}},
+	"pytorch:cu130": {Name: "pytorch:cu130", SourceID: "pytorch-cu130", IndexURL: "https://download.pytorch.org/whl/cu130/", IndexHost: "download.pytorch.org", DistributionHosts: []string{"download.pytorch.org", "download-r2.pytorch.org"}, OwnedProjects: []string{"torch", "torchvision", "torchaudio"}},
+	"pytorch:cu132": {Name: "pytorch:cu132", SourceID: "pytorch-cu132", IndexURL: "https://download.pytorch.org/whl/cu132/", IndexHost: "download.pytorch.org", DistributionHosts: []string{"download.pytorch.org", "download-r2.pytorch.org"}, OwnedProjects: []string{"torch", "torchvision", "torchaudio"}},
 }
 
-var upstreamRunscSHA512 = map[string]string{
-	"arm64": "26a306b4c51a54dd5c44f4c602d5326b92c1ba02757c591847d53f2cad448c0f838b1d8f7bd93cc50eb8d6ec88073c5d4b4a14b53bc572338ced49f42d618f9f",
-	"amd64": "4463ce276e207f5a516a08ec627a768a19cf7bed0094d522b0810bee3424585caa8d344e093204012b974f5c508ab2362dcb0d7236f0c1992fccc426beeb7ffc",
+type GVisorBundleMemberLock struct {
+	Path   string
+	Size   int64
+	SHA512 string
 }
 
-// UpstreamRunscSHA512 returns the official unpatched upstream release digest.
-// It is not an identity for the HAA-patched runtime.
-func UpstreamRunscSHA512(goarch string) (string, bool) {
-	value, ok := upstreamRunscSHA512[goarch]
-	return value, ok
+var GVisorRuntimeBundleMembers = []GVisorBundleMemberLock{
+	{Path: "containerd-shim-runsc-v1", Size: 43495570, SHA512: "539da392dccd46d43cdf32d693860cc2854b5ba6759460e59dbfdc5409093bebee5d4294dc4f5779bd9da82b17452bd92d2cb87ff884df8699746aba046ca99a"},
+	{Path: "gvisor-bin/checkpointgofer", Size: 69027766, SHA512: "33c9e79949c57b94ca36af2d8366160b6f3819525e86cca4c02a3f8d43500ed9c330b8a62dc5aae1ebdd5e9e08aa047a2ada1333b3f083cff2fe004a01049700"},
+	{Path: "gvisor-bin/gvisor-sentry-prewarmer", Size: 1416, SHA512: "4fd655a7ea7672ce7908be15e5e0446e2483c0df32e9b8fa95b1e0f984ce89162fba56e4e69cc7e6854af7206d4eaa0cbc1dfbd4234a216651c8be37ce8c3710"},
+	{Path: "gvisor-bin/gvisor_sentry", Size: 51780128, SHA512: "69a5e2f95d23c8143702ad2a30c25d4d4328636b4dbea63b3f7a0c0783c01c109c5108ef3d4ee840a43139d93edd1e39407853f01c1d6e86d3c790be512f944a"},
+	{Path: "gvisor-bin/runsc-metric-server", Size: 52879052, SHA512: "26ce866bc6f8eed5975dd5288de2dd9c9750f7f082352aa164cad9cb81df0fd35ae20dad219a5bc47c35e127fd2e1a19a39a17cd57ee3188d202afc8c0934236"},
+	{Path: "runsc", Size: 109328781, SHA512: "f7a9c79cbaa83ad89bcd61dcbd81520a6d01dcd32cca0b553e5379e1a35d9eacff8e8f33ad0b5c4e458fdae8bd055c5e0cd8051c78b1b78fae619a658368a426"},
 }

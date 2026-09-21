@@ -16,6 +16,14 @@ func TestNamedPyTorchProfilesHaveBoundedRootResourcePolicies(t *testing.T) {
 	if !ok {
 		t.Fatal("cu126 profile is missing")
 	}
+	cu130, ok := PyTorchProfile("cu130")
+	if !ok {
+		t.Fatal("cu130 profile is missing")
+	}
+	cu132, ok := PyTorchProfile("cu132")
+	if !ok {
+		t.Fatal("cu132 profile is missing")
+	}
 	if defaultPolicy.MaxArtifactCompressed() != 64<<20 || defaultPolicy.WheelLimits().MaxUncompressed != 256<<20 {
 		t.Fatalf("default PyPI resource policy = %#v", defaultPolicy)
 	}
@@ -25,11 +33,14 @@ func TestNamedPyTorchProfilesHaveBoundedRootResourcePolicies(t *testing.T) {
 	if cpu.ResourcePolicy().PromotionTmpfs() != 1<<30 {
 		t.Fatalf("CPU promotion tmpfs = %d, want 1 GiB", cpu.ResourcePolicy().PromotionTmpfs())
 	}
-	if cu126.ResourcePolicy().MaxArtifactCompressed() != 1<<30 || cu126.ResourcePolicy().MaxGraphCompressed() != (9<<30)/2 || cu126.ResourcePolicy().Duration() != 40*time.Minute {
+	if cu126.ResourcePolicy().MaxArtifactCompressed() != (3<<30)/2 || cu126.ResourcePolicy().WheelLimits().MaxUncompressed != 2<<30 || cu126.ResourcePolicy().MaxGraphCompressed() != 5<<30 || cu126.ResourcePolicy().MaxGraphUncompressed() != 8<<30 || cu126.ResourcePolicy().MaxGraphFiles() != 24_000 || cu126.ResourcePolicy().RuntimeTmpfs() != 12<<30 || cu126.ResourcePolicy().Duration() != 40*time.Minute {
 		t.Fatalf("cu126 resource policy = %#v", cu126.ResourcePolicy())
 	}
-	if cu126.ResourcePolicy().PromotionTmpfs() != 1<<30 {
-		t.Fatalf("cu126 promotion tmpfs changed = %d, want committed 1 GiB", cu126.ResourcePolicy().PromotionTmpfs())
+	for _, profile := range []SourceProfile{cu130, cu132} {
+		policy := profile.ResourcePolicy()
+		if policy.MaxArtifactCompressed() != 1<<30 || policy.WheelLimits().MaxUncompressed != 2<<30 || policy.MaxGraphCompressed() != 4<<30 || policy.MaxGraphUncompressed() != 8<<30 || policy.MaxGraphFiles() != 24_000 || policy.RuntimeTmpfs() != 12<<30 || policy.MaxTemporaryDisk() != 24<<30 || policy.Duration() != 40*time.Minute {
+			t.Fatalf("%s resource policy = %#v", profile.Name(), policy)
+		}
 	}
 }
 

@@ -100,6 +100,9 @@ func (i *StaticInspector) inspect(ctx context.Context, artifact domain.AcquiredA
 		if artifactpypi.ChargeUncompressedFromContext(ctx, uncompressed) != nil {
 			return nil, i.violation(artifact, "M5_WHEEL_RESOURCE_EXCEEDED", domain.InspectionDiagnosticResourceExceeded, domain.InspectionDiagnosticStageGraphUncompressed), nil
 		}
+		if artifactpypi.ChargeFilesFromContext(ctx, int64(len(info.Files))) != nil {
+			return nil, i.violation(artifact, "M5_WHEEL_RESOURCE_EXCEEDED", domain.InspectionDiagnosticResourceExceeded, domain.InspectionDiagnosticStageGraphUncompressed), nil
+		}
 		summary = fmt.Sprintf("PyPI wheel static inspection completed with %d RECORD entries.", len(info.Files))
 		return info, i.complete(artifact, "pypi-wheel-static", summary), nil
 	case "sdist":

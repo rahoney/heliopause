@@ -177,9 +177,9 @@ func TestBootstrapEnvironmentKeepsVerificationEnabled(t *testing.T) {
 const validTestToolLock = `{
   "schemaVersion": 1,
   "tools": [
-    {"command":"staticcheck","package":"honnef.co/go/tools/cmd/staticcheck","version":"2026.1","expectedVersion":"staticcheck 2026.1 (v0.7.0)","setupGo":"1.26.7"},
-    {"command":"gosec","package":"github.com/securego/gosec/v2/cmd/gosec","version":"v2.28.0","expectedVersion":"Version: dev","setupGo":"1.26.7"},
-    {"command":"govulncheck","package":"golang.org/x/vuln/cmd/govulncheck","version":"v1.7.0","expectedVersion":"govulncheck@v1.7.0","versionMatch":"contains","setupGo":"1.26.7"},
-    {"command":"gitleaks","version":"v8.18.4","expectedVersion":"8.18.4","versionArguments":["version"],"install":"archive","setupGo":"1.26.7","assets":[{"goos":"linux","goarch":"amd64","url":"https://github.com/gitleaks/gitleaks/releases/download/v8.18.4/gitleaks.tar.gz","sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}]}
+    {"command":"staticcheck","package":"honnef.co/go/tools/cmd/staticcheck","version":"2026.1","expectedVersion":"staticcheck 2026.1 (v0.7.0)","setupGo":"1.26.8"},
+    {"command":"gosec","package":"github.com/securego/gosec/v2/cmd/gosec","version":"v2.28.0","expectedVersion":"Version: dev","setupGo":"1.26.8"},
+    {"command":"govulncheck","package":"golang.org/x/vuln/cmd/govulncheck","version":"v1.7.0","expectedVersion":"govulncheck@v1.7.0","versionMatch":"contains","setupGo":"1.26.8"},
+    {"command":"gitleaks","version":"v8.18.4","expectedVersion":"8.18.4","versionArguments":["version"],"install":"archive","setupGo":"1.26.8","assets":[{"goos":"linux","goarch":"amd64","url":"https://github.com/gitleaks/gitleaks/releases/download/v8.18.4/gitleaks.tar.gz","sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}]}
   ]
 }`

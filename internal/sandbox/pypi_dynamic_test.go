@@ -190,6 +190,9 @@ func TestPythonDynamicObserverProfileMapping(t *testing.T) {
 		{"pypi", "pypi-wheel", 10_000, 2 << 20, false},
 		{"pytorch:cpu", "pypi-wheel-pytorch-cpu", 500_000, 128 << 20, false},
 		{"pytorch:cu126", "pypi-wheel-pytorch-cu126", 100_000, 16 << 20, false},
+		{"pytorch:cu130", "pypi-wheel-pytorch-cu130", 100_000, 16 << 20, false},
+		{"pytorch:cu132", "pypi-wheel-pytorch-cu132", 100_000, 16 << 20, false},
+		{"pytorch:cu128", "", 0, 0, true},
 		{"unknown", "", 0, 0, true},
 		{"", "", 0, 0, true},
 	}

@@ -64,6 +64,10 @@ func init() {
 			profile.resourcePolicy = pyTorchCPUResourcePolicy()
 		case "pytorch:cu126":
 			profile.resourcePolicy = pyTorchCU126ResourcePolicy()
+		case "pytorch:cu130":
+			profile.resourcePolicy = pyTorchCU130ResourcePolicy()
+		case "pytorch:cu132":
+			profile.resourcePolicy = pyTorchCU132ResourcePolicy()
 		}
 		pyTorchProfiles[strings.TrimPrefix(name, "pytorch:")] = mustSourceProfile(profile)
 	}

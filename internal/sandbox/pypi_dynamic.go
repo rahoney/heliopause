@@ -471,6 +471,10 @@ func pythonDynamicObserverProfile(rootProfileName string) (string, error) {
 		return "pypi-wheel-pytorch-cpu", nil
 	case "pytorch:cu126":
 		return "pypi-wheel-pytorch-cu126", nil
+	case "pytorch:cu130":
+		return "pypi-wheel-pytorch-cu130", nil
+	case "pytorch:cu132":
+		return "pypi-wheel-pytorch-cu132", nil
 	default:
 		return "", errors.New("unsupported Python root source profile for dynamic observer")
 	}

@@ -24,8 +24,7 @@ Copyright License 및 Option Five 조건과 자동 CLA status check를 충족해
 
 ## Build
 
-Heliopause는 Go `1.25.13` 이상이 필요하며, 검증된 개발 toolchain은
-Go `1.26.7`이다.
+Heliopause는 Go `1.26.8` 이상이 필요하며, 검증된 개발 toolchain도 Go `1.26.8`이다.
 
 다음 build 명령은 source checkout을 가진 개발자·검증자가 사용하는 경로다. 일반
 사용자는 최종적으로 GitHub Release의 검증된 bootstrap entrance를 사용해야 하며,
@@ -43,6 +42,7 @@ dependency와 품질 도구까지 재현하려면 저장소 루트에서 다음�
 ```sh
 go run ./scripts/check bootstrap
 go run ./scripts/check quick
+go run ./scripts/check freshness
 ```
 
 ## Commands
@@ -95,6 +95,14 @@ qualification이 완료되기 전까지 공개 지원으로 간주하지 않는�
 | M12-004 | public Terraform Provider 설치: `helox terraform init` |
 | M12-005 | 전체 생태계 qualification 및 feature freeze |
 | M12-02 | 최종 red-team/fix gate |
+
+PyTorch profile roles are CPU (primary non-CUDA), cu126 (compatibility), cu130
+(primary CUDA), and cu132 (extended compatibility). `cu128` is removed and is
+not selectable. CUDA qualification is explicit workflow-dispatch only.
+
+`scripts/version-support.lock.json` records externally managed baselines.
+Developer checks warn after 90 days; strict qualification freshness fails stale
+records without network access or lock rewriting.
 
 M12-001~005와 M12-02가 완료되면 기능 개발을 동결하고 M13에서 검증된 GitHub
 Release, OS package, npm/PyPI/pipx 및 Homebrew bootstrap·운영 절차를 진행한다.

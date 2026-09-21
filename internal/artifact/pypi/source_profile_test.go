@@ -7,7 +7,7 @@ import (
 )
 
 func TestPyTorchProfilesAreNamedAndBounded(t *testing.T) {
-	for _, name := range []string{"cpu", "cu126", "cu128"} {
+	for _, name := range []string{"cpu", "cu126", "cu130", "cu132"} {
 		profile, ok := PyTorchProfile(name)
 		if !ok || profile.Name() != "pytorch:"+name || !IsPyTorchSource(profile.Source()) {
 			t.Fatalf("profile %q = %#v, %v", name, profile, ok)
@@ -15,6 +15,9 @@ func TestPyTorchProfilesAreNamedAndBounded(t *testing.T) {
 		if !strings.HasPrefix(profile.IndexURL(), "https://download.pytorch.org/whl/"+name+"/") {
 			t.Fatalf("profile %q index URL = %q", name, profile.IndexURL())
 		}
+	}
+	if _, ok := PyTorchProfile("cu128"); ok {
+		t.Fatal("removed cu128 profile remains available")
 	}
 	if _, err := ParseReferenceForSource("torch@2.0.0+cpu", mustPyTorchProfile(t, "cpu").Source()); err != nil {
 		t.Fatalf("ParseReferenceForSource(local) error = %v", err)
@@ -48,7 +51,7 @@ func TestPyTorchHTMLIndexAndReportPreserveSourceIdentity(t *testing.T) {
 			t.Fatalf("PyTorch dependency requirements = %#v", requirements)
 		}
 	}
-	torchPage, err := ParseSimpleProjectForProfile("torch", []byte(`<html><body><a href="https://download.pytorch.org/whl/cpu/torch/torch-2.0.0%2Bcpu-cp314-cp314-linux_x86_64.whl#sha256=`+strings.Repeat("a", 64)+`">torch</a></body></html>`), profile)
+	torchPage, err := ParseSimpleProjectForProfile("torch", []byte(`<html><body><a href="https://download.pytorch.org/whl/cpu/torch/torch-2.0.0%2Bcpu-cp314-cp314-linux_x86_64.whl#sha256=`+strings.Repeat("a", 64)+`" data-requires-python=">=3.9">torch</a></body></html>`), profile)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -143,7 +146,7 @@ func TestPyTorchSimpleProjectAllowsBoundedLargeIndexPage(t *testing.T) {
 		body.WriteString(strconv.Itoa(i))
 		body.WriteString(`-cp314-cp314-manylinux_2_28_x86_64.whl#sha256=`)
 		body.WriteString(strings.Repeat("b", 64))
-		body.WriteString(`">torch</a>`)
+		body.WriteString(`" data-requires-python="">torch</a>`)
 	}
 	if _, err := ParsePyTorchSimpleProject("torch", []byte(body.String()), profile); err != nil {
 		t.Fatalf("bounded PyTorch Simple page was rejected: %v", err)
@@ -153,7 +156,7 @@ func TestPyTorchSimpleProjectAllowsBoundedLargeIndexPage(t *testing.T) {
 func TestPyTorchSimpleProjectIgnoresOutOfProfileLinks(t *testing.T) {
 	profile := mustPyTorchProfile(t, "cpu")
 	body := `<a href="https://download-r2.pytorch.org/whl/torch-0.1-cp27-cp27m-macosx_10_6_x86_64.whl#sha256=` + strings.Repeat("a", 64) + `">old</a>` +
-		`<a href="https://download-r2.pytorch.org/whl/cpu/torch/torch-2.9.1%2Bcpu-cp314-cp314-manylinux_2_28_x86_64.whl#sha256=` + strings.Repeat("b", 64) + `">current</a>`
+		`<a href="https://download-r2.pytorch.org/whl/cpu/torch/torch-2.9.1%2Bcpu-cp314-cp314-manylinux_2_28_x86_64.whl#sha256=` + strings.Repeat("b", 64) + `" data-requires-python="">current</a>`
 	page, err := ParsePyTorchSimpleProject("torch", []byte(body), profile)
 	if err != nil {
 		t.Fatal(err)
@@ -187,7 +190,7 @@ func TestPyTorchSimpleProjectRequiresWheelHashForSelectedCandidate(t *testing.T)
 
 	t.Run("unrelated hashless link is excluded", func(t *testing.T) {
 		body := `<a href="https://download-r2.pytorch.org/whl/cpu/torch-2.10.0.dev1%2Bcpu-cp310-cp310-manylinux_2_28_x86_64.whl">unrelated</a>` +
-			`<a href="` + selectedURL + `#sha256=` + selectedDigest + `">selected</a>`
+			`<a href="` + selectedURL + `#sha256=` + selectedDigest + `" data-requires-python="">selected</a>`
 		page := parse(t, body)
 		if files := page.Files(); len(files) != 1 || files[0].URL() != selectedURL || files[0].SHA256() != selectedDigest {
 			t.Fatalf("retained PyTorch files = %#v", files)
@@ -205,15 +208,15 @@ func TestPyTorchSimpleProjectRequiresWheelHashForSelectedCandidate(t *testing.T)
 	})
 
 	t.Run("selected digest mismatch is rejected", func(t *testing.T) {
-		page := parse(t, `<a href="`+selectedURL+`#sha256=`+strings.Repeat("b", 64)+`">selected</a>`)
+		page := parse(t, `<a href="`+selectedURL+`#sha256=`+strings.Repeat("b", 64)+`" data-requires-python="">selected</a>`)
 		if _, err := CrossCheckReport(InstallationReport{candidates: []Candidate{candidate}}, []SimpleProject{page}); err == nil {
 			t.Fatal("CrossCheckReport accepted mismatched PyTorch wheel digest")
 		}
 	})
 
 	t.Run("duplicate selected links are rejected", func(t *testing.T) {
-		body := `<a href="` + selectedURL + `#sha256=` + selectedDigest + `">selected</a>` +
-			`<a href="` + selectedURL + `#sha256=` + selectedDigest + `">selected duplicate</a>`
+		body := `<a href="` + selectedURL + `#sha256=` + selectedDigest + `" data-requires-python="">selected</a>` +
+			`<a href="` + selectedURL + `#sha256=` + selectedDigest + `" data-requires-python="">selected duplicate</a>`
 		if _, err := ParsePyTorchSimpleProject("torch", []byte(body), profile); err == nil {
 			t.Fatal("ParsePyTorchSimpleProject accepted duplicate selected links")
 		}
@@ -226,6 +229,20 @@ func TestPyTorchSimpleProjectRequiresWheelHashForSelectedCandidate(t *testing.T)
 			t.Fatal("CrossCheckReport accepted metadata digest in place of wheel digest")
 		}
 	})
+}
+
+func TestPyTorchSimpleSelectedLinkRequiresIndependentMetadata(t *testing.T) {
+	profile := mustPyTorchProfile(t, "cpu")
+	url := "https://download.pytorch.org/whl/cpu/torch/torch-2.14.0%2Bcpu-cp314-cp314-linux_x86_64.whl"
+	digest := strings.Repeat("a", 64)
+	page, err := ParsePyTorchSimpleProject("torch", []byte(`<a href="`+url+`#sha256=`+digest+`" data-requires-python=">=3.9">torch</a>`), profile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	candidate := Candidate{project: "torch", source: profile.Source(), filename: "torch-2.14.0+cpu-cp314-cp314-linux_x86_64.whl", url: strings.ReplaceAll(url, "%2B", "+"), sha256: digest, requiresPython: ">=3.10", primary: true}
+	if _, err := CrossCheckReport(InstallationReport{candidates: []Candidate{candidate}}, []SimpleProject{page}); err == nil {
+		t.Fatal("PyTorch Simple Requires-Python disagreement was accepted")
+	}
 }
 
 func TestPyTorchWheelLocalVersionAndPathAreProfileBound(t *testing.T) {

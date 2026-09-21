@@ -100,8 +100,8 @@ They are quality tooling only: none enters the product module graph.
 
 | Tool | Exact identity | Install and compatibility |
 | --- | --- | --- |
-| gosec | `github.com/securego/gosec/v2/cmd/gosec@v2.28.0` | checksum-verified `go install` with Go `1.26.7`; upstream requires Go `1.25+` |
-| govulncheck | `golang.org/x/vuln/cmd/govulncheck@v1.7.0` | checksum-verified `go install` with Go `1.26.7`; module Go floor `1.25` |
+| gosec | `github.com/securego/gosec/v2/cmd/gosec@v2.28.0` | checksum-verified `go install` with Go `1.26.8`; upstream requires Go `1.25+` |
+| govulncheck | `golang.org/x/vuln/cmd/govulncheck@v1.7.0` | checksum-verified `go install` with Go `1.26.8`; module Go floor `1.25` |
 | Gitleaks | official `v8.18.4` archive, per-platform SHA-256 lock | HTTPS download to the external tool cache and digest verification before extraction; newer `v8.28.0` and `v8.30.1` default-rule false negatives are excluded pending an upstream fix |
 
 The bootstrap checks an installed executable's supported version identity. A
@@ -119,9 +119,17 @@ allowlist is commit, path, rule and line specific; it cannot hide a new finding.
 
 The M7-005 gate itself found four reachable Go standard-library vulnerabilities
 in Go `1.26.5`; Go's release history records the fixes in the security-patched
-`1.26.6` line. The product/CI pin therefore advances to current supported
-patches `go1.26.7` and `go1.25.13`, and the same full suite must pass before
-the gate is considered clean.
+`1.26.6` line. That historical gate advanced the product/CI pins to
+`go1.26.7` and `go1.25.13`; the current supported baseline is recorded in the
+version-support lock below.
+
+### Current version-support review
+
+The canonical `scripts/version-support.lock.json` records each externally
+managed baseline, its official source, support decision, and review date. The
+deterministic `scripts/check freshness` profile warns once a review is older
+than 90 days; `qualification-freshness` fails stale records for qualification
+or release use. The current Go minimum and toolchain are both `1.26.8`.
 
 정확한 Go와 현재 사용하는 tool version은 아래 M0-002 lock에서 고정한다. 아직 사용하지 않는 미래 도구의 임의 최신 version은 미리 적지 않는다.
 

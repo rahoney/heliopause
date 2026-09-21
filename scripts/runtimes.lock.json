@@ -1,35 +1,37 @@
 {
   "schema_version": 1,
   "gvisor": {
-    "release": "release-20260810.0",
-    "commit": "5ceb9a5fd5750d6c73dd166441f28306039300d0",
+    "release": "release-20260907.0",
+    "commit": "7c6199801fd233d6d55309af4645d4746a077de7",
     "source_repository": "https://github.com/google/gvisor.git",
     "patch": {
-      "path": "tools/gvisor/release-20260810.0.patch",
-      "sha256": "d98f802d74a6ee42e4090957373ec30c432b64b7106a589f94bfdd1f384f8162"
+      "path": "tools/gvisor/release-20260907.0.patch",
+      "sha256": "71c91db97608fa4968bdde6e0ab6e865287d59b5ea1f5efcf8c99e3d0c753c4f"
     },
-    "upstream_binaries": {
-      "x86_64": {
-        "url": "https://storage.googleapis.com/gvisor/releases/release/20260810.0/x86_64/runsc",
-        "sha512": "4463ce276e207f5a516a08ec627a768a19cf7bed0094d522b0810bee3424585caa8d344e093204012b974f5c508ab2362dcb0d7236f0c1992fccc426beeb7ffc"
-      },
-      "aarch64": {
-        "url": "https://storage.googleapis.com/gvisor/releases/release/20260810.0/aarch64/runsc",
-        "sha512": "26a306b4c51a54dd5c44f4c602d5326b92c1ba02757c591847d53f2cad448c0f838b1d8f7bd93cc50eb8d6ec88073c5d4b4a14b53bc572338ced49f42d618f9f"
-      }
+    "runtime_bundle": {
+      "architecture": "amd64",
+      "members": [
+        {"path": "containerd-shim-runsc-v1", "size": 43495570, "sha512": "539da392dccd46d43cdf32d693860cc2854b5ba6759460e59dbfdc5409093bebee5d4294dc4f5779bd9da82b17452bd92d2cb87ff884df8699746aba046ca99a"},
+        {"path": "gvisor-bin/checkpointgofer", "size": 69027766, "sha512": "33c9e79949c57b94ca36af2d8366160b6f3819525e86cca4c02a3f8d43500ed9c330b8a62dc5aae1ebdd5e9e08aa047a2ada1333b3f083cff2fe004a01049700"},
+        {"path": "gvisor-bin/gvisor-sentry-prewarmer", "size": 1416, "sha512": "4fd655a7ea7672ce7908be15e5e0446e2483c0df32e9b8fa95b1e0f984ce89162fba56e4e69cc7e6854af7206d4eaa0cbc1dfbd4234a216651c8be37ce8c3710"},
+        {"path": "gvisor-bin/gvisor_sentry", "size": 51780128, "sha512": "69a5e2f95d23c8143702ad2a30c25d4d4328636b4dbea63b3f7a0c0783c01c109c5108ef3d4ee840a43139d93edd1e39407853f01c1d6e86d3c790be512f944a"},
+        {"path": "gvisor-bin/runsc-metric-server", "size": 52879052, "sha512": "26ce866bc6f8eed5975dd5288de2dd9c9750f7f082352aa164cad9cb81df0fd35ae20dad219a5bc47c35e127fd2e1a19a39a17cd57ee3188d202afc8c0934236"},
+        {"path": "runsc", "size": 109328781, "sha512": "f7a9c79cbaa83ad89bcd61dcbd81520a6d01dcd32cca0b553e5379e1a35d9eacff8e8f33ad0b5c4e458fdae8bd055c5e0cd8051c78b1b78fae619a658368a426"}
+      ]
     }
   },
   "docker": {
-    "minimum_engine": "29.6.0",
-    "ci_engine_version": "29.6.2",
+    "minimum_engine": "29.8.1",
+    "ci_engine_version": "29.8.1",
     "ci_ubuntu_24_04_amd64": {
-      "docker_ce_package": "5:29.6.2-1~ubuntu.24.04~noble",
-      "containerd_package": "2.3.3-1~ubuntu.24.04~noble"
+      "docker_ce_package": "5:29.8.1-1~ubuntu.24.04~noble",
+      "docker_ce_cli_package": "5:29.8.1-1~ubuntu.24.04~noble",
+      "containerd_package": "2.3.5-1~ubuntu.24.04~noble"
     }
   },
   "node_image": {
-    "reference": "node:22.23.1-slim@sha256:6c74791e557ce11fc957704f6d4fe134a7bc8d6f5ca4403205b2966bd488f6b3",
-    "npm_version": "10.9.8"
+    "reference": "node:24.21.0-slim@sha256:713cfbf4a0ac19f40e1bb9919893e126b74a5c8cf5d0623c9f89515c8f74c6fa",
+    "npm_version": "11.19.0"
   },
   "python_image": {
     "reference": "python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52",
@@ -59,9 +61,17 @@
       "owned_projects": ["torch", "torchvision", "torchaudio"]
     },
     {
-      "name": "pytorch:cu128",
-      "source_id": "pytorch-cu128",
-      "index_url": "https://download.pytorch.org/whl/cu128/",
+      "name": "pytorch:cu130",
+      "source_id": "pytorch-cu130",
+      "index_url": "https://download.pytorch.org/whl/cu130/",
+      "index_host": "download.pytorch.org",
+      "distribution_hosts": ["download.pytorch.org", "download-r2.pytorch.org"],
+      "owned_projects": ["torch", "torchvision", "torchaudio"]
+    },
+    {
+      "name": "pytorch:cu132",
+      "source_id": "pytorch-cu132",
+      "index_url": "https://download.pytorch.org/whl/cu132/",
       "index_host": "download.pytorch.org",
       "distribution_hosts": ["download.pytorch.org", "download-r2.pytorch.org"],
       "owned_projects": ["torch", "torchvision", "torchaudio"]

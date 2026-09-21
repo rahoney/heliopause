@@ -10,6 +10,7 @@ import (
 	"net/netip"
 	"runtime"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -22,6 +23,11 @@ const (
 	pypiDistributionEndpoint = "files.pythonhosted.org"
 	pypiResolverProjectDir   = "/tmp/haa-pypi-resolver"
 	pypiResolverTimeout      = 2 * time.Minute
+	maxPyTorchPendingEntries = 128
+	maxPyTorchGraphEdges     = 128
+	maxPyTorchReports        = 64
+	maxPyTorchReportBytes    = 16 << 20
+	maxPyTorchSingleReport   = 4 << 20
 )
 
 var pypiResolverEndpoints = []string{"pypi.org", "files.pythonhosted.org"}
@@ -74,6 +80,10 @@ func resolverObserverProfile(profile artifactpypi.SourceProfile) string {
 		return "pypi-wheel-pytorch-cpu"
 	case "pytorch:cu126":
 		return "pypi-wheel-pytorch-cu126"
+	case "pytorch:cu130":
+		return "pypi-wheel-pytorch-cu130"
+	case "pytorch:cu132":
+		return "pypi-wheel-pytorch-cu132"
 	default:
 		return "pypi-wheel"
 	}
@@ -310,11 +320,20 @@ func (r *PyPIResolver) resolvePyTorchGraph(ctx context.Context, containerID stri
 		request string
 		profile artifactpypi.SourceProfile
 		primary bool
+		parent  string
 	}
 	queue := []pending{{request: request, profile: r.profile, primary: true}}
 	candidates := make(map[string]artifactpypi.Candidate)
-	requests := make(map[string]string)
+	requests := make(map[string][]artifactpypi.BoundedRequirement)
+	sources := make(map[string]domain.SourceID)
+	seenRequests := make(map[string]bool)
 	reports := make([]byte, 0)
+	maxProjects := artifactpypi.ResourcePolicyFromContext(ctx).MaxGraphArtifacts()
+	if maxProjects <= 0 || maxProjects > maxPyTorchReports {
+		return nil, nil, errors.New("PyTorch resolver traversal policy is invalid")
+	}
+	edges := 0
+	reportCount := 0
 	for len(queue) > 0 {
 		current := queue[0]
 		queue = queue[1:]
@@ -322,20 +341,56 @@ func (r *PyPIResolver) resolvePyTorchGraph(ctx context.Context, containerID stri
 		if err != nil {
 			return nil, nil, errors.New("PyTorch dependency requirement is invalid")
 		}
-		if existing, seen := requests[project]; seen {
-			if existing != current.request {
-				return nil, nil, errors.New("PyTorch dependency requirements are ambiguous")
-			}
+		requestKey := current.parent + "\x00" + project + "\x00" + current.profile.Source().String() + "\x00" + current.request
+		if seenRequests[requestKey] {
 			continue
 		}
-		requests[project] = current.request
+		seenRequests[requestKey] = true
+		if source, seen := sources[project]; seen && source != current.profile.Source() {
+			return nil, nil, errors.New("PyTorch dependency sources conflict")
+		}
+		if _, seen := sources[project]; !seen && len(sources) >= maxProjects {
+			return nil, nil, errors.New("PyTorch resolver project traversal exceeds bound")
+		}
+		sources[project] = current.profile.Source()
+		if !current.primary {
+			bounded, err := artifactpypi.ParseBoundedRequirement(current.request)
+			if err != nil || bounded.Project() != project {
+				return nil, nil, errors.New("PyTorch dependency requirement is unsupported")
+			}
+			requests[project] = append(requests[project], bounded)
+		}
 		candidateReference, err := artifactpypi.ParseReferenceForSource(project, current.profile.Source())
 		if err != nil {
 			return nil, nil, err
 		}
-		candidate, report, err := r.resolvePyTorchCandidate(ctx, containerID, runtime, candidateReference, current.profile, current.request)
+		selectedRequest := current.request
+		requestedExtras := []string(nil)
+		if !current.primary {
+			aggregated, aggregateErr := artifactpypi.AggregateBoundedRequirements(project, requests[project])
+			selectedRequest, err = aggregated.Request(), aggregateErr
+			if err != nil {
+				return nil, nil, errors.New("PyTorch dependency aggregate is invalid")
+			}
+			requestedExtras = aggregated.Extras()
+		}
+		if reportCount >= maxPyTorchReports || len(reports) > maxPyTorchReportBytes-maxPyTorchSingleReport {
+			return nil, nil, errors.New("PyTorch resolver report traversal exceeds bound")
+		}
+		remainingReportBytes := maxPyTorchReportBytes - len(reports)
+		if remainingReportBytes > maxPyTorchSingleReport {
+			remainingReportBytes = maxPyTorchSingleReport
+		}
+		candidate, report, err := r.resolvePyTorchCandidate(ctx, containerID, runtime, candidateReference, current.profile, selectedRequest, requestedExtras, remainingReportBytes)
 		if err != nil {
 			return nil, nil, err
+		}
+		reportCount++
+		if len(report) > maxPyTorchReportBytes-len(reports) {
+			return nil, nil, errors.New("PyTorch resolver report traversal exceeds bound")
+		}
+		if candidate.Source() != current.profile.Source() || (!current.primary && !artifactpypi.CandidateSatisfiesBoundedRequirements(candidate.Version(), requests[project])) {
+			return nil, nil, errors.New("PyTorch dependency candidate does not satisfy all requirements")
 		}
 		candidates[project] = candidate.WithPrimary(current.primary)
 		reports = append(reports, report...)
@@ -348,7 +403,11 @@ func (r *PyPIResolver) resolvePyTorchGraph(ctx context.Context, containerID stri
 			if artifactpypi.IsPyTorchOwnedProject(dependency) {
 				profile = r.profile
 			}
-			queue = append(queue, pending{request: requirement, profile: profile})
+			if edges >= maxPyTorchGraphEdges || len(queue) >= maxPyTorchPendingEntries {
+				return nil, nil, errors.New("PyTorch resolver dependency traversal exceeds bound")
+			}
+			edges++
+			queue = append(queue, pending{request: requirement, profile: profile, parent: candidate.Project()})
 		}
 	}
 	result := make([]artifactpypi.Candidate, 0, len(candidates))
@@ -358,16 +417,22 @@ func (r *PyPIResolver) resolvePyTorchGraph(ctx context.Context, containerID stri
 	return result, reports, nil
 }
 
-func (r *PyPIResolver) resolvePyTorchCandidate(ctx context.Context, containerID string, runtime PythonRuntime, reference domain.ArtifactReference, profile artifactpypi.SourceProfile, requirement string) (artifactpypi.Candidate, []byte, error) {
+func (r *PyPIResolver) resolvePyTorchCandidate(ctx context.Context, containerID string, runtime PythonRuntime, reference domain.ArtifactReference, profile artifactpypi.SourceProfile, requirement string, requestedExtras []string, reportLimit int) (artifactpypi.Candidate, []byte, error) {
+	if reportLimit <= 0 || reportLimit > maxPyTorchSingleReport {
+		return artifactpypi.Candidate{}, nil, errors.New("PyTorch resolver report bound is invalid")
+	}
 	arguments := append([]string{"install", "--dry-run", "--report", pypiResolverProjectDir + "/report.json", "--disable-pip-version-check", "--no-input", "--no-cache-dir", "--isolated", "--no-deps", "--index-url", profile.IndexURL()}, requirement)
 	if _, err := r.runner.Output(ctx, "docker", append(boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-m", "pip"), arguments...)...); err != nil {
 		return artifactpypi.Candidate{}, nil, errors.New("run source-pinned pip resolution failed")
 	}
-	reportBytes, err := r.runner.Output(ctx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", boundedReadScript, pypiResolverProjectDir+"/report.json", "4194304")...)
+	reportBytes, err := r.runner.Output(ctx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", boundedReadScript, pypiResolverProjectDir+"/report.json", strconv.Itoa(reportLimit))...)
 	if err != nil {
 		return artifactpypi.Candidate{}, nil, errors.New("read source-pinned pip report failed")
 	}
-	report, err := artifactpypi.ParseInstallationReportForProfile(reference, reportBytes, runtime.PipVersion, runtime.PythonVersion, profile)
+	if len(reportBytes) == 0 || len(reportBytes) > reportLimit {
+		return artifactpypi.Candidate{}, nil, errors.New("PyTorch resolver report exceeds traversal bound")
+	}
+	report, err := artifactpypi.ParseInstallationReportForProfileWithExtras(reference, reportBytes, runtime.PipVersion, runtime.PythonVersion, profile, requestedExtras)
 	if err != nil {
 		return artifactpypi.Candidate{}, nil, fmt.Errorf("source-pinned pip report for %s is invalid: %w", requirement, err)
 	}
@@ -386,6 +451,22 @@ func (r *PyPIResolver) resolvePyTorchCandidate(ctx context.Context, containerID 
 	page, err := artifactpypi.ParseSimpleProjectForRootProfile(candidate.Project(), body, profile, r.profile)
 	if err != nil {
 		return artifactpypi.Candidate{}, nil, err
+	}
+	if artifactpypi.IsPyTorchSource(profile.Source()) {
+		coreMetadataURL, metadataErr := artifactpypi.PyTorchCoreMetadataURL(candidate, page)
+		if metadataErr != nil {
+			return artifactpypi.Candidate{}, nil, metadataErr
+		}
+		coreMetadata := []byte(nil)
+		if coreMetadataURL != "" {
+			coreMetadata, metadataErr = r.runner.Output(ctx, "docker", append(boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", pytorchCoreMetadataFetchScript), coreMetadataURL)...)
+			if metadataErr != nil {
+				return artifactpypi.Candidate{}, nil, errors.New("fetch PyTorch Core Metadata failed")
+			}
+		}
+		if metadataErr := artifactpypi.VerifyPyTorchCoreMetadata(candidate, page, coreMetadata); metadataErr != nil {
+			return artifactpypi.Candidate{}, nil, metadataErr
+		}
 	}
 	if _, err := artifactpypi.CrossCheckReport(report, []artifactpypi.SimpleProject{page}); err != nil {
 		return artifactpypi.Candidate{}, nil, err
@@ -567,3 +648,5 @@ const boundedReadScript = "import os,sys\np=sys.argv[1]\nlimit=int(sys.argv[2])\
 const simpleJSONFetchScript = "import sys,urllib.error,urllib.request\nclass NoRedirect(urllib.request.HTTPRedirectHandler):\n def redirect_request(self, req, fp, code, msg, headers, newurl): return None\nproject=sys.argv[1]\nurl='https://pypi.org/simple/'+project+'/'\nrequest=urllib.request.Request(url, headers={'Accept':'application/vnd.pypi.simple.v1+json'})\nresponse=urllib.request.build_opener(NoRedirect).open(request, timeout=15)\nif response.status != 200 or response.geturl() != url: raise SystemExit(1)\nif response.headers.get_content_type().lower() != 'application/vnd.pypi.simple.v1+json': raise SystemExit(1)\nlength=response.headers.get('Content-Length')\nif length is not None and (not length.isdigit() or int(length) < 1 or int(length) > 4194304): raise SystemExit(1)\nbody=response.read(4194305)\nif len(body) < 1 or len(body) > 4194304: raise SystemExit(1)\nsys.stdout.buffer.write(body)\n"
 
 const pytorchHTMLFetchScript = "import sys,urllib.request\nclass NoRedirect(urllib.request.HTTPRedirectHandler):\n def redirect_request(self, req, fp, code, msg, headers, newurl): return None\nbase=sys.argv[1]\nproject=sys.argv[2]\nurl=base+project+'/'\nrequest=urllib.request.Request(url, headers={'Accept':'text/html'})\nresponse=urllib.request.build_opener(NoRedirect).open(request, timeout=15)\nif response.status != 200 or response.geturl() != url: raise SystemExit(1)\nif response.headers.get_content_type().lower() != 'text/html': raise SystemExit(1)\nlength=response.headers.get('Content-Length')\nif length is not None and (not length.isdigit() or int(length) < 1 or int(length) > 4194304): raise SystemExit(1)\nbody=response.read(4194305)\nif len(body) < 1 or len(body) > 4194304: raise SystemExit(1)\nsys.stdout.buffer.write(body)\n"
+
+const pytorchCoreMetadataFetchScript = "import sys,urllib.request\nclass NoRedirect(urllib.request.HTTPRedirectHandler):\n def redirect_request(self, req, fp, code, msg, headers, newurl): return None\nurl=sys.argv[1]\nrequest=urllib.request.Request(url, headers={'Accept':'text/plain, application/octet-stream'})\nresponse=urllib.request.build_opener(NoRedirect).open(request, timeout=15)\nif response.status != 200 or response.geturl() != url: raise SystemExit(1)\nlength=response.headers.get('Content-Length')\nif length is not None and (not length.isdigit() or int(length) < 1 or int(length) > 2097152): raise SystemExit(1)\nbody=response.read(2097153)\nif len(body) < 1 or len(body) > 2097152: raise SystemExit(1)\nsys.stdout.buffer.write(body)\n"

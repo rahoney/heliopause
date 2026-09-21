@@ -33,9 +33,11 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '1.26.7'
+          go-version: '1.26.8'
           check-latest: false
           cache: false
+      - name: Run canonical release gate
+        run: go run ./scripts/check release-gate
       - name: Build deterministic native release assets
         run: |
           set -eu

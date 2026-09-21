@@ -130,7 +130,7 @@ func TestPyTorchResolverErrorDoesNotRetainChildOutput(t *testing.T) {
 	rawChildOutput := "resolver-output-must-not-escape"
 	runner := &recordingRunner{errors: []error{errors.New(rawChildOutput)}}
 	resolver := &PyPIResolver{runner: runner, profile: profile}
-	_, _, err = resolver.resolvePyTorchCandidate(context.Background(), "0123456789abcdef", PythonRuntime{}, reference, profile, "torch==2.9.1+cpu")
+	_, _, err = resolver.resolvePyTorchCandidate(context.Background(), "0123456789abcdef", PythonRuntime{}, reference, profile, "torch==2.9.1+cpu", nil, 4<<20)
 	if err == nil || strings.Contains(err.Error(), rawChildOutput) {
 		t.Fatalf("resolver error retained child output: %v", err)
 	}
