@@ -82,3 +82,44 @@ func TestRuntimeLockRejectsInvalidPatchIdentity(t *testing.T) {
 		})
 	}
 }
+
+func TestRuntimeLockRejectsInvalidBazelModuleLockIdentity(t *testing.T) {
+	t.Parallel()
+	lock, err := readLock("runtimes.lock.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	lock.GVisor.Build.BazelModuleLockSHA256 = "not-a-sha256"
+	if err := validate(lock); err == nil {
+		t.Fatal("invalid gVisor Bazel module lock identity was accepted")
+	}
+}
+
+func TestRuntimeLockRejectsInvalidBuilderIdentity(t *testing.T) {
+	t.Parallel()
+	base, err := readLock("runtimes.lock.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, test := range []struct {
+		name string
+		edit func(*runtimeLock)
+	}{
+		{"missing digest", func(l *runtimeLock) { l.GVisor.Build.Builder.ImageDigest = "" }},
+		{"non-SHA-256 digest", func(l *runtimeLock) {
+			l.GVisor.Build.Builder.ImageDigest = "sha512:" + l.GVisor.Build.Builder.ImageDigest[7:]
+		}},
+		{"mutable tag only", func(l *runtimeLock) { l.GVisor.Build.Builder.ImageDigest = l.GVisor.Build.Builder.ImageTag }},
+		{"wrong architecture", func(l *runtimeLock) { l.GVisor.Build.Builder.Architecture = "arm64" }},
+		{"unrelated repository", func(l *runtimeLock) { l.GVisor.Build.Builder.ImageRepository = "example.com/builder" }},
+		{"invalid tag", func(l *runtimeLock) { l.GVisor.Build.Builder.ImageTag = "latest" }},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			lock := base
+			test.edit(&lock)
+			if err := validate(lock); err == nil {
+				t.Fatal("invalid builder identity was accepted")
+			}
+		})
+	}
+}

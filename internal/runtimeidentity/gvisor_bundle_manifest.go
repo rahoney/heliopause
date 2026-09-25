@@ -14,7 +14,7 @@ const (
 	LocalRunscPath                = LocalGVisorBundleRoot + "/runsc"
 	LocalGVisorBundleManifestPath = LocalGVisorBundleRoot + "/gvisor-bundle.manifest.json"
 	LocalGVisorBundleManifestSize = 8192
-	LocalGVisorBundleSchema       = 1
+	LocalGVisorBundleSchema       = 2
 )
 
 var lowerHexSHA512 = regexp.MustCompile(`^[a-f0-9]{128}$`)
@@ -23,13 +23,18 @@ var lowerHexSHA512 = regexp.MustCompile(`^[a-f0-9]{128}$`)
 // bundle to the canonical source, patch, Bazel, and per-member identities.
 // It is local build custody, not a distributed release identity.
 type LocalGVisorBundleManifest struct {
-	SchemaVersion     int                  `json:"schema_version"`
-	Architecture      string               `json:"architecture"`
-	GVisorCommit      string               `json:"gvisor_commit"`
-	GVisorPatchSHA256 string               `json:"gvisor_patch_sha256"`
-	BazelVersion      string               `json:"bazel_version"`
-	BazelBinarySHA512 string               `json:"bazel_binary_sha512"`
-	Members           []GVisorBundleMember `json:"members"`
+	SchemaVersion          int                  `json:"schema_version"`
+	Architecture           string               `json:"architecture"`
+	GVisorCommit           string               `json:"gvisor_commit"`
+	GVisorPatchSHA256      string               `json:"gvisor_patch_sha256"`
+	BazelModuleLockSHA256  string               `json:"bazel_module_lock_sha256"`
+	BuilderImageRepository string               `json:"builder_image_repository"`
+	BuilderImageTag        string               `json:"builder_image_tag"`
+	BuilderImageDigest     string               `json:"builder_image_digest"`
+	BuilderArchitecture    string               `json:"builder_architecture"`
+	BazelVersion           string               `json:"bazel_version"`
+	BazelBinarySHA512      string               `json:"bazel_binary_sha512"`
+	Members                []GVisorBundleMember `json:"members"`
 }
 
 // GVisorBundleMember is a single regular runtime file in the exact bundle.
@@ -58,6 +63,11 @@ func ParseLocalGVisorBundleManifest(body []byte, goarch string) (LocalGVisorBund
 		manifest.Architecture != goarch ||
 		manifest.GVisorCommit != GVisorCommit ||
 		manifest.GVisorPatchSHA256 != GVisorPatchSHA256 ||
+		manifest.BazelModuleLockSHA256 != GVisorBazelModuleLockSHA256 ||
+		manifest.BuilderImageRepository != GVisorBuilderImageRepository ||
+		manifest.BuilderImageTag != GVisorBuilderImageTag ||
+		manifest.BuilderImageDigest != GVisorBuilderImageDigest ||
+		manifest.BuilderArchitecture != GVisorBuilderArchitecture ||
 		manifest.BazelVersion != BazelVersion ||
 		manifest.BazelBinarySHA512 != BazelLinuxX8664SHA512 ||
 		len(manifest.Members) != len(GVisorRuntimeBundleMembers) {

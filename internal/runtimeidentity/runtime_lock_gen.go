@@ -3,26 +3,31 @@
 package runtimeidentity
 
 const (
-	GVisorRelease          = "release-20260907.0"
-	GVisorCommit           = "7c6199801fd233d6d55309af4645d4746a077de7"
-	GVisorSourceRepository = "https://github.com/google/gvisor.git"
-	GVisorPatchPath        = "tools/gvisor/release-20260907.0.patch"
-	GVisorPatchSHA256      = "71c91db97608fa4968bdde6e0ab6e865287d59b5ea1f5efcf8c99e3d0c753c4f"
-	BazelVersion           = "8.3.1"
-	BazelLinuxX8664SHA512  = "c876a1619c885f44f3bdc87998eca59c79581954631c9d7fab4eb53cc0409b68e4be74c08ef3fe599c51b75d56262070f0c314f9908336221e7764fdf981b7f5"
-	DockerMinimumEngine    = "29.8.1"
-	DockerCIEngine         = "29.8.1"
-	DockerCEPackage        = "5:29.8.1-1~ubuntu.24.04~noble"
-	DockerCECLIPackage     = "5:29.8.1-1~ubuntu.24.04~noble"
-	ContainerdPackage      = "2.3.5-1~ubuntu.24.04~noble"
-	NodeImageReference     = "node:24.21.0-slim@sha256:713cfbf4a0ac19f40e1bb9919893e126b74a5c8cf5d0623c9f89515c8f74c6fa"
-	NodeNPMVersion         = "11.19.0"
-	PythonImageReference   = "python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52"
-	PythonVersion          = "3.14.7"
-	PipVersion             = "26.2.1"
-	PythonInterpreterTag   = "cp314"
-	PythonABITag           = "cp314"
-	PythonPlatformTag      = "manylinux_2_36_x86_64"
+	GVisorRelease                = "release-20260907.0"
+	GVisorCommit                 = "7c6199801fd233d6d55309af4645d4746a077de7"
+	GVisorSourceRepository       = "https://github.com/google/gvisor.git"
+	GVisorPatchPath              = "tools/gvisor/release-20260907.0.patch"
+	GVisorPatchSHA256            = "1e3e84535da9024102ef3d6a7dad5166504c5dfdbb554a9a06f6c3ad4c61d434"
+	GVisorBazelModuleLockSHA256  = "8402c7beb4baf2c666f4b78e400ea3f15514b56117598c2cb5411d6a35208d34"
+	GVisorBuilderImageRepository = "us-central1-docker.pkg.dev/gvisor-presubmit/gvisor-presubmit-images/default_x86_64"
+	GVisorBuilderImageTag        = "c48008cead6d6826"
+	GVisorBuilderImageDigest     = "sha256:9afba722516843795c026fbe3b7cd8a8f6b729d241e656a70af1ad46fe09406c"
+	GVisorBuilderArchitecture    = "amd64"
+	BazelVersion                 = "8.3.1"
+	BazelLinuxX8664SHA512        = "c876a1619c885f44f3bdc87998eca59c79581954631c9d7fab4eb53cc0409b68e4be74c08ef3fe599c51b75d56262070f0c314f9908336221e7764fdf981b7f5"
+	DockerMinimumEngine          = "29.8.1"
+	DockerCIEngine               = "29.8.1"
+	DockerCEPackage              = "5:29.8.1-1~ubuntu.24.04~noble"
+	DockerCECLIPackage           = "5:29.8.1-1~ubuntu.24.04~noble"
+	ContainerdPackage            = "2.3.5-1~ubuntu.24.04~noble"
+	NodeImageReference           = "node:24.21.0-slim@sha256:713cfbf4a0ac19f40e1bb9919893e126b74a5c8cf5d0623c9f89515c8f74c6fa"
+	NodeNPMVersion               = "11.19.0"
+	PythonImageReference         = "python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52"
+	PythonVersion                = "3.14.7"
+	PipVersion                   = "26.2.1"
+	PythonInterpreterTag         = "cp314"
+	PythonABITag                 = "cp314"
+	PythonPlatformTag            = "manylinux_2_36_x86_64"
 )
 
 type PythonSourceProfileLock struct {
@@ -44,10 +49,10 @@ type GVisorBundleMemberLock struct {
 }
 
 var GVisorRuntimeBundleMembers = []GVisorBundleMemberLock{
-	{Path: "containerd-shim-runsc-v1", Size: 43495570, SHA512: "539da392dccd46d43cdf32d693860cc2854b5ba6759460e59dbfdc5409093bebee5d4294dc4f5779bd9da82b17452bd92d2cb87ff884df8699746aba046ca99a"},
-	{Path: "gvisor-bin/checkpointgofer", Size: 69027766, SHA512: "33c9e79949c57b94ca36af2d8366160b6f3819525e86cca4c02a3f8d43500ed9c330b8a62dc5aae1ebdd5e9e08aa047a2ada1333b3f083cff2fe004a01049700"},
-	{Path: "gvisor-bin/gvisor-sentry-prewarmer", Size: 1416, SHA512: "4fd655a7ea7672ce7908be15e5e0446e2483c0df32e9b8fa95b1e0f984ce89162fba56e4e69cc7e6854af7206d4eaa0cbc1dfbd4234a216651c8be37ce8c3710"},
-	{Path: "gvisor-bin/gvisor_sentry", Size: 51780128, SHA512: "69a5e2f95d23c8143702ad2a30c25d4d4328636b4dbea63b3f7a0c0783c01c109c5108ef3d4ee840a43139d93edd1e39407853f01c1d6e86d3c790be512f944a"},
-	{Path: "gvisor-bin/runsc-metric-server", Size: 52879052, SHA512: "26ce866bc6f8eed5975dd5288de2dd9c9750f7f082352aa164cad9cb81df0fd35ae20dad219a5bc47c35e127fd2e1a19a39a17cd57ee3188d202afc8c0934236"},
-	{Path: "runsc", Size: 109328781, SHA512: "f7a9c79cbaa83ad89bcd61dcbd81520a6d01dcd32cca0b553e5379e1a35d9eacff8e8f33ad0b5c4e458fdae8bd055c5e0cd8051c78b1b78fae619a658368a426"},
+	{Path: "containerd-shim-runsc-v1", Size: 43495554, SHA512: "d6c107c5362cfe226507635c29ea81ace8fdd8d512cb08d9f96a8ab246bc1798e1d43e6e558b04e2465da962fcb9e3d82d6a355062d10f921be0c480c66c23a6"},
+	{Path: "gvisor-bin/checkpointgofer", Size: 69027766, SHA512: "7cf2801b226f650f947df5ff7151fa8dd709a33ae39f0f4aa84dbaba5badbb54c0c90d843cc8449fbda789126296d6a79fbd978dc2b51388484e3482b4783f72"},
+	{Path: "gvisor-bin/gvisor-sentry-prewarmer", Size: 1416, SHA512: "f0c131766303ca4733a4e42bd171d8ddf42a0a0087564605b3207b0f4c148d9ff355bad25e27d388c7c9cf06265160b3a02047ec195c035d9e8f428d8f608ce6"},
+	{Path: "gvisor-bin/gvisor_sentry", Size: 51817407, SHA512: "26a4268457de2ac6fcb9f6f99e8af9369ba77b1c6ef801d406fd6f74a24c0652e9cac2ad45aa38a025f45e1620034a77d3eaf9c919cd9a01a9799d9f63420544"},
+	{Path: "gvisor-bin/runsc-metric-server", Size: 52888835, SHA512: "62a2778d64b7febc2e2f634d390b11df2ceb6db6a5098938c2fb930ad2224291976f7b892bd0b54fe97050c68124e51ddbfc59593d2f4d99ec051f7f19244da8"},
+	{Path: "runsc", Size: 109368428, SHA512: "e6d11bd75242b5a53be1e4d8b95b3024b2032541e26e9dab2e30ae87d0f64d35ce8c38f55c5edd497a8ab3a4f378bb9e4ce14d648c743e001413dd71065f71ed"},
 }

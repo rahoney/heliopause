@@ -36,7 +36,12 @@ func validLocalGVisorBundleManifest() LocalGVisorBundleManifest {
 	return LocalGVisorBundleManifest{
 		SchemaVersion: LocalGVisorBundleSchema, Architecture: "amd64",
 		GVisorCommit: GVisorCommit, GVisorPatchSHA256: GVisorPatchSHA256,
-		BazelVersion: BazelVersion, BazelBinarySHA512: BazelLinuxX8664SHA512,
+		BazelModuleLockSHA256:  GVisorBazelModuleLockSHA256,
+		BuilderImageRepository: GVisorBuilderImageRepository,
+		BuilderImageTag:        GVisorBuilderImageTag,
+		BuilderImageDigest:     GVisorBuilderImageDigest,
+		BuilderArchitecture:    GVisorBuilderArchitecture,
+		BazelVersion:           BazelVersion, BazelBinarySHA512: BazelLinuxX8664SHA512,
 		Members: members,
 	}
 }
@@ -56,6 +61,8 @@ func TestParseLocalGVisorBundleManifest(t *testing.T) {
 	}{
 		{"wrong commit", func(m *LocalGVisorBundleManifest) { m.GVisorCommit = strings.Repeat("0", 40) }},
 		{"wrong patch", func(m *LocalGVisorBundleManifest) { m.GVisorPatchSHA256 = strings.Repeat("0", 64) }},
+		{"wrong Bazel module lock", func(m *LocalGVisorBundleManifest) { m.BazelModuleLockSHA256 = strings.Repeat("0", 64) }},
+		{"wrong builder digest", func(m *LocalGVisorBundleManifest) { m.BuilderImageDigest = "sha256:" + strings.Repeat("0", 64) }},
 		{"wrong architecture", func(m *LocalGVisorBundleManifest) { m.Architecture = "arm64" }},
 		{"wrong Bazel version", func(m *LocalGVisorBundleManifest) { m.BazelVersion = "0.0.0" }},
 		{"wrong member hash", func(m *LocalGVisorBundleManifest) { m.Members[0].SHA512 = strings.Repeat("0", 128) }},

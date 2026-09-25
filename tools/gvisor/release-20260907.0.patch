@@ -1,5 +1,361 @@
+diff --git a/pkg/sentry/platform/platform.go b/pkg/sentry/platform/platform.go
+index 22c8dc1..75398c7 100644
+--- a/pkg/sentry/platform/platform.go
++++ b/pkg/sentry/platform/platform.go
+@@ -505,6 +505,10 @@ type Requirements struct {
+ 	RequiresCapSysPtrace bool
+ }
+ 
++// SelfPIDVarName is the seccomp filter variable name used to encode the
++// current process ID.
++const SelfPIDVarName = "self_pid"
++
+ // SeccompInfo represents seccomp-bpf data for a given platform.
+ type SeccompInfo interface {
+ 	// Variables returns a map from named variables to the value they should
+diff --git a/pkg/sentry/platform/ptrace/BUILD b/pkg/sentry/platform/ptrace/BUILD
+index 17ca8d6..1b82338 100644
+--- a/pkg/sentry/platform/ptrace/BUILD
++++ b/pkg/sentry/platform/ptrace/BUILD
+@@ -1,4 +1,4 @@
+-load("//tools:defs.bzl", "go_library")
++load("//tools:defs.bzl", "go_library", "go_test")
+ 
+ package(
+     default_applicable_licenses = ["//:license"],
+@@ -36,6 +36,7 @@ go_library(
+         "//pkg/log",
+         "//pkg/safecopy",
+         "//pkg/seccomp",
++        "//pkg/seccomp/precompiledseccomp",
+         "//pkg/sentry/arch",
+         "//pkg/sentry/arch/fpu",
+         "//pkg/sentry/hostmm",
+@@ -47,3 +48,16 @@ go_library(
+         "@org_golang_x_sys//unix:go_default_library",
+     ],
+ )
++
++go_test(
++    name = "ptrace_test",
++    size = "small",
++    srcs = ["filters_test.go"],
++    library = ":ptrace",
++    deps = [
++        "//pkg/seccomp",
++        "//pkg/seccomp/precompiledseccomp",
++        "//pkg/sentry/platform",
++        "@org_golang_x_sys//unix:go_default_library",
++    ],
++)
+diff --git a/pkg/sentry/platform/ptrace/filters.go b/pkg/sentry/platform/ptrace/filters.go
+index a6773ee..c3ed85d 100644
+--- a/pkg/sentry/platform/ptrace/filters.go
++++ b/pkg/sentry/platform/ptrace/filters.go
+@@ -19,24 +19,47 @@ import (
+ 
+ 	"golang.org/x/sys/unix"
+ 	"gvisor.dev/gvisor/pkg/seccomp"
++	"gvisor.dev/gvisor/pkg/seccomp/precompiledseccomp"
+ 	"gvisor.dev/gvisor/pkg/sentry/platform"
+ )
+ 
++// ptraceSeccomp implements platform.SeccompInfo.
++type ptraceSeccomp struct{}
++
++// Variables implements platform.SeccompInfo.Variables.
++func (ptraceSeccomp) Variables() precompiledseccomp.Values {
++	vars := precompiledseccomp.Values{}
++	vars.SetUint64(platform.SelfPIDVarName, uint64(os.Getpid()))
++	return vars
++}
++
++// ConfigKey implements platform.SeccompInfo.ConfigKey.
++func (ptraceSeccomp) ConfigKey() string {
++	return "ptrace"
++}
++
++// SyscallFilters implements platform.SeccompInfo.SyscallFilters.
++func (ptraceSeccomp) SyscallFilters(vars precompiledseccomp.Values) seccomp.SyscallRules {
++	return seccomp.MakeSyscallRules(map[uintptr]seccomp.SyscallRule{
++		unix.SYS_PTRACE: seccomp.MatchAll{},
++		unix.SYS_RT_TGSIGQUEUEINFO: seccomp.PerArg{
++			seccomp.EqualTo(vars.GetUint64(platform.SelfPIDVarName)),
++			seccomp.AnyValue{}, // tid
++			seccomp.EqualTo(unix.SIGKILL),
++		},
++		unix.SYS_TGKILL: seccomp.MatchAll{},
++		unix.SYS_WAIT4:  seccomp.MatchAll{},
++	})
++}
++
++// HottestSyscalls implements platform.SeccompInfo.HottestSyscalls.
++func (ptraceSeccomp) HottestSyscalls() []uintptr {
++	return nil
++}
++
+ // SeccompInfo returns seccomp information for the ptrace platform.
+ func (*PTrace) SeccompInfo() platform.SeccompInfo {
+-	return platform.StaticSeccompInfo{
+-		PlatformName: "ptrace",
+-		Filters: seccomp.MakeSyscallRules(map[uintptr]seccomp.SyscallRule{
+-			unix.SYS_PTRACE: seccomp.MatchAll{},
+-			unix.SYS_RT_TGSIGQUEUEINFO: seccomp.PerArg{
+-				seccomp.EqualTo(os.Getpid()),
+-				seccomp.AnyValue{}, // tid
+-				seccomp.EqualTo(unix.SIGKILL),
+-			},
+-			unix.SYS_TGKILL: seccomp.MatchAll{},
+-			unix.SYS_WAIT4:  seccomp.MatchAll{},
+-		}),
+-	}
++	return ptraceSeccomp{}
+ }
+ 
+ // PrecompiledSeccompInfo implements
+diff --git a/pkg/sentry/platform/ptrace/filters_test.go b/pkg/sentry/platform/ptrace/filters_test.go
+new file mode 100644
+index 0000000..7e2916f
+--- /dev/null
++++ b/pkg/sentry/platform/ptrace/filters_test.go
+@@ -0,0 +1,93 @@
++// Copyright 2026 The gVisor Authors.
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//     http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package ptrace
++
++import (
++	"fmt"
++	"os"
++	"testing"
++
++	"golang.org/x/sys/unix"
++	"gvisor.dev/gvisor/pkg/seccomp"
++	"gvisor.dev/gvisor/pkg/seccomp/precompiledseccomp"
++	"gvisor.dev/gvisor/pkg/sentry/platform"
++)
++
++func TestPtraceSeccompPIDVariable(t *testing.T) {
++	info := (&PTrace{}).SeccompInfo()
++	if got, want := info.ConfigKey(), "ptrace"; got != want {
++		t.Fatalf("unexpected ConfigKey: got %q, want %q", got, want)
++	}
++
++	// 1. Default Variables() provides the current process PID.
++	vars := info.Variables()
++	if vars == nil {
++		t.Fatalf("Variables() returned nil")
++	}
++	if got, want := vars.GetUint64(platform.SelfPIDVarName), uint64(os.Getpid()); got != want {
++		t.Fatalf("expected platform.SelfPIDVarName in Variables() to be os.Getpid() (%d), got %d", want, got)
++	}
++
++	// 2. Behavioral verification of placeholder dependence:
++	// Verify that SYS_RT_TGSIGQUEUEINFO depends on the provided variable value
++	// rather than os.Getpid().
++	syntheticPIDs := []uint64{0x11223344, 0x55667788}
++	for _, pid := range syntheticPIDs {
++		t.Run(fmt.Sprintf("PID_%#x", pid), func(t *testing.T) {
++			testVars := precompiledseccomp.Values{}
++			testVars.SetUint64(platform.SelfPIDVarName, pid)
++			rules := info.SyscallFilters(testVars)
++
++			// Argument 0 must match the supplied PID, not os.Getpid().
++			err := rules.ForSingleArgument(unix.SYS_RT_TGSIGQUEUEINFO, 0, func(v seccomp.ValueMatcher) error {
++				eq, ok := v.(seccomp.EqualTo)
++				if !ok {
++					return fmt.Errorf("arg 0 not EqualTo: got %T (%v)", v, v)
++				}
++				if uint64(eq) != pid {
++					return fmt.Errorf("arg 0 expected %#x, got %#x", pid, uint64(eq))
++				}
++				if uint64(eq) == uint64(os.Getpid()) && pid != uint64(os.Getpid()) {
++					return fmt.Errorf("arg 0 incorrectly resolved to os.Getpid() (%d) instead of synthetic PID (%#x)", os.Getpid(), pid)
++				}
++				return nil
++			})
++			if err != nil {
++				t.Fatalf("ForSingleArgument(SYS_RT_TGSIGQUEUEINFO, 0) failed: %v", err)
++			}
++
++			// Argument 1 must be AnyValue (tid).
++			if err := rules.ForSingleArgument(unix.SYS_RT_TGSIGQUEUEINFO, 1, func(v seccomp.ValueMatcher) error {
++				if _, ok := v.(seccomp.AnyValue); !ok {
++					return fmt.Errorf("arg 1 expected AnyValue, got %T", v)
++				}
++				return nil
++			}); err != nil {
++				t.Fatalf("ForSingleArgument(SYS_RT_TGSIGQUEUEINFO, 1) failed: %v", err)
++			}
++
++			// Argument 2 must be EqualTo(SIGKILL).
++			if err := rules.ForSingleArgument(unix.SYS_RT_TGSIGQUEUEINFO, 2, func(v seccomp.ValueMatcher) error {
++				eq, ok := v.(seccomp.EqualTo)
++				if !ok || uint64(eq) != uint64(unix.SIGKILL) {
++					return fmt.Errorf("arg 2 expected SIGKILL (%d), got %v", unix.SIGKILL, v)
++				}
++				return nil
++			}); err != nil {
++				t.Fatalf("ForSingleArgument(SYS_RT_TGSIGQUEUEINFO, 2) failed: %v", err)
++			}
++		})
++	}
++}
+diff --git a/pkg/sentry/platform/systrap/BUILD b/pkg/sentry/platform/systrap/BUILD
+index ee3b436..c38875c 100644
+--- a/pkg/sentry/platform/systrap/BUILD
++++ b/pkg/sentry/platform/systrap/BUILD
+@@ -113,6 +113,7 @@ go_test(
+     size = "small",
+     srcs = [
+         "context_queue_test.go",
++        "filters_test.go",
+         "shared_context_test.go",
+         "systrap_test.go",
+     ],
+@@ -122,6 +123,8 @@ go_test(
+         "//pkg/cpuid",
+         "//pkg/hostarch",
+         "//pkg/safemem",
++        "//pkg/seccomp",
++        "//pkg/seccomp/precompiledseccomp",
+         "//pkg/sentry/arch",
+         "//pkg/sentry/memmap",
+         "//pkg/sentry/pgalloc",
+diff --git a/pkg/sentry/platform/systrap/filters.go b/pkg/sentry/platform/systrap/filters.go
+index 0958e6c..a24b80d 100644
+--- a/pkg/sentry/platform/systrap/filters.go
++++ b/pkg/sentry/platform/systrap/filters.go
+@@ -36,6 +36,7 @@ func (systrapSeccomp) Variables() precompiledseccomp.Values {
+ 	initSysmsgThreadPriority()
+ 	vars := precompiledseccomp.Values{}
+ 	vars.SetUint64(sysmsgThreadPriorityVarName, uint64(sysmsgThreadPriority))
++	vars.SetUint64(platform.SelfPIDVarName, uint64(os.Getpid()))
+ 	return vars
+ }
+ 
+@@ -96,7 +97,7 @@ func (systrapSeccomp) SyscallFilters(vars precompiledseccomp.Values) seccomp.Sys
+ 		},
+ 		unix.SYS_TGKILL: seccomp.MatchAll{},
+ 		unix.SYS_RT_TGSIGQUEUEINFO: seccomp.PerArg{
+-			seccomp.EqualTo(os.Getpid()),
++			seccomp.EqualTo(vars.GetUint64(platform.SelfPIDVarName)),
+ 			seccomp.AnyValue{}, // tid
+ 			seccomp.EqualTo(unix.SIGKILL),
+ 		},
+diff --git a/pkg/sentry/platform/systrap/filters_test.go b/pkg/sentry/platform/systrap/filters_test.go
+new file mode 100644
+index 0000000..ae235e8
+--- /dev/null
++++ b/pkg/sentry/platform/systrap/filters_test.go
+@@ -0,0 +1,94 @@
++// Copyright 2026 The gVisor Authors.
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//     http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package systrap
++
++import (
++	"fmt"
++	"os"
++	"testing"
++
++	"golang.org/x/sys/unix"
++	"gvisor.dev/gvisor/pkg/seccomp"
++	"gvisor.dev/gvisor/pkg/seccomp/precompiledseccomp"
++	"gvisor.dev/gvisor/pkg/sentry/platform"
++)
++
++func TestSystrapSeccompPIDVariable(t *testing.T) {
++	info := (&Systrap{}).SeccompInfo()
++	if got, want := info.ConfigKey(), "systrap"; got != want {
++		t.Fatalf("unexpected ConfigKey: got %q, want %q", got, want)
++	}
++
++	// 1. Default Variables() provides the current process PID.
++	vars := info.Variables()
++	if vars == nil {
++		t.Fatalf("Variables() returned nil")
++	}
++	if got, want := vars.GetUint64(platform.SelfPIDVarName), uint64(os.Getpid()); got != want {
++		t.Fatalf("expected platform.SelfPIDVarName in Variables() to be os.Getpid() (%d), got %d", want, got)
++	}
++
++	// 2. Behavioral verification of placeholder dependence:
++	// Verify that SYS_RT_TGSIGQUEUEINFO depends on the provided variable value
++	// rather than os.Getpid().
++	syntheticPIDs := []uint64{0x11223344, 0x55667788}
++	for _, pid := range syntheticPIDs {
++		t.Run(fmt.Sprintf("PID_%#x", pid), func(t *testing.T) {
++			testVars := precompiledseccomp.Values{}
++			testVars.SetUint64(sysmsgThreadPriorityVarName, 0)
++			testVars.SetUint64(platform.SelfPIDVarName, pid)
++			rules := info.SyscallFilters(testVars)
++
++			// Argument 0 must match the supplied PID, not os.Getpid().
++			err := rules.ForSingleArgument(unix.SYS_RT_TGSIGQUEUEINFO, 0, func(v seccomp.ValueMatcher) error {
++				eq, ok := v.(seccomp.EqualTo)
++				if !ok {
++					return fmt.Errorf("arg 0 not EqualTo: got %T (%v)", v, v)
++				}
++				if uint64(eq) != pid {
++					return fmt.Errorf("arg 0 expected %#x, got %#x", pid, uint64(eq))
++				}
++				if uint64(eq) == uint64(os.Getpid()) && pid != uint64(os.Getpid()) {
++					return fmt.Errorf("arg 0 incorrectly resolved to os.Getpid() (%d) instead of synthetic PID (%#x)", os.Getpid(), pid)
++				}
++				return nil
++			})
++			if err != nil {
++				t.Fatalf("ForSingleArgument(SYS_RT_TGSIGQUEUEINFO, 0) failed: %v", err)
++			}
++
++			// Argument 1 must be AnyValue (tid).
++			if err := rules.ForSingleArgument(unix.SYS_RT_TGSIGQUEUEINFO, 1, func(v seccomp.ValueMatcher) error {
++				if _, ok := v.(seccomp.AnyValue); !ok {
++					return fmt.Errorf("arg 1 expected AnyValue, got %T", v)
++				}
++				return nil
++			}); err != nil {
++				t.Fatalf("ForSingleArgument(SYS_RT_TGSIGQUEUEINFO, 1) failed: %v", err)
++			}
++
++			// Argument 2 must be EqualTo(SIGKILL).
++			if err := rules.ForSingleArgument(unix.SYS_RT_TGSIGQUEUEINFO, 2, func(v seccomp.ValueMatcher) error {
++				eq, ok := v.(seccomp.EqualTo)
++				if !ok || uint64(eq) != uint64(unix.SIGKILL) {
++					return fmt.Errorf("arg 2 expected SIGKILL (%d), got %v", unix.SIGKILL, v)
++				}
++				return nil
++			}); err != nil {
++				t.Fatalf("ForSingleArgument(SYS_RT_TGSIGQUEUEINFO, 2) failed: %v", err)
++			}
++		})
++	}
++}
 diff --git a/pkg/sentry/seccheck/metadata.go b/pkg/sentry/seccheck/metadata.go
-index 3484e3409..f0eacce41 100644
+index 3484e34..f0eacce 100644
 --- a/pkg/sentry/seccheck/metadata.go
 +++ b/pkg/sentry/seccheck/metadata.go
 @@ -31,6 +31,9 @@ const (
@@ -23,7 +379,7 @@ index 3484e3409..f0eacce41 100644
  
  var initOnce sync.Once
 diff --git a/pkg/sentry/seccheck/points/common.proto b/pkg/sentry/seccheck/points/common.proto
-index 546e58962..3a965b202 100644
+index 546e589..3a965b2 100644
 --- a/pkg/sentry/seccheck/points/common.proto
 +++ b/pkg/sentry/seccheck/points/common.proto
 @@ -166,5 +166,8 @@ enum MessageType {
@@ -36,7 +392,7 @@ index 546e58962..3a965b202 100644
  }
  // LINT.ThenChange(../../../../examples/seccheck/server.cc)
 diff --git a/pkg/sentry/seccheck/points/sentry.proto b/pkg/sentry/seccheck/points/sentry.proto
-index 7e41b2bf1..7c7304702 100644
+index 7e41b2b..7c73047 100644
 --- a/pkg/sentry/seccheck/points/sentry.proto
 +++ b/pkg/sentry/seccheck/points/sentry.proto
 @@ -188,3 +188,26 @@ message MmapInfo {
@@ -67,7 +423,7 @@ index 7e41b2bf1..7c7304702 100644
 +  uint64 mount_namespace_id = 2;
 +}
 diff --git a/pkg/sentry/seccheck/points/syscall.proto b/pkg/sentry/seccheck/points/syscall.proto
-index c9dc3be67..37fe97633 100644
+index c9dc3be..37fe976 100644
 --- a/pkg/sentry/seccheck/points/syscall.proto
 +++ b/pkg/sentry/seccheck/points/syscall.proto
 @@ -46,6 +46,16 @@ message Open {
@@ -88,7 +444,7 @@ index c9dc3be67..37fe97633 100644
    gvisor.common.ContextData context_data = 1;
    Exit exit = 2;
 diff --git a/pkg/sentry/seccheck/seccheck.go b/pkg/sentry/seccheck/seccheck.go
-index 7422baf1c..4c0be3b0d 100644
+index 7422baf..4c0be3b 100644
 --- a/pkg/sentry/seccheck/seccheck.go
 +++ b/pkg/sentry/seccheck/seccheck.go
 @@ -111,6 +111,9 @@ type Sink interface {
@@ -117,7 +473,7 @@ index 7422baf1c..4c0be3b0d 100644
  func (SinkDefaults) RawSyscall(context.Context, FieldSet, *pb.Syscall) error {
  	return nil
 diff --git a/pkg/sentry/seccheck/sinks/remote/remote.go b/pkg/sentry/seccheck/sinks/remote/remote.go
-index b05cc263a..b5de6af63 100644
+index b05cc26..b5de6af 100644
 --- a/pkg/sentry/seccheck/sinks/remote/remote.go
 +++ b/pkg/sentry/seccheck/sinks/remote/remote.go
 @@ -271,6 +271,21 @@ func (r *remote) Mmap(_ context.Context, _ seccheck.FieldSet, info *pb.MmapInfo)
@@ -143,7 +499,7 @@ index b05cc263a..b5de6af63 100644
  func (r *remote) ContainerStart(_ context.Context, _ seccheck.FieldSet, info *pb.Start) error {
  	r.write(info, pb.MessageType_MESSAGE_CONTAINER_START)
 diff --git a/pkg/sentry/seccheck/sinks/remote/remote_test.go b/pkg/sentry/seccheck/sinks/remote/remote_test.go
-index 407280d9c..7167bb35c 100644
+index 407280d..7167bb3 100644
 --- a/pkg/sentry/seccheck/sinks/remote/remote_test.go
 +++ b/pkg/sentry/seccheck/sinks/remote/remote_test.go
 @@ -154,6 +154,136 @@ func TestBasic(t *testing.T) {
@@ -283,9 +639,38 @@ index 407280d9c..7167bb35c 100644
  func TestVersionUnsupported(t *testing.T) {
  	server, err := test.NewServer()
  	if err != nil {
+diff --git a/pkg/sentry/syscalls/linux/BUILD b/pkg/sentry/syscalls/linux/BUILD
+index 1875324..82dddb8 100644
+--- a/pkg/sentry/syscalls/linux/BUILD
++++ b/pkg/sentry/syscalls/linux/BUILD
+@@ -140,7 +140,23 @@ go_test(
+         "linux64_amd64_test.go",
+         "linux64_arm64_test.go",
+         "linux64_test.go",
++        "open_result_test.go",
+     ],
+     library = ":linux",
+-    deps = ["//pkg/sentry/seccheck"],
++    deps = [
++        "//pkg/abi/linux",
++        "//pkg/context",
++        "//pkg/fspath",
++        "//pkg/hostarch",
++        "//pkg/sentry/fsimpl/testutil",
++        "//pkg/sentry/fsimpl/tmpfs",
++        "//pkg/sentry/kernel",
++        "//pkg/sentry/kernel/auth",
++        "//pkg/sentry/memmap",
++        "//pkg/sentry/seccheck",
++        "//pkg/sentry/seccheck/points:points_go_proto",
++        "//pkg/sentry/vfs",
++        "@org_golang_google_protobuf//proto:go_default_library",
++        "@org_golang_x_sys//unix:go_default_library",
++    ],
+ )
 diff --git a/pkg/sentry/syscalls/linux/open_result_test.go b/pkg/sentry/syscalls/linux/open_result_test.go
 new file mode 100644
-index 000000000..0d4325fca
+index 0000000..434131a
 --- /dev/null
 +++ b/pkg/sentry/syscalls/linux/open_result_test.go
 @@ -0,0 +1,555 @@
@@ -844,37 +1229,8 @@ index 000000000..0d4325fca
 +		t.Errorf("Failed Umount2 emitted unexpected mutation event!")
 +	}
 +}
-diff --git a/pkg/sentry/syscalls/linux/BUILD b/pkg/sentry/syscalls/linux/BUILD
-index 187532404..82dddb8fd 100644
---- a/pkg/sentry/syscalls/linux/BUILD
-+++ b/pkg/sentry/syscalls/linux/BUILD
-@@ -140,7 +140,23 @@ go_test(
-         "linux64_amd64_test.go",
-         "linux64_arm64_test.go",
-         "linux64_test.go",
-+        "open_result_test.go",
-     ],
-     library = ":linux",
--    deps = ["//pkg/sentry/seccheck"],
-+    deps = [
-+        "//pkg/abi/linux",
-+        "//pkg/context",
-+        "//pkg/fspath",
-+        "//pkg/hostarch",
-+        "//pkg/sentry/fsimpl/testutil",
-+        "//pkg/sentry/fsimpl/tmpfs",
-+        "//pkg/sentry/kernel",
-+        "//pkg/sentry/kernel/auth",
-+        "//pkg/sentry/memmap",
-+        "//pkg/sentry/seccheck",
-+        "//pkg/sentry/seccheck/points:points_go_proto",
-+        "//pkg/sentry/vfs",
-+        "@org_golang_google_protobuf//proto:go_default_library",
-+        "@org_golang_x_sys//unix:go_default_library",
-+    ],
- )
 diff --git a/pkg/sentry/syscalls/linux/points.go b/pkg/sentry/syscalls/linux/points.go
-index f8e38d360..d98c16eac 100644
+index f8e38d3..d98c16e 100644
 --- a/pkg/sentry/syscalls/linux/points.go
 +++ b/pkg/sentry/syscalls/linux/points.go
 @@ -69,6 +69,23 @@ func getIovecSize(t *kernel.Task, addr hostarch.Addr, iovcnt int) uint64 {
@@ -902,7 +1258,7 @@ index f8e38d360..d98c16eac 100644
  func PointOpen(t *kernel.Task, _ seccheck.FieldSet, cxtData *pb.ContextData, info kernel.SyscallInfo) (proto.Message, pb.MessageType) {
  	p := &pb.Open{
 diff --git a/pkg/sentry/syscalls/linux/sys_file.go b/pkg/sentry/syscalls/linux/sys_file.go
-index c2f114d19..1d7cca193 100644
+index c2f114d..1d7cca1 100644
 --- a/pkg/sentry/syscalls/linux/sys_file.go
 +++ b/pkg/sentry/syscalls/linux/sys_file.go
 @@ -29,6 +29,8 @@ import (
@@ -1014,7 +1370,7 @@ index c2f114d19..1d7cca193 100644
  	addr2 := args[1].Pointer()
  
 diff --git a/pkg/sentry/syscalls/linux/sys_mount.go b/pkg/sentry/syscalls/linux/sys_mount.go
-index 02e94b6ae..91ec91924 100644
+index 02e94b6..91ec919 100644
 --- a/pkg/sentry/syscalls/linux/sys_mount.go
 +++ b/pkg/sentry/syscalls/linux/sys_mount.go
 @@ -24,7 +24,12 @@ import (
@@ -1046,7 +1402,7 @@ index 02e94b6ae..91ec91924 100644
  	flags := args[1].Int()
  
 diff --git a/pkg/sentry/vfs/namespace.go b/pkg/sentry/vfs/namespace.go
-index add1bf726..3ecd2c449 100644
+index add1bf7..3ecd2c4 100644
 --- a/pkg/sentry/vfs/namespace.go
 +++ b/pkg/sentry/vfs/namespace.go
 @@ -22,6 +22,56 @@ import (
@@ -1107,7 +1463,7 @@ index add1bf726..3ecd2c449 100644
  // MountNamespaces are reference-counted. Unless otherwise specified, all
  // MountNamespace methods require that a reference is held.
 diff --git a/runsc/boot/BUILD b/runsc/boot/BUILD
-index 6a3f1aaca..4cf47864f 100644
+index 6a3f1aa..4cf4786 100644
 --- a/runsc/boot/BUILD
 +++ b/runsc/boot/BUILD
 @@ -179,6 +179,7 @@ go_test(
@@ -1134,8 +1490,259 @@ index 6a3f1aaca..4cf47864f 100644
          "@org_golang_x_sys//unix:go_default_library",
      ],
  )
+diff --git a/runsc/boot/filter/config/BUILD b/runsc/boot/filter/config/BUILD
+index 42fd484..9c61ad9 100644
+--- a/runsc/boot/filter/config/BUILD
++++ b/runsc/boot/filter/config/BUILD
+@@ -53,7 +53,9 @@ go_test(
+     deps = [
+         "//pkg/seccomp",
+         "//pkg/sentry/devices/nvproxy/nvconf",
++        "//pkg/sentry/platform",
+         "//pkg/sentry/platform/kvm",
++        "//pkg/sentry/platform/ptrace",
+         "//pkg/sentry/platform/systrap",
+         "@org_golang_x_sys//unix:go_default_library",
+     ],
+diff --git a/runsc/boot/filter/config/config_precompiled.go b/runsc/boot/filter/config/config_precompiled.go
+index ed4291e..ca9126e 100644
+--- a/runsc/boot/filter/config/config_precompiled.go
++++ b/runsc/boot/filter/config/config_precompiled.go
+@@ -36,7 +36,7 @@ const (
+ 	controllerFDVarName = "controller_fd"
+ 
+ 	// selfPIDVarName is the variable name for the current process ID.
+-	selfPIDVarName = "self_pid"
++	selfPIDVarName = platform.SelfPIDVarName
+ )
+ 
+ // allPrecompiledPlatforms returns a list of `platform.SeccompInfo` instances
+diff --git a/runsc/boot/filter/config/config_test.go b/runsc/boot/filter/config/config_test.go
+index a5e635c..d74762d 100644
+--- a/runsc/boot/filter/config/config_test.go
++++ b/runsc/boot/filter/config/config_test.go
+@@ -16,13 +16,17 @@ package config
+ 
+ import (
+ 	"fmt"
++	"os"
+ 	"reflect"
+ 	"testing"
+ 
+ 	"golang.org/x/sys/unix"
+ 	"gvisor.dev/gvisor/pkg/seccomp"
++	"gvisor.dev/gvisor/pkg/seccomp/precompiledseccomp"
+ 	"gvisor.dev/gvisor/pkg/sentry/devices/nvproxy/nvconf"
++	"gvisor.dev/gvisor/pkg/sentry/platform"
+ 	"gvisor.dev/gvisor/pkg/sentry/platform/kvm"
++	"gvisor.dev/gvisor/pkg/sentry/platform/ptrace"
+ 	"gvisor.dev/gvisor/pkg/sentry/platform/systrap"
+ )
+ 
+@@ -170,3 +174,201 @@ func TestOptionsConfigKey(t *testing.T) {
+ 		}
+ 	})
+ }
++
++// TestPlatformPIDVariableDependency verifies that SYS_RT_TGSIGQUEUEINFO
++// argument 0 strictly depends on the supplied runtime PID variable for both
++// ptrace and systrap, and does not evaluate os.Getpid() directly.
++func TestPlatformPIDVariableDependency(t *testing.T) {
++	for _, tc := range []struct {
++		name     string
++		platform platform.SeccompInfo
++	}{
++		{
++			name:     "ptrace",
++			platform: (&ptrace.PTrace{}).SeccompInfo(),
++		},
++		{
++			name:     "systrap",
++			platform: (&systrap.Systrap{}).SeccompInfo(),
++		},
++	} {
++		t.Run(tc.name, func(t *testing.T) {
++			syntheticPIDs := []uint64{0x11223344, 0x55667788}
++			for _, pid := range syntheticPIDs {
++				t.Run(fmt.Sprintf("PID_%#x", pid), func(t *testing.T) {
++					testVars := tc.platform.Variables()
++					if testVars == nil {
++						testVars = precompiledseccomp.Values{}
++					}
++					testVars.SetUint64(platform.SelfPIDVarName, pid)
++
++					rules := tc.platform.SyscallFilters(testVars)
++					err := rules.ForSingleArgument(unix.SYS_RT_TGSIGQUEUEINFO, 0, func(v seccomp.ValueMatcher) error {
++						eq, ok := v.(seccomp.EqualTo)
++						if !ok {
++							return fmt.Errorf("arg 0 not EqualTo: got %T (%v)", v, v)
++						}
++						if uint64(eq) != pid {
++							return fmt.Errorf("arg 0 expected %#x, got %#x", pid, uint64(eq))
++						}
++						if uint64(eq) == uint64(os.Getpid()) && pid != uint64(os.Getpid()) {
++							return fmt.Errorf("arg 0 inappropriately matched os.Getpid() (%d)", os.Getpid())
++						}
++						return nil
++					})
++					if err != nil {
++						t.Fatalf("ForSingleArgument(SYS_RT_TGSIGQUEUEINFO, 0) failed: %v", err)
++					}
++
++					// Verify argument 1 is AnyValue (tid)
++					if err := rules.ForSingleArgument(unix.SYS_RT_TGSIGQUEUEINFO, 1, func(v seccomp.ValueMatcher) error {
++						if _, ok := v.(seccomp.AnyValue); !ok {
++							return fmt.Errorf("arg 1 expected AnyValue, got %T", v)
++						}
++						return nil
++					}); err != nil {
++						t.Fatalf("ForSingleArgument(SYS_RT_TGSIGQUEUEINFO, 1) failed: %v", err)
++					}
++
++					// Verify argument 2 is EqualTo(SIGKILL)
++					if err := rules.ForSingleArgument(unix.SYS_RT_TGSIGQUEUEINFO, 2, func(v seccomp.ValueMatcher) error {
++						eq, ok := v.(seccomp.EqualTo)
++						if !ok || uint64(eq) != uint64(unix.SIGKILL) {
++							return fmt.Errorf("arg 2 expected SIGKILL (%d), got %v", unix.SIGKILL, v)
++						}
++						return nil
++					}); err != nil {
++						t.Fatalf("ForSingleArgument(SYS_RT_TGSIGQUEUEINFO, 2) failed: %v", err)
++					}
++				})
++			}
++		})
++	}
++}
++
++// TestPlatformPIDPrecompiledEquivalence verifies that precompiling with variable
++// placeholders and then rendering with a runtime PID produces the exact same
++// BPF instructions as directly compiling the policy for that runtime PID.
++func TestPlatformPIDPrecompiledEquivalence(t *testing.T) {
++	for _, tc := range []struct {
++		name     string
++		platform platform.SeccompInfo
++	}{
++		{
++			name:     "ptrace",
++			platform: (&ptrace.PTrace{}).SeccompInfo(),
++		},
++		{
++			name:     "systrap",
++			platform: (&systrap.Systrap{}).SeccompInfo(),
++		},
++	} {
++		t.Run(tc.name, func(t *testing.T) {
++			opt := Options{
++				Platform: tc.platform,
++			}
++			var varNames []string
++			for varName := range opt.Vars() {
++				varNames = append(varNames, varName)
++			}
++
++			// Precompile seccomp program.
++			prog, err := precompiledseccomp.Precompile(opt.ConfigKey(), varNames, func(vars precompiledseccomp.Values) *seccomp.Program {
++				seccompOpts := SeccompOptions(opt)
++				r, deny := rules(opt, vars)
++				return &seccomp.Program{
++					RuleSets: []seccomp.RuleSet{
++						{Rules: deny.Copy()},
++						{Rules: r.Copy(), Action: seccomp.Allow},
++					},
++					Options: seccompOpts,
++				}
++			})
++			if err != nil {
++				t.Fatalf("Precompile failed: %v", err)
++			}
++
++			// Verify that self_pid variable offsets exist in the precompiled program.
++			if len(prog.VarOffsets[platform.SelfPIDVarName+"_low32bits"]) == 0 {
++				t.Fatalf("precompiled program missing var offsets for %s_low32bits", platform.SelfPIDVarName)
++			}
++
++			// Test rendering with two distinct PIDs
++			pidX := uint64(0x11223344)
++			pidY := uint64(0x55667788)
++
++			varsX := opt.Vars()
++			varsX.SetUint64(platform.SelfPIDVarName, pidX)
++			progX := prog
++			progX.Bytecode32 = make([]uint32, len(prog.Bytecode32))
++			copy(progX.Bytecode32, prog.Bytecode32)
++			insnsX, err := progX.RenderInstructions(varsX)
++			if err != nil {
++				t.Fatalf("RenderInstructions(pidX) failed: %v", err)
++			}
++
++			varsY := opt.Vars()
++			varsY.SetUint64(platform.SelfPIDVarName, pidY)
++			progY := prog
++			progY.Bytecode32 = make([]uint32, len(prog.Bytecode32))
++			copy(progY.Bytecode32, prog.Bytecode32)
++			insnsY, err := progY.RenderInstructions(varsY)
++			if err != nil {
++				t.Fatalf("RenderInstructions(pidY) failed: %v", err)
++			}
++
++			// Directly compile rules for PID X
++			directRulesX, denyX := rules(opt, varsX)
++			directProgX := &seccomp.Program{
++				RuleSets: []seccomp.RuleSet{
++					{Rules: denyX.Copy()},
++					{Rules: directRulesX.Copy(), Action: seccomp.Allow},
++				},
++				Options: SeccompOptions(opt),
++			}
++			expectedInsnsX, _, err := directProgX.Build()
++			if err != nil {
++				t.Fatalf("direct compilation for pidX failed: %v", err)
++			}
++
++			// Directly compile rules for PID Y
++			directRulesY, denyY := rules(opt, varsY)
++			directProgY := &seccomp.Program{
++				RuleSets: []seccomp.RuleSet{
++					{Rules: denyY.Copy()},
++					{Rules: directRulesY.Copy(), Action: seccomp.Allow},
++				},
++				Options: SeccompOptions(opt),
++			}
++			expectedInsnsY, _, err := directProgY.Build()
++			if err != nil {
++				t.Fatalf("direct compilation for pidY failed: %v", err)
++			}
++
++			// Verify RenderInstructions(pidX) matches direct compilation for pidX
++			if len(insnsX) != len(expectedInsnsX) {
++				t.Fatalf("insnsX length mismatch: got %d, expected %d", len(insnsX), len(expectedInsnsX))
++			}
++			for i := range insnsX {
++				if insnsX[i] != expectedInsnsX[i] {
++					t.Fatalf("insnsX[%d] mismatch: rendered=%v, direct=%v", i, insnsX[i], expectedInsnsX[i])
++				}
++			}
++
++			// Verify RenderInstructions(pidY) matches direct compilation for pidY
++			if len(insnsY) != len(expectedInsnsY) {
++				t.Fatalf("insnsY length mismatch: got %d, expected %d", len(insnsY), len(expectedInsnsY))
++			}
++			for i := range insnsY {
++				if insnsY[i] != expectedInsnsY[i] {
++					t.Fatalf("insnsY[%d] mismatch: rendered=%v, direct=%v", i, insnsY[i], expectedInsnsY[i])
++				}
++			}
++
++			// Verify that instructions for PID X and PID Y are NOT identical
++			if reflect.DeepEqual(insnsX, insnsY) {
++				t.Fatalf("insnsX and insnsY are unexpectedly identical; PID variable was not embedded")
++			}
++		})
++	}
++}
 diff --git a/runsc/boot/loader.go b/runsc/boot/loader.go
-index d78a9606c..aa9d734fa 100644
+index d78a960..aa9d734 100644
 --- a/runsc/boot/loader.go
 +++ b/runsc/boot/loader.go
 @@ -27,6 +27,7 @@ import (
@@ -1196,7 +1803,7 @@ index d78a9606c..aa9d734fa 100644
  func (l *Loader) createSubcontainer(cid string, tty *fd.FD) error {
  	l.mu.Lock()
 diff --git a/runsc/boot/loader_test.go b/runsc/boot/loader_test.go
-index c2e067d1a..f338c86a8 100644
+index c2e067d..f338c86 100644
 --- a/runsc/boot/loader_test.go
 +++ b/runsc/boot/loader_test.go
 @@ -27,7 +27,9 @@ import (

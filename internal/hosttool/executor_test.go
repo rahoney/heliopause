@@ -125,7 +125,12 @@ func validGVisorBundleManifest() runtimeidentity.LocalGVisorBundleManifest {
 	return runtimeidentity.LocalGVisorBundleManifest{
 		SchemaVersion: runtimeidentity.LocalGVisorBundleSchema, Architecture: runtime.GOARCH,
 		GVisorCommit: runtimeidentity.GVisorCommit, GVisorPatchSHA256: runtimeidentity.GVisorPatchSHA256,
-		BazelVersion: runtimeidentity.BazelVersion, BazelBinarySHA512: runtimeidentity.BazelLinuxX8664SHA512,
+		BazelModuleLockSHA256:  runtimeidentity.GVisorBazelModuleLockSHA256,
+		BuilderImageRepository: runtimeidentity.GVisorBuilderImageRepository,
+		BuilderImageTag:        runtimeidentity.GVisorBuilderImageTag,
+		BuilderImageDigest:     runtimeidentity.GVisorBuilderImageDigest,
+		BuilderArchitecture:    runtimeidentity.GVisorBuilderArchitecture,
+		BazelVersion:           runtimeidentity.BazelVersion, BazelBinarySHA512: runtimeidentity.BazelLinuxX8664SHA512,
 		Members: members,
 	}
 }
