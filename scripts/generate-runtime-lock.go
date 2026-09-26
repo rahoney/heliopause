@@ -23,7 +23,9 @@ var hex512 = regexp.MustCompile(`^[a-f0-9]{128}$`)
 var hex256 = regexp.MustCompile(`^[a-f0-9]{64}$`)
 var release = regexp.MustCompile(`^release-[0-9]{8}\.0$`)
 var exactVersion = regexp.MustCompile(`^[0-9]+\.[0-9]+\.[0-9]+$`)
-var observerCommitDefinePattern = regexp.MustCompile(`HAA_GVISOR_COMMIT=\\+"([0-9a-fA-F]{40})\\+"`)
+var observerCommitDefinePattern = regexp.MustCompile(`HAA_GVISOR_COMMIT=\\*["']([0-9a-fA-F]{40})\\*["']`)
+var targetNamePattern = regexp.MustCompile(`\bname\s*=\s*["']([^"']+)["']`)
+var haaTokenPattern = regexp.MustCompile(`\bHAA_GVISOR_COMMIT\b`)
 
 type runtimeLock struct {
 	SchemaVersion int `json:"schema_version"`
@@ -124,9 +126,221 @@ func main() {
 	}
 }
 
+func isIdentChar(b byte) bool {
+	return (b >= 'a' && b <= 'z') || (b >= 'A' && b <= 'Z') || (b >= '0' && b <= '9') || b == '_'
+}
+
+func isWhitespace(b byte) bool {
+	return b == ' ' || b == '\t' || b == '\n' || b == '\r'
+}
+
+func stripStarlarkComments(src []byte) []byte {
+	out := make([]byte, 0, len(src))
+	n := len(src)
+	i := 0
+	for i < n {
+		b := src[i]
+		if (b == '"' || b == '\'') && i+2 < n && src[i+1] == b && src[i+2] == b {
+			quote := b
+			out = append(out, quote, quote, quote)
+			i += 3
+			for i < n {
+				if src[i] == '\\' {
+					out = append(out, src[i])
+					i++
+					if i < n {
+						out = append(out, src[i])
+						i++
+					}
+					continue
+				}
+				if src[i] == quote && i+2 < n && src[i+1] == quote && src[i+2] == quote {
+					out = append(out, quote, quote, quote)
+					i += 3
+					break
+				}
+				out = append(out, src[i])
+				i++
+			}
+			continue
+		}
+		if b == '"' || b == '\'' {
+			quote := b
+			out = append(out, quote)
+			i++
+			for i < n {
+				if src[i] == '\\' {
+					out = append(out, src[i])
+					i++
+					if i < n {
+						out = append(out, src[i])
+						i++
+					}
+					continue
+				}
+				if src[i] == quote {
+					out = append(out, quote)
+					i++
+					break
+				}
+				out = append(out, src[i])
+				i++
+			}
+			continue
+		}
+		if b == '#' {
+			for i < n && src[i] != '\n' {
+				i++
+			}
+			if i < n && src[i] == '\n' {
+				out = append(out, '\n')
+				i++
+			}
+			continue
+		}
+		out = append(out, b)
+		i++
+	}
+	return out
+}
+
+type parsedTarget struct {
+	name string
+	body string
+}
+
+func extractActiveTargets(cleanSrc []byte, ruleName string) ([]parsedTarget, error) {
+	var targets []parsedTarget
+	n := len(cleanSrc)
+	i := 0
+	targetPrefix := []byte(ruleName)
+
+	for i < n {
+		b := cleanSrc[i]
+		if (b == '"' || b == '\'') && i+2 < n && cleanSrc[i+1] == b && cleanSrc[i+2] == b {
+			quote := b
+			i += 3
+			for i < n {
+				if cleanSrc[i] == '\\' {
+					i += 2
+					continue
+				}
+				if cleanSrc[i] == quote && i+2 < n && cleanSrc[i+1] == quote && cleanSrc[i+2] == quote {
+					i += 3
+					break
+				}
+				i++
+			}
+			continue
+		}
+		if b == '"' || b == '\'' {
+			quote := b
+			i++
+			for i < n {
+				if cleanSrc[i] == '\\' {
+					i += 2
+					continue
+				}
+				if cleanSrc[i] == quote {
+					i++
+					break
+				}
+				i++
+			}
+			continue
+		}
+
+		if bytes.HasPrefix(cleanSrc[i:], targetPrefix) {
+			if i > 0 && isIdentChar(cleanSrc[i-1]) {
+				i++
+				continue
+			}
+			pos := i + len(targetPrefix)
+			for pos < n && isWhitespace(cleanSrc[pos]) {
+				pos++
+			}
+			if pos < n && cleanSrc[pos] == '(' {
+				openParen := pos
+				pos++
+				parenDepth := 1
+				bodyStart := pos
+
+				for pos < n && parenDepth > 0 {
+					cb := cleanSrc[pos]
+					if (cb == '"' || cb == '\'') && pos+2 < n && cleanSrc[pos+1] == cb && cleanSrc[pos+2] == cb {
+						quote := cb
+						pos += 3
+						for pos < n {
+							if cleanSrc[pos] == '\\' {
+								pos += 2
+								continue
+							}
+							if cleanSrc[pos] == quote && pos+2 < n && cleanSrc[pos+1] == quote && cleanSrc[pos+2] == quote {
+								pos += 3
+								break
+							}
+							pos++
+						}
+						continue
+					}
+					if cb == '"' || cb == '\'' {
+						quote := cb
+						pos++
+						for pos < n {
+							if cleanSrc[pos] == '\\' {
+								pos += 2
+								continue
+							}
+							if cleanSrc[pos] == quote {
+								pos++
+								break
+							}
+							pos++
+						}
+						continue
+					}
+					if cb == '(' {
+						parenDepth++
+					} else if cb == ')' {
+						parenDepth--
+					}
+					if parenDepth == 0 {
+						break
+					}
+					pos++
+				}
+				if parenDepth != 0 {
+					return nil, fmt.Errorf("unclosed %s parenthesis starting at offset %d", ruleName, openParen)
+				}
+				body := string(cleanSrc[bodyStart:pos])
+				nameMatch := targetNamePattern.FindStringSubmatch(body)
+				var name string
+				if len(nameMatch) > 1 {
+					name = nameMatch[1]
+				}
+				targets = append(targets, parsedTarget{
+					name: name,
+					body: body,
+				})
+				i = pos + 1
+				continue
+			}
+		}
+		i++
+	}
+	return targets, nil
+}
+
 func verifyObserverBuildCommit(buildContent []byte, expectedCommit string) error {
 	if len(expectedCommit) != 40 {
 		return fmt.Errorf("expected commit must be 40 hex characters: %q", expectedCommit)
+	}
+
+	cleanSrc := stripStarlarkComments(buildContent)
+
+	targets, err := extractActiveTargets(cleanSrc, "cc_binary")
+	if err != nil {
+		return fmt.Errorf("parse observer BUILD: %w", err)
 	}
 
 	requiredTargets := []string{
@@ -134,30 +348,45 @@ func verifyObserverBuildCommit(buildContent []byte, expectedCommit string) error
 		"haa_gvisor_observer_latch_test",
 	}
 
-	for _, target := range requiredTargets {
-		targetPattern := regexp.MustCompile(fmt.Sprintf(`cc_binary\s*\([^)]*name\s*=\s*"%s"[^)]*\)`, regexp.QuoteMeta(target)))
-		match := targetPattern.Find(buildContent)
-		if match == nil {
-			return fmt.Errorf("required target %q not found in observer BUILD", target)
+	targetCounts := make(map[string]int)
+	targetBodies := make(map[string]string)
+	for _, t := range targets {
+		if t.name == "" {
+			return fmt.Errorf("active cc_binary target is missing a name attribute")
 		}
-		commitMatch := observerCommitDefinePattern.FindSubmatch(match)
-		if commitMatch == nil {
+		targetCounts[t.name]++
+		if targetCounts[t.name] > 1 {
+			return fmt.Errorf("duplicate active target %q found in observer BUILD", t.name)
+		}
+		targetBodies[t.name] = t.body
+	}
+
+	for _, target := range requiredTargets {
+		body, exists := targetBodies[target]
+		if !exists {
+			return fmt.Errorf("required target %q not found in active observer BUILD", target)
+		}
+		haaOccurrences := haaTokenPattern.FindAllStringIndex(body, -1)
+		if len(haaOccurrences) == 0 {
 			return fmt.Errorf("target %q is missing HAA_GVISOR_COMMIT define in observer BUILD", target)
 		}
-		actualCommit := string(commitMatch[1])
+		if len(haaOccurrences) > 1 {
+			return fmt.Errorf("target %q contains %d HAA_GVISOR_COMMIT definitions, expected exactly 1", target, len(haaOccurrences))
+		}
+
+		commitMatch := observerCommitDefinePattern.FindStringSubmatch(body)
+		if commitMatch == nil {
+			return fmt.Errorf("target %q has malformed or non-40-hex HAA_GVISOR_COMMIT define", target)
+		}
+		actualCommit := commitMatch[1]
 		if actualCommit != expectedCommit {
 			return fmt.Errorf("target %q HAA_GVISOR_COMMIT %q does not match canonical commit %q", target, actualCommit, expectedCommit)
 		}
 	}
 
-	allMatches := observerCommitDefinePattern.FindAllSubmatch(buildContent, -1)
-	if len(allMatches) != len(requiredTargets) {
-		return fmt.Errorf("expected %d HAA_GVISOR_COMMIT defines in observer BUILD, found %d", len(requiredTargets), len(allMatches))
-	}
-	for _, m := range allMatches {
-		if string(m[1]) != expectedCommit {
-			return fmt.Errorf("observer BUILD contains mismatched HAA_GVISOR_COMMIT %q (expected %q)", string(m[1]), expectedCommit)
-		}
+	allActiveHaaOccurrences := haaTokenPattern.FindAllStringIndex(string(cleanSrc), -1)
+	if len(allActiveHaaOccurrences) != len(requiredTargets) {
+		return fmt.Errorf("expected %d active HAA_GVISOR_COMMIT defines in observer BUILD, found %d", len(requiredTargets), len(allActiveHaaOccurrences))
 	}
 
 	return nil

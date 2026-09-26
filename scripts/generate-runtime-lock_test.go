@@ -201,6 +201,109 @@ cc_binary(
 			commit: canonical,
 		},
 		{
+			name: "commented haa_gvisor_observer with valid commit but active target missing define",
+			buildContent: []byte(fmt.Sprintf(`
+# cc_binary(
+#     name = "haa_gvisor_observer",
+#     defines = ["HAA_GVISOR_COMMIT=\"%s\""],
+# )
+cc_binary(
+    name = "haa_gvisor_observer",
+    srcs = ["observer.cc"],
+)
+cc_binary(
+    name = "haa_gvisor_observer_latch_test",
+    srcs = ["observer_latch_test.cc"],
+    defines = ["HAA_GVISOR_COMMIT=\"%s\""],
+)
+`, canonical, canonical)),
+			commit: canonical,
+		},
+		{
+			name: "commented haa_gvisor_observer_latch_test with valid commit but active target missing define",
+			buildContent: []byte(fmt.Sprintf(`
+cc_binary(
+    name = "haa_gvisor_observer",
+    srcs = ["observer.cc"],
+    defines = ["HAA_GVISOR_COMMIT=\"%s\""],
+)
+# cc_binary(
+#     name = "haa_gvisor_observer_latch_test",
+#     defines = ["HAA_GVISOR_COMMIT=\"%s\""],
+# )
+cc_binary(
+    name = "haa_gvisor_observer_latch_test",
+    srcs = ["observer_latch_test.cc"],
+)
+`, canonical, canonical)),
+			commit: canonical,
+		},
+		{
+			name: "commented haa_gvisor_observer with valid commit and active target missing entirely",
+			buildContent: []byte(fmt.Sprintf(`
+# cc_binary(
+#     name = "haa_gvisor_observer",
+#     defines = ["HAA_GVISOR_COMMIT=\"%s\""],
+# )
+cc_binary(
+    name = "haa_gvisor_observer_latch_test",
+    srcs = ["observer_latch_test.cc"],
+    defines = ["HAA_GVISOR_COMMIT=\"%s\""],
+)
+`, canonical, canonical)),
+			commit: canonical,
+		},
+		{
+			name: "commented haa_gvisor_observer_latch_test with valid commit and active target missing entirely",
+			buildContent: []byte(fmt.Sprintf(`
+cc_binary(
+    name = "haa_gvisor_observer",
+    srcs = ["observer.cc"],
+    defines = ["HAA_GVISOR_COMMIT=\"%s\""],
+)
+# cc_binary(
+#     name = "haa_gvisor_observer_latch_test",
+#     defines = ["HAA_GVISOR_COMMIT=\"%s\""],
+# )
+`, canonical, canonical)),
+			commit: canonical,
+		},
+		{
+			name: "active target with duplicate defines",
+			buildContent: []byte(fmt.Sprintf(`
+cc_binary(
+    name = "haa_gvisor_observer",
+    defines = [
+        "HAA_GVISOR_COMMIT=\"%s\"",
+        "HAA_GVISOR_COMMIT=\"%s\"",
+    ],
+)
+cc_binary(
+    name = "haa_gvisor_observer_latch_test",
+    defines = ["HAA_GVISOR_COMMIT=\"%s\""],
+)
+`, canonical, canonical, canonical)),
+			commit: canonical,
+		},
+		{
+			name: "duplicate active targets with same name",
+			buildContent: []byte(fmt.Sprintf(`
+cc_binary(
+    name = "haa_gvisor_observer",
+    defines = ["HAA_GVISOR_COMMIT=\"%s\""],
+)
+cc_binary(
+    name = "haa_gvisor_observer",
+    defines = ["HAA_GVISOR_COMMIT=\"%s\""],
+)
+cc_binary(
+    name = "haa_gvisor_observer_latch_test",
+    defines = ["HAA_GVISOR_COMMIT=\"%s\""],
+)
+`, canonical, canonical, canonical)),
+			commit: canonical,
+		},
+		{
 			name: "missing define in haa_gvisor_observer",
 			buildContent: []byte(fmt.Sprintf(`
 cc_binary(
@@ -227,7 +330,21 @@ cc_binary(
 			commit: canonical,
 		},
 		{
-			name: "extra mismatched define",
+			name: "malformed define in target",
+			buildContent: []byte(fmt.Sprintf(`
+cc_binary(
+    name = "haa_gvisor_observer",
+    defines = ["HAA_GVISOR_COMMIT=not-a-valid-40-hex-hash"],
+)
+cc_binary(
+    name = "haa_gvisor_observer_latch_test",
+    defines = ["HAA_GVISOR_COMMIT=\"%s\""],
+)
+`, canonical)),
+			commit: canonical,
+		},
+		{
+			name: "extra mismatched define in third target",
 			buildContent: []byte(fmt.Sprintf(`
 cc_binary(
     name = "haa_gvisor_observer",
@@ -259,5 +376,31 @@ cc_binary(
 				t.Fatalf("expected error for case %q, but got nil", tc.name)
 			}
 		})
+	}
+}
+
+func TestVerifyObserverBuildCommitValidWithCommentsAndStrings(t *testing.T) {
+	t.Parallel()
+	canonical := "7c6199801fd233d6d55309af4645d4746a077de7"
+
+	build := []byte(fmt.Sprintf(`
+# Top level comment with cc_binary( name = "fake" )
+cc_binary( # comment with parens () and quotes ""
+    name = "haa_gvisor_observer", # comment
+    srcs = ["observer(1).cc"],
+    defines = ["HAA_GVISOR_COMMIT=\"%s\""],
+)
+cc_library(
+    name = "other_rule",
+    textual_hdrs = ["observer.cc"],
+)
+cc_binary(
+    name = 'haa_gvisor_observer_latch_test',
+    defines = ['HAA_GVISOR_COMMIT="%s"'], # trailing comment
+)
+`, canonical, canonical))
+
+	if err := verifyObserverBuildCommit(build, canonical); err != nil {
+		t.Fatalf("expected build with comments and string parens to pass, got: %v", err)
 	}
 }
