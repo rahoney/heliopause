@@ -360,12 +360,18 @@ jobs:
             printf '{"socket_path":"/run/heliopause-network-policy/helper.sock","client_path":"/usr/libexec/heliopause/helox","client_uid":%s,"client_gid":%s}\n' "$(id -u)" "$(id -g)" | sudo tee /etc/heliopause/network-policy.json >/dev/null
             sudo /usr/libexec/heliopause/haa-network-policy-helper >/tmp/haa-network-policy-helper.log 2>&1 &
             policy_helper_pid=$!
-            for attempt in $(seq 1 50); do
+            echo 'network-policy helper started'
+            helper_start_time=$(date +%s)
+            for attempt in $(seq 1 300); do
               test -S /run/heliopause-network-policy/helper.sock && break
+              if [ "$attempt" -eq 50 ]; then
+                echo 'network-policy helper still initializing after 5s'
+              fi
               sleep 0.1
             done
+            helper_elapsed=$(($(date +%s) - helper_start_time))
             if ! test -S /run/heliopause-network-policy/helper.sock; then
-              echo 'network-policy helper socket did not become ready' >&2
+              echo "network-policy helper socket did not become ready within 30s diagnostic window (${helper_elapsed}s elapsed)" >&2
               if sudo kill -0 "$policy_helper_pid" 2>/dev/null; then
                 echo 'network-policy helper process is still running' >&2
               else
@@ -376,6 +382,7 @@ jobs:
               fi
               return 1
             fi
+            echo "network-policy helper ready after ${helper_elapsed}s"
           }
           trap 'sudo kill "$policy_helper_pid" 2>/dev/null || true' EXIT
           start_policy_helper
