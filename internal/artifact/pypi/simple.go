@@ -1,41 +1,53 @@
 package pypi
 
 import (
+	"bufio"
 	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"html"
 	"io"
+	"net/textproto"
 	"net/url"
 	"path"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
 const (
-	maxSimpleResponseBytes = 4 << 20
-	maxReportBytes         = 4 << 20
-	maxPyPIReportEntries   = 1024
+	maxSimpleResponseBytes      = 4 << 20
+	maxReportBytes              = 4 << 20
+	maxPyPIReportEntries        = 1024
+	maxRequiresPythonComponents = 64
+	maxCoreMetadataBytes        = 2 << 20
 )
 
 var (
-	sha256HexPattern      = regexp.MustCompile(`^[a-f0-9]{64}$`)
-	simpleAPIVersion      = regexp.MustCompile(`^([0-9]+)\.([0-9]+)$`)
-	requirementNamePrefix = regexp.MustCompile(`^([A-Za-z0-9][A-Za-z0-9._-]*)(?:\s*(?:\([^)]*\)|[<>=!~].*)?)?$`)
+	sha256HexPattern               = regexp.MustCompile(`^[a-f0-9]{64}$`)
+	simpleAPIVersion               = regexp.MustCompile(`^([0-9]+)\.([0-9]+)$`)
+	requirementNamePrefix          = regexp.MustCompile(`^([A-Za-z0-9][A-Za-z0-9._-]*)(?:\s*(?:\([^)]*\)|[<>=!~].*)?)?$`)
+	requiresPythonSpecifierPattern = regexp.MustCompile(`^(===|==|!=|<=|>=|~=|<|>)\s*([A-Za-z0-9][A-Za-z0-9._*+!-]*)$`)
 )
+
+const maxPyTorchSimpleEntries = 20_000
 
 // SimpleProject is a bounded, parser-normalized PyPI Simple API project page.
 // It never contains a raw HTTP response or unvalidated endpoint.
 type SimpleProject struct {
 	project string
+	source  domain.SourceID
 	files   []SimpleFile
 }
 
-func (p SimpleProject) Project() string { return p.project }
+func (p SimpleProject) Project() string         { return p.project }
+func (p SimpleProject) Source() domain.SourceID { return p.source }
 func (p SimpleProject) Files() []SimpleFile {
 	return append([]SimpleFile(nil), p.files...)
 }
@@ -43,12 +55,14 @@ func (p SimpleProject) Files() []SimpleFile {
 // SimpleFile retains only the file metadata required to cross-check a pip
 // candidate before Controlled Intake observes its content.
 type SimpleFile struct {
-	filename       string
-	url            string
-	sha256         string
-	requiresPython string
-	yanked         bool
-	size           uint64
+	filename              string
+	url                   string
+	sha256                string
+	requiresPython        string
+	requiresPythonPresent bool
+	coreMetadataSHA       string
+	yanked                bool
+	size                  uint64
 }
 
 func (f SimpleFile) Filename() string       { return f.filename }
@@ -62,6 +76,7 @@ func (f SimpleFile) Size() uint64           { return f.size }
 // declared dependency names have been normalized. It is adapter-only data.
 type Candidate struct {
 	project        string
+	source         domain.SourceID
 	version        string
 	filename       string
 	url            string
@@ -69,16 +84,27 @@ type Candidate struct {
 	requiresPython string
 	primary        bool
 	dependencies   []string
+	requirements   []string
 }
 
-func (c Candidate) Project() string        { return c.project }
-func (c Candidate) Version() string        { return c.version }
-func (c Candidate) Filename() string       { return c.filename }
-func (c Candidate) URL() string            { return c.url }
-func (c Candidate) SHA256() string         { return c.sha256 }
-func (c Candidate) RequiresPython() string { return c.requiresPython }
-func (c Candidate) Primary() bool          { return c.primary }
-func (c Candidate) Dependencies() []string { return append([]string(nil), c.dependencies...) }
+func (c Candidate) Project() string         { return c.project }
+func (c Candidate) Source() domain.SourceID { return c.source }
+func (c Candidate) Version() string         { return c.version }
+func (c Candidate) Filename() string        { return c.filename }
+func (c Candidate) URL() string             { return c.url }
+func (c Candidate) SHA256() string          { return c.sha256 }
+func (c Candidate) RequiresPython() string  { return c.requiresPython }
+func (c Candidate) Primary() bool           { return c.primary }
+func (c Candidate) Dependencies() []string  { return append([]string(nil), c.dependencies...) }
+func (c Candidate) DependencyRequirements() []string {
+	return append([]string(nil), c.requirements...)
+}
+
+// WithPrimary returns a copy with the graph role selected by the resolver.
+func (c Candidate) WithPrimary(primary bool) Candidate {
+	c.primary = primary
+	return c
+}
 
 // InstallationReport is the bounded, normalized result of a stable pip
 // installation report v1. Its raw bytes remain in the Sandbox adapter.
@@ -105,49 +131,98 @@ type simpleFile struct {
 	Size           uint64            `json:"size"`
 }
 
+type simpleMetadataDiagnostic struct {
+	reason   string
+	project  string
+	response string
+	files    int
+	limit    int
+}
+
+func (d simpleMetadataDiagnostic) Error() string {
+	return fmt.Sprintf("invalid PyPI Simple project metadata is invalid: reason=%s project=%s response=%s files=%d limit=%d", d.reason, d.project, d.response, d.files, d.limit)
+}
+
 // ParseSimpleProject accepts only a PyPI Simple API JSON v1 project page and
 // enforces the public PyPI distribution endpoint for every listed file.
 func ParseSimpleProject(project string, body []byte) (SimpleProject, error) {
+	return parseJSONSimpleProject(project, body, PublicPyPIProfile(), maxPyPIReportEntries)
+}
+
+// ParseSimpleProjectForProfile selects the canonical parser for a named
+// source profile. It never accepts a caller-provided endpoint or format.
+func ParseSimpleProjectForProfile(project string, body []byte, profile SourceProfile) (SimpleProject, error) {
+	return ParseSimpleProjectForRootProfile(project, body, profile, PublicPyPIProfile())
+}
+
+// ParseSimpleProjectForRootProfile keeps node source validation independent
+// from the bounded Simple-page budget selected by a canonical root profile.
+func ParseSimpleProjectForRootProfile(project string, body []byte, profile, root SourceProfile) (SimpleProject, error) {
+	if IsPyTorchSource(profile.source) {
+		return ParsePyTorchSimpleProject(project, body, profile)
+	}
+	if profile.source == PublicPyPIProfile().source {
+		return parseJSONSimpleProject(project, body, profile, simpleFilesLimit(root))
+	}
+	return SimpleProject{}, errors.New("unsupported Python source profile")
+}
+
+func simpleFilesLimit(root SourceProfile) int {
+	if root.name == "pytorch:cpu" || root.name == "pytorch:cu126" || root.name == "pytorch:cu130" || root.name == "pytorch:cu132" {
+		return 8192
+	}
+	return maxPyPIReportEntries
+}
+
+func parseJSONSimpleProject(project string, body []byte, profile SourceProfile, filesLimit int) (SimpleProject, error) {
 	project, err := NormalizeProjectName(project)
 	if err != nil {
-		return SimpleProject{}, errors.New("PyPI Simple project is invalid")
+		return SimpleProject{}, errors.New("invalid PyPI Simple project is invalid")
 	}
 	if len(body) == 0 || len(body) > maxSimpleResponseBytes {
-		return SimpleProject{}, errors.New("PyPI Simple response exceeds supported bounds")
+		return SimpleProject{}, errors.New("invalid PyPI Simple response exceeds supported bounds")
 	}
 	var response simpleResponse
 	decoder := json.NewDecoder(bytes.NewReader(body))
 	if err := decoder.Decode(&response); err != nil || ensureSingleJSONValue(decoder) != nil {
-		return SimpleProject{}, errors.New("PyPI Simple response is invalid JSON")
+		return SimpleProject{}, errors.New("invalid PyPI Simple response is invalid JSON")
 	}
 	version := simpleAPIVersion.FindStringSubmatch(response.Meta.APIVersion)
 	if version == nil || version[1] != "1" {
-		return SimpleProject{}, errors.New("PyPI Simple API version is unsupported")
+		return SimpleProject{}, errors.New("invalid PyPI Simple API version is unsupported")
 	}
 	responseProject, err := NormalizeProjectName(response.Name)
-	if err != nil || responseProject != project || len(response.Files) == 0 || len(response.Files) > maxPyPIReportEntries {
-		return SimpleProject{}, errors.New("PyPI Simple project metadata is invalid")
+	if err != nil {
+		return SimpleProject{}, simpleMetadataDiagnostic{reason: "NAME_INVALID", project: project, files: len(response.Files), limit: filesLimit}
+	}
+	if responseProject != project {
+		return SimpleProject{}, simpleMetadataDiagnostic{reason: "NAME_MISMATCH", project: project, response: responseProject, files: len(response.Files), limit: filesLimit}
+	}
+	if len(response.Files) == 0 {
+		return SimpleProject{}, simpleMetadataDiagnostic{reason: "FILES_EMPTY", project: project, response: responseProject, limit: filesLimit}
+	}
+	if len(response.Files) > filesLimit {
+		return SimpleProject{}, simpleMetadataDiagnostic{reason: "FILES_LIMIT", project: project, response: responseProject, files: len(response.Files), limit: filesLimit}
 	}
 	files := make([]SimpleFile, 0, len(response.Files))
 	seen := make(map[string]bool, len(response.Files))
 	for _, raw := range response.Files {
-		file, err := parseSimpleFile(raw)
+		file, err := parseSimpleFileForProfile(raw, profile)
 		if err != nil || seen[file.url] {
-			return SimpleProject{}, errors.New("PyPI Simple file metadata is invalid")
+			return SimpleProject{}, errors.New("invalid PyPI Simple file metadata is invalid")
 		}
 		seen[file.url] = true
 		files = append(files, file)
 	}
 	sort.Slice(files, func(i, j int) bool { return files[i].url < files[j].url })
-	return SimpleProject{project: project, files: files}, nil
+	return SimpleProject{project: project, source: profile.source, files: files}, nil
 }
 
-func parseSimpleFile(raw simpleFile) (SimpleFile, error) {
+func parseSimpleFileForProfile(raw simpleFile, profile SourceProfile) (SimpleFile, error) {
 	if raw.Filename == "" || raw.Size == 0 || !sha256HexPattern.MatchString(raw.Hashes["sha256"]) || !validRequiresPython(raw.RequiresPython) {
 		return SimpleFile{}, errors.New("invalid file metadata")
 	}
-	_, err := parseDistributionURL(raw.URL, raw.Filename, false)
-	if err != nil {
+	if err := validateDistributionURLForSource(raw.URL, raw.Filename, profile, false); err != nil {
 		return SimpleFile{}, err
 	}
 	// Simple API v1 carries the digest in hashes.sha256; its canonical URL has
@@ -156,7 +231,135 @@ func parseSimpleFile(raw simpleFile) (SimpleFile, error) {
 	if err != nil {
 		return SimpleFile{}, err
 	}
-	return SimpleFile{filename: raw.Filename, url: raw.URL, sha256: raw.Hashes["sha256"], requiresPython: raw.RequiresPython, yanked: yanked, size: raw.Size}, nil
+	return SimpleFile{filename: raw.Filename, url: raw.URL, sha256: raw.Hashes["sha256"], requiresPython: raw.RequiresPython, requiresPythonPresent: true, yanked: yanked, size: raw.Size}, nil
+}
+
+var (
+	pytorchAnchorPattern          = regexp.MustCompile(`(?is)<a\b((?:[^"'>]|"[^"]*"|'[^']*')*)>`)
+	pytorchAttributePattern       = regexp.MustCompile(`(?is)([A-Za-z_:][A-Za-z0-9_:.-]*)\s*=\s*(?:"([^"]*)"|'([^']*)')`)
+	pytorchYankedAttributePattern = regexp.MustCompile(`(?is)(?:^|[\t\n\r ])data-yanked(?:[\t\n\r =]|$)`)
+	pytorchCoreMetadataPattern    = regexp.MustCompile(`^sha256=([a-f0-9]{64})$`)
+)
+
+// ParsePyTorchSimpleProject parses the bounded HTML Simple API served by the
+// official PyTorch index. Pip reports propose candidates but do not supply
+// missing link metadata: when data-requires-python is omitted, the resolver
+// authenticates Requires-Python from the link's hash-bound Core Metadata.
+func ParsePyTorchSimpleProject(project string, body []byte, profile SourceProfile) (SimpleProject, error) {
+	if !IsPyTorchSource(profile.source) {
+		return SimpleProject{}, errors.New("invalid PyTorch source profile is required")
+	}
+	project, err := NormalizeProjectName(project)
+	if err != nil || len(body) == 0 || len(body) > maxSimpleResponseBytes {
+		return SimpleProject{}, errors.New("invalid PyTorch Simple project is invalid")
+	}
+	base, err := url.Parse(profile.indexURL + project + "/")
+	if err != nil {
+		return SimpleProject{}, errors.New("invalid PyTorch index URL is invalid")
+	}
+	profileBase, err := url.Parse(profile.indexURL)
+	if err != nil {
+		return SimpleProject{}, errors.New("invalid PyTorch index URL is invalid")
+	}
+	matches := pytorchAnchorPattern.FindAllSubmatch(body, maxPyTorchSimpleEntries+1)
+	if len(matches) == 0 || len(matches) > maxPyTorchSimpleEntries {
+		return SimpleProject{}, errors.New("invalid PyTorch Simple project has no bounded files")
+	}
+	files := make([]SimpleFile, 0, len(matches))
+	seen := make(map[string]bool, len(matches))
+	for _, match := range matches {
+		attributes, err := parsePyTorchAnchorAttributes(match[1])
+		if err != nil {
+			return SimpleProject{}, err
+		}
+		href, ok := attributes["href"]
+		if !ok {
+			continue
+		}
+		href = html.UnescapeString(href)
+		parsed, err := base.Parse(href)
+		if err != nil {
+			return SimpleProject{}, errors.New("invalid PyTorch Simple file hash is missing")
+		}
+		// A PyTorch page can list unrelated files without a wheel digest. They
+		// are intentionally excluded rather than trusted: CrossCheckReport
+		// still requires the pip-selected candidate to match exactly one
+		// retained SimpleFile with the same SHA-256.
+		if parsed.Fragment == "" || !strings.HasPrefix(parsed.Fragment, "sha256=") {
+			continue
+		}
+		filename := path.Base(parsed.Path)
+		digest := strings.TrimPrefix(parsed.Fragment, "sha256=")
+		if !sha256HexPattern.MatchString(digest) || filename == "." || filename == "/" || seen[parsed.String()] {
+			return SimpleProject{}, errors.New("invalid PyTorch Simple file metadata is invalid")
+		}
+		parsed.Fragment = ""
+		if !strings.HasPrefix(parsed.Path, profileBase.Path) {
+			continue
+		}
+		requiresPython, requiresPythonPresent := attributes["data-requires-python"]
+		if requiresPythonPresent && !validRequiresPython(requiresPython) {
+			return SimpleProject{}, errors.New("invalid PyTorch Simple selected-link Requires-Python metadata")
+		}
+		coreMetadataSHA, err := pytorchCoreMetadataDigest(attributes)
+		if err != nil {
+			return SimpleProject{}, err
+		}
+		// PEP 503 defines data-yanked by attribute presence; its text is a
+		// human-readable reason, never a boolean value. In particular, the
+		// string "false" is still a yanked link.
+		yanked := pytorchYankedAttributePattern.Match(match[1])
+		if err := validateDistributionURLForSource(parsed.String(), filename, profile, true); err != nil {
+			return SimpleProject{}, err
+		}
+		canonicalURL := parsed.String()
+		if seen[canonicalURL] {
+			return SimpleProject{}, errors.New("invalid PyTorch Simple file metadata is ambiguous")
+		}
+		seen[canonicalURL] = true
+		files = append(files, SimpleFile{filename: filename, url: canonicalURL, sha256: digest, requiresPython: requiresPython, requiresPythonPresent: requiresPythonPresent, coreMetadataSHA: coreMetadataSHA, yanked: yanked, size: 1})
+	}
+	sort.Slice(files, func(i, j int) bool { return files[i].url < files[j].url })
+	return SimpleProject{project: project, source: profile.source, files: files}, nil
+}
+
+func pytorchCoreMetadataDigest(attributes map[string]string) (string, error) {
+	values := make([]string, 0, 2)
+	for _, name := range []string{"data-core-metadata", "data-dist-info-metadata"} {
+		value, present := attributes[name]
+		if !present {
+			continue
+		}
+		match := pytorchCoreMetadataPattern.FindStringSubmatch(value)
+		if match == nil {
+			return "", errors.New("invalid PyTorch Simple Core Metadata hash")
+		}
+		values = append(values, match[1])
+	}
+	if len(values) == 2 && values[0] != values[1] {
+		return "", errors.New("ambiguous PyTorch Simple Core Metadata hash")
+	}
+	if len(values) == 0 {
+		return "", nil
+	}
+	return values[0], nil
+}
+
+func parsePyTorchAnchorAttributes(raw []byte) (map[string]string, error) {
+	matches := pytorchAttributePattern.FindAllSubmatch(raw, -1)
+	attributes := make(map[string]string, len(matches))
+	for _, match := range matches {
+		name := strings.ToLower(string(match[1]))
+		value := string(match[2])
+		if value == "" && len(match[3]) != 0 {
+			value = string(match[3])
+		}
+		if _, duplicate := attributes[name]; duplicate {
+			return nil, errors.New("invalid PyTorch Simple selected-link metadata is ambiguous")
+		}
+		attributes[name] = html.UnescapeString(value)
+	}
+	return attributes, nil
 }
 
 func parseYanked(raw json.RawMessage) (bool, error) {
@@ -210,13 +413,41 @@ type pipInstall struct {
 // locked runtime. It intentionally rejects direct sources, unsupported
 // dependency markers/extras and any target-environment mismatch.
 func ParseInstallationReport(reference domain.ArtifactReference, body []byte, expectedPip, expectedPython string) (InstallationReport, error) {
+	profile, ok := ProfileForSource(reference.Source())
+	if !ok {
+		return InstallationReport{}, errors.New("python source profile is invalid")
+	}
+	return ParseInstallationReportForProfile(reference, body, expectedPip, expectedPython, profile)
+}
+
+// ParseInstallationReportForProfile preserves source identity for every
+// selected node and rejects source confusion between PyTorch-owned and
+// ordinary PyPI projects.
+func ParseInstallationReportForProfile(reference domain.ArtifactReference, body []byte, expectedPip, expectedPython string, profile SourceProfile) (InstallationReport, error) {
+	return ParseInstallationReportForProfileWithExtras(reference, body, expectedPip, expectedPython, profile, nil)
+}
+
+// ParseInstallationReportForProfileWithExtras parses the one source-pinned
+// candidate selected for a bounded request. requestedExtras is trusted only
+// after bounded requirement parsing and controls the candidate metadata edges
+// guarded by extra markers.
+func ParseInstallationReportForProfileWithExtras(reference domain.ArtifactReference, body []byte, expectedPip, expectedPython string, profile SourceProfile, requestedExtras []string) (InstallationReport, error) {
+	if reference.Source() != profile.source {
+		return InstallationReport{}, errors.New("python report source profile mismatch")
+	}
+	if err := boundedExtraSet(requestedExtras); err != nil {
+		return InstallationReport{}, errors.New("python report requested extras are invalid")
+	}
 	requestedProject, err := RequestedProject(reference)
 	if err != nil {
-		return InstallationReport{}, errors.New("PyPI report reference is invalid")
+		return InstallationReport{}, errors.New("invalid PyPI report reference is invalid")
+	}
+	if len(requestedExtras) != 0 && requestedProject != "cuda-toolkit" {
+		return InstallationReport{}, errors.New("python report requested extras do not belong to the selected project")
 	}
 	requestedVersion, versionRequested, err := RequestedVersion(reference)
 	if err != nil {
-		return InstallationReport{}, errors.New("PyPI report reference is invalid")
+		return InstallationReport{}, errors.New("invalid PyPI report reference is invalid")
 	}
 	if len(body) == 0 || len(body) > maxReportBytes {
 		return InstallationReport{}, errors.New("pip installation report exceeds supported bounds")
@@ -233,17 +464,20 @@ func ParseInstallationReport(reference domain.ArtifactReference, body []byte, ex
 	seenProjects := make(map[string]bool, len(report.Install))
 	primaryCount := 0
 	for _, item := range report.Install {
-		candidate, err := parseReportCandidate(item)
-		if err != nil || seenProjects[candidate.project] {
+		candidate, err := parseReportCandidate(item, profile, expectedPython, requestedExtras)
+		if err != nil {
+			return InstallationReport{}, errors.Join(errors.New("pip installation report candidate is invalid"), err)
+		}
+		if seenProjects[candidate.project] {
 			return InstallationReport{}, errors.New("pip installation report candidate is invalid")
 		}
 		seenProjects[candidate.project] = true
 		if candidate.primary {
 			primaryCount++
-			if candidate.project != requestedProject || versionRequested && candidate.version != requestedVersion {
+			if candidate.project != requestedProject || candidate.source != profile.source || versionRequested && candidate.version != requestedVersion {
 				return InstallationReport{}, errors.New("pip installation report primary candidate is invalid")
 			}
-			if !versionRequested && !IsFinalVersion(candidate.version) {
+			if !versionRequested && !isFinalVersionForProfile(candidate.version, profile) {
 				return InstallationReport{}, errors.New("pip installation report selected a non-final release")
 			}
 		}
@@ -256,34 +490,516 @@ func ParseInstallationReport(reference domain.ArtifactReference, body []byte, ex
 	return InstallationReport{candidates: candidates}, nil
 }
 
-func parseReportCandidate(item pipInstall) (Candidate, error) {
-	if item.IsDirect || !item.Requested && item.Metadata.Name == "" || !sha256HexPattern.MatchString(item.DownloadInfo.ArchiveInfo.Hashes["sha256"]) || item.DownloadInfo.ArchiveInfo.Hash != "sha256="+item.DownloadInfo.ArchiveInfo.Hashes["sha256"] {
+func isFinalVersionForProfile(value string, profile SourceProfile) bool {
+	if IsPyTorchSource(profile.source) && strings.Contains(value, "+") {
+		base := strings.SplitN(value, "+", 2)[0]
+		return IsFinalVersion(base)
+	}
+	return IsFinalVersion(value)
+}
+
+func parseReportCandidate(item pipInstall, profile SourceProfile, expectedPython string, activeExtras []string) (Candidate, error) {
+	sha256 := item.DownloadInfo.ArchiveInfo.Hashes["sha256"]
+	// pip's stable installation-report schema requires archive_info.hashes.
+	// Older pip versions also emitted the legacy singular hash field; when it
+	// is present, retain the consistency check without requiring that optional
+	// compatibility field from current reports.
+	if item.IsDirect || !item.Requested && item.Metadata.Name == "" || !sha256HexPattern.MatchString(sha256) || item.DownloadInfo.ArchiveInfo.Hash != "" && item.DownloadInfo.ArchiveInfo.Hash != "sha256="+sha256 {
 		return Candidate{}, errors.New("invalid pip candidate")
 	}
 	project, err := NormalizeProjectName(item.Metadata.Name)
 	if err != nil {
 		return Candidate{}, err
 	}
-	version, err := NormalizeVersion(item.Metadata.Version)
+	version, err := normalizeVersionForProfile(item.Metadata.Version, IsPyTorchSource(profile.source))
 	if err != nil || !validRequiresPython(item.Metadata.RequiresPython) {
 		return Candidate{}, errors.New("invalid pip candidate metadata")
 	}
-	filename := path.Base(item.DownloadInfo.URL)
-	if _, err := parseDistributionURL(item.DownloadInfo.URL, filename, false); err != nil {
+	distributionURL, err := url.Parse(item.DownloadInfo.URL)
+	if err != nil {
+		return Candidate{}, errors.New("invalid pip candidate distribution URL")
+	}
+	filename := path.Base(distributionURL.Path)
+	if err := validateDistributionURLForSource(item.DownloadInfo.URL, filename, profile, false); err != nil {
 		return Candidate{}, err
 	}
+	source, err := sourceForDistributionURL(item.DownloadInfo.URL, profile)
+	if err != nil {
+		return Candidate{}, err
+	}
+	if !sourceOwnsProject(profile, source, project) {
+		return Candidate{}, errors.New("python candidate source ownership is ambiguous")
+	}
 	dependencies := make([]string, 0, len(item.Metadata.RequiresDist))
+	requirements := make([]string, 0, len(item.Metadata.RequiresDist))
 	seenDependencies := make(map[string]bool, len(item.Metadata.RequiresDist))
 	for _, requirement := range item.Metadata.RequiresDist {
-		dependency, err := parseDeclaredDependency(requirement)
-		if err != nil || dependency == project || seenDependencies[dependency] {
+		dependency, active, err := parseDeclaredDependencyForProfileWithExtras(requirement, profile, expectedPython, activeExtras)
+		if err != nil {
+			return Candidate{}, fmt.Errorf("unsupported pip dependency metadata: %w", unsupportedRequirementDiagnostic(project, requirement, err))
+		}
+		if !active {
+			continue
+		}
+		if dependency == project {
 			return Candidate{}, errors.New("unsupported pip dependency metadata")
 		}
-		seenDependencies[dependency] = true
-		dependencies = append(dependencies, dependency)
+		// Multiple active extras can independently constrain the same project.
+		// Keep every requirement for conjunction checking, but only one graph edge.
+		if !seenDependencies[dependency] {
+			seenDependencies[dependency] = true
+			dependencies = append(dependencies, dependency)
+		}
+		requirements = append(requirements, requirement)
+		if strings.Contains(requirement, ";") && !strings.HasPrefix(requirement, "cuda-toolkit[") {
+			requirements[len(requirements)-1] = strings.TrimSpace(strings.SplitN(requirement, ";", 2)[0])
+		}
 	}
 	sort.Strings(dependencies)
-	return Candidate{project: project, version: version, filename: filename, url: item.DownloadInfo.URL, sha256: item.DownloadInfo.ArchiveInfo.Hashes["sha256"], requiresPython: item.Metadata.RequiresPython, primary: item.Requested, dependencies: dependencies}, nil
+	sort.Strings(requirements)
+	return Candidate{project: project, source: source, version: version, filename: filename, url: item.DownloadInfo.URL, sha256: sha256, requiresPython: item.Metadata.RequiresPython, primary: item.Requested, dependencies: dependencies, requirements: requirements}, nil
+}
+
+func unsupportedRequirementDiagnostic(parent, requirement string, cause error) error {
+	dependency := "<invalid>"
+	namePart := strings.TrimSpace(strings.SplitN(requirement, ";", 2)[0])
+	if parsed, err := parseDeclaredDependency(namePart); err == nil {
+		dependency = parsed
+	}
+	shape := "specifier"
+	if strings.Contains(requirement, ";") {
+		shape = "marker"
+	}
+	if strings.Contains(requirement, "extra") {
+		shape = "extras"
+	}
+	if strings.Contains(requirement, " and ") || strings.Contains(requirement, " or ") {
+		shape = "compound"
+	}
+	detail := "UNSUPPORTED"
+	if strings.Contains(cause.Error(), "marker") {
+		detail = "MARKER"
+	}
+	if strings.Contains(cause.Error(), "requirement") && dependency == "<invalid>" {
+		detail = "NAME"
+	}
+	return fmt.Errorf("reason=UNSUPPORTED_REQUIREMENT package=%s dependency=%s shape=%s detail=%s", parent, dependency, shape, detail)
+}
+
+func boundedExtraSet(extras []string) error {
+	result := make(map[string]bool, len(extras))
+	for _, extra := range extras {
+		if !allowedCUDAToolkitExtras[extra] || result[extra] {
+			return errors.New("unsupported requested extra")
+		}
+		result[extra] = true
+	}
+	return nil
+}
+
+func parseDeclaredDependencyForProfile(value string, profile SourceProfile, expectedPython string) (string, bool, error) {
+	return parseDeclaredDependencyForProfileWithExtras(value, profile, expectedPython, nil)
+}
+
+func parseDeclaredDependencyForProfileWithExtras(value string, _ SourceProfile, expectedPython string, activeExtras []string) (string, bool, error) {
+	if !strings.Contains(value, ";") {
+		dependency, err := parseDeclaredDependency(value)
+		return dependency, true, err
+	}
+	if strings.Count(value, ";") != 1 {
+		return "", false, errors.New("unsupported dependency requirement marker")
+	}
+	parts := strings.SplitN(value, ";", 2)
+	active, err := boundedMarkerActiveForRequestedExtras(strings.TrimSpace(parts[1]), expectedPython, activeExtras)
+	if err != nil {
+		return "", false, err
+	}
+	if !active {
+		return "", false, nil
+	}
+	// Evaluate and validate the complete marker before interpreting extras.
+	// Unrequested cuda-bindings extras must not become toolkit requests.
+	if strings.HasPrefix(value, "cuda-toolkit[") {
+		requirement, err := ParseBoundedRequirement(value)
+		if err != nil {
+			return "", false, err
+		}
+		return requirement.Project(), true, nil
+	}
+	dependency, err := parseDeclaredDependency(strings.TrimSpace(parts[0]))
+	if err != nil {
+		return "", false, err
+	}
+	return dependency, true, nil
+}
+
+type markerToken struct{ kind, value string }
+
+type markerAST interface {
+	validate(expectedPython string) error
+	evaluate(expectedPython, activeExtra string) (bool, error)
+}
+
+type markerBinaryNode struct {
+	op    string
+	left  markerAST
+	right markerAST
+}
+
+func (n *markerBinaryNode) validate(expectedPython string) error {
+	if n.op != "and" && n.op != "or" {
+		return errors.New("unsupported dependency requirement marker")
+	}
+	if n.left == nil || n.right == nil {
+		return errors.New("unsupported dependency requirement marker")
+	}
+	if err := n.left.validate(expectedPython); err != nil {
+		return err
+	}
+	return n.right.validate(expectedPython)
+}
+
+func (n *markerBinaryNode) evaluate(expectedPython, activeExtra string) (bool, error) {
+	switch n.op {
+	case "and":
+		left, err := n.left.evaluate(expectedPython, activeExtra)
+		if err != nil {
+			return false, err
+		}
+		if !left {
+			return false, nil
+		}
+		return n.right.evaluate(expectedPython, activeExtra)
+	case "or":
+		left, err := n.left.evaluate(expectedPython, activeExtra)
+		if err != nil {
+			return false, err
+		}
+		if left {
+			return true, nil
+		}
+		return n.right.evaluate(expectedPython, activeExtra)
+	default:
+		return false, errors.New("unsupported dependency requirement marker")
+	}
+}
+
+type markerAtomNode struct {
+	name     string
+	operator string
+	literal  string
+}
+
+func (n *markerAtomNode) validate(expectedPython string) error {
+	switch n.name {
+	case "extra":
+		if n.operator != "==" && n.operator != "!=" {
+			return errors.New("unsupported dependency requirement marker")
+		}
+		return nil
+	case "python_version":
+		_, recognized, err := evaluatePinnedPythonVersionMarker("python_version "+n.operator+" \""+n.literal+"\"", expectedPython)
+		if !recognized || err != nil {
+			return errors.New("unsupported dependency requirement marker")
+		}
+		return nil
+	case "sys_platform", "platform_system", "platform_machine", "platform_python_implementation":
+		if n.operator != "==" && n.operator != "!=" {
+			return errors.New("unsupported dependency requirement marker")
+		}
+		return nil
+	default:
+		return errors.New("unsupported dependency requirement marker")
+	}
+}
+
+func (n *markerAtomNode) evaluate(expectedPython, activeExtra string) (bool, error) {
+	if n.name == "extra" {
+		active := activeExtra == n.literal
+		if n.operator == "!=" {
+			active = !active
+		}
+		return active, nil
+	}
+	if n.name == "python_version" {
+		active, recognized, err := evaluatePinnedPythonVersionMarker("python_version "+n.operator+" \""+n.literal+"\"", expectedPython)
+		if !recognized || err != nil {
+			return false, errors.New("unsupported dependency requirement marker")
+		}
+		return active, nil
+	}
+	values := map[string]string{"sys_platform": "linux", "platform_system": "Linux", "platform_machine": "x86_64", "platform_python_implementation": "CPython"}
+	if current, ok := values[n.name]; ok {
+		active := current == n.literal
+		if n.operator == "!=" {
+			active = !active
+		}
+		return active, nil
+	}
+	return false, errors.New("unsupported dependency requirement marker")
+}
+
+// boundedMarkerActiveForRequestedExtras evaluates optional requirements
+// independently once for each requested feature, but only after complete AST
+// grammar validation proves every node belongs to the supported bounded syntax.
+func boundedMarkerActiveForRequestedExtras(value, expectedPython string, requestedExtras []string) (bool, error) {
+	if err := boundedExtraSet(requestedExtras); err != nil {
+		return false, err
+	}
+	ast, err := parseAndValidateBoundedMarker(value, expectedPython)
+	if err != nil {
+		return false, errors.New("unsupported dependency requirement marker")
+	}
+	// Core Metadata evaluates optional requirements once for each requested
+	// feature. With no requested feature, use the bounded base environment.
+	environments := requestedExtras
+	if len(environments) == 0 {
+		environments = []string{""}
+	}
+	active := false
+	for _, extra := range environments {
+		truth, err := ast.evaluate(expectedPython, extra)
+		if err != nil {
+			return false, errors.New("unsupported dependency requirement marker")
+		}
+		active = active || truth
+	}
+	return active, nil
+}
+
+func parseAndValidateBoundedMarker(value, expectedPython string) (markerAST, error) {
+	tokens, err := tokenizeBoundedMarker(value)
+	if err != nil {
+		return nil, err
+	}
+	p := boundedMarkerParser{tokens: tokens}
+	ast, err := p.parseOr()
+	if err != nil || p.position != len(tokens) {
+		return nil, errors.New("unsupported dependency requirement marker")
+	}
+	if err := ast.validate(expectedPython); err != nil {
+		return nil, err
+	}
+	return ast, nil
+}
+
+func tokenizeBoundedMarker(value string) ([]markerToken, error) {
+	tokens := make([]markerToken, 0, 8)
+	for i := 0; i < len(value); {
+		if value[i] == ' ' || value[i] == '\t' {
+			i++
+			continue
+		}
+		switch value[i] {
+		case '(', ')':
+			tokens = append(tokens, markerToken{kind: string(value[i]), value: string(value[i])})
+			i++
+			continue
+		case '\'', '"':
+			quote := value[i]
+			j := i + 1
+			for j < len(value) && value[j] != quote {
+				if value[j] == '\\' || value[j] < 0x20 {
+					return nil, errors.New("unsupported dependency requirement marker")
+				}
+				j++
+			}
+			if j == len(value) || j == i+1 {
+				return nil, errors.New("unsupported dependency requirement marker")
+			}
+			tokens = append(tokens, markerToken{kind: "string", value: value[i+1 : j]})
+			i = j + 1
+			continue
+		}
+		if strings.ContainsRune("<>=!", rune(value[i])) {
+			j := i + 1
+			if j < len(value) && value[j] == '=' {
+				j++
+			}
+			op := value[i:j]
+			if op != "==" && op != "!=" && op != ">=" && op != "<=" && op != ">" && op != "<" {
+				return nil, errors.New("unsupported dependency requirement marker")
+			}
+			tokens = append(tokens, markerToken{kind: "operator", value: op})
+			i = j
+			continue
+		}
+		if (value[i] >= 'A' && value[i] <= 'Z') || (value[i] >= 'a' && value[i] <= 'z') || value[i] == '_' {
+			j := i + 1
+			for j < len(value) && ((value[j] >= 'A' && value[j] <= 'Z') || (value[j] >= 'a' && value[j] <= 'z') || value[j] == '_') {
+				j++
+			}
+			word := value[i:j]
+			kind := "identifier"
+			if word == "and" || word == "or" {
+				kind = word
+			}
+			tokens = append(tokens, markerToken{kind: kind, value: word})
+			i = j
+			continue
+		}
+		return nil, errors.New("unsupported dependency requirement marker")
+	}
+	if len(tokens) == 0 || len(tokens) > 64 {
+		return nil, errors.New("unsupported dependency requirement marker")
+	}
+	return tokens, nil
+}
+
+type boundedMarkerParser struct {
+	tokens   []markerToken
+	position int
+}
+
+func (p *boundedMarkerParser) parseOr() (markerAST, error) {
+	left, err := p.parseAnd()
+	if err != nil {
+		return nil, err
+	}
+	for p.accept("or") {
+		right, err := p.parseAnd()
+		if err != nil {
+			return nil, err
+		}
+		left = &markerBinaryNode{op: "or", left: left, right: right}
+	}
+	return left, nil
+}
+
+func (p *boundedMarkerParser) parseAnd() (markerAST, error) {
+	left, err := p.parsePrimary()
+	if err != nil {
+		return nil, err
+	}
+	for p.accept("and") {
+		right, err := p.parsePrimary()
+		if err != nil {
+			return nil, err
+		}
+		left = &markerBinaryNode{op: "and", left: left, right: right}
+	}
+	return left, nil
+}
+
+func (p *boundedMarkerParser) parsePrimary() (markerAST, error) {
+	if p.accept("(") {
+		node, err := p.parseOr()
+		if err != nil || !p.accept(")") {
+			return nil, errors.New("unsupported dependency requirement marker")
+		}
+		return node, nil
+	}
+	if p.position+2 >= len(p.tokens) || p.tokens[p.position].kind != "identifier" || p.tokens[p.position+1].kind != "operator" || p.tokens[p.position+2].kind != "string" {
+		return nil, errors.New("unsupported dependency requirement marker")
+	}
+	name, operator, literal := p.tokens[p.position].value, p.tokens[p.position+1].value, p.tokens[p.position+2].value
+	p.position += 3
+	return &markerAtomNode{name: name, operator: operator, literal: literal}, nil
+}
+
+func (p *boundedMarkerParser) accept(kind string) bool {
+	if p.position < len(p.tokens) && p.tokens[p.position].kind == kind {
+		p.position++
+		return true
+	}
+	return false
+}
+
+// evaluatePinnedPythonVersionMarker evaluates the one runtime marker emitted
+// by the pinned PyTorch wheel metadata. pip's python_version value is the
+// major.minor portion of the locked runtime (for example, 3.14.7 -> 3.14).
+// Other marker variables and malformed expressions remain fail-closed.
+func evaluatePinnedPythonVersionMarker(value, expectedPython string) (bool, bool, error) {
+	operators := []string{"==", "!=", "<=", ">=", "<", ">"}
+	for _, operator := range operators {
+		prefix := "python_version " + operator + " "
+		if !strings.HasPrefix(value, prefix) {
+			continue
+		}
+		literal := strings.TrimSpace(strings.TrimPrefix(value, prefix))
+		if len(literal) < 2 || (literal[0] != '\'' && literal[0] != '"') || literal[len(literal)-1] != literal[0] || strings.ContainsAny(literal[1:len(literal)-1], "'\"") {
+			return false, true, errors.New("unsupported dependency requirement marker")
+		}
+		want, err := parsePythonVersionTuple(literal[1 : len(literal)-1])
+		if err != nil {
+			return false, true, errors.New("unsupported dependency requirement marker")
+		}
+		have, err := parsePythonRuntimeTuple(expectedPython)
+		if err != nil {
+			return false, true, errors.New("unsupported dependency requirement marker")
+		}
+		comparison := 0
+		if have[0] != want[0] {
+			if have[0] < want[0] {
+				comparison = -1
+			} else {
+				comparison = 1
+			}
+		} else if have[1] != want[1] {
+			if have[1] < want[1] {
+				comparison = -1
+			} else {
+				comparison = 1
+			}
+		}
+		active := false
+		switch operator {
+		case "==":
+			active = comparison == 0
+		case "!=":
+			active = comparison != 0
+		case "<":
+			active = comparison < 0
+		case "<=":
+			active = comparison <= 0
+		case ">":
+			active = comparison > 0
+		case ">=":
+			active = comparison >= 0
+		}
+		return active, true, nil
+	}
+	if strings.HasPrefix(value, "python_version ") {
+		return false, true, errors.New("unsupported dependency requirement marker")
+	}
+	return false, false, nil
+}
+
+func parsePythonVersionTuple(value string) ([2]int, error) {
+	parts := strings.Split(value, ".")
+	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+		return [2]int{}, errors.New("invalid Python version")
+	}
+	major, err := strconv.Atoi(parts[0])
+	if err != nil || major < 0 {
+		return [2]int{}, errors.New("invalid Python version")
+	}
+	minor, err := strconv.Atoi(parts[1])
+	if err != nil || minor < 0 {
+		return [2]int{}, errors.New("invalid Python version")
+	}
+	return [2]int{major, minor}, nil
+}
+
+func parsePythonRuntimeTuple(value string) ([2]int, error) {
+	parts := strings.Split(value, ".")
+	if len(parts) < 2 {
+		return [2]int{}, errors.New("invalid Python runtime version")
+	}
+	return parsePythonVersionTuple(strings.Join(parts[:2], "."))
+}
+
+// DependencyProject normalizes the project portion of a bounded requirement.
+// The resolver retains the original requirement only for its fixed pip call.
+func DependencyProject(requirement string) (string, error) {
+	if strings.HasPrefix(requirement, "cuda-toolkit[") {
+		parsed, err := ParseBoundedRequirement(requirement)
+		if err != nil {
+			return "", err
+		}
+		return parsed.Project(), nil
+	}
+	return parseDeclaredDependency(requirement)
 }
 
 func parseDeclaredDependency(value string) (string, error) {
@@ -302,28 +1018,114 @@ func parseDeclaredDependency(value string) (string, error) {
 // Requires-Python metadata.
 func CrossCheckReport(report InstallationReport, pages []SimpleProject) ([]Candidate, error) {
 	if len(report.candidates) == 0 || len(pages) != len(report.candidates) {
-		return nil, errors.New("PyPI Simple cross-check is incomplete")
+		return nil, errors.New("invalid PyPI Simple cross-check is incomplete")
 	}
 	byProject := make(map[string]SimpleProject, len(pages))
 	for _, page := range pages {
 		if page.project == "" || byProject[page.project].project != "" {
-			return nil, errors.New("PyPI Simple cross-check is ambiguous")
+			return nil, errors.New("invalid PyPI Simple cross-check is ambiguous")
 		}
 		byProject[page.project] = page
 	}
 	for _, candidate := range report.candidates {
 		page, ok := byProject[candidate.project]
-		if !ok || !matchesSimpleFile(candidate, page.files) {
+		if !ok || candidate.source != page.source || !matchesSimpleFile(candidate, page) {
 			return nil, errors.New("pip candidate does not match PyPI Simple metadata")
 		}
 	}
 	return report.Candidates(), nil
 }
 
-func matchesSimpleFile(candidate Candidate, files []SimpleFile) bool {
+// PyTorchCoreMetadataURL returns the exact hash-bound Core Metadata sidecar
+// required to authenticate Requires-Python when the selected PyTorch Simple
+// link omits the optional data-requires-python attribute. The sidecar URL is
+// derived from the already authenticated distribution URL, never pip output.
+func PyTorchCoreMetadataURL(candidate Candidate, page SimpleProject) (string, error) {
+	file, err := selectedPyTorchSimpleFile(candidate, page)
+	if err != nil {
+		return "", err
+	}
+	if file.requiresPythonPresent {
+		if !authenticatedRequiresPythonMetadataMatches(file.requiresPython, candidate.requiresPython) {
+			return "", errors.New("PyTorch Requires-Python metadata disagrees with pip candidate")
+		}
+		return "", nil
+	}
+	if file.coreMetadataSHA == "" {
+		return "", errors.New("PyTorch Simple link lacks authenticated Requires-Python metadata")
+	}
+	return file.url + ".metadata", nil
+}
+
+// VerifyPyTorchCoreMetadata verifies the exact hash advertised by the
+// selected Simple link, then compares the sidecar's Requires-Python header to
+// the pip proposal. A missing header is an authenticated absence and only
+// agrees with an empty pip value; it never becomes pip self-authority.
+func VerifyPyTorchCoreMetadata(candidate Candidate, page SimpleProject, body []byte) error {
+	file, err := selectedPyTorchSimpleFile(candidate, page)
+	if err != nil {
+		return err
+	}
+	if file.requiresPythonPresent {
+		if len(body) != 0 || !authenticatedRequiresPythonMetadataMatches(file.requiresPython, candidate.requiresPython) {
+			return errors.New("PyTorch Requires-Python metadata disagrees with pip candidate")
+		}
+		return nil
+	}
+	if file.coreMetadataSHA == "" || len(body) == 0 || len(body) > maxCoreMetadataBytes {
+		return errors.New("PyTorch Core Metadata is unauthenticated")
+	}
+	sum := sha256.Sum256(body)
+	if hex.EncodeToString(sum[:]) != file.coreMetadataSHA {
+		return errors.New("PyTorch Core Metadata hash does not match Simple link")
+	}
+	headers, err := textproto.NewReader(bufio.NewReader(bytes.NewReader(body))).ReadMIMEHeader()
+	if err != nil {
+		return errors.New("PyTorch Core Metadata is malformed")
+	}
+	values := headers.Values("Requires-Python")
+	if len(values) > 1 {
+		return errors.New("PyTorch Core Metadata Requires-Python is ambiguous")
+	}
+	if len(values) == 0 || values[0] == "" {
+		if candidate.requiresPython != "" {
+			return errors.New("PyTorch Core Metadata Requires-Python is absent")
+		}
+		return nil
+	}
+	if !requiresPythonMetadataMatches(values[0], candidate.requiresPython) {
+		return errors.New("PyTorch Core Metadata Requires-Python disagrees with pip candidate")
+	}
+	return nil
+}
+
+func selectedPyTorchSimpleFile(candidate Candidate, page SimpleProject) (SimpleFile, error) {
+	if !IsPyTorchSource(page.source) || candidate.source != page.source {
+		return SimpleFile{}, errors.New("PyTorch Simple source does not match candidate")
+	}
+	var selected SimpleFile
 	matches := 0
-	for _, file := range files {
-		if file.filename != candidate.filename || file.sha256 != candidate.sha256 || file.requiresPython != candidate.requiresPython || file.yanked || !sameDistributionURL(file.url, candidate.url) {
+	for _, file := range page.files {
+		if file.filename != candidate.filename || file.sha256 != candidate.sha256 || file.yanked || !sameDistributionURL(file.url, candidate.url) {
+			continue
+		}
+		selected = file
+		matches++
+	}
+	if matches != 1 {
+		return SimpleFile{}, errors.New("PyTorch Simple selected link is missing or ambiguous")
+	}
+	return selected, nil
+}
+
+func matchesSimpleFile(candidate Candidate, page SimpleProject) bool {
+	matches := 0
+	for _, file := range page.files {
+		requiresPythonMatches := requiresPythonMetadataMatches(file.requiresPython, candidate.requiresPython)
+		if IsPyTorchSource(page.source) && file.requiresPythonPresent {
+			requiresPythonMatches = authenticatedRequiresPythonMetadataMatches(file.requiresPython, candidate.requiresPython)
+		}
+		if file.filename != candidate.filename || file.sha256 != candidate.sha256 || file.yanked || !sameDistributionURL(file.url, candidate.url) || file.requiresPythonPresent && !requiresPythonMatches {
 			continue
 		}
 		matches++
@@ -335,21 +1137,21 @@ func matchesSimpleFile(candidate Candidate, files []SimpleFile) bool {
 // Domain values. Dependency edges come only from normalized selected report
 // metadata; unknown or unreachable requirements remain fail-closed.
 func BuildLockedGraph(reference domain.ArtifactReference, candidates []Candidate) (domain.LockedDependencyGraph, error) {
-	if reference.Source().String() != "pypi" || len(candidates) == 0 || len(candidates) > maxPyPIReportEntries {
-		return domain.LockedDependencyGraph{}, errors.New("PyPI candidate graph is invalid")
+	if _, ok := ProfileForSource(reference.Source()); !ok || len(candidates) == 0 || len(candidates) > maxPyPIReportEntries {
+		return domain.LockedDependencyGraph{}, errors.New("invalid PyPI candidate graph is invalid")
 	}
 	nodes := make(map[string]domain.LockedDependency, len(candidates))
 	edgesByProject := make(map[string][]string, len(candidates))
 	for _, candidate := range candidates {
 		if candidate.project == "" || nodes[candidate.project].Node().String() != "" {
-			return domain.LockedDependencyGraph{}, errors.New("PyPI candidate graph is ambiguous")
+			return domain.LockedDependencyGraph{}, errors.New("invalid PyPI candidate graph is ambiguous")
 		}
 		variant, ok := distributionVariant(candidate.filename)
 		if !ok {
-			return domain.LockedDependencyGraph{}, errors.New("PyPI distribution type is unsupported")
+			return domain.LockedDependencyGraph{}, errors.New("invalid PyPI distribution type is unsupported")
 		}
 		nodeID := candidateNodeID(candidate)
-		identity, err := domain.NewResolvedArtifactIdentity(reference.Source(), candidate.project, candidate.version, variant)
+		identity, err := domain.NewResolvedArtifactIdentity(candidate.source, candidate.project, candidate.version, variant)
 		if err != nil {
 			return domain.LockedDependencyGraph{}, err
 		}
@@ -406,23 +1208,8 @@ func distributionVariant(filename string) (string, bool) {
 	}
 }
 
-func parseDistributionURL(rawURL, filename string, allowHashFragment bool) (*url.URL, error) {
-	parsed, err := url.Parse(rawURL)
-	if err != nil || parsed.Scheme != "https" || !strings.EqualFold(parsed.Host, "files.pythonhosted.org") || parsed.Port() != "" || parsed.User != nil || parsed.RawQuery != "" || parsed.Path == "" || path.Base(parsed.Path) != filename || filename == "." || filename == "/" {
-		return nil, errors.New("PyPI distribution URL is invalid")
-	}
-	if !allowHashFragment && parsed.Fragment != "" {
-		return nil, errors.New("pip distribution URL must not have a fragment")
-	}
-	return parsed, nil
-}
-
 func sameDistributionURL(simpleURL, reportURL string) bool {
 	simpleRaw, err := url.Parse(simpleURL)
-	if err != nil {
-		return false
-	}
-	simpleParsed, err := parseDistributionURL(simpleURL, path.Base(simpleRaw.Path), true)
 	if err != nil {
 		return false
 	}
@@ -430,15 +1217,63 @@ func sameDistributionURL(simpleURL, reportURL string) bool {
 	if err != nil {
 		return false
 	}
-	reportParsed, err := parseDistributionURL(reportURL, path.Base(reportRaw.Path), false)
-	if err != nil {
-		return false
-	}
-	return simpleParsed.Scheme == reportParsed.Scheme && strings.EqualFold(simpleParsed.Host, reportParsed.Host) && simpleParsed.EscapedPath() == reportParsed.EscapedPath()
+	return simpleRaw.Scheme == "https" && reportRaw.Scheme == "https" && simpleRaw.User == nil && reportRaw.User == nil && simpleRaw.RawQuery == "" && reportRaw.RawQuery == "" && strings.EqualFold(simpleRaw.Host, reportRaw.Host) && simpleRaw.Path == reportRaw.Path
 }
 
 func validRequiresPython(value string) bool {
 	return len(value) <= 1024 && value == strings.TrimSpace(value) && strings.IndexFunc(value, func(r rune) bool { return r < 0x20 || r == 0x7f }) < 0
+}
+
+func requiresPythonMetadataMatches(simple, candidate string) bool {
+	if simple == "" {
+		return true
+	}
+	simpleComponents, ok := canonicalizeRequiresPythonComponents(simple)
+	if !ok {
+		return false
+	}
+	candidateComponents, ok := canonicalizeRequiresPythonComponents(candidate)
+	if !ok {
+		return false
+	}
+	if len(simpleComponents) != len(candidateComponents) {
+		return false
+	}
+	for i := range simpleComponents {
+		if simpleComponents[i] != candidateComponents[i] {
+			return false
+		}
+	}
+	return true
+}
+
+// authenticatedRequiresPythonMetadataMatches is used for the optional
+// PyTorch HTML attribute once it is present. An explicit empty value means no
+// Requires-Python constraint and must not authorize a non-empty pip value.
+func authenticatedRequiresPythonMetadataMatches(simple, candidate string) bool {
+	if simple == "" || candidate == "" {
+		return simple == candidate
+	}
+	return requiresPythonMetadataMatches(simple, candidate)
+}
+
+func canonicalizeRequiresPythonComponents(value string) ([]string, bool) {
+	if !validRequiresPython(value) || value == "" {
+		return nil, false
+	}
+	parts := strings.Split(value, ",")
+	if len(parts) == 0 || len(parts) > maxRequiresPythonComponents {
+		return nil, false
+	}
+	components := make([]string, 0, len(parts))
+	for _, part := range parts {
+		if len(part) == 0 || !requiresPythonSpecifierPattern.MatchString(part) {
+			return nil, false
+		}
+		components = append(components, part)
+	}
+	sort.Strings(components)
+	return components, true
 }
 
 func ensureSingleJSONValue(decoder *json.Decoder) error {

@@ -207,6 +207,10 @@ func (c *checker) runProfile(profile string) error {
 		return c.runFuzz()
 	case "docs":
 		return c.runStep("documentation", func() error { return checkMarkdownTree(c.root) })
+	case "freshness":
+		return c.runStep("version support freshness", func() error { return checkVersionSupport(c.root, false, c.stdout) })
+	case "qualification-freshness":
+		return c.runStep("strict version support freshness", func() error { return checkVersionSupport(c.root, true, c.stdout) })
 	case "format":
 		return c.runStep("format", c.applyFormat)
 	case "release-gate":
@@ -243,6 +247,7 @@ func (c *checker) foundationSteps(includeDocs bool) []checkStep {
 		{"runtime lock drift", func() error {
 			return c.runGo("runtime lock drift", "run", "./scripts/generate-runtime-lock.go", "-check")
 		}},
+		{"version support freshness", func() error { return checkVersionSupport(c.root, false, c.stdout) }},
 		{"module drift", c.checkModuleDrift},
 		{"module integrity", func() error { return c.runGo("module integrity", "mod", "verify") }},
 		{"production build", func() error { return c.runGo("production build", "build", "./...") }},

@@ -87,10 +87,13 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/bootstrap": true,
 		},
 		modulePath + "/internal/cli": {
-			modulePath + "/internal/application":   true,
-			modulePath + "/internal/artifact/npm":  true,
-			modulePath + "/internal/artifact/pypi": true,
-			modulePath + "/internal/core/domain":   true,
+			modulePath + "/internal/application":                true,
+			modulePath + "/internal/artifact/cargo":             true,
+			modulePath + "/internal/artifact/gomodule":          true,
+			modulePath + "/internal/artifact/npm":               true,
+			modulePath + "/internal/artifact/pypi":              true,
+			modulePath + "/internal/artifact/terraformprovider": true,
+			modulePath + "/internal/core/domain":                true,
 		},
 		modulePath + "/internal/core/domain": {},
 		modulePath + "/internal/core/ports": {
@@ -101,19 +104,31 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/core/ports":  true,
 		},
 		modulePath + "/internal/policy": {
-			modulePath + "/internal/core/domain": true,
+			modulePath + "/internal/core/domain":   true,
+			modulePath + "/internal/artifact/pypi": true,
 		},
 		modulePath + "/internal/artifact/npm": {
 			modulePath + "/internal/core/domain": true,
 		},
 		modulePath + "/internal/artifact/pypi": {
+			modulePath + "/internal/core/domain":     true,
+			modulePath + "/internal/runtimeidentity": true,
+		},
+		modulePath + "/internal/artifact/gomodule": {
+			modulePath + "/internal/core/domain": true,
+		},
+		modulePath + "/internal/artifact/cargo": {
+			modulePath + "/internal/core/domain": true,
+		},
+		modulePath + "/internal/artifact/terraformprovider": {
 			modulePath + "/internal/core/domain": true,
 		},
 		modulePath + "/internal/verification/npm": {
 			modulePath + "/internal/core/domain": true,
 		},
 		modulePath + "/internal/verification/pypi": {
-			modulePath + "/internal/core/domain": true,
+			modulePath + "/internal/artifact/pypi": true,
+			modulePath + "/internal/core/domain":   true,
 		},
 		modulePath + "/internal/inspection/npm": {
 			modulePath + "/internal/core/domain": true,
@@ -128,10 +143,19 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/core/domain": true,
 		},
 		modulePath + "/internal/sandbox": {
-			modulePath + "/internal/artifact/npm":    true,
-			modulePath + "/internal/artifact/pypi":   true,
-			modulePath + "/internal/core/domain":     true,
-			modulePath + "/internal/runtimeidentity": true,
+			modulePath + "/internal/artifact/cargo":    true,
+			modulePath + "/internal/artifact/gomodule": true,
+			modulePath + "/internal/artifact/npm":      true,
+			modulePath + "/internal/artifact/pypi":     true,
+			modulePath + "/internal/core/domain":       true,
+			modulePath + "/internal/runtimeidentity":   true,
+		},
+		modulePath + "/internal/promotion": {
+			modulePath + "/internal/artifact/gomodule": true,
+			modulePath + "/internal/artifact/pypi":     true,
+			modulePath + "/internal/core/domain":       true,
+			modulePath + "/internal/runtimeidentity":   true,
+			modulePath + "/internal/sandbox":           true,
 		},
 		modulePath + "/internal/runtimeidentity": {},
 		modulePath + "/internal/testutil/fakeworkflow": {
@@ -145,19 +169,24 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 		modulePath + "/internal/cli": {
 			"github.com/spf13/cobra": true,
 		},
-		modulePath + "/internal/core/domain":           {},
-		modulePath + "/internal/core/ports":            {},
-		modulePath + "/internal/application":           {},
-		modulePath + "/internal/policy":                {},
-		modulePath + "/internal/artifact/npm":          {},
-		modulePath + "/internal/artifact/pypi":         {},
-		modulePath + "/internal/verification/npm":      {},
-		modulePath + "/internal/inspection/npm":        {},
-		modulePath + "/internal/evidence/local":        {},
-		modulePath + "/internal/sandbox":               {},
-		modulePath + "/internal/runtimeidentity":       {},
-		modulePath + "/internal/testutil/fakeworkflow": {},
-		modulePath + "/scripts/check":                  {},
+		modulePath + "/internal/core/domain":                {},
+		modulePath + "/internal/core/ports":                 {},
+		modulePath + "/internal/application":                {},
+		modulePath + "/internal/policy":                     {},
+		modulePath + "/internal/artifact/npm":               {},
+		modulePath + "/internal/artifact/pypi":              {},
+		modulePath + "/internal/artifact/gomodule":          {},
+		modulePath + "/internal/artifact/cargo":             {},
+		modulePath + "/internal/artifact/terraformprovider": {},
+		modulePath + "/internal/verification/npm":           {},
+		modulePath + "/internal/verification/pypi":          {},
+		modulePath + "/internal/inspection/npm":             {},
+		modulePath + "/internal/evidence/local":             {},
+		modulePath + "/internal/sandbox":                    {},
+		modulePath + "/internal/promotion":                  {},
+		modulePath + "/internal/runtimeidentity":            {},
+		modulePath + "/internal/testutil/fakeworkflow":      {},
+		modulePath + "/scripts/check":                       {},
 	}
 	forbiddenConcreteImports := map[string]map[string]bool{
 		modulePath + "/internal/core/domain": {

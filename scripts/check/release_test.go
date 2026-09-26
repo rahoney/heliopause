@@ -29,6 +29,24 @@ func TestReleaseGateFailsClosedWithoutLicense(t *testing.T) {
 	}
 }
 
+func TestReleaseGateRunsStrictFreshness(t *testing.T) {
+	root := t.TempDir()
+	body, err := os.ReadFile(filepath.Join("..", "version-support.lock.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Join(root, "scripts"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	stale := strings.ReplaceAll(string(body), "2026-09-17", "2026-06-18")
+	if err := os.WriteFile(filepath.Join(root, "scripts", "version-support.lock.json"), []byte(stale), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := checkReleaseGate(root); err == nil || !strings.Contains(err.Error(), "version support review is stale") {
+		t.Fatalf("checkReleaseGate error = %v, want strict freshness failure", err)
+	}
+}
+
 func TestReleaseGateSummaryIsBounded(t *testing.T) {
 	root := t.TempDir()
 	summary := releaseGateSummary(root)

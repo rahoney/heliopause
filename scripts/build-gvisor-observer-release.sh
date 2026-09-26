@@ -19,6 +19,8 @@ runtime_lock=scripts/runtimes.lock.json
 test -f "$runtime_lock"
 gvisor_repository=$(jq -er '.gvisor.source_repository' "$runtime_lock")
 gvisor_commit=$(jq -er '.gvisor.commit' "$runtime_lock")
+gvisor_patch_path=$(jq -er '.gvisor.patch.path' "$runtime_lock")
+gvisor_patch_sha256=$(jq -er '.gvisor.patch.sha256' "$runtime_lock")
 bazel_url=$(jq -er '.bazel.linux_x86_64_url' "$runtime_lock")
 bazel_sha512=$(jq -er '.bazel.linux_x86_64_sha512' "$runtime_lock")
 
@@ -33,15 +35,54 @@ test "$(printf %s "$gvisor_commit" | wc -c | tr -d ' ')" = 40 || {
   exit 1
 }
 
+case "$gvisor_patch_path" in
+  tools/gvisor/*.patch) ;;
+  *) echo "runtime lock gVisor patch path is invalid" >&2; exit 1 ;;
+esac
+case "$gvisor_patch_path" in
+  *..*) echo "runtime lock gVisor patch path cannot escape" >&2; exit 1 ;;
+esac
+test -f "$gvisor_patch_path" || {
+  echo "runtime lock gVisor patch file missing: $gvisor_patch_path" >&2
+  exit 1
+}
+test "$(sha256sum "$gvisor_patch_path" | awk '{print $1}')" = "$gvisor_patch_sha256" || {
+  echo "runtime lock gVisor patch sha256 mismatch" >&2
+  exit 1
+}
+patch_abs="$(cd "$(dirname "$gvisor_patch_path")" && pwd)/$(basename "$gvisor_patch_path")"
+
 work_root=$(mktemp -d "${TMPDIR:-/tmp}/helox-release-observer.XXXXXX")
 cleanup() { rm -rf "$work_root"; }
 trap cleanup EXIT HUP INT TERM
 
-git clone --filter=blob:none "$gvisor_repository" "$work_root/gvisor"
+gvisor_source="${GVISOR_LOCAL_REPO:-$gvisor_repository}"
+git clone --filter=blob:none "$gvisor_source" "$work_root/gvisor"
 git -C "$work_root/gvisor" checkout --detach "$gvisor_commit"
 test "$(git -C "$work_root/gvisor" rev-parse HEAD)" = "$gvisor_commit"
+test -z "$(git -C "$work_root/gvisor" status --porcelain)" || {
+  echo "gVisor upstream source is not clean" >&2
+  exit 1
+}
 
-curl --fail --location --silent --show-error --output "$work_root/bazel" "$bazel_url"
+git -C "$work_root/gvisor" apply --check "$patch_abs" || {
+  echo "gVisor patch failed application check" >&2
+  exit 1
+}
+git -C "$work_root/gvisor" apply "$patch_abs" || {
+  echo "gVisor patch application failed" >&2
+  exit 1
+}
+test -n "$(git -C "$work_root/gvisor" status --porcelain)" || {
+  echo "gVisor patch produced no changes" >&2
+  exit 1
+}
+
+if [ -n "${BAZEL_PATH:-}" ] && [ -x "${BAZEL_PATH}" ]; then
+  cp "${BAZEL_PATH}" "$work_root/bazel"
+else
+  curl --fail --location --silent --show-error --output "$work_root/bazel" "$bazel_url"
+fi
 test "$(sha512sum "$work_root/bazel" | awk '{print $1}')" = "$bazel_sha512"
 chmod 0755 "$work_root/bazel"
 

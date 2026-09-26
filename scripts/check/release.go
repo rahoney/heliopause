@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -13,6 +14,9 @@ import (
 // explicitly authorizes public release assets.
 func checkReleaseGate(root string) error {
 	var findings []string
+	if err := checkVersionSupport(root, true, io.Discard); err != nil {
+		findings = append(findings, "strict version support freshness: "+err.Error())
+	}
 	licenseBody, err := readReleasePolicyFile(root, "LICENSE")
 	if err != nil {
 		findings = append(findings, "LICENSE is missing; release publication needs an explicit license decision")

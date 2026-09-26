@@ -12,8 +12,11 @@ import (
 	"strings"
 
 	"github.com/rahoney/heliopause/internal/application"
+	artifactcargo "github.com/rahoney/heliopause/internal/artifact/cargo"
+	artifactgomodule "github.com/rahoney/heliopause/internal/artifact/gomodule"
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
+	artifactterraform "github.com/rahoney/heliopause/internal/artifact/terraformprovider"
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/spf13/cobra"
 )
@@ -49,6 +52,26 @@ func New(stdout, stderr io.Writer) (*cobra.Command, error) {
 }
 
 type ReferenceParser func(string) (domain.ArtifactReference, error)
+
+// GoModuleResolver is the M12 application boundary used by `helox go get`.
+// The CLI only parses user input and renders the bounded resolution summary.
+type GoModuleResolver interface {
+	Get(context.Context, domain.ArtifactReference, domain.InstallContext) (domain.DependencyResolution, error)
+}
+
+// GoModuleProjectResolver resolves a complete current-project snapshot for
+// commands that do not name one primary module.
+type GoModuleProjectResolver interface {
+	Resolve(context.Context, domain.InstallContext) (domain.ProjectDependencySnapshot, error)
+}
+
+type CargoResolver interface {
+	Resolve(context.Context, domain.ArtifactReference, domain.InstallContext) (domain.DependencyResolution, error)
+}
+
+type TerraformResolver interface {
+	Resolve(context.Context, domain.ArtifactReference, domain.InstallContext) (domain.DependencyResolution, error)
+}
 
 // Doctor reports bounded installation and Host readiness checks. A false
 // Healthy result is never rendered as a successful diagnosis.
@@ -167,12 +190,41 @@ func AddGitHubReleaseInstall(root *cobra.Command, parser ReferenceParser, instal
 // AddPyPIInstall adds the injected PyPI Install/Promotion use case. The
 // generic JSON/human result contract is intentionally shared with npm.
 func AddPyPIInstall(root *cobra.Command, installer Installer) error {
-	if root == nil || installer == nil {
+	return AddPyPIInstallSources(root, map[string]Installer{"pypi": installer})
+}
+
+// AddPyPIInstallSources wires one bounded pip install command to the
+// canonical PyPI and named PyTorch source profiles.
+func AddPyPIInstallSources(root *cobra.Command, installers map[string]Installer) error {
+	if root == nil || len(installers) == 0 {
 		return errors.New("pypi install command requires root and use case")
 	}
 	if installCommand := findLeaf(root, "pip", "install"); installCommand != nil {
 		installCommand.RunE = func(command *cobra.Command, args []string) error {
-			reference, err := artifactpypi.ParseReference(args[0])
+			source, err := command.Flags().GetString("source")
+			if err != nil {
+				return err
+			}
+			if source == "" {
+				source = "pypi"
+			}
+			sourceID := artifactpypi.PublicPyPIProfile().Source()
+			if source != "pypi" {
+				profileName := strings.TrimPrefix(source, "pytorch:")
+				if profileName == source {
+					return errors.New("pip source must be pypi or a named pytorch profile")
+				}
+				profile, ok := artifactpypi.PyTorchProfile(profileName)
+				if !ok {
+					return errors.New("unknown PyTorch source profile")
+				}
+				sourceID = profile.Source()
+			}
+			installer, ok := installers[sourceID.String()]
+			if !ok || installer == nil {
+				return errors.New("selected Python source is unavailable on this Host")
+			}
+			reference, err := artifactpypi.ParseReferenceForSource(args[0], sourceID)
 			if err != nil {
 				return err
 			}
@@ -393,6 +445,157 @@ func AddNPMInstall(root *cobra.Command, installer Installer) error {
 	return errors.New("npm install command is not registered")
 }
 
+// AddGoModuleGet binds exact public module resolution to the static command
+// tree. Project mutation remains a later transaction step and is never implied
+// by a successful graph resolution.
+func AddGoModuleGet(root *cobra.Command, resolver GoModuleResolver) error {
+	if root == nil || resolver == nil {
+		return errors.New("go get command requires a resolution use case")
+	}
+	command := findLeaf(root, "go", "get")
+	if command == nil {
+		return errors.New("go get command is not registered")
+	}
+	command.RunE = func(command *cobra.Command, args []string) error {
+		reference, err := artifactgomodule.ParseReference(args[0])
+		if err != nil {
+			return err
+		}
+		workingDirectory, err := os.Getwd()
+		if err != nil {
+			return errors.New("resolve Go project directory")
+		}
+		target, err := domain.NewInstallTarget(workingDirectory)
+		if err != nil {
+			return errors.New("go project directory is unsupported")
+		}
+		installContext, err := domain.NewInstallContext(target)
+		if err != nil {
+			return err
+		}
+		resolution, err := resolver.Get(contextOrBackground(command.Context()), reference, installContext)
+		if err != nil {
+			return err
+		}
+		_, err = fmt.Fprintf(command.OutOrStdout(), "Source: %s\nModules: %d\nLock digest: %s\n", reference.Source(), len(resolution.Graph().Nodes()), resolution.LockfileDigest())
+		return err
+	}
+	return nil
+}
+
+// AddGoModuleDownload binds the complete project snapshot boundary to `go mod
+// download`. It reports a frozen state; verified-cache promotion is separate.
+func AddGoModuleDownload(root *cobra.Command, resolver GoModuleProjectResolver) error {
+	if root == nil || resolver == nil {
+		return errors.New("go mod download command requires a project resolution use case")
+	}
+	goCommand := findRootCommand(root, "go")
+	modCommand := findRootCommand(goCommand, "mod")
+	command := findRootCommand(modCommand, "download")
+	if command == nil {
+		return errors.New("go mod download command is not registered")
+	}
+	command.RunE = func(command *cobra.Command, _ []string) error {
+		installContext, err := currentGoProjectContext()
+		if err != nil {
+			return err
+		}
+		snapshot, err := resolver.Resolve(contextOrBackground(command.Context()), installContext)
+		if err != nil {
+			return err
+		}
+		_, err = fmt.Fprintf(command.OutOrStdout(), "Source: %s\nModules: %d\nGraph digest: %s\n", snapshot.Source(), len(snapshot.Dependencies()), snapshot.GraphDigest())
+		return err
+	}
+	return nil
+}
+
+func AddCargoAdd(root *cobra.Command, resolver CargoResolver) error {
+	if root == nil || resolver == nil {
+		return errors.New("cargo add command requires a resolution use case")
+	}
+	command := findLeaf(root, "cargo", "add")
+	if command == nil {
+		return errors.New("cargo add command is not registered")
+	}
+	command.RunE = func(command *cobra.Command, args []string) error {
+		reference, err := artifactcargo.ParseReference(args[0])
+		if err != nil {
+			return err
+		}
+		workingDirectory, err := os.Getwd()
+		if err != nil {
+			return errors.New("resolve Cargo project directory")
+		}
+		target, err := domain.NewInstallTarget(workingDirectory)
+		if err != nil {
+			return errors.New("cargo project directory is unsupported")
+		}
+		installContext, err := domain.NewInstallContext(target)
+		if err != nil {
+			return err
+		}
+		resolution, err := resolver.Resolve(contextOrBackground(command.Context()), reference, installContext)
+		if err != nil {
+			return err
+		}
+		_, err = fmt.Fprintf(command.OutOrStdout(), "Source: %s\nCrates: %d\nLock digest: %s\n", reference.Source(), len(resolution.Graph().Nodes()), resolution.LockfileDigest())
+		return err
+	}
+	return nil
+}
+
+func AddTerraformInit(root *cobra.Command, resolver TerraformResolver) error {
+	if root == nil || resolver == nil {
+		return errors.New("terraform init command requires a resolution use case")
+	}
+	command := findLeaf(root, "terraform", "init")
+	if command == nil {
+		return errors.New("terraform init command is not registered")
+	}
+	command.RunE = func(command *cobra.Command, args []string) error {
+		reference, err := artifactterraform.ParseReference(args[0])
+		if err != nil {
+			return err
+		}
+		workingDirectory, err := os.Getwd()
+		if err != nil {
+			return errors.New("resolve Terraform project directory")
+		}
+		target, err := domain.NewInstallTarget(workingDirectory)
+		if err != nil {
+			return errors.New("terraform project directory is unsupported")
+		}
+		installContext, err := domain.NewInstallContext(target)
+		if err != nil {
+			return err
+		}
+		resolution, err := resolver.Resolve(contextOrBackground(command.Context()), reference, installContext)
+		if err != nil {
+			return err
+		}
+		_, err = fmt.Fprintf(command.OutOrStdout(), "Source: %s\nProviders: %d\nLock digest: %s\n", reference.Source(), len(resolution.Graph().Nodes()), resolution.LockfileDigest())
+		return err
+	}
+	return nil
+}
+
+func currentGoProjectContext() (domain.InstallContext, error) {
+	workingDirectory, err := os.Getwd()
+	if err != nil {
+		return domain.InstallContext{}, errors.New("resolve Go project directory")
+	}
+	target, err := domain.NewInstallTarget(workingDirectory)
+	if err != nil {
+		return domain.InstallContext{}, errors.New("go project directory is unsupported")
+	}
+	installContext, err := domain.NewInstallContext(target)
+	if err != nil {
+		return domain.InstallContext{}, err
+	}
+	return installContext, nil
+}
+
 func initializeCommandTree(root *cobra.Command) {
 	root.AddCommand(&cobra.Command{Use: "doctor", Short: "Check installed release and trusted Host runtime readiness", Args: cobra.NoArgs, RunE: func(*cobra.Command, []string) error { return errors.New("doctor command is not configured") }})
 	npm := ensureNPMCommand(root)
@@ -401,11 +604,32 @@ func initializeCommandTree(root *cobra.Command) {
 	pypi := ensurePyPICommand(root)
 	pypi.AddCommand(newStaticLeaf("inspect <project>[@<version>]", "Inspect a PyPI distribution", false))
 	pip := ensurePipCommand(root)
-	pip.AddCommand(newStaticLeaf("install <project>[@<version>]", "Install a PyPI distribution into the active virtual environment", true))
+	pipInstall := newStaticLeaf("install <project>[@<version>]", "Install a PyPI distribution into the active virtual environment", true)
+	pipInstall.Flags().String("source", "pypi", pythonSourceHelp())
+	pip.AddCommand(pipInstall)
 	github := ensureGitHubCommand(root)
 	github.AddCommand(newStaticLeaf("inspect <owner>/<repo>@<tag>#<asset>", "Inspect a GitHub Release asset", false))
 	githubInstall := newStaticLeaf("install <owner>/<repo>@<tag>#<asset>", "Install a GitHub Release asset", true)
 	github.AddCommand(githubInstall)
+	goCommand := ensureGoCommand(root)
+	goCommand.AddCommand(newStaticLeaf("get <module>@<version>", "Resolve an exact public Go Module graph before transaction", false))
+	goCommand.AddCommand(newStaticLeaf("build <package>", "Build a Go project from the HAA-verified module cache", false))
+	goMod := &cobra.Command{Use: "mod", Short: "Resolve public Go Modules with the canonical proxy and SumDB"}
+	goMod.AddCommand(newStaticNoArgLeaf("download", "Resolve the current project's exact Go Module graph"))
+	goCommand.AddCommand(goMod)
+	cargo := ensureCargoCommand(root)
+	cargo.AddCommand(newStaticLeaf("add <crate>@<version>", "Resolve and transactionally add a public crates.io crate", false))
+	cargo.AddCommand(newStaticNoArgLeaf("build", "Build a Cargo project from the HAA-verified crate cache"))
+	terraform := ensureTerraformCommand(root)
+	terraform.AddCommand(newStaticLeaf("init <namespace/type@version>", "Resolve an exact public Terraform Provider", false))
+}
+
+func pythonSourceHelp() string {
+	names := make([]string, 0)
+	for _, profile := range artifactpypi.AllSourceProfiles() {
+		names = append(names, profile.Name())
+	}
+	return "named source profile: " + strings.Join(names, "/")
 }
 
 func findRootCommand(root *cobra.Command, name string) *cobra.Command {
@@ -430,6 +654,17 @@ func newStaticLeaf(use, short string, withTarget bool) *cobra.Command {
 		command.Flags().String("target", "", "advanced absolute destination (optional; existing paths are never overwritten)")
 	}
 	return command
+}
+
+func newStaticNoArgLeaf(use, short string) *cobra.Command {
+	return &cobra.Command{
+		Use:   use,
+		Short: short,
+		Args:  cobra.NoArgs,
+		RunE: func(*cobra.Command, []string) error {
+			return errors.New("command is not configured")
+		},
+	}
 }
 
 func findLeaf(root *cobra.Command, parent, leaf string) *cobra.Command {
@@ -486,6 +721,39 @@ func ensureGitHubCommand(root *cobra.Command) *cobra.Command {
 		}
 	}
 	command := &cobra.Command{Use: "github", Short: "Inspect and install public GitHub Release assets"}
+	root.AddCommand(command)
+	return command
+}
+
+func ensureGoCommand(root *cobra.Command) *cobra.Command {
+	for _, command := range root.Commands() {
+		if command.Name() == "go" {
+			return command
+		}
+	}
+	command := &cobra.Command{Use: "go", Short: "Inspect and build public Go Modules"}
+	root.AddCommand(command)
+	return command
+}
+
+func ensureCargoCommand(root *cobra.Command) *cobra.Command {
+	for _, command := range root.Commands() {
+		if command.Name() == "cargo" {
+			return command
+		}
+	}
+	command := &cobra.Command{Use: "cargo", Short: "Inspect and build public crates.io packages"}
+	root.AddCommand(command)
+	return command
+}
+
+func ensureTerraformCommand(root *cobra.Command) *cobra.Command {
+	for _, command := range root.Commands() {
+		if command.Name() == "terraform" {
+			return command
+		}
+	}
+	command := &cobra.Command{Use: "terraform", Short: "Install public Terraform Providers"}
 	root.AddCommand(command)
 	return command
 }

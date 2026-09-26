@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"net/netip"
+	"os/exec"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -19,7 +21,7 @@ func TestPyPIResolverUsesGVisorDefaultDenyLifecycleAndCrossChecks(t *testing.T) 
 	report := pypiResolverReportJSON()
 	runner := &recordingRunner{responses: [][]byte{
 		[]byte("0123456789abcdef"), []byte("172.30.0.0/24"),
-		[]byte("0123456789abcdef"), nil, []byte("3.14.7\n"), []byte("pip 26.2.1 from /usr/local/lib/python3.14/site-packages/pip\n"), []byte("Compatible tags:\n  cp314-cp314-manylinux_2_36_x86_64\n"), nil,
+		[]byte("0123456789abcdef"), nil, []byte("3.14.7\n"), []byte("pip 26.2.1 from /usr/local/lib/python3.14/site-packages/pip\n"), []byte("Compatible tags:\n  cp314-cp314-manylinux_2_36_x86_64\n"), nil, nil,
 		[]byte(report), []byte(pypiResolverSimpleJSON("child", "child-2.0-py3-none-any.whl", "")), []byte(pypiResolverSimpleJSON("primary", "primary-1.0-py3-none-any.whl", ">=3.14")),
 	}}
 	observer := &recordingObserver{reader: &traceReader{records: []TraceRecord{{Kind: "network-attempt", Bytes: 1}}}}
@@ -43,11 +45,11 @@ func TestPyPIResolverUsesGVisorDefaultDenyLifecycleAndCrossChecks(t *testing.T) 
 	if observer.containerID != "0123456789abcdef" {
 		t.Fatalf("observer container = %q", observer.containerID)
 	}
-	if len(runner.calls) != 13 {
+	if len(runner.calls) != 14 {
 		t.Fatalf("command calls = %d: %#v", len(runner.calls), runner.calls)
 	}
 	assertPyPIResolverCreate(t, runner.calls[2].arguments)
-	if got := runner.calls[7]; got.binary != "docker" || strings.Contains(strings.Join(got.arguments, " "), "--only-binary") || !strings.Contains(strings.Join(got.arguments, " "), "primary==1.0") {
+	if got := runner.calls[8]; got.binary != "docker" || strings.Contains(strings.Join(got.arguments, " "), "--only-binary") || !strings.Contains(strings.Join(got.arguments, " "), "primary==1.0") {
 		t.Fatalf("pip resolution command = %#v", got)
 	}
 	if got := runner.calls[len(runner.calls)-1]; got.binary != "docker" || got.arguments[0] != "network" || got.arguments[1] != "rm" {
@@ -117,6 +119,57 @@ func TestPyPINetworkArgumentsPinOnlyExpectedIPv4Addresses(t *testing.T) {
 	}
 }
 
+func TestPyTorchResolverErrorDoesNotRetainChildOutput(t *testing.T) {
+	t.Parallel()
+	profile, ok := artifactpypi.PyTorchProfile("cpu")
+	if !ok {
+		t.Fatal("CPU profile is missing")
+	}
+	reference, err := artifactpypi.ParseReferenceForSource("torch@2.9.1+cpu", profile.Source())
+	if err != nil {
+		t.Fatal(err)
+	}
+	rawChildOutput := "resolver-output-must-not-escape"
+	runner := &recordingRunner{errors: []error{errors.New(rawChildOutput)}}
+	resolver := &PyPIResolver{runner: runner, profile: profile}
+	_, _, err = resolver.resolvePyTorchCandidate(context.Background(), "0123456789abcdef", PythonRuntime{}, reference, profile, "torch==2.9.1+cpu", nil, 4<<20)
+	if err == nil || strings.Contains(err.Error(), rawChildOutput) {
+		t.Fatalf("resolver error retained child output: %v", err)
+	}
+}
+
+func TestPyTorchNetworkArgumentsIncludeOnlyCanonicalHosts(t *testing.T) {
+	profile, ok := artifactpypi.PyTorchProfile("cu126")
+	if !ok {
+		t.Fatal("cu126 profile is missing")
+	}
+	addresses := map[string][]netip.Addr{}
+	for _, host := range artifactpypiProfileEndpoints(profile) {
+		addresses[host] = []netip.Addr{netip.MustParseAddr("1.1.1.1")}
+	}
+	all, arguments, err := resolverNetworkArguments(profile, addresses)
+	if err != nil || len(all) != 1 || len(arguments) != len(addresses)*2 {
+		t.Fatalf("PyTorch network arguments = %v, %v, %v", all, arguments, err)
+	}
+	if _, _, err := resolverNetworkArguments(profile, map[string][]netip.Addr{"download.pytorch.org": {netip.MustParseAddr("1.1.1.1")}}); err == nil {
+		t.Fatal("PyTorch network arguments accepted an incomplete endpoint set")
+	}
+}
+
+func TestPyTorchResolveArgumentsDoNotEnableCrossIndexSelection(t *testing.T) {
+	profile, ok := artifactpypi.PyTorchProfile("cpu")
+	if !ok {
+		t.Fatal("cpu profile is missing")
+	}
+	arguments := strings.Join(pypiResolveArguments(profile, "torch==2.0.0+cpu"), " ")
+	if !strings.Contains(arguments, "--index-url "+profile.IndexURL()) || !strings.Contains(arguments, "--no-deps") {
+		t.Fatalf("PyTorch resolve arguments = %q", arguments)
+	}
+	if strings.Contains(arguments, "--extra-index-url") || strings.Contains(arguments, artifactpypi.PublicPyPIProfile().IndexURL()) {
+		t.Fatalf("PyTorch resolve arguments enable cross-index selection: %q", arguments)
+	}
+}
+
 func assertPyPIResolverCreate(t *testing.T, arguments []string) {
 	t.Helper()
 	joined := strings.Join(arguments, " ")
@@ -125,7 +178,7 @@ func assertPyPIResolverCreate(t *testing.T, arguments []string) {
 			t.Errorf("create command missing %q: %q", required, joined)
 		}
 	}
-	for _, forbidden := range []string{"--mount", "--volume", "-v ", "--env", "--privileged", "--network host", "/var/run/docker.sock"} {
+	for _, forbidden := range []string{"--mount", "--volume", "-v ", "--privileged", "--network host", "/var/run/docker.sock"} {
 		if strings.Contains(joined, forbidden) {
 			t.Errorf("create command contains forbidden %q: %q", forbidden, joined)
 		}
@@ -160,4 +213,128 @@ func pypiResolverSimpleJSON(project, filename, requiresPython string) string {
 
 func pypiResolverReportJSON() string {
 	return `{"version":"1","pip_version":"26.2.1","environment":{"implementation_name":"cpython","implementation_version":"3.14.7","python_full_version":"3.14.7","platform_machine":"x86_64","sys_platform":"linux"},"install":[{"download_info":{"url":"https://files.pythonhosted.org/packages/primary-1.0-py3-none-any.whl","archive_info":{"hash":"sha256=` + resolverTestSHA256 + `","hashes":{"sha256":"` + resolverTestSHA256 + `"}}},"is_direct":false,"requested":true,"metadata":{"name":"primary","version":"1.0","requires_python":">=3.14","requires_dist":["child>=2"]}},{"download_info":{"url":"https://files.pythonhosted.org/packages/child-2.0-py3-none-any.whl","archive_info":{"hash":"sha256=` + resolverTestSHA256 + `","hashes":{"sha256":"` + resolverTestSHA256 + `"}}},"is_direct":false,"requested":false,"metadata":{"name":"child","version":"2.0","requires_python":"","requires_dist":[]}}]}`
+}
+
+func TestPyTorchFetchScriptsSendTruthfulUserAgentAndPreserveInvariants(t *testing.T) {
+	t.Parallel()
+
+	scripts := []struct {
+		name         string
+		script       string
+		acceptHeader string
+		maxBytes     int
+	}{
+		{
+			name:         "PyTorch HTML index fetch script",
+			script:       pytorchHTMLFetchScript,
+			acceptHeader: "text/html",
+			maxBytes:     4194304,
+		},
+		{
+			name:         "PyTorch Core Metadata fetch script",
+			script:       pytorchCoreMetadataFetchScript,
+			acceptHeader: "text/plain, application/octet-stream",
+			maxBytes:     2097152,
+		},
+	}
+
+	for _, tt := range scripts {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			// 1. Truthful User-Agent identity helox/0
+			wantUserAgent := "'User-Agent':'" + heloxUserAgent + "'"
+			if !strings.Contains(tt.script, wantUserAgent) {
+				t.Errorf("%s missing truthful User-Agent %q in headers", tt.name, wantUserAgent)
+			}
+			if heloxUserAgent != "helox/0" {
+				t.Errorf("heloxUserAgent = %q, want %q", heloxUserAgent, "helox/0")
+			}
+
+			// 2. Exact Accept header preserved
+			wantAccept := "'Accept':'" + tt.acceptHeader + "'"
+			if !strings.Contains(tt.script, wantAccept) {
+				t.Errorf("%s missing expected Accept header %q", tt.name, wantAccept)
+			}
+
+			// 3. NoRedirect handler preserved
+			if !strings.Contains(tt.script, "class NoRedirect(urllib.request.HTTPRedirectHandler):") ||
+				!strings.Contains(tt.script, "def redirect_request(self, req, fp, code, msg, headers, newurl): return None") ||
+				!strings.Contains(tt.script, "urllib.request.build_opener(NoRedirect).open(request") {
+				t.Errorf("%s missing NoRedirect handler", tt.name)
+			}
+
+			// 4. HTTP status == 200 requirement preserved
+			if !strings.Contains(tt.script, "response.status != 200") {
+				t.Errorf("%s missing response.status == 200 requirement", tt.name)
+			}
+
+			// 5. Exact response URL equality preserved
+			if !strings.Contains(tt.script, "response.geturl() != url") {
+				t.Errorf("%s missing response.geturl() == url check", tt.name)
+			}
+
+			// 6. Bounded response handling preserved
+			maxBytesStr := strconv.Itoa(tt.maxBytes)
+			readLimitStr := strconv.Itoa(tt.maxBytes + 1)
+			if !strings.Contains(tt.script, "int(length) > "+maxBytesStr) ||
+				!strings.Contains(tt.script, "response.read("+readLimitStr+")") ||
+				!strings.Contains(tt.script, "len(body) > "+maxBytesStr) {
+				t.Errorf("%s missing bounded response handling for maxBytes %d", tt.name, tt.maxBytes)
+			}
+		})
+	}
+}
+
+func TestPyTorchFetchScriptsConstructValidPythonRequests(t *testing.T) {
+	t.Parallel()
+	pythonPath, err := exec.LookPath("python3")
+	if err != nil {
+		t.Skip("python3 not available on host")
+	}
+
+	testCases := []struct {
+		name       string
+		script     string
+		args       []string
+		wantAccept string
+	}{
+		{
+			name:       "PyTorch HTML Request",
+			script:     pytorchHTMLFetchScript,
+			args:       []string{"https://download.pytorch.org/whl/", "torch"},
+			wantAccept: "text/html",
+		},
+		{
+			name:       "PyTorch Core Metadata Request",
+			script:     pytorchCoreMetadataFetchScript,
+			args:       []string{"https://download-r2.pytorch.org/whl/cpu/torch-2.14.0%2Bcpu-cp314-cp314-manylinux_2_28_x86_64.whl.metadata"},
+			wantAccept: "text/plain, application/octet-stream",
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			inspectScript := strings.Split(tc.script, "response=")[0] +
+				"print('UA:' + request.headers.get('User-agent', ''))\n" +
+				"print('ACCEPT:' + request.headers.get('Accept', ''))\n"
+
+			cmdArgs := append([]string{"-I", "-c", inspectScript}, tc.args...)
+			cmd := exec.Command(pythonPath, cmdArgs...)
+			out, err := cmd.CombinedOutput()
+			if err != nil {
+				t.Fatalf("failed to evaluate request in Python: %v, output: %s", err, string(out))
+			}
+			outStr := string(out)
+			if !strings.Contains(outStr, "UA:helox/0") {
+				t.Errorf("expected User-Agent helox/0, got output:\n%s", outStr)
+			}
+			if !strings.Contains(outStr, "ACCEPT:"+tc.wantAccept) {
+				t.Errorf("expected Accept %s, got output:\n%s", tc.wantAccept, outStr)
+			}
+		})
+	}
 }

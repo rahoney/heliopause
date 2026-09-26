@@ -29,7 +29,7 @@ func TestRuntimeLockWorkflowRejectsCopiedIdentity(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fixture := string(contents) + "\n# node:22.23.1-slim@sha256:6c74791e557ce11fc957704f6d4fe134a7bc8d6f5ca4403205b2966bd488f6b3\n"
+	fixture := string(contents) + "\n# node:24.21.0-slim@sha256:713cfbf4a0ac19f40e1bb9919893e126b74a5c8cf5d0623c9f89515c8f74c6fa\n"
 	if findings := validateRuntimeLockWorkflow(root, fixture); len(findings) == 0 {
 		t.Fatal("hand-copied runtime identity was accepted")
 	}
@@ -53,6 +53,7 @@ func TestValidateReleaseWorkflowRejectsSecurityRegressions(t *testing.T) {
 		"PR trigger":                  strings.Replace(string(contents), "  push:\n", "  pull_request:\n  push:\n", 1),
 		"non-tag trigger":             strings.Replace(string(contents), "      - 'v*'", "      - '*'", 1),
 		"release publishing":          string(contents) + "\n      - run: gh release create $GITHUB_REF_NAME\n",
+		"missing release gate":        strings.Replace(string(contents), "go run ./scripts/check release-gate", "echo skipped", 1),
 	}
 	for name, fixture := range tests {
 		t.Run(name, func(t *testing.T) {
@@ -121,12 +122,17 @@ func TestValidateCIWorkflowRejectsSecurityRegressions(t *testing.T) {
 	}
 
 	tests := map[string]string{
-		"floating action":        strings.Replace(string(contents), "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", "actions/checkout@main", 1),
-		"missing always":         strings.Replace(string(contents), "    if: ${{ always() }}\n", "", 1),
-		"write token":            strings.Replace(string(contents), "  contents: read", "  contents: write", 1),
-		"moving macOS runner":    strings.Replace(string(contents), "runs-on: macos-26-intel", "runs-on: macos-latest", 1),
-		"missing minimum Go":     strings.Replace(string(contents), "go-version: '1.25.13'", "go-version: '1.26.7'", 1),
-		"missing platform check": strings.ReplaceAll(string(contents), "run: go run ./scripts/check platform", "run: go test ./..."),
+		"floating action":                     strings.Replace(string(contents), "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", "actions/checkout@main", 1),
+		"missing always":                      strings.Replace(string(contents), "    if: ${{ always() }}\n", "", 1),
+		"write token":                         strings.Replace(string(contents), "  contents: read", "  contents: write", 1),
+		"moving macOS runner":                 strings.Replace(string(contents), "runs-on: macos-26-intel", "runs-on: macos-latest", 1),
+		"missing minimum Go":                  strings.ReplaceAll(string(contents), "go-version: '1.26.8'", "go-version: '1.26.7'"),
+		"missing platform check":              strings.ReplaceAll(string(contents), "run: go run ./scripts/check platform", "run: go test ./..."),
+		"missing CUDA single-selection guard": strings.Replace(string(contents), "select at most one CUDA PyTorch qualification profile", "CUDA profiles unchecked", 1),
+		"missing CUDA strict freshness gate":  strings.Replace(string(contents), "go run ./scripts/check qualification-freshness", "echo skipped", 1),
+		"legacy CUDA profile":                 string(contents) + "\n# HELOX_PYTORCH_PROFILE=cu128\n",
+		"sidecar fallback":                    strings.Replace(string(contents), "--sidecar-usage-policy=STRICT", "--sidecar-usage-policy=LEGACY_DEPRECATED_SLOW_EMBEDDED_FALLBACK", 1),
+		"permissive sidecar download":         strings.Replace(string(contents), "--download-sidecars=NEVER", "--download-sidecars=ALWAYS", 1),
 		"runner context at job env": strings.Replace(
 			string(contents),
 			"    env:\n      GOTOOLCHAIN: local",

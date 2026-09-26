@@ -100,7 +100,7 @@ func validateToolLock(lock toolLock) error {
 	seen := make(map[string]bool, len(want))
 	for _, tool := range lock.Tools {
 		packagePath, known := want[tool.Command]
-		if !known || seen[tool.Command] || tool.Version == "" || tool.ExpectedVersion == "" || tool.SetupGo != "1.26.7" {
+		if !known || seen[tool.Command] || tool.Version == "" || tool.ExpectedVersion == "" || tool.SetupGo != "1.26.8" {
 			return &checkFailure{class: unavailable, step: "tool lock", detail: "tool identity is incomplete, duplicated or unexpected"}
 		}
 		seen[tool.Command] = true

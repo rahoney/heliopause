@@ -13,6 +13,7 @@ import (
 	artifactgithub "github.com/rahoney/heliopause/internal/artifact/githubrelease"
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
+	artifactterraform "github.com/rahoney/heliopause/internal/artifact/terraformprovider"
 	"github.com/rahoney/heliopause/internal/cli"
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/core/ports"
@@ -54,7 +55,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 	var trustedExecutor *hosttool.Executor
 	var observerSupervisor *sandbox.ObserverSupervisor
 	var processObserver sandbox.TraceObserver
-	if runtime.GOOS == "linux" && len(args) > 0 && (args[0] == "npm" || args[0] == "pypi" || args[0] == "pip" || args[0] == "github") {
+	if runtime.GOOS == "linux" && len(args) > 0 && (args[0] == "npm" || args[0] == "pypi" || args[0] == "pip" || args[0] == "github" || args[0] == "go") {
 		trustedExecutor, err = hosttool.NewSystem(ctx)
 		if err != nil {
 			return err
@@ -72,6 +73,65 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		}
 		processObserver = observerSupervisor.Observer()
 		defer func() { resultErr = errors.Join(resultErr, observerSupervisor.Close()) }()
+	}
+	if len(args) > 0 && args[0] == "go" {
+		if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" {
+			return errors.New("automatic Go Module resolution requires Linux amd64")
+		}
+		resolver, resolverErr := sandbox.NewGoModuleResolver(trustedExecutor)
+		if resolverErr != nil {
+			return resolverErr
+		}
+		promoter, promoterErr := promotion.NewGoProjectPromotion(trustedExecutor)
+		if promoterErr != nil {
+			return promoterErr
+		}
+		service, serviceErr := application.NewGoModuleGetService(resolver, promoter)
+		if serviceErr != nil {
+			return serviceErr
+		}
+		projectService, projectServiceErr := application.NewGoModuleProjectResolutionService(resolver)
+		if projectServiceErr != nil {
+			return projectServiceErr
+		}
+		if err := cli.AddGoModuleGet(command, service); err != nil {
+			return err
+		}
+		if err := cli.AddGoModuleDownload(command, projectService); err != nil {
+			return err
+		}
+	}
+	if len(args) > 0 && args[0] == "cargo" {
+		if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" {
+			return errors.New("automatic Cargo resolution requires Linux amd64")
+		}
+		resolver, resolverErr := sandbox.NewCargoResolver(trustedExecutor)
+		if resolverErr != nil {
+			return resolverErr
+		}
+		service, serviceErr := application.NewCargoResolutionService(resolver)
+		if serviceErr != nil {
+			return serviceErr
+		}
+		if err := cli.AddCargoAdd(command, service); err != nil {
+			return err
+		}
+	}
+	if len(args) > 0 && args[0] == "terraform" {
+		if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" {
+			return errors.New("automatic Terraform Provider resolution requires Linux amd64")
+		}
+		resolver, resolverErr := artifactterraform.NewPublicResolver()
+		if resolverErr != nil {
+			return resolverErr
+		}
+		service, serviceErr := application.NewTerraformResolutionService(resolver)
+		if serviceErr != nil {
+			return serviceErr
+		}
+		if err := cli.AddTerraformInit(command, service); err != nil {
+			return err
+		}
 	}
 	if len(args) > 0 && args[0] == "npm" {
 		cacheRoot, err := os.UserCacheDir()
@@ -231,7 +291,13 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err != nil {
 			return err
 		}
-		if err := cli.AddPyPIInstall(command, installer); err != nil {
+		installers := map[string]cli.Installer{"pypi": installer}
+		for _, profile := range artifactpypi.AllSourceProfiles() {
+			if artifactpypi.IsPyTorchSource(profile.Source()) {
+				installers[profile.Source().String()] = pyTorchResourceInstaller{installer: installer, profile: profile}
+			}
+		}
+		if err := cli.AddPyPIInstallSources(command, installers); err != nil {
 			return err
 		}
 	}
@@ -324,9 +390,52 @@ func pypiInstallDependencyResolver(goos, goarch string, executor sandbox.Trusted
 		if err != nil {
 			return nil, err
 		}
-		return resolver, nil
+		routes := map[string]ports.DependencyResolver{artifactpypi.PublicPyPIProfile().Source().String(): resolver}
+		for _, profile := range artifactpypi.AllSourceProfiles() {
+			if !artifactpypi.IsPyTorchSource(profile.Source()) {
+				continue
+			}
+			pytorchResolver, resolverErr := sandbox.NewLinuxPyTorchResolverWithExecutorAndPolicy(executor, observer, policyService, profile)
+			if resolverErr != nil {
+				return nil, resolverErr
+			}
+			routes[profile.Source().String()] = pytorchResolver
+		}
+		return pythonSourceResolver{routes: routes}, nil
 	}
 	return unsupportedPyPIInstallResolver{}, nil
+}
+
+type pythonSourceResolver struct {
+	routes map[string]ports.DependencyResolver
+}
+
+// pyTorchResourceInstaller selects one immutable root resource policy before
+// the existing generic install workflow begins. Node identities remain owned
+// by the locked dependency graph and are not rewritten here.
+type pyTorchResourceInstaller struct {
+	installer cli.Installer
+	profile   artifactpypi.SourceProfile
+}
+
+func (i pyTorchResourceInstaller) Install(ctx context.Context, request application.InstallRequest) (application.InstallOutcome, error) {
+	if i.installer == nil || request.Reference().Source() != i.profile.Source() {
+		return application.InstallOutcome{}, errors.New("PyTorch resource installer request is invalid")
+	}
+	resourceContext, err := artifactpypi.ContextWithResourcePolicy(ctx, i.profile)
+	if err != nil {
+		return application.InstallOutcome{}, err
+	}
+	timedContext, cancel := context.WithTimeout(resourceContext, i.profile.ResourcePolicy().Duration())
+	defer cancel()
+	return i.installer.Install(timedContext, request)
+}
+
+func (r pythonSourceResolver) ResolveDependencies(ctx context.Context, reference domain.ArtifactReference, installContext domain.InstallContext) (domain.DependencyResolution, error) {
+	if resolver := r.routes[reference.Source().String()]; resolver != nil {
+		return resolver.ResolveDependencies(ctx, reference, installContext)
+	}
+	return domain.DependencyResolution{}, errors.New("selected Python source profile is unsupported")
 }
 
 func installDependencyResolver(goos, goarch string, executor sandbox.TrustedExecutor, observer sandbox.TraceObserver) (ports.DependencyResolver, error) {

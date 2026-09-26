@@ -1,6 +1,7 @@
 package hosttool
 
 import (
+	"encoding/json"
 	"errors"
 	"net"
 	"os"
@@ -10,6 +11,8 @@ import (
 	"strings"
 	"syscall"
 	"testing"
+
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func TestVerifyExecutableRejectsHostileIdentity(t *testing.T) {
@@ -44,13 +47,120 @@ func TestParseRunscRegistrationRejectsDaemonRuntimeMismatch(t *testing.T) {
 		[]byte(`{"path":"runsc"}`),
 		[]byte(`{"path":"/usr/local/bin/../bin/runsc"}`),
 		[]byte(`{"path":"/usr/local/bin/runsc"`),
+		[]byte(`{"path":"/usr/local/bin/runsc","unknown":true}`),
+		[]byte(`{"path":"/usr/local/bin/runsc"} {}`),
 	} {
 		if _, err := parseRunscRegistration(body); err == nil {
 			t.Fatalf("parseRunscRegistration(%q) accepted mismatched registration", body)
 		}
 	}
-	if got, err := parseRunscRegistration([]byte(`{"path":"/usr/local/bin/runsc"}`)); err != nil || got != "/usr/local/bin/runsc" {
+}
+
+func TestParseRunscRegistrationRequiresStrictSidecarPolicy(t *testing.T) {
+	t.Parallel()
+	valid := []byte(`{"path":"/usr/local/bin/runsc","runtimeArgs":["--sidecar-usage-policy=STRICT","--pod-init-config=/etc/heliopause/pod-init.json"],"status":{"features":"bounded-daemon-data"}}`)
+	if got, err := parseRunscRegistration(valid); err != nil || got != "/usr/local/bin/runsc" {
 		t.Fatalf("valid registration path=%q error=%v", got, err)
+	}
+	if _, err := parseRunscRegistration([]byte(`{"path":"/usr/local/bin/runsc"}`)); err == nil {
+		t.Fatal("registration without runtime arguments was accepted")
+	}
+	for name, arguments := range map[string][]string{
+		"empty":                            {},
+		"strict absent":                    {"--pod-init-config=/etc/heliopause/pod-init.json"},
+		"double dash default":              {"--sidecar-usage-policy=DEFAULT", "--pod-init-config=/etc/heliopause/pod-init.json"},
+		"single dash default":              {"-sidecar-usage-policy=DEFAULT", "--pod-init-config=/etc/heliopause/pod-init.json"},
+		"single dash strict":               {"-sidecar-usage-policy=STRICT", "--pod-init-config=/etc/heliopause/pod-init.json"},
+		"separate strict value":            {"--sidecar-usage-policy", "STRICT", "--pod-init-config=/etc/heliopause/pod-init.json"},
+		"malformed attached value":         {"--sidecar-usage-policy=STRICT=DEFAULT", "--pod-init-config=/etc/heliopause/pod-init.json"},
+		"malformed separate value":         {"--sidecar-usage-policy", "DEFAULT", "--pod-init-config=/etc/heliopause/pod-init.json"},
+		"duplicate strict":                 {"--sidecar-usage-policy=STRICT", "--sidecar-usage-policy=STRICT", "--pod-init-config=/etc/heliopause/pod-init.json"},
+		"strict then default":              {"--sidecar-usage-policy=STRICT", "-sidecar-usage-policy=DEFAULT", "--pod-init-config=/etc/heliopause/pod-init.json"},
+		"default then strict":              {"--sidecar-usage-policy=DEFAULT", "--sidecar-usage-policy=STRICT", "--pod-init-config=/etc/heliopause/pod-init.json"},
+		"allow override double shorthand":  {"--sidecar-usage-policy=STRICT", "--allow-flag-override", "--pod-init-config=/etc/heliopause/pod-init.json"},
+		"allow override single shorthand":  {"--sidecar-usage-policy=STRICT", "-allow-flag-override", "--pod-init-config=/etc/heliopause/pod-init.json"},
+		"allow override double attached":   {"--sidecar-usage-policy=STRICT", "--allow-flag-override=true", "--pod-init-config=/etc/heliopause/pod-init.json"},
+		"allow override single attached":   {"--sidecar-usage-policy=STRICT", "-allow-flag-override=false", "--pod-init-config=/etc/heliopause/pod-init.json"},
+		"allow override separate":          {"--sidecar-usage-policy=STRICT", "--allow-flag-override", "false", "--pod-init-config=/etc/heliopause/pod-init.json"},
+		"allow override single separate":   {"--sidecar-usage-policy=STRICT", "-allow-flag-override", "false", "--pod-init-config=/etc/heliopause/pod-init.json"},
+		"strict consumed by debug command": {"--debug-command", "--sidecar-usage-policy=STRICT"},
+		"strict consumed by pod init":      {"--pod-init-config", "--sidecar-usage-policy=STRICT"},
+		"unknown flag before strict":       {"--unknown", "--sidecar-usage-policy=STRICT", "--pod-init-config=/etc/heliopause/pod-init.json"},
+		"unknown flag after strict":        {"--sidecar-usage-policy=STRICT", "--pod-init-config=/etc/heliopause/pod-init.json", "--unknown"},
+		"end of flags":                     {"--", "--sidecar-usage-policy=STRICT", "--pod-init-config=/etc/heliopause/pod-init.json"},
+		"positional argument":              {"--sidecar-usage-policy=STRICT", "run", "--pod-init-config=/etc/heliopause/pod-init.json"},
+		"strict looking pod init value":    {"--sidecar-usage-policy=STRICT", "--pod-init-config=/etc/sidecar-usage-policy.json"},
+		"case variant":                     {"--sidecar-usage-policy=strict", "--pod-init-config=/etc/heliopause/pod-init.json"},
+		"whitespace value":                 {"--sidecar-usage-policy=STRICT ", "--pod-init-config=/etc/heliopause/pod-init.json"},
+	} {
+		t.Run(name, func(t *testing.T) {
+			body, err := json.Marshal(struct {
+				Path        string   `json:"path"`
+				RuntimeArgs []string `json:"runtimeArgs"`
+			}{Path: "/usr/local/bin/runsc", RuntimeArgs: arguments})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if _, err := parseRunscRegistration(body); err == nil {
+				t.Fatalf("parseRunscRegistration(%q) accepted non-canonical runtime arguments", arguments)
+			}
+		})
+	}
+}
+
+func TestRegisteredRunscPathMustBeCanonicalHAAInstallation(t *testing.T) {
+	if err := validateRegisteredRunscPath("/usr/local/bin/runsc"); err == nil {
+		t.Fatal("non-canonical Docker runtime path accepted")
+	}
+	if err := validateRegisteredRunscPath(runtimeidentity.LocalRunscPath); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func validGVisorBundleManifest() runtimeidentity.LocalGVisorBundleManifest {
+	members := make([]runtimeidentity.GVisorBundleMember, len(runtimeidentity.GVisorRuntimeBundleMembers))
+	for i, member := range runtimeidentity.GVisorRuntimeBundleMembers {
+		members[i] = runtimeidentity.GVisorBundleMember(member)
+	}
+	return runtimeidentity.LocalGVisorBundleManifest{
+		SchemaVersion: runtimeidentity.LocalGVisorBundleSchema, Architecture: runtime.GOARCH,
+		GVisorCommit: runtimeidentity.GVisorCommit, GVisorPatchSHA256: runtimeidentity.GVisorPatchSHA256,
+		BazelModuleLockSHA256:  runtimeidentity.GVisorBazelModuleLockSHA256,
+		BuilderImageRepository: runtimeidentity.GVisorBuilderImageRepository,
+		BuilderImageTag:        runtimeidentity.GVisorBuilderImageTag,
+		BuilderImageDigest:     runtimeidentity.GVisorBuilderImageDigest,
+		BuilderArchitecture:    runtimeidentity.GVisorBuilderArchitecture,
+		BazelVersion:           runtimeidentity.BazelVersion, BazelBinarySHA512: runtimeidentity.BazelLinuxX8664SHA512,
+		Members: members,
+	}
+}
+
+func TestBundleMemberDigestMismatchRejected(t *testing.T) {
+	manifest := validGVisorBundleManifest()
+	manifest.Members[0].SHA512 = strings.Repeat("0", 128)
+	body, err := json.Marshal(manifest)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := runtimeidentity.ParseLocalGVisorBundleManifest(body, runtime.GOARCH); err == nil {
+		t.Fatal("changed bundle member hash was accepted")
+	}
+}
+
+func TestChangedManifestRejectedDuringRevalidation(t *testing.T) {
+	manifest := validGVisorBundleManifest()
+	body, err := json.Marshal(manifest)
+	if err != nil {
+		t.Fatal(err)
+	}
+	digest, _, err := validateLocalGVisorBundleManifestBody(body, "amd64", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	changed := append([]byte(nil), body...)
+	changed[len(changed)-2] ^= 1
+	if _, _, err := validateLocalGVisorBundleManifestBody(changed, "amd64", digest); err == nil {
+		t.Fatal("changed manifest retained its validated identity")
 	}
 }
 
