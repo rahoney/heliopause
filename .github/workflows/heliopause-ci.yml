@@ -336,8 +336,11 @@ jobs:
           scripts/build-gvisor-observer-release.sh "$RUNNER_TEMP/haa_gvisor_observer"
           sudo install -m 0755 "$RUNNER_TEMP/haa_gvisor_observer" /usr/libexec/heliopause/haa_gvisor_observer
 
+          echo 'Building helox for gVisor integration'
           go build -trimpath -o "$RUNNER_TEMP/helox" ./cmd/helox
+          echo 'Building network-policy helper for gVisor integration'
           go build -trimpath -o "$RUNNER_TEMP/haa-network-policy-helper" ./cmd/haa-network-policy-helper
+          echo 'Installing network-policy helper and preparing its identity contract'
           sudo install -m 0755 "$RUNNER_TEMP/helox" /usr/libexec/heliopause/helox
           sudo install -m 0755 "$RUNNER_TEMP/haa-network-policy-helper" /usr/libexec/heliopause/haa-network-policy-helper
           sudo install -d -m 0755 -o root -g root /run/heliopause-network-policy
@@ -361,7 +364,18 @@ jobs:
               test -S /run/heliopause-network-policy/helper.sock && break
               sleep 0.1
             done
-            test -S /run/heliopause-network-policy/helper.sock
+            if ! test -S /run/heliopause-network-policy/helper.sock; then
+              echo 'network-policy helper socket did not become ready' >&2
+              if sudo kill -0 "$policy_helper_pid" 2>/dev/null; then
+                echo 'network-policy helper process is still running' >&2
+              else
+                echo 'network-policy helper process exited' >&2
+              fi
+              if test -f /tmp/haa-network-policy-helper.log; then
+                head -c 4096 /tmp/haa-network-policy-helper.log >&2
+              fi
+              return 1
+            fi
           }
           trap 'sudo kill "$policy_helper_pid" 2>/dev/null || true' EXIT
           start_policy_helper

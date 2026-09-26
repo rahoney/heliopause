@@ -18,7 +18,7 @@ test "$(jq -er '.gvisor.runtime_bundle.members | length' "$runtime_lock")" = 6 |
   exit 1
 }
 expected_paths=$(jq -er '.gvisor.runtime_bundle.members[].path' "$runtime_lock" | LC_ALL=C sort)
-actual_paths=$(cd "$built_directory" && find . -type f -printf '%P\n' | LC_ALL=C sort)
+actual_paths=$(cd "$built_directory" && find . ! -type d -print | sed 's#^\./##' | LC_ALL=C sort)
 test "$actual_paths" = "$expected_paths" || {
   echo "gVisor release output inventory mismatch: expected=[$expected_paths] actual=[$actual_paths]" >&2
   exit 1
@@ -39,7 +39,7 @@ while IFS=' ' read -r member_path member_size member_sha512; do
     echo "gVisor bundle member size mismatch: path=$member_path expected=$member_size actual=$actual_member_size" >&2
     exit 1
   }
-  actual_member_sha512="$(sha512sum "$source_path" | awk '{print $1}')"
+  actual_member_sha512="$(shasum -a 512 "$source_path" | awk '{print $1}')"
   test "$actual_member_sha512" = "$member_sha512" || {
     echo "gVisor bundle member sha512 mismatch: path=$member_path expected=$member_sha512 actual=$actual_member_sha512" >&2
     exit 1

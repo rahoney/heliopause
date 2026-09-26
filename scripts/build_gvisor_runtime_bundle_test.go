@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -59,9 +60,39 @@ func TestGVisorBundleVerifier(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+	// The test executes the production verifier with a find implementation
+	// that rejects GNU -printf, even when the host running this test has it.
+	findPath, err := exec.LookPath("find")
+	if err != nil {
+		t.Fatal(err)
+	}
+	bin := filepath.Join(root, "bin")
+	if err := os.Mkdir(bin, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(bin, "find"), []byte("#!/bin/sh\nfor arg do\n  if [ \"$arg\" = -printf ]; then exit 97; fi\ndone\nexec \"$FIND_REAL\" \"$@\"\n"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(bin, "sha512sum"), []byte("#!/bin/sh\nexit 97\n"), 0o755); err != nil {
+		t.Fatal(err)
+	}
 	verify := func(output string) ([]byte, error) {
 		t.Helper()
-		return exec.Command("sh", "verify-gvisor-runtime-bundle.sh", lockPath, built, output).CombinedOutput()
+		command := exec.Command("sh", "verify-gvisor-runtime-bundle.sh", lockPath, built, output)
+		command.Env = append(os.Environ(), "PATH="+bin+string(os.PathListSeparator)+os.Getenv("PATH"), "FIND_REAL="+findPath)
+		return command.CombinedOutput()
+	}
+	expectFailure := func(name string, expected ...string) {
+		t.Helper()
+		output, err := verify(filepath.Join(root, name))
+		if err == nil {
+			t.Fatalf("%s unexpectedly passed", name)
+		}
+		for _, want := range expected {
+			if !strings.Contains(string(output), want) {
+				t.Fatalf("%s diagnostic missing %q: %s", name, want, output)
+			}
+		}
 	}
 
 	writeLock()
@@ -79,16 +110,39 @@ func TestGVisorBundleVerifier(t *testing.T) {
 	actualSHA := lock.GVisor.RuntimeBundle.Members[1].SHA512
 	lock.GVisor.RuntimeBundle.Members[1].SHA512 = strings.Repeat("0", 128)
 	writeLock()
-	output, err := verify(filepath.Join(root, "mismatch"))
-	if err == nil {
-		t.Fatal("SHA-512 mismatch unexpectedly passed")
+	expectFailure("hash-mismatch",
+		"sha512 mismatch", "path="+wantPath,
+		"expected="+strings.Repeat("0", 128), "actual="+actualSHA,
+	)
+	lock.GVisor.RuntimeBundle.Members[1].SHA512 = actualSHA
+	actualSize := lock.GVisor.RuntimeBundle.Members[1].Size
+	lock.GVisor.RuntimeBundle.Members[1].Size++
+	writeLock()
+	expectFailure("size-mismatch", "size mismatch", "path="+wantPath,
+		"expected="+strconv.Itoa(actualSize+1), "actual="+strconv.Itoa(actualSize))
+	lock.GVisor.RuntimeBundle.Members[1].Size--
+	writeLock()
+
+	memberPath := filepath.Join(built, wantPath)
+	if err := os.Remove(memberPath); err != nil {
+		t.Fatal(err)
 	}
-	for _, want := range []string{
-		"sha512 mismatch", "path=" + wantPath,
-		"expected=" + strings.Repeat("0", 128), "actual=" + actualSHA,
-	} {
-		if !strings.Contains(string(output), want) {
-			t.Fatalf("mismatch diagnostic missing %q: %s", want, output)
-		}
+	expectFailure("missing-member", "inventory mismatch", wantPath)
+	if err := os.WriteFile(memberPath, []byte("fixture:"+wantPath), 0o600); err != nil {
+		t.Fatal(err)
 	}
+	if err := os.WriteFile(filepath.Join(built, "unexpected"), []byte("extra"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	expectFailure("unexpected-member", "inventory mismatch", "unexpected")
+	if err := os.Remove(filepath.Join(built, "unexpected")); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Remove(memberPath); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink("gvisor_sentry", memberPath); err != nil {
+		t.Fatal(err)
+	}
+	expectFailure("symlink-member", "symlink", "path="+wantPath)
 }
