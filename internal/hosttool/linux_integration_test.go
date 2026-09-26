@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func TestLinuxTrustedHostExecutorIntegration(t *testing.T) {
@@ -43,7 +45,7 @@ func TestLinuxTrustedHostExecutorIntegration(t *testing.T) {
 		t.Fatal(err)
 	}
 	runscVersion, err := executor.Output(context.Background(), "runsc", "--version")
-	if err != nil || !strings.Contains(string(runscVersion), gVisorRelease) {
+	if err != nil || !runtimeidentity.ValidateGVisorRunscVersionOutput(runscVersion) {
 		t.Fatalf("runsc --version = %q, %v", runscVersion, err)
 	}
 	traceMeta, err := executor.Output(context.Background(), "runsc", "trace", "metadata")

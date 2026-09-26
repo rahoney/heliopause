@@ -362,16 +362,19 @@ jobs:
             policy_helper_pid=$!
             echo 'network-policy helper started'
             helper_start_time=$(date +%s)
-            for attempt in $(seq 1 300); do
+            for attempt in $(seq 1 600); do
               test -S /run/heliopause-network-policy/helper.sock && break
               if [ "$attempt" -eq 50 ]; then
                 echo 'network-policy helper still initializing after 5s'
+              fi
+              if ! sudo kill -0 "$policy_helper_pid" 2>/dev/null; then
+                break
               fi
               sleep 0.1
             done
             helper_elapsed=$(($(date +%s) - helper_start_time))
             if ! test -S /run/heliopause-network-policy/helper.sock; then
-              echo "network-policy helper socket did not become ready within 30s diagnostic window (${helper_elapsed}s elapsed)" >&2
+              echo "network-policy helper socket did not become ready within 60s (${helper_elapsed}s elapsed)" >&2
               if sudo kill -0 "$policy_helper_pid" 2>/dev/null; then
                 echo 'network-policy helper process is still running' >&2
               else

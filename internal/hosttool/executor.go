@@ -33,7 +33,6 @@ const (
 
 var (
 	minimumDockerEngine = runtimeidentity.DockerMinimumEngine
-	gVisorRelease       = runtimeidentity.GVisorRelease
 )
 
 // Config is trusted installation configuration, not user request data. Paths
@@ -285,9 +284,9 @@ func (e *Executor) validateDaemon(ctx context.Context) error {
 	e.runscManifest = manifestIdentity
 	e.tools["runsc"] = runsc
 	output, err := e.output(ctx, "runsc", "--version")
-	if err != nil || !strings.Contains(string(output), gVisorRelease) {
+	if err != nil || !runtimeidentity.ValidateGVisorRunscVersionOutput(output) {
 		delete(e.tools, "runsc")
-		return errors.New("registered runsc-trace release mismatch")
+		return errors.New("registered runsc-trace source-built version mismatch")
 	}
 	return nil
 }

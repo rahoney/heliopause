@@ -24,6 +24,7 @@ import (
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/hosttool"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func TestLinuxGVisorLifecycleIntegration(t *testing.T) {
@@ -35,6 +36,9 @@ func TestLinuxGVisorLifecycleIntegration(t *testing.T) {
 
 func TestIntegrationRunnerUsesDirectExecAdmissionWrapper(t *testing.T) {
 	runner := integrationRunner{t: t}
+	if path := integrationBinary("runsc"); path != runtimeidentity.LocalRunscPath {
+		t.Fatalf("integration runsc path = %q, want canonical bundle member", path)
+	}
 	if _, ok := any(runner).(directExecAdmissionRequired); !ok {
 		t.Fatal("integration runner must explicitly require direct-exec admission")
 	}
@@ -525,7 +529,7 @@ func integrationBinary(binary string) string {
 	// parent directory has a trusted identity. Production resolves this through
 	// hosttool; this raw integration runner mirrors only that exact test path.
 	if binary == "runsc" {
-		return "/usr/libexec/heliopause/runsc"
+		return runtimeidentity.LocalRunscPath
 	}
 	return binary
 }

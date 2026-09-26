@@ -17,7 +17,6 @@ const (
 )
 
 var (
-	gVisorRelease      = runtimeidentity.GVisorRelease
 	nodeImageReference = runtimeidentity.NodeImageReference
 )
 
@@ -92,7 +91,7 @@ func probeGVisorRuntime(ctx context.Context, operatingSystem string, executor Ex
 		return unsupported, nil
 	}
 	runscVersion, err := executor.Output(ctx, "runsc", "--version")
-	if err != nil || !strings.Contains(string(runscVersion), runtimeidentity.GVisorRelease) {
+	if err != nil || !runtimeidentity.ValidateGVisorRunscVersionOutput(runscVersion) {
 		return unsupported, nil
 	}
 	runscTraceMeta, err := executor.Output(ctx, "runsc", "trace", "metadata")
