@@ -541,11 +541,15 @@ func parseReportCandidate(item pipInstall, profile SourceProfile, expectedPython
 		if !active {
 			continue
 		}
-		if dependency == project || seenDependencies[dependency] {
+		if dependency == project {
 			return Candidate{}, errors.New("unsupported pip dependency metadata")
 		}
-		seenDependencies[dependency] = true
-		dependencies = append(dependencies, dependency)
+		// Multiple active extras can independently constrain the same project.
+		// Keep every requirement for conjunction checking, but only one graph edge.
+		if !seenDependencies[dependency] {
+			seenDependencies[dependency] = true
+			dependencies = append(dependencies, dependency)
+		}
 		requirements = append(requirements, requirement)
 		if strings.Contains(requirement, ";") && !strings.HasPrefix(requirement, "cuda-toolkit[") {
 			requirements[len(requirements)-1] = strings.TrimSpace(strings.SplitN(requirement, ";", 2)[0])
@@ -598,13 +602,6 @@ func parseDeclaredDependencyForProfile(value string, profile SourceProfile, expe
 }
 
 func parseDeclaredDependencyForProfileWithExtras(value string, _ SourceProfile, expectedPython string, activeExtras []string) (string, bool, error) {
-	if strings.HasPrefix(value, "cuda-toolkit[") {
-		requirement, err := ParseBoundedRequirement(value)
-		if err != nil {
-			return "", false, err
-		}
-		return requirement.Project(), true, nil
-	}
 	if !strings.Contains(value, ";") {
 		dependency, err := parseDeclaredDependency(value)
 		return dependency, true, err
@@ -619,6 +616,15 @@ func parseDeclaredDependencyForProfileWithExtras(value string, _ SourceProfile, 
 	}
 	if !active {
 		return "", false, nil
+	}
+	// Evaluate and validate the complete marker before interpreting extras.
+	// Unrequested cuda-bindings extras must not become toolkit requests.
+	if strings.HasPrefix(value, "cuda-toolkit[") {
+		requirement, err := ParseBoundedRequirement(value)
+		if err != nil {
+			return "", false, err
+		}
+		return requirement.Project(), true, nil
 	}
 	dependency, err := parseDeclaredDependency(strings.TrimSpace(parts[0]))
 	if err != nil {
@@ -697,7 +703,7 @@ func (n *markerAtomNode) validate(expectedPython string) error {
 			return errors.New("unsupported dependency requirement marker")
 		}
 		return nil
-	case "sys_platform", "platform_system", "platform_machine":
+	case "sys_platform", "platform_system", "platform_machine", "platform_python_implementation":
 		if n.operator != "==" && n.operator != "!=" {
 			return errors.New("unsupported dependency requirement marker")
 		}
@@ -722,7 +728,7 @@ func (n *markerAtomNode) evaluate(expectedPython, activeExtra string) (bool, err
 		}
 		return active, nil
 	}
-	values := map[string]string{"sys_platform": "linux", "platform_system": "Linux", "platform_machine": "x86_64"}
+	values := map[string]string{"sys_platform": "linux", "platform_system": "Linux", "platform_machine": "x86_64", "platform_python_implementation": "CPython"}
 	if current, ok := values[n.name]; ok {
 		active := current == n.literal
 		if n.operator == "!=" {

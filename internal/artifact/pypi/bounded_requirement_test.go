@@ -35,11 +35,48 @@ func TestBoundedCUDARequirementsRejectUnsupportedSyntax(t *testing.T) {
 		"cuda-toolkit[cublas,cublas]==12.6.3; platform_system == \"Linux\"",
 		"cuda-toolkit[cublas]==12.6.3; platform_system != \"Linux\"",
 		"cuda-toolkit[cublas]==12.6.3; sys_platform == \"linux\"",
-		"nvidia-cublas==13.*", "nvidia-cublas==13.1.1", "nvidia-cublas~=13.1", "nvidia-cublas @ https://bad.example/x", "nvidia-cublas>=13,,<14",
+		"nvidia-cublas==13.*", "nvidia-cublas~=13", "nvidia-cublas~=13.1.*", "nvidia-cublas @ https://bad.example/x", "nvidia-cublas>=13,,<14",
 	} {
 		if _, err := ParseBoundedRequirement(value); err == nil {
 			t.Fatalf("accepted unsupported requirement %q", value)
 		}
+	}
+}
+
+func TestPyTorch214ExactAndCompatibleRequirements(t *testing.T) {
+	// These shapes occur in the hash-verified 2.14.0 CUDA Core Metadata:
+	// nvidia-cudnn-cu12==9.10.2.21 and triton~=3.8.0.
+	for _, test := range []struct {
+		request        string
+		accept, reject []string
+	}{
+		{"nvidia-cudnn-cu12==9.10.2.21", []string{"9.10.2.21", "9.10.2.21.0"}, []string{"9.10.2.20", "9.10.2.22", "9.10.2.21+local", "9.10.2.21rc1"}},
+		{"triton~=3.8.0", []string{"3.8", "3.8.0", "3.8.9"}, []string{"3.7.9", "3.9.0", "4.0", "3.8.0rc1"}},
+		{"triton~=3.8.1", []string{"3.8.1", "3.8.99"}, []string{"3.8", "3.8.0", "3.9"}},
+		{"example~=3.8", []string{"3.8", "3.99"}, []string{"3.7", "4.0"}},
+		{"example~=3.0.0", []string{"3", "3.0.1"}, []string{"2.9", "3.1"}},
+	} {
+		t.Run(test.request, func(t *testing.T) {
+			req, err := ParseBoundedRequirement(test.request)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, v := range test.accept {
+				if !req.Satisfies(v) {
+					t.Errorf("rejected %s", v)
+				}
+			}
+			for _, v := range test.reject {
+				if req.Satisfies(v) {
+					t.Errorf("accepted %s", v)
+				}
+			}
+		})
+	}
+	exact, _ := ParseBoundedRequirement("triton==3.8.0")
+	compatible, _ := ParseBoundedRequirement("triton~=3.8.1")
+	if CandidateSatisfiesBoundedRequirements("3.8.0", []BoundedRequirement{exact, compatible}) || CandidateSatisfiesBoundedRequirements("3.8.1", []BoundedRequirement{exact, compatible}) {
+		t.Fatal("incompatible incoming requirements were accepted")
 	}
 }
 

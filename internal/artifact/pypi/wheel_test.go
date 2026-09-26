@@ -213,6 +213,12 @@ func TestWheelTagsCompatibleManylinuxSemantics(t *testing.T) {
 	}{
 		{name: "exact", platform: "manylinux_2_36_x86_64", target: target, want: true},
 		{name: "older glibc baseline", platform: "manylinux_2_28_x86_64", target: target, want: true},
+		{name: "cusparselt legacy 2014", platform: "manylinux2014_x86_64", target: target, want: true},
+		{name: "legacy 2010", platform: "manylinux2010_x86_64", target: target, want: true},
+		{name: "legacy 1", platform: "manylinux1_x86_64", target: target, want: true},
+		{name: "legacy baseline too new", platform: "manylinux2014_x86_64", target: WheelTarget{"cp314", "cp314", "manylinux_2_12_x86_64"}, want: false},
+		{name: "legacy architecture mismatch", platform: "manylinux2014_aarch64", target: target, want: false},
+		{name: "unversioned Linux", platform: "linux_x86_64", target: target, want: false},
 		{name: "newer wheel baseline", platform: "manylinux_2_36_x86_64", target: WheelTarget{"cp314", "cp314", "manylinux_2_28_x86_64"}, want: false},
 		{name: "architecture mismatch", platform: "manylinux_2_28_aarch64", target: target, want: false},
 		{name: "malformed", platform: "manylinux_x86_64", target: target, want: false},

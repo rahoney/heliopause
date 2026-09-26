@@ -136,7 +136,7 @@ func (r *pyTorchReplayRunner) project() string {
 	case strings.HasPrefix(r.request, "torch"):
 		return "torch"
 	default:
-		end := strings.IndexAny(r.request, "[<>=; ")
+		end := strings.IndexAny(r.request, "[<>=~; ")
 		if end < 0 {
 			end = len(r.request)
 		}
@@ -177,16 +177,16 @@ func (r *pyTorchReplayRunner) report() string {
 			requirements = []string{"shared1"}
 		} else if r.profile.Name() == "pytorch:cpu" {
 			for i := 1; i <= 9; i++ {
-				requirements = append(requirements, fmt.Sprintf("shared%d==1.0.0.*", i))
+				requirements = append(requirements, fmt.Sprintf("shared%d==1.0.0", i))
 			}
 		} else {
-			requirements = []string{"nvidia-cublas", `cuda-toolkit[cublas,cudart]==1.0.0; platform_system == "Linux"`}
+			requirements = []string{"nvidia-cublas~=1.0.0", `cuda-toolkit[cublas,cudart]==1.0.0; platform_system == "Linux"`}
 			for i := 1; i <= 26; i++ {
-				requirements = append(requirements, fmt.Sprintf("shared%d==1.0.0.*", i))
+				requirements = append(requirements, fmt.Sprintf("shared%d==1.0.0", i))
 			}
 		}
 	} else if project == "cuda-toolkit" {
-		requirements = []string{`nvidia-cublas==1.0.0.*; extra != "cublas"`}
+		requirements = []string{`nvidia-cublas==1.0.0; extra == "cublas"`, `nvidia-cublas>=1.0.0; extra == "cudart"`}
 	} else if project == "shared1" && r.profile.Name() != "pytorch:cpu" {
 		extraEdges := 12
 		if r.profile.Name() == "pytorch:cu126" {
@@ -196,6 +196,11 @@ func (r *pyTorchReplayRunner) report() string {
 			requirements = append(requirements, fmt.Sprintf("shared%d", i))
 		}
 	}
+	// Real setuptools/mpmath and cuda-bindings metadata includes these
+	// inactive extras. Their complete markers must still validate.
+	requirements = append(requirements,
+		`optional; platform_python_implementation != "PyPy" and extra == "type"`,
+		`cuda-toolkit[nvfatbin,nvvm]==13.*; extra == "all"`)
 	if r.chain > 0 && strings.HasPrefix(project, "shared") {
 		var number int
 		if _, err := fmt.Sscanf(project, "shared%d", &number); err == nil && number < r.chain {

@@ -10,6 +10,65 @@ import (
 
 const sampleSHA256 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 
+func TestPyTorch214TransitiveMetadataMarkers(t *testing.T) {
+	for _, test := range []struct {
+		requirement string
+		active      bool
+	}{
+		{`pytest-mypy>=1.0.1; platform_python_implementation != "PyPy" and extra == "type"`, false},
+		{`gmpy2 (>=2.1.0a4); (platform_python_implementation != "PyPy") and extra == 'gmpy'`, false},
+		{`child; platform_python_implementation == "CPython"`, true},
+		{`child; platform_python_implementation == "PyPy"`, false},
+		{`cuda-toolkit[nvfatbin,nvjitlink,nvrtc,nvvm]==13.*; extra == "all"`, false},
+		{`cuda-toolkit[cufile]==13.*; sys_platform == "linux" and extra == "all"`, false},
+	} {
+		_, active, err := parseDeclaredDependencyForProfile(test.requirement, PublicPyPIProfile(), "3.14.7")
+		if err != nil || active != test.active {
+			t.Errorf("%s: active=%t err=%v", test.requirement, active, err)
+		}
+	}
+	for _, invalid := range []string{
+		`child; platform_python_implementation >= "CPython"`,
+		`child; extra == "unused" and unknown_runtime == "CPython"`,
+		`cuda-toolkit[nvfatbin]==13.0.3; platform_system == "Linux"`,
+		`cuda-toolkit[cublas]==13.0.3; extra == "cublas"`,
+	} {
+		if _, _, err := parseDeclaredDependencyForProfileWithExtras(invalid, PublicPyPIProfile(), "3.14.7", []string{"cublas"}); err == nil {
+			t.Errorf("accepted %s", invalid)
+		}
+	}
+}
+
+func TestCUDARepeatedProjectRequirementsRemainConjoined(t *testing.T) {
+	item := pipInstall{Requested: true}
+	item.DownloadInfo.URL = "https://files.pythonhosted.org/packages/cuda_toolkit-13.0.3-py3-none-any.whl"
+	item.DownloadInfo.ArchiveInfo.Hashes = map[string]string{"sha256": sampleSHA256}
+	item.Metadata.Name, item.Metadata.Version = "cuda-toolkit", "13.0.3"
+	item.Metadata.RequiresDist = []string{
+		`nvidia-cublas==13.1.1.3.*; extra == "cublas"`,
+		`nvidia-cublas==13.1.1.3.*; extra == "cusolver"`,
+		`nvidia-cublas>=14; extra == "cusolver"`,
+	}
+	candidate, err := parseReportCandidate(item, PublicPyPIProfile(), "3.14.7", []string{"cublas", "cusolver"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(candidate.Dependencies()) != 1 || len(candidate.DependencyRequirements()) != 3 {
+		t.Fatal("duplicate edges or discarded constraints")
+	}
+	var requirements []BoundedRequirement
+	for _, raw := range candidate.DependencyRequirements() {
+		req, err := ParseBoundedRequirement(raw)
+		if err != nil {
+			t.Fatal(err)
+		}
+		requirements = append(requirements, req)
+	}
+	if CandidateSatisfiesBoundedRequirements("13.1.1.3", requirements) || CandidateSatisfiesBoundedRequirements("14.0", requirements) {
+		t.Fatal("conflicting extra constraints authorized a candidate")
+	}
+}
+
 func TestSimpleReportCrossCheckBuildsExactGraph(t *testing.T) {
 	t.Parallel()
 

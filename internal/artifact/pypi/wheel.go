@@ -531,6 +531,17 @@ var manylinuxPlatformPattern = regexp.MustCompile(`^manylinux_([0-9]+)_([0-9]+)_
 // manylinuxTagCompatible permits a target with equal-or-newer glibc on the
 // same architecture to run a wheel built for an older manylinux baseline.
 func manylinuxTagCompatible(wheel, target string) bool {
+	// The pinned x86_64 runtime also accepts the standardized legacy aliases.
+	// Keep architecture binding explicit; never treat an arbitrary linux tag
+	// as a manylinux compatibility promise.
+	aliases := map[string]string{
+		"manylinux1_x86_64":    "manylinux_2_5_x86_64",
+		"manylinux2010_x86_64": "manylinux_2_12_x86_64",
+		"manylinux2014_x86_64": "manylinux_2_17_x86_64",
+	}
+	if canonical, ok := aliases[wheel]; ok {
+		wheel = canonical
+	}
 	wheelMatch := manylinuxPlatformPattern.FindStringSubmatch(wheel)
 	targetMatch := manylinuxPlatformPattern.FindStringSubmatch(target)
 	if len(wheelMatch) != 4 || len(targetMatch) != 4 || wheelMatch[3] != targetMatch[3] {

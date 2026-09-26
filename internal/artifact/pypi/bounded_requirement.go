@@ -39,8 +39,8 @@ func (r BoundedRequirement) Project() string { return r.project }
 // and must survive project-level aggregation.
 func (r BoundedRequirement) Extras() []string { return append([]string(nil), r.extras...) }
 
-// ParseBoundedRequirement accepts only bare names, exact numeric release
-// prefixes, and numeric comparison conjunctions. cuda-toolkit extras require
+// ParseBoundedRequirement accepts only bare names, numeric exact/compatible
+// releases, release prefixes, and comparison conjunctions. cuda-toolkit extras require
 // the one active Linux marker emitted by the supported CUDA metadata.
 func ParseBoundedRequirement(value string) (BoundedRequirement, error) {
 	if value == "" || value != strings.TrimSpace(value) || strings.Contains(value, "@") || strings.Count(value, ";") > 1 {
@@ -95,7 +95,7 @@ func ParseBoundedRequirement(value string) (BoundedRequirement, error) {
 			return BoundedRequirement{}, errors.New("bounded requirement constraint is invalid")
 		}
 		operator := ""
-		for _, candidate := range []string{"==", ">=", "<=", ">", "<"} {
+		for _, candidate := range []string{"==", "~=", ">=", "<=", ">", "<"} {
 			if strings.HasPrefix(part, candidate) {
 				operator = candidate
 				break
@@ -106,7 +106,7 @@ func ParseBoundedRequirement(value string) (BoundedRequirement, error) {
 		}
 		version := strings.TrimSpace(strings.TrimPrefix(part, operator))
 		prefix := wildcardRelease.MatchString(version)
-		if version == "" || strings.ContainsAny(version, " <>!=~+@") || (operator == "==" && !prefix && !(project == "cuda-toolkit" && extras != "" && numericRelease.MatchString(version))) || (operator != "==" && !numericRelease.MatchString(version)) {
+		if version == "" || strings.ContainsAny(version, " <>!=~+@") || (!numericRelease.MatchString(version) && !(operator == "==" && prefix)) || (operator == "~=" && !strings.Contains(version, ".")) {
 			return BoundedRequirement{}, errors.New("bounded requirement version is invalid")
 		}
 		result.constraints = append(result.constraints, boundedConstraint{operator: operator, version: version, prefix: prefix})
@@ -135,6 +135,11 @@ func (r BoundedRequirement) Satisfies(version string) bool {
 			if constraint.prefix {
 				valid = len(candidate) >= len(want) && comparisonPrefix(candidate, want)
 			}
+		case "~=":
+			// PEP 440: ~=X.Y.Z is >=X.Y.Z together with ==X.Y.*.
+			// Compare a zero-padded prefix without incrementing an integer
+			// upper bound, so large components cannot overflow into acceptance.
+			valid = comparison >= 0 && len(want) >= 2 && compatibleReleasePrefix(candidate, want[:len(want)-1])
 		case ">=":
 			valid = comparison >= 0
 		case ">":
@@ -145,6 +150,19 @@ func (r BoundedRequirement) Satisfies(version string) bool {
 			valid = comparison < 0
 		}
 		if !valid {
+			return false
+		}
+	}
+	return true
+}
+
+func compatibleReleasePrefix(candidate, prefix []uint64) bool {
+	for i, value := range prefix {
+		var actual uint64
+		if i < len(candidate) {
+			actual = candidate[i]
+		}
+		if actual != value {
 			return false
 		}
 	}
