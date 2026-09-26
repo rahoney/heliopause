@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -119,6 +120,143 @@ func TestRuntimeLockRejectsInvalidBuilderIdentity(t *testing.T) {
 			test.edit(&lock)
 			if err := validate(lock); err == nil {
 				t.Fatal("invalid builder identity was accepted")
+			}
+		})
+	}
+}
+
+func TestRuntimeLockObserverBuildIdentityMatchesCanonicalCommit(t *testing.T) {
+	t.Parallel()
+	lock, err := readLock("runtimes.lock.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	buildPath := filepath.Join("..", observerBuildPath)
+	buildContent, err := os.ReadFile(buildPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := verifyObserverBuildCommit(buildContent, lock.GVisor.Commit); err != nil {
+		t.Fatalf("observer BUILD identity mismatch against canonical runtime lock: %v", err)
+	}
+}
+
+func TestVerifyObserverBuildCommitDetectsDrift(t *testing.T) {
+	t.Parallel()
+	canonical := "7c6199801fd233d6d55309af4645d4746a077de7"
+	stale := "5ceb9a5fd5750d6c73dd166441f28306039300d0"
+
+	validBuild := []byte(fmt.Sprintf(`
+cc_binary(
+    name = "haa_gvisor_observer",
+    srcs = ["observer.cc"],
+    defines = ["HAA_GVISOR_COMMIT=\\\"%s\\\""],
+)
+cc_binary(
+    name = "haa_gvisor_observer_latch_test",
+    srcs = ["observer_latch_test.cc"],
+    defines = ["HAA_GVISOR_COMMIT=\\\"%s\\\""],
+)
+`, canonical, canonical))
+
+	if err := verifyObserverBuildCommit(validBuild, canonical); err != nil {
+		t.Fatalf("expected valid build to pass, got: %v", err)
+	}
+
+	for _, tc := range []struct {
+		name         string
+		buildContent []byte
+		commit       string
+	}{
+		{
+			name: "stale haa_gvisor_observer target",
+			buildContent: []byte(fmt.Sprintf(`
+cc_binary(
+    name = "haa_gvisor_observer",
+    srcs = ["observer.cc"],
+    defines = ["HAA_GVISOR_COMMIT=\\\"%s\\\""],
+)
+cc_binary(
+    name = "haa_gvisor_observer_latch_test",
+    srcs = ["observer_latch_test.cc"],
+    defines = ["HAA_GVISOR_COMMIT=\\\"%s\\\""],
+)
+`, stale, canonical)),
+			commit: canonical,
+		},
+		{
+			name: "stale haa_gvisor_observer_latch_test target",
+			buildContent: []byte(fmt.Sprintf(`
+cc_binary(
+    name = "haa_gvisor_observer",
+    srcs = ["observer.cc"],
+    defines = ["HAA_GVISOR_COMMIT=\\\"%s\\\""],
+)
+cc_binary(
+    name = "haa_gvisor_observer_latch_test",
+    srcs = ["observer_latch_test.cc"],
+    defines = ["HAA_GVISOR_COMMIT=\\\"%s\\\""],
+)
+`, canonical, stale)),
+			commit: canonical,
+		},
+		{
+			name: "missing define in haa_gvisor_observer",
+			buildContent: []byte(fmt.Sprintf(`
+cc_binary(
+    name = "haa_gvisor_observer",
+    srcs = ["observer.cc"],
+)
+cc_binary(
+    name = "haa_gvisor_observer_latch_test",
+    srcs = ["observer_latch_test.cc"],
+    defines = ["HAA_GVISOR_COMMIT=\\\"%s\\\""],
+)
+`, canonical)),
+			commit: canonical,
+		},
+		{
+			name: "missing target haa_gvisor_observer_latch_test",
+			buildContent: []byte(fmt.Sprintf(`
+cc_binary(
+    name = "haa_gvisor_observer",
+    srcs = ["observer.cc"],
+    defines = ["HAA_GVISOR_COMMIT=\\\"%s\\\""],
+)
+`, canonical)),
+			commit: canonical,
+		},
+		{
+			name: "extra mismatched define",
+			buildContent: []byte(fmt.Sprintf(`
+cc_binary(
+    name = "haa_gvisor_observer",
+    srcs = ["observer.cc"],
+    defines = ["HAA_GVISOR_COMMIT=\\\"%s\\\""],
+)
+cc_binary(
+    name = "haa_gvisor_observer_latch_test",
+    srcs = ["observer_latch_test.cc"],
+    defines = ["HAA_GVISOR_COMMIT=\\\"%s\\\""],
+)
+cc_binary(
+    name = "extra_target",
+    defines = ["HAA_GVISOR_COMMIT=\\\"%s\\\""],
+)
+`, canonical, canonical, stale)),
+			commit: canonical,
+		},
+		{
+			name:         "invalid short commit length",
+			buildContent: validBuild,
+			commit:       "7c6199801fd2",
+		},
+	} {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			if err := verifyObserverBuildCommit(tc.buildContent, tc.commit); err == nil {
+				t.Fatalf("expected error for case %q, but got nil", tc.name)
 			}
 		})
 	}

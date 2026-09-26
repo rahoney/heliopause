@@ -17,11 +17,13 @@ import (
 )
 
 const outputPath = "internal/runtimeidentity/runtime_lock_gen.go"
+const observerBuildPath = "tools/gvisor-observer/BUILD"
 
 var hex512 = regexp.MustCompile(`^[a-f0-9]{128}$`)
 var hex256 = regexp.MustCompile(`^[a-f0-9]{64}$`)
 var release = regexp.MustCompile(`^release-[0-9]{8}\.0$`)
 var exactVersion = regexp.MustCompile(`^[0-9]+\.[0-9]+\.[0-9]+$`)
+var observerCommitDefinePattern = regexp.MustCompile(`HAA_GVISOR_COMMIT=\\+"([0-9a-fA-F]{40})\\+"`)
 
 type runtimeLock struct {
 	SchemaVersion int `json:"schema_version"`
@@ -99,6 +101,13 @@ func main() {
 	if err != nil {
 		fail(err)
 	}
+	observerBuild, err := os.ReadFile(observerBuildPath)
+	if err != nil {
+		fail(fmt.Errorf("read observer BUILD: %w", err))
+	}
+	if err := verifyObserverBuildCommit(observerBuild, lock.GVisor.Commit); err != nil {
+		fail(fmt.Errorf("observer BUILD identity differs from canonical lock: %w", err))
+	}
 	generated := render(lock)
 	if *check {
 		current, err := os.ReadFile(outputPath)
@@ -113,6 +122,45 @@ func main() {
 	if err := os.WriteFile(outputPath, generated, 0o644); err != nil {
 		fail(err)
 	}
+}
+
+func verifyObserverBuildCommit(buildContent []byte, expectedCommit string) error {
+	if len(expectedCommit) != 40 {
+		return fmt.Errorf("expected commit must be 40 hex characters: %q", expectedCommit)
+	}
+
+	requiredTargets := []string{
+		"haa_gvisor_observer",
+		"haa_gvisor_observer_latch_test",
+	}
+
+	for _, target := range requiredTargets {
+		targetPattern := regexp.MustCompile(fmt.Sprintf(`cc_binary\s*\([^)]*name\s*=\s*"%s"[^)]*\)`, regexp.QuoteMeta(target)))
+		match := targetPattern.Find(buildContent)
+		if match == nil {
+			return fmt.Errorf("required target %q not found in observer BUILD", target)
+		}
+		commitMatch := observerCommitDefinePattern.FindSubmatch(match)
+		if commitMatch == nil {
+			return fmt.Errorf("target %q is missing HAA_GVISOR_COMMIT define in observer BUILD", target)
+		}
+		actualCommit := string(commitMatch[1])
+		if actualCommit != expectedCommit {
+			return fmt.Errorf("target %q HAA_GVISOR_COMMIT %q does not match canonical commit %q", target, actualCommit, expectedCommit)
+		}
+	}
+
+	allMatches := observerCommitDefinePattern.FindAllSubmatch(buildContent, -1)
+	if len(allMatches) != len(requiredTargets) {
+		return fmt.Errorf("expected %d HAA_GVISOR_COMMIT defines in observer BUILD, found %d", len(requiredTargets), len(allMatches))
+	}
+	for _, m := range allMatches {
+		if string(m[1]) != expectedCommit {
+			return fmt.Errorf("observer BUILD contains mismatched HAA_GVISOR_COMMIT %q (expected %q)", string(m[1]), expectedCommit)
+		}
+	}
+
+	return nil
 }
 
 func fail(err error) { fmt.Fprintln(os.Stderr, "runtime lock:", err); os.Exit(1) }
