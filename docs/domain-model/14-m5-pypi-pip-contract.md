@@ -76,6 +76,8 @@ wheel 정적 inspection은 trusted controller에서 archive를 실행하지 않�
 
 wheel의 dynamic inspection은 M3 trusted observer/gVisor session에서 target-local private directory에 verified wheel만 `pip --no-index --no-deps`로 설치한 뒤 bounded declared import surface를 실행한다. Artifact가 제공한 script/entry point, `setup.py`, arbitrary module name 또는 Host Python을 실행하지 않는다. import surface를 안전하게 확정할 수 없거나 session/observation이 incomplete면 `MANUAL_REVIEW`다.
 
+검증된 `RECORD`에서 선언된 `Import-Name`·`Import-Namespace`, Python `.py` 모듈 및 Python extension 모듈이 전혀 없고 구조적으로 실행 가능 Python 표면이 없음이 정적으로 입증된 wheel(metadata-only 또는 native library/header 등 native/data-only wheel)은 Python import 적용 대상이 아님을 정적으로 확정할 수 있다. 이 경우에도 동일한 격리 session에서 exact wheel closure를 offline 설치하고 설치된 distribution identity를 확인하며 observer 완료를 요구한다. 결과에는 import `NOT_APPLICABLE`을 명시한다. 설치 가능 payload가 있지만 import surface를 안전하게 확정할 수 없거나 모호한 wheel은 이 예외에 해당하지 않으며 기존처럼 fail-closed다.
+
 ## 4. sdist와 derived wheel
 
 sdist는 build를 필요로 할 수 있는 executable Artifact다. source archive 또는 PEP 517 backend는 Host에서 실행하지 않는다.
@@ -106,6 +108,7 @@ staged exact wheels only
 - Promotion Python/pip runtime은 M5-002에서 exact image/version/digest를 lock한다. runtime에는 `--network none`, read-only root, non-root, capability drop, no-new-privileges, bounded resource, empty HOME/cache/config과 generated local wheel directory만 제공한다.
 - generated requirements는 every promoted distribution의 exact normalized name/version/SHA-256을 포함한다. `--no-deps`는 pip가 Manifest 밖 dependency를 다시 resolve하지 못하게 하며 network, index, cache, VCS, local project와 arbitrary build를 허용하지 않는다.
 - promotion 후 controller는 frozen requirements/Manifest/SBOM/local wheel digest, expected `.dist-info/METADATA` name/version, `RECORD` containment/hash, exact installed distribution set와 no-symlink/no-special-file를 확인한다. target pre-existence, parent identity change, new distribution requirement, output mismatch와 cleanup uncertainty는 fail-closed다.
+- 서로 다른 distribution의 `RECORD`가 같은 `site-packages` 파일을 가리키면 모든 선언 hash·size가 설치된 동일 파일과 일치하는 경우에만 한 destination에 exact 다중 소유자(distribution/version/artifact digest)를 기록한다. scripts/data destination의 중복이나 서로 다른 내용은 거부한다. 공유 파일 소유자 일부만 갱신하는 transaction도 거부하여 이전 소유자의 파일을 조용히 교체·삭제하지 않는다.
 
 ## 6. Policy and result semantics
 

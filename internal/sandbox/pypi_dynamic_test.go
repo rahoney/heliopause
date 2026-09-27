@@ -257,6 +257,35 @@ func TestPythonDynamicBackendInstallsExactClosureInOneOfflineInvocation(t *testi
 	}
 }
 
+func TestPythonDynamicBackendObservesProvenNoImportInstall(t *testing.T) {
+	root, artifact := pythonWheelFixture(t)
+	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef")}}
+	introducer, err := NewPythonArtifactIntroducer(root, runner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	backend, err := NewPythonDynamicBackend(runner, introducer, &recordingObserver{reader: &traceReader{}}, availablePythonProbe)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := backend.InspectWheelWithoutImportSurface(context.Background(), artifact, []domain.AcquiredArtifact{artifact})
+	if err != nil || result.Status() != domain.SandboxCompleted {
+		t.Fatalf("no-import install = %#v, %v", result, err)
+	}
+	var install, verify bool
+	for _, call := range runner.calls {
+		joined := strings.Join(call.arguments, " ")
+		install = install || strings.Contains(joined, "pip install --no-index --no-deps")
+		verify = verify || strings.Contains(joined, pythonInstalledDistributionScript) && strings.Contains(joined, "example 1.0")
+	}
+	if !install || !verify || len(runner.inputCalls) != 1 {
+		t.Fatalf("no-import sandbox commands = %#v; introduced = %#v", runner.calls, runner.inputCalls)
+	}
+	if len(result.Observations()) == 0 || result.Observations()[len(result.Observations())-1].Subject() != "python-no-import-surface-verified" {
+		t.Fatalf("no-import observation = %#v", result.Observations())
+	}
+}
+
 func TestPythonDynamicBackendClassifiesBoundedInstallFailureWithoutExposingOutput(t *testing.T) {
 	root, artifact := pythonWheelFixture(t)
 	runner := &recordingRunner{

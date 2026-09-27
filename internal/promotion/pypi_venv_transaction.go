@@ -24,15 +24,48 @@ const pypiVenvStateBound = 32 << 20
 // Source is private output. Final is bound once from the resolver's Scheme and
 // Relative identity; the transaction never interprets a RECORD pathname.
 type pypiDestination struct {
-	Scheme         string `json:"scheme"`
-	Relative       string `json:"relative"`
+	Scheme         string      `json:"scheme"`
+	Relative       string      `json:"relative"`
+	Distribution   string      `json:"distribution"`
+	Version        string      `json:"version"`
+	ArtifactDigest string      `json:"artifact_digest"`
+	SharedOwners   []pypiOwner `json:"shared_owners,omitempty"`
+	Digest         string      `json:"sha256"`
+	Size           int64       `json:"size"`
+	Source         string      `json:"-"`
+	Final          string      `json:"-"`
+}
+
+type pypiOwner struct {
 	Distribution   string `json:"distribution"`
 	Version        string `json:"version"`
 	ArtifactDigest string `json:"artifact_digest"`
-	Digest         string `json:"sha256"`
-	Size           int64  `json:"size"`
-	Source         string `json:"-"`
-	Final          string `json:"-"`
+}
+
+func (d pypiDestination) owners() []pypiOwner {
+	if len(d.SharedOwners) != 0 {
+		return append([]pypiOwner(nil), d.SharedOwners...)
+	}
+	return []pypiOwner{{d.Distribution, d.Version, d.ArtifactDigest}}
+}
+
+func validDestinationOwners(d pypiDestination) bool {
+	if d.Distribution == "" || d.Version == "" || len(d.SharedOwners) == 1 || len(d.SharedOwners) > 64 || len(d.SharedOwners) != 0 && d.Scheme != "site" {
+		return false
+	}
+	owners := d.owners()
+	if owners[0] != (pypiOwner{d.Distribution, d.Version, d.ArtifactDigest}) {
+		return false
+	}
+	for index, owner := range owners {
+		if owner.Distribution == "" || owner.Version == "" || owner.ArtifactDigest == "" && len(d.SharedOwners) != 0 {
+			return false
+		}
+		if index > 0 && owners[index-1].Distribution >= owner.Distribution {
+			return false
+		}
+	}
+	return true
 }
 
 func (d pypiDestination) key() string { return d.Scheme + "/" + d.Relative }
@@ -203,7 +236,7 @@ func (p pypiVenvPlan) readState() (pypiVenvState, bool, error) {
 	for key, d := range state.Files {
 		bound, err := p.bind(d)
 		digest, de := hex.DecodeString(d.Digest)
-		if err != nil || key != d.key() || de != nil || len(digest) != 32 || d.Size < 0 || d.Distribution == "" || d.Version == "" {
+		if err != nil || key != d.key() || de != nil || len(digest) != 32 || d.Size < 0 || !validDestinationOwners(d) {
 			return state, false, errors.New("invalid ownership metadata")
 		}
 		state.Files[key] = bound
@@ -497,13 +530,15 @@ func (t *pypiVenvTransaction) prepare(destinations []pypiDestination) (pypiVenvS
 	finals := map[string]bool{}
 	for _, raw := range destinations {
 		d, err := t.plan.bind(raw)
-		if err != nil || finals[d.Final] || d.Distribution == "" || d.Version == "" {
+		if err != nil || finals[d.Final] || !validDestinationOwners(d) {
 			return desired, nil, errors.New("duplicate or invalid destination")
 		}
-		if v := projects[d.Distribution]; v != "" && v != d.Version {
-			return desired, nil, errors.New("ambiguous distribution")
+		for _, owner := range d.owners() {
+			if v := projects[owner.Distribution]; v != "" && v != owner.Version {
+				return desired, nil, errors.New("ambiguous distribution")
+			}
+			projects[owner.Distribution] = owner.Version
 		}
-		projects[d.Distribution] = d.Version
 		finals[d.Final] = true
 		actual, err := snapshotPyPIFile(d.Source)
 		if err != nil || actual.Digest != d.Digest || actual.Size != d.Size {
@@ -513,11 +548,7 @@ func (t *pypiVenvTransaction) prepare(destinations []pypiDestination) (pypiVenvS
 		if err := t.freezeParents(filepath.Dir(d.Source)); err != nil {
 			return desired, nil, err
 		}
-		if prior, exists := t.current.Files[d.key()]; exists {
-			if prior.Distribution != d.Distribution {
-				return desired, nil, errors.New("destination belongs to another distribution")
-			}
-		} else {
+		if _, exists := t.current.Files[d.key()]; !exists {
 			if _, err := os.Lstat(d.Final); !errors.Is(err, os.ErrNotExist) {
 				return desired, nil, errors.New("unmanaged destination collision")
 			}
@@ -533,10 +564,23 @@ func (t *pypiVenvTransaction) prepare(destinations []pypiDestination) (pypiVenvS
 	}
 	obsolete := []pypiDestination{}
 	for key, old := range t.current.Files {
-		if _, replaces := projects[old.Distribution]; replaces {
-			if _, present := desired.Files[key]; !present {
-				obsolete = append(obsolete, old)
+		anyReplaced, allReplaced := false, true
+		for _, owner := range old.owners() {
+			_, replaces := projects[owner.Distribution]
+			anyReplaced = anyReplaced || replaces
+			allReplaced = allReplaced && replaces
+		}
+		if anyReplaced && !allReplaced {
+			return desired, nil, errors.New("partial shared distribution update is unavailable")
+		}
+		if replacement, present := desired.Files[key]; present {
+			if !allReplaced || old.Scheme != replacement.Scheme {
+				return desired, nil, errors.New("destination belongs to another distribution")
 			}
+			continue
+		}
+		if allReplaced {
+			obsolete = append(obsolete, old)
 		} else {
 			desired.Files[key] = old
 		}

@@ -36,6 +36,12 @@ type DependencyAwarePythonWheelRunner interface {
 	InspectWheelWithClosure(context.Context, domain.AcquiredArtifact, []string, []domain.AcquiredArtifact) (domain.SandboxResult, error)
 }
 
+// NoImportSurfacePythonWheelRunner still performs observed offline installation
+// for a statically proven metadata-only wheel. It does not claim an import ran.
+type NoImportSurfacePythonWheelRunner interface {
+	InspectWheelWithoutImportSurface(context.Context, domain.AcquiredArtifact, []domain.AcquiredArtifact) (domain.SandboxResult, error)
+}
+
 type discardCommandRunner interface {
 	RunDiscard(context.Context, string, ...string) error
 }
@@ -174,7 +180,15 @@ func (b *PythonDynamicBackend) InspectWheel(ctx context.Context, artifact domain
 }
 
 func (b *PythonDynamicBackend) InspectWheelWithClosure(ctx context.Context, artifact domain.AcquiredArtifact, imports []string, closure []domain.AcquiredArtifact) (domain.SandboxResult, error) {
-	if b == nil || b.runner == nil || b.introducer == nil || b.observer == nil || b.probe == nil || b.newSessionID == nil || ctx == nil || !validImportSurface(imports) {
+	return b.inspectWheelWithClosure(ctx, artifact, imports, closure, false)
+}
+
+func (b *PythonDynamicBackend) InspectWheelWithoutImportSurface(ctx context.Context, artifact domain.AcquiredArtifact, closure []domain.AcquiredArtifact) (domain.SandboxResult, error) {
+	return b.inspectWheelWithClosure(ctx, artifact, nil, closure, true)
+}
+
+func (b *PythonDynamicBackend) inspectWheelWithClosure(ctx context.Context, artifact domain.AcquiredArtifact, imports []string, closure []domain.AcquiredArtifact, noImportSurface bool) (domain.SandboxResult, error) {
+	if b == nil || b.runner == nil || b.introducer == nil || b.observer == nil || b.probe == nil || b.newSessionID == nil || ctx == nil || noImportSurface && len(imports) != 0 || !noImportSurface && !validImportSurface(imports) {
 		return domain.SandboxResult{}, errors.New("python dynamic inspection request is invalid")
 	}
 	validated, err := b.introducer.validatedWheelDestinations(artifact, closure)
@@ -235,6 +249,9 @@ func (b *PythonDynamicBackend) InspectWheelWithClosure(ctx context.Context, arti
 		return b.finishIncomplete(sessionID, containerID, trace, dynamicInstallFailureCode(failureClass))
 	}
 	arguments := append(boundaryExecArguments(containerID, boundaryPythonHandoffMode, "python", "-I", "-B", "-c", pythonImportScript), imports...)
+	if noImportSurface {
+		arguments = append(boundaryExecArguments(containerID, boundaryPythonHandoffMode, "python", "-I", "-B", "-c", pythonInstalledDistributionScript), artifact.Identity().Name(), artifact.Identity().Version())
+	}
 	if failureClass, err := runBoundedCommand(runCtx, b.runner, classifyDynamicImportFailure, "docker", arguments...); err != nil {
 		return b.finishIncomplete(sessionID, containerID, trace, dynamicImportFailureCode(failureClass))
 	}
@@ -242,7 +259,11 @@ func (b *PythonDynamicBackend) InspectWheelWithClosure(ctx context.Context, arti
 	if limitation != "" {
 		return pythonIncomplete(sessionID, limitation)
 	}
-	completed, err := domain.NewSandboxObservation(domain.ObservationProcess, "python-import-completed")
+	subject := "python-import-completed"
+	if noImportSurface {
+		subject = "python-no-import-surface-verified"
+	}
+	completed, err := domain.NewSandboxObservation(domain.ObservationProcess, subject)
 	if err != nil {
 		return domain.SandboxResult{}, err
 	}
@@ -462,6 +483,7 @@ func pythonDynamicCreateArguments(sessionID domain.SandboxSessionID, resourcePol
 }
 
 const pythonImportScript = "import importlib,sys\nsys.path.insert(0,'/haa-site')\nfor name in sys.argv[1:]: importlib.import_module(name)\n"
+const pythonInstalledDistributionScript = "import importlib.metadata as m,re,sys\nnormalize=lambda s: re.sub(r'[-_.]+','-',s).lower()\nmatches=[d for d in m.distributions(path=['/haa-site']) if normalize(d.metadata.get('Name',''))==normalize(sys.argv[1]) and d.version==sys.argv[2]]\nif len(matches)!=1: raise SystemExit(1)\n"
 
 func pythonDynamicObserverProfile(rootProfileName string) (string, error) {
 	switch rootProfileName {

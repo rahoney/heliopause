@@ -23,6 +23,45 @@ func TestDynamicInspectorUsesOnlyStaticImportNames(t *testing.T) {
 	}
 }
 
+func TestDynamicInspectorDistinguishesProvenNoImportFromUnknown(t *testing.T) {
+	artifact := pypiWheelArtifact(t)
+	runner := &noImportWheelRunner{result: completedResult(t)}
+	inspector, err := NewDynamicInspector(runner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	static := artifactpypi.WheelInspection{Project: "example", Version: "1.0", NoImportSurface: true}
+	report, err := inspector.InspectWheel(context.Background(), artifact, static)
+	if err != nil || runner.noImportCalls != 1 || runner.importCalls != 0 || report.Executions()[0].ID().String() != "pypi-dynamic-import-not-applicable" || len(report.Evidence()) != 1 {
+		t.Fatalf("proven no-import report = %#v, %v; runner = %#v", report, err, runner)
+	}
+	static.NoImportSurface = false
+	if _, err := inspector.InspectWheel(context.Background(), artifact, static); err == nil {
+		t.Fatal("unknown empty import surface accepted")
+	}
+	static.NoImportSurface = true
+	static.ImportNames = []string{"example"}
+	if _, err := inspector.InspectWheel(context.Background(), artifact, static); err == nil {
+		t.Fatal("ambiguous no-import surface accepted")
+	}
+}
+
+type noImportWheelRunner struct {
+	result        domain.SandboxResult
+	noImportCalls int
+	importCalls   int
+}
+
+func (r *noImportWheelRunner) InspectWheel(context.Context, domain.AcquiredArtifact, []string) (domain.SandboxResult, error) {
+	r.importCalls++
+	return r.result, nil
+}
+
+func (r *noImportWheelRunner) InspectWheelWithoutImportSurface(context.Context, domain.AcquiredArtifact, []domain.AcquiredArtifact) (domain.SandboxResult, error) {
+	r.noImportCalls++
+	return r.result, nil
+}
+
 func TestDynamicInspectorNormalizesFindingsAndBoundedSummary(t *testing.T) {
 	artifact := pypiWheelArtifact(t)
 	observations := []domain.SandboxObservation{

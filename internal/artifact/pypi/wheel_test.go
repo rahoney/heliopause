@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/binary"
 	"encoding/hex"
 	"fmt"
 	"os"
@@ -55,6 +56,404 @@ func TestInspectWheelDerivesImportNameWhenMetadataOmitsIt(t *testing.T) {
 	inspection, err := InspectWheel(bytes.NewReader(archive), int64(len(archive)), "packaging-25.0-cp314-cp314-manylinux_2_36_x86_64.whl", hex.EncodeToString(digest[:]), WheelTarget{"cp314", "cp314", "manylinux_2_36_x86_64"}, DefaultWheelLimits())
 	if err != nil || len(inspection.ImportNames) != 1 || inspection.ImportNames[0] != "packaging" {
 		t.Fatalf("fallback imports=%q error=%v", inspection.ImportNames, err)
+	}
+}
+
+func TestWheelImportSurfaceFromRecordedFiles(t *testing.T) {
+	for _, test := range []struct {
+		name       string
+		entries    []wheelTestEntry
+		wantImport string
+		noImport   bool
+	}{
+		{
+			name: "ordinary .py package",
+			entries: []wheelTestEntry{
+				{name: "example/__init__.py", body: []byte("value = 1\n")},
+			},
+			wantImport: "example",
+			noImport:   false,
+		},
+		{
+			name: "Python native-extension-only wheel",
+			entries: []wheelTestEntry{
+				{name: "cuda/bindings/_runtime.cpython-314-x86_64-linux-gnu.so", body: []byte("native")},
+			},
+			wantImport: "cuda.bindings._runtime",
+			noImport:   false,
+		},
+		{
+			name: "mixed .py + native-extension wheel",
+			entries: []wheelTestEntry{
+				{name: "package/__init__.py", body: []byte("value = 1\n")},
+				{name: "package/_native.cpython-314-x86_64-linux-gnu.so", body: []byte("native")},
+			},
+			wantImport: "package,package._native",
+			noImport:   false,
+		},
+		{
+			name: "realistic native/data-only CUDA-style wheel",
+			entries: []wheelTestEntry{
+				{name: "nvidia/nccl/lib/libnccl.so.2", body: []byte("elf payload")},
+				{name: "nvidia/nccl/include/nccl.h", body: []byte("header payload")},
+			},
+			wantImport: "",
+			noImport:   true,
+		},
+		{
+			name:       "proven metadata-only wheel",
+			entries:    nil,
+			wantImport: "",
+			noImport:   true,
+		},
+		{
+			name: "unknown ambiguous empty surface",
+			entries: []wheelTestEntry{
+				{name: "README", body: []byte("unstructured root payload")},
+			},
+			wantImport: "",
+			noImport:   false,
+		},
+		{
+			name: "unexpected executable Python surface fails closed",
+			entries: []wheelTestEntry{
+				{name: "nvidia/nccl/hook.pth", body: []byte("import sys")},
+			},
+			wantImport: "",
+			noImport:   false,
+		},
+		{
+			name: "unrecognized payload binary fails closed",
+			entries: []wheelTestEntry{
+				{name: "nvidia/nccl/payload.unknown_binary", body: []byte("binary")},
+			},
+			wantImport: "",
+			noImport:   false,
+		},
+		{
+			name: "versioned library directory does not authorize unknown payload",
+			entries: []wheelTestEntry{
+				{name: "nvidia/libfoo.so.2/payload.unknown_binary", body: []byte("binary")},
+			},
+			wantImport: "",
+			noImport:   false,
+		},
+		{
+			name: "unknown versioned library suffix fails closed",
+			entries: []wheelTestEntry{
+				{name: "nvidia/libfoo.so.unknown", body: []byte("binary")},
+			},
+			wantImport: "",
+			noImport:   false,
+		},
+		{
+			name: "dist-info Python path hook fails closed",
+			entries: []wheelTestEntry{
+				{name: "example-1.0.dist-info/hook.pth", body: []byte("import example")},
+			},
+			wantImport: "",
+			noImport:   false,
+		},
+		{
+			name: "bare .so proven Python extension",
+			entries: []wheelTestEntry{
+				{name: "package/_native.so", body: buildSyntheticELF([]string{"PyInit__native"})},
+			},
+			wantImport: "package._native",
+			noImport:   false,
+		},
+		{
+			name: "mixed .py + bare .so Python extension",
+			entries: []wheelTestEntry{
+				{name: "package/__init__.py", body: []byte("value = 1\n")},
+				{name: "package/_native.so", body: buildSyntheticELF([]string{"PyInit__native"})},
+			},
+			wantImport: "package,package._native",
+			noImport:   false,
+		},
+		{
+			name: "bare .so proven native library with no PyInit",
+			entries: []wheelTestEntry{
+				{name: "nvidia/cu13/lib/libpcsamplingutil.so", body: buildSyntheticELF([]string{"cuptiActivityEnable"})},
+				{name: "nvidia/cu13/include/cupti.h", body: []byte("header payload")},
+			},
+			wantImport: "",
+			noImport:   true,
+		},
+		{
+			name: "ambiguous bare .so fails closed",
+			entries: []wheelTestEntry{
+				{name: "package/corrupt.so", body: []byte("corrupt non-elf payload")},
+			},
+			wantImport: "",
+			noImport:   false,
+		},
+		{
+			name: "bare .so with mismatched PyInit fails closed",
+			entries: []wheelTestEntry{
+				{name: "package/_native.so", body: buildSyntheticELF([]string{"PyInit_othermod"})},
+			},
+			wantImport: "",
+			noImport:   false,
+		},
+		{
+			name: "wheel with .dist-info/entry_points.txt cannot be noImport",
+			entries: []wheelTestEntry{
+				{name: "example-1.0.dist-info/entry_points.txt", body: []byte("[console_scripts]\nrun = example.cli:main\n")},
+			},
+			wantImport: "",
+			noImport:   false,
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			archive := recordedWheelArchive(t, "example", "1.0", "example-1.0.dist-info", test.entries, []string{"py3-none-any"}, nil)
+			inspection := inspectTestWheel(t, archive, "example-1.0-py3-none-any.whl")
+			if got := strings.Join(inspection.ImportNames, ","); got != test.wantImport || inspection.NoImportSurface != test.noImport {
+				t.Fatalf("import surface = %q, no-import=%v, want %q/%v", got, inspection.NoImportSurface, test.wantImport, test.noImport)
+			}
+		})
+	}
+}
+
+func TestWheelEntryPointsParsedAndValidated(t *testing.T) {
+	epContent := `
+[console_scripts]
+black = black:patched_main
+cli-tool = mypkg.cli:main [extra_feat]
+my command = example:main
+
+# Comments and empty lines are supported
+; Alternate comment
+[gui_scripts]
+app = mypkg.gui:App.run
+
+[pytest11]
+my_plugin = mypkg.plugin
+custom plugin check = mypkg.plugin:check_func
+`
+	archive := recordedWheelArchive(t, "example", "1.0", "example-1.0.dist-info", []wheelTestEntry{
+		{name: "example-1.0.dist-info/entry_points.txt", body: []byte(epContent)},
+	}, []string{"py3-none-any"}, nil)
+	inspection := inspectTestWheel(t, archive, "example-1.0-py3-none-any.whl")
+
+	expectedEPs := []string{
+		"console_scripts: black = black:patched_main",
+		"console_scripts: cli-tool = mypkg.cli:main [extra_feat]",
+		"console_scripts: my command = example:main",
+		"gui_scripts: app = mypkg.gui:App.run",
+		"pytest11: custom plugin check = mypkg.plugin:check_func",
+		"pytest11: my_plugin = mypkg.plugin",
+	}
+	sort.Strings(expectedEPs)
+	if strings.Join(inspection.EntryPoints, ";") != strings.Join(expectedEPs, ";") {
+		t.Fatalf("entry points = %v, want %v", inspection.EntryPoints, expectedEPs)
+	}
+	if inspection.NoImportSurface {
+		t.Fatalf("wheel with executable entry points must not have NoImportSurface=true")
+	}
+
+	// Malformed entry_points.txt must fail closed
+	for _, malformed := range []struct {
+		name    string
+		content string
+	}{
+		{"missing equals", "[console_scripts]\ninvalid line without equals\n"},
+		{"entry outside section", "foo = bar:main\n[console_scripts]\n"},
+		{"unclosed section header", "[console_scripts\nfoo = bar:main\n"},
+		{"empty section name", "[]\nfoo = bar:main\n"},
+		{"invalid section punctuation", "[bad!group]\n"},
+		{"empty dotted section component", "[bad..group]\n"},
+		{"invalid UTF-8", string([]byte{'[', 'x', ']', '\n', '#', 0xff, '\n'})},
+		{"invalid module name in target", "[console_scripts]\nfoo = 123-invalid:main\n"},
+		{"empty key", "[console_scripts]\n= bar:main\n"},
+		{"empty value", "[console_scripts]\nfoo =\n"},
+		{"unclosed extras bracket", "[console_scripts]\nfoo = bar:main [extra\n"},
+		{"key starting with bracket", "[console_scripts]\n [foo = bar:main\n"},
+		{"control char in key", "[console_scripts]\nfoo\x00bar = bar:main\n"},
+	} {
+		t.Run(malformed.name, func(t *testing.T) {
+			malformedArchive := recordedWheelArchive(t, "example", "1.0", "example-1.0.dist-info", []wheelTestEntry{
+				{name: "example-1.0.dist-info/entry_points.txt", body: []byte(malformed.content)},
+			}, []string{"py3-none-any"}, nil)
+			digest := sha256.Sum256(malformedArchive)
+			_, err := InspectWheel(bytes.NewReader(malformedArchive), int64(len(malformedArchive)), "example-1.0-py3-none-any.whl", hex.EncodeToString(digest[:]), WheelTarget{"cp314", "cp314", "manylinux_2_36_x86_64"}, DefaultWheelLimits())
+			if err == nil {
+				t.Fatalf("expected malformed entry_points.txt to fail validation, but it passed")
+			}
+			stage, ok := WheelValidationStageOf(err)
+			if !ok || stage != WheelValidationMetadataInvalid {
+				t.Fatalf("validation stage = %q (%v), want %q", stage, err, WheelValidationMetadataInvalid)
+			}
+		})
+	}
+}
+
+func TestWheelEntryPointsAcceptsInternalWhitespace(t *testing.T) {
+	epContent := `
+[my.plugins]
+my command = example:main
+hello   world = example:main2
+`
+	archive := recordedWheelArchive(t, "example", "1.0", "example-1.0.dist-info", []wheelTestEntry{
+		{name: "example-1.0.dist-info/entry_points.txt", body: []byte(epContent)},
+	}, []string{"py3-none-any"}, nil)
+	inspection := inspectTestWheel(t, archive, "example-1.0-py3-none-any.whl")
+
+	expected := []string{
+		"my.plugins: hello   world = example:main2",
+		"my.plugins: my command = example:main",
+	}
+	sort.Strings(expected)
+	if strings.Join(inspection.EntryPoints, ";") != strings.Join(expected, ";") {
+		t.Fatalf("entry points = %v, want %v", inspection.EntryPoints, expected)
+	}
+	if inspection.NoImportSurface {
+		t.Fatalf("wheel with executable entry points must not have NoImportSurface=true")
+	}
+}
+
+func TestWheelBareSOClassificationSemantics(t *testing.T) {
+	// 1. Python extension exporting PyInit__native
+	extELF := buildSyntheticELF([]string{"PyInit__native"})
+	class, mod, err := classifyELFBytes(extELF)
+	if err != nil || class != soPythonExtension || mod != "_native" {
+		t.Fatalf("extELF: got class=%v, mod=%q, err=%v; want soPythonExtension, _native", class, mod, err)
+	}
+
+	// 2. Proven native library exporting cuptiActivityEnable, zero PyInit_
+	nativeELF := buildSyntheticELF([]string{"cuptiActivityEnable", "otherNativeFunc"})
+	class, mod, err = classifyELFBytes(nativeELF)
+	if err != nil || class != soProvenNative || mod != "" {
+		t.Fatalf("nativeELF: got class=%v, mod=%q, err=%v; want soProvenNative, empty", class, mod, err)
+	}
+
+	// 3. Ambiguous: non-ELF corrupt bytes
+	class, _, _ = classifyELFBytes([]byte("not an elf binary at all, just text payload"))
+	if class != soAmbiguous {
+		t.Fatalf("corrupt bytes: got class=%v, want soAmbiguous", class)
+	}
+
+	// 4. Ambiguous: ELF with multiple PyInit_ symbols
+	multiELF := buildSyntheticELF([]string{"PyInit_foo", "PyInit_bar"})
+	class, _, _ = classifyELFBytes(multiELF)
+	if class != soAmbiguous {
+		t.Fatalf("multi PyInit ELF: got class=%v, want soAmbiguous", class)
+	}
+
+	// 5. If actual NVIDIA cupti library is present on disk, verify real ELF
+	if realData, readErr := os.ReadFile("/tmp/test_libpcsamplingutil.so"); readErr == nil && len(realData) > 0 {
+		class, mod, err = classifyELFBytes(realData)
+		if err != nil || class != soProvenNative || mod != "" {
+			t.Fatalf("real cupti ELF: got class=%v, mod=%q, err=%v; want soProvenNative, empty", class, mod, err)
+		}
+	}
+}
+
+func buildSyntheticELF(symbols []string) []byte {
+	shstrtab := []byte("\x00.text\x00.dynsym\x00.dynstr\x00.shstrtab\x00")
+	offTextName := uint32(1)
+	offDynsymName := uint32(7)
+	offDynstrName := uint32(15)
+	offShstrtabName := uint32(23)
+
+	dynstr := []byte("\x00")
+	type symEntry struct {
+		nameOffset uint32
+		section    uint16
+	}
+	var symEntries []symEntry
+	symEntries = append(symEntries, symEntry{nameOffset: 0, section: 0})
+	for _, s := range symbols {
+		offset := uint32(len(dynstr))
+		dynstr = append(dynstr, []byte(s)...)
+		dynstr = append(dynstr, 0)
+		symEntries = append(symEntries, symEntry{nameOffset: offset, section: 1})
+	}
+
+	dynsym := make([]byte, len(symEntries)*24)
+	for i, sym := range symEntries {
+		off := i * 24
+		binary.LittleEndian.PutUint32(dynsym[off:off+4], sym.nameOffset)
+		if i > 0 {
+			dynsym[off+4] = 0x12 // STB_GLOBAL << 4 | STT_FUNC
+		}
+		binary.LittleEndian.PutUint16(dynsym[off+6:off+8], sym.section)
+		binary.LittleEndian.PutUint64(dynsym[off+8:off+16], 0x1000)
+		binary.LittleEndian.PutUint64(dynsym[off+16:off+24], 16)
+	}
+
+	text := []byte{0xc3} // ret
+
+	buf := new(bytes.Buffer)
+	eh := make([]byte, 64)
+	copy(eh[0:4], []byte{0x7f, 'E', 'L', 'F'})
+	eh[4] = 2                                    // ELFCLASS64
+	eh[5] = 1                                    // ELFDATA2LSB
+	eh[6] = 1                                    // EV_CURRENT
+	binary.LittleEndian.PutUint16(eh[16:18], 3)  // ET_DYN
+	binary.LittleEndian.PutUint16(eh[18:20], 62) // EM_X86_64
+	binary.LittleEndian.PutUint32(eh[20:24], 1)  // EV_CURRENT
+	binary.LittleEndian.PutUint16(eh[52:54], 64) // e_ehsize
+	binary.LittleEndian.PutUint16(eh[58:60], 64) // e_shentsize
+	binary.LittleEndian.PutUint16(eh[60:62], 5)  // e_shnum = 5
+	binary.LittleEndian.PutUint16(eh[62:64], 4)  // e_shstrndx = 4
+
+	textOff := uint64(64)
+	dynsymOff := textOff + uint64(len(text))
+	dynstrOff := dynsymOff + uint64(len(dynsym))
+	shstrtabOff := dynstrOff + uint64(len(dynstr))
+	shOff := shstrtabOff + uint64(len(shstrtab))
+
+	binary.LittleEndian.PutUint64(eh[40:48], shOff)
+
+	buf.Write(eh)
+	buf.Write(text)
+	buf.Write(dynsym)
+	buf.Write(dynstr)
+	buf.Write(shstrtab)
+
+	writeSectionHeader := func(name uint32, typ uint32, flags uint64, off, size uint64, link, info uint32, entsize uint64) {
+		sh := make([]byte, 64)
+		binary.LittleEndian.PutUint32(sh[0:4], name)
+		binary.LittleEndian.PutUint32(sh[4:8], typ)
+		binary.LittleEndian.PutUint64(sh[8:16], flags)
+		binary.LittleEndian.PutUint64(sh[24:32], off)
+		binary.LittleEndian.PutUint64(sh[32:40], size)
+		binary.LittleEndian.PutUint32(sh[40:44], link)
+		binary.LittleEndian.PutUint32(sh[44:48], info)
+		binary.LittleEndian.PutUint64(sh[56:64], entsize)
+		buf.Write(sh)
+	}
+
+	writeSectionHeader(0, 0, 0, 0, 0, 0, 0, 0)
+	writeSectionHeader(offTextName, 1, 6, textOff, uint64(len(text)), 0, 0, 0)
+	writeSectionHeader(offDynsymName, 11, 2, dynsymOff, uint64(len(dynsym)), 3, 1, 24)
+	writeSectionHeader(offDynstrName, 3, 2, dynstrOff, uint64(len(dynstr)), 0, 0, 0)
+	writeSectionHeader(offShstrtabName, 3, 0, shstrtabOff, uint64(len(shstrtab)), 0, 0, 0)
+
+	return buf.Bytes()
+}
+
+func TestDeclaredWheelImportMetadataRejectsAmbiguity(t *testing.T) {
+	parsed := headerValues([]byte("Import-Name: example\nImport-Namespace: nvidia.nccl\nImport-Namespace: nvidia.nvshmem\n"), 1024)
+	imports, err := declaredWheelImports(splitHeaders(parsed["import-name"]), splitHeaders(parsed["import-namespace"]))
+	if err != nil || strings.Join(imports, ",") != "example,nvidia.nccl,nvidia.nvshmem" {
+		t.Fatalf("parsed import metadata = %q, %v", imports, err)
+	}
+	for _, test := range []struct {
+		names, namespaces []string
+		want              string
+		invalid           bool
+	}{
+		{[]string{"example; private"}, nil, "example", false},
+		{nil, []string{"nvidia.nccl"}, "nvidia.nccl", false},
+		{[]string{"nvidia.nccl"}, []string{"nvidia.nccl"}, "", true},
+		{[]string{"bad-name"}, nil, "", true},
+	} {
+		imports, err := declaredWheelImports(test.names, test.namespaces)
+		if (err != nil) != test.invalid || strings.Join(imports, ",") != test.want {
+			t.Fatalf("declaredWheelImports(%q,%q) = %q, %v", test.names, test.namespaces, imports, err)
+		}
 	}
 }
 

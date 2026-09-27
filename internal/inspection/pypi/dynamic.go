@@ -55,7 +55,7 @@ type pythonWheelClosureRunner interface {
 }
 
 func (i *DynamicInspector) inspectWheelWithRunner(ctx context.Context, artifact domain.AcquiredArtifact, static artifactpypi.WheelInspection, closure []domain.AcquiredArtifact, runner pythonWheelInspectionRunner) (domain.InspectionReport, error) {
-	if i == nil || i.runner == nil || ctx == nil || (artifact.Identity().Variant() != "wheel" && artifact.Identity().Variant() != "derived-wheel") || static.Project != artifact.Identity().Name() || static.Version != artifact.Identity().Version() || len(static.ImportNames) == 0 {
+	if i == nil || i.runner == nil || ctx == nil || (artifact.Identity().Variant() != "wheel" && artifact.Identity().Variant() != "derived-wheel") || static.Project != artifact.Identity().Name() || static.Version != artifact.Identity().Version() || static.NoImportSurface && len(static.ImportNames) != 0 || !static.NoImportSurface && len(static.ImportNames) == 0 {
 		return domain.InspectionReport{}, errors.New("pypi dynamic inspection request is invalid")
 	}
 	if _, ok := artifactpypi.ProfileForSource(artifact.Identity().Source()); !ok {
@@ -63,7 +63,13 @@ func (i *DynamicInspector) inspectWheelWithRunner(ctx context.Context, artifact 
 	}
 	var result domain.SandboxResult
 	var err error
-	if closureRunner, ok := runner.(pythonWheelClosureRunner); ok {
+	if static.NoImportSurface {
+		noImportRunner, ok := i.runner.(sandbox.NoImportSurfacePythonWheelRunner)
+		if !ok {
+			return domain.InspectionReport{}, errors.New("pypi dynamic runner cannot inspect a proven no-import wheel")
+		}
+		result, err = noImportRunner.InspectWheelWithoutImportSurface(ctx, artifact, closure)
+	} else if closureRunner, ok := runner.(pythonWheelClosureRunner); ok {
 		result, err = closureRunner.InspectWheelWithClosure(ctx, artifact, static.ImportNames, closure)
 	} else {
 		result, err = runner.InspectWheel(ctx, artifact, static.ImportNames)
@@ -71,7 +77,11 @@ func (i *DynamicInspector) inspectWheelWithRunner(ctx context.Context, artifact 
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
-	checkID, err := domain.NewCheckID("pypi-dynamic-import")
+	checkName, evidenceName := "pypi-dynamic-import", "pypi-dynamic-import-result"
+	if static.NoImportSurface {
+		checkName, evidenceName = "pypi-dynamic-import-not-applicable", "pypi-dynamic-import-not-applicable-result"
+	}
+	checkID, err := domain.NewCheckID(checkName)
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
@@ -100,11 +110,11 @@ func (i *DynamicInspector) inspectWheelWithRunner(ctx context.Context, artifact 
 	if err != nil {
 		return incompleteReport(checkID, "M11_DYNAMIC_SUMMARY_INVALID")
 	}
-	evidenceID, err := domain.NewEvidenceID("pypi-dynamic-import-result")
+	evidenceID, err := domain.NewEvidenceID(evidenceName)
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
-	evidence, err := domain.NewEvidence(evidenceID, checkID, artifact.Identity(), artifact.Digest(), "pypi-dynamic-import", summary)
+	evidence, err := domain.NewEvidence(evidenceID, checkID, artifact.Identity(), artifact.Digest(), checkName, summary)
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}

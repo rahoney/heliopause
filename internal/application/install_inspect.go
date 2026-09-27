@@ -326,7 +326,7 @@ func graphDynamicInstallDiagnostics(graph domain.LockedDependencyGraph, reports 
 	diagnostics := make([]GraphDynamicInstallDiagnostic, 0)
 	for _, dependency := range graph.Nodes() {
 		for _, execution := range reports[dependency.Node()].Executions() {
-			if execution.ID().String() != "pypi-dynamic-import" {
+			if execution.ID().String() != "pypi-dynamic-import" && execution.ID().String() != "pypi-dynamic-import-not-applicable" {
 				continue
 			}
 			limitation, limited := execution.LimitationCode()

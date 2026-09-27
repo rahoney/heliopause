@@ -328,6 +328,7 @@ func validatedPyPIDestinations(site string, expected map[string]pypiExpected, re
 	}
 	installed := map[string]bool{}
 	recorded := map[string]bool{}
+	recordedDestinations := map[string]int{}
 	destinations := []pypiDestination{}
 	err := filepath.WalkDir(site, func(path string, entry os.DirEntry, err error) error {
 		if err != nil {
@@ -342,7 +343,7 @@ func validatedPyPIDestinations(site string, expected map[string]pypiExpected, re
 				if !ok || expected[name].version != version || installed[name] {
 					return errors.New("PyPI installed distribution set is invalid")
 				}
-				if err := validateInstalledRecord(site, path, expected[name], recorded, &destinations, limit); err != nil {
+				if err := validateInstalledRecord(site, path, expected[name], recorded, recordedDestinations, &destinations, limit); err != nil {
 					return err
 				}
 				installed[name] = true
@@ -383,7 +384,7 @@ func installedDistInfo(value string) (string, string, bool) {
 	return name, version, err == nil
 }
 
-func validateInstalledRecord(site, directory string, expected pypiExpected, recorded map[string]bool, destinations *[]pypiDestination, limit int64) error {
+func validateInstalledRecord(site, directory string, expected pypiExpected, recorded map[string]bool, recordedDestinations map[string]int, destinations *[]pypiDestination, limit int64) error {
 	metadata, err := readBoundedPromotionFile(filepath.Join(directory, "METADATA"), limit)
 	if err != nil || len(metadata) == 0 {
 		return errors.New("PyPI installed metadata is unavailable")
@@ -410,10 +411,9 @@ func validateInstalledRecord(site, directory string, expected pypiExpected, reco
 		}
 		destination, err := resolveInstalledRecordPath(site, directory, row[0])
 		entryPath := destination.Source
-		if err != nil || recorded[entryPath] {
+		if err != nil {
 			return errors.New("PyPI installed RECORD is invalid")
 		}
-		recorded[entryPath] = true
 		self := entryPath == filepath.Join(directory, "RECORD")
 		if row[1] == "" {
 			if !self || row[2] != "" {
@@ -460,7 +460,23 @@ func validateInstalledRecord(site, directory string, expected pypiExpected, reco
 			}
 		}
 		destination.Digest, destination.Size = fingerprint.Digest, fingerprint.Size
-		*destinations = append(*destinations, destination)
+		if previous, duplicate := recordedDestinations[entryPath]; duplicate {
+			prior := &(*destinations)[previous]
+			if destination.Scheme != "site" || prior.Scheme != "site" || destination.Digest != prior.Digest || destination.Size != prior.Size || destination.key() != prior.key() || expected.digest == "" {
+				return errors.New("PyPI cross-distribution destination collision is invalid")
+			}
+			owners := append(prior.owners(), pypiOwner{expected.name, expected.version, expected.digest})
+			sort.Slice(owners, func(i, j int) bool { return owners[i].Distribution < owners[j].Distribution })
+			prior.Distribution, prior.Version, prior.ArtifactDigest = owners[0].Distribution, owners[0].Version, owners[0].ArtifactDigest
+			prior.SharedOwners = owners
+			if !validDestinationOwners(*prior) {
+				return errors.New("PyPI shared destination ownership is invalid")
+			}
+		} else {
+			recordedDestinations[entryPath] = len(*destinations)
+			*destinations = append(*destinations, destination)
+		}
+		recorded[entryPath] = true
 		count++
 	}
 	if count == 0 {

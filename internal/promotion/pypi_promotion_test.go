@@ -153,6 +153,92 @@ func TestRecordRejectsCrossDistributionDestinationCollision(t *testing.T) {
 	}
 }
 
+func TestRecordPreservesIdenticalSharedSiteOwnership(t *testing.T) {
+	_, plan := makePypiVenvFixture(t)
+	output := realPromotionRoot(t)
+	site := filepath.Join(output, "site")
+	shared := filepath.Join(site, "nvidia", "__init__.py")
+	if err := os.MkdirAll(filepath.Dir(shared), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(shared, nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	empty := sha256.Sum256(nil)
+	sharedRow := fmt.Sprintf("nvidia/__init__.py,sha256=%s,0\n", base64.RawURLEncoding.EncodeToString(empty[:]))
+	expected := map[string]pypiExpected{}
+	// cu126 has ten distinct NVIDIA distributions claiming this empty file.
+	projects := []string{"nvidia-cublas-cu12", "nvidia-cuda-runtime-cu12", "nvidia-cufft-cu12", "nvidia-cufile-cu12", "nvidia-cuda-cupti-cu12", "nvidia-curand-cu12", "nvidia-cusolver-cu12", "nvidia-cusparse-cu12", "nvidia-cuda-nvrtc-cu12", "nvidia-nvtx-cu12"}
+	requirementLines := make([]string, 0, len(projects))
+	for index, project := range projects {
+		digest := strings.Repeat(string(rune('a'+index)), 64)
+		expected[project] = pypiExpected{name: project, version: "1.0", digest: digest}
+		requirementLines = append(requirementLines, project+"==1.0")
+		dist := filepath.Join(site, strings.ReplaceAll(project, "-", "_")+"-1.0.dist-info")
+		if err := os.MkdirAll(dist, 0o700); err != nil {
+			t.Fatal(err)
+		}
+		metadata := []byte("Name: " + project + "\nVersion: 1.0\n")
+		if err := os.WriteFile(filepath.Join(dist, "METADATA"), metadata, 0o600); err != nil {
+			t.Fatal(err)
+		}
+		metadataSum := sha256.Sum256(metadata)
+		body := sharedRow + fmt.Sprintf("%s/METADATA,sha256=%s,%d\n", filepath.Base(dist), base64.RawURLEncoding.EncodeToString(metadataSum[:]), len(metadata)) + filepath.Base(dist) + "/RECORD,,\n"
+		if err := os.WriteFile(filepath.Join(dist, "RECORD"), []byte(body), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	requirements := []byte(strings.Join(requirementLines, "\n") + "\n")
+	secondRecord := filepath.Join(site, "nvidia_cuda_runtime_cu12-1.0.dist-info", "RECORD")
+	originalRecord, err := os.ReadFile(secondRecord)
+	if err != nil {
+		t.Fatal(err)
+	}
+	wrong := sha256.Sum256([]byte("different"))
+	conflicting := strings.Replace(string(originalRecord), base64.RawURLEncoding.EncodeToString(empty[:]), base64.RawURLEncoding.EncodeToString(wrong[:]), 1)
+	if err := os.WriteFile(secondRecord, []byte(conflicting), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := validatedPyPIDestinations(site, expected, requirements); err == nil {
+		t.Fatal("conflicting shared site file hash accepted")
+	}
+	if err := os.WriteFile(secondRecord, originalRecord, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	destinations, err := validatedPyPIDestinations(site, expected, requirements)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var sharedDestination pypiDestination
+	for _, destination := range destinations {
+		if destination.key() == "site/nvidia/__init__.py" {
+			sharedDestination = destination
+		}
+	}
+	if len(destinations) != 2*len(projects)+1 || len(sharedDestination.SharedOwners) != len(projects) || sharedDestination.SharedOwners[0].Distribution != "nvidia-cublas-cu12" || sharedDestination.SharedOwners[len(projects)-1].Distribution != "nvidia-nvtx-cu12" {
+		t.Fatalf("shared destination = %#v; destinations = %d", sharedDestination, len(destinations))
+	}
+	if err := plan.commit("", destinations); err != nil {
+		t.Fatal(err)
+	}
+	state, _, err := plan.readState()
+	if err != nil || len(state.Files[sharedDestination.key()].SharedOwners) != len(projects) {
+		t.Fatalf("persisted shared ownership = %#v, %v", state, err)
+	}
+	partial := []pypiDestination{}
+	for _, destination := range destinations {
+		if destination.Distribution == "nvidia-cublas-cu12" {
+			if destination.key() == sharedDestination.key() {
+				destination.SharedOwners = nil
+			}
+			partial = append(partial, destination)
+		}
+	}
+	if err := plan.commit("", partial); err == nil {
+		t.Fatal("partial update stole a shared destination")
+	}
+}
+
 func TestRecordRejectsOutputOutsideSchemeRoots(t *testing.T) {
 	root, site, _ := validPromotionOutputFixture(t)
 	if err := os.Mkdir(filepath.Join(root, "libexec"), 0o700); err != nil {

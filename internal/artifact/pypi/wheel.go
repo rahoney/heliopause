@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"crypto/sha256"
+	"debug/elf"
 	"encoding/base64"
 	"encoding/csv"
 	"encoding/hex"
@@ -15,6 +16,8 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
@@ -91,9 +94,12 @@ type WheelInspection struct {
 	Files                             []WheelFile
 	RequiresPython                    string
 	RequiresDist, ImportNames         []string
-	EntryPoints, Scripts              []string
-	NativeExtensions                  []string
-	License, LicenseFile              string
+	// NoImportSurface is true only for a wheel proven to contain no dynamic Python
+	// surface (such as a metadata-only wheel or native/data-only wheel).
+	NoImportSurface      bool
+	EntryPoints, Scripts []string
+	NativeExtensions     []string
+	License, LicenseFile string
 }
 
 // InspectWheel validates one selected wheel without extracting or executing it.
@@ -232,19 +238,229 @@ func parseWheelMetadata(project, version, filename string, metadata, wheel, reco
 	if err != nil {
 		return WheelInspection{}, wheelValidation(WheelValidationRecord)
 	}
-	imports := splitHeaders(meta["import-name"])
-	if len(imports) == 0 {
-		imports = importNamesFromWheelFiles(files, distInfo)
+	declared, err := declaredWheelImports(splitHeaders(meta["import-name"]), splitHeaders(meta["import-namespace"]))
+	if err != nil {
+		return WheelInspection{}, wheelValidation(WheelValidationMetadataInvalid)
 	}
-	return WheelInspection{Project: project, Version: version, Filename: filename, WheelVersion: wheelHeaders["wheel-version"], Tags: splitHeaders(wheelHeaders["tag"]), Files: files, RequiresPython: meta["requires-python"], RequiresDist: splitHeaders(meta["requires-dist"]), ImportNames: imports, EntryPoints: splitHeaders(meta["entry-points"]), License: meta["license"], LicenseFile: meta["license-file"]}, nil
+	inferred := importNamesFromWheelFiles(files, distInfo, entries, limits)
+	imports := unionImportSurfaces(declared, inferred)
+	var entryPoints []string
+	if metaEP := splitHeaders(meta["entry-points"]); len(metaEP) > 0 {
+		entryPoints = append(entryPoints, metaEP...)
+	}
+	for _, file := range files {
+		if strings.HasSuffix(file.Path, ".dist-info/entry_points.txt") && file.Path != distInfo+"/entry_points.txt" {
+			return WheelInspection{}, wheelValidation(WheelValidationDistInfoIdentity)
+		}
+	}
+	if epEntry, ok := entries[distInfo+"/entry_points.txt"]; ok {
+		if epEntry.UncompressedSize64 > uint64(limits.MaxMetadata) {
+			return WheelInspection{}, wheelValidation(WheelValidationMetadata)
+		}
+		epData, readErr := readZipEntry(epEntry, limits.MaxMetadata)
+		if readErr != nil {
+			return WheelInspection{}, wheelValidation(WheelValidationMetadata)
+		}
+		parsedEP, parseErr := parseEntryPointsTxt(epData)
+		if parseErr != nil {
+			return WheelInspection{}, wheelValidation(WheelValidationMetadataInvalid)
+		}
+		entryPoints = append(entryPoints, parsedEP...)
+	}
+	sort.Strings(entryPoints)
+	noImportSurface := len(imports) == 0 && provenNoDynamicPythonSurface(files, distInfo, declared, entryPoints, entries, limits)
+	return WheelInspection{
+		Project:         project,
+		Version:         version,
+		Filename:        filename,
+		WheelVersion:    wheelHeaders["wheel-version"],
+		Tags:            splitHeaders(wheelHeaders["tag"]),
+		Files:           files,
+		RequiresPython:  meta["requires-python"],
+		RequiresDist:    splitHeaders(meta["requires-dist"]),
+		ImportNames:     imports,
+		NoImportSurface: noImportSurface,
+		EntryPoints:     entryPoints,
+		License:         meta["license"],
+		LicenseFile:     meta["license-file"],
+	}, nil
 }
 
-// importNamesFromWheelFiles is a bounded static fallback for widely deployed
-// wheels that predate the optional Import-Name metadata. Only a valid Python
-// identifier observed as a top-level module or package is returned; the
-// dynamic backend never receives package-manager or caller-supplied names.
-func importNamesFromWheelFiles(files []WheelFile, distInfo string) []string {
+func unionImportSurfaces(lists ...[]string) []string {
 	seen := map[string]struct{}{}
+	var result []string
+	for _, list := range lists {
+		for _, item := range list {
+			if !validPythonImportName(item) {
+				continue
+			}
+			if _, exists := seen[item]; !exists {
+				seen[item] = struct{}{}
+				result = append(result, item)
+			}
+		}
+	}
+	sort.Strings(result)
+	return result
+}
+
+func declaredWheelImports(names, namespaces []string) ([]string, error) {
+	seen := map[string]bool{}
+	result := make([]string, 0, len(names)+len(namespaces))
+	for _, value := range append(names, namespaces...) {
+		parts := strings.Split(value, ";")
+		name := strings.TrimSpace(parts[0])
+		if len(parts) > 2 || len(parts) == 2 && strings.TrimSpace(parts[1]) != "private" || !validPythonImportName(name) || seen[name] {
+			return nil, errors.New("wheel import metadata is invalid")
+		}
+		seen[name] = true
+		result = append(result, name)
+	}
+	return result, nil
+}
+
+func validPythonImportName(name string) bool {
+	for _, part := range strings.Split(name, ".") {
+		if !validPythonImportComponent(part) {
+			return false
+		}
+	}
+	return true
+}
+
+func provenNoDynamicPythonSurface(files []WheelFile, distInfo string, declaredImports, entryPoints []string, entries map[string]*zip.File, limits WheelLimits) bool {
+	if len(declaredImports) > 0 || len(entryPoints) > 0 {
+		return false
+	}
+	distInfoSeen := map[string]bool{}
+	for _, file := range files {
+		if strings.HasPrefix(file.Path, distInfo+"/") {
+			distInfoSeen[file.Path] = true
+		}
+	}
+	if !distInfoSeen[distInfo+"/METADATA"] || !distInfoSeen[distInfo+"/WHEEL"] || !distInfoSeen[distInfo+"/RECORD"] {
+		return false
+	}
+	var payloadFiles []WheelFile
+	for _, file := range files {
+		if strings.HasPrefix(file.Path, distInfo+"/") {
+			name := file.Path
+			if isPythonExecutableSurface(name) {
+				return false
+			}
+			continue
+		}
+		payloadFiles = append(payloadFiles, file)
+	}
+	if len(payloadFiles) == 0 {
+		return true
+	}
+	hasRecognizedPayload := false
+	for _, file := range payloadFiles {
+		name := file.Path
+		if isPythonExecutableSurface(name) {
+			return false
+		}
+		if !strings.Contains(name, "/") {
+			return false
+		}
+		if isBareSO(name) {
+			entry := entries[name]
+			if entry == nil {
+				return false
+			}
+			class, _, err := classifyBareSO(entry, limits.MaxUncompressed)
+			if err != nil || class != soProvenNative {
+				return false
+			}
+			hasRecognizedPayload = true
+			continue
+		}
+		if !isRecognizedNativeOrDataPayload(name, distInfo) {
+			return false
+		}
+		hasRecognizedPayload = true
+	}
+	return hasRecognizedPayload
+}
+
+func isPythonExecutableSurface(name string) bool {
+	if strings.HasSuffix(name, ".py") || strings.HasSuffix(name, ".pyw") ||
+		strings.HasSuffix(name, ".pyc") || strings.HasSuffix(name, ".pyo") ||
+		strings.HasSuffix(name, ".pyd") || strings.HasSuffix(name, ".pth") {
+		return true
+	}
+	if _, ok := pythonExtensionImportName(name); ok {
+		return true
+	}
+	if strings.Contains(name, ".data/scripts/") || strings.HasPrefix(name, "bin/") {
+		return true
+	}
+	if strings.HasSuffix(name, ".egg-link") {
+		return true
+	}
+	return false
+}
+
+func isRecognizedNativeOrDataPayload(name, distInfo string) bool {
+	base := path.Base(name)
+	upper := strings.ToUpper(base)
+	for _, prefix := range []string{"LICENSE", "NOTICE", "README", "COPYING", "AUTHORS", "PATENTS"} {
+		if strings.HasPrefix(upper, prefix) {
+			return true
+		}
+	}
+	if isVersionedNativeSO(base) ||
+		strings.HasSuffix(name, ".a") || strings.HasSuffix(name, ".dylib") ||
+		strings.HasSuffix(name, ".dll") {
+		return true
+	}
+	for _, ext := range []string{".h", ".hpp", ".hxx", ".cuh", ".inc", ".h.in", ".c", ".cpp", ".cc"} {
+		if strings.HasSuffix(name, ext) {
+			return true
+		}
+	}
+	for _, ext := range []string{".pc", ".pc.in", ".cmake", ".cmake.in"} {
+		if strings.HasSuffix(name, ext) {
+			return true
+		}
+	}
+	for _, ext := range []string{".txt", ".md", ".rst", ".json", ".yaml", ".yml", ".xml", ".csv", ".toml", ".ini", ".cfg", ".dat", ".bin", ".pdf", ".html", ".css"} {
+		if strings.HasSuffix(name, ext) {
+			return true
+		}
+	}
+	dataRoot := strings.TrimSuffix(distInfo, ".dist-info") + ".data/"
+	if strings.HasPrefix(name, dataRoot+"headers/") || strings.HasPrefix(name, dataRoot+"data/") {
+		return true
+	}
+	return false
+}
+
+func isVersionedNativeSO(base string) bool {
+	index := strings.LastIndex(base, ".so.")
+	if index <= 0 || index+4 >= len(base) {
+		return false
+	}
+	for _, part := range strings.Split(base[index+4:], ".") {
+		if part == "" {
+			return false
+		}
+		for _, character := range part {
+			if character < '0' || character > '9' {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+// importNamesFromWheelFiles is a bounded static inspection discovering Python
+// .py modules/packages and recognized Python native extension modules. It does
+// NOT treat arbitrary payload directories as dynamic Python import surfaces.
+func importNamesFromWheelFiles(files []WheelFile, distInfo string, entries map[string]*zip.File, limits WheelLimits) []string {
+	seen := map[string]struct{}{}
+	// 1. .py module / package discovery
 	for _, file := range files {
 		name := file.Path
 		if strings.HasPrefix(name, distInfo+"/") || strings.Contains(name, ".data/") {
@@ -262,12 +478,77 @@ func importNamesFromWheelFiles(files []WheelFile, distInfo string) []string {
 			seen[parts[0]] = struct{}{}
 		}
 	}
+	// 2. Python native extension discovery (combined with .py discovery, not only fallback)
+	for _, file := range files {
+		name := file.Path
+		if strings.HasPrefix(name, distInfo+"/") || strings.Contains(name, ".data/") {
+			continue
+		}
+		if candidate, ok := pythonExtensionImportName(name); ok && validPythonImportName(candidate) {
+			seen[candidate] = struct{}{}
+		}
+	}
+	// 3. Bare .so discovery: if a bare .so is proven to be a Python extension (exports PyInit_<module>),
+	// derive its candidate import name.
+	for _, file := range files {
+		name := file.Path
+		if strings.HasPrefix(name, distInfo+"/") || strings.Contains(name, ".data/") {
+			continue
+		}
+		if isBareSO(name) {
+			if entry := entries[name]; entry != nil {
+				class, modName, err := classifyBareSO(entry, limits.MaxUncompressed)
+				if err == nil && class == soPythonExtension && modName != "" {
+					candidate := bareSOImportName(name, modName)
+					if candidate != "" && validPythonImportName(candidate) {
+						seen[candidate] = struct{}{}
+					}
+				}
+			}
+		}
+	}
 	imports := make([]string, 0, len(seen))
 	for name := range seen {
 		imports = append(imports, name)
 	}
 	sort.Strings(imports)
 	return imports
+}
+
+func pythonExtensionImportName(path string) (string, bool) {
+	parts := strings.Split(path, "/")
+	base := parts[len(parts)-1]
+	var module string
+	if strings.HasSuffix(base, ".so") {
+		at := strings.Index(base, ".cpython-")
+		if at < 0 {
+			at = strings.Index(base, ".abi3.so")
+		}
+		if at <= 0 {
+			return "", false
+		}
+		module = base[:at]
+	} else if strings.HasSuffix(base, ".pyd") {
+		trimmed := strings.TrimSuffix(base, ".pyd")
+		if at := strings.Index(trimmed, ".cpython-"); at > 0 {
+			module = trimmed[:at]
+		} else if at := strings.Index(trimmed, ".cp"); at > 0 {
+			module = trimmed[:at]
+		} else {
+			module = trimmed
+		}
+	} else {
+		return "", false
+	}
+	if !validPythonImportComponent(module) {
+		return "", false
+	}
+	parts[len(parts)-1] = module
+	candidate := strings.Join(parts, ".")
+	if !validPythonImportName(candidate) {
+		return "", false
+	}
+	return candidate, true
 }
 
 func validPythonImportComponent(value string) bool {
@@ -279,6 +560,238 @@ func validPythonImportComponent(value string) bool {
 			continue
 		}
 		return false
+	}
+	return true
+}
+
+type soClassification int
+
+const (
+	soAmbiguous soClassification = iota
+	soProvenNative
+	soPythonExtension
+)
+
+func isBareSO(name string) bool {
+	if !strings.HasSuffix(name, ".so") {
+		return false
+	}
+	base := path.Base(name)
+	return !strings.Contains(base, ".cpython-") && !strings.Contains(base, ".abi3.so")
+}
+
+func classifyBareSO(entry *zip.File, maxUncompressed int64) (class soClassification, pyInitModule string, err error) {
+	if entry == nil || entry.UncompressedSize64 > uint64(maxUncompressed) || entry.UncompressedSize64 < 64 {
+		return soAmbiguous, "", nil
+	}
+	r, err := entry.Open()
+	if err != nil {
+		return soAmbiguous, "", err
+	}
+	defer r.Close()
+
+	data, err := io.ReadAll(io.LimitReader(r, int64(entry.UncompressedSize64)+1))
+	if err != nil || int64(len(data)) != int64(entry.UncompressedSize64) {
+		return soAmbiguous, "", err
+	}
+
+	class, modName, err := classifyELFBytes(data)
+	if err != nil || class != soPythonExtension {
+		return class, modName, err
+	}
+
+	// For a Python extension, the exported PyInit_<module> must match the file basename.
+	base := path.Base(entry.Name)
+	fileBase := strings.TrimSuffix(base, ".so")
+	if modName != fileBase {
+		return soAmbiguous, "", nil
+	}
+	return soPythonExtension, modName, nil
+}
+
+func classifyELFBytes(data []byte) (class soClassification, pyInitModule string, err error) {
+	if len(data) < 64 || !bytes.HasPrefix(data, []byte("\x7fELF")) {
+		return soAmbiguous, "", nil
+	}
+
+	var (
+		f       *elf.File
+		openErr error
+	)
+	func() {
+		defer func() {
+			if rec := recover(); rec != nil {
+				openErr = errors.New("elf parsing panic")
+			}
+		}()
+		f, openErr = elf.NewFile(bytes.NewReader(data))
+	}()
+	if openErr != nil || f == nil {
+		return soAmbiguous, "", nil
+	}
+	defer f.Close()
+
+	if f.Type != elf.ET_DYN {
+		return soAmbiguous, "", nil
+	}
+
+	var (
+		symbols []elf.Symbol
+		symErr  error
+	)
+	func() {
+		defer func() {
+			if rec := recover(); rec != nil {
+				symErr = errors.New("dynamic symbols panic")
+			}
+		}()
+		symbols, symErr = f.DynamicSymbols()
+	}()
+	if symErr != nil {
+		return soAmbiguous, "", nil
+	}
+
+	var pyInitSymbols []string
+	for _, sym := range symbols {
+		if strings.HasPrefix(sym.Name, "PyInit_") {
+			if sym.Section != elf.SHN_UNDEF {
+				mod := strings.TrimPrefix(sym.Name, "PyInit_")
+				pyInitSymbols = append(pyInitSymbols, mod)
+			} else {
+				// Undefined/imported PyInit_ reference is abnormal for native libraries.
+				return soAmbiguous, "", nil
+			}
+		}
+	}
+
+	if len(pyInitSymbols) == 0 {
+		return soProvenNative, "", nil
+	}
+	if len(pyInitSymbols) == 1 {
+		mod := pyInitSymbols[0]
+		if validPythonImportComponent(mod) {
+			return soPythonExtension, mod, nil
+		}
+		return soAmbiguous, "", nil
+	}
+	return soAmbiguous, "", nil
+}
+
+func bareSOImportName(filePath, modName string) string {
+	parts := strings.Split(filePath, "/")
+	fileBase := strings.TrimSuffix(parts[len(parts)-1], ".so")
+	if fileBase != modName || !validPythonImportComponent(modName) {
+		return ""
+	}
+	parts[len(parts)-1] = modName
+	candidate := strings.Join(parts, ".")
+	if !validPythonImportName(candidate) {
+		return ""
+	}
+	return candidate
+}
+
+func parseEntryPointsTxt(data []byte) ([]string, error) {
+	if len(data) == 0 {
+		return nil, nil
+	}
+	data = bytes.TrimPrefix(data, []byte("\xef\xbb\xbf"))
+	if !utf8.Valid(data) {
+		return nil, errors.New("malformed entry_points.txt: invalid UTF-8")
+	}
+	lines := strings.Split(string(data), "\n")
+	currentSection := ""
+	var results []string
+
+	for _, rawLine := range lines {
+		line := strings.TrimRight(rawLine, "\r")
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") || strings.HasPrefix(line, ";") {
+			continue
+		}
+		if strings.HasPrefix(line, "[") {
+			if !strings.HasSuffix(line, "]") {
+				return nil, errors.New("malformed entry_points.txt: unclosed section header")
+			}
+			section := strings.TrimSpace(line[1 : len(line)-1])
+			if !validEntryPointGroup(section) {
+				return nil, errors.New("malformed entry_points.txt: invalid section name")
+			}
+			currentSection = section
+			continue
+		}
+		if currentSection == "" {
+			return nil, errors.New("malformed entry_points.txt: entry outside section")
+		}
+		idx := strings.Index(line, "=")
+		if idx < 0 {
+			return nil, errors.New("malformed entry_points.txt: missing '='")
+		}
+		key := strings.TrimSpace(line[:idx])
+		val := strings.TrimSpace(line[idx+1:])
+		if key == "" || val == "" {
+			return nil, errors.New("malformed entry_points.txt: empty key or value")
+		}
+		if !validEntryPointName(key) {
+			return nil, errors.New("malformed entry_points.txt: invalid entry point name")
+		}
+		modSpec := val
+		if bracketIdx := strings.Index(val, "["); bracketIdx >= 0 {
+			if !strings.HasSuffix(val, "]") {
+				return nil, errors.New("malformed entry_points.txt: unclosed extras bracket")
+			}
+			modSpec = strings.TrimSpace(val[:bracketIdx])
+		}
+		parts := strings.Split(modSpec, ":")
+		if len(parts) > 2 {
+			return nil, errors.New("malformed entry_points.txt: multiple colons in target")
+		}
+		moduleName := strings.TrimSpace(parts[0])
+		if !validPythonImportName(moduleName) {
+			return nil, errors.New("malformed entry_points.txt: invalid module name in target")
+		}
+		if len(parts) == 2 {
+			attr := strings.TrimSpace(parts[1])
+			if attr == "" {
+				return nil, errors.New("malformed entry_points.txt: empty attribute in target")
+			}
+			for _, part := range strings.Split(attr, ".") {
+				if !validPythonImportComponent(part) {
+					return nil, errors.New("malformed entry_points.txt: invalid attribute identifier")
+				}
+			}
+		}
+		results = append(results, currentSection+": "+key+" = "+val)
+	}
+	sort.Strings(results)
+	return results, nil
+}
+
+func validEntryPointGroup(group string) bool {
+	if group == "" {
+		return false
+	}
+	for _, component := range strings.Split(group, ".") {
+		if component == "" {
+			return false
+		}
+		for _, character := range component {
+			if character != '_' && !unicode.IsLetter(character) && !unicode.IsDigit(character) {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func validEntryPointName(name string) bool {
+	if name == "" || strings.HasPrefix(name, "[") || name != strings.TrimSpace(name) {
+		return false
+	}
+	for _, character := range name {
+		if character == '=' || character == '\r' || character == '\n' || (unicode.IsControl(character) && character != '\t') {
+			return false
+		}
 	}
 	return true
 }
@@ -462,7 +975,7 @@ func headerValues(body []byte, limit int64) map[string]string {
 		}
 		key := strings.ToLower(strings.TrimSpace(line[:at]))
 		value := strings.TrimSpace(line[at+1:])
-		if key == "requires-dist" || key == "import-name" || key == "entry-points" || key == "tag" {
+		if key == "requires-dist" || key == "import-name" || key == "import-namespace" || key == "entry-points" || key == "tag" {
 			out[key] += value + "\n"
 		} else {
 			out[key] = value

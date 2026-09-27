@@ -2220,12 +2220,19 @@ Evidence (PyTorch CPU):
 - PyTorch CPU promotion tmpfs = 1 GiB, dynamic CPU limit = 30 CPU-seconds
 - observation event cap = 10,000 (configured observation budget/cap, not measured runtime usage; raw numeric observer counters not all retained)
 Explicit limitations:
-- CU126 remains unauthorized and unqualified.
-- CU128 remains unqualified.
-- CUDA/GPU qualification was NOT performed; CPU qualification does not authorize CUDA work.
+- 위의 CPU 2.9.1 기록은 이전 checkpoint의 evidence다. 현재
+  `01d07bffe776077a92f8cb7ad32f61fc640d1d95` ordinary CI와
+  `torch@2.14.0+cpu` full integration은 PASS다.
+- 같은 checkpoint의 수동 `torch@2.14.0+cu126` full integration은 static
+  inspection 이후 첫 empty-import wheel에서 FAIL했다. 현재 작업 트리의
+  임의 디렉터리 import 추론 제거, Python native extension과 .py 표면 union,
+  fail-closed proven-no-dynamic-surface 모델 및 동일 내용의 shared site-file ownership 수정은
+  local check를 통과했지만 독립 재감사와 CUDA runtime qualification은 남아 있다.
+- `cu126`, `cu130`, `cu132`는 canonical lock에 등록되어 있으며 CUDA full
+  integration PASS evidence는 아직 없다.
 MISSING:
-- CUDA profile qualification (cu126/cu128 remain unauthorized/unqualified; deferred or separate authorization)
-- CI qualification evidence
+- 현재 작업 트리 변경의 독립 재감사 및 최소 한 pinned CUDA full E2E PASS
+- CUDA qualification evidence에 따른 M12-001 acceptance closure
 
 M12-002 — Go
 IMPLEMENTED: YES
