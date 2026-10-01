@@ -701,8 +701,15 @@ func forgetObserverSessionOwned(session *observerSecuritySession) {
 
 func registerObserverProfile(ctx context.Context, containerID, profile string) (*observerSecuritySession, error) {
 	topology, ok := observerExpectedTopology(profile)
+	if !ok {
+		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	return registerObserverProfileWithTopology(ctx, containerID, profile, topology)
+}
+
+func registerObserverProfileWithTopology(ctx context.Context, containerID, profile string, topology []observerMountExpectation) (*observerSecuritySession, error) {
 	encodedTopology, encoded := encodeExpectedTopology(topology)
-	if ctx == nil || !containerIDPattern.MatchString(containerID) || !validObserverProfile(profile) || !ok || !encoded || activeObserverSession(containerID) != nil {
+	if ctx == nil || !containerIDPattern.MatchString(containerID) || !validObserverProfile(profile) || !encoded || activeObserverSession(containerID) != nil {
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
 	}
 	generation, err := newObserverSecurityGeneration()

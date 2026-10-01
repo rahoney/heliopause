@@ -206,7 +206,7 @@ func relocateStagedSchemeRoots(transactionRoot string) error {
 	var moves []move
 	// Preflight BOTH schemes before the first mutation, including when only
 	// the second scheme is hostile or has a destination collision.
-	for _, scheme := range []string{"bin", "share"} {
+	for _, scheme := range []string{"bin", "share", "include"} {
 		src := filepath.Join(site, scheme)
 		dst := filepath.Join(transactionRoot, scheme)
 		if !pathWithin(site, src) || !pathWithin(transactionRoot, dst) {
@@ -520,15 +520,18 @@ func resolveInstalledRecordPath(site, distInfo, value string) (pypiDestination, 
 		}
 		candidate, root = filepath.Join(distInfo, filepath.FromSlash(strings.Join(parts, "/"))), site
 	case 2:
-		if len(parts) < 3 || (parts[2] != "bin" && parts[2] != "share") {
+		if len(parts) < 3 || (parts[2] != "bin" && parts[2] != "share" && parts[2] != "include") {
 			return pypiDestination{}, errors.New("PyPI installed RECORD path is invalid")
 		}
 		candidate = filepath.Join(distInfo, filepath.FromSlash(strings.Join(parts, "/")))
 		root = filepath.Join(filepath.Dir(site), parts[2])
-		if parts[2] == "bin" {
+		switch parts[2] {
+		case "bin":
 			scheme = "scripts"
-		} else {
+		case "share":
 			scheme = "data"
+		case "include":
+			scheme = "headers"
 		}
 	default:
 		return pypiDestination{}, errors.New("PyPI installed RECORD path is invalid")
@@ -557,13 +560,13 @@ func validateRecordedOutputRoots(site, transactionRoot string, recorded map[stri
 	}
 	for _, entry := range entries {
 		switch entry.Name() {
-		case filepath.Base(site), "bin", "share", "wheels", manifestFilename, sbomFilename, "requirements.txt":
+		case filepath.Base(site), "bin", "share", "include", "wheels", manifestFilename, sbomFilename, "requirements.txt":
 			// These are the exact scheme roots and preparePyPIProject inputs.
 		default:
 			return errors.New("private output outside the controlled installation scheme")
 		}
 	}
-	for _, root := range []string{site, filepath.Join(transactionRoot, "bin"), filepath.Join(transactionRoot, "share")} {
+	for _, root := range []string{site, filepath.Join(transactionRoot, "bin"), filepath.Join(transactionRoot, "share"), filepath.Join(transactionRoot, "include")} {
 		if _, err := os.Lstat(root); errors.Is(err, os.ErrNotExist) {
 			continue
 		} else if err != nil || rejectSymlinkPath(root) != nil {

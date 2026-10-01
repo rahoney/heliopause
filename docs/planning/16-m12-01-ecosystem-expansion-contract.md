@@ -292,6 +292,8 @@ limit를 상향하지 않으며, root SourceProfile이 선택한 bounded runtime
 policy만 기존 sandbox/promotion composition이 소비한다. default PyPI runtime
 limits는 변경하지 않는다.
 
+Python observation의 CPU authorization은 artifact transaction 하나에 부여한다. Preparation, artifact-free volume anchor, 모든 독립 observation runtime과 descendant, startup scenario 및 transaction-subtree teardown의 CPU를 하나의 systemd parent cgroup `cpu.stat usage_usec`로 누적한다. 각 probe 경계와 재시도는 allowance를 재설정하지 않는다. Absolute ceiling `B`에서 polling interval `P`, maximum stop/drain interval `T`, maximum aggregate CPU parallelism `N`, conservative uncertainty `E`로 계산한 `R = N × (P + T) + E`를 내부에 예약하고 `B − R`에서 추가 launch를 중단한다. `R`은 `B`에 더하지 않으며, final CPU가 `B`를 넘거나 sample/termination bound가 확인되지 않으면 qualification하지 않는다. Wall deadline과 observer event/byte allowance도 transaction-wide이며 memory/PID ceilings은 각 disposable runtime에 적용한다.
+
 staging과 dynamic introduction의 `source == "pypi"` 전용 허용은
 `pytorch-cpu`·`pytorch-cu126` 문자열 예외를 여러 위치에 추가하는 방식으로
 확장하지 않는다. 기존 canonical `SourceProfile`/`ProfileForSource` policy로

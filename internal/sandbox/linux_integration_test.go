@@ -318,11 +318,66 @@ func TestLinuxPyPIWheelDynamicIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	resources, err := hosttool.NewSystemObservationResourceClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	backend.resources = integrationObservationResources{client: resources}
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 	result, err := backend.InspectWheel(ctx, artifact, static.ImportNames)
 	if err != nil || result.Status() != domain.SandboxCompleted {
 		t.Fatalf("dynamic result = %#v observer_reason=%s, %v", result, integrationObserverFaultReason(supervisor), err)
+	}
+}
+
+type integrationObservationResources struct {
+	client *hosttool.ObservationResourceClient
+}
+
+func integrationObservationLease(lease hosttool.ObservationResourceLease) ObservationResourceLease {
+	return ObservationResourceLease{CgroupParent: lease.CgroupParent, CPU: lease.CPU, UsageUsec: lease.UsageUsec}
+}
+
+func (a integrationObservationResources) Create(ctx context.Context, transaction, profile string) (ObservationResourceLease, error) {
+	lease, err := a.client.Create(ctx, transaction, profile)
+	return integrationObservationLease(lease), err
+}
+func (a integrationObservationResources) Register(ctx context.Context, transaction, container, role string) (ObservationResourceLease, error) {
+	lease, err := a.client.Register(ctx, transaction, container, role)
+	return integrationObservationLease(lease), err
+}
+func (a integrationObservationResources) Read(ctx context.Context, transaction string) (ObservationResourceLease, error) {
+	lease, err := a.client.Read(ctx, transaction)
+	return integrationObservationLease(lease), err
+}
+func (a integrationObservationResources) Terminate(ctx context.Context, transaction, container string) (ObservationResourceLease, error) {
+	lease, err := a.client.Terminate(ctx, transaction, container)
+	return integrationObservationLease(lease), err
+}
+func (a integrationObservationResources) Close(ctx context.Context, transaction string) (ObservationResourceLease, error) {
+	lease, err := a.client.Close(ctx, transaction)
+	return integrationObservationLease(lease), err
+}
+
+func TestLinuxPythonClosureVolumeIntegration(t *testing.T) {
+	if os.Getenv("HELOX_PYPI_DYNAMIC_INTEGRATION") != "1" {
+		t.Skip("requires pinned local Docker runtime")
+	}
+	id, err := domain.NewSandboxSessionID()
+	if err != nil {
+		t.Fatal(err)
+	}
+	runner := integrationRunner{t: t}
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	volume, err := createClosureVolume(ctx, runner, id.String(), strings.Repeat("a", 64), 16<<20)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer discardCommand(context.Background(), runner, "docker", "volume", "rm", volume.name)
+	if err := volume.verify(ctx, runner); err != nil {
+		t.Fatal(err)
 	}
 }
 

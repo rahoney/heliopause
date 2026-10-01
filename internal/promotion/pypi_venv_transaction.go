@@ -114,6 +114,10 @@ func discoverPythonVenv(root string) (pypiVenvPlan, error) {
 	if _, err := os.Lstat(data); !errors.Is(err, os.ErrNotExist) && trustedExistingDirectory(data) != nil {
 		return p, errors.New("unsafe virtual environment data root")
 	}
+	headers := filepath.Join(root, "include")
+	if _, err := os.Lstat(headers); !errors.Is(err, os.ErrNotExist) && trustedExistingDirectory(headers) != nil {
+		return p, errors.New("unsafe virtual environment headers root")
+	}
 	return p, nil
 }
 func (p pypiVenvPlan) bind(d pypiDestination) (pypiDestination, error) {
@@ -125,6 +129,8 @@ func (p pypiVenvPlan) bind(d pypiDestination) (pypiDestination, error) {
 		root = filepath.Join(p.root, "bin")
 	case "data":
 		root = filepath.Join(p.root, "share")
+	case "headers":
+		root = filepath.Join(p.root, "include")
 	default:
 		return d, errors.New("unknown installation scheme")
 	}
@@ -345,7 +351,7 @@ func beginPyPIVenvTransaction(p pypiVenvPlan) (_ *pypiVenvTransaction, resultErr
 	if err != nil || p.verifyState(t.current) != nil {
 		return nil, errors.New("ownership state unavailable or changed")
 	}
-	for _, path := range []string{p.root, p.site, filepath.Join(p.root, "bin"), filepath.Join(p.root, "share"), filepath.Join(p.root, ".heliopause")} {
+	for _, path := range []string{p.root, p.site, filepath.Join(p.root, "bin"), filepath.Join(p.root, "share"), filepath.Join(p.root, "include"), filepath.Join(p.root, ".heliopause")} {
 		if err := t.freezeParents(path); err != nil {
 			return nil, err
 		}
@@ -455,7 +461,7 @@ func (t *pypiVenvTransaction) verifyPathIdentity(path string) error {
 	if !t.config.matches(filepath.Join(t.plan.root, "pyvenv.cfg")) {
 		return errors.New("configuration drift")
 	}
-	paths := []string{t.plan.root, t.plan.site, filepath.Join(t.plan.root, "bin"), filepath.Join(t.plan.root, "share"), filepath.Join(t.plan.root, ".heliopause")}
+	paths := []string{t.plan.root, t.plan.site, filepath.Join(t.plan.root, "bin"), filepath.Join(t.plan.root, "share"), filepath.Join(t.plan.root, "include"), filepath.Join(t.plan.root, ".heliopause")}
 	for {
 		paths = append(paths, path)
 		if path == "/" {
@@ -669,7 +675,7 @@ func (t *pypiVenvTransaction) persistLedger() error {
 			return errors.New("created directory parent unavailable")
 		}
 		scheme := ""
-		for _, candidate := range []struct{ name, root string }{{"site", t.plan.site}, {"scripts", filepath.Join(t.plan.root, "bin")}, {"data", filepath.Join(t.plan.root, "share")}} {
+		for _, candidate := range []struct{ name, root string }{{"site", t.plan.site}, {"scripts", filepath.Join(t.plan.root, "bin")}, {"data", filepath.Join(t.plan.root, "share")}, {"headers", filepath.Join(t.plan.root, "include")}} {
 			if path == candidate.root || pathWithin(candidate.root, path) {
 				scheme = candidate.name
 				break

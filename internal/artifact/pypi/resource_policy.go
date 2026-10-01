@@ -13,20 +13,21 @@ import (
 // SourceProfile. It never replaces the independent source identity frozen on
 // each resolved graph node.
 type ResourcePolicy struct {
-	maxArtifactCompressed   int64
-	maxArtifactUncompressed int64
-	maxFilesPerArtifact     int64
-	maxMetadataFile         int64
-	maxGraphCompressed      int64
-	maxGraphUncompressed    int64
-	maxGraphFiles           int64
-	maxGraphArtifacts       int
-	maxTemporaryDisk        int64
-	qualificationDuration   time.Duration
-	runtimeMemory           int64
-	runtimeTmpfs            int64
-	promotionTmpfs          int64
-	runtimeCPUSecs          int
+	maxArtifactCompressed            int64
+	maxArtifactUncompressed          int64
+	maxFilesPerArtifact              int64
+	maxMetadataFile                  int64
+	maxGraphCompressed               int64
+	maxGraphUncompressed             int64
+	maxGraphFiles                    int64
+	maxGraphArtifacts                int
+	maxTemporaryDisk                 int64
+	qualificationDuration            time.Duration
+	runtimeMemory                    int64
+	runtimeTmpfs                     int64
+	promotionTmpfs                   int64
+	runtimeCPUSecs                   int
+	maxObservationImportsPerArtifact int
 }
 
 func defaultResourcePolicy() ResourcePolicy {
@@ -38,7 +39,8 @@ func defaultResourcePolicy() ResourcePolicy {
 		maxGraphFiles: limits.MaxFiles, maxGraphArtifacts: 64, maxTemporaryDisk: 512 << 20,
 		qualificationDuration: 5 * time.Minute, runtimeMemory: 512 << 20,
 		runtimeTmpfs: 256 << 20, promotionTmpfs: 128 << 20,
-		runtimeCPUSecs: 30,
+		runtimeCPUSecs:                   30,
+		maxObservationImportsPerArtifact: 32,
 	}
 }
 
@@ -50,7 +52,8 @@ func pyTorchCPUResourcePolicy() ResourcePolicy {
 		maxGraphArtifacts: 64, maxTemporaryDisk: 4 << 30,
 		qualificationDuration: 15 * time.Minute, runtimeMemory: 2 << 30,
 		runtimeTmpfs: 2 << 30, promotionTmpfs: 1 << 30,
-		runtimeCPUSecs: 180,
+		runtimeCPUSecs:                   180,
+		maxObservationImportsPerArtifact: 64,
 	}
 }
 
@@ -62,7 +65,8 @@ func pyTorchCU126ResourcePolicy() ResourcePolicy {
 		maxGraphArtifacts: 64, maxTemporaryDisk: 24 << 30,
 		qualificationDuration: 40 * time.Minute, runtimeMemory: 4 << 30,
 		runtimeTmpfs: 12 << 30, promotionTmpfs: 12 << 30,
-		runtimeCPUSecs: 300,
+		runtimeCPUSecs:                   300,
+		maxObservationImportsPerArtifact: 64,
 	}
 }
 
@@ -82,7 +86,8 @@ func pyTorchCUDA13ResourcePolicy() ResourcePolicy {
 		maxGraphArtifacts: 64, maxTemporaryDisk: 24 << 30,
 		qualificationDuration: 40 * time.Minute, runtimeMemory: 4 << 30,
 		runtimeTmpfs: 12 << 30, promotionTmpfs: 12 << 30,
-		runtimeCPUSecs: 300,
+		runtimeCPUSecs:                   300,
+		maxObservationImportsPerArtifact: 64,
 	}
 }
 
@@ -108,8 +113,15 @@ func (p ResourcePolicy) RuntimeCPUSecs() int {
 	return p.runtimeCPUSecs
 }
 
+func (p ResourcePolicy) MaxObservationImportsPerArtifact() int {
+	if p.maxObservationImportsPerArtifact <= 0 {
+		return 32
+	}
+	return p.maxObservationImportsPerArtifact
+}
+
 func (p ResourcePolicy) valid() bool {
-	return p.maxArtifactCompressed > 0 && p.maxArtifactUncompressed > 0 && p.maxFilesPerArtifact > 0 && p.maxMetadataFile > 0 && p.maxGraphCompressed > 0 && p.maxGraphUncompressed > 0 && p.maxGraphFiles > 0 && p.maxGraphArtifacts > 0 && p.maxTemporaryDisk > 0 && p.qualificationDuration > 0 && p.runtimeMemory > 0 && p.runtimeTmpfs > 0 && p.promotionTmpfs > 0 && p.runtimeCPUSecs > 0
+	return p.maxArtifactCompressed > 0 && p.maxArtifactUncompressed > 0 && p.maxFilesPerArtifact > 0 && p.maxMetadataFile > 0 && p.maxGraphCompressed > 0 && p.maxGraphUncompressed > 0 && p.maxGraphFiles > 0 && p.maxGraphArtifacts > 0 && p.maxTemporaryDisk > 0 && p.qualificationDuration > 0 && p.runtimeMemory > 0 && p.runtimeTmpfs > 0 && p.promotionTmpfs > 0 && p.runtimeCPUSecs > 0 && p.maxObservationImportsPerArtifact > 0
 }
 
 type resourceSession struct {

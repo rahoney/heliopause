@@ -204,8 +204,17 @@ func (i *PythonArtifactIntroducer) introduce(ctx context.Context, containerID st
 	if !ok {
 		return errors.New("sandbox artifact stream runner is not configured")
 	}
-	if err := input.RunInput(ctx, file, "docker", boundaryInputExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-B", "-c", pythonCopyArtifactScript, destination)...); err != nil {
+	// Authentication is bound to the bytes actually consumed by Docker's
+	// trusted input stream. The earlier static inspection cannot authenticate
+	// a second file open if intake bytes change between those two steps.
+	hasher := sha256.New()
+	stream := io.TeeReader(file, hasher)
+	if err := input.RunInput(ctx, stream, "docker", boundaryInputExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-B", "-c", pythonCopyArtifactScript, destination)...); err != nil {
 		return fmt.Errorf("introduce verified Python artifact: %w", err)
+	}
+	consumed, err := file.Seek(0, io.SeekCurrent)
+	if err != nil || consumed != info.Size() || hex.EncodeToString(hasher.Sum(nil)) != artifact.Digest().String() {
+		return errors.New("python artifact stream differs from authenticated intake")
 	}
 	return nil
 }

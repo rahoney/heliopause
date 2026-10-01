@@ -30,7 +30,8 @@ func TestDynamicInspectorDistinguishesProvenNoImportFromUnknown(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	static := artifactpypi.WheelInspection{Project: "example", Version: "1.0", NoImportSurface: true}
+	static := artifactpypi.WheelInspection{Project: "example", Version: "1.0", NoImportSurface: true,
+		Surface: artifactpypi.RuntimeSurface{InstalledFiles: []artifactpypi.InstalledFile{{ArchivePath: "example-1.0.dist-info/METADATA", Scheme: artifactpypi.SchemeDistInfo, Destination: "example-1.0.dist-info/METADATA", Role: artifactpypi.RuntimeRoleMetadata}}}}
 	report, err := inspector.InspectWheel(context.Background(), artifact, static)
 	if err != nil || runner.noImportCalls != 1 || runner.importCalls != 0 || report.Executions()[0].ID().String() != "pypi-dynamic-import-not-applicable" || len(report.Evidence()) != 1 {
 		t.Fatalf("proven no-import report = %#v, %v; runner = %#v", report, err, runner)
@@ -43,6 +44,20 @@ func TestDynamicInspectorDistinguishesProvenNoImportFromUnknown(t *testing.T) {
 	static.ImportNames = []string{"example"}
 	if _, err := inspector.InspectWheel(context.Background(), artifact, static); err == nil {
 		t.Fatal("ambiguous no-import surface accepted")
+	}
+}
+
+func TestDynamicInspectorScriptOnlyNeverQualifiesAsNoImport(t *testing.T) {
+	artifact := pypiWheelArtifact(t)
+	runner := &noImportWheelRunner{result: completedResult(t)}
+	inspector, err := NewDynamicInspector(runner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	static := artifactpypi.WheelInspection{Project: "example", Version: "1.0", Surface: artifactpypi.RuntimeSurface{Scripts: []string{"bin/tool"}}}
+	report, err := inspector.InspectWheel(context.Background(), artifact, static)
+	if err != nil || report.Execution().Status() != domain.ExecutionIncomplete || runner.noImportCalls != 0 || runner.importCalls != 0 {
+		t.Fatalf("script-only inspection = %#v, %v, runner %#v", report, err, runner)
 	}
 }
 

@@ -90,6 +90,8 @@ cp -R tools/gvisor-observer "$work_root/gvisor/tools/haa_gvisor_observer"
 (
   cd "$work_root/gvisor"
   "$work_root/bazel" build -c opt //tools/haa_gvisor_observer:haa_gvisor_observer
+  "$work_root/bazel" build -c opt //tools/haa_gvisor_observer:haa_gvisor_observer_latch_test
+  "$work_root/gvisor/bazel-bin/tools/haa_gvisor_observer/haa_gvisor_observer_latch_test"
 )
 
 test ! -e "$output_path"

@@ -127,7 +127,21 @@ func ServeNetworkPolicy(ctx context.Context) error {
 			_ = os.Remove(config.SocketPath)
 		}
 	}(info)
-	return server.Serve(ctx)
+	serviceContext, cancel := context.WithCancel(ctx)
+	defer cancel()
+	resourceResult := make(chan error, 1)
+	networkResult := make(chan error, 1)
+	go func() { resourceResult <- serveObservationResources(serviceContext, config, executor) }()
+	go func() { networkResult <- server.Serve(serviceContext) }()
+	select {
+	case err := <-resourceResult:
+		cancel()
+		_ = server.Close()
+		return errors.Join(err, <-networkResult)
+	case err := <-networkResult:
+		cancel()
+		return errors.Join(err, <-resourceResult)
+	}
 }
 
 func loadPolicyServiceConfig() (policyServiceConfig, error) {

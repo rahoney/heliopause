@@ -226,7 +226,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		}
 		var wheelRunner sandbox.PythonWheelRunner = sandbox.UnavailablePythonWheelRunner{}
 		if runtime.GOOS == "linux" {
-			backend, factoryErr := sandbox.NewLinuxPyPIDynamicBackendWithExecutor(filepath.Join(root, "intake"), trustedExecutor, processObserver)
+			backend, factoryErr := sandbox.NewLinuxPyPIDynamicBackendWithExecutor(filepath.Join(root, "intake"), trustedExecutor, processObserver, newObservationResourceAdapter())
 			if factoryErr != nil {
 				return factoryErr
 			}

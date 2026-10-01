@@ -2179,6 +2179,46 @@ production activation과 최종 배포를 수행한다.
 | 5 | M12-005 | cross-ecosystem qualification and feature freeze | NOT_STARTED |
 | 6 | M12-02 | final red-team/fix gate | RESERVED |
 
+M12-001 진행 근거 (2026-09-30): Model C Python 동적 관찰의 Pass 1 신뢰
+런타임 기판을 구현했다. 동일한 인증 closure를 고정된 읽기 전용 volume으로
+공유하고, controller가 독립 import unit마다 새 gVisor 런타임을 생성·제거하며,
+systemd transaction cgroup의 누적 CPU와 다중 observer stream을 회계한다.
+로컬 합성 wheel 통합, 전체 Go 테스트·vet, `scripts/check`의 platform·quick·security가
+통과했다. 활성 `.pth`, entry point/script, 설치 최종 목적지 충돌 및 CPython ABI
+의미 정리와 대표 PyTorch profile qualification은 남아 있다. 따라서 M12-001은
+`IN_PROGRESS`이고 acceptance는 닫히지 않았다.
+
+M12-001 Pass 2A 진행 근거 (2026-09-30): 정적 wheel role에서 import, 활성
+`.pth` statement와 별도 installed-startup scenario의 typed unit을 확정하고,
+인증 closure manifest에 묶은 controller 원장으로 전달한다. Entry point는 정확한
+설치 모듈 관찰에만 연결하고 임의 설치 script는 `MANUAL_REVIEW`로 유지한다.
+최종 설치 경로 충돌·CPython 3.14 x86_64 확장자 판정과 installer-generated
+entry-point wrapper 회계를 정리했다. Digest 고정 대표 wheel 15개, 대상 Go
+테스트, 전체 Go 테스트·vet, `scripts/check quick/security`는 통과했다. 별도로
+실행한 합성 wheel gVisor 통합 재검사는 설치된 helper가
+`/usr/libexec/heliopause/helox`만 인증하는 환경에서 Go test binary를 client로
+사용했으므로 peer admission에서 중단됐다. 별도의 고정 systemd keeper 실환경
+테스트는 통과했다. 인증된 production client를 통한 통합 재검증과 PyTorch
+profile qualification은 남아 있으므로
+acceptance는 닫히지 않았다.
+Pass 2A 종료 판정: `IMPLEMENTED=YES`, `WIRED=YES` (지원되는 typed unit과
+controller transaction), `QUALIFIED=NO`, `ACCEPTANCE_CLOSED=NO`.
+`MISSING`: 인증된 production client를 통한 Python 동적 통합 및 대표 CUDA full
+E2E qualification.
+
+M12-001 Pass 2B 로컬 근거 (2026-09-30): 실행 권한이 없는 구형 import batch
+inventory와 사용되지 않는 동적 오류 문자열 분류기·테스트를 제거했다. 15개 digest
+고정 실제 wheel corpus는 `REPRESENTATIVE_REAL_CORPUS`로 통과했고, 네
+PyTorch profile의 생산 resolver 정적 replay와 typed unit·누적 리소스·승격
+소유권 테스트도 통과했다. 고정 gVisor 소스의 observer 빌드 및 C++ latch,
+runtime bundle verifier, 전체 Go test·vet, platform·quick·security가
+통과했다. Go test binary를 통한 실제 동적 통합은 설치된 privileged helper의
+정상적인 peer 실행 파일 인증에서 `M5_PYPI_DYNAMIC_ACCOUNTING_UNAVAILABLE`로
+중단되므로 trusted transaction end-to-end 로컬 acceptance 근거로 세지
+않는다. M12-001은 `IN_PROGRESS`, `QUALIFIED=NO`, `ACCEPTANCE_CLOSED=NO`이며
+`MISSING`은 인증된 production client를 통한 동적 통합과 대표 CUDA full E2E
+qualification이다.
+
 Deferred planning note: M12-001은 기존 representative pinned CUDA qualification
 기준으로 닫고, broader first-release PyTorch/CUDA release support matrix 확정은
 M12-005 feature freeze에서 수행한다. canonical lock 등록만으로 release support를

@@ -10,8 +10,8 @@ import (
 	"github.com/rahoney/heliopause/internal/sandbox"
 )
 
-// DynamicInspector imports only statically declared wheel import names through
-// a consumer-owned gVisor runner. It does not control Docker/gVisor directly.
+// DynamicInspector reconciles the statically admitted observation plan with a
+// consumer-owned gVisor runner. It does not control Docker/gVisor directly.
 type DynamicInspector struct{ runner sandbox.PythonWheelRunner }
 
 func NewDynamicInspector(runner sandbox.PythonWheelRunner) (*DynamicInspector, error) {
@@ -21,9 +21,9 @@ func NewDynamicInspector(runner sandbox.PythonWheelRunner) (*DynamicInspector, e
 	return &DynamicInspector{runner: runner}, nil
 }
 
-// InspectWheel translates a completed isolated import run into generic Domain
-// evidence. An unavailable, failed or incomplete session is deliberately not a
-// successful inspection report.
+// InspectWheel translates externally completed bounded observations into
+// generic Domain evidence. Completion does not assert normal import return.
+// An unavailable, failed or incomplete session is not a successful report.
 func (i *DynamicInspector) InspectWheel(ctx context.Context, artifact domain.AcquiredArtifact, static artifactpypi.WheelInspection) (domain.InspectionReport, error) {
 	return i.inspectWheel(ctx, artifact, static, []domain.AcquiredArtifact{artifact})
 }
@@ -55,20 +55,38 @@ type pythonWheelClosureRunner interface {
 }
 
 func (i *DynamicInspector) inspectWheelWithRunner(ctx context.Context, artifact domain.AcquiredArtifact, static artifactpypi.WheelInspection, closure []domain.AcquiredArtifact, runner pythonWheelInspectionRunner) (domain.InspectionReport, error) {
-	if i == nil || i.runner == nil || ctx == nil || (artifact.Identity().Variant() != "wheel" && artifact.Identity().Variant() != "derived-wheel") || static.Project != artifact.Identity().Name() || static.Version != artifact.Identity().Version() || static.NoImportSurface && len(static.ImportNames) != 0 || !static.NoImportSurface && len(static.ImportNames) == 0 {
+	if i == nil || i.runner == nil || ctx == nil || (artifact.Identity().Variant() != "wheel" && artifact.Identity().Variant() != "derived-wheel") || static.Project != artifact.Identity().Name() || static.Version != artifact.Identity().Version() || static.NoImportSurface && len(static.ImportNames) != 0 {
 		return domain.InspectionReport{}, errors.New("pypi dynamic inspection request is invalid")
 	}
 	if _, ok := artifactpypi.ProfileForSource(artifact.Identity().Source()); !ok {
 		return domain.InspectionReport{}, errors.New("pypi dynamic inspection source is unsupported")
 	}
+	resourcePolicy := artifactpypi.ResourcePolicyFromContext(ctx)
+	plan, err := artifactpypi.BuildObservationPlan(static, resourcePolicy)
+	if err != nil {
+		return domain.InspectionReport{}, err
+	}
+	if err := artifactpypi.ValidateTypedObservationPlan(plan, resourcePolicy); err != nil {
+		return domain.InspectionReport{}, err
+	}
+	if !plan.Admissible() {
+		checkID, err := domain.NewCheckID("pypi-dynamic-import")
+		if err != nil {
+			return domain.InspectionReport{}, err
+		}
+		return incompleteReport(checkID, "M5_PYPI_DYNAMIC_SURFACE_UNSUPPORTED")
+	}
 	var result domain.SandboxResult
-	var err error
-	if static.NoImportSurface {
+	if planRunner, ok := runner.(sandbox.PlanAwarePythonWheelRunner); ok {
+		result, err = planRunner.InspectWheelWithPlan(ctx, artifact, plan, closure)
+	} else if static.NoImportSurface {
 		noImportRunner, ok := i.runner.(sandbox.NoImportSurfacePythonWheelRunner)
 		if !ok {
 			return domain.InspectionReport{}, errors.New("pypi dynamic runner cannot inspect a proven no-import wheel")
 		}
 		result, err = noImportRunner.InspectWheelWithoutImportSurface(ctx, artifact, closure)
+	} else if len(plan.SiteStartupHooks) != 0 || len(plan.EntryPointCoverage) != 0 || len(plan.ScriptCoverage) != 0 {
+		return domain.InspectionReport{}, errors.New("pypi dynamic runner cannot execute typed observation plan")
 	} else if closureRunner, ok := runner.(pythonWheelClosureRunner); ok {
 		result, err = closureRunner.InspectWheelWithClosure(ctx, artifact, static.ImportNames, closure)
 	} else {

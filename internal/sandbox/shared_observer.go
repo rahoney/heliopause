@@ -75,6 +75,99 @@ func observerExpectedTopology(profile string) ([]observerMountExpectation, bool)
 	}
 }
 
+type pythonClosurePhase string
+
+const (
+	pythonClosurePreparation pythonClosurePhase = "PREPARATION"
+	pythonClosureAnchor      pythonClosurePhase = "ANCHOR"
+	pythonClosureObservation pythonClosurePhase = "OBSERVATION"
+)
+
+// observationTraceLedger is shared by every phase of one Python observation
+// transaction. SharedObserver.mu protects it, including concurrent anchor and
+// probe streams. A new stream never replenishes the authorization.
+type observationTraceLedger struct {
+	maxEvents uint64
+	maxBytes  uint64
+	events    uint64
+	bytes     uint64
+}
+
+func newObservationTraceLedger(profile string) (*observationTraceLedger, error) {
+	if !isPythonObserverProfile(profile) {
+		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	budget := traceBudgetForProfile(profile)
+	if budget.events <= 0 || budget.bytes == 0 {
+		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	return &observationTraceLedger{maxEvents: uint64(budget.events), maxBytes: budget.bytes}, nil
+}
+
+func (l *observationTraceLedger) charge(record helperRecord, bytes uint64) error {
+	if l == nil || bytes == 0 {
+		return observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	events := uint64(1)
+	if record.Count != nil {
+		events = *record.Count
+	}
+	if events > l.maxEvents-l.events {
+		return observerFault{reason: "EVENT_LIMIT"}
+	}
+	if bytes > l.maxBytes-l.bytes {
+		return observerFault{reason: "BYTE_LIMIT"}
+	}
+	l.events += events
+	l.bytes += bytes
+	return nil
+}
+
+func (o *SharedObserver) observationUsage(ledger *observationTraceLedger) (uint64, uint64, error) {
+	if o == nil || ledger == nil {
+		return 0, 0, observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	o.mu.Lock()
+	defer o.mu.Unlock()
+	if o.fault != nil {
+		return 0, 0, o.fault
+	}
+	return ledger.events, ledger.bytes, nil
+}
+
+// pythonClosureExpectedTopology is selected by a trusted phase, never by a
+// wheel or caller-provided mount string. Docker volume identity is checked by
+// the controller; this topology independently seals the gVisor guest mount.
+func pythonClosureExpectedTopology(profile string, phase pythonClosurePhase) ([]observerMountExpectation, bool) {
+	if !isPythonObserverProfile(profile) {
+		return nil, false
+	}
+	base, ok := observerExpectedTopology(profile)
+	if !ok {
+		return nil, false
+	}
+	readOnly := phase == pythonClosureAnchor || phase == pythonClosureObservation
+	if phase != pythonClosurePreparation && !readOnly {
+		return nil, false
+	}
+	for index := range base {
+		if base[index].Mountpoint == pythonSitePath {
+			base[index] = observerMountExpectation{pythonSitePath, "workspace", "/", "9p", readOnly, false, false, false}
+			return base, true
+		}
+	}
+	return nil, false
+}
+
+func isPythonObserverProfile(profile string) bool {
+	switch profile {
+	case "pypi-wheel", "pypi-wheel-pytorch-cpu", "pypi-wheel-pytorch-cu126", "pypi-wheel-pytorch-cu130", "pypi-wheel-pytorch-cu132":
+		return true
+	default:
+		return false
+	}
+}
+
 func encodeExpectedTopology(topology []observerMountExpectation) (string, bool) {
 	if len(topology) == 0 || len(topology) > 64 {
 		return "", false
@@ -331,6 +424,26 @@ func (o *SharedObserver) Start(_ context.Context, containerID string) (TraceRead
 }
 
 func (o *SharedObserver) StartProfile(ctx context.Context, containerID, profile string) (TraceReader, error) {
+	return o.startProfile(ctx, containerID, profile, nil)
+}
+
+func (o *SharedObserver) StartPythonClosureProfile(ctx context.Context, containerID, profile string, phase pythonClosurePhase) (TraceReader, error) {
+	return o.StartPythonClosureProfileWithBudget(ctx, containerID, profile, phase, nil)
+}
+
+func (o *SharedObserver) StartPythonClosureProfileWithBudget(ctx context.Context, containerID, profile string, phase pythonClosurePhase, budget *observationTraceLedger) (TraceReader, error) {
+	topology, ok := pythonClosureExpectedTopology(profile, phase)
+	if !ok {
+		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	return o.startProfileWithBudget(ctx, containerID, profile, topology, budget)
+}
+
+func (o *SharedObserver) startProfile(ctx context.Context, containerID, profile string, topology []observerMountExpectation) (TraceReader, error) {
+	return o.startProfileWithBudget(ctx, containerID, profile, topology, nil)
+}
+
+func (o *SharedObserver) startProfileWithBudget(ctx context.Context, containerID, profile string, topology []observerMountExpectation, transactionBudget *observationTraceLedger) (TraceReader, error) {
 	if ctx == nil || profile == "" {
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
 	}
@@ -340,7 +453,13 @@ func (o *SharedObserver) StartProfile(ctx context.Context, containerID, profile 
 	if !active {
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
 	}
-	session, err := registerObserverProfile(ctx, containerID, profile)
+	var session *observerSecuritySession
+	var err error
+	if topology == nil {
+		session, err = registerObserverProfile(ctx, containerID, profile)
+	} else {
+		session, err = registerObserverProfileWithTopology(ctx, containerID, profile, topology)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -357,6 +476,7 @@ func (o *SharedObserver) StartProfile(ctx context.Context, containerID, profile 
 		profile:           profile,
 		attributionCounts: make(map[string]uint64),
 		session:           session,
+		transactionBudget: transactionBudget,
 	}
 	// The reader/session relationship is complete before either is reachable
 	// through SharedObserver maps. This closes the profile-publication race with
@@ -421,6 +541,13 @@ func (o *SharedObserver) receive() {
 			o.fail(observerFault{reason: "ATTRIBUTION_FAILURE"})
 			return
 		}
+		if reader.transactionBudget != nil {
+			if budgetErr := reader.transactionBudget.charge(record, uint64(size)); budgetErr != nil {
+				o.mu.Unlock()
+				o.fail(budgetErr)
+				return
+			}
+		}
 		if record.Kind == "stream-fault" {
 			o.sequence++
 			o.writeAttributionDiagnostic(sharedAttributionDiagnostic{o.sequence, reader.profile, reader.attributionCounts})
@@ -448,7 +575,10 @@ func (o *SharedObserver) receive() {
 			delete(o.sessions, record.ContainerID)
 			o.sequence++
 			o.writeAttributionDiagnostic(sharedAttributionDiagnostic{o.sequence, reader.profile, reader.attributionCounts})
-			batch := o.beginTeardownLocked(reader.session)
+			// A normal terminal stream only revokes its own authority. Other
+			// concurrent closure phases (especially the persistent anchor)
+			// must retain their independent observer sessions.
+			batch := o.beginSingleTeardownLocked(reader.session)
 			closeSharedTraceReaderDone(reader)
 			o.mu.Unlock()
 			o.completeTeardown(batch)
@@ -545,6 +675,17 @@ func (o *SharedObserver) beginTeardownLocked(initial ...*observerSecuritySession
 	return batch
 }
 
+func (o *SharedObserver) beginSingleTeardownLocked(session *observerSecuritySession) sharedObserverTeardownBatch {
+	batch := sharedObserverTeardownBatch{
+		seen:         make(map[*observerSecuritySession]struct{}),
+		afterPhase1:  o.teardownAfterPhase1,
+		beforePhase2: o.teardownBeforePhase2,
+		afterPhase2:  o.teardownAfterPhase2,
+	}
+	batch.add(session)
+	return batch
+}
+
 func (b *sharedObserverTeardownBatch) add(session *observerSecuritySession) {
 	if session == nil {
 		return
@@ -598,6 +739,7 @@ type sharedTraceReader struct {
 	profile           string
 	attributionCounts map[string]uint64
 	session           *observerSecuritySession
+	transactionBudget *observationTraceLedger
 }
 
 // AwaitMountAnchors is intentionally available only on the trusted shared

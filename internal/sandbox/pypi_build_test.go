@@ -2,6 +2,8 @@ package sandbox
 
 import (
 	"context"
+	"crypto/sha256"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -55,6 +57,22 @@ func TestPythonSdistBuilderRejectsGraphExpansionBeforeDocker(t *testing.T) {
 	}
 }
 
+func TestPythonArtifactIntroductionRejectsChangedStreamBytes(t *testing.T) {
+	root, source, _ := pythonBuildFixtures(t)
+	path := filepath.Join(root, "run_aaaaaaaaaaaaaaaaaaaaaaaaaa", "sdist.tar.gz")
+	if err := os.WriteFile(path, []byte("sourcE"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	runner := &recordingRunner{}
+	introducer, err := NewPythonArtifactIntroducer(root, runner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := introducer.introduce(context.Background(), "0123456789abcdef", source, "/tmp/source.tar.gz", "sdist"); err == nil {
+		t.Fatal("same-size intake mutation was accepted after its bytes were streamed")
+	}
+}
+
 func pythonBuildFixtures(t *testing.T) (string, domain.AcquiredArtifact, domain.AcquiredArtifact) {
 	t.Helper()
 	root := t.TempDir()
@@ -72,14 +90,15 @@ func pythonBuildFixtures(t *testing.T) (string, domain.AcquiredArtifact, domain.
 		t.Fatal(err)
 	}
 	sourceID, _ := domain.NewSourceID("pypi")
-	digest, _ := domain.NewSHA256Digest(strings.Repeat("a", 64))
+	sourceHash, _ := domain.NewSHA256Digest(fmt.Sprintf("%x", sha256.Sum256([]byte("source"))))
+	wheelHash, _ := domain.NewSHA256Digest(fmt.Sprintf("%x", sha256.Sum256([]byte("wheel"))))
 	sourceIdentity, _ := domain.NewResolvedArtifactIdentity(sourceID, "example", "1.0", "sdist")
-	source, err := domain.NewAcquiredArtifact(sourceIdentity, digest, "intake:run_aaaaaaaaaaaaaaaaaaaaaaaaaa:sdist", uint64(len("source")))
+	source, err := domain.NewAcquiredArtifact(sourceIdentity, sourceHash, "intake:run_aaaaaaaaaaaaaaaaaaaaaaaaaa:sdist", uint64(len("source")))
 	if err != nil {
 		t.Fatal(err)
 	}
 	wheelIdentity, _ := domain.NewResolvedArtifactIdentity(sourceID, "setuptools", "70.0", "wheel")
-	wheel, err := domain.NewAcquiredArtifact(wheelIdentity, digest, "intake:run_aaaaaaaaaaaaaaaaaaaaaaaaaa:wheel", uint64(len("wheel")))
+	wheel, err := domain.NewAcquiredArtifact(wheelIdentity, wheelHash, "intake:run_aaaaaaaaaaaaaaaaaaaaaaaaaa:wheel", uint64(len("wheel")))
 	if err != nil {
 		t.Fatal(err)
 	}

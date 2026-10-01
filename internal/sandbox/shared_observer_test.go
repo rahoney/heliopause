@@ -365,6 +365,30 @@ func TestSharedObserverStreamTerminalTeardownIsTwoPhase(t *testing.T) {
 	}
 }
 
+func TestSharedObserverCompletedProbeDoesNotRevokeAnchor(t *testing.T) {
+	observer, err := NewSharedObserver(observerEndpoint(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer observer.Close()
+	anchor := registerTeardownTestSession(t, "0123456789abcdef")
+	probe := registerTeardownTestSession(t, "fedcba9876543210")
+	anchorReader := attachTeardownTestSession(t, observer, anchor)
+	probeReader := attachTeardownTestSession(t, observer, probe)
+	writeTeardownRecord(t, observer.endpoint, helperRecord{ContainerID: probe.containerID, Kind: "stream-end"})
+	awaitTeardownTestSignal(t, probeReader.done, "probe stream completion")
+	if activeObserverSession(anchor.containerID) != anchor {
+		t.Fatal("normal probe completion revoked the live anchor authority")
+	}
+	select {
+	case <-anchorReader.done:
+		t.Fatal("normal probe completion ended the anchor stream")
+	default:
+	}
+	writeTeardownRecord(t, observer.endpoint, helperRecord{ContainerID: anchor.containerID, Kind: "stream-end"})
+	awaitTeardownTestSignal(t, anchorReader.done, "anchor stream completion")
+}
+
 func TestSharedObserverFailDeduplicatesReaderAndSessionSnapshot(t *testing.T) {
 	observer, err := NewSharedObserver(observerEndpoint(t))
 	if err != nil {

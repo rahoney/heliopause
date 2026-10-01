@@ -693,3 +693,57 @@ func TestRelocateStagedSchemeRootsRejectsHostilePathsBeforeMutation(t *testing.T
 		})
 	}
 }
+
+func TestPromotionHeadersIncludeSchemeAgreesWithInspection(t *testing.T) {
+	root := realPromotionRoot(t)
+	site := filepath.Join(root, "site")
+	dist := filepath.Join(site, "mypkg-1.0.dist-info")
+	if err := os.MkdirAll(dist, 0o700); err != nil {
+		t.Fatal(err)
+	}
+
+	// 1. resolveInstalledRecordPath maps ../../include to scheme "headers"
+	dst, err := resolveInstalledRecordPath(site, dist, "../../include/foo.h")
+	if err != nil {
+		t.Fatalf("resolveInstalledRecordPath failed: %v", err)
+	}
+	if dst.Scheme != "headers" {
+		t.Fatalf("destination scheme = %s, want headers", dst.Scheme)
+	}
+	if dst.Relative != "foo.h" {
+		t.Fatalf("destination relative = %s, want foo.h", dst.Relative)
+	}
+	expectedSource := filepath.Join(root, "include", "foo.h")
+	if dst.Source != expectedSource {
+		t.Fatalf("destination source = %s, want %s", dst.Source, expectedSource)
+	}
+
+	// 2. relocateStagedSchemeRoots moves site/include to root/include
+	stageSiteInclude := filepath.Join(site, "include")
+	if err := os.MkdirAll(stageSiteInclude, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(stageSiteInclude, "bar.h"), []byte("/* bar */"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := relocateStagedSchemeRoots(root); err != nil {
+		t.Fatalf("relocateStagedSchemeRoots failed: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(root, "include", "bar.h")); err != nil {
+		t.Fatalf("relocated header not found at root/include/bar.h: %v", err)
+	}
+	if _, err := os.Stat(stageSiteInclude); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("stage site/include still exists after relocation")
+	}
+
+	// 3. pypiVenvPlan binds scheme "headers" to venv include root
+	venvRoot := t.TempDir()
+	p := pypiVenvPlan{root: venvRoot, site: filepath.Join(venvRoot, "lib", "python3.14", "site-packages")}
+	bound, err := p.bind(pypiDestination{Scheme: "headers", Relative: "baz.h"})
+	if err != nil {
+		t.Fatalf("p.bind(headers) failed: %v", err)
+	}
+	if bound.Final != filepath.Join(venvRoot, "include", "baz.h") {
+		t.Fatalf("bound header final = %s, want %s", bound.Final, filepath.Join(venvRoot, "include", "baz.h"))
+	}
+}

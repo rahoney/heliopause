@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -26,6 +27,13 @@ var pythonImportName = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_]
 // supplied module names.
 type PythonWheelRunner interface {
 	InspectWheel(context.Context, domain.AcquiredArtifact, []string) (domain.SandboxResult, error)
+}
+
+// PlanAwarePythonWheelRunner accepts a static observation plan agreed upon
+// by the planner and dynamic backend.
+type PlanAwarePythonWheelRunner interface {
+	PythonWheelRunner
+	InspectWheelWithPlan(context.Context, domain.AcquiredArtifact, artifactpypi.ObservationPlan, []domain.AcquiredArtifact) (domain.SandboxResult, error)
 }
 
 // DependencyAwarePythonWheelRunner is the optional graph-install capability
@@ -152,8 +160,8 @@ func (i *PythonArtifactIntroducer) validatedWheelDestinations(target domain.Acqu
 	return validated, nil
 }
 
-// PythonDynamicBackend creates one network-isolated runsc-trace container for
-// importing a statically declared wheel surface. It returns observations only;
+// PythonDynamicBackend owns bounded, independent runsc-trace observations for
+// a statically declared wheel surface. It returns observations only;
 // it never creates Findings, Evidence, Policy or Promotion state.
 type PythonDynamicBackend struct {
 	runner       CommandRunner
@@ -161,8 +169,7 @@ type PythonDynamicBackend struct {
 	observer     TraceObserver
 	probe        func(context.Context) (PythonCapability, error)
 	newSessionID func() (domain.SandboxSessionID, error)
-	timeout      time.Duration
-	cleanupWait  time.Duration
+	resources    ObservationResourceClient
 }
 
 func NewPythonDynamicBackend(runner CommandRunner, introducer *PythonArtifactIntroducer, observer TraceObserver, probe func(context.Context) (PythonCapability, error)) (*PythonDynamicBackend, error) {
@@ -172,7 +179,7 @@ func NewPythonDynamicBackend(runner CommandRunner, introducer *PythonArtifactInt
 	if _, ok := runner.(discardCommandRunner); !ok {
 		return nil, errors.New("python dynamic runner must discard command output")
 	}
-	return &PythonDynamicBackend{runner: admissionAwareRunner(runner), introducer: introducer, observer: observer, probe: probe, newSessionID: domain.NewSandboxSessionID, timeout: pythonDynamicTimeout, cleanupWait: cleanupTimeout}, nil
+	return &PythonDynamicBackend{runner: admissionAwareRunner(runner), introducer: introducer, observer: observer, probe: probe, newSessionID: domain.NewSandboxSessionID}, nil
 }
 
 func (b *PythonDynamicBackend) InspectWheel(ctx context.Context, artifact domain.AcquiredArtifact, imports []string) (domain.SandboxResult, error) {
@@ -187,87 +194,69 @@ func (b *PythonDynamicBackend) InspectWheelWithoutImportSurface(ctx context.Cont
 	return b.inspectWheelWithClosure(ctx, artifact, nil, closure, true)
 }
 
-func (b *PythonDynamicBackend) inspectWheelWithClosure(ctx context.Context, artifact domain.AcquiredArtifact, imports []string, closure []domain.AcquiredArtifact, noImportSurface bool) (domain.SandboxResult, error) {
-	if b == nil || b.runner == nil || b.introducer == nil || b.observer == nil || b.probe == nil || b.newSessionID == nil || ctx == nil || noImportSurface && len(imports) != 0 || !noImportSurface && !validImportSurface(imports) {
+func (b *PythonDynamicBackend) InspectWheelWithPlan(ctx context.Context, artifact domain.AcquiredArtifact, plan artifactpypi.ObservationPlan, closure []domain.AcquiredArtifact) (domain.SandboxResult, error) {
+	if b == nil || b.runner == nil || b.introducer == nil || b.observer == nil || b.probe == nil || b.newSessionID == nil || ctx == nil {
 		return domain.SandboxResult{}, errors.New("python dynamic inspection request is invalid")
 	}
-	validated, err := b.introducer.validatedWheelDestinations(artifact, closure)
-	if err != nil {
-		return domain.SandboxResult{}, err
+	resourcePolicy := artifactpypi.ResourcePolicyFromContext(ctx)
+	if plan.Project != artifact.Identity().Name() || plan.Version != artifact.Identity().Version() ||
+		artifactpypi.ValidateTypedObservationPlan(plan, resourcePolicy) != nil {
+		return domain.SandboxResult{}, errors.New("python dynamic observation plan does not reconcile")
 	}
-	wheelPaths := make([]string, 0, len(validated))
-	for _, item := range validated {
-		wheelPaths = append(wheelPaths, item.destination)
+	if _, err := b.introducer.validatedWheelDestinations(artifact, closure); err != nil {
+		return domain.SandboxResult{}, err
 	}
 	sessionID, err := b.newSessionID()
 	if err != nil {
 		return domain.SandboxResult{}, err
 	}
-	capability, err := b.probe(ctx)
-	if err != nil || !capability.Available || capability.Runtime != PinnedPythonRuntime() {
-		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_RUNTIME_UNAVAILABLE")
+	if !plan.Admissible() {
+		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_SURFACE_UNSUPPORTED")
 	}
-	observerProfile, err := pythonDynamicObserverProfile(artifactpypi.RootSourceProfileNameFromContext(ctx))
-	if err != nil {
-		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_SETUP_FAILED")
+	// Only the controller-owned transaction ledger can qualify a plan. Process
+	// output, Python-side markers and successful exit alone have no authority.
+	return b.executeTrustedTransaction(ctx, sessionID, artifact, plan, closure)
+}
+
+func (b *PythonDynamicBackend) inspectWheelWithClosure(ctx context.Context, artifact domain.AcquiredArtifact, imports []string, closure []domain.AcquiredArtifact, noImportSurface bool) (domain.SandboxResult, error) {
+	if b == nil || ctx == nil {
+		return domain.SandboxResult{}, errors.New("python dynamic inspection request is invalid")
 	}
 	resourcePolicy := artifactpypi.ResourcePolicyFromContext(ctx)
-	created, err := b.runner.Output(ctx, "docker", pythonDynamicCreateArguments(sessionID, resourcePolicy)...)
-	if err != nil || !containerIDPattern.MatchString(strings.TrimSpace(string(created))) {
-		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_SETUP_FAILED")
-	}
-	containerID := strings.TrimSpace(string(created))
-	trace, err := startTrace(ctx, b.observer, containerID, observerProfile)
-	if err != nil {
-		if b.remove(containerID) != nil {
-			return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_CLEANUP_FAILED")
-		}
-		return pythonIncomplete(sessionID, dynamicObserverFailureCode("START", classifyDynamicObserverFailure(err)))
-	}
-	timeout := b.timeout
-	if resourcePolicy.Duration() > defaultPyPIDynamicDuration {
-		timeout = resourcePolicy.Duration()
-	}
-	runCtx, cancel := context.WithTimeout(ctx, timeout)
-	defer cancel()
-	if err := discardCommand(runCtx, b.runner, "docker", "start", containerID); err != nil {
-		return b.finishIncomplete(sessionID, containerID, trace, "M5_PYPI_DYNAMIC_SETUP_FAILED")
-	}
-	if err := awaitBoundaryHelper(runCtx, b.runner, containerID); err != nil {
-		return b.finishIncomplete(sessionID, containerID, trace, "M5_PYPI_DYNAMIC_SETUP_FAILED")
-	}
-	if err := awaitMountAnchors(runCtx, b.observer, containerID); err != nil {
-		return b.finishIncomplete(sessionID, containerID, trace, "M5_PYPI_DYNAMIC_OBSERVER_FAILED")
-	}
-	for _, item := range validated {
-		if err := b.introducer.introduceWheelAt(runCtx, containerID, item.artifact, item.destination); err != nil {
-			return b.finishIncomplete(sessionID, containerID, trace, "M5_PYPI_DYNAMIC_INTRODUCTION_FAILED")
-		}
-	}
-	installArguments := append(boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-B", "-m", "pip", "install", "--no-index", "--no-deps", "--no-compile", "--disable-pip-version-check", "--no-cache-dir", "--target", pythonSitePath), wheelPaths...)
-	if failureClass, err := runBoundedCommand(runCtx, b.runner, classifyDynamicInstallFailure, "docker", installArguments...); err != nil {
-		return b.finishIncomplete(sessionID, containerID, trace, dynamicInstallFailureCode(failureClass))
-	}
-	arguments := append(boundaryExecArguments(containerID, boundaryPythonHandoffMode, "python", "-I", "-B", "-c", pythonImportScript), imports...)
 	if noImportSurface {
-		arguments = append(boundaryExecArguments(containerID, boundaryPythonHandoffMode, "python", "-I", "-B", "-c", pythonInstalledDistributionScript), artifact.Identity().Name(), artifact.Identity().Version())
+		if len(imports) != 0 {
+			return domain.SandboxResult{}, errors.New("python dynamic inspection request is invalid")
+		}
+		plan := artifactpypi.ObservationPlan{
+			Project:         artifact.Identity().Name(),
+			Version:         artifact.Identity().Version(),
+			NoImportSurface: true,
+		}
+		return b.InspectWheelWithPlan(ctx, artifact, plan, closure)
 	}
-	if failureClass, err := runBoundedCommand(runCtx, b.runner, classifyDynamicImportFailure, "docker", arguments...); err != nil {
-		return b.finishIncomplete(sessionID, containerID, trace, dynamicImportFailureCode(failureClass))
+
+	if len(imports) == 0 || len(imports) > resourcePolicy.MaxObservationImportsPerArtifact() {
+		return domain.SandboxResult{}, errors.New("python dynamic inspection request is invalid")
 	}
-	observations, limitation := b.disposeAndCollect(containerID, trace)
-	if limitation != "" {
-		return pythonIncomplete(sessionID, limitation)
+	seen := make(map[string]bool, len(imports))
+	for _, name := range imports {
+		if !pythonImportName.MatchString(name) || seen[name] {
+			return domain.SandboxResult{}, errors.New("python dynamic inspection request is invalid")
+		}
+		seen[name] = true
 	}
-	subject := "python-import-completed"
-	if noImportSurface {
-		subject = "python-no-import-surface-verified"
+	imports = append([]string(nil), imports...)
+	sort.Strings(imports)
+	plan := artifactpypi.ObservationPlan{
+		Project:          artifact.Identity().Name(),
+		Version:          artifact.Identity().Version(),
+		ImportCandidates: imports,
+		TotalImportCount: len(imports),
 	}
-	completed, err := domain.NewSandboxObservation(domain.ObservationProcess, subject)
-	if err != nil {
-		return domain.SandboxResult{}, err
+	for _, name := range imports {
+		plan.Units = append(plan.Units, artifactpypi.PlannedObservationUnit{Kind: artifactpypi.DirectImportUnit, Candidate: name})
 	}
-	return domain.NewSandboxResult(sessionID, domain.SandboxCompleted, "", append(observations, completed))
+	return b.InspectWheelWithPlan(ctx, artifact, plan, closure)
 }
 
 func (i *PythonArtifactIntroducer) introduceWheelAt(ctx context.Context, containerID string, artifact domain.AcquiredArtifact, destination string) error {
@@ -279,33 +268,6 @@ func sameArtifactIdentity(left, right domain.AcquiredArtifact) bool {
 	return leftIdentity.Source() == rightIdentity.Source() && leftIdentity.Name() == rightIdentity.Name() && leftIdentity.Version() == rightIdentity.Version() && leftIdentity.Variant() == rightIdentity.Variant() && left.Digest() == right.Digest()
 }
 
-const defaultPyPIDynamicDuration = 5 * time.Minute
-
-func (b *PythonDynamicBackend) finishIncomplete(sessionID domain.SandboxSessionID, containerID string, trace TraceReader, limitation string) (domain.SandboxResult, error) {
-	_, collectLimitation := b.disposeAndCollect(containerID, trace)
-	if collectLimitation == "M5_PYPI_DYNAMIC_CLEANUP_FAILED" {
-		limitation = collectLimitation
-	}
-	return pythonIncomplete(sessionID, limitation)
-}
-func (b *PythonDynamicBackend) disposeAndCollect(containerID string, trace TraceReader) ([]domain.SandboxObservation, string) {
-	if b.remove(containerID) != nil {
-		return nil, "M5_PYPI_DYNAMIC_CLEANUP_FAILED"
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), b.cleanupWait)
-	defer cancel()
-	observations, limitation := collectTrace(ctx, trace)
-	if limitation != "" {
-		return nil, "M5_PYPI_DYNAMIC_OBSERVATION_INCOMPLETE"
-	}
-	return observations, ""
-}
-func (b *PythonDynamicBackend) remove(containerID string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), b.cleanupWait)
-	defer cancel()
-	return discardCommand(ctx, b.runner, "docker", "rm", "--force", containerID)
-}
-
 func discardCommand(ctx context.Context, runner CommandRunner, binary string, arguments ...string) error {
 	discarder, ok := runner.(discardCommandRunner)
 	if !ok {
@@ -314,165 +276,8 @@ func discardCommand(ctx context.Context, runner CommandRunner, binary string, ar
 	return discarder.RunDiscard(ctx, binary, arguments...)
 }
 
-func runBoundedCommand(ctx context.Context, runner CommandRunner, classify func(context.Context, string) string, binary string, arguments ...string) (string, error) {
-	if bounded, ok := runner.(boundedCommandRunner); ok {
-		output, err := bounded.RunBounded(ctx, binary, arguments...)
-		if err != nil {
-			return classify(ctx, string(output)), err
-		}
-		return "", nil
-	}
-	if err := discardCommand(ctx, runner, binary, arguments...); err != nil {
-		return classify(ctx, ""), err
-	}
-	return "", nil
-}
-
-const (
-	dynamicInstallFailurePrefix          = "M5_PYPI_DYNAMIC_INSTALL_FAILED_"
-	dynamicInstallFailurePipArgument     = "PIP_ARGUMENT_ERROR"
-	dynamicInstallFailureWheelPlatform   = "WHEEL_PLATFORM_REJECTED"
-	dynamicInstallFailureWheelMetadata   = "WHEEL_METADATA_REJECTED"
-	dynamicInstallFailurePackageConflict = "PACKAGE_CONFLICT"
-	dynamicInstallFailureDuplicate       = "DUPLICATE_DISTRIBUTION"
-	dynamicInstallFailureENOSPC          = "ENOSPC"
-	dynamicInstallFailureMemory          = "MEMORY_LIMIT"
-	dynamicInstallFailureTimeout         = "TIMEOUT"
-	dynamicInstallFailurePermission      = "PERMISSION"
-	dynamicInstallFailureSandboxRuntime  = "SANDBOX_RUNTIME"
-	dynamicInstallFailureOther           = "OTHER"
-	dynamicImportFailurePrefix           = "M5_PYPI_DYNAMIC_IMPORT_FAILED_"
-	dynamicImportFailureMissingLibrary   = "MISSING_SHARED_LIBRARY"
-	dynamicImportFailureDlopenPermission = "DLOPEN_PERMISSION"
-	dynamicImportFailureELFLoader        = "ELF_LOADER"
-	dynamicImportFailureSymbolVersion    = "SYMBOL_VERSION"
-	dynamicImportFailurePythonABI        = "PYTHON_ABI"
-	dynamicImportFailureException        = "IMPORT_EXCEPTION"
-	dynamicImportFailureMemory           = "MEMORY_LIMIT"
-	dynamicImportFailureCPU              = "CPU_LIMIT"
-	dynamicImportFailurePID              = "PID_LIMIT"
-	dynamicImportFailureTimeout          = "TIMEOUT"
-	dynamicImportFailureSandboxRuntime   = "SANDBOX_RUNTIME"
-	dynamicImportFailureOther            = "OTHER"
-	dynamicObserverFailurePrefix         = "M5_PYPI_DYNAMIC_OBSERVER_FAILED_"
-)
-
-func dynamicInstallFailureCode(class string) string {
-	return dynamicInstallFailurePrefix + class
-}
-
-func dynamicImportFailureCode(class string) string {
-	return dynamicImportFailurePrefix + class
-}
-
-func dynamicObserverFailureCode(phase, class string) string {
-	return dynamicObserverFailurePrefix + phase + "_" + class
-}
-
-func classifyDynamicInstallFailure(ctx context.Context, output string) string {
-	if ctx != nil && errors.Is(ctx.Err(), context.DeadlineExceeded) {
-		return dynamicInstallFailureTimeout
-	}
-	output = strings.ToLower(output)
-	switch {
-	case strings.Contains(output, "no space left on device"):
-		return dynamicInstallFailureENOSPC
-	case strings.Contains(output, "cannot allocate memory"), strings.Contains(output, "out of memory"), strings.Contains(output, "memory limit"):
-		return dynamicInstallFailureMemory
-	case strings.Contains(output, "permission denied"):
-		return dynamicInstallFailurePermission
-	case strings.Contains(output, "oci runtime"), strings.Contains(output, "runsc"), strings.Contains(output, "containerd"):
-		return dynamicInstallFailureSandboxRuntime
-	case strings.Contains(output, "not a supported wheel"), strings.Contains(output, "not supported wheel"):
-		return dynamicInstallFailureWheelPlatform
-	case strings.Contains(output, "invalid wheel"), strings.Contains(output, "bad wheel filename"), strings.Contains(output, "invalid metadata"):
-		return dynamicInstallFailureWheelMetadata
-	case strings.Contains(output, "resolutionimpossible"), strings.Contains(output, "conflicting dependencies"):
-		return dynamicInstallFailurePackageConflict
-	case strings.Contains(output, "already exists"), strings.Contains(output, "duplicate"):
-		return dynamicInstallFailureDuplicate
-	case strings.Contains(output, "no such option"), strings.Contains(output, "invalid requirement"), strings.Contains(output, "usage: pip"):
-		return dynamicInstallFailurePipArgument
-	default:
-		return dynamicInstallFailureOther
-	}
-}
-
-func classifyDynamicImportFailure(ctx context.Context, output string) string {
-	if ctx != nil && errors.Is(ctx.Err(), context.DeadlineExceeded) {
-		return dynamicImportFailureTimeout
-	}
-	output = strings.ToLower(output)
-	switch {
-	case strings.Contains(output, "no such file or directory"), strings.Contains(output, "cannot open shared object file"):
-		return dynamicImportFailureMissingLibrary
-	case strings.Contains(output, "failed to map segment"), strings.Contains(output, "permission denied"), strings.Contains(output, "operation not permitted"):
-		return dynamicImportFailureDlopenPermission
-	case strings.Contains(output, "wrong elf class"), strings.Contains(output, "exec format error"), strings.Contains(output, "invalid elf"):
-		return dynamicImportFailureELFLoader
-	case strings.Contains(output, "glibc_"), strings.Contains(output, "glibcxx_"), strings.Contains(output, "cxxabi_"):
-		return dynamicImportFailureSymbolVersion
-	case strings.Contains(output, "python abi"), strings.Contains(output, "abi version"), strings.Contains(output, "pyinit_"):
-		return dynamicImportFailurePythonABI
-	case strings.Contains(output, "cannot allocate memory"), strings.Contains(output, "out of memory"), strings.Contains(output, "memory limit"):
-		return dynamicImportFailureMemory
-	case strings.Contains(output, "resource temporarily unavailable"), strings.Contains(output, "pids limit"):
-		return dynamicImportFailurePID
-	case strings.Contains(output, "cpu time limit"):
-		return dynamicImportFailureCPU
-	case strings.Contains(output, "oci runtime"), strings.Contains(output, "runsc"), strings.Contains(output, "containerd"):
-		return dynamicImportFailureSandboxRuntime
-	case strings.Contains(output, "traceback"), strings.Contains(output, "importerror"), strings.Contains(output, "modulenotfounderror"):
-		return dynamicImportFailureException
-	default:
-		return dynamicImportFailureOther
-	}
-}
-
-func classifyDynamicObserverFailure(err error) string {
-	if err == nil {
-		return "OTHER"
-	}
-	var fault traceFault
-	if !errors.As(err, &fault) {
-		return "OTHER"
-	}
-	switch fault.TraceFaultReason() {
-	case "PREVIOUS_TRACE_NOT_FINALIZED":
-		return "PREVIOUS_TRACE_NOT_FINALIZED"
-	case "HELPER_UNAVAILABLE":
-		return "HELPER_UNAVAILABLE"
-	case "HELPER_CRASHED":
-		return "HELPER_CRASHED"
-	case "EVENT_LIMIT":
-		return "EVENT_LIMIT"
-	case "BYTE_LIMIT":
-		return "BYTE_LIMIT"
-	case "CHANNEL_OVERFLOW":
-		return "SESSION_LIMIT"
-	case "READER_ERROR", "READER_TIMEOUT", "STREAM_FAULT", "FINALIZATION_TIMEOUT":
-		return "TRACE_COLLECTION_FAILED"
-	case "ATTRIBUTION_FAILURE", "CONTAINER_MISMATCH", "PROFILE_LOOKUP_FAILURE", "UNKNOWN_EVENT_KIND", "LIFECYCLE_ERROR":
-		return "LIFECYCLE_ERROR"
-	default:
-		return "OTHER"
-	}
-}
 func pythonIncomplete(sessionID domain.SandboxSessionID, code string) (domain.SandboxResult, error) {
 	return domain.NewSandboxResult(sessionID, domain.SandboxIncomplete, code, nil)
-}
-func validImportSurface(imports []string) bool {
-	if len(imports) == 0 || len(imports) > 32 {
-		return false
-	}
-	seen := map[string]bool{}
-	for _, name := range imports {
-		if !pythonImportName.MatchString(name) || seen[name] {
-			return false
-		}
-		seen[name] = true
-	}
-	return true
 }
 func pythonDynamicCreateArguments(sessionID domain.SandboxSessionID, resourcePolicy artifactpypi.ResourcePolicy) []string {
 	size := strconv.FormatInt(resourcePolicy.RuntimeTmpfs(), 10)
@@ -481,9 +286,6 @@ func pythonDynamicCreateArguments(sessionID domain.SandboxSessionID, resourcePol
 	arguments = append(arguments, isolatedContainerEnvironmentArguments()...)
 	return append(arguments, "--name", "heliopause-pypi-"+sessionID.String(), pythonImageReference, "/bin/sh", "-ceu", boundaryContainerCommand())
 }
-
-const pythonImportScript = "import importlib,sys\nsys.path.insert(0,'/haa-site')\nfor name in sys.argv[1:]: importlib.import_module(name)\n"
-const pythonInstalledDistributionScript = "import importlib.metadata as m,re,sys\nnormalize=lambda s: re.sub(r'[-_.]+','-',s).lower()\nmatches=[d for d in m.distributions(path=['/haa-site']) if normalize(d.metadata.get('Name',''))==normalize(sys.argv[1]) and d.version==sys.argv[2]]\nif len(matches)!=1: raise SystemExit(1)\n"
 
 func pythonDynamicObserverProfile(rootProfileName string) (string, error) {
 	switch rootProfileName {

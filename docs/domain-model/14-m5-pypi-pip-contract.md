@@ -76,6 +76,8 @@ wheel 정적 inspection은 trusted controller에서 archive를 실행하지 않�
 
 wheel의 dynamic inspection은 M3 trusted observer/gVisor session에서 target-local private directory에 verified wheel만 `pip --no-index --no-deps`로 설치한 뒤 bounded declared import surface를 실행한다. Artifact가 제공한 script/entry point, `setup.py`, arbitrary module name 또는 Host Python을 실행하지 않는다. import surface를 안전하게 확정할 수 없거나 session/observation이 incomplete면 `MANUAL_REVIEW`다.
 
+Python dynamic inspection은 exact authenticated installed closure에 대한 controller-owned bounded observation experiments로 구성한다. 각 required unit의 identity, launch, externally observed process outcome, observer attribution, cumulative resource accounting, runtime destruction과 cleanup을 controller가 독립적으로 reconciliation한다. `COMPLETED`는 이 실험들의 실행·관찰·회계·정리를 뜻하며 Python import의 정상 반환, 모든 module body의 실행 또는 package safety를 증명하지 않는다. Artifact가 출력하거나 같은 interpreter에서 계산한 completion token은 coverage authority가 아니다. `sys.exit(0)`은 그 unit에서 외부 관찰된 zero-exit outcome일 뿐 다른 unit을 완료하거나 생략할 수 없다. 누락된 unit, unsupported required surface, nonzero/timeout/resource termination, uncertain attribution, 불완전한 observer evidence 또는 cleanup은 `MANUAL_REVIEW`로 남는다.
+
 검증된 `RECORD`에서 선언된 `Import-Name`·`Import-Namespace`, Python `.py` 모듈 및 Python extension 모듈이 전혀 없고 구조적으로 실행 가능 Python 표면이 없음이 정적으로 입증된 wheel(metadata-only 또는 native library/header 등 native/data-only wheel)은 Python import 적용 대상이 아님을 정적으로 확정할 수 있다. 이 경우에도 동일한 격리 session에서 exact wheel closure를 offline 설치하고 설치된 distribution identity를 확인하며 observer 완료를 요구한다. 결과에는 import `NOT_APPLICABLE`을 명시한다. 설치 가능 payload가 있지만 import surface를 안전하게 확정할 수 없거나 모호한 wheel은 이 예외에 해당하지 않으며 기존처럼 fail-closed다.
 
 ## 4. sdist와 derived wheel

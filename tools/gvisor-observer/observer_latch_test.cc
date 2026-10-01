@@ -243,7 +243,9 @@ bool RegisterProfileWithGeneration(const std::string& path, const char* containe
   const int fd = ConnectControl(path);
   if (fd < 0) return false;
   std::string topology = "/|oci-root|/||1|0|0|0;/tmp|workspace|/|tmpfs|0|1|1|0;/haa-runtime|helper|/|tmpfs|0|0|1|0";
-  if (strcmp(profile, kProfilePyPI) == 0 || strcmp(profile, kProfilePyTorchCPU) == 0 || strcmp(profile, kProfilePyTorchCU126) == 0) {
+  if (strcmp(profile, kProfilePyPI) == 0 || strcmp(profile, kProfilePyTorchCPU) == 0 ||
+      strcmp(profile, kProfilePyTorchCU126) == 0 || strcmp(profile, kProfilePyTorchCU130) == 0 ||
+      strcmp(profile, kProfilePyTorchCU132) == 0) {
     topology += ";/haa-site|workspace|/|tmpfs|0|0|1|0";
   } else if (strcmp(profile, kProfileGitHub) == 0) {
     topology += ";/work|workspace|/|tmpfs|0|0|1|0";
@@ -286,7 +288,9 @@ gvisor::sentry::MountTopologySnapshot BuildCanonicalTopologySnapshot(const char*
   add_mount(2, "/tmp", "tmpfs", false, true);
   add_mount(3, "/haa-runtime", "tmpfs", false, false);
   uint64_t next_id = 4;
-  if (strcmp(profile, kProfilePyPI) == 0 || strcmp(profile, kProfilePyTorchCPU) == 0 || strcmp(profile, kProfilePyTorchCU126) == 0) {
+  if (strcmp(profile, kProfilePyPI) == 0 || strcmp(profile, kProfilePyTorchCPU) == 0 ||
+      strcmp(profile, kProfilePyTorchCU126) == 0 || strcmp(profile, kProfilePyTorchCU130) == 0 ||
+      strcmp(profile, kProfilePyTorchCU132) == 0) {
     add_mount(next_id++, "/haa-site", "tmpfs", false, false);
   } else if (strcmp(profile, kProfileGitHub) == 0) {
     add_mount(next_id++, "/work", "tmpfs", false, false);
@@ -1699,6 +1703,31 @@ bool VerifySentryAuthoritativeBoundary(int output, const std::string& remote, co
   if (!ExpectRecord(output, kTwelfthID, "stream-fault", "EXEC_CORRELATION_INVALID")) return false;
   close(client);
   return true;
+}
+
+bool VerifyConcurrentPythonStreams(int output, const std::string& remote, const std::string& control) {
+  if (!RegisterProfile(control, kThirtyFourthID, kProfilePyTorchCU130) ||
+      !RegisterProfile(control, kThirtyFifthID, kProfilePyTorchCU132)) return false;
+  const int anchor = ConnectRemote(remote);
+  if (anchor < 0 || !Handshake(anchor)) return false;
+  const int probe = ConnectRemote(remote);
+  if (probe < 0 || !Handshake(probe)) { close(anchor); return false; }
+  gvisor::container::Start anchor_start;
+  anchor_start.mutable_context_data()->set_container_id(kThirtyFourthID);
+  gvisor::container::Start probe_start;
+  probe_start.mutable_context_data()->set_container_id(kThirtyFifthID);
+  // The anchor remains open while the probe must make independent progress.
+  const bool progressed = SendEvent(anchor, gvisor::common::MESSAGE_CONTAINER_START, anchor_start) &&
+      ExpectRecord(output, kThirtyFourthID, "container-start") &&
+      SendEvent(probe, gvisor::common::MESSAGE_CONTAINER_START, probe_start) &&
+      ExpectRecord(output, kThirtyFifthID, "container-start");
+  close(anchor);
+  if (!progressed || !ExpectRecord(output, kThirtyFourthID, "stream-end")) {
+    close(probe);
+    return false;
+  }
+  close(probe);
+  return ExpectRecord(output, kThirtyFifthID, "stream-end");
 }
 
 bool VerifyDelayedProfileRegistration(int output, const std::string& remote, const std::string& control) {
@@ -4525,6 +4554,8 @@ int main(int argc, char** argv) {
   const bool cloexec = running && VerifyCloexecReexec(output, remote, control);
   fprintf(stderr, "STARTING delayed\n");
   const bool delayed = running && VerifyDelayedProfileRegistration(output, remote, control);
+  fprintf(stderr, "STARTING concurrent_python_streams\n");
+  const bool concurrent_python_streams = running && VerifyConcurrentPythonStreams(output, remote, control);
   fprintf(stderr, "STARTING roles\n");
   const bool roles = running && VerifyRoleHandoffAndCloneProvenance(output, remote, control);
   fprintf(stderr, "STARTING oci_bootstrap\n");
@@ -4570,7 +4601,7 @@ int main(int argc, char** argv) {
 	fprintf(stderr, "STARTING pre_attribution_disconnect\n");
 	const bool pre_attribution_disconnect = running && VerifyAcceptedPreAttributionDisconnect(remote, child);
   const bool passed = running && profile && profile_limits && accessors && network && malformed_socket &&
-      malformed_connect && unknown_fd && process && correlation && cloexec && delayed && roles &&
+      malformed_connect && unknown_fd && process && correlation && cloexec && delayed && concurrent_python_streams && roles &&
       oci_bootstrap && demotion && mismatch && dropped && topology_ok && filesystem && npm_node &&
       open_result_negative_ok && open_result_positive_ok && no_basename_trust_ok &&
       unexpected_exec_diagnostic_ok && resolver_npm_version_node && resolver_npm_version_production_path &&
@@ -4583,6 +4614,7 @@ int main(int argc, char** argv) {
       {"malformed socket address", malformed_connect}, {"unknown FD state", unknown_fd},
       {"process trust boundary", process}, {"exec correlation boundary", correlation},
       {"CLOEXEC/re-exec boundary", cloexec}, {"delayed profile registration", delayed},
+      {"concurrent Python streams", concurrent_python_streams},
       {"role handoff/provenance", roles}, {"OCI bootstrap demotion", oci_bootstrap},
       {"setpriv demotion boundary", demotion}, {"container mismatch", mismatch},
       {"dropped events", dropped}, {"topology fail-closed", topology_ok},

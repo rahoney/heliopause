@@ -20,6 +20,7 @@
 #include <initializer_list>
 #include <string>
 #include <map>
+#include <memory>
 #include <set>
 #include <utility>
 #include <vector>
@@ -96,13 +97,17 @@ constexpr char kProfileNPM[] = "npm-lifecycle";
 constexpr char kProfilePyPI[] = "pypi-wheel";
 constexpr char kProfilePyTorchCPU[] = "pypi-wheel-pytorch-cpu";
 constexpr char kProfilePyTorchCU126[] = "pypi-wheel-pytorch-cu126";
+constexpr char kProfilePyTorchCU130[] = "pypi-wheel-pytorch-cu130";
+constexpr char kProfilePyTorchCU132[] = "pypi-wheel-pytorch-cu132";
 constexpr char kProfileGitHub[] = "github-elf";
 
 bool IsPythonProfile(const char* profile) {
   return profile != nullptr &&
       (strcmp(profile, kProfilePyPI) == 0 ||
        strcmp(profile, kProfilePyTorchCPU) == 0 ||
-       strcmp(profile, kProfilePyTorchCU126) == 0);
+       strcmp(profile, kProfilePyTorchCU126) == 0 ||
+       strcmp(profile, kProfilePyTorchCU130) == 0 ||
+       strcmp(profile, kProfilePyTorchCU132) == 0);
 }
 #pragma pack(push, 1)
 struct Header { uint16_t header_size; uint16_t message_type; uint32_t dropped_count; };
@@ -1482,6 +1487,8 @@ bool IsCanonicalBootstrapProfile(const char* profile) {
       (strcmp(profile, kProfileNPM) == 0 || strcmp(profile, kProfilePyPI) == 0 ||
        strcmp(profile, kProfilePyTorchCPU) == 0 ||
        strcmp(profile, kProfilePyTorchCU126) == 0 ||
+       strcmp(profile, kProfilePyTorchCU130) == 0 ||
+       strcmp(profile, kProfilePyTorchCU132) == 0 ||
        strcmp(profile, kProfileGitHub) == 0);
 }
 
@@ -1867,7 +1874,9 @@ bool ParseControlRecord(const char* payload, size_t size, ControlPeer* peer,
     const std::string& id = fields["container_id"]; const std::string& profile = fields["profile"];
     const std::string& topology = fields["expected_topology"]; const std::string& generation = fields["session_generation"];
     if (!ValidContainerID(id) || !ValidSessionGeneration(generation) ||
-        (profile != kProfileNPM && profile != kProfilePyPI && profile != kProfilePyTorchCPU && profile != kProfilePyTorchCU126 && profile != kProfileGitHub) ||
+        (profile != kProfileNPM && profile != kProfilePyPI && profile != kProfilePyTorchCPU &&
+         profile != kProfilePyTorchCU126 && profile != kProfilePyTorchCU130 &&
+         profile != kProfilePyTorchCU132 && profile != kProfileGitHub) ||
         peer->request_seen || peer->registered || peer->terminal || profiles->find(id) != profiles->end()) {
       return SendProfileAck(peer->fd, id, profile, topology, generation, "rejected");
     }
@@ -2072,7 +2081,8 @@ bool ParseSentryExitNotifyParent(const char* payload, size_t payload_size,
 size_t MaximumRecords(const char* profile) {
   if (profile == nullptr) return kMaxNormalizedRecordsPerConnection;
   if (strcmp(profile, kProfilePyTorchCPU) == 0) return kMaxPyTorchCPURecordsPerConnection;
-  if (strcmp(profile, kProfilePyTorchCU126) == 0) return kMaxPyTorchCU126RecordsPerConnection;
+  if (strcmp(profile, kProfilePyTorchCU126) == 0 || strcmp(profile, kProfilePyTorchCU130) == 0 ||
+      strcmp(profile, kProfilePyTorchCU132) == 0) return kMaxPyTorchCU126RecordsPerConnection;
   return kMaxNormalizedRecordsPerConnection;
 }
 
@@ -3089,199 +3099,218 @@ int main(int argc, char** argv) {
   signal(SIGINT, CleanupControlSocket);
   std::map<std::string, ProfileRegistration> profiles;
   std::map<int, ControlPeer> control_peers;
+  struct RemoteStream {
+    std::string container_id;
+    ProcessState process_state;
+    NormalizedCounts normalized_counts;
+    TopologyState topology_state;
+    const char* fault_reason = nullptr;
+    std::string profile;
+    std::string registration_generation;
+    size_t normalized_records = 0;
+    bool fault = false;
+  };
+  constexpr size_t kMaxConcurrentRemoteStreams = 8;
+  std::map<int, std::unique_ptr<RemoteStream>> remote_streams;
   const int output = ConnectDatagram(argv[2]);
   if (ready_fd >= 0) {
     const char ready = 'R';
     if (write(ready_fd, &ready, 1) != 1) err(1, "signal readiness");
     close(ready_fd);
   }
-  for (;;) {
-    std::vector<pollfd> listeners{{listener, POLLIN, 0}, {control, POLLIN, 0}};
-    for (const auto& peer : control_peers) listeners.push_back(pollfd{peer.first, POLLIN, 0});
-    const int ready = poll(listeners.data(), listeners.size(), -1);
-    if (ready < 0) {
-      if (errno == EINTR) continue;
-      err(1, "poll observer listener");
-    }
-    if ((listeners[1].revents & POLLIN) != 0 && !AcceptControlPeer(control, &control_peers)) errx(1, "accept control");
-    for (size_t index = 2; index < listeners.size(); ++index) {
-      if (listeners[index].revents != 0 &&
-          !ServiceControlPeer(listeners[index].fd, listeners[index].revents, &control_peers, &profiles)) {
-        errx(1, "invalid observer control connection");
-      }
-    }
-    if ((listeners[0].revents & POLLIN) == 0) continue;
-    int client = accept(listener, nullptr, nullptr); if (client < 0) err(1, "accept remote");
-    char handshake[1024]; ssize_t size = recv(client, handshake, sizeof(handshake), 0);
-    gvisor::common::Handshake incoming;
-    if (size <= 0 || !incoming.ParseFromArray(handshake, size) || incoming.version() != kProtocolVersion) { close(client); continue; }
-    gvisor::common::Handshake outgoing; outgoing.set_version(kProtocolVersion); std::string encoded; outgoing.SerializeToString(&encoded);
-    if (send(client, encoded.data(), encoded.size(), 0) != static_cast<ssize_t>(encoded.size())) { close(client); continue; }
-    std::string container_id; char event[kMaxEventSize]; bool fault = false;
-    ProcessState process_state;
-    NormalizedCounts normalized_counts;
-    TopologyState topology_state;
-    const char* fault_reason = nullptr;
-    const char* profile = nullptr;
+  auto finish_remote = [&](int client, RemoteStream& stream) {
+    // A successfully handshaken stream that never acquired a container identity
+    // poisons the shared helper: selective cleanup cannot be attributed.
+    if (stream.container_id.empty()) errx(1, "accepted remote stream ended before attribution");
     ProfileRegistration* registration = nullptr;
-		std::string registration_generation;
-    size_t normalized_records = 0;
-    for (;;) {
-      std::vector<pollfd> descriptors{{client, POLLIN, 0}, {control, POLLIN, 0}};
-      for (const auto& peer : control_peers) descriptors.push_back(pollfd{peer.first, POLLIN, 0});
-      const int ready = poll(descriptors.data(), descriptors.size(), -1);
-      if (ready < 0) {
-        if (errno == EINTR) continue;
-        size = -1;
-        break;
-      }
-
-      if ((descriptors[1].revents & POLLIN) != 0 && !AcceptControlPeer(control, &control_peers)) {
-        fault = true;
-        fault_reason = "STREAM_FAULT";
-        process_state.terminal_fault_site = FaultSite::kProfileLookup;
-        break;
-      }
-      for (size_t index = 2; index < descriptors.size(); ++index) {
-        if (descriptors[index].revents != 0 &&
-            !ServiceControlPeer(descriptors[index].fd, descriptors[index].revents, &control_peers, &profiles)) {
-          fault = true;
-          fault_reason = "STREAM_FAULT";
-          process_state.terminal_fault_site = FaultSite::kProfileLookup;
-          break;
-        }
-      }
-      if (fault) break;
-		if (registration != nullptr) {
-			auto current = profiles.find(container_id);
-			if (current == profiles.end() || current->second.session_generation != registration_generation) {
-				fault = true;
-				fault_reason = "PROFILE_LOOKUP_FAILURE";
-				process_state.terminal_fault_site = FaultSite::kProfileLookup;
-				break;
-			}
-			registration = &current->second;
-		}
-      if ((descriptors[0].revents & POLLIN) == 0) {
-        if ((descriptors[0].revents & (POLLERR | POLLHUP | POLLNVAL)) != 0) {
-          size = 0;
-          break;
-        }
-        continue;
-      }
-      size = recv(client, event, sizeof(event), MSG_TRUNC);
-      if (size <= 0) break;
-      if (static_cast<size_t>(size) > sizeof(event)) {
-        fault = true;
-        fault_reason = "STREAM_FAULT";
-        process_state.terminal_fault_site = FaultSite::kRecvTrunc;
-        break;
-      }
-      if (static_cast<size_t>(size) < sizeof(Header)) {
-        fault = true;
-        fault_reason = "STREAM_FAULT";
-        process_state.terminal_fault_site = FaultSite::kRecvShort;
-        break;
-      }
-      Header header{}; memcpy(&header, event, sizeof(header));
-      if (profile == nullptr && !container_id.empty()) {
-        registration = AwaitProfile(control, container_id, &control_peers, &profiles);
-        if (registration == nullptr) {
-          fault = true;
-          fault_reason = "PROFILE_LOOKUP_FAILURE";
-          process_state.terminal_fault_site = FaultSite::kProfileLookup;
-          break;
-        }
-        profile = registration->profile.c_str();
-		registration_generation = registration->session_generation;
-        topology_state.expected = registration->expected;
-      }
-      if (normalized_records + normalized_counts.immediate_records == MaximumRecords(profile)) {
-        fault = true;
-        fault_reason = "EVENT_LIMIT";
-        process_state.terminal_fault_site = FaultSite::kEventLimit;
-        break;
-      }
-      if (header.header_size < sizeof(Header) || header.header_size > static_cast<uint16_t>(size)) {
-        fault = true;
-        fault_reason = "STREAM_FAULT";
-        process_state.terminal_fault_site = FaultSite::kHeaderSize;
-        break;
-      }
-      if (!Handle(header, event + header.header_size, size - header.header_size, output, &container_id, profile, registration,
-                  &process_state, &normalized_counts, &topology_state, &fault_reason, &process_state.terminal_fault_site)) {
-        fault = true;
-        if (fault_reason == nullptr) fault_reason = "STREAM_FAULT";
-        break;
-      }
-      // Filesystem runtime/workspace reads are semantically aggregated. They
-      // must not consume the normalized transport-record budget one raw open
-      // at a time. Actionable filesystem records are counted by the parser.
-      if (header.message_type != gvisor::common::MESSAGE_SYSCALL_OPEN &&
-          header.message_type != gvisor::common::MESSAGE_SYSCALL_OPEN_RESULT) ++normalized_records;
+    auto current = profiles.find(stream.container_id);
+    if (current != profiles.end() &&
+        (stream.registration_generation.empty() || current->second.session_generation == stream.registration_generation)) {
+      registration = &current->second;
     }
-    if (size < 0) {
-      fault = true;
-      fault_reason = "STREAM_FAULT";
-      process_state.terminal_fault_site = FaultSite::kRecvError;
+    if (!stream.fault && registration == nullptr) {
+      stream.fault = true;
+      stream.fault_reason = "PROFILE_LOOKUP_FAILURE";
+      stream.process_state.terminal_fault_site = FaultSite::kProfileLookup;
     }
-		// A peer that passed the remote handshake is an accepted observer stream.
-		// If it disconnects before authoritative container attribution, selective
-		// registration cleanup cannot be proved. Exiting destroys every profile
-		// and admission in this helper; malformed pre-accept handshakes continue
-		// above without reaching this fail-stop path.
-		if (container_id.empty()) {
-			close(client);
-			errx(1, "accepted remote stream ended before attribution");
-		}
-    bool unresolved_pending_admission = false;
+    bool unresolved_admission = false;
     if (registration != nullptr) {
       for (const auto& admission : registration->pending_admissions) {
         if (admission.state == ProfileRegistration::AdmissionState::kPending) {
-          unresolved_pending_admission = true;
+          unresolved_admission = true;
           break;
         }
       }
     }
-    if (!fault && (!topology_state.sealed || !process_state.pending_sockets.empty() || !process_state.pending_opens.empty() ||
-                   unresolved_pending_admission)) {
-      fault = true;
-      if (!topology_state.sealed) {
-        fault_reason = "TOPOLOGY_NOT_READY";
-        process_state.terminal_fault_site = FaultSite::kUnsealedTopology;
-      } else if (!process_state.pending_sockets.empty()) {
-        fault_reason = "FD_STATE_UNKNOWN";
-        process_state.terminal_fault_site = FaultSite::kPendingSockets;
-      } else if (!process_state.pending_opens.empty()) {
-        fault_reason = "STREAM_FAULT";
-        process_state.terminal_fault_site = FaultSite::kPendingOpens;
+    if (!stream.fault && (!stream.topology_state.sealed ||
+        !stream.process_state.pending_sockets.empty() || !stream.process_state.pending_opens.empty() ||
+        unresolved_admission)) {
+      stream.fault = true;
+      if (!stream.topology_state.sealed) {
+        stream.fault_reason = "TOPOLOGY_NOT_READY";
+        stream.process_state.terminal_fault_site = FaultSite::kUnsealedTopology;
+      } else if (!stream.process_state.pending_sockets.empty()) {
+        stream.fault_reason = "FD_STATE_UNKNOWN";
+        stream.process_state.terminal_fault_site = FaultSite::kPendingSockets;
+      } else if (!stream.process_state.pending_opens.empty()) {
+        stream.fault_reason = "STREAM_FAULT";
+        stream.process_state.terminal_fault_site = FaultSite::kPendingOpens;
       } else {
-        fault_reason = "PROCESS_PROVENANCE_UNKNOWN";
-        process_state.terminal_fault_site = FaultSite::kSentryExec;
+        stream.fault_reason = "PROCESS_PROVENANCE_UNKNOWN";
+        stream.process_state.terminal_fault_site = FaultSite::kSentryExec;
       }
     }
-    if (!fault && !container_id.empty() && normalized_counts.workspace_access != 0) {
-      if (normalized_records + normalized_counts.immediate_records == MaximumRecords(profile)) {
-        fault = true;
-        fault_reason = "EVENT_LIMIT";
-        process_state.terminal_fault_site = FaultSite::kEventLimit;
-      } else if (!Send(output, container_id, "filesystem-workspace-access", nullptr, nullptr,
-                       normalized_counts.workspace_access)) {
-        fault = true;
-        fault_reason = "STREAM_FAULT";
-        process_state.terminal_fault_site = FaultSite::kWorkspaceSend;
+    if (!stream.fault && stream.normalized_counts.workspace_access != 0) {
+      const char* profile = stream.profile.empty() ? nullptr : stream.profile.c_str();
+      if (stream.normalized_records + stream.normalized_counts.immediate_records == MaximumRecords(profile)) {
+        stream.fault = true;
+        stream.fault_reason = "EVENT_LIMIT";
+        stream.process_state.terminal_fault_site = FaultSite::kEventLimit;
+      } else if (!Send(output, stream.container_id, "filesystem-workspace-access", nullptr, nullptr,
+                       stream.normalized_counts.workspace_access)) {
+        stream.fault = true;
+        stream.fault_reason = "STREAM_FAULT";
+        stream.process_state.terminal_fault_site = FaultSite::kWorkspaceSend;
       }
     }
-    if (!container_id.empty()) {
-      Send(output, container_id, fault ? "stream-fault" : "stream-end", fault_reason);
-		// An INVALIDATE may have removed this registration and a new security
-		// session for the same container may already be registered. Never let
-		// old stream cleanup erase that newer generation.
-		auto current = profiles.find(container_id);
-		if (current != profiles.end() && current->second.session_generation == registration_generation) {
-			profiles.erase(current);
-		}
-    }
+    Send(output, stream.container_id, stream.fault ? "stream-fault" : "stream-end", stream.fault_reason);
+    if (registration != nullptr) profiles.erase(stream.container_id);
     close(client);
+  };
+  for (;;) {
+    std::vector<pollfd> descriptors{{listener, POLLIN, 0}, {control, POLLIN, 0}};
+    std::vector<int> peers, remotes;
+    for (const auto& peer : control_peers) {
+      peers.push_back(peer.first);
+      descriptors.push_back(pollfd{peer.first, POLLIN, 0});
+    }
+    for (const auto& stream : remote_streams) {
+      remotes.push_back(stream.first);
+      descriptors.push_back(pollfd{stream.first, POLLIN, 0});
+    }
+    const int ready = poll(descriptors.data(), descriptors.size(), -1);
+    if (ready < 0) {
+      if (errno == EINTR) continue;
+      err(1, "poll observer streams");
+    }
+    if ((descriptors[1].revents & POLLIN) != 0 && !AcceptControlPeer(control, &control_peers)) {
+      errx(1, "accept control");
+    }
+    for (size_t index = 0; index < peers.size(); ++index) {
+      const short events = descriptors[2 + index].revents;
+      if (events != 0 && !ServiceControlPeer(peers[index], events, &control_peers, &profiles)) {
+        errx(1, "invalid observer control connection");
+      }
+    }
+    for (size_t index = 0; index < remotes.size(); ++index) {
+      const int client = remotes[index];
+      const short events = descriptors[2 + peers.size() + index].revents;
+      if (events == 0) continue;
+      RemoteStream& stream = *remote_streams.at(client);
+      bool terminal = false;
+      if ((events & POLLIN) != 0) {
+        char event[kMaxEventSize];
+        const ssize_t size = recv(client, event, sizeof(event), MSG_TRUNC);
+        if (size <= 0) {
+          if (size < 0) {
+            stream.fault = true;
+            stream.fault_reason = "STREAM_FAULT";
+            stream.process_state.terminal_fault_site = FaultSite::kRecvError;
+          }
+          terminal = true;
+        } else if (static_cast<size_t>(size) > sizeof(event) ||
+                   static_cast<size_t>(size) < sizeof(Header)) {
+          stream.fault = true;
+          stream.fault_reason = "STREAM_FAULT";
+          stream.process_state.terminal_fault_site = size > static_cast<ssize_t>(sizeof(event)) ?
+              FaultSite::kRecvTrunc : FaultSite::kRecvShort;
+          terminal = true;
+        } else {
+          ProfileRegistration* registration = nullptr;
+          if (!stream.registration_generation.empty()) {
+            auto current = profiles.find(stream.container_id);
+            if (current == profiles.end() || current->second.session_generation != stream.registration_generation) {
+              stream.fault = true;
+              stream.fault_reason = "PROFILE_LOOKUP_FAILURE";
+              stream.process_state.terminal_fault_site = FaultSite::kProfileLookup;
+              terminal = true;
+            } else {
+              registration = &current->second;
+            }
+          }
+          if (!terminal && stream.profile.empty() && !stream.container_id.empty()) {
+            registration = AwaitProfile(control, stream.container_id, &control_peers, &profiles);
+            if (registration == nullptr) {
+              stream.fault = true;
+              stream.fault_reason = "PROFILE_LOOKUP_FAILURE";
+              stream.process_state.terminal_fault_site = FaultSite::kProfileLookup;
+              terminal = true;
+            } else {
+              stream.profile = registration->profile;
+              stream.registration_generation = registration->session_generation;
+              stream.topology_state.expected = registration->expected;
+            }
+          }
+          const char* profile = stream.profile.empty() ? nullptr : stream.profile.c_str();
+          if (!terminal && stream.normalized_records + stream.normalized_counts.immediate_records == MaximumRecords(profile)) {
+            stream.fault = true;
+            stream.fault_reason = "EVENT_LIMIT";
+            stream.process_state.terminal_fault_site = FaultSite::kEventLimit;
+            terminal = true;
+          }
+          Header header{};
+          memcpy(&header, event, sizeof(header));
+          if (!terminal && (header.header_size < sizeof(Header) || header.header_size > static_cast<uint16_t>(size))) {
+            stream.fault = true;
+            stream.fault_reason = "STREAM_FAULT";
+            stream.process_state.terminal_fault_site = FaultSite::kHeaderSize;
+            terminal = true;
+          }
+          if (!terminal && !Handle(header, event + header.header_size, size - header.header_size, output,
+                                   &stream.container_id, profile, registration, &stream.process_state,
+                                   &stream.normalized_counts, &stream.topology_state, &stream.fault_reason,
+                                   &stream.process_state.terminal_fault_site)) {
+            stream.fault = true;
+            if (stream.fault_reason == nullptr) stream.fault_reason = "STREAM_FAULT";
+            terminal = true;
+          }
+          if (!terminal && header.message_type != gvisor::common::MESSAGE_SYSCALL_OPEN &&
+              header.message_type != gvisor::common::MESSAGE_SYSCALL_OPEN_RESULT) {
+            ++stream.normalized_records;
+          }
+        }
+      } else if ((events & (POLLERR | POLLHUP | POLLNVAL)) != 0) {
+        terminal = true;
+      }
+      if (terminal) {
+        finish_remote(client, stream);
+        remote_streams.erase(client);
+      }
+    }
+    if ((descriptors[0].revents & POLLIN) != 0) {
+      const int client = accept(listener, nullptr, nullptr);
+      if (client < 0) err(1, "accept remote");
+      if (remote_streams.size() >= kMaxConcurrentRemoteStreams) {
+        close(client);
+        continue;
+      }
+      char handshake[1024];
+      const ssize_t size = recv(client, handshake, sizeof(handshake), MSG_TRUNC);
+      gvisor::common::Handshake incoming;
+      if (size <= 0 || size > static_cast<ssize_t>(sizeof(handshake)) ||
+          !incoming.ParseFromArray(handshake, size) || incoming.version() != kProtocolVersion) {
+        close(client);
+        continue;
+      }
+      gvisor::common::Handshake outgoing;
+      outgoing.set_version(kProtocolVersion);
+      std::string encoded;
+      outgoing.SerializeToString(&encoded);
+      if (send(client, encoded.data(), encoded.size(), 0) != static_cast<ssize_t>(encoded.size())) {
+        close(client);
+        continue;
+      }
+      remote_streams.emplace(client, std::make_unique<RemoteStream>());
+    }
   }
 }

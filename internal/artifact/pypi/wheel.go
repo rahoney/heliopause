@@ -100,6 +100,7 @@ type WheelInspection struct {
 	EntryPoints, Scripts []string
 	NativeExtensions     []string
 	License, LicenseFile string
+	Surface              RuntimeSurface
 }
 
 // InspectWheel validates one selected wheel without extracting or executing it.
@@ -184,17 +185,6 @@ func inspectWheel(reader io.ReaderAt, size int64, filename, declaredSHA256 strin
 	}
 	info.ObservedSHA256 = observed
 	info.DeclaredSHA256 = declaredSHA256
-	for _, name := range regularFiles {
-		if strings.HasPrefix(name, info.distInfo()+"/") {
-			continue
-		}
-		if strings.Contains(name, ".data/scripts/") {
-			info.Scripts = append(info.Scripts, name)
-		}
-		if strings.HasSuffix(name, ".so") || strings.Contains(name, ".so.") || strings.HasSuffix(name, ".pyd") {
-			info.NativeExtensions = append(info.NativeExtensions, name)
-		}
-	}
 	return info, nil
 }
 
@@ -202,13 +192,25 @@ func parseWheelMetadata(project, version, filename string, metadata, wheel, reco
 	if len(metadata) == 0 || len(wheel) == 0 || len(record) == 0 {
 		return WheelInspection{}, wheelValidation(WheelValidationMetadataInvalid)
 	}
-	meta := headerValues(metadata, limits.MaxMetadata)
-	wheelHeaders := headerValues(wheel, limits.MaxMetadata)
-	metadataProject, nameErr := NormalizeProjectName(meta["name"])
-	if nameErr != nil || metadataProject != project || meta["version"] != version {
+	metaHeaders, err := parseRFC822Metadata(metadata, limits.MaxMetadata)
+	if err != nil {
+		return WheelInspection{}, wheelValidation(WheelValidationMetadataInvalid)
+	}
+	wheelHeaders, err := parseRFC822Metadata(wheel, limits.MaxMetadata)
+	if err != nil {
+		return WheelInspection{}, wheelValidation(WheelValidationMetadataInvalid)
+	}
+	rawName, hasName := metaHeaders.first("name")
+	rawVersion, hasVersion := metaHeaders.first("version")
+	if !hasName || !hasVersion {
 		return WheelInspection{}, wheelValidation(WheelValidationMetadataIdentity)
 	}
-	if wheelHeaders["wheel-version"] == "" || !supportedWheelVersion(wheelHeaders["wheel-version"]) {
+	metadataProject, nameErr := NormalizeProjectName(rawName)
+	if nameErr != nil || metadataProject != project || rawVersion != version {
+		return WheelInspection{}, wheelValidation(WheelValidationMetadataIdentity)
+	}
+	wheelVer, hasWheelVer := wheelHeaders.first("wheel-version")
+	if !hasWheelVer || wheelVer == "" || !supportedWheelVersion(wheelVer) {
 		return WheelInspection{}, wheelValidation(WheelValidationMetadataInvalid)
 	}
 	distInfo := wheelDistInfo(project, version)
@@ -238,20 +240,14 @@ func parseWheelMetadata(project, version, filename string, metadata, wheel, reco
 	if err != nil {
 		return WheelInspection{}, wheelValidation(WheelValidationRecord)
 	}
-	declared, err := declaredWheelImports(splitHeaders(meta["import-name"]), splitHeaders(meta["import-namespace"]))
+	declared, err := declaredWheelImports(metaHeaders.all("import-name"), metaHeaders.all("import-namespace"))
 	if err != nil {
 		return WheelInspection{}, wheelValidation(WheelValidationMetadataInvalid)
 	}
-	inferred := importNamesFromWheelFiles(files, distInfo, entries, limits)
-	imports := unionImportSurfaces(declared, inferred)
 	var entryPoints []string
-	if metaEP := splitHeaders(meta["entry-points"]); len(metaEP) > 0 {
+	var epDetails []EntryPoint
+	if metaEP := metaHeaders.all("entry-points"); len(metaEP) > 0 {
 		entryPoints = append(entryPoints, metaEP...)
-	}
-	for _, file := range files {
-		if strings.HasSuffix(file.Path, ".dist-info/entry_points.txt") && file.Path != distInfo+"/entry_points.txt" {
-			return WheelInspection{}, wheelValidation(WheelValidationDistInfoIdentity)
-		}
 	}
 	if epEntry, ok := entries[distInfo+"/entry_points.txt"]; ok {
 		if epEntry.UncompressedSize64 > uint64(limits.MaxMetadata) {
@@ -261,28 +257,45 @@ func parseWheelMetadata(project, version, filename string, metadata, wheel, reco
 		if readErr != nil {
 			return WheelInspection{}, wheelValidation(WheelValidationMetadata)
 		}
-		parsedEP, parseErr := parseEntryPointsTxt(epData)
+		parsedEP, details, parseErr := parseEntryPointsTxt(epData)
 		if parseErr != nil {
 			return WheelInspection{}, wheelValidation(WheelValidationMetadataInvalid)
 		}
 		entryPoints = append(entryPoints, parsedEP...)
+		epDetails = append(epDetails, details...)
 	}
 	sort.Strings(entryPoints)
-	noImportSurface := len(imports) == 0 && provenNoDynamicPythonSurface(files, distInfo, declared, entryPoints, entries, limits)
+
+	dataDir := strings.TrimSuffix(distInfo, ".dist-info") + ".data"
+	surface, imports, noImportSurface, err := classifyWheelSurface(files, distInfo, dataDir, declared, entryPoints, epDetails, entries, limits)
+	if err != nil {
+		return WheelInspection{}, err
+	}
+
+	reqPy, _ := metaHeaders.first("requires-python")
+	lic, _ := metaHeaders.first("license")
+	licFile, _ := metaHeaders.first("license-file")
+
+	nativeExts := append(append([]string{}, surface.PythonExtensions...), surface.NativeLibraries...)
+	sort.Strings(nativeExts)
+
 	return WheelInspection{
-		Project:         project,
-		Version:         version,
-		Filename:        filename,
-		WheelVersion:    wheelHeaders["wheel-version"],
-		Tags:            splitHeaders(wheelHeaders["tag"]),
-		Files:           files,
-		RequiresPython:  meta["requires-python"],
-		RequiresDist:    splitHeaders(meta["requires-dist"]),
-		ImportNames:     imports,
-		NoImportSurface: noImportSurface,
-		EntryPoints:     entryPoints,
-		License:         meta["license"],
-		LicenseFile:     meta["license-file"],
+		Project:          project,
+		Version:          version,
+		Filename:         filename,
+		WheelVersion:     wheelVer,
+		Tags:             wheelHeaders.all("tag"),
+		Files:            files,
+		RequiresPython:   reqPy,
+		RequiresDist:     metaHeaders.all("requires-dist"),
+		ImportNames:      imports,
+		NoImportSurface:  noImportSurface,
+		EntryPoints:      entryPoints,
+		Scripts:          surface.Scripts,
+		NativeExtensions: nativeExts,
+		License:          lic,
+		LicenseFile:      licFile,
+		Surface:          surface,
 	}, nil
 }
 
@@ -328,92 +341,61 @@ func validPythonImportName(name string) bool {
 	return true
 }
 
-func provenNoDynamicPythonSurface(files []WheelFile, distInfo string, declaredImports, entryPoints []string, entries map[string]*zip.File, limits WheelLimits) bool {
-	if len(declaredImports) > 0 || len(entryPoints) > 0 {
-		return false
+func mapWheelInstalledLocation(archivePath, distInfo, dataDir string) (InstallationScheme, string, error) {
+	if archivePath == distInfo || strings.HasPrefix(archivePath, distInfo+"/") {
+		return SchemeDistInfo, archivePath, nil
 	}
-	distInfoSeen := map[string]bool{}
-	for _, file := range files {
-		if strings.HasPrefix(file.Path, distInfo+"/") {
-			distInfoSeen[file.Path] = true
+	if archivePath == dataDir || strings.HasPrefix(archivePath, dataDir+"/") {
+		rel := strings.TrimPrefix(archivePath, dataDir+"/")
+		parts := strings.Split(rel, "/")
+		if len(parts) < 2 || parts[1] == "" {
+			return "", "", errors.New("empty entry in .data directory")
 		}
-	}
-	if !distInfoSeen[distInfo+"/METADATA"] || !distInfoSeen[distInfo+"/WHEEL"] || !distInfoSeen[distInfo+"/RECORD"] {
-		return false
-	}
-	var payloadFiles []WheelFile
-	for _, file := range files {
-		if strings.HasPrefix(file.Path, distInfo+"/") {
-			name := file.Path
-			if isPythonExecutableSurface(name) {
-				return false
+		category := parts[0]
+		subPath := strings.Join(parts[1:], "/")
+		switch category {
+		case "purelib", "platlib":
+			destParts := strings.Split(subPath, "/")
+			if strings.HasSuffix(destParts[0], ".dist-info") && destParts[0] != distInfo {
+				return "", "", wheelValidation(WheelValidationDistInfoIdentity)
 			}
-			continue
+			return SchemeSite, subPath, nil
+		case "scripts":
+			return SchemeScripts, "bin/" + subPath, nil
+		case "headers":
+			return SchemeHeaders, "include/" + subPath, nil
+		case "data":
+			return SchemeData, "share/" + subPath, nil
+		default:
+			return "", "", errors.New("unsupported .data category: " + category)
 		}
-		payloadFiles = append(payloadFiles, file)
 	}
-	if len(payloadFiles) == 0 {
-		return true
+	parts := strings.Split(archivePath, "/")
+	if strings.HasSuffix(parts[0], ".dist-info") {
+		if parts[0] != distInfo {
+			return "", "", wheelValidation(WheelValidationDistInfoIdentity)
+		}
+		return SchemeDistInfo, archivePath, nil
 	}
-	hasRecognizedPayload := false
-	for _, file := range payloadFiles {
-		name := file.Path
-		if isPythonExecutableSurface(name) {
-			return false
-		}
-		if !strings.Contains(name, "/") {
-			return false
-		}
-		if isBareSO(name) {
-			entry := entries[name]
-			if entry == nil {
-				return false
-			}
-			class, _, err := classifyBareSO(entry, limits.MaxUncompressed)
-			if err != nil || class != soProvenNative {
-				return false
-			}
-			hasRecognizedPayload = true
-			continue
-		}
-		if !isRecognizedNativeOrDataPayload(name, distInfo) {
-			return false
-		}
-		hasRecognizedPayload = true
+	if strings.HasSuffix(parts[0], ".data") {
+		return "", "", errors.New("unsupported foreign .data directory in wheel root")
 	}
-	return hasRecognizedPayload
+	return SchemeSite, archivePath, nil
 }
 
-func isPythonExecutableSurface(name string) bool {
-	if strings.HasSuffix(name, ".py") || strings.HasSuffix(name, ".pyw") ||
-		strings.HasSuffix(name, ".pyc") || strings.HasSuffix(name, ".pyo") ||
-		strings.HasSuffix(name, ".pyd") || strings.HasSuffix(name, ".pth") {
+func isRecognizedInertData(name string) bool {
+	if strings.Contains(name, ".dist-info/") {
 		return true
 	}
-	if _, ok := pythonExtensionImportName(name); ok {
+	if strings.Contains(name, "/") && strings.HasSuffix(name, ".pth") {
 		return true
 	}
-	if strings.Contains(name, ".data/scripts/") || strings.HasPrefix(name, "bin/") {
-		return true
-	}
-	if strings.HasSuffix(name, ".egg-link") {
-		return true
-	}
-	return false
-}
-
-func isRecognizedNativeOrDataPayload(name, distInfo string) bool {
 	base := path.Base(name)
 	upper := strings.ToUpper(base)
 	for _, prefix := range []string{"LICENSE", "NOTICE", "README", "COPYING", "AUTHORS", "PATENTS"} {
 		if strings.HasPrefix(upper, prefix) {
 			return true
 		}
-	}
-	if isVersionedNativeSO(base) ||
-		strings.HasSuffix(name, ".a") || strings.HasSuffix(name, ".dylib") ||
-		strings.HasSuffix(name, ".dll") {
-		return true
 	}
 	for _, ext := range []string{".h", ".hpp", ".hxx", ".cuh", ".inc", ".h.in", ".c", ".cpp", ".cc"} {
 		if strings.HasSuffix(name, ext) {
@@ -425,16 +407,330 @@ func isRecognizedNativeOrDataPayload(name, distInfo string) bool {
 			return true
 		}
 	}
-	for _, ext := range []string{".txt", ".md", ".rst", ".json", ".yaml", ".yml", ".xml", ".csv", ".toml", ".ini", ".cfg", ".dat", ".bin", ".pdf", ".html", ".css"} {
+	for _, ext := range []string{
+		".txt", ".md", ".rst", ".json", ".yaml", ".yml", ".xml", ".csv",
+		".toml", ".ini", ".cfg", ".dat", ".bin", ".pdf", ".html", ".css",
+		".js", ".svg", ".png", ".jpg", ".jpeg", ".gif", ".ico", ".wasm", ".xsl",
+	} {
 		if strings.HasSuffix(name, ext) {
 			return true
 		}
 	}
-	dataRoot := strings.TrimSuffix(distInfo, ".dist-info") + ".data/"
-	if strings.HasPrefix(name, dataRoot+"headers/") || strings.HasPrefix(name, dataRoot+"data/") {
-		return true
+	for _, ext := range []string{
+		".pxd", ".pyx", ".pxi", ".tmpl", ".in", ".jinja", ".j2",
+		".pyi", ".typed", ".exe", ".g4", ".lark", ".al", ".lock",
+	} {
+		if strings.HasSuffix(name, ext) {
+			return true
+		}
 	}
 	return false
+}
+
+func deduplicateSorted(items []string) []string {
+	if len(items) == 0 {
+		return nil
+	}
+	sort.Strings(items)
+	result := make([]string, 0, len(items))
+	for i, item := range items {
+		if i == 0 || item != items[i-1] {
+			result = append(result, item)
+		}
+	}
+	return result
+}
+
+// parseSiteHookLines accepts the active site-level subset of CPython .pth
+// syntax. Declarative paths are checked against the complete authenticated
+// installed closure before execution; unsupported syntax remains fail closed.
+func parseSiteHookLines(file string, body []byte) ([]SiteHookLine, error) {
+	if !utf8.Valid(body) || bytes.IndexByte(body, 0) >= 0 {
+		return nil, errors.New("active site hook is not UTF-8 text")
+	}
+	var lines []SiteHookLine
+	for index, raw := range strings.Split(string(body), "\n") {
+		raw = strings.TrimSuffix(raw, "\r")
+		if strings.TrimSpace(raw) == "" || strings.HasPrefix(raw, "#") {
+			continue
+		}
+		line := strings.TrimSpace(raw)
+		item := SiteHookLine{File: file, Line: index + 1}
+		if strings.HasPrefix(raw, "import ") || strings.HasPrefix(raw, "import\t") {
+			item.Statement = raw
+		} else {
+			if strings.HasPrefix(line, "import ") || strings.HasPrefix(line, "import\t") || strings.HasPrefix(line, "#") {
+				return nil, errors.New("active site line has unsupported indentation")
+			}
+			if path.IsAbs(line) || path.Clean(line) != line || line == "." || strings.ContainsAny(line, "\\:\x00") {
+				return nil, errors.New("active site path is not canonical")
+			}
+			for _, component := range strings.Split(line, "/") {
+				if component == "" || component == "." || component == ".." {
+					return nil, errors.New("active site path escapes installed closure")
+				}
+			}
+			item.Path = line
+		}
+		lines = append(lines, item)
+	}
+	return lines, nil
+}
+
+func classifyWheelSurface(files []WheelFile, distInfo, dataDir string, declaredImports, epList []string, epDetails []EntryPoint, entries map[string]*zip.File, limits WheelLimits) (RuntimeSurface, []string, bool, error) {
+	var surface RuntimeSurface
+	surface.EntryPoints = append(surface.EntryPoints, epList...)
+	surface.EntryPointDetails = append(surface.EntryPointDetails, epDetails...)
+
+	type mappedFile struct {
+		file   WheelFile
+		scheme InstallationScheme
+		dest   string
+	}
+	mapped := make([]mappedFile, 0, len(files))
+	initDirSet := make(map[string]bool)
+	seenDestinations := make(map[string]string, len(files))
+
+	for _, file := range files {
+		scheme, dest, err := mapWheelInstalledLocation(file.Path, distInfo, dataDir)
+		if err != nil {
+			return RuntimeSurface{}, nil, false, err
+		}
+		destKey := dest
+		if prev, exists := seenDestinations[destKey]; exists {
+			_ = prev
+			return RuntimeSurface{}, nil, false, wheelValidation(WheelValidationRecord)
+		}
+		seenDestinations[destKey] = file.Path
+		mapped = append(mapped, mappedFile{file: file, scheme: scheme, dest: dest})
+		if scheme == SchemeSite {
+			if dest == "__init__.py" {
+				initDirSet[""] = true
+			} else if strings.HasSuffix(dest, "/__init__.py") {
+				dir := strings.TrimSuffix(dest, "/__init__.py")
+				initDirSet[dir] = true
+			}
+		}
+	}
+
+	for _, m := range mapped {
+		var role RuntimeRole
+
+		switch m.scheme {
+		case SchemeDistInfo:
+			if strings.HasSuffix(m.dest, ".py") || strings.HasSuffix(m.dest, ".pth") {
+				role = RuntimeRoleUnresolved
+				surface.UnresolvedFiles = append(surface.UnresolvedFiles, m.dest)
+			} else {
+				role = RuntimeRoleMetadata
+			}
+
+		case SchemeScripts:
+			role = RuntimeRoleScript
+			surface.Scripts = append(surface.Scripts, m.dest)
+
+		case SchemeHeaders, SchemeData:
+			role = RuntimeRoleInertData
+			surface.InertDataFiles = append(surface.InertDataFiles, m.dest)
+
+		case SchemeSite:
+			dest := m.dest
+
+			if !strings.Contains(dest, "/") && strings.HasSuffix(dest, ".pth") {
+				role = RuntimeRoleSiteStartupHook
+				surface.SiteStartupHooks = append(surface.SiteStartupHooks, dest)
+				entry := entries[m.file.Path]
+				if entry == nil || entry.UncompressedSize64 > uint64(limits.MaxMetadata) {
+					return RuntimeSurface{}, nil, false, wheelValidation(WheelValidationMetadata)
+				}
+				body, readErr := readZipEntry(entry, limits.MaxMetadata)
+				if readErr != nil {
+					return RuntimeSurface{}, nil, false, wheelValidation(WheelValidationMetadata)
+				}
+				lines, parseErr := parseSiteHookLines(dest, body)
+				if parseErr != nil {
+					return RuntimeSurface{}, nil, false, wheelValidation(WheelValidationMetadataInvalid)
+				}
+				surface.SiteHookLines = append(surface.SiteHookLines, lines...)
+
+			} else if !strings.Contains(dest, "/") && strings.HasSuffix(dest, ".py") {
+				mod := strings.TrimSuffix(dest, ".py")
+				if mod != "__init__" && validPythonImportComponent(mod) {
+					role = RuntimeRolePythonModule
+					surface.PythonModules = append(surface.PythonModules, mod)
+				} else {
+					role = RuntimeRoleInertData
+					surface.InertDataFiles = append(surface.InertDataFiles, dest)
+				}
+
+			} else if isWrongTargetExtension(dest) {
+				role = RuntimeRoleUnresolved
+				surface.UnresolvedFiles = append(surface.UnresolvedFiles, dest)
+
+			} else if extMod, ok := pythonExtensionImportName(dest); ok && validPythonImportName(extMod) {
+				role = RuntimeRolePythonExtension
+				surface.PythonExtensions = append(surface.PythonExtensions, extMod)
+
+			} else if isBareSO(dest) {
+				entry := entries[m.file.Path]
+				if entry != nil {
+					class, modName, err := classifyBareSO(entry, limits.MaxUncompressed)
+					if err == nil && class == soPythonExtension && modName != "" {
+						candidate := bareSOImportName(dest, modName)
+						if candidate != "" && validPythonImportName(candidate) {
+							role = RuntimeRolePythonExtension
+							surface.PythonExtensions = append(surface.PythonExtensions, candidate)
+						} else {
+							role = RuntimeRoleUnresolved
+							surface.UnresolvedFiles = append(surface.UnresolvedFiles, dest)
+						}
+					} else if err == nil && class == soProvenNative {
+						role = RuntimeRoleNativeLibrary
+						surface.NativeLibraries = append(surface.NativeLibraries, dest)
+					} else {
+						role = RuntimeRoleUnresolved
+						surface.UnresolvedFiles = append(surface.UnresolvedFiles, dest)
+					}
+				} else {
+					role = RuntimeRoleUnresolved
+					surface.UnresolvedFiles = append(surface.UnresolvedFiles, dest)
+				}
+
+			} else if isVersionedNativeSO(path.Base(dest)) || strings.HasSuffix(dest, ".a") || strings.HasSuffix(dest, ".dylib") || strings.HasSuffix(dest, ".dll") {
+				role = RuntimeRoleNativeLibrary
+				surface.NativeLibraries = append(surface.NativeLibraries, dest)
+
+			} else if strings.Contains(dest, "/") {
+				parts := strings.Split(dest, "/")
+				topDir := parts[0]
+
+				if initDirSet[topDir] {
+					if dest == topDir+"/__init__.py" {
+						role = RuntimeRolePythonPackage
+						if validPythonImportComponent(topDir) {
+							surface.PythonPackages = append(surface.PythonPackages, topDir)
+						}
+					} else if strings.HasSuffix(dest, ".py") {
+						role = RuntimeRolePythonPackage
+					} else if isRecognizedInertData(dest) {
+						role = RuntimeRoleInertData
+						surface.InertDataFiles = append(surface.InertDataFiles, dest)
+					} else {
+						role = RuntimeRoleUnresolved
+						surface.UnresolvedFiles = append(surface.UnresolvedFiles, dest)
+					}
+				} else {
+					surface.NamespaceContainers = append(surface.NamespaceContainers, topDir)
+
+					if len(parts) > 1 {
+						subDir := parts[0] + "/" + parts[1]
+						if initDirSet[subDir] {
+							subpkgName := parts[0] + "." + parts[1]
+							if dest == subDir+"/__init__.py" {
+								role = RuntimeRoleExecutableSubpackage
+								if validPythonImportName(subpkgName) {
+									surface.ExecutableSubpackages = append(surface.ExecutableSubpackages, subpkgName)
+								}
+							} else if strings.HasSuffix(dest, ".py") {
+								role = RuntimeRoleExecutableSubpackage
+							} else if isRecognizedInertData(dest) {
+								role = RuntimeRoleInertData
+								surface.InertDataFiles = append(surface.InertDataFiles, dest)
+							} else {
+								role = RuntimeRoleUnresolved
+								surface.UnresolvedFiles = append(surface.UnresolvedFiles, dest)
+							}
+						} else if len(parts) == 2 && strings.HasSuffix(parts[1], ".py") {
+							modName := parts[0] + "." + strings.TrimSuffix(parts[1], ".py")
+							if validPythonImportName(modName) {
+								role = RuntimeRolePythonModule
+								surface.PythonModules = append(surface.PythonModules, modName)
+							} else {
+								role = RuntimeRoleInertData
+								surface.InertDataFiles = append(surface.InertDataFiles, dest)
+							}
+						} else if isRecognizedInertData(dest) {
+							role = RuntimeRoleInertData
+							surface.InertDataFiles = append(surface.InertDataFiles, dest)
+						} else {
+							role = RuntimeRoleUnresolved
+							surface.UnresolvedFiles = append(surface.UnresolvedFiles, dest)
+						}
+					} else {
+						if isRecognizedInertData(dest) {
+							role = RuntimeRoleInertData
+							surface.InertDataFiles = append(surface.InertDataFiles, dest)
+						} else {
+							role = RuntimeRoleUnresolved
+							surface.UnresolvedFiles = append(surface.UnresolvedFiles, dest)
+						}
+					}
+				}
+
+			} else if isRecognizedInertData(dest) {
+				role = RuntimeRoleInertData
+				surface.InertDataFiles = append(surface.InertDataFiles, dest)
+
+			} else {
+				role = RuntimeRoleUnresolved
+				surface.UnresolvedFiles = append(surface.UnresolvedFiles, dest)
+			}
+		}
+
+		surface.InstalledFiles = append(surface.InstalledFiles, InstalledFile{
+			ArchivePath: m.file.Path,
+			Scheme:      m.scheme,
+			Destination: m.dest,
+			Role:        role,
+			Size:        m.file.Size,
+			SHA256:      m.file.SHA256,
+		})
+	}
+
+	surface.SiteStartupHooks = deduplicateSorted(surface.SiteStartupHooks)
+	surface.PythonModules = deduplicateSorted(surface.PythonModules)
+	surface.PythonPackages = deduplicateSorted(surface.PythonPackages)
+	surface.NamespaceContainers = deduplicateSorted(surface.NamespaceContainers)
+	surface.ExecutableSubpackages = deduplicateSorted(surface.ExecutableSubpackages)
+	surface.PythonExtensions = deduplicateSorted(surface.PythonExtensions)
+	surface.NativeLibraries = deduplicateSorted(surface.NativeLibraries)
+	surface.Scripts = deduplicateSorted(surface.Scripts)
+	surface.InertDataFiles = deduplicateSorted(surface.InertDataFiles)
+	surface.UnresolvedFiles = deduplicateSorted(surface.UnresolvedFiles)
+
+	inferred := unionImportSurfaces(surface.PythonModules, surface.PythonPackages, surface.ExecutableSubpackages, surface.PythonExtensions)
+	imports := unionImportSurfaces(declaredImports, inferred)
+
+	noImportSurface := len(imports) == 0 &&
+		len(surface.SiteStartupHooks) == 0 &&
+		len(surface.UnresolvedFiles) == 0 &&
+		len(surface.Scripts) == 0 &&
+		len(declaredImports) == 0 &&
+		len(epList) == 0 &&
+		provenNoImportSurfaceRoles(surface.InstalledFiles)
+
+	return surface, imports, noImportSurface, nil
+}
+
+func provenNoImportSurfaceRoles(installed []InstalledFile) bool {
+	if len(installed) == 0 {
+		return false
+	}
+	hasNativeLib := false
+	isMetadataOnly := true
+	for _, f := range installed {
+		switch f.Role {
+		case RuntimeRoleMetadata:
+		case RuntimeRoleNativeLibrary:
+			hasNativeLib = true
+			isMetadataOnly = false
+		case RuntimeRoleInertData:
+			isMetadataOnly = false
+		default:
+			return false
+		}
+	}
+	return isMetadataOnly || hasNativeLib
 }
 
 func isVersionedNativeSO(base string) bool {
@@ -455,64 +751,18 @@ func isVersionedNativeSO(base string) bool {
 	return true
 }
 
-// importNamesFromWheelFiles is a bounded static inspection discovering Python
-// .py modules/packages and recognized Python native extension modules. It does
-// NOT treat arbitrary payload directories as dynamic Python import surfaces.
-func importNamesFromWheelFiles(files []WheelFile, distInfo string, entries map[string]*zip.File, limits WheelLimits) []string {
-	seen := map[string]struct{}{}
-	// 1. .py module / package discovery
-	for _, file := range files {
-		name := file.Path
-		if strings.HasPrefix(name, distInfo+"/") || strings.Contains(name, ".data/") {
-			continue
-		}
-		parts := strings.Split(name, "/")
-		if len(parts) == 1 && strings.HasSuffix(parts[0], ".py") {
-			module := strings.TrimSuffix(parts[0], ".py")
-			if module != "__init__" && validPythonImportComponent(module) {
-				seen[module] = struct{}{}
-			}
-			continue
-		}
-		if len(parts) > 1 && strings.HasSuffix(name, ".py") && validPythonImportComponent(parts[0]) {
-			seen[parts[0]] = struct{}{}
-		}
+func isWrongTargetExtension(path string) bool {
+	base := path
+	if idx := strings.LastIndex(path, "/"); idx >= 0 {
+		base = path[idx+1:]
 	}
-	// 2. Python native extension discovery (combined with .py discovery, not only fallback)
-	for _, file := range files {
-		name := file.Path
-		if strings.HasPrefix(name, distInfo+"/") || strings.Contains(name, ".data/") {
-			continue
-		}
-		if candidate, ok := pythonExtensionImportName(name); ok && validPythonImportName(candidate) {
-			seen[candidate] = struct{}{}
-		}
+	if strings.HasSuffix(base, ".pyd") {
+		return true
 	}
-	// 3. Bare .so discovery: if a bare .so is proven to be a Python extension (exports PyInit_<module>),
-	// derive its candidate import name.
-	for _, file := range files {
-		name := file.Path
-		if strings.HasPrefix(name, distInfo+"/") || strings.Contains(name, ".data/") {
-			continue
-		}
-		if isBareSO(name) {
-			if entry := entries[name]; entry != nil {
-				class, modName, err := classifyBareSO(entry, limits.MaxUncompressed)
-				if err == nil && class == soPythonExtension && modName != "" {
-					candidate := bareSOImportName(name, modName)
-					if candidate != "" && validPythonImportName(candidate) {
-						seen[candidate] = struct{}{}
-					}
-				}
-			}
-		}
+	if strings.HasSuffix(base, ".so") && strings.Contains(base, ".cpython-") {
+		return !strings.HasSuffix(base, ".cpython-314-x86_64-linux-gnu.so")
 	}
-	imports := make([]string, 0, len(seen))
-	for name := range seen {
-		imports = append(imports, name)
-	}
-	sort.Strings(imports)
-	return imports
+	return false
 }
 
 func pythonExtensionImportName(path string) (string, bool) {
@@ -520,22 +770,20 @@ func pythonExtensionImportName(path string) (string, bool) {
 	base := parts[len(parts)-1]
 	var module string
 	if strings.HasSuffix(base, ".so") {
-		at := strings.Index(base, ".cpython-")
-		if at < 0 {
-			at = strings.Index(base, ".abi3.so")
-		}
-		if at <= 0 {
-			return "", false
-		}
-		module = base[:at]
-	} else if strings.HasSuffix(base, ".pyd") {
-		trimmed := strings.TrimSuffix(base, ".pyd")
-		if at := strings.Index(trimmed, ".cpython-"); at > 0 {
-			module = trimmed[:at]
-		} else if at := strings.Index(trimmed, ".cp"); at > 0 {
-			module = trimmed[:at]
+		if strings.HasSuffix(base, ".cpython-314-x86_64-linux-gnu.so") {
+			at := strings.Index(base, ".cpython-314-x86_64-linux-gnu.so")
+			if at <= 0 {
+				return "", false
+			}
+			module = base[:at]
+		} else if strings.HasSuffix(base, ".abi3.so") {
+			at := strings.Index(base, ".abi3.so")
+			if at <= 0 {
+				return "", false
+			}
+			module = base[:at]
 		} else {
-			module = trimmed
+			return "", false
 		}
 	} else {
 		return "", false
@@ -691,17 +939,18 @@ func bareSOImportName(filePath, modName string) string {
 	return candidate
 }
 
-func parseEntryPointsTxt(data []byte) ([]string, error) {
+func parseEntryPointsTxt(data []byte) ([]string, []EntryPoint, error) {
 	if len(data) == 0 {
-		return nil, nil
+		return nil, nil, nil
 	}
 	data = bytes.TrimPrefix(data, []byte("\xef\xbb\xbf"))
 	if !utf8.Valid(data) {
-		return nil, errors.New("malformed entry_points.txt: invalid UTF-8")
+		return nil, nil, errors.New("malformed entry_points.txt: invalid UTF-8")
 	}
 	lines := strings.Split(string(data), "\n")
 	currentSection := ""
 	var results []string
+	var details []EntryPoint
 
 	for _, rawLine := range lines {
 		line := strings.TrimRight(rawLine, "\r")
@@ -711,60 +960,62 @@ func parseEntryPointsTxt(data []byte) ([]string, error) {
 		}
 		if strings.HasPrefix(line, "[") {
 			if !strings.HasSuffix(line, "]") {
-				return nil, errors.New("malformed entry_points.txt: unclosed section header")
+				return nil, nil, errors.New("malformed entry_points.txt: unclosed section header")
 			}
 			section := strings.TrimSpace(line[1 : len(line)-1])
 			if !validEntryPointGroup(section) {
-				return nil, errors.New("malformed entry_points.txt: invalid section name")
+				return nil, nil, errors.New("malformed entry_points.txt: invalid section name")
 			}
 			currentSection = section
 			continue
 		}
 		if currentSection == "" {
-			return nil, errors.New("malformed entry_points.txt: entry outside section")
+			return nil, nil, errors.New("malformed entry_points.txt: entry outside section")
 		}
 		idx := strings.Index(line, "=")
 		if idx < 0 {
-			return nil, errors.New("malformed entry_points.txt: missing '='")
+			return nil, nil, errors.New("malformed entry_points.txt: missing '='")
 		}
 		key := strings.TrimSpace(line[:idx])
 		val := strings.TrimSpace(line[idx+1:])
 		if key == "" || val == "" {
-			return nil, errors.New("malformed entry_points.txt: empty key or value")
+			return nil, nil, errors.New("malformed entry_points.txt: empty key or value")
 		}
 		if !validEntryPointName(key) {
-			return nil, errors.New("malformed entry_points.txt: invalid entry point name")
+			return nil, nil, errors.New("malformed entry_points.txt: invalid entry point name")
 		}
 		modSpec := val
 		if bracketIdx := strings.Index(val, "["); bracketIdx >= 0 {
 			if !strings.HasSuffix(val, "]") {
-				return nil, errors.New("malformed entry_points.txt: unclosed extras bracket")
+				return nil, nil, errors.New("malformed entry_points.txt: unclosed extras bracket")
 			}
 			modSpec = strings.TrimSpace(val[:bracketIdx])
 		}
 		parts := strings.Split(modSpec, ":")
 		if len(parts) > 2 {
-			return nil, errors.New("malformed entry_points.txt: multiple colons in target")
+			return nil, nil, errors.New("malformed entry_points.txt: multiple colons in target")
 		}
 		moduleName := strings.TrimSpace(parts[0])
 		if !validPythonImportName(moduleName) {
-			return nil, errors.New("malformed entry_points.txt: invalid module name in target")
+			return nil, nil, errors.New("malformed entry_points.txt: invalid module name in target")
 		}
+		attr := ""
 		if len(parts) == 2 {
-			attr := strings.TrimSpace(parts[1])
+			attr = strings.TrimSpace(parts[1])
 			if attr == "" {
-				return nil, errors.New("malformed entry_points.txt: empty attribute in target")
+				return nil, nil, errors.New("malformed entry_points.txt: empty attribute in target")
 			}
 			for _, part := range strings.Split(attr, ".") {
 				if !validPythonImportComponent(part) {
-					return nil, errors.New("malformed entry_points.txt: invalid attribute identifier")
+					return nil, nil, errors.New("malformed entry_points.txt: invalid attribute identifier")
 				}
 			}
 		}
+		details = append(details, EntryPoint{Group: currentSection, Name: key, Module: moduleName, Attr: attr})
 		results = append(results, currentSection+": "+key+" = "+val)
 	}
 	sort.Strings(results)
-	return results, nil
+	return results, details, nil
 }
 
 func validEntryPointGroup(group string) bool {
@@ -900,10 +1151,6 @@ func streamRecordFile(file *zip.File) (int64, string, error) {
 	return size, hex.EncodeToString(hash.Sum(nil)), nil
 }
 
-func (i WheelInspection) distInfo() string {
-	return wheelDistInfo(i.Project, i.Version)
-}
-
 func wheelDistInfo(project, version string) string {
 	return strings.ReplaceAll(project, "-", "_") + "-" + strings.ReplaceAll(version, "-", "_") + ".dist-info"
 }
@@ -963,22 +1210,106 @@ func readZipEntry(file *zip.File, limit int64) ([]byte, error) {
 	defer r.Close()
 	return io.ReadAll(io.LimitReader(r, limit+1))
 }
-func headerValues(body []byte, limit int64) map[string]string {
-	out := map[string]string{}
-	for _, line := range strings.Split(string(body), "\n") {
+
+type rfc822Metadata struct {
+	headers map[string][]string
+	keys    []string
+}
+
+func parseRFC822Metadata(body []byte, limit int64) (*rfc822Metadata, error) {
+	if int64(len(body)) > limit {
+		return nil, errors.New("metadata exceeds byte limit")
+	}
+	if !utf8.Valid(body) || bytes.IndexByte(body, 0) >= 0 {
+		return nil, errors.New("metadata contains invalid bytes")
+	}
+	m := &rfc822Metadata{
+		headers: make(map[string][]string),
+	}
+	raw := string(body)
+	lines := strings.Split(raw, "\n")
+	var currentKey string
+
+	for _, rawLine := range lines {
+		line := strings.TrimRight(rawLine, "\r")
+		// Header/body separator: the first blank line terminates headers
 		if line == "" {
+			break
+		}
+		// Line folding (continuation line)
+		if strings.HasPrefix(line, " ") || strings.HasPrefix(line, "\t") {
+			if currentKey == "" {
+				return nil, errors.New("metadata starts with continuation line")
+			}
+			vals := m.headers[currentKey]
+			if len(vals) > 0 {
+				vals[len(vals)-1] += "\n" + strings.TrimSpace(line)
+			}
 			continue
 		}
-		at := strings.IndexByte(line, ':')
-		if at <= 0 {
-			continue
+		colon := strings.IndexByte(line, ':')
+		if colon <= 0 {
+			return nil, errors.New("malformed metadata line without colon")
 		}
-		key := strings.ToLower(strings.TrimSpace(line[:at]))
-		value := strings.TrimSpace(line[at+1:])
-		if key == "requires-dist" || key == "import-name" || key == "import-namespace" || key == "entry-points" || key == "tag" {
-			out[key] += value + "\n"
-		} else {
-			out[key] = value
+		fieldName := line[:colon]
+		for _, ch := range fieldName {
+			if !(ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z' || ch >= '0' && ch <= '9' || ch == '-' || ch == '_') {
+				return nil, errors.New("malformed metadata field name")
+			}
+		}
+		fieldVal := strings.TrimSpace(line[colon+1:])
+		key := strings.ToLower(fieldName)
+		if _, exists := m.headers[key]; !exists {
+			m.keys = append(m.keys, key)
+		}
+		m.headers[key] = append(m.headers[key], fieldVal)
+		currentKey = key
+	}
+	return m, nil
+}
+
+func (m *rfc822Metadata) has(key string) bool {
+	if m == nil {
+		return false
+	}
+	_, ok := m.headers[strings.ToLower(key)]
+	return ok
+}
+
+func (m *rfc822Metadata) first(key string) (string, bool) {
+	if m == nil {
+		return "", false
+	}
+	vals, ok := m.headers[strings.ToLower(key)]
+	if !ok || len(vals) == 0 {
+		return "", false
+	}
+	return vals[0], true
+}
+
+func (m *rfc822Metadata) all(key string) []string {
+	if m == nil {
+		return nil
+	}
+	return m.headers[strings.ToLower(key)]
+}
+
+func headerValues(body []byte, limit int64) map[string]string {
+	m, err := parseRFC822Metadata(body, limit)
+	if err != nil {
+		return map[string]string{}
+	}
+	out := make(map[string]string, len(m.headers))
+	for k, vals := range m.headers {
+		if k == "requires-dist" || k == "import-name" || k == "import-namespace" || k == "entry-points" || k == "tag" {
+			var b strings.Builder
+			for _, v := range vals {
+				b.WriteString(v)
+				b.WriteByte('\n')
+			}
+			out[k] = b.String()
+		} else if len(vals) > 0 {
+			out[k] = vals[0]
 		}
 	}
 	return out

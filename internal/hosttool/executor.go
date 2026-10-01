@@ -240,8 +240,10 @@ func newExecutor(ctx context.Context, config Config, includeFirewall bool) (*Exe
 		return executor, nil
 	}
 	for name, candidates := range map[string][]string{
-		"iptables": {"/usr/sbin/iptables", "/usr/bin/iptables"},
-		"nft":      {"/usr/sbin/nft", "/usr/bin/nft"},
+		"iptables":    {"/usr/sbin/iptables", "/usr/bin/iptables"},
+		"nft":         {"/usr/sbin/nft", "/usr/bin/nft"},
+		"systemd-run": {"/usr/bin/systemd-run"},
+		"systemctl":   {"/usr/bin/systemctl"},
 	} {
 		path := firstExisting(candidates...)
 		if path == "" {

@@ -5,16 +5,17 @@ import (
 	"errors"
 	"runtime"
 
+	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
 // NewLinuxPyPIDynamicBackendWithExecutor uses the composition-root validated
 // Host executor for every Docker operation.
-func NewLinuxPyPIDynamicBackendWithExecutor(intakeRoot string, executor TrustedExecutor, observer TraceObserver) (*PythonDynamicBackend, error) {
-	return newLinuxPyPIDynamicBackend(intakeRoot, executor, observer)
+func NewLinuxPyPIDynamicBackendWithExecutor(intakeRoot string, executor TrustedExecutor, observer TraceObserver, resources ObservationResourceClient) (*PythonDynamicBackend, error) {
+	return newLinuxPyPIDynamicBackend(intakeRoot, executor, observer, resources)
 }
 
-func newLinuxPyPIDynamicBackend(intakeRoot string, executor TrustedExecutor, observer TraceObserver) (*PythonDynamicBackend, error) {
+func newLinuxPyPIDynamicBackend(intakeRoot string, executor TrustedExecutor, observer TraceObserver, resources ObservationResourceClient) (*PythonDynamicBackend, error) {
 	if observer == nil {
 		return nil, errors.New("process-scoped observer is required")
 	}
@@ -29,6 +30,9 @@ func newLinuxPyPIDynamicBackend(intakeRoot string, executor TrustedExecutor, obs
 	if err != nil {
 		return nil, err
 	}
+	// A missing or stale privileged resource port leaves only Python dynamic
+	// inspection incomplete. No interpreter completion or CPU fallback exists.
+	backend.resources = resources
 	return backend, nil
 }
 
@@ -61,6 +65,30 @@ func newLinuxPyPISdistBuilder(intakeRoot string, executor TrustedExecutor, obser
 type UnavailablePythonWheelRunner struct{}
 
 func (UnavailablePythonWheelRunner) InspectWheel(context.Context, domain.AcquiredArtifact, []string) (domain.SandboxResult, error) {
+	session, err := domain.NewSandboxSessionID()
+	if err != nil {
+		return domain.SandboxResult{}, err
+	}
+	return domain.NewSandboxResult(session, domain.SandboxIncomplete, "M5_PYPI_DYNAMIC_RUNTIME_UNAVAILABLE", nil)
+}
+
+func (UnavailablePythonWheelRunner) InspectWheelWithPlan(context.Context, domain.AcquiredArtifact, artifactpypi.ObservationPlan, []domain.AcquiredArtifact) (domain.SandboxResult, error) {
+	session, err := domain.NewSandboxSessionID()
+	if err != nil {
+		return domain.SandboxResult{}, err
+	}
+	return domain.NewSandboxResult(session, domain.SandboxIncomplete, "M5_PYPI_DYNAMIC_RUNTIME_UNAVAILABLE", nil)
+}
+
+func (UnavailablePythonWheelRunner) InspectWheelWithClosure(context.Context, domain.AcquiredArtifact, []string, []domain.AcquiredArtifact) (domain.SandboxResult, error) {
+	session, err := domain.NewSandboxSessionID()
+	if err != nil {
+		return domain.SandboxResult{}, err
+	}
+	return domain.NewSandboxResult(session, domain.SandboxIncomplete, "M5_PYPI_DYNAMIC_RUNTIME_UNAVAILABLE", nil)
+}
+
+func (UnavailablePythonWheelRunner) InspectWheelWithoutImportSurface(context.Context, domain.AcquiredArtifact, []domain.AcquiredArtifact) (domain.SandboxResult, error) {
 	session, err := domain.NewSandboxSessionID()
 	if err != nil {
 		return domain.SandboxResult{}, err

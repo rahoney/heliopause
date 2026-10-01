@@ -280,8 +280,14 @@ func (r *recordingRunner) RunDiscard(ctx context.Context, binary string, argumen
 }
 
 func (r *recordingRunner) RunBounded(ctx context.Context, binary string, arguments ...string) ([]byte, error) {
-	_, err := r.Output(ctx, binary, arguments...)
-	return append([]byte(nil), r.boundedOutput...), err
+	output, err := r.Output(ctx, binary, arguments...)
+	if len(r.boundedOutput) > 0 {
+		return append([]byte(nil), r.boundedOutput...), err
+	}
+	if err != nil {
+		return output, err
+	}
+	return output, err
 }
 
 type recordingIntroducer struct {

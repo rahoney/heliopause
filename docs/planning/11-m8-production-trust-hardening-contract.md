@@ -246,6 +246,8 @@ RemoveResolverPolicy(session)
   identity와 authorized UID/GID만 담으며, package name·hostname·raw firewall
   argument를 받는 runtime API가 아니다.
 
+M5 Python observation은 같은 authenticated helper process의 별도 protected socket에만 좁은 transaction-resource API를 추가한다. 입력은 validated transaction ID, fixed source resource-policy ID, exact Docker container ID와 `preparation`/`anchor`/`observation` role뿐이며 caller-supplied cgroup path, PID, CPU limit, executable 또는 shell command를 받지 않는다. Helper는 policy에서 CPU ceiling을 유도하고 systemd transaction slice와 artifact-free keeper를 생성하며, Docker와 cgroup에서 container membership을 독립적으로 확인한다. `cpu.stat usage_usec`의 monotonic cumulative counter를 preparation부터 마지막 anchor 종료까지 유지하고, exact runtime scope kill/drain과 final slice removal을 증명한다. 누락·감소·초과 counter, 예상 밖 member, helper/keeper 종료 또는 불확실한 cleanup은 incomplete다. Resolver network-policy operation과 socket authority는 그대로 분리한다.
+
 ## 5. Runtime identity single source of truth
 
 runtime/observer lock data가 exact identity의 canonical owner다. Go constants,
