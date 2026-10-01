@@ -88,11 +88,12 @@ func validateToolLock(lock toolLock) error {
 	if lock.SchemaVersion != toolLockSchemaVersion {
 		return &checkFailure{class: unavailable, step: "tool lock", detail: fmt.Sprintf("unsupported schemaVersion %d", lock.SchemaVersion)}
 	}
-	if len(lock.Tools) != 4 {
-		return &checkFailure{class: unavailable, step: "tool lock", detail: "require exactly four active tools"}
+	if len(lock.Tools) != 5 {
+		return &checkFailure{class: unavailable, step: "tool lock", detail: "require exactly five active tools"}
 	}
 	want := map[string]string{
 		"staticcheck": "honnef.co/go/tools/cmd/staticcheck",
+		"actionlint":  "github.com/rhysd/actionlint/cmd/actionlint",
 		"gosec":       "github.com/securego/gosec/v2/cmd/gosec",
 		"govulncheck": "golang.org/x/vuln/cmd/govulncheck",
 		"gitleaks":    "",

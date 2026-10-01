@@ -155,7 +155,6 @@ func validateCIWorkflow(contents string) []string {
 		"@master",
 		"@latest",
 		"ubuntu-latest",
-		"    env:\n      HELOX_TOOL_CACHE: ${{ runner.temp }}",
 		"5ceb9a5fd5750d6c73dd166441f28306039300d0",
 		"4463ce276e207f5a516a08ec627a768a19cf7bed0094d522b0810bee3424585caa8d344e093204012b974f5c508ab2362dcb0d7236f0c1992fccc426beeb7ffc",
 		"c876a1619c885f44f3bdc87998eca59c79581954631c9d7fab4eb53cc0409b68e4be74c08ef3fe599c51b75d56262070f0c314f9908336221e7764fdf981b7f5",

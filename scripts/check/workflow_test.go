@@ -133,13 +133,7 @@ func TestValidateCIWorkflowRejectsSecurityRegressions(t *testing.T) {
 		"legacy CUDA profile":                 string(contents) + "\n# HELOX_PYTORCH_PROFILE=cu128\n",
 		"sidecar fallback":                    strings.Replace(string(contents), "--sidecar-usage-policy=STRICT", "--sidecar-usage-policy=LEGACY_DEPRECATED_SLOW_EMBEDDED_FALLBACK", 1),
 		"permissive sidecar download":         strings.Replace(string(contents), "--download-sidecars=NEVER", "--download-sidecars=ALWAYS", 1),
-		"runner context at job env": strings.Replace(
-			string(contents),
-			"    env:\n      GOTOOLCHAIN: local",
-			"    env:\n      HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-quality-tools\n      GOTOOLCHAIN: local",
-			1,
-		),
-		"extra job": string(contents) + "\n  security:\n    runs-on: ubuntu-24.04\n",
+		"extra job":                           string(contents) + "\n  security:\n    runs-on: ubuntu-24.04\n",
 	}
 	for name, fixture := range tests {
 		t.Run(name, func(t *testing.T) {

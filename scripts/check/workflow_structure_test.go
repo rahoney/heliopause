@@ -109,3 +109,20 @@ func TestWorkflowParserIsToolOnlyDependency(t *testing.T) {
 		t.Fatal("parser permitted in product path")
 	}
 }
+
+func TestCorpusStepsShareRunnerDirectory(t *testing.T) {
+	root, err := filepath.Abs("../..")
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, err := os.ReadFile(filepath.Join(root, workflowRelativePath))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, replacement := range []string{"/tmp/haa_corpus", "${{ runner.temp }}/different", "$RUNNER_TEMP/wheel-corpus"} {
+		fixture := strings.Replace(string(body), "${{ runner.temp }}/wheel-corpus", replacement, 1)
+		if len(validateWorkflowStructure(fixture, true)) == 0 {
+			t.Fatalf("accepted inconsistent corpus root %q", replacement)
+		}
+	}
+}

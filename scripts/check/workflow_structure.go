@@ -202,15 +202,30 @@ func validateWorkflowStructure(contents string, ordinaryCI bool) []string {
 		}
 	}
 	corpus := workflowMap(jobs["wheel-corpus"])
+	if _, exists := workflowMap(corpus["env"])["HELOX_CORPUS_ROOT"]; exists {
+		bad("corpus root must be supplied at its consuming steps, not job env")
+	}
 	steps, _ = corpus["steps"].([]any)
 	preparation, execution := -1, -1
 	for i, value := range steps {
 		step := workflowMap(value)
 		switch step["run"] {
 		case `python3 scripts/prepare-wheel-corpus.py --root "$HELOX_CORPUS_ROOT"`:
+			if preparation >= 0 {
+				bad("duplicate corpus preparation")
+			}
 			preparation = i
 		case "go run ./scripts/check corpus":
+			if execution >= 0 {
+				bad("duplicate corpus validation")
+			}
 			execution = i
+		}
+		// Both consumers use the same runner-owned absolute directory at a
+		// location where Actions permits runner context. General context
+		// availability is checked independently by pinned actionlint.
+		if (i == preparation || i == execution) && workflowMap(step["env"])["HELOX_CORPUS_ROOT"] != "${{ runner.temp }}/wheel-corpus" {
+			bad("corpus consuming steps require the same explicit runner directory")
 		}
 		if step["if"] != nil {
 			bad("corpus steps must be unconditional")

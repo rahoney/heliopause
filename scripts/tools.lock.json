@@ -52,6 +52,14 @@
           "sha256": "a480d8593acd8215b22402cf0f3f88b01dcd3610c63b5391db640f7767e62104"
         }
       ]
+    },
+    {
+      "command": "actionlint",
+      "package": "github.com/rhysd/actionlint/cmd/actionlint",
+      "version": "v1.7.12",
+      "expectedVersion": "v1.7.12\n",
+      "versionMatch": "contains",
+      "setupGo": "1.26.8"
     }
   ]
 }

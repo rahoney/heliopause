@@ -42,7 +42,6 @@ jobs:
     timeout-minutes: 15
     env:
       GOTOOLCHAIN: local
-      HELOX_CORPUS_ROOT: ${{ runner.temp }}/wheel-corpus
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -57,8 +56,12 @@ jobs:
       - name: Prepare pinned module dependencies
         run: go run ./scripts/check bootstrap-modules
       - name: Acquire authenticated representative wheels as data
+        env:
+          HELOX_CORPUS_ROOT: ${{ runner.temp }}/wheel-corpus
         run: python3 scripts/prepare-wheel-corpus.py --root "$HELOX_CORPUS_ROOT"
       - name: Validate representative corpus offline
+        env:
+          HELOX_CORPUS_ROOT: ${{ runner.temp }}/wheel-corpus
         run: go run ./scripts/check corpus
 
 

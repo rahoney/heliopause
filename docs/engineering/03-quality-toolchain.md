@@ -609,3 +609,30 @@ profile은 `realcorpus` build tag로 production parser/classifier/planner/admiss
 Default PASS는 corpus PASS가 아니다. 작은 missing/digest regression은 기본 suite에
 남는다. 대표 corpus는 full CPU/CUDA dependency closure나 dynamic qualification을
 의미하지 않는다.
+
+## Actions 표현식 검증
+
+`bootstrap`은 `scripts/tools.lock.json`의 actionlint `v1.7.12`를 별도 tool
+module graph에서 Go proxy/checksum database 검증으로 준비한다. 제품 `go.mod`에
+추가하지 않는다. 이후 `workflow`와 `quick`은 오프라인에서 모든
+`.github/workflows/*.yml`/`*.yaml`에 고정 도구를 실행한다. 기존 YAML 구조와
+저장소 정책 검사는 유지하며 Actions 표현식의 허용 context는 actionlint가
+검사한다. optional ShellCheck/Pyflakes 연동만 끄고 Actions 진단은 억제하지 않는다.
+
+```bash
+go run ./scripts/check bootstrap
+go run ./scripts/check workflow
+go run ./scripts/check quick
+```
+
+`workflow`/`quick`은 `actionlint` build tag의 context 회귀 검사를 명시 실행하고
+실제 PASS 항목도 확인한다. 기본 Go unit tests에는 외부 도구 cache 의존성을
+추가하지 않는다. 준비되지 않은 고정 도구는 canonical 검사 실패다. Corpus
+획득과 오프라인 검사에는 각각 step-level env에서 동일한 runner 디렉터리를
+전달한다. job-level env는 `runner` context를 허용하지 않는다.
+
+로컬 도구 통과는 GitHub 서버의 최종 수용이나 native runner 실행을 증명하지
+않는다. push 이후 job 생성과 실제 required 결과는 별도로 확인한다.
+
+- [GitHub context availability](https://docs.github.com/en/actions/reference/workflows-and-actions/contexts#context-availability)
+- [Pinned actionlint usage](https://github.com/rhysd/actionlint/blob/v1.7.12/docs/usage.md)
