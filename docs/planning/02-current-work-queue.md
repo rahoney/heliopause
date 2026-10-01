@@ -2179,6 +2179,32 @@ production activation과 최종 배포를 수행한다.
 | 5 | M12-005 | cross-ecosystem qualification and feature freeze | NOT_STARTED |
 | 6 | M12-02 | final red-team/fix gate | RESERVED |
 
+M12-001 clean-CI 복구 baseline (2026-10-01): `IMPLEMENTED=YES`,
+`WIRED=YES`, `QUALIFIED=NO`, `ACCEPTANCE_CLOSED=NO`.
+기준 `a43ccfa1265eb7b7db8d4ef559e49a4c94eda224`의 controller transaction은
+유지한다. `MISSING`: default/corpus test 분리와 선언된 CI 입력 준비,
+Darwin test compilation, NetworkX resource applicability 수정, 인증된 후속
+integration 경로 및 clean-state 검증. 현재 작업은 M12-001 하나이며 CUDA
+qualification을 수행하지 않는다.
+
+M12-001 clean-CI 복구 결과 (2026-10-01): 위 범위의 bounded 수정과 로컬 검증을
+완료하여 `READY_FOR_REVIEW`다. Clean export의 quick(전체 Go test·vet·Staticcheck·
+Linux test build·platform 공통 단계), security, docs와 Darwin test compilation이
+통과했다. 필수 CI corpus는 명시적 준비 후 19개 profile 사례를 통과하며, 누락·
+변조 입력은 실패한다. Production packaging과 CPU PyTorch E2E, 후속 wheel/sdist·
+promotion 통합도 통과했다. Snapshot·명령·원인·한계는
+[복구 증거](evidence/m12-ci-repair/result.json)에 기록한다.
+`QUALIFIED=NO`, `ACCEPTANCE_CLOSED=NO`는 유지한다. 남은 milestone acceptance는
+remote Required CI, native macOS 및 CUDA qualification이다. CUDA 정적 matrix의
+전체 bytes 미확인 항목은 cu126 11개, cu130/cu132 각각 13개이며 CLEAR로 간주하지 않는다.
+
+M12-001 CI 연결 후속 수정 (2026-10-01): 독립 검토에서 발견한 workflow YAML
+배치, Required job inventory와 EXIT cleanup 오류를 수정한다. 실제 YAML parser와
+독립된 Actions 구조 정책, 변조 회귀 및 CI 공용 cleanup의 stub 실패 조합으로
+검증한다. 이전 product/CPU 증거는 변경 없는 입력에만 재사용한다. 후속 결과는
+[CI 연결 수정 증거](evidence/m12-ci-repair/workflow-followup.json)에 기록하며,
+remote CI·native macOS·CUDA qualification을 완료한 것으로 간주하지 않는다.
+
 M12-001 진행 근거 (2026-09-30): Model C Python 동적 관찰의 Pass 1 신뢰
 런타임 기판을 구현했다. 동일한 인증 closure를 고정된 읽기 전용 volume으로
 공유하고, controller가 독립 import unit마다 새 gVisor 런타임을 생성·제거하며,

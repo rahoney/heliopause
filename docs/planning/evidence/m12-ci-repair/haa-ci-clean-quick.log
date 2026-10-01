@@ -1,0 +1,162 @@
+[check] format check
+[check] runtime lock drift
+[check] version support freshness
+[check] module drift
+[check] module integrity
+[check] production build
+[check] test build validity
+[check] architecture
+[check] CI configuration
+[check] go vet
+[check] Staticcheck
+[check] default test
+check: execution failure: default test: /home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/bin/go test -timeout=5m ./...
+?   	github.com/rahoney/heliopause/cmd/haa-network-policy-helper	[no test files]
+ok  	github.com/rahoney/heliopause/cmd/helox	3.188s
+ok  	github.com/rahoney/heliopause/internal/application	0.238s
+ok  	github.com/rahoney/heliopause/internal/artifact/cargo	0.007s
+--- FAIL: TestClientResolveAndAcquireBindsAPIAsset (0.00s)
+panic: httptest: failed to listen on a port: listen tcp6 [::1]:0: socket: operation not permitted [recovered, repanicked]
+
+goroutine 8 [running]:
+testing.tRunner.func1.2({0x7c3620, 0x37ab336f08e0})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:1974 +0x232
+testing.tRunner.func1()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:1977 +0x349
+panic({0x7c3620?, 0x37ab336f08e0?})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/panic.go:860 +0x13a
+net/http/httptest.newLocalListener()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/net/http/httptest/server.go:72 +0xda
+net/http/httptest.NewUnstartedServer(...)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/net/http/httptest/server.go:120
+net/http/httptest.NewServer({0x882000, 0x37ab336e4c40})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/net/http/httptest/server.go:107 +0x25
+github.com/rahoney/heliopause/internal/artifact/githubrelease.TestClientResolveAndAcquireBindsAPIAsset(0x37ab337a6488)
+	/tmp/haa-ci-clean/internal/artifact/githubrelease/client_test.go:19 +0x191
+testing.tRunner(0x37ab337a6488, 0x87bcb8)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2036 +0xea
+created by testing.(*T).Run in goroutine 1
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2101 +0x4c5
+FAIL	github.com/rahoney/heliopause/internal/artifact/githubrelease	0.017s
+ok  	github.com/rahoney/heliopause/internal/artifact/gomodule	0.012s
+ok  	github.com/rahoney/heliopause/internal/artifact/npm	0.446s
+ok  	github.com/rahoney/heliopause/internal/artifact/pypi	0.138s
+ok  	github.com/rahoney/heliopause/internal/artifact/terraformprovider	0.015s
+ok  	github.com/rahoney/heliopause/internal/bootstrap	0.022s
+ok  	github.com/rahoney/heliopause/internal/cli	0.046s
+ok  	github.com/rahoney/heliopause/internal/core/domain	0.020s
+?   	github.com/rahoney/heliopause/internal/core/ports	[no test files]
+ok  	github.com/rahoney/heliopause/internal/evidence	0.027s
+ok  	github.com/rahoney/heliopause/internal/evidence/local	0.042s
+ok  	github.com/rahoney/heliopause/internal/hosttool	0.015s
+ok  	github.com/rahoney/heliopause/internal/inspection/githubrelease	0.018s
+ok  	github.com/rahoney/heliopause/internal/inspection/npm	0.053s
+ok  	github.com/rahoney/heliopause/internal/inspection/pypi	0.027s
+ok  	github.com/rahoney/heliopause/internal/networkpolicy	0.025s
+ok  	github.com/rahoney/heliopause/internal/policy	0.038s
+--- FAIL: TestVenvRejectsDestinationTypesAndAliases (0.06s)
+    --- FAIL: TestVenvRejectsDestinationTypesAndAliases/socket (0.00s)
+        pypi_venv_transaction_test.go:292: listen unix /tmp/haa-ci-isolated/tmp/TestVenvRejectsDestinationTypesAndAliasessocket20288017/001/bin/tool: setsockopt: operation not permitted
+FAIL
+FAIL	github.com/rahoney/heliopause/internal/promotion	4.146s
+ok  	github.com/rahoney/heliopause/internal/releaseinstall	0.396s
+ok  	github.com/rahoney/heliopause/internal/runtimeidentity	0.111s
+--- FAIL: TestSessionBindsProfileAdmissionAndInvalidation (0.00s)
+    direct_exec_admission_test.go:498: listen unixpacket /tmp/haa-ci-isolated/tmp/TestSessionBindsProfileAdmissionAndInvalidation169243661/001/control.sock: setsockopt: operation not permitted
+--- FAIL: TestPersistentControlPeerSerializesConcurrentAcknowledgements (0.00s)
+    direct_exec_admission_test.go:571: listen unixpacket /tmp/haa-ci-isolated/tmp/TestPersistentControlPeerSerializesConcurrentAcknowledgements3185107786/001/control.sock: setsockopt: operation not permitted
+--- FAIL: TestWaitingNormalOperationRechecksPoisonedSessionBeforeControlWrite (0.00s)
+    direct_exec_admission_test.go:612: listen unixpacket /tmp/haa-ci-isolated/tmp/TestWaitingNormalOperationRechecksPoisonedSessionBeforeControlWr2179735033/001/control.sock: setsockopt: operation not permitted
+--- FAIL: TestDirectExecLifecycleSerializesSameSessionAdmissions (0.00s)
+    direct_exec_admission_test.go:707: listen unixpacket /tmp/haa-ci-isolated/tmp/TestDirectExecLifecycleSerializesSameSessionAdmissions216501277/001/control.sock: setsockopt: operation not permitted
+--- FAIL: TestExternalTeardownWaitsBehindDirectExecLifecycle (0.00s)
+    direct_exec_admission_test.go:765: listen unixpacket /tmp/haa-ci-isolated/tmp/TestExternalTeardownWaitsBehindDirectExecLifecycle2479666110/001/control.sock: setsockopt: operation not permitted
+--- FAIL: TestWaitingLifecycleContextCancellationDoesNotPoisonOwner (0.00s)
+    direct_exec_admission_test.go:824: listen unixpacket /tmp/haa-ci-isolated/tmp/TestWaitingLifecycleContextCancellationDoesNotPoisonOwner1281300639/001/control.sock: setsockopt: operation not permitted
+--- FAIL: TestOwnerTimeoutCleansUpBeforeLifecycleRelease (0.00s)
+    direct_exec_admission_test.go:878: listen unixpacket /tmp/haa-ci-isolated/tmp/TestOwnerTimeoutCleansUpBeforeLifecycleRelease3542855355/001/control.sock: setsockopt: operation not permitted
+--- FAIL: TestWaitingLifecycleRevalidatesAfterOwnerPoison (0.00s)
+    direct_exec_admission_test.go:919: listen unixpacket /tmp/haa-ci-isolated/tmp/TestWaitingLifecycleRevalidatesAfterOwnerPoison3062662761/001/control.sock: setsockopt: operation not permitted
+--- FAIL: TestAmbiguousArmInvalidatesSessionAndPreventsLaunch (0.00s)
+    direct_exec_admission_test.go:970: listen unixpacket /tmp/haa-ci-isolated/tmp/TestAmbiguousArmInvalidatesSessionAndPreventsLaunch2430392219/001/control.sock: setsockopt: operation not permitted
+--- FAIL: TestInvalidateAckLossFailStopsExactSessionOwner (0.00s)
+    direct_exec_admission_test.go:1038: listen unixpacket /tmp/haa-ci-isolated/tmp/TestInvalidateAckLossFailStopsExactSessionOwner1616180630/001/control.sock: setsockopt: operation not permitted
+--- FAIL: TestAmbiguousCancelPoisonsSessionAndInvalidatesIt (0.00s)
+    direct_exec_admission_test.go:1144: listen unixpacket /tmp/haa-ci-isolated/tmp/TestAmbiguousCancelPoisonsSessionAndInvalidatesIt1014568161/001/control.sock: setsockopt: operation not permitted
+--- FAIL: TestReadinessAuthorityAmbiguityDoesNotRetryPoisonedSession (0.00s)
+    direct_exec_admission_test.go:1177: listen unixpacket /tmp/haa-ci-isolated/tmp/TestReadinessAuthorityAmbiguityDoesNotRetryPoisonedSession643143835/001/control.sock: setsockopt: operation not permitted
+--- FAIL: TestReadinessRetriesOrdinaryFailureWithFreshAdmissionNonce (0.00s)
+    direct_exec_admission_test.go:1205: listen unixpacket /tmp/haa-ci-isolated/tmp/TestReadinessRetriesOrdinaryFailureWithFreshAdmissionNonce3562651865/001/control.sock: setsockopt: operation not permitted
+--- FAIL: TestAdmissionRequiresExactPositiveAckBeforeDockerExec (0.00s)
+    direct_exec_admission_test.go:1238: listen unixpacket /tmp/haa-ci-isolated/tmp/TestAdmissionRequiresExactPositiveAckBeforeDockerExec891502516/001/control.sock: setsockopt: operation not permitted
+--- FAIL: TestAdmissionAckFailurePreventsDockerExecAndCancellationIsExact (0.00s)
+    direct_exec_admission_test.go:1261: listen unixpacket /tmp/haa-ci-isolated/tmp/TestAdmissionAckFailurePreventsDockerExecAndCancellationIsExact1146729963/001/control.sock: setsockopt: operation not permitted
+--- FAIL: TestConsumedAdmissionPreservesOriginalTargetFailureAndSession (0.00s)
+    direct_exec_admission_test.go:1334: listen unixgram /tmp/haa-real-obs-2503414688/output.sock: bind: operation not permitted
+--- FAIL: TestCancelConsumptionRaceCompletesAndPreservesRunnerFailure (0.00s)
+    direct_exec_admission_test.go:1367: listen unixgram /tmp/haa-real-obs-109020934/output.sock: bind: operation not permitted
+--- FAIL: TestAmbiguousStatusPoisonsSession (0.00s)
+    direct_exec_admission_test.go:1424: listen unixpacket /tmp/haa-ci-isolated/tmp/TestAmbiguousStatusPoisonsSession1987890709/001/control.sock: setsockopt: operation not permitted
+--- FAIL: TestAmbiguousCompletePoisonsSession (0.00s)
+    direct_exec_admission_test.go:1450: listen unixpacket /tmp/haa-ci-isolated/tmp/TestAmbiguousCompletePoisonsSession424666129/001/control.sock: setsockopt: operation not permitted
+--- FAIL: TestSuccessfulRunnerWaitsForDelayedSentryExecWithoutCancel (0.00s)
+    direct_exec_admission_test.go:1482: listen unixpacket /tmp/haa-ci-isolated/tmp/TestSuccessfulRunnerWaitsForDelayedSentryExecWithoutCancel2542378299/001/control.sock: setsockopt: operation not permitted
+--- FAIL: TestObserverSupervisorOwnsOneReceiverHelperAndEndpoints (0.00s)
+    observer_supervisor_test.go:22: observer runtime directory is not protected
+--- FAIL: TestObserverSupervisorRefusesExistingOwnerWithoutRemovingIt (0.00s)
+    observer_supervisor_test.go:48: observer runtime directory is not protected
+--- FAIL: TestObserverSupervisorHelperDeathFaultsObservation (0.00s)
+    observer_supervisor_test.go:67: observer runtime directory is not protected
+--- FAIL: TestObserverSupervisorFailStopUsesOwnedProcessAndPoisonsAllSessions (0.00s)
+    observer_supervisor_test.go:90: observer runtime directory is not protected
+--- FAIL: TestObserverSupervisorRetainsLockWhenEndpointCleanupIdentityChanges (0.00s)
+    observer_supervisor_test.go:136: observer runtime directory is not protected
+--- FAIL: TestSharedObserverStartProfilePublicationRejectsTerminalObserver (0.01s)
+    --- FAIL: TestSharedObserverStartProfilePublicationRejectsTerminalObserver/fail (0.00s)
+        shared_observer_test.go:100: listen unixpacket /tmp/haa-ci-isolated/tmp/TestSharedObserverStartProfilePublicationRejectsTerminalObserver380266836/001/control.sock: setsockopt: operation not permitted
+    --- FAIL: TestSharedObserverStartProfilePublicationRejectsTerminalObserver/close (0.01s)
+        shared_observer_test.go:100: listen unixpacket /tmp/haa-ci-isolated/tmp/TestSharedObserverStartProfilePublicationRejectsTerminalObserver3669700403/001/control.sock: setsockopt: operation not permitted
+--- FAIL: TestSharedObserverFailPhaseOneDoesNotDeadlockOwnerFailStop (0.00s)
+    shared_observer_test.go:210: listen unixgram /tmp/haa-observer-2831799915/o.sock: bind: operation not permitted
+--- FAIL: TestSharedObserverCloseIntentBlocksWaitingLifecycleBeforeArm (0.00s)
+    shared_observer_test.go:266: listen unixgram /tmp/haa-observer-430750044/o.sock: bind: operation not permitted
+--- FAIL: TestSharedObserverStreamTerminalTeardownIsTwoPhase (0.00s)
+    --- FAIL: TestSharedObserverStreamTerminalTeardownIsTwoPhase/stream-fault (0.00s)
+        shared_observer_test.go:326: listen unixgram /tmp/haa-observer-52758207/o.sock: bind: operation not permitted
+    --- FAIL: TestSharedObserverStreamTerminalTeardownIsTwoPhase/stream-end (0.00s)
+        shared_observer_test.go:326: listen unixgram /tmp/haa-observer-1812625032/o.sock: bind: operation not permitted
+--- FAIL: TestSharedObserverCompletedProbeDoesNotRevokeAnchor (0.00s)
+    shared_observer_test.go:371: listen unixgram /tmp/haa-observer-537113698/o.sock: bind: operation not permitted
+--- FAIL: TestSharedObserverFailDeduplicatesReaderAndSessionSnapshot (0.00s)
+    shared_observer_test.go:395: listen unixgram /tmp/haa-observer-1601846969/o.sock: bind: operation not permitted
+--- FAIL: TestSharedObserverConcurrentCloseAndFailAreIdempotent (0.00s)
+    shared_observer_test.go:416: listen unixgram /tmp/haa-observer-2515097091/o.sock: bind: operation not permitted
+--- FAIL: TestSharedObserverConcurrentFailAndStreamFaultAreIdempotent (0.00s)
+    shared_observer_test.go:461: listen unixgram /tmp/haa-observer-373010639/o.sock: bind: operation not permitted
+--- FAIL: TestSharedObserverAttributesOneContainerAndClosesItsStream (0.00s)
+    shared_observer_test.go:500: listen unixgram /tmp/haa-observer-3333046324/o.sock: bind: operation not permitted
+--- FAIL: TestSharedObserverFailsClosedForUnknownContainer (0.00s)
+    shared_observer_test.go:540: listen unixgram /tmp/haa-observer-2514639848/o.sock: bind: operation not permitted
+--- FAIL: TestSharedObserverFailsClosedForLatchedStreamFault (0.00s)
+    shared_observer_test.go:567: listen unixgram /tmp/haa-observer-2287362455/o.sock: bind: operation not permitted
+--- FAIL: TestSharedObserverFlushesAttributionOnStreamFault (0.00s)
+    shared_observer_test.go:601: listen unixgram /tmp/haa-observer-2206970583/o.sock: bind: operation not permitted
+--- FAIL: TestSharedObserverAwaitMountAnchors (0.01s)
+    --- FAIL: TestSharedObserverAwaitMountAnchors/blocks_until_mount_anchors_ready (0.00s)
+        shared_observer_test.go:825: listen unixgram /tmp/haa-observer-78591163/o.sock: bind: operation not permitted
+    --- FAIL: TestSharedObserverAwaitMountAnchors/duplicate_readiness_rejected (0.00s)
+        shared_observer_test.go:867: listen unixgram /tmp/haa-observer-1477274839/o.sock: bind: operation not permitted
+    --- FAIL: TestSharedObserverAwaitMountAnchors/unknown_container_rejected (0.00s)
+        shared_observer_test.go:912: listen unixgram /tmp/haa-observer-456462608/o.sock: bind: operation not permitted
+FAIL
+FAIL	github.com/rahoney/heliopause/internal/sandbox	0.830s
+ok  	github.com/rahoney/heliopause/internal/testutil/fakeworkflow	0.005s
+ok  	github.com/rahoney/heliopause/internal/verification/githubrelease	0.003s
+ok  	github.com/rahoney/heliopause/internal/verification/npm	0.003s
+?   	github.com/rahoney/heliopause/internal/verification/pypi	[no test files]
+ok  	github.com/rahoney/heliopause/scripts	0.653s
+ok  	github.com/rahoney/heliopause/scripts/check	0.070s
+ok  	github.com/rahoney/heliopause/scripts/release-manifest	3.162s
+ok  	github.com/rahoney/heliopause/scripts/runtime-image-manifest	0.028s
+FAIL: exit status 1
+exit status 1

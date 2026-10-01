@@ -1,0 +1,7 @@
+import os,subprocess,pathlib
+E=dict(HOME='/tmp/haa-ci-isolated/home',TMPDIR='/tmp/haa-ci-isolated/tmp',PATH='$HOME/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/bin:/usr/bin:/bin',GOCACHE='/tmp/haa-final-audit-tools/go-build',GOMODCACHE='/tmp/haa-final-audit-tools/go-mod',GOPROXY='off',GOTOOLCHAIN='local',GOOS='darwin',GOARCH='amd64',CGO_ENABLED='0')
+packages=subprocess.check_output(['go','list','./...'],env=E,text=True).splitlines()
+for i,p in enumerate(packages):
+ subprocess.run(['go','test','-c','-o',f'/tmp/haa-ci-isolated/test-bin/darwin-final-{i}.test',p],env=E,check=True)
+ print('COMPILED',p,flush=True)
+print('DARWIN_TEST_COMPILE_PASS',len(packages),'packages; no native execution')

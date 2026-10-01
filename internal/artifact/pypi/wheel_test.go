@@ -7,15 +7,11 @@ import (
 	"encoding/base64"
 	"encoding/binary"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 	"sort"
 	"strings"
 	"testing"
-
-	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
 func TestInspectWheelValidatesIntegrityAndStaticSurface(t *testing.T) {
@@ -111,36 +107,36 @@ func TestWheelImportSurfaceFromRecordedFiles(t *testing.T) {
 			noImport:   true,
 		},
 		{
-			name: "unknown ambiguous empty surface",
+			name: "resource-only wheel has no automatic import",
 			entries: []wheelTestEntry{
 				{name: "README", body: []byte("unstructured root payload")},
 			},
 			wantImport: "",
-			noImport:   false,
+			noImport:   true,
 		},
 		{
-			name: "unexpected executable Python surface fails closed",
+			name: "nested pth is a resource without site startup",
 			entries: []wheelTestEntry{
 				{name: "nvidia/nccl/hook.pth", body: []byte("import sys")},
 			},
 			wantImport: "",
-			noImport:   false,
+			noImport:   true,
 		},
 		{
-			name: "unrecognized payload binary fails closed",
+			name: "opaque payload is a resource",
 			entries: []wheelTestEntry{
 				{name: "nvidia/nccl/payload.unknown_binary", body: []byte("binary")},
 			},
 			wantImport: "",
-			noImport:   false,
+			noImport:   true,
 		},
 		{
-			name: "versioned library directory does not authorize unknown payload",
+			name: "parent suffix does not determine resource role",
 			entries: []wheelTestEntry{
 				{name: "nvidia/libfoo.so.2/payload.unknown_binary", body: []byte("binary")},
 			},
 			wantImport: "",
-			noImport:   false,
+			noImport:   true,
 		},
 		{
 			name: "unknown versioned library suffix fails closed",
@@ -242,7 +238,7 @@ custom plugin check = mypkg.plugin:check_func
 
 	expectedEPs := []string{
 		"console_scripts: black = black:patched_main",
-		"console_scripts: cli-tool = mypkg.cli:main [extra_feat]",
+		"console_scripts: cli-tool = mypkg.cli:main [extra-feat]",
 		"console_scripts: my command = example:main",
 		"gui_scripts: app = mypkg.gui:App.run",
 		"pytest11: custom plugin check = mypkg.plugin:check_func",
@@ -933,7 +929,7 @@ func TestModelC_NestedVendoredDistInfoPreserved(t *testing.T) {
 	for _, f := range insp.Surface.InstalledFiles {
 		if f.ArchivePath == "setuptools/_vendor/wheel-0.46.3.dist-info/entry_points.txt" {
 			foundNested = true
-			if f.Role != RuntimeRoleInertData || f.Scheme != SchemeSite {
+			if f.Role != RuntimeRoleResource || f.Scheme != SchemeSite {
 				t.Fatalf("unexpected role/scheme for nested vendored file: role=%v, scheme=%v", f.Role, f.Scheme)
 			}
 		}
@@ -961,7 +957,7 @@ func TestModelC_SiteStartupHookVsNestedPth(t *testing.T) {
 	for _, f := range insp.Surface.InstalledFiles {
 		if f.ArchivePath == "pkg/_vendor/nested.pth" {
 			foundNested = true
-			if f.Role != RuntimeRoleInertData {
+			if f.Role != RuntimeRoleResource {
 				t.Fatalf("nested .pth must be inert data, got role=%v", f.Role)
 			}
 		}
@@ -1034,7 +1030,7 @@ func TestModelC_NativeExtensionsVsOrdinaryLibraries(t *testing.T) {
 	}
 }
 
-// 7. Inert data files recognized; ambiguous/unknown files classified as RuntimeRoleUnresolved.
+// 7. Package resources are independent of content-format suffixes.
 func TestModelC_InertDataVsUnresolved(t *testing.T) {
 	entries := []wheelTestEntry{
 		{name: "pkg/__init__.py", body: []byte("pass\n")},
@@ -1046,8 +1042,8 @@ func TestModelC_InertDataVsUnresolved(t *testing.T) {
 	archive := recordedWheelArchive(t, "inert-test", "1.0", "inert_test-1.0.dist-info", entries, []string{"py3-none-any"}, nil)
 	insp := inspectTestWheel(t, archive, "inert_test-1.0-py3-none-any.whl")
 
-	if len(insp.Surface.UnresolvedFiles) != 1 || insp.Surface.UnresolvedFiles[0] != "pkg/unknown.arbitrary_extension" {
-		t.Fatalf("expected unresolved file pkg/unknown.arbitrary_extension, got: %v", insp.Surface.UnresolvedFiles)
+	if len(insp.Surface.UnresolvedFiles) != 0 || len(insp.Surface.ResourceFiles) != 4 {
+		t.Fatalf("unexpected resource classification: %v", insp.Surface.UnresolvedFiles)
 	}
 }
 
@@ -1055,7 +1051,7 @@ func TestModelC_InertDataVsUnresolved(t *testing.T) {
 func TestModelC_MixedUnresolvedFailsClosed(t *testing.T) {
 	entries := []wheelTestEntry{
 		{name: "pkg/__init__.py", body: []byte("pass\n")},
-		{name: "pkg/corrupt.unknown_bin", body: []byte("data")},
+		{name: "pkg/corrupt.pyc", body: []byte("data")},
 	}
 	archive := recordedWheelArchive(t, "mixed-test", "1.0", "mixed_test-1.0.dist-info", entries, []string{"py3-none-any"}, nil)
 	insp := inspectTestWheel(t, archive, "mixed_test-1.0-py3-none-any.whl")
@@ -1185,305 +1181,6 @@ func TestModelC_ProvenNoImportSurfaceWheels(t *testing.T) {
 	nativePlan, err := BuildObservationPlan(nativeInsp, defaultResourcePolicy())
 	if err != nil || !nativePlan.NoImportSurface || nativePlan.MetadataOnly {
 		t.Fatalf("observation plan for native library invalid: %#v, err=%v", nativePlan, err)
-	}
-}
-
-// 12. End-to-end regression on real corpus (/tmp/haa_corpus).
-func TestModelC_RealCorpusQualification(t *testing.T) {
-	corpusDir := "/tmp/haa_corpus"
-	if _, err := os.Stat(corpusDir); err != nil {
-		t.Fatalf("required real wheel corpus not found at %s: missing corpus is an explicit failure", corpusDir)
-	}
-
-	manifest := []struct {
-		fileOnDisk             string
-		canonical              string
-		profile                string
-		project                string
-		version                string
-		source                 string
-		expectedSHA256         string
-		wantImports            []string
-		noImport               bool
-		expectedCandidateCount int
-	}{
-		// CPU
-		{
-			fileOnDisk:     "setuptools-84.0.0-py3-none-any.whl",
-			profile:        "pytorch:cpu",
-			project:        "setuptools",
-			version:        "84.0.0",
-			source:         "pypi",
-			expectedSHA256: "51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670",
-			wantImports:    []string{"_distutils_hack", "setuptools"},
-			noImport:       false,
-		},
-		{
-			fileOnDisk:     "filelock-4.0.3-py3-none-any.whl",
-			profile:        "pytorch:cpu",
-			project:        "filelock",
-			version:        "4.0.3",
-			source:         "pypi",
-			expectedSHA256: "30cd166e2aee2c7534ce2c33c6367c4cd051b8368e20e2c4eb0c34f699bacfab",
-			wantImports:    []string{"filelock"},
-			noImport:       false,
-		},
-		{
-			fileOnDisk:     "filelock-4.0.4-py3-none-any.whl",
-			profile:        "pytorch:cpu",
-			project:        "filelock",
-			version:        "4.0.4",
-			source:         "pypi",
-			expectedSHA256: "0df72be195ca7892216d16f2edce8d9b93a571f02402972020a8cff84c594c7b",
-			wantImports:    []string{"filelock"},
-			noImport:       false,
-		},
-		{
-			fileOnDisk:     "sympy-1.14.0-py3-none-any.whl",
-			profile:        "pytorch:cpu",
-			project:        "sympy",
-			version:        "1.14.0",
-			source:         "pypi",
-			expectedSHA256: "e091cc3e99d2141a0ba2847328f5479b05d94a6635cb96148ccb3f34671bd8f5",
-			wantImports:    []string{"sympy"},
-			noImport:       false,
-		},
-		{
-			fileOnDisk:     "markupsafe-3.0.3-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
-			profile:        "pytorch:cpu",
-			project:        "markupsafe",
-			version:        "3.0.3",
-			source:         "pypi",
-			expectedSHA256: "457a69a9577064c05a97c41f4e65148652db078a3a509039e64d3467b9e7ef97",
-			wantImports:    []string{"markupsafe", "markupsafe._speedups"},
-			noImport:       false,
-		},
-		// cu126
-		{
-			fileOnDisk:     "haa-cu126-toolkit-audit.whl",
-			canonical:      "cuda_toolkit-12.6.3-py2.py3-none-any.whl",
-			profile:        "pytorch:cu126",
-			project:        "cuda-toolkit",
-			version:        "12.6.3",
-			source:         "pypi",
-			expectedSHA256: "79d8605baeb6c2f695761e0efb54bc62dbc3c9e32eb0742df7669c07befaa8f7",
-			wantImports:    nil,
-			noImport:       true,
-		},
-		{
-			fileOnDisk:     "haa-cu126-first-nccl.whl",
-			canonical:      "nvidia_nccl_cu12-2.29.3-py3-none-manylinux_2_18_x86_64.whl",
-			profile:        "pytorch:cu126",
-			project:        "nvidia-nccl-cu12",
-			version:        "2.29.3",
-			source:         "pypi",
-			expectedSHA256: "35ad42e7d5d722a83c36a3a478e281c20a5646383deaf1b9ed1a9ab7d61bed53",
-			wantImports:    nil,
-			noImport:       true,
-		},
-		{
-			fileOnDisk:     "haa-cu126-first-cufft.whl",
-			canonical:      "nvidia_cufft_cu12-11.3.0.4-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
-			profile:        "pytorch:cu126",
-			project:        "nvidia-cufft-cu12",
-			version:        "11.3.0.4",
-			source:         "pypi",
-			expectedSHA256: "ccba62eb9cef5559abd5e0d54ceed2d9934030f51163df018532142a8ec533e5",
-			wantImports:    []string{"nvidia"},
-			noImport:       false,
-		},
-		{
-			fileOnDisk:     "cuda_pathfinder-1.8.2-py3-none-any.whl",
-			canonical:      "cuda_pathfinder-1.8.2-py3-none-any.whl",
-			profile:        "pytorch:cu126",
-			project:        "cuda-pathfinder",
-			version:        "1.8.2",
-			source:         "pypi",
-			expectedSHA256: "4e65059febdb4d19d5cbc4798677e19db2b582f2f702f457b609e571690d357e",
-			wantImports:    []string{"cuda.pathfinder"},
-			noImport:       false,
-		},
-		{
-			fileOnDisk:             "cuda_bindings-12.9.9-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
-			canonical:              "cuda_bindings-12.9.9-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
-			profile:                "pytorch:cu126",
-			project:                "cuda-bindings",
-			version:                "12.9.9",
-			source:                 "pypi",
-			expectedSHA256:         "94e4f9bd6b9b21aad545e0d441707094e4ff88ab420d62b85fcdc8b6da1e039f",
-			noImport:               false,
-			expectedCandidateCount: 34,
-		},
-		// cu130
-		{
-			fileOnDisk:     "haa-cu130-toolkit-audit.whl",
-			canonical:      "cuda_toolkit-13.0.3.0-py2.py3-none-any.whl",
-			profile:        "pytorch:cu130",
-			project:        "cuda-toolkit",
-			version:        "13.0.3.0",
-			source:         "pypi",
-			expectedSHA256: "d693caaa261214ddd7dbb60d68e71cbed884e68c2be7509778f3051da0b91c3f",
-			wantImports:    nil,
-			noImport:       true,
-		},
-		{
-			fileOnDisk:     "haa-cu130-cupti-audit.whl",
-			canonical:      "nvidia_cuda_cupti-13.0.85-py3-none-manylinux_2_25_x86_64.whl",
-			profile:        "pytorch:cu130",
-			project:        "nvidia-cuda-cupti-cu13",
-			version:        "13.0.85",
-			source:         "pypi",
-			expectedSHA256: "4eb01c08e859bf924d222250d2e8f8b8ff6d3db4721288cf35d14252a4d933c8",
-			wantImports:    nil,
-			noImport:       true,
-		},
-		{
-			fileOnDisk:             "cuda_bindings-13.4.3-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
-			canonical:              "cuda_bindings-13.4.3-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
-			profile:                "pytorch:cu130",
-			project:                "cuda-bindings",
-			version:                "13.4.3",
-			source:                 "pypi",
-			expectedSHA256:         "bbacde6f75665b197016b986164cfdaa33b17515e5e635a63ddb75926aaa71c3",
-			noImport:               false,
-			expectedCandidateCount: 31,
-		},
-		// cu132
-		{
-			fileOnDisk:     "haa-cu132-toolkit-audit.whl",
-			canonical:      "cuda_toolkit-13.2.1-py2.py3-none-any.whl",
-			profile:        "pytorch:cu132",
-			project:        "cuda-toolkit",
-			version:        "13.2.1",
-			source:         "pypi",
-			expectedSHA256: "646d0e3668ce6f78f2312bb9cc0f668b9cbfcbef187eaa6a39eb2ea6dbec2a31",
-			wantImports:    nil,
-			noImport:       true,
-		},
-		{
-			fileOnDisk:     "haa-cu132-cupti-audit.whl",
-			canonical:      "nvidia_cuda_cupti-13.2.75-py3-none-manylinux_2_25_x86_64.whl",
-			profile:        "pytorch:cu132",
-			project:        "nvidia-cuda-cupti-cu13",
-			version:        "13.2.75",
-			source:         "pypi",
-			expectedSHA256: "f75aca6bef89c625a4076a820302bb06764daa1d21595286f6bee5e237d3a187",
-			wantImports:    nil,
-			noImport:       true,
-		},
-	}
-
-	target := WheelTarget{"cp314", "cp314", "manylinux_2_36_x86_64"}
-	for _, tc := range manifest {
-		t.Run(tc.fileOnDisk, func(t *testing.T) {
-			path := filepath.Join(corpusDir, tc.fileOnDisk)
-			data, err := os.ReadFile(path)
-			if err != nil {
-				t.Fatalf("missing required corpus file %s: %v", tc.fileOnDisk, err)
-			}
-			hash := sha256.Sum256(data)
-			actualSHA256 := hex.EncodeToString(hash[:])
-			if actualSHA256 != tc.expectedSHA256 {
-				t.Fatalf("corpus file %s digest mismatch: got %s, want independent pinned hash %s", tc.fileOnDisk, actualSHA256, tc.expectedSHA256)
-			}
-
-			wheelFilename := tc.canonical
-			if wheelFilename == "" {
-				wheelFilename = tc.fileOnDisk
-			}
-			limits := DefaultWheelLimits()
-			if prof, ok := PyTorchProfile(strings.TrimPrefix(tc.profile, "pytorch:")); ok {
-				limits = prof.ResourcePolicy().WheelLimits()
-			}
-			source, err := domain.NewSourceID(tc.source)
-			if err != nil {
-				t.Fatalf("invalid source id %s: %v", tc.source, err)
-			}
-			insp, err := InspectWheelForSource(bytes.NewReader(data), int64(len(data)), wheelFilename, tc.expectedSHA256, target, limits, source)
-			if err != nil {
-				stage, _ := WheelValidationStageOf(err)
-				t.Fatalf("InspectWheel(%q) failed: %v (stage: %s)", wheelFilename, err, stage)
-			}
-			if insp.NoImportSurface != tc.noImport {
-				t.Fatalf("NoImportSurface = %v, want %v", insp.NoImportSurface, tc.noImport)
-			}
-			if len(tc.wantImports) > 0 {
-				for _, want := range tc.wantImports {
-					found := false
-					for _, got := range insp.ImportNames {
-						if got == want {
-							found = true
-							break
-						}
-					}
-					if !found {
-						t.Fatalf("expected candidate import %q in %v", want, insp.ImportNames)
-					}
-				}
-			}
-
-			var policy ResourcePolicy
-			switch tc.profile {
-			case "pytorch:cpu":
-				policy = pyTorchCPUResourcePolicy()
-			case "pytorch:cu126":
-				policy = pyTorchCU126ResourcePolicy()
-			case "pytorch:cu130":
-				policy = pyTorchCU130ResourcePolicy()
-			case "pytorch:cu132":
-				policy = pyTorchCU132ResourcePolicy()
-			default:
-				policy = defaultResourcePolicy()
-			}
-
-			plan, err := BuildObservationPlan(insp, policy)
-			if err != nil {
-				t.Fatalf("BuildObservationPlan(%q) failed: %v", wheelFilename, err)
-			}
-			if err := ValidateTypedObservationPlan(plan, policy); err != nil || !plan.Admissible() {
-				t.Fatalf("authenticated corpus observation plan is nonqualifying: %v, entry points=%v, scripts=%v", err, plan.EntryPointCoverage, plan.ScriptCoverage)
-			}
-			if tc.expectedCandidateCount > 0 && plan.TotalImportCount != tc.expectedCandidateCount {
-				t.Fatalf("%s total imports = %d, want %d", tc.fileOnDisk, plan.TotalImportCount, tc.expectedCandidateCount)
-			}
-		})
-	}
-	t.Logf("REAL_CORPUS_CLASSIFICATION: REPRESENTATIVE_REAL_CORPUS (15 authenticated packages verified)")
-}
-
-func TestModelC_MissingCorpusDirectoryFails(t *testing.T) {
-	fakeDir := "/nonexistent/test/corpus/directory"
-	validateCorpus := func(dir string) error {
-		if _, err := os.Stat(dir); err != nil {
-			return errors.New("missing real corpus directory")
-		}
-		return nil
-	}
-	if err := validateCorpus(fakeDir); err == nil {
-		t.Fatal("expected missing corpus directory to fail, got nil")
-	}
-}
-
-func TestModelC_CorpusHashMismatchFails(t *testing.T) {
-	corpusDir := "/tmp/haa_corpus"
-	if _, err := os.Stat(corpusDir); err != nil {
-		t.Fatalf("corpus directory missing: %v", err)
-	}
-	file := filepath.Join(corpusDir, "setuptools-84.0.0-py3-none-any.whl")
-	data, err := os.ReadFile(file)
-	if err != nil {
-		t.Fatalf("failed to read file: %v", err)
-	}
-	wrongDigest := strings.Repeat("0", 64)
-	limits := DefaultWheelLimits()
-	target := WheelTarget{"cp314", "cp314", "manylinux_2_36_x86_64"}
-	_, err = InspectWheel(bytes.NewReader(data), int64(len(data)), "setuptools-84.0.0-py3-none-any.whl", wrongDigest, target, limits)
-	if err == nil {
-		t.Fatal("expected digest mismatch to fail, got nil")
-	}
-	stage, _ := WheelValidationStageOf(err)
-	if stage != WheelValidationDigest {
-		t.Fatalf("expected stage %s, got %s (err: %v)", WheelValidationDigest, stage, err)
 	}
 }
 

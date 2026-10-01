@@ -1,0 +1,51 @@
+[check] format check
+[check] runtime lock drift
+[check] version support freshness
+[check] module drift
+[check] module integrity
+[check] production build
+[check] test build validity
+[check] architecture
+[check] CI configuration
+[check] go vet
+[check] Staticcheck
+[check] default test
+check: execution failure: default test: $HOME/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/bin/go test -timeout=5m ./...
+?   	github.com/rahoney/heliopause/cmd/haa-network-policy-helper	[no test files]
+ok  	github.com/rahoney/heliopause/cmd/helox	0.830s
+ok  	github.com/rahoney/heliopause/internal/application	0.212s
+ok  	github.com/rahoney/heliopause/internal/artifact/cargo	(cached)
+ok  	github.com/rahoney/heliopause/internal/artifact/githubrelease	(cached)
+ok  	github.com/rahoney/heliopause/internal/artifact/gomodule	(cached)
+ok  	github.com/rahoney/heliopause/internal/artifact/npm	(cached)
+ok  	github.com/rahoney/heliopause/internal/artifact/pypi	0.141s
+ok  	github.com/rahoney/heliopause/internal/artifact/terraformprovider	(cached)
+ok  	github.com/rahoney/heliopause/internal/bootstrap	0.008s
+ok  	github.com/rahoney/heliopause/internal/cli	0.014s
+ok  	github.com/rahoney/heliopause/internal/core/domain	(cached)
+?   	github.com/rahoney/heliopause/internal/core/ports	[no test files]
+ok  	github.com/rahoney/heliopause/internal/evidence	(cached)
+ok  	github.com/rahoney/heliopause/internal/evidence/local	(cached)
+--- FAIL: TestVerifyLocalSocketAcceptsProtectedUserOwnedRuntimeDirectory (0.00s)
+    executor_test.go:283: docker endpoint parent is writable by non-owner
+FAIL
+FAIL	github.com/rahoney/heliopause/internal/hosttool	0.041s
+ok  	github.com/rahoney/heliopause/internal/inspection/githubrelease	(cached)
+ok  	github.com/rahoney/heliopause/internal/inspection/npm	(cached)
+ok  	github.com/rahoney/heliopause/internal/inspection/pypi	0.020s
+ok  	github.com/rahoney/heliopause/internal/networkpolicy	(cached)
+ok  	github.com/rahoney/heliopause/internal/policy	0.011s
+ok  	github.com/rahoney/heliopause/internal/promotion	2.683s
+ok  	github.com/rahoney/heliopause/internal/releaseinstall	(cached)
+ok  	github.com/rahoney/heliopause/internal/runtimeidentity	0.098s
+ok  	github.com/rahoney/heliopause/internal/sandbox	3.517s
+ok  	github.com/rahoney/heliopause/internal/testutil/fakeworkflow	(cached)
+ok  	github.com/rahoney/heliopause/internal/verification/githubrelease	(cached)
+ok  	github.com/rahoney/heliopause/internal/verification/npm	(cached)
+?   	github.com/rahoney/heliopause/internal/verification/pypi	[no test files]
+ok  	github.com/rahoney/heliopause/scripts	(cached)
+ok  	github.com/rahoney/heliopause/scripts/check	0.101s
+ok  	github.com/rahoney/heliopause/scripts/release-manifest	(cached)
+ok  	github.com/rahoney/heliopause/scripts/runtime-image-manifest	(cached)
+FAIL: exit status 1
+exit status 1

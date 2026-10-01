@@ -93,6 +93,36 @@ untrusted external source
 
 # 3. M12-001 — Official PyTorch source support
 
+## Wheel resource applicability (2026-10-01)
+
+Wheel 구조·identity·digest·RECORD·최종 설치 목적지 검증은 모든 파일에 적용한다.
+그 이후 고정 Linux CPython 3.14 import/site 및 wheel 설치 의미로 실행 역할을
+분류한다. 일반 package resource는 압축·직렬화 형식이나 익숙한 파일 suffix로
+신뢰를 부여하지 않는다. `RESOURCE`는 자동 import/startup 대상이 아니라는
+의미이며 안전성 또는 비실행성을 보증하지 않는다. Pickle, archive, native payload
+등은 package 코드가 읽거나 실행할 수 있고, 해당 행위는 실행된 bounded 실험의
+관찰 범위에만 들어간다. Host에서는 payload를 역직렬화하거나 실행하지 않는다.
+
+- site의 `.py`, 정확한 target extension과 활성 root `.pth`는 명시적 실행 역할이다.
+- `.pyc`, 모호한 extension binding과 지원하지 않는 required execution은 fail closed다.
+- script 설치 scheme은 파일 이름에 관계없이 `MANUAL_REVIEW`다.
+- headers/data scheme과 package resource의 bytes는 인증 closure·관찰·승격에 그대로
+  보존한다. Path hook은 인증 closure 경로 검증을 거치며 임의 archive loader를
+  자동 허용하지 않는다.
+- 고정 pip의 `--target`은 `.data/data`를 prefix에 배치한다. 지원하는 data
+  목적지는 `share/...`이며 이를 다시 `share/`로 접두하지 않는다. 나머지 data
+  목적지는 실행 역할과 승격 scheme이 정의되지 않았으므로 거부한다. Headers는
+  `include/python/<canonical-project>/...`, scripts는 `bin/...`로 계산한다.
+- Entry point의 extras는 정규화된 동일 식별자에 보존한다. 관찰은 정확한 target
+  module import이며 callable 실행이나 optional dependency 환경 검증을 주장하지 않는다.
+- import 없는 metadata/native/resource wheel도 관찰된 설치와 정리 요구를 유지한다.
+- direct import의 외부 종료·controller 원장 완료는 모든 module body 실행 또는
+  나중의 resource load에 대한 안전성 증명이 아니다.
+
+근거: [PyPA wheel installation scheme](https://packaging.python.org/en/latest/specifications/binary-distribution-format/),
+[CPython FileFinder](https://docs.python.org/3.14/library/importlib.html#importlib.machinery.FileFinder),
+[CPython site](https://docs.python.org/3.14/library/site.html).
+
 ## Goal
 
 기존 PyPI/pip adapter와 venv transaction을 재사용하면서 공식 PyTorch wheel

@@ -44,6 +44,9 @@ func checkWorkflow(root, relativePath string, validate func(string) []string) er
 		return &checkFailure{class: executionFailure, step: "CI configuration", cause: err}
 	}
 	findings := validate(string(contents))
+	if relativePath != workflowRelativePath {
+		findings = append(findings, validateWorkflowStructure(string(contents), false)...)
+	}
 	if relativePath == workflowRelativePath || relativePath == releaseWorkflowRelativePath {
 		findings = append(findings, validateRuntimeLockWorkflow(root, string(contents))...)
 	}
@@ -96,7 +99,7 @@ func runtimeLockStrings(value any) []string {
 }
 
 func validateCIWorkflow(contents string) []string {
-	var findings []string
+	findings := validateWorkflowStructure(contents, true)
 	requiredSnippets := []string{
 		"name: Heliopause CI",
 		"  pull_request:",
@@ -126,12 +129,14 @@ func validateCIWorkflow(contents string) []string {
 		"check-latest: false",
 		"cache: false",
 		"    if: ${{ always() }}",
-		"    needs:\n      - quick\n      - docs\n      - security\n      - vulnerability\n      - minimum-go\n      - macos\n      - gvisor-observer\n      - gvisor-integration",
+		"    needs:\n      - quick\n      - docs\n      - security\n      - vulnerability\n      - minimum-go\n      - macos\n      - gvisor-observer\n      - gvisor-integration\n      - wheel-corpus",
 		"run: go run ./scripts/check bootstrap-modules",
 		"run: go run ./scripts/check platform",
+		"run: go run ./scripts/check corpus",
+		`run: python3 scripts/prepare-wheel-corpus.py --root "$HELOX_CORPUS_ROOT"`,
 		"run: go run ./scripts/check security",
 		"run: go run ./scripts/check vulnerability",
-		`run: go run ./scripts/check required "$QUICK_RESULT" "$DOCS_RESULT" "$SECURITY_RESULT" "$VULNERABILITY_RESULT" "$MINIMUM_GO_RESULT" "$MACOS_RESULT" "$GVISOR_OBSERVER_RESULT" "$GVISOR_INTEGRATION_RESULT"`,
+		`run: go run ./scripts/check required "$QUICK_RESULT" "$DOCS_RESULT" "$SECURITY_RESULT" "$VULNERABILITY_RESULT" "$MINIMUM_GO_RESULT" "$MACOS_RESULT" "$GVISOR_OBSERVER_RESULT" "$GVISOR_INTEGRATION_RESULT" "$CORPUS_RESULT"`,
 	}
 	for _, snippet := range requiredSnippets {
 		if !strings.Contains(contents, snippet) {
@@ -168,8 +173,8 @@ func validateCIWorkflow(contents string) []string {
 	}
 
 	allowedActions := map[string]int{
-		"actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1": 9,
-		"actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e": 8,
+		"actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1": 10,
+		"actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e": 9,
 	}
 	actualActions := make(map[string]int)
 	for _, match := range actionReference.FindAllStringSubmatch(contents, -1) {
@@ -191,7 +196,7 @@ func validateCIWorkflow(contents string) []string {
 	}
 
 	jobs := workflowJobIDs(contents)
-	wantJobs := []string{"docs", "gvisor-integration", "gvisor-observer", "macos", "minimum-go", "quick", "required", "security", "vulnerability"}
+	wantJobs := []string{"docs", "gvisor-integration", "gvisor-observer", "macos", "minimum-go", "quick", "required", "security", "vulnerability", "wheel-corpus"}
 	if strings.Join(jobs, ",") != strings.Join(wantJobs, ",") {
 		findings = append(findings, fmt.Sprintf("workflow jobs are %q, require %q", jobs, wantJobs))
 	}
@@ -423,21 +428,13 @@ func validateReleasePublishWorkflow(contents string) []string {
 }
 
 func workflowJobIDs(contents string) []string {
-	lines := strings.Split(contents, "\n")
-	inJobs := false
+	doc, err := parseWorkflow(contents)
+	if err != nil {
+		return nil
+	}
 	var jobs []string
-	for _, line := range lines {
-		if line == "jobs:" {
-			inJobs = true
-			continue
-		}
-		if !inJobs || !strings.HasPrefix(line, "  ") || strings.HasPrefix(line, "    ") || !strings.HasSuffix(line, ":") {
-			continue
-		}
-		identifier := strings.TrimSuffix(strings.TrimSpace(line), ":")
-		if identifier != "" {
-			jobs = append(jobs, identifier)
-		}
+	for id := range workflowMap(doc["jobs"]) {
+		jobs = append(jobs, id)
 	}
 	sort.Strings(jobs)
 	return jobs

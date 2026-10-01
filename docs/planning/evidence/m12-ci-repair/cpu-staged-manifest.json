@@ -1,0 +1,312 @@
+{
+  "manifest_id": "3e72beca6d143045a88021279ecb87a6f611628f02fdacddad892e943da396b9",
+  "schema": "helox.verified-manifest/v1",
+  "operation_id": "op_lmagztxwkk3uep3il5vtb2aala",
+  "target": {
+    "path": "/tmp/haa-ci-runtime-final/e2e/pytorch-cpu-2858087544/target",
+    "requires_new": false
+  },
+  "resolver": {
+    "runtime_identity": "python:3.14.7;pip:26.2.1;target:cp314/cp314/manylinux_2_36_x86_64;source:pytorch:cpu",
+    "lockfile_sha256": "bd829d2fb70bd9226cd3e9a8c050a0b678cd3654b5a7bfc819160c096414d117"
+  },
+  "primary": "pypi-6043ea6b883f5df5a0ee0250a6dddf4d",
+  "policy": {
+    "decision": "ALLOW",
+    "id": "m5-pypi-pip",
+    "version": 1,
+    "reasons": [
+      "M5_VERIFIED_SET_COMPLETED"
+    ]
+  },
+  "entries": [
+    {
+      "node": "pypi-006252cca0ace5158c8a304558898659",
+      "record_path": "filelock-4.0.7-py3-none-any.whl",
+      "role": "DEPENDENCY",
+      "source": "pypi",
+      "name": "filelock",
+      "version": "4.0.7",
+      "variant": "wheel",
+      "sha256": "a93c4d93269b339a6af4848342c7e940d0f9928ad95eff64764699e5f1bf8a6a",
+      "declared_integrity": "sha256:a93c4d93269b339a6af4848342c7e940d0f9928ad95eff64764699e5f1bf8a6a",
+      "run_id": "run_5hpkz5zvjigalsprg233s5plmi",
+      "evidence": [
+        "evidence:run_5hpkz5zvjigalsprg233s5plmi:pypi-declared-sha256-result",
+        "evidence:run_5hpkz5zvjigalsprg233s5plmi:pypi-dynamic-import-result",
+        "evidence:run_5hpkz5zvjigalsprg233s5plmi:pypi-static-archive-result"
+      ],
+      "policy": {
+        "decision": "ALLOW",
+        "id": "m3-npm-dynamic-inspect",
+        "version": 1,
+        "reasons": [
+          "M3_REQUIRED_CHECKS_COMPLETED"
+        ]
+      }
+    },
+    {
+      "node": "pypi-0633ef763b7de5c638c476770ecb8bcf",
+      "record_path": "networkx-3.7-py3-none-any.whl",
+      "role": "DEPENDENCY",
+      "source": "pypi",
+      "name": "networkx",
+      "version": "3.7",
+      "variant": "wheel",
+      "sha256": "e3fd2c13a7814cee3746340d8d7f8598a67f16a58bf47fb7f8793fab6efca1b0",
+      "declared_integrity": "sha256:e3fd2c13a7814cee3746340d8d7f8598a67f16a58bf47fb7f8793fab6efca1b0",
+      "run_id": "run_fd3qmlhxdfpjcn3timoujx4fne",
+      "evidence": [
+        "evidence:run_fd3qmlhxdfpjcn3timoujx4fne:pypi-declared-sha256-result",
+        "evidence:run_fd3qmlhxdfpjcn3timoujx4fne:pypi-dynamic-import-result",
+        "evidence:run_fd3qmlhxdfpjcn3timoujx4fne:pypi-static-archive-result"
+      ],
+      "policy": {
+        "decision": "ALLOW",
+        "id": "m3-npm-dynamic-inspect",
+        "version": 1,
+        "reasons": [
+          "M3_REQUIRED_CHECKS_COMPLETED"
+        ]
+      }
+    },
+    {
+      "node": "pypi-1c618d37d22976a9915f20cc120a0948",
+      "record_path": "jinja2-3.1.6-py3-none-any.whl",
+      "role": "DEPENDENCY",
+      "source": "pypi",
+      "name": "jinja2",
+      "version": "3.1.6",
+      "variant": "wheel",
+      "sha256": "85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67",
+      "declared_integrity": "sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67",
+      "run_id": "run_4w6lboowmucym62bgcfsiqlblm",
+      "evidence": [
+        "evidence:run_4w6lboowmucym62bgcfsiqlblm:pypi-declared-sha256-result",
+        "evidence:run_4w6lboowmucym62bgcfsiqlblm:pypi-dynamic-import-result",
+        "evidence:run_4w6lboowmucym62bgcfsiqlblm:pypi-static-archive-result"
+      ],
+      "policy": {
+        "decision": "ALLOW",
+        "id": "m3-npm-dynamic-inspect",
+        "version": 1,
+        "reasons": [
+          "M3_REQUIRED_CHECKS_COMPLETED"
+        ]
+      }
+    },
+    {
+      "node": "pypi-587ddd596b19c2f8d4f89ca0e4980e41",
+      "record_path": "markupsafe-3.0.3-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+      "role": "DEPENDENCY",
+      "source": "pypi",
+      "name": "markupsafe",
+      "version": "3.0.3",
+      "variant": "wheel",
+      "sha256": "457a69a9577064c05a97c41f4e65148652db078a3a509039e64d3467b9e7ef97",
+      "declared_integrity": "sha256:457a69a9577064c05a97c41f4e65148652db078a3a509039e64d3467b9e7ef97",
+      "run_id": "run_alhigc4zj5i6lcvzhtyqonqtg4",
+      "evidence": [
+        "evidence:run_alhigc4zj5i6lcvzhtyqonqtg4:pypi-declared-sha256-result",
+        "evidence:run_alhigc4zj5i6lcvzhtyqonqtg4:pypi-dynamic-import-result",
+        "evidence:run_alhigc4zj5i6lcvzhtyqonqtg4:pypi-static-archive-result"
+      ],
+      "policy": {
+        "decision": "ALLOW",
+        "id": "m3-npm-dynamic-inspect",
+        "version": 1,
+        "reasons": [
+          "M3_REQUIRED_CHECKS_COMPLETED"
+        ]
+      }
+    },
+    {
+      "node": "pypi-6043ea6b883f5df5a0ee0250a6dddf4d",
+      "record_path": "torch-2.14.0+cpu-cp314-cp314-manylinux_2_28_x86_64.whl",
+      "role": "PRIMARY",
+      "source": "pytorch-cpu",
+      "name": "torch",
+      "version": "2.14.0+cpu",
+      "variant": "wheel",
+      "sha256": "f152f41dc5dc462afe0de780e451ebb47ea8b4451f8f919f9537aa8e2cbe1d7e",
+      "declared_integrity": "sha256:f152f41dc5dc462afe0de780e451ebb47ea8b4451f8f919f9537aa8e2cbe1d7e",
+      "run_id": "run_wmd5jkm247tehbyg467okhsgae",
+      "evidence": [
+        "evidence:run_wmd5jkm247tehbyg467okhsgae:pypi-declared-sha256-result",
+        "evidence:run_wmd5jkm247tehbyg467okhsgae:pypi-dynamic-import-result",
+        "evidence:run_wmd5jkm247tehbyg467okhsgae:pypi-static-archive-result"
+      ],
+      "policy": {
+        "decision": "ALLOW",
+        "id": "m3-npm-dynamic-inspect",
+        "version": 1,
+        "reasons": [
+          "M3_REQUIRED_CHECKS_COMPLETED"
+        ]
+      }
+    },
+    {
+      "node": "pypi-7a3ea1930be442f105d3182008267750",
+      "record_path": "typing_extensions-4.16.0-py3-none-any.whl",
+      "role": "DEPENDENCY",
+      "source": "pypi",
+      "name": "typing-extensions",
+      "version": "4.16.0",
+      "variant": "wheel",
+      "sha256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+      "declared_integrity": "sha256:481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+      "run_id": "run_xnape5wdtxedlj5ww3xs2raj4a",
+      "evidence": [
+        "evidence:run_xnape5wdtxedlj5ww3xs2raj4a:pypi-declared-sha256-result",
+        "evidence:run_xnape5wdtxedlj5ww3xs2raj4a:pypi-dynamic-import-result",
+        "evidence:run_xnape5wdtxedlj5ww3xs2raj4a:pypi-static-archive-result"
+      ],
+      "policy": {
+        "decision": "ALLOW",
+        "id": "m3-npm-dynamic-inspect",
+        "version": 1,
+        "reasons": [
+          "M3_REQUIRED_CHECKS_COMPLETED"
+        ]
+      }
+    },
+    {
+      "node": "pypi-7ce7c9fad32c978d314d2040ea427e69",
+      "record_path": "setuptools-84.0.0-py3-none-any.whl",
+      "role": "DEPENDENCY",
+      "source": "pypi",
+      "name": "setuptools",
+      "version": "84.0.0",
+      "variant": "wheel",
+      "sha256": "51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670",
+      "declared_integrity": "sha256:51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670",
+      "run_id": "run_n53waq7cs54nd445sszao7cd5u",
+      "evidence": [
+        "evidence:run_n53waq7cs54nd445sszao7cd5u:pypi-declared-sha256-result",
+        "evidence:run_n53waq7cs54nd445sszao7cd5u:pypi-dynamic-import-result",
+        "evidence:run_n53waq7cs54nd445sszao7cd5u:pypi-static-archive-result"
+      ],
+      "policy": {
+        "decision": "ALLOW",
+        "id": "m3-npm-dynamic-inspect",
+        "version": 1,
+        "reasons": [
+          "M3_REQUIRED_CHECKS_COMPLETED"
+        ]
+      }
+    },
+    {
+      "node": "pypi-97d5f014605b5fafbb6bbad4013860fc",
+      "record_path": "mpmath-1.3.0-py3-none-any.whl",
+      "role": "DEPENDENCY",
+      "source": "pypi",
+      "name": "mpmath",
+      "version": "1.3.0",
+      "variant": "wheel",
+      "sha256": "a0b2b9fe80bbcd81a6647ff13108738cfb482d481d826cc0e02f5b35e5c88d2c",
+      "declared_integrity": "sha256:a0b2b9fe80bbcd81a6647ff13108738cfb482d481d826cc0e02f5b35e5c88d2c",
+      "run_id": "run_7bcxx3oeodybqcgb2du5v2wgcm",
+      "evidence": [
+        "evidence:run_7bcxx3oeodybqcgb2du5v2wgcm:pypi-declared-sha256-result",
+        "evidence:run_7bcxx3oeodybqcgb2du5v2wgcm:pypi-dynamic-import-result",
+        "evidence:run_7bcxx3oeodybqcgb2du5v2wgcm:pypi-static-archive-result"
+      ],
+      "policy": {
+        "decision": "ALLOW",
+        "id": "m3-npm-dynamic-inspect",
+        "version": 1,
+        "reasons": [
+          "M3_REQUIRED_CHECKS_COMPLETED"
+        ]
+      }
+    },
+    {
+      "node": "pypi-ee4efdbb4deee0848c1ec1145e51feae",
+      "record_path": "fsspec-2026.9.0-py3-none-any.whl",
+      "role": "DEPENDENCY",
+      "source": "pypi",
+      "name": "fsspec",
+      "version": "2026.9.0",
+      "variant": "wheel",
+      "sha256": "8dd6e646e99ea382bd85f97a45e6b526a442d79423a7dc673f1e2756d05fcb5f",
+      "declared_integrity": "sha256:8dd6e646e99ea382bd85f97a45e6b526a442d79423a7dc673f1e2756d05fcb5f",
+      "run_id": "run_hgltwmqkyp2s4r3gegfydlbro4",
+      "evidence": [
+        "evidence:run_hgltwmqkyp2s4r3gegfydlbro4:pypi-declared-sha256-result",
+        "evidence:run_hgltwmqkyp2s4r3gegfydlbro4:pypi-dynamic-import-result",
+        "evidence:run_hgltwmqkyp2s4r3gegfydlbro4:pypi-static-archive-result"
+      ],
+      "policy": {
+        "decision": "ALLOW",
+        "id": "m3-npm-dynamic-inspect",
+        "version": 1,
+        "reasons": [
+          "M3_REQUIRED_CHECKS_COMPLETED"
+        ]
+      }
+    },
+    {
+      "node": "pypi-fdfa739a30be6a3b1984da35567f7d59",
+      "record_path": "sympy-1.14.0-py3-none-any.whl",
+      "role": "DEPENDENCY",
+      "source": "pypi",
+      "name": "sympy",
+      "version": "1.14.0",
+      "variant": "wheel",
+      "sha256": "e091cc3e99d2141a0ba2847328f5479b05d94a6635cb96148ccb3f34671bd8f5",
+      "declared_integrity": "sha256:e091cc3e99d2141a0ba2847328f5479b05d94a6635cb96148ccb3f34671bd8f5",
+      "run_id": "run_is5banln7uvxg3o4nyw275gfoa",
+      "evidence": [
+        "evidence:run_is5banln7uvxg3o4nyw275gfoa:pypi-declared-sha256-result",
+        "evidence:run_is5banln7uvxg3o4nyw275gfoa:pypi-dynamic-import-result",
+        "evidence:run_is5banln7uvxg3o4nyw275gfoa:pypi-static-archive-result"
+      ],
+      "policy": {
+        "decision": "ALLOW",
+        "id": "m3-npm-dynamic-inspect",
+        "version": 1,
+        "reasons": [
+          "M3_REQUIRED_CHECKS_COMPLETED"
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "pypi-1c618d37d22976a9915f20cc120a0948",
+      "to": "pypi-587ddd596b19c2f8d4f89ca0e4980e41"
+    },
+    {
+      "from": "pypi-6043ea6b883f5df5a0ee0250a6dddf4d",
+      "to": "pypi-006252cca0ace5158c8a304558898659"
+    },
+    {
+      "from": "pypi-6043ea6b883f5df5a0ee0250a6dddf4d",
+      "to": "pypi-0633ef763b7de5c638c476770ecb8bcf"
+    },
+    {
+      "from": "pypi-6043ea6b883f5df5a0ee0250a6dddf4d",
+      "to": "pypi-1c618d37d22976a9915f20cc120a0948"
+    },
+    {
+      "from": "pypi-6043ea6b883f5df5a0ee0250a6dddf4d",
+      "to": "pypi-7a3ea1930be442f105d3182008267750"
+    },
+    {
+      "from": "pypi-6043ea6b883f5df5a0ee0250a6dddf4d",
+      "to": "pypi-7ce7c9fad32c978d314d2040ea427e69"
+    },
+    {
+      "from": "pypi-6043ea6b883f5df5a0ee0250a6dddf4d",
+      "to": "pypi-ee4efdbb4deee0848c1ec1145e51feae"
+    },
+    {
+      "from": "pypi-6043ea6b883f5df5a0ee0250a6dddf4d",
+      "to": "pypi-fdfa739a30be6a3b1984da35567f7d59"
+    },
+    {
+      "from": "pypi-fdfa739a30be6a3b1984da35567f7d59",
+      "to": "pypi-97d5f014605b5fafbb6bbad4013860fc"
+    }
+  ]
+}

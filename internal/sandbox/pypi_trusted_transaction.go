@@ -23,6 +23,11 @@ func pythonLiteral(value string) string {
 	return string(encoded)
 }
 
+func pythonClosureFailure(sessionID domain.SandboxSessionID, phase string, cause error) (domain.SandboxResult, error) {
+	result, err := pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_CLOSURE_INVALID")
+	return result, errors.Join(err, fmt.Errorf("python closure %s: %w", phase, cause))
+}
+
 // A hook experiment executes only its selected statement. The separate
 // startup scenario executes every statement in canonical installed order.
 // Both run with -I -S, so ambient site startup cannot run implicitly.
@@ -201,7 +206,7 @@ func (b *PythonDynamicBackend) executeTrustedTransaction(ctx context.Context, se
 	policy := artifactpypi.ResourcePolicyFromContext(ctx)
 	manifest, err := b.introducer.buildClosureManifest(ctx, closure, policy)
 	if err != nil {
-		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_CLOSURE_INVALID")
+		return pythonClosureFailure(sessionID, "build authenticated manifest", err)
 	}
 	owner := artifact.Identity().Source().String() + ":" + artifact.Identity().Name() + ":" + artifact.Identity().Version() + ":" + artifact.Digest().String()
 	fromBytes, ok := manifest.inspections[owner]
@@ -215,7 +220,7 @@ func (b *PythonDynamicBackend) executeTrustedTransaction(ctx context.Context, se
 		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_PLAN_MISMATCH")
 	}
 	if err := validatePTHPathsInClosure(plan, manifest); err != nil {
-		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_CLOSURE_INVALID")
+		return pythonClosureFailure(sessionID, "validate startup paths", err)
 	}
 	units, err := freezePythonObservationUnits(plan, manifest.identity)
 	if err != nil {
@@ -245,8 +250,13 @@ func (b *PythonDynamicBackend) executeTrustedTransaction(ctx context.Context, se
 	// downgraded if any runtime, observer stream, cgroup or volume remains.
 	defer func() {
 		cleanupErr := transaction.cleanup()
-		if cleanupErr != nil || resultErr != nil {
+		if cleanupErr != nil {
+			priorErr := resultErr
 			result, resultErr = pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_CLEANUP_FAILED")
+			resultErr = errors.Join(priorErr, resultErr, fmt.Errorf("python transaction cleanup: %w", cleanupErr))
+			return
+		}
+		if resultErr != nil {
 			return
 		}
 		if result.Status() == domain.SandboxCompleted {
@@ -286,7 +296,7 @@ func (b *PythonDynamicBackend) executeTrustedTransaction(ctx context.Context, se
 	transaction.watch = watch
 	validated, err := b.introducer.validatedWheelDestinations(artifact, closure)
 	if err != nil {
-		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_CLOSURE_INVALID")
+		return pythonClosureFailure(sessionID, "validate wheel destinations", err)
 	}
 	wheelPaths := make([]string, 0, len(validated))
 	for _, item := range validated {
@@ -302,7 +312,7 @@ func (b *PythonDynamicBackend) executeTrustedTransaction(ctx context.Context, se
 	}
 	installed, err := verifyClosureInstallation(runCtx, b.runner, preparation.id, manifest, policy.RuntimeTmpfs())
 	if err != nil {
-		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_CLOSURE_INVALID")
+		return pythonClosureFailure(sessionID, "verify prepared installation", err)
 	}
 	transaction.installed = installed
 	anchor, err := transaction.startPhase(runCtx, phaseAnchor, 1)
@@ -311,7 +321,7 @@ func (b *PythonDynamicBackend) executeTrustedTransaction(ctx context.Context, se
 	}
 	transaction.anchor = anchor.id
 	if err := transaction.volume.verifyAttachments(runCtx, b.runner, map[string]bool{preparation.id: false, anchor.id: true}); err != nil {
-		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_CLOSURE_INVALID")
+		return pythonClosureFailure(sessionID, "verify closure attachments", err)
 	}
 	if err := transaction.terminatePhase(preparation.id); err != nil {
 		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_PREPARATION_FAILED")

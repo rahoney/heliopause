@@ -26,6 +26,17 @@ func TestLinuxPyTorchFullIntegration(t *testing.T) {
 		t.Fatalf("unsupported PyTorch qualification profile %q", profile)
 	}
 	root := t.TempDir()
+	if evidenceRoot := os.Getenv("HELOX_INTEGRATION_EVIDENCE_ROOT"); evidenceRoot != "" {
+		if err := os.MkdirAll(evidenceRoot, 0o700); err != nil {
+			t.Fatal(err)
+		}
+		var err error
+		root, err = os.MkdirTemp(evidenceRoot, "pytorch-"+profile+"-")
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Logf("retained integration evidence: %s", root)
+	}
 	t.Setenv("XDG_CACHE_HOME", filepath.Join(root, "cache"))
 	target := filepath.Join(root, "target")
 	for _, relative := range []string{"lib/python3.14/site-packages", "bin", "share"} {

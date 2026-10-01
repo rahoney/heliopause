@@ -1,0 +1,430 @@
+[
+  {
+    "sha256": "a93c4d93269b339a6af4848342c7e940d0f9928ad95eff64764699e5f1bf8a6a",
+    "project": "filelock",
+    "version": "4.0.7",
+    "url": "https://files.pythonhosted.org/packages/06/cf/1731c0dd182ee35f80a39e63afb3d03056ea0dd561b7498932b10b2e34d9/filelock-4.0.7-py3-none-any.whl",
+    "status": "VERIFIED_BYTES",
+    "declared_size": 109242,
+    "index": "https://pypi.org/pypi/filelock/4.0.7/json"
+  },
+  {
+    "sha256": "b15e1e62ab842d099ae9b19312374f62579668171efed8b676108b60fa75e5b0",
+    "project": "torch",
+    "version": "2.14.0+cu126",
+    "url": "https://download-r2.pytorch.org/whl/cu126/torch-2.14.0%2Bcu126-cp314-cp314-manylinux_2_28_x86_64.whl",
+    "status": "UNVERIFIED",
+    "reason": "no full local bytes; large PyTorch acquisition deferred to CPU E2E"
+  },
+  {
+    "sha256": "800927308ccc5dd6246d3f61f7fcef2ed7ec4e59e199090d360d3293f78bd5a2",
+    "project": "nvidia-cuda-nvrtc-cu12",
+    "version": "12.6.85",
+    "url": "https://files.pythonhosted.org/packages/f5/31/ffb400c5ae99daf09687aa6c42831c5d824f71c4851363ed2a4a1ac52bab/nvidia_cuda_nvrtc_cu12-12.6.85-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl",
+    "status": "UNVERIFIED",
+    "declared_size": 23649944,
+    "index": "https://pypi.org/pypi/nvidia-cuda-nvrtc-cu12/12.6.85/json",
+    "reason": "bounded data acquisition: per-file 16 MiB, total 128 MiB"
+  },
+  {
+    "sha256": "08ed2686e9875d01b58e3cb379c6896df8e76c75e0d4a7f7dace3d7b6d9ef8eb",
+    "project": "nvidia-cublas-cu12",
+    "version": "12.6.4.1",
+    "url": "https://files.pythonhosted.org/packages/af/eb/ff4b8c503fa1f1796679dce648854d58751982426e4e4b37d6fce49d259c/nvidia_cublas_cu12-12.6.4.1-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "status": "UNVERIFIED",
+    "declared_size": 393138322,
+    "index": "https://pypi.org/pypi/nvidia-cublas-cu12/12.6.4.1/json",
+    "reason": "bounded data acquisition: per-file 16 MiB, total 128 MiB"
+  },
+  {
+    "sha256": "7556d9eca156e18184b94947ade0fba5bb47d69cec46bf8660fd2c71a4b48b73",
+    "project": "nvidia-cusparse-cu12",
+    "version": "12.5.4.2",
+    "url": "https://files.pythonhosted.org/packages/06/1e/b8b7c2f4099a37b96af5c9bb158632ea9e5d9d27d7391d7eb8fc45236674/nvidia_cusparse_cu12-12.5.4.2-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "status": "UNVERIFIED",
+    "declared_size": 216561367,
+    "index": "https://pypi.org/pypi/nvidia-cusparse-cu12/12.5.4.2/json",
+    "reason": "bounded data acquisition: per-file 16 MiB, total 128 MiB"
+  },
+  {
+    "sha256": "042f2500f24c021db8a06c5eec2539027d57460e1c1a762055a6554f72c369bd",
+    "project": "nvidia-nvshmem-cu12",
+    "version": "3.4.5",
+    "url": "https://files.pythonhosted.org/packages/b5/09/6ea3ea725f82e1e76684f0708bbedd871fc96da89945adeba65c3835a64c/nvidia_nvshmem_cu12-3.4.5-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "status": "UNVERIFIED",
+    "declared_size": 139103095,
+    "index": "https://pypi.org/pypi/nvidia-nvshmem-cu12/3.4.5/json",
+    "reason": "bounded data acquisition: per-file 16 MiB, total 128 MiB"
+  },
+  {
+    "sha256": "cc23469d1c7e52ce6c1d55253273d32c565dd22068647f3aa59b3c6b005bf159",
+    "project": "nvidia-cufile-cu12",
+    "version": "1.11.1.6",
+    "url": "https://files.pythonhosted.org/packages/b2/66/cc9876340ac68ae71b15c743ddb13f8b30d5244af344ec8322b449e35426/nvidia_cufile_cu12-1.11.1.6-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "status": "VERIFIED_BYTES",
+    "declared_size": 1142103,
+    "index": "https://pypi.org/pypi/nvidia-cufile-cu12/1.11.1.6/json"
+  },
+  {
+    "sha256": "ba3b56a4f896141e25e19ab287cd71e52a6a0f4b29d0d31609f60e3b4d5219b7",
+    "project": "nvidia-cuda-runtime-cu12",
+    "version": "12.6.77",
+    "url": "https://files.pythonhosted.org/packages/e1/23/e717c5ac26d26cf39a27fbc076240fad2e3b817e5889d671b67f4f9f49c5/nvidia_cuda_runtime_cu12-12.6.77-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "status": "VERIFIED_BYTES",
+    "declared_size": 897690,
+    "index": "https://pypi.org/pypi/nvidia-cuda-runtime-cu12/12.6.77/json"
+  },
+  {
+    "sha256": "e9e49843a7707e42022babb9bcfa33c29857a93b88020c4e4434656a655b698c",
+    "project": "nvidia-cusolver-cu12",
+    "version": "11.7.1.2",
+    "url": "https://files.pythonhosted.org/packages/f0/6e/c2cf12c9ff8b872e92b4a5740701e51ff17689c4d726fca91875b07f655d/nvidia_cusolver_cu12-11.7.1.2-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "status": "UNVERIFIED",
+    "declared_size": 158229790,
+    "index": "https://pypi.org/pypi/nvidia-cusolver-cu12/11.7.1.2/json",
+    "reason": "bounded data acquisition: per-file 16 MiB, total 128 MiB"
+  },
+  {
+    "sha256": "f1bb701d6b930d5a7cea44c19ceb973311500847f81b634d802b7b539dc55623",
+    "project": "nvidia-cusparselt-cu12",
+    "version": "0.7.1",
+    "url": "https://files.pythonhosted.org/packages/56/79/12978b96bd44274fe38b5dde5cfb660b1d114f70a65ef962bcbbed99b549/nvidia_cusparselt_cu12-0.7.1-py3-none-manylinux2014_x86_64.whl",
+    "status": "UNVERIFIED",
+    "declared_size": 287193691,
+    "index": "https://pypi.org/pypi/nvidia-cusparselt-cu12/0.7.1/json",
+    "reason": "bounded data acquisition: per-file 16 MiB, total 128 MiB"
+  },
+  {
+    "sha256": "e3f1171dbdc83c5932a45f0f4c99180a70de9bd2718c1ab77d14104f6d7147f9",
+    "project": "nvidia-nvjitlink-cu12",
+    "version": "12.9.86",
+    "url": "https://files.pythonhosted.org/packages/46/0c/c75bbfb967457a0b7670b8ad267bfc4fffdf341c074e0a80db06c24ccfd4/nvidia_nvjitlink_cu12-12.9.86-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl",
+    "status": "UNVERIFIED",
+    "declared_size": 39748338,
+    "index": "https://pypi.org/pypi/nvidia-nvjitlink-cu12/12.9.86/json",
+    "reason": "bounded data acquisition: per-file 16 MiB, total 128 MiB"
+  },
+  {
+    "sha256": "387dae4cb0089a7b6ba1a428ae0782b65c4c58f57d94617cb22ca8593d8ccbca",
+    "project": "triton",
+    "version": "3.8.0",
+    "url": "https://files.pythonhosted.org/packages/93/d9/08c75f3459f19ad00425b564058e40efa4bcd79b816064cf27499303ea42/triton-3.8.0-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+    "status": "UNVERIFIED",
+    "declared_size": 247972313,
+    "index": "https://pypi.org/pypi/triton/3.8.0/json",
+    "reason": "bounded data acquisition: per-file 16 MiB, total 128 MiB"
+  },
+  {
+    "sha256": "b90bed3df379fa79afbd21be8e04a0314336b8ae16768b58f2d34cb1d04cd7d2",
+    "project": "nvidia-nvtx-cu12",
+    "version": "12.6.77",
+    "url": "https://files.pythonhosted.org/packages/56/9a/fff8376f8e3d084cd1530e1ef7b879bb7d6d265620c95c1b322725c694f4/nvidia_nvtx_cu12-12.6.77-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "status": "VERIFIED_BYTES",
+    "declared_size": 89276,
+    "index": "https://pypi.org/pypi/nvidia-nvtx-cu12/12.6.77/json"
+  },
+  {
+    "sha256": "949452be657fa16687d0930933f032835951ef0892b37d2d53824d1a84dc97a8",
+    "project": "nvidia-cudnn-cu12",
+    "version": "9.10.2.21",
+    "url": "https://files.pythonhosted.org/packages/ba/51/e123d997aa098c61d029f76663dedbfb9bc8dcf8c60cbd6adbe42f76d049/nvidia_cudnn_cu12-9.10.2.21-py3-none-manylinux_2_27_x86_64.whl",
+    "status": "UNVERIFIED",
+    "declared_size": 706758467,
+    "index": "https://pypi.org/pypi/nvidia-cudnn-cu12/9.10.2.21/json",
+    "reason": "bounded data acquisition: per-file 16 MiB, total 128 MiB"
+  },
+  {
+    "sha256": "6768bad6cab4f19e8292125e5f1ac8aa7d1718704012a0e3272a6f61c4bce132",
+    "project": "nvidia-cuda-cupti-cu12",
+    "version": "12.6.80",
+    "url": "https://files.pythonhosted.org/packages/49/60/7b6497946d74bcf1de852a21824d63baad12cd417db4195fc1bfe59db953/nvidia_cuda_cupti_cu12-12.6.80-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "status": "VERIFIED_BYTES",
+    "declared_size": 8917980,
+    "index": "https://pypi.org/pypi/nvidia-cuda-cupti-cu12/12.6.80/json"
+  },
+  {
+    "sha256": "8dd6e646e99ea382bd85f97a45e6b526a442d79423a7dc673f1e2756d05fcb5f",
+    "project": "fsspec",
+    "version": "2026.9.0",
+    "url": "https://files.pythonhosted.org/packages/6c/c0/a98505f18594f1bce828bb159cec0fcf9860562f1a2c85913409fc8f3d9e/fsspec-2026.9.0-py3-none-any.whl",
+    "status": "VERIFIED_BYTES",
+    "declared_size": 221738,
+    "index": "https://pypi.org/pypi/fsspec/2026.9.0/json"
+  },
+  {
+    "sha256": "a42cd1344297f70b9e39a1e4f467a4e1c10f1da54ff7a85c12197f6c652c8bdf",
+    "project": "nvidia-curand-cu12",
+    "version": "10.3.7.77",
+    "url": "https://files.pythonhosted.org/packages/73/1b/44a01c4e70933637c93e6e1a8063d1e998b50213a6b65ac5a9169c47e98e/nvidia_curand_cu12-10.3.7.77-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "status": "UNVERIFIED",
+    "declared_size": 56279010,
+    "index": "https://pypi.org/pypi/nvidia-curand-cu12/10.3.7.77/json",
+    "reason": "bounded data acquisition: per-file 16 MiB, total 128 MiB"
+  },
+  {
+    "sha256": "f152f41dc5dc462afe0de780e451ebb47ea8b4451f8f919f9537aa8e2cbe1d7e",
+    "project": "torch",
+    "version": "2.14.0+cpu",
+    "url": "https://download-r2.pytorch.org/whl/cpu/torch-2.14.0%2Bcpu-cp314-cp314-manylinux_2_28_x86_64.whl",
+    "status": "UNVERIFIED",
+    "reason": "no full local bytes; large PyTorch acquisition deferred to CPU E2E"
+  },
+  {
+    "sha256": "2b3c89c88d01ee0e477cb7f82ef60a11a4bcd57b6b87c33f789350b59759360b",
+    "project": "nvidia-cusparse",
+    "version": "12.6.3.3",
+    "url": "https://files.pythonhosted.org/packages/fa/18/623c77619c31d62efd55302939756966f3ecc8d724a14dab2b75f1508850/nvidia_cusparse-12.6.3.3-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "status": "UNVERIFIED",
+    "declared_size": 145942937,
+    "index": "https://pypi.org/pypi/nvidia-cusparse/12.6.3.3/json",
+    "reason": "bounded data acquisition: per-file 16 MiB, total 128 MiB"
+  },
+  {
+    "sha256": "0a759da5dea5c0ea10fd307de75cdeb59e7ea4fcb8add0924859b944babf1112",
+    "project": "nvidia-cusolver",
+    "version": "12.0.4.66",
+    "url": "https://files.pythonhosted.org/packages/5f/67/cba3777620cdacb99102da4042883709c41c709f4b6323c10781a9c3aa34/nvidia_cusolver-12.0.4.66-py3-none-manylinux_2_27_x86_64.whl",
+    "status": "UNVERIFIED",
+    "declared_size": 200941980,
+    "index": "https://pypi.org/pypi/nvidia-cusolver/12.0.4.66/json",
+    "reason": "bounded data acquisition: per-file 16 MiB, total 128 MiB"
+  },
+  {
+    "sha256": "290f0a2ee94c9f3687a02502f3b9299a9f9fe826e6d0287ee18482e78d495b80",
+    "project": "nvidia-nvshmem-cu13",
+    "version": "3.4.5",
+    "url": "https://files.pythonhosted.org/packages/3c/35/a9bf80a609e74e3b000fef598933235c908fcefcef9026042b8e6dfde2a9/nvidia_nvshmem_cu13-3.4.5-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "status": "UNVERIFIED",
+    "declared_size": 60412546,
+    "index": "https://pypi.org/pypi/nvidia-nvshmem-cu13/3.4.5/json",
+    "reason": "bounded data acquisition: per-file 16 MiB, total 128 MiB"
+  },
+  {
+    "sha256": "ad9b6d2ead2435f11cbb6868809d2adeeee302e9bb94bcf0539c7a40d80e8575",
+    "project": "nvidia-cuda-nvrtc",
+    "version": "13.0.88",
+    "url": "https://files.pythonhosted.org/packages/c3/68/483a78f5e8f31b08fb1bb671559968c0ca3a065ac7acabfc7cee55214fd6/nvidia_cuda_nvrtc-13.0.88-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl",
+    "status": "UNVERIFIED",
+    "declared_size": 90215200,
+    "index": "https://pypi.org/pypi/nvidia-cuda-nvrtc/13.0.88/json",
+    "reason": "bounded data acquisition: per-file 16 MiB, total 128 MiB"
+  },
+  {
+    "sha256": "71f181cd810e90f9b6023b01186fe82d13d65f0ec098581ee201d39fad769e4b",
+    "project": "nvidia-cudnn-cu13",
+    "version": "9.24.0.43",
+    "url": "https://files.pythonhosted.org/packages/5c/ba/791cffd048fe5b044e620df55267e3e95c0e6e07d50b41e377c03dfc910f/nvidia_cudnn_cu13-9.24.0.43-py3-none-manylinux_2_27_x86_64.whl",
+    "status": "UNVERIFIED",
+    "declared_size": 553099438,
+    "index": "https://pypi.org/pypi/nvidia-cudnn-cu13/9.24.0.43/json",
+    "reason": "bounded data acquisition: per-file 16 MiB, total 128 MiB"
+  },
+  {
+    "sha256": "1aee33a5da6e1db083fe2b90082def8915f30f3248d5896bcec36a579d941bfc",
+    "project": "nvidia-curand",
+    "version": "10.4.0.35",
+    "url": "https://files.pythonhosted.org/packages/a5/9f/be0a41ca4a4917abf5cb9ae0daff1a6060cc5de950aec0396de9f3b52bc5/nvidia_curand-10.4.0.35-py3-none-manylinux_2_27_x86_64.whl",
+    "status": "UNVERIFIED",
+    "declared_size": 59544258,
+    "index": "https://pypi.org/pypi/nvidia-curand/10.4.0.35/json",
+    "reason": "bounded data acquisition: per-file 16 MiB, total 128 MiB"
+  },
+  {
+    "sha256": "12b09f9e9f91347596393a6ddb95e9bc0aa003227eb6c7cd7f20c144eac62442",
+    "project": "torch",
+    "version": "2.14.0+cu130",
+    "url": "https://download-r2.pytorch.org/whl/cu130/torch-2.14.0%2Bcu130-cp314-cp314-manylinux_2_28_x86_64.whl",
+    "status": "UNVERIFIED",
+    "reason": "no full local bytes; large PyTorch acquisition deferred to CPU E2E"
+  },
+  {
+    "sha256": "786ce87568c303fadb5afcc7102d454cd3040d75f6f8626f5db460d1871f4dd0",
+    "project": "nvidia-cusparselt-cu13",
+    "version": "0.8.1",
+    "url": "https://files.pythonhosted.org/packages/34/7d/2661f2fb3ac4302f3a246f5fc030213ac60c1fe0bce84f9783dbd831dbb7/nvidia_cusparselt_cu13-0.8.1-py3-none-manylinux2014_x86_64.whl",
+    "status": "UNVERIFIED",
+    "declared_size": 170148586,
+    "index": "https://pypi.org/pypi/nvidia-cusparselt-cu13/0.8.1/json",
+    "reason": "bounded data acquisition: per-file 16 MiB, total 128 MiB"
+  },
+  {
+    "sha256": "37936a16db8fe4ac1f065c2139360608a543a09275cb1a1af612e08cfa065436",
+    "project": "nvidia-cublas",
+    "version": "13.1.1.3",
+    "url": "https://files.pythonhosted.org/packages/3b/cd/154ca20c38269e05eff77c1464e6c1da89f50a6390b565e9d82e06bc11e1/nvidia_cublas-13.1.1.3-py3-none-manylinux_2_27_x86_64.whl",
+    "status": "UNVERIFIED",
+    "declared_size": 423138758,
+    "index": "https://pypi.org/pypi/nvidia-cublas/13.1.1.3/json",
+    "reason": "bounded data acquisition: per-file 16 MiB, total 128 MiB"
+  },
+  {
+    "sha256": "08a3ecefae5a01c7f5117351c64f17c7c62efa5fffdbe24fc7d298da19cd0b44",
+    "project": "nvidia-cufile",
+    "version": "1.15.1.6",
+    "url": "https://files.pythonhosted.org/packages/3f/70/4f193de89a48b71714e74602ee14d04e4019ad36a5a9f20c425776e72cd6/nvidia_cufile-1.15.1.6-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "status": "VERIFIED_BYTES",
+    "declared_size": 1223672,
+    "index": "https://pypi.org/pypi/nvidia-cufile/1.15.1.6/json"
+  },
+  {
+    "sha256": "cefa7fdb9710efd0f39c5f1be1d61ff6fc9a996c451265bd7fbdcf9455ed4b50",
+    "project": "nvidia-nccl-cu13",
+    "version": "2.30.7",
+    "url": "https://files.pythonhosted.org/packages/3f/34/c500f90c7ae641b8e0f98965b36b8a7ac79cc8b296e8d251fe3eb592ee54/nvidia_nccl_cu13-2.30.7-py3-none-manylinux_2_18_x86_64.whl",
+    "status": "UNVERIFIED",
+    "declared_size": 215965170,
+    "index": "https://pypi.org/pypi/nvidia-nccl-cu13/2.30.7/json",
+    "reason": "bounded data acquisition: per-file 16 MiB, total 128 MiB"
+  },
+  {
+    "sha256": "6c44f692dce8fd5ffd3e3df134b6cdb9c2f72d99cf40b62c32dde45eea9ddad3",
+    "project": "nvidia-cufft",
+    "version": "12.0.0.61",
+    "url": "https://files.pythonhosted.org/packages/a8/2f/7b57e29836ea8714f81e9898409196f47d772d5ddedddf1592eadb8ab743/nvidia_cufft-12.0.0.61-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "status": "UNVERIFIED",
+    "declared_size": 214085489,
+    "index": "https://pypi.org/pypi/nvidia-cufft/12.0.0.61/json",
+    "reason": "bounded data acquisition: per-file 16 MiB, total 128 MiB"
+  },
+  {
+    "sha256": "e0391f24ed94ec879b84e3da4d4ec320c879aff681f2c7a638462f7199284323",
+    "project": "nvidia-nvjitlink",
+    "version": "13.4.92",
+    "url": "https://files.pythonhosted.org/packages/1d/6b/eef7a9e32872b8f41e145bf10cddc9af26e153c338852811fe9a9baddf9e/nvidia_nvjitlink-13.4.92-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl",
+    "status": "UNVERIFIED",
+    "declared_size": 42452378,
+    "index": "https://pypi.org/pypi/nvidia-nvjitlink/13.4.92/json",
+    "reason": "bounded data acquisition: per-file 16 MiB, total 128 MiB"
+  },
+  {
+    "sha256": "7f82250d7782aa23b6cfe765ecc7db554bd3c2870c43f3d1821f1d18aebf0548",
+    "project": "nvidia-cuda-runtime",
+    "version": "13.0.96",
+    "url": "https://files.pythonhosted.org/packages/2e/24/d1558f3b68b1d26e706813b1d10aa1d785e4698c425af8db8edc3dced472/nvidia_cuda_runtime-13.0.96-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "status": "VERIFIED_BYTES",
+    "declared_size": 2243632,
+    "index": "https://pypi.org/pypi/nvidia-cuda-runtime/13.0.96/json"
+  },
+  {
+    "sha256": "4936d1d6780fbe68db454f5e72a42ff64d1fd6397df9f363ae786930fd5c1cd4",
+    "project": "nvidia-nvtx",
+    "version": "13.0.85",
+    "url": "https://files.pythonhosted.org/packages/c2/f3/d86c845465a2723ad7e1e5c36dcd75ddb82898b3f53be47ebd429fb2fa5d/nvidia_nvtx-13.0.85-py3-none-manylinux1_x86_64.manylinux_2_5_x86_64.whl",
+    "status": "VERIFIED_BYTES",
+    "declared_size": 148047,
+    "index": "https://pypi.org/pypi/nvidia-nvtx/13.0.85/json"
+  },
+  {
+    "sha256": "72bf454902da594e0b833cadeddc8b7100ce1c7cf7ed9023943931be1aa913b7",
+    "project": "nvidia-cuda-runtime",
+    "version": "13.2.75",
+    "url": "https://files.pythonhosted.org/packages/dc/74/f1493b0774c6eaf0234512bb650e1ab90ce8f61fecf0b4aaf1fb416f571e/nvidia_cuda_runtime-13.2.75-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "status": "VERIFIED_BYTES",
+    "declared_size": 2321965,
+    "index": "https://pypi.org/pypi/nvidia-cuda-runtime/13.2.75/json"
+  },
+  {
+    "sha256": "a9049031da08cbedd0c20e3470e5a978dc330af0e0326b3b05774718c665dc3e",
+    "project": "nvidia-cuda-nvrtc",
+    "version": "13.2.78",
+    "url": "https://files.pythonhosted.org/packages/5f/96/237b40b171e06eb65905375c4ad5c96f78c2f861ac6e8ae7f650d95e1dfd/nvidia_cuda_nvrtc-13.2.78-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl",
+    "status": "UNVERIFIED",
+    "declared_size": 47019062,
+    "index": "https://pypi.org/pypi/nvidia-cuda-nvrtc/13.2.78/json",
+    "reason": "bounded data acquisition: per-file 16 MiB, total 128 MiB"
+  },
+  {
+    "sha256": "f0d110640aa63e7182fa787cc245afa07c5fb84ac30f1c4029e4fa3012353172",
+    "project": "nvidia-cusparse",
+    "version": "12.7.10.1",
+    "url": "https://files.pythonhosted.org/packages/b7/bd/bad43b37bcf13167637bef26399693d517b95092d742e8749eda5f4a85f3/nvidia_cusparse-12.7.10.1-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "status": "UNVERIFIED",
+    "declared_size": 150855566,
+    "index": "https://pypi.org/pypi/nvidia-cusparse/12.7.10.1/json",
+    "reason": "bounded data acquisition: per-file 16 MiB, total 128 MiB"
+  },
+  {
+    "sha256": "4693ea3c2a5d20369da7b5a4970a41df9b40f1b6f2ef9909c95f7c8c8c5ffb4d",
+    "project": "nvidia-cusolver",
+    "version": "12.2.0.1",
+    "url": "https://files.pythonhosted.org/packages/6b/97/a3c41eac54c89f6aac788d2b3ccd6642b32aa6b79650af3dedb8ee7c2bfa/nvidia_cusolver-12.2.0.1-py3-none-manylinux_2_27_x86_64.whl",
+    "status": "UNVERIFIED",
+    "declared_size": 227391570,
+    "index": "https://pypi.org/pypi/nvidia-cusolver/12.2.0.1/json",
+    "reason": "bounded data acquisition: per-file 16 MiB, total 128 MiB"
+  },
+  {
+    "sha256": "a8cd9485bd04d14cfdf235bca712964396cf38f6736068d907255a95287202be",
+    "project": "torch",
+    "version": "2.14.0+cu132",
+    "url": "https://download-r2.pytorch.org/whl/cu132/torch-2.14.0%2Bcu132-cp314-cp314-manylinux_2_28_x86_64.whl",
+    "status": "UNVERIFIED",
+    "reason": "no full local bytes; large PyTorch acquisition deferred to CPU E2E"
+  },
+  {
+    "sha256": "a9667ae4d81b9e54ddbbad24a9e72334f89d4fc184566d05ef028e2760c820eb",
+    "project": "nvidia-cufft",
+    "version": "12.2.0.46",
+    "url": "https://files.pythonhosted.org/packages/36/3e/8d717a6e1f6e27b85b64650b1104dbcf6108c9dc7e27e9e26a0d8e936cc5/nvidia_cufft-12.2.0.46-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "status": "UNVERIFIED",
+    "declared_size": 218258098,
+    "index": "https://pypi.org/pypi/nvidia-cufft/12.2.0.46/json",
+    "reason": "bounded data acquisition: per-file 16 MiB, total 128 MiB"
+  },
+  {
+    "sha256": "b4080cab49d4939f8e46b2c195c76c698d2289835c36ede558836daa40000e70",
+    "project": "nvidia-curand",
+    "version": "10.4.2.55",
+    "url": "https://files.pythonhosted.org/packages/f4/bc/f02a1d180d288e49b1a4548698b59755e9c485ee39c041fdeaf4d2cc2117/nvidia_curand-10.4.2.55-py3-none-manylinux_2_27_x86_64.whl",
+    "status": "UNVERIFIED",
+    "declared_size": 59920450,
+    "index": "https://pypi.org/pypi/nvidia-curand/10.4.2.55/json",
+    "reason": "bounded data acquisition: per-file 16 MiB, total 128 MiB"
+  },
+  {
+    "sha256": "87feaf8c3ad20d3d03a01933181801ff6892bace5c8f0b1e4b48f319d3e62d36",
+    "project": "nvidia-cufile",
+    "version": "1.17.1.22",
+    "url": "https://files.pythonhosted.org/packages/23/c5/661a73a9042fc5f81cdd5fe6e89f4170b3b33f7962e709987e2b5e5f1381/nvidia_cufile-1.17.1.22-py3-none-manylinux_2_27_x86_64.whl",
+    "status": "VERIFIED_BYTES",
+    "declared_size": 1387670,
+    "index": "https://pypi.org/pypi/nvidia-cufile/1.17.1.22/json"
+  },
+  {
+    "sha256": "53bf22e2ccbf644db74b6cc21cea7f5efb1a52aa64515438b430abbd05af4106",
+    "project": "nvidia-cublas",
+    "version": "13.4.0.1",
+    "url": "https://files.pythonhosted.org/packages/3d/ec/c9b2998aebe3149dee2769e501257e048c8701de51263925f4dff76ddedc/nvidia_cublas-13.4.0.1-py3-none-manylinux_2_27_x86_64.whl",
+    "status": "UNVERIFIED",
+    "declared_size": 404872465,
+    "index": "https://pypi.org/pypi/nvidia-cublas/13.4.0.1/json",
+    "reason": "bounded data acquisition: per-file 16 MiB, total 128 MiB"
+  },
+  {
+    "sha256": "f75aca6bef89c625a4076a820302bb06764daa1d21595286f6bee5e237d3a187",
+    "project": "nvidia-cuda-cupti",
+    "version": "13.2.75",
+    "url": "https://files.pythonhosted.org/packages/b7/2d/cbf8f6288259c502165282fdaa2b733daae98434e3f2aee2b7952ba87c6f/nvidia_cuda_cupti-13.2.75-py3-none-manylinux_2_25_x86_64.whl",
+    "status": "VERIFIED_BYTES",
+    "declared_size": 11986992,
+    "index": "https://pypi.org/pypi/nvidia-cuda-cupti/13.2.75/json"
+  },
+  {
+    "sha256": "2d7c24fc582d841493c6dc2cf017c25e4428cf583a3bd9e9325a65f0ecc65f73",
+    "project": "nvidia-nvtx",
+    "version": "13.2.75",
+    "url": "https://files.pythonhosted.org/packages/b0/cc/314eac684677dced22b913b5d1b3d03adcbe59d6c7332c5d04f864cdb079/nvidia_nvtx-13.2.75-py3-none-manylinux1_x86_64.manylinux_2_5_x86_64.whl",
+    "status": "VERIFIED_BYTES",
+    "declared_size": 153460,
+    "index": "https://pypi.org/pypi/nvidia-nvtx/13.2.75/json"
+  },
+  {
+    "sha256": "646d0e3668ce6f78f2312bb9cc0f668b9cbfcbef187eaa6a39eb2ea6dbec2a31",
+    "project": "cuda-toolkit",
+    "version": "13.2.1",
+    "url": "https://files.pythonhosted.org/packages/bd/6a/f79c134fa8e6d5fe028584933be063ce7961b1a85ce217f261cdda176e48/cuda_toolkit-13.2.1-py2.py3-none-any.whl",
+    "status": "VERIFIED_BYTES",
+    "declared_size": 2612,
+    "index": "https://pypi.org/pypi/cuda-toolkit/13.2.1/json"
+  }
+]

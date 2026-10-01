@@ -548,3 +548,11 @@ digest와 provenance subject를 가진다. custom image는 pinned upstream base�
 재포장하는 목적으로 만들지 않으며 runtime에 HAA-owned 구성요소가 필요한 경우에만
 publish한다. installer와 updater는 mutable tag나 verification 전 executable을
 실행하지 않는다.
+
+## M12 representative corpus gate
+
+`Representative Wheel Corpus` job은 선언된 manifest를 준비한 다음 canonical
+`corpus` profile을 오프라인 실행한다. `Required`는 기존 8개 job과 이 job의 성공을
+모두 요구한다. Default/Minimum Go/macOS 테스트는 private `/tmp` fixture를 요구하지
+않는다. Linux integration의 helper client 경로에 설치한 test binary만 privileged
+테스트를 호출하며, 이후 production client를 복원한다. 인증 우회는 허용하지 않는다.

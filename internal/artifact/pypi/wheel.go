@@ -94,7 +94,7 @@ type WheelInspection struct {
 	Files                             []WheelFile
 	RequiresPython                    string
 	RequiresDist, ImportNames         []string
-	// NoImportSurface is true only for a wheel proven to contain no dynamic Python
+	// NoImportSurface identifies no automatic Python import/startup role under the pinned
 	// surface (such as a metadata-only wheel or native/data-only wheel).
 	NoImportSurface      bool
 	EntryPoints, Scripts []string
@@ -363,9 +363,26 @@ func mapWheelInstalledLocation(archivePath, distInfo, dataDir string) (Installat
 		case "scripts":
 			return SchemeScripts, "bin/" + subPath, nil
 		case "headers":
-			return SchemeHeaders, "include/" + subPath, nil
+			// pip's pinned --target installation uses the posix_home scheme.
+			// Wheel requirement names are canonicalized before get_scheme.
+			identity := strings.TrimSuffix(dataDir, ".data")
+			separator := strings.LastIndex(identity, "-")
+			if separator < 1 {
+				return "", "", wheelValidation(WheelValidationDistInfoIdentity)
+			}
+			project, err := NormalizeProjectName(identity[:separator])
+			if err != nil {
+				return "", "", err
+			}
+			return SchemeHeaders, "include/python/" + project + "/" + subPath, nil
 		case "data":
-			return SchemeData, "share/" + subPath, nil
+			// The data scheme is the prefix itself, not prefix/share. Only
+			// share is supported by our bounded promotion scheme. Other paths
+			// could land in the import or script roots and need different roles.
+			if !strings.HasPrefix(subPath, "share/") {
+				return "", "", errors.New("unsupported .data/data destination outside share")
+			}
+			return SchemeData, subPath, nil
 		default:
 			return "", "", errors.New("unsupported .data category: " + category)
 		}
@@ -383,48 +400,20 @@ func mapWheelInstalledLocation(archivePath, distInfo, dataDir string) (Installat
 	return SchemeSite, archivePath, nil
 }
 
-func isRecognizedInertData(name string) bool {
-	if strings.Contains(name, ".dist-info/") {
-		return true
-	}
-	if strings.Contains(name, "/") && strings.HasSuffix(name, ".pth") {
-		return true
-	}
+// isPackageResource describes applicability under the pinned CPython FileFinder
+// and site startup rules, not safety. Content is never deserialized here. Code
+// may load any resource during observation or after promotion; that behavior is
+// not exhaustively covered by an import experiment. Active roles are classified
+// before this fallback. Sourceless bytecode and ambiguous extension bindings
+// still require unsupported execution semantics and must fail closed.
+func isPackageResource(name string) bool {
 	base := path.Base(name)
-	upper := strings.ToUpper(base)
-	for _, prefix := range []string{"LICENSE", "NOTICE", "README", "COPYING", "AUTHORS", "PATENTS"} {
-		if strings.HasPrefix(upper, prefix) {
-			return true
-		}
-	}
-	for _, ext := range []string{".h", ".hpp", ".hxx", ".cuh", ".inc", ".h.in", ".c", ".cpp", ".cc"} {
-		if strings.HasSuffix(name, ext) {
-			return true
-		}
-	}
-	for _, ext := range []string{".pc", ".pc.in", ".cmake", ".cmake.in"} {
-		if strings.HasSuffix(name, ext) {
-			return true
-		}
-	}
-	for _, ext := range []string{
-		".txt", ".md", ".rst", ".json", ".yaml", ".yml", ".xml", ".csv",
-		".toml", ".ini", ".cfg", ".dat", ".bin", ".pdf", ".html", ".css",
-		".js", ".svg", ".png", ".jpg", ".jpeg", ".gif", ".ico", ".wasm", ".xsl",
-	} {
-		if strings.HasSuffix(name, ext) {
-			return true
-		}
-	}
-	for _, ext := range []string{
-		".pxd", ".pyx", ".pxi", ".tmpl", ".in", ".jinja", ".j2",
-		".pyi", ".typed", ".exe", ".g4", ".lark", ".al", ".lock",
-	} {
-		if strings.HasSuffix(name, ext) {
-			return true
-		}
-	}
-	return false
+	return !strings.HasSuffix(base, ".py") &&
+		!strings.HasSuffix(base, ".pyc") &&
+		!strings.HasSuffix(base, ".pyd") &&
+		!strings.HasSuffix(base, ".so") &&
+		!strings.Contains(base, ".so.") &&
+		!(strings.HasSuffix(base, ".pth") && !strings.Contains(name, "/"))
 }
 
 func deduplicateSorted(items []string) []string {
@@ -530,8 +519,8 @@ func classifyWheelSurface(files []WheelFile, distInfo, dataDir string, declaredI
 			surface.Scripts = append(surface.Scripts, m.dest)
 
 		case SchemeHeaders, SchemeData:
-			role = RuntimeRoleInertData
-			surface.InertDataFiles = append(surface.InertDataFiles, m.dest)
+			role = RuntimeRoleResource
+			surface.ResourceFiles = append(surface.ResourceFiles, m.dest)
 
 		case SchemeSite:
 			dest := m.dest
@@ -559,8 +548,8 @@ func classifyWheelSurface(files []WheelFile, distInfo, dataDir string, declaredI
 					role = RuntimeRolePythonModule
 					surface.PythonModules = append(surface.PythonModules, mod)
 				} else {
-					role = RuntimeRoleInertData
-					surface.InertDataFiles = append(surface.InertDataFiles, dest)
+					role = RuntimeRoleResource
+					surface.ResourceFiles = append(surface.ResourceFiles, dest)
 				}
 
 			} else if isWrongTargetExtension(dest) {
@@ -612,9 +601,9 @@ func classifyWheelSurface(files []WheelFile, distInfo, dataDir string, declaredI
 						}
 					} else if strings.HasSuffix(dest, ".py") {
 						role = RuntimeRolePythonPackage
-					} else if isRecognizedInertData(dest) {
-						role = RuntimeRoleInertData
-						surface.InertDataFiles = append(surface.InertDataFiles, dest)
+					} else if isPackageResource(dest) {
+						role = RuntimeRoleResource
+						surface.ResourceFiles = append(surface.ResourceFiles, dest)
 					} else {
 						role = RuntimeRoleUnresolved
 						surface.UnresolvedFiles = append(surface.UnresolvedFiles, dest)
@@ -633,9 +622,9 @@ func classifyWheelSurface(files []WheelFile, distInfo, dataDir string, declaredI
 								}
 							} else if strings.HasSuffix(dest, ".py") {
 								role = RuntimeRoleExecutableSubpackage
-							} else if isRecognizedInertData(dest) {
-								role = RuntimeRoleInertData
-								surface.InertDataFiles = append(surface.InertDataFiles, dest)
+							} else if isPackageResource(dest) {
+								role = RuntimeRoleResource
+								surface.ResourceFiles = append(surface.ResourceFiles, dest)
 							} else {
 								role = RuntimeRoleUnresolved
 								surface.UnresolvedFiles = append(surface.UnresolvedFiles, dest)
@@ -646,20 +635,20 @@ func classifyWheelSurface(files []WheelFile, distInfo, dataDir string, declaredI
 								role = RuntimeRolePythonModule
 								surface.PythonModules = append(surface.PythonModules, modName)
 							} else {
-								role = RuntimeRoleInertData
-								surface.InertDataFiles = append(surface.InertDataFiles, dest)
+								role = RuntimeRoleResource
+								surface.ResourceFiles = append(surface.ResourceFiles, dest)
 							}
-						} else if isRecognizedInertData(dest) {
-							role = RuntimeRoleInertData
-							surface.InertDataFiles = append(surface.InertDataFiles, dest)
+						} else if isPackageResource(dest) {
+							role = RuntimeRoleResource
+							surface.ResourceFiles = append(surface.ResourceFiles, dest)
 						} else {
 							role = RuntimeRoleUnresolved
 							surface.UnresolvedFiles = append(surface.UnresolvedFiles, dest)
 						}
 					} else {
-						if isRecognizedInertData(dest) {
-							role = RuntimeRoleInertData
-							surface.InertDataFiles = append(surface.InertDataFiles, dest)
+						if isPackageResource(dest) {
+							role = RuntimeRoleResource
+							surface.ResourceFiles = append(surface.ResourceFiles, dest)
 						} else {
 							role = RuntimeRoleUnresolved
 							surface.UnresolvedFiles = append(surface.UnresolvedFiles, dest)
@@ -667,9 +656,9 @@ func classifyWheelSurface(files []WheelFile, distInfo, dataDir string, declaredI
 					}
 				}
 
-			} else if isRecognizedInertData(dest) {
-				role = RuntimeRoleInertData
-				surface.InertDataFiles = append(surface.InertDataFiles, dest)
+			} else if isPackageResource(dest) {
+				role = RuntimeRoleResource
+				surface.ResourceFiles = append(surface.ResourceFiles, dest)
 
 			} else {
 				role = RuntimeRoleUnresolved
@@ -695,7 +684,7 @@ func classifyWheelSurface(files []WheelFile, distInfo, dataDir string, declaredI
 	surface.PythonExtensions = deduplicateSorted(surface.PythonExtensions)
 	surface.NativeLibraries = deduplicateSorted(surface.NativeLibraries)
 	surface.Scripts = deduplicateSorted(surface.Scripts)
-	surface.InertDataFiles = deduplicateSorted(surface.InertDataFiles)
+	surface.ResourceFiles = deduplicateSorted(surface.ResourceFiles)
 	surface.UnresolvedFiles = deduplicateSorted(surface.UnresolvedFiles)
 
 	inferred := unionImportSurfaces(surface.PythonModules, surface.PythonPackages, surface.ExecutableSubpackages, surface.PythonExtensions)
@@ -716,21 +705,14 @@ func provenNoImportSurfaceRoles(installed []InstalledFile) bool {
 	if len(installed) == 0 {
 		return false
 	}
-	hasNativeLib := false
-	isMetadataOnly := true
 	for _, f := range installed {
 		switch f.Role {
-		case RuntimeRoleMetadata:
-		case RuntimeRoleNativeLibrary:
-			hasNativeLib = true
-			isMetadataOnly = false
-		case RuntimeRoleInertData:
-			isMetadataOnly = false
+		case RuntimeRoleMetadata, RuntimeRoleNativeLibrary, RuntimeRoleResource:
 		default:
 			return false
 		}
 	}
-	return isMetadataOnly || hasNativeLib
+	return true
 }
 
 func isVersionedNativeSO(base string) bool {
@@ -951,6 +933,7 @@ func parseEntryPointsTxt(data []byte) ([]string, []EntryPoint, error) {
 	currentSection := ""
 	var results []string
 	var details []EntryPoint
+	seen := make(map[string]bool)
 
 	for _, rawLine := range lines {
 		line := strings.TrimRight(rawLine, "\r")
@@ -984,10 +967,29 @@ func parseEntryPointsTxt(data []byte) ([]string, []EntryPoint, error) {
 		if !validEntryPointName(key) {
 			return nil, nil, errors.New("malformed entry_points.txt: invalid entry point name")
 		}
+		identity := currentSection + "\x00" + key
+		if seen[identity] {
+			return nil, nil, errors.New("duplicate entry point identity")
+		}
+		seen[identity] = true
+		var extras []string
 		modSpec := val
 		if bracketIdx := strings.Index(val, "["); bracketIdx >= 0 {
 			if !strings.HasSuffix(val, "]") {
 				return nil, nil, errors.New("malformed entry_points.txt: unclosed extras bracket")
+			}
+			body := strings.TrimSpace(val[bracketIdx+1 : len(val)-1])
+			extraSeen := make(map[string]bool)
+			if body != "" {
+				for _, raw := range strings.Split(body, ",") {
+					extra, err := NormalizeProjectName(strings.TrimSpace(raw))
+					if err != nil || extraSeen[extra] {
+						return nil, nil, errors.New("malformed entry point extras")
+					}
+					extraSeen[extra] = true
+					extras = append(extras, extra)
+				}
+				sort.Strings(extras)
 			}
 			modSpec = strings.TrimSpace(val[:bracketIdx])
 		}
@@ -1011,8 +1013,9 @@ func parseEntryPointsTxt(data []byte) ([]string, []EntryPoint, error) {
 				}
 			}
 		}
-		details = append(details, EntryPoint{Group: currentSection, Name: key, Module: moduleName, Attr: attr})
-		results = append(results, currentSection+": "+key+" = "+val)
+		ep := EntryPoint{Group: currentSection, Name: key, Module: moduleName, Attr: attr, Extras: extras}
+		details = append(details, ep)
+		results = append(results, ep.key())
 	}
 	sort.Strings(results)
 	return results, details, nil

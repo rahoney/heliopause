@@ -186,7 +186,7 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 		modulePath + "/internal/promotion":                  {},
 		modulePath + "/internal/runtimeidentity":            {},
 		modulePath + "/internal/testutil/fakeworkflow":      {},
-		modulePath + "/scripts/check":                       {},
+		modulePath + "/scripts/check":                       {"go.yaml.in/yaml/v3": true},
 	}
 	forbiddenConcreteImports := map[string]map[string]bool{
 		modulePath + "/internal/core/domain": {

@@ -1,0 +1,54 @@
+{
+  "base_head": "a43ccfa1265eb7b7db8d4ef559e49a4c94eda224",
+  "tested_merge": "cd362f5a0065f486d7ca8bdec2ae0e6799966bf3",
+  "merge_tree_files_different": [],
+  "run": 36807498667,
+  "jobs": [
+    {
+      "id": 110195000263,
+      "name": "Quick",
+      "conclusion": "failure"
+    },
+    {
+      "id": 110195000403,
+      "name": "Vulnerability",
+      "conclusion": "success"
+    },
+    {
+      "id": 110195000437,
+      "name": "Minimum Go",
+      "conclusion": "failure"
+    },
+    {
+      "id": 110195000446,
+      "name": "Security",
+      "conclusion": "success"
+    },
+    {
+      "id": 110195000477,
+      "name": "Docs",
+      "conclusion": "success"
+    },
+    {
+      "id": 110195000484,
+      "name": "gVisor Observer Helper",
+      "conclusion": "success"
+    },
+    {
+      "id": 110195000492,
+      "name": "macOS",
+      "conclusion": "failure"
+    },
+    {
+      "id": 110195000510,
+      "name": "gVisor Linux Integration",
+      "conclusion": "failure"
+    },
+    {
+      "id": 110199955310,
+      "name": "Required",
+      "conclusion": "failure"
+    }
+  ],
+  "full_logs": "user-supplied docs/github-logs/20261001-01; job and step duplicates counted once"
+}

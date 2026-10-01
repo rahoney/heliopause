@@ -1,0 +1,23 @@
+{
+  "project": "networkx",
+  "version": "3.7",
+  "sha256": "e3fd2c13a7814cee3746340d8d7f8598a67f16a58bf47fb7f8793fab6efca1b0",
+  "identity_basis": "current production resolver freeze + independent PyPI corpus manifest; failed CI did not retain selected version/digest",
+  "resources": [
+    "networkx/algorithms/flow/tests/gl1.gpickle.bz2",
+    "networkx/algorithms/flow/tests/gw1.gpickle.bz2",
+    "networkx/algorithms/flow/tests/netgen-2.gpickle.bz2",
+    "networkx/algorithms/flow/tests/wlm3.gpickle.bz2",
+    "networkx/algorithms/isomorphism/tests/iso_r01_s80.A99",
+    "networkx/algorithms/isomorphism/tests/iso_r01_s80.B99",
+    "networkx/algorithms/isomorphism/tests/si2_b06_m200.A99",
+    "networkx/algorithms/isomorphism/tests/si2_b06_m200.B99",
+    "networkx/generators/atlas.dat.gz"
+  ],
+  "readers": {
+    "networkx/generators/atlas.py": "importlib.resources.files then gzip.open; interpreted graph records",
+    "networkx/algorithms/flow/tests/test_maxflow_large_graph.py": "bz2.BZ2File then pickle.load; explicitly unsafe to deserialize untrusted input on host",
+    "networkx/algorithms/isomorphism/tests/test_isomorphvf2.py": "create_graph reads binary fixture through struct.unpack"
+  },
+  "host_payload_execution": false
+}

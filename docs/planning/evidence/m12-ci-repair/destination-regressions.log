@@ -1,0 +1,4 @@
+ok  	github.com/rahoney/heliopause/internal/artifact/pypi	0.086s
+ok  	github.com/rahoney/heliopause/internal/sandbox	1.501s
+ok  	github.com/rahoney/heliopause/internal/promotion	2.499s
+ok  	github.com/rahoney/heliopause/internal/inspection/pypi	0.016s

@@ -52,7 +52,7 @@ func verifyClosureInstallation(ctx context.Context, runner CommandRunner, contai
 	_ = reader.CloseWithError(verifyErr)
 	commandErr := <-commandResult
 	if verifyErr != nil || commandErr != nil || ctx.Err() != nil {
-		return closureInstallation{}, errors.New("python closure installed tree does not match authenticated manifest")
+		return closureInstallation{}, fmt.Errorf("python closure installed tree does not match authenticated manifest: %w", errors.Join(verifyErr, commandErr, ctx.Err()))
 	}
 	return installed, nil
 }

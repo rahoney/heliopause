@@ -1,0 +1,68 @@
+[check] format check
+[check] runtime lock drift
+[check] version support freshness
+[check] module drift
+[check] module integrity
+[check] production build
+[check] test build validity
+[check] architecture
+[check] CI configuration
+[check] go vet
+[check] Staticcheck
+[check] default test
+check: execution failure: default test: /home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/bin/go test -timeout=5m ./...
+?   	github.com/rahoney/heliopause/cmd/haa-network-policy-helper	[no test files]
+ok  	github.com/rahoney/heliopause/cmd/helox	(cached)
+ok  	github.com/rahoney/heliopause/internal/application	(cached)
+ok  	github.com/rahoney/heliopause/internal/artifact/cargo	(cached)
+ok  	github.com/rahoney/heliopause/internal/artifact/githubrelease	0.025s
+ok  	github.com/rahoney/heliopause/internal/artifact/gomodule	(cached)
+ok  	github.com/rahoney/heliopause/internal/artifact/npm	(cached)
+ok  	github.com/rahoney/heliopause/internal/artifact/pypi	(cached)
+ok  	github.com/rahoney/heliopause/internal/artifact/terraformprovider	(cached)
+ok  	github.com/rahoney/heliopause/internal/bootstrap	(cached)
+ok  	github.com/rahoney/heliopause/internal/cli	(cached)
+ok  	github.com/rahoney/heliopause/internal/core/domain	(cached)
+?   	github.com/rahoney/heliopause/internal/core/ports	[no test files]
+ok  	github.com/rahoney/heliopause/internal/evidence	(cached)
+ok  	github.com/rahoney/heliopause/internal/evidence/local	(cached)
+ok  	github.com/rahoney/heliopause/internal/hosttool	(cached)
+ok  	github.com/rahoney/heliopause/internal/inspection/githubrelease	(cached)
+ok  	github.com/rahoney/heliopause/internal/inspection/npm	(cached)
+ok  	github.com/rahoney/heliopause/internal/inspection/pypi	(cached)
+ok  	github.com/rahoney/heliopause/internal/networkpolicy	(cached)
+ok  	github.com/rahoney/heliopause/internal/policy	(cached)
+ok  	github.com/rahoney/heliopause/internal/promotion	2.536s
+ok  	github.com/rahoney/heliopause/internal/releaseinstall	(cached)
+ok  	github.com/rahoney/heliopause/internal/runtimeidentity	(cached)
+--- FAIL: TestPersistentControlPeerSerializesConcurrentAcknowledgements (0.00s)
+    direct_exec_admission_test.go:571: listen unixpacket /tmp/haa-ci-isolated/tmp/TestPersistentControlPeerSerializesConcurrentAcknowledgements342195182/001/control.sock: bind: invalid argument
+--- FAIL: TestWaitingNormalOperationRechecksPoisonedSessionBeforeControlWrite (0.00s)
+    direct_exec_admission_test.go:612: listen unixpacket /tmp/haa-ci-isolated/tmp/TestWaitingNormalOperationRechecksPoisonedSessionBeforeControlWr327314523/001/control.sock: bind: invalid argument
+--- FAIL: TestWaitingLifecycleContextCancellationDoesNotPoisonOwner (0.00s)
+    direct_exec_admission_test.go:824: listen unixpacket /tmp/haa-ci-isolated/tmp/TestWaitingLifecycleContextCancellationDoesNotPoisonOwner4164015473/001/control.sock: bind: invalid argument
+--- FAIL: TestReadinessAuthorityAmbiguityDoesNotRetryPoisonedSession (0.00s)
+    direct_exec_admission_test.go:1177: listen unixpacket /tmp/haa-ci-isolated/tmp/TestReadinessAuthorityAmbiguityDoesNotRetryPoisonedSession114469263/001/control.sock: bind: invalid argument
+--- FAIL: TestReadinessRetriesOrdinaryFailureWithFreshAdmissionNonce (0.00s)
+    direct_exec_admission_test.go:1205: listen unixpacket /tmp/haa-ci-isolated/tmp/TestReadinessRetriesOrdinaryFailureWithFreshAdmissionNonce3881912035/001/control.sock: bind: invalid argument
+--- FAIL: TestAdmissionAckFailurePreventsDockerExecAndCancellationIsExact (0.00s)
+    direct_exec_admission_test.go:1261: listen unixpacket /tmp/haa-ci-isolated/tmp/TestAdmissionAckFailurePreventsDockerExecAndCancellationIsExact2271735072/001/control.sock: bind: invalid argument
+--- FAIL: TestSuccessfulRunnerWaitsForDelayedSentryExecWithoutCancel (0.00s)
+    direct_exec_admission_test.go:1482: listen unixpacket /tmp/haa-ci-isolated/tmp/TestSuccessfulRunnerWaitsForDelayedSentryExecWithoutCancel3643868768/001/control.sock: bind: invalid argument
+--- FAIL: TestSharedObserverStartProfilePublicationRejectsTerminalObserver (0.00s)
+    --- FAIL: TestSharedObserverStartProfilePublicationRejectsTerminalObserver/fail (0.00s)
+        shared_observer_test.go:100: listen unixpacket /tmp/haa-ci-isolated/tmp/TestSharedObserverStartProfilePublicationRejectsTerminalObserver753219503/001/control.sock: bind: invalid argument
+    --- FAIL: TestSharedObserverStartProfilePublicationRejectsTerminalObserver/close (0.00s)
+        shared_observer_test.go:100: listen unixpacket /tmp/haa-ci-isolated/tmp/TestSharedObserverStartProfilePublicationRejectsTerminalObserver3592357735/001/control.sock: bind: invalid argument
+FAIL
+FAIL	github.com/rahoney/heliopause/internal/sandbox	1.257s
+ok  	github.com/rahoney/heliopause/internal/testutil/fakeworkflow	(cached)
+ok  	github.com/rahoney/heliopause/internal/verification/githubrelease	(cached)
+ok  	github.com/rahoney/heliopause/internal/verification/npm	(cached)
+?   	github.com/rahoney/heliopause/internal/verification/pypi	[no test files]
+ok  	github.com/rahoney/heliopause/scripts	(cached)
+ok  	github.com/rahoney/heliopause/scripts/check	0.042s
+ok  	github.com/rahoney/heliopause/scripts/release-manifest	(cached)
+ok  	github.com/rahoney/heliopause/scripts/runtime-image-manifest	(cached)
+FAIL: exit status 1
+exit status 1

@@ -1,0 +1,32 @@
+{
+  "cpu_test_seconds": 478.92,
+  "cpu_outer_command_seconds": 530,
+  "packaging_outer_command_seconds": 21,
+  "cpu_planned_units": 46,
+  "cpu_expected_runtime_launches": 66,
+  "cpu_closure_install_uncompressed_bytes_per_artifact": {
+    "filelock": 379050,
+    "networkx": 7237764,
+    "jinja2": 560912,
+    "markupsafe": 66360,
+    "torch": 754771086,
+    "typing-extensions": 182340,
+    "setuptools": 2740122,
+    "mpmath": 1942520,
+    "fsspec": 805452,
+    "sympy": 28639002
+  },
+  "cpu_total_repeated_closure_bytes": 797324608,
+  "cpu_max_retained_closure_bytes": 754771086,
+  "cpu_authorization_seconds_per_artifact": 180,
+  "cpu_enforcement_reserve_seconds_inside_ceiling": 17,
+  "cuda_authorization_seconds_per_artifact": 300,
+  "scope": "Preparation, retained volume memory, anchor, units and final teardown share each artifact transaction authorization. Reinstalling a dependency closure in a distinct artifact experiment is intentional. Graph-wide CPU is not one 180-second authorization. No budget increased. No hard-real-time guarantee.",
+  "larger_case_estimates": {
+    "method": "Scheduling proxy only: observed CPU E2E 478.92s / 66 planned runtime launches, multiplied by known CUDA launch counts. Includes CPU resolver/acquisition/promotion overhead; excludes missing CUDA wheels and their preparation. Not measured CUDA timing or full closure prediction.",
+    "cu126_known_part_seconds": 841.7381818181818,
+    "cu130_known_part_seconds": 740.149090909091,
+    "cu132_known_part_seconds": 740.149090909091
+  },
+  "cuda_missing_bytes": "UNVERIFIED; full matrices contain exact identities and digests."
+}

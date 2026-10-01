@@ -1,0 +1,14 @@
+{
+  "missing": {
+    "exit": 1,
+    "expected": 1
+  },
+  "tampered": {
+    "exit": 1,
+    "expected": 1
+  },
+  "prepared": {
+    "exit": 0,
+    "expected": 0
+  }
+}

@@ -243,7 +243,7 @@ func TestVerifyLocalSocketRejectsRemoteAndUnsafeEndpoint(t *testing.T) {
 	}
 }
 
-func TestVerifyLocalSocketAcceptsProtectedUserOwnedRuntimeDirectory(t *testing.T) {
+func TestVerifyLocalSocketChecksRuntimeDirectoryAncestors(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("Unix socket fixture")
 	}
@@ -279,6 +279,21 @@ func TestVerifyLocalSocketAcceptsProtectedUserOwnedRuntimeDirectory(t *testing.T
 	}
 	defer listener.Close()
 	got, err := verifyLocalSocket("unix://" + path)
+	// A checkout under /tmp is intentionally not a protected endpoint root.
+	// The fixture's 0700 leaf must not hide a writable ancestor. On protected
+	// checkouts this exercises acceptance; elsewhere it requires rejection.
+	for parent := workingDirectory; parent != filepath.Dir(parent); parent = filepath.Dir(parent) {
+		info, statErr := os.Stat(parent)
+		if statErr != nil {
+			t.Fatal(statErr)
+		}
+		if info.Mode().Perm()&0o022 != 0 {
+			if err == nil || !strings.Contains(err.Error(), "parent is writable by non-owner") {
+				t.Fatalf("writable ancestor must reject endpoint: %v", err)
+			}
+			return
+		}
+	}
 	if err != nil {
 		t.Fatal(err)
 	}

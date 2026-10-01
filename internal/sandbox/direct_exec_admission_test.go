@@ -120,7 +120,14 @@ func withAdmissionControl(t *testing.T, respond func(*net.UnixConn, admissionReq
 	if runtime.GOOS != "linux" {
 		t.Skip("SOCK_SEQPACKET test transport requires Linux")
 	}
-	endpoint := filepath.Join(t.TempDir(), "control.sock")
+	// t.TempDir includes the full test name, which can exceed sockaddr_un's
+	// path bound even with an ordinary isolated TMPDIR.
+	directory, err := os.MkdirTemp("", "haa-control-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.RemoveAll(directory) })
+	endpoint := filepath.Join(directory, "control.sock")
 	listener, err := net.ListenUnix("unixpacket", &net.UnixAddr{Name: endpoint, Net: "unixpacket"})
 	if err != nil {
 		t.Fatal(err)
@@ -1290,7 +1297,7 @@ func TestAdmissionAckFailurePreventsDockerExecAndCancellationIsExact(t *testing.
 	}
 
 	// A write without a correlated ACK must not invoke Docker.
-	observerControlEndpoint = filepath.Join(t.TempDir(), "no-ack.sock")
+	observerControlEndpoint = filepath.Join(filepath.Dir(observerControlEndpoint), "no-ack.sock")
 	forgetObserverSession(session)
 	listener, err := net.ListenUnix("unixpacket", &net.UnixAddr{Name: observerControlEndpoint, Net: "unixpacket"})
 	if err != nil {

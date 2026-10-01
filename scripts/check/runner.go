@@ -193,6 +193,16 @@ func (c *checker) runProfile(profile string) error {
 		return c.bootstrapModules()
 	case "foundation":
 		return c.runSequential(c.foundationSteps(true))
+	case "corpus":
+		output, err := c.runCommandWithTimeout("required representative wheel corpus", 6*time.Minute, c.offlineEnvironment(), c.goExecutable, "test", "-count=1", "-tags=realcorpus", "-timeout=5m", "./internal/artifact/pypi", "-run", "^TestModelC_(RealCorpusQualification|MissingCorpusDirectoryFails|CorpusHashMismatchFails)$", "-v")
+		if err != nil {
+			return err
+		}
+		if err := validateCorpusTestExecution(output); err != nil {
+			return err
+		}
+		_, err = fmt.Fprint(c.stdout, output)
+		return err
 	case "platform":
 		return c.runSequential(c.platformSteps())
 	case "quick":
@@ -404,4 +414,14 @@ func (b *boundedBuffer) String() string {
 		return b.buffer.String() + "\n[output truncated]"
 	}
 	return b.buffer.String()
+}
+
+// A successful go test process with an empty selection supplies no corpus evidence.
+func validateCorpusTestExecution(output string) error {
+	for _, name := range []string{"TestModelC_RealCorpusQualification", "TestModelC_MissingCorpusDirectoryFails", "TestModelC_CorpusHashMismatchFails"} {
+		if !strings.Contains(output, "=== RUN   "+name+"\n") || !strings.Contains(output, "--- PASS: "+name+" (") {
+			return &checkFailure{class: findingFailure, step: "required representative wheel corpus", detail: "intended test did not execute and pass: " + name}
+		}
+	}
+	return nil
 }

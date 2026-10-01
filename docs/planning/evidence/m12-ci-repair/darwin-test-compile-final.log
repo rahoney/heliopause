@@ -1,0 +1,35 @@
+COMPILED github.com/rahoney/heliopause/cmd/helox
+COMPILED github.com/rahoney/heliopause/internal/application
+COMPILED github.com/rahoney/heliopause/internal/artifact/cargo
+COMPILED github.com/rahoney/heliopause/internal/artifact/githubrelease
+COMPILED github.com/rahoney/heliopause/internal/artifact/gomodule
+COMPILED github.com/rahoney/heliopause/internal/artifact/npm
+COMPILED github.com/rahoney/heliopause/internal/artifact/pypi
+COMPILED github.com/rahoney/heliopause/internal/artifact/terraformprovider
+COMPILED github.com/rahoney/heliopause/internal/bootstrap
+COMPILED github.com/rahoney/heliopause/internal/cli
+COMPILED github.com/rahoney/heliopause/internal/core/domain
+?   	github.com/rahoney/heliopause/internal/core/ports	[no test files]
+COMPILED github.com/rahoney/heliopause/internal/core/ports
+COMPILED github.com/rahoney/heliopause/internal/evidence
+COMPILED github.com/rahoney/heliopause/internal/evidence/local
+COMPILED github.com/rahoney/heliopause/internal/hosttool
+COMPILED github.com/rahoney/heliopause/internal/inspection/githubrelease
+COMPILED github.com/rahoney/heliopause/internal/inspection/npm
+COMPILED github.com/rahoney/heliopause/internal/inspection/pypi
+COMPILED github.com/rahoney/heliopause/internal/networkpolicy
+COMPILED github.com/rahoney/heliopause/internal/policy
+COMPILED github.com/rahoney/heliopause/internal/promotion
+COMPILED github.com/rahoney/heliopause/internal/releaseinstall
+COMPILED github.com/rahoney/heliopause/internal/runtimeidentity
+COMPILED github.com/rahoney/heliopause/internal/sandbox
+COMPILED github.com/rahoney/heliopause/internal/testutil/fakeworkflow
+COMPILED github.com/rahoney/heliopause/internal/verification/githubrelease
+COMPILED github.com/rahoney/heliopause/internal/verification/npm
+?   	github.com/rahoney/heliopause/internal/verification/pypi	[no test files]
+COMPILED github.com/rahoney/heliopause/internal/verification/pypi
+COMPILED github.com/rahoney/heliopause/scripts
+COMPILED github.com/rahoney/heliopause/scripts/check
+COMPILED github.com/rahoney/heliopause/scripts/release-manifest
+COMPILED github.com/rahoney/heliopause/scripts/runtime-image-manifest
+DARWIN_TEST_COMPILE_PASS 32 packages; no native execution

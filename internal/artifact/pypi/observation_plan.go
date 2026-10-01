@@ -32,7 +32,7 @@ const (
 	RuntimeRoleNativeLibrary        RuntimeRole = "NATIVE_LIBRARY"        // ordinary native library without PyInit
 	RuntimeRoleScript               RuntimeRole = "SCRIPT"                // executable script in bin
 	RuntimeRoleMetadata             RuntimeRole = "METADATA"              // canonical dist-info metadata
-	RuntimeRoleInertData            RuntimeRole = "INERT_DATA"            // headers, licenses, docs, inert data
+	RuntimeRoleResource             RuntimeRole = "RESOURCE"              // payload without automatic import/startup semantics; not a safety claim
 	RuntimeRoleUnresolved           RuntimeRole = "UNRESOLVED"            // unclassified/ambiguous -> fail closed
 )
 
@@ -49,10 +49,25 @@ type InstalledFile struct {
 
 // EntryPoint models one canonical distribution entry point.
 type EntryPoint struct {
-	Group  string `json:"group"`
-	Name   string `json:"name"`
-	Module string `json:"module"`
-	Attr   string `json:"attr,omitempty"`
+	Group  string   `json:"group"`
+	Name   string   `json:"name"`
+	Module string   `json:"module"`
+	Attr   string   `json:"attr,omitempty"`
+	Extras []string `json:"extras,omitempty"`
+}
+
+// key is shared by parser, planner and validator. Extras describe optional
+// dependencies; observing the exact module does not invoke the entry-point
+// callable or certify that optional dependency environment.
+func (ep EntryPoint) key() string {
+	key := ep.Group + ": " + ep.Name + " = " + ep.Module
+	if ep.Attr != "" {
+		key += ":" + ep.Attr
+	}
+	if len(ep.Extras) != 0 {
+		key += " [" + strings.Join(ep.Extras, ",") + "]"
+	}
+	return key
 }
 
 // SiteHookLine is one statically parsed, active site-level .pth line. A path
@@ -86,10 +101,8 @@ type PlannedObservationUnit struct {
 type ExecutableCoverageOutcome string
 
 const (
-	CoverageObserved               ExecutableCoverageOutcome = "OBSERVED"
-	CoverageCoveredByModule        ExecutableCoverageOutcome = "COVERED_BY_EXPLICIT_MODULE_OBSERVATION"
-	CoverageNotApplicableWithProof ExecutableCoverageOutcome = "NOT_APPLICABLE_WITH_PROOF"
-	CoverageManualReview           ExecutableCoverageOutcome = "MANUAL_REVIEW"
+	CoverageCoveredByModule ExecutableCoverageOutcome = "COVERED_BY_EXPLICIT_MODULE_OBSERVATION"
+	CoverageManualReview    ExecutableCoverageOutcome = "MANUAL_REVIEW"
 )
 
 // RuntimeSurface accounts for all categorized runtime surfaces in a wheel.
@@ -108,7 +121,7 @@ type RuntimeSurface struct {
 	EntryPointDetails     []EntryPoint      `json:"entry_point_details,omitempty"`
 	EntryPointCoverage    map[string]string `json:"entry_point_coverage,omitempty"`
 	ScriptCoverage        map[string]string `json:"script_coverage,omitempty"`
-	InertDataFiles        []string          `json:"inert_data_files,omitempty"`
+	ResourceFiles         []string          `json:"resource_files,omitempty"`
 	UnresolvedFiles       []string          `json:"unresolved_files,omitempty"`
 }
 
@@ -216,10 +229,7 @@ func BuildObservationPlan(inspection WheelInspection, policy ResourcePolicy) (Ob
 
 	epCoverage := make(map[string]string)
 	for _, ep := range inspection.Surface.EntryPointDetails {
-		key := ep.Group + ": " + ep.Name + " = " + ep.Module
-		if ep.Attr != "" {
-			key += ":" + ep.Attr
-		}
+		key := ep.key()
 		if containsCandidate(candidates, ep.Module) {
 			epCoverage[key] = string(CoverageCoveredByModule)
 		} else {
@@ -352,10 +362,7 @@ func ValidateTypedObservationPlan(p ObservationPlan, policy ResourcePolicy) erro
 	}
 	knownEntryPoints := make(map[string]bool, len(p.EntryPointDetails))
 	for _, ep := range p.EntryPointDetails {
-		key := ep.Group + ": " + ep.Name + " = " + ep.Module
-		if ep.Attr != "" {
-			key += ":" + ep.Attr
-		}
+		key := ep.key()
 		want := string(CoverageManualReview)
 		if containsCandidate(p.ImportCandidates, ep.Module) {
 			want = string(CoverageCoveredByModule)

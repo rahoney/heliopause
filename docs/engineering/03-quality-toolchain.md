@@ -591,3 +591,21 @@ M3 seccheck remote observer는 product Go module에 의존성으로 넣지 않�
 - helper source, gVisor commit, Bazel version/binary SHA-512는 `scripts/runtimes.lock.json`의 canonical runtime identity로 pin한다. generated product identity와 CI shell은 이 lock만 소비하며 drift validator가 이를 fail-closed로 확인한다.
 - helper는 official seccheck remote protobuf/wire protocol만 소비하고, normalized container-ID/kind IPC boundary 외에 gVisor type/API를 product Core/Application으로 전달하지 않는다.
 - helper build failure는 Linux CI required aggregate failure다. product `minimum-go` profile에는 gVisor module/Bazel dependency가 유입되지 않는다.
+
+## Representative wheel corpus
+
+기본 `go test`, `quick`, `platform`은 외부 wheel 없이 실행한다. 실제 wheel은
+`internal/artifact/pypi/testdata/real-corpus.json`의 원래 filename·alias·version·
+source/index·독립 SHA-256에 고정한다. 다음 두 단계는 명시적으로 분리한다.
+
+```bash
+python3 scripts/prepare-wheel-corpus.py --root /absolute/corpus
+HELOX_CORPUS_ROOT=/absolute/corpus go run ./scripts/check corpus
+```
+
+준비 단계는 공식 source에서 data만 받으며 `--cache` hit도 재검증한다. Corpus
+profile은 `realcorpus` build tag로 production parser/classifier/planner/admission을
+오프라인 실행한다. 누락·변조·준비 실패는 FAIL이며 skip이나 대체 artifact는 없다.
+Default PASS는 corpus PASS가 아니다. 작은 missing/digest regression은 기본 suite에
+남는다. 대표 corpus는 full CPU/CUDA dependency closure나 dynamic qualification을
+의미하지 않는다.

@@ -1,0 +1,64 @@
+check: execution failure: required representative wheel corpus: /home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/bin/go test -count=1 -tags=realcorpus -timeout=5m ./internal/artifact/pypi -run ^TestModelC_(RealCorpusQualification|MissingCorpusDirectoryFails|CorpusHashMismatchFails)$ -v
+=== RUN   TestModelC_MissingCorpusDirectoryFails
+--- PASS: TestModelC_MissingCorpusDirectoryFails (0.00s)
+=== RUN   TestModelC_CorpusHashMismatchFails
+--- PASS: TestModelC_CorpusHashMismatchFails (0.00s)
+=== RUN   TestModelC_RealCorpusQualification
+=== RUN   TestModelC_RealCorpusQualification/setuptools-84.0.0-py3-none-any.whl
+    real_corpus_integration_test.go:31: open /tmp/haa-ci-negative/missing/setuptools-84.0.0-py3-none-any.whl: no such file or directory
+=== RUN   TestModelC_RealCorpusQualification/filelock-4.0.3-py3-none-any.whl
+    real_corpus_integration_test.go:31: open /tmp/haa-ci-negative/missing/filelock-4.0.3-py3-none-any.whl: no such file or directory
+=== RUN   TestModelC_RealCorpusQualification/filelock-4.0.4-py3-none-any.whl
+    real_corpus_integration_test.go:31: open /tmp/haa-ci-negative/missing/filelock-4.0.4-py3-none-any.whl: no such file or directory
+=== RUN   TestModelC_RealCorpusQualification/sympy-1.14.0-py3-none-any.whl
+    real_corpus_integration_test.go:31: open /tmp/haa-ci-negative/missing/sympy-1.14.0-py3-none-any.whl: no such file or directory
+=== RUN   TestModelC_RealCorpusQualification/markupsafe-3.0.3-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
+    real_corpus_integration_test.go:31: open /tmp/haa-ci-negative/missing/markupsafe-3.0.3-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl: no such file or directory
+=== RUN   TestModelC_RealCorpusQualification/haa-cu126-toolkit-audit.whl
+    real_corpus_integration_test.go:31: open /tmp/haa-ci-negative/missing/haa-cu126-toolkit-audit.whl: no such file or directory
+=== RUN   TestModelC_RealCorpusQualification/haa-cu126-first-nccl.whl
+    real_corpus_integration_test.go:31: open /tmp/haa-ci-negative/missing/haa-cu126-first-nccl.whl: no such file or directory
+=== RUN   TestModelC_RealCorpusQualification/haa-cu126-first-cufft.whl
+    real_corpus_integration_test.go:31: open /tmp/haa-ci-negative/missing/haa-cu126-first-cufft.whl: no such file or directory
+=== RUN   TestModelC_RealCorpusQualification/cuda_pathfinder-1.8.2-py3-none-any.whl
+    real_corpus_integration_test.go:31: open /tmp/haa-ci-negative/missing/cuda_pathfinder-1.8.2-py3-none-any.whl: no such file or directory
+=== RUN   TestModelC_RealCorpusQualification/cuda_bindings-12.9.9-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl
+    real_corpus_integration_test.go:31: open /tmp/haa-ci-negative/missing/cuda_bindings-12.9.9-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl: no such file or directory
+=== RUN   TestModelC_RealCorpusQualification/haa-cu130-toolkit-audit.whl
+    real_corpus_integration_test.go:31: open /tmp/haa-ci-negative/missing/haa-cu130-toolkit-audit.whl: no such file or directory
+=== RUN   TestModelC_RealCorpusQualification/haa-cu130-cupti-audit.whl
+    real_corpus_integration_test.go:31: open /tmp/haa-ci-negative/missing/haa-cu130-cupti-audit.whl: no such file or directory
+=== RUN   TestModelC_RealCorpusQualification/cuda_bindings-13.4.3-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl
+    real_corpus_integration_test.go:31: open /tmp/haa-ci-negative/missing/cuda_bindings-13.4.3-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl: no such file or directory
+=== RUN   TestModelC_RealCorpusQualification/haa-cu132-toolkit-audit.whl
+    real_corpus_integration_test.go:31: open /tmp/haa-ci-negative/missing/haa-cu132-toolkit-audit.whl: no such file or directory
+=== RUN   TestModelC_RealCorpusQualification/haa-cu132-cupti-audit.whl
+    real_corpus_integration_test.go:31: open /tmp/haa-ci-negative/missing/haa-cu132-cupti-audit.whl: no such file or directory
+=== RUN   TestModelC_RealCorpusQualification/networkx-3.6.1-py3-none-any.whl
+    real_corpus_integration_test.go:31: open /tmp/haa-ci-negative/missing/networkx-3.6.1-py3-none-any.whl: no such file or directory
+=== RUN   TestModelC_RealCorpusQualification/cuda_bindings-13.4.3-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl#01
+    real_corpus_integration_test.go:31: open /tmp/haa-ci-negative/missing/cuda_bindings-13.4.3-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl: no such file or directory
+=== NAME  TestModelC_RealCorpusQualification
+    real_corpus_integration_test.go:82: REAL_CORPUS_CLASSIFICATION: REPRESENTATIVE_REAL_CORPUS (17 authenticated packages verified)
+--- FAIL: TestModelC_RealCorpusQualification (0.00s)
+    --- FAIL: TestModelC_RealCorpusQualification/setuptools-84.0.0-py3-none-any.whl (0.00s)
+    --- FAIL: TestModelC_RealCorpusQualification/filelock-4.0.3-py3-none-any.whl (0.00s)
+    --- FAIL: TestModelC_RealCorpusQualification/filelock-4.0.4-py3-none-any.whl (0.00s)
+    --- FAIL: TestModelC_RealCorpusQualification/sympy-1.14.0-py3-none-any.whl (0.00s)
+    --- FAIL: TestModelC_RealCorpusQualification/markupsafe-3.0.3-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (0.00s)
+    --- FAIL: TestModelC_RealCorpusQualification/haa-cu126-toolkit-audit.whl (0.00s)
+    --- FAIL: TestModelC_RealCorpusQualification/haa-cu126-first-nccl.whl (0.00s)
+    --- FAIL: TestModelC_RealCorpusQualification/haa-cu126-first-cufft.whl (0.00s)
+    --- FAIL: TestModelC_RealCorpusQualification/cuda_pathfinder-1.8.2-py3-none-any.whl (0.00s)
+    --- FAIL: TestModelC_RealCorpusQualification/cuda_bindings-12.9.9-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (0.00s)
+    --- FAIL: TestModelC_RealCorpusQualification/haa-cu130-toolkit-audit.whl (0.00s)
+    --- FAIL: TestModelC_RealCorpusQualification/haa-cu130-cupti-audit.whl (0.00s)
+    --- FAIL: TestModelC_RealCorpusQualification/cuda_bindings-13.4.3-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (0.00s)
+    --- FAIL: TestModelC_RealCorpusQualification/haa-cu132-toolkit-audit.whl (0.00s)
+    --- FAIL: TestModelC_RealCorpusQualification/haa-cu132-cupti-audit.whl (0.00s)
+    --- FAIL: TestModelC_RealCorpusQualification/networkx-3.6.1-py3-none-any.whl (0.00s)
+    --- FAIL: TestModelC_RealCorpusQualification/cuda_bindings-13.4.3-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl#01 (0.00s)
+FAIL
+FAIL	github.com/rahoney/heliopause/internal/artifact/pypi	0.010s
+FAIL: exit status 1
+exit status 1

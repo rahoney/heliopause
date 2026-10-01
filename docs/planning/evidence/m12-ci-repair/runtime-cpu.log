@@ -1,0 +1,5 @@
+=== RUN   TestLinuxPyTorchFullIntegration
+    pytorch_linux_integration_test.go:38: retained integration evidence: /tmp/haa-ci-runtime-final/e2e/pytorch-cpu-2858087544
+observer_attribution sequence=1 profile=pypi-wheel-pytorch-cpu counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/PYTHON:151
+--- PASS: TestLinuxPyTorchFullIntegration (478.92s)
+PASS
