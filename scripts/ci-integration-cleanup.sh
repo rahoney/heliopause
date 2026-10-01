@@ -23,7 +23,7 @@ haa_helper_unknown() {
 }
 
 haa_observe_policy_helper() {
-  local listing status line found=0 seen=' '
+  local listing running stopped status line found=0 active=0 seen=' '
   if [[ ${haa_initialized-0} != 1 || ${haa_owner-} != "$$" || $BASH_SUBSHELL != 0 ]]; then
     haa_helper_unknown 1 'uninitialized or non-owning shell'; return $?
   fi
@@ -48,11 +48,36 @@ haa_observe_policy_helper() {
       if [[ "$line" == "$haa_recorded_pid" ]]; then found=1; fi
     done <<< "$listing"
   fi
-  if (( found == 1 )); then haa_helper_state=OWNED_LIVE; return 0; fi
-  # Absence from a successful snapshot is insufficient. Reap in this parent,
+  # A completed job can remain in jobs -p in noninteractive Bash. Query each
+  # producer directly; running and stopped jobs must remain live, while a
+  # completed/absent entry still requires a successful wait in this parent.
+  if running=$(jobs -r -p); then :; else
+    status=$?; haa_helper_unknown "$status" 'running job-table query failed'; return $?
+  fi
+  if stopped=$(jobs -s -p); then :; else
+    status=$?; haa_helper_unknown "$status" 'stopped job-table query failed'; return $?
+  fi
+  for listing in "$running" "$stopped"; do
+    seen=' '
+    if [[ -z "$listing" ]]; then continue; fi
+    while IFS= read -r line; do
+      if [[ ! "$line" =~ ^[1-9][0-9]*$ || "$seen" == *" $line "* ]]; then
+        haa_helper_unknown 1 'malformed active job-table output'; return $?
+      fi
+      seen+="$line "
+      if [[ "$line" == "$haa_recorded_pid" ]]; then active=1; fi
+    done <<< "$listing"
+  done
+  if (( active == 1 )); then
+    if (( found != 1 )); then haa_helper_unknown 1 'conflicting job-table snapshots'; return $?; fi
+    haa_helper_state=OWNED_LIVE; return 0
+  fi
+  # Absence from successful active snapshots is insufficient. Reap in this parent,
   # not in the query subshell. A failed/signalled sudo wrapper is uncertain.
   if wait "$haa_recorded_pid"; then
-    haa_reaped=1; haa_helper_state=CONFIRMED_STOPPED; return 0
+    haa_reaped=1; haa_helper_state=CONFIRMED_STOPPED
+    printf 'helper reaped: pid=%s wait=0\n' "$haa_recorded_pid" >&2
+    return 0
   else
     status=$?; haa_helper_unknown "$status" 'owned foreground wrapper did not complete cleanly'; return $?
   fi
@@ -64,16 +89,44 @@ haa_prepare_policy_helper_launch() {
 }
 
 haa_record_policy_helper_launch() {
-  local launched=${!-}
+  # Caller passes the owning shell's $! immediately after its launch. Expanding
+  # an unset $! here is not portable under nounset (notably Bash 3.2).
+  local launched=${1-}
   if [[ ${haa_initialized-0} != 1 || ${haa_owner-} != "$$" || $BASH_SUBSHELL != 0 || ${haa_helper_error-0} != 0 || ${haa_client_error-0} != 0 || ( ${haa_helper_state-} != NOT_STARTED && ${haa_helper_state-} != CONFIRMED_STOPPED ) ]]; then
     haa_helper_unknown 1 'launch without a clean owning lifecycle'; return $?
   fi
   if [[ ${haa_ever_started-0} == 1 && "$launched" == "${haa_recorded_pid-}" ]]; then
     haa_helper_unknown 1 'stale launch handle'; return $?
   fi
+  if [[ ! "$launched" =~ ^[1-9][0-9]*$ ]] || (( launched <= 1 )); then
+    haa_helper_unknown 1 'missing or invalid launch PID'; return $?
+  fi
   haa_ever_started=1; haa_registered=1; haa_reaped=0
   haa_recorded_pid=$launched; policy_helper_pid=$launched; haa_helper_state=OWNED_LIVE
   haa_observe_policy_helper
+}
+
+# Shared by CI and the bounded installed-helper smoke. The foreground sudo
+# lifecycle and readiness budget are unchanged; both typed sockets must be ready.
+haa_start_policy_helper() {
+  local attempt
+  haa_prepare_policy_helper_launch || return $?
+  if [[ -z ${RUNNER_TEMP-} ]]; then haa_helper_unknown 1 'missing helper log directory'; return $?; fi
+  printf 'helper launch: bash=%s version=%s owner=%s\n' "$BASH" "$BASH_VERSION" "$$"
+  sudo /usr/libexec/heliopause/haa-network-policy-helper >> "$RUNNER_TEMP/haa-network-policy-helper.log" 2>&1 &
+  haa_record_policy_helper_launch "$!" || return $?
+  for ((attempt=0; attempt<600; attempt++)); do
+    haa_observe_policy_helper || return $?
+    if [[ "$haa_helper_state" != OWNED_LIVE ]]; then break; fi
+    if [[ -S /run/heliopause-network-policy/helper.sock && -S /run/heliopause-network-policy/observation.sock ]]; then
+      printf 'helper ready: pid=%s attempt=%s\n' "$haa_recorded_pid" "$attempt"
+      return 0
+    fi
+    sleep 0.1 || { haa_helper_unknown 1 'readiness delay failed'; return $?; }
+  done
+  printf 'helper readiness failed: state=%s pid=%s (60s bound)\n' "$haa_helper_state" "$haa_recorded_pid" >&2
+  head -c 4096 "$RUNNER_TEMP/haa-network-policy-helper.log" >&2
+  return 1
 }
 
 haa_stop_policy_helper() {

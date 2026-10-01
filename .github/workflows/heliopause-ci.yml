@@ -187,6 +187,7 @@ jobs:
           HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-platform-tools
         run: go run ./scripts/check bootstrap-modules
       - name: Run canonical platform profile offline
+        shell: /bin/bash --noprofile --norc -e -u -o pipefail {0}
         env:
           HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-platform-tools
         run: go run ./scripts/check platform
@@ -213,6 +214,7 @@ jobs:
           HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-platform-tools
         run: go run ./scripts/check bootstrap-modules
       - name: Run canonical platform profile offline
+        shell: /bin/bash --noprofile --norc -e -u -o pipefail {0}
         env:
           HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-platform-tools
         run: go run ./scripts/check platform
@@ -275,6 +277,7 @@ jobs:
           check-latest: false
           cache: false
       - name: Install pinned runtime and run lifecycle integration
+        shell: /bin/bash --noprofile --norc -e -u -o pipefail {0}
         run: |
           set -eu
           runtime_lock=scripts/runtimes.lock.json
@@ -379,34 +382,7 @@ jobs:
           # The ordinary client must read the root-owned, non-writable public
           # identity contract; it contains no credential or secret.
           sudo chmod 0644 /etc/heliopause/network-policy.json
-          start_policy_helper() {
-            haa_prepare_policy_helper_launch
-            printf '{"socket_path":"/run/heliopause-network-policy/helper.sock","client_path":"/usr/libexec/heliopause/helox","client_uid":%s,"client_gid":%s}\n' "$(id -u)" "$(id -g)" | sudo tee /etc/heliopause/network-policy.json >/dev/null
-            sudo /usr/libexec/heliopause/haa-network-policy-helper >/tmp/haa-network-policy-helper.log 2>&1 &
-            haa_record_policy_helper_launch
-            echo 'network-policy helper started'
-            helper_start_time=$(date +%s)
-            for attempt in $(seq 1 600); do
-              test -S /run/heliopause-network-policy/helper.sock && break
-              if [ "$attempt" -eq 50 ]; then
-                echo 'network-policy helper still initializing after 5s'
-              fi
-              haa_observe_policy_helper
-              if [[ "$haa_helper_state" != OWNED_LIVE ]]; then break; fi
-              sleep 0.1
-            done
-            helper_elapsed=$(($(date +%s) - helper_start_time))
-            if ! test -S /run/heliopause-network-policy/helper.sock; then
-              echo "network-policy helper socket did not become ready within 60s (${helper_elapsed}s elapsed)" >&2
-              echo "network-policy helper lifecycle state: $haa_helper_state" >&2
-              if test -f /tmp/haa-network-policy-helper.log; then
-                head -c 4096 /tmp/haa-network-policy-helper.log >&2
-              fi
-              return 1
-            fi
-            echo "network-policy helper ready after ${helper_elapsed}s"
-          }
-          start_policy_helper
+          haa_start_policy_helper
           /usr/libexec/heliopause/gvisor/runsc --version
           docker version --format '{{.Server.Version}}'
           docker info --format '{{json (index .Runtimes "runsc-trace")}}'
@@ -437,11 +413,11 @@ jobs:
           test -d "$RUNNER_TEMP/pypi-target/lib/python3.14/site-packages/packaging"
           go test -c -o "$RUNNER_TEMP/helox-sandbox-test" ./internal/sandbox
           haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"
-          start_policy_helper
+          haa_start_policy_helper
           HELOX_PYTORCH_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.run '^TestLinuxPyTorchResolverIntegration$'
           go test -c -o "$RUNNER_TEMP/helox-bootstrap-test" ./internal/bootstrap
           haa_install_ci_client "$RUNNER_TEMP/helox-bootstrap-test"
-          start_policy_helper
+          haa_start_policy_helper
           selected_cuda_profiles=0
           if [ "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cu126_qualification }}" = true ]; then selected_cuda_profiles=$((selected_cuda_profiles + 1)); fi
           if [ "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cu130_qualification }}" = true ]; then selected_cuda_profiles=$((selected_cuda_profiles + 1)); fi
@@ -464,11 +440,11 @@ jobs:
             HELOX_PYTORCH_FULL_INTEGRATION=1 HELOX_PYTORCH_PROFILE=cu132 /usr/libexec/heliopause/helox -test.v -test.timeout=40m -test.run '^TestLinuxPyTorchFullIntegration$'
           fi
           haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"
-          start_policy_helper
+          haa_start_policy_helper
           HELOX_PYPI_DYNAMIC_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxPyPI(WheelDynamic|SdistBuild)Integration$'
           # Restore the production client before leaving the integration step.
           haa_install_ci_client "$RUNNER_TEMP/helox"
-          start_policy_helper
+          haa_start_policy_helper
           HELOX_PROMOTION_INTEGRATION=1 go test -v -timeout=5m ./internal/promotion -run TestLinuxNPMPromotionIntegration
           HELOX_PYPI_PROMOTION_INTEGRATION=1 go test -v -timeout=5m ./internal/promotion -run TestLinuxPyPIPromotionIntegration
 

@@ -257,7 +257,7 @@ func (c *checker) downloadProductModules() (resultErr error) {
 
 	downloadChecker := *c
 	downloadChecker.root = temporaryRoot
-	_, err = downloadChecker.runCommandWithTimeout("product module download", 10*time.Minute, c.bootstrapEnvironment(), c.goExecutable, "mod", "download")
+	_, err = downloadChecker.runCommandWithTimeout("product module download", 10*time.Minute, c.bootstrapEnvironment(), c.goExecutable, "mod", "download", "all")
 	return err
 }
 

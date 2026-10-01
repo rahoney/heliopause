@@ -24,7 +24,23 @@ func runCleanup(t *testing.T, body string, env ...string) (int, string, string) 
 	dir := t.TempDir()
 	ctx, cancel := context.WithTimeout(context.Background(), 12*time.Second)
 	defer cancel()
-	cmd := exec.CommandContext(ctx, "bash", "--noprofile", "--norc", "-e", "-u", "-o", "pipefail", "-c", body)
+	shell := os.Getenv("HELOX_CI_BASH")
+	if shell == "" {
+		shell = "/bin/bash"
+	}
+	t.Logf("CI shell: %s", shell)
+	args := []string{"--noprofile", "--norc", "-e", "-u", "-o", "pipefail"}
+	body = `printf 'shell=%s version=%s options=%s\n' "$BASH" "$BASH_VERSION" "$-" >&2` + "\n" + body
+	if os.Getenv("HELOX_CI_SCRIPT_FILE") == "1" {
+		path := filepath.Join(dir, "case.sh")
+		if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		args = append(args, path)
+	} else {
+		args = append(args, "-c", body)
+	}
+	cmd := exec.CommandContext(ctx, shell, args...)
 	cmd.Env = append(os.Environ(), "SCRIPT="+cleanupScript(t), "CASE_DIR="+dir, "RUNNER_TEMP=/production")
 	cmd.Env = append(cmd.Env, env...)
 	out, err := cmd.CombinedOutput()
@@ -59,9 +75,12 @@ jobs() {
  live=$(cat "$CASE_DIR/live")
  case ${QUERY-normal} in
    error) return 2;; producer) return 3;; malformed) echo garbage; return 0;; duplicate) printf '42\n42\n'; return 0;;
+   running-error) if [[ "$*" == "-r -p" ]]; then return 6; fi;;
+   stopped-error) if [[ "$*" == "-s -p" ]]; then return 7; fi;;
    afterterm) if [[ $live == 0 ]]; then return 5; fi;;
  esac
- if [[ $live == 1 ]]; then echo 42; fi
+ if [[ "$*" == "-s -p" ]]; then return 0; fi
+ if [[ $live == 1 || ( ${COMPLETED_ENTRY-0} == 1 && "$*" == "-p" ) ]]; then echo 42; fi
 }
 grep() { echo matcher >> "$CASE_DIR/actions"; return "${MATCH_STATUS-2}"; }
 wait() { echo "wait:$1" >> "$CASE_DIR/actions"; return "${WAIT_STATUS-0}"; }
@@ -88,7 +107,7 @@ func TestActualCIIntegrationCleanup(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, call := range []string{"source scripts/ci-integration-cleanup.sh", "haa_ci_initialize", "haa_record_policy_helper_launch", "haa_prepare_policy_helper_launch", "haa_observe_policy_helper"} {
+	for _, call := range []string{"source scripts/ci-integration-cleanup.sh", "haa_ci_initialize", "haa_start_policy_helper", "haa_install_ci_client"} {
 		if !strings.Contains(string(workflow), call) {
 			t.Fatalf("missing shared lifecycle call %s", call)
 		}
@@ -137,6 +156,10 @@ func TestCIHelperStateFaults(t *testing.T) {
 	}{
 		{"query-error", "", []string{"QUERY=error"}, 2, "", "UNKNOWN", "job-table query failed"},
 		{"producer-error-not-matcher", "", []string{"QUERY=producer", "MATCH_STATUS=1"}, 3, "", "UNKNOWN", "job-table query failed"},
+		{"running-query-error", "", []string{"QUERY=running-error"}, 6, "", "UNKNOWN", "running job-table query failed"},
+		{"stopped-query-error", "", []string{"QUERY=stopped-error"}, 7, "", "UNKNOWN", "stopped job-table query failed"},
+		{"completed-entry-retained", "printf 0 > \"$CASE_DIR/live\"", []string{"COMPLETED_ENTRY=1"}, 0, "wait:42\ninstall:/production/helox\n", "CONFIRMED_STOPPED", "RESTORED"},
+		{"interrupted-wait", "printf 0 > \"$CASE_DIR/live\"", []string{"WAIT_STATUS=130"}, 130, "wait:42\n", "UNKNOWN", "did not complete cleanly"},
 		{"query-after-term", "", []string{"QUERY=afterterm"}, 5, "term:42\n", "UNKNOWN", "job-table query failed"},
 		{"malformed-output", "", []string{"QUERY=malformed"}, 1, "", "UNKNOWN", "malformed job-table"},
 		{"duplicate-output", "", []string{"QUERY=duplicate"}, 1, "", "UNKNOWN", "malformed job-table"},
@@ -254,24 +277,24 @@ sudo() {
 		name, launch, exercise string
 		actions                string
 	}{
-		{"normal-early-exit", `bash -c 'exit 0' &`, `sleep 0.1; haa_observe_policy_helper; [[ $haa_helper_state == CONFIRMED_STOPPED ]]; haa_stop_policy_helper`, ""},
-		{"graceful-stop", `bash -c 'trap "exit 0" TERM; echo ready > "$CASE_DIR/ready"; for i in {1..30}; do sleep 0.1; done' &`, `while [[ ! -f "$CASE_DIR/ready" ]]; do sleep 0.01; done; haa_stop_policy_helper; [[ $haa_helper_state == CONFIRMED_STOPPED ]]`, "term\n"},
-		{"suspended-is-live", `bash -c 'trap "exit 0" TERM; echo ready > "$CASE_DIR/ready"; for i in {1..30}; do sleep 0.1; done' &`, `while [[ ! -f "$CASE_DIR/ready" ]]; do sleep 0.01; done; kill -STOP "$owned"; sleep 0.05; haa_observe_policy_helper; [[ $haa_helper_state == OWNED_LIVE ]]; kill -CONT "$owned"; haa_stop_policy_helper; [[ $haa_helper_state == CONFIRMED_STOPPED ]]`, "term\n"},
-		{"foreground-wrapper", `bash -c '
- bash -c '\''trap "exit 0" TERM; echo ready > "$CASE_DIR/ready"; for i in {1..30}; do sleep 0.1; done'\'' &
+		{"normal-early-exit", `"$BASH" -c 'exit 0' &`, `sleep 0.1; haa_observe_policy_helper; [[ $haa_helper_state == CONFIRMED_STOPPED ]]; haa_stop_policy_helper`, ""},
+		{"graceful-stop", `"$BASH" -c 'trap "exit 0" TERM; echo ready > "$CASE_DIR/ready"; for i in {1..30}; do sleep 0.1; done' &`, `while [[ ! -f "$CASE_DIR/ready" ]]; do sleep 0.01; done; haa_stop_policy_helper; [[ $haa_helper_state == CONFIRMED_STOPPED ]]`, "term\n"},
+		{"suspended-is-live", `"$BASH" -c 'trap "exit 0" TERM; echo ready > "$CASE_DIR/ready"; for i in {1..30}; do sleep 0.1; done' &`, `while [[ ! -f "$CASE_DIR/ready" ]]; do sleep 0.01; done; kill -STOP "$owned"; sleep 0.05; haa_observe_policy_helper; [[ $haa_helper_state == OWNED_LIVE ]]; kill -CONT "$owned"; haa_stop_policy_helper; [[ $haa_helper_state == CONFIRMED_STOPPED ]]`, "term\n"},
+		{"foreground-wrapper", `"$BASH" -c '
+ "$BASH" -c '\''trap "exit 0" TERM; echo ready > "$CASE_DIR/ready"; for i in {1..30}; do sleep 0.1; done'\'' &
  child=$!
  trap '\''kill -TERM "$child"; if wait "$child"; then echo reaped > "$CASE_DIR/reaped"; exit 0; else exit 1; fi'\'' TERM
  wait "$child"
 ' &`, `while [[ ! -f "$CASE_DIR/ready" ]]; do sleep 0.01; done; haa_stop_policy_helper; [[ $haa_helper_state == CONFIRMED_STOPPED && -f "$CASE_DIR/reaped" ]]`, "term\n"},
-		{"failed-wrapper", `bash -c 'exit 19' &`, `sleep 0.1; if haa_stop_policy_helper; then exit 99; fi; [[ $haa_helper_state == UNKNOWN && $haa_helper_error == 19 ]]; if haa_prepare_policy_helper_launch; then exit 98; fi`, ""},
+		{"failed-wrapper", `"$BASH" -c 'exit 19' &`, `sleep 0.1; if haa_stop_policy_helper; then exit 99; fi; [[ $haa_helper_state == UNKNOWN && $haa_helper_error == 19 ]]; if haa_prepare_policy_helper_launch; then exit 98; fi`, ""},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			body := common + c.launch + "\nowned=$!\nhaa_record_policy_helper_launch\n" + c.exercise + "\nowned=''\n"
+			body := common + c.launch + "\nowned=$!\nprintf 'owned pid=%s shell=%s\\n' \"$owned\" \"$$\" >&2\nhaa_record_policy_helper_launch \"$!\"\n" + c.exercise + "\nowned=''\n"
 			// A very early failed wrapper may already fail registration; delay its exit
 			// so registration exercises OWNED_LIVE before the failed wait.
 			if c.name == "failed-wrapper" {
-				body = strings.Replace(body, "bash -c 'exit 19' &", "bash -c 'sleep 0.05; exit 19' &", 1)
+				body = strings.Replace(body, "\"$BASH\" -c 'exit 19' &", "\"$BASH\" -c 'sleep 0.05; exit 19' &", 1)
 			}
 			code, out, actions := runCleanup(t, body)
 			if code != 0 || actions != c.actions {

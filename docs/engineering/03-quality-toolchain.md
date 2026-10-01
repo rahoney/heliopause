@@ -636,3 +636,36 @@ go run ./scripts/check quick
 
 - [GitHub context availability](https://docs.github.com/en/actions/reference/workflows-and-actions/contexts#context-availability)
 - [Pinned actionlint usage](https://github.com/rhysd/actionlint/blob/v1.7.12/docs/usage.md)
+
+## Cold-cache 준비와 CI helper shell
+
+`bootstrap`/`bootstrap-modules`는 격리한 go.mod/go.sum으로 `go mod download all`을
+실행한다. 이는 offline tidy가 읽는 외부 모듈 test 의존성까지 고정 graph를
+준비하며 module 파일을 변경하지 않는다. outer checker compiler cache와 inner
+HELOX_TOOL_CACHE의 go-mod/go-build를 분리한다. warm cache의 source-isolated
+quick은 cold 준비 검증을 대신하지 않는다.
+
+```bash
+go test -tags=bootstrapintegration ./scripts/check -run '^TestColdModulePreparationToOfflineTidy$' -count=1 -v
+```
+
+위 명시 integration은 빈 inner cache에 네트워크로 준비한 후 실제 offline
+tidy를 실행한다. 기본 unit suite에 public network를 추가하지 않는다.
+
+CI helper lifecycle과 shell 회귀는 `/bin/bash --noprofile --norc -e -u -o pipefail`
+계약을 사용한다. 테스트 matrix는 HELOX_CI_BASH 절대 경로와
+HELOX_CI_SCRIPT_FILE=1로 별도 shell/script-file 실행을 선택할 수 있다.
+`jobs -p`의 완료 항목은 생존 증거가 아니다. 성공한 all/running/stopped query와
+소유 shell의 wait=0를 함께 사용하며 query/신원/비정상 wait 불확실성은 복원을
+막는다. CI와 smoke는 공용 start/stop/replace/EXIT 구현을 사용한다.
+
+설치된 정상 bundle의 작은 authenticated 재시작/교체/복원 검증:
+
+```bash
+bash scripts/ci-helper-smoke.sh /absolute/canonical-built/helox
+```
+
+소켓이 이미 존재하면 시작하지 않는다. 설치 상태를 캡처하고 원본 production
+client bytes를 보관한 후 공용 lifecycle로 교체·재바인딩·복원한다. 실제 npm is-number@7.0.0
+소규모 설치·승격도 인증된 설치 경로로 실행한다. 이는 CPU/CUDA E2E나 privileged
+fault injection이 아니다. GNU Bash 3.2의 Linux 실행은 native macOS 증거가 아니다.
