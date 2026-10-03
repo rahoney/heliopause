@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "work_item": "M12-002",
+  "scope": "parser and private control snapshot checkpoint only",
+  "base": "62c3b595e8e27a4a1d836849643c372692a39b8b",
+  "status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "NO",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO"
+  },
+  "raw_go_input": {
+    "runtime": "go1.26.8",
+    "module": "github.com/spf13/pflag@v1.0.9",
+    "download_sha256": "da00da06035fbc6eebb6410da81077695db614a47fc8c15f703d7fc2484199d7",
+    "graph_sha256": "52ccc988d4409afb41282ac6bea47167fdf58c9f959b70880cc702b8666dc1ae",
+    "acquisition": "warm pinned quality module cache",
+    "qualification": false
+  },
+  "before": {
+    "download_stream": "FAIL",
+    "proxy_case_identity": "FAIL",
+    "project_graph_shape": "FAIL"
+  },
+  "after": {
+    "focused_parser_project_graph_environment_drift_cleanup_consumers": "PASS",
+    "canonical_quick": "PASS",
+    "canonical_security": "PASS",
+    "canonical_docs": "PASS",
+    "canonical_vulnerability": "PASS",
+    "darwin_test_compile": "PASS (cross-compile only; test bodies not executed)",
+    "cold_quality_bootstrap_and_offline_tidy": "PASS (quality provisioning only, not Go artifact qualification)"
+  },
+  "remaining": [
+    "isolated source-provenance and pinned runtime execution",
+    "acquire/verify/inspect/Policy/Evidence",
+    "exact graph transaction without reselection",
+    "approved verified module cache",
+    "network-disabled observed build and bounded publication",
+    "actual full positive/security/rollback qualification"
+  ],
+  "reused_m12_001_evidence": "baseline only; no PASS claim for this candidate",
+  "source_inventory_sha256": "4da020785a188b1495a6ed87091267602c8f78bf45471d8ff00c8ee0512ca5d3",
+  "source_files_sha256": {
+    "go.mod": "e75edec1db5da0d36e1d4d680f68576dec53348bbd7b74d0c21b729ebc03e499",
+    "go.sum": "f87d8c54220e1e0d51a3487cc039806675ae8e5035d7ba875d9f647765b67dd4",
+    "internal/artifact/gomodule/digest.go": "618506feed0724c25a04cec809b54709883fa78772b09d0e7b7f197cd607351c",
+    "internal/artifact/gomodule/digest_test.go": "d47a9707abc22a0353f9fff5efa6b999d99b94b2ea4f40c2222714c917ffad2c",
+    "internal/artifact/gomodule/graph.go": "581ff36018736b74e75f4dd797b6cf2807f781884d82ab0400d76eb212f78255",
+    "internal/artifact/gomodule/module.go": "995634c81aa93d57db666fc62d843dae5934d248229188d7fd2ddb81e807479d",
+    "internal/artifact/gomodule/module_test.go": "6538bcc2726bc5ba70a0a341c7235d228c40acdf60248e3d40ce7decc2a2767d",
+    "internal/artifact/gomodule/project.go": "a71c163d7a46f868c0e21649b97c6d2ef206deccdd41c3a2b5063bcfc68c440a",
+    "internal/artifact/gomodule/project_test.go": "a8f521c58df43180bd2423bf37edf5ab8711cb78667af95b2190e43b4f61e1e2",
+    "internal/sandbox/gomodule_cleanup_unix_test.go": "04d7e461ae108f6c6fb3e1384af8649c47cd8c2f994a8d9c9708ee22b02c662e",
+    "internal/sandbox/gomodule_resolver.go": "b17c176b766880bd5d7070d6cc8cc4dbaab43c3e565d868de1a65ec674373611",
+    "internal/sandbox/gomodule_resolver_test.go": "76e35cab71122d8858d9968e3157e108a3d457c3047d79ce860f714f0a999595",
+    "scripts/check/architecture.go": "011adfa12622eb5ed754d692ae00e17688448b6ccb499a0068208ba80e5f40f5"
+  },
+  "common_observer_runtime_policy_workflow_changed": false,
+  "push_remote_ci_merge": false,
+  "checks": {
+    "quick": {
+      "exit": 0,
+      "log": "quick-checkpoint.log"
+    },
+    "security": {
+      "exit": 0,
+      "log": "security-verified.log"
+    },
+    "vulnerability": {
+      "exit": 0,
+      "log": "vulnerability-verified.log"
+    },
+    "docs": {
+      "exit": 0,
+      "log": "docs-verified.log"
+    },
+    "darwin_test_compile": {
+      "exit": 0,
+      "log": "darwin-compile-checkpoint.log",
+      "method": "GOOS=darwin GOARCH=amd64 go test -exec /bin/true ./...; compile only"
+    }
+  },
+  "logs_sha256": {
+    "parser-before.log": "1873d1f9f257e1afcc6000882859c0b4ff2336c26627e4a71b85a9a1d08d96dc",
+    "parser-after.log": "21fa9e733409e9a36603227ad1da73c262c3bca4e9ff84e08f8d2e033d310915",
+    "graph-before.log": "0cfe5e9177f2f8ba309405ee29c9aead6d88e1aef05b991f46a50aeb88b58388",
+    "focused-final.log": "296927e11f317e3d78172769de4acb1a66536bb4b09f1be1867ecfeb925cce24",
+    "quick-checkpoint.log": "e87a8b9c1ed1964caf68f28d01d00261c539460bb4bfc5cb541778f4b15433bd",
+    "security-verified.log": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95",
+    "vulnerability-verified.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs-verified.log": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9",
+    "darwin-compile-checkpoint.log": "8033a8f616b2731837549ac2c79f0f132d283b2310b6fb08555a8c375c760560",
+    "cold-bootstrap_modules.log": "979a1bcc551b294da584b78a3ee6f0b7dbd842b1b256711a2372ef83cae2033b",
+    "cold-offline_tidy.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs-final-receipt.log": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9",
+    "security-final-receipt.log": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95"
+  },
+  "cold_quality": {
+    "initial_attempt": "outer go run compiler could not acquire pinned YAML under GOPROXY=off; preparation harness failure, not product regression",
+    "corrected_setup": "fresh declared cache and HOME; canonical online bootstrap-modules, then GOPROXY=off tidy -diff",
+    "exits": {
+      "bootstrap_modules": 0,
+      "offline_tidy": 0
+    }
+  },
+  "source_unchanged_across_checkpoint_checks": true,
+  "final_tree_checks": {
+    "docs_exit": 0,
+    "security_exit": 0,
+    "staged_source_matches_checked_fingerprint": true
+  }
+}

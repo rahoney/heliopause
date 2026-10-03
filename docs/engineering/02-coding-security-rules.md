@@ -71,6 +71,29 @@ module path·release tag·checksum 신뢰성
 - [Cobra Apache-2.0 license](https://github.com/spf13/cobra/blob/v1.10.2/LICENSE.txt)
 - [GitHub global advisory query for Cobra](https://api.github.com/advisories?ecosystem=go&affects=github.com%2Fspf13%2Fcobra&per_page=100)
 
+### M12-002 Go module parser dependency review
+
+2026-10-04에 `golang.org/x/mod v0.39.0`을 고정한다. 필요한 범위는
+`internal/artifact/gomodule`의 Go module identity/major-version validation,
+proxy path·version escaping과 실행 전 `go.mod` grammar/directive 검사다.
+Standard library에는 이 문법 parser가 없고 문자열·regexp 대체는 quoted/block
+`replace`와 path/version 의미를 정확히 처리하지 못한다. 기존 adapter에 이
+공식 library를 적용하며 Core/Application에는 외부 type/import를 전달하지 않는다.
+
+- [공식 tag](https://go.googlesource.com/mod/+/refs/tags/v0.39.0)의 commit은
+  `13be9020bbbfae457b59b82c999f8c309cb21ffc`이며 Go Authors의 유지보수·review 경로를 따른다.
+- [go.mod](https://raw.githubusercontent.com/golang/mod/v0.39.0/go.mod)의 Go floor는
+  `1.25.0`으로 project의 고정 `1.26.8`을 올리지 않는다. Module graph에는
+  `x/tools v0.48.0` requirement가 있지만 현재 build-selected import는
+  `modfile`, `module`, `semver`, `internal/lazyregexp`이며 `x/tools` package는 없다.
+- [License](https://raw.githubusercontent.com/golang/mod/v0.39.0/LICENSE)는
+  BSD-3-Clause다. 재배포 시 copyright/license 유지 의무를 따른다.
+- Canonical proxy/SumDB로 고정 pin을 준비하고 `.zip`/`go.mod` h1을 `go.sum`에 기록했다.
+  Warm quality cache를 사용했으며 이를 cold acquisition qualification으로 기록하지 않는다.
+- 새 import의 canonical `vulnerability`는 exit0을 확인했다. 이는 현재 scanner/DB/호출
+  범위의 결과이며 package 안전성 보증이 아니다. 후속 후보에서 새로운 import가 생기면
+  해당 소비 범위를 다시 확인한다. 업그레이드는 자동으로 수행하지 않는다.
+
 ## 3. Package와 API 작성
 
 - Step 8의 dependency direction과 package 책임을 따른다.

@@ -1,0 +1,7 @@
+--- FAIL: TestDownloadRecordsAcceptGoCommandJSONStream (0.00s)
+    module_test.go:111: indented Go command stream = []gomodule.DownloadRecord(nil), error = go module download record is incomplete
+--- FAIL: TestProxyURLPreservesGoModuleCaseIdentity (0.00s)
+    module_test.go:132: case-preserving Go proxy URL = "https://proxy.golang.org/example.com/azure/sdk/@v/v1.2.3-RC.1.zip", error = <nil>
+FAIL
+FAIL	github.com/rahoney/heliopause/internal/artifact/gomodule	0.008s
+FAIL

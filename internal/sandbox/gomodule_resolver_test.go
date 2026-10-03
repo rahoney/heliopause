@@ -18,6 +18,102 @@ type goModuleRunnerFixture struct {
 	caches []string
 }
 
+type goModulePrivateMutationRunner struct {
+	goModuleRunnerFixture
+	workspace string
+}
+
+func (r *goModulePrivateMutationRunner) RunGo(ctx context.Context, directory string, environment []string, arguments ...string) ([]byte, error) {
+	r.workspace = directory
+	if strings.Join(arguments, " ") == "mod download -json all" {
+		if err := os.WriteFile(filepath.Join(directory, "go.sum"), []byte("resolver-private updated sums\n"), 0o600); err != nil {
+			return nil, err
+		}
+	}
+	return r.goModuleRunnerFixture.RunGo(ctx, directory, environment, arguments...)
+}
+
+func TestGoModuleProjectResolverCannotMutateUserControlFiles(t *testing.T) {
+	project := t.TempDir()
+	mod := []byte("module example.com/app\n\ngo 1.25\nrequire example.com/mod v1.2.3\n")
+	sum := []byte("example.com/mod v1.2.3 h1:fixture\n")
+	for name, body := range map[string][]byte{"go.mod": mod, "go.sum": sum} {
+		if err := os.WriteFile(filepath.Join(project, name), body, 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	target, _ := domain.NewInstallTarget(project)
+	install, _ := domain.NewInstallContext(target)
+	runner := &goModulePrivateMutationRunner{}
+	resolver, _ := NewGoModuleResolver(runner)
+	if _, err := resolver.ResolveProjectDependencies(context.Background(), install); err != nil {
+		t.Fatal(err)
+	}
+	if runner.workspace == project {
+		t.Fatal("resolver ran inside the user project")
+	}
+	for name, want := range map[string][]byte{"go.mod": mod, "go.sum": sum} {
+		got, err := os.ReadFile(filepath.Join(project, name))
+		if err != nil || string(got) != string(want) {
+			t.Fatalf("user %s was modified: %q (%v)", name, got, err)
+		}
+	}
+	if _, err := os.Stat(runner.workspace); !os.IsNotExist(err) {
+		t.Fatalf("private workspace survived: %v", err)
+	}
+}
+
+func TestGoModuleResolverRejectsUnsafeControlsBeforeAnyCommand(t *testing.T) {
+	for _, member := range []string{"replacement", "mod symlink", "sum symlink", "oversize", "directory"} {
+		t.Run(member, func(t *testing.T) {
+			project := t.TempDir()
+			mod := "module example.com/app\n\ngo 1.25\nrequire example.com/mod v1.2.3\n"
+			if member == "replacement" {
+				mod += "replace example.com/mod => ../host-private\n"
+			}
+			if err := os.WriteFile(filepath.Join(project, "go.mod"), []byte(mod), 0o600); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(filepath.Join(project, "go.sum"), []byte("fixture\n"), 0o600); err != nil {
+				t.Fatal(err)
+			}
+			name := "go.mod"
+			if member == "sum symlink" {
+				name = "go.sum"
+			}
+			if strings.HasSuffix(member, "symlink") || member == "directory" {
+				if err := os.Remove(filepath.Join(project, name)); err != nil {
+					t.Fatal(err)
+				}
+				var err error
+				if member == "directory" {
+					err = os.Mkdir(filepath.Join(project, name), 0o700)
+				} else {
+					err = os.Symlink(filepath.Join(t.TempDir(), "outside"), filepath.Join(project, name))
+				}
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
+			if member == "oversize" {
+				if err := os.WriteFile(filepath.Join(project, name), []byte(strings.Repeat(" ", artifactgomodule.MaxProjectControlBytes+1)), 0o600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			target, _ := domain.NewInstallTarget(project)
+			install, _ := domain.NewInstallContext(target)
+			runner := &goModuleRunnerFixture{}
+			resolver, _ := NewGoModuleResolver(runner)
+			if _, err := resolver.ResolveProjectDependencies(context.Background(), install); err == nil {
+				t.Fatal("unsafe project controls reached resolver")
+			}
+			if len(runner.calls) != 0 {
+				t.Fatalf("Go ran before control validation: %v", runner.calls)
+			}
+		})
+	}
+}
+
 func (r *goModuleRunnerFixture) RunGo(_ context.Context, _ string, environment []string, arguments ...string) ([]byte, error) {
 	cache := ""
 	for _, entry := range environment {
@@ -42,7 +138,7 @@ func (r *goModuleRunnerFixture) RunGo(_ context.Context, _ string, environment [
 	if strings.Join(arguments, " ") == "mod download -json all" {
 		return []byte(`{"Path":"example.com/mod","Version":"v1.2.3","GoMod":"/tmp/mod.mod","Zip":"/tmp/mod.zip","Sum":"` + h1('a') + `","GoModSum":"` + h1('b') + `","Origin":null}` + "\n"), nil
 	}
-	return []byte("example.com/mod@v1.2.3 example.com/mod@v1.2.3\n"), nil
+	return []byte("example.com/app example.com/mod@v1.2.3\nexample.com/app go@1.25\ngo@1.25 toolchain@go1.25\n"), nil
 }
 
 func TestGoModuleResolverUsesCanonicalCommandsAndSource(t *testing.T) {
@@ -53,7 +149,7 @@ func TestGoModuleResolverUsesCanonicalCommandsAndSource(t *testing.T) {
 	}
 	reference, _ := artifactgomodule.ParseReference("example.com/mod@v1.2.3")
 	project := t.TempDir()
-	if err := os.WriteFile(filepath.Join(project, "go.mod"), []byte("module example.com/app\n\ngo 1.25\n"), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(project, "go.mod"), []byte("module example.com/app\n\ngo 1.25\nrequire example.com/mod v1.2.3\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.WriteFile(filepath.Join(project, "go.sum"), []byte("example.com/mod v1.2.3 h1:fixture\n"), 0o600); err != nil {
@@ -87,7 +183,7 @@ func TestGoModuleResolverRejectsOtherSource(t *testing.T) {
 
 func TestGoModuleResolverFreezesWholeProjectWithoutPrimaryArtifact(t *testing.T) {
 	project := t.TempDir()
-	if err := os.WriteFile(filepath.Join(project, "go.mod"), []byte("module example.com/app\n\ngo 1.25\n"), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(project, "go.mod"), []byte("module example.com/app\n\ngo 1.25\nrequire example.com/mod v1.2.3\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.WriteFile(filepath.Join(project, "go.sum"), []byte("example.com/mod v1.2.3 h1:fixture\n"), 0o600); err != nil {
@@ -116,7 +212,7 @@ func TestGoModuleResolverFreezesWholeProjectWithoutPrimaryArtifact(t *testing.T)
 
 func TestGoModuleResolverRejectsProjectControlFileDrift(t *testing.T) {
 	project := t.TempDir()
-	if err := os.WriteFile(filepath.Join(project, "go.mod"), []byte("module example.com/app\n\ngo 1.25\n"), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(project, "go.mod"), []byte("module example.com/app\n\ngo 1.25\nrequire example.com/mod v1.2.3\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.WriteFile(filepath.Join(project, "go.sum"), []byte("example.com/mod v1.2.3 h1:fixture\n"), 0o600); err != nil {
@@ -135,7 +231,7 @@ func TestGoModuleResolverRejectsProjectControlFileDrift(t *testing.T) {
 
 func TestGoModuleExactResolverRejectsProjectControlFileDrift(t *testing.T) {
 	project := t.TempDir()
-	if err := os.WriteFile(filepath.Join(project, "go.mod"), []byte("module example.com/app\n\ngo 1.25\n"), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(project, "go.mod"), []byte("module example.com/app\n\ngo 1.25\nrequire example.com/mod v1.2.3\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.WriteFile(filepath.Join(project, "go.sum"), []byte("example.com/mod v1.2.3 h1:fixture\n"), 0o600); err != nil {
@@ -176,7 +272,7 @@ func (r *goModuleExactDriftRunner) RunGo(_ context.Context, _ string, environmen
 		if err := os.WriteFile(filepath.Join(r.project, "go.sum"), []byte("changed\n"), 0o600); err != nil {
 			return nil, err
 		}
-		return []byte("example.com/mod@v1.2.3 example.com/mod@v1.2.3\n"), nil
+		return []byte("example.com/app example.com/mod@v1.2.3\nexample.com/app go@1.25\ngo@1.25 toolchain@go1.25\n"), nil
 	}
 	h1 := func(value byte) string {
 		return "h1:" + base64.StdEncoding.EncodeToString([]byte(strings.Repeat(string([]byte{value}), 32)))
@@ -204,7 +300,7 @@ func (r *goModuleDriftRunner) RunGo(_ context.Context, _ string, environment []s
 		if err := os.WriteFile(filepath.Join(r.project, "go.sum"), []byte("changed\n"), 0o600); err != nil {
 			return nil, err
 		}
-		return []byte("example.com/mod@v1.2.3 example.com/mod@v1.2.3\n"), nil
+		return []byte("example.com/app example.com/mod@v1.2.3\nexample.com/app go@1.25\ngo@1.25 toolchain@go1.25\n"), nil
 	}
 	h1 := func(value byte) string {
 		return "h1:" + base64.StdEncoding.EncodeToString([]byte(strings.Repeat(string([]byte{value}), 32)))

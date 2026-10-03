@@ -9,9 +9,9 @@
 ```text
 Current milestone: M12 — Ecosystem Expansion Before Public Release
 Milestone status: IN_PROGRESS
-Active work item: None (M12-001 COMPLETE)
-Next work item: M12-002 — public Go Modules
-Next work item status: NOT_STARTED (M12-001 acceptance closed)
+Active work item: M12-002 — public Go Modules
+Next work item: M12-003 — Rust/Cargo and public crates.io
+Next work item status: NOT_STARTED (M12-002 acceptance prerequisite)
 Ready: Yes
 ```
 
@@ -2133,14 +2133,14 @@ M11-FIX-04: COMPLETE
 M11-FIX-05: COMPLETE
 M12: IN_PROGRESS
 M12-001: COMPLETE
-M12-002: NOT_STARTED
+M12-002: IN_PROGRESS
 M12-003: NOT_STARTED
 M12-004: NOT_STARTED
 M12-005: NOT_STARTED
 M12-02: RESERVED
 M13: BLOCKED
-Active work item: None (M12-001 COMPLETE)
-Next work item: M12-002 — NOT_STARTED / Ready: Yes
+Active work item: M12-002 — public Go Modules
+Next work item: M12-003 — NOT_STARTED / Ready: No (M12-002 acceptance prerequisite)
 ```
 
 M9-006까지 qualification을 완료했다. M10-001은 release identity·manifest 및
@@ -2173,7 +2173,7 @@ production activation과 최종 배포를 수행한다.
 | Order | ID | Scope | Status |
 | --- | --- | --- | --- |
 | 1 | M12-001 | Official PyTorch source support | COMPLETE |
-| 2 | M12-002 | public Go Modules | NOT_STARTED |
+| 2 | M12-002 | public Go Modules | IN_PROGRESS |
 | 3 | M12-003 | Rust/Cargo and public crates.io | NOT_STARTED |
 | 4 | M12-004 | Terraform Provider installation | NOT_STARTED |
 | 5 | M12-005 | cross-ecosystem qualification and feature freeze | NOT_STARTED |
@@ -2200,6 +2200,47 @@ CPU full E2E가 포함되며 별도 수동 CUDA full 재실행은 이 문서 변
 
 M12 전체는 `IN_PROGRESS`를 유지한다. 다음 M12-002 public Go Modules는
 `NOT_STARTED / Ready: Yes`이며 아직 구현 작업을 시작하지 않았다.
+
+### M12-002 시작 baseline audit (2026-10-04)
+
+PR28 merge `62c3b595e8e27a4a1d836849643c372692a39b8b`와
+[main CI run37132385788](https://github.com/rahoney/heliopause/actions/runs/37132385788)의
+10개 jobs(Required/macOS 포함) success를 확인하고
+`milestone/m12-ecosystem-qualification`에서 시작했다. M12-001은 COMPLETE를 유지한다.
+
+`IMPLEMENTED=YES`, `WIRED=NO`, `QUALIFIED=NO`, `ACCEPTANCE_CLOSED=NO`다.
+기존 `artifact/gomodule` parser, `sandbox/gomodule_resolver.go`/`gomodule_build.go`,
+`promotion/go_get.go`/`go_transaction.go`, `application/gomodule.go`,
+`domain/project_snapshot.go`, CLI/bootstrap을 재사용한다. 기본 단위/stub 회귀의
+존재를 실제 production qualification으로 확대하지 않는다.
+
+`MISSING`: resolved exact graph/content의 검사·Policy·Evidence와 transaction 연결,
+재선택 없는 approved verified cache 승격, 실제 isolated/observed offline build와
+output publication, Host에서 project/replace/toolchain content를 실행하지 않는
+resolver 경계, pinned runtime 및 정상·tamper·cache poisoning·ambient env·race·
+rollback/cleanup과 기존 직접 소비자의 실제 qualification이다. 현 `go get`은
+resolution 뒤 별도 network-enabled selection을 하고 `go mod download`는
+resolution만 보고한다. `GoBuildRunner`는 CLI에 연결되지 않았으며 현재 RunGo는
+Host 실행이다. 이를 성공한 검사·승격·격리 build로 기록하지 않는다.
+
+작업 범위는 기존 보안 모델 안에서 M12-002의 acceptance gap을 채우는 것이다.
+현재 하나의 IN_PROGRESS만 유지하며 local checkpoint를 남긴다.
+NO PUSH / NO REMOTE CI / NO MERGE. 다음 M12-003은 NOT_STARTED다.
+
+### M12-002 parser/private snapshot checkpoint (2026-10-04)
+
+[Parser baseline evidence](./evidence/m12-002-parser-baseline/result.json)는
+실제 Go command 형식과 기존 stub의 차이, 수정 전 FAIL과 직접 정상/negative
+회귀를 연결한다. Existing parser/resolver에 bounded JSON stream, official module
+identity/escaping, project-bound main/synthetic/selected-MVS graph, checksum/control
+binding, private-control reads와 cleanup failure 보존을 적용했다. x/mod dependency
+검토는 [Coding/security rules](../engineering/02-coding-security-rules.md)에 있다.
+
+이 checkpoint는 Go full operation closure가 아니다. Origin metadata는 source
+attestation을 대신하지 않으며, host runner·재선택 promoter·검사/Policy/verified
+cache·실제 isolated build/output publish와 qualification은 위 MISSING에 남는다.
+`M12-002 IN_PROGRESS / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO`를 유지한다.
+PyTorch/공통 observer/기존 runtime lock/workflow·Policy 입력은 변경하지 않았다.
 
 ### M12-001 종료 전 이력 (당시 상태, 현재 판정 아님)
 
@@ -2425,7 +2466,7 @@ IMPLEMENTED: YES
 WIRED: NO
 QUALIFIED: NO
 ACCEPTANCE_CLOSED: NO
-Status: NOT_STARTED
+Status: IN_PROGRESS
 Ready: Yes (M12-001 acceptance closed)
 
 M12-003 — Cargo
@@ -2446,7 +2487,7 @@ Status: NOT_STARTED
 `WIRED: NO`는 코드가 전혀 존재하지 않는다는 뜻이 아니라, 해당 work item의
 required user/runtime path 전체가 acceptance 수준으로 연결되지 않았다는 뜻이다.
 M12-002~004의 상세 MISSING은 해당 work item이 시작될 때 별도 baseline audit로
-확정한다. 현재 활성 work item은 없으며 다음 M12-002가 `NOT_STARTED / Ready: Yes`다.
+확정한다. 현재 활성 work item은 M12-002 하나이며 다음 M12-003은 `NOT_STARTED`다.
 
 ### M11 post-qualification release hardening
 

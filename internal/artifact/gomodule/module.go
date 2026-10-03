@@ -4,18 +4,18 @@
 package gomodule
 
 import (
-	"bufio"
 	"bytes"
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"net/url"
+	"io"
 	"path/filepath"
-	"regexp"
 	"sort"
 	"strings"
+
+	"golang.org/x/mod/module"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
@@ -26,11 +26,7 @@ const (
 	maxDownloadOutput = 4 << 20
 )
 
-var (
-	modulePathPattern    = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._~/-]*$`)
-	moduleVersionPattern = regexp.MustCompile(`^v[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$`)
-	goModuleSource       = mustSource("go-proxy")
-)
+var goModuleSource = mustSource("go-proxy")
 
 // Source is the one supported public Go module source identity.
 func Source() domain.SourceID { return goModuleSource }
@@ -50,6 +46,11 @@ func ResolverEnvironment() []string {
 		"GONOSUMDB=",
 		"GOVCS=*:off",
 		"GOTOOLCHAIN=local",
+		"GOENV=off",
+		"GOWORK=off",
+		// Writable directories are required to dispose of this operation-private
+		// cache. This never enables a caller's tool-exec or acquisition options.
+		"GOFLAGS=-modcacherw",
 	}
 }
 
@@ -66,7 +67,8 @@ func ValidateResolverEnvironment(environment []string) error {
 	seen := map[string]bool{}
 	for _, entry := range environment {
 		key, value, ok := strings.Cut(entry, "=")
-		if !ok || allowed[key] != value || seen[key] {
+		expected, known := allowed[key]
+		if !ok || !known || expected != value || seen[key] {
 			return errors.New("go module resolver environment is not canonical")
 		}
 		seen[key] = true
@@ -120,6 +122,8 @@ func BuildEnvironmentForCache(cache string) ([]string, error) {
 		"GONOSUMDB=*",
 		"GOVCS=*:off",
 		"GOTOOLCHAIN=local",
+		"GOENV=off",
+		"GOWORK=off",
 		"GOFLAGS=-mod=readonly",
 		"GOMODCACHE=" + cache,
 	}, nil
@@ -146,18 +150,20 @@ func ParseReference(value string) (domain.ArtifactReference, error) {
 		return domain.ArtifactReference{}, errors.New("go module reference requires module@version")
 	}
 	parts := strings.SplitN(value, "@", 2)
-	if !validModulePath(parts[0]) || !moduleVersionPattern.MatchString(parts[1]) {
+	if !validModuleVersion(parts[0], parts[1]) {
 		return domain.ArtifactReference{}, errors.New("go module reference is invalid")
 	}
 	return domain.NewArtifactReference(goModuleSource, parts[0]+"@"+parts[1])
 }
 
-func validModulePath(value string) bool {
-	return value != "" && !strings.Contains(value, "..") && !strings.ContainsAny(value, ":?#\\\\") && modulePathPattern.MatchString(value)
+func validModuleVersion(pathValue, version string) bool {
+	return module.Check(pathValue, version) == nil && module.CanonicalVersion(version) == version
 }
 
 // DownloadRecord is the bounded subset of `go mod download -json` needed for
-// exact identity and SumDB-backed integrity. Origin is deliberately rejected.
+// exact identity and checksum declarations. Origin is repository metadata, not
+// proof of the acquisition endpoint; the pending isolated source-provenance
+// boundary has not yet attested records carrying it.
 type DownloadRecord struct {
 	Path     string          `json:"Path"`
 	Version  string          `json:"Version"`
@@ -169,31 +175,29 @@ type DownloadRecord struct {
 	Origin   json.RawMessage `json:"Origin"`
 }
 
-// ParseDownloadJSON parses newline-delimited Go command records. A record
-// with VCS Origin or missing SumDB checksums is never promoted.
+// ParseDownloadJSON parses the bounded stream of Go command JSON objects. A record
+// with unattested origin metadata or missing checksums is not admitted here.
 func ParseDownloadJSON(body []byte) ([]DownloadRecord, error) {
 	if len(body) == 0 || len(body) > maxDownloadOutput {
 		return nil, errors.New("go module download output exceeds bound")
 	}
-	scanner := bufio.NewScanner(bytes.NewReader(body))
-	scanner.Buffer(make([]byte, 1024), maxDownloadOutput)
+	decoder := json.NewDecoder(bytes.NewReader(body))
 	var records []DownloadRecord
 	seen := map[string]bool{}
-	for scanner.Scan() {
-		line := scanner.Bytes()
-		if len(bytes.TrimSpace(line)) == 0 {
-			continue
-		}
+	for {
 		var record DownloadRecord
-		decoder := json.NewDecoder(bytes.NewReader(line))
-		if err := decoder.Decode(&record); err != nil || record.Path == "" || record.Version == "" || record.Zip == "" || record.GoMod == "" || record.Sum == "" || record.GoModSum == "" {
+		err := decoder.Decode(&record)
+		if err == io.EOF {
+			break
+		}
+		if err != nil || record.Path == "" || record.Version == "" || record.Zip == "" || record.GoMod == "" || record.Sum == "" || record.GoModSum == "" {
 			return nil, errors.New("go module download record is incomplete")
 		}
-		if !validModulePath(record.Path) || !moduleVersionPattern.MatchString(record.Version) || strings.Contains(record.Zip, "\\") || strings.Contains(record.GoMod, "\\") {
+		if !validModuleVersion(record.Path, record.Version) || strings.Contains(record.Zip, "\\") || strings.Contains(record.GoMod, "\\") {
 			return nil, errors.New("go module download record identity is invalid")
 		}
 		if len(record.Origin) != 0 && string(record.Origin) != "null" && string(record.Origin) != "{}" {
-			return nil, errors.New("direct VCS module fallback is forbidden")
+			return nil, errors.New("go module output source provenance is not attested")
 		}
 		if _, err := h1Digest(record.Sum); err != nil {
 			return nil, errors.New("go module SumDB checksum is invalid")
@@ -208,7 +212,7 @@ func ParseDownloadJSON(body []byte) ([]DownloadRecord, error) {
 		seen[key] = true
 		records = append(records, record)
 	}
-	if err := scanner.Err(); err != nil || len(records) == 0 {
+	if len(records) == 0 {
 		return nil, errors.New("go module download output is invalid")
 	}
 	sort.Slice(records, func(i, j int) bool {
@@ -220,8 +224,8 @@ func ParseDownloadJSON(body []byte) ([]DownloadRecord, error) {
 // BuildLockedGraph converts exact download records and `go mod graph` edges
 // into the generic Domain graph. Edges outside the primary closure are rejected
 // rather than silently dropping resolver output.
-func BuildLockedGraph(reference domain.ArtifactReference, records []DownloadRecord, graphOutput []byte) (domain.LockedDependencyGraph, error) {
-	if reference.Source() != goModuleSource || len(records) == 0 {
+func BuildLockedGraph(reference domain.ArtifactReference, records []DownloadRecord, graphOutput, goMod []byte) (domain.LockedDependencyGraph, error) {
+	if parsed, err := ParseReference(reference.Locator()); err != nil || parsed != reference || len(records) == 0 {
 		return domain.LockedDependencyGraph{}, errors.New("go module graph request is invalid")
 	}
 	byKey := make(map[string]DownloadRecord, len(records))
@@ -233,7 +237,7 @@ func BuildLockedGraph(reference domain.ArtifactReference, records []DownloadReco
 	if _, ok := byKey[primaryKey]; !ok {
 		return domain.LockedDependencyGraph{}, errors.New("requested Go module is absent from exact graph")
 	}
-	edges, err := parseGraphEdges(graphOutput, byKey)
+	edges, err := normalizeProjectGraph(graphOutput, records, goMod)
 	if err != nil {
 		return domain.LockedDependencyGraph{}, err
 	}
@@ -321,7 +325,7 @@ func BuildProjectSnapshot(installContext domain.InstallContext, records []Downlo
 		}
 		byKey[key] = record
 	}
-	if err := validateCompleteProjectGraph(graphOutput, byKey); err != nil {
+	if _, err := normalizeProjectGraph(graphOutput, records, goMod); err != nil {
 		return domain.ProjectDependencySnapshot{}, err
 	}
 	dependencies := make([]domain.ResolvedArtifact, 0, len(records))
@@ -340,7 +344,7 @@ func BuildProjectSnapshot(installContext domain.InstallContext, records []Downlo
 		}
 		dependencies = append(dependencies, artifact)
 	}
-	modHash, sumHash, graphHash := sha256.Sum256(goMod), sha256.Sum256(goSum), sha256.Sum256(graphOutput)
+	modHash, sumHash := sha256.Sum256(goMod), sha256.Sum256(goSum)
 	modDigest, err := domain.NewSHA256Digest(hex.EncodeToString(modHash[:]))
 	if err != nil {
 		return domain.ProjectDependencySnapshot{}, err
@@ -349,7 +353,7 @@ func BuildProjectSnapshot(installContext domain.InstallContext, records []Downlo
 	if err != nil {
 		return domain.ProjectDependencySnapshot{}, err
 	}
-	graphDigest, err := domain.NewSHA256Digest(hex.EncodeToString(graphHash[:]))
+	graphDigest, err := FreezeResolutionDigest(records, graphOutput, goMod, goSum)
 	if err != nil {
 		return domain.ProjectDependencySnapshot{}, err
 	}
@@ -362,89 +366,6 @@ func BuildProjectSnapshot(installContext domain.InstallContext, records []Downlo
 		return domain.ProjectDependencySnapshot{}, err
 	}
 	return domain.NewProjectDependencySnapshot(installContext, goModuleSource, []domain.ProjectControlDigest{modControl, sumControl}, dependencies, graphDigest)
-}
-
-func validateCompleteProjectGraph(body []byte, records map[string]DownloadRecord) error {
-	if len(body) == 0 || len(body) > maxDownloadOutput {
-		return errors.New("go project graph is invalid")
-	}
-	scanner := bufio.NewScanner(bytes.NewReader(body))
-	seen := map[string]bool{}
-	for scanner.Scan() {
-		parts := strings.Fields(scanner.Text())
-		if len(parts) != 2 {
-			return errors.New("go module graph edge is invalid")
-		}
-		from, err := parseModuleKey(parts[0])
-		if err != nil {
-			return err
-		}
-		to, err := parseModuleKey(parts[1])
-		if err != nil {
-			return err
-		}
-		if _, known := records[from]; known {
-			seen[from] = true
-		}
-		if _, known := records[to]; known {
-			seen[to] = true
-		}
-		if _, fromKnown := records[from]; fromKnown {
-			if _, toKnown := records[to]; !toKnown {
-				return errors.New("go module graph references unknown target")
-			}
-		}
-	}
-	if err := scanner.Err(); err != nil || len(seen) != len(records) {
-		return errors.New("go project graph is incomplete")
-	}
-	return nil
-}
-
-type graphEdge struct{ from, to string }
-
-func parseGraphEdges(body []byte, records map[string]DownloadRecord) ([]graphEdge, error) {
-	if len(body) > maxDownloadOutput {
-		return nil, errors.New("go module graph exceeds bound")
-	}
-	scanner := bufio.NewScanner(bytes.NewReader(body))
-	edges := []graphEdge{}
-	for scanner.Scan() {
-		parts := strings.Fields(scanner.Text())
-		if len(parts) != 2 {
-			return nil, errors.New("go module graph edge is invalid")
-		}
-		from, err := parseModuleKey(parts[0])
-		if err != nil {
-			return nil, err
-		}
-		to, err := parseModuleKey(parts[1])
-		if err != nil {
-			return nil, err
-		}
-		if _, ok := records[from]; !ok {
-			// `go mod graph` includes the local main module, which is not an
-			// acquired public module record. Its outgoing edge is outside this
-			// source graph; dependency records remain subject to exact checks.
-			continue
-		}
-		if _, ok := records[to]; !ok {
-			return nil, errors.New("go module graph references unknown target")
-		}
-		edges = append(edges, graphEdge{from: from, to: to})
-	}
-	if err := scanner.Err(); err != nil {
-		return nil, errors.New("go module graph cannot be read")
-	}
-	return edges, nil
-}
-
-func parseModuleKey(value string) (string, error) {
-	parts := strings.SplitN(value, "@", 2)
-	if len(parts) != 2 || !validModulePath(parts[0]) || !moduleVersionPattern.MatchString(parts[1]) {
-		return "", errors.New("go module graph module identity is invalid")
-	}
-	return recordKey(parts[0], parts[1]), nil
 }
 
 func recordKey(pathValue, version string) string { return pathValue + "@" + version }
@@ -476,15 +397,13 @@ func mustSource(value string) domain.SourceID {
 
 // ProxyURL returns the only canonical acquisition URL accepted for a module.
 func ProxyURL(modulePath, version, suffix string) (string, error) {
-	if !validModulePath(modulePath) || !moduleVersionPattern.MatchString(version) || (suffix != ".zip" && suffix != ".mod" && suffix != ".info") {
+	if !validModuleVersion(modulePath, version) || (suffix != ".zip" && suffix != ".mod" && suffix != ".info") {
 		return "", errors.New("go module proxy URL input is invalid")
 	}
-	encoded := []string{}
-	for _, segment := range strings.Split(modulePath, "/") {
-		if segment == "" {
-			return "", errors.New("go module path contains an empty segment")
-		}
-		encoded = append(encoded, url.PathEscape(strings.ToLower(segment)))
+	escapedPath, pathErr := module.EscapePath(modulePath)
+	escapedVersion, versionErr := module.EscapeVersion(version)
+	if pathErr != nil || versionErr != nil {
+		return "", errors.New("go module proxy URL escaping failed")
 	}
-	return proxyEndpoint + "/" + strings.Join(encoded, "/") + "/@v/" + version + suffix, nil
+	return proxyEndpoint + "/" + escapedPath + "/@v/" + escapedVersion + suffix, nil
 }
