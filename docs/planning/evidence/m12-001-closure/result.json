@@ -1,0 +1,432 @@
+{
+  "record_type": "M12-001 documentation-only acceptance closure",
+  "verified_on": "2026-10-03",
+  "contract": "docs/planning/16-m12-01-ecosystem-expansion-contract.md#qualification",
+  "baseline_audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES",
+    "ACCEPTANCE_CLOSED": "NO",
+    "MISSING": [
+      "Canonical completion and qualification evidence records"
+    ]
+  },
+  "final_status": {
+    "work_item": "M12-001",
+    "status": "COMPLETE",
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES",
+    "ACCEPTANCE_CLOSED": "YES",
+    "MISSING": []
+  },
+  "handoff": {
+    "milestone": "M12",
+    "milestone_status": "IN_PROGRESS",
+    "active_work_item": null,
+    "next_work_item": "M12-002",
+    "next_status": "NOT_STARTED",
+    "next_ready": true
+  },
+  "qualified_head": "8cb258ca882653511710b08bf8d09ffa1ef212bf",
+  "qualified_tree": "ca03cce1ad2e38b1c0188d726edc65e5d11e3ea8",
+  "pr": {
+    "number": 28,
+    "url": "https://github.com/rahoney/heliopause/pull/28",
+    "ordinary_checkout_sha": "e247da4479e9571b096c4670a3e3a779ce5b191d",
+    "head_to_checkout_compare_changed_files": 0,
+    "status_at_review": "OPEN",
+    "github_approval_reviews_at_review": 0
+  },
+  "qualification_scope": {
+    "host": "Linux amd64, pinned Linux/gVisor runtime and observer",
+    "python": "CPython 3.14",
+    "torch": {
+      "cpu": "2.14.0+cpu",
+      "cu126": "2.14.0+cu126",
+      "cu130": "2.14.0+cu130",
+      "cu132": "2.14.0+cu132"
+    },
+    "qualified_profiles": [
+      "cpu",
+      "cu126",
+      "cu130",
+      "cu132"
+    ],
+    "full_test": "internal/bootstrap/pytorch_linux_integration_test.go:TestLinuxPyTorchFullIntegration",
+    "workflow": ".github/workflows/heliopause-ci.yml",
+    "runtime_lock": "scripts/runtimes.lock.json",
+    "cpu_inspection_prerequisite": "EMPTY",
+    "cuda_inspection_prerequisite": "Explicit authenticated NumPy 2.4.6 pin from the unchanged workflow; excluded from original 29 promoted entries and target files/scripts",
+    "cuda_command_limitation": "triton.profiler.viewer NOT_ATTESTED retained in evidence, result and promotion references; functionality_attested=false and later_execution_enforced=false",
+    "release_support": "No RELEASE_SUPPORTED promotion in this closure; broader first-release CUDA support matrix is an M12-005 feature-freeze decision",
+    "limits": [
+      "These bounded installation/inspection results do not attest arbitrary CUDA Toolkit, GPU hardware or every installed command.",
+      "Live resolved inputs belong to the linked exact runs, not a claim of frozen replay."
+    ]
+  },
+  "runs": [
+    {
+      "profile": "cpu",
+      "id": 37120163411,
+      "url": "https://github.com/rahoney/heliopause/actions/runs/37120163411",
+      "event": "pull_request",
+      "head_sha": "8cb258ca882653511710b08bf8d09ffa1ef212bf",
+      "checkout_sha": "e247da4479e9571b096c4670a3e3a779ce5b191d",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "name": "Vulnerability",
+          "id": 111194559161,
+          "conclusion": "success"
+        },
+        {
+          "name": "Minimum Go",
+          "id": 111194559268,
+          "conclusion": "success"
+        },
+        {
+          "name": "Quick",
+          "id": 111194559300,
+          "conclusion": "success"
+        },
+        {
+          "name": "gVisor Observer Helper",
+          "id": 111194559303,
+          "conclusion": "success"
+        },
+        {
+          "name": "Representative Wheel Corpus",
+          "id": 111194559338,
+          "conclusion": "success"
+        },
+        {
+          "name": "macOS",
+          "id": 111194559339,
+          "conclusion": "success"
+        },
+        {
+          "name": "Docs",
+          "id": 111194559352,
+          "conclusion": "success"
+        },
+        {
+          "name": "Security",
+          "id": 111194559365,
+          "conclusion": "success"
+        },
+        {
+          "name": "gVisor Linux Integration",
+          "id": 111194559395,
+          "conclusion": "success"
+        },
+        {
+          "name": "Required",
+          "id": 111197567215,
+          "conclusion": "success"
+        }
+      ],
+      "actual_outcome_lines": [
+        "2026-10-03T11:55:37.9927398Z --- PASS: TestLinuxPyTorchFullIntegration (228.13s)",
+        "2026-10-03T11:55:46.3484501Z --- PASS: TestLinuxPyPISdistBuildIntegration (6.87s)",
+        "2026-10-03T11:55:50.0764101Z --- PASS: TestLinuxPyPIWheelDynamicIntegration (3.73s)",
+        "2026-10-03T11:55:57.5123186Z cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=190588"
+      ],
+      "actual_profile_lines": [],
+      "not_attested": []
+    },
+    {
+      "profile": "cu126",
+      "id": 37121509332,
+      "url": "https://github.com/rahoney/heliopause/actions/runs/37121509332",
+      "event": "workflow_dispatch",
+      "head_sha": "8cb258ca882653511710b08bf8d09ffa1ef212bf",
+      "checkout_sha": "8cb258ca882653511710b08bf8d09ffa1ef212bf",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "name": "Minimum Go",
+          "id": 111198484082,
+          "conclusion": "success"
+        },
+        {
+          "name": "Docs",
+          "id": 111198484195,
+          "conclusion": "success"
+        },
+        {
+          "name": "macOS",
+          "id": 111198484213,
+          "conclusion": "success"
+        },
+        {
+          "name": "gVisor Observer Helper",
+          "id": 111198484214,
+          "conclusion": "success"
+        },
+        {
+          "name": "Vulnerability",
+          "id": 111198484219,
+          "conclusion": "success"
+        },
+        {
+          "name": "Representative Wheel Corpus",
+          "id": 111198484224,
+          "conclusion": "success"
+        },
+        {
+          "name": "gVisor Linux Integration",
+          "id": 111198484259,
+          "conclusion": "success"
+        },
+        {
+          "name": "Security",
+          "id": 111198484281,
+          "conclusion": "success"
+        },
+        {
+          "name": "Quick",
+          "id": 111198492034,
+          "conclusion": "success"
+        },
+        {
+          "name": "Required",
+          "id": 111203235234,
+          "conclusion": "success"
+        }
+      ],
+      "actual_outcome_lines": [
+        "2026-10-03T12:18:17.8004245Z --- PASS: TestLinuxPyTorchFullIntegration (187.02s)",
+        "2026-10-03T12:32:13.5559503Z --- PASS: TestLinuxPyTorchFullIntegration (835.75s)",
+        "2026-10-03T12:32:20.1169251Z --- PASS: TestLinuxPyPISdistBuildIntegration (5.47s)",
+        "2026-10-03T12:32:23.1534967Z --- PASS: TestLinuxPyPIWheelDynamicIntegration (3.04s)",
+        "2026-10-03T12:32:29.6079978Z cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=269022"
+      ],
+      "actual_profile_lines": [
+        "2026-10-03T12:19:21.3032378Z observer_attribution sequence=1 profile=pypi-wheel-pytorch-cu126 counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/PYTHON:390"
+      ],
+      "not_attested": [
+        "2026-10-03T12:32:11.0621199Z     pytorch_linux_integration_test.go:118: bounded command evidence retained in result/promotion: {\"scope\":\"post-install-command-target-import\",\"module\":\"triton.profiler.viewer\",\"owner_sha256\":\"387dae4cb0089a7b6ba1a428ae0782b65c4c58f57d94617cb22ca8593d8ccbca\",\"unit\":\"DIRECT_IMPORT:324d826a5e0796a9815573025b8e581dafea10a9a4eeebdd618902f893e531c3\",\"disposition\":\"NOT_ATTESTED\",\"functionality_attested\":false,\"later_execution_enforced\":false}"
+      ]
+    },
+    {
+      "profile": "cu130",
+      "id": 37123862157,
+      "url": "https://github.com/rahoney/heliopause/actions/runs/37123862157",
+      "event": "workflow_dispatch",
+      "head_sha": "8cb258ca882653511710b08bf8d09ffa1ef212bf",
+      "checkout_sha": "8cb258ca882653511710b08bf8d09ffa1ef212bf",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "name": "Security",
+          "id": 111205142016,
+          "conclusion": "success"
+        },
+        {
+          "name": "gVisor Observer Helper",
+          "id": 111205142128,
+          "conclusion": "success"
+        },
+        {
+          "name": "Representative Wheel Corpus",
+          "id": 111205142142,
+          "conclusion": "success"
+        },
+        {
+          "name": "Minimum Go",
+          "id": 111205142155,
+          "conclusion": "success"
+        },
+        {
+          "name": "Vulnerability",
+          "id": 111205142169,
+          "conclusion": "success"
+        },
+        {
+          "name": "Quick",
+          "id": 111205142178,
+          "conclusion": "success"
+        },
+        {
+          "name": "gVisor Linux Integration",
+          "id": 111205142195,
+          "conclusion": "success"
+        },
+        {
+          "name": "macOS",
+          "id": 111205142210,
+          "conclusion": "success"
+        },
+        {
+          "name": "Docs",
+          "id": 111205142218,
+          "conclusion": "success"
+        },
+        {
+          "name": "Required",
+          "id": 111209905630,
+          "conclusion": "success"
+        }
+      ],
+      "actual_outcome_lines": [
+        "2026-10-03T13:02:16.5702570Z --- PASS: TestLinuxPyTorchFullIntegration (193.76s)",
+        "2026-10-03T13:14:22.0187486Z --- PASS: TestLinuxPyTorchFullIntegration (725.44s)",
+        "2026-10-03T13:14:28.7874371Z --- PASS: TestLinuxPyPISdistBuildIntegration (5.57s)",
+        "2026-10-03T13:14:31.8952213Z --- PASS: TestLinuxPyPIWheelDynamicIntegration (3.11s)",
+        "2026-10-03T13:14:38.1921631Z cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=262889"
+      ],
+      "actual_profile_lines": [
+        "2026-10-03T13:03:24.6244646Z observer_attribution sequence=1 profile=pypi-wheel-pytorch-cu130 counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/PYTHON:401"
+      ],
+      "not_attested": [
+        "2026-10-03T13:14:19.4382828Z     pytorch_linux_integration_test.go:118: bounded command evidence retained in result/promotion: {\"scope\":\"post-install-command-target-import\",\"module\":\"triton.profiler.viewer\",\"owner_sha256\":\"387dae4cb0089a7b6ba1a428ae0782b65c4c58f57d94617cb22ca8593d8ccbca\",\"unit\":\"DIRECT_IMPORT:324d826a5e0796a9815573025b8e581dafea10a9a4eeebdd618902f893e531c3\",\"disposition\":\"NOT_ATTESTED\",\"functionality_attested\":false,\"later_execution_enforced\":false}"
+      ]
+    },
+    {
+      "profile": "cu132",
+      "id": 37125786935,
+      "url": "https://github.com/rahoney/heliopause/actions/runs/37125786935",
+      "event": "workflow_dispatch",
+      "head_sha": "8cb258ca882653511710b08bf8d09ffa1ef212bf",
+      "checkout_sha": "8cb258ca882653511710b08bf8d09ffa1ef212bf",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "name": "Minimum Go",
+          "id": 111210687728,
+          "conclusion": "success"
+        },
+        {
+          "name": "macOS",
+          "id": 111210687810,
+          "conclusion": "success"
+        },
+        {
+          "name": "Vulnerability",
+          "id": 111210687858,
+          "conclusion": "success"
+        },
+        {
+          "name": "Quick",
+          "id": 111210687860,
+          "conclusion": "success"
+        },
+        {
+          "name": "Security",
+          "id": 111210687865,
+          "conclusion": "success"
+        },
+        {
+          "name": "gVisor Linux Integration",
+          "id": 111210687886,
+          "conclusion": "success"
+        },
+        {
+          "name": "Docs",
+          "id": 111210687899,
+          "conclusion": "success"
+        },
+        {
+          "name": "gVisor Observer Helper",
+          "id": 111210687903,
+          "conclusion": "success"
+        },
+        {
+          "name": "Representative Wheel Corpus",
+          "id": 111210688094,
+          "conclusion": "success"
+        },
+        {
+          "name": "Required",
+          "id": 111217518421,
+          "conclusion": "success"
+        }
+      ],
+      "actual_outcome_lines": [
+        "2026-10-03T13:44:34.7956440Z --- PASS: TestLinuxPyTorchFullIntegration (280.75s)",
+        "2026-10-03T13:59:52.2479934Z --- PASS: TestLinuxPyTorchFullIntegration (917.44s)",
+        "2026-10-03T14:00:03.2059299Z --- PASS: TestLinuxPyPISdistBuildIntegration (9.22s)",
+        "2026-10-03T14:00:07.9276256Z --- PASS: TestLinuxPyPIWheelDynamicIntegration (4.72s)",
+        "2026-10-03T14:00:16.8056987Z cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=263812"
+      ],
+      "actual_profile_lines": [
+        "2026-10-03T13:46:19.6930393Z observer_attribution sequence=1 profile=pypi-wheel-pytorch-cu132 counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/PYTHON:541"
+      ],
+      "not_attested": [
+        "2026-10-03T13:59:50.4413153Z     pytorch_linux_integration_test.go:118: bounded command evidence retained in result/promotion: {\"scope\":\"post-install-command-target-import\",\"module\":\"triton.profiler.viewer\",\"owner_sha256\":\"387dae4cb0089a7b6ba1a428ae0782b65c4c58f57d94617cb22ca8593d8ccbca\",\"unit\":\"DIRECT_IMPORT:324d826a5e0796a9815573025b8e581dafea10a9a4eeebdd618902f893e531c3\",\"disposition\":\"NOT_ATTESTED\",\"functionality_attested\":false,\"later_execution_enforced\":false}"
+      ]
+    }
+  ],
+  "acceptance_mapping": [
+    {
+      "requirement": "CPU install and at least one pinned CUDA resolution/install/full E2E",
+      "evidence": "All four linked actual gVisor job results; TestLinuxPyTorchFullIntegration target and staged-source assertions"
+    },
+    {
+      "requirement": "Canonical source ownership, source-confusion rejection, arbitrary URL rejection, graph identity freeze",
+      "evidence": [
+        "ordinary Quick/Required",
+        "internal/artifact/pypi/source_profile_test.go",
+        "internal/sandbox/pypi_resolver_test.go",
+        "internal/sandbox/pytorch_static_replay_test.go",
+        "Full integration source identity in staging manifest"
+      ]
+    },
+    {
+      "requirement": "Tampered wheel/digest and incomplete observation fail closed; default PyPI resource bounds retained",
+      "evidence": [
+        "ordinary Quick/Security/Required",
+        "internal/artifact/pypi/resource_role_test.go",
+        "internal/artifact/pypi/resource_policy_test.go",
+        "internal/sandbox/collector_test.go",
+        "internal/sandbox/backend_test.go"
+      ]
+    },
+    {
+      "requirement": "Existing PyPI regressions and direct consumers",
+      "evidence": [
+        "ordinary Quick and gVisor Linux Integration",
+        "All four runs: TestLinuxPyPISdistBuildIntegration and TestLinuxPyPIWheelDynamicIntegration actual PASS",
+        "All four runs: promotion regressions and successful helper cleanup"
+      ]
+    },
+    {
+      "requirement": "CI helper race native OS qualification",
+      "evidence": "All four macOS jobs success; prior Linux/Bash 3.2 checks alone were not native macOS qualification"
+    }
+  ],
+  "closure_change_scope": {
+    "paths": [
+      "README.md",
+      "PROJECT-DECISIONS.md",
+      "docs/planning/02-current-work-queue.md",
+      "docs/planning/evidence/m12-001-closure/result.json"
+    ],
+    "baseline": "8cb258ca882653511710b08bf8d09ffa1ef212bf",
+    "unchanged_inventory_format": "git ls-tree -r <tree>; remove only the exact closure paths; retain mode/type/blob/path and LF bytes in Git order",
+    "unchanged_tracked_entries": 470,
+    "unchanged_inventory_sha256": "5885091e8b770e6ea454b214527622eb1e6cdfbaca41d8de84277738d6928c25",
+    "reuse_boundary": "All other tracked blobs and modes must equal qualified_head, including code, workflows, dependencies, runtime, policy, fixtures and canonical contracts. Reuse exact existing full qualification only within that unchanged input scope.",
+    "manual_cuda_full_rerun": "Not required for this documentation-only delta",
+    "new_head_ci": "Existing green is not a result for the closure commit; ordinary Required (including CPU full) is pending after push"
+  },
+  "review": {
+    "kind": "Separate agent-context read-only closure review in the same task",
+    "scope": "Contract acceptance vs actual run/job logs and canonical COMPLETE/handoff state",
+    "findings_requiring_implementation": [],
+    "limits": "Not a GitHub approval review or external independent security audit"
+  },
+  "pending_delivery": [
+    "Push the documentation-only closure commit when authorized",
+    "ordinary Required all-green on that new head",
+    "Reviewer merges PR #28; ordinary merge commit preserves referenced checkpoint SHAs",
+    "Automatic main CI after merge"
+  ],
+  "actions_in_this_task": {
+    "product_changes": false,
+    "push": false,
+    "remote_ci_trigger": false,
+    "merge": false
+  }
+}

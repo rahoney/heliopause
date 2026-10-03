@@ -9,9 +9,9 @@
 ```text
 Current milestone: M12 — Ecosystem Expansion Before Public Release
 Milestone status: IN_PROGRESS
-Active work item: M12-001 — Official PyTorch source support
+Active work item: None (M12-001 COMPLETE)
 Next work item: M12-002 — public Go Modules
-Next work item status: NOT_STARTED (blocked until M12-001 acceptance closes)
+Next work item status: NOT_STARTED (M12-001 acceptance closed)
 Ready: Yes
 ```
 
@@ -2132,15 +2132,15 @@ M11-FIX-03: COMPLETE
 M11-FIX-04: COMPLETE
 M11-FIX-05: COMPLETE
 M12: IN_PROGRESS
-M12-001: IN_PROGRESS
+M12-001: COMPLETE
 M12-002: NOT_STARTED
 M12-003: NOT_STARTED
 M12-004: NOT_STARTED
 M12-005: NOT_STARTED
 M12-02: RESERVED
 M13: BLOCKED
-Active work item: M12-001 — Ready: Yes
-Next work item: M12-002 — Ready: No (M12-001 acceptance prerequisite)
+Active work item: None (M12-001 COMPLETE)
+Next work item: M12-002 — NOT_STARTED / Ready: Yes
 ```
 
 M9-006까지 qualification을 완료했다. M10-001은 release identity·manifest 및
@@ -2172,12 +2172,57 @@ production activation과 최종 배포를 수행한다.
 
 | Order | ID | Scope | Status |
 | --- | --- | --- | --- |
-| 1 | M12-001 | Official PyTorch source support | IN_PROGRESS |
+| 1 | M12-001 | Official PyTorch source support | COMPLETE |
 | 2 | M12-002 | public Go Modules | NOT_STARTED |
 | 3 | M12-003 | Rust/Cargo and public crates.io | NOT_STARTED |
 | 4 | M12-004 | Terraform Provider installation | NOT_STARTED |
 | 5 | M12-005 | cross-ecosystem qualification and feature freeze | NOT_STARTED |
 | 6 | M12-02 | final red-team/fix gate | RESERVED |
+
+### M12-001 acceptance 종료 (2026-10-03)
+
+`IMPLEMENTED=YES`, `WIRED=YES`, `QUALIFIED=YES`, `ACCEPTANCE_CLOSED=YES`로
+닫는다. `MISSING: None`이며 추가 구현은 없다. 최종 qualification 후보
+`8cb258ca882653511710b08bf8d09ffa1ef212bf`에서 ordinary Required와
+CPU·cu126·cu130·cu132 full E2E가 모두 통과했다. 네 run 각각의 native macOS,
+sdist·wheel·promotion 직접 소비자와 helper cleanup 성공도 확인했다.
+Run/job, 실제 checkout SHA, 실행 결과와 acceptance 대응은
+[M12-001 closure evidence](./evidence/m12-001-closure/result.json)가 소유한다.
+별도 agent 문맥의 읽기 전용 종료 검토에서도 acceptance 누락은 발견되지 않았다.
+이는 GitHub 승인 리뷰나 외부 독립 보안 감사가 아니다.
+
+종료 변경은 README·PROJECT-DECISIONS·이 Queue·closure evidence뿐이다.
+나머지 모든 tracked blob/mode가 qualification 후보와 동일하므로 기존 full
+qualification을 그 입력 범위에서 재사용한다. 새 closure head의 ordinary
+Required CI와 PR merge 및 merge 후 main CI는 아직 수행하지 않은 전달 단계다.
+기존 green을 새 head의 CI 결과로 표기하지 않는다. Ordinary Required 자체에
+CPU full E2E가 포함되며 별도 수동 CUDA full 재실행은 이 문서 변경에 필요하지 않다.
+
+M12 전체는 `IN_PROGRESS`를 유지한다. 다음 M12-002 public Go Modules는
+`NOT_STARTED / Ready: Yes`이며 아직 구현 작업을 시작하지 않았다.
+
+### M12-001 종료 전 이력 (당시 상태, 현재 판정 아님)
+
+아래 날짜별 NO·미검증·IN_PROGRESS 기록은 당시 검증 범위다. 현재 판정은 위의
+종료 기록을 따른다. 과거 실패·checkpoint·원본 증거를 소급 변경하지 않는다.
+
+M12-001 CI helper 종료 경쟁 로컬 수리 검증 (2026-10-03, baseline `87a9e2e`):
+기존 공용 `scripts/ci-integration-cleanup.sh`의 lifecycle을 수정했다.
+TERM 실패 뒤 동일 owner/PID/job-table/parent wait를 한 번 재확인하며 wait0만
+CONFIRMED_STOPPED, 실제 nonzero wait는 그 status/UNKNOWN, live/query 불확실성은
+최초 TERM 실패로 보존한다. Fixture의 ready/release·bounded polling·parent wait와
+명시적 assertion으로 시간 가정 및 Bash3.2 false-PASS를 제거했다.
+원본 cleanup은 두 Bash에서 두 경쟁 사례 FAIL, 수정 뒤 Bash5.2.21/3.2.57의
+`-c`/파일 실행 각각 전체 fault matrix 및 lifecycle 30회(총960 child cases) PASS다.
+실제 authenticated helper 시작·client 교체·복원/npm 3회, Linux trusted executor와
+두 gVisor 직접 소비자 PASS; 원래 네 설치 파일 identity와 자원 부재를 확인했다.
+최종 quick/security/docs와 Darwin amd64 TEST compile PASS다. 제품·Policy·observer
+입력은 변경하지 않았으며 CPU/CUDA full E2E를 새 후보에서 재실행한 것으로 쓰지 않는다.
+`IMPLEMENTED=YES`, `WIRED=YES`; native macOS 검증 전이므로
+`QUALIFIED=NO`, `ACCEPTANCE_CLOSED=NO`다. 이 수리의 `MISSING`은 새 후보 native
+macOS CI이며 Linux Bash3.2 성공으로 대체하지 않는다. M12-001은 IN_PROGRESS다.
+원본·입력 hash·실행 결과는 로컬 reviews의 `m12-helper-race-87a9e2e/result.json`에
+보존한다. NO PUSH / NO REMOTE CI / NO MERGE; 새 commit은 만들지 않았다.
 
 M12-001 sdist observer 회귀 로컬 검증 완료 (2026-10-03): 같은 fixture bytes의
 `1401274` PASS / `1704eb1` FAIL을 직접 대조했다. 최초 차이는 kernel-observed
@@ -2300,23 +2345,9 @@ runtime bundle verifier, 전체 Go test·vet, platform·quick·security가
 `MISSING`은 인증된 production client를 통한 동적 통합과 대표 CUDA full E2E
 qualification이다.
 
-Deferred planning note: M12-001은 기존 representative pinned CUDA qualification
-기준으로 닫고, broader first-release PyTorch/CUDA release support matrix 확정은
-M12-005 feature freeze에서 수행한다. canonical lock 등록만으로 release support를
-주장하지 않는다. 상세 계약은
-`16-m12-01-ecosystem-expansion-contract.md`를 따른다.
+#### 이전 CPU checkpoint baseline audit (역사적 기록)
 
-### M13 Production Release & Operations queue (M12 완료 후)
-
-| Order | ID | Scope | Status |
-| --- | --- | --- | --- |
-| 1 | M13-001 | protected main/develop/tag/release environment/immutable release activation | BLOCKED |
-| 2 | M13-002 | `develop → main` 실제 protected PR qualification | NOT_STARTED |
-| 3 | M13-003 | canonical release build·manifest·attestation·OS package assets | NOT_STARTED |
-| 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | NOT_STARTED |
-| 5 | M13-005 | exact publication·clean Host bootstrap·doctor·cross-ecosystem smoke·quarantine | NOT_STARTED |
-
-### M12 baseline audit status
+아래는 당시 판정이며 최종 qualification 후보의 상태가 아니다.
 
 ```text
 M12-001 — PyTorch
@@ -2354,6 +2385,40 @@ Explicit limitations:
 MISSING:
 - 현재 작업 트리 변경의 독립 재감사 및 최소 한 pinned CUDA full E2E PASS
 - CUDA qualification evidence에 따른 M12-001 acceptance closure
+```
+
+### M12-005에 남는 release support 결정
+
+Deferred planning note: M12-001은 기존 representative pinned CUDA qualification
+기준으로 닫고, broader first-release PyTorch/CUDA release support matrix 확정은
+M12-005 feature freeze에서 수행한다. canonical lock 등록만으로 release support를
+주장하지 않는다. 상세 계약은
+`16-m12-01-ecosystem-expansion-contract.md`를 따른다.
+
+### M13 Production Release & Operations queue (M12 완료 후)
+
+| Order | ID | Scope | Status |
+| --- | --- | --- | --- |
+| 1 | M13-001 | protected main/develop/tag/release environment/immutable release activation | BLOCKED |
+| 2 | M13-002 | `develop → main` 실제 protected PR qualification | NOT_STARTED |
+| 3 | M13-003 | canonical release build·manifest·attestation·OS package assets | NOT_STARTED |
+| 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | NOT_STARTED |
+| 5 | M13-005 | exact publication·clean Host bootstrap·doctor·cross-ecosystem smoke·quarantine | NOT_STARTED |
+
+### M12 baseline audit status
+
+```text
+M12-001 — PyTorch
+IMPLEMENTED: YES
+WIRED: YES
+QUALIFIED: YES (CPU, cu126, cu130, cu132)
+ACCEPTANCE_CLOSED: YES
+Status: COMPLETE
+Evidence: evidence/m12-001-closure/result.json
+Qualified source: 8cb258ca882653511710b08bf8d09ffa1ef212bf
+MISSING: None (M12-001 technical acceptance)
+Delivery pending: closure-head Required CI, PR merge, main CI
+Release support: broader first-release CUDA matrix remains an M12-005 decision
 
 M12-002 — Go
 IMPLEMENTED: YES
@@ -2361,6 +2426,7 @@ WIRED: NO
 QUALIFIED: NO
 ACCEPTANCE_CLOSED: NO
 Status: NOT_STARTED
+Ready: Yes (M12-001 acceptance closed)
 
 M12-003 — Cargo
 IMPLEMENTED: YES
@@ -2380,7 +2446,7 @@ Status: NOT_STARTED
 `WIRED: NO`는 코드가 전혀 존재하지 않는다는 뜻이 아니라, 해당 work item의
 required user/runtime path 전체가 acceptance 수준으로 연결되지 않았다는 뜻이다.
 M12-002~004의 상세 MISSING은 해당 work item이 시작될 때 별도 baseline audit로
-확정하며, 현재는 M12-001 하나만 `IN_PROGRESS`다.
+확정한다. 현재 활성 work item은 없으며 다음 M12-002가 `NOT_STARTED / Ready: Yes`다.
 
 ### M11 post-qualification release hardening
 
