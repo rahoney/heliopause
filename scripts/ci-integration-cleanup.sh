@@ -24,6 +24,9 @@ haa_helper_unknown() {
 
 haa_observe_policy_helper() {
   local listing running stopped status line found=0 active=0 seen=' '
+  # Distinguish a parent wait result from an observation failure. This is not
+  # termination authority: only the existing owned wait=0 path confirms stop.
+  haa_observed_wait_status=''
   if [[ ${haa_initialized-0} != 1 || ${haa_owner-} != "$$" || $BASH_SUBSHELL != 0 ]]; then
     haa_helper_unknown 1 'uninitialized or non-owning shell'; return $?
   fi
@@ -75,11 +78,13 @@ haa_observe_policy_helper() {
   # Absence from successful active snapshots is insufficient. Reap in this parent,
   # not in the query subshell. A failed/signalled sudo wrapper is uncertain.
   if wait "$haa_recorded_pid"; then
+    haa_observed_wait_status=0
     haa_reaped=1; haa_helper_state=CONFIRMED_STOPPED
     printf 'helper reaped: pid=%s wait=0\n' "$haa_recorded_pid" >&2
     return 0
   else
-    status=$?; haa_helper_unknown "$status" 'owned foreground wrapper did not complete cleanly'; return $?
+    status=$?; haa_observed_wait_status=$status
+    haa_helper_unknown "$status" 'owned foreground wrapper did not complete cleanly'; return $?
   fi
 }
 
@@ -134,7 +139,19 @@ haa_stop_policy_helper() {
   if haa_observe_policy_helper; then :; else return $?; fi
   if [[ "$haa_helper_state" == NOT_STARTED || "$haa_helper_state" == CONFIRMED_STOPPED ]]; then return 0; fi
   if sudo kill -TERM "$haa_recorded_pid"; then :; else
-    status=$?; haa_helper_unknown "$status" 'termination request failed'; return $?
+    status=$?
+    # The owned child may have exited after the live snapshot. Reconcile once
+    # through the same ownership/job-table/parent-wait checks, without another
+    # signal or a larger wait budget. A missing PID alone cannot authorize stop.
+    if haa_observe_policy_helper; then
+      if [[ "$haa_helper_state" == CONFIRMED_STOPPED ]]; then return 0; fi
+    elif [[ -n "$haa_observed_wait_status" ]]; then
+      return "$haa_helper_error"
+    fi
+    # Live or uncertain: retain the original TERM failure, even if the second
+    # observation also failed. That diagnostic remains visible above.
+    haa_helper_error=$status
+    haa_helper_unknown "$status" 'termination request failed; owned termination unconfirmed'; return $?
   fi
   for ((attempt=0; attempt<50; attempt++)); do
     if haa_observe_policy_helper; then :; else return $?; fi

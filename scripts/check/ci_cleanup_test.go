@@ -88,7 +88,11 @@ sleep() { return "${SLEEP_STATUS-0}"; }
 sudo() {
  if [[ $1 == kill ]]; then
    echo "term:$3" >> "$CASE_DIR/actions"
-   if [[ ${STOP-0} != 0 ]]; then return "$STOP"; fi
+   if [[ ${STOP-0} != 0 ]]; then
+     if [[ ${EXIT_BEFORE_TERM-0} == 1 ]]; then printf '0' > "$CASE_DIR/live"; fi
+     if [[ ${QUERY_AFTER_FAILURE-} != '' ]]; then QUERY=$QUERY_AFTER_FAILURE; fi
+     return "$STOP"
+   fi
    if [[ ${HANG-0} == 0 ]]; then printf '0' > "$CASE_DIR/live"; fi
    return 0
  fi
@@ -169,7 +173,13 @@ func TestCIHelperStateFaults(t *testing.T) {
 		{"zero-pid", "haa_recorded_pid=0; policy_helper_pid=0", nil, 1, "", "UNKNOWN", "unowned lifecycle"},
 		{"unowned", "haa_registered=0", nil, 1, "", "UNKNOWN", "unowned lifecycle"},
 		{"wrong-owner", "haa_owner=0", nil, 1, "", "UNKNOWN", "non-owning shell"},
+		{"signal-permission-failure", "", []string{"STOP=1"}, 1, "term:42\n", "UNKNOWN", "termination request failed"},
 		{"signal-failure", "", []string{"STOP=23"}, 23, "term:42\n", "UNKNOWN", "termination request failed"},
+		{"signal-failure-query-uncertain", "", []string{"STOP=23", "QUERY_AFTER_FAILURE=error"}, 23, "term:42\n", "UNKNOWN", "termination request failed"},
+		{"signal-failure-malformed-snapshot", "", []string{"STOP=23", "QUERY_AFTER_FAILURE=malformed"}, 23, "term:42\n", "UNKNOWN", "termination request failed"},
+		{"signal-race-clean-wait", "", []string{"STOP=1", "EXIT_BEFORE_TERM=1"}, 0, "term:42\nwait:42\ninstall:/production/helox\n", "CONFIRMED_STOPPED", "RESTORED"},
+		{"signal-race-failed-wait", "", []string{"STOP=1", "EXIT_BEFORE_TERM=1", "WAIT_STATUS=19"}, 19, "term:42\nwait:42\n", "UNKNOWN", "did not complete cleanly"},
+		{"signal-race-not-child", "", []string{"STOP=1", "EXIT_BEFORE_TERM=1", "WAIT_STATUS=127"}, 127, "term:42\nwait:42\n", "UNKNOWN", "did not complete cleanly"},
 		{"suspended-or-timeout", "", []string{"HANG=1"}, 1, "term:42\n", "UNKNOWN", "bounded wait"},
 		{"sleep-failure", "", []string{"HANG=1", "SLEEP_STATUS=7"}, 7, "term:42\n", "UNKNOWN", "confirmation delay failed"},
 		{"wrapper-signalled", "printf 0 > \"$CASE_DIR/live\"", []string{"WAIT_STATUS=143"}, 143, "wait:42\n", "UNKNOWN", "did not complete cleanly"},
@@ -202,6 +212,8 @@ func TestCIHelperEarlyAndRepeatedCleanup(t *testing.T) {
 		{"never-started", `source "$SCRIPT"; haa_ci_initialize; exit 0`, 0, "", "NOT_STARTED"},
 		{"conflicting-initialization", `source "$SCRIPT"; policy_helper_pid=42; haa_ci_initialize`, 1, "", "UNKNOWN"},
 		{"missing-launch", `source "$SCRIPT"; haa_ci_initialize; haa_record_policy_helper_launch`, 1, "", "UNKNOWN"},
+		{"stale-launch", cleanupStubs + `haa_helper_state=CONFIRMED_STOPPED; haa_reaped=1
+haa_record_policy_helper_launch 42`, 1, "", "stale launch handle"},
 		{"subshell-owner", cleanupStubs + `if (haa_stop_policy_helper); then exit 99; fi
 exit 37`, 37, "term:42\nwait:42\ninstall:/production/helox\n", "original=37"},
 		{"before-initialization-zero", `source "$SCRIPT"; exit 0`, 1, "", "UNKNOWN"},
@@ -250,8 +262,10 @@ func TestCIClientReplacementStopsBeforeInstall(t *testing.T) {
 }
 
 func TestCIHelperRealChildLifecycle(t *testing.T) {
-	// Real jobs, $!, wait and kill; sudo is replaced with an exact recorded-child
-	// signal, and install only records an action. No product helper or privilege.
+	// The child cannot terminate before registration/release. Polls have bounds
+	// and observe explicit state; elapsed time never stands in for child exit.
+	// Assertions fail explicitly; Bash 3.2 errexit does not cover standalone [[.
+	// Real jobs/$!/wait/kill are used; only privilege and install are replaced.
 	common := `source "$SCRIPT"
 haa_ci_initialize
 trap - EXIT
@@ -265,38 +279,94 @@ cleanup_fixture() {
  fi
 }
 trap cleanup_fixture EXIT
+await_file() {
+ local attempt
+ for ((attempt=0; attempt<400; attempt++)); do
+   if [[ -f $1 ]]; then return 0; fi
+   sleep 0.01
+ done
+ echo 'fixture handshake timed out' >&2
+ return 98
+}
+release_and_wait() {
+ : > "$CASE_DIR/release"
+ if wait "$owned"; then terminal=0; else terminal=$?; fi
+ [[ $terminal == "$TERMINAL_STATUS" ]] || return 98
+}
 sudo() {
  if [[ $1 == kill ]]; then
-  [[ $3 == "$owned" ]] || return 99
+  [[ $3 == "$owned" && $3 == "$haa_recorded_pid" && $haa_helper_state == OWNED_LIVE ]] || return 99
   echo term >> "$CASE_DIR/actions"
+  # Place the real terminal transition AFTER the production observation and
+  # BEFORE the real signal. The parent wait is also an explicit exit barrier.
+  if [[ ${RACE_EXIT-0} == 1 ]]; then release_and_wait || return 98; fi
+  if [[ ${DENY_TERM-0} != 0 ]]; then return "$DENY_TERM"; fi
   kill -TERM "$3"
  else echo install >> "$CASE_DIR/actions"; fi
 }
+cat > "$CASE_DIR/child.sh" <<'CHILD'
+trap 'exit 0' TERM
+: > "$CASE_DIR/ready"
+for ((attempt=0; attempt<400; attempt++)); do
+ if [[ -f "$CASE_DIR/release" ]]; then exit "$TERMINAL_STATUS"; fi
+ sleep 0.01
+done
+exit 98
+CHILD
 `
+	const cleanStop = `haa_stop_policy_helper
+[[ $haa_helper_state == CONFIRMED_STOPPED && $haa_reaped == 1 && $haa_helper_error == 0 ]] || exit 96
+haa_stop_policy_helper`
+	const failedStop = `if haa_stop_policy_helper; then exit 99; else stopped=$?; fi
+[[ $stopped == "$TERMINAL_STATUS" && $haa_helper_state == UNKNOWN && $haa_helper_error == "$TERMINAL_STATUS" ]] || exit 96
+if haa_prepare_policy_helper_launch; then exit 98; fi
+if haa_install_ci_client /test-client; then exit 97; fi`
 	cases := []struct {
 		name, launch, exercise string
+		env                    []string
 		actions                string
 	}{
-		{"normal-early-exit", `"$BASH" -c 'exit 0' &`, `sleep 0.1; haa_observe_policy_helper; [[ $haa_helper_state == CONFIRMED_STOPPED ]]; haa_stop_policy_helper`, ""},
-		{"graceful-stop", `"$BASH" -c 'trap "exit 0" TERM; echo ready > "$CASE_DIR/ready"; for i in {1..30}; do sleep 0.1; done' &`, `while [[ ! -f "$CASE_DIR/ready" ]]; do sleep 0.01; done; haa_stop_policy_helper; [[ $haa_helper_state == CONFIRMED_STOPPED ]]`, "term\n"},
-		{"suspended-is-live", `"$BASH" -c 'trap "exit 0" TERM; echo ready > "$CASE_DIR/ready"; for i in {1..30}; do sleep 0.1; done' &`, `while [[ ! -f "$CASE_DIR/ready" ]]; do sleep 0.01; done; kill -STOP "$owned"; sleep 0.05; haa_observe_policy_helper; [[ $haa_helper_state == OWNED_LIVE ]]; kill -CONT "$owned"; haa_stop_policy_helper; [[ $haa_helper_state == CONFIRMED_STOPPED ]]`, "term\n"},
+		{"normal-early-exit", "", "release_and_wait\n" + cleanStop, nil, ""},
+		{"graceful-stop", "", cleanStop, nil, "term\n"},
+		{"suspended-is-live", "", `kill -STOP "$owned"
+for ((attempt=0; attempt<400; attempt++)); do
+ stopped=$(ps -o stat= -p "$owned")
+ if [[ $stopped == *T* ]]; then break; fi
+ sleep 0.01
+done
+[[ $stopped == *T* ]] || exit 96
+haa_observe_policy_helper
+[[ $haa_helper_state == OWNED_LIVE ]] || exit 96
+kill -CONT "$owned"
+` + cleanStop, nil, "term\n"},
 		{"foreground-wrapper", `"$BASH" -c '
- "$BASH" -c '\''trap "exit 0" TERM; echo ready > "$CASE_DIR/ready"; for i in {1..30}; do sleep 0.1; done'\'' &
+ "$BASH" "$CASE_DIR/child.sh" &
  child=$!
  trap '\''kill -TERM "$child"; if wait "$child"; then echo reaped > "$CASE_DIR/reaped"; exit 0; else exit 1; fi'\'' TERM
+ : > "$CASE_DIR/wrapper-ready"
  wait "$child"
-' &`, `while [[ ! -f "$CASE_DIR/ready" ]]; do sleep 0.01; done; haa_stop_policy_helper; [[ $haa_helper_state == CONFIRMED_STOPPED && -f "$CASE_DIR/reaped" ]]`, "term\n"},
-		{"failed-wrapper", `"$BASH" -c 'exit 19' &`, `sleep 0.1; if haa_stop_policy_helper; then exit 99; fi; [[ $haa_helper_state == UNKNOWN && $haa_helper_error == 19 ]]; if haa_prepare_policy_helper_launch; then exit 98; fi`, ""},
+' &`, `await_file "$CASE_DIR/wrapper-ready"
+` + cleanStop + `
+[[ -f "$CASE_DIR/reaped" ]] || exit 96`, nil, "term\n"},
+		{"failed-wrapper-terminal-before-stop", "", "release_and_wait\n" + failedStop, []string{"TERMINAL_STATUS=19"}, ""},
+		{"clean-exit-between-observe-and-term", "", cleanStop, []string{"RACE_EXIT=1"}, "term\n"},
+		{"failed-exit-between-observe-and-term", "", failedStop, []string{"RACE_EXIT=1", "TERMINAL_STATUS=19"}, "term\n"},
+		{"term-denied-live-child", "", `if haa_stop_policy_helper; then exit 99; else stopped=$?; fi
+[[ $stopped == 23 && $haa_helper_state == UNKNOWN && $haa_helper_error == 23 ]] || exit 96
+if haa_install_ci_client /test-client; then exit 98; fi
+# The denied signal did not terminate the owned child. Cleanup it through the
+# explicit fixture protocol without changing the production UNKNOWN state.
+release_and_wait`, []string{"DENY_TERM=23"}, "term\n"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			body := common + c.launch + "\nowned=$!\nprintf 'owned pid=%s shell=%s\\n' \"$owned\" \"$$\" >&2\nhaa_record_policy_helper_launch \"$!\"\n" + c.exercise + "\nowned=''\n"
-			// A very early failed wrapper may already fail registration; delay its exit
-			// so registration exercises OWNED_LIVE before the failed wait.
-			if c.name == "failed-wrapper" {
-				body = strings.Replace(body, "\"$BASH\" -c 'exit 19' &", "\"$BASH\" -c 'sleep 0.05; exit 19' &", 1)
+			launch := c.launch
+			if launch == "" {
+				launch = `"$BASH" "$CASE_DIR/child.sh" &`
 			}
-			code, out, actions := runCleanup(t, body)
+			body := common + launch + "\nowned=$!\nprintf 'owned pid=%s shell=%s\\n' \"$owned\" \"$$\" >&2\nhaa_record_policy_helper_launch \"$owned\"\nawait_file \"$CASE_DIR/ready\"\n" + c.exercise + "\nowned=''\n"
+			env := append([]string{"TERMINAL_STATUS=0"}, c.env...)
+			code, out, actions := runCleanup(t, body, env...)
 			if code != 0 || actions != c.actions {
 				t.Fatalf("exit %d actions %q want %q\n%s", code, actions, c.actions, out)
 			}
