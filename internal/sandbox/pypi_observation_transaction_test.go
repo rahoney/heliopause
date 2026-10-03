@@ -97,6 +97,42 @@ func TestObservationTransactionReserveAndCumulativeLimits(t *testing.T) {
 	}
 }
 
+func TestObservationAccountingFailureRetainsRejectingOperands(t *testing.T) {
+	now := time.Now()
+	for _, test := range []struct {
+		name  string
+		usage uint64
+		gap   time.Duration
+		want  string
+	}{
+		{"late", 200, 51 * time.Millisecond, "gap_ns=51000000"},
+		{"counter decreased", 99, time.Millisecond, "usage_us=99 prior_usage_us=100"},
+		{"sample reordered", 100, -time.Millisecond, "gap_ns=-1000000"},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			transaction, err := newObservationTransaction(testObservationPolicy(now), nil, now)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := transaction.sampleCPU(100, now); err != nil {
+				t.Fatal(err)
+			}
+			err = transaction.sampleCPU(test.usage, now.Add(test.gap))
+			if err == nil || !transaction.failed || transaction.usageUsec != 100 || !transaction.lastSample.Equal(now) {
+				t.Fatalf("rejected sample changed accounting: %v", err)
+			}
+			for _, want := range []string{"failed_before=false", "termination=false", "last_sample_present=true", "poll_ns=50000000", test.want} {
+				if !strings.Contains(err.Error(), want) {
+					t.Fatalf("missing rejecting operand %q: %v", want, err)
+				}
+			}
+			if err := transaction.sampleCPU(200, now.Add(2*time.Millisecond)); err == nil || !strings.Contains(err.Error(), "failed_before=true") {
+				t.Fatalf("secondary failure lost sticky state: %v", err)
+			}
+		})
+	}
+}
+
 func TestObservationTransitionUsesReservedIntervalWithoutResettingCPU(t *testing.T) {
 	now := time.Now()
 	policy := testObservationPolicy(now)

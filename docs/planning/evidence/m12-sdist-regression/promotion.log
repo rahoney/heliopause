@@ -1,0 +1,6 @@
+=== RUN   TestLinuxPyPIPromotionIntegration
+--- PASS: TestLinuxPyPIPromotionIntegration (3.31s)
+=== RUN   TestLinuxNPMPromotionIntegration
+--- PASS: TestLinuxNPMPromotionIntegration (2.21s)
+PASS
+ok  	github.com/rahoney/heliopause/internal/promotion	5.527s

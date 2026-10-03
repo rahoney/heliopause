@@ -1,0 +1,39 @@
+{
+  "status": "RESTORED",
+  "installed": [
+    {
+      "path": "/usr/libexec/heliopause/helox",
+      "sha256": "4c3b3d263781ce7931bd12b5aaf542caff5a94b0fc58dfc5c5d13c4dda0173d5",
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o755"
+    },
+    {
+      "path": "/usr/libexec/heliopause/haa_gvisor_observer",
+      "sha256": "2fde42a4d91ccbe73f4056a54d41a4119edc170d18cc9ef7a17c4344fbe5be8a",
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o755"
+    },
+    {
+      "path": "/usr/libexec/heliopause/haa-network-policy-helper",
+      "sha256": "11b064f58af403733aa9264e8c8f07f91e7350e4b2f14519b10404acd7cb280f",
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o755"
+    },
+    {
+      "path": "/etc/heliopause/network-policy.json",
+      "sha256": "2acf7e15a49b0c1b823d9011dd4aaf654e8eef433c1fdf1786e2971923897c64",
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o644"
+    }
+  ],
+  "runtime_processes": "absent via successful ps query",
+  "containers": "empty via successful docker query",
+  "volumes": "empty via successful docker query",
+  "haaobs_slices": "empty via successful systemctl query",
+  "helper_sockets": "absent",
+  "lifecycle": "final2 runtime and tail wrappers both confirmed helper wait0 before restoration"
+}

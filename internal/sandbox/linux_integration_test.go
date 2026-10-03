@@ -357,6 +357,15 @@ func TestLinuxPyPISdistBuildIntegration(t *testing.T) {
 	if err != nil || result.Status() != domain.SandboxCompleted {
 		t.Fatalf("build result = %#v observer_reason=%s, %v", result, integrationObserverFaultReason(supervisor), err)
 	}
+	unexpected := false
+	for _, observation := range result.Observations() {
+		if observation.Subject() == "process-exec-unexpected" {
+			unexpected = true
+		}
+	}
+	if !unexpected {
+		t.Fatal("sdist build lost artifact child-exec observations")
+	}
 	derivedBytes, err := os.ReadFile(filepath.Join(root, runID, "derived.whl"))
 	if err != nil {
 		t.Fatal(err)

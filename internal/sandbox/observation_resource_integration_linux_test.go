@@ -105,6 +105,12 @@ func (a integrationObservationResources) Close(ctx context.Context, transaction 
 // under each root policy with a tiny authenticated fixture. It is not CUDA
 // wheel qualification. CPU requests follow failed CUDA experiments in the same
 // observer/backend so state leakage cannot hide behind separate processes.
+// This runtime utility remains an actionable ARTIFACT exec; its minimal
+// loader reads must not abort the observer in any Python root policy.
+func TestLinuxPythonUtilityLoaderIntegration(t *testing.T) {
+	runLinuxPythonRootPolicyTransactions(t, "utility-loader")
+}
+
 func TestLinuxPythonRootPolicyTransactionSequenceIntegration(t *testing.T) {
 	runLinuxPythonRootPolicyTransactions(t, "sequence")
 }
@@ -344,6 +350,8 @@ func runLinuxPythonRootPolicyTransactions(t *testing.T, mode string) {
 			program := "VALUE = 'ok'\n"
 			switch mode {
 			case "sequence", "namespace-sequence", "command-sequence":
+			case "utility-loader":
+				program = "import subprocess\nsubprocess.run(['/usr/bin/uname', '-p'], check=True)\n"
 			case "proc-maps":
 				program = "with open('/proc/self/maps') as maps:\n    maps.read(4096)\n"
 			case "renamed":
@@ -423,7 +431,17 @@ func runLinuxPythonRootPolicyTransactions(t *testing.T, mode string) {
 				t.Fatal(err)
 			}
 			result, err := backend.InspectWheelWithPlan(ctx, artifact, plan, []domain.AcquiredArtifact{artifact})
-			if strings.HasPrefix(mode, "query-negative-") {
+			if mode == "utility-loader" {
+				unexpected := false
+				for _, observation := range result.Observations() {
+					if observation.Subject() == "process-exec-unexpected" {
+						unexpected = true
+					}
+				}
+				if err != nil || result.Status() != domain.SandboxCompleted || !unexpected {
+					t.Fatalf("utility loader lost completed observation/actionable exec: status=%s err=%v observations=%v", result.Status(), err, result.Observations())
+				}
+			} else if strings.HasPrefix(mode, "query-negative-") {
 				unexpected := false
 				for _, observation := range result.Observations() {
 					if observation.Subject() == "process-exec-unexpected" {

@@ -170,8 +170,12 @@ func (t *observationTransaction) accountCPULocked(usageUsec uint64, at time.Time
 	if (t.failed && !termination) || !at.Before(t.policy.wallDeadline) ||
 		(!t.lastSample.IsZero() && (at.Before(t.lastSample) || at.Sub(t.lastSample) > t.policy.pollInterval)) ||
 		usageUsec < t.usageUsec {
+		// Keep the rejecting trusted operands before making failure sticky.
+		// These bounded scalars diagnose ordering/latency without exposing
+		// artifact output or changing the accounting decision.
+		err := fmt.Errorf("python observation CPU accounting is unavailable or late: failed_before=%t termination=%t last_sample_present=%t gap_ns=%d poll_ns=%d wall_remaining_ns=%d usage_us=%d prior_usage_us=%d", t.failed, termination, !t.lastSample.IsZero(), at.Sub(t.lastSample).Nanoseconds(), t.policy.pollInterval.Nanoseconds(), t.policy.wallDeadline.Sub(at).Nanoseconds(), usageUsec, t.usageUsec)
 		t.failed = true
-		return errors.New("python observation CPU accounting is unavailable or late")
+		return err
 	}
 	t.usageUsec = usageUsec
 	t.lastSample = at

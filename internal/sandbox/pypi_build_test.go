@@ -3,6 +3,7 @@ package sandbox
 import (
 	"context"
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -113,4 +114,56 @@ type buildRunner struct {
 func (r *buildRunner) RunOutput(_ context.Context, output io.Writer, _ string, _ ...string) error {
 	_, err := output.Write(r.output)
 	return err
+}
+
+func TestPythonSdistBuildPreservesPrimaryAndObserverFailure(t *testing.T) {
+	for _, cleanupFails := range []bool{false, true} {
+		t.Run(fmt.Sprintf("cleanup-%t", cleanupFails), func(t *testing.T) {
+			root, source, wheel := pythonBuildFixtures(t)
+			runner := &sdistFailureRunner{cleanupFails: cleanupFails}
+			introducer, _ := NewPythonArtifactIntroducer(root, runner)
+			builder, _ := NewPythonSdistBuilder(runner, introducer, &recordingObserver{reader: terminationDiagnosticTrace{err: observerFault{reason: "STREAM_FAULT", site: "OPEN_RESULT_CLASSIFICATION_IMAGE", imageLocator: 123}}}, availablePythonProbe)
+			recipe := artifactpypi.SdistInspection{Project: "example", Version: "1.0", ObservedSHA256: source.Digest().String(), BuildRequirements: []string{"setuptools"}}
+			built, result, err := builder.Build(context.Background(), source, recipe, []domain.AcquiredArtifact{wheel})
+			code, _ := result.LimitationCode()
+			if err == nil || code != "M5_PYPI_BUILD_FAILED" || result.Status() != domain.SandboxIncomplete || built.Filename != "" || !runner.removed {
+				t.Fatalf("failure lost: %#v %s %v removed=%t", built, code, err, runner.removed)
+			}
+			for _, want := range []string{"primary_code=M5_PYPI_BUILD_FAILED", "command=COMMAND_ERROR", "reason=STREAM_FAULT", "fault_site=OPEN_RESULT_CLASSIFICATION_IMAGE", "image_locator_fnv1a64=000000000000007b"} {
+				if !strings.Contains(err.Error(), want) {
+					t.Fatalf("missing %q in %v", want, err)
+				}
+			}
+			if strings.Contains(err.Error(), "secret") {
+				t.Fatal("raw command text leaked")
+			}
+			if cleanupFails && !strings.Contains(err.Error(), "cleanup=M5_PYPI_DYNAMIC_CLEANUP_FAILED") {
+				t.Fatalf("cleanup lost: %v", err)
+			}
+		})
+	}
+}
+
+type sdistFailureRunner struct {
+	buildRunner
+	cleanupFails, removed bool
+}
+
+func (r *sdistFailureRunner) Output(ctx context.Context, binary string, args ...string) ([]byte, error) {
+	if len(args) > 0 && args[0] == "create" {
+		return []byte("0123456789abcdef"), nil
+	}
+	return r.buildRunner.Output(ctx, binary, args...)
+}
+func (r *sdistFailureRunner) RunDiscard(_ context.Context, _ string, args ...string) error {
+	if len(args) > 0 && args[0] == "rm" {
+		r.removed = true
+		if r.cleanupFails {
+			return errors.New("secret cleanup output")
+		}
+	}
+	if strings.Contains(strings.Join(args, " "), "--no-build-isolation") {
+		return errors.New("secret backend output")
+	}
+	return nil
 }

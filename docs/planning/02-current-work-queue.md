@@ -2179,6 +2179,28 @@ production activation과 최종 배포를 수행한다.
 | 5 | M12-005 | cross-ecosystem qualification and feature freeze | NOT_STARTED |
 | 6 | M12-02 | final red-team/fix gate | RESERVED |
 
+M12-001 sdist observer 회귀 로컬 검증 완료 (2026-10-03): 같은 fixture bytes의
+`1401274` PASS / `1704eb1` FAIL을 직접 대조했다. 최초 차이는 kernel-observed
+`/usr/bin/uname` ARTIFACT clone의 sealed OCI root `/etc/ld.so.cache` 읽기가
+runtime-root 대신 unknown/STREAM_FAULT로 분류되는 지점이다. 고정 실행 이미지의
+최소 loader 읽기만 교정했고 mutable comm, 역할·network 신뢰, unexpected-exec 관찰과
+기존 budget은 변경하지 않았다. 최초 build/observer/cleanup 실패는 따로 보존한다.
+이번 로컬 회귀 범위는 `IMPLEMENTED=YES`, `WIRED=YES`, `QUALIFIED=YES`다.
+필수 `TestLinuxPyPISdistBuildIntegration` **13.46초**, wheel **11.34초**, 네 root
+utility/실패→CPU 회귀 및 ordinary의 모든 local integration을 실제 실행해 통과했다.
+같은 최종 실행 후보 CPU full **499.06초**, cu126 full **2085.40초 PASS**;
+원래 29개 승격, NumPy 제외와 viewer NOT_ATTESTED evidence를 확인했다.
+quick/security/docs/corpus와 Darwin TEST compile은 최종 후보에서 PASS다.
+Corpus는 공식 고정 입력 19 cases/18 wheels를 실제 확인했다. cu130/cu132는 focused common-path PASS이며
+full은 재실행하지 않았다. 기존 `1704` remote PASS를 새 후보에 전용하지 않는다.
+중간 cu126 회계 실패 두 건의 원인은 미확정으로 보존하고, 판정 불변의 bounded
+수치 진단만 추가했다. 원래 설치 파일의 exact hash·소유권·mode와 자원 정리를 확인했다.
+이번 로컬 회귀 범위의 acceptance는 충족했다. M12-001 전체
+`ACCEPTANCE_CLOSED=NO`와 IN_PROGRESS는 유지하며 `MISSING`은 별도의
+원격 Required CI/native macOS 및 milestone review·merge acceptance다.
+상세 입력·원인 사슬·실행 범위는 [sdist 회귀 근거](./evidence/m12-sdist-regression/result.json)가 소유한다.
+이번 작업은 NO PUSH / NO REMOTE CI / NO MERGE다.
+
 M12-001 bounded Python library-query 진행 (2026-10-02): 사용자 승인으로 고정
 read-only runtime의 exact `ldconfig -p` 조회를 ARTIFACT 역할에서 지원한다.
 범위와 조건은 [M3 계약](../domain-model/12-m3-linux-dynamic-contract.md)의 bounded

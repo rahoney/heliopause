@@ -2930,6 +2930,71 @@ bool VerifyNoBasenameTrust(int output, const std::string& remote, const std::str
   return ExpectRecordExact(output, kSixtySixthID, "stream-end");
 }
 
+// A loader read is telemetry, not an authorization of the preceding exec.
+bool VerifyPinnedUtilityLoaderReads() {
+  for (const char* profile : {kProfilePyPI, kProfilePyTorchCPU, kProfilePyTorchCU126,
+                             kProfilePyTorchCU130, kProfilePyTorchCU132}) {
+    TopologyState topology;
+    topology.expected.push_back(ExpectedMount{"/", "oci-root", "/", "", true, false, false, false});
+    topology.anchors.emplace(1, MountAnchor{1, "/", "oci-root"});
+    topology.namespace_id = 10; topology.snapshot_seen = true; topology.sealed = true;
+    gvisor::sentry::ExecveInfo image;
+    auto* context = image.mutable_context_data();
+    context->set_container_id("aabbccddeeff0101");
+    context->set_thread_group_id(91); context->set_thread_group_start_time_ns(910);
+    context->set_parent_thread_group_id(90); context->set_process_name("python");
+    image.set_binary_path("/usr/bin/uname"); image.set_execfn("/usr/bin/uname");
+    image.add_argv("/usr/bin/uname"); image.add_argv("-p");
+    int output[2]; if (socketpair(AF_UNIX, SOCK_DGRAM, 0, output) != 0) return false;
+    auto check = [&](const gvisor::sentry::ExecveInfo& event, const TopologyState& mounts, bool readable) {
+      ProcessState state;
+      if (!RegisterGroup(&state, image.context_data(), ProcessState::Role::kArtifact,
+                         ProcessState::Provenance::kCloneChild, false, true)) return false;
+      ProfileRegistration registration; std::string payload, id; const char* reason = nullptr;
+      if (!event.SerializeToString(&payload) || !ParseSentryProcessAndClassify(payload.data(), payload.size(),
+            output[0], &id, profile, &registration, &state, &reason, &mounts) ||
+          !ExpectUnexpectedProcessRecord(output[1], id.c_str(), "SENTRY_EXEC", "OTHER", "ARTIFACT_ROLE", "ARTIFACT_GROUP")) return false;
+      if (state.groups.at(91).role != ProcessState::Role::kArtifact || state.groups.at(91).root_eligible ||
+          IsTrustedControlNetwork(event.context_data(), state)) return false;
+      gvisor::syscall::Open read;
+      *read.mutable_context_data() = event.context_data(); read.set_flags(557056);
+      for (const char* comm : {"uname", "python", "worker"}) {
+        read.mutable_context_data()->set_process_name(comm);
+        for (const char* path : {"/etc/ld.so.cache", "/usr/lib/x86_64-linux-gnu/libc.so.6"}) {
+          read.set_pathname(path);
+          if ((ClassifyFilesystemOpen(read, state, profile) == FilesystemClass::kRuntimeRoot) != readable) return false;
+        }
+      }
+      for (const char* path : {"/etc/shadow", "/usr/local/lib/python3.14/os.py", "/usr/lib/x86_64-linux-gnu/libutil.so.1"}) {
+        read.set_pathname(path);
+        if (ClassifyFilesystemOpen(read, state, profile) == FilesystemClass::kRuntimeRoot) return false;
+      }
+      read.set_pathname("/etc/ld.so.cache"); read.set_flags(kOpenWriteOnly);
+      if (ClassifyFilesystemOpen(read, state, profile) != FilesystemClass::kOutside) return false;
+      read.set_flags(0); read.mutable_context_data()->set_thread_group_start_time_ns(911);
+      if (ClassifyFilesystemOpen(read, state, profile) == FilesystemClass::kRuntimeRoot) return false;
+      // Re-exec replaces the kernel image classification; no inherited grant.
+      auto replacement = event; replacement.set_binary_path("/tmp/uname");
+      if (!replacement.SerializeToString(&payload) || !ParseSentryProcessAndClassify(payload.data(), payload.size(),
+            output[0], &id, profile, &registration, &state, &reason, &mounts) ||
+          !ExpectUnexpectedProcessRecord(output[1], id.c_str(), "SENTRY_EXEC", "OTHER", "ARTIFACT_ROLE", "ARTIFACT_GROUP")) return false;
+      *read.mutable_context_data() = event.context_data();
+      if (ClassifyFilesystemOpen(read, state, profile) == FilesystemClass::kRuntimeRoot) return false;
+      return true;
+    };
+    bool ok = check(image, topology, true);
+    auto fake = image; fake.set_binary_path("/tmp/uname"); ok = ok && check(fake, topology, false);
+    auto unsealed = topology; unsealed.sealed = false; ok = ok && check(image, unsealed, false);
+    auto writable = topology; writable.expected[0].read_only = false; ok = ok && check(image, writable, false);
+    for (const char* shadow : {"/usr/bin/uname", "/etc/ld.so.cache"}) {
+      auto substituted = topology; substituted.anchors.emplace(2, MountAnchor{2, shadow, "workspace"});
+      ok = ok && check(image, substituted, false);
+    }
+    close(output[0]); close(output[1]); if (!ok) return false;
+  }
+  return true;
+}
+
 bool VerifyBoundedRuntimeCacheQuery() {
   for (const char* profile : {kProfilePyPI, kProfilePyTorchCPU, kProfilePyTorchCU126,
                             kProfilePyTorchCU130, kProfilePyTorchCU132}) {
@@ -3016,7 +3081,7 @@ bool VerifyBoundedRuntimeCacheQuery() {
 }
 
 bool VerifyUnexpectedExecDiagnosticRetention() {
-  if (!VerifyBoundedRuntimeCacheQuery()) return false;
+  if (!VerifyPinnedUtilityLoaderReads() || !VerifyBoundedRuntimeCacheQuery()) return false;
   gvisor::sentry::ExecveInfo query;
   query.set_binary_path("/usr/sbin/ldconfig");
   query.add_argv("/sbin/ldconfig");

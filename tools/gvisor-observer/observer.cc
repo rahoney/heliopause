@@ -173,6 +173,7 @@ enum class ProcessClass {
   kMkdir,
   kCat,
   kChmod,
+  kUname,
 };
 
 enum class SocketClassification {
@@ -928,6 +929,7 @@ const char* ProcessClassName(ProcessClass process_class) {
     case ProcessClass::kMkdir: return "MKDIR";
     case ProcessClass::kCat: return "CAT";
     case ProcessClass::kChmod: return "CHMOD";
+    case ProcessClass::kUname: return "OTHER";  // Still an unexpected artifact exec.
     case ProcessClass::kUnknown: return "OTHER";
   }
   return "OTHER";
@@ -950,6 +952,7 @@ const char* NetworkProcessClassName(ProcessClass process_class) {
     case ProcessClass::kMkdir:
     case ProcessClass::kCat:
     case ProcessClass::kChmod:
+    case ProcessClass::kUname:
       return "OTHER";
   }
   return "OTHER";
@@ -1023,6 +1026,7 @@ ProcessClass ProcessClassForPath(const std::string& path, const char* profile) {
     if (path == "/usr/local/lib/node_modules/npm/bin/npm-cli.js") return ProcessClass::kNpm;
   }
   if (IsPythonProfile(profile)) {
+    if (path == "/usr/bin/uname") return ProcessClass::kUname;
     if (path == "/usr/local/bin/python" || path == "/usr/local/bin/python3" || path == "/usr/local/bin/python3.14" || path == "python") return ProcessClass::kPython;
     if (path == "/usr/local/bin/pip" || path == "pip") return ProcessClass::kPip;
   }
@@ -1494,7 +1498,14 @@ bool IsPinnedRuntimeRootRead(const gvisor::common::ContextData& context,
   if (group->role == ProcessState::Role::kArtifact) {
     // comm is mutable by ordinary Python/native code. Artifact reads depend
     // on the observed current executable, never on a claimed thread name.
-    if (FilesystemProcessClass(context, state) != ProcessClass::kPython) return false;
+    const auto image = FilesystemProcessClass(context, state);
+    // uname is used by the pinned Python build runtime. Its immutable loader
+    // inputs are readable without treating its execution as expected or granting
+    // Python's broader runtime surface. No write or role/network privilege.
+    if (image == ProcessClass::kUname) {
+      return normalized == "/etc/ld.so.cache" || IsExactLibc6(normalized);
+    }
+    if (image != ProcessClass::kPython) return false;
   } else if (context.process_name() != "python" && context.process_name() != "python3.14" &&
              context.process_name() != "uname" && context.process_name() != "sh") {
     return false;
@@ -2346,6 +2357,14 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
   }
   group->second.runtime_cache_query = false;
   group->second.current_image_class = ProcessClassForPath(message.binary_path(), profile);
+  // Kernel-resolved utility image in the sealed immutable runtime, not comm,
+  // argv[0], an artifact copy or a path shadow. This only classifies loader reads;
+  // the ordinary ARTIFACT unexpected-exec event below is unchanged.
+  if (group->second.current_image_class == ProcessClass::kUname &&
+      (!IsPinnedReadOnlyRootPath(topology, message.binary_path()) ||
+       !IsPinnedReadOnlyRootPath(topology, "/etc/ld.so.cache"))) {
+    group->second.current_image_class = ProcessClass::kUnknown;
+  }
   group->second.diagnostic_image = DiagnosticImageForPath(message.binary_path());
   if (group->second.provenance == ProcessState::Provenance::kOCIRoot) {
     if (group->second.role != ProcessState::Role::kControl ||

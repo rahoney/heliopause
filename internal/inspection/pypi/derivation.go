@@ -54,7 +54,7 @@ func (d *Deriver) Derive(ctx context.Context, inspections []domain.DependencyIns
 		}
 		built, result, err := d.builder.Build(ctx, source.Artifact(), recipe, inputs)
 		if err != nil || result.Status() != domain.SandboxCompleted || built.SourceDigest != source.Artifact().Digest() || len(built.BuildRequirementDigests) != len(inputs) {
-			return nil, errors.New("PyPI sdist build is incomplete")
+			return nil, errors.Join(errors.New("PyPI sdist build is incomplete"), err)
 		}
 		nodeID, err := domain.NewDependencyNodeID(source.Node().String() + "-derived")
 		if err != nil {
