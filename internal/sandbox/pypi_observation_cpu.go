@@ -63,20 +63,19 @@ func (w *observationCPUWatch) sample(ctx context.Context) error {
 	if !w.transition.IsZero() {
 		return errors.New("python observation CPU sample crossed a lifecycle transition")
 	}
-	return w.sampleLocked(ctx)
+	return w.sampleLocked(ctx, false)
 }
 
-func (w *observationCPUWatch) sampleLocked(ctx context.Context) error {
+func (w *observationCPUWatch) sampleLocked(ctx context.Context, termination bool) error {
 	readContext, cancel := context.WithTimeout(ctx, w.ledger.policy.pollInterval)
 	defer cancel()
 	lease, err := w.client.Read(readContext, w.transaction)
 	if err != nil {
 		return errors.New("python observation CPU counter is unavailable")
 	}
-	if err := w.ledger.sampleCPU(lease.UsageUsec, time.Now()); err != nil {
-		return err
-	}
-	return nil
+	w.ledger.mu.Lock()
+	defer w.ledger.mu.Unlock()
+	return w.ledger.accountCPULocked(lease.UsageUsec, time.Now(), termination)
 }
 
 // beginTransition and endTransition bracket a trusted Docker create/start or
@@ -84,6 +83,14 @@ func (w *observationCPUWatch) sampleLocked(ctx context.Context) error {
 // registered cgroup member for an unrelated process. The parent counter is
 // sampled on both sides, and the reserved stop bound limits the gap.
 func (w *observationCPUWatch) beginTransition(ctx context.Context) error {
+	return w.beginLifecycle(ctx, false)
+}
+
+func (w *observationCPUWatch) beginTermination(ctx context.Context) error {
+	return w.beginLifecycle(ctx, true)
+}
+
+func (w *observationCPUWatch) beginLifecycle(ctx context.Context, termination bool) error {
 	if w == nil || ctx == nil {
 		return errors.New("python observation lifecycle accounting is unavailable")
 	}
@@ -92,7 +99,7 @@ func (w *observationCPUWatch) beginTransition(ctx context.Context) error {
 	if !w.transition.IsZero() {
 		return errors.New("python observation lifecycle transition overlaps another")
 	}
-	if err := w.sampleLocked(ctx); err != nil {
+	if err := w.sampleLocked(ctx, termination); err != nil {
 		return err
 	}
 	w.transition = time.Now()
@@ -100,6 +107,14 @@ func (w *observationCPUWatch) beginTransition(ctx context.Context) error {
 }
 
 func (w *observationCPUWatch) endTransition(ctx context.Context) error {
+	return w.endLifecycle(ctx, false)
+}
+
+func (w *observationCPUWatch) endTermination(ctx context.Context) error {
+	return w.endLifecycle(ctx, true)
+}
+
+func (w *observationCPUWatch) endLifecycle(ctx context.Context, termination bool) error {
 	if w == nil || ctx == nil {
 		return errors.New("python observation lifecycle accounting is unavailable")
 	}
@@ -116,7 +131,7 @@ func (w *observationCPUWatch) endTransition(ctx context.Context) error {
 	if err != nil {
 		return errors.New("python observation CPU counter after lifecycle is unavailable")
 	}
-	return w.ledger.sampleCPUAfterTransition(lease.UsageUsec, started, time.Now())
+	return w.ledger.accountCPUAfterTransition(lease.UsageUsec, started, time.Now(), termination)
 }
 
 func (w *observationCPUWatch) run(ctx context.Context) {
@@ -141,7 +156,7 @@ func (w *observationCPUWatch) run(ctx context.Context) {
 					err = errors.New("python observation lifecycle exceeded its reserved stop bound")
 				}
 			} else {
-				err = w.sampleLocked(ctx)
+				err = w.sampleLocked(ctx, false)
 			}
 			w.sampleMu.Unlock()
 			if err != nil {

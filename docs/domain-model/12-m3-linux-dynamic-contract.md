@@ -156,8 +156,9 @@ marker. It performs `CONTROL → ARTIFACT` (or leaves `ARTIFACT` unchanged) and
 has no reverse transition. Python package import passes this handoff before
 `importlib.import_module`; npm lifecycle execution uses it as its
 `script-shell` trampoline; and GitHub ELF execution passes through it before
-`/work/artifact`. Artifact-controlled network operations and executable
-transitions remain actionable after handoff. No pathname, process class,
+`/work/artifact`. Artifact-controlled network operations and unmodeled executable
+transitions remain actionable after handoff. The bounded Python library-query
+operation below is modeled without changing ARTIFACT role or network attribution. No pathname, process class,
 child ancestry or handoff marker can create or restore CONTROL trust.
 After a direct root has consumed launch eligibility and established its valid
 CONTROL lifecycle, that exact group may still execute the verified handoff:
@@ -176,6 +177,32 @@ correlation; it cannot be restored. Artifact-controlled communication attempts r
 [Trusted Tooling and Evidence](../threat-model/04-trusted-tooling-and-evidence.md)
 own the trusted-tool compromise scope; this M3 contract owns only observation
 interpretation.
+
+### 고정 Python runtime의 bounded library query (2026-10-02)
+
+사용자 승인에 따른 좁은 정책 정교화다. ARTIFACT의 일반 실행 전이는 계속
+`M3_UNEXPECTED_PROCESS` 대상이지만, 다음 조건을 모두 만족한 `ldconfig -p`는
+`process-exec-expected`로 관찰한다. Expected operation은 CONTROL 역할이 아니다.
+
+- 기존 host attestation이 고정 Python image identity를 확인하고, guest topology가
+  같은 session의 read-only OCI root와 mount namespace를 seal해야 한다.
+- successful Sentry image-load의 kernel-resolved binary는 `/usr/sbin/ldconfig`
+  또는 고정 image의 `/sbin/ldconfig` 별칭이어야 한다. Binary와 `/etc/ld.so.cache`
+  아래의 다른 mount는 지원하지 않는다. Pathname/comm/argv0 주장만으로 인정하지 않는다.
+- execfn/argv0는 위 별칭, argv는 정확히 두 항목(실행 파일, `-p`), env는 정확히
+  `LC_ALL=C`와 `LANG=C`다. 추가 cache/root/config/loader/locale/search-path 입력은 거부한다.
+- 고정 image의 ldconfig는 ELF interpreter/DT_NEEDED가 없는 static PIE다.
+  조회 중 실제 `/etc/ld.so.cache`의 read-only OCI-root open만 runtime read로 처리한다.
+  다른 접근, write, exec, network에는 기존 규칙을 적용한다.
+- ARTIFACT 역할, consumed root eligibility, 모든 events/counts, unit ledger,
+  cumulative CPU/memory/observer limits와 cleanup 요구는 그대로다. 조회 상태는
+  exec마다 초기화하며 child에게 상속하지 않는다. 출력은 package 데이터이며
+  완료나 신뢰 증거가 아니다. 다른 필수 checks와 Policy 판정이 계속 필요하다.
+
+이는 pinned CPython `ctypes.util.find_library`의 첫 ldconfig 조회만 지원한다.
+`gcc`, `objdump`, `ld` fallback은 지원에 포함되지 않는다. Image/mount/관찰 증거가
+없거나 일치하지 않으면 비적격이다. 일반 PyPI의 같은 Python runtime에도 동일하게
+적용하며 npm/GitHub ELF의 동작 허용 범위는 변경하지 않는다.
 
 ## 5. M3 Policy v3 direction
 

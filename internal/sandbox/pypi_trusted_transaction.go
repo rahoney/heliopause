@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"os/exec"
 	"sort"
 	"strings"
 	"sync"
@@ -54,7 +55,7 @@ func freezePythonObservationUnits(plan artifactpypi.ObservationPlan, closureID s
 	}
 	units := make([]observationUnit, 0, len(plan.Units))
 	for index, declared := range plan.Units {
-		unit := observationUnit{kind: observationUnitKind(declared.Kind), candidate: declared.Candidate}
+		unit := observationUnit{kind: observationUnitKind(declared.Kind), candidate: declared.Candidate, coverage: declared.Coverage}
 		switch declared.Kind {
 		case artifactpypi.DirectImportUnit:
 			unit.program = pythonDirectObservation
@@ -68,6 +69,9 @@ func freezePythonObservationUnits(plan artifactpypi.ObservationPlan, closureID s
 			return nil, errors.New("python observation unit kind is unsupported")
 		}
 		identity := sha256.Sum256([]byte(fmt.Sprintf("%s\x00%d\x00%s\x00%s\x00%s", closureID, index, unit.kind, unit.candidate, unit.program)))
+		if unit.coverage != artifactpypi.RequiredObservation {
+			identity = sha256.Sum256(append(identity[:], []byte(unit.coverage)...))
+		}
 		unit.id = string(unit.kind) + ":" + hex.EncodeToString(identity[:])
 		units = append(units, unit)
 	}
@@ -111,7 +115,10 @@ if parts[0] in sys.modules:
     raise RuntimeError('target already present in interpreter startup')
 search = [root]
 for depth in range(len(parts)):
-    spec = importlib.machinery.PathFinder.find_spec('.'.join(parts[:depth + 1]), search)
+    # Resolve each component against its authenticated parent search path.
+    # A fully qualified namespace lookup requires an imported parent in
+    # sys.modules; executing that parent here would precede target admission.
+    spec = importlib.machinery.PathFinder.find_spec(parts[depth], search)
     if spec is None:
         raise RuntimeError('target not found in authenticated site')
     if spec.origin not in (None, 'namespace') and os.path.commonpath((root, os.path.realpath(spec.origin))) != root:
@@ -133,35 +140,49 @@ type pythonClosureObserver interface {
 	observationUsage(*observationTraceLedger) (uint64, uint64, error)
 }
 
+type pythonPhaseTrace struct {
+	observations []domain.SandboxObservation
+	limitation   string
+	diagnostic   TraceDiagnostic
+}
+
 type pythonPhaseRuntime struct {
-	id         string
-	phase      pythonObservationPhase
-	trace      TraceReader
-	registered bool
-	collected  bool
+	id          string
+	phase       pythonObservationPhase
+	trace       TraceReader
+	registered  bool
+	collected   bool
+	traceOnce   sync.Once
+	traceResult pythonPhaseTrace
 }
 
 type pythonTransactionExecutor struct {
-	backend     *PythonDynamicBackend
-	observer    pythonClosureObserver
-	resources   ObservationResourceClient
-	volume      closureVolume
-	manifest    closureManifest
-	installed   closureInstallation
-	transaction string
-	profile     string
-	policy      artifactpypi.ResourcePolicy
-	ledger      *observationTransaction
-	traceLedger *observationTraceLedger
-	lease       ObservationResourceLease
-	mu          sync.Mutex
-	runtimes    map[string]*pythonPhaseRuntime
-	anchor      string
-	created     bool
-	volumeMade  bool
-	allObserved []domain.SandboxObservation
-	watch       *observationCPUWatch
-	finalCPU    uint64
+	backend           *PythonDynamicBackend
+	observer          pythonClosureObserver
+	resources         ObservationResourceClient
+	volume            closureVolume
+	manifest          closureManifest
+	installed         closureInstallation
+	transaction       string
+	profile           string
+	policy            artifactpypi.ResourcePolicy
+	ledger            *observationTransaction
+	traceLedger       *observationTraceLedger
+	lease             ObservationResourceLease
+	mu                sync.Mutex
+	runtimes          map[string]*pythonPhaseRuntime
+	anchor            string
+	created           bool
+	volumeMade        bool
+	allObserved       []domain.SandboxObservation
+	watch             *observationCPUWatch
+	finalCPU          uint64
+	artifact          domain.AcquiredArtifact
+	started           time.Time
+	activeUnit        string
+	activeInputDigest string
+	commandReason     string
+	requestCtx        context.Context
 }
 
 func observationPolicyForPython(policy artifactpypi.ResourcePolicy, profile string, unitCount int, now time.Time) (observationResourcePolicy, error) {
@@ -184,7 +205,7 @@ func observationPolicyForPython(policy artifactpypi.ResourcePolicy, profile stri
 }
 
 func (b *PythonDynamicBackend) executeTrustedTransaction(ctx context.Context, sessionID domain.SandboxSessionID,
-	artifact domain.AcquiredArtifact, plan artifactpypi.ObservationPlan, closure []domain.AcquiredArtifact) (result domain.SandboxResult, resultErr error) {
+	artifact domain.AcquiredArtifact, plan artifactpypi.ObservationPlan, closure []domain.AcquiredArtifact, commands *[]PythonCommandObservation, prerequisites ...domain.AcquiredArtifact) (result domain.SandboxResult, resultErr error) {
 	if b == nil || b.resources == nil {
 		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_TRUSTED_TRANSACTION_UNAVAILABLE")
 	}
@@ -204,6 +225,21 @@ func (b *PythonDynamicBackend) executeTrustedTransaction(ctx context.Context, se
 		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_SETUP_FAILED")
 	}
 	policy := artifactpypi.ResourcePolicyFromContext(ctx)
+	if len(prerequisites) > 1 {
+		return pythonIncomplete(sessionID, "M5_PYPI_INSPECTION_PREREQUISITE_UNSUPPORTED")
+	}
+	for _, prerequisite := range prerequisites {
+		declared, declaredOK := prerequisite.DeclaredIntegrity()
+		if prerequisite.Identity().Source() != artifactpypi.PublicPyPIProfile().Source() || prerequisite.Identity().Variant() != "wheel" || !declaredOK || declared != "sha256:"+prerequisite.Digest().String() {
+			return pythonIncomplete(sessionID, "M5_PYPI_INSPECTION_PREREQUISITE_UNAPPROVED")
+		}
+		for _, original := range closure {
+			if prerequisite.Identity().Name() == original.Identity().Name() {
+				return pythonIncomplete(sessionID, "M5_PYPI_INSPECTION_PREREQUISITE_CONFLICT")
+			}
+		}
+	}
+	closure = append(append([]domain.AcquiredArtifact(nil), closure...), prerequisites...)
 	manifest, err := b.introducer.buildClosureManifest(ctx, closure, policy)
 	if err != nil {
 		return pythonClosureFailure(sessionID, "build authenticated manifest", err)
@@ -226,6 +262,38 @@ func (b *PythonDynamicBackend) executeTrustedTransaction(ctx context.Context, se
 	if err != nil {
 		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_RESOURCE_POLICY_INVALID")
 	}
+	for index := range units {
+		units[index].ownerDigest = artifact.Digest().String()
+	}
+	// Prerequisite code is independently observed first. Its units retain a
+	// separate owner identity but share preparation, the frozen RO volume,
+	// observer credit, cgroup accounting and the target's unchanged ceiling.
+	for _, prerequisite := range prerequisites {
+		id := prerequisite.Identity()
+		key := id.Source().String() + ":" + id.Name() + ":" + id.Version() + ":" + prerequisite.Digest().String()
+		inspection, present := manifest.inspections[key]
+		if !present {
+			return pythonIncomplete(sessionID, "M5_PYPI_INSPECTION_PREREQUISITE_UNSUPPORTED")
+		}
+		originals := make([]artifactpypi.WheelInspection, 0, len(manifest.inspections)-1)
+		for owner, original := range manifest.inspections {
+			if owner != key {
+				originals = append(originals, original)
+			}
+		}
+		prerequisitePlan, planErr := artifactpypi.ValidateInspectionPrerequisite(inspection, originals, policy)
+		if planErr != nil {
+			return pythonIncomplete(sessionID, "M5_PYPI_INSPECTION_PREREQUISITE_UNQUALIFIED")
+		}
+		additional, freezeErr := freezePythonObservationUnits(prerequisitePlan, manifest.identity+":"+key)
+		if freezeErr != nil {
+			return pythonIncomplete(sessionID, "M5_PYPI_INSPECTION_PREREQUISITE_UNQUALIFIED")
+		}
+		for index := range additional {
+			additional[index].ownerDigest = prerequisite.Digest().String()
+		}
+		units = append(additional, units...)
+	}
 	now := time.Now()
 	resourcePolicy, err := observationPolicyForPython(policy, profile, len(units), now)
 	if err != nil {
@@ -244,6 +312,7 @@ func (b *PythonDynamicBackend) executeTrustedTransaction(ctx context.Context, se
 	transaction := &pythonTransactionExecutor{
 		backend: b, observer: observer, resources: b.resources, manifest: manifest,
 		transaction: sessionID.String(), profile: profile, policy: policy,
+		artifact: artifact, started: now, requestCtx: runCtx,
 		ledger: ledger, traceLedger: traceLedger, runtimes: make(map[string]*pythonPhaseRuntime),
 	}
 	// Cleanup is part of the security decision. A successful experiment is
@@ -251,9 +320,7 @@ func (b *PythonDynamicBackend) executeTrustedTransaction(ctx context.Context, se
 	defer func() {
 		cleanupErr := transaction.cleanup()
 		if cleanupErr != nil {
-			priorErr := resultErr
-			result, resultErr = pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_CLEANUP_FAILED")
-			resultErr = errors.Join(priorErr, resultErr, fmt.Errorf("python transaction cleanup: %w", cleanupErr))
+			result, resultErr = pythonCleanupFailure(sessionID, result, resultErr, transaction.diagnostic("cleanup", cleanupErr))
 			return
 		}
 		if resultErr != nil {
@@ -271,6 +338,9 @@ func (b *PythonDynamicBackend) executeTrustedTransaction(ctx context.Context, se
 			}
 			transaction.allObserved = append(transaction.allObserved, completed)
 			result, resultErr = domain.NewSandboxResult(sessionID, domain.SandboxCompleted, "", transaction.allObserved)
+			if resultErr == nil && commands != nil {
+				*commands = ledger.commandObservations()
+			}
 		}
 	}()
 	lease, err := b.resources.Create(runCtx, transaction.transaction, artifactpypi.RootSourceProfileNameFromContext(ctx))
@@ -308,7 +378,8 @@ func (b *PythonDynamicBackend) executeTrustedTransaction(ctx context.Context, se
 	install := append(boundaryExecArguments(preparation.id, boundaryLaunchMode, "python", "-I", "-B", "-m", "pip", "install",
 		"--no-index", "--no-deps", "--no-compile", "--disable-pip-version-check", "--no-cache-dir", "--target", pythonSitePath), wheelPaths...)
 	if err := discardCommand(runCtx, b.runner, "docker", install...); err != nil {
-		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_INSTALL_FAILED")
+		failed, failureErr := pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_INSTALL_FAILED")
+		return failed, errors.Join(failureErr, transaction.diagnostic("install", errors.New(pythonCommandErrorReason(err))))
 	}
 	installed, err := verifyClosureInstallation(runCtx, b.runner, preparation.id, manifest, policy.RuntimeTmpfs())
 	if err != nil {
@@ -324,7 +395,8 @@ func (b *PythonDynamicBackend) executeTrustedTransaction(ctx context.Context, se
 		return pythonClosureFailure(sessionID, "verify closure attachments", err)
 	}
 	if err := transaction.terminatePhase(preparation.id); err != nil {
-		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_PREPARATION_FAILED")
+		failed, failureErr := pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_PREPARATION_FAILED")
+		return failed, errors.Join(failureErr, err)
 	}
 	if after, err := verifyClosureInstallation(runCtx, b.runner, anchor.id, manifest, policy.RuntimeTmpfs()); err != nil || after.identity != installed.identity {
 		return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_CLOSURE_CHANGED")
@@ -333,6 +405,8 @@ func (b *PythonDynamicBackend) executeTrustedTransaction(ctx context.Context, se
 	ledger.preparationOK, ledger.anchorAlive = true, true
 	ledger.mu.Unlock()
 	for index, unit := range units {
+		transaction.activeUnit = unit.id
+		transaction.activeInputDigest = unit.ownerDigest
 		if err := transaction.verifyAnchorAndVolume(runCtx, nil); err != nil {
 			return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_CLOSURE_CHANGED")
 		}
@@ -355,12 +429,18 @@ func (b *PythonDynamicBackend) executeTrustedTransaction(ctx context.Context, se
 			arguments = append(arguments, unit.candidate)
 		}
 		commandErr := discardCommand(runCtx, b.runner, "docker", arguments...)
+		transaction.commandReason = pythonCommandErrorReason(commandErr)
 		outcome := observationZeroExit
 		if commandErr != nil {
-			outcome = observationNonzeroExit
+			outcome = observationSignaled
+			var observed *observedDirectExecExit
+			if errors.As(commandErr, &observed) && runCtx.Err() == nil {
+				outcome = observationNonzeroExit
+			}
 		}
 		if err := transaction.terminatePhase(probe.id); err != nil {
-			return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_OBSERVATION_INCOMPLETE")
+			failed, failureErr := pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_OBSERVATION_INCOMPLETE")
+			return failed, errors.Join(failureErr, transaction.diagnostic("unit-termination", err))
 		}
 		if err := transaction.verifyAnchorAndVolume(runCtx, nil); err != nil {
 			return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_CLOSURE_CHANGED")
@@ -379,10 +459,84 @@ func (b *PythonDynamicBackend) executeTrustedTransaction(ctx context.Context, se
 			closureUnchanged: true, events: afterEvents - beforeEvents, bytes: afterBytes - beforeBytes,
 			cumulativeCPUUsec: cpuLease.UsageUsec,
 		}, time.Now()); err != nil {
-			return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_OBSERVATION_INCOMPLETE")
+			failed, failureErr := pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_OBSERVATION_INCOMPLETE")
+			return failed, errors.Join(failureErr, transaction.diagnostic("unit-outcome", err))
 		}
 	}
 	return domain.NewSandboxResult(sessionID, domain.SandboxCompleted, "", nil)
+}
+
+// Preserve the first incomplete result even when cleanup independently fails.
+// Diagnostics are operational evidence, never completion or policy authority.
+func pythonCleanupFailure(sessionID domain.SandboxSessionID, prior domain.SandboxResult, priorErr, cleanupErr error) (domain.SandboxResult, error) {
+	code, incomplete := prior.LimitationCode()
+	if !incomplete {
+		code = "M5_PYPI_DYNAMIC_CLEANUP_FAILED"
+	}
+	result, err := pythonIncomplete(sessionID, code)
+	return result, errors.Join(priorErr, err, fmt.Errorf("primary_code=%s python transaction cleanup: %w", code, cleanupErr))
+}
+
+// Only a short fixed-format error reason can enter public operational errors.
+// Raw command output, argv, paths, environment and transport payloads cannot.
+func pythonCommandErrorReason(err error) string {
+	if err == nil {
+		return "OK"
+	}
+	if errors.Is(err, context.DeadlineExceeded) {
+		return "DEADLINE_EXCEEDED"
+	}
+	if errors.Is(err, context.Canceled) {
+		return "CANCELED"
+	}
+	var exit *exec.ExitError
+	if errors.As(err, &exit) {
+		return fmt.Sprintf("EXIT_STATUS_%d", exit.ExitCode())
+	}
+	var fault observerFault
+	if errors.As(err, &fault) {
+		switch fault.reason {
+		case "LIFECYCLE_ERROR", "HELPER_UNAVAILABLE", "EVENT_LIMIT", "BYTE_LIMIT", "CHANNEL_OVERFLOW", "TOPOLOGY_INVALID", "TOPOLOGY_NOT_READY", "STREAM_FAULT":
+			return fault.reason
+		}
+	}
+	return "COMMAND_ERROR"
+}
+
+func pythonResourceErrorReason(err error) string {
+	if err == nil {
+		return "OK"
+	}
+	if errors.Is(err, context.DeadlineExceeded) {
+		return "DEADLINE_EXCEEDED"
+	}
+	if errors.Is(err, context.Canceled) {
+		return "CANCELED"
+	}
+	// Typed helper errors are fixed messages. Do not expose arbitrary transport
+	// paths, process output or credentials from an underlying error.
+	switch err.Error() {
+	case "observation runtime drainage is unproven",
+		"observation transaction cgroup membership changed",
+		"observation CPU accounting after termination is unavailable",
+		"observation runtime is not registered",
+		"observation runtime identity changed during termination":
+		return strings.ReplaceAll(strings.ToUpper(err.Error()), " ", "_")
+	default:
+		return "RESOURCE_ERROR"
+	}
+}
+
+func (t *pythonTransactionExecutor) diagnostic(stage string, cause error) error {
+	identity := t.artifact.Identity()
+	budget := traceBudgetForProfile(t.profile)
+	requestState := "ACTIVE"
+	if t.requestCtx != nil && t.requestCtx.Err() != nil {
+		requestState = pythonResourceErrorReason(t.requestCtx.Err())
+	}
+	return fmt.Errorf("python transaction stage=%s profile=%s artifact=%s@%s digest=%s transaction=%s unit=%s unit_artifact_digest=%s elapsed_ms=%d request=%s command=%s cpu_limit_s=%d memory_limit=%d tmpfs_limit=%d wall_limit_ms=%d trace_event_limit=%d trace_byte_limit=%d: %w",
+		stage, t.profile, identity.Name(), identity.Version(), t.artifact.Digest().String(), t.transaction, t.activeUnit, t.activeInputDigest, time.Since(t.started).Milliseconds(), requestState, t.commandReason,
+		t.policy.RuntimeCPUSecs(), t.policy.RuntimeMemory(), t.policy.RuntimeTmpfs(), t.policy.Duration().Milliseconds(), budget.events, budget.bytes, cause)
 }
 
 func (t *pythonTransactionExecutor) startPhase(ctx context.Context, phase pythonObservationPhase, ordinal int) (started *pythonPhaseRuntime, resultErr error) {
@@ -450,46 +604,51 @@ func (t *pythonTransactionExecutor) terminatePhase(id string) (resultErr error) 
 		return errors.New("python observation runtime cleanup identity is invalid")
 	}
 	if t.watch != nil {
-		if err := t.watch.beginTransition(context.Background()); err != nil {
-			return err
+		if err := t.watch.beginTermination(context.Background()); err != nil {
+			// Missing accounting rejects qualification, but cannot suppress
+			// independently authenticated termination and final keeper cleanup.
+			resultErr = err
+		} else {
+			defer func() {
+				if err := t.watch.endTermination(context.Background()); err != nil {
+					resultErr = errors.Join(resultErr, err)
+				}
+			}()
 		}
-		defer func() {
-			if err := t.watch.endTransition(context.Background()); err != nil {
-				resultErr = errors.Join(resultErr, err)
-			}
-		}()
 	}
+
 	t.mu.Lock()
 	runtime := t.runtimes[id]
 	t.mu.Unlock()
 	if runtime == nil || runtime.collected || runtime.trace == nil || !runtime.registered {
 		return errors.New("python observation runtime cleanup evidence is unavailable")
 	}
-	type traceResult struct {
-		observations []domain.SandboxObservation
-		limitation   string
-		diagnostic   TraceDiagnostic
-	}
-	traceDone := make(chan traceResult, 1)
+	traceDone := make(chan pythonPhaseTrace, 1)
 	go func() {
-		traceCtx, cancel := context.WithTimeout(context.Background(), 7*time.Second)
-		defer cancel()
-		observations, limitation, diagnostic := collectTraceDiagnostic(traceCtx, runtime.trace)
-		traceDone <- traceResult{observations, limitation, diagnostic}
+		// A phase stream is consumable once. Cleanup retries may still drain
+		// resources, but must retain the first complete or failed evidence.
+		runtime.traceOnce.Do(func() {
+			traceCtx, cancel := context.WithTimeout(context.Background(), 7*time.Second)
+			defer cancel()
+			observations, limitation, diagnostic := collectTraceDiagnostic(traceCtx, runtime.trace)
+			runtime.traceResult = pythonPhaseTrace{observations, limitation, diagnostic}
+		})
+		traceDone <- runtime.traceResult
 	}()
 	cleanupCtx, cancel := context.WithTimeout(context.Background(), 7*time.Second)
 	lease, err := t.resources.Terminate(cleanupCtx, t.transaction, id)
 	cancel()
 	trace := <-traceDone
 	if err != nil || trace.limitation != "" || !trace.diagnostic.SessionComplete || lease.CgroupParent != t.lease.CgroupParent {
-		return errors.New("python observation runtime drainage or observer evidence is incomplete")
+		return errors.Join(resultErr, t.diagnostic("phase-termination", fmt.Errorf("phase=%s container=%s helper=%s parent_match=%t cumulative_cpu_us=%d limitation=%s trace={%s}",
+			runtime.phase, id, pythonResourceErrorReason(err), lease.CgroupParent == t.lease.CgroupParent, lease.UsageUsec, trace.limitation, trace.diagnostic.String())))
 	}
 	t.mu.Lock()
 	runtime.collected = true
 	delete(t.runtimes, id)
 	t.allObserved = append(t.allObserved, trace.observations...)
 	t.mu.Unlock()
-	return nil
+	return resultErr
 }
 
 func (t *pythonTransactionExecutor) abortAll(ctx context.Context) error {

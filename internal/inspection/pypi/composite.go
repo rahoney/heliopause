@@ -33,8 +33,9 @@ func (s graphStaticState) footprint() (files, uncompressed int64, ok bool) {
 // wheel import check. Source distributions remain static until the dedicated
 // PEP 517 build boundary supplies a derived wheel.
 type CompositeInspector struct {
-	static  *StaticInspector
-	dynamic *DynamicInspector
+	static        *StaticInspector
+	dynamic       *DynamicInspector
+	prerequisites InspectionPrerequisiteLoader
 }
 
 func NewCompositeInspector(static *StaticInspector, dynamic *DynamicInspector) (*CompositeInspector, error) {
@@ -102,6 +103,10 @@ func (i *CompositeInspector) InspectGraph(ctx context.Context, graph domain.Lock
 	if i.dynamic == nil {
 		return nil, errors.New("PyPI dynamic inspector is unavailable")
 	}
+	prerequisites, err := i.preparePrerequisites(ctx, graph, states, acquired)
+	if err != nil {
+		return nil, err
+	}
 	for _, dependency := range nodes {
 		artifact := acquired[dependency.Node()]
 		closure, err := graphClosure(graph, dependency.Node(), acquired)
@@ -111,7 +116,12 @@ func (i *CompositeInspector) InspectGraph(ctx context.Context, graph domain.Lock
 		if err := validateRuntimeClosure(ctx, closure, graph, states); err != nil {
 			return nil, err
 		}
-		dynamic, err := i.dynamic.InspectWheelWithClosure(ctx, artifact, states[dependency.Node()].wheel, closure)
+		var dynamic domain.InspectionReport
+		if input, present := prerequisites[dependency.Node()]; present {
+			dynamic, err = i.dynamic.InspectWheelWithPrerequisites(ctx, artifact, states[dependency.Node()].wheel, closure, []domain.AcquiredArtifact{input})
+		} else {
+			dynamic, err = i.dynamic.InspectWheelWithClosure(ctx, artifact, states[dependency.Node()].wheel, closure)
+		}
 		if err != nil {
 			return nil, err
 		}

@@ -89,7 +89,17 @@ const (
 
 // PlannedObservationUnit is immutable controller input. Its identity is
 // subsequently bound to the authenticated closure manifest by the executor.
+// ObservationCoverage is chosen from authenticated installed roles, before execution.
+// The zero value retains the existing required-unit contract.
+type ObservationCoverage string
+
+const (
+	RequiredObservation           ObservationCoverage = ""
+	PostInstallCommandObservation ObservationCoverage = "POST_INSTALL_COMMAND"
+)
+
 type PlannedObservationUnit struct {
+	Coverage  ObservationCoverage `json:"coverage,omitempty"`
 	Kind      ObservationUnitKind `json:"kind"`
 	Candidate string              `json:"candidate,omitempty"`
 	HookFile  string              `json:"hook_file,omitempty"`
@@ -101,8 +111,9 @@ type PlannedObservationUnit struct {
 type ExecutableCoverageOutcome string
 
 const (
-	CoverageCoveredByModule ExecutableCoverageOutcome = "COVERED_BY_EXPLICIT_MODULE_OBSERVATION"
-	CoverageManualReview    ExecutableCoverageOutcome = "MANUAL_REVIEW"
+	CoverageCoveredByModule    ExecutableCoverageOutcome = "COVERED_BY_EXPLICIT_MODULE_OBSERVATION"
+	CoveragePostInstallCommand ExecutableCoverageOutcome = "POST_INSTALL_COMMAND_OBSERVATION"
+	CoverageManualReview       ExecutableCoverageOutcome = "MANUAL_REVIEW"
 )
 
 // RuntimeSurface accounts for all categorized runtime surfaces in a wheel.
@@ -128,18 +139,19 @@ type RuntimeSurface struct {
 // ObservationPlan represents the validated, bounded execution plan agreed upon
 // by the static planner and the dynamic sandbox backend.
 type ObservationPlan struct {
-	Project            string                   `json:"project"`
-	Version            string                   `json:"version"`
-	SiteStartupHooks   []string                 `json:"site_startup_hooks,omitempty"`
-	SiteHookLines      []SiteHookLine           `json:"site_hook_lines,omitempty"`
-	ImportCandidates   []string                 `json:"import_candidates,omitempty"`
-	EntryPointCoverage map[string]string        `json:"entry_point_coverage,omitempty"`
-	EntryPointDetails  []EntryPoint             `json:"entry_point_details,omitempty"`
-	ScriptCoverage     map[string]string        `json:"script_coverage,omitempty"`
-	NoImportSurface    bool                     `json:"no_import_surface"`
-	MetadataOnly       bool                     `json:"metadata_only"`
-	TotalImportCount   int                      `json:"total_import_count"`
-	Units              []PlannedObservationUnit `json:"units,omitempty"`
+	Project                  string                   `json:"project"`
+	Version                  string                   `json:"version"`
+	SiteStartupHooks         []string                 `json:"site_startup_hooks,omitempty"`
+	SiteHookLines            []SiteHookLine           `json:"site_hook_lines,omitempty"`
+	RequiredImportCandidates []string                 `json:"required_import_candidates,omitempty"`
+	ImportCandidates         []string                 `json:"import_candidates,omitempty"`
+	EntryPointCoverage       map[string]string        `json:"entry_point_coverage,omitempty"`
+	EntryPointDetails        []EntryPoint             `json:"entry_point_details,omitempty"`
+	ScriptCoverage           map[string]string        `json:"script_coverage,omitempty"`
+	NoImportSurface          bool                     `json:"no_import_surface"`
+	MetadataOnly             bool                     `json:"metadata_only"`
+	TotalImportCount         int                      `json:"total_import_count"`
+	Units                    []PlannedObservationUnit `json:"units,omitempty"`
 }
 
 // BuildObservationPlan validates the complete installed runtime surface.
@@ -211,9 +223,21 @@ func BuildObservationPlan(inspection WheelInspection, policy ResourcePolicy) (Ob
 		}
 		return hookLines[i].Line < hookLines[j].Line
 	})
+	required := append([]string(nil), inspection.ImportNames...)
+	// Executable startup statements can dynamically reach modules. Until exact
+	// independence is established, command targets in that wheel remain required.
+	for _, ep := range inspection.Surface.EntryPointDetails {
+		if ep.Group != "console_scripts" && ep.Group != "gui_scripts" || hasExecutableHook(hookLines) {
+			if containsCandidate(candidates, ep.Module) {
+				required = append(required, ep.Module)
+			}
+		}
+	}
+	required = deduplicateSorted(required)
+	classification := ObservationPlan{RequiredImportCandidates: required, EntryPointDetails: inspection.Surface.EntryPointDetails}
 	units := make([]PlannedObservationUnit, 0, len(candidates)+len(inspection.Surface.SiteHookLines)+1)
 	for _, candidate := range candidates {
-		units = append(units, PlannedObservationUnit{Kind: DirectImportUnit, Candidate: candidate})
+		units = append(units, PlannedObservationUnit{Kind: DirectImportUnit, Candidate: candidate, Coverage: classification.importCoverage(candidate)})
 	}
 	for _, line := range hookLines {
 		if line.Statement != "" {
@@ -231,7 +255,7 @@ func BuildObservationPlan(inspection WheelInspection, policy ResourcePolicy) (Ob
 	for _, ep := range inspection.Surface.EntryPointDetails {
 		key := ep.key()
 		if containsCandidate(candidates, ep.Module) {
-			epCoverage[key] = string(CoverageCoveredByModule)
+			epCoverage[key] = string(classification.entryPointCoverage(ep.Module))
 		} else {
 			epCoverage[key] = string(CoverageManualReview)
 		}
@@ -248,18 +272,19 @@ func BuildObservationPlan(inspection WheelInspection, policy ResourcePolicy) (Ob
 	}
 
 	return ObservationPlan{
-		Project:            inspection.Project,
-		Version:            inspection.Version,
-		SiteStartupHooks:   hooks,
-		SiteHookLines:      hookLines,
-		ImportCandidates:   candidates,
-		EntryPointCoverage: epCoverage,
-		EntryPointDetails:  append([]EntryPoint(nil), inspection.Surface.EntryPointDetails...),
-		ScriptCoverage:     scriptCoverage,
-		NoImportSurface:    false,
-		MetadataOnly:       false,
-		TotalImportCount:   len(candidates),
-		Units:              units,
+		Project:                  inspection.Project,
+		Version:                  inspection.Version,
+		SiteStartupHooks:         hooks,
+		SiteHookLines:            hookLines,
+		ImportCandidates:         candidates,
+		RequiredImportCandidates: required,
+		EntryPointCoverage:       epCoverage,
+		EntryPointDetails:        append([]EntryPoint(nil), inspection.Surface.EntryPointDetails...),
+		ScriptCoverage:           scriptCoverage,
+		NoImportSurface:          false,
+		MetadataOnly:             false,
+		TotalImportCount:         len(candidates),
+		Units:                    units,
 	}, nil
 }
 
@@ -285,14 +310,50 @@ func installedModuleExists(files []InstalledFile, module string) bool {
 			return true
 		}
 	}
-	return false
+	// A declared entry point can name an implicit namespace package. Its
+	// directory is authenticated by an installed descendant, even when that
+	// descendant is opaque data. This adds an exact independent import unit;
+	// it does not turn the resource into executable code or trusted content.
+	ownedDirectory := false
+	for _, file := range files {
+		if file.Scheme == SchemeSite && strings.HasPrefix(file.Destination, stem+"/") {
+			ownedDirectory = true
+			break
+		}
+	}
+	if !ownedDirectory {
+		return false
+	}
+	// FileFinder chooses a regular module before an implicit namespace. A
+	// module at any parent would prevent reaching this exact directory.
+	parts := strings.Split(stem, "/")
+	for depth := 1; depth < len(parts); depth++ {
+		parent := strings.Join(parts[:depth], "/")
+		packageParent, moduleParent := false, false
+		for _, file := range files {
+			if file.Scheme != SchemeSite {
+				continue
+			}
+			if file.Destination == parent+"/__init__.py" {
+				packageParent = true
+			}
+			if file.Destination == parent+".py" || file.Role == RuntimeRolePythonExtension &&
+				(file.Destination == parent+".cpython-314-x86_64-linux-gnu.so" || file.Destination == parent+".abi3.so" || file.Destination == parent+".so") {
+				moduleParent = true
+			}
+		}
+		if moduleParent && !packageParent {
+			return false
+		}
+	}
+	return true
 }
 
 // Admissible rejects every unsupported executable disposition before any
 // wheel code is introduced to a runtime.
 func (p ObservationPlan) Admissible() bool {
 	for _, outcome := range p.EntryPointCoverage {
-		if outcome != string(CoverageCoveredByModule) {
+		if outcome != string(CoverageCoveredByModule) && outcome != string(CoveragePostInstallCommand) {
 			return false
 		}
 	}
@@ -313,7 +374,7 @@ func ValidateTypedObservationPlan(p ObservationPlan, policy ResourcePolicy) erro
 		return errors.New("observation plan exceeds policy or lacks identity")
 	}
 	if p.NoImportSurface {
-		if len(p.ImportCandidates) != 0 || len(p.SiteStartupHooks) != 0 || len(p.SiteHookLines) != 0 || len(p.Units) != 0 || len(p.EntryPointCoverage) != 0 || len(p.ScriptCoverage) != 0 {
+		if len(p.RequiredImportCandidates) != 0 || len(p.ImportCandidates) != 0 || len(p.SiteStartupHooks) != 0 || len(p.SiteHookLines) != 0 || len(p.Units) != 0 || len(p.EntryPointCoverage) != 0 || len(p.ScriptCoverage) != 0 {
 			return errors.New("no-import plan contains executable surface")
 		}
 		return nil
@@ -337,9 +398,14 @@ func ValidateTypedObservationPlan(p ObservationPlan, policy ResourcePolicy) erro
 			return errors.New("active site hook line is invalid")
 		}
 	}
+	for i, candidate := range p.RequiredImportCandidates {
+		if !containsCandidate(p.ImportCandidates, candidate) || i > 0 && p.RequiredImportCandidates[i-1] >= candidate {
+			return errors.New("required import provenance is invalid")
+		}
+	}
 	expected := make([]PlannedObservationUnit, 0, len(p.ImportCandidates)+len(p.SiteHookLines)+1)
 	for _, candidate := range p.ImportCandidates {
-		expected = append(expected, PlannedObservationUnit{Kind: DirectImportUnit, Candidate: candidate})
+		expected = append(expected, PlannedObservationUnit{Kind: DirectImportUnit, Candidate: candidate, Coverage: p.importCoverage(candidate)})
 	}
 	for _, line := range p.SiteHookLines {
 		if line.Statement != "" {
@@ -365,7 +431,7 @@ func ValidateTypedObservationPlan(p ObservationPlan, policy ResourcePolicy) erro
 		key := ep.key()
 		want := string(CoverageManualReview)
 		if containsCandidate(p.ImportCandidates, ep.Module) {
-			want = string(CoverageCoveredByModule)
+			want = string(p.entryPointCoverage(ep.Module))
 		}
 		if p.EntryPointCoverage[key] != want {
 			return errors.New("entry point target coverage is inexact")
@@ -388,6 +454,43 @@ func ValidateTypedObservationPlan(p ObservationPlan, policy ResourcePolicy) erro
 func containsString(items []string, value string) bool {
 	for _, item := range items {
 		if item == value {
+			return true
+		}
+	}
+	return false
+}
+
+// An entry point may add a post-install command probe, never downgrade a
+// required import or a non-command group. Legacy plans without metadata stay required.
+func (p ObservationPlan) importCoverage(module string) ObservationCoverage {
+	if containsCandidate(p.RequiredImportCandidates, module) || hasExecutableHook(p.SiteHookLines) {
+		return RequiredObservation
+	}
+	command := false
+	for _, ep := range p.EntryPointDetails {
+		if ep.Module != module {
+			continue
+		}
+		if ep.Group != "console_scripts" && ep.Group != "gui_scripts" {
+			return RequiredObservation
+		}
+		command = true
+	}
+	if command {
+		return PostInstallCommandObservation
+	}
+	return RequiredObservation
+}
+func (p ObservationPlan) entryPointCoverage(module string) ExecutableCoverageOutcome {
+	if p.importCoverage(module) == PostInstallCommandObservation {
+		return CoveragePostInstallCommand
+	}
+	return CoverageCoveredByModule
+}
+
+func hasExecutableHook(lines []SiteHookLine) bool {
+	for _, line := range lines {
+		if line.Statement != "" {
 			return true
 		}
 	}

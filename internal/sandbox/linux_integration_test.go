@@ -16,6 +16,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"strings"
 	"testing"
 	"time"
@@ -367,21 +368,47 @@ func TestLinuxPyPISdistBuildIntegration(t *testing.T) {
 
 func linuxDynamicWheel(t *testing.T) []byte {
 	t.Helper()
+	return linuxDynamicWheelWithProgram(t, "VALUE = 'ok'\n")
+}
+
+func linuxDynamicWheelWithProgram(t *testing.T, program string) []byte {
+	return linuxDynamicWheelWithProgramAndFiles(t, program, nil)
+}
+
+func linuxDynamicWheelWithProgramAndFiles(t *testing.T, program string, additional map[string][]byte) []byte {
+	return linuxDynamicProjectWheel(t, "example", program, additional)
+}
+
+func linuxDynamicProjectWheel(t *testing.T, project, program string, additional map[string][]byte) []byte {
+	t.Helper()
+	module := project + "/__init__.py"
+	metadata, wheelMetadata, recordPath := project+"-1.0.dist-info/METADATA", project+"-1.0.dist-info/WHEEL", project+"-1.0.dist-info/RECORD"
 	files := map[string][]byte{
-		"example/__init__.py":            []byte("VALUE = 'ok'\n"),
-		"example-1.0.dist-info/METADATA": []byte("Metadata-Version: 2.4\nName: example\nVersion: 1.0\nImport-Name: example\n"),
-		"example-1.0.dist-info/WHEEL":    []byte("Wheel-Version: 1.0\nGenerator: heliopause-test\nRoot-Is-Purelib: true\nTag: py3-none-any\n"),
+		module:        []byte(program),
+		metadata:      []byte("Metadata-Version: 2.4\nName: " + project + "\nVersion: 1.0\nImport-Name: " + project + "\n"),
+		wheelMetadata: []byte("Wheel-Version: 1.0\nGenerator: heliopause-test\nRoot-Is-Purelib: true\nTag: py3-none-any\n"),
 	}
+	names := []string{module, metadata, wheelMetadata}
+	extraNames := make([]string, 0, len(additional))
+	for name, body := range additional {
+		if _, exists := files[name]; exists || name == recordPath {
+			t.Fatalf("fixture addition replaces canonical file: %s", name)
+		}
+		files[name] = body
+		extraNames = append(extraNames, name)
+	}
+	sort.Strings(extraNames)
+	names = append(names, extraNames...)
 	var record strings.Builder
-	for _, name := range []string{"example/__init__.py", "example-1.0.dist-info/METADATA", "example-1.0.dist-info/WHEEL"} {
+	for _, name := range names {
 		sum := sha256.Sum256(files[name])
 		record.WriteString(name + ",sha256=" + base64.RawURLEncoding.EncodeToString(sum[:]) + "," + fmt.Sprintf("%d", len(files[name])) + "\n")
 	}
-	record.WriteString("example-1.0.dist-info/RECORD,,\n")
-	files["example-1.0.dist-info/RECORD"] = []byte(record.String())
+	record.WriteString(recordPath + ",,\n")
+	files[recordPath] = []byte(record.String())
 	var output bytes.Buffer
 	writer := zip.NewWriter(&output)
-	for _, name := range []string{"example/__init__.py", "example-1.0.dist-info/METADATA", "example-1.0.dist-info/WHEEL", "example-1.0.dist-info/RECORD"} {
+	for _, name := range append(names, recordPath) {
 		entry, err := writer.Create(name)
 		if err != nil {
 			t.Fatal(err)

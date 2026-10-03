@@ -3,6 +3,7 @@ package pypi
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
@@ -39,6 +40,13 @@ func (i *DynamicInspector) InspectWheelWithClosure(ctx context.Context, artifact
 	return i.inspectWheelWithRunner(ctx, artifact, static, closure, runner)
 }
 
+func (i *DynamicInspector) InspectWheelWithPrerequisites(ctx context.Context, artifact domain.AcquiredArtifact, static artifactpypi.WheelInspection, closure, inputs []domain.AcquiredArtifact) (domain.InspectionReport, error) {
+	if len(inputs) != 1 {
+		return domain.InspectionReport{}, errors.New("inspection prerequisite input must be explicit and bounded")
+	}
+	return i.inspectWheelWithRunner(ctx, artifact, static, closure, i.runner, inputs...)
+}
+
 func (i *DynamicInspector) inspectWheel(ctx context.Context, artifact domain.AcquiredArtifact, static artifactpypi.WheelInspection, closure []domain.AcquiredArtifact) (domain.InspectionReport, error) {
 	if runner, ok := i.runner.(sandbox.DependencyAwarePythonWheelRunner); ok && len(closure) > 1 {
 		return i.inspectWheelWithRunner(ctx, artifact, static, closure, runner)
@@ -54,7 +62,7 @@ type pythonWheelClosureRunner interface {
 	InspectWheelWithClosure(context.Context, domain.AcquiredArtifact, []string, []domain.AcquiredArtifact) (domain.SandboxResult, error)
 }
 
-func (i *DynamicInspector) inspectWheelWithRunner(ctx context.Context, artifact domain.AcquiredArtifact, static artifactpypi.WheelInspection, closure []domain.AcquiredArtifact, runner pythonWheelInspectionRunner) (domain.InspectionReport, error) {
+func (i *DynamicInspector) inspectWheelWithRunner(ctx context.Context, artifact domain.AcquiredArtifact, static artifactpypi.WheelInspection, closure []domain.AcquiredArtifact, runner pythonWheelInspectionRunner, inputs ...domain.AcquiredArtifact) (domain.InspectionReport, error) {
 	if i == nil || i.runner == nil || ctx == nil || (artifact.Identity().Variant() != "wheel" && artifact.Identity().Variant() != "derived-wheel") || static.Project != artifact.Identity().Name() || static.Version != artifact.Identity().Version() || static.NoImportSurface && len(static.ImportNames) != 0 {
 		return domain.InspectionReport{}, errors.New("pypi dynamic inspection request is invalid")
 	}
@@ -77,8 +85,15 @@ func (i *DynamicInspector) inspectWheelWithRunner(ctx context.Context, artifact 
 		return incompleteReport(checkID, "M5_PYPI_DYNAMIC_SURFACE_UNSUPPORTED")
 	}
 	var result domain.SandboxResult
-	if planRunner, ok := runner.(sandbox.PlanAwarePythonWheelRunner); ok {
-		result, err = planRunner.InspectWheelWithPlan(ctx, artifact, plan, closure)
+	var observed sandbox.PythonObservationResult
+	if len(inputs) != 0 {
+		planRunner, ok := runner.(sandbox.InspectionPrerequisitePythonWheelRunner)
+		if !ok {
+			return domain.InspectionReport{}, errors.New("dynamic runner cannot bind inspection prerequisites")
+		}
+		observed, err = planRunner.InspectWheelWithPrerequisites(ctx, artifact, plan, closure, inputs)
+	} else if planRunner, ok := runner.(sandbox.PlanAwarePythonWheelRunner); ok {
+		observed, err = planRunner.InspectWheelWithPlan(ctx, artifact, plan, closure)
 	} else if static.NoImportSurface {
 		noImportRunner, ok := i.runner.(sandbox.NoImportSurfacePythonWheelRunner)
 		if !ok {
@@ -92,12 +107,18 @@ func (i *DynamicInspector) inspectWheelWithRunner(ctx context.Context, artifact 
 	} else {
 		result, err = runner.InspectWheel(ctx, artifact, static.ImportNames)
 	}
+	if observed.SessionID().String() != "" {
+		result = observed.SandboxResult
+	}
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
 	checkName, evidenceName := "pypi-dynamic-import", "pypi-dynamic-import-result"
 	if static.NoImportSurface {
 		checkName, evidenceName = "pypi-dynamic-import-not-applicable", "pypi-dynamic-import-not-applicable-result"
+	}
+	if len(inputs) != 0 {
+		checkName, evidenceName = "pypi-dynamic-import-supplemented", "pypi-dynamic-import-supplemented-result"
 	}
 	checkID, err := domain.NewCheckID(checkName)
 	if err != nil {
@@ -128,6 +149,31 @@ func (i *DynamicInspector) inspectWheelWithRunner(ctx context.Context, artifact 
 	if err != nil {
 		return incompleteReport(checkID, "M11_DYNAMIC_SUMMARY_INVALID")
 	}
+	if len(inputs) != 0 {
+		binding, err := inspectionEnvironmentBinding(ctx, artifact, plan, closure, inputs)
+		if err != nil {
+			return domain.InspectionReport{}, err
+		}
+		// The supplemental check deliberately makes no assertion that these
+		// broader dependency probes work without the inspection-only input.
+		identity := inputs[0].Identity()
+		encoded, encodeErr := json.Marshal(struct {
+			Schema              string          `json:"schema"`
+			Scope               string          `json:"scope"`
+			OriginalEnvironment string          `json:"original_environment"`
+			Source              string          `json:"input_source"`
+			Project             string          `json:"input_project"`
+			Version             string          `json:"input_version"`
+			SHA256              string          `json:"input_sha256"`
+			Reason              string          `json:"reason"`
+			Environment         string          `json:"environment_sha256"`
+			Observations        json.RawMessage `json:"observations"`
+		}{"m5-inspection-environment/v1", "inspection-only-prerequisite", "NOT_ATTESTED", identity.Source().String(), identity.Name(), identity.Version(), inputs[0].Digest().String(), "BROADER_MODULE_PROBES", binding, json.RawMessage(summary)})
+		if encodeErr != nil {
+			return domain.InspectionReport{}, encodeErr
+		}
+		summary = string(encoded)
+	}
 	evidenceID, err := domain.NewEvidenceID(evidenceName)
 	if err != nil {
 		return domain.InspectionReport{}, err
@@ -144,7 +190,11 @@ func (i *DynamicInspector) inspectWheelWithRunner(ctx context.Context, artifact 
 		}
 		findings = append(findings, finding)
 	}
-	return domain.NewInspectionReport(execution, findings, []domain.Evidence{evidence})
+	commandEvidence, err := commandObservationEvidence(checkID, artifact, plan, inputs, observed.Commands, len(findings) == 0)
+	if err != nil {
+		return incompleteReport(checkID, "M5_PYPI_COMMAND_EVIDENCE_INCOMPLETE")
+	}
+	return domain.NewInspectionReport(execution, findings, append([]domain.Evidence{evidence}, commandEvidence...))
 }
 
 func incompleteReport(checkID domain.CheckID, limitation string) (domain.InspectionReport, error) {

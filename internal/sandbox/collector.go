@@ -14,12 +14,14 @@ import (
 // It is retained only to explain a fail-closed decision; observations remain
 // the sole policy input.
 type TraceDiagnostic struct {
-	Reason          string
-	Events          uint64
-	Bytes           uint64
-	SessionComplete bool
-	LastKind        string
-	KindCounts      map[string]uint64
+	Reason            string
+	FaultSite         string
+	FaultImageLocator uint64
+	Events            uint64
+	Bytes             uint64
+	SessionComplete   bool
+	LastKind          string
+	KindCounts        map[string]uint64
 }
 
 type traceFault interface{ TraceFaultReason() string }
@@ -167,6 +169,14 @@ func collectTraceDiagnostic(ctx context.Context, reader TraceReader) ([]domain.S
 			var fault traceFault
 			if errors.As(err, &fault) {
 				diagnostic.Reason = fault.TraceFaultReason()
+				var site interface{ TraceFaultSite() string }
+				if errors.As(err, &site) {
+					diagnostic.FaultSite = site.TraceFaultSite()
+				}
+				var locator interface{ TraceFaultImageLocator() uint64 }
+				if errors.As(err, &locator) {
+					diagnostic.FaultImageLocator = locator.TraceFaultImageLocator()
+				}
 			}
 			diagnostic.Events, diagnostic.Bytes = uint64(eventCount), totalBytes
 			diagnostic.KindCounts = cloneKindCounts(kindCounts)
@@ -238,7 +248,14 @@ func collectTraceDiagnostic(ctx context.Context, reader TraceReader) ([]domain.S
 }
 
 func (d TraceDiagnostic) String() string {
-	return fmt.Sprintf("reason=%s events=%d bytes=%d session_complete=%t last_kind=%s kinds=%s", d.Reason, d.Events, d.Bytes, d.SessionComplete, d.LastKind, formatKindCounts(d.KindCounts))
+	site := ""
+	if d.FaultSite != "" {
+		site = " fault_site=" + d.FaultSite
+	}
+	if d.FaultImageLocator != 0 {
+		site += fmt.Sprintf(" image_locator_fnv1a64=%016x", d.FaultImageLocator)
+	}
+	return fmt.Sprintf("reason=%s events=%d bytes=%d session_complete=%t last_kind=%s kinds=%s", d.Reason, d.Events, d.Bytes, d.SessionComplete, d.LastKind, formatKindCounts(d.KindCounts)) + site
 }
 
 func traceObservation(kind string) (domain.ObservationCategory, string, bool) {

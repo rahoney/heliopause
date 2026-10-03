@@ -3,6 +3,7 @@ package sandbox
 import (
 	"errors"
 	"fmt"
+	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"math"
 	"sort"
 	"sync"
@@ -12,10 +13,12 @@ import (
 // observationUnit is frozen by the controller before any artifact execution.
 // Neither process output nor Python state is an input to this ledger.
 type observationUnit struct {
-	id        string
-	kind      observationUnitKind
-	candidate string
-	program   string
+	id          string
+	kind        observationUnitKind
+	candidate   string
+	program     string
+	ownerDigest string
+	coverage    artifactpypi.ObservationCoverage
 }
 
 type observationUnitKind string
@@ -40,6 +43,7 @@ type observationUnitState struct {
 	container string
 	launched  bool
 	finished  bool
+	outcome   observationTerminalOutcome
 }
 
 // observationResourcePolicy is a single artifact-transaction authorization.
@@ -105,6 +109,9 @@ func newObservationTransaction(policy observationResourcePolicy, units []observa
 			(unit.kind != observationDirectImport && unit.kind != observationActivePTHHook && unit.kind != observationInstalledStartup) {
 			return nil, errors.New("python observation unit identity is missing or repeated")
 		}
+		if unit.coverage != artifactpypi.RequiredObservation && (unit.coverage != artifactpypi.PostInstallCommandObservation || unit.kind != observationDirectImport) {
+			return nil, errors.New("invalid observation coverage")
+		}
 		transaction.expected[unit.id] = &observationUnitState{unit: unit}
 		transaction.order = append(transaction.order, unit.id)
 	}
@@ -126,12 +133,18 @@ func (t *observationTransaction) sampleCPU(usageUsec uint64, at time.Time) error
 // the reserve already includes this interval, and no new unit can begin until
 // the resulting parent-cgroup sample has been accepted.
 func (t *observationTransaction) sampleCPUAfterTransition(usageUsec uint64, started, at time.Time) error {
+	return t.accountCPUAfterTransition(usageUsec, started, at, false)
+}
+
+// Termination still accounts exact usage after a nonqualifying unit. The
+// failed bit is retained; these samples cannot admit or complete any unit.
+func (t *observationTransaction) accountCPUAfterTransition(usageUsec uint64, started, at time.Time, termination bool) error {
 	if t == nil {
 		return errors.New("python observation CPU accounting is unavailable")
 	}
 	t.mu.Lock()
 	defer t.mu.Unlock()
-	if t.failed || t.lastSample.IsZero() || started.Before(t.lastSample) ||
+	if (t.failed && !termination) || t.lastSample.IsZero() || started.Before(t.lastSample) ||
 		started.Sub(t.lastSample) > t.policy.pollInterval || at.Before(started) ||
 		at.Sub(started) > t.policy.stopBound || usageUsec < t.usageUsec {
 		t.failed = true
@@ -147,10 +160,14 @@ func (t *observationTransaction) sampleCPUAfterTransition(usageUsec uint64, star
 }
 
 func (t *observationTransaction) sampleCPULocked(usageUsec uint64, at time.Time) error {
+	return t.accountCPULocked(usageUsec, at, false)
+}
+
+func (t *observationTransaction) accountCPULocked(usageUsec uint64, at time.Time, termination bool) error {
 	if t == nil {
 		return errors.New("python observation CPU accounting is unavailable or late")
 	}
-	if t.failed || !at.Before(t.policy.wallDeadline) ||
+	if (t.failed && !termination) || !at.Before(t.policy.wallDeadline) ||
 		(!t.lastSample.IsZero() && (at.Before(t.lastSample) || at.Sub(t.lastSample) > t.policy.pollInterval)) ||
 		usageUsec < t.usageUsec {
 		t.failed = true
@@ -234,13 +251,14 @@ func (t *observationTransaction) finishUnit(e externalUnitEvidence, at time.Time
 	if err := t.sampleCPULocked(e.cumulativeCPUUsec, at); err != nil {
 		return err
 	}
-	if e.terminalOutcome != observationZeroExit {
+	if e.terminalOutcome != observationZeroExit && !(unit.unit.coverage == artifactpypi.PostInstallCommandObservation && e.terminalOutcome == observationNonzeroExit) {
 		t.failed = true
 		return errors.New("python observation unit had a nonqualifying external outcome")
 	}
 	t.events += e.events
 	t.bytes += e.bytes
 	unit.finished = true
+	unit.outcome = e.terminalOutcome
 	t.active = ""
 	return nil
 }
@@ -263,4 +281,17 @@ func (t *observationTransaction) finalize(finalCPUUsec uint64, at time.Time) err
 		}
 	}
 	return nil
+}
+
+func (t *observationTransaction) commandObservations() []PythonCommandObservation {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	var out []PythonCommandObservation
+	for _, id := range t.order {
+		state := t.expected[id]
+		if state.finished && state.unit.coverage == artifactpypi.PostInstallCommandObservation {
+			out = append(out, PythonCommandObservation{Module: state.unit.candidate, UnitID: id, OwnerSHA256: state.unit.ownerDigest, ZeroExit: state.outcome == observationZeroExit})
+		}
+	}
+	return out
 }

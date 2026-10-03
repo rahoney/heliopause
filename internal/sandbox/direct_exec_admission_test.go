@@ -1537,3 +1537,52 @@ func TestSuccessfulRunnerWaitsForDelayedSentryExecWithoutCancel(t *testing.T) {
 		t.Fatal("successful delayed SENTRY_EXEC did not retain active session")
 	}
 }
+
+func (r *testRealExecRunner) RunDiscard(ctx context.Context, binary string, arguments ...string) error {
+	_, err := r.Output(ctx, binary, arguments...)
+	return err
+}
+
+func TestDiscardNonzeroRequiresConsumedAdmission(t *testing.T) {
+	for _, consumed := range []bool{false, true} {
+		t.Run(map[bool]string{false: "cancelled", true: "consumed"}[consumed], func(t *testing.T) {
+			const id = "0123456789abcdef"
+			obs := startRealObserverForTest(t, id)
+			registerAdmissionSession(t, id)
+			// Only a local test-owned shell runs. This manufactures an actual OS exit
+			// status, not artifact stderr or an error string resembling one.
+			targetErr := exec.Command("/bin/sh", "-c", "exit 37").Run()
+			runner := &testRealExecRunner{err: targetErr}
+			if consumed {
+				runner.onExec = func(nonce string) { obs.sendSentryExec(t, id, boundaryLaunchMode, nonce) }
+			}
+			err := admissionAwareRunner(runner).(discardCommandRunner).RunDiscard(context.Background(), "docker", boundaryExecArguments(id, boundaryLaunchMode, "/bin/false")...)
+			var terminal *observedDirectExecExit
+			if errors.As(err, &terminal) != consumed || !errors.Is(err, targetErr) {
+				t.Fatalf("consumed=%v: %v", consumed, err)
+			}
+			if !consumed && !errors.Is(err, errDirectExecNotStarted) {
+				t.Fatal("cancelled launch lost uncertainty", err)
+			}
+		})
+	}
+}
+
+func TestDiscardReservedAndNonzeroExitStatuses(t *testing.T) {
+	for _, tc := range []struct {
+		status   string
+		observed bool
+	}{{"1", true}, {"37", true}, {"125", false}, {"126", false}, {"127", false}, {"200", true}} {
+		t.Run(tc.status, func(t *testing.T) {
+			const id = "0123456789abcdef"
+			obs := startRealObserverForTest(t, id)
+			registerAdmissionSession(t, id)
+			runner := &testRealExecRunner{err: exec.Command("/bin/sh", "-c", "exit "+tc.status).Run(), onExec: func(nonce string) { obs.sendSentryExec(t, id, boundaryLaunchMode, nonce) }}
+			err := admissionAwareRunner(runner).(discardCommandRunner).RunDiscard(context.Background(), "docker", boundaryExecArguments(id, boundaryLaunchMode, "/bin/false")...)
+			var terminal *observedDirectExecExit
+			if errors.As(err, &terminal) != tc.observed {
+				t.Fatalf("status=%s observed=%v error=%v", tc.status, tc.observed, err)
+			}
+		})
+	}
+}

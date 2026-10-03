@@ -29,11 +29,34 @@ type PythonWheelRunner interface {
 	InspectWheel(context.Context, domain.AcquiredArtifact, []string) (domain.SandboxResult, error)
 }
 
-// PlanAwarePythonWheelRunner accepts a static observation plan agreed upon
-// by the planner and dynamic backend.
+// PythonCommandObservation records an externally reconciled target import.
+// ZeroExit does not assert normal import return or later command functionality.
+type PythonCommandObservation struct {
+	Module      string `json:"module"`
+	UnitID      string `json:"unit_id"`
+	OwnerSHA256 string `json:"owner_sha256"`
+	ZeroExit    bool   `json:"zero_exit"`
+}
+
+// SandboxCompleted still requires complete trusted lifecycle evidence. Commands
+// are externally reconciled bounded outcomes, never interpreter receipts.
+type PythonObservationResult struct {
+	domain.SandboxResult
+	Commands []PythonCommandObservation
+}
+
+// PlanAwarePythonWheelRunner accepts the canonical authenticated observation plan.
 type PlanAwarePythonWheelRunner interface {
 	PythonWheelRunner
-	InspectWheelWithPlan(context.Context, domain.AcquiredArtifact, artifactpypi.ObservationPlan, []domain.AcquiredArtifact) (domain.SandboxResult, error)
+	InspectWheelWithPlan(context.Context, domain.AcquiredArtifact, artifactpypi.ObservationPlan, []domain.AcquiredArtifact) (PythonObservationResult, error)
+}
+
+// InspectionPrerequisitePythonWheelRunner observes explicitly selected leaf
+// inputs and the target together under one transaction authorization. These
+// inputs belong to inspection, never to the requested dependency graph.
+type InspectionPrerequisitePythonWheelRunner interface {
+	PlanAwarePythonWheelRunner
+	InspectWheelWithPrerequisites(context.Context, domain.AcquiredArtifact, artifactpypi.ObservationPlan, []domain.AcquiredArtifact, []domain.AcquiredArtifact) (PythonObservationResult, error)
 }
 
 // DependencyAwarePythonWheelRunner is the optional graph-install capability
@@ -194,7 +217,22 @@ func (b *PythonDynamicBackend) InspectWheelWithoutImportSurface(ctx context.Cont
 	return b.inspectWheelWithClosure(ctx, artifact, nil, closure, true)
 }
 
-func (b *PythonDynamicBackend) InspectWheelWithPlan(ctx context.Context, artifact domain.AcquiredArtifact, plan artifactpypi.ObservationPlan, closure []domain.AcquiredArtifact) (domain.SandboxResult, error) {
+func (b *PythonDynamicBackend) InspectWheelWithPlan(ctx context.Context, artifact domain.AcquiredArtifact, plan artifactpypi.ObservationPlan, closure []domain.AcquiredArtifact) (PythonObservationResult, error) {
+	var commands []PythonCommandObservation
+	result, err := b.inspectWheelWithPlanAndPrerequisites(ctx, artifact, plan, closure, nil, &commands)
+	return PythonObservationResult{result, commands}, err
+}
+
+func (b *PythonDynamicBackend) InspectWheelWithPrerequisites(ctx context.Context, artifact domain.AcquiredArtifact, plan artifactpypi.ObservationPlan, closure, prerequisites []domain.AcquiredArtifact) (PythonObservationResult, error) {
+	if len(prerequisites) == 0 {
+		return PythonObservationResult{}, errors.New("inspection prerequisites must be explicit")
+	}
+	var commands []PythonCommandObservation
+	result, err := b.inspectWheelWithPlanAndPrerequisites(ctx, artifact, plan, closure, prerequisites, &commands)
+	return PythonObservationResult{result, commands}, err
+}
+
+func (b *PythonDynamicBackend) inspectWheelWithPlanAndPrerequisites(ctx context.Context, artifact domain.AcquiredArtifact, plan artifactpypi.ObservationPlan, closure, prerequisites []domain.AcquiredArtifact, commands *[]PythonCommandObservation) (domain.SandboxResult, error) {
 	if b == nil || b.runner == nil || b.introducer == nil || b.observer == nil || b.probe == nil || b.newSessionID == nil || ctx == nil {
 		return domain.SandboxResult{}, errors.New("python dynamic inspection request is invalid")
 	}
@@ -215,7 +253,7 @@ func (b *PythonDynamicBackend) InspectWheelWithPlan(ctx context.Context, artifac
 	}
 	// Only the controller-owned transaction ledger can qualify a plan. Process
 	// output, Python-side markers and successful exit alone have no authority.
-	return b.executeTrustedTransaction(ctx, sessionID, artifact, plan, closure)
+	return b.executeTrustedTransaction(ctx, sessionID, artifact, plan, closure, commands, prerequisites...)
 }
 
 func (b *PythonDynamicBackend) inspectWheelWithClosure(ctx context.Context, artifact domain.AcquiredArtifact, imports []string, closure []domain.AcquiredArtifact, noImportSurface bool) (domain.SandboxResult, error) {
@@ -232,7 +270,8 @@ func (b *PythonDynamicBackend) inspectWheelWithClosure(ctx context.Context, arti
 			Version:         artifact.Identity().Version(),
 			NoImportSurface: true,
 		}
-		return b.InspectWheelWithPlan(ctx, artifact, plan, closure)
+		result, err := b.InspectWheelWithPlan(ctx, artifact, plan, closure)
+		return result.SandboxResult, err
 	}
 
 	if len(imports) == 0 || len(imports) > resourcePolicy.MaxObservationImportsPerArtifact() {
@@ -248,15 +287,17 @@ func (b *PythonDynamicBackend) inspectWheelWithClosure(ctx context.Context, arti
 	imports = append([]string(nil), imports...)
 	sort.Strings(imports)
 	plan := artifactpypi.ObservationPlan{
-		Project:          artifact.Identity().Name(),
-		Version:          artifact.Identity().Version(),
-		ImportCandidates: imports,
-		TotalImportCount: len(imports),
+		Project:                  artifact.Identity().Name(),
+		Version:                  artifact.Identity().Version(),
+		ImportCandidates:         imports,
+		RequiredImportCandidates: append([]string(nil), imports...),
+		TotalImportCount:         len(imports),
 	}
 	for _, name := range imports {
 		plan.Units = append(plan.Units, artifactpypi.PlannedObservationUnit{Kind: artifactpypi.DirectImportUnit, Candidate: name})
 	}
-	return b.InspectWheelWithPlan(ctx, artifact, plan, closure)
+	result, err := b.InspectWheelWithPlan(ctx, artifact, plan, closure)
+	return result.SandboxResult, err
 }
 
 func (i *PythonArtifactIntroducer) introduceWheelAt(ctx context.Context, containerID string, artifact domain.AcquiredArtifact, destination string) error {

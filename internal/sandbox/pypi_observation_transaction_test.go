@@ -1,6 +1,7 @@
 package sandbox
 
 import (
+	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"strings"
 	"testing"
 	"time"
@@ -185,5 +186,62 @@ func TestObservationTransactionRejectsUnknownUnitAndNonzeroOutcome(t *testing.T)
 		closureUnchanged: true, cumulativeCPUUsec: 2,
 	}, now.Add(3*time.Millisecond)); err == nil {
 		t.Fatal("nonzero external outcome qualified")
+	}
+}
+
+func TestObservationCommandTerminalDoesNotRelaxTrustedEvidence(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		coverage artifactpypi.ObservationCoverage
+		terminal observationTerminalOutcome
+		broken   string
+		accept   bool
+	}{
+		{"command zero", artifactpypi.PostInstallCommandObservation, observationZeroExit, "", true},
+		{"command nonzero", artifactpypi.PostInstallCommandObservation, observationNonzeroExit, "", true},
+		{"required nonzero", artifactpypi.RequiredObservation, observationNonzeroExit, "", false},
+		{"command signal", artifactpypi.PostInstallCommandObservation, observationSignaled, "", false},
+		{"command timeout", artifactpypi.PostInstallCommandObservation, observationTimedOut, "", false},
+		{"observer", artifactpypi.PostInstallCommandObservation, observationNonzeroExit, "observer", false},
+		{"drain", artifactpypi.PostInstallCommandObservation, observationNonzeroExit, "drain", false},
+		{"accounting", artifactpypi.PostInstallCommandObservation, observationNonzeroExit, "accounting", false},
+		{"cleanup", artifactpypi.PostInstallCommandObservation, observationNonzeroExit, "cleanup", false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			now := time.Now()
+			tx, err := newObservationTransaction(testObservationPolicy(now), []observationUnit{{id: "u", kind: observationDirectImport, candidate: "pkg.cli", coverage: tc.coverage, ownerDigest: strings.Repeat("a", 64)}}, now)
+			if err != nil {
+				t.Fatal(err)
+			}
+			tx.preparationOK, tx.anchorAlive = true, true
+			if err := tx.sampleCPU(100, now.Add(time.Millisecond)); err != nil {
+				t.Fatal(err)
+			}
+			container := strings.Repeat("b", 64)
+			if err := tx.beginUnit("u", container, now.Add(2*time.Millisecond)); err != nil {
+				t.Fatal(err)
+			}
+			e := externalUnitEvidence{unitID: "u", containerID: container, terminalOutcome: tc.terminal, observerComplete: true, containerGone: true, cgroupDrained: true, closureUnchanged: true, events: 2, bytes: 20, cumulativeCPUUsec: 1000}
+			switch tc.broken {
+			case "observer":
+				e.observerComplete = false
+			case "drain":
+				e.cgroupDrained = false
+			case "accounting":
+				e.cumulativeCPUUsec = 1
+			}
+			finished := tx.finishUnit(e, now.Add(3*time.Millisecond))
+			tx.anchorAlive, tx.cleanupOK = false, tc.broken != "cleanup"
+			final := tx.finalize(1000, now.Add(4*time.Millisecond))
+			if (finished == nil && final == nil) != tc.accept {
+				t.Fatalf("finish=%v final=%v", finished, final)
+			}
+			if tc.accept {
+				got := tx.commandObservations()
+				if len(got) != 1 || got[0].ZeroExit != (tc.terminal == observationZeroExit) {
+					t.Fatal(got)
+				}
+			}
+		})
 	}
 }

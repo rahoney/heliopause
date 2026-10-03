@@ -115,6 +115,9 @@ Wheel 구조·identity·digest·RECORD·최종 설치 목적지 검증은 모든
   `include/python/<canonical-project>/...`, scripts는 `bin/...`로 계산한다.
 - Entry point의 extras는 정규화된 동일 식별자에 보존한다. 관찰은 정확한 target
   module import이며 callable 실행이나 optional dependency 환경 검증을 주장하지 않는다.
+  Console/gui metadata만의 target은 [M5 post-install command 관찰](../domain-model/14-m5-pypi-pip-contract.md)에 따라
+  사전에 coverage를 분리한다. Required 역할 우선, NOT_ATTESTED의 명시적 Evidence,
+  Finding/불완전 관찰의 기존 차단 및 승격 후 실행 enforcement 부재를 유지한다.
 - import 없는 metadata/native/resource wheel도 관찰된 설치와 정리 요구를 유지한다.
 - direct import의 외부 종료·controller 원장 완료는 모든 module body 실행 또는
   나중의 resource load에 대한 안전성 증명이 아니다.
@@ -124,6 +127,8 @@ Wheel 구조·identity·digest·RECORD·최종 설치 목적지 검증은 모든
 [CPython site](https://docs.python.org/3.14/library/site.html).
 
 ## Goal
+
+M12 검사 prerequisite는 [M5의 명시적 inspection-only 계약](../domain-model/14-m5-pypi-pip-contract.md#명시적인-inspection-only-prerequisite-2026-10-02-정책-정교화)을 따른다. 이는 선언되지 않은 upstream dependency edge를 만드는 resolver repair가 아니다. 원래 root/default 설치 검사와 승격 집합을 보존하고, 비-root broader probe의 보조 환경 결과를 별도로 표시한다. CPU 기본 입력은 empty이며 CUDA profile 등록 또는 보조 probe 성공을 full qualification으로 확대하지 않는다. 모든 지원 profile은 동일한 owner·한도·fail-closed 규칙을 사용한다.
 
 기존 PyPI/pip adapter와 venv transaction을 재사용하면서 공식 PyTorch wheel
 배포 경로를 지원한다. AI 개발자가 `torch`, `torchvision`, `torchaudio` 등

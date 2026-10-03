@@ -139,12 +139,12 @@ func TestWheelImportSurfaceFromRecordedFiles(t *testing.T) {
 			noImport:   true,
 		},
 		{
-			name: "unknown versioned library suffix fails closed",
+			name: "non-import versioned payload is a resource",
 			entries: []wheelTestEntry{
 				{name: "nvidia/libfoo.so.unknown", body: []byte("binary")},
 			},
 			wantImport: "",
-			noImport:   false,
+			noImport:   true,
 		},
 		{
 			name: "dist-info Python path hook fails closed",
@@ -1416,5 +1416,33 @@ func TestModelC_ScriptCoverageExplicit(t *testing.T) {
 	scriptOutcome, ok := scriptOnlyPlan.ScriptCoverage["bin/standalone-tool"]
 	if !ok || scriptOutcome != string(CoverageManualReview) {
 		t.Fatalf("script-only coverage outcome = %s, want %s", scriptOutcome, CoverageManualReview)
+	}
+}
+
+func TestModelC_VersionedNonImportPayloadRoles(t *testing.T) {
+	for _, name := range []string{"pkg/plugins/libPlugin.so.23.0git", "pkg/payload.so.release", "pkg/payload.opaque"} {
+		t.Run(name, func(t *testing.T) {
+			archive := recordedWheelArchive(t, "role-test", "1.0", "role_test-1.0.dist-info", []wheelTestEntry{{name: "pkg/__init__.py", body: []byte("pass\n")}, {name: name, body: []byte("untrusted payload")}}, []string{"py3-none-any"}, nil)
+			inspected := inspectTestWheel(t, archive, "role_test-1.0-py3-none-any.whl")
+			if len(inspected.Surface.ResourceFiles) != 1 || len(inspected.Surface.UnresolvedFiles) != 0 {
+				t.Fatalf("non-import payload roles: %#v", inspected.Surface)
+			}
+			for _, root := range []string{"cpu", "cu126", "cu130", "cu132"} {
+				profile, _ := PyTorchProfile(root)
+				plan, err := BuildObservationPlan(inspected, profile.ResourcePolicy())
+				if err != nil || ValidateTypedObservationPlan(plan, profile.ResourcePolicy()) != nil || len(plan.Units) != 1 {
+					t.Fatalf("root=%s plan=%#v err=%v", root, plan, err)
+				}
+			}
+		})
+	}
+	for _, name := range []string{"pkg/payload.pyc", "pkg/payload.pyd", "pkg/payload.cpython-313-x86_64-linux-gnu.so"} {
+		t.Run(name, func(t *testing.T) {
+			archive := recordedWheelArchive(t, "role-test", "1.0", "role_test-1.0.dist-info", []wheelTestEntry{{name: "pkg/__init__.py", body: []byte("pass\n")}, {name: name, body: []byte("untrusted payload")}}, []string{"py3-none-any"}, nil)
+			inspected := inspectTestWheel(t, archive, "role_test-1.0-py3-none-any.whl")
+			if _, err := BuildObservationPlan(inspected, defaultResourcePolicy()); err == nil {
+				t.Fatal("active/unsupported binding gained resource admission")
+			}
+		})
 	}
 }

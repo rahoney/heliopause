@@ -606,6 +606,7 @@ func initializeCommandTree(root *cobra.Command) {
 	pip := ensurePipCommand(root)
 	pipInstall := newStaticLeaf("install <project>[@<version>]", "Install a PyPI distribution into the active virtual environment", true)
 	pipInstall.Flags().String("source", "pypi", pythonSourceHelp())
+	pipInstall.Flags().String("inspection-prerequisites", "", "Explicit pinned JSON for one inspection-only non-root leaf prerequisite; not installed into the target")
 	pip.AddCommand(pipInstall)
 	github := ensureGitHubCommand(root)
 	github.AddCommand(newStaticLeaf("inspect <owner>/<repo>@<tag>#<asset>", "Inspect a GitHub Release asset", false))

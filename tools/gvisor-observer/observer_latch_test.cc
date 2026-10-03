@@ -87,7 +87,7 @@ bool SendAll(int fd, const std::string& value) {
   return send(fd, value.data(), value.size(), 0) == static_cast<ssize_t>(value.size());
 }
 
-bool ExpectRecordExact(int output, const char* container_id, const char* kind, const char* reason = nullptr);
+bool ExpectRecordExact(int output, const char* container_id, const char* kind, const char* reason = nullptr, const char* wanted_site = nullptr);
 bool ExpectRecord(int output, const char* container_id, const char* kind, const char* reason = nullptr);
 
 int BindDatagram(const std::string& path) {
@@ -541,12 +541,36 @@ bool SendProcessClone(int output, int client, const char* container_id,
   return SendEvent(client, gvisor::common::MESSAGE_SENTRY_CLONE, clone);
 }
 
-bool ExpectRecordExact(int output, const char* container_id, const char* kind, const char* reason) {
+bool ExpectRecordExact(int output, const char* container_id, const char* kind, const char* reason, const char* wanted_site) {
   char buffer[1024];
   const ssize_t size = recv(output, buffer, sizeof(buffer), 0);
   if (size <= 0) return false;
   std::string expected = std::string("{\"container_id\":\"") + container_id + "\",\"kind\":\"" + kind + "\"";
   if (reason != nullptr) expected += ",\"reason\":\"" + std::string(reason) + "\"";
+  if (strcmp(kind, "stream-fault") == 0) {
+    // The diagnostic extension is mandatory on faults. Preserve exact envelope
+    // checks and accept only the fixed enum vocabulary, never arbitrary payloads.
+    const std::string actual(buffer, size);
+    const char* sites[] = {"NONE", "RECV_TRUNC", "RECV_SHORT", "PROFILE_LOOKUP", "EVENT_LIMIT", "HEADER_SIZE", "DROPPED_COUNT", "CONTAINER_START", "SENTRY_CLONE", "SENTRY_EXIT_NOTIFY_PARENT", "SENTRY_EXEC", "EXEC_SYSCALL", "OPEN", "OPEN_RESULT", "OPEN_RESULT_ENVELOPE", "OPEN_RESULT_CORRELATION", "OPEN_RESULT_FAILURE_FORMAT", "OPEN_RESULT_SUCCESS_FORMAT", "OPEN_RESULT_ANCHOR", "OPEN_RESULT_SHADOW", "OPEN_RESULT_CLASSIFICATION", "OPEN_RESULT_CLASSIFICATION_PROCESS_NAME", "OPEN_RESULT_CLASSIFICATION_PROC", "OPEN_RESULT_CLASSIFICATION_SYS", "OPEN_RESULT_CLASSIFICATION_IMAGE", "OPEN_RESULT_CLASSIFICATION_OTHER", "TOPOLOGY_SNAPSHOT", "TOPOLOGY_MUTATION", "CONNECT", "SOCKET", "RAW", "FD_TRACK", "UNKNOWN_MESSAGE", "RECV_ERROR", "UNSEALED_TOPOLOGY", "PENDING_SOCKETS", "PENDING_OPENS", "WORKSPACE_SEND"};
+    for (const char* site : sites) {
+      if (wanted_site != nullptr && strcmp(site, wanted_site) != 0) continue;
+      if (actual == expected + ",\"fault_site\":\"" + site + "\"}") return true;
+      if (strcmp(site, "OPEN_RESULT_CLASSIFICATION_IMAGE") == 0) {
+        const std::string prefix = expected + ",\"fault_site\":\"" + site + "\",\"fault_image_locator\":";
+        if (actual.compare(0, prefix.size(), prefix) == 0 && actual.back() == '}') {
+          const std::string decimal = actual.substr(prefix.size(), actual.size() - prefix.size() - 1);
+          uint64_t value = 0;
+          bool valid = !decimal.empty() && decimal.size() <= 20;
+          for (char digit : decimal) {
+            if (digit < '0' || digit > '9' || value > (UINT64_MAX - (digit - '0')) / 10) { valid = false; break; }
+            value = value * 10 + (digit - '0');
+          }
+          if (valid && value != 0) return true;
+        }
+      }
+    }
+    return false;
+  }
   expected += "}";
   return std::string(buffer, size) == expected;
 }
@@ -878,6 +902,7 @@ bool VerifyFilesystemClassification() {
   if (!RegisterGroup(&python_runtime_state, python_runtime_context,
                      ProcessState::Role::kControl,
                      ProcessState::Provenance::kCloneChild, false, true)) return false;
+  python_runtime_state.groups.find(111)->second.current_image_class = ProcessClass::kPython;
   const auto python_before = python_runtime_state.groups.find(111)->second;
   gvisor::syscall::Open python_runtime_open;
   *python_runtime_open.mutable_context_data() = python_runtime_context;
@@ -902,6 +927,38 @@ bool VerifyFilesystemClassification() {
   python_runtime_state.groups.find(111)->second.role = ProcessState::Role::kArtifact;
   python_runtime_open.set_pathname("/usr/local/lib/python3.14/os.py");
   if (ClassifyFilesystemOpen(python_runtime_open, python_runtime_state, kProfilePyPI) != FilesystemClass::kRuntimeRoot) return false;
+  for (const char* profile : {kProfilePyTorchCPU, kProfilePyTorchCU126,
+                             kProfilePyTorchCU130, kProfilePyTorchCU132}) {
+    python_runtime_open.mutable_context_data()->set_process_name("worker");
+    python_runtime_open.set_pathname("/proc/111/maps");
+    if (ClassifyFilesystemOpen(python_runtime_open, python_runtime_state, profile) != FilesystemClass::kRuntimeRoot) return false;
+    for (const char* library : {"/lib/x86_64-linux-gnu/libutil.so.1",
+                                "/usr/lib/x86_64-linux-gnu/libutil.so.1"}) {
+      python_runtime_open.set_pathname(library);
+      if (ClassifyFilesystemOpen(python_runtime_open, python_runtime_state, profile) != FilesystemClass::kRuntimeRoot) return false;
+    }
+    for (const char* unknown : {"/usr/lib/x86_64-linux-gnu/libutil.so.2",
+                                "/usr/lib/x86_64-linux-gnu/libutil.so.1evil"}) {
+      python_runtime_open.set_pathname(unknown);
+      if (ClassifyFilesystemOpen(python_runtime_open, python_runtime_state, profile) == FilesystemClass::kRuntimeRoot) return false;
+    }
+    python_runtime_open.set_pathname("/usr/lib/x86_64-linux-gnu/libutil.so.1");
+    // A claimed Python name cannot supply a missing/different executable.
+    python_runtime_open.mutable_context_data()->set_process_name("python");
+    for (ProcessClass image : {ProcessClass::kUnknown, ProcessClass::kShell, ProcessClass::kArtifact}) {
+      python_runtime_state.groups.find(111)->second.current_image_class = image;
+      if (ClassifyFilesystemOpen(python_runtime_open, python_runtime_state, profile) == FilesystemClass::kRuntimeRoot) return false;
+    }
+    python_runtime_state.groups.find(111)->second.current_image_class = ProcessClass::kPython;
+    auto replaced = python_runtime_open;
+    replaced.mutable_context_data()->set_thread_group_start_time_ns(1111);
+    if (ClassifyFilesystemOpen(replaced, python_runtime_state, profile) == FilesystemClass::kRuntimeRoot) return false;
+    python_runtime_open.set_flags(kOpenWriteOnly);
+    if (ClassifyFilesystemOpen(python_runtime_open, python_runtime_state, profile) != FilesystemClass::kOutside) return false;
+    python_runtime_open.set_flags(0);
+  }
+  python_runtime_open.mutable_context_data()->set_process_name("python3.14");
+
   python_runtime_open.set_pathname("/usr/local/lib/glibc-hwcaps/x86-64-v2/libpython3.14.so.1.0");
   if (ClassifyFilesystemOpen(python_runtime_open, python_runtime_state, kProfilePyPI) != FilesystemClass::kUnknown) return false;
   python_runtime_open.set_pathname("/usr/local/lib/glibc-hwcaps/x86-64-v3/libpython3.14.so.1.1");
@@ -2604,7 +2661,7 @@ bool VerifyOpenResultNegativeMatrix(int output, const std::string& remote, const
     if (!SetupTestSession(output, remote, control, kFiftyFirstID, kProfilePyPI, &client)) return false;
     auto res = BuildOpenResult(kFiftyFirstID, "/tmp/no_enter.txt", 2, true, 0, 0);
     if (!SendEvent<gvisor::syscall::OpenResult>(client, gvisor::common::MESSAGE_SYSCALL_OPEN_RESULT, res)) { close(client); return false; }
-    if (!ExpectRecordExact(output, kFiftyFirstID, "stream-fault", "STREAM_FAULT")) { close(client); return false; }
+    if (!ExpectRecordExact(output, kFiftyFirstID, "stream-fault", "STREAM_FAULT", "OPEN_RESULT_CORRELATION")) { close(client); return false; }
     close(client);
   }
 
@@ -2873,7 +2930,107 @@ bool VerifyNoBasenameTrust(int output, const std::string& remote, const std::str
   return ExpectRecordExact(output, kSixtySixthID, "stream-end");
 }
 
+bool VerifyBoundedRuntimeCacheQuery() {
+  for (const char* profile : {kProfilePyPI, kProfilePyTorchCPU, kProfilePyTorchCU126,
+                            kProfilePyTorchCU130, kProfilePyTorchCU132}) {
+    TopologyState topology;
+    topology.expected.push_back(ExpectedMount{"/", "oci-root", "/", "", true, false, false, false});
+    topology.anchors.emplace(1, MountAnchor{1, "/", "oci-root"});
+    topology.namespace_id = 10; topology.snapshot_seen = true; topology.sealed = true;
+    gvisor::sentry::ExecveInfo query;
+    auto* context = query.mutable_context_data();
+    context->set_container_id("aabbccddeeff0101");
+    context->set_thread_group_id(91); context->set_thread_group_start_time_ns(910);
+    context->set_parent_thread_group_id(90); context->set_process_name("spoofed");
+    query.set_binary_path("/usr/sbin/ldconfig"); query.set_execfn("/sbin/ldconfig");
+    query.add_argv("/sbin/ldconfig"); query.add_argv("-p");
+    query.add_env("LC_ALL=C"); query.add_env("LANG=C");
+    int output[2]; if (socketpair(AF_UNIX, SOCK_DGRAM, 0, output) != 0) return false;
+    auto run = [&](const gvisor::sentry::ExecveInfo& event, const TopologyState* mounts,
+                   bool expected, ProcessState* retained = nullptr) {
+      ProcessState state;
+      if (!RegisterGroup(&state, query.context_data(), ProcessState::Role::kArtifact,
+                         ProcessState::Provenance::kCloneChild, false, true)) return false;
+      ProfileRegistration registration;
+      std::string payload, id; const char* reason = nullptr;
+      if (!event.SerializeToString(&payload) || !ParseSentryProcessAndClassify(
+            payload.data(), payload.size(), output[0], &id, profile, &registration, &state, &reason, mounts)) return false;
+      const auto& group = state.groups.at(91);
+      char record[1024];
+      const ssize_t size = recv(output[1], record, sizeof(record), 0);
+      const std::string received = size > 0 ? std::string(record, size) : "";
+      const bool event_ok = expected
+          ? received == "{\"container_id\":\"" + id + "\",\"kind\":\"process-exec-expected\"}"
+          : received.find("\"kind\":\"process-exec-unexpected\"") != std::string::npos &&
+            received.find("\"parent_relation\":\"ARTIFACT_GROUP\"") != std::string::npos;
+      const bool ok = event_ok &&
+          group.role == ProcessState::Role::kArtifact && !group.root_eligible &&
+          !group.trusted_control_network_active && !IsTrustedControlNetwork(event.context_data(), state) &&
+          group.runtime_cache_query == expected;
+      if (retained != nullptr) *retained = state;
+      return ok;
+    };
+    ProcessState accepted;
+    bool ok = run(query, &topology, true, &accepted);
+    auto invalid = query; invalid.set_binary_path("/tmp/ldconfig"); ok = ok && run(invalid, &topology, false);
+    invalid = query; invalid.set_execfn("/tmp/alias"); ok = ok && run(invalid, &topology, false);
+    invalid = query; invalid.add_argv("-C"); ok = ok && run(invalid, &topology, false);
+    invalid = query; invalid.set_argv(1, "-v"); ok = ok && run(invalid, &topology, false);
+    invalid = query; invalid.add_env("LD_PRELOAD=/tmp/fake.so"); ok = ok && run(invalid, &topology, false);
+    invalid = query; invalid.set_env(0, "LOCPATH=/tmp"); ok = ok && run(invalid, &topology, false);
+    invalid = query; invalid.clear_env(); ok = ok && run(invalid, &topology, false);
+    ok = ok && run(query, nullptr, false);
+    auto wrong = topology; wrong.sealed = false; ok = ok && run(query, &wrong, false);
+    wrong = topology; wrong.expected[0].read_only = false; ok = ok && run(query, &wrong, false);
+    wrong = topology; wrong.anchors.emplace(2, MountAnchor{2, "/usr/sbin", "system"}); ok = ok && run(query, &wrong, false);
+    wrong = topology; wrong.anchors.emplace(2, MountAnchor{2, "/etc/ld.so.cache", "system"}); ok = ok && run(query, &wrong, false);
+    gvisor::syscall::Open open;
+    *open.mutable_context_data() = query.context_data(); open.set_pathname("/etc/ld.so.cache");
+    const MountAnchor root{1, "/", "oci-root"};
+    ok = ok && ClassifyFilesystemOpen(open, accepted, profile, &root) == FilesystemClass::kRuntimeRoot;
+    open.set_flags(kOpenReadWrite);
+    ok = ok && ClassifyFilesystemOpen(open, accepted, profile, &root) == FilesystemClass::kOutside;
+    open.set_flags(0); open.set_pathname("/etc/ld.so.conf");
+    ok = ok && ClassifyFilesystemOpen(open, accepted, profile, &root) != FilesystemClass::kRuntimeRoot;
+    open.set_pathname("/etc/ld.so.cache");
+    const MountAnchor substitute{2, "/etc/ld.so.cache", "system"};
+    ok = ok && ClassifyFilesystemOpen(open, accepted, profile, &substitute) != FilesystemClass::kRuntimeRoot;
+    // A child inherits ARTIFACT role, never this current-image operation.
+    gvisor::sentry::CloneInfo clone;
+    *clone.mutable_context_data() = query.context_data();
+    clone.set_created_thread_group_id(92); clone.set_created_thread_start_time_ns(920);
+    std::string clone_payload, clone_id; const char* clone_reason = nullptr;
+    ok = ok && clone.SerializeToString(&clone_payload) && ParseSentryClone(
+        clone_payload.data(), clone_payload.size(), output[0], &clone_id, &accepted, &clone_reason) &&
+        accepted.groups.at(92).role == ProcessState::Role::kArtifact &&
+        !accepted.groups.at(92).runtime_cache_query && !accepted.groups.at(92).root_eligible;
+    // A later exec must discard query state and remain unexpected.
+    invalid = query; invalid.set_binary_path("/bin/sh"); invalid.set_execfn("/bin/sh");
+    ProfileRegistration registration; std::string payload, id; const char* reason = nullptr;
+    ok = ok && invalid.SerializeToString(&payload) && ParseSentryProcessAndClassify(
+        payload.data(), payload.size(), output[0], &id, profile, &registration, &accepted, &reason, &topology) &&
+        ExpectUnexpectedProcessRecord(output[1], id.c_str(), "SENTRY_EXEC", "SHELL", "ARTIFACT_ROLE", "ARTIFACT_GROUP") && !accepted.groups.at(91).runtime_cache_query;
+    close(output[0]); close(output[1]); if (!ok) return false;
+  }
+  return true;
+}
+
 bool VerifyUnexpectedExecDiagnosticRetention() {
+  if (!VerifyBoundedRuntimeCacheQuery()) return false;
+  gvisor::sentry::ExecveInfo query;
+  query.set_binary_path("/usr/sbin/ldconfig");
+  query.add_argv("/sbin/ldconfig");
+  query.add_argv("-p");
+  if (!IsExactLdconfigCacheQuery(query)) return false;
+  auto wrong_query = query;
+  wrong_query.set_binary_path("/tmp/ldconfig");
+  if (IsExactLdconfigCacheQuery(wrong_query)) return false;
+  wrong_query = query;
+  wrong_query.add_argv("-C");
+  if (IsExactLdconfigCacheQuery(wrong_query)) return false;
+  wrong_query = query;
+  wrong_query.set_argv(1, "-v");
+  if (IsExactLdconfigCacheQuery(wrong_query)) return false;
   // 1. Verify ClassifyCommandShape
   gvisor::sentry::ExecveInfo lock_exec;
   lock_exec.add_argv("sh");

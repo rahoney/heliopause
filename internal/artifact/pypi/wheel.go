@@ -412,7 +412,6 @@ func isPackageResource(name string) bool {
 		!strings.HasSuffix(base, ".pyc") &&
 		!strings.HasSuffix(base, ".pyd") &&
 		!strings.HasSuffix(base, ".so") &&
-		!strings.Contains(base, ".so.") &&
 		!(strings.HasSuffix(base, ".pth") && !strings.Contains(name, "/"))
 }
 

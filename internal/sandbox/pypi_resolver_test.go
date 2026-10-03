@@ -3,6 +3,7 @@ package sandbox
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/netip"
 	"os/exec"
 	"strconv"
@@ -14,6 +15,62 @@ import (
 )
 
 const resolverTestSHA256 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+
+func TestPyPIResolverKeepsSourceOwnershipAndCanonicalRootMetadataBudget(t *testing.T) {
+	for _, tc := range []struct {
+		root  string
+		files int
+		want  bool
+	}{
+		{"pypi", 1, true}, {"pypi", 4232, false},
+		{"cpu", 4232, true}, {"cu126", 4232, true}, {"cu130", 4232, true}, {"cu132", 4232, true},
+		{"cpu", 8193, false}, {"cu126", 8193, false}, {"cu130", 8193, false}, {"cu132", 8193, false},
+	} {
+		t.Run(fmt.Sprintf("%s/%d", tc.root, tc.files), func(t *testing.T) {
+			ctx := context.Background()
+			if tc.root != "pypi" {
+				profile, _ := artifactpypi.PyTorchProfile(tc.root)
+				var err error
+				ctx, err = artifactpypi.ContextWithResourcePolicy(ctx, profile)
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
+			page := pypiResolverSimpleJSON("child", "child-2.0-py3-none-any.whl", "")
+			var more strings.Builder
+			for n := 1; n < tc.files; n++ {
+				filename := fmt.Sprintf("child-9.0.%d-py3-none-any.whl", n)
+				fmt.Fprintf(&more, `,{"filename":%q,"url":%q,"hashes":{"sha256":%q},"requires-python":"","yanked":false,"size":123}`, filename, "https://files.pythonhosted.org/packages/"+filename, resolverTestSHA256)
+			}
+			page = strings.TrimSuffix(page, "]}") + more.String() + "]}"
+			runner := &recordingRunner{responses: [][]byte{
+				[]byte("0123456789abcdef"), []byte("172.30.0.0/24"), []byte("0123456789abcdef"), nil,
+				[]byte("3.14.7\n"), []byte("pip 26.2.1 from pip\n"), []byte("cp314-cp314-manylinux_2_36_x86_64\n"), nil, nil,
+				[]byte(pypiResolverReportJSON()), []byte(page), []byte(pypiResolverSimpleJSON("primary", "primary-1.0-py3-none-any.whl", ">=3.14")),
+			}}
+			observer := &recordingObserver{reader: &traceReader{records: []TraceRecord{{Kind: "network-attempt", Bytes: 1}}}}
+			resolver, err := NewPyPIResolver(runner, pypiStaticEndpoints{}, observer, availablePythonProbe, &recordingResolverPolicyService{})
+			if err != nil {
+				t.Fatal(err)
+			}
+			reference, _ := artifactpypi.ParseReference("primary@1.0")
+			resolution, err := resolver.ResolveDependencies(ctx, reference, domain.InstallContext{})
+			if (err == nil) != tc.want {
+				t.Fatalf("resolution=%v error=%v want success=%v", resolution, err, tc.want)
+			}
+			if !tc.want && (!strings.Contains(err.Error(), "reason=FILES_LIMIT") || len(resolution.Graph().Nodes()) != 0) {
+				t.Fatalf("nonqualifying metadata yielded graph: %v %v", resolution, err)
+			}
+			if tc.want {
+				for _, node := range resolution.Graph().Nodes() {
+					if node.Artifact().Identity().Source() != artifactpypi.PublicPyPIProfile().Source() {
+						t.Fatal("root budget changed node source ownership")
+					}
+				}
+			}
+		})
+	}
+}
 
 func TestPyPIResolverUsesGVisorDefaultDenyLifecycleAndCrossChecks(t *testing.T) {
 	t.Parallel()

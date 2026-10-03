@@ -9,6 +9,7 @@ import (
 	"errors"
 	"io"
 	"net"
+	"os/exec"
 	"sync"
 	"syscall"
 	"time"
@@ -98,7 +99,16 @@ func (r *admissionAwareCommandRunner) RunDiscard(ctx context.Context, binary str
 	commandErr := runner.RunDiscard(ctx, binary, prepared...)
 	if finish != nil {
 		if finishErr := finish(ctx, commandErr == nil); finishErr != nil {
-			return finishErr
+			return errors.Join(commandErr, finishErr)
+		}
+	}
+	if finish != nil && commandErr != nil {
+		var exit *exec.ExitError
+		// Docker reserves 125..127 for invocation/launch failure. Other
+		// positive statuses are external target terminal outcomes, not proof
+		// of normal Python return. A killed/cancelled CLI has no such status.
+		if errors.As(commandErr, &exit) && exit.ExitCode() > 0 && (exit.ExitCode() < 125 || exit.ExitCode() > 127) {
+			return &observedDirectExecExit{commandErr}
 		}
 	}
 	return commandErr
@@ -141,6 +151,12 @@ func (r *admissionAwareCommandRunner) RunOutput(ctx context.Context, output io.W
 	}
 	return commandErr
 }
+
+type observedDirectExecExit struct{ error }
+
+func (e *observedDirectExecExit) Unwrap() error { return e.error }
+
+var errDirectExecNotStarted = errors.New("direct exec was cancelled before trusted launch consumption")
 
 type directExecAdmission struct {
 	containerID, generation, mode, nonce string
@@ -840,8 +856,8 @@ func finalizeDirectExecAdmission(ctx context.Context, admission directExecAdmiss
 			return completeDirectExecAdmission(ctx, admission)
 		}
 		// cancelDirectExecAdmission's locked classifier leaves only this
-		// legitimate terminal state here.
-		return nil
+		// legitimate terminal state here. It is not an observed target exit.
+		return errDirectExecNotStarted
 	default:
 		return observerFault{reason: "LIFECYCLE_ERROR"}
 	}

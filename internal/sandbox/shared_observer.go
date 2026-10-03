@@ -220,6 +220,8 @@ type helperRecord struct {
 	ContainerID          string  `json:"container_id"`
 	Kind                 string  `json:"kind"`
 	Reason               string  `json:"reason,omitempty"`
+	FaultSite            string  `json:"fault_site,omitempty"`
+	FaultImageLocator    uint64  `json:"fault_image_locator,omitempty"`
 	EventSource          string  `json:"event_source,omitempty"`
 	Family               string  `json:"family,omitempty"`
 	ProcessRelation      string  `json:"process_relation,omitempty"`
@@ -229,10 +231,15 @@ type helperRecord struct {
 	Count                *uint64 `json:"count,omitempty"`
 }
 
-type observerFault struct{ reason string }
+type observerFault struct {
+	reason, site string
+	imageLocator uint64
+}
 
-func (e observerFault) Error() string            { return "observer stream is incomplete" }
-func (e observerFault) TraceFaultReason() string { return e.reason }
+func (e observerFault) Error() string                  { return "observer stream is incomplete" }
+func (e observerFault) TraceFaultReason() string       { return e.reason }
+func (e observerFault) TraceFaultSite() string         { return e.site }
+func (e observerFault) TraceFaultImageLocator() uint64 { return e.imageLocator }
 
 const maximumHelperRecordBytes = 1024
 
@@ -243,7 +250,7 @@ func decodeHelperRecord(payload []byte) (helperRecord, error) {
 		return helperRecord{}, observerFault{reason: "ATTRIBUTION_FAILURE"}
 	}
 	var record helperRecord
-	if err := json.Unmarshal(payload, &record); err != nil || !containerIDPattern.MatchString(record.ContainerID) || (record.Reason != "" && !validObserverReason(record.Reason)) || !validRecordCount(record) || !validAttribution(record) {
+	if err := json.Unmarshal(payload, &record); err != nil || !containerIDPattern.MatchString(record.ContainerID) || (record.Reason != "" && !validObserverReason(record.Reason)) || !validFaultSite(record) || !validRecordCount(record) || !validAttribution(record) {
 		return helperRecord{}, observerFault{reason: "ATTRIBUTION_FAILURE"}
 	}
 	return record, nil
@@ -277,7 +284,7 @@ func validAttribution(record helperRecord) bool {
 	case "process-exec-unexpected":
 		return record.EventSource == "SENTRY_EXEC" && record.Family == "" && record.ProcessRelation == "" &&
 			validFixed(record.ProcessClass, "SHELL", "PYTHON", "PIP", "NODE", "NPM", "ARTIFACT", "SLEEP", "MKDIR", "CAT", "CHMOD", "OTHER") &&
-			validFixed(record.ClassificationReason, "INVALID_PROCESS_IDENTITY", "START_TIME_MISMATCH", "CLASS_MISMATCH", "UNMODELED_PARENT", "BOOTSTRAP_ENDED", "DIRECT_EXEC_NOT_ALLOWED", "TRACKING_LIMIT", "UNKNOWN_CLASS", "ARTIFACT_ROLE", "OTHER") &&
+			validFixed(record.ClassificationReason, "INVALID_PROCESS_IDENTITY", "START_TIME_MISMATCH", "CLASS_MISMATCH", "UNMODELED_PARENT", "BOOTSTRAP_ENDED", "DIRECT_EXEC_NOT_ALLOWED", "TRACKING_LIMIT", "UNKNOWN_CLASS", "ARTIFACT_ROLE", "ARTIFACT_LDCONFIG_QUERY", "OTHER") &&
 			validFixed(record.ParentRelation, "BOOTSTRAP_ROOT", "BOOTSTRAP_CHILD", "TRACKED_PARENT", "TRACKED_GROUP", "ROOT", "UNTRACKED_PARENT", "ARTIFACT_GROUP", "UNKNOWN")
 	default:
 		return !hasAttribution
@@ -556,7 +563,7 @@ func (o *SharedObserver) receive() {
 				reason = "STREAM_FAULT"
 			}
 			if o.fault == nil {
-				o.fault = observerFault{reason: reason}
+				o.fault = observerFault{reason: reason, site: record.FaultSite, imageLocator: record.FaultImageLocator}
 			}
 			batch := o.beginTeardownLocked(reader.session)
 			closeSharedTraceReaderDone(reader)
@@ -838,5 +845,24 @@ func (r *sharedTraceReader) Next(ctx context.Context) (TraceRecord, error) {
 		return TraceRecord{}, io.EOF
 	case <-ctx.Done():
 		return TraceRecord{}, ctx.Err()
+	}
+}
+
+// Fault sites are diagnostic enums from the pinned helper, never policy input.
+func validFaultSite(record helperRecord) bool {
+	if record.FaultImageLocator != 0 && (record.Kind != "stream-fault" || record.FaultSite != "OPEN_RESULT_CLASSIFICATION_IMAGE") {
+		return false
+	}
+	if record.FaultSite == "" {
+		return true
+	}
+	if record.Kind != "stream-fault" {
+		return false
+	}
+	switch record.FaultSite {
+	case "NONE", "RECV_TRUNC", "RECV_SHORT", "PROFILE_LOOKUP", "EVENT_LIMIT", "HEADER_SIZE", "DROPPED_COUNT", "CONTAINER_START", "SENTRY_CLONE", "SENTRY_EXIT_NOTIFY_PARENT", "SENTRY_EXEC", "EXEC_SYSCALL", "OPEN", "OPEN_RESULT", "OPEN_RESULT_ENVELOPE", "OPEN_RESULT_CORRELATION", "OPEN_RESULT_FAILURE_FORMAT", "OPEN_RESULT_SUCCESS_FORMAT", "OPEN_RESULT_ANCHOR", "OPEN_RESULT_SHADOW", "OPEN_RESULT_CLASSIFICATION", "OPEN_RESULT_CLASSIFICATION_PROCESS_NAME", "OPEN_RESULT_CLASSIFICATION_PROC", "OPEN_RESULT_CLASSIFICATION_SYS", "OPEN_RESULT_CLASSIFICATION_IMAGE", "OPEN_RESULT_CLASSIFICATION_OTHER", "TOPOLOGY_SNAPSHOT", "TOPOLOGY_MUTATION", "CONNECT", "SOCKET", "RAW", "FD_TRACK", "UNKNOWN_MESSAGE", "RECV_ERROR", "UNSEALED_TOPOLOGY", "PENDING_SOCKETS", "PENDING_OPENS", "WORKSPACE_SEND":
+		return true
+	default:
+		return false
 	}
 }

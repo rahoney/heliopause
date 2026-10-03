@@ -248,6 +248,13 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err != nil {
 			return err
 		}
+		installCommand, _, err := command.Find([]string{"pip", "install"})
+		if err != nil {
+			return err
+		}
+		inspection.WithInspectionPrerequisites(inspectionPrerequisiteLoader(func() (string, error) {
+			return installCommand.Flags().GetString("inspection-prerequisites")
+		}, resolver, intake))
 		directArtifact, err := artifactpypi.NewGraphArtifact(resolver, intake)
 		if err != nil {
 			return err

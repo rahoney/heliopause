@@ -129,10 +129,12 @@ struct Attribution {
 };
 
 bool Send(int output, const std::string& container_id, const char* kind, const char* reason = nullptr,
-          const Attribution* attribution = nullptr, uint64_t count = 0) {
+          const Attribution* attribution = nullptr, uint64_t count = 0, const char* fault_site = nullptr, uint64_t image_locator = 0) {
   if (!ValidContainerID(container_id)) return false;
   std::string message = "{\"container_id\":\"" + container_id + "\",\"kind\":\"" + kind + "\"";
   if (reason != nullptr) message += ",\"reason\":\"" + std::string(reason) + "\"";
+  if (fault_site != nullptr) message += ",\"fault_site\":\"" + std::string(fault_site) + "\"";
+  if (image_locator != 0) message += ",\"fault_image_locator\":" + std::to_string(image_locator);
   if (attribution != nullptr) {
     if (attribution->event_source != nullptr) message += ",\"event_source\":\"" + std::string(attribution->event_source) + "\"";
     if (attribution->family != nullptr) message += ",\"family\":\"" + std::string(attribution->family) + "\"";
@@ -240,6 +242,18 @@ enum class FaultSite {
   kExecSyscall,
   kOpen,
   kOpenResult,
+  kOpenResultEnvelope,
+  kOpenResultCorrelation,
+  kOpenResultFailureFormat,
+  kOpenResultSuccessFormat,
+  kOpenResultAnchor,
+  kOpenResultShadow,
+  kOpenResultClassification,
+  kOpenResultClassificationProcessName,
+  kOpenResultClassificationProc,
+  kOpenResultClassificationSys,
+  kOpenResultClassificationImage,
+  kOpenResultClassificationOther,
   kTopologySnapshot,
   kTopologyMutation,
   kConnect,
@@ -269,6 +283,18 @@ const char* FaultSiteName(FaultSite site) {
     case FaultSite::kExecSyscall: return "EXEC_SYSCALL";
     case FaultSite::kOpen: return "OPEN";
     case FaultSite::kOpenResult: return "OPEN_RESULT";
+    case FaultSite::kOpenResultEnvelope: return "OPEN_RESULT_ENVELOPE";
+    case FaultSite::kOpenResultCorrelation: return "OPEN_RESULT_CORRELATION";
+    case FaultSite::kOpenResultFailureFormat: return "OPEN_RESULT_FAILURE_FORMAT";
+    case FaultSite::kOpenResultSuccessFormat: return "OPEN_RESULT_SUCCESS_FORMAT";
+    case FaultSite::kOpenResultAnchor: return "OPEN_RESULT_ANCHOR";
+    case FaultSite::kOpenResultShadow: return "OPEN_RESULT_SHADOW";
+    case FaultSite::kOpenResultClassification: return "OPEN_RESULT_CLASSIFICATION";
+    case FaultSite::kOpenResultClassificationProcessName: return "OPEN_RESULT_CLASSIFICATION_PROCESS_NAME";
+    case FaultSite::kOpenResultClassificationProc: return "OPEN_RESULT_CLASSIFICATION_PROC";
+    case FaultSite::kOpenResultClassificationSys: return "OPEN_RESULT_CLASSIFICATION_SYS";
+    case FaultSite::kOpenResultClassificationImage: return "OPEN_RESULT_CLASSIFICATION_IMAGE";
+    case FaultSite::kOpenResultClassificationOther: return "OPEN_RESULT_CLASSIFICATION_OTHER";
     case FaultSite::kTopologySnapshot: return "TOPOLOGY_SNAPSHOT";
     case FaultSite::kTopologyMutation: return "TOPOLOGY_MUTATION";
     case FaultSite::kConnect: return "CONNECT";
@@ -351,6 +377,11 @@ struct ProcessState {
     // used only by the LOCK_GENERATION transition predicate.
     int32_t clone_creator_group_id = 0;
     int64_t clone_creator_group_start_time_ns = 0;
+    // Kernel image-load evidence, retained across thread-name changes and
+    // fork, replaced on every exec. This grants no CONTROL or network trust.
+    ProcessClass current_image_class = ProcessClass::kUnknown;
+    // Current exact runtime query only; neither role nor inheritable authority.
+    bool runtime_cache_query = false;
   };
   bool bootstrap_active = true;
   bool bootstrap_group_set = false;
@@ -384,6 +415,7 @@ struct ProcessState {
   std::map<std::pair<int32_t, int64_t>, PendingOpen> pending_opens;
   UnexpectedExecDiagnostic first_unexpected_exec;
   FaultSite terminal_fault_site = FaultSite::kNone;
+  uint64_t fault_image_locator = 0;
 };
 
 struct NormalizedCounts {
@@ -416,6 +448,27 @@ struct TopologyState {
   bool snapshot_seen = false;
   bool sealed = false;
 };
+
+bool IsAtOrBelowMountpoint(const std::string& path, const std::string& mountpoint);
+
+// Kernel-resolved path + sealed, host-attested read-only OCI namespace, not a
+// pathname claim. A nested mount (even read-only) cannot substitute this file.
+bool IsPinnedReadOnlyRootPath(const TopologyState* topology, const std::string& path) {
+  if (topology == nullptr || !topology->sealed || !topology->snapshot_seen ||
+      topology->namespace_id == 0) return false;
+  bool readonly_root = false;
+  for (const auto& mount : topology->expected) {
+    if (mount.mountpoint == "/" && mount.mount_class == "oci-root" && mount.read_only)
+      readonly_root = true;
+  }
+  bool actual_root = false;
+  for (const auto& entry : topology->anchors) {
+    const auto& anchor = entry.second;
+    if (anchor.mountpoint == "/" && anchor.mount_class == "oci-root") actual_root = true;
+    else if (IsAtOrBelowMountpoint(path, anchor.mountpoint)) return false;
+  }
+  return readonly_root && actual_root;
+}
 
 struct ProfileRegistration {
   std::string profile;
@@ -459,6 +512,27 @@ bool HasExactCloneCreator(const ProcessState::GroupState& group, const ProcessSt
   const auto creator = state.groups.find(group.clone_creator_group_id);
   return creator != state.groups.end() &&
       creator->second.start_time_ns == group.clone_creator_group_start_time_ns;
+}
+
+// Shape alone is diagnostic only. Admission also requires the sealed runtime
+// namespace and the exact bounded environment below.
+bool IsExactLdconfigCacheQuery(const gvisor::sentry::ExecveInfo& message) {
+  return (message.binary_path() == "/sbin/ldconfig" || message.binary_path() == "/usr/sbin/ldconfig") &&
+      message.argv_size() == 2 &&
+      (message.argv(0) == "/sbin/ldconfig" || message.argv(0) == "/usr/sbin/ldconfig") &&
+      message.argv(1) == "-p";
+}
+
+bool IsSupportedLdconfigCacheQuery(const gvisor::sentry::ExecveInfo& message,
+                                  const TopologyState* topology) {
+  if (!IsExactLdconfigCacheQuery(message) ||
+      (message.execfn() != "/sbin/ldconfig" && message.execfn() != "/usr/sbin/ldconfig") ||
+      !IsPinnedReadOnlyRootPath(topology, message.binary_path()) ||
+      !IsPinnedReadOnlyRootPath(topology, "/etc/ld.so.cache") || message.env_size() != 2) return false;
+  // The pinned ctypes.util supplies only these two variables. In particular,
+  // no artifact-controlled loader, locale path, or executable search path is admitted.
+  return (message.env(0) == "LC_ALL=C" && message.env(1) == "LANG=C") ||
+         (message.env(1) == "LC_ALL=C" && message.env(0) == "LANG=C");
 }
 
 BoundaryMode BoundaryInvocation(const gvisor::sentry::ExecveInfo& message) {
@@ -1252,6 +1326,10 @@ bool IsExactBootstrapHelperWrite(const gvisor::common::ContextData& context,
 
 ProcessClass FilesystemProcessClass(const gvisor::common::ContextData& context,
                                     const ProcessState& state) {
+  const auto* group = FindFilesystemGroup(context, state);
+  if (group != nullptr && group->role == ProcessState::Role::kArtifact) {
+    return group->current_image_class;
+  }
   auto expected = state.expected_groups.find(context.thread_group_id());
   if (expected == state.expected_groups.end() ||
       expected->second.start_time_ns != context.thread_group_start_time_ns()) {
@@ -1383,6 +1461,9 @@ bool IsExactPinnedPythonSystemLibrary(const std::string& path) {
       "/lib/x86_64-linux-gnu/libssl.so.3",
       "/lib/x86_64-linux-gnu/libstdc++.so.6",
       "/lib/x86_64-linux-gnu/libtinfo.so.6",
+      // glibc compatibility SONAME supplied by the pinned image, like
+      // libdl/libpthread. This is not an artifact/vendor exception.
+      "/lib/x86_64-linux-gnu/libutil.so.1",
       "/lib/x86_64-linux-gnu/libuuid.so.1",
       "/lib/x86_64-linux-gnu/libz.so.1",
       "/lib/x86_64-linux-gnu/libzstd.so.1",
@@ -1410,8 +1491,14 @@ bool IsPinnedRuntimeRootRead(const gvisor::common::ContextData& context,
         IsExactLibc6(normalized);
   }
   if (!IsPythonProfile(profile)) return false;
-  if (context.process_name() != "python" && context.process_name() != "python3.14" &&
-      context.process_name() != "uname" && context.process_name() != "sh") return false;
+  if (group->role == ProcessState::Role::kArtifact) {
+    // comm is mutable by ordinary Python/native code. Artifact reads depend
+    // on the observed current executable, never on a claimed thread name.
+    if (FilesystemProcessClass(context, state) != ProcessClass::kPython) return false;
+  } else if (context.process_name() != "python" && context.process_name() != "python3.14" &&
+             context.process_name() != "uname" && context.process_name() != "sh") {
+    return false;
+  }
   static constexpr const char* kLoaderCandidates[] = {
       "/usr/local/bin/../lib/glibc-hwcaps/x86-64-v3/libpython3.14.so.1.0",
       "/usr/local/bin/../lib/glibc-hwcaps/x86-64-v2/libpython3.14.so.1.0",
@@ -1733,6 +1820,12 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
       !IsWriteCapableOpen(message.flags()) &&
       (path == "/etc/ld.so.cache" || IsExactLibc6(path));
   if (exact_artifact_shell_loader) return FilesystemClass::kHelperOnly;
+  if (IsPythonProfile(profile) && tracked->role == ProcessState::Role::kArtifact &&
+      tracked->runtime_cache_query && anchor != nullptr &&
+      anchor->mountpoint == "/" && anchor->mount_class == "oci-root" &&
+      !IsWriteCapableOpen(message.flags()) && path == "/etc/ld.so.cache") {
+    return FilesystemClass::kRuntimeRoot;
+  }
   if (IsWorkspacePath(path, profile)) return FilesystemClass::kWorkspace;
   if (IsClearlyOutsideWorkspace(path) ||
       (IsWriteCapableOpen(message.flags()) && path != "/dev/null" &&
@@ -2004,6 +2097,7 @@ bool ParseSentryClone(const char* payload, size_t payload_size,
       ProcessState::Provenance::kCloneChild, false, true, false, false, false, false,
       false, false, false, false, ProcessClass::kUnknown, ProcessState::OCIBootstrapStage::kNotOCI,
       creator->second.command_phase});
+  state->groups.find(child_group)->second.current_image_class = creator->second.current_image_class;
   state->groups.find(child_group)->second.clone_creator_group_id = creator_group;
   state->groups.find(child_group)->second.clone_creator_group_start_time_ns =
       creator->second.start_time_ns;
@@ -2202,7 +2296,8 @@ bool ParseExecSyscallTelemetry(const char* payload, size_t payload_size, std::st
 
 bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int output, std::string* container_id,
                                    const char* profile, ProfileRegistration* registration,
-                                   ProcessState* process_state, const char** reason) {
+                                   ProcessState* process_state, const char** reason,
+                                   const TopologyState* topology = nullptr) {
   if (profile == nullptr || registration == nullptr || process_state == nullptr) return false;
   gvisor::sentry::ExecveInfo message;
   if (!message.ParseFromArray(payload, payload_size)) return false;
@@ -2249,6 +2344,8 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     group = candidate.groups.find(group_id);
     new_direct_root = true;
   }
+  group->second.runtime_cache_query = false;
+  group->second.current_image_class = ProcessClassForPath(message.binary_path(), profile);
   group->second.diagnostic_image = DiagnosticImageForPath(message.binary_path());
   if (group->second.provenance == ProcessState::Provenance::kOCIRoot) {
     if (group->second.role != ProcessState::Role::kControl ||
@@ -2390,13 +2487,24 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
       process_state->fd_states = candidate.fd_states;
       return Send(output, *container_id, "process-exec-expected");
     }
+    if (IsPythonProfile(profile) && IsSupportedLdconfigCacheQuery(message, topology)) {
+      // Expected operation remains ARTIFACT. Do not touch expected_groups,
+      // root eligibility, network attribution, or launch admission.
+      group->second.runtime_cache_query = true;
+      ApplyExecCloexec(&candidate, group_id);
+      process_state->groups = candidate.groups;
+      process_state->fd_states = candidate.fd_states;
+      return Send(output, *container_id, "process-exec-expected");
+    }
     ApplyExecCloexec(&candidate, group_id);
+    const char* artifact_reason = IsPythonProfile(profile) && IsExactLdconfigCacheQuery(message)
+        ? "ARTIFACT_LDCONFIG_QUERY" : "ARTIFACT_ROLE";
     const Attribution attribution{"SENTRY_EXEC", nullptr, nullptr,
-                                  ProcessClassName(process_class), "ARTIFACT_ROLE", "ARTIFACT_GROUP"};
+                                  ProcessClassName(process_class), artifact_reason, "ARTIFACT_GROUP"};
     process_state->groups = candidate.groups;
     process_state->fd_states = candidate.fd_states;
     RecordUnexpectedExec(&process_state->first_unexpected_exec, snapshot,
-                         "ARTIFACT_ROLE", "ARTIFACT_GROUP");
+                         artifact_reason, "ARTIFACT_GROUP");
     return Send(output, *container_id, "process-exec-unexpected", nullptr, &attribution);
   }
   auto tracked_group = candidate.expected_groups.find(group_id);
@@ -2529,14 +2637,15 @@ bool ParseOpenAndSend(const char* payload, size_t payload_size, int output, std:
 
 bool ParseOpenResultAndSend(const char* payload, size_t payload_size, int output, std::string* container_id,
                             const char* profile, ProcessState* state, NormalizedCounts* counts,
-                            const TopologyState& topology, const char** reason) {
+                            const TopologyState& topology, const char** reason, FaultSite* fault_site = nullptr) {
+  auto detail = [fault_site](FaultSite site) { if (fault_site != nullptr) *fault_site = site; };
   if (profile == nullptr || state == nullptr || counts == nullptr || !topology.sealed) {
     return false;
   }
   gvisor::syscall::OpenResult result;
   if (!result.ParseFromArray(payload, payload_size) || !ValidateContextContainer(result.context_data(), container_id, reason) ||
       result.context_data().thread_id() <= 0 || result.context_data().thread_start_time_ns() <= 0) {
-    *reason = "STREAM_FAULT"; return false;
+    detail(FaultSite::kOpenResultEnvelope); *reason = "STREAM_FAULT"; return false;
   }
   const auto group = state->groups.find(result.context_data().thread_group_id());
   if (group != state->groups.end()) {
@@ -2554,27 +2663,27 @@ bool ParseOpenResultAndSend(const char* payload, size_t payload_size, int output
       pending->second.thread_group_start_time_ns != result.context_data().thread_group_start_time_ns() ||
       pending->second.sysno != result.sysno() ||
       (pending->second.flags | kOpenLargefile) != (result.flags() | kOpenLargefile)) {
-    *reason = "STREAM_FAULT"; return false;
+    detail(FaultSite::kOpenResultCorrelation); *reason = "STREAM_FAULT"; return false;
   }
   const bool early = pending->second.early_finding_emitted;
   state->pending_opens.erase(pending);
   if (!result.success()) {
     if (result.errorno() == 0 || !result.resolved_pathname().empty() || result.mount_id() != 0) {
-      *reason = "STREAM_FAULT"; return false;
+      detail(FaultSite::kOpenResultFailureFormat); *reason = "STREAM_FAULT"; return false;
     }
     return true;
   }
   if (result.errorno() != 0 || result.mount_id() == 0 || !IsNormalizedAbsolutePath(result.resolved_pathname())) {
-    *reason = "STREAM_FAULT"; return false;
+    detail(FaultSite::kOpenResultSuccessFormat); *reason = "STREAM_FAULT"; return false;
   }
   const auto anchor = topology.anchors.find(result.mount_id());
   if (anchor == topology.anchors.end() || !IsAtOrBelowMountpoint(result.resolved_pathname(), anchor->second.mountpoint)) {
-    *reason = "STREAM_FAULT"; return false;
+    detail(FaultSite::kOpenResultAnchor); *reason = "STREAM_FAULT"; return false;
   }
   for (const auto& candidate : topology.anchors) {
     if (candidate.first != anchor->first && candidate.second.mountpoint.size() > anchor->second.mountpoint.size() &&
         IsAtOrBelowMountpoint(result.resolved_pathname(), candidate.second.mountpoint)) {
-      *reason = "STREAM_FAULT"; return false;
+      detail(FaultSite::kOpenResultShadow); *reason = "STREAM_FAULT"; return false;
     }
   }
   if (early) return true;
@@ -2598,7 +2707,34 @@ bool ParseOpenResultAndSend(const char* payload, size_t payload_size, int output
       if (!Send(output, *container_id, "filesystem-outside-workspace")) return false;
       ++counts->immediate_records;
       return true;
-    default: *reason = "STREAM_FAULT"; return false;
+    default: {
+      // Diagnostics reuse the actual runtime predicate; they grant no access
+      // and retain no arbitrary pathname or mutable process-name bytes.
+      auto named_python = final_open.context_data();
+      named_python.set_process_name("python");
+      if (IsPythonProfile(profile) &&
+          IsPinnedRuntimeRootRead(named_python, *state, final_open.pathname(), final_open.flags(), profile)) {
+        detail(FaultSite::kOpenResultClassificationProcessName);
+      } else if (HasPrefix(final_open.pathname(), "/proc/")) {
+        detail(FaultSite::kOpenResultClassificationProc);
+      } else if (HasPrefix(final_open.pathname(), "/sys/")) {
+        detail(FaultSite::kOpenResultClassificationSys);
+      } else if (anchor->second.mount_class == "oci-root") {
+        detail(FaultSite::kOpenResultClassificationImage);
+        // Noncryptographic diagnostic locator, never identity/admission
+        // authority. Resolve only against the pinned image's data-only file
+        // catalogue; collisions remain ambiguous. No pathname is exposed.
+        uint64_t locator = 14695981039346656037ULL;
+        for (unsigned char byte : final_open.pathname()) {
+          locator ^= byte;
+          locator *= 1099511628211ULL;
+        }
+        state->fault_image_locator = locator == 0 ? 1 : locator;
+      } else {
+        detail(FaultSite::kOpenResultClassificationOther);
+      }
+      *reason = "STREAM_FAULT"; return false;
+    }
   }
 }
 
@@ -2949,7 +3085,7 @@ bool Handle(const Header& header, const char* payload, size_t payload_size, int 
       }
       return true;
     case gvisor::common::MESSAGE_SENTRY_EXEC:
-      if (!ParseSentryProcessAndClassify(payload, payload_size, output, container_id, profile, registration, process_state, reason)) {
+      if (!ParseSentryProcessAndClassify(payload, payload_size, output, container_id, profile, registration, process_state, reason, topology)) {
         set_fault_site(FaultSite::kSentryExec);
         return false;
       }
@@ -2970,8 +3106,8 @@ bool Handle(const Header& header, const char* payload, size_t payload_size, int 
       }
       return true;
     case gvisor::common::MESSAGE_SYSCALL_OPEN_RESULT:
-      if (!ParseOpenResultAndSend(payload, payload_size, output, container_id, profile, process_state, counts, *topology, reason)) {
-        set_fault_site(FaultSite::kOpenResult);
+      set_fault_site(FaultSite::kOpenResult);
+      if (!ParseOpenResultAndSend(payload, payload_size, output, container_id, profile, process_state, counts, *topology, reason, fault_site)) {
         return false;
       }
       return true;
@@ -3173,7 +3309,9 @@ int main(int argc, char** argv) {
         stream.process_state.terminal_fault_site = FaultSite::kWorkspaceSend;
       }
     }
-    Send(output, stream.container_id, stream.fault ? "stream-fault" : "stream-end", stream.fault_reason);
+    Send(output, stream.container_id, stream.fault ? "stream-fault" : "stream-end", stream.fault_reason, nullptr, 0,
+         stream.fault ? FaultSiteName(stream.process_state.terminal_fault_site) : nullptr,
+         stream.fault ? stream.process_state.fault_image_locator : 0);
     if (registration != nullptr) profiles.erase(stream.container_id);
     close(client);
   };

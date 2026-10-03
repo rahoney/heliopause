@@ -105,6 +105,41 @@ func TestDynamicInspectorNormalizesFindingsAndBoundedSummary(t *testing.T) {
 	}
 }
 
+// Expected runtime operations are retained telemetry, not a grant that hides
+// later artifact behavior or completes another required check.
+func TestDynamicInspectorExpectedQueryDoesNotSuppressLaterFindings(t *testing.T) {
+	for _, test := range []struct {
+		name, subject, code string
+		category            domain.ObservationCategory
+	}{
+		{"query only", "", "", domain.ObservationProcess},
+		{"later exec", "process-exec-unexpected", "M3_UNEXPECTED_PROCESS", domain.ObservationProcess},
+		{"later network", "network-attempt", "M3_NETWORK_ATTEMPT", domain.ObservationNetwork},
+		{"later write", "filesystem-outside-workspace", "M3_FILESYSTEM_VIOLATION", domain.ObservationFilesystem},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			observations := []domain.SandboxObservation{observation(t, domain.ObservationProcess, "process-exec-expected")}
+			if test.subject != "" {
+				observations = append(observations, observation(t, test.category, test.subject))
+			}
+			inspector, _ := NewDynamicInspector(&wheelRunner{result: completedResultWithObservations(t, observations)})
+			report, err := inspector.InspectWheel(context.Background(), pypiWheelArtifact(t), artifactpypi.WheelInspection{Project: "example", Version: "1.0", ImportNames: []string{"example"}})
+			if err != nil || report.Execution().Status() != domain.ExecutionCompleted {
+				t.Fatalf("report: %v", err)
+			}
+			if test.code == "" {
+				if len(report.Findings()) != 0 {
+					t.Fatal(report.Findings())
+				}
+				return
+			}
+			if len(report.Findings()) != 1 || report.Findings()[0].Code() != test.code {
+				t.Fatal(report.Findings())
+			}
+		})
+	}
+}
+
 func TestDynamicInspectorFailsClosedOnIncompleteSandbox(t *testing.T) {
 	artifact := pypiWheelArtifact(t)
 	session, _ := domain.ParseSandboxSessionID("sbx_aaaaaaaaaaaaaaaaaaaaaaaaaa")

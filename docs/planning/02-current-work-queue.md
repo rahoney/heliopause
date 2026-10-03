@@ -2179,6 +2179,39 @@ production activation과 최종 배포를 수행한다.
 | 5 | M12-005 | cross-ecosystem qualification and feature freeze | NOT_STARTED |
 | 6 | M12-02 | final red-team/fix gate | RESERVED |
 
+M12-001 bounded Python library-query 진행 (2026-10-02): 사용자 승인으로 고정
+read-only runtime의 exact `ldconfig -p` 조회를 ARTIFACT 역할에서 지원한다.
+범위와 조건은 [M3 계약](../domain-model/12-m3-linux-dynamic-contract.md)의 bounded
+library query 절이 소유한다. 기존 libutil/image identity/failed cleanup/resource-role
+미커밋 correction을 보존한다. `IMPLEMENTED=YES`, `WIRED=YES`인 기존 transaction을
+재구현하지 않는다. 새 capability의 negative/four-profile actual regression,
+CPU full E2E(526.76초), canonical quick/security/docs는 로컬 후보에서 통과했다.
+cu126 full E2E는 `cuda.bindings.cufile`의 NumPy 누락으로 비적격이며, 동일 실패
+unit의 작은 재현으로 원인을 연결했다. cu130/cu132의 실제 bindings13.4.3도
+`_v2.nvrtc`의 NumPy 누락을 확인했다(full qualification 아님). 선택된 graph는
+NumPy를 포함하지 않는다. 사용자 승인된 [M5 inspection-only prerequisite 계약](../domain-model/14-m5-pypi-pip-contract.md)에 따라
+비-root broader probes의 명시적인 leaf 입력 연결은 구현·로컬 검증되었다.
+NumPy 자체 23개 단위와 bindings 전체 36/31개 단위가 하나의 기존 자원 승인 안에서
+cu126/cu130/cu132 모두 완료됐다. 보조 입력은 원래 graph/승격 집합에서 제외된다.
+직전 후보는 CPU 491.89초 PASS, cu126 1420.19초에 Triton viewer의 pandas
+누락으로 실패했다. 2026-10-03 승인된 [M5 post-install command 관찰](../domain-model/14-m5-pypi-pip-contract.md)에 따라
+console/gui-only target의 coverage를 사전에 분리했다. Required 역할 우선,
+Finding/불완전 trusted evidence 차단과 승격 후 실행 enforcement 부재를 유지한다.
+동일 executable 후보의 새 CPU full E2E **513.98초**, cu126 full E2E
+**2078.51초 PASS**: 원래 29개 승격 대상, inspection-only NumPy 제외,
+viewer `NOT_ATTESTED` Evidence/result/manifest reference를 실제 확인했다.
+Triton의 원래 한-wheel closure/7 units는 cu126/cu130/cu132에서 각각
+81.06/78.21/77.96초 완료했다. CUDA13 전체 qualification은 미실행이다.
+Canonical quick/security/docs/required corpus 및 Darwin amd64 TEST compile
+통과; native macOS/새 원격 CI 성공은 주장하지 않는다. 수동 CUDA CI에도
+동일한 명시적 NumPy pin을 전달하며 CPU 입력은 empty다. 실제 workflow block의
+정상/누락/잘못된 pin 회귀 및 actionlint/Required 연결을 확인했다.
+`IMPLEMENTED=YES`, `WIRED=YES`, `QUALIFIED=YES`는 **로컬 CPU+대표 cu126**
+범위이며 `ACCEPTANCE_CLOSED=NO`, `IN_PROGRESS`를 유지한다. `MISSING`은
+현재 후보의 ordinary Required CI/native macOS 및 PR review·merge gate다.
+cu130/cu132 release support는 각 full qualification 전에는 주장하지 않는다.
+
+
 M12-001 clean-CI 복구 baseline (2026-10-01): `IMPLEMENTED=YES`,
 `WIRED=YES`, `QUALIFIED=NO`, `ACCEPTANCE_CLOSED=NO`.
 기준 `a43ccfa1265eb7b7db8d4ef559e49a4c94eda224`의 controller transaction은

@@ -265,6 +265,16 @@ func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain
 	if err != nil {
 		return domain.DependencyResolution{}, err
 	}
+	// Source ownership remains that of each node. Metadata bounds belong to
+	// the canonical root transaction, including an explicitly resolved input.
+	// An ordinary PyPI context retains its conservative default bound.
+	rootProfile := artifactpypi.PublicPyPIProfile()
+	for _, canonical := range artifactpypi.AllSourceProfiles() {
+		if canonical.Name() == artifactpypi.RootSourceProfileNameFromContext(ctx) {
+			rootProfile = canonical
+			break
+		}
+	}
 	pages := make([]artifactpypi.SimpleProject, 0, len(report.Candidates()))
 	for _, candidate := range report.Candidates() {
 		fetchScript := simpleJSONFetchScript
@@ -279,7 +289,7 @@ func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain
 		if err != nil {
 			return domain.DependencyResolution{}, errors.New("fetch PyPI Simple metadata failed")
 		}
-		page, err := artifactpypi.ParseSimpleProjectForRootProfile(candidate.Project(), body, profile, r.profile)
+		page, err := artifactpypi.ParseSimpleProjectForRootProfile(candidate.Project(), body, profile, rootProfile)
 		if err != nil {
 			return domain.DependencyResolution{}, err
 		}
@@ -509,7 +519,10 @@ func pypiCreateArguments(network string, hostArguments []string) []string {
 
 func verifyPyPIResolverRuntime(ctx context.Context, runner CommandRunner, containerID string, runtime PythonRuntime) error {
 	python, err := runner.Output(ctx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", "import sys; print('.'.join(map(str, sys.version_info[:3])))")...)
-	if err != nil || strings.TrimSpace(string(python)) != runtime.PythonVersion {
+	if err != nil {
+		return fmt.Errorf("PyPI resolver Python runtime query failed: %s", pythonCommandErrorReason(err))
+	}
+	if strings.TrimSpace(string(python)) != runtime.PythonVersion {
 		return errors.New("PyPI resolver Python runtime version mismatch")
 	}
 	pip, err := runner.Output(ctx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-m", "pip", "--version")...)

@@ -72,12 +72,9 @@ func (UnavailablePythonWheelRunner) InspectWheel(context.Context, domain.Acquire
 	return domain.NewSandboxResult(session, domain.SandboxIncomplete, "M5_PYPI_DYNAMIC_RUNTIME_UNAVAILABLE", nil)
 }
 
-func (UnavailablePythonWheelRunner) InspectWheelWithPlan(context.Context, domain.AcquiredArtifact, artifactpypi.ObservationPlan, []domain.AcquiredArtifact) (domain.SandboxResult, error) {
-	session, err := domain.NewSandboxSessionID()
-	if err != nil {
-		return domain.SandboxResult{}, err
-	}
-	return domain.NewSandboxResult(session, domain.SandboxIncomplete, "M5_PYPI_DYNAMIC_RUNTIME_UNAVAILABLE", nil)
+func (r UnavailablePythonWheelRunner) InspectWheelWithPlan(ctx context.Context, a domain.AcquiredArtifact, _ artifactpypi.ObservationPlan, _ []domain.AcquiredArtifact) (PythonObservationResult, error) {
+	result, err := r.InspectWheel(ctx, a, nil)
+	return PythonObservationResult{SandboxResult: result}, err
 }
 
 func (UnavailablePythonWheelRunner) InspectWheelWithClosure(context.Context, domain.AcquiredArtifact, []string, []domain.AcquiredArtifact) (domain.SandboxResult, error) {

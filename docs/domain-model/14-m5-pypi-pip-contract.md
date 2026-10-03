@@ -76,7 +76,47 @@ wheel 정적 inspection은 trusted controller에서 archive를 실행하지 않�
 
 wheel의 dynamic inspection은 M3 trusted observer/gVisor session에서 target-local private directory에 verified wheel만 `pip --no-index --no-deps`로 설치한 뒤 bounded declared import surface를 실행한다. Artifact가 제공한 script/entry point, `setup.py`, arbitrary module name 또는 Host Python을 실행하지 않는다. import surface를 안전하게 확정할 수 없거나 session/observation이 incomplete면 `MANUAL_REVIEW`다.
 
-Python dynamic inspection은 exact authenticated installed closure에 대한 controller-owned bounded observation experiments로 구성한다. 각 required unit의 identity, launch, externally observed process outcome, observer attribution, cumulative resource accounting, runtime destruction과 cleanup을 controller가 독립적으로 reconciliation한다. `COMPLETED`는 이 실험들의 실행·관찰·회계·정리를 뜻하며 Python import의 정상 반환, 모든 module body의 실행 또는 package safety를 증명하지 않는다. Artifact가 출력하거나 같은 interpreter에서 계산한 completion token은 coverage authority가 아니다. `sys.exit(0)`은 그 unit에서 외부 관찰된 zero-exit outcome일 뿐 다른 unit을 완료하거나 생략할 수 없다. 누락된 unit, unsupported required surface, nonzero/timeout/resource termination, uncertain attribution, 불완전한 observer evidence 또는 cleanup은 `MANUAL_REVIEW`로 남는다.
+Python dynamic inspection은 exact authenticated installed closure에 대한 controller-owned bounded observation experiments로 구성한다. 각 required unit의 identity, launch, externally observed process outcome, observer attribution, cumulative resource accounting, runtime destruction과 cleanup을 controller가 독립적으로 reconciliation한다. `COMPLETED`는 이 실험들의 실행·관찰·회계·정리를 뜻하며 Python import의 정상 반환, 모든 module body의 실행 또는 package safety를 증명하지 않는다. Artifact가 출력하거나 같은 interpreter에서 계산한 completion token은 coverage authority가 아니다. `sys.exit(0)`은 그 unit에서 외부 관찰된 zero-exit outcome일 뿐 다른 unit을 완료하거나 생략할 수 없다. 누락된 unit, unsupported required surface, required unit의 nonzero 또는 timeout/resource termination, uncertain attribution, 불완전한 observer evidence 또는 cleanup은 `MANUAL_REVIEW`로 남는다.
+
+### Post-install command target의 bounded 관찰 (2026-10-03 정책 정교화)
+
+인증된 `console_scripts`/`gui_scripts` metadata만으로 추가된 exact target module은
+`POST_INSTALL_COMMAND` 관찰 단위다. 이는 후속 사용자 명령이며 base 설치의
+필수 successful-import 조건은 아니다. 실행 전에 artifact plan owner가 coverage를
+고정한다. 정상 import/native/plugin/startup 등 다른 required 역할과 겹치면 required가
+우선한다. 다른 entry-point group은 기존 required 규칙을 유지한다. 동적 startup
+statement가 있는 wheel은 reachability를 분리 입증하지 않으므로 command target도
+required로 유지한다. Declarative path만으로 이 결정을 바꾸지 않는다.
+
+모든 계획 단위는 기존 controller launch/관찰/회계/종료/정리를 거친다. 정확한
+launch consumption과 외부 terminal zero, 완전한 trusted evidence, actionable Finding
+없음이면 `ATTESTED`, 정상 nonzero이면 `NOT_ATTESTED`로 기록한다. 후자는 base
+required check 실패가 아니다. 실행되지 않은 명령 실패, signal/timeout, missing unit,
+불완전한 observer/회계/cleanup은 계속 fail-closed다. stderr·누락 dependency·출력은
+coverage나 보조 dependency를 결정하지 않는다. 관찰된 network/exec/filesystem 등
+Finding은 terminal 상태와 무관하게 기존 Inspector→Policy 판정을 유지한다.
+
+Python runner의 typed outcome을 Inspector가 기존 required transaction Evidence에
+추가한다. Evidence에는 exact module/unit/owner digest, disposition,
+`functionality_attested=false`, `later_execution_enforced=false`가 포함된다. CLI 결과와
+promotion manifest의 Evidence reference에도 `pypi-command-not-attested-*` 구분을
+유지한다. `ATTESTED`조차 callable 실행·정상 import return·기능·package 안전성을
+증명하지 않는다. HAA는 승격된 `NOT_ATTESTED` command의 나중 실행을 차단하지
+않는다. 원래 요청 graph/승격 집합은 그대로이며 명령을 동작시키기 위한 recursive
+inspection prerequisite 확장은 없다. 이 절은 이전 모든 exact entry-point target의
+required-success 규칙을 이 범위에서 명시적으로 대체한다.
+
+### 명시적인 inspection-only prerequisite (2026-10-02 정책 정교화)
+
+기본 입력은 비어 있다. `pip install --inspection-prerequisites '<JSON>'`은 trusted caller가 선택한 **비-root** artifact의 broader module probes에만 한 개의 leaf wheel을 제공한다. JSON은 `target_sha256`, `source`, `project`, `version`, `filename`, `sha256`, `reason`을 포함하며 reason은 `BROADER_MODULE_PROBES`다. Artifact의 오류·stdout·누락 import는 이 입력을 선택할 권한이 없다. 원래 요청 root는 항상 원래 전체 plan과 원래 dependency closure로 검사하며, 그 required 실패는 보조 환경 성공으로 상쇄할 수 없다. root/직접 요청의 augmentation은 지원하지 않는다.
+
+- Bootstrap은 기존 격리 PyPI resolver와 intake/integrity verification으로 official `pypi` source의 caller pin을 교차 확인한다. CompositeInspector는 모든 원래 wheel과 보조 wheel의 구조·RECORD·CP314 ABI·설치 역할을 검사하고 동일 project 교체, import shadowing, 최종 파일/디렉터리 collision을 거부한다. 현재 leaf 계약은 `Requires-Dist` 또는 startup hook이 있는 보조 입력과 recursive/extra expansion을 지원하지 않는다.
+- 보조 입력도 ARTIFACT이며 전체 own plan의 모든 unit을 target unit 앞에서 실행한다. 같은 frozen RO closure, preparation/anchor, CPU/memory/tmpfs/wall/observer authorization을 공유하고 비용을 원래 graph의 storage 한도에도 합산한다. 실패는 sticky이며 별도 budget reset·권한·네트워크를 받지 않는다.
+- `pypi-dynamic-import-supplemented`는 별도의 required check다. generic Evidence summary에 input source/project/version/digest/reason, target/base/input/runtime/root-policy/plan binding과 정규화 관찰을 남기며 `original_environment=NOT_ATTESTED`를 명시한다. 해당 broader module이 보조 입력 없이 동작한다는 증거가 아니다. 원래 no-prerequisite 실패 실험은 별도 증거로 보존한다. 현재 evidence cache는 없고 매번 새 transaction을 실행한다.
+- 보조 입력의 source ownership과 metadata 한도의 owner도 구분한다. 공식 PyPI에서 선택하더라도 기존 canonical root context의 Simple 한도를 적용한다. 기본 PyPI의 1,024개, 등록된 PyTorch root의 기존 8,192개 한도와 response byte bound는 변경하지 않는다. 이 선택은 패키지 이름이나 artifact 출력에 따르지 않는다.
+- 원래 resolved graph, dependency edges, Verified Set, target SBOM 및 promotion ownership을 확장하지 않는다. 보조 wheel과 생성 script는 inspection volume에서만 사용되고 target에 복사하지 않는다. 사용자가 별도로 선택한 dependency와 혼동하거나 요청 설치의 실제 base 실패를 숨겨 ALLOW할 수 없다. Policy의 다른 필수 조건과 bounded observation의 assurance limit은 그대로다.
+
+정확한 entry-point module이 인증된 site directory의 implicit namespace인 경우에도 독립 unit으로 검사한다. Admission은 controlled parent search에서 각 local component를 찾고 origin/namespace containment를 확인한 뒤 정확한 전체 module을 import한다. 이 사전 선택을 위해 parent artifact 코드를 먼저 실행하거나 mutable `__file__`/`__path__`를 독립 attestation으로 사용하지 않는다.
 
 검증된 `RECORD`에서 선언된 `Import-Name`·`Import-Namespace`, Python `.py` 모듈 및 Python extension 모듈이 전혀 없고 구조적으로 실행 가능 Python 표면이 없음이 정적으로 입증된 wheel(metadata-only 또는 native library/header 등 native/data-only wheel)은 Python import 적용 대상이 아님을 정적으로 확정할 수 있다. 이 경우에도 동일한 격리 session에서 exact wheel closure를 offline 설치하고 설치된 distribution identity를 확인하며 observer 완료를 요구한다. 결과에는 import `NOT_APPLICABLE`을 명시한다. 설치 가능 payload가 있지만 import surface를 안전하게 확정할 수 없거나 모호한 wheel은 이 예외에 해당하지 않으며 기존처럼 fail-closed다.
 
