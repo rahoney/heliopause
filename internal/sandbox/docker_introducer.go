@@ -32,7 +32,7 @@ func NewDockerArtifactIntroducer(intakeRoot string, runner CommandRunner) (*Dock
 	if runner == nil {
 		return nil, errors.New("sandbox command runner is required")
 	}
-	return &DockerArtifactIntroducer{intakeRoot: filepath.Clean(intakeRoot), runner: runner}, nil
+	return &DockerArtifactIntroducer{intakeRoot: filepath.Clean(intakeRoot), runner: admissionAwareRunner(runner)}, nil
 }
 
 func (i *DockerArtifactIntroducer) Introduce(ctx context.Context, containerID string, artifact domain.AcquiredArtifact) error {
@@ -59,7 +59,8 @@ func (i *DockerArtifactIntroducer) Introduce(ctx context.Context, containerID st
 	if !ok {
 		return errors.New("sandbox artifact stream runner is not configured")
 	}
-	if err := inputRunner.RunInput(ctx, file, "docker", "exec", "-i", containerID, "/bin/sh", "-ceu", "umask 077; cat > /tmp/artifact.tgz"); err != nil {
+	arguments := boundaryInputExecArguments(containerID, boundaryLaunchMode, "/bin/sh", "-ceu", "umask 077; cat > /tmp/artifact.tgz")
+	if err := inputRunner.RunInput(ctx, file, "docker", arguments...); err != nil {
 		return fmt.Errorf("introduce controlled Sandbox Artifact: %w", err)
 	}
 	return nil

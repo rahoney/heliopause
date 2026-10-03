@@ -191,8 +191,20 @@ func (c *checker) runProfile(profile string) error {
 		return c.bootstrap()
 	case "bootstrap-modules":
 		return c.bootstrapModules()
+	case "workflow":
+		return c.checkActionsWorkflows()
 	case "foundation":
 		return c.runSequential(c.foundationSteps(true))
+	case "corpus":
+		output, err := c.runCommandWithTimeout("required representative wheel corpus", 6*time.Minute, c.offlineEnvironment(), c.goExecutable, "test", "-count=1", "-tags=realcorpus", "-timeout=5m", "./internal/artifact/pypi", "-run", "^TestModelC_(RealCorpusQualification|MissingCorpusDirectoryFails|CorpusHashMismatchFails)$", "-v")
+		if err != nil {
+			return err
+		}
+		if err := validateCorpusTestExecution(output); err != nil {
+			return err
+		}
+		_, err = fmt.Fprint(c.stdout, output)
+		return err
 	case "platform":
 		return c.runSequential(c.platformSteps())
 	case "quick":
@@ -207,6 +219,10 @@ func (c *checker) runProfile(profile string) error {
 		return c.runFuzz()
 	case "docs":
 		return c.runStep("documentation", func() error { return checkMarkdownTree(c.root) })
+	case "freshness":
+		return c.runStep("version support freshness", func() error { return checkVersionSupport(c.root, false, c.stdout) })
+	case "qualification-freshness":
+		return c.runStep("strict version support freshness", func() error { return checkVersionSupport(c.root, true, c.stdout) })
 	case "format":
 		return c.runStep("format", c.applyFormat)
 	case "release-gate":
@@ -228,7 +244,7 @@ func (c *checker) platformSteps() []checkStep {
 func (c *checker) quickSteps() []checkStep {
 	steps := c.foundationSteps(false)
 	return append(steps,
-		checkStep{"CI configuration", func() error { return checkCIWorkflow(c.root) }},
+		checkStep{"CI configuration", c.checkActionsWorkflows},
 		checkStep{"go vet", func() error { return c.runAnalysis("go vet", c.goExecutable, "vet", "./...") }},
 		checkStep{"Staticcheck", c.runStaticcheck},
 		checkStep{"default test", func() error {
@@ -243,6 +259,7 @@ func (c *checker) foundationSteps(includeDocs bool) []checkStep {
 		{"runtime lock drift", func() error {
 			return c.runGo("runtime lock drift", "run", "./scripts/generate-runtime-lock.go", "-check")
 		}},
+		{"version support freshness", func() error { return checkVersionSupport(c.root, false, c.stdout) }},
 		{"module drift", c.checkModuleDrift},
 		{"module integrity", func() error { return c.runGo("module integrity", "mod", "verify") }},
 		{"production build", func() error { return c.runGo("production build", "build", "./...") }},
@@ -399,4 +416,14 @@ func (b *boundedBuffer) String() string {
 		return b.buffer.String() + "\n[output truncated]"
 	}
 	return b.buffer.String()
+}
+
+// A successful go test process with an empty selection supplies no corpus evidence.
+func validateCorpusTestExecution(output string) error {
+	for _, name := range []string{"TestModelC_RealCorpusQualification", "TestModelC_MissingCorpusDirectoryFails", "TestModelC_CorpusHashMismatchFails"} {
+		if !strings.Contains(output, "=== RUN   "+name+"\n") || !strings.Contains(output, "--- PASS: "+name+" (") {
+			return &checkFailure{class: findingFailure, step: "required representative wheel corpus", detail: "intended test did not execute and pass: " + name}
+		}
+	}
+	return nil
 }

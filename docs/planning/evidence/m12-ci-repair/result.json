@@ -1,0 +1,131 @@
+{
+  "RESULT": "READY_FOR_REVIEW",
+  "BASE_HEAD": "a43ccfa1265eb7b7db8d4ef559e49a4c94eda224",
+  "branch": "recovery/m12-reconciliation",
+  "failed_merge": "cd362f5a0065f486d7ca8bdec2ae0e6799966bf3",
+  "merge_vs_base_source_comparison": "GitHub compare reports no changed files vs checkpoint HEAD; different SHA is not causal",
+  "scope": "bounded clean-CI regression repair, uncommitted working tree",
+  "checks": {
+    "clean_quick": "PASS: full default Go tests, vet, Staticcheck, Linux test compilation and platform-equivalent steps; corpus root absent",
+    "security": "PASS",
+    "docs": "PASS",
+    "darwin_test_compile": "PASS: 32 packages plus changed hosttool test recompiled",
+    "native_macos": "NOT_RUN: Linux WSL2 host",
+    "required_corpus": "PASS: 19 profile cases, 18 unique pinned wheels; missing=exit1, tampered=exit1, prepared=exit0",
+    "packaging_production": "PASS: installed production client and authenticated helper, 21s",
+    "cpu_e2e": "PASS: 478.92s test, 530s outer command; exact frozen 10-node set promoted",
+    "wheel_sdist": "PASS: installed authenticated sandbox test binary; production client restored",
+    "npm_pypi_promotion": "PASS: 2.86s / 4.19s",
+    "remote_ci": "NOT_RUN",
+    "cuda_qualification": "NOT_RUN"
+  },
+  "primary_and_adjacent_fixes": [
+    {
+      "jobs": "Quick, Minimum Go, macOS",
+      "cause": "default tests required undeclared /tmp/haa_corpus",
+      "fix": "tagged realcorpus test, independent committed digest manifest, explicit preparation and required CI job; temporary negative fixtures"
+    },
+    {
+      "jobs": "macOS",
+      "cause": "Linux-only symbols in unconstrained test file",
+      "fix": "move only Linux resource test and adapter to constrained file; preserve portable tests"
+    },
+    {
+      "jobs": "Linux CPU",
+      "cause": "suffix allowlist treated ordinary NetworkX resources as unresolved execution",
+      "fix": "installed-role resource applicability; integrity checks and active-role rejection preserved"
+    },
+    {
+      "jobs": "Linux later stages",
+      "cause": "Jinja2 extras key diverged between parser/planner; SymPy data scheme duplicated share prefix",
+      "fix": "one exact entry-point key; pinned pip final destination mapping and regressions"
+    },
+    {
+      "jobs": "Linux after CPU",
+      "cause": "go test client no longer matched helper protected executable identity",
+      "fix": "install declared test binary, restart helper, execute protected path; restore production client"
+    },
+    {
+      "jobs": "clean exported local tests",
+      "cause": "long Unix socket fixture paths; positive endpoint fixture assumed protected checkout ancestors",
+      "fix": "short temporary control directory and explicit writable-ancestor rejection assertion"
+    },
+    {
+      "jobs": "diagnostics",
+      "cause": "closure verifier and deferred cleanup discarded underlying error",
+      "fix": "preserve phase/cause and cleanup errors while retaining incomplete result"
+    }
+  ],
+  "removed": [
+    "isRecognizedInertData suffix/name allowlist",
+    "duplicate entry-point key reconstruction",
+    "unused OBSERVED / NOT_APPLICABLE_WITH_PROOF coverage constants",
+    "default-test hardcoded corpus dependency"
+  ],
+  "assurance_limits": [
+    "RESOURCE is applicability, not harmlessness; package readers can deserialize pickle and execute code",
+    "zero external termination establishes only its independently launched experiment; no package-safety or complete-module-execution claim",
+    "CPU budget/reserve, peer authentication, controller ledger, RO anchor continuity and final cleanup requirements unchanged",
+    "CUDA full-byte gaps: cu126 11/29, cu130 13/29, cu132 13/29; no dynamic CUDA claim",
+    "Historical failed CI NetworkX identity unavailable: logs omit it and run has zero retained artifacts. Current exact NetworkX 3.7 hash is independently recorded; not asserted as historical identity."
+  ],
+  "optional_complexity_notes": [
+    "Reusing one prepared closure across artifact transactions could reduce repeated installation, but changes isolation/ownership and accounting scope; not implemented. Current CPU graph repeats 797324608 uncompressed closure bytes in total."
+  ],
+  "installation": {
+    "helox_sha256": "4c3b3d263781ce7931bd12b5aaf542caff5a94b0fc58dfc5c5d13c4dda0173d5",
+    "helper_sha256": "11b064f58af403733aa9264e8c8f07f91e7350e4b2f14519b10404acd7cb280f",
+    "observer_sha256": "2fde42a4d91ccbe73f4056a54d41a4119edc170d18cc9ef7a17c4344fbe5be8a",
+    "binding": "canonical go build -trimpath using Go1.26.8; independently rebuilt outputs match installed production hashes",
+    "cleanup": "own helper stopped; production client restored; zero observation slices before and after; auth config unchanged"
+  },
+  "NO_STAGE": true,
+  "NO_COMMIT": true,
+  "NO_PUSH": true,
+  "NO_REMOTE_CI": true,
+  "NO_CUDA_QUALIFICATION": true,
+  "TESTED_SOURCE_FINGERPRINT": "017633d87ef8924ed2ed4f69ce49abf45d5f246fb5e4deda1fc4f8ec411d7fe2",
+  "tracked_diff_sha256": "cf70e1407b89c41d12375139ed66135c77a10b2035737de842c5f78b72c4822d",
+  "changed_tracked_files": [
+    ".github/workflows/heliopause-ci.yml",
+    "docs/engineering/03-quality-toolchain.md",
+    "docs/engineering/04-ci-quality-gate.md",
+    "docs/planning/02-current-work-queue.md",
+    "docs/planning/16-m12-01-ecosystem-expansion-contract.md",
+    "internal/artifact/pypi/observation_plan.go",
+    "internal/artifact/pypi/wheel.go",
+    "internal/artifact/pypi/wheel_test.go",
+    "internal/bootstrap/pytorch_linux_integration_test.go",
+    "internal/hosttool/executor_test.go",
+    "internal/sandbox/direct_exec_admission_test.go",
+    "internal/sandbox/linux_integration_test.go",
+    "internal/sandbox/pypi_closure_installation.go",
+    "internal/sandbox/pypi_trusted_transaction.go",
+    "scripts/check/main.go",
+    "scripts/check/required.go",
+    "scripts/check/required_test.go",
+    "scripts/check/runner.go",
+    "scripts/check/workflow.go"
+  ],
+  "new_source_test_files": [
+    "internal/artifact/pypi/corpus_test.go",
+    "internal/artifact/pypi/entry_point_identity_test.go",
+    "internal/artifact/pypi/real_corpus_integration_test.go",
+    "internal/artifact/pypi/resource_role_test.go",
+    "internal/artifact/pypi/testdata/real-corpus.json",
+    "internal/sandbox/observation_resource_integration_linux_test.go",
+    "internal/sandbox/pypi_closure_error_test.go",
+    "internal/sandbox/pytorch_closure_integration_test.go",
+    "scripts/prepare-wheel-corpus.py"
+  ],
+  "final_preservation": {
+    "source_snapshot_rechecked": true,
+    "supplied_logs_unchanged": 79,
+    "unrelated_reference_documents_preserved": true,
+    "index_empty": true,
+    "head_unchanged": true,
+    "diff_check": "PASS",
+    "installed_production_hashes_rechecked": true,
+    "no_remaining_own_containers_slices_or_helper": true
+  }
+}

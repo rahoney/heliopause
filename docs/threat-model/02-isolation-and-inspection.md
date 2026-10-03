@@ -1,0 +1,172 @@
+# Threat Model — Isolation and Inspection
+
+## 사용자 원문: D-006
+
+```text
+6번: Lifecycle script 및 실행 코드 처리
+Artifact는 실제 Host 환경에 반입하기 전에 다운로드·설치·실행의 단계별 검사를 수행한다.
+Artifact를 격리된 환경으로 다운로드하여 실행 없이 정적 검증을 수행하고, 설치 단계에서는 lifecycle script를 포함한 설치 동작을 격리된 환경에서 실행·관찰한다. 필요하면 설치 후 프로그램 자체도 격리된 환경에서 제한적으로 실행하여 동적 행위를 검사한다.
+모든 실행 단계에서는 Host 파일시스템, 자격증명, 내부 네트워크 등 보호 자산에 직접 접근할 수 없도록 제한한다.
+```
+
+## D-006 Lifecycle script 및 실행 코드 처리 확정
+
+Artifact는 실제 Host 환경에 반입하기 전에 다운로드·설치·실행의 단계별 검사를 수행한다.
+
+| 단계 | 처리 원칙 |
+| --- | --- |
+| 다운로드 | Artifact를 격리된 환경으로 가져오고 실행 없이 checksum·digest·provenance·정적 검증을 수행 |
+| 설치 | lifecycle script를 포함한 설치 동작을 격리된 환경에서 실행하고 파일·프로세스·네트워크·환경변수 변화를 관찰 |
+| 설치 후 실행 | 필요할 때만 프로그램 자체를 격리된 환경에서 제한적으로 실행하여 동적 행위를 검사 |
+| 반입 | 단계별 정책을 통과한 고정 Artifact만 목표 Host 환경으로 반입 |
+
+모든 실행 단계에서는 Host 파일시스템, 자격증명, `.env`와 환경변수, 브라우저·클라우드 인증정보, 내부 네트워크, 다른 장비, 실행 중인 Host 프로세스와 서비스에 직접 접근할 수 없도록 제한한다. 격리 환경의 권한·네트워크·파일 접근 정책과 관찰 결과는 receipt에 기록한다.
+
+## 결정 로그: D-006
+
+| ID | 날짜 | 결정 | 이유 | 영향 |
+| --- | --- | --- | --- | --- |
+| D-006 | 2026-08-07 | 다운로드·설치·실행을 단계별로 격리 검사하고 보호 자산 직접 접근을 차단 | lifecycle script와 설치 후 실행 코드가 Artifact 반입 순간 동작할 수 있기 때문 | 정적 검증, 격리 동적 관찰, 제한 실행, receipt 기록이 필수 pipeline이 됨 |
+
+## 사용자 원문: D-007
+
+```text
+7번: 격리 환경 탈출 처리
+격리 환경 탈출은 실제 위협으로 포함한다. 다만 컨테이너 런타임, 운영체제 커널, VM 등 기반 격리 기술 자체의 취약점을 완전히 해결하거나 안전성을 보증하는 것을 목표로 하지는 않는다.
+대신 non-root 실행, 최소 권한, Host filesystem mount 제한, 자격증명 비노출, 네트워크 제한, resource limit 등 다중 방어를 적용해 탈출 성공 시 피해 가능성을 최소화한다.
+탈출 자체를 적극적으로 방어하는 독자적인 격리 기술 구축은 범위가 크게 확장되므로 향후 확장 과제로 별도 기록한다.
+```
+
+## D-007 격리 환경 탈출 처리 범위 확정
+
+격리 환경 탈출은 실제 위협으로 포함한다. 다만 컨테이너 런타임, 운영체제 커널, VM 등 기반 격리 기술 자체의 취약점을 완전히 해결하거나 안전성을 보증하는 것을 HAA의 1차 목표로 삼지 않는다.
+
+대신 탈출 성공을 전제로 다음 다중 방어를 적용해 피해 가능성을 최소화한다.
+
+- non-root 실행
+- 최소 권한과 capability 제한
+- Host filesystem mount 최소화 또는 금지
+- 자격증명·secret 비노출
+- 네트워크 기본 차단과 명시적 제한
+- CPU·메모리·디스크·프로세스 등 resource limit
+- 실행 중인 Host 프로세스·서비스와의 분리
+
+탈출 자체를 적극적으로 방어하는 독자적인 격리 기술 구축은 범위를 크게 확장하므로 1차 구현에서 제외하고, 향후 별도 확장 과제로 기록한다.
+
+## 결정 로그: D-007
+
+| ID | 날짜 | 결정 | 이유 | 영향 |
+| --- | --- | --- | --- | --- |
+| D-007 | 2026-08-07 | 격리 탈출을 실제 위협으로 포함하되 독자적인 격리 기술 구축은 1차 범위에서 제외하고 다중 방어로 피해를 최소화 | 런타임·커널·VM 취약점까지 완전히 보증하는 것은 별도 보안 제품 수준의 범위이기 때문 | non-root, 최소 권한, mount·secret·network 제한과 resource limit이 필수 조건이 됨 |
+
+## 사용자 원문: D-008
+
+```text
+8번: Host 자산 접근 통제 및 미끼 자산
+격리 환경에서는 실제 Host filesystem, 자격증명, 환경변수, 내부 네트워크, Host 서비스 및 프로세스를 기본적으로 노출하지 않는다. 모든 접근은 **default deny**를 원칙으로 한다.
+실제 Secret·Credential은 격리 환경에 주입하지 않는다. 대신 필요한 경우 실제 개발 환경과 유사한 디렉터리 구조와 권한 없는 **더미 Credential, Secret 및 파일(honeytoken/canary)**을 포함한 모의 Host 환경을 격리 환경에 구성하여 Artifact가 민감정보를 탐색·읽기·복사·전송하려는 행동을 탐지한다.
+검사에 프로젝트 파일 등이 필요한 경우에도 실제 Host filesystem을 직접 노출하지 않고, 별도로 복사·정제한 검사 전용 데이터를 제공하는 것을 원칙으로 한다.
+네트워크 또한 기본적으로 실제 외부 및 내부 네트워크와 격리한다. 동적 분석에서는 **가짜 DNS/HTTP 서버 또는 통제된 격리 네트워크를 제공하여 Artifact가 어디에 접속하려 했는지와 어떤 통신을 시도했는지 관찰·기록할 수 있도록 설계한다.**
+```
+
+## D-008 Host 자산 접근 통제와 미끼 자산 확정
+
+격리 환경에서는 실제 Host filesystem, 자격증명, 환경변수, 내부 네트워크, Host 서비스와 프로세스를 기본적으로 노출하지 않는다. 모든 접근은 **default deny**를 원칙으로 한다.
+
+- 실제 Secret·Credential은 격리 환경에 주입하지 않는다.
+- 필요한 경우 **격리 환경 내부에만** 실제 개발 환경과 유사한 디렉터리 구조·권한·더미 filesystem을 만든다. 그 안에 권한 없는 더미 Credential·Secret·파일(honeytoken/canary)을 포함한 모의 Host 환경을 구성한다. 이 모의 환경은 외부나 실제 Host filesystem에 생성하지 않는다.
+- Artifact가 민감정보를 탐색·읽기·복사·전송하려는 행동은 canary 반응과 격리 telemetry로 탐지한다.
+- 프로젝트 파일이 필요해도 실제 Host filesystem을 직접 노출하지 않고, 격리 환경 내부에 별도로 복사·정제한 검사 전용 filesystem과 데이터만 제공한다.
+- 네트워크는 기본적으로 실제 외부·내부 네트워크와 격리한다.
+- 동적 분석에는 격리 환경 내부에서 실행하는 가짜 DNS/HTTP 서버 또는 통제된 격리 네트워크를 사용해 접속 대상과 통신 시도를 관찰·기록한다.
+
+#### M3 trusted observer transport
+
+M3 Linux dynamic inspection은 gVisor seccheck `remote` sink와 HAA trusted observer의 protected shared Unix-domain `SOCK_SEQPACKET`만 사용한다. Docker `runsc-trace` runtime은 고정 `--pod-init-config` trace session으로 Sandbox start 전에 연결되고 Artifact에는 socket, Host path, credential 또는 Evidence Store 접근을 제공하지 않는다. Sentry에서 오는 protobuf stream은 untrusted input이며 handshake/protocol version, message size, dropped event와 stream completion을 검증한다. 필요한 trace point의 `container_id` context field와 connection/container/Sandbox Session mapping이 정확히 하나로 확정돼야 한다. mapping 불일치·중복·미확정, observer 구성·연결·필수 event 수집 실패는 fail-closed `INCOMPLETE`다. shared UDS여도 Sandbox별 Observation/Evidence state는 분리한다. `--strace`, stdout/stderr scraping, Host 일반 파일 log는 observation transport나 fallback으로 사용하지 않는다.
+
+모의 filesystem, 디렉터리, 더미 자산, fake DNS/HTTP 서버와 관찰 telemetry는 모두 격리 환경의 경계 안에서 생성·실행·보관한다. Honeytoken·canary는 실제 접근 권한이나 유효한 자격증명을 포함하지 않아야 하며, 관찰 데이터도 격리 환경 밖으로 불필요하게 전송하지 않는다.
+
+## 결정 로그: D-008
+
+| ID | 날짜 | 결정 | 이유 | 영향 |
+| --- | --- | --- | --- | --- |
+| D-008 | 2026-08-07 | 실제 Host 자산은 default deny로 차단하고 모의 Host·더미 honeytoken·통제 네트워크로 탐지·관찰 | 실제 secret·filesystem·내부망을 노출하지 않고도 탐색·복사·전송·외부 통신 행위를 검증하기 위해 | 검사 전용 데이터, canary telemetry, fake DNS/HTTP와 격리 네트워크가 필수 조건이 됨 |
+
+## 사용자 원문: D-014
+
+```text
+14번: 자원 고갈 및 검사 방해 대응
+
+Artifact가 CPU, 메모리, 저장공간, 프로세스 수, 실행 시간, 네트워크 등의 자원을 과도하게 사용하여 검사 환경을 마비시키거나 Host에 영향을 주는 행위를 위협으로 포함한다.
+
+다운로드·압축 해제·설치·실행 등 검사 전 과정에 CPU·메모리·디스크 사용량·프로세스 수·실행 시간 등에 적절한 resource limit과 timeout을 적용한다. 압축폭탄(archive bomb), 과도한 파일 생성 등 저장공간 고갈 공격도 제한 대상에 포함한다.
+
+제한을 초과하면 해당 작업과 Artifact가 생성한 관련 프로세스를 종료하고, 해당 검사 환경은 재사용하지 않고 안전하게 폐기·초기화한다.
+
+비정상적인 자원 소비, 반복적인 프로세스 생성, 과도한 파일 생성·압축 해제, 비정상적인 네트워크 활동 등은 Evidence로 기록하고 위험 신호로 취급한다. 다만 자원 사용량만으로 악성 여부를 단정하지 않고 다른 검사 결과와 함께 판정한다.
+
+자원 제한이나 강제 종료로 인해 필수 검사가 완료되지 못한 경우 정상 통과로 처리하지 않고 앞서 정한 fail-closed 정책을 적용한다.
+```
+
+## D-014 자원 고갈 및 검사 방해 대응 확정
+
+CPU, 메모리, 저장공간, 프로세스 수, 실행 시간과 네트워크를 과도하게 사용해 검사 환경을 마비시키거나 Host에 영향을 주는 행위를 위협으로 포함한다.
+
+다운로드·압축 해제·설치·실행 전 과정에 다음 제한을 적용한다.
+
+- CPU·메모리·디스크 사용량·프로세스 수에 resource limit
+- 단계별 실행 시간에 timeout
+- archive bomb와 과도한 파일 생성에 저장공간 제한
+- 제한 초과 시 작업과 Artifact가 생성한 관련 프로세스 종료
+- 해당 검사 환경을 재사용하지 않고 안전하게 폐기·초기화
+
+비정상 자원 소비, 반복적인 프로세스 생성, 과도한 파일 생성·압축 해제, 비정상 네트워크 활동은 Evidence로 기록하고 위험 신호로 취급한다. 자원 사용량만으로 악성 여부를 단정하지 않고 다른 검사 결과와 함께 판정한다.
+
+자원 제한이나 강제 종료로 필수 검사가 완료되지 않으면 정상 통과로 처리하지 않고 D-010의 fail-closed 정책을 적용한다.
+
+| 항목 | 상태 | 결정 |
+| --- | --- | --- |
+| 자원 고갈 | 결정 | CPU·메모리·저장공간·프로세스·시간·네트워크 과다 사용을 위협으로 포함 |
+| 제한 범위 | 결정 | 다운로드·압축 해제·설치·실행 전 과정에 resource limit과 timeout 적용 |
+| 초과 처리 | 결정 | 작업·관련 프로세스 종료 후 검사 환경 폐기·초기화 |
+| 위험 Evidence | 결정 | 자원 소비·프로세스·파일·압축 해제·네트워크 이상을 기록 |
+| 악성 판정 | 결정 | 자원 사용량 단독 판정 금지; 다른 검사 결과와 결합 |
+| 필수 검사 미완료 | 결정 | 정상 통과 금지; `MANUAL_REVIEW` 또는 `BLOCK` 적용 |
+
+#### D-014 구현 영향
+
+- 격리 실행 supervisor가 단계별 CPU·메모리·디스크·프로세스·네트워크·wall-clock limit을 관리한다.
+- archive extraction은 압축 해제 전후 크기·파일 수·경로를 제한하고 archive bomb를 중단한다.
+- timeout·limit 초과 시 process tree를 종료하고 workspace·network namespace·임시 자원을 폐기한다.
+- 폐기·강제 종료·미완료 검사를 receipt와 Evidence에 기록한다.
+- limit 초과만으로 악성 판정을 내리지 않고 정책 engine이 다른 관찰 결과와 함께 판정한다.
+
+#### D-014 누락 점검
+
+- [x] CPU·메모리·저장공간·프로세스·실행 시간·네트워크 자원 고갈 포함
+- [x] 전 과정 resource limit·timeout
+- [x] archive bomb·과도한 파일 생성 제한
+- [x] 초과 시 관련 프로세스 종료
+- [x] 검사 환경 폐기·초기화와 재사용 금지
+- [x] 비정상 자원·프로세스·파일·압축·네트워크 Evidence 기록
+- [x] 자원량 단독 악성 판정 금지
+- [x] 필수 검사 미완료 시 fail-closed
+
+## 결정 로그: D-014
+
+| ID | 날짜 | 결정 | 이유 | 영향 |
+| --- | --- | --- | --- | --- |
+| D-014 | 2026-08-08 | 전 과정 resource limit·timeout으로 자원 고갈을 제한하고 초과 시 프로세스 종료·환경 폐기·fail-closed 적용 | Artifact가 검사 환경을 마비시키거나 Host에 영향을 주는 검사 방해를 방지하기 위해 | supervisor, archive bomb 제한, process tree 정리, 자원·강제 종료 Evidence가 필수 조건이 됨 |
+
+## M4 resolver egress isolation
+
+M4 npm resolver는 package metadata와 tarball resolution을 위해 제한된 외부 egress가 필요하지만, 이 예외는 resolver 전용 network-policy helper가 강제하는 사전 정의 endpoint 집합으로 한정한다. 일반 Docker bridge, Host의 기존 firewall/proxy, proxy 환경변수는 보호 경계가 아니다.
+
+- helper는 resolver 전용 Docker network와 해당 network/subnet의 default-deny Host firewall policy를 생성·적용하고, 실제 deny/allow rule이 존재하는지 검증한 뒤에만 container를 시작한다.
+- npm metadata가 tarball URL을 제공하므로 endpoint 집합은 metadata endpoint와 실제 tarball endpoint를 포함하도록 M4 runtime qualification에서 확정한다. 임의 metadata URL이나 redirect가 endpoint policy를 확장하지 않는다.
+- policy 적용·검증·container 정리·rule/network cleanup 실패 또는 불확실성은 resolver result를 incomplete로 만들며 이후 ALLOW/Promotion 경로가 없다.
+- resolver에는 Host filesystem mount, credential, Docker socket, user/global npm config를 주입하지 않는다.
+
+| ID | 날짜 | 결정 | 이유 | 영향 |
+| --- | --- | --- | --- |
+| M4-Resolver-Egress | 2026-08-14 | resolver 외부 통신은 HAA가 관리하는 default-deny firewall policy와 검증된 npm endpoint 집합으로만 허용 | resolver가 package manager로서 network를 필요로 해도 unrestricted Host/bridge 접근을 안전한 것으로 취급할 수 없기 때문 | endpoint discovery/qualification, deny·allow 검증, lifecycle cleanup fail-closed가 필수 |

@@ -1,0 +1,153 @@
+# Documentation Guide
+
+이 문서는 Heliopause 작업에 필요한 canonical 설계 문서를 찾기 위한 라우터다. 설계 내용 자체는 각 주제의 상세 문서에만 기록한다.
+
+## Areas
+
+| Area | Purpose | Index |
+| --- | --- | --- |
+| Threat Model | 위협, 보호 자산, 신뢰 경계와 fail-closed 원칙 | [threat-model/README.md](./threat-model/README.md) |
+| MVP Scope | MVP 지원 범위, 검사·검증과 완료 기준 | [mvp-scope/README.md](./mvp-scope/README.md) |
+| Architecture | 책임, 의존성, Port/Adapter와 신뢰 경계 | [architecture/README.md](./architecture/README.md) |
+| User Journey + CLI IA | 사용자 흐름, CLI 구조와 실행 경험 | [user-journey-cli-ia/README.md](./user-journey-cli-ia/README.md) |
+| Domain Model | Domain Concept와 Interface Contract | [domain-model/README.md](./domain-model/README.md) |
+| Engineering | 구현 디렉터리, 코딩·보안 규칙과 품질 자동화 | [engineering/README.md](./engineering/README.md) |
+| Planning | 구현 milestone, 의존 순서와 현재 실행 작업 | [planning/README.md](./planning/README.md) |
+
+## Task Routing
+
+### 디렉터리 또는 Go package 구조
+
+Read:
+
+- [Step 8 — Directory Structure](./engineering/01-directory-structure.md)
+- [Architecture — Foundation and Dependencies](./architecture/01-foundation-and-dependencies.md)
+- 구현하려는 책임에 해당하는 아래 task route
+
+### Artifact Adapter 또는 dependency resolution
+
+Read:
+
+- [Architecture — Adapters and Providers](./architecture/02-adapters-and-providers.md)
+- [Domain — Artifact Identity](./domain-model/02-artifact-identity.md)
+- [Domain — Dependency and Verified Set](./domain-model/05-dependency-verified-set.md)
+- [Contract — Artifact Port](./domain-model/07-contract-artifact-port.md)
+- [MVP — Ecosystems, Platforms, and Artifacts](./mvp-scope/01-ecosystems-platforms-artifacts.md)
+
+### Verification 또는 static inspection
+
+Read:
+
+- [MVP — Inspection and Verification](./mvp-scope/02-inspection-and-verification.md)
+- [Architecture — Inspection, Sandbox, and Policy](./architecture/03-inspection-sandbox-policy.md)
+- [Domain — Verification, Evidence, and Finding](./domain-model/04-verification-evidence-finding.md)
+- [Contract — Inspection, Sandbox, and Policy](./domain-model/08-contract-inspection-sandbox-policy.md)
+
+### Sandbox 또는 dynamic inspection
+
+Read:
+
+- [Threat Model — Isolation and Inspection](./threat-model/02-isolation-and-inspection.md)
+- [Architecture — Inspection, Sandbox, and Policy](./architecture/03-inspection-sandbox-policy.md)
+- [Contract — Inspection, Sandbox, and Policy](./domain-model/08-contract-inspection-sandbox-policy.md)
+- M11 behavior detection 작업이면
+  [M11 Dynamic Detection Depth Contract](./planning/14-m11-dynamic-detection-depth-contract.md)
+
+### Policy 또는 상태 모델
+
+Read:
+
+- [Threat Model — Fail-Closed and Promotion](./threat-model/03-fail-closed-and-promotion.md)
+- [Domain — Inspection Run and Status](./domain-model/03-inspection-run-and-status.md)
+- [Domain — Verification, Evidence, and Finding](./domain-model/04-verification-evidence-finding.md)
+- [Contract — Inspection, Sandbox, and Policy](./domain-model/08-contract-inspection-sandbox-policy.md)
+- M1 fake inspect 구현이면 [M1 Entry — Domain Workflow Contract](./domain-model/10-m1-workflow-contract.md)
+
+### Evidence, Result 또는 SBOM
+
+Read:
+
+- [Architecture — Evidence, Staging, and Promotion](./architecture/04-evidence-staging-promotion.md)
+- [Domain — Verification, Evidence, and Finding](./domain-model/04-verification-evidence-finding.md)
+- [Contract — Evidence, Staging, and Promotion](./domain-model/09-contract-evidence-staging-promotion.md)
+- [MVP — Results, Policy, and Completion](./mvp-scope/03-results-policy-and-completion.md)
+
+### Staging 또는 Promotion
+
+Read:
+
+- [Threat Model — Fail-Closed and Promotion](./threat-model/03-fail-closed-and-promotion.md)
+- [Architecture — Evidence, Staging, and Promotion](./architecture/04-evidence-staging-promotion.md)
+- [Domain — Dependency and Verified Set](./domain-model/05-dependency-verified-set.md)
+- [Domain — Operation Request and Context](./domain-model/06-operation-request-context.md)
+- [Contract — Evidence, Staging, and Promotion](./domain-model/09-contract-evidence-staging-promotion.md)
+
+### CLI 또는 사용자 흐름
+
+Read:
+
+- [User Journey — Journey and Input](./user-journey-cli-ia/01-journey-and-input.md)
+- [User Journey — CLI Structure](./user-journey-cli-ia/02-cli-structure.md)
+- [User Journey — Execution and Interaction](./user-journey-cli-ia/03-execution-and-interaction.md)
+- [Domain — Operation Request and Context](./domain-model/06-operation-request-context.md)
+
+### Runtime, 배포 또는 trusted tooling
+
+Read:
+
+- [Threat Model — Trusted Tooling and Evidence](./threat-model/04-trusted-tooling-and-evidence.md)
+- [MVP — Ecosystems, Platforms, and Artifacts](./mvp-scope/01-ecosystems-platforms-artifacts.md)
+- [Architecture — Foundation and Dependencies](./architecture/01-foundation-and-dependencies.md)
+- [Architecture — Inspection, Sandbox, and Policy](./architecture/03-inspection-sandbox-policy.md)
+- production Host command, observer lifecycle 또는 privileged helper 작업이면
+  [M8 Production Trust Hardening Contract](./planning/11-m8-production-trust-hardening-contract.md)
+- runtime, release artifact, signing identity, installer 또는 bootstrap 작업이면
+  [M10 Verified Distribution & Bootstrap Contract](./planning/13-m10-verified-distribution-bootstrap-contract.md)
+- final release environment, protected tag/branch, Ruleset activation 또는 public
+  deployment 작업이면
+  [M13 Production Release & Operations Contract](./planning/18-m13-production-release-operations-contract.md)
+
+### Coding 또는 security rule
+
+Read:
+
+- [Step 9 — Coding / Security Rules](./engineering/02-coding-security-rules.md)
+- [Step 8 — Directory Structure](./engineering/01-directory-structure.md)
+- 구현하려는 책임에 해당하는 위 task route
+
+### Formatter, linter, test 또는 security scan
+
+Read:
+
+- [Step 10 — Quality Toolchain](./engineering/03-quality-toolchain.md)
+- [Step 9 — Coding / Security Rules](./engineering/02-coding-security-rules.md)
+- 검사 대상 책임에 해당하는 위 task route
+
+### CI 또는 quality gate
+
+Read:
+
+- [Step 11 — CI + Quality Gate](./engineering/04-ci-quality-gate.md)
+- [Step 10 — Quality Toolchain](./engineering/03-quality-toolchain.md)
+- [Step 9 — Coding / Security Rules](./engineering/02-coding-security-rules.md)
+
+### Milestone 또는 current work
+
+Read:
+
+- [Planning Index](./planning/README.md)
+- [Step 12 — Milestones](./planning/01-milestones.md)
+- [Step 13 — Current Work Queue](./planning/02-current-work-queue.md)
+- 완료 milestone의 qualification evidence가 필요하면 해당 planning qualification
+  문서를 읽고, 현재 M8 작업이면
+  [M8 Production Trust Hardening Contract](./planning/11-m8-production-trust-hardening-contract.md)를 읽는다.
+- 해당 work item이 가리키는 Architecture·Domain·Engineering leaf 문서
+
+## Rules
+
+- 현재 작업에 라우팅된 상세 문서만 우선 읽는다.
+- 라우팅이 없으면 관련 주제의 `README.md`에서 시작한다.
+- 실제 결정의 canonical source는 leaf 문서다.
+- 이 파일과 주제 README에는 상세 결정을 복제하지 않는다.
+- 문서를 추가·이동하면 관련 주제 README와 이 라우팅표를 같은 변경에서 갱신한다.
+- `docs/` 전체를 기본 context로 한 번에 로드하지 않는다.

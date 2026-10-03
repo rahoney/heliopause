@@ -1,0 +1,12 @@
+[check] format check
+[check] runtime lock drift
+[check] version support freshness
+[check] module drift
+[check] module integrity
+[check] production build
+[check] test build validity
+[check] architecture
+[check] CI configuration
+[check] go vet
+[check] Staticcheck
+[check] default test

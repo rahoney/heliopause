@@ -32,6 +32,77 @@ const (
 	ExecutionUnavailable ExecutionStatus = "UNAVAILABLE"
 )
 
+// InspectionDiagnosticCause identifies a bounded reason why a graph static
+// inspection cannot enter its dynamic phase. It is diagnostic metadata only;
+// Policy decisions continue to use Findings and CheckExecution values.
+type InspectionDiagnosticCause string
+
+const (
+	InspectionDiagnosticStaticFinding           InspectionDiagnosticCause = "STATIC_FINDING"
+	InspectionDiagnosticStaticIncomplete        InspectionDiagnosticCause = "STATIC_INCOMPLETE"
+	InspectionDiagnosticSdistDynamicUnavailable InspectionDiagnosticCause = "SDIST_DYNAMIC_UNAVAILABLE"
+	InspectionDiagnosticResourceExceeded        InspectionDiagnosticCause = "RESOURCE_EXCEEDED"
+	InspectionDiagnosticInvalidWheel            InspectionDiagnosticCause = "INVALID_WHEEL"
+)
+
+// InspectionDiagnosticStage is a bounded parser or resource accounting
+// stage. Empty is valid only for causes that have no stage-specific detail.
+type InspectionDiagnosticStage string
+
+const (
+	InspectionDiagnosticStageFilename                InspectionDiagnosticStage = "FILENAME"
+	InspectionDiagnosticStageCompatibility           InspectionDiagnosticStage = "COMPATIBILITY"
+	InspectionDiagnosticStageZIP                     InspectionDiagnosticStage = "ZIP"
+	InspectionDiagnosticStageDigest                  InspectionDiagnosticStage = "DIGEST"
+	InspectionDiagnosticStageMetadataIdentity        InspectionDiagnosticStage = "METADATA_IDENTITY"
+	InspectionDiagnosticStageDistInfoIdentity        InspectionDiagnosticStage = "DIST_INFO_IDENTITY"
+	InspectionDiagnosticStageWheelTag                InspectionDiagnosticStage = "WHEEL_TAG"
+	InspectionDiagnosticStageRecord                  InspectionDiagnosticStage = "RECORD"
+	InspectionDiagnosticStageFileType                InspectionDiagnosticStage = "FILE_TYPE"
+	InspectionDiagnosticStageOther                   InspectionDiagnosticStage = "OTHER"
+	InspectionDiagnosticStagePerArtifactCompressed   InspectionDiagnosticStage = "PER_ARTIFACT_COMPRESSED"
+	InspectionDiagnosticStagePerArtifactUncompressed InspectionDiagnosticStage = "PER_ARTIFACT_UNCOMPRESSED"
+	InspectionDiagnosticStageFileCount               InspectionDiagnosticStage = "FILE_COUNT"
+	InspectionDiagnosticStageMetadata                InspectionDiagnosticStage = "METADATA"
+	InspectionDiagnosticStageGraphUncompressed       InspectionDiagnosticStage = "GRAPH_UNCOMPRESSED"
+)
+
+// InspectionDiagnostic is bounded metadata for qualification diagnostics.
+// It intentionally carries no parser error, path, environment, URL, or
+// archive content.
+type InspectionDiagnostic struct {
+	cause InspectionDiagnosticCause
+	stage InspectionDiagnosticStage
+}
+
+// NewInspectionDiagnostic validates the small diagnostic vocabulary.
+func NewInspectionDiagnostic(cause InspectionDiagnosticCause, stage InspectionDiagnosticStage) (InspectionDiagnostic, error) {
+	switch cause {
+	case InspectionDiagnosticStaticFinding, InspectionDiagnosticStaticIncomplete, InspectionDiagnosticSdistDynamicUnavailable, InspectionDiagnosticResourceExceeded, InspectionDiagnosticInvalidWheel:
+	default:
+		return InspectionDiagnostic{}, errors.New("invalid inspection diagnostic cause")
+	}
+	if cause == InspectionDiagnosticInvalidWheel {
+		switch stage {
+		case InspectionDiagnosticStageFilename, InspectionDiagnosticStageCompatibility, InspectionDiagnosticStageZIP, InspectionDiagnosticStageDigest, InspectionDiagnosticStageMetadataIdentity, InspectionDiagnosticStageDistInfoIdentity, InspectionDiagnosticStageWheelTag, InspectionDiagnosticStageRecord, InspectionDiagnosticStageFileType, InspectionDiagnosticStageOther:
+		default:
+			return InspectionDiagnostic{}, errors.New("invalid wheel diagnostic stage")
+		}
+	} else if cause == InspectionDiagnosticResourceExceeded {
+		switch stage {
+		case InspectionDiagnosticStagePerArtifactCompressed, InspectionDiagnosticStagePerArtifactUncompressed, InspectionDiagnosticStageFileCount, InspectionDiagnosticStageMetadata, InspectionDiagnosticStageGraphUncompressed, InspectionDiagnosticStageOther:
+		default:
+			return InspectionDiagnostic{}, errors.New("invalid resource diagnostic stage")
+		}
+	} else if stage != "" {
+		return InspectionDiagnostic{}, errors.New("diagnostic stage is not applicable")
+	}
+	return InspectionDiagnostic{cause: cause, stage: stage}, nil
+}
+
+func (d InspectionDiagnostic) Cause() InspectionDiagnosticCause { return d.cause }
+func (d InspectionDiagnostic) Stage() InspectionDiagnosticStage { return d.stage }
+
 // CheckID identifies one normalized check within a Run. Its zero value is invalid.
 type CheckID struct{ value string }
 
@@ -149,15 +220,22 @@ func (r VerificationReport) Evidence() []Evidence         { return append([]Evid
 
 // InspectionReport records a completed or limited inspection and its Findings.
 type InspectionReport struct {
-	execution  CheckExecution
-	executions []CheckExecution
-	findings   []Finding
-	evidence   []Evidence
+	execution   CheckExecution
+	executions  []CheckExecution
+	findings    []Finding
+	evidence    []Evidence
+	diagnostics []InspectionDiagnostic
 }
 
 // NewInspectionReport constructs a normalized Inspection report.
 func NewInspectionReport(execution CheckExecution, findings []Finding, evidence []Evidence) (InspectionReport, error) {
 	return NewCompositeInspectionReport([]InspectionReport{{execution: execution, executions: []CheckExecution{execution}, findings: findings, evidence: evidence}})
+}
+
+// NewInspectionReportWithDiagnostic preserves the existing report semantics
+// while attaching bounded qualification metadata.
+func NewInspectionReportWithDiagnostic(execution CheckExecution, findings []Finding, evidence []Evidence, diagnostic InspectionDiagnostic) (InspectionReport, error) {
+	return NewCompositeInspectionReport([]InspectionReport{{execution: execution, executions: []CheckExecution{execution}, findings: findings, evidence: evidence, diagnostics: []InspectionDiagnostic{diagnostic}}})
 }
 
 // NewCompositeInspectionReport combines independently completed or limited Inspection checks for one Artifact.
@@ -168,6 +246,7 @@ func NewCompositeInspectionReport(reports []InspectionReport) (InspectionReport,
 	executions := make([]CheckExecution, 0, len(reports))
 	findings := make([]Finding, 0)
 	evidence := make([]Evidence, 0)
+	diagnostics := make([]InspectionDiagnostic, 0)
 	for _, report := range reports {
 		execution := report.execution
 		if execution.kind != CheckInspection {
@@ -185,11 +264,17 @@ func NewCompositeInspectionReport(reports []InspectionReport) (InspectionReport,
 		if err := validateFindingsForEvidence(report.findings, report.evidence); err != nil {
 			return InspectionReport{}, err
 		}
+		for _, diagnostic := range report.diagnostics {
+			if _, err := NewInspectionDiagnostic(diagnostic.cause, diagnostic.stage); err != nil {
+				return InspectionReport{}, err
+			}
+		}
 		executions = append(executions, execution)
 		findings = append(findings, report.findings...)
 		evidence = append(evidence, report.evidence...)
+		diagnostics = append(diagnostics, report.diagnostics...)
 	}
-	return InspectionReport{execution: executions[0], executions: executions, findings: findings, evidence: evidence}, nil
+	return InspectionReport{execution: executions[0], executions: executions, findings: findings, evidence: evidence, diagnostics: diagnostics}, nil
 }
 
 func (r InspectionReport) Execution() CheckExecution { return r.execution }
@@ -198,6 +283,9 @@ func (r InspectionReport) Executions() []CheckExecution {
 }
 func (r InspectionReport) Findings() []Finding  { return append([]Finding(nil), r.findings...) }
 func (r InspectionReport) Evidence() []Evidence { return append([]Evidence(nil), r.evidence...) }
+func (r InspectionReport) Diagnostics() []InspectionDiagnostic {
+	return append([]InspectionDiagnostic(nil), r.diagnostics...)
+}
 
 func validateEvidenceForCheck(id CheckID, evidence []Evidence) error {
 	for index, item := range evidence {

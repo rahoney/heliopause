@@ -119,6 +119,7 @@ func TestQuickStepComposition(t *testing.T) {
 	want := []string{
 		"format check",
 		"runtime lock drift",
+		"version support freshness",
 		"module drift",
 		"module integrity",
 		"production build",

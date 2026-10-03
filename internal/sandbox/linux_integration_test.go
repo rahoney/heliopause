@@ -16,6 +16,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"strings"
 	"testing"
 	"time"
@@ -24,12 +25,50 @@ import (
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/hosttool"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func TestLinuxGVisorLifecycleIntegration(t *testing.T) {
 	if os.Getenv("HELOX_GVISOR_INTEGRATION") != "1" {
 		t.Skip("requires pinned Linux gVisor runtime")
 	}
+	runLinuxGVisorLifecycleIntegration(t, `{"name":"tiny","version":"1.2.3"}`)
+}
+
+func TestIntegrationRunnerUsesDirectExecAdmissionWrapper(t *testing.T) {
+	runner := integrationRunner{t: t}
+	if path := integrationBinary("runsc"); path != runtimeidentity.LocalRunscPath {
+		t.Fatalf("integration runsc path = %q, want canonical bundle member", path)
+	}
+	if _, ok := any(runner).(directExecAdmissionRequired); !ok {
+		t.Fatal("integration runner must explicitly require direct-exec admission")
+	}
+	if _, ok := admissionAwareRunner(runner).(*admissionAwareCommandRunner); !ok {
+		t.Fatal("integration runner must use the direct-exec admission wrapper")
+	}
+}
+
+func TestLinuxGVisorArtifactEnvironmentIsolationIntegration(t *testing.T) {
+	if os.Getenv("HELOX_GVISOR_INTEGRATION") != "1" {
+		t.Skip("requires pinned Linux gVisor runtime")
+	}
+	for key, value := range map[string]string{
+		"GITHUB_TOKEN":          "fake-github-token",
+		"NPM_TOKEN":             "fake-npm-token",
+		"PYPI_TOKEN":            "fake-pypi-token",
+		"AWS_SECRET_ACCESS_KEY": "fake-aws-secret",
+		"OPENAI_API_KEY":        "fake-openai-key",
+		"CI_SECRET":             "fake-ci-secret",
+		"ARBITRARY_TOKEN":       "fake-arbitrary-token",
+		"SSH_AUTH_SOCK":         "/tmp/fake-ssh-agent.sock",
+	} {
+		t.Setenv(key, value)
+	}
+	runLinuxGVisorLifecycleIntegration(t, `{"name":"tiny","version":"1.2.3","scripts":{"preinstall":"test -z \"$GITHUB_TOKEN\" && test -z \"$NPM_TOKEN\" && test -z \"$PYPI_TOKEN\" && test -z \"$AWS_SECRET_ACCESS_KEY\" && test -z \"$OPENAI_API_KEY\" && test -z \"$CI_SECRET\" && test -z \"$ARBITRARY_TOKEN\" && test -z \"$SSH_AUTH_SOCK\""}}`)
+}
+
+func runLinuxGVisorLifecycleIntegration(t *testing.T, body string) {
+	t.Helper()
 	root := t.TempDir()
 	path := filepath.Join(root, "run_aaaaaaaaaaaaaaaaaaaaaaaaaa", "tarball.tgz")
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
@@ -41,7 +80,6 @@ func TestLinuxGVisorLifecycleIntegration(t *testing.T) {
 	}
 	gzipWriter := gzip.NewWriter(file)
 	writer := tar.NewWriter(gzipWriter)
-	body := `{"name":"tiny","version":"1.2.3"}`
 	if err := writer.WriteHeader(&tar.Header{Name: "package/package.json", Size: int64(len(body)), Mode: 0o600}); err != nil {
 		t.Fatal(err)
 	}
@@ -74,8 +112,21 @@ func TestLinuxGVisorLifecycleIntegration(t *testing.T) {
 	}
 	if result.Status() != domain.SandboxCompleted {
 		code, _ := result.LimitationCode()
-		t.Fatalf("Sandbox result = %q/%q", result.Status(), code)
+		t.Fatalf("Sandbox result = %q/%q observer_reason=%s", result.Status(), code, integrationObserverFaultReason(supervisor))
 	}
+}
+
+func integrationObserverFaultReason(supervisor *ObserverSupervisor) string {
+	if supervisor == nil || supervisor.observer == nil {
+		return ""
+	}
+	supervisor.observer.mu.Lock()
+	defer supervisor.observer.mu.Unlock()
+	var fault traceFault
+	if !errors.As(supervisor.observer.fault, &fault) {
+		return ""
+	}
+	return fault.TraceFaultReason()
 }
 
 func TestLinuxGitHubReleaseELFDynamicIntegration(t *testing.T) {
@@ -119,7 +170,7 @@ func TestLinuxGitHubReleaseELFDynamicIntegration(t *testing.T) {
 	result, err := backend.Execute(ctx, request)
 	if err != nil || result.Status() != domain.SandboxCompleted {
 		code, _ := result.LimitationCode()
-		t.Fatalf("GitHub ELF dynamic result = %q/%q, %v", result.Status(), code, err)
+		t.Fatalf("GitHub ELF dynamic result = %q/%q observer_reason=%s, %v", result.Status(), code, integrationObserverFaultReason(supervisor), err)
 	}
 }
 
@@ -185,52 +236,66 @@ func TestLinuxPyPIResolverIntegration(t *testing.T) {
 	}
 }
 
-func integrationResolverPolicyService(t *testing.T) ResolverPolicyService {
-	t.Helper()
-	return &recordingResolverPolicyService{}
-}
-
-func TestLinuxPyPIWheelDynamicIntegration(t *testing.T) {
-	if os.Getenv("HELOX_PYPI_DYNAMIC_INTEGRATION") != "1" {
-		t.Skip("requires pinned Linux Python/gVisor dynamic integration")
+func TestLinuxPyTorchResolverIntegration(t *testing.T) {
+	if os.Getenv("HELOX_PYTORCH_RESOLVER_INTEGRATION") != "1" {
+		t.Skip("requires pinned Linux Python/gVisor and Docker firewall integration")
 	}
-	root := t.TempDir()
-	wheel := linuxDynamicWheel(t)
-	path := filepath.Join(root, "run_aaaaaaaaaaaaaaaaaaaaaaaaaa", "wheel.whl")
-	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(path, wheel, 0o600); err != nil {
-		t.Fatal(err)
-	}
-	sum := sha256.Sum256(wheel)
-	static, err := artifactpypi.InspectWheel(bytes.NewReader(wheel), int64(len(wheel)), "example-1.0-py3-none-any.whl", hex.EncodeToString(sum[:]), artifactpypi.WheelTarget{Python: "cp314", ABI: "cp314", Platform: "manylinux_2_36_x86_64"}, artifactpypi.DefaultWheelLimits())
-	if err != nil {
-		t.Fatal(err)
-	}
-	source, _ := domain.NewSourceID("pypi")
-	identity, _ := domain.NewResolvedArtifactIdentity(source, "example", "1.0", "wheel")
-	digest, _ := domain.NewSHA256Digest(hex.EncodeToString(sum[:]))
-	artifact, err := domain.NewAcquiredArtifact(identity, digest, "intake:run_aaaaaaaaaaaaaaaaaaaaaaaaaa:wheel", uint64(len(wheel)))
-	if err != nil {
-		t.Fatal(err)
+	profile, ok := artifactpypi.PyTorchProfile("cpu")
+	if !ok {
+		t.Fatal("locked PyTorch CPU profile is unavailable")
 	}
 	supervisor := integrationObserverSupervisor(t)
 	defer supervisor.Close()
 	runner := integrationRunner{t: t}
-	introducer, err := NewPythonArtifactIntroducer(root, runner)
+	resolver, err := NewPyTorchResolver(runner, systemNamedEndpointResolver{}, supervisor.Observer(), integrationPythonCapabilityProbe(runner), integrationResolverPolicyService(t), profile)
 	if err != nil {
 		t.Fatal(err)
 	}
-	backend, err := NewPythonDynamicBackend(runner, introducer, supervisor.Observer(), integrationPythonCapabilityProbe(runner))
+	reference, err := artifactpypi.ParseReferenceForSource("torch", profile.Source())
 	if err != nil {
 		t.Fatal(err)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	target, _ := domain.NewInstallTarget("/tmp/heliopause-pytorch-resolver-target")
+	installContext, _ := domain.NewInstallContext(target)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
-	result, err := backend.InspectWheel(ctx, artifact, static.ImportNames)
-	if err != nil || result.Status() != domain.SandboxCompleted {
-		t.Fatalf("dynamic result = %#v, %v", result, err)
+	resolution, err := resolver.ResolveDependencies(ctx, reference, installContext)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, node := range resolution.Graph().Nodes() {
+		if node.Node() == resolution.Graph().Primary() && node.Artifact().Identity().Source() != profile.Source() {
+			t.Fatalf("PyTorch root source = %s, want %s", node.Artifact().Identity().Source(), profile.Source())
+		}
+		if node.Artifact().Identity().Source() != profile.Source() && node.Artifact().Identity().Source() != artifactpypi.PublicPyPIProfile().Source() {
+			t.Fatalf("PyTorch graph contains unowned source %s", node.Artifact().Identity().Source())
+		}
+	}
+}
+
+func integrationResolverPolicyService(t *testing.T) ResolverPolicyService {
+	t.Helper()
+	return newIntegrationResolverPolicyService(t)
+}
+
+func TestLinuxPythonClosureVolumeIntegration(t *testing.T) {
+	if os.Getenv("HELOX_PYPI_DYNAMIC_INTEGRATION") != "1" {
+		t.Skip("requires pinned local Docker runtime")
+	}
+	id, err := domain.NewSandboxSessionID()
+	if err != nil {
+		t.Fatal(err)
+	}
+	runner := integrationRunner{t: t}
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	volume, err := createClosureVolume(ctx, runner, id.String(), strings.Repeat("a", 64), 16<<20)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer discardCommand(context.Background(), runner, "docker", "volume", "rm", volume.name)
+	if err := volume.verify(ctx, runner); err != nil {
+		t.Fatal(err)
 	}
 }
 
@@ -250,6 +315,11 @@ func TestLinuxPyPISdistBuildIntegration(t *testing.T) {
 		if err := os.WriteFile(path, body, 0o600); err != nil {
 			t.Fatal(err)
 		}
+	}
+	// Build requirements use the same verified wheel filename record as the
+	// production intake boundary.
+	if err := os.WriteFile(filepath.Join(root, runID, "filename"), []byte("backend-1.0-py3-none-any.whl"), 0o400); err != nil {
+		t.Fatal(err)
 	}
 	sourceSum := sha256.Sum256(sourceBytes)
 	recipe, err := artifactpypi.InspectSdist(bytes.NewReader(sourceBytes), "example-1.0.tar.gz", hex.EncodeToString(sourceSum[:]), artifactpypi.DefaultSdistLimits())
@@ -285,7 +355,16 @@ func TestLinuxPyPISdistBuildIntegration(t *testing.T) {
 	defer cancel()
 	derived, result, err := builder.Build(ctx, sourceArtifact, recipe, []domain.AcquiredArtifact{backendArtifact})
 	if err != nil || result.Status() != domain.SandboxCompleted {
-		t.Fatalf("build result = %#v, %v", result, err)
+		t.Fatalf("build result = %#v observer_reason=%s, %v", result, integrationObserverFaultReason(supervisor), err)
+	}
+	unexpected := false
+	for _, observation := range result.Observations() {
+		if observation.Subject() == "process-exec-unexpected" {
+			unexpected = true
+		}
+	}
+	if !unexpected {
+		t.Fatal("sdist build lost artifact child-exec observations")
 	}
 	derivedBytes, err := os.ReadFile(filepath.Join(root, runID, "derived.whl"))
 	if err != nil {
@@ -298,21 +377,47 @@ func TestLinuxPyPISdistBuildIntegration(t *testing.T) {
 
 func linuxDynamicWheel(t *testing.T) []byte {
 	t.Helper()
+	return linuxDynamicWheelWithProgram(t, "VALUE = 'ok'\n")
+}
+
+func linuxDynamicWheelWithProgram(t *testing.T, program string) []byte {
+	return linuxDynamicWheelWithProgramAndFiles(t, program, nil)
+}
+
+func linuxDynamicWheelWithProgramAndFiles(t *testing.T, program string, additional map[string][]byte) []byte {
+	return linuxDynamicProjectWheel(t, "example", program, additional)
+}
+
+func linuxDynamicProjectWheel(t *testing.T, project, program string, additional map[string][]byte) []byte {
+	t.Helper()
+	module := project + "/__init__.py"
+	metadata, wheelMetadata, recordPath := project+"-1.0.dist-info/METADATA", project+"-1.0.dist-info/WHEEL", project+"-1.0.dist-info/RECORD"
 	files := map[string][]byte{
-		"example/__init__.py":            []byte("VALUE = 'ok'\n"),
-		"example-1.0.dist-info/METADATA": []byte("Metadata-Version: 2.4\nName: example\nVersion: 1.0\nImport-Name: example\n"),
-		"example-1.0.dist-info/WHEEL":    []byte("Wheel-Version: 1.0\nGenerator: heliopause-test\nRoot-Is-Purelib: true\nTag: py3-none-any\n"),
+		module:        []byte(program),
+		metadata:      []byte("Metadata-Version: 2.4\nName: " + project + "\nVersion: 1.0\nImport-Name: " + project + "\n"),
+		wheelMetadata: []byte("Wheel-Version: 1.0\nGenerator: heliopause-test\nRoot-Is-Purelib: true\nTag: py3-none-any\n"),
 	}
+	names := []string{module, metadata, wheelMetadata}
+	extraNames := make([]string, 0, len(additional))
+	for name, body := range additional {
+		if _, exists := files[name]; exists || name == recordPath {
+			t.Fatalf("fixture addition replaces canonical file: %s", name)
+		}
+		files[name] = body
+		extraNames = append(extraNames, name)
+	}
+	sort.Strings(extraNames)
+	names = append(names, extraNames...)
 	var record strings.Builder
-	for _, name := range []string{"example/__init__.py", "example-1.0.dist-info/METADATA", "example-1.0.dist-info/WHEEL"} {
+	for _, name := range names {
 		sum := sha256.Sum256(files[name])
 		record.WriteString(name + ",sha256=" + base64.RawURLEncoding.EncodeToString(sum[:]) + "," + fmt.Sprintf("%d", len(files[name])) + "\n")
 	}
-	record.WriteString("example-1.0.dist-info/RECORD,,\n")
-	files["example-1.0.dist-info/RECORD"] = []byte(record.String())
+	record.WriteString(recordPath + ",,\n")
+	files[recordPath] = []byte(record.String())
 	var output bytes.Buffer
 	writer := zip.NewWriter(&output)
-	for _, name := range []string{"example/__init__.py", "example-1.0.dist-info/METADATA", "example-1.0.dist-info/WHEEL", "example-1.0.dist-info/RECORD"} {
+	for _, name := range append(names, recordPath) {
 		entry, err := writer.Create(name)
 		if err != nil {
 			t.Fatal(err)
@@ -406,6 +511,10 @@ type integrationRunner struct {
 	t *testing.T
 }
 
+// RequiresDirectExecAdmission marks this controlled integration executor as
+// the production-equivalent trusted Host command boundary.
+func (integrationRunner) RequiresDirectExecAdmission() {}
+
 func integrationCapabilityProbe(executor Executor) CapabilityProbe {
 	return func(ctx context.Context) (Capability, error) {
 		return probe(ctx, runtime.GOOS, executor)
@@ -428,7 +537,7 @@ func integrationBinary(binary string) string {
 	// parent directory has a trusted identity. Production resolves this through
 	// hosttool; this raw integration runner mirrors only that exact test path.
 	if binary == "runsc" {
-		return "/usr/libexec/heliopause/runsc"
+		return runtimeidentity.LocalRunscPath
 	}
 	return binary
 }
@@ -448,6 +557,7 @@ func (r integrationRunner) Output(ctx context.Context, binary string, arguments 
 		// errors remain sanitized and never carry command output.
 		fmt.Fprintf(os.Stderr, "integration command failed: %s %q: %v; stdout=%q; stderr=%q\n", binary, arguments, err, strings.TrimSpace(string(output)), stderr)
 	}
+
 	if err == nil && binary == "docker" && len(arguments) == 2 && arguments[0] == "wait" && strings.TrimSpace(string(output)) != "0" {
 		logs, logsErr := exec.CommandContext(ctx, "docker", "logs", arguments[1]).CombinedOutput()
 		r.t.Logf("container exited with %q; logs=%q; logs error=%v", strings.TrimSpace(string(output)), strings.TrimSpace(string(logs)), logsErr)
@@ -477,6 +587,16 @@ func (r integrationRunner) RunDiscard(ctx context.Context, binary string, argume
 		r.t.Logf("discard command failed: %s %q: %v; bounded output=%q", binary, arguments, err, output.String())
 	}
 	return err
+}
+
+func (r integrationRunner) RunBounded(ctx context.Context, binary string, arguments ...string) ([]byte, error) {
+	r.t.Helper()
+	command := exec.CommandContext(ctx, integrationBinary(binary), arguments...)
+	output := &boundedIntegrationOutput{remaining: 16 << 10}
+	command.Stdout = output
+	command.Stderr = output
+	err := command.Run()
+	return append([]byte(nil), output.Bytes()...), err
 }
 
 func (r integrationRunner) RunOutput(ctx context.Context, output io.Writer, binary string, arguments ...string) error {

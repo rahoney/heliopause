@@ -1,0 +1,72 @@
+[
+  {
+    "Source": "pypi",
+    "Project": "filelock",
+    "Version": "4.0.7",
+    "URL": "https://files.pythonhosted.org/packages/06/cf/1731c0dd182ee35f80a39e63afb3d03056ea0dd561b7498932b10b2e34d9/filelock-4.0.7-py3-none-any.whl",
+    "Integrity": "sha256:a93c4d93269b339a6af4848342c7e940d0f9928ad95eff64764699e5f1bf8a6a"
+  },
+  {
+    "Source": "pypi",
+    "Project": "networkx",
+    "Version": "3.7",
+    "URL": "https://files.pythonhosted.org/packages/7e/cd/fe58041e9011f307c490e3e17dd48cc516448f7c698a3f2d9d9d65d7e6a8/networkx-3.7-py3-none-any.whl",
+    "Integrity": "sha256:e3fd2c13a7814cee3746340d8d7f8598a67f16a58bf47fb7f8793fab6efca1b0"
+  },
+  {
+    "Source": "pypi",
+    "Project": "jinja2",
+    "Version": "3.1.6",
+    "URL": "https://files.pythonhosted.org/packages/62/a1/3d680cbfd5f4b8f15abc1d571870c5fc3e594bb582bc3b64ea099db13e56/jinja2-3.1.6-py3-none-any.whl",
+    "Integrity": "sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67"
+  },
+  {
+    "Source": "pypi",
+    "Project": "markupsafe",
+    "Version": "3.0.3",
+    "URL": "https://files.pythonhosted.org/packages/41/3c/a36c2450754618e62008bf7435ccb0f88053e07592e6028a34776213d877/markupsafe-3.0.3-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+    "Integrity": "sha256:457a69a9577064c05a97c41f4e65148652db078a3a509039e64d3467b9e7ef97"
+  },
+  {
+    "Source": "pytorch-cpu",
+    "Project": "torch",
+    "Version": "2.14.0+cpu",
+    "URL": "https://download-r2.pytorch.org/whl/cpu/torch-2.14.0%2Bcpu-cp314-cp314-manylinux_2_28_x86_64.whl",
+    "Integrity": "sha256:f152f41dc5dc462afe0de780e451ebb47ea8b4451f8f919f9537aa8e2cbe1d7e"
+  },
+  {
+    "Source": "pypi",
+    "Project": "typing-extensions",
+    "Version": "4.16.0",
+    "URL": "https://files.pythonhosted.org/packages/49/d3/b8441a820a491ddfc024b0b0cf0393375b75ea13866d9c66727e54c2fc80/typing_extensions-4.16.0-py3-none-any.whl",
+    "Integrity": "sha256:481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8"
+  },
+  {
+    "Source": "pypi",
+    "Project": "setuptools",
+    "Version": "84.0.0",
+    "URL": "https://files.pythonhosted.org/packages/95/9c/c510029fc6ef33a6275cd2c5d3cecd6613dfd6aa401d57c54f1c18852ccf/setuptools-84.0.0-py3-none-any.whl",
+    "Integrity": "sha256:51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670"
+  },
+  {
+    "Source": "pypi",
+    "Project": "mpmath",
+    "Version": "1.3.0",
+    "URL": "https://files.pythonhosted.org/packages/43/e3/7d92a15f894aa0c9c4b49b8ee9ac9850d6e63b03c9c32c0367a13ae62209/mpmath-1.3.0-py3-none-any.whl",
+    "Integrity": "sha256:a0b2b9fe80bbcd81a6647ff13108738cfb482d481d826cc0e02f5b35e5c88d2c"
+  },
+  {
+    "Source": "pypi",
+    "Project": "fsspec",
+    "Version": "2026.9.0",
+    "URL": "https://files.pythonhosted.org/packages/6c/c0/a98505f18594f1bce828bb159cec0fcf9860562f1a2c85913409fc8f3d9e/fsspec-2026.9.0-py3-none-any.whl",
+    "Integrity": "sha256:8dd6e646e99ea382bd85f97a45e6b526a442d79423a7dc673f1e2756d05fcb5f"
+  },
+  {
+    "Source": "pypi",
+    "Project": "sympy",
+    "Version": "1.14.0",
+    "URL": "https://files.pythonhosted.org/packages/a2/09/77d55d46fd61b4a135c444fc97158ef34a095e5681d0a6c10b75bf356191/sympy-1.14.0-py3-none-any.whl",
+    "Integrity": "sha256:e091cc3e99d2141a0ba2847328f5479b05d94a6635cb96148ccb3f34671bd8f5"
+  }
+]

@@ -1,0 +1,205 @@
+[
+  {
+    "Source": "pypi",
+    "Project": "filelock",
+    "Version": "4.0.7",
+    "URL": "https://files.pythonhosted.org/packages/06/cf/1731c0dd182ee35f80a39e63afb3d03056ea0dd561b7498932b10b2e34d9/filelock-4.0.7-py3-none-any.whl",
+    "Integrity": "sha256:a93c4d93269b339a6af4848342c7e940d0f9928ad95eff64764699e5f1bf8a6a"
+  },
+  {
+    "Source": "pypi",
+    "Project": "nvidia-cuda-runtime",
+    "Version": "13.2.75",
+    "URL": "https://files.pythonhosted.org/packages/dc/74/f1493b0774c6eaf0234512bb650e1ab90ce8f61fecf0b4aaf1fb416f571e/nvidia_cuda_runtime-13.2.75-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "Integrity": "sha256:72bf454902da594e0b833cadeddc8b7100ce1c7cf7ed9023943931be1aa913b7"
+  },
+  {
+    "Source": "pypi",
+    "Project": "networkx",
+    "Version": "3.7",
+    "URL": "https://files.pythonhosted.org/packages/7e/cd/fe58041e9011f307c490e3e17dd48cc516448f7c698a3f2d9d9d65d7e6a8/networkx-3.7-py3-none-any.whl",
+    "Integrity": "sha256:e3fd2c13a7814cee3746340d8d7f8598a67f16a58bf47fb7f8793fab6efca1b0"
+  },
+  {
+    "Source": "pypi",
+    "Project": "nvidia-cuda-nvrtc",
+    "Version": "13.2.78",
+    "URL": "https://files.pythonhosted.org/packages/5f/96/237b40b171e06eb65905375c4ad5c96f78c2f861ac6e8ae7f650d95e1dfd/nvidia_cuda_nvrtc-13.2.78-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl",
+    "Integrity": "sha256:a9049031da08cbedd0c20e3470e5a978dc330af0e0326b3b05774718c665dc3e"
+  },
+  {
+    "Source": "pypi",
+    "Project": "jinja2",
+    "Version": "3.1.6",
+    "URL": "https://files.pythonhosted.org/packages/62/a1/3d680cbfd5f4b8f15abc1d571870c5fc3e594bb582bc3b64ea099db13e56/jinja2-3.1.6-py3-none-any.whl",
+    "Integrity": "sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67"
+  },
+  {
+    "Source": "pypi",
+    "Project": "nvidia-cusparse",
+    "Version": "12.7.10.1",
+    "URL": "https://files.pythonhosted.org/packages/b7/bd/bad43b37bcf13167637bef26399693d517b95092d742e8749eda5f4a85f3/nvidia_cusparse-12.7.10.1-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "Integrity": "sha256:f0d110640aa63e7182fa787cc245afa07c5fb84ac30f1c4029e4fa3012353172"
+  },
+  {
+    "Source": "pypi",
+    "Project": "nvidia-nvshmem-cu13",
+    "Version": "3.4.5",
+    "URL": "https://files.pythonhosted.org/packages/3c/35/a9bf80a609e74e3b000fef598933235c908fcefcef9026042b8e6dfde2a9/nvidia_nvshmem_cu13-3.4.5-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "Integrity": "sha256:290f0a2ee94c9f3687a02502f3b9299a9f9fe826e6d0287ee18482e78d495b80"
+  },
+  {
+    "Source": "pypi",
+    "Project": "markupsafe",
+    "Version": "3.0.3",
+    "URL": "https://files.pythonhosted.org/packages/41/3c/a36c2450754618e62008bf7435ccb0f88053e07592e6028a34776213d877/markupsafe-3.0.3-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+    "Integrity": "sha256:457a69a9577064c05a97c41f4e65148652db078a3a509039e64d3467b9e7ef97"
+  },
+  {
+    "Source": "pypi",
+    "Project": "nvidia-cudnn-cu13",
+    "Version": "9.24.0.43",
+    "URL": "https://files.pythonhosted.org/packages/5c/ba/791cffd048fe5b044e620df55267e3e95c0e6e07d50b41e377c03dfc910f/nvidia_cudnn_cu13-9.24.0.43-py3-none-manylinux_2_27_x86_64.whl",
+    "Integrity": "sha256:71f181cd810e90f9b6023b01186fe82d13d65f0ec098581ee201d39fad769e4b"
+  },
+  {
+    "Source": "pypi",
+    "Project": "nvidia-cusolver",
+    "Version": "12.2.0.1",
+    "URL": "https://files.pythonhosted.org/packages/6b/97/a3c41eac54c89f6aac788d2b3ccd6642b32aa6b79650af3dedb8ee7c2bfa/nvidia_cusolver-12.2.0.1-py3-none-manylinux_2_27_x86_64.whl",
+    "Integrity": "sha256:4693ea3c2a5d20369da7b5a4970a41df9b40f1b6f2ef9909c95f7c8c8c5ffb4d"
+  },
+  {
+    "Source": "pypi",
+    "Project": "typing-extensions",
+    "Version": "4.16.0",
+    "URL": "https://files.pythonhosted.org/packages/49/d3/b8441a820a491ddfc024b0b0cf0393375b75ea13866d9c66727e54c2fc80/typing_extensions-4.16.0-py3-none-any.whl",
+    "Integrity": "sha256:481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8"
+  },
+  {
+    "Source": "pypi",
+    "Project": "setuptools",
+    "Version": "84.0.0",
+    "URL": "https://files.pythonhosted.org/packages/95/9c/c510029fc6ef33a6275cd2c5d3cecd6613dfd6aa401d57c54f1c18852ccf/setuptools-84.0.0-py3-none-any.whl",
+    "Integrity": "sha256:51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670"
+  },
+  {
+    "Source": "pypi",
+    "Project": "triton",
+    "Version": "3.8.0",
+    "URL": "https://files.pythonhosted.org/packages/93/d9/08c75f3459f19ad00425b564058e40efa4bcd79b816064cf27499303ea42/triton-3.8.0-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+    "Integrity": "sha256:387dae4cb0089a7b6ba1a428ae0782b65c4c58f57d94617cb22ca8593d8ccbca"
+  },
+  {
+    "Source": "pytorch-cu132",
+    "Project": "torch",
+    "Version": "2.14.0+cu132",
+    "URL": "https://download-r2.pytorch.org/whl/cu132/torch-2.14.0%2Bcu132-cp314-cp314-manylinux_2_28_x86_64.whl",
+    "Integrity": "sha256:a8cd9485bd04d14cfdf235bca712964396cf38f6736068d907255a95287202be"
+  },
+  {
+    "Source": "pypi",
+    "Project": "nvidia-cufft",
+    "Version": "12.2.0.46",
+    "URL": "https://files.pythonhosted.org/packages/36/3e/8d717a6e1f6e27b85b64650b1104dbcf6108c9dc7e27e9e26a0d8e936cc5/nvidia_cufft-12.2.0.46-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "Integrity": "sha256:a9667ae4d81b9e54ddbbad24a9e72334f89d4fc184566d05ef028e2760c820eb"
+  },
+  {
+    "Source": "pypi",
+    "Project": "mpmath",
+    "Version": "1.3.0",
+    "URL": "https://files.pythonhosted.org/packages/43/e3/7d92a15f894aa0c9c4b49b8ee9ac9850d6e63b03c9c32c0367a13ae62209/mpmath-1.3.0-py3-none-any.whl",
+    "Integrity": "sha256:a0b2b9fe80bbcd81a6647ff13108738cfb482d481d826cc0e02f5b35e5c88d2c"
+  },
+  {
+    "Source": "pypi",
+    "Project": "nvidia-cusparselt-cu13",
+    "Version": "0.8.1",
+    "URL": "https://files.pythonhosted.org/packages/34/7d/2661f2fb3ac4302f3a246f5fc030213ac60c1fe0bce84f9783dbd831dbb7/nvidia_cusparselt_cu13-0.8.1-py3-none-manylinux2014_x86_64.whl",
+    "Integrity": "sha256:786ce87568c303fadb5afcc7102d454cd3040d75f6f8626f5db460d1871f4dd0"
+  },
+  {
+    "Source": "pypi",
+    "Project": "nvidia-curand",
+    "Version": "10.4.2.55",
+    "URL": "https://files.pythonhosted.org/packages/f4/bc/f02a1d180d288e49b1a4548698b59755e9c485ee39c041fdeaf4d2cc2117/nvidia_curand-10.4.2.55-py3-none-manylinux_2_27_x86_64.whl",
+    "Integrity": "sha256:b4080cab49d4939f8e46b2c195c76c698d2289835c36ede558836daa40000e70"
+  },
+  {
+    "Source": "pypi",
+    "Project": "nvidia-cufile",
+    "Version": "1.17.1.22",
+    "URL": "https://files.pythonhosted.org/packages/23/c5/661a73a9042fc5f81cdd5fe6e89f4170b3b33f7962e709987e2b5e5f1381/nvidia_cufile-1.17.1.22-py3-none-manylinux_2_27_x86_64.whl",
+    "Integrity": "sha256:87feaf8c3ad20d3d03a01933181801ff6892bace5c8f0b1e4b48f319d3e62d36"
+  },
+  {
+    "Source": "pypi",
+    "Project": "cuda-bindings",
+    "Version": "13.4.3",
+    "URL": "https://files.pythonhosted.org/packages/a3/49/7a3769c43e432b0434dd46424058b47af4347167f0dfca1ecb27e2de92a1/cuda_bindings-13.4.3-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+    "Integrity": "sha256:bbacde6f75665b197016b986164cfdaa33b17515e5e635a63ddb75926aaa71c3"
+  },
+  {
+    "Source": "pypi",
+    "Project": "nvidia-nccl-cu13",
+    "Version": "2.30.7",
+    "URL": "https://files.pythonhosted.org/packages/3f/34/c500f90c7ae641b8e0f98965b36b8a7ac79cc8b296e8d251fe3eb592ee54/nvidia_nccl_cu13-2.30.7-py3-none-manylinux_2_18_x86_64.whl",
+    "Integrity": "sha256:cefa7fdb9710efd0f39c5f1be1d61ff6fc9a996c451265bd7fbdcf9455ed4b50"
+  },
+  {
+    "Source": "pypi",
+    "Project": "nvidia-cublas",
+    "Version": "13.4.0.1",
+    "URL": "https://files.pythonhosted.org/packages/3d/ec/c9b2998aebe3149dee2769e501257e048c8701de51263925f4dff76ddedc/nvidia_cublas-13.4.0.1-py3-none-manylinux_2_27_x86_64.whl",
+    "Integrity": "sha256:53bf22e2ccbf644db74b6cc21cea7f5efb1a52aa64515438b430abbd05af4106"
+  },
+  {
+    "Source": "pypi",
+    "Project": "nvidia-cuda-cupti",
+    "Version": "13.2.75",
+    "URL": "https://files.pythonhosted.org/packages/b7/2d/cbf8f6288259c502165282fdaa2b733daae98434e3f2aee2b7952ba87c6f/nvidia_cuda_cupti-13.2.75-py3-none-manylinux_2_25_x86_64.whl",
+    "Integrity": "sha256:f75aca6bef89c625a4076a820302bb06764daa1d21595286f6bee5e237d3a187"
+  },
+  {
+    "Source": "pypi",
+    "Project": "cuda-pathfinder",
+    "Version": "1.8.2",
+    "URL": "https://files.pythonhosted.org/packages/98/59/239c7259e669c46ddbcac0aa60e3a0ef00bfeaaa687f905b24dd6a7a10fe/cuda_pathfinder-1.8.2-py3-none-any.whl",
+    "Integrity": "sha256:4e65059febdb4d19d5cbc4798677e19db2b582f2f702f457b609e571690d357e"
+  },
+  {
+    "Source": "pypi",
+    "Project": "nvidia-nvtx",
+    "Version": "13.2.75",
+    "URL": "https://files.pythonhosted.org/packages/b0/cc/314eac684677dced22b913b5d1b3d03adcbe59d6c7332c5d04f864cdb079/nvidia_nvtx-13.2.75-py3-none-manylinux1_x86_64.manylinux_2_5_x86_64.whl",
+    "Integrity": "sha256:2d7c24fc582d841493c6dc2cf017c25e4428cf583a3bd9e9325a65f0ecc65f73"
+  },
+  {
+    "Source": "pypi",
+    "Project": "nvidia-nvjitlink",
+    "Version": "13.4.92",
+    "URL": "https://files.pythonhosted.org/packages/1d/6b/eef7a9e32872b8f41e145bf10cddc9af26e153c338852811fe9a9baddf9e/nvidia_nvjitlink-13.4.92-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl",
+    "Integrity": "sha256:e0391f24ed94ec879b84e3da4d4ec320c879aff681f2c7a638462f7199284323"
+  },
+  {
+    "Source": "pypi",
+    "Project": "cuda-toolkit",
+    "Version": "13.2.1",
+    "URL": "https://files.pythonhosted.org/packages/bd/6a/f79c134fa8e6d5fe028584933be063ce7961b1a85ce217f261cdda176e48/cuda_toolkit-13.2.1-py2.py3-none-any.whl",
+    "Integrity": "sha256:646d0e3668ce6f78f2312bb9cc0f668b9cbfcbef187eaa6a39eb2ea6dbec2a31"
+  },
+  {
+    "Source": "pypi",
+    "Project": "fsspec",
+    "Version": "2026.9.0",
+    "URL": "https://files.pythonhosted.org/packages/6c/c0/a98505f18594f1bce828bb159cec0fcf9860562f1a2c85913409fc8f3d9e/fsspec-2026.9.0-py3-none-any.whl",
+    "Integrity": "sha256:8dd6e646e99ea382bd85f97a45e6b526a442d79423a7dc673f1e2756d05fcb5f"
+  },
+  {
+    "Source": "pypi",
+    "Project": "sympy",
+    "Version": "1.14.0",
+    "URL": "https://files.pythonhosted.org/packages/a2/09/77d55d46fd61b4a135c444fc97158ef34a095e5681d0a6c10b75bf356191/sympy-1.14.0-py3-none-any.whl",
+    "Integrity": "sha256:e091cc3e99d2141a0ba2847328f5479b05d94a6635cb96148ccb3f34671bd8f5"
+  }
+]

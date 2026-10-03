@@ -1,0 +1,40 @@
+{
+  "0_Required.txt": [
+    "2026-10-01T03:08:42.0306681Z ##[error]Process completed with exit code 1."
+  ],
+  "1_gVisor Observer Helper.txt": [],
+  "2_macOS.txt": [
+    "2026-10-01T02:53:17.5687450Z ##[error]internal/sandbox/linux_integration_test.go:321:29: undefined: hosttool.NewSystemObservationResourceClient",
+    "2026-10-01T02:53:17.5735290Z ##[error]internal/sandbox/linux_integration_test.go:335:19: undefined: hosttool.ObservationResourceClient",
+    "2026-10-01T02:53:17.5742790Z ##[error]internal/sandbox/linux_integration_test.go:338:49: undefined: hosttool.ObservationResourceLease",
+    "2026-10-01T02:53:17.5762920Z --- FAIL: TestModelC_RealCorpusQualification (0.00s)",
+    "2026-10-01T02:53:17.5766850Z     wheel_test.go:1195: required real wheel corpus not found at /tmp/haa_corpus: missing corpus is an explicit failure",
+    "2026-10-01T02:53:17.5774340Z --- FAIL: TestModelC_CorpusHashMismatchFails (0.00s)",
+    "2026-10-01T02:53:17.5777420Z     wheel_test.go:1470: corpus directory missing: stat /tmp/haa_corpus: no such file or directory",
+    "2026-10-01T02:53:17.5906190Z ##[error]Process completed with exit code 1."
+  ],
+  "3_Minimum Go.txt": [
+    "2026-10-01T02:48:51.9332698Z --- FAIL: TestModelC_RealCorpusQualification (0.00s)",
+    "2026-10-01T02:48:51.9333954Z     wheel_test.go:1195: required real wheel corpus not found at /tmp/haa_corpus: missing corpus is an explicit failure",
+    "2026-10-01T02:48:51.9334731Z --- FAIL: TestModelC_CorpusHashMismatchFails (0.00s)",
+    "2026-10-01T02:48:51.9335564Z     wheel_test.go:1470: corpus directory missing: stat /tmp/haa_corpus: no such file or directory",
+    "2026-10-01T02:48:51.9363988Z ##[error]Process completed with exit code 1."
+  ],
+  "4_gVisor Linux Integration.txt": [
+    "2026-10-01T03:06:18.7913031Z --- PASS: TestLinuxTrustedHostExecutorIntegration (3.59s)",
+    "2026-10-01T03:07:26.3386447Z --- PASS: TestLinuxPyTorchResolverIntegration (32.31s)",
+    "2026-10-01T03:08:20.9764955Z     pytorch_linux_integration_test.go:44: PyTorch cpu install failed: wheel contains 9 unresolved surface(s): [networkx/algorithms/flow/tests/gl1.gpickle.bz2 networkx/algorithms/flow/tests/gw1.gpickle.bz2 networkx/algorithms/flow/tests/netgen-2.gpickle.bz2 networkx/algorithms/flow/tests/wlm3.gpickle.bz2 networkx/algorithms/isomorphism/tests/iso_r01_s80.A99 networkx/algorithms/isomorphism/tests/iso_r01_s80.B99 networkx/algorithms/isomorphism/tests/si2_b06_m200.A99 networkx/algorithms/isomorphism/tests/si2_b06_m200.B99 networkx/generators/atlas.dat.gz]",
+    "2026-10-01T03:08:21.0022734Z --- FAIL: TestLinuxPyTorchFullIntegration (50.44s)",
+    "2026-10-01T03:08:21.0159548Z ##[error]Process completed with exit code 1."
+  ],
+  "5_Security.txt": [],
+  "6_Docs.txt": [],
+  "7_Vulnerability.txt": [],
+  "8_Quick.txt": [
+    "2026-10-01T02:50:00.0094696Z --- FAIL: TestModelC_RealCorpusQualification (0.00s)",
+    "2026-10-01T02:50:00.0095758Z     wheel_test.go:1195: required real wheel corpus not found at /tmp/haa_corpus: missing corpus is an explicit failure",
+    "2026-10-01T02:50:00.0096807Z --- FAIL: TestModelC_CorpusHashMismatchFails (0.00s)",
+    "2026-10-01T02:50:00.0097560Z     wheel_test.go:1470: corpus directory missing: stat /tmp/haa_corpus: no such file or directory",
+    "2026-10-01T02:50:00.0138502Z ##[error]Process completed with exit code 1."
+  ]
+}

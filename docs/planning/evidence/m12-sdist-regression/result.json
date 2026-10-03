@@ -1,0 +1,836 @@
+{
+  "status": "LOCAL_REGRESSION_QUALIFIED",
+  "base_head": "1704eb18d6dbc8b295a3b5a4ec06d24c01b4f958",
+  "green_comparison": "1401274a21c4031b13d59b93e71b76206139843a",
+  "baseline_audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO",
+    "MISSING": [
+      "paired minimum-fixture causal proof",
+      "narrow correction and first failure retention",
+      "negative and actual direct-consumer matrix including sdist",
+      "same-candidate CPU and representative cu126 full; canonical checks"
+    ],
+    "scope": "start-of-task baseline before this correction"
+  },
+  "fixture": {
+    "sdist_sha256": "50e0fc5ca24af332b6eb724ef2d2517290455b1f42ad6a77e59ee7bfcf49d398",
+    "backend_sha256": "e37039d18eeb84aeb32e1e002373c4918ed13f39f4e675030e7cb8b125c221c5"
+  },
+  "causal_chain": [
+    {
+      "step": "command",
+      "owner": "internal/sandbox/pypi_build.go:PythonSdistBuilder.Build",
+      "value": "/tmp/haa-buildenv/bin/python -I -B -m pip wheel --no-index --no-deps --no-build-isolation --no-cache-dir --wheel-dir /tmp/haa-derived /tmp/example-1.0.tar.gz"
+    },
+    {
+      "step": "first_child_exec",
+      "parent_tgid": 34,
+      "child_tgid": 36,
+      "kernel_image": "/usr/bin/uname",
+      "image_locator_fnv1a64": "8fe06ba35e781415",
+      "class": "OTHER",
+      "role": "ARTIFACT",
+      "provenance": "CLONE_CHILD",
+      "note": "numeric diagnostics mapped against the pinned image catalogue; locator is not authentication"
+    },
+    {
+      "step": "first_divergent_open",
+      "resolved_path": "/etc/ld.so.cache",
+      "path_locator_fnv1a64": "fbc430c15ef57dff",
+      "flags": 557056,
+      "mount_id": 16,
+      "mount_class": "oci-root",
+      "sealed": true
+    },
+    {
+      "step": "predicate",
+      "symbol": "IsPinnedRuntimeRootRead",
+      "green": true,
+      "regression": false,
+      "classification_green": "kRuntimeRoot (3)",
+      "classification_regression": "kUnknown (5)"
+    },
+    {
+      "step": "observer_fault",
+      "reason": "STREAM_FAULT",
+      "site": "OPEN_RESULT_CLASSIFICATION_IMAGE"
+    },
+    {
+      "step": "builder_result",
+      "status": "INCOMPLETE",
+      "limitation": "M5_PYPI_BUILD_FAILED"
+    }
+  ],
+  "diagnostics": {
+    "method": "same bounded diagnostic patch in two isolated commit exports; classification predicates unchanged",
+    "bounds": {
+      "exec_records": 16,
+      "artifact_clone_open_records": 48
+    },
+    "raw_artifact_output_authority": false
+  },
+  "correction": {
+    "owner": "tools/gvisor-observer/observer.cc",
+    "scope": "kernel-resolved pinned uname image in sealed read-only OCI root; only read-only cache/libc loader paths",
+    "preserved": [
+      "ARTIFACT role",
+      "unexpected-exec observation",
+      "network attribution",
+      "fail-closed topology/provenance",
+      "existing budgets"
+    ],
+    "failure_evidence": "build primary code, command/context category, observer FaultSite/locator and cleanup limitation survive independently"
+  },
+  "local_gates": {
+    "sdist": "PASS13.46s; mandatory final TestLinuxPyPISdistBuildIntegration; unexpected exec retained",
+    "wheel": "PASS11.34s",
+    "npm_lifecycle": "PASS",
+    "artifact_environment_isolation": "PASS",
+    "github_elf": "PASS1.78s",
+    "utility_four_profiles": "PASS45.85s",
+    "failure_cpu_sequence": "PASS112.45s; 10 requests",
+    "resolver": "PASS49.57s",
+    "production_installs": "npm is-number7 and PyPI packaging25 completed ALLOW/promotion/target assertions",
+    "host_executor": "PASS3.37s",
+    "promotion": "PyPI3.31s/npm2.21s PASS",
+    "helper_record_fuzz": "PASS actual2s",
+    "sdist_negatives": "canonical default Go tests: graph expansion, changed stream bytes, unsafe/unsupported metadata, non-ALLOW source; primary/observer/cleanup retention; pinned utility latch negatives",
+    "quick": "PASS; format/build/default Go tests/vet/pinned Staticcheck/workflow/actionlint",
+    "security": "PASS",
+    "docs": "PASS final evidence/Queue and local lessons",
+    "corpus": "PASS9.58s on final execution candidate; 19 cases/18 unique wheels; canonical official pinned preparation and offline validation",
+    "darwin_amd64_test_compile": "PASS bootstrap/inspection/pypi/artifact/pypi/sandbox; native execution NOT_RUN",
+    "cache": "canonical prepared pinned warm cache; not cold-cache claim"
+  },
+  "mandatory_final_sdist_gate": {
+    "test": "TestLinuxPyPISdistBuildIntegration",
+    "env": "HELOX_PYPI_DYNAMIC_INTEGRATION=1",
+    "command": "authenticated installed sandbox test binary -test.v -test.timeout=5m -test.run ^TestLinuxPyPI(WheelDynamic|SdistBuild)Integration$",
+    "result": "PASS13.46s; unexpected exec retained",
+    "raw_evidence": "matrix-basic.log"
+  },
+  "full": {
+    "cpu": {
+      "result": "PASS",
+      "seconds": 499.06
+    },
+    "cu126": {
+      "result": "PASS",
+      "seconds": 2085.4,
+      "promoted_entries": 29,
+      "inspection_numpy_promoted": false,
+      "viewer": "NOT_ATTESTED; retained in evidence/result/promotion references"
+    },
+    "cu130_cu132": {
+      "focused": "PASS utility-loader common-path regression",
+      "full": "NOT_RERUN",
+      "impact_rationale": "correction is limited to pinned utility loader classification shared by all Python profiles; five-policy latch negatives and four-root actual utility checks exercise it; CPU and representative cu126 full required",
+      "remote_1704": "existing full PASS is baseline only, not current candidate qualification"
+    }
+  },
+  "remote_ci": "NOT_RUN",
+  "native_macos": "NOT_RUN; Darwin test compile only",
+  "push": false,
+  "merge": false,
+  "verification_type": "implementer verification; not independent review",
+  "logs": {
+    "accounting-negative.log": "6eeee6476a701c395ae182a225459559a4ba6aeb1be15c061b29d62d63a35ccc",
+    "corpus.log": "234d27286a7d100ac90c978ccddbac563ddf5ae471969c08934fffac3827d9c7",
+    "docs.log": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9",
+    "final-canonical-exits.txt": "59008dce04a95dc282ccb23eb76f684ec0ab009cbb596272979af56cdb606244",
+    "final-helper-fuzz.log": "ca2c1994699a02e5791e05034d6a5cd5957d5eadc75582d5f53edfcde3b5b047",
+    "go-focused.log": "fc6fdfdeb6211d992ab0d914447af921eba2f25a28f5373a60e59ae4c045afa6",
+    "hosttool.log": "3030b7ed4c9ea90fe408be4d8b5ef6f39e0100c6be498fe340eb12bf47ac3db4",
+    "latch-final.log": "b2a19f5e3078d4771cd718b2dc10ad20ca2595fa4ece0b69dca653c560b34a4d",
+    "matrix-basic.log": "be312d00bed0ab2a0d274be1a37195d02312c7cc36315f2545c66fd41475e729",
+    "matrix-resolver.log": "dcc3f428d81632382a3f757c95a889d98571182bb6f6c3b084660166b6ec0473",
+    "original-restoration.json": "a672fa494fe41389ce469eb7a3ea04a097a2429e2d79fb067b19096e861ae2b3",
+    "pinned-image-catalogue.json": "df552a501cfff87de5546d0c38200a8788aed50f061cb1612c8d62751654f5b8",
+    "promotion.log": "9901aab55f105e1ab952a53cbd1dcfe01d9c07cbffcffd0badb7716851c256bd",
+    "quick.log": "f19c508b9f6efc74b266bd02c062d58190668c689b4beb3c5dab9650c836fdd6",
+    "repro-new.log": "81ea75f3b91db62eca010021645322b8d22f5424ca0dfbbad045d383c73bfa25",
+    "repro-old.log": "0897cdfd9c027045a8998d3b8d2b1ad85c0aceffaab96c7df163f63badfaf72c",
+    "security.log": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95"
+  },
+  "restoration": {
+    "status": "RESTORED",
+    "installed": [
+      {
+        "path": "/usr/libexec/heliopause/helox",
+        "sha256": "4c3b3d263781ce7931bd12b5aaf542caff5a94b0fc58dfc5c5d13c4dda0173d5",
+        "uid": 0,
+        "gid": 0,
+        "mode": "0o755"
+      },
+      {
+        "path": "/usr/libexec/heliopause/haa_gvisor_observer",
+        "sha256": "2fde42a4d91ccbe73f4056a54d41a4119edc170d18cc9ef7a17c4344fbe5be8a",
+        "uid": 0,
+        "gid": 0,
+        "mode": "0o755"
+      },
+      {
+        "path": "/usr/libexec/heliopause/haa-network-policy-helper",
+        "sha256": "11b064f58af403733aa9264e8c8f07f91e7350e4b2f14519b10404acd7cb280f",
+        "uid": 0,
+        "gid": 0,
+        "mode": "0o755"
+      },
+      {
+        "path": "/etc/heliopause/network-policy.json",
+        "sha256": "2acf7e15a49b0c1b823d9011dd4aaf654e8eef433c1fdf1786e2971923897c64",
+        "uid": 0,
+        "gid": 0,
+        "mode": "0o644"
+      }
+    ],
+    "runtime_processes": "absent via successful ps query",
+    "containers": "empty via successful docker query",
+    "volumes": "empty via successful docker query",
+    "haaobs_slices": "empty via successful systemctl query",
+    "helper_sockets": "absent",
+    "lifecycle": "final2 runtime and tail wrappers both confirmed helper wait0 before restoration"
+  },
+  "runtime": {
+    "lock": "scripts/runtimes.lock.json",
+    "python_image": "python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52",
+    "observer_sha256": "e3814deb370f406685694db6097f8293a7399044ceb47bbd18eefb499b43e712",
+    "bootstrap_test_sha256": "53d9b66e27c04c306bd106719329262c824b83ac72360dc75fca6eefa5c02c51",
+    "sandbox_test_sha256": "93fe85d70127460682cb05da35b1c89cbccb4f6c187c08720a088da679469e6c",
+    "runsc_sha256": "29030530fa1da033e44c976510ea2b5c2e956f5c2ee6e8f9561a6d7f209ec611",
+    "pinned_catalogue": "pinned-image-catalogue.json"
+  },
+  "ordinary_local_integration_matrix": {
+    "workflow": ".github/workflows/heliopause-ci.yml",
+    "required": [
+      "helper record fuzz",
+      "trusted host executor",
+      "gVisor lifecycle",
+      "GitHub ELF",
+      "npm production install",
+      "pip production install",
+      "PyTorch resolver",
+      "CPU full",
+      "PyPI wheel dynamic",
+      "PyPI sdist build",
+      "npm promotion",
+      "PyPI promotion"
+    ],
+    "execution": "each actual local integration completed; individual logs bound above; remote aggregate not run"
+  },
+  "initial_sdist_candidate": {
+    "source_fingerprint": "968448040f4fab3699ea9c841f34ba7333d323d786877ab9f5e84601ff92f13f",
+    "source_inventory": [
+      {
+        "path": "docs/planning/02-current-work-queue.md",
+        "sha256": "fe49db330071d68bafa00aa2188b9fb04320aa59915c15527b2b565c9963bc99",
+        "mode": "0644",
+        "git_mode": "100644"
+      },
+      {
+        "path": "internal/inspection/pypi/derivation.go",
+        "sha256": "775d040e5bf638f68c1335ade4741a0aa31f5524f86369b53d0188b596c9c6f5",
+        "mode": "0644",
+        "git_mode": "100644"
+      },
+      {
+        "path": "internal/sandbox/linux_integration_test.go",
+        "sha256": "0f9e5bf5bb2b5c697963bc0af65c3df1518e91833bbaf4ff7e32d6dc6f14b88c",
+        "mode": "0644",
+        "git_mode": "100644"
+      },
+      {
+        "path": "internal/sandbox/observation_resource_integration_linux_test.go",
+        "sha256": "c3fa166d7cf0cab3b4f293584ad93211ef7fbe3be47900a625a07897f760e182",
+        "mode": "0644",
+        "git_mode": "100644"
+      },
+      {
+        "path": "internal/sandbox/pypi_build.go",
+        "sha256": "30b916611020c89611779b6135834d4ad1b4223f681a688698d32651a5c25495",
+        "mode": "0644",
+        "git_mode": "100644"
+      },
+      {
+        "path": "internal/sandbox/pypi_build_test.go",
+        "sha256": "685ca0c4dbdf631ef6738323eff0d4b3d7a0c7d86138dc3d17ac7fbc55f85037",
+        "mode": "0644",
+        "git_mode": "100644"
+      },
+      {
+        "path": "tools/gvisor-observer/observer.cc",
+        "sha256": "b9dd988cbf4df3f123364bfd6f3aec1918c5bedc4506c54fb70f9f10c37076a6",
+        "mode": "0644",
+        "git_mode": "100644"
+      },
+      {
+        "path": "tools/gvisor-observer/observer_latch_test.cc",
+        "sha256": "4095495a61acfd623f225611f810946232d7840091be835acd22485f7255c320",
+        "mode": "0644",
+        "git_mode": "100644"
+      }
+    ],
+    "local_gates": {
+      "sdist": "PASS14.81s final test binary; actual unexpected exec retained",
+      "wheel": "PASS12.29s",
+      "npm_lifecycle": "PASS4.99s",
+      "artifact_environment_isolation": "PASS4.31s",
+      "github_elf": "PASS1.93s",
+      "utility_loader_four_profiles": "PASS61.63s; CPU/cu126/cu130/cu132 unexpected exec remains",
+      "failure_cpu_sequence": "PASS129.48s,10requests; intentional nonzero remains INCOMPLETE",
+      "resolver": "PASS54.41s",
+      "production_install": "npm is-number7 + packaging25 required checks/ALLOW/promotion COMPLETED",
+      "source_fingerprint": "968448040f4fab3699ea9c841f34ba7333d323d786877ab9f5e84601ff92f13f",
+      "quick": "PASS",
+      "security": "PASS",
+      "docs": "PASS",
+      "corpus": "PASS, 19 cases / 18 unique wheel bytes",
+      "darwin_amd64_test_compile": "PASS, bootstrap/inspection/pypi/artifact/pypi/sandbox",
+      "native_macos": "NOT_RUN",
+      "cache": "declared pinned prepared warm cache; GOPROXY=off; isolated export; not cold-cache claim",
+      "helper_record_fuzz": "PASS, actual FuzzDecodeHelperRecord 2s; final-helper-fuzz.log",
+      "trusted_host_executor": "PASS3.59s; hosttool.log",
+      "promotion": "PyPI PASS3.45s, npm PASS2.43s; promotion.log"
+    },
+    "full": {
+      "cpu": {
+        "result": "PASS",
+        "seconds": 576.32,
+        "source_fingerprint": "968448040f4fab3699ea9c841f34ba7333d323d786877ab9f5e84601ff92f13f",
+        "input_note": "live MarkupSafe 3.0.4 vs earlier 3.0.3; not frozen replay"
+      },
+      "cu126": {
+        "result": "FAIL",
+        "seconds": 1015.15,
+        "stage": "cuda-bindings@12.9.9 unit-outcome, request ACTIVE, command OK, CPU accounting unavailable or late",
+        "first_cause": "UNCONFIRMED; same original bindings closure2 plus existing NumPy1 bounded diagnostic running",
+        "prior_attempt": "host reboot before terminal result; not counted as PASS",
+        "focused_diagnostic": {
+          "result": "PASS",
+          "seconds": 426.8,
+          "closure": 29,
+          "target_units": 8,
+          "authorizations": 1,
+          "closes": 1,
+          "predicate_changes": false,
+          "bounded_cpu_diagnostic_errors": 0,
+          "scope": "same retained authenticated original closure; target transaction only, not full installation"
+        },
+        "current_execution": "historical failure; newer diagnostic candidate full gates tracked separately",
+        "prepared_attempt": {
+          "result": "FAIL",
+          "seconds": 765.62,
+          "stage": "Torch preparation install CANCELED; subsequent accounting unavailable-or-late and PROFILE_LOOKUP_FAILURE",
+          "first_cause": "UNCONFIRMED; same-root diagnostic passed; original failure preserved"
+        },
+        "bindings_focused_diagnostic": {
+          "result": "PASS",
+          "seconds": 272.08,
+          "closure": 2,
+          "inspection_inputs": 1,
+          "units": 59,
+          "authorizations": 1,
+          "closes": 1,
+          "cpu_diagnostic_errors": 0
+        }
+      },
+      "cu130_cu132": {
+        "focused": "PASS utility-loader common-path regression",
+        "full": "NOT_RERUN",
+        "impact_rationale": "correction is limited to pinned utility loader classification shared by all Python profiles; five-policy latch negatives and four-root actual utility checks exercise it; CPU and representative cu126 full required",
+        "remote_1704": "existing full PASS is baseline only, not current candidate qualification"
+      }
+    }
+  },
+  "execution_candidate": {
+    "base_head": "1704eb18d6dbc8b295a3b5a4ec06d24c01b4f958",
+    "files": [
+      {
+        "path": "internal/inspection/pypi/derivation.go",
+        "sha256": "775d040e5bf638f68c1335ade4741a0aa31f5524f86369b53d0188b596c9c6f5",
+        "git_mode": "100644"
+      },
+      {
+        "path": "internal/sandbox/linux_integration_test.go",
+        "sha256": "0f9e5bf5bb2b5c697963bc0af65c3df1518e91833bbaf4ff7e32d6dc6f14b88c",
+        "git_mode": "100644"
+      },
+      {
+        "path": "internal/sandbox/observation_resource_integration_linux_test.go",
+        "sha256": "c3fa166d7cf0cab3b4f293584ad93211ef7fbe3be47900a625a07897f760e182",
+        "git_mode": "100644"
+      },
+      {
+        "path": "internal/sandbox/pypi_build.go",
+        "sha256": "30b916611020c89611779b6135834d4ad1b4223f681a688698d32651a5c25495",
+        "git_mode": "100644"
+      },
+      {
+        "path": "internal/sandbox/pypi_build_test.go",
+        "sha256": "685ca0c4dbdf631ef6738323eff0d4b3d7a0c7d86138dc3d17ac7fbc55f85037",
+        "git_mode": "100644"
+      },
+      {
+        "path": "internal/sandbox/pypi_observation_transaction.go",
+        "sha256": "4f00fe2692171e6c5883938c01f9d458bfb2b5f3c2ab88956f04841115f25355",
+        "git_mode": "100644"
+      },
+      {
+        "path": "internal/sandbox/pypi_observation_transaction_test.go",
+        "sha256": "34c8c99a9ade38e577008f0b6b342339286cc7f44b45535212281496f9474b6d",
+        "git_mode": "100644"
+      },
+      {
+        "path": "tools/gvisor-observer/observer.cc",
+        "sha256": "b9dd988cbf4df3f123364bfd6f3aec1918c5bedc4506c54fb70f9f10c37076a6",
+        "git_mode": "100644"
+      },
+      {
+        "path": "tools/gvisor-observer/observer_latch_test.cc",
+        "sha256": "4095495a61acfd623f225611f810946232d7840091be835acd22485f7255c320",
+        "git_mode": "100644"
+      }
+    ],
+    "fingerprint": "f80921b25cb999976f9e48b8f13a68983d307234c8890f743338365d8b9ea701"
+  },
+  "local_scope_assessment": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES (local regression scope)",
+    "ACCEPTANCE_CLOSED": "YES (requested local regression scope only)",
+    "milestone": "M12-001 remains IN_PROGRESS; this does not close remote/milestone acceptance",
+    "MISSING": []
+  },
+  "accounting_diagnostics": {
+    "change": "bounded trusted rejection operands in the existing error only",
+    "unchanged": [
+      "predicate",
+      "poll interval",
+      "CPU ceiling/reserve",
+      "wall limit",
+      "sticky failed state"
+    ],
+    "tests": "late, decreased CPU counter, reordered sample and sticky rejection PASS",
+    "earlier_full_failures": [
+      {
+        "seconds": 765.62,
+        "stage": "Torch preparation install",
+        "detail": "CANCELED; later CPU accounting unavailable-or-late/PROFILE_LOOKUP_FAILURE"
+      },
+      {
+        "seconds": 1015.15,
+        "stage": "cuda-bindings unit-outcome",
+        "detail": "ACTIVE/command OK; CPU accounting unavailable-or-late"
+      }
+    ],
+    "cause": "UNCONFIRMED; original logs preserved, no accounting semantic fix claimed",
+    "focused_diagnostics": [
+      {
+        "scope": "same original root closure29",
+        "seconds": 426.8,
+        "units": 8,
+        "result": "PASS"
+      },
+      {
+        "scope": "original bindings closure2 plus explicit NumPy1",
+        "seconds": 272.08,
+        "units": 59,
+        "result": "PASS"
+      }
+    ]
+  },
+  "full_inputs": {
+    "cpu": {
+      "manifest_sha256": "b0575b208692fadc5dd00f3c7689c89e8fce56a07f7ac31fe2749b8117768aed",
+      "entries": [
+        {
+          "source": "pypi",
+          "name": "filelock",
+          "version": "4.0.9",
+          "sha256": "9287fd61b99a806e5202be29a83034c0808a1b9830e820537c2f5773981f7eeb",
+          "declared_integrity": "sha256:9287fd61b99a806e5202be29a83034c0808a1b9830e820537c2f5773981f7eeb",
+          "bytes": 110368
+        },
+        {
+          "source": "pypi",
+          "name": "fsspec",
+          "version": "2026.9.0",
+          "sha256": "8dd6e646e99ea382bd85f97a45e6b526a442d79423a7dc673f1e2756d05fcb5f",
+          "declared_integrity": "sha256:8dd6e646e99ea382bd85f97a45e6b526a442d79423a7dc673f1e2756d05fcb5f",
+          "bytes": 221738
+        },
+        {
+          "source": "pypi",
+          "name": "jinja2",
+          "version": "3.1.6",
+          "sha256": "85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67",
+          "declared_integrity": "sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67",
+          "bytes": 134899
+        },
+        {
+          "source": "pypi",
+          "name": "markupsafe",
+          "version": "3.0.4",
+          "sha256": "a8e9f292fcda89b324f2f5c91d13f1424a153e40fc2756f38ee23b15835ff300",
+          "declared_integrity": "sha256:a8e9f292fcda89b324f2f5c91d13f1424a153e40fc2756f38ee23b15835ff300",
+          "bytes": 23049
+        },
+        {
+          "source": "pypi",
+          "name": "mpmath",
+          "version": "1.3.0",
+          "sha256": "a0b2b9fe80bbcd81a6647ff13108738cfb482d481d826cc0e02f5b35e5c88d2c",
+          "declared_integrity": "sha256:a0b2b9fe80bbcd81a6647ff13108738cfb482d481d826cc0e02f5b35e5c88d2c",
+          "bytes": 536198
+        },
+        {
+          "source": "pypi",
+          "name": "networkx",
+          "version": "3.7",
+          "sha256": "e3fd2c13a7814cee3746340d8d7f8598a67f16a58bf47fb7f8793fab6efca1b0",
+          "declared_integrity": "sha256:e3fd2c13a7814cee3746340d8d7f8598a67f16a58bf47fb7f8793fab6efca1b0",
+          "bytes": 2142205
+        },
+        {
+          "source": "pypi",
+          "name": "setuptools",
+          "version": "84.0.0",
+          "sha256": "51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670",
+          "declared_integrity": "sha256:51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670",
+          "bytes": 818216
+        },
+        {
+          "source": "pypi",
+          "name": "sympy",
+          "version": "1.14.0",
+          "sha256": "e091cc3e99d2141a0ba2847328f5479b05d94a6635cb96148ccb3f34671bd8f5",
+          "declared_integrity": "sha256:e091cc3e99d2141a0ba2847328f5479b05d94a6635cb96148ccb3f34671bd8f5",
+          "bytes": 6299353
+        },
+        {
+          "source": "pytorch-cpu",
+          "name": "torch",
+          "version": "2.14.0+cpu",
+          "sha256": "f152f41dc5dc462afe0de780e451ebb47ea8b4451f8f919f9537aa8e2cbe1d7e",
+          "declared_integrity": "sha256:f152f41dc5dc462afe0de780e451ebb47ea8b4451f8f919f9537aa8e2cbe1d7e",
+          "bytes": 196260719
+        },
+        {
+          "source": "pypi",
+          "name": "typing-extensions",
+          "version": "4.16.0",
+          "sha256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+          "declared_integrity": "sha256:481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+          "bytes": 45571
+        }
+      ],
+      "full_retained_bytes_rehashed": true,
+      "resolve": "live official sources; not frozen replay"
+    },
+    "cu126": {
+      "manifest_sha256": "53e46e5b4423cef83cefcebf50eb8361e5d3543f39750c02d9a2e64c7d2df636",
+      "entries": [
+        {
+          "source": "pypi",
+          "name": "cuda-bindings",
+          "version": "12.9.9",
+          "sha256": "94e4f9bd6b9b21aad545e0d441707094e4ff88ab420d62b85fcdc8b6da1e039f",
+          "declared_integrity": "sha256:94e4f9bd6b9b21aad545e0d441707094e4ff88ab420d62b85fcdc8b6da1e039f",
+          "bytes": 7440112
+        },
+        {
+          "source": "pypi",
+          "name": "cuda-pathfinder",
+          "version": "1.8.3",
+          "sha256": "e29e59829c297a7a5233bd9cc71094fc5bddbd076951482670178f9eade39b1f",
+          "declared_integrity": "sha256:e29e59829c297a7a5233bd9cc71094fc5bddbd076951482670178f9eade39b1f",
+          "bytes": 62561
+        },
+        {
+          "source": "pypi",
+          "name": "cuda-toolkit",
+          "version": "12.6.3",
+          "sha256": "79d8605baeb6c2f695761e0efb54bc62dbc3c9e32eb0742df7669c07befaa8f7",
+          "declared_integrity": "sha256:79d8605baeb6c2f695761e0efb54bc62dbc3c9e32eb0742df7669c07befaa8f7",
+          "bytes": 2288
+        },
+        {
+          "source": "pypi",
+          "name": "filelock",
+          "version": "4.0.9",
+          "sha256": "9287fd61b99a806e5202be29a83034c0808a1b9830e820537c2f5773981f7eeb",
+          "declared_integrity": "sha256:9287fd61b99a806e5202be29a83034c0808a1b9830e820537c2f5773981f7eeb",
+          "bytes": 110368
+        },
+        {
+          "source": "pypi",
+          "name": "fsspec",
+          "version": "2026.9.0",
+          "sha256": "8dd6e646e99ea382bd85f97a45e6b526a442d79423a7dc673f1e2756d05fcb5f",
+          "declared_integrity": "sha256:8dd6e646e99ea382bd85f97a45e6b526a442d79423a7dc673f1e2756d05fcb5f",
+          "bytes": 221738
+        },
+        {
+          "source": "pypi",
+          "name": "jinja2",
+          "version": "3.1.6",
+          "sha256": "85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67",
+          "declared_integrity": "sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67",
+          "bytes": 134899
+        },
+        {
+          "source": "pypi",
+          "name": "markupsafe",
+          "version": "3.0.4",
+          "sha256": "a8e9f292fcda89b324f2f5c91d13f1424a153e40fc2756f38ee23b15835ff300",
+          "declared_integrity": "sha256:a8e9f292fcda89b324f2f5c91d13f1424a153e40fc2756f38ee23b15835ff300",
+          "bytes": 23049
+        },
+        {
+          "source": "pypi",
+          "name": "mpmath",
+          "version": "1.3.0",
+          "sha256": "a0b2b9fe80bbcd81a6647ff13108738cfb482d481d826cc0e02f5b35e5c88d2c",
+          "declared_integrity": "sha256:a0b2b9fe80bbcd81a6647ff13108738cfb482d481d826cc0e02f5b35e5c88d2c",
+          "bytes": 536198
+        },
+        {
+          "source": "pypi",
+          "name": "networkx",
+          "version": "3.7",
+          "sha256": "e3fd2c13a7814cee3746340d8d7f8598a67f16a58bf47fb7f8793fab6efca1b0",
+          "declared_integrity": "sha256:e3fd2c13a7814cee3746340d8d7f8598a67f16a58bf47fb7f8793fab6efca1b0",
+          "bytes": 2142205
+        },
+        {
+          "source": "pypi",
+          "name": "nvidia-cublas-cu12",
+          "version": "12.6.4.1",
+          "sha256": "08ed2686e9875d01b58e3cb379c6896df8e76c75e0d4a7f7dace3d7b6d9ef8eb",
+          "declared_integrity": "sha256:08ed2686e9875d01b58e3cb379c6896df8e76c75e0d4a7f7dace3d7b6d9ef8eb",
+          "bytes": 393138322
+        },
+        {
+          "source": "pypi",
+          "name": "nvidia-cuda-cupti-cu12",
+          "version": "12.6.80",
+          "sha256": "6768bad6cab4f19e8292125e5f1ac8aa7d1718704012a0e3272a6f61c4bce132",
+          "declared_integrity": "sha256:6768bad6cab4f19e8292125e5f1ac8aa7d1718704012a0e3272a6f61c4bce132",
+          "bytes": 8917980
+        },
+        {
+          "source": "pypi",
+          "name": "nvidia-cuda-nvrtc-cu12",
+          "version": "12.6.85",
+          "sha256": "800927308ccc5dd6246d3f61f7fcef2ed7ec4e59e199090d360d3293f78bd5a2",
+          "declared_integrity": "sha256:800927308ccc5dd6246d3f61f7fcef2ed7ec4e59e199090d360d3293f78bd5a2",
+          "bytes": 23649944
+        },
+        {
+          "source": "pypi",
+          "name": "nvidia-cuda-runtime-cu12",
+          "version": "12.6.77",
+          "sha256": "ba3b56a4f896141e25e19ab287cd71e52a6a0f4b29d0d31609f60e3b4d5219b7",
+          "declared_integrity": "sha256:ba3b56a4f896141e25e19ab287cd71e52a6a0f4b29d0d31609f60e3b4d5219b7",
+          "bytes": 897690
+        },
+        {
+          "source": "pypi",
+          "name": "nvidia-cudnn-cu12",
+          "version": "9.10.2.21",
+          "sha256": "949452be657fa16687d0930933f032835951ef0892b37d2d53824d1a84dc97a8",
+          "declared_integrity": "sha256:949452be657fa16687d0930933f032835951ef0892b37d2d53824d1a84dc97a8",
+          "bytes": 706758467
+        },
+        {
+          "source": "pypi",
+          "name": "nvidia-cufft-cu12",
+          "version": "11.3.0.4",
+          "sha256": "ccba62eb9cef5559abd5e0d54ceed2d9934030f51163df018532142a8ec533e5",
+          "declared_integrity": "sha256:ccba62eb9cef5559abd5e0d54ceed2d9934030f51163df018532142a8ec533e5",
+          "bytes": 200221632
+        },
+        {
+          "source": "pypi",
+          "name": "nvidia-cufile-cu12",
+          "version": "1.11.1.6",
+          "sha256": "cc23469d1c7e52ce6c1d55253273d32c565dd22068647f3aa59b3c6b005bf159",
+          "declared_integrity": "sha256:cc23469d1c7e52ce6c1d55253273d32c565dd22068647f3aa59b3c6b005bf159",
+          "bytes": 1142103
+        },
+        {
+          "source": "pypi",
+          "name": "nvidia-curand-cu12",
+          "version": "10.3.7.77",
+          "sha256": "a42cd1344297f70b9e39a1e4f467a4e1c10f1da54ff7a85c12197f6c652c8bdf",
+          "declared_integrity": "sha256:a42cd1344297f70b9e39a1e4f467a4e1c10f1da54ff7a85c12197f6c652c8bdf",
+          "bytes": 56279010
+        },
+        {
+          "source": "pypi",
+          "name": "nvidia-cusolver-cu12",
+          "version": "11.7.1.2",
+          "sha256": "e9e49843a7707e42022babb9bcfa33c29857a93b88020c4e4434656a655b698c",
+          "declared_integrity": "sha256:e9e49843a7707e42022babb9bcfa33c29857a93b88020c4e4434656a655b698c",
+          "bytes": 158229790
+        },
+        {
+          "source": "pypi",
+          "name": "nvidia-cusparse-cu12",
+          "version": "12.5.4.2",
+          "sha256": "7556d9eca156e18184b94947ade0fba5bb47d69cec46bf8660fd2c71a4b48b73",
+          "declared_integrity": "sha256:7556d9eca156e18184b94947ade0fba5bb47d69cec46bf8660fd2c71a4b48b73",
+          "bytes": 216561367
+        },
+        {
+          "source": "pypi",
+          "name": "nvidia-cusparselt-cu12",
+          "version": "0.7.1",
+          "sha256": "f1bb701d6b930d5a7cea44c19ceb973311500847f81b634d802b7b539dc55623",
+          "declared_integrity": "sha256:f1bb701d6b930d5a7cea44c19ceb973311500847f81b634d802b7b539dc55623",
+          "bytes": 287193691
+        },
+        {
+          "source": "pypi",
+          "name": "nvidia-nccl-cu12",
+          "version": "2.29.3",
+          "sha256": "35ad42e7d5d722a83c36a3a478e281c20a5646383deaf1b9ed1a9ab7d61bed53",
+          "declared_integrity": "sha256:35ad42e7d5d722a83c36a3a478e281c20a5646383deaf1b9ed1a9ab7d61bed53",
+          "bytes": 289760316
+        },
+        {
+          "source": "pypi",
+          "name": "nvidia-nvjitlink-cu12",
+          "version": "12.9.86",
+          "sha256": "e3f1171dbdc83c5932a45f0f4c99180a70de9bd2718c1ab77d14104f6d7147f9",
+          "declared_integrity": "sha256:e3f1171dbdc83c5932a45f0f4c99180a70de9bd2718c1ab77d14104f6d7147f9",
+          "bytes": 39748338
+        },
+        {
+          "source": "pypi",
+          "name": "nvidia-nvshmem-cu12",
+          "version": "3.4.5",
+          "sha256": "042f2500f24c021db8a06c5eec2539027d57460e1c1a762055a6554f72c369bd",
+          "declared_integrity": "sha256:042f2500f24c021db8a06c5eec2539027d57460e1c1a762055a6554f72c369bd",
+          "bytes": 139103095
+        },
+        {
+          "source": "pypi",
+          "name": "nvidia-nvtx-cu12",
+          "version": "12.6.77",
+          "sha256": "b90bed3df379fa79afbd21be8e04a0314336b8ae16768b58f2d34cb1d04cd7d2",
+          "declared_integrity": "sha256:b90bed3df379fa79afbd21be8e04a0314336b8ae16768b58f2d34cb1d04cd7d2",
+          "bytes": 89276
+        },
+        {
+          "source": "pypi",
+          "name": "setuptools",
+          "version": "84.0.0",
+          "sha256": "51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670",
+          "declared_integrity": "sha256:51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670",
+          "bytes": 818216
+        },
+        {
+          "source": "pypi",
+          "name": "sympy",
+          "version": "1.14.0",
+          "sha256": "e091cc3e99d2141a0ba2847328f5479b05d94a6635cb96148ccb3f34671bd8f5",
+          "declared_integrity": "sha256:e091cc3e99d2141a0ba2847328f5479b05d94a6635cb96148ccb3f34671bd8f5",
+          "bytes": 6299353
+        },
+        {
+          "source": "pytorch-cu126",
+          "name": "torch",
+          "version": "2.14.0+cu126",
+          "sha256": "b15e1e62ab842d099ae9b19312374f62579668171efed8b676108b60fa75e5b0",
+          "declared_integrity": "sha256:b15e1e62ab842d099ae9b19312374f62579668171efed8b676108b60fa75e5b0",
+          "bytes": 869180118
+        },
+        {
+          "source": "pypi",
+          "name": "triton",
+          "version": "3.8.0",
+          "sha256": "387dae4cb0089a7b6ba1a428ae0782b65c4c58f57d94617cb22ca8593d8ccbca",
+          "declared_integrity": "sha256:387dae4cb0089a7b6ba1a428ae0782b65c4c58f57d94617cb22ca8593d8ccbca",
+          "bytes": 247972313
+        },
+        {
+          "source": "pypi",
+          "name": "typing-extensions",
+          "version": "4.16.0",
+          "sha256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+          "declared_integrity": "sha256:481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+          "bytes": 45571
+        }
+      ],
+      "full_retained_bytes_rehashed": true,
+      "resolve": "live official sources; not frozen replay",
+      "inspection_only": {
+        "name": "numpy",
+        "version": "2.4.6",
+        "sha256": "a2c306dea656c12c68f51f4cea133cbe78ca7435eb28c735eac1d3ebe73be6e8",
+        "bytes": 16638245,
+        "promoted": false
+      }
+    }
+  },
+  "external_evidence": {
+    "final2-full-cpu.log": {
+      "sha256": "e75f2bd0cbb9218c6e99c4e8a274f05797b05ba661823417518bb732b34b1303",
+      "location": "existing local m12-sdist-1704eb1/resume evidence record"
+    },
+    "final2-full-cu126.log": {
+      "sha256": "871a054f56cb16f5988ee18a682159dc97ec145d7d2fab77197c37706554ac94",
+      "location": "existing local m12-sdist-1704eb1/resume evidence record"
+    },
+    "final2-matrix-profiles.log": {
+      "sha256": "82e2855d4d1891491043bccd9a4e28d4d9a1f18b087db65337d12a1913d2bbac",
+      "location": "existing local m12-sdist-1704eb1/resume evidence record"
+    },
+    "final2-runtime-lifecycle.log": {
+      "sha256": "f4347f5942294f1e5b8ddedfe88a7b8eefa334fd8ea2d4e211e254b6487b86ee",
+      "location": "existing local m12-sdist-1704eb1/resume evidence record"
+    },
+    "final2-tail-lifecycle.log": {
+      "sha256": "b1850bf243cad6e69b09d29c98103fa6c84b69641a3dd0a3a4f6daf7961a10dc",
+      "location": "existing local m12-sdist-1704eb1/resume evidence record"
+    },
+    "final2-npm.log": {
+      "sha256": "70318d90942f184d91bafe0e229de12bbfa36962ca6a146f4528fe7b8c1ad29f",
+      "location": "existing local m12-sdist-1704eb1/resume evidence record"
+    },
+    "final2-packaging.log": {
+      "sha256": "0eff8fff8b7e57b8e640a80e033e9eef593892ea032e78cf076b5a1dede434bf",
+      "location": "existing local m12-sdist-1704eb1/resume evidence record"
+    },
+    "full-cu126-prepared.log": {
+      "sha256": "346424f07b0f1c4e75ab8d4e1ca55bd2f41dee23ca01d898c2557be0b8cf912a",
+      "location": "existing local m12-sdist-1704eb1/resume evidence record"
+    },
+    "full-cu126-isolated.log": {
+      "sha256": "27770a3c1c100a2fdd2bae2a5f561f471af9ebda99633ec0afc58d5c9f17b270",
+      "location": "existing local m12-sdist-1704eb1/resume evidence record"
+    },
+    "root-diagnostic.log": {
+      "sha256": "2aad82ce00c6e2e13b8634a89ea47b38639ce088dbc89ad9ac42250bffec6169",
+      "location": "existing local m12-sdist-1704eb1/resume evidence record"
+    },
+    "bindings-diagnostic.log": {
+      "sha256": "8937dbea607efb167016238314717218359718205425be8f38ed8b890f6969a1",
+      "location": "existing local m12-sdist-1704eb1/resume evidence record"
+    },
+    "final2-corpus-prepare.log": {
+      "sha256": "7ff55509308ab755f92bdf63669ba172702a81c9242aa9d0b1c19ff87567f5fe",
+      "location": "existing local m12-sdist-1704eb1/resume evidence record"
+    },
+    "final2-corpus-exit.txt": {
+      "sha256": "279847c6803cdd23e230a99a926355c1be76c026ee292376cc8b3efb477319bb",
+      "location": "existing local m12-sdist-1704eb1/resume evidence record"
+    }
+  },
+  "external_evidence_note": "raw host paths and one-shot admission values stay in local evidence; no raw capture was rewritten",
+  "checkpoint_scope": "source/test correction, Current Work Queue and this bounded evidence directory only; existing local lessons updated but left untracked; unrelated initial documents/logs preserved"
+}

@@ -56,7 +56,7 @@ func NewPythonSdistBuilder(runner CommandRunner, introducer *PythonArtifactIntro
 	if _, ok := runner.(discardCommandRunner); !ok {
 		return nil, errors.New("python sdist runner must discard command output")
 	}
-	return &PythonSdistBuilder{runner: runner, introducer: introducer, observer: observer, probe: probe, newSessionID: domain.NewSandboxSessionID, timeout: pythonDynamicTimeout, cleanupWait: cleanupTimeout}, nil
+	return &PythonSdistBuilder{runner: admissionAwareRunner(runner), introducer: introducer, observer: observer, probe: probe, newSessionID: domain.NewSandboxSessionID, timeout: pythonDynamicTimeout, cleanupWait: cleanupTimeout}, nil
 }
 
 // Build creates exactly one derived wheel in a fresh gVisor session. Any
@@ -75,7 +75,7 @@ func (b *PythonSdistBuilder) Build(ctx context.Context, source domain.AcquiredAr
 		result, resultErr := pythonIncomplete(sessionID, "M5_PYPI_BUILD_RUNTIME_UNAVAILABLE")
 		return DerivedWheel{}, result, resultErr
 	}
-	created, err := b.runner.Output(ctx, "docker", pythonDynamicCreateArguments(sessionID)...)
+	created, err := b.runner.Output(ctx, "docker", pythonDynamicCreateArguments(sessionID, artifactpypi.ResourcePolicyFromContext(ctx))...)
 	if err != nil || !containerIDPattern.MatchString(strings.TrimSpace(string(created))) {
 		result, resultErr := pythonIncomplete(sessionID, "M5_PYPI_BUILD_SETUP_FAILED")
 		return DerivedWheel{}, result, resultErr
@@ -92,58 +92,65 @@ func (b *PythonSdistBuilder) Build(ctx context.Context, source domain.AcquiredAr
 	}
 	runCtx, cancel := context.WithTimeout(ctx, b.timeout)
 	defer cancel()
-	fail := func(code string) (DerivedWheel, domain.SandboxResult, error) {
-		_, limitation := b.disposeAndCollect(containerID, trace)
-		if limitation == "M5_PYPI_DYNAMIC_CLEANUP_FAILED" {
-			code = "M5_PYPI_BUILD_CLEANUP_FAILED"
-		}
+	fail := func(code string, cause error) (DerivedWheel, domain.SandboxResult, error) {
+		_, limitation, diagnostic := b.disposeAndCollect(containerID, trace)
 		result, resultErr := pythonIncomplete(sessionID, code)
-		return DerivedWheel{}, result, resultErr
+		return DerivedWheel{}, result, errors.Join(resultErr, fmt.Errorf("python sdist build primary_code=%s command=%s context=%s cleanup=%s trace={%s}", code, pythonCommandErrorReason(cause), pythonCommandErrorReason(runCtx.Err()), limitation, diagnostic.String()))
 	}
 	if err := discardCommand(runCtx, b.runner, "docker", "start", containerID); err != nil {
-		return fail("M5_PYPI_BUILD_SETUP_FAILED")
+		return fail("M5_PYPI_BUILD_SETUP_FAILED", err)
+	}
+	if err := awaitBoundaryHelper(runCtx, b.runner, containerID); err != nil {
+		return fail("M5_PYPI_BUILD_SETUP_FAILED", err)
+	}
+	if err := awaitMountAnchors(runCtx, b.observer, containerID); err != nil {
+		return fail("M5_PYPI_BUILD_OBSERVER_FAILED", err)
 	}
 	sdistPath := pythonSdistPath(source)
 	if err := b.introducer.introduce(runCtx, containerID, source, sdistPath, "sdist"); err != nil {
-		return fail("M5_PYPI_BUILD_INTRODUCTION_FAILED")
+		return fail("M5_PYPI_BUILD_INTRODUCTION_FAILED", err)
 	}
 	wheelPaths := make([]string, 0, len(buildWheels))
 	for _, wheel := range buildWheels {
-		destination := pythonBuildInput + "/" + filepath.Base(pythonWheelPath(wheel))
+		filename, filenameErr := b.introducer.validatedWheelFilename(wheel)
+		if filenameErr != nil {
+			return fail("M5_PYPI_BUILD_INTRODUCTION_FAILED", filenameErr)
+		}
+		destination := pythonBuildInput + "/" + filename
 		if err := b.introducer.introduce(runCtx, containerID, wheel, destination, "wheel"); err != nil {
-			return fail("M5_PYPI_BUILD_INTRODUCTION_FAILED")
+			return fail("M5_PYPI_BUILD_INTRODUCTION_FAILED", err)
 		}
 		wheelPaths = append(wheelPaths, destination)
 	}
-	if err := discardCommand(runCtx, b.runner, "docker", "exec", containerID, "python", "-I", "-m", "venv", "/tmp/haa-buildenv"); err != nil {
-		return fail("M5_PYPI_BUILD_ENVIRONMENT_FAILED")
+	if err := discardCommand(runCtx, b.runner, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-B", "-m", "venv", "/tmp/haa-buildenv")...); err != nil {
+		return fail("M5_PYPI_BUILD_ENVIRONMENT_FAILED", err)
 	}
-	installArgs := append([]string{"exec", containerID, "/tmp/haa-buildenv/bin/python", "-I", "-m", "pip", "install", "--no-index", "--no-deps", "--no-compile", "--disable-pip-version-check"}, wheelPaths...)
+	installArgs := append(boundaryExecArguments(containerID, boundaryLaunchMode, "/tmp/haa-buildenv/bin/python", "-I", "-B", "-m", "pip", "install", "--no-index", "--no-deps", "--no-compile", "--disable-pip-version-check", "--no-cache-dir"), wheelPaths...)
 	if err := discardCommand(runCtx, b.runner, "docker", installArgs...); err != nil {
-		return fail("M5_PYPI_BUILD_REQUIREMENTS_FAILED")
+		return fail("M5_PYPI_BUILD_REQUIREMENTS_FAILED", err)
 	}
-	if err := discardCommand(runCtx, b.runner, "docker", "exec", containerID, "/tmp/haa-buildenv/bin/python", "-I", "-m", "pip", "wheel", "--no-index", "--no-deps", "--no-build-isolation", "--wheel-dir", pythonDerivedPath, sdistPath); err != nil {
+	if err := discardCommand(runCtx, b.runner, "docker", boundaryExecArguments(containerID, boundaryPythonHandoffMode, "/tmp/haa-buildenv/bin/python", "-I", "-B", "-m", "pip", "wheel", "--no-index", "--no-deps", "--no-build-isolation", "--no-cache-dir", "--wheel-dir", pythonDerivedPath, sdistPath)...); err != nil {
 		if errors.Is(runCtx.Err(), context.DeadlineExceeded) {
-			return fail("M5_PYPI_BUILD_TIMEOUT")
+			return fail("M5_PYPI_BUILD_TIMEOUT", err)
 		}
-		return fail("M5_PYPI_BUILD_FAILED")
+		return fail("M5_PYPI_BUILD_FAILED", err)
 	}
-	filenameBytes, err := b.runner.Output(runCtx, "docker", "exec", containerID, "python", "-I", "-c", pythonSingleWheelNameScript, pythonDerivedPath)
+	filenameBytes, err := b.runner.Output(runCtx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-B", "-c", pythonSingleWheelNameScript, pythonDerivedPath)...)
 	filename := strings.TrimSpace(string(filenameBytes))
 	if err != nil || len(filename) > 256 {
-		return fail("M5_PYPI_BUILD_OUTPUT_AMBIGUOUS")
+		return fail("M5_PYPI_BUILD_OUTPUT_AMBIGUOUS", err)
 	}
 	if project, version, _, _, _, parseErr := artifactpypi.ParseWheelFilename(filename); parseErr != nil || project != recipe.Project || version != recipe.Version {
-		return fail("M5_PYPI_BUILD_OUTPUT_AMBIGUOUS")
+		return fail("M5_PYPI_BUILD_OUTPUT_AMBIGUOUS", parseErr)
 	}
 	derived, streamErr := b.streamDerivedWheel(runCtx, containerID, source, filename, recipe, buildWheels)
 	if streamErr != nil {
-		return fail("M5_PYPI_BUILD_OUTPUT_FAILED")
+		return fail("M5_PYPI_BUILD_OUTPUT_FAILED", streamErr)
 	}
-	observations, limitation := b.disposeAndCollect(containerID, trace)
+	observations, limitation, diagnostic := b.disposeAndCollect(containerID, trace)
 	if limitation != "" {
 		result, resultErr := pythonIncomplete(sessionID, "M5_PYPI_BUILD_OBSERVATION_INCOMPLETE")
-		return DerivedWheel{}, result, resultErr
+		return DerivedWheel{}, result, errors.Join(resultErr, fmt.Errorf("python sdist build cleanup=%s trace={%s}", limitation, diagnostic.String()))
 	}
 	completed, _ := domain.NewSandboxObservation(domain.ObservationProcess, "pep517-build-completed")
 	result, resultErr := domain.NewSandboxResult(sessionID, domain.SandboxCompleted, "", append(observations, completed))
@@ -173,7 +180,8 @@ func validSdistBuildInput(source domain.AcquiredArtifact, recipe artifactpypi.Sd
 }
 
 func (i *PythonArtifactIntroducer) introduce(ctx context.Context, containerID string, artifact domain.AcquiredArtifact, destination, variant string) error {
-	if i == nil || i.runner == nil || ctx == nil || !containerIDPattern.MatchString(containerID) || artifact.Identity().Source().String() != "pypi" || artifact.Identity().Variant() != variant || !strings.HasPrefix(destination, "/tmp/") {
+	_, supported := artifactpypi.ProfileForSource(artifact.Identity().Source())
+	if i == nil || i.runner == nil || ctx == nil || !containerIDPattern.MatchString(containerID) || !supported || artifact.Identity().Variant() != variant || !strings.HasPrefix(destination, "/tmp/") {
 		return errors.New("python artifact introduction request is invalid")
 	}
 	source, err := i.artifactPath(artifact.ContentHandle(), variant)
@@ -193,8 +201,17 @@ func (i *PythonArtifactIntroducer) introduce(ctx context.Context, containerID st
 	if !ok {
 		return errors.New("sandbox artifact stream runner is not configured")
 	}
-	if err := input.RunInput(ctx, file, "docker", "exec", "-i", containerID, "python", "-I", "-c", pythonCopyArtifactScript, destination); err != nil {
+	// Authentication is bound to the bytes actually consumed by Docker's
+	// trusted input stream. The earlier static inspection cannot authenticate
+	// a second file open if intake bytes change between those two steps.
+	hasher := sha256.New()
+	stream := io.TeeReader(file, hasher)
+	if err := input.RunInput(ctx, stream, "docker", boundaryInputExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-B", "-c", pythonCopyArtifactScript, destination)...); err != nil {
 		return fmt.Errorf("introduce verified Python artifact: %w", err)
+	}
+	consumed, err := file.Seek(0, io.SeekCurrent)
+	if err != nil || consumed != info.Size() || hex.EncodeToString(hasher.Sum(nil)) != artifact.Digest().String() {
+		return errors.New("python artifact stream differs from authenticated intake")
 	}
 	return nil
 }
@@ -231,17 +248,19 @@ func pythonSdistPath(artifact domain.AcquiredArtifact) string {
 	return "/tmp/" + name + "-" + version + ".tar.gz"
 }
 
-func (b *PythonSdistBuilder) disposeAndCollect(containerID string, trace TraceReader) ([]domain.SandboxObservation, string) {
-	if b.remove(containerID) != nil {
-		return nil, "M5_PYPI_DYNAMIC_CLEANUP_FAILED"
-	}
+func (b *PythonSdistBuilder) disposeAndCollect(containerID string, trace TraceReader) ([]domain.SandboxObservation, string, TraceDiagnostic) {
+	removalErr := b.remove(containerID)
 	ctx, cancel := context.WithTimeout(context.Background(), b.cleanupWait)
 	defer cancel()
-	observations, limitation := collectTrace(ctx, trace)
-	if limitation != "" {
-		return nil, "M5_PYPI_BUILD_OBSERVATION_INCOMPLETE"
+	observations, limitation, diagnostic := collectTraceDiagnostic(ctx, trace)
+	// An independent trace failure must not be lost if removal also failed.
+	if removalErr != nil {
+		return nil, "M5_PYPI_DYNAMIC_CLEANUP_FAILED", diagnostic
 	}
-	return observations, ""
+	if limitation != "" {
+		return nil, "M5_PYPI_BUILD_OBSERVATION_INCOMPLETE", diagnostic
+	}
+	return observations, "", diagnostic
 }
 func (b *PythonSdistBuilder) remove(containerID string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), b.cleanupWait)
@@ -275,7 +294,7 @@ func (b *PythonSdistBuilder) streamDerivedWheel(ctx context.Context, containerID
 	temporaryPath := temporary.Name()
 	defer os.Remove(temporaryPath)
 	writer := &limitedFileWriter{writer: temporary, limit: derivedWheelLimit, hasher: sha256.New()}
-	err = output.RunOutput(ctx, writer, "docker", "exec", containerID, "python", "-I", "-c", pythonStreamFileScript, pythonDerivedPath+"/"+filename)
+	err = output.RunOutput(ctx, writer, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-B", "-c", pythonStreamFileScript, pythonDerivedPath+"/"+filename)...)
 	syncErr := temporary.Sync()
 	closeErr := temporary.Close()
 	if err != nil || writer.exceeded || syncErr != nil || closeErr != nil {

@@ -1,0 +1,347 @@
+{
+  "result": "READY_FOR_TARGETED_REVIEW",
+  "base_head": "a43ccfa1265eb7b7db8d4ef559e49a4c94eda224",
+  "branch": "recovery/m12-reconciliation",
+  "starting_fingerprint": "017633d87ef8924ed2ed4f69ce49abf45d5f246fb5e4deda1fc4f8ec411d7fe2",
+  "starting_fingerprint_match": true,
+  "source_fingerprint": "786ca65fd7dd501de5c4b2901dc87c960e496f06eb00ef589a6eb6cdcddf3adb",
+  "source_algorithm": "sha256 of sorted compact JSON mapping repository source path to sha256 and permission mode; evidence/user logs/reference docs excluded to avoid circular receipts",
+  "fingerprint_inventory": {
+    "original_scope": "source-snapshot.json files keys",
+    "added_paths": [
+      "scripts/check/ci_cleanup_test.go",
+      "scripts/check/workflow_structure.go",
+      "scripts/check/workflow_structure_test.go",
+      "scripts/ci-integration-cleanup.sh"
+    ],
+    "instruction": "Rehash current bytes and oct(stat.mode & 0777) for union of these paths; sha256(json.dumps(mapping,sort_keys=True,separators=(comma,colon)).encode()). Evidence excluded."
+  },
+  "changed_source_hashes": {
+    ".github/workflows/heliopause-ci.yml": {
+      "sha256": "724f34023888497a5aea38759f257a2d5eec8d4f1699ef5fedde664bc81b9829",
+      "mode": "0o644"
+    },
+    "docs/planning/02-current-work-queue.md": {
+      "sha256": "3719eeb42c02a3cdf8a8dd512b83f3c51eecd8a3a2fce7098305e2a660072d1c",
+      "mode": "0o644"
+    },
+    "go.mod": {
+      "sha256": "9c3a9f9ffc29cb2c59ebf9b6eaddca9e9e53c20c9c24c96823dcbb8ea5924e8d",
+      "mode": "0o644"
+    },
+    "go.sum": {
+      "sha256": "b3adefd7f1ca0e39e7ba52c4905ef95586fe8108f28ca86fae36a7e834ba5a78",
+      "mode": "0o644"
+    },
+    "scripts/check/architecture.go": {
+      "sha256": "11836700f6ad9a90c05419796975ac5fe3ce42b869c2c24ba33a8017eea783ff",
+      "mode": "0o644"
+    },
+    "scripts/check/ci_cleanup_test.go": {
+      "sha256": "80b7db1f3119a363a56721ba61d148dd2a547f07a92f79a41b7fbc843606d002",
+      "mode": "0o644"
+    },
+    "scripts/check/required_test.go": {
+      "sha256": "b93091f813d8a3114cde3784c0a64a37a26c923328317ff0b19e1b2287606102",
+      "mode": "0o644"
+    },
+    "scripts/check/runner.go": {
+      "sha256": "7243bdeb42cea981e5d975d1b45024e70bbd487e74e81dd7d93b6c9b260edd94",
+      "mode": "0o644"
+    },
+    "scripts/check/workflow.go": {
+      "sha256": "059625792e44eda464dcb84f1e7cc28ef43c689e64fefc792951cfe2a635b173",
+      "mode": "0o644"
+    },
+    "scripts/check/workflow_structure.go": {
+      "sha256": "fbe4d6e4cb2c22225259af9776a5583cb5a51e2b1ca451b9ffa2146a49141424",
+      "mode": "0o644"
+    },
+    "scripts/check/workflow_structure_test.go": {
+      "sha256": "c65b501cfb2a210b34bc5a0c596dede91f66ed49f2545cc55c6c5ae24b42f972",
+      "mode": "0o644"
+    },
+    "scripts/ci-integration-cleanup.sh": {
+      "sha256": "3f1d497ed179024efa31be10ceedf84bdca3f132787a8346c92dbdad5fe0ae08",
+      "mode": "0o644"
+    }
+  },
+  "changed_or_added_this_pass": [
+    ".github/workflows/heliopause-ci.yml",
+    "docs/planning/02-current-work-queue.md",
+    "go.mod",
+    "go.sum",
+    "scripts/check/architecture.go",
+    "scripts/check/ci_cleanup_test.go",
+    "scripts/check/required_test.go",
+    "scripts/check/runner.go",
+    "scripts/check/workflow.go",
+    "scripts/check/workflow_structure.go",
+    "scripts/check/workflow_structure_test.go",
+    "scripts/ci-integration-cleanup.sh",
+    "docs/planning/evidence/m12-ci-repair/workflow-followup.json"
+  ],
+  "baseline_reproductions": {
+    "A": {
+      "parser": "system PyYAML diagnostic only",
+      "error": "mapping values are not allowed here, line 39 column 16 (default: false)"
+    },
+    "B": {
+      "command": "go test ./scripts/check -run ^TestRepositoryCIWorkflow$ -count=1 in preserved old checker export",
+      "exit": 1,
+      "actual_jobs": 10,
+      "old_expected_jobs": 9
+    },
+    "C": {
+      "code": "exact original workflow trap executed with stub sudo under bash -e -u -o pipefail",
+      "original_exit": 37,
+      "restore_exit": 19,
+      "actual_exit": 19,
+      "observed_actions": [
+        "install"
+      ],
+      "helper_termination_not_attempted": true
+    }
+  },
+  "repairs": {
+    "corpus_job": "jobs.wheel-corpus; cu126/cu130/cu132 Boolean/false/default/nonrequired inputs preserved",
+    "checker": "go.yaml.in/yaml/v3 v3.0.4 (checker-only reviewed dependency); one YAML document, duplicate mapping rejection, supported Actions structures and independent policy for 10 jobs / 9 prerequisites / exact needs-env-command binding; aggregate unconditional and no ignored failures",
+    "cleanup": "single sourced CI/test script; task-owned shell job PID only; stop before replacement, 50 x 0.1s bounded wait; EXIT captures original first, disables recursion, independently captures stop/restore failures; original nonzero wins; no blanket required-error suppression",
+    "removed": "line-based jobs scanner, inline restoration-first EXIT trap and ignored helper-stop loop"
+  },
+  "executed": [
+    {
+      "command": "go test ./scripts/check -run Test(CI|ActualCI|RepositoryCI|.*Required|CorpusTarget|WorkflowParser) -count=1 -v",
+      "exit": 0,
+      "scope": "15 disposable workflow mutations plus corrected workflow; 8 cleanup fault combinations plus unset/absent/invalid/timeout and replacement ordering; exact-nine and negative aggregate states; empty/skipped corpus-selection rejection; tool-only parser boundary"
+    },
+    {
+      "command": "bash -n on all 17 decoded CI run blocks and scripts/ci-integration-cleanup.sh",
+      "exit": 0
+    },
+    {
+      "command": "go test -tags=realcorpus ./internal/artifact/pypi -list ^TestModelC_(RealCorpusQualification|MissingCorpusDirectoryFails|CorpusHashMismatchFails)$",
+      "exit": 0,
+      "selected_tests": 3
+    },
+    {
+      "command": "go run ./scripts/check bootstrap-modules",
+      "exit": 0,
+      "scope": "clean export; pinned network bootstrap into declared cache"
+    },
+    {
+      "command": "go run ./scripts/check quick",
+      "exit": 0,
+      "scope": "final unchanged clean-export source; includes format/module/runtime-lock/build/test compilation/architecture/CI policy/vet/pinned Staticcheck/default Go tests and platform-equivalent Linux coverage; absent corpus root"
+    },
+    {
+      "command": "go run ./scripts/check security",
+      "exit": 0,
+      "scope": "final source in repository; canonical gosec and current-tree Gitleaks; exit independently observed after final policy refinement"
+    },
+    {
+      "command": "go run ./scripts/check docs",
+      "exit": 0,
+      "scope": "current documentation; evidence append does not change Markdown input"
+    },
+    {
+      "command": "HELOX_CORPUS_ROOT=<absent-root> go run ./scripts/check corpus",
+      "exit": 1,
+      "expected_failure": true,
+      "scope": "actual selected real-corpus test failed on missing required bytes; small missing/hash mismatch tests passed"
+    },
+    {
+      "command": "GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go test -c -o <external-temp> ./scripts/check",
+      "exit": 0,
+      "scope": "new checker/tests compile only; not native macOS execution"
+    }
+  ],
+  "intermediate_failures": [
+    {
+      "command": "bootstrap-modules inside sandbox",
+      "exit": 1,
+      "cause": "restricted DNS/socket; canonical bootstrap then succeeded with network permission"
+    },
+    {
+      "command": "first clean quick",
+      "exit": 1,
+      "cause": "parser external import not yet approved; bounded checker-only architecture policy corrected"
+    },
+    {
+      "command": "intermediate quick",
+      "exit": 0,
+      "scope": "before additional Required continue-on-error/step-if policy regression; final quick is authoritative"
+    }
+  ],
+  "environment": {
+    "toolchain": "Go 1.26.8 linux/amd64",
+    "export": "/tmp/haa-ci-workflow-clean",
+    "HOME": "/tmp/haa-ci-followup-isolated/home",
+    "TMPDIR": "/tmp/haa-ci-followup-isolated/tmp",
+    "GOMODCACHE": "/tmp/haa-final-audit-tools/go-mod",
+    "GOCACHE": "/tmp/haa-final-audit-tools/go-build",
+    "HELOX_TOOL_CACHE": "/tmp/haa-final-audit-tools",
+    "GOPROXY": "off during checks",
+    "GOTOOLCHAIN": "local",
+    "HELOX_CORPUS_ROOT": "/tmp/haa-ci-followup-isolated/absent-corpus",
+    "private_corpus_used": false
+  },
+  "new_validation_logs": {
+    "quick": {
+      "sha256": "4180a08e7559303c9bb6a6dea5289c427a599824992914fadbb74ad3e5526f92",
+      "summary": "[check] format check\n[check] runtime lock drift\n[check] version support freshness\n[check] module drift\n[check] module integrity\n[check] production build\n[check] test build validity\n[check] architecture\n[check] CI configuration\n[check] go vet\n[check] Staticcheck\n[check] default test\n"
+    },
+    "security": {
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95",
+      "summary": "[check] gosec\n[check] Gitleaks current tree\n"
+    },
+    "docs": {
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9",
+      "summary": "[check] documentation\n"
+    },
+    "bootstrap": {
+      "sha256": "acb510f2bf2d167d77dbfead415ff6fd09c8efbefdf6453b7506d82b57c0650b",
+      "summary": "[check] prepare module cache\n[check] download product modules\n"
+    },
+    "focused": {
+      "sha256": "0afed506108fe53155ddb39f86c65238f6dab3822ef4bc001f2a9f01d536b766",
+      "summary": null
+    },
+    "missing_corpus": {
+      "sha256": "03d3dbaafd2971c40bc8972bd0ec922c47b17701a1d0f6d41ab3c9204628e5d9",
+      "summary": null
+    }
+  },
+  "reused_evidence": {
+    "source_scope": "all 263 original internal/cmd/tools source/test inputs unchanged, as are runtime locks, corpus manifest and preparation script; go.mod/go.sum add only checker-used YAML dependency",
+    "CPU": "runtime-cpu.log plus cpu-inspection-records.json and cpu-staged-manifest.json; 478.92s, install/checks/promotion/assertions; not rerun",
+    "packaging_and_promotion": "existing production packaging, wheel/sdist, npm/PyPI promotion logs; product implementation unchanged; not evidence of corrected privileged CI cleanup execution",
+    "corpus": "clean-corpus-prepared.log and clean-corpus-tampered.log; authenticated production parser/planner cases unchanged; old positive output contains all three tests expected by new selection guard",
+    "Darwin": "original full-package compile evidence reused for unchanged product/test code; new checker compiled separately; native execution NOT_RUN"
+  },
+  "preservation": {
+    "HEAD_unchanged": true,
+    "index_empty": true,
+    "product_source_and_test_bytes_unchanged": true,
+    "historical_evidence_files_unchanged": 61,
+    "uploaded_log_files_unchanged": 79,
+    "unrelated_AI_documents_preserved": 3
+  },
+  "intended_checkpoint_inventory": [
+    ".github/workflows/heliopause-ci.yml",
+    "docs/engineering/03-quality-toolchain.md",
+    "docs/engineering/04-ci-quality-gate.md",
+    "docs/planning/02-current-work-queue.md",
+    "docs/planning/16-m12-01-ecosystem-expansion-contract.md",
+    "docs/planning/evidence/m12-ci-repair/authenticated-wheel-inputs.json",
+    "docs/planning/evidence/m12-ci-repair/baseline.json",
+    "docs/planning/evidence/m12-ci-repair/ci-errors.json",
+    "docs/planning/evidence/m12-ci-repair/clean-corpus-commands.py.txt",
+    "docs/planning/evidence/m12-ci-repair/clean-corpus-missing.log",
+    "docs/planning/evidence/m12-ci-repair/clean-corpus-prepared.log",
+    "docs/planning/evidence/m12-ci-repair/clean-corpus-results.json",
+    "docs/planning/evidence/m12-ci-repair/clean-corpus-tampered.log",
+    "docs/planning/evidence/m12-ci-repair/clean-docs-final.log",
+    "docs/planning/evidence/m12-ci-repair/clean-quick-ancestor-failure.log",
+    "docs/planning/evidence/m12-ci-repair/clean-quick-final.log",
+    "docs/planning/evidence/m12-ci-repair/clean-security-final.log",
+    "docs/planning/evidence/m12-ci-repair/closure-admission.jsonl",
+    "docs/planning/evidence/m12-ci-repair/commands.json",
+    "docs/planning/evidence/m12-ci-repair/continuation.json",
+    "docs/planning/evidence/m12-ci-repair/corpus-final.log",
+    "docs/planning/evidence/m12-ci-repair/corpus-inputs.json",
+    "docs/planning/evidence/m12-ci-repair/corpus-missing.log",
+    "docs/planning/evidence/m12-ci-repair/corpus-negative-exits.json",
+    "docs/planning/evidence/m12-ci-repair/corpus-preparation-final.log",
+    "docs/planning/evidence/m12-ci-repair/corpus-tampered.log",
+    "docs/planning/evidence/m12-ci-repair/cpu-before-destination-fix.log",
+    "docs/planning/evidence/m12-ci-repair/cpu-inspection-records.json",
+    "docs/planning/evidence/m12-ci-repair/cpu-staged-manifest.json",
+    "docs/planning/evidence/m12-ci-repair/darwin-commands.py.txt",
+    "docs/planning/evidence/m12-ci-repair/darwin-hosttool-final.log",
+    "docs/planning/evidence/m12-ci-repair/darwin-test-compile-final.log",
+    "docs/planning/evidence/m12-ci-repair/destination-regressions.log",
+    "docs/planning/evidence/m12-ci-repair/failed-ci-artifacts.json",
+    "docs/planning/evidence/m12-ci-repair/frozen-cpu.json",
+    "docs/planning/evidence/m12-ci-repair/frozen-cu126.json",
+    "docs/planning/evidence/m12-ci-repair/frozen-cu130.json",
+    "docs/planning/evidence/m12-ci-repair/frozen-cu132.json",
+    "docs/planning/evidence/m12-ci-repair/go-build-metadata.txt",
+    "docs/planning/evidence/m12-ci-repair/haa-ci-clean-quick-final.log",
+    "docs/planning/evidence/m12-ci-repair/haa-ci-clean-quick-host.log",
+    "docs/planning/evidence/m12-ci-repair/haa-ci-clean-quick.log",
+    "docs/planning/evidence/m12-ci-repair/haa-ci-clean-security.log",
+    "docs/planning/evidence/m12-ci-repair/haa-ci-corpus-preparation.log",
+    "docs/planning/evidence/m12-ci-repair/haa-ci-darwin-compile.log",
+    "docs/planning/evidence/m12-ci-repair/local-acquisition.json",
+    "docs/planning/evidence/m12-ci-repair/matrix-driver.go.txt",
+    "docs/planning/evidence/m12-ci-repair/networkx-resources.json",
+    "docs/planning/evidence/m12-ci-repair/profile-summary.json",
+    "docs/planning/evidence/m12-ci-repair/promotion-final.log",
+    "docs/planning/evidence/m12-ci-repair/resolver-freeze.log",
+    "docs/planning/evidence/m12-ci-repair/resource-and-timing.json",
+    "docs/planning/evidence/m12-ci-repair/result.json",
+    "docs/planning/evidence/m12-ci-repair/runtime-cleanup.txt",
+    "docs/planning/evidence/m12-ci-repair/runtime-commands.sh.txt",
+    "docs/planning/evidence/m12-ci-repair/runtime-cpu.log",
+    "docs/planning/evidence/m12-ci-repair/runtime-helper.log",
+    "docs/planning/evidence/m12-ci-repair/runtime-installed-after.sha256",
+    "docs/planning/evidence/m12-ci-repair/runtime-packaging.log",
+    "docs/planning/evidence/m12-ci-repair/runtime-slices-after.txt",
+    "docs/planning/evidence/m12-ci-repair/runtime-slices-before.txt",
+    "docs/planning/evidence/m12-ci-repair/runtime-timing.txt",
+    "docs/planning/evidence/m12-ci-repair/runtime-wheel-sdist.log",
+    "docs/planning/evidence/m12-ci-repair/small-downloads.json",
+    "docs/planning/evidence/m12-ci-repair/source-snapshot.json",
+    "docs/planning/evidence/m12-ci-repair/supplied-log-hashes.json",
+    "docs/planning/evidence/m12-ci-repair/workflow-followup.json",
+    "go.mod",
+    "go.sum",
+    "internal/artifact/pypi/corpus_test.go",
+    "internal/artifact/pypi/entry_point_identity_test.go",
+    "internal/artifact/pypi/observation_plan.go",
+    "internal/artifact/pypi/real_corpus_integration_test.go",
+    "internal/artifact/pypi/resource_role_test.go",
+    "internal/artifact/pypi/testdata/real-corpus.json",
+    "internal/artifact/pypi/wheel.go",
+    "internal/artifact/pypi/wheel_test.go",
+    "internal/bootstrap/pytorch_linux_integration_test.go",
+    "internal/hosttool/executor_test.go",
+    "internal/sandbox/direct_exec_admission_test.go",
+    "internal/sandbox/linux_integration_test.go",
+    "internal/sandbox/observation_resource_integration_linux_test.go",
+    "internal/sandbox/pypi_closure_error_test.go",
+    "internal/sandbox/pypi_closure_installation.go",
+    "internal/sandbox/pypi_trusted_transaction.go",
+    "internal/sandbox/pytorch_closure_integration_test.go",
+    "scripts/check/architecture.go",
+    "scripts/check/ci_cleanup_test.go",
+    "scripts/check/main.go",
+    "scripts/check/required.go",
+    "scripts/check/required_test.go",
+    "scripts/check/runner.go",
+    "scripts/check/workflow.go",
+    "scripts/check/workflow_structure.go",
+    "scripts/check/workflow_structure_test.go",
+    "scripts/ci-integration-cleanup.sh",
+    "scripts/prepare-wheel-corpus.py"
+  ],
+  "intended_checkpoint_count": 97,
+  "excluded_untracked_count": 82,
+  "remaining_limits": [
+    "No remote CI result or checkpoint authorization",
+    "No native macOS execution",
+    "No privileged fault injection or real corrected harness execution in this task; actual shared code fault paths exercised with controlled stubs",
+    "EXIT does not promise cleanup after SIGKILL/forced runner death",
+    "Checker validates supported Actions structures and repository policy, not the complete Actions expression language",
+    "CUDA incomplete bytes and qualification remain unchanged and unverified"
+  ],
+  "no_stage": true,
+  "no_commit": true,
+  "no_push": true,
+  "no_remote_ci": true,
+  "no_qualification": true,
+  "final_git_diff_check": "PASS",
+  "final_source_fingerprint_rechecked": true,
+  "bash_syntax_checked_run_blocks": 17
+}

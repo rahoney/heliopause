@@ -88,11 +88,12 @@ func validateToolLock(lock toolLock) error {
 	if lock.SchemaVersion != toolLockSchemaVersion {
 		return &checkFailure{class: unavailable, step: "tool lock", detail: fmt.Sprintf("unsupported schemaVersion %d", lock.SchemaVersion)}
 	}
-	if len(lock.Tools) != 4 {
-		return &checkFailure{class: unavailable, step: "tool lock", detail: "require exactly four active tools"}
+	if len(lock.Tools) != 5 {
+		return &checkFailure{class: unavailable, step: "tool lock", detail: "require exactly five active tools"}
 	}
 	want := map[string]string{
 		"staticcheck": "honnef.co/go/tools/cmd/staticcheck",
+		"actionlint":  "github.com/rhysd/actionlint/cmd/actionlint",
 		"gosec":       "github.com/securego/gosec/v2/cmd/gosec",
 		"govulncheck": "golang.org/x/vuln/cmd/govulncheck",
 		"gitleaks":    "",
@@ -100,7 +101,7 @@ func validateToolLock(lock toolLock) error {
 	seen := make(map[string]bool, len(want))
 	for _, tool := range lock.Tools {
 		packagePath, known := want[tool.Command]
-		if !known || seen[tool.Command] || tool.Version == "" || tool.ExpectedVersion == "" || tool.SetupGo != "1.26.7" {
+		if !known || seen[tool.Command] || tool.Version == "" || tool.ExpectedVersion == "" || tool.SetupGo != "1.26.8" {
 			return &checkFailure{class: unavailable, step: "tool lock", detail: "tool identity is incomplete, duplicated or unexpected"}
 		}
 		seen[tool.Command] = true
@@ -256,7 +257,7 @@ func (c *checker) downloadProductModules() (resultErr error) {
 
 	downloadChecker := *c
 	downloadChecker.root = temporaryRoot
-	_, err = downloadChecker.runCommandWithTimeout("product module download", 10*time.Minute, c.bootstrapEnvironment(), c.goExecutable, "mod", "download")
+	_, err = downloadChecker.runCommandWithTimeout("product module download", 10*time.Minute, c.bootstrapEnvironment(), c.goExecutable, "mod", "download", "all")
 	return err
 }
 

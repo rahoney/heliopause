@@ -1,0 +1,43 @@
+{
+  "reference": "python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52",
+  "docker_image_config_digest": "sha256:f9a89f9c7592a9cf06f0e9538dc4f52464c03f4a9e7b2ed78df6cccd41340191",
+  "method": "data-only export of an unstarted read-only container; no image code executed",
+  "catalogue_members": 6611,
+  "members": {
+    "/etc/ld.so.cache": {
+      "sha256": "bb6c908575bd522834e1e32913d171b0be48394b1363e8160ee353a3694ce0e7",
+      "size": 5299,
+      "diagnostic_locator_fnv1a64": "fbc430c15ef57dff"
+    },
+    "/usr/bin/uname": {
+      "sha256": "ed210303cc81299ad2bf8804d4a2f1e2853ad34f6307a3114b48444ceb6c60da",
+      "size": 43888,
+      "diagnostic_locator_fnv1a64": "8fe06ba35e781415"
+    },
+    "/usr/lib/x86_64-linux-gnu/libc.so.6": {
+      "sha256": "6b4a45352fd0c540a9c7c718f35ce8c8e46a4e482f9d3885a910c32d1a0e1421",
+      "size": 1926232,
+      "diagnostic_locator_fnv1a64": "a306bb3484b08e39"
+    },
+    "/usr/local/bin/python3.14": {
+      "sha256": "3fbc4d6c766a7a5d56c4bcc80d3325181a05f1b64596eb7cf622f0ec056dd546",
+      "size": 14480,
+      "diagnostic_locator_fnv1a64": "b982a2d37572906d"
+    }
+  },
+  "locator_matches": {
+    "8fe06ba35e781415": [
+      "/usr/bin/uname"
+    ],
+    "fbc430c15ef57dff": [
+      "/etc/ld.so.cache"
+    ],
+    "a306bb3484b08e39": [
+      "/usr/lib/x86_64-linux-gnu/libc.so.6"
+    ],
+    "b982a2d37572906d": [
+      "/usr/local/bin/python3.14"
+    ]
+  },
+  "locator_authority": "diagnostic lookup only; pinned image and host-attested sealed read-only topology supply identity"
+}

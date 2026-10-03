@@ -17,7 +17,6 @@ const (
 )
 
 var (
-	gVisorRelease      = runtimeidentity.GVisorRelease
 	nodeImageReference = runtimeidentity.NodeImageReference
 )
 
@@ -79,8 +78,8 @@ func probeGVisorRuntime(ctx context.Context, operatingSystem string, executor Ex
 	if executor == nil {
 		return "", errors.New("runtime probe executor is required")
 	}
-	for _, binary := range []string{"docker", "runsc"} {
-		if _, err := executor.LookPath(binary); err != nil {
+	for _, tool := range []string{"docker", "runsc"} {
+		if _, err := executor.LookPath(tool); err != nil {
 			return unavailable, nil
 		}
 	}
@@ -92,14 +91,33 @@ func probeGVisorRuntime(ctx context.Context, operatingSystem string, executor Ex
 		return unsupported, nil
 	}
 	runscVersion, err := executor.Output(ctx, "runsc", "--version")
-	if err != nil || !strings.Contains(string(runscVersion), runtimeidentity.GVisorRelease) {
+	if err != nil || !runtimeidentity.ValidateGVisorRunscVersionOutput(runscVersion) {
 		return unsupported, nil
 	}
-	runtimeRegistration, err := executor.Output(ctx, "docker", "info", "--format", "{{json (index .Runtimes \"runsc-trace\")}}")
-	if err != nil || strings.TrimSpace(string(runtimeRegistration)) == "" || strings.Contains(string(runtimeRegistration), "<no value>") {
-		return unavailable, nil
+	runscTraceMeta, err := executor.Output(ctx, "runsc", "trace", "metadata")
+	if err != nil || VerifyPatchCapability(string(runscTraceMeta)) != nil {
+		return unsupported, nil
 	}
 	return "", nil
+}
+
+// RequiredObservationPoints defines the observation point schemas required by
+// M12-001 filesystem attribution.
+var RequiredObservationPoints = []string{
+	"syscall/open_result",
+	"sentry/mount_topology_snapshot",
+	"sentry/mount_topology_mutation",
+}
+
+// VerifyPatchCapability confirms that runsc trace metadata advertises all
+// required HAA filesystem-observation capabilities.
+func VerifyPatchCapability(traceMetadata string) error {
+	for _, point := range RequiredObservationPoints {
+		if !strings.Contains(traceMetadata, "Name: "+point) && !strings.Contains(traceMetadata, point) {
+			return fmt.Errorf("missing required observation point %q", point)
+		}
+	}
+	return nil
 }
 
 func atLeastVersion(actual, minimum string) bool {

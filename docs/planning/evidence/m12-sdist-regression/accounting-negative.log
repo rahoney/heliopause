@@ -1,0 +1,10 @@
+=== RUN   TestObservationAccountingFailureRetainsRejectingOperands
+=== RUN   TestObservationAccountingFailureRetainsRejectingOperands/late
+=== RUN   TestObservationAccountingFailureRetainsRejectingOperands/counter_decreased
+=== RUN   TestObservationAccountingFailureRetainsRejectingOperands/sample_reordered
+--- PASS: TestObservationAccountingFailureRetainsRejectingOperands (0.00s)
+    --- PASS: TestObservationAccountingFailureRetainsRejectingOperands/late (0.00s)
+    --- PASS: TestObservationAccountingFailureRetainsRejectingOperands/counter_decreased (0.00s)
+    --- PASS: TestObservationAccountingFailureRetainsRejectingOperands/sample_reordered (0.00s)
+PASS
+ok  	github.com/rahoney/heliopause/internal/sandbox	0.005s

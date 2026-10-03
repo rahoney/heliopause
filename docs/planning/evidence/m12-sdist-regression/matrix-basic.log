@@ -1,0 +1,13 @@
+=== RUN   TestLinuxGVisorLifecycleIntegration
+--- PASS: TestLinuxGVisorLifecycleIntegration (3.95s)
+=== RUN   TestLinuxGVisorArtifactEnvironmentIsolationIntegration
+observer_attribution sequence=1 profile=npm-lifecycle counts=PROCESS/SENTRY_EXEC/SHELL/ARTIFACT_ROLE/ARTIFACT_GROUP:1
+--- PASS: TestLinuxGVisorArtifactEnvironmentIsolationIntegration (3.88s)
+=== RUN   TestLinuxGitHubReleaseELFDynamicIntegration
+--- PASS: TestLinuxGitHubReleaseELFDynamicIntegration (1.78s)
+=== RUN   TestLinuxPyPISdistBuildIntegration
+observer_attribution sequence=1 profile=pypi-wheel counts=PROCESS/SENTRY_EXEC/OTHER/ARTIFACT_ROLE/ARTIFACT_GROUP:1,PROCESS/SENTRY_EXEC/PYTHON/ARTIFACT_ROLE/ARTIFACT_GROUP:2
+--- PASS: TestLinuxPyPISdistBuildIntegration (13.46s)
+=== RUN   TestLinuxPyPIWheelDynamicIntegration
+--- PASS: TestLinuxPyPIWheelDynamicIntegration (11.34s)
+PASS

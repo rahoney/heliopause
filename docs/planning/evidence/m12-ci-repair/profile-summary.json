@@ -1,0 +1,238 @@
+{
+  "cpu": {
+    "nodes": 10,
+    "authenticated_full_wheels": 10,
+    "unverified": 0,
+    "admissible": 10,
+    "typed_units_available": 46,
+    "minimum_runtime_launches_available": 66,
+    "available_uncompressed_bytes": 754771086,
+    "missing": [],
+    "limit_scope": "per-artifact observation transaction including preparation, anchor, units and final teardown; dependency closures are reinstalled for each artifact",
+    "time_estimate": "sum of closure preparations and drains plus sum of unit launches; CUDA runtime timing not measured"
+  },
+  "cu126": {
+    "nodes": 29,
+    "authenticated_full_wheels": 18,
+    "unverified": 11,
+    "admissible": 18,
+    "typed_units_available": 80,
+    "minimum_runtime_launches_available": 116,
+    "available_uncompressed_bytes": 793980392,
+    "missing": [
+      {
+        "project": "torch",
+        "version": "2.14.0+cu126",
+        "sha256": "b15e1e62ab842d099ae9b19312374f62579668171efed8b676108b60fa75e5b0"
+      },
+      {
+        "project": "nvidia-cuda-nvrtc-cu12",
+        "version": "12.6.85",
+        "sha256": "800927308ccc5dd6246d3f61f7fcef2ed7ec4e59e199090d360d3293f78bd5a2"
+      },
+      {
+        "project": "nvidia-cublas-cu12",
+        "version": "12.6.4.1",
+        "sha256": "08ed2686e9875d01b58e3cb379c6896df8e76c75e0d4a7f7dace3d7b6d9ef8eb"
+      },
+      {
+        "project": "nvidia-cusparse-cu12",
+        "version": "12.5.4.2",
+        "sha256": "7556d9eca156e18184b94947ade0fba5bb47d69cec46bf8660fd2c71a4b48b73"
+      },
+      {
+        "project": "nvidia-nvshmem-cu12",
+        "version": "3.4.5",
+        "sha256": "042f2500f24c021db8a06c5eec2539027d57460e1c1a762055a6554f72c369bd"
+      },
+      {
+        "project": "nvidia-cusolver-cu12",
+        "version": "11.7.1.2",
+        "sha256": "e9e49843a7707e42022babb9bcfa33c29857a93b88020c4e4434656a655b698c"
+      },
+      {
+        "project": "nvidia-cusparselt-cu12",
+        "version": "0.7.1",
+        "sha256": "f1bb701d6b930d5a7cea44c19ceb973311500847f81b634d802b7b539dc55623"
+      },
+      {
+        "project": "nvidia-nvjitlink-cu12",
+        "version": "12.9.86",
+        "sha256": "e3f1171dbdc83c5932a45f0f4c99180a70de9bd2718c1ab77d14104f6d7147f9"
+      },
+      {
+        "project": "triton",
+        "version": "3.8.0",
+        "sha256": "387dae4cb0089a7b6ba1a428ae0782b65c4c58f57d94617cb22ca8593d8ccbca"
+      },
+      {
+        "project": "nvidia-cudnn-cu12",
+        "version": "9.10.2.21",
+        "sha256": "949452be657fa16687d0930933f032835951ef0892b37d2d53824d1a84dc97a8"
+      },
+      {
+        "project": "nvidia-curand-cu12",
+        "version": "10.3.7.77",
+        "sha256": "a42cd1344297f70b9e39a1e4f467a4e1c10f1da54ff7a85c12197f6c652c8bdf"
+      }
+    ],
+    "limit_scope": "per-artifact observation transaction including preparation, anchor, units and final teardown; dependency closures are reinstalled for each artifact",
+    "time_estimate": "sum of closure preparations and drains plus sum of unit launches; CUDA runtime timing not measured"
+  },
+  "cu130": {
+    "nodes": 29,
+    "authenticated_full_wheels": 16,
+    "unverified": 13,
+    "admissible": 16,
+    "typed_units_available": 70,
+    "minimum_runtime_launches_available": 102,
+    "available_uncompressed_bytes": 123874289,
+    "missing": [
+      {
+        "project": "nvidia-cusparse",
+        "version": "12.6.3.3",
+        "sha256": "2b3c89c88d01ee0e477cb7f82ef60a11a4bcd57b6b87c33f789350b59759360b"
+      },
+      {
+        "project": "nvidia-cusolver",
+        "version": "12.0.4.66",
+        "sha256": "0a759da5dea5c0ea10fd307de75cdeb59e7ea4fcb8add0924859b944babf1112"
+      },
+      {
+        "project": "nvidia-nvshmem-cu13",
+        "version": "3.4.5",
+        "sha256": "290f0a2ee94c9f3687a02502f3b9299a9f9fe826e6d0287ee18482e78d495b80"
+      },
+      {
+        "project": "nvidia-cuda-nvrtc",
+        "version": "13.0.88",
+        "sha256": "ad9b6d2ead2435f11cbb6868809d2adeeee302e9bb94bcf0539c7a40d80e8575"
+      },
+      {
+        "project": "nvidia-cudnn-cu13",
+        "version": "9.24.0.43",
+        "sha256": "71f181cd810e90f9b6023b01186fe82d13d65f0ec098581ee201d39fad769e4b"
+      },
+      {
+        "project": "nvidia-curand",
+        "version": "10.4.0.35",
+        "sha256": "1aee33a5da6e1db083fe2b90082def8915f30f3248d5896bcec36a579d941bfc"
+      },
+      {
+        "project": "torch",
+        "version": "2.14.0+cu130",
+        "sha256": "12b09f9e9f91347596393a6ddb95e9bc0aa003227eb6c7cd7f20c144eac62442"
+      },
+      {
+        "project": "triton",
+        "version": "3.8.0",
+        "sha256": "387dae4cb0089a7b6ba1a428ae0782b65c4c58f57d94617cb22ca8593d8ccbca"
+      },
+      {
+        "project": "nvidia-cusparselt-cu13",
+        "version": "0.8.1",
+        "sha256": "786ce87568c303fadb5afcc7102d454cd3040d75f6f8626f5db460d1871f4dd0"
+      },
+      {
+        "project": "nvidia-cublas",
+        "version": "13.1.1.3",
+        "sha256": "37936a16db8fe4ac1f065c2139360608a543a09275cb1a1af612e08cfa065436"
+      },
+      {
+        "project": "nvidia-nccl-cu13",
+        "version": "2.30.7",
+        "sha256": "cefa7fdb9710efd0f39c5f1be1d61ff6fc9a996c451265bd7fbdcf9455ed4b50"
+      },
+      {
+        "project": "nvidia-cufft",
+        "version": "12.0.0.61",
+        "sha256": "6c44f692dce8fd5ffd3e3df134b6cdb9c2f72d99cf40b62c32dde45eea9ddad3"
+      },
+      {
+        "project": "nvidia-nvjitlink",
+        "version": "13.4.92",
+        "sha256": "e0391f24ed94ec879b84e3da4d4ec320c879aff681f2c7a638462f7199284323"
+      }
+    ],
+    "limit_scope": "per-artifact observation transaction including preparation, anchor, units and final teardown; dependency closures are reinstalled for each artifact",
+    "time_estimate": "sum of closure preparations and drains plus sum of unit launches; CUDA runtime timing not measured"
+  },
+  "cu132": {
+    "nodes": 29,
+    "authenticated_full_wheels": 16,
+    "unverified": 13,
+    "admissible": 16,
+    "typed_units_available": 70,
+    "minimum_runtime_launches_available": 102,
+    "available_uncompressed_bytes": 129115258,
+    "missing": [
+      {
+        "project": "nvidia-cuda-nvrtc",
+        "version": "13.2.78",
+        "sha256": "a9049031da08cbedd0c20e3470e5a978dc330af0e0326b3b05774718c665dc3e"
+      },
+      {
+        "project": "nvidia-cusparse",
+        "version": "12.7.10.1",
+        "sha256": "f0d110640aa63e7182fa787cc245afa07c5fb84ac30f1c4029e4fa3012353172"
+      },
+      {
+        "project": "nvidia-nvshmem-cu13",
+        "version": "3.4.5",
+        "sha256": "290f0a2ee94c9f3687a02502f3b9299a9f9fe826e6d0287ee18482e78d495b80"
+      },
+      {
+        "project": "nvidia-cudnn-cu13",
+        "version": "9.24.0.43",
+        "sha256": "71f181cd810e90f9b6023b01186fe82d13d65f0ec098581ee201d39fad769e4b"
+      },
+      {
+        "project": "nvidia-cusolver",
+        "version": "12.2.0.1",
+        "sha256": "4693ea3c2a5d20369da7b5a4970a41df9b40f1b6f2ef9909c95f7c8c8c5ffb4d"
+      },
+      {
+        "project": "triton",
+        "version": "3.8.0",
+        "sha256": "387dae4cb0089a7b6ba1a428ae0782b65c4c58f57d94617cb22ca8593d8ccbca"
+      },
+      {
+        "project": "torch",
+        "version": "2.14.0+cu132",
+        "sha256": "a8cd9485bd04d14cfdf235bca712964396cf38f6736068d907255a95287202be"
+      },
+      {
+        "project": "nvidia-cufft",
+        "version": "12.2.0.46",
+        "sha256": "a9667ae4d81b9e54ddbbad24a9e72334f89d4fc184566d05ef028e2760c820eb"
+      },
+      {
+        "project": "nvidia-cusparselt-cu13",
+        "version": "0.8.1",
+        "sha256": "786ce87568c303fadb5afcc7102d454cd3040d75f6f8626f5db460d1871f4dd0"
+      },
+      {
+        "project": "nvidia-curand",
+        "version": "10.4.2.55",
+        "sha256": "b4080cab49d4939f8e46b2c195c76c698d2289835c36ede558836daa40000e70"
+      },
+      {
+        "project": "nvidia-nccl-cu13",
+        "version": "2.30.7",
+        "sha256": "cefa7fdb9710efd0f39c5f1be1d61ff6fc9a996c451265bd7fbdcf9455ed4b50"
+      },
+      {
+        "project": "nvidia-cublas",
+        "version": "13.4.0.1",
+        "sha256": "53bf22e2ccbf644db74b6cc21cea7f5efb1a52aa64515438b430abbd05af4106"
+      },
+      {
+        "project": "nvidia-nvjitlink",
+        "version": "13.4.92",
+        "sha256": "e0391f24ed94ec879b84e3da4d4ec320c879aff681f2c7a638462f7199284323"
+      }
+    ],
+    "limit_scope": "per-artifact observation transaction including preparation, anchor, units and final teardown; dependency closures are reinstalled for each artifact",
+    "time_estimate": "sum of closure preparations and drains plus sum of unit launches; CUDA runtime timing not measured"
+  }
+}

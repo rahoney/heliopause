@@ -1,0 +1,19 @@
+=== RUN   TestLinuxPyTorchFrozenClosuresIntegration
+=== RUN   TestLinuxPyTorchFrozenClosuresIntegration/cpu
+observer_attribution sequence=1 profile=pypi-wheel-pytorch-cpu counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/PYTHON:151
+    pytorch_closure_integration_test.go:71: FROZEN_METADATA_ONLY profile=cpu nodes=10
+=== RUN   TestLinuxPyTorchFrozenClosuresIntegration/cu126
+observer_attribution sequence=1 profile=pypi-wheel-pytorch-cu126 counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/PYTHON:526
+    pytorch_closure_integration_test.go:71: FROZEN_METADATA_ONLY profile=cu126 nodes=29
+=== RUN   TestLinuxPyTorchFrozenClosuresIntegration/cu130
+observer_attribution sequence=1 profile=pypi-wheel-pytorch-cu130 counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/PYTHON:541
+    pytorch_closure_integration_test.go:71: FROZEN_METADATA_ONLY profile=cu130 nodes=29
+=== RUN   TestLinuxPyTorchFrozenClosuresIntegration/cu132
+observer_attribution sequence=1 profile=pypi-wheel-pytorch-cu132 counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/PYTHON:541
+    pytorch_closure_integration_test.go:71: FROZEN_METADATA_ONLY profile=cu132 nodes=29
+--- PASS: TestLinuxPyTorchFrozenClosuresIntegration (445.26s)
+    --- PASS: TestLinuxPyTorchFrozenClosuresIntegration/cpu (43.53s)
+    --- PASS: TestLinuxPyTorchFrozenClosuresIntegration/cu126 (132.84s)
+    --- PASS: TestLinuxPyTorchFrozenClosuresIntegration/cu130 (139.42s)
+    --- PASS: TestLinuxPyTorchFrozenClosuresIntegration/cu132 (129.46s)
+PASS

@@ -1,0 +1,12 @@
+import os,subprocess,json
+from pathlib import Path
+base=dict(HOME='/tmp/haa-ci-isolated/home',TMPDIR='/tmp/haa-ci-isolated/tmp',PATH='$HOME/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/bin:/usr/bin:/bin',GOCACHE='/tmp/haa-final-audit-tools/go-build',GOMODCACHE='/tmp/haa-final-audit-tools/go-mod',HELOX_TOOL_CACHE='/tmp/haa-final-audit-tools',GOPROXY='off',GOTOOLCHAIN='local')
+results={}
+for name,root,expected in [('missing','/tmp/haa-ci-isolated/absent-corpus',1),('tampered','/tmp/haa-ci-negative/tampered',1),('prepared','/tmp/haa-ci-repair-corpus',0)]:
+ env=base|{'HELOX_CORPUS_ROOT':root}
+ with open('/tmp/haa-ci-clean-corpus-'+name+'.log','w') as log:
+  code=subprocess.run(['go','run','./scripts/check','corpus'],env=env,stdout=log,stderr=subprocess.STDOUT).returncode
+ results[name]={'exit':code,'expected':expected}
+ if code != expected: raise RuntimeError(results)
+Path('/tmp/haa-ci-clean-corpus-results.json').write_text(json.dumps(results,indent=2)+'\n')
+print(results)

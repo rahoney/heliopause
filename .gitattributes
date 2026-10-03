@@ -1,0 +1,3 @@
+# Preserve captured command output verbatim; only EOL blanks are exempt.
+docs/planning/evidence/m12-ci-repair/cpu-before-destination-fix.log whitespace=-blank-at-eol
+docs/planning/evidence/m12-ci-repair/go-build-metadata.txt whitespace=-blank-at-eol

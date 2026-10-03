@@ -47,6 +47,49 @@ func TestResolverNetworkPolicyFailsClosedOnServiceOrCleanupFailure(t *testing.T)
 	}
 }
 
+func TestResolverNetworkPolicyCreateDiagnostic(t *testing.T) {
+	cases := []struct{ message, code string }{
+		{"resolver policy identity is invalid", "POLICY_IDENTITY_INVALID"},
+		{"resolver policy endpoint set is invalid", "POLICY_ENDPOINTS_INVALID"},
+		{"network policy service identity is unavailable", "SERVICE_IDENTITY_UNAVAILABLE"},
+		{"network policy service identity changed", "SERVICE_IDENTITY_CHANGED"},
+		{"network policy service is unavailable", "SERVICE_UNAVAILABLE"},
+		{"network policy operation is invalid", "OPERATION_INVALID"},
+		{"network policy service connection failed", "CONNECTION_FAILED"},
+		{"network policy service deadline failed", "DEADLINE_FAILED"},
+		{"network policy request failed", "REQUEST_FAILED"},
+		{"network policy service rejected request", "REQUEST_REJECTED"},
+		{"token=private-secret /run/private.sock policy=payload", "UNKNOWN"},
+		{"network policy service connection failed: token=private-secret", "UNKNOWN"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.code, func(t *testing.T) {
+			runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), []byte("172.30.0.0/24")}}
+			service := &recordingResolverPolicyService{createErr: errors.New(tc.message)}
+			policy, err := NewResolverNetworkPolicy(runner, service)
+			if err != nil {
+				t.Fatal(err)
+			}
+			name, err := policy.Prepare(context.Background(), []netip.Addr{netip.MustParseAddr("1.1.1.1")})
+			want := "create resolver network policy failed [code=" + tc.code + "]"
+			if err == nil || err.Error() != want || name != "" || policy.prepared != nil {
+				t.Fatal("Create failure did not return only the bounded diagnostic and fail closed")
+			}
+			if errors.Is(err, service.createErr) {
+				t.Fatal("arbitrary service error retained")
+			}
+			if service.create != 1 || service.verify != 0 || service.remove != 0 || len(runner.calls) != 3 {
+				t.Fatal("Create failure changed lifecycle")
+			}
+			create := runner.calls[0]
+			cleanup := runner.calls[2]
+			if cleanup.binary != "docker" || !sameStrings(cleanup.arguments, []string{"network", "rm", create.arguments[len(create.arguments)-1]}) {
+				t.Fatal("created Docker network was not cleaned up")
+			}
+		})
+	}
+}
+
 func TestValidateResolverEndpointsRejectsUnsafeOrAmbiguousInputs(t *testing.T) {
 	for _, endpoints := range [][]netip.Addr{nil, {netip.MustParseAddr("127.0.0.1")}, {netip.MustParseAddr("10.0.0.1")}, {netip.MustParseAddr("1.1.1.1"), netip.MustParseAddr("1.1.1.1")}, {netip.MustParseAddr("2606:4700:4700::1111")}} {
 		if err := validateResolverEndpoints(endpoints); err == nil {
@@ -57,7 +100,7 @@ func TestValidateResolverEndpointsRejectsUnsafeOrAmbiguousInputs(t *testing.T) {
 
 func TestNPMResolverReturnsOnlyParsedGraphAfterTypedPolicyLifecycle(t *testing.T) {
 	lock := resolverLockJSON()
-	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), []byte("172.30.0.0/24"), []byte("0123456789ab"), nil, []byte(resolverNPMVersion), nil, []byte(lock)}}
+	runner := &recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), []byte("172.30.0.0/24"), []byte("0123456789ab"), nil, nil, []byte(resolverNPMVersion), nil, []byte(lock)}}
 	observer := &recordingObserver{reader: &traceReader{records: []TraceRecord{{Kind: "network-attempt", Bytes: 1}}}}
 	service := &recordingResolverPolicyService{}
 	resolver, err := NewNPMResolverWithObserver(runner, staticEndpoints{addresses: []netip.Addr{netip.MustParseAddr("1.1.1.1")}}, observer, service)

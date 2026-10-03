@@ -7,6 +7,8 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -80,6 +82,39 @@ func TestObserverSupervisorHelperDeathFaultsObservation(t *testing.T) {
 	}
 }
 
+func TestObserverSupervisorFailStopUsesOwnedProcessAndPoisonsAllSessions(t *testing.T) {
+	paths := supervisorPaths(t)
+	launcher := &fakeObserverLauncher{}
+	supervisor, err := newObserverSupervisor(context.Background(), launcher.StartObserver, paths.remote, paths.output, paths.lock)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer supervisor.Close()
+	first := &observerSecuritySession{containerID: "0123456789abcdef", generation: strings.Repeat("a", 64)}
+	second := &observerSecuritySession{containerID: "fedcba9876543210", generation: strings.Repeat("b", 64)}
+	if !activateObserverSession(first) || !activateObserverSession(second) {
+		t.Fatal("activate test security sessions")
+	}
+	supervisor.observer.mu.Lock()
+	supervisor.observer.sessions[first.containerID] = first
+	supervisor.observer.sessions[second.containerID] = second
+	supervisor.observer.mu.Unlock()
+	if err := supervisor.failStopHelper(context.Background()); err != nil {
+		t.Fatalf("failStopHelper() error = %v", err)
+	}
+	select {
+	case <-launcher.process.Done():
+	default:
+		t.Fatal("fail-stop returned before exact helper termination")
+	}
+	if activeObserverSession(first.containerID) != nil || activeObserverSession(second.containerID) != nil {
+		t.Fatal("fail-stop retained observer security session")
+	}
+	if _, err := supervisor.Observer().Start(context.Background(), "0011223344556677"); err == nil {
+		t.Fatal("fail-stopped observer accepted a new stream")
+	}
+}
+
 func TestObserverSupervisorStartupFailureReleasesKnownOwnership(t *testing.T) {
 	paths := supervisorPaths(t)
 	_, err := newObserverSupervisor(context.Background(), failingObserverLauncher{}.StartObserver, paths.remote, paths.output, paths.lock)
@@ -122,20 +157,51 @@ type supervisorTestPaths struct{ remote, output, lock string }
 
 func supervisorPaths(t *testing.T) supervisorTestPaths {
 	t.Helper()
-	directory, err := os.MkdirTemp(".", "observer-supervisor-")
-	if err != nil {
-		t.Fatal(err)
+	var candidates []string
+	if xdg := os.Getenv("XDG_RUNTIME_DIR"); xdg != "" {
+		candidates = append(candidates, xdg)
+	}
+	candidates = append(candidates, filepath.Join("/run/user", strconv.Itoa(os.Getuid())))
+	if cache, err := os.UserCacheDir(); err == nil && cache != "" {
+		candidates = append(candidates, cache)
+	}
+	if home, err := os.UserHomeDir(); err == nil && home != "" {
+		candidates = append(candidates, home)
+	}
+	candidates = append(candidates, ".")
+
+	var directory string
+	for _, base := range candidates {
+		if base == "" {
+			continue
+		}
+		if err := verifyObserverRuntimeDirectory(base); err != nil {
+			continue
+		}
+		d, err := os.MkdirTemp(base, "obs-sup-")
+		if err != nil {
+			continue
+		}
+		if err := os.Chmod(d, 0o700); err != nil {
+			_ = os.RemoveAll(d)
+			continue
+		}
+		if verifyObserverRuntimeDirectory(d) == nil {
+			directory = d
+			break
+		}
+		_ = os.RemoveAll(d)
+	}
+	if directory == "" {
+		t.Skip("host Unix socket path limit or runtime directory permissions leave no protected short test directory")
 	}
 	t.Cleanup(func() { _ = os.RemoveAll(directory) })
-	directory, err = filepath.Abs(directory)
+	directory, err := filepath.Abs(directory)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(filepath.Join(directory, "output.sock")) >= 100 {
 		t.Skip("host Unix socket path limit leaves no protected short test directory")
-	}
-	if err := os.Chmod(directory, 0o700); err != nil {
-		t.Fatal(err)
 	}
 	return supervisorTestPaths{
 		remote: filepath.Join(directory, "remote.sock"),
@@ -155,6 +221,7 @@ func (l *fakeObserverLauncher) StartObserver(_ context.Context, remote, _ string
 	if err != nil {
 		return nil, err
 	}
+	_ = os.Chmod(remote, 0o700)
 	l.process = &fakeObserverProcess{listener: listener, done: make(chan struct{})}
 	return l.process, nil
 }

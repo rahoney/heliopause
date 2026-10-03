@@ -83,6 +83,38 @@ func TestSandboxObservationSummaryIsBoundedAndDoesNotRetainPayloads(t *testing.T
 	}
 }
 
+func TestCountedSandboxObservationIsBoundedAndSummaryPreservesCount(t *testing.T) {
+	t.Parallel()
+	sessionID, err := domain.ParseSandboxSessionID("sbx_aaaaaaaaaaaaaaaaaaaaaaaaaa")
+	if err != nil {
+		t.Fatal(err)
+	}
+	workspace, err := domain.NewCountedSandboxObservation(domain.ObservationFilesystem, "filesystem-workspace-access", 1153)
+	if err != nil || workspace.Count() != 1153 {
+		t.Fatalf("workspace = %#v, %v", workspace, err)
+	}
+	duplicate, err := domain.NewCountedSandboxObservation(domain.ObservationFilesystem, "filesystem-workspace-access", 9000)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := domain.NewSandboxResult(sessionID, domain.SandboxCompleted, "", []domain.SandboxObservation{workspace, duplicate})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if observations := result.Observations(); len(observations) != 1 || observations[0].Count() != domain.MaximumObservationSummaryCount {
+		t.Fatalf("observations = %#v", observations)
+	}
+	summary, err := result.ObservationSummary()
+	if err != nil || !strings.Contains(summary, `"FILESYSTEM:filesystem-workspace-access":10000`) {
+		t.Fatalf("summary = %q, %v", summary, err)
+	}
+	for _, count := range []uint64{0, domain.MaximumObservationSummaryCount + 1} {
+		if _, err := domain.NewCountedSandboxObservation(domain.ObservationFilesystem, "filesystem-workspace-access", count); err == nil {
+			t.Fatalf("count %d was accepted", count)
+		}
+	}
+}
+
 func mustObservation(t *testing.T, category domain.ObservationCategory, subject string) domain.SandboxObservation {
 	t.Helper()
 	observation, err := domain.NewSandboxObservation(category, subject)

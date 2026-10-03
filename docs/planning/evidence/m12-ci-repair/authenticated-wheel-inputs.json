@@ -1,0 +1,242 @@
+[
+  {
+    "expected_sha256_from_resolver": "a93c4d93269b339a6af4848342c7e940d0f9928ad95eff64764699e5f1bf8a6a",
+    "actual_sha256": "a93c4d93269b339a6af4848342c7e940d0f9928ad95eff64764699e5f1bf8a6a",
+    "authorized_url": "https://files.pythonhosted.org/packages/06/cf/1731c0dd182ee35f80a39e63afb3d03056ea0dd561b7498932b10b2e34d9/filelock-4.0.7-py3-none-any.whl",
+    "input": "/tmp/haa-ci-wheel-data/a93c4d93269b339a6af4848342c7e940d0f9928ad95eff64764699e5f1bf8a6a.whl",
+    "bytes": 109242,
+    "source": "pypi"
+  },
+  {
+    "expected_sha256_from_resolver": "e3fd2c13a7814cee3746340d8d7f8598a67f16a58bf47fb7f8793fab6efca1b0",
+    "actual_sha256": "e3fd2c13a7814cee3746340d8d7f8598a67f16a58bf47fb7f8793fab6efca1b0",
+    "authorized_url": "https://files.pythonhosted.org/packages/7e/cd/fe58041e9011f307c490e3e17dd48cc516448f7c698a3f2d9d9d65d7e6a8/networkx-3.7-py3-none-any.whl",
+    "input": "/tmp/haa-ci-wheel-data/e3fd2c13a7814cee3746340d8d7f8598a67f16a58bf47fb7f8793fab6efca1b0.whl",
+    "bytes": 2142205,
+    "source": "pypi"
+  },
+  {
+    "expected_sha256_from_resolver": "85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67",
+    "actual_sha256": "85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67",
+    "authorized_url": "https://files.pythonhosted.org/packages/62/a1/3d680cbfd5f4b8f15abc1d571870c5fc3e594bb582bc3b64ea099db13e56/jinja2-3.1.6-py3-none-any.whl",
+    "input": "/tmp/haa-ci-wheel-data/85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67.whl",
+    "bytes": 134899,
+    "source": "pypi"
+  },
+  {
+    "expected_sha256_from_resolver": "457a69a9577064c05a97c41f4e65148652db078a3a509039e64d3467b9e7ef97",
+    "actual_sha256": "457a69a9577064c05a97c41f4e65148652db078a3a509039e64d3467b9e7ef97",
+    "authorized_url": "https://files.pythonhosted.org/packages/41/3c/a36c2450754618e62008bf7435ccb0f88053e07592e6028a34776213d877/markupsafe-3.0.3-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+    "input": "/tmp/haa-ci-wheel-data/457a69a9577064c05a97c41f4e65148652db078a3a509039e64d3467b9e7ef97.whl",
+    "bytes": 23005,
+    "source": "pypi"
+  },
+  {
+    "expected_sha256_from_resolver": "f152f41dc5dc462afe0de780e451ebb47ea8b4451f8f919f9537aa8e2cbe1d7e",
+    "actual_sha256": "f152f41dc5dc462afe0de780e451ebb47ea8b4451f8f919f9537aa8e2cbe1d7e",
+    "authorized_url": "https://download-r2.pytorch.org/whl/cpu/torch-2.14.0%2Bcpu-cp314-cp314-manylinux_2_28_x86_64.whl",
+    "input": "/tmp/haa-ci-wheel-data/f152f41dc5dc462afe0de780e451ebb47ea8b4451f8f919f9537aa8e2cbe1d7e.whl",
+    "bytes": 196260719,
+    "source": "pytorch-cpu"
+  },
+  {
+    "expected_sha256_from_resolver": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+    "actual_sha256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+    "authorized_url": "https://files.pythonhosted.org/packages/49/d3/b8441a820a491ddfc024b0b0cf0393375b75ea13866d9c66727e54c2fc80/typing_extensions-4.16.0-py3-none-any.whl",
+    "input": "/tmp/haa-ci-wheel-data/481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8.whl",
+    "bytes": 45571,
+    "source": "pypi"
+  },
+  {
+    "expected_sha256_from_resolver": "51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670",
+    "actual_sha256": "51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670",
+    "authorized_url": "https://files.pythonhosted.org/packages/95/9c/c510029fc6ef33a6275cd2c5d3cecd6613dfd6aa401d57c54f1c18852ccf/setuptools-84.0.0-py3-none-any.whl",
+    "input": "/tmp/haa-ci-wheel-data/51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670.whl",
+    "bytes": 818216,
+    "source": "pypi"
+  },
+  {
+    "expected_sha256_from_resolver": "a0b2b9fe80bbcd81a6647ff13108738cfb482d481d826cc0e02f5b35e5c88d2c",
+    "actual_sha256": "a0b2b9fe80bbcd81a6647ff13108738cfb482d481d826cc0e02f5b35e5c88d2c",
+    "authorized_url": "https://files.pythonhosted.org/packages/43/e3/7d92a15f894aa0c9c4b49b8ee9ac9850d6e63b03c9c32c0367a13ae62209/mpmath-1.3.0-py3-none-any.whl",
+    "input": "/tmp/haa-ci-wheel-data/a0b2b9fe80bbcd81a6647ff13108738cfb482d481d826cc0e02f5b35e5c88d2c.whl",
+    "bytes": 536198,
+    "source": "pypi"
+  },
+  {
+    "expected_sha256_from_resolver": "8dd6e646e99ea382bd85f97a45e6b526a442d79423a7dc673f1e2756d05fcb5f",
+    "actual_sha256": "8dd6e646e99ea382bd85f97a45e6b526a442d79423a7dc673f1e2756d05fcb5f",
+    "authorized_url": "https://files.pythonhosted.org/packages/6c/c0/a98505f18594f1bce828bb159cec0fcf9860562f1a2c85913409fc8f3d9e/fsspec-2026.9.0-py3-none-any.whl",
+    "input": "/tmp/haa-ci-wheel-data/8dd6e646e99ea382bd85f97a45e6b526a442d79423a7dc673f1e2756d05fcb5f.whl",
+    "bytes": 221738,
+    "source": "pypi"
+  },
+  {
+    "expected_sha256_from_resolver": "e091cc3e99d2141a0ba2847328f5479b05d94a6635cb96148ccb3f34671bd8f5",
+    "actual_sha256": "e091cc3e99d2141a0ba2847328f5479b05d94a6635cb96148ccb3f34671bd8f5",
+    "authorized_url": "https://files.pythonhosted.org/packages/a2/09/77d55d46fd61b4a135c444fc97158ef34a095e5681d0a6c10b75bf356191/sympy-1.14.0-py3-none-any.whl",
+    "input": "/tmp/haa-ci-wheel-data/e091cc3e99d2141a0ba2847328f5479b05d94a6635cb96148ccb3f34671bd8f5.whl",
+    "bytes": 6299353,
+    "source": "pypi"
+  },
+  {
+    "expected_sha256_from_resolver": "ccba62eb9cef5559abd5e0d54ceed2d9934030f51163df018532142a8ec533e5",
+    "actual_sha256": "ccba62eb9cef5559abd5e0d54ceed2d9934030f51163df018532142a8ec533e5",
+    "authorized_url": "https://files.pythonhosted.org/packages/8f/16/73727675941ab8e6ffd86ca3a4b7b47065edcca7a997920b831f8147c99d/nvidia_cufft_cu12-11.3.0.4-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "input": "/tmp/haa-ci-wheel-data/ccba62eb9cef5559abd5e0d54ceed2d9934030f51163df018532142a8ec533e5.whl",
+    "bytes": 200221632,
+    "source": "pypi"
+  },
+  {
+    "expected_sha256_from_resolver": "94e4f9bd6b9b21aad545e0d441707094e4ff88ab420d62b85fcdc8b6da1e039f",
+    "actual_sha256": "94e4f9bd6b9b21aad545e0d441707094e4ff88ab420d62b85fcdc8b6da1e039f",
+    "authorized_url": "https://files.pythonhosted.org/packages/e3/95/182a020efbe1bade0de1f5ec0d3e4101cb6deba7216b219f07ce08fa6146/cuda_bindings-12.9.9-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+    "input": "/tmp/haa-ci-wheel-data/94e4f9bd6b9b21aad545e0d441707094e4ff88ab420d62b85fcdc8b6da1e039f.whl",
+    "bytes": 7440112,
+    "source": "pypi"
+  },
+  {
+    "expected_sha256_from_resolver": "35ad42e7d5d722a83c36a3a478e281c20a5646383deaf1b9ed1a9ab7d61bed53",
+    "actual_sha256": "35ad42e7d5d722a83c36a3a478e281c20a5646383deaf1b9ed1a9ab7d61bed53",
+    "authorized_url": "https://files.pythonhosted.org/packages/31/5a/cac7d231f322b66caa16fd4b136ebc8e4b18b2805811c2d58dc47210cdea/nvidia_nccl_cu12-2.29.3-py3-none-manylinux_2_18_x86_64.whl",
+    "input": "/tmp/haa-ci-wheel-data/35ad42e7d5d722a83c36a3a478e281c20a5646383deaf1b9ed1a9ab7d61bed53.whl",
+    "bytes": 289760316,
+    "source": "pypi"
+  },
+  {
+    "expected_sha256_from_resolver": "79d8605baeb6c2f695761e0efb54bc62dbc3c9e32eb0742df7669c07befaa8f7",
+    "actual_sha256": "79d8605baeb6c2f695761e0efb54bc62dbc3c9e32eb0742df7669c07befaa8f7",
+    "authorized_url": "https://files.pythonhosted.org/packages/ad/88/2dbc37975fffb874418b14380418a1b99cb36f2101fd1d08c54e06ee8c95/cuda_toolkit-12.6.3-py2.py3-none-any.whl",
+    "input": "/tmp/haa-ci-wheel-data/79d8605baeb6c2f695761e0efb54bc62dbc3c9e32eb0742df7669c07befaa8f7.whl",
+    "bytes": 2288,
+    "source": "pypi"
+  },
+  {
+    "expected_sha256_from_resolver": "cc23469d1c7e52ce6c1d55253273d32c565dd22068647f3aa59b3c6b005bf159",
+    "actual_sha256": "cc23469d1c7e52ce6c1d55253273d32c565dd22068647f3aa59b3c6b005bf159",
+    "authorized_url": "https://files.pythonhosted.org/packages/b2/66/cc9876340ac68ae71b15c743ddb13f8b30d5244af344ec8322b449e35426/nvidia_cufile_cu12-1.11.1.6-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "input": "/tmp/haa-ci-wheel-data/cc23469d1c7e52ce6c1d55253273d32c565dd22068647f3aa59b3c6b005bf159.whl",
+    "bytes": 1142103,
+    "source": "pypi"
+  },
+  {
+    "expected_sha256_from_resolver": "ba3b56a4f896141e25e19ab287cd71e52a6a0f4b29d0d31609f60e3b4d5219b7",
+    "actual_sha256": "ba3b56a4f896141e25e19ab287cd71e52a6a0f4b29d0d31609f60e3b4d5219b7",
+    "authorized_url": "https://files.pythonhosted.org/packages/e1/23/e717c5ac26d26cf39a27fbc076240fad2e3b817e5889d671b67f4f9f49c5/nvidia_cuda_runtime_cu12-12.6.77-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "input": "/tmp/haa-ci-wheel-data/ba3b56a4f896141e25e19ab287cd71e52a6a0f4b29d0d31609f60e3b4d5219b7.whl",
+    "bytes": 897690,
+    "source": "pypi"
+  },
+  {
+    "expected_sha256_from_resolver": "b90bed3df379fa79afbd21be8e04a0314336b8ae16768b58f2d34cb1d04cd7d2",
+    "actual_sha256": "b90bed3df379fa79afbd21be8e04a0314336b8ae16768b58f2d34cb1d04cd7d2",
+    "authorized_url": "https://files.pythonhosted.org/packages/56/9a/fff8376f8e3d084cd1530e1ef7b879bb7d6d265620c95c1b322725c694f4/nvidia_nvtx_cu12-12.6.77-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "input": "/tmp/haa-ci-wheel-data/b90bed3df379fa79afbd21be8e04a0314336b8ae16768b58f2d34cb1d04cd7d2.whl",
+    "bytes": 89276,
+    "source": "pypi"
+  },
+  {
+    "expected_sha256_from_resolver": "4e65059febdb4d19d5cbc4798677e19db2b582f2f702f457b609e571690d357e",
+    "actual_sha256": "4e65059febdb4d19d5cbc4798677e19db2b582f2f702f457b609e571690d357e",
+    "authorized_url": "https://files.pythonhosted.org/packages/98/59/239c7259e669c46ddbcac0aa60e3a0ef00bfeaaa687f905b24dd6a7a10fe/cuda_pathfinder-1.8.2-py3-none-any.whl",
+    "input": "/tmp/haa-ci-wheel-data/4e65059febdb4d19d5cbc4798677e19db2b582f2f702f457b609e571690d357e.whl",
+    "bytes": 62551,
+    "source": "pypi"
+  },
+  {
+    "expected_sha256_from_resolver": "6768bad6cab4f19e8292125e5f1ac8aa7d1718704012a0e3272a6f61c4bce132",
+    "actual_sha256": "6768bad6cab4f19e8292125e5f1ac8aa7d1718704012a0e3272a6f61c4bce132",
+    "authorized_url": "https://files.pythonhosted.org/packages/49/60/7b6497946d74bcf1de852a21824d63baad12cd417db4195fc1bfe59db953/nvidia_cuda_cupti_cu12-12.6.80-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "input": "/tmp/haa-ci-wheel-data/6768bad6cab4f19e8292125e5f1ac8aa7d1718704012a0e3272a6f61c4bce132.whl",
+    "bytes": 8917980,
+    "source": "pypi"
+  },
+  {
+    "expected_sha256_from_resolver": "d693caaa261214ddd7dbb60d68e71cbed884e68c2be7509778f3051da0b91c3f",
+    "actual_sha256": "d693caaa261214ddd7dbb60d68e71cbed884e68c2be7509778f3051da0b91c3f",
+    "authorized_url": "https://files.pythonhosted.org/packages/d1/c7/a79086a62c98befcdb8349656c6f114e2db3b8b2422f6e25c97a7f2a9a3c/cuda_toolkit-13.0.3.0-py2.py3-none-any.whl",
+    "input": "/tmp/haa-ci-wheel-data/d693caaa261214ddd7dbb60d68e71cbed884e68c2be7509778f3051da0b91c3f.whl",
+    "bytes": 2512,
+    "source": "pypi"
+  },
+  {
+    "expected_sha256_from_resolver": "08a3ecefae5a01c7f5117351c64f17c7c62efa5fffdbe24fc7d298da19cd0b44",
+    "actual_sha256": "08a3ecefae5a01c7f5117351c64f17c7c62efa5fffdbe24fc7d298da19cd0b44",
+    "authorized_url": "https://files.pythonhosted.org/packages/3f/70/4f193de89a48b71714e74602ee14d04e4019ad36a5a9f20c425776e72cd6/nvidia_cufile-1.15.1.6-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "input": "/tmp/haa-ci-wheel-data/08a3ecefae5a01c7f5117351c64f17c7c62efa5fffdbe24fc7d298da19cd0b44.whl",
+    "bytes": 1223672,
+    "source": "pypi"
+  },
+  {
+    "expected_sha256_from_resolver": "4eb01c08e859bf924d222250d2e8f8b8ff6d3db4721288cf35d14252a4d933c8",
+    "actual_sha256": "4eb01c08e859bf924d222250d2e8f8b8ff6d3db4721288cf35d14252a4d933c8",
+    "authorized_url": "https://files.pythonhosted.org/packages/33/6d/737d164b4837a9bbd202f5ae3078975f0525a55730fe871d8ed4e3b952b0/nvidia_cuda_cupti-13.0.85-py3-none-manylinux_2_25_x86_64.whl",
+    "input": "/tmp/haa-ci-wheel-data/4eb01c08e859bf924d222250d2e8f8b8ff6d3db4721288cf35d14252a4d933c8.whl",
+    "bytes": 10715597,
+    "source": "pypi"
+  },
+  {
+    "expected_sha256_from_resolver": "bbacde6f75665b197016b986164cfdaa33b17515e5e635a63ddb75926aaa71c3",
+    "actual_sha256": "bbacde6f75665b197016b986164cfdaa33b17515e5e635a63ddb75926aaa71c3",
+    "authorized_url": "https://files.pythonhosted.org/packages/a3/49/7a3769c43e432b0434dd46424058b47af4347167f0dfca1ecb27e2de92a1/cuda_bindings-13.4.3-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+    "input": "/tmp/haa-ci-wheel-data/bbacde6f75665b197016b986164cfdaa33b17515e5e635a63ddb75926aaa71c3.whl",
+    "bytes": 6978955,
+    "source": "pypi"
+  },
+  {
+    "expected_sha256_from_resolver": "7f82250d7782aa23b6cfe765ecc7db554bd3c2870c43f3d1821f1d18aebf0548",
+    "actual_sha256": "7f82250d7782aa23b6cfe765ecc7db554bd3c2870c43f3d1821f1d18aebf0548",
+    "authorized_url": "https://files.pythonhosted.org/packages/2e/24/d1558f3b68b1d26e706813b1d10aa1d785e4698c425af8db8edc3dced472/nvidia_cuda_runtime-13.0.96-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "input": "/tmp/haa-ci-wheel-data/7f82250d7782aa23b6cfe765ecc7db554bd3c2870c43f3d1821f1d18aebf0548.whl",
+    "bytes": 2243632,
+    "source": "pypi"
+  },
+  {
+    "expected_sha256_from_resolver": "4936d1d6780fbe68db454f5e72a42ff64d1fd6397df9f363ae786930fd5c1cd4",
+    "actual_sha256": "4936d1d6780fbe68db454f5e72a42ff64d1fd6397df9f363ae786930fd5c1cd4",
+    "authorized_url": "https://files.pythonhosted.org/packages/c2/f3/d86c845465a2723ad7e1e5c36dcd75ddb82898b3f53be47ebd429fb2fa5d/nvidia_nvtx-13.0.85-py3-none-manylinux1_x86_64.manylinux_2_5_x86_64.whl",
+    "input": "/tmp/haa-ci-wheel-data/4936d1d6780fbe68db454f5e72a42ff64d1fd6397df9f363ae786930fd5c1cd4.whl",
+    "bytes": 148047,
+    "source": "pypi"
+  },
+  {
+    "expected_sha256_from_resolver": "72bf454902da594e0b833cadeddc8b7100ce1c7cf7ed9023943931be1aa913b7",
+    "actual_sha256": "72bf454902da594e0b833cadeddc8b7100ce1c7cf7ed9023943931be1aa913b7",
+    "authorized_url": "https://files.pythonhosted.org/packages/dc/74/f1493b0774c6eaf0234512bb650e1ab90ce8f61fecf0b4aaf1fb416f571e/nvidia_cuda_runtime-13.2.75-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+    "input": "/tmp/haa-ci-wheel-data/72bf454902da594e0b833cadeddc8b7100ce1c7cf7ed9023943931be1aa913b7.whl",
+    "bytes": 2321965,
+    "source": "pypi"
+  },
+  {
+    "expected_sha256_from_resolver": "87feaf8c3ad20d3d03a01933181801ff6892bace5c8f0b1e4b48f319d3e62d36",
+    "actual_sha256": "87feaf8c3ad20d3d03a01933181801ff6892bace5c8f0b1e4b48f319d3e62d36",
+    "authorized_url": "https://files.pythonhosted.org/packages/23/c5/661a73a9042fc5f81cdd5fe6e89f4170b3b33f7962e709987e2b5e5f1381/nvidia_cufile-1.17.1.22-py3-none-manylinux_2_27_x86_64.whl",
+    "input": "/tmp/haa-ci-wheel-data/87feaf8c3ad20d3d03a01933181801ff6892bace5c8f0b1e4b48f319d3e62d36.whl",
+    "bytes": 1387670,
+    "source": "pypi"
+  },
+  {
+    "expected_sha256_from_resolver": "f75aca6bef89c625a4076a820302bb06764daa1d21595286f6bee5e237d3a187",
+    "actual_sha256": "f75aca6bef89c625a4076a820302bb06764daa1d21595286f6bee5e237d3a187",
+    "authorized_url": "https://files.pythonhosted.org/packages/b7/2d/cbf8f6288259c502165282fdaa2b733daae98434e3f2aee2b7952ba87c6f/nvidia_cuda_cupti-13.2.75-py3-none-manylinux_2_25_x86_64.whl",
+    "input": "/tmp/haa-ci-wheel-data/f75aca6bef89c625a4076a820302bb06764daa1d21595286f6bee5e237d3a187.whl",
+    "bytes": 11986992,
+    "source": "pypi"
+  },
+  {
+    "expected_sha256_from_resolver": "2d7c24fc582d841493c6dc2cf017c25e4428cf583a3bd9e9325a65f0ecc65f73",
+    "actual_sha256": "2d7c24fc582d841493c6dc2cf017c25e4428cf583a3bd9e9325a65f0ecc65f73",
+    "authorized_url": "https://files.pythonhosted.org/packages/b0/cc/314eac684677dced22b913b5d1b3d03adcbe59d6c7332c5d04f864cdb079/nvidia_nvtx-13.2.75-py3-none-manylinux1_x86_64.manylinux_2_5_x86_64.whl",
+    "input": "/tmp/haa-ci-wheel-data/2d7c24fc582d841493c6dc2cf017c25e4428cf583a3bd9e9325a65f0ecc65f73.whl",
+    "bytes": 153460,
+    "source": "pypi"
+  },
+  {
+    "expected_sha256_from_resolver": "646d0e3668ce6f78f2312bb9cc0f668b9cbfcbef187eaa6a39eb2ea6dbec2a31",
+    "actual_sha256": "646d0e3668ce6f78f2312bb9cc0f668b9cbfcbef187eaa6a39eb2ea6dbec2a31",
+    "authorized_url": "https://files.pythonhosted.org/packages/bd/6a/f79c134fa8e6d5fe028584933be063ce7961b1a85ce217f261cdda176e48/cuda_toolkit-13.2.1-py2.py3-none-any.whl",
+    "input": "/tmp/haa-ci-wheel-data/646d0e3668ce6f78f2312bb9cc0f668b9cbfcbef187eaa6a39eb2ea6dbec2a31.whl",
+    "bytes": 2612,
+    "source": "pypi"
+  }
+]

@@ -1,0 +1,5 @@
+{
+  "state": "COMPLETE_READY_FOR_REVIEW",
+  "next": "Review uncommitted bounded patch; no automatic next task. Remote CI and CUDA qualification were not performed.",
+  "evidence": "result.json"
+}

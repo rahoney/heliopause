@@ -1,0 +1,507 @@
+{
+  "result": "REPAIR_VALIDATED",
+  "verification_kind": "implementer verification; not independent approval or checkpoint authorization",
+  "base_head": "a43ccfa1265eb7b7db8d4ef559e49a4c94eda224",
+  "branch": "recovery/m12-reconciliation",
+  "starting_fingerprint": "786ca65fd7dd501de5c4b2901dc87c960e496f06eb00ef589a6eb6cdcddf3adb",
+  "starting_fingerprint_match": true,
+  "new_source_fingerprint": "0e10253b8cb47c8fb232ab3630f484776dd8ac3091ee318bab6f12ebe2fd1ccc",
+  "fingerprint_algorithm": "sha256(json.dumps(path->{sha256(bytes),mode:oct(stat&0777)},sort_keys=True,separators=(comma,colon)).encode()); same 377-path scope as previous review; evidence excluded",
+  "fingerprint_scope": {
+    "original_inventory": "docs/planning/evidence/m12-ci-repair/source-snapshot.json:files",
+    "additional_paths": [
+      "scripts/check/ci_cleanup_test.go",
+      "scripts/check/workflow_structure.go",
+      "scripts/check/workflow_structure_test.go",
+      "scripts/ci-integration-cleanup.sh"
+    ],
+    "source_file_count": 377
+  },
+  "changed_or_added_this_pass": [
+    ".github/workflows/heliopause-ci.yml",
+    "scripts/check/ci_cleanup_test.go",
+    "scripts/ci-integration-cleanup.sh",
+    "docs/planning/evidence/m12-ci-repair/cleanup-state-repair.json"
+  ],
+  "changed_source_identities": {
+    ".github/workflows/heliopause-ci.yml": {
+      "before": {
+        "sha256": "724f34023888497a5aea38759f257a2d5eec8d4f1699ef5fedde664bc81b9829",
+        "mode": "0o644"
+      },
+      "after": {
+        "sha256": "ed8b1d5af1c46c891354af7ab7e4bf2be305102a3c27b6c123df79ae454bbba5",
+        "mode": "0o644"
+      }
+    },
+    "scripts/check/ci_cleanup_test.go": {
+      "before": {
+        "sha256": "80b7db1f3119a363a56721ba61d148dd2a547f07a92f79a41b7fbc843606d002",
+        "mode": "0o644"
+      },
+      "after": {
+        "sha256": "cb5e3ee1bd5960e9329cb449446744db9052bc0a394970c08553a14b23c27e19",
+        "mode": "0o644"
+      }
+    },
+    "scripts/ci-integration-cleanup.sh": {
+      "before": {
+        "sha256": "3f1d497ed179024efa31be10ceedf84bdca3f132787a8346c92dbdad5fe0ae08",
+        "mode": "0o644"
+      },
+      "after": {
+        "sha256": "4cdbfe57e422b3792b0862d1fc189928e84aaa02764c7af390c3492eb547af22",
+        "mode": "0o644"
+      }
+    }
+  },
+  "baseline": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "NO for demonstrated error paths",
+    "ACCEPTANCE_CLOSED": "NO",
+    "MISSING": [
+      "helper query/identity error propagation and dependent restoration gating"
+    ]
+  },
+  "original_reproductions": [
+    {
+      "name": "identity_invalid_restore",
+      "exit": 1,
+      "stdout": "PRIVILEGED:install -m 0755 /production/helox /usr/libexec/heliopause/helox\n",
+      "stderr": "cleanup: invalid task-owned helper PID\ncleanup: original=0 helper_stop=1 client_restore=0\n"
+    },
+    {
+      "name": "job_query_failure_during_replace",
+      "exit": 0,
+      "stdout": "PRIVILEGED:install -m 0755 /test-client /usr/libexec/heliopause/helox\nPRIVILEGED:install -m 0755 /production/helox /usr/libexec/heliopause/helox\n",
+      "stderr": "cleanup: original=0 helper_stop=0 client_restore=0\n"
+    },
+    {
+      "name": "job_query_failure_during_exit",
+      "exit": 0,
+      "stdout": "PRIVILEGED:install -m 0755 /production/helox /usr/libexec/heliopause/helox\n",
+      "stderr": "cleanup: original=0 helper_stop=0 client_restore=0\n"
+    },
+    {
+      "name": "membership_probe_failure",
+      "exit": 0,
+      "stdout": "PRIVILEGED:install -m 0755 /test-client /usr/libexec/heliopause/helox\nPRIVILEGED:install -m 0755 /production/helox /usr/libexec/heliopause/helox\n",
+      "stderr": "cleanup: original=0 helper_stop=0 client_restore=0\n"
+    },
+    {
+      "name": "query_failure_after_successful_TERM_attempt",
+      "exit": 0,
+      "stdout": "PRIVILEGED:kill -TERM 42\nPRIVILEGED:install -m 0755 /production/helox /usr/libexec/heliopause/helox\n",
+      "stderr": "cleanup: original=0 helper_stop=0 client_restore=0\n"
+    }
+  ],
+  "corrections": [
+    "Removed jobs|grep and every absence inference based on query failure or kill -0. Capture jobs status directly; validate its PID lines, including duplicates; jobs -p includes suspended jobs.",
+    "Initialize once in owning parent; retain registered $! handle, owner shell, launch/reaping facts and first sticky errors. Reject conflicting initialization, malformed/missing/unowned/stale handles and subshell decisions.",
+    "Successful job-table absence requires parent wait=0 on the fixed foreground sudo lifecycle. Nonzero/signalled/unwaitable wrapper remains UNKNOWN. Never clear the handle to manufacture cleanup success.",
+    "Use the same observation before TERM and each of 50 bounded 0.1-second confirmations. UNKNOWN cannot authorize signalling, client installation or helper rebinding.",
+    "Record possible client replacement before install; a failed replacement blocks subsequent test install/helper rebind. EXIT may restore only with a recorded replacement and proven safe helper state; unsafe restoration is explicitly incomplete.",
+    "Preserve original exit above cleanup errors, capture each required error separately, disable recursive EXIT; never restore after uncertain helper stop."
+  ],
+  "state_table": {
+    "NOT_STARTED": {
+      "proof": "explicit clean owning-shell initialization; never-started, unregistered, empty handles",
+      "actions": "no signalling; replacement/restore only when justified by recorded replacement state"
+    },
+    "OWNED_LIVE": {
+      "proof": "registered owning-shell launch; validated successful jobs snapshot contains exact recorded handle; suspended is live",
+      "actions": "TERM exact foreground sudo job, then bounded confirmation; no dependent client replacement"
+    },
+    "CONFIRMED_STOPPED": {
+      "proof": "successful validated jobs snapshot lacks handle AND owning parent wait returns zero; retain reaping proof and handle",
+      "actions": "required client restoration/replacement permitted"
+    },
+    "UNKNOWN": {
+      "proof": "query/output/ownership/wait/signal/delay error or timeout; first error retained",
+      "actions": "no signalling/rebinding/dependent privileged restore; report incomplete and preserve primary error"
+    }
+  },
+  "workflow_call_site_rationale": "Essential: initialize before possible launch, prepare before privileged config/rebind, register actual $! immediately after unchanged foreground sudo launch, and use shared observation during readiness. Removed competing kill -0 readiness inference. Job identities, needs/results, inputs, authentication and install destinations unchanged.",
+  "foreground_sudo_contract": {
+    "primary_source": "https://raw.githubusercontent.com/sudo-project/sudo/main/docs/sudo.man.in",
+    "scope": "foreground sudo relays TERM and waits for command status; fixed helper is non-daemonizing and exits zero after graceful service teardown. sudo -b/arbitrary wrappers are unsupported by this proof. Signal or command failure is UNKNOWN.",
+    "fixed_helper_entry": "cmd/haa-network-policy-helper/main_linux.go",
+    "service_entry": "internal/hosttool/policy_service_linux.go:77 ServeNetworkPolicy (existing implementation; no product edits)"
+  },
+  "test_expectations": {
+    "main_statuses": [
+      0,
+      37
+    ],
+    "restore_statuses": [
+      0,
+      19
+    ],
+    "stop_statuses": [
+      0,
+      23
+    ],
+    "unsafe_restore_count": 0,
+    "expectations": "independent explicit case/action tables, not implementation classifier output",
+    "query_errors": [
+      2,
+      3,
+      5
+    ],
+    "producer_error_plus_matcher_no_match": "query=3 retained; matcher never invoked",
+    "matrix": "includes malformed/duplicate query output, malformed/missing/zero/one/unowned/wrong-owner handles, before/after TERM query errors, signal/delay failures, suspended/timeout, wait143/127, already terminated, early/conflicting initialization, missing launch, repeated stop, subshell, and client18+restore19+original37",
+    "real_nonprivileged_children": [
+      "normal/early exit and reaping",
+      "graceful TERM",
+      "suspended remains live; test-owned CONT before graceful stop",
+      "foreground wrapper forwards TERM and waits for its child",
+      "failed wrapper remains UNKNOWN"
+    ],
+    "real_child_limit": "12s Go context per case; finite fixture child loops, test-owned cleanup trap. No sudo/helper execution or privileged lifecycle assertion; no EXIT guarantee after SIGKILL/runner death."
+  },
+  "executed": [
+    {
+      "command": "go test ./scripts/check -count=1 -timeout=2m -v",
+      "exit": 0,
+      "toolchain": "go1.26.8 linux/amd64",
+      "scope": "owning package, actual cleanup tables/real children, workflow mutations, nine-result negatives, corpus selection, dependency policy",
+      "passed_test_cases": [
+        "TestActualCIIntegrationCleanup",
+        "TestActualCIIntegrationCleanup/original0_restore0_stop0",
+        "TestActualCIIntegrationCleanup/original0_restore0_stop23",
+        "TestActualCIIntegrationCleanup/original0_restore19_stop0",
+        "TestActualCIIntegrationCleanup/original0_restore19_stop23",
+        "TestActualCIIntegrationCleanup/original37_restore0_stop0",
+        "TestActualCIIntegrationCleanup/original37_restore0_stop23",
+        "TestActualCIIntegrationCleanup/original37_restore19_stop0",
+        "TestActualCIIntegrationCleanup/original37_restore19_stop23",
+        "TestCIHelperStateFaults",
+        "TestCIHelperStateFaults/query-error",
+        "TestCIHelperStateFaults/producer-error-not-matcher",
+        "TestCIHelperStateFaults/query-after-term",
+        "TestCIHelperStateFaults/malformed-output",
+        "TestCIHelperStateFaults/duplicate-output",
+        "TestCIHelperStateFaults/missing-after-launch",
+        "TestCIHelperStateFaults/malformed-pid",
+        "TestCIHelperStateFaults/one-pid",
+        "TestCIHelperStateFaults/zero-pid",
+        "TestCIHelperStateFaults/unowned",
+        "TestCIHelperStateFaults/wrong-owner",
+        "TestCIHelperStateFaults/signal-failure",
+        "TestCIHelperStateFaults/suspended-or-timeout",
+        "TestCIHelperStateFaults/sleep-failure",
+        "TestCIHelperStateFaults/wrapper-signalled",
+        "TestCIHelperStateFaults/not-child",
+        "TestCIHelperStateFaults/already-terminated",
+        "TestCIHelperEarlyAndRepeatedCleanup",
+        "TestCIHelperEarlyAndRepeatedCleanup/never-started",
+        "TestCIHelperEarlyAndRepeatedCleanup/conflicting-initialization",
+        "TestCIHelperEarlyAndRepeatedCleanup/missing-launch",
+        "TestCIHelperEarlyAndRepeatedCleanup/subshell-owner",
+        "TestCIHelperEarlyAndRepeatedCleanup/before-initialization-zero",
+        "TestCIHelperEarlyAndRepeatedCleanup/before-initialization",
+        "TestCIHelperEarlyAndRepeatedCleanup/unproven-replacement",
+        "TestCIHelperEarlyAndRepeatedCleanup/legitimate-never-started-replacement",
+        "TestCIHelperEarlyAndRepeatedCleanup/repeated-confirmed",
+        "TestCIHelperEarlyAndRepeatedCleanup/repeated-unknown",
+        "TestCIHelperEarlyAndRepeatedCleanup/client-failure-blocks-rebind",
+        "TestCIClientReplacementStopsBeforeInstall",
+        "TestCIHelperRealChildLifecycle",
+        "TestCIHelperRealChildLifecycle/normal-early-exit",
+        "TestCIHelperRealChildLifecycle/graceful-stop",
+        "TestCIHelperRealChildLifecycle/suspended-is-live",
+        "TestCIHelperRealChildLifecycle/foreground-wrapper",
+        "TestCIHelperRealChildLifecycle/failed-wrapper",
+        "TestValidateVersionSupport",
+        "TestValidateVersionSupport/valid_record",
+        "TestValidateVersionSupport/missing_field",
+        "TestValidateVersionSupport/malformed_date",
+        "TestValidateVersionSupport/stale_warning",
+        "TestValidateVersionSupport/strict_stale_failure",
+        "TestReleaseGateFailsClosedWithoutLicense",
+        "TestReleaseGateRunsStrictFreshness",
+        "TestReleaseGateSummaryIsBounded",
+        "TestRequiredExactNineResults",
+        "TestBootstrapEnvironmentKeepsVerificationEnabled",
+        "TestCIWorkflowStructureMutations",
+        "TestCIWorkflowStructureMutations/valid_job_shaped_dispatch_input",
+        "TestCIWorkflowStructureMutations/wrong_location",
+        "TestCIWorkflowStructureMutations/missing_corpus_needs",
+        "TestCIWorkflowStructureMutations/substitute_argument",
+        "TestCIWorkflowStructureMutations/duplicate_corpus",
+        "TestCIWorkflowStructureMutations/unknown_needs",
+        "TestCIWorkflowStructureMutations/required_ignored_error",
+        "TestCIWorkflowStructureMutations/required_skipped_step",
+        "TestCIWorkflowStructureMutations/commented_corpus",
+        "TestCIWorkflowStructureMutations/missing_corpus",
+        "TestCIWorkflowStructureMutations/missing_binding",
+        "TestCIWorkflowStructureMutations/wrong_input_default",
+        "TestCIWorkflowStructureMutations/actual_malformed_YAML",
+        "TestCIWorkflowStructureMutations/substitute_result",
+        "TestCIWorkflowStructureMutations/skippable_corpus",
+        "TestCorpusTargetRejectsEmptySelection",
+        "TestWorkflowParserIsToolOnlyDependency",
+        "TestValidateCurrentImports",
+        "TestPlatformStepComposition",
+        "TestQuickStepComposition",
+        "TestRunSequentialPreservesFirstFailure",
+        "TestRunRejectsUnknownProfile",
+        "TestDeterministicGoEnvironment",
+        "TestBoundedBuffer",
+        "TestValidateCurrentImportsRejectsBoundaryShortcut",
+        "TestRunRequiredExit",
+        "TestValidateToolVersion",
+        "TestValidateRequiredResultsRejectsMissingChild",
+        "TestFenceMarkerRequiresMatchingClosure",
+        "TestResolveToolCacheRejectsSymlinkIntoSource",
+        "TestResolveToolCache",
+        "TestRunCommandRejectsPATHExecutable",
+        "TestReadToolLock",
+        "TestRuntimeLockWorkflowRejectsCopiedIdentity",
+        "TestCheckMarkdownTreeAcceptsHealthyFixture",
+        "TestVerifyToolRejectsMissingPinnedExecutable",
+        "TestBootstrapRejectsSetupGoMismatchBeforeMutation",
+        "TestValidateModuleRoot",
+        "TestValidateRequiredResults",
+        "TestValidateRequiredResults/failure",
+        "TestValidateRequiredResults/#00",
+        "TestValidateRequiredResults/unknown",
+        "TestValidateRequiredResults/cancelled",
+        "TestValidateRequiredResults/skipped",
+        "TestPrepareModuleCacheExcludesQualityTools",
+        "TestReadToolLockRejectsUnknownAndFloatingValues",
+        "TestReadToolLockRejectsUnknownAndFloatingValues/floating",
+        "TestReadToolLockRejectsUnknownAndFloatingValues/unknown_field",
+        "TestReadToolLockRejectsUnknownAndFloatingValues/trailing",
+        "TestFormatCheckAndExplicitFormatProfile",
+        "TestModuleDriftIsFinding",
+        "TestValidateReleasePublishWorkflowRejectsSecurityRegressions",
+        "TestValidateReleasePublishWorkflowRejectsSecurityRegressions/missing_draft_binding",
+        "TestValidateReleasePublishWorkflowRejectsSecurityRegressions/missing_Required_success",
+        "TestValidateReleasePublishWorkflowRejectsSecurityRegressions/floating_action",
+        "TestValidateReleasePublishWorkflowRejectsSecurityRegressions/missing_attestation",
+        "TestValidateReleasePublishWorkflowRejectsSecurityRegressions/push_trigger",
+        "TestValidateReleasePublishWorkflowRejectsSecurityRegressions/clobber",
+        "TestValidateReleasePublishWorkflowRejectsSecurityRegressions/missing_main_provenance",
+        "TestValidateReleasePublishWorkflowRejectsSecurityRegressions/draft_verification_after_publication",
+        "TestValidateReleasePublishWorkflowRejectsSecurityRegressions/missing_exact_candidate_asset",
+        "TestValidateReleasePublishWorkflowRejectsSecurityRegressions/missing_quarantine",
+        "TestCheckMarkdownTreeRejectsBrokenFixtures",
+        "TestCheckMarkdownTreeRejectsBrokenFixtures/absolute_Unix",
+        "TestCheckMarkdownTreeRejectsBrokenFixtures/unclosed_fence",
+        "TestCheckMarkdownTreeRejectsBrokenFixtures/absolute_Win",
+        "TestCheckMarkdownTreeRejectsBrokenFixtures/reference_link",
+        "TestCheckMarkdownTreeRejectsBrokenFixtures/broken_link",
+        "TestCheckMarkdownTreeRejectsBrokenFixtures/outside_tree",
+        "TestCheckMarkdownTreeRejectsBrokenFixtures/absolute_file",
+        "TestValidateReleaseWorkflowRejectsSecurityRegressions",
+        "TestValidateReleaseWorkflowRejectsSecurityRegressions/missing_release_gate",
+        "TestValidateReleaseWorkflowRejectsSecurityRegressions/release_publishing",
+        "TestValidateReleaseWorkflowRejectsSecurityRegressions/write_content_permission",
+        "TestValidateReleaseWorkflowRejectsSecurityRegressions/PR_trigger",
+        "TestValidateReleaseWorkflowRejectsSecurityRegressions/floating_attestation_action",
+        "TestValidateReleaseWorkflowRejectsSecurityRegressions/non-tag_trigger",
+        "TestValidateCIWorkflowRejectsSecurityRegressions",
+        "TestValidateCIWorkflowRejectsSecurityRegressions/extra_job",
+        "TestValidateCIWorkflowRejectsSecurityRegressions/missing_CUDA_single-selection_guard",
+        "TestValidateCIWorkflowRejectsSecurityRegressions/sidecar_fallback",
+        "TestValidateCIWorkflowRejectsSecurityRegressions/write_token",
+        "TestValidateCIWorkflowRejectsSecurityRegressions/permissive_sidecar_download",
+        "TestValidateCIWorkflowRejectsSecurityRegressions/runner_context_at_job_env",
+        "TestValidateCIWorkflowRejectsSecurityRegressions/floating_action",
+        "TestValidateCIWorkflowRejectsSecurityRegressions/missing_platform_check",
+        "TestValidateCIWorkflowRejectsSecurityRegressions/missing_CUDA_strict_freshness_gate",
+        "TestValidateCIWorkflowRejectsSecurityRegressions/legacy_CUDA_profile",
+        "TestValidateCIWorkflowRejectsSecurityRegressions/missing_minimum_Go",
+        "TestValidateCIWorkflowRejectsSecurityRegressions/moving_macOS_runner",
+        "TestValidateCIWorkflowRejectsSecurityRegressions/missing_always",
+        "TestRepositoryCIWorkflow"
+      ],
+      "log_sha256": "b591c549a8ad885da5bbfad01c7ac51421abd6d24b580dc495c99537a4408b82"
+    },
+    {
+      "command": "go run ./scripts/check security",
+      "exit": 0,
+      "scope": "canonical pinned gosec and Gitleaks current tree",
+      "output": "[check] gosec\n[check] Gitleaks current tree\n"
+    },
+    {
+      "command": "go run /tmp/haa-cleanup-bash-syntax.go (declared go.yaml.in/yaml/v3 parser; bash -n on decoded run blocks)",
+      "exit": 0,
+      "scope": {
+        "shared_script_exit": 0,
+        "workflow_run_blocks": [
+          "wheel-corpus:2",
+          "wheel-corpus:3",
+          "wheel-corpus:4",
+          "docs:2",
+          "vulnerability:2",
+          "vulnerability:3",
+          "macos:2",
+          "macos:3",
+          "gvisor-observer:1",
+          "gvisor-integration:2",
+          "required:2",
+          "quick:2",
+          "quick:3",
+          "security:2",
+          "security:3",
+          "minimum-go:2",
+          "minimum-go:3"
+        ]
+      }
+    },
+    {
+      "command": "git diff --check; git diff --cached --name-status",
+      "exit": 0,
+      "scope": "empty index and whitespace validity"
+    }
+  ],
+  "validation_notes": [
+    "Initial owning/security checks passed; after adding producer-no-match and early-zero assertions, reran only affected cheap owning/security gates on final unchanged source. No full quick/product loop.",
+    "Optional Python YAML syntax attempt unavailable (ModuleNotFoundError); not a test prerequisite. Replaced with declared pinned Go YAML parser; all 17 Bash run blocks and shared script passed."
+  ],
+  "environment": {
+    "PATH_prefix": "/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/bin",
+    "GOMODCACHE": "/tmp/haa-final-audit-tools/go-mod",
+    "GOCACHE": "/tmp/haa-final-audit-tools/go-build",
+    "HELOX_TOOL_CACHE": "/tmp/haa-final-audit-tools",
+    "GOPROXY": "off",
+    "GOTOOLCHAIN": "local"
+  },
+  "unaffected_approvals_preserved": {
+    "unchanged_source_files": 374,
+    "unchanged_prior_checkpoint_files": 94,
+    "historical_evidence_files": 62,
+    "excluded_AI_documents": 3,
+    "excluded_uploaded_logs": 79,
+    "product_source_tests_dependencies_runtime_locks_budgets_unchanged": true,
+    "prior_review_record_preserved": "/home/winamp/.local/state/heliopause/reviews/m12-ci-786ca65f-review.json"
+  },
+  "reused_evidence": {
+    "references": [
+      "docs/planning/evidence/m12-ci-repair/workflow-followup.json",
+      "docs/planning/evidence/m12-ci-repair/result.json"
+    ],
+    "scope": "prior full quick/vet/platform-equivalent, product CPU E2E 478.92s, packaging, authenticated representative corpus, promotion and Darwin compilation only for unchanged effective product/test/tool inputs. These are NOT executions of corrected cleanup/workflow, native macOS, remote CI or CUDA qualification. New checker/cleanup evidence supplied above.",
+    "production_installation": "unchanged; no client/helper install or restart performed"
+  },
+  "intended_checkpoint_inventory": [
+    ".github/workflows/heliopause-ci.yml",
+    "docs/engineering/03-quality-toolchain.md",
+    "docs/engineering/04-ci-quality-gate.md",
+    "docs/planning/02-current-work-queue.md",
+    "docs/planning/16-m12-01-ecosystem-expansion-contract.md",
+    "docs/planning/evidence/m12-ci-repair/authenticated-wheel-inputs.json",
+    "docs/planning/evidence/m12-ci-repair/baseline.json",
+    "docs/planning/evidence/m12-ci-repair/ci-errors.json",
+    "docs/planning/evidence/m12-ci-repair/clean-corpus-commands.py.txt",
+    "docs/planning/evidence/m12-ci-repair/clean-corpus-missing.log",
+    "docs/planning/evidence/m12-ci-repair/clean-corpus-prepared.log",
+    "docs/planning/evidence/m12-ci-repair/clean-corpus-results.json",
+    "docs/planning/evidence/m12-ci-repair/clean-corpus-tampered.log",
+    "docs/planning/evidence/m12-ci-repair/clean-docs-final.log",
+    "docs/planning/evidence/m12-ci-repair/clean-quick-ancestor-failure.log",
+    "docs/planning/evidence/m12-ci-repair/clean-quick-final.log",
+    "docs/planning/evidence/m12-ci-repair/clean-security-final.log",
+    "docs/planning/evidence/m12-ci-repair/cleanup-state-repair.json",
+    "docs/planning/evidence/m12-ci-repair/closure-admission.jsonl",
+    "docs/planning/evidence/m12-ci-repair/commands.json",
+    "docs/planning/evidence/m12-ci-repair/continuation.json",
+    "docs/planning/evidence/m12-ci-repair/corpus-final.log",
+    "docs/planning/evidence/m12-ci-repair/corpus-inputs.json",
+    "docs/planning/evidence/m12-ci-repair/corpus-missing.log",
+    "docs/planning/evidence/m12-ci-repair/corpus-negative-exits.json",
+    "docs/planning/evidence/m12-ci-repair/corpus-preparation-final.log",
+    "docs/planning/evidence/m12-ci-repair/corpus-tampered.log",
+    "docs/planning/evidence/m12-ci-repair/cpu-before-destination-fix.log",
+    "docs/planning/evidence/m12-ci-repair/cpu-inspection-records.json",
+    "docs/planning/evidence/m12-ci-repair/cpu-staged-manifest.json",
+    "docs/planning/evidence/m12-ci-repair/darwin-commands.py.txt",
+    "docs/planning/evidence/m12-ci-repair/darwin-hosttool-final.log",
+    "docs/planning/evidence/m12-ci-repair/darwin-test-compile-final.log",
+    "docs/planning/evidence/m12-ci-repair/destination-regressions.log",
+    "docs/planning/evidence/m12-ci-repair/failed-ci-artifacts.json",
+    "docs/planning/evidence/m12-ci-repair/frozen-cpu.json",
+    "docs/planning/evidence/m12-ci-repair/frozen-cu126.json",
+    "docs/planning/evidence/m12-ci-repair/frozen-cu130.json",
+    "docs/planning/evidence/m12-ci-repair/frozen-cu132.json",
+    "docs/planning/evidence/m12-ci-repair/go-build-metadata.txt",
+    "docs/planning/evidence/m12-ci-repair/haa-ci-clean-quick-final.log",
+    "docs/planning/evidence/m12-ci-repair/haa-ci-clean-quick-host.log",
+    "docs/planning/evidence/m12-ci-repair/haa-ci-clean-quick.log",
+    "docs/planning/evidence/m12-ci-repair/haa-ci-clean-security.log",
+    "docs/planning/evidence/m12-ci-repair/haa-ci-corpus-preparation.log",
+    "docs/planning/evidence/m12-ci-repair/haa-ci-darwin-compile.log",
+    "docs/planning/evidence/m12-ci-repair/local-acquisition.json",
+    "docs/planning/evidence/m12-ci-repair/matrix-driver.go.txt",
+    "docs/planning/evidence/m12-ci-repair/networkx-resources.json",
+    "docs/planning/evidence/m12-ci-repair/profile-summary.json",
+    "docs/planning/evidence/m12-ci-repair/promotion-final.log",
+    "docs/planning/evidence/m12-ci-repair/resolver-freeze.log",
+    "docs/planning/evidence/m12-ci-repair/resource-and-timing.json",
+    "docs/planning/evidence/m12-ci-repair/result.json",
+    "docs/planning/evidence/m12-ci-repair/runtime-cleanup.txt",
+    "docs/planning/evidence/m12-ci-repair/runtime-commands.sh.txt",
+    "docs/planning/evidence/m12-ci-repair/runtime-cpu.log",
+    "docs/planning/evidence/m12-ci-repair/runtime-helper.log",
+    "docs/planning/evidence/m12-ci-repair/runtime-installed-after.sha256",
+    "docs/planning/evidence/m12-ci-repair/runtime-packaging.log",
+    "docs/planning/evidence/m12-ci-repair/runtime-slices-after.txt",
+    "docs/planning/evidence/m12-ci-repair/runtime-slices-before.txt",
+    "docs/planning/evidence/m12-ci-repair/runtime-timing.txt",
+    "docs/planning/evidence/m12-ci-repair/runtime-wheel-sdist.log",
+    "docs/planning/evidence/m12-ci-repair/small-downloads.json",
+    "docs/planning/evidence/m12-ci-repair/source-snapshot.json",
+    "docs/planning/evidence/m12-ci-repair/supplied-log-hashes.json",
+    "docs/planning/evidence/m12-ci-repair/workflow-followup.json",
+    "go.mod",
+    "go.sum",
+    "internal/artifact/pypi/corpus_test.go",
+    "internal/artifact/pypi/entry_point_identity_test.go",
+    "internal/artifact/pypi/observation_plan.go",
+    "internal/artifact/pypi/real_corpus_integration_test.go",
+    "internal/artifact/pypi/resource_role_test.go",
+    "internal/artifact/pypi/testdata/real-corpus.json",
+    "internal/artifact/pypi/wheel.go",
+    "internal/artifact/pypi/wheel_test.go",
+    "internal/bootstrap/pytorch_linux_integration_test.go",
+    "internal/hosttool/executor_test.go",
+    "internal/sandbox/direct_exec_admission_test.go",
+    "internal/sandbox/linux_integration_test.go",
+    "internal/sandbox/observation_resource_integration_linux_test.go",
+    "internal/sandbox/pypi_closure_error_test.go",
+    "internal/sandbox/pypi_closure_installation.go",
+    "internal/sandbox/pypi_trusted_transaction.go",
+    "internal/sandbox/pytorch_closure_integration_test.go",
+    "scripts/check/architecture.go",
+    "scripts/check/ci_cleanup_test.go",
+    "scripts/check/main.go",
+    "scripts/check/required.go",
+    "scripts/check/required_test.go",
+    "scripts/check/runner.go",
+    "scripts/check/workflow.go",
+    "scripts/check/workflow_structure.go",
+    "scripts/check/workflow_structure_test.go",
+    "scripts/ci-integration-cleanup.sh",
+    "scripts/prepare-wheel-corpus.py"
+  ],
+  "intended_checkpoint_count": 98,
+  "checkpoint_inventory_note": "exact cumulative intended paths; 82 unrelated AI/log files excluded and preserved. Evidence receipt itself excluded from source fingerprint; no circular self-hash.",
+  "remaining_blockers": [],
+  "ready_for_cleanup_only_read_only_review": true,
+  "continuation": "Independent review only this cleanup delta, its actual-code tests and direct workflow callers; preserve other approvals. Self-review does not authorize checkpoint. No next task initiated.",
+  "no_stage": true,
+  "no_commit": true,
+  "no_push": true,
+  "no_remote_ci": true,
+  "no_qualification": true,
+  "fixed_exact_review_reproduction": {
+    "name": "query_failure_after_successful_TERM_attempt",
+    "exit": 2,
+    "stdout": "PRIVILEGED:kill -TERM 42\n",
+    "stderr": "cleanup: UNKNOWN: job-table query failed (status=2 pid=42)\ncleanup: production restoration incomplete; helper/replacement identity is uncertain\ncleanup: original=0 helper_state=UNKNOWN helper_stop=2 client_error=0 client_restore=1 restore_result=SKIPPED_UNSAFE pid=42\n",
+    "setup": "new recorded initialization/owned lifecycle and replacement facts; otherwise original review query/TERM stubs; no privileged commands executed"
+  }
+}

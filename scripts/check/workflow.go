@@ -44,6 +44,9 @@ func checkWorkflow(root, relativePath string, validate func(string) []string) er
 		return &checkFailure{class: executionFailure, step: "CI configuration", cause: err}
 	}
 	findings := validate(string(contents))
+	if relativePath != workflowRelativePath {
+		findings = append(findings, validateWorkflowStructure(string(contents), false)...)
+	}
 	if relativePath == workflowRelativePath || relativePath == releaseWorkflowRelativePath {
 		findings = append(findings, validateRuntimeLockWorkflow(root, string(contents))...)
 	}
@@ -96,7 +99,7 @@ func runtimeLockStrings(value any) []string {
 }
 
 func validateCIWorkflow(contents string) []string {
-	var findings []string
+	findings := validateWorkflowStructure(contents, true)
 	requiredSnippets := []string{
 		"name: Heliopause CI",
 		"  pull_request:",
@@ -107,23 +110,33 @@ func validateCIWorkflow(contents string) []string {
 		"runs-on: ubuntu-24.04",
 		"runs-on: macos-26-intel",
 		"persist-credentials: false",
-		"go-version: '1.26.7'",
-		"go-version: '1.25.13'",
+		"go-version: '1.26.8'",
 		".docker.ci_ubuntu_24_04_amd64.docker_ce_package",
 		".docker.ci_ubuntu_24_04_amd64.containerd_package",
 		"test \"$(docker version --format '{{.Server.Version}}')\" = \"$docker_engine_version\"",
 		"runtime_lock=scripts/runtimes.lock.json",
 		"jq -er",
+		"--download-sidecars=NEVER --require-sidecars=ALWAYS --runtime=runsc-trace -- --sidecar-usage-policy=STRICT",
+		"pytorch_cu126_qualification:",
+		"pytorch_cu130_qualification:",
+		"pytorch_cu132_qualification:",
+		"select at most one CUDA PyTorch qualification profile",
+		"if [ \"$selected_cuda_profiles\" -gt 0 ]; then\n            go run ./scripts/check qualification-freshness\n          fi",
+		"HELOX_PYTORCH_PROFILE=cu126",
+		"HELOX_PYTORCH_PROFILE=cu130",
+		"HELOX_PYTORCH_PROFILE=cu132",
 		"HELOX_PROMOTION_INTEGRATION=1 go test -v -timeout=5m ./internal/promotion -run TestLinuxNPMPromotionIntegration",
 		"check-latest: false",
 		"cache: false",
 		"    if: ${{ always() }}",
-		"    needs:\n      - quick\n      - docs\n      - security\n      - vulnerability\n      - minimum-go\n      - macos\n      - gvisor-observer\n      - gvisor-integration",
+		"    needs:\n      - quick\n      - docs\n      - security\n      - vulnerability\n      - minimum-go\n      - macos\n      - gvisor-observer\n      - gvisor-integration\n      - wheel-corpus",
 		"run: go run ./scripts/check bootstrap-modules",
 		"run: go run ./scripts/check platform",
+		"run: go run ./scripts/check corpus",
+		`run: python3 scripts/prepare-wheel-corpus.py --root "$HELOX_CORPUS_ROOT"`,
 		"run: go run ./scripts/check security",
 		"run: go run ./scripts/check vulnerability",
-		`run: go run ./scripts/check required "$QUICK_RESULT" "$DOCS_RESULT" "$SECURITY_RESULT" "$VULNERABILITY_RESULT" "$MINIMUM_GO_RESULT" "$MACOS_RESULT" "$GVISOR_OBSERVER_RESULT" "$GVISOR_INTEGRATION_RESULT"`,
+		`run: go run ./scripts/check required "$QUICK_RESULT" "$DOCS_RESULT" "$SECURITY_RESULT" "$VULNERABILITY_RESULT" "$MINIMUM_GO_RESULT" "$MACOS_RESULT" "$GVISOR_OBSERVER_RESULT" "$GVISOR_INTEGRATION_RESULT" "$CORPUS_RESULT"`,
 	}
 	for _, snippet := range requiredSnippets {
 		if !strings.Contains(contents, snippet) {
@@ -142,12 +155,15 @@ func validateCIWorkflow(contents string) []string {
 		"@master",
 		"@latest",
 		"ubuntu-latest",
-		"    env:\n      HELOX_TOOL_CACHE: ${{ runner.temp }}",
 		"5ceb9a5fd5750d6c73dd166441f28306039300d0",
 		"4463ce276e207f5a516a08ec627a768a19cf7bed0094d522b0810bee3424585caa8d344e093204012b974f5c508ab2362dcb0d7236f0c1992fccc426beeb7ffc",
 		"c876a1619c885f44f3bdc87998eca59c79581954631c9d7fab4eb53cc0409b68e4be74c08ef3fe599c51b75d56262070f0c314f9908336221e7764fdf981b7f5",
 		"node:22.23.1-slim@sha256:",
 		"python:3.14.7-slim-bookworm@sha256:",
+		"pytorch_cuda_qualification",
+		"HELOX_PYTORCH_PROFILE=cu128",
+		"--download-sidecars=ALWAYS",
+		"--sidecar-usage-policy=LEGACY_DEPRECATED_SLOW_EMBEDDED_FALLBACK",
 	}
 	for _, token := range forbidden {
 		if strings.Contains(contents, token) {
@@ -156,8 +172,8 @@ func validateCIWorkflow(contents string) []string {
 	}
 
 	allowedActions := map[string]int{
-		"actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1": 9,
-		"actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e": 8,
+		"actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1": 10,
+		"actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e": 9,
 	}
 	actualActions := make(map[string]int)
 	for _, match := range actionReference.FindAllStringSubmatch(contents, -1) {
@@ -179,7 +195,7 @@ func validateCIWorkflow(contents string) []string {
 	}
 
 	jobs := workflowJobIDs(contents)
-	wantJobs := []string{"docs", "gvisor-integration", "gvisor-observer", "macos", "minimum-go", "quick", "required", "security", "vulnerability"}
+	wantJobs := []string{"docs", "gvisor-integration", "gvisor-observer", "macos", "minimum-go", "quick", "required", "security", "vulnerability", "wheel-corpus"}
 	if strings.Join(jobs, ",") != strings.Join(wantJobs, ",") {
 		findings = append(findings, fmt.Sprintf("workflow jobs are %q, require %q", jobs, wantJobs))
 	}
@@ -197,7 +213,7 @@ func validateSecurityWorkflow(contents string) []string {
 		"fetch-depth: 0",
 		"persist-credentials: false",
 		"runs-on: ubuntu-24.04",
-		"go-version: '1.26.7'",
+		"go-version: '1.26.8'",
 		"run: go run ./scripts/check security-history",
 		"run: go run ./scripts/check vulnerability",
 		"run: go run ./scripts/check fuzz",
@@ -231,10 +247,11 @@ func validateReleaseWorkflow(contents string) []string {
 		"runs-on: ubuntu-24.04",
 		"GOTOOLCHAIN: local",
 		"persist-credentials: false",
-		"go-version: '1.26.7'",
+		"go-version: '1.26.8'",
 		"check-latest: false",
 		"cache: false",
 		"go build -trimpath -buildvcs=true",
+		"go run ./scripts/check release-gate",
 		"scripts/build-gvisor-observer-release.sh",
 		"go run ./scripts/runtime-image-manifest",
 		"docker buildx imagetools inspect \"$node_image\"",
@@ -312,7 +329,7 @@ func validateReleasePublishWorkflow(contents string) []string {
 		"runs-on: ubuntu-24.04",
 		"environment: release",
 		"persist-credentials: false",
-		"go-version: '1.26.7'",
+		"go-version: '1.26.8'",
 		"gh run view \"$SOURCE_RUN_ID\" -R \"$GH_REPO\"",
 		"test \"$(jq -er '.workflowName' <<<\"$run_json\")\" = 'Heliopause Release Build'",
 		"repos/$GH_REPO/branches/main",
@@ -410,21 +427,13 @@ func validateReleasePublishWorkflow(contents string) []string {
 }
 
 func workflowJobIDs(contents string) []string {
-	lines := strings.Split(contents, "\n")
-	inJobs := false
+	doc, err := parseWorkflow(contents)
+	if err != nil {
+		return nil
+	}
 	var jobs []string
-	for _, line := range lines {
-		if line == "jobs:" {
-			inJobs = true
-			continue
-		}
-		if !inJobs || !strings.HasPrefix(line, "  ") || strings.HasPrefix(line, "    ") || !strings.HasSuffix(line, ":") {
-			continue
-		}
-		identifier := strings.TrimSuffix(strings.TrimSpace(line), ":")
-		if identifier != "" {
-			jobs = append(jobs, identifier)
-		}
+	for id := range workflowMap(doc["jobs"]) {
+		jobs = append(jobs, id)
 	}
 	sort.Strings(jobs)
 	return jobs

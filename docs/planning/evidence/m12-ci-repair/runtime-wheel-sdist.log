@@ -1,0 +1,6 @@
+=== RUN   TestLinuxPyPISdistBuildIntegration
+observer_attribution sequence=1 profile=pypi-wheel counts=PROCESS/SENTRY_EXEC/OTHER/ARTIFACT_ROLE/ARTIFACT_GROUP:1,PROCESS/SENTRY_EXEC/PYTHON/ARTIFACT_ROLE/ARTIFACT_GROUP:2
+--- PASS: TestLinuxPyPISdistBuildIntegration (13.62s)
+=== RUN   TestLinuxPyPIWheelDynamicIntegration
+--- PASS: TestLinuxPyPIWheelDynamicIntegration (12.04s)
+PASS

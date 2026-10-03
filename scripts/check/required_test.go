@@ -10,16 +10,16 @@ import (
 func TestValidateRequiredResults(t *testing.T) {
 	t.Parallel()
 
-	if err := validateRequiredResults([]string{"success", "success", "success", "success", "success", "success", "success", "success"}); err != nil {
+	if err := validateRequiredResults([]string{"success", "success", "success", "success", "success", "success", "success", "success", "success"}); err != nil {
 		t.Fatalf("validateRequiredResults success error: %v", err)
 	}
 
-	for _, result := range []string{"failure", "cancelled", "skipped", ""} {
+	for _, result := range []string{"failure", "cancelled", "skipped", "", "unknown"} {
 		result := result
 		t.Run(result, func(t *testing.T) {
 			t.Parallel()
 			var failure *checkFailure
-			err := validateRequiredResults([]string{"success", "success", "success", "success", "success", "success", "success", result})
+			err := validateRequiredResults([]string{"success", "success", "success", "success", "success", "success", "success", "success", result})
 			if !errors.As(err, &failure) || failure.class != findingFailure {
 				t.Fatalf("validateRequiredResults(%q) error = %v, want finding", result, err)
 			}
@@ -34,7 +34,7 @@ func TestValidateRequiredResultsRejectsMissingChild(t *testing.T) {
 	t.Parallel()
 
 	var failure *checkFailure
-	err := validateRequiredResults([]string{"success", "success", "success", "success", "success"})
+	err := validateRequiredResults([]string{"success", "success", "success", "success", "success", "success"})
 	if !errors.As(err, &failure) || failure.class != executionFailure {
 		t.Fatalf("validateRequiredResults error = %v, want execution failure", err)
 	}
@@ -43,14 +43,26 @@ func TestValidateRequiredResultsRejectsMissingChild(t *testing.T) {
 func TestRunRequiredExit(t *testing.T) {
 	t.Parallel()
 
-	if code := run([]string{"required", "success", "success", "success", "success", "success", "success", "success", "success"}, io.Discard, io.Discard); code != exitSuccess {
+	if code := run([]string{"required", "success", "success", "success", "success", "success", "success", "success", "success", "success"}, io.Discard, io.Discard); code != exitSuccess {
 		t.Fatalf("run success code = %d", code)
 	}
 	var stderr strings.Builder
-	if code := run([]string{"required", "success", "success", "success", "success", "success", "success", "success", "cancelled"}, io.Discard, &stderr); code != exitFailure {
+	if code := run([]string{"required", "success", "success", "success", "success", "success", "success", "success", "success", "cancelled"}, io.Discard, &stderr); code != exitFailure {
 		t.Fatalf("run cancelled code = %d", code)
 	}
 	if !strings.Contains(stderr.String(), "cancelled") {
 		t.Fatalf("stderr = %q, want cancelled", stderr.String())
+	}
+}
+
+func TestRequiredExactNineResults(t *testing.T) {
+	for _, count := range []int{0, 8, 10} {
+		values := make([]string, count)
+		for i := range values {
+			values[i] = "success"
+		}
+		if validateRequiredResults(values) == nil {
+			t.Fatalf("accepted %d results", count)
+		}
 	}
 }

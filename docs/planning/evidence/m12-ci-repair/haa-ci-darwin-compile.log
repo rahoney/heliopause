@@ -1,0 +1,35 @@
+go test -c -o /tmp/haa-ci-isolated/test-bin/github.com_rahoney_heliopause_cmd_helox.test github.com/rahoney/heliopause/cmd/helox
+go test -c -o /tmp/haa-ci-isolated/test-bin/github.com_rahoney_heliopause_internal_application.test github.com/rahoney/heliopause/internal/application
+go test -c -o /tmp/haa-ci-isolated/test-bin/github.com_rahoney_heliopause_internal_artifact_cargo.test github.com/rahoney/heliopause/internal/artifact/cargo
+go test -c -o /tmp/haa-ci-isolated/test-bin/github.com_rahoney_heliopause_internal_artifact_githubrelease.test github.com/rahoney/heliopause/internal/artifact/githubrelease
+go test -c -o /tmp/haa-ci-isolated/test-bin/github.com_rahoney_heliopause_internal_artifact_gomodule.test github.com/rahoney/heliopause/internal/artifact/gomodule
+go test -c -o /tmp/haa-ci-isolated/test-bin/github.com_rahoney_heliopause_internal_artifact_npm.test github.com/rahoney/heliopause/internal/artifact/npm
+go test -c -o /tmp/haa-ci-isolated/test-bin/github.com_rahoney_heliopause_internal_artifact_pypi.test github.com/rahoney/heliopause/internal/artifact/pypi
+go test -c -o /tmp/haa-ci-isolated/test-bin/github.com_rahoney_heliopause_internal_artifact_terraformprovider.test github.com/rahoney/heliopause/internal/artifact/terraformprovider
+go test -c -o /tmp/haa-ci-isolated/test-bin/github.com_rahoney_heliopause_internal_bootstrap.test github.com/rahoney/heliopause/internal/bootstrap
+go test -c -o /tmp/haa-ci-isolated/test-bin/github.com_rahoney_heliopause_internal_cli.test github.com/rahoney/heliopause/internal/cli
+go test -c -o /tmp/haa-ci-isolated/test-bin/github.com_rahoney_heliopause_internal_core_domain.test github.com/rahoney/heliopause/internal/core/domain
+go test -c -o /tmp/haa-ci-isolated/test-bin/github.com_rahoney_heliopause_internal_core_ports.test github.com/rahoney/heliopause/internal/core/ports
+?   	github.com/rahoney/heliopause/internal/core/ports	[no test files]
+go test -c -o /tmp/haa-ci-isolated/test-bin/github.com_rahoney_heliopause_internal_evidence.test github.com/rahoney/heliopause/internal/evidence
+go test -c -o /tmp/haa-ci-isolated/test-bin/github.com_rahoney_heliopause_internal_evidence_local.test github.com/rahoney/heliopause/internal/evidence/local
+go test -c -o /tmp/haa-ci-isolated/test-bin/github.com_rahoney_heliopause_internal_hosttool.test github.com/rahoney/heliopause/internal/hosttool
+go test -c -o /tmp/haa-ci-isolated/test-bin/github.com_rahoney_heliopause_internal_inspection_githubrelease.test github.com/rahoney/heliopause/internal/inspection/githubrelease
+go test -c -o /tmp/haa-ci-isolated/test-bin/github.com_rahoney_heliopause_internal_inspection_npm.test github.com/rahoney/heliopause/internal/inspection/npm
+go test -c -o /tmp/haa-ci-isolated/test-bin/github.com_rahoney_heliopause_internal_inspection_pypi.test github.com/rahoney/heliopause/internal/inspection/pypi
+go test -c -o /tmp/haa-ci-isolated/test-bin/github.com_rahoney_heliopause_internal_networkpolicy.test github.com/rahoney/heliopause/internal/networkpolicy
+go test -c -o /tmp/haa-ci-isolated/test-bin/github.com_rahoney_heliopause_internal_policy.test github.com/rahoney/heliopause/internal/policy
+go test -c -o /tmp/haa-ci-isolated/test-bin/github.com_rahoney_heliopause_internal_promotion.test github.com/rahoney/heliopause/internal/promotion
+go test -c -o /tmp/haa-ci-isolated/test-bin/github.com_rahoney_heliopause_internal_releaseinstall.test github.com/rahoney/heliopause/internal/releaseinstall
+go test -c -o /tmp/haa-ci-isolated/test-bin/github.com_rahoney_heliopause_internal_runtimeidentity.test github.com/rahoney/heliopause/internal/runtimeidentity
+go test -c -o /tmp/haa-ci-isolated/test-bin/github.com_rahoney_heliopause_internal_sandbox.test github.com/rahoney/heliopause/internal/sandbox
+go test -c -o /tmp/haa-ci-isolated/test-bin/github.com_rahoney_heliopause_internal_testutil_fakeworkflow.test github.com/rahoney/heliopause/internal/testutil/fakeworkflow
+go test -c -o /tmp/haa-ci-isolated/test-bin/github.com_rahoney_heliopause_internal_verification_githubrelease.test github.com/rahoney/heliopause/internal/verification/githubrelease
+go test -c -o /tmp/haa-ci-isolated/test-bin/github.com_rahoney_heliopause_internal_verification_npm.test github.com/rahoney/heliopause/internal/verification/npm
+go test -c -o /tmp/haa-ci-isolated/test-bin/github.com_rahoney_heliopause_internal_verification_pypi.test github.com/rahoney/heliopause/internal/verification/pypi
+?   	github.com/rahoney/heliopause/internal/verification/pypi	[no test files]
+go test -c -o /tmp/haa-ci-isolated/test-bin/github.com_rahoney_heliopause_scripts.test github.com/rahoney/heliopause/scripts
+go test -c -o /tmp/haa-ci-isolated/test-bin/github.com_rahoney_heliopause_scripts_check.test github.com/rahoney/heliopause/scripts/check
+go test -c -o /tmp/haa-ci-isolated/test-bin/github.com_rahoney_heliopause_scripts_release-manifest.test github.com/rahoney/heliopause/scripts/release-manifest
+go test -c -o /tmp/haa-ci-isolated/test-bin/github.com_rahoney_heliopause_scripts_runtime-image-manifest.test github.com/rahoney/heliopause/scripts/runtime-image-manifest
+DARWIN_TEST_COMPILE_PASS 32

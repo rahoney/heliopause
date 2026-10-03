@@ -1,0 +1,100 @@
+{
+  "toolchain": "Go 1.26.8, Linux amd64; Python runtime3.14.7/pip26.2.1 and image digest in scripts/runtimes.lock.json",
+  "clean_export": "Tracked files plus intended internal/scripts additions copied to /tmp/haa-ci-clean; unrelated user documents/logs omitted. Separate empty .git initialized only in export for Go VCS discovery. HOME=/tmp/haa-ci-isolated/home; TMPDIR=/tmp/haa-ci-isolated/tmp; env -i.",
+  "declared_caches": {
+    "HELOX_TOOL_CACHE": "/tmp/haa-final-audit-tools",
+    "GOCACHE": "/tmp/haa-final-audit-tools/go-build",
+    "GOMODCACHE": "/tmp/haa-final-audit-tools/go-mod",
+    "GOPROXY": "off",
+    "GOTOOLCHAIN": "local"
+  },
+  "executed": [
+    {
+      "command": "go run ./scripts/check quick",
+      "cwd": "clean export",
+      "exit": 0,
+      "evidence": "clean-quick-final.log",
+      "supplies": [
+        "full default Go tests",
+        "go vet",
+        "pinned Staticcheck",
+        "production build",
+        "Linux test compilation",
+        "platform-equivalent coverage"
+      ],
+      "corpus_root": "/tmp/haa-ci-isolated/absent-corpus"
+    },
+    {
+      "command": "go run ./scripts/check security",
+      "cwd": "clean export",
+      "exit": 0,
+      "evidence": "clean-security-final.log"
+    },
+    {
+      "command": "go run ./scripts/check docs",
+      "cwd": "repository after queue update",
+      "exit": 0,
+      "evidence": "clean-docs-final.log"
+    },
+    {
+      "command": "GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go test -c -o <unique output> <each package>",
+      "cwd": "clean export",
+      "exit": 0,
+      "evidence": "darwin-test-compile-final.log",
+      "followup": "Changed hosttool test compiled again after its fixture correction; native execution NOT_RUN"
+    },
+    {
+      "command": "python3 scripts/prepare-wheel-corpus.py --root /tmp/haa-ci-repair-corpus --cache /tmp/haa_corpus",
+      "exit": 0,
+      "note": "Cache was acquisition acceleration only; every file checked against committed independent digest. CI preparation does not require cache."
+    },
+    {
+      "command": "HELOX_CORPUS_ROOT=<missing|tampered|prepared> go run ./scripts/check corpus",
+      "cwd": "clean export",
+      "exits": [
+        1,
+        1,
+        0
+      ],
+      "evidence": "clean-corpus-results.json"
+    },
+    {
+      "command": "go test ./internal/artifact/pypi ./internal/sandbox ./internal/promotion ./internal/inspection/pypi",
+      "exit": 0,
+      "evidence": "destination-regressions.log"
+    },
+    {
+      "command": "go build -trimpath -o <temporary> ./cmd/helox; go build -trimpath -o <temporary> ./cmd/haa-network-policy-helper",
+      "exit": 0,
+      "note": "Independent repeated builds matched installed hashes; no source alteration"
+    },
+    {
+      "command": "bash /tmp/haa-ci-runtime-final.sh",
+      "exit": 0,
+      "evidence": "runtime-commands.sh.txt",
+      "supplies": [
+        "production packaging acceptance",
+        "CPU E2E",
+        "authenticated wheel/sdist integration",
+        "production client restore and own helper cleanup"
+      ]
+    },
+    {
+      "command": "HELOX_PYTORCH_FREEZE_INTEGRATION=1 HELOX_RESOLUTION_OUTPUT=<output> /usr/libexec/heliopause/helox -test.v -test.timeout=22m -test.run ^TestLinuxPyTorchFrozenClosuresIntegration$",
+      "exit": 0,
+      "evidence": "resolver-freeze.log",
+      "note": "Canonical protected test binary installed and helper rebound before execution; metadata only, no CUDA wheel execution"
+    },
+    {
+      "command": "HELOX_PROMOTION_INTEGRATION=1 HELOX_PYPI_PROMOTION_INTEGRATION=1 go test -v -timeout=5m ./internal/promotion -run ^TestLinux(NPM|PyPI)PromotionIntegration$",
+      "exit": 0,
+      "evidence": "promotion-final.log"
+    }
+  ],
+  "not_run": [
+    "remote CI",
+    "native macOS",
+    "CUDA dynamic qualification",
+    "redundant platform profile (identical steps supplied by quick)"
+  ]
+}

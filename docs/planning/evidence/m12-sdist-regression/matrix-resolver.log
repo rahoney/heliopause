@@ -1,0 +1,4 @@
+=== RUN   TestLinuxPyTorchResolverIntegration
+observer_attribution sequence=1 profile=pypi-wheel-pytorch-cpu counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/PYTHON:151
+--- PASS: TestLinuxPyTorchResolverIntegration (49.57s)
+PASS

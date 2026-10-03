@@ -89,6 +89,21 @@ func WriteJSONInstallResult(output io.Writer, outcome application.InstallOutcome
 		OperationStatus: status, Artifact: machineArtifact{Reference: machineReference{SourceID: inspection.Request().Reference().Source().String(), Locator: inspection.Request().Reference().Locator()}},
 		Checks: []machineCheck{}, EvidenceReferences: []machineEvidenceReference{}, Target: inspection.Request().Context().Target().String(), PromotionStatus: promotion,
 	}
+	for _, diagnostic := range inspection.GraphStaticDiagnostics() {
+		document.GraphStaticNotReady = append(document.GraphStaticNotReady, machineGraphStaticDiagnostic{
+			Node: diagnostic.Node().String(), Package: diagnostic.Package(), Version: diagnostic.Version(), Source: diagnostic.Source().String(), Variant: diagnostic.Variant(), Cause: string(diagnostic.Cause()), Stage: string(diagnostic.Stage()),
+		})
+	}
+	for _, diagnostic := range inspection.GraphDynamicInstallDiagnostics() {
+		document.GraphDynamicInstallFailures = append(document.GraphDynamicInstallFailures, machineGraphDynamicInstallDiagnostic{
+			Node: diagnostic.Node().String(), Package: diagnostic.Package(), Version: diagnostic.Version(), Source: diagnostic.Source().String(), Variant: diagnostic.Variant(), Reason: diagnostic.Reason(), Phase: diagnostic.Phase(), FailureClass: diagnostic.FailureClass(),
+		})
+	}
+	for _, diagnostic := range inspection.DependencyPolicyDiagnostics() {
+		document.DependencyPolicyAttribution = append(document.DependencyPolicyAttribution, machineDependencyPolicyDiagnostic{
+			Node: diagnostic.Node().String(), Package: diagnostic.Package(), Version: diagnostic.Version(), Source: diagnostic.Source().String(), EntryPolicyDecision: string(diagnostic.Decision()), EntryPolicyReasons: diagnostic.Reasons(), DynamicFindingCodes: diagnostic.DynamicFindingCodes(),
+		})
+	}
 	if inspection.Set().Valid() {
 		for _, item := range inspection.Set().Inspections() {
 			for _, check := range item.Checks() {
@@ -127,18 +142,52 @@ func installStatuses(outcome application.InstallOutcome, operationErr error) (st
 }
 
 type installMachineResult struct {
-	SchemaVersion      string                     `json:"schema_version"`
-	OperationID        string                     `json:"operation_id"`
-	Operation          string                     `json:"operation"`
-	OperationStatus    string                     `json:"operation_status"`
-	Artifact           machineArtifact            `json:"artifact"`
-	Checks             []machineCheck             `json:"checks"`
-	EvidenceReferences []machineEvidenceReference `json:"evidence_references"`
-	Policy             *machinePolicy             `json:"policy,omitempty"`
-	Target             string                     `json:"target"`
-	VerifiedSet        *machineVerifiedSet        `json:"verified_set,omitempty"`
-	PromotionStatus    string                     `json:"promotion_status"`
-	Error              *machineError              `json:"error,omitempty"`
+	SchemaVersion               string                                 `json:"schema_version"`
+	OperationID                 string                                 `json:"operation_id"`
+	Operation                   string                                 `json:"operation"`
+	OperationStatus             string                                 `json:"operation_status"`
+	Artifact                    machineArtifact                        `json:"artifact"`
+	Checks                      []machineCheck                         `json:"checks"`
+	EvidenceReferences          []machineEvidenceReference             `json:"evidence_references"`
+	GraphStaticNotReady         []machineGraphStaticDiagnostic         `json:"graph_static_not_ready,omitempty"`
+	GraphDynamicInstallFailures []machineGraphDynamicInstallDiagnostic `json:"graph_dynamic_install_failures,omitempty"`
+	DependencyPolicyAttribution []machineDependencyPolicyDiagnostic    `json:"dependency_policy_attribution,omitempty"`
+	Policy                      *machinePolicy                         `json:"policy,omitempty"`
+	Target                      string                                 `json:"target"`
+	VerifiedSet                 *machineVerifiedSet                    `json:"verified_set,omitempty"`
+	PromotionStatus             string                                 `json:"promotion_status"`
+	Error                       *machineError                          `json:"error,omitempty"`
+}
+
+type machineDependencyPolicyDiagnostic struct {
+	Node                string   `json:"node"`
+	Package             string   `json:"package"`
+	Version             string   `json:"version"`
+	Source              string   `json:"source"`
+	EntryPolicyDecision string   `json:"entry_policy_decision"`
+	EntryPolicyReasons  []string `json:"entry_policy_reasons"`
+	DynamicFindingCodes []string `json:"dynamic_finding_codes"`
+}
+
+type machineGraphStaticDiagnostic struct {
+	Node    string `json:"node"`
+	Package string `json:"package"`
+	Version string `json:"version"`
+	Source  string `json:"source"`
+	Variant string `json:"variant"`
+	Cause   string `json:"cause"`
+	Stage   string `json:"stage,omitempty"`
+}
+
+type machineGraphDynamicInstallDiagnostic struct {
+	Node         string `json:"node"`
+	Package      string `json:"package"`
+	Version      string `json:"version"`
+	Source       string `json:"source"`
+	Variant      string `json:"variant"`
+	Reason       string `json:"reason"`
+	Phase        string `json:"phase,omitempty"`
+	FailureClass string `json:"failure_class"`
 }
 
 type machineVerifiedSet struct {

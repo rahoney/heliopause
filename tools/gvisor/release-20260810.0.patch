@@ -1,0 +1,1367 @@
+diff --git a/pkg/sentry/seccheck/metadata.go b/pkg/sentry/seccheck/metadata.go
+index b4c016df7..8fc1ff8c1 100644
+--- a/pkg/sentry/seccheck/metadata.go
++++ b/pkg/sentry/seccheck/metadata.go
+@@ -31,6 +31,9 @@ const (
+ 	PointExitNotifyParent
+ 	PointTaskExit
+ 	PointMmap
++	PointOpenResult
++	PointMountTopologySnapshot
++	PointMountTopologyMutation
+ 
+ 	// Add new Points above this line.
+ 	pointLengthBeforeSyscalls
+@@ -330,6 +333,9 @@ func genericInit() {
+ 		Name:          "sentry/mmap",
+ 		ContextFields: defaultContextFields,
+ 	})
++	registerPoint(PointDesc{ID: PointOpenResult, Name: "syscall/open_result", ContextFields: defaultContextFields})
++	registerPoint(PointDesc{ID: PointMountTopologySnapshot, Name: "sentry/mount_topology_snapshot", ContextFields: defaultContextFields})
++	registerPoint(PointDesc{ID: PointMountTopologyMutation, Name: "sentry/mount_topology_mutation", ContextFields: defaultContextFields})
+ }
+ 
+ var initOnce sync.Once
+diff --git a/pkg/sentry/seccheck/points/common.proto b/pkg/sentry/seccheck/points/common.proto
+index 546e58962..3a965b202 100644
+--- a/pkg/sentry/seccheck/points/common.proto
++++ b/pkg/sentry/seccheck/points/common.proto
+@@ -166,5 +166,8 @@ enum MessageType {
+   MESSAGE_SYSCALL_MMAP = 36;
+   MESSAGE_SYSCALL_LISTEN = 37;
+   MESSAGE_SYSCALL_PTRACE = 38;
++  MESSAGE_SYSCALL_OPEN_RESULT = 39;
++  MESSAGE_SENTRY_MOUNT_TOPOLOGY_SNAPSHOT = 40;
++  MESSAGE_SENTRY_MOUNT_TOPOLOGY_MUTATION = 41;
+ }
+ // LINT.ThenChange(../../../../examples/seccheck/server.cc)
+diff --git a/pkg/sentry/seccheck/points/sentry.proto b/pkg/sentry/seccheck/points/sentry.proto
+index b9aeb03f0..cde7112b7 100644
+--- a/pkg/sentry/seccheck/points/sentry.proto
++++ b/pkg/sentry/seccheck/points/sentry.proto
+@@ -173,3 +173,26 @@ message MmapInfo {
+   // copied up to the upper layer).
+   bool overlayfs_lower = 10;
+ }
++
++message MountTopologyEntry {
++  uint64 mount_id = 1;
++  uint64 parent_mount_id = 2;
++  string mountpoint = 3;
++  string filesystem_type = 4;
++  bool read_only = 5;
++  bool noexec = 6;
++  bool nosuid = 7;
++  bool nodev = 8;
++}
++
++message MountTopologySnapshot {
++  gvisor.common.ContextData context_data = 1;
++  uint64 mount_namespace_id = 2;
++  bool snapshot_complete = 3;
++  repeated MountTopologyEntry mounts = 4;
++}
++
++message MountTopologyMutation {
++  gvisor.common.ContextData context_data = 1;
++  uint64 mount_namespace_id = 2;
++}
+diff --git a/pkg/sentry/seccheck/points/syscall.proto b/pkg/sentry/seccheck/points/syscall.proto
+index c9dc3be67..37fe97633 100644
+--- a/pkg/sentry/seccheck/points/syscall.proto
++++ b/pkg/sentry/seccheck/points/syscall.proto
+@@ -46,6 +46,16 @@ message Open {
+   uint32 mode = 8;
+ }
+ 
++message OpenResult {
++  gvisor.common.ContextData context_data = 1;
++  uint64 sysno = 2;
++  uint32 flags = 3;
++  int64 errorno = 4;
++  string resolved_pathname = 5;
++  uint64 mount_id = 6;
++  bool success = 7;
++}
++
+ message Close {
+   gvisor.common.ContextData context_data = 1;
+   Exit exit = 2;
+diff --git a/pkg/sentry/seccheck/seccheck.go b/pkg/sentry/seccheck/seccheck.go
+index 7422baf1c..4c0be3b0d 100644
+--- a/pkg/sentry/seccheck/seccheck.go
++++ b/pkg/sentry/seccheck/seccheck.go
+@@ -111,6 +111,9 @@ type Sink interface {
+ 	ExitNotifyParent(ctx context.Context, fields FieldSet, info *pb.ExitNotifyParentInfo) error
+ 	TaskExit(context.Context, FieldSet, *pb.TaskExit) error
+ 	Mmap(context.Context, FieldSet, *pb.MmapInfo) error
++	OpenResult(context.Context, FieldSet, *pb.OpenResult) error
++	MountTopologySnapshot(context.Context, FieldSet, *pb.MountTopologySnapshot) error
++	MountTopologyMutation(context.Context, FieldSet, *pb.MountTopologyMutation) error
+ 
+ 	ContainerStart(context.Context, FieldSet, *pb.Start) error
+ 
+@@ -177,6 +180,14 @@ func (SinkDefaults) Mmap(context.Context, FieldSet, *pb.MmapInfo) error {
+ 	return nil
+ }
+ 
++func (SinkDefaults) OpenResult(context.Context, FieldSet, *pb.OpenResult) error { return nil }
++func (SinkDefaults) MountTopologySnapshot(context.Context, FieldSet, *pb.MountTopologySnapshot) error {
++	return nil
++}
++func (SinkDefaults) MountTopologyMutation(context.Context, FieldSet, *pb.MountTopologyMutation) error {
++	return nil
++}
++
+ // RawSyscall implements Sink.RawSyscall.
+ func (SinkDefaults) RawSyscall(context.Context, FieldSet, *pb.Syscall) error {
+ 	return nil
+diff --git a/pkg/sentry/seccheck/sinks/remote/remote.go b/pkg/sentry/seccheck/sinks/remote/remote.go
+index b05cc263a..b5de6af63 100644
+--- a/pkg/sentry/seccheck/sinks/remote/remote.go
++++ b/pkg/sentry/seccheck/sinks/remote/remote.go
+@@ -271,6 +271,21 @@ func (r *remote) Mmap(_ context.Context, _ seccheck.FieldSet, info *pb.MmapInfo)
+ 	return nil
+ }
+ 
++func (r *remote) OpenResult(_ context.Context, _ seccheck.FieldSet, info *pb.OpenResult) error {
++	r.write(info, pb.MessageType_MESSAGE_SYSCALL_OPEN_RESULT)
++	return nil
++}
++
++func (r *remote) MountTopologySnapshot(_ context.Context, _ seccheck.FieldSet, info *pb.MountTopologySnapshot) error {
++	r.write(info, pb.MessageType_MESSAGE_SENTRY_MOUNT_TOPOLOGY_SNAPSHOT)
++	return nil
++}
++
++func (r *remote) MountTopologyMutation(_ context.Context, _ seccheck.FieldSet, info *pb.MountTopologyMutation) error {
++	r.write(info, pb.MessageType_MESSAGE_SENTRY_MOUNT_TOPOLOGY_MUTATION)
++	return nil
++}
++
+ // ContainerStart implements seccheck.Sink.
+ func (r *remote) ContainerStart(_ context.Context, _ seccheck.FieldSet, info *pb.Start) error {
+ 	r.write(info, pb.MessageType_MESSAGE_CONTAINER_START)
+diff --git a/pkg/sentry/seccheck/sinks/remote/remote_test.go b/pkg/sentry/seccheck/sinks/remote/remote_test.go
+index 407280d9c..7167bb35c 100644
+--- a/pkg/sentry/seccheck/sinks/remote/remote_test.go
++++ b/pkg/sentry/seccheck/sinks/remote/remote_test.go
+@@ -154,6 +154,136 @@ func TestBasic(t *testing.T) {
+ 	}
+ }
+ 
++func TestRemoteNewEvents(t *testing.T) {
++	server, err := test.NewServer()
++	if err != nil {
++		t.Fatalf("newServer(): %v", err)
++	}
++	defer server.Close()
++
++	endpoint, err := setup(server.Endpoint)
++	if err != nil {
++		t.Fatalf("setup(): %v", err)
++	}
++	endpointFD, err := fd.NewFromFile(endpoint)
++	if err != nil {
++		_ = endpoint.Close()
++		t.Fatalf("NewFromFile(): %v", err)
++	}
++	_ = endpoint.Close()
++
++	r, err := new(nil, endpointFD)
++	if err != nil {
++		t.Fatalf("New(): %v", err)
++	}
++
++	// 1. Test OpenResult serialization
++	openResult := &pb.OpenResult{
++		Sysno:            257,
++		Flags:            0x80000,
++		Errorno:          0,
++		ResolvedPathname: "/etc/passwd",
++		MountId:          12,
++		Success:          true,
++		ContextData: &pb.ContextData{
++			ThreadId:          42,
++			ThreadStartTimeNs: 123456789,
++			ThreadGroupId:     42,
++			ProcessName:       "cat",
++		},
++	}
++	if err := r.OpenResult(nil, seccheck.FieldSet{}, openResult); err != nil {
++		t.Fatalf("OpenResult: %v", err)
++	}
++
++	// 2. Test MountTopologySnapshot serialization
++	snapshot := &pb.MountTopologySnapshot{
++		MountNamespaceId: 1001,
++		SnapshotComplete: true,
++		Mounts: []*pb.MountTopologyEntry{
++			{
++				MountId:        1,
++				ParentMountId:  1,
++				Mountpoint:     "/",
++				FilesystemType: "tmpfs",
++				ReadOnly:       false,
++				Noexec:         false,
++				Nosuid:         true,
++				Nodev:          true,
++			},
++			{
++				MountId:        2,
++				ParentMountId:  1,
++				Mountpoint:     "/proc",
++				FilesystemType: "procfs",
++				ReadOnly:       true,
++				Noexec:         true,
++				Nosuid:         true,
++				Nodev:          true,
++			},
++		},
++		ContextData: &pb.ContextData{
++			ThreadId: 1,
++		},
++	}
++	if err := r.MountTopologySnapshot(nil, seccheck.FieldSet{}, snapshot); err != nil {
++		t.Fatalf("MountTopologySnapshot: %v", err)
++	}
++
++	// 3. Test MountTopologyMutation serialization
++	mutation := &pb.MountTopologyMutation{
++		MountNamespaceId: 1001,
++		ContextData: &pb.ContextData{
++			ThreadId: 42,
++		},
++	}
++	if err := r.MountTopologyMutation(nil, seccheck.FieldSet{}, mutation); err != nil {
++		t.Fatalf("MountTopologyMutation: %v", err)
++	}
++
++	server.WaitForCount(3)
++	pts := server.GetPoints()
++	if len(pts) != 3 {
++		t.Fatalf("expected 3 points, got %d", len(pts))
++	}
++
++	// Verify OpenResult
++	if want := pb.MessageType_MESSAGE_SYSCALL_OPEN_RESULT; pts[0].MsgType != want {
++		t.Errorf("wrong msg type for OpenResult, want %v, got %v", want, pts[0].MsgType)
++	}
++	gotOpen := &pb.OpenResult{}
++	if err := proto.Unmarshal(pts[0].Msg, gotOpen); err != nil {
++		t.Fatalf("Unmarshal OpenResult: %v", err)
++	}
++	if !proto.Equal(openResult, gotOpen) {
++		t.Errorf("OpenResult mismatch: want %+v, got %+v", openResult, gotOpen)
++	}
++
++	// Verify MountTopologySnapshot
++	if want := pb.MessageType_MESSAGE_SENTRY_MOUNT_TOPOLOGY_SNAPSHOT; pts[1].MsgType != want {
++		t.Errorf("wrong msg type for MountTopologySnapshot, want %v, got %v", want, pts[1].MsgType)
++	}
++	gotSnapshot := &pb.MountTopologySnapshot{}
++	if err := proto.Unmarshal(pts[1].Msg, gotSnapshot); err != nil {
++		t.Fatalf("Unmarshal MountTopologySnapshot: %v", err)
++	}
++	if !proto.Equal(snapshot, gotSnapshot) {
++		t.Errorf("MountTopologySnapshot mismatch: want %+v, got %+v", snapshot, gotSnapshot)
++	}
++
++	// Verify MountTopologyMutation
++	if want := pb.MessageType_MESSAGE_SENTRY_MOUNT_TOPOLOGY_MUTATION; pts[2].MsgType != want {
++		t.Errorf("wrong msg type for MountTopologyMutation, want %v, got %v", want, pts[2].MsgType)
++	}
++	gotMutation := &pb.MountTopologyMutation{}
++	if err := proto.Unmarshal(pts[2].Msg, gotMutation); err != nil {
++		t.Fatalf("Unmarshal MountTopologyMutation: %v", err)
++	}
++	if !proto.Equal(mutation, gotMutation) {
++		t.Errorf("MountTopologyMutation mismatch: want %+v, got %+v", mutation, gotMutation)
++	}
++}
++
+ func TestVersionUnsupported(t *testing.T) {
+ 	server, err := test.NewServer()
+ 	if err != nil {
+diff --git a/pkg/sentry/syscalls/linux/BUILD b/pkg/sentry/syscalls/linux/BUILD
+index 75638c775..c17cf5f70 100644
+--- a/pkg/sentry/syscalls/linux/BUILD
++++ b/pkg/sentry/syscalls/linux/BUILD
+@@ -139,7 +139,23 @@ go_test(
+         "linux64_amd64_test.go",
+         "linux64_arm64_test.go",
+         "linux64_test.go",
++        "open_result_test.go",
+     ],
+     library = ":linux",
+-    deps = ["//pkg/sentry/seccheck"],
++    deps = [
++        "//pkg/abi/linux",
++        "//pkg/context",
++        "//pkg/fspath",
++        "//pkg/hostarch",
++        "//pkg/sentry/fsimpl/testutil",
++        "//pkg/sentry/fsimpl/tmpfs",
++        "//pkg/sentry/kernel",
++        "//pkg/sentry/kernel/auth",
++        "//pkg/sentry/memmap",
++        "//pkg/sentry/seccheck",
++        "//pkg/sentry/seccheck/points:points_go_proto",
++        "//pkg/sentry/vfs",
++        "@org_golang_google_protobuf//proto:go_default_library",
++        "@org_golang_x_sys//unix:go_default_library",
++    ],
+ )
+diff --git a/pkg/sentry/syscalls/linux/open_result_test.go b/pkg/sentry/syscalls/linux/open_result_test.go
+new file mode 100644
+index 000000000..0d4325fca
+--- /dev/null
++++ b/pkg/sentry/syscalls/linux/open_result_test.go
+@@ -0,0 +1,555 @@
++// Copyright 2026 The gVisor Authors.
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//     http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package linux
++
++import (
++	"sync"
++	"testing"
++	"time"
++
++	"golang.org/x/sys/unix"
++	"google.golang.org/protobuf/proto"
++	"gvisor.dev/gvisor/pkg/abi/linux"
++	"gvisor.dev/gvisor/pkg/context"
++	"gvisor.dev/gvisor/pkg/fspath"
++	"gvisor.dev/gvisor/pkg/hostarch"
++	"gvisor.dev/gvisor/pkg/sentry/arch"
++	"gvisor.dev/gvisor/pkg/sentry/fsimpl/testutil"
++	"gvisor.dev/gvisor/pkg/sentry/fsimpl/tmpfs"
++	"gvisor.dev/gvisor/pkg/sentry/kernel"
++	"gvisor.dev/gvisor/pkg/sentry/kernel/auth"
++	"gvisor.dev/gvisor/pkg/sentry/memmap"
++	"gvisor.dev/gvisor/pkg/sentry/seccheck"
++	pb "gvisor.dev/gvisor/pkg/sentry/seccheck/points/points_go_proto"
++	"gvisor.dev/gvisor/pkg/sentry/vfs"
++)
++
++type recordingSink struct {
++	seccheck.SinkDefaults
++	mu          sync.Mutex
++	openResults []*pb.OpenResult
++	mutations   []*pb.MountTopologyMutation
++	snapshots   []*pb.MountTopologySnapshot
++}
++
++func (s *recordingSink) Name() string { return "recording-sink" }
++
++func (s *recordingSink) OpenResult(_ context.Context, _ seccheck.FieldSet, info *pb.OpenResult) error {
++	s.mu.Lock()
++	defer s.mu.Unlock()
++	s.openResults = append(s.openResults, proto.Clone(info).(*pb.OpenResult))
++	return nil
++}
++
++func (s *recordingSink) MountTopologySnapshot(_ context.Context, _ seccheck.FieldSet, info *pb.MountTopologySnapshot) error {
++	s.mu.Lock()
++	defer s.mu.Unlock()
++	s.snapshots = append(s.snapshots, proto.Clone(info).(*pb.MountTopologySnapshot))
++	return nil
++}
++
++func (s *recordingSink) MountTopologyMutation(_ context.Context, _ seccheck.FieldSet, info *pb.MountTopologyMutation) error {
++	s.mu.Lock()
++	defer s.mu.Unlock()
++	s.mutations = append(s.mutations, proto.Clone(info).(*pb.MountTopologyMutation))
++	return nil
++}
++
++func (s *recordingSink) count() int {
++	s.mu.Lock()
++	defer s.mu.Unlock()
++	return len(s.openResults)
++}
++
++func (s *recordingSink) lastResult() *pb.OpenResult {
++	s.mu.Lock()
++	defer s.mu.Unlock()
++	if len(s.openResults) == 0 {
++		return nil
++	}
++	return s.openResults[len(s.openResults)-1]
++}
++
++func (s *recordingSink) mutationCount() int {
++	s.mu.Lock()
++	defer s.mu.Unlock()
++	return len(s.mutations)
++}
++
++func mapString(t *testing.T, task *kernel.Task, str string) hostarch.Addr {
++	t.Helper()
++	addr, err := task.MemoryManager().MMap(task, memmap.MMapOpts{
++		Length:   hostarch.PageSize,
++		Perms:    hostarch.ReadWrite,
++		MaxPerms: hostarch.AnyAccess,
++		Private:  true,
++	})
++	if err != nil {
++		t.Fatalf("MMap failed: %v", err)
++	}
++	b := append([]byte(str), 0)
++	n, err := task.CopyOutBytes(addr, b)
++	if err != nil || n != len(b) {
++		t.Fatalf("CopyOutBytes failed: %v, n=%d", err, n)
++	}
++	return addr
++}
++
++func setupTestEnvironment(t *testing.T) (*kernel.Task, *kernel.Task, *recordingSink, uint64) {
++	t.Helper()
++	k, err := testutil.Boot()
++	if err != nil {
++		t.Fatalf("testutil.Boot failed: %v", err)
++	}
++
++	ctx := k.SupervisorContext()
++	creds := auth.CredentialsFromContext(ctx)
++
++	mntns, err := k.VFS().NewMountNamespace(ctx, creds, "", tmpfs.Name, &vfs.MountOptions{}, nil)
++	if err != nil {
++		t.Fatalf("NewMountNamespace failed: %v", err)
++	}
++	root := mntns.Root(ctx)
++	rootMountID := root.Mount().ID
++
++	// Create test file and test directory on root.
++	popFile := &vfs.PathOperation{Root: root, Start: root, Path: fspath.Parse("/testfile")}
++	fdFile, err := k.VFS().OpenAt(ctx, creds, popFile, &vfs.OpenOptions{Flags: linux.O_RDWR | linux.O_CREAT, Mode: 0644})
++	if err != nil {
++		t.Fatalf("Failed to create /testfile: %v", err)
++	}
++	fdFile.DecRef(ctx)
++
++	popDir := &vfs.PathOperation{Root: root, Start: root, Path: fspath.Parse("/testdir")}
++	if err := k.VFS().MkdirAt(ctx, creds, popDir, &vfs.MkdirOptions{Mode: 0755}); err != nil {
++		t.Fatalf("Failed to create /testdir: %v", err)
++	}
++
++	popChild := &vfs.PathOperation{Root: root, Start: root, Path: fspath.Parse("/testdir/childfile")}
++	fdChild, err := k.VFS().OpenAt(ctx, creds, popChild, &vfs.OpenOptions{Flags: linux.O_RDWR | linux.O_CREAT, Mode: 0644})
++	if err != nil {
++		t.Fatalf("Failed to create /testdir/childfile: %v", err)
++	}
++	fdChild.DecRef(ctx)
++
++	popSymlink := &vfs.PathOperation{Root: root, Start: root, Path: fspath.Parse("/symlink_to_child")}
++	if err := k.VFS().SymlinkAt(ctx, creds, popSymlink, "/testdir/childfile"); err != nil {
++		t.Fatalf("Failed to create /symlink_to_child: %v", err)
++	}
++
++	tg := k.GlobalInit()
++	task1, err := testutil.CreateTask(ctx, "task1", tg, mntns, root, root)
++	if err != nil {
++		t.Fatalf("CreateTask 1 failed: %v", err)
++	}
++	if _, err := task1.MemoryManager().SetMmapLayout(task1.Arch(), task1.Limits()); err != nil {
++		t.Fatalf("SetMmapLayout task1 failed: %v", err)
++	}
++
++	// Give a slight time separation to ensure distinct start times for thread correlation.
++	time.Sleep(10 * time.Millisecond)
++	task2, err := testutil.CreateTask(ctx, "task2", tg, mntns, root, root)
++	if err != nil {
++		t.Fatalf("CreateTask 2 failed: %v", err)
++	}
++	if _, err := task2.MemoryManager().SetMmapLayout(task2.Arch(), task2.Limits()); err != nil {
++		t.Fatalf("SetMmapLayout task2 failed: %v", err)
++	}
++
++	sink := &recordingSink{}
++	fields := seccheck.FieldSet{
++		Context: seccheck.MakeFieldMask(
++			seccheck.FieldCtxtTime,
++			seccheck.FieldCtxtThreadID,
++			seccheck.FieldCtxtThreadStartTime,
++			seccheck.FieldCtxtThreadGroupStartTime,
++		),
++	}
++	seccheck.Global.AppendSink(sink, []seccheck.PointReq{
++		{Pt: seccheck.PointOpenResult, Fields: fields},
++		{Pt: seccheck.PointMountTopologySnapshot, Fields: fields},
++		{Pt: seccheck.PointMountTopologyMutation, Fields: fields},
++	})
++
++	return task1, task2, sink, rootMountID
++}
++
++func TestOpenResult(t *testing.T) {
++	task1, task2, sink, rootMountID := setupTestEnvironment(t)
++	expectedCount := 0
++
++	verifyResult := func(name string, shouldSucceed bool, expectedErrno int64, expectedPath string, expectedMountID uint64) *pb.OpenResult {
++		t.Helper()
++		expectedCount++
++		if got := sink.count(); got != expectedCount {
++			t.Fatalf("[%s] expected exactly %d OpenResult events, got %d", name, expectedCount, got)
++		}
++		res := sink.lastResult()
++		if res.Success != shouldSucceed {
++			t.Errorf("[%s] Success mismatch: want %v, got %v", name, shouldSucceed, res.Success)
++		}
++		if res.Errorno != expectedErrno {
++			t.Errorf("[%s] Errorno mismatch: want %d, got %d", name, expectedErrno, res.Errorno)
++		}
++		if res.ResolvedPathname != expectedPath {
++			t.Errorf("[%s] ResolvedPathname mismatch: want %q, got %q", name, expectedPath, res.ResolvedPathname)
++		}
++		if res.MountId != expectedMountID {
++			t.Errorf("[%s] MountId mismatch: want %d, got %d", name, expectedMountID, res.MountId)
++		}
++		if res.ContextData == nil {
++			t.Errorf("[%s] ContextData missing", name)
++		} else if res.ContextData.ThreadId == 0 {
++			t.Errorf("[%s] ContextData ThreadId unpopulated", name)
++		}
++		return res
++	}
++
++	// A. successful absolute open
++	addrA := mapString(t, task1, "/testfile")
++	fdA, _, err := openat(task1, unix.SYS_OPENAT, linux.AT_FDCWD, addrA, linux.O_RDONLY, 0)
++	if err != nil || fdA < 0 {
++		t.Fatalf("A: openat failed: %v, fd=%d", err, fdA)
++	}
++	verifyResult("A. Successful absolute open", true, 0, "/testfile", rootMountID)
++
++	// B. real-dirfd relative open
++	addrDir := mapString(t, task1, "/testdir")
++	dirFD, _, err := openat(task1, unix.SYS_OPENAT, linux.AT_FDCWD, addrDir, linux.O_RDONLY|linux.O_DIRECTORY, 0)
++	if err != nil || dirFD < 0 {
++		t.Fatalf("B: openat dir failed: %v", err)
++	}
++	verifyResult("B. Open dir for dirfd", true, 0, "/testdir", rootMountID)
++
++	addrChild := mapString(t, task1, "childfile")
++	fdB, _, err := openat(task1, unix.SYS_OPENAT, int32(dirFD), addrChild, linux.O_RDONLY, 0)
++	if err != nil || fdB < 0 {
++		t.Fatalf("B: openat child via dirfd failed: %v", err)
++	}
++	verifyResult("B. Real-dirfd relative open", true, 0, "/testdir/childfile", rootMountID)
++
++	// C. AT_FDCWD relative open
++	// Change working directory of task1 to /testdir
++	dirFile := task1.GetFile(int32(dirFD))
++	if dirFile == nil {
++		t.Fatalf("C: failed to get dir file for FD %d", dirFD)
++	}
++	task1.FSContext().SetWorkingDirectory(task1, dirFile.VirtualDentry())
++	dirFile.DecRef(task1)
++
++	fdC, _, err := openat(task1, unix.SYS_OPENAT, linux.AT_FDCWD, addrChild, linux.O_RDONLY, 0)
++	if err != nil || fdC < 0 {
++		t.Fatalf("C: openat child via AT_FDCWD failed: %v", err)
++	}
++	verifyResult("C. AT_FDCWD relative open", true, 0, "/testdir/childfile", rootMountID)
++
++	// D. symlink whose lexical location differs from actual target
++	addrSymlink := mapString(t, task1, "/symlink_to_child")
++	fdD, _, err := openat(task1, unix.SYS_OPENAT, linux.AT_FDCWD, addrSymlink, linux.O_RDONLY, 0)
++	if err != nil || fdD < 0 {
++		t.Fatalf("D: openat symlink failed: %v", err)
++	}
++	verifyResult("D. Symlink resolving to target", true, 0, "/testdir/childfile", rootMountID)
++
++	// E. .. resolution
++	addrDotDot := mapString(t, task1, "/testdir/../testfile")
++	fdE, _, err := openat(task1, unix.SYS_OPENAT, linux.AT_FDCWD, addrDotDot, linux.O_RDONLY, 0)
++	if err != nil || fdE < 0 {
++		t.Fatalf("E: openat .. failed: %v", err)
++	}
++	verifyResult("E. DotDot resolution", true, 0, "/testfile", rootMountID)
++
++	// F. ENOENT
++	addrNoEnt := mapString(t, task1, "/nonexistent_file")
++	_, _, err = openat(task1, unix.SYS_OPENAT, linux.AT_FDCWD, addrNoEnt, linux.O_RDONLY, 0)
++	if err == nil {
++		t.Fatalf("F: expected ENOENT, got nil")
++	}
++	verifyResult("F. ENOENT", false, int64(unix.ENOENT), "", 0)
++
++	// G. ENOTDIR
++	addrNotDir := mapString(t, task1, "/testfile/cannot_be_dir")
++	_, _, err = openat(task1, unix.SYS_OPENAT, linux.AT_FDCWD, addrNotDir, linux.O_RDONLY, 0)
++	if err == nil {
++		t.Fatalf("G: expected ENOTDIR, got nil")
++	}
++	verifyResult("G. ENOTDIR", false, int64(unix.ENOTDIR), "", 0)
++
++	// H. Ordinary failure: EEXIST (O_CREAT | O_EXCL on existing file)
++	addrExist := mapString(t, task1, "/testfile")
++	_, _, err = openat(task1, unix.SYS_OPENAT, linux.AT_FDCWD, addrExist, linux.O_RDWR|linux.O_CREAT|linux.O_EXCL, 0644)
++	if err == nil {
++		t.Fatalf("H: expected EEXIST, got nil")
++	}
++	verifyResult("H. EEXIST", false, int64(unix.EEXIST), "", 0)
++
++	// H2. Ordinary failure: EBADF (bad dirfd for relative path)
++	_, _, err = openat(task1, unix.SYS_OPENAT, 9999, addrChild, linux.O_RDONLY, 0)
++	if err == nil {
++		t.Fatalf("H2: expected EBADF, got nil")
++	}
++	verifyResult("H2. EBADF", false, int64(unix.EBADF), "", 0)
++
++	// H3. Ordinary failure: EFAULT (bad pointer)
++	_, _, err = openat(task1, unix.SYS_OPENAT, linux.AT_FDCWD, 0, linux.O_RDONLY, 0)
++	if err == nil {
++		t.Fatalf("H3: expected EFAULT, got nil")
++	}
++	verifyResult("H3. EFAULT", false, int64(unix.EFAULT), "", 0)
++
++	// M. Thread correlation across distinct Tasks in same ThreadGroup
++	addrT2 := mapString(t, task2, "/testfile")
++	fdT2, _, err := openat(task2, unix.SYS_OPENAT, linux.AT_FDCWD, addrT2, linux.O_RDONLY, 0)
++	if err != nil || fdT2 < 0 {
++		t.Fatalf("M: task2 openat failed: %v", err)
++	}
++	resT2 := verifyResult("M. Task2 open in same TG", true, 0, "/testfile", rootMountID)
++
++	resT1 := sink.openResults[0] // Task 1 result from test A
++	if resT1.ContextData.ThreadGroupId != resT2.ContextData.ThreadGroupId {
++		t.Errorf("M: expected same TG ID, got %d vs %d", resT1.ContextData.ThreadGroupId, resT2.ContextData.ThreadGroupId)
++	}
++	if resT1.ContextData.ThreadId == resT2.ContextData.ThreadId {
++		t.Errorf("M: expected distinct ThreadIDs, got %d", resT1.ContextData.ThreadId)
++	}
++	if resT1.ContextData.ThreadStartTimeNs == resT2.ContextData.ThreadStartTimeNs {
++		t.Errorf("M: expected distinct ThreadStartTimeNs, got %d", resT1.ContextData.ThreadStartTimeNs)
++	}
++
++	// L. Rendering failure produces an unambiguously incomplete result shape
++	// Create task3 in a separate MountNamespace, but give it an FD pointing to dirFD in task1's MountNamespace.
++	mntns2, err := task1.Kernel().VFS().NewMountNamespace(task1, task1.Credentials(), "", tmpfs.Name, &vfs.MountOptions{}, nil)
++	if err != nil {
++		t.Fatalf("NewMountNamespace 2 failed: %v", err)
++	}
++	root2 := mntns2.Root(task1)
++	task3, err := testutil.CreateTask(task1.Kernel().SupervisorContext(), "task3", task1.ThreadGroup(), mntns2, root2, root2)
++	if err != nil {
++		t.Fatalf("CreateTask 3 failed: %v", err)
++	}
++	if _, err := task3.MemoryManager().SetMmapLayout(task3.Arch(), task3.Limits()); err != nil {
++		t.Fatalf("SetMmapLayout task3 failed: %v", err)
++	}
++	foreignDirFile := task1.GetFile(int32(dirFD))
++	fdInTask3, err := task3.NewFDFrom(0, foreignDirFile, kernel.FDFlags{})
++	foreignDirFile.DecRef(task1)
++	if err != nil {
++		t.Fatalf("NewFDFrom failed: %v", err)
++	}
++	addrChild3 := mapString(t, task3, "childfile")
++	fdL, _, err := openat(task3, unix.SYS_OPENAT, fdInTask3, addrChild3, linux.O_RDONLY, 0)
++	if err != nil || fdL < 0 {
++		t.Fatalf("L: openat via foreign dirfd failed: %v", err)
++	}
++	verifyResult("L. Rendering failure produces incomplete result shape", true, 0, "", 0)
++
++	// Test Topology Mutation emission
++	mutCountBefore := sink.mutationCount()
++	EmitMountTopologyMutation(task1)
++	if got := sink.mutationCount(); got != mutCountBefore+1 {
++		t.Errorf("EmitMountTopologyMutation failed to record mutation: want %d, got %d", mutCountBefore+1, got)
++	}
++	lastMut := sink.mutations[len(sink.mutations)-1]
++	if lastMut.MountNamespaceId != task1.MountNamespace().ID {
++		t.Errorf("MountTopologyMutation MountNamespaceId mismatch: want %d, got %d", task1.MountNamespace().ID, lastMut.MountNamespaceId)
++	}
++}
++
++func makeArgs(a0, a1, a2, a3, a4, a5 uintptr) arch.SyscallArguments {
++	return arch.SyscallArguments{
++		{Value: a0},
++		{Value: a1},
++		{Value: a2},
++		{Value: a3},
++		{Value: a4},
++		{Value: a5},
++	}
++}
++
++func TestMountTopologySnapshotAndMutations(t *testing.T) {
++	task, _, sink, rootMountID := setupTestEnvironment(t)
++	ctx := task
++	mntns := task.MountNamespace()
++
++	// 1. Initial snapshot validation
++	entries, err := mntns.MountTopology(ctx)
++	if err != nil {
++		t.Fatalf("MountTopology failed: %v", err)
++	}
++	if len(entries) != 1 {
++		t.Fatalf("Expected exactly 1 initial mount, got %d", len(entries))
++	}
++	if entries[0].ID != rootMountID {
++		t.Errorf("Root mount ID mismatch: want %d, got %d", rootMountID, entries[0].ID)
++	}
++	if entries[0].Mountpoint != "/" {
++		t.Errorf("Root mountpoint mismatch: want '/', got %q", entries[0].Mountpoint)
++	}
++	if entries[0].FilesystemType != "tmpfs" {
++		t.Errorf("Root fs type mismatch: want 'tmpfs', got %q", entries[0].FilesystemType)
++	}
++
++	// 2. Test Bounds Definition validation
++	// Bounds: <=64 mounts, mountpoint <= 512 bytes, filesystem type <= 32 bytes, encoded <= 64 KiB
++	longMountpoint := "/" + string(make([]byte, 513))
++	longType := string(make([]byte, 33))
++	if len(longMountpoint) <= 512 || len(longType) <= 32 {
++		t.Fatalf("Test setup error for bounds")
++	}
++
++	// Create mount target
++	addrMntDir := mapString(t, task, "/mnt_target")
++	popMntDir := &vfs.PathOperation{Root: mntns.Root(ctx), Start: mntns.Root(ctx), Path: fspath.Parse("/mnt_target")}
++	if err := task.Kernel().VFS().MkdirAt(ctx, task.Credentials(), popMntDir, &vfs.MkdirOptions{Mode: 0755}); err != nil {
++		t.Fatalf("MkdirAt /mnt_target failed: %v", err)
++	}
++
++	// 3. Test Mutation: Mount syscall
++	addrSource := mapString(t, task, "none")
++	addrType := mapString(t, task, "tmpfs")
++	mutBefore := sink.mutationCount()
++
++	mountArgs := makeArgs(uintptr(addrSource), uintptr(addrMntDir), uintptr(addrType), 0, 0, 0)
++	_, _, err = Mount(task, unix.SYS_MOUNT, mountArgs)
++	if err != nil {
++		t.Fatalf("Mount syscall failed: %v", err)
++	}
++	if sink.mutationCount() != mutBefore+1 {
++		t.Fatalf("Mount did not emit MountTopologyMutation: before=%d, after=%d", mutBefore, sink.mutationCount())
++	}
++	mut := sink.mutations[len(sink.mutations)-1]
++	if mut.MountNamespaceId != mntns.ID {
++		t.Errorf("MountTopologyMutation ID mismatch: want %d, got %d", mntns.ID, mut.MountNamespaceId)
++	}
++
++	// Verify updated topology contains 2 mounts and correct parent relationship
++	entries, err = mntns.MountTopology(ctx)
++	if err != nil {
++		t.Fatalf("MountTopology after mount failed: %v", err)
++	}
++	if len(entries) != 2 {
++		t.Fatalf("Expected 2 mounts after Mount, got %d", len(entries))
++	}
++	var subEntry *vfs.MountTopologyEntry
++	for i := range entries {
++		if entries[i].Mountpoint == "/mnt_target" {
++			subEntry = &entries[i]
++			break
++		}
++	}
++	if subEntry == nil {
++		t.Fatalf("Submount /mnt_target not found in topology: %+v", entries)
++	}
++	if subEntry.ParentID != rootMountID {
++		t.Errorf("Submount ParentID mismatch: want root %d, got %d", rootMountID, subEntry.ParentID)
++	}
++	if subEntry.ReadOnly {
++		t.Errorf("Expected writable submount initially")
++	}
++
++	// 4. Test Mutation: Remount branch (MS_REMOUNT | MS_RDONLY)
++	mutBefore = sink.mutationCount()
++	remountArgs := makeArgs(0, uintptr(addrMntDir), 0, uintptr(unix.MS_REMOUNT|unix.MS_RDONLY), 0, 0)
++	_, _, err = Mount(task, unix.SYS_MOUNT, remountArgs)
++	if err != nil {
++		t.Fatalf("Remount syscall failed: %v", err)
++	}
++	if sink.mutationCount() != mutBefore+1 {
++		t.Fatalf("Remount did not emit MountTopologyMutation: before=%d, after=%d", mutBefore, sink.mutationCount())
++	}
++	entries, err = mntns.MountTopology(ctx)
++	if err != nil {
++		t.Fatalf("MountTopology after remount failed: %v", err)
++	}
++	subEntry = nil
++	for i := range entries {
++		if entries[i].Mountpoint == "/mnt_target" {
++			subEntry = &entries[i]
++			break
++		}
++	}
++	if subEntry == nil || !subEntry.ReadOnly {
++		t.Errorf("Remount did not make submount ReadOnly: %+v", subEntry)
++	}
++
++	// 5. Test Mutation: Move branch (MS_MOVE)
++	addrMntMoved := mapString(t, task, "/mnt_moved")
++	popMntMoved := &vfs.PathOperation{Root: mntns.Root(ctx), Start: mntns.Root(ctx), Path: fspath.Parse("/mnt_moved")}
++	if err := task.Kernel().VFS().MkdirAt(ctx, task.Credentials(), popMntMoved, &vfs.MkdirOptions{Mode: 0755}); err != nil {
++		t.Fatalf("MkdirAt /mnt_moved failed: %v", err)
++	}
++	mutBefore = sink.mutationCount()
++	moveArgs := makeArgs(uintptr(addrMntDir), uintptr(addrMntMoved), 0, uintptr(unix.MS_MOVE), 0, 0)
++	_, _, err = Mount(task, unix.SYS_MOUNT, moveArgs)
++	if err != nil {
++		t.Fatalf("Move syscall failed: %v", err)
++	}
++	if sink.mutationCount() != mutBefore+1 {
++		t.Fatalf("Move did not emit MountTopologyMutation: before=%d, after=%d", mutBefore, sink.mutationCount())
++	}
++	entries, err = mntns.MountTopology(ctx)
++	if err != nil {
++		t.Fatalf("MountTopology after move failed: %v", err)
++	}
++	subEntry = nil
++	for i := range entries {
++		if entries[i].Mountpoint == "/mnt_moved" {
++			subEntry = &entries[i]
++			break
++		}
++	}
++	if subEntry == nil {
++		t.Fatalf("Moved mount /mnt_moved not found in topology: %+v", entries)
++	}
++
++	// 6. Test Mutation: Umount2
++	mutBefore = sink.mutationCount()
++	umountArgs := makeArgs(uintptr(addrMntMoved), 0, 0, 0, 0, 0)
++	_, _, err = Umount2(task, unix.SYS_UMOUNT2, umountArgs)
++	if err != nil {
++		t.Fatalf("Umount2 syscall failed: %v", err)
++	}
++	if sink.mutationCount() != mutBefore+1 {
++		t.Fatalf("Umount2 did not emit MountTopologyMutation: before=%d, after=%d", mutBefore, sink.mutationCount())
++	}
++	entries, err = mntns.MountTopology(ctx)
++	if err != nil {
++		t.Fatalf("MountTopology after umount2 failed: %v", err)
++	}
++	if len(entries) != 1 {
++		t.Fatalf("Expected 1 mount after umount2, got %d", len(entries))
++	}
++
++	// 7. Negative test: Failed Mount and Umount2 must NOT emit mutation
++	mutBefore = sink.mutationCount()
++	addrNonExistent := mapString(t, task, "/nonexistent_dir")
++	badMountArgs := makeArgs(uintptr(addrSource), uintptr(addrNonExistent), uintptr(addrType), 0, 0, 0)
++	_, _, err = Mount(task, unix.SYS_MOUNT, badMountArgs)
++	if err == nil {
++		t.Fatalf("Expected Mount to fail on nonexistent target")
++	}
++	if sink.mutationCount() != mutBefore {
++		t.Errorf("Failed Mount emitted unexpected mutation event!")
++	}
++
++	badUmountArgs := makeArgs(uintptr(addrNonExistent), 0, 0, 0, 0, 0)
++	_, _, err = Umount2(task, unix.SYS_UMOUNT2, badUmountArgs)
++	if err == nil {
++		t.Fatalf("Expected Umount2 to fail on nonexistent target")
++	}
++	if sink.mutationCount() != mutBefore {
++		t.Errorf("Failed Umount2 emitted unexpected mutation event!")
++	}
++}
+diff --git a/pkg/sentry/syscalls/linux/points.go b/pkg/sentry/syscalls/linux/points.go
+index f8e38d360..d98c16eac 100644
+--- a/pkg/sentry/syscalls/linux/points.go
++++ b/pkg/sentry/syscalls/linux/points.go
+@@ -69,6 +69,23 @@ func getIovecSize(t *kernel.Task, addr hostarch.Addr, iovcnt int) uint64 {
+ 	return uint64(dst.NumBytes())
+ }
+ 
++// EmitMountTopologyMutation reports a successful mount-namespace mutation.
++// The remote sink's existing drop accounting applies to this required event.
++func EmitMountTopologyMutation(t *kernel.Task) {
++	if !seccheck.Global.Enabled(seccheck.PointMountTopologyMutation) {
++		return
++	}
++	fields := seccheck.Global.GetFieldSet(seccheck.PointMountTopologyMutation)
++	evt := &pb.MountTopologyMutation{MountNamespaceId: t.MountNamespace().ID}
++	if !fields.Context.Empty() {
++		evt.ContextData = &pb.ContextData{}
++		kernel.LoadSeccheckData(t, fields.Context, evt.ContextData)
++	}
++	_ = seccheck.Global.SentToSinks(func(c seccheck.Sink) error {
++		return c.MountTopologyMutation(t, fields, evt)
++	})
++}
++
+ // PointOpen converts open(2) syscall to proto.
+ func PointOpen(t *kernel.Task, _ seccheck.FieldSet, cxtData *pb.ContextData, info kernel.SyscallInfo) (proto.Message, pb.MessageType) {
+ 	p := &pb.Open{
+diff --git a/pkg/sentry/syscalls/linux/sys_file.go b/pkg/sentry/syscalls/linux/sys_file.go
+index bac6ff14f..760e6c5db 100644
+--- a/pkg/sentry/syscalls/linux/sys_file.go
++++ b/pkg/sentry/syscalls/linux/sys_file.go
+@@ -29,6 +29,8 @@ import (
+ 	"gvisor.dev/gvisor/pkg/sentry/kernel/fasync"
+ 	"gvisor.dev/gvisor/pkg/sentry/kernel/pipe"
+ 	"gvisor.dev/gvisor/pkg/sentry/limits"
++	"gvisor.dev/gvisor/pkg/sentry/seccheck"
++	pb "gvisor.dev/gvisor/pkg/sentry/seccheck/points/points_go_proto"
+ 	"gvisor.dev/gvisor/pkg/sentry/vfs"
+ )
+ 
+@@ -86,7 +88,7 @@ func Open(t *kernel.Task, sysno uintptr, args arch.SyscallArguments) (uintptr, *
+ 	addr := args[0].Pointer()
+ 	flags := args[1].Uint()
+ 	mode := args[2].ModeT()
+-	return openat(t, linux.AT_FDCWD, addr, flags, mode)
++	return openat(t, sysno, linux.AT_FDCWD, addr, flags, mode)
+ }
+ 
+ // Openat implements Linux syscall openat(2).
+@@ -95,17 +97,43 @@ func Openat(t *kernel.Task, sysno uintptr, args arch.SyscallArguments) (uintptr,
+ 	addr := args[1].Pointer()
+ 	flags := args[2].Uint()
+ 	mode := args[3].ModeT()
+-	return openat(t, dirfd, addr, flags, mode)
++	return openat(t, sysno, dirfd, addr, flags, mode)
+ }
+ 
+ // Creat implements Linux syscall creat(2).
+ func Creat(t *kernel.Task, sysno uintptr, args arch.SyscallArguments) (uintptr, *kernel.SyscallControl, error) {
+ 	addr := args[0].Pointer()
+ 	mode := args[1].ModeT()
+-	return openat(t, linux.AT_FDCWD, addr, linux.O_WRONLY|linux.O_CREAT|linux.O_TRUNC, mode)
+-}
+-
+-func openat(t *kernel.Task, dirfd int32, pathAddr hostarch.Addr, flags uint32, mode uint) (uintptr, *kernel.SyscallControl, error) {
++	return openat(t, sysno, linux.AT_FDCWD, addr, linux.O_WRONLY|linux.O_CREAT|linux.O_TRUNC, mode)
++}
++
++func openat(t *kernel.Task, sysno uintptr, dirfd int32, pathAddr hostarch.Addr, flags uint32, mode uint) (rval uintptr, ctrl *kernel.SyscallControl, retErr error) {
++	var file *vfs.FileDescription
++	defer func() {
++		if seccheck.Global.Enabled(seccheck.PointOpenResult) {
++			fields := seccheck.Global.GetFieldSet(seccheck.PointOpenResult)
++			evt := &pb.OpenResult{Sysno: uint64(sysno), Flags: flags | linux.O_LARGEFILE, Errorno: int64(kernel.ExtractErrno(retErr, int(sysno))), Success: retErr == nil}
++			if !fields.Context.Empty() {
++				evt.ContextData = &pb.ContextData{}
++				kernel.LoadSeccheckData(t, fields.Context, evt.ContextData)
++			}
++			if retErr == nil && file != nil {
++				root := t.MountNamespace().Root(t)
++				if root.Ok() {
++					path, err := t.Kernel().VFS().PathnameReachable(t, root, file.VirtualDentry())
++					root.DecRef(t)
++					if err == nil && path != "" {
++						evt.ResolvedPathname = path
++						evt.MountId = file.VirtualDentry().Mount().ID
++					}
++				}
++			}
++			_ = seccheck.Global.SentToSinks(func(c seccheck.Sink) error { return c.OpenResult(t, fields, evt) })
++		}
++		if file != nil {
++			file.DecRef(t)
++		}
++	}()
+ 	path, err := copyInPath(t, pathAddr)
+ 	if err != nil {
+ 		return 0, nil, err
+@@ -116,15 +144,13 @@ func openat(t *kernel.Task, dirfd int32, pathAddr hostarch.Addr, flags uint32, m
+ 	}
+ 	defer tpop.Release(t)
+ 
+-	file, err := t.Kernel().VFS().OpenAt(t, t.Credentials(), &tpop.pop, &vfs.OpenOptions{
++	file, err = t.Kernel().VFS().OpenAt(t, t.Credentials(), &tpop.pop, &vfs.OpenOptions{
+ 		Flags: flags | linux.O_LARGEFILE,
+ 		Mode:  linux.FileMode(mode & (0777 | linux.S_ISUID | linux.S_ISGID | linux.S_ISVTX) &^ t.FSContext().Umask()),
+ 	})
+ 	if err != nil {
+ 		return 0, nil, err
+ 	}
+-	defer file.DecRef(t)
+-
+ 	fd, err := t.NewFDFrom(0, file, kernel.FDFlags{
+ 		CloseOnExec: flags&linux.O_CLOEXEC != 0,
+ 	})
+@@ -401,7 +427,12 @@ func Chroot(t *kernel.Task, sysno uintptr, args arch.SyscallArguments) (uintptr,
+ }
+ 
+ // PivotRoot implements Linux syscall pivot_root(2).
+-func PivotRoot(t *kernel.Task, sysno uintptr, args arch.SyscallArguments) (uintptr, *kernel.SyscallControl, error) {
++func PivotRoot(t *kernel.Task, sysno uintptr, args arch.SyscallArguments) (rval uintptr, ctrl *kernel.SyscallControl, retErr error) {
++	defer func() {
++		if retErr == nil {
++			EmitMountTopologyMutation(t)
++		}
++	}()
+ 	addr1 := args[0].Pointer()
+ 	addr2 := args[1].Pointer()
+ 
+diff --git a/pkg/sentry/syscalls/linux/sys_mount.go b/pkg/sentry/syscalls/linux/sys_mount.go
+index 07c3c1b17..13aea32b1 100644
+--- a/pkg/sentry/syscalls/linux/sys_mount.go
++++ b/pkg/sentry/syscalls/linux/sys_mount.go
+@@ -24,7 +24,12 @@ import (
+ )
+ 
+ // Mount implements Linux syscall mount(2).
+-func Mount(t *kernel.Task, sysno uintptr, args arch.SyscallArguments) (uintptr, *kernel.SyscallControl, error) {
++func Mount(t *kernel.Task, sysno uintptr, args arch.SyscallArguments) (rval uintptr, ctrl *kernel.SyscallControl, retErr error) {
++	defer func() {
++		if retErr == nil {
++			EmitMountTopologyMutation(t)
++		}
++	}()
+ 	sourceAddr := args[0].Pointer()
+ 	targetAddr := args[1].Pointer()
+ 	typeAddr := args[2].Pointer()
+@@ -143,7 +148,12 @@ func Mount(t *kernel.Task, sysno uintptr, args arch.SyscallArguments) (uintptr,
+ }
+ 
+ // Umount2 implements Linux syscall umount2(2).
+-func Umount2(t *kernel.Task, sysno uintptr, args arch.SyscallArguments) (uintptr, *kernel.SyscallControl, error) {
++func Umount2(t *kernel.Task, sysno uintptr, args arch.SyscallArguments) (rval uintptr, ctrl *kernel.SyscallControl, retErr error) {
++	defer func() {
++		if retErr == nil {
++			EmitMountTopologyMutation(t)
++		}
++	}()
+ 	addr := args[0].Pointer()
+ 	flags := args[1].Int()
+ 
+diff --git a/pkg/sentry/vfs/namespace.go b/pkg/sentry/vfs/namespace.go
+index 14799fcba..10bcbe772 100644
+--- a/pkg/sentry/vfs/namespace.go
++++ b/pkg/sentry/vfs/namespace.go
+@@ -22,6 +22,56 @@ import (
+ 	"gvisor.dev/gvisor/pkg/sentry/kernel/auth"
+ )
+ 
++// MountTopologyEntry is an authoritative, namespace-relative description of a
++// mount. It is intended for security-check observation only.
++type MountTopologyEntry struct {
++	ID, ParentID                    uint64
++	Mountpoint, FilesystemType      string
++	ReadOnly, NoExec, NoSUID, NoDev bool
++}
++
++// MountTopology returns the complete reachable mount tree rooted at mntns.
++// Callers must treat any error as an incomplete topology, never as an empty one.
++func (mntns *MountNamespace) MountTopology(ctx context.Context) ([]MountTopologyEntry, error) {
++	root := mntns.Root(ctx)
++	if !root.Ok() {
++		return nil, linuxerr.ENOENT
++	}
++	defer root.DecRef(ctx)
++	mntns.vfs.lockMounts()
++	mounts := root.mount.submountsLocked()
++	for _, mnt := range mounts {
++		mnt.IncRef()
++	}
++	mntns.vfs.unlockMounts(ctx)
++	defer func() {
++		for _, mnt := range mounts {
++			mnt.DecRef(ctx)
++		}
++	}()
++	if len(mounts) == 0 {
++		return nil, linuxerr.ENOENT
++	}
++	entries := make([]MountTopologyEntry, 0, len(mounts))
++	for _, mnt := range mounts {
++		vd := VirtualDentry{mount: mnt, dentry: mnt.root}
++		path, err := mntns.vfs.PathnameReachable(ctx, root, vd)
++		if err != nil || path == "" {
++			if err != nil {
++				return nil, err
++			}
++			return nil, linuxerr.ENOENT
++		}
++		opts := mnt.Options()
++		parentID := mnt.ID
++		if parent := mnt.parent(); parent != nil {
++			parentID = parent.ID
++		}
++		entries = append(entries, MountTopologyEntry{ID: mnt.ID, ParentID: parentID, Mountpoint: path, FilesystemType: mnt.fs.FilesystemType().Name(), ReadOnly: opts.ReadOnly, NoExec: opts.Flags.NoExec, NoSUID: opts.Flags.NoSUID, NoDev: opts.Flags.NoDev})
++	}
++	return entries, nil
++}
++
+ // A MountNamespace is a collection of Mounts.//
+ // MountNamespaces are reference-counted. Unless otherwise specified, all
+ // MountNamespace methods require that a reference is held.
+diff --git a/runsc/boot/BUILD b/runsc/boot/BUILD
+index a5fdff259..8d3a1d23f 100644
+--- a/runsc/boot/BUILD
++++ b/runsc/boot/BUILD
+@@ -174,6 +174,7 @@ go_test(
+     library = ":boot",
+     deps = [
+         "//pkg/abi/linux",
++        "//pkg/context",
+         "//pkg/control/server",
+         "//pkg/cpuid",
+         "//pkg/fspath",
+@@ -182,6 +183,7 @@ go_test(
+         "//pkg/sentry/fsimpl/erofs",
+         "//pkg/sentry/kernel/auth",
+         "//pkg/sentry/seccheck",
++        "//pkg/sentry/seccheck/points:points_go_proto",
+         "//pkg/sentry/vfs",
+         "//pkg/sync",
+         "//pkg/unet",
+@@ -192,6 +194,7 @@ go_test(
+         "@com_github_google_go_cmp//cmp:go_default_library",
+         "@com_github_moby_sys_capability//:go_default_library",
+         "@com_github_opencontainers_runtime_spec//specs-go:go_default_library",
++        "@org_golang_google_protobuf//proto:go_default_library",
+         "@org_golang_x_sys//unix:go_default_library",
+     ],
+ )
+diff --git a/runsc/boot/loader.go b/runsc/boot/loader.go
+index 6588a4e62..f29c0ef38 100644
+--- a/runsc/boot/loader.go
++++ b/runsc/boot/loader.go
+@@ -27,6 +27,7 @@ import (
+ 	"github.com/moby/sys/capability"
+ 	specs "github.com/opencontainers/runtime-spec/specs-go"
+ 	"golang.org/x/sys/unix"
++	"google.golang.org/protobuf/proto"
+ 	"gvisor.dev/gvisor/pkg/abi/linux"
+ 	"gvisor.dev/gvisor/pkg/cleanup"
+ 	"gvisor.dev/gvisor/pkg/context"
+@@ -1207,6 +1208,9 @@ func (l *Loader) run() error {
+ 				return c.ContainerStart(context.Background(), fields, &evt)
+ 			})
+ 		}
++		if err := l.emitMountTopologySnapshot(tg.Leader()); err != nil {
++			return err
++		}
+ 	case restoringUnstarted:
+ 		// If we are restoring, we do not want to create a process.
+ 	default:
+@@ -1256,6 +1260,38 @@ func (l *Loader) run() error {
+ 	return nil
+ }
+ 
++// emitMountTopologySnapshot emits one complete initial namespace topology before
++// the root task can execute userspace code.
++func (l *Loader) emitMountTopologySnapshot(t *kernel.Task) error {
++	if !seccheck.Global.Enabled(seccheck.PointMountTopologySnapshot) {
++		return nil
++	}
++	ns := t.MountNamespace()
++	entries, err := ns.MountTopology(context.Background())
++	if err != nil {
++		return err
++	}
++	if len(entries) > 64 {
++		return fmt.Errorf("mount topology exceeds 64 mounts")
++	}
++	evt := pb.MountTopologySnapshot{MountNamespaceId: ns.ID, SnapshotComplete: true}
++	fields := seccheck.Global.GetFieldSet(seccheck.PointMountTopologySnapshot)
++	if !fields.Context.Empty() {
++		evt.ContextData = &pb.ContextData{}
++		kernel.LoadSeccheckData(t, fields.Context, evt.ContextData)
++	}
++	for _, entry := range entries {
++		if len(entry.Mountpoint) > 512 || len(entry.FilesystemType) > 32 {
++			return fmt.Errorf("mount topology entry exceeds bounds")
++		}
++		evt.Mounts = append(evt.Mounts, &pb.MountTopologyEntry{MountId: entry.ID, ParentMountId: entry.ParentID, Mountpoint: entry.Mountpoint, FilesystemType: entry.FilesystemType, ReadOnly: entry.ReadOnly, Noexec: entry.NoExec, Nosuid: entry.NoSUID, Nodev: entry.NoDev})
++	}
++	if proto.Size(&evt) > 64<<10 {
++		return fmt.Errorf("mount topology snapshot exceeds 64 KiB")
++	}
++	return seccheck.Global.SentToSinks(func(c seccheck.Sink) error { return c.MountTopologySnapshot(context.Background(), fields, &evt) })
++}
++
+ // createSubcontainer creates a new container inside the sandbox.
+ func (l *Loader) createSubcontainer(cid string, tty *fd.FD) error {
+ 	l.mu.Lock()
+diff --git a/runsc/boot/loader_test.go b/runsc/boot/loader_test.go
+index c2e067d1a..f338c86a8 100644
+--- a/runsc/boot/loader_test.go
++++ b/runsc/boot/loader_test.go
+@@ -27,7 +27,9 @@ import (
+ 	"github.com/moby/sys/capability"
+ 	specs "github.com/opencontainers/runtime-spec/specs-go"
+ 	"golang.org/x/sys/unix"
++	"google.golang.org/protobuf/proto"
+ 	"gvisor.dev/gvisor/pkg/abi/linux"
++	"gvisor.dev/gvisor/pkg/context"
+ 	"gvisor.dev/gvisor/pkg/control/server"
+ 	"gvisor.dev/gvisor/pkg/cpuid"
+ 	"gvisor.dev/gvisor/pkg/fspath"
+@@ -35,6 +37,7 @@ import (
+ 	"gvisor.dev/gvisor/pkg/log"
+ 	"gvisor.dev/gvisor/pkg/sentry/kernel/auth"
+ 	"gvisor.dev/gvisor/pkg/sentry/seccheck"
++	pb "gvisor.dev/gvisor/pkg/sentry/seccheck/points/points_go_proto"
+ 	"gvisor.dev/gvisor/pkg/sentry/vfs"
+ 	"gvisor.dev/gvisor/pkg/sync"
+ 	"gvisor.dev/gvisor/pkg/unet"
+@@ -197,6 +200,157 @@ func TestRun(t *testing.T) {
+ 	}
+ }
+ 
++type snapshotTestSink struct {
++	seccheck.SinkDefaults
++	mu        sync.Mutex
++	snapshots []*pb.MountTopologySnapshot
++}
++
++func (s *snapshotTestSink) Name() string { return "snapshot-test-sink" }
++func (s *snapshotTestSink) MountTopologySnapshot(_ context.Context, _ seccheck.FieldSet, info *pb.MountTopologySnapshot) error {
++	s.mu.Lock()
++	defer s.mu.Unlock()
++	s.snapshots = append(s.snapshots, proto.Clone(info).(*pb.MountTopologySnapshot))
++	return nil
++}
++
++func TestMountTopologySnapshotEmission(t *testing.T) {
++	sink := &snapshotTestSink{}
++	seccheck.Global.AppendSink(sink, []seccheck.PointReq{
++		{Pt: seccheck.PointMountTopologySnapshot, Fields: seccheck.FieldSet{}},
++	})
++
++	l, cleanup, err := createLoader(testConfig(), testSpec())
++	if err != nil {
++		t.Fatalf("error creating loader: %v", err)
++	}
++	defer l.Destroy()
++	defer cleanup()
++
++	// Snapshot must not be emitted before Run
++	sink.mu.Lock()
++	if len(sink.snapshots) != 0 {
++		t.Fatalf("expected 0 snapshots before Run, got %d", len(sink.snapshots))
++	}
++	sink.mu.Unlock()
++
++	var resultChanErr error
++	var wg sync.WaitGroup
++	wg.Add(1)
++	go func() {
++		resultChanErr = <-l.ctrl.manager.startResultChan
++		wg.Done()
++	}()
++
++	if err := l.Run(); err != nil {
++		t.Fatalf("Run failed: %v", err)
++	}
++
++	wg.Wait()
++	if resultChanErr != nil {
++		t.Fatalf("startResultChan error: %v", resultChanErr)
++	}
++
++	// Immediately upon Run, exactly 1 complete snapshot must be emitted
++	sink.mu.Lock()
++	if len(sink.snapshots) != 1 {
++		t.Fatalf("expected exactly 1 snapshot upon Run, got %d", len(sink.snapshots))
++	}
++	snap := sink.snapshots[0]
++	sink.mu.Unlock()
++
++	if !snap.SnapshotComplete {
++		t.Errorf("expected SnapshotComplete=true")
++	}
++	if snap.MountNamespaceId == 0 {
++		t.Errorf("expected non-zero MountNamespaceId")
++	}
++	if len(snap.Mounts) == 0 {
++		t.Errorf("expected at least 1 mount in snapshot")
++	}
++	if len(snap.Mounts) > 64 {
++		t.Errorf("mount count %d exceeds bound 64", len(snap.Mounts))
++	}
++	hasRoot := false
++	for _, m := range snap.Mounts {
++		if len(m.Mountpoint) > 512 {
++			t.Errorf("mountpoint %q exceeds bound 512", m.Mountpoint)
++		}
++		if len(m.FilesystemType) > 32 {
++			t.Errorf("fs type %q exceeds bound 32", m.FilesystemType)
++		}
++		if m.Mountpoint == "/" {
++			hasRoot = true
++		}
++	}
++	if !hasRoot {
++		t.Errorf("expected root mount ('/') in snapshot")
++	}
++
++	// Wait for application exit
++	if status := l.WaitExit(); !status.Exited() || status.ExitStatus() != 0 {
++		t.Errorf("application exited with %s, want 0", status)
++	}
++
++	// Confirm no second snapshot was emitted in normal session
++	sink.mu.Lock()
++	if len(sink.snapshots) != 1 {
++		t.Errorf("expected still exactly 1 snapshot after exit, got %d", len(sink.snapshots))
++	}
++	sink.mu.Unlock()
++}
++
++func TestMountTopologySnapshotBoundsValidation(t *testing.T) {
++	validateBounds := func(entries []vfs.MountTopologyEntry) error {
++		if len(entries) > 64 {
++			return fmt.Errorf("mount topology exceeds 64 mounts")
++		}
++		for _, entry := range entries {
++			if len(entry.Mountpoint) > 512 || len(entry.FilesystemType) > 32 {
++				return fmt.Errorf("mount topology entry exceeds bounds")
++			}
++		}
++		return nil
++	}
++
++	// Test entries > 64
++	var entries65 []vfs.MountTopologyEntry
++	for i := uint64(1); i <= 65; i++ {
++		entries65 = append(entries65, vfs.MountTopologyEntry{ID: i, Mountpoint: "/", FilesystemType: "tmpfs"})
++	}
++	if err := validateBounds(entries65); err == nil || !strings.Contains(err.Error(), "exceeds 64 mounts") {
++		t.Errorf("expected >64 error, got %v", err)
++	}
++
++	// Test mountpoint > 512
++	longMountpoint := "/" + strings.Repeat("a", 513)
++	entriesLongMP := []vfs.MountTopologyEntry{{ID: 1, Mountpoint: longMountpoint, FilesystemType: "tmpfs"}}
++	if err := validateBounds(entriesLongMP); err == nil || !strings.Contains(err.Error(), "exceeds bounds") {
++		t.Errorf("expected long mountpoint error, got %v", err)
++	}
++
++	// Test fs type > 32
++	longFSType := strings.Repeat("b", 33)
++	entriesLongFS := []vfs.MountTopologyEntry{{ID: 1, Mountpoint: "/", FilesystemType: longFSType}}
++	if err := validateBounds(entriesLongFS); err == nil || !strings.Contains(err.Error(), "exceeds bounds") {
++		t.Errorf("expected long fs type error, got %v", err)
++	}
++
++	// Test proto size > 64 KiB
++	evtBig := pb.MountTopologySnapshot{
++		MountNamespaceId: 1,
++		SnapshotComplete: true,
++	}
++	for i := uint64(1); i <= 64; i++ {
++		evtBig.Mounts = append(evtBig.Mounts, &pb.MountTopologyEntry{
++			MountId:        i,
++			Mountpoint:     "/" + strings.Repeat("x", 510),
++			FilesystemType: strings.Repeat("y", 30),
++		})
++	}
++	t.Logf("64 max-sized entries proto size: %d bytes (limit 65536)", proto.Size(&evtBig))
++}
++
+ // TestStartSignal tests that the controller Start message will cause
+ // WaitForStartSignal to return.
+ func TestStartSignal(t *testing.T) {

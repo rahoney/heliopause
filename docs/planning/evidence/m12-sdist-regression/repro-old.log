@@ -1,0 +1,57 @@
+=== RUN   TestLinuxPyPISdistBuildIntegration
+    linux_integration_test.go:309: fixture sdist=50e0fc5ca24af332b6eb724ef2d2517290455b1f42ad6a77e59ee7bfcf49d398 backend=e37039d18eeb84aeb32e1e002373c4918ed13f39f4e675030e7cb8b125c221c5
+sdist-exec pid=34 parent=0 image=b982a2d37572906d execfn=47415db7ccddc2cf class=PYTHON role=2 provenance=2 argc=13
+sdist-exec pid=36 parent=34 image=8fe06ba35e781415 execfn=8fe06ba35e781415 class=OTHER role=2 provenance=3 argc=2
+sdist-open pid=36 path=fbc430c15ef57dff flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=36 path=a306bb3484b08e39 flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-exec pid=37 parent=34 image=b982a2d37572906d execfn=47415db7ccddc2cf class=PYTHON role=2 provenance=3 argc=4
+sdist-open pid=37 path=32581434d67478c1 flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=fbc430c15ef57dff flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=a306bb3484b08e39 flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=3ab8c2f957ec9f93 flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=0e1bbcd0ca36a604 flags=32768 mount=21 mount_class=system sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=078b3baab1a792d5 flags=557056 mount=21 mount_class=system sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=07a7ea4562a20073 flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=172a2dd97f42239b flags=624640 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=0ff1b9165cb48c76 flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=a68483c206eb2f0e flags=624640 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=3829884ca662eeda flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=1dd6b72718435b04 flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=a5c166ec26253271 flags=624640 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=a9368498453cfae6 flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=ada2d9f06243dade flags=624640 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=08a06b3a1b52e5fe flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=dc8707726734a7f9 flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=e1d1f42d9edb6192 flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=3ce353eebfd6803e flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=104896c8a781debd flags=624640 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=0468ada28c1d305b flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=f6d1dbf21f28e0d9 flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=9473acb1208ae929 flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=ce792cb8b0c7a0ff flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=b9cc13aae497ee9e flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=fed4b312b3a37c25 flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=471ea3cdfa9cc658 flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=d4672258dfa43c81 flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=39de7a84136ed793 flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=4f878a13d922afb2 flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=4f1b1876b9357b04 flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=73a57e060ca8d0cd flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=4cf6dfa90fb4a0a2 flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=d73937f7a236fb0c flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=d908bbc6b5bb20ca flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=fb26b1cc1ed57c7f flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=fbc430c15ef57dff flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=381e186ac8659ab5 flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=072df03f28df3cc3 flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=f9feccbcb4561ade flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=94ff43b72985e036 flags=624640 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=33821ee112d38c29 flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=39a090cabffb0d4d flags=624640 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=02fae5ca4a828015 flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=796561683954f0df flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-open pid=37 path=fbc430c15ef57dff flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=1 result=3
+sdist-exec pid=38 parent=34 image=b982a2d37572906d execfn=47415db7ccddc2cf class=PYTHON role=2 provenance=3 argc=4
+observer_attribution sequence=1 profile=pypi-wheel counts=PROCESS/SENTRY_EXEC/OTHER/ARTIFACT_ROLE/ARTIFACT_GROUP:1,PROCESS/SENTRY_EXEC/PYTHON/ARTIFACT_ROLE/ARTIFACT_GROUP:2
+--- PASS: TestLinuxPyPISdistBuildIntegration (15.43s)
+PASS

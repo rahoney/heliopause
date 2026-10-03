@@ -1,0 +1,9 @@
+=== RUN   TestLinuxPyPISdistBuildIntegration
+    linux_integration_test.go:310: fixture sdist=50e0fc5ca24af332b6eb724ef2d2517290455b1f42ad6a77e59ee7bfcf49d398 backend=e37039d18eeb84aeb32e1e002373c4918ed13f39f4e675030e7cb8b125c221c5
+sdist-exec pid=34 parent=0 image=b982a2d37572906d execfn=47415db7ccddc2cf class=PYTHON role=2 provenance=2 argc=13
+sdist-exec pid=36 parent=34 image=8fe06ba35e781415 execfn=8fe06ba35e781415 class=OTHER role=2 provenance=3 argc=2
+sdist-open pid=36 path=fbc430c15ef57dff flags=557056 mount=16 mount_class=oci-root sealed=1 role=2 provenance=3 class=OTHER predicate=0 result=5
+observer_attribution sequence=1 profile=pypi-wheel counts=PROCESS/SENTRY_EXEC/OTHER/ARTIFACT_ROLE/ARTIFACT_GROUP:1
+    linux_integration_test.go:359: build result = domain.SandboxResult{sessionID:domain.SandboxSessionID{value:"sbx_3rc7itw3l4sqy2d3gw6vc7wsny"}, status:"INCOMPLETE", limitation:"M5_PYPI_BUILD_FAILED", observed:[]domain.SandboxObservation{}} observer_reason=sandbox.observerFault{reason:"STREAM_FAULT", site:"OPEN_RESULT_CLASSIFICATION_IMAGE", imageLocator:0xfbc430c15ef57dff}, <nil>
+--- FAIL: TestLinuxPyPISdistBuildIntegration (14.06s)
+FAIL

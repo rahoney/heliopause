@@ -1,0 +1,73 @@
+#!/bin/bash
+set -euo pipefail
+cd $REPO
+work=/tmp/haa-ci-runtime-final
+mkdir -p "$work"
+if pgrep -f '^/usr/libexec/heliopause/haa-network-policy-helper$' >/dev/null; then exit 2; fi
+helper_pid=''
+stop_helper() {
+  if [ -n "$helper_pid" ]; then
+    sudo -n kill -TERM "$helper_pid" 2>/dev/null || true
+    wait "$helper_pid" || true
+    helper_pid=''
+    for i in $(seq 1 100); do
+      if ! test -S /run/heliopause-network-policy/helper.sock; then return 0; fi
+      sleep 0.1
+    done
+    return 1
+  fi
+  return 0
+}
+start_helper() {
+ sudo -n /usr/libexec/heliopause/haa-network-policy-helper >> "$work/helper.log" 2>&1 &
+ helper_pid=$!
+ for i in $(seq 1 600); do
+  if test -S /run/heliopause-network-policy/helper.sock && test -S /run/heliopause-network-policy/observation.sock; then return 0; fi
+  if ! sudo -n kill -0 "$helper_pid" 2>/dev/null; then return 1; fi
+  sleep 0.1
+ done
+ return 1
+}
+finish() {
+ status=$?
+ trap - EXIT
+ set +e
+ stop_helper
+ stop_status=$?
+ sudo -n install -m 0755 /tmp/haa-ci-helox-final /usr/libexec/heliopause/helox
+ restore_status=$?
+ sha256sum /usr/libexec/heliopause/helox /usr/libexec/heliopause/haa-network-policy-helper /usr/libexec/heliopause/haa_gvisor_observer > "$work/installed-after.sha256"
+ systemctl list-units 'haaobs*.slice' --all --no-legend > "$work/slices-after.txt"
+ printf 'task_exit=%s stop_exit=%s restore_exit=%s\n' "$status" "$stop_status" "$restore_status" > "$work/cleanup.txt"
+ if [ "$stop_status" -ne 0 ] || [ "$restore_status" -ne 0 ]; then exit 2; fi
+ exit "$status"
+}
+trap finish EXIT
+systemctl list-units 'haaobs*.slice' --all --no-legend > "$work/slices-before.txt"
+sudo -n install -m 0755 /tmp/haa-ci-helper-final /usr/libexec/heliopause/haa-network-policy-helper
+sudo -n install -m 0755 /tmp/haa-ci-helox-final /usr/libexec/heliopause/helox
+start_helper
+mkdir -p "$work/packaging-target"
+python_image=$(python3 -c 'import json;print(json.load(open("scripts/runtimes.lock.json"))["python_image"]["reference"])')
+docker run --rm --network none --user "$(id -u):$(id -g)" -v "$work/packaging-target:/target" "$python_image" python -m venv --without-pip /target
+start=$(date +%s)
+/usr/libexec/heliopause/helox pip install packaging@25.0 --target "$work/packaging-target" > "$work/packaging.log" 2>&1
+printf 'packaging_seconds=%s\n' "$(($(date +%s)-start))" > "$work/timing.txt"
+stop_helper
+sudo -n install -m 0755 /tmp/haa-ci-bootstrap-final.test /usr/libexec/heliopause/helox
+start_helper
+start=$(date +%s)
+set +e
+HELOX_INTEGRATION_EVIDENCE_ROOT="$work/e2e" HELOX_PYTORCH_FULL_INTEGRATION=1 HELOX_PYTORCH_PROFILE=cpu /usr/libexec/heliopause/helox -test.v -test.timeout=15m -test.run '^TestLinuxPyTorchFullIntegration$' > "$work/cpu.log" 2>&1
+cpu_status=$?
+set -e
+printf 'cpu_exit=%s cpu_seconds=%s\n' "$cpu_status" "$(($(date +%s)-start))" >> "$work/timing.txt"
+stop_helper
+sudo -n install -m 0755 /tmp/haa-ci-sandbox-final.test /usr/libexec/heliopause/helox
+start_helper
+set +e
+HELOX_PYPI_DYNAMIC_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxPyPI(WheelDynamic|SdistBuild)Integration$' > "$work/wheel-sdist.log" 2>&1
+sandbox_status=$?
+set -e
+printf 'sandbox_exit=%s\n' "$sandbox_status" >> "$work/timing.txt"
+if [ "$cpu_status" -ne 0 ] || [ "$sandbox_status" -ne 0 ]; then exit 1; fi
