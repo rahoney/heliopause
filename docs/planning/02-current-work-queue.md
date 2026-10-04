@@ -2590,6 +2590,24 @@ M12-002~004의 상세 MISSING은 해당 work item이 시작될 때 별도 baseli
 | 4 | M11-FIX-04 | draft asset binding·post-publish quarantine | COMPLETE |
 | 5 | M11-FIX-05 | observer profile wait timing regression | COMPLETE |
 
+
+### M12-002 Go resolver/source 보완 checkpoint (2026-10-04)
+
+사용자 승인으로 신규 Go resolver만 연결별 200,000 charged records를 적용했다.
+기존 profile/collector/CPU/memory/time 예산과 observer 판정은 유지한다. 정적 검사의
+최초 원인은 의도적으로 invalid한 testdata assets에 일반 source 문법을 강제한
+것이며 pinned Go discovery/explicit compiler·동일 최소 fixture로 대조했다.
+Cobra/tools 전체 CLI, pflag 실제 Get+retained Download와 기존 npm/GitHub ELF/
+필수 sdist/wheel 및 생산 C++ finite-boundary/latch 회귀는 통과했다.
+[Source correction evidence](./evidence/m12-002-go-source-correction/README.md)가
+exact source/입력/결과/검사 범위를 소유한다.
+
+큰 gRPC graph는 source/inspection을 통과한 뒤 별도 cache file bound로 FAIL했다.
+전체 preflight 11,572 files/약190.5 MiB이며 file cap20,000 여부는 사용자 답변 pending,
+실제 변경은 없다. M12-002 IN_PROGRESS와 전체 WIRED/QUALIFIED/ACCEPTANCE_CLOSED NO,
+M12-003/004 NOT_STARTED를 유지한다. Observed offline build/output publish와 최종
+qualification MISSING을 계속한다. NO PUSH / NO REMOTE CI / NO MERGE.
+
 ## Step 13 Invariant
 
 1. Current Work Queue에는 현재 milestone의 실행 항목만 둔다.

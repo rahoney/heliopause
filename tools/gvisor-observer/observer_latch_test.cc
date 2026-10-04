@@ -676,8 +676,52 @@ bool HasPinnedPodInitProfile() {
 bool HasBoundedProfileRecordLimits() {
   return MaximumRecords(kProfilePyTorchCPU) == 500000 &&
       MaximumRecords(kProfilePyTorchCU126) == 100000 &&
+      MaximumRecords(kProfilePyTorchCU130) == 100000 &&
+      MaximumRecords(kProfilePyTorchCU132) == 100000 &&
+      MaximumRecords(kProfileGoResolver) == 200000 &&
+      MaximumRecords(kProfileNPM) == 10000 &&
+      MaximumRecords(kProfileGitHub) == 10000 &&
       MaximumRecords(kProfilePyPI) == 10000 &&
+      MaximumRecords("unknown-profile") == 10000 &&
       MaximumRecords(nullptr) == 10000;
+}
+
+bool VerifyProfileRecordBoundary(int output, const std::string& remote, const std::string& control, const char* id, const char* profile, size_t limit, bool overflow) {
+  if (!RegisterProfile(control, id, profile)) return false;
+  const int client = ConnectRemote(remote);
+  if (client < 0 || !Handshake(client)) return false;
+  gvisor::container::Start start;
+  start.mutable_context_data()->set_container_id(id);
+  if (!SendEvent(client, gvisor::common::MESSAGE_CONTAINER_START, start) || !ExpectRecord(output, id, "container-start")) return false;
+  gvisor::syscall::Close close_message;
+  auto* context = close_message.mutable_context_data();
+  context->set_container_id(id);
+  context->set_thread_group_id(1);
+  context->set_thread_group_start_time_ns(1);
+  close_message.set_fd(7);
+  close_message.mutable_exit()->set_errorno(9);
+  close_message.mutable_exit()->set_result(-1);
+  // Start and sealed topology each charge one; retain the original accounting.
+  const size_t count = overflow ? limit - 1 : limit - 3;
+  for (size_t i = 0; i < count; ++i) {
+    if (!SendEvent(client, gvisor::common::MESSAGE_SYSCALL_CLOSE, close_message)) { close(client); return false; }
+  }
+  shutdown(client, SHUT_WR);
+  char data[2048];
+  const ssize_t n = recv(output, data, sizeof(data), 0);
+  close(client);
+  if (n <= 0) return false;
+  const std::string result(data, n);
+  if (!overflow) {
+    const std::string expected = std::string("{\"container_id\":\"") + id + "\",\"kind\":\"stream-end\"}";
+    return result == expected;
+  }
+  const bool rejected = result.find("\"reason\":\"EVENT_LIMIT\"") != std::string::npos &&
+      result.find("\"fault_site\":\"EVENT_LIMIT\"") != std::string::npos &&
+      result.find("\"charged\":" + std::to_string(limit)) != std::string::npos &&
+      result.find("\"limit\":" + std::to_string(limit)) != std::string::npos;
+  fprintf(stderr, "profile=%s bounded terminal=%s\n", profile, result.c_str());
+  return rejected;
 }
 
 bool VerifyPinnedAccessors(int output, const std::string& remote, const std::string& control) {
@@ -4910,6 +4954,12 @@ int main(int argc, char** argv) {
   const bool profile = HasPinnedPodInitProfile();
   const bool profile_limits = HasBoundedProfileRecordLimits();
 	const bool unaccepted_disconnect = running && VerifyUnacceptedRemoteDisconnect(remote);
+  fprintf(stderr, "STARTING record_boundaries\n");
+  const bool record_boundaries = running &&
+      VerifyProfileRecordBoundary(output, remote, control, "0101010101010101", kProfileGoResolver, 200000, false) &&
+      VerifyProfileRecordBoundary(output, remote, control, "0202020202020202", kProfileGoResolver, 200000, true) &&
+      VerifyProfileRecordBoundary(output, remote, control, "0303030303030303", kProfileNPM, 10000, false) &&
+      VerifyProfileRecordBoundary(output, remote, control, "0404040404040404", kProfileNPM, 10000, true);
   fprintf(stderr, "STARTING accessors\n");
   const bool accessors = running && VerifyPinnedAccessors(output, remote, control);
   fprintf(stderr, "STARTING network\n");
@@ -4975,7 +5025,7 @@ int main(int argc, char** argv) {
 	const bool control_peer_hup_live_admission = running && VerifyControlPeerHUPClearsLiveAdmission(control);
 	fprintf(stderr, "STARTING pre_attribution_disconnect\n");
 	const bool pre_attribution_disconnect = running && VerifyAcceptedPreAttributionDisconnect(remote, child);
-  const bool passed = running && profile && profile_limits && accessors && network && malformed_socket &&
+  const bool passed = running && profile && profile_limits && record_boundaries && accessors && network && malformed_socket &&
       malformed_connect && unknown_fd && process && correlation && cloexec && delayed && concurrent_python_streams && roles &&
       oci_bootstrap && demotion && mismatch && dropped && topology_ok && filesystem && go_runtime_read && npm_node &&
       open_result_negative_ok && open_result_positive_ok && no_basename_trust_ok &&
@@ -4984,7 +5034,7 @@ int main(int argc, char** argv) {
 		admission_terminal_protocol && direct_exec_admission_bound && session_aware_control && exact_control_peer && control_peer_hup_live_admission && unaccepted_disconnect && pre_attribution_disconnect;
   const std::pair<const char*, bool> latches[] = {
       {"readiness", running}, {"pod-init profile", profile},
-      {"profile record limits", profile_limits}, {"normalized accessors", accessors},
+      {"profile record limits", profile_limits}, {"finite profile record boundary", record_boundaries}, {"normalized accessors", accessors},
       {"socket family classification", network}, {"unknown socket family", malformed_socket},
       {"malformed socket address", malformed_connect}, {"unknown FD state", unknown_fd},
       {"process trust boundary", process}, {"exec correlation boundary", correlation},

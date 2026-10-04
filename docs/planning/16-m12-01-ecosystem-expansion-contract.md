@@ -547,6 +547,26 @@ error/path/text를 새로운 authority 또는 공개 failure detail로 사용하
 Static inspection은 동일 envelope의 bounds·module identity·Go syntax를 확인하며
 source를 import/execute하지 않는다. 실제 project/build qualification 범위는 Queue가 소유한다.
 
+Go의 기본 package 탐색이 제외하는 정확한 `testdata` directory의 `.go`는 negative
+parser fixture 등을 포함하는 archive data로 취급한다. 이 구분은 package/vendor
+이름 allowlist나 안전성 판정이 아니다. 모든 bytes의 인증·digest·archive bounds·
+경로·duplicate/link·read integrity 검사는 유지하고, 그 밖의 `.go` 문법 오류는
+기존대로 Finding이다. Module identity의 `testdata` component, `testdata.go`, 비슷한
+directory 이름은 이 구분을 얻지 않는다. Explicit package selection/import로 해당
+data가 빌드 source가 될 수 있으므로 observed offline build의 실제 compiler 검사를
+반드시 거친다. Static 결과를 임의 실행의 안전성 증명으로 확대하지 않는다.
+
+### Go resolver observation budget
+
+신규 `go-module-resolver`의 remote connection별 charged-record ceiling은 200,000이다.
+고정 runtime의 fresh pflag/Cobra/tools/gRPC source commands 36개에서 최대 63,018을
+관찰하고 finite-boundary 실험을 확인한 뒤 승인한 값이다. 모든 정상 module의 최악
+상한을 입증한 값은 아니며 초과/incomplete observation은 계속 fail closed다.
+Helper의 charged records와 normalized collector records는 별도 단위다. Collector는
+기존 10,000 records / 2 MiB를 유지하며 CPU 1 core, memory 512 MiB, command 120 seconds,
+output/graph/archive/cache bounds와 기존 npm/PyPI/GitHub/CPU/CUDA profiles는 유지한다.
+측정 범위와 exact 입력은 [처리량 evidence](./evidence/m12-002-resolver-budget-measurement/README.md)가 소유한다.
+
 ## Project transaction
 
 transaction set:

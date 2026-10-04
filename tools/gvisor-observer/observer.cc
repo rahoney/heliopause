@@ -46,6 +46,7 @@ constexpr size_t kMaxEventSize = 1024 * 1024;
 constexpr size_t kMaxNormalizedRecordsPerConnection = 10000;
 constexpr size_t kMaxPyTorchCPURecordsPerConnection = 500000;
 constexpr size_t kMaxPyTorchCU126RecordsPerConnection = 100000;
+constexpr size_t kMaxGoResolverRecordsPerConnection = 200000;
 constexpr size_t kMaxTrackedProcessGroups = 64;
 constexpr size_t kMaxPendingDirectExecAdmissions = 64;
 constexpr size_t kDirectExecAdmissionNonceChars = 64;
@@ -2270,6 +2271,7 @@ bool ParseSentryExitNotifyParent(const char* payload, size_t payload_size,
 
 size_t MaximumRecords(const char* profile) {
   if (profile == nullptr) return kMaxNormalizedRecordsPerConnection;
+  if (strcmp(profile, kProfileGoResolver) == 0) return kMaxGoResolverRecordsPerConnection;
   if (strcmp(profile, kProfilePyTorchCPU) == 0) return kMaxPyTorchCPURecordsPerConnection;
   if (strcmp(profile, kProfilePyTorchCU126) == 0 || strcmp(profile, kProfilePyTorchCU130) == 0 ||
       strcmp(profile, kProfilePyTorchCU132) == 0) return kMaxPyTorchCU126RecordsPerConnection;

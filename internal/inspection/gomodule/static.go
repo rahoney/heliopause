@@ -7,6 +7,7 @@ import (
 	"go/parser"
 	"go/token"
 	"io"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -62,6 +63,15 @@ func (i *StaticInspector) Inspect(ctx context.Context, artifact domain.AcquiredA
 		if readErr != nil || closeErr != nil || len(body) > artifactgo.MaxModuleFileBytes {
 			return report(artifact, "M12_GO_MODULE_ARCHIVE_INVALID")
 		}
+		// Go's package discovery excludes directories named exactly testdata.
+		// These bytes are still authenticated, bounded and read above (including
+		// ZIP integrity). This is syntax applicability, never execution authority:
+		// an explicit package/import may select them and must pass the compiler
+		// in the observed build. No package or vendor name grants an exemption.
+		rel := strings.TrimPrefix(file.Name, artifact.Identity().Name()+"@"+artifact.Identity().Version()+"/")
+		if isTestData(rel) {
+			continue
+		}
 		// Parsing never imports or executes project code. Comments and directives
 		// remain data; go generate and arbitrary tool execution are not invoked.
 		if _, err := parser.ParseFile(token.NewFileSet(), "module.go", body, parser.AllErrors|parser.SkipObjectResolution); err != nil {
@@ -71,11 +81,20 @@ func (i *StaticInspector) Inspect(ctx context.Context, artifact domain.AcquiredA
 	return report(artifact, "")
 }
 
+func isTestData(relative string) bool {
+	for _, directory := range strings.Split(path.Dir(relative), "/") {
+		if directory == "testdata" {
+			return true
+		}
+	}
+	return false
+}
+
 func report(artifact domain.AcquiredArtifact, code string) (domain.InspectionReport, error) {
 	checkID, _ := domain.NewCheckID("go-module-static")
 	check, _ := domain.NewCheckExecution(checkID, domain.CheckInspection, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
 	evidenceID, _ := domain.NewEvidenceID("go-module-static-result")
-	evidence, err := domain.NewEvidence(evidenceID, checkID, artifact.Identity(), artifact.Digest(), "go-module-static", "Bounded controlled subject archive and Go source syntax inspected without execution.")
+	evidence, err := domain.NewEvidence(evidenceID, checkID, artifact.Identity(), artifact.Digest(), "go-module-static", "Bounded controlled archive and Go source syntax inspected without execution. Testdata assets retain archive integrity checks; explicit selection requires compiler checks in the observed build.")
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}

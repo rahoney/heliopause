@@ -1,0 +1,36 @@
+{
+  "go_version": "go version go1.26.8 linux/amd64",
+  "scope": "trusted bounded literal fixture; compiler invoked, fixture code never executed",
+  "results": [
+    {
+      "case": "automatic discovery",
+      "args": [
+        "list",
+        "./..."
+      ],
+      "exit_code": 0,
+      "stdout": "example.com/sourcefixture\n",
+      "stderr": ""
+    },
+    {
+      "case": "explicit selection",
+      "args": [
+        "build",
+        "./testdata/bad"
+      ],
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "testdata/bad/bad.go:1:9: expected 'IDENT', found '!'\n"
+    },
+    {
+      "case": "imported testdata",
+      "args": [
+        "build",
+        "."
+      ],
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "testdata/bad/bad.go:1:9: expected 'IDENT', found '!'\n"
+    }
+  ]
+}

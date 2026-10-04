@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -133,6 +134,29 @@ func TestGoCacheRejectsUnapprovedAndCanonicalArchiveCollision(t *testing.T) {
 	entries, err := os.ReadDir(cache.cacheRoot)
 	if err != nil || len(entries) != 0 {
 		t.Fatal("partial collision cache retained")
+	}
+}
+
+func TestGoCacheContentBudgetFailureDoesNotPublishPartialCache(t *testing.T) {
+	root := canonicalGoTestRoot(t)
+	cache, err := newGoCacheForTest(filepath.Join(root, "intake"), filepath.Join(root, "evidence"), filepath.Join(root, "verified"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	// An individually bounded, approved archive can still exceed the complete
+	// cache budget once its required proxy metadata is included.
+	files := map[string]string{"go.mod": "module example.com/module\ngo 1.26.0\n"}
+	for n := 1; n < artifactgo.MaxModuleFiles; n++ {
+		files[fmt.Sprintf("testdata/asset-%05d", n)] = ""
+	}
+	set, _ := goCacheFixture(t, cache.intakeRoot, filepath.Join(root, "project"), "example.com/module", files)
+	staged, err := cache.StageProject(context.Background(), set)
+	if err == nil || staged.Valid() || !strings.Contains(err.Error(), "go project cache exceeds bounded content limits:") || !strings.Contains(err.Error(), "file_limit=10000") {
+		t.Fatalf("cache budget failure lost: staged=%v error=%v", staged.Valid(), err)
+	}
+	entries, err := os.ReadDir(cache.cacheRoot)
+	if err != nil || len(entries) != 0 {
+		t.Fatal("budget failure retained partial or published cache")
 	}
 }
 

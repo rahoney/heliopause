@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/fs"
 	"os"
@@ -178,7 +179,7 @@ func (c *GoVerifiedCache) StageProject(ctx context.Context, set domain.ProjectVe
 			totalBytes += entry.UncompressedSize64
 		}
 		if totalBytes > uint64(maxGoProjectCacheBytes) || totalFiles > maxGoProjectCacheFiles {
-			return staged, errors.New("go project cache exceeds bounded content limits")
+			return staged, fmt.Errorf("go project cache exceeds bounded content limits: bytes=%d byte_limit=%d files=%d file_limit=%d", totalBytes, maxGoProjectCacheBytes, totalFiles, maxGoProjectCacheFiles)
 		}
 		integrity, ok := a.DeclaredIntegrity()
 		if !ok {
