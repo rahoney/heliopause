@@ -2316,6 +2316,23 @@ observed offline build/output publish·build CLI, 최종 security/direct-consume
 CPU/CUDA 영향 검증이다. 다음 M12-003/004는 NOT_STARTED를 유지한다.
 NO PUSH / NO REMOTE CI / NO MERGE.
 
+### M12-002 Go resolver 처리량 측정 (2026-10-04)
+
+사용자가 정상 작업량 측정을 지시하여 신규 Go만 별도 LOCAL observer의 finite
+ceiling으로 조사했다. 제품 source·기존 profile budgets·charging·Policy는 불변이다.
+네 fixture의 fresh source-command 36 connections 완료와 실제 처리량/CPU/memory,
+전체 CLI pflag/Cobra PASS 및 x/tools/gRPC의 별도 syntax/Policy FAIL 범위는
+[측정 evidence](./evidence/m12-002-resolver-budget-measurement/README.md)가 소유한다.
+측정 최대 charged63,018에 근거한 신규 resolver 연결별200,000은 후보이며 제품
+적용/qualification은 아직 아니다. 기존 10,000 및 후보 finite overflow 차단도 확인했다.
+
+새로 확인한 MISSING은 Go module의 malformed negative-test assets와 일반 source의
+syntax inspection 범위다. Raw filename을 승인 authority로 삼거나 package/vendor
+allowlist·test skip·Policy 완화로 통과시키지 않았다. 기존 Get/build/최종 qualification
+MISSING과 함께 닫아야 한다. M12-002 IN_PROGRESS, 전체 WIRED/QUALIFIED/
+ACCEPTANCE_CLOSED NO와 M12-003/004 NOT_STARTED를 유지한다.
+NO PUSH / NO REMOTE CI / NO MERGE.
+
 ### M12-001 종료 전 이력 (당시 상태, 현재 판정 아님)
 
 아래 날짜별 NO·미검증·IN_PROGRESS 기록은 당시 검증 범위다. 현재 판정은 위의

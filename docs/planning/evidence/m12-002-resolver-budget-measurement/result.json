@@ -1,0 +1,737 @@
+{
+  "date": "2026-10-04",
+  "baseCommit": "87514a5117f39530d6a047fe1f4032b1dcbde351",
+  "scope": "LOCAL normal Go resolver resource measurement; production budgets unchanged; not M12-002 qualification",
+  "implemented": "YES",
+  "wired": "NO",
+  "qualified": "NO",
+  "acceptanceClosed": "NO",
+  "method": {
+    "experimentalGoHelperCeiling": 500000,
+    "unit": "normalized_records + immediate_records per gVisor remote connection, as charged by the production helper",
+    "rawFramesAndBytes": "additional scalar diagnostics, not the collector event/byte quota",
+    "warmth": "fresh disposable container and private resolver cache for each command; no ambient/global module cache consumed",
+    "containerLimits": {
+      "nanoCPUs": 1000000000,
+      "memoryBytes": 536870912,
+      "pids": 64,
+      "tmpfsBytes": 536870912,
+      "goCommandSeconds": 120
+    },
+    "collectorLimits": {
+      "normalizedRecords": 10000,
+      "normalizedBytes": 2097152
+    },
+    "workspaceSummarySaturation": 10000,
+    "sampling": "Docker read-only stats + cgroup memory.peak/cpu.stat until teardown, target100ms; sampled CPU totals are lower bounds; host process samples do not provide simultaneous total memory",
+    "policy": "all production classifications, charging, approval and transaction rules remain unchanged"
+  },
+  "sourceFixtures": [
+    {
+      "fixture": "pflag@v1.0.9",
+      "attempts": 3,
+      "source_command_result": "PASS",
+      "commands": [
+        {
+          "command": "get",
+          "charged_counts": [
+            16726,
+            16726,
+            16728
+          ],
+          "stream_seconds": [
+            5.089235,
+            5.244162,
+            5.094611
+          ],
+          "received_frames": [
+            24278,
+            24278,
+            24280
+          ],
+          "received_bytes": [
+            3075185,
+            3075189,
+            3075415
+          ]
+        },
+        {
+          "command": "mod download -json all",
+          "charged_counts": [
+            2195,
+            2195,
+            2195
+          ],
+          "stream_seconds": [
+            2.222233,
+            2.37378,
+            2.270668
+          ],
+          "received_frames": [
+            3413,
+            3413,
+            3413
+          ],
+          "received_bytes": [
+            487157,
+            487155,
+            487157
+          ]
+        },
+        {
+          "command": "mod graph",
+          "charged_counts": [
+            1690,
+            1690,
+            1690
+          ],
+          "stream_seconds": [
+            2.153845,
+            2.391313,
+            2.140594
+          ],
+          "received_frames": [
+            2702,
+            2702,
+            2702
+          ],
+          "received_bytes": [
+            395390,
+            395396,
+            395396
+          ]
+        }
+      ],
+      "observer_peak_rss_kib": 10664,
+      "container_cgroup_peak_bytes_before_teardown": 50536448
+    },
+    {
+      "fixture": "cobra@v1.10.2",
+      "attempts": 3,
+      "source_command_result": "PASS",
+      "commands": [
+        {
+          "command": "get",
+          "charged_counts": [
+            18066,
+            18038,
+            18036
+          ],
+          "stream_seconds": [
+            5.906621,
+            6.337821,
+            5.647762
+          ],
+          "received_frames": [
+            26336,
+            26286,
+            26284
+          ],
+          "received_bytes": [
+            3346593,
+            3339849,
+            3339629
+          ]
+        },
+        {
+          "command": "mod download -json all",
+          "charged_counts": [
+            3852,
+            3872,
+            3874
+          ],
+          "stream_seconds": [
+            3.094632,
+            2.888493,
+            2.851853
+          ],
+          "received_frames": [
+            5844,
+            5880,
+            5882
+          ],
+          "received_bytes": [
+            812276,
+            817141,
+            817373
+          ]
+        },
+        {
+          "command": "mod graph",
+          "charged_counts": [
+            1762,
+            1760,
+            1760
+          ],
+          "stream_seconds": [
+            2.187386,
+            2.136461,
+            2.137877
+          ],
+          "received_frames": [
+            2834,
+            2832,
+            2832
+          ],
+          "received_bytes": [
+            413956,
+            413736,
+            413738
+          ]
+        }
+      ],
+      "observer_peak_rss_kib": 10664,
+      "container_cgroup_peak_bytes_before_teardown": 54177792
+    },
+    {
+      "fixture": "tools@v0.49.0",
+      "attempts": 3,
+      "source_command_result": "PASS",
+      "commands": [
+        {
+          "command": "get",
+          "charged_counts": [
+            17806,
+            17806,
+            17806
+          ],
+          "stream_seconds": [
+            7.492029,
+            7.393213,
+            8.097082
+          ],
+          "received_frames": [
+            27454,
+            27454,
+            27454
+          ],
+          "received_bytes": [
+            3872258,
+            3872266,
+            3872258
+          ]
+        },
+        {
+          "command": "mod download -json all",
+          "charged_counts": [
+            19956,
+            19941,
+            19966
+          ],
+          "stream_seconds": [
+            8.90928,
+            9.166059,
+            8.62735
+          ],
+          "received_frames": [
+            28440,
+            28415,
+            28456
+          ],
+          "received_bytes": [
+            3827006,
+            3823716,
+            3829057
+          ]
+        },
+        {
+          "command": "mod graph",
+          "charged_counts": [
+            1690,
+            1692,
+            1692
+          ],
+          "stream_seconds": [
+            2.115525,
+            2.526699,
+            2.16672
+          ],
+          "received_frames": [
+            2702,
+            2704,
+            2704
+          ],
+          "received_bytes": [
+            395368,
+            395594,
+            395594
+          ]
+        }
+      ],
+      "observer_peak_rss_kib": 10664,
+      "container_cgroup_peak_bytes_before_teardown": 98574336
+    },
+    {
+      "fixture": "grpc@v1.76.0",
+      "attempts": 3,
+      "source_command_result": "PASS",
+      "commands": [
+        {
+          "command": "get",
+          "charged_counts": [
+            58260,
+            58288,
+            58288
+          ],
+          "stream_seconds": [
+            20.7786,
+            19.374743,
+            20.322184
+          ],
+          "received_frames": [
+            85298,
+            85350,
+            85350
+          ],
+          "received_bytes": [
+            11263366,
+            11270384,
+            11270370
+          ]
+        },
+        {
+          "command": "mod download -json all",
+          "charged_counts": [
+            63004,
+            62974,
+            63018
+          ],
+          "stream_seconds": [
+            27.446973,
+            26.990857,
+            24.466861
+          ],
+          "received_frames": [
+            89194,
+            89138,
+            89214
+          ],
+          "received_bytes": [
+            12108527,
+            12100985,
+            12111014
+          ]
+        },
+        {
+          "command": "mod graph",
+          "charged_counts": [
+            1749,
+            1749,
+            1749
+          ],
+          "stream_seconds": [
+            2.12152,
+            2.1812,
+            2.1713
+          ],
+          "received_frames": [
+            2811,
+            2811,
+            2811
+          ],
+          "received_bytes": [
+            410657,
+            410651,
+            410649
+          ]
+        }
+      ],
+      "observer_peak_rss_kib": 10728,
+      "container_cgroup_peak_bytes_before_teardown": 310411264
+    }
+  ],
+  "observedMaximumCharged": 63018,
+  "wholeCLI": {
+    "pflag": "two original positive Get+retained download gate executions PASS",
+    "cobra": "full exact selection + acquire/SumDB/static inspection + entry/set ALLOW + publication + retained download PASS; approved modules7",
+    "tools": "FAIL at set Policy;8 inspected modules, tools0.49 M12_GO_SOURCE_INVALID",
+    "grpc": "FAIL at set Policy;41 inspected modules, tools0.34 M12_GO_SOURCE_INVALID",
+    "notEquivalent": "source command PASS is not full CLI approval; the Policy failures were not converted to success"
+  },
+  "policyCausality": {
+    "tools049Subject": "93983dea50c1f5d29f4513b70fcad0b1591c5117ee68fd88adea2ba19f6dbe88",
+    "tools034Subject": "ed8ade28cbc4e159fe67c47953d71603820bd5cdb7937df2570ce4a882dd0025",
+    "proof": "same subject envelopes reconstructed and digest-matched; pinned Go parser flags match StaticInspector; malformed testdata .go assets reproduce M12_GO_SOURCE_INVALID without execution",
+    "tools049GoFiles": 1283,
+    "tools049InvalidGoFiles": 11,
+    "tools049InvalidMembersAllUnderTestdata": true,
+    "tools034GoFiles": 1233,
+    "tools034InvalidGoFiles": 16,
+    "remaining": "generic Go source-vs-negative-test-asset syntax inspection semantics require separate causal correction; no package allowlist, test skip or Policy relaxation applied"
+  },
+  "finiteCeilingProof": {
+    "experimentalGo": "499999 charged completes; additional event at charged500000 faults EVENT_LIMIT",
+    "legacyNpm": "additional event at charged10000 still faults EVENT_LIMIT",
+    "scope": "synthetic exact remote-sink protobuf lifecycle probe, separate from real kernel-observed normal workloads",
+    "candidateGo": "199999 charged completes; additional event at charged200000 faults EVENT_LIMIT"
+  },
+  "recommendedCandidate": {
+    "profile": "go-module-resolver",
+    "helperChargedLimit": 200000,
+    "basis": "about3.17 times measured maximum63018; engineering margin, not a statistically proven optimal bound or support for every possible graph",
+    "containerAndCollectorLimits": "preserve existing settings",
+    "productionApplied": false,
+    "exclusions": [
+      "Go build budget is not measured/wired",
+      "Cargo profile is not measured",
+      "no CPU/CUDA/native macOS qualification claimed"
+    ],
+    "localCandidateSourceTrial": {
+      "fixture": "gRPC1.76.0",
+      "result": "PASS",
+      "chargedCounts": [
+        58293,
+        63018,
+        1749
+      ],
+      "scope": "same production runner with external200000 ceiling; not full CLI approval or final candidate"
+    },
+    "localCandidateOriginalCLIGate": {
+      "result": "PASS",
+      "chargedCounts": [
+        16726,
+        2195,
+        1692,
+        2197,
+        1690
+      ],
+      "scope": "original positive product Get+retained Download test with external200000 helper; production code remains unchanged"
+    }
+  },
+  "rawEvidenceRoot": "External local M12-002 STATE measurement directory; raw logs are not automatically available on GitHub",
+  "rawEvidence": [
+    {
+      "path": "build.log",
+      "sha256": "032ba70540b94c1c21f0e108a3260631682e125681d3a79537c90b2f3d72ee75"
+    },
+    {
+      "path": "fixture-build.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "grpc-fixture-build.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "cli-fixture-build.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "cli-diagnostic-build.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "get-cli-1.log",
+      "sha256": "9a9aedc981e867ed38b295b874cdb8a88c4251a10222a9fac3482c3bf9cae713"
+    },
+    {
+      "path": "get-cli-1.time",
+      "sha256": "dca425bc56c2f5720620ca75ce2099f45077a4ab53478770aca3bbdef053a67d"
+    },
+    {
+      "path": "get-cli-2.log",
+      "sha256": "71fcad6e5dca52262b501cfd325c99c602919f80e2ea4d4ec72294e61c005033"
+    },
+    {
+      "path": "get-cli-2.json",
+      "sha256": "f505b0c4525df92bdcd40852a0e17ea60ac548cb41fbe3e99c7a518f1091fde9"
+    },
+    {
+      "path": "get-cli-2.time",
+      "sha256": "9523ef4b970b26ed9ae0f20034824866b040303857fc981c14ee262120a38fa7"
+    },
+    {
+      "path": "resolver-matrix.log",
+      "sha256": "5dd836faa2b9fb767fddfc1406c290483693c9224772cdd965c1ff4de10e3d06"
+    },
+    {
+      "path": "resolver-matrix.json",
+      "sha256": "c76fcc529964974e9e9e5611a852740e9e9c8e17570c49e0707d74d3a924f5f0"
+    },
+    {
+      "path": "resolver-matrix.samples.json",
+      "sha256": "74cf48555e9e11e0c4cdf4c92ef829fc72ec30930eb298a56ebd47fa18f33596"
+    },
+    {
+      "path": "resolver-matrix.time",
+      "sha256": "453b4e120d6999e9cc2f7a9a3e87340c839d40a011812b6c4a56e3d1fac2d810"
+    },
+    {
+      "path": "resolver-grpc.log",
+      "sha256": "211e63188ea24ca9c9bfe88be28d3785af3c919468f762efc0017820082bbe25"
+    },
+    {
+      "path": "resolver-grpc.json",
+      "sha256": "b5966879b8af80af1d533974dc95d29d276e57831584e3446c0a17862f0ea376"
+    },
+    {
+      "path": "resolver-grpc.samples.json",
+      "sha256": "adb94110db963245f4c70faaad65a08b1b2681f7a3c7cbfd7382e93667d5b52a"
+    },
+    {
+      "path": "resolver-grpc.time",
+      "sha256": "2a6b66c8aadb34d21f233a532bbc13f9ec30555faa7000b2bec51278f518e470"
+    },
+    {
+      "path": "cli-matrix.log",
+      "sha256": "9b7e770ed4cef4027549cb4a8f2b36823a715278d804b983a281b4aed35074a5"
+    },
+    {
+      "path": "cli-matrix.json",
+      "sha256": "a83130fdac20f3b206cd7c7be6a95dfaee7c843a3e912f3e4ab7641f3269acae"
+    },
+    {
+      "path": "cli-matrix.samples.json",
+      "sha256": "f688eb66a28828e42b3a753dd38080ba44f2538ded2f73ae6ee76762b89fe649"
+    },
+    {
+      "path": "cli-matrix.time",
+      "sha256": "56a56a4e13053c0aef6011d025d7930c97046c555fe26ea6f57a5bc29a49462c"
+    },
+    {
+      "path": "cli-policy-diagnostic.log",
+      "sha256": "16e622e7a2cb366e7948881614aca05008e38cd7066163852de35c21919bc9ee"
+    },
+    {
+      "path": "cli-policy-diagnostic.json",
+      "sha256": "c01c9fe2e7d3630ad5785b0016e03d45446de9d80f4a792dcf60163a1d3431c1"
+    },
+    {
+      "path": "cli-policy-diagnostic.samples.json",
+      "sha256": "83d275e5ed5bb64955737559b95dd1f6301eff8d692eac480ab165e2931698ea"
+    },
+    {
+      "path": "cli-policy-diagnostic.time",
+      "sha256": "c14d8c8e5427c914114254d26a9cecf40ebb308b60fe324a6846ffd300a4b85e"
+    },
+    {
+      "path": "budget-probe-build.log",
+      "sha256": "fe3893175a20cb82bfe42ab153cfcae569e6214799e030b5e668b80974f60875"
+    },
+    {
+      "path": "budget-probe.log",
+      "sha256": "17934dc7490919dd43101b2cafcb882e0b880dc2756cf406821d8fd6b9f71448"
+    },
+    {
+      "path": "budget-probe.time",
+      "sha256": "55f5c3b38469f01c0172baa068413d59432db2542895af3c0851e9dca996affa"
+    },
+    {
+      "path": "tools-cache-content-binding.json",
+      "sha256": "c754b9458f51f4ab2cdde9a15d24800a96e1d74567a103701e6aa9e1c09e2bdc"
+    },
+    {
+      "path": "tools-parse-diagnostic.json",
+      "sha256": "50ed9f50a3fdd5d33333e2c0950731199e2f63f2dd6febe55e329801e1544a0f"
+    },
+    {
+      "path": "grpc-tools-content-binding.json",
+      "sha256": "313f35574cb878139772f1ac8eb3306cf98657f79b94a8c83339d619836096eb"
+    },
+    {
+      "path": "grpc-tools-parse-diagnostic.json",
+      "sha256": "313dc4504f30f30dcf1b3ba439a1242052cd04aeeb9a43a53800896301e985b4"
+    },
+    {
+      "path": "setup.json",
+      "sha256": "0b04d5ede2361dfced468357bc076301ddacee720cdf28b83d7217d4ad164158"
+    },
+    {
+      "path": "matrix-inputs.json",
+      "sha256": "9c6e453e47f8b14f18382a22611171e31e5ea872a58baec365c84c7a82397462"
+    },
+    {
+      "path": "cli-inputs-first.json",
+      "sha256": "15d699429f30b2261044f27f3f575ba7c0e602ed66176ef6b9db60bb6083665f"
+    },
+    {
+      "path": "candidate-build.log",
+      "sha256": "b9decbbc5841d5cd32415afbe803ad71fcf17b353270dbca77599385376201c4"
+    },
+    {
+      "path": "candidate-fixture-build.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "candidate-budget-probe.log",
+      "sha256": "820dd142eb7f5d45e2012e2b6621c767f69a4337c3d50512dac16f140c7a4791"
+    },
+    {
+      "path": "candidate-grpc.log",
+      "sha256": "f90b7fdb0e10cdff12829f8a0fa385f4853115d3e244fc7a7e1d7410e9c233e0"
+    },
+    {
+      "path": "candidate-grpc.json",
+      "sha256": "b84d16421c426a55d7e7e47761109bba35236e3bddfe3dcf1ad2c1b77a382234"
+    },
+    {
+      "path": "candidate-grpc.samples.json",
+      "sha256": "b3c29954c3b9d69b80f73ca983605e9f43fc359e9bfc0b63c7831e039a1a8a51"
+    },
+    {
+      "path": "candidate-grpc.time",
+      "sha256": "5d4669e4b2393e3f78ccc32a59e81af128e8f233828ae95097470b05135b958e"
+    },
+    {
+      "path": "candidate-get-cli.log",
+      "sha256": "d1b91e97bcf6d9c3309f18ae232d6340769ec50cfe6053767eadbb90d2f40aba"
+    },
+    {
+      "path": "candidate-get-cli.json",
+      "sha256": "0fafc76ab3de44d7a131052dac12ab5450a54bd6192f263b81dfd9eea022cdd2"
+    },
+    {
+      "path": "candidate-get-cli.samples.json",
+      "sha256": "9c7805bc65ea6823bcbb77b746474fa6a1665f5b9caf769bd9c6dc2c9d51b8c6"
+    },
+    {
+      "path": "candidate-get-cli.time",
+      "sha256": "ef97117214e5f89893d040aaba3b574d76497eee6c75a756135eacd30c6ecd13"
+    }
+  ],
+  "experimentalInputs": [
+    {
+      "path": "observer-measurement.cc",
+      "sha256": "6b1825b3dc43c15f50e2f43677644264cedb62d634fb0f8857f33345b8d1a2e1"
+    },
+    {
+      "path": "budget_probe.cc",
+      "sha256": "7fd20ab2257f8e1c5b687f8c8e9e5285bb8ff667b9839439a8828d8089ee1aaf"
+    },
+    {
+      "path": "resolver_measurement_test.go",
+      "sha256": "2594097d8fab560bed090204f60738c10c232505e151da4f699590b53e90dc4b"
+    },
+    {
+      "path": "grpc_measurement_test.go",
+      "sha256": "544bf94b4f2dab04e2d7b45b1719a85391cfa1ec67b605ce9abac92144b5851e"
+    },
+    {
+      "path": "cli_measurement_test.go.v2",
+      "sha256": "f29b4aa051b756cc79b4a0f1a420317e0b12b458eefd7aca60dfe39956d58585"
+    },
+    {
+      "path": "cli_measurement_test.go",
+      "sha256": "e066bef1fb4abafdbed025f5d7c747d12671f03fc0e5b6b51ef56c17b02ffc6e"
+    },
+    {
+      "path": "parse-assets.go",
+      "sha256": "9d05f1e663b6c31ece732f689b4038e53b1ecf64e12a9c54ba2b8601ae6f81ae"
+    },
+    {
+      "path": "run-case-v1.sh",
+      "sha256": "a791dcae9f59f14d1e9807816ac2488ae7b82d41cc233516fe8971951c11d7f3"
+    },
+    {
+      "path": "sample-v1.py",
+      "sha256": "9fccf1accd767d7b350ccc4ba1f0966dca61c022780d8f164920c4f71b0583aa"
+    },
+    {
+      "path": "run-case.sh.v2",
+      "sha256": "75100d0e137426240bbb2cdb6fa32a2e31ea552d78713a1e013645db993a5440"
+    },
+    {
+      "path": "sample.py.v2",
+      "sha256": "d8e5c66cae155c3f67d77a66f6bbd65a1f975cd6489f76d8ee8e12b855c42560"
+    },
+    {
+      "path": "sample.py",
+      "sha256": "d8e5c66cae155c3f67d77a66f6bbd65a1f975cd6489f76d8ee8e12b855c42560"
+    },
+    {
+      "path": "run-case.sh",
+      "sha256": "e282ed394193b27a3cf4fb1269bd4ea782ed7bbe4f30d6473de979a7319037ce"
+    },
+    {
+      "path": "fixture-three.test",
+      "sha256": "f32396acf2743e040115dd730d05a2ff0a68ad9d7b5f242bd1e39c76c95cc760"
+    },
+    {
+      "path": "fixture.test",
+      "sha256": "27110252af36bdb53e6b6431e0d0fa869d0ce17fa8e58d3b73e6f32a1920d7b3"
+    },
+    {
+      "path": "cli-fixture.test.v2",
+      "sha256": "9589ddba20c08faf919b8916cb164e028b13889b0953b184f8e49b29edbb3319"
+    },
+    {
+      "path": "cli-fixture.test",
+      "sha256": "e24e231acc85d4f598823e274b96c395a9ac847eb73f39539e5d3c2542616b91"
+    },
+    {
+      "path": "observer-candidate-measurement.cc",
+      "sha256": "15110132bb0f42dbd82116c3846653c4eaa0c1789a50f8e6d8de6fac6259ae3e"
+    },
+    {
+      "path": "budget-probe-candidate.cc",
+      "sha256": "1a18a56da6c9173ee507ad6b4c3cebbecd182a29d4bd5e2a792d522bcbdb00a6"
+    },
+    {
+      "path": "candidate_grpc_measurement_test.go",
+      "sha256": "4bbe109795c37ab588081fff6cbe279de71d012cfd5b21e16c678c076374901d"
+    },
+    {
+      "path": "candidate-overlay.json",
+      "sha256": "f9ef0ba1543cbcc5b470f162e14a28c69560673888fb583b1b8ec8e2e6c2fd27"
+    },
+    {
+      "path": "run-case-candidate.sh",
+      "sha256": "d9a215a1f3bf6fc5fb41ea6168cca23320b9247ca79d7d977b805ba3f6bd5d76"
+    },
+    {
+      "path": "sample-candidate.py",
+      "sha256": "2f598a737d44f4c90af26afeca9de7d85768d9d3bb1c09db136a54bd5c8074e9"
+    },
+    {
+      "path": "fixture-candidate.test",
+      "sha256": "774f456d342eb9e855ec57314570acc0eb4e142b2dceaac718efab8d17404f7b"
+    }
+  ],
+  "productionInputs": [
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "cf512e6572794e159ea136c53d3903ea2f1d99ab292e6b244c252965179d9921"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "1924558d53617d4cf28f893b5c91fa74592dc710bc5f87922e906f7aae6bed37"
+    },
+    {
+      "path": "internal/sandbox/gomodule_isolated_runner.go",
+      "sha256": "8460de8d7f5b9b3b328a0b73069f30cd757da804b33d6408800bc5c345c3e6b5"
+    },
+    {
+      "path": "internal/bootstrap/go_download_integration_test.go",
+      "sha256": "6a8934ccf789f30835dfcab8a24028d746f356b634760dee992c800ddaa21b84"
+    },
+    {
+      "path": "go.mod",
+      "sha256": "77e44381a6ebd9cd69a07bcde77e64cbf0d636250f6a3c1ac24caadef02bb8e1"
+    },
+    {
+      "path": "go.sum",
+      "sha256": "d5b0501c796125d12b819566df798b8ddfca9ac4e7dd8812d7439add1ee07095"
+    }
+  ],
+  "missing": [
+    "final production Go resolver budget definition/direct-consumer qualification",
+    "source syntax treatment of malformed negative test assets",
+    "observed offline build/output publication and whole M12-002 acceptance",
+    "M12-003 and M12-004 remain NOT_STARTED"
+  ],
+  "baselineEvidence": "../m12-002-download/result.json",
+  "experimentalBinaries": [
+    {
+      "path": "initial500k-observer",
+      "sha256": "f4ee949771c601eeb4898fa52c9199858a4cc5016197e67b0450b6d8324b334a"
+    },
+    {
+      "path": "candidate200k-observer",
+      "sha256": "6d6ea294b83f92a23fca1de1149ca013a235c2f5f40e3e9af82b52fabf7ec86f"
+    },
+    {
+      "path": "original-positive-CLI-test",
+      "sha256": "ab63ce56fc6d953537e3835a315a428856f17fc8de9a8ad0176f5e0d8d524afa"
+    }
+  ]
+}
