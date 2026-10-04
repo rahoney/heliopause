@@ -144,6 +144,22 @@ func ValidateBuildEnvironmentForCache(environment []string, cache string) error 
 	return nil
 }
 
+// ValidateBuildPackage accepts a package selector, never Go command flags,
+// alternate projects, version selection or tool-execution configuration.
+func ValidateBuildPackage(value string) error {
+	if value == "." || value == "./..." {
+		return nil
+	}
+	if len(value) == 0 || len(value) > 1024 || value[0] == '-' || value[0] == '/' || strings.ContainsAny(value, "\\@\x00\r\n\t ") {
+		return errors.New("go build package selector is invalid")
+	}
+	name := strings.TrimSuffix(strings.TrimPrefix(value, "./"), "/...")
+	if module.CheckImportPath(name) != nil {
+		return errors.New("go build package selector is invalid")
+	}
+	return nil
+}
+
 // Reference is an exact module path and semantic version request.
 func ParseReference(value string) (domain.ArtifactReference, error) {
 	if strings.Count(value, "@") != 1 {

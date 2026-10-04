@@ -1,0 +1,134 @@
+{
+  "schema": 1,
+  "scope": "M12-002 retained build inputs, bounded anchored project source, and reused unwired GoBuildRunner command validation; offline observed build/Policy/output/CLI qualification remains missing",
+  "baseline": "94efda055ac00916897188064cb2a037d35ec9e7",
+  "before": {
+    "command": [
+      "-toolexec",
+      "-o",
+      "-C",
+      "outside/absolute/project-version selectors",
+      "extra args",
+      "cancelled request"
+    ],
+    "only_old_wrapper_overlay": true,
+    "expected_exit": 1,
+    "actual_execution": "fake GoModuleRunner captures commands; no malicious process executed"
+  },
+  "after": {
+    "command_exit": 0,
+    "source_inputs_exit": 0,
+    "focused_consumers_exit": 0,
+    "source_inputs_seconds": 2.048,
+    "focused_consumers_promotion_seconds": 13.545,
+    "source_semantics": "local byte identity; no registry/ALLOW authority; retained independent approval rechecked",
+    "source_bound": {
+      "files": 10000,
+      "entries": 20000,
+      "single_file_bytes": 67108864,
+      "total_content_bytes": 209715200
+    },
+    "invalid": [
+      "missing/closed/changed approval or controls",
+      "cache/Evidence/state tamper",
+      "source content/inode/mode/inventory/directory drift",
+      "visible symlink including hidden namespace aliases",
+      "hardlink",
+      "oversize",
+      "cancellation"
+    ]
+  },
+  "source": [
+    {
+      "path": "internal/artifact/gomodule/module.go",
+      "sha256": "478969c69097c555f16e139f11818abaacfc345c9aa87dc0ad70231f13b318bd"
+    },
+    {
+      "path": "internal/promotion/go_approved_transaction.go",
+      "sha256": "d8926263057e84a5dad1b72be2937bda1286db579c68a0ef1e711b80e5eb285e"
+    },
+    {
+      "path": "internal/promotion/go_build_inputs.go",
+      "sha256": "901f99355a50b7a5c164e53b68cfe7a71a65d28b9d4e3edb8b2f1c7f61aab314"
+    },
+    {
+      "path": "internal/promotion/go_build_inputs_test.go",
+      "sha256": "9a6d57c9d2becd2ba557cdd0f9432ee99a38d7d59ebe17aee55362230b3f9316"
+    },
+    {
+      "path": "internal/promotion/go_build_source.go",
+      "sha256": "bf0730699a09fa0d1fe7fe4635f72f5ee4cb672906cfaaec5314851737a5faf1"
+    },
+    {
+      "path": "internal/promotion/go_build_source_test.go",
+      "sha256": "cc104f1c86a877ebe81d478b00d92f2c15835af9a8662fc1fc1d9d28a62608b1"
+    },
+    {
+      "path": "internal/sandbox/gomodule_build.go",
+      "sha256": "a87d324fe27b54bc7ec27f15544276856baf8c186dba28818132e2c9a63f4a88"
+    },
+    {
+      "path": "internal/sandbox/gomodule_build_test.go",
+      "sha256": "d4ecf725d66ecbe728f4c1696935e12cbd57fab7cf1304d857d49335c9bed7d8"
+    }
+  ],
+  "logs": [
+    {
+      "path": "docs/planning/evidence/m12-002-go-build-inputs/command-after.log",
+      "sha256": "c6a4c76b454b7b29f0e7b7af297cd7820175cec4ae9e41f4a8ae071009a79a31"
+    },
+    {
+      "path": "docs/planning/evidence/m12-002-go-build-inputs/command-before.log",
+      "sha256": "73cc1ca61902a45790d63a7c2da1834d31df80ebed0df490a68384603f6ba70e"
+    },
+    {
+      "path": "docs/planning/evidence/m12-002-go-build-inputs/consumers-focused.log",
+      "sha256": "c87c859451b88c20a90004221a41d606d5c440c7b24946d2d8912de56ffea765"
+    },
+    {
+      "path": "docs/planning/evidence/m12-002-go-build-inputs/source-focused.log",
+      "sha256": "f25ad499e3197a3576d393768f2abdc0b0e878a4b3639a507501b098b9c127ef"
+    }
+  ],
+  "checks": {
+    "canonical_quick": {
+      "exit": 0,
+      "log": "$LOCAL_STATE/m12-002/measurement/go-build-preparation-quick.log",
+      "sha256": "60793cda4b1fd422d179cd93f506d083957f9603720bf98108b78a2934bed473",
+      "environment": "native Linux validation checkout; 573 candidate files hash/mode matched from active OneDrive workspace"
+    },
+    "canonical_docs": {
+      "exit": 0,
+      "log": "$LOCAL_STATE/m12-002/measurement/go-build-preparation-docs.log",
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9",
+      "scope": "active workspace including unrelated user untracked docs/lessons"
+    },
+    "canonical_security": {
+      "exit": 0,
+      "log": "$LOCAL_STATE/m12-002/measurement/go-build-preparation-security.log",
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95",
+      "scope": "active workspace current tree including unrelated user untracked docs/lessons; complete receipt/security check also exit0"
+    },
+    "darwin_test_compile": {
+      "exit": 0,
+      "log": "$LOCAL_STATE/m12-002/measurement/go-build-preparation-darwin.log",
+      "sha256": "bfb2d6a7bd39bb98dcd6642d2ff3608329676c80de15adf3c91ce667fe46e611",
+      "scope": "GOOS=darwin GOARCH=amd64 go test -exec /bin/true ./...; compile only, not native macOS execution"
+    },
+    "initial_quick": {
+      "exit": 1,
+      "cause": "Staticcheck ST1005 rejected capitalized Go-prefixed error strings; corrected to lowercase without changing judgment",
+      "log": "$LOCAL_STATE/m12-002/measurement/go-build-preparation-quick-first.log"
+    }
+  },
+  "not_claimed": [
+    "actual observed build",
+    "CLI go build",
+    "build-time Policy ALLOW",
+    "output publication",
+    "new CPU/CUDA full",
+    "native macOS",
+    "M12-002/003/004 closure"
+  ],
+  "git_actions": "local checkpoint only; NO PUSH / NO REMOTE CI / NO MERGE"
+}

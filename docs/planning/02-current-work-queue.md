@@ -2624,6 +2624,20 @@ MISSING이다. 전체 `WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO`, M12-002
 IN_PROGRESS와 M12-003/004 NOT_STARTED를 유지하고 같은 item의 남은 작업을 계속한다.
 NO PUSH / NO REMOTE CI / NO MERGE.
 
+
+### M12-002 Go build input preparation checkpoint (2026-10-04)
+
+[Build input evidence](./evidence/m12-002-go-build-inputs/README.md)는 기존 미연결
+Go build wrapper의 command/cancellation 경계 before FAIL→after PASS와 retained
+approval·Evidence/cache 재검사, bounded anchored source snapshot의 정상/변조/링크
+회귀를 연결한다. 기존 components를 확장하며 원본 project code를 Host에서 실행하지
+않는다. Local source identity를 registry attestation이나 Policy ALLOW로 사용하지 않는다.
+이 checkpoint는 build 입력 준비이며 registered ARTIFACT Go/compiler의 실제 isolated
+execution·offline graph revalidation·build-time Evidence/Policy·bounded output publish·
+CLI wiring과 최종 qualification은 MISSING이다. 전체 WIRED/QUALIFIED/ACCEPTANCE_CLOSED
+NO, M12-002 IN_PROGRESS와 M12-003/004 NOT_STARTED를 유지하고 같은 item을 계속한다.
+NO PUSH / NO REMOTE CI / NO MERGE.
+
 ## Step 13 Invariant
 
 1. Current Work Queue에는 현재 milestone의 실행 항목만 둔다.

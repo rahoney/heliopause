@@ -44,6 +44,7 @@ type approvedGoProjectGuard struct {
 	originalStateInfo os.FileInfo
 	closed            bool
 	committed         bool
+	buildSource       *goBuildSourcePlan
 }
 
 func (p *GoProjectPromotion) Begin(ctx context.Context, install domain.InstallContext) (result *approvedGoProjectGuard, resultErr error) {

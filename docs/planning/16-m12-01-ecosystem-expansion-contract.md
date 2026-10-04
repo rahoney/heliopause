@@ -686,6 +686,20 @@ project discovery
 → bounded build output publish
 ```
 
+Build 준비는 기존 project guard 아래 외부 retained approval의 controls·graph·entry와
+필수 Evidence·전체 cache inventory를 다시 확인한다. Unmanaged project는 build에서
+자동 채택하지 않으며 먼저 `go mod download`로 기존 adoption 계약을 거친다.
+Package 입력은 단일 package selector로 제한하여 command flag, 외부 project/output,
+새 version selection과 tool-execution 설정을 전달하지 않는다.
+
+Project source는 원래 guard 아래 10,000 regular files·20,000 entries·개별 64 MiB·
+전체 200 MiB의 private intake snapshot으로 만든다. 숨긴 metadata/config namespace를
+읽거나 도입하지 않고, visible symlink·hardlink·nonregular member를 거부한다.
+Directory와 직접 file handles를 anchored 상태로 유지하며 inode·mode·contents와
+controls를 publication 전에 다시 확인한다. 이 snapshot의 `project-local` source와
+SHA-256은 project byte identity이며 public registry provenance나 ALLOW가 아니다.
+실제 compiler 관찰·build Policy·output publication은 별도로 요구한다.
+
 build 단계에서는 dependency acquisition network를 허용하지 않는다. 필요한 module이
 verified cache에 없으면 build 중 외부 download로 보충하지 않고 resolver 단계로
 되돌아가 검증한 뒤 다시 build한다.

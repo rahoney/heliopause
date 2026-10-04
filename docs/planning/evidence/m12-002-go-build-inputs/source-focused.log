@@ -1,0 +1,58 @@
+=== RUN   TestGoBuildInputsRequireLiveGuardAndRecheckedRetainedApproval
+=== RUN   TestGoBuildInputsRequireLiveGuardAndRecheckedRetainedApproval/normal
+=== RUN   TestGoBuildInputsRequireLiveGuardAndRecheckedRetainedApproval/unmanaged
+=== RUN   TestGoBuildInputsRequireLiveGuardAndRecheckedRetainedApproval/closed
+=== RUN   TestGoBuildInputsRequireLiveGuardAndRecheckedRetainedApproval/controls
+=== RUN   TestGoBuildInputsRequireLiveGuardAndRecheckedRetainedApproval/cache
+=== RUN   TestGoBuildInputsRequireLiveGuardAndRecheckedRetainedApproval/evidence
+=== RUN   TestGoBuildInputsRequireLiveGuardAndRecheckedRetainedApproval/state
+--- PASS: TestGoBuildInputsRequireLiveGuardAndRecheckedRetainedApproval (0.54s)
+    --- PASS: TestGoBuildInputsRequireLiveGuardAndRecheckedRetainedApproval/normal (0.08s)
+    --- PASS: TestGoBuildInputsRequireLiveGuardAndRecheckedRetainedApproval/unmanaged (0.06s)
+    --- PASS: TestGoBuildInputsRequireLiveGuardAndRecheckedRetainedApproval/closed (0.07s)
+    --- PASS: TestGoBuildInputsRequireLiveGuardAndRecheckedRetainedApproval/controls (0.08s)
+    --- PASS: TestGoBuildInputsRequireLiveGuardAndRecheckedRetainedApproval/cache (0.08s)
+    --- PASS: TestGoBuildInputsRequireLiveGuardAndRecheckedRetainedApproval/evidence (0.08s)
+    --- PASS: TestGoBuildInputsRequireLiveGuardAndRecheckedRetainedApproval/state (0.08s)
+=== RUN   TestGoBuildSourceCapturesDataWithoutCredentialNamespaces
+--- PASS: TestGoBuildSourceCapturesDataWithoutCredentialNamespaces (0.10s)
+=== RUN   TestGoBuildSourceRejectsDriftBeforePublication
+=== RUN   TestGoBuildSourceRejectsDriftBeforePublication/content
+=== RUN   TestGoBuildSourceRejectsDriftBeforePublication/inode
+=== RUN   TestGoBuildSourceRejectsDriftBeforePublication/mode
+=== RUN   TestGoBuildSourceRejectsDriftBeforePublication/new-file
+=== RUN   TestGoBuildSourceRejectsDriftBeforePublication/removed-file
+=== RUN   TestGoBuildSourceRejectsDriftBeforePublication/new-directory
+=== RUN   TestGoBuildSourceRejectsDriftBeforePublication/directory-inode
+=== RUN   TestGoBuildSourceRejectsDriftBeforePublication/directory-alias
+=== RUN   TestGoBuildSourceRejectsDriftBeforePublication/controls
+--- PASS: TestGoBuildSourceRejectsDriftBeforePublication (0.75s)
+    --- PASS: TestGoBuildSourceRejectsDriftBeforePublication/content (0.08s)
+    --- PASS: TestGoBuildSourceRejectsDriftBeforePublication/inode (0.08s)
+    --- PASS: TestGoBuildSourceRejectsDriftBeforePublication/mode (0.09s)
+    --- PASS: TestGoBuildSourceRejectsDriftBeforePublication/new-file (0.08s)
+    --- PASS: TestGoBuildSourceRejectsDriftBeforePublication/removed-file (0.08s)
+    --- PASS: TestGoBuildSourceRejectsDriftBeforePublication/new-directory (0.09s)
+    --- PASS: TestGoBuildSourceRejectsDriftBeforePublication/directory-inode (0.09s)
+    --- PASS: TestGoBuildSourceRejectsDriftBeforePublication/directory-alias (0.08s)
+    --- PASS: TestGoBuildSourceRejectsDriftBeforePublication/controls (0.08s)
+=== RUN   TestGoBuildSourceRejectsLinksAndOversizeBeforeIntake
+=== RUN   TestGoBuildSourceRejectsLinksAndOversizeBeforeIntake/outside-symlink
+=== RUN   TestGoBuildSourceRejectsLinksAndOversizeBeforeIntake/hidden-symlink
+=== RUN   TestGoBuildSourceRejectsLinksAndOversizeBeforeIntake/directory-symlink
+=== RUN   TestGoBuildSourceRejectsLinksAndOversizeBeforeIntake/hardlink
+=== RUN   TestGoBuildSourceRejectsLinksAndOversizeBeforeIntake/oversize
+=== RUN   TestGoBuildSourceRejectsLinksAndOversizeBeforeIntake/cancelled
+=== RUN   TestGoBuildSourceRejectsLinksAndOversizeBeforeIntake/closed
+=== RUN   TestGoBuildSourceRejectsLinksAndOversizeBeforeIntake/unmanaged
+--- PASS: TestGoBuildSourceRejectsLinksAndOversizeBeforeIntake (0.65s)
+    --- PASS: TestGoBuildSourceRejectsLinksAndOversizeBeforeIntake/outside-symlink (0.08s)
+    --- PASS: TestGoBuildSourceRejectsLinksAndOversizeBeforeIntake/hidden-symlink (0.09s)
+    --- PASS: TestGoBuildSourceRejectsLinksAndOversizeBeforeIntake/directory-symlink (0.08s)
+    --- PASS: TestGoBuildSourceRejectsLinksAndOversizeBeforeIntake/hardlink (0.08s)
+    --- PASS: TestGoBuildSourceRejectsLinksAndOversizeBeforeIntake/oversize (0.08s)
+    --- PASS: TestGoBuildSourceRejectsLinksAndOversizeBeforeIntake/cancelled (0.08s)
+    --- PASS: TestGoBuildSourceRejectsLinksAndOversizeBeforeIntake/closed (0.07s)
+    --- PASS: TestGoBuildSourceRejectsLinksAndOversizeBeforeIntake/unmanaged (0.08s)
+PASS
+ok  	github.com/rahoney/heliopause/internal/promotion	2.048s
