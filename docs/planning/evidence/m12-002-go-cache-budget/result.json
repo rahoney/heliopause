@@ -1,0 +1,118 @@
+{
+  "parent": "2f700904c42e0b1ced0d2b400c8eab791cb7ec29",
+  "scope": "Go project cache aggregate file ceiling only; M12-002 remains IN_PROGRESS",
+  "approval": "User explicitly approved Go cache 20,000 files on 2026-10-04",
+  "limits": {
+    "files": 20000,
+    "filesystem_entries_including_directories": 40000,
+    "bytes": 536870912,
+    "receipt_bytes": 4194304,
+    "module_archive_entries": 10000
+  },
+  "cause_evidence": "../m12-002-go-source-correction/result.json",
+  "previous_complete_preflight": {
+    "modules": 41,
+    "files": 11572,
+    "bytes": 199788477,
+    "note": "Earlier bounded diagnostic of complete approved set; first-failure partial count was 10795. Not a new disk-usage measurement."
+  },
+  "validation": [
+    {
+      "test": "TestGoCacheAggregateFileBudget/at-limit",
+      "before": "FAIL with file_limit=10000",
+      "after": "PASS: 20000 actual regular files, cache reopen; added file rejects reuse"
+    },
+    {
+      "test": "TestGoCacheAggregateFileBudget/over-limit",
+      "after": "PASS: individually bounded modules, 20002 aggregate files rejected; no published or partial cache"
+    },
+    {
+      "test": "TestLinuxGoDependencyFreeDownloadIntegration",
+      "after": "PASS",
+      "seconds": 22.67
+    },
+    {
+      "test": "TestLinuxGoGetDownloadIntegration",
+      "after": "PASS",
+      "seconds": 35.54
+    },
+    {
+      "test": "TestLinuxGoTransitiveGetDownloadIntegration",
+      "after": "PASS: exact gRPC 1.76.0 selection, complete 41 modules, retained Download",
+      "seconds": 207.91
+    }
+  ],
+  "production_diff": "internal/promotion/go_cache.go: maxGoProjectCacheFiles 10000 -> 20000 only; observer, roles, runtime reads, source inspector, Policy, workflow, dependency and other profile budgets unchanged",
+  "sources": {
+    "internal/promotion/go_cache.go": "699e7ff2b3d6b8bf150a1010aa693ecf740163d69fbfb4d6060621ea0a0b8f6c",
+    "internal/promotion/go_cache_test.go": "303e0fd9b5acbaca3a96eeb60a30c6dfd16eaacf2b2f297d5ecc24d4f326fc3c",
+    "internal/bootstrap/go_download_integration_test.go": "3f781a9f362139785ebd9e3da13be9800ebb268e18e027c6aeecf85406fcbf30",
+    "tools/gvisor-observer/observer.cc": "632029958070ef278c0b6cab7a51c3147b6b6e9fef0a26c584eb97ebaeb15c07",
+    "tools/gvisor-observer/observer_latch_test.cc": "80ae6684fd9ba37c2debfe6650e7b6c9e90a93f0dbb191c87563cd7cc90464b9",
+    "internal/inspection/gomodule/static.go": "e38942999294f2672c8d51e55714a8476eaf611d912aa7007c6b29308dcb8e2d"
+  },
+  "binaries": {
+    "$LOCAL_STATE/m12-002/measurement/cli-cache-20k.test": "a77bb8b854faeca4d4b06f9ff42251ba200c6123f45fe17e17b17c1b1fcfcc89",
+    "$LOCAL_STATE/m12-002/observer-source-official/bazel-bin/tools/haa_gvisor_observer/haa_gvisor_observer": "92f08bfeac6669a8f748ebe73e5155b9b1d45cb86ef06d53599fe28fba1e9cea"
+  },
+  "raw_logs": [
+    {
+      "path": "$LOCAL_STATE/m12-002/measurement/cache-20k-before-exact.log",
+      "sha256": "986c9f473fce30d8d3e47d26fc5d00f33600340489256ea7e38f7b5c77c5d046"
+    },
+    {
+      "path": "$LOCAL_STATE/m12-002/measurement/cache-20k-after.log",
+      "sha256": "2fb7fb77142a2b2f6d03d7b14facc491593372b157b60e4f07df366ccd019dff"
+    },
+    {
+      "path": "$LOCAL_STATE/m12-002/measurement/cache-20k-cli-build.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "$LOCAL_STATE/m12-002/measurement/cache-20k-cli.log",
+      "sha256": "c1564f4d5e2db85dba141eb3cfad0180aebae2d90bb2142fe1410e957f62d877"
+    }
+  ],
+  "lifecycle": "helper reaped wait=0; original four installed files restored with hash/owner/mode checks",
+  "remaining": [
+    "Observed offline Go build, bounded output publication and related security qualification",
+    "Final same-candidate local Required integration/CPU impact qualification",
+    "M12-003 and M12-004 sequential acceptance"
+  ],
+  "remote": "NO PUSH / NO REMOTE CI / NO MERGE",
+  "checks": [
+    {
+      "profile": "docs",
+      "path": "$LOCAL_STATE/m12-002/measurement/cache-20k-docs.log",
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9",
+      "exit": 0,
+      "scope": "original shared workspace"
+    },
+    {
+      "profile": "security",
+      "path": "$LOCAL_STATE/m12-002/measurement/cache-20k-security.log",
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95",
+      "exit": 0,
+      "scope": "original shared workspace including untracked notes/logs"
+    },
+    {
+      "profile": "quick",
+      "path": "$LOCAL_STATE/m12-002/measurement/cache-20k-native-quick.log",
+      "sha256": "37f128a1facf400364c98690c3e25d31161484546e02f84229132b996bb6feed",
+      "exit": 0,
+      "scope": "Linux filesystem detached checkout; exact tracked candidate + new versioned evidence"
+    },
+    {
+      "profile": "quick",
+      "path": "$LOCAL_STATE/m12-002/measurement/cache-20k-quick.log",
+      "sha256": "bbb4564a27bb5ab1b3015d77b8432381dba2a41de3f655828c787514b4bce3f7",
+      "exit": 1,
+      "scope": "original OneDrive checkout; default test command timed out at six minutes; excluded from PASS"
+    }
+  ],
+  "native_input_manifest": {
+    "path": "$LOCAL_STATE/m12-002/measurement/cache-native-inputs.json",
+    "sha256": "a23889006c74c594895ed6f781605026f863b8e75e3c747d70f0d69f91f3a123"
+  },
+  "test_tooling_observation": "Without -count=1 on the original OneDrive checkout the focused fixture prints test PASS/ok but the Go command does not exit within 40 seconds. With -count=1 it exits normally. Identical tracked source passes canonical quick on a Linux filesystem checkout. Exact low-level timing cause is not claimed; no production/quality budget or test skip was introduced."
+}

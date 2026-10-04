@@ -1,0 +1,6 @@
+--- FAIL: TestGoCacheAggregateFileBudget (1.95s)
+    --- FAIL: TestGoCacheAggregateFileBudget/at-limit (1.95s)
+        go_cache_test.go:187: 20,000-file approved graph rejected: go project cache exceeds bounded content limits: bytes=3819700 byte_limit=536870912 files=20000 file_limit=10000
+FAIL
+FAIL	github.com/rahoney/heliopause/internal/promotion	1.959s
+FAIL

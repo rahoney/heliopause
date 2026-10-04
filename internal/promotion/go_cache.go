@@ -21,7 +21,7 @@ import (
 
 const (
 	maxGoProjectCacheBytes int64 = 512 << 20
-	maxGoProjectCacheFiles       = 10000
+	maxGoProjectCacheFiles       = 20000
 	goCacheReceipt               = "receipt.json"
 )
 

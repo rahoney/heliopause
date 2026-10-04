@@ -2603,10 +2603,26 @@ Cobra/tools 전체 CLI, pflag 실제 Get+retained Download와 기존 npm/GitHub 
 exact source/입력/결과/검사 범위를 소유한다.
 
 큰 gRPC graph는 source/inspection을 통과한 뒤 별도 cache file bound로 FAIL했다.
-전체 preflight 11,572 files/약190.5 MiB이며 file cap20,000 여부는 사용자 답변 pending,
-실제 변경은 없다. M12-002 IN_PROGRESS와 전체 WIRED/QUALIFIED/ACCEPTANCE_CLOSED NO,
+당시 전체 preflight 11,572 files/약190.5 MiB이며 file cap20,000 승인은 pending이었다.
+아래 cache checkpoint가 이 상태를 supersede한다. M12-002 IN_PROGRESS와 전체 WIRED/QUALIFIED/ACCEPTANCE_CLOSED NO,
 M12-003/004 NOT_STARTED를 유지한다. Observed offline build/output publish와 최종
 qualification MISSING을 계속한다. NO PUSH / NO REMOTE CI / NO MERGE.
+
+### M12-002 Go verified cache file budget checkpoint (2026-10-04)
+
+사용자가 Go cache aggregate file cap20,000을 명시 승인했다. 기존 512 MiB와
+module archive10,000 entries 및 receipt4 MiB를 유지하고 directory 포함 파생
+filesystem entry bound만40,000으로 맞춘다. Observer/Policy/runtime/workflow와
+기존 profile 예산은 이 변경의 입력이 아니다.
+[Cache budget evidence](./evidence/m12-002-go-cache-budget/README.md)가 같은
+aggregate fixture의 old source FAIL→new PASS, exact20,000 경계·초과 reuse 거부,
+aggregate20,002 승격 차단과 임시 cache 정리를 소유한다. Maintained actual CLI의
+dependency-free Download 및 pflag/gRPC41 Get+retained Download도 PASS다.
+
+Observed offline Go build/output publication과 최종 local qualification은
+MISSING이다. 전체 `WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO`, M12-002
+IN_PROGRESS와 M12-003/004 NOT_STARTED를 유지하고 같은 item의 남은 작업을 계속한다.
+NO PUSH / NO REMOTE CI / NO MERGE.
 
 ## Step 13 Invariant
 

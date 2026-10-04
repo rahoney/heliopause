@@ -3,6 +3,7 @@ package bootstrap_test
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -66,6 +67,17 @@ func TestLinuxGoDependencyFreeDownloadIntegration(t *testing.T) {
 // Required positive product gate: a runner-only fixture or a successful empty
 // download never substitutes for exact selection, approval and publication.
 func TestLinuxGoGetDownloadIntegration(t *testing.T) {
+	goGetDownloadIntegration(t, "github.com/spf13/pflag@v1.0.9", 1)
+}
+
+// This complete transitive graph exceeds the previous 10,000-file cache cap.
+// Keep the actual CLI gate alongside the aggregate budget/security tests.
+func TestLinuxGoTransitiveGetDownloadIntegration(t *testing.T) {
+	goGetDownloadIntegration(t, "google.golang.org/grpc@v1.76.0", 41)
+}
+
+func goGetDownloadIntegration(t *testing.T, reference string, modules int) {
+	t.Helper()
 	if os.Getenv("HELOX_GO_RESOLVER_INTEGRATION") != "1" {
 		t.Skip("requires pinned Linux gVisor and authenticated helper")
 	}
@@ -89,7 +101,7 @@ func TestLinuxGoGetDownloadIntegration(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
 	defer cancel()
 	var stdout, stderr bytes.Buffer
-	getErr := bootstrap.Run(ctx, []string{"go", "get", "github.com/spf13/pflag@v1.0.9"}, &stdout, &stderr)
+	getErr := bootstrap.Run(ctx, []string{"go", "get", reference}, &stdout, &stderr)
 	if getErr != nil {
 		got, readErr := os.ReadFile(filepath.Join(project, "go.mod"))
 		_, sumErr := os.Lstat(filepath.Join(project, "go.sum"))
@@ -100,11 +112,12 @@ func TestLinuxGoGetDownloadIntegration(t *testing.T) {
 		}
 		t.Fatalf("actual go get failed: %v stdout=%s stderr=%s", getErr, stdout.String(), stderr.String())
 	}
-	if !strings.Contains(stdout.String(), "Source: go-proxy\nModules: 1\n") {
+	expected := fmt.Sprintf("Source: go-proxy\nModules: %d\n", modules)
+	if !strings.Contains(stdout.String(), expected) {
 		t.Fatalf("missing complete get result: %s", stdout.String())
 	}
 	selected, err := os.ReadFile(filepath.Join(project, "go.mod"))
-	if err != nil || !strings.Contains(string(selected), "github.com/spf13/pflag v1.0.9") {
+	if err != nil || !strings.Contains(string(selected), strings.Replace(reference, "@", " ", 1)) {
 		t.Fatal("approved exact module was not published")
 	}
 	stdout.Reset()
@@ -112,7 +125,7 @@ func TestLinuxGoGetDownloadIntegration(t *testing.T) {
 	if err := bootstrap.Run(ctx, []string{"go", "mod", "download"}, &stdout, &stderr); err != nil {
 		t.Fatalf("actual retained managed download failed: %v stdout=%s stderr=%s", err, stdout.String(), stderr.String())
 	}
-	if !strings.Contains(stdout.String(), "Source: go-proxy\nModules: 1\n") {
+	if !strings.Contains(stdout.String(), expected) {
 		t.Fatal("managed download did not retain the complete module graph")
 	}
 }

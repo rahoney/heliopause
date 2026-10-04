@@ -137,26 +137,85 @@ func TestGoCacheRejectsUnapprovedAndCanonicalArchiveCollision(t *testing.T) {
 	}
 }
 
-func TestGoCacheContentBudgetFailureDoesNotPublishPartialCache(t *testing.T) {
-	root := canonicalGoTestRoot(t)
-	cache, err := newGoCacheForTest(filepath.Join(root, "intake"), filepath.Join(root, "evidence"), filepath.Join(root, "verified"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	// An individually bounded, approved archive can still exceed the complete
-	// cache budget once its required proxy metadata is included.
-	files := map[string]string{"go.mod": "module example.com/module\ngo 1.26.0\n"}
-	for n := 1; n < artifactgo.MaxModuleFiles; n++ {
-		files[fmt.Sprintf("testdata/asset-%05d", n)] = ""
-	}
-	set, _ := goCacheFixture(t, cache.intakeRoot, filepath.Join(root, "project"), "example.com/module", files)
-	staged, err := cache.StageProject(context.Background(), set)
-	if err == nil || staged.Valid() || !strings.Contains(err.Error(), "go project cache exceeds bounded content limits:") || !strings.Contains(err.Error(), "file_limit=10000") {
-		t.Fatalf("cache budget failure lost: staged=%v error=%v", staged.Valid(), err)
-	}
-	entries, err := os.ReadDir(cache.cacheRoot)
-	if err != nil || len(entries) != 0 {
-		t.Fatal("budget failure retained partial or published cache")
+func TestGoCacheAggregateFileBudget(t *testing.T) {
+	for _, test := range []struct {
+		name           string
+		filesPerModule int
+		wantFailure    bool
+	}{
+		{"at-limit", 9996, false},
+		{"over-limit", 9997, true},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			root := canonicalGoTestRoot(t)
+			cache, err := newGoCacheForTest(filepath.Join(root, "intake"), filepath.Join(root, "evidence"), filepath.Join(root, "verified"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			// Each archive stays under the unchanged 10,000-file module limit. The
+			// complete graph, including proxy metadata, must obey the separate cache cap.
+			var dependencies []domain.ResolvedArtifact
+			var inspections []domain.DependencyInspection
+			var first domain.ProjectVerifiedSet
+			for module := 0; module < 2; module++ {
+				modulePath := fmt.Sprintf("example.com/module%d", module)
+				files := map[string]string{"go.mod": "module " + modulePath + "\ngo 1.26.0\n"}
+				for n := 1; n < test.filesPerModule; n++ {
+					files[fmt.Sprintf("testdata/asset-%05d", n)] = ""
+				}
+				approved, _ := goCacheFixture(t, cache.intakeRoot, filepath.Join(root, "project"), modulePath, files)
+				first = approved
+				dependencies = append(dependencies, approved.Inspected().Snapshot().Dependencies()...)
+				inspections = append(inspections, approved.Inspected().Inspections()...)
+			}
+			original := first.Inspected().Snapshot()
+			snapshot, err := domain.NewProjectDependencySnapshot(original.Context(), original.Source(), original.ControlDigests(), dependencies, original.GraphDigest())
+			if err != nil {
+				t.Fatal(err)
+			}
+			inspected, err := domain.NewInspectedProjectSet(snapshot, inspections)
+			if err != nil {
+				t.Fatal(err)
+			}
+			set, err := domain.NewProjectVerifiedSet(inspected, first.Decision())
+			if err != nil {
+				t.Fatal(err)
+			}
+			staged, err := cache.StageProject(context.Background(), set)
+			if !test.wantFailure {
+				if err != nil {
+					t.Fatalf("20,000-file approved graph rejected: %v", err)
+				}
+				dir, err := cache.OpenProjectCache(context.Background(), staged)
+				if err != nil {
+					t.Fatal(err)
+				}
+				inventory, err := goCacheInventory(context.Background(), dir)
+				fileCount := 0
+				for _, entry := range inventory {
+					if entry.Kind == "file" {
+						fileCount++
+					}
+				}
+				if err != nil || fileCount != 20000 {
+					t.Fatalf("cache inventory: files=%d error=%v", fileCount, err)
+				}
+				if err := os.WriteFile(filepath.Join(dir, "extra"), []byte(""), 0o600); err != nil {
+					t.Fatal(err)
+				}
+				if _, err := cache.OpenProjectCache(context.Background(), staged); err == nil || !strings.Contains(err.Error(), "bounded content limits") {
+					t.Fatalf("over-limit reuse accepted: %v", err)
+				}
+				return
+			}
+			if err == nil || staged.Valid() || !strings.Contains(err.Error(), "go project cache exceeds bounded content limits:") || !strings.Contains(err.Error(), "file_limit=20000") {
+				t.Fatalf("cache budget failure lost: staged=%v error=%v", staged.Valid(), err)
+			}
+			entries, err := os.ReadDir(cache.cacheRoot)
+			if err != nil || len(entries) != 0 {
+				t.Fatal("budget failure retained partial or published cache")
+			}
+		})
 	}
 }
 

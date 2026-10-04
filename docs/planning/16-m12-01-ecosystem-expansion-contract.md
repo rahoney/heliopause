@@ -642,7 +642,7 @@ Go verified cache는 승인된 intake envelope를 다시 해시한 뒤 Go 공식
 새 operation-private tree에 materialize한다. Resolver/global cache를 복사하지 않는다.
 Module cache payload와 extracted source를 h1에 대조하고, 전체 graph/control digest·
 project binding·entry Run/Evidence/Policy·file inventory를 trusted receipt에 연결해
-동기화 후 atomic publish한다. Aggregate는 512 MiB·10,000 files·20,000 filesystem
+동기화 후 atomic publish한다. Aggregate는 512 MiB·20,000 files·40,000 filesystem
 entries, receipt는 4 MiB로 bounded하다. 캐시 재사용 경계에서 receipt digest와 전체
 tree를 다시 검사하며 source files는 readonly, build mount도 readonly여야 한다.
 Cache receipt/path/`.ziphash`만으로 approval을 복구하지 않는다. 실제 resolver/build/
