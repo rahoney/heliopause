@@ -123,6 +123,14 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 		modulePath + "/internal/artifact/terraformprovider": {
 			modulePath + "/internal/core/domain": true,
 		},
+		modulePath + "/internal/verification/gomodule": {
+			modulePath + "/internal/artifact/gomodule": true,
+			modulePath + "/internal/core/domain":       true,
+		},
+		modulePath + "/internal/inspection/gomodule": {
+			modulePath + "/internal/artifact/gomodule": true,
+			modulePath + "/internal/core/domain":       true,
+		},
 		modulePath + "/internal/verification/npm": {
 			modulePath + "/internal/core/domain": true,
 		},
@@ -176,12 +184,15 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 		modulePath + "/internal/artifact/npm":  {},
 		modulePath + "/internal/artifact/pypi": {},
 		modulePath + "/internal/artifact/gomodule": {
-			"golang.org/x/mod/module":  true,
-			"golang.org/x/mod/modfile": true,
-			"golang.org/x/mod/semver":  true,
+			"golang.org/x/mod/module":        true,
+			"golang.org/x/mod/modfile":       true,
+			"golang.org/x/mod/semver":        true,
+			"golang.org/x/mod/sumdb/dirhash": true,
 		},
 		modulePath + "/internal/artifact/cargo":             {},
 		modulePath + "/internal/artifact/terraformprovider": {},
+		modulePath + "/internal/verification/gomodule":      {"golang.org/x/mod/sumdb": true},
+		modulePath + "/internal/inspection/gomodule":        {"golang.org/x/mod/modfile": true},
 		modulePath + "/internal/verification/npm":           {},
 		modulePath + "/internal/verification/pypi":          {},
 		modulePath + "/internal/inspection/npm":             {},

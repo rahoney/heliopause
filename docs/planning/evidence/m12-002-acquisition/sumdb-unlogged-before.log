@@ -1,0 +1,8 @@
+=== RUN   TestSumDBRequiresAuthenticatedArchiveAndModProof
+=== RUN   TestSumDBRequiresAuthenticatedArchiveAndModProof/unlogged-hash
+    integrity_test.go:167: unauthenticated/tampered subject verified
+--- FAIL: TestSumDBRequiresAuthenticatedArchiveAndModProof (0.01s)
+    --- FAIL: TestSumDBRequiresAuthenticatedArchiveAndModProof/unlogged-hash (0.01s)
+FAIL
+FAIL	github.com/rahoney/heliopause/internal/verification/gomodule	0.016s
+FAIL

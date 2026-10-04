@@ -526,6 +526,27 @@ freeze 대상:
 requested version이 symbolic selector이면 resolver가 exact version으로 freeze한 뒤
 그 이후 단계에서는 selector를 다시 평가하지 않는다.
 
+### Controlled intake and independent SumDB verification
+
+Go acquisition은 exact canonical proxy `.mod`와 `.zip`을 실행·압축 해제하지 않고
+Run-private intake에 보관한다. 두 payload는 `HAA-GO-MODULE-1` envelope의 고정
+header·8-byte big-endian `.mod` length·`.mod` bytes·`.zip` bytes로 한 subject에
+묶으며 envelope 전체의 SHA-256을 observed content identity로 사용한다. 이 framing은
+transport 형식일 뿐 인증·Policy·승격 권한이 아니다. Proxy content는 `.mod` 4 MiB,
+compressed `.zip` 64 MiB, 10,000 entries, file 64 MiB, expanded total 200 MiB로
+bounded하게 처리한다. Redirect·ambient proxy·credential·Host module cache를 사용하지 않는다.
+
+Verifier는 acquired digest를 다시 검사하고 Go 공식 h1 algorithm으로 두 identity를
+계산한 뒤, 고정 `sum.golang.org` signing key와 x/mod SumDB client의 signed-tree /
+Merkle proof 검증을 통해 archive 및 `/go.mod` record를 각각 확인한다. 프로젝트
+`go.sum` 또는 resolver 선언이 같다는 사실은 이 인증을 대체하지 않는다.
+Operation-private SumDB requests는 64개, single response 1 MiB, total 4 MiB,
+60 seconds로 제한한다. Unavailable/invalid proof는 정상 Verification report가
+아니며, authenticated record와 content 불일치는 MISMATCH로 정규화한다. Raw peer
+error/path/text를 새로운 authority 또는 공개 failure detail로 사용하지 않는다.
+Static inspection은 동일 envelope의 bounds·module identity·Go syntax를 확인하며
+source를 import/execute하지 않는다. 실제 project/build qualification 범위는 Queue가 소유한다.
+
 ## Project transaction
 
 transaction set:

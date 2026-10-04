@@ -2206,7 +2206,9 @@ M12 전체는 `IN_PROGRESS`를 유지한다. 다음 M12-002 public Go Modules는
 PR28 merge `62c3b595e8e27a4a1d836849643c372692a39b8b`와
 [main CI run37132385788](https://github.com/rahoney/heliopause/actions/runs/37132385788)의
 10개 jobs(Required/macOS 포함) success를 확인하고
-`milestone/m12-ecosystem-qualification`에서 시작했다. M12-001은 COMPLETE를 유지한다.
+`milestone/m12-ecosystem-qualification`에서 시작했다. 사용자 지시에 따라
+원격 main을 다시 fetch하고 로컬 main을 같은 merge SHA로 fast-forward한 뒤
+`milestone/m12-go-cargo-terraform`을 생성하여 기존 checkpoint를 그대로 이어갔다. M12-001은 COMPLETE를 유지한다.
 
 `IMPLEMENTED=YES`, `WIRED=NO`, `QUALIFIED=NO`, `ACCEPTANCE_CLOSED=NO`다.
 기존 `artifact/gomodule` parser, `sandbox/gomodule_resolver.go`/`gomodule_build.go`,
@@ -2241,6 +2243,22 @@ attestation을 대신하지 않으며, host runner·재선택 promoter·검사/P
 cache·실제 isolated build/output publish와 qualification은 위 MISSING에 남는다.
 `M12-002 IN_PROGRESS / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO`를 유지한다.
 PyTorch/공통 observer/기존 runtime lock/workflow·Policy 입력은 변경하지 않았다.
+
+### M12-002 acquisition/SumDB checkpoint (2026-10-04)
+
+[Acquisition evidence](./evidence/m12-002-acquisition/result.json)에 exact public
+`.mod`/`.zip` intake, independent signed SumDB/Merkle/h1 verification, bounded
+non-executing static inspection과 기존 entry Policy/Evidence 경로의 실제 빈 intake
+정상/negative 검증을 연결한다. 신규 SumDB consumer에서 검출된 x/mod 인증
+취약점은 official fixed `v0.40.0` pin으로 교정했고 동일 unlogged-hash fixture의
+old FAIL/fixed PASS를 보존한다. 상세 source/dependency 계약은 M12 leaf와
+coding/security rules가 소유한다.
+
+이는 project command 전체 qualification이 아니다. Source-attested isolated
+resolution, complete graph inspection/cache, 재선택 없는 transaction, observed
+offline build/output publish와 필수 소비자 검증을 계속 진행한다.
+`M12-002 IN_PROGRESS / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO`를 유지한다.
+M12-003/004는 아직 시작하지 않았다. NO PUSH / NO REMOTE CI / NO MERGE.
 
 ### M12-001 종료 전 이력 (당시 상태, 현재 판정 아님)
 

@@ -94,6 +94,31 @@ Standard library에는 이 문법 parser가 없고 문자열·regexp 대체는 q
   범위의 결과이며 package 안전성 보증이 아니다. 후속 후보에서 새로운 import가 생기면
   해당 소비 범위를 다시 확인한다. 업그레이드는 자동으로 수행하지 않는다.
 
+2026-10-04의 동일 pin 후속 소비자 검토: `sumdb`·`sumdb/dirhash`를 current Go
+intake/verifier에, `modfile`을 Go static inspector에 연결한다. 공식
+[SumDB client API](https://pkg.go.dev/golang.org/x/mod/sumdb)와
+[h1 algorithm](https://pkg.go.dev/golang.org/x/mod/sumdb/dirhash)을 재사용한다.
+Signed notes는 Go standard library의 Ed25519로 확인하며 자체 signature/Merkle
+구현을 만들지 않는다. 고정 verifier key는 pinned Go1.26.8 source의
+`cmd/go/internal/modfetch/key.go`와 동일한 public key다. Private key나 credential은
+제품 입력에 없다. Config/cache callback은 operation-private 상태이며 project
+`go.sum`·peer text를 verifier key로 사용하지 않는다. HTTPS endpoint·redirect·proxy와
+payload/request/time bounds는 Go adapter/verifier가 소유한다. Core/Application에는
+외부 library type을 전달하지 않으며 Architecture checker에 실제 owner의 import만
+등록한다. 신규 import의 vulnerability 재검증 결과는 해당 checkpoint evidence가 소유한다.
+
+**SumDB 연결 후 pin 교정:** parser-only `v0.39.0` scan의 PASS는 신규 SumDB
+consumer에 전용하지 않는다. 실제 `Client.Lookup`·tile verifier가 reachable해지면서
+[GO-2026-6180](https://pkg.go.dev/vuln/GO-2026-6180)와
+[GO-2026-6179](https://pkg.go.dev/vuln/GO-2026-6179)가 검출되어 공식 수정 pin
+`v0.40.0`을 선택했다. [공식 tag](https://go.googlesource.com/mod/+/refs/tags/v0.40.0)의
+commit은 `d3398d06de5fa5c71083d3d1c26f2cda73508e0f`이다. Go floor는 여전히
+`1.25.0`, license는 BSD-3-Clause이고 x/tools requirement는 `v0.49.0`이나 build에
+import하지 않는다. Canonical proxy/SumDB로 exact zip/mod h1을 확보했고 automatic
+latest 또는 자체 crypto 보완을 사용하지 않았다. Authenticated record 밖에 넣은
+matching checksum을 거부하는 같은 regression의 old/fixed 결과와 새 candidate
+vulnerability/check scope는 해당 acquisition checkpoint evidence에 연결한다.
+
 ## 3. Package와 API 작성
 
 - Step 8의 dependency direction과 package 책임을 따른다.
