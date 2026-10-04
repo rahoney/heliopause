@@ -23,40 +23,45 @@ func (a goProjectMutationAdapter) Begin(ctx context.Context, install domain.Inst
 	return a.promoter.Begin(ctx, install)
 }
 
-func newGoModuleGetService(resolver *sandbox.GoModuleResolver) (*application.GoModuleGetService, error) {
+func newGoModuleServices(resolver *sandbox.GoModuleResolver) (get *application.GoModuleGetService, download *application.GoModuleProjectResolutionService, resultErr error) {
 	cacheRoot, err := os.UserCacheDir()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	root := filepath.Join(cacheRoot, "heliopause")
 	intakeRoot, evidenceRoot := filepath.Join(root, "intake"), filepath.Join(root, "evidence")
 	artifact, err := artifactgo.NewPublicClient(intakeRoot)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	verifier, err := verificationgo.NewIntegrityVerifier(intakeRoot)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	inspector, err := inspectiongo.NewStaticInspector(intakeRoot)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	evidence, err := local.NewStore(evidenceRoot)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	inspection, err := application.NewProjectInspectService(artifact, verifier, inspector, evidence, policy.M3{}, policy.M4{}, domain.NewOperationID, domain.NewRunID)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	cache, err := promotion.NewGoVerifiedCache(intakeRoot, evidenceRoot, filepath.Join(root, "go-verified-cache"), evidence)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	promoter, err := promotion.NewGoProjectPromotion(cache, filepath.Join(root, "go-projects"))
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return application.NewGoModuleGetService(resolver, goProjectMutationAdapter{promoter}, inspection, cache)
+	get, err = application.NewGoModuleGetService(resolver, goProjectMutationAdapter{promoter}, inspection, cache)
+	if err != nil {
+		return nil, nil, err
+	}
+	download, err = application.NewGoModuleProjectResolutionService(resolver, goProjectMutationAdapter{promoter}, inspection, cache)
+	return get, download, err
 }

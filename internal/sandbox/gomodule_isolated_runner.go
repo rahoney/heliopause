@@ -233,7 +233,7 @@ func (r *IsolatedGoModuleRunner) RunGo(ctx context.Context, workspace string, en
 	}
 	phase = "SELECTED_SUM"
 	selectedSum, err = r.boundedOutput(ctx, containerID, "/bin/cat", goResolverGuestProject+"/go.sum")
-	if err != nil || len(selectedSum) == 0 {
+	if err != nil || (arguments[0] == "get" && len(selectedSum) == 0) || validateGoSelectedControls(selectedMod, selectedSum) != nil {
 		return nil, errors.New("go resolver selected checksum control invalid")
 	}
 	return output, nil
@@ -287,6 +287,9 @@ func goResolverCreateArguments(network string, hosts []string) []string {
 }
 
 func storeGoResolverControls(workspace string, beforeMod, beforeSum, selectedMod, selectedSum []byte) error {
+	if err := validateGoSelectedControls(selectedMod, selectedSum); err != nil {
+		return err
+	}
 	currentControls, err := readGoFrozenControls(workspace)
 	if err != nil {
 		return errors.New("go resolver private controls changed")
@@ -304,7 +307,7 @@ func storeGoResolverControls(workspace string, beforeMod, beforeSum, selectedMod
 		name string
 		body []byte
 	}{{"go.mod", selectedMod}, {"go.sum", selectedSum}} {
-		if len(control.body) == 0 || len(control.body) > artifactgomodule.MaxProjectControlBytes {
+		if len(control.body) > artifactgomodule.MaxProjectControlBytes {
 			return errors.New("go resolver selected controls exceed bound")
 		}
 		info, err := root.Lstat(control.name)
@@ -329,6 +332,19 @@ func storeGoResolverControls(workspace string, beforeMod, beforeSum, selectedMod
 		closeErr := file.Close()
 		if errors.Join(writeErr, syncErr, closeErr) != nil {
 			return errors.New("write go resolver private control")
+		}
+	}
+	return nil
+}
+
+func validateGoSelectedControls(mod, sum []byte) error {
+	if artifactgomodule.ValidateProjectMod(mod) != nil || len(sum) > artifactgomodule.MaxProjectControlBytes {
+		return errors.New("go resolver selected controls exceed bounds or are invalid")
+	}
+	if len(sum) == 0 {
+		free, err := artifactgomodule.ProjectDependencyFree(mod)
+		if err != nil || !free {
+			return errors.New("nonempty Go project requires selected checksum controls")
 		}
 	}
 	return nil

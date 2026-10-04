@@ -136,6 +136,43 @@ func TestIsolatedGoResolverRejectsAmbientCommandsAndEndpoints(t *testing.T) {
 	}
 }
 
+func TestIsolatedGoResolverEmptySumsRequireDependencyFreeDownload(t *testing.T) {
+	for _, test := range []struct {
+		name        string
+		command     []string
+		selectedMod string
+		wantFailure bool
+	}{
+		{"download", []string{"mod", "download", "-json", "all"}, "module example.com/project\ngo 1.26\n", false},
+		{"graph", []string{"mod", "graph"}, "module example.com/project\ngo 1.26\n", false},
+		{"get", []string{"get", "example.com/module@v1.0.0"}, "module example.com/project\ngo 1.26\n", true},
+		{"missing-required-sums", []string{"mod", "graph"}, "module example.com/project\ngo 1.26\nrequire example.com/module v1.0.0\n", true},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			mod := []byte("module example.com/project\ngo 1.26\n")
+			workspace, cleanup, err := privateGoProjectWorkspace(mod, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer cleanup()
+			env, cleanupEnv, err := privateGoResolverEnvironment()
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer cleanupEnv()
+			runner := &goResolverTestRunner{recordingRunner: recordingRunner{responses: [][]byte{[]byte("0123456789abcdef"), []byte("172.30.0.0/24"), []byte("0123456789abcdef"), nil, nil}}, outputQueue: [][]byte{[]byte("go version go" + PinnedGoRuntime().GoVersion + " linux/amd64\n"), []byte("output"), []byte(test.selectedMod), nil}}
+			isolated, err := newIsolatedGoModuleRunner(runner, goResolverTestEndpoints{}, &recordingObserver{reader: &traceReader{}}, availableGoProbe, &recordingResolverPolicyService{})
+			if err != nil {
+				t.Fatal(err)
+			}
+			output, err := isolated.RunGo(context.Background(), workspace, env, test.command...)
+			if (err != nil) != test.wantFailure || (test.wantFailure && len(output) != 0) {
+				t.Fatalf("empty sums output=%q error=%v", output, err)
+			}
+		})
+	}
+}
+
 func TestGoObserverProfileRequiresRegisteredTopology(t *testing.T) {
 	topology, ok := observerExpectedTopology(goResolverProfile)
 	if !ok || !validObserverProfile(goResolverProfile) || len(topology) != 3 || !topology[0].ReadOnly || !topology[1].NoExec {

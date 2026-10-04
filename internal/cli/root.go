@@ -483,7 +483,7 @@ func AddGoModuleGet(root *cobra.Command, resolver GoModuleResolver) error {
 }
 
 // AddGoModuleDownload binds the complete project snapshot boundary to `go mod
-// download`. It reports a frozen state; verified-cache promotion is separate.
+// download`. The use case completes inspection and verified-cache promotion.
 func AddGoModuleDownload(root *cobra.Command, resolver GoModuleProjectResolver) error {
 	if root == nil || resolver == nil {
 		return errors.New("go mod download command requires a project resolution use case")

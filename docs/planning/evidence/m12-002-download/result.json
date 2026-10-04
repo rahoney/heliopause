@@ -1,161 +1,150 @@
 {
   "schema_version": 1,
   "work_item": "M12-002",
-  "scope": "source-isolated resolver, immutable selected controls, guarded approved transaction and retained Evidence/cache checks; whole acceptance remains open",
+  "scope": "guarded complete download and explicit dependency-free project/cache; actual Get and build remain open",
   "base_main": "62c3b595e8e27a4a1d836849643c372692a39b8b",
-  "parent_checkpoint": "dde762427ce733cfdb0dff1ddafdd5d436dd4c65",
+  "parent_checkpoint": "4d7a9e2f6123be1fb8bd0c2d020536ce9ad4db5d",
   "branch": "milestone/m12-go-cargo-terraform",
   "audit": {
-    "IMPLEMENTED": "YES (existing components corrected and composed in place)",
-    "WIRED": "NO",
+    "IMPLEMENTED": "YES (existing components reused)",
+    "WIRED": "NO (whole work item)",
     "QUALIFIED": "NO",
     "ACCEPTANCE_CLOSED": "NO"
   },
-  "runtime": {
-    "go_image": "golang:1.26.8-bookworm@sha256:abe4f87f354c4f6d7ee3fb11b241c6b6c24a32ca50a2ebcc30493a2168e14048",
-    "observer_source_sha256": "cf512e6572794e159ea136c53d3903ea2f1d99ab292e6b244c252965179d9921",
-    "latch_source_sha256": "1924558d53617d4cf28f893b5c91fa74592dc710bc5f87922e906f7aae6bed37",
-    "observer_binary_sha256": "fbd2263cd914185875f9e3be21a4168c6745fea594b6e5ddf754a4be194ac98d",
-    "current_test_binary_sha256": "eafe41f233f725e1ae4e8df6f1dc9766ae7ae47bea5a91aefd7808c3e7ed7408",
-    "current_actual_project_graph_sha256": "2fd85f35b1032f4332f924e60f9846cac5bd5a4f1a49a36a135879eec72a4db5"
+  "download": {
+    "pipeline": "guard -> exact current snapshot -> complete inspection/Policy/Evidence -> approved cache -> unchanged snapshot transaction -> retained approval",
+    "primary": "none fabricated; no get invoked by download",
+    "dependency_free": "explicit complete graph state; zero/missing snapshot remains invalid; normalized empty go.sum on initial adoption",
+    "positive_actual": "empty CLI initial adoption and retained reuse PASS19.29s; public source snapshot PASS8.89s, empty source snapshot PASS7.62s",
+    "public_graph_sha256": "2fd85f35b1032f4332f924e60f9846cac5bd5a4f1a49a36a135879eec72a4db5",
+    "empty_graph_sha256": "5fce8efcf6e6c7e4462e816a233133217f502d87491cac38214d03de2cf441a5",
+    "scope_limit": "actual public managed full CLI download depends on first successful Get and remains open"
   },
-  "source_boundary": {
-    "fixture": "github.com/spf13/pflag@v1.0.9",
-    "current_actual_result": "download + graph -> strict parser -> complete snapshot PASS 8.98s",
-    "get_result": "EVENT_LIMIT 10000; unresolved, not converted to PASS",
-    "budget_counters": {
+  "required_positive_get_gate": {
+    "test": "TestLinuxGoGetDownloadIntegration",
+    "fixture": "dependency-free example.com/haa-fixture, go1.26, absent go.sum; github.com/spf13/pflag@v1.0.9",
+    "result": "FAIL9.45s; not expected-failure PASS",
+    "phase": "COMMAND",
+    "reason": "EVENT_LIMIT",
+    "budget": {
       "charged": 10000,
       "limit": 10000,
-      "close": 2292,
-      "fcntl": 7379,
+      "close": 2291,
+      "fcntl": 7371,
       "raw": 0,
-      "other": 329,
-      "workspace": 270
+      "other": 338,
+      "workspace": 277
     },
-    "budget_authorization": "scope clarification pending; no limit/event accounting change",
-    "diagnostics": "bounded fixed-enum/scalar FaultOpen/FaultBudget; diagnostic locator is not authority",
-    "read_correction_scope": "new Go profile only, exact kernel image/role/provenance and sealed/system topology; existing profiles unchanged"
+    "failure_preserved": "trusted observer cause survives isolated runner, resolver, application and CLI; original controls, absent sum, no retained approval, lock cleanup asserted",
+    "decision": "previous budget-increase prohibition scope for new Go/Cargo profiles remains pending; no budget/charge/event changes"
   },
-  "transaction": {
-    "selection": "guard captured root/control inode, bytes and presence before one private get/download/graph selection",
-    "publication": "complete inspected/approved cache and selected controls; no second package-manager selection",
-    "retained_authority": "outside-project HAA state, exact cache/Evidence/control/graph binding; raw project marker is not authority",
-    "tested_negatives": [
-      "control content/presence/same-byte inode drift",
-      "foreign project cache approval",
-      "missing/tampered Evidence and poisoned cache inventory",
-      "concurrent/replaced transaction lock",
-      "unreconciled journal",
-      "private selected-control byte substitution",
-      "approval publication failure restores original controls/metadata and preserves cause"
-    ]
-  },
+  "negative_coverage": [
+    "all download approval boundaries and cleanup fail closed",
+    "private selected download controls cannot silently drift",
+    "explicit empty graph rejects public/foreign/missing vertices, requirements/exclude/tool and retained sums",
+    "implicit missing snapshot remains invalid",
+    "empty cache rejects undeclared payload and cannot restore retained authority",
+    "get and nonempty project cannot accept missing selected sums",
+    "original absent/empty sum presence remains unchanged during source resolution"
+  ],
   "validation": [
     {
       "command": "go run ./scripts/check quick",
-      "log": "guard-final-quick.log",
-      "sha256": "489f169ed5a052387dbcdb8b6361fd2057b689c4f24b6e48c760f889e45cdec7",
+      "log": "download-checkpoint-quick.log",
+      "sha256": "93813b76cd48758c400ecc8b6d09bc2955c96c45a013b3b52343c577f3dc2455",
       "exit": 0,
-      "scope": "current source"
+      "scope": "current source and new required positive Get gate; opt-in actual gate separately failed as recorded"
     },
     {
-      "command": "go run ./scripts/check security",
-      "log": "guard-final-security.log",
+      "command": "focused Go/project direct consumers",
+      "log": "download-selected-empty-focused.log",
+      "sha256": "dd3ad51f05ffa8b4653e39ff7b2e1923c690a5aa08d925bb5b652eb5a32bf62f",
+      "exit": 0,
+      "scope": "all current production source; before additional positive Get test"
+    },
+    {
+      "command": "canonical security",
+      "log": "download-qualified-security.log",
       "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95",
       "exit": 0,
-      "scope": "current source"
+      "scope": "all current production source; before additional positive Get test"
     },
     {
-      "command": "GOOS=darwin GOARCH=amd64 go test ./... -run ^$ -exec=true",
-      "log": "guard-final-darwin.log",
-      "sha256": "3d281bf94fce25e4139fa377917b65a2a7ad372b0c42d3c214480519c5990585",
+      "command": "whole Darwin TEST compile",
+      "log": "download-qualified-darwin.log",
+      "sha256": "a6bfe85cfe90835d46b567ec3f57d2080bbfdc38cdefc012307c95b7aef893e8",
       "exit": 0,
-      "scope": "cross test compilation only"
+      "scope": "all current production source; before additional positive Get test"
     },
     {
-      "command": "focused Go/domain/application/Evidence/observer tests",
-      "log": "guard-final-focused.log",
-      "sha256": "9351f4a3f8907d62091252051e93aa5f67317e23e37b1a8cb481f0e827cb815a",
+      "command": "Darwin new positive gate TEST compile",
+      "log": "download-get-gate-darwin.log",
+      "sha256": "fbc1e5771873313cb9a49e3e9642bb5955a550d6646fb06648574a7a1b30a916",
       "exit": 0,
-      "scope": "current source"
+      "scope": "current source; compile only, not native execution"
     },
     {
-      "command": "actual public module acquisition and project verified cache tests",
-      "log": "guard-final-public.log",
-      "sha256": "cb120fd2d66d0b8a2f57b0681d397d7b980f8d279405bf58c98465b72f070891",
+      "command": "actual public/empty registered gVisor project snapshots",
+      "log": "download-actual-snapshots-after.log",
+      "sha256": "33516b2bf82a4ac73af602168c046b48f47770861c8eacc67ec09cfcfdb8f5f4",
       "exit": 0,
-      "scope": "explicit fixture snapshot, not resolver output"
+      "scope": "current resolver/observer source; source binary43db907e"
     },
     {
-      "command": "authenticated registered gVisor project snapshot fixture",
-      "log": "guard-final-isolated-snapshot.log",
-      "sha256": "56a8e8bb01da14571c19bb3a72047076edf1a5dfaf6adf0dc55ee78ad1e65aea",
+      "command": "actual dependency-free CLI download and retained reuse",
+      "log": "download-actual-cli.log",
+      "sha256": "e1ca0b37dca2c8b290ed60b30e32cf6c230cf312633ecae74733b4f4950e7d7b",
       "exit": 0,
-      "scope": "current test binary; download+graph only"
+      "scope": "production inputs unchanged; test binary06183839 before adding separate Get test"
     },
     {
-      "command": "go run ./scripts/check vulnerability",
-      "log": "guard-bounded-vulnerability.log",
-      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "exit": 0,
-      "scope": "before final transaction inode/selected-byte additions; unchanged dependency pins"
-    },
-    {
-      "command": "whole official C++ observer latch binary",
-      "log": "observer-budget-diagnostic-latch.log",
-      "sha256": "6b407af1364826879ec1bd954a2308cf323ef3e7a8502b19855befd940e28f5f",
-      "exit": 0,
-      "scope": "same observer sources and binary as current"
-    },
-    {
-      "command": "actual npm lifecycle/env, GitHub ELF, PyPI sdist+wheel consumers",
-      "log": "isolated-current-legacy-consumers.log",
-      "sha256": "c90479bff933bd19bedb46fd50a3151782098a857af581f5875a0959d9cc5e5e",
-      "exit": 0,
-      "scope": "same observer sources/binary; before guarded Go transaction additions"
-    },
-    {
-      "command": "same missing-Evidence fixture, prior cache-only adapter overlay",
-      "log": "go-cache-missing-evidence-before.log",
-      "sha256": "1cf84b8c17c0f73c7560648c81063ab3036374bd665d4229b8584d53a1bd57e2",
+      "command": "actual complete CLI exact Get positive gate",
+      "log": "download-actual-get-cli.log",
+      "sha256": "ac18138e81f065d11326bddde4bc88719edd5864f49d465368687b83ecf79af9",
       "exit": 1,
-      "scope": "causal experiment predates reader constructor DI signature"
+      "scope": "current test binaryab63ce56; EVENT_LIMIT preserved and original controls/approval unchanged"
     },
     {
-      "command": "same missing-Evidence fixture after correction",
-      "log": "go-cache-missing-evidence-after.log",
-      "sha256": "7c4daf4334f876a1f9ee683e86fb715c2e000ea9d2851aad32b11445f4723fa3",
+      "command": "prior resolver only overlaid against private-control drift fixture",
+      "log": "download-private-drift-before.log",
+      "sha256": "9839f919bbdb57d2f8a61ada211dad9e21bb77d3aac1a65766ff63a5194ad322",
+      "exit": 1,
+      "scope": "same fixture data; prior resolver incorrectly returns successful snapshot"
+    },
+    {
+      "command": "corrected resolver against same private-control drift fixture",
+      "log": "download-private-drift-after.log",
+      "sha256": "9a7e0ce50a6b5f9c5a96915d6bb4529be23705c8bb300247e2eaf622e01b39e9",
       "exit": 0,
-      "scope": "causal experiment predates reader constructor DI signature"
+      "scope": "private control mutation rejected"
     },
     {
-      "command": "actual isolated Go get fixture",
-      "log": "isolated-budget-diagnostic-integration.log",
-      "sha256": "fc96c5362a67554cb389c73d14fb0ad60eb7073e781708be17c8a6a8ebf56678",
+      "command": "first current empty actual snapshot fixture",
+      "log": "download-actual-snapshots-fixed.log",
+      "sha256": "9348912cf440a64c9d287997e53a206e31b766d36fa5e42f676051f43943f70e",
       "exit": 1,
-      "scope": "EVENT_LIMIT; earlier resolver candidate, identical current observer"
+      "scope": "SELECTED_SUM incorrectly rejected empty sums"
     },
     {
-      "command": "rejected GODEBUG=goindex=0 experiment",
-      "log": "isolated-index-off-integration.log",
-      "sha256": "57bd120850783708138f6e0587833d9c5ed5eea745d7be26d970dd54f2ac7edf",
-      "exit": 1,
-      "scope": "EVENT_LIMIT; setting removed"
+      "command": "excluded stale-binary invocation",
+      "log": "download-actual-snapshots.log",
+      "sha256": "e6fe0fa7c329c22bc1e490cd39e9023edcfe9e82ed57551a59263e25985a94ba",
+      "exit": 0,
+      "scope": "NOT candidate evidence; compile failed before invocation, old binary ran public case only"
     }
   ],
   "MISSING": [
-    "Go get EVENT_LIMIT scope decision and actual positive qualification",
-    "guarded full download workflow",
-    "explicit dependency-free project support",
-    "observed OS-network-disabled verified-cache build and bounded output publication",
-    "complete CLI and normal/transitive/security/race/rollback qualification",
-    "same final candidate mandatory direct consumers including TestLinuxPyPISdistBuildIntegration, CPU full and CUDA impact checks",
-    "new candidate native macOS evidence is not provided by Linux or Darwin compilation"
+    "scope decision and same actual exact Get positive gate PASS",
+    "actual public/transitive managed CLI download qualification",
+    "observed OS-network-disabled verified-cache build, bounded output publish and complete build CLI",
+    "complete security/race/rollback/direct-consumer/final CPU and CUDA impact qualification",
+    "native macOS evidence where required"
   ],
   "limits": [
-    "no full Go acceptance or M12-003/004 work claimed",
-    "no CPU/CUDA full rerun or native macOS claimed",
-    "no push, remote CI or merge"
+    "no M12-002 closure or M12-003/004 implementation claimed",
+    "no budget increase, event deletion, source allowlist or failure-to-success conversion",
+    "no push, remote CI or merge",
+    "no native macOS or new full CPU/CUDA claim"
   ],
   "source_inputs": [
     {
@@ -211,6 +200,11 @@
     {
       "path": "docs/planning/evidence/m12-002-project-cache/result.json",
       "sha256": "a18ab3488b232c4334d16f4a90b24f1e08fa0d89edb9ea5b5a9e60d1d6b1d98d",
+      "mode": "0o644"
+    },
+    {
+      "path": "docs/planning/evidence/m12-002-source-transaction/result.json",
+      "sha256": "d6875c7a0f913d9a940b4bdec7b2ab6ffadbeb4cd599ba05a28d057bc89ceb55",
       "mode": "0o644"
     },
     {
@@ -370,12 +364,17 @@
     },
     {
       "path": "internal/application/gomodule.go",
-      "sha256": "82e6bbd50a9872c7ea3e6b3f7827ab5483735ef0fedf9dad7c19bbe3bb4dc7c5",
+      "sha256": "63e4df81090e667028e0b0e204ced4dc3069c49d74e0acf7e0326f2fb9f98f31",
+      "mode": "0o644"
+    },
+    {
+      "path": "internal/application/gomodule_download_test.go",
+      "sha256": "883d38f8bd0a17da92feabd0091f5a5120bcd2fd6daeadf5ec2adfcc2c720233",
       "mode": "0o644"
     },
     {
       "path": "internal/application/gomodule_test.go",
-      "sha256": "a94323f716681c17539a8be1deec4aea371b9722da305b50be0abf2e0fd76ab9",
+      "sha256": "461f530d5dcb7efe3e397cd06b7fc2ac48339e198646cea8d5494b95c968c07d",
       "mode": "0o644"
     },
     {
@@ -500,7 +499,7 @@
     },
     {
       "path": "internal/artifact/gomodule/digest.go",
-      "sha256": "618506feed0724c25a04cec809b54709883fa78772b09d0e7b7f197cd607351c",
+      "sha256": "b05e3d163fa2071c58b9fad0c2c21938a7894c0ea197a0854e39dd1edb6cfe74",
       "mode": "0o644"
     },
     {
@@ -509,8 +508,13 @@
       "mode": "0o644"
     },
     {
+      "path": "internal/artifact/gomodule/empty_project_test.go",
+      "sha256": "cd849f034a7ac27d580da917fe70040ce257314aedb16b239bd9b1bd420491ab",
+      "mode": "0o644"
+    },
+    {
       "path": "internal/artifact/gomodule/graph.go",
-      "sha256": "581ff36018736b74e75f4dd797b6cf2807f781884d82ab0400d76eb212f78255",
+      "sha256": "1e486330072fa274d2e91aa8e4b89af09ee05b22f2e7b86620f90515b840a1cc",
       "mode": "0o644"
     },
     {
@@ -520,7 +524,7 @@
     },
     {
       "path": "internal/artifact/gomodule/module.go",
-      "sha256": "5595c3a1d4d5bf1f9559ffd4708ee5e203a8f1a7dec6cdae136e85e669809005",
+      "sha256": "b5828177aca07835ad0477c12014643b626fe8132e4857a04cb2031645fe9828",
       "mode": "0o644"
     },
     {
@@ -700,7 +704,7 @@
     },
     {
       "path": "internal/bootstrap/bootstrap.go",
-      "sha256": "c356ca1cf960423ec1e48790e8dd3ee1c4a5b509462664c78f046a0e55518776",
+      "sha256": "eeda79c9860b8a377e54e2a6b77c1cf7e06620aed256b327483076ec5d7c395c",
       "mode": "0o644"
     },
     {
@@ -719,8 +723,13 @@
       "mode": "0o644"
     },
     {
+      "path": "internal/bootstrap/go_download_integration_test.go",
+      "sha256": "6a8934ccf789f30835dfcab8a24028d746f356b634760dee992c800ddaa21b84",
+      "mode": "0o644"
+    },
+    {
       "path": "internal/bootstrap/go_module.go",
-      "sha256": "94792120ad998c81322639533a596f13b93f3869e1423d22f8b3df9927ed80af",
+      "sha256": "17067bbc0a2308c6de6862dd6dbff54c3ad19ad91d0b0badf924e35b929029de",
       "mode": "0o644"
     },
     {
@@ -810,7 +819,7 @@
     },
     {
       "path": "internal/cli/root.go",
-      "sha256": "3208a2e838bb3a8f2f50d4c000145124a5be172521868af1ab2f148ce62f8211",
+      "sha256": "252db52531a74101d09798dfecec65f27f47d16c847344a45a6cb5072f0756d8",
       "mode": "0o644"
     },
     {
@@ -895,7 +904,7 @@
     },
     {
       "path": "internal/core/domain/project_snapshot.go",
-      "sha256": "faf3ea6f570002c83ff9e1fe400f6b21b6160113e180dec7a166037d49579d7e",
+      "sha256": "c5b54718b58d4727b1df5955950a19858d6e557a2542cf50a4215a9368293039",
       "mode": "0o644"
     },
     {
@@ -960,7 +969,7 @@
     },
     {
       "path": "internal/core/ports/ports.go",
-      "sha256": "47552f38919adf10e6426d34be67d62163234788ba362b0fb20f3e0fb89aea39",
+      "sha256": "8bffb39898b90ea0955567bbe0bad6e07c564efa9363b1b58600feedc3fb993c",
       "mode": "0o644"
     },
     {
@@ -1280,17 +1289,17 @@
     },
     {
       "path": "internal/promotion/go_approved_transaction.go",
-      "sha256": "5d972fa673618734a42ed0445ff44d555332d417c603ab7e70b7edde56c552a7",
+      "sha256": "af2b8fdf9c9aeec2f35c4733e258a3f5417b8c21e716b8f2f2fc2ede8ea15cbf",
       "mode": "0o644"
     },
     {
       "path": "internal/promotion/go_approved_transaction_test.go",
-      "sha256": "9783899f6b9da4e3ba209b192460318659626f3ce39efd1f9578e556f27837f1",
+      "sha256": "38f4fe5950ddbbaebbe2335f92a67d89e2536c38800ef2e306d44cc0d8498fb9",
       "mode": "0o644"
     },
     {
       "path": "internal/promotion/go_cache.go",
-      "sha256": "3e0effb11c014e80af98c57f30ebdc10cb49b2a214eaefff61a8ce29f363c6c1",
+      "sha256": "2ac994c87163b92c24ef3d7f25b672c7d1676abde1aad836b14cb7fb6fe5c172",
       "mode": "0o644"
     },
     {
@@ -1301,6 +1310,11 @@
     {
       "path": "internal/promotion/go_cache_test.go",
       "sha256": "bfb7bfe218429cf9a43f0233eadc9b9a39ebcc0a0c207c4fa66a28e1676d2826",
+      "mode": "0o644"
+    },
+    {
+      "path": "internal/promotion/go_empty_project_test.go",
+      "sha256": "90429b264d19d90825b80720e360ef138091cb9bd441de90f0001a29ebbad397",
       "mode": "0o644"
     },
     {
@@ -1579,28 +1593,33 @@
       "mode": "0o644"
     },
     {
+      "path": "internal/sandbox/gomodule_empty_project_test.go",
+      "sha256": "805f9b6c86a6f1ea3ee99fc44248f24909b35108db3da09439b97661e15e4af8",
+      "mode": "0o644"
+    },
+    {
       "path": "internal/sandbox/gomodule_isolated_integration_test.go",
-      "sha256": "7a02096de41921a6d5ba957afb29d831a8d2416e8b40743a9b5e20920f76e3a1",
+      "sha256": "6ec3b786c5d5efef95472fa01744288207149bba6eeb1bb5a04316b7b1306265",
       "mode": "0o644"
     },
     {
       "path": "internal/sandbox/gomodule_isolated_runner.go",
-      "sha256": "bb25afcfdd6c9a502bf3d59d9ee9adb4ced2eb31a913198e51c988947c8547e8",
+      "sha256": "8460de8d7f5b9b3b328a0b73069f30cd757da804b33d6408800bc5c345c3e6b5",
       "mode": "0o644"
     },
     {
       "path": "internal/sandbox/gomodule_isolated_runner_test.go",
-      "sha256": "970e2bd2cef539d43a0cc9f75254c633602a54884c175cae0d57abce1960b28b",
+      "sha256": "8169d8c0124b37e20b3d4dfeda114c0ad59ac0e7bb61579023d363bb406b2e5c",
       "mode": "0o644"
     },
     {
       "path": "internal/sandbox/gomodule_resolver.go",
-      "sha256": "a6b7c5f87d1e76abcb812303433fb14e7ef1699802902e3abf7fcbbca0025ee8",
+      "sha256": "cc8c2849d889b6e6f253232d832a4180da55ae3bfa137fd351ec2376502c4657",
       "mode": "0o644"
     },
     {
       "path": "internal/sandbox/gomodule_resolver_test.go",
-      "sha256": "dd2ac7933a03bdbb0a70bc10ba246644e61aa39bcb07a325a5f706ebd972afc7",
+      "sha256": "3a88d77916e8adb45c3b6f83208b4f22fdbe7aab52a81a97c06dcc340537b7f2",
       "mode": "0o644"
     },
     {

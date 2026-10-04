@@ -1,6 +1,7 @@
 package sandbox
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -47,7 +48,11 @@ func (r *GoModuleResolver) ResolveProjectDependencies(ctx context.Context, insta
 	if !filepath.IsAbs(project) || project == "/" {
 		return domain.ProjectDependencySnapshot{}, errors.New("go project path is invalid")
 	}
-	goMod, goSum, err := readGoProjectControlFiles(project)
+	original, err := readGoFrozenControls(project)
+	if err != nil {
+		return domain.ProjectDependencySnapshot{}, err
+	}
+	goMod, goSum, err := goFrozenControlBodies(original)
 	if err != nil {
 		return domain.ProjectDependencySnapshot{}, err
 	}
@@ -65,7 +70,7 @@ func (r *GoModuleResolver) ResolveProjectDependencies(ctx context.Context, insta
 	if err != nil {
 		return domain.ProjectDependencySnapshot{}, goModuleRunnerFailure("go module download failed", err)
 	}
-	records, err := artifactgomodule.ParseDownloadJSON(jsonBody)
+	records, err := artifactgomodule.ParseProjectDownloadJSON(jsonBody)
 	if err != nil {
 		return domain.ProjectDependencySnapshot{}, err
 	}
@@ -73,9 +78,17 @@ func (r *GoModuleResolver) ResolveProjectDependencies(ctx context.Context, insta
 	if err != nil {
 		return domain.ProjectDependencySnapshot{}, goModuleRunnerFailure("go module graph failed", err)
 	}
-	currentMod, currentSum, currentErr := readGoProjectControlFiles(project)
-	if currentErr != nil || string(currentMod) != string(goMod) || string(currentSum) != string(goSum) {
+	current, currentErr := readGoFrozenControls(project)
+	if currentErr != nil || !sameGoFrozenControls(original, current) {
 		return domain.ProjectDependencySnapshot{}, errors.New("go project changed during resolution")
+	}
+	selected, err := readGoFrozenControls(workspace)
+	if err != nil {
+		return domain.ProjectDependencySnapshot{}, err
+	}
+	selectedMod, selectedSum, err := goFrozenControlBodies(selected)
+	if err != nil || !bytes.Equal(selectedMod, goMod) || !bytes.Equal(selectedSum, goSum) {
+		return domain.ProjectDependencySnapshot{}, errors.New("go download changed frozen controls")
 	}
 	return artifactgomodule.BuildProjectSnapshot(installContext, records, graphBody, goMod, goSum)
 }

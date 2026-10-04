@@ -130,6 +130,43 @@ func TestGoProjectGuardRejectsForeignApproval(t *testing.T) {
 	}
 }
 
+func TestGoProjectGuardRetainsApprovedCurrentSnapshot(t *testing.T) {
+	p, guard, update, staged := approvedGoFixture(t)
+	if err := guard.Commit(context.Background(), update, staged); err != nil {
+		t.Fatal(err)
+	}
+	if err := guard.Close(); err != nil {
+		t.Fatal(err)
+	}
+	guard, err := p.Begin(context.Background(), update.Snapshot().Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+	staged, err = p.cache.StageProject(context.Background(), staged.Set())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := guard.CommitSnapshot(context.Background(), update.Snapshot(), staged); err != nil {
+		t.Fatal(err)
+	}
+	if err := guard.Close(); err != nil {
+		t.Fatal(err)
+	}
+	for _, control := range update.SelectedControls() {
+		body, err := os.ReadFile(filepath.Join(guard.plan.root, control.Name()))
+		if err != nil || string(body) != string(control.Body()) {
+			t.Fatal("download changed the selected controls")
+		}
+	}
+	retained, err := p.Begin(context.Background(), update.Snapshot().Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := retained.Close(); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestGoProjectGuardDoesNotRemoveForeignLock(t *testing.T) {
 	_, guard, _, _ := approvedGoFixture(t)
 	path := guard.guard.path

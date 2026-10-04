@@ -25,15 +25,27 @@ func (d ProjectControlDigest) Digest() ContentDigest { return d.digest }
 // fabricating a primary artifact. This is deliberately distinct from
 // LockedDependencyGraph, which requires exactly one primary artifact.
 type ProjectDependencySnapshot struct {
-	context      InstallContext
-	source       SourceID
-	controls     []ProjectControlDigest
-	dependencies []ResolvedArtifact
-	graphDigest  ContentDigest
+	context        InstallContext
+	source         SourceID
+	controls       []ProjectControlDigest
+	dependencies   []ResolvedArtifact
+	graphDigest    ContentDigest
+	dependencyFree bool
 }
 
 func NewProjectDependencySnapshot(context InstallContext, source SourceID, controls []ProjectControlDigest, dependencies []ResolvedArtifact, graphDigest ContentDigest) (ProjectDependencySnapshot, error) {
-	if !context.Valid() || source.String() == "" || len(controls) == 0 || len(dependencies) == 0 || graphDigest.String() == "" {
+	return newProjectDependencySnapshot(context, source, controls, dependencies, graphDigest, false)
+}
+
+// NewDependencyFreeProjectSnapshot represents an explicitly resolved complete
+// empty graph. The resolver must validate the controls and graph before using
+// this constructor. A zero value or missing dependency list is not this state.
+func NewDependencyFreeProjectSnapshot(context InstallContext, source SourceID, controls []ProjectControlDigest, graphDigest ContentDigest) (ProjectDependencySnapshot, error) {
+	return newProjectDependencySnapshot(context, source, controls, nil, graphDigest, true)
+}
+
+func newProjectDependencySnapshot(context InstallContext, source SourceID, controls []ProjectControlDigest, dependencies []ResolvedArtifact, graphDigest ContentDigest, dependencyFree bool) (ProjectDependencySnapshot, error) {
+	if !context.Valid() || source.String() == "" || len(controls) == 0 || (len(dependencies) == 0) != dependencyFree || graphDigest.String() == "" {
 		return ProjectDependencySnapshot{}, errors.New("valid project dependency snapshot is required")
 	}
 	controlCopy := append([]ProjectControlDigest(nil), controls...)
@@ -54,12 +66,13 @@ func NewProjectDependencySnapshot(context InstallContext, source SourceID, contr
 			return ProjectDependencySnapshot{}, errors.New("project dependencies are invalid")
 		}
 	}
-	return ProjectDependencySnapshot{context: context, source: source, controls: controlCopy, dependencies: dependencyCopy, graphDigest: graphDigest}, nil
+	return ProjectDependencySnapshot{context: context, source: source, controls: controlCopy, dependencies: dependencyCopy, graphDigest: graphDigest, dependencyFree: dependencyFree}, nil
 }
 
 func (s ProjectDependencySnapshot) Valid() bool {
-	return s.context.Valid() && s.source.String() != "" && len(s.controls) != 0 && len(s.dependencies) != 0 && s.graphDigest.String() != ""
+	return s.context.Valid() && s.source.String() != "" && len(s.controls) != 0 && ((len(s.dependencies) == 0) == s.dependencyFree) && s.graphDigest.String() != ""
 }
+func (s ProjectDependencySnapshot) DependencyFree() bool    { return s.Valid() && s.dependencyFree }
 func (s ProjectDependencySnapshot) Context() InstallContext { return s.context }
 func (s ProjectDependencySnapshot) Source() SourceID        { return s.source }
 func (s ProjectDependencySnapshot) ControlDigests() []ProjectControlDigest {

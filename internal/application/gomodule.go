@@ -82,26 +82,68 @@ func (s *GoModuleGetService) Get(ctx context.Context, reference domain.ArtifactR
 // that operate on the complete current project rather than one requested
 // module.
 type GoModuleProjectResolutionService struct {
-	resolver ports.ProjectDependencyResolver
+	resolver   ports.ProjectDependencyResolver
+	promoter   ports.ProjectMutation
+	inspection ProjectInspection
+	staging    ports.ProjectCacheStaging
 }
 
-func NewGoModuleProjectResolutionService(resolver ports.ProjectDependencyResolver) (*GoModuleProjectResolutionService, error) {
-	if resolver == nil {
-		return nil, errors.New("go project resolution service requires a dependency resolver")
+func NewGoModuleProjectResolutionService(resolver ports.ProjectDependencyResolver, promoter ports.ProjectMutation, inspection ProjectInspection, staging ports.ProjectCacheStaging) (*GoModuleProjectResolutionService, error) {
+	if resolver == nil || promoter == nil || inspection == nil || staging == nil {
+		return nil, errors.New("go project download requires guarded resolution, inspection and cache staging")
 	}
-	return &GoModuleProjectResolutionService{resolver: resolver}, nil
+	return &GoModuleProjectResolutionService{resolver, promoter, inspection, staging}, nil
 }
 
-func (s *GoModuleProjectResolutionService) Resolve(ctx context.Context, installContext domain.InstallContext) (domain.ProjectDependencySnapshot, error) {
+func (s *GoModuleProjectResolutionService) Resolve(ctx context.Context, installContext domain.InstallContext) (snapshot domain.ProjectDependencySnapshot, resultErr error) {
 	if s == nil || s.resolver == nil || ctx == nil || !installContext.Valid() {
 		return domain.ProjectDependencySnapshot{}, errors.New("valid Go project resolution request is required")
 	}
-	snapshot, err := s.resolver.ResolveProjectDependencies(ctx, installContext)
+	guard, err := s.promoter.Begin(ctx, installContext)
+	if err != nil {
+		return snapshot, fmt.Errorf("guard Go project download: %w", err)
+	}
+	if guard == nil {
+		return snapshot, errors.New("go project download returned no guard")
+	}
+	defer func() {
+		resultErr = errors.Join(resultErr, guard.Close())
+		if resultErr != nil {
+			snapshot = domain.ProjectDependencySnapshot{}
+		}
+	}()
+	snapshot, err = s.resolver.ResolveProjectDependencies(ctx, installContext)
 	if err != nil {
 		return domain.ProjectDependencySnapshot{}, fmt.Errorf("resolve complete Go project graph: %w", err)
 	}
 	if !snapshot.Valid() || snapshot.Context() != installContext || snapshot.Source().String() != "go-proxy" {
 		return domain.ProjectDependencySnapshot{}, errors.New("go project resolver returned an invalid snapshot")
+	}
+	controls := guard.Controls()
+	if len(controls) != len(snapshot.ControlDigests()) {
+		return domain.ProjectDependencySnapshot{}, errors.New("go project download control coverage differs from guard")
+	}
+	for i, control := range snapshot.ControlDigests() {
+		if control.Name() != controls[i].Name() || control.Digest() != controls[i].Digest() {
+			return domain.ProjectDependencySnapshot{}, errors.New("go project download controls differ from guard")
+		}
+	}
+	if err := guard.VerifyUnchanged(ctx); err != nil {
+		return snapshot, err
+	}
+	verified, err := s.inspection.InspectProject(ctx, snapshot)
+	if err != nil {
+		return snapshot, fmt.Errorf("inspect complete Go download: %w", err)
+	}
+	if err := guard.VerifyUnchanged(ctx); err != nil {
+		return snapshot, err
+	}
+	staged, err := s.staging.StageProject(ctx, verified)
+	if err != nil {
+		return snapshot, fmt.Errorf("stage approved Go download: %w", err)
+	}
+	if err := guard.CommitSnapshot(ctx, snapshot, staged); err != nil {
+		return snapshot, fmt.Errorf("retain approved Go download: %w", err)
 	}
 	return snapshot, nil
 }

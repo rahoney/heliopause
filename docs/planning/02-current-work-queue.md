@@ -2294,6 +2294,28 @@ observed offline build/output publish, complete CLI와 최종 qualification은 M
 유지하고 같은 item을 계속한다. M12-003/004는 NOT_STARTED다.
 NO PUSH / NO REMOTE CI / NO MERGE.
 
+### M12-002 guarded download/dependency-free project checkpoint (2026-10-04)
+
+기존 download use case에 guard·complete project inspection/Policy/Evidence·verified
+cache·current-snapshot transaction을 연결했다. 임의 primary 또는 두 번째 selection은
+없다. Explicit dependency-free graph는 missing snapshot과 구분하고 empty payload
+inventory에 bind한다. 같은 private-control drift fixture의 old resolver FAIL/new
+PASS와 현재 실제 public/empty source snapshot, dependency-free CLI 최초 adoption과
+retained reuse PASS 범위는 [download evidence](./evidence/m12-002-download/result.json)가 소유한다.
+
+필수 positive product gate `TestLinuxGoGetDownloadIntegration`도 실제 실행했다.
+Dependency-free project에서 exact pflag Get는 phase COMMAND/EVENT_LIMIT10000으로
+FAIL하며 primary diagnostic과 원래 controls·approval 부재·guard cleanup을 보존한다.
+이 gate를 expected-failure PASS로 바꾸지 않았다. 이전 사용자 지시의 budget 증가
+금지가 신규 Go/Cargo profile의 최초 예산 정의에도 적용되는지 확인은 pending이다.
+답변 전 기존/신규 한도와 event accounting은 변경하지 않는다.
+
+M12-002는 IN_PROGRESS, 전체 WIRED/QUALIFIED/ACCEPTANCE_CLOSED는 NO다. Remaining
+MISSING은 실제 Get와 public/transitive managed CLI download qualification,
+observed offline build/output publish·build CLI, 최종 security/direct-consumer 및
+CPU/CUDA 영향 검증이다. 다음 M12-003/004는 NOT_STARTED를 유지한다.
+NO PUSH / NO REMOTE CI / NO MERGE.
+
 ### M12-001 종료 전 이력 (당시 상태, 현재 판정 아님)
 
 아래 날짜별 NO·미검증·IN_PROGRESS 기록은 당시 검증 범위다. 현재 판정은 위의

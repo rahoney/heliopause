@@ -58,6 +58,7 @@ type ProjectMutationGuard interface {
 	Controls() []domain.ProjectControlFile
 	VerifyUnchanged(context.Context) error
 	Commit(context.Context, domain.ProjectDependencyUpdate, domain.StagedProjectSet) error
+	CommitSnapshot(context.Context, domain.ProjectDependencySnapshot, domain.StagedProjectSet) error
 	Close() error
 }
 

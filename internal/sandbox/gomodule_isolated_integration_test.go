@@ -32,6 +32,20 @@ func TestLinuxGoSourceProjectSnapshotIntegration(t *testing.T) {
 	if os.Getenv("HELOX_GO_RESOLVER_PROJECT_INTEGRATION") != "1" {
 		t.Skip("requires pinned Linux gVisor and authenticated helper")
 	}
+	mod := []byte("module example.com/haa-fixture\n\ngo 1.26\n\nrequire github.com/spf13/pflag v1.0.9\n")
+	sum := []byte("github.com/spf13/pflag v1.0.9 h1:9exaQaMOCwffKiiiYk6/BndUBv+iRViNW+4lEMi0PvY=\ngithub.com/spf13/pflag v1.0.9/go.mod h1:McXfInJRrz4CZXVZOBLb0bTZqETkiAhM9Iw0y3An2Bg=\n")
+	goSourceSnapshotFixture(t, mod, sum, 1)
+}
+
+func TestLinuxGoDependencyFreeProjectSnapshotIntegration(t *testing.T) {
+	if os.Getenv("HELOX_GO_RESOLVER_PROJECT_INTEGRATION") != "1" {
+		t.Skip("requires pinned Linux gVisor and authenticated helper")
+	}
+	goSourceSnapshotFixture(t, []byte("module example.com/haa-fixture\n\ngo 1.26\n"), nil, 0)
+}
+
+func goSourceSnapshotFixture(t *testing.T, mod, sum []byte, modules int) {
+	t.Helper()
 	supervisor := integrationObserverSupervisor(t)
 	defer func() {
 		if err := supervisor.Close(); err != nil {
@@ -43,8 +57,6 @@ func TestLinuxGoSourceProjectSnapshotIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	mod := []byte("module example.com/haa-fixture\n\ngo 1.26\n\nrequire github.com/spf13/pflag v1.0.9\n")
-	sum := []byte("github.com/spf13/pflag v1.0.9 h1:9exaQaMOCwffKiiiYk6/BndUBv+iRViNW+4lEMi0PvY=\ngithub.com/spf13/pflag v1.0.9/go.mod h1:McXfInJRrz4CZXVZOBLb0bTZqETkiAhM9Iw0y3An2Bg=\n")
 	project, cleanup, err := privateGoProjectWorkspace(mod, sum)
 	if err != nil {
 		t.Fatal(err)
@@ -68,7 +80,7 @@ func TestLinuxGoSourceProjectSnapshotIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !snapshot.Valid() || len(snapshot.Dependencies()) != 1 || snapshot.Context() != installContext {
+	if !snapshot.Valid() || len(snapshot.Dependencies()) != modules || snapshot.DependencyFree() != (modules == 0) || snapshot.Context() != installContext {
 		t.Fatal("actual isolated project snapshot is incomplete")
 	}
 	t.Logf("actual_project_graph_sha256=%s modules=%d", snapshot.GraphDigest(), len(snapshot.Dependencies()))

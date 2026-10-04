@@ -46,8 +46,8 @@ func TestGoModuleProjectResolverCannotMutateUserControlFiles(t *testing.T) {
 	install, _ := domain.NewInstallContext(target)
 	runner := &goModulePrivateMutationRunner{}
 	resolver, _ := NewGoModuleResolver(runner)
-	if _, err := resolver.ResolveProjectDependencies(context.Background(), install); err != nil {
-		t.Fatal(err)
+	if snapshot, err := resolver.ResolveProjectDependencies(context.Background(), install); err == nil || snapshot.Valid() || !strings.Contains(err.Error(), "changed frozen controls") {
+		t.Fatalf("private control drift returned approval: %v", err)
 	}
 	if runner.workspace == project {
 		t.Fatal("resolver ran inside the user project")

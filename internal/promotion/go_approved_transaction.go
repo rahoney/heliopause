@@ -212,14 +212,46 @@ func (g *approvedGoProjectGuard) Commit(ctx context.Context, update domain.Proje
 	if g == nil || !update.Valid() || !staged.Valid() || update.Snapshot().Context() != g.context || update.Snapshot().Source() != artifactgo.Source() || !sameGoTransactionControls(g.plan.controls, update.OriginalControls()) {
 		return errors.New("go transaction update differs from guarded project")
 	}
+	return g.commitSelection(ctx, update.Snapshot(), update.SelectedControls(), staged)
+}
+
+// CommitSnapshot retains approval for the complete current project without
+// inventing a primary artifact or selecting dependencies again.
+func (g *approvedGoProjectGuard) CommitSnapshot(ctx context.Context, snapshot domain.ProjectDependencySnapshot, staged domain.StagedProjectSet) error {
+	if g == nil || !snapshot.Valid() || snapshot.Context() != g.context || snapshot.Source() != artifactgo.Source() {
+		return errors.New("go download snapshot differs from guarded project")
+	}
+	controls := g.Controls()
+	if len(controls) != len(snapshot.ControlDigests()) {
+		return errors.New("go download control coverage differs from guard")
+	}
+	for i, file := range snapshot.ControlDigests() {
+		if !controls[i].Present() && snapshot.DependencyFree() && controls[i].Name() == "go.sum" && len(controls[i].Body()) == 0 {
+			var err error
+			controls[i], err = domain.NewProjectControlFile("go.sum", nil, true)
+			if err != nil {
+				return err
+			}
+		}
+		if controls[i].Name() != file.Name() || controls[i].Digest() != file.Digest() || !controls[i].Present() {
+			return errors.New("go download controls differ from guard")
+		}
+	}
+	return g.commitSelection(ctx, snapshot, controls, staged)
+}
+
+func (g *approvedGoProjectGuard) commitSelection(ctx context.Context, selected domain.ProjectDependencySnapshot, controls []domain.ProjectControlFile, staged domain.StagedProjectSet) (resultErr error) {
+	if !staged.Valid() {
+		return errors.New("go project requires an approved staged cache")
+	}
 	if err := g.VerifyUnchanged(ctx); err != nil {
 		return err
 	}
 	snapshot := staged.Set().Inspected().Snapshot()
-	if snapshot.Context() != update.Snapshot().Context() || snapshot.Source() != update.Snapshot().Source() || snapshot.GraphDigest() != update.Snapshot().GraphDigest() || len(snapshot.Dependencies()) != len(update.Snapshot().Dependencies()) {
+	if snapshot.Context() != selected.Context() || snapshot.Source() != selected.Source() || snapshot.GraphDigest() != selected.GraphDigest() || len(snapshot.Dependencies()) != len(selected.Dependencies()) {
 		return errors.New("go transaction cache approval differs from selected graph")
 	}
-	selectedDependencies := update.Snapshot().Dependencies()
+	selectedDependencies := selected.Dependencies()
 	for i, artifact := range snapshot.Dependencies() {
 		if artifact != selectedDependencies[i] {
 			return errors.New("go transaction cache dependency differs from selected graph")
@@ -232,10 +264,10 @@ func (g *approvedGoProjectGuard) Commit(ctx context.Context, update domain.Proje
 	if err != nil {
 		return err
 	}
-	if len(doc.Controls) != len(update.SelectedControls()) {
+	if len(doc.Controls) != len(controls) {
 		return errors.New("go transaction approval controls are incomplete")
 	}
-	for i, control := range update.SelectedControls() {
+	for i, control := range controls {
 		if doc.Controls[i].Path != control.Name() || doc.Controls[i].SHA256 != control.Digest().String() {
 			return errors.New("go transaction approval controls differ from selection")
 		}
@@ -253,7 +285,7 @@ func (g *approvedGoProjectGuard) Commit(ctx context.Context, update domain.Proje
 			resultErr = errors.Join(resultErr, errors.New("dispose Go transaction workspace"))
 		}
 	}()
-	for _, control := range update.SelectedControls() {
+	for _, control := range controls {
 		if !control.Present() || os.WriteFile(filepath.Join(workspace, control.Name()), control.Body(), 0o600) != nil {
 			return errors.New("materialize selected Go transaction controls")
 		}
@@ -261,7 +293,7 @@ func (g *approvedGoProjectGuard) Commit(ctx context.Context, update domain.Proje
 	if err := g.VerifyUnchanged(ctx); err != nil {
 		return err
 	}
-	transaction, err := beginGoProjectTransaction(g.plan, workspace, update.SelectedControls()...)
+	transaction, err := beginGoProjectTransaction(g.plan, workspace, controls...)
 	if err != nil {
 		return err
 	}

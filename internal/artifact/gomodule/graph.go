@@ -19,8 +19,14 @@ type graphEdge struct{ from, to string }
 // The complete raw requirement graph remains separately digest-bound.
 func normalizeProjectGraph(body []byte, records []DownloadRecord, goMod []byte) ([]graphEdge, error) {
 	file, err := parseProjectMod(goMod)
-	if err != nil || len(body) == 0 || len(body) > maxDownloadOutput || len(records) == 0 || len(records) > 4096 {
+	if err != nil || len(body) > maxDownloadOutput || len(records) > 4096 {
 		return nil, errors.New("go project graph is invalid or exceeds bound")
+	}
+	if len(records) == 0 {
+		free, err := ProjectDependencyFree(goMod)
+		if err != nil || !free {
+			return nil, errors.New("empty Go graph differs from project requirements")
+		}
 	}
 	selected := map[string]DownloadRecord{}
 	for _, record := range records {

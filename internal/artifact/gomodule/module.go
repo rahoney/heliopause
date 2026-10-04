@@ -221,6 +221,16 @@ func ParseDownloadJSON(body []byte) ([]DownloadRecord, error) {
 	return records, nil
 }
 
+// ParseProjectDownloadJSON permits the command's empty output grammar. Only
+// BuildProjectSnapshot can bind that output to dependency-free controls and a
+// complete graph; this parser alone does not prove an empty dependency set.
+func ParseProjectDownloadJSON(body []byte) ([]DownloadRecord, error) {
+	if len(body) <= maxDownloadOutput && len(bytes.TrimSpace(body)) == 0 {
+		return nil, nil
+	}
+	return ParseDownloadJSON(body)
+}
+
 // BuildLockedGraph converts exact download records and `go mod graph` edges
 // into the generic Domain graph. Edges outside the primary closure are rejected
 // rather than silently dropping resolver output.
@@ -314,11 +324,13 @@ func BuildLockedGraph(reference domain.ArtifactReference, records []DownloadReco
 // project. The local main module is not an acquired artifact, so this does
 // not weaken LockedDependencyGraph's exactly-one-primary invariant.
 func BuildProjectSnapshot(installContext domain.InstallContext, records []DownloadRecord, graphOutput, goMod, goSum []byte) (domain.ProjectDependencySnapshot, error) {
-	if !installContext.Valid() || len(records) == 0 || len(goMod) == 0 || len(goSum) == 0 {
+	if !installContext.Valid() || len(goMod) == 0 || (len(records) != 0 && len(goSum) == 0) || (len(records) == 0 && len(goSum) != 0) {
 		return domain.ProjectDependencySnapshot{}, errors.New("go project snapshot request is invalid")
 	}
-	if err := ValidateProjectSums(goSum, records); err != nil {
-		return domain.ProjectDependencySnapshot{}, err
+	if len(records) != 0 {
+		if err := ValidateProjectSums(goSum, records); err != nil {
+			return domain.ProjectDependencySnapshot{}, err
+		}
 	}
 	byKey := make(map[string]DownloadRecord, len(records))
 	for _, record := range records {
@@ -367,6 +379,9 @@ func BuildProjectSnapshot(installContext domain.InstallContext, records []Downlo
 	sumControl, err := domain.NewProjectControlDigest("go.sum", sumDigest)
 	if err != nil {
 		return domain.ProjectDependencySnapshot{}, err
+	}
+	if len(records) == 0 {
+		return domain.NewDependencyFreeProjectSnapshot(installContext, goModuleSource, []domain.ProjectControlDigest{modControl, sumControl}, graphDigest)
 	}
 	return domain.NewProjectDependencySnapshot(installContext, goModuleSource, []domain.ProjectControlDigest{modControl, sumControl}, dependencies, graphDigest)
 }

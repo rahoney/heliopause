@@ -73,19 +73,21 @@ type goCacheEvidence struct {
 	SHA256 string `json:"sha256"`
 }
 type goCacheDocument struct {
-	Schema        int            `json:"schema"`
-	Graph         string         `json:"graph"`
-	Project       string         `json:"project"`
-	Policy        string         `json:"policy"`
-	PolicyVersion uint64         `json:"policy_version"`
-	Controls      []goCacheFile  `json:"controls"`
-	Entries       []goCacheEntry `json:"entries"`
-	Files         []goCacheFile  `json:"files"`
+	Schema         int            `json:"schema"`
+	Graph          string         `json:"graph"`
+	Project        string         `json:"project"`
+	Policy         string         `json:"policy"`
+	PolicyVersion  uint64         `json:"policy_version"`
+	Controls       []goCacheFile  `json:"controls"`
+	Entries        []goCacheEntry `json:"entries"`
+	Files          []goCacheFile  `json:"files"`
+	DependencyFree bool           `json:"dependency_free,omitempty"`
 }
 
 func (c *GoVerifiedCache) goCacheApproval(ctx context.Context, set domain.ProjectVerifiedSet) (goCacheDocument, error) {
 	project := sha256.Sum256([]byte(set.Inspected().Snapshot().Context().Target().String()))
 	doc := goCacheDocument{Schema: 1, Graph: set.Inspected().Snapshot().GraphDigest().String(), Project: hex.EncodeToString(project[:]), Policy: set.Decision().PolicyID(), PolicyVersion: set.Decision().Version()}
+	doc.DependencyFree = set.Inspected().Snapshot().DependencyFree()
 	for _, control := range set.Inspected().Snapshot().ControlDigests() {
 		doc.Controls = append(doc.Controls, goCacheFile{Path: control.Name(), SHA256: control.Digest().String()})
 	}
@@ -290,6 +292,9 @@ func (c *GoVerifiedCache) openProjectCacheDocument(ctx context.Context, handle s
 	if err != nil {
 		return "", err
 	}
+	if expected.DependencyFree && (len(files) != 1 || files[0].Path != "." || files[0].Kind != "directory") {
+		return "", errors.New("dependency-free Go cache contains undeclared content")
+	}
 	expected.Files = files
 	want, err := json.Marshal(expected)
 	if err != nil || !bytes.Equal(want, body) {
@@ -299,7 +304,7 @@ func (c *GoVerifiedCache) openProjectCacheDocument(ctx context.Context, handle s
 }
 
 func (c *GoVerifiedCache) verifyRecordedApproval(ctx context.Context, doc goCacheDocument) error {
-	if len(doc.Entries) == 0 || len(doc.Entries) > 4096 {
+	if (len(doc.Entries) == 0) != doc.DependencyFree || len(doc.Entries) > 4096 {
 		return errors.New("go retained approval coverage is invalid")
 	}
 	seen := map[domain.ResolvedArtifactIdentity]bool{}

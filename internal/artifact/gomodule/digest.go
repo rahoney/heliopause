@@ -14,7 +14,7 @@ import (
 // requirement graph and project controls. Adapter-local cache filenames and
 // origin metadata do not become reproducible graph identity or trust authority.
 func FreezeResolutionDigest(records []DownloadRecord, graphOutput, goMod, goSum []byte) (domain.ContentDigest, error) {
-	if len(goSum) == 0 || len(goSum) > MaxProjectControlBytes {
+	if (len(records) == 0 && len(goSum) != 0) || (len(records) != 0 && len(goSum) == 0) || len(goSum) > MaxProjectControlBytes {
 		return domain.ContentDigest{}, errors.New("go project sums exceed bound")
 	}
 	if _, err := normalizeProjectGraph(graphOutput, records, goMod); err != nil {

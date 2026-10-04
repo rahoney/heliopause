@@ -31,7 +31,7 @@ func TestGoModuleResolutionServiceUsesOnlyDependencyResolver(t *testing.T) {
 func TestGoModuleProjectResolutionRejectsInvalidSnapshot(t *testing.T) {
 	target, _ := domain.NewInstallTarget("/tmp/haa-go-project")
 	installContext, _ := domain.NewInstallContext(target)
-	service, err := application.NewGoModuleProjectResolutionService(goModuleProjectResolverFixture{})
+	service, err := application.NewGoModuleProjectResolutionService(goModuleProjectResolverFixture{}, &goModulePromoterFixture{}, goUnavailableProjectPipeline{}, goUnavailableProjectPipeline{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -103,4 +103,9 @@ func (goUnavailableProjectPipeline) InspectProject(context.Context, domain.Proje
 }
 func (goUnavailableProjectPipeline) StageProject(context.Context, domain.ProjectVerifiedSet) (domain.StagedProjectSet, error) {
 	return domain.StagedProjectSet{}, errors.New("staging must be unreachable")
+}
+
+func (g *goMutationGuardFixture) CommitSnapshot(context.Context, domain.ProjectDependencySnapshot, domain.StagedProjectSet) error {
+	g.owner.called = true
+	return nil
 }

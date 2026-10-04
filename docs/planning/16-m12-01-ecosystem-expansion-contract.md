@@ -632,6 +632,20 @@ Run/subject/check/digest에 대조한다. Required check의 기록이 없거나 
 깨지면 중단하며, record content digest도 cache receipt에 연결한다. Reader 구현은
 Composition Root에서 주입하고 Promotion이 Evidence adapter를 직접 생성하지 않는다.
 
+`go mod download`는 guard 아래 current controls와 complete snapshot을 대조한 뒤
+동일한 entry/set inspection·Policy·Evidence와 verified-cache staging을 완료하고
+승인된 현재 snapshot을 retained state에 transactionally 기록한다. 임의 module을
+primary로 만들거나 `go get`을 실행하지 않는다. Private download가 controls를
+바꿔 원래 snapshot과 달라지면 성공한 snapshot으로 반환하지 않는다.
+
+Dependency-free project는 누락된 dependency list와 구분하는 명시적인 complete
+empty snapshot으로 표현한다. Go adapter는 dependency-free directives, empty sums와
+main/synthetic vertices를 포함하는 complete graph를 확인한 뒤에만 이를 만든다.
+기본 zero/missing snapshot은 여전히 invalid다. Empty snapshot도 set Policy를 거치며
+그 cache는 payload가 없는 전체 inventory로 bind한다. 최초 download adoption에서
+absent `go.sum`은 승인된 empty control file로 정규화하고 외부 approval과 함께
+기록한다. 이 module-set 승인은 project code의 build-time 실행 관찰을 대체하지 않는다.
+
 ### `helox go build` contract
 
 `helox go build`는 현재 project의 `go.mod`/`go.sum`을 snapshot한 뒤 exact dependency
