@@ -100,6 +100,7 @@ constexpr char kProfilePyTorchCU126[] = "pypi-wheel-pytorch-cu126";
 constexpr char kProfilePyTorchCU130[] = "pypi-wheel-pytorch-cu130";
 constexpr char kProfilePyTorchCU132[] = "pypi-wheel-pytorch-cu132";
 constexpr char kProfileGitHub[] = "github-elf";
+constexpr char kProfileGoResolver[] = "go-module-resolver";
 
 bool IsPythonProfile(const char* profile) {
   return profile != nullptr &&
@@ -129,12 +130,14 @@ struct Attribution {
 };
 
 bool Send(int output, const std::string& container_id, const char* kind, const char* reason = nullptr,
-          const Attribution* attribution = nullptr, uint64_t count = 0, const char* fault_site = nullptr, uint64_t image_locator = 0) {
+          const Attribution* attribution = nullptr, uint64_t count = 0, const char* fault_site = nullptr, uint64_t image_locator = 0, const std::string& fault_open = "", const std::string& fault_budget = "") {
   if (!ValidContainerID(container_id)) return false;
   std::string message = "{\"container_id\":\"" + container_id + "\",\"kind\":\"" + kind + "\"";
   if (reason != nullptr) message += ",\"reason\":\"" + std::string(reason) + "\"";
   if (fault_site != nullptr) message += ",\"fault_site\":\"" + std::string(fault_site) + "\"";
   if (image_locator != 0) message += ",\"fault_image_locator\":" + std::to_string(image_locator);
+  if (!fault_open.empty()) message += ",\"fault_open\":" + fault_open;
+  if (!fault_budget.empty()) message += ",\"fault_budget\":" + fault_budget;
   if (attribution != nullptr) {
     if (attribution->event_source != nullptr) message += ",\"event_source\":\"" + std::string(attribution->event_source) + "\"";
     if (attribution->family != nullptr) message += ",\"family\":\"" + std::string(attribution->family) + "\"";
@@ -174,6 +177,7 @@ enum class ProcessClass {
   kCat,
   kChmod,
   kUname,
+  kGo,
 };
 
 enum class SocketClassification {
@@ -417,6 +421,7 @@ struct ProcessState {
   UnexpectedExecDiagnostic first_unexpected_exec;
   FaultSite terminal_fault_site = FaultSite::kNone;
   uint64_t fault_image_locator = 0;
+  std::string fault_open_diagnostic;
 };
 
 struct NormalizedCounts {
@@ -924,6 +929,7 @@ const char* ProcessClassName(ProcessClass process_class) {
     case ProcessClass::kPip: return "PIP";
     case ProcessClass::kNode: return "NODE";
     case ProcessClass::kNpm: return "NPM";
+    case ProcessClass::kGo: return "GO";
     case ProcessClass::kArtifact: return "ARTIFACT";
     case ProcessClass::kSleep: return "SLEEP";
     case ProcessClass::kMkdir: return "MKDIR";
@@ -945,6 +951,7 @@ const char* NetworkProcessClassName(ProcessClass process_class) {
     case ProcessClass::kPip:
     case ProcessClass::kNode:
     case ProcessClass::kNpm:
+    case ProcessClass::kGo:
     case ProcessClass::kArtifact:
     case ProcessClass::kUnknown:
       return ProcessClassName(process_class);
@@ -1031,6 +1038,7 @@ ProcessClass ProcessClassForPath(const std::string& path, const char* profile) {
     if (path == "/usr/local/bin/pip" || path == "pip") return ProcessClass::kPip;
   }
   if (strcmp(profile, kProfileGitHub) == 0 && path == "/work/artifact") return ProcessClass::kArtifact;
+  if (strcmp(profile, kProfileGoResolver) == 0 && path == "/usr/local/go/bin/go") return ProcessClass::kGo;
   return ProcessClass::kUnknown;
 }
 
@@ -1362,6 +1370,35 @@ bool IsExactLibc6(const std::string& path) {
   return MatchesLibraryNameOrVersion(p, "/lib/x86_64-linux-gnu/libc.so.6");
 }
 
+// Diagnostic only: exact, fixed subjects avoid retaining a guest path/name.
+const char* FaultOpenSubject(const gvisor::common::ContextData& context,
+                             const std::string& path, const MountAnchor& anchor) {
+  const std::string self = "/proc/" + std::to_string(context.thread_group_id());
+  if (path == self + "/auxv") return "PROC_SELF_AUXV";
+  if (path == self + "/cgroup") return "PROC_SELF_CGROUP";
+  if (path == self + "/mountinfo") return "PROC_SELF_MOUNTINFO";
+  if (path == "/sys/kernel/mm/transparent_hugepage/hpage_pmd_size") return "THP_PAGE_SIZE";
+  if (path == "/sys/fs/cgroup/cpu/cpu.cfs_quota_us" ||
+      path == "/sys/fs/cgroup/cpu/cpu.cfs_period_us") return "CGROUP_CPU_QUOTA";
+  return anchor.mount_class == "oci-root" ? "OCI_IMAGE" : "OTHER";
+}
+
+std::string FaultOpenDiagnostic(const gvisor::syscall::Open& message,
+                                const ProcessState& state, const MountAnchor& anchor) {
+  const auto* group = FindFilesystemGroup(message.context_data(), state);
+  uint64_t locator = 14695981039346656037ULL;
+  for (unsigned char byte : message.pathname()) {
+    locator ^= byte;
+    locator *= 1099511628211ULL;
+  }
+  return std::string("{\"image\":\"") + ProcessClassName(FilesystemProcessClass(message.context_data(), state)) +
+      "\",\"role\":\"" + RoleName(group == nullptr ? ProcessState::Role::kUnknown : group->role) +
+      "\",\"provenance\":\"" + ProvenanceName(group == nullptr ? ProcessState::Provenance::kUnknown : group->provenance) +
+      "\",\"subject\":\"" + FaultOpenSubject(message.context_data(), message.pathname(), anchor) +
+      "\",\"mount\":\"" + anchor.mount_class + "\",\"flags\":" + std::to_string(message.flags()) +
+      ",\"path_locator\":" + std::to_string(locator == 0 ? 1 : locator) + "}";
+}
+
 bool IsExactLibcapNg0(const std::string& path) {
   std::string p = path;
   if (HasPrefix(p, "/usr/lib/")) {
@@ -1580,6 +1617,53 @@ bool IsPinnedRuntimeRootRead(const gvisor::common::ContextData& context,
   return HasPrefix(normalized, kStdlibRoot);
 }
 
+// The resolver executes only the locked Go tool, with no artifact source or
+// helper execution. Go's own cgroup discovery is metadata, never resource or
+// completion authority. This exception grants neither an ARTIFACT role nor
+// another process's proc files, and does not depend on mutable comm.
+bool IsPinnedGoResolverRead(const gvisor::common::ContextData& context,
+                            const ProcessState& state, const std::string& path,
+                            uint64_t flags, const char* profile, const MountAnchor* anchor) {
+  if (profile == nullptr || strcmp(profile, kProfileGoResolver) != 0 ||
+      anchor == nullptr ||
+      !IsAtOrBelowMountpoint(path, anchor->mountpoint) || IsWriteCapableOpen(flags)) return false;
+  const auto* group = FindFilesystemGroup(context, state);
+  if (group == nullptr || group->role != ProcessState::Role::kControl ||
+      group->root_eligible || !group->root_consumed || group->demotion_pending ||
+      group->launch_target_pending || group->handoff_target_pending) return false;
+  const auto image = FilesystemProcessClass(context, state);
+  if (image == ProcessClass::kMkdir &&
+      group->provenance == ProcessState::Provenance::kCloneChild &&
+      !group->trusted_control_network_active && HasExactCloneCreator(*group, state) &&
+      context.parent_thread_group_id() == group->clone_creator_group_id &&
+      !IsWriteCapableOpen(flags) && anchor->mount_class == "system" &&
+      anchor->mountpoint == "/proc" && path == "/proc/filesystems") {
+    const auto& parent = state.groups.find(group->clone_creator_group_id)->second;
+    return parent.role == ProcessState::Role::kControl &&
+        parent.provenance == ProcessState::Provenance::kDirectExecRoot &&
+        !parent.root_eligible && parent.root_consumed;
+  }
+  if (image != ProcessClass::kGo ||
+      group->provenance != ProcessState::Provenance::kDirectExecRoot ||
+      !group->trusted_control_network_active) return false;
+  const std::string self = "/proc/" + std::to_string(context.thread_group_id());
+  if (anchor->mount_class == "oci-root" && anchor->mountpoint == "/") {
+    // X.509 reads the immutable Debian bundle and its certificate directory;
+    // resolved symlinks reach the same image's packaged certificate store.
+    return path == "/usr/local/go/go.env" || path == "/etc/nsswitch.conf" ||
+        path == "/usr/share/zoneinfo/Etc/UTC" ||
+        path == "/usr/local/go/src" || HasPrefix(path, "/usr/local/go/src/") ||
+        path == "/etc/ssl/certs" || HasPrefix(path, "/etc/ssl/certs/") ||
+        HasPrefix(path, "/usr/share/ca-certificates/");
+  }
+  if (anchor->mount_class != "system") return false;
+  return ((path == "/etc/resolv.conf" || path == "/etc/hosts") && anchor->mountpoint == path) ||
+      (anchor->mountpoint == "/proc" &&
+          (path == self + "/cgroup" || path == self + "/mountinfo")) ||
+      path == "/sys/fs/cgroup/cpu/cpu.cfs_quota_us" ||
+      path == "/sys/fs/cgroup/cpu/cpu.cfs_period_us";
+}
+
 bool IsCanonicalBootstrapProfile(const char* profile) {
   return profile != nullptr &&
       (strcmp(profile, kProfileNPM) == 0 || strcmp(profile, kProfilePyPI) == 0 ||
@@ -1587,7 +1671,7 @@ bool IsCanonicalBootstrapProfile(const char* profile) {
        strcmp(profile, kProfilePyTorchCU126) == 0 ||
        strcmp(profile, kProfilePyTorchCU130) == 0 ||
        strcmp(profile, kProfilePyTorchCU132) == 0 ||
-       strcmp(profile, kProfileGitHub) == 0);
+       strcmp(profile, kProfileGitHub) == 0 || strcmp(profile, kProfileGoResolver) == 0);
 }
 
 bool IsDirectExecLoaderProfile(const char* profile) {
@@ -1844,6 +1928,7 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
     return FilesystemClass::kOutside;
   }
   if (IsExactBootstrapHelperWrite(message.context_data(), state, path, message.flags()) ||
+      IsPinnedGoResolverRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
       IsExactDockerEtcHostsLockGenerationRead(message.context_data(), state, path,
                                               message.flags(), profile, anchor) ||
       IsPinnedRuntimeRootRead(message.context_data(), state, path,
@@ -1980,7 +2065,7 @@ bool ParseControlRecord(const char* payload, size_t size, ControlPeer* peer,
     if (!ValidContainerID(id) || !ValidSessionGeneration(generation) ||
         (profile != kProfileNPM && profile != kProfilePyPI && profile != kProfilePyTorchCPU &&
          profile != kProfilePyTorchCU126 && profile != kProfilePyTorchCU130 &&
-         profile != kProfilePyTorchCU132 && profile != kProfileGitHub) ||
+         profile != kProfilePyTorchCU132 && profile != kProfileGitHub && profile != kProfileGoResolver) ||
         peer->request_seen || peer->registered || peer->terminal || profiles->find(id) != profiles->end()) {
       return SendProfileAck(peer->fd, id, profile, topology, generation, "rejected");
     }
@@ -2727,6 +2812,7 @@ bool ParseOpenResultAndSend(const char* payload, size_t payload_size, int output
       ++counts->immediate_records;
       return true;
     default: {
+      state->fault_open_diagnostic = FaultOpenDiagnostic(final_open, *state, anchor->second);
       // Diagnostics reuse the actual runtime predicate; they grant no access
       // and retain no arbitrary pathname or mutable process-name bytes.
       auto named_python = final_open.context_data();
@@ -3263,6 +3349,8 @@ int main(int argc, char** argv) {
     std::string profile;
     std::string registration_generation;
     size_t normalized_records = 0;
+    // Diagnostic counters only; the existing charge and limit stay unchanged.
+    size_t close_records = 0, fcntl_records = 0, raw_records = 0, other_records = 0;
     bool fault = false;
   };
   constexpr size_t kMaxConcurrentRemoteStreams = 8;
@@ -3328,9 +3416,21 @@ int main(int argc, char** argv) {
         stream.process_state.terminal_fault_site = FaultSite::kWorkspaceSend;
       }
     }
+    std::string fault_budget;
+    if (stream.fault && stream.process_state.terminal_fault_site == FaultSite::kEventLimit) {
+      const char* profile = stream.profile.empty() ? nullptr : stream.profile.c_str();
+      fault_budget = "{\"charged\":" + std::to_string(stream.normalized_records + stream.normalized_counts.immediate_records) +
+          ",\"limit\":" + std::to_string(MaximumRecords(profile)) +
+          ",\"close\":" + std::to_string(stream.close_records) +
+          ",\"fcntl\":" + std::to_string(stream.fcntl_records) +
+          ",\"raw\":" + std::to_string(stream.raw_records) +
+          ",\"other\":" + std::to_string(stream.other_records) +
+          ",\"workspace\":" + std::to_string(stream.normalized_counts.workspace_access) + "}";
+    }
     Send(output, stream.container_id, stream.fault ? "stream-fault" : "stream-end", stream.fault_reason, nullptr, 0,
          stream.fault ? FaultSiteName(stream.process_state.terminal_fault_site) : nullptr,
-         stream.fault ? stream.process_state.fault_image_locator : 0);
+         stream.fault ? stream.process_state.fault_image_locator : 0,
+         stream.fault ? stream.process_state.fault_open_diagnostic : "", fault_budget);
     if (registration != nullptr) profiles.erase(stream.container_id);
     close(client);
   };
@@ -3434,6 +3534,12 @@ int main(int argc, char** argv) {
           if (!terminal && header.message_type != gvisor::common::MESSAGE_SYSCALL_OPEN &&
               header.message_type != gvisor::common::MESSAGE_SYSCALL_OPEN_RESULT) {
             ++stream.normalized_records;
+            switch (static_cast<gvisor::common::MessageType>(header.message_type)) {
+              case gvisor::common::MESSAGE_SYSCALL_CLOSE: ++stream.close_records; break;
+              case gvisor::common::MESSAGE_SYSCALL_FCNTL: ++stream.fcntl_records; break;
+              case gvisor::common::MESSAGE_SYSCALL_RAW: ++stream.raw_records; break;
+              default: ++stream.other_records; break;
+            }
           }
         }
       } else if ((events & (POLLERR | POLLHUP | POLLNVAL)) != 0) {

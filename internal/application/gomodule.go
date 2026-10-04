@@ -14,32 +14,68 @@ import (
 // isolated, source-pinned dependency resolver.
 type GoModuleResolutionService struct{ resolver ports.DependencyResolver }
 
-// GoModuleGetService composes immutable resolution with the separate project
-// mutation port. Promotion is unreachable when resolution fails.
+type ProjectInspection interface {
+	InspectProject(context.Context, domain.ProjectDependencySnapshot) (domain.ProjectVerifiedSet, error)
+}
+
+// GoModuleGetService holds the original guard before selection, inspects the
+// complete frozen project, and publishes that selection without another get.
 type GoModuleGetService struct {
-	resolver ports.DependencyResolver
-	promoter ports.ProjectDependencyPromoter
+	resolver   ports.ProjectDependencyUpdateResolver
+	promoter   ports.ProjectMutation
+	inspection ProjectInspection
+	staging    ports.ProjectCacheStaging
 }
 
-func NewGoModuleGetService(resolver ports.DependencyResolver, promoter ports.ProjectDependencyPromoter) (*GoModuleGetService, error) {
-	if resolver == nil || promoter == nil {
-		return nil, errors.New("go get service requires resolver and project promoter")
+func NewGoModuleGetService(resolver ports.ProjectDependencyUpdateResolver, promoter ports.ProjectMutation, inspection ProjectInspection, staging ports.ProjectCacheStaging) (*GoModuleGetService, error) {
+	if resolver == nil || promoter == nil || inspection == nil || staging == nil {
+		return nil, errors.New("go get service requires guarded selection, inspection and cache staging")
 	}
-	return &GoModuleGetService{resolver: resolver, promoter: promoter}, nil
+	return &GoModuleGetService{resolver, promoter, inspection, staging}, nil
 }
 
-func (s *GoModuleGetService) Get(ctx context.Context, reference domain.ArtifactReference, installContext domain.InstallContext) (domain.DependencyResolution, error) {
+func (s *GoModuleGetService) Get(ctx context.Context, reference domain.ArtifactReference, installContext domain.InstallContext) (resolution domain.DependencyResolution, resultErr error) {
 	if s == nil || s.resolver == nil || s.promoter == nil || ctx == nil || reference.Source().String() != "go-proxy" || !installContext.Valid() {
 		return domain.DependencyResolution{}, errors.New("valid Go get request is required")
 	}
-	resolution, err := s.resolver.ResolveDependencies(ctx, reference, installContext)
+	guard, err := s.promoter.Begin(ctx, installContext)
+	if err != nil {
+		return resolution, fmt.Errorf("guard Go project: %w", err)
+	}
+	if guard == nil {
+		return resolution, errors.New("go project mutation returned no guard")
+	}
+	defer func() {
+		resultErr = errors.Join(resultErr, guard.Close())
+		if resultErr != nil {
+			resolution = domain.DependencyResolution{}
+		}
+	}()
+	update, err := s.resolver.ResolveProjectDependencyUpdate(ctx, reference, installContext, guard.Controls())
 	if err != nil {
 		return domain.DependencyResolution{}, fmt.Errorf("resolve exact Go module graph: %w", err)
 	}
-	if err := s.promoter.PromoteProjectDependency(ctx, reference, installContext); err != nil {
+	if !update.Valid() || update.Snapshot().Context() != installContext || update.Snapshot().Source() != reference.Source() {
+		return resolution, errors.New("go resolver returned an invalid project update")
+	}
+	if err := guard.VerifyUnchanged(ctx); err != nil {
+		return resolution, err
+	}
+	verified, err := s.inspection.InspectProject(ctx, update.Snapshot())
+	if err != nil {
+		return resolution, fmt.Errorf("inspect complete selected Go project: %w", err)
+	}
+	if err := guard.VerifyUnchanged(ctx); err != nil {
+		return resolution, err
+	}
+	staged, err := s.staging.StageProject(ctx, verified)
+	if err != nil {
+		return resolution, fmt.Errorf("stage approved Go project cache: %w", err)
+	}
+	if err := guard.Commit(ctx, update, staged); err != nil {
 		return domain.DependencyResolution{}, fmt.Errorf("promote exact Go module graph: %w", err)
 	}
-	return resolution, nil
+	return update.Resolution(), nil
 }
 
 // GoModuleProjectResolutionService is the application boundary for commands

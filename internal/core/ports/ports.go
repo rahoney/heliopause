@@ -46,6 +46,29 @@ type ProjectDependencyResolver interface {
 	ResolveProjectDependencies(context.Context, domain.InstallContext) (domain.ProjectDependencySnapshot, error)
 }
 
+// ProjectDependencyUpdateResolver selects once using frozen controls captured
+// under the caller's project guard. The result is not promotion authorization.
+type ProjectDependencyUpdateResolver interface {
+	ResolveProjectDependencyUpdate(context.Context, domain.ArtifactReference, domain.InstallContext, []domain.ProjectControlFile) (domain.ProjectDependencyUpdate, error)
+}
+
+// ProjectMutationGuard holds the original target through selection, approval
+// and commit. Commit accepts only the frozen update and its approved cache.
+type ProjectMutationGuard interface {
+	Controls() []domain.ProjectControlFile
+	VerifyUnchanged(context.Context) error
+	Commit(context.Context, domain.ProjectDependencyUpdate, domain.StagedProjectSet) error
+	Close() error
+}
+
+type ProjectMutation interface {
+	Begin(context.Context, domain.InstallContext) (ProjectMutationGuard, error)
+}
+
+type ProjectCacheStaging interface {
+	StageProject(context.Context, domain.ProjectVerifiedSet) (domain.StagedProjectSet, error)
+}
+
 // ProjectDependencyPromoter applies an already-resolved exact dependency to a
 // project through an ecosystem-specific transactional boundary.
 type ProjectDependencyPromoter interface {

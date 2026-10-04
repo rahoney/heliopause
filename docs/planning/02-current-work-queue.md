@@ -2276,6 +2276,24 @@ Project checksum disagreement를 승인하던 동일 fixture의 before FAIL → 
 qualification이다. 이 checkpoint 뒤 같은 item을 계속하며 다음 M12-003/004는
 NOT_STARTED다. NO PUSH / NO REMOTE CI / NO MERGE.
 
+### M12-002 isolated source/guarded transaction checkpoint (2026-10-04)
+
+[Source/transaction evidence](./evidence/m12-002-source-transaction/result.json)에
+고정 Go runtime의 registered source 경계, 실제 download/graph→complete snapshot,
+하나의 private selection을 승인 후 재선택 없이 반영하는 guarded transaction과
+required Evidence/cache 재검증을 연결한다. Raw project marker는 승인 권한이
+아니며 기존 journal·rollback을 재사용한다. 동일 missing-record fixture의 이전
+cache adapter FAIL과 보완 후 PASS, control/lock/foreign approval/journal 및
+selected-byte substitution 회귀도 해당 기록의 범위로 남긴다.
+
+실제 `go get`은 EVENT_LIMIT10000에서 실패한다. Budget scope 확인은 pending이며
+한도·관찰·판정을 변경하지 않았다. 독립 download/graph source gate의 PASS를 get
+PASS로 전용하지 않는다. 전체 download workflow, dependency-free project 표현,
+observed offline build/output publish, complete CLI와 최종 qualification은 MISSING이다.
+현재 `M12-002 IN_PROGRESS / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO`를
+유지하고 같은 item을 계속한다. M12-003/004는 NOT_STARTED다.
+NO PUSH / NO REMOTE CI / NO MERGE.
+
 ### M12-001 종료 전 이력 (당시 상태, 현재 판정 아님)
 
 아래 날짜별 NO·미검증·IN_PROGRESS 기록은 당시 검증 범위다. 현재 판정은 위의

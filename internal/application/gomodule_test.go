@@ -8,6 +8,7 @@ import (
 	"github.com/rahoney/heliopause/internal/application"
 	artifactgomodule "github.com/rahoney/heliopause/internal/artifact/gomodule"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 )
 
 func TestGoModuleResolutionServiceUsesOnlyDependencyResolver(t *testing.T) {
@@ -44,7 +45,7 @@ func TestGoModuleGetDoesNotPromoteWhenResolutionFails(t *testing.T) {
 	target, _ := domain.NewInstallTarget("/tmp/haa-go-project")
 	installContext, _ := domain.NewInstallContext(target)
 	promoter := &goModulePromoterFixture{}
-	service, err := application.NewGoModuleGetService(&goModuleResolverFixture{}, promoter)
+	service, err := application.NewGoModuleGetService(&goModuleResolverFixture{}, promoter, goUnavailableProjectPipeline{}, goUnavailableProjectPipeline{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -64,6 +65,10 @@ func (*goModuleResolverFixture) ResolveDependencies(context.Context, domain.Arti
 	return domain.DependencyResolution{}, errGoModuleResolver
 }
 
+func (*goModuleResolverFixture) ResolveProjectDependencyUpdate(context.Context, domain.ArtifactReference, domain.InstallContext, []domain.ProjectControlFile) (domain.ProjectDependencyUpdate, error) {
+	return domain.ProjectDependencyUpdate{}, errGoModuleResolver
+}
+
 type goModuleProjectResolverFixture struct{}
 
 func (goModuleProjectResolverFixture) ResolveProjectDependencies(context.Context, domain.InstallContext) (domain.ProjectDependencySnapshot, error) {
@@ -75,4 +80,27 @@ type goModulePromoterFixture struct{ called bool }
 func (p *goModulePromoterFixture) PromoteProjectDependency(context.Context, domain.ArtifactReference, domain.InstallContext) error {
 	p.called = true
 	return nil
+}
+
+func (p *goModulePromoterFixture) Begin(context.Context, domain.InstallContext) (ports.ProjectMutationGuard, error) {
+	return &goMutationGuardFixture{owner: p}, nil
+}
+
+type goMutationGuardFixture struct{ owner *goModulePromoterFixture }
+
+func (*goMutationGuardFixture) Controls() []domain.ProjectControlFile { return nil }
+func (*goMutationGuardFixture) VerifyUnchanged(context.Context) error { return nil }
+func (g *goMutationGuardFixture) Commit(context.Context, domain.ProjectDependencyUpdate, domain.StagedProjectSet) error {
+	g.owner.called = true
+	return nil
+}
+func (*goMutationGuardFixture) Close() error { return nil }
+
+type goUnavailableProjectPipeline struct{}
+
+func (goUnavailableProjectPipeline) InspectProject(context.Context, domain.ProjectDependencySnapshot) (domain.ProjectVerifiedSet, error) {
+	return domain.ProjectVerifiedSet{}, errors.New("inspection must be unreachable")
+}
+func (goUnavailableProjectPipeline) StageProject(context.Context, domain.ProjectVerifiedSet) (domain.StagedProjectSet, error) {
+	return domain.StagedProjectSet{}, errors.New("staging must be unreachable")
 }

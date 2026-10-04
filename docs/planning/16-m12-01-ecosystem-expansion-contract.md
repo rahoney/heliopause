@@ -566,13 +566,27 @@ target discovery
 → private resolver
 → graph freeze
 → acquire/verify/inspect
-→ private go get
-→ post-state verify
+→ approved selected-control replay
+→ post-state / cache identity verify
 → atomic control-file commit
 ```
 
 기존 unmanaged project를 자동으로 HAA-managed 상태라고 주장하지 않는다.
 초기 adoption policy는 npm M9 원칙과 같은 방향으로 bounded하게 정의한다.
+Go의 초기 adoption은 dependency-free `go.mod`와 empty/absent `go.sum`에 한정한다.
+Nonempty unmanaged state와 matching project checksum marker만으로는 승인 상태를
+복구하지 않는다. Guard는 resolver 실행 전에 원래 root/control inode·bytes·presence를
+고정하며, 하나의 private `go get` 결과에서 requested primary resolution·complete
+project snapshot·selected control bytes를 함께 만든다. 승인 뒤에는 이 고정 결과만
+반영하고 두 번째 live `go get`을 실행하지 않는다. Opaque control bytes의 digest는
+transaction binding이며 Policy authority가 아니다.
+
+Retained approval은 project 밖의 별도 HAA state에 cache receipt·exact controls·full
+graph·entry/set Policy·Run/Evidence binding으로 기록한다. Cache와 필수 Evidence를
+다시 확인한 뒤에만 현재 project와 일치하는 승인 기록을 사용한다. Project 안의
+transaction metadata는 이 외부 기록을 대체하지 않는다. 기존 transaction journal의
+backup·fsync·rollback을 재사용하며 publication은 confined root와 원래/선택한 byte
+identity를 확인한다. Incomplete recovery journal 또는 불확실한 identity는 fail closed다.
 
 `go mod download`와 `go build`는 HAA가 소유·검증하는 module cache boundary를
 사용한다. 사용자 global module cache를 resolver trust boundary로 사용하지 않는다.
@@ -613,6 +627,10 @@ entries, receipt는 4 MiB로 bounded하다. 캐시 재사용 경계에서 receip
 tree를 다시 검사하며 source files는 readonly, build mount도 readonly여야 한다.
 Cache receipt/path/`.ziphash`만으로 approval을 복구하지 않는다. 실제 resolver/build/
 project transaction qualification 상태는 Queue와 해당 evidence가 소유한다.
+Staging과 cache 재사용 시 local Evidence Store의 bounded canonical record를 exact
+Run/subject/check/digest에 대조한다. Required check의 기록이 없거나 record integrity가
+깨지면 중단하며, record content digest도 cache receipt에 연결한다. Reader 구현은
+Composition Root에서 주입하고 Promotion이 Evidence adapter를 직접 생성하지 않는다.
 
 ### `helox go build` contract
 

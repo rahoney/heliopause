@@ -17,11 +17,37 @@ type TraceDiagnostic struct {
 	Reason            string
 	FaultSite         string
 	FaultImageLocator uint64
+	FaultOpen         FaultOpenDiagnostic
+	FaultBudget       FaultBudgetDiagnostic
 	Events            uint64
 	Bytes             uint64
 	SessionComplete   bool
 	LastKind          string
 	KindCounts        map[string]uint64
+}
+
+// FaultOpenDiagnostic contains only bounded kernel-derived classifications.
+// It explains a rejected open and never participates in Policy or admission.
+type FaultOpenDiagnostic struct {
+	Image       string `json:"image"`
+	Role        string `json:"role"`
+	Provenance  string `json:"provenance"`
+	Subject     string `json:"subject"`
+	Mount       string `json:"mount"`
+	Flags       uint32 `json:"flags"`
+	PathLocator uint64 `json:"path_locator,omitempty"`
+}
+
+// FaultBudgetDiagnostic explains the existing helper limit using only fixed
+// counters. It cannot increase a budget or repair an incomplete observation.
+type FaultBudgetDiagnostic struct {
+	Charged   uint64 `json:"charged"`
+	Limit     uint64 `json:"limit"`
+	Close     uint64 `json:"close"`
+	Fcntl     uint64 `json:"fcntl"`
+	Raw       uint64 `json:"raw"`
+	Other     uint64 `json:"other"`
+	Workspace uint64 `json:"workspace"`
 }
 
 type traceFault interface{ TraceFaultReason() string }
@@ -177,6 +203,14 @@ func collectTraceDiagnostic(ctx context.Context, reader TraceReader) ([]domain.S
 				if errors.As(err, &locator) {
 					diagnostic.FaultImageLocator = locator.TraceFaultImageLocator()
 				}
+				var open interface{ TraceFaultOpen() FaultOpenDiagnostic }
+				if errors.As(err, &open) {
+					diagnostic.FaultOpen = open.TraceFaultOpen()
+				}
+				var counters interface{ TraceFaultBudget() FaultBudgetDiagnostic }
+				if errors.As(err, &counters) {
+					diagnostic.FaultBudget = counters.TraceFaultBudget()
+				}
 			}
 			diagnostic.Events, diagnostic.Bytes = uint64(eventCount), totalBytes
 			diagnostic.KindCounts = cloneKindCounts(kindCounts)
@@ -254,6 +288,16 @@ func (d TraceDiagnostic) String() string {
 	}
 	if d.FaultImageLocator != 0 {
 		site += fmt.Sprintf(" image_locator_fnv1a64=%016x", d.FaultImageLocator)
+	}
+	if d.FaultOpen.Subject != "" {
+		site += fmt.Sprintf(" open_image=%s open_role=%s open_provenance=%s open_subject=%s open_mount=%s open_flags=%d", d.FaultOpen.Image, d.FaultOpen.Role, d.FaultOpen.Provenance, d.FaultOpen.Subject, d.FaultOpen.Mount, d.FaultOpen.Flags)
+	}
+	if d.FaultOpen.PathLocator != 0 {
+		site += fmt.Sprintf(" open_locator_fnv1a64=%016x", d.FaultOpen.PathLocator)
+	}
+	if d.FaultBudget.Limit != 0 {
+		b := d.FaultBudget
+		site += fmt.Sprintf(" budget_charged=%d budget_limit=%d budget_close=%d budget_fcntl=%d budget_raw=%d budget_other=%d budget_workspace=%d", b.Charged, b.Limit, b.Close, b.Fcntl, b.Raw, b.Other, b.Workspace)
 	}
 	return fmt.Sprintf("reason=%s events=%d bytes=%d session_complete=%t last_kind=%s kinds=%s", d.Reason, d.Events, d.Bytes, d.SessionComplete, d.LastKind, formatKindCounts(d.KindCounts)) + site
 }

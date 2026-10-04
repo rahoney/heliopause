@@ -14,13 +14,14 @@ import (
 
 	artifactgo "github.com/rahoney/heliopause/internal/artifact/gomodule"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	evidencelocal "github.com/rahoney/heliopause/internal/evidence/local"
 )
 
 func TestGoCacheStagesApprovedSubjectAndRechecksWholeTree(t *testing.T) {
 	for _, test := range []string{"normal", "intake-tamper", "extracted-tamper", "zip-tamper", "receipt-tamper", "extra-file", "extra-directory", "symlink", "foreign-approval"} {
 		t.Run(test, func(t *testing.T) {
-			root := t.TempDir()
-			cache, err := NewGoVerifiedCache(filepath.Join(root, "intake"), filepath.Join(root, "evidence"), filepath.Join(root, "verified"))
+			root := canonicalGoTestRoot(t)
+			cache, err := newGoCacheForTest(filepath.Join(root, "intake"), filepath.Join(root, "evidence"), filepath.Join(root, "verified"))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -113,15 +114,15 @@ func TestGoCacheStagesApprovedSubjectAndRechecksWholeTree(t *testing.T) {
 }
 
 func TestGoCacheRejectsUnapprovedAndCanonicalArchiveCollision(t *testing.T) {
-	root := t.TempDir()
-	cache, err := NewGoVerifiedCache(filepath.Join(root, "intake"), filepath.Join(root, "evidence"), filepath.Join(root, "verified"))
+	root := canonicalGoTestRoot(t)
+	cache, err := newGoCacheForTest(filepath.Join(root, "intake"), filepath.Join(root, "evidence"), filepath.Join(root, "verified"))
 	if err != nil {
 		t.Fatal(err)
 	}
 	if _, err := cache.StageProject(context.Background(), domain.ProjectVerifiedSet{}); err == nil {
 		t.Fatal("unapproved cache staged")
 	}
-	if _, err := NewGoVerifiedCache(cache.intakeRoot, cache.evidenceRoot, filepath.Join(cache.intakeRoot, "cache")); err == nil {
+	if _, err := newGoCacheForTest(cache.intakeRoot, cache.evidenceRoot, filepath.Join(cache.intakeRoot, "cache")); err == nil {
 		t.Fatal("overlapping cache accepted")
 	}
 	set, _ := goCacheFixture(t, cache.intakeRoot, filepath.Join(root, "project"), "example.com/module", map[string]string{"go.mod": "module example.com/module\n", "a": "source", "a/b.go": "package a\n"})
@@ -246,15 +247,27 @@ func goCacheFixture(t *testing.T, intakeRoot, project, modulePath string, files 
 		}
 		checks = append(checks, check)
 	}
-	eID, err := domain.NewEvidenceID("fixture-evidence")
+	store, err := evidencelocal.NewStore(filepath.Join(filepath.Dir(intakeRoot), "evidence"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	e, err := domain.NewEvidenceReference(eID, "fixture:evidence")
+	var items []domain.Evidence
+	for _, check := range checks {
+		eID, err := domain.NewEvidenceID(check.ID().String())
+		if err != nil {
+			t.Fatal(err)
+		}
+		item, err := domain.NewEvidence(eID, check.ID(), identity, digest, "fixture", "Synthetic complete check evidence.")
+		if err != nil {
+			t.Fatal(err)
+		}
+		items = append(items, item)
+	}
+	refs, err := store.Record(context.Background(), run, items)
 	if err != nil {
 		t.Fatal(err)
 	}
-	i, err := domain.NewDependencyInspection(node, run, a, checks, []domain.EvidenceReference{e}, decision)
+	i, err := domain.NewDependencyInspection(node, run, a, checks, refs, decision)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -267,4 +280,21 @@ func goCacheFixture(t *testing.T, intakeRoot, project, modulePath string, files 
 		t.Fatal(err)
 	}
 	return approved, file
+}
+
+func newGoCacheForTest(intake, evidence, cache string) (*GoVerifiedCache, error) {
+	store, err := evidencelocal.NewStore(evidence)
+	if err != nil {
+		return nil, err
+	}
+	return NewGoVerifiedCache(intake, evidence, cache, store)
+}
+
+func canonicalGoTestRoot(t *testing.T) string {
+	t.Helper()
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	return root
 }

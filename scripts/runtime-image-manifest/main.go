@@ -21,7 +21,12 @@ var (
 
 type runtimeLock struct {
 	SchemaVersion int `json:"schema_version"`
-	NodeImage     struct {
+	GoImage       struct {
+		Reference    string `json:"reference"`
+		GoVersion    string `json:"go_version"`
+		Architecture string `json:"architecture"`
+	} `json:"go_image"`
+	NodeImage struct {
 		Reference  string `json:"reference"`
 		NPMVersion string `json:"npm_version"`
 	} `json:"node_image"`
@@ -123,6 +128,10 @@ func buildManifest(lock runtimeLock) (runtimeImageManifest, error) {
 	if err != nil {
 		return runtimeImageManifest{}, err
 	}
+	goImage, err := imageEntry("golang", lock.GoImage.Reference, "docker.io/library/golang", lock.GoImage.GoVersion)
+	if err != nil || lock.GoImage.Architecture != "amd64" || !strings.HasPrefix(lock.GoImage.Reference, "golang:"+lock.GoImage.GoVersion+"-bookworm@") {
+		return runtimeImageManifest{}, errors.New("go runtime image identity is invalid")
+	}
 	return runtimeImageManifest{
 		Schema:              manifestSchema,
 		CustomGHCRImage:     false,
@@ -131,7 +140,7 @@ func buildManifest(lock runtimeLock) (runtimeImageManifest, error) {
 			Required:     true,
 			Verification: "release candidate attestation must bind this manifest and each exact image reference",
 		},
-		Images: []runtimeImageEntry{node, python},
+		Images: []runtimeImageEntry{node, python, goImage},
 	}, nil
 }
 

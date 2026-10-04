@@ -62,7 +62,7 @@ func observerExpectedTopology(profile string) ([]observerMountExpectation, bool)
 	tmp := observerMountExpectation{"/tmp", "workspace", "/", "tmpfs", false, true, true, false}
 	runtime := observerMountExpectation{"/haa-runtime", "helper", "/", "tmpfs", false, false, true, false}
 	switch profile {
-	case "npm-lifecycle":
+	case "npm-lifecycle", "go-module-resolver":
 		return []observerMountExpectation{root, tmp, runtime}, true
 	case "pypi-wheel", "pypi-wheel-pytorch-cpu", "pypi-wheel-pytorch-cu126", "pypi-wheel-pytorch-cu130", "pypi-wheel-pytorch-cu132":
 		site := observerMountExpectation{"/haa-site", "workspace", "/", "tmpfs", false, false, true, false}
@@ -217,29 +217,35 @@ const ObserverControlEndpoint = "/run/heliopause-observer/haa-control.sock"
 var observerControlEndpoint = ObserverControlEndpoint
 
 type helperRecord struct {
-	ContainerID          string  `json:"container_id"`
-	Kind                 string  `json:"kind"`
-	Reason               string  `json:"reason,omitempty"`
-	FaultSite            string  `json:"fault_site,omitempty"`
-	FaultImageLocator    uint64  `json:"fault_image_locator,omitempty"`
-	EventSource          string  `json:"event_source,omitempty"`
-	Family               string  `json:"family,omitempty"`
-	ProcessRelation      string  `json:"process_relation,omitempty"`
-	ProcessClass         string  `json:"process_class,omitempty"`
-	ClassificationReason string  `json:"classification_reason,omitempty"`
-	ParentRelation       string  `json:"parent_relation,omitempty"`
-	Count                *uint64 `json:"count,omitempty"`
+	ContainerID          string                 `json:"container_id"`
+	Kind                 string                 `json:"kind"`
+	Reason               string                 `json:"reason,omitempty"`
+	FaultSite            string                 `json:"fault_site,omitempty"`
+	FaultImageLocator    uint64                 `json:"fault_image_locator,omitempty"`
+	FaultOpen            *FaultOpenDiagnostic   `json:"fault_open,omitempty"`
+	FaultBudget          *FaultBudgetDiagnostic `json:"fault_budget,omitempty"`
+	EventSource          string                 `json:"event_source,omitempty"`
+	Family               string                 `json:"family,omitempty"`
+	ProcessRelation      string                 `json:"process_relation,omitempty"`
+	ProcessClass         string                 `json:"process_class,omitempty"`
+	ClassificationReason string                 `json:"classification_reason,omitempty"`
+	ParentRelation       string                 `json:"parent_relation,omitempty"`
+	Count                *uint64                `json:"count,omitempty"`
 }
 
 type observerFault struct {
 	reason, site string
 	imageLocator uint64
+	open         FaultOpenDiagnostic
+	budget       FaultBudgetDiagnostic
 }
 
-func (e observerFault) Error() string                  { return "observer stream is incomplete" }
-func (e observerFault) TraceFaultReason() string       { return e.reason }
-func (e observerFault) TraceFaultSite() string         { return e.site }
-func (e observerFault) TraceFaultImageLocator() uint64 { return e.imageLocator }
+func (e observerFault) Error() string                           { return "observer stream is incomplete" }
+func (e observerFault) TraceFaultReason() string                { return e.reason }
+func (e observerFault) TraceFaultSite() string                  { return e.site }
+func (e observerFault) TraceFaultImageLocator() uint64          { return e.imageLocator }
+func (e observerFault) TraceFaultOpen() FaultOpenDiagnostic     { return e.open }
+func (e observerFault) TraceFaultBudget() FaultBudgetDiagnostic { return e.budget }
 
 const maximumHelperRecordBytes = 1024
 
@@ -277,13 +283,13 @@ func validAttribution(record helperRecord) bool {
 	case "network-attempt":
 		return validFixed(record.EventSource, "SOCKET", "CONNECT", "SENDTO", "SENDMSG", "SENDMMSG") && validFixed(record.Family, "INET", "INET6", "PACKET") &&
 			validFixed(record.ProcessRelation, "BOOTSTRAP_ROOT", "BOOTSTRAP_CHILD", "DIRECT_EXEC_SESSION", "TRACKED_EXPECTED_GROUP", "TRACKED_UNEXPECTED_GROUP", "CONTROL_GROUP", "ARTIFACT_GROUP", "UNKNOWN") &&
-			validFixed(record.ProcessClass, "SHELL", "PYTHON", "PIP", "NODE", "NPM", "ARTIFACT", "OTHER") && record.ClassificationReason == "" && record.ParentRelation == ""
+			validFixed(record.ProcessClass, "SHELL", "PYTHON", "PIP", "NODE", "NPM", "GO", "ARTIFACT", "OTHER") && record.ClassificationReason == "" && record.ParentRelation == ""
 	case "trusted-control-network":
 		return validFixed(record.EventSource, "CONNECT", "SENDTO", "SENDMSG", "SENDMMSG") && validFixed(record.Family, "INET", "INET6") &&
-			record.ProcessRelation == "DIRECT_EXEC_SESSION" && validFixed(record.ProcessClass, "SHELL", "PYTHON", "PIP", "NODE", "NPM", "ARTIFACT", "OTHER") && record.ClassificationReason == "" && record.ParentRelation == ""
+			record.ProcessRelation == "DIRECT_EXEC_SESSION" && validFixed(record.ProcessClass, "SHELL", "PYTHON", "PIP", "NODE", "NPM", "GO", "ARTIFACT", "OTHER") && record.ClassificationReason == "" && record.ParentRelation == ""
 	case "process-exec-unexpected":
 		return record.EventSource == "SENTRY_EXEC" && record.Family == "" && record.ProcessRelation == "" &&
-			validFixed(record.ProcessClass, "SHELL", "PYTHON", "PIP", "NODE", "NPM", "ARTIFACT", "SLEEP", "MKDIR", "CAT", "CHMOD", "OTHER") &&
+			validFixed(record.ProcessClass, "SHELL", "PYTHON", "PIP", "NODE", "NPM", "GO", "ARTIFACT", "SLEEP", "MKDIR", "CAT", "CHMOD", "OTHER") &&
 			validFixed(record.ClassificationReason, "INVALID_PROCESS_IDENTITY", "START_TIME_MISMATCH", "CLASS_MISMATCH", "UNMODELED_PARENT", "BOOTSTRAP_ENDED", "DIRECT_EXEC_NOT_ALLOWED", "TRACKING_LIMIT", "UNKNOWN_CLASS", "ARTIFACT_ROLE", "ARTIFACT_LDCONFIG_QUERY", "OTHER") &&
 			validFixed(record.ParentRelation, "BOOTSTRAP_ROOT", "BOOTSTRAP_CHILD", "TRACKED_PARENT", "TRACKED_GROUP", "ROOT", "UNTRACKED_PARENT", "ARTIFACT_GROUP", "UNKNOWN")
 	default:
@@ -525,7 +531,8 @@ func (o *SharedObserver) startProfileWithBudget(ctx context.Context, containerID
 }
 
 func validObserverProfile(profile string) bool {
-	return profile == "npm-lifecycle" || profile == "pypi-wheel" || profile == "pypi-wheel-pytorch-cpu" || profile == "pypi-wheel-pytorch-cu126" || profile == "pypi-wheel-pytorch-cu130" || profile == "pypi-wheel-pytorch-cu132" || profile == "github-elf"
+	_, ok := observerExpectedTopology(profile)
+	return ok
 }
 
 func (o *SharedObserver) receive() {
@@ -563,7 +570,14 @@ func (o *SharedObserver) receive() {
 				reason = "STREAM_FAULT"
 			}
 			if o.fault == nil {
-				o.fault = observerFault{reason: reason, site: record.FaultSite, imageLocator: record.FaultImageLocator}
+				fault := observerFault{reason: reason, site: record.FaultSite, imageLocator: record.FaultImageLocator}
+				if record.FaultOpen != nil {
+					fault.open = *record.FaultOpen
+				}
+				if record.FaultBudget != nil {
+					fault.budget = *record.FaultBudget
+				}
+				o.fault = fault
 			}
 			batch := o.beginTeardownLocked(reader.session)
 			closeSharedTraceReaderDone(reader)
@@ -850,6 +864,22 @@ func (r *sharedTraceReader) Next(ctx context.Context) (TraceRecord, error) {
 
 // Fault sites are diagnostic enums from the pinned helper, never policy input.
 func validFaultSite(record helperRecord) bool {
+	if record.FaultBudget != nil {
+		b := record.FaultBudget
+		if record.Kind != "stream-fault" || record.Reason != "EVENT_LIMIT" || record.FaultSite != "EVENT_LIMIT" || b.Limit == 0 || b.Limit > maximumPyTorchCPUTraceEvents || b.Charged > b.Limit || b.Close > b.Charged || b.Fcntl > b.Charged || b.Raw > b.Charged || b.Other > b.Charged || b.Close+b.Fcntl+b.Raw+b.Other > b.Charged || b.Workspace > maximumTraceEvents {
+			return false
+		}
+	}
+	if record.FaultOpen != nil {
+		open := record.FaultOpen
+		if record.Kind != "stream-fault" || !validFixed(record.FaultSite, "OPEN_RESULT_CLASSIFICATION_IMAGE", "OPEN_RESULT_CLASSIFICATION_PROC", "OPEN_RESULT_CLASSIFICATION_SYS", "OPEN_RESULT_CLASSIFICATION_OTHER", "OPEN_RESULT_CLASSIFICATION_PROCESS_NAME") ||
+			!validFixed(open.Image, "SHELL", "PYTHON", "PIP", "NODE", "NPM", "GO", "ARTIFACT", "SLEEP", "MKDIR", "CAT", "CHMOD", "OTHER") ||
+			!validFixed(open.Role, "CONTROL", "ARTIFACT", "UNKNOWN") || !validFixed(open.Provenance, "OCI_ROOT", "DIRECT_EXEC_ROOT", "CLONE_CHILD", "UNKNOWN") ||
+			!validFixed(open.Subject, "PROC_SELF_AUXV", "PROC_SELF_CGROUP", "PROC_SELF_MOUNTINFO", "THP_PAGE_SIZE", "CGROUP_CPU_QUOTA", "OCI_IMAGE", "OTHER") ||
+			!validFixed(open.Mount, "oci-root", "system", "workspace", "helper") {
+			return false
+		}
+	}
 	if record.FaultImageLocator != 0 && (record.Kind != "stream-fault" || record.FaultSite != "OPEN_RESULT_CLASSIFICATION_IMAGE") {
 		return false
 	}

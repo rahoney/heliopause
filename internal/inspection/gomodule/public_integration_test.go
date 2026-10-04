@@ -110,7 +110,7 @@ func TestGoPublicProjectVerifiedCacheIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	cache, err := promotion.NewGoVerifiedCache(intake, evidenceRoot, filepath.Join(root, "verified-cache"))
+	cache, err := promotion.NewGoVerifiedCache(intake, evidenceRoot, filepath.Join(root, "verified-cache"), evidence)
 	if err != nil {
 		t.Fatal(err)
 	}

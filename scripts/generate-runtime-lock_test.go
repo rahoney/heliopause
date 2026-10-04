@@ -125,6 +125,31 @@ func TestRuntimeLockRejectsInvalidBuilderIdentity(t *testing.T) {
 	}
 }
 
+func TestRuntimeLockRejectsUnpinnedOrSubstitutedGoToolchain(t *testing.T) {
+	base, err := readLock("runtimes.lock.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, test := range []struct {
+		name string
+		edit func(*runtimeLock)
+	}{
+		{"mutable", func(l *runtimeLock) { l.GoImage.Reference = "golang:1.26.8-bookworm" }},
+		{"repository", func(l *runtimeLock) { l.GoImage.Reference = "example.com/" + l.GoImage.Reference }},
+		{"architecture", func(l *runtimeLock) { l.GoImage.Architecture = "arm64" }},
+		{"version", func(l *runtimeLock) { l.GoImage.GoVersion = "1.26.7" }},
+		{"digest", func(l *runtimeLock) { l.GoImage.Reference = "golang:1.26.8-bookworm@sha256:invalid" }},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			lock := base
+			test.edit(&lock)
+			if err := validate(lock); err == nil {
+				t.Fatal("untrusted Go runtime pin accepted")
+			}
+		})
+	}
+}
+
 func TestRuntimeLockObserverBuildIdentityMatchesCanonicalCommit(t *testing.T) {
 	t.Parallel()
 	lock, err := readLock("runtimes.lock.json")

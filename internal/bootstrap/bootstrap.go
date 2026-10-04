@@ -78,15 +78,19 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" {
 			return errors.New("automatic Go Module resolution requires Linux amd64")
 		}
-		resolver, resolverErr := sandbox.NewGoModuleResolver(trustedExecutor)
+		resolverPolicy, policyErr := newSystemResolverPolicyAdapter()
+		if policyErr != nil {
+			return policyErr
+		}
+		isolatedRunner, runnerErr := sandbox.NewLinuxGoModuleRunner(trustedExecutor, processObserver, resolverPolicy)
+		if runnerErr != nil {
+			return runnerErr
+		}
+		resolver, resolverErr := sandbox.NewGoModuleResolver(isolatedRunner)
 		if resolverErr != nil {
 			return resolverErr
 		}
-		promoter, promoterErr := promotion.NewGoProjectPromotion(trustedExecutor)
-		if promoterErr != nil {
-			return promoterErr
-		}
-		service, serviceErr := application.NewGoModuleGetService(resolver, promoter)
+		service, serviceErr := newGoModuleGetService(resolver)
 		if serviceErr != nil {
 			return serviceErr
 		}

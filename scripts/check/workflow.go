@@ -256,6 +256,7 @@ func validateReleaseWorkflow(contents string) []string {
 		"go run ./scripts/runtime-image-manifest",
 		"docker buildx imagetools inspect \"$node_image\"",
 		"docker buildx imagetools inspect \"$python_image\"",
+		"docker buildx imagetools inspect \"$go_image\"",
 		"go run ./scripts/release-manifest",
 		"--workflow-run \"$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\"",
 		"--runtime-images \"$dist/helox-runtime-images.json\"",

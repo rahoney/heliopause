@@ -40,6 +40,8 @@ func TestGoProjectTransactionPublishesControlFilesTogether(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Internal transaction fixture; a raw project marker supplies no authority.
+	plan.authorized = true
 	workspace, err := plan.privateWorkspace()
 	if err != nil {
 		t.Fatal(err)

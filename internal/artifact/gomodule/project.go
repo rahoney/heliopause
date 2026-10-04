@@ -18,6 +18,16 @@ func ValidateProjectMod(body []byte) error {
 	return err
 }
 
+// ProjectDependencyFree is the bounded initial adoption condition, not proof
+// that an existing dependency graph has been inspected or approved.
+func ProjectDependencyFree(body []byte) (bool, error) {
+	file, err := parseProjectMod(body)
+	if err != nil {
+		return false, err
+	}
+	return len(file.Require) == 0 && len(file.Exclude) == 0 && len(file.Retract) == 0 && len(file.Tool) == 0, nil
+}
+
 // ValidateProjectSums binds the current control declaration to the complete
 // selected content pair. This agreement is separate from independent SumDB
 // authentication and never makes a project declaration an authority.

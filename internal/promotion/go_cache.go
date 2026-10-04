@@ -26,9 +26,19 @@ const (
 
 // GoVerifiedCache has separate intake, Evidence and cache roots. Materialized
 // files come only from rehashed ALLOW subjects, never an ambient/resolver cache.
-type GoVerifiedCache struct{ intakeRoot, evidenceRoot, cacheRoot string }
+type GoEvidenceReader interface {
+	ReadReference(context.Context, domain.RunID, domain.EvidenceReference, domain.ResolvedArtifactIdentity, domain.ContentDigest) (domain.Evidence, domain.ContentDigest, error)
+}
 
-func NewGoVerifiedCache(intakeRoot, evidenceRoot, cacheRoot string) (*GoVerifiedCache, error) {
+type GoVerifiedCache struct {
+	intakeRoot, evidenceRoot, cacheRoot string
+	evidence                            GoEvidenceReader
+}
+
+func NewGoVerifiedCache(intakeRoot, evidenceRoot, cacheRoot string, evidence GoEvidenceReader) (*GoVerifiedCache, error) {
+	if evidence == nil {
+		return nil, errors.New("go cache requires recorded Evidence reader")
+	}
 	roots := []string{intakeRoot, evidenceRoot, cacheRoot}
 	for _, root := range roots {
 		if !filepath.IsAbs(root) || filepath.Clean(root) != root || root == "/" {
@@ -38,7 +48,7 @@ func NewGoVerifiedCache(intakeRoot, evidenceRoot, cacheRoot string) (*GoVerified
 	if !separateRoots(roots) {
 		return nil, errors.New("go verified cache roots overlap")
 	}
-	return &GoVerifiedCache{intakeRoot, evidenceRoot, cacheRoot}, nil
+	return &GoVerifiedCache{intakeRoot, evidenceRoot, cacheRoot, evidence}, nil
 }
 
 type goCacheFile struct {
@@ -48,15 +58,19 @@ type goCacheFile struct {
 	SHA256 string `json:"sha256"`
 }
 type goCacheEntry struct {
-	Source        string   `json:"source"`
-	Module        string   `json:"module"`
-	Version       string   `json:"version"`
-	Digest        string   `json:"digest"`
-	Integrity     string   `json:"integrity"`
-	Run           string   `json:"run"`
-	Evidence      []string `json:"evidence"`
-	Policy        string   `json:"policy"`
-	PolicyVersion uint64   `json:"policy_version"`
+	Source        string            `json:"source"`
+	Module        string            `json:"module"`
+	Version       string            `json:"version"`
+	Digest        string            `json:"digest"`
+	Integrity     string            `json:"integrity"`
+	Run           string            `json:"run"`
+	Evidence      []goCacheEvidence `json:"evidence"`
+	Policy        string            `json:"policy"`
+	PolicyVersion uint64            `json:"policy_version"`
+}
+type goCacheEvidence struct {
+	ID     string `json:"id"`
+	SHA256 string `json:"sha256"`
 }
 type goCacheDocument struct {
 	Schema        int            `json:"schema"`
@@ -69,7 +83,7 @@ type goCacheDocument struct {
 	Files         []goCacheFile  `json:"files"`
 }
 
-func goCacheApproval(set domain.ProjectVerifiedSet) goCacheDocument {
+func (c *GoVerifiedCache) goCacheApproval(ctx context.Context, set domain.ProjectVerifiedSet) (goCacheDocument, error) {
 	project := sha256.Sum256([]byte(set.Inspected().Snapshot().Context().Target().String()))
 	doc := goCacheDocument{Schema: 1, Graph: set.Inspected().Snapshot().GraphDigest().String(), Project: hex.EncodeToString(project[:]), Policy: set.Decision().PolicyID(), PolicyVersion: set.Decision().Version()}
 	for _, control := range set.Inspected().Snapshot().ControlDigests() {
@@ -80,12 +94,23 @@ func goCacheApproval(set domain.ProjectVerifiedSet) goCacheDocument {
 		p := inspection.PolicyDecision()
 		integrity, _ := a.DeclaredIntegrity()
 		e := goCacheEntry{Source: a.Identity().Source().String(), Module: a.Identity().Name(), Version: a.Identity().Version(), Digest: a.Digest().String(), Integrity: integrity, Run: inspection.RunID().String(), Policy: p.PolicyID(), PolicyVersion: p.Version()}
+		covered := map[domain.CheckID]bool{}
 		for _, ref := range inspection.Evidence() {
-			e.Evidence = append(e.Evidence, ref.ID().String())
+			item, digest, err := c.evidence.ReadReference(ctx, inspection.RunID(), ref, a.Identity(), a.Digest())
+			if err != nil {
+				return goCacheDocument{}, err
+			}
+			covered[item.CheckID()] = true
+			e.Evidence = append(e.Evidence, goCacheEvidence{ref.ID().String(), digest.String()})
+		}
+		for _, check := range inspection.Checks() {
+			if check.Required() && !covered[check.ID()] {
+				return goCacheDocument{}, errors.New("go cache approval has missing required Evidence")
+			}
 		}
 		doc.Entries = append(doc.Entries, e)
 	}
-	return doc
+	return doc, nil
 }
 
 func (c *GoVerifiedCache) StageProject(ctx context.Context, set domain.ProjectVerifiedSet) (staged domain.StagedProjectSet, resultErr error) {
@@ -165,7 +190,10 @@ func (c *GoVerifiedCache) StageProject(ctx context.Context, set domain.ProjectVe
 	if err != nil {
 		return staged, err
 	}
-	doc := goCacheApproval(set)
+	doc, err := c.goCacheApproval(ctx, set)
+	if err != nil {
+		return staged, err
+	}
 	doc.Files = files
 	body, err := json.Marshal(doc)
 	if err != nil {
@@ -207,7 +235,17 @@ func (c *GoVerifiedCache) OpenProjectCache(ctx context.Context, staged domain.St
 	if err := ctx.Err(); err != nil {
 		return "", err
 	}
-	id, ok := strings.CutPrefix(staged.ContentHandle(), "project-cache:")
+	expected, err := c.goCacheApproval(ctx, staged.Set())
+	if err != nil {
+		return "", err
+	}
+	return c.openProjectCacheDocument(ctx, staged.ContentHandle(), staged.Digest(), expected)
+}
+
+// The expected document is either derived from a live typed approval or read
+// from the separate controller-owned project receipt, never the project marker.
+func (c *GoVerifiedCache) openProjectCacheDocument(ctx context.Context, handle string, digest domain.ContentDigest, expected goCacheDocument) (string, error) {
+	id, ok := strings.CutPrefix(handle, "project-cache:")
 	if !ok {
 		return "", errors.New("invalid Go cache handle")
 	}
@@ -239,7 +277,7 @@ func (c *GoVerifiedCache) OpenProjectCache(ctx context.Context, staged domain.St
 	body, readErr := io.ReadAll(io.LimitReader(f, info.Size()+1))
 	closeErr := f.Close()
 	hash := sha256.Sum256(body)
-	if readErr != nil || closeErr != nil || int64(len(body)) != info.Size() || hex.EncodeToString(hash[:]) != staged.Digest().String() {
+	if readErr != nil || closeErr != nil || int64(len(body)) != info.Size() || hex.EncodeToString(hash[:]) != digest.String() {
 		return "", errors.New("go cache receipt changed")
 	}
 	var doc goCacheDocument
@@ -252,13 +290,49 @@ func (c *GoVerifiedCache) OpenProjectCache(ctx context.Context, staged domain.St
 	if err != nil {
 		return "", err
 	}
-	expected := goCacheApproval(staged.Set())
 	expected.Files = files
 	want, err := json.Marshal(expected)
 	if err != nil || !bytes.Equal(want, body) {
 		return "", errors.New("go cache content or approval binding changed")
 	}
 	return filepath.Join(root, "modcache"), nil
+}
+
+func (c *GoVerifiedCache) verifyRecordedApproval(ctx context.Context, doc goCacheDocument) error {
+	if len(doc.Entries) == 0 || len(doc.Entries) > 4096 {
+		return errors.New("go retained approval coverage is invalid")
+	}
+	seen := map[domain.ResolvedArtifactIdentity]bool{}
+	for _, entry := range doc.Entries {
+		identity, err := domain.NewResolvedArtifactIdentity(artifactgo.Source(), entry.Module, entry.Version, "module")
+		if err != nil || entry.Source != artifactgo.Source().String() || seen[identity] || entry.Policy == "" || entry.PolicyVersion == 0 || len(entry.Evidence) == 0 || len(entry.Evidence) > 4096 {
+			return errors.New("go retained entry approval is invalid")
+		}
+		seen[identity] = true
+		run, err := domain.ParseRunID(entry.Run)
+		if err != nil {
+			return errors.New("go retained entry Run is invalid")
+		}
+		digest, err := domain.NewSHA256Digest(entry.Digest)
+		if err != nil {
+			return errors.New("go retained entry digest is invalid")
+		}
+		for _, recorded := range entry.Evidence {
+			id, err := domain.NewEvidenceID(recorded.ID)
+			if err != nil {
+				return errors.New("go retained Evidence identity is invalid")
+			}
+			ref, err := domain.NewEvidenceReference(id, "evidence:"+run.String()+":"+id.String())
+			if err != nil {
+				return err
+			}
+			_, hash, err := c.evidence.ReadReference(ctx, run, ref, identity, digest)
+			if err != nil || hash.String() != recorded.SHA256 {
+				return errors.New("go retained Evidence changed or is unavailable")
+			}
+		}
+	}
+	return nil
 }
 
 func goCacheInventory(ctx context.Context, root string) ([]goCacheFile, error) {

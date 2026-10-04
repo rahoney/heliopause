@@ -38,6 +38,11 @@
       "containerd_package": "2.3.5-1~ubuntu.24.04~noble"
     }
   },
+  "go_image": {
+    "reference": "golang:1.26.8-bookworm@sha256:abe4f87f354c4f6d7ee3fb11b241c6b6c24a32ca50a2ebcc30493a2168e14048",
+    "go_version": "1.26.8",
+    "architecture": "amd64"
+  },
   "node_image": {
     "reference": "node:24.21.0-slim@sha256:713cfbf4a0ac19f40e1bb9919893e126b74a5c8cf5d0623c9f89515c8f74c6fa",
     "npm_version": "11.19.0"

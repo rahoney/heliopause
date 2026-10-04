@@ -728,6 +728,158 @@ bool VerifyPinnedAccessors(int output, const std::string& remote, const std::str
       ExpectRecord(output, kFirstID, "stream-end");
 }
 
+
+bool VerifyGoResolverRuntimeReadBoundary() {
+  ProcessState state;
+  gvisor::common::ContextData context;
+  context.set_container_id(kFirstID);
+  context.set_thread_group_id(99);
+  context.set_thread_group_start_time_ns(990);
+  context.set_parent_thread_group_id(0);
+  context.set_is_exec_session(true);
+  context.set_process_name("renamed-worker");
+  if (!RegisterGroup(&state, context, ProcessState::Role::kControl,
+                     ProcessState::Provenance::kDirectExecRoot, false, true)) return false;
+  state.groups[99].trusted_control_network_active = true;
+  state.groups[99].current_image_class = ProcessClass::kGo;
+  state.expected_groups[99] = ProcessState::ExpectedGroup{990, ProcessClass::kGo};
+  gvisor::syscall::Open open;
+  *open.mutable_context_data() = context;
+  open.set_pathname("/proc/99/cgroup");
+  open.set_flags(557056);
+  MountAnchor system{10, "/proc", "system"};
+  auto classify = [&]() { return ClassifyFilesystemOpen(open, state, kProfileGoResolver, &system); };
+  const auto before_diagnostic = classify();
+  const std::string diagnostic = FaultOpenDiagnostic(open, state, system);
+  if (classify() != before_diagnostic ||
+      diagnostic.find("\"image\":\"GO\"") == std::string::npos ||
+      diagnostic.find("\"subject\":\"PROC_SELF_CGROUP\"") == std::string::npos) return false;
+  if (classify() != FilesystemClass::kHelperOnly) return false;
+  open.set_pathname("/proc/99/mountinfo");
+  if (classify() != FilesystemClass::kHelperOnly) return false;
+  open.set_pathname("/sys/fs/cgroup/cpu/cpu.cfs_quota_us");
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  system.mountpoint = "/sys/fs/cgroup/cpu";
+  if (classify() != FilesystemClass::kHelperOnly) return false;
+  open.set_pathname("/sys/fs/cgroup/cpu/cpu.cfs_period_us");
+  if (classify() != FilesystemClass::kHelperOnly) return false;
+  open.set_pathname("/sys/fs/cgroup/cpu/cpu.shares");
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  system.mountpoint = "/proc";
+  for (const char* path : {"/proc/98/cgroup", "/proc/99/maps", "/proc/99/environ", "/etc/passwd"}) {
+    open.set_pathname(path);
+    if (classify() == FilesystemClass::kHelperOnly) return false;
+  }
+  open.set_pathname("/usr/local/go/go.env");
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  system = MountAnchor{1, "/", "oci-root"};
+  if (classify() != FilesystemClass::kHelperOnly) return false;
+  open.set_pathname("/etc/nsswitch.conf");
+  if (classify() != FilesystemClass::kHelperOnly) return false;
+  for (const char* path : {"/etc/ssl/certs", "/etc/ssl/certs/ca-certificates.crt",
+                           "/usr/share/ca-certificates/mozilla/ISRG_Root_X1.crt",
+                           "/usr/share/zoneinfo/Etc/UTC",
+                           "/usr/local/go/src", "/usr/local/go/src/encoding",
+                           "/usr/local/go/src/encoding/json/decode.go"}) {
+    open.set_pathname(path);
+    if (classify() != FilesystemClass::kHelperOnly) return false;
+    open.set_flags(kOpenWriteOnly);
+    if (classify() == FilesystemClass::kHelperOnly) return false;
+    open.set_flags(557056);
+  }
+  open.set_pathname("/etc/ssl/private/secret.key");
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  open.set_pathname("/usr/local/go/go.env");
+  system = MountAnchor{2, "/usr/local/go", "oci-root"};
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  open.set_pathname("/dev/null");
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  system = MountAnchor{3, "/dev", "system"};
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  open.set_flags(557057);
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  open.set_flags(kOpenWriteOnly | kOpenTruncate);
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  open.set_flags(557056);
+  open.set_pathname("/dev/random");
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  open.set_pathname("/etc/resolv.conf");
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  system = MountAnchor{4, "/etc/resolv.conf", "system"};
+  if (classify() != FilesystemClass::kHelperOnly) return false;
+  open.set_pathname("/etc/hosts");
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  system = MountAnchor{5, "/etc/hosts", "system"};
+  if (classify() != FilesystemClass::kHelperOnly) return false;
+  system = MountAnchor{10, "/proc", "system"};
+  open.set_pathname("/proc/99/cgroup");
+  system.mountpoint = "/proc/99/cgroup";
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  system.mountpoint = "/proc";
+  open.set_flags(kOpenWriteOnly);
+  if (classify() != FilesystemClass::kOutside) return false;
+  open.set_flags(557056);
+  for (const char* profile : {kProfileNPM, kProfilePyPI, kProfilePyTorchCPU,
+                              kProfilePyTorchCU126, kProfilePyTorchCU130,
+                              kProfilePyTorchCU132, kProfileGitHub}) {
+    if (ClassifyFilesystemOpen(open, state, profile, &system) == FilesystemClass::kHelperOnly) return false;
+  }
+  auto& group = state.groups[99];
+  group.role = ProcessState::Role::kArtifact;
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  group.role = ProcessState::Role::kControl;
+  group.provenance = ProcessState::Provenance::kCloneChild;
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  group.provenance = ProcessState::Provenance::kDirectExecRoot;
+  group.root_consumed = false;
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  group.root_consumed = true;
+  state.expected_groups[99].process_class = ProcessClass::kUnknown;
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  state.expected_groups[99].process_class = ProcessClass::kGo;
+  state.expected_groups[99].start_time_ns = 991;
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  // Go's fixed control-file setup uses the pinned mkdir utility. Its SELinux
+  // discovery is metadata; the clone receives no direct-root network grant.
+  auto parent_context = context;
+  parent_context.set_thread_group_id(110);
+  parent_context.set_thread_group_start_time_ns(1100);
+  if (!RegisterGroup(&state, parent_context, ProcessState::Role::kControl,
+                     ProcessState::Provenance::kDirectExecRoot, false, true)) return false;
+  auto child_context = context;
+  child_context.set_thread_group_id(111);
+  child_context.set_thread_group_start_time_ns(1110);
+  child_context.set_parent_thread_group_id(110);
+  child_context.set_process_name("renamed-mkdir");
+  if (!RegisterGroup(&state, child_context, ProcessState::Role::kControl,
+                     ProcessState::Provenance::kCloneChild, false, true)) return false;
+  auto& child = state.groups[111];
+  child.clone_creator_group_id = 110;
+  child.clone_creator_group_start_time_ns = 1100;
+  state.expected_groups[111] = ProcessState::ExpectedGroup{1110, ProcessClass::kMkdir};
+  *open.mutable_context_data() = child_context;
+  open.set_pathname("/proc/filesystems");
+  if (classify() != FilesystemClass::kHelperOnly) return false;
+  child.trusted_control_network_active = true;
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  child.trusted_control_network_active = false;
+  state.groups[110].start_time_ns = 1101;
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  state.groups[110].start_time_ns = 1100;
+  child.role = ProcessState::Role::kArtifact;
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  child.role = ProcessState::Role::kControl;
+  open.set_flags(kOpenWriteOnly);
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  open.set_flags(557056);
+  state.expected_groups[111].process_class = ProcessClass::kUnknown;
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  return ProcessClassForPath("/usr/local/go/bin/go", kProfileGoResolver) == ProcessClass::kGo &&
+      ProcessClassForPath("go", kProfileGoResolver) == ProcessClass::kUnknown &&
+      ProcessClassForPath("/tmp/go", kProfileGoResolver) == ProcessClass::kUnknown &&
+      ProcessClassForPath("/usr/local/go/bin/go", kProfilePyPI) == ProcessClass::kUnknown;
+}
+
 bool VerifyFilesystemClassification() {
   ProcessState state;
   gvisor::common::ContextData context;
@@ -4792,6 +4944,7 @@ int main(int argc, char** argv) {
   const bool topology_ok = running && VerifyTopologyFailClosed(output, remote, control);
   fprintf(stderr, "STARTING filesystem\n");
   const bool filesystem = VerifyFilesystemClassification();
+  const bool go_runtime_read = VerifyGoResolverRuntimeReadBoundary();
   fprintf(stderr, "STARTING npm_node\n");
   const bool npm_node = VerifyExactNpmNodeInterpreterTransition();
   fprintf(stderr, "STARTING open_result_negative\n");
@@ -4824,7 +4977,7 @@ int main(int argc, char** argv) {
 	const bool pre_attribution_disconnect = running && VerifyAcceptedPreAttributionDisconnect(remote, child);
   const bool passed = running && profile && profile_limits && accessors && network && malformed_socket &&
       malformed_connect && unknown_fd && process && correlation && cloexec && delayed && concurrent_python_streams && roles &&
-      oci_bootstrap && demotion && mismatch && dropped && topology_ok && filesystem && npm_node &&
+      oci_bootstrap && demotion && mismatch && dropped && topology_ok && filesystem && go_runtime_read && npm_node &&
       open_result_negative_ok && open_result_positive_ok && no_basename_trust_ok &&
       unexpected_exec_diagnostic_ok && resolver_npm_version_node && resolver_npm_version_production_path &&
       resolver_lock_generation_production_path && process_group_lifecycle && direct_exec_admission &&
@@ -4841,6 +4994,7 @@ int main(int argc, char** argv) {
       {"setpriv demotion boundary", demotion}, {"container mismatch", mismatch},
       {"dropped events", dropped}, {"topology fail-closed", topology_ok},
       {"filesystem normalization", filesystem},
+      {"Go resolver runtime read boundary", go_runtime_read},
       {"exact npm CLI-to-Node", npm_node},
       {"OPEN_RESULT negative matrix", open_result_negative_ok},
       {"OPEN_RESULT positive matrix", open_result_positive_ok},

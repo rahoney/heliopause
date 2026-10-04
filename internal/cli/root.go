@@ -445,9 +445,8 @@ func AddNPMInstall(root *cobra.Command, installer Installer) error {
 	return errors.New("npm install command is not registered")
 }
 
-// AddGoModuleGet binds exact public module resolution to the static command
-// tree. Project mutation remains a later transaction step and is never implied
-// by a successful graph resolution.
+// AddGoModuleGet binds the guarded, inspected and approved frozen project
+// update to the static command tree. A mere resolution does not update files.
 func AddGoModuleGet(root *cobra.Command, resolver GoModuleResolver) error {
 	if root == nil || resolver == nil {
 		return errors.New("go get command requires a resolution use case")
