@@ -188,6 +188,7 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			"golang.org/x/mod/modfile":       true,
 			"golang.org/x/mod/semver":        true,
 			"golang.org/x/mod/sumdb/dirhash": true,
+			"golang.org/x/mod/zip":           true,
 		},
 		modulePath + "/internal/artifact/cargo":             {},
 		modulePath + "/internal/artifact/terraformprovider": {},

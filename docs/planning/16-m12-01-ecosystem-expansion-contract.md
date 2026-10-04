@@ -598,6 +598,22 @@ HAA-managed verified module cache
 HAA-managed cache에 Promotion할 때는 exact module path/version/content digest와
 SumDB/source identity를 다시 bind한다.
 
+Complete project inspection은 각 frozen module에 독립 Run·required verification/
+inspection·recorded Evidence·entry ALLOW를 요구하고 기존 complete-coverage Policy로
+set ALLOW를 확인한다. `go.sum`의 selected archive와 `/go.mod` 선언도 frozen pair와
+일치해야 하지만 이 일치는 독립 SumDB 인증을 대체하지 않는다. 미승인 결과는
+typed inspection/Policy facts를 보존하고 캐시 승격 권한을 만들지 않는다.
+
+Go verified cache는 승인된 intake envelope를 다시 해시한 뒤 Go 공식 ZIP 규칙으로
+새 operation-private tree에 materialize한다. Resolver/global cache를 복사하지 않는다.
+Module cache payload와 extracted source를 h1에 대조하고, 전체 graph/control digest·
+project binding·entry Run/Evidence/Policy·file inventory를 trusted receipt에 연결해
+동기화 후 atomic publish한다. Aggregate는 512 MiB·10,000 files·20,000 filesystem
+entries, receipt는 4 MiB로 bounded하다. 캐시 재사용 경계에서 receipt digest와 전체
+tree를 다시 검사하며 source files는 readonly, build mount도 readonly여야 한다.
+Cache receipt/path/`.ziphash`만으로 approval을 복구하지 않는다. 실제 resolver/build/
+project transaction qualification 상태는 Queue와 해당 evidence가 소유한다.
+
 ### `helox go build` contract
 
 `helox go build`는 현재 project의 `go.mod`/`go.sum`을 snapshot한 뒤 exact dependency

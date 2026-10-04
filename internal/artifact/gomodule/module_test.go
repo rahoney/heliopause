@@ -170,7 +170,7 @@ func TestBuildProjectSnapshotBindsAllRecordsAndControlFiles(t *testing.T) {
 	}
 	target, _ := domain.NewInstallTarget("/workspace/project")
 	installContext, _ := domain.NewInstallContext(target)
-	snapshot, err := BuildProjectSnapshot(installContext, records, []byte("example.com/app example.com/mod@v1.2.3\n"), []byte("module example.com/app\nrequire example.com/mod v1.2.3\n"), []byte("example.com/mod v1.2.3 h1:fixture\n"))
+	snapshot, err := BuildProjectSnapshot(installContext, records, []byte("example.com/app example.com/mod@v1.2.3\n"), []byte("module example.com/app\nrequire example.com/mod v1.2.3\n"), []byte("example.com/mod v1.2.3 "+testH1('a')+"\nexample.com/mod v1.2.3/go.mod "+testH1('b')+"\n"))
 	if err != nil || !snapshot.Valid() || len(snapshot.Dependencies()) != 1 || len(snapshot.ControlDigests()) != 2 {
 		t.Fatalf("snapshot = %#v, error = %v", snapshot, err)
 	}
@@ -185,7 +185,7 @@ func TestProjectSnapshotAcceptsActualGoGraphShape(t *testing.T) {
 	graph := []byte("example.com/haa-m12-fixture github.com/spf13/pflag@v1.0.9\nexample.com/haa-m12-fixture go@1.26.8\ngo@1.26.8 toolchain@go1.26.8\n")
 	target, _ := domain.NewInstallTarget("/workspace/project")
 	install, _ := domain.NewInstallContext(target)
-	if _, err := BuildProjectSnapshot(install, records, graph, mod, []byte("fixture-sum\n")); err != nil {
+	if _, err := BuildProjectSnapshot(install, records, graph, mod, []byte("github.com/spf13/pflag v1.0.9 "+testH1('a')+"\ngithub.com/spf13/pflag v1.0.9/go.mod "+testH1('b')+"\n")); err != nil {
 		t.Fatalf("actual Go 1.26.8 graph shape rejected: %v", err)
 	}
 }

@@ -1,0 +1,6 @@
+ok  	github.com/rahoney/heliopause/internal/core/domain	0.023s
+ok  	github.com/rahoney/heliopause/internal/application	0.162s
+ok  	github.com/rahoney/heliopause/internal/policy	0.021s
+ok  	github.com/rahoney/heliopause/internal/artifact/gomodule	0.061s
+ok  	github.com/rahoney/heliopause/internal/sandbox	2.265s
+ok  	github.com/rahoney/heliopause/internal/promotion	3.422s

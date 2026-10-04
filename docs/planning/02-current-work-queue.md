@@ -2260,6 +2260,22 @@ offline build/output publish와 필수 소비자 검증을 계속 진행한다.
 `M12-002 IN_PROGRESS / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO`를 유지한다.
 M12-003/004는 아직 시작하지 않았다. NO PUSH / NO REMOTE CI / NO MERGE.
 
+### M12-002 project inspection/verified cache checkpoint (2026-10-04)
+
+기존 per-entry workflow와 M3/M4 complete-coverage semantics를 재사용하여 primary
+없는 complete project 검사와 ALLOW-only typed verified cache staging을 연결한다.
+Project checksum disagreement를 승인하던 동일 fixture의 before FAIL → after PASS,
+입력/캐시 변조·누락·foreign Run/approval·incomplete checks의 fail-closed 회귀와
+실제 public intake→독립 SumDB→project 검사/Evidence/Policy→cache 소비 결과는
+[project/cache evidence](./evidence/m12-002-project-cache/result.json)가 소유한다.
+이 fixture의 project snapshot은 명시한 qualification 입력이며 isolated resolver
+실행 결과로 주장하지 않는다. `IMPLEMENTED=YES`의 재사용을 유지하고 전체
+`WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO`, M12-002 IN_PROGRESS를 유지한다.
+남은 acceptance는 source-attested isolated resolver·재선택 없는 project transaction,
+실제 observed offline build와 output publish, CLI wiring 및 전체/direct-consumer
+qualification이다. 이 checkpoint 뒤 같은 item을 계속하며 다음 M12-003/004는
+NOT_STARTED다. NO PUSH / NO REMOTE CI / NO MERGE.
+
 ### M12-001 종료 전 이력 (당시 상태, 현재 판정 아님)
 
 아래 날짜별 NO·미검증·IN_PROGRESS 기록은 당시 검증 범위다. 현재 판정은 위의

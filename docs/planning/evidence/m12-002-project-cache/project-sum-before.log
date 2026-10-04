@@ -1,0 +1,23 @@
+=== RUN   TestProjectSnapshotRequiresExactControlChecksumPair
+=== RUN   TestProjectSnapshotRequiresExactControlChecksumPair/malformed
+    project_sum_test.go:25: project checksum disagreement was accepted
+=== RUN   TestProjectSnapshotRequiresExactControlChecksumPair/archive-mismatch
+    project_sum_test.go:25: project checksum disagreement was accepted
+=== RUN   TestProjectSnapshotRequiresExactControlChecksumPair/mod-mismatch
+    project_sum_test.go:25: project checksum disagreement was accepted
+=== RUN   TestProjectSnapshotRequiresExactControlChecksumPair/missing-archive
+    project_sum_test.go:25: project checksum disagreement was accepted
+=== RUN   TestProjectSnapshotRequiresExactControlChecksumPair/missing-mod
+    project_sum_test.go:25: project checksum disagreement was accepted
+=== RUN   TestProjectSnapshotRequiresExactControlChecksumPair/duplicate
+    project_sum_test.go:25: project checksum disagreement was accepted
+--- FAIL: TestProjectSnapshotRequiresExactControlChecksumPair (0.00s)
+    --- FAIL: TestProjectSnapshotRequiresExactControlChecksumPair/malformed (0.00s)
+    --- FAIL: TestProjectSnapshotRequiresExactControlChecksumPair/archive-mismatch (0.00s)
+    --- FAIL: TestProjectSnapshotRequiresExactControlChecksumPair/mod-mismatch (0.00s)
+    --- FAIL: TestProjectSnapshotRequiresExactControlChecksumPair/missing-archive (0.00s)
+    --- FAIL: TestProjectSnapshotRequiresExactControlChecksumPair/missing-mod (0.00s)
+    --- FAIL: TestProjectSnapshotRequiresExactControlChecksumPair/duplicate (0.00s)
+FAIL
+FAIL	github.com/rahoney/heliopause/internal/artifact/gomodule	0.010s
+FAIL

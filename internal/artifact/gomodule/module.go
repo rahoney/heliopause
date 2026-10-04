@@ -317,6 +317,9 @@ func BuildProjectSnapshot(installContext domain.InstallContext, records []Downlo
 	if !installContext.Valid() || len(records) == 0 || len(goMod) == 0 || len(goSum) == 0 {
 		return domain.ProjectDependencySnapshot{}, errors.New("go project snapshot request is invalid")
 	}
+	if err := ValidateProjectSums(goSum, records); err != nil {
+		return domain.ProjectDependencySnapshot{}, err
+	}
 	byKey := make(map[string]DownloadRecord, len(records))
 	for _, record := range records {
 		key := recordKey(record.Path, record.Version)

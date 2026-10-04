@@ -1,0 +1,34 @@
+ok  	github.com/rahoney/heliopause/cmd/helox	0.024s
+ok  	github.com/rahoney/heliopause/internal/application	0.028s
+ok  	github.com/rahoney/heliopause/internal/artifact/cargo	0.034s
+ok  	github.com/rahoney/heliopause/internal/artifact/githubrelease	0.025s
+ok  	github.com/rahoney/heliopause/internal/artifact/gomodule	0.035s
+ok  	github.com/rahoney/heliopause/internal/artifact/npm	0.034s
+ok  	github.com/rahoney/heliopause/internal/artifact/pypi	0.031s
+ok  	github.com/rahoney/heliopause/internal/artifact/terraformprovider	0.024s
+ok  	github.com/rahoney/heliopause/internal/bootstrap	0.047s
+ok  	github.com/rahoney/heliopause/internal/cli	0.027s
+ok  	github.com/rahoney/heliopause/internal/core/domain	0.021s
+?   	github.com/rahoney/heliopause/internal/core/ports	[no test files]
+ok  	github.com/rahoney/heliopause/internal/evidence	0.035s
+ok  	github.com/rahoney/heliopause/internal/evidence/local	0.025s
+ok  	github.com/rahoney/heliopause/internal/hosttool	0.032s
+ok  	github.com/rahoney/heliopause/internal/inspection/githubrelease	0.021s
+ok  	github.com/rahoney/heliopause/internal/inspection/gomodule	0.028s
+ok  	github.com/rahoney/heliopause/internal/inspection/npm	0.022s
+ok  	github.com/rahoney/heliopause/internal/inspection/pypi	0.045s
+ok  	github.com/rahoney/heliopause/internal/networkpolicy	0.023s
+ok  	github.com/rahoney/heliopause/internal/policy	0.014s
+ok  	github.com/rahoney/heliopause/internal/promotion	0.009s
+ok  	github.com/rahoney/heliopause/internal/releaseinstall	0.009s
+ok  	github.com/rahoney/heliopause/internal/runtimeidentity	0.009s
+ok  	github.com/rahoney/heliopause/internal/sandbox	0.009s
+ok  	github.com/rahoney/heliopause/internal/testutil/fakeworkflow	0.011s
+ok  	github.com/rahoney/heliopause/internal/verification/githubrelease	0.010s
+ok  	github.com/rahoney/heliopause/internal/verification/gomodule	0.007s
+ok  	github.com/rahoney/heliopause/internal/verification/npm	0.009s
+?   	github.com/rahoney/heliopause/internal/verification/pypi	[no test files]
+ok  	github.com/rahoney/heliopause/scripts	0.003s
+ok  	github.com/rahoney/heliopause/scripts/check	0.002s
+ok  	github.com/rahoney/heliopause/scripts/release-manifest	0.009s
+ok  	github.com/rahoney/heliopause/scripts/runtime-image-manifest	0.010s

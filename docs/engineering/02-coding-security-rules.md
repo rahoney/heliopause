@@ -119,6 +119,16 @@ latest 또는 자체 crypto 보완을 사용하지 않았다. Authenticated reco
 matching checksum을 거부하는 같은 regression의 old/fixed 결과와 새 candidate
 vulnerability/check scope는 해당 acquisition checkpoint evidence에 연결한다.
 
+**Verified cache 연결 후 ZIP consumer:** 같은 fixed `v0.40.0`의 공식
+`zip.Unzip`을 operation-private cache materialization에 사용한다. 앞단의 HAA
+archive/count/expanded bounds와 재해시는 유지하며 공식 Unicode case-folding·
+file/ancestor collision·nested go.mod 규칙을 재사용한다. Library의 VCS acquisition/
+creation API를 호출하지 않는다. 새 import의 upstream ZIP tests가 `x/tools/txtar`를
+사용하므로 canonical tidy가 이미 선택된 `x/tools v0.49.0`의 zip/mod checksum을
+요구했고 이를 고정 Go로 `go.sum`에 기록했다. `go.mod`의 버전 선택과 production
+import graph의 x/tools 미사용은 유지한다. 신규 ZIP 호출 범위의 vulnerability 및
+빈 quality cache bootstrap→offline consumer 검증은 project/cache evidence가 소유한다.
+
 ## 3. Package와 API 작성
 
 - Step 8의 dependency direction과 package 책임을 따른다.
