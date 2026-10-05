@@ -73,6 +73,12 @@ type runtimeLock struct {
 		GoVersion    string `json:"go_version"`
 		Architecture string `json:"architecture"`
 	} `json:"go_image"`
+	RustImage struct {
+		Reference    string `json:"reference"`
+		RustVersion  string `json:"rust_version"`
+		Architecture string `json:"architecture"`
+		Target       string `json:"target"`
+	} `json:"rust_image"`
 	PythonImage struct {
 		Reference     string `json:"reference"`
 		PythonVersion string `json:"python_version"`
@@ -448,6 +454,10 @@ func validate(lock runtimeLock) error {
 	if !goReference.MatchString(lock.GoImage.Reference) || !exactVersion.MatchString(lock.GoImage.GoVersion) || !strings.HasPrefix(lock.GoImage.Reference, "golang:"+lock.GoImage.GoVersion+"-bookworm@") || lock.GoImage.Architecture != "amd64" {
 		return errors.New("go image identity is invalid")
 	}
+	rustReference := regexp.MustCompile(`^rust:[0-9]+\.[0-9]+\.[0-9]+-bookworm@sha256:[a-f0-9]{64}$`)
+	if !rustReference.MatchString(lock.RustImage.Reference) || !exactVersion.MatchString(lock.RustImage.RustVersion) || !strings.HasPrefix(lock.RustImage.Reference, "rust:"+lock.RustImage.RustVersion+"-bookworm@") || lock.RustImage.Architecture != "amd64" || lock.RustImage.Target != "x86_64-unknown-linux-gnu" {
+		return errors.New("rust image identity is invalid")
+	}
 	if !strings.Contains(lock.PythonImage.Reference, "@sha256:") || !exactVersion.MatchString(lock.PythonImage.PythonVersion) || !exactVersion.MatchString(lock.PythonImage.PipVersion) || lock.PythonImage.Target.Interpreter == "" || lock.PythonImage.Target.ABI == "" || lock.PythonImage.Target.Platform == "" {
 		return errors.New("python identity is invalid")
 	}
@@ -496,6 +506,7 @@ func render(lock runtimeLock) []byte {
 		{"DockerMinimumEngine", lock.Docker.MinimumEngine}, {"DockerCIEngine", lock.Docker.CIEngine}, {"DockerCEPackage", lock.Docker.CIUbuntu.DockerCE}, {"DockerCECLIPackage", lock.Docker.CIUbuntu.DockerCLI}, {"ContainerdPackage", lock.Docker.CIUbuntu.Containerd}, {"NodeImageReference", lock.NodeImage.Reference}, {"NodeNPMVersion", lock.NodeImage.NPMVersion},
 		{"PythonImageReference", lock.PythonImage.Reference}, {"PythonVersion", lock.PythonImage.PythonVersion}, {"PipVersion", lock.PythonImage.PipVersion},
 		{"GoImageReference", lock.GoImage.Reference}, {"GoVersion", lock.GoImage.GoVersion}, {"GoArchitecture", lock.GoImage.Architecture},
+		{"RustImageReference", lock.RustImage.Reference}, {"RustVersion", lock.RustImage.RustVersion}, {"RustArchitecture", lock.RustImage.Architecture}, {"RustTarget", lock.RustImage.Target},
 		{"PythonInterpreterTag", lock.PythonImage.Target.Interpreter}, {"PythonABITag", lock.PythonImage.Target.ABI}, {"PythonPlatformTag", lock.PythonImage.Target.Platform},
 	} {
 		fmt.Fprintf(&output, "\t%s = %q\n", item.name, item.value)

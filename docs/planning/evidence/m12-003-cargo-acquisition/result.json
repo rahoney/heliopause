@@ -1,0 +1,160 @@
+{
+  "work_item": "M12-003",
+  "scope": "PARTIAL_SOURCE_ACQUISITION_CHECKPOINT",
+  "baseline_commit": "bdd3a29f99ef8db7dd350d0cb57002add79a5c26",
+  "implemented": "YES",
+  "wired": "NO",
+  "qualified": "NO (whole work item)",
+  "acceptance_closed": "NO",
+  "source_inventory": {
+    "path": "qualified-source.json",
+    "entries": 646,
+    "sha256": "f268d010919e30893cb40eb14d3bcf94ecd3f4113397a8a9ea2d314c84c1294c",
+    "includes_new_owned_files": true,
+    "execution_root": "exact bytes/modes projection on native Linux filesystem"
+  },
+  "causal_regression": {
+    "input": "version-controlled actual Cargo metadata/lock fixture",
+    "before_exit": 1,
+    "before_scope": "bdd3a29 resolver/parser source, same literal actual metadata and lock",
+    "after_exit": 0,
+    "cause": "actual Cargo metadata has no package checksum field; frozen lock declaration was not joined to metadata",
+    "authority_boundary": "lock/metadata parser result is not registry authentication or Policy approval"
+  },
+  "actual_public_gate": {
+    "command": "go test -tags=integration -count=1 -v ./internal/inspection/cargo -run ^TestCargoPublicCrateAcquisitionIntegration$",
+    "exit": 0,
+    "seconds": 0.284,
+    "crate": "itoa@1.0.17",
+    "sha256": "92ecc6618181def0457392ccd0ee51198e065e016d1d527a7ac1b6dc7c1f09d2",
+    "checks": 2,
+    "evidence": 2,
+    "policy": "ALLOW",
+    "empty_owned_intake": true,
+    "host_artifact_execution": false,
+    "covers": [
+      "canonical HTTPS acquisition",
+      "independent official sparse-index checksum",
+      "exact bytes checksum",
+      "bounded static archive/manifest checks",
+      "recorded Evidence",
+      "existing entry Policy"
+    ],
+    "does_not_cover": [
+      "project graph resolver",
+      "transaction",
+      "retained cache",
+      "observed build",
+      "output publication"
+    ]
+  },
+  "checks": [
+    {
+      "profile": "quick",
+      "exit": 0
+    },
+    {
+      "profile": "focused Cargo parser/index/archive/intake/integrity/runtime negatives",
+      "exit": 0
+    },
+    {
+      "profile": "vulnerability",
+      "exit": 0
+    },
+    {
+      "profile": "security",
+      "exit": 0
+    },
+    {
+      "profile": "docs",
+      "exit": 0
+    }
+  ],
+  "runtime": {
+    "reference": "rust:1.99.0-bookworm@sha256:59037199c44290f2befcdd58dcc540164763fc296950255aaefeef096a1866b0",
+    "target": "x86_64-unknown-linux-gnu",
+    "cargo_version": "cargo 1.99.0 (5f94df478 2026-08-27)",
+    "rustc_version": "rustc 1.99.0 (b940084d7 2026-09-28)",
+    "stock_oci_query_exit": 0,
+    "registered_gvisor_cargo_qualification": "NOT_RUN",
+    "source_urls": [
+      "https://static.rust-lang.org/dist/channel-rust-stable.toml",
+      "https://github.com/docker-library/official-images/blob/master/library/rust",
+      "https://github.com/rust-lang/docker-rust"
+    ]
+  },
+  "fixture_files": [
+    {
+      "path": "internal/artifact/cargo/testdata/itoa-1.0.17.crate",
+      "sha256": "92ecc6618181def0457392ccd0ee51198e065e016d1d527a7ac1b6dc7c1f09d2"
+    },
+    {
+      "path": "internal/artifact/cargo/testdata/itoa-index.jsonl",
+      "sha256": "5e275f1d7a32dd49bc850af460efbf99064cd058f4566f5f86a969e2a535eece"
+    },
+    {
+      "path": "internal/artifact/cargo/testdata/metadata-v1-rust-1.99.0.json",
+      "sha256": "4e58d9e3e5ca9f9affaf6f5faa3fa77f772412d0541807895cf13528ef4ef86e"
+    },
+    {
+      "path": "internal/artifact/cargo/testdata/metadata-v1-rust-1.99.0.lock",
+      "sha256": "ffef3b59221fd6c3b394a98c7405a5ff1711b1184de90a791d3b6a6707ea6890"
+    }
+  ],
+  "logs": [
+    {
+      "path": "docs/planning/evidence/m12-003-cargo-acquisition/cargo-metadata-before.log",
+      "sha256": "47a169e3e5339f3a454d881f81a0f809d733a662788449503c92944aa83fd6bf"
+    },
+    {
+      "path": "docs/planning/evidence/m12-003-cargo-acquisition/cargo-parser-focused.log",
+      "sha256": "46aad915520ddd7861b0c60022fe39db7f921e4ee0e7f2cb65e76ec04a3eacd5"
+    },
+    {
+      "path": "docs/planning/evidence/m12-003-cargo-acquisition/cargo-parser-quick.log",
+      "sha256": "8ba158ab5445b9e23df158f2bc5abe28e3fdb227cea6fe46491c6c8f84465fda"
+    },
+    {
+      "path": "docs/planning/evidence/m12-003-cargo-acquisition/cargo-acquisition-final-quick.log",
+      "sha256": "2007faea7c71e4fbb956b22869daf58381b44fcdd679c2f06c3efc7b3e6757a3"
+    },
+    {
+      "path": "docs/planning/evidence/m12-003-cargo-acquisition/cargo-acquisition-focused.log",
+      "sha256": "4a5100c08320a093556d8e7997480e4e48617b34ea4b96a72fb2ea1293e5e75c"
+    },
+    {
+      "path": "docs/planning/evidence/m12-003-cargo-acquisition/cargo-public-acquisition-final.log",
+      "sha256": "06fc3b80a3bbe723f4c04a9b1e8c491ada996121411d5712023bfb955422f7ec"
+    },
+    {
+      "path": "docs/planning/evidence/m12-003-cargo-acquisition/cargo-acquisition-vulnerability.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/planning/evidence/m12-003-cargo-acquisition/cargo-acquisition-security.log",
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95"
+    },
+    {
+      "path": "docs/planning/evidence/m12-003-cargo-acquisition/cargo-acquisition-docs.log",
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "path": "docs/planning/evidence/m12-003-cargo-acquisition/rust-toolchain-version.log",
+      "sha256": "71898dff3c6432efdb734448f5be423843b12dd8075283501aad41600c41899c"
+    }
+  ],
+  "missing": [
+    "anchored complete project source/controls",
+    "isolated resolver without host execution or ambient config",
+    "complete project snapshot and verified cache",
+    "guarded frozen add transaction and rollback",
+    "network-disabled observed compiler/build scripts/macros/native helpers",
+    "bounded no-overwrite output publication",
+    "whole positive/security qualification and affected consumers/platform"
+  ],
+  "remote_ci": "NOT_RUN",
+  "push": "NOT_PERFORMED",
+  "merge": "NOT_PERFORMED",
+  "native_macos": "NOT_RUN",
+  "m12_004": "NOT_STARTED"
+}

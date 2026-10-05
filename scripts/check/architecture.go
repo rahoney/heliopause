@@ -127,6 +127,14 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/artifact/gomodule": true,
 			modulePath + "/internal/core/domain":       true,
 		},
+		modulePath + "/internal/verification/cargo": {
+			modulePath + "/internal/artifact/cargo": true,
+			modulePath + "/internal/core/domain":    true,
+		},
+		modulePath + "/internal/inspection/cargo": {
+			modulePath + "/internal/artifact/cargo": true,
+			modulePath + "/internal/core/domain":    true,
+		},
 		modulePath + "/internal/inspection/gomodule": {
 			modulePath + "/internal/artifact/gomodule": true,
 			modulePath + "/internal/core/domain":       true,
@@ -190,9 +198,11 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			"golang.org/x/mod/sumdb/dirhash": true,
 			"golang.org/x/mod/zip":           true,
 		},
-		modulePath + "/internal/artifact/cargo":             {},
+		modulePath + "/internal/artifact/cargo":             {"github.com/pelletier/go-toml/v2": true},
 		modulePath + "/internal/artifact/terraformprovider": {},
 		modulePath + "/internal/verification/gomodule":      {"golang.org/x/mod/sumdb": true},
+		modulePath + "/internal/verification/cargo":         {},
+		modulePath + "/internal/inspection/cargo":           {},
 		modulePath + "/internal/inspection/gomodule":        {"golang.org/x/mod/modfile": true},
 		modulePath + "/internal/verification/npm":           {},
 		modulePath + "/internal/verification/pypi":          {},

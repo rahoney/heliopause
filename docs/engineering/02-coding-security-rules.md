@@ -129,6 +129,29 @@ creation API를 호출하지 않는다. 새 import의 upstream ZIP tests가 `x/t
 import graph의 x/tools 미사용은 유지한다. 신규 ZIP 호출 범위의 vulnerability 및
 빈 quality cache bootstrap→offline consumer 검증은 project/cache evidence가 소유한다.
 
+
+### M12-003 Cargo TOML parser dependency review
+
+2026-10-05에 `github.com/pelletier/go-toml/v2 v2.4.3`을 exact pin한다.
+실제 Cargo.toml/Cargo.lock의 quoted/dotted keys, inline tables, arrays와 duplicate
+선언을 읽는 현재 adapter에 필요하며 표준 라이브러리에는 TOML parser가 없다.
+문자열/regexp 대체나 자체 문법 parser를 만들지 않는다. 외부 type은
+`internal/artifact/cargo` 안에서만 사용하고 Core/Application에 전달하지 않는다.
+
+[공식 release](https://github.com/pelletier/go-toml/releases/tag/v2.4.3)는 2026-07-05
+발표되었고 nested array/inline-table의 stack exhaustion 방어를 포함한다.
+[go.mod](https://raw.githubusercontent.com/pelletier/go-toml/v2.4.3/go.mod)의 Go floor는
+1.21.0이며 외부 module requirement가 없어 기존 Go1.26.8을 유지한다.
+[License](https://raw.githubusercontent.com/pelletier/go-toml/v2.4.3/LICENSE)는 MIT이며
+배포 시 copyright/license를 유지한다. Maintainer의 release/수정 활동을 확인했고
+단일 parser 공급망에 대한 의존은 남는다. Canonical proxy/SumDB로 zip/mod를
+고정하고 scanner를 실제 새 consumer에 적용한다. Registry authentication이나
+Policy ALLOW는 parser 성공과 별개의 후속 책임이다. 실제 lock/metadata·crate manifest
+consumer의 canonical vulnerability는 exit0을 확인했으며 해당 후보와 범위는
+[Cargo acquisition evidence](../planning/evidence/m12-003-cargo-acquisition/result.json)가 소유한다.
+후속 CLI/build consumer의 새 scan은 별도로 수행한다. Input byte/count/depth,
+source/checksum 및 graph/controls의 semantic validation은 adapter에서 유지한다.
+
 ## 3. Package와 API 작성
 
 - Step 8의 dependency direction과 package 책임을 따른다.

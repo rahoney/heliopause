@@ -1,0 +1,64 @@
+{
+  "work_item": "M12-003",
+  "baseline_commit": "bdd3a29f99ef8db7dd350d0cb57002add79a5c26",
+  "implemented": "YES (existing parser/resolver/application/transaction/CLI foundation)",
+  "wired": "NO (add resolves only; build static unavailable leaf)",
+  "qualified": "NO",
+  "acceptance_closed": "NO",
+  "reuse": [
+    {
+      "path": "internal/artifact/cargo/metadata.go",
+      "sha256": "dd8942b7b016aed4633a3544612f1907ca52be9f83bafe5559a65c4ec8db1d43"
+    },
+    {
+      "path": "internal/sandbox/cargo_resolver.go",
+      "sha256": "e25ac86097efd5e5ee0528d52035dd871d8ecc9b6381c08953269b703223ec3f"
+    },
+    {
+      "path": "internal/promotion/cargo_transaction.go",
+      "sha256": "82e07782cb7228a3fe78d18bc668e7315d22a60fb1791016cdc318c4d3f7acf7"
+    },
+    {
+      "path": "internal/application/cargo.go",
+      "sha256": "38873a3c63d6fb95e209d60ca594b7f153b943741bef09fe296959e1e454ff06"
+    },
+    {
+      "path": "internal/cli/root.go",
+      "sha256": "252db52531a74101d09798dfecec65f27f47d16c847344a45a6cb5072f0756d8"
+    },
+    {
+      "path": "internal/bootstrap/bootstrap.go",
+      "sha256": "7fbfe8293dc4d9b195fa3ab8fa7a3b434605fddc8f5799c09c4a30c660fc5021"
+    },
+    {
+      "path": "internal/hosttool/executor.go",
+      "sha256": "485e4ad8865243e662a2c027f5af1691509871caf245d91587dca0d468e517b2"
+    },
+    {
+      "path": "scripts/runtimes.lock.json",
+      "sha256": "949cef4e2d48e1b68a5a35c0e88ec63a6fdd57ec19854260e050a42b5e8adea6"
+    }
+  ],
+  "missing": [
+    "actual Cargo metadata joined to frozen Cargo.lock/checksum and independent official sparse index, complete graph/feature/target binding",
+    "bounded anchored controls/local project source; exact official Rust/Cargo runtime identity; isolated resolver with no Host artifact execution or ambient config",
+    "canonical endpoint acquisition/integrity/static inspection/Run+Evidence+Policy for complete crate set; retained verified cache with rehash",
+    "guarded Cargo.toml/Cargo.lock approval transaction; no second selection, concurrent mutation and owned rollback/cleanup checks",
+    "network-disabled observed cargo build from exact cache/source with build.rs/proc-macro/native subprocess and bounded no-overwrite output publication",
+    "actual positive/transitive/checksum/registry/git/network/filesystem/proc-macro/race/cleanup qualification; changed direct consumers; canonical and platform checks"
+  ],
+  "replace_existing_implementation": false,
+  "implementation_policy": "augment existing owners and inject isolated production adapters; reuse existing Core/Run/Evidence/M3/transaction primitives; no future placeholder or unrelated redesign",
+  "source_reference": [
+    {
+      "url": "https://doc.rust-lang.org/cargo/commands/cargo-metadata.html",
+      "scope": "published output has package source and feature/graph/target fields, no crate checksum field; real output fixture still to capture"
+    },
+    {
+      "url": "https://doc.rust-lang.org/cargo/reference/registry-index.html",
+      "scope": "canonical sparse metadata/download/checksum grammar"
+    }
+  ],
+  "prior_go_qualification": "docs/planning/evidence/m12-002-go-build-qualification/result.json",
+  "remote_ci": "NOT_RUN; no push/remote/merge authorization"
+}

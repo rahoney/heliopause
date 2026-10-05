@@ -43,6 +43,12 @@
     "go_version": "1.26.8",
     "architecture": "amd64"
   },
+  "rust_image": {
+    "reference": "rust:1.99.0-bookworm@sha256:59037199c44290f2befcdd58dcc540164763fc296950255aaefeef096a1866b0",
+    "rust_version": "1.99.0",
+    "architecture": "amd64",
+    "target": "x86_64-unknown-linux-gnu"
+  },
   "node_image": {
     "reference": "node:24.21.0-slim@sha256:713cfbf4a0ac19f40e1bb9919893e126b74a5c8cf5d0623c9f89515c8f74c6fa",
     "npm_version": "11.19.0"

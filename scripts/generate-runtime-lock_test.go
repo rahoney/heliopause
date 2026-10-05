@@ -150,6 +150,32 @@ func TestRuntimeLockRejectsUnpinnedOrSubstitutedGoToolchain(t *testing.T) {
 	}
 }
 
+func TestRuntimeLockRejectsUnpinnedOrSubstitutedCargoToolchain(t *testing.T) {
+	base, err := readLock("runtimes.lock.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, test := range []struct {
+		name string
+		edit func(*runtimeLock)
+	}{
+		{"mutable", func(l *runtimeLock) { l.RustImage.Reference = "rust:1.99.0-bookworm" }},
+		{"repository", func(l *runtimeLock) { l.RustImage.Reference = "example.com/" + l.RustImage.Reference }},
+		{"architecture", func(l *runtimeLock) { l.RustImage.Architecture = "arm64" }},
+		{"version", func(l *runtimeLock) { l.RustImage.RustVersion = "1.98.0" }},
+		{"target", func(l *runtimeLock) { l.RustImage.Target = "aarch64-unknown-linux-gnu" }},
+		{"digest", func(l *runtimeLock) { l.RustImage.Reference = "rust:1.99.0-bookworm@sha256:invalid" }},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			lock := base
+			test.edit(&lock)
+			if err := validate(lock); err == nil {
+				t.Fatal("untrusted Cargo runtime pin accepted")
+			}
+		})
+	}
+}
+
 func TestRuntimeLockObserverBuildIdentityMatchesCanonicalCommit(t *testing.T) {
 	t.Parallel()
 	lock, err := readLock("runtimes.lock.json")

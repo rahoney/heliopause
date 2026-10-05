@@ -9,9 +9,9 @@
 ```text
 Current milestone: M12 — Ecosystem Expansion Before Public Release
 Milestone status: IN_PROGRESS
-Active work item: None (M12-002 complete; M12-003 baseline audit next)
-Next work item: M12-003 — Rust/Cargo and public crates.io
-Next work item status: NOT_STARTED / Ready: Yes (M12-002 local acceptance closed)
+Active work item: M12-003 — Rust/Cargo and public crates.io
+Next work item: M12-004 — Terraform Provider installation
+Next work item status: NOT_STARTED / Ready: No (M12-003 acceptance prerequisite)
 Ready: Yes
 ```
 
@@ -2134,13 +2134,13 @@ M11-FIX-05: COMPLETE
 M12: IN_PROGRESS
 M12-001: COMPLETE
 M12-002: COMPLETE
-M12-003: NOT_STARTED
+M12-003: IN_PROGRESS
 M12-004: NOT_STARTED
 M12-005: NOT_STARTED
 M12-02: RESERVED
 M13: BLOCKED
-Active work item: None (M12-002 complete; M12-003 baseline audit next)
-Next work item: M12-003 — NOT_STARTED / Ready: Yes
+Active work item: M12-003 — Rust/Cargo and public crates.io
+Next work item: M12-004 — NOT_STARTED / Ready: No (M12-003 acceptance prerequisite)
 ```
 
 M9-006까지 qualification을 완료했다. M10-001은 release identity·manifest 및
@@ -2174,7 +2174,7 @@ production activation과 최종 배포를 수행한다.
 | --- | --- | --- | --- |
 | 1 | M12-001 | Official PyTorch source support | COMPLETE |
 | 2 | M12-002 | public Go Modules | COMPLETE |
-| 3 | M12-003 | Rust/Cargo and public crates.io | NOT_STARTED |
+| 3 | M12-003 | Rust/Cargo and public crates.io | IN_PROGRESS |
 | 4 | M12-004 | Terraform Provider installation | NOT_STARTED |
 | 5 | M12-005 | cross-ecosystem qualification and feature freeze | NOT_STARTED |
 | 6 | M12-02 | final red-team/fix gate | RESERVED |
@@ -2567,7 +2567,8 @@ IMPLEMENTED: YES
 WIRED: NO
 QUALIFIED: NO
 ACCEPTANCE_CLOSED: NO
-Status: NOT_STARTED
+Status: IN_PROGRESS
+Ready: Yes (M12-002 local acceptance closed)
 
 M12-004 — Terraform
 IMPLEMENTED: NO
@@ -2580,7 +2581,7 @@ Status: NOT_STARTED
 `WIRED: NO`는 코드가 전혀 존재하지 않는다는 뜻이 아니라, 해당 work item의
 required user/runtime path 전체가 acceptance 수준으로 연결되지 않았다는 뜻이다.
 M12-002~004의 상세 MISSING은 해당 work item이 시작될 때 별도 baseline audit로
-확정한다. M12-002 local acceptance는 닫혔으며 다음 M12-003은 `NOT_STARTED / Ready: Yes`다.
+확정한다. M12-002 local acceptance는 닫혔으며 현재 M12-003 하나만 IN_PROGRESS다.
 
 ### M11 post-qualification release hardening
 
@@ -2683,6 +2684,53 @@ CUDA RELEASE_SUPPORTED 결정은 완료 선언에 포함하지 않는다. Prior 
 검사한다. 다음 M12-003은 `NOT_STARTED / Ready: Yes`이며 baseline audit 뒤 하나의
 IN_PROGRESS로 전환한다. M12-004는 아직 NOT_STARTED다.
 NO PUSH / NO REMOTE CI / NO MERGE.
+
+
+### M12-003 시작 baseline audit (2026-10-05)
+
+Baseline은 M12-002 로컬 완료 `bdd3a29`이며 `IMPLEMENTED=YES / WIRED=NO /
+QUALIFIED=NO / ACCEPTANCE_CLOSED=NO`다. 기존 `artifact/cargo`의 exact reference·
+metadata/graph, `sandbox/CargoResolver`, `application/CargoResolutionService`,
+`promotion/cargo_transaction.go`, CLI/bootstrap을 재사용한다. `cargo add`는 현재
+resolve만 수행하고 `cargo build`는 static unavailable leaf다. 기존 stub/unit PASS는
+실제 acquisition·Policy·transaction·observed build의 qualification이 아니다.
+
+`MISSING`: 실제 metadata와 frozen Cargo.lock·독립 sparse-index checksum의 연결,
+complete graph/feature/target 상태; anchored controls와 local source 및 pinned Rust/Cargo
+runtime을 사용하는 isolated resolver; canonical crate intake/검증/정적 검사/Run·
+Evidence·Policy와 verified cache; guarded Cargo.toml/Cargo.lock transaction 및 재선택
+금지·경쟁/rollback/cleanup; offline observed build.rs/proc-macro/native subprocess와
+bounded no-overwrite output publish; canonical leaf의 실제 정상·부정/security
+qualification과 영향받는 직접 소비자 및 canonical/platform 검사다.
+
+Read: [Cargo canonical contract](./16-m12-01-ecosystem-expansion-contract.md#5-m12-003--rust--cargo),
+[Adapter 책임](../architecture/02-adapters-and-providers.md),
+[Inspection/Sandbox/Policy](../architecture/03-inspection-sandbox-policy.md), 관련 Artifact/
+Inspection/Evidence·Promotion contracts와 Engineering check/security 규칙을 따른다.
+기존 구현을 대체하지 않고 확인한 acceptance gap만 같은 owner에서 보완한다.
+M12-003만 IN_PROGRESS이며 M12-004는 NOT_STARTED다. 새 profile의 예산은 Go 예산을
+자동 전용하지 않고 실제 처리량과 실패 경계를 따로 확인한다.
+NO PUSH / NO REMOTE CI / NO MERGE.
+
+### M12-003 실제 parser/source acquisition 부분 checkpoint (2026-10-05)
+
+동일 고정 Cargo metadata/lock의 old resolver FAIL→frozen lock과 연결한 bounded parser
+PASS를 확인했다. Complete nodes·edges·workspace/features/target 상태를 정규화하며
+checksum 선언과 공식 source 인증은 구분한다. 공식 Rust1.99.0-bookworm OCI digest를
+runtime lock에 고정하고 실제 SDK version query와 substituted/missing runtime 부정
+회귀를 확인했다. 등록된 gVisor Cargo 실행은 아직 NOT_RUN이다.
+
+빈 owned intake의 `itoa@1.0.17`은 canonical HTTPS acquire→독립 sparse-index/lock/bytes
+검증→bounded static archive 검사→Evidence→기존 Policy ALLOW가 실제 PASS다.
+Parser/index/archive/intake/integrity/runtime 부정과 canonical quick/security/docs/
+vulnerability도 PASS다. [부분 evidence](./evidence/m12-003-cargo-acquisition/result.json)가
+source/입력/실제 실행 범위를 소유한다. Source 성공은 project add/build 완료가 아니다.
+
+`WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO`와 M12-003 IN_PROGRESS를 유지한다.
+MISSING은 anchored complete project/source controls, isolated resolver, complete snapshot과
+verified cache, guarded frozen add transaction/rollback, offline observed build와 bounded
+no-overwrite output 및 whole qualification/직접 소비자·platform 검증이다. M12-004는
+NOT_STARTED다. NO PUSH / NO REMOTE CI / NO MERGE.
 
 ## Step 13 Invariant
 

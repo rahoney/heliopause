@@ -1,0 +1,5 @@
+=== RUN   TestCargoPublicCrateAcquisitionIntegration
+    public_integration_test.go:74: source=crates-io version=1.0.17 digest=92ecc6618181def0457392ccd0ee51198e065e016d1d527a7ac1b6dc7c1f09d2 checks=2 evidence=2 policy=ALLOW
+--- PASS: TestCargoPublicCrateAcquisitionIntegration (0.28s)
+PASS
+ok  	github.com/rahoney/heliopause/internal/inspection/cargo	0.284s
