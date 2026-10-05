@@ -27,9 +27,13 @@ const (
 
 // GoVerifiedCache has separate intake, Evidence and cache roots. Materialized
 // files come only from rehashed ALLOW subjects, never an ambient/resolver cache.
-type GoEvidenceReader interface {
+type ProjectEvidenceReader interface {
 	ReadReference(context.Context, domain.RunID, domain.EvidenceReference, domain.ResolvedArtifactIdentity, domain.ContentDigest) (domain.Evidence, domain.ContentDigest, error)
 }
+
+// Preserve the existing Go composition contract as another project consumer
+// uses the same recorded-Evidence boundary.
+type GoEvidenceReader = ProjectEvidenceReader
 
 type GoVerifiedCache struct {
 	intakeRoot, evidenceRoot, cacheRoot string
@@ -52,12 +56,13 @@ func NewGoVerifiedCache(intakeRoot, evidenceRoot, cacheRoot string, evidence GoE
 	return &GoVerifiedCache{intakeRoot, evidenceRoot, cacheRoot, evidence}, nil
 }
 
-type goCacheFile struct {
+type cacheFileRecord struct {
 	Path   string `json:"path"`
 	Kind   string `json:"kind"`
 	Size   int64  `json:"size"`
 	SHA256 string `json:"sha256"`
 }
+type goCacheFile = cacheFileRecord
 type goCacheEntry struct {
 	Source        string            `json:"source"`
 	Module        string            `json:"module"`
@@ -97,19 +102,10 @@ func (c *GoVerifiedCache) goCacheApproval(ctx context.Context, set domain.Projec
 		p := inspection.PolicyDecision()
 		integrity, _ := a.DeclaredIntegrity()
 		e := goCacheEntry{Source: a.Identity().Source().String(), Module: a.Identity().Name(), Version: a.Identity().Version(), Digest: a.Digest().String(), Integrity: integrity, Run: inspection.RunID().String(), Policy: p.PolicyID(), PolicyVersion: p.Version()}
-		covered := map[domain.CheckID]bool{}
-		for _, ref := range inspection.Evidence() {
-			item, digest, err := c.evidence.ReadReference(ctx, inspection.RunID(), ref, a.Identity(), a.Digest())
-			if err != nil {
-				return goCacheDocument{}, err
-			}
-			covered[item.CheckID()] = true
-			e.Evidence = append(e.Evidence, goCacheEvidence{ref.ID().String(), digest.String()})
-		}
-		for _, check := range inspection.Checks() {
-			if check.Required() && !covered[check.ID()] {
-				return goCacheDocument{}, errors.New("go cache approval has missing required Evidence")
-			}
+		var err error
+		e.Evidence, err = projectCacheEvidence(ctx, c.evidence, inspection)
+		if err != nil {
+			return goCacheDocument{}, err
 		}
 		doc.Entries = append(doc.Entries, e)
 	}
@@ -342,6 +338,15 @@ func (c *GoVerifiedCache) verifyRecordedApproval(ctx context.Context, doc goCach
 }
 
 func goCacheInventory(ctx context.Context, root string) ([]goCacheFile, error) {
+	return projectCacheInventory(ctx, root, maxGoProjectCacheFiles, maxGoProjectCacheBytes, artifactgo.MaxZipBytes, false)
+}
+
+// The caller supplies its own finite limits. Cargo does not inherit Go's
+// measured aggregate capacity. Sealed Cargo files also require single links.
+func projectCacheInventory(ctx context.Context, root string, maxFiles int, maxBytes, maxFileBytes int64, sealed bool) ([]cacheFileRecord, error) {
+	if ctx == nil || maxFiles <= 0 || maxBytes <= 0 || maxFileBytes <= 0 {
+		return nil, errors.New("project cache inventory bounds are invalid")
+	}
 	var files []goCacheFile
 	var total int64
 	var visited int
@@ -358,7 +363,7 @@ func goCacheInventory(ctx context.Context, root string) ([]goCacheFile, error) {
 			return err
 		}
 		visited++
-		if visited > 2*maxGoProjectCacheFiles {
+		if visited > 2*maxFiles {
 			return errors.New("go cache tree exceeds bounded entry limits")
 		}
 		rel, err := filepath.Rel(root, name)
@@ -366,12 +371,15 @@ func goCacheInventory(ctx context.Context, root string) ([]goCacheFile, error) {
 			return err
 		}
 		if info.IsDir() {
+			if sealed && info.Mode().Perm() != 0o755 {
+				return errors.New("project cache directory is not sealed")
+			}
 			files = append(files, goCacheFile{Path: filepath.ToSlash(rel), Kind: "directory"})
 			return nil
 		}
 		total += info.Size()
 		fileCount++
-		if !info.Mode().IsRegular() || info.Size() < 0 || info.Size() > artifactgo.MaxZipBytes || total > maxGoProjectCacheBytes || fileCount > maxGoProjectCacheFiles {
+		if !info.Mode().IsRegular() || info.Size() < 0 || info.Size() > maxFileBytes || total > maxBytes || fileCount > maxFiles || (sealed && (info.Mode().Perm() != 0o444 || !pypiSingleLink(info))) {
 			return errors.New("go project cache exceeds bounded content limits")
 		}
 		f, err := os.OpenFile(name, os.O_RDONLY|syscall.O_NONBLOCK, 0)
@@ -385,8 +393,13 @@ func goCacheInventory(ctx context.Context, root string) ([]goCacheFile, error) {
 		}
 		hash := sha256.New()
 		n, copyErr := io.Copy(hash, io.LimitReader(f, info.Size()+1))
+		var after os.FileInfo
+		var afterErr error
+		if sealed {
+			after, afterErr = f.Stat()
+		}
 		closeErr := f.Close()
-		if copyErr != nil || closeErr != nil || n != info.Size() {
+		if copyErr != nil || closeErr != nil || n != info.Size() || (sealed && (afterErr != nil || !os.SameFile(info, after) || after.Size() != info.Size() || after.Mode() != info.Mode() || !after.ModTime().Equal(info.ModTime()) || !pypiSingleLink(after))) {
 			return errors.New("go cache member read is incomplete")
 		}
 		files = append(files, goCacheFile{Path: filepath.ToSlash(rel), Kind: "file", Size: n, SHA256: hex.EncodeToString(hash.Sum(nil))})

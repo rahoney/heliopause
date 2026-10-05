@@ -2,9 +2,6 @@ package sandbox
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"io"
 	"os"
@@ -71,28 +68,11 @@ func (r *CargoResolver) ResolveDependencies(ctx context.Context, reference domai
 	if !filepath.IsAbs(project) || project == "/" {
 		return domain.DependencyResolution{}, errors.New("cargo project path is invalid")
 	}
-	manifest, lock, err := readCargoControlFiles(project)
+	selected, err := r.resolveLockedProject(ctx, installContext)
 	if err != nil {
 		return domain.DependencyResolution{}, err
 	}
-	home, err := os.MkdirTemp("", "haa-cargo-home-")
-	if err != nil {
-		return domain.DependencyResolution{}, errors.New("create private Cargo resolver home")
-	}
-	defer os.RemoveAll(home)
-	environment, err := CargoResolverEnvironmentForHome(home)
-	if err != nil {
-		return domain.DependencyResolution{}, err
-	}
-	body, err := r.runner.RunCargo(ctx, project, environment, "metadata", "--locked", "--format-version", "1")
-	if err != nil {
-		return domain.DependencyResolution{}, errors.New("cargo metadata resolution failed")
-	}
-	currentManifest, currentLock, currentErr := readCargoControlFiles(project)
-	if currentErr != nil || string(currentManifest) != string(manifest) || string(currentLock) != string(lock) {
-		return domain.DependencyResolution{}, errors.New("cargo project changed during resolution")
-	}
-	records, edges, state, err := artifactcargo.ParseLockedMetadata(body, lock, project)
+	records, edges, _, err := artifactcargo.ParseLockedMetadata(selected.metadata, selected.files["Cargo.lock"], selected.metadataRoot)
 	if err != nil {
 		return domain.DependencyResolution{}, err
 	}
@@ -100,21 +80,7 @@ func (r *CargoResolver) ResolveDependencies(ctx context.Context, reference domai
 	if err != nil {
 		return domain.DependencyResolution{}, err
 	}
-	manifestDigest, lockDigest := sha256.Sum256(manifest), sha256.Sum256(lock)
-	canonical, err := json.Marshal(struct {
-		Manifest string          `json:"manifest_sha256"`
-		Lock     string          `json:"lock_sha256"`
-		Graph    json.RawMessage `json:"graph"`
-	}{hex.EncodeToString(manifestDigest[:]), hex.EncodeToString(lockDigest[:]), state})
-	if err != nil {
-		return domain.DependencyResolution{}, errors.New("cargo frozen report normalization failed")
-	}
-	digestBytes := sha256.Sum256(canonical)
-	digest, err := domain.NewSHA256Digest(hex.EncodeToString(digestBytes[:]))
-	if err != nil {
-		return domain.DependencyResolution{}, err
-	}
-	return domain.NewDependencyResolution(graph, "cargo:crates.io;sparse:index.crates.io;metadata-v1;frozen-lock", digest)
+	return domain.NewDependencyResolution(graph, cargoResolutionDescriptor, selected.snapshot.GraphDigest())
 }
 
 func readCargoControlFiles(project string) ([]byte, []byte, error) {

@@ -19,6 +19,7 @@ type TraceDiagnostic struct {
 	FaultImageLocator uint64
 	FaultOpen         FaultOpenDiagnostic
 	FaultBudget       FaultBudgetDiagnostic
+	FaultRaw          FaultRawDiagnostic
 	FaultLedger       FaultLedgerDiagnostic
 	Events            uint64
 	Bytes             uint64
@@ -30,18 +31,23 @@ type TraceDiagnostic struct {
 // FaultOpenDiagnostic contains only bounded kernel-derived classifications.
 // It explains a rejected open and never participates in Policy or admission.
 type FaultOpenDiagnostic struct {
-	Image             string `json:"image"`
-	KernelImage       string `json:"kernel_image,omitempty"`
-	Role              string `json:"role"`
-	Provenance        string `json:"provenance"`
-	Subject           string `json:"subject"`
-	Mount             string `json:"mount"`
-	Flags             uint32 `json:"flags"`
-	PathLocator       uint64 `json:"path_locator,omitempty"`
-	ExecutableLocator uint64 `json:"executable_locator,omitempty"`
-	MountpointLocator uint64 `json:"mountpoint_locator,omitempty"`
-	ExecutablePinned  bool   `json:"executable_pinned,omitempty"`
-	GoDriverCreator   bool   `json:"go_driver_creator,omitempty"`
+	Image              string `json:"image"`
+	KernelImage        string `json:"kernel_image,omitempty"`
+	Role               string `json:"role"`
+	Provenance         string `json:"provenance"`
+	Subject            string `json:"subject"`
+	Mount              string `json:"mount"`
+	Flags              uint32 `json:"flags"`
+	PathLocator        uint64 `json:"path_locator,omitempty"`
+	ExecutableLocator  uint64 `json:"executable_locator,omitempty"`
+	MountpointLocator  uint64 `json:"mountpoint_locator,omitempty"`
+	ExecutablePinned   bool   `json:"executable_pinned,omitempty"`
+	GoDriverCreator    bool   `json:"go_driver_creator,omitempty"`
+	CargoDriverCreator bool   `json:"cargo_driver_creator,omitempty"`
+	RustcVersionQuery  bool   `json:"rustc_version_query,omitempty"`
+	RustcMetadataQuery bool   `json:"rustc_metadata_query,omitempty"`
+	RustcArgc          uint32 `json:"rustc_argc,omitempty"`
+	RustcArgvLocator   uint64 `json:"rustc_argv_locator,omitempty"`
 }
 
 // FaultBudgetDiagnostic explains the existing helper limit using only fixed
@@ -54,6 +60,23 @@ type FaultBudgetDiagnostic struct {
 	Raw       uint64 `json:"raw"`
 	Other     uint64 `json:"other"`
 	Workspace uint64 `json:"workspace"`
+}
+
+// FaultRawDiagnostic explains a rejected send syscall without preserving its
+// payload, address, path or mutable process name. It confers no permission.
+type FaultRawDiagnostic struct {
+	Check              string `json:"check"`
+	Sysno              uint64 `json:"sysno"`
+	FD                 uint64 `json:"fd"`
+	KernelImage        string `json:"kernel_image"`
+	Role               string `json:"role"`
+	Provenance         string `json:"provenance"`
+	ExecutableLocator  uint64 `json:"executable_locator"`
+	SocketpairObserved bool   `json:"socketpair_observed,omitempty"`
+	SocketpairFDMatch  bool   `json:"socketpair_fd_match,omitempty"`
+	SocketpairDomain   int32  `json:"socketpair_domain,omitempty"`
+	SocketpairType     uint32 `json:"socketpair_type,omitempty"`
+	SocketpairSource   string `json:"socketpair_source,omitempty"`
 }
 
 // FaultLedgerDiagnostic describes the host-owned aggregate ledger, whose
@@ -225,6 +248,10 @@ func collectTraceDiagnostic(ctx context.Context, reader TraceReader) ([]domain.S
 				if errors.As(err, &counters) {
 					diagnostic.FaultBudget = counters.TraceFaultBudget()
 				}
+				var raw interface{ TraceFaultRaw() FaultRawDiagnostic }
+				if errors.As(err, &raw) {
+					diagnostic.FaultRaw = raw.TraceFaultRaw()
+				}
 				var ledger interface{ TraceFaultLedger() FaultLedgerDiagnostic }
 				if errors.As(err, &ledger) {
 					diagnostic.FaultLedger = ledger.TraceFaultLedger()
@@ -319,6 +346,8 @@ func (d TraceDiagnostic) String() string {
 	if d.FaultOpen.ExecutableLocator != 0 {
 		site += fmt.Sprintf(" open_executable_fnv1a64=%016x", d.FaultOpen.ExecutableLocator)
 		site += fmt.Sprintf(" open_executable_pinned=%t open_go_driver_creator=%t", d.FaultOpen.ExecutablePinned, d.FaultOpen.GoDriverCreator)
+		site += fmt.Sprintf(" open_cargo_driver_creator=%t open_rustc_version_query=%t", d.FaultOpen.CargoDriverCreator, d.FaultOpen.RustcVersionQuery)
+		site += fmt.Sprintf(" open_rustc_metadata_query=%t open_rustc_argc=%d open_rustc_argv_fnv1a64=%016x", d.FaultOpen.RustcMetadataQuery, d.FaultOpen.RustcArgc, d.FaultOpen.RustcArgvLocator)
 	}
 	if d.FaultOpen.MountpointLocator != 0 {
 		site += fmt.Sprintf(" open_mountpoint_fnv1a64=%016x", d.FaultOpen.MountpointLocator)
@@ -326,6 +355,13 @@ func (d TraceDiagnostic) String() string {
 	if d.FaultBudget.Limit != 0 {
 		b := d.FaultBudget
 		site += fmt.Sprintf(" budget_charged=%d budget_limit=%d budget_close=%d budget_fcntl=%d budget_raw=%d budget_other=%d budget_workspace=%d", b.Charged, b.Limit, b.Close, b.Fcntl, b.Raw, b.Other, b.Workspace)
+	}
+	if d.FaultRaw.Check != "" {
+		r := d.FaultRaw
+		site += fmt.Sprintf(" raw_check=%s raw_sysno=%d raw_fd=%d raw_kernel_image=%s raw_role=%s raw_provenance=%s raw_executable_fnv1a64=%016x", r.Check, r.Sysno, r.FD, r.KernelImage, r.Role, r.Provenance, r.ExecutableLocator)
+		if r.SocketpairObserved {
+			site += fmt.Sprintf(" raw_socketpair_observed=true raw_socketpair_fd_match=%t raw_socketpair_domain=%d raw_socketpair_type=%d raw_socketpair_source=%s", r.SocketpairFDMatch, r.SocketpairDomain, r.SocketpairType, r.SocketpairSource)
+		}
 	}
 	if d.FaultLedger.EventLimit != 0 {
 		l := d.FaultLedger

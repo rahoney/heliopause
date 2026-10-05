@@ -868,6 +868,14 @@ required observation incomplete → no ALLOW.
 
 ## Project transaction
 
+Cargo resolver는 초기 charged event 상한10,000을 유지한다. Go의 측정된 resolver/
+build 한도를 Cargo에 전용하지 않는다. 새 verified vendor cache의 초기 aggregate는
+regular files10,000(각 controller-generated checksum 포함), directory 포함 entries20,000,
+expanded bytes200MiB, canonical receipt4MiB다. 개별 crate의 기존 archive/file/control
+한도는 그대로 적용한다. 독립 승인·Evidence와 모든 파일을 staging 및 재사용 때
+재확인하며, archive가 `.cargo-checksum.json` 권위를 제공할 수 없다. 이 초기 한도는
+실제 정상 처리량과 초과 차단 근거 없이 자동 확장하지 않는다.
+
 `cargo add` transaction set:
 
 ```text

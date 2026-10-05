@@ -62,7 +62,7 @@ func observerExpectedTopology(profile string) ([]observerMountExpectation, bool)
 	tmp := observerMountExpectation{"/tmp", "workspace", "/", "tmpfs", false, true, true, false}
 	runtime := observerMountExpectation{"/haa-runtime", "helper", "/", "tmpfs", false, false, true, false}
 	switch profile {
-	case "npm-lifecycle", "go-module-resolver", "go-module-build":
+	case "npm-lifecycle", "go-module-resolver", "go-module-build", "cargo-resolver":
 		return []observerMountExpectation{root, tmp, runtime}, true
 	case "pypi-wheel", "pypi-wheel-pytorch-cpu", "pypi-wheel-pytorch-cu126", "pypi-wheel-pytorch-cu130", "pypi-wheel-pytorch-cu132":
 		site := observerMountExpectation{"/haa-site", "workspace", "/", "tmpfs", false, false, true, false}
@@ -253,6 +253,7 @@ type helperRecord struct {
 	FaultImageLocator    uint64                 `json:"fault_image_locator,omitempty"`
 	FaultOpen            *FaultOpenDiagnostic   `json:"fault_open,omitempty"`
 	FaultBudget          *FaultBudgetDiagnostic `json:"fault_budget,omitempty"`
+	FaultRaw             *FaultRawDiagnostic    `json:"fault_raw,omitempty"`
 	EventSource          string                 `json:"event_source,omitempty"`
 	Family               string                 `json:"family,omitempty"`
 	ProcessRelation      string                 `json:"process_relation,omitempty"`
@@ -267,6 +268,7 @@ type observerFault struct {
 	imageLocator uint64
 	open         FaultOpenDiagnostic
 	budget       FaultBudgetDiagnostic
+	raw          FaultRawDiagnostic
 	ledger       FaultLedgerDiagnostic
 }
 
@@ -276,6 +278,7 @@ func (e observerFault) TraceFaultSite() string                  { return e.site 
 func (e observerFault) TraceFaultImageLocator() uint64          { return e.imageLocator }
 func (e observerFault) TraceFaultOpen() FaultOpenDiagnostic     { return e.open }
 func (e observerFault) TraceFaultBudget() FaultBudgetDiagnostic { return e.budget }
+func (e observerFault) TraceFaultRaw() FaultRawDiagnostic       { return e.raw }
 func (e observerFault) TraceFaultLedger() FaultLedgerDiagnostic { return e.ledger }
 
 const maximumHelperRecordBytes = 1024
@@ -627,6 +630,9 @@ func (o *SharedObserver) receive() {
 				if record.FaultBudget != nil {
 					fault.budget = *record.FaultBudget
 				}
+				if record.FaultRaw != nil {
+					fault.raw = *record.FaultRaw
+				}
 				o.fault = fault
 			}
 			batch := o.beginTeardownLocked(reader.session)
@@ -914,6 +920,20 @@ func (r *sharedTraceReader) Next(ctx context.Context) (TraceRecord, error) {
 
 // Fault sites are diagnostic enums from the pinned helper, never policy input.
 func validFaultSite(record helperRecord) bool {
+	if record.FaultRaw != nil {
+		r := record.FaultRaw
+		if (r.SocketpairObserved && r.SocketpairSource != "GUEST_RETURN_BUFFER") ||
+			(!r.SocketpairObserved && (r.SocketpairFDMatch || r.SocketpairDomain != 0 || r.SocketpairType != 0 || r.SocketpairSource != "")) {
+			return false
+		}
+		if record.Kind != "stream-fault" || record.Reason != "FD_STATE_UNKNOWN" || record.FaultSite != "RAW" ||
+			!validFixed(r.Check, "ARGUMENT", "TABLE", "DESCRIPTOR", "CLASSIFICATION", "FAMILY") ||
+			(r.Sysno != 44 && r.Sysno != 46 && r.Sysno != 307 && r.Sysno != 206 && r.Sysno != 211 && r.Sysno != 269) ||
+			!validFixed(r.KernelImage, "UNKNOWN", "BOUNDARY", "SETPRIV", "SHELL", "ENV", "NPM_CLI", "NODE", "CARGO", "TAR", "RUSTC") ||
+			!validFixed(r.Role, "CONTROL", "ARTIFACT", "UNKNOWN") || !validFixed(r.Provenance, "OCI_ROOT", "DIRECT_EXEC_ROOT", "CLONE_CHILD", "UNKNOWN") {
+			return false
+		}
+	}
 	if record.FaultBudget != nil {
 		b := record.FaultBudget
 		if record.Kind != "stream-fault" || record.Reason != "EVENT_LIMIT" || record.FaultSite != "EVENT_LIMIT" || b.Limit == 0 || b.Limit > maximumPyTorchCPUTraceEvents || b.Charged > b.Limit || b.Close > b.Charged || b.Fcntl > b.Charged || b.Raw > b.Charged || b.Other > b.Charged || b.Close+b.Fcntl+b.Raw+b.Other > b.Charged || b.Workspace > maximumTraceEvents {
@@ -922,11 +942,14 @@ func validFaultSite(record helperRecord) bool {
 	}
 	if record.FaultOpen != nil {
 		open := record.FaultOpen
+		if open.RustcArgc > 33 {
+			return false
+		}
 		if record.Kind != "stream-fault" || !validFixed(record.FaultSite, "OPEN_RESULT_CLASSIFICATION_IMAGE", "OPEN_RESULT_CLASSIFICATION_PROC", "OPEN_RESULT_CLASSIFICATION_SYS", "OPEN_RESULT_CLASSIFICATION_OTHER", "OPEN_RESULT_CLASSIFICATION_PROCESS_NAME") ||
 			!validFixed(open.Image, "SHELL", "PYTHON", "PIP", "NODE", "NPM", "GO", "ARTIFACT", "SLEEP", "MKDIR", "CAT", "CHMOD", "OTHER") ||
-			(open.KernelImage != "" && !validFixed(open.KernelImage, "UNKNOWN", "BOUNDARY", "SETPRIV", "SHELL", "ENV", "NPM_CLI", "NODE")) ||
+			(open.KernelImage != "" && !validFixed(open.KernelImage, "UNKNOWN", "BOUNDARY", "SETPRIV", "SHELL", "ENV", "NPM_CLI", "NODE", "CARGO", "TAR", "RUSTC")) ||
 			!validFixed(open.Role, "CONTROL", "ARTIFACT", "UNKNOWN") || !validFixed(open.Provenance, "OCI_ROOT", "DIRECT_EXEC_ROOT", "CLONE_CHILD", "UNKNOWN") ||
-			!validFixed(open.Subject, "PROC_SELF_AUXV", "PROC_SELF_CGROUP", "PROC_SELF_MOUNTINFO", "THP_PAGE_SIZE", "CGROUP_CPU_QUOTA", "OCI_IMAGE", "OTHER") ||
+			!validFixed(open.Subject, "PROC_SELF_AUXV", "PROC_SELF_MAPS", "PROC_SELF_STATM", "PROC_SELF_CGROUP", "PROC_SELF_MOUNTINFO", "VM_OVERCOMMIT_MEMORY", "THP_PAGE_SIZE", "CGROUP_CPU_QUOTA", "OCI_IMAGE", "OTHER") ||
 			!validFixed(open.Mount, "oci-root", "system", "workspace", "helper") {
 			return false
 		}

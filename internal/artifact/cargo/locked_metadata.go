@@ -152,6 +152,7 @@ func ParseLockedMetadata(body, lockBody []byte, projectRoot string) (records []P
 	seenRegistryEdges := map[metadataEdge]bool{}
 	var nodes []frozenNode
 	var graphEdges []frozenEdge
+	adjacent := map[string][]string{}
 	seenNodes, seenEdges := map[string]bool{}, map[frozenEdge]bool{}
 	for _, node := range document.Resolve.Nodes {
 		if _, exists := byID[node.ID]; !exists || seenNodes[node.ID] || len(node.Features) > 1024 {
@@ -176,6 +177,7 @@ func ParseLockedMetadata(body, lockBody []byte, projectRoot string) (records []P
 			if !locked[lockKeys[node.ID]].resolvedDeps[lockKeys[dependency.Pkg]] {
 				return nil, nil, nil, errors.New("cargo graph edge is absent from frozen lock")
 			}
+			adjacent[node.ID] = append(adjacent[node.ID], dependency.Pkg)
 			for _, kind := range dependency.Kinds {
 				value := frozenEdge{From: identities[node.ID], To: identities[dependency.Pkg], Name: dependency.Name}
 				if kind.Kind != nil {
@@ -204,6 +206,22 @@ func ParseLockedMetadata(body, lockBody []byte, projectRoot string) (records []P
 				}
 			}
 		}
+	}
+	reachable := map[string]bool{}
+	queue := append([]string(nil), document.WorkspaceMembers...)
+	for _, id := range queue {
+		reachable[id] = true
+	}
+	for index := 0; index < len(queue); index++ {
+		for _, id := range adjacent[queue[index]] {
+			if !reachable[id] {
+				reachable[id] = true
+				queue = append(queue, id)
+			}
+		}
+	}
+	if len(reachable) != len(byID) {
+		return nil, nil, nil, errors.New("cargo graph contains packages disconnected from workspace members")
 	}
 	sort.Strings(members)
 	sort.Slice(nodes, func(i, j int) bool { return nodes[i].Identity < nodes[j].Identity })

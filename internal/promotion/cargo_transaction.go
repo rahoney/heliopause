@@ -6,6 +6,9 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+
+	artifactcargo "github.com/rahoney/heliopause/internal/artifact/cargo"
+	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
 const cargoTransactionMetadata = ".heliopause/cargo-transaction.json"
@@ -13,30 +16,81 @@ const cargoTransactionMetadata = ".heliopause/cargo-transaction.json"
 type cargoProjectPlan struct {
 	root                 string
 	cargoToml, cargoLock [32]byte
+	rootInfo             os.FileInfo
+	members              map[string]os.FileInfo
+	controls             []domain.ProjectControlFile
+	authorized           bool
 }
 
-func freezeCargoProject(root string) (cargoProjectPlan, error) {
-	if !filepath.IsAbs(root) || trustedExistingDirectory(root) != nil {
+func freezeCargoProject(root string) (result cargoProjectPlan, resultErr error) {
+	if !filepath.IsAbs(root) || filepath.Clean(root) != root || root == "/" || trustedExistingDirectory(root) != nil {
 		return cargoProjectPlan{}, errors.New("cargo project root is untrusted")
 	}
-	toml, err := os.ReadFile(filepath.Join(root, "Cargo.toml"))
-	if err != nil || len(toml) == 0 {
-		return cargoProjectPlan{}, errors.New("cargo.toml is unavailable")
+	info, err := os.Lstat(root)
+	if err != nil {
+		return result, errors.New("cargo project root is unavailable")
 	}
-	lock, err := os.ReadFile(filepath.Join(root, "Cargo.lock"))
-	if err != nil || len(lock) == 0 {
-		return cargoProjectPlan{}, errors.New("cargo.lock is unavailable")
+	directory, err := os.OpenRoot(root)
+	if err != nil {
+		return result, errors.New("open anchored Cargo controls")
 	}
-	return cargoProjectPlan{root: root, cargoToml: sha256.Sum256(toml), cargoLock: sha256.Sum256(lock)}, nil
+	defer func() {
+		resultErr = errors.Join(resultErr, directory.Close())
+		if resultErr != nil {
+			result = cargoProjectPlan{}
+		}
+	}()
+	opened, err := directory.Stat(".")
+	if err != nil || !os.SameFile(info, opened) {
+		return result, errors.New("cargo control root identity changed")
+	}
+	plan := cargoProjectPlan{root: root, rootInfo: info, members: map[string]os.FileInfo{}}
+	for _, name := range []string{"Cargo.toml", "Cargo.lock"} {
+		body, member, err := readGoTransactionControl(directory, name)
+		present := true
+		if name == "Cargo.lock" && errors.Is(err, os.ErrNotExist) {
+			body, member, err, present = nil, nil, nil, false
+		}
+		if err != nil || (present && (member == nil || !pypiSingleLink(member) || len(body) == 0)) {
+			return result, errors.New("cargo control is not bounded single-link content")
+		}
+		if name == "Cargo.toml" {
+			if err := artifactcargo.ValidateProjectManifest(body, name); err != nil {
+				return result, err
+			}
+			plan.cargoToml = sha256.Sum256(body)
+		} else {
+			plan.cargoLock = sha256.Sum256(body)
+		}
+		control, err := domain.NewProjectControlFile(name, body, present)
+		if err != nil {
+			return result, err
+		}
+		plan.controls = append(plan.controls, control)
+		plan.members[name] = member
+	}
+	return plan, nil
 }
 func (p cargoProjectPlan) verifyUnchanged() error {
 	current, err := freezeCargoProject(p.root)
-	if err != nil || current.cargoToml != p.cargoToml || current.cargoLock != p.cargoLock {
+	if err != nil || p.rootInfo == nil || !os.SameFile(p.rootInfo, current.rootInfo) || p.rootInfo.Mode() != current.rootInfo.Mode() || current.cargoToml != p.cargoToml || current.cargoLock != p.cargoLock {
 		return errors.New("cargo project changed during transaction")
+	}
+	for _, name := range []string{"Cargo.toml", "Cargo.lock"} {
+		before, after := p.members[name], current.members[name]
+		if (before == nil) != (after == nil) || (before != nil && (!os.SameFile(before, after) || before.Mode() != after.Mode())) {
+			return errors.New("cargo control identity changed during transaction")
+		}
 	}
 	return nil
 }
 func (p cargoProjectPlan) verifyManaged() error {
+	// Production publication sets this only after independent retained approval
+	// or a guarded dependency-free adoption. The legacy marker is never used by
+	// the current Application guard to establish approval.
+	if p.authorized {
+		return nil
+	}
 	body, err := os.ReadFile(filepath.Join(p.root, cargoTransactionMetadata))
 	if err != nil {
 		return errors.New("cargo project is not HAA-managed")
@@ -52,9 +106,11 @@ func (p cargoProjectPlan) privateWorkspace() (string, error) {
 	if err != nil {
 		return "", errors.New("create Cargo private transaction workspace")
 	}
-	for _, name := range []string{"Cargo.toml", "Cargo.lock"} {
-		body, readErr := os.ReadFile(filepath.Join(p.root, name))
-		if readErr != nil || os.WriteFile(filepath.Join(workspace, name), body, 0o600) != nil {
+	for _, control := range p.controls {
+		if !control.Present() {
+			continue
+		}
+		if os.WriteFile(filepath.Join(workspace, control.Name()), control.Body(), 0o600) != nil {
 			_ = os.RemoveAll(workspace)
 			return "", errors.New("copy Cargo transaction control files")
 		}

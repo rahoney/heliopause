@@ -34,7 +34,7 @@ func TestProbeGoRejectsUnverifiedRuntimeOrImage(t *testing.T) {
 	base := map[string]string{
 		"docker version --format {{.Server.Version}}": "29.8.1",
 		"runsc --version":      canonicalRunscVersionOutput,
-		"runsc trace metadata": "Name: syscall/open_result\nName: sentry/mount_topology_snapshot\nName: sentry/mount_topology_mutation\n",
+		"runsc trace metadata": "Name: syscall/open_result\nName: syscall/socketpair_result\nName: sentry/mount_topology_snapshot\nName: sentry/mount_topology_mutation\n",
 		"docker image inspect " + PinnedGoRuntime().ImageReference + " --format {{.Id}} {{.Architecture}}": "sha256:" + strings.Repeat("a", 64) + " amd64",
 	}
 	tests := []struct {

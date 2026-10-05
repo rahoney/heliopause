@@ -1,12 +1,72 @@
 package promotion
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"os"
 	"path/filepath"
 	"testing"
 )
+
+func TestCargoProjectPlanRejectsAliasedControls(t *testing.T) {
+	for _, kind := range []string{"symlink", "hardlink", "oversize"} {
+		t.Run(kind, func(t *testing.T) {
+			root := writeManagedCargoProject(t)
+			control := filepath.Join(root, "Cargo.toml")
+			if kind == "oversize" {
+				if err := os.WriteFile(control, bytes.Repeat([]byte("x"), 4<<20+1), 0o600); err != nil {
+					t.Fatal(err)
+				}
+			} else {
+				outside := filepath.Join(canonicalGoTestRoot(t), "owned-fixture.toml")
+				body, err := os.ReadFile(control)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if err := os.WriteFile(outside, body, 0o600); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.Remove(control); err != nil {
+					t.Fatal(err)
+				}
+				if kind == "symlink" {
+					err = os.Symlink(outside, control)
+				} else {
+					err = os.Link(outside, control)
+				}
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
+			if _, err := freezeCargoProject(root); err == nil {
+				t.Fatal("unbounded or aliased Cargo control accepted")
+			}
+		})
+	}
+}
+
+func TestCargoProjectPlanPreservesOriginalControlIdentity(t *testing.T) {
+	root := writeManagedCargoProject(t)
+	plan, err := freezeCargoProject(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	name := filepath.Join(root, "Cargo.toml")
+	body, err := os.ReadFile(name)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Rename(name, name+".original"); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(name, body, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := plan.verifyUnchanged(); err == nil {
+		t.Fatal("same-byte control replacement accepted")
+	}
+}
 
 func writeManagedCargoProject(t *testing.T) string {
 	t.Helper()

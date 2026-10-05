@@ -34,6 +34,13 @@ type goProjectGuard struct {
 }
 
 func acquireGoProjectGuard(root string) (goProjectGuard, error) {
+	return acquireProjectTransactionGuard(root, ".heliopause-go-transaction.lock")
+}
+
+func acquireProjectTransactionGuard(root, lockName string) (goProjectGuard, error) {
+	if lockName == "" || filepath.Base(lockName) != lockName || lockName == "." || lockName == ".." {
+		return goProjectGuard{}, errors.New("project transaction lock name is invalid")
+	}
 	if !filepath.IsAbs(root) || filepath.Clean(root) != root || root == "/" || trustedExistingDirectory(root) != nil {
 		return goProjectGuard{}, errors.New("go project root is untrusted")
 	}
@@ -50,7 +57,7 @@ func acquireGoProjectGuard(root string) (goProjectGuard, error) {
 		_ = directory.Close()
 		return goProjectGuard{}, errors.New("go project root identity changed")
 	}
-	path := filepath.Join(root, ".heliopause-go-transaction.lock")
+	path := filepath.Join(root, lockName)
 	file, err := directory.OpenFile(filepath.Base(path), os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
 	if err != nil {
 		_ = directory.Close()

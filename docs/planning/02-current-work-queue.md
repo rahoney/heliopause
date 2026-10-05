@@ -2732,6 +2732,37 @@ verified cache, guarded frozen add transaction/rollback, offline observed build�
 no-overwrite output 및 whole qualification/직접 소비자·platform 검증이다. M12-004는
 NOT_STARTED다. NO PUSH / NO REMOTE CI / NO MERGE.
 
+### M12-003 isolated source·verified cache 부분 검증 (2026-10-05)
+
+같은 최소 itoa1.0.17 frozen source fixture가 registered gVisor에서 source PASS3.38s다.
+판정 불변 kernel image/role/open/topology 진단으로 각 최초 차단을 연결했고, exact
+Cargo CONTROL의 고정 runtime 입력과 SDK info-only child만 narrow하게 교정했다.
+Mutable guest SocketPair return buffer는 FD authority로 쓰지 않는다. 실제 kernel
+NewFDs 결과를 전용 typed point로 전달하고 exact entry/result·thread/start/args에
+대조한 producer/consumer의 before FAIL→after latches 및 kernel tests가 PASS다.
+Canonical six-member runtime build와 source/patch roundtrip을 확인했다. 기존 profile
+예산·Policy는 유지한다. 새 common runtime의 전체 직접 소비자/qualification은 별도다.
+
+공식 itoa의 빈 intake acquire→독립 sparse-index/lock/bytes 검증→static inspection→
+Evidence2·Policy ALLOW→verified vendor cache 재사용도 실제 PASS0.213s다. 공통
+Evidence/inventory helper의 기존 Go 소비자와 Cargo cache 정상/부정·initial 한도
+경계는 PASS다. Cache 한도·reserved checksum 권한은 Cargo canonical leaf가 소유한다.
+기존 Cargo control plan의 alias·oversize·동일 바이트 inode 교체 네 누락은 같은
+final fixture의 old1270 FAIL→anchored bounded single-link/identity 교정 PASS다.
+[부분 source/cache evidence](./evidence/m12-003-cargo-source-cache/result.json)가 source·runtime·원본 hash와
+각 실행 범위를 소유한다. 같은 후보의 Cargo source4.10s·Go source6.54s·필수 sdist
+15.94s·wheel dynamic8.55s 및 canonical quick/security/docs가 PASS다. 이를 whole
+CLI add/build 또는 새 CPU/CUDA qualification으로 전용하지 않는다.
+
+`IMPLEMENTED=YES / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO`를 유지한다.
+MISSING은 independent retained approval·original source/control guard와 guarded frozen
+add publication/rollback, actual CLI wiring, offline observed build.rs/proc-macro/native
+helper 및 bounded no-overwrite output, 이후 최종 후보의 실제 직접 소비자(필수
+sdist 포함)와 CPU/cu126 full·cu130/cu132 focused, canonical/platform/
+security/CI wiring 및 whole acceptance evidence다. Native macOS/new remote Required는
+NOT_RUN이며 M12-003만 IN_PROGRESS, M12-004는 NOT_STARTED다.
+NO PUSH / NO REMOTE CI / NO MERGE.
+
 ## Step 13 Invariant
 
 1. Current Work Queue에는 현재 milestone의 실행 항목만 둔다.

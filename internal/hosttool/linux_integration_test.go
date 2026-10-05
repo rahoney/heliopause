@@ -52,7 +52,7 @@ func TestLinuxTrustedHostExecutorIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("runsc trace metadata = %v", err)
 	}
-	for _, point := range []string{"syscall/open_result", "sentry/mount_topology_snapshot", "sentry/mount_topology_mutation"} {
+	for _, point := range []string{"syscall/open_result", "syscall/socketpair_result", "sentry/mount_topology_snapshot", "sentry/mount_topology_mutation"} {
 		if !strings.Contains(string(traceMeta), point) {
 			t.Fatalf("runsc trace metadata missing required point %q", point)
 		}

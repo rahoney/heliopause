@@ -212,6 +212,7 @@ Name: sentry/clone, optional fields: []
 Name: sentry/mount_topology_mutation, optional fields: []
 Name: sentry/mount_topology_snapshot, optional fields: []
 Name: syscall/open_result, optional fields: []
+Name: syscall/socketpair_result, optional fields: []
 Name: sentry/task_exit, optional fields: []
 `
 	err := sandbox.VerifyPatchCapability(patchedTraceMetadata)

@@ -168,6 +168,7 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 		},
 		modulePath + "/internal/promotion": {
 			modulePath + "/internal/artifact/gomodule": true,
+			modulePath + "/internal/artifact/cargo":    true,
 			modulePath + "/internal/artifact/pypi":     true,
 			modulePath + "/internal/core/domain":       true,
 			modulePath + "/internal/runtimeidentity":   true,

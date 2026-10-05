@@ -63,6 +63,7 @@ func TestLockedMetadataRejectsUncertainGraphAndLock(t *testing.T) {
 		{"unknown schema", func(d *projectMetadata) { d.Version = 2 }},
 		{"wrong workspace", func(d *projectMetadata) { d.WorkspaceRoot = "/other" }},
 		{"missing graph", func(d *projectMetadata) { d.Resolve.Nodes = nil }},
+		{"disconnected selected package", func(d *projectMetadata) { d.Resolve.Nodes[0].Deps = nil }},
 		{"duplicate package", func(d *projectMetadata) { d.Packages[1].ID = d.Packages[0].ID }},
 		{"duplicate node", func(d *projectMetadata) { d.Resolve.Nodes[1].ID = d.Resolve.Nodes[0].ID }},
 		{"unknown dependency", func(d *projectMetadata) { d.Resolve.Nodes[0].Deps[0].Pkg = "unknown" }},

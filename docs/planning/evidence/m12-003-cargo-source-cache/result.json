@@ -1,0 +1,132 @@
+{
+  "work_item": "M12-003",
+  "scope": "PARTIAL_SOURCE_CACHE_CHECKPOINT",
+  "baseline": "1270ba75fd301c867a952562aa70017ee0c20b2d",
+  "implemented": "YES",
+  "wired": "NO (whole CLI add/build)",
+  "qualified": "NO (whole work item)",
+  "acceptance_closed": "NO",
+  "source_entries": 676,
+  "source_manifest_sha256": "99e7bd39fd90a8a1cd3e6b1fb6085dc599b39fca2fa5046d620a713043dceb75",
+  "runtime_build": {
+    "exit": 0,
+    "elapsed_seconds": 664.3,
+    "six_member_lock": "scripts/runtimes.lock.json",
+    "kernel_tests": "linux/seccheck/remote 3/3 PASS"
+  },
+  "direct_consumers": {
+    "scope": "four actual direct consumers; not CPU/CUDA full or whole M12-003 qualification",
+    "checks": [
+      {
+        "test": "TestLinuxCargoSourceProjectSnapshotIntegration",
+        "status": "PASS",
+        "elapsed": "4.10s"
+      },
+      {
+        "test": "TestLinuxGoSourceProjectSnapshotIntegration",
+        "status": "PASS",
+        "elapsed": "6.54s"
+      },
+      {
+        "test": "TestLinuxPyPISdistBuildIntegration",
+        "status": "PASS",
+        "elapsed": "15.94s"
+      },
+      {
+        "test": "TestLinuxPyPIWheelDynamicIntegration",
+        "status": "PASS",
+        "elapsed": "8.55s"
+      }
+    ],
+    "helper_parent_wait": 0,
+    "installed_original_files_restored": 12,
+    "runtime_log_sha256": "9755425c71a03734e2f030e5da945767cbcaa3bf7ecdf62eba0392d36e27c392",
+    "source_receipt_sha256": "238df34ef95ebb880e8c4e75ecae6ea545c9597224c3e48dff71b392de375c8f"
+  },
+  "public_vendor_cache": {
+    "empty_intake": true,
+    "crate": "itoa@1.0.17",
+    "elapsed_seconds": 0.213,
+    "policy": "ALLOW",
+    "evidence": 2,
+    "stage_and_reuse": "PASS"
+  },
+  "causal_regressions": {
+    "control_alias_oversize_inode": {
+      "same_final_fixture": true,
+      "old_source_exit": 1,
+      "new_source_exit": 0
+    },
+    "kernel_socketpair_result": {
+      "old_consumer_latch": "FAIL",
+      "new_full_latches": "PASS",
+      "authority": "kernel NewFDs result; guest buffer remains diagnostic-only"
+    },
+    "cargo_fixed_runtime_read": {
+      "utc_and_cloexec_entropy_before": "FAIL",
+      "same_final_after": "PASS"
+    }
+  },
+  "canonical": {
+    "quick": 0,
+    "security": 0,
+    "docs": 0
+  },
+  "limits": {
+    "cargo_resolver_events": 10000,
+    "cargo_cache_regular_files": 10000,
+    "cargo_cache_entries": 20000,
+    "cargo_cache_expanded_bytes": 209715200,
+    "go_cache_regular_files": 20000
+  },
+  "missing": [
+    "guarded Cargo add publication and independent retained approval",
+    "offline observed Cargo build and output publication",
+    "same final candidate CPU/cu126 full and cu130/cu132 focused",
+    "whole qualification and native/remote evidence"
+  ],
+  "new_remote_ci": "NOT_RUN",
+  "new_native_macos": "NOT_RUN",
+  "raw_log_hashes": [
+    {
+      "name": "cargo-control-final-before.log",
+      "sha256": "3fa39ef3b8546811870071ecdce40c228a66d2ff99ed7427859d062a5635e696"
+    },
+    {
+      "name": "cargo-control-after.log",
+      "sha256": "261f9f0982da5dd98a26d98bf2e29ea222acd18d43928b5dba83a67b2e546aec"
+    },
+    {
+      "name": "cargo-fixed-utc-final-before-latch.log",
+      "sha256": "d82aed6d4cc22bb86848f33a6c140bd851d7bd51717b568995db980aec13295e"
+    },
+    {
+      "name": "cargo-fixed-utc-final-after-latch.log",
+      "sha256": "77697eb57d5b07a1c68d8be260f79c266f56cc65f8d3949b3d818e270fa3628c"
+    },
+    {
+      "name": "cargo-source-cache-direct-consumers-runtime.log",
+      "sha256": "9755425c71a03734e2f030e5da945767cbcaa3bf7ecdf62eba0392d36e27c392"
+    },
+    {
+      "name": "cargo-source-cache-consumer-quick.log",
+      "sha256": "3bdef8e12e883d4b15a91b0581d561694a68d2950370727c8f66d914380e5016"
+    },
+    {
+      "name": "cargo-source-cache-consumer-security.log",
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95"
+    },
+    {
+      "name": "cargo-source-cache-consumer-docs.log",
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "name": "cargo-cache-public.log",
+      "sha256": "6c862b4260394e46c8fbec11fa2c8afec8f8cfb7312af13a94ecb62ddf134874"
+    },
+    {
+      "name": "socketpair-runtime-canonical-build.log",
+      "sha256": "c6c65528a1a173fd875604080db0ef1ca0915b2094eb72e797f1010a109befea"
+    }
+  ]
+}

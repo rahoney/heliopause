@@ -1,5 +1,5 @@
 diff --git a/pkg/sentry/platform/platform.go b/pkg/sentry/platform/platform.go
-index 22c8dc1..75398c7 100644
+index 22c8dc1d8..75398c762 100644
 --- a/pkg/sentry/platform/platform.go
 +++ b/pkg/sentry/platform/platform.go
 @@ -505,6 +505,10 @@ type Requirements struct {
@@ -14,7 +14,7 @@ index 22c8dc1..75398c7 100644
  type SeccompInfo interface {
  	// Variables returns a map from named variables to the value they should
 diff --git a/pkg/sentry/platform/ptrace/BUILD b/pkg/sentry/platform/ptrace/BUILD
-index 17ca8d6..1b82338 100644
+index 17ca8d608..1b8233862 100644
 --- a/pkg/sentry/platform/ptrace/BUILD
 +++ b/pkg/sentry/platform/ptrace/BUILD
 @@ -1,4 +1,4 @@
@@ -49,7 +49,7 @@ index 17ca8d6..1b82338 100644
 +    ],
 +)
 diff --git a/pkg/sentry/platform/ptrace/filters.go b/pkg/sentry/platform/ptrace/filters.go
-index a6773ee..c3ed85d 100644
+index a6773ee79..c3ed85dd7 100644
 --- a/pkg/sentry/platform/ptrace/filters.go
 +++ b/pkg/sentry/platform/ptrace/filters.go
 @@ -19,24 +19,47 @@ import (
@@ -115,7 +115,7 @@ index a6773ee..c3ed85d 100644
  // PrecompiledSeccompInfo implements
 diff --git a/pkg/sentry/platform/ptrace/filters_test.go b/pkg/sentry/platform/ptrace/filters_test.go
 new file mode 100644
-index 0000000..7e2916f
+index 000000000..7e2916f3c
 --- /dev/null
 +++ b/pkg/sentry/platform/ptrace/filters_test.go
 @@ -0,0 +1,93 @@
@@ -213,7 +213,7 @@ index 0000000..7e2916f
 +	}
 +}
 diff --git a/pkg/sentry/platform/systrap/BUILD b/pkg/sentry/platform/systrap/BUILD
-index ee3b436..c38875c 100644
+index ee3b436b0..c38875ce9 100644
 --- a/pkg/sentry/platform/systrap/BUILD
 +++ b/pkg/sentry/platform/systrap/BUILD
 @@ -113,6 +113,7 @@ go_test(
@@ -234,7 +234,7 @@ index ee3b436..c38875c 100644
          "//pkg/sentry/memmap",
          "//pkg/sentry/pgalloc",
 diff --git a/pkg/sentry/platform/systrap/filters.go b/pkg/sentry/platform/systrap/filters.go
-index 0958e6c..a24b80d 100644
+index 0958e6ccc..a24b80d9b 100644
 --- a/pkg/sentry/platform/systrap/filters.go
 +++ b/pkg/sentry/platform/systrap/filters.go
 @@ -36,6 +36,7 @@ func (systrapSeccomp) Variables() precompiledseccomp.Values {
@@ -256,7 +256,7 @@ index 0958e6c..a24b80d 100644
  		},
 diff --git a/pkg/sentry/platform/systrap/filters_test.go b/pkg/sentry/platform/systrap/filters_test.go
 new file mode 100644
-index 0000000..ae235e8
+index 000000000..ae235e864
 --- /dev/null
 +++ b/pkg/sentry/platform/systrap/filters_test.go
 @@ -0,0 +1,94 @@
@@ -355,44 +355,47 @@ index 0000000..ae235e8
 +	}
 +}
 diff --git a/pkg/sentry/seccheck/metadata.go b/pkg/sentry/seccheck/metadata.go
-index 3484e34..f0eacce 100644
+index 3484e3409..6e47181b2 100644
 --- a/pkg/sentry/seccheck/metadata.go
 +++ b/pkg/sentry/seccheck/metadata.go
-@@ -31,6 +31,9 @@ const (
+@@ -31,6 +31,10 @@ const (
  	PointExitNotifyParent
  	PointTaskExit
  	PointMmap
 +	PointOpenResult
 +	PointMountTopologySnapshot
 +	PointMountTopologyMutation
++	PointSocketPairResult
  
  	// Add new Points above this line.
  	pointLengthBeforeSyscalls
-@@ -338,6 +341,9 @@ func genericInit() {
+@@ -338,6 +342,10 @@ func genericInit() {
  		Name:          "sentry/mmap",
  		ContextFields: defaultContextFields,
  	})
 +	registerPoint(PointDesc{ID: PointOpenResult, Name: "syscall/open_result", ContextFields: defaultContextFields})
++	registerPoint(PointDesc{ID: PointSocketPairResult, Name: "syscall/socketpair_result", ContextFields: defaultContextFields})
 +	registerPoint(PointDesc{ID: PointMountTopologySnapshot, Name: "sentry/mount_topology_snapshot", ContextFields: defaultContextFields})
 +	registerPoint(PointDesc{ID: PointMountTopologyMutation, Name: "sentry/mount_topology_mutation", ContextFields: defaultContextFields})
  }
  
  var initOnce sync.Once
 diff --git a/pkg/sentry/seccheck/points/common.proto b/pkg/sentry/seccheck/points/common.proto
-index 546e589..3a965b2 100644
+index 546e58962..35a027e87 100644
 --- a/pkg/sentry/seccheck/points/common.proto
 +++ b/pkg/sentry/seccheck/points/common.proto
-@@ -166,5 +166,8 @@ enum MessageType {
+@@ -166,5 +166,9 @@ enum MessageType {
    MESSAGE_SYSCALL_MMAP = 36;
    MESSAGE_SYSCALL_LISTEN = 37;
    MESSAGE_SYSCALL_PTRACE = 38;
 +  MESSAGE_SYSCALL_OPEN_RESULT = 39;
 +  MESSAGE_SENTRY_MOUNT_TOPOLOGY_SNAPSHOT = 40;
 +  MESSAGE_SENTRY_MOUNT_TOPOLOGY_MUTATION = 41;
++  MESSAGE_SYSCALL_SOCKETPAIR_RESULT = 42;
  }
  // LINT.ThenChange(../../../../examples/seccheck/server.cc)
 diff --git a/pkg/sentry/seccheck/points/sentry.proto b/pkg/sentry/seccheck/points/sentry.proto
-index 7e41b2b..7c73047 100644
+index 7e41b2bf1..7c7304702 100644
 --- a/pkg/sentry/seccheck/points/sentry.proto
 +++ b/pkg/sentry/seccheck/points/sentry.proto
 @@ -188,3 +188,26 @@ message MmapInfo {
@@ -423,10 +426,10 @@ index 7e41b2b..7c73047 100644
 +  uint64 mount_namespace_id = 2;
 +}
 diff --git a/pkg/sentry/seccheck/points/syscall.proto b/pkg/sentry/seccheck/points/syscall.proto
-index c9dc3be..37fe976 100644
+index c9dc3be67..9a71017ed 100644
 --- a/pkg/sentry/seccheck/points/syscall.proto
 +++ b/pkg/sentry/seccheck/points/syscall.proto
-@@ -46,6 +46,16 @@ message Open {
+@@ -46,6 +46,30 @@ message Open {
    uint32 mode = 8;
  }
  
@@ -440,28 +443,46 @@ index c9dc3be..37fe976 100644
 +  bool success = 7;
 +}
 +
++// SocketPairResult records descriptors allocated by the kernel, never a copy
++// from the mutable guest return buffer. Failure publishes no descriptors.
++message SocketPairResult {
++  gvisor.common.ContextData context_data = 1;
++  uint64 sysno = 2;
++  int32 domain = 3;
++  int32 type = 4;
++  int32 protocol = 5;
++  int32 socket1 = 6;
++  int32 socket2 = 7;
++  int64 errorno = 8;
++  bool success = 9;
++}
++
  message Close {
    gvisor.common.ContextData context_data = 1;
    Exit exit = 2;
 diff --git a/pkg/sentry/seccheck/seccheck.go b/pkg/sentry/seccheck/seccheck.go
-index 7422baf..4c0be3b 100644
+index 7422baf1c..86305d02d 100644
 --- a/pkg/sentry/seccheck/seccheck.go
 +++ b/pkg/sentry/seccheck/seccheck.go
-@@ -111,6 +111,9 @@ type Sink interface {
+@@ -111,6 +111,10 @@ type Sink interface {
  	ExitNotifyParent(ctx context.Context, fields FieldSet, info *pb.ExitNotifyParentInfo) error
  	TaskExit(context.Context, FieldSet, *pb.TaskExit) error
  	Mmap(context.Context, FieldSet, *pb.MmapInfo) error
 +	OpenResult(context.Context, FieldSet, *pb.OpenResult) error
++	SocketPairResult(context.Context, FieldSet, *pb.SocketPairResult) error
 +	MountTopologySnapshot(context.Context, FieldSet, *pb.MountTopologySnapshot) error
 +	MountTopologyMutation(context.Context, FieldSet, *pb.MountTopologyMutation) error
  
  	ContainerStart(context.Context, FieldSet, *pb.Start) error
  
-@@ -177,6 +180,14 @@ func (SinkDefaults) Mmap(context.Context, FieldSet, *pb.MmapInfo) error {
+@@ -177,6 +181,17 @@ func (SinkDefaults) Mmap(context.Context, FieldSet, *pb.MmapInfo) error {
  	return nil
  }
  
 +func (SinkDefaults) OpenResult(context.Context, FieldSet, *pb.OpenResult) error { return nil }
++func (SinkDefaults) SocketPairResult(context.Context, FieldSet, *pb.SocketPairResult) error {
++	return nil
++}
 +func (SinkDefaults) MountTopologySnapshot(context.Context, FieldSet, *pb.MountTopologySnapshot) error {
 +	return nil
 +}
@@ -473,13 +494,18 @@ index 7422baf..4c0be3b 100644
  func (SinkDefaults) RawSyscall(context.Context, FieldSet, *pb.Syscall) error {
  	return nil
 diff --git a/pkg/sentry/seccheck/sinks/remote/remote.go b/pkg/sentry/seccheck/sinks/remote/remote.go
-index b05cc26..b5de6af 100644
+index b05cc263a..4fbb2db51 100644
 --- a/pkg/sentry/seccheck/sinks/remote/remote.go
 +++ b/pkg/sentry/seccheck/sinks/remote/remote.go
-@@ -271,6 +271,21 @@ func (r *remote) Mmap(_ context.Context, _ seccheck.FieldSet, info *pb.MmapInfo)
+@@ -271,6 +271,26 @@ func (r *remote) Mmap(_ context.Context, _ seccheck.FieldSet, info *pb.MmapInfo)
  	return nil
  }
  
++func (r *remote) SocketPairResult(_ context.Context, _ seccheck.FieldSet, info *pb.SocketPairResult) error {
++	r.write(info, pb.MessageType_MESSAGE_SYSCALL_SOCKETPAIR_RESULT)
++	return nil
++}
++
 +func (r *remote) OpenResult(_ context.Context, _ seccheck.FieldSet, info *pb.OpenResult) error {
 +	r.write(info, pb.MessageType_MESSAGE_SYSCALL_OPEN_RESULT)
 +	return nil
@@ -499,10 +525,10 @@ index b05cc26..b5de6af 100644
  func (r *remote) ContainerStart(_ context.Context, _ seccheck.FieldSet, info *pb.Start) error {
  	r.write(info, pb.MessageType_MESSAGE_CONTAINER_START)
 diff --git a/pkg/sentry/seccheck/sinks/remote/remote_test.go b/pkg/sentry/seccheck/sinks/remote/remote_test.go
-index 407280d..7167bb3 100644
+index 407280d9c..fe0a9a8ca 100644
 --- a/pkg/sentry/seccheck/sinks/remote/remote_test.go
 +++ b/pkg/sentry/seccheck/sinks/remote/remote_test.go
-@@ -154,6 +154,136 @@ func TestBasic(t *testing.T) {
+@@ -154,6 +154,158 @@ func TestBasic(t *testing.T) {
  	}
  }
  
@@ -593,10 +619,32 @@ index 407280d..7167bb3 100644
 +		t.Fatalf("MountTopologyMutation: %v", err)
 +	}
 +
-+	server.WaitForCount(3)
++	pairs := []*pb.SocketPairResult{
++		{ContextData: &pb.ContextData{ThreadId: 42, ThreadStartTimeNs: 123}, Sysno: 53, Domain: 1, Type: 526337, Socket1: 5, Socket2: 6, Success: true},
++		{ContextData: &pb.ContextData{ThreadId: 43, ThreadStartTimeNs: 124}, Sysno: 53, Domain: 1, Type: 1, Socket1: -1, Socket2: -1, Errorno: 14},
++	}
++	for _, pair := range pairs {
++		if err := r.SocketPairResult(nil, seccheck.FieldSet{}, pair); err != nil {
++			t.Fatalf("SocketPairResult: %v", err)
++		}
++	}
++	server.WaitForCount(5)
 +	pts := server.GetPoints()
-+	if len(pts) != 3 {
-+		t.Fatalf("expected 3 points, got %d", len(pts))
++	if len(pts) != 5 {
++		t.Fatalf("expected 5 points, got %d", len(pts))
++	}
++	for i, pair := range pairs {
++		point := pts[3+i]
++		if point.MsgType != pb.MessageType_MESSAGE_SYSCALL_SOCKETPAIR_RESULT {
++			t.Fatalf("wrong socketpair message type: %v", point.MsgType)
++		}
++		got := &pb.SocketPairResult{}
++		if err := proto.Unmarshal(point.Msg, got); err != nil {
++			t.Fatal(err)
++		}
++		if !proto.Equal(pair, got) {
++			t.Fatalf("SocketPairResult mismatch: want=%v got=%v", pair, got)
++		}
 +	}
 +
 +	// Verify OpenResult
@@ -640,14 +688,15 @@ index 407280d..7167bb3 100644
  	server, err := test.NewServer()
  	if err != nil {
 diff --git a/pkg/sentry/syscalls/linux/BUILD b/pkg/sentry/syscalls/linux/BUILD
-index 1875324..82dddb8 100644
+index 187532404..7b2bc069c 100644
 --- a/pkg/sentry/syscalls/linux/BUILD
 +++ b/pkg/sentry/syscalls/linux/BUILD
-@@ -140,7 +140,23 @@ go_test(
+@@ -140,7 +140,27 @@ go_test(
          "linux64_amd64_test.go",
          "linux64_arm64_test.go",
          "linux64_test.go",
 +        "open_result_test.go",
++        "socketpair_result_test.go",
      ],
      library = ":linux",
 -    deps = ["//pkg/sentry/seccheck"],
@@ -656,6 +705,9 @@ index 1875324..82dddb8 100644
 +        "//pkg/context",
 +        "//pkg/fspath",
 +        "//pkg/hostarch",
++        "//pkg/marshal/primitive",
++        "//pkg/sentry/arch",
++        "//pkg/sentry/socket/unix",
 +        "//pkg/sentry/fsimpl/testutil",
 +        "//pkg/sentry/fsimpl/tmpfs",
 +        "//pkg/sentry/kernel",
@@ -670,10 +722,10 @@ index 1875324..82dddb8 100644
  )
 diff --git a/pkg/sentry/syscalls/linux/open_result_test.go b/pkg/sentry/syscalls/linux/open_result_test.go
 new file mode 100644
-index 0000000..434131a
+index 000000000..30b8adceb
 --- /dev/null
 +++ b/pkg/sentry/syscalls/linux/open_result_test.go
-@@ -0,0 +1,555 @@
+@@ -0,0 +1,564 @@
 +// Copyright 2026 The gVisor Authors.
 +//
 +// Licensed under the Apache License, Version 2.0 (the "License");
@@ -716,11 +768,19 @@ index 0000000..434131a
 +	seccheck.SinkDefaults
 +	mu          sync.Mutex
 +	openResults []*pb.OpenResult
++	pairResults []*pb.SocketPairResult
 +	mutations   []*pb.MountTopologyMutation
 +	snapshots   []*pb.MountTopologySnapshot
 +}
 +
 +func (s *recordingSink) Name() string { return "recording-sink" }
++
++func (s *recordingSink) SocketPairResult(_ context.Context, _ seccheck.FieldSet, info *pb.SocketPairResult) error {
++	s.mu.Lock()
++	defer s.mu.Unlock()
++	s.pairResults = append(s.pairResults, proto.Clone(info).(*pb.SocketPairResult))
++	return nil
++}
 +
 +func (s *recordingSink) OpenResult(_ context.Context, _ seccheck.FieldSet, info *pb.OpenResult) error {
 +	s.mu.Lock()
@@ -855,6 +915,7 @@ index 0000000..434131a
 +	}
 +	seccheck.Global.AppendSink(sink, []seccheck.PointReq{
 +		{Pt: seccheck.PointOpenResult, Fields: fields},
++		{Pt: seccheck.PointSocketPairResult, Fields: fields},
 +		{Pt: seccheck.PointMountTopologySnapshot, Fields: fields},
 +		{Pt: seccheck.PointMountTopologyMutation, Fields: fields},
 +	})
@@ -1230,7 +1291,7 @@ index 0000000..434131a
 +	}
 +}
 diff --git a/pkg/sentry/syscalls/linux/points.go b/pkg/sentry/syscalls/linux/points.go
-index f8e38d3..d98c16e 100644
+index f8e38d360..d98c16eac 100644
 --- a/pkg/sentry/syscalls/linux/points.go
 +++ b/pkg/sentry/syscalls/linux/points.go
 @@ -69,6 +69,23 @@ func getIovecSize(t *kernel.Task, addr hostarch.Addr, iovcnt int) uint64 {
@@ -1257,8 +1318,122 @@ index f8e38d3..d98c16e 100644
  // PointOpen converts open(2) syscall to proto.
  func PointOpen(t *kernel.Task, _ seccheck.FieldSet, cxtData *pb.ContextData, info kernel.SyscallInfo) (proto.Message, pb.MessageType) {
  	p := &pb.Open{
+diff --git a/pkg/sentry/syscalls/linux/socketpair_result_test.go b/pkg/sentry/syscalls/linux/socketpair_result_test.go
+new file mode 100644
+index 000000000..255c87688
+--- /dev/null
++++ b/pkg/sentry/syscalls/linux/socketpair_result_test.go
+@@ -0,0 +1,108 @@
++// Copyright 2026 The gVisor Authors.
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//     http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package linux
++
++import (
++	"golang.org/x/sys/unix"
++	"gvisor.dev/gvisor/pkg/abi/linux"
++	"gvisor.dev/gvisor/pkg/marshal/primitive"
++	"gvisor.dev/gvisor/pkg/sentry/arch"
++	"gvisor.dev/gvisor/pkg/sentry/kernel"
++	"gvisor.dev/gvisor/pkg/sentry/seccheck"
++	pb "gvisor.dev/gvisor/pkg/sentry/seccheck/points/points_go_proto"
++	_ "gvisor.dev/gvisor/pkg/sentry/socket/unix"
++	"testing"
++)
++
++func TestSocketPairResultUsesKernelDescriptors(t *testing.T) {
++	task, _, sink, _ := setupTestEnvironment(t)
++	addr := mapString(t, task, "return-buffer")
++	args := arch.SyscallArguments{
++		{Value: linux.AF_UNIX}, {Value: uintptr(linux.SOCK_STREAM | linux.SOCK_NONBLOCK | linux.SOCK_CLOEXEC)},
++		{}, {Value: uintptr(addr)},
++	}
++	ret, _, err := SocketPair(task, unix.SYS_SOCKETPAIR, args)
++	if err != nil || ret != 0 {
++		t.Fatalf("SocketPair: ret=%d err=%v", ret, err)
++	}
++	if len(sink.pairResults) != 1 {
++		t.Fatalf("result count=%d", len(sink.pairResults))
++	}
++	got := sink.pairResults[0]
++	var actual [2]int32
++	if _, err := primitive.CopyInt32SliceIn(task, addr, actual[:]); err != nil {
++		t.Fatal(err)
++	}
++	if !got.Success || got.Errorno != 0 || got.Socket1 != actual[0] || got.Socket2 != actual[1] || actual[0] == actual[1] || actual[0] < 0 {
++		t.Fatalf("kernel allocation/result mismatch: actual=%v result=%v", actual, got)
++	}
++	if got.Sysno != unix.SYS_SOCKETPAIR || got.Domain != linux.AF_UNIX || got.Type != int32(args[1].Int()) || got.ContextData == nil || got.ContextData.ThreadId == 0 || got.ContextData.ThreadStartTimeNs == 0 {
++		t.Fatalf("missing syscall/identity context: %v", got)
++	}
++	for _, fd := range actual {
++		file, flags := task.FDTable().Get(fd)
++		if file == nil {
++			t.Fatalf("kernel FD %d is absent", fd)
++		}
++		if !flags.CloseOnExec || file.StatusFlags()&linux.O_NONBLOCK == 0 {
++			t.Errorf("FD %d flags=%v status=%d", fd, flags, file.StatusFlags())
++		}
++		file.DecRef(task)
++	}
++	// Reproduce the old producer's trust flaw without using its values as authority.
++	forged := []int32{123456, 123457}
++	if _, err := primitive.CopyInt32SliceOut(task, addr, forged); err != nil {
++		t.Fatal(err)
++	}
++	msg, _ := PointSocketpair(task, seccheck.FieldSet{}, got.ContextData, kernel.SyscallInfo{Exit: true, Sysno: unix.SYS_SOCKETPAIR, Args: args})
++	old := msg.(*pb.SocketPair)
++	if old.Socket1 != forged[0] || old.Socket2 != forged[1] {
++		t.Fatalf("old mutable-buffer fixture did not reproduce: %v", old)
++	}
++	if got.Socket1 != actual[0] || got.Socket2 != actual[1] {
++		t.Fatalf("guest changed kernel result: %v", got)
++	}
++}
++
++func TestSocketPairResultFailurePublishesNoDescriptors(t *testing.T) {
++	task, _, sink, _ := setupTestEnvironment(t)
++	for _, tc := range []struct {
++		name  string
++		args  arch.SyscallArguments
++		errno int64
++	}{
++		{"invalid-type", arch.SyscallArguments{{Value: linux.AF_UNIX}, {Value: 1 << 28}}, int64(unix.EINVAL)},
++		{"copyout-fault", arch.SyscallArguments{{Value: linux.AF_UNIX}, {Value: uintptr(linux.SOCK_STREAM)}}, int64(unix.EFAULT)},
++		{"unsupported-network-pair", arch.SyscallArguments{{Value: linux.AF_INET}, {Value: uintptr(linux.SOCK_STREAM)}}, 0},
++	} {
++		t.Run(tc.name, func(t *testing.T) {
++			count := len(sink.pairResults)
++			_, _, err := SocketPair(task, unix.SYS_SOCKETPAIR, tc.args)
++			if err == nil {
++				t.Fatal("expected syscall failure")
++			}
++			if len(sink.pairResults) != count+1 {
++				t.Fatal("missing terminal result")
++			}
++			got := sink.pairResults[count]
++			if got.Success || got.Errorno == 0 || got.Socket1 != -1 || got.Socket2 != -1 {
++				t.Fatalf("failure granted descriptors: %v", got)
++			}
++			if tc.errno != 0 && got.Errorno != tc.errno {
++				t.Fatalf("errno got=%d want=%d", got.Errorno, tc.errno)
++			}
++		})
++	}
++}
 diff --git a/pkg/sentry/syscalls/linux/sys_file.go b/pkg/sentry/syscalls/linux/sys_file.go
-index c2f114d..1d7cca1 100644
+index c2f114d19..1d7cca193 100644
 --- a/pkg/sentry/syscalls/linux/sys_file.go
 +++ b/pkg/sentry/syscalls/linux/sys_file.go
 @@ -29,6 +29,8 @@ import (
@@ -1370,7 +1545,7 @@ index c2f114d..1d7cca1 100644
  	addr2 := args[1].Pointer()
  
 diff --git a/pkg/sentry/syscalls/linux/sys_mount.go b/pkg/sentry/syscalls/linux/sys_mount.go
-index 02e94b6..91ec919 100644
+index 02e94b6ae..91ec91924 100644
 --- a/pkg/sentry/syscalls/linux/sys_mount.go
 +++ b/pkg/sentry/syscalls/linux/sys_mount.go
 @@ -24,7 +24,12 @@ import (
@@ -1401,8 +1576,57 @@ index 02e94b6..91ec919 100644
  	addr := args[0].Pointer()
  	flags := args[1].Int()
  
+diff --git a/pkg/sentry/syscalls/linux/sys_socket.go b/pkg/sentry/syscalls/linux/sys_socket.go
+index 17b7c7ce3..a1daec718 100644
+--- a/pkg/sentry/syscalls/linux/sys_socket.go
++++ b/pkg/sentry/syscalls/linux/sys_socket.go
+@@ -31,6 +31,8 @@ import (
+ 	"gvisor.dev/gvisor/pkg/sentry/kernel"
+ 	"gvisor.dev/gvisor/pkg/sentry/kernel/auth"
+ 	"gvisor.dev/gvisor/pkg/sentry/ktime"
++	"gvisor.dev/gvisor/pkg/sentry/seccheck"
++	pb "gvisor.dev/gvisor/pkg/sentry/seccheck/points/points_go_proto"
+ 	"gvisor.dev/gvisor/pkg/sentry/socket"
+ 	"gvisor.dev/gvisor/pkg/sentry/socket/control"
+ 	"gvisor.dev/gvisor/pkg/sentry/socket/unix/transport"
+@@ -207,7 +209,26 @@ func Socket(t *kernel.Task, sysno uintptr, args arch.SyscallArguments) (uintptr,
+ }
+ 
+ // SocketPair implements the linux syscall socketpair(2).
+-func SocketPair(t *kernel.Task, sysno uintptr, args arch.SyscallArguments) (uintptr, *kernel.SyscallControl, error) {
++func SocketPair(t *kernel.Task, sysno uintptr, args arch.SyscallArguments) (rval uintptr, ctrl *kernel.SyscallControl, retErr error) {
++	// Retain only kernel allocations after CopyOut succeeds. A guest thread may
++	// overwrite the return buffer before the ordinary syscall exit checkpoint.
++	first, second := int32(-1), int32(-1)
++	defer func() {
++		if !seccheck.Global.Enabled(seccheck.PointSocketPairResult) {
++			return
++		}
++		fields := seccheck.Global.GetFieldSet(seccheck.PointSocketPairResult)
++		evt := &pb.SocketPairResult{
++			Sysno: uint64(sysno), Domain: args[0].Int(), Type: args[1].Int(), Protocol: args[2].Int(),
++			Socket1: first, Socket2: second, Success: retErr == nil,
++			Errorno: int64(kernel.ExtractErrno(retErr, int(sysno))),
++		}
++		if !fields.Context.Empty() {
++			evt.ContextData = &pb.ContextData{}
++			kernel.LoadSeccheckData(t, fields.Context, evt.ContextData)
++		}
++		_ = seccheck.Global.SentToSinks(func(c seccheck.Sink) error { return c.SocketPairResult(t, fields, evt) })
++	}()
+ 	domain := int(args[0].Int())
+ 	stype := args[1].Int()
+ 	protocol := int(args[2].Int())
+@@ -253,6 +274,7 @@ func SocketPair(t *kernel.Task, sysno uintptr, args arch.SyscallArguments) (uint
+ 		return 0, nil, err
+ 	}
+ 
++	first, second = fds[0], fds[1]
+ 	return 0, nil, nil
+ }
+ 
 diff --git a/pkg/sentry/vfs/namespace.go b/pkg/sentry/vfs/namespace.go
-index add1bf7..3ecd2c4 100644
+index add1bf726..3ecd2c449 100644
 --- a/pkg/sentry/vfs/namespace.go
 +++ b/pkg/sentry/vfs/namespace.go
 @@ -22,6 +22,56 @@ import (
@@ -1463,7 +1687,7 @@ index add1bf7..3ecd2c4 100644
  // MountNamespaces are reference-counted. Unless otherwise specified, all
  // MountNamespace methods require that a reference is held.
 diff --git a/runsc/boot/BUILD b/runsc/boot/BUILD
-index 6a3f1aa..4cf4786 100644
+index 6a3f1aaca..4cf47864f 100644
 --- a/runsc/boot/BUILD
 +++ b/runsc/boot/BUILD
 @@ -179,6 +179,7 @@ go_test(
@@ -1491,7 +1715,7 @@ index 6a3f1aa..4cf4786 100644
      ],
  )
 diff --git a/runsc/boot/filter/config/BUILD b/runsc/boot/filter/config/BUILD
-index 42fd484..9c61ad9 100644
+index 42fd484b8..9c61ad914 100644
 --- a/runsc/boot/filter/config/BUILD
 +++ b/runsc/boot/filter/config/BUILD
 @@ -53,7 +53,9 @@ go_test(
@@ -1505,7 +1729,7 @@ index 42fd484..9c61ad9 100644
          "@org_golang_x_sys//unix:go_default_library",
      ],
 diff --git a/runsc/boot/filter/config/config_precompiled.go b/runsc/boot/filter/config/config_precompiled.go
-index ed4291e..ca9126e 100644
+index ed4291e05..ca9126ee8 100644
 --- a/runsc/boot/filter/config/config_precompiled.go
 +++ b/runsc/boot/filter/config/config_precompiled.go
 @@ -36,7 +36,7 @@ const (
@@ -1518,7 +1742,7 @@ index ed4291e..ca9126e 100644
  
  // allPrecompiledPlatforms returns a list of `platform.SeccompInfo` instances
 diff --git a/runsc/boot/filter/config/config_test.go b/runsc/boot/filter/config/config_test.go
-index a5e635c..d74762d 100644
+index a5e635c10..d74762d68 100644
 --- a/runsc/boot/filter/config/config_test.go
 +++ b/runsc/boot/filter/config/config_test.go
 @@ -16,13 +16,17 @@ package config
@@ -1742,7 +1966,7 @@ index a5e635c..d74762d 100644
 +	}
 +}
 diff --git a/runsc/boot/loader.go b/runsc/boot/loader.go
-index d78a960..aa9d734 100644
+index d78a9606c..aa9d734fa 100644
 --- a/runsc/boot/loader.go
 +++ b/runsc/boot/loader.go
 @@ -27,6 +27,7 @@ import (
@@ -1803,7 +2027,7 @@ index d78a960..aa9d734 100644
  func (l *Loader) createSubcontainer(cid string, tty *fd.FD) error {
  	l.mu.Lock()
 diff --git a/runsc/boot/loader_test.go b/runsc/boot/loader_test.go
-index c2e067d..f338c86 100644
+index c2e067d1a..f338c86a8 100644
 --- a/runsc/boot/loader_test.go
 +++ b/runsc/boot/loader_test.go
 @@ -27,7 +27,9 @@ import (

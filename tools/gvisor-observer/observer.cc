@@ -104,6 +104,9 @@ constexpr char kProfilePyTorchCU132[] = "pypi-wheel-pytorch-cu132";
 constexpr char kProfileGitHub[] = "github-elf";
 constexpr char kProfileGoResolver[] = "go-module-resolver";
 constexpr char kProfileGoBuild[] = "go-module-build";
+constexpr char kProfileCargoResolver[] = "cargo-resolver";
+constexpr char kCargoBinary[] = "/usr/local/rustup/toolchains/1.99.0-x86_64-unknown-linux-gnu/bin/cargo";
+constexpr char kRustcBinary[] = "/usr/local/rustup/toolchains/1.99.0-x86_64-unknown-linux-gnu/bin/rustc";
 
 bool IsPythonProfile(const char* profile) {
   return profile != nullptr &&
@@ -133,7 +136,7 @@ struct Attribution {
 };
 
 bool Send(int output, const std::string& container_id, const char* kind, const char* reason = nullptr,
-          const Attribution* attribution = nullptr, uint64_t count = 0, const char* fault_site = nullptr, uint64_t image_locator = 0, const std::string& fault_open = "", const std::string& fault_budget = "") {
+          const Attribution* attribution = nullptr, uint64_t count = 0, const char* fault_site = nullptr, uint64_t image_locator = 0, const std::string& fault_open = "", const std::string& fault_budget = "", const std::string& fault_raw = "") {
   if (!ValidContainerID(container_id)) return false;
   std::string message = "{\"container_id\":\"" + container_id + "\",\"kind\":\"" + kind + "\"";
   if (reason != nullptr) message += ",\"reason\":\"" + std::string(reason) + "\"";
@@ -141,6 +144,7 @@ bool Send(int output, const std::string& container_id, const char* kind, const c
   if (image_locator != 0) message += ",\"fault_image_locator\":" + std::to_string(image_locator);
   if (!fault_open.empty()) message += ",\"fault_open\":" + fault_open;
   if (!fault_budget.empty()) message += ",\"fault_budget\":" + fault_budget;
+  if (!fault_raw.empty()) message += ",\"fault_raw\":" + fault_raw;
   if (attribution != nullptr) {
     if (attribution->event_source != nullptr) message += ",\"event_source\":\"" + std::string(attribution->event_source) + "\"";
     if (attribution->family != nullptr) message += ",\"family\":\"" + std::string(attribution->family) + "\"";
@@ -181,6 +185,9 @@ enum class ProcessClass {
   kChmod,
   kUname,
   kGo,
+  kCargo,
+  kCargoTar,
+  kCargoRustc,
   kGoBuildBoundary,
   kGoBuildSetpriv,
   kGoBuildTool,
@@ -201,8 +208,11 @@ enum class SocketClassification {
 };
 
 // Diagnostic identities never participate in classification.
-enum class DiagnosticImage { kUnknown, kBoundary, kSetpriv, kShell, kEnv, kNpmCLI, kNode };
+enum class DiagnosticImage { kUnknown, kBoundary, kSetpriv, kShell, kEnv, kNpmCLI, kNode, kCargo, kTar, kRustc };
 DiagnosticImage DiagnosticImageForPath(const std::string& path) {
+  if (path == kCargoBinary) return DiagnosticImage::kCargo;
+  if (path == kRustcBinary) return DiagnosticImage::kRustc;
+  if (path == "/usr/bin/tar") return DiagnosticImage::kTar;
   if (path == "/haa-runtime/haa-boundary") return DiagnosticImage::kBoundary;
   if (path == "/usr/bin/setpriv") return DiagnosticImage::kSetpriv;
   if (path == "/bin/sh" || path == "/usr/bin/dash") return DiagnosticImage::kShell;
@@ -219,6 +229,9 @@ const char* DiagnosticImageName(DiagnosticImage image) {
     case DiagnosticImage::kEnv: return "ENV";
     case DiagnosticImage::kNpmCLI: return "NPM_CLI";
     case DiagnosticImage::kNode: return "NODE";
+    case DiagnosticImage::kCargo: return "CARGO";
+    case DiagnosticImage::kTar: return "TAR";
+    case DiagnosticImage::kRustc: return "RUSTC";
     default: return "UNKNOWN";
   }
 }
@@ -403,6 +416,19 @@ struct ProcessState {
     // Current exact runtime query only; neither role nor inheritable authority.
     bool runtime_cache_query = false;
     bool diagnostic_image_pinned = false;
+    bool diagnostic_rustc_version = false;
+    bool diagnostic_rustc_metadata = false;
+    uint32_t diagnostic_rustc_argc = 0;
+    uint64_t diagnostic_rustc_argv_locator = 0;
+    // Existing SocketPair telemetry reads guest return-buffer bytes. These
+    // fields are diagnostics only and must never populate the FD authority.
+    bool diagnostic_socketpair_seen = false;
+    int32_t diagnostic_socketpair_first = -1;
+    int32_t diagnostic_socketpair_second = -1;
+    int32_t diagnostic_socketpair_domain = 0;
+    uint32_t diagnostic_socketpair_type = 0;
+    bool cargo_rustc_query_candidate = false;
+    bool cargo_rustc_query_active = false;
     bool go_build_tool_candidate = false;
     bool go_build_tool_active = false;
     bool go_build_gcc_candidate = false;
@@ -425,6 +451,15 @@ struct ProcessState {
   };
   std::map<int32_t, std::map<int32_t, FDEntry>> fd_states;
   std::map<int32_t, uint32_t> pending_sockets;
+  struct PendingSocketPair {
+    int32_t thread_group_id;
+    int64_t thread_group_start_time_ns;
+    uint64_t sysno;
+    int32_t domain;
+    int32_t type;
+    int32_t protocol;
+  };
+  std::map<std::pair<int32_t, int64_t>, PendingSocketPair> pending_socketpairs;
   bool launch_root_set = false;
   bool launch_root_active = false;
   int32_t launch_root_group_id = 0;
@@ -443,6 +478,7 @@ struct ProcessState {
   FaultSite terminal_fault_site = FaultSite::kNone;
   uint64_t fault_image_locator = 0;
   std::string fault_open_diagnostic;
+  std::string fault_raw_diagnostic;
 };
 
 struct NormalizedCounts {
@@ -539,6 +575,44 @@ bool HasExactCloneCreator(const ProcessState::GroupState& group, const ProcessSt
   const auto creator = state.groups.find(group.clone_creator_group_id);
   return creator != state.groups.end() &&
       creator->second.start_time_ns == group.clone_creator_group_start_time_ns;
+}
+
+bool HasExactCargoResolverCreator(const gvisor::common::ContextData& context,
+                                  const ProcessState::GroupState& group,
+                                  const ProcessState& state) {
+  if (group.role != ProcessState::Role::kControl ||
+      group.provenance != ProcessState::Provenance::kCloneChild ||
+      group.root_eligible || !group.root_consumed || group.trusted_control_network_active ||
+      group.demotion_pending || group.launch_target_pending || group.handoff_target_pending ||
+      !HasExactCloneCreator(group, state) ||
+      context.parent_thread_group_id() != group.clone_creator_group_id) return false;
+  const auto& parent = state.groups.find(group.clone_creator_group_id)->second;
+  const auto expected = state.expected_groups.find(group.clone_creator_group_id);
+  return parent.role == ProcessState::Role::kControl &&
+      parent.provenance == ProcessState::Provenance::kDirectExecRoot &&
+      parent.current_image_class == ProcessClass::kCargo && !parent.root_eligible &&
+      parent.root_consumed && parent.trusted_control_network_active &&
+      !parent.demotion_pending && !parent.launch_target_pending && !parent.handoff_target_pending &&
+      expected != state.expected_groups.end() && expected->second.start_time_ns == parent.start_time_ns &&
+      expected->second.process_class == ProcessClass::kCargo;
+}
+
+// Exact info-only SDK query observed from the admitted Cargo driver. Compile
+// options, artifact names, and print variants that trigger compilation are excluded.
+bool IsExactCargoRustcMetadataQuery(const gvisor::sentry::ExecveInfo& message) {
+  if (message.binary_path() != kRustcBinary || message.execfn() != kRustcBinary ||
+      message.argv_size() < 22 || message.argv_size() > 24 || message.argv(0) != kRustcBinary) return false;
+  std::vector<std::string> expected{kRustcBinary, "-", "--crate-name", "___", "--print=file-names"};
+  if (message.argv(5) == "--target") {
+    expected.push_back("--target"); expected.push_back("x86_64-unknown-linux-gnu");
+  }
+  for (const char* kind : {"bin", "rlib", "dylib", "cdylib", "staticlib", "proc-macro"}) {
+    expected.push_back("--crate-type"); expected.push_back(kind);
+  }
+  for (const char* print : {"--print=sysroot", "--print=split-debuginfo", "--print=crate-name", "--print=cfg", "-Wwarnings"}) expected.push_back(print);
+  if (message.argv_size() != static_cast<int>(expected.size())) return false;
+  for (size_t i = 0; i < expected.size(); ++i) if (message.argv(static_cast<int>(i)) != expected[i]) return false;
+  return true;
 }
 
 bool IsGoBuildDriverGroup(const ProcessState::GroupState& group) {
@@ -1047,6 +1121,9 @@ const char* ProcessClassName(ProcessClass process_class) {
     case ProcessClass::kNode: return "NODE";
     case ProcessClass::kNpm: return "NPM";
     case ProcessClass::kGo: return "GO";
+    case ProcessClass::kCargo: return "OTHER";
+    case ProcessClass::kCargoTar: return "OTHER";
+    case ProcessClass::kCargoRustc: return "OTHER";
     case ProcessClass::kArtifact: return "ARTIFACT";
     case ProcessClass::kSleep: return "SLEEP";
     case ProcessClass::kMkdir: return "MKDIR";
@@ -1082,6 +1159,9 @@ const char* NetworkProcessClassName(ProcessClass process_class) {
     case ProcessClass::kArtifact:
     case ProcessClass::kUnknown:
       return ProcessClassName(process_class);
+    case ProcessClass::kCargo:
+    case ProcessClass::kCargoTar:
+    case ProcessClass::kCargoRustc: return "OTHER";
     case ProcessClass::kSleep:
     case ProcessClass::kMkdir:
     case ProcessClass::kCat:
@@ -1189,6 +1269,9 @@ ProcessClass ProcessClassForPath(const std::string& path, const char* profile) {
   }
   if (strcmp(profile, kProfileGitHub) == 0 && path == "/work/artifact") return ProcessClass::kArtifact;
   if ((strcmp(profile, kProfileGoResolver) == 0 || strcmp(profile, kProfileGoBuild) == 0) && path == "/usr/local/go/bin/go") return ProcessClass::kGo;
+  if (strcmp(profile, kProfileCargoResolver) == 0 && path == kCargoBinary) return ProcessClass::kCargo;
+  if (strcmp(profile, kProfileCargoResolver) == 0 && path == "/usr/bin/tar") return ProcessClass::kCargoTar;
+  if (strcmp(profile, kProfileCargoResolver) == 0 && path == kRustcBinary) return ProcessClass::kCargoRustc;
   return ProcessClass::kUnknown;
 }
 
@@ -1525,8 +1608,11 @@ const char* FaultOpenSubject(const gvisor::common::ContextData& context,
                              const std::string& path, const MountAnchor& anchor) {
   const std::string self = "/proc/" + std::to_string(context.thread_group_id());
   if (path == self + "/auxv") return "PROC_SELF_AUXV";
+  if (path == self + "/maps") return "PROC_SELF_MAPS";
+  if (path == self + "/statm") return "PROC_SELF_STATM";
   if (path == self + "/cgroup") return "PROC_SELF_CGROUP";
   if (path == self + "/mountinfo") return "PROC_SELF_MOUNTINFO";
+  if (path == "/proc/sys/vm/overcommit_memory") return "VM_OVERCOMMIT_MEMORY";
   if (path == "/sys/kernel/mm/transparent_hugepage/hpage_pmd_size") return "THP_PAGE_SIZE";
   if (path == "/sys/fs/cgroup/cpu/cpu.cfs_quota_us" ||
       path == "/sys/fs/cgroup/cpu/cpu.cfs_period_us") return "CGROUP_CPU_QUOTA";
@@ -1556,6 +1642,11 @@ std::string FaultOpenDiagnostic(const gvisor::syscall::Open& message,
       ",\"mountpoint_locator\":" + std::to_string(mount_locator == 0 ? 1 : mount_locator) +
       ",\"executable_pinned\":" + (group != nullptr && group->diagnostic_image_pinned ? "true" : "false") +
       ",\"go_driver_creator\":" + (group != nullptr && HasExactGoBuildDriverCreator(message.context_data(), *group, state) ? "true" : "false") +
+      ",\"cargo_driver_creator\":" + (group != nullptr && HasExactCargoResolverCreator(message.context_data(), *group, state) ? "true" : "false") +
+      ",\"rustc_version_query\":" + (group != nullptr && group->diagnostic_rustc_version ? "true" : "false") +
+      ",\"rustc_metadata_query\":" + (group != nullptr && group->diagnostic_rustc_metadata ? "true" : "false") +
+      ",\"rustc_argc\":" + std::to_string(group == nullptr ? 0 : group->diagnostic_rustc_argc) +
+      ",\"rustc_argv_locator\":" + std::to_string(group == nullptr ? 0 : group->diagnostic_rustc_argv_locator) +
       ",\"executable_locator\":" + std::to_string(group == nullptr ? 0 : group->executable_locator) + "}";
 }
 
@@ -1777,10 +1868,67 @@ bool IsPinnedRuntimeRootRead(const gvisor::common::ContextData& context,
   return HasPrefix(normalized, kStdlibRoot);
 }
 
-// The resolver executes only the locked Go tool, with no artifact source or
-// helper execution. Go's own cgroup discovery is metadata, never resource or
-// completion authority. This exception grants neither an ARTIFACT role nor
-// another process's proc files, and does not depend on mutable comm.
+// Cargo's fixed ELF needs the glibc realtime compatibility ABI, and Rust
+// initializes its stack guard from its own memory map. These are resolver-only
+// reads by the kernel-classified Cargo driver and its exact info-only SDK queries;
+// neither filenames, mutable comm nor diagnostics establish that authority.
+bool IsPinnedCargoResolverRead(const gvisor::common::ContextData& context,
+                              const ProcessState& state, const std::string& path,
+                              uint64_t flags, const char* profile, const MountAnchor* anchor) {
+  if (profile == nullptr || strcmp(profile, kProfileCargoResolver) != 0 ||
+      anchor == nullptr || !IsAtOrBelowMountpoint(path, anchor->mountpoint) ||
+      IsWriteCapableOpen(flags)) return false;
+  const auto* group = FindFilesystemGroup(context, state);
+  if (group != nullptr && group->current_image_class == ProcessClass::kCargoRustc &&
+      FilesystemProcessClass(context, state) == ProcessClass::kCargoRustc &&
+      group->cargo_rustc_query_active && HasExactCargoResolverCreator(context, *group, state)) {
+    if (anchor->mount_class == "system" && anchor->mountpoint == "/sys/fs/cgroup/cpu") {
+      return path == "/sys/fs/cgroup/cpu/cpu.cfs_quota_us" ||
+          path == "/sys/fs/cgroup/cpu/cpu.cfs_period_us";
+    }
+    if (anchor->mount_class == "system" && anchor->mountpoint == "/proc") {
+      return path == "/proc/sys/vm/overcommit_memory" ||
+          path == "/proc/" + std::to_string(context.thread_group_id()) + "/maps" ||
+          path == "/proc/" + std::to_string(context.thread_group_id()) + "/statm" ||
+          path == "/proc/" + std::to_string(context.thread_group_id()) + "/cgroup" ||
+          path == "/proc/" + std::to_string(context.thread_group_id()) + "/mountinfo";
+    }
+    // Exact ABI inputs of the locked Rustc/driver/LLVM images. An artifact
+    // manifest, runtime diagnostic or another SDK subtree cannot add inputs.
+    return anchor->mount_class == "oci-root" && anchor->mountpoint == "/" &&
+        (path == "/usr/local/rustup/toolchains/1.99.0-x86_64-unknown-linux-gnu/lib/librustc_driver-999a121de2f042be.so" ||
+         path == "/usr/local/rustup/toolchains/1.99.0-x86_64-unknown-linux-gnu/lib/libLLVM.so.23.1-rust-1.99.0-stable" ||
+         path == "/usr/local/rustup/toolchains/1.99.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib" ||
+         path == "/usr/lib/x86_64-linux-gnu/librt.so.1" || path == "/lib/x86_64-linux-gnu/librt.so.1" ||
+         path == "/usr/lib/x86_64-linux-gnu/libz.so.1.2.13" || path == "/lib/x86_64-linux-gnu/libz.so.1.2.13");
+  }
+  if (!context.is_exec_session() || context.parent_thread_group_id() != 0) return false;
+  if (group == nullptr || group->role != ProcessState::Role::kControl ||
+      group->provenance != ProcessState::Provenance::kDirectExecRoot ||
+      group->current_image_class != ProcessClass::kCargo ||
+      FilesystemProcessClass(context, state) != ProcessClass::kCargo ||
+      group->root_eligible || !group->root_consumed || !group->trusted_control_network_active ||
+      group->demotion_pending || group->launch_target_pending || group->handoff_target_pending) return false;
+  if (anchor->mount_class == "oci-root" && anchor->mountpoint == "/") {
+    return path == "/usr/lib/x86_64-linux-gnu/librt.so.1" ||
+        path == "/lib/x86_64-linux-gnu/librt.so.1" ||
+        path == "/etc/host.conf" ||
+        path == "/etc/nsswitch.conf" ||
+        path == "/usr/share/zoneinfo/Etc/UTC" ||
+        path == "/etc/ssl/certs/ca-certificates.crt";
+  }
+  if (anchor->mount_class == "system" && anchor->mountpoint == "/dev") {
+    return (path == "/dev/urandom" && (flags == kOpenLargefile || flags == 557056)) ||
+        (path == "/dev/null" && flags == 557056);
+  }
+  if (anchor->mount_class == "system" &&
+      (anchor->mountpoint == "/etc/resolv.conf" || anchor->mountpoint == "/etc/hosts")) {
+    return path == anchor->mountpoint;
+  }
+  return anchor->mount_class == "system" && anchor->mountpoint == "/proc" &&
+      path == "/proc/" + std::to_string(context.thread_group_id()) + "/maps";
+}
+
 bool IsPinnedGoResolverRead(const gvisor::common::ContextData& context,
                             const ProcessState& state, const std::string& path,
                             uint64_t flags, const char* profile, const MountAnchor* anchor) {
@@ -1824,20 +1972,22 @@ bool IsPinnedGoResolverRead(const gvisor::common::ContextData& context,
       path == "/sys/fs/cgroup/cpu/cpu.cfs_period_us";
 }
 
-// Fixed HAA configuration copying uses the locked mkdir image in a CONTROL
+// Fixed HAA project copying uses the locked mkdir image in a CONTROL
 // clone of the admitted shell. This metadata read grants no artifact, network,
 // other proc subject, or runtime-tool authority and does not use mutable comm.
-bool IsPinnedGoBuildConfigurationRead(
+bool IsPinnedProjectConfigurationRead(
     const gvisor::common::ContextData& context, const ProcessState& state,
     const std::string& path, uint64_t flags, const char* profile,
     const MountAnchor* anchor) {
-  if (profile == nullptr || strcmp(profile, kProfileGoBuild) != 0 ||
+  if (profile == nullptr ||
+      (strcmp(profile, kProfileGoBuild) != 0 && strcmp(profile, kProfileCargoResolver) != 0) ||
       path != "/proc/filesystems" || IsWriteCapableOpen(flags) || anchor == nullptr ||
       anchor->mount_class != "system" || anchor->mountpoint != "/proc") return false;
   const auto* group = FindFilesystemGroup(context, state);
   if (group == nullptr || group->role != ProcessState::Role::kControl ||
       group->provenance != ProcessState::Provenance::kCloneChild ||
-      group->current_image_class != ProcessClass::kMkdir ||
+      (group->current_image_class != ProcessClass::kMkdir &&
+       !(strcmp(profile, kProfileCargoResolver) == 0 && group->current_image_class == ProcessClass::kCargoTar)) ||
       group->root_eligible || !group->root_consumed ||
       group->trusted_control_network_active || group->demotion_pending ||
       group->launch_target_pending || group->handoff_target_pending ||
@@ -1859,7 +2009,7 @@ bool IsCanonicalBootstrapProfile(const char* profile) {
        strcmp(profile, kProfilePyTorchCU130) == 0 ||
        strcmp(profile, kProfilePyTorchCU132) == 0 ||
        strcmp(profile, kProfileGitHub) == 0 || strcmp(profile, kProfileGoResolver) == 0 ||
-       strcmp(profile, kProfileGoBuild) == 0);
+       strcmp(profile, kProfileGoBuild) == 0 || strcmp(profile, kProfileCargoResolver) == 0);
 }
 
 bool IsDirectExecLoaderProfile(const char* profile) {
@@ -2286,8 +2436,9 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
     return FilesystemClass::kOutside;
   }
   if (IsExactBootstrapHelperWrite(message.context_data(), state, path, message.flags()) ||
+      IsPinnedCargoResolverRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
       IsPinnedGoResolverRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
-      IsPinnedGoBuildConfigurationRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
+      IsPinnedProjectConfigurationRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
       IsPinnedGoBuildRuntimeRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
       IsPinnedGoBuildNullDeviceOpen(message.context_data(), state, path, message.flags(), profile, anchor) ||
       IsExactDockerEtcHostsLockGenerationRead(message.context_data(), state, path,
@@ -2427,7 +2578,7 @@ bool ParseControlRecord(const char* payload, size_t size, ControlPeer* peer,
         (profile != kProfileNPM && profile != kProfilePyPI && profile != kProfilePyTorchCPU &&
          profile != kProfilePyTorchCU126 && profile != kProfilePyTorchCU130 &&
          profile != kProfilePyTorchCU132 && profile != kProfileGitHub && profile != kProfileGoResolver &&
-         profile != kProfileGoBuild) ||
+         profile != kProfileGoBuild && profile != kProfileCargoResolver) ||
         peer->request_seen || peer->registered || peer->terminal || profiles->find(id) != profiles->end()) {
       return SendProfileAck(peer->fd, id, profile, topology, generation, "rejected");
     }
@@ -2558,6 +2709,8 @@ bool ParseSentryClone(const char* payload, size_t payload_size,
   state->groups.find(child_group)->second.current_image_class = creator->second.current_image_class;
   state->groups.find(child_group)->second.executable_locator = creator->second.executable_locator;
   state->groups.find(child_group)->second.diagnostic_image_pinned = creator->second.diagnostic_image_pinned;
+  state->groups.find(child_group)->second.cargo_rustc_query_candidate =
+      creator->second.current_image_class == ProcessClass::kCargo;
   // One kernel clone of the admitted build driver may execute one locked SDK
   // tool. Neither tool authority nor CONTROL/network privilege is inherited.
   state->groups.find(child_group)->second.go_build_tool_candidate = IsGoBuildDriverGroup(creator->second);
@@ -2607,6 +2760,14 @@ bool ParseSentryExitNotifyParent(const char* payload, size_t payload_size,
   }
   state->fd_states.erase(group_id);
   state->pending_sockets.erase(group_id);
+  for (auto pending = state->pending_socketpairs.begin(); pending != state->pending_socketpairs.end();) {
+    if (pending->second.thread_group_id == group_id &&
+        pending->second.thread_group_start_time_ns == start_time_ns) {
+      pending = state->pending_socketpairs.erase(pending);
+    } else {
+      ++pending;
+    }
+  }
   const auto launch = state->launch_roots.find(group_id);
   if (launch != state->launch_roots.end()) {
     if (launch->second != start_time_ns) {
@@ -2816,6 +2977,9 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     new_direct_root = true;
   }
   group->second.runtime_cache_query = false;
+  const bool cargo_query_candidate = group->second.cargo_rustc_query_candidate;
+  group->second.cargo_rustc_query_candidate = false;
+  group->second.cargo_rustc_query_active = false;
   const bool go_tool_candidate = group->second.go_build_tool_candidate;
   const bool go_gcc_candidate = group->second.go_build_gcc_candidate;
   const bool go_gcc_child_candidate = group->second.go_build_gcc_child_candidate;
@@ -2835,6 +2999,15 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
   // never this cached flag or its serialized value.
   group->second.diagnostic_image_pinned = IsPinnedReadOnlyRootPath(topology, message.binary_path());
   group->second.current_image_class = ProcessClassForPath(message.binary_path(), profile);
+  if (strcmp(profile, kProfileCargoResolver) == 0 &&
+      (group->second.current_image_class == ProcessClass::kCargo ||
+       group->second.current_image_class == ProcessClass::kCargoTar ||
+       group->second.current_image_class == ProcessClass::kCargoRustc ||
+       group->second.current_image_class == ProcessClass::kMkdir ||
+       group->second.current_image_class == ProcessClass::kShell) &&
+      !IsPinnedReadOnlyRootPath(topology, message.binary_path())) {
+    group->second.current_image_class = ProcessClass::kUnknown;
+  }
   // Kernel-resolved utility image in the sealed immutable runtime, not comm,
   // argv[0], an artifact copy or a path shadow. This only classifies loader reads;
   // the ordinary ARTIFACT unexpected-exec event below is unchanged.
@@ -2877,6 +3050,36 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     if (!exact_helper || helper_mounts != 1) group->second.current_image_class = ProcessClass::kUnknown;
   }
   group->second.diagnostic_image = DiagnosticImageForPath(message.binary_path());
+  group->second.diagnostic_rustc_version = message.binary_path() == kRustcBinary &&
+      message.execfn() == kRustcBinary && message.argv_size() == 2 &&
+      message.argv(0) == kRustcBinary && message.argv(1) == "-vV";
+  group->second.diagnostic_rustc_metadata = IsExactCargoRustcMetadataQuery(message);
+  group->second.diagnostic_rustc_argc = 0;
+  group->second.diagnostic_rustc_argv_locator = 0;
+  group->second.diagnostic_socketpair_seen = false;
+  if (message.binary_path() == kRustcBinary) {
+    group->second.diagnostic_rustc_argc = static_cast<uint32_t>(std::min(message.argv_size(), 33));
+    if (message.argv_size() <= 32) {
+      uint64_t hash = 14695981039346656037ULL;
+      size_t bytes = 0;
+      for (const auto& argument : message.argv()) {
+        bytes += argument.size() + 1;
+        if (bytes > 1024) break;
+        for (const unsigned char character : argument) { hash ^= character; hash *= 1099511628211ULL; }
+        hash ^= 0; hash *= 1099511628211ULL;
+      }
+      if (bytes <= 1024) group->second.diagnostic_rustc_argv_locator = hash == 0 ? 1 : hash;
+    }
+  }
+  // One exact kernel clone of the admitted Cargo driver may query the locked
+  // compiler version or fixed target metadata. Other compiler commands and later execs gain no reads;
+  // the diagnostic flags above never participate in this permission check.
+  group->second.cargo_rustc_query_active = strcmp(profile, kProfileCargoResolver) == 0 &&
+      cargo_query_candidate && group->second.current_image_class == ProcessClass::kCargoRustc &&
+      HasExactCargoResolverCreator(message.context_data(), group->second, candidate) &&
+      message.binary_path() == kRustcBinary && message.execfn() == kRustcBinary &&
+      ((message.argv_size() == 2 && message.argv(0) == kRustcBinary && message.argv(1) == "-vV") ||
+       IsExactCargoRustcMetadataQuery(message));
   if (group->second.provenance == ProcessState::Provenance::kOCIRoot) {
     if (group->second.role != ProcessState::Role::kControl ||
         !candidate.bootstrap_active || group->second.trusted_control_network_active) {
@@ -3441,6 +3644,126 @@ bool ParseForkAndTrack(const char* payload, size_t payload_size, std::string* co
   return true;
 }
 
+// The ordinary SocketPair exit message reads a guest return buffer. Only the
+// separately patched kernel result may establish descriptor classification.
+bool ParseSocketPairEntry(const char* payload, size_t payload_size, int output,
+                          std::string* container_id, ProcessState* state, const char** reason) {
+  gvisor::syscall::SocketPair message;
+  if (!message.ParseFromArray(payload, payload_size) ||
+      !ValidateContextContainer(message.context_data(), container_id, reason)) return false;
+  if (message.has_exit()) return true;
+  const auto& context = message.context_data();
+  const auto group = state->groups.find(context.thread_group_id());
+  if (!ValidProcessIdentity(context) || context.thread_id() <= 0 || context.thread_start_time_ns() <= 0 ||
+      group == state->groups.end() || !SameGroup(group->second, context)) {
+    *reason = "PROCESS_PROVENANCE_UNKNOWN"; return false;
+  }
+  if (message.sysno() != 53 && message.sysno() != 199) { *reason = "FD_STATE_UNKNOWN"; return false; }
+  const auto family = ClassifySocketFamily(message.domain());
+  if (family == SocketClassification::kUnknown) { *reason = SocketUnknownFamilyReason(message.domain()); return false; }
+  const auto key = std::make_pair(context.thread_id(), context.thread_start_time_ns());
+  if (state->pending_socketpairs.find(key) != state->pending_socketpairs.end() ||
+      state->pending_socketpairs.size() >= kMaxTrackedFileDescriptorsPerGroup) {
+    *reason = "FD_STATE_LIMIT"; return false;
+  }
+  state->pending_socketpairs.emplace(key, ProcessState::PendingSocketPair{context.thread_group_id(),
+      context.thread_group_start_time_ns(), message.sysno(), message.domain(), message.type(), message.protocol()});
+  if (family == SocketClassification::kNetwork && message.domain() == kLinuxAFPacket) {
+    const Attribution attribution{"SOCKET", "PACKET", NetworkProcessRelation(context, *state), "OTHER", nullptr, nullptr};
+    return Send(output, *container_id, "network-attempt", nullptr, &attribution);
+  }
+  return true;
+}
+
+bool ParseSocketPairResult(const char* payload, size_t payload_size, std::string* container_id,
+                           ProcessState* state, const char** reason) {
+  gvisor::syscall::SocketPairResult message;
+  if (!message.ParseFromArray(payload, payload_size) ||
+      !ValidateContextContainer(message.context_data(), container_id, reason)) return false;
+  const auto& context = message.context_data();
+  const auto group = state->groups.find(context.thread_group_id());
+  if (!ValidProcessIdentity(context) || context.thread_id() <= 0 || context.thread_start_time_ns() <= 0 ||
+      group == state->groups.end() || !SameGroup(group->second, context)) {
+    *reason = "PROCESS_PROVENANCE_UNKNOWN"; return false;
+  }
+  const auto key = std::make_pair(context.thread_id(), context.thread_start_time_ns());
+  const auto pending = state->pending_socketpairs.find(key);
+  if (pending == state->pending_socketpairs.end() ||
+      pending->second.thread_group_id != context.thread_group_id() ||
+      pending->second.thread_group_start_time_ns != context.thread_group_start_time_ns() ||
+      pending->second.sysno != message.sysno() || pending->second.domain != message.domain() ||
+      pending->second.type != message.type() || pending->second.protocol != message.protocol()) {
+    *reason = "FD_STATE_UNKNOWN"; return false;
+  }
+  if (!message.success()) {
+    if (message.errorno() <= 0 || message.errorno() > 4095 || message.socket1() != -1 || message.socket2() != -1) {
+      *reason = "FD_STATE_UNKNOWN"; return false;
+    }
+    state->pending_socketpairs.erase(pending);
+    return true;
+  }
+  if (message.errorno() != 0 || message.socket1() < 0 || message.socket2() < 0 ||
+      message.socket1() == message.socket2() || (message.type() & ~(0xf | SOCK_CLOEXEC | SOCK_NONBLOCK)) != 0) {
+    *reason = "FD_STATE_UNKNOWN"; return false;
+  }
+  const auto family = ClassifySocketFamily(message.domain());
+  if (family == SocketClassification::kUnknown) { *reason = SocketUnknownFamilyReason(message.domain()); return false; }
+  auto table = state->fd_states.find(context.thread_group_id());
+  if (table == state->fd_states.end()) {
+    if (state->fd_states.size() >= kMaxTrackedProcessGroups) { *reason = "FD_STATE_LIMIT"; return false; }
+    table = state->fd_states.emplace(context.thread_group_id(), std::map<int32_t, ProcessState::FDEntry>{}).first;
+  }
+  // NewFDs allocates two free descriptors. A collision signals stale tracking;
+  // never relabel an existing network FD as local.
+  if (table->second.find(message.socket1()) != table->second.end() ||
+      table->second.find(message.socket2()) != table->second.end()) { *reason = "FD_STATE_UNKNOWN"; return false; }
+  if (table->second.size() > kMaxTrackedFileDescriptorsPerGroup - 2) { *reason = "FD_STATE_LIMIT"; return false; }
+  const ProcessState::FDEntry descriptor{family, message.domain(), (message.type() & SOCK_CLOEXEC) != 0};
+  table->second.emplace(message.socket1(), descriptor);
+  table->second.emplace(message.socket2(), descriptor);
+  state->pending_socketpairs.erase(pending);
+  return true;
+}
+
+// Descriptor diagnostics retain bounded scalars and fixed classifications.
+// Guest-buffer correlation is labelled and never establishes authority.
+std::string FaultRawDiagnostic(const gvisor::syscall::Syscall& message,
+                               const ProcessState& state, const char* check) {
+  const auto& group = state.groups.find(message.context_data().thread_group_id())->second;
+  std::string diagnostic = std::string("{\"check\":\"") + check + "\",\"sysno\":" + std::to_string(message.sysno()) +
+      ",\"fd\":" + std::to_string(message.arg1()) +
+      ",\"kernel_image\":\"" + DiagnosticImageName(group.diagnostic_image) +
+      "\",\"role\":\"" + RoleName(group.role) +
+      "\",\"provenance\":\"" + ProvenanceName(group.provenance) +
+      "\",\"executable_locator\":" + std::to_string(group.executable_locator);
+  if (group.diagnostic_socketpair_seen) {
+    const bool match = message.arg1() == static_cast<uint64_t>(group.diagnostic_socketpair_first) ||
+        message.arg1() == static_cast<uint64_t>(group.diagnostic_socketpair_second);
+    diagnostic += ",\"socketpair_observed\":true,\"socketpair_fd_match\":" + std::string(match ? "true" : "false") +
+        ",\"socketpair_domain\":" + std::to_string(group.diagnostic_socketpair_domain) +
+        ",\"socketpair_type\":" + std::to_string(group.diagnostic_socketpair_type) +
+        ",\"socketpair_source\":\"GUEST_RETURN_BUFFER\"";
+  }
+  return diagnostic + "}";
+}
+
+bool ParseSocketPairDiagnostic(const char* payload, size_t payload_size, std::string* container_id,
+                               ProcessState* state, const char** reason) {
+  gvisor::syscall::SocketPair message;
+  if (!message.ParseFromArray(payload, payload_size) ||
+      !ValidateContextContainer(message.context_data(), container_id, reason)) return false;
+  if (!message.has_exit() || message.exit().errorno() != 0 || message.exit().result() != 0) return true;
+  const auto found = state->groups.find(message.context_data().thread_group_id());
+  if (found == state->groups.end() || !SameGroup(found->second, message.context_data())) return true;
+  auto& group = found->second;
+  group.diagnostic_socketpair_seen = true;
+  group.diagnostic_socketpair_first = message.socket1();
+  group.diagnostic_socketpair_second = message.socket2();
+  group.diagnostic_socketpair_domain = message.domain();
+  group.diagnostic_socketpair_type = static_cast<uint32_t>(message.type());
+  return true;
+}
+
 bool ParseRawAndSend(const char* payload, size_t payload_size, int output, std::string* container_id, const char* profile,
                      ProcessState* state, const char** reason) {
   gvisor::syscall::Syscall message;
@@ -3463,15 +3786,20 @@ bool ParseRawAndSend(const char* payload, size_t payload_size, int output, std::
   else if (sysno == kSyscallSendmsgX86 || sysno == kSyscallSendmsgArm64) source = "SENDMSG";
   else if (sysno == kSyscallSendmmsgX86 || sysno == kSyscallSendmmsgArm64) source = "SENDMMSG";
   else { *reason = "RAW_SYSCALL_INVALID"; return false; }
-  if (message.arg1() > INT_MAX) { *reason = "FD_STATE_UNKNOWN"; return false; }
+  auto unknown_fd = [&](const char* check) {
+    *reason = "FD_STATE_UNKNOWN";
+    state->fault_raw_diagnostic = FaultRawDiagnostic(message, *state, check);
+    return false;
+  };
+  if (message.arg1() > INT_MAX) return unknown_fd("ARGUMENT");
   auto table = state->fd_states.find(message.context_data().thread_group_id());
-  if (table == state->fd_states.end()) { *reason = "FD_STATE_UNKNOWN"; return false; }
+  if (table == state->fd_states.end()) return unknown_fd("TABLE");
   auto fd = table->second.find(static_cast<int32_t>(message.arg1()));
-  if (fd == table->second.end()) { *reason = "FD_STATE_UNKNOWN"; return false; }
+  if (fd == table->second.end()) return unknown_fd("DESCRIPTOR");
   if (fd->second.family == SocketClassification::kLocal || fd->second.family == SocketClassification::kSpecialKernelLocal) return true;
-  if (fd->second.family != SocketClassification::kNetwork) { *reason = "FD_STATE_UNKNOWN"; return false; }
+  if (fd->second.family != SocketClassification::kNetwork) return unknown_fd("CLASSIFICATION");
   const char* family = FamilyName(fd->second.family, fd->second.raw_family);
-  if (family == nullptr) { *reason = "FD_STATE_UNKNOWN"; return false; }
+  if (family == nullptr) return unknown_fd("FAMILY");
   const char* relation = NetworkProcessRelation(message.context_data(), *state);
   const ProcessClass process_class = ProcessClassForPath(message.context_data().process_name(), profile);
   const Attribution attribution{source, family, relation, NetworkProcessClassName(process_class), nullptr, nullptr};
@@ -3715,6 +4043,19 @@ bool Handle(const Header& header, const char* payload, size_t payload_size, int 
         return false;
       }
       return true;
+    case gvisor::common::MESSAGE_SYSCALL_SOCKETPAIR:
+      if (!ParseSocketPairEntry(payload, payload_size, output, container_id, process_state, reason) ||
+          !ParseSocketPairDiagnostic(payload, payload_size, container_id, process_state, reason)) {
+        set_fault_site(FaultSite::kFdTrack);
+        return false;
+      }
+      return true;
+    case gvisor::common::MESSAGE_SYSCALL_SOCKETPAIR_RESULT:
+      if (!ParseSocketPairResult(payload, payload_size, container_id, process_state, reason)) {
+        set_fault_site(FaultSite::kFdTrack);
+        return false;
+      }
+      return true;
     case gvisor::common::MESSAGE_SYSCALL_CLOSE:
       if (!ParseCloseAndTrack(payload, payload_size, container_id, process_state, reason)) {
         set_fault_site(FaultSite::kFdTrack);
@@ -3850,13 +4191,14 @@ int main(int argc, char** argv) {
       }
     }
     if (!stream.fault && (!stream.topology_state.sealed ||
-        !stream.process_state.pending_sockets.empty() || !stream.process_state.pending_opens.empty() ||
+        !stream.process_state.pending_sockets.empty() || !stream.process_state.pending_socketpairs.empty() ||
+        !stream.process_state.pending_opens.empty() ||
         unresolved_admission)) {
       stream.fault = true;
       if (!stream.topology_state.sealed) {
         stream.fault_reason = "TOPOLOGY_NOT_READY";
         stream.process_state.terminal_fault_site = FaultSite::kUnsealedTopology;
-      } else if (!stream.process_state.pending_sockets.empty()) {
+      } else if (!stream.process_state.pending_sockets.empty() || !stream.process_state.pending_socketpairs.empty()) {
         stream.fault_reason = "FD_STATE_UNKNOWN";
         stream.process_state.terminal_fault_site = FaultSite::kPendingSockets;
       } else if (!stream.process_state.pending_opens.empty()) {
@@ -3894,7 +4236,8 @@ int main(int argc, char** argv) {
     Send(output, stream.container_id, stream.fault ? "stream-fault" : "stream-end", stream.fault_reason, nullptr, 0,
          stream.fault ? FaultSiteName(stream.process_state.terminal_fault_site) : nullptr,
          stream.fault ? stream.process_state.fault_image_locator : 0,
-         stream.fault ? stream.process_state.fault_open_diagnostic : "", fault_budget);
+         stream.fault ? stream.process_state.fault_open_diagnostic : "", fault_budget,
+         stream.fault ? stream.process_state.fault_raw_diagnostic : "");
     if (registration != nullptr) profiles.erase(stream.container_id);
     close(client);
   };
