@@ -1,0 +1,21 @@
+{
+  "scope": "current exact final actual Go CLI normal + negative/security gates under production helper250k/Host20k",
+  "result": "PASS",
+  "actual_exit": 0,
+  "raw_local_file": "go-build-watch-stop-final-cli.log",
+  "raw_sha256": "3a7104db3e321dcf842e0ed43f0317c232c75fbc1fed74a268dd2627934af3a4",
+  "actual_pass_tests": [
+    "--- PASS: TestLinuxGoDependencyFreeBuildCLIIntegration (54.91s)",
+    "--- PASS: TestLinuxGoPublicBuildCLIIntegration (70.09s)",
+    "--- PASS: TestLinuxGoTransitiveBuildCLIIntegration (267.57s)",
+    "--- PASS: TestLinuxGoInvalidTestdataBuildCLIIntegration (16.14s)",
+    "--- PASS: TestLinuxGoCgoBuildCLIIntegration (43.03s)",
+    "--- PASS: TestLinuxGoLibraryBuildCLIIntegration (17.24s)",
+    "--- PASS: TestLinuxGoMixedPackagesBuildCLIIntegration (32.41s)",
+    "--- PASS: TestLinuxGoMixedInvalidPackageBuildCLIIntegration (30.03s)",
+    "--- PASS: TestLinuxGoBuildSecurityCLIIntegration (58.64s)"
+  ],
+  "helper_wait": 0,
+  "original_installation_restored": true,
+  "candidate_receipt_sha256": "08af9139c92894facd1264acded3e6357c39b3b4499dc620b79e7ced325e5c1b"
+}

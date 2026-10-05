@@ -1,0 +1,301 @@
+{
+  "scope": "derived index of same security fixtures; raw local logs retained; no raw executable/path authority or complete normal/CPU qualification implied",
+  "pairs": [
+    {
+      "same_final_fixture": "registered nested mount boundary",
+      "before": {
+        "raw_log": "go-build-nested-mount-before-latch.log",
+        "sha256": "576b1b37cbcf8c83875aa4d97c4148da873ed40f2af6cb759efae01ca7b5563f",
+        "failure_lines": [
+          "observer latch FAIL: registered nested mount boundary"
+        ]
+      },
+      "after": {
+        "raw_log": "go-build-nested-mount-after-latch.log",
+        "sha256": "15b3afeb4af0c1a0eb5422fda8dc35a85411c42fe4c9b2a8a9d59177cfab6a7a",
+        "all_latches_pass": true
+      }
+    },
+    {
+      "same_final_fixture": "Go build configuration read boundary",
+      "before": {
+        "raw_log": "go-build-mkdir-before-latch.log",
+        "sha256": "f619378c7f646a0ea6edfc5f79abc398523d29f53d948e9f97179ff227d76f31",
+        "failure_lines": [
+          "observer latch FAIL: Go build configuration read boundary"
+        ]
+      },
+      "after": {
+        "raw_log": "go-build-mkdir-after-latch.log",
+        "sha256": "6a7c95bf1b9845b9d049693799e8cd2d94f684f37d2e435bbd45ea417d5baa10",
+        "all_latches_pass": true
+      }
+    },
+    {
+      "same_final_fixture": "Go build handoff read boundary",
+      "before": {
+        "raw_log": "go-build-handoff-before-latch.log",
+        "sha256": "5a81417b8f97d087cfdd61d951a6c1b9ed66b0c2280716dd7783e748dc9bc5ea",
+        "failure_lines": [
+          "observer latch FAIL: Go build handoff read boundary"
+        ]
+      },
+      "after": {
+        "raw_log": "go-build-handoff-after-latch.log",
+        "sha256": "54dc43a35af70358a30371a3349ac5d24d24ba46cef6290f5de7bef7263c8c65",
+        "all_latches_pass": true
+      }
+    },
+    {
+      "same_final_fixture": "Go build runtime metadata boundary",
+      "before": {
+        "raw_log": "go-build-cpu-before-latch.log",
+        "sha256": "166fcd57d0d00840e5f910d9306bce66d48bf09ada3e7a16b2c9ea467894c766",
+        "failure_lines": [
+          "observer latch FAIL: Go build runtime metadata boundary"
+        ]
+      },
+      "after": {
+        "raw_log": "go-build-cpu-after-latch.log",
+        "sha256": "52609c41072ba07c6911dd1ba55af033ce93b87b629d02c0820677defb023b3c",
+        "all_latches_pass": true
+      }
+    },
+    {
+      "same_final_fixture": "Go build SDK tool child boundary",
+      "before": {
+        "raw_log": "go-build-tool-before-latch.log",
+        "sha256": "253af4ad303570489170f8bb91bad07fdff2bcdf64d74b28bf1524a3729a7c40",
+        "failure_lines": [
+          "observer latch FAIL: Go build SDK tool child boundary"
+        ]
+      },
+      "after": {
+        "raw_log": "go-build-tool-after-latch.log",
+        "sha256": "f7ac03918bfbedbd82c5bbef8ffe1ca86ec98a0e0faf402982dda2718a521136",
+        "all_latches_pass": true
+      }
+    },
+    {
+      "same_final_fixture": "Go build cgo GCC creator boundary",
+      "before": {
+        "raw_log": "go-build-cgo-creator-before-latch.log",
+        "sha256": "bfa23473acd0bcde97f62e7f55042c4c5684327ee7fe2dee8afe8bdb41f5e07f",
+        "failure_lines": [
+          "observer latch FAIL: Go build cgo GCC creator boundary"
+        ]
+      },
+      "after": {
+        "raw_log": "go-build-cgo-creator-after-latch.log",
+        "sha256": "dd3fea2fcf10ffc1e9764b2e28f532ad8d12914ec5f6f2d7b1e774542d935717",
+        "all_latches_pass": true
+      }
+    },
+    {
+      "same_final_fixture": [
+        "Go build CC1 creator and loader boundary"
+      ],
+      "before": {
+        "raw_log": "go-build-cc1-final-before-latch.log",
+        "sha256": "5b2a6ff87e16f4e39e7338c42cc38fb12551d9eb9647aff2079e7253e22a0d06",
+        "failure_lines": [
+          "observer latch FAIL: Go build CC1 creator and loader boundary"
+        ]
+      },
+      "after": {
+        "raw_log": "go-build-cc1-final-after-latch.log",
+        "sha256": "28ff198abe3c6a2ad2864c80908ae7ffcb6abeb8bc6819cd9daec0a54e8fa8c3",
+        "all_latches_pass": true
+      }
+    },
+    {
+      "same_final_fixture": [
+        "Go build CC1 readonly header boundary"
+      ],
+      "before": {
+        "raw_log": "go-build-cc1-header-final-before-latch.log",
+        "sha256": "cb17f9d1453fd9075138957e1dc992b6983a0d0ebd02d71afe2a2eaa81163d15",
+        "failure_lines": [
+          "observer latch FAIL: Go build CC1 readonly header boundary"
+        ]
+      },
+      "after": {
+        "raw_log": "go-build-cc1-header-final-after-latch.log",
+        "sha256": "769f91b985415a7ad7c2da3425738bffb838fcf06aa233c57feb5175e954fe53",
+        "all_latches_pass": true
+      }
+    },
+    {
+      "same_final_fixture": [
+        "Go build assembler creator and loader boundary"
+      ],
+      "before": {
+        "raw_log": "go-build-as-final-before-latch.log",
+        "sha256": "97292a413da07788a2f34a3a6c5e505f6213545e1fef87eda8e03f0159cceba2",
+        "failure_lines": [
+          "observer latch FAIL: Go build assembler creator and loader boundary"
+        ]
+      },
+      "after": {
+        "raw_log": "go-build-as-final-after-latch.log",
+        "sha256": "68fb6164b32a67de3470d36645133d042c01a1e7fb79ae19def26bf8a33263ac",
+        "all_latches_pass": true
+      }
+    },
+    {
+      "same_final_fixture": [
+        "Go build collect2 creator and loader boundary"
+      ],
+      "before": {
+        "raw_log": "go-build-collect2-before-latch.log",
+        "sha256": "dfc82ab7f15729d4f37ea491c5dedb741cba0b7a22301d07691a2108be8097a7",
+        "failure_lines": [
+          "observer latch FAIL: Go build collect2 creator and loader boundary"
+        ]
+      },
+      "after": {
+        "raw_log": "go-build-collect2-after-latch.log",
+        "sha256": "ecef518de93bf90ac0f8df894f4a5f271be3eeedd7c17e2c7715106401b4f6c7",
+        "all_latches_pass": true
+      }
+    },
+    {
+      "same_final_fixture": [
+        "Go build native linker creator and loader boundary"
+      ],
+      "before": {
+        "raw_log": "go-build-native-linker-before-latch.log",
+        "sha256": "d5d34422d69c5afe7a0a0eeb20ef6007eae8a424e9d650b864c2daf3eecf8ecd",
+        "failure_lines": [
+          "observer latch FAIL: Go build native linker creator and loader boundary"
+        ]
+      },
+      "after": {
+        "raw_log": "go-build-native-linker-after-latch.log",
+        "sha256": "e8e6feb345a28c0454a4852237a5c0dcff3ae64b1e9fae3b97f1eb594f09907d",
+        "all_latches_pass": true
+      }
+    },
+    {
+      "same_final_fixture": [
+        "Go build native linker fixed plugin boundary"
+      ],
+      "before": {
+        "raw_log": "go-build-linker-plugin-before-latch.log",
+        "sha256": "deaa4f76da983353c0cb016999ab74faba02a4a3ca111de7829bf26d70181ff5",
+        "failure_lines": [
+          "observer latch FAIL: Go build native linker fixed plugin boundary"
+        ]
+      },
+      "after": {
+        "raw_log": "go-build-linker-plugin-after-latch.log",
+        "sha256": "bcfc4db6be8af5f49e2ea3d79d6315745c07c12463a01387cc29d16af376df4f",
+        "all_latches_pass": true
+      }
+    },
+    {
+      "same_final_fixture": [
+        "Go build native linker null device boundary"
+      ],
+      "before": {
+        "raw_log": "go-build-linker-null-before-latch.log",
+        "sha256": "e122b91c887f27b221739b73fee14c4f09a1507b22f5f4096d73d62062e93e30",
+        "failure_lines": [
+          "observer latch FAIL: Go build native linker null device boundary"
+        ]
+      },
+      "after": {
+        "raw_log": "go-build-linker-null-after-latch.log",
+        "sha256": "171b51e3fa21820d0069add40ebb43674e4f9ad85e35a9c96a5a310945cd6f50",
+        "all_latches_pass": true
+      }
+    },
+    {
+      "same_final_fixture": [
+        "Go build native linker C runtime input boundary"
+      ],
+      "before": {
+        "raw_log": "go-build-linker-runtime-before-latch.log",
+        "sha256": "8f2c25a5aa3d8637d3d4fa3725ac50210e611b4ca25f1ee93fcb15e68c1940b5",
+        "failure_lines": [
+          "observer latch FAIL: Go build native linker C runtime input boundary"
+        ]
+      },
+      "after": {
+        "raw_log": "go-build-linker-runtime-after-latch.log",
+        "sha256": "ea6f1ad4e81f19b649a8b0493f5ee24b0d017cad161406c18a870609de7df531",
+        "all_latches_pass": true
+      }
+    },
+    {
+      "same_final_fixture": [
+        "Go build assembler null device boundary"
+      ],
+      "before": {
+        "raw_log": "go-build-as-null-before-latch.log",
+        "sha256": "d312cae890e32d4afcd8e132f1638d1e03e761d3f767dafc00491b566832b3d5",
+        "failure_lines": [
+          "observer latch FAIL: Go build assembler null device boundary"
+        ]
+      },
+      "after": {
+        "raw_log": "go-build-as-null-after-latch.log",
+        "sha256": "3ef71e3eee98e0506b10e125d7d76dc2a92da0b1ea8417c58592188603cc815d",
+        "all_latches_pass": true
+      }
+    },
+    {
+      "same_final_fixture": [
+        "Go build CC1 readonly SDK Cgo input boundary"
+      ],
+      "before": {
+        "raw_log": "go-build-cc1-sdk-cgo-final-before-latch.log",
+        "sha256": "ae9bfb1a30c7ea25d17ad7298083b64894097a769f81f04a056c9465c463ec8c",
+        "failure_lines": [
+          "observer latch FAIL: Go build CC1 readonly SDK Cgo input boundary"
+        ]
+      },
+      "after": {
+        "raw_log": "go-build-cc1-sdk-cgo-after-latch.log",
+        "sha256": "e82ab3b7d9003cefa437531670d61a6995bf6ddaf0cce22567e62df8be7d4b05",
+        "all_latches_pass": true
+      }
+    },
+    {
+      "same_final_fixture": [
+        "Go build SDK linker GCC creator boundary",
+        "Go build SDK linker native ancestry boundary"
+      ],
+      "before": {
+        "raw_log": "go-build-sdk-link-gcc-before-latch.log",
+        "sha256": "caac793a0bce991fa5c2089c1d4333b7f6a2dffd2b6008ba286ab7d450188136",
+        "failure_lines": [
+          "observer latch FAIL: Go build SDK linker GCC creator boundary",
+          "observer latch FAIL: Go build SDK linker native ancestry boundary"
+        ]
+      },
+      "after": {
+        "raw_log": "go-build-sdk-link-gcc-after-latch.log",
+        "sha256": "97b231298a7f7fdfa6966940badb18987f03b98dd6e92c13ff027bada65b1a75",
+        "all_latches_pass": true
+      }
+    },
+    {
+      "same_final_fixture": [
+        "Go build native linker resolver ABI boundary"
+      ],
+      "before": {
+        "raw_log": "go-build-linker-resolver-before-latch.log",
+        "sha256": "bc9d4520e7291f026c9e804eaf21308e75e11d1b20ec237cc2f8724fda93f857",
+        "failure_lines": [
+          "observer latch FAIL: Go build native linker resolver ABI boundary"
+        ]
+      },
+      "after": {
+        "raw_log": "go-build-linker-resolver-after-latch.log",
+        "sha256": "46d6213560f3cf8fd2aa78e6428c807f491c083273b8c96219e3939a5ac0816a",
+        "all_latches_pass": true
+      }
+    }
+  ]
+}

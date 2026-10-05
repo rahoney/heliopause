@@ -1,0 +1,119 @@
+{
+  "scope": "derived original result fields; local target paths omitted; raw log SHA recorded separately",
+  "results": [
+    {
+      "schema_version": "helox.operation-result/v1",
+      "operation": "INSTALL",
+      "operation_status": "COMPLETED",
+      "artifact": {
+        "reference": {
+          "source_id": "npm",
+          "locator": "is-number@7.0.0"
+        }
+      },
+      "policy": {
+        "decision": "ALLOW",
+        "id": "m4-npm-install-promotion",
+        "version": 1,
+        "reasons": [
+          "M4_VERIFIED_SET_COMPLETED"
+        ]
+      },
+      "checks": [
+        {
+          "id": "npm-declared-integrity",
+          "kind": "VERIFICATION",
+          "required": true,
+          "capability": "SUPPORTED",
+          "execution_status": "COMPLETED"
+        },
+        {
+          "id": "npm-static-archive",
+          "kind": "INSPECTION",
+          "required": true,
+          "capability": "SUPPORTED",
+          "execution_status": "COMPLETED"
+        },
+        {
+          "id": "npm-dynamic-lifecycle",
+          "kind": "INSPECTION",
+          "required": true,
+          "capability": "SUPPORTED",
+          "execution_status": "COMPLETED"
+        }
+      ],
+      "evidence_references": [
+        {
+          "id": "npm-declared-integrity-result",
+          "handle": "evidence:run_i3etotjfcrajqyk4vlg7c2cyfe:npm-declared-integrity-result"
+        },
+        {
+          "id": "npm-static-archive-result",
+          "handle": "evidence:run_i3etotjfcrajqyk4vlg7c2cyfe:npm-static-archive-result"
+        },
+        {
+          "id": "npm-dynamic-lifecycle-result",
+          "handle": "evidence:run_i3etotjfcrajqyk4vlg7c2cyfe:npm-dynamic-lifecycle-result"
+        }
+      ],
+      "promotion_status": "COMPLETED"
+    },
+    {
+      "schema_version": "helox.operation-result/v1",
+      "operation": "INSTALL",
+      "operation_status": "COMPLETED",
+      "artifact": {
+        "reference": {
+          "source_id": "pypi",
+          "locator": "packaging@25.0"
+        }
+      },
+      "policy": {
+        "decision": "ALLOW",
+        "id": "m5-pypi-pip",
+        "version": 1,
+        "reasons": [
+          "M5_VERIFIED_SET_COMPLETED"
+        ]
+      },
+      "checks": [
+        {
+          "id": "pypi-declared-sha256",
+          "kind": "VERIFICATION",
+          "required": true,
+          "capability": "SUPPORTED",
+          "execution_status": "COMPLETED"
+        },
+        {
+          "id": "pypi-static-archive",
+          "kind": "INSPECTION",
+          "required": true,
+          "capability": "SUPPORTED",
+          "execution_status": "COMPLETED"
+        },
+        {
+          "id": "pypi-dynamic-import",
+          "kind": "INSPECTION",
+          "required": true,
+          "capability": "SUPPORTED",
+          "execution_status": "COMPLETED"
+        }
+      ],
+      "evidence_references": [
+        {
+          "id": "pypi-declared-sha256-result",
+          "handle": "evidence:run_mlwzofsx2ia4v7ngp2vves6a5y:pypi-declared-sha256-result"
+        },
+        {
+          "id": "pypi-static-archive-result",
+          "handle": "evidence:run_mlwzofsx2ia4v7ngp2vves6a5y:pypi-static-archive-result"
+        },
+        {
+          "id": "pypi-dynamic-import-result",
+          "handle": "evidence:run_mlwzofsx2ia4v7ngp2vves6a5y:pypi-dynamic-import-result"
+        }
+      ],
+      "promotion_status": "COMPLETED"
+    }
+  ]
+}

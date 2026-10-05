@@ -24,6 +24,75 @@ func TestCollectTraceNormalizesKindsWithoutPayload(t *testing.T) {
 	}
 }
 
+func TestAggregateLedgerDiagnosticSeparatesNormalizedCountFromRecords(t *testing.T) {
+	ledger, err := newObservationTraceLedger(goBuildProfile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Retain the exact former Host ledger boundary as a diagnostic regression.
+	ledger.maxEvents = 10000
+	for range 588 {
+		if err := ledger.charge(helperRecord{Kind: "process-exec-expected"}, 114); err != nil {
+			t.Fatal(err)
+		}
+	}
+	count := uint64(10000)
+	failure := ledger.charge(helperRecord{Kind: "filesystem-workspace-access", Count: &count}, 110)
+	if failure == nil || ledger.events != 588 || ledger.bytes != 67032 {
+		t.Fatal("rejected aggregate count changed the budget or became success")
+	}
+	_, limitation, diagnostic := collectTraceDiagnostic(context.Background(), &traceReader{err: failure})
+	if limitation == "" || diagnostic.Reason != "EVENT_LIMIT" || diagnostic.FaultBudget.Limit != 0 {
+		t.Fatal("host ledger failure was confused with a helper charged-record limit")
+	}
+	want := FaultLedgerDiagnostic{588, 10000, 67032, 2 << 20, 10000, 110}
+	if diagnostic.FaultLedger != want || !strings.Contains(diagnostic.String(), "ledger_requested_events=10000") {
+		t.Fatalf("aggregate ledger diagnostic = %+v", diagnostic.FaultLedger)
+	}
+	if err := ledger.charge(helperRecord{Kind: "process-exec-expected"}, 1); err != nil || ledger.events != 589 {
+		t.Fatal("diagnostic changed the remaining authorization")
+	}
+	ledger = &observationTraceLedger{maxEvents: 3, maxBytes: 8, events: 1, bytes: 7}
+	if err := ledger.charge(helperRecord{Kind: "process-exec-expected"}, 2); err == nil {
+		t.Fatal("byte overflow became success")
+	} else {
+		_, _, diagnostic := collectTraceDiagnostic(context.Background(), &traceReader{err: err})
+		if diagnostic.Reason != "BYTE_LIMIT" || diagnostic.FaultLedger.Bytes != 7 || diagnostic.FaultLedger.RequestedBytes != 2 || ledger.events != 1 || ledger.bytes != 7 {
+			t.Fatal("byte ledger rejection or diagnostic changed")
+		}
+	}
+}
+
+func TestGoBuildAggregateLedgerNeverReplenishesAcrossStreams(t *testing.T) {
+	ledger, err := newObservationTraceLedger(goBuildProfile)
+	if err != nil || ledger.maxEvents != 20000 || ledger.maxBytes != 2<<20 {
+		t.Fatalf("build ledger = %+v, %v", ledger, err)
+	}
+	// Preparation and build share one authorization; summary counts consume it.
+	for _, events := range []uint64{619, 10000, 9381} {
+		if err := ledger.charge(helperRecord{Kind: "filesystem-workspace-access", Count: &events}, 134); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if ledger.events != 20000 {
+		t.Fatal("exact aggregate bound was not charged")
+	}
+	err = ledger.charge(helperRecord{Kind: "process-exec-expected"}, 134)
+	var fault observerFault
+	if !errors.As(err, &fault) || fault.reason != "EVENT_LIMIT" || ledger.events != 20000 || ledger.bytes != 402 {
+		t.Fatal("overflow succeeded or changed the remaining authorization")
+	}
+	for _, profile := range []string{"pypi-wheel", "pypi-wheel-pytorch-cpu", "pypi-wheel-pytorch-cu126", "pypi-wheel-pytorch-cu130", "pypi-wheel-pytorch-cu132"} {
+		other, err := newObservationTraceLedger(profile)
+		if err != nil || other.maxEvents != uint64(traceBudgetForProfile(profile).events) {
+			t.Fatalf("existing profile budget changed: %q", profile)
+		}
+	}
+	if traceBudgetForProfile(goBuildProfile).events != 10000 {
+		t.Fatal("physical Go build collector budget changed")
+	}
+}
+
 func TestCollectTraceFailsClosedOnUntrustedOrOversizedInput(t *testing.T) {
 	tests := []struct {
 		name   string

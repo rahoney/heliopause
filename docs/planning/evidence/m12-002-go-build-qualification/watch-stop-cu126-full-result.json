@@ -1,0 +1,424 @@
+{
+  "profile": "cu126",
+  "full_exit": 0,
+  "seconds": 2082.74,
+  "native_platform": "linux/amd64",
+  "bootstrap_binary_sha256": "9c174e72bbbe6aeb3a792f116657437dcf818b50022cda3eeefffb93df3ab291",
+  "observer_binary_sha256": "5e60b6ee93e8c3f4428e267432e2c82a1366efe6bcf678117e75de0cb366d6dd",
+  "candidate_receipt_sha256": "08af9139c92894facd1264acded3e6357c39b3b4499dc620b79e7ced325e5c1b",
+  "raw_local_file": "go-build-watch-stop-final-full-cu126.log",
+  "raw_sha256": "fe070e693e14c37f3316f5fbe185a46776fa98e2fdbeb9a3d1fb0b76538f495d",
+  "staged_manifest_sha256": "f6bd59ac72468dd301cd05384b21c9fce0cbdb2bedc19162fc9fc5f7d5c84be7",
+  "entries": [
+    {
+      "source": "pypi",
+      "name": "networkx",
+      "version": "3.7",
+      "variant": "wheel",
+      "sha256": "e3fd2c13a7814cee3746340d8d7f8598a67f16a58bf47fb7f8793fab6efca1b0",
+      "run_id": "run_o2l6bix2nv2563vkv3jlfkz6pm",
+      "evidence": [
+        "evidence:run_o2l6bix2nv2563vkv3jlfkz6pm:pypi-declared-sha256-result",
+        "evidence:run_o2l6bix2nv2563vkv3jlfkz6pm:pypi-dynamic-import-result",
+        "evidence:run_o2l6bix2nv2563vkv3jlfkz6pm:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "nvidia-cufft-cu12",
+      "version": "11.3.0.4",
+      "variant": "wheel",
+      "sha256": "ccba62eb9cef5559abd5e0d54ceed2d9934030f51163df018532142a8ec533e5",
+      "run_id": "run_n3hd7q75gggmddsgjdrdsykjuy",
+      "evidence": [
+        "evidence:run_n3hd7q75gggmddsgjdrdsykjuy:pypi-declared-sha256-result",
+        "evidence:run_n3hd7q75gggmddsgjdrdsykjuy:pypi-dynamic-import-result",
+        "evidence:run_n3hd7q75gggmddsgjdrdsykjuy:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pytorch-cu126",
+      "name": "torch",
+      "version": "2.14.0+cu126",
+      "variant": "wheel",
+      "sha256": "b15e1e62ab842d099ae9b19312374f62579668171efed8b676108b60fa75e5b0",
+      "run_id": "run_6n3ns4piyzrht5vg2k2xwkdpbe",
+      "evidence": [
+        "evidence:run_6n3ns4piyzrht5vg2k2xwkdpbe:pypi-command-attested-7da7345a649f0c7734fa62aa51b2066a",
+        "evidence:run_6n3ns4piyzrht5vg2k2xwkdpbe:pypi-command-attested-b05f5f8790d00e61020094229e26480b",
+        "evidence:run_6n3ns4piyzrht5vg2k2xwkdpbe:pypi-declared-sha256-result",
+        "evidence:run_6n3ns4piyzrht5vg2k2xwkdpbe:pypi-dynamic-import-result",
+        "evidence:run_6n3ns4piyzrht5vg2k2xwkdpbe:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "jinja2",
+      "version": "3.1.6",
+      "variant": "wheel",
+      "sha256": "85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67",
+      "run_id": "run_t6rzziqzzt4gcdgidj4wwscypu",
+      "evidence": [
+        "evidence:run_t6rzziqzzt4gcdgidj4wwscypu:pypi-declared-sha256-result",
+        "evidence:run_t6rzziqzzt4gcdgidj4wwscypu:pypi-dynamic-import-result",
+        "evidence:run_t6rzziqzzt4gcdgidj4wwscypu:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "nvidia-cuda-nvrtc-cu12",
+      "version": "12.6.85",
+      "variant": "wheel",
+      "sha256": "800927308ccc5dd6246d3f61f7fcef2ed7ec4e59e199090d360d3293f78bd5a2",
+      "run_id": "run_ywa56s2cmqviregvbxw5kvffwy",
+      "evidence": [
+        "evidence:run_ywa56s2cmqviregvbxw5kvffwy:pypi-declared-sha256-result",
+        "evidence:run_ywa56s2cmqviregvbxw5kvffwy:pypi-dynamic-import-result",
+        "evidence:run_ywa56s2cmqviregvbxw5kvffwy:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "cuda-bindings",
+      "version": "12.9.9",
+      "variant": "wheel",
+      "sha256": "94e4f9bd6b9b21aad545e0d441707094e4ff88ab420d62b85fcdc8b6da1e039f",
+      "run_id": "run_ykwi5sjpyxtqpra73sjf6qih2y",
+      "evidence": [
+        "evidence:run_ykwi5sjpyxtqpra73sjf6qih2y:pypi-command-attested-895c169bf546f821ffb2cf30ca467be1",
+        "evidence:run_ykwi5sjpyxtqpra73sjf6qih2y:pypi-command-attested-aa924ee453ec6f2905376e156c4fd882",
+        "evidence:run_ykwi5sjpyxtqpra73sjf6qih2y:pypi-declared-sha256-result",
+        "evidence:run_ykwi5sjpyxtqpra73sjf6qih2y:pypi-dynamic-import-supplemented-result",
+        "evidence:run_ykwi5sjpyxtqpra73sjf6qih2y:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "nvidia-cublas-cu12",
+      "version": "12.6.4.1",
+      "variant": "wheel",
+      "sha256": "08ed2686e9875d01b58e3cb379c6896df8e76c75e0d4a7f7dace3d7b6d9ef8eb",
+      "run_id": "run_24bpj7aiuml7rxmdaeyeaogilu",
+      "evidence": [
+        "evidence:run_24bpj7aiuml7rxmdaeyeaogilu:pypi-declared-sha256-result",
+        "evidence:run_24bpj7aiuml7rxmdaeyeaogilu:pypi-dynamic-import-result",
+        "evidence:run_24bpj7aiuml7rxmdaeyeaogilu:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "nvidia-nccl-cu12",
+      "version": "2.29.3",
+      "variant": "wheel",
+      "sha256": "35ad42e7d5d722a83c36a3a478e281c20a5646383deaf1b9ed1a9ab7d61bed53",
+      "run_id": "run_wdcbl5lpuymiupm346baijvxeu",
+      "evidence": [
+        "evidence:run_wdcbl5lpuymiupm346baijvxeu:pypi-declared-sha256-result",
+        "evidence:run_wdcbl5lpuymiupm346baijvxeu:pypi-dynamic-import-not-applicable-result",
+        "evidence:run_wdcbl5lpuymiupm346baijvxeu:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "filelock",
+      "version": "4.0.10",
+      "variant": "wheel",
+      "sha256": "698048d158dc3c9e18cc5e88b3efdd4bd0e77d76686b22adb4511cc4b2c2f0db",
+      "run_id": "run_r7vyqsbywmlh625rwd6veqinaa",
+      "evidence": [
+        "evidence:run_r7vyqsbywmlh625rwd6veqinaa:pypi-declared-sha256-result",
+        "evidence:run_r7vyqsbywmlh625rwd6veqinaa:pypi-dynamic-import-result",
+        "evidence:run_r7vyqsbywmlh625rwd6veqinaa:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "nvidia-cusparse-cu12",
+      "version": "12.5.4.2",
+      "variant": "wheel",
+      "sha256": "7556d9eca156e18184b94947ade0fba5bb47d69cec46bf8660fd2c71a4b48b73",
+      "run_id": "run_yy7tlluggwpo6hzfonjs4lzlvi",
+      "evidence": [
+        "evidence:run_yy7tlluggwpo6hzfonjs4lzlvi:pypi-declared-sha256-result",
+        "evidence:run_yy7tlluggwpo6hzfonjs4lzlvi:pypi-dynamic-import-result",
+        "evidence:run_yy7tlluggwpo6hzfonjs4lzlvi:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "nvidia-nvshmem-cu12",
+      "version": "3.4.5",
+      "variant": "wheel",
+      "sha256": "042f2500f24c021db8a06c5eec2539027d57460e1c1a762055a6554f72c369bd",
+      "run_id": "run_ep7uksl5b2lxacu2k75kevf25a",
+      "evidence": [
+        "evidence:run_ep7uksl5b2lxacu2k75kevf25a:pypi-declared-sha256-result",
+        "evidence:run_ep7uksl5b2lxacu2k75kevf25a:pypi-dynamic-import-not-applicable-result",
+        "evidence:run_ep7uksl5b2lxacu2k75kevf25a:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "cuda-toolkit",
+      "version": "12.6.3",
+      "variant": "wheel",
+      "sha256": "79d8605baeb6c2f695761e0efb54bc62dbc3c9e32eb0742df7669c07befaa8f7",
+      "run_id": "run_c4xr6ko7bbalmwpmklx5al32qe",
+      "evidence": [
+        "evidence:run_c4xr6ko7bbalmwpmklx5al32qe:pypi-declared-sha256-result",
+        "evidence:run_c4xr6ko7bbalmwpmklx5al32qe:pypi-dynamic-import-not-applicable-result",
+        "evidence:run_c4xr6ko7bbalmwpmklx5al32qe:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "nvidia-cufile-cu12",
+      "version": "1.11.1.6",
+      "variant": "wheel",
+      "sha256": "cc23469d1c7e52ce6c1d55253273d32c565dd22068647f3aa59b3c6b005bf159",
+      "run_id": "run_eum74b7t3wvnhcqvq7nk6ru4ra",
+      "evidence": [
+        "evidence:run_eum74b7t3wvnhcqvq7nk6ru4ra:pypi-declared-sha256-result",
+        "evidence:run_eum74b7t3wvnhcqvq7nk6ru4ra:pypi-dynamic-import-result",
+        "evidence:run_eum74b7t3wvnhcqvq7nk6ru4ra:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "nvidia-cuda-runtime-cu12",
+      "version": "12.6.77",
+      "variant": "wheel",
+      "sha256": "ba3b56a4f896141e25e19ab287cd71e52a6a0f4b29d0d31609f60e3b4d5219b7",
+      "run_id": "run_7dyc6bcsoiikg6ib66ujh2wfwm",
+      "evidence": [
+        "evidence:run_7dyc6bcsoiikg6ib66ujh2wfwm:pypi-declared-sha256-result",
+        "evidence:run_7dyc6bcsoiikg6ib66ujh2wfwm:pypi-dynamic-import-result",
+        "evidence:run_7dyc6bcsoiikg6ib66ujh2wfwm:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "nvidia-cusolver-cu12",
+      "version": "11.7.1.2",
+      "variant": "wheel",
+      "sha256": "e9e49843a7707e42022babb9bcfa33c29857a93b88020c4e4434656a655b698c",
+      "run_id": "run_rvv6neqy3l4lrc3ueegrn26c74",
+      "evidence": [
+        "evidence:run_rvv6neqy3l4lrc3ueegrn26c74:pypi-declared-sha256-result",
+        "evidence:run_rvv6neqy3l4lrc3ueegrn26c74:pypi-dynamic-import-result",
+        "evidence:run_rvv6neqy3l4lrc3ueegrn26c74:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "nvidia-cusparselt-cu12",
+      "version": "0.7.1",
+      "variant": "wheel",
+      "sha256": "f1bb701d6b930d5a7cea44c19ceb973311500847f81b634d802b7b539dc55623",
+      "run_id": "run_4427zjx22wrhzrwd4zvli6tewu",
+      "evidence": [
+        "evidence:run_4427zjx22wrhzrwd4zvli6tewu:pypi-declared-sha256-result",
+        "evidence:run_4427zjx22wrhzrwd4zvli6tewu:pypi-dynamic-import-not-applicable-result",
+        "evidence:run_4427zjx22wrhzrwd4zvli6tewu:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "nvidia-nvjitlink-cu12",
+      "version": "12.9.86",
+      "variant": "wheel",
+      "sha256": "e3f1171dbdc83c5932a45f0f4c99180a70de9bd2718c1ab77d14104f6d7147f9",
+      "run_id": "run_zi3cqzzxgjaoacrmrf5adfic24",
+      "evidence": [
+        "evidence:run_zi3cqzzxgjaoacrmrf5adfic24:pypi-declared-sha256-result",
+        "evidence:run_zi3cqzzxgjaoacrmrf5adfic24:pypi-dynamic-import-not-applicable-result",
+        "evidence:run_zi3cqzzxgjaoacrmrf5adfic24:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "typing-extensions",
+      "version": "4.16.0",
+      "variant": "wheel",
+      "sha256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+      "run_id": "run_nxxayy5zpblmyoudhmzq2jyisu",
+      "evidence": [
+        "evidence:run_nxxayy5zpblmyoudhmzq2jyisu:pypi-declared-sha256-result",
+        "evidence:run_nxxayy5zpblmyoudhmzq2jyisu:pypi-dynamic-import-result",
+        "evidence:run_nxxayy5zpblmyoudhmzq2jyisu:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "setuptools",
+      "version": "84.0.0",
+      "variant": "wheel",
+      "sha256": "51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670",
+      "run_id": "run_mczgpsociud7onlh2wxaizyy6e",
+      "evidence": [
+        "evidence:run_mczgpsociud7onlh2wxaizyy6e:pypi-declared-sha256-result",
+        "evidence:run_mczgpsociud7onlh2wxaizyy6e:pypi-dynamic-import-result",
+        "evidence:run_mczgpsociud7onlh2wxaizyy6e:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "triton",
+      "version": "3.8.0",
+      "variant": "wheel",
+      "sha256": "387dae4cb0089a7b6ba1a428ae0782b65c4c58f57d94617cb22ca8593d8ccbca",
+      "run_id": "run_t4x32ddjn4yqtjbh7gmxqnmyci",
+      "evidence": [
+        "evidence:run_t4x32ddjn4yqtjbh7gmxqnmyci:pypi-command-attested-9a07cb2912247155b178a1dda287f500",
+        "evidence:run_t4x32ddjn4yqtjbh7gmxqnmyci:pypi-command-not-attested-f9c3e3543082b7d10f8f3a3cd326543a",
+        "evidence:run_t4x32ddjn4yqtjbh7gmxqnmyci:pypi-declared-sha256-result",
+        "evidence:run_t4x32ddjn4yqtjbh7gmxqnmyci:pypi-dynamic-import-result",
+        "evidence:run_t4x32ddjn4yqtjbh7gmxqnmyci:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "nvidia-nvtx-cu12",
+      "version": "12.6.77",
+      "variant": "wheel",
+      "sha256": "b90bed3df379fa79afbd21be8e04a0314336b8ae16768b58f2d34cb1d04cd7d2",
+      "run_id": "run_hsb7sm6f5bknvkudyuuomz5zy4",
+      "evidence": [
+        "evidence:run_hsb7sm6f5bknvkudyuuomz5zy4:pypi-declared-sha256-result",
+        "evidence:run_hsb7sm6f5bknvkudyuuomz5zy4:pypi-dynamic-import-result",
+        "evidence:run_hsb7sm6f5bknvkudyuuomz5zy4:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "mpmath",
+      "version": "1.3.0",
+      "variant": "wheel",
+      "sha256": "a0b2b9fe80bbcd81a6647ff13108738cfb482d481d826cc0e02f5b35e5c88d2c",
+      "run_id": "run_ept3yxm2eigly2z2aazfxppg7e",
+      "evidence": [
+        "evidence:run_ept3yxm2eigly2z2aazfxppg7e:pypi-declared-sha256-result",
+        "evidence:run_ept3yxm2eigly2z2aazfxppg7e:pypi-dynamic-import-result",
+        "evidence:run_ept3yxm2eigly2z2aazfxppg7e:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "nvidia-cudnn-cu12",
+      "version": "9.10.2.21",
+      "variant": "wheel",
+      "sha256": "949452be657fa16687d0930933f032835951ef0892b37d2d53824d1a84dc97a8",
+      "run_id": "run_aowpa3ltb6fwv5gwk3eqqyfci4",
+      "evidence": [
+        "evidence:run_aowpa3ltb6fwv5gwk3eqqyfci4:pypi-declared-sha256-result",
+        "evidence:run_aowpa3ltb6fwv5gwk3eqqyfci4:pypi-dynamic-import-not-applicable-result",
+        "evidence:run_aowpa3ltb6fwv5gwk3eqqyfci4:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "markupsafe",
+      "version": "3.0.4",
+      "variant": "wheel",
+      "sha256": "a8e9f292fcda89b324f2f5c91d13f1424a153e40fc2756f38ee23b15835ff300",
+      "run_id": "run_snoebwrzwfy6ubvflhubh4kgf4",
+      "evidence": [
+        "evidence:run_snoebwrzwfy6ubvflhubh4kgf4:pypi-declared-sha256-result",
+        "evidence:run_snoebwrzwfy6ubvflhubh4kgf4:pypi-dynamic-import-result",
+        "evidence:run_snoebwrzwfy6ubvflhubh4kgf4:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "nvidia-cuda-cupti-cu12",
+      "version": "12.6.80",
+      "variant": "wheel",
+      "sha256": "6768bad6cab4f19e8292125e5f1ac8aa7d1718704012a0e3272a6f61c4bce132",
+      "run_id": "run_tkbxa3hehfrptq77tt6bykyife",
+      "evidence": [
+        "evidence:run_tkbxa3hehfrptq77tt6bykyife:pypi-declared-sha256-result",
+        "evidence:run_tkbxa3hehfrptq77tt6bykyife:pypi-dynamic-import-result",
+        "evidence:run_tkbxa3hehfrptq77tt6bykyife:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "cuda-pathfinder",
+      "version": "1.8.3",
+      "variant": "wheel",
+      "sha256": "e29e59829c297a7a5233bd9cc71094fc5bddbd076951482670178f9eade39b1f",
+      "run_id": "run_cf3afwnpvr6agz7m2mzsbcpw3u",
+      "evidence": [
+        "evidence:run_cf3afwnpvr6agz7m2mzsbcpw3u:pypi-declared-sha256-result",
+        "evidence:run_cf3afwnpvr6agz7m2mzsbcpw3u:pypi-dynamic-import-result",
+        "evidence:run_cf3afwnpvr6agz7m2mzsbcpw3u:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "fsspec",
+      "version": "2026.9.0",
+      "variant": "wheel",
+      "sha256": "8dd6e646e99ea382bd85f97a45e6b526a442d79423a7dc673f1e2756d05fcb5f",
+      "run_id": "run_7haotxsbxdkvzgfpip6iq65374",
+      "evidence": [
+        "evidence:run_7haotxsbxdkvzgfpip6iq65374:pypi-declared-sha256-result",
+        "evidence:run_7haotxsbxdkvzgfpip6iq65374:pypi-dynamic-import-result",
+        "evidence:run_7haotxsbxdkvzgfpip6iq65374:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "nvidia-curand-cu12",
+      "version": "10.3.7.77",
+      "variant": "wheel",
+      "sha256": "a42cd1344297f70b9e39a1e4f467a4e1c10f1da54ff7a85c12197f6c652c8bdf",
+      "run_id": "run_km43domu3g7tocvicm2gkchuxm",
+      "evidence": [
+        "evidence:run_km43domu3g7tocvicm2gkchuxm:pypi-declared-sha256-result",
+        "evidence:run_km43domu3g7tocvicm2gkchuxm:pypi-dynamic-import-result",
+        "evidence:run_km43domu3g7tocvicm2gkchuxm:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "sympy",
+      "version": "1.14.0",
+      "variant": "wheel",
+      "sha256": "e091cc3e99d2141a0ba2847328f5479b05d94a6635cb96148ccb3f34671bd8f5",
+      "run_id": "run_qz2kckakjy7ywrx333cy23qudy",
+      "evidence": [
+        "evidence:run_qz2kckakjy7ywrx333cy23qudy:pypi-declared-sha256-result",
+        "evidence:run_qz2kckakjy7ywrx333cy23qudy:pypi-dynamic-import-result",
+        "evidence:run_qz2kckakjy7ywrx333cy23qudy:pypi-static-archive-result"
+      ]
+    }
+  ],
+  "viewer_not_attested": [
+    {
+      "evidence_id": "pypi-command-not-attested-f9c3e3543082b7d10f8f3a3cd326543a",
+      "record_sha256": "a550e03427acefb47cbbc78df6ccfe6faa9e616b135e8fb023b7eb79f08a415a",
+      "summary": {
+        "scope": "post-install-command-target-import",
+        "module": "triton.profiler.viewer",
+        "owner_sha256": "387dae4cb0089a7b6ba1a428ae0782b65c4c58f57d94617cb22ca8593d8ccbca",
+        "unit": "DIRECT_IMPORT:324d826a5e0796a9815573025b8e581dafea10a9a4eeebdd618902f893e531c3",
+        "disposition": "NOT_ATTESTED",
+        "functionality_attested": false,
+        "later_execution_enforced": false
+      }
+    }
+  ],
+  "inspection_prerequisite": {
+    "project": "numpy",
+    "version": "2.4.6",
+    "sha256": "a2c306dea656c12c68f51f4cea133cbe78ca7435eb28c735eac1d3ebe73be6e8",
+    "excluded_from_promotion_and_target": true
+  },
+  "helper_wait": 0,
+  "original_installation_restored": true,
+  "cu130_cu132": "focused common-path PASS; current full NOT_RUN",
+  "remote_ci": "NOT_RUN",
+  "native_macos": "NOT_RUN",
+  "prior_full_failure_cause": "UNCONFIRMED; do not attribute prior failure to narrow stop race from later PASS"
+}

@@ -1,0 +1,14 @@
+{
+  "scope": "current watcher-stop candidate, four-profile optional/nonzero, namespace and prerequisite sequences; cu130/cu132 focused common-path only",
+  "result": "PASS",
+  "raw_local_file": "go-build-watch-stop-final-terminal-consumers.log",
+  "raw_sha256": "fb4a47c57b753e680e2c8959e6f408f8024501f96e18a408611d99039188ef60",
+  "actual_pass_tests": [
+    "--- PASS: TestLinuxPythonCommandSequenceIntegration (186.43s)",
+    "--- PASS: TestLinuxPythonNamespaceSequenceIntegration (163.46s)",
+    "--- PASS: TestLinuxInspectionPrerequisiteSequenceIntegration (208.02s)"
+  ],
+  "helper_wait": 0,
+  "restored_original_installation": true,
+  "candidate_receipt_sha256": "08af9139c92894facd1264acded3e6357c39b3b4499dc620b79e7ced325e5c1b"
+}

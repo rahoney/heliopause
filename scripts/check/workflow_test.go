@@ -122,18 +122,21 @@ func TestValidateCIWorkflowRejectsSecurityRegressions(t *testing.T) {
 	}
 
 	tests := map[string]string{
-		"floating action":                     strings.Replace(string(contents), "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", "actions/checkout@main", 1),
-		"missing always":                      strings.Replace(string(contents), "    if: ${{ always() }}\n", "", 1),
-		"write token":                         strings.Replace(string(contents), "  contents: read", "  contents: write", 1),
-		"moving macOS runner":                 strings.Replace(string(contents), "runs-on: macos-26-intel", "runs-on: macos-latest", 1),
-		"missing minimum Go":                  strings.ReplaceAll(string(contents), "go-version: '1.26.8'", "go-version: '1.26.7'"),
-		"missing platform check":              strings.ReplaceAll(string(contents), "run: go run ./scripts/check platform", "run: go test ./..."),
-		"missing CUDA single-selection guard": strings.Replace(string(contents), "select at most one CUDA PyTorch qualification profile", "CUDA profiles unchecked", 1),
-		"missing CUDA strict freshness gate":  strings.Replace(string(contents), "go run ./scripts/check qualification-freshness", "echo skipped", 1),
-		"legacy CUDA profile":                 string(contents) + "\n# HELOX_PYTORCH_PROFILE=cu128\n",
-		"sidecar fallback":                    strings.Replace(string(contents), "--sidecar-usage-policy=STRICT", "--sidecar-usage-policy=LEGACY_DEPRECATED_SLOW_EMBEDDED_FALLBACK", 1),
-		"permissive sidecar download":         strings.Replace(string(contents), "--download-sidecars=NEVER", "--download-sidecars=ALWAYS", 1),
-		"extra job":                           string(contents) + "\n  security:\n    runs-on: ubuntu-24.04\n",
+		"floating action":                        strings.Replace(string(contents), "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", "actions/checkout@main", 1),
+		"missing always":                         strings.Replace(string(contents), "    if: ${{ always() }}\n", "", 1),
+		"write token":                            strings.Replace(string(contents), "  contents: read", "  contents: write", 1),
+		"moving macOS runner":                    strings.Replace(string(contents), "runs-on: macos-26-intel", "runs-on: macos-latest", 1),
+		"missing minimum Go":                     strings.ReplaceAll(string(contents), "go-version: '1.26.8'", "go-version: '1.26.7'"),
+		"missing pinned Go image":                strings.Replace(string(contents), `docker pull "$go_image"`, `echo skipped`, 1),
+		"Go build integration silently skipped":  strings.Replace(string(contents), "HELOX_GO_BUILD_CLI_INTEGRATION=1", "HELOX_GO_BUILD_CLI_INTEGRATION=0", 1),
+		"Go source integration silently skipped": strings.ReplaceAll(string(contents), "HELOX_GO_RESOLVER_INTEGRATION=1", "HELOX_GO_RESOLVER_INTEGRATION=0"),
+		"missing platform check":                 strings.ReplaceAll(string(contents), "run: go run ./scripts/check platform", "run: go test ./..."),
+		"missing CUDA single-selection guard":    strings.Replace(string(contents), "select at most one CUDA PyTorch qualification profile", "CUDA profiles unchecked", 1),
+		"missing CUDA strict freshness gate":     strings.Replace(string(contents), "go run ./scripts/check qualification-freshness", "echo skipped", 1),
+		"legacy CUDA profile":                    string(contents) + "\n# HELOX_PYTORCH_PROFILE=cu128\n",
+		"sidecar fallback":                       strings.Replace(string(contents), "--sidecar-usage-policy=STRICT", "--sidecar-usage-policy=LEGACY_DEPRECATED_SLOW_EMBEDDED_FALLBACK", 1),
+		"permissive sidecar download":            strings.Replace(string(contents), "--download-sidecars=NEVER", "--download-sidecars=ALWAYS", 1),
+		"extra job":                              string(contents) + "\n  security:\n    runs-on: ubuntu-24.04\n",
 	}
 	for name, fixture := range tests {
 		t.Run(name, func(t *testing.T) {

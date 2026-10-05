@@ -1,9 +1,13 @@
 package promotion
 
 import (
+	"archive/tar"
 	"context"
+	"errors"
+	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	artifactgo "github.com/rahoney/heliopause/internal/artifact/gomodule"
@@ -64,6 +68,23 @@ func TestDependencyFreeGoDownloadAdoptionAndCacheBinding(t *testing.T) {
 	retained, err := p.Begin(context.Background(), install)
 	if err != nil {
 		t.Fatal(err)
+	}
+	artifact, err := retained.SnapshotBuildCache(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	parts := strings.Split(artifact.ContentHandle(), ":")
+	if len(parts) != 3 || parts[0] != "intake" || parts[2] != "go-cache" || artifact.Identity().Version() != snapshot.GraphDigest().String() {
+		t.Fatal("empty build cache lost its approved graph binding")
+	}
+	archive, err := os.Open(filepath.Join(cache.intakeRoot, parts[1], "go-cache.tar"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, entryErr := tar.NewReader(archive).Next()
+	closeErr := archive.Close()
+	if !errors.Is(entryErr, io.EOF) || closeErr != nil {
+		t.Fatal("approved dependency-free build cache contained an entry")
 	}
 	if err := retained.Close(); err != nil {
 		t.Fatal(err)

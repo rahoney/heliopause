@@ -62,7 +62,7 @@ func observerExpectedTopology(profile string) ([]observerMountExpectation, bool)
 	tmp := observerMountExpectation{"/tmp", "workspace", "/", "tmpfs", false, true, true, false}
 	runtime := observerMountExpectation{"/haa-runtime", "helper", "/", "tmpfs", false, false, true, false}
 	switch profile {
-	case "npm-lifecycle", "go-module-resolver":
+	case "npm-lifecycle", "go-module-resolver", "go-module-build":
 		return []observerMountExpectation{root, tmp, runtime}, true
 	case "pypi-wheel", "pypi-wheel-pytorch-cpu", "pypi-wheel-pytorch-cu126", "pypi-wheel-pytorch-cu130", "pypi-wheel-pytorch-cu132":
 		site := observerMountExpectation{"/haa-site", "workspace", "/", "tmpfs", false, false, true, false}
@@ -83,7 +83,7 @@ const (
 	pythonClosureObservation pythonClosurePhase = "OBSERVATION"
 )
 
-// observationTraceLedger is shared by every phase of one Python observation
+// observationTraceLedger is shared by every phase of one observation
 // transaction. SharedObserver.mu protects it, including concurrent anchor and
 // probe streams. A new stream never replenishes the authorization.
 type observationTraceLedger struct {
@@ -93,15 +93,43 @@ type observationTraceLedger struct {
 	bytes     uint64
 }
 
+// The Go build ledger aggregates preparation and compiler streams, including
+// counted workspace summaries. This does not increase physical collector limits.
+const maximumGoBuildLedgerEvents = 20000
+
 func newObservationTraceLedger(profile string) (*observationTraceLedger, error) {
-	if !isPythonObserverProfile(profile) {
+	if !isPythonObserverProfile(profile) && profile != goBuildProfile {
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
 	}
 	budget := traceBudgetForProfile(profile)
 	if budget.events <= 0 || budget.bytes == 0 {
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
 	}
-	return &observationTraceLedger{maxEvents: uint64(budget.events), maxBytes: budget.bytes}, nil
+
+	maxEvents := uint64(budget.events)
+	if profile == goBuildProfile {
+		maxEvents = maximumGoBuildLedgerEvents
+	}
+	return &observationTraceLedger{maxEvents: maxEvents, maxBytes: budget.bytes}, nil
+}
+
+func goBuildInputExpectedTopology(readOnly bool) ([]observerMountExpectation, bool) {
+	base, ok := observerExpectedTopology(goBuildProfile)
+	if !ok {
+		return nil, false
+	}
+	// The pinned runtime exposes Docker's named tmpfs as 9p. Host noexec is
+	// separately checked; it does not assert a guest 9p flag. The build input
+	// is read-only and distinct from the writable scratch /tmp mount.
+	return append(base, observerMountExpectation{goBuildGuestInput, "workspace", "/tmp", "9p", readOnly, false, false, false}), true
+}
+
+func goBuildOutputExpectedTopology(readOnly bool) ([]observerMountExpectation, bool) {
+	base, ok := goBuildInputExpectedTopology(readOnly)
+	if !ok {
+		return nil, false
+	}
+	return append(base, observerMountExpectation{goBuildGuestOutput, "workspace", "/tmp", "9p", false, false, false, false}), true
 }
 
 func (l *observationTraceLedger) charge(record helperRecord, bytes uint64) error {
@@ -112,11 +140,12 @@ func (l *observationTraceLedger) charge(record helperRecord, bytes uint64) error
 	if record.Count != nil {
 		events = *record.Count
 	}
+	diagnostic := FaultLedgerDiagnostic{l.events, l.maxEvents, l.bytes, l.maxBytes, events, bytes}
 	if events > l.maxEvents-l.events {
-		return observerFault{reason: "EVENT_LIMIT"}
+		return observerFault{reason: "EVENT_LIMIT", ledger: diagnostic}
 	}
 	if bytes > l.maxBytes-l.bytes {
-		return observerFault{reason: "BYTE_LIMIT"}
+		return observerFault{reason: "BYTE_LIMIT", ledger: diagnostic}
 	}
 	l.events += events
 	l.bytes += bytes
@@ -238,6 +267,7 @@ type observerFault struct {
 	imageLocator uint64
 	open         FaultOpenDiagnostic
 	budget       FaultBudgetDiagnostic
+	ledger       FaultLedgerDiagnostic
 }
 
 func (e observerFault) Error() string                           { return "observer stream is incomplete" }
@@ -246,6 +276,7 @@ func (e observerFault) TraceFaultSite() string                  { return e.site 
 func (e observerFault) TraceFaultImageLocator() uint64          { return e.imageLocator }
 func (e observerFault) TraceFaultOpen() FaultOpenDiagnostic     { return e.open }
 func (e observerFault) TraceFaultBudget() FaultBudgetDiagnostic { return e.budget }
+func (e observerFault) TraceFaultLedger() FaultLedgerDiagnostic { return e.ledger }
 
 const maximumHelperRecordBytes = 1024
 
@@ -438,6 +469,25 @@ func (o *SharedObserver) Start(_ context.Context, containerID string) (TraceRead
 
 func (o *SharedObserver) StartProfile(ctx context.Context, containerID, profile string) (TraceReader, error) {
 	return o.startProfile(ctx, containerID, profile, nil)
+}
+
+func (o *SharedObserver) StartGoBuildInputProfile(ctx context.Context, containerID string, readOnly bool, budget *observationTraceLedger) (TraceReader, error) {
+	if budget == nil {
+		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	topology, ok := goBuildInputExpectedTopology(readOnly)
+	if !ok {
+		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	return o.startProfileWithBudget(ctx, containerID, goBuildProfile, topology, budget)
+}
+
+func (o *SharedObserver) StartGoBuildOutputProfile(ctx context.Context, containerID string, readOnly bool, budget *observationTraceLedger) (TraceReader, error) {
+	topology, ok := goBuildOutputExpectedTopology(readOnly)
+	if budget == nil || !ok {
+		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	return o.startProfileWithBudget(ctx, containerID, goBuildProfile, topology, budget)
 }
 
 func (o *SharedObserver) StartPythonClosureProfile(ctx context.Context, containerID, profile string, phase pythonClosurePhase) (TraceReader, error) {
@@ -874,6 +924,7 @@ func validFaultSite(record helperRecord) bool {
 		open := record.FaultOpen
 		if record.Kind != "stream-fault" || !validFixed(record.FaultSite, "OPEN_RESULT_CLASSIFICATION_IMAGE", "OPEN_RESULT_CLASSIFICATION_PROC", "OPEN_RESULT_CLASSIFICATION_SYS", "OPEN_RESULT_CLASSIFICATION_OTHER", "OPEN_RESULT_CLASSIFICATION_PROCESS_NAME") ||
 			!validFixed(open.Image, "SHELL", "PYTHON", "PIP", "NODE", "NPM", "GO", "ARTIFACT", "SLEEP", "MKDIR", "CAT", "CHMOD", "OTHER") ||
+			(open.KernelImage != "" && !validFixed(open.KernelImage, "UNKNOWN", "BOUNDARY", "SETPRIV", "SHELL", "ENV", "NPM_CLI", "NODE")) ||
 			!validFixed(open.Role, "CONTROL", "ARTIFACT", "UNKNOWN") || !validFixed(open.Provenance, "OCI_ROOT", "DIRECT_EXEC_ROOT", "CLONE_CHILD", "UNKNOWN") ||
 			!validFixed(open.Subject, "PROC_SELF_AUXV", "PROC_SELF_CGROUP", "PROC_SELF_MOUNTINFO", "THP_PAGE_SIZE", "CGROUP_CPU_QUOTA", "OCI_IMAGE", "OTHER") ||
 			!validFixed(open.Mount, "oci-root", "system", "workspace", "helper") {

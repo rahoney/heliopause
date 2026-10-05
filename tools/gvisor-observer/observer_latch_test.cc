@@ -679,6 +679,7 @@ bool HasBoundedProfileRecordLimits() {
       MaximumRecords(kProfilePyTorchCU130) == 100000 &&
       MaximumRecords(kProfilePyTorchCU132) == 100000 &&
       MaximumRecords(kProfileGoResolver) == 200000 &&
+      MaximumRecords(kProfileGoBuild) == 250000 &&
       MaximumRecords(kProfileNPM) == 10000 &&
       MaximumRecords(kProfileGitHub) == 10000 &&
       MaximumRecords(kProfilePyPI) == 10000 &&
@@ -922,6 +923,833 @@ bool VerifyGoResolverRuntimeReadBoundary() {
       ProcessClassForPath("go", kProfileGoResolver) == ProcessClass::kUnknown &&
       ProcessClassForPath("/tmp/go", kProfileGoResolver) == ProcessClass::kUnknown &&
       ProcessClassForPath("/usr/local/go/bin/go", kProfilePyPI) == ProcessClass::kUnknown;
+}
+
+bool VerifyGoBuildConfigurationReadBoundary() {
+  ProcessState state;
+  gvisor::common::ContextData parent;
+  parent.set_container_id(kFirstID);
+  parent.set_thread_group_id(99);
+  parent.set_thread_group_start_time_ns(990);
+  parent.set_parent_thread_group_id(0);
+  parent.set_is_exec_session(true);
+  parent.set_process_name("renamed-parent");
+  if (!RegisterGroup(&state, parent, ProcessState::Role::kControl,
+                     ProcessState::Provenance::kDirectExecRoot, false, true)) return false;
+  state.groups[99].current_image_class = ProcessClass::kShell;
+  auto child_context = parent;
+  child_context.set_thread_group_id(100);
+  child_context.set_thread_group_start_time_ns(1000);
+  child_context.set_parent_thread_group_id(99);
+  child_context.set_process_name("renamed-child");
+  if (!RegisterGroup(&state, child_context, ProcessState::Role::kControl,
+                     ProcessState::Provenance::kCloneChild, false, true)) return false;
+  auto& child = state.groups[100];
+  child.clone_creator_group_id = 99;
+  child.clone_creator_group_start_time_ns = 990;
+  child.current_image_class = ProcessClass::kMkdir;
+  state.expected_groups[100] = ProcessState::ExpectedGroup{1000, ProcessClass::kMkdir};
+  gvisor::syscall::Open open;
+  *open.mutable_context_data() = child_context;
+  open.set_pathname("/proc/filesystems");
+  open.set_flags(557056);
+  MountAnchor anchor{10, "/proc", "system"};
+  auto classify = [&]() { return ClassifyFilesystemOpen(open, state, kProfileGoBuild, &anchor); };
+  if (classify() != FilesystemClass::kHelperOnly) return false;
+  for (const char* path : {"/proc/99/environ", "/proc/100/status", "/etc/shadow"}) {
+    open.set_pathname(path);
+    if (classify() == FilesystemClass::kHelperOnly) return false;
+  }
+  open.set_pathname("/proc/filesystems");
+  open.set_flags(kOpenWriteOnly);
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  open.set_flags(557056);
+  anchor.mountpoint = "/proc/other";
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  anchor.mountpoint = "/proc";
+  anchor.mount_class = "oci-root";
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  anchor.mount_class = "system";
+  child.role = ProcessState::Role::kArtifact;
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  child.role = ProcessState::Role::kControl;
+  child.trusted_control_network_active = true;
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  child.trusted_control_network_active = false;
+  child.current_image_class = ProcessClass::kUnknown;
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  child.current_image_class = ProcessClass::kMkdir;
+  state.groups[99].start_time_ns++;
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  state.groups[99].start_time_ns--;
+  state.groups[99].role = ProcessState::Role::kArtifact;
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  state.groups[99].role = ProcessState::Role::kControl;
+  state.groups[99].current_image_class = ProcessClass::kGo;
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  state.groups[99].current_image_class = ProcessClass::kShell;
+  open.mutable_context_data()->set_thread_group_start_time_ns(1001);
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  open.mutable_context_data()->set_thread_group_start_time_ns(1000);
+  return classify() == FilesystemClass::kHelperOnly &&
+      MaximumRecords(kProfileGoBuild) == 250000 &&
+      MaximumRecords(kProfileGoResolver) == 200000;
+}
+
+bool VerifyGoBuildHandoffReadBoundary() {
+  ProcessState state;
+  gvisor::common::ContextData context;
+  context.set_container_id(kFirstID);
+  context.set_thread_group_id(99);
+  context.set_thread_group_start_time_ns(990);
+  context.set_parent_thread_group_id(0);
+  context.set_is_exec_session(true);
+  context.set_process_name("renamed-handoff");
+  if (!RegisterGroup(&state, context, ProcessState::Role::kArtifact,
+                     ProcessState::Provenance::kDirectExecRoot, false, true)) return false;
+  auto& group = state.groups[99];
+  group.handoff_target_pending = true;
+  group.handoff_target_class = ProcessClass::kGo;
+  group.current_image_class = ProcessClassForPath("/usr/bin/setpriv", kProfileGoBuild);
+  gvisor::syscall::Open open;
+  *open.mutable_context_data() = context;
+  open.set_pathname("/etc/ld.so.cache");
+  open.set_flags(557056);
+  MountAnchor anchor{1, "/", "oci-root"};
+  auto classify = [&]() { return ClassifyFilesystemOpen(open, state, kProfileGoBuild, &anchor); };
+  if (classify() != FilesystemClass::kHelperOnly) return false;
+  for (const char* path : {"/usr/lib/x86_64-linux-gnu/libc.so.6", "/usr/lib/x86_64-linux-gnu/libcap-ng.so.0.0.0", "/etc/nsswitch.conf", "/etc/passwd", "/etc/group"}) {
+    open.set_pathname(path);
+    if (classify() != FilesystemClass::kHelperOnly) return false;
+  }
+  for (const char* path : {"/etc/shadow", "/usr/lib/x86_64-linux-gnu/libprivate.so.0", "/etc/ld.so.cache.backup"}) {
+    open.set_pathname(path);
+    if (classify() == FilesystemClass::kHelperOnly) return false;
+  }
+  open.set_pathname("/etc/ld.so.cache");
+  open.set_flags(kOpenWriteOnly);
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  open.set_flags(557056);
+  group.handoff_target_pending = false;
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  group.handoff_target_pending = true;
+  group.trusted_control_network_active = true;
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  group.trusted_control_network_active = false;
+  group.root_eligible = true;
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  group.root_eligible = false;
+  group.current_image_class = ProcessClassForPath("/tmp/setpriv", kProfileGoBuild);
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  group.current_image_class = ProcessClassForPath("/usr/bin/setpriv", kProfileGoBuild);
+  group.provenance = ProcessState::Provenance::kCloneChild;
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  group.provenance = ProcessState::Provenance::kDirectExecRoot;
+  anchor.mountpoint = "/etc/ld.so.cache";
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  anchor = MountAnchor{10, "/proc", "system"};
+  open.set_pathname("/proc/sys/kernel/cap_last_cap");
+  if (classify() != FilesystemClass::kHelperOnly) return false;
+  open.set_pathname("/proc/99/status");
+  if (classify() != FilesystemClass::kHelperOnly) return false;
+  open.set_pathname("/proc/98/status");
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  open.set_pathname("/proc/99/status");
+  group.role = ProcessState::Role::kControl;
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  group.role = ProcessState::Role::kArtifact;
+  group.demotion_pending = true;
+  group.current_image_class = ProcessClassForPath("/haa-runtime/haa-boundary", kProfileGoBuild);
+  anchor = MountAnchor{3, "/haa-runtime", "helper"};
+  open.set_pathname("/haa-runtime/haa-boundary");
+  if (classify() != FilesystemClass::kHelperOnly) return false;
+  anchor = MountAnchor{1, "/", "oci-root"};
+  open.set_pathname("/etc/ld.so.cache");
+  if (classify() != FilesystemClass::kHelperOnly) return false;
+  group.current_image_class = ProcessClass::kUnknown;
+  group.handoff_target_pending = false;
+  open.mutable_context_data()->set_process_name("haa-boundary");
+  return classify() != FilesystemClass::kHelperOnly;
+}
+
+bool VerifyGoBuildRuntimeMetadataBoundary() {
+  ProcessState state;
+  gvisor::common::ContextData context;
+  context.set_container_id(kFirstID);
+  context.set_thread_group_id(99);
+  context.set_thread_group_start_time_ns(990);
+  context.set_parent_thread_group_id(0);
+  context.set_is_exec_session(true);
+  context.set_process_name("renamed-build");
+  if (!RegisterGroup(&state, context, ProcessState::Role::kArtifact,
+                     ProcessState::Provenance::kDirectExecRoot, false, true)) return false;
+  auto& group = state.groups[99];
+  group.current_image_class = ProcessClass::kGo;
+  gvisor::syscall::Open open;
+  *open.mutable_context_data() = context;
+  open.set_pathname("/proc/99/cgroup");
+  open.set_flags(557056);
+  MountAnchor anchor{10, "/proc", "system"};
+  auto classify = [&]() { return ClassifyFilesystemOpen(open, state, kProfileGoBuild, &anchor); };
+  if (classify() != FilesystemClass::kHelperOnly) return false;
+  open.set_pathname("/proc/99/mountinfo");
+  if (classify() != FilesystemClass::kHelperOnly) return false;
+  anchor.mountpoint = "/sys/fs/cgroup/cpu";
+  for (const char* path : {"/sys/fs/cgroup/cpu/cpu.cfs_quota_us", "/sys/fs/cgroup/cpu/cpu.cfs_period_us"}) {
+    open.set_pathname(path);
+    if (classify() != FilesystemClass::kHelperOnly) return false;
+  }
+  for (const char* path : {"/sys/fs/cgroup/cpu/cpu.shares", "/sys/fs/cgroup/memory/memory.limit_in_bytes", "/sys/devices/system/cpu/online"}) {
+    open.set_pathname(path);
+    if (classify() == FilesystemClass::kHelperOnly) return false;
+  }
+  open.set_pathname("/sys/fs/cgroup/cpu/cpu.cfs_quota_us");
+  group.role = ProcessState::Role::kControl;
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  group.role = ProcessState::Role::kArtifact;
+  group.provenance = ProcessState::Provenance::kCloneChild;
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  group.provenance = ProcessState::Provenance::kDirectExecRoot;
+  group.current_image_class = ProcessClass::kUnknown;
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  group.current_image_class = ProcessClass::kGo;
+  group.trusted_control_network_active = true;
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  group.trusted_control_network_active = false;
+  open.set_flags(kOpenWriteOnly);
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  open.set_flags(557056);
+  anchor.mountpoint = "/sys/fs/cgroup";
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  anchor.mountpoint = "/sys/fs/cgroup/cpu";
+  anchor.mount_class = "oci-root";
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  anchor.mount_class = "system";
+  open.mutable_context_data()->set_thread_group_start_time_ns(991);
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  open.mutable_context_data()->set_thread_group_start_time_ns(990);
+  if (ClassifyFilesystemOpen(open, state, kProfileGoResolver, &anchor) == FilesystemClass::kHelperOnly) return false;
+  anchor.mountpoint = "/";
+  anchor.mount_class = "oci-root";
+  open.set_pathname("/usr/local/go/go.env");
+  if (classify() != FilesystemClass::kHelperOnly) return false;
+  open.set_pathname("/usr/local/go/go.env.extra");
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  for (const char* path : {"/usr/local/go/src", "/usr/local/go/src/runtime", "/usr/local/go/src/runtime/asm_amd64.s", "/usr/local/go/pkg/include", "/usr/local/go/pkg/include/textflag.h", "/usr/share/zoneinfo/Etc/UTC"}) {
+    open.set_pathname(path);
+    if (classify() != FilesystemClass::kHelperOnly) return false;
+  }
+  for (const char* path : {"/usr/local/go/src.extra", "/usr/local/go/pkg/include.extra", "/usr/local/go/pkg/tool/linux_amd64/compile", "/usr/local/go/test/eof.go", "/usr/share/zoneinfo/Etc/GMT"}) {
+    open.set_pathname(path);
+    if (classify() == FilesystemClass::kHelperOnly) return false;
+  }
+  open.set_pathname("/usr/local/go/go.env");
+  open.set_flags(kOpenWriteOnly);
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  open.set_flags(557056);
+  anchor.mountpoint = "/usr/local/go";
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  anchor.mountpoint = "/dev";
+  anchor.mount_class = "system";
+  open.set_pathname("/dev/null");
+  if (classify() != FilesystemClass::kHelperOnly) return false;
+  open.set_pathname("/dev/zero");
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  open.set_pathname("/dev/null");
+  open.set_flags(kOpenWriteOnly);
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  open.set_flags(557056);
+  anchor.mountpoint = "/dev/null";
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  anchor.mountpoint = "/dev";
+  anchor.mount_class = "oci-root";
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  anchor.mountpoint = "/proc";
+  anchor.mount_class = "system";
+  for (const char* path : {"/proc/98/cgroup", "/proc/99/maps", "/proc/99/environ", "/proc/99/status", "/etc/ld.so.cache"}) {
+    open.set_pathname(path);
+    if (classify() == FilesystemClass::kHelperOnly) return false;
+  }
+  open.set_pathname("/proc/99/cgroup");
+  group.role = ProcessState::Role::kControl;
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  group.role = ProcessState::Role::kArtifact;
+  group.provenance = ProcessState::Provenance::kCloneChild;
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  group.provenance = ProcessState::Provenance::kDirectExecRoot;
+  group.handoff_target_pending = true;
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  group.handoff_target_pending = false;
+  group.current_image_class = ProcessClass::kUnknown;
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  group.current_image_class = ProcessClass::kGo;
+  group.trusted_control_network_active = true;
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  group.trusted_control_network_active = false;
+  open.set_flags(kOpenWriteOnly);
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  open.set_flags(557056);
+  anchor.mountpoint = "/proc/99";
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  anchor.mountpoint = "/proc";
+  anchor.mount_class = "oci-root";
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  anchor.mount_class = "system";
+  open.mutable_context_data()->set_thread_group_start_time_ns(991);
+  if (classify() == FilesystemClass::kHelperOnly) return false;
+  return ClassifyFilesystemOpen(open, state, kProfileGoResolver, &anchor) != FilesystemClass::kHelperOnly;
+}
+
+bool VerifyGoBuildCreatorDiagnosticBoundary() {
+  ProcessState state;
+  gvisor::common::ContextData parent;
+  parent.set_container_id(kFirstID);
+  parent.set_thread_group_id(99);
+  parent.set_thread_group_start_time_ns(990);
+  parent.set_parent_thread_group_id(0);
+  parent.set_is_exec_session(true);
+  if (!RegisterGroup(&state, parent, ProcessState::Role::kArtifact,
+                     ProcessState::Provenance::kDirectExecRoot, false, true)) return false;
+  state.groups[99].current_image_class = ProcessClass::kGo;
+  auto context = parent;
+  context.set_thread_group_id(100);
+  context.set_thread_group_start_time_ns(1000);
+  context.set_parent_thread_group_id(99);
+  context.set_is_exec_session(false);
+  if (!RegisterGroup(&state, context, ProcessState::Role::kArtifact,
+                     ProcessState::Provenance::kCloneChild, false, true)) return false;
+  auto& child = state.groups[100];
+  child.clone_creator_group_id = 99;
+  child.clone_creator_group_start_time_ns = 990;
+  gvisor::syscall::Open open;
+  *open.mutable_context_data() = context;
+  open.set_pathname("/proc/100/cgroup");
+  open.set_flags(557056);
+  MountAnchor anchor{10, "/proc", "system"};
+  auto exact = [&]() {
+    return FaultOpenDiagnostic(open, state, anchor).find("\"go_driver_creator\":true") != std::string::npos;
+  };
+  if (!exact()) return false;
+  child.clone_creator_group_start_time_ns = 991;
+  if (exact()) return false;
+  child.clone_creator_group_start_time_ns = 990;
+  state.groups[99].current_image_class = ProcessClass::kUnknown;
+  if (exact()) return false;
+  state.groups[99].current_image_class = ProcessClass::kGo;
+  state.groups[99].role = ProcessState::Role::kControl;
+  if (exact()) return false;
+  state.groups[99].role = ProcessState::Role::kArtifact;
+  state.groups[99].handoff_target_pending = true;
+  if (exact()) return false;
+  state.groups[99].handoff_target_pending = false;
+  open.mutable_context_data()->set_parent_thread_group_id(98);
+  if (exact()) return false;
+  open.mutable_context_data()->set_parent_thread_group_id(99);
+  child.provenance = ProcessState::Provenance::kDirectExecRoot;
+  return !exact();
+}
+
+bool VerifyGoBuildToolChildBoundary() {
+  int output[2];
+  if (socketpair(AF_UNIX, SOCK_DGRAM, 0, output) != 0) return false;
+  TopologyState topology;
+  topology.expected.push_back(ExpectedMount{"/", "oci-root", "/", "", true, false, false, false});
+  topology.anchors.emplace(1, MountAnchor{1, "/", "oci-root"});
+  topology.namespace_id = 10; topology.snapshot_seen = true; topology.sealed = true;
+  auto run = [&](const char* tool, const char* scenario) {
+    ProcessState state;
+    gvisor::common::ContextData parent;
+    parent.set_container_id(kFirstID); parent.set_thread_group_id(99);
+    parent.set_thread_group_start_time_ns(990); parent.set_parent_thread_group_id(0);
+    parent.set_is_exec_session(true); parent.set_process_name("renamed-driver");
+    if (!RegisterGroup(&state, parent, ProcessState::Role::kArtifact,
+                       ProcessState::Provenance::kDirectExecRoot, false, true)) return false;
+    state.groups[99].current_image_class = ProcessClass::kGo;
+    gvisor::sentry::CloneInfo clone;
+    *clone.mutable_context_data() = parent;
+    clone.set_created_thread_group_id(100); clone.set_created_thread_start_time_ns(1000);
+    std::string payload, id; const char* reason = nullptr;
+    if (!clone.SerializeToString(&payload) || !ParseSentryClone(payload.data(), payload.size(),
+          output[0], &id, &state, &reason)) return false;
+    gvisor::sentry::ExecveInfo image;
+    *image.mutable_context_data() = parent;
+    image.mutable_context_data()->set_thread_group_id(100);
+    image.mutable_context_data()->set_thread_group_start_time_ns(1000);
+    image.mutable_context_data()->set_parent_thread_group_id(99);
+    image.mutable_context_data()->set_is_exec_session(false);
+    image.mutable_context_data()->set_process_name("renamed-compiler");
+    const bool native_gcc = strcmp(tool, "gcc") == 0;
+    const std::string path = native_gcc ? "/usr/bin/x86_64-linux-gnu-gcc-12" :
+        std::string("/usr/local/go/pkg/tool/linux_amd64/") + tool;
+    image.set_binary_path(path);
+    image.set_execfn(native_gcc ? "/usr/bin/gcc" : path);
+    image.add_argv(native_gcc ? "gcc" : path);
+    image.add_argv("-V=full");
+    auto mounts = topology;
+    const TopologyState* selected = &mounts;
+    const bool expected = strcmp(scenario, "normal") == 0 || strcmp(scenario, "absolute-argv0") == 0;
+    if (strcmp(scenario, "absolute-argv0") == 0) image.set_argv(0, "/usr/bin/gcc");
+    if (strcmp(scenario, "alias-shadow") == 0) mounts.anchors.emplace(2, MountAnchor{2, "/usr/bin/gcc", "workspace"});
+    if (strcmp(scenario, "copied-image") == 0) image.set_binary_path("/tmp/compile");
+    if (strcmp(scenario, "execfn") == 0) image.set_execfn("/tmp/alias");
+    if (strcmp(scenario, "argv0") == 0) image.set_argv(0, "compile");
+    if (strcmp(scenario, "parent-class") == 0) state.groups[99].current_image_class = ProcessClass::kUnknown;
+    if (strcmp(scenario, "parent-role") == 0) state.groups[99].role = ProcessState::Role::kControl;
+    if (strcmp(scenario, "parent-start") == 0) state.groups[99].start_time_ns = 991;
+    if (strcmp(scenario, "parent-pending") == 0) state.groups[99].handoff_target_pending = true;
+    if (strcmp(scenario, "parent-context") == 0) image.mutable_context_data()->set_parent_thread_group_id(98);
+    if (strcmp(scenario, "missing-clone") == 0) {
+      state.groups.erase(100);
+      if (!RegisterGroup(&state, image.context_data(), ProcessState::Role::kArtifact,
+                         ProcessState::Provenance::kCloneChild, false, true)) return false;
+      state.groups[100].clone_creator_group_id = 99;
+      state.groups[100].clone_creator_group_start_time_ns = 990;
+      state.groups[100].current_image_class = ProcessClass::kGo;
+    }
+    if (strcmp(scenario, "unsealed") == 0) mounts.sealed = false;
+    if (strcmp(scenario, "writable-root") == 0) mounts.expected[0].read_only = false;
+    if (strcmp(scenario, "shadow") == 0) mounts.anchors.emplace(2, MountAnchor{2, native_gcc ? "/usr/bin" : "/usr/local/go/pkg", "system"});
+    if (strcmp(scenario, "no-topology") == 0) selected = nullptr;
+    ProfileRegistration registration;
+    if (!image.SerializeToString(&payload) || !ParseSentryProcessAndClassify(payload.data(), payload.size(),
+          output[0], &id, strcmp(scenario, "other-profile") == 0 ? kProfileGoResolver : kProfileGoBuild, &registration, &state, &reason, selected)) return false;
+    if (expected ? !ExpectRecordExact(output[1], id.c_str(), "process-exec-expected") :
+        !ExpectUnexpectedProcessRecord(output[1], id.c_str(), "SENTRY_EXEC", "OTHER", "ARTIFACT_ROLE", "ARTIFACT_GROUP")) return false;
+    if (state.groups.at(100).role != ProcessState::Role::kArtifact || state.groups.at(100).root_eligible ||
+        IsTrustedControlNetwork(image.context_data(), state) || state.expected_groups.count(100) != 0) return false;
+    gvisor::syscall::Open open;
+    *open.mutable_context_data() = image.context_data(); open.set_flags(557056);
+    open.set_pathname(native_gcc ? "/etc/ld.so.cache" : "/proc/100/cgroup");
+    MountAnchor proc = native_gcc ? MountAnchor{1, "/", "oci-root"} : MountAnchor{10, "/proc", "system"};
+    auto readable = [&]() { return ClassifyFilesystemOpen(open, state, kProfileGoBuild, &proc) == FilesystemClass::kHelperOnly; };
+    if (readable() != expected) return false;
+    if (!expected) return true;
+    const MountAnchor sdk{1, "/", "oci-root"};
+    for (const char* path : {"/usr/local/go/src/runtime/runtime.go", "/usr/local/go/pkg/include/textflag.h"}) {
+      open.set_pathname(path);
+      if ((ClassifyFilesystemOpen(open, state, kProfileGoBuild, &sdk) == FilesystemClass::kHelperOnly) == native_gcc) return false;
+      open.set_flags(kOpenWriteOnly);
+      if (ClassifyFilesystemOpen(open, state, kProfileGoBuild, &sdk) == FilesystemClass::kHelperOnly) return false;
+      open.set_flags(557056);
+    }
+    if (native_gcc) {
+      for (const char* path : {"/lib/x86_64-linux-gnu/libc.so.6", "/usr/lib/x86_64-linux-gnu/libc.so.6"}) {
+        open.set_pathname(path); if (!readable()) return false;
+        open.set_flags(kOpenWriteOnly); if (readable()) return false;
+        open.set_flags(557056);
+      }
+      for (const char* path : {"/etc/passwd", "/usr/lib/x86_64-linux-gnu/libm.so.6", "/usr/include/stdio.h", "/proc/100/cgroup"}) {
+        open.set_pathname(path); if (readable()) return false;
+      }
+    }
+    for (const char* path : {"/proc/99/cgroup", "/proc/100/environ", "/proc/100/maps"}) {
+      open.set_pathname(path); if (readable()) return false;
+    }
+    open.set_pathname(native_gcc ? "/etc/ld.so.cache" : "/proc/100/cgroup"); open.set_flags(kOpenWriteOnly);
+    if (readable()) return false;
+    open.set_flags(557056);
+    proc.mountpoint = "/proc/100"; if (readable()) return false;
+    proc.mountpoint = native_gcc ? "/" : "/proc";
+    open.mutable_context_data()->set_thread_group_start_time_ns(1001); if (readable()) return false;
+    open.mutable_context_data()->set_thread_group_start_time_ns(1000);
+    // A compiler descendant cannot inherit the driver's one-shot tool grant.
+    *clone.mutable_context_data() = image.context_data();
+    clone.set_created_thread_group_id(101); clone.set_created_thread_start_time_ns(1010);
+    if (!clone.SerializeToString(&payload) || !ParseSentryClone(payload.data(), payload.size(),
+          output[0], &id, &state, &reason)) return false;
+    auto descendant = image;
+    descendant.mutable_context_data()->set_thread_group_id(101);
+    descendant.mutable_context_data()->set_thread_group_start_time_ns(1010);
+    descendant.mutable_context_data()->set_parent_thread_group_id(100);
+    if (!descendant.SerializeToString(&payload) || !ParseSentryProcessAndClassify(payload.data(), payload.size(),
+          output[0], &id, kProfileGoBuild, &registration, &state, &reason, &topology) ||
+        !ExpectUnexpectedProcessRecord(output[1], id.c_str(), "SENTRY_EXEC", "OTHER", "ARTIFACT_ROLE", "ARTIFACT_GROUP")) return false;
+    // A second exec also consumes no renewed grant, even for the same SDK tool.
+    if (!image.SerializeToString(&payload) || !ParseSentryProcessAndClassify(payload.data(), payload.size(),
+          output[0], &id, kProfileGoBuild, &registration, &state, &reason, &topology) ||
+        !ExpectUnexpectedProcessRecord(output[1], id.c_str(), "SENTRY_EXEC", "OTHER", "ARTIFACT_ROLE", "ARTIFACT_GROUP")) return false;
+    return !readable() && state.first_unexpected_exec.present;
+  };
+  bool ok = true;
+  for (const char* tool : {"compile", "asm", "link", "cgo"}) ok = ok && run(tool, "normal");
+  for (const char* tool : {"compile", "asm", "link", "cgo"}) {
+    for (const char* scenario : {"copied-image", "execfn", "argv0", "parent-class", "parent-role", "parent-start",
+         "parent-pending", "parent-context", "missing-clone", "unsealed", "writable-root", "shadow", "no-topology"}) {
+      ok = ok && run(tool, scenario);
+    }
+  }
+  ok = ok && run("vet", "outside-build-tools");
+  ok = ok && run("gcc", "normal") && run("gcc", "absolute-argv0");
+  for (const char* scenario : {"copied-image", "execfn", "argv0", "parent-class", "parent-role", "parent-start",
+       "parent-pending", "parent-context", "missing-clone", "unsealed", "writable-root", "shadow", "no-topology",
+       "alias-shadow", "other-profile"}) ok = ok && run("gcc", scenario);
+  close(output[0]); close(output[1]);
+  return ok;
+}
+
+bool VerifyGoBuildCgoGccCreatorBoundary(bool sdk_link = false) {
+  int output[2];
+  if (socketpair(AF_UNIX, SOCK_DGRAM, 0, output) != 0) return false;
+  TopologyState topology;
+  topology.expected.push_back(ExpectedMount{"/", "oci-root", "/", "", true, false, false, false});
+  topology.anchors.emplace(1, MountAnchor{1, "/", "oci-root"});
+  topology.namespace_id = 10; topology.snapshot_seen = true; topology.sealed = true;
+  auto run = [&](const char* scenario) {
+    ProcessState state;
+    gvisor::common::ContextData driver;
+    driver.set_container_id(kFirstID); driver.set_thread_group_id(99);
+    driver.set_thread_group_start_time_ns(990); driver.set_parent_thread_group_id(0);
+    driver.set_is_exec_session(true); driver.set_process_name("renamed-driver");
+    if (!RegisterGroup(&state, driver, ProcessState::Role::kArtifact,
+                       ProcessState::Provenance::kDirectExecRoot, false, true)) return false;
+    state.groups[99].current_image_class = ProcessClass::kGo;
+    std::string payload, id; const char* reason = nullptr;
+    auto clone = [&](const gvisor::common::ContextData& creator, int child, int64_t start) {
+      gvisor::sentry::CloneInfo event;
+      *event.mutable_context_data() = creator;
+      event.set_created_thread_group_id(child); event.set_created_thread_start_time_ns(start);
+      return event.SerializeToString(&payload) && ParseSentryClone(payload.data(), payload.size(),
+          output[0], &id, &state, &reason);
+    };
+    if (!clone(driver, 100, 1000)) return false;
+    gvisor::sentry::ExecveInfo cgo;
+    *cgo.mutable_context_data() = driver;
+    cgo.mutable_context_data()->set_thread_group_id(100);
+    cgo.mutable_context_data()->set_thread_group_start_time_ns(1000);
+    cgo.mutable_context_data()->set_parent_thread_group_id(99);
+    cgo.mutable_context_data()->set_is_exec_session(false);
+    cgo.mutable_context_data()->set_process_name("renamed-cgo");
+    cgo.set_binary_path(sdk_link ? "/usr/local/go/pkg/tool/linux_amd64/link" : "/usr/local/go/pkg/tool/linux_amd64/cgo");
+    cgo.set_execfn(cgo.binary_path()); cgo.add_argv(cgo.binary_path());
+    ProfileRegistration registration;
+    auto exec = [&](const gvisor::sentry::ExecveInfo& event) {
+      return event.SerializeToString(&payload) && ParseSentryProcessAndClassify(payload.data(), payload.size(),
+          output[0], &id, kProfileGoBuild, &registration, &state, &reason, &topology);
+    };
+    if (!exec(cgo) || !ExpectRecordExact(output[1], id.c_str(), "process-exec-expected")) return false;
+    if (!clone(cgo.context_data(), 101, 1010)) return false;
+    gvisor::sentry::ExecveInfo gcc;
+    *gcc.mutable_context_data() = cgo.context_data();
+    gcc.mutable_context_data()->set_thread_group_id(101);
+    gcc.mutable_context_data()->set_thread_group_start_time_ns(1010);
+    gcc.mutable_context_data()->set_parent_thread_group_id(100);
+    gcc.mutable_context_data()->set_process_name("renamed-gcc");
+    gcc.set_binary_path("/usr/bin/x86_64-linux-gnu-gcc-12");
+    gcc.set_execfn("/usr/bin/gcc"); gcc.add_argv("gcc"); gcc.add_argv("-E");
+    const bool expected = strcmp(scenario, "normal") == 0;
+    if (strcmp(scenario, "parent-image") == 0) state.groups[100].current_image_class =
+        ProcessClassForPath("/usr/local/go/pkg/tool/linux_amd64/compile", kProfileGoBuild);
+    if (strcmp(scenario, "parent-role") == 0) state.groups[100].role = ProcessState::Role::kControl;
+    if (strcmp(scenario, "parent-start") == 0) state.groups[100].start_time_ns = 1001;
+    if (strcmp(scenario, "parent-inactive") == 0) state.groups[100].go_build_tool_active = false;
+    if (strcmp(scenario, "parent-pending") == 0) state.groups[100].handoff_target_pending = true;
+    if (strcmp(scenario, "driver-image") == 0) state.groups[99].current_image_class = ProcessClass::kUnknown;
+    if (strcmp(scenario, "driver-role") == 0) state.groups[99].role = ProcessState::Role::kControl;
+    if (strcmp(scenario, "driver-start") == 0) state.groups[99].start_time_ns = 991;
+    if (strcmp(scenario, "creator-context") == 0) gcc.mutable_context_data()->set_parent_thread_group_id(99);
+    if (!exec(gcc)) return false;
+    if (expected ? !ExpectRecordExact(output[1], id.c_str(), "process-exec-expected") :
+        !ExpectUnexpectedProcessRecord(output[1], id.c_str(), "SENTRY_EXEC", "OTHER", "ARTIFACT_ROLE", "ARTIFACT_GROUP")) return false;
+    if (state.groups[101].role != ProcessState::Role::kArtifact || state.groups[101].root_eligible ||
+        state.expected_groups.count(101) != 0 || IsTrustedControlNetwork(gcc.context_data(), state)) return false;
+    gvisor::syscall::Open open;
+    *open.mutable_context_data() = gcc.context_data(); open.set_pathname("/etc/ld.so.cache"); open.set_flags(557056);
+    const MountAnchor image{1, "/", "oci-root"};
+    auto readable = [&]() { return ClassifyFilesystemOpen(open, state, kProfileGoBuild, &image) == FilesystemClass::kHelperOnly; };
+    if (readable() != expected) return false;
+    if (!expected) return true;
+    // The cgo ancestry cannot renew a GCC exec grant or pass one to a GCC descendant.
+    if (!clone(gcc.context_data(), 102, 1020)) return false;
+    auto descendant = gcc;
+    descendant.mutable_context_data()->set_thread_group_id(102);
+    descendant.mutable_context_data()->set_thread_group_start_time_ns(1020);
+    descendant.mutable_context_data()->set_parent_thread_group_id(101);
+    if (!exec(descendant) || !ExpectUnexpectedProcessRecord(output[1], id.c_str(),
+        "SENTRY_EXEC", "OTHER", "ARTIFACT_ROLE", "ARTIFACT_GROUP")) return false;
+    if (!exec(gcc) || !ExpectUnexpectedProcessRecord(output[1], id.c_str(),
+        "SENTRY_EXEC", "OTHER", "ARTIFACT_ROLE", "ARTIFACT_GROUP")) return false;
+    return !readable();
+  };
+  bool ok = run("normal");
+  for (const char* scenario : {"parent-image", "parent-role", "parent-start", "parent-inactive", "parent-pending",
+       "driver-image", "driver-role", "driver-start", "creator-context"}) ok = ok && run(scenario);
+  close(output[0]); close(output[1]);
+  return ok;
+}
+
+enum class GoBuildGccChildFixture { kCc1, kAssembler, kCollect2, kNativeLinker, kNativeLinkerPlugin, kNativeLinkerNull, kNativeLinkerRuntime, kAssemblerNull, kCc1SDKCgo, kNativeLinkerSDKLink, kNativeLinkerResolver };
+
+bool VerifyGoBuildGccChildBoundary(bool check_headers = false,
+                                 GoBuildGccChildFixture tool = GoBuildGccChildFixture::kCc1) {
+  const bool resolver_abi = tool == GoBuildGccChildFixture::kNativeLinkerResolver;
+  const bool sdk_link = tool == GoBuildGccChildFixture::kNativeLinkerSDKLink;
+  const bool sdk_cgo = tool == GoBuildGccChildFixture::kCc1SDKCgo;
+  const bool assembler_null = tool == GoBuildGccChildFixture::kAssemblerNull;
+  const bool assembler = tool == GoBuildGccChildFixture::kAssembler || assembler_null;
+  const bool linker_plugin = tool == GoBuildGccChildFixture::kNativeLinkerPlugin;
+  const bool linker_null = tool == GoBuildGccChildFixture::kNativeLinkerNull;
+  const bool null_device = linker_null || assembler_null;
+  const bool runtime_data = tool == GoBuildGccChildFixture::kNativeLinkerRuntime;
+  const bool native_linker = tool == GoBuildGccChildFixture::kNativeLinker || linker_plugin || linker_null || runtime_data || sdk_link || resolver_abi;
+  const bool collect2 = tool == GoBuildGccChildFixture::kCollect2 || native_linker;
+  const int target_group = native_linker ? 103 : 102;
+  const int64_t target_start = target_group * 10;
+  const int parent_group = native_linker ? 102 : 101;
+  int output[2];
+  if (socketpair(AF_UNIX, SOCK_DGRAM, 0, output) != 0) return false;
+  auto run = [&](const char* scenario) {
+    TopologyState topology;
+    topology.expected.push_back(ExpectedMount{"/", "oci-root", "/", "", true, false, false, false});
+    topology.anchors.emplace(1, MountAnchor{1, "/", "oci-root"});
+    topology.namespace_id = 10; topology.snapshot_seen = true; topology.sealed = true;
+    ProcessState state;
+    gvisor::common::ContextData driver;
+    driver.set_container_id(kFirstID); driver.set_thread_group_id(99);
+    driver.set_thread_group_start_time_ns(990); driver.set_parent_thread_group_id(0);
+    driver.set_is_exec_session(true); driver.set_process_name("renamed-driver");
+    if (!RegisterGroup(&state, driver, ProcessState::Role::kArtifact,
+                       ProcessState::Provenance::kDirectExecRoot, false, true)) return false;
+    state.groups[99].current_image_class = ProcessClass::kGo;
+    std::string payload, id; const char* reason = nullptr;
+    auto clone = [&](const gvisor::common::ContextData& creator, int child, int64_t start) {
+      gvisor::sentry::CloneInfo event;
+      *event.mutable_context_data() = creator;
+      event.set_created_thread_group_id(child); event.set_created_thread_start_time_ns(start);
+      return event.SerializeToString(&payload) && ParseSentryClone(payload.data(), payload.size(),
+          output[0], &id, &state, &reason);
+    };
+    if (!clone(driver, 100, 1000)) return false;
+    gvisor::sentry::ExecveInfo cgo;
+    *cgo.mutable_context_data() = driver;
+    cgo.mutable_context_data()->set_thread_group_id(100);
+    cgo.mutable_context_data()->set_thread_group_start_time_ns(1000);
+    cgo.mutable_context_data()->set_parent_thread_group_id(99);
+    cgo.mutable_context_data()->set_is_exec_session(false);
+    cgo.mutable_context_data()->set_process_name("renamed-cgo");
+    cgo.set_binary_path(sdk_link ? "/usr/local/go/pkg/tool/linux_amd64/link" : "/usr/local/go/pkg/tool/linux_amd64/cgo");
+    cgo.set_execfn(cgo.binary_path()); cgo.add_argv(cgo.binary_path());
+    ProfileRegistration registration;
+    auto exec = [&](const gvisor::sentry::ExecveInfo& event) {
+      return event.SerializeToString(&payload) && ParseSentryProcessAndClassify(payload.data(), payload.size(),
+          output[0], &id, kProfileGoBuild, &registration, &state, &reason, &topology);
+    };
+    if (!exec(cgo) || !ExpectRecordExact(output[1], id.c_str(), "process-exec-expected")) return false;
+    if (!clone(cgo.context_data(), 101, 1010)) return false;
+    gvisor::sentry::ExecveInfo gcc;
+    *gcc.mutable_context_data() = cgo.context_data();
+    gcc.mutable_context_data()->set_thread_group_id(101);
+    gcc.mutable_context_data()->set_thread_group_start_time_ns(1010);
+    gcc.mutable_context_data()->set_parent_thread_group_id(100);
+    gcc.mutable_context_data()->set_process_name("renamed-gcc");
+    gcc.set_binary_path("/usr/bin/x86_64-linux-gnu-gcc-12");
+    gcc.set_execfn("/usr/bin/gcc"); gcc.add_argv("gcc"); gcc.add_argv("-E");
+    if (!exec(gcc) || !ExpectRecordExact(output[1], id.c_str(), "process-exec-expected")) return false;
+    if (!clone(gcc.context_data(), 102, 1020)) return false;
+    gvisor::sentry::ExecveInfo cc1;
+    *cc1.mutable_context_data() = gcc.context_data();
+    cc1.mutable_context_data()->set_thread_group_id(102);
+    cc1.mutable_context_data()->set_thread_group_start_time_ns(1020);
+    cc1.mutable_context_data()->set_parent_thread_group_id(101);
+    cc1.mutable_context_data()->set_process_name("renamed-frontend");
+    cc1.set_binary_path(assembler ? "/usr/bin/x86_64-linux-gnu-as" : collect2 ?
+        "/usr/lib/gcc/x86_64-linux-gnu/12/collect2" : "/usr/lib/gcc/x86_64-linux-gnu/12/cc1");
+    cc1.set_execfn(assembler ? "/usr/bin/as" : cc1.binary_path()); cc1.add_argv(assembler ? "as" : cc1.binary_path());
+    if (assembler && strcmp(scenario, "canonical-argv0") == 0) cc1.set_argv(0, "/usr/bin/as");
+    if (native_linker) {
+      if (!exec(cc1) || !ExpectRecordExact(output[1], id.c_str(), "process-exec-expected")) return false;
+      if (!clone(cc1.context_data(), target_group, target_start)) return false;
+      cc1.mutable_context_data()->set_thread_group_id(target_group);
+      cc1.mutable_context_data()->set_thread_group_start_time_ns(target_start);
+      cc1.mutable_context_data()->set_parent_thread_group_id(parent_group);
+      cc1.set_binary_path("/usr/bin/x86_64-linux-gnu-ld.bfd");
+      cc1.set_execfn("/usr/bin/ld"); cc1.set_argv(0, "/usr/bin/ld");
+    }
+    const bool expected = strcmp(scenario, "normal") == 0 || strcmp(scenario, "canonical-argv0") == 0;
+    if (strcmp(scenario, "parent-image") == 0) state.groups[parent_group].current_image_class = ProcessClass::kUnknown;
+    if (strcmp(scenario, "parent-role") == 0) state.groups[parent_group].role = ProcessState::Role::kControl;
+    if (strcmp(scenario, "parent-start") == 0) state.groups[parent_group].start_time_ns = parent_group * 10 + 1;
+    if (strcmp(scenario, "parent-inactive") == 0) state.groups[parent_group].go_build_tool_active = false;
+    if (strcmp(scenario, "parent-pending") == 0) state.groups[parent_group].handoff_target_pending = true;
+    if (strcmp(scenario, "gcc-image") == 0) state.groups[101].current_image_class = ProcessClass::kUnknown;
+    if (strcmp(scenario, "gcc-role") == 0) state.groups[101].role = ProcessState::Role::kControl;
+    if (strcmp(scenario, "gcc-start") == 0) state.groups[101].start_time_ns = 1011;
+    if (strcmp(scenario, "gcc-inactive") == 0) state.groups[101].go_build_tool_active = false;
+    if (strcmp(scenario, "gcc-pending") == 0) state.groups[101].handoff_target_pending = true;
+    if (strcmp(scenario, "driver-image") == 0) state.groups[99].current_image_class = ProcessClass::kUnknown;
+    if (strcmp(scenario, "driver-role") == 0) state.groups[99].role = ProcessState::Role::kControl;
+    if (strcmp(scenario, "driver-start") == 0) state.groups[99].start_time_ns = 991;
+    if (strcmp(scenario, "creator-context") == 0) cc1.mutable_context_data()->set_parent_thread_group_id(100);
+    if (strcmp(scenario, "cgo-image") == 0) state.groups[100].current_image_class =
+        ProcessClassForPath("/usr/local/go/pkg/tool/linux_amd64/compile", kProfileGoBuild);
+    if (strcmp(scenario, "cgo-inactive") == 0) state.groups[100].go_build_tool_active = false;
+    if (strcmp(scenario, "copy") == 0) cc1.set_binary_path("/tmp/cc1");
+    if (strcmp(scenario, "argv0") == 0) cc1.set_argv(0, "cc1");
+    if (strcmp(scenario, "execfn") == 0) cc1.set_execfn("/tmp/cc1");
+    if (strcmp(scenario, "shadow") == 0) topology.anchors.emplace(2, MountAnchor{2, (assembler || native_linker) ? "/usr/bin" : "/usr/lib/gcc", "workspace"});
+    if (strcmp(scenario, "unsealed") == 0) topology.sealed = false;
+    if (strcmp(scenario, "writable-root") == 0) topology.expected[0].read_only = false;
+    if (!exec(cc1)) return false;
+    if (expected ? !ExpectRecordExact(output[1], id.c_str(), "process-exec-expected") :
+        !ExpectUnexpectedProcessRecord(output[1], id.c_str(), "SENTRY_EXEC", "OTHER", "ARTIFACT_ROLE", "ARTIFACT_GROUP")) return false;
+    if (state.groups[target_group].role != ProcessState::Role::kArtifact || state.groups[target_group].root_eligible ||
+        state.expected_groups.count(target_group) != 0 || IsTrustedControlNetwork(cc1.context_data(), state)) return false;
+    gvisor::syscall::Open open;
+    *open.mutable_context_data() = cc1.context_data(); open.set_pathname("/etc/ld.so.cache"); open.set_flags(557056);
+    MountAnchor image{1, "/", "oci-root"};
+    auto readable = [&]() { return ClassifyFilesystemOpen(open, state, kProfileGoBuild, &image) == FilesystemClass::kHelperOnly; };
+    if (readable() != expected) return false;
+    if (sdk_cgo) {
+      open.set_pathname("/usr/local/go/src/runtime/cgo/gcc_amd64.S"); open.set_flags(33024);
+      if (readable() != expected) return false;
+      open.set_pathname("/etc/ld.so.cache"); open.set_flags(557056);
+    }
+    if (!expected) return true;
+    // Independent data-only DT_NEEDED inspection of locked ELF images supplies these ABI fixtures.
+    const std::vector<const char*> loader_paths = native_linker ? std::vector<const char*>{
+        "/usr/lib/x86_64-linux-gnu/libbfd-2.40-system.so", "/usr/lib/x86_64-linux-gnu/libctf.so.0",
+        "/usr/lib/x86_64-linux-gnu/libjansson.so.4", "/usr/lib/x86_64-linux-gnu/libz.so.1",
+        "/usr/lib/x86_64-linux-gnu/libzstd.so.1", "/usr/lib/x86_64-linux-gnu/libsframe.so.0",
+        "/usr/lib/x86_64-linux-gnu/libc.so.6"} : collect2 ? std::vector<const char*>{
+        "/usr/lib/x86_64-linux-gnu/libc.so.6", "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2"} : assembler ? std::vector<const char*>{
+        "/usr/lib/x86_64-linux-gnu/libbfd-2.40-system.so", "/usr/lib/x86_64-linux-gnu/libsframe.so.0",
+        "/usr/lib/x86_64-linux-gnu/libz.so.1", "/usr/lib/x86_64-linux-gnu/libzstd.so.1",
+        "/usr/lib/x86_64-linux-gnu/libc.so.6"} : std::vector<const char*>{
+        "/usr/lib/x86_64-linux-gnu/libisl.so.23", "/usr/lib/x86_64-linux-gnu/libmpc.so.3",
+        "/usr/lib/x86_64-linux-gnu/libmpfr.so.6", "/usr/lib/x86_64-linux-gnu/libgmp.so.10",
+        "/usr/lib/x86_64-linux-gnu/libz.so.1", "/usr/lib/x86_64-linux-gnu/libzstd.so.1",
+        "/usr/lib/x86_64-linux-gnu/libm.so.6", "/usr/lib/x86_64-linux-gnu/libc.so.6",
+        "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2"};
+    for (const char* path : loader_paths) {
+      open.set_pathname(path); if (!readable()) return false;
+      open.set_flags(kOpenWriteOnly); if (readable()) return false;
+      open.set_flags(557056);
+    }
+    if (runtime_data) {
+      // Independently copied fixed OCI ELF objects, archives and linker scripts.
+      for (const char* path : {
+          "/usr/lib/gcc/x86_64-linux-gnu/12/crtbegin.o", "/usr/lib/gcc/x86_64-linux-gnu/12/crtbeginS.o",
+          "/usr/lib/gcc/x86_64-linux-gnu/12/crtbeginT.o", "/usr/lib/gcc/x86_64-linux-gnu/12/crtend.o",
+          "/usr/lib/gcc/x86_64-linux-gnu/12/crtendS.o", "/usr/lib/gcc/x86_64-linux-gnu/12/libgcc.a",
+          "/usr/lib/gcc/x86_64-linux-gnu/12/libgcc_eh.a", "/usr/lib/gcc/x86_64-linux-gnu/12/libgcc_s.so",
+          "/usr/lib/x86_64-linux-gnu/Scrt1.o", "/usr/lib/x86_64-linux-gnu/crt1.o",
+          "/usr/lib/x86_64-linux-gnu/rcrt1.o", "/usr/lib/x86_64-linux-gnu/crti.o", "/usr/lib/x86_64-linux-gnu/crtn.o",
+          "/usr/lib/x86_64-linux-gnu/libc.so", "/usr/lib/x86_64-linux-gnu/libc_nonshared.a",
+          "/usr/lib/x86_64-linux-gnu/libpthread.a", "/usr/lib/x86_64-linux-gnu/libpthread_nonshared.a",
+          "/usr/lib/x86_64-linux-gnu/libdl.a", "/usr/lib/x86_64-linux-gnu/libgcc_s.so.1",
+          "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2"}) {
+        open.set_pathname(path); if (!readable()) return false;
+        open.set_flags(kOpenWriteOnly); if (readable()) return false;
+        open.set_flags(557056);
+      }
+    }
+    if (resolver_abi) {
+      open.set_pathname("/usr/lib/x86_64-linux-gnu/libresolv.so.2"); open.set_flags(32768);
+      if (!readable()) return false;
+      open.set_flags(kOpenWriteOnly); if (readable()) return false;
+      open.set_flags(557056);
+    }
+    if (!native_linker) {
+      open.set_pathname("/usr/lib/x86_64-linux-gnu/libresolv.so.2"); if (readable()) return false;
+    }
+    if (!native_linker) {
+      open.set_pathname("/usr/lib/x86_64-linux-gnu/Scrt1.o"); if (readable()) return false;
+    }
+    if (null_device) {
+      MountAnchor device{2, "/dev", "system"};
+      open.set_pathname("/dev/null"); open.set_flags(kOpenReadWrite | kOpenCreate | kOpenTruncate | kOpenLargefile);
+      auto device_sink = [&]() { return ClassifyFilesystemOpen(open, state, kProfileGoBuild, &device) == FilesystemClass::kHelperOnly; };
+      if (!device_sink()) return false;
+      open.set_flags(kOpenReadWrite | kOpenCreate | kOpenTruncate); if (!device_sink()) return false;
+      for (uint64_t flags : {kOpenWriteOnly, kOpenReadWrite, kOpenReadWrite | kOpenAppend,
+          kOpenReadWrite | kOpenCreate | kOpenTruncate | kOpenAppend}) {
+        open.set_flags(flags); if (device_sink()) return false;
+      }
+      open.set_flags(kOpenReadWrite | kOpenCreate | kOpenTruncate | kOpenLargefile);
+      open.set_pathname("/dev/zero"); if (device_sink()) return false;
+      open.set_pathname("/dev/null");
+      device.mount_class = "workspace"; if (device_sink()) return false;
+      device.mount_class = "system"; device.mountpoint = "/"; if (device_sink()) return false;
+      device.mountpoint = "/dev";
+      if (ClassifyFilesystemOpen(open, state, kProfileGoResolver, &device) == FilesystemClass::kHelperOnly ||
+          ClassifyFilesystemOpen(open, state, kProfileGoBuild) == FilesystemClass::kHelperOnly) return false;
+      open.mutable_context_data()->set_thread_group_start_time_ns(target_start + 1); if (device_sink()) return false;
+      open.mutable_context_data()->set_thread_group_start_time_ns(target_start);
+      state.groups[parent_group].go_build_tool_active = false; if (device_sink()) return false;
+      state.groups[parent_group].go_build_tool_active = true;
+      open.set_flags(557056);
+    }
+    if (linker_plugin) {
+      open.set_pathname("/usr/lib/gcc/x86_64-linux-gnu/12/liblto_plugin.so"); if (!readable()) return false;
+      open.set_flags(kOpenWriteOnly); if (readable()) return false;
+      open.set_flags(557056);
+    }
+    if (!native_linker) {
+      open.set_pathname("/usr/lib/gcc/x86_64-linux-gnu/12/liblto_plugin.so"); if (readable()) return false;
+    }
+    if (assembler || collect2) {
+      for (const char* path : {"/usr/include/stdc-predef.h", "/usr/lib/gcc/x86_64-linux-gnu/12/include/stddef.h",
+          "/usr/lib/x86_64-linux-gnu/libisl.so.23"}) {
+        open.set_pathname(path); if (readable()) return false;
+      }
+    }
+    if (sdk_cgo) {
+      for (const char* path : {"/usr/local/go/src/runtime/cgo", "/usr/local/go/src/runtime/cgo/gcc_amd64.S",
+          "/usr/local/go/src/runtime/cgo/gcc_libinit.c", "/usr/local/go/src/runtime/cgo/abi_amd64.h"}) {
+        open.set_pathname(path); open.set_flags(33024); if (!readable()) return false;
+        open.set_flags(kOpenWriteOnly); if (readable()) return false;
+      }
+      open.set_pathname("/usr/local/go/src/runtime/cgo/gcc_amd64.S"); open.set_flags(33024);
+      image.mount_class = "workspace"; if (readable()) return false;
+      image.mount_class = "oci-root"; image.mountpoint = "/usr/local/go/src/runtime/cgo"; if (readable()) return false;
+      image.mountpoint = "/";
+      if (ClassifyFilesystemOpen(open, state, kProfileGoResolver, &image) == FilesystemClass::kHelperOnly ||
+          ClassifyFilesystemOpen(open, state, kProfileGoBuild) == FilesystemClass::kHelperOnly) return false;
+      state.groups[parent_group].go_build_tool_active = false; if (readable()) return false;
+      state.groups[parent_group].go_build_tool_active = true;
+      open.set_flags(557056);
+    }
+    if (assembler || collect2) {
+      open.set_pathname("/usr/local/go/src/runtime/cgo/gcc_amd64.S"); if (readable()) return false;
+    }
+    if (check_headers) {
+      for (const char* path : {"/usr/include", "/usr/include/stdc-predef.h", "/usr/include/x86_64-linux-gnu/bits/types.h",
+          "/usr/lib/gcc/x86_64-linux-gnu/12/include", "/usr/lib/gcc/x86_64-linux-gnu/12/include/stddef.h"}) {
+        open.set_pathname(path); if (!readable()) return false;
+        open.set_flags(kOpenWriteOnly); if (readable()) return false;
+        open.set_flags(557056);
+      }
+    }
+    for (const char* path : {"/etc/passwd", "/usr/lib/x86_64-linux-gnu/libpython3.14.so.1.0",
+        "/usr/local/go/src/runtime/runtime.go", "/usr/local/go/src/runtime/cgo-other/gcc_amd64.S",
+        "/usr/local/go/pkg/include/textflag.h", "/usr/include-other/stdio.h",
+        "/usr/lib/gcc/x86_64-linux-gnu/12/include-other/stddef.h", "/usr/lib/gcc/x86_64-linux-gnu/12/specs", "/usr/lib/gcc/x86_64-linux-gnu/12/libcc1.so", "/usr/lib/x86_64-linux-gnu/arbitrary.o", "/usr/lib/gcc/x86_64-linux-gnu/12/crtbeginS.o.other", "/usr/lib/x86_64-linux-gnu/libunknown.a", "/usr/lib/x86_64-linux-gnu/libresolv-other.so.2", "/proc/102/cgroup"}) {
+      open.set_pathname(path); if (readable()) return false;
+    }
+    open.set_pathname("/etc/ld.so.cache");
+    image.mountpoint = "/usr/lib"; if (readable()) return false;
+    image.mountpoint = "/";
+    open.mutable_context_data()->set_thread_group_start_time_ns(target_start + 1); if (readable()) return false;
+    open.mutable_context_data()->set_thread_group_start_time_ns(target_start);
+    if (!clone(cc1.context_data(), target_group + 1, target_start + 10)) return false;
+    auto descendant = cc1;
+    descendant.mutable_context_data()->set_thread_group_id(target_group + 1);
+    descendant.mutable_context_data()->set_thread_group_start_time_ns(target_start + 10);
+    descendant.mutable_context_data()->set_parent_thread_group_id(target_group);
+    if (!exec(descendant) || !ExpectUnexpectedProcessRecord(output[1], id.c_str(),
+        "SENTRY_EXEC", "OTHER", "ARTIFACT_ROLE", "ARTIFACT_GROUP")) return false;
+    if (!exec(cc1) || !ExpectUnexpectedProcessRecord(output[1], id.c_str(),
+        "SENTRY_EXEC", "OTHER", "ARTIFACT_ROLE", "ARTIFACT_GROUP")) return false;
+    return !readable();
+  };
+  bool ok = run("normal");
+  for (const char* scenario : {"canonical-argv0", "parent-image", "parent-role", "parent-start", "parent-inactive", "parent-pending",
+       "driver-image", "driver-role", "driver-start", "creator-context", "cgo-image", "cgo-inactive",
+       "copy", "argv0", "execfn", "shadow", "unsealed", "writable-root"}) ok = ok && run(scenario);
+  if (native_linker) {
+    for (const char* scenario : {"gcc-image", "gcc-role", "gcc-start", "gcc-inactive", "gcc-pending"}) ok = ok && run(scenario);
+  }
+  close(output[0]); close(output[1]);
+  return ok;
 }
 
 bool VerifyFilesystemClassification() {
@@ -2631,6 +3459,81 @@ bool VerifyTopologyFailClosed(int output, const std::string& remote, const std::
     close(client);
   }
 
+  return true;
+}
+
+bool VerifyRegisteredNestedMountBoundary() {
+  for (bool read_only : {false, true}) {
+    for (bool with_output : {false, true}) {
+    for (int failure = 0; failure < (with_output ? 14 : 11); ++failure) {
+      TopologyState topology;
+      topology.expected = {
+          {"/", "oci-root", "/", "", true, false, false, false},
+          {"/tmp", "workspace", "/", "tmpfs", false, true, true, false},
+          {"/haa-runtime", "helper", "/", "tmpfs", false, false, true, false},
+          {"/tmp/haa-go-input", "workspace", "/tmp", "9p", read_only, false, false, false}};
+      auto snapshot = BuildCanonicalTopologySnapshot(kFirstID, kProfileGoBuild);
+      auto* input = snapshot.add_mounts();
+      input->set_mount_id(4);
+      input->set_parent_mount_id(2);
+      input->set_mountpoint("/tmp/haa-go-input");
+      input->set_filesystem_type("9p");
+      input->set_read_only(read_only);
+      auto* output = with_output ? snapshot.add_mounts() : nullptr;
+      if (with_output) {
+        topology.expected.push_back({"/tmp/haa-go-output", "workspace", "/tmp", "9p", false, false, false, false});
+        output->set_mount_id(5);
+        output->set_parent_mount_id(2);
+        output->set_mountpoint("/tmp/haa-go-output");
+        output->set_filesystem_type("9p");
+        output->set_read_only(false);
+      }
+      switch (failure) {
+        case 1: input->set_read_only(!read_only); break;
+        case 2: input->set_parent_mount_id(1); break;
+        case 3: input->set_filesystem_type("tmpfs"); break;
+        case 4: input->set_noexec(true); break;
+        case 5: input->set_nosuid(true); break;
+        case 6: input->set_nodev(true); break;
+        case 7: snapshot.mutable_mounts()->RemoveLast(); break;
+        case 8:
+        case 9: {
+          auto* extra = snapshot.add_mounts();
+          extra->set_mount_id(with_output ? 6 : 5);
+          extra->set_parent_mount_id(failure == 8 ? 2 : 4);
+          extra->set_mountpoint(failure == 8 ? "/tmp/unregistered" : "/tmp/haa-go-input/shadow");
+          extra->set_filesystem_type("9p");
+          extra->set_read_only(true);
+          break;
+        }
+        case 10: topology.expected.push_back(topology.expected.back()); break;
+        case 11: output->set_read_only(true); break;
+        case 12: output->set_parent_mount_id(4); break;
+        case 13: {
+          auto* extra = snapshot.add_mounts();
+          extra->set_mount_id(6);
+          extra->set_parent_mount_id(5);
+          extra->set_mountpoint("/tmp/haa-go-output/shadow");
+          extra->set_filesystem_type("9p");
+          break;
+        }
+      }
+      int sockets[2];
+      if (socketpair(AF_UNIX, SOCK_DGRAM, 0, sockets) != 0) return false;
+      std::string payload, container_id = kFirstID;
+      const char* reason = nullptr;
+      const bool encoded = snapshot.SerializeToString(&payload);
+      const bool accepted = encoded && ParseTopologySnapshot(payload.data(), payload.size(), sockets[0], &container_id, &topology, &reason);
+      const bool correct = failure == 0
+          ? accepted && topology.sealed && topology.snapshot_seen && topology.anchors.size() == (with_output ? 5U : 4U) &&
+              ExpectRecordExact(sockets[1], kFirstID, "mount-anchors-ready")
+          : !accepted && !topology.sealed && !topology.snapshot_seen && reason != nullptr &&
+              strcmp(reason, "TOPOLOGY_MISMATCH") == 0;
+      close(sockets[0]); close(sockets[1]);
+      if (!correct) return false;
+    }
+    }
+  }
   return true;
 }
 
@@ -4958,6 +5861,8 @@ int main(int argc, char** argv) {
   const bool record_boundaries = running &&
       VerifyProfileRecordBoundary(output, remote, control, "0101010101010101", kProfileGoResolver, 200000, false) &&
       VerifyProfileRecordBoundary(output, remote, control, "0202020202020202", kProfileGoResolver, 200000, true) &&
+      VerifyProfileRecordBoundary(output, remote, control, "0505050505050505", kProfileGoBuild, 250000, false) &&
+      VerifyProfileRecordBoundary(output, remote, control, "0606060606060606", kProfileGoBuild, 250000, true) &&
       VerifyProfileRecordBoundary(output, remote, control, "0303030303030303", kProfileNPM, 10000, false) &&
       VerifyProfileRecordBoundary(output, remote, control, "0404040404040404", kProfileNPM, 10000, true);
   fprintf(stderr, "STARTING accessors\n");
@@ -4992,9 +5897,29 @@ int main(int argc, char** argv) {
   const bool dropped = running && RunFaultCase(output, remote, control, false);
   fprintf(stderr, "STARTING topology_fail_closed\n");
   const bool topology_ok = running && VerifyTopologyFailClosed(output, remote, control);
+  const bool nested_mounts = VerifyRegisteredNestedMountBoundary();
   fprintf(stderr, "STARTING filesystem\n");
   const bool filesystem = VerifyFilesystemClassification();
   const bool go_runtime_read = VerifyGoResolverRuntimeReadBoundary();
+  const bool go_build_config_read = VerifyGoBuildConfigurationReadBoundary();
+  const bool go_build_handoff_read = VerifyGoBuildHandoffReadBoundary();
+  const bool go_build_runtime_read = VerifyGoBuildRuntimeMetadataBoundary();
+  const bool go_build_creator_diagnostic = VerifyGoBuildCreatorDiagnosticBoundary();
+  const bool go_build_tool_child = VerifyGoBuildToolChildBoundary();
+  const bool go_build_cgo_gcc_creator = VerifyGoBuildCgoGccCreatorBoundary();
+  const bool go_build_sdk_link_gcc = VerifyGoBuildCgoGccCreatorBoundary(true);
+  const bool go_build_sdk_link_native = VerifyGoBuildGccChildBoundary(false, GoBuildGccChildFixture::kNativeLinkerSDKLink);
+  const bool go_build_linker_resolver = VerifyGoBuildGccChildBoundary(false, GoBuildGccChildFixture::kNativeLinkerResolver);
+  const bool go_build_cc1 = VerifyGoBuildGccChildBoundary();
+  const bool go_build_cc1_headers = VerifyGoBuildGccChildBoundary(true);
+  const bool go_build_as = VerifyGoBuildGccChildBoundary(false, GoBuildGccChildFixture::kAssembler);
+  const bool go_build_collect2 = VerifyGoBuildGccChildBoundary(false, GoBuildGccChildFixture::kCollect2);
+  const bool go_build_native_linker = VerifyGoBuildGccChildBoundary(false, GoBuildGccChildFixture::kNativeLinker);
+  const bool go_build_linker_plugin = VerifyGoBuildGccChildBoundary(false, GoBuildGccChildFixture::kNativeLinkerPlugin);
+  const bool go_build_linker_null = VerifyGoBuildGccChildBoundary(false, GoBuildGccChildFixture::kNativeLinkerNull);
+  const bool go_build_linker_runtime = VerifyGoBuildGccChildBoundary(false, GoBuildGccChildFixture::kNativeLinkerRuntime);
+  const bool go_build_as_null = VerifyGoBuildGccChildBoundary(false, GoBuildGccChildFixture::kAssemblerNull);
+  const bool go_build_cc1_sdk_cgo = VerifyGoBuildGccChildBoundary(false, GoBuildGccChildFixture::kCc1SDKCgo);
   fprintf(stderr, "STARTING npm_node\n");
   const bool npm_node = VerifyExactNpmNodeInterpreterTransition();
   fprintf(stderr, "STARTING open_result_negative\n");
@@ -5027,7 +5952,7 @@ int main(int argc, char** argv) {
 	const bool pre_attribution_disconnect = running && VerifyAcceptedPreAttributionDisconnect(remote, child);
   const bool passed = running && profile && profile_limits && record_boundaries && accessors && network && malformed_socket &&
       malformed_connect && unknown_fd && process && correlation && cloexec && delayed && concurrent_python_streams && roles &&
-      oci_bootstrap && demotion && mismatch && dropped && topology_ok && filesystem && go_runtime_read && npm_node &&
+      oci_bootstrap && demotion && mismatch && dropped && topology_ok && nested_mounts && filesystem && go_runtime_read && go_build_config_read && go_build_handoff_read && go_build_runtime_read && go_build_creator_diagnostic && go_build_tool_child && go_build_cgo_gcc_creator && go_build_sdk_link_gcc && go_build_sdk_link_native && go_build_linker_resolver && go_build_cc1 && go_build_cc1_headers && go_build_as && go_build_collect2 && go_build_native_linker && go_build_linker_plugin && go_build_linker_null && go_build_linker_runtime && go_build_as_null && go_build_cc1_sdk_cgo && npm_node &&
       open_result_negative_ok && open_result_positive_ok && no_basename_trust_ok &&
       unexpected_exec_diagnostic_ok && resolver_npm_version_node && resolver_npm_version_production_path &&
       resolver_lock_generation_production_path && process_group_lifecycle && direct_exec_admission &&
@@ -5043,8 +5968,28 @@ int main(int argc, char** argv) {
       {"role handoff/provenance", roles}, {"OCI bootstrap demotion", oci_bootstrap},
       {"setpriv demotion boundary", demotion}, {"container mismatch", mismatch},
       {"dropped events", dropped}, {"topology fail-closed", topology_ok},
+      {"registered nested mount boundary", nested_mounts},
       {"filesystem normalization", filesystem},
       {"Go resolver runtime read boundary", go_runtime_read},
+      {"Go build configuration read boundary", go_build_config_read},
+      {"Go build handoff read boundary", go_build_handoff_read},
+      {"Go build runtime metadata boundary", go_build_runtime_read},
+      {"Go build exact creator diagnostic boundary", go_build_creator_diagnostic},
+      {"Go build SDK tool child boundary", go_build_tool_child},
+      {"Go build cgo GCC creator boundary", go_build_cgo_gcc_creator},
+      {"Go build SDK linker GCC creator boundary", go_build_sdk_link_gcc},
+      {"Go build SDK linker native ancestry boundary", go_build_sdk_link_native},
+      {"Go build native linker resolver ABI boundary", go_build_linker_resolver},
+      {"Go build CC1 creator and loader boundary", go_build_cc1},
+      {"Go build CC1 readonly header boundary", go_build_cc1_headers},
+      {"Go build assembler creator and loader boundary", go_build_as},
+      {"Go build collect2 creator and loader boundary", go_build_collect2},
+      {"Go build native linker creator and loader boundary", go_build_native_linker},
+      {"Go build native linker fixed plugin boundary", go_build_linker_plugin},
+      {"Go build native linker null device boundary", go_build_linker_null},
+      {"Go build native linker C runtime input boundary", go_build_linker_runtime},
+      {"Go build assembler null device boundary", go_build_as_null},
+      {"Go build CC1 readonly SDK Cgo input boundary", go_build_cc1_sdk_cgo},
       {"exact npm CLI-to-Node", npm_node},
       {"OPEN_RESULT negative matrix", open_result_negative_ok},
       {"OPEN_RESULT positive matrix", open_result_positive_ok},

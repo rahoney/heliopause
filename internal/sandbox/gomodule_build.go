@@ -38,7 +38,7 @@ func (b *GoBuildRunner) Build(ctx context.Context, project, cache string, packag
 	}
 	arguments := append([]string{"build", "-mod=readonly"}, packageArgs...)
 	if _, err := b.runner.RunGo(ctx, project, environment, arguments...); err != nil {
-		return errors.New("network-disabled Go build failed")
+		return goBuildRunnerFailure(err)
 	}
 	return nil
 }

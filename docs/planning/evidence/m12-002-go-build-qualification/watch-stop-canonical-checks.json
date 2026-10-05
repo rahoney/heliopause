@@ -1,0 +1,63 @@
+{
+  "status": "PASS for named scopes",
+  "candidate_receipt_sha256": "08af9139c92894facd1264acded3e6357c39b3b4499dc620b79e7ced325e5c1b",
+  "checks": [
+    {
+      "profile": "quick",
+      "actual_exit": 0,
+      "local_raw_file": "go-build-watch-stop-final-quick.log",
+      "raw_sha256": "9fdbc6a83a7fa60a42671011d4db0da5d750244c9bf548731ac3beeee306aa8c",
+      "scope": "canonical pinned tooling / exact current native projection"
+    },
+    {
+      "profile": "security",
+      "actual_exit": 0,
+      "local_raw_file": "go-build-watch-stop-final-security.log",
+      "raw_sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95",
+      "scope": "canonical pinned tooling / exact current native projection"
+    },
+    {
+      "profile": "docs",
+      "actual_exit": 0,
+      "local_raw_file": "go-build-watch-stop-final-docs.log",
+      "raw_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9",
+      "scope": "canonical pinned tooling / exact current native projection"
+    },
+    {
+      "profile": "corpus-prepare",
+      "actual_exit": 0,
+      "local_raw_file": "go-build-watch-stop-final-corpus-prepare.log",
+      "raw_sha256": "40d6b0520d7435816bf4673536923ad6560dbe87f7dc16be28a0fd883e443c35",
+      "scope": "canonical pinned tooling / exact current native projection"
+    },
+    {
+      "profile": "corpus-declared",
+      "actual_exit": 0,
+      "local_raw_file": "go-build-watch-stop-final-corpus-declared.log",
+      "raw_sha256": "622870f9a53418493a0250bb8247344f3f594cd500bbf9b46e57d3fd4bf625c1",
+      "scope": "canonical pinned tooling / exact current native projection"
+    },
+    {
+      "profile": "platform",
+      "actual_exit": 0,
+      "local_raw_file": "go-build-watch-stop-final-platform.log",
+      "raw_sha256": "fb49a92d2cfca9e6f197611a2e0567108e2eb01175e865442baea47d308e8ef7",
+      "scope": "canonical pinned tooling / exact current native projection"
+    },
+    {
+      "profile": "darwin-test-compile",
+      "actual_exit": 0,
+      "local_raw_file": "go-build-watch-stop-final-darwin-test-compile.log",
+      "raw_sha256": "26403f98b9f6e726a08b4221609fdb770e51b4dd37f8130fc1c10ffbcba2db36",
+      "scope": "whole Darwin test compilation; native macOS not executed"
+    },
+    {
+      "profile": "vulnerability",
+      "actual_exit": 0,
+      "local_raw_file": "go-build-watch-stop-final-vulnerability.log",
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "scope": "canonical pinned scanner / exact current execution candidate"
+    }
+  ],
+  "prior_missing_corpus_input": "go-build-watch-stop-final-corpus.log actualexit1; preserved; no source change; explicit root canonical prepare then actualexit0"
+}

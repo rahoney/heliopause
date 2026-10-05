@@ -98,3 +98,21 @@ type Manifest interface {
 type Promotion interface {
 	Promote(context.Context, domain.StagedSet, domain.VerifiedBundle, domain.InstallContext) (domain.PromotedInstall, error)
 }
+
+// ProjectBuildInspection normalizes build facts using the existing report types.
+type ProjectBuildInspection interface {
+	InspectBuild(context.Context, domain.ProjectBuildInputs) (domain.ProjectBuildReport, error)
+}
+
+// ProjectBuildGuard retains the original source/cache approval and target.
+// Frozen input handles contain no infrastructure paths or runtime commands.
+type ProjectBuildGuard interface {
+	FreezeBuildInputs(context.Context, domain.RunID, string) (domain.ProjectBuildInputs, error)
+	VerifyBuildSource(context.Context) error
+	PublishBuild(context.Context, domain.ApprovedProjectBuild) (domain.PublishedProjectBuild, error)
+	Close() error
+}
+
+type ProjectBuildMutation interface {
+	BeginBuild(context.Context, domain.InstallContext) (ProjectBuildGuard, error)
+}

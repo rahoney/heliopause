@@ -19,6 +19,7 @@ type TraceDiagnostic struct {
 	FaultImageLocator uint64
 	FaultOpen         FaultOpenDiagnostic
 	FaultBudget       FaultBudgetDiagnostic
+	FaultLedger       FaultLedgerDiagnostic
 	Events            uint64
 	Bytes             uint64
 	SessionComplete   bool
@@ -29,13 +30,18 @@ type TraceDiagnostic struct {
 // FaultOpenDiagnostic contains only bounded kernel-derived classifications.
 // It explains a rejected open and never participates in Policy or admission.
 type FaultOpenDiagnostic struct {
-	Image       string `json:"image"`
-	Role        string `json:"role"`
-	Provenance  string `json:"provenance"`
-	Subject     string `json:"subject"`
-	Mount       string `json:"mount"`
-	Flags       uint32 `json:"flags"`
-	PathLocator uint64 `json:"path_locator,omitempty"`
+	Image             string `json:"image"`
+	KernelImage       string `json:"kernel_image,omitempty"`
+	Role              string `json:"role"`
+	Provenance        string `json:"provenance"`
+	Subject           string `json:"subject"`
+	Mount             string `json:"mount"`
+	Flags             uint32 `json:"flags"`
+	PathLocator       uint64 `json:"path_locator,omitempty"`
+	ExecutableLocator uint64 `json:"executable_locator,omitempty"`
+	MountpointLocator uint64 `json:"mountpoint_locator,omitempty"`
+	ExecutablePinned  bool   `json:"executable_pinned,omitempty"`
+	GoDriverCreator   bool   `json:"go_driver_creator,omitempty"`
 }
 
 // FaultBudgetDiagnostic explains the existing helper limit using only fixed
@@ -48,6 +54,14 @@ type FaultBudgetDiagnostic struct {
 	Raw       uint64 `json:"raw"`
 	Other     uint64 `json:"other"`
 	Workspace uint64 `json:"workspace"`
+}
+
+// FaultLedgerDiagnostic describes the host-owned aggregate ledger, whose
+// normalized counts are distinct from the helper's charged syscall records.
+// These scalars explain a rejection without changing the ledger's decision.
+type FaultLedgerDiagnostic struct {
+	Events, EventLimit, Bytes, ByteLimit uint64
+	RequestedEvents, RequestedBytes      uint64
 }
 
 type traceFault interface{ TraceFaultReason() string }
@@ -211,6 +225,10 @@ func collectTraceDiagnostic(ctx context.Context, reader TraceReader) ([]domain.S
 				if errors.As(err, &counters) {
 					diagnostic.FaultBudget = counters.TraceFaultBudget()
 				}
+				var ledger interface{ TraceFaultLedger() FaultLedgerDiagnostic }
+				if errors.As(err, &ledger) {
+					diagnostic.FaultLedger = ledger.TraceFaultLedger()
+				}
 			}
 			diagnostic.Events, diagnostic.Bytes = uint64(eventCount), totalBytes
 			diagnostic.KindCounts = cloneKindCounts(kindCounts)
@@ -295,9 +313,23 @@ func (d TraceDiagnostic) String() string {
 	if d.FaultOpen.PathLocator != 0 {
 		site += fmt.Sprintf(" open_locator_fnv1a64=%016x", d.FaultOpen.PathLocator)
 	}
+	if d.FaultOpen.KernelImage != "" {
+		site += " open_kernel_image=" + d.FaultOpen.KernelImage
+	}
+	if d.FaultOpen.ExecutableLocator != 0 {
+		site += fmt.Sprintf(" open_executable_fnv1a64=%016x", d.FaultOpen.ExecutableLocator)
+		site += fmt.Sprintf(" open_executable_pinned=%t open_go_driver_creator=%t", d.FaultOpen.ExecutablePinned, d.FaultOpen.GoDriverCreator)
+	}
+	if d.FaultOpen.MountpointLocator != 0 {
+		site += fmt.Sprintf(" open_mountpoint_fnv1a64=%016x", d.FaultOpen.MountpointLocator)
+	}
 	if d.FaultBudget.Limit != 0 {
 		b := d.FaultBudget
 		site += fmt.Sprintf(" budget_charged=%d budget_limit=%d budget_close=%d budget_fcntl=%d budget_raw=%d budget_other=%d budget_workspace=%d", b.Charged, b.Limit, b.Close, b.Fcntl, b.Raw, b.Other, b.Workspace)
+	}
+	if d.FaultLedger.EventLimit != 0 {
+		l := d.FaultLedger
+		site += fmt.Sprintf(" ledger_events=%d ledger_event_limit=%d ledger_bytes=%d ledger_byte_limit=%d ledger_requested_events=%d ledger_requested_bytes=%d", l.Events, l.EventLimit, l.Bytes, l.ByteLimit, l.RequestedEvents, l.RequestedBytes)
 	}
 	return fmt.Sprintf("reason=%s events=%d bytes=%d session_complete=%t last_kind=%s kinds=%s", d.Reason, d.Events, d.Bytes, d.SessionComplete, d.LastKind, formatKindCounts(d.KindCounts)) + site
 }

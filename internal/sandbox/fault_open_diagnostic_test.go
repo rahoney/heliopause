@@ -21,6 +21,7 @@ func TestFaultOpenDiagnosticIsBoundedAndDoesNotRepairFailure(t *testing.T) {
 		func(r *helperRecord) { r.Kind = "stream-end" },
 		func(r *helperRecord) { r.FaultSite = "OPEN" },
 		func(r *helperRecord) { r.FaultOpen.Image = "artifact-controlled-image" },
+		func(r *helperRecord) { r.FaultOpen.KernelImage = "/private/secret" },
 		func(r *helperRecord) { r.FaultOpen.Subject = "/private/secret" },
 		func(r *helperRecord) { r.FaultOpen.Role = "TRUSTED" },
 		func(r *helperRecord) { r.FaultOpen.Provenance = "artifact claimed" },
@@ -45,6 +46,28 @@ func TestFaultOpenDiagnosticIsBoundedAndDoesNotRepairFailure(t *testing.T) {
 	}
 	if !strings.Contains(diagnostic.String(), "open_image=GO open_role=CONTROL open_provenance=DIRECT_EXEC_ROOT open_subject=PROC_SELF_AUXV open_mount=system open_flags=0") {
 		t.Fatal("first causal diagnostic lost")
+	}
+}
+
+func TestFaultOpenKernelImageRemainsDiagnostic(t *testing.T) {
+	for _, kernelImage := range []string{"UNKNOWN", "BOUNDARY", "SETPRIV", "SHELL", "ENV", "NPM_CLI", "NODE"} {
+		open := FaultOpenDiagnostic{Image: "OTHER", KernelImage: kernelImage, ExecutableLocator: 1, MountpointLocator: 2, ExecutablePinned: true, GoDriverCreator: true, Role: "ARTIFACT", Provenance: "DIRECT_EXEC_ROOT", Subject: "OCI_IMAGE", Mount: "oci-root", Flags: 557056}
+		record := helperRecord{ContainerID: strings.Repeat("a", 64), Kind: "stream-fault", Reason: "STREAM_FAULT", FaultSite: "OPEN_RESULT_CLASSIFICATION_IMAGE", FaultOpen: &open}
+		payload, err := json.Marshal(record)
+		if err != nil || len(payload) > 1024 {
+			t.Fatal("kernel image diagnostic exceeds the existing record bound")
+		}
+		if _, err := decodeHelperRecord(payload); err != nil {
+			t.Fatal(err)
+		}
+		fault := observerFault{reason: record.Reason, site: record.FaultSite, open: open}
+		observations, limitation, diagnostic := collectTraceDiagnostic(context.Background(), &traceReader{err: fault})
+		if len(observations) != 0 || limitation != "M3_DYNAMIC_OBSERVER_FAILED" || diagnostic.SessionComplete || diagnostic.FaultOpen != open || !strings.Contains(diagnostic.String(), "open_kernel_image="+kernelImage) || !strings.Contains(diagnostic.String(), "open_executable_fnv1a64=0000000000000001") || !strings.Contains(diagnostic.String(), "open_mountpoint_fnv1a64=0000000000000002") {
+			t.Fatal("kernel diagnostic repaired or hid the observer failure")
+		}
+		if !strings.Contains(diagnostic.String(), "open_executable_pinned=true open_go_driver_creator=true") {
+			t.Fatal("bounded kernel provenance diagnostic lost")
+		}
 	}
 }
 

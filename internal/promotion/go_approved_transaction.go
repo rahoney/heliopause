@@ -45,6 +45,8 @@ type approvedGoProjectGuard struct {
 	closed            bool
 	committed         bool
 	buildSource       *goBuildSourcePlan
+	buildCache        *domain.AcquiredArtifact
+	buildInputs       *domain.ProjectBuildInputs
 }
 
 func (p *GoProjectPromotion) Begin(ctx context.Context, install domain.InstallContext) (result *approvedGoProjectGuard, resultErr error) {

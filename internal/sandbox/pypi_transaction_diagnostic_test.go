@@ -5,7 +5,9 @@ import (
 	"errors"
 	"io"
 	"strings"
+	"sync/atomic"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
@@ -34,6 +36,183 @@ func (c terminationDiagnosticClient) Close(context.Context, string) (Observation
 }
 
 type terminationDiagnosticTrace struct{ err error }
+
+type terminalPollingClient struct {
+	terminationDiagnosticClient
+	reads   atomic.Int32
+	ready   chan struct{}
+	release chan struct{}
+	next    chan struct{}
+	usage   uint64
+	readErr error
+}
+
+// Keep a real periodic read pending when ordinary cleanup starts. Virtual time
+// and channel barriers establish the order without scheduler-dependent sleeps.
+func TestPythonCPUWatchStopPreservesPendingAccounting(t *testing.T) {
+	for _, test := range []struct {
+		name      string
+		usage     uint64
+		readErr   error
+		wantFault bool
+		timeout   bool
+	}{
+		{name: "valid pending read", usage: 101},
+		{name: "missing pending read", usage: 101, readErr: errors.New("/private/resource payload credential=fixture"), wantFault: true},
+		{name: "regressed pending read", usage: 99, wantFault: true},
+		{name: "exhausted pending read", usage: 30_000_000, wantFault: true},
+		{name: "expired pending read", usage: 101, wantFault: true, timeout: true},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			synctest.Test(t, func(t *testing.T) {
+				now := time.Now()
+				policy := testObservationPolicy(now)
+				policy.pollInterval = time.Second
+				ledger, err := newObservationTransaction(policy, nil, now)
+				if err != nil {
+					t.Fatal(err)
+				}
+				client := &terminalPollingClient{ready: make(chan struct{}), release: make(chan struct{}), next: make(chan struct{}), usage: test.usage, readErr: test.readErr}
+				ctx, cancel := context.WithCancel(context.Background())
+				var aborted atomic.Int32
+				watch, err := startObservationCPUWatch(ctx, client, "transaction", ledger, cancel, func(context.Context) error { aborted.Add(1); return nil })
+				if err != nil {
+					t.Fatal(err)
+				}
+				<-client.ready
+				stopped := make(chan error, 1)
+				go func() { stopped <- watch.stop() }()
+				synctest.Wait()
+				prematureCancel := ctx.Err() != nil
+				if test.timeout {
+					time.Sleep(2 * policy.pollInterval) // synctest virtual time only
+				}
+				close(client.release)
+				err = <-stopped
+				if prematureCancel || (err != nil) != test.wantFault || (aborted.Load() != 0) != test.wantFault {
+					t.Fatalf("ordinary stop canceled pending accounting=%t err=%v aborts=%d", prematureCancel, err, aborted.Load())
+				}
+				if ctx.Err() == nil {
+					t.Fatal("stopped watch left request active")
+				}
+				if test.readErr != nil && strings.Contains(err.Error(), test.readErr.Error()) {
+					t.Fatal("untrusted resource text escaped diagnostics", err)
+				}
+				if err := watch.stop(); (err != nil) != test.wantFault {
+					t.Fatal("repeated stop changed result", err)
+				}
+			})
+		})
+	}
+}
+
+func (c *terminalPollingClient) Read(ctx context.Context, _ string) (ObservationResourceLease, error) {
+	switch c.reads.Add(1) {
+	case 1:
+		return ObservationResourceLease{UsageUsec: 100}, nil
+	case 2:
+		close(c.ready)
+		select {
+		case <-c.release:
+		case <-ctx.Done():
+			return ObservationResourceLease{}, ctx.Err()
+		}
+	case 3:
+		close(c.next)
+	}
+	return ObservationResourceLease{UsageUsec: c.usage}, c.readErr
+}
+
+// Hold the trusted read across finishUnit, rather than relying on the ticker
+// happening to race with the controller's return and deferred cleanup.
+func TestPythonTerminalFailurePollingPreservesOutcomeAndAccounting(t *testing.T) {
+	for _, test := range []struct {
+		name       string
+		usage      uint64
+		readErr    error
+		wantFault  bool
+		priorFault bool
+		late       bool
+	}{
+		{name: "terminal outcome", usage: 1001},
+		{name: "regressed counter", usage: 999, wantFault: true},
+		{name: "missing counter", usage: 1001, readErr: errors.New("unavailable"), wantFault: true},
+		{name: "exhausted reserve", usage: 30_000_000, wantFault: true},
+		{name: "late counter", usage: 1001, wantFault: true, late: true},
+		{name: "prior accounting failure", usage: 1001, wantFault: true, priorFault: true},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			now := time.Now()
+			policy := testObservationPolicy(now)
+			policy.pollInterval = time.Second
+			ledger, err := newObservationTransaction(policy, []observationUnit{{id: "a", kind: observationDirectImport, candidate: "example"}}, now)
+			if err != nil {
+				t.Fatal(err)
+			}
+			ledger.preparationOK, ledger.anchorAlive = true, true
+			client := &terminalPollingClient{ready: make(chan struct{}), release: make(chan struct{}), next: make(chan struct{}), usage: test.usage, readErr: test.readErr}
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			var aborted atomic.Int32
+			watch, err := startObservationCPUWatch(ctx, client, "transaction", ledger, cancel, func(context.Context) error { aborted.Add(1); return nil })
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer watch.stop()
+			container := strings.Repeat("a", 64)
+			if err := ledger.beginUnit("a", container, time.Now()); err != nil {
+				t.Fatal(err)
+			}
+			select {
+			case <-client.ready:
+			case <-time.After(5 * time.Second):
+				t.Fatal("trusted poll did not reach barrier")
+			}
+			finalUsage := uint64(1000)
+			wantCause := "nonqualifying external outcome"
+			if test.priorFault {
+				finalUsage, wantCause = 99, "CPU accounting"
+			}
+			outcomeErr := ledger.finishUnit(externalUnitEvidence{unitID: "a", containerID: container, terminalOutcome: observationNonzeroExit, observerComplete: true, containerGone: true, cgroupDrained: true, closureUnchanged: true, cumulativeCPUUsec: finalUsage}, time.Now())
+			if outcomeErr == nil || !strings.Contains(outcomeErr.Error(), wantCause) {
+				t.Fatalf("terminal outcome: %v", outcomeErr)
+			}
+			if test.late {
+				ledger.mu.Lock()
+				ledger.lastSample = time.Now().Add(-2 * policy.pollInterval)
+				ledger.mu.Unlock()
+			}
+			close(client.release)
+			if test.wantFault {
+				select {
+				case <-watch.done:
+				case <-time.After(5 * time.Second):
+					t.Fatal("invalid accounting did not stop runtime")
+				}
+				if err := watch.stop(); err == nil || aborted.Load() != 1 {
+					t.Fatalf("accounting fault lost: err=%v aborts=%d", err, aborted.Load())
+				}
+			} else {
+				select {
+				case <-client.next:
+				case <-watch.done:
+					t.Fatalf("terminal outcome became a polling fault: %v", watch.stop())
+				case <-time.After(5 * time.Second):
+					t.Fatal("termination accounting did not continue")
+				}
+				if err := watch.stop(); err != nil || aborted.Load() != 0 {
+					t.Fatalf("invented accounting failure: err=%v aborts=%d", err, aborted.Load())
+				}
+			}
+			if err := ledger.beginUnit("a", container, time.Now()); err == nil {
+				t.Fatal("failed unit admitted again")
+			}
+			if err := ledger.finalize(1001, time.Now()); err == nil {
+				t.Fatal("failed unit gained completion")
+			}
+		})
+	}
+}
 
 func (r terminationDiagnosticTrace) Next(context.Context) (TraceRecord, error) {
 	return TraceRecord{}, r.err

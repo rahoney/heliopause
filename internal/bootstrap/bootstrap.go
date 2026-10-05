@@ -100,6 +100,13 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err := cli.AddGoModuleDownload(command, projectService); err != nil {
 			return err
 		}
+		buildService, serviceErr := newGoModuleBuildService(trustedExecutor, processObserver)
+		if serviceErr != nil {
+			return serviceErr
+		}
+		if err := cli.AddGoModuleBuild(command, buildService); err != nil {
+			return err
+		}
 	}
 	if len(args) > 0 && args[0] == "cargo" {
 		if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" {

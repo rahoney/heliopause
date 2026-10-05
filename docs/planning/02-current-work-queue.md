@@ -9,9 +9,9 @@
 ```text
 Current milestone: M12 — Ecosystem Expansion Before Public Release
 Milestone status: IN_PROGRESS
-Active work item: M12-002 — public Go Modules
+Active work item: None (M12-002 complete; M12-003 baseline audit next)
 Next work item: M12-003 — Rust/Cargo and public crates.io
-Next work item status: NOT_STARTED (M12-002 acceptance prerequisite)
+Next work item status: NOT_STARTED / Ready: Yes (M12-002 local acceptance closed)
 Ready: Yes
 ```
 
@@ -2133,14 +2133,14 @@ M11-FIX-04: COMPLETE
 M11-FIX-05: COMPLETE
 M12: IN_PROGRESS
 M12-001: COMPLETE
-M12-002: IN_PROGRESS
+M12-002: COMPLETE
 M12-003: NOT_STARTED
 M12-004: NOT_STARTED
 M12-005: NOT_STARTED
 M12-02: RESERVED
 M13: BLOCKED
-Active work item: M12-002 — public Go Modules
-Next work item: M12-003 — NOT_STARTED / Ready: No (M12-002 acceptance prerequisite)
+Active work item: None (M12-002 complete; M12-003 baseline audit next)
+Next work item: M12-003 — NOT_STARTED / Ready: Yes
 ```
 
 M9-006까지 qualification을 완료했다. M10-001은 release identity·manifest 및
@@ -2173,7 +2173,7 @@ production activation과 최종 배포를 수행한다.
 | Order | ID | Scope | Status |
 | --- | --- | --- | --- |
 | 1 | M12-001 | Official PyTorch source support | COMPLETE |
-| 2 | M12-002 | public Go Modules | IN_PROGRESS |
+| 2 | M12-002 | public Go Modules | COMPLETE |
 | 3 | M12-003 | Rust/Cargo and public crates.io | NOT_STARTED |
 | 4 | M12-004 | Terraform Provider installation | NOT_STARTED |
 | 5 | M12-005 | cross-ecosystem qualification and feature freeze | NOT_STARTED |
@@ -2554,11 +2554,13 @@ Release support: broader first-release CUDA matrix remains an M12-005 decision
 
 M12-002 — Go
 IMPLEMENTED: YES
-WIRED: NO
-QUALIFIED: NO
-ACCEPTANCE_CLOSED: NO
-Status: IN_PROGRESS
-Ready: Yes (M12-001 acceptance closed)
+WIRED: YES
+QUALIFIED: YES (Linux/amd64 local qualification)
+ACCEPTANCE_CLOSED: YES
+Status: COMPLETE
+Evidence: evidence/m12-002-go-build-qualification/result.json
+MISSING: None (work-item local acceptance)
+Delivery pending: new remote Required CI and native macOS; NO PUSH / NO REMOTE CI / NO MERGE
 
 M12-003 — Cargo
 IMPLEMENTED: YES
@@ -2578,7 +2580,7 @@ Status: NOT_STARTED
 `WIRED: NO`는 코드가 전혀 존재하지 않는다는 뜻이 아니라, 해당 work item의
 required user/runtime path 전체가 acceptance 수준으로 연결되지 않았다는 뜻이다.
 M12-002~004의 상세 MISSING은 해당 work item이 시작될 때 별도 baseline audit로
-확정한다. 현재 활성 work item은 M12-002 하나이며 다음 M12-003은 `NOT_STARTED`다.
+확정한다. M12-002 local acceptance는 닫혔으며 다음 M12-003은 `NOT_STARTED / Ready: Yes`다.
 
 ### M11 post-qualification release hardening
 
@@ -2636,6 +2638,50 @@ approval·Evidence/cache 재검사, bounded anchored source snapshot의 정상/�
 execution·offline graph revalidation·build-time Evidence/Policy·bounded output publish·
 CLI wiring과 최종 qualification은 MISSING이다. 전체 WIRED/QUALIFIED/ACCEPTANCE_CLOSED
 NO, M12-002 IN_PROGRESS와 M12-003/004 NOT_STARTED를 유지하고 같은 item을 계속한다.
+NO PUSH / NO REMOTE CI / NO MERGE.
+
+### M12-002 observed Go build / output wiring 진행 (2026-10-05)
+
+신규 Go build profile·offline compiler 관찰과 separate local-source verification,
+기존 Run/Evidence/M3 Policy, retained guard/cache 재검증과 bounded output publish를
+실제 `helox go build`에 연결했다. Canonical Go leaf가 예산·source/output 경계를
+소유한다. Dependency-free 연속 2회·public pflag·gRPC 41 modules의 production CLI
+ALLOW/publish와 explicit invalid testdata의 실제 compiler 실패 보존을 확인했다.
+Output 수집 첫 실패는 Docker archive reader가 gVisor private scratch를 읽지 못한
+것이며 exact named output data volume으로 같은 최소 source fixture가 통과했다.
+입력 RO·event charging·기존 profile의 예산·Policy를 유지한다.
+
+이 wiring checkpoint 당시 IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO /
+ACCEPTANCE_CLOSED=NO였다. 아래 최종 local acceptance 종료가 이 상태를 supersede한다.
+MISSING은 새 library/cgo/security 및 wired CI 호출의 실제 로컬 통합, 변경 observer의
+기존 직접 소비자(sdist 포함), 같은 최종 실행 후보 CPU/cu126 full과 cu130/cu132
+focused 공통 경로, final canonical/security/docs/corpus/Darwin test compilation 및
+qualification evidence다. 과거 M12-001 remote PASS를 새 후보 PASS로 전용하지 않는다.
+M12-002 IN_PROGRESS, M12-003/004 NOT_STARTED를 유지하며 계속 진행한다.
+NO PUSH / NO REMOTE CI / NO MERGE.
+
+
+### M12-002 local acceptance 종료 (2026-10-05)
+
+`IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES`,
+`COMPLETE / MISSING: None`으로 닫는다. Linux/amd64의 실제 source4·Get/download3·
+build CLI9 정상/부정, offline compiler coverage·Policy·output publication과
+기존 직접 소비자8(필수 sdist 포함), 네 profile 추가sequence3, ordinary 실제
+npm/PyPI install/promote 및 canonical 검사를 같은 최종 실행 후보에서 확인했다.
+CPU full526.62s/cu126 full2082.74s와 viewer NOT_ATTESTED·검사 전용 NumPy 승격
+제외, exact helper wait0·원래 설치 복원도 PASS다. Exact source/binary·입력·각 scope와
+causal proofs는 [qualification evidence](./evidence/m12-002-go-build-qualification/result.json)가 소유한다.
+
+cu130/cu132는 실제 공통 경로 focused 회귀만 실행했으며 새 후보 full PASS로
+기록하지 않는다. Native macOS와 새 remote Required는 NOT_RUN이다. Darwin
+TEST compile이나 M12-001 원격 green을 그 증거로 전용하지 않는다. 이는 사용자
+승인된 로컬 work-item 완료와 후속 진행이며 원격 전달·전체 M12 qualification·
+CUDA RELEASE_SUPPORTED 결정은 완료 선언에 포함하지 않는다. Prior full failure의
+미확정 원인은 evidence의 범위를 유지한다.
+
+종료 문서만의 delta는 실행 입력 동일성을 대조하고 전체 후보 docs/security를
+검사한다. 다음 M12-003은 `NOT_STARTED / Ready: Yes`이며 baseline audit 뒤 하나의
+IN_PROGRESS로 전환한다. M12-004는 아직 NOT_STARTED다.
 NO PUSH / NO REMOTE CI / NO MERGE.
 
 ## Step 13 Invariant

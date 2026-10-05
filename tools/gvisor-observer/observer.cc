@@ -47,6 +47,7 @@ constexpr size_t kMaxNormalizedRecordsPerConnection = 10000;
 constexpr size_t kMaxPyTorchCPURecordsPerConnection = 500000;
 constexpr size_t kMaxPyTorchCU126RecordsPerConnection = 100000;
 constexpr size_t kMaxGoResolverRecordsPerConnection = 200000;
+constexpr size_t kMaxGoBuildRecordsPerConnection = 250000;
 constexpr size_t kMaxTrackedProcessGroups = 64;
 constexpr size_t kMaxPendingDirectExecAdmissions = 64;
 constexpr size_t kDirectExecAdmissionNonceChars = 64;
@@ -102,6 +103,7 @@ constexpr char kProfilePyTorchCU130[] = "pypi-wheel-pytorch-cu130";
 constexpr char kProfilePyTorchCU132[] = "pypi-wheel-pytorch-cu132";
 constexpr char kProfileGitHub[] = "github-elf";
 constexpr char kProfileGoResolver[] = "go-module-resolver";
+constexpr char kProfileGoBuild[] = "go-module-build";
 
 bool IsPythonProfile(const char* profile) {
   return profile != nullptr &&
@@ -179,6 +181,16 @@ enum class ProcessClass {
   kChmod,
   kUname,
   kGo,
+  kGoBuildBoundary,
+  kGoBuildSetpriv,
+  kGoBuildTool,
+  kGoBuildCgo,
+  kGoBuildLink,
+  kGoBuildGcc,
+  kGoBuildCc1,
+  kGoBuildAssembler,
+  kGoBuildCollect2,
+  kGoBuildNativeLinker,
 };
 
 enum class SocketClassification {
@@ -380,14 +392,22 @@ struct ProcessState {
     CommandPhase command_phase = CommandPhase::kUnknown;
     DiagnosticImage diagnostic_image = DiagnosticImage::kUnknown;
     // Sentry clone provenance establishes this bounded parent relation. It is
-    // used only by the LOCK_GENERATION transition predicate.
+    // used by exact kernel-owned runtime transitions.
     int32_t clone_creator_group_id = 0;
     int64_t clone_creator_group_start_time_ns = 0;
     // Kernel image-load evidence, retained across thread-name changes and
     // fork, replaced on every exec. This grants no CONTROL or network trust.
     ProcessClass current_image_class = ProcessClass::kUnknown;
+    // FNV of the last kernel-resolved exec image is diagnostic only.
+    uint64_t executable_locator = 0;
     // Current exact runtime query only; neither role nor inheritable authority.
     bool runtime_cache_query = false;
+    bool diagnostic_image_pinned = false;
+    bool go_build_tool_candidate = false;
+    bool go_build_tool_active = false;
+    bool go_build_gcc_candidate = false;
+    bool go_build_gcc_child_candidate = false;
+    bool go_build_native_linker_candidate = false;
   };
   bool bootstrap_active = true;
   bool bootstrap_group_set = false;
@@ -519,6 +539,102 @@ bool HasExactCloneCreator(const ProcessState::GroupState& group, const ProcessSt
   const auto creator = state.groups.find(group.clone_creator_group_id);
   return creator != state.groups.end() &&
       creator->second.start_time_ns == group.clone_creator_group_start_time_ns;
+}
+
+bool IsGoBuildDriverGroup(const ProcessState::GroupState& group) {
+  return group.role == ProcessState::Role::kArtifact &&
+      group.provenance == ProcessState::Provenance::kDirectExecRoot &&
+      group.current_image_class == ProcessClass::kGo && !group.root_eligible &&
+      group.root_consumed && !group.trusted_control_network_active &&
+      !group.demotion_pending && !group.launch_target_pending && !group.handoff_target_pending;
+}
+
+bool HasExactGoBuildDriverCreator(const gvisor::common::ContextData& context,
+                                 const ProcessState::GroupState& group,
+                                 const ProcessState& state) {
+  if (group.role != ProcessState::Role::kArtifact ||
+      group.provenance != ProcessState::Provenance::kCloneChild ||
+      group.root_eligible || !group.root_consumed ||
+      group.trusted_control_network_active || group.demotion_pending ||
+      group.launch_target_pending || group.handoff_target_pending ||
+      !HasExactCloneCreator(group, state) ||
+      context.parent_thread_group_id() != group.clone_creator_group_id) return false;
+  const auto& parent = state.groups.find(group.clone_creator_group_id)->second;
+  return IsGoBuildDriverGroup(parent);
+}
+
+// Only Cgo and the Go SDK linker produce external GCC children. Compile and
+// asm retain their SDK reads without this subprocess authority.
+bool IsGoBuildCompilerProducerGroup(const ProcessState::GroupState& group,
+                             const ProcessState& state) {
+  if (group.role != ProcessState::Role::kArtifact ||
+      group.provenance != ProcessState::Provenance::kCloneChild ||
+      (group.current_image_class != ProcessClass::kGoBuildCgo &&
+       group.current_image_class != ProcessClass::kGoBuildLink) || !group.go_build_tool_active ||
+      group.root_eligible || !group.root_consumed || group.trusted_control_network_active ||
+      group.demotion_pending || group.launch_target_pending || group.handoff_target_pending ||
+      !HasExactCloneCreator(group, state)) return false;
+  return IsGoBuildDriverGroup(state.groups.find(group.clone_creator_group_id)->second);
+}
+
+bool HasExactGoBuildGccCreator(const gvisor::common::ContextData& context,
+                             const ProcessState::GroupState& group,
+                             const ProcessState& state) {
+  if (group.role != ProcessState::Role::kArtifact ||
+      group.provenance != ProcessState::Provenance::kCloneChild ||
+      group.root_eligible || !group.root_consumed || group.trusted_control_network_active ||
+      group.demotion_pending || group.launch_target_pending || group.handoff_target_pending ||
+      !HasExactCloneCreator(group, state) ||
+      context.parent_thread_group_id() != group.clone_creator_group_id) return false;
+  const auto& parent = state.groups.find(group.clone_creator_group_id)->second;
+  return IsGoBuildDriverGroup(parent) || IsGoBuildCompilerProducerGroup(parent, state);
+}
+
+bool IsGoBuildGccProducerGroup(const ProcessState::GroupState& group,
+                             const ProcessState& state) {
+  if (group.role != ProcessState::Role::kArtifact ||
+      group.provenance != ProcessState::Provenance::kCloneChild ||
+      group.current_image_class != ProcessClass::kGoBuildGcc || !group.go_build_tool_active ||
+      group.root_eligible || !group.root_consumed || group.trusted_control_network_active ||
+      group.demotion_pending || group.launch_target_pending || group.handoff_target_pending ||
+      !HasExactCloneCreator(group, state)) return false;
+  const auto& parent = state.groups.find(group.clone_creator_group_id)->second;
+  return IsGoBuildDriverGroup(parent) || IsGoBuildCompilerProducerGroup(parent, state);
+}
+
+bool HasExactGoBuildGccChildCreator(const gvisor::common::ContextData& context,
+                             const ProcessState::GroupState& group,
+                             const ProcessState& state) {
+  if (group.role != ProcessState::Role::kArtifact ||
+      group.provenance != ProcessState::Provenance::kCloneChild ||
+      group.root_eligible || !group.root_consumed || group.trusted_control_network_active ||
+      group.demotion_pending || group.launch_target_pending || group.handoff_target_pending ||
+      !HasExactCloneCreator(group, state) ||
+      context.parent_thread_group_id() != group.clone_creator_group_id) return false;
+  return IsGoBuildGccProducerGroup(state.groups.find(group.clone_creator_group_id)->second, state);
+}
+
+bool IsGoBuildCollect2ProducerGroup(const ProcessState::GroupState& group,
+                                  const ProcessState& state) {
+  if (group.role != ProcessState::Role::kArtifact ||
+      group.provenance != ProcessState::Provenance::kCloneChild ||
+      group.current_image_class != ProcessClass::kGoBuildCollect2 || !group.go_build_tool_active ||
+      group.root_eligible || !group.root_consumed || group.trusted_control_network_active ||
+      group.demotion_pending || group.launch_target_pending || group.handoff_target_pending ||
+      !HasExactCloneCreator(group, state)) return false;
+  return IsGoBuildGccProducerGroup(state.groups.find(group.clone_creator_group_id)->second, state);
+}
+
+bool HasExactGoBuildNativeLinkerCreator(const gvisor::common::ContextData& context,
+                                      const ProcessState::GroupState& group,
+                                      const ProcessState& state) {
+  if (group.role != ProcessState::Role::kArtifact ||
+      group.provenance != ProcessState::Provenance::kCloneChild ||
+      group.root_eligible || !group.root_consumed || group.trusted_control_network_active ||
+      group.demotion_pending || group.launch_target_pending || group.handoff_target_pending ||
+      !HasExactCloneCreator(group, state) ||
+      context.parent_thread_group_id() != group.clone_creator_group_id) return false;
+  return IsGoBuildCollect2ProducerGroup(state.groups.find(group.clone_creator_group_id)->second, state);
 }
 
 // Shape alone is diagnostic only. Admission also requires the sealed runtime
@@ -937,6 +1053,16 @@ const char* ProcessClassName(ProcessClass process_class) {
     case ProcessClass::kCat: return "CAT";
     case ProcessClass::kChmod: return "CHMOD";
     case ProcessClass::kUname: return "OTHER";  // Still an unexpected artifact exec.
+    case ProcessClass::kGoBuildBoundary:
+    case ProcessClass::kGoBuildSetpriv:
+    case ProcessClass::kGoBuildTool:
+    case ProcessClass::kGoBuildCgo:
+    case ProcessClass::kGoBuildLink:
+    case ProcessClass::kGoBuildGcc:
+    case ProcessClass::kGoBuildCc1:
+    case ProcessClass::kGoBuildAssembler:
+    case ProcessClass::kGoBuildCollect2:
+    case ProcessClass::kGoBuildNativeLinker:
     case ProcessClass::kUnknown: return "OTHER";
   }
   return "OTHER";
@@ -961,6 +1087,16 @@ const char* NetworkProcessClassName(ProcessClass process_class) {
     case ProcessClass::kCat:
     case ProcessClass::kChmod:
     case ProcessClass::kUname:
+    case ProcessClass::kGoBuildBoundary:
+    case ProcessClass::kGoBuildSetpriv:
+    case ProcessClass::kGoBuildTool:
+    case ProcessClass::kGoBuildCgo:
+    case ProcessClass::kGoBuildLink:
+    case ProcessClass::kGoBuildGcc:
+    case ProcessClass::kGoBuildCc1:
+    case ProcessClass::kGoBuildAssembler:
+    case ProcessClass::kGoBuildCollect2:
+    case ProcessClass::kGoBuildNativeLinker:
       return "OTHER";
   }
   return "OTHER";
@@ -1028,6 +1164,19 @@ ProcessClass ProcessClassForPath(const std::string& path, const char* profile) {
   if (path == "/usr/bin/cat" || path == "/bin/cat" || path == "cat") return ProcessClass::kCat;
   if (path == "/usr/bin/chmod" || path == "/bin/chmod" || path == "chmod") return ProcessClass::kChmod;
   if (profile == nullptr) return ProcessClass::kUnknown;
+  if (strcmp(profile, kProfileGoBuild) == 0) {
+    if (path == "/haa-runtime/haa-boundary") return ProcessClass::kGoBuildBoundary;
+    if (path == "/usr/bin/setpriv") return ProcessClass::kGoBuildSetpriv;
+    if (path == "/usr/bin/x86_64-linux-gnu-gcc-12") return ProcessClass::kGoBuildGcc;
+    if (path == "/usr/lib/gcc/x86_64-linux-gnu/12/cc1") return ProcessClass::kGoBuildCc1;
+    if (path == "/usr/bin/x86_64-linux-gnu-as") return ProcessClass::kGoBuildAssembler;
+    if (path == "/usr/lib/gcc/x86_64-linux-gnu/12/collect2") return ProcessClass::kGoBuildCollect2;
+    if (path == "/usr/bin/x86_64-linux-gnu-ld.bfd") return ProcessClass::kGoBuildNativeLinker;
+    if (path == "/usr/local/go/pkg/tool/linux_amd64/compile" ||
+        path == "/usr/local/go/pkg/tool/linux_amd64/asm") return ProcessClass::kGoBuildTool;
+    if (path == "/usr/local/go/pkg/tool/linux_amd64/link") return ProcessClass::kGoBuildLink;
+    if (path == "/usr/local/go/pkg/tool/linux_amd64/cgo") return ProcessClass::kGoBuildCgo;
+  }
   if (strcmp(profile, kProfileNPM) == 0) {
     if (path == "/usr/local/bin/node" || path == "node") return ProcessClass::kNode;
     if (path == "/usr/local/bin/npm" || path == "npm") return ProcessClass::kNpm;
@@ -1039,7 +1188,7 @@ ProcessClass ProcessClassForPath(const std::string& path, const char* profile) {
     if (path == "/usr/local/bin/pip" || path == "pip") return ProcessClass::kPip;
   }
   if (strcmp(profile, kProfileGitHub) == 0 && path == "/work/artifact") return ProcessClass::kArtifact;
-  if (strcmp(profile, kProfileGoResolver) == 0 && path == "/usr/local/go/bin/go") return ProcessClass::kGo;
+  if ((strcmp(profile, kProfileGoResolver) == 0 || strcmp(profile, kProfileGoBuild) == 0) && path == "/usr/local/go/bin/go") return ProcessClass::kGo;
   return ProcessClass::kUnknown;
 }
 
@@ -1392,12 +1541,22 @@ std::string FaultOpenDiagnostic(const gvisor::syscall::Open& message,
     locator ^= byte;
     locator *= 1099511628211ULL;
   }
+  uint64_t mount_locator = 14695981039346656037ULL;
+  for (unsigned char byte : anchor.mountpoint) {
+    mount_locator ^= byte;
+    mount_locator *= 1099511628211ULL;
+  }
   return std::string("{\"image\":\"") + ProcessClassName(FilesystemProcessClass(message.context_data(), state)) +
+      "\",\"kernel_image\":\"" + DiagnosticImageName(group == nullptr ? DiagnosticImage::kUnknown : group->diagnostic_image) +
       "\",\"role\":\"" + RoleName(group == nullptr ? ProcessState::Role::kUnknown : group->role) +
       "\",\"provenance\":\"" + ProvenanceName(group == nullptr ? ProcessState::Provenance::kUnknown : group->provenance) +
       "\",\"subject\":\"" + FaultOpenSubject(message.context_data(), message.pathname(), anchor) +
       "\",\"mount\":\"" + anchor.mount_class + "\",\"flags\":" + std::to_string(message.flags()) +
-      ",\"path_locator\":" + std::to_string(locator == 0 ? 1 : locator) + "}";
+      ",\"path_locator\":" + std::to_string(locator == 0 ? 1 : locator) +
+      ",\"mountpoint_locator\":" + std::to_string(mount_locator == 0 ? 1 : mount_locator) +
+      ",\"executable_pinned\":" + (group != nullptr && group->diagnostic_image_pinned ? "true" : "false") +
+      ",\"go_driver_creator\":" + (group != nullptr && HasExactGoBuildDriverCreator(message.context_data(), *group, state) ? "true" : "false") +
+      ",\"executable_locator\":" + std::to_string(group == nullptr ? 0 : group->executable_locator) + "}";
 }
 
 bool IsExactLibcapNg0(const std::string& path) {
@@ -1665,6 +1824,33 @@ bool IsPinnedGoResolverRead(const gvisor::common::ContextData& context,
       path == "/sys/fs/cgroup/cpu/cpu.cfs_period_us";
 }
 
+// Fixed HAA configuration copying uses the locked mkdir image in a CONTROL
+// clone of the admitted shell. This metadata read grants no artifact, network,
+// other proc subject, or runtime-tool authority and does not use mutable comm.
+bool IsPinnedGoBuildConfigurationRead(
+    const gvisor::common::ContextData& context, const ProcessState& state,
+    const std::string& path, uint64_t flags, const char* profile,
+    const MountAnchor* anchor) {
+  if (profile == nullptr || strcmp(profile, kProfileGoBuild) != 0 ||
+      path != "/proc/filesystems" || IsWriteCapableOpen(flags) || anchor == nullptr ||
+      anchor->mount_class != "system" || anchor->mountpoint != "/proc") return false;
+  const auto* group = FindFilesystemGroup(context, state);
+  if (group == nullptr || group->role != ProcessState::Role::kControl ||
+      group->provenance != ProcessState::Provenance::kCloneChild ||
+      group->current_image_class != ProcessClass::kMkdir ||
+      group->root_eligible || !group->root_consumed ||
+      group->trusted_control_network_active || group->demotion_pending ||
+      group->launch_target_pending || group->handoff_target_pending ||
+      !HasExactCloneCreator(*group, state) ||
+      context.parent_thread_group_id() != group->clone_creator_group_id) return false;
+  const auto& parent = state.groups.find(group->clone_creator_group_id)->second;
+  return parent.role == ProcessState::Role::kControl &&
+      parent.current_image_class == ProcessClass::kShell &&
+      parent.provenance == ProcessState::Provenance::kDirectExecRoot &&
+      !parent.root_eligible && parent.root_consumed && !parent.demotion_pending &&
+      !parent.launch_target_pending && !parent.handoff_target_pending;
+}
+
 bool IsCanonicalBootstrapProfile(const char* profile) {
   return profile != nullptr &&
       (strcmp(profile, kProfileNPM) == 0 || strcmp(profile, kProfilePyPI) == 0 ||
@@ -1672,7 +1858,8 @@ bool IsCanonicalBootstrapProfile(const char* profile) {
        strcmp(profile, kProfilePyTorchCU126) == 0 ||
        strcmp(profile, kProfilePyTorchCU130) == 0 ||
        strcmp(profile, kProfilePyTorchCU132) == 0 ||
-       strcmp(profile, kProfileGitHub) == 0 || strcmp(profile, kProfileGoResolver) == 0);
+       strcmp(profile, kProfileGitHub) == 0 || strcmp(profile, kProfileGoResolver) == 0 ||
+       strcmp(profile, kProfileGoBuild) == 0);
 }
 
 bool IsDirectExecLoaderProfile(const char* profile) {
@@ -1804,6 +1991,170 @@ bool IsPinnedNpmRuntimeRead(const gvisor::common::ContextData& context,
       path == "/sys/devices/system/cpu/online";
 }
 
+// The linker and assembler use the runtime null device as an output sink.
+// A matched /dev mount, exact owned tool and observed flag shape do not
+// grant general device or filesystem writes.
+bool IsPinnedGoBuildNullDeviceOpen(
+    const gvisor::common::ContextData& context, const ProcessState& state,
+    const std::string& path, uint64_t flags, const char* profile,
+    const MountAnchor* anchor) {
+  if (profile == nullptr || strcmp(profile, kProfileGoBuild) != 0 || anchor == nullptr ||
+      anchor->mount_class != "system" || anchor->mountpoint != "/dev" || path != "/dev/null" ||
+      (flags & ~kOpenLargefile) != (kOpenReadWrite | kOpenCreate | kOpenTruncate)) return false;
+  const auto* group = FindFilesystemGroup(context, state);
+  if (group == nullptr || !group->go_build_tool_active) return false;
+  return (group->current_image_class == ProcessClass::kGoBuildNativeLinker &&
+          HasExactGoBuildNativeLinkerCreator(context, *group, state)) ||
+      (group->current_image_class == ProcessClass::kGoBuildAssembler &&
+       HasExactGoBuildGccChildCreator(context, *group, state));
+}
+
+// The locked build driver and its exact SDK tools read immutable SDK inputs,
+// fixed runtime data and their own cgroup metadata. These are not completion or
+// resource authority. Keep this
+// distinct from the CONTROL/network-enabled public module resolver.
+bool IsPinnedGoBuildRuntimeRead(
+    const gvisor::common::ContextData& context, const ProcessState& state,
+    const std::string& path, uint64_t flags, const char* profile,
+    const MountAnchor* anchor) {
+  if (profile == nullptr || strcmp(profile, kProfileGoBuild) != 0 ||
+      IsWriteCapableOpen(flags) || anchor == nullptr) return false;
+  const auto* group = FindFilesystemGroup(context, state);
+  if (group == nullptr || group->role != ProcessState::Role::kArtifact ||
+      group->root_eligible || !group->root_consumed ||
+      group->trusted_control_network_active || group->demotion_pending ||
+      group->launch_target_pending || group->handoff_target_pending) return false;
+  const bool driver = IsGoBuildDriverGroup(*group);
+  const bool tool = (group->current_image_class == ProcessClass::kGoBuildTool ||
+      group->current_image_class == ProcessClass::kGoBuildCgo ||
+      group->current_image_class == ProcessClass::kGoBuildLink) &&
+      group->go_build_tool_active && HasExactGoBuildDriverCreator(context, *group, state);
+  const bool native_gcc = group->current_image_class == ProcessClass::kGoBuildGcc &&
+      group->go_build_tool_active && HasExactGoBuildGccCreator(context, *group, state);
+  if (native_gcc) {
+    // The compiler stays ARTIFACT. Its fixed loader data is not an SDK,
+    // arbitrary image-library or system-metadata grant.
+    return anchor->mount_class == "oci-root" && anchor->mountpoint == "/" &&
+        (path == "/etc/ld.so.cache" || IsExactLibc6(path));
+  }
+  const bool native_linker = group->current_image_class == ProcessClass::kGoBuildNativeLinker &&
+      group->go_build_tool_active && HasExactGoBuildNativeLinkerCreator(context, *group, state);
+  if (native_linker) {
+    if (anchor->mount_class != "oci-root" || anchor->mountpoint != "/") return false;
+    if (path == "/etc/ld.so.cache" || path == "/usr/lib/gcc/x86_64-linux-gnu/12/liblto_plugin.so") return true;
+    std::string library_path = path;
+    if (HasPrefix(library_path, "/usr/lib/")) library_path = "/lib/" + library_path.substr(9);
+    // Fixed C ABI link inputs, independently bound to the locked OCI image.
+    // They are data for this exact linker, not a general SDK directory grant.
+    for (const char* input : {
+        "/lib/gcc/x86_64-linux-gnu/12/crtbegin.o", "/lib/gcc/x86_64-linux-gnu/12/crtbeginS.o",
+        "/lib/gcc/x86_64-linux-gnu/12/crtbeginT.o", "/lib/gcc/x86_64-linux-gnu/12/crtend.o",
+        "/lib/gcc/x86_64-linux-gnu/12/crtendS.o", "/lib/gcc/x86_64-linux-gnu/12/libgcc.a",
+        "/lib/gcc/x86_64-linux-gnu/12/libgcc_eh.a", "/lib/gcc/x86_64-linux-gnu/12/libgcc_s.so",
+        "/lib/x86_64-linux-gnu/Scrt1.o", "/lib/x86_64-linux-gnu/crt1.o", "/lib/x86_64-linux-gnu/rcrt1.o",
+        "/lib/x86_64-linux-gnu/crti.o", "/lib/x86_64-linux-gnu/crtn.o", "/lib/x86_64-linux-gnu/libc.so",
+        "/lib/x86_64-linux-gnu/libc_nonshared.a", "/lib/x86_64-linux-gnu/libpthread.a",
+        "/lib/x86_64-linux-gnu/libpthread_nonshared.a", "/lib/x86_64-linux-gnu/libdl.a",
+        "/lib/x86_64-linux-gnu/libgcc_s.so.1", "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2"}) {
+      if (library_path == input) return true;
+    }
+    for (const char* name : {"libbfd-2.40-system.so", "libctf.so.0", "libjansson.so.4", "libz.so.1",
+         "libzstd.so.1", "libsframe.so.0", "libc.so.6", "libresolv.so.2"}) {
+      if (MatchesLibraryNameOrVersion(library_path, (std::string("/lib/x86_64-linux-gnu/") + name).c_str())) return true;
+    }
+    return false;
+  }
+  const bool native_collect2 = group->current_image_class == ProcessClass::kGoBuildCollect2 &&
+      group->go_build_tool_active && HasExactGoBuildGccChildCreator(context, *group, state);
+  if (native_collect2) {
+    if (anchor->mount_class != "oci-root" || anchor->mountpoint != "/") return false;
+    std::string library_path = path;
+    if (HasPrefix(library_path, "/usr/lib/")) library_path = "/lib/" + library_path.substr(9);
+    return path == "/etc/ld.so.cache" || IsExactLibc6(path) ||
+        library_path == "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2";
+  }
+  const bool native_assembler = group->current_image_class == ProcessClass::kGoBuildAssembler &&
+      group->go_build_tool_active && HasExactGoBuildGccChildCreator(context, *group, state);
+  if (native_assembler) {
+    if (anchor->mount_class != "oci-root" || anchor->mountpoint != "/") return false;
+    if (path == "/etc/ld.so.cache") return true;
+    std::string library_path = path;
+    if (HasPrefix(library_path, "/usr/lib/")) library_path = "/lib/" + library_path.substr(9);
+    for (const char* name : {"libbfd-2.40-system.so", "libz.so.1", "libzstd.so.1", "libsframe.so.0", "libc.so.6"}) {
+      if (MatchesLibraryNameOrVersion(library_path, (std::string("/lib/x86_64-linux-gnu/") + name).c_str())) return true;
+    }
+    return false;
+  }
+  const bool native_cc1 = group->current_image_class == ProcessClass::kGoBuildCc1 &&
+      group->go_build_tool_active && HasExactGoBuildGccChildCreator(context, *group, state);
+  if (native_cc1) {
+    if (anchor->mount_class != "oci-root" || anchor->mountpoint != "/") return false;
+    if (path == "/etc/ld.so.cache" || path == "/usr/include" || HasPrefix(path, "/usr/include/") ||
+        path == "/usr/lib/gcc/x86_64-linux-gnu/12/include" ||
+        HasPrefix(path, "/usr/lib/gcc/x86_64-linux-gnu/12/include/")) return true;
+    // CC1 preprocesses/compiles the fixed SDK's Cgo runtime inputs. This
+    // immutable C ABI subtree is distinct from arbitrary Go SDK source.
+    if (path == "/usr/local/go/src/runtime/cgo" ||
+        HasPrefix(path, "/usr/local/go/src/runtime/cgo/")) return true;
+    std::string library_path = path;
+    if (HasPrefix(library_path, "/usr/lib/")) library_path = "/lib/" + library_path.substr(9);
+    // Fixed ABI roles from the locked cc1 ELF. Neither artifact output nor a
+    // mutable metadata file can add a loader permission at runtime.
+    for (const char* name : {"libisl.so.23", "libmpc.so.3", "libmpfr.so.6", "libgmp.so.10",
+         "libz.so.1", "libzstd.so.1", "libm.so.6", "libc.so.6", "ld-linux-x86-64.so.2"}) {
+      if (MatchesLibraryNameOrVersion(library_path, (std::string("/lib/x86_64-linux-gnu/") + name).c_str())) return true;
+    }
+    return false;
+  }
+  if (!driver && !tool) return false;
+  if (anchor->mount_class == "oci-root" && anchor->mountpoint == "/") {
+    return path == "/usr/local/go/go.env" || path == "/usr/local/go/src" ||
+        HasPrefix(path, "/usr/local/go/src/") || path == "/usr/local/go/pkg/include" ||
+        HasPrefix(path, "/usr/local/go/pkg/include/") || path == "/usr/share/zoneinfo/Etc/UTC";
+  }
+  if (anchor->mount_class != "system") return false;
+  if (anchor->mountpoint == "/dev") return path == "/dev/null";
+  const std::string self = "/proc/" + std::to_string(context.thread_group_id());
+  if (anchor->mountpoint == "/proc") {
+    return path == self + "/cgroup" || path == self + "/mountinfo";
+  }
+  return anchor->mountpoint == "/sys/fs/cgroup/cpu" &&
+      (path == "/sys/fs/cgroup/cpu/cpu.cfs_quota_us" ||
+       path == "/sys/fs/cgroup/cpu/cpu.cfs_period_us");
+}
+
+// This new build profile cannot obtain helper reads from comm. The kernel
+// helper/demoter image and the one-shot, exact direct handoff must agree. Both
+// stages remain ARTIFACT, and the allowance disappears at the Go target exec.
+bool IsPinnedGoBuildHandoffRead(
+    const gvisor::common::ContextData& context, const ProcessState& state,
+    const std::string& path, uint64_t flags, const char* profile,
+    const MountAnchor* anchor) {
+  if (profile == nullptr || strcmp(profile, kProfileGoBuild) != 0 ||
+      IsWriteCapableOpen(flags) || anchor == nullptr) return false;
+  const auto* group = FindFilesystemGroup(context, state);
+  if (group == nullptr || group->role != ProcessState::Role::kArtifact ||
+      group->provenance != ProcessState::Provenance::kDirectExecRoot ||
+      group->root_eligible || !group->root_consumed ||
+      group->trusted_control_network_active || !group->handoff_target_pending ||
+      group->handoff_target_class != ProcessClass::kGo) return false;
+  const bool helper = group->demotion_pending &&
+      group->current_image_class == ProcessClass::kGoBuildBoundary;
+  const bool demoter = !group->demotion_pending &&
+      group->current_image_class == ProcessClass::kGoBuildSetpriv;
+  if (!helper && !demoter) return false;
+  if (helper && anchor->mount_class == "helper" &&
+      anchor->mountpoint == "/haa-runtime" && path == "/haa-runtime/haa-boundary") return true;
+  if (anchor->mount_class == "oci-root" && anchor->mountpoint == "/") {
+    if (path == "/etc/ld.so.cache" || IsExactLibc6(path)) return true;
+    return demoter && (IsExactLibcapNg0(path) || path == "/etc/nsswitch.conf" ||
+        path == "/etc/passwd" || path == "/etc/group");
+  }
+  return demoter && anchor->mount_class == "system" && anchor->mountpoint == "/proc" &&
+      (path == "/proc/sys/kernel/cap_last_cap" ||
+       path == "/proc/" + std::to_string(context.thread_group_id()) + "/status");
+}
+
 bool IsExactHAAELFHandoffDemotionRead(
     const gvisor::common::ContextData& context, const ProcessState& state,
     const std::string& path, uint64_t flags, const char* profile) {
@@ -1889,6 +2240,10 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
     return exact_pre_sentry_loader ? FilesystemClass::kHelperOnly : FilesystemClass::kUnknown;
   }
   const auto* tracked = FindFilesystemGroup(message.context_data(), state);
+  if (IsPinnedGoBuildHandoffRead(message.context_data(), state, path,
+                                  message.flags(), profile, anchor)) {
+    return FilesystemClass::kHelperOnly;
+  }
   if (IsExactHAAELFHandoffDemotionRead(message.context_data(), state, path,
                                        message.flags(), profile)) {
     return FilesystemClass::kHelperOnly;
@@ -1897,7 +2252,8 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
       message.context_data().process_name() == "setpriv" && !IsWriteCapableOpen(message.flags()) &&
       path == "/proc/" + std::to_string(message.context_data().thread_group_id()) + "/status";
   if (exact_self_status) return FilesystemClass::kHelperOnly;
-  const bool exact_handoff_validation = tracked->role == ProcessState::Role::kArtifact &&
+  const bool exact_handoff_validation = (profile == nullptr || strcmp(profile, kProfileGoBuild) != 0) &&
+      tracked->role == ProcessState::Role::kArtifact &&
       (tracked->provenance == ProcessState::Provenance::kCloneChild ||
        tracked->provenance == ProcessState::Provenance::kDirectExecRoot) &&
       !tracked->root_eligible && tracked->root_consumed &&
@@ -1908,7 +2264,8 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
        path == "/etc/ld.so.cache" || IsExactLibc6(path) ||
        path == "/proc/" + std::to_string(message.context_data().thread_group_id()) + "/status");
   if (exact_handoff_validation) return FilesystemClass::kHelperOnly;
-  const bool exact_artifact_shell_loader = tracked->role == ProcessState::Role::kArtifact &&
+  const bool exact_artifact_shell_loader = (profile == nullptr || strcmp(profile, kProfileGoBuild) != 0) &&
+      tracked->role == ProcessState::Role::kArtifact &&
       tracked->provenance == ProcessState::Provenance::kCloneChild &&
       !tracked->root_eligible && tracked->root_consumed &&
       !tracked->trusted_control_network_active &&
@@ -1930,6 +2287,9 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
   }
   if (IsExactBootstrapHelperWrite(message.context_data(), state, path, message.flags()) ||
       IsPinnedGoResolverRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
+      IsPinnedGoBuildConfigurationRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
+      IsPinnedGoBuildRuntimeRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
+      IsPinnedGoBuildNullDeviceOpen(message.context_data(), state, path, message.flags(), profile, anchor) ||
       IsExactDockerEtcHostsLockGenerationRead(message.context_data(), state, path,
                                               message.flags(), profile, anchor) ||
       IsPinnedRuntimeRootRead(message.context_data(), state, path,
@@ -2066,7 +2426,8 @@ bool ParseControlRecord(const char* payload, size_t size, ControlPeer* peer,
     if (!ValidContainerID(id) || !ValidSessionGeneration(generation) ||
         (profile != kProfileNPM && profile != kProfilePyPI && profile != kProfilePyTorchCPU &&
          profile != kProfilePyTorchCU126 && profile != kProfilePyTorchCU130 &&
-         profile != kProfilePyTorchCU132 && profile != kProfileGitHub && profile != kProfileGoResolver) ||
+         profile != kProfilePyTorchCU132 && profile != kProfileGitHub && profile != kProfileGoResolver &&
+         profile != kProfileGoBuild) ||
         peer->request_seen || peer->registered || peer->terminal || profiles->find(id) != profiles->end()) {
       return SendProfileAck(peer->fd, id, profile, topology, generation, "rejected");
     }
@@ -2195,6 +2556,17 @@ bool ParseSentryClone(const char* payload, size_t payload_size,
       false, false, false, false, ProcessClass::kUnknown, ProcessState::OCIBootstrapStage::kNotOCI,
       creator->second.command_phase});
   state->groups.find(child_group)->second.current_image_class = creator->second.current_image_class;
+  state->groups.find(child_group)->second.executable_locator = creator->second.executable_locator;
+  state->groups.find(child_group)->second.diagnostic_image_pinned = creator->second.diagnostic_image_pinned;
+  // One kernel clone of the admitted build driver may execute one locked SDK
+  // tool. Neither tool authority nor CONTROL/network privilege is inherited.
+  state->groups.find(child_group)->second.go_build_tool_candidate = IsGoBuildDriverGroup(creator->second);
+  state->groups.find(child_group)->second.go_build_gcc_candidate =
+      IsGoBuildDriverGroup(creator->second) || IsGoBuildCompilerProducerGroup(creator->second, *state);
+  state->groups.find(child_group)->second.go_build_gcc_child_candidate =
+      IsGoBuildGccProducerGroup(creator->second, *state);
+  state->groups.find(child_group)->second.go_build_native_linker_candidate =
+      IsGoBuildCollect2ProducerGroup(creator->second, *state);
   state->groups.find(child_group)->second.clone_creator_group_id = creator_group;
   state->groups.find(child_group)->second.clone_creator_group_start_time_ns =
       creator->second.start_time_ns;
@@ -2272,6 +2644,7 @@ bool ParseSentryExitNotifyParent(const char* payload, size_t payload_size,
 size_t MaximumRecords(const char* profile) {
   if (profile == nullptr) return kMaxNormalizedRecordsPerConnection;
   if (strcmp(profile, kProfileGoResolver) == 0) return kMaxGoResolverRecordsPerConnection;
+  if (strcmp(profile, kProfileGoBuild) == 0) return kMaxGoBuildRecordsPerConnection;
   if (strcmp(profile, kProfilePyTorchCPU) == 0) return kMaxPyTorchCPURecordsPerConnection;
   if (strcmp(profile, kProfilePyTorchCU126) == 0 || strcmp(profile, kProfilePyTorchCU130) == 0 ||
       strcmp(profile, kProfilePyTorchCU132) == 0) return kMaxPyTorchCU126RecordsPerConnection;
@@ -2443,6 +2816,24 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     new_direct_root = true;
   }
   group->second.runtime_cache_query = false;
+  const bool go_tool_candidate = group->second.go_build_tool_candidate;
+  const bool go_gcc_candidate = group->second.go_build_gcc_candidate;
+  const bool go_gcc_child_candidate = group->second.go_build_gcc_child_candidate;
+  const bool go_native_linker_candidate = group->second.go_build_native_linker_candidate;
+  group->second.go_build_native_linker_candidate = false;
+  group->second.go_build_gcc_child_candidate = false;
+  group->second.go_build_gcc_candidate = false;
+  group->second.go_build_tool_candidate = false;
+  group->second.go_build_tool_active = false;
+  uint64_t executable_locator = 14695981039346656037ULL;
+  for (unsigned char byte : message.binary_path()) {
+    executable_locator ^= byte;
+    executable_locator *= 1099511628211ULL;
+  }
+  group->second.executable_locator = executable_locator == 0 ? 1 : executable_locator;
+  // Bounded diagnostics only. Permissions use the actual topology predicate,
+  // never this cached flag or its serialized value.
+  group->second.diagnostic_image_pinned = IsPinnedReadOnlyRootPath(topology, message.binary_path());
   group->second.current_image_class = ProcessClassForPath(message.binary_path(), profile);
   // Kernel-resolved utility image in the sealed immutable runtime, not comm,
   // argv[0], an artifact copy or a path shadow. This only classifies loader reads;
@@ -2451,6 +2842,39 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
       (!IsPinnedReadOnlyRootPath(topology, message.binary_path()) ||
        !IsPinnedReadOnlyRootPath(topology, "/etc/ld.so.cache"))) {
     group->second.current_image_class = ProcessClass::kUnknown;
+  }
+  // The new build target remains ARTIFACT. A shadow of its locked SDK image
+  // cannot obtain the GO classification or consume the one-shot handoff.
+  if (strcmp(profile, kProfileGoBuild) == 0 &&
+      (group->second.current_image_class == ProcessClass::kGo ||
+       group->second.current_image_class == ProcessClass::kMkdir ||
+       group->second.current_image_class == ProcessClass::kShell ||
+       group->second.current_image_class == ProcessClass::kGoBuildTool ||
+       group->second.current_image_class == ProcessClass::kGoBuildCgo ||
+       group->second.current_image_class == ProcessClass::kGoBuildLink ||
+       group->second.current_image_class == ProcessClass::kGoBuildGcc ||
+       group->second.current_image_class == ProcessClass::kGoBuildCc1 ||
+       group->second.current_image_class == ProcessClass::kGoBuildAssembler ||
+       group->second.current_image_class == ProcessClass::kGoBuildCollect2 ||
+       group->second.current_image_class == ProcessClass::kGoBuildNativeLinker ||
+       group->second.current_image_class == ProcessClass::kGoBuildSetpriv) &&
+      !IsPinnedReadOnlyRootPath(topology, message.binary_path())) {
+    group->second.current_image_class = ProcessClass::kUnknown;
+  }
+  if (strcmp(profile, kProfileGoBuild) == 0 &&
+      group->second.current_image_class == ProcessClass::kGoBuildBoundary) {
+    bool exact_helper = topology != nullptr && topology->sealed &&
+        topology->snapshot_seen && topology->namespace_id != 0;
+    size_t helper_mounts = 0;
+    if (exact_helper) {
+      for (const auto& entry : topology->anchors) {
+        const auto& mount = entry.second;
+        if (mount.mountpoint == "/haa-runtime" && mount.mount_class == "helper") helper_mounts++;
+        else if (IsAtOrBelowMountpoint(message.binary_path(), mount.mountpoint) &&
+                 mount.mountpoint != "/") exact_helper = false;
+      }
+    }
+    if (!exact_helper || helper_mounts != 1) group->second.current_image_class = ProcessClass::kUnknown;
   }
   group->second.diagnostic_image = DiagnosticImageForPath(message.binary_path());
   if (group->second.provenance == ProcessState::Provenance::kOCIRoot) {
@@ -2538,7 +2962,8 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
       group->second.demotion_pending = boundary_mode != BoundaryMode::kHandoff;
       group->second.handoff_target_pending = boundary_mode != BoundaryMode::kHandoff;
       group->second.handoff_target_class = boundary_mode == BoundaryMode::kPythonHandoff
-          ? ProcessClass::kPython : ProcessClass::kArtifact;
+          ? ProcessClass::kPython : (strcmp(profile, kProfileGoBuild) == 0
+              ? ProcessClass::kGo : ProcessClass::kArtifact);
       ApplyExecCloexec(&candidate, group_id);
       process_state->groups = candidate.groups;
       process_state->fd_states = candidate.fd_states;
@@ -2585,7 +3010,43 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     return Send(output, *container_id, "process-exec-expected");
   }
   if (group->second.role == ProcessState::Role::kArtifact) {
-    const ProcessClass process_class = ProcessClassForPath(message.binary_path(), profile);
+    const ProcessClass process_class = strcmp(profile, kProfileGoBuild) == 0
+        ? group->second.current_image_class : ProcessClassForPath(message.binary_path(), profile);
+    const bool exact_sdk_tool = (process_class == ProcessClass::kGoBuildTool ||
+        process_class == ProcessClass::kGoBuildCgo ||
+        process_class == ProcessClass::kGoBuildLink) &&
+        message.execfn() == message.binary_path() && message.argv_size() > 0 &&
+        message.argv(0) == message.binary_path();
+    const bool exact_gcc = process_class == ProcessClass::kGoBuildGcc &&
+        message.execfn() == "/usr/bin/gcc" && message.argv_size() > 0 &&
+        (message.argv(0) == "gcc" || message.argv(0) == "/usr/bin/gcc") &&
+        IsPinnedReadOnlyRootPath(topology, message.execfn());
+    const bool exact_gcc_internal_tool = (process_class == ProcessClass::kGoBuildCc1 ||
+        process_class == ProcessClass::kGoBuildCollect2) &&
+        message.execfn() == message.binary_path() && message.argv_size() > 0 &&
+        message.argv(0) == message.binary_path();
+    const bool exact_assembler = process_class == ProcessClass::kGoBuildAssembler &&
+        message.execfn() == "/usr/bin/as" && message.argv_size() > 0 &&
+        (message.argv(0) == "as" || message.argv(0) == "/usr/bin/as") &&
+        IsPinnedReadOnlyRootPath(topology, message.execfn());
+    const bool exact_native_linker = process_class == ProcessClass::kGoBuildNativeLinker &&
+        message.execfn() == "/usr/bin/ld" && message.argv_size() > 0 && message.argv(0) == "/usr/bin/ld" &&
+        IsPinnedReadOnlyRootPath(topology, message.execfn());
+    if (strcmp(profile, kProfileGoBuild) == 0 &&
+        ((go_tool_candidate && exact_sdk_tool &&
+          HasExactGoBuildDriverCreator(message.context_data(), group->second, candidate)) ||
+         (go_gcc_candidate && exact_gcc &&
+          HasExactGoBuildGccCreator(message.context_data(), group->second, candidate)) ||
+         (go_gcc_child_candidate && (exact_gcc_internal_tool || exact_assembler) &&
+          HasExactGoBuildGccChildCreator(message.context_data(), group->second, candidate)) ||
+         (go_native_linker_candidate && exact_native_linker &&
+          HasExactGoBuildNativeLinkerCreator(message.context_data(), group->second, candidate)))) {
+      group->second.go_build_tool_active = true;
+      ApplyExecCloexec(&candidate, group_id);
+      process_state->groups = candidate.groups;
+      process_state->fd_states = candidate.fd_states;
+      return Send(output, *container_id, "process-exec-expected");
+    }
     if (group->second.handoff_target_pending && process_class == group->second.handoff_target_class) {
       group->second.handoff_target_pending = false;
       ApplyExecCloexec(&candidate, group_id);
@@ -3122,14 +3583,15 @@ bool ParseTopologySnapshot(const char* payload, size_t payload_size, int output,
   // be nested beneath an HAA writable/control anchor after registration.
   for (const auto& pair : mounts) {
     const auto* actual = pair.second;
-    bool registered = false;
+    // Exact registered mounts already passed parent, filesystem and flag
+    // validation. Check that identity before testing their writable ancestors;
+    // an explicitly declared child is not an unregistered shadow mount.
+    if (expected_ids.find(actual->mountpoint()) != expected_ids.end()) continue;
     for (const auto& expected : topology->expected) {
-      if (actual->mountpoint() == expected.mountpoint) { registered = true; break; }
       if (expected.mountpoint != "/" && IsAtOrBelowMountpoint(actual->mountpoint(), expected.mountpoint)) {
         *reason = "TOPOLOGY_MISMATCH"; return false;
       }
     }
-    (void)registered;
   }
   topology->anchors.clear();
   for (const auto& pair : mounts) {

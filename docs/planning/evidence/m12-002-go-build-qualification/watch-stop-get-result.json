@@ -1,0 +1,14 @@
+{
+  "scope": "current exact final actual dependency-free download + public pflag/gRPC Get and retained download",
+  "result": "PASS",
+  "raw_local_file": "go-build-watch-stop-final-get.log",
+  "raw_sha256": "e9d47d2901361a0e45105535f7813b87e157d03ad364558be7f26265d00cc20f",
+  "actual_pass_tests": [
+    "--- PASS: TestLinuxGoDependencyFreeDownloadIntegration (19.36s)",
+    "--- PASS: TestLinuxGoGetDownloadIntegration (29.26s)",
+    "--- PASS: TestLinuxGoTransitiveGetDownloadIntegration (189.13s)"
+  ],
+  "helper_wait": 0,
+  "original_installation_restored": true,
+  "candidate_receipt_sha256": "08af9139c92894facd1264acded3e6357c39b3b4499dc620b79e7ced325e5c1b"
+}

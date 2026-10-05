@@ -14,3 +14,10 @@ func renameNoReplace(oldPath, newPath string) error {
 	}
 	return os.Rename(oldPath, newPath)
 }
+
+func renameRootNoReplace(root *os.Root, oldPath, newPath string) error {
+	if _, err := root.Lstat(newPath); !errors.Is(err, os.ErrNotExist) {
+		return errors.New("destination exists or cannot be verified")
+	}
+	return root.Rename(oldPath, newPath)
+}

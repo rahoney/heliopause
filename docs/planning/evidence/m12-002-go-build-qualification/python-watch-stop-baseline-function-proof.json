@@ -1,0 +1,7 @@
+{
+  "scope": "only old stop function bytes; not full failure attribution",
+  "baseline_commit": "62c3b595e8e27a4a1d836849643c372692a39b8b",
+  "function": "observationCPUWatch.stop",
+  "equal_to_prior_candidate": true,
+  "function_sha256": "c58aa0bba5374b1bb1510d495abbc56babc9a6972bc126576f6df75cf7ed105e"
+}

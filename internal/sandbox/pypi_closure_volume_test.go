@@ -30,21 +30,35 @@ func (r volumeInspectRunner) Output(_ context.Context, _ string, arguments ...st
 }
 
 func TestClosureVolumeRejectsSubstitutedMount(t *testing.T) {
-	volume := closureVolume{name: "haa-closure-abc", transaction: "tx", manifestID: strings.Repeat("f", 64), createdAt: "2026-09-29T00:00:00Z", mountpoint: "/var/lib/docker/volumes/haa-closure-abc/_data", capacity: 1024}
+	for _, goBuild := range []bool{false, true} {
+		name := "python"
+		if goBuild {
+			name = "go-build"
+		}
+		t.Run(name, func(t *testing.T) { testClosureVolumeRejectsSubstitutedMount(t, goBuild) })
+	}
+}
+
+func testClosureVolumeRejectsSubstitutedMount(t *testing.T, goBuild bool) {
+	volume := closureVolume{name: "haa-closure-abc", transaction: "tx", manifestID: strings.Repeat("f", 64), createdAt: "2026-09-29T00:00:00Z", mountpoint: "/var/lib/docker/volumes/haa-closure-abc/_data", capacity: 1024, goBuild: goBuild}
+	destination, options := pythonSitePath, "size=1024"+closureTmpfsOptions
+	if goBuild {
+		destination, options = "/tmp/haa-go-input", options+",noexec"
+	}
 	volumeJSON, err := json.Marshal(dockerVolumeInspection{
 		Name: volume.name, Driver: "local", Scope: "local", Mountpoint: volume.mountpoint,
 		CreatedAt: volume.createdAt,
-		Options:   map[string]string{"type": "tmpfs", "device": "tmpfs", "o": "size=1024" + closureTmpfsOptions},
+		Options:   map[string]string{"type": "tmpfs", "device": "tmpfs", "o": options},
 		Labels:    map[string]string{closureVolumeLabel: "tx", closureManifestLabel: volume.manifestID},
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
 	container := strings.Repeat("a", 64)
-	configured := dockerHostMountInspection{Type: "volume", Source: volume.name, Target: pythonSitePath, ReadOnly: true}
+	configured := dockerHostMountInspection{Type: "volume", Source: volume.name, Target: destination, ReadOnly: true}
 	configured.VolumeOptions.NoCopy = true
 	good := dockerContainerMountInspection{ID: container,
-		Mounts:     []dockerMountInspection{{Type: "volume", Name: volume.name, Driver: "local", Source: volume.mountpoint, Destination: pythonSitePath, RW: false}},
+		Mounts:     []dockerMountInspection{{Type: "volume", Name: volume.name, Driver: "local", Source: volume.mountpoint, Destination: destination, RW: false}},
 		HostMounts: []dockerHostMountInspection{configured}}
 	encode := func(value dockerContainerMountInspection) []byte {
 		body, err := json.Marshal(value)
@@ -57,17 +71,17 @@ func TestClosureVolumeRejectsSubstitutedMount(t *testing.T) {
 		t.Fatal(err)
 	}
 	bad := good
-	bad.Mounts = []dockerMountInspection{{Type: "bind", Source: volume.mountpoint, Destination: pythonSitePath, RW: false}}
+	bad.Mounts = []dockerMountInspection{{Type: "bind", Source: volume.mountpoint, Destination: destination, RW: false}}
 	if err := volume.verifyContainerMount(context.Background(), volumeInspectRunner{volume: volumeJSON, mounts: encode(bad)}, container, true); err == nil {
 		t.Fatal("host bind accepted")
 	}
 	bad = good
-	bad.Mounts = []dockerMountInspection{{Type: "volume", Name: volume.name, Driver: "local", Source: volume.mountpoint, Destination: pythonSitePath, RW: true}}
+	bad.Mounts = []dockerMountInspection{{Type: "volume", Name: volume.name, Driver: "local", Source: volume.mountpoint, Destination: destination, RW: true}}
 	if err := volume.verifyContainerMount(context.Background(), volumeInspectRunner{volume: volumeJSON, mounts: encode(bad)}, container, true); err == nil {
 		t.Fatal("writable observation mount accepted")
 	}
 	bad = good
-	bad.HostMounts = []dockerHostMountInspection{{Type: "volume", Source: volume.name, Target: pythonSitePath, ReadOnly: true}}
+	bad.HostMounts = []dockerHostMountInspection{{Type: "volume", Source: volume.name, Target: destination, ReadOnly: true}}
 	if err := volume.verifyContainerMount(context.Background(), volumeInspectRunner{volume: volumeJSON, mounts: encode(bad)}, container, true); err == nil {
 		t.Fatal("missing no-copy rejected")
 	}

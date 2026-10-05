@@ -700,9 +700,50 @@ controls를 publication 전에 다시 확인한다. 이 snapshot의 `project-loc
 SHA-256은 project byte identity이며 public registry provenance나 ALLOW가 아니다.
 실제 compiler 관찰·build Policy·output publication은 별도로 요구한다.
 
+선택된 모든 package를 먼저 pinned Go의 고정 `-o /dev/null` no-write mode로
+실제 컴파일한다. Go의 directory `-o` mode는 main package만 build하므로 전체
+선택 coverage로 사용하지 않는다. 그다음 동일 readonly source/cache의 bounded
+고정 role query가 main package 존재를 나타낼 때만 고정 output directory build를
+실행한다. Role query는 출력 명령의 형태만 선택하는 data이며 권한·Policy·관찰
+완료 authority가 아니다. Library-only 선택도 실제 compiler 성공과 모든 관찰이
+필수이고 publish할 payload가 없는 bounded output archive를 허용한다. 어느
+compiler/query/output 실패도 성공한 부재로 치환하지 않는다.
+
+Compiler output은 별도의 transaction-bound named tmpfs volume으로 받는다.
+입력 volume은 build 동안 읽기 전용이고 output은 200 MiB의 고정 writable
+data mount다. 두 volume의 생성 identity·options·exact container attachments를
+검증하며 Host project bind mount를 허용하지 않는다. Output을 Host에서 실행하지
+않고 bounded data archive로 수집한 뒤 모든 관찰·runtime cleanup을 확인한다.
+최대 128 regular files·개별 64 MiB·aggregate 200 MiB와 경로·중복·link·special
+member 검사를 적용하고 private archive headers를 재구성한다.
+
+Build source의 별도 byte-binding verification, 실제 recorded Evidence와 기존
+M3 Policy의 completed ALLOW, original source·retained cache·graph의 재검증 뒤에만
+새 `.heliopause/builds/<Run>`에 atomic publish한다. 기존 output을 덮지 않으며
+receipt는 source/cache/graph/output/고정 build recipe와 Evidence digest를 연결한다.
+출력 실행의 안전성·기능 정상이나 registry source provenance를 증명하지 않는다.
+
 build 단계에서는 dependency acquisition network를 허용하지 않는다. 필요한 module이
 verified cache에 없으면 build 중 외부 download로 보충하지 않고 resolver 단계로
 되돌아가 검증한 뒤 다시 build한다.
+
+### Go build observation budget
+
+신규 `go-module-build`의 remote connection별 charged-record ceiling은 250,000이다.
+이전 single-output recipe의 retained gRPC 41-module build 정상 반복 측정
+최대 118,428에 약 2.1배 여유를 둔 초기 유한 한도이며 모든 Go project의 완료를 보장하는 값은 아니다.
+한도 초과는 기존 EVENT_LIMIT와 incomplete observation으로 차단한다. 실제
+현재 all-selected recipe의 실제 CLI completion은 이 production 상한 아래 별도로
+검증했다. 측정 최대값을 새 recipe의 event count로 전용하지 않는다. 검증 소비자와
+최종 qualification은 [Go qualification evidence](./evidence/m12-002-go-build-qualification/result.json)와 Queue가 소유한다.
+
+Host transaction의 preparation/build 공용 normalized-event 원장은 20,000으로
+제한한다. Count가 붙은 workspace summary도 해당 원장에 누적하며 stream을
+새로 열어 예산을 보충하지 않는다. Physical collector는 10,000 records / 2 MiB,
+workspace summary saturation은 10,000, CPU 1 core·memory 512 MiB·build transaction
+3 minutes를 유지한다. Helper charged events, physical records, summary count와
+Host aggregate는 서로 다른 단위다. 기존 resolver·Python/PyTorch·npm/GitHub
+profile의 예산과 판정은 바꾸지 않는다. 메모리 경계 근처 peak는 OOM 확정 근거가 아니다.
 
 ## Inspection
 

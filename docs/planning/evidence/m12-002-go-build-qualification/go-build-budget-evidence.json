@@ -1,0 +1,116 @@
+{
+  "scope": "derived historical pre-all-selected command measurement; production current CLI is separately qualified; sampled CPU lower bound; unavailable sampling intervals retained",
+  "input": {
+    "module": "google.golang.org/grpc@v1.76.0",
+    "graph": "23e3024403173c469be709790536e5b56df0bf690c756b9f362ca6a9b0e2ec41",
+    "source": "c5b0d6da55ca1dbb74d5e3ac324706794ac9d9387610351132065d36e050a57f",
+    "cache": "bdf76a0f270b3d34a8da95b35c49e019677aff8d771123dae88caa845fae6d4e"
+  },
+  "repetitions": [
+    {
+      "repetition": "first",
+      "exit": 0,
+      "log_sha256": "6ba1f7ca3280dda38f2f174f977cded9a39a0354da610321e03e0cf6f800fb44",
+      "measurement_sha256": "5d6bce46e9c27ceaee80eeaf76577bb99404facc45261eac7256c78836c068b2",
+      "helper_limit": 500000,
+      "host_aggregate": 20000,
+      "charged_max": 118406,
+      "received_frames_max": 201988,
+      "received_bytes_max": 28018631,
+      "observer_peak_rss_kib": 127696,
+      "sampling_error_count": 12,
+      "memory": [
+        {
+          "cgroup_peak_memory_bytes": 26222592,
+          "last_cgroup_cpu_usage_usec": 492800,
+          "memory_events": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0
+          }
+        },
+        {
+          "cgroup_peak_memory_bytes": 536870912,
+          "last_cgroup_cpu_usage_usec": 106391108,
+          "memory_events": {
+            "max": 445,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0
+          }
+        }
+      ]
+    },
+    {
+      "repetition": "second",
+      "exit": 0,
+      "log_sha256": "b936006a8d2241d7f672a29ca8d139fea8546022c8a623a61f7375dacef04bca",
+      "measurement_sha256": "c68457e0aedf429afd06c4a0d7ec475cb9218f14336140cfab992320c7671d51",
+      "helper_limit": 500000,
+      "host_aggregate": 20000,
+      "charged_max": 118428,
+      "received_frames_max": 202010,
+      "received_bytes_max": 28038971,
+      "observer_peak_rss_kib": 113164,
+      "sampling_error_count": 11,
+      "memory": [
+        {
+          "cgroup_peak_memory_bytes": 25219072,
+          "last_cgroup_cpu_usage_usec": 493208,
+          "memory_events": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0
+          }
+        },
+        {
+          "cgroup_peak_memory_bytes": 536875008,
+          "last_cgroup_cpu_usage_usec": 106182378,
+          "memory_events": {
+            "max": 428,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0
+          }
+        }
+      ]
+    },
+    {
+      "repetition": "third",
+      "exit": 0,
+      "log_sha256": "71675dd142c0a565546e9baeee3357ca6932fc0c734e64a8fddf8f95016c9edb",
+      "measurement_sha256": "69441a7f7e535c4d19750148f37f2412f114b18d253ba195192fb8add9b2091e",
+      "helper_limit": 500000,
+      "host_aggregate": 20000,
+      "charged_max": 118382,
+      "received_frames_max": 201964,
+      "received_bytes_max": 28033638,
+      "observer_peak_rss_kib": 112596,
+      "sampling_error_count": 11,
+      "memory": [
+        {
+          "cgroup_peak_memory_bytes": 25010176,
+          "last_cgroup_cpu_usage_usec": 493215,
+          "memory_events": {
+            "max": 0,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0
+          }
+        },
+        {
+          "cgroup_peak_memory_bytes": 536870912,
+          "last_cgroup_cpu_usage_usec": 105915974,
+          "memory_events": {
+            "max": 379,
+            "oom": 0,
+            "oom_kill": 0,
+            "oom_group_kill": 0
+          }
+        }
+      ]
+    }
+  ]
+}

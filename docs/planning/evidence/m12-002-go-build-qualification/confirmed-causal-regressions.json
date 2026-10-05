@@ -1,0 +1,104 @@
+{
+  "scope": "derived paired causal regressions; only confirmed responsibility boundaries",
+  "runtime_image": "fixed Go image and fixed gVisor/observer locks are included in runtime inventory; locator diagnostics are not authentication",
+  "cases": [
+    {
+      "case": "Docker output reader visibility",
+      "same_source_sha256": "27d4b61d26b3f0431008d6843549c699f9d6867184992ef6a007ed27dbfe05a3",
+      "before_files": [
+        "go-build-production-cli-minimal-first.log",
+        "go-output-minimal-diagnostic-first.log",
+        "go-output-producer-minimal-first.log"
+      ],
+      "after_file": "go-build-terminal-final-cli.log",
+      "correction": "transaction-bound exact named output data mount; source/cache remain RO; bounded capture and required observation unchanged",
+      "raw_captures": [
+        {
+          "local_file": "go-build-production-cli-minimal-first.log",
+          "sha256": "d6d98c9c26da2c6e0883564e9e46480568d992150840e9ed55dc8637777181ff"
+        },
+        {
+          "local_file": "go-output-minimal-diagnostic-first.log",
+          "sha256": "feda5ae348e7988737fc66576051d34432c313deebd9b7a7a327ef255f4b82f4"
+        },
+        {
+          "local_file": "go-output-producer-minimal-first.log",
+          "sha256": "8dd72c682908f18dae71b74c41953d55d5e6ed69f0441cc5a1209a7c5b5f4996"
+        },
+        {
+          "local_file": "go-build-terminal-final-cli.log",
+          "sha256": "906442d1d377ecb52f222ad263f424ea063bbd3d7853bd600463c7d395cc1497"
+        }
+      ]
+    },
+    {
+      "case": "all-selected package coverage",
+      "same_source_sha256": "24c2b88048ba2c08df5e6ca85ce454016e9ae7aef5e25453cec896f1551378f2",
+      "before_files": [
+        "go-build-mixed-invalid-before.log"
+      ],
+      "after_file": "go-build-terminal-final-cli.log",
+      "correction": "fixed no-write compile of all selected packages precedes role query and optional main output; failing compiler stays incomplete and no publish",
+      "raw_captures": [
+        {
+          "local_file": "go-build-mixed-invalid-before.log",
+          "sha256": "557e6c05aa42d3abe5ec9e41fc994599922bf3cb6cbe5f481f489f263504756f"
+        },
+        {
+          "local_file": "go-build-terminal-final-cli.log",
+          "sha256": "906442d1d377ecb52f222ad263f424ea063bbd3d7853bd600463c7d395cc1497"
+        }
+      ]
+    },
+    {
+      "case": "terminal rejected outcome periodic accounting",
+      "before_files": [
+        "python-terminal-poll-final-before.log"
+      ],
+      "after_file": "python-terminal-poll-final-after.log",
+      "race_file": "python-terminal-poll-final-race.log",
+      "correction": "after externally complete terminal evidence and valid final sample, periodic teardown accounting uses existing termination predicate; failed qualification sticky",
+      "raw_captures": [
+        {
+          "local_file": "python-terminal-poll-final-before.log",
+          "sha256": "473a95208a57412604772aa1e8882c851f82819cc46c7ae3b34c5163f31c209e"
+        },
+        {
+          "local_file": "python-terminal-poll-final-after.log",
+          "sha256": "cf9c1d18dac23313ce0b3c61930a241a52a39a85dcd73446716eee1bf2ea675c"
+        },
+        {
+          "local_file": "python-terminal-poll-final-race.log",
+          "sha256": "244ced52af4fab52e53607ce99c7b5ee20b114620c19f8ff209b248ef2e6376d"
+        }
+      ]
+    },
+    {
+      "case": "ordinary watcher stop vs pending read",
+      "before_files": [
+        "python-watch-stop-final-before.log"
+      ],
+      "after_file": "python-watch-stop-final-after.log",
+      "race_file": "python-watch-stop-final-race.log",
+      "correction": "trusted stop request closes channel; pending bounded read and genuine error/abort complete before request cancellation; queued ticks stop; no bounds changed",
+      "raw_captures": [
+        {
+          "local_file": "python-watch-stop-final-before.log",
+          "sha256": "8959a7609f479198ae8a1899614dce87e940fcdd408791d26b6f8a52820aa036"
+        },
+        {
+          "local_file": "python-watch-stop-final-after.log",
+          "sha256": "6994e787bce591c0f769d89d59ae6834137a9b873207545c4d43486c24f1dfd2"
+        },
+        {
+          "local_file": "python-watch-stop-final-race.log",
+          "sha256": "a715e9f30958665bfa11a880b28e0a3ca54ac98bd45132400a041e5232a4ab96"
+        }
+      ]
+    }
+  ],
+  "unconfirmed": [
+    "prior full cu1261390.83 failure exact cause; retained wheel ten old-decision repeats pass",
+    "older M12-001 two full CPU accounting failures"
+  ]
+}

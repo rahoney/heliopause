@@ -1,0 +1,49 @@
+{
+  "schema": "m12-local-qualification.v1",
+  "work_item": "M12-002",
+  "status": "LOCAL_ACCEPTANCE_COMPLETE",
+  "implemented": "YES",
+  "wired": "YES",
+  "qualified": "YES (Linux/amd64 local qualification)",
+  "acceptance_closed": "YES (work-item acceptance; remote delivery separate)",
+  "candidate_receipt": "runtime-candidate-watch-stop.json",
+  "candidate_receipt_sha256": "a8bd69dbe01acbf19b1b81924fa9f337b1e2914c1b48dacd7b2918d13eb9c0b1",
+  "source_paths": 594,
+  "check_results": "watch-stop-canonical-checks.json",
+  "integration_results": [
+    "watch-stop-source-result.json",
+    "watch-stop-get-result.json",
+    "watch-stop-cli-result.json",
+    "watch-stop-legacy-result.json",
+    "watch-stop-terminal-consumers-result.json",
+    "watch-stop-ordinary-result.json"
+  ],
+  "full_results": [
+    "watch-stop-cpu-full-result.json",
+    "watch-stop-cu126-full-result.json"
+  ],
+  "mandatory_direct_consumer": "TestLinuxPyPISdistBuildIntegration",
+  "cu130_cu132": "actual four-profile focused common-path regression only; full NOT_RUN for this candidate",
+  "native_macos": "NOT_RUN; Darwin TEST compilation is not native execution",
+  "remote_required_ci": "NOT_RUN; no inherited green claim",
+  "release_supported_cuda_matrix": "unchanged; decision remains M12-005",
+  "causal_proofs": [
+    "causal-latch-index.json",
+    "confirmed-causal-regressions.json"
+  ],
+  "initial_build_budget": {
+    "helper_charged_records_per_connection": 250000,
+    "host_normalized_aggregate": 20000,
+    "historical_measurement_max_charged": 118428,
+    "measurement_recipe": "historical single-output recipe; not current all-selected recipe count",
+    "current_recipe": "all-selected v2 370b1b9aa7af73617e37cb9867e48ae9989b50ddcb8a8cc24fb9db7d3a57e00d; actual CLI completion tested under production limits",
+    "physical_records": 10000,
+    "physical_bytes": 2097152,
+    "measurement_owner": "go-build-budget-evidence.json"
+  },
+  "raw_capture_boundary": "Derived portable integration/full summaries preserve local raw SHA256. Raw artifact text/path and locator diagnostics are not trust authority. Selected bounded check/unit logs are copied byte-for-byte.",
+  "missing": [],
+  "delivery": "NO PUSH / NO REMOTE CI / NO MERGE; branch continues M12-003 then M12-004",
+  "execution_receipt_raw_sha256": "08af9139c92894facd1264acded3e6357c39b3b4499dc620b79e7ced325e5c1b",
+  "portable_receipt_format": "Binary digests and source inventory use typed role/path + sha256 records. Hash values and original execution receipt digest preserved."
+}

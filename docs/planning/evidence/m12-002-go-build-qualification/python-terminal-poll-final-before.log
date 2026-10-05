@@ -1,0 +1,6 @@
+--- FAIL: TestPythonTerminalFailurePollingPreservesOutcomeAndAccounting (3.01s)
+    --- FAIL: TestPythonTerminalFailurePollingPreservesOutcomeAndAccounting/terminal_outcome (0.50s)
+        pypi_transaction_diagnostic_test.go:139: terminal outcome became a polling fault: python observation CPU accounting is unavailable or late: failed_before=true termination=false last_sample_present=true gap_ns=10300 poll_ns=1000000000 wall_remaining_ns=59499009548 usage_us=1001 prior_usage_us=1000
+FAIL
+FAIL	github.com/rahoney/heliopause/internal/sandbox	3.012s
+FAIL

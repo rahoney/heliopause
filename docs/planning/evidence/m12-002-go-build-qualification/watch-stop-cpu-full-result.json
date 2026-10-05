@@ -1,0 +1,152 @@
+{
+  "profile": "cpu",
+  "full_exit": 0,
+  "seconds": 526.62,
+  "native_platform": "linux/amd64",
+  "bootstrap_binary_sha256": "9c174e72bbbe6aeb3a792f116657437dcf818b50022cda3eeefffb93df3ab291",
+  "observer_binary_sha256": "5e60b6ee93e8c3f4428e267432e2c82a1366efe6bcf678117e75de0cb366d6dd",
+  "candidate_receipt_sha256": "08af9139c92894facd1264acded3e6357c39b3b4499dc620b79e7ced325e5c1b",
+  "raw_local_file": "go-build-watch-stop-final-full-cpu.log",
+  "raw_sha256": "526ba5001639ef0b2e221235156b3926c17f5bb15df6a8f6ebec2557f020291c",
+  "staged_manifest_sha256": "b882b15f2a043b2cb81e97147b8d237f169743f9afcb5f588e2ebe79c10fc3eb",
+  "entries": [
+    {
+      "source": "pypi",
+      "name": "networkx",
+      "version": "3.7",
+      "variant": "wheel",
+      "sha256": "e3fd2c13a7814cee3746340d8d7f8598a67f16a58bf47fb7f8793fab6efca1b0",
+      "run_id": "run_fxh6usnzxv7ocygqaz44r6zdiu",
+      "evidence": [
+        "evidence:run_fxh6usnzxv7ocygqaz44r6zdiu:pypi-declared-sha256-result",
+        "evidence:run_fxh6usnzxv7ocygqaz44r6zdiu:pypi-dynamic-import-result",
+        "evidence:run_fxh6usnzxv7ocygqaz44r6zdiu:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "jinja2",
+      "version": "3.1.6",
+      "variant": "wheel",
+      "sha256": "85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67",
+      "run_id": "run_bknk5fn6hw7vil6hrcvzmzw6ka",
+      "evidence": [
+        "evidence:run_bknk5fn6hw7vil6hrcvzmzw6ka:pypi-declared-sha256-result",
+        "evidence:run_bknk5fn6hw7vil6hrcvzmzw6ka:pypi-dynamic-import-result",
+        "evidence:run_bknk5fn6hw7vil6hrcvzmzw6ka:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "filelock",
+      "version": "4.0.10",
+      "variant": "wheel",
+      "sha256": "698048d158dc3c9e18cc5e88b3efdd4bd0e77d76686b22adb4511cc4b2c2f0db",
+      "run_id": "run_cc2ff2tybrjwo5ynwnwnrcuzny",
+      "evidence": [
+        "evidence:run_cc2ff2tybrjwo5ynwnwnrcuzny:pypi-declared-sha256-result",
+        "evidence:run_cc2ff2tybrjwo5ynwnwnrcuzny:pypi-dynamic-import-result",
+        "evidence:run_cc2ff2tybrjwo5ynwnwnrcuzny:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pytorch-cpu",
+      "name": "torch",
+      "version": "2.14.0+cpu",
+      "variant": "wheel",
+      "sha256": "f152f41dc5dc462afe0de780e451ebb47ea8b4451f8f919f9537aa8e2cbe1d7e",
+      "run_id": "run_7u5wy4o7hwrikb7nbfsyrpzdvq",
+      "evidence": [
+        "evidence:run_7u5wy4o7hwrikb7nbfsyrpzdvq:pypi-command-attested-36fd5b1638e184f29d61962c7772d443",
+        "evidence:run_7u5wy4o7hwrikb7nbfsyrpzdvq:pypi-command-attested-8a751a178bf5c7e5211faf9e94a67978",
+        "evidence:run_7u5wy4o7hwrikb7nbfsyrpzdvq:pypi-declared-sha256-result",
+        "evidence:run_7u5wy4o7hwrikb7nbfsyrpzdvq:pypi-dynamic-import-result",
+        "evidence:run_7u5wy4o7hwrikb7nbfsyrpzdvq:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "typing-extensions",
+      "version": "4.16.0",
+      "variant": "wheel",
+      "sha256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+      "run_id": "run_gkjcqci7ztoepqmmruqn7ttyze",
+      "evidence": [
+        "evidence:run_gkjcqci7ztoepqmmruqn7ttyze:pypi-declared-sha256-result",
+        "evidence:run_gkjcqci7ztoepqmmruqn7ttyze:pypi-dynamic-import-result",
+        "evidence:run_gkjcqci7ztoepqmmruqn7ttyze:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "setuptools",
+      "version": "84.0.0",
+      "variant": "wheel",
+      "sha256": "51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670",
+      "run_id": "run_nbjzms7cg2su4jvm3ixd5ub64q",
+      "evidence": [
+        "evidence:run_nbjzms7cg2su4jvm3ixd5ub64q:pypi-declared-sha256-result",
+        "evidence:run_nbjzms7cg2su4jvm3ixd5ub64q:pypi-dynamic-import-result",
+        "evidence:run_nbjzms7cg2su4jvm3ixd5ub64q:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "mpmath",
+      "version": "1.3.0",
+      "variant": "wheel",
+      "sha256": "a0b2b9fe80bbcd81a6647ff13108738cfb482d481d826cc0e02f5b35e5c88d2c",
+      "run_id": "run_p44cbnhk5wiyah5bnl5rzoiwgm",
+      "evidence": [
+        "evidence:run_p44cbnhk5wiyah5bnl5rzoiwgm:pypi-declared-sha256-result",
+        "evidence:run_p44cbnhk5wiyah5bnl5rzoiwgm:pypi-dynamic-import-result",
+        "evidence:run_p44cbnhk5wiyah5bnl5rzoiwgm:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "markupsafe",
+      "version": "3.0.4",
+      "variant": "wheel",
+      "sha256": "a8e9f292fcda89b324f2f5c91d13f1424a153e40fc2756f38ee23b15835ff300",
+      "run_id": "run_ibvdk32o2jhu7hmcfplfnimbuy",
+      "evidence": [
+        "evidence:run_ibvdk32o2jhu7hmcfplfnimbuy:pypi-declared-sha256-result",
+        "evidence:run_ibvdk32o2jhu7hmcfplfnimbuy:pypi-dynamic-import-result",
+        "evidence:run_ibvdk32o2jhu7hmcfplfnimbuy:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "fsspec",
+      "version": "2026.9.0",
+      "variant": "wheel",
+      "sha256": "8dd6e646e99ea382bd85f97a45e6b526a442d79423a7dc673f1e2756d05fcb5f",
+      "run_id": "run_y2xsur5a4bbtfxx66t4cvj6u6i",
+      "evidence": [
+        "evidence:run_y2xsur5a4bbtfxx66t4cvj6u6i:pypi-declared-sha256-result",
+        "evidence:run_y2xsur5a4bbtfxx66t4cvj6u6i:pypi-dynamic-import-result",
+        "evidence:run_y2xsur5a4bbtfxx66t4cvj6u6i:pypi-static-archive-result"
+      ]
+    },
+    {
+      "source": "pypi",
+      "name": "sympy",
+      "version": "1.14.0",
+      "variant": "wheel",
+      "sha256": "e091cc3e99d2141a0ba2847328f5479b05d94a6635cb96148ccb3f34671bd8f5",
+      "run_id": "run_cep2riaswxjdm6gh5vakje5gxi",
+      "evidence": [
+        "evidence:run_cep2riaswxjdm6gh5vakje5gxi:pypi-declared-sha256-result",
+        "evidence:run_cep2riaswxjdm6gh5vakje5gxi:pypi-dynamic-import-result",
+        "evidence:run_cep2riaswxjdm6gh5vakje5gxi:pypi-static-archive-result"
+      ]
+    }
+  ],
+  "helper_wait": 0,
+  "original_installation_restored": true,
+  "cu126": "same current candidate full PASS2082.74s; see watch-stop-cu126-full-result.json",
+  "cu130_cu132": "focused common-path PASS; current full NOT_RUN",
+  "remote_ci": "NOT_RUN",
+  "native_macos": "NOT_RUN"
+}
