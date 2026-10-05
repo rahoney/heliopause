@@ -48,6 +48,49 @@ func (s *cargoProjectSource) Verify(ctx context.Context) error { return s.verify
 func (s *cargoProjectSource) Archive() ([]byte, error)         { return s.archive() }
 func (s *cargoProjectSource) Close() error                     { return s.close() }
 
+// VerifyPublishedControls permits only the two exact selected root controls to
+// change during publication. Every other source member retains its original
+// inode, mode and content witness; hidden HAA records are not source authority.
+func (s *cargoProjectSource) VerifyPublishedControls(ctx context.Context, controls map[string][]byte) (resultErr error) {
+	if s == nil || len(s.roots) == 0 || len(controls) != 2 {
+		return errors.New("cargo publication source witness is unavailable")
+	}
+	current, err := captureCargoProject(ctx, s.project)
+	if err != nil {
+		return err
+	}
+	defer func() { resultErr = errors.Join(resultErr, current.close()) }()
+	if !os.SameFile(s.rootInfo, current.rootInfo) || s.rootInfo.Mode() != current.rootInfo.Mode() {
+		return errors.New("cargo publication source root changed")
+	}
+	expected := map[string]cargoSourceMember{}
+	for _, member := range s.members {
+		if member.name != "Cargo.toml" && member.name != "Cargo.lock" {
+			expected[member.name] = member
+		}
+	}
+	seen := 0
+	for _, member := range current.members {
+		if member.name == "Cargo.toml" || member.name == "Cargo.lock" {
+			body, exists := controls[member.name]
+			if !exists || !bytes.Equal(body, member.body) {
+				return errors.New("cargo published controls differ from selection")
+			}
+			seen++
+			continue
+		}
+		before, exists := expected[member.name]
+		if !exists || !os.SameFile(before.info, member.info) || before.info.Mode() != member.info.Mode() || before.hash != member.hash {
+			return errors.New("cargo source changed during publication")
+		}
+		delete(expected, member.name)
+	}
+	if seen != 2 || len(expected) != 0 {
+		return errors.New("cargo publication source coverage changed")
+	}
+	return nil
+}
+
 func captureCargoProject(ctx context.Context, project string) (result *cargoProjectSource, resultErr error) {
 	if ctx == nil || !filepath.IsAbs(project) || filepath.Clean(project) != project || project == "/" {
 		return nil, errors.New("cargo source project is invalid")

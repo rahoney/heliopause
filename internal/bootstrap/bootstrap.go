@@ -124,7 +124,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if resolverErr != nil {
 			return resolverErr
 		}
-		service, serviceErr := application.NewCargoResolutionService(resolver)
+		service, serviceErr := newCargoAddService(resolver)
 		if serviceErr != nil {
 			return serviceErr
 		}

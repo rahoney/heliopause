@@ -1926,7 +1926,8 @@ bool IsPinnedCargoResolverRead(const gvisor::common::ContextData& context,
     return path == anchor->mountpoint;
   }
   return anchor->mount_class == "system" && anchor->mountpoint == "/proc" &&
-      path == "/proc/" + std::to_string(context.thread_group_id()) + "/maps";
+      (path == "/proc/" + std::to_string(context.thread_group_id()) + "/maps" ||
+       (path == "/proc/sys/vm/overcommit_memory" && flags == 557056));
 }
 
 bool IsPinnedGoResolverRead(const gvisor::common::ContextData& context,

@@ -876,6 +876,13 @@ expanded bytes200MiB, canonical receipt4MiB다. 개별 crate의 기존 archive/f
 재확인하며, archive가 `.cargo-checksum.json` 권위를 제공할 수 없다. 이 초기 한도는
 실제 정상 처리량과 초과 차단 근거 없이 자동 확장하지 않는다.
 
+`cargo add`는 원본 complete source/control guard를 선택 이전부터 유지하고 한 번의
+private selection을 canonical crate acquisition·독립 검증·검사·Evidence·Policy·cache와
+대조한 후 publish한다. Retained approval은 project와 분리한 controller-owned state에
+control/local-manifest/graph/cache/Evidence를 연결한다. Project checksum marker는
+승인 authority가 아니다. 경쟁 파일은 덮어쓰지 않으며 rollback의 소유권이 불명확하면
+원래 오류와 recovery journal을 보존해 후속 transaction을 차단한다.
+
 `cargo add` transaction set:
 
 ```text

@@ -99,6 +99,7 @@ func TestCargoProjectTransactionPublishesBothControlFiles(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	plan.authorized = true
 	workspace, err := plan.privateWorkspace()
 	if err != nil {
 		t.Fatal(err)
@@ -145,5 +146,23 @@ func TestCargoProjectTransactionRejectsUnmanagedProject(t *testing.T) {
 	defer os.RemoveAll(workspace)
 	if _, err := beginCargoProjectTransaction(plan, workspace); err == nil {
 		t.Fatal("unmanaged Cargo project was accepted")
+	}
+}
+
+// This legacy primitive must never restore authority from a matching checksum
+// marker in the project. Only the approved guard supplies authorization.
+func TestCargoProjectTransactionRejectsRawProjectMarker(t *testing.T) {
+	root := writeManagedCargoProject(t)
+	plan, err := freezeCargoProject(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	workspace, err := plan.privateWorkspace()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(workspace)
+	if _, err := beginCargoProjectTransaction(plan, workspace); err == nil {
+		t.Fatal("raw project marker authorized publication without independent approval")
 	}
 }

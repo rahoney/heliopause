@@ -2763,6 +2763,24 @@ security/CI wiring 및 whole acceptance evidence다. Native macOS/new remote Req
 NOT_RUN이며 M12-003만 IN_PROGRESS, M12-004는 NOT_STARTED다.
 NO PUSH / NO REMOTE CI / NO MERGE.
 
+### M12-003 guarded Cargo add 부분 checkpoint (2026-10-05)
+
+실제 최초 추가와 retained reuse가 itoa1 crate21.87s·serde7 crates25.15s에서 PASS다.
+Complete graph의 acquire/독립 검증/검사·Evidence·Policy·vendor cache와 frozen control
+publication을 연결했으며 공통 application workflow의 Go get 직접 소비자30.86s도
+PASS다. Matching marker의 old internal primitive와 Cargo direct VM metadata read의
+same-final before FAIL→after PASS, source/control/state/cache/Evidence·경쟁 publication·
+rollback/uncertainty·foreign lock/recovery journal 부정과 shared Go/Cargo boundary matrix,
+canonical quick/security/docs/Linux platform·Darwin TEST compile을 확인했다.
+[부분 add evidence](./evidence/m12-003-cargo-add/result.json)가 각 실행과 source/test-only
+후속 delta를 소유한다. Native macOS/new remote Required는 NOT_RUN이다.
+
+M12-003만 IN_PROGRESS이며 `IMPLEMENTED=YES / WIRED=NO / QUALIFIED=NO /
+ACCEPTANCE_CLOSED=NO`를 유지한다. Whole WIRED/qualification MISSING은 offline observed
+Cargo build.rs/proc-macro/native helper·bounded no-overwrite output, final candidate의
+필수 sdist 포함 직접 소비자·CPU/cu126 full·cu130/cu132 focused, CI wiring과 whole
+acceptance evidence다. M12-004는 NOT_STARTED다. NO PUSH / NO REMOTE CI / NO MERGE.
+
 ## Step 13 Invariant
 
 1. Current Work Queue에는 현재 milestone의 실행 항목만 둔다.

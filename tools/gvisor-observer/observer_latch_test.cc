@@ -846,8 +846,13 @@ bool VerifyCargoResolverRuntimeReadBoundary(const std::string& pathname = "/usr/
     open.set_flags(flags);
     if (readable(accepted, image)) return false;
   }
+  if (pathname == "/proc/sys/vm/overcommit_memory") {
+    for (uint64_t other_flags : {0, 32768}) { open.set_flags(other_flags); if (readable(accepted,image)) return false; }
+    open.set_flags(flags);
+    if (readable(accepted,MountAnchor{2,"/proc/sys","system"}) || readable(accepted,MountAnchor{2,"/proc/sys/vm","workspace"})) return false;
+  }
   open.set_flags(flags);
-  for (const char* path : {"/usr/lib/x86_64-linux-gnu/librt.so.2", "/usr/lib/evil.so", "/etc/passwd", "/proc/98/maps", "/proc/99/environ", "/proc/99/status", "/dev/random", "/dev/zero", "/dev/tty", "/usr/share/zoneinfo/Europe/London", "/tmp/usr/share/zoneinfo/Etc/UTC", "/usr/share/zoneinfo/Etc/UTC.evil"}) {
+  for (const char* path : {"/usr/lib/x86_64-linux-gnu/librt.so.2", "/usr/lib/evil.so", "/etc/passwd", "/proc/98/maps", "/proc/99/environ", "/proc/99/status", "/proc/sys/vm/drop_caches", "/proc/sys/vm/overcommit_ratio", "/proc/sys/vm/overcommit_memory/", "/dev/random", "/dev/zero", "/dev/tty", "/usr/share/zoneinfo/Europe/London", "/tmp/usr/share/zoneinfo/Etc/UTC", "/usr/share/zoneinfo/Etc/UTC.evil"}) {
     open.set_pathname(path);
     if (readable(accepted, image)) return false;
   }
@@ -6202,6 +6207,11 @@ bool VerifyUnacceptedRemoteDisconnect(const std::string& remote) {
 }  // namespace
 
 int main(int argc, char** argv) {
+  if (argc == 2 && strcmp(argv[1], "--cargo-vm-metadata-only") == 0) {
+    const bool passed = VerifyCargoResolverRuntimeReadBoundary("/proc/sys/vm/overcommit_memory", "/proc", "system");
+    fprintf(stderr, "Cargo root VM metadata %s\n", passed ? "PASS" : "FAIL");
+    return passed ? 0 : 1;
+  }
   if (argc == 2 && strcmp(argv[1], "--cargo-utc-only") == 0) {
     const bool passed = VerifyCargoResolverRuntimeReadBoundary("/usr/share/zoneinfo/Etc/UTC");
     fprintf(stderr, "Cargo fixed UTC boundary: %s\n", passed ? "PASS" : "FAIL");
@@ -6422,6 +6432,8 @@ int main(int argc, char** argv) {
       VerifyCargoResolverRuntimeReadBoundary("/etc/nsswitch.conf");
   const bool cargo_resolver_file = VerifyCargoResolverRuntimeReadBoundary("/etc/resolv.conf", "/etc/resolv.conf", "system") &&
       VerifyCargoResolverRuntimeReadBoundary("/etc/hosts", "/etc/hosts", "system");
+  const bool cargo_vm_metadata = VerifyCargoResolverRuntimeReadBoundary("/proc/sys/vm/overcommit_memory", "/proc", "system");
+  if (!cargo_vm_metadata) return 1;
   const bool cargo_utc = VerifyCargoResolverRuntimeReadBoundary("/usr/share/zoneinfo/Etc/UTC");
   const bool socketpair_diagnostic = VerifySocketPairDiagnosticPreservesFDAuthority();
   const bool kernel_socketpair = VerifyKernelSocketPairTracking();

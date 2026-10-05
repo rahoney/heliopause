@@ -35,47 +35,10 @@ func NewGoModuleGetService(resolver ports.ProjectDependencyUpdateResolver, promo
 }
 
 func (s *GoModuleGetService) Get(ctx context.Context, reference domain.ArtifactReference, installContext domain.InstallContext) (resolution domain.DependencyResolution, resultErr error) {
-	if s == nil || s.resolver == nil || s.promoter == nil || ctx == nil || reference.Source().String() != "go-proxy" || !installContext.Valid() {
-		return domain.DependencyResolution{}, errors.New("valid Go get request is required")
+	if s == nil {
+		return domain.DependencyResolution{}, errors.New("go get service is unavailable")
 	}
-	guard, err := s.promoter.Begin(ctx, installContext)
-	if err != nil {
-		return resolution, fmt.Errorf("guard Go project: %w", err)
-	}
-	if guard == nil {
-		return resolution, errors.New("go project mutation returned no guard")
-	}
-	defer func() {
-		resultErr = errors.Join(resultErr, guard.Close())
-		if resultErr != nil {
-			resolution = domain.DependencyResolution{}
-		}
-	}()
-	update, err := s.resolver.ResolveProjectDependencyUpdate(ctx, reference, installContext, guard.Controls())
-	if err != nil {
-		return domain.DependencyResolution{}, fmt.Errorf("resolve exact Go module graph: %w", err)
-	}
-	if !update.Valid() || update.Snapshot().Context() != installContext || update.Snapshot().Source() != reference.Source() {
-		return resolution, errors.New("go resolver returned an invalid project update")
-	}
-	if err := guard.VerifyUnchanged(ctx); err != nil {
-		return resolution, err
-	}
-	verified, err := s.inspection.InspectProject(ctx, update.Snapshot())
-	if err != nil {
-		return resolution, fmt.Errorf("inspect complete selected Go project: %w", err)
-	}
-	if err := guard.VerifyUnchanged(ctx); err != nil {
-		return resolution, err
-	}
-	staged, err := s.staging.StageProject(ctx, verified)
-	if err != nil {
-		return resolution, fmt.Errorf("stage approved Go project cache: %w", err)
-	}
-	if err := guard.Commit(ctx, update, staged); err != nil {
-		return domain.DependencyResolution{}, fmt.Errorf("promote exact Go module graph: %w", err)
-	}
-	return update.Resolution(), nil
+	return executeProjectUpdate(ctx, reference, installContext, s.resolver, s.promoter, s.inspection, s.staging, "go-proxy", "Go", "get")
 }
 
 // GoModuleProjectResolutionService is the application boundary for commands
