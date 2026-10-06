@@ -1,0 +1,62 @@
+{
+  "baseline_head": "c106172bf8a7faff0ec01e4c3966ee5a6c854d4d",
+  "changed_paths": [
+    ".github/workflows/heliopause-ci.yml",
+    "docs/planning/02-current-work-queue.md"
+  ],
+  "fixture": {
+    "path": "internal/artifact/cargo/testdata/metadata-v1-rust-1.99.0.lock",
+    "git_blob": "1eb7451f617031b39bef162735c751fe281a1727",
+    "sha256": "ffef3b59221fd6c3b394a98c7405a5ff1711b1184de90a791d3b6a6707ea6890"
+  },
+  "boundary": "workflow working directory only; product/test Go/fixture/helper/policy/budgets unchanged",
+  "paired_scope": "same compiled metadata consumer filesystem input; full actual source gate requires next remote run",
+  "failed_run": 37499465550,
+  "failed_linux_job": 112393261447,
+  "failed_required_job": 112404529823,
+  "corrected_head": "132baead052842deddc63c6016c7d2811958cb0a",
+  "new_run": 37503579865,
+  "checks": [
+    {
+      "profile": "workflow",
+      "exit_code": 0,
+      "path": "cargo-cwd-workflow.log",
+      "sha256": "79851bcc8e4038e7a9989822a06245e33fd0486565c97f652475d413c3571a9f"
+    },
+    {
+      "profile": "workflow-tests",
+      "exit_code": 0,
+      "path": "cargo-cwd-workflow-tests.log",
+      "sha256": "3fc792180fbd855b54f058420217140e4fac3d6e3e117c837ddb445b24b5b99c"
+    },
+    {
+      "profile": "docs",
+      "exit_code": 0,
+      "path": "cargo-cwd-docs.log",
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "profile": "security",
+      "exit_code": 0,
+      "path": "cargo-cwd-security.log",
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95"
+    }
+  ],
+  "subshell_exit_checks": {
+    "scope": "Linux Bash subshell status propagation only; actual lifecycle full awaits remote CI",
+    "results": [
+      {
+        "subshell_exit": 0,
+        "parent_exit": 0,
+        "cleanup_calls": 1,
+        "stdout": "parent_continued\ncleanup=0\n"
+      },
+      {
+        "subshell_exit": 37,
+        "parent_exit": 37,
+        "cleanup_calls": 1,
+        "stdout": "cleanup=37\n"
+      }
+    ]
+  }
+}

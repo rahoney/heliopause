@@ -1,0 +1,270 @@
+﻿2026-10-06T16:57:02.3259606Z Current runner version: '2.337.0'
+2026-10-06T16:57:02.3293840Z ##[group]Runner Image Provisioner
+2026-10-06T16:57:02.3295037Z Hosted Compute Agent
+2026-10-06T16:57:02.3295970Z Version: 20261002.596
+2026-10-06T16:57:02.3296782Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+2026-10-06T16:57:02.3297896Z Build Date: 2026-10-02T22:28:27Z
+2026-10-06T16:57:02.3298782Z Worker ID: {1e5a9f76-b894-4562-a363-51f488dda484}
+2026-10-06T16:57:02.3299781Z Region: centralus
+2026-10-06T16:57:02.3300503Z Cloud: Azure
+2026-10-06T16:57:02.3301216Z ##[endgroup]
+2026-10-06T16:57:02.3303009Z ##[group]Operating System
+2026-10-06T16:57:02.3303759Z Ubuntu
+2026-10-06T16:57:02.3304523Z 24.04.5
+2026-10-06T16:57:02.3305307Z LTS
+2026-10-06T16:57:02.3306222Z ##[endgroup]
+2026-10-06T16:57:02.3307035Z ##[group]Runner Image
+2026-10-06T16:57:02.3307842Z Image: ubuntu-24.04
+2026-10-06T16:57:02.3308606Z Version: 20261004.327.1
+2026-10-06T16:57:02.3310314Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-06T16:57:02.3312397Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+2026-10-06T16:57:02.3313629Z ##[endgroup]
+2026-10-06T16:57:02.3315085Z ##[group]GITHUB_TOKEN Permissions
+2026-10-06T16:57:02.3318353Z Contents: read
+2026-10-06T16:57:02.3319128Z Metadata: read
+2026-10-06T16:57:02.3319860Z ##[endgroup]
+2026-10-06T16:57:02.3323471Z Secret source: Actions
+2026-10-06T16:57:02.3324759Z Cache mode: write
+2026-10-06T16:57:02.3326240Z Prepare workflow directory
+2026-10-06T16:57:02.3753285Z Prepare all required actions
+2026-10-06T16:57:02.3822823Z Getting action download info
+2026-10-06T16:57:02.6782706Z Download action repository 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+2026-10-06T16:57:02.7896355Z Download action repository 'actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e' (SHA:b7ad1dad31e06c5925ef5d2fc7ad053ef454303e)
+2026-10-06T16:57:03.5777289Z Complete job name: Vulnerability
+2026-10-06T16:57:03.6482817Z ##[group]Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+2026-10-06T16:57:03.6484016Z with:
+2026-10-06T16:57:03.6484605Z   persist-credentials: false
+2026-10-06T16:57:03.6485272Z   repository: rahoney/heliopause
+2026-10-06T16:57:03.6489889Z   token: ***
+2026-10-06T16:57:03.6490466Z   ssh-strict: true
+2026-10-06T16:57:03.6491071Z   ssh-user: git
+2026-10-06T16:57:03.6491610Z   clean: true
+2026-10-06T16:57:03.6492172Z   sparse-checkout-cone-mode: true
+2026-10-06T16:57:03.6492915Z   fetch-depth: 1
+2026-10-06T16:57:03.6493459Z   fetch-tags: false
+2026-10-06T16:57:03.6494036Z   show-progress: true
+2026-10-06T16:57:03.6494594Z   lfs: false
+2026-10-06T16:57:03.6495268Z   submodules: false
+2026-10-06T16:57:03.6496032Z   set-safe-directory: true
+2026-10-06T16:57:03.6496729Z   allow-unsafe-pr-checkout: false
+2026-10-06T16:57:03.6497558Z env:
+2026-10-06T16:57:03.6498070Z   GOTOOLCHAIN: local
+2026-10-06T16:57:03.6498608Z ##[endgroup]
+2026-10-06T16:57:03.7518661Z Syncing repository: rahoney/heliopause
+2026-10-06T16:57:03.7521374Z ##[group]Getting Git version info
+2026-10-06T16:57:03.7522691Z Working directory is '/home/runner/work/heliopause/heliopause'
+2026-10-06T16:57:03.7524588Z [command]/usr/bin/git version
+2026-10-06T16:57:03.7538295Z git version 2.55.0
+2026-10-06T16:57:03.7545375Z ##[endgroup]
+2026-10-06T16:57:03.7554524Z Temporarily overriding HOME='/home/runner/work/_temp/0305c2c2-93c8-4ae0-89dc-54c2ae935ab3' before making global git config changes
+2026-10-06T16:57:03.7557151Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-06T16:57:03.7562175Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/heliopause/heliopause
+2026-10-06T16:57:03.7607558Z Deleting the contents of '/home/runner/work/heliopause/heliopause'
+2026-10-06T16:57:03.7610601Z ##[group]Determining repository object format
+2026-10-06T16:57:03.7612600Z ##[endgroup]
+2026-10-06T16:57:03.7614440Z ##[group]Initializing the repository
+2026-10-06T16:57:03.7616613Z [command]/usr/bin/git init /home/runner/work/heliopause/heliopause
+2026-10-06T16:57:03.7707355Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-06T16:57:03.7708971Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-06T16:57:03.7710710Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-06T16:57:03.7711789Z hint: call:
+2026-10-06T16:57:03.7712634Z hint:
+2026-10-06T16:57:03.7713596Z hint: 	git config --global init.defaultBranch <name>
+2026-10-06T16:57:03.7714674Z hint:
+2026-10-06T16:57:03.7715843Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-06T16:57:03.7718088Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-06T16:57:03.7719324Z hint:
+2026-10-06T16:57:03.7720575Z hint: 	git branch -m <name>
+2026-10-06T16:57:03.7721687Z hint:
+2026-10-06T16:57:03.7723123Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-06T16:57:03.7724910Z Initialized empty Git repository in /home/runner/work/heliopause/heliopause/.git/
+2026-10-06T16:57:03.7729157Z [command]/usr/bin/git remote add origin https://github.com/rahoney/heliopause
+2026-10-06T16:57:03.7782273Z ##[endgroup]
+2026-10-06T16:57:03.7783874Z ##[group]Disabling automatic garbage collection
+2026-10-06T16:57:03.7785397Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-06T16:57:03.7818942Z ##[endgroup]
+2026-10-06T16:57:03.7820393Z ##[group]Setting up auth
+2026-10-06T16:57:03.7821322Z Removing SSH command configuration
+2026-10-06T16:57:03.7825339Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-06T16:57:03.7856311Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-06T16:57:03.8185573Z Removing HTTP extra header
+2026-10-06T16:57:03.8191890Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-06T16:57:03.8223649Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-06T16:57:03.8429453Z Removing includeIf entries pointing to credentials config files
+2026-10-06T16:57:03.8435263Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-06T16:57:03.8465915Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-06T16:57:03.8652251Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-49d5d699-3831-4786-a5e6-a2633a171d98.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-06T16:57:03.8690284Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/heliopause/heliopause/.git.path /home/runner/work/_temp/git-credentials-49d5d699-3831-4786-a5e6-a2633a171d98.config
+2026-10-06T16:57:03.8853242Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/heliopause/heliopause/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-49d5d699-3831-4786-a5e6-a2633a171d98.config
+2026-10-06T16:57:03.8892139Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-49d5d699-3831-4786-a5e6-a2633a171d98.config
+2026-10-06T16:57:03.8925297Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-49d5d699-3831-4786-a5e6-a2633a171d98.config
+2026-10-06T16:57:03.8951830Z ##[endgroup]
+2026-10-06T16:57:03.8952768Z ##[group]Fetching the repository
+2026-10-06T16:57:03.8958672Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +5eee9420791fc2b7894a458cf9a834c9946caead:refs/remotes/pull/29/merge
+2026-10-06T16:57:04.8868791Z From https://github.com/rahoney/heliopause
+2026-10-06T16:57:04.8872417Z  * [new ref]         5eee9420791fc2b7894a458cf9a834c9946caead -> pull/29/merge
+2026-10-06T16:57:04.8876845Z ##[endgroup]
+2026-10-06T16:57:04.8878878Z ##[group]Determining the checkout info
+2026-10-06T16:57:04.8881125Z ##[endgroup]
+2026-10-06T16:57:04.8882318Z [command]/usr/bin/git sparse-checkout disable
+2026-10-06T16:57:04.9085315Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-06T16:57:04.9117748Z ##[group]Checking out the ref
+2026-10-06T16:57:04.9120854Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/29/merge
+2026-10-06T16:57:04.9958095Z Note: switching to 'refs/remotes/pull/29/merge'.
+2026-10-06T16:57:04.9959308Z 
+2026-10-06T16:57:04.9960228Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-06T16:57:04.9962505Z changes and commit them, and you can discard any commits you make in this
+2026-10-06T16:57:04.9966331Z state without impacting any branches by switching back to a branch.
+2026-10-06T16:57:04.9968272Z 
+2026-10-06T16:57:04.9969682Z If you want to create a new branch to retain commits you create, you may
+2026-10-06T16:57:04.9973095Z do so (now or later) by using -c with the switch command. Example:
+2026-10-06T16:57:04.9975039Z 
+2026-10-06T16:57:04.9976192Z   git switch -c <new-branch-name>
+2026-10-06T16:57:04.9977733Z 
+2026-10-06T16:57:04.9978562Z Or undo this operation with:
+2026-10-06T16:57:04.9979730Z 
+2026-10-06T16:57:04.9980454Z   git switch -
+2026-10-06T16:57:04.9981423Z 
+2026-10-06T16:57:04.9982992Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-06T16:57:04.9986055Z 
+2026-10-06T16:57:04.9987984Z HEAD is now at 5eee942 Merge c106172bf8a7faff0ec01e4c3966ee5a6c854d4d into 62c3b595e8e27a4a1d836849643c372692a39b8b
+2026-10-06T16:57:04.9994426Z ##[endgroup]
+2026-10-06T16:57:05.0016870Z [command]/usr/bin/git log -1 --format=%H
+2026-10-06T16:57:05.0041575Z 5eee9420791fc2b7894a458cf9a834c9946caead
+2026-10-06T16:57:05.0051700Z ##[group]Removing auth
+2026-10-06T16:57:05.0053665Z Removing SSH command configuration
+2026-10-06T16:57:05.0056971Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-06T16:57:05.0088740Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-06T16:57:05.0276581Z Removing HTTP extra header
+2026-10-06T16:57:05.0279843Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-06T16:57:05.0312243Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-06T16:57:05.0503005Z Removing includeIf entries pointing to credentials config files
+2026-10-06T16:57:05.0506607Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-06T16:57:05.0535010Z includeif.gitdir:/home/runner/work/heliopause/heliopause/.git.path
+2026-10-06T16:57:05.0538470Z includeif.gitdir:/home/runner/work/heliopause/heliopause/.git/worktrees/*.path
+2026-10-06T16:57:05.0541633Z includeif.gitdir:/github/workspace/.git.path
+2026-10-06T16:57:05.0544050Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-06T16:57:05.0550065Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/heliopause/heliopause/.git.path
+2026-10-06T16:57:05.0567663Z /home/runner/work/_temp/git-credentials-49d5d699-3831-4786-a5e6-a2633a171d98.config
+2026-10-06T16:57:05.0576693Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/heliopause/heliopause/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-49d5d699\-3831\-4786\-a5e6\-a2633a171d98\.config
+2026-10-06T16:57:05.0610904Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/heliopause/heliopause/.git/worktrees/*.path
+2026-10-06T16:57:05.0634145Z /home/runner/work/_temp/git-credentials-49d5d699-3831-4786-a5e6-a2633a171d98.config
+2026-10-06T16:57:05.0642369Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/heliopause/heliopause/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-49d5d699\-3831\-4786\-a5e6\-a2633a171d98\.config
+2026-10-06T16:57:05.0673866Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-10-06T16:57:05.0697774Z /github/runner_temp/git-credentials-49d5d699-3831-4786-a5e6-a2633a171d98.config
+2026-10-06T16:57:05.0706958Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-49d5d699\-3831\-4786\-a5e6\-a2633a171d98\.config
+2026-10-06T16:57:05.0739933Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-06T16:57:05.0761820Z /github/runner_temp/git-credentials-49d5d699-3831-4786-a5e6-a2633a171d98.config
+2026-10-06T16:57:05.0820189Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-49d5d699\-3831\-4786\-a5e6\-a2633a171d98\.config
+2026-10-06T16:57:05.0863073Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-06T16:57:05.1047018Z Removing credentials config '/home/runner/work/_temp/git-credentials-49d5d699-3831-4786-a5e6-a2633a171d98.config'
+2026-10-06T16:57:05.1057327Z ##[endgroup]
+2026-10-06T16:57:05.1370302Z ##[group]Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e
+2026-10-06T16:57:05.1371858Z with:
+2026-10-06T16:57:05.1372675Z   go-version: 1.26.8
+2026-10-06T16:57:05.1373595Z   check-latest: false
+2026-10-06T16:57:05.1374499Z   cache: false
+2026-10-06T16:57:05.1383410Z   token: ***
+2026-10-06T16:57:05.1384261Z env:
+2026-10-06T16:57:05.1385076Z   GOTOOLCHAIN: local
+2026-10-06T16:57:05.1386043Z ##[endgroup]
+2026-10-06T16:57:05.2564155Z Setup go version spec 1.26.8
+2026-10-06T16:57:05.2643700Z Found in cache @ /opt/hostedtoolcache/go/1.26.8/x64
+2026-10-06T16:57:05.2645780Z Added go to the path
+2026-10-06T16:57:05.2647566Z Successfully set up Go version 1.26.8
+2026-10-06T16:57:05.8361429Z go version go1.26.8 linux/amd64
+2026-10-06T16:57:05.8361817Z 
+2026-10-06T16:57:05.8362398Z ##[group]go env
+2026-10-06T16:57:05.9872112Z AR='ar'
+2026-10-06T16:57:05.9872535Z CC='gcc'
+2026-10-06T16:57:05.9872927Z CGO_CFLAGS='-O2 -g'
+2026-10-06T16:57:05.9873317Z CGO_CPPFLAGS=''
+2026-10-06T16:57:05.9873802Z CGO_CXXFLAGS='-O2 -g'
+2026-10-06T16:57:05.9874171Z CGO_ENABLED='1'
+2026-10-06T16:57:05.9874556Z CGO_FFLAGS='-O2 -g'
+2026-10-06T16:57:05.9875001Z CGO_LDFLAGS='-O2 -g'
+2026-10-06T16:57:05.9875440Z CXX='g++'
+2026-10-06T16:57:05.9876100Z GCCGO='gccgo'
+2026-10-06T16:57:05.9876549Z GO111MODULE=''
+2026-10-06T16:57:05.9876910Z GOAMD64='v1'
+2026-10-06T16:57:05.9877357Z GOARCH='amd64'
+2026-10-06T16:57:05.9877749Z GOAUTH='netrc'
+2026-10-06T16:57:05.9878084Z GOBIN=''
+2026-10-06T16:57:05.9878550Z GOCACHE='/home/runner/.cache/go-build'
+2026-10-06T16:57:05.9879129Z GOCACHEPROG=''
+2026-10-06T16:57:05.9879575Z GODEBUG=''
+2026-10-06T16:57:05.9880107Z GOENV='/home/runner/.config/go/env'
+2026-10-06T16:57:05.9880547Z GOEXE=''
+2026-10-06T16:57:05.9881687Z GOEXPERIMENT=''
+2026-10-06T16:57:05.9882219Z GOFIPS140='off'
+2026-10-06T16:57:05.9882639Z GOFLAGS=''
+2026-10-06T16:57:05.9884303Z GOGCCFLAGS='-fPIC -m64 -pthread -Wl,--no-gc-sections -fmessage-length=0 -ffile-prefix-map=/tmp/go-build3393308464=/tmp/go-build -gno-record-gcc-switches'
+2026-10-06T16:57:05.9885542Z GOHOSTARCH='amd64'
+2026-10-06T16:57:05.9886227Z GOHOSTOS='linux'
+2026-10-06T16:57:05.9886680Z GOINSECURE=''
+2026-10-06T16:57:05.9887335Z GOMOD='/home/runner/work/heliopause/heliopause/go.mod'
+2026-10-06T16:57:05.9888153Z GOMODCACHE='/home/runner/go/pkg/mod'
+2026-10-06T16:57:05.9888776Z GONOPROXY=''
+2026-10-06T16:57:05.9889604Z GONOSUMDB=''
+2026-10-06T16:57:05.9890096Z GOOS='linux'
+2026-10-06T16:57:05.9890633Z GOPATH='/home/runner/go'
+2026-10-06T16:57:05.9891156Z GOPRIVATE=''
+2026-10-06T16:57:05.9891820Z GOPROXY='https://proxy.golang.org,direct'
+2026-10-06T16:57:05.9892624Z GOROOT='/opt/hostedtoolcache/go/1.26.8/x64'
+2026-10-06T16:57:05.9893261Z GOSUMDB='sum.golang.org'
+2026-10-06T16:57:05.9893837Z GOTELEMETRY='local'
+2026-10-06T16:57:05.9894484Z GOTELEMETRYDIR='/home/runner/.config/go/telemetry'
+2026-10-06T16:57:05.9895032Z GOTMPDIR=''
+2026-10-06T16:57:05.9895408Z GOTOOLCHAIN='local'
+2026-10-06T16:57:05.9896156Z GOTOOLDIR='/opt/hostedtoolcache/go/1.26.8/x64/pkg/tool/linux_amd64'
+2026-10-06T16:57:05.9897007Z GOVCS=''
+2026-10-06T16:57:05.9897398Z GOVERSION='go1.26.8'
+2026-10-06T16:57:05.9897801Z GOWORK=''
+2026-10-06T16:57:05.9898240Z PKG_CONFIG='pkg-config'
+2026-10-06T16:57:05.9898497Z 
+2026-10-06T16:57:05.9899253Z ##[endgroup]
+2026-10-06T16:57:06.0025262Z ##[group]Run go run ./scripts/check bootstrap
+2026-10-06T16:57:06.0026050Z [36;1mgo run ./scripts/check bootstrap[0m
+2026-10-06T16:57:06.0210330Z shell: /usr/bin/bash -e {0}
+2026-10-06T16:57:06.0210732Z env:
+2026-10-06T16:57:06.0211001Z   GOTOOLCHAIN: local
+2026-10-06T16:57:06.0211394Z   HELOX_TOOL_CACHE: /home/runner/work/_temp/heliopause-quality-tools
+2026-10-06T16:57:06.0211805Z ##[endgroup]
+2026-10-06T16:57:06.2044293Z go: downloading go.yaml.in/yaml/v3 v3.0.4
+2026-10-06T16:57:22.4300036Z [check] prepare module cache
+2026-10-06T16:57:22.4306970Z [check] download product modules
+2026-10-06T16:57:24.1586697Z [check] prepare quality tool cache
+2026-10-06T16:57:24.1587449Z [check] install staticcheck
+2026-10-06T16:57:46.7282525Z [check] verify staticcheck identity
+2026-10-06T16:57:46.7354070Z [check] install gosec
+2026-10-06T16:58:29.8857494Z [check] verify gosec identity
+2026-10-06T16:58:29.9310354Z [check] install govulncheck
+2026-10-06T16:58:33.7457653Z [check] verify govulncheck identity
+2026-10-06T16:58:33.9031782Z [check] install gitleaks
+2026-10-06T16:58:34.2378904Z [check] verify gitleaks identity
+2026-10-06T16:58:34.2403657Z [check] install actionlint
+2026-10-06T16:58:37.4928731Z [check] verify actionlint identity
+2026-10-06T16:58:37.6229053Z ##[group]Run go run ./scripts/check vulnerability
+2026-10-06T16:58:37.6229454Z [36;1mgo run ./scripts/check vulnerability[0m
+2026-10-06T16:58:37.6272297Z shell: /usr/bin/bash -e {0}
+2026-10-06T16:58:37.6272566Z env:
+2026-10-06T16:58:37.6272769Z   GOTOOLCHAIN: local
+2026-10-06T16:58:37.6273089Z   HELOX_TOOL_CACHE: /home/runner/work/_temp/heliopause-quality-tools
+2026-10-06T16:58:37.6273429Z ##[endgroup]
+2026-10-06T16:58:41.3950919Z Post job cleanup.
+2026-10-06T16:58:41.5202374Z Post job cleanup.
+2026-10-06T16:58:41.6046698Z [command]/usr/bin/git version
+2026-10-06T16:58:41.6088151Z git version 2.55.0
+2026-10-06T16:58:41.6119882Z Temporarily overriding HOME='/home/runner/work/_temp/a5071940-d32d-440f-b152-9fb9d1959edd' before making global git config changes
+2026-10-06T16:58:41.6121342Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-06T16:58:41.6126354Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/heliopause/heliopause
+2026-10-06T16:58:41.6160191Z Removing SSH command configuration
+2026-10-06T16:58:41.6167216Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-06T16:58:41.6200728Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-06T16:58:41.6419228Z Removing HTTP extra header
+2026-10-06T16:58:41.6424760Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-06T16:58:41.6458011Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-06T16:58:41.6670061Z Removing includeIf entries pointing to credentials config files
+2026-10-06T16:58:41.6678657Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-06T16:58:41.6711388Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-06T16:58:41.7067066Z Cleaning up orphan processes

@@ -1,0 +1,14 @@
+[
+  {
+    "label": "before-repository-root",
+    "exit_code": 1,
+    "path": "cargo-cwd-before-repository-root.log",
+    "sha256": "090c6cfcb54c1bf9086eb0c1d73e9e920d0514c1c2c577107c03e445c1584132"
+  },
+  {
+    "label": "after-package-root",
+    "exit_code": 0,
+    "path": "cargo-cwd-after-package-root.log",
+    "sha256": "b2ff2b1c89605357df13851ce812bfa38a22e614b4cf3abcc3d86a60a084eccf"
+  }
+]

@@ -1,0 +1,8 @@
+{
+  "branch_head": "c106172bf8a7faff0ec01e4c3966ee5a6c854d4d",
+  "checkout_merge": "5eee9420791fc2b7894a458cf9a834c9946caead",
+  "branch_tree": "40992d67b97484a79b78955b39ab58917a3e967e",
+  "merge_tree": "40992d67b97484a79b78955b39ab58917a3e967e",
+  "tree_and_modes_identical": true,
+  "scope": "Exact corrected PR candidate binding; no new source qualification claim"
+}

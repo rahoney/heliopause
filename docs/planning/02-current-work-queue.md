@@ -9,7 +9,7 @@
 ```text
 Current milestone: M12 — Ecosystem Expansion Before Public Release
 Milestone status: IN_PROGRESS
-Active work item: M12-004 — remote CI follow-up for cumulative M12-002~004
+Active work item: none (M12-002~004 remote qualification complete)
 Next work item: M12-005 — Cross-ecosystem qualification and feature freeze
 Next work item status: NOT_STARTED / Ready: Yes
 Ready: Yes
@@ -2135,11 +2135,11 @@ M12: IN_PROGRESS
 M12-001: COMPLETE
 M12-002: COMPLETE
 M12-003: COMPLETE
-M12-004: IN_PROGRESS (remote follow-up; local acceptance COMPLETE)
+M12-004: COMPLETE
 M12-005: NOT_STARTED
 M12-02: RESERVED
 M13: BLOCKED
-Active work item: M12-004 — remote CI follow-up for cumulative M12-002~004
+Active work item: none (M12-002~004 remote qualification complete)
 Next work item: M12-005 — NOT_STARTED / Ready: Yes
 ```
 
@@ -2175,7 +2175,7 @@ production activation과 최종 배포를 수행한다.
 | 1 | M12-001 | Official PyTorch source support | COMPLETE |
 | 2 | M12-002 | public Go Modules | COMPLETE |
 | 3 | M12-003 | Rust/Cargo and public crates.io | COMPLETE |
-| 4 | M12-004 | Terraform Provider installation; cumulative remote CI follow-up | IN_PROGRESS |
+| 4 | M12-004 | Terraform Provider installation and cumulative remote qualification | COMPLETE |
 | 5 | M12-005 | cross-ecosystem qualification and feature freeze | NOT_STARTED |
 | 6 | M12-02 | final red-team/fix gate | RESERVED |
 
@@ -2960,6 +2960,29 @@ repository cwd에서 FAIL, internal/sandbox cwd에서 PASS0.02s다. 기존 lifec
 step의 Cargo source 명령만 package cwd의 subshell에서 실행하며 source/argv,
 helper 신원·복원, Policy와 모든 예산을 유지한다. 원래 failed job의 helper wait0와
 RESTORED는 제품 성공과 구분한다. Full 후속 CI와 Required는 아직 남아 있다.
+
+### M12-002~004 원격 qualification과 성공 데이터 정리 완료 (2026-10-07)
+
+PR29의 qualified head132baea, checkoutc375a45/run37503579865에서 Required와
+9 prerequisites 모두 실제 SUCCESS다. 두 source tree의 전체 tracked blob/mode는
+동일하다. Native macOS 재검증, 실제 Cargo source1.30s, Go download/build/Cgo와
+Cargo add/build/security, Terraform probe/security/init 및 부정 검증, CPU full288.73s,
+기존 PyPI sdist8.76s/wheel4.59s와 npm/PyPI promotion까지 실제 PASS를 확인했다.
+CI production client를 명시적으로 다시 설치하고 helper parent wait0를 확인했다.
+최종 cleanup은 original0/CONFIRMED_STOPPED/client_error0/client_restore0/NOT_REQUIRED다.
+과거 최초 실패·cancelled와 이번 완료 결과를 구분하며30 job raw 본문/SHA를 보존한다.
+
+IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES다.
+MISSING=[]이며 source qualification과 데이터 정리의
+[종료 근거](./evidence/m12-002-004-remote-ci/result.json)를 연결한다.
+완료된 테스트 전용 네 root는 전체 파일 SHA/metadata·원본 Evidence와 현재 사용 여부를
+확인한 뒤 삭제했고, 두 batch의 WSL 가용 공간 증가 합계는30,309,568,512B(약28.2GiB)다.
+실패 cu126 재현 입력과 runtime originals는 유지하며 Windows VHDX 축소로 확대하지 않는다.
+
+이 종료 변경은 문서·증거·raw 형식 예외만 포함하며 qualified source의 나머지
+tracked blob/mode 전체를 대조한다. 새 종료 HEAD의 원격 Required는 push 뒤 별도로
+확인한다. M12-004는 COMPLETE, active item은 없고 다음 M12-005는
+NOT_STARTED/Ready: Yes다. M12 전체와 broader release/feature freeze는 아직 완료가 아니다.
 
 ## Step 13 Invariant
 

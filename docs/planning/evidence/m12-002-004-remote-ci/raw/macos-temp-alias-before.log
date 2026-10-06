@@ -1,0 +1,5 @@
+--- FAIL: TestPyTorchQualificationCacheIsFreshAndSeparate (0.00s)
+    pytorch_storage_test.go:17: qualification cache parent must have no symlink components
+FAIL
+FAIL	github.com/rahoney/heliopause/internal/bootstrap	0.016s
+FAIL

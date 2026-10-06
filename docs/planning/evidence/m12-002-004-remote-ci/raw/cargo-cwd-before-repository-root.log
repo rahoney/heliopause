@@ -1,0 +1,4 @@
+=== RUN   TestCargoResolverActualMetadataAndLock
+    cargo_actual_metadata_test.go:20: open ../artifact/cargo/testdata/metadata-v1-rust-1.99.0.json: no such file or directory
+--- FAIL: TestCargoResolverActualMetadataAndLock (0.00s)
+FAIL

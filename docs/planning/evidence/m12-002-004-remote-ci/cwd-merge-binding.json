@@ -1,0 +1,9 @@
+{
+  "branch_head": "132baead052842deddc63c6016c7d2811958cb0a",
+  "checkout_merge_sha": "c375a45baa7a3a224053312459dcfb527e41e3d0",
+  "branch_tree": "3aa4fea2d75aee1cb477d7bdbcd30213f88df544",
+  "checkout_tree": "3aa4fea2d75aee1cb477d7bdbcd30213f88df544",
+  "tracked_blob_modes_equal": true,
+  "run_id": 37503579865,
+  "completed_jobs_capture": "cwd-job-captures.json"
+}

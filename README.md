@@ -8,8 +8,8 @@
 - Go module path: `github.com/rahoney/heliopause`
 - 구현 언어: Go
 - CLI framework: Cobra
-- 현재 상태: M0–M11 qualification 및 post-qualification release hardening 완료. M12 생태계 확장을 진행 중이며, M12-001 공식 PyTorch source support와 M12-002 public Go Modules와 M12-003 public Cargo와 M12-004 public Terraform Provider installation의 로컬 acceptance를 완료했다. M12-02 최종 red-team/fix gate와 M13 Production Release & Operations는 선행 작업 완료 후 진행
-- 진행 작업: M12-004 후속 — M12-002~004 누적 변경의 원격 PR CI 검증과 성공 테스트 아티팩트 정리
+- 현재 상태: M0–M11 qualification 및 post-qualification release hardening 완료. M12 생태계 확장을 진행 중이며, M12-001 공식 PyTorch source support와 M12-002 public Go Modules와 M12-003 public Cargo와 M12-004 public Terraform Provider installation의 acceptance를 완료했고, M12-002~004 누적 변경의 원격 Required 및9 prerequisites 검증과 성공 테스트 데이터 정리를 완료했다. M12-02 최종 red-team/fix gate와 M13 Production Release & Operations는 선행 작업 완료 후 진행
+- 진행 작업: 없음 — M12-002~004 누적 원격 qualification 완료 ([종료 근거](docs/planning/evidence/m12-002-004-remote-ci/result.json))
 - 다음 작업: M12-005 — Cross-ecosystem qualification and feature freeze (`NOT_STARTED / Ready: Yes`)
 - 진행 상태의 canonical owner: [`docs/planning/02-current-work-queue.md`](docs/planning/02-current-work-queue.md)
 

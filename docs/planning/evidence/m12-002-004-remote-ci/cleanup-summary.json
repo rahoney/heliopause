@@ -1,0 +1,77 @@
+{
+  "status": "COMPLETE",
+  "completed_batches": [
+    {
+      "inventory": {
+        "role": "external complete file metadata and SHA inventory",
+        "file": "successful-test-cleanup-inventory.json",
+        "sha256": "a39da332cc8ed544a065728a2259849df5801b1c1ffc016b7fe4fa1769169336"
+      },
+      "result": {
+        "file": "successful-test-cleanup-result.json",
+        "sha256": "68653f5ad8f3a6a036ffb2ae36a44d78789ad3ef576d7ef3fc270fdedcbce730"
+      },
+      "removed": [
+        {
+          "path": "/tmp/haa-m12-004-native-e2e/pytorch-cpu-2486874687",
+          "logical_file_bytes": 1174916104,
+          "records": 16345
+        },
+        {
+          "path": "/tmp/haa-m12-reclaimed-native-e2e/pytorch-cu126-4133131746",
+          "logical_file_bytes": 13892557717,
+          "records": 17637
+        }
+      ],
+      "usage_check": {
+        "process_query": "COMPLETE_NO_USERS",
+        "pids_checked": 71,
+        "fds_checked": 1034,
+        "nested_mounts": "ABSENT",
+        "docker_query_exit": 0,
+        "docker_containers": 0
+      },
+      "wsl_available_gain_bytes": 15154782208,
+      "windows_c_available_change_bytes": -172032,
+      "failed_root_retained": "/tmp/haa-m12-004-native-e2e/pytorch-cu126-3044443509"
+    },
+    {
+      "inventory": {
+        "role": "external complete file metadata and SHA inventory",
+        "file": "final-successful-test-cleanup-inventory.json",
+        "sha256": "a60e65f7c70d82834b3d7b14968860bda6202a4b5e3f8a6492583f26266fd188"
+      },
+      "result": {
+        "file": "final-successful-test-cleanup-result.json",
+        "sha256": "cadf6bb0cfa4fa68ff40cda91d7f20d6e4366dab9bc3358f0b961fb54eb08745"
+      },
+      "removed": [
+        {
+          "path": "/tmp/haa-m12-004-timing-native-e2e/pytorch-cpu-4281483733",
+          "logical_file_bytes": 1174916111,
+          "records": 16345
+        },
+        {
+          "path": "/tmp/haa-m12-004-timing-native-e2e/pytorch-cu126-591548379",
+          "logical_file_bytes": 13892557717,
+          "records": 17637
+        }
+      ],
+      "usage_check": {
+        "process_query": "COMPLETE_NO_USERS",
+        "pids_checked": 72,
+        "fds_checked": 1022,
+        "nested_mounts": "ABSENT",
+        "docker_query_exit": 0,
+        "docker_containers": 0
+      },
+      "wsl_available_gain_bytes": 15154786304,
+      "windows_c_available_change_bytes": -110592,
+      "failed_root_retained": "/tmp/haa-m12-004-native-e2e/pytorch-cu126-3044443509"
+    }
+  ],
+  "total_observed_wsl_available_gain_bytes": 30309568512,
+  "total_observed_wsl_available_gain_gib": 28.227985382080078,
+  "retention": "Full file inventories and copied typed Evidence with original SHA/ownership remain in external local M12-004 remote-ci. Original qualification raw logs and exact target inventories remain version-controlled. Failed inputs/runtime originals retained.",
+  "physical_space_scope": "Available WSL blocks are reclaimed. Online root fstrim is separate from Windows VHDX shrink; no offline compaction/shutdown performed."
+}
