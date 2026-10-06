@@ -1,0 +1,6 @@
+{
+  "reason": "canonical clone from partial/shallow local gVisor repeatedly rejects root and recursively creates filtered fetch descendants; build NOT_REACHED",
+  "root_pid": 169752,
+  "git_pid": 169771,
+  "verified_owned_process_group": 169752
+}

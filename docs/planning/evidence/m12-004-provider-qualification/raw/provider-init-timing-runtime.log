@@ -1,0 +1,48 @@
+Exact source/binary probe candidate verified
+runtime before bytes/identity/modes verified
+runtime candidate bytes/identity/modes verified
+Bounded complete host executable query: no installed executable consumer
+no existing traced runtime consumers; bounded Docker queries succeeded
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+/etc/heliopause/pod-init.json: OK
+helper launch: bash=/usr/bin/bash version=5.2.21(1)-release owner=486219
+helper ready: pid=486263 attempt=13
+=== RUN   TestLinuxTerraformInitIntegration
+=== RUN   TestLinuxTerraformInitIntegration/official
+    terraform_init_integration_linux_test.go:140: actual_terraform_init_attempt=0 Source: terraform-registry
+        Providers: 1
+        Lock digest: a4c8de53fcef3ef860dc1ebccd53225523fe0f26de37d6fb746064057964f90d
+    terraform_init_integration_linux_test.go:140: actual_terraform_init_attempt=1 Source: terraform-registry
+        Providers: 1
+        Lock digest: a4c8de53fcef3ef860dc1ebccd53225523fe0f26de37d6fb746064057964f90d
+=== RUN   TestLinuxTerraformInitIntegration/partner
+    terraform_init_integration_linux_test.go:140: actual_terraform_init_attempt=0 Source: terraform-registry
+        Providers: 1
+        Lock digest: 8394ef99824f1e1e156f6b112d8106f55066de04a43a353d5ebf681d09577854
+    terraform_init_integration_linux_test.go:140: actual_terraform_init_attempt=1 Source: terraform-registry
+        Providers: 1
+        Lock digest: 8394ef99824f1e1e156f6b112d8106f55066de04a43a353d5ebf681d09577854
+=== RUN   TestLinuxTerraformInitIntegration/complete-project
+    terraform_init_integration_linux_test.go:140: actual_terraform_init_attempt=0 Source: terraform-registry
+        Providers: 2
+        Lock digest: 89e738c4a042a302e5aab56e726d26a2e768cd320f89eb5a35a8f852c30f1be3
+    terraform_init_integration_linux_test.go:140: actual_terraform_init_attempt=1 Source: terraform-registry
+        Providers: 2
+        Lock digest: 89e738c4a042a302e5aab56e726d26a2e768cd320f89eb5a35a8f852c30f1be3
+--- PASS: TestLinuxTerraformInitIntegration (69.89s)
+    --- PASS: TestLinuxTerraformInitIntegration/official (15.77s)
+    --- PASS: TestLinuxTerraformInitIntegration/partner (19.93s)
+    --- PASS: TestLinuxTerraformInitIntegration/complete-project (34.19s)
+PASS
+helper reaped: pid=486263 wait=0
+no existing traced runtime consumers; bounded Docker queries succeeded
+runtime before bytes/identity/modes verified
+/etc/heliopause/pod-init.json: OK
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=486263

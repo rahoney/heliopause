@@ -247,7 +247,7 @@ bool RegisterProfileWithGeneration(const std::string& path, const char* containe
       strcmp(profile, kProfilePyTorchCU126) == 0 || strcmp(profile, kProfilePyTorchCU130) == 0 ||
       strcmp(profile, kProfilePyTorchCU132) == 0) {
     topology += ";/haa-site|workspace|/|tmpfs|0|0|1|0";
-  } else if (strcmp(profile, kProfileGitHub) == 0) {
+  } else if (strcmp(profile, kProfileGitHub) == 0 || strcmp(profile, "terraform-provider") == 0) {
     topology += ";/work|workspace|/|tmpfs|0|0|1|0";
   }
   const std::string body = std::string("{\"op\":\"profile\",\"container_id\":\"") + container_id + "\",\"profile\":\"" + profile +
@@ -292,7 +292,7 @@ gvisor::sentry::MountTopologySnapshot BuildCanonicalTopologySnapshot(const char*
       strcmp(profile, kProfilePyTorchCU126) == 0 || strcmp(profile, kProfilePyTorchCU130) == 0 ||
       strcmp(profile, kProfilePyTorchCU132) == 0) {
     add_mount(next_id++, "/haa-site", "tmpfs", false, false);
-  } else if (strcmp(profile, kProfileGitHub) == 0) {
+  } else if (strcmp(profile, kProfileGitHub) == 0 || strcmp(profile, "terraform-provider") == 0) {
     add_mount(next_id++, "/work", "tmpfs", false, false);
   }
   return snapshot;
@@ -6515,7 +6515,7 @@ std::string TestTopologyForProfile(const char* profile) {
   std::string topology = "/|oci-root|/||1|0|0|0;/tmp|workspace|/|tmpfs|0|1|1|0;/haa-runtime|helper|/|tmpfs|0|0|1|0";
   if (strcmp(profile, kProfilePyPI) == 0 || strcmp(profile, kProfilePyTorchCPU) == 0 || strcmp(profile, kProfilePyTorchCU126) == 0) {
     topology += ";/haa-site|workspace|/|tmpfs|0|0|1|0";
-  } else if (strcmp(profile, kProfileGitHub) == 0) {
+  } else if (strcmp(profile, kProfileGitHub) == 0 || strcmp(profile, "terraform-provider") == 0) {
     topology += ";/work|workspace|/|tmpfs|0|0|1|0";
   }
   return topology;
@@ -6688,6 +6688,27 @@ bool VerifyUnacceptedRemoteDisconnect(const std::string& remote) {
 
 
 }  // namespace
+
+// Provider profile mechanics are distinct from source approval and from the
+// Go/Cargo resolver/compiler executable catalogues.
+bool VerifyTerraformProviderProfileBoundary() {
+ const char* profile = "terraform-provider";
+ if (!IsCanonicalBootstrapProfile(profile) || MaximumRecords(profile) != 10000 ||
+     ProcessClassForPath("/work/artifact", profile) != ProcessClass::kArtifact ||
+     !IsBootstrapHandoffClass(ProcessClass::kArtifact, profile) ||
+     !IsWorkspacePath("/work/artifact", profile)) return false;
+ for (const char* path : {"/work/provider", "/usr/local/go/bin/go", "/usr/local/bin/node",
+                         "/usr/local/bin/python3.14", kCargoBinary, kRustcBinary}) {
+  if (ProcessClassForPath(path, profile) != ProcessClass::kUnknown) return false;
+ }
+ for (const auto process : {ProcessClass::kNode, ProcessClass::kGo, ProcessClass::kCargo,
+                            ProcessClass::kCargoRustc, ProcessClass::kPython}) {
+  if (IsBootstrapHandoffClass(process, profile)) return false;
+ }
+ return !IsWorkspacePath("/etc/passwd", profile) &&
+   !IsBootstrapHandoffClass(ProcessClass::kArtifact, kProfileNPM) &&
+   ProcessClassForPath("/work/artifact", kProfileGoBuild) == ProcessClass::kUnknown;
+}
 
 int main(int argc, char** argv) {
   if(argc==2 && strcmp(argv[1],"--cargo-build-program-query-only")==0){const bool passed=VerifyCargoBuildProgramRustcQueryBoundary();fprintf(stderr,"Cargo program query %s\n",passed?"PASS":"FAIL");return passed?0:1;}
@@ -7014,7 +7035,8 @@ int main(int argc, char** argv) {
 	const bool control_peer_hup_live_admission = running && VerifyControlPeerHUPClearsLiveAdmission(control);
 	fprintf(stderr, "STARTING pre_attribution_disconnect\n");
 	const bool pre_attribution_disconnect = running && VerifyAcceptedPreAttributionDisconnect(remote, child);
-  const bool passed = running && profile && profile_limits && record_boundaries && accessors && network && malformed_socket &&
+  const bool terraform_profile = VerifyTerraformProviderProfileBoundary();
+  const bool passed = terraform_profile && running && profile && profile_limits && record_boundaries && accessors && network && malformed_socket &&
       malformed_connect && unknown_fd && process && correlation && cloexec && delayed && concurrent_python_streams && roles &&
       oci_bootstrap && demotion && mismatch && dropped && topology_ok && nested_mounts && filesystem && cargo_runtime_read && cargo_self_maps_read && cargo_config_read && cargo_tar_read && cargo_entropy_read && cargo_ca_read && cargo_null_read && cargo_rustc_query && cargo_rustc_metadata && cargo_rustc_abi && cargo_rustc_zlib && cargo_rustc_overcommit && cargo_rustc_maps && cargo_rustc_statm && cargo_rustc_cgroup && go_runtime_read && go_build_config_read && go_build_handoff_read && cargo_build_handoff_read && cargo_build_pinned_target && cargo_build_driver_read && cargo_build_rustc_child && cargo_build_native_cc_child && cargo_build_collect2_child && cargo_build_lld_launcher && cargo_build_rust_lld && cargo_build_link_inputs && cargo_build_link_sdk && cargo_build_rust_c_abi && cargo_build_lld_entropy && cargo_build_program && cargo_build_program_abi && cargo_build_program_maps && cargo_build_program_query && cargo_build_program_null && cargo_build_config && go_build_runtime_read && go_build_creator_diagnostic && go_build_tool_child && go_build_cgo_gcc_creator && go_build_sdk_link_gcc && go_build_sdk_link_native && go_build_linker_resolver && go_build_cc1 && go_build_cc1_headers && go_build_as && go_build_collect2 && go_build_native_linker && go_build_linker_plugin && go_build_linker_null && go_build_linker_runtime && go_build_as_null && go_build_cc1_sdk_cgo && npm_node &&
       cargo_rustc_mountinfo && cargo_rustc_cpu_quota && cargo_rustc_sysroot_directory && cargo_dns_configuration && cargo_resolver_file && cargo_utc && cargo_cloexec_entropy && socketpair_diagnostic && kernel_socketpair && open_result_negative_ok && open_result_positive_ok && no_basename_trust_ok &&
@@ -7079,6 +7101,7 @@ int main(int argc, char** argv) {
       {"Cargo build program rustc query", cargo_build_program_query},
       {"Cargo build program null", cargo_build_program_null},
       {"Cargo build configuration", cargo_build_config},
+      {"Terraform provider profile isolation", terraform_profile},
       {"Go build runtime metadata boundary", go_build_runtime_read},
       {"Go build exact creator diagnostic boundary", go_build_creator_diagnostic},
       {"Go build SDK tool child boundary", go_build_tool_child},

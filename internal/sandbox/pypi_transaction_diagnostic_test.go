@@ -3,6 +3,7 @@ package sandbox
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"strings"
 	"sync/atomic"
@@ -36,6 +37,63 @@ func (c terminationDiagnosticClient) Close(context.Context, string) (Observation
 }
 
 type terminationDiagnosticTrace struct{ err error }
+
+type timedAccountingClient struct {
+	terminationDiagnosticClient
+	delay        time.Duration
+	readReturned chan struct{}
+}
+
+func (c timedAccountingClient) Read(context.Context, string) (ObservationResourceLease, error) {
+	time.Sleep(c.delay)
+	close(c.readReturned)
+	return c.lease, c.err
+}
+
+func TestPythonCPUWatchLateTimingPreservesFirstFailure(t *testing.T) {
+	for _, test := range []struct {
+		name             string
+		beforeRead, read time.Duration
+	}{
+		{"resource read", 500 * time.Millisecond, 700 * time.Millisecond},
+		{"controller delay", 1200 * time.Millisecond, 0},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			synctest.Test(t, func(t *testing.T) {
+				now := time.Now()
+				policy := testObservationPolicy(now)
+				policy.pollInterval = time.Second
+				ledger, err := newObservationTransaction(policy, nil, now)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if err := ledger.sampleCPU(100, now); err != nil {
+					t.Fatal(err)
+				}
+				client := timedAccountingClient{terminationDiagnosticClient: terminationDiagnosticClient{lease: ObservationResourceLease{UsageUsec: 101}}, delay: test.read, readReturned: make(chan struct{})}
+				watch := &observationCPUWatch{client: client, transaction: "transaction", ledger: ledger}
+				time.Sleep(test.beforeRead)
+				err = watch.sampleAccountingLocked(context.Background(), false, false)
+				if err == nil || !ledger.failed || ledger.usageUsec != 100 || !ledger.lastSample.Equal(now) {
+					t.Fatalf("late sample changed authority: err=%v failed=%t usage=%d", err, ledger.failed, ledger.usageUsec)
+				}
+				for _, operand := range []string{
+					"failed_before=false", "poll_ns=1000000000",
+					fmt.Sprintf("read_ns=%d", test.read.Nanoseconds()),
+					"ledger_lock_ns=0",
+					fmt.Sprintf("before_read_gap_ns=%d", test.beforeRead.Nanoseconds()),
+				} {
+					if !strings.Contains(err.Error(), operand) {
+						t.Fatalf("missing trusted timing %s: %v", operand, err)
+					}
+				}
+				if ledger.sampleCPU(101, time.Now()) == nil || ledger.finalize(101, time.Now()) == nil {
+					t.Fatal("diagnostics repaired failed authorization")
+				}
+			})
+		})
+	}
+}
 
 type terminalPollingClient struct {
 	terminationDiagnosticClient

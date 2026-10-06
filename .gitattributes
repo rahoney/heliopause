@@ -1,6 +1,11 @@
-# Preserve captured command output verbatim; only EOL blanks are exempt.
+# Preserve captured output and fixtures verbatim; exemptions use exact paths.
 docs/planning/evidence/m12-ci-repair/cpu-before-destination-fix.log whitespace=-blank-at-eol
 docs/planning/evidence/m12-ci-repair/go-build-metadata.txt whitespace=-blank-at-eol
 docs/planning/evidence/m12-003-cargo-build-qualification/raw/cargo-build-final-cu126-full-runtime.log whitespace=-blank-at-eol
 docs/planning/evidence/m12-003-cargo-build-qualification/raw/socketpair-runtime-canonical-build.log whitespace=-blank-at-eol
 docs/planning/evidence/m12-003-cargo-build-qualification/raw/split-storage-cu126-capacity-failure.log whitespace=-blank-at-eol
+docs/planning/evidence/m12-004-provider-qualification/raw/cu126-full-runtime.log whitespace=-blank-at-eol
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log whitespace=-blank-at-eol
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log whitespace=-blank-at-eol
+docs/planning/evidence/m12-004-provider-qualification/provider-profile-fixture.txt whitespace=-blank-at-eof
+docs/planning/evidence/m12-004-provider-qualification/raw/closure-first-cached-check.log whitespace=-blank-at-eol

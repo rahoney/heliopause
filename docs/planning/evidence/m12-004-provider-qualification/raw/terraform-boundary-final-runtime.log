@@ -1,0 +1,47 @@
+Exact source/binary probe candidate verified
+runtime before bytes/identity/modes verified
+runtime candidate bytes/identity/modes verified
+Bounded complete host executable query: no installed executable consumer
+no existing traced runtime consumers; bounded Docker queries succeeded
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+/etc/heliopause/pod-init.json: OK
+helper launch: bash=/usr/bin/bash version=5.2.21(1)-release owner=293609
+helper ready: pid=293655 attempt=14
+=== RUN   TestLinuxTerraformProviderProbeIntegration
+=== RUN   TestLinuxTerraformProviderProbeIntegration/hashicorp/random@3.7.2
+    terraform_provider_integration_linux_test.go:89: Exact public provider help probe completed: reference=hashicorp/random@3.7.2 archive=7b8434212eef0f8c83f5a90c6d76feaf850f6502b61b53c329e85b3b281cba34 envelope=43cd1fc27fb3a890570339ec3880084d29333b61f41e2fb2b15072d4a47f1f67 {"schema":"m11-004","session":"sbx_pwrqcuirpt5mqkszj4oyfvakva","status":"COMPLETED","unique_subjects":4,"total":39,"counts":{"FILESYSTEM:filesystem-workspace-access":2,"PROCESS:lifecycle-completed":1,"PROCESS:process-exec-expected":35,"PROCESS:terraform-help-exit-0":1}}
+=== RUN   TestLinuxTerraformProviderProbeIntegration/integrations/github@6.6.0
+    direct_exec_admission.go:99: discard command failed: docker ["exec" "--user" "0:0" "2891121b5ab3160387c8936a66e42751dda758c10b247fbb114913b3d2410f8a" "/haa-runtime/haa-boundary" "--origin-handoff-elf" "9bfbf27c7eb32e9742b1e305ccbe92d1c0d243e70c7203047304a901ecd4e4e1" "/work/artifact" "-help"]: exit status 1; bounded output="This binary is a plugin. These are not meant to be executed directly.\nPlease execute the program that consumes these plugins, which will\nload any plugins automatically\n"
+    terraform_provider_integration_linux_test.go:89: Exact public provider help probe completed: reference=integrations/github@6.6.0 archive=772edb5890d72b32868f9fdc0a9a1d4f4701d8e7f8acb37a7ac530d053c776e3 envelope=715f444c220d9044e0891b3e24846544b5a3fbb87e91b75a9a3c51a77c2aff73 {"schema":"m11-004","session":"sbx_z2g7ln3ywmqu6braadt7hwyebu","status":"COMPLETED","unique_subjects":4,"total":39,"counts":{"FILESYSTEM:filesystem-workspace-access":2,"PROCESS:lifecycle-completed":1,"PROCESS:process-exec-expected":35,"PROCESS:terraform-help-exit-1":1}}
+--- PASS: TestLinuxTerraformProviderProbeIntegration (4.32s)
+    --- PASS: TestLinuxTerraformProviderProbeIntegration/hashicorp/random@3.7.2 (2.19s)
+    --- PASS: TestLinuxTerraformProviderProbeIntegration/integrations/github@6.6.0 (2.13s)
+=== RUN   TestLinuxTerraformProviderSecurityIntegration
+=== RUN   TestLinuxTerraformProviderSecurityIntegration/normal
+    terraform_provider_security_integration_linux_test.go:203: actual_provider_boundary=normal {"schema":"m11-004","session":"sbx_26fulrn4u4um7snqhcbewa4lea","status":"COMPLETED","unique_subjects":4,"total":38,"counts":{"FILESYSTEM:filesystem-workspace-access":1,"PROCESS:lifecycle-completed":1,"PROCESS:process-exec-expected":35,"PROCESS:terraform-help-exit-0":1}}
+=== RUN   TestLinuxTerraformProviderSecurityIntegration/network
+observer_attribution sequence=1 profile=terraform-provider counts=NETWORK/CONNECT/INET/ARTIFACT_GROUP/OTHER:1
+    terraform_provider_security_integration_linux_test.go:203: actual_provider_boundary=network {"schema":"m11-004","session":"sbx_55o7bwq5fcep2b7kiqkwuvuk7y","status":"COMPLETED","unique_subjects":5,"total":39,"counts":{"FILESYSTEM:filesystem-workspace-access":1,"NETWORK:network-attempt":1,"PROCESS:lifecycle-completed":1,"PROCESS:process-exec-expected":35,"PROCESS:terraform-help-exit-0":1}}
+=== RUN   TestLinuxTerraformProviderSecurityIntegration/filesystem
+    terraform_provider_security_integration_linux_test.go:203: actual_provider_boundary=filesystem {"schema":"m11-004","session":"sbx_remclr3gh4lemfnh27imijd6hq","status":"INCOMPLETE","limitation":"M3_DYNAMIC_OBSERVER_FAILED","unique_subjects":0,"total":0,"counts":{}}
+=== RUN   TestLinuxTerraformProviderSecurityIntegration/unexpected-process
+observer_attribution sequence=1 profile=terraform-provider counts=PROCESS/SENTRY_EXEC/OTHER/ARTIFACT_ROLE/ARTIFACT_GROUP:1
+    terraform_provider_security_integration_linux_test.go:203: actual_provider_boundary=unexpected-process {"schema":"m11-004","session":"sbx_tjnhlgnllth24lkbaoocufop44","status":"INCOMPLETE","limitation":"M3_DYNAMIC_OBSERVER_FAILED","unique_subjects":1,"total":1,"counts":{"PROCESS:process-exec-unexpected":1}}
+--- PASS: TestLinuxTerraformProviderSecurityIntegration (4.09s)
+    --- PASS: TestLinuxTerraformProviderSecurityIntegration/normal (1.08s)
+    --- PASS: TestLinuxTerraformProviderSecurityIntegration/network (1.01s)
+    --- PASS: TestLinuxTerraformProviderSecurityIntegration/filesystem (1.00s)
+    --- PASS: TestLinuxTerraformProviderSecurityIntegration/unexpected-process (1.00s)
+PASS
+helper reaped: pid=293655 wait=0
+no existing traced runtime consumers; bounded Docker queries succeeded
+runtime before bytes/identity/modes verified
+/etc/heliopause/pod-init.json: OK
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=293655

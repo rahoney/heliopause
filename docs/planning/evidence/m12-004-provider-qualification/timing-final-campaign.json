@@ -1,0 +1,214 @@
+[
+  {
+    "candidate": "final-executable-candidate-timing.json",
+    "name": "cu126-timing-final-full",
+    "command": [
+      "bash",
+      "/home/winamp/.local/state/heliopause/m12-004/run-qualified-consumers-timing.sh",
+      "^TestLinuxPyTorchFullIntegration$",
+      "cu126",
+      "40m",
+      "bootstrap"
+    ],
+    "status": "PASS",
+    "started_utc": "2026-10-06T14:31:56.562895+00:00",
+    "exit_code": 0,
+    "finished_utc": "2026-10-06T15:04:43.501639+00:00",
+    "raw_log": "cu126-timing-final-full-runtime.log",
+    "raw_sha256": "d376ddeeea14fb6fcf645beabbbf850427ec9c08e16cdb830151172d153acfb9"
+  },
+  {
+    "candidate": "final-executable-candidate-timing.json",
+    "name": "cpu-timing-final-full",
+    "command": [
+      "bash",
+      "/home/winamp/.local/state/heliopause/m12-004/run-qualified-consumers-timing.sh",
+      "^TestLinuxPyTorchFullIntegration$",
+      "cpu",
+      "15m",
+      "bootstrap"
+    ],
+    "status": "PASS",
+    "started_utc": "2026-10-06T15:04:48.391586+00:00",
+    "exit_code": 0,
+    "finished_utc": "2026-10-06T15:13:37.796215+00:00",
+    "raw_log": "cpu-timing-final-full-runtime.log",
+    "raw_sha256": "3d95dd30ba85dd2f58340aafb9706e6c5d3261706b46176c1d4d4b0308b93114"
+  },
+  {
+    "candidate": "final-executable-candidate-timing.json",
+    "name": "terraform-timing-final-boundary",
+    "command": [
+      "bash",
+      "/home/winamp/.local/state/heliopause/m12-004/run-qualified-consumers-timing.sh",
+      "^TestLinuxTerraformProvider(Probe|Security)Integration$",
+      "none",
+      "5m",
+      "sandbox"
+    ],
+    "status": "PASS",
+    "started_utc": "2026-10-06T15:13:42.760489+00:00",
+    "exit_code": 0,
+    "finished_utc": "2026-10-06T15:14:03.163553+00:00",
+    "raw_log": "terraform-timing-final-boundary-runtime.log",
+    "raw_sha256": "b380bb124b729a8cfa62cd6eed50c44f0db19c66cd4265b0d4ab7427ec8be8e5"
+  },
+  {
+    "candidate": "final-executable-candidate-timing.json",
+    "name": "legacy-timing-final-direct",
+    "command": [
+      "bash",
+      "/home/winamp/.local/state/heliopause/m12-004/run-qualified-consumers-timing.sh",
+      "^TestLinux(GVisorLifecycle|GitHubReleaseELFDynamic|PyPISdistBuild|PyPIWheelDynamic|PythonRootPolicyTransactionSequence|PythonRenamedProcessTransaction|PythonPinnedLibutilTransaction|GoIsolatedResolver|GoIsolatedProjectResolver|GoSourceProjectSnapshot|GoDependencyFreeProjectSnapshot|CargoSourceProjectSnapshot)Integration$",
+      "none",
+      "15m",
+      "sandbox"
+    ],
+    "status": "PASS",
+    "started_utc": "2026-10-06T15:14:08.716875+00:00",
+    "exit_code": 0,
+    "finished_utc": "2026-10-06T15:18:18.888688+00:00",
+    "raw_log": "legacy-timing-final-direct-runtime.log",
+    "raw_sha256": "733c2e7841c38a750e295ca79af507eee67061569d6cda279caa8fd336036f37"
+  },
+  {
+    "candidate": "final-executable-candidate-timing.json",
+    "name": "python-timing-final-proc-maps-cpu",
+    "command": [
+      "bash",
+      "/home/winamp/.local/state/heliopause/m12-004/run-qualified-consumers-timing.sh",
+      "^TestLinuxPythonProcMapsTransactionIntegration$",
+      "none",
+      "5m",
+      "sandbox"
+    ],
+    "status": "PASS",
+    "started_utc": "2026-10-06T15:18:23.403834+00:00",
+    "exit_code": 0,
+    "finished_utc": "2026-10-06T15:18:41.355784+00:00",
+    "raw_log": "python-timing-final-proc-maps-cpu-runtime.log",
+    "raw_sha256": "135db06040671489c3e3ac90f0b4f7d08e0d6d2ae6352b7a74977a7afff1d3f4"
+  },
+  {
+    "candidate": "final-executable-candidate-timing.json",
+    "name": "python-timing-final-proc-maps-cu126",
+    "command": [
+      "bash",
+      "/home/winamp/.local/state/heliopause/m12-004/run-qualified-consumers-timing.sh",
+      "^TestLinuxPythonProcMapsTransactionIntegration$",
+      "cu126",
+      "5m",
+      "sandbox"
+    ],
+    "status": "PASS",
+    "started_utc": "2026-10-06T15:18:45.902249+00:00",
+    "exit_code": 0,
+    "finished_utc": "2026-10-06T15:19:02.912689+00:00",
+    "raw_log": "python-timing-final-proc-maps-cu126-runtime.log",
+    "raw_sha256": "528489cc1f7ceda56a4ba921765b7e6631004b1dbff78ffb778c3d05643360db"
+  },
+  {
+    "candidate": "final-executable-candidate-timing.json",
+    "name": "python-timing-final-proc-maps-cu130",
+    "command": [
+      "bash",
+      "/home/winamp/.local/state/heliopause/m12-004/run-qualified-consumers-timing.sh",
+      "^TestLinuxPythonProcMapsTransactionIntegration$",
+      "cu130",
+      "5m",
+      "sandbox"
+    ],
+    "status": "PASS",
+    "started_utc": "2026-10-06T15:19:08.281190+00:00",
+    "exit_code": 0,
+    "finished_utc": "2026-10-06T15:19:23.800622+00:00",
+    "raw_log": "python-timing-final-proc-maps-cu130-runtime.log",
+    "raw_sha256": "3667b712ed38272fe478f8d671931096af67079fb60319762bdabf32827c1bd0"
+  },
+  {
+    "candidate": "final-executable-candidate-timing.json",
+    "name": "python-timing-final-proc-maps-cu132",
+    "command": [
+      "bash",
+      "/home/winamp/.local/state/heliopause/m12-004/run-qualified-consumers-timing.sh",
+      "^TestLinuxPythonProcMapsTransactionIntegration$",
+      "cu132",
+      "5m",
+      "sandbox"
+    ],
+    "status": "PASS",
+    "started_utc": "2026-10-06T15:19:27.729317+00:00",
+    "exit_code": 0,
+    "finished_utc": "2026-10-06T15:19:47.451818+00:00",
+    "raw_log": "python-timing-final-proc-maps-cu132-runtime.log",
+    "raw_sha256": "eb8531ede1adde7a5265c2d7ed5e43086581750de5fea87f18aa478eeb5d2c55"
+  },
+  {
+    "candidate": "final-executable-candidate-timing.json",
+    "name": "ordinary-timing-final-product-cli",
+    "command": [
+      "bash",
+      "/home/winamp/.local/state/heliopause/m12-004/run-qualified-cli-timing.sh"
+    ],
+    "status": "PASS",
+    "started_utc": "2026-10-06T15:19:52.820693+00:00",
+    "exit_code": 0,
+    "finished_utc": "2026-10-06T15:20:41.012674+00:00",
+    "raw_log": "ordinary-timing-final-product-cli-runtime.log",
+    "raw_sha256": "9205f0aa64642baf2682b96c61e8dd34c783a6e4cc569e46782dfe78671f9cb0"
+  },
+  {
+    "candidate": "final-executable-candidate-timing.json",
+    "name": "go-cargo-timing-final-cli",
+    "command": [
+      "bash",
+      "/home/winamp/.local/state/heliopause/m12-004/run-qualified-consumers-timing.sh",
+      "^TestLinuxGo(GetDownload|TransitiveGetDownload|DependencyFreeDownload|DependencyFreeBuildCLI|PublicBuildCLI|TransitiveBuildCLI|InvalidTestdataBuildCLI|CgoBuildCLI|LibraryBuildCLI|MixedPackagesBuildCLI|MixedInvalidPackageBuildCLI|BuildSecurityCLI)Integration$|^TestLinuxCargo(Add|TransitiveAdd)Integration$",
+      "none",
+      "30m",
+      "bootstrap"
+    ],
+    "status": "PASS",
+    "started_utc": "2026-10-06T15:20:45.311746+00:00",
+    "exit_code": 0,
+    "finished_utc": "2026-10-06T15:36:38.916920+00:00",
+    "raw_log": "go-cargo-timing-final-cli-runtime.log",
+    "raw_sha256": "c6e15f1401561d2ae2577bf906717251a5ec17e6180b3c28c1245b9d4715b9ed"
+  },
+  {
+    "candidate": "final-executable-candidate-timing.json",
+    "name": "cargo-timing-final-build-cli",
+    "command": [
+      "bash",
+      "/home/winamp/.local/state/heliopause/m12-004/run-qualified-consumers-timing.sh",
+      "^TestLinuxCargo.*Build.*CLIIntegration$|^TestLinuxCargoProcMacroSecurityCLIIntegration$",
+      "none",
+      "15m",
+      "bootstrap"
+    ],
+    "status": "PASS",
+    "started_utc": "2026-10-06T15:36:43.332243+00:00",
+    "exit_code": 0,
+    "finished_utc": "2026-10-06T15:42:02.821208+00:00",
+    "raw_log": "cargo-timing-final-build-cli-runtime.log",
+    "raw_sha256": "fba09157c5579fb26f4af1192d58907df3273a91bb9115c6a7ec830b7c9d721e"
+  },
+  {
+    "candidate": "final-executable-candidate-timing.json",
+    "name": "promotion-timing-final-consumers",
+    "command": [
+      "bash",
+      "/home/winamp/.local/state/heliopause/m12-004/run-qualified-consumers-timing.sh",
+      "^TestLinux(NPMPromotion|PyPIPromotion)Integration$",
+      "none",
+      "5m",
+      "promotion"
+    ],
+    "status": "PASS",
+    "started_utc": "2026-10-06T15:42:06.643766+00:00",
+    "exit_code": 0,
+    "finished_utc": "2026-10-06T15:42:20.511071+00:00",
+    "raw_log": "promotion-timing-final-consumers-runtime.log",
+    "raw_sha256": "ef6fd244a3e62db5d0af01f868e1790cf4a0daa7ad2716a9d66e7e5976591065"
+  }
+]

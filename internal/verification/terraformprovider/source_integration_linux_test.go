@@ -85,6 +85,11 @@ func TestPublicTerraformProviderSourceIntegration(t *testing.T) {
 			if err != nil || report.Outcome() != domain.VerificationVerified || report.Execution().Status() != domain.ExecutionCompleted {
 				t.Fatalf("public normalized verification=%s %v", report.Outcome(), err)
 			}
+			contents, err := artifactterraform.InspectPackage(ctx, bundle, fixture.reference)
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Logf("ZIP fully read; files=%d; h1=%s; zh=%s; executable=%s; executableSHA256=%s", len(contents.Files), contents.H1, contents.ZH, contents.Executable, contents.ExecutableDigest)
 			t.Logf("Exact public provider verified; archive=%s; envelope=%s; signer=%s; trust=%s", bundle.ArchiveDigest(), acquired.Digest(), binding.Fingerprint, binding.Trust)
 			t.Logf("Qualification intake directory=%s; Run=%s", root, run)
 		})

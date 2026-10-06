@@ -13,7 +13,6 @@ import (
 	artifactgithub "github.com/rahoney/heliopause/internal/artifact/githubrelease"
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
-	artifactterraform "github.com/rahoney/heliopause/internal/artifact/terraformprovider"
 	"github.com/rahoney/heliopause/internal/cli"
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/core/ports"
@@ -55,7 +54,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 	var trustedExecutor *hosttool.Executor
 	var observerSupervisor *sandbox.ObserverSupervisor
 	var processObserver sandbox.TraceObserver
-	if runtime.GOOS == "linux" && len(args) > 0 && (args[0] == "npm" || args[0] == "pypi" || args[0] == "pip" || args[0] == "github" || args[0] == "go" || args[0] == "cargo") {
+	if runtime.GOOS == "linux" && len(args) > 0 && (args[0] == "npm" || args[0] == "pypi" || args[0] == "pip" || args[0] == "github" || args[0] == "go" || args[0] == "cargo" || args[0] == "terraform") {
 		trustedExecutor, err = hosttool.NewSystem(ctx)
 		if err != nil {
 			return err
@@ -137,13 +136,9 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 	}
 	if len(args) > 0 && args[0] == "terraform" {
 		if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" {
-			return errors.New("automatic Terraform Provider resolution requires Linux amd64")
+			return errors.New("automatic Terraform Provider installation requires Linux amd64")
 		}
-		resolver, resolverErr := artifactterraform.NewPublicResolver()
-		if resolverErr != nil {
-			return resolverErr
-		}
-		service, serviceErr := application.NewTerraformResolutionService(resolver)
+		service, serviceErr := newTerraformService(trustedExecutor, processObserver)
 		if serviceErr != nil {
 			return serviceErr
 		}

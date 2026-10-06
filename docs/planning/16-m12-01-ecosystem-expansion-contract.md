@@ -981,7 +981,7 @@ Terraform public Provider 설치를 HAA transaction으로 보호한다.
 ## Public UX
 
 ```bash
-helox terraform init hashicorp/aws@5.50.0
+helox terraform init hashicorp/random@3.7.2
 ```
 
 지원하지 않음:
@@ -1122,6 +1122,61 @@ project discovery
 → post-state verify
 → atomic commit / rollback
 ```
+
+### Guarded controls, package inspection and retained installation
+
+Project guard가 lock·configuration·reachable local module의 원래 bytes와 file/directory
+identity를 고정한 뒤에만 public selection을 수행한다. Maintained HCL2 parser로 `.tf`
+및 `.tf.json`의 literal `required_providers`와 local module source를 읽는다. Explicit
+public source 선언을 요구하고 implicit provider inference, remote/escaping module,
+override file, expression-based source/version, alias·hardlink·ambiguous configuration은
+fail-closed다. Host Terraform, ambient CLI flags/configuration 및 provider mirror는
+실행하거나 소비하지 않는다. Configuration256files·local32modules·file1MiB·aggregate3MiB,
+parser depth64, project control4MiB와 provider32개가 finite upper bound다.
+
+요청 Provider는 CLI의 exact version과 모든 configuration constraint를 만족해야 한다.
+다른 required provider는 기존 lock의 exact selection을 사용한다. 독립 Provider roots를
+요청 Provider의 dependency라고 꾸미지 않는다. Resolution은 requested primary를
+표현하고 complete ProjectDependencySnapshot은 모든 required Provider를 검사·승인한다.
+기존 같은-version lock에서 현재 package의 supported `h1` 또는 `zh`가 적어도 하나
+일치해야 한다. Signed ZIP SHA256(`zh`)과 unpacked file-content hash(`h1`)를 구분하며
+다른 platform의 기존 hash는 보존한다. Selected control과 source 전체를 하나의
+framed graph digest로 연결하며 approval 후 live resolution/download를 반복하지 않는다.
+
+ZIP의 모든 member를 bounded CRC read한다. Flat path·unique case identity·regular
+file·0644/0755만 지원하고 traversal·directory/link/special/setid·encrypted archive,
+추가 ELF/실행 표면과 version/platform mismatch는 거부한다. Exact provider ELF는
+Linux/amd64 ET_EXEC/ET_DYN이며 content와 executable digest를 따로 고정한다. ZIP64MiB,
+member64MiB, expanded aggregate200MiB, archive10,000entries, complete installed set
+200MiB/10,000files/20,000entries의 한도를 유지한다. 한도 밖 package는 자동 설치하지 않는다.
+
+Verified signer에만 같은 acquired subject의 required isolated `-help` probe를 수행한다.
+`terraform-provider` 전용 ARTIFACT profile에서 exact `/work/artifact`를 한 번 실행하고
+network-none, readonly OCI root, 기존 CPU30s/wall30s/memory512MiB/PID64/charged10,000
+경계를 적용한다. 고정 probe의 외부 terminal0(help) 또는 terminal1(plugin host required)를
+기록한다. Terminal1은 consumed exact direct-exec admission과 typed external target exit를
+함께 요구한다. stdout·error string·bare exit error는 완료 authority가 아니다. Missing
+observation, ambiguous admission, timeout/resource/cleanup failure는 required INCOMPLETE다.
+이미 관찰된 의심 사실과 미완료 coverage를 독립 check로 유지한다. Network·unexpected
+exec·filesystem·honeytoken은 기존 Policy로 전달한다. 이 probe는 Provider RPC/schema,
+plan/apply/cloud operation이나 package 전체 기능의 attestation이 아니다.
+
+Complete entry/set ALLOW와 실제 recorded source/static/dynamic Evidence가 있어야 verified
+cache를 stage한다. Intake·registry/archive integrity·unpacked hash·executable를 재해시하고
+cache 전체의 file/directory identity·mode·content inventory와 Evidence record digest를
+receipt에 연결한다. Retained open도 실제 Evidence와 전체 tree를 다시 검증한다.
+Project marker만의 checksum을 approval authority로 사용하지 않는다. Project 밖 trusted
+state는 exact cache receipt와 complete approval을 보존하며 `.terraform/providers`에는
+0644 data의 readonly0444 및 executable0555만 materialize한다. Backend/module/foreign
+`.terraform` state는 adoption하지 않는다.
+
+기존 Terraform transaction owner의 private selected tree·original backup·no-replace
+publication·post-state verification·fsync·rollback을 재사용한다. Configuration, original
+lock/provider/metadata 및 independent approval drift와 concurrent init를 거부한다.
+새 lock/providers/metadata/approval 어느 단계가 실패해도 식별된 자기 output만 제거하고
+원래 상태를 복원한다. 외부에서 바뀐 tree/identity는 지우거나 덮지 않으며 recovery
+backup을 남기고 다음 init를 fail-closed로 중단한다. Retained configuration/lock/installed
+state의 승인 후 변경도 자동 재승인하지 않는다.
 
 ## Existing GitHub Release reuse
 

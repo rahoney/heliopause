@@ -1,0 +1,32 @@
+=== RUN   TestTerraformRetainedApprovalAndMarkerPermissions
+=== RUN   TestTerraformRetainedApprovalAndMarkerPermissions/approval-before-begin
+    terraform_cache_test.go:489: changed retained control permissions accepted
+=== RUN   TestTerraformRetainedApprovalAndMarkerPermissions/marker-before-begin
+    terraform_cache_test.go:489: changed retained control permissions accepted
+=== RUN   TestTerraformRetainedApprovalAndMarkerPermissions/approval-during-guard
+    terraform_cache_test.go:503: permissions drift during guard accepted
+=== RUN   TestTerraformRetainedApprovalAndMarkerPermissions/marker-during-guard
+    terraform_cache_test.go:503: permissions drift during guard accepted
+=== RUN   TestTerraformRetainedApprovalAndMarkerPermissions/approval-after-publication
+    terraform_cache_test.go:541: foreign approval mode was overwritten by rollback
+=== RUN   TestTerraformRetainedApprovalAndMarkerPermissions/approval-after-publication-clean-return
+    terraform_cache_test.go:530: foreign approval mode accepted
+=== RUN   TestTerraformRetainedApprovalAndMarkerPermissions/approval-body-after-publication
+    terraform_cache_test.go:530: foreign approval mode accepted
+=== RUN   TestTerraformRetainedApprovalAndMarkerPermissions/lock-after-publication
+    terraform_cache_test.go:530: foreign approval mode accepted
+=== RUN   TestTerraformRetainedApprovalAndMarkerPermissions/marker-after-publication
+    terraform_cache_test.go:530: foreign approval mode accepted
+--- FAIL: TestTerraformRetainedApprovalAndMarkerPermissions (2.62s)
+    --- FAIL: TestTerraformRetainedApprovalAndMarkerPermissions/approval-before-begin (0.17s)
+    --- FAIL: TestTerraformRetainedApprovalAndMarkerPermissions/marker-before-begin (0.29s)
+    --- FAIL: TestTerraformRetainedApprovalAndMarkerPermissions/approval-during-guard (0.17s)
+    --- FAIL: TestTerraformRetainedApprovalAndMarkerPermissions/marker-during-guard (0.38s)
+    --- FAIL: TestTerraformRetainedApprovalAndMarkerPermissions/approval-after-publication (0.26s)
+    --- FAIL: TestTerraformRetainedApprovalAndMarkerPermissions/approval-after-publication-clean-return (0.38s)
+    --- FAIL: TestTerraformRetainedApprovalAndMarkerPermissions/approval-body-after-publication (0.39s)
+    --- FAIL: TestTerraformRetainedApprovalAndMarkerPermissions/lock-after-publication (0.31s)
+    --- FAIL: TestTerraformRetainedApprovalAndMarkerPermissions/marker-after-publication (0.25s)
+FAIL
+FAIL	github.com/rahoney/heliopause/internal/promotion	2.630s
+FAIL

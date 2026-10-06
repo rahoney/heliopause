@@ -1,0 +1,191 @@
+{
+  "scope": "retained authenticated 30-wheel installation and synthetic single native load timing diagnostic, not whole qualification",
+  "base_candidate_sha256": "2ba01fbc2a2ed71dd04c5dde6f0eea89f3160bf2cfe381cef3b49bde1eca9f44",
+  "records": [
+    {
+      "role": "cpu-install-diagnostic-sandbox.test",
+      "sha256": "b03dd7c8b7be1aeedab0fbb0db5a3502ade879b9af70fadba81fdd30a3bcf948",
+      "mode": 365
+    },
+    {
+      "role": "cpu-read-diagnostic-overlay.go",
+      "sha256": "be996a9a33ed0a1e4f9a43865c453144ce5751f5c94340a9eaef84217f8833fc",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-test-overlay.go",
+      "sha256": "5045de9c064ebb276024be0d59989e8aeccdfdf5b4e2fecdea2e1bcac0200b16",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-overlay.json",
+      "sha256": "a29af44def17b8cef9e945880d9714bcc00b4f7ce1f6369673ffee68c9d5a9e6",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-manifest-v2.json",
+      "sha256": "770793f10a6ab60ac74bcda3be9d0e4b877bb5b9b24b87ebaa910cf780cf2495",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-source-receipt.json",
+      "sha256": "846b69b5ba60c7ccb2ca02623ec91be2a50e170b8ce433aefec15a6ae7b19d6c",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-source-cuda-toolkit.json",
+      "sha256": "6e1bec9cb4c1d00294f837bdc4faa58da676cda8e8a6766b32b43d0e56f28c68",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-source-markupsafe.json",
+      "sha256": "85cd5bce3f85e67ab0b921be9c9ba144a7cc01a2d02b85ad65b1f8dabeac4c57",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-source-networkx.json",
+      "sha256": "7f1ed131b5a2e9e53bd980cfce44f80960241c76ea494935c3ec798bed686442",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-source-typing-extensions.json",
+      "sha256": "2140da00d62dde967f52d0be0ae28444f1d6a3fe603f52c83c23988c32122d5a",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-source-cuda-pathfinder.json",
+      "sha256": "082e8bdf8c966701acd399cc1b793ac932a816d3eb49adcc392f7e65e69cc17d",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-source-nvidia-cusparselt-cu12.json",
+      "sha256": "b254dc8a87d3522494786e7268577c7d320364f8ce9b13989f10206cab772300",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-source-nvidia-nvtx-cu12.json",
+      "sha256": "1d4d8b5674e23abeb20bb9cdc4047df370484d678e46d8556a64356260c2e0e6",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-source-nvidia-curand-cu12.json",
+      "sha256": "e41e4f5e6a3d040aff18c2c10c8daca5a183bf853b0c7b9398fca4a76025e87d",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-source-nvidia-cufft-cu12.json",
+      "sha256": "792acd46732d3fe97aede2869185383363ce87ab254e5529211ff63ab4dd13aa",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-source-setuptools.json",
+      "sha256": "24d07932459261bbf9e66e5cfdebfeba23a977234ab24bf9c3a1df053c53ba21",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-source-nvidia-nccl-cu12.json",
+      "sha256": "2a1dd49b7f5e3e32577b56ef125041511b5dbd8980a6993a84d468605c23c1e9",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-source-nvidia-cuda-runtime-cu12.json",
+      "sha256": "d7c1e3d5a899d86de3c81477e66131f546e813a6ab8bf1cf6e20a514f8c0609f",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-source-fsspec.json",
+      "sha256": "4a93a853911936a59262f3ccc1a36a42cfbff106beec53d6e247d00f7a3aa1e9",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-source-sympy.json",
+      "sha256": "7f17c97b2d9ccec17969f30bd7e43c58db3de1145cd1cf00773e48991048d176",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-source-triton.json",
+      "sha256": "d899984094b5da2d8bf178c11006ce5fe61b18dd75650e19ff73d0fda6cc2592",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-source-filelock.json",
+      "sha256": "e8795b93a3ac4a5ee5c2c9dc3d6300936cc95481ecda6f71dcb48b761f360658",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-source-cuda-bindings.json",
+      "sha256": "a368cbf03e396e5503f272211ba1e9ff90d05eebe6b2e6bdb5311e13c2de285f",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-source-nvidia-nvshmem-cu12.json",
+      "sha256": "763b36a56403cd9de6fcd8e24a1d76520ae8f03a3b6b4845f9ccf6cdc006500b",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-source-nvidia-nvjitlink-cu12.json",
+      "sha256": "ffc058b5a5f4f6936dad93c8d056952032544999d90d1cf5fcb53d5f29c66220",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-source-nvidia-cudnn-cu12.json",
+      "sha256": "af2747bbbe547d6d9dd1c96898f3681a6a7774db4ac4c06f3e343deb38cbedfa",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-source-nvidia-cufile-cu12.json",
+      "sha256": "76a3f201a696ea597265ecfd020015672a8df6ea0a4f1cf7bb33d41ade738ac7",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-source-nvidia-cusparse-cu12.json",
+      "sha256": "c35995af12bccc7ea4b2d56be0f12b7d8a97bf0bc39eaaf7c0d0ce70b3dffd30",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-source-jinja2.json",
+      "sha256": "1bc757d7065f3e67d3a49e72ebc731d0774055575732592eede9820c136329cc",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-source-nvidia-cusolver-cu12.json",
+      "sha256": "e0ed4bb237a7045f0562dd19fbb7d703e37ba2c9d57eff6cbbae8f6559c51c85",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-source-nvidia-cuda-cupti-cu12.json",
+      "sha256": "3d9d1fad5f68bc48d6c9090ef6d3c822df5cfaf173f041acd524910c31cc994d",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-source-torch.html",
+      "sha256": "01dbd19fffd754bd0e5cf2cacaf1520ccfbe97c4c2a683af78bd58c55a29f29b",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-source-numpy.json",
+      "sha256": "fc316414566d77fbc82c92f9d710d913778a701b253d0568aa033bd85d3e5169",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-source-nvidia-cublas-cu12.json",
+      "sha256": "8f8e7492e29b42acbaeda82e8a78f12514b272a53d2e7270baeb719972057255",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-source-nvidia-cuda-nvrtc-cu12.json",
+      "sha256": "5b46a6410d0e7ae1bbb077b5980e99760c1b2f2bff90bd7a88a61a2c03a9afb9",
+      "mode": 420
+    },
+    {
+      "role": "cpu-install-diagnostic-source-mpmath.json",
+      "sha256": "87119e683fa33e0fcbca594469c138ecd42294fa5194f525c86787eefdfb77aa",
+      "mode": 420
+    }
+  ],
+  "authority_changes": false,
+  "local_receipt": {
+    "name": "cpu-install-diagnostic-candidate-v2.json",
+    "sha256": "575707129b27c94881841521cd37b1a8af8eb9c9f7683da7a97bc8c3478e89f4"
+  }
+}

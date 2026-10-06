@@ -1,0 +1,738 @@
+[
+  {
+    "name": "terraform-boundary-final",
+    "status": "PASS",
+    "exit_code": 0,
+    "raw_log": "terraform-boundary-final-runtime.log",
+    "raw_sha256": "30b33ed670eb11fde5adc3bb4e3097f3a554892559651528f08629f6e4835dfc",
+    "started_utc": "2026-10-06T12:47:26.009417+00:00",
+    "finished_utc": "2026-10-06T12:47:42.974779+00:00",
+    "candidate": "final-executable-candidate-initial.json",
+    "tests": [
+      {
+        "name": "TestLinuxTerraformProviderProbeIntegration",
+        "seconds": 4.32
+      },
+      {
+        "name": "TestLinuxTerraformProviderSecurityIntegration",
+        "seconds": 4.09
+      }
+    ],
+    "diagnostic_skips": [],
+    "terminal_restore_confirmed": true
+  },
+  {
+    "name": "legacy-direct",
+    "status": "PASS",
+    "exit_code": 0,
+    "raw_log": "legacy-direct-runtime.log",
+    "raw_sha256": "4c7f9ee4ee561c31b936c5b9f20c9da78e0d66cdd9d99ea971b8464330613deb",
+    "started_utc": "2026-10-06T12:47:42.977162+00:00",
+    "finished_utc": "2026-10-06T12:50:28.035678+00:00",
+    "candidate": "final-executable-candidate-initial.json",
+    "tests": [
+      {
+        "name": "TestLinuxCargoSourceProjectSnapshotIntegration",
+        "seconds": 2.86
+      },
+      {
+        "name": "TestLinuxGoIsolatedResolverIntegration",
+        "seconds": 11.94
+      },
+      {
+        "name": "TestLinuxGoIsolatedProjectResolverIntegration",
+        "seconds": 5.31
+      },
+      {
+        "name": "TestLinuxGoSourceProjectSnapshotIntegration",
+        "seconds": 5.25
+      },
+      {
+        "name": "TestLinuxGoDependencyFreeProjectSnapshotIntegration",
+        "seconds": 4.31
+      },
+      {
+        "name": "TestLinuxGVisorLifecycleIntegration",
+        "seconds": 3.38
+      },
+      {
+        "name": "TestLinuxGitHubReleaseELFDynamicIntegration",
+        "seconds": 1.01
+      },
+      {
+        "name": "TestLinuxPyPISdistBuildIntegration",
+        "seconds": 12.43
+      },
+      {
+        "name": "TestLinuxPyPIWheelDynamicIntegration",
+        "seconds": 6.0
+      },
+      {
+        "name": "TestLinuxPythonRootPolicyTransactionSequenceIntegration",
+        "seconds": 57.45
+      },
+      {
+        "name": "TestLinuxPythonRenamedProcessTransactionIntegration",
+        "seconds": 23.1
+      },
+      {
+        "name": "TestLinuxPythonPinnedLibutilTransactionIntegration",
+        "seconds": 23.35
+      }
+    ],
+    "diagnostic_skips": [
+      "TestLinuxRetainedPythonTransactionIntegration"
+    ],
+    "terminal_restore_confirmed": true
+  },
+  {
+    "name": "python-proc-maps-cpu",
+    "status": "PASS",
+    "exit_code": 0,
+    "raw_log": "python-proc-maps-cpu-runtime.log",
+    "raw_sha256": "6099bdcc1b54e8f7f5be1823c64707dad4a9f4e2c1e8375b07f506946f423975",
+    "started_utc": "2026-10-06T12:50:28.037277+00:00",
+    "finished_utc": "2026-10-06T12:50:42.926011+00:00",
+    "candidate": "final-executable-candidate-initial.json",
+    "tests": [
+      {
+        "name": "TestLinuxPythonProcMapsTransactionIntegration",
+        "seconds": 6.17
+      }
+    ],
+    "diagnostic_skips": [],
+    "terminal_restore_confirmed": true
+  },
+  {
+    "name": "python-proc-maps-cu126",
+    "status": "PASS",
+    "exit_code": 0,
+    "raw_log": "python-proc-maps-cu126-runtime.log",
+    "raw_sha256": "3832d4e6b1e3b20323444b9ea81d4df8bd23a99b368e8a07e6c84ccff5274fd5",
+    "started_utc": "2026-10-06T12:50:42.927583+00:00",
+    "finished_utc": "2026-10-06T12:50:57.730137+00:00",
+    "candidate": "final-executable-candidate-initial.json",
+    "tests": [
+      {
+        "name": "TestLinuxPythonProcMapsTransactionIntegration",
+        "seconds": 6.27
+      }
+    ],
+    "diagnostic_skips": [],
+    "terminal_restore_confirmed": true
+  },
+  {
+    "name": "python-proc-maps-cu130",
+    "status": "PASS",
+    "exit_code": 0,
+    "raw_log": "python-proc-maps-cu130-runtime.log",
+    "raw_sha256": "ed46f1ee271e66a270d373b0d345c0bed7f55dbf17bdc98904062f5c3d7eb200",
+    "started_utc": "2026-10-06T12:50:57.732136+00:00",
+    "finished_utc": "2026-10-06T12:51:12.859261+00:00",
+    "candidate": "final-executable-candidate-initial.json",
+    "tests": [
+      {
+        "name": "TestLinuxPythonProcMapsTransactionIntegration",
+        "seconds": 6.76
+      }
+    ],
+    "diagnostic_skips": [],
+    "terminal_restore_confirmed": true
+  },
+  {
+    "name": "python-proc-maps-cu132",
+    "status": "FAIL",
+    "exit_code": 98,
+    "raw_log": "python-proc-maps-cu132-runtime.log",
+    "raw_sha256": "0eccc1f592355e8c6e1f118463cb110ba11b0373e3da1714087719ea50876346",
+    "started_utc": "2026-10-06T12:51:12.860938+00:00",
+    "finished_utc": "2026-10-06T12:51:12.863375+00:00",
+    "candidate": "final-executable-candidate-initial.json",
+    "tests": [],
+    "diagnostic_skips": [],
+    "terminal_restore_confirmed": false
+  },
+  {
+    "name": "python-proc-maps-cu132-after-hold",
+    "status": "PASS",
+    "exit_code": 0,
+    "raw_log": "python-proc-maps-cu132-after-hold-runtime.log",
+    "raw_sha256": "c8b2ec1c56c346ad6200d6ce7ad676b59bd10835542c512d45b0101c65c50245",
+    "started_utc": "2026-10-06T13:00:08.020197+00:00",
+    "finished_utc": "2026-10-06T13:00:24.765597+00:00",
+    "candidate": "final-executable-candidate.json",
+    "tests": [
+      {
+        "name": "TestLinuxPythonProcMapsTransactionIntegration",
+        "seconds": 7.42
+      }
+    ],
+    "diagnostic_skips": [],
+    "terminal_restore_confirmed": true
+  },
+  {
+    "name": "ordinary-product-cli",
+    "status": "PASS",
+    "exit_code": 0,
+    "raw_log": "ordinary-product-cli-runtime.log",
+    "raw_sha256": "2e220ce727772ced1ebdd409a544332f12dbf5fdf224b0c9e42dda75445f7727",
+    "started_utc": "2026-10-06T13:00:24.767653+00:00",
+    "finished_utc": "2026-10-06T13:01:16.401967+00:00",
+    "candidate": "final-executable-candidate.json",
+    "tests": [],
+    "diagnostic_skips": [],
+    "terminal_restore_confirmed": true
+  },
+  {
+    "name": "go-cargo-cli",
+    "status": "PASS",
+    "exit_code": 0,
+    "raw_log": "go-cargo-cli-runtime.log",
+    "raw_sha256": "15a23115145fad0646ced168b59191b9d3cc1c25f769461eac6b518f532598c5",
+    "started_utc": "2026-10-06T13:01:16.404212+00:00",
+    "finished_utc": "2026-10-06T13:19:37.654009+00:00",
+    "candidate": "final-executable-candidate.json",
+    "tests": [
+      {
+        "name": "TestLinuxCargoAddIntegration",
+        "seconds": 22.65
+      },
+      {
+        "name": "TestLinuxCargoTransitiveAddIntegration",
+        "seconds": 27.31
+      },
+      {
+        "name": "TestLinuxGoDependencyFreeBuildCLIIntegration",
+        "seconds": 63.17
+      },
+      {
+        "name": "TestLinuxGoPublicBuildCLIIntegration",
+        "seconds": 81.35
+      },
+      {
+        "name": "TestLinuxGoTransitiveBuildCLIIntegration",
+        "seconds": 321.57
+      },
+      {
+        "name": "TestLinuxGoInvalidTestdataBuildCLIIntegration",
+        "seconds": 22.76
+      },
+      {
+        "name": "TestLinuxGoCgoBuildCLIIntegration",
+        "seconds": 62.65
+      },
+      {
+        "name": "TestLinuxGoLibraryBuildCLIIntegration",
+        "seconds": 22.48
+      },
+      {
+        "name": "TestLinuxGoMixedPackagesBuildCLIIntegration",
+        "seconds": 47.5
+      },
+      {
+        "name": "TestLinuxGoMixedInvalidPackageBuildCLIIntegration",
+        "seconds": 48.14
+      },
+      {
+        "name": "TestLinuxGoBuildSecurityCLIIntegration",
+        "seconds": 90.08
+      },
+      {
+        "name": "TestLinuxGoDependencyFreeDownloadIntegration",
+        "seconds": 25.63
+      },
+      {
+        "name": "TestLinuxGoGetDownloadIntegration",
+        "seconds": 39.08
+      },
+      {
+        "name": "TestLinuxGoTransitiveGetDownloadIntegration",
+        "seconds": 216.91
+      }
+    ],
+    "diagnostic_skips": [],
+    "terminal_restore_confirmed": true
+  },
+  {
+    "name": "cargo-build-cli",
+    "status": "PASS",
+    "exit_code": 0,
+    "raw_log": "cargo-build-cli-runtime.log",
+    "raw_sha256": "dbfc712a0c29fabce1d58eb8f88452a55270ceec439ddaf8b38242f894b2ffd9",
+    "started_utc": "2026-10-06T13:19:37.656498+00:00",
+    "finished_utc": "2026-10-06T13:25:22.958639+00:00",
+    "candidate": "final-executable-candidate.json",
+    "tests": [
+      {
+        "name": "TestLinuxCargoDependencyFreeBuildCLIIntegration",
+        "seconds": 13.99
+      },
+      {
+        "name": "TestLinuxCargoPublicBuildCLIIntegration",
+        "seconds": 40.08
+      },
+      {
+        "name": "TestLinuxCargoTransitiveBuildCLIIntegration",
+        "seconds": 58.51
+      },
+      {
+        "name": "TestLinuxCargoLibraryBuildCLIIntegration",
+        "seconds": 25.83
+      },
+      {
+        "name": "TestLinuxCargoWorkspaceBuildCLIIntegration",
+        "seconds": 27.4
+      },
+      {
+        "name": "TestLinuxCargoBuildScriptBuildCLIIntegration",
+        "seconds": 28.81
+      },
+      {
+        "name": "TestLinuxCargoProcMacroBuildCLIIntegration",
+        "seconds": 28.33
+      },
+      {
+        "name": "TestLinuxCargoBuildFilesystemSecurityCLIIntegration",
+        "seconds": 13.01
+      },
+      {
+        "name": "TestLinuxCargoBuildNetworkSecurityCLIIntegration",
+        "seconds": 15.25
+      },
+      {
+        "name": "TestLinuxCargoBuildConfigurationSecurityCLIIntegration",
+        "seconds": 29.91
+      },
+      {
+        "name": "TestLinuxCargoBuildUnexpectedChildSecurityCLIIntegration",
+        "seconds": 13.66
+      },
+      {
+        "name": "TestLinuxCargoInvalidSourceBuildCLIIntegration",
+        "seconds": 13.19
+      },
+      {
+        "name": "TestLinuxCargoProcMacroSecurityCLIIntegration",
+        "seconds": 27.37
+      }
+    ],
+    "diagnostic_skips": [],
+    "terminal_restore_confirmed": true
+  },
+  {
+    "name": "promotion-consumers",
+    "status": "PASS",
+    "exit_code": 0,
+    "raw_log": "promotion-consumers-runtime.log",
+    "raw_sha256": "f55dd2f510763c422f5bc4645bbe679ec9ee3d905ef7bdafe5b6bf68fca117eb",
+    "started_utc": "2026-10-06T13:25:22.960585+00:00",
+    "finished_utc": "2026-10-06T13:25:39.250823+00:00",
+    "candidate": "final-executable-candidate.json",
+    "tests": [
+      {
+        "name": "TestLinuxPyPIPromotionIntegration",
+        "seconds": 3.9
+      },
+      {
+        "name": "TestLinuxNPMPromotionIntegration",
+        "seconds": 2.57
+      }
+    ],
+    "diagnostic_skips": [],
+    "terminal_restore_confirmed": true
+  },
+  {
+    "name": "cpu-full",
+    "status": "PASS",
+    "exit_code": 0,
+    "raw_log": "cpu-full-runtime.log",
+    "raw_sha256": "2c68241d4dd85cdeaa27e58968772710f9005713894995dc15d6e20b90de7611",
+    "started_utc": "2026-10-06T13:25:39.252658+00:00",
+    "finished_utc": "2026-10-06T13:35:16.329406+00:00",
+    "candidate": "final-executable-candidate.json",
+    "tests": [
+      {
+        "name": "TestLinuxPyTorchFullIntegration",
+        "seconds": 567.63
+      }
+    ],
+    "diagnostic_skips": [],
+    "terminal_restore_confirmed": true
+  },
+  {
+    "name": "cu126-full",
+    "status": "FAIL",
+    "exit_code": 1,
+    "raw_log": "cu126-full-runtime.log",
+    "raw_sha256": "ccb8b7b848a48b1f76fc89878f3b5bf6fd8d9aac84dff510abc9613bd86af341",
+    "started_utc": "2026-10-06T13:35:16.331523+00:00",
+    "finished_utc": "2026-10-06T13:49:02.657794+00:00",
+    "candidate": "final-executable-candidate.json",
+    "tests": [],
+    "diagnostic_skips": [],
+    "terminal_restore_confirmed": false
+  },
+  {
+    "name": "cu126-timing-final-full",
+    "status": "PASS",
+    "exit_code": 0,
+    "raw_log": "cu126-timing-final-full-runtime.log",
+    "raw_sha256": "d376ddeeea14fb6fcf645beabbbf850427ec9c08e16cdb830151172d153acfb9",
+    "started_utc": "2026-10-06T14:31:56.562895+00:00",
+    "finished_utc": "2026-10-06T15:04:43.501639+00:00",
+    "candidate": "final-executable-candidate-timing.json",
+    "tests": [
+      {
+        "name": "TestLinuxPyTorchFullIntegration",
+        "seconds": 1921.07
+      }
+    ],
+    "diagnostic_skips": [],
+    "terminal_restore_confirmed": true
+  },
+  {
+    "name": "cpu-timing-final-full",
+    "status": "PASS",
+    "exit_code": 0,
+    "raw_log": "cpu-timing-final-full-runtime.log",
+    "raw_sha256": "3d95dd30ba85dd2f58340aafb9706e6c5d3261706b46176c1d4d4b0308b93114",
+    "started_utc": "2026-10-06T15:04:48.391586+00:00",
+    "finished_utc": "2026-10-06T15:13:37.796215+00:00",
+    "candidate": "final-executable-candidate-timing.json",
+    "tests": [
+      {
+        "name": "TestLinuxPyTorchFullIntegration",
+        "seconds": 507.82
+      }
+    ],
+    "diagnostic_skips": [],
+    "terminal_restore_confirmed": true
+  },
+  {
+    "name": "terraform-timing-final-boundary",
+    "status": "PASS",
+    "exit_code": 0,
+    "raw_log": "terraform-timing-final-boundary-runtime.log",
+    "raw_sha256": "b380bb124b729a8cfa62cd6eed50c44f0db19c66cd4265b0d4ab7427ec8be8e5",
+    "started_utc": "2026-10-06T15:13:42.760489+00:00",
+    "finished_utc": "2026-10-06T15:14:03.163553+00:00",
+    "candidate": "final-executable-candidate-timing.json",
+    "tests": [
+      {
+        "name": "TestLinuxTerraformProviderProbeIntegration",
+        "seconds": 6.06
+      },
+      {
+        "name": "TestLinuxTerraformProviderSecurityIntegration",
+        "seconds": 4.75
+      }
+    ],
+    "diagnostic_skips": [],
+    "terminal_restore_confirmed": true
+  },
+  {
+    "name": "legacy-timing-final-direct",
+    "status": "PASS",
+    "exit_code": 0,
+    "raw_log": "legacy-timing-final-direct-runtime.log",
+    "raw_sha256": "733c2e7841c38a750e295ca79af507eee67061569d6cda279caa8fd336036f37",
+    "started_utc": "2026-10-06T15:14:08.716875+00:00",
+    "finished_utc": "2026-10-06T15:18:18.888688+00:00",
+    "candidate": "final-executable-candidate-timing.json",
+    "tests": [
+      {
+        "name": "TestLinuxCargoSourceProjectSnapshotIntegration",
+        "seconds": 3.47
+      },
+      {
+        "name": "TestLinuxGoIsolatedResolverIntegration",
+        "seconds": 13.93
+      },
+      {
+        "name": "TestLinuxGoIsolatedProjectResolverIntegration",
+        "seconds": 6.21
+      },
+      {
+        "name": "TestLinuxGoSourceProjectSnapshotIntegration",
+        "seconds": 5.97
+      },
+      {
+        "name": "TestLinuxGoDependencyFreeProjectSnapshotIntegration",
+        "seconds": 4.98
+      },
+      {
+        "name": "TestLinuxGVisorLifecycleIntegration",
+        "seconds": 3.97
+      },
+      {
+        "name": "TestLinuxGitHubReleaseELFDynamicIntegration",
+        "seconds": 1.26
+      },
+      {
+        "name": "TestLinuxPyPISdistBuildIntegration",
+        "seconds": 16.45
+      },
+      {
+        "name": "TestLinuxPyPIWheelDynamicIntegration",
+        "seconds": 7.89
+      },
+      {
+        "name": "TestLinuxPythonRootPolicyTransactionSequenceIntegration",
+        "seconds": 101.55
+      },
+      {
+        "name": "TestLinuxPythonRenamedProcessTransactionIntegration",
+        "seconds": 40.04
+      },
+      {
+        "name": "TestLinuxPythonPinnedLibutilTransactionIntegration",
+        "seconds": 29.35
+      }
+    ],
+    "diagnostic_skips": [],
+    "terminal_restore_confirmed": true
+  },
+  {
+    "name": "python-timing-final-proc-maps-cpu",
+    "status": "PASS",
+    "exit_code": 0,
+    "raw_log": "python-timing-final-proc-maps-cpu-runtime.log",
+    "raw_sha256": "135db06040671489c3e3ac90f0b4f7d08e0d6d2ae6352b7a74977a7afff1d3f4",
+    "started_utc": "2026-10-06T15:18:23.403834+00:00",
+    "finished_utc": "2026-10-06T15:18:41.355784+00:00",
+    "candidate": "final-executable-candidate-timing.json",
+    "tests": [
+      {
+        "name": "TestLinuxPythonProcMapsTransactionIntegration",
+        "seconds": 7.65
+      }
+    ],
+    "diagnostic_skips": [],
+    "terminal_restore_confirmed": true
+  },
+  {
+    "name": "python-timing-final-proc-maps-cu126",
+    "status": "PASS",
+    "exit_code": 0,
+    "raw_log": "python-timing-final-proc-maps-cu126-runtime.log",
+    "raw_sha256": "528489cc1f7ceda56a4ba921765b7e6631004b1dbff78ffb778c3d05643360db",
+    "started_utc": "2026-10-06T15:18:45.902249+00:00",
+    "finished_utc": "2026-10-06T15:19:02.912689+00:00",
+    "candidate": "final-executable-candidate-timing.json",
+    "tests": [
+      {
+        "name": "TestLinuxPythonProcMapsTransactionIntegration",
+        "seconds": 7.53
+      }
+    ],
+    "diagnostic_skips": [],
+    "terminal_restore_confirmed": true
+  },
+  {
+    "name": "python-timing-final-proc-maps-cu130",
+    "status": "PASS",
+    "exit_code": 0,
+    "raw_log": "python-timing-final-proc-maps-cu130-runtime.log",
+    "raw_sha256": "3667b712ed38272fe478f8d671931096af67079fb60319762bdabf32827c1bd0",
+    "started_utc": "2026-10-06T15:19:08.281190+00:00",
+    "finished_utc": "2026-10-06T15:19:23.800622+00:00",
+    "candidate": "final-executable-candidate-timing.json",
+    "tests": [
+      {
+        "name": "TestLinuxPythonProcMapsTransactionIntegration",
+        "seconds": 6.54
+      }
+    ],
+    "diagnostic_skips": [],
+    "terminal_restore_confirmed": true
+  },
+  {
+    "name": "python-timing-final-proc-maps-cu132",
+    "status": "PASS",
+    "exit_code": 0,
+    "raw_log": "python-timing-final-proc-maps-cu132-runtime.log",
+    "raw_sha256": "eb8531ede1adde7a5265c2d7ed5e43086581750de5fea87f18aa478eeb5d2c55",
+    "started_utc": "2026-10-06T15:19:27.729317+00:00",
+    "finished_utc": "2026-10-06T15:19:47.451818+00:00",
+    "candidate": "final-executable-candidate-timing.json",
+    "tests": [
+      {
+        "name": "TestLinuxPythonProcMapsTransactionIntegration",
+        "seconds": 10.43
+      }
+    ],
+    "diagnostic_skips": [],
+    "terminal_restore_confirmed": true
+  },
+  {
+    "name": "ordinary-timing-final-product-cli",
+    "status": "PASS",
+    "exit_code": 0,
+    "raw_log": "ordinary-timing-final-product-cli-runtime.log",
+    "raw_sha256": "9205f0aa64642baf2682b96c61e8dd34c783a6e4cc569e46782dfe78671f9cb0",
+    "started_utc": "2026-10-06T15:19:52.820693+00:00",
+    "finished_utc": "2026-10-06T15:20:41.012674+00:00",
+    "candidate": "final-executable-candidate-timing.json",
+    "tests": [],
+    "diagnostic_skips": [],
+    "terminal_restore_confirmed": true
+  },
+  {
+    "name": "go-cargo-timing-final-cli",
+    "status": "PASS",
+    "exit_code": 0,
+    "raw_log": "go-cargo-timing-final-cli-runtime.log",
+    "raw_sha256": "c6e15f1401561d2ae2577bf906717251a5ec17e6180b3c28c1245b9d4715b9ed",
+    "started_utc": "2026-10-06T15:20:45.311746+00:00",
+    "finished_utc": "2026-10-06T15:36:38.916920+00:00",
+    "candidate": "final-executable-candidate-timing.json",
+    "tests": [
+      {
+        "name": "TestLinuxCargoAddIntegration",
+        "seconds": 21.77
+      },
+      {
+        "name": "TestLinuxCargoTransitiveAddIntegration",
+        "seconds": 24.24
+      },
+      {
+        "name": "TestLinuxGoDependencyFreeBuildCLIIntegration",
+        "seconds": 61.16
+      },
+      {
+        "name": "TestLinuxGoPublicBuildCLIIntegration",
+        "seconds": 87.79
+      },
+      {
+        "name": "TestLinuxGoTransitiveBuildCLIIntegration",
+        "seconds": 278.91
+      },
+      {
+        "name": "TestLinuxGoInvalidTestdataBuildCLIIntegration",
+        "seconds": 16.81
+      },
+      {
+        "name": "TestLinuxGoCgoBuildCLIIntegration",
+        "seconds": 45.75
+      },
+      {
+        "name": "TestLinuxGoLibraryBuildCLIIntegration",
+        "seconds": 17.17
+      },
+      {
+        "name": "TestLinuxGoMixedPackagesBuildCLIIntegration",
+        "seconds": 32.57
+      },
+      {
+        "name": "TestLinuxGoMixedInvalidPackageBuildCLIIntegration",
+        "seconds": 30.58
+      },
+      {
+        "name": "TestLinuxGoBuildSecurityCLIIntegration",
+        "seconds": 63.36
+      },
+      {
+        "name": "TestLinuxGoDependencyFreeDownloadIntegration",
+        "seconds": 20.61
+      },
+      {
+        "name": "TestLinuxGoGetDownloadIntegration",
+        "seconds": 31.21
+      },
+      {
+        "name": "TestLinuxGoTransitiveGetDownloadIntegration",
+        "seconds": 190.97
+      }
+    ],
+    "diagnostic_skips": [],
+    "terminal_restore_confirmed": true
+  },
+  {
+    "name": "cargo-timing-final-build-cli",
+    "status": "PASS",
+    "exit_code": 0,
+    "raw_log": "cargo-timing-final-build-cli-runtime.log",
+    "raw_sha256": "fba09157c5579fb26f4af1192d58907df3273a91bb9115c6a7ec830b7c9d721e",
+    "started_utc": "2026-10-06T15:36:43.332243+00:00",
+    "finished_utc": "2026-10-06T15:42:02.821208+00:00",
+    "candidate": "final-executable-candidate-timing.json",
+    "tests": [
+      {
+        "name": "TestLinuxCargoDependencyFreeBuildCLIIntegration",
+        "seconds": 13.52
+      },
+      {
+        "name": "TestLinuxCargoPublicBuildCLIIntegration",
+        "seconds": 37.14
+      },
+      {
+        "name": "TestLinuxCargoTransitiveBuildCLIIntegration",
+        "seconds": 54.19
+      },
+      {
+        "name": "TestLinuxCargoLibraryBuildCLIIntegration",
+        "seconds": 26.2
+      },
+      {
+        "name": "TestLinuxCargoWorkspaceBuildCLIIntegration",
+        "seconds": 25.01
+      },
+      {
+        "name": "TestLinuxCargoBuildScriptBuildCLIIntegration",
+        "seconds": 25.8
+      },
+      {
+        "name": "TestLinuxCargoProcMacroBuildCLIIntegration",
+        "seconds": 26.11
+      },
+      {
+        "name": "TestLinuxCargoBuildFilesystemSecurityCLIIntegration",
+        "seconds": 11.8
+      },
+      {
+        "name": "TestLinuxCargoBuildNetworkSecurityCLIIntegration",
+        "seconds": 12.16
+      },
+      {
+        "name": "TestLinuxCargoBuildConfigurationSecurityCLIIntegration",
+        "seconds": 24.01
+      },
+      {
+        "name": "TestLinuxCargoBuildUnexpectedChildSecurityCLIIntegration",
+        "seconds": 11.36
+      },
+      {
+        "name": "TestLinuxCargoInvalidSourceBuildCLIIntegration",
+        "seconds": 11.55
+      },
+      {
+        "name": "TestLinuxCargoProcMacroSecurityCLIIntegration",
+        "seconds": 23.75
+      }
+    ],
+    "diagnostic_skips": [],
+    "terminal_restore_confirmed": true
+  },
+  {
+    "name": "promotion-timing-final-consumers",
+    "status": "PASS",
+    "exit_code": 0,
+    "raw_log": "promotion-timing-final-consumers-runtime.log",
+    "raw_sha256": "ef6fd244a3e62db5d0af01f868e1790cf4a0daa7ad2716a9d66e7e5976591065",
+    "started_utc": "2026-10-06T15:42:06.643766+00:00",
+    "finished_utc": "2026-10-06T15:42:20.511071+00:00",
+    "candidate": "final-executable-candidate-timing.json",
+    "tests": [
+      {
+        "name": "TestLinuxPyPIPromotionIntegration",
+        "seconds": 3.36
+      },
+      {
+        "name": "TestLinuxNPMPromotionIntegration",
+        "seconds": 2.2
+      }
+    ],
+    "diagnostic_skips": [],
+    "terminal_restore_confirmed": true
+  }
+]

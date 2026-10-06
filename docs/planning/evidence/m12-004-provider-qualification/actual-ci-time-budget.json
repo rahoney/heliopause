@@ -1,0 +1,123 @@
+[
+  {
+    "role": "go-build",
+    "tests": [
+      {
+        "name": "TestLinuxGoDependencyFreeBuildCLIIntegration",
+        "seconds": 61.16
+      },
+      {
+        "name": "TestLinuxGoPublicBuildCLIIntegration",
+        "seconds": 87.79
+      },
+      {
+        "name": "TestLinuxGoTransitiveBuildCLIIntegration",
+        "seconds": 278.91
+      },
+      {
+        "name": "TestLinuxGoInvalidTestdataBuildCLIIntegration",
+        "seconds": 16.81
+      },
+      {
+        "name": "TestLinuxGoCgoBuildCLIIntegration",
+        "seconds": 45.75
+      },
+      {
+        "name": "TestLinuxGoLibraryBuildCLIIntegration",
+        "seconds": 17.17
+      },
+      {
+        "name": "TestLinuxGoMixedPackagesBuildCLIIntegration",
+        "seconds": 32.57
+      },
+      {
+        "name": "TestLinuxGoMixedInvalidPackageBuildCLIIntegration",
+        "seconds": 30.58
+      },
+      {
+        "name": "TestLinuxGoBuildSecurityCLIIntegration",
+        "seconds": 63.36
+      }
+    ],
+    "actual_seconds": 634.1,
+    "timeout_seconds": 900
+  },
+  {
+    "role": "go-get-download",
+    "tests": [
+      {
+        "name": "TestLinuxGoDependencyFreeDownloadIntegration",
+        "seconds": 20.61
+      },
+      {
+        "name": "TestLinuxGoGetDownloadIntegration",
+        "seconds": 31.21
+      },
+      {
+        "name": "TestLinuxGoTransitiveGetDownloadIntegration",
+        "seconds": 190.97
+      }
+    ],
+    "actual_seconds": 242.79,
+    "timeout_seconds": 600
+  },
+  {
+    "role": "cargo-build",
+    "tests": [
+      {
+        "name": "TestLinuxCargoDependencyFreeBuildCLIIntegration",
+        "seconds": 13.52
+      },
+      {
+        "name": "TestLinuxCargoPublicBuildCLIIntegration",
+        "seconds": 37.14
+      },
+      {
+        "name": "TestLinuxCargoTransitiveBuildCLIIntegration",
+        "seconds": 54.19
+      },
+      {
+        "name": "TestLinuxCargoLibraryBuildCLIIntegration",
+        "seconds": 26.2
+      },
+      {
+        "name": "TestLinuxCargoWorkspaceBuildCLIIntegration",
+        "seconds": 25.01
+      },
+      {
+        "name": "TestLinuxCargoBuildScriptBuildCLIIntegration",
+        "seconds": 25.8
+      },
+      {
+        "name": "TestLinuxCargoProcMacroBuildCLIIntegration",
+        "seconds": 26.11
+      },
+      {
+        "name": "TestLinuxCargoBuildFilesystemSecurityCLIIntegration",
+        "seconds": 11.8
+      },
+      {
+        "name": "TestLinuxCargoBuildNetworkSecurityCLIIntegration",
+        "seconds": 12.16
+      },
+      {
+        "name": "TestLinuxCargoBuildConfigurationSecurityCLIIntegration",
+        "seconds": 24.01
+      },
+      {
+        "name": "TestLinuxCargoBuildUnexpectedChildSecurityCLIIntegration",
+        "seconds": 11.36
+      },
+      {
+        "name": "TestLinuxCargoInvalidSourceBuildCLIIntegration",
+        "seconds": 11.55
+      },
+      {
+        "name": "TestLinuxCargoProcMacroSecurityCLIIntegration",
+        "seconds": 23.75
+      }
+    ],
+    "actual_seconds": 302.6,
+    "timeout_seconds": 900
+  }
+]

@@ -101,6 +101,7 @@ func runtimeLockStrings(value any) []string {
 func validateCIWorkflow(contents string) []string {
 	findings := validateWorkflowStructure(contents, true)
 	findings = append(findings, validateCargoIntegrationGates(contents)...)
+	findings = append(findings, validateTerraformIntegrationGates(contents)...)
 	requiredSnippets := []string{
 		"name: Heliopause CI",
 		"  pull_request:",
@@ -456,7 +457,19 @@ var cargoIntegrationCommands = []string{
 	`HELOX_CARGO_RESOLVER_INTEGRATION=1 HELOX_CARGO_BUILD_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=15m -test.run '^TestLinuxCargo.*Build.*CLIIntegration$|^TestLinuxCargoProcMacroSecurityCLIIntegration$'`,
 }
 
+var terraformIntegrationCommands = []string{
+	`HELOX_RUN_TERRAFORM_SOURCE_INTEGRATION=1 go test -v -timeout=3m ./internal/verification/terraformprovider -run '^TestPublicTerraformProviderSourceIntegration$'`,
+	`HELOX_TERRAFORM_PROVIDER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxTerraformProvider(Probe|Security)Integration$'`,
+	`HELOX_TERRAFORM_INIT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestLinuxTerraformInit(Integration|NegativeIntegration)$'`,
+}
+
+func validateTerraformIntegrationGates(contents string) []string {
+	return validateLifecycleIntegrationCommands(contents, "Terraform", terraformIntegrationCommands)
+}
 func validateCargoIntegrationGates(contents string) []string {
+	return validateLifecycleIntegrationCommands(contents, "Cargo", cargoIntegrationCommands)
+}
+func validateLifecycleIntegrationCommands(contents, label string, commands []string) []string {
 	doc, err := parseWorkflow(contents)
 	if err != nil {
 		return nil
@@ -478,9 +491,9 @@ func validateCargoIntegrationGates(contents string) []string {
 		}
 	}
 	var findings []string
-	for _, command := range cargoIntegrationCommands {
+	for _, command := range commands {
 		if counts[command] != 1 {
-			findings = append(findings, fmt.Sprintf("Cargo integration requires one active lifecycle command %q", command))
+			findings = append(findings, fmt.Sprintf("%s integration requires one active lifecycle command %q", label, command))
 		}
 	}
 	return findings

@@ -191,3 +191,32 @@ func TestCargoIntegrationRejectsSkippedOrSubstitutedOwner(t *testing.T) {
 		})
 	}
 }
+
+func TestTerraformRequiredGatesRejectCommentsDuplicatesAndDisabledFlags(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "..", workflowRelativePath))
+	if err != nil {
+		t.Fatal(err)
+	}
+	source := string(body)
+	for _, command := range []string{
+		`HELOX_RUN_TERRAFORM_SOURCE_INTEGRATION=1 go test -v -timeout=3m ./internal/verification/terraformprovider -run '^TestPublicTerraformProviderSourceIntegration$'`,
+		`HELOX_TERRAFORM_PROVIDER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxTerraformProvider(Probe|Security)Integration$'`,
+		`HELOX_TERRAFORM_INIT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestLinuxTerraformInit(Integration|NegativeIntegration)$'`,
+	} {
+		if strings.Count(source, command) != 1 {
+			t.Fatal("expected actual lifecycle command missing")
+		}
+		for name, fixture := range map[string]string{
+			"comment":            strings.Replace(source, command, "# "+command, 1),
+			"disabled":           strings.Replace(source, command, strings.Replace(command, "=1", "=0", 1), 1),
+			"duplicate":          strings.Replace(source, command, command+"\n          "+command, 1),
+			"substituted-target": strings.Replace(source, command, strings.Replace(command, "Integration", "OtherIntegration", 1), 1),
+		} {
+			t.Run(name+command, func(t *testing.T) {
+				if len(validateCIWorkflow(fixture)) == 0 {
+					t.Fatal("inactive Terraform gate accepted")
+				}
+			})
+		}
+	}
+}

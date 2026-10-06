@@ -93,6 +93,7 @@
 | Official PyTorch Source Qualification | M12-001 | Complete | [Closure Evidence](./docs/planning/evidence/m12-001-closure/result.json), [Current Work Queue](./docs/planning/02-current-work-queue.md) |
 | Public Go Modules Qualification | M12-002 | Complete (local) | [Qualification Evidence](./docs/planning/evidence/m12-002-go-build-qualification/result.json), [Current Work Queue](./docs/planning/02-current-work-queue.md) |
 | Public Cargo/crates.io Qualification | M12-003 | Complete (local) | [Qualification Evidence](./docs/planning/evidence/m12-003-cargo-build-qualification/result.json), [Current Work Queue](./docs/planning/02-current-work-queue.md) |
+| Public Terraform Provider Installation Qualification | M12-004 | Complete (local) | [Qualification Evidence](./docs/planning/evidence/m12-004-provider-qualification/result.json), [Current Work Queue](./docs/planning/02-current-work-queue.md) |
 | M12 Final Red-Team Fix Gate | M12-02 | Reserved | [M12-02 Final Red-Team Fix List](./docs/planning/17-m12-02-fix-list.md) |
 | Production Release & Operations | M13 | Defined | [M13 Production Release & Operations Contract](./docs/planning/18-m13-production-release-operations-contract.md) |
 
@@ -103,7 +104,7 @@ Step 14 — Implementation: M0·M1·M2·M3·M4·M5-001..007·M6-001..007·M7-001
 Documentation hierarchy and task routing migration: Complete
 
 M12-001 acceptance와 M12-002 public Go Modules·M12-003 public Cargo의 로컬
-acceptance는 완료했고 M12-004 Terraform Provider는 baseline audit을 마치고 `IN_PROGRESS`다. M12 전체는 계속 `IN_PROGRESS`이며, CUDA
+acceptance와 M12-004 public Terraform Provider installation의 로컬 acceptance는 완료했다. 다음 M12-005는 `NOT_STARTED / Ready: Yes`다. M12 전체는 계속 `IN_PROGRESS`이며, CUDA
 qualification을 broader first-release `RELEASE_SUPPORTED` 결정으로 확대하지
 않는다. 그 결정은 M12-005 feature freeze에 남긴다. 현재 milestone과
 active/next work item은 [Current Work Queue](./docs/planning/02-current-work-queue.md)를 참조한다.

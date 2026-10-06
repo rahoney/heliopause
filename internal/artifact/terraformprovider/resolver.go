@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"runtime"
+	"slices"
 	"strings"
 	"time"
 
@@ -73,7 +74,7 @@ func (s RegistrySnapshot) Parse(reference domain.ArtifactReference, platform Pla
 		return ProviderArtifact{}, err
 	}
 	for _, version := range versions.Versions {
-		if version.Version == parts[1] && strings.Join(version.Protocols, ",") != strings.Join(artifact.Protocols, ",") {
+		if version.Version == parts[1] && !sameProtocols(version.Protocols, artifact.Protocols) {
 			return ProviderArtifact{}, errors.New("terraform registry protocol declarations differ")
 		}
 	}
@@ -157,4 +158,12 @@ func (r *Resolver) readJSON(ctx context.Context, relative string, limit int64) (
 		return nil, errors.Join(errors.New("read bounded terraform Registry metadata"), ctx.Err())
 	}
 	return body, nil
+}
+
+func sameProtocols(a, b []string) bool {
+	a = slices.Clone(a)
+	b = slices.Clone(b)
+	slices.Sort(a)
+	slices.Sort(b)
+	return slices.Equal(a, b)
 }

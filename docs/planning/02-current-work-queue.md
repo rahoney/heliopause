@@ -9,9 +9,9 @@
 ```text
 Current milestone: M12 — Ecosystem Expansion Before Public Release
 Milestone status: IN_PROGRESS
-Active work item: M12-004 — Terraform Provider installation
+Active work item: None (M12-004 local acceptance COMPLETE)
 Next work item: M12-005 — Cross-ecosystem qualification and feature freeze
-Next work item status: NOT_STARTED / Ready: No (M12-004 pending)
+Next work item status: NOT_STARTED / Ready: Yes
 Ready: Yes
 ```
 
@@ -2135,12 +2135,12 @@ M12: IN_PROGRESS
 M12-001: COMPLETE
 M12-002: COMPLETE
 M12-003: COMPLETE
-M12-004: IN_PROGRESS
+M12-004: COMPLETE
 M12-005: NOT_STARTED
 M12-02: RESERVED
 M13: BLOCKED
-Active work item: M12-004 — Terraform Provider installation
-Next work item: M12-005 — NOT_STARTED / Ready: No (M12-004 pending)
+Active work item: None (M12-004 local acceptance COMPLETE)
+Next work item: M12-005 — NOT_STARTED / Ready: Yes
 ```
 
 M9-006까지 qualification을 완료했다. M10-001은 release identity·manifest 및
@@ -2175,7 +2175,7 @@ production activation과 최종 배포를 수행한다.
 | 1 | M12-001 | Official PyTorch source support | COMPLETE |
 | 2 | M12-002 | public Go Modules | COMPLETE |
 | 3 | M12-003 | Rust/Cargo and public crates.io | COMPLETE |
-| 4 | M12-004 | Terraform Provider installation | IN_PROGRESS |
+| 4 | M12-004 | Terraform Provider installation | COMPLETE |
 | 5 | M12-005 | cross-ecosystem qualification and feature freeze | NOT_STARTED |
 | 6 | M12-02 | final red-team/fix gate | RESERVED |
 
@@ -2573,19 +2573,20 @@ MISSING: None (work-item local acceptance)
 Delivery pending: new remote Required CI and native macOS; NO PUSH / NO REMOTE CI / NO MERGE
 
 M12-004 — Terraform
-IMPLEMENTED: NO (partial existing owners reused)
-WIRED: NO (resolution only)
-QUALIFIED: NO
-ACCEPTANCE_CLOSED: NO
-Status: IN_PROGRESS
-Evidence: evidence/m12-004-provider-baseline/result.json
-MISSING: signed acquisition, inspection, guarded complete provider transaction, actual CLI and qualification
+IMPLEMENTED: YES (existing owners reused and acceptance gaps implemented)
+WIRED: YES (public initial/retained complete-project installation CLI)
+QUALIFIED: YES (Linux/amd64 local qualification)
+ACCEPTANCE_CLOSED: YES
+Status: COMPLETE
+Evidence: evidence/m12-004-provider-qualification/result.json
+MISSING: None (work-item local acceptance)
+Delivery pending: new remote Required CI/native macOS/PR merge; NO PUSH / NO REMOTE CI / NO MERGE
 ```
 
 `WIRED: NO`는 코드가 전혀 존재하지 않는다는 뜻이 아니라, 해당 work item의
 required user/runtime path 전체가 acceptance 수준으로 연결되지 않았다는 뜻이다.
 M12-002~004의 상세 MISSING은 해당 work item이 시작될 때 별도 baseline audit로
-확정한다. M12-002와 M12-003 local acceptance는 닫혔으며 M12-004 baseline audit을 완료하고 남은 acceptance gap을 진행한다.
+확정한다. M12-002~004 local acceptance는 닫혔으며 다음 M12-005는 NOT_STARTED/Ready: Yes다.
 
 ### M11 post-qualification release hardening
 
@@ -2885,6 +2886,36 @@ CPU523.65s/cu1262070.42s full과 terminal cleanup/restoration을 확인했다.
 Native macOS·새 remote Required는 NOT_RUN이고 CUDA release-support matrix 결정은
 M12-005에 남는다. 다음 M12-004는 NOT_STARTED/Ready: Yes이며 baseline audit 후
 유일한 IN_PROGRESS로 시작한다. NO PUSH / NO REMOTE CI / NO MERGE.
+
+### M12-004 local acceptance 종료 (2026-10-07)
+
+`IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES`,
+`COMPLETE / MISSING: None`으로 로컬 acceptance를 닫는다. 기존 resolver, generic
+project update, GitHub ELF lifecycle과 Terraform transaction primitive를 재사용했다.
+Public official random3.7.2/partner integrations/github6.6.0의 signed source,
+bounded ZIP/ELF·HCL controls, fixed help0/1 observation, 독립 Evidence/entry+set ALLOW,
+private verified cache와 guarded provider tree/lock/metadata/retained approval을 연결한다.
+Actual 최초·retained 여섯 calls와 checksum/remote module/foreign cache/concurrent
+네 product negatives, hostile ownership/mode/post-state/rollback 회귀를 확인했다.
+
+최종 exact943-source timing 후보의 CPU507.82s/cu1261921.07s full, public probe/security,
+기존 직접 소비자12·네 proc maps·실제 npm/pip·Go/Cargo14·Cargo13·promotion2는 모두
+PASS다. 각 helper wait0, 독립 bounded Docker absence와 original12 bytes/modes 복원을
+확인했다. Viewer NOT_ATTESTED와 검사 전용 NumPy 승격 제외는 유지한다. Go build9
+634.10s/get-download3 242.79s/Cargo13 302.60s는 기존 CI 상한 안이다.
+
+[Qualification 결과](./evidence/m12-004-provider-qualification/result.json)가 raw,
+세 후보의 변경 경계, full input/target·stored Evidence와 actual CI budget을 연결한다.
+첫 cu126815.92s late gap의 원인은 미확정이며 후속 PASS/오류 진단을 회계 수정으로
+쓰지 않는다. Deliberate preparation98·진단 SourceID fixture·가상 mutex fixture의
+실패도 보존했다. 전체1198-path 후보 docs/workflow/security와 staged 검사를 확인하고
+최종 종료 변경은 명시적인 documentation/evidence/format-policy 경로만 바꾼다.
+
+Scope는 Provider installation only이며 RPC/plan/apply/cloud behavior는 NOT_ATTESTED다.
+Native macOS/new remote Required는 NOT_RUN, cu130/cu132는 공통 경로 focused scope다.
+M12 전체는 IN_PROGRESS이며 broader release support/feature freeze는 다음 M12-005에
+남는다. 다음 item은 `NOT_STARTED / Ready: Yes`이고 구현을 시작하지 않았다.
+NO PUSH / NO REMOTE CI / NO MERGE / NO AGENTS.
 
 ## Step 13 Invariant
 

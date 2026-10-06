@@ -1,0 +1,20 @@
+=== RUN   TestTerraformRetainedApprovalAndMarkerPermissions
+=== RUN   TestTerraformRetainedApprovalAndMarkerPermissions/approval-before-begin
+    terraform_cache_test.go:486: changed retained control permissions accepted
+=== RUN   TestTerraformRetainedApprovalAndMarkerPermissions/marker-before-begin
+    terraform_cache_test.go:486: changed retained control permissions accepted
+=== RUN   TestTerraformRetainedApprovalAndMarkerPermissions/approval-during-guard
+    terraform_cache_test.go:500: permissions drift during guard accepted
+=== RUN   TestTerraformRetainedApprovalAndMarkerPermissions/marker-during-guard
+    terraform_cache_test.go:500: permissions drift during guard accepted
+=== RUN   TestTerraformRetainedApprovalAndMarkerPermissions/approval-after-publication
+    terraform_cache_test.go:523: foreign approval mode was overwritten by rollback
+--- FAIL: TestTerraformRetainedApprovalAndMarkerPermissions (0.49s)
+    --- FAIL: TestTerraformRetainedApprovalAndMarkerPermissions/approval-before-begin (0.09s)
+    --- FAIL: TestTerraformRetainedApprovalAndMarkerPermissions/marker-before-begin (0.08s)
+    --- FAIL: TestTerraformRetainedApprovalAndMarkerPermissions/approval-during-guard (0.08s)
+    --- FAIL: TestTerraformRetainedApprovalAndMarkerPermissions/marker-during-guard (0.08s)
+    --- FAIL: TestTerraformRetainedApprovalAndMarkerPermissions/approval-after-publication (0.16s)
+FAIL
+FAIL	github.com/rahoney/heliopause/internal/promotion	0.499s
+FAIL

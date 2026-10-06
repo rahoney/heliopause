@@ -1,0 +1,100 @@
+=== RUN   TestTerraformVerifiedCacheRequiresRecordedEvidenceAndExactTree
+=== RUN   TestTerraformVerifiedCacheRequiresRecordedEvidenceAndExactTree/normal
+=== RUN   TestTerraformVerifiedCacheRequiresRecordedEvidenceAndExactTree/intake-tamper
+=== RUN   TestTerraformVerifiedCacheRequiresRecordedEvidenceAndExactTree/missing-evidence-stage
+=== RUN   TestTerraformVerifiedCacheRequiresRecordedEvidenceAndExactTree/missing-evidence-reuse
+=== RUN   TestTerraformVerifiedCacheRequiresRecordedEvidenceAndExactTree/file-tamper
+=== RUN   TestTerraformVerifiedCacheRequiresRecordedEvidenceAndExactTree/extra-file
+=== RUN   TestTerraformVerifiedCacheRequiresRecordedEvidenceAndExactTree/extra-directory
+=== RUN   TestTerraformVerifiedCacheRequiresRecordedEvidenceAndExactTree/symlink
+=== RUN   TestTerraformVerifiedCacheRequiresRecordedEvidenceAndExactTree/hardlink
+=== RUN   TestTerraformVerifiedCacheRequiresRecordedEvidenceAndExactTree/writable-executable
+=== RUN   TestTerraformVerifiedCacheRequiresRecordedEvidenceAndExactTree/receipt-tamper
+--- PASS: TestTerraformVerifiedCacheRequiresRecordedEvidenceAndExactTree (0.76s)
+    --- PASS: TestTerraformVerifiedCacheRequiresRecordedEvidenceAndExactTree/normal (0.07s)
+    --- PASS: TestTerraformVerifiedCacheRequiresRecordedEvidenceAndExactTree/intake-tamper (0.03s)
+    --- PASS: TestTerraformVerifiedCacheRequiresRecordedEvidenceAndExactTree/missing-evidence-stage (0.02s)
+    --- PASS: TestTerraformVerifiedCacheRequiresRecordedEvidenceAndExactTree/missing-evidence-reuse (0.05s)
+    --- PASS: TestTerraformVerifiedCacheRequiresRecordedEvidenceAndExactTree/file-tamper (0.05s)
+    --- PASS: TestTerraformVerifiedCacheRequiresRecordedEvidenceAndExactTree/extra-file (0.05s)
+    --- PASS: TestTerraformVerifiedCacheRequiresRecordedEvidenceAndExactTree/extra-directory (0.12s)
+    --- PASS: TestTerraformVerifiedCacheRequiresRecordedEvidenceAndExactTree/symlink (0.12s)
+    --- PASS: TestTerraformVerifiedCacheRequiresRecordedEvidenceAndExactTree/hardlink (0.09s)
+    --- PASS: TestTerraformVerifiedCacheRequiresRecordedEvidenceAndExactTree/writable-executable (0.10s)
+    --- PASS: TestTerraformVerifiedCacheRequiresRecordedEvidenceAndExactTree/receipt-tamper (0.08s)
+=== RUN   TestTerraformGuardPublishesRetainedStateAndRollsBackEveryPhase
+=== RUN   TestTerraformGuardPublishesRetainedStateAndRollsBackEveryPhase/normal-initial
+=== RUN   TestTerraformGuardPublishesRetainedStateAndRollsBackEveryPhase/before-backup-initial
+=== RUN   TestTerraformGuardPublishesRetainedStateAndRollsBackEveryPhase/after-lock-publication-initial
+=== RUN   TestTerraformGuardPublishesRetainedStateAndRollsBackEveryPhase/after-provider-publication-initial
+=== RUN   TestTerraformGuardPublishesRetainedStateAndRollsBackEveryPhase/before-approval-initial
+=== RUN   TestTerraformGuardPublishesRetainedStateAndRollsBackEveryPhase/after-approval-initial
+=== RUN   TestTerraformGuardPublishesRetainedStateAndRollsBackEveryPhase/normal-retained
+=== RUN   TestTerraformGuardPublishesRetainedStateAndRollsBackEveryPhase/before-backup-retained
+=== RUN   TestTerraformGuardPublishesRetainedStateAndRollsBackEveryPhase/after-lock-publication-retained
+=== RUN   TestTerraformGuardPublishesRetainedStateAndRollsBackEveryPhase/after-provider-publication-retained
+=== RUN   TestTerraformGuardPublishesRetainedStateAndRollsBackEveryPhase/before-approval-retained
+=== RUN   TestTerraformGuardPublishesRetainedStateAndRollsBackEveryPhase/after-approval-retained
+--- PASS: TestTerraformGuardPublishesRetainedStateAndRollsBackEveryPhase (1.52s)
+    --- PASS: TestTerraformGuardPublishesRetainedStateAndRollsBackEveryPhase/normal-initial (0.10s)
+    --- PASS: TestTerraformGuardPublishesRetainedStateAndRollsBackEveryPhase/before-backup-initial (0.08s)
+    --- PASS: TestTerraformGuardPublishesRetainedStateAndRollsBackEveryPhase/after-lock-publication-initial (0.08s)
+    --- PASS: TestTerraformGuardPublishesRetainedStateAndRollsBackEveryPhase/after-provider-publication-initial (0.08s)
+    --- PASS: TestTerraformGuardPublishesRetainedStateAndRollsBackEveryPhase/before-approval-initial (0.08s)
+    --- PASS: TestTerraformGuardPublishesRetainedStateAndRollsBackEveryPhase/after-approval-initial (0.09s)
+    --- PASS: TestTerraformGuardPublishesRetainedStateAndRollsBackEveryPhase/normal-retained (0.18s)
+    --- PASS: TestTerraformGuardPublishesRetainedStateAndRollsBackEveryPhase/before-backup-retained (0.16s)
+    --- PASS: TestTerraformGuardPublishesRetainedStateAndRollsBackEveryPhase/after-lock-publication-retained (0.18s)
+    --- PASS: TestTerraformGuardPublishesRetainedStateAndRollsBackEveryPhase/after-provider-publication-retained (0.15s)
+    --- PASS: TestTerraformGuardPublishesRetainedStateAndRollsBackEveryPhase/before-approval-retained (0.17s)
+    --- PASS: TestTerraformGuardPublishesRetainedStateAndRollsBackEveryPhase/after-approval-retained (0.18s)
+=== RUN   TestTerraformGuardRejectsControlAndApprovalAuthorityDrift
+=== RUN   TestTerraformGuardRejectsControlAndApprovalAuthorityDrift/configuration
+=== RUN   TestTerraformGuardRejectsControlAndApprovalAuthorityDrift/new-local-module
+=== RUN   TestTerraformGuardRejectsControlAndApprovalAuthorityDrift/lock
+=== RUN   TestTerraformGuardRejectsControlAndApprovalAuthorityDrift/foreign-marker
+=== RUN   TestTerraformGuardRejectsControlAndApprovalAuthorityDrift/foreign-provider
+=== RUN   TestTerraformGuardRejectsControlAndApprovalAuthorityDrift/metadata-directory-alias
+=== RUN   TestTerraformGuardRejectsControlAndApprovalAuthorityDrift/state-root-alias
+--- PASS: TestTerraformGuardRejectsControlAndApprovalAuthorityDrift (0.03s)
+    --- PASS: TestTerraformGuardRejectsControlAndApprovalAuthorityDrift/configuration (0.00s)
+    --- PASS: TestTerraformGuardRejectsControlAndApprovalAuthorityDrift/new-local-module (0.00s)
+    --- PASS: TestTerraformGuardRejectsControlAndApprovalAuthorityDrift/lock (0.00s)
+    --- PASS: TestTerraformGuardRejectsControlAndApprovalAuthorityDrift/foreign-marker (0.00s)
+    --- PASS: TestTerraformGuardRejectsControlAndApprovalAuthorityDrift/foreign-provider (0.00s)
+    --- PASS: TestTerraformGuardRejectsControlAndApprovalAuthorityDrift/metadata-directory-alias (0.00s)
+    --- PASS: TestTerraformGuardRejectsControlAndApprovalAuthorityDrift/state-root-alias (0.00s)
+=== RUN   TestTerraformRetainedApprovalAndMarkerPermissions
+=== RUN   TestTerraformRetainedApprovalAndMarkerPermissions/approval-before-begin
+=== RUN   TestTerraformRetainedApprovalAndMarkerPermissions/marker-before-begin
+=== RUN   TestTerraformRetainedApprovalAndMarkerPermissions/approval-during-guard
+=== RUN   TestTerraformRetainedApprovalAndMarkerPermissions/marker-during-guard
+=== RUN   TestTerraformRetainedApprovalAndMarkerPermissions/approval-after-publication
+=== RUN   TestTerraformRetainedApprovalAndMarkerPermissions/approval-after-publication-clean-return
+=== RUN   TestTerraformRetainedApprovalAndMarkerPermissions/approval-body-after-publication
+=== RUN   TestTerraformRetainedApprovalAndMarkerPermissions/lock-after-publication
+=== RUN   TestTerraformRetainedApprovalAndMarkerPermissions/marker-after-publication
+--- PASS: TestTerraformRetainedApprovalAndMarkerPermissions (1.24s)
+    --- PASS: TestTerraformRetainedApprovalAndMarkerPermissions/approval-before-begin (0.10s)
+    --- PASS: TestTerraformRetainedApprovalAndMarkerPermissions/marker-before-begin (0.09s)
+    --- PASS: TestTerraformRetainedApprovalAndMarkerPermissions/approval-during-guard (0.09s)
+    --- PASS: TestTerraformRetainedApprovalAndMarkerPermissions/marker-during-guard (0.09s)
+    --- PASS: TestTerraformRetainedApprovalAndMarkerPermissions/approval-after-publication (0.17s)
+    --- PASS: TestTerraformRetainedApprovalAndMarkerPermissions/approval-after-publication-clean-return (0.18s)
+    --- PASS: TestTerraformRetainedApprovalAndMarkerPermissions/approval-body-after-publication (0.18s)
+    --- PASS: TestTerraformRetainedApprovalAndMarkerPermissions/lock-after-publication (0.18s)
+    --- PASS: TestTerraformRetainedApprovalAndMarkerPermissions/marker-after-publication (0.18s)
+=== RUN   TestTerraformRollbackPreservesForeignMutationAndRecoveryBackup
+--- PASS: TestTerraformRollbackPreservesForeignMutationAndRecoveryBackup (0.07s)
+=== RUN   TestTerraformCommitAndRollbackPreserveForeignBackupMembers
+=== RUN   TestTerraformCommitAndRollbackPreserveForeignBackupMembers/root
+=== RUN   TestTerraformCommitAndRollbackPreserveForeignBackupMembers/selected
+--- PASS: TestTerraformCommitAndRollbackPreserveForeignBackupMembers (0.19s)
+    --- PASS: TestTerraformCommitAndRollbackPreserveForeignBackupMembers/root (0.10s)
+    --- PASS: TestTerraformCommitAndRollbackPreserveForeignBackupMembers/selected (0.09s)
+=== RUN   TestTerraformTransactionPublishesLockAtomically
+--- PASS: TestTerraformTransactionPublishesLockAtomically (0.02s)
+=== RUN   TestTerraformTransactionRejectsUnmanagedProject
+--- PASS: TestTerraformTransactionRejectsUnmanagedProject (0.00s)
+PASS
+ok  	github.com/rahoney/heliopause/internal/promotion	3.847s

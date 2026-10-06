@@ -12,6 +12,8 @@ import (
 	"regexp"
 	"strings"
 
+	"golang.org/x/mod/semver"
+
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
@@ -34,7 +36,7 @@ func ParseReference(value string) (domain.ArtifactReference, error) {
 		return domain.ArtifactReference{}, errors.New("terraform Provider reference requires namespace/type@version")
 	}
 	path := strings.Split(parts[0], "/")
-	if len(path) != 2 || !providerSegment.MatchString(path[0]) || !providerSegment.MatchString(path[1]) || !providerVersion.MatchString(parts[1]) {
+	if len(path) != 2 || !providerSegment.MatchString(path[0]) || !providerSegment.MatchString(path[1]) || !validProviderVersion(parts[1]) {
 		return domain.ArtifactReference{}, errors.New("terraform Provider reference is invalid")
 	}
 	return domain.NewArtifactReference(providerSource, parts[0]+"@"+parts[1])
@@ -75,7 +77,7 @@ type SigningKey struct {
 }
 
 func ParseVersionResponse(body []byte, requestedVersion string, platform Platform) error {
-	if len(body) == 0 || len(body) > 2<<20 || !providerVersion.MatchString(requestedVersion) || !providerSegment.MatchString(platform.OS) || !providerSegment.MatchString(platform.Arch) {
+	if len(body) == 0 || len(body) > 2<<20 || !validProviderVersion(requestedVersion) || !providerSegment.MatchString(platform.OS) || !providerSegment.MatchString(platform.Arch) {
 		return errors.New("terraform Provider version request is invalid")
 	}
 	var document versionDocument
@@ -85,7 +87,7 @@ func ParseVersionResponse(body []byte, requestedVersion string, platform Platfor
 	seen := map[string]bool{}
 	available := false
 	for _, entry := range document.Versions {
-		if !providerVersion.MatchString(entry.Version) || seen[entry.Version] || len(entry.Platforms) > 64 || len(entry.Protocols) > 8 {
+		if !validProviderVersion(entry.Version) || seen[entry.Version] || len(entry.Platforms) > 64 || len(entry.Protocols) > 8 {
 			return errors.New("terraform Registry version identity is invalid or ambiguous")
 		}
 		seen[entry.Version] = true
@@ -267,4 +269,8 @@ func mustSource(value string) domain.SourceID {
 		panic(err)
 	}
 	return source
+}
+
+func validProviderVersion(value string) bool {
+	return providerVersion.MatchString(value) && semver.IsValid("v"+value)
 }

@@ -1,0 +1,62 @@
+{
+  "checks": [
+    {
+      "profile": "docs",
+      "exit_code": 0,
+      "raw": "raw/closure-first-docs.log",
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9",
+      "scope": "Complete pre-closure1198-path candidate; source/evidence/profile checks actual terminal0; later closure delta documentation/evidence/format policy only"
+    },
+    {
+      "profile": "workflow",
+      "exit_code": 0,
+      "raw": "raw/closure-first-workflow.log",
+      "sha256": "f4f25ae69c732bff0bafe12cf6d9bc0bbd08c6a62454779752e01fd290308e1f",
+      "scope": "Complete pre-closure1198-path candidate; source/evidence/profile checks actual terminal0; later closure delta documentation/evidence/format policy only"
+    },
+    {
+      "profile": "security",
+      "exit_code": 0,
+      "raw": "raw/closure-first-security.log",
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95",
+      "scope": "Complete pre-closure1198-path candidate; source/evidence/profile checks actual terminal0; later closure delta documentation/evidence/format policy only"
+    },
+    {
+      "profile": "staged-whitespace",
+      "exit_code": 0,
+      "raw": "raw/closure-verbatim-cached-check.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "scope": "Complete pre-closure1198-path candidate; source/evidence/profile checks actual terminal0; later closure delta documentation/evidence/format policy only"
+    }
+  ],
+  "final_closure_checks": {
+    "status": "PASS",
+    "scope": "Final closure documentation/evidence delta, canonical profiles actual terminal0; raw-only exact whitespace exceptions preserve bytes",
+    "checks": [
+      {
+        "profile": "docs",
+        "exit_code": 0,
+        "raw": "raw/closure-final-docs.log",
+        "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+      },
+      {
+        "profile": "workflow",
+        "exit_code": 0,
+        "raw": "raw/closure-final-workflow.log",
+        "sha256": "3f20bf1e3d8f98de7982f5f1a15d284048a3acfe2cca146e19a0a6260690599d"
+      },
+      {
+        "profile": "security",
+        "exit_code": 0,
+        "raw": "raw/closure-final-security.log",
+        "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95"
+      },
+      {
+        "profile": "staged-whitespace",
+        "exit_code": 0,
+        "raw": "raw/closure-final-preserved-cached-check.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ]
+  }
+}

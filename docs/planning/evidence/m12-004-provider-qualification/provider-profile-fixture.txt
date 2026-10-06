@@ -1,0 +1,21 @@
+// Provider profile mechanics are distinct from source approval and from the
+// Go/Cargo resolver/compiler executable catalogues.
+bool VerifyTerraformProviderProfileBoundary() {
+ const char* profile = "terraform-provider";
+ if (!IsCanonicalBootstrapProfile(profile) || MaximumRecords(profile) != 10000 ||
+     ClassifyExecutablePath("/work/artifact", profile) != ProcessClass::kArtifact ||
+     !IsBootstrapHandoffClass(ProcessClass::kArtifact, profile) ||
+     !IsWorkspacePath("/work/artifact", profile)) return false;
+ for (const char* path : {"/work/provider", "/usr/local/go/bin/go", "/usr/local/bin/node",
+                         "/usr/local/bin/python3.14", kCargoBinary, kRustcBinary}) {
+  if (ClassifyExecutablePath(path, profile) != ProcessClass::kUnknown) return false;
+ }
+ for (const auto process : {ProcessClass::kNode, ProcessClass::kGo, ProcessClass::kCargo,
+                            ProcessClass::kCargoRustc, ProcessClass::kPython}) {
+  if (IsBootstrapHandoffClass(process, profile)) return false;
+ }
+ return !IsWorkspacePath("/etc/passwd", profile) &&
+   !IsBootstrapHandoffClass(ProcessClass::kArtifact, kProfileNPM) &&
+   ClassifyExecutablePath("/work/artifact", kProfileGoBuild) == ProcessClass::kUnknown;
+}
+

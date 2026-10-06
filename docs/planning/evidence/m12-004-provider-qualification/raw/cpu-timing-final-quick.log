@@ -1,0 +1,697 @@
+[check] format check
+[check] runtime lock drift
+[check] version support freshness
+[check] module drift
+[check] module integrity
+[check] production build
+[check] test build validity
+[check] architecture
+[check] CI configuration
+=== RUN   TestActionlintContextAvailability
+=== RUN   TestActionlintContextAvailability/corrected_full_workflow
+=== RUN   TestActionlintContextAvailability/valid_step_context
+=== RUN   TestActionlintContextAvailability/original_corpus_violation
+=== RUN   TestActionlintContextAvailability/renamed_reordered_job_env
+=== RUN   TestActionlintContextAvailability/different_job_and_key_order
+=== RUN   TestActionlintContextAvailability/disallowed_step_context_at_job_if
+--- PASS: TestActionlintContextAvailability (0.07s)
+    --- PASS: TestActionlintContextAvailability/corrected_full_workflow (0.01s)
+    --- PASS: TestActionlintContextAvailability/valid_step_context (0.01s)
+    --- PASS: TestActionlintContextAvailability/original_corpus_violation (0.01s)
+    --- PASS: TestActionlintContextAvailability/renamed_reordered_job_env (0.01s)
+    --- PASS: TestActionlintContextAvailability/different_job_and_key_order (0.01s)
+    --- PASS: TestActionlintContextAvailability/disallowed_step_context_at_job_if (0.01s)
+PASS
+ok  	github.com/rahoney/heliopause/scripts/check	0.076s
+[check] go vet
+[check] Staticcheck
+[check] default test
+check: execution failure: default test: /home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/bin/go test -timeout=5m ./...
+?   	github.com/rahoney/heliopause/cmd/haa-network-policy-helper	[no test files]
+ok  	github.com/rahoney/heliopause/cmd/helox	2.921s
+ok  	github.com/rahoney/heliopause/internal/application	(cached)
+ok  	github.com/rahoney/heliopause/internal/artifact/cargo	(cached)
+ok  	github.com/rahoney/heliopause/internal/artifact/githubrelease	(cached)
+ok  	github.com/rahoney/heliopause/internal/artifact/gomodule	(cached)
+ok  	github.com/rahoney/heliopause/internal/artifact/npm	(cached)
+?   	github.com/rahoney/heliopause/internal/artifact/projectbuild	[no test files]
+ok  	github.com/rahoney/heliopause/internal/artifact/pypi	(cached)
+ok  	github.com/rahoney/heliopause/internal/artifact/terraformprovider	(cached)
+ok  	github.com/rahoney/heliopause/internal/bootstrap	0.018s
+ok  	github.com/rahoney/heliopause/internal/cli	(cached)
+ok  	github.com/rahoney/heliopause/internal/core/domain	(cached)
+?   	github.com/rahoney/heliopause/internal/core/ports	[no test files]
+ok  	github.com/rahoney/heliopause/internal/evidence	(cached)
+ok  	github.com/rahoney/heliopause/internal/evidence/local	(cached)
+ok  	github.com/rahoney/heliopause/internal/hosttool	(cached)
+?   	github.com/rahoney/heliopause/internal/inspection/cargo	[no test files]
+ok  	github.com/rahoney/heliopause/internal/inspection/githubrelease	(cached)
+ok  	github.com/rahoney/heliopause/internal/inspection/gomodule	(cached)
+ok  	github.com/rahoney/heliopause/internal/inspection/npm	(cached)
+?   	github.com/rahoney/heliopause/internal/inspection/projectbuild	[no test files]
+ok  	github.com/rahoney/heliopause/internal/inspection/pypi	(cached)
+ok  	github.com/rahoney/heliopause/internal/inspection/terraformprovider	(cached)
+ok  	github.com/rahoney/heliopause/internal/networkpolicy	(cached)
+ok  	github.com/rahoney/heliopause/internal/policy	(cached)
+ok  	github.com/rahoney/heliopause/internal/promotion	(cached)
+ok  	github.com/rahoney/heliopause/internal/releaseinstall	(cached)
+ok  	github.com/rahoney/heliopause/internal/runtimeidentity	(cached)
+SIGQUIT: quit
+PC=0x495821 m=0 sigcode=0
+
+goroutine 0 gp=0x11910a0 m=0 mp=0x1192280 [idle]:
+runtime.futex(0x11923d8, 0x80, 0x0, 0x0, 0x0, 0x0)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/sys_linux_amd64.s:569 +0x21 fp=0x7ffcd2091fe8 sp=0x7ffcd2091fe0 pc=0x495821
+runtime.futexsleep(0x1192280?, 0xd2092060?, 0x463348?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/os_linux.go:73 +0x30 fp=0x7ffcd2092038 sp=0x7ffcd2091fe8 pc=0x44de70
+runtime.notesleep(0x11923d8)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/lock_futex.go:47 +0x87 fp=0x7ffcd2092070 sp=0x7ffcd2092038 pc=0x421587
+runtime.mPark(...)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:1967
+runtime.stopm()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:3008 +0x8c fp=0x7ffcd20920a0 sp=0x7ffcd2092070 pc=0x45948c
+runtime.findRunnable()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:3796 +0xec8 fp=0x7ffcd2092270 sp=0x7ffcd20920a0 pc=0x45b048
+runtime.schedule()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:4164 +0xb1 fp=0x7ffcd20922b0 sp=0x7ffcd2092270 pc=0x45c191
+runtime.park_m(0x356a9b1f50e0)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:4304 +0x285 fp=0x7ffcd2092310 sp=0x7ffcd20922b0 pc=0x45c625
+runtime.mcall()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:496 +0x55 fp=0x7ffcd2092328 sp=0x7ffcd2092310 pc=0x492075
+
+goroutine 1 gp=0x356a9adf01e0 m=nil [chan receive, 2 minutes]:
+runtime.gopark(0x300ee106de4e8?, 0x300ee106d64c0?, 0xc0?, 0x64?, 0x78ee106de4e8?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9aea3990 sp=0x356a9aea3970 pc=0x48bbce
+runtime.chanrecv(0x356a9aeec580, 0x356a9aea3a77, 0x1)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/chan.go:667 +0x4ae fp=0x356a9aea3a08 sp=0x356a9aea3990 pc=0x41b0ee
+runtime.chanrecv1(0x1190040?, 0xc558a0?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/chan.go:509 +0x12 fp=0x356a9aea3a30 sp=0x356a9aea3a08 pc=0x41ac12
+testing.(*T).Run(0x356a9af6e908, {0xc0e386?, 0x0?}, 0xc2fa80)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2109 +0x4e5 fp=0x356a9aea3b08 sp=0x356a9aea3a30 pc=0x53e665
+testing.runTests.func1(0x356a9af6e908)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2585 +0x3e fp=0x356a9aea3b50 sp=0x356a9aea3b08 pc=0x540abe
+testing.tRunner(0x356a9af6e908, 0x356a9b05fc58)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2036 +0xea fp=0x356a9aea3ba0 sp=0x356a9aea3b50 pc=0x53d64a
+testing.runTests({0xbf0fbf, 0x1d}, {0xc0a83f, 0x2e}, 0x356a9af367b0, {0x118c820, 0x10a, 0x10a}, {0xc2a95f279c9d4c1e, 0x45d99d2d5a, ...})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2583 +0x505 fp=0x356a9aea3c88 sp=0x356a9aea3ba0 pc=0x540985
+testing.(*M).Run(0x356a9b06f9a0)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2443 +0x6ac fp=0x356a9aea3ec8 sp=0x356a9aea3c88 pc=0x53f30c
+main.main()
+	_testmain.go:578 +0x9b fp=0x356a9aea3f48 sp=0x356a9aea3ec8 pc=0xa5109b
+runtime.main()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:290 +0x2d5 fp=0x356a9aea3fe0 sp=0x356a9aea3f48 pc=0x454675
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9aea3fe8 sp=0x356a9aea3fe0 pc=0x493cc1
+
+goroutine 2 gp=0x356a9adf0d20 m=nil [force gc (idle), 2 minutes]:
+runtime.gopark(0xf45cd68ed3f?, 0x0?, 0x0?, 0x0?, 0x0?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9ae66fa8 sp=0x356a9ae66f88 pc=0x48bbce
+runtime.goparkunlock(...)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:468
+runtime.forcegchelper()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:375 +0xb3 fp=0x356a9ae66fe0 sp=0x356a9ae66fa8 pc=0x454993
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9ae66fe8 sp=0x356a9ae66fe0 pc=0x493cc1
+created by runtime.init.7 in goroutine 1
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:363 +0x1a
+
+goroutine 18 gp=0x356a9af043c0 m=nil [GC sweep wait]:
+runtime.gopark(0x118fa01?, 0x0?, 0x0?, 0x0?, 0x0?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9ae62788 sp=0x356a9ae62768 pc=0x48bbce
+runtime.goparkunlock(...)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:468
+runtime.bgsweep(0x356a9af12000)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgcsweep.go:324 +0x151 fp=0x356a9ae627c8 sp=0x356a9ae62788 pc=0x43be71
+runtime.gcenable.gowrap1()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:214 +0x17 fp=0x356a9ae627e0 sp=0x356a9ae627c8 pc=0x42d1d7
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9ae627e8 sp=0x356a9ae627e0 pc=0x493cc1
+created by runtime.gcenable in goroutine 1
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:214 +0x66
+
+goroutine 19 gp=0x356a9af045a0 m=nil [GC scavenge wait, 2 minutes]:
+runtime.gopark(0x15d8d8?, 0x3b9aca00?, 0x0?, 0x0?, 0x0?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9ae62f78 sp=0x356a9ae62f58 pc=0x48bbce
+runtime.goparkunlock(...)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:468
+runtime.(*scavengerState).park(0x1190a20)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgcscavenge.go:425 +0x49 fp=0x356a9ae62fa8 sp=0x356a9ae62f78 pc=0x4398e9
+runtime.bgscavenge(0x356a9af12000)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgcscavenge.go:658 +0x59 fp=0x356a9ae62fc8 sp=0x356a9ae62fa8 pc=0x439e79
+runtime.gcenable.gowrap2()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:215 +0x17 fp=0x356a9ae62fe0 sp=0x356a9ae62fc8 pc=0x42d197
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9ae62fe8 sp=0x356a9ae62fe0 pc=0x493cc1
+created by runtime.gcenable in goroutine 1
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:215 +0xa5
+
+goroutine 20 gp=0x356a9af04780 m=nil [GOMAXPROCS updater (idle), 2 minutes]:
+runtime.gopark(0x0?, 0x0?, 0x0?, 0x0?, 0x0?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9ae63788 sp=0x356a9ae63768 pc=0x48bbce
+runtime.goparkunlock(...)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:468
+runtime.updateMaxProcsGoroutine()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:7095 +0xe7 fp=0x356a9ae637e0 sp=0x356a9ae63788 pc=0x463007
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9ae637e8 sp=0x356a9ae637e0 pc=0x493cc1
+created by runtime.defaultGOMAXPROCSUpdateEnable in goroutine 1
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:7083 +0x37
+
+goroutine 21 gp=0x356a9af04d20 m=nil [finalizer wait, 2 minutes]:
+runtime.gopark(0x464055?, 0x1c8?, 0xa0?, 0x50?, 0x356a9ae66601?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9ae66620 sp=0x356a9ae66600 pc=0x48bbce
+runtime.runFinalizers()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mfinal.go:210 +0x107 fp=0x356a9ae667e0 sp=0x356a9ae66620 pc=0x42c147
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9ae667e8 sp=0x356a9ae667e0 pc=0x493cc1
+created by runtime.createfing in goroutine 1
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mfinal.go:172 +0x3d
+
+goroutine 22 gp=0x356a9af04f00 m=nil [cleanup wait, 2 minutes]:
+runtime.gopark(0x0?, 0x0?, 0x0?, 0x0?, 0x0?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9ae63f68 sp=0x356a9ae63f48 pc=0x48bbce
+runtime.goparkunlock(...)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:468
+runtime.(*cleanupQueue).dequeue(0x1190e80)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mcleanup.go:522 +0xd4 fp=0x356a9ae63fa0 sp=0x356a9ae63f68 pc=0x428e94
+runtime.runCleanups()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mcleanup.go:718 +0x45 fp=0x356a9ae63fe0 sp=0x356a9ae63fa0 pc=0x429505
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9ae63fe8 sp=0x356a9ae63fe0 pc=0x493cc1
+created by runtime.(*cleanupQueue).createGs in goroutine 1
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mcleanup.go:672 +0xa5
+
+goroutine 454 gp=0x356a9af054a0 m=nil [chan receive, 2 minutes]:
+runtime.gopark(0x0?, 0x356a9af18000?, 0xd?, 0xde?, 0x356a9ae74c10?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9ae74bc0 sp=0x356a9ae74ba0 pc=0x48bbce
+runtime.chanrecv(0x356a9af1c700, 0x0, 0x1)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/chan.go:667 +0x4ae fp=0x356a9ae74c38 sp=0x356a9ae74bc0 pc=0x41b0ee
+runtime.chanrecv1(0x1190040?, 0xc558a0?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/chan.go:509 +0x12 fp=0x356a9ae74c60 sp=0x356a9ae74c38 pc=0x41ac12
+testing.(*T).Parallel(0x356a9af6efc8)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:1803 +0x230 fp=0x356a9ae74cf8 sp=0x356a9ae74c60 pc=0x53d2d0
+github.com/rahoney/heliopause/internal/sandbox.TestNPMCreateArgumentsConstrainedAndBoundaryConfigured(0x356a9af6efc8)
+	/tmp/haa-m12-004-source/internal/sandbox/npm_resolver_test.go:16 +0x2a fp=0x356a9ae74f70 sp=0x356a9ae74cf8 pc=0x9f830a
+testing.tRunner(0x356a9af6efc8, 0xc2f8b8)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2036 +0xea fp=0x356a9ae74fc0 sp=0x356a9ae74f70 pc=0x53d64a
+testing.(*T).Run.gowrap1()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2101 +0x1b fp=0x356a9ae74fe0 sp=0x356a9ae74fc0 pc=0x53e7db
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9ae74fe8 sp=0x356a9ae74fe0 pc=0x493cc1
+created by testing.(*T).Run in goroutine 1
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2101 +0x4c5
+
+goroutine 42 gp=0x356a9af05a40 m=nil [GC worker (idle), 2 minutes]:
+runtime.gopark(0x356a9ae64f50?, 0x356a9ae64f60?, 0x93?, 0xcd?, 0x4bf1b3?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9ae64f40 sp=0x356a9ae64f20 pc=0x48bbce
+runtime.gcBgMarkWorker(0x356a9af1d180)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1791 +0xeb fp=0x356a9ae64fc8 sp=0x356a9ae64f40 pc=0x42fcab
+runtime.gcBgMarkStartWorkers.gowrap1()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1695 +0x17 fp=0x356a9ae64fe0 sp=0x356a9ae64fc8 pc=0x42fb97
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9ae64fe8 sp=0x356a9ae64fe0 pc=0x493cc1
+created by runtime.gcBgMarkStartWorkers in goroutine 41
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1695 +0x105
+
+goroutine 43 gp=0x356a9af05c20 m=nil [GC worker (idle), 2 minutes]:
+runtime.gopark(0x356a9ae64750?, 0x356a9ae64760?, 0x93?, 0xcd?, 0x356a9af36ca8?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9ae64740 sp=0x356a9ae64720 pc=0x48bbce
+runtime.gcBgMarkWorker(0x356a9af1d180)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1791 +0xeb fp=0x356a9ae647c8 sp=0x356a9ae64740 pc=0x42fcab
+runtime.gcBgMarkStartWorkers.gowrap1()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1695 +0x17 fp=0x356a9ae647e0 sp=0x356a9ae647c8 pc=0x42fb97
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9ae647e8 sp=0x356a9ae647e0 pc=0x493cc1
+created by runtime.gcBgMarkStartWorkers in goroutine 41
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1695 +0x105
+
+goroutine 44 gp=0x356a9b1f4000 m=nil [GC worker (idle), 2 minutes]:
+runtime.gopark(0x0?, 0x0?, 0x0?, 0x0?, 0x0?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9ae65740 sp=0x356a9ae65720 pc=0x48bbce
+runtime.gcBgMarkWorker(0x356a9af1d180)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1791 +0xeb fp=0x356a9ae657c8 sp=0x356a9ae65740 pc=0x42fcab
+runtime.gcBgMarkStartWorkers.gowrap1()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1695 +0x17 fp=0x356a9ae657e0 sp=0x356a9ae657c8 pc=0x42fb97
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9ae657e8 sp=0x356a9ae657e0 pc=0x493cc1
+created by runtime.gcBgMarkStartWorkers in goroutine 41
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1695 +0x105
+
+goroutine 45 gp=0x356a9b1f41e0 m=nil [GC worker (idle), 2 minutes]:
+runtime.gopark(0x0?, 0x0?, 0x0?, 0x0?, 0x0?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9ae65f40 sp=0x356a9ae65f20 pc=0x48bbce
+runtime.gcBgMarkWorker(0x356a9af1d180)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1791 +0xeb fp=0x356a9ae65fc8 sp=0x356a9ae65f40 pc=0x42fcab
+runtime.gcBgMarkStartWorkers.gowrap1()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1695 +0x17 fp=0x356a9ae65fe0 sp=0x356a9ae65fc8 pc=0x42fb97
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9ae65fe8 sp=0x356a9ae65fe0 pc=0x493cc1
+created by runtime.gcBgMarkStartWorkers in goroutine 41
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1695 +0x105
+
+goroutine 46 gp=0x356a9b1f43c0 m=nil [GC worker (idle), 2 minutes]:
+runtime.gopark(0x0?, 0x0?, 0x0?, 0x0?, 0x0?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9b1fa740 sp=0x356a9b1fa720 pc=0x48bbce
+runtime.gcBgMarkWorker(0x356a9af1d180)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1791 +0xeb fp=0x356a9b1fa7c8 sp=0x356a9b1fa740 pc=0x42fcab
+runtime.gcBgMarkStartWorkers.gowrap1()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1695 +0x17 fp=0x356a9b1fa7e0 sp=0x356a9b1fa7c8 pc=0x42fb97
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9b1fa7e8 sp=0x356a9b1fa7e0 pc=0x493cc1
+created by runtime.gcBgMarkStartWorkers in goroutine 41
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1695 +0x105
+
+goroutine 47 gp=0x356a9b1f45a0 m=nil [GC worker (idle), 2 minutes]:
+runtime.gopark(0x0?, 0x0?, 0x0?, 0x0?, 0x0?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9b1faf40 sp=0x356a9b1faf20 pc=0x48bbce
+runtime.gcBgMarkWorker(0x356a9af1d180)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1791 +0xeb fp=0x356a9b1fafc8 sp=0x356a9b1faf40 pc=0x42fcab
+runtime.gcBgMarkStartWorkers.gowrap1()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1695 +0x17 fp=0x356a9b1fafe0 sp=0x356a9b1fafc8 pc=0x42fb97
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9b1fafe8 sp=0x356a9b1fafe0 pc=0x493cc1
+created by runtime.gcBgMarkStartWorkers in goroutine 41
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1695 +0x105
+
+goroutine 48 gp=0x356a9b1f4780 m=nil [GC worker (idle), 2 minutes]:
+runtime.gopark(0xf45cd71f7c9?, 0x1?, 0x79?, 0xfc?, 0x0?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9b1fb740 sp=0x356a9b1fb720 pc=0x48bbce
+runtime.gcBgMarkWorker(0x356a9af1d180)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1791 +0xeb fp=0x356a9b1fb7c8 sp=0x356a9b1fb740 pc=0x42fcab
+runtime.gcBgMarkStartWorkers.gowrap1()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1695 +0x17 fp=0x356a9b1fb7e0 sp=0x356a9b1fb7c8 pc=0x42fb97
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9b1fb7e8 sp=0x356a9b1fb7e0 pc=0x493cc1
+created by runtime.gcBgMarkStartWorkers in goroutine 41
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1695 +0x105
+
+goroutine 49 gp=0x356a9b1f4960 m=nil [GC worker (idle)]:
+runtime.gopark(0xf45cd7200b2?, 0x1?, 0x7e?, 0xac?, 0x0?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9b1fbf40 sp=0x356a9b1fbf20 pc=0x48bbce
+runtime.gcBgMarkWorker(0x356a9af1d180)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1791 +0xeb fp=0x356a9b1fbfc8 sp=0x356a9b1fbf40 pc=0x42fcab
+runtime.gcBgMarkStartWorkers.gowrap1()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1695 +0x17 fp=0x356a9b1fbfe0 sp=0x356a9b1fbfc8 pc=0x42fb97
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9b1fbfe8 sp=0x356a9b1fbfe0 pc=0x493cc1
+created by runtime.gcBgMarkStartWorkers in goroutine 41
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1695 +0x105
+
+goroutine 50 gp=0x356a9b1f4b40 m=nil [GC worker (idle), 2 minutes]:
+runtime.gopark(0xf29a45ef63c?, 0x1?, 0x31?, 0x8a?, 0x0?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9b1fc740 sp=0x356a9b1fc720 pc=0x48bbce
+runtime.gcBgMarkWorker(0x356a9af1d180)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1791 +0xeb fp=0x356a9b1fc7c8 sp=0x356a9b1fc740 pc=0x42fcab
+runtime.gcBgMarkStartWorkers.gowrap1()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1695 +0x17 fp=0x356a9b1fc7e0 sp=0x356a9b1fc7c8 pc=0x42fb97
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9b1fc7e8 sp=0x356a9b1fc7e0 pc=0x493cc1
+created by runtime.gcBgMarkStartWorkers in goroutine 41
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1695 +0x105
+
+goroutine 51 gp=0x356a9b1f4d20 m=nil [GC worker (idle), 2 minutes]:
+runtime.gopark(0xf29a7aab21c?, 0x3?, 0xe3?, 0x70?, 0x0?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9b1fcf40 sp=0x356a9b1fcf20 pc=0x48bbce
+runtime.gcBgMarkWorker(0x356a9af1d180)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1791 +0xeb fp=0x356a9b1fcfc8 sp=0x356a9b1fcf40 pc=0x42fcab
+runtime.gcBgMarkStartWorkers.gowrap1()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1695 +0x17 fp=0x356a9b1fcfe0 sp=0x356a9b1fcfc8 pc=0x42fb97
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9b1fcfe8 sp=0x356a9b1fcfe0 pc=0x493cc1
+created by runtime.gcBgMarkStartWorkers in goroutine 41
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1695 +0x105
+
+goroutine 52 gp=0x356a9b1f4f00 m=nil [GC worker (idle), 2 minutes]:
+runtime.gopark(0xf29a7a5913c?, 0x3?, 0x4b?, 0x4b?, 0x0?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9b1fd740 sp=0x356a9b1fd720 pc=0x48bbce
+runtime.gcBgMarkWorker(0x356a9af1d180)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1791 +0xeb fp=0x356a9b1fd7c8 sp=0x356a9b1fd740 pc=0x42fcab
+runtime.gcBgMarkStartWorkers.gowrap1()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1695 +0x17 fp=0x356a9b1fd7e0 sp=0x356a9b1fd7c8 pc=0x42fb97
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9b1fd7e8 sp=0x356a9b1fd7e0 pc=0x493cc1
+created by runtime.gcBgMarkStartWorkers in goroutine 41
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1695 +0x105
+
+goroutine 53 gp=0x356a9b1f50e0 m=nil [GC worker (idle)]:
+runtime.gopark(0xf45cd71fb78?, 0x1?, 0x80?, 0xda?, 0x0?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9b1fdf40 sp=0x356a9b1fdf20 pc=0x48bbce
+runtime.gcBgMarkWorker(0x356a9af1d180)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1791 +0xeb fp=0x356a9b1fdfc8 sp=0x356a9b1fdf40 pc=0x42fcab
+runtime.gcBgMarkStartWorkers.gowrap1()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1695 +0x17 fp=0x356a9b1fdfe0 sp=0x356a9b1fdfc8 pc=0x42fb97
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9b1fdfe8 sp=0x356a9b1fdfe0 pc=0x493cc1
+created by runtime.gcBgMarkStartWorkers in goroutine 41
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/mgc.go:1695 +0x105
+
+goroutine 600 gp=0x356a9af05680 m=nil [sync.Mutex.Lock, 2 minutes, synctest bubble 2]:
+runtime.gopark(0x1000060?, 0x11909a0?, 0x60?, 0x92?, 0x48bbce?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9b0c8970 sp=0x356a9b0c8950 pc=0x48bbce
+runtime.goparkunlock(...)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:468
+runtime.semacquire1(0x356a9af8e0e4, 0x0, 0x3, 0x2, 0x16)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/sema.go:192 +0x232 fp=0x356a9b0c89d8 sp=0x356a9b0c8970 pc=0x468cd2
+internal/sync.runtime_SemacquireMutex(0x0?, 0x0?, 0x0?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/sema.go:95 +0x25 fp=0x356a9b0c8a10 sp=0x356a9b0c89d8 pc=0x48d3c5
+internal/sync.(*Mutex).lockSlow(0x356a9af8e0e0)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/internal/sync/mutex.go:149 +0x15d fp=0x356a9b0c8a60 sp=0x356a9b0c8a10 pc=0x49b91d
+internal/sync.(*Mutex).Lock(...)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/internal/sync/mutex.go:70
+sync.(*Mutex).Lock(...)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/sync/mutex.go:46
+github.com/rahoney/heliopause/internal/sandbox.(*observationCPUWatch).sampleAccountingLocked(0x356a9b0c8e08, {0xc3fbe8, 0x11b2240}, 0x0, 0x0)
+	/tmp/haa-m12-004-source/internal/sandbox/pypi_observation_cpu.go:85 +0x14d fp=0x356a9b0c8c40 sp=0x356a9b0c8a60 pc=0x967c0d
+github.com/rahoney/heliopause/internal/sandbox.TestPythonCPUWatchLateTimingPreservesFirstFailure.func1.1(0x356a9af6e248)
+	/tmp/haa-m12-004-source/internal/sandbox/pypi_transaction_diagnostic_test.go:85 +0x412 fp=0x356a9b0c8f70 sp=0x356a9b0c8c40 pc=0xa243d2
+testing.tRunner(0x356a9af6e248, 0x356a9b7e08d0)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2036 +0xea fp=0x356a9b0c8fc0 sp=0x356a9b0c8f70 pc=0x53d64a
+testing.testingSynctestTest.gowrap1()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2150 +0x1b fp=0x356a9b0c8fe0 sp=0x356a9b0c8fc0 pc=0x53e81b
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9b0c8fe8 sp=0x356a9b0c8fe0 pc=0x493cc1
+created by testing/synctest.testingSynctestTest in goroutine 599
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2150 +0x277
+
+goroutine 599 gp=0x356a9aeaa1e0 m=nil [chan receive (durable), 2 minutes, synctest bubble 2]:
+runtime.gopark(0x78ee106de4e8?, 0x3000000000080?, 0xc0?, 0x64?, 0x78ee106de4e8?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9b1f66a0 sp=0x356a9b1f6680 pc=0x48bbce
+runtime.chanrecv(0x356a9aeec780, 0x356a9b1f6767, 0x1)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/chan.go:667 +0x4ae fp=0x356a9b1f6718 sp=0x356a9b1f66a0 pc=0x41b0ee
+runtime.chanrecv1(0xc3fbe8?, 0x1?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/chan.go:509 +0x12 fp=0x356a9b1f6740 sp=0x356a9b1f6718 pc=0x41ac12
+testing/synctest.testingSynctestTest(0x356a9b19dd48, 0x356a9b7e08d0)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2151 +0x292 fp=0x356a9b1f67b8 sp=0x356a9b1f6740 pc=0x5428b2
+testing/synctest.Test.func1()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/synctest/synctest.go:291 +0x25 fp=0x356a9b1f67e0 sp=0x356a9b1f67b8 pc=0x87b425
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9b1f67e8 sp=0x356a9b1f67e0 pc=0x493cc1
+created by testing/synctest.Test in goroutine 598
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/synctest/synctest.go:290 +0x90
+
+goroutine 347 gp=0x356a9aeaa5a0 m=nil [chan receive, 2 minutes]:
+runtime.gopark(0x0?, 0x356a9b0d6690?, 0xd?, 0xde?, 0x356a9b0cda38?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9b0cd9e8 sp=0x356a9b0cd9c8 pc=0x48bbce
+runtime.chanrecv(0x356a9af1c700, 0x0, 0x1)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/chan.go:667 +0x4ae fp=0x356a9b0cda60 sp=0x356a9b0cd9e8 pc=0x41b0ee
+runtime.chanrecv1(0x1190040?, 0xc558a0?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/chan.go:509 +0x12 fp=0x356a9b0cda88 sp=0x356a9b0cda60 pc=0x41ac12
+testing.(*T).Parallel(0x356a9b19c6c8)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:1803 +0x230 fp=0x356a9b0cdb20 sp=0x356a9b0cda88 pc=0x53d2d0
+github.com/rahoney/heliopause/internal/sandbox.TestPyPIResolverFailsClosedForObserverOrEndpointFailure(0x356a9b19c6c8)
+	/tmp/haa-m12-004-source/internal/sandbox/pypi_resolver_test.go:123 +0x2a fp=0x356a9b0cdf70 sp=0x356a9b0cdb20 pc=0xa1f7ea
+testing.tRunner(0x356a9b19c6c8, 0xc2f9e8)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2036 +0xea fp=0x356a9b0cdfc0 sp=0x356a9b0cdf70 pc=0x53d64a
+testing.(*T).Run.gowrap1()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2101 +0x1b fp=0x356a9b0cdfe0 sp=0x356a9b0cdfc0 pc=0x53e7db
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9b0cdfe8 sp=0x356a9b0cdfe0 pc=0x493cc1
+created by testing.(*T).Run in goroutine 1
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2101 +0x4c5
+
+goroutine 598 gp=0x356a9aeaa780 m=nil [synctest.Run (durable), 2 minutes, synctest bubble 2]:
+runtime.gopark(0x356a9ae686a8?, 0x754?, 0x66?, 0x34?, 0xf5ad00?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9ae68640 sp=0x356a9ae68620 pc=0x48bbce
+internal/synctest.Run(0x356a9c42a340)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/synctest.go:218 +0x1e6 fp=0x356a9ae68700 sp=0x356a9ae68640 pc=0x48fec6
+testing/synctest.Test(0x356a9b19dd48, 0x356a9b7e08d0)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/synctest/synctest.go:290 +0x90 fp=0x356a9ae68728 sp=0x356a9ae68700 pc=0x87b3b0
+github.com/rahoney/heliopause/internal/sandbox.TestPythonCPUWatchLateTimingPreservesFirstFailure.func1(0x356a9b19dd48)
+	/tmp/haa-m12-004-source/internal/sandbox/pypi_transaction_diagnostic_test.go:63 +0x9d fp=0x356a9ae68770 sp=0x356a9ae68728 pc=0xa23f9d
+testing.tRunner(0x356a9b19dd48, 0x356a9b7e0870)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2036 +0xea fp=0x356a9ae687c0 sp=0x356a9ae68770 pc=0x53d64a
+testing.(*T).Run.gowrap1()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2101 +0x1b fp=0x356a9ae687e0 sp=0x356a9ae687c0 pc=0x53e7db
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9ae687e8 sp=0x356a9ae687e0 pc=0x493cc1
+created by testing.(*T).Run in goroutine 594
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2101 +0x4c5
+
+goroutine 601 gp=0x356a9b0be3c0 m=nil [sleep (durable), 2 minutes, synctest bubble 2]:
+runtime.gopark(0x356a9ae302a0?, 0xd234ccf9afab900?, 0x0?, 0x0?, 0x0?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9c307f58 sp=0x356a9c307f38 pc=0x48bbce
+time.Sleep(0x4190ab00)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/time.go:361 +0x145 fp=0x356a9c307fb0 sp=0x356a9c307f58 pc=0x4904a5
+github.com/rahoney/heliopause/internal/sandbox.TestPythonCPUWatchLateTimingPreservesFirstFailure.func1.1.1()
+	/tmp/haa-m12-004-source/internal/sandbox/pypi_transaction_diagnostic_test.go:81 +0x35 fp=0x356a9c307fe0 sp=0x356a9c307fb0 pc=0xa248f5
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9c307fe8 sp=0x356a9c307fe0 pc=0x493cc1
+created by github.com/rahoney/heliopause/internal/sandbox.TestPythonCPUWatchLateTimingPreservesFirstFailure.func1.1 in goroutine 600
+	/tmp/haa-m12-004-source/internal/sandbox/pypi_transaction_diagnostic_test.go:79 +0x3f3
+
+goroutine 594 gp=0x356a9c1d6000 m=nil [chan receive, 2 minutes]:
+runtime.gopark(0x300ee106de4e8?, 0x300ee106d64c0?, 0xc0?, 0x64?, 0x78ee106de4e8?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9ae79ce0 sp=0x356a9ae79cc0 pc=0x48bbce
+runtime.chanrecv(0x356a9aeec700, 0x356a9ae79dc7, 0x1)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/chan.go:667 +0x4ae fp=0x356a9ae79d58 sp=0x356a9ae79ce0 pc=0x41b0ee
+runtime.chanrecv1(0x1190040?, 0xc558a0?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/chan.go:509 +0x12 fp=0x356a9ae79d80 sp=0x356a9ae79d58 pc=0x41ac12
+testing.(*T).Run(0x356a9b19d688, {0xbdda09?, 0x356a9b7ee780?}, 0x356a9b7e0870)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2109 +0x4e5 fp=0x356a9ae79e58 sp=0x356a9ae79d80 pc=0x53e665
+github.com/rahoney/heliopause/internal/sandbox.TestPythonCPUWatchLateTimingPreservesFirstFailure(0x356a9b19d688)
+	/tmp/haa-m12-004-source/internal/sandbox/pypi_transaction_diagnostic_test.go:62 +0x105 fp=0x356a9ae79f70 sp=0x356a9ae79e58 pc=0xa23e05
+testing.tRunner(0x356a9b19d688, 0xc2fa80)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2036 +0xea fp=0x356a9ae79fc0 sp=0x356a9ae79f70 pc=0x53d64a
+testing.(*T).Run.gowrap1()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2101 +0x1b fp=0x356a9ae79fe0 sp=0x356a9ae79fc0 pc=0x53e7db
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9ae79fe8 sp=0x356a9ae79fe0 pc=0x493cc1
+created by testing.(*T).Run in goroutine 1
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2101 +0x4c5
+
+goroutine 353 gp=0x356a9b0be5a0 m=nil [chan receive, 2 minutes]:
+runtime.gopark(0x0?, 0x356a9b0d6690?, 0xd?, 0xde?, 0x356a9b1f6cf8?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9b1f6ca8 sp=0x356a9b1f6c88 pc=0x48bbce
+runtime.chanrecv(0x356a9af1c700, 0x0, 0x1)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/chan.go:667 +0x4ae fp=0x356a9b1f6d20 sp=0x356a9b1f6ca8 pc=0x41b0ee
+runtime.chanrecv1(0x1190040?, 0xc558a0?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/chan.go:509 +0x12 fp=0x356a9b1f6d48 sp=0x356a9b1f6d20 pc=0x41ac12
+testing.(*T).Parallel(0x356a9b19d448)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:1803 +0x230 fp=0x356a9b1f6de0 sp=0x356a9b1f6d48 pc=0x53d2d0
+github.com/rahoney/heliopause/internal/sandbox.TestPyTorchFetchScriptsConstructValidPythonRequests(0x356a9b19d448)
+	/tmp/haa-m12-004-source/internal/sandbox/pypi_resolver_test.go:348 +0x2a fp=0x356a9b1f6f70 sp=0x356a9b1f6de0 pc=0xa2336a
+testing.tRunner(0x356a9b19d448, 0xc2fa08)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2036 +0xea fp=0x356a9b1f6fc0 sp=0x356a9b1f6f70 pc=0x53d64a
+testing.(*T).Run.gowrap1()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2101 +0x1b fp=0x356a9b1f6fe0 sp=0x356a9b1f6fc0 pc=0x53e7db
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9b1f6fe8 sp=0x356a9b1f6fe0 pc=0x493cc1
+created by testing.(*T).Run in goroutine 1
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2101 +0x4c5
+
+goroutine 352 gp=0x356a9b0be780 m=nil [chan receive, 2 minutes]:
+runtime.gopark(0x0?, 0x356a9b0d6690?, 0xd?, 0xde?, 0x356a9c306d58?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9c306d08 sp=0x356a9c306ce8 pc=0x48bbce
+runtime.chanrecv(0x356a9af1c700, 0x0, 0x1)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/chan.go:667 +0x4ae fp=0x356a9c306d80 sp=0x356a9c306d08 pc=0x41b0ee
+runtime.chanrecv1(0x1190040?, 0xc558a0?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/chan.go:509 +0x12 fp=0x356a9c306da8 sp=0x356a9c306d80 pc=0x41ac12
+testing.(*T).Parallel(0x356a9b19d208)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:1803 +0x230 fp=0x356a9c306e40 sp=0x356a9c306da8 pc=0x53d2d0
+github.com/rahoney/heliopause/internal/sandbox.TestPyTorchFetchScriptsSendTruthfulUserAgentAndPreserveInvariants(0x356a9b19d208)
+	/tmp/haa-m12-004-source/internal/sandbox/pypi_resolver_test.go:276 +0x2a fp=0x356a9c306f70 sp=0x356a9c306e40 pc=0xa22aea
+testing.tRunner(0x356a9b19d208, 0xc2fa10)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2036 +0xea fp=0x356a9c306fc0 sp=0x356a9c306f70 pc=0x53d64a
+testing.(*T).Run.gowrap1()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2101 +0x1b fp=0x356a9c306fe0 sp=0x356a9c306fc0 pc=0x53e7db
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9c306fe8 sp=0x356a9c306fe0 pc=0x493cc1
+created by testing.(*T).Run in goroutine 1
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2101 +0x4c5
+
+goroutine 455 gp=0x356a9b0be960 m=nil [chan receive, 2 minutes]:
+runtime.gopark(0x0?, 0x356a9af18000?, 0xd?, 0xde?, 0x356a9ae7aa90?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9ae7aa40 sp=0x356a9ae7aa20 pc=0x48bbce
+runtime.chanrecv(0x356a9af1c700, 0x0, 0x1)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/chan.go:667 +0x4ae fp=0x356a9ae7aab8 sp=0x356a9ae7aa40 pc=0x41b0ee
+runtime.chanrecv1(0x1190040?, 0xc558a0?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/chan.go:509 +0x12 fp=0x356a9ae7aae0 sp=0x356a9ae7aab8 pc=0x41ac12
+testing.(*T).Parallel(0x356a9af6f208)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:1803 +0x230 fp=0x356a9ae7ab78 sp=0x356a9ae7aae0 pc=0x53d2d0
+github.com/rahoney/heliopause/internal/sandbox.TestNPMResolverExecutionSequenceAndBoundaryWrapping(0x356a9af6f208)
+	/tmp/haa-m12-004-source/internal/sandbox/npm_resolver_test.go:71 +0x2a fp=0x356a9ae7af70 sp=0x356a9ae7ab78 pc=0x9f888a
+testing.tRunner(0x356a9af6f208, 0xc2f8d0)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2036 +0xea fp=0x356a9ae7afc0 sp=0x356a9ae7af70 pc=0x53d64a
+testing.(*T).Run.gowrap1()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2101 +0x1b fp=0x356a9ae7afe0 sp=0x356a9ae7afc0 pc=0x53e7db
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9ae7afe8 sp=0x356a9ae7afe0 pc=0x493cc1
+created by testing.(*T).Run in goroutine 1
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2101 +0x4c5
+
+goroutine 456 gp=0x356a9c1d61e0 m=nil [chan receive, 2 minutes]:
+runtime.gopark(0x0?, 0x356a9af18000?, 0xd?, 0xde?, 0x356a9ae77b38?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9ae77ae8 sp=0x356a9ae77ac8 pc=0x48bbce
+runtime.chanrecv(0x356a9af1c700, 0x0, 0x1)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/chan.go:667 +0x4ae fp=0x356a9ae77b60 sp=0x356a9ae77ae8 pc=0x41b0ee
+runtime.chanrecv1(0x1190040?, 0xc558a0?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/chan.go:509 +0x12 fp=0x356a9ae77b88 sp=0x356a9ae77b60 pc=0x41ac12
+testing.(*T).Parallel(0x356a9af6f448)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:1803 +0x230 fp=0x356a9ae77c20 sp=0x356a9ae77b88 pc=0x53d2d0
+github.com/rahoney/heliopause/internal/sandbox.TestNPMResolverObserverFaultRetainsDiagnosticAndFailsClosed(0x356a9af6f448)
+	/tmp/haa-m12-004-source/internal/sandbox/npm_resolver_test.go:169 +0x2a fp=0x356a9ae77f70 sp=0x356a9ae77c20 pc=0x9f9b8a
+testing.tRunner(0x356a9af6f448, 0xc2f8e0)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2036 +0xea fp=0x356a9ae77fc0 sp=0x356a9ae77f70 pc=0x53d64a
+testing.(*T).Run.gowrap1()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2101 +0x1b fp=0x356a9ae77fe0 sp=0x356a9ae77fc0 pc=0x53e7db
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9ae77fe8 sp=0x356a9ae77fe0 pc=0x493cc1
+created by testing.(*T).Run in goroutine 1
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2101 +0x4c5
+
+goroutine 457 gp=0x356a9c1d63c0 m=nil [chan receive, 2 minutes]:
+runtime.gopark(0x0?, 0x356a9af18000?, 0xd?, 0xde?, 0x356a9b1f9e58?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9b1f9e08 sp=0x356a9b1f9de8 pc=0x48bbce
+runtime.chanrecv(0x356a9af1c700, 0x0, 0x1)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/chan.go:667 +0x4ae fp=0x356a9b1f9e80 sp=0x356a9b1f9e08 pc=0x41b0ee
+runtime.chanrecv1(0x1190040?, 0xc558a0?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/chan.go:509 +0x12 fp=0x356a9b1f9ea8 sp=0x356a9b1f9e80 pc=0x41ac12
+testing.(*T).Parallel(0x356a9af6f688)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:1803 +0x230 fp=0x356a9b1f9f40 sp=0x356a9b1f9ea8 pc=0x53d2d0
+github.com/rahoney/heliopause/internal/sandbox.TestNPMResolverFailsClosedOnReadinessFailure(0x356a9af6f688)
+	/tmp/haa-m12-004-source/internal/sandbox/npm_resolver_test.go:229 +0x18 fp=0x356a9b1f9f70 sp=0x356a9b1f9f40 pc=0x9fa7b8
+testing.tRunner(0x356a9af6f688, 0xc2f8d8)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2036 +0xea fp=0x356a9b1f9fc0 sp=0x356a9b1f9f70 pc=0x53d64a
+testing.(*T).Run.gowrap1()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2101 +0x1b fp=0x356a9b1f9fe0 sp=0x356a9b1f9fc0 pc=0x53e7db
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9b1f9fe8 sp=0x356a9b1f9fe0 pc=0x493cc1
+created by testing.(*T).Run in goroutine 1
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2101 +0x4c5
+
+goroutine 501 gp=0x356a9c1d65a0 m=nil [chan receive, 2 minutes]:
+runtime.gopark(0x0?, 0x356a9af18000?, 0xd?, 0xde?, 0x356a9c301da8?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9c301d58 sp=0x356a9c301d38 pc=0x48bbce
+runtime.chanrecv(0x356a9af1c700, 0x0, 0x1)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/chan.go:667 +0x4ae fp=0x356a9c301dd0 sp=0x356a9c301d58 pc=0x41b0ee
+runtime.chanrecv1(0x1190040?, 0xc558a0?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/chan.go:509 +0x12 fp=0x356a9c301df8 sp=0x356a9c301dd0 pc=0x41ac12
+testing.(*T).Parallel(0x356a9ae0eb48)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:1803 +0x230 fp=0x356a9c301e90 sp=0x356a9c301df8 pc=0x53d2d0
+github.com/rahoney/heliopause/internal/sandbox.TestRuntimeLockMatchesSandboxRuntimeIdentity(0x356a9ae0eb48)
+	/tmp/haa-m12-004-source/internal/sandbox/probe_test.go:18 +0x27 fp=0x356a9c301f70 sp=0x356a9c301e90 pc=0xa0b547
+testing.tRunner(0x356a9ae0eb48, 0xc2fb48)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2036 +0xea fp=0x356a9c301fc0 sp=0x356a9c301f70 pc=0x53d64a
+testing.(*T).Run.gowrap1()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2101 +0x1b fp=0x356a9c301fe0 sp=0x356a9c301fc0 pc=0x53e7db
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9c301fe8 sp=0x356a9c301fe0 pc=0x493cc1
+created by testing.(*T).Run in goroutine 1
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2101 +0x4c5
+
+goroutine 502 gp=0x356a9c1d6780 m=nil [chan receive, 2 minutes]:
+runtime.gopark(0x0?, 0x356a9af18000?, 0xd?, 0xde?, 0x356a9ae7bad8?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9ae7ba88 sp=0x356a9ae7ba68 pc=0x48bbce
+runtime.chanrecv(0x356a9af1c700, 0x0, 0x1)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/chan.go:667 +0x4ae fp=0x356a9ae7bb00 sp=0x356a9ae7ba88 pc=0x41b0ee
+runtime.chanrecv1(0x1190040?, 0xc558a0?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/chan.go:509 +0x12 fp=0x356a9ae7bb28 sp=0x356a9ae7bb00 pc=0x41ac12
+testing.(*T).Parallel(0x356a9ae0ed88)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:1803 +0x230 fp=0x356a9ae7bbc0 sp=0x356a9ae7bb28 pc=0x53d2d0
+github.com/rahoney/heliopause/internal/sandbox.TestProbe(0x356a9ae0ed88)
+	/tmp/haa-m12-004-source/internal/sandbox/probe_test.go:38 +0x2a fp=0x356a9ae7bf70 sp=0x356a9ae7bbc0 pc=0xa0b80a
+testing.tRunner(0x356a9ae0ed88, 0xc2f9a8)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2036 +0xea fp=0x356a9ae7bfc0 sp=0x356a9ae7bf70 pc=0x53d64a
+testing.(*T).Run.gowrap1()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2101 +0x1b fp=0x356a9ae7bfe0 sp=0x356a9ae7bfc0 pc=0x53e7db
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9ae7bfe8 sp=0x356a9ae7bfe0 pc=0x493cc1
+created by testing.(*T).Run in goroutine 1
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2101 +0x4c5
+
+goroutine 349 gp=0x356a9c1d6b40 m=nil [chan receive, 2 minutes]:
+runtime.gopark(0x0?, 0x356a9b0d6690?, 0xd?, 0xde?, 0x356a9ae768e8?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9ae76898 sp=0x356a9ae76878 pc=0x48bbce
+runtime.chanrecv(0x356a9af1c700, 0x0, 0x1)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/chan.go:667 +0x4ae fp=0x356a9ae76910 sp=0x356a9ae76898 pc=0x41b0ee
+runtime.chanrecv1(0x1190040?, 0xc558a0?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/chan.go:509 +0x12 fp=0x356a9ae76938 sp=0x356a9ae76910 pc=0x41ac12
+testing.(*T).Parallel(0x356a9b19cb48)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:1803 +0x230 fp=0x356a9ae769d0 sp=0x356a9ae76938 pc=0x53d2d0
+github.com/rahoney/heliopause/internal/sandbox.TestPyTorchResolverErrorDoesNotRetainChildOutput(0x356a9b19cb48)
+	/tmp/haa-m12-004-source/internal/sandbox/pypi_resolver_test.go:180 +0x2a fp=0x356a9ae76f70 sp=0x356a9ae769d0 pc=0xa2104a
+testing.tRunner(0x356a9b19cb48, 0xc2fa30)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2036 +0xea fp=0x356a9ae76fc0 sp=0x356a9ae76f70 pc=0x53d64a
+testing.(*T).Run.gowrap1()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2101 +0x1b fp=0x356a9ae76fe0 sp=0x356a9ae76fc0 pc=0x53e7db
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9ae76fe8 sp=0x356a9ae76fe0 pc=0x493cc1
+created by testing.(*T).Run in goroutine 1
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2101 +0x4c5
+
+goroutine 348 gp=0x356a9c1d6d20 m=nil [chan receive, 2 minutes]:
+runtime.gopark(0x0?, 0x356a9b0d6690?, 0xd?, 0xde?, 0x356a9ae75948?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9ae758f8 sp=0x356a9ae758d8 pc=0x48bbce
+runtime.chanrecv(0x356a9af1c700, 0x0, 0x1)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/chan.go:667 +0x4ae fp=0x356a9ae75970 sp=0x356a9ae758f8 pc=0x41b0ee
+runtime.chanrecv1(0x1190040?, 0xc558a0?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/chan.go:509 +0x12 fp=0x356a9ae75998 sp=0x356a9ae75970 pc=0x41ac12
+testing.(*T).Parallel(0x356a9b19c908)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:1803 +0x230 fp=0x356a9ae75a30 sp=0x356a9ae75998 pc=0x53d2d0
+github.com/rahoney/heliopause/internal/sandbox.TestPyPINetworkArgumentsPinOnlyExpectedIPv4Addresses(0x356a9b19c908)
+	/tmp/haa-m12-004-source/internal/sandbox/pypi_resolver_test.go:162 +0x2a fp=0x356a9ae75f70 sp=0x356a9ae75a30 pc=0xa2088a
+testing.tRunner(0x356a9b19c908, 0xc2f9e0)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2036 +0xea fp=0x356a9ae75fc0 sp=0x356a9ae75f70 pc=0x53d64a
+testing.(*T).Run.gowrap1()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2101 +0x1b fp=0x356a9ae75fe0 sp=0x356a9ae75fc0 pc=0x53e7db
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9ae75fe8 sp=0x356a9ae75fe0 pc=0x493cc1
+created by testing.(*T).Run in goroutine 1
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2101 +0x4c5
+
+goroutine 346 gp=0x356a9c1d6f00 m=nil [chan receive, 2 minutes]:
+runtime.gopark(0x0?, 0x356a9b0d6690?, 0xd?, 0xde?, 0x356a9b0cb900?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/proc.go:462 +0xce fp=0x356a9b0cb8b0 sp=0x356a9b0cb890 pc=0x48bbce
+runtime.chanrecv(0x356a9af1c700, 0x0, 0x1)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/chan.go:667 +0x4ae fp=0x356a9b0cb928 sp=0x356a9b0cb8b0 pc=0x41b0ee
+runtime.chanrecv1(0x1190040?, 0xc558a0?)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/chan.go:509 +0x12 fp=0x356a9b0cb950 sp=0x356a9b0cb928 pc=0x41ac12
+testing.(*T).Parallel(0x356a9b19c008)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:1803 +0x230 fp=0x356a9b0cb9e8 sp=0x356a9b0cb950 pc=0x53d2d0
+github.com/rahoney/heliopause/internal/sandbox.TestPyPIResolverUsesGVisorDefaultDenyLifecycleAndCrossChecks(0x356a9b19c008)
+	/tmp/haa-m12-004-source/internal/sandbox/pypi_resolver_test.go:76 +0x2a fp=0x356a9b0cbf70 sp=0x356a9b0cb9e8 pc=0xa1e38a
+testing.tRunner(0x356a9b19c008, 0xc2f9f8)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2036 +0xea fp=0x356a9b0cbfc0 sp=0x356a9b0cbf70 pc=0x53d64a
+testing.(*T).Run.gowrap1()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2101 +0x1b fp=0x356a9b0cbfe0 sp=0x356a9b0cbfc0 pc=0x53e7db
+runtime.goexit({})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/asm_amd64.s:1771 +0x1 fp=0x356a9b0cbfe8 sp=0x356a9b0cbfe0 pc=0x493cc1
+created by testing.(*T).Run in goroutine 1
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2101 +0x4c5
+
+rax    0xca
+rbx    0x0
+rcx    0x495823
+rdx    0x0
+rdi    0x11923d8
+rsi    0x80
+rbp    0x7ffcd2092028
+rsp    0x7ffcd2091fe0
+r8     0x0
+r9     0x0
+r10    0x0
+r11    0x286
+r12    0x356a9ae3a008
+r13    0x1
+r14    0x11910a0
+r15    0x5
+rip    0x495821
+rflags 0x286
+cs     0x33
+fs     0x0
+gs     0x0
+FAIL	github.com/rahoney/heliopause/internal/sandbox	138.715s
+ok  	github.com/rahoney/heliopause/internal/testutil/fakeworkflow	(cached)
+ok  	github.com/rahoney/heliopause/internal/verification/cargo	(cached)
+ok  	github.com/rahoney/heliopause/internal/verification/githubrelease	(cached)
+ok  	github.com/rahoney/heliopause/internal/verification/gomodule	(cached)
+ok  	github.com/rahoney/heliopause/internal/verification/npm	(cached)
+?   	github.com/rahoney/heliopause/internal/verification/projectbuild	[no test files]
+?   	github.com/rahoney/heliopause/internal/verification/pypi	[no test files]
+ok  	github.com/rahoney/heliopause/internal/verification/terraformprovider	(cached)
+ok  	github.com/rahoney/heliopause/scripts	(cached)
+ok  	github.com/rahoney/heliopause/scripts/check	(cached)
+ok  	github.com/rahoney/heliopause/scripts/release-manifest	(cached)
+ok  	github.com/rahoney/heliopause/scripts/runtime-image-manifest	(cached)
+FAIL: exit status 1
+exit status 1

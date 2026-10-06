@@ -36,6 +36,7 @@ func TestTerraformTransactionPublishesLockAtomically(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	plan.authorized = true // Synthetic primitive approval; the project marker is not authority.
 	workspace, err := plan.privateWorkspace()
 	if err != nil {
 		t.Fatal(err)

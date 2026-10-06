@@ -415,12 +415,14 @@ jobs:
             "$RUNNER_TEMP/npm-target/node_modules/is-number/package.json" >/dev/null
           test "$pypi_status" = 0
           test -d "$RUNNER_TEMP/pypi-target/lib/python3.14/site-packages/packaging"
+          HELOX_RUN_TERRAFORM_SOURCE_INTEGRATION=1 go test -v -timeout=3m ./internal/verification/terraformprovider -run '^TestPublicTerraformProviderSourceIntegration$'
           go test -c -o "$RUNNER_TEMP/helox-sandbox-test" ./internal/sandbox
           haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"
           haa_start_policy_helper
           HELOX_PYTORCH_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.run '^TestLinuxPyTorchResolverIntegration$'
           HELOX_GO_RESOLVER_INTEGRATION=1 HELOX_GO_RESOLVER_PROJECT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxGo(IsolatedResolver|IsolatedProjectResolver|SourceProjectSnapshot|DependencyFreeProjectSnapshot)Integration$'
           HELOX_CARGO_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxCargoSourceProjectSnapshotIntegration$'
+          HELOX_TERRAFORM_PROVIDER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxTerraformProvider(Probe|Security)Integration$'
           go test -c -o "$RUNNER_TEMP/helox-bootstrap-test" ./internal/bootstrap
           haa_install_ci_client "$RUNNER_TEMP/helox-bootstrap-test"
           haa_start_policy_helper
@@ -428,6 +430,7 @@ jobs:
           HELOX_GO_BUILD_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=15m -test.run '^TestLinuxGo(DependencyFreeBuildCLI|PublicBuildCLI|TransitiveBuildCLI|InvalidTestdataBuildCLI|CgoBuildCLI|LibraryBuildCLI|MixedPackagesBuildCLI|MixedInvalidPackageBuildCLI|BuildSecurityCLI)Integration$'
           HELOX_CARGO_RESOLVER_INTEGRATION=1 HELOX_CARGO_ADD_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestLinuxCargo(Add|TransitiveAdd)Integration$'
           HELOX_CARGO_RESOLVER_INTEGRATION=1 HELOX_CARGO_BUILD_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=15m -test.run '^TestLinuxCargo.*Build.*CLIIntegration$|^TestLinuxCargoProcMacroSecurityCLIIntegration$'
+          HELOX_TERRAFORM_INIT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestLinuxTerraformInit(Integration|NegativeIntegration)$'
           selected_cuda_profiles=0
           if [ "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cu126_qualification }}" = true ]; then selected_cuda_profiles=$((selected_cuda_profiles + 1)); fi
           if [ "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cu130_qualification }}" = true ]; then selected_cuda_profiles=$((selected_cuda_profiles + 1)); fi

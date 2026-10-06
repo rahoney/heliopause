@@ -1,0 +1,41 @@
+{
+  "terraform_profile": {
+    "before": "raw/provider-profile-before-upstream-build-latches.log",
+    "after": "raw/provider-profile-after-build-latches.log",
+    "same_final_latch": "tools/gvisor-observer/observer_latch_test.cc",
+    "scope": "Locked upstream build; original helper/CPP budgets and existing full latches retained. Failed shallow-clone preparation is separately preserved."
+  },
+  "retained_control_permissions": {
+    "before_source": "raw/provider-permissions-before-terraform_approved_transaction.go.txt",
+    "before": "raw/provider-permissions-final-fixture-before.log",
+    "after": "raw/provider-permissions-after.log",
+    "same_final_regression": "TestTerraformRetainedApprovalAndMarkerPermissions, nine cases; only prior adapter overlaid",
+    "scope": "Permissions/content/root postcheck and preserve foreign mutation on rollback; not whole crash recovery proof."
+  },
+  "ci_active_commands": {
+    "before_source": "raw/provider-ci-before-workflow.go.txt",
+    "before": "raw/provider-ci-active-before.log",
+    "after": "raw/provider-ci-active-after.log",
+    "scope": "Same final test/workflow, only old checker overlaid. Required jobs/aggregation unchanged."
+  },
+  "accepted_facts_before_observer_failure": {
+    "before": "raw/provider-security-runtime.log",
+    "after": "raw/provider-retained-facts-runtime.log",
+    "before_candidate": "provider-security-before-candidate.json",
+    "after_candidate": "provider-security-after-candidate.json",
+    "scope": "Required coverage stays INCOMPLETE; accepted bounded suspicious facts retained in an independent completed check."
+  },
+  "dependency_vulnerability": {
+    "before": "raw/archive-hcl-vulnerability.log",
+    "after": "raw/provider-permissions-vulnerability.log",
+    "scope": "Reachable HCL x/text dependency uses official fixed0.39.0; old scan failure not bypassed."
+  },
+  "cpu_failure_observability": {
+    "before_full": "raw/cu126-full-runtime.log",
+    "after_focused": "raw/cpu-timing-corrected-focused.log",
+    "after_race": "raw/cpu-timing-corrected-race.log",
+    "virtual_fixture_failure": "raw/cpu-timing-final-quick.log",
+    "after_full": "raw/cu126-timing-final-full-runtime.log",
+    "scope": "Read/controller delays have deterministic scalar regressions; sticky failure preserved. Virtual mutex fixture hang corrected; prior full root cause UNCONFIRMED and full PASS not a claimed fix."
+  }
+}

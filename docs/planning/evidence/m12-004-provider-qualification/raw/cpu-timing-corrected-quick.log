@@ -1,0 +1,28 @@
+[check] format check
+[check] runtime lock drift
+[check] version support freshness
+[check] module drift
+[check] module integrity
+[check] production build
+[check] test build validity
+[check] architecture
+[check] CI configuration
+=== RUN   TestActionlintContextAvailability
+=== RUN   TestActionlintContextAvailability/corrected_full_workflow
+=== RUN   TestActionlintContextAvailability/valid_step_context
+=== RUN   TestActionlintContextAvailability/original_corpus_violation
+=== RUN   TestActionlintContextAvailability/renamed_reordered_job_env
+=== RUN   TestActionlintContextAvailability/different_job_and_key_order
+=== RUN   TestActionlintContextAvailability/disallowed_step_context_at_job_if
+--- PASS: TestActionlintContextAvailability (0.07s)
+    --- PASS: TestActionlintContextAvailability/corrected_full_workflow (0.01s)
+    --- PASS: TestActionlintContextAvailability/valid_step_context (0.01s)
+    --- PASS: TestActionlintContextAvailability/original_corpus_violation (0.01s)
+    --- PASS: TestActionlintContextAvailability/renamed_reordered_job_env (0.01s)
+    --- PASS: TestActionlintContextAvailability/different_job_and_key_order (0.01s)
+    --- PASS: TestActionlintContextAvailability/disallowed_step_context_at_job_if (0.01s)
+PASS
+ok  	github.com/rahoney/heliopause/scripts/check	0.075s
+[check] go vet
+[check] Staticcheck
+[check] default test

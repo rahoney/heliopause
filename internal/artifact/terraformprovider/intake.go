@@ -25,17 +25,40 @@ var bundleLimits = []int{64 << 10, 2 << 20, 1 << 20, 1 << 20, 16 << 10, MaxProvi
 type Bundle struct{ parts [][]byte }
 
 func (b Bundle) Registry() RegistrySnapshot {
+	if len(b.parts) != 6 {
+		return RegistrySnapshot{}
+	}
 	return RegistrySnapshot{bytes.Clone(b.parts[0]), bytes.Clone(b.parts[1]), bytes.Clone(b.parts[2])}
 }
-func (b Bundle) Checksums() []byte     { return bytes.Clone(b.parts[3]) }
-func (b Bundle) Signature() []byte     { return bytes.Clone(b.parts[4]) }
-func (b Bundle) Archive() []byte       { return bytes.Clone(b.parts[5]) }
-func (b Bundle) ArchiveDigest() string { return sha256Hex(b.parts[5]) }
+func (b Bundle) Checksums() []byte { return b.part(3) }
+func (b Bundle) Signature() []byte { return b.part(4) }
+func (b Bundle) Archive() []byte   { return b.part(5) }
+func (b Bundle) ArchiveDigest() string {
+	if len(b.parts) != 6 {
+		return ""
+	}
+	return sha256Hex(b.parts[5])
+}
+func (b Bundle) part(i int) []byte {
+	if len(b.parts) != 6 {
+		return nil
+	}
+	return bytes.Clone(b.parts[i])
+}
 func (b Bundle) RegistryDigest() string {
-	body, _ := encodeParts(registryHeader, b.parts[:3], registryLimits)
+	if len(b.parts) != 6 {
+		return ""
+	}
+	body, err := encodeParts(registryHeader, b.parts[:3], registryLimits)
+	if err != nil {
+		return ""
+	}
 	return sha256Hex(body)
 }
 func (b Bundle) ZipReader() (*zip.Reader, error) {
+	if len(b.parts) != 6 {
+		return nil, errors.New("terraform bundle is invalid")
+	}
 	return zip.NewReader(bytes.NewReader(b.parts[5]), int64(len(b.parts[5])))
 }
 
@@ -178,7 +201,7 @@ func ReadIntake(directory string, artifact domain.AcquiredArtifact) (Bundle, err
 }
 
 func validPrivateFile(info os.FileInfo) bool {
-	if info == nil || !info.Mode().IsRegular() || info.Mode().Perm() != 0o600 {
+	if info == nil || !info.Mode().IsRegular() || info.Mode().Perm() != 0o600 || info.Mode()&(os.ModeSetuid|os.ModeSetgid|os.ModeSticky) != 0 {
 		return false
 	}
 	st, ok := info.Sys().(*syscall.Stat_t)

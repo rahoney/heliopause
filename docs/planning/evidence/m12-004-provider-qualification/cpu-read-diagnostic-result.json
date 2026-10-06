@@ -1,0 +1,10 @@
+{
+  "scope": "focused timing diagnosis only; not full qualification",
+  "status": "PASS",
+  "tool_session": 92883,
+  "raw": "cpu-read-diagnostic-runtime.log",
+  "raw_sha256": "5b879033987dca85d60cf215ee42d870eafc2d40f92fd9c3fe97b65de7e4333a",
+  "original12_restored": true,
+  "helper_wait": 0,
+  "reason": "completed single cublas native load"
+}

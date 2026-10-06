@@ -1,0 +1,110 @@
+Exact source/binary probe candidate verified
+runtime before bytes/identity/modes verified
+runtime candidate bytes/identity/modes verified
+Bounded complete host executable query: no installed executable consumer
+no existing traced runtime consumers; bounded Docker queries succeeded
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+/etc/heliopause/pod-init.json: OK
+helper launch: bash=/usr/bin/bash version=5.2.21(1)-release owner=658296
+helper ready: pid=658354 attempt=14
+=== RUN   TestLinuxCargoAddIntegration
+observer_attribution sequence=1 profile=cargo-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:5,NETWORK/TRUSTED_CONTROL/SENDTO/INET/DIRECT_EXEC_SESSION/OTHER:17
+observer_attribution sequence=2 profile=cargo-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:10,NETWORK/TRUSTED_CONTROL/SENDTO/INET/DIRECT_EXEC_SESSION/OTHER:24
+    cargo_add_integration_test.go:20: actual_cargo_add_attempt=0 Source: crates-io
+        Crates: 1
+        Lock digest: cbf39703e39655f25a7390d31c2766f93fcb119f4054952ec94a779cdb190d04
+observer_attribution sequence=1 profile=cargo-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:5,NETWORK/TRUSTED_CONTROL/SENDTO/INET/DIRECT_EXEC_SESSION/OTHER:13
+observer_attribution sequence=2 profile=cargo-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:10,NETWORK/TRUSTED_CONTROL/SENDTO/INET/DIRECT_EXEC_SESSION/OTHER:24
+    cargo_add_integration_test.go:20: actual_cargo_add_attempt=1 Source: crates-io
+        Crates: 1
+        Lock digest: cbf39703e39655f25a7390d31c2766f93fcb119f4054952ec94a779cdb190d04
+--- PASS: TestLinuxCargoAddIntegration (21.77s)
+=== RUN   TestLinuxCargoTransitiveAddIntegration
+observer_attribution sequence=1 profile=cargo-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:5,NETWORK/TRUSTED_CONTROL/SENDTO/INET/DIRECT_EXEC_SESSION/OTHER:29
+observer_attribution sequence=2 profile=cargo-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:10,NETWORK/TRUSTED_CONTROL/SENDTO/INET/DIRECT_EXEC_SESSION/OTHER:47
+    cargo_add_integration_test.go:21: actual_cargo_add_attempt=0 Source: crates-io
+        Crates: 7
+        Lock digest: ec13922d429a8e1cca9148f636c32731cd44ccfc9d1fa55bc9d5bf9241672ba6
+observer_attribution sequence=1 profile=cargo-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:5,NETWORK/TRUSTED_CONTROL/SENDTO/INET/DIRECT_EXEC_SESSION/OTHER:25
+observer_attribution sequence=2 profile=cargo-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:10,NETWORK/TRUSTED_CONTROL/SENDTO/INET/DIRECT_EXEC_SESSION/OTHER:48
+    cargo_add_integration_test.go:21: actual_cargo_add_attempt=1 Source: crates-io
+        Crates: 7
+        Lock digest: ec13922d429a8e1cca9148f636c32731cd44ccfc9d1fa55bc9d5bf9241672ba6
+--- PASS: TestLinuxCargoTransitiveAddIntegration (24.24s)
+=== RUN   TestLinuxGoDependencyFreeBuildCLIIntegration
+    go_build_cli_integration_test.go:21: actual CLI retained build reference= graph=bda38cb39b9fc0aa676b07ab6ad654d1c5867ec81cfb8ee1b7788d0911f0539e source=27d4b61d26b3f0431008d6843549c699f9d6867184992ef6a007ed27dbfe05a3 cache=5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef output=a8188540c6a4a80d72c6f88e84bfd223110b63473d10c11a9dd31f9b0c13d8db recipe=370b1b9aa7af73617e37cb9867e48ae9989b50ddcb8a8cc24fb9db7d3a57e00d
+    go_build_cli_integration_test.go:21: actual CLI retained build reference= graph=bda38cb39b9fc0aa676b07ab6ad654d1c5867ec81cfb8ee1b7788d0911f0539e source=27d4b61d26b3f0431008d6843549c699f9d6867184992ef6a007ed27dbfe05a3 cache=5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef output=a8188540c6a4a80d72c6f88e84bfd223110b63473d10c11a9dd31f9b0c13d8db recipe=370b1b9aa7af73617e37cb9867e48ae9989b50ddcb8a8cc24fb9db7d3a57e00d
+--- PASS: TestLinuxGoDependencyFreeBuildCLIIntegration (61.16s)
+=== RUN   TestLinuxGoPublicBuildCLIIntegration
+observer_attribution sequence=1 profile=go-module-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:4
+observer_attribution sequence=2 profile=go-module-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:1
+observer_attribution sequence=3 profile=go-module-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:1
+    go_build_cli_integration_test.go:24: actual CLI retained build reference=github.com/spf13/pflag@v1.0.9 graph=448d4a5978ee1b675396511f50147e43ebaf11e6cd08603e11a27d3719ae2651 source=047ba408e8a9b4d029447657425faa692863e5c409277514cf49759398944e64 cache=34c81f63bf01dfb5b38ea9eda545d91c5d2dd8357db7b6170b78685877f701af output=36770872f3848cddef52f5af4c8bceeaf00969ebad548c05fd65bc7e55b74c61 recipe=370b1b9aa7af73617e37cb9867e48ae9989b50ddcb8a8cc24fb9db7d3a57e00d
+--- PASS: TestLinuxGoPublicBuildCLIIntegration (87.79s)
+=== RUN   TestLinuxGoTransitiveBuildCLIIntegration
+observer_attribution sequence=1 profile=go-module-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:3
+observer_attribution sequence=2 profile=go-module-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:3
+observer_attribution sequence=3 profile=go-module-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:2
+    go_build_cli_integration_test.go:27: actual CLI retained build reference=google.golang.org/grpc@v1.76.0 graph=23e3024403173c469be709790536e5b56df0bf690c756b9f362ca6a9b0e2ec41 source=c5b0d6da55ca1dbb74d5e3ac324706794ac9d9387610351132065d36e050a57f cache=bdf76a0f270b3d34a8da95b35c49e019677aff8d771123dae88caa845fae6d4e output=518d22e9b9ecf2ebbe96dd7be1f5050153a2e62523cf33fc1e2037c4a65c735d recipe=370b1b9aa7af73617e37cb9867e48ae9989b50ddcb8a8cc24fb9db7d3a57e00d
+--- PASS: TestLinuxGoTransitiveBuildCLIIntegration (278.91s)
+=== RUN   TestLinuxGoInvalidTestdataBuildCLIIntegration
+    go_build_cli_integration_test.go:30: actual selected compiler failure selector=./testdata source_sha256=27d4b61d26b3f0431008d6843549c699f9d6867184992ef6a007ed27dbfe05a3 trusted_failure=observed go build failed: phase=BUILD_ALL command_status=EXIT_STATUS_1 reason= events=0 bytes=0 session_complete=false last_kind= kinds=none
+--- PASS: TestLinuxGoInvalidTestdataBuildCLIIntegration (16.81s)
+=== RUN   TestLinuxGoCgoBuildCLIIntegration
+    go_build_cli_integration_test.go:34: actual CLI retained build reference= graph=bda38cb39b9fc0aa676b07ab6ad654d1c5867ec81cfb8ee1b7788d0911f0539e source=671bad5e3b9f521f5aaacb8ade4fabbd64c39a09a3f16568e3a83fd206dc7a5b cache=5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef output=8d739ee41de67be7d872c1d92b226277ca9d736e4873c596ec6950f617f4b9f3 recipe=370b1b9aa7af73617e37cb9867e48ae9989b50ddcb8a8cc24fb9db7d3a57e00d
+--- PASS: TestLinuxGoCgoBuildCLIIntegration (45.75s)
+=== RUN   TestLinuxGoLibraryBuildCLIIntegration
+    go_build_cli_integration_test.go:38: actual CLI retained build reference= graph=bda38cb39b9fc0aa676b07ab6ad654d1c5867ec81cfb8ee1b7788d0911f0539e source=4dafcb34a1a39ef8c1b8675ac17792e72e33812905d598525a12bac18cee195d cache=5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef output=5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef recipe=370b1b9aa7af73617e37cb9867e48ae9989b50ddcb8a8cc24fb9db7d3a57e00d
+--- PASS: TestLinuxGoLibraryBuildCLIIntegration (17.17s)
+=== RUN   TestLinuxGoMixedPackagesBuildCLIIntegration
+    go_build_cli_integration_test.go:42: actual CLI retained build reference= graph=bda38cb39b9fc0aa676b07ab6ad654d1c5867ec81cfb8ee1b7788d0911f0539e source=c16a8683cde09153549a7e072093726783a42a4e023b4647f6651abff1f60d9a cache=5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef output=a8188540c6a4a80d72c6f88e84bfd223110b63473d10c11a9dd31f9b0c13d8db recipe=370b1b9aa7af73617e37cb9867e48ae9989b50ddcb8a8cc24fb9db7d3a57e00d
+--- PASS: TestLinuxGoMixedPackagesBuildCLIIntegration (32.57s)
+=== RUN   TestLinuxGoMixedInvalidPackageBuildCLIIntegration
+    go_build_cli_integration_test.go:46: actual selected compiler failure selector=./... source_sha256=24c2b88048ba2c08df5e6ca85ce454016e9ae7aef5e25453cec896f1551378f2 trusted_failure=observed go build failed: phase=BUILD_ALL command_status=EXIT_STATUS_1 reason= events=0 bytes=0 session_complete=false last_kind= kinds=none
+--- PASS: TestLinuxGoMixedInvalidPackageBuildCLIIntegration (30.58s)
+=== RUN   TestLinuxGoBuildSecurityCLIIntegration
+=== RUN   TestLinuxGoBuildSecurityCLIIntegration/filesystem
+=== RUN   TestLinuxGoBuildSecurityCLIIntegration/missing-cache
+observer_attribution sequence=1 profile=go-module-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:4
+observer_attribution sequence=2 profile=go-module-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:1
+observer_attribution sequence=3 profile=go-module-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:1
+=== RUN   TestLinuxGoBuildSecurityCLIIntegration/unmanaged
+--- PASS: TestLinuxGoBuildSecurityCLIIntegration (63.36s)
+    --- PASS: TestLinuxGoBuildSecurityCLIIntegration/filesystem (40.18s)
+    --- PASS: TestLinuxGoBuildSecurityCLIIntegration/missing-cache (21.82s)
+    --- PASS: TestLinuxGoBuildSecurityCLIIntegration/unmanaged (1.36s)
+=== RUN   TestLinuxGoDependencyFreeDownloadIntegration
+    go_download_integration_test.go:59: actual_download_attempt=0 Source: go-proxy
+        Modules: 0
+        Graph digest: 5fce8efcf6e6c7e4462e816a233133217f502d87491cac38214d03de2cf441a5
+    go_download_integration_test.go:59: actual_download_attempt=1 Source: go-proxy
+        Modules: 0
+        Graph digest: 5fce8efcf6e6c7e4462e816a233133217f502d87491cac38214d03de2cf441a5
+--- PASS: TestLinuxGoDependencyFreeDownloadIntegration (20.61s)
+=== RUN   TestLinuxGoGetDownloadIntegration
+observer_attribution sequence=1 profile=go-module-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:4
+observer_attribution sequence=2 profile=go-module-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:1
+observer_attribution sequence=3 profile=go-module-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:1
+observer_attribution sequence=1 profile=go-module-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:1
+observer_attribution sequence=2 profile=go-module-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:1
+--- PASS: TestLinuxGoGetDownloadIntegration (31.21s)
+=== RUN   TestLinuxGoTransitiveGetDownloadIntegration
+observer_attribution sequence=1 profile=go-module-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:3
+observer_attribution sequence=2 profile=go-module-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:4
+observer_attribution sequence=3 profile=go-module-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:2
+observer_attribution sequence=1 profile=go-module-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:2
+observer_attribution sequence=2 profile=go-module-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:2
+--- PASS: TestLinuxGoTransitiveGetDownloadIntegration (190.97s)
+PASS
+helper reaped: pid=658354 wait=0
+no existing traced runtime consumers; bounded Docker queries succeeded
+runtime before bytes/identity/modes verified
+/etc/heliopause/pod-init.json: OK
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=658354

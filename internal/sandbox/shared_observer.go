@@ -67,7 +67,7 @@ func observerExpectedTopology(profile string) ([]observerMountExpectation, bool)
 	case "pypi-wheel", "pypi-wheel-pytorch-cpu", "pypi-wheel-pytorch-cu126", "pypi-wheel-pytorch-cu130", "pypi-wheel-pytorch-cu132":
 		site := observerMountExpectation{"/haa-site", "workspace", "/", "tmpfs", false, false, true, false}
 		return []observerMountExpectation{root, tmp, site, runtime}, true
-	case "github-elf":
+	case "github-elf", "terraform-provider":
 		work := observerMountExpectation{"/work", "workspace", "/", "tmpfs", false, false, true, false}
 		return []observerMountExpectation{root, tmp, work, runtime}, true
 	default:

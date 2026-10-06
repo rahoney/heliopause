@@ -1,0 +1,33 @@
+{
+  "qualified_source_count": 943,
+  "unchanged_functional_source": true,
+  "allowed_source_delta": [
+    {
+      "path": ".gitattributes",
+      "qualified_sha256": "79c88d1ea53fa1d99bd742793bc375407f972e50739d059b690020fcd3bd3d06",
+      "closure_sha256": "77f0c30471a1502d98ecb32aa0a2986018c1b7634f4df12e80c3c02e92c71b8b"
+    },
+    {
+      "path": "PROJECT-DECISIONS.md",
+      "qualified_sha256": "255af7bd7ddb152f13a800eb4943cb18944bbd868eda8823d4f5a2e354a6b201",
+      "closure_sha256": "ced175f6396a12423de6b636454850e2fd436e49dae7ad2ccbf9efd79e1bfa6b"
+    },
+    {
+      "path": "README.md",
+      "qualified_sha256": "0686418ed7c8687adaecee2810275be3c29e637f23b14e8fdbb9e8e567ecf1cd",
+      "closure_sha256": "4a247ff8aa285a31c28626dd51156895c8719756a83399e1ddd1d6a59c6e8099"
+    },
+    {
+      "path": "docs/planning/02-current-work-queue.md",
+      "qualified_sha256": "e61926639af382d1b151277a6ef7a00f8446b6d10af6c63dc6a2bc04372412e1",
+      "closure_sha256": "c9f31081059f83456baa7ad60069fa47211d2d4f05de28e0e68a75506b795708"
+    },
+    {
+      "path": "docs/planning/16-m12-01-ecosystem-expansion-contract.md",
+      "qualified_sha256": "b0f67c06eb3c10c94f0ead58b04dd3b72f456c5cae954515d0d9cf343728345f",
+      "closure_sha256": "94ccd4b8e015a000f5ed3db5ef1b8b634cdaec297edcacd3bd4492e0012ec2fc"
+    }
+  ],
+  "additional_paths": "This qualification evidence directory only; no other new/removed production input",
+  "scope": "All actual runtimes ended and original12 restored before documentation/evidence/format-policy closure. Source/budget/policy/runtime behavior unchanged."
+}

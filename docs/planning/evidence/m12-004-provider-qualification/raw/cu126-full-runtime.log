@@ -1,0 +1,34 @@
+Exact source/binary probe candidate verified
+runtime before bytes/identity/modes verified
+runtime candidate bytes/identity/modes verified
+Bounded complete host executable query: no installed executable consumer
+no existing traced runtime consumers; bounded Docker queries succeeded
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+/etc/heliopause/pod-init.json: OK
+helper launch: bash=/usr/bin/bash version=5.2.21(1)-release owner=455701
+helper ready: pid=455745 attempt=14
+=== RUN   TestLinuxPyTorchFullIntegration
+    pytorch_linux_integration_test.go:40: retained integration evidence: /tmp/haa-m12-004-native-e2e/pytorch-cu126-3044443509
+observer_attribution sequence=1 profile=pypi-wheel-pytorch-cu126 counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/PYTHON:526
+observer_attribution sequence=2 profile=pypi-wheel counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/PYTHON:15
+    pytorch_linux_integration_test.go:69: PyTorch cu126 install failed: python transaction stage=install profile=pypi-wheel-pytorch-cu126 artifact=torch@2.14.0+cu126 digest=b15e1e62ab842d099ae9b19312374f62579668171efed8b676108b60fa75e5b0 transaction=sbx_gemywuebd4r45sukrki6syicg4 unit= unit_artifact_digest= elapsed_ms=93494 request=CANCELED command= cpu_limit_s=300 memory_limit=4294967296 tmpfs_limit=12884901888 wall_limit_ms=2400000 trace_event_limit=100000 trace_byte_limit=16777216: CANCELED
+        primary_code=M5_PYPI_DYNAMIC_INSTALL_FAILED python transaction cleanup: python transaction stage=cleanup profile=pypi-wheel-pytorch-cu126 artifact=torch@2.14.0+cu126 digest=b15e1e62ab842d099ae9b19312374f62579668171efed8b676108b60fa75e5b0 transaction=sbx_gemywuebd4r45sukrki6syicg4 unit= unit_artifact_digest= elapsed_ms=96846 request=CANCELED command= cpu_limit_s=300 memory_limit=4294967296 tmpfs_limit=12884901888 wall_limit_ms=2400000 trace_event_limit=100000 trace_byte_limit=16777216: python observation CPU accounting is unavailable or late: failed_before=false termination=false last_sample_present=true gap_ns=1183829770 poll_ns=1000000000 wall_remaining_ns=2306509452942 usage_us=87740068 prior_usage_us=86812918
+        python observation CPU accounting is unavailable or late: failed_before=true termination=true last_sample_present=true gap_ns=4043069338 poll_ns=1000000000 wall_remaining_ns=2303650213374 usage_us=90293116 prior_usage_us=86812918
+        python transaction stage=phase-termination profile=pypi-wheel-pytorch-cu126 artifact=torch@2.14.0+cu126 digest=b15e1e62ab842d099ae9b19312374f62579668171efed8b676108b60fa75e5b0 transaction=sbx_gemywuebd4r45sukrki6syicg4 unit= unit_artifact_digest= elapsed_ms=96412 request=CANCELED command= cpu_limit_s=300 memory_limit=4294967296 tmpfs_limit=12884901888 wall_limit_ms=2400000 trace_event_limit=100000 trace_byte_limit=16777216: phase=preparation container=6878d4a8e73c1ec85c4a684dc6e3cace232906f0167afce85be4e8f3f3e7db30 helper=OK parent_match=true cumulative_cpu_us=90293116 limitation=M3_DYNAMIC_OBSERVER_FAILED trace={reason=PROFILE_LOOKUP_FAILURE events=117 bytes=13338 session_complete=false last_kind=process-exec-expected kinds=process-exec-expected:117 fault_site=PROFILE_LOOKUP}
+        stdout={"schema_version":"helox.operation-result/v1","operation_id":"op_iwr3yugqs2bf37ta4bvdv4omze","operation":"INSTALL","operation_status":"FAILED","artifact":{"reference":{"source_id":"pytorch-cu126","locator":"torch@2.14.0+cu126"}},"checks":[],"evidence_references":[],"target":"/tmp/haa-m12-004-native-e2e/pytorch-cu126-3044443509/target","promotion_status":"FAILED","error":{"code":"INSTALL_INSPECTION_FAILED","message":"Install operation failed."}}
+        
+        stderr=
+--- FAIL: TestLinuxPyTorchFullIntegration (815.92s)
+FAIL
+helper reaped: pid=455745 wait=0
+no existing traced runtime consumers; bounded Docker queries succeeded
+runtime before bytes/identity/modes verified
+/etc/heliopause/pod-init.json: OK
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+cleanup: original=1 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=455745

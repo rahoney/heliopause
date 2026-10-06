@@ -1,0 +1,7 @@
+0755 containerd-shim-runsc-v1
+0755 gvisor-bin/checkpointgofer
+0755 gvisor-bin/gvisor-sentry-prewarmer
+0755 gvisor-bin/gvisor_sentry
+0755 gvisor-bin/runsc-metric-server
+0755 runsc
+0644 gvisor-bundle.manifest.json

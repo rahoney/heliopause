@@ -76,9 +76,11 @@ func (w *observationCPUWatch) sampleLocked(ctx context.Context, termination bool
 func (w *observationCPUWatch) sampleAccountingLocked(ctx context.Context, termination, periodic bool) error {
 	readContext, cancel := context.WithTimeout(ctx, w.ledger.policy.pollInterval)
 	defer cancel()
+	readStarted := time.Now()
 	lease, err := w.client.Read(readContext, w.transaction)
+	readReturned := time.Now()
 	if err != nil {
-		return fmt.Errorf("python observation CPU counter is unavailable: request_context=%s read_context=%s resource=%s", pythonResourceErrorReason(ctx.Err()), pythonResourceErrorReason(readContext.Err()), pythonResourceErrorReason(err))
+		return fmt.Errorf("python observation CPU counter is unavailable: request_context=%s read_context=%s resource=%s read_ns=%d", pythonResourceErrorReason(ctx.Err()), pythonResourceErrorReason(readContext.Err()), pythonResourceErrorReason(err), readReturned.Sub(readStarted).Nanoseconds())
 	}
 	w.ledger.mu.Lock()
 	defer w.ledger.mu.Unlock()
@@ -89,7 +91,15 @@ func (w *observationCPUWatch) sampleAccountingLocked(ctx context.Context, termin
 	if periodic && w.ledger.terminalFailure {
 		termination = true
 	}
-	return w.ledger.accountCPULocked(lease.UsageUsec, time.Now(), termination)
+	sampleAt := time.Now()
+	previous := w.ledger.lastSample
+	if err := w.ledger.accountCPULocked(lease.UsageUsec, sampleAt, termination); err != nil {
+		// Trusted scalar timing distinguishes a delayed resource read from a
+		// controller/ledger delay without retaining helper output or changing
+		// the accounting deadline, sticky failure, or completion authority.
+		return fmt.Errorf("%w: read_ns=%d ledger_lock_ns=%d before_read_gap_ns=%d", err, readReturned.Sub(readStarted).Nanoseconds(), sampleAt.Sub(readReturned).Nanoseconds(), readStarted.Sub(previous).Nanoseconds())
+	}
+	return nil
 }
 
 // beginTransition and endTransition bracket a trusted Docker create/start or

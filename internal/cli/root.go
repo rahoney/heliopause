@@ -70,7 +70,7 @@ type CargoResolver interface {
 }
 
 type TerraformResolver interface {
-	Resolve(context.Context, domain.ArtifactReference, domain.InstallContext) (domain.DependencyResolution, error)
+	Init(context.Context, domain.ArtifactReference, domain.InstallContext) (application.TerraformInitResult, error)
 }
 
 // Doctor reports bounded installation and Host readiness checks. A false
@@ -546,7 +546,7 @@ func AddCargoAdd(root *cobra.Command, resolver CargoResolver) error {
 
 func AddTerraformInit(root *cobra.Command, resolver TerraformResolver) error {
 	if root == nil || resolver == nil {
-		return errors.New("terraform init command requires a resolution use case")
+		return errors.New("terraform init command requires a guarded installation use case")
 	}
 	command := findLeaf(root, "terraform", "init")
 	if command == nil {
@@ -569,11 +569,11 @@ func AddTerraformInit(root *cobra.Command, resolver TerraformResolver) error {
 		if err != nil {
 			return err
 		}
-		resolution, err := resolver.Resolve(contextOrBackground(command.Context()), reference, installContext)
+		result, err := resolver.Init(contextOrBackground(command.Context()), reference, installContext)
 		if err != nil {
 			return err
 		}
-		_, err = fmt.Fprintf(command.OutOrStdout(), "Source: %s\nProviders: %d\nLock digest: %s\n", reference.Source(), len(resolution.Graph().Nodes()), resolution.LockfileDigest())
+		_, err = fmt.Fprintf(command.OutOrStdout(), "Source: %s\nProviders: %d\nLock digest: %s\n", reference.Source(), result.ProviderCount, result.Resolution.LockfileDigest())
 		return err
 	}
 	return nil

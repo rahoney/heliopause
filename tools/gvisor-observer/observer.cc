@@ -102,6 +102,7 @@ constexpr char kProfilePyTorchCU126[] = "pypi-wheel-pytorch-cu126";
 constexpr char kProfilePyTorchCU130[] = "pypi-wheel-pytorch-cu130";
 constexpr char kProfilePyTorchCU132[] = "pypi-wheel-pytorch-cu132";
 constexpr char kProfileGitHub[] = "github-elf";
+constexpr char kProfileTerraformProvider[] = "terraform-provider";
 constexpr char kProfileGoResolver[] = "go-module-resolver";
 constexpr char kProfileGoBuild[] = "go-module-build";
 constexpr char kProfileCargoResolver[] = "cargo-resolver";
@@ -1411,7 +1412,7 @@ ProcessClass ProcessClassForPath(const std::string& path, const char* profile) {
     if (path == "/usr/local/bin/python" || path == "/usr/local/bin/python3" || path == "/usr/local/bin/python3.14" || path == "python") return ProcessClass::kPython;
     if (path == "/usr/local/bin/pip" || path == "pip") return ProcessClass::kPip;
   }
-  if (strcmp(profile, kProfileGitHub) == 0 && path == "/work/artifact") return ProcessClass::kArtifact;
+  if ((strcmp(profile, kProfileGitHub) == 0 || strcmp(profile, kProfileTerraformProvider) == 0) && path == "/work/artifact") return ProcessClass::kArtifact;
   if ((strcmp(profile, kProfileGoResolver) == 0 || strcmp(profile, kProfileGoBuild) == 0) && path == "/usr/local/go/bin/go") return ProcessClass::kGo;
   if ((strcmp(profile, kProfileCargoResolver) == 0 || strcmp(profile, kProfileCargoBuild) == 0) && path == kCargoBinary) return ProcessClass::kCargo;
   if (strcmp(profile, kProfileCargoResolver) == 0 && path == "/usr/bin/tar") return ProcessClass::kCargoTar;
@@ -1430,7 +1431,7 @@ bool IsBootstrapChildClass(ProcessClass process_class) {
 
 bool IsBootstrapHandoffClass(ProcessClass process_class, const char* profile) {
   if (strcmp(profile, kProfileNPM) == 0) return process_class == ProcessClass::kNode || process_class == ProcessClass::kNpm;
-  return strcmp(profile, kProfileGitHub) == 0 && process_class == ProcessClass::kArtifact;
+  return (strcmp(profile, kProfileGitHub) == 0 || strcmp(profile, kProfileTerraformProvider) == 0) && process_class == ProcessClass::kArtifact;
 }
 
 bool ValidProcessIdentity(const gvisor::common::ContextData& context) {
@@ -1667,7 +1668,7 @@ enum class FilesystemClass { kWorkspace, kOutside, kHoneytoken, kRuntimeRoot, kH
 
 bool IsWorkspacePath(const std::string& path, const char* profile) {
   if (profile == nullptr) return false;
-  if (strcmp(profile, kProfileGitHub) == 0) return HasPrefix(path, "/work/");
+  if (strcmp(profile, kProfileGitHub) == 0 || strcmp(profile, kProfileTerraformProvider) == 0) return HasPrefix(path, "/work/");
   if (IsPythonProfile(profile)) {
     return path == "/tmp" || HasPrefix(path, "/tmp/") ||
         path == "/haa-site" || HasPrefix(path, "/haa-site/");
@@ -2387,7 +2388,7 @@ bool IsCanonicalBootstrapProfile(const char* profile) {
        strcmp(profile, kProfilePyTorchCU126) == 0 ||
        strcmp(profile, kProfilePyTorchCU130) == 0 ||
        strcmp(profile, kProfilePyTorchCU132) == 0 ||
-       strcmp(profile, kProfileGitHub) == 0 || strcmp(profile, kProfileGoResolver) == 0 ||
+       strcmp(profile, kProfileGitHub) == 0 || strcmp(profile, kProfileTerraformProvider) == 0 || strcmp(profile, kProfileGoResolver) == 0 ||
        strcmp(profile, kProfileGoBuild) == 0 || strcmp(profile, kProfileCargoResolver) == 0 ||
        strcmp(profile, kProfileCargoBuild) == 0);
 }
@@ -2700,7 +2701,7 @@ bool IsPinnedProjectBuildHandoffRead(
 bool IsExactHAAELFHandoffDemotionRead(
     const gvisor::common::ContextData& context, const ProcessState& state,
     const std::string& path, uint64_t flags, const char* profile) {
-  if (profile == nullptr || (strcmp(profile, kProfileGitHub) != 0 && !IsPythonProfile(profile)) ||
+  if (profile == nullptr || (strcmp(profile, kProfileGitHub) != 0 && strcmp(profile, kProfileTerraformProvider) != 0 && !IsPythonProfile(profile)) ||
       IsWriteCapableOpen(flags)) return false;
   const auto* group = FindFilesystemGroup(context, state);
   if (group == nullptr || group->role != ProcessState::Role::kArtifact ||
@@ -2978,7 +2979,7 @@ bool ParseControlRecord(const char* payload, size_t size, ControlPeer* peer,
     if (!ValidContainerID(id) || !ValidSessionGeneration(generation) ||
         (profile != kProfileNPM && profile != kProfilePyPI && profile != kProfilePyTorchCPU &&
          profile != kProfilePyTorchCU126 && profile != kProfilePyTorchCU130 &&
-         profile != kProfilePyTorchCU132 && profile != kProfileGitHub && profile != kProfileGoResolver &&
+         profile != kProfilePyTorchCU132 && profile != kProfileGitHub && profile != kProfileTerraformProvider && profile != kProfileGoResolver &&
          profile != kProfileGoBuild && profile != kProfileCargoResolver && profile != kProfileCargoBuild) ||
         peer->request_seen || peer->registered || peer->terminal || profiles->find(id) != profiles->end()) {
       return SendProfileAck(peer->fd, id, profile, topology, generation, "rejected");

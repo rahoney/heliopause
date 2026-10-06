@@ -1,0 +1,124 @@
+[
+  {
+    "candidate": "final-executable-candidate.json",
+    "name": "python-proc-maps-cu132-after-hold",
+    "command": [
+      "bash",
+      "/home/winamp/.local/state/heliopause/m12-004/run-qualified-consumers.sh",
+      "^TestLinuxPythonProcMapsTransactionIntegration$",
+      "cu132",
+      "5m",
+      "sandbox"
+    ],
+    "status": "PASS",
+    "started_utc": "2026-10-06T13:00:08.020197+00:00",
+    "exit_code": 0,
+    "finished_utc": "2026-10-06T13:00:24.765597+00:00",
+    "raw_log": "python-proc-maps-cu132-after-hold-runtime.log",
+    "raw_sha256": "c8b2ec1c56c346ad6200d6ce7ad676b59bd10835542c512d45b0101c65c50245"
+  },
+  {
+    "candidate": "final-executable-candidate.json",
+    "name": "ordinary-product-cli",
+    "command": [
+      "bash",
+      "/home/winamp/.local/state/heliopause/m12-004/run-qualified-cli.sh"
+    ],
+    "status": "PASS",
+    "started_utc": "2026-10-06T13:00:24.767653+00:00",
+    "exit_code": 0,
+    "finished_utc": "2026-10-06T13:01:16.401967+00:00",
+    "raw_log": "ordinary-product-cli-runtime.log",
+    "raw_sha256": "2e220ce727772ced1ebdd409a544332f12dbf5fdf224b0c9e42dda75445f7727"
+  },
+  {
+    "candidate": "final-executable-candidate.json",
+    "name": "go-cargo-cli",
+    "command": [
+      "bash",
+      "/home/winamp/.local/state/heliopause/m12-004/run-qualified-consumers.sh",
+      "^TestLinuxGo(GetDownload|TransitiveGetDownload|DependencyFreeDownload|DependencyFreeBuildCLI|PublicBuildCLI|TransitiveBuildCLI|InvalidTestdataBuildCLI|CgoBuildCLI|LibraryBuildCLI|MixedPackagesBuildCLI|MixedInvalidPackageBuildCLI|BuildSecurityCLI)Integration$|^TestLinuxCargo(Add|TransitiveAdd)Integration$",
+      "none",
+      "30m",
+      "bootstrap"
+    ],
+    "status": "PASS",
+    "started_utc": "2026-10-06T13:01:16.404212+00:00",
+    "exit_code": 0,
+    "finished_utc": "2026-10-06T13:19:37.654009+00:00",
+    "raw_log": "go-cargo-cli-runtime.log",
+    "raw_sha256": "15a23115145fad0646ced168b59191b9d3cc1c25f769461eac6b518f532598c5"
+  },
+  {
+    "candidate": "final-executable-candidate.json",
+    "name": "cargo-build-cli",
+    "command": [
+      "bash",
+      "/home/winamp/.local/state/heliopause/m12-004/run-qualified-consumers.sh",
+      "^TestLinuxCargo.*Build.*CLIIntegration$|^TestLinuxCargoProcMacroSecurityCLIIntegration$",
+      "none",
+      "15m",
+      "bootstrap"
+    ],
+    "status": "PASS",
+    "started_utc": "2026-10-06T13:19:37.656498+00:00",
+    "exit_code": 0,
+    "finished_utc": "2026-10-06T13:25:22.958639+00:00",
+    "raw_log": "cargo-build-cli-runtime.log",
+    "raw_sha256": "dbfc712a0c29fabce1d58eb8f88452a55270ceec439ddaf8b38242f894b2ffd9"
+  },
+  {
+    "candidate": "final-executable-candidate.json",
+    "name": "promotion-consumers",
+    "command": [
+      "bash",
+      "/home/winamp/.local/state/heliopause/m12-004/run-qualified-consumers.sh",
+      "^TestLinux(NPMPromotion|PyPIPromotion)Integration$",
+      "none",
+      "5m",
+      "promotion"
+    ],
+    "status": "PASS",
+    "started_utc": "2026-10-06T13:25:22.960585+00:00",
+    "exit_code": 0,
+    "finished_utc": "2026-10-06T13:25:39.250823+00:00",
+    "raw_log": "promotion-consumers-runtime.log",
+    "raw_sha256": "f55dd2f510763c422f5bc4645bbe679ec9ee3d905ef7bdafe5b6bf68fca117eb"
+  },
+  {
+    "candidate": "final-executable-candidate.json",
+    "name": "cpu-full",
+    "command": [
+      "bash",
+      "/home/winamp/.local/state/heliopause/m12-004/run-qualified-consumers.sh",
+      "^TestLinuxPyTorchFullIntegration$",
+      "cpu",
+      "15m",
+      "bootstrap"
+    ],
+    "status": "PASS",
+    "started_utc": "2026-10-06T13:25:39.252658+00:00",
+    "exit_code": 0,
+    "finished_utc": "2026-10-06T13:35:16.329406+00:00",
+    "raw_log": "cpu-full-runtime.log",
+    "raw_sha256": "2c68241d4dd85cdeaa27e58968772710f9005713894995dc15d6e20b90de7611"
+  },
+  {
+    "candidate": "final-executable-candidate.json",
+    "name": "cu126-full",
+    "command": [
+      "bash",
+      "/home/winamp/.local/state/heliopause/m12-004/run-qualified-consumers.sh",
+      "^TestLinuxPyTorchFullIntegration$",
+      "cu126",
+      "40m",
+      "bootstrap"
+    ],
+    "status": "FAIL",
+    "started_utc": "2026-10-06T13:35:16.331523+00:00",
+    "exit_code": 1,
+    "finished_utc": "2026-10-06T13:49:02.657794+00:00",
+    "raw_log": "cu126-full-runtime.log",
+    "raw_sha256": "ccb8b7b848a48b1f76fc89878f3b5bf6fd8d9aac84dff510abc9613bd86af341"
+  }
+]

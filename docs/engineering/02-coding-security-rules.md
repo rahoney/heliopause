@@ -176,6 +176,28 @@ canonical security·vulnerability profile이 exit0였으며 상세 graph·raw는
 [M12-004 source evidence](../planning/evidence/m12-004-provider-source/result.json)를
 따른다. 이 결과를 이후 HCL·ZIP·동적 실행 연결의 검사나 전체 acceptance로 전용하지 않는다.
 
+### M12-004 HCL control parsing dependency review
+
+`github.com/hashicorp/hcl/v2 v2.24.0`을 project의 native/JSON HCL과 dependency
+lock의 bounded syntax parsing에 사용한다. 표준 library는 HCL grammar를 지원하지
+않으므로 별도 정규식 parser나 Host Terraform 실행으로 대체하지 않는다.
+[고정 release](https://github.com/hashicorp/hcl/releases/tag/v2.24.0)와
+[고정 module graph](https://github.com/hashicorp/hcl/blob/v2.24.0/go.mod)의 Go floor는
+1.23이며 product1.26.8과 맞는다. [MPL-2.0 원본 license](https://github.com/hashicorp/hcl/blob/v2.24.0/LICENSE)를
+notice/source 제공 검토에 포함한다. Runtime transitive cty1.16.3(MIT),
+levenshtein1.2.1(MIT), textseg/v15(MIT), wordwrap1.0.1(MIT)와 실제 선택한 x/text
+pin은 준비 graph에 기록한다. Actual HCL consumer의 canonical scanner가
+기존 x/text0.28.0에서 [GO-2026-5970](https://pkg.go.dev/vuln/GO-2026-5970)을
+reachable로 보고했으므로 공식 fixed0.39.0으로 고정한다. Go floor1.25는
+product1.26.8과 맞으며 pre-parser UTF8 검사로 취약점 scanner를 우회하지 않는다. 기존 더 높은 x/mod·x/tools·x/sys·x/crypto pin은 유지한다.
+
+외부 syntax/value type은 Terraform artifact adapter 안에만 둔다. Literal provider
+identity·constraint·lock hash·local module source만 읽고 EvalContext/function·network·
+Host 실행·ambient configuration은 제공하지 않는다. Bytes·nesting·file/module bounds와
+중복·불명확한 제어 입력의 fail-closed 검사를 parser 앞뒤에서 유지한다. Parser의
+raw diagnostic은 개인 project content를 노출할 수 있어 고정된 adapter error로 바꾼다.
+Actual consumer 연결 뒤 canonical quick/security/vulnerability를 검사한다.
+
 ## 3. Package와 API 작성
 
 - Step 8의 dependency direction과 package 책임을 따른다.

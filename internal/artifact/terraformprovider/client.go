@@ -23,11 +23,13 @@ const MaxProviderArchiveBytes = 64 << 20
 // selection. Acquire consumes that selection, never performs a new resolve,
 // and gives the independent verifier the signed checksum and archive bytes.
 type Client struct {
-	intakeRoot string
-	resolver   *Resolver
-	releases   *githubrelease.Client
-	mu         sync.Mutex
-	frozen     map[string]RegistrySnapshot
+	intakeRoot    string
+	resolver      *Resolver
+	releases      *githubrelease.Client
+	mu            sync.Mutex
+	frozen        map[string]RegistrySnapshot
+	prepared      map[string][]byte
+	preparedBytes int
 }
 
 func NewPublicClient(intakeRoot string) (*Client, error) {
@@ -124,23 +126,28 @@ func (c *Client) Acquire(ctx context.Context, run domain.RunID, resolved domain.
 	if err != nil || artifact.SHA256 != archiveDigest {
 		return result, errors.New("terraform acquisition differs from selected package")
 	}
-	acquireCtx, cancel := context.WithTimeout(ctx, 2*time.Minute)
-	defer cancel()
-	sums, err := c.download(acquireCtx, artifact.ShasumsURL, 1<<20)
-	if err != nil {
-		return result, err
-	}
-	signature, err := c.download(acquireCtx, artifact.SignatureURL, 16<<10)
-	if err != nil {
-		return result, err
-	}
-	archive, err := c.download(acquireCtx, artifact.DownloadURL, MaxProviderArchiveBytes)
-	if err != nil {
-		return result, err
-	}
-	body, err := encodeParts(bundleHeader, [][]byte{snapshot.Discovery, snapshot.Versions, snapshot.Package, sums, signature, archive}, bundleLimits)
-	if err != nil {
-		return result, err
+	c.mu.Lock()
+	body := append([]byte(nil), c.prepared[key]...)
+	c.mu.Unlock()
+	if len(body) == 0 {
+		acquireCtx, cancel := context.WithTimeout(ctx, 2*time.Minute)
+		defer cancel()
+		sums, err := c.download(acquireCtx, artifact.ShasumsURL, 1<<20)
+		if err != nil {
+			return result, err
+		}
+		signature, err := c.download(acquireCtx, artifact.SignatureURL, 16<<10)
+		if err != nil {
+			return result, err
+		}
+		archive, err := c.download(acquireCtx, artifact.DownloadURL, MaxProviderArchiveBytes)
+		if err != nil {
+			return result, err
+		}
+		body, err = encodeParts(bundleHeader, [][]byte{snapshot.Discovery, snapshot.Versions, snapshot.Package, sums, signature, archive}, bundleLimits)
+		if err != nil {
+			return result, err
+		}
 	}
 	if err := os.MkdirAll(c.intakeRoot, 0o700); err != nil {
 		return result, err
