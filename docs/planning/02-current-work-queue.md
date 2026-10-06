@@ -2949,6 +2949,18 @@ parent와 negative test의 기준 root만 EvalSymlinks로 고정한다. Helper�
 거부와 freshness 계약은 변경하지 않으며 negative를 다른 symlink 오류로 가리지 않는다.
 Native macOS 재검증과 최종 all green은 아직 남아 있고 같은 후속 item을 계속한다.
 
+### 원격 Cargo fixture 작업 디렉터리 교정 (2026-10-07)
+
+c106172/run37499465550은 native macOS 포함8 prerequisites가 SUCCESS이고
+Linux112393261447/Required112404529823은 FAIL이다. 최초 오류는 Cargo source
+integration의 상대 fixture 경로 ENOENT다. Fixture는 tracked blob1eb7451이며
+누락된 것이 아니다. 직접 설치한 test binary는 repository cwd를 유지하지만
+일반 go test는 package cwd에서 실행한다. 같은 compiled metadata consumer는
+repository cwd에서 FAIL, internal/sandbox cwd에서 PASS0.02s다. 기존 lifecycle
+step의 Cargo source 명령만 package cwd의 subshell에서 실행하며 source/argv,
+helper 신원·복원, Policy와 모든 예산을 유지한다. 원래 failed job의 helper wait0와
+RESTORED는 제품 성공과 구분한다. Full 후속 CI와 Required는 아직 남아 있다.
+
 ## Step 13 Invariant
 
 1. Current Work Queue에는 현재 milestone의 실행 항목만 둔다.
