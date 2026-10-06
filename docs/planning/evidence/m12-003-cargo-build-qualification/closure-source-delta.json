@@ -1,0 +1,48 @@
+{
+  "scope": "All708 executed source paths compared. Only exact six documentation/workflow/format-policy paths differ; Go/product/CPP/runtime/policy inputs preserved. New build qualification evidence is checked in whole candidate separately.",
+  "executed_source": "executed-split-source-portable.json",
+  "executed_source_paths": 708,
+  "unchanged_paths": 702,
+  "delta": [
+    {
+      "path": ".gitattributes",
+      "executed_sha256": "ce1d873cab7fed2ef79bbd72559ae92df59adde1ce739ea11c8d90d54c37396b",
+      "final_sha256": "79c88d1ea53fa1d99bd742793bc375407f972e50739d059b690020fcd3bd3d06",
+      "mode": "0o644"
+    },
+    {
+      "path": ".github/workflows/heliopause-ci.yml",
+      "executed_sha256": "ccc66de6814f3cc2ba8f1cbb0c1db74cebdd4f49334ea83463b0d38d32d05ea1",
+      "final_sha256": "f47c82e691f9e030752ddb1b1fbcf24b46321a30c3c7dc3a594b4f4bc607e9de",
+      "mode": "0o644"
+    },
+    {
+      "path": "PROJECT-DECISIONS.md",
+      "executed_sha256": "4e7b138da76583fe770bf44aabb842d98132695c21e880a5e036086d42ecc228",
+      "final_sha256": "adeac70b8ed36872e5086fd7c4cd20a2b43f56734d6225f0dc9e0479d76fe945",
+      "mode": "0o644"
+    },
+    {
+      "path": "README.md",
+      "executed_sha256": "53c206665829d17bac6b10c28b34050c7e5f664a95af0141454fbdef10494553",
+      "final_sha256": "e2cacc60caf5df0b5c17922a91b097631bdd7b970361baac21cd2c6ae89f92bf",
+      "mode": "0o644"
+    },
+    {
+      "path": "docs/planning/02-current-work-queue.md",
+      "executed_sha256": "2ba4dfef8e175adcc9099d91d16a04a2d7a243bb96f514be0693cd3db4fc6e69",
+      "final_sha256": "e53355975a4f5eb73622a322623de22ca62b4e6825215280fb9eb19f4ef65cfa",
+      "mode": "0o644"
+    },
+    {
+      "path": "docs/planning/16-m12-01-ecosystem-expansion-contract.md",
+      "executed_sha256": "7ae067819484163093f0a3e9159b4e24f6771fc6055b2bb20657f5600ce5ca0e",
+      "final_sha256": "534f4e87ef0b5b2ede837de73b050addc73f057c9fba0a42616af098e406b54d",
+      "mode": "0o644"
+    }
+  ],
+  "workflow_boundary": "Only gvisor-integration job timeout60\u2192120; individual commands/resource/security caps unchanged",
+  "whole_candidate_checks": "canonical-checks.json; final closure document checks run before local commit",
+  "native_macos": "NOT_RUN",
+  "remote_required_ci": "NOT_RUN"
+}

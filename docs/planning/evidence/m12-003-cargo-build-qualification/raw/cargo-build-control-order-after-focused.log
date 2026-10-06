@@ -1,0 +1,4 @@
+ok  	github.com/rahoney/heliopause/internal/artifact/cargo	0.399s
+ok  	github.com/rahoney/heliopause/internal/sandbox	0.563s
+ok  	github.com/rahoney/heliopause/internal/promotion	37.052s
+ok  	github.com/rahoney/heliopause/internal/application	0.006s

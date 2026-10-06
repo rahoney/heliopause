@@ -1,0 +1,8 @@
+--- FAIL: TestCargoBuildSnapshotControlsMatchByIdentity (0.00s)
+    --- FAIL: TestCargoBuildSnapshotControlsMatchByIdentity/go-proxy/reversed (0.00s)
+        project_snapshot_test.go:88: matching frozen controls were not inspected: project download controls differ from guard
+    --- FAIL: TestCargoBuildSnapshotControlsMatchByIdentity/crates-io/reversed (0.00s)
+        project_snapshot_test.go:88: matching frozen controls were not inspected: project download controls differ from guard
+FAIL
+FAIL	github.com/rahoney/heliopause/internal/application	0.006s
+FAIL

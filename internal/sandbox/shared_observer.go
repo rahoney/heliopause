@@ -62,7 +62,7 @@ func observerExpectedTopology(profile string) ([]observerMountExpectation, bool)
 	tmp := observerMountExpectation{"/tmp", "workspace", "/", "tmpfs", false, true, true, false}
 	runtime := observerMountExpectation{"/haa-runtime", "helper", "/", "tmpfs", false, false, true, false}
 	switch profile {
-	case "npm-lifecycle", "go-module-resolver", "go-module-build", "cargo-resolver":
+	case "npm-lifecycle", "go-module-resolver", "go-module-build", "cargo-resolver", "cargo-build":
 		return []observerMountExpectation{root, tmp, runtime}, true
 	case "pypi-wheel", "pypi-wheel-pytorch-cpu", "pypi-wheel-pytorch-cu126", "pypi-wheel-pytorch-cu130", "pypi-wheel-pytorch-cu132":
 		site := observerMountExpectation{"/haa-site", "workspace", "/", "tmpfs", false, false, true, false}
@@ -98,7 +98,7 @@ type observationTraceLedger struct {
 const maximumGoBuildLedgerEvents = 20000
 
 func newObservationTraceLedger(profile string) (*observationTraceLedger, error) {
-	if !isPythonObserverProfile(profile) && profile != goBuildProfile {
+	if !isPythonObserverProfile(profile) && profile != goBuildProfile && profile != cargoBuildProfile {
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
 	}
 	budget := traceBudgetForProfile(profile)
@@ -130,6 +130,14 @@ func goBuildOutputExpectedTopology(readOnly bool) ([]observerMountExpectation, b
 		return nil, false
 	}
 	return append(base, observerMountExpectation{goBuildGuestOutput, "workspace", "/tmp", "9p", false, false, false, false}), true
+}
+
+func cargoBuildExpectedTopology(readOnly bool) ([]observerMountExpectation, bool) {
+	base, ok := observerExpectedTopology(cargoBuildProfile)
+	if !ok {
+		return nil, false
+	}
+	return append(base, observerMountExpectation{cargoBuildGuestInput, "workspace", "/tmp", "9p", readOnly, false, false, false}, observerMountExpectation{cargoBuildGuestTarget, "workspace", "/tmp", "9p", false, false, false, false}), true
 }
 
 func (l *observationTraceLedger) charge(record helperRecord, bytes uint64) error {
@@ -491,6 +499,14 @@ func (o *SharedObserver) StartGoBuildOutputProfile(ctx context.Context, containe
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
 	}
 	return o.startProfileWithBudget(ctx, containerID, goBuildProfile, topology, budget)
+}
+
+func (o *SharedObserver) StartCargoBuildProfile(ctx context.Context, containerID string, readOnly bool, budget *observationTraceLedger) (TraceReader, error) {
+	topology, ok := cargoBuildExpectedTopology(readOnly)
+	if budget == nil || !ok {
+		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	return o.startProfileWithBudget(ctx, containerID, cargoBuildProfile, topology, budget)
 }
 
 func (o *SharedObserver) StartPythonClosureProfile(ctx context.Context, containerID, profile string, phase pythonClosurePhase) (TraceReader, error) {
@@ -929,7 +945,7 @@ func validFaultSite(record helperRecord) bool {
 		if record.Kind != "stream-fault" || record.Reason != "FD_STATE_UNKNOWN" || record.FaultSite != "RAW" ||
 			!validFixed(r.Check, "ARGUMENT", "TABLE", "DESCRIPTOR", "CLASSIFICATION", "FAMILY") ||
 			(r.Sysno != 44 && r.Sysno != 46 && r.Sysno != 307 && r.Sysno != 206 && r.Sysno != 211 && r.Sysno != 269) ||
-			!validFixed(r.KernelImage, "UNKNOWN", "BOUNDARY", "SETPRIV", "SHELL", "ENV", "NPM_CLI", "NODE", "CARGO", "TAR", "RUSTC") ||
+			!validFixed(r.KernelImage, "UNKNOWN", "BOUNDARY", "SETPRIV", "SHELL", "ENV", "NPM_CLI", "NODE", "CARGO", "TAR", "RUSTC", "GCC", "COLLECT2", "LLD_LAUNCHER", "RUST_LLD") ||
 			!validFixed(r.Role, "CONTROL", "ARTIFACT", "UNKNOWN") || !validFixed(r.Provenance, "OCI_ROOT", "DIRECT_EXEC_ROOT", "CLONE_CHILD", "UNKNOWN") {
 			return false
 		}
@@ -947,9 +963,9 @@ func validFaultSite(record helperRecord) bool {
 		}
 		if record.Kind != "stream-fault" || !validFixed(record.FaultSite, "OPEN_RESULT_CLASSIFICATION_IMAGE", "OPEN_RESULT_CLASSIFICATION_PROC", "OPEN_RESULT_CLASSIFICATION_SYS", "OPEN_RESULT_CLASSIFICATION_OTHER", "OPEN_RESULT_CLASSIFICATION_PROCESS_NAME") ||
 			!validFixed(open.Image, "SHELL", "PYTHON", "PIP", "NODE", "NPM", "GO", "ARTIFACT", "SLEEP", "MKDIR", "CAT", "CHMOD", "OTHER") ||
-			(open.KernelImage != "" && !validFixed(open.KernelImage, "UNKNOWN", "BOUNDARY", "SETPRIV", "SHELL", "ENV", "NPM_CLI", "NODE", "CARGO", "TAR", "RUSTC")) ||
+			(open.KernelImage != "" && !validFixed(open.KernelImage, "UNKNOWN", "BOUNDARY", "SETPRIV", "SHELL", "ENV", "NPM_CLI", "NODE", "CARGO", "TAR", "RUSTC", "GCC", "COLLECT2", "LLD_LAUNCHER", "RUST_LLD")) ||
 			!validFixed(open.Role, "CONTROL", "ARTIFACT", "UNKNOWN") || !validFixed(open.Provenance, "OCI_ROOT", "DIRECT_EXEC_ROOT", "CLONE_CHILD", "UNKNOWN") ||
-			!validFixed(open.Subject, "PROC_SELF_AUXV", "PROC_SELF_MAPS", "PROC_SELF_STATM", "PROC_SELF_CGROUP", "PROC_SELF_MOUNTINFO", "VM_OVERCOMMIT_MEMORY", "THP_PAGE_SIZE", "CGROUP_CPU_QUOTA", "OCI_IMAGE", "OTHER") ||
+			!validFixed(open.Subject, "DEV_NULL", "PROC_SELF_AUXV", "PROC_SELF_MAPS", "PROC_SELF_STATM", "PROC_SELF_CGROUP", "PROC_SELF_MOUNTINFO", "VM_OVERCOMMIT_MEMORY", "THP_PAGE_SIZE", "CGROUP_CPU_QUOTA", "OCI_IMAGE", "OTHER") ||
 			!validFixed(open.Mount, "oci-root", "system", "workspace", "helper") {
 			return false
 		}

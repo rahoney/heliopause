@@ -1,0 +1,5 @@
+fuzz: elapsed: 0s, gathering baseline coverage: 0/144 completed
+fuzz: elapsed: 1s, gathering baseline coverage: 144/144 completed, now fuzzing with 12 workers
+fuzz: elapsed: 2s, execs: 49194 (22666/sec), new interesting: 15 (total: 159)
+PASS
+ok  	github.com/rahoney/heliopause/internal/sandbox	2.233s

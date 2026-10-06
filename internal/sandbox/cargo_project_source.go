@@ -46,7 +46,10 @@ func CaptureCargoProjectSource(ctx context.Context, project string) (*CargoProje
 func (s *cargoProjectSource) Files() map[string][]byte         { return s.files() }
 func (s *cargoProjectSource) Verify(ctx context.Context) error { return s.verify(ctx) }
 func (s *cargoProjectSource) Archive() ([]byte, error)         { return s.archive() }
-func (s *cargoProjectSource) Close() error                     { return s.close() }
+
+// BuildArchive preserves source bytes while using readonly transport metadata.
+func (s *cargoProjectSource) BuildArchive() ([]byte, error) { return s.archiveWithFileMode(0o400) }
+func (s *cargoProjectSource) Close() error                  { return s.close() }
 
 // VerifyPublishedControls permits only the two exact selected root controls to
 // change during publication. Every other source member retains its original
@@ -305,14 +308,16 @@ func (s *cargoProjectSource) verify(ctx context.Context) (resultErr error) {
 	return nil
 }
 
-func (s *cargoProjectSource) archive() ([]byte, error) {
+func (s *cargoProjectSource) archive() ([]byte, error) { return s.archiveWithFileMode(0o600) }
+
+func (s *cargoProjectSource) archiveWithFileMode(fileMode int64) ([]byte, error) {
 	if s == nil || len(s.roots) == 0 {
 		return nil, errors.New("cargo source snapshot is closed")
 	}
 	var body bytes.Buffer
 	w := tar.NewWriter(&body)
 	for _, member := range s.members {
-		h := &tar.Header{Name: member.name, Mode: 0o600, Size: int64(len(member.body)), Typeflag: tar.TypeReg}
+		h := &tar.Header{Name: member.name, Mode: fileMode, Size: int64(len(member.body)), Typeflag: tar.TypeReg}
 		if member.info.IsDir() {
 			h.Typeflag = tar.TypeDir
 			h.Mode = 0o700

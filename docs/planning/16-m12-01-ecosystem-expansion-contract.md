@@ -903,6 +903,56 @@ HAA build record
 기존 target directory를 무조건 덮어쓰지 않는다. private build tree에서
 post-build verification 후 bounded commit한다.
 
+### Locked default build and bounded output
+
+`helox cargo build`는 flags/selector 없이 pinned Linux/amd64 default target만 빌드한다.
+원래 project의 complete controls/source guard를 유지하면서 locked complete graph를
+독립 acquire/verify/inspect하고 controller-owned approval/Evidence/vendor cache를
+재확인한다. Approval 뒤 live selector를 다시 평가하지 않는다. Cargo/Rustup/Rustc/
+wrapper/flags/target/cache 및 credential 환경은 고정한 container 입력만 사용한다.
+
+빌드 입력은 complete local source와 approved vendor cache를 immutable transport로
+고정하고, Cargo metadata의 graph/features/targets를 frozen snapshot과 다시 대조한다.
+Project/cache와 controller의 Cargo source-replacement config는 UID/GID1000의
+read-only input volume에 함께 두고 content/mode/ownership/inventory를 재확인한다.
+Cargo cwd는 read-only `/`이며 mutable parent의 config replacement를 승인하지 않는다.
+Target은 별도 operation-private executable volume이다. 이 volume의 build program은
+계속 untrusted ARTIFACT이며 CONTROL 또는 network 권한을 얻지 않는다.
+
+고정 metadata/build는 `--frozen --offline --locked`를 함께 사용하고 network none,
+read-only OCI root, demotion/no-new-privileges, pids64, memory512MiB, CPU1 core,
+input512MiB/noexec, target200MiB, temporary512MiB/noexec, operation180seconds를
+유지한다. `cargo-build`의 charged connection limit10,000과 normalized10,000/2MiB도
+유지한다. Go의 확장된 event/cache 예산을 Cargo에 자동 전용하지 않는다.
+
+Cargo driver→Rustc→fixed native compiler/linker 및 build program 전이는 kernel image,
+sealed topology, recorded group/start/exact creator와 one-shot lifecycle을 사용한다.
+동일 pinned launcher의 linker reexec도 exact kernel group에서 한 번만 인정한다.
+Compiler/loader의 고정 SDK/ABI와 own process metadata는 runtime input data이며,
+mutable process name·package/vendor 이름·artifact 출력·serialized diagnostic boolean은
+권한이 아니다. Build program의 pinned Rustc `--version`은 info-only child이며
+compiler producer/CONTROL/network 권한을 얻지 않는다. 다른 subprocess와 filesystem/
+network 시도, drop/incomplete stream은 기존 Findings/Policy/failure로 보존한다.
+
+전체 default debug output TAR는 entries20,000/files10,000/expanded200MiB/
+file64MiB로 확인한다. 첫 empty dot directory만 root data로 인정하고 unsafe roots,
+links/metadata drift/duplicates/escape/trailing data를 거부한다. Archive-local hardlink
+alias는 같은 archive의 regular backing data로만 재구성하며 logical expansion도
+200MiB에 charge한다. Host link를 생성하거나 외부 파일을 따라가지 않는다. 이 output
+규칙은 source/crate/cache의 link 거부 규칙을 바꾸지 않는다. Promotion 대상은
+nonhidden top-level default products(`.d` 제외), 최대128files/200MiB이며 host에서
+실행하지 않는다.
+
+`cargo-build-v3` recipe digest는 pinned runtime, fixed config와 실제 create/metadata/
+build argv, 두 phase topology, resource/transport/output bounds 및 selection/alias
+규칙을 묶는다. Source/cache/graph/output/recipe/개별 files와 recorded Evidence content
+hashes를 independent receipt로 재확인한 뒤 새 `.heliopause/builds/<Run>`에 atomic
+no-overwrite publication한다. Competing/foreign output은 보존하고 uncertain cleanup/
+rollback은 실패다. Retained build도 새 Run/output을 사용하며 기존 output을 덮지 않는다.
+최초 trusted stage/command status와 bounded observer/output diagnostics는 generic build
+result나 cleanup에 가려지지 않게 보존한다. Raw artifact-controlled text/path는 새
+trust authority가 아니다.
+
 ## Qualification
 
 - normal crate add

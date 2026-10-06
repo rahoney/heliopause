@@ -1,0 +1,32 @@
+{
+  "scope": "2026-10-06 interrupted qualification environment recovery; no product source or budget change",
+  "command_role": "reviewed /tmp/haa-m12-resume-restore.sh using scripts/ci-integration-cleanup.sh",
+  "tool_exit": 0,
+  "preconditions": {
+    "source_receipt": "707 path/hash/mode records match both primary and native projection",
+    "boot": "current boot started after last valid old pressure sample",
+    "installed_consumer": "host /proc executable scan found none of the installed client/helper/observer/runtime executables live",
+    "docker": "bounded complete query succeeded; no traced consumers",
+    "lifecycle": "four exact sockets/lock absent",
+    "candidate": "installed candidate binaries match receipt hashes and root UID/GID/single-link regular files",
+    "original_copies": "seven runtime SHA512 and five client/helper/observer/config SHA256 records match preserved before copies"
+  },
+  "result": {
+    "original_installation": "12 files restored with exact before hashes/UID/GID/modes",
+    "runtime_directories": "canonical observer owner0700 and root policy0755 restored",
+    "cleanup_original": 0,
+    "helper_state": "NOT_STARTED for new restoration shell",
+    "helper_stop": 0,
+    "client_error": 0,
+    "client_restore": 0,
+    "previous_retry_test": "INTERRUPTED/UNOBSERVED; no prior parent wait or test success inferred"
+  },
+  "new_cu126_execution": {
+    "status": "FAIL2400s test timeout; separate original2 and confirmed helper wait0/original12 restoration",
+    "raw_log": "baseline/cargo-build-final-cu126-resume-runtime.log in local persistent state",
+    "candidate": "same source/CPP/helper/bootstrap-test/runtime as CPU518.36s PASS",
+    "individual_test_timeout": "40m unchanged",
+    "product_and_profile_security_limits": "UNCHANGED",
+    "result": "cu126-resume-result.json"
+  }
+}

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -38,7 +39,14 @@ func TestLinuxPyTorchFullIntegration(t *testing.T) {
 		}
 		t.Logf("retained integration evidence: %s", root)
 	}
-	t.Setenv("XDG_CACHE_HOME", filepath.Join(root, "cache"))
+	cache, err := pytorchIntegrationCache(root, profile, os.Getenv("HELOX_INTEGRATION_CACHE_ROOT"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("XDG_CACHE_HOME", cache)
+	if os.Getenv("HELOX_INTEGRATION_CACHE_ROOT") != "" {
+		t.Logf("retained integration cache: %s", cache)
+	}
 	target := filepath.Join(root, "target")
 	for _, relative := range []string{"lib/python3.14/site-packages", "bin", "share"} {
 		if err := os.MkdirAll(filepath.Join(target, relative), 0o700); err != nil {
@@ -56,7 +64,7 @@ func TestLinuxPyTorchFullIntegration(t *testing.T) {
 	if prerequisite != "" {
 		args = append(args, "--inspection-prerequisites", prerequisite)
 	}
-	err := bootstrap.Run(ctx, args, &stdout, &stderr)
+	err = bootstrap.Run(ctx, args, &stdout, &stderr)
 	if err != nil {
 		t.Fatalf("PyTorch %s install failed: %v\nstdout=%s\nstderr=%s", profile, err, stdout.String(), stderr.String())
 	}
@@ -70,7 +78,7 @@ func TestLinuxPyTorchFullIntegration(t *testing.T) {
 			}
 		}
 	}
-	staged, globErr := filepath.Glob(filepath.Join(root, "cache", "heliopause", "staging", "*", "manifest.json"))
+	staged, globErr := filepath.Glob(filepath.Join(cache, "heliopause", "staging", "*", "manifest.json"))
 	if globErr != nil || len(staged) != 1 {
 		t.Fatalf("PyTorch %s staging manifest = %q, %v", profile, staged, globErr)
 	}
@@ -79,7 +87,7 @@ func TestLinuxPyTorchFullIntegration(t *testing.T) {
 		t.Fatalf("PyTorch %s source identity did not reach staged manifest: %v\n%s", profile, readErr, manifest)
 	}
 	if expected := os.Getenv("HELOX_PYTORCH_NOT_ATTESTED_MODULE"); expected != "" {
-		paths, err := filepath.Glob(filepath.Join(root, "cache/heliopause/evidence/*/pypi-command-not-attested-*.json"))
+		paths, err := filepath.Glob(filepath.Join(cache, "heliopause/evidence/*/pypi-command-not-attested-*.json"))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -157,7 +165,7 @@ func TestLinuxPyTorchFullIntegration(t *testing.T) {
 				}
 			}
 		}
-		evidence, err := filepath.Glob(filepath.Join(root, "cache/heliopause/evidence/*/pypi-dynamic-import-supplemented-result.json"))
+		evidence, err := filepath.Glob(filepath.Join(cache, "heliopause/evidence/*/pypi-dynamic-import-supplemented-result.json"))
 		if err != nil || len(evidence) != 1 {
 			t.Fatalf("supplemented evidence: %v %v", evidence, err)
 		}
@@ -174,4 +182,25 @@ func TestLinuxPyTorchFullIntegration(t *testing.T) {
 		}
 		t.Logf("inspection input excluded from %d promoted entries; separate supplemented evidence retained", len(stagedManifest.Entries))
 	}
+}
+
+// The optional qualification cache is fresh per invocation. Private mutation
+// and the final target remain together; production verification and copying
+// still bind cache content to the exact inspected set across filesystems.
+func pytorchIntegrationCache(root, profile, parent string) (string, error) {
+	if parent == "" {
+		return filepath.Join(root, "cache"), nil
+	}
+	if !filepath.IsAbs(parent) || filepath.Clean(parent) != parent {
+		return "", errors.New("qualification cache parent must be canonical and absolute")
+	}
+	resolved, err := filepath.EvalSymlinks(parent)
+	if err != nil || resolved != parent {
+		return "", errors.New("qualification cache parent must have no symlink components")
+	}
+	info, err := os.Lstat(parent)
+	if err != nil || !info.IsDir() || info.Mode().Perm() != 0o700 {
+		return "", errors.New("qualification cache parent must be a private existing directory")
+	}
+	return os.MkdirTemp(parent, "pytorch-"+profile+"-")
 }

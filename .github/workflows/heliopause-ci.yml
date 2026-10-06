@@ -262,7 +262,7 @@ jobs:
   gvisor-integration:
     name: gVisor Linux Integration
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 120
     env:
       GOTOOLCHAIN: local
     steps:
@@ -288,6 +288,7 @@ jobs:
           node_image="$(jq -er '.node_image.reference' "$runtime_lock")"
           python_image="$(jq -er '.python_image.reference' "$runtime_lock")"
           go_image="$(jq -er '.go_image.reference' "$runtime_lock")"
+          rust_image="$(jq -er '.rust_image.reference' "$runtime_lock")"
           conflicting_packages=()
           for package in docker.io docker-compose docker-compose-v2 docker-doc podman-docker containerd runc moby-engine moby-cli; do
             if dpkg-query -W -f='${db:Status-Abbrev}' "$package" 2>/dev/null | grep -q '^ii'; then
@@ -367,6 +368,7 @@ jobs:
           docker pull "$node_image"
           docker pull "$python_image"
           docker pull "$go_image"
+          docker pull "$rust_image"
           scripts/build-gvisor-observer-release.sh "$RUNNER_TEMP/haa_gvisor_observer"
           sudo install -m 0755 "$RUNNER_TEMP/haa_gvisor_observer" /usr/libexec/heliopause/haa_gvisor_observer
 
@@ -418,11 +420,14 @@ jobs:
           haa_start_policy_helper
           HELOX_PYTORCH_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.run '^TestLinuxPyTorchResolverIntegration$'
           HELOX_GO_RESOLVER_INTEGRATION=1 HELOX_GO_RESOLVER_PROJECT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxGo(IsolatedResolver|IsolatedProjectResolver|SourceProjectSnapshot|DependencyFreeProjectSnapshot)Integration$'
+          HELOX_CARGO_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxCargoSourceProjectSnapshotIntegration$'
           go test -c -o "$RUNNER_TEMP/helox-bootstrap-test" ./internal/bootstrap
           haa_install_ci_client "$RUNNER_TEMP/helox-bootstrap-test"
           haa_start_policy_helper
           HELOX_GO_RESOLVER_INTEGRATION=1 HELOX_GO_RESOLVER_PROJECT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestLinuxGo(GetDownload|TransitiveGetDownload|DependencyFreeDownload)Integration$'
           HELOX_GO_BUILD_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=15m -test.run '^TestLinuxGo(DependencyFreeBuildCLI|PublicBuildCLI|TransitiveBuildCLI|InvalidTestdataBuildCLI|CgoBuildCLI|LibraryBuildCLI|MixedPackagesBuildCLI|MixedInvalidPackageBuildCLI|BuildSecurityCLI)Integration$'
+          HELOX_CARGO_RESOLVER_INTEGRATION=1 HELOX_CARGO_ADD_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestLinuxCargo(Add|TransitiveAdd)Integration$'
+          HELOX_CARGO_RESOLVER_INTEGRATION=1 HELOX_CARGO_BUILD_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=15m -test.run '^TestLinuxCargo.*Build.*CLIIntegration$|^TestLinuxCargoProcMacroSecurityCLIIntegration$'
           selected_cuda_profiles=0
           if [ "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cu126_qualification }}" = true ]; then selected_cuda_profiles=$((selected_cuda_profiles + 1)); fi
           if [ "${{ github.event_name == 'workflow_dispatch' && inputs.pytorch_cu130_qualification }}" = true ]; then selected_cuda_profiles=$((selected_cuda_profiles + 1)); fi

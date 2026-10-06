@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"reflect"
+	"strings"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/core/ports"
@@ -72,6 +73,7 @@ func (s *ProjectBuildService) Build(ctx context.Context, install domain.InstallC
 		return result, published, err
 	}
 	fail := func(code string, cause error) (domain.OperationResult, domain.PublishedProjectBuild, error) {
+		code = strings.Replace(code, "M12_GO_", "M12_"+strings.ToUpper(inputs.Kind())+"_", 1)
 		r, e := failRun(run, reference, inputs.Source(), nil, nil, code, "Project build did not complete.", cause)
 		return r, domain.PublishedProjectBuild{}, e
 	}
@@ -128,7 +130,7 @@ func (s *ProjectBuildService) Build(ctx context.Context, install domain.InstallC
 	}
 	published, err = guard.PublishBuild(ctx, approved)
 	if err != nil || !published.Valid() {
-		return result, domain.PublishedProjectBuild{}, errors.Join(errors.New("go build output publication failed"), err)
+		return result, domain.PublishedProjectBuild{}, errors.Join(errors.New("project build output publication failed"), err)
 	}
 	return result, published, nil
 }

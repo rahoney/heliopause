@@ -1,0 +1,26 @@
+verified fresh Cargo source and observer candidate; no overlay
+runtime before bytes/identity/modes verified
+runtime candidate bytes/identity/modes verified
+no existing traced runtime consumers; bounded Docker queries succeeded
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+/etc/heliopause/pod-init.json: OK
+helper launch: bash=/usr/bin/bash version=5.2.21(1)-release owner=2177397
+helper ready: pid=2177438 attempt=15
+=== RUN   TestLinuxCargoTransitiveBuildCLIIntegration
+observer_attribution sequence=1 profile=cargo-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:5,NETWORK/TRUSTED_CONTROL/SENDTO/INET/DIRECT_EXEC_SESSION/OTHER:29
+observer_attribution sequence=2 profile=cargo-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:10,NETWORK/TRUSTED_CONTROL/SENDTO/INET/DIRECT_EXEC_SESSION/OTHER:48
+observer_attribution sequence=1 profile=cargo-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:10,NETWORK/TRUSTED_CONTROL/SENDTO/INET/DIRECT_EXEC_SESSION/OTHER:47
+--- PASS: TestLinuxCargoTransitiveBuildCLIIntegration (35.86s)
+PASS
+helper reaped: pid=2177438 wait=0
+no existing traced runtime consumers; bounded Docker queries succeeded
+runtime before bytes/identity/modes verified
+/etc/heliopause/pod-init.json: OK
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=2177438

@@ -13,6 +13,7 @@ import (
 	"syscall"
 
 	artifactgo "github.com/rahoney/heliopause/internal/artifact/gomodule"
+	projectbuild "github.com/rahoney/heliopause/internal/artifact/projectbuild"
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
@@ -143,18 +144,25 @@ func openGoBuildParent(parent *os.Root, name string) (*os.Root, goBuildParentBin
 
 // PublishBuild consumes exact completed ALLOW and actual recorded Evidence.
 // No resulting program is executed here. Existing outputs are never replaced.
-func (g *approvedGoProjectGuard) PublishBuild(ctx context.Context, build domain.ApprovedProjectBuild) (result domain.PublishedProjectBuild, resultErr error) {
-	records, err := g.verifyBuildApproval(ctx, build)
+func (g *approvedGoProjectGuard) PublishBuild(ctx context.Context, build domain.ApprovedProjectBuild) (domain.PublishedProjectBuild, error) {
+	if g == nil || g.buildInputs == nil {
+		return domain.PublishedProjectBuild{}, errors.New("go build inputs were not frozen")
+	}
+	return publishProjectBuildOutput(ctx, g.guard.root, g.owner.cache.intakeRoot, *g.buildInputs, build, g.verifyBuildApproval, g.owner.buildCheck)
+}
+
+func publishProjectBuildOutput(ctx context.Context, project *os.Root, intake string, inputs domain.ProjectBuildInputs, build domain.ApprovedProjectBuild, verify func(context.Context, domain.ApprovedProjectBuild) ([]goBuildEvidenceRecord, error), check func(string) error) (result domain.PublishedProjectBuild, resultErr error) {
+	records, err := verify(ctx, build)
 	if err != nil {
 		return result, err
 	}
-	metadata, first, err := openGoBuildParent(g.guard.root, ".heliopause")
+	metadata, first, err := openGoBuildParent(project, ".heliopause")
 	if err != nil {
 		return result, err
 	}
 	defer func() {
 		if metadata.Close() != nil {
-			resultErr = errors.Join(resultErr, errors.New("close go build publication parent"))
+			resultErr = errors.Join(resultErr, errors.New("close project build publication parent"))
 			result = domain.PublishedProjectBuild{}
 		}
 	}()
@@ -164,48 +172,48 @@ func (g *approvedGoProjectGuard) PublishBuild(ctx context.Context, build domain.
 	}
 	defer func() {
 		if outputs.Close() != nil {
-			resultErr = errors.Join(resultErr, errors.New("close go build output parent"))
+			resultErr = errors.Join(resultErr, errors.New("close project build output parent"))
 			result = domain.PublishedProjectBuild{}
 		}
 	}()
 	parents := []goBuildParentBinding{first, second}
-	name := ".haa-go-output-" + g.buildInputs.RunID().String()
+	name := ".haa-" + inputs.Kind() + "-output-" + inputs.RunID().String()
 	if err := outputs.Mkdir(name, 0o700); err != nil {
-		return result, errors.New("create private go build output")
+		return result, errors.New("create private project build output")
 	}
 	ownedInfo, err := outputs.Lstat(name)
 	if err != nil || !ownedInfo.IsDir() {
-		return result, errors.New("go build output ownership unavailable")
+		return result, errors.New("project build output ownership unavailable")
 	}
 	var stage *os.Root
 	defer func() {
 		if stage != nil && stage.Close() != nil {
-			resultErr = errors.Join(resultErr, errors.New("close private go build output"))
+			resultErr = errors.Join(resultErr, errors.New("close private project build output"))
 		}
 		if resultErr != nil {
 			current, err := outputs.Lstat(name)
 			if err != nil || !current.IsDir() || !os.SameFile(current, ownedInfo) {
-				resultErr = errors.Join(resultErr, errors.New("go build output rollback identity unavailable"))
+				resultErr = errors.Join(resultErr, errors.New("project build output rollback identity unavailable"))
 			} else if outputs.RemoveAll(name) != nil || syncGoTransactionRoot(outputs) != nil {
-				resultErr = errors.Join(resultErr, errors.New("go build output rollback incomplete"))
+				resultErr = errors.Join(resultErr, errors.New("project build output rollback incomplete"))
 			}
 			result = domain.PublishedProjectBuild{}
 		}
 	}()
 	stage, err = outputs.OpenRoot(name)
 	if err != nil {
-		return result, errors.New("open private go build output")
+		return result, errors.New("open private project build output")
 	}
-	files, err := artifactgo.ReadBuildOutput(ctx, g.owner.cache.intakeRoot, build.Report().Output(), func(name string, size int64, input io.Reader) error {
+	files, err := projectbuild.ReadBuildOutput(ctx, intake, build.Report().Output(), inputs.Kind()+"-output", func(name string, size int64, input io.Reader) error {
 		file, err := stage.OpenFile(name, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o500)
 		if err != nil {
-			return errors.New("create staged go build file")
+			return errors.New("create staged project build file")
 		}
 		n, writeErr := io.Copy(file, input)
 		syncErr := file.Sync()
 		closeErr := file.Close()
 		if n != size || errors.Join(writeErr, syncErr, closeErr) != nil {
-			return errors.New("persist staged go build file")
+			return errors.New("persist staged project build file")
 		}
 		return nil
 	})
@@ -213,42 +221,42 @@ func (g *approvedGoProjectGuard) PublishBuild(ctx context.Context, build domain.
 		return result, err
 	}
 	decision, _ := build.Result().PolicyDecision()
-	doc := goBuildOutputReceipt{1, g.buildInputs.RunID().String(), g.buildInputs.Source().Digest().String(), g.buildInputs.Cache().Digest().String(), g.buildInputs.Snapshot().GraphDigest().String(), build.Report().Output().Digest().String(), build.Report().Binding().ConfigDigest().String(), decision.PolicyID(), decision.Version(), files, records}
+	doc := goBuildOutputReceipt{1, inputs.RunID().String(), inputs.Source().Digest().String(), inputs.Cache().Digest().String(), inputs.Snapshot().GraphDigest().String(), build.Report().Output().Digest().String(), build.Report().Binding().ConfigDigest().String(), decision.PolicyID(), decision.Version(), files, records}
 	body, err := json.Marshal(doc)
 	if err != nil || len(body) > 1<<20 {
-		return result, errors.New("go build output receipt is invalid")
+		return result, errors.New("project build output receipt is invalid")
 	}
 	file, err := stage.OpenFile(".haa-build.json", os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o400)
 	if err != nil {
-		return result, errors.New("create go build output receipt")
+		return result, errors.New("create project build output receipt")
 	}
 	_, writeErr := file.Write(body)
 	syncErr := file.Sync()
 	closeErr := file.Close()
 	if errors.Join(writeErr, syncErr, closeErr) != nil || syncGoTransactionRoot(stage) != nil {
-		return result, errors.New("persist go build output receipt")
+		return result, errors.New("persist project build output receipt")
 	}
-	if err := g.owner.buildCheck("BEFORE_PUBLISH"); err != nil {
+	if err := check("BEFORE_PUBLISH"); err != nil {
 		return result, err
 	}
 	if verifyGoBuildParents(parents) != nil || verifyGoBuildOutputTree(stage, ownedInfo, files, body) != nil {
-		return result, errors.New("go build output changed before publication")
+		return result, errors.New("project build output changed before publication")
 	}
-	if _, err := g.verifyBuildApproval(ctx, build); err != nil {
+	if _, err := verify(ctx, build); err != nil {
 		return result, err
 	}
-	if err := renameRootNoReplace(outputs, name, g.buildInputs.RunID().String()); err != nil {
-		return result, errors.New("go build output destination exists or publication failed")
+	if err := renameRootNoReplace(outputs, name, inputs.RunID().String()); err != nil {
+		return result, errors.New("project build output destination exists or publication failed")
 	}
-	name = g.buildInputs.RunID().String()
-	if err := g.owner.buildCheck("AFTER_PUBLISH"); err != nil {
+	name = inputs.RunID().String()
+	if err := check("AFTER_PUBLISH"); err != nil {
 		return result, err
 	}
 	current, err := outputs.Lstat(name)
 	if err != nil || !os.SameFile(current, ownedInfo) || verifyGoBuildParents(parents) != nil || syncGoTransactionRoot(outputs) != nil || verifyGoBuildOutputTree(stage, ownedInfo, files, body) != nil {
-		return result, errors.New("go build output publication could not be confirmed")
+		return result, errors.New("project build output publication could not be confirmed")
 	}
-	if _, err := g.verifyBuildApproval(ctx, build); err != nil {
+	if _, err := verify(ctx, build); err != nil {
 		return result, err
 	}
 	return domain.NewPublishedProjectBuild(build)

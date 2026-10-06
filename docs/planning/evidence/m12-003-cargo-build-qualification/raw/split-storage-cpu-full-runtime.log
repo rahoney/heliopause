@@ -1,0 +1,26 @@
+Verified fresh split-cache test binary/source708 and unchanged observer/helper; no overlay
+runtime before bytes/identity/modes verified
+runtime candidate bytes/identity/modes verified
+no existing traced runtime consumers; bounded Docker queries succeeded
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+/etc/heliopause/pod-init.json: OK
+helper launch: bash=/usr/bin/bash version=5.2.21(1)-release owner=247061
+helper ready: pid=247180 attempt=14
+=== RUN   TestLinuxPyTorchFullIntegration
+    pytorch_linux_integration_test.go:40: retained integration evidence: /tmp/haa-m12-split-e2e/pytorch-cpu-4057024018
+    pytorch_linux_integration_test.go:48: retained integration cache: /tmp/haa-m12-qualification-disk/split-cache/pytorch-cpu-2081920776
+observer_attribution sequence=1 profile=pypi-wheel-pytorch-cpu counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/PYTHON:151
+--- PASS: TestLinuxPyTorchFullIntegration (523.65s)
+PASS
+helper reaped: pid=247180 wait=0
+no existing traced runtime consumers; bounded Docker queries succeeded
+runtime before bytes/identity/modes verified
+/etc/heliopause/pod-init.json: OK
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=247180

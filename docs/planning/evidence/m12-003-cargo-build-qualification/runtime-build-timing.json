@@ -1,0 +1,12 @@
+{
+  "scope": "Actual inner Bazel build of complete pinned six-member bundle; excludes total setup/download/roundtrip and is not runtime execution qualification. Original receipt says not installed.",
+  "elapsed_seconds": 664.3,
+  "path": "raw/socketpair-runtime-canonical-build.log",
+  "sha256": "c6c65528a1a173fd875604080db0ef1ca0915b2094eb72e797f1010a109befea",
+  "bytes": 43808,
+  "builder_receipt": {
+    "path": "raw/socketpair-runtime-built-receipt.json",
+    "sha256": "b5d67a05b1966085e41e7191efcf845bdb1051e75c782ff736452475898f509d",
+    "bytes": 3589
+  }
+}

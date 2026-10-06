@@ -1,0 +1,87 @@
+{
+  "status": "FAIL",
+  "tool_wrapper_exit": 2,
+  "test_seconds": null,
+  "timeout_seconds": 2400,
+  "path": "raw/split-storage-cu126-full-runtime.log",
+  "sha256": "9091b22f34119f75fc9ceb3114dbac7c542026aef46a440c290ce0fd1a1294b9",
+  "bytes": 7146,
+  "executed_source": "executed-split-source-portable.json",
+  "source_count": 708,
+  "binaries": [
+    {
+      "role": "bootstrap-test",
+      "sha256": "c88c2edf2ca663a1fb13a302cc32b0e67138c33d05a0b7c86146f0a630df9ffa"
+    },
+    {
+      "role": "observer",
+      "sha256": "68d2f7f232fb7700c5820a5943483fd0245424e16018c5598b31c2f1a54dcf28"
+    },
+    {
+      "role": "policy-helper",
+      "sha256": "d268d1ece6751cf19e52eef1e17d71ed737ea60fd428b7866944e4f8e78b7c5d"
+    }
+  ],
+  "roots": {
+    "evidence": "/tmp/haa-m12-split-e2e/pytorch-cu126-1671769759",
+    "cache": "/tmp/haa-m12-qualification-disk/split-cache/pytorch-cu126-1661727912"
+  },
+  "cleanup": {
+    "helper_parent_wait": 0,
+    "bounded_docker_absence": true,
+    "original12_bytes_uid_gid_modes_restored": true
+  },
+  "pressure": {
+    "path": "raw/split-storage-retry-pressure.jsonl",
+    "sha256": "0462667b566ec8b961305b5b48660df5d83c866c7797ec695fb3facd97c5df0a",
+    "bytes": 55044
+  },
+  "scope": "Terminal actual cu126 full invocation; whole work-item acceptance still requires final documentation and complete-candidate checks.",
+  "failure": "Actual test40m timeout/tool2 at appendJournal Fsync for next publish-intent; latency root cause unconfirmed. Guarded target/private workspace/journal retained; panic is not project rollback evidence.",
+  "retained_journal": {
+    "path": "/tmp/haa-m12-split-e2e/pytorch-cu126-1671769759/target/.heliopause-pypi-commit-2710954369/ledger.json",
+    "sha256": "6654e0f2e4d10ff35d5bce254f9c4bac12da7d8a08f4cae07a67ef3e1f025e11",
+    "bytes": 14144300,
+    "header_bytes": 8331360,
+    "append_records": 24913,
+    "actions": {
+      "mkdir_intent": 846,
+      "directory_created_confirmation": 846,
+      "publish_intent": 11611,
+      "published_confirmation": 11610
+    },
+    "last_record": {
+      "Action": "publish",
+      "Path": "/tmp/haa-m12-split-e2e/pytorch-cu126-1671769759/target/lib/python3.14/site-packages/torch/include/ATen/ops/rnn_tanh_native.h"
+    },
+    "record_shapes": [
+      {
+        "fields": [
+          "Action",
+          "Path"
+        ],
+        "count": 12457
+      },
+      {
+        "fields": [
+          "Created",
+          "Device",
+          "Inode",
+          "Order",
+          "ParentDevice",
+          "ParentInode",
+          "Scheme"
+        ],
+        "count": 846
+      },
+      {
+        "fields": [
+          "Published"
+        ],
+        "count": 11610
+      }
+    ],
+    "expected_destinations": 16117,
+    "unconfirmed_destinations": 4507
+  }
+}

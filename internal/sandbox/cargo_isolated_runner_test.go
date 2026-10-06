@@ -130,7 +130,7 @@ func TestCargoObserverProfileRequiresRegisteredTopology(t *testing.T) {
 	if !ok || !validObserverProfile(cargoResolverProfile) || len(topology) != 3 || !topology[0].ReadOnly || !topology[1].NoExec {
 		t.Fatal("cargo profile topology and registration disagree")
 	}
-	for _, profile := range []string{"cargo", "cargo-build", "cargo-resolver-untrusted", "CARGO-RESOLVER"} {
+	for _, profile := range []string{"cargo", "cargo-build-untrusted", "cargo-resolver-untrusted", "CARGO-RESOLVER"} {
 		if validObserverProfile(profile) {
 			t.Fatal("artifact profile alias admitted")
 		}

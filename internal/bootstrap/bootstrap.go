@@ -124,11 +124,14 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if resolverErr != nil {
 			return resolverErr
 		}
-		service, serviceErr := newCargoAddService(resolver)
+		service, buildService, serviceErr := newCargoServices(resolver, trustedExecutor, processObserver)
 		if serviceErr != nil {
 			return serviceErr
 		}
 		if err := cli.AddCargoAdd(command, service); err != nil {
+			return err
+		}
+		if err := cli.AddCargoBuild(command, buildService); err != nil {
 			return err
 		}
 	}

@@ -1,0 +1,271 @@
+{
+  "scope": "DRAFT; bounded paired predicate evidence, no acceptance claim",
+  "pairs": [
+    {
+      "boundary": "bootstrap",
+      "before": {
+        "name": "cargo-build-bootstrap-before-latch.log",
+        "sha256": "4e20fe826656ac8326da86fb4da0032f8faf041ffa44613b190b013497ef568f",
+        "asserted": "FAIL (same final focused fixture with historical predicate overlay)"
+      },
+      "after": {
+        "name": "cargo-build-bootstrap-after-latches.log",
+        "sha256": "c4144a0b88654f6a817b220df1f1fdaf93e2c67424779cbd15be71900dfe2bf0",
+        "asserted": "PASS (whole old/new latch suite)"
+      },
+      "remaining_actual_failure": "A following first fault is retained separately; a paired latch PASS is not whole build PASS."
+    },
+    {
+      "boundary": "control proc configuration",
+      "before": {
+        "name": "cargo-build-configuration-before-latch.log",
+        "sha256": "1437732afd4950fdca94218a19f95bf3ff06bf1ba4ba366cd27a079c199f4ffa",
+        "asserted": "FAIL (same final focused fixture with historical predicate overlay)"
+      },
+      "after": {
+        "name": "cargo-build-configuration-after-latches.log",
+        "sha256": "c4144a0b88654f6a817b220df1f1fdaf93e2c67424779cbd15be71900dfe2bf0",
+        "asserted": "PASS (whole old/new latch suite)"
+      },
+      "remaining_actual_failure": "A following first fault is retained separately; a paired latch PASS is not whole build PASS."
+    },
+    {
+      "boundary": "one-shot artifact handoff",
+      "before": {
+        "name": "cargo-build-handoff-final-before-latch.log",
+        "sha256": "75463b3cc4d7a647bdbb2069a56d4ecb27d323bc17dcf6441bd5a9b13b02299a",
+        "asserted": "FAIL (same final focused fixture with historical predicate overlay)"
+      },
+      "after": {
+        "name": "cargo-build-handoff-final-after-latches.log",
+        "sha256": "9e6a05ff8d3e1aa6fd7cbfb639c1db13de615fb6ee1b328b81b9d3b0bb6ce70d",
+        "asserted": "PASS (whole old/new latch suite)"
+      },
+      "remaining_actual_failure": "A following first fault is retained separately; a paired latch PASS is not whole build PASS."
+    },
+    {
+      "boundary": "sealed Cargo target before handoff",
+      "before": {
+        "name": "cargo-build-pinned-target-final-before-latch.log",
+        "sha256": "a3f7cfe409ba2cf698e4df019d176e80c73d838b5a993f5dc8ad2ba1496e0ffd",
+        "asserted": "FAIL (same final focused fixture with historical predicate overlay)"
+      },
+      "after": {
+        "name": "cargo-build-handoff-final-after-latches.log",
+        "sha256": "9e6a05ff8d3e1aa6fd7cbfb639c1db13de615fb6ee1b328b81b9d3b0bb6ce70d",
+        "asserted": "PASS (whole old/new latch suite)"
+      },
+      "remaining_actual_failure": "A following first fault is retained separately; a paired latch PASS is not whole build PASS."
+    },
+    {
+      "boundary": "Cargo driver readonly startup",
+      "before": {
+        "name": "cargo-build-driver-final-before-latch.log",
+        "sha256": "2d5c6be3634c1c22f3c1297bf96ad4b4049044c64bce92805c437c276c19c75a",
+        "asserted": "FAIL (same final focused fixture with historical predicate overlay)"
+      },
+      "after": {
+        "name": "cargo-build-driver-final-after-latches.log",
+        "sha256": "f0581a145adf3ad4ee757e1f1ea472542f9e13018fb6e1418db25db4d9b18fe4",
+        "asserted": "PASS (whole old/new latch suite)"
+      },
+      "remaining_actual_failure": "A following first fault is retained separately; a paired latch PASS is not whole build PASS."
+    },
+    {
+      "boundary": "Cargo driver ABI",
+      "before": {
+        "name": "cargo-build-driver-abi-before-latch.log",
+        "sha256": "2d5c6be3634c1c22f3c1297bf96ad4b4049044c64bce92805c437c276c19c75a",
+        "asserted": "FAIL (same final focused fixture with historical predicate overlay)"
+      },
+      "after": {
+        "name": "cargo-build-driver-abi-after-latches.log",
+        "sha256": "f0581a145adf3ad4ee757e1f1ea472542f9e13018fb6e1418db25db4d9b18fe4",
+        "asserted": "PASS (whole old/new latch suite)"
+      },
+      "remaining_actual_failure": "A following first fault is retained separately; a paired latch PASS is not whole build PASS."
+    },
+    {
+      "boundary": "Rustc exact Cargo compiler creator",
+      "before": {
+        "name": "cargo-build-rustc-before-latch.log",
+        "sha256": "29d137f5c4368ad88968164cb9265f77073559a85af2c9d6967a4172f3570327",
+        "asserted": "FAIL (same final focused fixture with historical predicate overlay)"
+      },
+      "after": {
+        "name": "cargo-build-rustc-ready-after-latches.log",
+        "sha256": "150da835c47f36556a831c02f6780c6df967d7338e310a1b60873e85cdaffdd6",
+        "asserted": "PASS (whole old/new latch suite)"
+      },
+      "remaining_actual_failure": "A following first fault is retained separately; a paired latch PASS is not whole build PASS."
+    },
+    {
+      "boundary": "exact Cargo compiler to native CC",
+      "before": {
+        "name": "cargo-build-native-cc-before-latch.log",
+        "sha256": "110b18810ea4776b311ef66514972b74115ce9aaf7af322d78aaaa904a544488",
+        "asserted": "FAIL (same final focused fixture with historical predicate overlay)"
+      },
+      "after": {
+        "name": "cargo-build-native-cc-after-latches.log",
+        "sha256": "fd9004a092942790fe0df38ed1e442a3a2270173917ee5e97cc01e16c0ffaf20",
+        "asserted": "PASS (whole old/new latch suite)"
+      },
+      "remaining_actual_failure": "A following first fault is retained separately; a paired latch PASS is not whole build PASS."
+    },
+    {
+      "boundary": "CC to collect2",
+      "before": {
+        "name": "cargo-build-collect2-before-latch.log",
+        "sha256": "9ba496646fac506ebb1621421ac5897acea50f56e90e213aacabcff70d2c64a7",
+        "asserted": "FAIL (same final focused fixture with historical predicate overlay)"
+      },
+      "after": {
+        "name": "cargo-build-collect2-after-latches.log",
+        "sha256": "3e5f3e172937d36efff0251fde1c0e5d3d71a11bfadbdc5807fe254c11093abe",
+        "asserted": "PASS (whole old/new latch suite)"
+      },
+      "remaining_actual_failure": "A following first fault is retained separately; a paired latch PASS is not whole build PASS."
+    },
+    {
+      "boundary": "collect2 to lld launcher",
+      "before": {
+        "name": "cargo-build-lld-launcher-before-latch.log",
+        "sha256": "c05ad9a64c475e93355cbe08e64a39ef27b45bb50dbd62a6acd7961625c5f618",
+        "asserted": "FAIL (same final focused fixture with historical predicate overlay)"
+      },
+      "after": {
+        "name": "cargo-build-lld-launcher-after-latches.log",
+        "sha256": "9d133a63065b7fac96ac030ffe7b4fbfc67b62f8a6cbb16f5dc7222a57d9f9cb",
+        "asserted": "PASS (whole old/new latch suite)"
+      },
+      "remaining_actual_failure": "A following first fault is retained separately; a paired latch PASS is not whole build PASS."
+    },
+    {
+      "boundary": "launcher ABI limited to actual four",
+      "before": {
+        "name": "cargo-build-lld-launcher-abi-before-latch.log",
+        "sha256": "c05ad9a64c475e93355cbe08e64a39ef27b45bb50dbd62a6acd7961625c5f618",
+        "asserted": "FAIL (same final focused fixture with historical predicate overlay)"
+      },
+      "after": {
+        "name": "cargo-build-rust-lld-transition-diagnostic-latches.log",
+        "sha256": "9d133a63065b7fac96ac030ffe7b4fbfc67b62f8a6cbb16f5dc7222a57d9f9cb",
+        "asserted": "PASS (whole old/new latch suite)"
+      },
+      "remaining_actual_failure": "A following first fault is retained separately; a paired latch PASS is not whole build PASS."
+    },
+    {
+      "boundary": "launcher same kernel group to rust-lld",
+      "before": {
+        "name": "cargo-build-rust-lld-before-latch.log",
+        "sha256": "b7b904fc6c1bc1d415bdca309afc0c90b3443748716578cbe961d1c19acb7558",
+        "asserted": "FAIL (same final focused fixture with historical predicate overlay)"
+      },
+      "after": {
+        "name": "cargo-build-rust-lld-after-latches.log",
+        "sha256": "dc3e715cba7956283209e8215aa1d8ae5de66297829241211b69e849f9b8587c",
+        "asserted": "PASS (whole old/new latch suite)"
+      },
+      "remaining_actual_failure": "A following first fault is retained separately; a paired latch PASS is not whole build PASS."
+    },
+    {
+      "boundary": "linker exact shared C ABI input",
+      "before": {
+        "name": "cargo-build-link-inputs-before-latch.log",
+        "sha256": "34db8c58c149ae104fc3af5389dd4fbb1628ff00266ee6277818f45bf073978d",
+        "asserted": "FAIL (same final focused fixture with historical predicate overlay)"
+      },
+      "after": {
+        "name": "cargo-build-link-inputs-after-latches.log",
+        "sha256": "fa61924a5a6959904f3bceb8f2fc6bbc69c405873bf284580dd4c942c1fd7084",
+        "asserted": "PASS (whole old/new latch suite)"
+      },
+      "remaining_actual_failure": "A following first fault is retained separately; a paired latch PASS is not whole build PASS."
+    },
+    {
+      "boundary": "linker pinned target SDK data",
+      "before": {
+        "name": "cargo-build-link-sdk-before-latch.log",
+        "sha256": "28938ce6e6db9cee4fa27ae5e5b8ff246dd374945fc2c755b784cb660c32ab0b",
+        "asserted": "FAIL (same final focused fixture with historical predicate overlay)"
+      },
+      "after": {
+        "name": "cargo-build-link-sdk-after-latches.log",
+        "sha256": "03c7c6e8f900f5b858d23742fbeed967ddee99bf3aff48fee52a8538d35f8691",
+        "asserted": "PASS (whole old/new latch suite)"
+      },
+      "remaining_actual_failure": "A following first fault is retained separately; a paired latch PASS is not whole build PASS."
+    },
+    {
+      "boundary": "Rust-private C ABI data",
+      "before": {
+        "name": "cargo-build-rust-c-abi-before-latch.log",
+        "sha256": "64a17cf8422f0266ba7f123abc837a824dc12df2cf517a4b50f08d0bd1695536",
+        "asserted": "FAIL (same final focused fixture with historical predicate overlay)"
+      },
+      "after": {
+        "name": "cargo-build-rust-c-abi-after-latches.log",
+        "sha256": "5b67de8203eba52286dbeb96ec0e5cdd042dfcb4bf0e11d936095b123c9e52e6",
+        "asserted": "PASS (whole old/new latch suite)"
+      },
+      "remaining_actual_failure": "A following first fault is retained separately; a paired latch PASS is not whole build PASS."
+    },
+    {
+      "boundary": "Rust linker exact readonly entropy",
+      "before": {
+        "name": "cargo-build-lld-entropy-before-latch.log",
+        "sha256": "32404878a0dc8311374db5f3f383a78a6e3f1f8c56cd0d118dc4866d9fe4cc4e",
+        "asserted": "FAIL (same final focused fixture with historical predicate overlay)"
+      },
+      "after": {
+        "name": "cargo-build-lld-entropy-after-latches.log",
+        "sha256": "29e53a81e5b3de38c11ace6e34110659cfe0258708805a852147d82b6e1c77f7",
+        "asserted": "PASS (whole old/new latch suite)"
+      },
+      "remaining_actual_failure": "A following first fault is retained separately; a paired latch PASS is not whole build PASS."
+    },
+    {
+      "boundary": "untrusted one-shot private target program",
+      "before": {
+        "name": "cargo-build-program-final-before-latch.log",
+        "sha256": "2773eb21303625b0da077e4e99ce29317006a03f630b5d36df1426be87a092c0",
+        "asserted": "FAIL (same final focused fixture with historical predicate overlay)"
+      },
+      "after": {
+        "name": "cargo-build-program-after-latches.log",
+        "sha256": "31c703b9744db5059d1b459de4d8ed2a5d87cd858ec7f83d825351c8ee54a638",
+        "asserted": "PASS (whole old/new latch suite)"
+      },
+      "remaining_actual_failure": "A following first fault is retained separately; a paired latch PASS is not whole build PASS."
+    },
+    {
+      "boundary": "program exact three startup ABI data",
+      "before": {
+        "name": "cargo-build-program-abi-before-latch.log",
+        "sha256": "95ef6c1e4862fe57d406585744d2cedd0f8e359325e8af7f65fb3bdc3acb32cc",
+        "asserted": "FAIL (same final focused fixture with historical predicate overlay)"
+      },
+      "after": {
+        "name": "cargo-build-program-abi-after-latches.log",
+        "sha256": "93577c4e40d865cfc82334612964bf02e6362d4a2a72508d91dbe602502d5636",
+        "asserted": "PASS (whole old/new latch suite)"
+      },
+      "remaining_actual_failure": "A following first fault is retained separately; a paired latch PASS is not whole build PASS."
+    },
+    {
+      "boundary": "program own maps",
+      "before": {
+        "name": "cargo-build-program-maps-before-latch.log",
+        "sha256": "85fb1c6a9c70fa4c35e56796f7bf2b4ab7fada1d335ee97376f7b39f873a634d",
+        "asserted": "FAIL (same final focused fixture with historical predicate overlay)"
+      },
+      "after": {
+        "name": "cargo-build-program-maps-after-latches.log",
+        "sha256": "e7a60b9a73af23e73e2da40bc4efe15fe7619bd8740f631a901f7d17a4a1bf0e",
+        "asserted": "PASS (whole old/new latch suite)"
+      },
+      "remaining_actual_failure": "A following first fault is retained separately; a paired latch PASS is not whole build PASS."
+    }
+  ]
+}

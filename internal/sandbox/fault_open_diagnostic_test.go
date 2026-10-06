@@ -91,8 +91,8 @@ func TestFaultOpenDiagnosticIsBoundedAndDoesNotRepairFailure(t *testing.T) {
 }
 
 func TestFaultOpenKernelImageRemainsDiagnostic(t *testing.T) {
-	for _, kernelImage := range []string{"UNKNOWN", "BOUNDARY", "SETPRIV", "SHELL", "ENV", "NPM_CLI", "NODE", "CARGO", "TAR", "RUSTC"} {
-		open := FaultOpenDiagnostic{Image: "OTHER", KernelImage: kernelImage, ExecutableLocator: 1, MountpointLocator: 2, ExecutablePinned: true, GoDriverCreator: true, CargoDriverCreator: true, RustcVersionQuery: true, RustcMetadataQuery: true, RustcArgc: 33, RustcArgvLocator: ^uint64(0), Role: "ARTIFACT", Provenance: "DIRECT_EXEC_ROOT", Subject: "OCI_IMAGE", Mount: "oci-root", Flags: 557056}
+	for _, kernelImage := range []string{"UNKNOWN", "BOUNDARY", "SETPRIV", "SHELL", "ENV", "NPM_CLI", "NODE", "CARGO", "TAR", "RUSTC", "GCC", "COLLECT2", "LLD_LAUNCHER", "RUST_LLD"} {
+		open := FaultOpenDiagnostic{Image: "OTHER", KernelImage: kernelImage, ExecutableLocator: 1, MountpointLocator: 2, ExecutablePinned: true, GoDriverCreator: true, CargoDriverCreator: true, CargoCompilerCreator: true, CargoProgramCreator: true, LldSameGroup: true, BuildTargetImage: true, NativeCCInvocation: true, RustcVersionQuery: true, RustcMetadataQuery: true, RustcArgc: 33, RustcArgvLocator: ^uint64(0), Role: "ARTIFACT", Provenance: "DIRECT_EXEC_ROOT", Subject: "OCI_IMAGE", Mount: "oci-root", Flags: 557056}
 		record := helperRecord{ContainerID: strings.Repeat("a", 64), Kind: "stream-fault", Reason: "STREAM_FAULT", FaultSite: "OPEN_RESULT_CLASSIFICATION_IMAGE", FaultOpen: &open}
 		payload, err := json.Marshal(record)
 		if err != nil || len(payload) > 1024 {
@@ -112,6 +112,18 @@ func TestFaultOpenKernelImageRemainsDiagnostic(t *testing.T) {
 		if !strings.Contains(diagnostic.String(), "open_cargo_driver_creator=true open_rustc_version_query=true") {
 			t.Fatal("Cargo provenance diagnostic lost")
 		}
+		if kernelImage == "GCC" && !strings.Contains(diagnostic.String(), "open_cargo_compiler_creator=true open_native_cc_invocation=true") {
+			t.Fatal("bounded native compiler diagnostic lost")
+		}
+		if kernelImage == "RUST_LLD" && !strings.Contains(diagnostic.String(), "open_lld_same_group=true") {
+			t.Fatal("bounded same-group transition diagnostic lost")
+		}
+		if !strings.Contains(diagnostic.String(), "open_cargo_program_creator=true") {
+			t.Fatal("build program provenance diagnostic lost")
+		}
+		if !strings.Contains(diagnostic.String(), "open_build_target_image=true") {
+			t.Fatal("diagnostic build target relation lost")
+		}
 		if !strings.Contains(diagnostic.String(), "open_rustc_metadata_query=true open_rustc_argc=33 open_rustc_argv_fnv1a64=ffffffffffffffff") {
 			t.Fatal("bounded Rustc argument diagnostic lost")
 		}
@@ -119,7 +131,7 @@ func TestFaultOpenKernelImageRemainsDiagnostic(t *testing.T) {
 }
 
 func TestFaultOpenFixedKernelMetadataRemainsDiagnostic(t *testing.T) {
-	for _, subject := range []string{"PROC_SELF_MAPS", "PROC_SELF_STATM", "VM_OVERCOMMIT_MEMORY"} {
+	for _, subject := range []string{"PROC_SELF_MAPS", "PROC_SELF_STATM", "VM_OVERCOMMIT_MEMORY", "DEV_NULL"} {
 		t.Run(subject, func(t *testing.T) {
 			open := FaultOpenDiagnostic{Image: "OTHER", KernelImage: "CARGO", Role: "CONTROL", Provenance: "DIRECT_EXEC_ROOT", Subject: "PROC_SELF_MAPS", Mount: "system", Flags: 557056}
 			open.Subject = subject

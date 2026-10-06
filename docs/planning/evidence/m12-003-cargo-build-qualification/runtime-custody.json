@@ -1,0 +1,42 @@
+{
+  "scope": "Exact local source/patch/toolchain/six-member custody used for actual Cargo/common/full qualifications; not a published release attestation",
+  "manifest_sha256": "e48a8d3919d60558cc99af63c403a4ca292fb4cdc77e6763aa0e253b1047d5d9",
+  "gvisor_commit": "7c6199801fd233d6d55309af4645d4746a077de7",
+  "gvisor_patch_sha256": "4e932cede0d3d1c8596346b06191c2aaed2f8974289d690ade1594948b7674f3",
+  "member_count": 6,
+  "member_sha512": [
+    {
+      "path": "containerd-shim-runsc-v1",
+      "size": 43502412,
+      "sha512": "d0aa0cecaf048b1d42bc530e15a977f937d5e3f92996bc77c89817b899000ca5658e83f71a9f7adf91cad58961133549ef41239493f34c38c2572612d358826a"
+    },
+    {
+      "path": "gvisor-bin/checkpointgofer",
+      "size": 69039544,
+      "sha512": "9c9faca22def369d1b009bf0ba1fd7cb86dad4cb0c3fc334f06d5fca07e7feee8c9c02925242d412345d934ce069fb0a9635000727cb4d49a97545686b8d1ea4"
+    },
+    {
+      "path": "gvisor-bin/gvisor-sentry-prewarmer",
+      "size": 1416,
+      "sha512": "f0c131766303ca4733a4e42bd171d8ddf42a0a0087564605b3207b0f4c148d9ff355bad25e27d388c7c9cf06265160b3a02047ec195c035d9e8f428d8f608ce6"
+    },
+    {
+      "path": "gvisor-bin/gvisor_sentry",
+      "size": 51831363,
+      "sha512": "97e71e1b575aa03a21ad3b816756b2a039f692a678d43382306838f94766f6cdb52a9515b211a557aa460fd64eb31edb9fdfb2702b80219994e6836b452c921e"
+    },
+    {
+      "path": "gvisor-bin/runsc-metric-server",
+      "size": 52895599,
+      "sha512": "4a9cad01e92b3df8db5c4864494eb7bcc24a73af7491b764191b4f7964609f25e232681dc9a62f2d31b9d6d52a819276dd2b98b60847c326f2b781dc0199eb15"
+    },
+    {
+      "path": "runsc",
+      "size": 109388472,
+      "sha512": "e3d0748b4f24f6472e0cb83b7728bd31b8cf4dbdd212f01bdc3f2c0fecaf6aea6449b3fcc2f1e90bd15f4603fa96bbe8a4a38bb8491603703557a1d84c7374d5"
+    }
+  ],
+  "installed_candidate_verified": "guarded driver before every actual consumer; byte/UID/GID/mode equality required",
+  "restore_boundary": "exact parent-owned helper wait and bounded complete traced-container absence precede original12 runtime/client/pod-init restore",
+  "artifact_authority": "none; manifest is controller-owned local runtime custody"
+}

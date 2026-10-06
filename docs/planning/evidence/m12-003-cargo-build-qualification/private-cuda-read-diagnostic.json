@@ -1,0 +1,9 @@
+{
+  "scope": "Post-timeout read-only diagnostic, current cache state; not original invocation timing or acceptance",
+  "file_role": "remaining operation-private torch/lib/libtorch_cuda.so",
+  "size": 1037548593,
+  "sha256": "ff4bf65fa8ba1962a06123fdffe2fb4d9a1e5dadb1aa87651fdf2cd2e79e5d06",
+  "seconds": 0.752,
+  "method": "Python hashlib SHA256 with1MiB buffers",
+  "identity_unchanged": true
+}

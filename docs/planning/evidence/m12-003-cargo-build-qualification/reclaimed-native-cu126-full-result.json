@@ -1,0 +1,57 @@
+{
+  "status": "PASS",
+  "tool_wrapper_exit": 0,
+  "test_seconds": 2070.42,
+  "timeout_seconds": 2400,
+  "executed_source": "executed-split-source-portable.json",
+  "source_count": 708,
+  "binaries": [
+    {
+      "role": "bootstrap-test",
+      "sha256": "c88c2edf2ca663a1fb13a302cc32b0e67138c33d05a0b7c86146f0a630df9ffa"
+    },
+    {
+      "role": "observer",
+      "sha256": "68d2f7f232fb7700c5820a5943483fd0245424e16018c5598b31c2f1a54dcf28"
+    },
+    {
+      "role": "policy-helper",
+      "sha256": "d268d1ece6751cf19e52eef1e17d71ed737ea60fd428b7866944e4f8e78b7c5d"
+    }
+  ],
+  "paths": [
+    {
+      "path": "raw/reclaimed-native-cu126-full-runtime.log",
+      "sha256": "b2c1b235e919cb5e5c7156f11143cc4e09913dba71c1455f6538effcc1a6cdcf",
+      "bytes": 2135,
+      "available": true
+    },
+    {
+      "path": "raw/reclaimed-native-cu126-wrapper-exit.txt",
+      "sha256": "9245a2d2a198463a7df671af5a2b2b9438639bbc706087cdff24ba8136952775",
+      "bytes": 29,
+      "available": true
+    },
+    {
+      "path": "raw/reclaimed-native-cu126-pressure.jsonl",
+      "sha256": "b84bac9a10a9fd76fc32368e50053407a3eac83bda6809b965f588bbd9193fc9",
+      "bytes": 49741,
+      "available": true
+    }
+  ],
+  "cleanup": {
+    "helper_parent_wait": 0,
+    "bounded_docker_absence": true,
+    "original12_bytes_uid_gid_modes_restored": true
+  },
+  "storage": "Fresh native cache/target/private/journal after measured host capacity recovery; F archive mounted readonly",
+  "prior_failures": "Preserved in separate results; no causal root-fix claim",
+  "execution_source_delta": [
+    {
+      "path": "docs/planning/02-current-work-queue.md",
+      "executed_sha256": "2ba4dfef8e175adcc9099d91d16a04a2d7a243bb96f514be0693cd3db4fc6e69",
+      "current_sha256": "d75c1c0f86f5c7c42dfadf5ac5bfb0844c133881edc3bca1e6c5758df66271b6"
+    }
+  ],
+  "scope": "Actual full result and cleanup; final complete-candidate checks required before work-item closure"
+}

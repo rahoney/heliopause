@@ -1,0 +1,115 @@
+verified fresh Cargo source and observer candidate; no overlay
+runtime before bytes/identity/modes verified
+runtime candidate bytes/identity/modes verified
+no existing traced runtime consumers; bounded Docker queries succeeded
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+/etc/heliopause/pod-init.json: OK
+helper launch: bash=/usr/bin/bash version=5.2.21(1)-release owner=5904
+helper ready: pid=6030 attempt=17
+=== RUN   TestLinuxPyTorchFullIntegration
+    pytorch_linux_integration_test.go:39: retained integration evidence: /home/winamp/.local/state/heliopause/m12-003/qualification/e2e/pytorch-cu126-2509318137
+observer_attribution sequence=1 profile=pypi-wheel-pytorch-cu126 counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/PYTHON:526
+observer_attribution sequence=2 profile=pypi-wheel counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/PYTHON:15
+panic: test timed out after 40m0s
+	running tests:
+		TestLinuxPyTorchFullIntegration (40m0s)
+
+goroutine 14867 [running]:
+testing.(*M).startAlarm.func1()
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2802 +0x354
+created by time.goFunc
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/time/sleep.go:215 +0x2d
+
+goroutine 1 [chan receive, 39 minutes]:
+testing.(*T).Run(0x27e2e6566908, {0xb7fd50?, 0x0?}, 0xbc0ab0)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2109 +0x4e5
+testing.runTests.func1(0x27e2e6566908)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2585 +0x3e
+testing.tRunner(0x27e2e6566908, 0x27e2e665fc58)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2036 +0xea
+testing.runTests({0xb7d290, 0x1d}, {0xb9a5e0, 0x30}, 0x27e2e6536120, {0x1078ee0, 0x27, 0x27}, {0xc2a90f70e0a07884, 0x22ecb4581f1, ...})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2583 +0x505
+testing.(*M).Run(0x27e2e661d180)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2443 +0x6ac
+main.main()
+	_testmain.go:124 +0x9b
+
+goroutine 23 [runnable]:
+io.copyBuffer({0x78d160179200, 0x27e2e90a8800}, {0xbc7ac0, 0x27e2e67cab28}, {0x0, 0x0, 0x0})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/io/io.go:429 +0x190
+io.Copy(...)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/io/io.go:388
+os.genericWriteTo(0x27e2e67cab28?, {0x78d160179200?, 0x27e2e90a8800?})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/os/file.go:295 +0x35
+os.(*File).WriteTo(0x27e2e67cab28, {0x78d160179200, 0x27e2e90a8800})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/os/file.go:273 +0x9c
+io.copyBuffer({0x78d160179200, 0x27e2e90a8800}, {0xbc7b40, 0x27e2e67cab28}, {0x0, 0x0, 0x0})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/io/io.go:411 +0x9d
+io.Copy(...)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/io/io.go:388
+github.com/rahoney/heliopause/internal/promotion.snapshotPyPIFile({0x27e2e89f05a0, 0x98})
+	/home/winamp/.local/state/heliopause/m12-002/cache-native-check/internal/promotion/pypi_venv_transaction.go:184 +0x45f
+github.com/rahoney/heliopause/internal/promotion.pypiFileSnapshot.matches({{0x27e2e84ec380, 0x40}, 0x3dd7bc31, 0x1ed, 0x830, 0x311fcf, {0xbd2728, 0x27e2e783f5f0}}, {0x27e2e89f05a0, 0x98})
+	/home/winamp/.local/state/heliopause/m12-002/cache-native-check/internal/promotion/pypi_venv_transaction.go:215 +0x6e
+github.com/rahoney/heliopause/internal/promotion.(*pypiVenvTransaction).commit(0x27e2e6557080, {0x27e2f0210000, 0x3ef5, 0x27e2e8171800?})
+	/home/winamp/.local/state/heliopause/m12-002/cache-native-check/internal/promotion/pypi_venv_transaction.go:831 +0x117f
+github.com/rahoney/heliopause/internal/promotion.(*PyPIPromotion).promoteActiveVenv(_, {_, _}, {_, _}, {{{0x27e2e73bd740, 0x40}}, {{{{...}, {...}, {...}, ...}, ...}, ...}, ...}, ...)
+	/home/winamp/.local/state/heliopause/m12-002/cache-native-check/internal/promotion/pypi_promotion.go:172 +0x528
+github.com/rahoney/heliopause/internal/promotion.(*PyPIPromotion).Promote(_, {_, _}, {{{_, _}}, {_, _}}, {{{0x27e2e73bd740, 0x40}}, {{{{...}, ...}, ...}, ...}, ...}, ...)
+	/home/winamp/.local/state/heliopause/m12-002/cache-native-check/internal/promotion/pypi_promotion.go:68 +0x9f6
+github.com/rahoney/heliopause/internal/application.(*InstallService).Install(_, {_, _}, {{{{0xb6dc5b, 0xd}}, {0x27e2e68063a8, 0x12}}, {{{0x27e2e65be960, 0x5e}}, {0xb6c1e8, ...}}})
+	/home/winamp/.local/state/heliopause/m12-002/cache-native-check/internal/application/install_promote.go:69 +0xe1f
+github.com/rahoney/heliopause/internal/bootstrap.pyTorchResourceInstaller.Install({{0xbc8300, 0x27e2e680a440}, {{0xb6dc4e, 0xd}, {{0xb6dc5b, 0xd}}, {0xb8e4a2, 0x27}, {0xb7411c, 0x14}, ...}}, ...)
+	/home/winamp/.local/state/heliopause/m12-002/cache-native-check/internal/bootstrap/bootstrap.go:456 +0x35f
+github.com/rahoney/heliopause/internal/cli.ExecuteInstall({0xbce1d8?, 0x27e2e6690000?}, {0xbc83e0?, 0x27e2e69060f0?}, {{{{0xb6dc5b, 0xd}}, {0x27e2e68063a8, 0x12}}, {{{0x27e2e65be960, 0x5e}}, ...}}, ...)
+	/home/winamp/.local/state/heliopause/m12-002/cache-native-check/internal/cli/install_result.go:23 +0xe9
+github.com/rahoney/heliopause/internal/cli.AddPyPIInstallSources.func1(0x27e2e6693808, {0x27e2e68121c0, 0x1, 0xb65cf7?})
+	/home/winamp/.local/state/heliopause/m12-002/cache-native-check/internal/cli/root.go:247 +0x6ff
+github.com/spf13/cobra.(*Command).execute(0x27e2e6693808, {0x27e2e6812150, 0x7, 0x7})
+	/home/winamp/.cache/heliopause/quality-tools/go-mod/github.com/spf13/cobra@v1.10.2/command.go:1015 +0xb14
+github.com/spf13/cobra.(*Command).ExecuteC(0x27e2e6692008)
+	/home/winamp/.cache/heliopause/quality-tools/go-mod/github.com/spf13/cobra@v1.10.2/command.go:1148 +0x465
+github.com/spf13/cobra.(*Command).Execute(...)
+	/home/winamp/.cache/heliopause/quality-tools/go-mod/github.com/spf13/cobra@v1.10.2/command.go:1071
+github.com/spf13/cobra.(*Command).ExecuteContext(0xaca680?, {0xbce1d8?, 0x27e2e6690000?})
+	/home/winamp/.cache/heliopause/quality-tools/go-mod/github.com/spf13/cobra@v1.10.2/command.go:1064 +0x47
+github.com/rahoney/heliopause/internal/bootstrap.Run({0xbce1d8, 0x27e2e6690000}, {0x27e2e657c540, 0x9, 0xe}, {0xbc8520?, 0x27e2e661ac90?}, {0xbc8520?, 0x27e2e661acc0?})
+	/home/winamp/.local/state/heliopause/m12-002/cache-native-check/internal/bootstrap/bootstrap.go:396 +0x219b
+github.com/rahoney/heliopause/internal/bootstrap_test.TestLinuxPyTorchFullIntegration(0x27e2e6566b48)
+	/home/winamp/.local/state/heliopause/m12-002/cache-native-check/internal/bootstrap/pytorch_linux_integration_test.go:59 +0xb25
+testing.tRunner(0x27e2e6566b48, 0xbc0ab0)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2036 +0xea
+created by testing.(*T).Run in goroutine 1
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/testing/testing.go:2101 +0x4c5
+
+goroutine 37 [IO wait, 7 minutes]:
+internal/poll.runtime_pollWait(0x78d1624f4a00, 0x72)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/runtime/netpoll.go:351 +0x85
+internal/poll.(*pollDesc).wait(0x27e2e689a080?, 0x27e2e673a000?, 0x0)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/internal/poll/fd_poll_runtime.go:84 +0x27
+internal/poll.(*pollDesc).waitRead(...)
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/internal/poll/fd_poll_runtime.go:89
+internal/poll.(*FD).ReadFrom(0x27e2e689a080, {0x27e2e673a000, 0x400, 0x400})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/internal/poll/fd_unix.go:214 +0x270
+net.(*netFD).readFrom(0x27e2e689a080, {0x27e2e673a000?, 0x27e2e64eb008?, 0x27e2e6621a20?})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/net/fd_posix.go:74 +0x25
+net.(*UnixConn).readFrom(0x27e2e67b0078, {0x27e2e673a000?, 0x9134b2?, 0x27e2e6940090?})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/net/unixsock_posix.go:103 +0x25
+net.(*UnixConn).ReadFromUnix(0x27e2e67b0078, {0x27e2e673a000?, 0x1?, 0x1?})
+	/home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/src/net/unixsock.go:110 +0x30
+github.com/rahoney/heliopause/internal/sandbox.(*SharedObserver).receive(0x27e2e689c000)
+	/home/winamp/.local/state/heliopause/m12-002/cache-native-check/internal/sandbox/shared_observer.go:610 +0x69
+created by github.com/rahoney/heliopause/internal/sandbox.newSharedObserver in goroutine 23
+	/home/winamp/.local/state/heliopause/m12-002/cache-native-check/internal/sandbox/shared_observer.go:396 +0x27f
+helper reaped: pid=6030 wait=0
+no existing traced runtime consumers; bounded Docker queries succeeded
+runtime before bytes/identity/modes verified
+/etc/heliopause/pod-init.json: OK
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+cleanup: original=2 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=6030

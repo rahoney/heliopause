@@ -1,0 +1,231 @@
+{
+  "scope": "Interruption recovery audit only. No product source, runtime installation, acceptance status, stage, commit, push, remote CI or merge changed.",
+  "observed_at": "2026-10-05T23:57:19.688072+09:00",
+  "persistent_user_scope": "Finish M12-003, then immediately baseline-audit and finish M12-004. No push, remote CI, merge or subagents.",
+  "state_authority": "User-local ~/.local/state/heliopause/m12-003/STATE.md and NEXT.md, actual worktrees and raw logs; canonical status remains Current Work Queue.",
+  "git": {
+    "branch": "milestone/m12-go-cargo-terraform",
+    "head": "aa475a0ce18c8d79432e37e3214b6324fc48ffa6",
+    "tracked_modified_paths": [
+      ".github/workflows/heliopause-ci.yml",
+      "internal/application/gomodule.go",
+      "internal/application/project_build.go",
+      "internal/artifact/gomodule/build_output.go",
+      "internal/bootstrap/bootstrap.go",
+      "internal/bootstrap/cargo.go",
+      "internal/cli/cargo_test.go",
+      "internal/core/domain/project_build.go",
+      "internal/inspection/gomodule/build.go",
+      "internal/promotion/cargo_approved_transaction.go",
+      "internal/promotion/go_build_cache.go",
+      "internal/promotion/go_build_output.go",
+      "internal/promotion/go_build_output_test.go",
+      "internal/sandbox/cargo_isolated_runner_test.go",
+      "internal/sandbox/cargo_project_source.go",
+      "internal/sandbox/collector.go",
+      "internal/sandbox/fault_open_diagnostic_test.go",
+      "internal/sandbox/gomodule_build_inputs.go",
+      "internal/sandbox/gomodule_build_materialization.go",
+      "internal/sandbox/pypi_closure_volume.go",
+      "internal/sandbox/shared_observer.go",
+      "internal/verification/gomodule/build_source.go",
+      "scripts/check/architecture.go",
+      "scripts/check/workflow.go",
+      "scripts/check/workflow_test.go",
+      "tools/gvisor-observer/observer.cc",
+      "tools/gvisor-observer/observer_latch_test.cc"
+    ],
+    "new_product_source_paths": [
+      "internal/application/cargo_build.go",
+      "internal/application/project_snapshot.go",
+      "internal/application/project_snapshot_test.go",
+      "internal/artifact/projectbuild/output.go",
+      "internal/bootstrap/cargo_build_cli_integration_test.go",
+      "internal/cli/cargo_build.go",
+      "internal/inspection/projectbuild/build.go",
+      "internal/promotion/cargo_build_inputs.go",
+      "internal/promotion/cargo_build_output.go",
+      "internal/promotion/cargo_build_output_test.go",
+      "internal/promotion/project_build_archive.go",
+      "internal/sandbox/cargo_build_inputs.go",
+      "internal/sandbox/cargo_build_output.go",
+      "internal/sandbox/cargo_build_output_test.go",
+      "internal/sandbox/cargo_build_runtime.go",
+      "internal/sandbox/cargo_build_security_test.go",
+      "internal/sandbox/cargo_observed_build.go",
+      "internal/verification/projectbuild/source.go"
+    ],
+    "index_empty": true,
+    "stash_empty": true
+  },
+  "source_identity": {
+    "receipt_path": "baseline/cargo-build-final-cpu-full-runtime-receipt.json",
+    "receipt_sha256": "b66733959e566d5657100ded824d538fa6641168b2d58dc52b5629a589eab294",
+    "checks": [
+      {
+        "role": "primary_worktree",
+        "checked_paths": 707,
+        "sha256_and_mode_mismatches": []
+      },
+      {
+        "role": "native_projection",
+        "checked_paths": 707,
+        "sha256_and_mode_mismatches": []
+      }
+    ],
+    "receipt_metadata_limit": "Original head and count fields are historical and stale. Identity was established by the actual 707 path/hash/mode records, not those scalar labels."
+  },
+  "acceptance_state": {
+    "M12-001": "COMPLETE; prior remote CPU/CUDA qualification and delivery preserved in canonical evidence.",
+    "M12-002": "COMPLETE for local work-item acceptance at bdd3a29; newer remote Required/native macOS remain separate.",
+    "M12-003": {
+      "canonical_committed_checkpoint": {
+        "IMPLEMENTED": "YES",
+        "WIRED": "NO",
+        "QUALIFIED": "NO",
+        "ACCEPTANCE_CLOSED": "NO"
+      },
+      "working_candidate": {
+        "IMPLEMENTED": "YES",
+        "WIRED": "YES for tested Cargo add/build public CLI paths",
+        "QUALIFIED": "NO",
+        "ACCEPTANCE_CLOSED": "NO"
+      },
+      "status": "IN_PROGRESS",
+      "verified_historical_scopes": [
+        "Cargo build positive/security/retained actual matrix: 13 PASS",
+        "Go and Cargo add/get/download/build actual matrix: 14 PASS",
+        "Required sdist/wheel and other direct consumers passed individually; mixed direct suite aggregate FAIL from 3 preconditions, corrected gates are separate",
+        "CPU full actual PASS 518.36 seconds with helper wait0 and original installation restoration",
+        "Canonical quick/security/docs/platform/Darwin TEST compilation/corpus/vulnerability results preserved; no native macOS or remote Required run"
+      ],
+      "missing": [
+        "Recover installed runtime/client/helper/observer environment after interrupted retry, preserving evidence and ownership checks",
+        "Resolve remaining cu126 full qualification: first FAIL remains valid and retry outcome is INTERRUPTED/UNOBSERVED",
+        "Finish portable qualification evidence and CI aggregate duration review, final document/workflow delta checks",
+        "Commit approved independent local unit and close canonical M12-003 acceptance before M12-004 baseline audit"
+      ]
+    },
+    "M12-004": "NOT_STARTED; Terraform public Provider installation only, after M12-003 acceptance; plan/apply excluded"
+  },
+  "interrupted_execution": {
+    "test": "TestLinuxPyTorchFullIntegration",
+    "profile": "cu126",
+    "first_attempt": "FAIL at 811.67 seconds: trusted CPU counter read deadline; underlying latency root cause unconfirmed, original restoration observed.",
+    "retry": "Started exact same candidate. Raw log has RUN and two attribution records but no test PASS/FAIL, helper wait or cleanup receipt. No final test/tool result inferred.",
+    "retained_e2e_directory": "qualification/e2e/pytorch-cu126-881031173",
+    "last_valid_host_pressure_sample_kst": "2026-10-05T23:23:30.145191+09:00",
+    "pressure_valid_samples": 906,
+    "pressure_trailing_nul_bytes": 3194,
+    "pressure_limit": "Trailing NUL data preserved as raw bytes; not repaired or used to prove disk/WSL failure causality.",
+    "processes": "Host ps -ef read-only check found no former qualification/helper runtime processes; Docker all-containers query succeeded with empty output; lifecycle sockets/lock absent.",
+    "cleanup": "Retry restoration was not completed: installed CLI/helper/observer and fixed gVisor bundle match candidate; source-lifecycle before copies remain available.",
+    "installed_candidate_binaries": [
+      {
+        "role": "client",
+        "installed_path": "/usr/libexec/heliopause/helox",
+        "sha256": "117879861318ef4f5de7dd2c24b5154b0856e9c2cdc71f02db3eaa2790673eed",
+        "matches_test_candidate": true
+      },
+      {
+        "role": "policy_helper",
+        "installed_path": "/usr/libexec/heliopause/haa-network-policy-helper",
+        "sha256": "d268d1ece6751cf19e52eef1e17d71ed737ea60fd428b7866944e4f8e78b7c5d",
+        "matches_test_candidate": true
+      },
+      {
+        "role": "observer",
+        "installed_path": "/usr/libexec/heliopause/haa_gvisor_observer",
+        "sha256": "68d2f7f232fb7700c5820a5943483fd0245424e16018c5598b31c2f1a54dcf28",
+        "matches_test_candidate": true
+      }
+    ],
+    "original_runtime_backup_checks": [
+      {
+        "path": "containerd-shim-runsc-v1",
+        "matches_original_sha512": true
+      },
+      {
+        "path": "gvisor-bin/checkpointgofer",
+        "matches_original_sha512": true
+      },
+      {
+        "path": "gvisor-bin/gvisor-sentry-prewarmer",
+        "matches_original_sha512": true
+      },
+      {
+        "path": "gvisor-bin/gvisor_sentry",
+        "matches_original_sha512": true
+      },
+      {
+        "path": "gvisor-bin/runsc-metric-server",
+        "matches_original_sha512": true
+      },
+      {
+        "path": "runsc",
+        "matches_original_sha512": true
+      },
+      {
+        "path": "gvisor-bundle.manifest.json",
+        "matches_original_sha512": true
+      }
+    ],
+    "ownership_limit": "Filesystem sandbox remaps UID/GID, so sandbox owner mismatches are not a host ownership conclusion. Host ownership must be rechecked before privileged restoration."
+  },
+  "current_disk_observation": [
+    {
+      "role": "wsl_root",
+      "total_bytes": 1081101176832,
+      "available_bytes": 767755796480
+    },
+    {
+      "role": "windows_c",
+      "total_bytes": 498462093312,
+      "available_bytes": 33444876288
+    }
+  ],
+  "disk_limit": "Current free space is a present observation, not proof of free space at interruption or proof of its cause. WSL filesystem capacity does not establish Windows backing-volume capacity.",
+  "original_log_fingerprints": [
+    {
+      "path": "baseline/cargo-build-security-retained-final-runtime.log",
+      "sha256": "0519bbf874e92195e4dd0cdf26ee9c8fe2dd019b4b63997b2a51a624bb9817da",
+      "bytes": 20631
+    },
+    {
+      "path": "baseline/cargo-build-final-go-cargo-add-runtime.log",
+      "sha256": "6cd21071cfe7d2847e947ef0a9384170220754582e0a7d1f7370586cb914f32e",
+      "bytes": 11911
+    },
+    {
+      "path": "baseline/cargo-build-final-direct-consumers-runtime.log",
+      "sha256": "0382e4616f77ad33f7b0be01029fa115b18c524e13f175926a5adf816de3feb9",
+      "bytes": 70447
+    },
+    {
+      "path": "baseline/cargo-build-final-cpu-full-runtime.log",
+      "sha256": "a37f579a8135ae1f42a72f1f2cf992adb896a8b7c6c7397a7581940a04b60843",
+      "bytes": 1441
+    },
+    {
+      "path": "baseline/cargo-build-final-cu126-full-runtime.log",
+      "sha256": "e445dd55f5bd805d3fe84c673bb089cf74f282dd432eabb05763cbdbc7d4c55a",
+      "bytes": 4247
+    },
+    {
+      "path": "baseline/cargo-build-final-cu126-retry-runtime.log",
+      "sha256": "a1631ae04c4275f6d4f244e5e93b4f7d1502124cf2433bd461ad2c597608079b",
+      "bytes": 1015
+    },
+    {
+      "path": "baseline/cargo-build-cu126-retry-host-pressure.jsonl",
+      "sha256": "a28147296f05888f775b95a069af49b6a4261f7006615d610798cdeef84435b3",
+      "bytes": 565248
+    }
+  ],
+  "next_sequence": [
+    "Preserve both exact worktrees and persistent state/logs/original installation copies",
+    "Verify host runtime/container absence and original installation identities, then restore through canonical lifecycle with appropriate permissions",
+    "Continue only remaining M12-003 qualification/evidence/CI-duration work; reuse unchanged passing scopes",
+    "Close M12-003 and proceed directly to M12-004 baseline audit and acceptance work"
+  ]
+}

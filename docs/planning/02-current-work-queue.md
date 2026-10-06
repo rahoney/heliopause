@@ -9,9 +9,9 @@
 ```text
 Current milestone: M12 — Ecosystem Expansion Before Public Release
 Milestone status: IN_PROGRESS
-Active work item: M12-003 — Rust/Cargo and public crates.io
+Active work item: None (M12-003 local acceptance closed; M12-004 baseline next)
 Next work item: M12-004 — Terraform Provider installation
-Next work item status: NOT_STARTED / Ready: No (M12-003 acceptance prerequisite)
+Next work item status: NOT_STARTED / Ready: Yes (M12-003 local acceptance closed)
 Ready: Yes
 ```
 
@@ -2134,13 +2134,13 @@ M11-FIX-05: COMPLETE
 M12: IN_PROGRESS
 M12-001: COMPLETE
 M12-002: COMPLETE
-M12-003: IN_PROGRESS
+M12-003: COMPLETE
 M12-004: NOT_STARTED
 M12-005: NOT_STARTED
 M12-02: RESERVED
 M13: BLOCKED
-Active work item: M12-003 — Rust/Cargo and public crates.io
-Next work item: M12-004 — NOT_STARTED / Ready: No (M12-003 acceptance prerequisite)
+Active work item: None (M12-003 local acceptance closed; M12-004 baseline next)
+Next work item: M12-004 — NOT_STARTED / Ready: Yes (M12-003 local acceptance closed)
 ```
 
 M9-006까지 qualification을 완료했다. M10-001은 release identity·manifest 및
@@ -2174,7 +2174,7 @@ production activation과 최종 배포를 수행한다.
 | --- | --- | --- | --- |
 | 1 | M12-001 | Official PyTorch source support | COMPLETE |
 | 2 | M12-002 | public Go Modules | COMPLETE |
-| 3 | M12-003 | Rust/Cargo and public crates.io | IN_PROGRESS |
+| 3 | M12-003 | Rust/Cargo and public crates.io | COMPLETE |
 | 4 | M12-004 | Terraform Provider installation | NOT_STARTED |
 | 5 | M12-005 | cross-ecosystem qualification and feature freeze | NOT_STARTED |
 | 6 | M12-02 | final red-team/fix gate | RESERVED |
@@ -2564,11 +2564,13 @@ Delivery pending: new remote Required CI and native macOS; NO PUSH / NO REMOTE C
 
 M12-003 — Cargo
 IMPLEMENTED: YES
-WIRED: NO
-QUALIFIED: NO
-ACCEPTANCE_CLOSED: NO
-Status: IN_PROGRESS
-Ready: Yes (M12-002 local acceptance closed)
+WIRED: YES (public add/build production CLI)
+QUALIFIED: YES (Linux/amd64 local qualification)
+ACCEPTANCE_CLOSED: YES
+Status: COMPLETE
+Evidence: evidence/m12-003-cargo-build-qualification/result.json
+MISSING: None (work-item local acceptance)
+Delivery pending: new remote Required CI and native macOS; NO PUSH / NO REMOTE CI / NO MERGE
 
 M12-004 — Terraform
 IMPLEMENTED: NO
@@ -2581,7 +2583,7 @@ Status: NOT_STARTED
 `WIRED: NO`는 코드가 전혀 존재하지 않는다는 뜻이 아니라, 해당 work item의
 required user/runtime path 전체가 acceptance 수준으로 연결되지 않았다는 뜻이다.
 M12-002~004의 상세 MISSING은 해당 work item이 시작될 때 별도 baseline audit로
-확정한다. M12-002 local acceptance는 닫혔으며 현재 M12-003 하나만 IN_PROGRESS다.
+확정한다. M12-002와 M12-003 local acceptance는 닫혔으며 다음 M12-004는 baseline audit 뒤 시작한다.
 
 ### M11 post-qualification release hardening
 
@@ -2780,6 +2782,73 @@ ACCEPTANCE_CLOSED=NO`를 유지한다. Whole WIRED/qualification MISSING은 offl
 Cargo build.rs/proc-macro/native helper·bounded no-overwrite output, final candidate의
 필수 sdist 포함 직접 소비자·CPU/cu126 full·cu130/cu132 focused, CI wiring과 whole
 acceptance evidence다. M12-004는 NOT_STARTED다. NO PUSH / NO REMOTE CI / NO MERGE.
+
+### M12-003 observed build와 중단 재개 qualification (2026-10-06)
+
+기존 Cargo/공통 project build owner에 실제 offline build와 bounded no-overwrite
+publication이 연결됐다. 같은 실행 후보의 Cargo 정상·보안·retained13개, Go/Cargo
+관련14개, 필수 sdist와 기존 직접 소비자 및 CPU full518.36s가 PASS다. Actual
+source707·binaries·원본과 각 범위는
+[build qualification evidence](./evidence/m12-003-cargo-build-qualification/result.json)가 소유한다.
+`IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO`다.
+
+cu126 첫 회계 FAIL, WSL 중단 retry, native 재개40m timeout과 D-backed loop의
+40m timeout은 각각 보존한다. 마지막 실행은 publish-intent journal fsync에서
+중단됐으며 helper parent wait0·bounded Docker absence·original12 복원은 확인했다.
+Incomplete project journal/lock/private workspace는 그대로 보존한다. Post-timeout
+동기화200회는 native0.548s/loop4.385s로 측정됐지만 원래 aggregate 지연 인과는
+미확정이다. 제품의 durable intent/해시/rollback/40m 상한을 바꾸지 않는다.
+
+현재 MISSING은 같은 제품 후보의 최종 cu126 full과 전체 후보 종료 검사·evidence다.
+Qualification harness만 별도 fresh cache root를 선택할 수 있도록 보완한다. 캐시는
+D-backed ext4에, private workspace/target/journal은 같은 native filesystem에 둔다.
+기존 verified copy가 두 filesystem을 잇고 publication rename은 native 내부에 남는다.
+원래 observed provider/runtime/Profile·Policy·모든 assertion은 유지한다. 해당 환경의
+실제 full 결과 전에는 성공으로 표시하지 않는다. M12-003만 IN_PROGRESS이며
+M12-004는 NOT_STARTED다. NO PUSH / NO REMOTE CI / NO MERGE.
+
+### M12-003 압축 후 qualification 재개 (2026-10-06)
+
+후보708·보존 바이너리3·original runtime12·gVisor bundle의 동일성을 확인하고
+사라진 native projection·실행 파일·canonical `/run`을 복구했다. F의 동일52GiB
+ext4는 보관 증거 확인용 읽기 전용 mount로 연결했다. VHDX 길이 감소와 C의
+실제 여유90GB 이상은 확인됐으나 압축 worker의 최종 종료 receipt는 미확인이다.
+새 여유 공간에서 같은 실행 후보의 fresh native cache/target/private/journal로
+cu126 full을 기존40분 상한으로 실행 중이다. 이전 full 실패를 보존하고 제품의
+durability·Policy·관찰·자원 한도는 변경하지 않았다. 결과·parent-owned cleanup·
+original12 복원과 최종 전체 후보 검사 전에는 QUALIFIED/ACCEPTANCE_CLOSED를
+NO로 유지한다. M12-003 하나만 IN_PROGRESS, M12-004는 NOT_STARTED다.
+NO PUSH / NO REMOTE CI / NO MERGE.
+
+### M12-003 재개 full 통과와 종료 검사 (2026-10-06)
+
+같은708-path/c88c test 후보의 fresh native cu126 full은2070.42s/actual0 PASS다.
+16,117개 파일 게시, 검사 전용 NumPy의29개 승격집합 제외와 viewer NOT_ATTESTED의
+결과·승격 Evidence 참조, helper parentwait0/bounded Docker absence/original12 복원을
+확인했다. 이전 timeout·중단·capacity 실패는 별도 증거로 보존한다. 과거 지연의
+정확한 원인을 새 PASS만으로 확정하지 않는다.
+
+[현재 full 결과](./evidence/m12-003-cargo-build-qualification/reclaimed-native-cu126-full-result.json)와
+[CI aggregate 시간 검토](./evidence/m12-003-cargo-build-qualification/ci-duration-review.json)가
+실제 입력·소요 시간과 individual test/보안 한도 보존을 소유한다. 전체 후보 종료
+검사·evidence가 남아 있어 M12-003 IN_PROGRESS/acceptance NO, M12-004 NOT_STARTED다.
+NO PUSH / NO REMOTE CI / NO MERGE.
+
+### M12-003 local acceptance 종료 (2026-10-06)
+
+`IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES`,
+`COMPLETE / MISSING: None`으로 로컬 acceptance를 닫는다. Actual Cargo13·Go/Cargo14,
+mandatory sdist 포함 기존 직접 소비자·ordinary CLI/promotion, 같은708 후보의
+CPU523.65s/cu1262070.42s full과 terminal cleanup/restoration을 확인했다.
+최종875-path candidate의 workflow/security/docs·Darwin TEST compile도 PASS다.
+[Qualification 결과](./evidence/m12-003-cargo-build-qualification/result.json)가
+원본·same-source/runtime·각 검증 범위와 과거 실패 보존을 연결한다.
+
+최종 종료 문서는 실행 source708 대비 허용된6개 documentation/workflow/format-policy
+경로만 바꾸며 전체 docs/security/whitespace를 확인해 로컬 checkpoint를 남긴다.
+Native macOS·새 remote Required는 NOT_RUN이고 CUDA release-support matrix 결정은
+M12-005에 남는다. 다음 M12-004는 NOT_STARTED/Ready: Yes이며 baseline audit 후
+유일한 IN_PROGRESS로 시작한다. NO PUSH / NO REMOTE CI / NO MERGE.
 
 ## Step 13 Invariant
 

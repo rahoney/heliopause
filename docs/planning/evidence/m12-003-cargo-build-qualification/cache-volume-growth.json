@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "operation": "Grow exact existing task-owned regular image32->52GiB and ext4 online; no formatting/shrinking/deleting/cleanup",
+  "uuid": "ed392db3-8e98-40a5-9e00-c4270f7b5e99",
+  "old_image_bytes": 34359738368,
+  "new_image_bytes": 55834574848,
+  "cache_free_bytes_after": 37368090624,
+  "required_cache_start_bytes": 36304391996,
+  "backing_D_free_before": 51093229568,
+  "backing_D_free_after": 29618393088,
+  "preserved_failed_journal": {
+    "sha256": "91d51d69e4462c395bf325c6ee0da6e766b7789009eb48bfb309a14eb9acf768",
+    "bytes": 9995249
+  },
+  "scope": "Existing24GiB CUDA temporary-disk policy plus original measured cache peak and headroom; no product budget change or qualification success claim."
+}

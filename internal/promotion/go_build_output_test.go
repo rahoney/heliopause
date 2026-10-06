@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/rahoney/heliopause/internal/application"
-	artifactgo "github.com/rahoney/heliopause/internal/artifact/gomodule"
+	artifactgo "github.com/rahoney/heliopause/internal/artifact/projectbuild"
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/core/ports"
 	"github.com/rahoney/heliopause/internal/evidence/local"
@@ -68,7 +68,7 @@ func (b *goOutputBackend) Build(ctx context.Context, inputs domain.ProjectBuildI
 		return domain.ProjectBuildObservation{}, err
 	}
 	if b.mode == "output-tamper" {
-		name := filepath.Join(b.intake, inputs.RunID().String(), "go-output.tar")
+		name := filepath.Join(b.intake, inputs.RunID().String(), inputs.Kind()+"-output.tar")
 		if err := os.Chmod(name, 0o600); err != nil {
 			b.t.Fatal(err)
 		}
@@ -91,7 +91,7 @@ func (b *goOutputBackend) Build(ctx context.Context, inputs domain.ProjectBuildI
 	session, _ := domain.NewSandboxSessionID()
 	result, _ := domain.NewSandboxResult(session, domain.SandboxCompleted, "", facts)
 	recipe, _ := domain.NewSHA256Digest(strings.Repeat("f", 64))
-	binding, err := domain.NewDerivationBinding(inputs.Source().Digest(), []domain.ContentDigest{inputs.Cache().Digest(), inputs.Snapshot().GraphDigest()}, "go-build-linux-amd64", recipe)
+	binding, err := domain.NewDerivationBinding(inputs.Source().Digest(), []domain.ContentDigest{inputs.Cache().Digest(), inputs.Snapshot().GraphDigest()}, inputs.Kind()+"-build-linux-amd64", recipe)
 	if err != nil {
 		return domain.ProjectBuildObservation{}, err
 	}

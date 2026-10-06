@@ -17,9 +17,10 @@ type ProjectBuildInputs struct {
 }
 
 func NewProjectBuildInputs(snapshot ProjectDependencySnapshot, source, cache AcquiredArtifact, run RunID, selector string) (ProjectBuildInputs, error) {
-	if !snapshot.Valid() || snapshot.Source().String() != "go-proxy" || run.String() == "" ||
-		source.Identity().Source().String() != "project-local" || source.Identity().Variant() != "go-source" ||
-		cache.Identity().Source().String() != "project-local" || cache.Identity().Variant() != "go-cache" || cache.Identity().Version() != snapshot.GraphDigest().String() {
+	kind := strings.TrimSuffix(source.Identity().Variant(), "-source")
+	if !snapshot.Valid() || !validProjectBuildKind(kind) || source.Identity().Variant() != kind+"-source" || run.String() == "" ||
+		source.Identity().Source().String() != "project-local" ||
+		cache.Identity().Source().String() != "project-local" || cache.Identity().Variant() != kind+"-cache" || cache.Identity().Version() != snapshot.GraphDigest().String() {
 		return ProjectBuildInputs{}, errors.New("project build inputs are invalid")
 	}
 	for _, artifact := range []AcquiredArtifact{source, cache} {
@@ -42,6 +43,24 @@ func NewProjectBuildInputs(snapshot ProjectDependencySnapshot, source, cache Acq
 		}
 	}
 	return ProjectBuildInputs{snapshot, source, cache, run, selector}, nil
+}
+
+// Kind binds the transport facets to one controller-selected build adapter.
+// It is structural identity, not execution, registry or publication authority.
+func (i ProjectBuildInputs) Kind() string {
+	return strings.TrimSuffix(i.source.Identity().Variant(), "-source")
+}
+
+func validProjectBuildKind(kind string) bool {
+	if kind == "" || len(kind) > 64 {
+		return false
+	}
+	for _, r := range kind {
+		if r < 'a' || r > 'z' {
+			return false
+		}
+	}
+	return true
 }
 
 func (i ProjectBuildInputs) Valid() bool {
@@ -83,9 +102,9 @@ func (o ProjectBuildObservation) Binding() DerivationBinding   { return o.bindin
 func validProjectBuildOutput(inputs ProjectBuildInputs, output AcquiredArtifact, binding DerivationBinding) bool {
 	declared, ok := output.DeclaredIntegrity()
 	if output.Identity().Source() != inputs.Source().Identity().Source() || output.Identity().Name() != inputs.Source().Identity().Name() ||
-		output.Identity().Variant() != "go-output" || output.Identity().Version() != inputs.RunID().String() || output.Digest().String() == "" || output.SizeBytes() == 0 || !ok ||
-		declared != "sha256:"+output.Digest().String() || output.ContentHandle() != "intake:"+inputs.RunID().String()+":go-output" ||
-		binding.SourceDigest() != inputs.Source().Digest() || binding.Executor() != "go-build-linux-amd64" || binding.ConfigDigest().String() == "" {
+		output.Identity().Variant() != inputs.Kind()+"-output" || output.Identity().Version() != inputs.RunID().String() || output.Digest().String() == "" || output.SizeBytes() == 0 || !ok ||
+		declared != "sha256:"+output.Digest().String() || output.ContentHandle() != "intake:"+inputs.RunID().String()+":"+inputs.Kind()+"-output" ||
+		binding.SourceDigest() != inputs.Source().Digest() || binding.Executor() != inputs.Kind()+"-build-linux-amd64" || binding.ConfigDigest().String() == "" {
 		return false
 	}
 	seen := map[ContentDigest]bool{}

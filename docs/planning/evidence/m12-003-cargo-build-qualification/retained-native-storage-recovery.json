@@ -1,0 +1,240 @@
+{
+  "scope": "Verified exact failed-state archival and duplicate-original removal; not rollback/install success or performance qualification",
+  "archive_verification": {
+    "status": "ARCHIVED_AND_READBACK_VERIFIED_NO_REMOVAL",
+    "archive_root": "/tmp/haa-m12-qualification-disk/retained-native-cu126-archive-one",
+    "roots": [
+      "/home/winamp/.local/state/heliopause/m12-003/qualification/e2e/pytorch-cu126-2509318137",
+      "/tmp/haa-m12-split-e2e/pytorch-cu126-1671769759"
+    ],
+    "entries": 37013,
+    "files": 32488,
+    "unique_blobs": 15720,
+    "pack": {
+      "path": "blobs.pack",
+      "bytes": 10221806203,
+      "sha256": "f910b49c48ce0a3f6033ecf5a8f9b2daaccf575bc683cd301b0307ab9f0ef00b"
+    },
+    "manifest": {
+      "path": "manifest.json",
+      "sha256": "57c91062837d7ef0d4c4372726c6aa9b4fa027584a3dbbb428982c4fd255f2ce",
+      "bytes": 22666372
+    },
+    "original_inventory_sha256": "791f167ce7e5801e330e6a4e5b50f34c50374f0dce3212f0eaba1570862c5c6f",
+    "decoder_checks": [
+      {
+        "original_root": "/home/winamp/.local/state/heliopause/m12-003/qualification/e2e/pytorch-cu126-2509318137",
+        "original_path": "target/.heliopause-pypi-commit-1173252351/ledger.json",
+        "restored_path": "/tmp/haa-m12-qualification-disk/retained-native-cu126-archive-one/decoder-check/0",
+        "sha256": "667004ebb3ffdb4e2cd0c6691a2599f1d977e08d9bc1ae8c2d8edb16e58ea758",
+        "bytes": 17220272
+      },
+      {
+        "original_root": "/home/winamp/.local/state/heliopause/m12-003/qualification/e2e/pytorch-cu126-2509318137",
+        "original_path": "target/pyvenv.cfg",
+        "restored_path": "/tmp/haa-m12-qualification-disk/retained-native-cu126-archive-one/decoder-check/1",
+        "sha256": "bef041d039522896bea08e3e22f49029087893b9bf9c0f527dbc03f19703a095",
+        "bytes": 17
+      },
+      {
+        "original_root": "/tmp/haa-m12-split-e2e/pytorch-cu126-1671769759",
+        "original_path": "target/.heliopause-pypi-commit-2710954369/ledger.json",
+        "restored_path": "/tmp/haa-m12-qualification-disk/retained-native-cu126-archive-one/decoder-check/2",
+        "sha256": "6654e0f2e4d10ff35d5bce254f9c4bac12da7d8a08f4cae07a67ef3e1f025e11",
+        "bytes": 14144300
+      },
+      {
+        "original_root": "/tmp/haa-m12-split-e2e/pytorch-cu126-1671769759",
+        "original_path": "target/pyvenv.cfg",
+        "restored_path": "/tmp/haa-m12-qualification-disk/retained-native-cu126-archive-one/decoder-check/3",
+        "sha256": "bef041d039522896bea08e3e22f49029087893b9bf9c0f527dbc03f19703a095",
+        "bytes": 17
+      }
+    ],
+    "all_blobs_readback_verified": true,
+    "original_metadata_and_full_path_mapping_preserved": true,
+    "originals_removed": false,
+    "archived_source_regular_allocated_bytes": 27866849280,
+    "seconds": 322.84500527381897
+  },
+  "relocation": {
+    "status": "VERIFIED_RELOCATION_COMPLETE",
+    "archive_root": "/tmp/haa-m12-qualification-disk/retained-native-cu126-archive-one",
+    "pack": {
+      "path": "blobs.pack",
+      "bytes": 10221806203,
+      "sha256": "f910b49c48ce0a3f6033ecf5a8f9b2daaccf575bc683cd301b0307ab9f0ef00b"
+    },
+    "manifest": {
+      "path": "manifest.json",
+      "sha256": "57c91062837d7ef0d4c4372726c6aa9b4fa027584a3dbbb428982c4fd255f2ce",
+      "bytes": 22666372
+    },
+    "inventory_sha256": "791f167ce7e5801e330e6a4e5b50f34c50374f0dce3212f0eaba1570862c5c6f",
+    "exact_original_roots": [
+      "/home/winamp/.local/state/heliopause/m12-003/qualification/e2e/pytorch-cu126-2509318137",
+      "/tmp/haa-m12-split-e2e/pytorch-cu126-1671769759"
+    ],
+    "all_original_file_bytes_archived": true,
+    "full_archive_readback_before_removal": true,
+    "removed_roots": [
+      "/home/winamp/.local/state/heliopause/m12-003/qualification/e2e/pytorch-cu126-2509318137",
+      "/tmp/haa-m12-split-e2e/pytorch-cu126-1671769759"
+    ],
+    "original_regular_allocated_bytes": 27866849280,
+    "scope": "Verified storage relocation of two terminated qualification copies only; failure evidence remains in archive, no rollback/install/acceptance claim",
+    "docker_query": "no existing traced runtime consumers; bounded Docker queries succeeded",
+    "started_unix": 1791253232.1204526,
+    "finished_unix": 1791253272.521809,
+    "free_bytes": {
+      "/mnt/c": 5343981568,
+      "/mnt/d": 29618393088,
+      "/tmp/haa-m12-qualification-disk": 19761246208
+    }
+  },
+  "tooling": [
+    {
+      "path": "haa-m12-retained-storage-inventory.py",
+      "sha256": "222e5da347ca106e00af17b71be4155d0df528d55a5c8a8a1b467f0d5e27aec5",
+      "bytes": 4009
+    },
+    {
+      "path": "haa-m12-archive-retained-native.py",
+      "sha256": "faed664ce3cafe02efccf6fce2e8d889b1adce345f4c564ae50a8a4c8976984c",
+      "bytes": 6340
+    },
+    {
+      "path": "haa-m12-reclaim-verified-native-copies.py",
+      "sha256": "35046d2d15a9612c56d5a881b2202488090cb33e7dd246a0405f31aa1fe673cc",
+      "bytes": 7926
+    },
+    {
+      "path": "restore.py",
+      "sha256": "384a60da30be25b5ab9d10b1a9f1966ab4a6f355fed41de40ac5000c70045448",
+      "bytes": 2608
+    },
+    {
+      "path": "README.txt",
+      "sha256": "d2a7ec7553cad11b3964cb842f871b6835d0db7d0cbbf50ff6462a39cb781976",
+      "bytes": 1170
+    }
+  ],
+  "trim": {
+    "command": [
+      "sudo",
+      "-n",
+      "timeout",
+      "120s",
+      "/usr/sbin/fstrim",
+      "-v",
+      "/"
+    ],
+    "tool_exit": 0,
+    "reported_trimmed_bytes": 14418268160
+  },
+  "current_free_bytes": {
+    "/mnt/c": 5341143040,
+    "/mnt/d": 29618393088,
+    "/tmp": 766200553472,
+    "/tmp/haa-m12-qualification-disk": 19761213440
+  },
+  "obsolete_bazel_cleanup": {
+    "status": "COMPLETE",
+    "output_bases": 56,
+    "all_canonical_clean_exits_zero": true,
+    "durable_receipt": "/home/winamp/.local/state/heliopause/m12-003/qualification/storage-recovery-20261006/obsolete-bazel-cleanup.json",
+    "receipt_sha256": "bd4be32d12bc14678883fb99625f621c2a7638050837033f8e457c0988e6eccf",
+    "before_native_filesystem_used_bytes": 259910578176,
+    "after_native_filesystem_used_bytes": 230215127040,
+    "scope": "Generated outputs of deleted HAA temp workspaces; retained current source/runtime/evidence/quality caches preserved"
+  },
+  "root_vhd_read_only_inventory": {
+    "file_bytes": 294314311680,
+    "sparse_attribute": false,
+    "maximum_virtual_bytes": 1099511627776,
+    "offline_compaction": "PREPARED_NOT_EXECUTED",
+    "scope": "Current Linux file deletion and trim have not returned physical C capacity; exact Windows path and personal registry identity remain in local checkpoint only"
+  },
+  "storage_transfer": {
+    "status": "F_TRANSFER_FULL_READBACK_VERIFIED_D_ORIGINALS_REMOVED",
+    "source": "/mnt/d/Heliopause-qualification",
+    "destination": "/mnt/f/Heliopause-qualification",
+    "bytes": 55834797316,
+    "files": [
+      {
+        "path": "m12-003-cu126.ext4",
+        "bytes": 55834574848,
+        "sha256": "ca64776260643eba9214523a0a30e1974ad64282aa6836d34f1c64e456487851"
+      },
+      {
+        "path": "wsl-compaction-20261006/NEXT.md",
+        "bytes": 1714,
+        "sha256": "aec1da0869efcdbb92ae44d73917ca6e777cf7a6396bc2916b2ac641a2311348"
+      },
+      {
+        "path": "wsl-compaction-20261006/README.txt",
+        "bytes": 1552,
+        "sha256": "18603ad348d2869eeb7805f95bf5f5070521d8bb76c9fbd64701d66eac288754"
+      },
+      {
+        "path": "wsl-compaction-20261006/STATE.md",
+        "bytes": 56405,
+        "sha256": "7b82e8f539359bdc3bdb902a32c5ed1086afb4ac3abe6f528004401a4e611219"
+      },
+      {
+        "path": "wsl-compaction-20261006/WSL-compact-run.cmd",
+        "bytes": 507,
+        "sha256": "8acb0eb7de670b9f34c7e3f86dbf39f9b26d5f0c47e0b56da998299fb82c3d93"
+      },
+      {
+        "path": "wsl-compaction-20261006/checkpoint.json",
+        "bytes": 93366,
+        "sha256": "f884e298bc34ea86e1e5a6b9cd8d888796d40fc910a4b0a5cb62ce566e4e8b04"
+      },
+      {
+        "path": "wsl-compaction-20261006/compact-wsl-single-run.ps1",
+        "bytes": 6464,
+        "sha256": "6754f386e1e6372ddcf695ddf8441e9e591e05a9f5aa524f9ec830e5ff29cf55"
+      },
+      {
+        "path": "wsl-compaction-20261006/compact-wsl.ps1",
+        "bytes": 5711,
+        "sha256": "8423f2f9a3e33575ce7cf90f5b03120c276a0a2599d75f9710c255bd3de8e4ca"
+      },
+      {
+        "path": "wsl-compaction-20261006/launch-attempts.json",
+        "bytes": 481,
+        "sha256": "4e89f56bb8d68299fd967a941e10d1ecb83827b25fc50e511722fc6bba1b43d6"
+      },
+      {
+        "path": "wsl-compaction-20261006/obsolete-bazel-cleanup.json",
+        "bytes": 52442,
+        "sha256": "bd4be32d12bc14678883fb99625f621c2a7638050837033f8e457c0988e6eccf"
+      },
+      {
+        "path": "wsl-compaction-20261006/ready.json",
+        "bytes": 635,
+        "sha256": "691d4cdb4556ee946b41ab71373e2d2d25d38b49b9baf33c73bc6c4ddd877eb4"
+      },
+      {
+        "path": "wsl-compaction-20261006/saved-task-inputs.json",
+        "bytes": 3191,
+        "sha256": "c56a063eb9dea9d0eecf9d66d5dfcadb376311679dab4f45671f957890dcba1c"
+      }
+    ],
+    "source_removed_after_full_readback": true,
+    "image_UUID": "ed392db3-8e98-40a5-9e00-c4270f7b5e99",
+    "image_owner_mode_size_verified": true,
+    "native_timestamp_restore_exit": 0,
+    "F_worker_parser_exit": 0,
+    "compaction_workers": 0,
+    "unknown_windows_commandlines": 0,
+    "F_worker_sha256": "9676c64346f3666cea36db589c67314c6470f5ef95886885df309dd1f6e6a9fc",
+    "capacity_after": {
+      "/mnt/c": 1978466304,
+      "/mnt/d": 85452967936,
+      "/mnt/f": 95721041920
+    },
+    "offline_root_compaction_executed": false
+  }
+}

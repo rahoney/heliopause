@@ -1,0 +1,671 @@
+{
+  "scope": "Same minimal Cargo source digest throughout actual failing compiler prefixes; next faults are not attributed to previous correction without paired evidence. Whole positive matrix is separate.",
+  "source_sha256": "fc43cb3651b30236614bafc1e6e5f05044958dd2f625064984968e4e60d1b96a",
+  "command": "controller fixed offline metadata/build arguments from sandbox/cargo_build_runtime.go; recipe frozen separately",
+  "authority": "Kernel image/topology/role/creator state grants permissions; FNV locators and serialized diagnostic booleans are diagnostic only.",
+  "chain": [
+    {
+      "log": "cargo-build-bootstrap-after-runtime.log",
+      "sha256": "ebd98caeeaaffa06fb02618916f4eee6aebbf55e4ec4aca456256fd01161d11f",
+      "source_sha256": "fc43cb3651b30236614bafc1e6e5f05044958dd2f625064984968e4e60d1b96a",
+      "first_bounded_failure": {
+        "phase": "CONFIG",
+        "reason": "STREAM_FAULT",
+        "events": "30",
+        "bytes": "3420",
+        "session_complete": "false",
+        "fault_site": "OPEN_RESULT_CLASSIFICATION_PROC",
+        "open_image": "MKDIR",
+        "open_role": "CONTROL",
+        "open_provenance": "CLONE_CHILD",
+        "open_subject": "OTHER",
+        "open_mount": "system",
+        "open_flags": "557056",
+        "open_locator_fnv1a64": "0a78358dda616a11",
+        "open_kernel_image": "UNKNOWN",
+        "open_executable_fnv1a64": "720cde0ba7fef26e",
+        "open_executable_pinned": "true",
+        "open_cargo_driver_creator": "false",
+        "open_rustc_version_query": "false",
+        "open_rustc_argc": "0",
+        "open_rustc_argv_fnv1a64": "0000000000000000",
+        "open_mountpoint_fnv1a64": "f51debb7de530372"
+      },
+      "actual_test_outcomes": [
+        {
+          "status": "FAIL",
+          "name": "TestLinuxCargoDependencyFreeBuildCLIIntegration",
+          "seconds": 11.25
+        }
+      ]
+    },
+    {
+      "log": "cargo-build-configuration-after-runtime.log",
+      "sha256": "56e9a9b5ba62efa4c4b42b02afc9e7d728c3825c886f69857506a95f38dfde3c",
+      "source_sha256": "fc43cb3651b30236614bafc1e6e5f05044958dd2f625064984968e4e60d1b96a",
+      "first_bounded_failure": {
+        "phase": "OFFLINE_GRAPH",
+        "command_status": "LIFECYCLE_ERROR",
+        "reason": "STREAM_FAULT",
+        "events": "32",
+        "bytes": "3648",
+        "session_complete": "false",
+        "fault_site": "OPEN_RESULT_CLASSIFICATION_IMAGE",
+        "image_locator_fnv1a64": "fbc430c15ef57dff",
+        "open_image": "OTHER",
+        "open_role": "ARTIFACT",
+        "open_provenance": "DIRECT_EXEC_ROOT",
+        "open_subject": "OCI_IMAGE",
+        "open_mount": "oci",
+        "open_flags": "557056",
+        "open_locator_fnv1a64": "fbc430c15ef57dff",
+        "open_kernel_image": "BOUNDARY",
+        "open_executable_fnv1a64": "42bea7bdd1732cb5",
+        "open_executable_pinned": "false",
+        "open_cargo_driver_creator": "false",
+        "open_rustc_version_query": "false",
+        "open_rustc_argc": "0",
+        "open_rustc_argv_fnv1a64": "0000000000000000",
+        "open_mountpoint_fnv1a64": "af63a24c860189fe"
+      },
+      "actual_test_outcomes": [
+        {
+          "status": "FAIL",
+          "name": "TestLinuxCargoDependencyFreeBuildCLIIntegration",
+          "seconds": 11.25
+        }
+      ]
+    },
+    {
+      "log": "cargo-build-handoff-final-after-runtime.log",
+      "sha256": "92495395a598e0231344c8e2315de505db9654fe5ba891d2ab5c8c2f4f8a6552",
+      "source_sha256": "fc43cb3651b30236614bafc1e6e5f05044958dd2f625064984968e4e60d1b96a",
+      "first_bounded_failure": {
+        "phase": "OFFLINE_GRAPH",
+        "command_status": "LIFECYCLE_ERROR",
+        "reason": "STREAM_FAULT",
+        "events": "34",
+        "bytes": "3876",
+        "session_complete": "false",
+        "fault_site": "OPEN_RESULT_CLASSIFICATION_IMAGE",
+        "image_locator_fnv1a64": "fbc430c15ef57dff",
+        "open_image": "OTHER",
+        "open_role": "ARTIFACT",
+        "open_provenance": "DIRECT_EXEC_ROOT",
+        "open_subject": "OCI_IMAGE",
+        "open_mount": "oci",
+        "open_flags": "557056",
+        "open_locator_fnv1a64": "fbc430c15ef57dff",
+        "open_kernel_image": "CARGO",
+        "open_executable_fnv1a64": "05aa2efcccd45bfb",
+        "open_executable_pinned": "true",
+        "open_cargo_driver_creator": "false",
+        "open_rustc_version_query": "false",
+        "open_rustc_argc": "0",
+        "open_rustc_argv_fnv1a64": "0000000000000000",
+        "open_mountpoint_fnv1a64": "af63a24c860189fe"
+      },
+      "actual_test_outcomes": [
+        {
+          "status": "FAIL",
+          "name": "TestLinuxCargoDependencyFreeBuildCLIIntegration",
+          "seconds": 11.38
+        }
+      ]
+    },
+    {
+      "log": "cargo-build-driver-final-after-runtime.log",
+      "sha256": "ec61ed7fc86b2202fc4ad89e21fe0320f590c5b18c0cf02f01d1b2f2146503c0",
+      "source_sha256": "fc43cb3651b30236614bafc1e6e5f05044958dd2f625064984968e4e60d1b96a",
+      "first_bounded_failure": {
+        "phase": "OFFLINE_GRAPH",
+        "command_status": "LIFECYCLE_ERROR",
+        "reason": "STREAM_FAULT",
+        "events": "34",
+        "bytes": "3876",
+        "session_complete": "false",
+        "fault_site": "OPEN_RESULT_CLASSIFICATION_IMAGE",
+        "image_locator_fnv1a64": "6e0a31ee772d48fe",
+        "open_image": "OTHER",
+        "open_role": "ARTIFACT",
+        "open_provenance": "DIRECT_EXEC_ROOT",
+        "open_subject": "OCI_IMAGE",
+        "open_mount": "oci",
+        "open_flags": "557056",
+        "open_locator_fnv1a64": "6e0a31ee772d48fe",
+        "open_kernel_image": "CARGO",
+        "open_executable_fnv1a64": "05aa2efcccd45bfb",
+        "open_executable_pinned": "true",
+        "open_cargo_driver_creator": "false",
+        "open_rustc_version_query": "false",
+        "open_rustc_argc": "0",
+        "open_rustc_argv_fnv1a64": "0000000000000000",
+        "open_mountpoint_fnv1a64": "af63a24c860189fe"
+      },
+      "actual_test_outcomes": [
+        {
+          "status": "FAIL",
+          "name": "TestLinuxCargoDependencyFreeBuildCLIIntegration",
+          "seconds": 11.65
+        }
+      ]
+    },
+    {
+      "log": "cargo-build-driver-abi-after-runtime.log",
+      "sha256": "6aa535aba659aeed43fd6b7abac6f81c691f904f41f07f731272c71dc019f736",
+      "source_sha256": "fc43cb3651b30236614bafc1e6e5f05044958dd2f625064984968e4e60d1b96a",
+      "first_bounded_failure": {
+        "phase": "OFFLINE_GRAPH",
+        "command_status": "LIFECYCLE_ERROR",
+        "reason": "STREAM_FAULT",
+        "events": "34",
+        "bytes": "3876",
+        "session_complete": "false",
+        "fault_site": "OPEN_RESULT_CLASSIFICATION_IMAGE",
+        "image_locator_fnv1a64": "660afad21eb74b5c",
+        "open_image": "OTHER",
+        "open_role": "ARTIFACT",
+        "open_provenance": "DIRECT_EXEC_ROOT",
+        "open_subject": "OCI_IMAGE",
+        "open_mount": "oci",
+        "open_flags": "32768",
+        "open_locator_fnv1a64": "660afad21eb74b5c",
+        "open_kernel_image": "CARGO",
+        "open_executable_fnv1a64": "05aa2efcccd45bfb",
+        "open_executable_pinned": "true",
+        "open_cargo_driver_creator": "false",
+        "open_rustc_version_query": "false",
+        "open_rustc_argc": "0",
+        "open_rustc_argv_fnv1a64": "0000000000000000",
+        "open_mountpoint_fnv1a64": "af63a24c860189fe"
+      },
+      "actual_test_outcomes": [
+        {
+          "status": "FAIL",
+          "name": "TestLinuxCargoDependencyFreeBuildCLIIntegration",
+          "seconds": 11.93
+        }
+      ]
+    },
+    {
+      "log": "cargo-build-driver-ca-after-runtime.log",
+      "sha256": "e142da8ae9b46ffbd59aff4cf7a4a7268ffaf57cae220eeca932e0289ae27ee2",
+      "source_sha256": "fc43cb3651b30236614bafc1e6e5f05044958dd2f625064984968e4e60d1b96a",
+      "first_bounded_failure": {
+        "phase": "OFFLINE_GRAPH",
+        "command_status": "LIFECYCLE_ERROR",
+        "reason": "STREAM_FAULT",
+        "events": "35",
+        "bytes": "4120",
+        "session_complete": "false",
+        "fault_site": "OPEN_RESULT_CLASSIFICATION_IMAGE",
+        "image_locator_fnv1a64": "15a2271579237725",
+        "open_image": "OTHER",
+        "open_role": "ARTIFACT",
+        "open_provenance": "CLONE_CHILD",
+        "open_subject": "OCI_IMAGE",
+        "open_mount": "oci",
+        "open_flags": "557056",
+        "open_locator_fnv1a64": "15a2271579237725",
+        "open_kernel_image": "RUSTC",
+        "open_executable_fnv1a64": "10196e7a251de540",
+        "open_executable_pinned": "true",
+        "open_cargo_driver_creator": "true",
+        "open_rustc_version_query": "true",
+        "open_rustc_argc": "2",
+        "open_rustc_argv_fnv1a64": "5cbaadbc11dd096d",
+        "open_mountpoint_fnv1a64": "af63a24c860189fe"
+      },
+      "actual_test_outcomes": [
+        {
+          "status": "FAIL",
+          "name": "TestLinuxCargoDependencyFreeBuildCLIIntegration",
+          "seconds": 11.83
+        }
+      ]
+    },
+    {
+      "log": "cargo-build-rustc-ready-after-runtime.log",
+      "sha256": "4261a3ecdcb60f73e6b2d7b65dd62d373cd97c7af6e8ff4f1ed30b9bb9124a74",
+      "source_sha256": "fc43cb3651b30236614bafc1e6e5f05044958dd2f625064984968e4e60d1b96a",
+      "first_bounded_failure": {
+        "phase": "BUILD",
+        "command_status": "LIFECYCLE_ERROR",
+        "reason": "STREAM_FAULT",
+        "events": "42",
+        "bytes": "4918",
+        "session_complete": "false",
+        "fault_site": "OPEN_RESULT_CLASSIFICATION_IMAGE",
+        "image_locator_fnv1a64": "fbc430c15ef57dff",
+        "open_image": "OTHER",
+        "open_role": "ARTIFACT",
+        "open_provenance": "CLONE_CHILD",
+        "open_subject": "OCI_IMAGE",
+        "open_mount": "oci",
+        "open_flags": "557056",
+        "open_locator_fnv1a64": "fbc430c15ef57dff",
+        "open_kernel_image": "UNKNOWN",
+        "open_executable_fnv1a64": "be6f7bb4b25f5d7e",
+        "open_executable_pinned": "true",
+        "open_cargo_driver_creator": "false",
+        "open_rustc_version_query": "false",
+        "open_rustc_argc": "0",
+        "open_rustc_argv_fnv1a64": "0000000000000000",
+        "open_mountpoint_fnv1a64": "af63a24c860189fe"
+      },
+      "actual_test_outcomes": [
+        {
+          "status": "FAIL",
+          "name": "TestLinuxCargoDependencyFreeBuildCLIIntegration",
+          "seconds": 13.07
+        }
+      ]
+    },
+    {
+      "log": "cargo-build-native-cc-after-runtime.log",
+      "sha256": "0cd998c847e5d615c55b02dd7d5ab59530df3da86ac3f1ebc60e7929e679c1c5",
+      "source_sha256": "fc43cb3651b30236614bafc1e6e5f05044958dd2f625064984968e4e60d1b96a",
+      "first_bounded_failure": {
+        "phase": "BUILD",
+        "command_status": "LIFECYCLE_ERROR",
+        "reason": "STREAM_FAULT",
+        "events": "43",
+        "bytes": "5032",
+        "session_complete": "false",
+        "fault_site": "OPEN_RESULT_CLASSIFICATION_IMAGE",
+        "image_locator_fnv1a64": "fbc430c15ef57dff",
+        "open_image": "OTHER",
+        "open_role": "ARTIFACT",
+        "open_provenance": "CLONE_CHILD",
+        "open_subject": "OCI_IMAGE",
+        "open_mount": "oci",
+        "open_flags": "557056",
+        "open_locator_fnv1a64": "fbc430c15ef57dff",
+        "open_kernel_image": "UNKNOWN",
+        "open_executable_fnv1a64": "628f0cd1cb690a31",
+        "open_executable_pinned": "true",
+        "open_cargo_driver_creator": "false",
+        "open_rustc_version_query": "false",
+        "open_rustc_argc": "0",
+        "open_rustc_argv_fnv1a64": "0000000000000000",
+        "open_mountpoint_fnv1a64": "af63a24c860189fe"
+      },
+      "actual_test_outcomes": [
+        {
+          "status": "FAIL",
+          "name": "TestLinuxCargoDependencyFreeBuildCLIIntegration",
+          "seconds": 13.59
+        }
+      ]
+    },
+    {
+      "log": "cargo-build-collect2-diagnostic-runtime.log",
+      "sha256": "0d5671fb8e4e9d9f6f96f344ae168e55269fa9284ac9b8616952d3bc12b51612",
+      "source_sha256": "fc43cb3651b30236614bafc1e6e5f05044958dd2f625064984968e4e60d1b96a",
+      "first_bounded_failure": {
+        "phase": "BUILD",
+        "command_status": "LIFECYCLE_ERROR",
+        "reason": "STREAM_FAULT",
+        "events": "43",
+        "bytes": "5032",
+        "session_complete": "false",
+        "fault_site": "OPEN_RESULT_CLASSIFICATION_IMAGE",
+        "image_locator_fnv1a64": "fbc430c15ef57dff",
+        "open_image": "OTHER",
+        "open_role": "ARTIFACT",
+        "open_provenance": "CLONE_CHILD",
+        "open_subject": "OCI_IMAGE",
+        "open_mount": "oci",
+        "open_flags": "557056",
+        "open_locator_fnv1a64": "fbc430c15ef57dff",
+        "open_kernel_image": "COLLECT2",
+        "open_executable_fnv1a64": "628f0cd1cb690a31",
+        "open_executable_pinned": "true",
+        "open_cargo_driver_creator": "false",
+        "open_cargo_compiler_creator": "true",
+        "open_native_cc_invocation": "false",
+        "open_rustc_version_query": "false",
+        "open_rustc_argc": "0",
+        "open_rustc_argv_fnv1a64": "0000000000000000",
+        "open_mountpoint_fnv1a64": "af63a24c860189fe"
+      },
+      "actual_test_outcomes": [
+        {
+          "status": "FAIL",
+          "name": "TestLinuxCargoDependencyFreeBuildCLIIntegration",
+          "seconds": 14.36
+        }
+      ]
+    },
+    {
+      "log": "cargo-build-collect2-after-runtime.log",
+      "sha256": "7845b9a71b5dafb69c93ff3dd54ea78d110237ecf8d3268cb2fb32e102e43703",
+      "source_sha256": "fc43cb3651b30236614bafc1e6e5f05044958dd2f625064984968e4e60d1b96a",
+      "first_bounded_failure": {
+        "phase": "BUILD",
+        "command_status": "LIFECYCLE_ERROR",
+        "reason": "STREAM_FAULT",
+        "events": "44",
+        "bytes": "5146",
+        "session_complete": "false",
+        "fault_site": "OPEN_RESULT_CLASSIFICATION_IMAGE",
+        "image_locator_fnv1a64": "fbc430c15ef57dff",
+        "open_image": "OTHER",
+        "open_role": "ARTIFACT",
+        "open_provenance": "CLONE_CHILD",
+        "open_subject": "OCI_IMAGE",
+        "open_mount": "oci",
+        "open_flags": "557056",
+        "open_locator_fnv1a64": "fbc430c15ef57dff",
+        "open_kernel_image": "UNKNOWN",
+        "open_executable_fnv1a64": "45ae95af260013a1",
+        "open_executable_pinned": "true",
+        "open_cargo_driver_creator": "false",
+        "open_rustc_version_query": "false",
+        "open_rustc_argc": "0",
+        "open_rustc_argv_fnv1a64": "0000000000000000",
+        "open_mountpoint_fnv1a64": "af63a24c860189fe"
+      },
+      "actual_test_outcomes": [
+        {
+          "status": "FAIL",
+          "name": "TestLinuxCargoDependencyFreeBuildCLIIntegration",
+          "seconds": 13.21
+        }
+      ]
+    },
+    {
+      "log": "cargo-build-lld-launcher-diagnostic-runtime.log",
+      "sha256": "99d41f55140f3742c2f789c07283c5260634dcbb796bf7086c47177115d7754a",
+      "source_sha256": "fc43cb3651b30236614bafc1e6e5f05044958dd2f625064984968e4e60d1b96a",
+      "first_bounded_failure": {
+        "phase": "BUILD",
+        "command_status": "LIFECYCLE_ERROR",
+        "reason": "STREAM_FAULT",
+        "events": "44",
+        "bytes": "5146",
+        "session_complete": "false",
+        "fault_site": "OPEN_RESULT_CLASSIFICATION_IMAGE",
+        "image_locator_fnv1a64": "fbc430c15ef57dff",
+        "open_image": "OTHER",
+        "open_role": "ARTIFACT",
+        "open_provenance": "CLONE_CHILD",
+        "open_subject": "OCI_IMAGE",
+        "open_mount": "oci",
+        "open_flags": "557056",
+        "open_locator_fnv1a64": "fbc430c15ef57dff",
+        "open_kernel_image": "LLD_LAUNCHER",
+        "open_executable_fnv1a64": "45ae95af260013a1",
+        "open_executable_pinned": "true",
+        "open_cargo_driver_creator": "false",
+        "open_cargo_compiler_creator": "true",
+        "open_native_cc_invocation": "false",
+        "open_rustc_version_query": "false",
+        "open_rustc_argc": "0",
+        "open_rustc_argv_fnv1a64": "0000000000000000",
+        "open_mountpoint_fnv1a64": "af63a24c860189fe"
+      },
+      "actual_test_outcomes": [
+        {
+          "status": "FAIL",
+          "name": "TestLinuxCargoDependencyFreeBuildCLIIntegration",
+          "seconds": 13.1
+        }
+      ]
+    },
+    {
+      "log": "cargo-build-lld-launcher-after-runtime.log",
+      "sha256": "e1594a4bdfb7fbd7fec0237176df4d15a35c50b9bb5bafb1c4849a4c08ec1ee5",
+      "source_sha256": "fc43cb3651b30236614bafc1e6e5f05044958dd2f625064984968e4e60d1b96a",
+      "first_bounded_failure": {
+        "phase": "BUILD",
+        "command_status": "LIFECYCLE_ERROR",
+        "reason": "STREAM_FAULT",
+        "events": "45",
+        "bytes": "5260",
+        "session_complete": "false",
+        "fault_site": "OPEN_RESULT_CLASSIFICATION_IMAGE",
+        "image_locator_fnv1a64": "fbc430c15ef57dff",
+        "open_image": "OTHER",
+        "open_role": "ARTIFACT",
+        "open_provenance": "CLONE_CHILD",
+        "open_subject": "OCI_IMAGE",
+        "open_mount": "oci",
+        "open_flags": "557056",
+        "open_locator_fnv1a64": "fbc430c15ef57dff",
+        "open_kernel_image": "UNKNOWN",
+        "open_executable_fnv1a64": "2f2cc7f1fd1d5a23",
+        "open_executable_pinned": "true",
+        "open_cargo_driver_creator": "false",
+        "open_rustc_version_query": "false",
+        "open_rustc_argc": "0",
+        "open_rustc_argv_fnv1a64": "0000000000000000",
+        "open_mountpoint_fnv1a64": "af63a24c860189fe"
+      },
+      "actual_test_outcomes": [
+        {
+          "status": "FAIL",
+          "name": "TestLinuxCargoDependencyFreeBuildCLIIntegration",
+          "seconds": 12.43
+        }
+      ]
+    },
+    {
+      "log": "cargo-build-rust-lld-transition-diagnostic-runtime.log",
+      "sha256": "41ac7c853e6004e9b17ed33a9460d82fe3ce8f502d8851e8c8de570b008dd00f",
+      "source_sha256": "fc43cb3651b30236614bafc1e6e5f05044958dd2f625064984968e4e60d1b96a",
+      "first_bounded_failure": {
+        "phase": "BUILD",
+        "command_status": "LIFECYCLE_ERROR",
+        "reason": "STREAM_FAULT",
+        "events": "45",
+        "bytes": "5260",
+        "session_complete": "false",
+        "fault_site": "OPEN_RESULT_CLASSIFICATION_IMAGE",
+        "image_locator_fnv1a64": "fbc430c15ef57dff",
+        "open_image": "OTHER",
+        "open_role": "ARTIFACT",
+        "open_provenance": "CLONE_CHILD",
+        "open_subject": "OCI_IMAGE",
+        "open_mount": "oci",
+        "open_flags": "557056",
+        "open_locator_fnv1a64": "fbc430c15ef57dff",
+        "open_kernel_image": "RUST_LLD",
+        "open_executable_fnv1a64": "2f2cc7f1fd1d5a23",
+        "open_executable_pinned": "true",
+        "open_cargo_driver_creator": "false",
+        "open_cargo_compiler_creator": "true",
+        "open_native_cc_invocation": "false",
+        "open_lld_same_group": "true",
+        "open_rustc_version_query": "false",
+        "open_rustc_argc": "0",
+        "open_rustc_argv_fnv1a64": "0000000000000000",
+        "open_mountpoint_fnv1a64": "af63a24c860189fe"
+      },
+      "actual_test_outcomes": [
+        {
+          "status": "FAIL",
+          "name": "TestLinuxCargoDependencyFreeBuildCLIIntegration",
+          "seconds": 14.99
+        }
+      ]
+    },
+    {
+      "log": "cargo-build-rust-lld-after-runtime.log",
+      "sha256": "7ffa6a742f2eedd3e81b6aea1a6304af39f845cf26a7a6a2414682812713dc2f",
+      "source_sha256": "fc43cb3651b30236614bafc1e6e5f05044958dd2f625064984968e4e60d1b96a",
+      "first_bounded_failure": {
+        "phase": "BUILD",
+        "command_status": "LIFECYCLE_ERROR",
+        "reason": "STREAM_FAULT",
+        "events": "45",
+        "bytes": "5130",
+        "session_complete": "false",
+        "fault_site": "OPEN_RESULT_CLASSIFICATION_IMAGE",
+        "image_locator_fnv1a64": "f213abad9a80ed21",
+        "open_image": "OTHER",
+        "open_role": "ARTIFACT",
+        "open_provenance": "CLONE_CHILD",
+        "open_subject": "OCI_IMAGE",
+        "open_mount": "oci",
+        "open_flags": "557056",
+        "open_locator_fnv1a64": "f213abad9a80ed21",
+        "open_kernel_image": "RUST_LLD",
+        "open_executable_fnv1a64": "2f2cc7f1fd1d5a23",
+        "open_executable_pinned": "true",
+        "open_cargo_driver_creator": "false",
+        "open_cargo_compiler_creator": "true",
+        "open_native_cc_invocation": "false",
+        "open_lld_same_group": "true",
+        "open_rustc_version_query": "false",
+        "open_rustc_argc": "0",
+        "open_rustc_argv_fnv1a64": "0000000000000000",
+        "open_mountpoint_fnv1a64": "af63a24c860189fe"
+      },
+      "actual_test_outcomes": [
+        {
+          "status": "FAIL",
+          "name": "TestLinuxCargoDependencyFreeBuildCLIIntegration",
+          "seconds": 11.09
+        }
+      ]
+    },
+    {
+      "log": "cargo-build-link-inputs-after-runtime.log",
+      "sha256": "e750cd316b3c10f5bb2cda6dd3fa55a6727ac4b005f20c63e8665895049dfc0d",
+      "source_sha256": "fc43cb3651b30236614bafc1e6e5f05044958dd2f625064984968e4e60d1b96a",
+      "first_bounded_failure": {
+        "phase": "BUILD",
+        "command_status": "LIFECYCLE_ERROR",
+        "reason": "STREAM_FAULT",
+        "events": "45",
+        "bytes": "5130",
+        "session_complete": "false",
+        "fault_site": "OPEN_RESULT_CLASSIFICATION_IMAGE",
+        "image_locator_fnv1a64": "d0eaa961b20c7058",
+        "open_image": "OTHER",
+        "open_role": "ARTIFACT",
+        "open_provenance": "CLONE_CHILD",
+        "open_subject": "OCI_IMAGE",
+        "open_mount": "oci",
+        "open_flags": "557056",
+        "open_locator_fnv1a64": "d0eaa961b20c7058",
+        "open_kernel_image": "RUST_LLD",
+        "open_executable_fnv1a64": "2f2cc7f1fd1d5a23",
+        "open_executable_pinned": "true",
+        "open_cargo_driver_creator": "false",
+        "open_cargo_compiler_creator": "true",
+        "open_native_cc_invocation": "false",
+        "open_lld_same_group": "true",
+        "open_rustc_version_query": "false",
+        "open_rustc_argc": "0",
+        "open_rustc_argv_fnv1a64": "0000000000000000",
+        "open_mountpoint_fnv1a64": "af63a24c860189fe"
+      },
+      "actual_test_outcomes": [
+        {
+          "status": "FAIL",
+          "name": "TestLinuxCargoDependencyFreeBuildCLIIntegration",
+          "seconds": 11.35
+        }
+      ]
+    },
+    {
+      "log": "cargo-build-link-sdk-after-runtime.log",
+      "sha256": "7d571b1bae194ffb6b6e58cd99d31675648b39d8fc60173682fd8ad0440e0f99",
+      "source_sha256": "fc43cb3651b30236614bafc1e6e5f05044958dd2f625064984968e4e60d1b96a",
+      "first_bounded_failure": {
+        "phase": "BUILD",
+        "command_status": "LIFECYCLE_ERROR",
+        "reason": "STREAM_FAULT",
+        "events": "45",
+        "bytes": "5130",
+        "session_complete": "false",
+        "fault_site": "OPEN_RESULT_CLASSIFICATION_IMAGE",
+        "image_locator_fnv1a64": "c0825b4756cd6aab",
+        "open_image": "OTHER",
+        "open_role": "ARTIFACT",
+        "open_provenance": "CLONE_CHILD",
+        "open_subject": "OCI_IMAGE",
+        "open_mount": "oci",
+        "open_flags": "557056",
+        "open_locator_fnv1a64": "c0825b4756cd6aab",
+        "open_kernel_image": "RUST_LLD",
+        "open_executable_fnv1a64": "2f2cc7f1fd1d5a23",
+        "open_executable_pinned": "true",
+        "open_cargo_driver_creator": "false",
+        "open_cargo_compiler_creator": "true",
+        "open_native_cc_invocation": "false",
+        "open_lld_same_group": "true",
+        "open_rustc_version_query": "false",
+        "open_rustc_argc": "0",
+        "open_rustc_argv_fnv1a64": "0000000000000000",
+        "open_mountpoint_fnv1a64": "af63a24c860189fe"
+      },
+      "actual_test_outcomes": [
+        {
+          "status": "FAIL",
+          "name": "TestLinuxCargoDependencyFreeBuildCLIIntegration",
+          "seconds": 11.7
+        }
+      ]
+    },
+    {
+      "log": "cargo-build-rust-c-abi-after-runtime.log",
+      "sha256": "cb4ccc9e93ba3715245fecd63e994187e404e143f9ed8279353108bb54a46018",
+      "source_sha256": "fc43cb3651b30236614bafc1e6e5f05044958dd2f625064984968e4e60d1b96a",
+      "first_bounded_failure": {
+        "phase": "BUILD",
+        "command_status": "LIFECYCLE_ERROR",
+        "reason": "STREAM_FAULT",
+        "events": "45",
+        "bytes": "5130",
+        "session_complete": "false",
+        "fault_site": "OPEN_RESULT_CLASSIFICATION_OTHER",
+        "open_image": "OTHER",
+        "open_role": "ARTIFACT",
+        "open_provenance": "CLONE_CHILD",
+        "open_subject": "OTHER",
+        "open_mount": "system",
+        "open_flags": "32768",
+        "open_locator_fnv1a64": "d601eb6de05c650e",
+        "open_kernel_image": "RUST_LLD",
+        "open_executable_fnv1a64": "2f2cc7f1fd1d5a23",
+        "open_executable_pinned": "true",
+        "open_cargo_driver_creator": "false",
+        "open_cargo_compiler_creator": "true",
+        "open_native_cc_invocation": "false",
+        "open_lld_same_group": "true",
+        "open_rustc_version_query": "false",
+        "open_rustc_argc": "0",
+        "open_rustc_argv_fnv1a64": "0000000000000000",
+        "open_mountpoint_fnv1a64": "0be3699c9bd6bd65"
+      },
+      "actual_test_outcomes": [
+        {
+          "status": "FAIL",
+          "name": "TestLinuxCargoDependencyFreeBuildCLIIntegration",
+          "seconds": 11.46
+        }
+      ]
+    },
+    {
+      "log": "cargo-build-lld-entropy-after-runtime.log",
+      "sha256": "b4e83d0262d8ce1e530065067fffcb875e6cfa7cfdcb7c8077e0c299859f71aa",
+      "source_sha256": "fc43cb3651b30236614bafc1e6e5f05044958dd2f625064984968e4e60d1b96a",
+      "first_bounded_failure": {
+        "phase": "OUTPUT_CAPTURE",
+        "events": "0",
+        "bytes": "0",
+        "session_complete": "false"
+      },
+      "actual_test_outcomes": [
+        {
+          "status": "FAIL",
+          "name": "TestLinuxCargoDependencyFreeBuildCLIIntegration",
+          "seconds": 11.75
+        }
+      ]
+    }
+  ]
+}

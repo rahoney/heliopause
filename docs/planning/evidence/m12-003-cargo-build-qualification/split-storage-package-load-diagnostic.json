@@ -1,0 +1,9 @@
+{
+  "canonical_current_security_exit": 1,
+  "failure": "gosec SSA/package import cmd/helox cannot import bootstrap (invalid package name); no product cause established",
+  "raw_log": "raw/split-storage-current-security-import-failure.log",
+  "sha256": "f9614d29512a23f6694a43e989e8cecc44d5f98761e3da7a7ae9c508e9de545a",
+  "bytes": 40170,
+  "followup_go_list_exit": 0,
+  "scope": "Pinned Go go list of cmd/helox and bootstrap returned valid package names and no Error/DepsErrors. Diagnostic only, not security or full acceptance."
+}

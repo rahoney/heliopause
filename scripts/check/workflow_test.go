@@ -122,27 +122,71 @@ func TestValidateCIWorkflowRejectsSecurityRegressions(t *testing.T) {
 	}
 
 	tests := map[string]string{
-		"floating action":                        strings.Replace(string(contents), "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", "actions/checkout@main", 1),
-		"missing always":                         strings.Replace(string(contents), "    if: ${{ always() }}\n", "", 1),
-		"write token":                            strings.Replace(string(contents), "  contents: read", "  contents: write", 1),
-		"moving macOS runner":                    strings.Replace(string(contents), "runs-on: macos-26-intel", "runs-on: macos-latest", 1),
-		"missing minimum Go":                     strings.ReplaceAll(string(contents), "go-version: '1.26.8'", "go-version: '1.26.7'"),
-		"missing pinned Go image":                strings.Replace(string(contents), `docker pull "$go_image"`, `echo skipped`, 1),
-		"Go build integration silently skipped":  strings.Replace(string(contents), "HELOX_GO_BUILD_CLI_INTEGRATION=1", "HELOX_GO_BUILD_CLI_INTEGRATION=0", 1),
-		"Go source integration silently skipped": strings.ReplaceAll(string(contents), "HELOX_GO_RESOLVER_INTEGRATION=1", "HELOX_GO_RESOLVER_INTEGRATION=0"),
-		"missing platform check":                 strings.ReplaceAll(string(contents), "run: go run ./scripts/check platform", "run: go test ./..."),
-		"missing CUDA single-selection guard":    strings.Replace(string(contents), "select at most one CUDA PyTorch qualification profile", "CUDA profiles unchecked", 1),
-		"missing CUDA strict freshness gate":     strings.Replace(string(contents), "go run ./scripts/check qualification-freshness", "echo skipped", 1),
-		"legacy CUDA profile":                    string(contents) + "\n# HELOX_PYTORCH_PROFILE=cu128\n",
-		"sidecar fallback":                       strings.Replace(string(contents), "--sidecar-usage-policy=STRICT", "--sidecar-usage-policy=LEGACY_DEPRECATED_SLOW_EMBEDDED_FALLBACK", 1),
-		"permissive sidecar download":            strings.Replace(string(contents), "--download-sidecars=NEVER", "--download-sidecars=ALWAYS", 1),
-		"extra job":                              string(contents) + "\n  security:\n    runs-on: ubuntu-24.04\n",
+		"floating action":                             strings.Replace(string(contents), "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", "actions/checkout@main", 1),
+		"missing always":                              strings.Replace(string(contents), "    if: ${{ always() }}\n", "", 1),
+		"write token":                                 strings.Replace(string(contents), "  contents: read", "  contents: write", 1),
+		"moving macOS runner":                         strings.Replace(string(contents), "runs-on: macos-26-intel", "runs-on: macos-latest", 1),
+		"missing minimum Go":                          strings.ReplaceAll(string(contents), "go-version: '1.26.8'", "go-version: '1.26.7'"),
+		"missing pinned Go image":                     strings.Replace(string(contents), `docker pull "$go_image"`, `echo skipped`, 1),
+		"Go build integration silently skipped":       strings.Replace(string(contents), "HELOX_GO_BUILD_CLI_INTEGRATION=1", "HELOX_GO_BUILD_CLI_INTEGRATION=0", 1),
+		"Go source integration silently skipped":      strings.ReplaceAll(string(contents), "HELOX_GO_RESOLVER_INTEGRATION=1", "HELOX_GO_RESOLVER_INTEGRATION=0"),
+		"missing pinned Rust image":                   strings.Replace(string(contents), `docker pull "$rust_image"`, `echo skipped`, 1),
+		"Cargo resolver integration silently skipped": strings.ReplaceAll(string(contents), "HELOX_CARGO_RESOLVER_INTEGRATION=1", "HELOX_CARGO_RESOLVER_INTEGRATION=0"),
+		"Cargo add integration silently skipped":      strings.Replace(string(contents), "HELOX_CARGO_ADD_INTEGRATION=1", "HELOX_CARGO_ADD_INTEGRATION=0", 1),
+		"Cargo build integration silently skipped":    strings.Replace(string(contents), "HELOX_CARGO_BUILD_CLI_INTEGRATION=1", "HELOX_CARGO_BUILD_CLI_INTEGRATION=0", 1),
+		"missing platform check":                      strings.ReplaceAll(string(contents), "run: go run ./scripts/check platform", "run: go test ./..."),
+		"missing CUDA single-selection guard":         strings.Replace(string(contents), "select at most one CUDA PyTorch qualification profile", "CUDA profiles unchecked", 1),
+		"missing CUDA strict freshness gate":          strings.Replace(string(contents), "go run ./scripts/check qualification-freshness", "echo skipped", 1),
+		"legacy CUDA profile":                         string(contents) + "\n# HELOX_PYTORCH_PROFILE=cu128\n",
+		"sidecar fallback":                            strings.Replace(string(contents), "--sidecar-usage-policy=STRICT", "--sidecar-usage-policy=LEGACY_DEPRECATED_SLOW_EMBEDDED_FALLBACK", 1),
+		"permissive sidecar download":                 strings.Replace(string(contents), "--download-sidecars=NEVER", "--download-sidecars=ALWAYS", 1),
+		"extra job":                                   string(contents) + "\n  security:\n    runs-on: ubuntu-24.04\n",
 	}
 	for name, fixture := range tests {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			if findings := validateCIWorkflow(fixture); len(findings) == 0 {
 				t.Fatal("validateCIWorkflow findings = none, want non-empty")
+			}
+		})
+	}
+}
+
+func TestCargoRequiredGatesMustBeActiveInTheirLifecycleOwner(t *testing.T) {
+	contents, err := os.ReadFile(filepath.Join("..", "..", workflowRelativePath))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, line := range strings.Split(string(contents), "\n") {
+		command := strings.TrimSpace(line)
+		if !strings.HasPrefix(command, "HELOX_CARGO_") && command != `docker pull "$rust_image"` {
+			continue
+		}
+		t.Run(command, func(t *testing.T) {
+			// A shell comment inside a valid YAML run block must not satisfy a gate.
+			fixture := strings.Replace(string(contents), line, "          # "+command, 1)
+			if len(validateCIWorkflow(fixture)) == 0 {
+				t.Fatal("commented Cargo gate satisfied Required contract")
+			}
+		})
+	}
+}
+
+func TestCargoIntegrationRejectsSkippedOrSubstitutedOwner(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "..", workflowRelativePath))
+	if err != nil {
+		t.Fatal(err)
+	}
+	source := string(body)
+	for name, fixture := range map[string]string{
+		"wrong step":        strings.Replace(source, "- name: Install pinned runtime and run lifecycle integration", "- name: Cargo commands outside lifecycle owner", 1),
+		"conditional step":  strings.Replace(source, "- name: Install pinned runtime and run lifecycle integration", "- name: Install pinned runtime and run lifecycle integration\n        if: false", 1),
+		"ignored failure":   strings.Replace(source, "- name: Install pinned runtime and run lifecycle integration", "- name: Install pinned runtime and run lifecycle integration\n        continue-on-error: true", 1),
+		"duplicate command": strings.Replace(source, `          docker pull "$rust_image"`, `          docker pull "$rust_image"`+"\n"+`          docker pull "$rust_image"`, 1),
+	} {
+		t.Run(name, func(t *testing.T) {
+			if len(validateCIWorkflow(fixture)) == 0 {
+				t.Fatal("inactive or duplicate Cargo gate accepted")
 			}
 		})
 	}

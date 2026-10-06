@@ -1,0 +1,152 @@
+verified fresh Cargo source and observer candidate; no overlay
+runtime before bytes/identity/modes verified
+runtime candidate bytes/identity/modes verified
+no existing traced runtime consumers; bounded Docker queries succeeded
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+/etc/heliopause/pod-init.json: OK
+helper launch: bash=/usr/bin/bash version=5.2.21(1)-release owner=2186057
+helper ready: pid=2188119 attempt=14
+=== RUN   TestLinuxCargoDependencyFreeBuildCLIIntegration
+--- PASS: TestLinuxCargoDependencyFreeBuildCLIIntegration (12.78s)
+=== RUN   TestLinuxCargoPublicBuildCLIIntegration
+observer_attribution sequence=1 profile=cargo-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:5,NETWORK/TRUSTED_CONTROL/SENDTO/INET/DIRECT_EXEC_SESSION/OTHER:17
+observer_attribution sequence=2 profile=cargo-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:10,NETWORK/TRUSTED_CONTROL/SENDTO/INET/DIRECT_EXEC_SESSION/OTHER:24
+observer_attribution sequence=1 profile=cargo-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:10,NETWORK/TRUSTED_CONTROL/SENDTO/INET/DIRECT_EXEC_SESSION/OTHER:24
+    cargo_build_cli_integration_test.go:254: actual Cargo build run=run_xrbortb6h3z5fws4ehxay5i3zi source=5918cf755e0ec402b22ea3718f08d9e5e27836cd7d627ced21d75f36669eb0b9 cache=f3217d77bfa700abb967435755c8b6a00990b62568de34f651f8c20c3f9a370c graph=12cba32698557c17bb51c6c8f2112ae90b70b0468a61c991602edb28ec1a7f2d output=ed3d7ce7238e8cc07c84c23aa78132242176648c6d58fe47b77f7d2c50d055d4 recipe=c1e616d14c8444fc02a561c87914291120a26781960e357428afaaff4da4a6b5
+observer_attribution sequence=1 profile=cargo-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:10,NETWORK/TRUSTED_CONTROL/SENDTO/INET/DIRECT_EXEC_SESSION/OTHER:24
+    cargo_build_cli_integration_test.go:254: actual Cargo build run=run_muucybxp6kytevorxmeipuo4jy source=5918cf755e0ec402b22ea3718f08d9e5e27836cd7d627ced21d75f36669eb0b9 cache=f3217d77bfa700abb967435755c8b6a00990b62568de34f651f8c20c3f9a370c graph=12cba32698557c17bb51c6c8f2112ae90b70b0468a61c991602edb28ec1a7f2d output=ed3d7ce7238e8cc07c84c23aa78132242176648c6d58fe47b77f7d2c50d055d4 recipe=c1e616d14c8444fc02a561c87914291120a26781960e357428afaaff4da4a6b5
+    cargo_build_cli_integration_test.go:254: actual Cargo build run=run_xrbortb6h3z5fws4ehxay5i3zi source=5918cf755e0ec402b22ea3718f08d9e5e27836cd7d627ced21d75f36669eb0b9 cache=f3217d77bfa700abb967435755c8b6a00990b62568de34f651f8c20c3f9a370c graph=12cba32698557c17bb51c6c8f2112ae90b70b0468a61c991602edb28ec1a7f2d output=ed3d7ce7238e8cc07c84c23aa78132242176648c6d58fe47b77f7d2c50d055d4 recipe=c1e616d14c8444fc02a561c87914291120a26781960e357428afaaff4da4a6b5
+--- PASS: TestLinuxCargoPublicBuildCLIIntegration (36.44s)
+=== RUN   TestLinuxCargoTransitiveBuildCLIIntegration
+observer_attribution sequence=1 profile=cargo-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:5,NETWORK/TRUSTED_CONTROL/SENDTO/INET/DIRECT_EXEC_SESSION/OTHER:28
+observer_attribution sequence=2 profile=cargo-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:10,NETWORK/TRUSTED_CONTROL/SENDTO/INET/DIRECT_EXEC_SESSION/OTHER:48
+observer_attribution sequence=1 profile=cargo-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:10,NETWORK/TRUSTED_CONTROL/SENDTO/INET/DIRECT_EXEC_SESSION/OTHER:48
+    cargo_build_cli_integration_test.go:261: actual Cargo build run=run_45mckb555q34o6qpuyufpxi23m source=2a999d2593128a26c7a33d79f9d63d1cab25c794980aa27ce0b4443e92a4a52e cache=b674535e14dd26d8c2968d12c8ca8ca885bd8f4e16f61d4c0277c91bd9b378c1 graph=a61e41c97cc49602fa03850562cf625ea8f41887c41dc0d99eec7eb89477be11 output=88797ed2713baa286c4f7a6bdf582824e597c78e8212eb9370185c2b2dbcdcdf recipe=c1e616d14c8444fc02a561c87914291120a26781960e357428afaaff4da4a6b5
+observer_attribution sequence=1 profile=cargo-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:10,NETWORK/TRUSTED_CONTROL/SENDTO/INET/DIRECT_EXEC_SESSION/OTHER:48
+    cargo_build_cli_integration_test.go:261: actual Cargo build run=run_y2y3yci7qv7zodvi6xdnyn2zpq source=2a999d2593128a26c7a33d79f9d63d1cab25c794980aa27ce0b4443e92a4a52e cache=b674535e14dd26d8c2968d12c8ca8ca885bd8f4e16f61d4c0277c91bd9b378c1 graph=a61e41c97cc49602fa03850562cf625ea8f41887c41dc0d99eec7eb89477be11 output=88797ed2713baa286c4f7a6bdf582824e597c78e8212eb9370185c2b2dbcdcdf recipe=c1e616d14c8444fc02a561c87914291120a26781960e357428afaaff4da4a6b5
+    cargo_build_cli_integration_test.go:261: actual Cargo build run=run_45mckb555q34o6qpuyufpxi23m source=2a999d2593128a26c7a33d79f9d63d1cab25c794980aa27ce0b4443e92a4a52e cache=b674535e14dd26d8c2968d12c8ca8ca885bd8f4e16f61d4c0277c91bd9b378c1 graph=a61e41c97cc49602fa03850562cf625ea8f41887c41dc0d99eec7eb89477be11 output=88797ed2713baa286c4f7a6bdf582824e597c78e8212eb9370185c2b2dbcdcdf recipe=c1e616d14c8444fc02a561c87914291120a26781960e357428afaaff4da4a6b5
+--- PASS: TestLinuxCargoTransitiveBuildCLIIntegration (53.61s)
+=== RUN   TestLinuxCargoLibraryBuildCLIIntegration
+    cargo_build_cli_integration_test.go:83: actual Cargo build run=run_dyb522bhyf37if5rrckgzlyvay source=f2880bde4a29f039190d600435ee7395528409d635ea63fed0174b300bc24212 cache=5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef graph=7d98bf301eb14b746685c78c4c1cdec2f06d5c7f0293984cd1561a87d9a11128 output=009f5b1f15ee6185b943ab928ed6ad7f84df8ad63affce272db81f7a2d818189 recipe=c1e616d14c8444fc02a561c87914291120a26781960e357428afaaff4da4a6b5
+    cargo_build_cli_integration_test.go:83: actual Cargo build run=run_7nkrjhhphravgunln3sdwh3yty source=f2880bde4a29f039190d600435ee7395528409d635ea63fed0174b300bc24212 cache=5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef graph=7d98bf301eb14b746685c78c4c1cdec2f06d5c7f0293984cd1561a87d9a11128 output=009f5b1f15ee6185b943ab928ed6ad7f84df8ad63affce272db81f7a2d818189 recipe=c1e616d14c8444fc02a561c87914291120a26781960e357428afaaff4da4a6b5
+    cargo_build_cli_integration_test.go:83: actual Cargo build run=run_dyb522bhyf37if5rrckgzlyvay source=f2880bde4a29f039190d600435ee7395528409d635ea63fed0174b300bc24212 cache=5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef graph=7d98bf301eb14b746685c78c4c1cdec2f06d5c7f0293984cd1561a87d9a11128 output=009f5b1f15ee6185b943ab928ed6ad7f84df8ad63affce272db81f7a2d818189 recipe=c1e616d14c8444fc02a561c87914291120a26781960e357428afaaff4da4a6b5
+--- PASS: TestLinuxCargoLibraryBuildCLIIntegration (22.60s)
+=== RUN   TestLinuxCargoWorkspaceBuildCLIIntegration
+    cargo_build_cli_integration_test.go:83: actual Cargo build run=run_chuao5vwr5g3fveseefxg7w2de source=b20393852d5e587a656605ef41a2594ed8cb17cac0b52204019e58841528d24c cache=5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef graph=5b566d887b590d7405f1350fc43eb76f9aae40db6ee4d9c7635a10a8103e864c output=30623e1da7c843c099a41168d1609921628aae79c0acd74917fa800623587bcd recipe=c1e616d14c8444fc02a561c87914291120a26781960e357428afaaff4da4a6b5
+    cargo_build_cli_integration_test.go:83: actual Cargo build run=run_a22qtfybx6efbq4quzb3la5zby source=b20393852d5e587a656605ef41a2594ed8cb17cac0b52204019e58841528d24c cache=5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef graph=5b566d887b590d7405f1350fc43eb76f9aae40db6ee4d9c7635a10a8103e864c output=30623e1da7c843c099a41168d1609921628aae79c0acd74917fa800623587bcd recipe=c1e616d14c8444fc02a561c87914291120a26781960e357428afaaff4da4a6b5
+    cargo_build_cli_integration_test.go:83: actual Cargo build run=run_chuao5vwr5g3fveseefxg7w2de source=b20393852d5e587a656605ef41a2594ed8cb17cac0b52204019e58841528d24c cache=5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef graph=5b566d887b590d7405f1350fc43eb76f9aae40db6ee4d9c7635a10a8103e864c output=30623e1da7c843c099a41168d1609921628aae79c0acd74917fa800623587bcd recipe=c1e616d14c8444fc02a561c87914291120a26781960e357428afaaff4da4a6b5
+--- PASS: TestLinuxCargoWorkspaceBuildCLIIntegration (24.36s)
+=== RUN   TestLinuxCargoBuildScriptBuildCLIIntegration
+    cargo_build_cli_integration_test.go:83: actual Cargo build run=run_ttmhuecv7oosnjtjpske4n7l5y source=83eacac37c883c26ae897016d8dd21f0f4e89e99932b7d16e46655c573691b8e cache=5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef graph=21389cc67090a4a790254e10c2156baa0c860bcdec5db729d353db8dea181bd7 output=8add82489026921248ecb487cc204958d8aa6dffbe10dfa14d0beeb5ac5d3a58 recipe=c1e616d14c8444fc02a561c87914291120a26781960e357428afaaff4da4a6b5
+    cargo_build_cli_integration_test.go:83: actual Cargo build run=run_m7eto3f2fdxehxcrnmqx7h56uq source=83eacac37c883c26ae897016d8dd21f0f4e89e99932b7d16e46655c573691b8e cache=5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef graph=21389cc67090a4a790254e10c2156baa0c860bcdec5db729d353db8dea181bd7 output=8add82489026921248ecb487cc204958d8aa6dffbe10dfa14d0beeb5ac5d3a58 recipe=c1e616d14c8444fc02a561c87914291120a26781960e357428afaaff4da4a6b5
+    cargo_build_cli_integration_test.go:83: actual Cargo build run=run_ttmhuecv7oosnjtjpske4n7l5y source=83eacac37c883c26ae897016d8dd21f0f4e89e99932b7d16e46655c573691b8e cache=5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef graph=21389cc67090a4a790254e10c2156baa0c860bcdec5db729d353db8dea181bd7 output=8add82489026921248ecb487cc204958d8aa6dffbe10dfa14d0beeb5ac5d3a58 recipe=c1e616d14c8444fc02a561c87914291120a26781960e357428afaaff4da4a6b5
+--- PASS: TestLinuxCargoBuildScriptBuildCLIIntegration (24.58s)
+=== RUN   TestLinuxCargoProcMacroBuildCLIIntegration
+    cargo_build_cli_integration_test.go:83: actual Cargo build run=run_6ft2crtsoutq7hl4jgior3isri source=c1e74d99bb60b4f5948aeb80d765d4b200fc2b4ccb3b0facad8736184266aded cache=5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef graph=10a8db38a755f1d3dd197b50b8339729d0c4a9b48d289fab7c60f90b9f222cb7 output=c3d57b99189cac27b81e1ba347b0ae8f12ab68d932a5d48b5119f96bf210e383 recipe=c1e616d14c8444fc02a561c87914291120a26781960e357428afaaff4da4a6b5
+    cargo_build_cli_integration_test.go:83: actual Cargo build run=run_2z4snzaryzhplrz3qhzvix4uva source=c1e74d99bb60b4f5948aeb80d765d4b200fc2b4ccb3b0facad8736184266aded cache=5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef graph=10a8db38a755f1d3dd197b50b8339729d0c4a9b48d289fab7c60f90b9f222cb7 output=c3d57b99189cac27b81e1ba347b0ae8f12ab68d932a5d48b5119f96bf210e383 recipe=c1e616d14c8444fc02a561c87914291120a26781960e357428afaaff4da4a6b5
+    cargo_build_cli_integration_test.go:83: actual Cargo build run=run_6ft2crtsoutq7hl4jgior3isri source=c1e74d99bb60b4f5948aeb80d765d4b200fc2b4ccb3b0facad8736184266aded cache=5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef graph=10a8db38a755f1d3dd197b50b8339729d0c4a9b48d289fab7c60f90b9f222cb7 output=c3d57b99189cac27b81e1ba347b0ae8f12ab68d932a5d48b5119f96bf210e383 recipe=c1e616d14c8444fc02a561c87914291120a26781960e357428afaaff4da4a6b5
+--- PASS: TestLinuxCargoProcMacroBuildCLIIntegration (25.58s)
+=== RUN   TestLinuxCargoBuildFilesystemSecurityCLIIntegration
+    cargo_build_cli_integration_test.go:83: actual Cargo build denied: observed cargo build failed: phase=BUILD command_status=LIFECYCLE_ERROR reason=STREAM_FAULT events=41 bytes=4674 session_complete=false last_kind=process-exec-expected kinds=process-exec-expected:41 fault_site=OPEN_RESULT_CLASSIFICATION_IMAGE image_locator_fnv1a64=8cd5faba57335497 open_image=OTHER open_role=ARTIFACT open_provenance=CLONE_CHILD open_subject=OCI_IMAGE open_mount=oci-root open_flags=557056 open_locator_fnv1a64=8cd5faba57335497 open_kernel_image=UNKNOWN open_executable_fnv1a64=465928f011aed54f open_executable_pinned=false open_go_driver_creator=false open_cargo_driver_creator=true open_rustc_version_query=false open_build_target_image=true open_rustc_metadata_query=false open_rustc_argc=0 open_rustc_argv_fnv1a64=0000000000000000 open_mountpoint_fnv1a64=af63a24c860189fe output_diagnostic= stdout=Operation: INSPECT
+        Operation ID: op_ovdsz6l7bu5qkaqekslzazv5wi
+        Status: FAILED
+        Run ID: run_mhkvu7wdr3ool7flhxp3jamz3y
+        Run outcome: FAILED
+        Artifact: project-local/project-e86d92e9a2a9ee9b421900954e9b69ebc051cd6b168c7be6c062b71a4ba50749@snapshot (cargo-source)
+        Digest: sha256:ecff69a6fbd1f4383ed011ca6630bde04e909e295e64a2a759bdee5569758169
+        Error: M12_CARGO_BUILD_OBSERVATION_FAILED: Project build did not complete.
+--- PASS: TestLinuxCargoBuildFilesystemSecurityCLIIntegration (14.24s)
+=== RUN   TestLinuxCargoBuildNetworkSecurityCLIIntegration
+observer_attribution sequence=3 profile=cargo-build counts=NETWORK/CONNECT/INET/ARTIFACT_GROUP/OTHER:1
+    cargo_build_cli_integration_test.go:83: actual Cargo build denied: operation completed with exit code 10 stdout=Operation: INSPECT
+        Operation ID: op_q63az5edjr76qdn6sdrf65jsv4
+        Status: COMPLETED
+        Run ID: run_s65fhkzcnmwd4frcqfz6l746em
+        Run outcome: COMPLETED
+        Artifact: project-local/project-eee4ed9b7e5225019568143a770aedcfa16f574f1b21d553dd8e85b87eb6fd3a@snapshot (cargo-source)
+        Digest: sha256:d6955f9b8c6acd333e92f2b16db53dd650a6961800b74b1968377cf9a2233a20
+        Policy: MANUAL_REVIEW (m3-npm-dynamic-inspect v1)
+        Reasons: [M3_NETWORK_ATTEMPT]
+--- PASS: TestLinuxCargoBuildNetworkSecurityCLIIntegration (15.68s)
+=== RUN   TestLinuxCargoBuildConfigurationSecurityCLIIntegration
+=== RUN   TestLinuxCargoBuildConfigurationSecurityCLIIntegration/cargo-home
+    cargo_build_cli_integration_test.go:83: actual Cargo build denied: operation completed with exit code 20 stdout=Operation: INSPECT
+        Operation ID: op_3v64h3zgsup73u42ggcjtk5key
+        Status: COMPLETED
+        Run ID: run_4w4rkhus6onygu3fk2h2j5e5ve
+        Run outcome: COMPLETED
+        Artifact: project-local/project-caabbc947a10fb857f6b2db32dee987142dc70e1a60988c0b60e98f138ff17d1@snapshot (cargo-source)
+        Digest: sha256:64c821e8cc5707904cde0208b3f71195d74ac863ac3af247615a581de94417d1
+        Policy: BLOCK (m3-npm-dynamic-inspect v1)
+        Reasons: [M3_FILESYSTEM_VIOLATION]
+=== RUN   TestLinuxCargoBuildConfigurationSecurityCLIIntegration/working-directory
+    cargo_build_cli_integration_test.go:83: actual Cargo build denied: operation completed with exit code 20 stdout=Operation: INSPECT
+        Operation ID: op_2zns6t3tg3ddeznqzcat64oase
+        Status: COMPLETED
+        Run ID: run_fvjwncqr3z226h6mqdgpe3umsq
+        Run outcome: COMPLETED
+        Artifact: project-local/project-46b2570f5975d9b3452e08cfc7fc487f158a291aa86c2a64fc3efb0f07edf26c@snapshot (cargo-source)
+        Digest: sha256:eb98ad8bbdcc0a663604a18dbc945a294d3a8297d265c2f1baf8d4e06dfac40b
+        Policy: BLOCK (m3-npm-dynamic-inspect v1)
+        Reasons: [M3_FILESYSTEM_VIOLATION]
+--- PASS: TestLinuxCargoBuildConfigurationSecurityCLIIntegration (25.97s)
+    --- PASS: TestLinuxCargoBuildConfigurationSecurityCLIIntegration/cargo-home (13.20s)
+    --- PASS: TestLinuxCargoBuildConfigurationSecurityCLIIntegration/working-directory (12.77s)
+=== RUN   TestLinuxCargoBuildUnexpectedChildSecurityCLIIntegration
+observer_attribution sequence=3 profile=cargo-build counts=PROCESS/SENTRY_EXEC/SHELL/ARTIFACT_ROLE/ARTIFACT_GROUP:1
+    cargo_build_cli_integration_test.go:83: actual Cargo build denied: observed cargo build failed: phase=BUILD command_status=LIFECYCLE_ERROR reason=STREAM_FAULT events=42 bytes=4918 session_complete=false last_kind=process-exec-unexpected kinds=process-exec-expected:41,process-exec-unexpected:1 fault_site=OPEN_RESULT_CLASSIFICATION_IMAGE image_locator_fnv1a64=fbc430c15ef57dff open_image=SHELL open_role=ARTIFACT open_provenance=CLONE_CHILD open_subject=OCI_IMAGE open_mount=oci-root open_flags=557056 open_locator_fnv1a64=fbc430c15ef57dff open_kernel_image=SHELL open_executable_fnv1a64=adfe813dd2e5792b open_executable_pinned=true open_go_driver_creator=false open_cargo_driver_creator=false open_rustc_version_query=false open_cargo_program_creator=true open_rustc_metadata_query=false open_rustc_argc=0 open_rustc_argv_fnv1a64=0000000000000000 open_mountpoint_fnv1a64=af63a24c860189fe output_diagnostic= stdout=Operation: INSPECT
+        Operation ID: op_rgm7kkxjm2j25qnsgc5upijn74
+        Status: FAILED
+        Run ID: run_nnbpajnnnnv3jdboi6plfiwkzq
+        Run outcome: FAILED
+        Artifact: project-local/project-a3af285171a84a810df7bd5aca3c21be70c8f2e86ce05cc6d5514bda6e8b850d@snapshot (cargo-source)
+        Digest: sha256:d7e46faf988a39710220d4acb85c978c34eacc3c65641598465bcd3645e1c0aa
+        Error: M12_CARGO_BUILD_OBSERVATION_FAILED: Project build did not complete.
+--- PASS: TestLinuxCargoBuildUnexpectedChildSecurityCLIIntegration (11.54s)
+=== RUN   TestLinuxCargoInvalidSourceBuildCLIIntegration
+    cargo_build_cli_integration_test.go:83: actual Cargo build denied: observed cargo build failed: phase=BUILD command_status=EXIT_STATUS_101 reason= events=43 bytes=4919 session_complete=true last_kind=filesystem-workspace-access kinds=process-exec-expected:42,filesystem-workspace-access:61 output_diagnostic= stdout=Operation: INSPECT
+        Operation ID: op_6j57gv3632hnnq2oicqjyyqsfm
+        Status: FAILED
+        Run ID: run_itb44vut2ne4mu3jrqgef37hdu
+        Run outcome: FAILED
+        Artifact: project-local/project-ae45ef8c7c824060655cb090fdf5c362eaf64cd10146e099ad4a4924ee86c6e2@snapshot (cargo-source)
+        Digest: sha256:e6eb93b484ab2ff42015ee8d9fa6386940784290a29d5acdec511ba054b6cd5d
+        Error: M12_CARGO_BUILD_OBSERVATION_FAILED: Project build did not complete.
+--- PASS: TestLinuxCargoInvalidSourceBuildCLIIntegration (11.11s)
+=== RUN   TestLinuxCargoProcMacroSecurityCLIIntegration
+=== RUN   TestLinuxCargoProcMacroSecurityCLIIntegration/filesystem
+    cargo_build_cli_integration_test.go:83: actual Cargo build denied: observed cargo build failed: phase=BUILD command_status=LIFECYCLE_ERROR reason=STREAM_FAULT events=41 bytes=4674 session_complete=false last_kind=process-exec-expected kinds=process-exec-expected:41 fault_site=OPEN_RESULT_CLASSIFICATION_IMAGE image_locator_fnv1a64=8cd5faba57335497 open_image=OTHER open_role=ARTIFACT open_provenance=CLONE_CHILD open_subject=OCI_IMAGE open_mount=oci-root open_flags=557056 open_locator_fnv1a64=8cd5faba57335497 open_kernel_image=RUSTC open_executable_fnv1a64=10196e7a251de540 open_executable_pinned=true open_go_driver_creator=false open_cargo_driver_creator=true open_rustc_version_query=false open_rustc_metadata_query=false open_rustc_argc=32 open_rustc_argv_fnv1a64=64a98d95e24bb02b open_mountpoint_fnv1a64=af63a24c860189fe output_diagnostic= stdout=Operation: INSPECT
+        Operation ID: op_7kubja5nzql5n2pdryc5ro32yi
+        Status: FAILED
+        Run ID: run_savbcnuxodx6fmfdqtui5w7awm
+        Run outcome: FAILED
+        Artifact: project-local/project-4a1f5786c8bc24d4c179aed908ab6256557bd54b0b6dd5658dabb9bed9877ace@snapshot (cargo-source)
+        Digest: sha256:bdf41bfb291cd865f3b98bda0d22fabc550a21142d00786ce6a81c1a1322e021
+        Error: M12_CARGO_BUILD_OBSERVATION_FAILED: Project build did not complete.
+=== RUN   TestLinuxCargoProcMacroSecurityCLIIntegration/network
+observer_attribution sequence=3 profile=cargo-build counts=NETWORK/CONNECT/INET/ARTIFACT_GROUP/OTHER:1
+    cargo_build_cli_integration_test.go:83: actual Cargo build denied: operation completed with exit code 10 stdout=Operation: INSPECT
+        Operation ID: op_zqtg75kfqczix2wd474gaqytzu
+        Status: COMPLETED
+        Run ID: run_cclgjwlx3t7bwqcejuc7gjcr6i
+        Run outcome: COMPLETED
+        Artifact: project-local/project-a2ab69f03b6b39d5fdc3bf04d1d8b3fe5d95bf683bd3ac612fda6ade9ba87155@snapshot (cargo-source)
+        Digest: sha256:e07ebc75aba943b3686e5bf4a5456b747843ac27a89c2c179f6261414489a039
+        Policy: MANUAL_REVIEW (m3-npm-dynamic-inspect v1)
+        Reasons: [M3_NETWORK_ATTEMPT]
+--- PASS: TestLinuxCargoProcMacroSecurityCLIIntegration (23.81s)
+    --- PASS: TestLinuxCargoProcMacroSecurityCLIIntegration/filesystem (11.51s)
+    --- PASS: TestLinuxCargoProcMacroSecurityCLIIntegration/network (12.30s)
+PASS
+helper reaped: pid=2188119 wait=0
+no existing traced runtime consumers; bounded Docker queries succeeded
+runtime before bytes/identity/modes verified
+/etc/heliopause/pod-init.json: OK
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=2188119

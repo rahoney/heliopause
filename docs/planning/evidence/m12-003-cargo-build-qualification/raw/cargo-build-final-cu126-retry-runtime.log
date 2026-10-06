@@ -1,0 +1,15 @@
+verified fresh Cargo source and observer candidate; no overlay
+runtime before bytes/identity/modes verified
+runtime candidate bytes/identity/modes verified
+no existing traced runtime consumers; bounded Docker queries succeeded
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+/etc/heliopause/pod-init.json: OK
+helper launch: bash=/usr/bin/bash version=5.2.21(1)-release owner=2440596
+helper ready: pid=2440644 attempt=16
+=== RUN   TestLinuxPyTorchFullIntegration
+    pytorch_linux_integration_test.go:39: retained integration evidence: /home/winamp/.local/state/heliopause/m12-003/qualification/e2e/pytorch-cu126-881031173
+observer_attribution sequence=1 profile=pypi-wheel-pytorch-cu126 counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/PYTHON:526
+observer_attribution sequence=2 profile=pypi-wheel counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/PYTHON:15

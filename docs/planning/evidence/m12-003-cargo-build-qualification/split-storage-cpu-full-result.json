@@ -1,0 +1,33 @@
+{
+  "status": "PASS",
+  "tool_wrapper_exit": 0,
+  "test_seconds": 523.65,
+  "timeout_seconds": 900,
+  "path": "raw/split-storage-cpu-full-runtime.log",
+  "sha256": "2e5947cabcafb4711fba631ef28009ef586dbfcecda6aec7c6461e0c3a97d9cb",
+  "bytes": 1562,
+  "executed_source": "executed-split-source-portable.json",
+  "source_count": 708,
+  "binaries": [
+    {
+      "role": "bootstrap-test",
+      "sha256": "c88c2edf2ca663a1fb13a302cc32b0e67138c33d05a0b7c86146f0a630df9ffa"
+    },
+    {
+      "role": "observer",
+      "sha256": "68d2f7f232fb7700c5820a5943483fd0245424e16018c5598b31c2f1a54dcf28"
+    },
+    {
+      "role": "policy-helper",
+      "sha256": "d268d1ece6751cf19e52eef1e17d71ed737ea60fd428b7866944e4f8e78b7c5d"
+    }
+  ],
+  "target_root": "/tmp/haa-m12-split-e2e/pytorch-cpu-4057024018",
+  "fresh_cache_root": "/tmp/haa-m12-qualification-disk/split-cache/pytorch-cpu-2081920776",
+  "cleanup": {
+    "helper_parent_wait": 0,
+    "bounded_docker_absence": true,
+    "original12_bytes_uid_gid_modes_restored": true
+  },
+  "scope": "Actual full CPU installation/assertions; cu126 still running, whole003 acceptance pending."
+}

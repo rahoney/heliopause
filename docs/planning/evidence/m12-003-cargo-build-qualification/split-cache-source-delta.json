@@ -1,0 +1,34 @@
+{
+  "schema": "m12-003-split-cache-source-delta.v1",
+  "parent_executed_source_count": 707,
+  "new_source_count": 708,
+  "changes": [
+    {
+      "path": ".gitattributes",
+      "before_sha256": "4969c4cb3bf772c090851af42c71231cd8261dfddec871396ffcca52537789c4",
+      "after_sha256": "ce1d873cab7fed2ef79bbd72559ae92df59adde1ce739ea11c8d90d54c37396b",
+      "mode": "0o644"
+    },
+    {
+      "path": "docs/planning/02-current-work-queue.md",
+      "before_sha256": "72d9c84a3fd86e6016616a3f1d854d45be93b109e32cdd1f801fd9cf8e40039e",
+      "after_sha256": "2ba4dfef8e175adcc9099d91d16a04a2d7a243bb96f514be0693cd3db4fc6e69",
+      "mode": "0o644"
+    },
+    {
+      "path": "internal/bootstrap/pytorch_linux_integration_test.go",
+      "before_sha256": "dd34c2a815448144055aad2ea2cbdf368a8bbe1683d96caac85f2ef02bf670f9",
+      "after_sha256": "483030115f77a9e52b516826d432bbddc8f653648ef473f0d30e8747b946b097",
+      "mode": "0o644"
+    }
+  ],
+  "new_paths": [
+    {
+      "path": "internal/bootstrap/pytorch_storage_test.go",
+      "sha256": "161a375cdd3abe587ef0326fae666dd6855e6ca4ffa52773be6d69be4c24bf80",
+      "mode": "0o644"
+    }
+  ],
+  "product_cpp_runtime_policy_durability": "unchanged",
+  "scope": "Qualification harness/cache assertions and documentation/one raw EOL attribute only. New full binary must be rebuilt and actual checks recorded; no prior full PASS is claimed."
+}

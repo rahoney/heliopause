@@ -1,0 +1,17 @@
+{
+  "status": "FAIL",
+  "test": "TestLinuxPyTorchFullIntegration",
+  "profile": "cu126",
+  "duration_seconds": 811.67,
+  "log_sha256": "e445dd55f5bd805d3fe84c673bb089cf74f282dd432eabb05763cbdbc7d4c55a",
+  "bytes": 4247,
+  "first_trusted_failure": "observation CPU counter unavailable; request_context=OK, read_context=DEADLINE_EXCEEDED, resource=RESOURCE_ERROR",
+  "request_outcome": "CANCELED",
+  "cleanup_trace": "PROFILE_LOOKUP_FAILURE / PROFILE_LOOKUP; first observer exec117 expected, session incomplete",
+  "latency_root_cause": "UNCONFIRMED",
+  "helper_parent_wait": 0,
+  "wrapper_original": 1,
+  "restore": "original12 verified; bounded Docker absence verified",
+  "original_exec_tool_exit": "UNOBSERVED; session handle was not captured",
+  "decision": "Keep FAIL. Retry exact candidate once, with no product/profile/budget change."
+}

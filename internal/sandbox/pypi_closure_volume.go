@@ -16,14 +16,16 @@ const closureManifestLabel = "io.heliopause.closure-manifest-sha256"
 const closureTmpfsOptions = ",nosuid,nodev,uid=1000,gid=1000,mode=0700"
 
 type closureVolume struct {
-	name          string
-	transaction   string
-	manifestID    string
-	createdAt     string
-	mountpoint    string
-	capacity      int64
-	goBuild       bool
-	goBuildOutput bool
+	name                    string
+	transaction             string
+	manifestID              string
+	createdAt               string
+	mountpoint              string
+	capacity                int64
+	goBuild                 bool
+	goBuildOutput           bool
+	projectBuildDestination string
+	projectBuildExecutable  bool
 }
 
 type dockerVolumeInspection struct {
@@ -60,9 +62,12 @@ func createGoBuildOutputVolume(ctx context.Context, runner CommandRunner, transa
 	return volume, err
 }
 
-func createInputVolume(ctx context.Context, runner CommandRunner, transaction, manifestID string, capacity int64, goBuild bool) (closureVolume, error) {
+func createInputVolume(ctx context.Context, runner CommandRunner, transaction, manifestID string, capacity int64, goBuild bool, project ...projectBuildVolumeConfig) (closureVolume, error) {
 	if ctx == nil || runner == nil || capacity <= 0 || len(manifestID) != 64 {
 		return closureVolume{}, errors.New("python closure volume configuration is invalid")
+	}
+	if len(project) > 1 || (len(project) == 1 && (goBuild || (project[0].destination != cargoBuildGuestInput && project[0].destination != cargoBuildGuestTarget) || project[0].executable != (project[0].destination == cargoBuildGuestTarget))) {
+		return closureVolume{}, errors.New("project volume mount contract is invalid")
 	}
 	name, err := closureVolumeName(transaction)
 	if err != nil {
@@ -75,6 +80,10 @@ func createInputVolume(ctx context.Context, runner CommandRunner, transaction, m
 		return closureVolume{}, errors.New("python closure volume identity already exists")
 	}
 	volume := closureVolume{name: name, transaction: transaction, manifestID: manifestID, capacity: capacity, goBuild: goBuild}
+	if len(project) == 1 {
+		volume.projectBuildDestination = project[0].destination
+		volume.projectBuildExecutable = project[0].executable
+	}
 	options := volume.tmpfsOptions()
 	created, err := runner.Output(ctx, "docker", "volume", "create", "--driver", "local",
 		"--opt", "type=tmpfs", "--opt", "device=tmpfs", "--opt", "o="+options,
@@ -94,13 +103,16 @@ func createInputVolume(ctx context.Context, runner CommandRunner, transaction, m
 
 func (v closureVolume) tmpfsOptions() string {
 	options := "size=" + strconv.FormatInt(v.capacity, 10) + closureTmpfsOptions
-	if v.goBuild {
+	if v.goBuild || (v.projectBuildDestination != "" && !v.projectBuildExecutable) {
 		options += ",noexec"
 	}
 	return options
 }
 
 func (v closureVolume) destination() string {
+	if v.projectBuildDestination != "" {
+		return v.projectBuildDestination
+	}
 	if v.goBuildOutput {
 		return goBuildGuestOutput
 	}

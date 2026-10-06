@@ -13,8 +13,9 @@ import (
 )
 
 type goBuildPreparedInputs struct {
-	source, cache *goBuildInputFile
-	manifest      goBuildInputManifest
+	source, cache      *goBuildInputFile
+	manifest           goBuildInputManifest
+	cargoConfiguration bool
 }
 
 func prepareGoBuildInputs(ctx context.Context, intake string, snapshot domain.ProjectDependencySnapshot, source, cache domain.AcquiredArtifact) (_ *goBuildPreparedInputs, resultErr error) {
@@ -62,6 +63,10 @@ func (p *goBuildPreparedInputs) close() error {
 }
 
 func (p *goBuildPreparedInputs) introduce(ctx context.Context, runner CommandRunner, container string) error {
+	return p.introduceAt(ctx, runner, container, goBuildGuestInput)
+}
+
+func (p *goBuildPreparedInputs) introduceAt(ctx context.Context, runner CommandRunner, container, destination string) error {
 	input, ok := runner.(inputCommandRunner)
 	if p == nil || ctx == nil || !ok || !exactObservationContainerID(container) {
 		return errGoBuildInput
@@ -82,13 +87,16 @@ func (p *goBuildPreparedInputs) introduce(ctx context.Context, runner CommandRun
 		if err == nil {
 			err = p.cache.scan(ctx, &p.manifest, writer)
 		}
+		if err == nil && p.cargoConfiguration {
+			err = writeCargoBuildConfiguration(writer)
+		}
 		err = errors.Join(err, writer.Close())
 		_ = pipe.CloseWithError(err)
 		result <- err
 	}()
 	// Only a newly-created, identity-checked preparation volume receives the
 	// reconstructed stream. No artifact-controlled path enters this command.
-	commandErr := input.RunInput(ctx, reader, "docker", "cp", "--archive", "-", container+":"+goBuildGuestInput)
+	commandErr := input.RunInput(ctx, reader, "docker", "cp", "--archive", "-", container+":"+destination)
 	_ = reader.CloseWithError(commandErr)
 	copyErr := <-result
 	if commandErr != nil || copyErr != nil || ctx.Err() != nil {
@@ -98,6 +106,10 @@ func (p *goBuildPreparedInputs) introduce(ctx context.Context, runner CommandRun
 }
 
 func verifyGoBuildMaterialization(ctx context.Context, runner CommandRunner, container string, manifest goBuildInputManifest) error {
+	return verifyProjectBuildMaterialization(ctx, runner, container, goBuildGuestInput, manifest)
+}
+
+func verifyProjectBuildMaterialization(ctx context.Context, runner CommandRunner, container, destination string, manifest goBuildInputManifest) error {
 	output, ok := runner.(streamingDockerOutput)
 	if ctx == nil || !ok || !exactObservationContainerID(container) {
 		return errGoBuildInput
@@ -105,7 +117,7 @@ func verifyGoBuildMaterialization(ctx context.Context, runner CommandRunner, con
 	reader, writer := io.Pipe()
 	result := make(chan error, 1)
 	go func() {
-		err := output.RunOutput(ctx, writer, "docker", "cp", container+":"+goBuildGuestInput+"/.", "-")
+		err := output.RunOutput(ctx, writer, "docker", "cp", container+":"+destination+"/.", "-")
 		_ = writer.CloseWithError(err)
 		result <- err
 	}()

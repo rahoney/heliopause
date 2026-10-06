@@ -54,6 +54,7 @@ type approvedCargoProjectGuard struct {
 	closed            bool
 	committed         bool
 	source            *sandbox.CargoProjectSource
+	buildInputs       *domain.ProjectBuildInputs
 }
 
 func (p *CargoProjectPromotion) Begin(ctx context.Context, install domain.InstallContext) (result *approvedCargoProjectGuard, resultErr error) {

@@ -1,0 +1,35 @@
+{
+  "status": "FAIL",
+  "actual_tool_exit": 2,
+  "timeout_seconds": 2400,
+  "wrapper_receipt": "qualification_wrapper_exit=2",
+  "failure_stage": "pypiVenvTransaction.commit -> journalIntent(publish) -> appendJournal -> os.File.Sync -> syscall.Fsync",
+  "source_file": "internal/promotion/pypi_venv_transaction.go",
+  "source_line": 834,
+  "latency_root_cause": "UNCONFIRMED; syscall at interruption is not aggregate phase timing/root cause",
+  "retained_root": "/tmp/haa-m12-qualification-disk/e2e/pytorch-cu126-3210051410",
+  "journal": {
+    "path": "/tmp/haa-m12-qualification-disk/e2e/pytorch-cu126-3210051410/target/.heliopause-pypi-commit-3384211758/ledger.json",
+    "sha256": "91d51d69e4462c395bf325c6ee0da6e766b7789009eb48bfb309a14eb9acf768",
+    "bytes": 9995249,
+    "header_bytes": 8571929,
+    "incremental_records": 6151,
+    "record_counts": {
+      "mkdir": 347,
+      "Created": 347,
+      "publish": 2729,
+      "Published": 2728
+    },
+    "last_action": "publish",
+    "interrupted_file": "/tmp/haa-m12-qualification-disk/e2e/pytorch-cu126-3210051410/target/lib/python3.14/site-packages/sympy/physics/sho.py"
+  },
+  "cleanup": {
+    "helper_parent_wait": 0,
+    "original_status": 2,
+    "bounded_docker_absence": true,
+    "original12_bytes_uid_gid_modes_restored": true,
+    "project_transaction_recovery": "RETAINED; incomplete journal/lock/private workspace preserved; Go panic does not attest project rollback",
+    "observer_project_cleanup": "not assumed from system runtime restoration"
+  },
+  "scope": "Storage-relocated same source/binaries/runtime; previous failures retained independently. No new full CUDA PASS."
+}

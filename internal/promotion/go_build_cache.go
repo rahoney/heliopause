@@ -211,6 +211,13 @@ func (w *goBuildCacheArchiveWriter) Write(body []byte) (int, error) {
 }
 
 func copyApprovedGoBuildCache(ctx context.Context, root *os.Root, inventory []goCacheFile, writer *tar.Writer, roots *[]*os.Root) error {
+	return copyApprovedProjectBuildCache(ctx, root, inventory, writer, roots, maxGoProjectCacheFiles, maxGoProjectCacheBytes)
+}
+
+func copyApprovedProjectBuildCache(ctx context.Context, root *os.Root, inventory []cacheFileRecord, writer *tar.Writer, roots *[]*os.Root, maxFiles int, maxBytes int64) error {
+	if maxFiles <= 0 || maxBytes <= 0 || len(inventory) == 0 || len(inventory) > 2*maxFiles {
+		return errors.New("project build cache inventory exceeds bounds")
+	}
 	directories := map[string]*os.Root{".": root}
 	seen := map[string]bool{}
 	var total int64
@@ -260,7 +267,7 @@ func copyApprovedGoBuildCache(ctx context.Context, root *os.Root, inventory []go
 			continue
 		}
 		fileCount++
-		if entry.Kind != "file" || !info.Mode().IsRegular() || info.Mode() != 0o444 || !pypiSingleLink(info) || entry.Size < 0 || info.Size() != entry.Size || entry.Size > 64<<20 || total+entry.Size > maxGoProjectCacheBytes || fileCount > maxGoProjectCacheFiles {
+		if entry.Kind != "file" || !info.Mode().IsRegular() || info.Mode() != 0o444 || !pypiSingleLink(info) || entry.Size < 0 || info.Size() != entry.Size || entry.Size > 64<<20 || total+entry.Size > maxBytes || fileCount > maxFiles {
 			return errors.New("go build cache file content or identity exceeds bounds")
 		}
 		digest, err := domain.NewSHA256Digest(entry.SHA256)

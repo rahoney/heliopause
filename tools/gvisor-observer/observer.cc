@@ -105,6 +105,7 @@ constexpr char kProfileGitHub[] = "github-elf";
 constexpr char kProfileGoResolver[] = "go-module-resolver";
 constexpr char kProfileGoBuild[] = "go-module-build";
 constexpr char kProfileCargoResolver[] = "cargo-resolver";
+constexpr char kProfileCargoBuild[] = "cargo-build";
 constexpr char kCargoBinary[] = "/usr/local/rustup/toolchains/1.99.0-x86_64-unknown-linux-gnu/bin/cargo";
 constexpr char kRustcBinary[] = "/usr/local/rustup/toolchains/1.99.0-x86_64-unknown-linux-gnu/bin/rustc";
 
@@ -188,8 +189,8 @@ enum class ProcessClass {
   kCargo,
   kCargoTar,
   kCargoRustc,
-  kGoBuildBoundary,
-  kGoBuildSetpriv,
+  kProjectBuildBoundary,
+  kProjectBuildSetpriv,
   kGoBuildTool,
   kGoBuildCgo,
   kGoBuildLink,
@@ -198,6 +199,9 @@ enum class ProcessClass {
   kGoBuildAssembler,
   kGoBuildCollect2,
   kGoBuildNativeLinker,
+  kCargoLldLauncher,
+  kCargoRustLld,
+  kCargoBuildProgram,
 };
 
 enum class SocketClassification {
@@ -208,8 +212,12 @@ enum class SocketClassification {
 };
 
 // Diagnostic identities never participate in classification.
-enum class DiagnosticImage { kUnknown, kBoundary, kSetpriv, kShell, kEnv, kNpmCLI, kNode, kCargo, kTar, kRustc };
+enum class DiagnosticImage { kUnknown, kBoundary, kSetpriv, kShell, kEnv, kNpmCLI, kNode, kCargo, kTar, kRustc, kGcc, kCollect2, kLldLauncher, kRustLld };
 DiagnosticImage DiagnosticImageForPath(const std::string& path) {
+  if (path == "/usr/bin/x86_64-linux-gnu-gcc-12") return DiagnosticImage::kGcc;
+  if (path == "/usr/lib/gcc/x86_64-linux-gnu/12/collect2") return DiagnosticImage::kCollect2;
+  if (path == "/usr/local/rustup/toolchains/1.99.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin/gcc-ld/ld.lld") return DiagnosticImage::kLldLauncher;
+  if (path == "/usr/local/rustup/toolchains/1.99.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin/rust-lld") return DiagnosticImage::kRustLld;
   if (path == kCargoBinary) return DiagnosticImage::kCargo;
   if (path == kRustcBinary) return DiagnosticImage::kRustc;
   if (path == "/usr/bin/tar") return DiagnosticImage::kTar;
@@ -232,6 +240,10 @@ const char* DiagnosticImageName(DiagnosticImage image) {
     case DiagnosticImage::kCargo: return "CARGO";
     case DiagnosticImage::kTar: return "TAR";
     case DiagnosticImage::kRustc: return "RUSTC";
+    case DiagnosticImage::kGcc: return "GCC";
+    case DiagnosticImage::kCollect2: return "COLLECT2";
+    case DiagnosticImage::kLldLauncher: return "LLD_LAUNCHER";
+    case DiagnosticImage::kRustLld: return "RUST_LLD";
     default: return "UNKNOWN";
   }
 }
@@ -418,6 +430,9 @@ struct ProcessState {
     bool diagnostic_image_pinned = false;
     bool diagnostic_rustc_version = false;
     bool diagnostic_rustc_metadata = false;
+    bool diagnostic_native_cc = false;
+    bool diagnostic_lld_same_group = false;
+    bool diagnostic_build_target_image = false;
     uint32_t diagnostic_rustc_argc = 0;
     uint64_t diagnostic_rustc_argv_locator = 0;
     // Existing SocketPair telemetry reads guest return-buffer bytes. These
@@ -429,6 +444,14 @@ struct ProcessState {
     uint32_t diagnostic_socketpair_type = 0;
     bool cargo_rustc_query_candidate = false;
     bool cargo_rustc_query_active = false;
+    bool cargo_build_rustc_active = false;
+    bool cargo_lld_launcher_candidate = false;
+    bool cargo_lld_launcher_active = false;
+    bool cargo_rust_lld_active = false;
+    bool cargo_build_program_candidate = false;
+    bool cargo_build_program_active = false;
+    bool cargo_build_program_query_candidate = false;
+    bool cargo_build_program_query_active = false;
     bool go_build_tool_candidate = false;
     bool go_build_tool_active = false;
     bool go_build_gcc_candidate = false;
@@ -613,6 +636,115 @@ bool IsExactCargoRustcMetadataQuery(const gvisor::sentry::ExecveInfo& message) {
   if (message.argv_size() != static_cast<int>(expected.size())) return false;
   for (size_t i = 0; i < expected.size(); ++i) if (message.argv(static_cast<int>(i)) != expected[i]) return false;
   return true;
+}
+
+bool IsCargoBuildDriverGroup(const ProcessState::GroupState& group) {
+  return group.role == ProcessState::Role::kArtifact &&
+      group.provenance == ProcessState::Provenance::kDirectExecRoot &&
+      group.current_image_class == ProcessClass::kCargo && !group.root_eligible &&
+      group.root_consumed && !group.trusted_control_network_active &&
+      !group.demotion_pending && !group.launch_target_pending && !group.handoff_target_pending;
+}
+
+bool HasExactCargoBuildDriverCreator(const gvisor::common::ContextData& context,
+                                    const ProcessState::GroupState& group,
+                                    const ProcessState& state) {
+  if (group.role != ProcessState::Role::kArtifact ||
+      group.provenance != ProcessState::Provenance::kCloneChild ||
+      group.root_eligible || !group.root_consumed || group.trusted_control_network_active ||
+      group.demotion_pending || group.launch_target_pending || group.handoff_target_pending ||
+      !HasExactCloneCreator(group, state) ||
+      context.parent_thread_group_id() != group.clone_creator_group_id) return false;
+  return IsCargoBuildDriverGroup(state.groups.find(group.clone_creator_group_id)->second);
+}
+
+bool IsCargoBuildProgramProducerGroup(const ProcessState::GroupState& group, const ProcessState& state) {
+  if (group.role != ProcessState::Role::kArtifact || group.provenance != ProcessState::Provenance::kCloneChild ||
+      group.current_image_class != ProcessClass::kCargoBuildProgram || !group.cargo_build_program_active ||
+      group.root_eligible || !group.root_consumed || group.trusted_control_network_active ||
+      group.demotion_pending || group.launch_target_pending || group.handoff_target_pending || !HasExactCloneCreator(group,state)) return false;
+  return IsCargoBuildDriverGroup(state.groups.find(group.clone_creator_group_id)->second);
+}
+
+bool HasExactCargoBuildProgramCreator(const gvisor::common::ContextData& context,
+                                     const ProcessState::GroupState& group, const ProcessState& state) {
+  if (group.role != ProcessState::Role::kArtifact || group.provenance != ProcessState::Provenance::kCloneChild ||
+      group.root_eligible || !group.root_consumed || group.trusted_control_network_active ||
+      group.demotion_pending || group.launch_target_pending || group.handoff_target_pending ||
+      !HasExactCloneCreator(group,state) || context.parent_thread_group_id() != group.clone_creator_group_id) return false;
+  return IsCargoBuildProgramProducerGroup(state.groups.find(group.clone_creator_group_id)->second,state);
+}
+
+bool IsCargoBuildCompilerProducerGroup(const ProcessState::GroupState& group, const ProcessState& state) {
+  if(group.role!=ProcessState::Role::kArtifact || group.provenance!=ProcessState::Provenance::kCloneChild ||
+     group.current_image_class!=ProcessClass::kCargoRustc || !group.cargo_build_rustc_active ||
+     group.root_eligible || !group.root_consumed || group.trusted_control_network_active ||
+     group.demotion_pending || group.launch_target_pending || group.handoff_target_pending || !HasExactCloneCreator(group,state))return false;
+  return IsCargoBuildDriverGroup(state.groups.find(group.clone_creator_group_id)->second);
+}
+
+bool HasExactCargoBuildCompilerCreator(const gvisor::common::ContextData& context,
+                                      const ProcessState::GroupState& group,const ProcessState& state) {
+  if(group.role!=ProcessState::Role::kArtifact || group.provenance!=ProcessState::Provenance::kCloneChild ||
+     group.root_eligible || !group.root_consumed || group.trusted_control_network_active ||
+     group.demotion_pending || group.launch_target_pending || group.handoff_target_pending ||
+     !HasExactCloneCreator(group,state) || context.parent_thread_group_id()!=group.clone_creator_group_id)return false;
+  return IsCargoBuildCompilerProducerGroup(state.groups.find(group.clone_creator_group_id)->second,state);
+}
+
+bool IsCargoBuildGccProducerGroup(const ProcessState::GroupState& group,const ProcessState& state) {
+  if(group.role!=ProcessState::Role::kArtifact || group.provenance!=ProcessState::Provenance::kCloneChild ||
+     group.current_image_class!=ProcessClass::kGoBuildGcc || !group.go_build_tool_active ||
+     group.root_eligible || !group.root_consumed || group.trusted_control_network_active ||
+     group.demotion_pending || group.launch_target_pending || group.handoff_target_pending || !HasExactCloneCreator(group,state))return false;
+  return IsCargoBuildCompilerProducerGroup(state.groups.find(group.clone_creator_group_id)->second,state);
+}
+
+bool HasExactCargoBuildGccChildCreator(const gvisor::common::ContextData& context,
+                                     const ProcessState::GroupState& group,const ProcessState& state) {
+  if(group.role!=ProcessState::Role::kArtifact || group.provenance!=ProcessState::Provenance::kCloneChild ||
+     group.root_eligible || !group.root_consumed || group.trusted_control_network_active ||
+     group.demotion_pending || group.launch_target_pending || group.handoff_target_pending ||
+     !HasExactCloneCreator(group,state) || context.parent_thread_group_id()!=group.clone_creator_group_id)return false;
+  return IsCargoBuildGccProducerGroup(state.groups.find(group.clone_creator_group_id)->second,state);
+}
+
+bool IsCargoBuildCollect2ProducerGroup(const ProcessState::GroupState& group,const ProcessState& state) {
+  if(group.role!=ProcessState::Role::kArtifact || group.provenance!=ProcessState::Provenance::kCloneChild ||
+     group.current_image_class!=ProcessClass::kGoBuildCollect2 || !group.go_build_tool_active ||
+     group.root_eligible || !group.root_consumed || group.trusted_control_network_active ||
+     group.demotion_pending || group.launch_target_pending || group.handoff_target_pending || !HasExactCloneCreator(group,state))return false;
+  return IsCargoBuildGccProducerGroup(state.groups.find(group.clone_creator_group_id)->second,state);
+}
+
+bool HasExactCargoBuildCollect2ChildCreator(const gvisor::common::ContextData& context,
+                                          const ProcessState::GroupState& group,const ProcessState& state) {
+  if(group.role!=ProcessState::Role::kArtifact || group.provenance!=ProcessState::Provenance::kCloneChild ||
+     group.root_eligible || !group.root_consumed || group.trusted_control_network_active ||
+     group.demotion_pending || group.launch_target_pending || group.handoff_target_pending ||
+     !HasExactCloneCreator(group,state) || context.parent_thread_group_id()!=group.clone_creator_group_id)return false;
+  return IsCargoBuildCollect2ProducerGroup(state.groups.find(group.clone_creator_group_id)->second,state);
+}
+
+// Used only to report the actual launcher creator; it grants no permission.
+bool HasExactCargoLldLauncherCreator(const gvisor::common::ContextData& context,
+                                    const ProcessState::GroupState& group,const ProcessState& state) {
+  if(group.role!=ProcessState::Role::kArtifact || group.provenance!=ProcessState::Provenance::kCloneChild ||
+     group.root_eligible || !group.root_consumed || group.trusted_control_network_active ||
+     group.demotion_pending || group.launch_target_pending || group.handoff_target_pending ||
+     !HasExactCloneCreator(group,state) || context.parent_thread_group_id()!=group.clone_creator_group_id)return false;
+  const auto& creator=state.groups.find(group.clone_creator_group_id)->second;
+  if(creator.current_image_class!=ProcessClass::kCargoLldLauncher || !creator.cargo_lld_launcher_active ||
+     creator.role!=ProcessState::Role::kArtifact || creator.provenance!=ProcessState::Provenance::kCloneChild ||
+     creator.root_eligible || !creator.root_consumed || creator.trusted_control_network_active ||
+     creator.demotion_pending || creator.launch_target_pending || creator.handoff_target_pending || !HasExactCloneCreator(creator,state))return false;
+  return IsCargoBuildCollect2ProducerGroup(state.groups.find(creator.clone_creator_group_id)->second,state);
+}
+
+bool IsExactCargoNativeCCInvocation(const gvisor::sentry::ExecveInfo& message) {
+  return message.binary_path()=="/usr/bin/x86_64-linux-gnu-gcc-12" &&
+      message.execfn()=="/usr/bin/cc" && message.argv_size()>0 &&
+      (message.argv(0)=="cc" || message.argv(0)=="/usr/bin/cc");
 }
 
 bool IsGoBuildDriverGroup(const ProcessState::GroupState& group) {
@@ -1130,8 +1262,8 @@ const char* ProcessClassName(ProcessClass process_class) {
     case ProcessClass::kCat: return "CAT";
     case ProcessClass::kChmod: return "CHMOD";
     case ProcessClass::kUname: return "OTHER";  // Still an unexpected artifact exec.
-    case ProcessClass::kGoBuildBoundary:
-    case ProcessClass::kGoBuildSetpriv:
+    case ProcessClass::kProjectBuildBoundary:
+    case ProcessClass::kProjectBuildSetpriv:
     case ProcessClass::kGoBuildTool:
     case ProcessClass::kGoBuildCgo:
     case ProcessClass::kGoBuildLink:
@@ -1140,6 +1272,9 @@ const char* ProcessClassName(ProcessClass process_class) {
     case ProcessClass::kGoBuildAssembler:
     case ProcessClass::kGoBuildCollect2:
     case ProcessClass::kGoBuildNativeLinker:
+    case ProcessClass::kCargoBuildProgram:
+    case ProcessClass::kCargoRustLld:
+    case ProcessClass::kCargoLldLauncher:
     case ProcessClass::kUnknown: return "OTHER";
   }
   return "OTHER";
@@ -1167,8 +1302,8 @@ const char* NetworkProcessClassName(ProcessClass process_class) {
     case ProcessClass::kCat:
     case ProcessClass::kChmod:
     case ProcessClass::kUname:
-    case ProcessClass::kGoBuildBoundary:
-    case ProcessClass::kGoBuildSetpriv:
+    case ProcessClass::kProjectBuildBoundary:
+    case ProcessClass::kProjectBuildSetpriv:
     case ProcessClass::kGoBuildTool:
     case ProcessClass::kGoBuildCgo:
     case ProcessClass::kGoBuildLink:
@@ -1177,6 +1312,9 @@ const char* NetworkProcessClassName(ProcessClass process_class) {
     case ProcessClass::kGoBuildAssembler:
     case ProcessClass::kGoBuildCollect2:
     case ProcessClass::kGoBuildNativeLinker:
+    case ProcessClass::kCargoBuildProgram:
+    case ProcessClass::kCargoRustLld:
+    case ProcessClass::kCargoLldLauncher:
       return "OTHER";
   }
   return "OTHER";
@@ -1244,9 +1382,15 @@ ProcessClass ProcessClassForPath(const std::string& path, const char* profile) {
   if (path == "/usr/bin/cat" || path == "/bin/cat" || path == "cat") return ProcessClass::kCat;
   if (path == "/usr/bin/chmod" || path == "/bin/chmod" || path == "chmod") return ProcessClass::kChmod;
   if (profile == nullptr) return ProcessClass::kUnknown;
+  if (strcmp(profile, kProfileGoBuild) == 0 || strcmp(profile, kProfileCargoBuild) == 0) {
+    if (path == "/haa-runtime/haa-boundary") return ProcessClass::kProjectBuildBoundary;
+    if (path == "/usr/bin/setpriv") return ProcessClass::kProjectBuildSetpriv;
+  }
+  if (strcmp(profile, kProfileCargoBuild) == 0 && path == "/usr/bin/x86_64-linux-gnu-gcc-12") return ProcessClass::kGoBuildGcc;
+  if (strcmp(profile, kProfileCargoBuild) == 0 && path == "/usr/lib/gcc/x86_64-linux-gnu/12/collect2") return ProcessClass::kGoBuildCollect2;
+  if (strcmp(profile, kProfileCargoBuild) == 0 && path == "/usr/local/rustup/toolchains/1.99.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin/rust-lld") return ProcessClass::kCargoRustLld;
+  if (strcmp(profile, kProfileCargoBuild) == 0 && path == "/usr/local/rustup/toolchains/1.99.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin/gcc-ld/ld.lld") return ProcessClass::kCargoLldLauncher;
   if (strcmp(profile, kProfileGoBuild) == 0) {
-    if (path == "/haa-runtime/haa-boundary") return ProcessClass::kGoBuildBoundary;
-    if (path == "/usr/bin/setpriv") return ProcessClass::kGoBuildSetpriv;
     if (path == "/usr/bin/x86_64-linux-gnu-gcc-12") return ProcessClass::kGoBuildGcc;
     if (path == "/usr/lib/gcc/x86_64-linux-gnu/12/cc1") return ProcessClass::kGoBuildCc1;
     if (path == "/usr/bin/x86_64-linux-gnu-as") return ProcessClass::kGoBuildAssembler;
@@ -1269,9 +1413,9 @@ ProcessClass ProcessClassForPath(const std::string& path, const char* profile) {
   }
   if (strcmp(profile, kProfileGitHub) == 0 && path == "/work/artifact") return ProcessClass::kArtifact;
   if ((strcmp(profile, kProfileGoResolver) == 0 || strcmp(profile, kProfileGoBuild) == 0) && path == "/usr/local/go/bin/go") return ProcessClass::kGo;
-  if (strcmp(profile, kProfileCargoResolver) == 0 && path == kCargoBinary) return ProcessClass::kCargo;
+  if ((strcmp(profile, kProfileCargoResolver) == 0 || strcmp(profile, kProfileCargoBuild) == 0) && path == kCargoBinary) return ProcessClass::kCargo;
   if (strcmp(profile, kProfileCargoResolver) == 0 && path == "/usr/bin/tar") return ProcessClass::kCargoTar;
-  if (strcmp(profile, kProfileCargoResolver) == 0 && path == kRustcBinary) return ProcessClass::kCargoRustc;
+  if ((strcmp(profile, kProfileCargoResolver) == 0 || strcmp(profile, kProfileCargoBuild) == 0) && path == kRustcBinary) return ProcessClass::kCargoRustc;
   return ProcessClass::kUnknown;
 }
 
@@ -1557,6 +1701,21 @@ bool IsFilesystemControlGroup(const gvisor::common::ContextData& context, const 
   return group != nullptr && group->role == ProcessState::Role::kControl;
 }
 
+// Cargo configuration is controller input, even when its parent is a build
+// workspace. Deny artifact writes on entry (including failed attempts) and on
+// resolved results. The actual home/config also lives in the read-only input
+// mount, so rename/unlink cannot substitute an unobserved authority.
+bool IsCargoBuildConfigurationWrite(const gvisor::common::ContextData& context,
+                                    const ProcessState& state, const std::string& path,
+                                    uint64_t flags, const char* profile) {
+  if (profile == nullptr || strcmp(profile, kProfileCargoBuild) != 0 || !IsWriteCapableOpen(flags)) return false;
+  const auto* group = FindFilesystemGroup(context, state);
+  if (group == nullptr || group->role != ProcessState::Role::kArtifact) return false;
+  return path == "/tmp/haa-cargo-input/cargo-home/config" ||
+      path == "/tmp/haa-cargo-input/cargo-home/config.toml" ||
+      IsAtOrBelowMountpoint(path, "/tmp/.cargo");
+}
+
 bool IsExactBootstrapHelperWrite(const gvisor::common::ContextData& context,
                                  const ProcessState& state, const std::string& path,
                                  uint64_t flags) {
@@ -1607,6 +1766,7 @@ bool IsExactLibc6(const std::string& path) {
 const char* FaultOpenSubject(const gvisor::common::ContextData& context,
                              const std::string& path, const MountAnchor& anchor) {
   const std::string self = "/proc/" + std::to_string(context.thread_group_id());
+  if (path == "/dev/null") return "DEV_NULL";
   if (path == self + "/auxv") return "PROC_SELF_AUXV";
   if (path == self + "/maps") return "PROC_SELF_MAPS";
   if (path == self + "/statm") return "PROC_SELF_STATM";
@@ -1642,12 +1802,18 @@ std::string FaultOpenDiagnostic(const gvisor::syscall::Open& message,
       ",\"mountpoint_locator\":" + std::to_string(mount_locator == 0 ? 1 : mount_locator) +
       ",\"executable_pinned\":" + (group != nullptr && group->diagnostic_image_pinned ? "true" : "false") +
       ",\"go_driver_creator\":" + (group != nullptr && HasExactGoBuildDriverCreator(message.context_data(), *group, state) ? "true" : "false") +
-      ",\"cargo_driver_creator\":" + (group != nullptr && HasExactCargoResolverCreator(message.context_data(), *group, state) ? "true" : "false") +
+      ",\"cargo_driver_creator\":" + (group != nullptr && (HasExactCargoResolverCreator(message.context_data(), *group, state) || HasExactCargoBuildDriverCreator(message.context_data(), *group, state)) ? "true" : "false") +
+      (group != nullptr && HasExactCargoBuildProgramCreator(message.context_data(), *group, state) ? ",\"cargo_program_creator\":true" : "") +
       ",\"rustc_version_query\":" + (group != nullptr && group->diagnostic_rustc_version ? "true" : "false") +
       ",\"rustc_metadata_query\":" + (group != nullptr && group->diagnostic_rustc_metadata ? "true" : "false") +
       ",\"rustc_argc\":" + std::to_string(group == nullptr ? 0 : group->diagnostic_rustc_argc) +
       ",\"rustc_argv_locator\":" + std::to_string(group == nullptr ? 0 : group->diagnostic_rustc_argv_locator) +
-      ",\"executable_locator\":" + std::to_string(group == nullptr ? 0 : group->executable_locator) + "}";
+      ",\"executable_locator\":" + std::to_string(group == nullptr ? 0 : group->executable_locator) +
+      (group != nullptr && (group->diagnostic_image == DiagnosticImage::kGcc || group->diagnostic_image == DiagnosticImage::kCollect2 || group->diagnostic_image == DiagnosticImage::kLldLauncher || group->diagnostic_image == DiagnosticImage::kRustLld)
+          ? std::string(",\"cargo_compiler_creator\":") + ((HasExactCargoBuildCompilerCreator(message.context_data(), *group, state) || HasExactCargoBuildGccChildCreator(message.context_data(), *group, state) || HasExactCargoBuildCollect2ChildCreator(message.context_data(), *group, state) || HasExactCargoLldLauncherCreator(message.context_data(), *group, state)) ? "true" : "false") +
+            ",\"native_cc_invocation\":" + (group->diagnostic_native_cc ? "true" : "false") : "") +
+      (group != nullptr && group->diagnostic_build_target_image ? std::string(",\"build_target_image\":true") : "") +
+      (group != nullptr && group->diagnostic_image == DiagnosticImage::kRustLld ? std::string(",\"lld_same_group\":") + (group->diagnostic_lld_same_group ? "true" : "false") : "") + "}";
 }
 
 bool IsExactLibcapNg0(const std::string& path) {
@@ -1721,6 +1887,29 @@ bool NormalizeAbsolutePath(const std::string& path, std::string* normalized) {
     *normalized += parts[index];
   }
   return true;
+}
+
+// Kernel relation to the exact host-attested private executable build volume.
+// Its payload stays untrusted; serialized diagnostics never grant permission.
+bool IsCargoBuildTargetImage(const TopologyState* topology,const std::string& path) {
+  constexpr const char* target="/tmp/haa-cargo-target";
+  std::string normalized;
+  if(topology==nullptr || !topology->sealed || !topology->snapshot_seen || topology->namespace_id==0 ||
+     !NormalizeAbsolutePath(path,&normalized) || normalized!=path || path==target ||
+     !IsAtOrBelowMountpoint(path,target) || !IsPinnedReadOnlyRootPath(topology,kCargoBinary))return false;
+  size_t declarations=0,anchors=0;
+  for(const auto& mount:topology->expected)if(mount.mountpoint==target) {
+    if(mount.mount_class!="workspace" || mount.parent!="/tmp" || mount.filesystem_type!="9p" || mount.read_only || mount.noexec)return false;
+    ++declarations;
+  }
+  for(const auto& entry:topology->anchors) {
+    const auto& mount=entry.second;
+    if(mount.mountpoint==target) {
+      if(mount.mount_class!="workspace")return false;
+      ++anchors;
+    } else if(IsAtOrBelowMountpoint(mount.mountpoint,target) && IsAtOrBelowMountpoint(path,mount.mountpoint))return false;
+  }
+  return declarations==1 && anchors==1;
 }
 
 bool IsExactPinnedPythonSystemLibrary(const std::string& path) {
@@ -1930,6 +2119,194 @@ bool IsPinnedCargoResolverRead(const gvisor::common::ContextData& context,
        (path == "/proc/sys/vm/overcommit_memory" && flags == 557056));
 }
 
+// ABI dependency closure of the locked Cargo executable, independently read
+// from its ELF without starting the OCI image. Only sealed root data callers
+// may use this set; it does not classify arbitrary ARTIFACT libraries.
+bool IsExactCargoRuntimeABIRead(const std::string& path) {
+  std::string canonical = path;
+  if (HasPrefix(canonical, "/usr/lib/")) canonical = "/lib/" + canonical.substr(9);
+  for (const char* name : {"libdl.so.2", "libgcc_s.so.1", "librt.so.1", "libpthread.so.0", "libm.so.6", "libc.so.6", "ld-linux-x86-64.so.2"}) {
+    if (MatchesLibraryNameOrVersion(canonical, (std::string("/lib/x86_64-linux-gnu/") + name).c_str())) return true;
+  }
+  return false;
+}
+
+// Same locked Cargo runtime, now executing untrusted build inputs. The driver
+// remains ARTIFACT and has no CONTROL/network authority. Only its immutable
+// startup data and own runtime metadata have a bounded read classification.
+bool IsPinnedCargoBuildDriverRead(const gvisor::common::ContextData& context,
+                                 const ProcessState& state, const std::string& path,
+                                 uint64_t flags, const char* profile, const MountAnchor* anchor) {
+  if (profile == nullptr || strcmp(profile, kProfileCargoBuild) != 0 || anchor == nullptr ||
+      !IsAtOrBelowMountpoint(path, anchor->mountpoint) || IsWriteCapableOpen(flags) ||
+      !context.is_exec_session() || context.parent_thread_group_id() != 0) return false;
+  const auto* group = FindFilesystemGroup(context, state);
+  if (group == nullptr || !IsCargoBuildDriverGroup(*group)) return false;
+  if (anchor->mount_class == "oci-root" && anchor->mountpoint == "/") {
+    return path == "/etc/ld.so.cache" || IsExactCargoRuntimeABIRead(path) ||
+        path == "/usr/share/zoneinfo/Etc/UTC" ||
+        (path == "/etc/ssl/certs/ca-certificates.crt" && flags == kOpenLargefile);
+  }
+  if (anchor->mount_class != "system") return false;
+  if (anchor->mountpoint == "/dev") {
+    return (path == "/dev/urandom" && (flags == kOpenLargefile || flags == 557056)) ||
+        (path == "/dev/null" && flags == 557056);
+  }
+  return anchor->mountpoint == "/proc" &&
+      (path == "/proc/" + std::to_string(context.thread_group_id()) + "/maps" ||
+       (path == "/proc/sys/vm/overcommit_memory" && flags == 557056));
+}
+
+// Canonical target standard libraries from the locked Rust SDK. Each compiler
+// or linker consumer must separately prove its sealed image and exact lineage.
+bool IsExactPinnedRustTargetLibraryInput(const std::string& path) {
+  constexpr const char* sdk="/usr/local/rustup/toolchains/1.99.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib";
+  return path==sdk || HasPrefix(path,(std::string(sdk)+"/").c_str());
+}
+
+// Locked Rustc consumes untrusted project/macro inputs as ARTIFACT. Its
+// one-shot kernel clone must still have the exact Cargo build creator. Fixed
+// SDK bytes are input data, never CONTROL, network or completion authority.
+bool IsPinnedCargoBuildCompilerRead(const gvisor::common::ContextData& context,
+                                   const ProcessState& state, const std::string& path,
+                                   uint64_t flags, const char* profile, const MountAnchor* anchor) {
+  if (profile == nullptr || strcmp(profile,kProfileCargoBuild)!=0 || anchor==nullptr ||
+      IsWriteCapableOpen(flags) || !IsAtOrBelowMountpoint(path,anchor->mountpoint)) return false;
+  const auto* group=FindFilesystemGroup(context,state);
+  if(group==nullptr || group->current_image_class!=ProcessClass::kCargoRustc ||
+     !group->cargo_build_rustc_active || !HasExactCargoBuildDriverCreator(context,*group,state)) return false;
+  if(anchor->mount_class=="oci-root" && anchor->mountpoint=="/") {
+    return path=="/etc/ld.so.cache" || IsExactCargoRuntimeABIRead(path) ||
+        path=="/usr/local/rustup/toolchains/1.99.0-x86_64-unknown-linux-gnu/lib/librustc_driver-999a121de2f042be.so" ||
+        path=="/usr/local/rustup/toolchains/1.99.0-x86_64-unknown-linux-gnu/lib/libLLVM.so.23.1-rust-1.99.0-stable" ||
+        IsExactPinnedRustTargetLibraryInput(path) ||
+        path=="/usr/lib/x86_64-linux-gnu/libz.so.1.2.13" || path=="/lib/x86_64-linux-gnu/libz.so.1.2.13";
+  }
+  if(anchor->mount_class!="system")return false;
+  const std::string self="/proc/"+std::to_string(context.thread_group_id());
+  if(anchor->mountpoint=="/proc")return path==self+"/maps" || path==self+"/statm" || path==self+"/cgroup" || path==self+"/mountinfo" || (path=="/proc/sys/vm/overcommit_memory" && flags==557056);
+  return anchor->mountpoint=="/sys/fs/cgroup/cpu" && (path=="/sys/fs/cgroup/cpu/cpu.cfs_quota_us" || path=="/sys/fs/cgroup/cpu/cpu.cfs_period_us");
+}
+
+bool IsExactCargoLldLauncherInvocation(const gvisor::sentry::ExecveInfo& message) {
+  constexpr const char* binary="/usr/local/rustup/toolchains/1.99.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin/gcc-ld/ld.lld";
+  std::string invoked,argv0;
+  return message.binary_path()==binary && NormalizeAbsolutePath(message.execfn(),&invoked) && invoked==binary &&
+      message.argv_size()>0 && (message.argv(0)=="ld.lld" || (NormalizeAbsolutePath(message.argv(0),&argv0) && argv0==binary));
+}
+
+// A build program may inspect the fixed compiler version. This grants no
+// compile/tool producer role and no CONTROL/network authority.
+bool IsPinnedCargoBuildProgramQueryRead(const gvisor::common::ContextData& context,
+                                      const ProcessState& state, const std::string& path,
+                                      uint64_t flags, const char* profile, const MountAnchor* anchor) {
+  if (profile == nullptr || strcmp(profile,kProfileCargoBuild) != 0 || anchor == nullptr ||
+      IsWriteCapableOpen(flags) || !IsAtOrBelowMountpoint(path,anchor->mountpoint)) return false;
+  const auto* group = FindFilesystemGroup(context,state);
+  if (group == nullptr || group->current_image_class != ProcessClass::kCargoRustc ||
+      !group->cargo_build_program_query_active || !HasExactCargoBuildProgramCreator(context,*group,state)) return false;
+  if (anchor->mount_class == "oci-root" && anchor->mountpoint == "/") {
+    return path == "/etc/ld.so.cache" || IsExactCargoRuntimeABIRead(path) ||
+        path == "/usr/local/rustup/toolchains/1.99.0-x86_64-unknown-linux-gnu/lib/librustc_driver-999a121de2f042be.so" ||
+        path == "/usr/local/rustup/toolchains/1.99.0-x86_64-unknown-linux-gnu/lib/libLLVM.so.23.1-rust-1.99.0-stable" ||
+        path == "/usr/lib/x86_64-linux-gnu/libz.so.1.2.13" || path == "/lib/x86_64-linux-gnu/libz.so.1.2.13";
+  }
+  const std::string self = "/proc/"+std::to_string(context.thread_group_id());
+  return anchor->mount_class == "system" && anchor->mountpoint == "/proc" && flags == 557056 &&
+      (path == self+"/maps" || path == self+"/statm" || path == "/proc/sys/vm/overcommit_memory");
+}
+
+bool IsPinnedCargoLldLauncherRead(const gvisor::common::ContextData& context,
+                                const ProcessState& state,const std::string& path,
+                                uint64_t flags,const char* profile,const MountAnchor* anchor) {
+  if(profile==nullptr || strcmp(profile,kProfileCargoBuild)!=0 || anchor==nullptr ||
+     IsWriteCapableOpen(flags) || !IsAtOrBelowMountpoint(path,anchor->mountpoint))return false;
+  const auto* group=FindFilesystemGroup(context,state);
+  if(group==nullptr || group->current_image_class!=ProcessClass::kCargoLldLauncher || !group->cargo_lld_launcher_active ||
+     !HasExactCargoBuildCollect2ChildCreator(context,*group,state))return false;
+  if(anchor->mount_class=="oci-root" && anchor->mountpoint=="/") {
+    if(path=="/etc/ld.so.cache")return true;
+    std::string canonical=path;
+    if(HasPrefix(canonical,"/usr/lib/"))canonical="/lib/"+canonical.substr(9);
+    // Independently read ELF dependency closure of the locked launcher.
+    for(const char* name:{"libgcc_s.so.1","libpthread.so.0","libc.so.6","ld-linux-x86-64.so.2"})
+      if(MatchesLibraryNameOrVersion(canonical,(std::string("/lib/x86_64-linux-gnu/")+name).c_str()))return true;
+    return false;
+  }
+  return anchor->mount_class=="system" && anchor->mountpoint=="/proc" &&
+      (path=="/proc/"+std::to_string(context.thread_group_id())+"/maps" || (path=="/proc/sys/vm/overcommit_memory" && flags==557056));
+}
+
+// Fixed C ABI link-input roles shared by the locked Debian toolchains.
+// Each consumer separately proves its kernel image, one-shot state and creator.
+bool IsExactCABILinkInput(const std::string& path) {
+  std::string canonical=path;
+  if(HasPrefix(canonical,"/usr/lib/"))canonical="/lib/"+canonical.substr(9);
+    for (const char* input : {
+        "/lib/gcc/x86_64-linux-gnu/12/crtbegin.o", "/lib/gcc/x86_64-linux-gnu/12/crtbeginS.o",
+        "/lib/gcc/x86_64-linux-gnu/12/crtbeginT.o", "/lib/gcc/x86_64-linux-gnu/12/crtend.o",
+        "/lib/gcc/x86_64-linux-gnu/12/crtendS.o", "/lib/gcc/x86_64-linux-gnu/12/libgcc.a",
+        "/lib/gcc/x86_64-linux-gnu/12/libgcc_eh.a", "/lib/gcc/x86_64-linux-gnu/12/libgcc_s.so",
+        "/lib/x86_64-linux-gnu/Scrt1.o", "/lib/x86_64-linux-gnu/crt1.o", "/lib/x86_64-linux-gnu/rcrt1.o",
+        "/lib/x86_64-linux-gnu/crti.o", "/lib/x86_64-linux-gnu/crtn.o", "/lib/x86_64-linux-gnu/libc.so",
+        "/lib/x86_64-linux-gnu/libc_nonshared.a", "/lib/x86_64-linux-gnu/libpthread.a",
+        "/lib/x86_64-linux-gnu/libpthread_nonshared.a", "/lib/x86_64-linux-gnu/libdl.a",
+        "/lib/x86_64-linux-gnu/libgcc_s.so.1", "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2"}) {
+      if (canonical == input) return true;
+    }
+  return false;
+}
+
+// Same-group one-shot locked native linker; LLVM's independently inspected
+// transitive ABI is data only. Arbitrary SDK paths and plugins remain denied.
+bool IsPinnedCargoRustLldRead(const gvisor::common::ContextData& context,
+                            const ProcessState& state,const std::string& path,
+                            uint64_t flags,const char* profile,const MountAnchor* anchor) {
+  if(profile==nullptr || strcmp(profile,kProfileCargoBuild)!=0 || anchor==nullptr ||
+     IsWriteCapableOpen(flags) || !IsAtOrBelowMountpoint(path,anchor->mountpoint))return false;
+  const auto* group=FindFilesystemGroup(context,state);
+  if(group==nullptr || group->current_image_class!=ProcessClass::kCargoRustLld || !group->cargo_rust_lld_active ||
+     !HasExactCargoBuildCollect2ChildCreator(context,*group,state))return false;
+  if(anchor->mount_class=="oci-root" && anchor->mountpoint=="/") {
+    std::string canonical=path;
+    if(HasPrefix(canonical,"/usr/lib/"))canonical="/lib/"+canonical.substr(9);
+    // Fixed Rust standard-library C ABI input: merged glibc archive stubs
+    // and the independently read libm script's two exact targets. This is
+    // link data only; it changes no existing Python/runtime libutil rule.
+    return path=="/etc/ld.so.cache" || IsExactCargoRuntimeABIRead(path) || IsExactCABILinkInput(path) || IsExactPinnedRustTargetLibraryInput(path) ||
+        path=="/usr/local/rustup/toolchains/1.99.0-x86_64-unknown-linux-gnu/lib/libLLVM.so.23.1-rust-1.99.0-stable" ||
+        canonical=="/lib/x86_64-linux-gnu/libz.so.1.2.13" || canonical=="/lib/x86_64-linux-gnu/libutil.a" ||
+        canonical=="/lib/x86_64-linux-gnu/librt.a" || canonical=="/lib/x86_64-linux-gnu/libm.so" ||
+        canonical=="/lib/x86_64-linux-gnu/libmvec.so.1";
+  }
+  if(anchor->mount_class=="system" && anchor->mountpoint=="/dev")
+    return path=="/dev/urandom" && flags==kOpenLargefile;
+  return anchor->mount_class=="system" && anchor->mountpoint=="/proc" &&
+      (path=="/proc/"+std::to_string(context.thread_group_id())+"/maps" || (path=="/proc/sys/vm/overcommit_memory" && flags==557056));
+}
+
+// Startup data only for the one-shot untrusted Cargo-owned build program.
+// Its arbitrary filesystem/network/child activity is still observed as ARTIFACT.
+bool IsPinnedCargoBuildProgramRead(const gvisor::common::ContextData& context,
+                                 const ProcessState& state,const std::string& path,
+                                 uint64_t flags,const char* profile,const MountAnchor* anchor) {
+  if(profile==nullptr || strcmp(profile,kProfileCargoBuild)!=0 || anchor==nullptr ||
+     IsWriteCapableOpen(flags) || !IsAtOrBelowMountpoint(path,anchor->mountpoint))return false;
+  const auto* group=FindFilesystemGroup(context,state);
+  if(group==nullptr || group->current_image_class!=ProcessClass::kCargoBuildProgram || !group->cargo_build_program_active ||
+     !HasExactCargoBuildDriverCreator(context,*group,state))return false;
+  if(anchor->mount_class=="system" && anchor->mountpoint=="/dev")
+    return path=="/dev/null" && flags==557056;
+  if(anchor->mount_class=="system" && anchor->mountpoint=="/proc")
+    return path=="/proc/"+std::to_string(context.thread_group_id())+"/maps" && flags==557056;
+  if(anchor->mount_class!="oci-root" || anchor->mountpoint!="/")return false;
+  std::string canonical=path;
+  if(HasPrefix(canonical,"/usr/lib/"))canonical="/lib/"+canonical.substr(9);
+  return path=="/etc/ld.so.cache" || IsExactLibc6(path) ||
+      MatchesLibraryNameOrVersion(canonical,"/lib/x86_64-linux-gnu/libgcc_s.so.1") ||
+      canonical=="/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2";
+}
+
 bool IsPinnedGoResolverRead(const gvisor::common::ContextData& context,
                             const ProcessState& state, const std::string& path,
                             uint64_t flags, const char* profile, const MountAnchor* anchor) {
@@ -1981,7 +2358,8 @@ bool IsPinnedProjectConfigurationRead(
     const std::string& path, uint64_t flags, const char* profile,
     const MountAnchor* anchor) {
   if (profile == nullptr ||
-      (strcmp(profile, kProfileGoBuild) != 0 && strcmp(profile, kProfileCargoResolver) != 0) ||
+      (strcmp(profile, kProfileGoBuild) != 0 && strcmp(profile, kProfileCargoResolver) != 0 &&
+       strcmp(profile, kProfileCargoBuild) != 0) ||
       path != "/proc/filesystems" || IsWriteCapableOpen(flags) || anchor == nullptr ||
       anchor->mount_class != "system" || anchor->mountpoint != "/proc") return false;
   const auto* group = FindFilesystemGroup(context, state);
@@ -2010,7 +2388,8 @@ bool IsCanonicalBootstrapProfile(const char* profile) {
        strcmp(profile, kProfilePyTorchCU130) == 0 ||
        strcmp(profile, kProfilePyTorchCU132) == 0 ||
        strcmp(profile, kProfileGitHub) == 0 || strcmp(profile, kProfileGoResolver) == 0 ||
-       strcmp(profile, kProfileGoBuild) == 0 || strcmp(profile, kProfileCargoResolver) == 0);
+       strcmp(profile, kProfileGoBuild) == 0 || strcmp(profile, kProfileCargoResolver) == 0 ||
+       strcmp(profile, kProfileCargoBuild) == 0);
 }
 
 bool IsDirectExecLoaderProfile(const char* profile) {
@@ -2160,6 +2539,34 @@ bool IsPinnedGoBuildNullDeviceOpen(
        HasExactGoBuildGccChildCreator(context, *group, state));
 }
 
+// Both fixed build runtimes contain the same GCC loader ABI. Each caller
+// keeps its own exact SDK creator contract; this grants no generic library,
+// compiler descendant, CONTROL, network or mutable-name authority.
+bool IsPinnedProjectBuildGccRead(const gvisor::common::ContextData& context,
+                                const ProcessState& state, const std::string& path,
+                                uint64_t flags, const char* profile, const MountAnchor* anchor) {
+  if(profile==nullptr || anchor==nullptr || anchor->mount_class!="oci-root" ||
+     anchor->mountpoint!="/" || IsWriteCapableOpen(flags))return false;
+  const auto* group=FindFilesystemGroup(context,state);
+  if(group==nullptr || group->current_image_class!=ProcessClass::kGoBuildGcc || !group->go_build_tool_active)return false;
+  const bool owned=(strcmp(profile,kProfileGoBuild)==0 && HasExactGoBuildGccCreator(context,*group,state)) ||
+      (strcmp(profile,kProfileCargoBuild)==0 && HasExactCargoBuildCompilerCreator(context,*group,state));
+  return owned && (path=="/etc/ld.so.cache" || IsExactLibc6(path));
+}
+
+bool IsPinnedProjectBuildCollect2Read(const gvisor::common::ContextData& context,
+                                    const ProcessState& state,const std::string& path,
+                                    uint64_t flags,const char* profile,const MountAnchor* anchor) {
+  if(profile==nullptr || anchor==nullptr || anchor->mount_class!="oci-root" ||
+     anchor->mountpoint!="/" || IsWriteCapableOpen(flags))return false;
+  const auto* group=FindFilesystemGroup(context,state);
+  if(group==nullptr || group->current_image_class!=ProcessClass::kGoBuildCollect2 || !group->go_build_tool_active)return false;
+  const bool owned=(strcmp(profile,kProfileGoBuild)==0 && HasExactGoBuildGccChildCreator(context,*group,state)) ||
+      (strcmp(profile,kProfileCargoBuild)==0 && HasExactCargoBuildGccChildCreator(context,*group,state));
+  std::string canonical=path;if(HasPrefix(canonical,"/usr/lib/"))canonical="/lib/"+canonical.substr(9);
+  return owned && (path=="/etc/ld.so.cache" || IsExactLibc6(path) || canonical=="/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2");
+}
+
 // The locked build driver and its exact SDK tools read immutable SDK inputs,
 // fixed runtime data and their own cgroup metadata. These are not completion or
 // resource authority. Keep this
@@ -2185,8 +2592,7 @@ bool IsPinnedGoBuildRuntimeRead(
   if (native_gcc) {
     // The compiler stays ARTIFACT. Its fixed loader data is not an SDK,
     // arbitrary image-library or system-metadata grant.
-    return anchor->mount_class == "oci-root" && anchor->mountpoint == "/" &&
-        (path == "/etc/ld.so.cache" || IsExactLibc6(path));
+    return IsPinnedProjectBuildGccRead(context,state,path,flags,profile,anchor);
   }
   const bool native_linker = group->current_image_class == ProcessClass::kGoBuildNativeLinker &&
       group->go_build_tool_active && HasExactGoBuildNativeLinkerCreator(context, *group, state);
@@ -2195,20 +2601,7 @@ bool IsPinnedGoBuildRuntimeRead(
     if (path == "/etc/ld.so.cache" || path == "/usr/lib/gcc/x86_64-linux-gnu/12/liblto_plugin.so") return true;
     std::string library_path = path;
     if (HasPrefix(library_path, "/usr/lib/")) library_path = "/lib/" + library_path.substr(9);
-    // Fixed C ABI link inputs, independently bound to the locked OCI image.
-    // They are data for this exact linker, not a general SDK directory grant.
-    for (const char* input : {
-        "/lib/gcc/x86_64-linux-gnu/12/crtbegin.o", "/lib/gcc/x86_64-linux-gnu/12/crtbeginS.o",
-        "/lib/gcc/x86_64-linux-gnu/12/crtbeginT.o", "/lib/gcc/x86_64-linux-gnu/12/crtend.o",
-        "/lib/gcc/x86_64-linux-gnu/12/crtendS.o", "/lib/gcc/x86_64-linux-gnu/12/libgcc.a",
-        "/lib/gcc/x86_64-linux-gnu/12/libgcc_eh.a", "/lib/gcc/x86_64-linux-gnu/12/libgcc_s.so",
-        "/lib/x86_64-linux-gnu/Scrt1.o", "/lib/x86_64-linux-gnu/crt1.o", "/lib/x86_64-linux-gnu/rcrt1.o",
-        "/lib/x86_64-linux-gnu/crti.o", "/lib/x86_64-linux-gnu/crtn.o", "/lib/x86_64-linux-gnu/libc.so",
-        "/lib/x86_64-linux-gnu/libc_nonshared.a", "/lib/x86_64-linux-gnu/libpthread.a",
-        "/lib/x86_64-linux-gnu/libpthread_nonshared.a", "/lib/x86_64-linux-gnu/libdl.a",
-        "/lib/x86_64-linux-gnu/libgcc_s.so.1", "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2"}) {
-      if (library_path == input) return true;
-    }
+    if (IsExactCABILinkInput(path)) return true;
     for (const char* name : {"libbfd-2.40-system.so", "libctf.so.0", "libjansson.so.4", "libz.so.1",
          "libzstd.so.1", "libsframe.so.0", "libc.so.6", "libresolv.so.2"}) {
       if (MatchesLibraryNameOrVersion(library_path, (std::string("/lib/x86_64-linux-gnu/") + name).c_str())) return true;
@@ -2218,11 +2611,7 @@ bool IsPinnedGoBuildRuntimeRead(
   const bool native_collect2 = group->current_image_class == ProcessClass::kGoBuildCollect2 &&
       group->go_build_tool_active && HasExactGoBuildGccChildCreator(context, *group, state);
   if (native_collect2) {
-    if (anchor->mount_class != "oci-root" || anchor->mountpoint != "/") return false;
-    std::string library_path = path;
-    if (HasPrefix(library_path, "/usr/lib/")) library_path = "/lib/" + library_path.substr(9);
-    return path == "/etc/ld.so.cache" || IsExactLibc6(path) ||
-        library_path == "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2";
+    return IsPinnedProjectBuildCollect2Read(context,state,path,flags,profile,anchor);
   }
   const bool native_assembler = group->current_image_class == ProcessClass::kGoBuildAssembler &&
       group->go_build_tool_active && HasExactGoBuildGccChildCreator(context, *group, state);
@@ -2276,23 +2665,25 @@ bool IsPinnedGoBuildRuntimeRead(
 
 // This new build profile cannot obtain helper reads from comm. The kernel
 // helper/demoter image and the one-shot, exact direct handoff must agree. Both
-// stages remain ARTIFACT, and the allowance disappears at the Go target exec.
-bool IsPinnedGoBuildHandoffRead(
+// stages remain ARTIFACT, and the allowance disappears at the exact project driver exec.
+bool IsPinnedProjectBuildHandoffRead(
     const gvisor::common::ContextData& context, const ProcessState& state,
     const std::string& path, uint64_t flags, const char* profile,
     const MountAnchor* anchor) {
-  if (profile == nullptr || strcmp(profile, kProfileGoBuild) != 0 ||
+  if (profile == nullptr ||
+      (strcmp(profile, kProfileGoBuild) != 0 && strcmp(profile, kProfileCargoBuild) != 0) ||
       IsWriteCapableOpen(flags) || anchor == nullptr) return false;
+  const auto target = strcmp(profile, kProfileCargoBuild) == 0 ? ProcessClass::kCargo : ProcessClass::kGo;
   const auto* group = FindFilesystemGroup(context, state);
   if (group == nullptr || group->role != ProcessState::Role::kArtifact ||
       group->provenance != ProcessState::Provenance::kDirectExecRoot ||
       group->root_eligible || !group->root_consumed ||
       group->trusted_control_network_active || !group->handoff_target_pending ||
-      group->handoff_target_class != ProcessClass::kGo) return false;
+      group->handoff_target_class != target) return false;
   const bool helper = group->demotion_pending &&
-      group->current_image_class == ProcessClass::kGoBuildBoundary;
+      group->current_image_class == ProcessClass::kProjectBuildBoundary;
   const bool demoter = !group->demotion_pending &&
-      group->current_image_class == ProcessClass::kGoBuildSetpriv;
+      group->current_image_class == ProcessClass::kProjectBuildSetpriv;
   if (!helper && !demoter) return false;
   if (helper && anchor->mount_class == "helper" &&
       anchor->mountpoint == "/haa-runtime" && path == "/haa-runtime/haa-boundary") return true;
@@ -2391,7 +2782,7 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
     return exact_pre_sentry_loader ? FilesystemClass::kHelperOnly : FilesystemClass::kUnknown;
   }
   const auto* tracked = FindFilesystemGroup(message.context_data(), state);
-  if (IsPinnedGoBuildHandoffRead(message.context_data(), state, path,
+  if (IsPinnedProjectBuildHandoffRead(message.context_data(), state, path,
                                   message.flags(), profile, anchor)) {
     return FilesystemClass::kHelperOnly;
   }
@@ -2403,7 +2794,7 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
       message.context_data().process_name() == "setpriv" && !IsWriteCapableOpen(message.flags()) &&
       path == "/proc/" + std::to_string(message.context_data().thread_group_id()) + "/status";
   if (exact_self_status) return FilesystemClass::kHelperOnly;
-  const bool exact_handoff_validation = (profile == nullptr || strcmp(profile, kProfileGoBuild) != 0) &&
+  const bool exact_handoff_validation = (profile == nullptr || (strcmp(profile, kProfileGoBuild) != 0 && strcmp(profile, kProfileCargoBuild) != 0)) &&
       tracked->role == ProcessState::Role::kArtifact &&
       (tracked->provenance == ProcessState::Provenance::kCloneChild ||
        tracked->provenance == ProcessState::Provenance::kDirectExecRoot) &&
@@ -2415,7 +2806,7 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
        path == "/etc/ld.so.cache" || IsExactLibc6(path) ||
        path == "/proc/" + std::to_string(message.context_data().thread_group_id()) + "/status");
   if (exact_handoff_validation) return FilesystemClass::kHelperOnly;
-  const bool exact_artifact_shell_loader = (profile == nullptr || strcmp(profile, kProfileGoBuild) != 0) &&
+  const bool exact_artifact_shell_loader = (profile == nullptr || (strcmp(profile, kProfileGoBuild) != 0 && strcmp(profile, kProfileCargoBuild) != 0)) &&
       tracked->role == ProcessState::Role::kArtifact &&
       tracked->provenance == ProcessState::Provenance::kCloneChild &&
       !tracked->root_eligible && tracked->root_consumed &&
@@ -2430,6 +2821,7 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
       !IsWriteCapableOpen(message.flags()) && path == "/etc/ld.so.cache") {
     return FilesystemClass::kRuntimeRoot;
   }
+  if (IsCargoBuildConfigurationWrite(message.context_data(), state, path, message.flags(), profile)) return FilesystemClass::kOutside;
   if (IsWorkspacePath(path, profile)) return FilesystemClass::kWorkspace;
   if (IsClearlyOutsideWorkspace(path) ||
       (IsWriteCapableOpen(message.flags()) && path != "/dev/null" &&
@@ -2438,6 +2830,14 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
   }
   if (IsExactBootstrapHelperWrite(message.context_data(), state, path, message.flags()) ||
       IsPinnedCargoResolverRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
+      IsPinnedCargoBuildDriverRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
+      IsPinnedCargoBuildCompilerRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
+      IsPinnedCargoBuildProgramQueryRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
+      IsPinnedCargoLldLauncherRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
+      IsPinnedCargoRustLldRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
+      IsPinnedCargoBuildProgramRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
+      IsPinnedProjectBuildGccRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
+      IsPinnedProjectBuildCollect2Read(message.context_data(), state, path, message.flags(), profile, anchor) ||
       IsPinnedGoResolverRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
       IsPinnedProjectConfigurationRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
       IsPinnedGoBuildRuntimeRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
@@ -2579,7 +2979,7 @@ bool ParseControlRecord(const char* payload, size_t size, ControlPeer* peer,
         (profile != kProfileNPM && profile != kProfilePyPI && profile != kProfilePyTorchCPU &&
          profile != kProfilePyTorchCU126 && profile != kProfilePyTorchCU130 &&
          profile != kProfilePyTorchCU132 && profile != kProfileGitHub && profile != kProfileGoResolver &&
-         profile != kProfileGoBuild && profile != kProfileCargoResolver) ||
+         profile != kProfileGoBuild && profile != kProfileCargoResolver && profile != kProfileCargoBuild) ||
         peer->request_seen || peer->registered || peer->terminal || profiles->find(id) != profiles->end()) {
       return SendProfileAck(peer->fd, id, profile, topology, generation, "rejected");
     }
@@ -2716,9 +3116,13 @@ bool ParseSentryClone(const char* payload, size_t payload_size,
   // tool. Neither tool authority nor CONTROL/network privilege is inherited.
   state->groups.find(child_group)->second.go_build_tool_candidate = IsGoBuildDriverGroup(creator->second);
   state->groups.find(child_group)->second.go_build_gcc_candidate =
-      IsGoBuildDriverGroup(creator->second) || IsGoBuildCompilerProducerGroup(creator->second, *state);
+      IsGoBuildDriverGroup(creator->second) || IsGoBuildCompilerProducerGroup(creator->second, *state) ||
+      IsCargoBuildCompilerProducerGroup(creator->second, *state);
   state->groups.find(child_group)->second.go_build_gcc_child_candidate =
-      IsGoBuildGccProducerGroup(creator->second, *state);
+      IsGoBuildGccProducerGroup(creator->second, *state) || IsCargoBuildGccProducerGroup(creator->second, *state);
+  state->groups.find(child_group)->second.cargo_build_program_candidate = IsCargoBuildDriverGroup(creator->second);
+  state->groups.find(child_group)->second.cargo_build_program_query_candidate = IsCargoBuildProgramProducerGroup(creator->second, *state);
+  state->groups.find(child_group)->second.cargo_lld_launcher_candidate = IsCargoBuildCollect2ProducerGroup(creator->second, *state);
   state->groups.find(child_group)->second.go_build_native_linker_candidate =
       IsGoBuildCollect2ProducerGroup(creator->second, *state);
   state->groups.find(child_group)->second.clone_creator_group_id = creator_group;
@@ -2978,9 +3382,28 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     new_direct_root = true;
   }
   group->second.runtime_cache_query = false;
+  const bool cargo_program_candidate=group->second.cargo_build_program_candidate;
+  group->second.cargo_build_program_candidate=false;
+  group->second.cargo_build_program_active=false;
+  const bool cargo_program_query_candidate = group->second.cargo_build_program_query_candidate;
+  group->second.cargo_build_program_query_candidate = false;
+  group->second.cargo_build_program_query_active = false;
   const bool cargo_query_candidate = group->second.cargo_rustc_query_candidate;
   group->second.cargo_rustc_query_candidate = false;
   group->second.cargo_rustc_query_active = false;
+  group->second.cargo_build_rustc_active = false;
+  // Consume actual kernel image/active state once. Diagnostic fields never
+  // participate in this transition or its later read classification.
+  const bool cargo_lld_transition = group->second.current_image_class==ProcessClass::kCargoLldLauncher &&
+      group->second.cargo_lld_launcher_active;
+  group->second.cargo_rust_lld_active=false;
+  group->second.diagnostic_lld_same_group =
+      group->second.current_image_class==ProcessClass::kCargoLldLauncher &&
+      group->second.cargo_lld_launcher_active &&
+      DiagnosticImageForPath(message.binary_path())==DiagnosticImage::kRustLld;
+  const bool cargo_lld_candidate=group->second.cargo_lld_launcher_candidate;
+  group->second.cargo_lld_launcher_candidate=false;
+  group->second.cargo_lld_launcher_active=false;
   const bool go_tool_candidate = group->second.go_build_tool_candidate;
   const bool go_gcc_candidate = group->second.go_build_gcc_candidate;
   const bool go_gcc_child_candidate = group->second.go_build_gcc_child_candidate;
@@ -2999,11 +3422,17 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
   // Bounded diagnostics only. Permissions use the actual topology predicate,
   // never this cached flag or its serialized value.
   group->second.diagnostic_image_pinned = IsPinnedReadOnlyRootPath(topology, message.binary_path());
+  group->second.diagnostic_build_target_image = strcmp(profile,kProfileCargoBuild)==0 && IsCargoBuildTargetImage(topology,message.binary_path());
   group->second.current_image_class = ProcessClassForPath(message.binary_path(), profile);
-  if (strcmp(profile, kProfileCargoResolver) == 0 &&
+  if ((strcmp(profile, kProfileCargoResolver) == 0 || strcmp(profile, kProfileCargoBuild) == 0) &&
       (group->second.current_image_class == ProcessClass::kCargo ||
        group->second.current_image_class == ProcessClass::kCargoTar ||
        group->second.current_image_class == ProcessClass::kCargoRustc ||
+       group->second.current_image_class == ProcessClass::kGoBuildGcc ||
+       group->second.current_image_class == ProcessClass::kGoBuildCollect2 ||
+       group->second.current_image_class == ProcessClass::kCargoLldLauncher ||
+       group->second.current_image_class == ProcessClass::kCargoRustLld ||
+       group->second.current_image_class == ProcessClass::kProjectBuildSetpriv ||
        group->second.current_image_class == ProcessClass::kMkdir ||
        group->second.current_image_class == ProcessClass::kShell) &&
       !IsPinnedReadOnlyRootPath(topology, message.binary_path())) {
@@ -3031,12 +3460,12 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
        group->second.current_image_class == ProcessClass::kGoBuildAssembler ||
        group->second.current_image_class == ProcessClass::kGoBuildCollect2 ||
        group->second.current_image_class == ProcessClass::kGoBuildNativeLinker ||
-       group->second.current_image_class == ProcessClass::kGoBuildSetpriv) &&
+       group->second.current_image_class == ProcessClass::kProjectBuildSetpriv) &&
       !IsPinnedReadOnlyRootPath(topology, message.binary_path())) {
     group->second.current_image_class = ProcessClass::kUnknown;
   }
-  if (strcmp(profile, kProfileGoBuild) == 0 &&
-      group->second.current_image_class == ProcessClass::kGoBuildBoundary) {
+  if ((strcmp(profile, kProfileGoBuild) == 0 || strcmp(profile, kProfileCargoBuild) == 0) &&
+      group->second.current_image_class == ProcessClass::kProjectBuildBoundary) {
     bool exact_helper = topology != nullptr && topology->sealed &&
         topology->snapshot_seen && topology->namespace_id != 0;
     size_t helper_mounts = 0;
@@ -3051,9 +3480,10 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     if (!exact_helper || helper_mounts != 1) group->second.current_image_class = ProcessClass::kUnknown;
   }
   group->second.diagnostic_image = DiagnosticImageForPath(message.binary_path());
+  group->second.diagnostic_native_cc = IsExactCargoNativeCCInvocation(message);
   group->second.diagnostic_rustc_version = message.binary_path() == kRustcBinary &&
       message.execfn() == kRustcBinary && message.argv_size() == 2 &&
-      message.argv(0) == kRustcBinary && message.argv(1) == "-vV";
+      message.argv(0) == kRustcBinary && (message.argv(1) == "-vV" || message.argv(1) == "--version");
   group->second.diagnostic_rustc_metadata = IsExactCargoRustcMetadataQuery(message);
   group->second.diagnostic_rustc_argc = 0;
   group->second.diagnostic_rustc_argv_locator = 0;
@@ -3167,7 +3597,8 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
       group->second.handoff_target_pending = boundary_mode != BoundaryMode::kHandoff;
       group->second.handoff_target_class = boundary_mode == BoundaryMode::kPythonHandoff
           ? ProcessClass::kPython : (strcmp(profile, kProfileGoBuild) == 0
-              ? ProcessClass::kGo : ProcessClass::kArtifact);
+              ? ProcessClass::kGo : (strcmp(profile, kProfileCargoBuild) == 0
+                  ? ProcessClass::kCargo : ProcessClass::kArtifact));
       ApplyExecCloexec(&candidate, group_id);
       process_state->groups = candidate.groups;
       process_state->fd_states = candidate.fd_states;
@@ -3214,7 +3645,78 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     return Send(output, *container_id, "process-exec-expected");
   }
   if (group->second.role == ProcessState::Role::kArtifact) {
-    const ProcessClass process_class = strcmp(profile, kProfileGoBuild) == 0
+    if (strcmp(profile,kProfileCargoBuild) == 0 && cargo_program_query_candidate &&
+        group->second.current_image_class == ProcessClass::kCargoRustc &&
+        message.binary_path() == kRustcBinary && message.execfn() == kRustcBinary &&
+        message.argv_size() == 2 && message.argv(0) == kRustcBinary && message.argv(1) == "--version" &&
+        HasExactCargoBuildProgramCreator(message.context_data(),group->second,candidate)) {
+      group->second.cargo_build_program_query_active = true;
+      ApplyExecCloexec(&candidate,group_id);
+      process_state->groups = candidate.groups;
+      process_state->fd_states = candidate.fd_states;
+      return Send(output,*container_id,"process-exec-expected");
+    }
+    // Compiled project/build code stays untrusted ARTIFACT. The image must be
+    // kernel-resolved in the exact host-attested executable target volume and
+    // loaded once by its owned Cargo clone. Neither names nor diagnostics grant
+    // this transition, and it grants no CONTROL/expected-group/network authority.
+    if(strcmp(profile,kProfileCargoBuild)==0 && cargo_program_candidate &&
+       IsCargoBuildTargetImage(topology,message.binary_path()) &&
+       HasExactCargoBuildDriverCreator(message.context_data(),group->second,candidate)) {
+      group->second.current_image_class=ProcessClass::kCargoBuildProgram;
+      group->second.cargo_build_program_active=true;
+      ApplyExecCloexec(&candidate,group_id);
+      process_state->groups=candidate.groups;
+      process_state->fd_states=candidate.fd_states;
+      return Send(output,*container_id,"process-exec-expected");
+    }
+
+    // The locked launcher reexecs the locked linker in the same kernel group.
+    // Untrusted linker arguments confer no CONTROL/network authority.
+    if(strcmp(profile,kProfileCargoBuild)==0 && cargo_lld_transition &&
+       group->second.current_image_class==ProcessClass::kCargoRustLld &&
+       HasExactCargoBuildCollect2ChildCreator(message.context_data(),group->second,candidate)) {
+      group->second.cargo_rust_lld_active=true;
+      ApplyExecCloexec(&candidate,group_id);
+      process_state->groups=candidate.groups;
+      process_state->fd_states=candidate.fd_states;
+      return Send(output,*container_id,"process-exec-expected");
+    }
+
+    if(strcmp(profile,kProfileCargoBuild)==0 && cargo_lld_candidate &&
+       group->second.current_image_class==ProcessClass::kCargoLldLauncher && IsExactCargoLldLauncherInvocation(message) &&
+       HasExactCargoBuildCollect2ChildCreator(message.context_data(),group->second,candidate)) {
+      group->second.cargo_lld_launcher_active=true;
+      ApplyExecCloexec(&candidate,group_id);
+      process_state->groups=candidate.groups;
+      process_state->fd_states=candidate.fd_states;
+      return Send(output,*container_id,"process-exec-expected");
+    }
+
+    if(strcmp(profile,kProfileCargoBuild)==0 && go_gcc_candidate &&
+       group->second.current_image_class==ProcessClass::kGoBuildGcc &&
+       IsExactCargoNativeCCInvocation(message) && IsPinnedReadOnlyRootPath(topology,message.execfn()) &&
+       HasExactCargoBuildCompilerCreator(message.context_data(),group->second,candidate)) {
+      group->second.go_build_tool_active=true;
+      ApplyExecCloexec(&candidate,group_id);
+      process_state->groups=candidate.groups;
+      process_state->fd_states=candidate.fd_states;
+      return Send(output,*container_id,"process-exec-expected");
+    }
+
+    if (strcmp(profile,kProfileCargoBuild)==0 && cargo_query_candidate &&
+        group->second.current_image_class==ProcessClass::kCargoRustc &&
+        message.binary_path()==kRustcBinary && message.execfn()==kRustcBinary &&
+        message.argv_size()>0 && message.argv(0)==kRustcBinary &&
+        HasExactCargoBuildDriverCreator(message.context_data(),group->second,candidate)) {
+      group->second.cargo_build_rustc_active=true;
+      ApplyExecCloexec(&candidate,group_id);
+      process_state->groups=candidate.groups;
+      process_state->fd_states=candidate.fd_states;
+      return Send(output,*container_id,"process-exec-expected");
+    }
+
+    const ProcessClass process_class = (strcmp(profile, kProfileGoBuild) == 0 || strcmp(profile, kProfileCargoBuild) == 0)
         ? group->second.current_image_class : ProcessClassForPath(message.binary_path(), profile);
     const bool exact_sdk_tool = (process_class == ProcessClass::kGoBuildTool ||
         process_class == ProcessClass::kGoBuildCgo ||
@@ -3236,6 +3738,15 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     const bool exact_native_linker = process_class == ProcessClass::kGoBuildNativeLinker &&
         message.execfn() == "/usr/bin/ld" && message.argv_size() > 0 && message.argv(0) == "/usr/bin/ld" &&
         IsPinnedReadOnlyRootPath(topology, message.execfn());
+    if(strcmp(profile,kProfileCargoBuild)==0 && go_gcc_child_candidate &&
+       process_class==ProcessClass::kGoBuildCollect2 && exact_gcc_internal_tool &&
+       HasExactCargoBuildGccChildCreator(message.context_data(),group->second,candidate)) {
+      group->second.go_build_tool_active=true;
+      ApplyExecCloexec(&candidate,group_id);
+      process_state->groups=candidate.groups;
+      process_state->fd_states=candidate.fd_states;
+      return Send(output,*container_id,"process-exec-expected");
+    }
     if (strcmp(profile, kProfileGoBuild) == 0 &&
         ((go_tool_candidate && exact_sdk_tool &&
           HasExactGoBuildDriverCreator(message.context_data(), group->second, candidate)) ||
@@ -3390,7 +3901,8 @@ bool ParseOpenAndSend(const char* payload, size_t payload_size, int output, std:
     if (!Send(output, *container_id, "honeytoken-access")) return false;
     ++counts->immediate_records;
     emitted = true;
-  } else if (IsClearlyOutsideWorkspace(message.pathname()) ||
+  } else if (IsCargoBuildConfigurationWrite(message.context_data(), *state, message.pathname(), message.flags(), profile) ||
+             IsClearlyOutsideWorkspace(message.pathname()) ||
              (IsWriteCapableOpen(message.flags()) && message.pathname() != "/dev/null" &&
               !message.pathname().empty() && message.pathname()[0] == '/' &&
               !IsWorkspacePath(message.pathname(), profile) &&
@@ -3460,6 +3972,10 @@ bool ParseOpenResultAndSend(const char* payload, size_t payload_size, int output
   if (early) return true;
   if (IsHoneytoken(result.resolved_pathname())) {
     if (!Send(output, *container_id, "honeytoken-access")) return false;
+    ++counts->immediate_records; return true;
+  }
+  if (IsCargoBuildConfigurationWrite(result.context_data(), *state, result.resolved_pathname(), result.flags(), profile)) {
+    if (!Send(output, *container_id, "filesystem-outside-workspace")) return false;
     ++counts->immediate_records; return true;
   }
   if (anchor->second.mount_class == "workspace") {

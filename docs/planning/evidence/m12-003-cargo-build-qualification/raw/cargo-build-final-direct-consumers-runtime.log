@@ -1,0 +1,373 @@
+verified fresh Cargo source and observer candidate; no overlay
+runtime before bytes/identity/modes verified
+runtime candidate bytes/identity/modes verified
+no existing traced runtime consumers; bounded Docker queries succeeded
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+/etc/heliopause/pod-init.json: OK
+helper launch: bash=/usr/bin/bash version=5.2.21(1)-release owner=2229926
+helper ready: pid=2230022 attempt=13
+=== RUN   TestLinuxCargoSourceProjectSnapshotIntegration
+observer_attribution sequence=1 profile=cargo-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:10,NETWORK/TRUSTED_CONTROL/SENDTO/INET/DIRECT_EXEC_SESSION/OTHER:24
+    cargo_isolated_integration_test.go:58: actual_cargo_graph_sha256=df04ccadce07ff0b9a2facd6a75f628a65a10bc82b4f51b521d53f0b34f99c45 crates=1
+--- PASS: TestLinuxCargoSourceProjectSnapshotIntegration (2.59s)
+=== RUN   TestLinuxGoBuildIntegration
+--- PASS: TestLinuxGoBuildIntegration (15.63s)
+=== RUN   TestLinuxGoIsolatedResolverIntegration
+observer_attribution sequence=1 profile=go-module-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:2
+    gomodule_isolated_integration_test.go:21: isolated_command=get github.com/spf13/pflag@v1.0.9 output_bytes=0 output_sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+observer_attribution sequence=2 profile=go-module-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:1
+    gomodule_isolated_integration_test.go:21: isolated_command=mod download -json all output_bytes=497 output_sha256=56f6013247270cb569000a7f0014ef97099984324d026108514217ef8f7c7d4c
+observer_attribution sequence=3 profile=go-module-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:1
+    gomodule_isolated_integration_test.go:21: isolated_command=mod graph output_bytes=111 output_sha256=a34d60c5aea5368cbb0e91d403dfd8f88442cc3322e0087a47dc4cd618e991b0
+--- PASS: TestLinuxGoIsolatedResolverIntegration (11.48s)
+=== RUN   TestLinuxGoIsolatedProjectResolverIntegration
+observer_attribution sequence=1 profile=go-module-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:1
+    gomodule_isolated_integration_test.go:28: isolated_command=mod download -json all output_bytes=497 output_sha256=56f6013247270cb569000a7f0014ef97099984324d026108514217ef8f7c7d4c
+observer_attribution sequence=2 profile=go-module-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:1
+    gomodule_isolated_integration_test.go:28: isolated_command=mod graph output_bytes=111 output_sha256=a34d60c5aea5368cbb0e91d403dfd8f88442cc3322e0087a47dc4cd618e991b0
+--- PASS: TestLinuxGoIsolatedProjectResolverIntegration (5.24s)
+=== RUN   TestLinuxGoSourceProjectSnapshotIntegration
+observer_attribution sequence=1 profile=go-module-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:1
+observer_attribution sequence=2 profile=go-module-resolver counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/OTHER:1
+    gomodule_isolated_integration_test.go:37: actual_project_graph_sha256=2fd85f35b1032f4332f924e60f9846cac5bd5a4f1a49a36a135879eec72a4db5 modules=1
+--- PASS: TestLinuxGoSourceProjectSnapshotIntegration (5.58s)
+=== RUN   TestLinuxGoDependencyFreeProjectSnapshotIntegration
+    gomodule_isolated_integration_test.go:44: actual_project_graph_sha256=5fce8efcf6e6c7e4462e816a233133217f502d87491cac38214d03de2cf441a5 modules=0
+--- PASS: TestLinuxGoDependencyFreeProjectSnapshotIntegration (4.46s)
+=== RUN   TestLinuxGVisorLifecycleIntegration
+    direct_exec_admission.go:63: command failed: docker ["exec" "--user" "0:0" "f1cde43c12f089e82367cc0178605deb25fe7acf7dca5b7454fcad864a77fd26" "/haa-runtime/haa-boundary" "--origin-launch" "07b4a9ec3babaff60486a182f30c23db8a7105f11bb21d9fcdcdcd1b999f9ab1" "/bin/sh" "-ceu" "test \"$(id -u)\" = 1000; test \"$(id -g)\" = 1000; grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/1/status; grep -Eq '^Gid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/1/status; grep -Eq '^Groups:[[:space:]]*$' /proc/1/status; for field in CapInh CapPrm CapEff CapBnd CapAmb; do grep -Eq \"^${field}:[[:space:]]+0000000000000000$\" /proc/1/status; done; grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/self/status; grep -Eq '^Gid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/self/status; grep -Eq '^Groups:[[:space:]]*$' /proc/self/status; for field in CapInh CapPrm CapEff CapBnd CapAmb; do grep -Eq \"^${field}:[[:space:]]+0000000000000000$\" /proc/self/status; done"]: exit status 127; stdout="OCI runtime exec failed: executing processes for container: executing command \"/haa-runtime/haa-boundary --origin-launch 07b4a9ec3babaff60486a182f30c23db8a7105f11bb21d9fcdcdcd1b999f9ab1 /bin/sh -ceu test \\\"$(id -u)\\\" = 1000; test \\\"$(id -g)\\\" = 1000; grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/1/status; grep -Eq '^Gid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/1/status; grep -Eq '^Groups:[[:space:]]*$' /proc/1/status; for field in CapInh CapPrm CapEff CapBnd CapAmb; do grep -Eq \\\"^${field}:[[:space:]]+0000000000000000$\\\" /proc/1/status; done; grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/self/status; grep -Eq '^Gid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/self/status; grep -Eq '^Groups:[[:space:]]*$' /proc/self/status; for field in CapInh CapPrm CapEff CapBnd CapAmb; do grep -Eq \\\"^${field}:[[:space:]]+0000000000000000$\\\" /proc/self/status; done\" in sandbox: failed to load /haa-runtime/haa-boundary: no such file or directory"; stderr=""
+integration command failed: docker ["exec" "--user" "0:0" "f1cde43c12f089e82367cc0178605deb25fe7acf7dca5b7454fcad864a77fd26" "/haa-runtime/haa-boundary" "--origin-launch" "07b4a9ec3babaff60486a182f30c23db8a7105f11bb21d9fcdcdcd1b999f9ab1" "/bin/sh" "-ceu" "test \"$(id -u)\" = 1000; test \"$(id -g)\" = 1000; grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/1/status; grep -Eq '^Gid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/1/status; grep -Eq '^Groups:[[:space:]]*$' /proc/1/status; for field in CapInh CapPrm CapEff CapBnd CapAmb; do grep -Eq \"^${field}:[[:space:]]+0000000000000000$\" /proc/1/status; done; grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/self/status; grep -Eq '^Gid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/self/status; grep -Eq '^Groups:[[:space:]]*$' /proc/self/status; for field in CapInh CapPrm CapEff CapBnd CapAmb; do grep -Eq \"^${field}:[[:space:]]+0000000000000000$\" /proc/self/status; done"]: exit status 127; stdout="OCI runtime exec failed: executing processes for container: executing command \"/haa-runtime/haa-boundary --origin-launch 07b4a9ec3babaff60486a182f30c23db8a7105f11bb21d9fcdcdcd1b999f9ab1 /bin/sh -ceu test \\\"$(id -u)\\\" = 1000; test \\\"$(id -g)\\\" = 1000; grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/1/status; grep -Eq '^Gid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/1/status; grep -Eq '^Groups:[[:space:]]*$' /proc/1/status; for field in CapInh CapPrm CapEff CapBnd CapAmb; do grep -Eq \\\"^${field}:[[:space:]]+0000000000000000$\\\" /proc/1/status; done; grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/self/status; grep -Eq '^Gid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/self/status; grep -Eq '^Groups:[[:space:]]*$' /proc/self/status; for field in CapInh CapPrm CapEff CapBnd CapAmb; do grep -Eq \\\"^${field}:[[:space:]]+0000000000000000$\\\" /proc/self/status; done\" in sandbox: failed to load /haa-runtime/haa-boundary: no such file or directory"; stderr=""
+--- PASS: TestLinuxGVisorLifecycleIntegration (3.45s)
+=== RUN   TestLinuxGVisorArtifactEnvironmentIsolationIntegration
+observer_attribution sequence=1 profile=npm-lifecycle counts=PROCESS/SENTRY_EXEC/SHELL/ARTIFACT_ROLE/ARTIFACT_GROUP:1
+--- PASS: TestLinuxGVisorArtifactEnvironmentIsolationIntegration (3.27s)
+=== RUN   TestLinuxGitHubReleaseELFDynamicIntegration
+--- PASS: TestLinuxGitHubReleaseELFDynamicIntegration (1.02s)
+=== RUN   TestLinuxNPMResolverNetworkPolicyIntegration
+    linux_integration_test.go:182: resolver network policy integration requires explicit CAP_NET_ADMIN elevation
+--- FAIL: TestLinuxNPMResolverNetworkPolicyIntegration (0.00s)
+=== RUN   TestLinuxPyPIResolverIntegration
+    linux_integration_test.go:212: PyPI resolver network policy integration requires explicit CAP_NET_ADMIN elevation
+--- FAIL: TestLinuxPyPIResolverIntegration (0.00s)
+=== RUN   TestLinuxPyTorchResolverIntegration
+observer_attribution sequence=1 profile=pypi-wheel-pytorch-cpu counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/PYTHON:151
+--- PASS: TestLinuxPyTorchResolverIntegration (44.21s)
+=== RUN   TestLinuxPyPISdistBuildIntegration
+observer_attribution sequence=1 profile=pypi-wheel counts=PROCESS/SENTRY_EXEC/OTHER/ARTIFACT_ROLE/ARTIFACT_GROUP:1,PROCESS/SENTRY_EXEC/PYTHON/ARTIFACT_ROLE/ARTIFACT_GROUP:2
+--- PASS: TestLinuxPyPISdistBuildIntegration (12.05s)
+=== RUN   TestLinuxPyPIWheelDynamicIntegration
+--- PASS: TestLinuxPyPIWheelDynamicIntegration (5.99s)
+=== RUN   TestLinuxPythonRootPolicyTransactionSequenceIntegration
+=== RUN   TestLinuxPythonRootPolicyTransactionSequenceIntegration/cpu-zero
+    observation_resource_integration_linux_test.go:476: root=pytorch:cpu fixture_sha256=fae90b4c80d775f648e10e03b9c45b60521ae28cc4dcb230fc5828ab03393205 units=1 status=COMPLETED transaction=sbx_3f567cevbae2xl3kcxdikgdsra
+=== RUN   TestLinuxPythonRootPolicyTransactionSequenceIntegration/cu126-zero
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu126 fixture_sha256=fae90b4c80d775f648e10e03b9c45b60521ae28cc4dcb230fc5828ab03393205 units=1 status=COMPLETED transaction=sbx_cn7sjm36wel3rt3anyzkuaznm4
+=== RUN   TestLinuxPythonRootPolicyTransactionSequenceIntegration/cu126-nonzero
+=== NAME  TestLinuxPythonRootPolicyTransactionSequenceIntegration
+    direct_exec_admission.go:99: discard command failed: docker ["exec" "--user" "0:0" "c43e14b5a0a5e498efb26fb37294b6fa8a466fa643afc061835f37e2d99ce204" "/haa-runtime/haa-boundary" "--origin-handoff-python" "8e60fd153b55e199de44cac2614adfb6611e194c8a7043b50cad85d14c29ce46" "python" "-I" "-S" "-B" "-c" "import importlib, importlib.machinery, os, sys\nroot = '/haa-site'\nname = sys.argv[1]\nparts = name.split('.')\nif not parts or any(not part.isidentifier() for part in parts):\n    raise RuntimeError('invalid target import identity')\nif parts[0] in sys.modules:\n    raise RuntimeError('target already present in interpreter startup')\nsearch = [root]\nfor depth in range(len(parts)):\n    # Resolve each component against its authenticated parent search path.\n    # A fully qualified namespace lookup requires an imported parent in\n    # sys.modules; executing that parent here would precede target admission.\n    spec = importlib.machinery.PathFinder.find_spec(parts[depth], search)\n    if spec is None:\n        raise RuntimeError('target not found in authenticated site')\n    if spec.origin not in (None, 'namespace') and os.path.commonpath((root, os.path.realpath(spec.origin))) != root:\n        raise RuntimeError('target origin outside authenticated site')\n    locations = spec.submodule_search_locations\n    if locations is not None and (not locations or any(os.path.commonpath((root, os.path.realpath(p))) != root for p in locations)):\n        raise RuntimeError('target namespace outside authenticated site')\n    if depth + 1 < len(parts):\n        if locations is None:\n            raise RuntimeError('target parent is not a package')\n        search = locations\nsys.path.insert(0, root)\nimportlib.import_module(name)\n" "example"]: exit status 37; bounded output=""
+=== NAME  TestLinuxPythonRootPolicyTransactionSequenceIntegration/cu126-nonzero
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu126 fixture_sha256=5b9ca02af3634ab1376e1268da0e157134f759c5406f00394c093d8a8fa2d11d units=1 status=INCOMPLETE transaction=sbx_ljxh5hpzxleeygwhgcso3zzr6u
+=== RUN   TestLinuxPythonRootPolicyTransactionSequenceIntegration/cpu-zero#01
+    observation_resource_integration_linux_test.go:476: root=pytorch:cpu fixture_sha256=fae90b4c80d775f648e10e03b9c45b60521ae28cc4dcb230fc5828ab03393205 units=1 status=COMPLETED transaction=sbx_g33mfoi243n6unoec62lngv25a
+=== RUN   TestLinuxPythonRootPolicyTransactionSequenceIntegration/cu130-zero
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu130 fixture_sha256=fae90b4c80d775f648e10e03b9c45b60521ae28cc4dcb230fc5828ab03393205 units=1 status=COMPLETED transaction=sbx_43eoewc77w6mcdjnhuxlf262sa
+=== RUN   TestLinuxPythonRootPolicyTransactionSequenceIntegration/cu130-nonzero
+=== NAME  TestLinuxPythonRootPolicyTransactionSequenceIntegration
+    direct_exec_admission.go:99: discard command failed: docker ["exec" "--user" "0:0" "0dfd1a87014b9c7302b66b9584ce0f84c7ba6c98d5c4bd20de1fd50320bde986" "/haa-runtime/haa-boundary" "--origin-handoff-python" "a912bebdf511a61afae29701006d539cf0d48406856d2ef1f791bf73ccf61584" "python" "-I" "-S" "-B" "-c" "import importlib, importlib.machinery, os, sys\nroot = '/haa-site'\nname = sys.argv[1]\nparts = name.split('.')\nif not parts or any(not part.isidentifier() for part in parts):\n    raise RuntimeError('invalid target import identity')\nif parts[0] in sys.modules:\n    raise RuntimeError('target already present in interpreter startup')\nsearch = [root]\nfor depth in range(len(parts)):\n    # Resolve each component against its authenticated parent search path.\n    # A fully qualified namespace lookup requires an imported parent in\n    # sys.modules; executing that parent here would precede target admission.\n    spec = importlib.machinery.PathFinder.find_spec(parts[depth], search)\n    if spec is None:\n        raise RuntimeError('target not found in authenticated site')\n    if spec.origin not in (None, 'namespace') and os.path.commonpath((root, os.path.realpath(spec.origin))) != root:\n        raise RuntimeError('target origin outside authenticated site')\n    locations = spec.submodule_search_locations\n    if locations is not None and (not locations or any(os.path.commonpath((root, os.path.realpath(p))) != root for p in locations)):\n        raise RuntimeError('target namespace outside authenticated site')\n    if depth + 1 < len(parts):\n        if locations is None:\n            raise RuntimeError('target parent is not a package')\n        search = locations\nsys.path.insert(0, root)\nimportlib.import_module(name)\n" "example"]: exit status 37; bounded output=""
+=== NAME  TestLinuxPythonRootPolicyTransactionSequenceIntegration/cu130-nonzero
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu130 fixture_sha256=5b9ca02af3634ab1376e1268da0e157134f759c5406f00394c093d8a8fa2d11d units=1 status=INCOMPLETE transaction=sbx_wharij2gjxt6phksrff6rttyz4
+=== RUN   TestLinuxPythonRootPolicyTransactionSequenceIntegration/cpu-zero#02
+    observation_resource_integration_linux_test.go:476: root=pytorch:cpu fixture_sha256=fae90b4c80d775f648e10e03b9c45b60521ae28cc4dcb230fc5828ab03393205 units=1 status=COMPLETED transaction=sbx_iteotqncp7ynolzh3qjjnksstq
+=== RUN   TestLinuxPythonRootPolicyTransactionSequenceIntegration/cu132-zero
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu132 fixture_sha256=fae90b4c80d775f648e10e03b9c45b60521ae28cc4dcb230fc5828ab03393205 units=1 status=COMPLETED transaction=sbx_ddv32otoke4j5zj6z4jcfnbaui
+=== RUN   TestLinuxPythonRootPolicyTransactionSequenceIntegration/cu132-nonzero
+=== NAME  TestLinuxPythonRootPolicyTransactionSequenceIntegration
+    direct_exec_admission.go:99: discard command failed: docker ["exec" "--user" "0:0" "a42ed406b2168b921ee586bb93eeb9335bc7356894a5fce9e78b7ed8a22c677e" "/haa-runtime/haa-boundary" "--origin-handoff-python" "9b2924c12ec819e0c2de7785792e6d904848bf9bb3447318f5f6260d17e448f5" "python" "-I" "-S" "-B" "-c" "import importlib, importlib.machinery, os, sys\nroot = '/haa-site'\nname = sys.argv[1]\nparts = name.split('.')\nif not parts or any(not part.isidentifier() for part in parts):\n    raise RuntimeError('invalid target import identity')\nif parts[0] in sys.modules:\n    raise RuntimeError('target already present in interpreter startup')\nsearch = [root]\nfor depth in range(len(parts)):\n    # Resolve each component against its authenticated parent search path.\n    # A fully qualified namespace lookup requires an imported parent in\n    # sys.modules; executing that parent here would precede target admission.\n    spec = importlib.machinery.PathFinder.find_spec(parts[depth], search)\n    if spec is None:\n        raise RuntimeError('target not found in authenticated site')\n    if spec.origin not in (None, 'namespace') and os.path.commonpath((root, os.path.realpath(spec.origin))) != root:\n        raise RuntimeError('target origin outside authenticated site')\n    locations = spec.submodule_search_locations\n    if locations is not None and (not locations or any(os.path.commonpath((root, os.path.realpath(p))) != root for p in locations)):\n        raise RuntimeError('target namespace outside authenticated site')\n    if depth + 1 < len(parts):\n        if locations is None:\n            raise RuntimeError('target parent is not a package')\n        search = locations\nsys.path.insert(0, root)\nimportlib.import_module(name)\n" "example"]: exit status 37; bounded output=""
+=== NAME  TestLinuxPythonRootPolicyTransactionSequenceIntegration/cu132-nonzero
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu132 fixture_sha256=5b9ca02af3634ab1376e1268da0e157134f759c5406f00394c093d8a8fa2d11d units=1 status=INCOMPLETE transaction=sbx_adynmp4n47jtzjxym42uvy3wzm
+=== RUN   TestLinuxPythonRootPolicyTransactionSequenceIntegration/cpu-zero#03
+    observation_resource_integration_linux_test.go:476: root=pytorch:cpu fixture_sha256=fae90b4c80d775f648e10e03b9c45b60521ae28cc4dcb230fc5828ab03393205 units=1 status=COMPLETED transaction=sbx_oidq72z54kmhpvzolokdposzni
+--- PASS: TestLinuxPythonRootPolicyTransactionSequenceIntegration (59.78s)
+    --- PASS: TestLinuxPythonRootPolicyTransactionSequenceIntegration/cpu-zero (6.01s)
+    --- PASS: TestLinuxPythonRootPolicyTransactionSequenceIntegration/cu126-zero (6.08s)
+    --- PASS: TestLinuxPythonRootPolicyTransactionSequenceIntegration/cu126-nonzero (5.78s)
+    --- PASS: TestLinuxPythonRootPolicyTransactionSequenceIntegration/cpu-zero#01 (5.91s)
+    --- PASS: TestLinuxPythonRootPolicyTransactionSequenceIntegration/cu130-zero (6.12s)
+    --- PASS: TestLinuxPythonRootPolicyTransactionSequenceIntegration/cu130-nonzero (5.90s)
+    --- PASS: TestLinuxPythonRootPolicyTransactionSequenceIntegration/cpu-zero#02 (5.75s)
+    --- PASS: TestLinuxPythonRootPolicyTransactionSequenceIntegration/cu132-zero (6.11s)
+    --- PASS: TestLinuxPythonRootPolicyTransactionSequenceIntegration/cu132-nonzero (5.93s)
+    --- PASS: TestLinuxPythonRootPolicyTransactionSequenceIntegration/cpu-zero#03 (6.18s)
+=== RUN   TestLinuxPythonProcMapsTransactionIntegration
+    observation_resource_integration_linux_test.go:342: invalid diagnostic root profile
+--- FAIL: TestLinuxPythonProcMapsTransactionIntegration (0.01s)
+=== RUN   TestLinuxPythonLibraryDiscoveryBoundaryIntegration
+=== RUN   TestLinuxPythonLibraryDiscoveryBoundaryIntegration/cpu
+=== RUN   TestLinuxPythonLibraryDiscoveryBoundaryIntegration/cpu/cpu-zero
+    observation_resource_integration_linux_test.go:476: root=pytorch:cpu fixture_sha256=62ca8e3db8fcc6fad24ebd3de2ae9344ab2f80d2cb285211c65e03178189aa8a units=1 status=COMPLETED transaction=sbx_xtn5wtz3mqg2uyvbu2lrvatu3e
+=== RUN   TestLinuxPythonLibraryDiscoveryBoundaryIntegration/cu126
+=== RUN   TestLinuxPythonLibraryDiscoveryBoundaryIntegration/cu126/cu126-zero
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu126 fixture_sha256=62ca8e3db8fcc6fad24ebd3de2ae9344ab2f80d2cb285211c65e03178189aa8a units=1 status=COMPLETED transaction=sbx_qckv2ec7u7nqdzet7burkcglmq
+=== RUN   TestLinuxPythonLibraryDiscoveryBoundaryIntegration/cu130
+=== RUN   TestLinuxPythonLibraryDiscoveryBoundaryIntegration/cu130/cu130-zero
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu130 fixture_sha256=62ca8e3db8fcc6fad24ebd3de2ae9344ab2f80d2cb285211c65e03178189aa8a units=1 status=COMPLETED transaction=sbx_6y6yz6qjciuthpvwckkyjea3cm
+=== RUN   TestLinuxPythonLibraryDiscoveryBoundaryIntegration/cu132
+=== RUN   TestLinuxPythonLibraryDiscoveryBoundaryIntegration/cu132/cu132-zero
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu132 fixture_sha256=62ca8e3db8fcc6fad24ebd3de2ae9344ab2f80d2cb285211c65e03178189aa8a units=1 status=COMPLETED transaction=sbx_norc2txgtdibcemk257lkr7bdq
+--- PASS: TestLinuxPythonLibraryDiscoveryBoundaryIntegration (26.39s)
+    --- PASS: TestLinuxPythonLibraryDiscoveryBoundaryIntegration/cpu (8.04s)
+        --- PASS: TestLinuxPythonLibraryDiscoveryBoundaryIntegration/cpu/cpu-zero (8.04s)
+    --- PASS: TestLinuxPythonLibraryDiscoveryBoundaryIntegration/cu126 (6.06s)
+        --- PASS: TestLinuxPythonLibraryDiscoveryBoundaryIntegration/cu126/cu126-zero (6.06s)
+    --- PASS: TestLinuxPythonLibraryDiscoveryBoundaryIntegration/cu130 (6.15s)
+        --- PASS: TestLinuxPythonLibraryDiscoveryBoundaryIntegration/cu130/cu130-zero (6.14s)
+    --- PASS: TestLinuxPythonLibraryDiscoveryBoundaryIntegration/cu132 (6.14s)
+        --- PASS: TestLinuxPythonLibraryDiscoveryBoundaryIntegration/cu132/cu132-zero (6.13s)
+=== RUN   TestLinuxPythonLibraryQuerySequenceIntegration
+=== RUN   TestLinuxPythonLibraryQuerySequenceIntegration/cpu-zero
+    observation_resource_integration_linux_test.go:476: root=pytorch:cpu fixture_sha256=62ca8e3db8fcc6fad24ebd3de2ae9344ab2f80d2cb285211c65e03178189aa8a units=1 status=COMPLETED transaction=sbx_inyoxmxzaki6aye4mhzes5mdzy
+=== RUN   TestLinuxPythonLibraryQuerySequenceIntegration/cu126-zero
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu126 fixture_sha256=62ca8e3db8fcc6fad24ebd3de2ae9344ab2f80d2cb285211c65e03178189aa8a units=1 status=COMPLETED transaction=sbx_4ycisyfr5hk4r4igeqrrh6iveu
+=== RUN   TestLinuxPythonLibraryQuerySequenceIntegration/cu126-nonzero
+=== NAME  TestLinuxPythonLibraryQuerySequenceIntegration
+    direct_exec_admission.go:99: discard command failed: docker ["exec" "--user" "0:0" "75c0ed8d474d1d3b2504654f24f703758adbb20380e68fe979c58a7a64927196" "/haa-runtime/haa-boundary" "--origin-handoff-python" "87d1b1bc5a0412ce52b37e23aa937dd939fa0ce5151036b09a34f08c88063451" "python" "-I" "-S" "-B" "-c" "import importlib, importlib.machinery, os, sys\nroot = '/haa-site'\nname = sys.argv[1]\nparts = name.split('.')\nif not parts or any(not part.isidentifier() for part in parts):\n    raise RuntimeError('invalid target import identity')\nif parts[0] in sys.modules:\n    raise RuntimeError('target already present in interpreter startup')\nsearch = [root]\nfor depth in range(len(parts)):\n    # Resolve each component against its authenticated parent search path.\n    # A fully qualified namespace lookup requires an imported parent in\n    # sys.modules; executing that parent here would precede target admission.\n    spec = importlib.machinery.PathFinder.find_spec(parts[depth], search)\n    if spec is None:\n        raise RuntimeError('target not found in authenticated site')\n    if spec.origin not in (None, 'namespace') and os.path.commonpath((root, os.path.realpath(spec.origin))) != root:\n        raise RuntimeError('target origin outside authenticated site')\n    locations = spec.submodule_search_locations\n    if locations is not None and (not locations or any(os.path.commonpath((root, os.path.realpath(p))) != root for p in locations)):\n        raise RuntimeError('target namespace outside authenticated site')\n    if depth + 1 < len(parts):\n        if locations is None:\n            raise RuntimeError('target parent is not a package')\n        search = locations\nsys.path.insert(0, root)\nimportlib.import_module(name)\n" "example"]: exit status 37; bounded output=""
+=== NAME  TestLinuxPythonLibraryQuerySequenceIntegration/cu126-nonzero
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu126 fixture_sha256=8cbf2a5f38f2f948d0fc754d5925340c5589d4c114d7f1fcf59eaf0ce82b4995 units=1 status=INCOMPLETE transaction=sbx_fpru36e4rlmojflqc52ce7ggia
+=== RUN   TestLinuxPythonLibraryQuerySequenceIntegration/cpu-zero#01
+    observation_resource_integration_linux_test.go:476: root=pytorch:cpu fixture_sha256=62ca8e3db8fcc6fad24ebd3de2ae9344ab2f80d2cb285211c65e03178189aa8a units=1 status=COMPLETED transaction=sbx_bf2iodex675zlr7hiciv4heqoq
+=== RUN   TestLinuxPythonLibraryQuerySequenceIntegration/cu130-zero
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu130 fixture_sha256=62ca8e3db8fcc6fad24ebd3de2ae9344ab2f80d2cb285211c65e03178189aa8a units=1 status=COMPLETED transaction=sbx_f4sqgngfyi5hyciz3nq25yht4e
+=== RUN   TestLinuxPythonLibraryQuerySequenceIntegration/cu130-nonzero
+=== NAME  TestLinuxPythonLibraryQuerySequenceIntegration
+    direct_exec_admission.go:99: discard command failed: docker ["exec" "--user" "0:0" "e0afaf1b03f4d77ef21e99557c3f40b0cd02aaf950a94ecea004bd40caac8310" "/haa-runtime/haa-boundary" "--origin-handoff-python" "6da943f04e82ee929e6b8bab39e9d6d5e5500a4b75a6e0a96608278f59a97134" "python" "-I" "-S" "-B" "-c" "import importlib, importlib.machinery, os, sys\nroot = '/haa-site'\nname = sys.argv[1]\nparts = name.split('.')\nif not parts or any(not part.isidentifier() for part in parts):\n    raise RuntimeError('invalid target import identity')\nif parts[0] in sys.modules:\n    raise RuntimeError('target already present in interpreter startup')\nsearch = [root]\nfor depth in range(len(parts)):\n    # Resolve each component against its authenticated parent search path.\n    # A fully qualified namespace lookup requires an imported parent in\n    # sys.modules; executing that parent here would precede target admission.\n    spec = importlib.machinery.PathFinder.find_spec(parts[depth], search)\n    if spec is None:\n        raise RuntimeError('target not found in authenticated site')\n    if spec.origin not in (None, 'namespace') and os.path.commonpath((root, os.path.realpath(spec.origin))) != root:\n        raise RuntimeError('target origin outside authenticated site')\n    locations = spec.submodule_search_locations\n    if locations is not None and (not locations or any(os.path.commonpath((root, os.path.realpath(p))) != root for p in locations)):\n        raise RuntimeError('target namespace outside authenticated site')\n    if depth + 1 < len(parts):\n        if locations is None:\n            raise RuntimeError('target parent is not a package')\n        search = locations\nsys.path.insert(0, root)\nimportlib.import_module(name)\n" "example"]: exit status 37; bounded output=""
+=== NAME  TestLinuxPythonLibraryQuerySequenceIntegration/cu130-nonzero
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu130 fixture_sha256=8cbf2a5f38f2f948d0fc754d5925340c5589d4c114d7f1fcf59eaf0ce82b4995 units=1 status=INCOMPLETE transaction=sbx_ubut6gc2mir6d6v7blyylm3eta
+=== RUN   TestLinuxPythonLibraryQuerySequenceIntegration/cpu-zero#02
+    observation_resource_integration_linux_test.go:476: root=pytorch:cpu fixture_sha256=62ca8e3db8fcc6fad24ebd3de2ae9344ab2f80d2cb285211c65e03178189aa8a units=1 status=COMPLETED transaction=sbx_2f2eqkope2epnqaiem6yj76srm
+=== RUN   TestLinuxPythonLibraryQuerySequenceIntegration/cu132-zero
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu132 fixture_sha256=62ca8e3db8fcc6fad24ebd3de2ae9344ab2f80d2cb285211c65e03178189aa8a units=1 status=COMPLETED transaction=sbx_whluswuurslvexqeerxyv33hou
+=== RUN   TestLinuxPythonLibraryQuerySequenceIntegration/cu132-nonzero
+=== NAME  TestLinuxPythonLibraryQuerySequenceIntegration
+    direct_exec_admission.go:99: discard command failed: docker ["exec" "--user" "0:0" "fa879cbc48f2bf2d0d156ed2dcec7eaa014b56a31f26036f7b720b64138acef6" "/haa-runtime/haa-boundary" "--origin-handoff-python" "87128c6e3023c171cf23bc3813996a1307439e86bba0645a6bee8b5b3f632ecb" "python" "-I" "-S" "-B" "-c" "import importlib, importlib.machinery, os, sys\nroot = '/haa-site'\nname = sys.argv[1]\nparts = name.split('.')\nif not parts or any(not part.isidentifier() for part in parts):\n    raise RuntimeError('invalid target import identity')\nif parts[0] in sys.modules:\n    raise RuntimeError('target already present in interpreter startup')\nsearch = [root]\nfor depth in range(len(parts)):\n    # Resolve each component against its authenticated parent search path.\n    # A fully qualified namespace lookup requires an imported parent in\n    # sys.modules; executing that parent here would precede target admission.\n    spec = importlib.machinery.PathFinder.find_spec(parts[depth], search)\n    if spec is None:\n        raise RuntimeError('target not found in authenticated site')\n    if spec.origin not in (None, 'namespace') and os.path.commonpath((root, os.path.realpath(spec.origin))) != root:\n        raise RuntimeError('target origin outside authenticated site')\n    locations = spec.submodule_search_locations\n    if locations is not None and (not locations or any(os.path.commonpath((root, os.path.realpath(p))) != root for p in locations)):\n        raise RuntimeError('target namespace outside authenticated site')\n    if depth + 1 < len(parts):\n        if locations is None:\n            raise RuntimeError('target parent is not a package')\n        search = locations\nsys.path.insert(0, root)\nimportlib.import_module(name)\n" "example"]: exit status 37; bounded output=""
+=== NAME  TestLinuxPythonLibraryQuerySequenceIntegration/cu132-nonzero
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu132 fixture_sha256=8cbf2a5f38f2f948d0fc754d5925340c5589d4c114d7f1fcf59eaf0ce82b4995 units=1 status=INCOMPLETE transaction=sbx_ltvgnnaec4emku3ggrbjxw726m
+=== RUN   TestLinuxPythonLibraryQuerySequenceIntegration/cpu-zero#03
+    observation_resource_integration_linux_test.go:476: root=pytorch:cpu fixture_sha256=62ca8e3db8fcc6fad24ebd3de2ae9344ab2f80d2cb285211c65e03178189aa8a units=1 status=COMPLETED transaction=sbx_po4akhpiys54mpb5kjbtudkx6a
+--- PASS: TestLinuxPythonLibraryQuerySequenceIntegration (60.95s)
+    --- PASS: TestLinuxPythonLibraryQuerySequenceIntegration/cpu-zero (6.08s)
+    --- PASS: TestLinuxPythonLibraryQuerySequenceIntegration/cu126-zero (6.41s)
+    --- PASS: TestLinuxPythonLibraryQuerySequenceIntegration/cu126-nonzero (6.03s)
+    --- PASS: TestLinuxPythonLibraryQuerySequenceIntegration/cpu-zero#01 (6.10s)
+    --- PASS: TestLinuxPythonLibraryQuerySequenceIntegration/cu130-zero (6.04s)
+    --- PASS: TestLinuxPythonLibraryQuerySequenceIntegration/cu130-nonzero (6.24s)
+    --- PASS: TestLinuxPythonLibraryQuerySequenceIntegration/cpu-zero#02 (6.14s)
+    --- PASS: TestLinuxPythonLibraryQuerySequenceIntegration/cu132-zero (5.93s)
+    --- PASS: TestLinuxPythonLibraryQuerySequenceIntegration/cu132-nonzero (5.98s)
+    --- PASS: TestLinuxPythonLibraryQuerySequenceIntegration/cpu-zero#03 (5.99s)
+=== RUN   TestLinuxPythonCommandSequenceIntegration
+=== RUN   TestLinuxPythonCommandSequenceIntegration/cpu-zero
+    observation_resource_integration_linux_test.go:476: root=pytorch:cpu fixture_sha256=1ef9c89a02182c89119b45027c5e399011987ad2495598dc943c335a6067be13 units=2 status=COMPLETED transaction=sbx_idep4jxhmsxefr7jbgj35opozq
+=== RUN   TestLinuxPythonCommandSequenceIntegration/cu126-zero
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu126 fixture_sha256=1ef9c89a02182c89119b45027c5e399011987ad2495598dc943c335a6067be13 units=2 status=COMPLETED transaction=sbx_ghpvben23u7xe3alsiguxcc6ma
+=== RUN   TestLinuxPythonCommandSequenceIntegration/cu126-nonzero
+=== NAME  TestLinuxPythonCommandSequenceIntegration
+    direct_exec_admission.go:99: discard command failed: docker ["exec" "--user" "0:0" "5ed0acd1f9677433c7dc320232264f5ea65c154d4ba31401d362c3a1b16bee59" "/haa-runtime/haa-boundary" "--origin-handoff-python" "96e30da89c45b4af3e0eeabe2be241be42b899804805c25d9f5dcaa4dcf27b49" "python" "-I" "-S" "-B" "-c" "import importlib, importlib.machinery, os, sys\nroot = '/haa-site'\nname = sys.argv[1]\nparts = name.split('.')\nif not parts or any(not part.isidentifier() for part in parts):\n    raise RuntimeError('invalid target import identity')\nif parts[0] in sys.modules:\n    raise RuntimeError('target already present in interpreter startup')\nsearch = [root]\nfor depth in range(len(parts)):\n    # Resolve each component against its authenticated parent search path.\n    # A fully qualified namespace lookup requires an imported parent in\n    # sys.modules; executing that parent here would precede target admission.\n    spec = importlib.machinery.PathFinder.find_spec(parts[depth], search)\n    if spec is None:\n        raise RuntimeError('target not found in authenticated site')\n    if spec.origin not in (None, 'namespace') and os.path.commonpath((root, os.path.realpath(spec.origin))) != root:\n        raise RuntimeError('target origin outside authenticated site')\n    locations = spec.submodule_search_locations\n    if locations is not None and (not locations or any(os.path.commonpath((root, os.path.realpath(p))) != root for p in locations)):\n        raise RuntimeError('target namespace outside authenticated site')\n    if depth + 1 < len(parts):\n        if locations is None:\n            raise RuntimeError('target parent is not a package')\n        search = locations\nsys.path.insert(0, root)\nimportlib.import_module(name)\n" "example.cli"]: exit status 37; bounded output=""
+=== NAME  TestLinuxPythonCommandSequenceIntegration/cu126-nonzero
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu126 fixture_sha256=22176b3fad2f2939bc90c461c126ba595ec7fa1be223c533199dd3b41371fe18 units=2 status=COMPLETED transaction=sbx_ifopnbrgkzgwuekgaqbqgzb3rm
+=== RUN   TestLinuxPythonCommandSequenceIntegration/cpu-zero#01
+    observation_resource_integration_linux_test.go:476: root=pytorch:cpu fixture_sha256=1ef9c89a02182c89119b45027c5e399011987ad2495598dc943c335a6067be13 units=2 status=COMPLETED transaction=sbx_tf4oxjoppbkvegi37ekmyaaooe
+=== RUN   TestLinuxPythonCommandSequenceIntegration/cu130-zero
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu130 fixture_sha256=1ef9c89a02182c89119b45027c5e399011987ad2495598dc943c335a6067be13 units=2 status=COMPLETED transaction=sbx_wocnwuutoyd5k3xgbgkmiesegm
+=== RUN   TestLinuxPythonCommandSequenceIntegration/cu130-nonzero
+=== NAME  TestLinuxPythonCommandSequenceIntegration
+    direct_exec_admission.go:99: discard command failed: docker ["exec" "--user" "0:0" "073ec151d32380bc089af4b90b101a1fc708e9b59395ab03a39383dcad7a25d5" "/haa-runtime/haa-boundary" "--origin-handoff-python" "4c91b9613e85518b572b5b3bd020774c4ee26cfbf23e017b2b314cebd70a3535" "python" "-I" "-S" "-B" "-c" "import importlib, importlib.machinery, os, sys\nroot = '/haa-site'\nname = sys.argv[1]\nparts = name.split('.')\nif not parts or any(not part.isidentifier() for part in parts):\n    raise RuntimeError('invalid target import identity')\nif parts[0] in sys.modules:\n    raise RuntimeError('target already present in interpreter startup')\nsearch = [root]\nfor depth in range(len(parts)):\n    # Resolve each component against its authenticated parent search path.\n    # A fully qualified namespace lookup requires an imported parent in\n    # sys.modules; executing that parent here would precede target admission.\n    spec = importlib.machinery.PathFinder.find_spec(parts[depth], search)\n    if spec is None:\n        raise RuntimeError('target not found in authenticated site')\n    if spec.origin not in (None, 'namespace') and os.path.commonpath((root, os.path.realpath(spec.origin))) != root:\n        raise RuntimeError('target origin outside authenticated site')\n    locations = spec.submodule_search_locations\n    if locations is not None and (not locations or any(os.path.commonpath((root, os.path.realpath(p))) != root for p in locations)):\n        raise RuntimeError('target namespace outside authenticated site')\n    if depth + 1 < len(parts):\n        if locations is None:\n            raise RuntimeError('target parent is not a package')\n        search = locations\nsys.path.insert(0, root)\nimportlib.import_module(name)\n" "example.cli"]: exit status 37; bounded output=""
+=== NAME  TestLinuxPythonCommandSequenceIntegration/cu130-nonzero
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu130 fixture_sha256=22176b3fad2f2939bc90c461c126ba595ec7fa1be223c533199dd3b41371fe18 units=2 status=COMPLETED transaction=sbx_jzxrnwlf35434aydxo6m4nqt6q
+=== RUN   TestLinuxPythonCommandSequenceIntegration/cpu-zero#02
+    observation_resource_integration_linux_test.go:476: root=pytorch:cpu fixture_sha256=1ef9c89a02182c89119b45027c5e399011987ad2495598dc943c335a6067be13 units=2 status=COMPLETED transaction=sbx_4okuf776fru22ukuo745d4nls4
+=== RUN   TestLinuxPythonCommandSequenceIntegration/cu132-zero
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu132 fixture_sha256=1ef9c89a02182c89119b45027c5e399011987ad2495598dc943c335a6067be13 units=2 status=COMPLETED transaction=sbx_g3kheqynoseci6pc6on4ensoou
+=== RUN   TestLinuxPythonCommandSequenceIntegration/cu132-nonzero
+=== NAME  TestLinuxPythonCommandSequenceIntegration
+    direct_exec_admission.go:99: discard command failed: docker ["exec" "--user" "0:0" "e9e7d44361a43311930d442de78e8597d52810259ef963f9968c348426c171c6" "/haa-runtime/haa-boundary" "--origin-handoff-python" "7c55c10e67b07282c1d937f2fbfd193df10a8766da79c3085ea539d55b712014" "python" "-I" "-S" "-B" "-c" "import importlib, importlib.machinery, os, sys\nroot = '/haa-site'\nname = sys.argv[1]\nparts = name.split('.')\nif not parts or any(not part.isidentifier() for part in parts):\n    raise RuntimeError('invalid target import identity')\nif parts[0] in sys.modules:\n    raise RuntimeError('target already present in interpreter startup')\nsearch = [root]\nfor depth in range(len(parts)):\n    # Resolve each component against its authenticated parent search path.\n    # A fully qualified namespace lookup requires an imported parent in\n    # sys.modules; executing that parent here would precede target admission.\n    spec = importlib.machinery.PathFinder.find_spec(parts[depth], search)\n    if spec is None:\n        raise RuntimeError('target not found in authenticated site')\n    if spec.origin not in (None, 'namespace') and os.path.commonpath((root, os.path.realpath(spec.origin))) != root:\n        raise RuntimeError('target origin outside authenticated site')\n    locations = spec.submodule_search_locations\n    if locations is not None and (not locations or any(os.path.commonpath((root, os.path.realpath(p))) != root for p in locations)):\n        raise RuntimeError('target namespace outside authenticated site')\n    if depth + 1 < len(parts):\n        if locations is None:\n            raise RuntimeError('target parent is not a package')\n        search = locations\nsys.path.insert(0, root)\nimportlib.import_module(name)\n" "example.cli"]: exit status 37; bounded output=""
+=== NAME  TestLinuxPythonCommandSequenceIntegration/cu132-nonzero
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu132 fixture_sha256=22176b3fad2f2939bc90c461c126ba595ec7fa1be223c533199dd3b41371fe18 units=2 status=COMPLETED transaction=sbx_jbxif6ys62pkbjjbrmy3p3t3fm
+=== RUN   TestLinuxPythonCommandSequenceIntegration/cpu-zero#03
+    observation_resource_integration_linux_test.go:476: root=pytorch:cpu fixture_sha256=1ef9c89a02182c89119b45027c5e399011987ad2495598dc943c335a6067be13 units=2 status=COMPLETED transaction=sbx_zvpjmaqsqroc6qxwslb3rcbzkm
+--- PASS: TestLinuxPythonCommandSequenceIntegration (71.92s)
+    --- PASS: TestLinuxPythonCommandSequenceIntegration/cpu-zero (7.20s)
+    --- PASS: TestLinuxPythonCommandSequenceIntegration/cu126-zero (7.12s)
+    --- PASS: TestLinuxPythonCommandSequenceIntegration/cu126-nonzero (7.16s)
+    --- PASS: TestLinuxPythonCommandSequenceIntegration/cpu-zero#01 (7.18s)
+    --- PASS: TestLinuxPythonCommandSequenceIntegration/cu130-zero (7.10s)
+    --- PASS: TestLinuxPythonCommandSequenceIntegration/cu130-nonzero (7.32s)
+    --- PASS: TestLinuxPythonCommandSequenceIntegration/cpu-zero#02 (7.21s)
+    --- PASS: TestLinuxPythonCommandSequenceIntegration/cu132-zero (7.19s)
+    --- PASS: TestLinuxPythonCommandSequenceIntegration/cu132-nonzero (7.20s)
+    --- PASS: TestLinuxPythonCommandSequenceIntegration/cpu-zero#03 (7.22s)
+=== RUN   TestLinuxPythonNamespaceSequenceIntegration
+=== RUN   TestLinuxPythonNamespaceSequenceIntegration/cpu-zero
+    observation_resource_integration_linux_test.go:476: root=pytorch:cpu fixture_sha256=2d508d019235e2de420a47da2fea4cb2ef7009e71575a32c9af63d85a7dcaa07 units=2 status=COMPLETED transaction=sbx_jg6d46dzebcqhjzahyxasqor2i
+=== RUN   TestLinuxPythonNamespaceSequenceIntegration/cu126-zero
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu126 fixture_sha256=2d508d019235e2de420a47da2fea4cb2ef7009e71575a32c9af63d85a7dcaa07 units=2 status=COMPLETED transaction=sbx_ui65nlxxxkga6f47liavdb5pai
+=== RUN   TestLinuxPythonNamespaceSequenceIntegration/cu126-nonzero
+=== NAME  TestLinuxPythonNamespaceSequenceIntegration
+    direct_exec_admission.go:99: discard command failed: docker ["exec" "--user" "0:0" "6c6fd2d27ed00eb10bfa798f56986573862448cf8b28c0ba19f9932dc37a98d2" "/haa-runtime/haa-boundary" "--origin-handoff-python" "ebe1210a0057f7e45a41de6bf8c8b945a429876d63c2997dd25592a299b32152" "python" "-I" "-S" "-B" "-c" "import importlib, importlib.machinery, os, sys\nroot = '/haa-site'\nname = sys.argv[1]\nparts = name.split('.')\nif not parts or any(not part.isidentifier() for part in parts):\n    raise RuntimeError('invalid target import identity')\nif parts[0] in sys.modules:\n    raise RuntimeError('target already present in interpreter startup')\nsearch = [root]\nfor depth in range(len(parts)):\n    # Resolve each component against its authenticated parent search path.\n    # A fully qualified namespace lookup requires an imported parent in\n    # sys.modules; executing that parent here would precede target admission.\n    spec = importlib.machinery.PathFinder.find_spec(parts[depth], search)\n    if spec is None:\n        raise RuntimeError('target not found in authenticated site')\n    if spec.origin not in (None, 'namespace') and os.path.commonpath((root, os.path.realpath(spec.origin))) != root:\n        raise RuntimeError('target origin outside authenticated site')\n    locations = spec.submodule_search_locations\n    if locations is not None and (not locations or any(os.path.commonpath((root, os.path.realpath(p))) != root for p in locations)):\n        raise RuntimeError('target namespace outside authenticated site')\n    if depth + 1 < len(parts):\n        if locations is None:\n            raise RuntimeError('target parent is not a package')\n        search = locations\nsys.path.insert(0, root)\nimportlib.import_module(name)\n" "example"]: exit status 37; bounded output=""
+=== NAME  TestLinuxPythonNamespaceSequenceIntegration/cu126-nonzero
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu126 fixture_sha256=3117ea87f98b97b1aee29b2965489b64783e7732f3f51ada79ea4384cb532e06 units=2 status=INCOMPLETE transaction=sbx_cafhs4u4lhmqdvyl5lataiy5dy
+=== RUN   TestLinuxPythonNamespaceSequenceIntegration/cpu-zero#01
+    observation_resource_integration_linux_test.go:476: root=pytorch:cpu fixture_sha256=2d508d019235e2de420a47da2fea4cb2ef7009e71575a32c9af63d85a7dcaa07 units=2 status=COMPLETED transaction=sbx_ao5wadswjj5dc3slhbxltle4c4
+=== RUN   TestLinuxPythonNamespaceSequenceIntegration/cu130-zero
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu130 fixture_sha256=2d508d019235e2de420a47da2fea4cb2ef7009e71575a32c9af63d85a7dcaa07 units=2 status=COMPLETED transaction=sbx_opyqfq77ciyjjyqzre63fpzh7u
+=== RUN   TestLinuxPythonNamespaceSequenceIntegration/cu130-nonzero
+=== NAME  TestLinuxPythonNamespaceSequenceIntegration
+    direct_exec_admission.go:99: discard command failed: docker ["exec" "--user" "0:0" "bafd8fbcda633c5f0f1ee3339116c85f7c10582d18693dde8a5902ecdd1f8e96" "/haa-runtime/haa-boundary" "--origin-handoff-python" "389b6605059c70e99d3014eb20e0e9a8d3cf254ff4c1a4dd23f4ddba3fa3e093" "python" "-I" "-S" "-B" "-c" "import importlib, importlib.machinery, os, sys\nroot = '/haa-site'\nname = sys.argv[1]\nparts = name.split('.')\nif not parts or any(not part.isidentifier() for part in parts):\n    raise RuntimeError('invalid target import identity')\nif parts[0] in sys.modules:\n    raise RuntimeError('target already present in interpreter startup')\nsearch = [root]\nfor depth in range(len(parts)):\n    # Resolve each component against its authenticated parent search path.\n    # A fully qualified namespace lookup requires an imported parent in\n    # sys.modules; executing that parent here would precede target admission.\n    spec = importlib.machinery.PathFinder.find_spec(parts[depth], search)\n    if spec is None:\n        raise RuntimeError('target not found in authenticated site')\n    if spec.origin not in (None, 'namespace') and os.path.commonpath((root, os.path.realpath(spec.origin))) != root:\n        raise RuntimeError('target origin outside authenticated site')\n    locations = spec.submodule_search_locations\n    if locations is not None and (not locations or any(os.path.commonpath((root, os.path.realpath(p))) != root for p in locations)):\n        raise RuntimeError('target namespace outside authenticated site')\n    if depth + 1 < len(parts):\n        if locations is None:\n            raise RuntimeError('target parent is not a package')\n        search = locations\nsys.path.insert(0, root)\nimportlib.import_module(name)\n" "example"]: exit status 37; bounded output=""
+=== NAME  TestLinuxPythonNamespaceSequenceIntegration/cu130-nonzero
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu130 fixture_sha256=3117ea87f98b97b1aee29b2965489b64783e7732f3f51ada79ea4384cb532e06 units=2 status=INCOMPLETE transaction=sbx_bviiuydyrf34emlwr75babjjcq
+=== RUN   TestLinuxPythonNamespaceSequenceIntegration/cpu-zero#02
+    observation_resource_integration_linux_test.go:476: root=pytorch:cpu fixture_sha256=2d508d019235e2de420a47da2fea4cb2ef7009e71575a32c9af63d85a7dcaa07 units=2 status=COMPLETED transaction=sbx_4ib6gej5zufzafqun4foderhr4
+=== RUN   TestLinuxPythonNamespaceSequenceIntegration/cu132-zero
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu132 fixture_sha256=2d508d019235e2de420a47da2fea4cb2ef7009e71575a32c9af63d85a7dcaa07 units=2 status=COMPLETED transaction=sbx_336ywwxjjp3eqhl3bcuwgj7yqm
+=== RUN   TestLinuxPythonNamespaceSequenceIntegration/cu132-nonzero
+=== NAME  TestLinuxPythonNamespaceSequenceIntegration
+    direct_exec_admission.go:99: discard command failed: docker ["exec" "--user" "0:0" "03007dfd99ac21a4a6e8cad795d0d7c81714c7d531e84c966e21b12689185b3f" "/haa-runtime/haa-boundary" "--origin-handoff-python" "a7ff7534b87a3ecc999c971fedb1cc0e38ff5627492074650ffa54f8668ca383" "python" "-I" "-S" "-B" "-c" "import importlib, importlib.machinery, os, sys\nroot = '/haa-site'\nname = sys.argv[1]\nparts = name.split('.')\nif not parts or any(not part.isidentifier() for part in parts):\n    raise RuntimeError('invalid target import identity')\nif parts[0] in sys.modules:\n    raise RuntimeError('target already present in interpreter startup')\nsearch = [root]\nfor depth in range(len(parts)):\n    # Resolve each component against its authenticated parent search path.\n    # A fully qualified namespace lookup requires an imported parent in\n    # sys.modules; executing that parent here would precede target admission.\n    spec = importlib.machinery.PathFinder.find_spec(parts[depth], search)\n    if spec is None:\n        raise RuntimeError('target not found in authenticated site')\n    if spec.origin not in (None, 'namespace') and os.path.commonpath((root, os.path.realpath(spec.origin))) != root:\n        raise RuntimeError('target origin outside authenticated site')\n    locations = spec.submodule_search_locations\n    if locations is not None and (not locations or any(os.path.commonpath((root, os.path.realpath(p))) != root for p in locations)):\n        raise RuntimeError('target namespace outside authenticated site')\n    if depth + 1 < len(parts):\n        if locations is None:\n            raise RuntimeError('target parent is not a package')\n        search = locations\nsys.path.insert(0, root)\nimportlib.import_module(name)\n" "example"]: exit status 37; bounded output=""
+=== NAME  TestLinuxPythonNamespaceSequenceIntegration/cu132-nonzero
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu132 fixture_sha256=3117ea87f98b97b1aee29b2965489b64783e7732f3f51ada79ea4384cb532e06 units=2 status=INCOMPLETE transaction=sbx_np2zg6oif4hjba23k4rlencq2e
+=== RUN   TestLinuxPythonNamespaceSequenceIntegration/cpu-zero#03
+    observation_resource_integration_linux_test.go:476: root=pytorch:cpu fixture_sha256=2d508d019235e2de420a47da2fea4cb2ef7009e71575a32c9af63d85a7dcaa07 units=2 status=COMPLETED transaction=sbx_humyt6lb27e7oyi5rgqjkaewni
+--- PASS: TestLinuxPythonNamespaceSequenceIntegration (71.17s)
+    --- PASS: TestLinuxPythonNamespaceSequenceIntegration/cpu-zero (7.27s)
+    --- PASS: TestLinuxPythonNamespaceSequenceIntegration/cu126-zero (7.26s)
+    --- PASS: TestLinuxPythonNamespaceSequenceIntegration/cu126-nonzero (5.81s)
+    --- PASS: TestLinuxPythonNamespaceSequenceIntegration/cpu-zero#01 (7.33s)
+    --- PASS: TestLinuxPythonNamespaceSequenceIntegration/cu130-zero (7.41s)
+    --- PASS: TestLinuxPythonNamespaceSequenceIntegration/cu130-nonzero (6.75s)
+    --- PASS: TestLinuxPythonNamespaceSequenceIntegration/cpu-zero#02 (8.65s)
+    --- PASS: TestLinuxPythonNamespaceSequenceIntegration/cu132-zero (7.57s)
+    --- PASS: TestLinuxPythonNamespaceSequenceIntegration/cu132-nonzero (5.94s)
+    --- PASS: TestLinuxPythonNamespaceSequenceIntegration/cpu-zero#03 (7.17s)
+=== RUN   TestLinuxInspectionPrerequisiteSequenceIntegration
+=== RUN   TestLinuxInspectionPrerequisiteSequenceIntegration/cpu-positive
+    observation_resource_integration_linux_test.go:256: profile=cpu input_failure=false own_units=2 creates=1 closes=1 next_cpu=COMPLETED
+=== RUN   TestLinuxInspectionPrerequisiteSequenceIntegration/cpu-input-exit37
+=== NAME  TestLinuxInspectionPrerequisiteSequenceIntegration
+    direct_exec_admission.go:99: discard command failed: docker ["exec" "--user" "0:0" "8b60f62951774ed9d19d9ad6266c7d3528d16c7ed52525808a9420a741088822" "/haa-runtime/haa-boundary" "--origin-handoff-python" "807a090ab9628566e442056d123e36062a82a8d40bf8a32996f9600bc25e8356" "python" "-I" "-S" "-B" "-c" "import importlib, importlib.machinery, os, sys\nroot = '/haa-site'\nname = sys.argv[1]\nparts = name.split('.')\nif not parts or any(not part.isidentifier() for part in parts):\n    raise RuntimeError('invalid target import identity')\nif parts[0] in sys.modules:\n    raise RuntimeError('target already present in interpreter startup')\nsearch = [root]\nfor depth in range(len(parts)):\n    # Resolve each component against its authenticated parent search path.\n    # A fully qualified namespace lookup requires an imported parent in\n    # sys.modules; executing that parent here would precede target admission.\n    spec = importlib.machinery.PathFinder.find_spec(parts[depth], search)\n    if spec is None:\n        raise RuntimeError('target not found in authenticated site')\n    if spec.origin not in (None, 'namespace') and os.path.commonpath((root, os.path.realpath(spec.origin))) != root:\n        raise RuntimeError('target origin outside authenticated site')\n    locations = spec.submodule_search_locations\n    if locations is not None and (not locations or any(os.path.commonpath((root, os.path.realpath(p))) != root for p in locations)):\n        raise RuntimeError('target namespace outside authenticated site')\n    if depth + 1 < len(parts):\n        if locations is None:\n            raise RuntimeError('target parent is not a package')\n        search = locations\nsys.path.insert(0, root)\nimportlib.import_module(name)\n" "support"]: exit status 37; bounded output=""
+=== NAME  TestLinuxInspectionPrerequisiteSequenceIntegration/cpu-input-exit37
+    observation_resource_integration_linux_test.go:256: profile=cpu input_failure=true own_units=1 creates=1 closes=1 next_cpu=COMPLETED
+=== RUN   TestLinuxInspectionPrerequisiteSequenceIntegration/cu126-positive
+    observation_resource_integration_linux_test.go:256: profile=cu126 input_failure=false own_units=2 creates=1 closes=1 next_cpu=COMPLETED
+=== RUN   TestLinuxInspectionPrerequisiteSequenceIntegration/cu126-input-exit37
+=== NAME  TestLinuxInspectionPrerequisiteSequenceIntegration
+    direct_exec_admission.go:99: discard command failed: docker ["exec" "--user" "0:0" "e14873d822fcf188ffcb6e2154ea0ea201f56adc1a266af1187f56e32dd7756c" "/haa-runtime/haa-boundary" "--origin-handoff-python" "cbaadccd45e002cf707d7d20e2730e9eeff050e3c66797c745ef4aaf01fe715a" "python" "-I" "-S" "-B" "-c" "import importlib, importlib.machinery, os, sys\nroot = '/haa-site'\nname = sys.argv[1]\nparts = name.split('.')\nif not parts or any(not part.isidentifier() for part in parts):\n    raise RuntimeError('invalid target import identity')\nif parts[0] in sys.modules:\n    raise RuntimeError('target already present in interpreter startup')\nsearch = [root]\nfor depth in range(len(parts)):\n    # Resolve each component against its authenticated parent search path.\n    # A fully qualified namespace lookup requires an imported parent in\n    # sys.modules; executing that parent here would precede target admission.\n    spec = importlib.machinery.PathFinder.find_spec(parts[depth], search)\n    if spec is None:\n        raise RuntimeError('target not found in authenticated site')\n    if spec.origin not in (None, 'namespace') and os.path.commonpath((root, os.path.realpath(spec.origin))) != root:\n        raise RuntimeError('target origin outside authenticated site')\n    locations = spec.submodule_search_locations\n    if locations is not None and (not locations or any(os.path.commonpath((root, os.path.realpath(p))) != root for p in locations)):\n        raise RuntimeError('target namespace outside authenticated site')\n    if depth + 1 < len(parts):\n        if locations is None:\n            raise RuntimeError('target parent is not a package')\n        search = locations\nsys.path.insert(0, root)\nimportlib.import_module(name)\n" "support"]: exit status 37; bounded output=""
+=== NAME  TestLinuxInspectionPrerequisiteSequenceIntegration/cu126-input-exit37
+    observation_resource_integration_linux_test.go:256: profile=cu126 input_failure=true own_units=1 creates=1 closes=1 next_cpu=COMPLETED
+=== RUN   TestLinuxInspectionPrerequisiteSequenceIntegration/cu130-positive
+    observation_resource_integration_linux_test.go:256: profile=cu130 input_failure=false own_units=2 creates=1 closes=1 next_cpu=COMPLETED
+=== RUN   TestLinuxInspectionPrerequisiteSequenceIntegration/cu130-input-exit37
+=== NAME  TestLinuxInspectionPrerequisiteSequenceIntegration
+    direct_exec_admission.go:99: discard command failed: docker ["exec" "--user" "0:0" "e73a9bf40575b24698008b8fbdd1574840beb3d51d4fb856849a4252df044f81" "/haa-runtime/haa-boundary" "--origin-handoff-python" "6023bbc6f8a352546f8f6ff212cb607a8a5881f7c6bb7b6224b17793a818fadd" "python" "-I" "-S" "-B" "-c" "import importlib, importlib.machinery, os, sys\nroot = '/haa-site'\nname = sys.argv[1]\nparts = name.split('.')\nif not parts or any(not part.isidentifier() for part in parts):\n    raise RuntimeError('invalid target import identity')\nif parts[0] in sys.modules:\n    raise RuntimeError('target already present in interpreter startup')\nsearch = [root]\nfor depth in range(len(parts)):\n    # Resolve each component against its authenticated parent search path.\n    # A fully qualified namespace lookup requires an imported parent in\n    # sys.modules; executing that parent here would precede target admission.\n    spec = importlib.machinery.PathFinder.find_spec(parts[depth], search)\n    if spec is None:\n        raise RuntimeError('target not found in authenticated site')\n    if spec.origin not in (None, 'namespace') and os.path.commonpath((root, os.path.realpath(spec.origin))) != root:\n        raise RuntimeError('target origin outside authenticated site')\n    locations = spec.submodule_search_locations\n    if locations is not None and (not locations or any(os.path.commonpath((root, os.path.realpath(p))) != root for p in locations)):\n        raise RuntimeError('target namespace outside authenticated site')\n    if depth + 1 < len(parts):\n        if locations is None:\n            raise RuntimeError('target parent is not a package')\n        search = locations\nsys.path.insert(0, root)\nimportlib.import_module(name)\n" "support"]: exit status 37; bounded output=""
+=== NAME  TestLinuxInspectionPrerequisiteSequenceIntegration/cu130-input-exit37
+    observation_resource_integration_linux_test.go:256: profile=cu130 input_failure=true own_units=1 creates=1 closes=1 next_cpu=COMPLETED
+=== RUN   TestLinuxInspectionPrerequisiteSequenceIntegration/cu132-positive
+    observation_resource_integration_linux_test.go:256: profile=cu132 input_failure=false own_units=2 creates=1 closes=1 next_cpu=COMPLETED
+=== RUN   TestLinuxInspectionPrerequisiteSequenceIntegration/cu132-input-exit37
+=== NAME  TestLinuxInspectionPrerequisiteSequenceIntegration
+    direct_exec_admission.go:99: discard command failed: docker ["exec" "--user" "0:0" "fa83df450d24466824fae46613bf2b92b424c955b71da82653f8f08c2cbf53ad" "/haa-runtime/haa-boundary" "--origin-handoff-python" "1d059ef61994fac1a13e917d82eada02833da3cfddc83a54e2d172717acdb605" "python" "-I" "-S" "-B" "-c" "import importlib, importlib.machinery, os, sys\nroot = '/haa-site'\nname = sys.argv[1]\nparts = name.split('.')\nif not parts or any(not part.isidentifier() for part in parts):\n    raise RuntimeError('invalid target import identity')\nif parts[0] in sys.modules:\n    raise RuntimeError('target already present in interpreter startup')\nsearch = [root]\nfor depth in range(len(parts)):\n    # Resolve each component against its authenticated parent search path.\n    # A fully qualified namespace lookup requires an imported parent in\n    # sys.modules; executing that parent here would precede target admission.\n    spec = importlib.machinery.PathFinder.find_spec(parts[depth], search)\n    if spec is None:\n        raise RuntimeError('target not found in authenticated site')\n    if spec.origin not in (None, 'namespace') and os.path.commonpath((root, os.path.realpath(spec.origin))) != root:\n        raise RuntimeError('target origin outside authenticated site')\n    locations = spec.submodule_search_locations\n    if locations is not None and (not locations or any(os.path.commonpath((root, os.path.realpath(p))) != root for p in locations)):\n        raise RuntimeError('target namespace outside authenticated site')\n    if depth + 1 < len(parts):\n        if locations is None:\n            raise RuntimeError('target parent is not a package')\n        search = locations\nsys.path.insert(0, root)\nimportlib.import_module(name)\n" "support"]: exit status 37; bounded output=""
+=== NAME  TestLinuxInspectionPrerequisiteSequenceIntegration/cu132-input-exit37
+    observation_resource_integration_linux_test.go:256: profile=cu132 input_failure=true own_units=1 creates=1 closes=1 next_cpu=COMPLETED
+--- PASS: TestLinuxInspectionPrerequisiteSequenceIntegration (98.36s)
+    --- PASS: TestLinuxInspectionPrerequisiteSequenceIntegration/cpu-positive (13.35s)
+    --- PASS: TestLinuxInspectionPrerequisiteSequenceIntegration/cpu-input-exit37 (11.54s)
+    --- PASS: TestLinuxInspectionPrerequisiteSequenceIntegration/cu126-positive (12.91s)
+    --- PASS: TestLinuxInspectionPrerequisiteSequenceIntegration/cu126-input-exit37 (11.59s)
+    --- PASS: TestLinuxInspectionPrerequisiteSequenceIntegration/cu130-positive (12.99s)
+    --- PASS: TestLinuxInspectionPrerequisiteSequenceIntegration/cu130-input-exit37 (11.58s)
+    --- PASS: TestLinuxInspectionPrerequisiteSequenceIntegration/cu132-positive (12.96s)
+    --- PASS: TestLinuxInspectionPrerequisiteSequenceIntegration/cu132-input-exit37 (11.43s)
+=== RUN   TestLinuxPythonRejectedLibraryQueryIntegration
+=== RUN   TestLinuxPythonRejectedLibraryQueryIntegration/cpu/query-negative-args
+=== RUN   TestLinuxPythonRejectedLibraryQueryIntegration/cpu/query-negative-args/cpu-zero
+observer_attribution sequence=2 profile=pypi-wheel-pytorch-cpu counts=PROCESS/SENTRY_EXEC/OTHER/ARTIFACT_ROLE/ARTIFACT_GROUP:1
+    observation_resource_integration_linux_test.go:476: root=pytorch:cpu fixture_sha256=c877a2838aa5f3b42997c8ed8a4b717dce984eff5535aff95a72744d1cffd287 units=1 status=INCOMPLETE transaction=sbx_6kbl5uv33lpkqv63ldc7mdfdca
+=== RUN   TestLinuxPythonRejectedLibraryQueryIntegration/cpu/query-negative-env
+=== RUN   TestLinuxPythonRejectedLibraryQueryIntegration/cpu/query-negative-env/cpu-zero
+observer_attribution sequence=2 profile=pypi-wheel-pytorch-cpu counts=PROCESS/SENTRY_EXEC/OTHER/ARTIFACT_LDCONFIG_QUERY/ARTIFACT_GROUP:1
+    observation_resource_integration_linux_test.go:476: root=pytorch:cpu fixture_sha256=6c4433def3b21ebf16a53dd2c2ee25f821b122b1a87bd06de75f5a2c8d6b1413 units=1 status=INCOMPLETE transaction=sbx_o7tfgv3cxl6yq2s7wekj3qnzx4
+=== RUN   TestLinuxPythonRejectedLibraryQueryIntegration/cpu/query-negative-image
+=== RUN   TestLinuxPythonRejectedLibraryQueryIntegration/cpu/query-negative-image/cpu-zero
+observer_attribution sequence=2 profile=pypi-wheel-pytorch-cpu counts=PROCESS/SENTRY_EXEC/OTHER/ARTIFACT_ROLE/ARTIFACT_GROUP:1
+    observation_resource_integration_linux_test.go:476: root=pytorch:cpu fixture_sha256=371d7e2d50429eee3836f5de801d42a82d325969d2dfacb18ea66c3be16be689 units=1 status=INCOMPLETE transaction=sbx_f7m5y4mquvldu7dzsywe2syub4
+=== RUN   TestLinuxPythonRejectedLibraryQueryIntegration/cu126/query-negative-args
+=== RUN   TestLinuxPythonRejectedLibraryQueryIntegration/cu126/query-negative-args/cu126-zero
+observer_attribution sequence=2 profile=pypi-wheel-pytorch-cu126 counts=PROCESS/SENTRY_EXEC/OTHER/ARTIFACT_ROLE/ARTIFACT_GROUP:1
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu126 fixture_sha256=c877a2838aa5f3b42997c8ed8a4b717dce984eff5535aff95a72744d1cffd287 units=1 status=INCOMPLETE transaction=sbx_vxtdwpcsvosgywdi6ov5qdz3n4
+=== RUN   TestLinuxPythonRejectedLibraryQueryIntegration/cu126/query-negative-env
+=== RUN   TestLinuxPythonRejectedLibraryQueryIntegration/cu126/query-negative-env/cu126-zero
+observer_attribution sequence=2 profile=pypi-wheel-pytorch-cu126 counts=PROCESS/SENTRY_EXEC/OTHER/ARTIFACT_LDCONFIG_QUERY/ARTIFACT_GROUP:1
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu126 fixture_sha256=6c4433def3b21ebf16a53dd2c2ee25f821b122b1a87bd06de75f5a2c8d6b1413 units=1 status=INCOMPLETE transaction=sbx_3ij4elqv42fdug2to6zrflpmye
+=== RUN   TestLinuxPythonRejectedLibraryQueryIntegration/cu126/query-negative-image
+=== RUN   TestLinuxPythonRejectedLibraryQueryIntegration/cu126/query-negative-image/cu126-zero
+observer_attribution sequence=2 profile=pypi-wheel-pytorch-cu126 counts=PROCESS/SENTRY_EXEC/OTHER/ARTIFACT_ROLE/ARTIFACT_GROUP:1
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu126 fixture_sha256=371d7e2d50429eee3836f5de801d42a82d325969d2dfacb18ea66c3be16be689 units=1 status=INCOMPLETE transaction=sbx_dpnkf5av7d43k3t3iqjtkyu7ji
+=== RUN   TestLinuxPythonRejectedLibraryQueryIntegration/cu130/query-negative-args
+=== RUN   TestLinuxPythonRejectedLibraryQueryIntegration/cu130/query-negative-args/cu130-zero
+observer_attribution sequence=2 profile=pypi-wheel-pytorch-cu130 counts=PROCESS/SENTRY_EXEC/OTHER/ARTIFACT_ROLE/ARTIFACT_GROUP:1
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu130 fixture_sha256=c877a2838aa5f3b42997c8ed8a4b717dce984eff5535aff95a72744d1cffd287 units=1 status=INCOMPLETE transaction=sbx_yld6qtx7vdseyrwpgvqikcygyy
+=== RUN   TestLinuxPythonRejectedLibraryQueryIntegration/cu130/query-negative-env
+=== RUN   TestLinuxPythonRejectedLibraryQueryIntegration/cu130/query-negative-env/cu130-zero
+observer_attribution sequence=2 profile=pypi-wheel-pytorch-cu130 counts=PROCESS/SENTRY_EXEC/OTHER/ARTIFACT_LDCONFIG_QUERY/ARTIFACT_GROUP:1
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu130 fixture_sha256=6c4433def3b21ebf16a53dd2c2ee25f821b122b1a87bd06de75f5a2c8d6b1413 units=1 status=INCOMPLETE transaction=sbx_mtip3yzmdbjfkmhgodioyfiscm
+=== RUN   TestLinuxPythonRejectedLibraryQueryIntegration/cu130/query-negative-image
+=== RUN   TestLinuxPythonRejectedLibraryQueryIntegration/cu130/query-negative-image/cu130-zero
+observer_attribution sequence=2 profile=pypi-wheel-pytorch-cu130 counts=PROCESS/SENTRY_EXEC/OTHER/ARTIFACT_ROLE/ARTIFACT_GROUP:1
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu130 fixture_sha256=371d7e2d50429eee3836f5de801d42a82d325969d2dfacb18ea66c3be16be689 units=1 status=INCOMPLETE transaction=sbx_uchfzqxyyh4ql44ao2lzkslr74
+=== RUN   TestLinuxPythonRejectedLibraryQueryIntegration/cu132/query-negative-args
+=== RUN   TestLinuxPythonRejectedLibraryQueryIntegration/cu132/query-negative-args/cu132-zero
+observer_attribution sequence=2 profile=pypi-wheel-pytorch-cu132 counts=PROCESS/SENTRY_EXEC/OTHER/ARTIFACT_ROLE/ARTIFACT_GROUP:1
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu132 fixture_sha256=c877a2838aa5f3b42997c8ed8a4b717dce984eff5535aff95a72744d1cffd287 units=1 status=INCOMPLETE transaction=sbx_54u6ahzlvedjaecc3cffwnc2hm
+=== RUN   TestLinuxPythonRejectedLibraryQueryIntegration/cu132/query-negative-env
+=== RUN   TestLinuxPythonRejectedLibraryQueryIntegration/cu132/query-negative-env/cu132-zero
+observer_attribution sequence=2 profile=pypi-wheel-pytorch-cu132 counts=PROCESS/SENTRY_EXEC/OTHER/ARTIFACT_LDCONFIG_QUERY/ARTIFACT_GROUP:1
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu132 fixture_sha256=6c4433def3b21ebf16a53dd2c2ee25f821b122b1a87bd06de75f5a2c8d6b1413 units=1 status=INCOMPLETE transaction=sbx_c6uvad73nvvstant3ccih52ucm
+=== RUN   TestLinuxPythonRejectedLibraryQueryIntegration/cu132/query-negative-image
+=== RUN   TestLinuxPythonRejectedLibraryQueryIntegration/cu132/query-negative-image/cu132-zero
+observer_attribution sequence=2 profile=pypi-wheel-pytorch-cu132 counts=PROCESS/SENTRY_EXEC/OTHER/ARTIFACT_ROLE/ARTIFACT_GROUP:1
+    observation_resource_integration_linux_test.go:476: root=pytorch:cu132 fixture_sha256=371d7e2d50429eee3836f5de801d42a82d325969d2dfacb18ea66c3be16be689 units=1 status=INCOMPLETE transaction=sbx_tktsehlvumc4pbsxyhieu4cilm
+--- PASS: TestLinuxPythonRejectedLibraryQueryIntegration (72.29s)
+    --- PASS: TestLinuxPythonRejectedLibraryQueryIntegration/cpu/query-negative-args (6.15s)
+        --- PASS: TestLinuxPythonRejectedLibraryQueryIntegration/cpu/query-negative-args/cpu-zero (6.15s)
+    --- PASS: TestLinuxPythonRejectedLibraryQueryIntegration/cpu/query-negative-env (5.86s)
+        --- PASS: TestLinuxPythonRejectedLibraryQueryIntegration/cpu/query-negative-env/cpu-zero (5.85s)
+    --- PASS: TestLinuxPythonRejectedLibraryQueryIntegration/cpu/query-negative-image (5.88s)
+        --- PASS: TestLinuxPythonRejectedLibraryQueryIntegration/cpu/query-negative-image/cpu-zero (5.88s)
+    --- PASS: TestLinuxPythonRejectedLibraryQueryIntegration/cu126/query-negative-args (5.82s)
+        --- PASS: TestLinuxPythonRejectedLibraryQueryIntegration/cu126/query-negative-args/cu126-zero (5.81s)
+    --- PASS: TestLinuxPythonRejectedLibraryQueryIntegration/cu126/query-negative-env (6.45s)
+        --- PASS: TestLinuxPythonRejectedLibraryQueryIntegration/cu126/query-negative-env/cu126-zero (6.44s)
+    --- PASS: TestLinuxPythonRejectedLibraryQueryIntegration/cu126/query-negative-image (5.94s)
+        --- PASS: TestLinuxPythonRejectedLibraryQueryIntegration/cu126/query-negative-image/cu126-zero (5.93s)
+    --- PASS: TestLinuxPythonRejectedLibraryQueryIntegration/cu130/query-negative-args (5.92s)
+        --- PASS: TestLinuxPythonRejectedLibraryQueryIntegration/cu130/query-negative-args/cu130-zero (5.92s)
+    --- PASS: TestLinuxPythonRejectedLibraryQueryIntegration/cu130/query-negative-env (6.38s)
+        --- PASS: TestLinuxPythonRejectedLibraryQueryIntegration/cu130/query-negative-env/cu130-zero (6.38s)
+    --- PASS: TestLinuxPythonRejectedLibraryQueryIntegration/cu130/query-negative-image (6.00s)
+        --- PASS: TestLinuxPythonRejectedLibraryQueryIntegration/cu130/query-negative-image/cu130-zero (5.99s)
+    --- PASS: TestLinuxPythonRejectedLibraryQueryIntegration/cu132/query-negative-args (6.07s)
+        --- PASS: TestLinuxPythonRejectedLibraryQueryIntegration/cu132/query-negative-args/cu132-zero (6.06s)
+    --- PASS: TestLinuxPythonRejectedLibraryQueryIntegration/cu132/query-negative-env (5.86s)
+        --- PASS: TestLinuxPythonRejectedLibraryQueryIntegration/cu132/query-negative-env/cu132-zero (5.85s)
+    --- PASS: TestLinuxPythonRejectedLibraryQueryIntegration/cu132/query-negative-image (5.96s)
+        --- PASS: TestLinuxPythonRejectedLibraryQueryIntegration/cu132/query-negative-image/cu132-zero (5.95s)
+FAIL
+helper reaped: pid=2230022 wait=0
+no existing traced runtime consumers; bounded Docker queries succeeded
+runtime before bytes/identity/modes verified
+/etc/heliopause/pod-init.json: OK
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+cleanup: original=1 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=2230022

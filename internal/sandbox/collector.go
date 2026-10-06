@@ -31,23 +31,28 @@ type TraceDiagnostic struct {
 // FaultOpenDiagnostic contains only bounded kernel-derived classifications.
 // It explains a rejected open and never participates in Policy or admission.
 type FaultOpenDiagnostic struct {
-	Image              string `json:"image"`
-	KernelImage        string `json:"kernel_image,omitempty"`
-	Role               string `json:"role"`
-	Provenance         string `json:"provenance"`
-	Subject            string `json:"subject"`
-	Mount              string `json:"mount"`
-	Flags              uint32 `json:"flags"`
-	PathLocator        uint64 `json:"path_locator,omitempty"`
-	ExecutableLocator  uint64 `json:"executable_locator,omitempty"`
-	MountpointLocator  uint64 `json:"mountpoint_locator,omitempty"`
-	ExecutablePinned   bool   `json:"executable_pinned,omitempty"`
-	GoDriverCreator    bool   `json:"go_driver_creator,omitempty"`
-	CargoDriverCreator bool   `json:"cargo_driver_creator,omitempty"`
-	RustcVersionQuery  bool   `json:"rustc_version_query,omitempty"`
-	RustcMetadataQuery bool   `json:"rustc_metadata_query,omitempty"`
-	RustcArgc          uint32 `json:"rustc_argc,omitempty"`
-	RustcArgvLocator   uint64 `json:"rustc_argv_locator,omitempty"`
+	BuildTargetImage     bool   `json:"build_target_image,omitempty"`
+	Image                string `json:"image"`
+	KernelImage          string `json:"kernel_image,omitempty"`
+	Role                 string `json:"role"`
+	Provenance           string `json:"provenance"`
+	Subject              string `json:"subject"`
+	Mount                string `json:"mount"`
+	Flags                uint32 `json:"flags"`
+	PathLocator          uint64 `json:"path_locator,omitempty"`
+	ExecutableLocator    uint64 `json:"executable_locator,omitempty"`
+	MountpointLocator    uint64 `json:"mountpoint_locator,omitempty"`
+	ExecutablePinned     bool   `json:"executable_pinned,omitempty"`
+	GoDriverCreator      bool   `json:"go_driver_creator,omitempty"`
+	CargoDriverCreator   bool   `json:"cargo_driver_creator,omitempty"`
+	CargoCompilerCreator bool   `json:"cargo_compiler_creator,omitempty"`
+	CargoProgramCreator  bool   `json:"cargo_program_creator,omitempty"`
+	LldSameGroup         bool   `json:"lld_same_group,omitempty"`
+	NativeCCInvocation   bool   `json:"native_cc_invocation,omitempty"`
+	RustcVersionQuery    bool   `json:"rustc_version_query,omitempty"`
+	RustcMetadataQuery   bool   `json:"rustc_metadata_query,omitempty"`
+	RustcArgc            uint32 `json:"rustc_argc,omitempty"`
+	RustcArgvLocator     uint64 `json:"rustc_argv_locator,omitempty"`
 }
 
 // FaultBudgetDiagnostic explains the existing helper limit using only fixed
@@ -347,6 +352,18 @@ func (d TraceDiagnostic) String() string {
 		site += fmt.Sprintf(" open_executable_fnv1a64=%016x", d.FaultOpen.ExecutableLocator)
 		site += fmt.Sprintf(" open_executable_pinned=%t open_go_driver_creator=%t", d.FaultOpen.ExecutablePinned, d.FaultOpen.GoDriverCreator)
 		site += fmt.Sprintf(" open_cargo_driver_creator=%t open_rustc_version_query=%t", d.FaultOpen.CargoDriverCreator, d.FaultOpen.RustcVersionQuery)
+		if d.FaultOpen.KernelImage == "GCC" || d.FaultOpen.KernelImage == "COLLECT2" || d.FaultOpen.KernelImage == "LLD_LAUNCHER" || d.FaultOpen.KernelImage == "RUST_LLD" {
+			site += fmt.Sprintf(" open_cargo_compiler_creator=%t open_native_cc_invocation=%t", d.FaultOpen.CargoCompilerCreator, d.FaultOpen.NativeCCInvocation)
+		}
+		if d.FaultOpen.KernelImage == "RUST_LLD" {
+			site += fmt.Sprintf(" open_lld_same_group=%t", d.FaultOpen.LldSameGroup)
+		}
+		if d.FaultOpen.CargoProgramCreator {
+			site += " open_cargo_program_creator=true"
+		}
+		if d.FaultOpen.BuildTargetImage {
+			site += " open_build_target_image=true"
+		}
 		site += fmt.Sprintf(" open_rustc_metadata_query=%t open_rustc_argc=%d open_rustc_argv_fnv1a64=%016x", d.FaultOpen.RustcMetadataQuery, d.FaultOpen.RustcArgc, d.FaultOpen.RustcArgvLocator)
 	}
 	if d.FaultOpen.MountpointLocator != 0 {

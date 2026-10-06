@@ -32,6 +32,7 @@ type goBuildInputFile struct {
 	before    os.FileInfo
 	artifact  domain.AcquiredArtifact
 	prefix    string
+	limits    projectBuildInputLimits
 }
 
 type goBuildInputMember struct {
@@ -58,15 +59,36 @@ func goBuildSingleLink(info os.FileInfo) bool {
 	return n.IsValid() && n.CanUint() && n.Uint() == 1
 }
 
-func openGoBuildInput(intake string, artifact domain.AcquiredArtifact, prefix string) (_ *goBuildInputFile, resultErr error) {
-	variant := map[string]string{"project": "go-source", "cache": "go-cache"}[prefix]
-	parts := strings.Split(artifact.ContentHandle(), ":")
-	limit := int64(artifactgo.MaxModuleExpandedBytes + (2*artifactgo.MaxModuleFiles+2)*512)
+type projectBuildInputLimits struct {
+	variant                string
+	files                  int
+	maxPath                int
+	payload, file, control int64
+	controls               [2]string
+}
+
+func goBuildInputLimits(prefix string) projectBuildInputLimits {
+	limits := projectBuildInputLimits{maxPath: 1024, variant: map[string]string{"project": "go-source", "cache": "go-cache"}[prefix], files: artifactgo.MaxModuleFiles, payload: artifactgo.MaxModuleExpandedBytes, file: artifactgo.MaxModuleFileBytes, control: artifactgo.MaxProjectControlBytes, controls: [2]string{"go.mod", "go.sum"}}
 	if prefix == "cache" {
-		limit = goBuildCacheBytes + (4*goBuildCacheFiles+2)*512
+		limits.files = goBuildCacheFiles
+		limits.payload = goBuildCacheBytes
+	}
+	return limits
+}
+
+func openGoBuildInput(intake string, artifact domain.AcquiredArtifact, prefix string) (*goBuildInputFile, error) {
+	return openProjectBuildInput(intake, artifact, prefix, goBuildInputLimits(prefix))
+}
+
+func openProjectBuildInput(intake string, artifact domain.AcquiredArtifact, prefix string, limits projectBuildInputLimits) (_ *goBuildInputFile, resultErr error) {
+	variant := limits.variant
+	parts := strings.Split(artifact.ContentHandle(), ":")
+	limit := limits.payload + int64(2*limits.files+2)*512
+	if prefix == "cache" {
+		limit = limits.payload + int64(4*limits.files+2)*512
 	}
 	declared, ok := artifact.DeclaredIntegrity()
-	if !filepath.IsAbs(intake) || filepath.Clean(intake) != intake || intake == "/" || variant == "" ||
+	if !filepath.IsAbs(intake) || filepath.Clean(intake) != intake || intake == "/" || variant == "" || limits.files <= 0 || limits.payload <= 0 || limits.file <= 0 || limits.control <= 0 || (prefix != "project" && prefix != "cache") ||
 		artifact.Identity().Source().String() != "project-local" || artifact.Identity().Variant() != variant ||
 		artifact.Digest().String() == "" || !ok || declared != "sha256:"+artifact.Digest().String() ||
 		artifact.SizeBytes() == 0 || artifact.SizeBytes() > uint64(limit) || len(parts) != 3 || parts[0] != "intake" || parts[2] != variant {
@@ -76,7 +98,7 @@ func openGoBuildInput(intake string, artifact domain.AcquiredArtifact, prefix st
 	if err != nil {
 		return nil, errGoBuildInput
 	}
-	input := &goBuildInputFile{artifact: artifact, prefix: prefix}
+	input := &goBuildInputFile{artifact: artifact, prefix: prefix, limits: limits}
 	defer func() {
 		if resultErr != nil {
 			resultErr = errors.Join(resultErr, input.close())
@@ -159,10 +181,7 @@ func (i *goBuildInputFile) scan(ctx context.Context, manifest *goBuildInputManif
 	directories := map[string]bool{".": true}
 	files, entries := 0, 0
 	var payload int64
-	fileLimit, payloadLimit := artifactgo.MaxModuleFiles, int64(artifactgo.MaxModuleExpandedBytes)
-	if i.prefix == "cache" {
-		fileLimit, payloadLimit = goBuildCacheFiles, goBuildCacheBytes
-	}
+	fileLimit, payloadLimit := i.limits.files, i.limits.payload
 	for {
 		if err := ctx.Err(); err != nil {
 			return err
@@ -176,7 +195,7 @@ func (i *goBuildInputFile) scan(ctx context.Context, manifest *goBuildInputManif
 		}
 		entries++
 		name := strings.TrimSuffix(header.Name, "/")
-		if entries > 2*fileLimit || !validClosureDestination(name) || len(name) > 1024 || strings.Contains(name, ":") ||
+		if entries > 2*fileLimit || !validClosureDestination(name) || len(name) > i.limits.maxPath || strings.Contains(name, ":") ||
 			seen[name] || !directories[path.Dir(name)] || header.Linkname != "" || header.Uid != 0 || header.Gid != 0 ||
 			header.Uname != "" || header.Gname != "" {
 			return errGoBuildInput
@@ -203,7 +222,7 @@ func (i *goBuildInputFile) scan(ctx context.Context, manifest *goBuildInputManif
 			directories[name] = true
 		} else if header.Typeflag == tar.TypeReg {
 			files++
-			if header.Mode != 0o400 || header.Size < 0 || header.Size > artifactgo.MaxModuleFileBytes || files > fileLimit || header.Size > payloadLimit-payload {
+			if header.Mode != 0o400 || header.Size < 0 || header.Size > i.limits.file || files > fileLimit || header.Size > payloadLimit-payload {
 				return errGoBuildInput
 			}
 		} else {
@@ -228,10 +247,10 @@ func (i *goBuildInputFile) scan(ctx context.Context, manifest *goBuildInputManif
 			if writer != nil {
 				output = io.MultiWriter(writer, fileHash)
 			}
-			control := i.prefix == "project" && (name == "go.mod" || name == "go.sum")
+			control := i.prefix == "project" && (name == i.limits.controls[0] || name == i.limits.controls[1])
 			var body strings.Builder
 			if control {
-				if member.size > artifactgo.MaxProjectControlBytes {
+				if member.size > i.limits.control {
 					return errGoBuildInput
 				}
 				output = io.MultiWriter(output, &body)

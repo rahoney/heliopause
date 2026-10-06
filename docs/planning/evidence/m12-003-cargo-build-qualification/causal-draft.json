@@ -1,0 +1,77 @@
+{
+  "scope": "DRAFT; full cu126 still RUNNING; no acceptance closure",
+  "causes": [
+    {
+      "boundary": "snapshot controls",
+      "before": "cargo-build-control-order-before.log",
+      "after": "cargo-build-control-order-after-focused.log",
+      "correction": "Match exact control name and digest, reject duplicates; preserve Go/Cargo controls independently of sorting.",
+      "before_available": true,
+      "before_sha256": "f2ef37c95a4dfa8edb41c95010a68d5d220086aea23fff1b8c54d53a4c0c05f2",
+      "after_available": true,
+      "after_sha256": "278b9188d1700c83828925db392340eeabf95f1f79e64c45bdeb01e81002497c"
+    },
+    {
+      "boundary": "untrusted build program /dev/null",
+      "before": "cargo-build-program-null-final-before-latch.log",
+      "after": "cargo-build-program-null-after-latches.log",
+      "correction": "Only exact Cargo-created untrusted target program, system /dev mount and readonly557056; no other device or write allowance.",
+      "before_available": true,
+      "before_sha256": "459baf254d728c933a41a946a36adc05a1dc62c65a4246e3730e1d7fa6c7b9a6",
+      "after_available": true,
+      "after_sha256": "70c74b3a67223686cbd28443af9cc618908db7b7c335a398dee744ccf2ffda9b"
+    },
+    {
+      "boundary": "untrusted build program pinned Rustc --version",
+      "before": "cargo-build-program-query-before-latch.log",
+      "after": "cargo-build-program-query-after-latches.log",
+      "diagnostic": "cargo-build-program-query-diagnostic-runtime.log",
+      "actual": "cargo-build-program-query-after-runtime.log",
+      "correction": "Kernel-pinned Rustc argc2 --version with exact program creator, one-shot info-query reads; no compiler producer, CONTROL or networking authority.",
+      "before_available": true,
+      "before_sha256": "fd63a4947b429b1b2113826a9acb24a87093a128586a69e6857886aad17e9bc6",
+      "after_available": true,
+      "after_sha256": "34ded4ca8d02d19d4d86ae5ad8b81a6d4348d04fb8f157d12114a244ae16fcc7",
+      "diagnostic_available": true,
+      "diagnostic_sha256": "54f4bc95ef7bdf28d5d835286218c02450e02b95d024bc9c003f6f7e40a40a41",
+      "actual_available": true,
+      "actual_sha256": "69f248aa3e2463be6a8b1d4b2e4b531ef03101beaaba1015290fa562bb31c0ea"
+    },
+    {
+      "boundary": "mutable Cargo configuration",
+      "before_actual": "cargo-build-security-first-runtime.log",
+      "before": "cargo-build-config-final-before-latch.log",
+      "after": "cargo-build-config-after-latches.log",
+      "actual": "cargo-build-config-after-runtime.log",
+      "correction": "Controller config in readonly input inventory with exact content/mode/ownership rehash; readonly cwd /; preserve absolute and correlated resolved write observations.",
+      "before_available": true,
+      "before_sha256": "81c90084a5c118d1a0a74108e4ef01e55f25b06717553a55781d90626145c91a",
+      "after_available": true,
+      "after_sha256": "b7859ef6339716b0a79293d2fba195593867aa1f606c0bebcb8d236e78bbd9fa",
+      "actual_available": true,
+      "actual_sha256": "843378a1eeead05ece20fc1364b92ef71cf6346e200b4d20e1747aab4534a953",
+      "before_actual_available": true,
+      "before_actual_sha256": "ebbddac091caf0b8efc07511c837d4c9f5a4080ecf6b971a783bf723adde6b33"
+    },
+    {
+      "boundary": "output dot root",
+      "before": "cargo-build-output-root-final-before.log",
+      "after": "cargo-build-output-final-after.log",
+      "correction": "Only first empty dot directory is archive data; regular/late/duplicate/unsafe roots denied.",
+      "before_available": true,
+      "before_sha256": "0c414bdb094d6e720266d85274120d2431dcea121cde6e19413f5e0cfa447508",
+      "after_available": true,
+      "after_sha256": "fa24b8e3abb9243efee303c15729c856be8f0d5493e6d1f2ada47f5ccd765b6c"
+    },
+    {
+      "boundary": "output archive aliases",
+      "before": "cargo-build-output-alias-final-before.log",
+      "after": "cargo-build-output-final-after.log",
+      "correction": "Reconstruct only exact same-archive regular backing bytes after full inventory; reject foreign/chain/cycle/drift aliases and charge logical expansion before emission.",
+      "before_available": true,
+      "before_sha256": "8b87a4be0c1f1bf80594a79b68e8864ee138e505345e0876fd9d3b5effec8f13",
+      "after_available": true,
+      "after_sha256": "fa24b8e3abb9243efee303c15729c856be8f0d5493e6d1f2ada47f5ccd765b6c"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+--- FAIL: TestCargoBuildOutputRootHeaderIsDataOnly (0.00s)
+    --- FAIL: TestCargoBuildOutputRootHeaderIsDataOnly/./ (0.00s)
+        cargo_build_output_test.go:59: ARCHIVE_BOUNDARY member=1 kind=53 uid=1000 gid=1000 mode=755 link=false pax=0 root_dot=true
+    --- FAIL: TestCargoBuildOutputRootHeaderIsDataOnly/regular-root (0.00s)
+        cargo_build_output_test.go:94: unsafe root archive accepted
+    --- FAIL: TestCargoBuildOutputRootHeaderIsDataOnly/late-root (0.00s)
+        cargo_build_output_test.go:94: unsafe root archive accepted
+FAIL
+FAIL	github.com/rahoney/heliopause/internal/sandbox	0.006s
+FAIL
