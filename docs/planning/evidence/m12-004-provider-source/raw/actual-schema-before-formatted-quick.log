@@ -1,0 +1,77 @@
+[check] format check
+[check] runtime lock drift
+[check] version support freshness
+[check] module drift
+[check] module integrity
+[check] production build
+[check] test build validity
+[check] architecture
+[check] CI configuration
+=== RUN   TestActionlintContextAvailability
+=== RUN   TestActionlintContextAvailability/corrected_full_workflow
+=== RUN   TestActionlintContextAvailability/valid_step_context
+=== RUN   TestActionlintContextAvailability/original_corpus_violation
+=== RUN   TestActionlintContextAvailability/renamed_reordered_job_env
+=== RUN   TestActionlintContextAvailability/different_job_and_key_order
+=== RUN   TestActionlintContextAvailability/disallowed_step_context_at_job_if
+--- PASS: TestActionlintContextAvailability (0.06s)
+    --- PASS: TestActionlintContextAvailability/corrected_full_workflow (0.01s)
+    --- PASS: TestActionlintContextAvailability/valid_step_context (0.01s)
+    --- PASS: TestActionlintContextAvailability/original_corpus_violation (0.01s)
+    --- PASS: TestActionlintContextAvailability/renamed_reordered_job_env (0.01s)
+    --- PASS: TestActionlintContextAvailability/different_job_and_key_order (0.01s)
+    --- PASS: TestActionlintContextAvailability/disallowed_step_context_at_job_if (0.01s)
+PASS
+ok  	github.com/rahoney/heliopause/scripts/check	0.068s
+[check] go vet
+[check] Staticcheck
+[check] default test
+check: execution failure: default test: /home/winamp/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.8.linux-amd64/bin/go test -timeout=5m ./...
+?   	github.com/rahoney/heliopause/cmd/haa-network-policy-helper	[no test files]
+ok  	github.com/rahoney/heliopause/cmd/helox	1.924s
+ok  	github.com/rahoney/heliopause/internal/application	0.597s
+ok  	github.com/rahoney/heliopause/internal/artifact/cargo	0.560s
+ok  	github.com/rahoney/heliopause/internal/artifact/githubrelease	0.059s
+ok  	github.com/rahoney/heliopause/internal/artifact/gomodule	0.722s
+ok  	github.com/rahoney/heliopause/internal/artifact/npm	0.685s
+?   	github.com/rahoney/heliopause/internal/artifact/projectbuild	[no test files]
+ok  	github.com/rahoney/heliopause/internal/artifact/pypi	0.194s
+--- FAIL: TestProviderActualRegistryMetadata (0.00s)
+    --- FAIL: TestProviderActualRegistryMetadata/hashicorp/random@3.7.2 (0.00s)
+        provider_test.go:28: actual registry metadata: terraform Registry package response is invalid
+    --- FAIL: TestProviderActualRegistryMetadata/integrations/github@6.6.0 (0.00s)
+        provider_test.go:28: actual registry metadata: terraform Registry package response is invalid
+FAIL
+FAIL	github.com/rahoney/heliopause/internal/artifact/terraformprovider	0.018s
+ok  	github.com/rahoney/heliopause/internal/bootstrap	0.036s
+ok  	github.com/rahoney/heliopause/internal/cli	0.050s
+ok  	github.com/rahoney/heliopause/internal/core/domain	0.050s
+?   	github.com/rahoney/heliopause/internal/core/ports	[no test files]
+ok  	github.com/rahoney/heliopause/internal/evidence	0.010s
+ok  	github.com/rahoney/heliopause/internal/evidence/local	0.793s
+ok  	github.com/rahoney/heliopause/internal/hosttool	0.040s
+?   	github.com/rahoney/heliopause/internal/inspection/cargo	[no test files]
+ok  	github.com/rahoney/heliopause/internal/inspection/githubrelease	0.036s
+ok  	github.com/rahoney/heliopause/internal/inspection/gomodule	0.104s
+ok  	github.com/rahoney/heliopause/internal/inspection/npm	0.027s
+?   	github.com/rahoney/heliopause/internal/inspection/projectbuild	[no test files]
+ok  	github.com/rahoney/heliopause/internal/inspection/pypi	0.443s
+ok  	github.com/rahoney/heliopause/internal/networkpolicy	0.008s
+ok  	github.com/rahoney/heliopause/internal/policy	0.028s
+ok  	github.com/rahoney/heliopause/internal/promotion	77.459s
+ok  	github.com/rahoney/heliopause/internal/releaseinstall	0.802s
+ok  	github.com/rahoney/heliopause/internal/runtimeidentity	0.142s
+ok  	github.com/rahoney/heliopause/internal/sandbox	8.900s
+ok  	github.com/rahoney/heliopause/internal/testutil/fakeworkflow	0.009s
+ok  	github.com/rahoney/heliopause/internal/verification/cargo	0.048s
+ok  	github.com/rahoney/heliopause/internal/verification/githubrelease	0.007s
+ok  	github.com/rahoney/heliopause/internal/verification/gomodule	0.104s
+ok  	github.com/rahoney/heliopause/internal/verification/npm	0.005s
+?   	github.com/rahoney/heliopause/internal/verification/projectbuild	[no test files]
+?   	github.com/rahoney/heliopause/internal/verification/pypi	[no test files]
+ok  	github.com/rahoney/heliopause/scripts	0.753s
+ok  	github.com/rahoney/heliopause/scripts/check	4.336s
+ok  	github.com/rahoney/heliopause/scripts/release-manifest	1.715s
+ok  	github.com/rahoney/heliopause/scripts/runtime-image-manifest	0.132s
+FAIL: exit status 1
+exit status 1

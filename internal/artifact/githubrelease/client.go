@@ -247,11 +247,39 @@ func (c *Client) allowedAssetRedirect(target *url.URL) bool {
 	if target == nil || target.User != nil || target.Fragment != "" {
 		return false
 	}
-	if c.production && target.Scheme != "https" {
+	if c.production && (target.Scheme != "https" || target.Port() != "" || target.Host != target.Hostname()) {
 		return false
 	}
 	host := strings.ToLower(target.Hostname())
 	return host == "github.com" || host == "api.github.com" || host == "objects.githubusercontent.com" || host == "github-releases.githubusercontent.com" || host == "release-assets.githubusercontent.com" || (!c.production && host == strings.ToLower(c.api.Hostname()))
+}
+
+// ReadPublicReleaseFile exposes bounded HTTPS byte acquisition only. The
+// caller must establish its own exact release URL, digest, signature and
+// ecosystem identity; this supplies no GitHub artifact approval or ALLOW.
+func (c *Client) ReadPublicReleaseFile(ctx context.Context, endpoint string, limit int64) ([]byte, error) {
+	if err := validRequest(ctx, c); err != nil {
+		return nil, err
+	}
+	u, err := url.Parse(endpoint)
+	if err != nil || !c.production || limit <= 0 || limit > 64<<20 || u.Scheme != "https" || u.Host != "github.com" || u.User != nil || u.RawQuery != "" || u.ForceQuery || u.Fragment != "" || u.RawPath != "" || !strings.Contains(u.Path, "/releases/download/") {
+		return nil, errors.New("public release file request is invalid")
+	}
+	requestCtx, cancel := context.WithTimeout(ctx, assetTimeout)
+	defer cancel()
+	response, err := c.assetRequest(requestCtx, endpoint)
+	if err != nil {
+		return nil, errors.Join(errors.New("public release file request failed"), ctx.Err())
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusOK || response.ContentLength > limit {
+		return nil, errors.New("public release file response is unexpected")
+	}
+	body, err := io.ReadAll(io.LimitReader(response.Body, limit+1))
+	if err != nil || len(body) == 0 || int64(len(body)) > limit || (response.ContentLength >= 0 && int64(len(body)) != response.ContentLength) {
+		return nil, errors.Join(errors.New("public release file response is incomplete or excessive"), ctx.Err())
+	}
+	return body, nil
 }
 
 type resolvedLocator struct {

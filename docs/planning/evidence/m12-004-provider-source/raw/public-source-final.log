@@ -1,0 +1,12 @@
+=== RUN   TestPublicTerraformProviderSourceIntegration
+=== RUN   TestPublicTerraformProviderSourceIntegration/hashicorp/random@3.7.2
+    source_integration_linux_test.go:88: Exact public provider verified; archive=7b8434212eef0f8c83f5a90c6d76feaf850f6502b61b53c329e85b3b281cba34; envelope=43cd1fc27fb3a890570339ec3880084d29333b61f41e2fb2b15072d4a47f1f67; signer=C874011F0AB405110D02105534365D9472D7468F; trust=HASHICORP_OFFICIAL
+    source_integration_linux_test.go:89: Qualification intake directory=/home/winamp/.local/state/heliopause/m12-004/public-source-intake/provider-source-636790408; Run=run_ntcuvw6f2nm2u63gaqz5e5wesq
+=== RUN   TestPublicTerraformProviderSourceIntegration/integrations/github@6.6.0
+    source_integration_linux_test.go:88: Exact public provider verified; archive=772edb5890d72b32868f9fdc0a9a1d4f4701d8e7f8acb37a7ac530d053c776e3; envelope=715f444c220d9044e0891b3e24846544b5a3fbb87e91b75a9a3c51a77c2aff73; signer=F31928FACE52F1A13A6C60EA38027F80D7FD5FB2; trust=RECOGNIZED_PARTNER
+    source_integration_linux_test.go:89: Qualification intake directory=/home/winamp/.local/state/heliopause/m12-004/public-source-intake/provider-source-756440091; Run=run_36cqwsfs46wqz7dtgw4qnyraom
+--- PASS: TestPublicTerraformProviderSourceIntegration (2.68s)
+    --- PASS: TestPublicTerraformProviderSourceIntegration/hashicorp/random@3.7.2 (0.95s)
+    --- PASS: TestPublicTerraformProviderSourceIntegration/integrations/github@6.6.0 (1.73s)
+PASS
+ok  	github.com/rahoney/heliopause/internal/verification/terraformprovider	2.686s

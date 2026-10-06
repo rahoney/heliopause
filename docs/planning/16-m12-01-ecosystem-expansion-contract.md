@@ -1058,6 +1058,48 @@ unsigned / mismatch / ambiguous identity
 
 정확한 signer classification은 adapter의 canonical policy table 하나가 소유한다.
 
+### Public discovery and frozen signed acquisition
+
+Provider selection은 고정 public origin의 `providers.v1` discovery, provider version
+목록의 요청한 exact version/platform/protocol, package metadata를 한 번 고정한다.
+목록의 다른 과거 release에 legacy/empty protocol 선언이 있어도 현재 version의
+protocol로 해석하지 않는다. Duplicate version/key·ambiguous JSON·trailing data는
+거부하고, 현재 요청한 platform/protocol의 일치 검사는 그대로 유지한다.
+
+Endpoint policy는 exact filename·version·platform과 연결된 HashiCorp release path
+또는 해당 namespace의 GitHub provider repository/release path다. Registry response가
+호스트·포트·경로·mirror 허용 범위를 추가하지 않는다. GitHub asset/CDN redirect의
+기존 bounded HTTPS byte acquisition만 재사용하며 해당 adapter의 승인과 identity를
+전용하지 않는다. Ambient proxy·credential·Terraform configuration을 소비하지 않는다.
+
+Frozen intake는 discovery(64KiB), versions(2MiB), package(1MiB), checksum(1MiB),
+signature(16KiB), ZIP(64MiB)의 여섯 length-delimited fields로 한 subject에 bind한다.
+Envelope SHA256, registry snapshot SHA256, archive SHA256, unpacked h1와 executable
+SHA256은 서로 다른 identity다. Run-private0700 directory·single-link0600 file을
+anchored read하고 envelope digest를 다시 확인한다. Acquisition은 새로운 resolve를
+하지 않으며 verifier가 같은 frozen bytes를 독립 검증한다.
+
+Signer table은 `verification/terraformprovider` 한 곳에 둔다:
+
+| Binding | Normalized verification |
+| --- | --- |
+| `hashicorp` namespace + pinned full official fingerprint + current official certificate + valid exact checksum signature | required VERIFIED; inspection 계속 |
+| current provider certificate + pinned partner root의 endorsement + valid exact checksum signature | recognized partner VERIFIED; inspection 계속 |
+| valid self-signed/community certificate·checksum signature, recognized endorsement 없음 | required INCOMPLETE·signer review limitation; 자동 ALLOW 없음 |
+| unsigned, invalid/ambiguous signature, checksum/metadata identity mismatch 또는 invalid endorsement | required MISMATCH; 기존 Policy의 BLOCK 입력 |
+
+Partner endorsement는 registry public certificate armor의 **exact decoded packet
+bytes**에 대한 detached signature다. 재직렬화한 entity나 key ID/source label로
+대체하지 않는다. 공식 signer는 published primary fingerprint
+`C874011F0AB405110D02105534365D9472D7468F`에 bind한다. 공식 과거 서명에는 서명 당시
+유효한 historical binding과 같은 전체 signing-key fingerprint의 현재 authoritative
+certificate binding을 모두 요구한다. Current primary/subkey expiry·revocation과
+message signature validity를 유지하며 expiration error 억제·zero-time 검증을 하지 않는다.
+현재 official public certificate와 partner root의 공개 bytes·공식 출처는 source
+qualification evidence와 dependency review에 연결한다.
+
+서명 성공은 provider의 안전성, dynamic observation 완료나 init 설치 성공이 아니다.
+
 ## Transaction set
 
 ```text

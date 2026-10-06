@@ -9,7 +9,7 @@
 - 구현 언어: Go
 - CLI framework: Cobra
 - 현재 상태: M0–M11 qualification 및 post-qualification release hardening 완료. M12 생태계 확장을 진행 중이며, M12-001 공식 PyTorch source support와 M12-002 public Go Modules와 M12-003 public Cargo의 로컬 acceptance를 완료했다. M12-02 최종 red-team/fix gate와 M13 Production Release & Operations는 선행 작업 완료 후 진행
-- 다음 작업: M12-004 — Terraform Provider installation (`NOT_STARTED` / `Ready: Yes`; baseline audit 후 시작)
+- 현재 작업: M12-004 — Terraform Provider installation (`IN_PROGRESS`; baseline audit 완료 후 남은 acceptance 구현·검증)
 - 진행 상태의 canonical owner: [`docs/planning/02-current-work-queue.md`](docs/planning/02-current-work-queue.md)
 
 Heliopause는 Apache-2.0으로 배포한다. 외부 기여는 `CLA.md`의 Harmony

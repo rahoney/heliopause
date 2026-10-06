@@ -1,0 +1,90 @@
+[
+  {
+    "run": "run_ntcuvw6f2nm2u63gaqz5e5wesq",
+    "retained_local_intake": "/home/winamp/.local/state/heliopause/m12-004/public-source-intake/provider-source-636790408/run_ntcuvw6f2nm2u63gaqz5e5wesq/provider.bundle",
+    "envelope_sha256": "43cd1fc27fb3a890570339ec3880084d29333b61f41e2fb2b15072d4a47f1f67",
+    "envelope_bytes": 5843995,
+    "fields": [
+      {
+        "field": "discovery",
+        "sha256": "b9f54de00c40ba5b8c37a4cecc04b8907c3bbc82c4b404a55bbfbb73b93a11f7",
+        "bytes": 62,
+        "path": "raw/terraform-provider-random_3.7.2/discovery.json"
+      },
+      {
+        "field": "versions",
+        "sha256": "32d1dd6219c312833b760d813fb950530b54091de02c1d296931e291f78134d4",
+        "bytes": 16307,
+        "path": "raw/terraform-provider-random_3.7.2/versions.json"
+      },
+      {
+        "field": "package",
+        "sha256": "cf8682d7fb2d0d064eeb83986d29e7f7d243be5ca3e6ba94fc97af1db7627804",
+        "bytes": 8600,
+        "path": "raw/terraform-provider-random_3.7.2/package.json"
+      },
+      {
+        "field": "checksums",
+        "sha256": "879660c20ecf5060b3ddaddb44b0d678a9b77a8f9de459735e47bc44534fb240",
+        "bytes": 1368,
+        "path": "raw/terraform-provider-random_3.7.2/checksums.raw"
+      },
+      {
+        "field": "signature",
+        "sha256": "ce80b4578c8e9bcd09b2febf547aebcb4b12bcf6c57610602c698d3db034c1c3",
+        "bytes": 566,
+        "path": "raw/terraform-provider-random_3.7.2/signature.raw"
+      },
+      {
+        "field": "archive",
+        "sha256": "7b8434212eef0f8c83f5a90c6d76feaf850f6502b61b53c329e85b3b281cba34",
+        "bytes": 5817019,
+        "immutable_download_url": "https://releases.hashicorp.com/terraform-provider-random/3.7.2/terraform-provider-random_3.7.2_linux_amd64.zip"
+      }
+    ]
+  },
+  {
+    "run": "run_36cqwsfs46wqz7dtgw4qnyraom",
+    "retained_local_intake": "/home/winamp/.local/state/heliopause/m12-004/public-source-intake/provider-source-756440091/run_36cqwsfs46wqz7dtgw4qnyraom/provider.bundle",
+    "envelope_sha256": "715f444c220d9044e0891b3e24846544b5a3fbb87e91b75a9a3c51a77c2aff73",
+    "envelope_bytes": 7372650,
+    "fields": [
+      {
+        "field": "discovery",
+        "sha256": "b9f54de00c40ba5b8c37a4cecc04b8907c3bbc82c4b404a55bbfbb73b93a11f7",
+        "bytes": 62,
+        "path": "raw/terraform-provider-github_6.6.0/discovery.json"
+      },
+      {
+        "field": "versions",
+        "sha256": "0fb1d3fecdfb0e8776a46b43b6b2672420592ba7356f30f36cad504af76eb0f1",
+        "bytes": 64425,
+        "path": "raw/terraform-provider-github_6.6.0/versions.json"
+      },
+      {
+        "field": "package",
+        "sha256": "f0a535afb83a4e94b0b3f8a22f6298258f6e1b50073829e454bce32926facb7c",
+        "bytes": 4954,
+        "path": "raw/terraform-provider-github_6.6.0/package.json"
+      },
+      {
+        "field": "checksums",
+        "sha256": "1bedbdd7581318c3f9a0056b45ac11afb95f573da33e48f73de64873e7cbb12e",
+        "bytes": 1714,
+        "path": "raw/terraform-provider-github_6.6.0/checksums.raw"
+      },
+      {
+        "field": "signature",
+        "sha256": "707368f4a095256ec71d170300947ce0678c0125e21fb6758c57c4a917017dae",
+        "bytes": 566,
+        "path": "raw/terraform-provider-github_6.6.0/signature.raw"
+      },
+      {
+        "field": "archive",
+        "sha256": "772edb5890d72b32868f9fdc0a9a1d4f4701d8e7f8acb37a7ac530d053c776e3",
+        "bytes": 7300856,
+        "immutable_download_url": "https://github.com/integrations/terraform-provider-github/releases/download/v6.6.0/terraform-provider-github_6.6.0_linux_amd64.zip"
+      }
+    ]
+  }
+]

@@ -152,6 +152,30 @@ consumer의 canonical vulnerability는 exit0을 확인했으며 해당 후보와
 후속 CLI/build consumer의 새 scan은 별도로 수행한다. Input byte/count/depth,
 source/checksum 및 graph/controls의 semantic validation은 adapter에서 유지한다.
 
+### M12-004 OpenPGP verification dependency review
+
+`github.com/ProtonMail/go-crypto v1.5.2`의 `openpgp/v2`를 Terraform checksum
+문서·partner certificate의 detached signature와 현재 key binding 검증에 사용한다.
+Go standard library에는 유지보수되는 OpenPGP certificate/message verifier가 없으며
+직접 packet/crypto 구현이나 deprecated `x/crypto/openpgp`로 대체하지 않는다.
+[고정 release](https://github.com/ProtonMail/go-crypto/releases/tag/v1.5.2)는
+2026-09-28의 serialization 교정을 포함한다. Go floor1.23은 product1.26.8과 맞는다.
+[BSD-3-Clause license](https://github.com/ProtonMail/go-crypto/blob/v1.5.2/LICENSE)를
+배포 notice 검토에 포함한다. 직접 transitive는 CIRCL1.6.3(BSD-3-Clause),
+x/crypto0.41.0(BSD-3-Clause), x/sys0.35.0 최소치이며 기존 x/sys0.47.0을 유지한다.
+실제 선택 graph·SumDB checksum은 고정 module preparation에서 확인한다.
+
+외부 type은 verifier adapter 안에만 둔다. Full fingerprint, current primary/subkey
+binding·expiry·revocation, strong signature hash, 단일 signature packet과 exact
+signed bytes를 확인하며 expiry 오류를 억제하지 않는다. Registry 선언이나 certificate
+source label을 signer trust authority로 사용하지 않는다. 공개 HashiCorp/partner
+certificate bytes는 공식 security/upstream public-key 자료에서 고정하고 fingerprint를
+별도로 대조한다. 추가·reachable verifier 연결 뒤 canonical vulnerability profile을
+실행한다. Source checkpoint의 실제 reachable verifier·acquisition 후보에서
+canonical security·vulnerability profile이 exit0였으며 상세 graph·raw는
+[M12-004 source evidence](../planning/evidence/m12-004-provider-source/result.json)를
+따른다. 이 결과를 이후 HCL·ZIP·동적 실행 연결의 검사나 전체 acceptance로 전용하지 않는다.
+
 ## 3. Package와 API 작성
 
 - Step 8의 dependency direction과 package 책임을 따른다.

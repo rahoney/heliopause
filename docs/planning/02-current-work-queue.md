@@ -9,9 +9,9 @@
 ```text
 Current milestone: M12 — Ecosystem Expansion Before Public Release
 Milestone status: IN_PROGRESS
-Active work item: None (M12-003 local acceptance closed; M12-004 baseline next)
-Next work item: M12-004 — Terraform Provider installation
-Next work item status: NOT_STARTED / Ready: Yes (M12-003 local acceptance closed)
+Active work item: M12-004 — Terraform Provider installation
+Next work item: M12-005 — Cross-ecosystem qualification and feature freeze
+Next work item status: NOT_STARTED / Ready: No (M12-004 pending)
 Ready: Yes
 ```
 
@@ -2135,12 +2135,12 @@ M12: IN_PROGRESS
 M12-001: COMPLETE
 M12-002: COMPLETE
 M12-003: COMPLETE
-M12-004: NOT_STARTED
+M12-004: IN_PROGRESS
 M12-005: NOT_STARTED
 M12-02: RESERVED
 M13: BLOCKED
-Active work item: None (M12-003 local acceptance closed; M12-004 baseline next)
-Next work item: M12-004 — NOT_STARTED / Ready: Yes (M12-003 local acceptance closed)
+Active work item: M12-004 — Terraform Provider installation
+Next work item: M12-005 — NOT_STARTED / Ready: No (M12-004 pending)
 ```
 
 M9-006까지 qualification을 완료했다. M10-001은 release identity·manifest 및
@@ -2175,7 +2175,7 @@ production activation과 최종 배포를 수행한다.
 | 1 | M12-001 | Official PyTorch source support | COMPLETE |
 | 2 | M12-002 | public Go Modules | COMPLETE |
 | 3 | M12-003 | Rust/Cargo and public crates.io | COMPLETE |
-| 4 | M12-004 | Terraform Provider installation | NOT_STARTED |
+| 4 | M12-004 | Terraform Provider installation | IN_PROGRESS |
 | 5 | M12-005 | cross-ecosystem qualification and feature freeze | NOT_STARTED |
 | 6 | M12-02 | final red-team/fix gate | RESERVED |
 
@@ -2573,17 +2573,19 @@ MISSING: None (work-item local acceptance)
 Delivery pending: new remote Required CI and native macOS; NO PUSH / NO REMOTE CI / NO MERGE
 
 M12-004 — Terraform
-IMPLEMENTED: NO
-WIRED: NO
+IMPLEMENTED: NO (partial existing owners reused)
+WIRED: NO (resolution only)
 QUALIFIED: NO
 ACCEPTANCE_CLOSED: NO
-Status: NOT_STARTED
+Status: IN_PROGRESS
+Evidence: evidence/m12-004-provider-baseline/result.json
+MISSING: signed acquisition, inspection, guarded complete provider transaction, actual CLI and qualification
 ```
 
 `WIRED: NO`는 코드가 전혀 존재하지 않는다는 뜻이 아니라, 해당 work item의
 required user/runtime path 전체가 acceptance 수준으로 연결되지 않았다는 뜻이다.
 M12-002~004의 상세 MISSING은 해당 work item이 시작될 때 별도 baseline audit로
-확정한다. M12-002와 M12-003 local acceptance는 닫혔으며 다음 M12-004는 baseline audit 뒤 시작한다.
+확정한다. M12-002와 M12-003 local acceptance는 닫혔으며 M12-004 baseline audit을 완료하고 남은 acceptance gap을 진행한다.
 
 ### M11 post-qualification release hardening
 
@@ -2833,6 +2835,40 @@ NO PUSH / NO REMOTE CI / NO MERGE.
 실제 입력·소요 시간과 individual test/보안 한도 보존을 소유한다. 전체 후보 종료
 검사·evidence가 남아 있어 M12-003 IN_PROGRESS/acceptance NO, M12-004 NOT_STARTED다.
 NO PUSH / NO REMOTE CI / NO MERGE.
+
+### M12-004 frozen public source·signature 부분 checkpoint (2026-10-06)
+
+기존 metadata/resolver owner에 실제 schema·discovery·요청 version/platform/protocol
+binding을 보완했고, 신규 acquired subject는 원래 registry bytes·signed checksum·
+signature·ZIP을 Run에 고정한다. Acquire는 재선택하지 않는다. 독립 verifier는 full
+signer/current key·partner endorsement와 exact archive checksum을 검증한다.
+Actual official random3.7.2와 partner integrations/github6.6.0 source gate2.686s는
+VERIFIED이며 frozen selection·mirror/redirect·intake alias·signature·expiry/revocation
+부정 및 canonical quick/security/vulnerability도 exit0다.
+
+Whole item의 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED는 계속 NO다.
+현재 init은 아직 resolution 출력만 연결되어 있다. MISSING은 bounded ZIP/executable/
+h1 검사·실제 fixed dynamic probe, complete project/lock selection과 독립 승인 staging,
+original guard 아래 provider-tree·lock·metadata 전체 publish/rollback 및 실제 CLI·
+보안·경쟁·partial commit qualification이다. [부분 source evidence](./evidence/m12-004-provider-source/result.json)는
+원래 FAIL과 source-bound PASS를 구분한다. 같은 M12-004를 계속하며 원격 작업은 없다.
+
+### M12-004 시작 baseline audit (2026-10-06)
+
+기준 commit은 `8c56f873eb7ce395af4ba984190413492b096e63`이다. 기존
+`artifact/terraformprovider`의 exact reference·metadata parser·resolver·graph,
+`application/terraform.go`와 CLI/bootstrap의 조회 연결,
+`promotion/terraform_transaction.go`의 lock plan·private workspace·backup/rollback
+primitive를 재사용한다. Full item은 `IMPLEMENTED=NO / WIRED=NO /
+QUALIFIED=NO / ACCEPTANCE_CLOSED=NO`다. 기존 조회 성공을 설치 완료로 쓰지 않는다.
+
+MISSING은 실제 discovery/version/package 응답과 endpoint binding, frozen signed
+acquisition과 full signer/trust 확인, ZIP/executable 정적 검사 및 fixed dynamic
+probe, 독립 Evidence/Policy 승인, original guard 아래 provider tree·lock·metadata
+전체 publish/rollback, retained state 검증, public official/partner 및 보안·경쟁·
+부분 commit qualification이다. 관련 owner의 baseline hash와 재사용 경계는
+[baseline evidence](./evidence/m12-004-provider-baseline/result.json)에 기록했다.
+M12-004만 IN_PROGRESS이며 NO PUSH / NO REMOTE CI / NO MERGE를 유지한다.
 
 ### M12-003 local acceptance 종료 (2026-10-06)
 

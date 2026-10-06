@@ -6,9 +6,9 @@ package terraformprovider
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"net/url"
+	"path"
 	"regexp"
 	"strings"
 
@@ -17,11 +17,13 @@ import (
 
 const registryEndpoint = "https://registry.terraform.io"
 
-var providerSegment = regexp.MustCompile(`^[a-z0-9][a-z0-9_-]{0,127}$`)
-var providerVersion = regexp.MustCompile(`^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?$`)
+var providerSegment = regexp.MustCompile(`^[a-z0-9][a-z0-9-]{0,127}$`)
+var providerVersion = regexp.MustCompile(`^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?$`)
+var signingKeyID = regexp.MustCompile(`^[0-9A-F]{16}$`)
+var signatureSuffix = regexp.MustCompile(`^(?:\.[0-9A-F]{8,16})?\.sig$`)
 var providerSource = mustSource("terraform-registry")
 
-var defaultDownloadHosts = map[string]bool{"releases.hashicorp.com": true}
+var defaultDownloadHosts = map[string]bool{"releases.hashicorp.com": true, "github.com": true}
 
 func Source() domain.SourceID  { return providerSource }
 func RegistryEndpoint() string { return registryEndpoint }
@@ -51,17 +53,25 @@ type versionEntry struct {
 	Platforms []Platform `json:"platforms"`
 }
 type packageDocument struct {
-	Protocol            string `json:"protocol"`
-	OS                  string `json:"os"`
-	Arch                string `json:"arch"`
-	Filename            string `json:"filename"`
-	DownloadURL         string `json:"download_url"`
-	ShasumsURL          string `json:"shasums_url"`
-	ShasumsSignatureURL string `json:"shasums_signature_url"`
-	Shasum              string `json:"shasum"`
-	SigningKeys         []struct {
-		KeyID string `json:"key_id"`
+	Protocols           []string `json:"protocols"`
+	OS                  string   `json:"os"`
+	Arch                string   `json:"arch"`
+	Filename            string   `json:"filename"`
+	DownloadURL         string   `json:"download_url"`
+	ShasumsURL          string   `json:"shasums_url"`
+	ShasumsSignatureURL string   `json:"shasums_signature_url"`
+	Shasum              string   `json:"shasum"`
+	SigningKeys         struct {
+		Keys []SigningKey `json:"gpg_public_keys"`
 	} `json:"signing_keys"`
+}
+
+// SigningKey is an untrusted registry declaration. KeyID and source labels
+// never confer trust; verification uses the certificate's full fingerprint.
+type SigningKey struct {
+	KeyID          string `json:"key_id"`
+	ASCIIArmor     string `json:"ascii_armor"`
+	TrustSignature string `json:"trust_signature"`
 }
 
 func ParseVersionResponse(body []byte, requestedVersion string, platform Platform) error {
@@ -69,19 +79,35 @@ func ParseVersionResponse(body []byte, requestedVersion string, platform Platfor
 		return errors.New("terraform Provider version request is invalid")
 	}
 	var document versionDocument
-	if err := json.Unmarshal(body, &document); err != nil {
+	if err := decodeRegistryJSON(body, &document, 2<<20); err != nil || len(document.Versions) == 0 || len(document.Versions) > 8192 {
 		return errors.New("terraform Registry version response is invalid")
 	}
+	seen := map[string]bool{}
+	available := false
 	for _, entry := range document.Versions {
+		if !providerVersion.MatchString(entry.Version) || seen[entry.Version] || len(entry.Platforms) > 64 || len(entry.Protocols) > 8 {
+			return errors.New("terraform Registry version identity is invalid or ambiguous")
+		}
+		seen[entry.Version] = true
 		if entry.Version != requestedVersion {
 			continue
 		}
+		if !validProtocols(entry.Protocols) {
+			return errors.New("terraform requested provider protocols are invalid or unavailable")
+		}
+		seenPlatforms := map[Platform]bool{}
 		for _, candidate := range entry.Platforms {
+			if !providerSegment.MatchString(candidate.OS) || !providerSegment.MatchString(candidate.Arch) || seenPlatforms[candidate] {
+				return errors.New("terraform requested provider platforms are invalid or ambiguous")
+			}
+			seenPlatforms[candidate] = true
 			if candidate == platform {
-				return nil
+				available = true
 			}
 		}
-		return errors.New("terraform Provider platform is unavailable")
+	}
+	if available {
+		return nil
 	}
 	return errors.New("terraform Provider version is unavailable")
 }
@@ -93,6 +119,11 @@ type ProviderArtifact struct {
 	DownloadURL  string
 	SHA256       string
 	SignerKeyIDs []string
+	Filename     string
+	ShasumsURL   string
+	SignatureURL string
+	Protocols    []string
+	SigningKeys  []SigningKey
 }
 
 // BuildLockedGraph binds one exact Provider installation to the generic
@@ -137,14 +168,18 @@ func ParsePackageResponseWithAllowedHosts(reference domain.ArtifactReference, bo
 		return ProviderArtifact{}, errors.New("terraform Provider package request is invalid")
 	}
 	parts := strings.SplitN(reference.Locator(), "@", 2)
-	if len(parts) != 2 {
+	parsed, parseErr := ParseReference(reference.Locator())
+	if len(parts) != 2 || parseErr != nil || parsed != reference || platform != (Platform{OS: "linux", Arch: "amd64"}) {
 		return ProviderArtifact{}, errors.New("terraform Provider reference is invalid")
 	}
 	var document packageDocument
-	if err := json.Unmarshal(body, &document); err != nil {
+	if err := decodeRegistryJSON(body, &document, 1<<20); err != nil {
 		return ProviderArtifact{}, errors.New("terraform Registry package response is invalid")
 	}
-	if document.OS != platform.OS || document.Arch != platform.Arch || !providerVersion.MatchString(parts[1]) || document.Filename == "" || !isSHA256(document.Shasum) || document.DownloadURL == "" || document.ShasumsURL == "" || document.ShasumsSignatureURL == "" {
+	segments := strings.Split(parts[0], "/")
+	base := "terraform-provider-" + segments[1] + "_" + parts[1]
+	filename := base + "_" + platform.OS + "_" + platform.Arch + ".zip"
+	if document.OS != platform.OS || document.Arch != platform.Arch || document.Filename != filename || !validProtocols(document.Protocols) || !isSHA256(document.Shasum) || document.Shasum != strings.ToLower(document.Shasum) || document.DownloadURL == "" || document.ShasumsURL == "" || document.ShasumsSignatureURL == "" {
 		return ProviderArtifact{}, errors.New("terraform Provider package binding is incomplete")
 	}
 	if err := trustedURL(document.DownloadURL); err != nil {
@@ -162,16 +197,39 @@ func ParsePackageResponseWithAllowedHosts(reference domain.ArtifactReference, bo
 	if download.Hostname() == "registry.terraform.io" || sums.Hostname() != signature.Hostname() || download.Hostname() != sums.Hostname() || !allowedHosts[strings.ToLower(download.Hostname())] {
 		return ProviderArtifact{}, errors.New("terraform Provider download endpoint identity is invalid")
 	}
-	keys := make([]string, 0, len(document.SigningKeys))
-	for _, key := range document.SigningKeys {
-		if key.KeyID != "" {
-			keys = append(keys, key.KeyID)
+	parent := path.Dir(download.Path)
+	if path.Base(download.Path) != filename || path.Dir(sums.Path) != parent || path.Dir(signature.Path) != parent || path.Base(sums.Path) != base+"_SHA256SUMS" || !strings.HasPrefix(path.Base(signature.Path), path.Base(sums.Path)) || !signatureSuffix.MatchString(strings.TrimPrefix(path.Base(signature.Path), path.Base(sums.Path))) {
+		return ProviderArtifact{}, errors.New("terraform Provider download paths do not bind exact package")
+	}
+	switch download.Hostname() {
+	case "releases.hashicorp.com":
+		if segments[0] != "hashicorp" || parent != "/terraform-provider-"+segments[1]+"/"+parts[1] {
+			return ProviderArtifact{}, errors.New("terraform Provider official endpoint binding is invalid")
 		}
+	case "github.com":
+		expected := "/" + segments[0] + "/terraform-provider-" + segments[1] + "/releases/download/"
+		if parent != expected+parts[1] && parent != expected+"v"+parts[1] {
+			return ProviderArtifact{}, errors.New("terraform Provider release endpoint binding is invalid")
+		}
+	default:
+		return ProviderArtifact{}, errors.New("terraform Provider download endpoint is unsupported")
+	}
+	keys := make([]string, 0, len(document.SigningKeys.Keys))
+	seenKeys := map[string]bool{}
+	if len(document.SigningKeys.Keys) > 8 {
+		return ProviderArtifact{}, errors.New("terraform Provider signing key count exceeds bound")
+	}
+	for _, key := range document.SigningKeys.Keys {
+		if !signingKeyID.MatchString(key.KeyID) || seenKeys[key.KeyID] || len(key.ASCIIArmor) > 128<<10 || !strings.HasPrefix(key.ASCIIArmor, "-----BEGIN PGP PUBLIC KEY BLOCK-----") || len(key.TrustSignature) > 16<<10 {
+			return ProviderArtifact{}, errors.New("terraform Provider signing declaration is invalid or ambiguous")
+		}
+		seenKeys[key.KeyID] = true
+		keys = append(keys, key.KeyID)
 	}
 	if len(keys) == 0 {
 		return ProviderArtifact{}, errors.New("terraform Provider signer identity is missing")
 	}
-	return ProviderArtifact{Reference: reference, Platform: platform, DownloadURL: document.DownloadURL, SHA256: strings.ToLower(document.Shasum), SignerKeyIDs: keys}, nil
+	return ProviderArtifact{Reference: reference, Platform: platform, DownloadURL: document.DownloadURL, SHA256: document.Shasum, SignerKeyIDs: keys, Filename: filename, ShasumsURL: document.ShasumsURL, SignatureURL: document.ShasumsSignatureURL, Protocols: document.Protocols, SigningKeys: document.SigningKeys.Keys}, nil
 }
 
 func VerifyLockHash(lockHashes []string, sha256Hex string) error {
@@ -191,7 +249,7 @@ func VerifyLockHash(lockHashes []string, sha256Hex string) error {
 
 func trustedURL(value string) error {
 	parsed, err := url.Parse(value)
-	if err != nil || parsed.Scheme != "https" || parsed.User != nil || parsed.RawQuery != "" || parsed.Fragment != "" || parsed.Hostname() == "" || parsed.Path == "" {
+	if err != nil || len(value) > 2048 || strings.ContainsAny(value, "\x00\r\n\\") || parsed.Scheme != "https" || parsed.Opaque != "" || parsed.User != nil || parsed.RawQuery != "" || parsed.ForceQuery || parsed.Fragment != "" || parsed.Hostname() == "" || parsed.Host != parsed.Hostname() || parsed.RawPath != "" || parsed.Path == "" || path.Clean(parsed.Path) != parsed.Path || parsed.String() != value {
 		return errors.New("uRL is not canonical HTTPS")
 	}
 	return nil

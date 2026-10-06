@@ -123,7 +123,8 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/core/domain": true,
 		},
 		modulePath + "/internal/artifact/terraformprovider": {
-			modulePath + "/internal/core/domain": true,
+			modulePath + "/internal/core/domain":            true,
+			modulePath + "/internal/artifact/githubrelease": true,
 		},
 		modulePath + "/internal/verification/gomodule": {
 			modulePath + "/internal/artifact/gomodule":         true,
@@ -134,6 +135,10 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 		modulePath + "/internal/verification/cargo": {
 			modulePath + "/internal/artifact/cargo": true,
 			modulePath + "/internal/core/domain":    true,
+		},
+		modulePath + "/internal/verification/terraformprovider": {
+			modulePath + "/internal/artifact/terraformprovider": true,
+			modulePath + "/internal/core/domain":                true,
 		},
 		modulePath + "/internal/inspection/cargo": {
 			modulePath + "/internal/artifact/cargo": true,
@@ -214,17 +219,22 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 		modulePath + "/internal/verification/projectbuild":  {},
 		modulePath + "/internal/verification/gomodule":      {"golang.org/x/mod/sumdb": true},
 		modulePath + "/internal/verification/cargo":         {},
-		modulePath + "/internal/inspection/cargo":           {},
-		modulePath + "/internal/inspection/gomodule":        {"golang.org/x/mod/modfile": true},
-		modulePath + "/internal/verification/npm":           {},
-		modulePath + "/internal/verification/pypi":          {},
-		modulePath + "/internal/inspection/npm":             {},
-		modulePath + "/internal/evidence/local":             {},
-		modulePath + "/internal/sandbox":                    {},
-		modulePath + "/internal/promotion":                  {},
-		modulePath + "/internal/runtimeidentity":            {},
-		modulePath + "/internal/testutil/fakeworkflow":      {},
-		modulePath + "/scripts/check":                       {"go.yaml.in/yaml/v3": true},
+		modulePath + "/internal/verification/terraformprovider": {
+			"github.com/ProtonMail/go-crypto/openpgp/v2":     true,
+			"github.com/ProtonMail/go-crypto/openpgp/armor":  true,
+			"github.com/ProtonMail/go-crypto/openpgp/packet": true,
+		},
+		modulePath + "/internal/inspection/cargo":      {},
+		modulePath + "/internal/inspection/gomodule":   {"golang.org/x/mod/modfile": true},
+		modulePath + "/internal/verification/npm":      {},
+		modulePath + "/internal/verification/pypi":     {},
+		modulePath + "/internal/inspection/npm":        {},
+		modulePath + "/internal/evidence/local":        {},
+		modulePath + "/internal/sandbox":               {},
+		modulePath + "/internal/promotion":             {},
+		modulePath + "/internal/runtimeidentity":       {},
+		modulePath + "/internal/testutil/fakeworkflow": {},
+		modulePath + "/scripts/check":                  {"go.yaml.in/yaml/v3": true},
 	}
 	forbiddenConcreteImports := map[string]map[string]bool{
 		modulePath + "/internal/core/domain": {
