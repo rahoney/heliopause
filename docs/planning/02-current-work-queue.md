@@ -9,7 +9,7 @@
 ```text
 Current milestone: M12 — Ecosystem Expansion Before Public Release
 Milestone status: IN_PROGRESS
-Active work item: None (M12-004 local acceptance COMPLETE)
+Active work item: M12-004 — remote CI follow-up for cumulative M12-002~004
 Next work item: M12-005 — Cross-ecosystem qualification and feature freeze
 Next work item status: NOT_STARTED / Ready: Yes
 Ready: Yes
@@ -2135,11 +2135,11 @@ M12: IN_PROGRESS
 M12-001: COMPLETE
 M12-002: COMPLETE
 M12-003: COMPLETE
-M12-004: COMPLETE
+M12-004: IN_PROGRESS (remote follow-up; local acceptance COMPLETE)
 M12-005: NOT_STARTED
 M12-02: RESERVED
 M13: BLOCKED
-Active work item: None (M12-004 local acceptance COMPLETE)
+Active work item: M12-004 — remote CI follow-up for cumulative M12-002~004
 Next work item: M12-005 — NOT_STARTED / Ready: Yes
 ```
 
@@ -2175,7 +2175,7 @@ production activation과 최종 배포를 수행한다.
 | 1 | M12-001 | Official PyTorch source support | COMPLETE |
 | 2 | M12-002 | public Go Modules | COMPLETE |
 | 3 | M12-003 | Rust/Cargo and public crates.io | COMPLETE |
-| 4 | M12-004 | Terraform Provider installation | COMPLETE |
+| 4 | M12-004 | Terraform Provider installation; cumulative remote CI follow-up | IN_PROGRESS |
 | 5 | M12-005 | cross-ecosystem qualification and feature freeze | NOT_STARTED |
 | 6 | M12-02 | final red-team/fix gate | RESERVED |
 
@@ -2916,6 +2916,27 @@ Native macOS/new remote Required는 NOT_RUN, cu130/cu132는 공통 경로 focuse
 M12 전체는 IN_PROGRESS이며 broader release support/feature freeze는 다음 M12-005에
 남는다. 다음 item은 `NOT_STARTED / Ready: Yes`이고 구현을 시작하지 않았다.
 NO PUSH / NO REMOTE CI / NO MERGE / NO AGENTS.
+
+### M12-002~004 원격 전달·CI 후속 시작 (2026-10-07)
+
+사용자가 누적 변경의 push, PR CI, 원인에 따른 수정·재검증·오답노트 기록을
+all green까지 반복하고 불필요한 성공 테스트 아티팩트를 정리하도록 요청했다.
+기존 local acceptance와 실패 원본은 보존하며 현재 활성 item은 M12-004 후속 하나다.
+M12-005는 NOT_STARTED/Ready: Yes이고 이 원격 후속 완료 뒤 baseline audit로 재개한다.
+
+Baseline은 local6da451a와 remote main62c3b59다. Main 이후16 commits에
+M12-002 bdd3a29, M12-003 8c56f87, M12-004 6da451a가 모두 포함된다.
+IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES(local), remote qualification=NO,
+ACCEPTANCE_CLOSED=YES(local), remote delivery closed=NO다. 기존 구현을 다시 만들지 않는다.
+MISSING은 같은 최종 후보의 PR Required 및9 prerequisites 실제 성공, 필요한 오류
+교정·회귀, raw run/job/source 연결, 완료 기록과 성공 테스트 전용 데이터 정리다.
+
+이번 요청은 push와 PR CI를 허용한다. Main merge, M12-005 구현이나 support 범위
+확장은 포함하지 않는다. 과거 NO PUSH/NO REMOTE CI는 당시 local 작업 범위 기록이다.
+실패는 최초 원인과 정확한 입력을 보존하며 M12-001 green code와 비교해 확인된
+회귀만 수정한다. Skip/Required 삭제/예산 완화로 성공을 만들지 않는다.
+성공한 테스트 데이터는 보존 증거와 후속 사용 여부·현재 process/resource를 확인한
+뒤 본 작업의 전용 경로만 제거한다. 실패 재현 입력·runtime originals는 유지한다.
 
 ## Step 13 Invariant
 
