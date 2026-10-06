@@ -8,7 +8,10 @@ import (
 
 func TestPyTorchQualificationCacheIsFreshAndSeparate(t *testing.T) {
 	project := t.TempDir()
-	parent := t.TempDir()
+	parent, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
 	if err := os.Chmod(parent, 0o700); err != nil {
 		t.Fatal(err)
 	}
@@ -41,7 +44,10 @@ func TestPyTorchQualificationCacheIsFreshAndSeparate(t *testing.T) {
 }
 
 func TestPyTorchQualificationCacheRejectsUntrustedParent(t *testing.T) {
-	root := t.TempDir()
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
 	parent := filepath.Join(root, "parent")
 	if err := os.Mkdir(parent, 0o700); err != nil {
 		t.Fatal(err)

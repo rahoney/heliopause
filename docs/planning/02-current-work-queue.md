@@ -2938,6 +2938,17 @@ MISSING은 같은 최종 후보의 PR Required 및9 prerequisites 실제 성공,
 성공한 테스트 데이터는 보존 증거와 후속 사용 여부·현재 process/resource를 확인한
 뒤 본 작업의 전용 경로만 제거한다. 실패 재현 입력·runtime originals는 유지한다.
 
+### 원격 첫 macOS 실패와 동일 입력 교정 (2026-10-07)
+
+PR29/run37497646753의 macOS job112386202588에서
+TestPyTorchQualificationCacheIsFreshAndSeparate가 no-symlink parent 조건으로 실패했다.
+실제 checkout은 PR merge0ec1e77이며 branch candidate1170ce2다. M12-001 main62c3b59에는
+이 test/helper 추가가 없고 M12-003 8c56f87에서 추가됐다. Linux TMPDIR를 symlink alias로
+고정한 동일 두 test도 beforeFAIL0.016s로 같은 오류를 재현했다. 정상 test의 임시
+parent와 negative test의 기준 root만 EvalSymlinks로 고정한다. Helper의 symlink·mode
+거부와 freshness 계약은 변경하지 않으며 negative를 다른 symlink 오류로 가리지 않는다.
+Native macOS 재검증과 최종 all green은 아직 남아 있고 같은 후속 item을 계속한다.
+
 ## Step 13 Invariant
 
 1. Current Work Queue에는 현재 milestone의 실행 항목만 둔다.
