@@ -160,9 +160,49 @@ func TestLinuxNPMPromotionIntegration(t *testing.T) {
 	if err != nil || string(body) != "module.exports = 42;\n" {
 		t.Fatalf("installed package body=%q error=%v", body, err)
 	}
+	t.Run("project-first-and-retained", func(t *testing.T) {
+		root := realPromotionRoot(t)
+		target := filepath.Join(root, "target")
+		if err := os.Mkdir(target, 0o700); err != nil {
+			t.Fatal(err)
+		}
+		for name, body := range map[string]string{"package.json": `{"dependencies":{}}`, "package-lock.json": `{"packages":{"":{}}}`} {
+			if err := os.WriteFile(filepath.Join(target, name), []byte(body), 0o600); err != nil {
+				t.Fatal(err)
+			}
+		}
+		install, err := domain.NewNPMProjectInstallContext(installContextFor(t, target).Target())
+		if err != nil {
+			t.Fatal(err)
+		}
+		bundle, staged := validStagedNPMFixtureForContext(t, root, install)
+		adapter, err := NewNPMPromotionWithRunner(filepath.Join(root, "staging"), executor)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, phase := range []string{"first", "retained"} {
+			if _, err := adapter.Promote(context.Background(), staged, bundle, install); err != nil {
+				t.Fatalf("%s project promotion: %v", phase, err)
+			}
+			plan, err := freezeNPMProject(target)
+			if err != nil || plan.verifyManagedOrEmpty() != nil || rejectInterruptedNPMTransaction(target) != nil {
+				t.Fatalf("%s project did not reconcile or clear backup: %v", phase, err)
+			}
+			body, err := os.ReadFile(filepath.Join(target, "node_modules", "haa-promotion-fixture", "index.js"))
+			if err != nil || string(body) != "module.exports = 42;\n" {
+				t.Fatalf("%s project output: %q %v", phase, body, err)
+			}
+		}
+		t.Log("actual_npm_project_commits=2 first_and_retained_reconciled=true backup_cleanup_complete=true")
+	})
 }
 
 func validStagedNPMFixture(t *testing.T, root string) (domain.VerifiedBundle, domain.StagedSet) {
+	t.Helper()
+	return validStagedNPMFixtureForContext(t, root, installContextFor(t, filepath.Join(root, "target")))
+}
+
+func validStagedNPMFixtureForContext(t *testing.T, root string, install domain.InstallContext) (domain.VerifiedBundle, domain.StagedSet) {
 	t.Helper()
 	runID, _ := domain.NewRunID()
 	intake := filepath.Join(root, "intake")
@@ -198,7 +238,7 @@ func validStagedNPMFixture(t *testing.T, root string) (domain.VerifiedBundle, do
 	set, _ := domain.NewVerifiedSet(inspected, setDecision)
 	operationID, _ := domain.NewOperationID()
 	lockDigest, _ := domain.NewSHA256Digest(strings.Repeat("c", 64))
-	bundle, err := evidence.BuildVerifiedBundle(evidence.ManifestContext{OperationID: operationID, InstallContext: installContextFor(t, filepath.Join(root, "target")), ResolverRuntime: "node:22.23.1;npm:10.9.8", LockfileDigest: lockDigest}, set)
+	bundle, err := evidence.BuildVerifiedBundle(evidence.ManifestContext{OperationID: operationID, InstallContext: install, ResolverRuntime: "node:22.23.1;npm:10.9.8", LockfileDigest: lockDigest}, set)
 	if err != nil {
 		t.Fatal(err)
 	}

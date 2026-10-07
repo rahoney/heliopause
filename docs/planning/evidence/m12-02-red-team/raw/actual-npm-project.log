@@ -1,0 +1,6 @@
+=== RUN   TestLinuxNPMPromotionIntegration
+    linux_integration_test.go:145: verify registered runsc-trace bundle: local gVisor bundle manifest identity mismatch
+--- FAIL: TestLinuxNPMPromotionIntegration (0.19s)
+FAIL
+FAIL	github.com/rahoney/heliopause/internal/promotion	0.193s
+FAIL

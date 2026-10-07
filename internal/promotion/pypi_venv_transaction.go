@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"hash"
 	"io"
 	"os"
 	"path/filepath"
@@ -314,6 +315,8 @@ type pypiVenvTransaction struct {
 	desired                                         pypiVenvState
 	journalStarted                                  bool
 	journalIdentity                                 os.FileInfo
+	journalHash                                     hash.Hash
+	journalSize                                     int64
 	journalBacked, journalPublished, journalCreated int
 	journalMetadataBacked, journalMetadataPublished bool
 	// Instance-local deterministic fault seam, never Artifact/config input.
@@ -724,12 +727,21 @@ func (t *pypiVenvTransaction) appendJournal(value any) error {
 		return err
 	}
 	info, err := f.Stat()
-	if err != nil || !info.Mode().IsRegular() || !pypiSingleLink(info) || (t.journalStarted && !os.SameFile(t.journalIdentity, info)) {
+	if err != nil || !info.Mode().IsRegular() || !pypiSingleLink(info) || info.Mode().Perm() != 0o600 || info.Size() != t.journalSize || (t.journalStarted && !os.SameFile(t.journalIdentity, info)) {
 		_ = f.Close()
 		return errors.New("recovery journal identity changed")
 	}
 	t.journalIdentity = info
-	_, we := f.Write(append(body, '\n'))
+	if t.journalHash == nil {
+		t.journalHash = sha256.New()
+	}
+	line := append(body, '\n')
+	n, we := f.Write(line)
+	if we == nil && n != len(line) {
+		we = io.ErrShortWrite
+	}
+	_, _ = t.journalHash.Write(line[:n])
+	t.journalSize += int64(n)
 	if err := errors.Join(we, f.Sync(), f.Close()); err != nil {
 		return err
 	}
@@ -771,9 +783,9 @@ func (t *pypiVenvTransaction) commit(destinations []pypiDestination) (resultErr 
 				return
 			}
 		}
-		if err := os.RemoveAll(t.backup); err != nil {
+		if err := t.removeBackup(resultErr == nil); err != nil {
 			t.recovery = true
-			resultErr = errors.Join(resultErr, errors.New("recovery cleanup failed"))
+			resultErr = errors.Join(resultErr, err, errors.New("recovery cleanup failed"))
 		}
 		if err := syncDirectory(t.plan.root); err != nil {
 			t.recovery = true

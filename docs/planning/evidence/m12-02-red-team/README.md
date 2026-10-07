@@ -44,3 +44,11 @@
 대체하지 않는다.
 
 Status: IN_PROGRESS. Remaining review and remote results pending.
+
+## FIX-02 및 검토 matrix
+
+[fix-02-local.json](./fix-02-local.json)은 npm/PyPI 최종 fixture의 동일 입력 인과,
+48개 사례 PASS·기존 회귀와 canonical profile 결과, 실제 npm local preflight 거부를
+구분한다. [여덟 영역 검토](./review-matrix.md)는 owner·거부 조건·변경 범위와 현재
+판정을 연결한다. 원격 실제 소비자·CPU/세 CUDA full·최종 CI가 완료되기 전에는
+FIX-01/02와 M12-02 acceptance를 닫지 않는다.

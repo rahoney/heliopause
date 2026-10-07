@@ -1,0 +1,4 @@
+[check] fuzz GitHub Release reference
+[check] fuzz PyPI reference
+[check] fuzz wheel inspection
+[check] fuzz sdist inspection

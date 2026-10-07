@@ -67,7 +67,7 @@ Status: IN_PROGRESS — remediation·동일 입력/기존 소비자 로컬 회�
 
 ## FIX-02 — npm/PyPI backup cleanup 및 npm rollback의 외부 파일 삭제
 
-Status: IN_PROGRESS — 기준 production에서 실제 삭제 재현, remediation 미완료.
+Status: IN_PROGRESS — remediation·동일 입력/기존 소비자 로컬 회귀 통과, 원격 검증 대기.
 
 - 기준: `19411ca`, `internal/promotion/npm_transaction.go`와
   `internal/promotion/pypi_venv_transaction.go`.
@@ -78,3 +78,10 @@ Status: IN_PROGRESS — 기준 production에서 실제 삭제 재현, remediatio
 - 수정 범위는 기존 owner의 backup/member identity 및 내용 검증과 확인된 member의
   개별 정리다. 원래 오류와 불확실한 데이터·recovery 영역을 보존하고 다음 작업을
   차단한다. 신규 기능·graph/Policy/observation 권한 변경은 하지 않는다.
+- npm의 경쟁 destination 및 교체된 guard도 덮어쓰거나 삭제하지 않는다. PyPI는
+  controller가 append한 journal의 길이·digest와 신원도 확인한다. 최종48개 사례와
+  기존 npm/PyPI 회귀, canonical 일곱 profile은 actual PASS다. 새 실제 npm 프로젝트
+  최초/retained 소비자는 기존 Required test에 연결했으며 local registered runtime
+  identity preflight가 거부해 body는 NOT_RUN이다. Current CPU/세 CUDA full·실제
+  프로젝트·전체 CI가 남는다. [로컬 근거](./evidence/m12-02-red-team/fix-02-local.json)와
+  [여덟 영역 검토](./evidence/m12-02-red-team/review-matrix.md)를 참조한다.
