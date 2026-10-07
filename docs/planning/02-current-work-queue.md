@@ -9,9 +9,9 @@
 ```text
 Current milestone: M12 — Ecosystem Expansion Before Public Release
 Milestone status: IN_PROGRESS
-Active work item: None — M12-005 COMPLETE
-Next work item: M12-02 — final red-team/fix gate
-Next work item status: NOT_STARTED / Ready: Yes
+Active work item: M12-02 — final red-team/fix gate
+Next work item: M13 — Production Release & Operations
+Next work item status: NOT_STARTED / Ready: No — M12-02 acceptance pending
 Ready: Yes
 ```
 
@@ -2177,7 +2177,7 @@ production activation과 최종 배포를 수행한다.
 | 3 | M12-003 | Rust/Cargo and public crates.io | COMPLETE |
 | 4 | M12-004 | Terraform Provider installation and cumulative remote qualification | COMPLETE |
 | 5 | M12-005 | cross-ecosystem qualification and feature freeze | COMPLETE |
-| 6 | M12-02 | final red-team/fix gate | NOT_STARTED / Ready: Yes |
+| 6 | M12-02 | final red-team/fix gate | IN_PROGRESS / Ready: Yes |
 
 ### M12-001 acceptance 종료 (2026-10-03)
 
@@ -3058,3 +3058,12 @@ Final documentation/evidence commit의 원격 Required와 whole checkout 동일�
 Active item은 없고 M12-02는 `NOT_STARTED / Ready: Yes`다. 이번 변경은 red-team을
 수행하거나 NO_RELEASE_BLOCKING_FINDINGS를 선언하지 않는다. M12 전체는
 IN_PROGRESS이며 main reviewer merge와 public release는 후속 gate를 따른다.
+
+### M12-02 final red-team baseline audit 시작 (2026-10-07)
+
+사용자는005 완료 후보19411ca에서 최종 검토·확정 결함 수정·회귀와 최종 CI까지
+진행하도록 승인했다. [Baseline audit](./evidence/m12-02-red-team/README.md)에
+IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO와
+여덟 검토 영역·실제 MISSING을 기록했다. 기존 구현과005 full 증거를 재사용하며
+새 기능이나 Core/Policy 계약 변경은 하지 않는다. M12-02만 IN_PROGRESS다.
+M13은NOT_STARTED이며 이번 범위는 reviewer의 main merge 전 검토 완료까지다.

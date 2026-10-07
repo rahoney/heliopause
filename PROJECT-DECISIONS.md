@@ -96,7 +96,7 @@
 | Public Terraform Provider Installation Qualification | M12-004 | Complete | [Qualification Evidence](./docs/planning/evidence/m12-004-provider-qualification/result.json), [Remote CI Evidence](./docs/planning/evidence/m12-002-004-remote-ci/result.json), [Current Work Queue](./docs/planning/02-current-work-queue.md) |
 | Go·Cargo·Terraform Cumulative Remote Qualification | M12-002~004 | Complete | [Remote CI Evidence](./docs/planning/evidence/m12-002-004-remote-ci/result.json), [Current Work Queue](./docs/planning/02-current-work-queue.md) |
 | Cross-Ecosystem Qualification and Feature Freeze | M12-005 | Complete | [Qualification Evidence](./docs/planning/evidence/m12-005-qualification/README.md), [Current Work Queue](./docs/planning/02-current-work-queue.md) |
-| M12 Final Red-Team Fix Gate | M12-02 | Not started / Ready | [M12-02 Final Red-Team Fix List](./docs/planning/17-m12-02-fix-list.md) |
+| M12 Final Red-Team Fix Gate | M12-02 | In progress | [M12-02 Final Red-Team Fix List](./docs/planning/17-m12-02-fix-list.md) |
 | Production Release & Operations | M13 | Defined | [M13 Production Release & Operations Contract](./docs/planning/18-m13-production-release-operations-contract.md) |
 
 ## Current Stage
@@ -110,7 +110,7 @@ M12-001~004 acceptance 및 누적 원격 qualification을 완료했다. M12-005�
 네 exact PyTorch tuple의 bounded support 및 feature freeze를 확정했다. 상세 지원
 결정은 [M12 계약](./docs/planning/16-m12-01-ecosystem-expansion-contract.md#first-release-support-tuples)을 따른다.
 M12 전체는 final red-team/fix gate가 남아 `IN_PROGRESS`다. M12-02는
-`NOT_STARTED / Ready: Yes`이며 이번 작업에서 시작하지 않았다. 현재 milestone과
+`IN_PROGRESS / Ready: Yes`이며 최종 검토와 확정 결함의 수정·검증을 진행한다. 현재 milestone과
 active/next work item은 [Current Work Queue](./docs/planning/02-current-work-queue.md)를 참조한다.
 
 M7 MVP qualification evidence는 보존한다. external security review에서 확인된
