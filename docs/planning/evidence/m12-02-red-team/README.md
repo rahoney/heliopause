@@ -35,4 +35,12 @@
   기록한다. 범용 framework, 신규 기능 또는 취향에 따른 재작성은 이번 범위가 아니다.
 - 현재 작성자의 검토를 외부 독립 보안 감사나 GitHub reviewer 승인으로 표시하지 않는다.
 
-Status: IN_PROGRESS. Review results pending.
+## FIX-01 로컬 인과 및 회귀
+
+[fix-01-local.json](./fix-01-local.json)은 최종 fixture와 correction source의 SHA,
+동일 fixture의 baseline FAIL → correction PASS, 첫 수정의 기존 Cargo 회귀 실패와
+보완 후 PASS, canonical 여섯 profile의 실제 exit/log SHA를 연결한다. 원본 로그는
+`raw/`에 bytes 그대로 보존한다. 원격 소비자·CI는 아직 대기 중이며 로컬 PASS로
+대체하지 않는다.
+
+Status: IN_PROGRESS. Remaining review and remote results pending.

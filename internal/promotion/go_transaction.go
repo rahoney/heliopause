@@ -212,10 +212,14 @@ type goProjectTransaction struct {
 	metadataPublished     bool
 	metadataInfo          os.FileInfo
 	originalMetadataInfo  os.FileInfo
+	originalMetadataHash  [32]byte
+	selectedDirectoryInfo os.FileInfo
+	selectedHashes        map[string][32]byte
 	metadataDirectoryInfo os.FileInfo
 	publishApproval       func() error
 	rollbackApproval      func() error
 	boundary              *os.Root
+	backupInfo            os.FileInfo
 	selectedInfo          map[string]os.FileInfo
 	expectedControls      []domain.ProjectControlFile
 }
@@ -248,10 +252,14 @@ func beginGoProjectTransaction(plan goProjectPlan, workspace string, expected ..
 		_ = os.RemoveAll(backup)
 		return nil, errors.New("go transaction root identity changed")
 	}
-	t := &goProjectTransaction{plan: plan, workspace: workspace, backup: backup, boundary: boundary, moved: map[string]bool{}, published: map[string]bool{}, selectedInfo: map[string]os.FileInfo{}}
+	t := &goProjectTransaction{plan: plan, workspace: workspace, backup: backup, boundary: boundary, moved: map[string]bool{}, published: map[string]bool{}, selectedInfo: map[string]os.FileInfo{}, selectedHashes: map[string][32]byte{}}
+	t.backupInfo, err = boundary.Lstat(filepath.Base(backup))
+	if err != nil {
+		return nil, errors.Join(err, boundary.Close())
+	}
 	t.expectedControls = append([]domain.ProjectControlFile(nil), expected...)
 	if err := t.prepareSelectedControls(); err != nil {
-		cleanupErr := boundary.RemoveAll(filepath.Base(backup))
+		cleanupErr := t.removeBackup(false)
 		return nil, errors.Join(err, cleanupErr, boundary.Close())
 	}
 	return t, nil
@@ -266,6 +274,10 @@ func (t *goProjectTransaction) prepareSelectedControls() error {
 	directory := filepath.Join(filepath.Base(t.backup), "selected")
 	if err := t.boundary.Mkdir(directory, 0o700); err != nil {
 		return errors.New("create bounded Go publication directory")
+	}
+	t.selectedDirectoryInfo, err = t.boundary.Lstat(directory)
+	if err != nil {
+		return err
 	}
 	for _, name := range []string{"go.mod", "go.sum"} {
 		body, _, err := readGoTransactionControl(source, name)
@@ -301,6 +313,7 @@ func (t *goProjectTransaction) prepareSelectedControls() error {
 			return errors.New("persist selected Go control")
 		}
 		t.selectedInfo[name] = info
+		t.selectedHashes[name] = sha256.Sum256(body)
 	}
 	return nil
 }
@@ -335,7 +348,7 @@ func (t *goProjectTransaction) commit() (resultErr error) {
 	if err := syncGoTransactionRoot(t.boundary); err != nil {
 		return t.fail(errors.New("sync committed Go project"))
 	}
-	if err := t.boundary.RemoveAll(filepath.Base(t.backup)); err != nil {
+	if err := t.removeBackup(true); err != nil {
 		return errors.New("remove committed Go rollback backup; project is fail-closed")
 	}
 	return syncGoTransactionRoot(t.boundary)
@@ -346,7 +359,7 @@ func (t *goProjectTransaction) fail(cause error) error {
 	if rollbackErr != nil {
 		return errors.Join(cause, rollbackErr, errors.New("go transaction rollback is incomplete; project is fail-closed"))
 	}
-	if err := t.boundary.RemoveAll(filepath.Base(t.backup)); err != nil {
+	if err := t.removeBackup(false); err != nil {
 		return errors.Join(cause, errors.New("remove rolled back Go transaction; project is fail-closed"))
 	}
 	return cause
@@ -358,12 +371,13 @@ func (t *goProjectTransaction) backupCurrent() error {
 	} else if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return errors.New("go metadata directory is unavailable")
 	}
-	if info, err := t.boundary.Lstat(goTransactionMetadata); err == nil {
+	if body, info, err := readGoTransactionControl(t.boundary, goTransactionMetadata); err == nil {
 		if !info.Mode().IsRegular() || info.Mode()&os.ModeSymlink != 0 {
 			return errors.New("inspect current Go transaction metadata")
 		}
 		t.originalMetadataInfo = info
-		if err := t.boundary.Rename(goTransactionMetadata, filepath.Join(filepath.Base(t.backup), "go-transaction.json")); err != nil {
+		t.originalMetadataHash = sha256.Sum256(body)
+		if err := renameRootNoReplace(t.boundary, goTransactionMetadata, filepath.Join(filepath.Base(t.backup), "go-transaction.json")); err != nil {
 			return errors.New("backup current Go transaction metadata")
 		}
 		t.metadataMoved = true
@@ -381,7 +395,7 @@ func (t *goProjectTransaction) backupCurrent() error {
 		if !os.SameFile(t.plan.members[name], info) {
 			return errors.New("go transaction original member identity changed")
 		}
-		if err := t.boundary.Rename(name, filepath.Join(filepath.Base(t.backup), name)); err != nil {
+		if err := renameRootNoReplace(t.boundary, name, filepath.Join(filepath.Base(t.backup), name)); err != nil {
 			return errors.New("backup current Go transaction member")
 		}
 		t.moved[name] = true
@@ -457,6 +471,9 @@ func (t *goProjectTransaction) publishMetadata() error {
 }
 
 func (t *goProjectTransaction) rollback() error {
+	if err := t.verifyBackupBoundary(); err != nil {
+		return err
+	}
 	var result error
 	if t.rollbackApproval != nil {
 		result = errors.Join(result, t.rollbackApproval())
@@ -473,7 +490,7 @@ func (t *goProjectTransaction) rollback() error {
 	if t.metadataMoved {
 		backup := filepath.Join(filepath.Base(t.backup), "go-transaction.json")
 		info, err := t.boundary.Lstat(backup)
-		if err != nil || !os.SameFile(t.originalMetadataInfo, info) {
+		if err != nil || !os.SameFile(t.originalMetadataInfo, info) || controlBackupUnchanged(t.boundary, backup, controlBackupRecord{t.originalMetadataInfo, t.originalMetadataHash}) != nil {
 			result = errors.Join(result, errors.New("go rollback original metadata identity changed"))
 		} else if err := t.boundary.Link(backup, goTransactionMetadata); err != nil {
 			result = errors.Join(result, errors.New("restore Go transaction metadata"))
@@ -484,7 +501,7 @@ func (t *goProjectTransaction) rollback() error {
 	for _, name := range []string{"go.sum", "go.mod"} {
 		if t.published[name] {
 			info, err := t.boundary.Lstat(name)
-			if err != nil || !os.SameFile(t.selectedInfo[name], info) {
+			if err != nil || !os.SameFile(t.selectedInfo[name], info) || controlBackupUnchanged(t.boundary, name, controlBackupRecord{t.selectedInfo[name], t.selectedHashes[name]}) != nil {
 				result = errors.Join(result, errors.New("go rollback published member identity changed"))
 				continue
 			}
@@ -495,7 +512,7 @@ func (t *goProjectTransaction) rollback() error {
 		if t.moved[name] {
 			backup := filepath.Join(filepath.Base(t.backup), name)
 			info, err := t.boundary.Lstat(backup)
-			if err != nil || !os.SameFile(t.plan.members[name], info) {
+			if err != nil || !os.SameFile(t.plan.members[name], info) || controlBackupUnchanged(t.boundary, backup, t.backupRecords(true)[name]) != nil {
 				result = errors.Join(result, errors.New("go rollback original member identity changed"))
 				continue
 			}

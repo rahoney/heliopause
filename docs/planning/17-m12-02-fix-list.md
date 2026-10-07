@@ -43,3 +43,38 @@ M12-005의 검증은 재사용하며, 위 여덟 영역의 최종 검토와 확�
 최종 후보 CI 및 재현 가능한 검토 근거가 이번 acceptance에 남는다.
 [Baseline audit](./evidence/m12-02-red-team/README.md)가 상태 판정과 증거 경계를
 기록한다. 검토 완료 전에는 release-blocking finding의 부재를 선언하지 않는다.
+
+## FIX-01 — Go/Cargo rollback 보관 영역의 외부 파일 삭제
+
+Status: IN_PROGRESS — remediation·동일 입력/기존 소비자 로컬 회귀 통과, 원격 검증 대기.
+
+- 기준: `19411ca`, `internal/promotion/go_transaction.go`와
+  `internal/promotion/cargo_transaction.go`의 commit/fail cleanup.
+- 승인 publication 중 rollback 보관 디렉터리에 외부 파일이 추가되면 성공 commit과
+  실패 후 rollback 모두 `RemoveAll`로 그 파일을 삭제했다. 실제 transaction을 사용하는
+  `TestProjectTransactionPreservesUnexpectedBackupContent`의 두 생태계 × 두 종료 경로가
+  모두 FAIL했다. 이는 사용자 데이터 보존·불확실한 rollback의 fail-closed 계약에 위배된다.
+- 수정 범위: 기존 transaction owner에서 원래/선택한 control·metadata와 보관 경계의
+  identity/content/mode를 대조하고, 정리는 확인한 파일의 개별 삭제와 빈 디렉터리
+  삭제로 제한한다. 외부 파일·변경된 백업은 보존하고 다음 작업을 차단하는 journal을 남긴다.
+- 최초 원본: local M12-02 `backup-before.log`; portable 검증 근거는
+  [review evidence](./evidence/m12-02-red-team/README.md)에 연결한다.
+- 최종 fixture를 기준 production에 적용하면 FAIL, 수정 후 새 40개 사례와 기존 Cargo
+  publication-race 사례가 PASS다. 첫 수정의 전체 선검사는 안전한 원본 복원까지 막아
+  기존 테스트에서 반증됐으며 파일별 검증으로 보완했다. canonical quick/security/
+  vulnerability/fuzz/freshness/release-gate는 모두 actual exit 0다. 이 결과를 새 CLI·원격
+  full qualification으로 확대하지 않는다.
+
+## FIX-02 — npm/PyPI backup cleanup 및 npm rollback의 외부 파일 삭제
+
+Status: IN_PROGRESS — 기준 production에서 실제 삭제 재현, remediation 미완료.
+
+- 기준: `19411ca`, `internal/promotion/npm_transaction.go`와
+  `internal/promotion/pypi_venv_transaction.go`.
+- npm/PyPI의 정상 commit·실패 rollback 후 `RemoveAll`이 보관 영역의 외부 파일을
+  삭제한다. npm rollback은 이미 publish된 `node_modules`/`.heliopause`의 외부 파일도
+  삭제한다. 기존 transaction fixture와 instance-local PyPI fault seam을 사용하는
+  여섯 실제 사례가 FAIL했으며 원본은 local M12-02 `legacy-backup-before.log`다.
+- 수정 범위는 기존 owner의 backup/member identity 및 내용 검증과 확인된 member의
+  개별 정리다. 원래 오류와 불확실한 데이터·recovery 영역을 보존하고 다음 작업을
+  차단한다. 신규 기능·graph/Policy/observation 권한 변경은 하지 않는다.

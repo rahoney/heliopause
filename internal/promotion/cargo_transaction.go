@@ -119,6 +119,9 @@ type cargoProjectTransaction struct {
 	metadataPublished     bool
 	metadataInfo          os.FileInfo
 	originalMetadataInfo  os.FileInfo
+	originalMetadataHash  [32]byte
+	selectedDirectoryInfo os.FileInfo
+	selectedHashes        map[string][32]byte
 	metadataDirectoryInfo os.FileInfo
 	publishApproval       func() error
 	rollbackApproval      func() error
@@ -155,14 +158,14 @@ func beginCargoProjectTransaction(plan cargoProjectPlan, workspace string, expec
 		_ = os.RemoveAll(backup)
 		return nil, errors.New("cargo transaction root identity changed")
 	}
-	t := &cargoProjectTransaction{plan: plan, workspace: workspace, backup: backup, boundary: boundary, moved: map[string]bool{}, published: map[string]bool{}, selectedInfo: map[string]os.FileInfo{}}
+	t := &cargoProjectTransaction{plan: plan, workspace: workspace, backup: backup, boundary: boundary, moved: map[string]bool{}, published: map[string]bool{}, selectedInfo: map[string]os.FileInfo{}, selectedHashes: map[string][32]byte{}}
 	t.backupInfo, err = boundary.Lstat(filepath.Base(backup))
 	if err != nil {
 		return nil, errors.Join(err, boundary.Close())
 	}
 	t.expectedControls = append([]domain.ProjectControlFile(nil), expected...)
 	if err := t.prepareSelectedControls(); err != nil {
-		cleanupErr := boundary.RemoveAll(filepath.Base(backup))
+		cleanupErr := t.removeBackup(false)
 		return nil, errors.Join(err, cleanupErr, boundary.Close())
 	}
 	return t, nil
@@ -177,6 +180,10 @@ func (t *cargoProjectTransaction) prepareSelectedControls() error {
 	directory := filepath.Join(filepath.Base(t.backup), "selected")
 	if err := t.boundary.Mkdir(directory, 0o700); err != nil {
 		return errors.New("create bounded Cargo publication directory")
+	}
+	t.selectedDirectoryInfo, err = t.boundary.Lstat(directory)
+	if err != nil {
+		return err
 	}
 	for _, name := range []string{"Cargo.toml", "Cargo.lock"} {
 		body, member, err := readGoTransactionControl(source, name)
@@ -212,6 +219,7 @@ func (t *cargoProjectTransaction) prepareSelectedControls() error {
 			return errors.New("persist selected Cargo control")
 		}
 		t.selectedInfo[name] = info
+		t.selectedHashes[name] = sha256.Sum256(body)
 	}
 	return nil
 }
@@ -261,7 +269,7 @@ func (t *cargoProjectTransaction) commit() (resultErr error) {
 	if err := t.verifyBoundary(); err != nil {
 		return err
 	}
-	if err := t.boundary.RemoveAll(filepath.Base(t.backup)); err != nil {
+	if err := t.removeBackup(true); err != nil {
 		return errors.New("remove committed Cargo rollback backup; project is fail-closed")
 	}
 	return syncCargoTransactionRoot(t.boundary)
@@ -272,7 +280,7 @@ func (t *cargoProjectTransaction) fail(cause error) error {
 	if rollbackErr != nil {
 		return errors.Join(cause, rollbackErr, errors.New("cargo transaction rollback is incomplete; project is fail-closed"))
 	}
-	if err := t.boundary.RemoveAll(filepath.Base(t.backup)); err != nil {
+	if err := t.removeBackup(false); err != nil {
 		return errors.Join(cause, errors.New("remove rolled back Cargo transaction; project is fail-closed"))
 	}
 	return cause
@@ -287,11 +295,12 @@ func (t *cargoProjectTransaction) backupCurrent() error {
 	} else if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return errors.New("cargo metadata directory is unavailable")
 	}
-	if info, err := t.boundary.Lstat(cargoTransactionMetadata); err == nil {
+	if body, info, err := readGoTransactionControl(t.boundary, cargoTransactionMetadata); err == nil {
 		if !info.Mode().IsRegular() || info.Mode()&os.ModeSymlink != 0 {
 			return errors.New("inspect current Cargo transaction metadata")
 		}
 		t.originalMetadataInfo = info
+		t.originalMetadataHash = sha256.Sum256(body)
 		if err := renameRootNoReplace(t.boundary, cargoTransactionMetadata, filepath.Join(filepath.Base(t.backup), "cargo-transaction.json")); err != nil {
 			return errors.New("backup current Cargo transaction metadata")
 		}
@@ -417,6 +426,9 @@ func (t *cargoProjectTransaction) publishMetadata() error {
 }
 
 func (t *cargoProjectTransaction) rollback() error {
+	if err := t.verifyBackupBoundary(); err != nil {
+		return err
+	}
 	if err := t.verifyBoundary(); err != nil {
 		return err
 	}
@@ -436,7 +448,7 @@ func (t *cargoProjectTransaction) rollback() error {
 	if t.metadataMoved {
 		backup := filepath.Join(filepath.Base(t.backup), "cargo-transaction.json")
 		info, err := t.boundary.Lstat(backup)
-		if err != nil || !os.SameFile(t.originalMetadataInfo, info) {
+		if err != nil || !os.SameFile(t.originalMetadataInfo, info) || controlBackupUnchanged(t.boundary, backup, controlBackupRecord{t.originalMetadataInfo, t.originalMetadataHash}) != nil {
 			result = errors.Join(result, errors.New("cargo rollback original metadata identity changed"))
 		} else if err := t.boundary.Link(backup, cargoTransactionMetadata); err != nil {
 			result = errors.Join(result, errors.New("restore Cargo transaction metadata"))
@@ -447,7 +459,7 @@ func (t *cargoProjectTransaction) rollback() error {
 	for _, name := range []string{"Cargo.lock", "Cargo.toml"} {
 		if t.published[name] {
 			info, err := t.boundary.Lstat(name)
-			if err != nil || !os.SameFile(t.selectedInfo[name], info) {
+			if err != nil || !os.SameFile(t.selectedInfo[name], info) || controlBackupUnchanged(t.boundary, name, controlBackupRecord{t.selectedInfo[name], t.selectedHashes[name]}) != nil {
 				result = errors.Join(result, errors.New("cargo rollback published member identity changed"))
 				continue
 			}
@@ -458,7 +470,7 @@ func (t *cargoProjectTransaction) rollback() error {
 		if t.moved[name] {
 			backup := filepath.Join(filepath.Base(t.backup), name)
 			info, err := t.boundary.Lstat(backup)
-			if err != nil || !os.SameFile(t.plan.members[name], info) {
+			if err != nil || !os.SameFile(t.plan.members[name], info) || controlBackupUnchanged(t.boundary, backup, t.backupRecords(true)[name]) != nil {
 				result = errors.Join(result, errors.New("cargo rollback original member identity changed"))
 				continue
 			}

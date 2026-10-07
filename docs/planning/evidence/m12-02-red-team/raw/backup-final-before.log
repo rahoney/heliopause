@@ -1,0 +1,139 @@
+=== RUN   TestProjectTransactionPreservesUnexpectedBackupContent
+=== RUN   TestProjectTransactionPreservesUnexpectedBackupContent/go/commit
+    m12_transaction_backup_test.go:68: transaction accepted unexpected backup content
+    m12_transaction_backup_test.go:75: foreign backup content was deleted: open /tmp/TestProjectTransactionPreservesUnexpectedBackupContentgocommit1761672582/001/.heliopause-go-commit-4111911283/foreign.txt: no such file or directory
+=== RUN   TestProjectTransactionPreservesUnexpectedBackupContent/go/rollback
+    m12_transaction_backup_test.go:75: foreign backup content was deleted: open /tmp/TestProjectTransactionPreservesUnexpectedBackupContentgorollba1252703951/001/.heliopause-go-commit-2757306242/foreign.txt: no such file or directory
+=== RUN   TestProjectTransactionPreservesUnexpectedBackupContent/cargo/commit
+    m12_transaction_backup_test.go:68: transaction accepted unexpected backup content
+    m12_transaction_backup_test.go:75: foreign backup content was deleted: open /tmp/TestProjectTransactionPreservesUnexpectedBackupContentcargocom2559148286/001/.heliopause-cargo-commit-1125559408/foreign.txt: no such file or directory
+=== RUN   TestProjectTransactionPreservesUnexpectedBackupContent/cargo/rollback
+    m12_transaction_backup_test.go:75: foreign backup content was deleted: open /tmp/TestProjectTransactionPreservesUnexpectedBackupContentcargorol2808391011/001/.heliopause-cargo-commit-1023291174/foreign.txt: no such file or directory
+--- FAIL: TestProjectTransactionPreservesUnexpectedBackupContent (0.09s)
+    --- FAIL: TestProjectTransactionPreservesUnexpectedBackupContent/go/commit (0.02s)
+    --- FAIL: TestProjectTransactionPreservesUnexpectedBackupContent/go/rollback (0.02s)
+    --- FAIL: TestProjectTransactionPreservesUnexpectedBackupContent/cargo/commit (0.02s)
+    --- FAIL: TestProjectTransactionPreservesUnexpectedBackupContent/cargo/rollback (0.02s)
+=== RUN   TestProjectTransactionRejectsBackupDrift
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/commit/foreign-directory
+    m12_transaction_backup_test.go:209: backup drift was accepted
+    m12_transaction_backup_test.go:215: uncertain recovery journal removed: stat /tmp/TestProjectTransactionRejectsBackupDriftgocommitforeign-direc1550625956/001/.heliopause-go-commit-93733179: no such file or directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/commit/foreign-selected
+    m12_transaction_backup_test.go:209: backup drift was accepted
+    m12_transaction_backup_test.go:215: uncertain recovery journal removed: stat /tmp/TestProjectTransactionRejectsBackupDriftgocommitforeign-selec2568055374/001/.heliopause-go-commit-3392725315: no such file or directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/commit/backup-inode
+    m12_transaction_backup_test.go:209: backup drift was accepted
+    m12_transaction_backup_test.go:215: uncertain recovery journal removed: stat /tmp/TestProjectTransactionRejectsBackupDriftgocommitbackup-inode1767195130/001/.heliopause-go-commit-2175567199: no such file or directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/commit/selected-inode
+    m12_transaction_backup_test.go:209: backup drift was accepted
+    m12_transaction_backup_test.go:215: uncertain recovery journal removed: stat /tmp/TestProjectTransactionRejectsBackupDriftgocommitselected-inod4236534976/001/.heliopause-go-commit-2308261557: no such file or directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/commit/original-content
+    m12_transaction_backup_test.go:209: backup drift was accepted
+    m12_transaction_backup_test.go:215: uncertain recovery journal removed: stat /tmp/TestProjectTransactionRejectsBackupDriftgocommitoriginal-cont2753298068/001/.heliopause-go-commit-2073063401: no such file or directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/commit/original-mode
+    m12_transaction_backup_test.go:209: backup drift was accepted
+    m12_transaction_backup_test.go:215: uncertain recovery journal removed: stat /tmp/TestProjectTransactionRejectsBackupDriftgocommitoriginal-mode2931315453/001/.heliopause-go-commit-750970148: no such file or directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/commit/original-inode
+    m12_transaction_backup_test.go:209: backup drift was accepted
+    m12_transaction_backup_test.go:215: uncertain recovery journal removed: stat /tmp/TestProjectTransactionRejectsBackupDriftgocommitoriginal-inod1297687056/001/.heliopause-go-commit-1665987719: no such file or directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/commit/original-hardlink
+    m12_transaction_backup_test.go:209: backup drift was accepted
+    m12_transaction_backup_test.go:215: uncertain recovery journal removed: stat /tmp/TestProjectTransactionRejectsBackupDriftgocommitoriginal-hard2054714290/001/.heliopause-go-commit-10838870: no such file or directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/commit/original-missing
+    m12_transaction_backup_test.go:209: backup drift was accepted
+    m12_transaction_backup_test.go:215: uncertain recovery journal removed: stat /tmp/TestProjectTransactionRejectsBackupDriftgocommitoriginal-miss2480846195/001/.heliopause-go-commit-4165476481: no such file or directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/rollback/foreign-directory
+    m12_transaction_backup_test.go:215: uncertain recovery journal removed: stat /tmp/TestProjectTransactionRejectsBackupDriftgorollbackforeign-dir1917480285/001/.heliopause-go-commit-2256902734: no such file or directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/rollback/foreign-selected
+    m12_transaction_backup_test.go:215: uncertain recovery journal removed: stat /tmp/TestProjectTransactionRejectsBackupDriftgorollbackforeign-sel1947446937/001/.heliopause-go-commit-3104236698: no such file or directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/rollback/backup-inode
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/rollback/selected-inode
+    m12_transaction_backup_test.go:215: uncertain recovery journal removed: stat /tmp/TestProjectTransactionRejectsBackupDriftgorollbackselected-in3689405552/001/.heliopause-go-commit-2855780709: no such file or directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/rollback/original-content
+    m12_transaction_backup_test.go:215: uncertain recovery journal removed: stat /tmp/TestProjectTransactionRejectsBackupDriftgorollbackoriginal-co357268248/001/.heliopause-go-commit-4214079163: no such file or directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/rollback/original-mode
+    m12_transaction_backup_test.go:215: uncertain recovery journal removed: stat /tmp/TestProjectTransactionRejectsBackupDriftgorollbackoriginal-mo3734033114/001/.heliopause-go-commit-2753762742: no such file or directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/rollback/original-inode
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/rollback/original-hardlink
+    m12_transaction_backup_test.go:215: uncertain recovery journal removed: stat /tmp/TestProjectTransactionRejectsBackupDriftgorollbackoriginal-ha3256106405/001/.heliopause-go-commit-1346550813: no such file or directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/rollback/original-missing
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/commit/foreign-directory
+    m12_transaction_backup_test.go:209: backup drift was accepted
+    m12_transaction_backup_test.go:215: uncertain recovery journal removed: stat /tmp/TestProjectTransactionRejectsBackupDriftcargocommitforeign-di7161600/001/.heliopause-cargo-commit-119234124: no such file or directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/commit/foreign-selected
+    m12_transaction_backup_test.go:209: backup drift was accepted
+    m12_transaction_backup_test.go:215: uncertain recovery journal removed: stat /tmp/TestProjectTransactionRejectsBackupDriftcargocommitforeign-se2678806567/001/.heliopause-cargo-commit-937624206: no such file or directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/commit/backup-inode
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/commit/selected-inode
+    m12_transaction_backup_test.go:209: backup drift was accepted
+    m12_transaction_backup_test.go:215: uncertain recovery journal removed: stat /tmp/TestProjectTransactionRejectsBackupDriftcargocommitselected-i4091012624/001/.heliopause-cargo-commit-2448596235: no such file or directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/commit/original-content
+    m12_transaction_backup_test.go:209: backup drift was accepted
+    m12_transaction_backup_test.go:215: uncertain recovery journal removed: stat /tmp/TestProjectTransactionRejectsBackupDriftcargocommitoriginal-c395844163/001/.heliopause-cargo-commit-2625854100: no such file or directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/commit/original-mode
+    m12_transaction_backup_test.go:209: backup drift was accepted
+    m12_transaction_backup_test.go:215: uncertain recovery journal removed: stat /tmp/TestProjectTransactionRejectsBackupDriftcargocommitoriginal-m3580034978/001/.heliopause-cargo-commit-3960540451: no such file or directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/commit/original-inode
+    m12_transaction_backup_test.go:209: backup drift was accepted
+    m12_transaction_backup_test.go:215: uncertain recovery journal removed: stat /tmp/TestProjectTransactionRejectsBackupDriftcargocommitoriginal-i23273641/001/.heliopause-cargo-commit-208231667: no such file or directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/commit/original-hardlink
+    m12_transaction_backup_test.go:209: backup drift was accepted
+    m12_transaction_backup_test.go:215: uncertain recovery journal removed: stat /tmp/TestProjectTransactionRejectsBackupDriftcargocommitoriginal-h1275138046/001/.heliopause-cargo-commit-2578916250: no such file or directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/commit/original-missing
+    m12_transaction_backup_test.go:209: backup drift was accepted
+    m12_transaction_backup_test.go:215: uncertain recovery journal removed: stat /tmp/TestProjectTransactionRejectsBackupDriftcargocommitoriginal-m4254439817/001/.heliopause-cargo-commit-3482121775: no such file or directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/rollback/foreign-directory
+    m12_transaction_backup_test.go:215: uncertain recovery journal removed: stat /tmp/TestProjectTransactionRejectsBackupDriftcargorollbackforeign-4232308986/001/.heliopause-cargo-commit-2355284305: no such file or directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/rollback/foreign-selected
+    m12_transaction_backup_test.go:215: uncertain recovery journal removed: stat /tmp/TestProjectTransactionRejectsBackupDriftcargorollbackforeign-243723843/001/.heliopause-cargo-commit-4204027086: no such file or directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/rollback/backup-inode
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/rollback/selected-inode
+    m12_transaction_backup_test.go:215: uncertain recovery journal removed: stat /tmp/TestProjectTransactionRejectsBackupDriftcargorollbackselected1403231816/001/.heliopause-cargo-commit-1798238207: no such file or directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/rollback/original-content
+    m12_transaction_backup_test.go:215: uncertain recovery journal removed: stat /tmp/TestProjectTransactionRejectsBackupDriftcargorollbackoriginal4280348596/001/.heliopause-cargo-commit-1520070569: no such file or directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/rollback/original-mode
+    m12_transaction_backup_test.go:215: uncertain recovery journal removed: stat /tmp/TestProjectTransactionRejectsBackupDriftcargorollbackoriginal2315202775/001/.heliopause-cargo-commit-2583625388: no such file or directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/rollback/original-inode
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/rollback/original-hardlink
+    m12_transaction_backup_test.go:215: uncertain recovery journal removed: stat /tmp/TestProjectTransactionRejectsBackupDriftcargorollbackoriginal1578979974/001/.heliopause-cargo-commit-1196459936: no such file or directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/rollback/original-missing
+--- FAIL: TestProjectTransactionRejectsBackupDrift (0.76s)
+    --- FAIL: TestProjectTransactionRejectsBackupDrift/go/commit/foreign-directory (0.02s)
+    --- FAIL: TestProjectTransactionRejectsBackupDrift/go/commit/foreign-selected (0.02s)
+    --- FAIL: TestProjectTransactionRejectsBackupDrift/go/commit/backup-inode (0.02s)
+    --- FAIL: TestProjectTransactionRejectsBackupDrift/go/commit/selected-inode (0.02s)
+    --- FAIL: TestProjectTransactionRejectsBackupDrift/go/commit/original-content (0.02s)
+    --- FAIL: TestProjectTransactionRejectsBackupDrift/go/commit/original-mode (0.02s)
+    --- FAIL: TestProjectTransactionRejectsBackupDrift/go/commit/original-inode (0.02s)
+    --- FAIL: TestProjectTransactionRejectsBackupDrift/go/commit/original-hardlink (0.02s)
+    --- FAIL: TestProjectTransactionRejectsBackupDrift/go/commit/original-missing (0.02s)
+    --- FAIL: TestProjectTransactionRejectsBackupDrift/go/rollback/foreign-directory (0.03s)
+    --- FAIL: TestProjectTransactionRejectsBackupDrift/go/rollback/foreign-selected (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/go/rollback/backup-inode (0.02s)
+    --- FAIL: TestProjectTransactionRejectsBackupDrift/go/rollback/selected-inode (0.02s)
+    --- FAIL: TestProjectTransactionRejectsBackupDrift/go/rollback/original-content (0.02s)
+    --- FAIL: TestProjectTransactionRejectsBackupDrift/go/rollback/original-mode (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/go/rollback/original-inode (0.02s)
+    --- FAIL: TestProjectTransactionRejectsBackupDrift/go/rollback/original-hardlink (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/go/rollback/original-missing (0.02s)
+    --- FAIL: TestProjectTransactionRejectsBackupDrift/cargo/commit/foreign-directory (0.02s)
+    --- FAIL: TestProjectTransactionRejectsBackupDrift/cargo/commit/foreign-selected (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/cargo/commit/backup-inode (0.02s)
+    --- FAIL: TestProjectTransactionRejectsBackupDrift/cargo/commit/selected-inode (0.02s)
+    --- FAIL: TestProjectTransactionRejectsBackupDrift/cargo/commit/original-content (0.02s)
+    --- FAIL: TestProjectTransactionRejectsBackupDrift/cargo/commit/original-mode (0.02s)
+    --- FAIL: TestProjectTransactionRejectsBackupDrift/cargo/commit/original-inode (0.02s)
+    --- FAIL: TestProjectTransactionRejectsBackupDrift/cargo/commit/original-hardlink (0.02s)
+    --- FAIL: TestProjectTransactionRejectsBackupDrift/cargo/commit/original-missing (0.02s)
+    --- FAIL: TestProjectTransactionRejectsBackupDrift/cargo/rollback/foreign-directory (0.02s)
+    --- FAIL: TestProjectTransactionRejectsBackupDrift/cargo/rollback/foreign-selected (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/cargo/rollback/backup-inode (0.02s)
+    --- FAIL: TestProjectTransactionRejectsBackupDrift/cargo/rollback/selected-inode (0.02s)
+    --- FAIL: TestProjectTransactionRejectsBackupDrift/cargo/rollback/original-content (0.02s)
+    --- FAIL: TestProjectTransactionRejectsBackupDrift/cargo/rollback/original-mode (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/cargo/rollback/original-inode (0.02s)
+    --- FAIL: TestProjectTransactionRejectsBackupDrift/cargo/rollback/original-hardlink (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/cargo/rollback/original-missing (0.02s)
+FAIL
+FAIL	github.com/rahoney/heliopause/internal/promotion	0.850s
+FAIL
