@@ -1,6 +1,31 @@
 # M12-005 qualification
 
-## Baseline audit — 2026-10-07
+M12-005 source qualification and feature freeze: COMPLETE. [Result](./result.json)
+binds all five audit states to current source `d328756` and the exact evidence.
+M12-02 is NOT_STARTED / Ready: Yes; main merge and public release remain later gates.
+The final documentation commit has a separate pushed-HEAD CI delivery check.
+
+## Final candidate qualification
+
+[77 scenario rows](./requirement-matrix.json), [current default regression](./current-default-checks.json),
+[implementation/design review](./maintainability-review.md), [CLI review](./cli-help-review.json),
+[compiled bounds](./compiled-profile-bounds.json), [source identity](./current-source-boundary.json)
+and [five successful-root cleanup](./successful-test-cleanup.json) document the completed
+acceptance. Default tests contain763 top-level/2217 case passes and87 explicit
+environment-gated skips; actual installed and full executions are separate proof.
+
+[Four actual profile scopes](./actual-scope-summary.json) independently qualify
+CPU/cu126/cu130/cu132 on the reduced source. Every run has actual10SUCCESS, full
+decoded raw bodies, whole checkout/source tree and mode equality,102 latches,
+five helper parent waits0 and confirmed final cleanup. CUDA logs separately prove
+viewer NOT_ATTESTED and inspection-only NumPy excluded from29 original promotion
+entries/site-packages/scripts. [Support tuples](./support-tuples.json) retain those
+limitations and exact existing resource bounds. GPU computation/driver/Toolkit
+and public Host activation are outside this qualification. Historical bb28/8791
+proofs below retain their original scopes and are not substituted for current runs.
+
+
+## Baseline audit — 2026-10-07 (historical start state)
 
 Baseline: `01175bbe62a2ab8d1b9ee873861839351de1e485`,
 `milestone/m12-go-cargo-terraform`. The tracked worktree and index were clean.
@@ -20,7 +45,7 @@ The YES entries describe reusable implementation and the work-item acceptance
 already established. They do not claim that older CUDA execution proves the
 current candidate or that a registered profile is release-supported.
 
-MISSING:
+MISSING at start (all now closed by the final result above):
 
 - Requirement-to-implementation/test/evidence mapping for every required ecosystem
   and hostile regression from M7/M8/M9/M11 on the final candidate.
@@ -93,5 +118,10 @@ typed aggregate retaining extras, endpoint constant and configured probe are
 unchanged. [Exact before/after scope](./additional-code-cleanup-boundary.json)
 records the 40-line removal. The M5 contract now names the actual configured
 helper; capability/identity/Policy/resource rules are unchanged. Earlier005 remote
-runs remain historical qualification, and the new source needs independent
-CPU/cu126/cu130/cu132 and Required results before feature freeze.
+runs remain historical qualification; the new source has independent
+CPU/cu126/cu130/cu132 and Required results linked in the final scope above.
+
+Current-source ordinary run37561282942 also independently passed the public npm
+inspect gate in5.65s: COMPLETED/ALLOW,3 required checks and3 Evidence records.
+Its CPU full took291.53s; source tree/mode equality and actual45 consumers were
+verified. Final document-closure HEAD CI remains a separate delivery result.

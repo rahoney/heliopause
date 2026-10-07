@@ -1289,20 +1289,22 @@ post-freeze 변경으로 취급한다.
 
 ## Feature freeze condition
 
-### First-release tuple candidate — qualification pending
+### First-release support tuples
 
-M12-005의 first-release 후보는 `torch`의 아래 네 exact tuple이다. 이 목록은
-현재 lock의 named endpoints와 이미 구현된 bounded resource policy를 사용한다.
-현재는 마지막 qualification 진행 중이며 이 표 자체로 `RELEASE_SUPPORTED`를
-선언하지 않는다. Actual run/checkout/source boundary 및 feature-freeze 종료는
-[M12-005 evidence](./evidence/m12-005-qualification/README.md)가 소유한다.
+M12-005는 아래 네 exact tuple을 HAA의 bounded artifact inspection과 원래 graph의
+offline Promotion 범위에서 `RELEASE_SUPPORTED`로 확정한다. Named official
+endpoint와 이미 구현된 resource policy를 사용하며 같은 source `d328756`에서
+CPU·각 CUDA profile을 독립 실행했다. Actual run/checkout/source와 원본 전체 로그는
+[M12-005 qualification](./evidence/m12-005-qualification/README.md), machine-readable
+[support tuples](./evidence/m12-005-qualification/support-tuples.json)가 소유한다.
+Public release 게시와 일반 Host runtime activation은 별도의 후속 gate를 따른다.
 
-| Package/version | Official source profile | Interpreter/ABI/platform target | Resource policy | Qualification |
+| Package/version | Official source profile | Interpreter/ABI/platform target | Resource policy | Qualification / support |
 | --- | --- | --- | --- | --- |
-| `torch==2.14.0+cpu` | `pytorch:cpu` | Python3.14.7 / cp314-cp314 / Linux amd64, manylinux_2_36_x86_64 target | `pytorch:cpu`의 위 두 budget 표 | final candidate pending |
-| `torch==2.14.0+cu126` | `pytorch:cu126` | 동일 pinned Python/ABI/platform | `pytorch:cu126`의 위 두 budget 표 | final candidate pending |
-| `torch==2.14.0+cu130` | `pytorch:cu130` | 동일 pinned Python/ABI/platform | `pytorch:cu130`의 위 두 budget 표 | final candidate pending |
-| `torch==2.14.0+cu132` | `pytorch:cu132` | 동일 pinned Python/ABI/platform | `pytorch:cu132`의 위 두 budget 표 | final candidate pending |
+| `torch==2.14.0+cpu` | `pytorch:cpu` | Python3.14.7 / cp314-cp314 / Linux amd64, manylinux_2_36_x86_64 target | `pytorch:cpu`의 위 두 budget 표 | [actual full / all10SUCCESS](https://github.com/rahoney/heliopause/actions/runs/37561282942); `RELEASE_SUPPORTED` |
+| `torch==2.14.0+cu126` | `pytorch:cu126` | 동일 pinned Python/ABI/platform | `pytorch:cu126`의 위 두 budget 표 | [actual full / all10SUCCESS](https://github.com/rahoney/heliopause/actions/runs/37570546443); `RELEASE_SUPPORTED` |
+| `torch==2.14.0+cu130` | `pytorch:cu130` | 동일 pinned Python/ABI/platform | `pytorch:cu130`의 위 두 budget 표 | [actual full / all10SUCCESS](https://github.com/rahoney/heliopause/actions/runs/37561348597); `RELEASE_SUPPORTED` |
+| `torch==2.14.0+cu132` | `pytorch:cu132` | 동일 pinned Python/ABI/platform | `pytorch:cu132`의 위 두 budget 표 | [actual full / all10SUCCESS](https://github.com/rahoney/heliopause/actions/runs/37566006329); `RELEASE_SUPPORTED` |
 
 Wheel의 manylinux_2_28 tag와 runtime target manylinux_2_36은 서로 다른 identity
 field다. Compatible selected tag와 exact interpreter/source/digest 검사는 유지한다.
@@ -1311,7 +1313,7 @@ Qualification은 root exact version을 live resolve한 뒤 각 selected node를 
 과거 graph의 frozen full replay로 표현하지 않으며 deterministic static replay와
 실제 lifecycle 실행은 각각의 증거를 가진다.
 
-CUDA 후보의 broader non-root probes에는 explicit inspection-only NumPy2.4.6 pin을
+CUDA tuple의 broader non-root probes에는 explicit inspection-only NumPy2.4.6 pin을
 사용한다. CPU 기본 입력은 empty다. 이 보조 wheel과 entry-point scripts는 target에
 승격하지 않으며 원래 설치 graph를 바꾸지 않는다. 보조 입력 없는 required
 inspection 실패를 성공으로 간주하지 않는다. Pin과 대상 binding은 기존
@@ -1329,18 +1331,24 @@ Public release·일반 Host runtime activation은 M12-02/M13의 별도 완료 �
 
 다음이 모두 만족되면 M12 기능 개발을 종료한다.
 
-- [ ] PyTorch official source supported without arbitrary index fallback
-- [ ] PyTorch canonical source-ownership table prevents cross-index dependency confusion
-- [ ] first-release PyTorch/CUDA release support matrix finalized with explicit bounds and qualification evidence
-- [ ] registered-but-unqualified PyTorch profiles are not represented as release-supported
-- [ ] Go proxy + SumDB exact graph qualification
-- [ ] `helox go build` uses only HAA-managed verified modules and passes build-time observation qualification
-- [ ] Cargo add/build and build-time observation qualification
-- [ ] Terraform Provider init/checksum/signature qualification
-- [ ] all existing npm/PyPI/GitHub tests remain green
-- [ ] Linux gVisor integration green
-- [ ] canonical `Required` CI green
-- [ ] docs/CLI accurately state supported and unsupported paths
+- [x] PyTorch official source supported without arbitrary index fallback
+- [x] PyTorch canonical source-ownership table prevents cross-index dependency confusion
+- [x] first-release PyTorch/CUDA release support matrix finalized with explicit bounds and qualification evidence
+- [x] registered-but-unqualified PyTorch profiles are not represented as release-supported
+- [x] Go proxy + SumDB exact graph qualification
+- [x] `helox go build` uses only HAA-managed verified modules and passes build-time observation qualification
+- [x] Cargo add/build and build-time observation qualification
+- [x] Terraform Provider init/checksum/signature qualification
+- [x] all existing npm/PyPI/GitHub tests remain green
+- [x] Linux gVisor integration green
+- [x] canonical `Required` CI green
+- [x] docs/CLI accurately state supported and unsupported paths
+
+M12-005의 모든 조건을 같은 source의 실제 qualification과 문서 대조로 확인했다.
+[77개 요구사항 매핑](./evidence/m12-005-qualification/requirement-matrix.json)은
+현재 기본 회귀와 실제 installed/full consumer를 구분한다. GitHub standalone의
+transitive graph는 기존 M6 계약상 N/A이며 Provider 독립 roots를 dependency edge로
+표현하지 않는다. 최종 문서 commit의 원격 Required는 별도 전달 확인이다.
 
 이 시점 이후 Java, Helm, private registries, alternate mirrors 등은 첫 release 뒤로
 넘긴다.

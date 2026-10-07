@@ -9,9 +9,9 @@
 ```text
 Current milestone: M12 — Ecosystem Expansion Before Public Release
 Milestone status: IN_PROGRESS
-Active work item: M12-005 — Cross-ecosystem qualification and feature freeze
+Active work item: None — M12-005 COMPLETE
 Next work item: M12-02 — final red-team/fix gate
-Next work item status: RESERVED / Ready: No
+Next work item status: NOT_STARTED / Ready: Yes
 Ready: Yes
 ```
 
@@ -2176,8 +2176,8 @@ production activation과 최종 배포를 수행한다.
 | 2 | M12-002 | public Go Modules | COMPLETE |
 | 3 | M12-003 | Rust/Cargo and public crates.io | COMPLETE |
 | 4 | M12-004 | Terraform Provider installation and cumulative remote qualification | COMPLETE |
-| 5 | M12-005 | cross-ecosystem qualification and feature freeze | IN_PROGRESS |
-| 6 | M12-02 | final red-team/fix gate | RESERVED |
+| 5 | M12-005 | cross-ecosystem qualification and feature freeze | COMPLETE |
+| 6 | M12-02 | final red-team/fix gate | NOT_STARTED / Ready: Yes |
 
 ### M12-001 acceptance 종료 (2026-10-03)
 
@@ -3033,3 +3033,28 @@ SUCCESS, full 및 새 npm inspect 결과는 당시 source evidence로 보존한�
 제품 failure나 qualification PASS로 해석하지 않는다. 새 source의 CPU·세CUDA와
 Required를 독립 실행한 후에만005 acceptance/feature freeze를 닫는다. 현재005
 IN_PROGRESS와 M12-02RESERVED/ReadyNo를 유지한다.
+
+### M12-005 qualification·feature freeze 완료 (2026-10-07)
+
+현재 source `d328756`의 네 profile에서 Required와9 prerequisites를 각각 실제
+SUCCESS로 확인했다. CPU·cu126·cu130·cu132 full, 실제 npm/PyPI/GitHub/Go/Cargo/
+Provider consumer,102 observer latches와 helper 종료·복원은 각각 원본 증거와
+소스/checkout tree·mode에 대응한다. [Qualification result](./evidence/m12-005-qualification/result.json)가
+기본763/2217 회귀,77개 요구사항,지원 tuple,CLI/문서·구조 검토와 정리 범위를 연결한다.
+
+M12-005: `IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES`.
+MISSING: 없음. 기존 구현을 재사용했고 미사용 초기 API201 net lines와 직접 재현한
+npm media-type 결함만 기존 owner에서 정리했다. 성공 데이터5 roots를 삭제하고
+Evidence282개를 해시 보존하여 약21.97GiB의 WSL 가용 공간을 확보했다. 실패 데이터와
+기존 runtime/shared cache는 보존한다. 과거 미확정 CUDA 지연의 해결이나 Windows
+VHDX 압축으로 기록하지 않는다.
+
+네 torch2.14.0 profile의 명시적 bounded support만 확정하며 GPU 계산/driver/
+Toolkit, 다른 ABI/OS/version 또는 torchvision/torchaudio를 검증했다고 주장하지
+않는다. CUDA inspection-only NumPy와 viewer NOT_ATTESTED 제한을 유지한다.
+Final documentation/evidence commit의 원격 Required와 whole checkout 동일성은
+별도 전달 확인이며 실제 완료 결과는 PR29 및 외부 closure receipt에 기록한다.
+
+Active item은 없고 M12-02는 `NOT_STARTED / Ready: Yes`다. 이번 변경은 red-team을
+수행하거나 NO_RELEASE_BLOCKING_FINDINGS를 선언하지 않는다. M12 전체는
+IN_PROGRESS이며 main reviewer merge와 public release는 후속 gate를 따른다.

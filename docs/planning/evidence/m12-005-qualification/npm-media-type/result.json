@@ -1,5 +1,5 @@
 {
-  "status": "RESOLVER_AND_ACTUAL_NPM_INSPECT_CLI_VERIFIED_FINAL_CLOSURE_PENDING",
+  "status": "RESOLVER_AND_CURRENT_SOURCE_ACTUAL_CLI_VERIFIED",
   "baseline_commit": "bb28b4744d6d124169c26e8dba77f4ef8c832db2",
   "cause": "Requested abbreviated npm metadata media type was rejected by application/json-prefix-only response check; prefix check also accepted malformed/unknown JSON media types.",
   "primary_source": "internal/artifact/npm/resolver.go:Resolver.fetchMetadata",
@@ -63,8 +63,20 @@
       "bytes": 21682
     }
   ],
-  "source_candidate": "8791fdcff573b1d85681ca74b65cf5a9e3ccf27a",
+  "source_candidate": "d328756f0087624093808215d1fbedd47767ef58",
   "actual_cli": {
+    "run_id": 37561282942,
+    "job_id": 112598875689,
+    "test": "TestLinuxNPMInspectCLIIntegration",
+    "duration_seconds": 5.65,
+    "operation_status": "COMPLETED",
+    "decision": "ALLOW",
+    "required_checks_completed": 3,
+    "retained_evidence_references": 3,
+    "scope_receipt": "../remote-ci/final-source-ordinary-actual-scope.json",
+    "all_jobs": "10 SUCCESS"
+  },
+  "historical_actual_cli": {
     "run_id": 37556677169,
     "job_id": 112584750760,
     "test": "TestLinuxNPMInspectCLIIntegration",

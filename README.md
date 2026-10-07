@@ -8,9 +8,9 @@
 - Go module path: `github.com/rahoney/heliopause`
 - 구현 언어: Go
 - CLI framework: Cobra
-- 현재 상태: M0–M11 qualification 및 post-qualification release hardening 완료. M12 생태계 확장을 진행 중이며, M12-001 공식 PyTorch source support와 M12-002 public Go Modules와 M12-003 public Cargo와 M12-004 public Terraform Provider installation의 acceptance를 완료했고, M12-002~004 누적 변경의 원격 Required 및9 prerequisites 검증과 성공 테스트 데이터 정리를 완료했다. M12-02 최종 red-team/fix gate와 M13 Production Release & Operations는 선행 작업 완료 후 진행
-- 진행 작업: M12-005 — Cross-ecosystem qualification and feature freeze (`IN_PROGRESS`)
-- 다음 작업: M12-02 — final red-team/fix gate (`RESERVED / Ready: No`)
+- 현재 상태: M0–M11 qualification 및 post-qualification release hardening 완료. M12-001~005 생태계 acceptance·전체 qualification과 feature freeze를 완료했다. M12-02 최종 red-team/fix gate를 준비했으며, 이를 완료한 뒤 M13 Production Release & Operations를 진행한다.
+- 완료 작업: M12-005 — Cross-ecosystem qualification and feature freeze (`COMPLETE`)
+- 다음 작업: M12-02 — final red-team/fix gate (`NOT_STARTED / Ready: Yes`)
 - 진행 상태의 canonical owner: [`docs/planning/02-current-work-queue.md`](docs/planning/02-current-work-queue.md)
 
 Heliopause는 Apache-2.0으로 배포한다. 외부 기여는 `CLA.md`의 Harmony
@@ -96,25 +96,25 @@ helox terraform init 'hashicorp/random@3.7.2'
 
 ## M12 qualification
 
-다음 생태계 경로는 구현되어 있으며, 전체 feature freeze는 M12-005에서 검증 중이다.
+다음 생태계 경로의 acceptance와 M12-005 전체 qualification·feature freeze를 완료했다.
 Qualified source 경로와 일반 사용자용 public installer/배포 완료는 각각의 acceptance를
 따른다. Runtime/helper를 준비하지 않은 Host에서 동적 실행을 지원한다고 주장하지 않는다.
 
 | Milestone | Implemented path | Status |
 | --- | --- | --- |
-| M12-001 | 공식 PyTorch source profile을 통한 `helox pip install` | acceptance complete; release tuple freeze in M12-005 |
+| M12-001 | 공식 PyTorch source profile을 통한 `helox pip install` | acceptance complete; four bounded release tuples qualified |
 | M12-002 | public Go Modules: `helox go get`, `helox go mod download`, `helox go build` | acceptance complete |
 | M12-003 | public crates.io: `helox cargo add`, `helox cargo build` | acceptance complete |
 | M12-004 | public Terraform Provider 설치: `helox terraform init` | installation acceptance complete; RPC/cloud behavior not attested |
-| M12-005 | 전체 생태계 qualification 및 feature freeze | IN_PROGRESS |
-| M12-02 | 최종 red-team/fix gate | RESERVED |
+| M12-005 | 전체 생태계 qualification 및 feature freeze | COMPLETE |
+| M12-02 | 최종 red-team/fix gate | NOT_STARTED / Ready: Yes |
 
 PyTorch profile roles are CPU (primary non-CUDA), cu126 (compatibility), cu130
 (primary CUDA), and cu132 (extended compatibility). `cu128` is removed and is
 not selectable. CUDA qualification is explicit workflow-dispatch only.
 
-First-release PyTorch 후보의 exact version·Python/ABI/platform·resource bound와
-qualifying scope는 [canonical support tuple](./docs/planning/16-m12-01-ecosystem-expansion-contract.md#first-release-tuple-candidate--qualification-pending)을
+First-release PyTorch 지원 tuple의 exact version·Python/ABI/platform·resource bound와
+qualifying scope는 [canonical support tuple](./docs/planning/16-m12-01-ecosystem-expansion-contract.md#first-release-support-tuples)을
 따른다. CUDA broader module 검사는 `--inspection-prerequisites`로 명시한 고정
 NumPy2.4.6을 검사 전용으로 사용하며 target에는 설치하지 않는다. 기본 입력은 empty이고
 필수 검사가 불완전하면 자동 승격하지 않는다. `triton.profiler.viewer`의

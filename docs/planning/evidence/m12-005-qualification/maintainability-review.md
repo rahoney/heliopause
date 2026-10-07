@@ -45,7 +45,8 @@ qualified again on the reduced source before final feature freeze.
 The remaining npm inspect MIME mismatch was reproduced with an actual official
 response. The existing resolver was corrected without changing its source,
 integrity or resource/Policy rules; see [the exact regression](./npm-media-type/result.json).
-Its actual CLI qualification is separately required. No implemented supported
+Its actual public CLI passed on the current source; the final document HEAD CI
+is separately verified. No implemented supported
 subsystem was replaced or recreated.
 
 ## Reviewed hotspots
@@ -54,7 +55,10 @@ subsystem was replaced or recreated.
 215 test files and 2,035 production functions after initial cleanup. Function
 length/branch-node count prioritized review; neither is a quality/pass threshold.
 The later npm change is a narrow parser correction, plus a test and existing CI
-caller. It does not alter the reviewed long transaction functions.
+caller. It does not alter the reviewed long transaction functions. After the
+additional unused API cleanup, the current inventory is 227 production Go files,
+216 test files and 2,030 production functions; no new abstraction or subsystem
+is introduced.
 
 - `bootstrap.Run` (358 lines): sequential construction, explicit supported Host
   checks and lifecycle ownership. Ecosystem factory helpers already carry Go,

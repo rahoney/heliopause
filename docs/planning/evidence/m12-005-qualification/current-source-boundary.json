@@ -1,7 +1,7 @@
 {
-  "source_commit": "8791fdcff573b1d85681ca74b65cf5a9e3ccf27a",
+  "source_commit": "d328756f0087624093808215d1fbedd47767ef58",
   "native_git_head": "01175bbe62a2ab8d1b9ee873861839351de1e485",
-  "scope": "All tracked functional files/fixtures/tools/workflows/locks; exact repository and native projection bytes/executable modes equal source commit. Documents and .gitattributes are closure edits, not runtime inputs. Native Git HEAD is deliberately not candidate identity.",
+  "scope": "All tracked functional files/fixtures/tools/workflows/locks; exact repository/native projection bytes/executable modes equal source commit. Documents/.gitattributes are closure edits, not runtime inputs. Native Git HEAD is not candidate identity.",
   "functional_files": 491,
   "files": [
     {
@@ -234,9 +234,9 @@
     },
     {
       "path": "internal/application/terraform.go",
-      "git_blob": "5559e29e06f8fc7788c97967342a75afb301c43f",
+      "git_blob": "8c6977102b20ad222dda98389937ad88ade215af",
       "git_mode": "100644",
-      "sha256": "ac8ab4d03df80b3d60d5f5063f8b02a4d9385e7abfe720797670a6132808aeeb"
+      "sha256": "b094e1ea0564b570266ae2722ede25854c47ec074df2eecb760dff24f7f2877a"
     },
     {
       "path": "internal/artifact/cargo/client.go",
@@ -492,9 +492,9 @@
     },
     {
       "path": "internal/artifact/pypi/bounded_requirement.go",
-      "git_blob": "3e6613a9c4842ccc60785e645e7af40babca1889",
+      "git_blob": "7c850ea1ff8bbc285a47d3bd5c8113207eeaca59",
       "git_mode": "100644",
-      "sha256": "7ce664f50eb019778df2a56386e3b40725b153af184f12a91a23c98efb0c9d52"
+      "sha256": "901c1b8f15b001683b52938a72a2ec2a6a3e913316a713452cac8807a3568a54"
     },
     {
       "path": "internal/artifact/pypi/bounded_requirement_test.go",
@@ -684,9 +684,9 @@
     },
     {
       "path": "internal/artifact/terraformprovider/provider.go",
-      "git_blob": "206e6cfeda9896f85a475a44ba5ff11e5a4b6112",
+      "git_blob": "e4b3395474d6ad8d1afb429a43ed59b477d6c471",
       "git_mode": "100644",
-      "sha256": "46859a9808047fdcd4236ed0a0b3d565696dd5b3f8bc4c4a5787347215ddbe52"
+      "sha256": "55598aaaff411f8f56d5b6eb7945c19139a029b6faabadf998ae44fb9387d63f"
     },
     {
       "path": "internal/artifact/terraformprovider/provider_test.go",
@@ -2406,9 +2406,9 @@
     },
     {
       "path": "internal/sandbox/python_runtime.go",
-      "git_blob": "a82d8eb1cd30835ecd10f0ac3b42a704b8a9c8d3",
+      "git_blob": "26e33d5fe7d0a3f4b374c22bd765c0ce0232fe98",
       "git_mode": "100644",
-      "sha256": "a0b84fe9f4525f21c9fade309edaad7e268e0baee9e2ff71c013df3ca413aadf"
+      "sha256": "e3a3478b4094eff47e8543aca93189e1c2931d5c4dedcbd55294e9035a0656e4"
     },
     {
       "path": "internal/sandbox/python_runtime_test.go",

@@ -1490,6 +1490,8 @@
   "candidate_basis": {
     "parent_commit": "8791fdcff573b1d85681ca74b65cf5a9e3ccf27a",
     "functional_delta": "additional-code-cleanup-boundary.json",
-    "scope": "Precommit native source-byte projection; checked source/mode boundary, documents separately reconciled. Native Git metadata is not candidate identity."
-  }
+    "scope": "Precommit native source-byte projection; checked source/mode boundary, documents separately reconciled. Native Git metadata is not candidate identity.",
+    "postcommit_functional_boundary": "current-source-boundary.json"
+  },
+  "source_commit": "d328756f0087624093808215d1fbedd47767ef58"
 }

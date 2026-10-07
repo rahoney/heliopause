@@ -2,7 +2,7 @@
 
 - 파일명: `17-m12-02-fix-list.md`
 - 시점: M12 Ecosystem Expansion 전체 qualification 완료 직후
-- 상태: RESERVED
+- 상태: NOT_STARTED / Ready: Yes
 
 이 문서는 M12에서 추가한 **PyTorch, Go Modules, Cargo/crates.io, Terraform Provider**
 지원과 기존 npm/PyPI/GitHub 경로를 함께 최종 red-team 검토한 뒤,
@@ -32,5 +32,6 @@ release integration impact
 NO_RELEASE_BLOCKING_FINDINGS
 ```
 
-Status: RESERVED
-Next: M12 완료 후 final red-team review
+Status: NOT_STARTED
+Ready: Yes — M12-001~005 기능 qualification·feature freeze 완료
+Next: final red-team review (이번 M12-005 작업에서 미실행)

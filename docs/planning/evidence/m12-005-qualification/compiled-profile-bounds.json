@@ -1,5 +1,5 @@
 {
-  "source_candidate": "8791fdcff573b1d85681ca74b65cf5a9e3ccf27a",
+  "source_candidate": "d328756f0087624093808215d1fbedd47767ef58",
   "scope": "Direct compiled public source/profile/resource APIs; no integration or release-support claim",
   "runtime_lock": {
     "path": "scripts/runtimes.lock.json",
@@ -145,5 +145,7 @@
       "temporary_disk_bytes": 25769803776,
       "transaction_cpu_seconds": 300
     }
-  ]
+  ],
+  "actual_exit": 0,
+  "compiled_output_sha256": "7d6759b8a1143ca8bfb12f76a7c5f6c3bd9f2c5c791c76157ec4262dbf422ef4"
 }
