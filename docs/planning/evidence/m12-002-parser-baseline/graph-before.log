@@ -1,0 +1,5 @@
+--- FAIL: TestProjectSnapshotAcceptsActualGoGraphShape (0.00s)
+    module_test.go:189: actual Go 1.26.8 graph shape rejected: go module graph module identity is invalid
+FAIL
+FAIL	github.com/rahoney/heliopause/internal/artifact/gomodule	0.008s
+FAIL

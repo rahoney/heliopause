@@ -1,0 +1,32 @@
+{
+  "scope": "594-path qualification inventory compared after closure; only named documentation paths differ",
+  "unchanged_paths": 590,
+  "execution_workflow_dependency_runtime_policy_unchanged": true,
+  "paths": [
+    {
+      "path": "PROJECT-DECISIONS.md",
+      "qualified_sha256": "1796a3848094f2a113c91e45576c7d6c4348adee0169c49eb846844a1f970f18",
+      "closure_sha256": "c89b1113aaa8824ce321b6a75c9e37c0ac84b7e990227a1a5aa31dfea413350c",
+      "mode": "0o644"
+    },
+    {
+      "path": "README.md",
+      "qualified_sha256": "dd3285deed4c7669754a267800a69ed4ffde16fc00d3f49492c8a25e9531e66e",
+      "closure_sha256": "a342e702066c1f4c71c1b8ef9dfd024eae44cfe1c956bd891fc37c23e87f0212",
+      "mode": "0o644"
+    },
+    {
+      "path": "docs/planning/02-current-work-queue.md",
+      "qualified_sha256": "928184176341dc804201155b2c07546430e7e4c456aa74253e6dcdb2f3dcb172",
+      "closure_sha256": "9303d9cf83d0e5b5d2d36759f1e54d9cebc8e22f2e50d1ae63070985b80ce42c",
+      "mode": "0o644"
+    },
+    {
+      "path": "docs/planning/16-m12-01-ecosystem-expansion-contract.md",
+      "qualified_sha256": "c9d4909f91728f3adbe79d4325236dc42e2f7e6f02d88e3acf8c7d2a225f94ec",
+      "closure_sha256": "2935a093bf25143888184f3efd2ed94492a978f0ba5161ae6e082713ed92c796",
+      "mode": "0o644"
+    }
+  ],
+  "new_evidence_scope": "portable documentation only; checked as complete candidate before commit"
+}

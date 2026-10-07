@@ -1,0 +1,14 @@
+{
+  "scope": "authenticated retained30 wheels + synthetic single native load; install-size diagnosis only, not resolution, complete plan, Policy or promotion qualification",
+  "status": "PASS",
+  "tool_session": 14243,
+  "seconds": 358.5,
+  "raw": "cpu-install-diagnostic-runtime-v2.log",
+  "raw_sha256": "d831f6a07afde34b2691622a01a71360f2bd17dfab8cb824cb83e9e3337e6ec8",
+  "candidate": "cpu-install-diagnostic-candidate-v2.json",
+  "timing_read_over250ms": 0,
+  "minimum_mem_available_kib": 115360,
+  "helper_wait": 0,
+  "original12_restored": true,
+  "prior_full_root_cause": "UNCONFIRMED"
+}

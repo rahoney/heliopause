@@ -1,0 +1,245 @@
+{
+  "scope": "authenticated retained 30-wheel installation timing, synthetic native load; not resolution/full promotion qualification",
+  "inputs": [
+    {
+      "filename": "nvidia_nvjitlink_cu12-12.9.86-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl",
+      "sha256": "e3f1171dbdc83c5932a45f0f4c99180a70de9bd2718c1ab77d14104f6d7147f9",
+      "bytes": 39748338,
+      "source_url": "https://pypi.org/pypi/nvidia-nvjitlink-cu12/12.9.86/json",
+      "metadata_path": "cpu-install-diagnostic-source-nvidia-nvjitlink-cu12.json",
+      "metadata_sha256": "ffc058b5a5f4f6936dad93c8d056952032544999d90d1cf5fcb53d5f29c66220"
+    },
+    {
+      "filename": "nvidia_cusparse_cu12-12.5.4.2-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+      "sha256": "7556d9eca156e18184b94947ade0fba5bb47d69cec46bf8660fd2c71a4b48b73",
+      "bytes": 216561367,
+      "source_url": "https://pypi.org/pypi/nvidia-cusparse-cu12/12.5.4.2/json",
+      "metadata_path": "cpu-install-diagnostic-source-nvidia-cusparse-cu12.json",
+      "metadata_sha256": "c35995af12bccc7ea4b2d56be0f12b7d8a97bf0bc39eaaf7c0d0ce70b3dffd30"
+    },
+    {
+      "filename": "nvidia_cusparselt_cu12-0.7.1-py3-none-manylinux2014_x86_64.whl",
+      "sha256": "f1bb701d6b930d5a7cea44c19ceb973311500847f81b634d802b7b539dc55623",
+      "bytes": 287193691,
+      "source_url": "https://pypi.org/pypi/nvidia-cusparselt-cu12/0.7.1/json",
+      "metadata_path": "cpu-install-diagnostic-source-nvidia-cusparselt-cu12.json",
+      "metadata_sha256": "b254dc8a87d3522494786e7268577c7d320364f8ce9b13989f10206cab772300"
+    },
+    {
+      "filename": "nvidia_cufile_cu12-1.11.1.6-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+      "sha256": "cc23469d1c7e52ce6c1d55253273d32c565dd22068647f3aa59b3c6b005bf159",
+      "bytes": 1142103,
+      "source_url": "https://pypi.org/pypi/nvidia-cufile-cu12/1.11.1.6/json",
+      "metadata_path": "cpu-install-diagnostic-source-nvidia-cufile-cu12.json",
+      "metadata_sha256": "76a3f201a696ea597265ecfd020015672a8df6ea0a4f1cf7bb33d41ade738ac7"
+    },
+    {
+      "filename": "nvidia_cuda_runtime_cu12-12.6.77-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+      "sha256": "ba3b56a4f896141e25e19ab287cd71e52a6a0f4b29d0d31609f60e3b4d5219b7",
+      "bytes": 897690,
+      "source_url": "https://pypi.org/pypi/nvidia-cuda-runtime-cu12/12.6.77/json",
+      "metadata_path": "cpu-install-diagnostic-source-nvidia-cuda-runtime-cu12.json",
+      "metadata_sha256": "d7c1e3d5a899d86de3c81477e66131f546e813a6ab8bf1cf6e20a514f8c0609f"
+    },
+    {
+      "filename": "setuptools-84.0.0-py3-none-any.whl",
+      "sha256": "51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670",
+      "bytes": 818216,
+      "source_url": "https://pypi.org/pypi/setuptools/84.0.0/json",
+      "metadata_path": "cpu-install-diagnostic-source-setuptools.json",
+      "metadata_sha256": "24d07932459261bbf9e66e5cfdebfeba23a977234ab24bf9c3a1df053c53ba21"
+    },
+    {
+      "filename": "nvidia_cublas_cu12-12.6.4.1-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+      "sha256": "08ed2686e9875d01b58e3cb379c6896df8e76c75e0d4a7f7dace3d7b6d9ef8eb",
+      "bytes": 393138322,
+      "source_url": "https://pypi.org/pypi/nvidia-cublas-cu12/12.6.4.1/json",
+      "metadata_path": "cpu-install-diagnostic-source-nvidia-cublas-cu12.json",
+      "metadata_sha256": "8f8e7492e29b42acbaeda82e8a78f12514b272a53d2e7270baeb719972057255"
+    },
+    {
+      "filename": "nvidia_cufft_cu12-11.3.0.4-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+      "sha256": "ccba62eb9cef5559abd5e0d54ceed2d9934030f51163df018532142a8ec533e5",
+      "bytes": 200221632,
+      "source_url": "https://pypi.org/pypi/nvidia-cufft-cu12/11.3.0.4/json",
+      "metadata_path": "cpu-install-diagnostic-source-nvidia-cufft-cu12.json",
+      "metadata_sha256": "792acd46732d3fe97aede2869185383363ce87ab254e5529211ff63ab4dd13aa"
+    },
+    {
+      "filename": "nvidia_cudnn_cu12-9.10.2.21-py3-none-manylinux_2_27_x86_64.whl",
+      "sha256": "949452be657fa16687d0930933f032835951ef0892b37d2d53824d1a84dc97a8",
+      "bytes": 706758467,
+      "source_url": "https://pypi.org/pypi/nvidia-cudnn-cu12/9.10.2.21/json",
+      "metadata_path": "cpu-install-diagnostic-source-nvidia-cudnn-cu12.json",
+      "metadata_sha256": "af2747bbbe547d6d9dd1c96898f3681a6a7774db4ac4c06f3e343deb38cbedfa"
+    },
+    {
+      "filename": "jinja2-3.1.6-py3-none-any.whl",
+      "sha256": "85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67",
+      "bytes": 134899,
+      "source_url": "https://pypi.org/pypi/jinja2/3.1.6/json",
+      "metadata_path": "cpu-install-diagnostic-source-jinja2.json",
+      "metadata_sha256": "1bc757d7065f3e67d3a49e72ebc731d0774055575732592eede9820c136329cc"
+    },
+    {
+      "filename": "nvidia_nvtx_cu12-12.6.77-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+      "sha256": "b90bed3df379fa79afbd21be8e04a0314336b8ae16768b58f2d34cb1d04cd7d2",
+      "bytes": 89276,
+      "source_url": "https://pypi.org/pypi/nvidia-nvtx-cu12/12.6.77/json",
+      "metadata_path": "cpu-install-diagnostic-source-nvidia-nvtx-cu12.json",
+      "metadata_sha256": "1d4d8b5674e23abeb20bb9cdc4047df370484d678e46d8556a64356260c2e0e6"
+    },
+    {
+      "filename": "torch-2.14.0+cu126-cp314-cp314-manylinux_2_28_x86_64.whl",
+      "sha256": "b15e1e62ab842d099ae9b19312374f62579668171efed8b676108b60fa75e5b0",
+      "bytes": 869180118,
+      "source_url": "https://download.pytorch.org/whl/cu126/torch/",
+      "metadata_path": "cpu-install-diagnostic-source-torch.html",
+      "metadata_sha256": "01dbd19fffd754bd0e5cf2cacaf1520ccfbe97c4c2a683af78bd58c55a29f29b"
+    },
+    {
+      "filename": "cuda_toolkit-12.6.3-py2.py3-none-any.whl",
+      "sha256": "79d8605baeb6c2f695761e0efb54bc62dbc3c9e32eb0742df7669c07befaa8f7",
+      "bytes": 2288,
+      "source_url": "https://pypi.org/pypi/cuda-toolkit/12.6.3/json",
+      "metadata_path": "cpu-install-diagnostic-source-cuda-toolkit.json",
+      "metadata_sha256": "6e1bec9cb4c1d00294f837bdc4faa58da676cda8e8a6766b32b43d0e56f28c68"
+    },
+    {
+      "filename": "numpy-2.4.6-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+      "sha256": "a2c306dea656c12c68f51f4cea133cbe78ca7435eb28c735eac1d3ebe73be6e8",
+      "bytes": 16638245,
+      "source_url": "https://pypi.org/pypi/numpy/2.4.6/json",
+      "metadata_path": "cpu-install-diagnostic-source-numpy.json",
+      "metadata_sha256": "fc316414566d77fbc82c92f9d710d913778a701b253d0568aa033bd85d3e5169"
+    },
+    {
+      "filename": "networkx-3.7-py3-none-any.whl",
+      "sha256": "e3fd2c13a7814cee3746340d8d7f8598a67f16a58bf47fb7f8793fab6efca1b0",
+      "bytes": 2142205,
+      "source_url": "https://pypi.org/pypi/networkx/3.7/json",
+      "metadata_path": "cpu-install-diagnostic-source-networkx.json",
+      "metadata_sha256": "7f1ed131b5a2e9e53bd980cfce44f80960241c76ea494935c3ec798bed686442"
+    },
+    {
+      "filename": "triton-3.8.0-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+      "sha256": "387dae4cb0089a7b6ba1a428ae0782b65c4c58f57d94617cb22ca8593d8ccbca",
+      "bytes": 247972313,
+      "source_url": "https://pypi.org/pypi/triton/3.8.0/json",
+      "metadata_path": "cpu-install-diagnostic-source-triton.json",
+      "metadata_sha256": "d899984094b5da2d8bf178c11006ce5fe61b18dd75650e19ff73d0fda6cc2592"
+    },
+    {
+      "filename": "filelock-4.0.12-py3-none-any.whl",
+      "sha256": "5f17ee83ecee8a6f3e389c75822fb70a1c2f0506b99438a6dffa1d56793588c8",
+      "bytes": 111732,
+      "source_url": "https://pypi.org/pypi/filelock/4.0.12/json",
+      "metadata_path": "cpu-install-diagnostic-source-filelock.json",
+      "metadata_sha256": "e8795b93a3ac4a5ee5c2c9dc3d6300936cc95481ecda6f71dcb48b761f360658"
+    },
+    {
+      "filename": "nvidia_cusolver_cu12-11.7.1.2-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+      "sha256": "e9e49843a7707e42022babb9bcfa33c29857a93b88020c4e4434656a655b698c",
+      "bytes": 158229790,
+      "source_url": "https://pypi.org/pypi/nvidia-cusolver-cu12/11.7.1.2/json",
+      "metadata_path": "cpu-install-diagnostic-source-nvidia-cusolver-cu12.json",
+      "metadata_sha256": "e0ed4bb237a7045f0562dd19fbb7d703e37ba2c9d57eff6cbbae8f6559c51c85"
+    },
+    {
+      "filename": "cuda_bindings-12.9.9-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+      "sha256": "94e4f9bd6b9b21aad545e0d441707094e4ff88ab420d62b85fcdc8b6da1e039f",
+      "bytes": 7440112,
+      "source_url": "https://pypi.org/pypi/cuda-bindings/12.9.9/json",
+      "metadata_path": "cpu-install-diagnostic-source-cuda-bindings.json",
+      "metadata_sha256": "a368cbf03e396e5503f272211ba1e9ff90d05eebe6b2e6bdb5311e13c2de285f"
+    },
+    {
+      "filename": "nvidia_curand_cu12-10.3.7.77-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+      "sha256": "a42cd1344297f70b9e39a1e4f467a4e1c10f1da54ff7a85c12197f6c652c8bdf",
+      "bytes": 56279010,
+      "source_url": "https://pypi.org/pypi/nvidia-curand-cu12/10.3.7.77/json",
+      "metadata_path": "cpu-install-diagnostic-source-nvidia-curand-cu12.json",
+      "metadata_sha256": "e41e4f5e6a3d040aff18c2c10c8daca5a183bf853b0c7b9398fca4a76025e87d"
+    },
+    {
+      "filename": "nvidia_nvshmem_cu12-3.4.5-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+      "sha256": "042f2500f24c021db8a06c5eec2539027d57460e1c1a762055a6554f72c369bd",
+      "bytes": 139103095,
+      "source_url": "https://pypi.org/pypi/nvidia-nvshmem-cu12/3.4.5/json",
+      "metadata_path": "cpu-install-diagnostic-source-nvidia-nvshmem-cu12.json",
+      "metadata_sha256": "763b36a56403cd9de6fcd8e24a1d76520ae8f03a3b6b4845f9ccf6cdc006500b"
+    },
+    {
+      "filename": "markupsafe-3.0.4-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+      "sha256": "a8e9f292fcda89b324f2f5c91d13f1424a153e40fc2756f38ee23b15835ff300",
+      "bytes": 23049,
+      "source_url": "https://pypi.org/pypi/markupsafe/3.0.4/json",
+      "metadata_path": "cpu-install-diagnostic-source-markupsafe.json",
+      "metadata_sha256": "85cd5bce3f85e67ab0b921be9c9ba144a7cc01a2d02b85ad65b1f8dabeac4c57"
+    },
+    {
+      "filename": "nvidia_cuda_cupti_cu12-12.6.80-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl",
+      "sha256": "6768bad6cab4f19e8292125e5f1ac8aa7d1718704012a0e3272a6f61c4bce132",
+      "bytes": 8917980,
+      "source_url": "https://pypi.org/pypi/nvidia-cuda-cupti-cu12/12.6.80/json",
+      "metadata_path": "cpu-install-diagnostic-source-nvidia-cuda-cupti-cu12.json",
+      "metadata_sha256": "3d9d1fad5f68bc48d6c9090ef6d3c822df5cfaf173f041acd524910c31cc994d"
+    },
+    {
+      "filename": "mpmath-1.3.0-py3-none-any.whl",
+      "sha256": "a0b2b9fe80bbcd81a6647ff13108738cfb482d481d826cc0e02f5b35e5c88d2c",
+      "bytes": 536198,
+      "source_url": "https://pypi.org/pypi/mpmath/1.3.0/json",
+      "metadata_path": "cpu-install-diagnostic-source-mpmath.json",
+      "metadata_sha256": "87119e683fa33e0fcbca594469c138ecd42294fa5194f525c86787eefdfb77aa"
+    },
+    {
+      "filename": "nvidia_nccl_cu12-2.29.3-py3-none-manylinux_2_18_x86_64.whl",
+      "sha256": "35ad42e7d5d722a83c36a3a478e281c20a5646383deaf1b9ed1a9ab7d61bed53",
+      "bytes": 289760316,
+      "source_url": "https://pypi.org/pypi/nvidia-nccl-cu12/2.29.3/json",
+      "metadata_path": "cpu-install-diagnostic-source-nvidia-nccl-cu12.json",
+      "metadata_sha256": "2a1dd49b7f5e3e32577b56ef125041511b5dbd8980a6993a84d468605c23c1e9"
+    },
+    {
+      "filename": "nvidia_cuda_nvrtc_cu12-12.6.85-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl",
+      "sha256": "800927308ccc5dd6246d3f61f7fcef2ed7ec4e59e199090d360d3293f78bd5a2",
+      "bytes": 23649944,
+      "source_url": "https://pypi.org/pypi/nvidia-cuda-nvrtc-cu12/12.6.85/json",
+      "metadata_path": "cpu-install-diagnostic-source-nvidia-cuda-nvrtc-cu12.json",
+      "metadata_sha256": "5b46a6410d0e7ae1bbb077b5980e99760c1b2f2bff90bd7a88a61a2c03a9afb9"
+    },
+    {
+      "filename": "cuda_pathfinder-1.8.3-py3-none-any.whl",
+      "sha256": "e29e59829c297a7a5233bd9cc71094fc5bddbd076951482670178f9eade39b1f",
+      "bytes": 62561,
+      "source_url": "https://pypi.org/pypi/cuda-pathfinder/1.8.3/json",
+      "metadata_path": "cpu-install-diagnostic-source-cuda-pathfinder.json",
+      "metadata_sha256": "082e8bdf8c966701acd399cc1b793ac932a816d3eb49adcc392f7e65e69cc17d"
+    },
+    {
+      "filename": "fsspec-2026.9.0-py3-none-any.whl",
+      "sha256": "8dd6e646e99ea382bd85f97a45e6b526a442d79423a7dc673f1e2756d05fcb5f",
+      "bytes": 221738,
+      "source_url": "https://pypi.org/pypi/fsspec/2026.9.0/json",
+      "metadata_path": "cpu-install-diagnostic-source-fsspec.json",
+      "metadata_sha256": "4a93a853911936a59262f3ccc1a36a42cfbff106beec53d6e247d00f7a3aa1e9"
+    },
+    {
+      "filename": "typing_extensions-4.16.0-py3-none-any.whl",
+      "sha256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+      "bytes": 45571,
+      "source_url": "https://pypi.org/pypi/typing-extensions/4.16.0/json",
+      "metadata_path": "cpu-install-diagnostic-source-typing-extensions.json",
+      "metadata_sha256": "2140da00d62dde967f52d0be0ae28444f1d6a3fe603f52c83c23988c32122d5a"
+    },
+    {
+      "filename": "sympy-1.14.0-py3-none-any.whl",
+      "sha256": "e091cc3e99d2141a0ba2847328f5479b05d94a6635cb96148ccb3f34671bd8f5",
+      "bytes": 6299353,
+      "source_url": "https://pypi.org/pypi/sympy/1.14.0/json",
+      "metadata_path": "cpu-install-diagnostic-source-sympy.json",
+      "metadata_sha256": "7f17c97b2d9ccec17969f30bd7e43c58db3de1145cd1cf00773e48991048d176"
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+=== RUN   TestCargoApprovedTransactionRefusesPublicationRace
+=== RUN   TestCargoApprovedTransactionRefusesPublicationRace/selected-content
+=== RUN   TestCargoApprovedTransactionRefusesPublicationRace/selected-inode
+=== RUN   TestCargoApprovedTransactionRefusesPublicationRace/foreign-destination
+--- PASS: TestCargoApprovedTransactionRefusesPublicationRace (0.29s)
+    --- PASS: TestCargoApprovedTransactionRefusesPublicationRace/selected-content (0.10s)
+    --- PASS: TestCargoApprovedTransactionRefusesPublicationRace/selected-inode (0.09s)
+    --- PASS: TestCargoApprovedTransactionRefusesPublicationRace/foreign-destination (0.10s)
+=== RUN   TestProjectTransactionPreservesUnexpectedBackupContent
+=== RUN   TestProjectTransactionPreservesUnexpectedBackupContent/go/commit
+=== RUN   TestProjectTransactionPreservesUnexpectedBackupContent/go/rollback
+=== RUN   TestProjectTransactionPreservesUnexpectedBackupContent/cargo/commit
+=== RUN   TestProjectTransactionPreservesUnexpectedBackupContent/cargo/rollback
+--- PASS: TestProjectTransactionPreservesUnexpectedBackupContent (0.08s)
+    --- PASS: TestProjectTransactionPreservesUnexpectedBackupContent/go/commit (0.02s)
+    --- PASS: TestProjectTransactionPreservesUnexpectedBackupContent/go/rollback (0.02s)
+    --- PASS: TestProjectTransactionPreservesUnexpectedBackupContent/cargo/commit (0.02s)
+    --- PASS: TestProjectTransactionPreservesUnexpectedBackupContent/cargo/rollback (0.02s)
+=== RUN   TestProjectTransactionRejectsBackupDrift
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/commit/foreign-directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/commit/foreign-selected
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/commit/backup-inode
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/commit/selected-inode
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/commit/original-content
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/commit/original-mode
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/commit/original-inode
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/commit/original-hardlink
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/commit/original-missing
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/rollback/foreign-directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/rollback/foreign-selected
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/rollback/backup-inode
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/rollback/selected-inode
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/rollback/original-content
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/rollback/original-mode
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/rollback/original-inode
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/rollback/original-hardlink
+=== RUN   TestProjectTransactionRejectsBackupDrift/go/rollback/original-missing
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/commit/foreign-directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/commit/foreign-selected
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/commit/backup-inode
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/commit/selected-inode
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/commit/original-content
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/commit/original-mode
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/commit/original-inode
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/commit/original-hardlink
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/commit/original-missing
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/rollback/foreign-directory
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/rollback/foreign-selected
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/rollback/backup-inode
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/rollback/selected-inode
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/rollback/original-content
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/rollback/original-mode
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/rollback/original-inode
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/rollback/original-hardlink
+=== RUN   TestProjectTransactionRejectsBackupDrift/cargo/rollback/original-missing
+--- PASS: TestProjectTransactionRejectsBackupDrift (0.69s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/go/commit/foreign-directory (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/go/commit/foreign-selected (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/go/commit/backup-inode (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/go/commit/selected-inode (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/go/commit/original-content (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/go/commit/original-mode (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/go/commit/original-inode (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/go/commit/original-hardlink (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/go/commit/original-missing (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/go/rollback/foreign-directory (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/go/rollback/foreign-selected (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/go/rollback/backup-inode (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/go/rollback/selected-inode (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/go/rollback/original-content (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/go/rollback/original-mode (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/go/rollback/original-inode (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/go/rollback/original-hardlink (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/go/rollback/original-missing (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/cargo/commit/foreign-directory (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/cargo/commit/foreign-selected (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/cargo/commit/backup-inode (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/cargo/commit/selected-inode (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/cargo/commit/original-content (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/cargo/commit/original-mode (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/cargo/commit/original-inode (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/cargo/commit/original-hardlink (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/cargo/commit/original-missing (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/cargo/rollback/foreign-directory (0.03s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/cargo/rollback/foreign-selected (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/cargo/rollback/backup-inode (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/cargo/rollback/selected-inode (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/cargo/rollback/original-content (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/cargo/rollback/original-mode (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/cargo/rollback/original-inode (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/cargo/rollback/original-hardlink (0.02s)
+    --- PASS: TestProjectTransactionRejectsBackupDrift/cargo/rollback/original-missing (0.02s)
+PASS
+ok  	github.com/rahoney/heliopause/internal/promotion	1.069s

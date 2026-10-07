@@ -1,0 +1,243 @@
+{
+  "source_candidate": "d328756f0087624093808215d1fbedd47767ef58",
+  "tuples": [
+    {
+      "package": "torch",
+      "version": "2.14.0+cpu",
+      "source_profile": "pytorch:cpu",
+      "support_status": "RELEASE_SUPPORTED",
+      "scope": "HAA bounded artifact inspection and original-graph offline Promotion; not GPU execution/driver/Toolkit attestation",
+      "python_target": {
+        "reference": "python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52",
+        "python_version": "3.14.7",
+        "pip_version": "26.2.1",
+        "target": {
+          "interpreter": "cp314",
+          "abi": "cp314",
+          "platform": "manylinux_2_36_x86_64"
+        }
+      },
+      "resource_bounds": {
+        "artifact_limits": {
+          "MaxCompressed": 268435456,
+          "MaxUncompressed": 1073741824,
+          "MaxFiles": 20000,
+          "MaxMetadata": 2097152
+        },
+        "distribution_hosts": [
+          "download.pytorch.org",
+          "download-r2.pytorch.org"
+        ],
+        "duration_seconds": 900,
+        "graph_artifacts": 64,
+        "graph_compressed_bytes": 536870912,
+        "graph_files": 20000,
+        "graph_uncompressed_bytes": 2147483648,
+        "index_url": "https://download.pytorch.org/whl/cpu/",
+        "profile": "pytorch:cpu",
+        "promotion_tmpfs_bytes": 1073741824,
+        "required_import_unit_limit": 64,
+        "runtime_memory_bytes": 2147483648,
+        "runtime_tmpfs_bytes": 2147483648,
+        "source_id": "pytorch-cpu",
+        "temporary_disk_bytes": 4294967296,
+        "transaction_cpu_seconds": 180
+      },
+      "qualification": {
+        "profile": "cpu",
+        "run_id": 37561282942,
+        "url": "https://github.com/rahoney/heliopause/actions/runs/37561282942",
+        "source_commit": "d328756f0087624093808215d1fbedd47767ef58",
+        "checkout": "1a8d0dbd526a68e9a68f5dd10519f7937ed08a84",
+        "full_invocation_seconds": [
+          291.53
+        ],
+        "actual_top_level_pass_count": 45,
+        "receipt": "remote-ci/final-source-ordinary-actual-scope.json"
+      },
+      "inspection_only_prerequisite": null,
+      "command_limitations": []
+    },
+    {
+      "package": "torch",
+      "version": "2.14.0+cu130",
+      "source_profile": "pytorch:cu130",
+      "support_status": "RELEASE_SUPPORTED",
+      "scope": "HAA bounded artifact inspection and original-graph offline Promotion; not GPU execution/driver/Toolkit attestation",
+      "python_target": {
+        "reference": "python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52",
+        "python_version": "3.14.7",
+        "pip_version": "26.2.1",
+        "target": {
+          "interpreter": "cp314",
+          "abi": "cp314",
+          "platform": "manylinux_2_36_x86_64"
+        }
+      },
+      "resource_bounds": {
+        "artifact_limits": {
+          "MaxCompressed": 1073741824,
+          "MaxUncompressed": 2147483648,
+          "MaxFiles": 20000,
+          "MaxMetadata": 2097152
+        },
+        "distribution_hosts": [
+          "download.pytorch.org",
+          "download-r2.pytorch.org"
+        ],
+        "duration_seconds": 2400,
+        "graph_artifacts": 64,
+        "graph_compressed_bytes": 4294967296,
+        "graph_files": 24000,
+        "graph_uncompressed_bytes": 8589934592,
+        "index_url": "https://download.pytorch.org/whl/cu130/",
+        "profile": "pytorch:cu130",
+        "promotion_tmpfs_bytes": 12884901888,
+        "required_import_unit_limit": 64,
+        "runtime_memory_bytes": 4294967296,
+        "runtime_tmpfs_bytes": 12884901888,
+        "source_id": "pytorch-cu130",
+        "temporary_disk_bytes": 25769803776,
+        "transaction_cpu_seconds": 300
+      },
+      "qualification": {
+        "profile": "cu130",
+        "run_id": 37561348597,
+        "url": "https://github.com/rahoney/heliopause/actions/runs/37561348597",
+        "source_commit": "d328756f0087624093808215d1fbedd47767ef58",
+        "checkout": "d328756f0087624093808215d1fbedd47767ef58",
+        "full_invocation_seconds": [
+          285.44,
+          972.98
+        ],
+        "actual_top_level_pass_count": 46,
+        "receipt": "remote-ci/final-source-cu130-actual-scope.json"
+      },
+      "inspection_only_prerequisite": "exact authenticated NumPy2.4.6 pin, target-bound; separate supplemented Evidence; excluded from promoted entries/site-packages/scripts",
+      "command_limitations": [
+        "triton.profiler.viewer NOT_ATTESTED; functionality and later execution enforcement are false"
+      ]
+    },
+    {
+      "package": "torch",
+      "version": "2.14.0+cu132",
+      "source_profile": "pytorch:cu132",
+      "support_status": "RELEASE_SUPPORTED",
+      "scope": "HAA bounded artifact inspection and original-graph offline Promotion; not GPU execution/driver/Toolkit attestation",
+      "python_target": {
+        "reference": "python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52",
+        "python_version": "3.14.7",
+        "pip_version": "26.2.1",
+        "target": {
+          "interpreter": "cp314",
+          "abi": "cp314",
+          "platform": "manylinux_2_36_x86_64"
+        }
+      },
+      "resource_bounds": {
+        "artifact_limits": {
+          "MaxCompressed": 1073741824,
+          "MaxUncompressed": 2147483648,
+          "MaxFiles": 20000,
+          "MaxMetadata": 2097152
+        },
+        "distribution_hosts": [
+          "download.pytorch.org",
+          "download-r2.pytorch.org"
+        ],
+        "duration_seconds": 2400,
+        "graph_artifacts": 64,
+        "graph_compressed_bytes": 4294967296,
+        "graph_files": 24000,
+        "graph_uncompressed_bytes": 8589934592,
+        "index_url": "https://download.pytorch.org/whl/cu132/",
+        "profile": "pytorch:cu132",
+        "promotion_tmpfs_bytes": 12884901888,
+        "required_import_unit_limit": 64,
+        "runtime_memory_bytes": 4294967296,
+        "runtime_tmpfs_bytes": 12884901888,
+        "source_id": "pytorch-cu132",
+        "temporary_disk_bytes": 25769803776,
+        "transaction_cpu_seconds": 300
+      },
+      "qualification": {
+        "profile": "cu132",
+        "run_id": 37566006329,
+        "url": "https://github.com/rahoney/heliopause/actions/runs/37566006329",
+        "source_commit": "d328756f0087624093808215d1fbedd47767ef58",
+        "checkout": "d328756f0087624093808215d1fbedd47767ef58",
+        "full_invocation_seconds": [
+          290.95,
+          949.5
+        ],
+        "actual_top_level_pass_count": 46,
+        "receipt": "remote-ci/final-source-cu132-actual-scope.json"
+      },
+      "inspection_only_prerequisite": "exact authenticated NumPy2.4.6 pin, target-bound; separate supplemented Evidence; excluded from promoted entries/site-packages/scripts",
+      "command_limitations": [
+        "triton.profiler.viewer NOT_ATTESTED; functionality and later execution enforcement are false"
+      ]
+    },
+    {
+      "package": "torch",
+      "version": "2.14.0+cu126",
+      "source_profile": "pytorch:cu126",
+      "support_status": "RELEASE_SUPPORTED",
+      "scope": "HAA bounded artifact inspection and original-graph offline Promotion; not GPU execution/driver/Toolkit attestation",
+      "python_target": {
+        "reference": "python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52",
+        "python_version": "3.14.7",
+        "pip_version": "26.2.1",
+        "target": {
+          "interpreter": "cp314",
+          "abi": "cp314",
+          "platform": "manylinux_2_36_x86_64"
+        }
+      },
+      "resource_bounds": {
+        "artifact_limits": {
+          "MaxCompressed": 1610612736,
+          "MaxUncompressed": 2147483648,
+          "MaxFiles": 20000,
+          "MaxMetadata": 2097152
+        },
+        "distribution_hosts": [
+          "download.pytorch.org",
+          "download-r2.pytorch.org"
+        ],
+        "duration_seconds": 2400,
+        "graph_artifacts": 64,
+        "graph_compressed_bytes": 5368709120,
+        "graph_files": 24000,
+        "graph_uncompressed_bytes": 8589934592,
+        "index_url": "https://download.pytorch.org/whl/cu126/",
+        "profile": "pytorch:cu126",
+        "promotion_tmpfs_bytes": 12884901888,
+        "required_import_unit_limit": 64,
+        "runtime_memory_bytes": 4294967296,
+        "runtime_tmpfs_bytes": 12884901888,
+        "source_id": "pytorch-cu126",
+        "temporary_disk_bytes": 25769803776,
+        "transaction_cpu_seconds": 300
+      },
+      "qualification": {
+        "profile": "cu126",
+        "run_id": 37570546443,
+        "url": "https://github.com/rahoney/heliopause/actions/runs/37570546443",
+        "source_commit": "d328756f0087624093808215d1fbedd47767ef58",
+        "checkout": "d328756f0087624093808215d1fbedd47767ef58",
+        "full_invocation_seconds": [
+          232.68,
+          1047.88
+        ],
+        "actual_top_level_pass_count": 46,
+        "receipt": "remote-ci/final-source-cu126-actual-scope.json"
+      },
+      "inspection_only_prerequisite": "exact authenticated NumPy2.4.6 pin, target-bound; separate supplemented Evidence; excluded from promoted entries/site-packages/scripts",
+      "command_limitations": [
+        "triton.profiler.viewer NOT_ATTESTED; functionality and later execution enforcement are false"
+      ]
+    }
+  ],
+  "not_qualified": "Other torch versions, torchvision/torchaudio combinations, OS/architecture/ABI/interpreters; public distribution/Host activation remain M12-02/M13. Live selected graphs freeze per execution; static deterministic replay is separate evidence."
+}

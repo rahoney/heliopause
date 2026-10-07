@@ -1,0 +1,119 @@
+{
+  "scope": "Actual product/source checks reused only under explicit707\u2192708 test/quality-only delta; fresh complete875-path projection workflow/security/docs and Darwin TEST compilation completed0. Final closure documentation is checked separately before local commit.",
+  "checks": [
+    {
+      "profile": "quick",
+      "tool_exit": 0,
+      "raw_log": "cargo-build-final-quick.log",
+      "sha256": "616f308ab89dfae44da9ad2f6cb23a21619a30f7c06d67784877919a37fa8f8b",
+      "bytes": 1354
+    },
+    {
+      "profile": "security",
+      "tool_exit": 0,
+      "raw_log": "cargo-build-final-security.log",
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95",
+      "bytes": 44
+    },
+    {
+      "profile": "docs",
+      "tool_exit": 0,
+      "raw_log": "cargo-build-final-docs.log",
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9",
+      "bytes": 22
+    },
+    {
+      "profile": "platform_linux",
+      "tool_exit": 0,
+      "raw_log": "cargo-build-final-platform.log",
+      "sha256": "fb49a92d2cfca9e6f197611a2e0567108e2eb01175e865442baea47d308e8ef7",
+      "bytes": 46
+    },
+    {
+      "profile": "darwin_amd64_test_compile",
+      "tool_exit": 0,
+      "raw_log": "cargo-build-final-darwin-test-compile.log",
+      "sha256": "b6bced612ac7c1303163984e21aff9cef41ced96d3df133f911295dd6ee90402",
+      "bytes": 2638
+    },
+    {
+      "profile": "declared_corpus",
+      "tool_exit": 0,
+      "raw_log": "cargo-build-final-corpus.log",
+      "sha256": "3f217682c52a48b814834d83474a8d6e117ac0b068f3a6a601427020d12482d7",
+      "bytes": 6552
+    },
+    {
+      "profile": "vulnerability",
+      "tool_exit": 0,
+      "raw_log": "cargo-build-final-vulnerability.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "profile": "quality_only_final_quick",
+      "tool_exit": 0,
+      "raw_log": "cargo-ci-active-gates-final-quick.log",
+      "sha256": "9fdbc6a83a7fa60a42671011d4db0da5d750244c9bf548731ac3beeee306aa8c",
+      "bytes": 1354
+    },
+    {
+      "profile": "quality_only_final_security",
+      "tool_exit": 0,
+      "raw_log": "cargo-ci-active-gates-final-security.log",
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95",
+      "bytes": 44
+    },
+    {
+      "profile": "quality_only_final_docs",
+      "tool_exit": 0,
+      "raw_log": "cargo-ci-active-gates-final-docs.log",
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9",
+      "bytes": 22
+    },
+    {
+      "profile": "full_observer_old_new_latches",
+      "tool_exit": 0,
+      "raw_log": "cargo-build-security-retained-final-latches.log",
+      "sha256": "34ded4ca8d02d19d4d86ae5ad8b81a6d4348d04fb8f157d12114a244ae16fcc7",
+      "bytes": 7238
+    }
+  ],
+  "native_macos": "NOT_RUN",
+  "remote_required_ci": "NOT_RUN",
+  "closure_checks": [
+    {
+      "profile": "workflow",
+      "tool_exit": 0,
+      "path": "raw/closure-workflow.log",
+      "sha256": "9aa7466daf46045588efe719d90d344f27572c9f413cf3c1770da2dcdb216ed1",
+      "bytes": 1071,
+      "available": true
+    },
+    {
+      "profile": "security",
+      "tool_exit": 0,
+      "path": "raw/closure-security.log",
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95",
+      "bytes": 44,
+      "available": true
+    },
+    {
+      "profile": "docs",
+      "tool_exit": 0,
+      "path": "raw/closure-docs.log",
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9",
+      "bytes": 22,
+      "available": true
+    },
+    {
+      "profile": "darwin-test-compile",
+      "tool_exit": 0,
+      "path": "raw/closure-darwin-test-compile.log",
+      "sha256": "5e00da1c72767018721c68bf0ed46835df9526e34e6926822384783c6ca756c3",
+      "bytes": 2638,
+      "available": true
+    }
+  ],
+  "closure_checked_candidate": "closure-check-candidate.json"
+}

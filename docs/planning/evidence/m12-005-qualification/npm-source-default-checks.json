@@ -1,0 +1,187 @@
+{
+  "source_commit": "8791fdcff573b1d85681ca74b65cf5a9e3ccf27a",
+  "command": "go test -json ./...",
+  "actual_exit": 0,
+  "environment": "pinned Go1.26.8 / canonical locked bootstrap cache / GOPROXY=off / GOSUMDB=off / explicit verified runsc bundle; source-byte projected Linux native filesystem",
+  "test_cache": "Allowed; canonical quick already executed on the same source. This is a complete actual default consumer result, not a fresh installed dynamic qualification.",
+  "raw_provenance": {
+    "role": "npm-media-type/default-tests.jsonl, retained externally",
+    "bytes": 2633079,
+    "sha256": "8a29f0fc090412b1394c6c6fcf9d3841cd549a062a7901b5a06dd54fe40473c3"
+  },
+  "passed_top_level_tests": 763,
+  "passed_all_test_cases": 2217,
+  "package_terminals": [
+    {
+      "package": "github.com/rahoney/heliopause/cmd/haa-network-policy-helper",
+      "action": "skip"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/artifact/projectbuild",
+      "action": "skip"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/artifact/githubrelease",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/artifact/pypi",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/artifact/terraformprovider",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/artifact/npm",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/application",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/artifact/gomodule",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/artifact/cargo",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/core/ports",
+      "action": "skip"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/inspection/cargo",
+      "action": "skip"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/evidence",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/core/domain",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/inspection/projectbuild",
+      "action": "skip"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/inspection/githubrelease",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/inspection/terraformprovider",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/inspection/npm",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/cli",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/bootstrap",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/hosttool",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/networkpolicy",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/policy",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/inspection/gomodule",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/evidence/local",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/inspection/pypi",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/verification/projectbuild",
+      "action": "skip"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/verification/pypi",
+      "action": "skip"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/verification/githubrelease",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/verification/npm",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/testutil/fakeworkflow",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/verification/cargo",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/scripts/runtime-image-manifest",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/verification/terraformprovider",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/verification/gomodule",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/runtimeidentity",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/releaseinstall",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/scripts",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/cmd/helox",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/scripts/release-manifest",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/scripts/check",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/sandbox",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/rahoney/heliopause/internal/promotion",
+      "action": "pass"
+    }
+  ],
+  "not_attested": "Env-gated skip cases do not qualify actual installed/public/full execution. Those are separate remote raw/actual scopes.",
+  "skipped_case_count": 87,
+  "scope": "Summary of the earlier8791 npm source default execution; exact full JSONL retained externally with recorded hash. The new source actual-case inventory lives only in current-default-checks.json and is not this older execution."
+}

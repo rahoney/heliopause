@@ -1,0 +1,189 @@
+{
+  "head": "132baead052842deddc63c6016c7d2811958cb0a",
+  "checkout": "c375a45baa7a3a224053312459dcfb527e41e3d0",
+  "run_id": 37503579865,
+  "linux_job": 112406457746,
+  "required_job": 112424624693,
+  "actual_top_level_passed_tests": [
+    {
+      "test": "TestLinuxTrustedHostExecutorIntegration",
+      "duration_seconds": 4.02
+    },
+    {
+      "test": "TestPublicTerraformProviderSourceIntegration",
+      "duration_seconds": 1.04
+    },
+    {
+      "test": "TestLinuxPyTorchResolverIntegration",
+      "duration_seconds": 31.26
+    },
+    {
+      "test": "TestLinuxGoIsolatedResolverIntegration",
+      "duration_seconds": 5.49
+    },
+    {
+      "test": "TestLinuxGoIsolatedProjectResolverIntegration",
+      "duration_seconds": 2.65
+    },
+    {
+      "test": "TestLinuxGoSourceProjectSnapshotIntegration",
+      "duration_seconds": 2.71
+    },
+    {
+      "test": "TestLinuxGoDependencyFreeProjectSnapshotIntegration",
+      "duration_seconds": 2.34
+    },
+    {
+      "test": "TestLinuxCargoSourceProjectSnapshotIntegration",
+      "duration_seconds": 1.3
+    },
+    {
+      "test": "TestLinuxTerraformProviderProbeIntegration",
+      "duration_seconds": 2.03
+    },
+    {
+      "test": "TestLinuxTerraformProviderSecurityIntegration",
+      "duration_seconds": 2.3
+    },
+    {
+      "test": "TestLinuxGoDependencyFreeDownloadIntegration",
+      "duration_seconds": 17.31
+    },
+    {
+      "test": "TestLinuxGoGetDownloadIntegration",
+      "duration_seconds": 23.24
+    },
+    {
+      "test": "TestLinuxGoTransitiveGetDownloadIntegration",
+      "duration_seconds": 85.85
+    },
+    {
+      "test": "TestLinuxGoDependencyFreeBuildCLIIntegration",
+      "duration_seconds": 41.59
+    },
+    {
+      "test": "TestLinuxGoPublicBuildCLIIntegration",
+      "duration_seconds": 52.36
+    },
+    {
+      "test": "TestLinuxGoTransitiveBuildCLIIntegration",
+      "duration_seconds": 161.52
+    },
+    {
+      "test": "TestLinuxGoInvalidTestdataBuildCLIIntegration",
+      "duration_seconds": 14.48
+    },
+    {
+      "test": "TestLinuxGoCgoBuildCLIIntegration",
+      "duration_seconds": 31.21
+    },
+    {
+      "test": "TestLinuxGoLibraryBuildCLIIntegration",
+      "duration_seconds": 15.04
+    },
+    {
+      "test": "TestLinuxGoMixedPackagesBuildCLIIntegration",
+      "duration_seconds": 25.55
+    },
+    {
+      "test": "TestLinuxGoMixedInvalidPackageBuildCLIIntegration",
+      "duration_seconds": 24.57
+    },
+    {
+      "test": "TestLinuxGoBuildSecurityCLIIntegration",
+      "duration_seconds": 45.95
+    },
+    {
+      "test": "TestLinuxCargoAddIntegration",
+      "duration_seconds": 17.56
+    },
+    {
+      "test": "TestLinuxCargoTransitiveAddIntegration",
+      "duration_seconds": 18.82
+    },
+    {
+      "test": "TestLinuxCargoDependencyFreeBuildCLIIntegration",
+      "duration_seconds": 10.76
+    },
+    {
+      "test": "TestLinuxCargoPublicBuildCLIIntegration",
+      "duration_seconds": 29.71
+    },
+    {
+      "test": "TestLinuxCargoTransitiveBuildCLIIntegration",
+      "duration_seconds": 38.45
+    },
+    {
+      "test": "TestLinuxCargoLibraryBuildCLIIntegration",
+      "duration_seconds": 19.46
+    },
+    {
+      "test": "TestLinuxCargoWorkspaceBuildCLIIntegration",
+      "duration_seconds": 20.1
+    },
+    {
+      "test": "TestLinuxCargoBuildScriptBuildCLIIntegration",
+      "duration_seconds": 20.6
+    },
+    {
+      "test": "TestLinuxCargoProcMacroBuildCLIIntegration",
+      "duration_seconds": 20.71
+    },
+    {
+      "test": "TestLinuxCargoBuildFilesystemSecurityCLIIntegration",
+      "duration_seconds": 9.84
+    },
+    {
+      "test": "TestLinuxCargoBuildNetworkSecurityCLIIntegration",
+      "duration_seconds": 10.31
+    },
+    {
+      "test": "TestLinuxCargoBuildConfigurationSecurityCLIIntegration",
+      "duration_seconds": 20.59
+    },
+    {
+      "test": "TestLinuxCargoBuildUnexpectedChildSecurityCLIIntegration",
+      "duration_seconds": 9.94
+    },
+    {
+      "test": "TestLinuxCargoInvalidSourceBuildCLIIntegration",
+      "duration_seconds": 9.71
+    },
+    {
+      "test": "TestLinuxCargoProcMacroSecurityCLIIntegration",
+      "duration_seconds": 20.16
+    },
+    {
+      "test": "TestLinuxTerraformInitIntegration",
+      "duration_seconds": 49.79
+    },
+    {
+      "test": "TestLinuxTerraformInitNegativeIntegration",
+      "duration_seconds": 6.88
+    },
+    {
+      "test": "TestLinuxPyTorchFullIntegration",
+      "duration_seconds": 288.73
+    },
+    {
+      "test": "TestLinuxPyPISdistBuildIntegration",
+      "duration_seconds": 8.76
+    },
+    {
+      "test": "TestLinuxPyPIWheelDynamicIntegration",
+      "duration_seconds": 4.59
+    },
+    {
+      "test": "TestLinuxNPMPromotionIntegration",
+      "duration_seconds": 2.29
+    },
+    {
+      "test": "TestLinuxPyPIPromotionIntegration",
+      "duration_seconds": 3.34
+    }
+  ],
+  "full_pytorch_profile": "cpu",
+  "cuda_remote_full": "NOT_RUN in this follow-up; prior local cu126 qualification preserved",
+  "linux_cleanup": "Explicit production client reinstall before final promotion; helper parent wait0; final original0 CONFIRMED_STOPPED client_error0 client_restore0 NOT_REQUIRED",
+  "not_attested": "No main merge, M12-005 implementation or broader release support decision"
+}

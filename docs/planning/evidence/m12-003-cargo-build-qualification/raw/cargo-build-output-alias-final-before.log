@@ -1,0 +1,8 @@
+--- FAIL: TestCargoBuildOutputArchiveAliasesAreReconstructedAsRegularData (0.00s)
+    --- FAIL: TestCargoBuildOutputArchiveAliasesAreReconstructedAsRegularData/prior-target (0.00s)
+        cargo_build_output_test.go:115: ARCHIVE_BOUNDARY member=4 kind=49 uid=1000 gid=1000 mode=755 link=true pax=0 root_dot=false
+    --- FAIL: TestCargoBuildOutputArchiveAliasesAreReconstructedAsRegularData/forward-target (0.00s)
+        cargo_build_output_test.go:115: ARCHIVE_BOUNDARY member=3 kind=49 uid=1000 gid=1000 mode=755 link=true pax=0 root_dot=false
+FAIL
+FAIL	github.com/rahoney/heliopause/internal/sandbox	0.006s
+FAIL

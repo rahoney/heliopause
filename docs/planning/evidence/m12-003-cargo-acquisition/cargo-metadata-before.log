@@ -1,0 +1,5 @@
+--- FAIL: TestCargoResolverActualMetadataAndLock (0.01s)
+    cargo_actual_metadata_test.go:43: actual Cargo metadata with matching frozen lock: cargo metadata contains an unsupported or unverified package
+FAIL
+FAIL	github.com/rahoney/heliopause/internal/sandbox	0.020s
+FAIL

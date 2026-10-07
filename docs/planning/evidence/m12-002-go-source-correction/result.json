@@ -1,0 +1,252 @@
+{
+  "schema": 1,
+  "baseline": "56c703f7722a9f3e5ae74a4b6d353f35cc9de629",
+  "scope": "Go resolver budget and non-executing module source applicability; M12-002 remains IN_PROGRESS",
+  "approval": "user approved new Go resolver 200000 charged records per remote connection; other resource budgets unchanged",
+  "source_files": [
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "632029958070ef278c0b6cab7a51c3147b6b6e9fef0a26c584eb97ebaeb15c07"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "80ae6684fd9ba37c2debfe6650e7b6c9e90a93f0dbb191c87563cd7cc90464b9"
+    },
+    {
+      "path": "internal/inspection/gomodule/static.go",
+      "sha256": "e38942999294f2672c8d51e55714a8476eaf611d912aa7007c6b29308dcb8e2d"
+    },
+    {
+      "path": "internal/inspection/gomodule/static_test.go",
+      "sha256": "7d6c8c7eafb1d77ca68a45eadc35a17fdd7c4572d6942a80d5e82bcd78e8e9ea"
+    },
+    {
+      "path": "internal/promotion/go_cache.go",
+      "sha256": "d49133c0aec170ed5fbf08a584cd95cf0ad72b108eb0bbf5447df4346d6b88d8"
+    },
+    {
+      "path": "internal/promotion/go_cache_test.go",
+      "sha256": "1822ec6f120beb33d2c50cfc53823ebd89eb9e173ea070f48a61658075fd96d3"
+    },
+    {
+      "path": "internal/sandbox/collector_test.go",
+      "sha256": "d10a90c6c98eed71ff7c4168339e7580e2fed371652faa783c461e851a5f1714"
+    },
+    {
+      "path": "docs/planning/16-m12-01-ecosystem-expansion-contract.md",
+      "sha256": "64e18f00b664ff2da4eb0af9983db0587044cc3270ff1c532989b538a2b3a966"
+    }
+  ],
+  "observer_binary": {
+    "path": "/home/winamp/.local/state/heliopause/m12-002/observer-source-official/bazel-bin/tools/haa_gvisor_observer/haa_gvisor_observer",
+    "sha256": "92f08bfeac6669a8f748ebe73e5155b9b1d45cb86ef06d53599fe28fba1e9cea"
+  },
+  "observer_change_exactly_constant_and_profile_branch": true,
+  "syntax_cause": {
+    "owner": "internal/inspection/gomodule.StaticInspector.Inspect",
+    "former_scope": "every .go member including negative test assets",
+    "official_basis": "pinned Go1.26.8 cmd/go/internal/search/search.go and cmd/go/alldocs.go",
+    "subjects": [
+      {
+        "module": "golang.org/x/tools",
+        "version": "v0.49.0",
+        "envelope_sha256": "93983dea50c1f5d29f4513b70fcad0b1591c5117ee68fd88adea2ba19f6dbe88",
+        "go_files": 1283,
+        "invalid_go_files": 11,
+        "all_invalid_under_testdata": true
+      },
+      {
+        "module": "golang.org/x/tools",
+        "version": "v0.34.0",
+        "envelope_sha256": "ed8ade28cbc4e159fe67c47953d71603820bd5cdb7937df2570ce4a882dd0025",
+        "go_files": 1233,
+        "invalid_go_files": 16,
+        "all_invalid_under_testdata": true
+      }
+    ]
+  },
+  "correction": "Only exact testdata directory components relative to validated module prefix are excluded from automatic source syntax. Complete integrity/bounds/path/duplicate/link/CRC reads remain. Explicit selected/imported source still requires actual compiler in observed build.",
+  "raw_receipts": [
+    {
+      "path": "/home/winamp/.local/state/heliopause/m12-002/measurement/static-applicability-before.log",
+      "sha256": "37880f465a2d039e7c5fbd60237cc4e48c1210b910ad9ae629d9d9cbef462eef"
+    },
+    {
+      "path": "/home/winamp/.local/state/heliopause/m12-002/measurement/static-cache-focused-final.log",
+      "sha256": "732f6dbb1344d2dc73e6b4467ee926c14a11603820c07301b9950351e2f798d0"
+    },
+    {
+      "path": "/home/winamp/.local/state/heliopause/m12-002/measurement/budget-product-before-build-valid.log",
+      "sha256": "da92163e3f6d9b1d4f43794d436377a1ca61116dfdbc40986802a66d8b2d2011"
+    },
+    {
+      "path": "/home/winamp/.local/state/heliopause/m12-002/measurement/budget-product-before.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/home/winamp/.local/state/heliopause/m12-002/measurement/budget-product-after-build.log",
+      "sha256": "5da2521279eecf881815bec94d8359241d4d5c160c2c7cb6324826d941d8ae34"
+    },
+    {
+      "path": "/home/winamp/.local/state/heliopause/m12-002/measurement/budget-product-after-latch.log",
+      "sha256": "0f827a1663b2ba982874b2661197851e714dcf1e991be167c2e93d4ce521ea68"
+    },
+    {
+      "path": "/home/winamp/.local/state/heliopause/m12-002/measurement/cli-corrected.log",
+      "sha256": "125fafa4ab4f745acf6ffe97e75c21b9ede748b123d36636fe16326f538f80eb"
+    },
+    {
+      "path": "/home/winamp/.local/state/heliopause/m12-002/measurement/cli-cache-diagnostic.log",
+      "sha256": "c48843562a56424b2a2d08505433566e1ab19bc5852327717e59dfce1fd46afb"
+    },
+    {
+      "path": "/home/winamp/.local/state/heliopause/m12-002/measurement/cli-cache-full-diagnostic.log",
+      "sha256": "198786d0f2038b48455e90b1ef3602e90dc0d548deddd0f44f90636748832026"
+    },
+    {
+      "path": "/home/winamp/.local/state/heliopause/m12-002/measurement/static-budget-get-cli.log",
+      "sha256": "0b270c12a8c1887fffe2d5d7324a0d374b21eff817077dee6d115d126940ed1a"
+    },
+    {
+      "path": "/home/winamp/.local/state/heliopause/m12-002/measurement/static-budget-legacy.log",
+      "sha256": "cdd180931ecb5d1e497f7485840bd6ff105ccd72b7aafcc13d690317311d32e6"
+    },
+    {
+      "path": "/home/winamp/.local/state/heliopause/m12-002/measurement/testdata-parse-v0.49.0.json",
+      "sha256": "58f195d5f849e4540d768a4d57a3f063bbd3b51ceaee00b435e0d7c475c4bc13"
+    },
+    {
+      "path": "/home/winamp/.local/state/heliopause/m12-002/measurement/testdata-parse-v0.34.0.json",
+      "sha256": "6c42dbb16b981eff5d2d05475118a0a8cf1403489652832b1cd4ef3f5eb8c0ba"
+    },
+    {
+      "path": "/home/winamp/.local/state/heliopause/m12-002/measurement/testdata-go-rules.json",
+      "sha256": "e2a8ab766eb06598a009db33771afb544ed4df4a04b6838d55e9adc5eb844191"
+    },
+    {
+      "path": "/home/winamp/.local/state/heliopause/m12-002/measurement/cli_measurement_test.go",
+      "sha256": "e066bef1fb4abafdbed025f5d7c747d12671f03fc0e5b6b51ef56c17b02ffc6e"
+    },
+    {
+      "path": "/home/winamp/.local/state/heliopause/m12-002/measurement/cli-overlay.json",
+      "sha256": "42125f4e412a8de644c43106968675b16936f7e3cb1aa1b568f6a0d9efeda4ad"
+    },
+    {
+      "path": "/home/winamp/.local/state/heliopause/m12-002/measurement/run-case-corrected.sh",
+      "sha256": "91500cdfb4756f2b9bda3d0039baab7f1f6c42d6a960e82c31cb48cd00c2d28a"
+    },
+    {
+      "path": "/home/winamp/.local/state/heliopause/m12-002/measurement/run-case-cache-diagnostic.sh",
+      "sha256": "d1b267f2be876afff93ad66ca2a61743a1bfaadb3a56f3baae6124bbe246ffb2"
+    },
+    {
+      "path": "/home/winamp/.local/state/heliopause/m12-002/measurement/run-case-cache-full-diagnostic.sh",
+      "sha256": "91b434c381c530a2174ffdda503df1528a2fb72ce2cc61272282c446283c29b4"
+    },
+    {
+      "path": "/home/winamp/.local/state/heliopause/m12-002/measurement/cache-full-diagnostic.go",
+      "sha256": "46f8db4b773c7e1f3f8b8bdf74b7d7c03fdcf68d2491bdacc49de5bd57897c03"
+    },
+    {
+      "path": "/home/winamp/.local/state/heliopause/m12-002/measurement/cli-cache-full-diagnostic_test.go",
+      "sha256": "1c1988643d2751897cc50f2168fc8566cda88c2a8cb1549af95e68d2f0a20422"
+    },
+    {
+      "path": "/home/winamp/.local/state/heliopause/m12-002/measurement/cache-full-overlay.json",
+      "sha256": "8a3a3ef6157146b8916472aa8900b80923872b9e85805b1ff43a248d7926866a"
+    },
+    {
+      "path": "/home/winamp/.local/state/heliopause/m12-002/measurement/cli-corrected.test",
+      "sha256": "9e2f334a1bce09f253586a268d24e71b73c979231c37697ab7000ec024e5bfa3"
+    },
+    {
+      "path": "/home/winamp/.local/state/heliopause/m12-002/measurement/cli-cache-diagnostic.test",
+      "sha256": "4f3f3a415dc874279685d3c6da58ddba9c9a409f46be8bcdd800ddd45ee35791"
+    },
+    {
+      "path": "/home/winamp/.local/state/heliopause/m12-002/measurement/cli-cache-full-diagnostic.test",
+      "sha256": "c11c28a926c6149748833f00d9b8a3de01179708d520b4bbd9aa8bc17d835d6e"
+    },
+    {
+      "path": "/home/winamp/.local/state/heliopause/m12-002/measurement/sandbox-corrected.test",
+      "sha256": "3535cb4c21b577bd7b5468110f9bb618505ab6f3158c6bf968c1c3640dffb20f"
+    },
+    {
+      "path": "/home/winamp/.local/state/heliopause/m12-002/measurement/run-case-corrected-at-cli.sh",
+      "sha256": "bd2df34782459d5cfcae237256321f6d61fc49822be8705de410d4fb3cca9032",
+      "scope": "first CLI matrix driver bytes reconstructed from preserved parent with exact two substitutions; current driver additionally selects fresh default/positive binaries for later cases"
+    }
+  ],
+  "qualification": {
+    "cpp_production_full_latch": "PASS: all existing latches and Go200k/npm10k below/overflow",
+    "focused_go_consumers": "PASS",
+    "pflag_get_retained_download": "PASS 29.02s",
+    "cobra_get_retained_download": "PASS 38.57s 7 modules",
+    "tools_get_retained_download": "PASS 77.10s 8 modules",
+    "grpc_full_cli": "FAIL: later cache file budget, not syntax or observer fault",
+    "legacy_npm_lifecycle_env_github_elf_sdist_wheel": "PASS 3.88/3.72/1.60/13.13/10.77s",
+    "go_build": "NOT_QUALIFIED",
+    "cpu_cuda_full": "NOT_RERUN: no shared process/runtime-read predicate changed in this correction",
+    "quick": "PASS final product source incl cache scalar diagnostics",
+    "darwin": "PASS compile only; native test bodies not executed"
+  },
+  "checks_pending": [],
+  "grpc_cache_diagnostic": {
+    "scope": "bounded external diagnostic overlay; product judgment unchanged; invocation remains FAIL",
+    "approved_modules": 41,
+    "complete_cache_preflight_bytes": 199788477,
+    "complete_cache_preflight_files": 11572,
+    "first_rejected_preflight_bytes": 148190059,
+    "first_rejected_preflight_files": 10795,
+    "byte_limit": 536870912,
+    "file_limit": 10000,
+    "original_controls_unchanged": true,
+    "retained_approval_absent": true,
+    "exact_guard_removed": true,
+    "owned_helper_reaped_zero": true,
+    "original_installed_files_restored": true,
+    "file_limit_change": "user decision pending; no change applied"
+  },
+  "checks": [
+    {
+      "profile": "quick",
+      "result": "PASS",
+      "log": "/home/winamp/.local/state/heliopause/m12-002/measurement/static-budget-quick-final.log",
+      "sha256": "e87a8b9c1ed1964caf68f28d01d00261c539460bb4bfc5cb541778f4b15433bd"
+    },
+    {
+      "profile": "corpus",
+      "result": "PASS",
+      "log": "/home/winamp/.local/state/heliopause/m12-002/measurement/static-budget-corpus-qualified.log",
+      "sha256": "8aaeb88a9df1fc789a6d3750852e348eb91cd99245fbe030a0579494e1dffc8a"
+    },
+    {
+      "profile": "darwin_compile_only",
+      "result": "PASS",
+      "log": "/home/winamp/.local/state/heliopause/m12-002/measurement/static-budget-darwin.log",
+      "sha256": "2d37303af4a7515798c48016013f6044e0742b368bf0521ca1eff8d0e9c8e3eb"
+    },
+    {
+      "profile": "security",
+      "result": "PASS",
+      "log": "/home/winamp/.local/state/heliopause/m12-002/measurement/static-budget-security-staged.log",
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95"
+    },
+    {
+      "profile": "docs",
+      "result": "PASS",
+      "log": "/home/winamp/.local/state/heliopause/m12-002/measurement/static-budget-docs-final.log",
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    }
+  ],
+  "excluded_setup_failures": [
+    {
+      "log": "/home/winamp/.local/state/heliopause/m12-002/measurement/budget-product-before-build.log",
+      "reason": "Bazel invoked outside pinned upstream workspace; no built candidate or test execution; corrected build checked before invocation"
+    },
+    {
+      "log": "/home/winamp/.local/state/heliopause/m12-002/measurement/static-budget-corpus.log",
+      "reason": "missing HELOX_CORPUS_ROOT; negative missing/hash checks passed but representative gate failed; canonical preparation and required input rerun passed"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+verified fresh Cargo source and observer candidate; no overlay
+runtime before bytes/identity/modes verified
+runtime candidate bytes/identity/modes verified
+no existing traced runtime consumers; bounded Docker queries succeeded
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+/etc/heliopause/pod-init.json: OK
+helper launch: bash=/usr/bin/bash version=5.2.21(1)-release owner=2094876
+helper ready: pid=2094926 attempt=13
+=== RUN   TestLinuxCargoDependencyFreeBuildCLIIntegration
+    cargo_build_cli_integration_test.go:55: actual Cargo build failed: observed cargo build failed: phase=OUTPUT_CAPTURE command_status= reason= events=0 bytes=0 session_complete=false last_kind= kinds=none stdout=Operation: INSPECT
+        Operation ID: op_zpxhexa62753brhxxqcz4hly4i
+        Status: FAILED
+        Run ID: run_cna3ubhtecvl4vgoncppafrfaq
+        Run outcome: FAILED
+        Artifact: project-local/project-066dfe926bd9a3381cecf8d4a1de79601a9601df82430101133bca1570a9a3be@snapshot (cargo-source)
+        Digest: sha256:fc43cb3651b30236614bafc1e6e5f05044958dd2f625064984968e4e60d1b96a
+        Error: M12_CARGO_BUILD_OBSERVATION_FAILED: Project build did not complete.
+         stderr=
+--- FAIL: TestLinuxCargoDependencyFreeBuildCLIIntegration (11.75s)
+FAIL
+helper reaped: pid=2094926 wait=0
+no existing traced runtime consumers; bounded Docker queries succeeded
+runtime before bytes/identity/modes verified
+/etc/heliopause/pod-init.json: OK
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+cleanup: original=1 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=2094926

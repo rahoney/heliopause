@@ -1,0 +1,41 @@
+=== RUN   TestTerraformRequiredGatesRejectCommentsDuplicatesAndDisabledFlags
+=== RUN   TestTerraformRequiredGatesRejectCommentsDuplicatesAndDisabledFlags/commentHELOX_RUN_TERRAFORM_SOURCE_INTEGRATION=1_go_test_-v_-timeout=3m_./internal/verification/terraformprovider_-run_'^TestPublicTerraformProviderSourceIntegration$'
+    workflow_test.go:217: inactive Terraform gate accepted
+=== RUN   TestTerraformRequiredGatesRejectCommentsDuplicatesAndDisabledFlags/disabledHELOX_RUN_TERRAFORM_SOURCE_INTEGRATION=1_go_test_-v_-timeout=3m_./internal/verification/terraformprovider_-run_'^TestPublicTerraformProviderSourceIntegration$'
+    workflow_test.go:217: inactive Terraform gate accepted
+=== RUN   TestTerraformRequiredGatesRejectCommentsDuplicatesAndDisabledFlags/duplicateHELOX_RUN_TERRAFORM_SOURCE_INTEGRATION=1_go_test_-v_-timeout=3m_./internal/verification/terraformprovider_-run_'^TestPublicTerraformProviderSourceIntegration$'
+    workflow_test.go:217: inactive Terraform gate accepted
+=== RUN   TestTerraformRequiredGatesRejectCommentsDuplicatesAndDisabledFlags/substituted-targetHELOX_RUN_TERRAFORM_SOURCE_INTEGRATION=1_go_test_-v_-timeout=3m_./internal/verification/terraformprovider_-run_'^TestPublicTerraformProviderSourceIntegration$'
+    workflow_test.go:217: inactive Terraform gate accepted
+=== RUN   TestTerraformRequiredGatesRejectCommentsDuplicatesAndDisabledFlags/duplicateHELOX_TERRAFORM_PROVIDER_INTEGRATION=1_/usr/libexec/heliopause/helox_-test.v_-test.timeout=5m_-test.run_'^TestLinuxTerraformProvider(Probe|Security)Integration$'
+    workflow_test.go:217: inactive Terraform gate accepted
+=== RUN   TestTerraformRequiredGatesRejectCommentsDuplicatesAndDisabledFlags/substituted-targetHELOX_TERRAFORM_PROVIDER_INTEGRATION=1_/usr/libexec/heliopause/helox_-test.v_-test.timeout=5m_-test.run_'^TestLinuxTerraformProvider(Probe|Security)Integration$'
+    workflow_test.go:217: inactive Terraform gate accepted
+=== RUN   TestTerraformRequiredGatesRejectCommentsDuplicatesAndDisabledFlags/commentHELOX_TERRAFORM_PROVIDER_INTEGRATION=1_/usr/libexec/heliopause/helox_-test.v_-test.timeout=5m_-test.run_'^TestLinuxTerraformProvider(Probe|Security)Integration$'
+    workflow_test.go:217: inactive Terraform gate accepted
+=== RUN   TestTerraformRequiredGatesRejectCommentsDuplicatesAndDisabledFlags/disabledHELOX_TERRAFORM_PROVIDER_INTEGRATION=1_/usr/libexec/heliopause/helox_-test.v_-test.timeout=5m_-test.run_'^TestLinuxTerraformProvider(Probe|Security)Integration$'
+    workflow_test.go:217: inactive Terraform gate accepted
+=== RUN   TestTerraformRequiredGatesRejectCommentsDuplicatesAndDisabledFlags/commentHELOX_TERRAFORM_INIT_INTEGRATION=1_/usr/libexec/heliopause/helox_-test.v_-test.timeout=10m_-test.run_'^TestLinuxTerraformInit(Integration|NegativeIntegration)$'
+    workflow_test.go:217: inactive Terraform gate accepted
+=== RUN   TestTerraformRequiredGatesRejectCommentsDuplicatesAndDisabledFlags/disabledHELOX_TERRAFORM_INIT_INTEGRATION=1_/usr/libexec/heliopause/helox_-test.v_-test.timeout=10m_-test.run_'^TestLinuxTerraformInit(Integration|NegativeIntegration)$'
+    workflow_test.go:217: inactive Terraform gate accepted
+=== RUN   TestTerraformRequiredGatesRejectCommentsDuplicatesAndDisabledFlags/duplicateHELOX_TERRAFORM_INIT_INTEGRATION=1_/usr/libexec/heliopause/helox_-test.v_-test.timeout=10m_-test.run_'^TestLinuxTerraformInit(Integration|NegativeIntegration)$'
+    workflow_test.go:217: inactive Terraform gate accepted
+=== RUN   TestTerraformRequiredGatesRejectCommentsDuplicatesAndDisabledFlags/substituted-targetHELOX_TERRAFORM_INIT_INTEGRATION=1_/usr/libexec/heliopause/helox_-test.v_-test.timeout=10m_-test.run_'^TestLinuxTerraformInit(Integration|NegativeIntegration)$'
+    workflow_test.go:217: inactive Terraform gate accepted
+--- FAIL: TestTerraformRequiredGatesRejectCommentsDuplicatesAndDisabledFlags (0.06s)
+    --- FAIL: TestTerraformRequiredGatesRejectCommentsDuplicatesAndDisabledFlags/commentHELOX_RUN_TERRAFORM_SOURCE_INTEGRATION=1_go_test_-v_-timeout=3m_./internal/verification/terraformprovider_-run_'^TestPublicTerraformProviderSourceIntegration$' (0.01s)
+    --- FAIL: TestTerraformRequiredGatesRejectCommentsDuplicatesAndDisabledFlags/disabledHELOX_RUN_TERRAFORM_SOURCE_INTEGRATION=1_go_test_-v_-timeout=3m_./internal/verification/terraformprovider_-run_'^TestPublicTerraformProviderSourceIntegration$' (0.01s)
+    --- FAIL: TestTerraformRequiredGatesRejectCommentsDuplicatesAndDisabledFlags/duplicateHELOX_RUN_TERRAFORM_SOURCE_INTEGRATION=1_go_test_-v_-timeout=3m_./internal/verification/terraformprovider_-run_'^TestPublicTerraformProviderSourceIntegration$' (0.01s)
+    --- FAIL: TestTerraformRequiredGatesRejectCommentsDuplicatesAndDisabledFlags/substituted-targetHELOX_RUN_TERRAFORM_SOURCE_INTEGRATION=1_go_test_-v_-timeout=3m_./internal/verification/terraformprovider_-run_'^TestPublicTerraformProviderSourceIntegration$' (0.00s)
+    --- FAIL: TestTerraformRequiredGatesRejectCommentsDuplicatesAndDisabledFlags/duplicateHELOX_TERRAFORM_PROVIDER_INTEGRATION=1_/usr/libexec/heliopause/helox_-test.v_-test.timeout=5m_-test.run_'^TestLinuxTerraformProvider(Probe|Security)Integration$' (0.01s)
+    --- FAIL: TestTerraformRequiredGatesRejectCommentsDuplicatesAndDisabledFlags/substituted-targetHELOX_TERRAFORM_PROVIDER_INTEGRATION=1_/usr/libexec/heliopause/helox_-test.v_-test.timeout=5m_-test.run_'^TestLinuxTerraformProvider(Probe|Security)Integration$' (0.00s)
+    --- FAIL: TestTerraformRequiredGatesRejectCommentsDuplicatesAndDisabledFlags/commentHELOX_TERRAFORM_PROVIDER_INTEGRATION=1_/usr/libexec/heliopause/helox_-test.v_-test.timeout=5m_-test.run_'^TestLinuxTerraformProvider(Probe|Security)Integration$' (0.01s)
+    --- FAIL: TestTerraformRequiredGatesRejectCommentsDuplicatesAndDisabledFlags/disabledHELOX_TERRAFORM_PROVIDER_INTEGRATION=1_/usr/libexec/heliopause/helox_-test.v_-test.timeout=5m_-test.run_'^TestLinuxTerraformProvider(Probe|Security)Integration$' (0.00s)
+    --- FAIL: TestTerraformRequiredGatesRejectCommentsDuplicatesAndDisabledFlags/commentHELOX_TERRAFORM_INIT_INTEGRATION=1_/usr/libexec/heliopause/helox_-test.v_-test.timeout=10m_-test.run_'^TestLinuxTerraformInit(Integration|NegativeIntegration)$' (0.01s)
+    --- FAIL: TestTerraformRequiredGatesRejectCommentsDuplicatesAndDisabledFlags/disabledHELOX_TERRAFORM_INIT_INTEGRATION=1_/usr/libexec/heliopause/helox_-test.v_-test.timeout=10m_-test.run_'^TestLinuxTerraformInit(Integration|NegativeIntegration)$' (0.00s)
+    --- FAIL: TestTerraformRequiredGatesRejectCommentsDuplicatesAndDisabledFlags/duplicateHELOX_TERRAFORM_INIT_INTEGRATION=1_/usr/libexec/heliopause/helox_-test.v_-test.timeout=10m_-test.run_'^TestLinuxTerraformInit(Integration|NegativeIntegration)$' (0.01s)
+    --- FAIL: TestTerraformRequiredGatesRejectCommentsDuplicatesAndDisabledFlags/substituted-targetHELOX_TERRAFORM_INIT_INTEGRATION=1_/usr/libexec/heliopause/helox_-test.v_-test.timeout=10m_-test.run_'^TestLinuxTerraformInit(Integration|NegativeIntegration)$' (0.01s)
+FAIL
+FAIL	github.com/rahoney/heliopause/scripts/check	0.068s
+FAIL

@@ -1,0 +1,108 @@
+[
+  {
+    "path": "baseline/cargo-build-final-go-cargo-add-runtime.log",
+    "sha256": "6cd21071cfe7d2847e947ef0a9384170220754582e0a7d1f7370586cb914f32e",
+    "bytes": 11911,
+    "tests": [
+      {
+        "name": "TestLinuxCargoAddIntegration",
+        "status": "PASS",
+        "seconds": 21.87
+      },
+      {
+        "name": "TestLinuxCargoTransitiveAddIntegration",
+        "status": "PASS",
+        "seconds": 25.38
+      },
+      {
+        "name": "TestLinuxGoDependencyFreeBuildCLIIntegration",
+        "status": "PASS",
+        "seconds": 57.14
+      },
+      {
+        "name": "TestLinuxGoPublicBuildCLIIntegration",
+        "status": "PASS",
+        "seconds": 71.23
+      },
+      {
+        "name": "TestLinuxGoTransitiveBuildCLIIntegration",
+        "status": "PASS",
+        "seconds": 277.28
+      },
+      {
+        "name": "TestLinuxGoInvalidTestdataBuildCLIIntegration",
+        "status": "PASS",
+        "seconds": 15.96
+      },
+      {
+        "name": "TestLinuxGoCgoBuildCLIIntegration",
+        "status": "PASS",
+        "seconds": 43.92
+      },
+      {
+        "name": "TestLinuxGoLibraryBuildCLIIntegration",
+        "status": "PASS",
+        "seconds": 17.01
+      },
+      {
+        "name": "TestLinuxGoMixedPackagesBuildCLIIntegration",
+        "status": "PASS",
+        "seconds": 32.85
+      },
+      {
+        "name": "TestLinuxGoMixedInvalidPackageBuildCLIIntegration",
+        "status": "PASS",
+        "seconds": 30.26
+      },
+      {
+        "name": "TestLinuxGoBuildSecurityCLIIntegration",
+        "status": "PASS",
+        "seconds": 58.81
+      },
+      {
+        "name": "TestLinuxGoDependencyFreeDownloadIntegration",
+        "status": "PASS",
+        "seconds": 19.05
+      },
+      {
+        "name": "TestLinuxGoGetDownloadIntegration",
+        "status": "PASS",
+        "seconds": 29.98
+      },
+      {
+        "name": "TestLinuxGoTransitiveGetDownloadIntegration",
+        "status": "PASS",
+        "seconds": 187.28
+      }
+    ]
+  },
+  {
+    "path": "baseline/cargo-build-final-promotion-runtime.log",
+    "sha256": "709270f9e98448cb8531b18a417cb08869153b837c4971c64d88bb2f5e30905c",
+    "bytes": 1240,
+    "tests": [
+      {
+        "name": "TestLinuxPyPIPromotionIntegration",
+        "status": "PASS",
+        "seconds": 3.87
+      },
+      {
+        "name": "TestLinuxNPMPromotionIntegration",
+        "status": "PASS",
+        "seconds": 2.24
+      }
+    ]
+  },
+  {
+    "path": "baseline/cargo-ci-active-gates-final-security.log",
+    "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95",
+    "bytes": 44,
+    "tests": []
+  },
+  {
+    "path": "baseline/cargo-ci-active-gates-final-docs.log",
+    "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9",
+    "bytes": 22,
+    "tests": []
+  }
+]

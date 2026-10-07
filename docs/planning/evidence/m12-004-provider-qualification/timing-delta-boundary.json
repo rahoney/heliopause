@@ -1,0 +1,13 @@
+{
+  "source_delta": [
+    "internal/sandbox/pypi_observation_cpu.go",
+    "internal/sandbox/pypi_transaction_diagnostic_test.go"
+  ],
+  "scope": "Bounded trusted scalar timing on existing errors; no cadence/deadline/counter/authority/budget change",
+  "before_candidate": "final-executable-candidate-permissions.json",
+  "after_candidate": "final-executable-candidate-timing.json",
+  "final_actuals": "timing-final-campaign.json",
+  "all_actual_consumers_rerun": true,
+  "prior_failure_cause": "UNCONFIRMED",
+  "original003_helper": "Same exact bytes copied to private read-only555 file; original0755 remains unchanged"
+}

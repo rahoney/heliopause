@@ -1,0 +1,8 @@
+=== RUN   TestGoPublicModuleAcquisitionIntegration
+    public_integration_test.go:73: source=go-proxy version=v1.0.9 digest=5742d159f3efbff133a1cb0887e5632f5a52e5a5bb71874f70376b115a82ad0f checks=2 evidence=2 policy=ALLOW
+--- PASS: TestGoPublicModuleAcquisitionIntegration (0.28s)
+=== RUN   TestGoPublicProjectVerifiedCacheIntegration
+    public_integration_test.go:160: graph=be6ca0f1379de54c349253d3fa1682f9a3bb921fc8ef4fae10d2e8e3fda5e560 subject=5742d159f3efbff133a1cb0887e5632f5a52e5a5bb71874f70376b115a82ad0f receipt=aa371aa45a207fb02c6e4d5135f6119782f3b996a7d922d3fa065c2282ef539f entries=1 checks=2 evidence=2 policy=ALLOW
+--- PASS: TestGoPublicProjectVerifiedCacheIntegration (0.61s)
+PASS
+ok  	github.com/rahoney/heliopause/internal/inspection/gomodule	0.905s

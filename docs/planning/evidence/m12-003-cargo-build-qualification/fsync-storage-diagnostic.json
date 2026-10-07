@@ -1,0 +1,25 @@
+{
+  "time_utc": "2026-10-06T00:42:22.784674+00:00",
+  "samples": [
+    {
+      "root": "/tmp/haa-m12-native-fsync-diagnostic",
+      "records": 200,
+      "seconds": 0.5480270390035002,
+      "median_seconds": 0.0025876795007206965,
+      "max_seconds": 0.006685182997898664,
+      "p95_seconds": 0.003451589000178501,
+      "device": 2096,
+      "scope": "Post-timeout storage diagnostic only; not the original journal, no original invocation timing/qualification claim"
+    },
+    {
+      "root": "/tmp/haa-m12-qualification-disk/fsync-diagnostic",
+      "records": 200,
+      "seconds": 4.384536391000438,
+      "median_seconds": 0.022134963499411242,
+      "max_seconds": 0.5529190439992817,
+      "p95_seconds": 0.023570246994495392,
+      "device": 1792,
+      "scope": "Post-timeout storage diagnostic only; not the original journal, no original invocation timing/qualification claim"
+    }
+  ]
+}

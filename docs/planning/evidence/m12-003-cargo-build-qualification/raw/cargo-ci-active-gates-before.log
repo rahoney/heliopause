@@ -1,0 +1,12 @@
+--- FAIL: TestCargoRequiredGatesMustBeActiveInTheirLifecycleOwner (0.02s)
+    --- FAIL: TestCargoRequiredGatesMustBeActiveInTheirLifecycleOwner/docker_pull_"$rust_image" (0.00s)
+        workflow_test.go:164: commented Cargo gate satisfied Required contract
+    --- FAIL: TestCargoRequiredGatesMustBeActiveInTheirLifecycleOwner/HELOX_CARGO_RESOLVER_INTEGRATION=1_/usr/libexec/heliopause/helox_-test.v_-test.timeout=5m_-test.run_'^TestLinuxCargoSourceProjectSnapshotIntegration$' (0.00s)
+        workflow_test.go:164: commented Cargo gate satisfied Required contract
+    --- FAIL: TestCargoRequiredGatesMustBeActiveInTheirLifecycleOwner/HELOX_CARGO_RESOLVER_INTEGRATION=1_HELOX_CARGO_ADD_INTEGRATION=1_/usr/libexec/heliopause/helox_-test.v_-test.timeout=10m_-test.run_'^TestLinuxCargo(Add|TransitiveAdd)Integration$' (0.01s)
+        workflow_test.go:164: commented Cargo gate satisfied Required contract
+    --- FAIL: TestCargoRequiredGatesMustBeActiveInTheirLifecycleOwner/HELOX_CARGO_RESOLVER_INTEGRATION=1_HELOX_CARGO_BUILD_CLI_INTEGRATION=1_/usr/libexec/heliopause/helox_-test.v_-test.timeout=15m_-test.run_'^TestLinuxCargo.*Build.*CLIIntegration$|^TestLinuxCargoProcMacroSecurityCLIIntegration$' (0.00s)
+        workflow_test.go:164: commented Cargo gate satisfied Required contract
+FAIL
+FAIL	github.com/rahoney/heliopause/scripts/check	0.023s
+FAIL

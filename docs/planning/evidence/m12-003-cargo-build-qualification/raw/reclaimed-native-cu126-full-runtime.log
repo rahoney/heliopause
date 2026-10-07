@@ -1,0 +1,28 @@
+Verified fresh split-cache test binary/source708 and unchanged observer/helper; no overlay
+runtime before bytes/identity/modes verified
+runtime candidate bytes/identity/modes verified
+no existing traced runtime consumers; bounded Docker queries succeeded
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+/etc/heliopause/pod-init.json: OK
+helper launch: bash=/usr/bin/bash version=5.2.21(1)-release owner=3624
+helper ready: pid=3673 attempt=15
+=== RUN   TestLinuxPyTorchFullIntegration
+    pytorch_linux_integration_test.go:40: retained integration evidence: /tmp/haa-m12-reclaimed-native-e2e/pytorch-cu126-4133131746
+observer_attribution sequence=1 profile=pypi-wheel-pytorch-cu126 counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/PYTHON:526
+observer_attribution sequence=2 profile=pypi-wheel counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/PYTHON:15
+    pytorch_linux_integration_test.go:126: bounded command evidence retained in result/promotion: {"scope":"post-install-command-target-import","module":"triton.profiler.viewer","owner_sha256":"387dae4cb0089a7b6ba1a428ae0782b65c4c58f57d94617cb22ca8593d8ccbca","unit":"DIRECT_IMPORT:324d826a5e0796a9815573025b8e581dafea10a9a4eeebdd618902f893e531c3","disposition":"NOT_ATTESTED","functionality_attested":false,"later_execution_enforced":false}
+    pytorch_linux_integration_test.go:183: inspection input excluded from 29 promoted entries; separate supplemented evidence retained
+--- PASS: TestLinuxPyTorchFullIntegration (2070.42s)
+PASS
+helper reaped: pid=3673 wait=0
+no existing traced runtime consumers; bounded Docker queries succeeded
+runtime before bytes/identity/modes verified
+/etc/heliopause/pod-init.json: OK
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=3673

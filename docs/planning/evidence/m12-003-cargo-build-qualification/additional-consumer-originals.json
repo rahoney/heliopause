@@ -1,0 +1,45 @@
+{
+  "scope": "Exact preserved CPU result, first cu126 failure and consumer compilation receipts; legacy scalar head/count are not compiled input authority.",
+  "files": [
+    {
+      "path": "raw/cargo-build-final-cpu-full-runtime-receipt.json",
+      "sha256": "b66733959e566d5657100ded824d538fa6641168b2d58dc52b5629a589eab294",
+      "bytes": 130440
+    },
+    {
+      "path": "raw/cargo-build-final-cpu-full-runtime.log",
+      "sha256": "a37f579a8135ae1f42a72f1f2cf992adb896a8b7c6c7397a7581940a04b60843",
+      "bytes": 1441
+    },
+    {
+      "path": "raw/cargo-build-final-cu126-first-failure.json",
+      "sha256": "013a46d0fe9ff424e7f34036ff63a41ed9ff6456e3d81e636a9664afebeda329",
+      "bytes": 843
+    },
+    {
+      "path": "raw/cargo-build-final-direct-consumers-runtime-receipt.json",
+      "sha256": "53468fe07dba2a430c39414f8e1861e8c7756260c39657ed7d58f427e4f2f71b",
+      "bytes": 130345
+    },
+    {
+      "path": "raw/cargo-build-final-go-cargo-add-runtime-receipt.json",
+      "sha256": "1aa67abaf48eadccfe87002cdcdca768a929d0de626b0643d7702e8c5338c913",
+      "bytes": 130444
+    },
+    {
+      "path": "raw/cargo-build-final-ordinary-cli-runtime-receipt.json",
+      "sha256": "f823fb1dda84e9228cd883faa029cf04a4babe537b8b63c590cca139a62c702a",
+      "bytes": 130449
+    },
+    {
+      "path": "raw/cargo-build-final-promotion-runtime-receipt.json",
+      "sha256": "01afb9ac2643920420b58096afd4731d9f2049f5bb80e1c9ba3379bda6c732c1",
+      "bytes": 130441
+    },
+    {
+      "path": "raw/cargo-build-security-retained-final-runtime-receipt.json",
+      "sha256": "1ab8f3209c38920aeb9e568bdaa971074884b41a455648f8e08314b75ef592c0",
+      "bytes": 130291
+    }
+  ]
+}

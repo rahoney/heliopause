@@ -1,0 +1,148 @@
+{
+  "production_go_files": 227,
+  "test_files": 215,
+  "functions_total": 2035,
+  "largest_functions": [
+    {
+      "path": "internal/bootstrap/bootstrap.go",
+      "name": "Run",
+      "line": 35,
+      "lines": 358,
+      "branch_nodes": 92
+    },
+    {
+      "path": "internal/sandbox/pypi_trusted_transaction.go",
+      "name": "PythonDynamicBackend.executeTrustedTransaction",
+      "line": 207,
+      "lines": 261,
+      "branch_nodes": 59
+    },
+    {
+      "path": "internal/artifact/pypi/wheel.go",
+      "name": "classifyWheelSurface",
+      "line": 468,
+      "lines": 234,
+      "branch_nodes": 43
+    },
+    {
+      "path": "internal/promotion/terraform_approved_transaction.go",
+      "name": "approvedTerraformProjectGuard.Commit",
+      "line": 288,
+      "lines": 214,
+      "branch_nodes": 59
+    },
+    {
+      "path": "internal/promotion/pypi_venv_transaction.go",
+      "name": "pypiVenvTransaction.commit",
+      "line": 745,
+      "lines": 208,
+      "branch_nodes": 61
+    },
+    {
+      "path": "scripts/check/workflow_structure.go",
+      "name": "validateWorkflowStructure",
+      "line": 42,
+      "lines": 197,
+      "branch_nodes": 52
+    },
+    {
+      "path": "scripts/check/architecture.go",
+      "name": "validateCurrentImports",
+      "line": 84,
+      "lines": 192,
+      "branch_nodes": 7
+    },
+    {
+      "path": "internal/artifact/cargo/locked_metadata.go",
+      "name": "ParseLockedMetadata",
+      "line": 84,
+      "lines": 176,
+      "branch_nodes": 41
+    },
+    {
+      "path": "internal/promotion/go_build_cache.go",
+      "name": "approvedGoProjectGuard.SnapshotBuildCache",
+      "line": 27,
+      "lines": 171,
+      "branch_nodes": 37
+    },
+    {
+      "path": "internal/sandbox/pypi_resolver.go",
+      "name": "PyPIResolver.ResolveDependencies",
+      "line": 147,
+      "lines": 167,
+      "branch_nodes": 37
+    },
+    {
+      "path": "internal/sandbox/gomodule_isolated_runner.go",
+      "name": "IsolatedGoModuleRunner.RunGo",
+      "line": 78,
+      "lines": 163,
+      "branch_nodes": 35
+    },
+    {
+      "path": "internal/sandbox/cargo_isolated_runner.go",
+      "name": "IsolatedCargoRunner.RunCargo",
+      "line": 88,
+      "lines": 157,
+      "branch_nodes": 34
+    },
+    {
+      "path": "internal/artifact/terraformprovider/project_resolver.go",
+      "name": "Client.ResolveProjectDependencyUpdate",
+      "line": 16,
+      "lines": 156,
+      "branch_nodes": 39
+    },
+    {
+      "path": "internal/promotion/go_build_source.go",
+      "name": "approvedGoProjectGuard.collectBuildSource",
+      "line": 177,
+      "lines": 156,
+      "branch_nodes": 37
+    },
+    {
+      "path": "internal/sandbox/gomodule_observed_build.go",
+      "name": "ObservedGoBuilder.observe",
+      "line": 193,
+      "lines": 136,
+      "branch_nodes": 33
+    },
+    {
+      "path": "internal/application/install_inspect.go",
+      "name": "InstallInspectService.inspectGraphAware",
+      "line": 140,
+      "lines": 135,
+      "branch_nodes": 32
+    },
+    {
+      "path": "internal/promotion/cargo_approved_transaction.go",
+      "name": "approvedCargoProjectGuard.commitSelection",
+      "line": 263,
+      "lines": 135,
+      "branch_nodes": 36
+    },
+    {
+      "path": "internal/inspection/pypi/dynamic.go",
+      "name": "DynamicInspector.inspectWheelWithRunner",
+      "line": 65,
+      "lines": 134,
+      "branch_nodes": 33
+    },
+    {
+      "path": "internal/artifact/pypi/observation_plan.go",
+      "name": "BuildObservationPlan",
+      "line": 159,
+      "lines": 131,
+      "branch_nodes": 27
+    },
+    {
+      "path": "internal/promotion/npm_promotion.go",
+      "name": "NPMPromotion.Promote",
+      "line": 63,
+      "lines": 130,
+      "branch_nodes": 36
+    }
+  ],
+  "scope": "AST lengths and branch-node counts prioritize manual review, not a maintainability pass/fail threshold."
+}

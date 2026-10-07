@@ -1,0 +1,357 @@
+{
+  "work_item": "M12-003",
+  "scope": "DRAFT_NOT_ACCEPTANCE_CLOSED",
+  "remote_ci": "NOT_RUN",
+  "native_macos": "NOT_RUN",
+  "original_log_fingerprints": [
+    {
+      "path": "baseline/cargo-build-security-retained-final-runtime.log",
+      "sha256": "0519bbf874e92195e4dd0cdf26ee9c8fe2dd019b4b63997b2a51a624bb9817da",
+      "bytes": 20631,
+      "top_level_tests": [
+        {
+          "name": "TestLinuxCargoDependencyFreeBuildCLIIntegration",
+          "status": "PASS",
+          "seconds": 12.78
+        },
+        {
+          "name": "TestLinuxCargoPublicBuildCLIIntegration",
+          "status": "PASS",
+          "seconds": 36.44
+        },
+        {
+          "name": "TestLinuxCargoTransitiveBuildCLIIntegration",
+          "status": "PASS",
+          "seconds": 53.61
+        },
+        {
+          "name": "TestLinuxCargoLibraryBuildCLIIntegration",
+          "status": "PASS",
+          "seconds": 22.6
+        },
+        {
+          "name": "TestLinuxCargoWorkspaceBuildCLIIntegration",
+          "status": "PASS",
+          "seconds": 24.36
+        },
+        {
+          "name": "TestLinuxCargoBuildScriptBuildCLIIntegration",
+          "status": "PASS",
+          "seconds": 24.58
+        },
+        {
+          "name": "TestLinuxCargoProcMacroBuildCLIIntegration",
+          "status": "PASS",
+          "seconds": 25.58
+        },
+        {
+          "name": "TestLinuxCargoBuildFilesystemSecurityCLIIntegration",
+          "status": "PASS",
+          "seconds": 14.24
+        },
+        {
+          "name": "TestLinuxCargoBuildNetworkSecurityCLIIntegration",
+          "status": "PASS",
+          "seconds": 15.68
+        },
+        {
+          "name": "TestLinuxCargoBuildConfigurationSecurityCLIIntegration",
+          "status": "PASS",
+          "seconds": 25.97
+        },
+        {
+          "name": "TestLinuxCargoBuildUnexpectedChildSecurityCLIIntegration",
+          "status": "PASS",
+          "seconds": 11.54
+        },
+        {
+          "name": "TestLinuxCargoInvalidSourceBuildCLIIntegration",
+          "status": "PASS",
+          "seconds": 11.11
+        },
+        {
+          "name": "TestLinuxCargoProcMacroSecurityCLIIntegration",
+          "status": "PASS",
+          "seconds": 23.81
+        }
+      ]
+    },
+    {
+      "path": "baseline/cargo-build-final-direct-consumers-runtime.log",
+      "sha256": "0382e4616f77ad33f7b0be01029fa115b18c524e13f175926a5adf816de3feb9",
+      "bytes": 70447,
+      "top_level_tests": [
+        {
+          "name": "TestLinuxCargoSourceProjectSnapshotIntegration",
+          "status": "PASS",
+          "seconds": 2.59
+        },
+        {
+          "name": "TestLinuxGoBuildIntegration",
+          "status": "PASS",
+          "seconds": 15.63
+        },
+        {
+          "name": "TestLinuxGoIsolatedResolverIntegration",
+          "status": "PASS",
+          "seconds": 11.48
+        },
+        {
+          "name": "TestLinuxGoIsolatedProjectResolverIntegration",
+          "status": "PASS",
+          "seconds": 5.24
+        },
+        {
+          "name": "TestLinuxGoSourceProjectSnapshotIntegration",
+          "status": "PASS",
+          "seconds": 5.58
+        },
+        {
+          "name": "TestLinuxGoDependencyFreeProjectSnapshotIntegration",
+          "status": "PASS",
+          "seconds": 4.46
+        },
+        {
+          "name": "TestLinuxGVisorLifecycleIntegration",
+          "status": "PASS",
+          "seconds": 3.45
+        },
+        {
+          "name": "TestLinuxGVisorArtifactEnvironmentIsolationIntegration",
+          "status": "PASS",
+          "seconds": 3.27
+        },
+        {
+          "name": "TestLinuxGitHubReleaseELFDynamicIntegration",
+          "status": "PASS",
+          "seconds": 1.02
+        },
+        {
+          "name": "TestLinuxNPMResolverNetworkPolicyIntegration",
+          "status": "FAIL",
+          "seconds": 0.0
+        },
+        {
+          "name": "TestLinuxPyPIResolverIntegration",
+          "status": "FAIL",
+          "seconds": 0.0
+        },
+        {
+          "name": "TestLinuxPyTorchResolverIntegration",
+          "status": "PASS",
+          "seconds": 44.21
+        },
+        {
+          "name": "TestLinuxPyPISdistBuildIntegration",
+          "status": "PASS",
+          "seconds": 12.05
+        },
+        {
+          "name": "TestLinuxPyPIWheelDynamicIntegration",
+          "status": "PASS",
+          "seconds": 5.99
+        },
+        {
+          "name": "TestLinuxPythonRootPolicyTransactionSequenceIntegration",
+          "status": "PASS",
+          "seconds": 59.78
+        },
+        {
+          "name": "TestLinuxPythonProcMapsTransactionIntegration",
+          "status": "FAIL",
+          "seconds": 0.01
+        },
+        {
+          "name": "TestLinuxPythonLibraryDiscoveryBoundaryIntegration",
+          "status": "PASS",
+          "seconds": 26.39
+        },
+        {
+          "name": "TestLinuxPythonLibraryQuerySequenceIntegration",
+          "status": "PASS",
+          "seconds": 60.95
+        },
+        {
+          "name": "TestLinuxPythonCommandSequenceIntegration",
+          "status": "PASS",
+          "seconds": 71.92
+        },
+        {
+          "name": "TestLinuxPythonNamespaceSequenceIntegration",
+          "status": "PASS",
+          "seconds": 71.17
+        },
+        {
+          "name": "TestLinuxInspectionPrerequisiteSequenceIntegration",
+          "status": "PASS",
+          "seconds": 98.36
+        },
+        {
+          "name": "TestLinuxPythonRejectedLibraryQueryIntegration",
+          "status": "PASS",
+          "seconds": 72.29
+        }
+      ]
+    },
+    {
+      "path": "baseline/cargo-build-final-proc-maps-corrected-runtime.log",
+      "sha256": "c5b1f07969c44af8e58cb5be3b3711d551cc3956a52c3f1ffeba66cd18d2eb37",
+      "bytes": 1533,
+      "top_level_tests": [
+        {
+          "name": "TestLinuxPythonProcMapsTransactionIntegration",
+          "status": "PASS",
+          "seconds": 6.7
+        }
+      ]
+    },
+    {
+      "path": "baseline/cargo-build-final-ordinary-cli-runtime.log",
+      "sha256": "fa30cab68698da79e4bb4bbc24461820bbc1cc024a8d2d02a5d5396d825156b1",
+      "bytes": 4888,
+      "top_level_tests": []
+    },
+    {
+      "path": "baseline/cargo-build-final-hosttool.log",
+      "sha256": "f4d76a7267fa7e18f38800b717f3b7e5ca6a3bad18abfeebdfa9314a15a09161",
+      "bytes": 173,
+      "top_level_tests": [
+        {
+          "name": "TestLinuxTrustedHostExecutorIntegration",
+          "status": "PASS",
+          "seconds": 3.66
+        }
+      ]
+    },
+    {
+      "path": "baseline/cargo-build-final-helper-fuzz.log",
+      "sha256": "5d3b4437d208be5fe1ea4bdb8c1090a4951c31b8fe40153a5bcf967038a4409c",
+      "bytes": 301,
+      "top_level_tests": []
+    },
+    {
+      "path": "baseline/cargo-ci-active-gates-before.log",
+      "sha256": "566e347dbd315e5422ccbc595f0e6a5e61b627afdaf9196e0d7793f13a0b13de",
+      "bytes": 1352,
+      "top_level_tests": [
+        {
+          "name": "TestCargoRequiredGatesMustBeActiveInTheirLifecycleOwner",
+          "status": "FAIL",
+          "seconds": 0.02
+        }
+      ]
+    },
+    {
+      "path": "baseline/cargo-ci-active-gates-after.log",
+      "sha256": "a766548074f3af30f822d0bcfe695efe1b9ee355c048d71838238c5b96ad2c3f",
+      "bytes": 56,
+      "top_level_tests": []
+    },
+    {
+      "path": "baseline/cargo-ci-active-gates-final-quick.log",
+      "sha256": "9fdbc6a83a7fa60a42671011d4db0da5d750244c9bf548731ac3beeee306aa8c",
+      "bytes": 1354,
+      "top_level_tests": [
+        {
+          "name": "TestActionlintContextAvailability",
+          "status": "PASS",
+          "seconds": 0.16
+        }
+      ]
+    },
+    {
+      "path": "baseline/cargo-build-final-quick.log",
+      "sha256": "616f308ab89dfae44da9ad2f6cb23a21619a30f7c06d67784877919a37fa8f8b",
+      "bytes": 1354,
+      "top_level_tests": [
+        {
+          "name": "TestActionlintContextAvailability",
+          "status": "PASS",
+          "seconds": 0.17
+        }
+      ]
+    },
+    {
+      "path": "baseline/cargo-build-final-security.log",
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95",
+      "bytes": 44,
+      "top_level_tests": []
+    },
+    {
+      "path": "baseline/cargo-build-final-docs.log",
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9",
+      "bytes": 22,
+      "top_level_tests": []
+    },
+    {
+      "path": "baseline/cargo-build-final-corpus.log",
+      "sha256": "3f217682c52a48b814834d83474a8d6e117ac0b068f3a6a601427020d12482d7",
+      "bytes": 6552,
+      "top_level_tests": [
+        {
+          "name": "TestModelC_MissingCorpusDirectoryFails",
+          "status": "PASS",
+          "seconds": 0.0
+        },
+        {
+          "name": "TestModelC_CorpusHashMismatchFails",
+          "status": "PASS",
+          "seconds": 0.0
+        },
+        {
+          "name": "TestModelC_RealCorpusQualification",
+          "status": "PASS",
+          "seconds": 9.4
+        }
+      ]
+    },
+    {
+      "path": "baseline/cargo-build-final-platform.log",
+      "sha256": "fb49a92d2cfca9e6f197611a2e0567108e2eb01175e865442baea47d308e8ef7",
+      "bytes": 46,
+      "top_level_tests": []
+    },
+    {
+      "path": "baseline/cargo-build-final-darwin-test-compile.log",
+      "sha256": "b6bced612ac7c1303163984e21aff9cef41ced96d3df133f911295dd6ee90402",
+      "bytes": 2638,
+      "top_level_tests": []
+    },
+    {
+      "path": "baseline/cargo-build-final-vulnerability.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "top_level_tests": []
+    },
+    {
+      "path": "baseline/cargo-build-output-root-final-before.log",
+      "sha256": "0c414bdb094d6e720266d85274120d2431dcea121cde6e19413f5e0cfa447508",
+      "bytes": 610,
+      "top_level_tests": [
+        {
+          "name": "TestCargoBuildOutputRootHeaderIsDataOnly",
+          "status": "FAIL",
+          "seconds": 0.0
+        }
+      ]
+    },
+    {
+      "path": "baseline/cargo-build-output-alias-final-before.log",
+      "sha256": "8b87a4be0c1f1bf80594a79b68e8864ee138e505345e0876fd9d3b5effec8f13",
+      "bytes": 615,
+      "top_level_tests": [
+        {
+          "name": "TestCargoBuildOutputArchiveAliasesAreReconstructedAsRegularData",
+          "status": "FAIL",
+          "seconds": 0.0
+        }
+      ]
+    },
+    {
+      "path": "baseline/cargo-build-output-final-after.log",
+      "sha256": "fa24b8e3abb9243efee303c15729c856be8f0d5493e6d1f2ada47f5ccd765b6c",
+      "bytes": 59,
+      "top_level_tests": []
+    }
+  ]
+}

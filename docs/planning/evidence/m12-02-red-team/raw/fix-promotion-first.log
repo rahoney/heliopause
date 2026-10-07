@@ -1,0 +1,12 @@
+--- FAIL: TestCargoApprovedTransactionRefusesPublicationRace (0.29s)
+    --- FAIL: TestCargoApprovedTransactionRefusesPublicationRace/selected-content (0.09s)
+        cargo_approved_transaction_test.go:389: rejected race lost original controls: cargo selected control changed before publication
+            control transaction backup member changed
+            cargo transaction rollback backup is uncertain; project is fail-closed
+    --- FAIL: TestCargoApprovedTransactionRefusesPublicationRace/selected-inode (0.10s)
+        cargo_approved_transaction_test.go:389: rejected race lost original controls: selected Cargo transaction member identity changed
+            control transaction backup member changed
+            cargo transaction rollback backup is uncertain; project is fail-closed
+FAIL
+FAIL	github.com/rahoney/heliopause/internal/promotion	56.714s
+FAIL

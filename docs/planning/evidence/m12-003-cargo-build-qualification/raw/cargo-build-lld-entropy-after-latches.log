@@ -1,0 +1,132 @@
+STARTING record_boundaries
+profile=go-module-resolver bounded terminal={"container_id":"0202020202020202","kind":"stream-fault","reason":"EVENT_LIMIT","fault_site":"EVENT_LIMIT","fault_budget":{"charged":200000,"limit":200000,"close":199998,"fcntl":0,"raw":0,"other":2,"workspace":0}}
+profile=go-module-build bounded terminal={"container_id":"0606060606060606","kind":"stream-fault","reason":"EVENT_LIMIT","fault_site":"EVENT_LIMIT","fault_budget":{"charged":250000,"limit":250000,"close":249998,"fcntl":0,"raw":0,"other":2,"workspace":0}}
+profile=cargo-resolver bounded terminal={"container_id":"0808080808080808","kind":"stream-fault","reason":"EVENT_LIMIT","fault_site":"EVENT_LIMIT","fault_budget":{"charged":10000,"limit":10000,"close":9998,"fcntl":0,"raw":0,"other":2,"workspace":0}}
+profile=npm-lifecycle bounded terminal={"container_id":"0404040404040404","kind":"stream-fault","reason":"EVENT_LIMIT","fault_site":"EVENT_LIMIT","fault_budget":{"charged":10000,"limit":10000,"close":9998,"fcntl":0,"raw":0,"other":2,"workspace":0}}
+STARTING accessors
+STARTING network
+STARTING malformed_socket
+STARTING malformed_connect
+STARTING unknown_fd
+STARTING process
+STARTING correlation
+STARTING cloexec
+STARTING delayed
+STARTING concurrent_python_streams
+STARTING roles
+STARTING oci_bootstrap
+STARTING demotion
+STARTING mismatch
+STARTING dropped
+STARTING topology_fail_closed
+STARTING filesystem
+STARTING npm_node
+STARTING open_result_negative
+STARTING open_result_positive
+STARTING no_basename_trust
+STARTING unexpected_exec_diagnostic
+STARTING resolver_npm_version_node
+STARTING resolver_npm_version_production_path
+STARTING resolver_lock_generation_production_path
+STARTING process_group_lifecycle
+STARTING direct_exec_admission
+STARTING direct_exec_admission_bound
+STARTING session_aware_control
+STARTING control_peer_hup_live_admission
+STARTING pre_attribution_disconnect
+haa_gvisor_observer_latch_test: accepted remote stream ended before attribution
+observer latch PASS: readiness
+observer latch PASS: pod-init profile
+observer latch PASS: profile record limits
+observer latch PASS: finite profile record boundary
+observer latch PASS: normalized accessors
+observer latch PASS: socket family classification
+observer latch PASS: unknown socket family
+observer latch PASS: malformed socket address
+observer latch PASS: unknown FD state
+observer latch PASS: process trust boundary
+observer latch PASS: exec correlation boundary
+observer latch PASS: CLOEXEC/re-exec boundary
+observer latch PASS: delayed profile registration
+observer latch PASS: concurrent Python streams
+observer latch PASS: role handoff/provenance
+observer latch PASS: OCI bootstrap demotion
+observer latch PASS: setpriv demotion boundary
+observer latch PASS: container mismatch
+observer latch PASS: dropped events
+observer latch PASS: topology fail-closed
+observer latch PASS: registered nested mount boundary
+observer latch PASS: filesystem normalization
+observer latch PASS: Cargo resolver runtime read boundary
+observer latch PASS: Cargo resolver self maps boundary
+observer latch PASS: Cargo configuration read boundary
+observer latch PASS: Cargo TAR configuration read boundary
+observer latch PASS: Cargo entropy read boundary
+observer latch PASS: Cargo certificate bundle read boundary
+observer latch PASS: Cargo null input read boundary
+observer latch PASS: Cargo Rustc query boundary
+observer latch PASS: Cargo Rustc metadata query boundary
+observer latch PASS: Cargo Rustc VM metadata boundary
+observer latch PASS: Cargo Rustc self maps boundary
+observer latch PASS: Cargo Rustc self memory stats boundary
+observer latch PASS: Cargo Rustc self cgroup boundary
+observer latch PASS: Cargo Rustc self mountinfo boundary
+observer latch PASS: Cargo Rustc CPU quota boundary
+observer latch PASS: Cargo Rustc fixed sysroot directory boundary
+observer latch PASS: Cargo DNS configuration boundary
+observer latch PASS: Cargo resolver configuration file boundary
+observer latch PASS: Cargo fixed UTC boundary
+observer latch PASS: Cargo close-on-exec entropy boundary
+observer latch PASS: SocketPair diagnostic preserves FD authority
+observer latch PASS: Kernel SocketPair descriptor authority
+observer latch PASS: Cargo Rustc Zlib ABI boundary
+observer latch PASS: Cargo Rustc ABI boundary
+observer latch PASS: Go resolver runtime read boundary
+observer latch PASS: Go build configuration read boundary
+observer latch PASS: Go build handoff read boundary
+observer latch PASS: Cargo build handoff read boundary
+observer latch PASS: Cargo build pinned target
+observer latch PASS: Cargo build driver read
+observer latch PASS: Cargo build rustc child
+observer latch PASS: Cargo build native cc child
+observer latch PASS: Cargo build collect2 child
+observer latch PASS: Cargo build lld launcher
+observer latch PASS: Cargo build rust lld
+observer latch PASS: Cargo build link inputs
+observer latch PASS: Cargo build link sdk
+observer latch PASS: Cargo build Rust C ABI
+observer latch PASS: Cargo build lld entropy
+observer latch PASS: Go build runtime metadata boundary
+observer latch PASS: Go build exact creator diagnostic boundary
+observer latch PASS: Go build SDK tool child boundary
+observer latch PASS: Go build cgo GCC creator boundary
+observer latch PASS: Go build SDK linker GCC creator boundary
+observer latch PASS: Go build SDK linker native ancestry boundary
+observer latch PASS: Go build native linker resolver ABI boundary
+observer latch PASS: Go build CC1 creator and loader boundary
+observer latch PASS: Go build CC1 readonly header boundary
+observer latch PASS: Go build assembler creator and loader boundary
+observer latch PASS: Go build collect2 creator and loader boundary
+observer latch PASS: Go build native linker creator and loader boundary
+observer latch PASS: Go build native linker fixed plugin boundary
+observer latch PASS: Go build native linker null device boundary
+observer latch PASS: Go build native linker C runtime input boundary
+observer latch PASS: Go build assembler null device boundary
+observer latch PASS: Go build CC1 readonly SDK Cgo input boundary
+observer latch PASS: exact npm CLI-to-Node
+observer latch PASS: OPEN_RESULT negative matrix
+observer latch PASS: OPEN_RESULT positive matrix
+observer latch PASS: no-basename-trust
+observer latch PASS: unexpected exec diagnostic retention
+observer latch PASS: exact resolver npm-version-to-Node
+observer latch PASS: resolver npm-version production path
+observer latch PASS: resolver lock-generation production path
+observer latch PASS: authoritative process-group lifecycle
+observer latch PASS: direct-exec one-shot admission
+observer latch PASS: direct-exec terminal admission protocol
+observer latch PASS: direct-exec admission bound
+observer latch PASS: session-aware control
+observer latch PASS: exact control peer binding
+observer latch PASS: control peer HUP clears live admission
+observer latch PASS: unaccepted remote disconnect
+observer latch PASS: accepted pre-attribution disconnect fail-stop

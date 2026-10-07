@@ -1,0 +1,27 @@
+{
+  "qualified_source_commit": "d328756f0087624093808215d1fbedd47767ef58",
+  "checks": [
+    {
+      "profile": "docs",
+      "actual_exit": 0,
+      "raw_role": "closure-docs.log",
+      "bytes": 22,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "profile": "security",
+      "actual_exit": 0,
+      "raw_role": "closure-security.log",
+      "bytes": 44,
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95"
+    }
+  ],
+  "strict_freshness": "qualification-freshness-final-source.json",
+  "whole_staged_check_after_raw_policy_amendment": {
+    "actual_exit": 0,
+    "raw_role": "closure-cached-check-after.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "scope": "Whole explicit source/document/evidence candidate before this receipt metadata addition; final complete candidate docs/security/cached verification is additionally retained outside Git before commit. Postcommit HEAD CI is separate."
+}

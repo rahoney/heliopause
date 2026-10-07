@@ -1,0 +1,36 @@
+{
+  "scope": "single authenticated cublas native load timing diagnostic; not whole cu126 qualification",
+  "base_candidate_sha256": "2ba01fbc2a2ed71dd04c5dde6f0eea89f3160bf2cfe381cef3b49bde1eca9f44",
+  "records": [
+    {
+      "role": "sandbox-diagnostic",
+      "sha256": "19cc8b1b1ff9a4a7cea12ddf4bfd139c2716cbb873977a1a679f4dc359e84245",
+      "mode": 365
+    },
+    {
+      "role": "source-overlay",
+      "sha256": "be996a9a33ed0a1e4f9a43865c453144ce5751f5c94340a9eaef84217f8833fc",
+      "mode": 420
+    },
+    {
+      "role": "overlay-map",
+      "sha256": "65f3c49c31e344a360c32b51e9fa17658dafef1305198e800674036e0b7e666c",
+      "mode": 420
+    },
+    {
+      "role": "input-manifest",
+      "sha256": "ce3f595f443cf3ff57c62ed0246bed87e783cca2826c0e036d5df8dbc9666fc9",
+      "mode": 420
+    },
+    {
+      "role": "independent-source",
+      "sha256": "8f8e7492e29b42acbaeda82e8a78f12514b272a53d2e7270baeb719972057255",
+      "mode": 420
+    }
+  ],
+  "authority_changes": false,
+  "local_receipt": {
+    "name": "cpu-read-diagnostic-candidate.json",
+    "sha256": "ff50fbc6de9afb81d3e333f51b118608d79827694d50efd7594232de60af7600"
+  }
+}

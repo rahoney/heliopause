@@ -1,0 +1,188 @@
+=== RUN   TestCargoPublicAcquisitionFrozenSubjectAndIntake
+--- PASS: TestCargoPublicAcquisitionFrozenSubjectAndIntake (0.02s)
+=== RUN   TestCargoPublicAcquisitionRejectsSubstitutionRedirectAndIncomplete
+=== RUN   TestCargoPublicAcquisitionRejectsSubstitutionRedirectAndIncomplete/redirect
+=== RUN   TestCargoPublicAcquisitionRejectsSubstitutionRedirectAndIncomplete/length_cap
+=== RUN   TestCargoPublicAcquisitionRejectsSubstitutionRedirectAndIncomplete/truncated
+=== RUN   TestCargoPublicAcquisitionRejectsSubstitutionRedirectAndIncomplete/empty
+--- PASS: TestCargoPublicAcquisitionRejectsSubstitutionRedirectAndIncomplete (0.00s)
+    --- PASS: TestCargoPublicAcquisitionRejectsSubstitutionRedirectAndIncomplete/redirect (0.00s)
+    --- PASS: TestCargoPublicAcquisitionRejectsSubstitutionRedirectAndIncomplete/length_cap (0.00s)
+    --- PASS: TestCargoPublicAcquisitionRejectsSubstitutionRedirectAndIncomplete/truncated (0.00s)
+    --- PASS: TestCargoPublicAcquisitionRejectsSubstitutionRedirectAndIncomplete/empty (0.00s)
+=== RUN   TestCargoIndexExactIdentityAndSource
+--- PASS: TestCargoIndexExactIdentityAndSource (0.00s)
+=== RUN   TestCargoIndexRejectsAmbiguousOrExcessiveDeclarations
+=== RUN   TestCargoIndexRejectsAmbiguousOrExcessiveDeclarations/build_alias
+=== RUN   TestCargoIndexRejectsAmbiguousOrExcessiveDeclarations/unknown_schema
+=== RUN   TestCargoIndexRejectsAmbiguousOrExcessiveDeclarations/uppercase_digest
+=== RUN   TestCargoIndexRejectsAmbiguousOrExcessiveDeclarations/empty_internal_line
+=== RUN   TestCargoIndexRejectsAmbiguousOrExcessiveDeclarations/line_cap
+=== RUN   TestCargoIndexRejectsAmbiguousOrExcessiveDeclarations/record_cap
+=== RUN   TestCargoIndexRejectsAmbiguousOrExcessiveDeclarations/duplicate_version
+=== RUN   TestCargoIndexRejectsAmbiguousOrExcessiveDeclarations/duplicate_field
+=== RUN   TestCargoIndexRejectsAmbiguousOrExcessiveDeclarations/malformed_digest
+=== RUN   TestCargoIndexRejectsAmbiguousOrExcessiveDeclarations/trailing_JSON
+=== RUN   TestCargoIndexRejectsAmbiguousOrExcessiveDeclarations/byte_cap
+--- PASS: TestCargoIndexRejectsAmbiguousOrExcessiveDeclarations (0.01s)
+    --- PASS: TestCargoIndexRejectsAmbiguousOrExcessiveDeclarations/build_alias (0.00s)
+    --- PASS: TestCargoIndexRejectsAmbiguousOrExcessiveDeclarations/unknown_schema (0.00s)
+    --- PASS: TestCargoIndexRejectsAmbiguousOrExcessiveDeclarations/uppercase_digest (0.00s)
+    --- PASS: TestCargoIndexRejectsAmbiguousOrExcessiveDeclarations/empty_internal_line (0.00s)
+    --- PASS: TestCargoIndexRejectsAmbiguousOrExcessiveDeclarations/line_cap (0.00s)
+    --- PASS: TestCargoIndexRejectsAmbiguousOrExcessiveDeclarations/record_cap (0.00s)
+    --- PASS: TestCargoIndexRejectsAmbiguousOrExcessiveDeclarations/duplicate_version (0.00s)
+    --- PASS: TestCargoIndexRejectsAmbiguousOrExcessiveDeclarations/duplicate_field (0.00s)
+    --- PASS: TestCargoIndexRejectsAmbiguousOrExcessiveDeclarations/malformed_digest (0.00s)
+    --- PASS: TestCargoIndexRejectsAmbiguousOrExcessiveDeclarations/trailing_JSON (0.00s)
+    --- PASS: TestCargoIndexRejectsAmbiguousOrExcessiveDeclarations/byte_cap (0.00s)
+=== RUN   TestCargoArchiveActualPublicCrate
+=== RUN   TestCargoArchiveActualPublicCrate/crc
+=== RUN   TestCargoArchiveActualPublicCrate/second_gzip_member
+=== RUN   TestCargoArchiveActualPublicCrate/truncated
+=== RUN   TestCargoArchiveActualPublicCrate/identity
+--- PASS: TestCargoArchiveActualPublicCrate (0.00s)
+    --- PASS: TestCargoArchiveActualPublicCrate/crc (0.00s)
+    --- PASS: TestCargoArchiveActualPublicCrate/second_gzip_member (0.00s)
+    --- PASS: TestCargoArchiveActualPublicCrate/truncated (0.00s)
+    --- PASS: TestCargoArchiveActualPublicCrate/identity (0.00s)
+=== RUN   TestCargoArchiveRejectsDangerousPathsTypesAndBounds
+=== RUN   TestCargoArchiveRejectsDangerousPathsTypesAndBounds/escape
+=== RUN   TestCargoArchiveRejectsDangerousPathsTypesAndBounds/absolute
+=== RUN   TestCargoArchiveRejectsDangerousPathsTypesAndBounds/dot
+=== RUN   TestCargoArchiveRejectsDangerousPathsTypesAndBounds/backslash
+=== RUN   TestCargoArchiveRejectsDangerousPathsTypesAndBounds/symlink
+=== RUN   TestCargoArchiveRejectsDangerousPathsTypesAndBounds/hardlink
+=== RUN   TestCargoArchiveRejectsDangerousPathsTypesAndBounds/fifo
+=== RUN   TestCargoArchiveRejectsDangerousPathsTypesAndBounds/setid
+=== RUN   TestCargoArchiveRejectsDangerousPathsTypesAndBounds/duplicate
+=== RUN   TestCargoArchiveRejectsDangerousPathsTypesAndBounds/case_collision
+=== RUN   TestCargoArchiveRejectsDangerousPathsTypesAndBounds/ancestor_collision
+=== RUN   TestCargoArchiveRejectsDangerousPathsTypesAndBounds/ancestor_case_collision
+=== RUN   TestCargoArchiveRejectsDangerousPathsTypesAndBounds/wrong_manifest
+=== RUN   TestCargoArchiveRejectsDangerousPathsTypesAndBounds/file_cap
+=== RUN   TestCargoArchiveRejectsDangerousPathsTypesAndBounds/count_cap
+--- PASS: TestCargoArchiveRejectsDangerousPathsTypesAndBounds (0.10s)
+    --- PASS: TestCargoArchiveRejectsDangerousPathsTypesAndBounds/escape (0.00s)
+    --- PASS: TestCargoArchiveRejectsDangerousPathsTypesAndBounds/absolute (0.00s)
+    --- PASS: TestCargoArchiveRejectsDangerousPathsTypesAndBounds/dot (0.00s)
+    --- PASS: TestCargoArchiveRejectsDangerousPathsTypesAndBounds/backslash (0.00s)
+    --- PASS: TestCargoArchiveRejectsDangerousPathsTypesAndBounds/symlink (0.00s)
+    --- PASS: TestCargoArchiveRejectsDangerousPathsTypesAndBounds/hardlink (0.00s)
+    --- PASS: TestCargoArchiveRejectsDangerousPathsTypesAndBounds/fifo (0.00s)
+    --- PASS: TestCargoArchiveRejectsDangerousPathsTypesAndBounds/setid (0.00s)
+    --- PASS: TestCargoArchiveRejectsDangerousPathsTypesAndBounds/duplicate (0.00s)
+    --- PASS: TestCargoArchiveRejectsDangerousPathsTypesAndBounds/case_collision (0.00s)
+    --- PASS: TestCargoArchiveRejectsDangerousPathsTypesAndBounds/ancestor_collision (0.00s)
+    --- PASS: TestCargoArchiveRejectsDangerousPathsTypesAndBounds/ancestor_case_collision (0.00s)
+    --- PASS: TestCargoArchiveRejectsDangerousPathsTypesAndBounds/wrong_manifest (0.00s)
+    --- PASS: TestCargoArchiveRejectsDangerousPathsTypesAndBounds/file_cap (0.00s)
+    --- PASS: TestCargoArchiveRejectsDangerousPathsTypesAndBounds/count_cap (0.08s)
+=== RUN   TestLockedMetadataActualOutputAndStableGraph
+--- PASS: TestLockedMetadataActualOutputAndStableGraph (0.00s)
+=== RUN   TestLockedMetadataRejectsUncertainGraphAndLock
+=== RUN   TestLockedMetadataRejectsUncertainGraphAndLock/unknown_schema
+=== RUN   TestLockedMetadataRejectsUncertainGraphAndLock/wrong_workspace
+=== RUN   TestLockedMetadataRejectsUncertainGraphAndLock/missing_graph
+=== RUN   TestLockedMetadataRejectsUncertainGraphAndLock/duplicate_package
+=== RUN   TestLockedMetadataRejectsUncertainGraphAndLock/duplicate_node
+=== RUN   TestLockedMetadataRejectsUncertainGraphAndLock/unknown_dependency
+=== RUN   TestLockedMetadataRejectsUncertainGraphAndLock/local_escape
+=== RUN   TestLockedMetadataRejectsUncertainGraphAndLock/invalid_member
+=== RUN   TestLockedMetadataRejectsUncertainGraphAndLock/registry_swap
+=== RUN   TestLockedMetadataRejectsUncertainGraphAndLock/git_source
+=== RUN   TestLockedMetadataRejectsUncertainGraphAndLock/checksum_disagreement
+=== RUN   TestLockedMetadataRejectsUncertainGraphAndLock/duplicate_feature
+=== RUN   TestLockedMetadataRejectsUncertainGraphAndLock/unknown_dependency_kind
+=== RUN   TestLockedMetadataRejectsUncertainGraphAndLock/duplicate_edge
+=== RUN   TestLockedMetadataRejectsUncertainGraphAndLock/duplicate_key
+=== RUN   TestLockedMetadataRejectsUncertainGraphAndLock/duplicate_package#01
+=== RUN   TestLockedMetadataRejectsUncertainGraphAndLock/unknown_lock_edge
+=== RUN   TestLockedMetadataRejectsUncertainGraphAndLock/missing_selected_lock_edge
+=== RUN   TestLockedMetadataRejectsUncertainGraphAndLock/lock_registry_substitution
+=== RUN   TestLockedMetadataRejectsUncertainGraphAndLock/control_bound
+=== RUN   TestLockedMetadataRejectsUncertainGraphAndLock/unknown_lock_version
+=== RUN   TestLockedMetadataRejectsUncertainGraphAndLock/missing_checksum
+=== RUN   TestLockedMetadataRejectsUncertainGraphAndLock/trailing_object
+=== RUN   TestLockedMetadataRejectsUncertainGraphAndLock/duplicate_JSON_key
+=== RUN   TestLockedMetadataRejectsUncertainGraphAndLock/deep_ignored_metadata
+=== RUN   TestLockedMetadataRejectsUncertainGraphAndLock/JSON_byte_bound
+--- PASS: TestLockedMetadataRejectsUncertainGraphAndLock (0.01s)
+    --- PASS: TestLockedMetadataRejectsUncertainGraphAndLock/unknown_schema (0.00s)
+    --- PASS: TestLockedMetadataRejectsUncertainGraphAndLock/wrong_workspace (0.00s)
+    --- PASS: TestLockedMetadataRejectsUncertainGraphAndLock/missing_graph (0.00s)
+    --- PASS: TestLockedMetadataRejectsUncertainGraphAndLock/duplicate_package (0.00s)
+    --- PASS: TestLockedMetadataRejectsUncertainGraphAndLock/duplicate_node (0.00s)
+    --- PASS: TestLockedMetadataRejectsUncertainGraphAndLock/unknown_dependency (0.00s)
+    --- PASS: TestLockedMetadataRejectsUncertainGraphAndLock/local_escape (0.00s)
+    --- PASS: TestLockedMetadataRejectsUncertainGraphAndLock/invalid_member (0.00s)
+    --- PASS: TestLockedMetadataRejectsUncertainGraphAndLock/registry_swap (0.00s)
+    --- PASS: TestLockedMetadataRejectsUncertainGraphAndLock/git_source (0.00s)
+    --- PASS: TestLockedMetadataRejectsUncertainGraphAndLock/checksum_disagreement (0.00s)
+    --- PASS: TestLockedMetadataRejectsUncertainGraphAndLock/duplicate_feature (0.00s)
+    --- PASS: TestLockedMetadataRejectsUncertainGraphAndLock/unknown_dependency_kind (0.00s)
+    --- PASS: TestLockedMetadataRejectsUncertainGraphAndLock/duplicate_edge (0.00s)
+    --- PASS: TestLockedMetadataRejectsUncertainGraphAndLock/duplicate_key (0.00s)
+    --- PASS: TestLockedMetadataRejectsUncertainGraphAndLock/duplicate_package#01 (0.00s)
+    --- PASS: TestLockedMetadataRejectsUncertainGraphAndLock/unknown_lock_edge (0.00s)
+    --- PASS: TestLockedMetadataRejectsUncertainGraphAndLock/missing_selected_lock_edge (0.00s)
+    --- PASS: TestLockedMetadataRejectsUncertainGraphAndLock/lock_registry_substitution (0.00s)
+    --- PASS: TestLockedMetadataRejectsUncertainGraphAndLock/control_bound (0.00s)
+    --- PASS: TestLockedMetadataRejectsUncertainGraphAndLock/unknown_lock_version (0.00s)
+    --- PASS: TestLockedMetadataRejectsUncertainGraphAndLock/missing_checksum (0.00s)
+    --- PASS: TestLockedMetadataRejectsUncertainGraphAndLock/trailing_object (0.00s)
+    --- PASS: TestLockedMetadataRejectsUncertainGraphAndLock/duplicate_JSON_key (0.00s)
+    --- PASS: TestLockedMetadataRejectsUncertainGraphAndLock/deep_ignored_metadata (0.00s)
+    --- PASS: TestLockedMetadataRejectsUncertainGraphAndLock/JSON_byte_bound (0.00s)
+=== RUN   TestCargoMetadataRejectsGitAndPreservesChecksumGraph
+--- PASS: TestCargoMetadataRejectsGitAndPreservesChecksumGraph (0.00s)
+PASS
+ok  	github.com/rahoney/heliopause/internal/artifact/cargo	0.155s
+=== RUN   TestCargoIntegrityRequiresThreeMatchingIdentities
+=== RUN   TestCargoIntegrityRequiresThreeMatchingIdentities/normal
+=== RUN   TestCargoIntegrityRequiresThreeMatchingIdentities/lock_mismatch
+=== RUN   TestCargoIntegrityRequiresThreeMatchingIdentities/index_mismatch
+=== RUN   TestCargoIntegrityRequiresThreeMatchingIdentities/missing_declaration
+=== RUN   TestCargoIntegrityRequiresThreeMatchingIdentities/lookup_failure
+=== RUN   TestCargoIntegrityRequiresThreeMatchingIdentities/intake_tamper
+=== RUN   TestCargoIntegrityRequiresThreeMatchingIdentities/cancelled
+--- PASS: TestCargoIntegrityRequiresThreeMatchingIdentities (0.02s)
+    --- PASS: TestCargoIntegrityRequiresThreeMatchingIdentities/normal (0.00s)
+    --- PASS: TestCargoIntegrityRequiresThreeMatchingIdentities/lock_mismatch (0.00s)
+    --- PASS: TestCargoIntegrityRequiresThreeMatchingIdentities/index_mismatch (0.00s)
+    --- PASS: TestCargoIntegrityRequiresThreeMatchingIdentities/missing_declaration (0.00s)
+    --- PASS: TestCargoIntegrityRequiresThreeMatchingIdentities/lookup_failure (0.00s)
+    --- PASS: TestCargoIntegrityRequiresThreeMatchingIdentities/intake_tamper (0.00s)
+    --- PASS: TestCargoIntegrityRequiresThreeMatchingIdentities/cancelled (0.00s)
+PASS
+ok  	github.com/rahoney/heliopause/internal/verification/cargo	0.029s
+=== RUN   TestCargoResolverActualMetadataAndLock
+--- PASS: TestCargoResolverActualMetadataAndLock (0.00s)
+=== RUN   TestCargoResolverEnvironmentRejectsRegistrySubstitution
+--- PASS: TestCargoResolverEnvironmentRejectsRegistrySubstitution (0.00s)
+=== RUN   TestCargoResolverPinsCanonicalSparseRegistry
+--- PASS: TestCargoResolverPinsCanonicalSparseRegistry (0.00s)
+=== RUN   TestCargoResolverRejectsNonCargoSource
+--- PASS: TestCargoResolverRejectsNonCargoSource (0.00s)
+=== RUN   TestCargoResolverRejectsControlFileDrift
+--- PASS: TestCargoResolverRejectsControlFileDrift (0.00s)
+=== RUN   TestCargoRuntimeLockMatchesPinnedIdentity
+--- PASS: TestCargoRuntimeLockMatchesPinnedIdentity (0.00s)
+=== RUN   TestProbeCargoRejectsUnverifiedRuntimeOrImage
+=== RUN   TestProbeCargoRejectsUnverifiedRuntimeOrImage/native_unsupported
+=== RUN   TestProbeCargoRejectsUnverifiedRuntimeOrImage/architecture_unsupported
+=== RUN   TestProbeCargoRejectsUnverifiedRuntimeOrImage/missing_image
+=== RUN   TestProbeCargoRejectsUnverifiedRuntimeOrImage/wrong_image_architecture
+=== RUN   TestProbeCargoRejectsUnverifiedRuntimeOrImage/non_digest_identity
+=== RUN   TestProbeCargoRejectsUnverifiedRuntimeOrImage/extra_image_fields
+=== RUN   TestProbeCargoRejectsUnverifiedRuntimeOrImage/pinned_image
+--- PASS: TestProbeCargoRejectsUnverifiedRuntimeOrImage (0.00s)
+    --- PASS: TestProbeCargoRejectsUnverifiedRuntimeOrImage/native_unsupported (0.00s)
+    --- PASS: TestProbeCargoRejectsUnverifiedRuntimeOrImage/architecture_unsupported (0.00s)
+    --- PASS: TestProbeCargoRejectsUnverifiedRuntimeOrImage/missing_image (0.00s)
+    --- PASS: TestProbeCargoRejectsUnverifiedRuntimeOrImage/wrong_image_architecture (0.00s)
+    --- PASS: TestProbeCargoRejectsUnverifiedRuntimeOrImage/non_digest_identity (0.00s)
+    --- PASS: TestProbeCargoRejectsUnverifiedRuntimeOrImage/extra_image_fields (0.00s)
+    --- PASS: TestProbeCargoRejectsUnverifiedRuntimeOrImage/pinned_image (0.00s)
+PASS
+ok  	github.com/rahoney/heliopause/internal/sandbox	0.017s

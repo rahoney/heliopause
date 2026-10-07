@@ -2,12 +2,11 @@ package sandbox
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"errors"
+	"io"
 	"os"
 	"path/filepath"
-	"strings"
+	"syscall"
 
 	artifactcargo "github.com/rahoney/heliopause/internal/artifact/cargo"
 	"github.com/rahoney/heliopause/internal/core/domain"
@@ -62,32 +61,18 @@ func (r *CargoResolver) ResolveDependencies(ctx context.Context, reference domai
 	if r == nil || r.runner == nil || ctx == nil || reference.Source() != artifactcargo.Source() || !installContext.Valid() {
 		return domain.DependencyResolution{}, errors.New("valid Cargo resolver request is required")
 	}
+	if err := ctx.Err(); err != nil {
+		return domain.DependencyResolution{}, err
+	}
 	project := filepath.Clean(installContext.Target().String())
 	if !filepath.IsAbs(project) || project == "/" {
 		return domain.DependencyResolution{}, errors.New("cargo project path is invalid")
 	}
-	manifest, lock, err := readCargoControlFiles(project)
+	selected, err := r.resolveLockedProject(ctx, installContext)
 	if err != nil {
 		return domain.DependencyResolution{}, err
 	}
-	home, err := os.MkdirTemp("", "haa-cargo-home-")
-	if err != nil {
-		return domain.DependencyResolution{}, errors.New("create private Cargo resolver home")
-	}
-	defer os.RemoveAll(home)
-	environment, err := CargoResolverEnvironmentForHome(home)
-	if err != nil {
-		return domain.DependencyResolution{}, err
-	}
-	body, err := r.runner.RunCargo(ctx, project, environment, "metadata", "--locked", "--format-version", "1")
-	if err != nil {
-		return domain.DependencyResolution{}, errors.New("cargo metadata resolution failed")
-	}
-	currentManifest, currentLock, currentErr := readCargoControlFiles(project)
-	if currentErr != nil || string(currentManifest) != string(manifest) || string(currentLock) != string(lock) {
-		return domain.DependencyResolution{}, errors.New("cargo project changed during resolution")
-	}
-	records, edges, err := artifactcargo.ParseMetadata(body)
+	records, edges, _, err := artifactcargo.ParseLockedMetadata(selected.metadata, selected.files["Cargo.lock"], selected.metadataRoot)
 	if err != nil {
 		return domain.DependencyResolution{}, err
 	}
@@ -95,22 +80,45 @@ func (r *CargoResolver) ResolveDependencies(ctx context.Context, reference domai
 	if err != nil {
 		return domain.DependencyResolution{}, err
 	}
-	digestBytes := sha256.Sum256(body)
-	digest, err := domain.NewSHA256Digest(hex.EncodeToString(digestBytes[:]))
-	if err != nil {
-		return domain.DependencyResolution{}, err
-	}
-	return domain.NewDependencyResolution(graph, "cargo:crates.io;sparse:index.crates.io;env:"+strings.Join(environment, ";"), digest)
+	return domain.NewDependencyResolution(graph, cargoResolutionDescriptor, selected.snapshot.GraphDigest())
 }
 
 func readCargoControlFiles(project string) ([]byte, []byte, error) {
-	manifest, err := os.ReadFile(filepath.Join(project, "Cargo.toml"))
-	if err != nil || len(manifest) == 0 {
-		return nil, nil, errors.New("cargo manifest is unavailable")
+	root, err := os.OpenRoot(project)
+	if err != nil {
+		return nil, nil, errors.New("cargo project controls are unavailable")
 	}
-	lock, err := os.ReadFile(filepath.Join(project, "Cargo.lock"))
-	if err != nil || len(lock) == 0 {
-		return nil, nil, errors.New("cargo lock file is unavailable")
+	defer root.Close()
+	manifest, err := readCargoControlFile(root, "Cargo.toml")
+	if err != nil {
+		return nil, nil, err
+	}
+	lock, err := readCargoControlFile(root, "Cargo.lock")
+	if err != nil {
+		return nil, nil, err
 	}
 	return manifest, lock, nil
+}
+
+func readCargoControlFile(root *os.Root, name string) ([]byte, error) {
+	info, err := root.Lstat(name)
+	if err != nil || !info.Mode().IsRegular() || info.Size() <= 0 || info.Size() > artifactcargo.MaxProjectControlBytes {
+		return nil, errors.New("cargo control is not bounded regular content")
+	}
+	file, err := root.OpenFile(name, os.O_RDONLY|syscall.O_NONBLOCK, 0)
+	if err != nil {
+		return nil, errors.New("open Cargo control file")
+	}
+	defer file.Close()
+	opened, err := file.Stat()
+	if err != nil || !os.SameFile(info, opened) || !opened.Mode().IsRegular() {
+		return nil, errors.New("cargo control identity changed")
+	}
+	body, err := io.ReadAll(io.LimitReader(file, artifactcargo.MaxProjectControlBytes+1))
+	after, statErr := file.Stat()
+	current, currentErr := root.Lstat(name)
+	if err != nil || statErr != nil || currentErr != nil || !os.SameFile(info, current) || len(body) != int(info.Size()) || after.Size() != info.Size() || after.ModTime() != info.ModTime() {
+		return nil, errors.New("cargo control changed during bounded read")
+	}
+	return body, nil
 }

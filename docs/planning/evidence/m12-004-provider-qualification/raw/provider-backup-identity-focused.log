@@ -1,0 +1,7 @@
+ok  	github.com/rahoney/heliopause/internal/promotion	103.330s
+ok  	github.com/rahoney/heliopause/internal/inspection/terraformprovider	0.007s
+ok  	github.com/rahoney/heliopause/internal/artifact/terraformprovider	0.129s
+ok  	github.com/rahoney/heliopause/internal/application	0.253s
+ok  	github.com/rahoney/heliopause/internal/cli	0.025s
+ok  	github.com/rahoney/heliopause/internal/bootstrap	0.026s
+ok  	github.com/rahoney/heliopause/internal/sandbox	8.153s

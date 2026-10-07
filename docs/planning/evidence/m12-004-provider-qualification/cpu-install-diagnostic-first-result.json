@@ -1,0 +1,10 @@
+{
+  "scope": "focused timing diagnosis only; not full qualification",
+  "status": "NOT_REACHED",
+  "tool_session": 56044,
+  "raw": "cpu-install-diagnostic-runtime.log",
+  "raw_sha256": "f9f2c89159972aafa8cb401063754c2d46252042aa56595ce9609db04e6ae243",
+  "original12_restored": true,
+  "helper_wait": 0,
+  "reason": "invalid fixture SourceID before observation; corrected using canonical source"
+}

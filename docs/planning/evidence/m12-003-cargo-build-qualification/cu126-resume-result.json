@@ -1,0 +1,32 @@
+{
+  "status": "FAIL",
+  "profile": "cu126",
+  "test": "TestLinuxPyTorchFullIntegration",
+  "tool_exit": 2,
+  "test_timeout_seconds": 2400,
+  "first_failure": "panic: test timed out after 40m0s",
+  "last_phase": "pypiVenvTransaction.commit private output SHA256 rehash before publication of current file; earlier outputs already partially published",
+  "stack_location": "internal/promotion/pypi_venv_transaction.go:831",
+  "cause": "Latency cause UNCONFIRMED; timeout location observed. Not attributed to Cargo observer changes.",
+  "cleanup": {
+    "helper_parent_wait": 0,
+    "wrapper_original": 2,
+    "bounded_docker_absence": "CONFIRMED",
+    "original12_hash_uid_gid_mode": "RESTORED"
+  },
+  "raw_log": {
+    "path": "raw/cargo-build-final-cu126-resume-runtime.log",
+    "sha256": "599d7402a8a64764136df9b0ad7edd9865094723f3f1f9df00ec525fbf469e9e"
+  },
+  "candidate": "executed-source-portable.json",
+  "budgets": "UNCHANGED",
+  "staged_manifest": "e0cd840416496cd5a9420977f397dbb96996e9cc2b8a1ddc5b424c0b18bfc27d",
+  "promotion": "INCOMPLETE, stale transaction state retained; no complete acceptance claim",
+  "recovery_ledger": {
+    "expected_files": 16117,
+    "published_records": 14848,
+    "incremental_records": 31826,
+    "bytes": 17220272,
+    "format": "existing synced append-only header + per-mutation intent/confirmation; no repeated full-ledger rewrite"
+  }
+}

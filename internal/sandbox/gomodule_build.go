@@ -23,6 +23,12 @@ func (b *GoBuildRunner) Build(ctx context.Context, project, cache string, packag
 	if b == nil || b.runner == nil || ctx == nil || !filepath.IsAbs(project) || filepath.Clean(project) != project || project == "/" {
 		return errors.New("valid Go build request is required")
 	}
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	if len(packageArgs) > 1 || (len(packageArgs) == 1 && artifactgomodule.ValidateBuildPackage(packageArgs[0]) != nil) {
+		return errors.New("go build requires one package selector without command flags")
+	}
 	environment, err := artifactgomodule.BuildEnvironmentForCache(cache)
 	if err != nil {
 		return err
@@ -32,7 +38,7 @@ func (b *GoBuildRunner) Build(ctx context.Context, project, cache string, packag
 	}
 	arguments := append([]string{"build", "-mod=readonly"}, packageArgs...)
 	if _, err := b.runner.RunGo(ctx, project, environment, arguments...); err != nil {
-		return errors.New("network-disabled Go build failed")
+		return goBuildRunnerFailure(err)
 	}
 	return nil
 }

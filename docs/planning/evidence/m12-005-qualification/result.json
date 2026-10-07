@@ -1,0 +1,111 @@
+{
+  "work_item": "M12-005",
+  "status": "COMPLETE",
+  "source_candidate": "d328756f0087624093808215d1fbedd47767ef58",
+  "baseline_commit": "01175bbe62a2ab8d1b9ee873861839351de1e485",
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES",
+    "ACCEPTANCE_CLOSED": "YES",
+    "MISSING": []
+  },
+  "checks": "additional-code-cleanup-boundary.json and current-default-checks.json; source native canonical actual0; whole closure docs/security/cached checks recorded separately before commit",
+  "requirement_matrix": "requirement-matrix.json",
+  "actual_scope": "actual-scope-summary.json",
+  "support_tuples": "support-tuples.json",
+  "source_boundary": "current-source-boundary.json",
+  "maintenance_review": "maintainability-review.md",
+  "cli_review": "cli-help-review.json",
+  "resource_bound_proof": "compiled-profile-bounds.json",
+  "strict_freshness": "qualification-freshness-final-source.json",
+  "successful_cleanup": "successful-test-cleanup.json",
+  "source_changes": {
+    "net_unused_production_and_test_lines_removed": 201,
+    "scope": [
+      "initial Go/Cargo/Host SDK scaffolding161",
+      "additional Provider/PyPI/probe APIs40"
+    ],
+    "defect": "Exact official npm metadata MIME rejection; narrow existing-owner correction and real public CLI gate"
+  },
+  "default_regression": {
+    "top_level_passes": 763,
+    "all_test_case_passes": 2217,
+    "environment_gated_skips": 87,
+    "skip_is_full_integration": false
+  },
+  "actual_profiles": [
+    {
+      "profile": "cpu",
+      "run_id": 37561282942,
+      "url": "https://github.com/rahoney/heliopause/actions/runs/37561282942",
+      "source_commit": "d328756f0087624093808215d1fbedd47767ef58",
+      "checkout": "1a8d0dbd526a68e9a68f5dd10519f7937ed08a84",
+      "full_invocation_seconds": [
+        291.53
+      ],
+      "actual_top_level_pass_count": 45,
+      "receipt": "remote-ci/final-source-ordinary-actual-scope.json"
+    },
+    {
+      "profile": "cu130",
+      "run_id": 37561348597,
+      "url": "https://github.com/rahoney/heliopause/actions/runs/37561348597",
+      "source_commit": "d328756f0087624093808215d1fbedd47767ef58",
+      "checkout": "d328756f0087624093808215d1fbedd47767ef58",
+      "full_invocation_seconds": [
+        285.44,
+        972.98
+      ],
+      "actual_top_level_pass_count": 46,
+      "receipt": "remote-ci/final-source-cu130-actual-scope.json"
+    },
+    {
+      "profile": "cu132",
+      "run_id": 37566006329,
+      "url": "https://github.com/rahoney/heliopause/actions/runs/37566006329",
+      "source_commit": "d328756f0087624093808215d1fbedd47767ef58",
+      "checkout": "d328756f0087624093808215d1fbedd47767ef58",
+      "full_invocation_seconds": [
+        290.95,
+        949.5
+      ],
+      "actual_top_level_pass_count": 46,
+      "receipt": "remote-ci/final-source-cu132-actual-scope.json"
+    },
+    {
+      "profile": "cu126",
+      "run_id": 37570546443,
+      "url": "https://github.com/rahoney/heliopause/actions/runs/37570546443",
+      "source_commit": "d328756f0087624093808215d1fbedd47767ef58",
+      "checkout": "d328756f0087624093808215d1fbedd47767ef58",
+      "full_invocation_seconds": [
+        232.68,
+        1047.88
+      ],
+      "actual_top_level_pass_count": 46,
+      "receipt": "remote-ci/final-source-cu126-actual-scope.json"
+    }
+  ],
+  "cleanup": {
+    "successful_roots_removed": 5,
+    "retained_evidence_verified": 282,
+    "measured_wsl_available_delta_bytes": 23592923136,
+    "prior004_cleanup_excluded": true,
+    "failed_data_preserved": true,
+    "windows_vhdx_compaction_performed": false
+  },
+  "next": {
+    "work_item": "M12-02",
+    "status": "NOT_STARTED",
+    "ready": true,
+    "red_team_performed": false
+  },
+  "delivery": {
+    "closure_head_ci": "Separate postcommit Required+9 actualSUCCESS required before final handoff; records retained outside source tree to avoid recursive evidence-only commits",
+    "pull_request": "https://github.com/rahoney/heliopause/pull/29",
+    "main_merge": "NOT_PERFORMED",
+    "public_release": "NOT_PERFORMED"
+  },
+  "closure_checks": "closure-checks.json"
+}

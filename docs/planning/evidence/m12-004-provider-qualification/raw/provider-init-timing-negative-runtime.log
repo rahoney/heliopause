@@ -1,0 +1,36 @@
+Exact source/binary probe candidate verified
+runtime before bytes/identity/modes verified
+runtime candidate bytes/identity/modes verified
+Bounded complete host executable query: no installed executable consumer
+no existing traced runtime consumers; bounded Docker queries succeeded
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+/etc/heliopause/pod-init.json: OK
+helper launch: bash=/usr/bin/bash version=5.2.21(1)-release owner=734700
+helper ready: pid=734744 attempt=13
+=== RUN   TestLinuxTerraformInitNegativeIntegration
+=== RUN   TestLinuxTerraformInitNegativeIntegration/lock-checksum-mismatch
+    terraform_init_integration_linux_test.go:217: actual_terraform_negative=lock-checksum-mismatch primary=resolve exact Terraform graph: terraform package does not match any existing lock hash
+=== RUN   TestLinuxTerraformInitNegativeIntegration/remote-module
+    terraform_init_integration_linux_test.go:217: actual_terraform_negative=remote-module primary=guard Terraform project: terraform remote module acquisition is unsupported
+=== RUN   TestLinuxTerraformInitNegativeIntegration/foreign-provider-cache
+    terraform_init_integration_linux_test.go:217: actual_terraform_negative=foreign-provider-cache primary=guard Terraform project: terraform installation contains unmanaged module/backend/cache state
+=== RUN   TestLinuxTerraformInitNegativeIntegration/concurrent-init
+    terraform_init_integration_linux_test.go:217: actual_terraform_negative=concurrent-init primary=guard Terraform project: go project is already being mutated or lock is unavailable
+--- PASS: TestLinuxTerraformInitNegativeIntegration (6.06s)
+    --- PASS: TestLinuxTerraformInitNegativeIntegration/lock-checksum-mismatch (2.13s)
+    --- PASS: TestLinuxTerraformInitNegativeIntegration/remote-module (1.31s)
+    --- PASS: TestLinuxTerraformInitNegativeIntegration/foreign-provider-cache (1.32s)
+    --- PASS: TestLinuxTerraformInitNegativeIntegration/concurrent-init (1.30s)
+PASS
+helper reaped: pid=734744 wait=0
+no existing traced runtime consumers; bounded Docker queries succeeded
+runtime before bytes/identity/modes verified
+/etc/heliopause/pod-init.json: OK
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=734744

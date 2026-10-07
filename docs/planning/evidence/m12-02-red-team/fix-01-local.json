@@ -1,0 +1,126 @@
+{
+  "baseline": "19411caa06009b614e18c7c58771b5e19f9d26af",
+  "same_fixture_causal_proof": {
+    "baseline": "19411caa06009b614e18c7c58771b5e19f9d26af",
+    "final_fixture_sha256": "563e8b3617c6678117498cf631949320ed17791401ac401d505cf28782091a33",
+    "before_exit": 1,
+    "before_log": "backup-final-before.log",
+    "before_source": "exact baseline Go/Cargo transaction files; correction helper absent; unchanged final fixture",
+    "final_source_restored": true,
+    "first_revision_limitation": "premature full-backup check prevented safe original restoration; same existing Cargo publication-race consumer failed",
+    "first_revision_log": "fix-promotion-first.log"
+  },
+  "current_source": [
+    {
+      "path": "internal/promotion/go_transaction.go",
+      "sha256": "41ae8fbc6b4728477a6c3a2c4a98965f9a703991ed15c9f77698a8f32d5b1353"
+    },
+    {
+      "path": "internal/promotion/cargo_transaction.go",
+      "sha256": "3b5efb91d5a092268ac4d3007d25abd00a6574701a705921e4ecad5917eb61e5"
+    },
+    {
+      "path": "internal/promotion/control_transaction_backup.go",
+      "sha256": "54bde4146b4e899cacfc21307c3fef1e9ad14a600aa05fdd5338db73b28f5f98"
+    },
+    {
+      "path": "internal/promotion/m12_transaction_backup_test.go",
+      "sha256": "563e8b3617c6678117498cf631949320ed17791401ac401d505cf28782091a33"
+    }
+  ],
+  "fixture_cases": 40,
+  "existing_cargo_race_cases": 3,
+  "after_exit": 0,
+  "canonical_checks": [
+    {
+      "profile": "quick",
+      "exit_code": 0,
+      "seconds": 78.449,
+      "log": "reviewed-quick.log",
+      "sha256": "fce04c3924381c281fa3069a4073d960e773de94a14a655a736ac84d273fad64"
+    },
+    {
+      "profile": "security",
+      "exit_code": 0,
+      "seconds": 3.734,
+      "log": "reviewed-security.log",
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95"
+    },
+    {
+      "profile": "vulnerability",
+      "exit_code": 0,
+      "seconds": 2.072,
+      "log": "reviewed-vulnerability.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "profile": "fuzz",
+      "exit_code": 0,
+      "seconds": 28.17,
+      "log": "reviewed-fuzz.log",
+      "sha256": "3aa3160b72810b361e1c3f0c05b03f34b39479b2e7a00326e7e700780ef72dff"
+    },
+    {
+      "profile": "qualification-freshness",
+      "exit_code": 0,
+      "seconds": 0.111,
+      "log": "reviewed-qualification-freshness.log",
+      "sha256": "a139e18892192652dc1d7880e1d1bda7b269e445b80081de6776ebbe4d82c2c0"
+    },
+    {
+      "profile": "release-gate",
+      "exit_code": 0,
+      "seconds": 0.102,
+      "log": "reviewed-release-gate.log",
+      "sha256": "11e43c6a182a612ea79ba5d521d90153efd0f567857993ea20db4c3f95039b73"
+    }
+  ],
+  "raw": [
+    {
+      "path": "raw/backup-final-before.log",
+      "bytes": 15842,
+      "sha256": "6f978e486c41fab1583697e8f6f46dbf679cdfcc3825a75c2ef9d5bd20b15829"
+    },
+    {
+      "path": "raw/backup-second-after.log",
+      "bytes": 7774,
+      "sha256": "857f98bc6cfe3f9ae6128043d66011b0c7a314ab8099710e42e36d9f0e9a3be1"
+    },
+    {
+      "path": "raw/fix-promotion-first.log",
+      "bytes": 866,
+      "sha256": "1dbe5f7a983e3c8f2080eb4ef0440d277f7f2b0675cc4c471c8bd846ff0993fd"
+    },
+    {
+      "path": "raw/reviewed-quick.log",
+      "bytes": 1354,
+      "sha256": "fce04c3924381c281fa3069a4073d960e773de94a14a655a736ac84d273fad64"
+    },
+    {
+      "path": "raw/reviewed-security.log",
+      "bytes": 44,
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95"
+    },
+    {
+      "path": "raw/reviewed-vulnerability.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "raw/reviewed-fuzz.log",
+      "bytes": 126,
+      "sha256": "3aa3160b72810b361e1c3f0c05b03f34b39479b2e7a00326e7e700780ef72dff"
+    },
+    {
+      "path": "raw/reviewed-qualification-freshness.log",
+      "bytes": 41,
+      "sha256": "a139e18892192652dc1d7880e1d1bda7b269e445b80081de6776ebbe4d82c2c0"
+    },
+    {
+      "path": "raw/reviewed-release-gate.log",
+      "bytes": 21,
+      "sha256": "11e43c6a182a612ea79ba5d521d90153efd0f567857993ea20db4c3f95039b73"
+    }
+  ],
+  "remote_qualification": "NOT_RUN"
+}

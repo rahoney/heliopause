@@ -1,0 +1,177 @@
+{
+  "baseline": "19411caa06009b614e18c7c58771b5e19f9d26af",
+  "causal": {
+    "baseline": "19411caa06009b614e18c7c58771b5e19f9d26af",
+    "fixture_sha256": "33a8cf4a2e328703fac0ad7fbac2801f0b9cf03bd498bfbaaf7de3021eb24bad",
+    "before_exit": 1,
+    "before_log": "legacy-backup-final-before.log",
+    "current_source_restored": true,
+    "source": [
+      {
+        "path": "internal/promotion/npm_transaction.go",
+        "sha256": "14498851e4d7a650c7e3ecd5663b64748cb18432bd9d3d91f8259f8d4073f7c4"
+      },
+      {
+        "path": "internal/promotion/pypi_venv_transaction.go",
+        "sha256": "fa8d41cc4d63fb42617c9c17cf8f7774cb47e1bc863de925537ddb4c7720ec9a"
+      },
+      {
+        "path": "internal/promotion/npm_transaction_member.go",
+        "sha256": "870495e4717e84b65f3f456f17b0b989dcc21cd014eb9ed4e9b4fb0a261f1136"
+      },
+      {
+        "path": "internal/promotion/pypi_venv_backup.go",
+        "sha256": "da91547f2f5c07a1cdc782ab95357a0054cc290c70f2df8c1d79cd392773e2f5"
+      }
+    ]
+  },
+  "before_failed_lines": 42,
+  "after_failed_lines": 0,
+  "fixture_cases": 48,
+  "after_exit": 0,
+  "source": [
+    {
+      "path": "internal/promotion/npm_transaction.go",
+      "sha256": "14498851e4d7a650c7e3ecd5663b64748cb18432bd9d3d91f8259f8d4073f7c4"
+    },
+    {
+      "path": "internal/promotion/npm_transaction_member.go",
+      "sha256": "870495e4717e84b65f3f456f17b0b989dcc21cd014eb9ed4e9b4fb0a261f1136"
+    },
+    {
+      "path": "internal/promotion/pypi_venv_transaction.go",
+      "sha256": "fa8d41cc4d63fb42617c9c17cf8f7774cb47e1bc863de925537ddb4c7720ec9a"
+    },
+    {
+      "path": "internal/promotion/pypi_venv_backup.go",
+      "sha256": "da91547f2f5c07a1cdc782ab95357a0054cc290c70f2df8c1d79cd392773e2f5"
+    },
+    {
+      "path": "internal/promotion/m12_legacy_backup_test.go",
+      "sha256": "33a8cf4a2e328703fac0ad7fbac2801f0b9cf03bd498bfbaaf7de3021eb24bad"
+    },
+    {
+      "path": "internal/promotion/linux_integration_test.go",
+      "sha256": "03b87b24ff7914d06395c4c62e6f87417ca7a4e7648a0d168ddbb2600eb7dffb"
+    }
+  ],
+  "canonical_checks": [
+    {
+      "profile": "quick",
+      "exit_code": 0,
+      "seconds": 84.474,
+      "log": "fix-02-quick.log",
+      "sha256": "75ade6ac7944241b5606159239821511cc68664cb7348492352d448ddc1130ad"
+    },
+    {
+      "profile": "docs",
+      "exit_code": 0,
+      "seconds": 0.164,
+      "log": "fix-02-docs.log",
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "profile": "security",
+      "exit_code": 0,
+      "seconds": 4.063,
+      "log": "fix-02-security.log",
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95"
+    },
+    {
+      "profile": "vulnerability",
+      "exit_code": 0,
+      "seconds": 2.82,
+      "log": "fix-02-vulnerability.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "profile": "fuzz",
+      "exit_code": 0,
+      "seconds": 26.547,
+      "log": "fix-02-fuzz.log",
+      "sha256": "3aa3160b72810b361e1c3f0c05b03f34b39479b2e7a00326e7e700780ef72dff"
+    },
+    {
+      "profile": "qualification-freshness",
+      "exit_code": 0,
+      "seconds": 0.115,
+      "log": "fix-02-qualification-freshness.log",
+      "sha256": "a139e18892192652dc1d7880e1d1bda7b269e445b80081de6776ebbe4d82c2c0"
+    },
+    {
+      "profile": "release-gate",
+      "exit_code": 0,
+      "seconds": 0.113,
+      "log": "fix-02-release-gate.log",
+      "sha256": "11e43c6a182a612ea79ba5d521d90153efd0f567857993ea20db4c3f95039b73"
+    }
+  ],
+  "new_actual_npm_project_consumer": {
+    "local_exit": 1,
+    "phase": "registered runsc bundle identity preflight",
+    "project_body": "NOT_RUN",
+    "remote": "PENDING"
+  },
+  "raw": [
+    {
+      "path": "raw/legacy-backup-before.log",
+      "bytes": 2924,
+      "sha256": "b6a26948d77c780eba8e4f9139e4e5677d137438d556a0938e36293087d3fc70"
+    },
+    {
+      "path": "raw/legacy-backup-final-before.log",
+      "bytes": 19726,
+      "sha256": "d683a48181ef17a4feefb553da27c179fc0ae909738d54126f42b87357ee72b4"
+    },
+    {
+      "path": "raw/legacy-backup-final-after.log",
+      "bytes": 8194,
+      "sha256": "7cb5cf4f9967d8e16a30c3b5d79d20b8e4e188518a55fbd7b071561126a35ada"
+    },
+    {
+      "path": "raw/actual-npm-project.log",
+      "bytes": 285,
+      "sha256": "246a967251890d45d092ca21b768c62e836cfbddaccf5604e62c5e67496988c0"
+    },
+    {
+      "path": "raw/fix-02-quick.log",
+      "bytes": 1354,
+      "sha256": "75ade6ac7944241b5606159239821511cc68664cb7348492352d448ddc1130ad"
+    },
+    {
+      "path": "raw/fix-02-docs.log",
+      "bytes": 22,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "path": "raw/fix-02-security.log",
+      "bytes": 44,
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95"
+    },
+    {
+      "path": "raw/fix-02-vulnerability.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "raw/fix-02-fuzz.log",
+      "bytes": 126,
+      "sha256": "3aa3160b72810b361e1c3f0c05b03f34b39479b2e7a00326e7e700780ef72dff"
+    },
+    {
+      "path": "raw/fix-02-qualification-freshness.log",
+      "bytes": 41,
+      "sha256": "a139e18892192652dc1d7880e1d1bda7b269e445b80081de6776ebbe4d82c2c0"
+    },
+    {
+      "path": "raw/fix-02-release-gate.log",
+      "bytes": 21,
+      "sha256": "11e43c6a182a612ea79ba5d521d90153efd0f567857993ea20db4c3f95039b73"
+    }
+  ],
+  "new_test_source_quick": {
+    "exit_code": 0,
+    "path": "raw/final-source-quick.log",
+    "sha256": "446feb74e149ccdf8eec4898d3a498c13ebca1d430aec2f5c172fab27324f5db"
+  }
+}

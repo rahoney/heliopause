@@ -13,7 +13,6 @@ import (
 	artifactgithub "github.com/rahoney/heliopause/internal/artifact/githubrelease"
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
-	artifactterraform "github.com/rahoney/heliopause/internal/artifact/terraformprovider"
 	"github.com/rahoney/heliopause/internal/cli"
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/core/ports"
@@ -55,7 +54,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 	var trustedExecutor *hosttool.Executor
 	var observerSupervisor *sandbox.ObserverSupervisor
 	var processObserver sandbox.TraceObserver
-	if runtime.GOOS == "linux" && len(args) > 0 && (args[0] == "npm" || args[0] == "pypi" || args[0] == "pip" || args[0] == "github" || args[0] == "go") {
+	if runtime.GOOS == "linux" && len(args) > 0 && (args[0] == "npm" || args[0] == "pypi" || args[0] == "pip" || args[0] == "github" || args[0] == "go" || args[0] == "cargo" || args[0] == "terraform") {
 		trustedExecutor, err = hosttool.NewSystem(ctx)
 		if err != nil {
 			return err
@@ -78,21 +77,21 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" {
 			return errors.New("automatic Go Module resolution requires Linux amd64")
 		}
-		resolver, resolverErr := sandbox.NewGoModuleResolver(trustedExecutor)
+		resolverPolicy, policyErr := newSystemResolverPolicyAdapter()
+		if policyErr != nil {
+			return policyErr
+		}
+		isolatedRunner, runnerErr := sandbox.NewLinuxGoModuleRunner(trustedExecutor, processObserver, resolverPolicy)
+		if runnerErr != nil {
+			return runnerErr
+		}
+		resolver, resolverErr := sandbox.NewGoModuleResolver(isolatedRunner)
 		if resolverErr != nil {
 			return resolverErr
 		}
-		promoter, promoterErr := promotion.NewGoProjectPromotion(trustedExecutor)
-		if promoterErr != nil {
-			return promoterErr
-		}
-		service, serviceErr := application.NewGoModuleGetService(resolver, promoter)
+		service, projectService, serviceErr := newGoModuleServices(resolver)
 		if serviceErr != nil {
 			return serviceErr
-		}
-		projectService, projectServiceErr := application.NewGoModuleProjectResolutionService(resolver)
-		if projectServiceErr != nil {
-			return projectServiceErr
 		}
 		if err := cli.AddGoModuleGet(command, service); err != nil {
 			return err
@@ -100,32 +99,46 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err := cli.AddGoModuleDownload(command, projectService); err != nil {
 			return err
 		}
+		buildService, serviceErr := newGoModuleBuildService(trustedExecutor, processObserver)
+		if serviceErr != nil {
+			return serviceErr
+		}
+		if err := cli.AddGoModuleBuild(command, buildService); err != nil {
+			return err
+		}
 	}
 	if len(args) > 0 && args[0] == "cargo" {
 		if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" {
 			return errors.New("automatic Cargo resolution requires Linux amd64")
 		}
-		resolver, resolverErr := sandbox.NewCargoResolver(trustedExecutor)
+		resolverPolicy, policyErr := newSystemResolverPolicyAdapter()
+		if policyErr != nil {
+			return policyErr
+		}
+		isolatedRunner, runnerErr := sandbox.NewLinuxCargoRunner(trustedExecutor, processObserver, resolverPolicy)
+		if runnerErr != nil {
+			return runnerErr
+		}
+		resolver, resolverErr := sandbox.NewCargoResolver(isolatedRunner)
 		if resolverErr != nil {
 			return resolverErr
 		}
-		service, serviceErr := application.NewCargoResolutionService(resolver)
+		service, buildService, serviceErr := newCargoServices(resolver, trustedExecutor, processObserver)
 		if serviceErr != nil {
 			return serviceErr
 		}
 		if err := cli.AddCargoAdd(command, service); err != nil {
 			return err
 		}
+		if err := cli.AddCargoBuild(command, buildService); err != nil {
+			return err
+		}
 	}
 	if len(args) > 0 && args[0] == "terraform" {
 		if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" {
-			return errors.New("automatic Terraform Provider resolution requires Linux amd64")
+			return errors.New("automatic Terraform Provider installation requires Linux amd64")
 		}
-		resolver, resolverErr := artifactterraform.NewPublicResolver()
-		if resolverErr != nil {
-			return resolverErr
-		}
-		service, serviceErr := application.NewTerraformResolutionService(resolver)
+		service, serviceErr := newTerraformService(trustedExecutor, processObserver)
 		if serviceErr != nil {
 			return serviceErr
 		}

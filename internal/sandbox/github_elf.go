@@ -52,7 +52,13 @@ func newLinuxGitHubELFBackend(intakeRoot string, executor TrustedExecutor, obser
 }
 
 func (b *GitHubELFBackend) Execute(ctx context.Context, request domain.SandboxRequest) (domain.SandboxResult, error) {
-	if b == nil || b.runner == nil || b.observer == nil || b.probe == nil || b.newSessionID == nil || ctx == nil || request.Artifact().Identity().Source().String() != "github-release" {
+	return b.executeELF(ctx, request, "github-release", "github-elf", b.introduce, nil)
+}
+
+// executeELF shares only fixed isolation/lifecycle mechanics. Source identity,
+// profile and introduction are supplied by the owning backend, never input.
+func (b *GitHubELFBackend) executeELF(ctx context.Context, request domain.SandboxRequest, source, profile string, introduce func(context.Context, string, domain.AcquiredArtifact) error, probeTerminal func(context.Context, string) (string, error)) (domain.SandboxResult, error) {
+	if b == nil || b.runner == nil || b.observer == nil || b.probe == nil || b.newSessionID == nil || ctx == nil || request.Artifact().Identity().Source().String() != source {
 		return domain.SandboxResult{}, errors.New("GitHub ELF sandbox request is invalid")
 	}
 	sessionID, err := b.newSessionID()
@@ -66,7 +72,7 @@ func (b *GitHubELFBackend) Execute(ctx context.Context, request domain.SandboxRe
 		}
 		return incomplete(sessionID, capability.LimitationCode)
 	}
-	created, err := b.runner.Output(ctx, "docker", githubELFCreateArguments(sessionID)...)
+	created, err := b.runner.Output(ctx, "docker", isolatedELFCreateArguments(sessionID, profile)...)
 	if err != nil {
 		return incomplete(sessionID, "M6_DYNAMIC_SETUP_FAILED")
 	}
@@ -74,7 +80,7 @@ func (b *GitHubELFBackend) Execute(ctx context.Context, request domain.SandboxRe
 	if !containerIDPattern.MatchString(containerID) {
 		return incomplete(sessionID, "M6_DYNAMIC_SETUP_FAILED")
 	}
-	trace, err := startTrace(ctx, b.observer, containerID, "github-elf")
+	trace, err := startTrace(ctx, b.observer, containerID, profile)
 	if err != nil {
 		if b.cleanup(containerID) != nil {
 			return incomplete(sessionID, "M6_DYNAMIC_CLEANUP_FAILED")
@@ -95,28 +101,64 @@ func (b *GitHubELFBackend) Execute(ctx context.Context, request domain.SandboxRe
 		_ = b.cleanup(containerID)
 		return incomplete(sessionID, "M6_DYNAMIC_OBSERVER_FAILED")
 	}
-	if err := b.introduce(runContext, containerID, request.Artifact()); err != nil {
+	if err := introduce(runContext, containerID, request.Artifact()); err != nil {
 		if b.cleanup(containerID) != nil {
 			return incomplete(sessionID, "M6_DYNAMIC_CLEANUP_FAILED")
 		}
 		return incomplete(sessionID, "M6_DYNAMIC_ARTIFACT_INTRODUCTION_FAILED")
 	}
-	_, waitErr := b.runner.Output(runContext, "docker", boundaryExecArguments(containerID, boundaryELFHandoffMode, "/work/artifact")...)
+	var terminal string
+	var waitErr error
+	if probeTerminal == nil {
+		_, waitErr = b.runner.Output(runContext, "docker", boundaryExecArguments(containerID, boundaryELFHandoffMode, "/work/artifact")...)
+	} else {
+		terminal, waitErr = probeTerminal(runContext, containerID)
+	}
 	cleanupErr := b.cleanup(containerID)
 	collectCtx, collectCancel := context.WithTimeout(context.Background(), cleanupTimeout)
-	observations, limitation := collectTrace(collectCtx, trace)
+	var observations []domain.SandboxObservation
+	var limitation string
+	if probeTerminal == nil {
+		observations, limitation = collectTrace(collectCtx, trace)
+	} else {
+		var diagnostic TraceDiagnostic
+		observations, limitation, diagnostic = collectTraceDiagnostic(collectCtx, trace)
+		if limitation != "" {
+			observations = retainedELFProbeFacts(diagnostic.KindCounts)
+		}
+	}
 	collectCancel()
+	if terminal != "" {
+		observation, err := domain.NewSandboxObservation(domain.ObservationProcess, terminal)
+		if err != nil {
+			return domain.SandboxResult{}, err
+		}
+		observations = append(observations, observation)
+	}
+	failed := func(code string) (domain.SandboxResult, error) {
+		if probeTerminal != nil {
+			return domain.NewSandboxResult(sessionID, domain.SandboxIncomplete, code, observations)
+		}
+		return incomplete(sessionID, code)
+	}
+	if probeTerminal != nil && limitation != "" {
+		if cleanupErr != nil {
+			fact, _ := domain.NewSandboxObservation(domain.ObservationResource, "terraform-cleanup-failed")
+			observations = append(observations, fact)
+		}
+		return failed(limitation)
+	}
 	if cleanupErr != nil {
-		return incomplete(sessionID, "M6_DYNAMIC_CLEANUP_FAILED")
+		return failed("M6_DYNAMIC_CLEANUP_FAILED")
 	}
 	if waitErr != nil {
 		if runContext.Err() == context.DeadlineExceeded || ctx.Err() == context.DeadlineExceeded {
-			return incomplete(sessionID, "M6_DYNAMIC_TIMEOUT")
+			return failed("M6_DYNAMIC_TIMEOUT")
 		}
-		return incomplete(sessionID, "M6_DYNAMIC_EXECUTION_FAILED")
+		return failed("M6_DYNAMIC_EXECUTION_FAILED")
 	}
 	if limitation != "" {
-		return incomplete(sessionID, limitation)
+		return failed(limitation)
 	}
 	completed, _ := domain.NewSandboxObservation(domain.ObservationProcess, "lifecycle-completed")
 	observations = append(observations, completed)
@@ -168,7 +210,11 @@ func (b *GitHubELFBackend) introduce(ctx context.Context, containerID string, ar
 }
 
 func githubELFCreateArguments(sessionID domain.SandboxSessionID) []string {
+	return isolatedELFCreateArguments(sessionID, "github-elf")
+}
+
+func isolatedELFCreateArguments(sessionID domain.SandboxSessionID, profile string) []string {
 	arguments := []string{"create", "--runtime", gVisorRuntimeName, "--network", "none", "--read-only", "--cap-drop", "ALL", "--cap-add", "SETUID", "--cap-add", "SETGID", "--cap-add", "SETPCAP", "--security-opt", "no-new-privileges", "--pids-limit", "64", "--memory", "512m", "--cpus", "1", "--ulimit", "cpu=30:30", "--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=256m,uid=1000,gid=1000,mode=0700", "--tmpfs", "/work:rw,exec,nosuid,nodev,size=256m,uid=1000,gid=1000,mode=0700", "--tmpfs", boundaryHelperMount}
 	arguments = append(arguments, isolatedContainerEnvironmentArguments()...)
-	return append(arguments, "--name", "heliopause-github-elf-"+sessionID.String(), nodeImageReference, "/bin/sh", "-ceu", boundaryContainerCommand())
+	return append(arguments, "--name", "heliopause-"+profile+"-"+sessionID.String(), nodeImageReference, "/bin/sh", "-ceu", boundaryContainerCommand())
 }

@@ -1,0 +1,787 @@
+{
+  "scope": "Portable complete terminal raw bytes; includes capacity-corrected split CUDA40m failure and primary six-member runtime build timing. Partial/direct PASS never overrides failed full/aggregate.",
+  "records": [
+    {
+      "path": "raw/cargo-build-bootstrap-after-latches.log",
+      "sha256": "c4144a0b88654f6a817b220df1f1fdaf93e2c67424779cbd15be71900dfe2bf0",
+      "bytes": 6407,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-bootstrap-after-runtime.log",
+      "sha256": "ebd98caeeaaffa06fb02618916f4eee6aebbf55e4ec4aca456256fd01161d11f",
+      "bytes": 2442,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-bootstrap-before-latch.log",
+      "sha256": "4e20fe826656ac8326da86fb4da0032f8faf041ffa44613b190b013497ef568f",
+      "bytes": 27,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-collect2-after-latches.log",
+      "sha256": "3e5f3e172937d36efff0251fde1c0e5d3d71a11bfadbdc5807fe254c11093abe",
+      "bytes": 6696,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-collect2-after-runtime.log",
+      "sha256": "7845b9a71b5dafb69c93ff3dd54ea78d110237ecf8d3268cb2fb32e102e43703",
+      "bytes": 2647,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-collect2-before-latch.log",
+      "sha256": "9ba496646fac506ebb1621421ac5897acea50f56e90e213aacabcff70d2c64a7",
+      "bytes": 26,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-collect2-diagnostic-runtime.log",
+      "sha256": "0d5671fb8e4e9d9f6f96f344ae168e55269fa9284ac9b8616952d3bc12b51612",
+      "bytes": 2713,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-config-after-latches.log",
+      "sha256": "b7859ef6339716b0a79293d2fba195593867aa1f606c0bebcb8d236e78bbd9fa",
+      "bytes": 7139,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-config-after-runtime.log",
+      "sha256": "843378a1eeead05ece20fc1364b92ef71cf6346e200b4d20e1747aab4534a953",
+      "bytes": 2981,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-config-final-before-latch.log",
+      "sha256": "81c90084a5c118d1a0a74108e4ef01e55f25b06717553a55781d90626145c91a",
+      "bytes": 25,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-configuration-after-latches.log",
+      "sha256": "c4144a0b88654f6a817b220df1f1fdaf93e2c67424779cbd15be71900dfe2bf0",
+      "bytes": 6407,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-configuration-after-runtime.log",
+      "sha256": "56e9a9b5ba62efa4c4b42b02afc9e7d728c3825c886f69857506a95f38dfde3c",
+      "bytes": 2518,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-configuration-before-latch.log",
+      "sha256": "1437732afd4950fdca94218a19f95bf3ff06bf1ba4ba366cd27a079c199f4ffa",
+      "bytes": 31,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-control-order-after-focused.log",
+      "sha256": "278b9188d1700c83828925db392340eeabf95f1f79e64c45bdeb01e81002497c",
+      "bytes": 250,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-control-order-before.log",
+      "sha256": "f2ef37c95a4dfa8edb41c95010a68d5d220086aea23fff1b8c54d53a4c0c05f2",
+      "bytes": 562,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-driver-abi-after-latches.log",
+      "sha256": "f0581a145adf3ad4ee757e1f1ea472542f9e13018fb6e1418db25db4d9b18fe4",
+      "bytes": 6554,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-driver-abi-after-runtime.log",
+      "sha256": "6aa535aba659aeed43fd6b7abac6f81c691f904f41f07f731272c71dc019f736",
+      "bytes": 2513,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-driver-abi-before-latch.log",
+      "sha256": "2d5c6be3634c1c22f3c1297bf96ad4b4049044c64bce92805c437c276c19c75a",
+      "bytes": 24,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-driver-ca-after-runtime.log",
+      "sha256": "e142da8ae9b46ffbd59aff4cf7a4a7268ffaf57cae220eeca932e0289ae27ee2",
+      "bytes": 2651,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-driver-final-after-latches.log",
+      "sha256": "f0581a145adf3ad4ee757e1f1ea472542f9e13018fb6e1418db25db4d9b18fe4",
+      "bytes": 6554,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-driver-final-after-runtime.log",
+      "sha256": "ec61ed7fc86b2202fc4ad89e21fe0320f590c5b18c0cf02f01d1b2f2146503c0",
+      "bytes": 2514,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-driver-final-before-latch.log",
+      "sha256": "2d5c6be3634c1c22f3c1297bf96ad4b4049044c64bce92805c437c276c19c75a",
+      "bytes": 24,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-final-corpus.log",
+      "sha256": "3f217682c52a48b814834d83474a8d6e117ac0b068f3a6a601427020d12482d7",
+      "bytes": 6552,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-final-cpu-full-runtime-receipt.json",
+      "sha256": "b66733959e566d5657100ded824d538fa6641168b2d58dc52b5629a589eab294",
+      "bytes": 130440,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-final-cpu-full-runtime.log",
+      "sha256": "a37f579a8135ae1f42a72f1f2cf992adb896a8b7c6c7397a7581940a04b60843",
+      "bytes": 1441,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-final-cu126-disk-ready-runtime.log",
+      "sha256": "32ca6089fa29aa802142b0e6fa20016fa706fbcb7993e01ed1f030da239d5b6a",
+      "bytes": 11722,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-final-cu126-disk-runtime.log",
+      "sha256": "03fdce501f3922559cce0e97fabf6e40c041a82123d508970afbfa0ac2a87579",
+      "bytes": 39,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-final-cu126-first-failure.json",
+      "sha256": "013a46d0fe9ff424e7f34036ff63a41ed9ff6456e3d81e636a9664afebeda329",
+      "bytes": 843,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-final-cu126-full-runtime.log",
+      "sha256": "e445dd55f5bd805d3fe84c673bb089cf74f282dd432eabb05763cbdbc7d4c55a",
+      "bytes": 4247,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-final-cu126-resume-runtime.log",
+      "sha256": "599d7402a8a64764136df9b0ad7edd9865094723f3f1f9df00ec525fbf469e9e",
+      "bytes": 9477,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-final-cu126-retry-runtime.log",
+      "sha256": "a1631ae04c4275f6d4f244e5e93b4f7d1502124cf2433bd461ad2c597608079b",
+      "bytes": 1015,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-final-darwin-test-compile.log",
+      "sha256": "b6bced612ac7c1303163984e21aff9cef41ced96d3df133f911295dd6ee90402",
+      "bytes": 2638,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-final-direct-consumers-runtime-receipt.json",
+      "sha256": "53468fe07dba2a430c39414f8e1861e8c7756260c39657ed7d58f427e4f2f71b",
+      "bytes": 130345,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-final-direct-consumers-runtime.log",
+      "sha256": "0382e4616f77ad33f7b0be01029fa115b18c524e13f175926a5adf816de3feb9",
+      "bytes": 70447,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-final-docs.log",
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9",
+      "bytes": 22,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-final-go-cargo-add-runtime-receipt.json",
+      "sha256": "1aa67abaf48eadccfe87002cdcdca768a929d0de626b0643d7702e8c5338c913",
+      "bytes": 130444,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-final-go-cargo-add-runtime.log",
+      "sha256": "6cd21071cfe7d2847e947ef0a9384170220754582e0a7d1f7370586cb914f32e",
+      "bytes": 11911,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-final-helper-fuzz.log",
+      "sha256": "5d3b4437d208be5fe1ea4bdb8c1090a4951c31b8fe40153a5bcf967038a4409c",
+      "bytes": 301,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-final-hosttool.log",
+      "sha256": "f4d76a7267fa7e18f38800b717f3b7e5ca6a3bad18abfeebdfa9314a15a09161",
+      "bytes": 173,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-final-ordinary-cli-runtime-receipt.json",
+      "sha256": "f823fb1dda84e9228cd883faa029cf04a4babe537b8b63c590cca139a62c702a",
+      "bytes": 130449,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-final-ordinary-cli-runtime.log",
+      "sha256": "fa30cab68698da79e4bb4bbc24461820bbc1cc024a8d2d02a5d5396d825156b1",
+      "bytes": 4888,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-final-platform.log",
+      "sha256": "fb49a92d2cfca9e6f197611a2e0567108e2eb01175e865442baea47d308e8ef7",
+      "bytes": 46,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-final-proc-maps-corrected-runtime.log",
+      "sha256": "c5b1f07969c44af8e58cb5be3b3711d551cc3956a52c3f1ffeba66cd18d2eb37",
+      "bytes": 1533,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-final-promotion-runtime-receipt.json",
+      "sha256": "01afb9ac2643920420b58096afd4731d9f2049f5bb80e1c9ba3379bda6c732c1",
+      "bytes": 130441,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-final-promotion-runtime.log",
+      "sha256": "709270f9e98448cb8531b18a417cb08869153b837c4971c64d88bb2f5e30905c",
+      "bytes": 1240,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-final-quick.log",
+      "sha256": "616f308ab89dfae44da9ad2f6cb23a21619a30f7c06d67784877919a37fa8f8b",
+      "bytes": 1354,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-final-security.log",
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95",
+      "bytes": 44,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-final-vulnerability.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-handoff-final-after-latches.log",
+      "sha256": "9e6a05ff8d3e1aa6fd7cbfb639c1db13de615fb6ee1b328b81b9d3b0bb6ce70d",
+      "bytes": 6509,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-handoff-final-after-runtime.log",
+      "sha256": "92495395a598e0231344c8e2315de505db9654fe5ba891d2ab5c8c2f4f8a6552",
+      "bytes": 2514,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-handoff-final-before-latch.log",
+      "sha256": "75463b3cc4d7a647bdbb2069a56d4ecb27d323bc17dcf6441bd5a9b13b02299a",
+      "bytes": 25,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-link-inputs-after-latches.log",
+      "sha256": "fa61924a5a6959904f3bceb8f2fc6bbc69c405873bf284580dd4c942c1fd7084",
+      "bytes": 6829,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-link-inputs-after-runtime.log",
+      "sha256": "e750cd316b3c10f5bb2cda6dd3fa55a6727ac4b005f20c63e8665895049dfc0d",
+      "bytes": 2594,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-link-inputs-before-latch.log",
+      "sha256": "34db8c58c149ae104fc3af5389dd4fbb1628ff00266ee6277818f45bf073978d",
+      "bytes": 29,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-link-sdk-after-latches.log",
+      "sha256": "03c7c6e8f900f5b858d23742fbeed967ddee99bf3aff48fee52a8538d35f8691",
+      "bytes": 6871,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-link-sdk-after-runtime.log",
+      "sha256": "7d571b1bae194ffb6b6e58cd99d31675648b39d8fc60173682fd8ad0440e0f99",
+      "bytes": 2594,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-link-sdk-before-latch.log",
+      "sha256": "28938ce6e6db9cee4fa27ae5e5b8ff246dd374945fc2c755b784cb660c32ab0b",
+      "bytes": 26,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-lld-entropy-after-latches.log",
+      "sha256": "29e53a81e5b3de38c11ace6e34110659cfe0258708805a852147d82b6e1c77f7",
+      "bytes": 6960,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-lld-entropy-after-runtime.log",
+      "sha256": "b4e83d0262d8ce1e530065067fffcb875e6cfa7cfdcb7c8077e0c299859f71aa",
+      "bytes": 1875,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-lld-entropy-before-latch.log",
+      "sha256": "32404878a0dc8311374db5f3f383a78a6e3f1f8c56cd0d118dc4866d9fe4cc4e",
+      "bytes": 29,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-lld-launcher-abi-before-latch.log",
+      "sha256": "c05ad9a64c475e93355cbe08e64a39ef27b45bb50dbd62a6acd7961625c5f618",
+      "bytes": 30,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-lld-launcher-after-latches.log",
+      "sha256": "9d133a63065b7fac96ac030ffe7b4fbfc67b62f8a6cbb16f5dc7222a57d9f9cb",
+      "bytes": 6742,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-lld-launcher-after-runtime.log",
+      "sha256": "e1594a4bdfb7fbd7fec0237176df4d15a35c50b9bb5bafb1c4849a4c08ec1ee5",
+      "bytes": 2647,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-lld-launcher-before-latch.log",
+      "sha256": "c05ad9a64c475e93355cbe08e64a39ef27b45bb50dbd62a6acd7961625c5f618",
+      "bytes": 30,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-lld-launcher-diagnostic-runtime.log",
+      "sha256": "99d41f55140f3742c2f789c07283c5260634dcbb796bf7086c47177115d7754a",
+      "bytes": 2717,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-native-cc-after-latches.log",
+      "sha256": "fd9004a092942790fe0df38ed1e442a3a2270173917ee5e97cc01e16c0ffaf20",
+      "bytes": 6648,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-native-cc-after-runtime.log",
+      "sha256": "0cd998c847e5d615c55b02dd7d5ab59530df3da86ac3f1ebc60e7929e679c1c5",
+      "bytes": 2647,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-native-cc-before-latch.log",
+      "sha256": "110b18810ea4776b311ef66514972b74115ce9aaf7af322d78aaaa904a544488",
+      "bytes": 27,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-output-alias-final-before.log",
+      "sha256": "8b87a4be0c1f1bf80594a79b68e8864ee138e505345e0876fd9d3b5effec8f13",
+      "bytes": 615,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-output-final-after.log",
+      "sha256": "fa24b8e3abb9243efee303c15729c856be8f0d5493e6d1f2ada47f5ccd765b6c",
+      "bytes": 59,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-output-root-final-before.log",
+      "sha256": "0c414bdb094d6e720266d85274120d2431dcea121cde6e19413f5e0cfa447508",
+      "bytes": 610,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-pinned-target-final-before-latch.log",
+      "sha256": "a3f7cfe409ba2cf698e4df019d176e80c73d838b5a993f5dc8ad2ba1496e0ffd",
+      "bytes": 31,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-program-abi-after-latches.log",
+      "sha256": "93577c4e40d865cfc82334612964bf02e6362d4a2a72508d91dbe602502d5636",
+      "bytes": 7046,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-program-abi-before-latch.log",
+      "sha256": "95ef6c1e4862fe57d406585744d2cedd0f8e359325e8af7f65fb3bdc3acb32cc",
+      "bytes": 29,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-program-after-latches.log",
+      "sha256": "31c703b9744db5059d1b459de4d8ed2a5d87cd858ec7f83d825351c8ee54a638",
+      "bytes": 7001,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-program-final-before-latch.log",
+      "sha256": "2773eb21303625b0da077e4e99ce29317006a03f630b5d36df1426be87a092c0",
+      "bytes": 25,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-program-maps-after-latches.log",
+      "sha256": "e7a60b9a73af23e73e2da40bc4efe15fe7619bd8740f631a901f7d17a4a1bf0e",
+      "bytes": 7092,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-program-maps-before-latch.log",
+      "sha256": "85fb1c6a9c70fa4c35e56796f7bf2b4ab7fada1d335ee97376f7b39f873a634d",
+      "bytes": 30,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-program-null-after-latches.log",
+      "sha256": "70c74b3a67223686cbd28443af9cc618908db7b7c335a398dee744ccf2ffda9b",
+      "bytes": 7185,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-program-null-final-before-latch.log",
+      "sha256": "459baf254d728c933a41a946a36adc05a1dc62c65a4246e3730e1d7fa6c7b9a6",
+      "bytes": 24,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-program-query-after-latches.log",
+      "sha256": "34ded4ca8d02d19d4d86ae5ad8b81a6d4348d04fb8f157d12114a244ae16fcc7",
+      "bytes": 7238,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-program-query-after-runtime.log",
+      "sha256": "69f248aa3e2463be6a8b1d4b2e4b531ef03101beaaba1015290fa562bb31c0ea",
+      "bytes": 1745,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-program-query-before-latch.log",
+      "sha256": "fd63a4947b429b1b2113826a9acb24a87093a128586a69e6857886aad17e9bc6",
+      "bytes": 25,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-program-query-diagnostic-runtime.log",
+      "sha256": "54f4bc95ef7bdf28d5d835286218c02450e02b95d024bc9c003f6f7e40a40a41",
+      "bytes": 3266,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-rust-c-abi-after-latches.log",
+      "sha256": "5b67de8203eba52286dbeb96ec0e5cdd042dfcb4bf0e11d936095b123c9e52e6",
+      "bytes": 6915,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-rust-c-abi-after-runtime.log",
+      "sha256": "cb4ccc9e93ba3715245fecd63e994187e404e143f9ed8279353108bb54a46018",
+      "bytes": 2548,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-rust-c-abi-before-latch.log",
+      "sha256": "64a17cf8422f0266ba7f123abc837a824dc12df2cf517a4b50f08d0bd1695536",
+      "bytes": 28,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-rust-lld-after-latches.log",
+      "sha256": "dc3e715cba7956283209e8215aa1d8ae5de66297829241211b69e849f9b8587c",
+      "bytes": 6784,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-rust-lld-after-runtime.log",
+      "sha256": "7ffa6a742f2eedd3e81b6aea1a6304af39f845cf26a7a6a2414682812713dc2f",
+      "bytes": 2594,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-rust-lld-before-latch.log",
+      "sha256": "b7b904fc6c1bc1d415bdca309afc0c90b3443748716578cbe961d1c19acb7558",
+      "bytes": 26,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-rust-lld-transition-diagnostic-latches.log",
+      "sha256": "9d133a63065b7fac96ac030ffe7b4fbfc67b62f8a6cbb16f5dc7222a57d9f9cb",
+      "bytes": 6742,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-rust-lld-transition-diagnostic-runtime.log",
+      "sha256": "41ac7c853e6004e9b17ed33a9460d82fe3ce8f502d8851e8c8de570b008dd00f",
+      "bytes": 2738,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-rustc-before-latch.log",
+      "sha256": "29d137f5c4368ad88968164cb9265f77073559a85af2c9d6967a4172f3570327",
+      "bytes": 23,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-rustc-ready-after-latches.log",
+      "sha256": "150da835c47f36556a831c02f6780c6df967d7338e310a1b60873e85cdaffdd6",
+      "bytes": 6599,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-rustc-ready-after-runtime.log",
+      "sha256": "4261a3ecdcb60f73e6b2d7b65dd62d373cd97c7af6e8ff4f1ed30b9bb9124a74",
+      "bytes": 2647,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-security-first-runtime.log",
+      "sha256": "ebbddac091caf0b8efc07511c837d4c9f5a4080ecf6b971a783bf723adde6b33",
+      "bytes": 5149,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-security-retained-final-latches.log",
+      "sha256": "34ded4ca8d02d19d4d86ae5ad8b81a6d4348d04fb8f157d12114a244ae16fcc7",
+      "bytes": 7238,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-security-retained-final-runtime-receipt.json",
+      "sha256": "1ab8f3209c38920aeb9e568bdaa971074884b41a455648f8e08314b75ef592c0",
+      "bytes": 130291,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-build-security-retained-final-runtime.log",
+      "sha256": "0519bbf874e92195e4dd0cdf26ee9c8fe2dd019b4b63997b2a51a624bb9817da",
+      "bytes": 20631,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-ci-active-gates-after.log",
+      "sha256": "a766548074f3af30f822d0bcfe695efe1b9ee355c048d71838238c5b96ad2c3f",
+      "bytes": 56,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-ci-active-gates-before.log",
+      "sha256": "566e347dbd315e5422ccbc595f0e6a5e61b627afdaf9196e0d7793f13a0b13de",
+      "bytes": 1352,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-ci-active-gates-final-docs.log",
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9",
+      "bytes": 22,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-ci-active-gates-final-quick.log",
+      "sha256": "9fdbc6a83a7fa60a42671011d4db0da5d750244c9bf548731ac3beeee306aa8c",
+      "bytes": 1354,
+      "available": true
+    },
+    {
+      "path": "raw/cargo-ci-active-gates-final-security.log",
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95",
+      "bytes": 44,
+      "available": true
+    },
+    {
+      "path": "raw/cu126-disk-pressure.jsonl",
+      "sha256": "84c948d63c5800472b4d715e5c7ca664759582b7c592328eb95eed95f9a2a6c6",
+      "bytes": 45566,
+      "available": true
+    },
+    {
+      "path": "raw/cu126-resume-pressure.jsonl",
+      "sha256": "6fedcd93b97758ab3bc5d43ba93a8724bf769b2a7829781317999a059f4c60be",
+      "bytes": 22614,
+      "available": true
+    },
+    {
+      "path": "raw/resume-evidence-docs.log",
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9",
+      "bytes": 22,
+      "available": true
+    },
+    {
+      "path": "raw/resume-evidence-security.log",
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95",
+      "bytes": 44,
+      "available": true
+    },
+    {
+      "path": "raw/resume-evidence-workflow.log",
+      "sha256": "2edbc2a0d08a6499c5c8e2bcbab74529b29c67a43792c72f546a655df7fe2996",
+      "bytes": 1071,
+      "available": true
+    },
+    {
+      "path": "raw/resume-final-quick.log",
+      "sha256": "cfe7a99df1226a22b24908aec53ffd7934eb5d8073b5975f44e9f4dd718b1b6b",
+      "bytes": 1453,
+      "available": true
+    },
+    {
+      "path": "raw/resume-native-quick.log",
+      "sha256": "ba81e933ceb309c2d0f8474ed0077a81ea62f68b5a2f531c81fcf8c42fd2055b",
+      "bytes": 1354,
+      "available": true
+    },
+    {
+      "path": "raw/socketpair-runtime-built-receipt.json",
+      "sha256": "b5d67a05b1966085e41e7191efcf845bdb1051e75c782ff736452475898f509d",
+      "bytes": 3589,
+      "available": true
+    },
+    {
+      "path": "raw/socketpair-runtime-canonical-build.log",
+      "sha256": "c6c65528a1a173fd875604080db0ef1ca0915b2094eb72e797f1010a109befea",
+      "bytes": 43808,
+      "available": true
+    },
+    {
+      "path": "raw/split-storage-cpu-full-runtime.log",
+      "sha256": "2e5947cabcafb4711fba631ef28009ef586dbfcecda6aec7c6461e0c3a97d9cb",
+      "bytes": 1562,
+      "available": true
+    },
+    {
+      "path": "raw/split-storage-cu126-capacity-failure.log",
+      "sha256": "66424ac757349b8af6253d05ba47fac591ef83082230d6cb6df024b31db3878b",
+      "bytes": 2165,
+      "available": true
+    },
+    {
+      "path": "raw/split-storage-cu126-full-runtime.log",
+      "sha256": "9091b22f34119f75fc9ceb3114dbac7c542026aef46a440c290ce0fd1a1294b9",
+      "bytes": 7146,
+      "available": true
+    },
+    {
+      "path": "raw/split-storage-current-security-import-failure.log",
+      "sha256": "f9614d29512a23f6694a43e989e8cecc44d5f98761e3da7a7ae9c508e9de545a",
+      "bytes": 40170,
+      "available": true
+    },
+    {
+      "path": "raw/split-storage-docs.log",
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9",
+      "bytes": 22,
+      "available": true
+    },
+    {
+      "path": "raw/split-storage-first-pressure.jsonl",
+      "sha256": "e87ac772859760a4c2ecd3302c878d32921507c0a13a223acf9bd557e007360e",
+      "bytes": 14062,
+      "available": true
+    },
+    {
+      "path": "raw/split-storage-native-evidence-security.log",
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95",
+      "bytes": 44,
+      "available": true
+    },
+    {
+      "path": "raw/split-storage-quick.log",
+      "sha256": "a54ded546219c71fe07f1f16167f8ae8e99f1317a7e1b8882b91a5db51bb4aee",
+      "bytes": 1354,
+      "available": true
+    },
+    {
+      "path": "raw/split-storage-retry-pressure.jsonl",
+      "sha256": "0462667b566ec8b961305b5b48660df5d83c866c7797ec695fb3facd97c5df0a",
+      "bytes": 55044,
+      "available": true
+    },
+    {
+      "path": "raw/split-storage-security.log",
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95",
+      "bytes": 44,
+      "available": true
+    },
+    {
+      "path": "raw/reclaimed-native-cu126-full-runtime.log",
+      "sha256": "b2c1b235e919cb5e5c7156f11143cc4e09913dba71c1455f6538effcc1a6cdcf",
+      "bytes": 2135,
+      "available": true
+    },
+    {
+      "path": "raw/reclaimed-native-cu126-wrapper-exit.txt",
+      "sha256": "9245a2d2a198463a7df671af5a2b2b9438639bbc706087cdff24ba8136952775",
+      "bytes": 29,
+      "available": true
+    },
+    {
+      "path": "raw/reclaimed-native-cu126-pressure.jsonl",
+      "sha256": "b84bac9a10a9fd76fc32368e50053407a3eac83bda6809b965f588bbd9193fc9",
+      "bytes": 49741,
+      "available": true
+    },
+    {
+      "path": "raw/closure-workflow.log",
+      "sha256": "9aa7466daf46045588efe719d90d344f27572c9f413cf3c1770da2dcdb216ed1",
+      "bytes": 1071,
+      "available": true
+    },
+    {
+      "path": "raw/closure-security.log",
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95",
+      "bytes": 44,
+      "available": true
+    },
+    {
+      "path": "raw/closure-docs.log",
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9",
+      "bytes": 22,
+      "available": true
+    },
+    {
+      "path": "raw/closure-darwin-test-compile.log",
+      "sha256": "5e00da1c72767018721c68bf0ed46835df9526e34e6926822384783c6ca756c3",
+      "bytes": 2638,
+      "available": true
+    }
+  ],
+  "claimed_originals_verified": 23,
+  "claim_files_currently_unavailable": []
+}

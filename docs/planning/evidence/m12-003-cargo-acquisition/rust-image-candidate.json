@@ -1,0 +1,10 @@
+{
+  "reference": "rust:1.99.0-bookworm@sha256:59037199c44290f2befcdd58dcc540164763fc296950255aaefeef096a1866b0",
+  "index_digest": "sha256:59037199c44290f2befcdd58dcc540164763fc296950255aaefeef096a1866b0",
+  "linux_amd64_manifest": "sha256:37f847a196b12e0c6298d265b99075a8bc9176f2bb22e434b4340ab7342ca3af",
+  "tag": "1.99.0-bookworm",
+  "source": "Docker official library/rust verified from official image manifest and TLS registry",
+  "architecture": "amd64",
+  "rust_version": "1.99.0",
+  "channel_manifest_sha256": "ce6dddc886364f8d786514771212cebe9b731ba82d6b859951c6b0ccc516b6a2"
+}

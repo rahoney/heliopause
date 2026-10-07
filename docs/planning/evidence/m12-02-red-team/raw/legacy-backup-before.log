@@ -1,0 +1,32 @@
+=== RUN   TestNPMTransactionPreservesForeignBackup
+=== RUN   TestNPMTransactionPreservesForeignBackup/commit
+    m12_legacy_backup_test.go:67: foreign backup deleted: "" open /tmp/TestNPMTransactionPreservesForeignBackupcommit1897783554/001/.heliopause-npm-commit-3489338047/foreign.txt: no such file or directory
+    m12_legacy_backup_test.go:70: uncertain backup cleanup reported success
+    m12_legacy_backup_test.go:73: recovery boundary did not block next transaction
+=== RUN   TestNPMTransactionPreservesForeignBackup/rollback
+    m12_legacy_backup_test.go:67: foreign backup deleted: "" open /tmp/TestNPMTransactionPreservesForeignBackuprollback1497503564/001/.heliopause-npm-commit-2692789507/foreign.txt: no such file or directory
+    m12_legacy_backup_test.go:73: recovery boundary did not block next transaction
+--- FAIL: TestNPMTransactionPreservesForeignBackup (0.06s)
+    --- FAIL: TestNPMTransactionPreservesForeignBackup/commit (0.04s)
+    --- FAIL: TestNPMTransactionPreservesForeignBackup/rollback (0.02s)
+=== RUN   TestNPMTransactionPreservesForeignPublishedMember
+=== RUN   TestNPMTransactionPreservesForeignPublishedMember/node_modules
+    m12_legacy_backup_test.go:99: foreign publication deleted: "" open /tmp/TestNPMTransactionPreservesForeignPublishedMembernode_modules1042109392/001/node_modules/foreign.txt: no such file or directory
+=== RUN   TestNPMTransactionPreservesForeignPublishedMember/haa
+    m12_legacy_backup_test.go:99: foreign publication deleted: "" open /tmp/TestNPMTransactionPreservesForeignPublishedMemberhaa1488992978/001/.heliopause/foreign.txt: no such file or directory
+--- FAIL: TestNPMTransactionPreservesForeignPublishedMember (0.02s)
+    --- FAIL: TestNPMTransactionPreservesForeignPublishedMember/node_modules (0.01s)
+    --- FAIL: TestNPMTransactionPreservesForeignPublishedMember/haa (0.01s)
+=== RUN   TestVenvTransactionPreservesForeignBackup
+=== RUN   TestVenvTransactionPreservesForeignBackup/commit
+    m12_legacy_backup_test.go:140: foreign backup deleted: "" open /tmp/TestVenvTransactionPreservesForeignBackupcommit1794602078/001/.heliopause-pypi-commit-84919651/foreign.txt: no such file or directory
+    m12_legacy_backup_test.go:143: uncertain backup cleanup reported success or released recovery boundary
+=== RUN   TestVenvTransactionPreservesForeignBackup/rollback
+    m12_legacy_backup_test.go:140: foreign backup deleted: "" open /tmp/TestVenvTransactionPreservesForeignBackuprollback1061575492/001/.heliopause-pypi-commit-326720367/foreign.txt: no such file or directory
+    m12_legacy_backup_test.go:143: uncertain backup cleanup reported success or released recovery boundary
+--- FAIL: TestVenvTransactionPreservesForeignBackup (0.18s)
+    --- FAIL: TestVenvTransactionPreservesForeignBackup/commit (0.09s)
+    --- FAIL: TestVenvTransactionPreservesForeignBackup/rollback (0.09s)
+FAIL
+FAIL	github.com/rahoney/heliopause/internal/promotion	0.275s
+FAIL

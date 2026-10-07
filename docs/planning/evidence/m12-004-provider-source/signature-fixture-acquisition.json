@@ -1,0 +1,26 @@
+[
+  {
+    "path": "internal/verification/terraformprovider/testdata/hashicorp-random-3.7.2.sums",
+    "url": "https://releases.hashicorp.com/terraform-provider-random/3.7.2/terraform-provider-random_3.7.2_SHA256SUMS",
+    "sha256": "879660c20ecf5060b3ddaddb44b0d678a9b77a8f9de459735e47bc44534fb240",
+    "bytes": 1368
+  },
+  {
+    "path": "internal/verification/terraformprovider/testdata/hashicorp-random-3.7.2.sig",
+    "url": "https://releases.hashicorp.com/terraform-provider-random/3.7.2/terraform-provider-random_3.7.2_SHA256SUMS.72D7468F.sig",
+    "sha256": "ce80b4578c8e9bcd09b2febf547aebcb4b12bcf6c57610602c698d3db034c1c3",
+    "bytes": 566
+  },
+  {
+    "path": "internal/verification/terraformprovider/testdata/integrations-github-6.6.0.sums",
+    "url": "https://github.com/integrations/terraform-provider-github/releases/download/v6.6.0/terraform-provider-github_6.6.0_SHA256SUMS",
+    "sha256": "1bedbdd7581318c3f9a0056b45ac11afb95f573da33e48f73de64873e7cbb12e",
+    "bytes": 1714
+  },
+  {
+    "path": "internal/verification/terraformprovider/testdata/integrations-github-6.6.0.sig",
+    "url": "https://github.com/integrations/terraform-provider-github/releases/download/v6.6.0/terraform-provider-github_6.6.0_SHA256SUMS.sig",
+    "sha256": "707368f4a095256ec71d170300947ce0678c0125e21fb6758c57c4a917017dae",
+    "bytes": 566
+  }
+]

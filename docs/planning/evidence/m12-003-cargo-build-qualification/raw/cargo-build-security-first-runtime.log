@@ -1,0 +1,69 @@
+verified fresh Cargo source and observer candidate; no overlay
+runtime before bytes/identity/modes verified
+runtime candidate bytes/identity/modes verified
+no existing traced runtime consumers; bounded Docker queries succeeded
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+/etc/heliopause/pod-init.json: OK
+helper launch: bash=/usr/bin/bash version=5.2.21(1)-release owner=2139329
+helper ready: pid=2139383 attempt=16
+=== RUN   TestLinuxCargoBuildFilesystemSecurityCLIIntegration
+    cargo_build_cli_integration_test.go:193: actual Cargo build denied: observed cargo build failed: phase=BUILD command_status=LIFECYCLE_ERROR reason=STREAM_FAULT events=46 bytes=5244 session_complete=false last_kind=process-exec-expected kinds=process-exec-expected:46 fault_site=OPEN_RESULT_CLASSIFICATION_IMAGE image_locator_fnv1a64=8cd5faba57335497 open_image=OTHER open_role=ARTIFACT open_provenance=CLONE_CHILD open_subject=OCI_IMAGE open_mount=oci-root open_flags=557056 open_locator_fnv1a64=8cd5faba57335497 open_kernel_image=UNKNOWN open_executable_fnv1a64=465928f011aed54f open_executable_pinned=false open_go_driver_creator=false open_cargo_driver_creator=true open_rustc_version_query=false open_build_target_image=true open_rustc_metadata_query=false open_rustc_argc=0 open_rustc_argv_fnv1a64=0000000000000000 open_mountpoint_fnv1a64=af63a24c860189fe output_diagnostic= stdout=Operation: INSPECT
+        Operation ID: op_nacd5aux7w3shfabfefpr5rdwm
+        Status: FAILED
+        Run ID: run_qb4pwn47haz5ydxt7hb4q3v74i
+        Run outcome: FAILED
+        Artifact: project-local/project-f3326e63fb51136cbf81eea34052284993857f79a225f7e524c8e71e1ffc05da@snapshot (cargo-source)
+        Digest: sha256:ecff69a6fbd1f4383ed011ca6630bde04e909e295e64a2a759bdee5569758169
+        Error: M12_CARGO_BUILD_OBSERVATION_FAILED: Project build did not complete.
+--- PASS: TestLinuxCargoBuildFilesystemSecurityCLIIntegration (14.30s)
+=== RUN   TestLinuxCargoBuildNetworkSecurityCLIIntegration
+observer_attribution sequence=3 profile=cargo-build counts=NETWORK/CONNECT/INET/ARTIFACT_GROUP/OTHER:1
+    cargo_build_cli_integration_test.go:197: actual Cargo build denied: operation completed with exit code 10 stdout=Operation: INSPECT
+        Operation ID: op_tvy4upcararakzuty7h6muwzde
+        Status: COMPLETED
+        Run ID: run_g6r3f2srmrjgzzdpyjrtg2pp7q
+        Run outcome: COMPLETED
+        Artifact: project-local/project-78ac473ff03ddc4842002e4064c4256c52e564d6e4217314fc920a4c828d0f7e@snapshot (cargo-source)
+        Digest: sha256:d6955f9b8c6acd333e92f2b16db53dd650a6961800b74b1968377cf9a2233a20
+        Policy: MANUAL_REVIEW (m3-npm-dynamic-inspect v1)
+        Reasons: [M3_NETWORK_ATTEMPT]
+--- PASS: TestLinuxCargoBuildNetworkSecurityCLIIntegration (15.91s)
+=== RUN   TestLinuxCargoBuildConfigurationSecurityCLIIntegration
+=== RUN   TestLinuxCargoBuildConfigurationSecurityCLIIntegration/cargo-home
+    cargo_build_cli_integration_test.go:206: unsafe Cargo build completed: stdout=Operation: INSPECT
+        Operation ID: op_anpezd7auqtidoltvso4nfjnbm
+        Status: COMPLETED
+        Run ID: run_joqqnz3a2ui73bv4tehxrh4wta
+        Run outcome: COMPLETED
+        Artifact: project-local/project-ed322c81faf079c79f017c122caadef7cbededf1aef12e00ce3f749fa8bf6ef4@snapshot (cargo-source)
+        Digest: sha256:e32c037bcae9aaba68214378b84bdba465e61ceb18e1cf432763b669f8f6fa22
+        Policy: ALLOW (m3-npm-dynamic-inspect v1)
+        Reasons: [M3_REQUIRED_CHECKS_COMPLETED]
+        Build output: .heliopause/builds/run_joqqnz3a2ui73bv4tehxrh4wta
+=== RUN   TestLinuxCargoBuildConfigurationSecurityCLIIntegration/working-directory
+    cargo_build_cli_integration_test.go:206: unsafe Cargo build completed: stdout=Operation: INSPECT
+        Operation ID: op_wfe3x26z3g6tpe7ou3zj6gnpju
+        Status: COMPLETED
+        Run ID: run_iffrcfdwk7wp2h6t2lafrpzd6u
+        Run outcome: COMPLETED
+        Artifact: project-local/project-fe2d04580b2b4e3a23da8782ef32cefb9feb031add8f04f8d0a111c957ae1093@snapshot (cargo-source)
+        Digest: sha256:eb98ad8bbdcc0a663604a18dbc945a294d3a8297d265c2f1baf8d4e06dfac40b
+        Policy: ALLOW (m3-npm-dynamic-inspect v1)
+        Reasons: [M3_REQUIRED_CHECKS_COMPLETED]
+        Build output: .heliopause/builds/run_iffrcfdwk7wp2h6t2lafrpzd6u
+--- FAIL: TestLinuxCargoBuildConfigurationSecurityCLIIntegration (31.82s)
+    --- FAIL: TestLinuxCargoBuildConfigurationSecurityCLIIntegration/cargo-home (16.15s)
+    --- FAIL: TestLinuxCargoBuildConfigurationSecurityCLIIntegration/working-directory (15.67s)
+FAIL
+helper reaped: pid=2139383 wait=0
+no existing traced runtime consumers; bounded Docker queries succeeded
+runtime before bytes/identity/modes verified
+/etc/heliopause/pod-init.json: OK
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+cleanup: original=1 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=2139383

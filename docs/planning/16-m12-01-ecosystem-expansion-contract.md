@@ -314,7 +314,22 @@ conservative limits를 유지한다.
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | default PyPI | existing conservative limits | existing conservative limits | existing conservative limits | existing conservative limits | existing conservative limits | existing conservative limits | existing conservative limits | existing conservative limits |
 | `pytorch:cpu` | 256 MiB | 1 GiB | 20,000 | 2 MiB | 512 MiB | 2 GiB | 4 GiB | 15 minutes |
-| `pytorch:cu126` | 1 GiB | 2.5 GiB | 20,000 | 2 MiB | 4.5 GiB | 8 GiB | 24 GiB | 40 minutes |
+| `pytorch:cu126` | 1.5 GiB | 2 GiB | 20,000 | 2 MiB | 5 GiB | 8 GiB | 24 GiB | 40 minutes |
+| `pytorch:cu130` | 1 GiB | 2 GiB | 20,000 | 2 MiB | 4 GiB | 8 GiB | 24 GiB | 40 minutes |
+| `pytorch:cu132` | 1 GiB | 2 GiB | 20,000 | 2 MiB | 4 GiB | 8 GiB | 24 GiB | 40 minutes |
+
+M12-005 문서 대조에서 이전 cu126 표의 값이 기존 qualification 구현과 다름을
+확인하여 `internal/artifact/pypi/resource_policy.go`의 실제 bounded policy와 맞췄다.
+위 CUDA 값은 M12-001 qualification 후보부터 존재한 값이며 이번 변경에서
+실행 예산을 상향하거나 판정을 완화하지 않았다. Source profile 등록과 이 표만으로
+release support를 선언하지 않으며 아래 support freeze의 실제 검증 근거를 요구한다.
+
+| Root profile | Graph files / artifacts | Runtime memory / tmpfs | Promotion tmpfs | Transaction CPU ceiling | Required import units/artifact |
+| --- | --- | --- | --- | --- | --- |
+| `pytorch:cpu` | 20,000 / 64 | 2 GiB / 2 GiB | 1 GiB | 180 CPU seconds | 64 |
+| `pytorch:cu126` | 24,000 / 64 | 4 GiB / 12 GiB | 12 GiB | 300 CPU seconds | 64 |
+| `pytorch:cu130` | 24,000 / 64 | 4 GiB / 12 GiB | 12 GiB | 300 CPU seconds | 64 |
+| `pytorch:cu132` | 24,000 / 64 | 4 GiB / 12 GiB | 12 GiB | 300 CPU seconds | 64 |
 
 기존 구현에 대응 resource-bound abstraction이 있으면 그것을 canonical owner로
 재사용한다. 이 계약은 별도의 중복 abstraction을 요구하지 않는다.
@@ -526,6 +541,47 @@ freeze 대상:
 requested version이 symbolic selector이면 resolver가 exact version으로 freeze한 뒤
 그 이후 단계에서는 selector를 다시 평가하지 않는다.
 
+### Controlled intake and independent SumDB verification
+
+Go acquisition은 exact canonical proxy `.mod`와 `.zip`을 실행·압축 해제하지 않고
+Run-private intake에 보관한다. 두 payload는 `HAA-GO-MODULE-1` envelope의 고정
+header·8-byte big-endian `.mod` length·`.mod` bytes·`.zip` bytes로 한 subject에
+묶으며 envelope 전체의 SHA-256을 observed content identity로 사용한다. 이 framing은
+transport 형식일 뿐 인증·Policy·승격 권한이 아니다. Proxy content는 `.mod` 4 MiB,
+compressed `.zip` 64 MiB, 10,000 entries, file 64 MiB, expanded total 200 MiB로
+bounded하게 처리한다. Redirect·ambient proxy·credential·Host module cache를 사용하지 않는다.
+
+Verifier는 acquired digest를 다시 검사하고 Go 공식 h1 algorithm으로 두 identity를
+계산한 뒤, 고정 `sum.golang.org` signing key와 x/mod SumDB client의 signed-tree /
+Merkle proof 검증을 통해 archive 및 `/go.mod` record를 각각 확인한다. 프로젝트
+`go.sum` 또는 resolver 선언이 같다는 사실은 이 인증을 대체하지 않는다.
+Operation-private SumDB requests는 64개, single response 1 MiB, total 4 MiB,
+60 seconds로 제한한다. Unavailable/invalid proof는 정상 Verification report가
+아니며, authenticated record와 content 불일치는 MISMATCH로 정규화한다. Raw peer
+error/path/text를 새로운 authority 또는 공개 failure detail로 사용하지 않는다.
+Static inspection은 동일 envelope의 bounds·module identity·Go syntax를 확인하며
+source를 import/execute하지 않는다. 실제 project/build qualification 범위는 Queue가 소유한다.
+
+Go의 기본 package 탐색이 제외하는 정확한 `testdata` directory의 `.go`는 negative
+parser fixture 등을 포함하는 archive data로 취급한다. 이 구분은 package/vendor
+이름 allowlist나 안전성 판정이 아니다. 모든 bytes의 인증·digest·archive bounds·
+경로·duplicate/link·read integrity 검사는 유지하고, 그 밖의 `.go` 문법 오류는
+기존대로 Finding이다. Module identity의 `testdata` component, `testdata.go`, 비슷한
+directory 이름은 이 구분을 얻지 않는다. Explicit package selection/import로 해당
+data가 빌드 source가 될 수 있으므로 observed offline build의 실제 compiler 검사를
+반드시 거친다. Static 결과를 임의 실행의 안전성 증명으로 확대하지 않는다.
+
+### Go resolver observation budget
+
+신규 `go-module-resolver`의 remote connection별 charged-record ceiling은 200,000이다.
+고정 runtime의 fresh pflag/Cobra/tools/gRPC source commands 36개에서 최대 63,018을
+관찰하고 finite-boundary 실험을 확인한 뒤 승인한 값이다. 모든 정상 module의 최악
+상한을 입증한 값은 아니며 초과/incomplete observation은 계속 fail closed다.
+Helper의 charged records와 normalized collector records는 별도 단위다. Collector는
+기존 10,000 records / 2 MiB를 유지하며 CPU 1 core, memory 512 MiB, command 120 seconds,
+output/graph/archive/cache bounds와 기존 npm/PyPI/GitHub/CPU/CUDA profiles는 유지한다.
+측정 범위와 exact 입력은 [처리량 evidence](./evidence/m12-002-resolver-budget-measurement/README.md)가 소유한다.
+
 ## Project transaction
 
 transaction set:
@@ -545,13 +601,27 @@ target discovery
 → private resolver
 → graph freeze
 → acquire/verify/inspect
-→ private go get
-→ post-state verify
+→ approved selected-control replay
+→ post-state / cache identity verify
 → atomic control-file commit
 ```
 
 기존 unmanaged project를 자동으로 HAA-managed 상태라고 주장하지 않는다.
 초기 adoption policy는 npm M9 원칙과 같은 방향으로 bounded하게 정의한다.
+Go의 초기 adoption은 dependency-free `go.mod`와 empty/absent `go.sum`에 한정한다.
+Nonempty unmanaged state와 matching project checksum marker만으로는 승인 상태를
+복구하지 않는다. Guard는 resolver 실행 전에 원래 root/control inode·bytes·presence를
+고정하며, 하나의 private `go get` 결과에서 requested primary resolution·complete
+project snapshot·selected control bytes를 함께 만든다. 승인 뒤에는 이 고정 결과만
+반영하고 두 번째 live `go get`을 실행하지 않는다. Opaque control bytes의 digest는
+transaction binding이며 Policy authority가 아니다.
+
+Retained approval은 project 밖의 별도 HAA state에 cache receipt·exact controls·full
+graph·entry/set Policy·Run/Evidence binding으로 기록한다. Cache와 필수 Evidence를
+다시 확인한 뒤에만 현재 project와 일치하는 승인 기록을 사용한다. Project 안의
+transaction metadata는 이 외부 기록을 대체하지 않는다. 기존 transaction journal의
+backup·fsync·rollback을 재사용하며 publication은 confined root와 원래/선택한 byte
+identity를 확인한다. Incomplete recovery journal 또는 불확실한 identity는 fail closed다.
 
 `go mod download`와 `go build`는 HAA가 소유·검증하는 module cache boundary를
 사용한다. 사용자 global module cache를 resolver trust boundary로 사용하지 않는다.
@@ -577,6 +647,40 @@ HAA-managed verified module cache
 HAA-managed cache에 Promotion할 때는 exact module path/version/content digest와
 SumDB/source identity를 다시 bind한다.
 
+Complete project inspection은 각 frozen module에 독립 Run·required verification/
+inspection·recorded Evidence·entry ALLOW를 요구하고 기존 complete-coverage Policy로
+set ALLOW를 확인한다. `go.sum`의 selected archive와 `/go.mod` 선언도 frozen pair와
+일치해야 하지만 이 일치는 독립 SumDB 인증을 대체하지 않는다. 미승인 결과는
+typed inspection/Policy facts를 보존하고 캐시 승격 권한을 만들지 않는다.
+
+Go verified cache는 승인된 intake envelope를 다시 해시한 뒤 Go 공식 ZIP 규칙으로
+새 operation-private tree에 materialize한다. Resolver/global cache를 복사하지 않는다.
+Module cache payload와 extracted source를 h1에 대조하고, 전체 graph/control digest·
+project binding·entry Run/Evidence/Policy·file inventory를 trusted receipt에 연결해
+동기화 후 atomic publish한다. Aggregate는 512 MiB·20,000 files·40,000 filesystem
+entries, receipt는 4 MiB로 bounded하다. 캐시 재사용 경계에서 receipt digest와 전체
+tree를 다시 검사하며 source files는 readonly, build mount도 readonly여야 한다.
+Cache receipt/path/`.ziphash`만으로 approval을 복구하지 않는다. 실제 resolver/build/
+project transaction qualification 상태는 Queue와 해당 evidence가 소유한다.
+Staging과 cache 재사용 시 local Evidence Store의 bounded canonical record를 exact
+Run/subject/check/digest에 대조한다. Required check의 기록이 없거나 record integrity가
+깨지면 중단하며, record content digest도 cache receipt에 연결한다. Reader 구현은
+Composition Root에서 주입하고 Promotion이 Evidence adapter를 직접 생성하지 않는다.
+
+`go mod download`는 guard 아래 current controls와 complete snapshot을 대조한 뒤
+동일한 entry/set inspection·Policy·Evidence와 verified-cache staging을 완료하고
+승인된 현재 snapshot을 retained state에 transactionally 기록한다. 임의 module을
+primary로 만들거나 `go get`을 실행하지 않는다. Private download가 controls를
+바꿔 원래 snapshot과 달라지면 성공한 snapshot으로 반환하지 않는다.
+
+Dependency-free project는 누락된 dependency list와 구분하는 명시적인 complete
+empty snapshot으로 표현한다. Go adapter는 dependency-free directives, empty sums와
+main/synthetic vertices를 포함하는 complete graph를 확인한 뒤에만 이를 만든다.
+기본 zero/missing snapshot은 여전히 invalid다. Empty snapshot도 set Policy를 거치며
+그 cache는 payload가 없는 전체 inventory로 bind한다. 최초 download adoption에서
+absent `go.sum`은 승인된 empty control file로 정규화하고 외부 approval과 함께
+기록한다. 이 module-set 승인은 project code의 build-time 실행 관찰을 대체하지 않는다.
+
 ### `helox go build` contract
 
 `helox go build`는 현재 project의 `go.mod`/`go.sum`을 snapshot한 뒤 exact dependency
@@ -597,9 +701,64 @@ project discovery
 → bounded build output publish
 ```
 
+Build 준비는 기존 project guard 아래 외부 retained approval의 controls·graph·entry와
+필수 Evidence·전체 cache inventory를 다시 확인한다. Unmanaged project는 build에서
+자동 채택하지 않으며 먼저 `go mod download`로 기존 adoption 계약을 거친다.
+Package 입력은 단일 package selector로 제한하여 command flag, 외부 project/output,
+새 version selection과 tool-execution 설정을 전달하지 않는다.
+
+Project source는 원래 guard 아래 10,000 regular files·20,000 entries·개별 64 MiB·
+전체 200 MiB의 private intake snapshot으로 만든다. 숨긴 metadata/config namespace를
+읽거나 도입하지 않고, visible symlink·hardlink·nonregular member를 거부한다.
+Directory와 직접 file handles를 anchored 상태로 유지하며 inode·mode·contents와
+controls를 publication 전에 다시 확인한다. 이 snapshot의 `project-local` source와
+SHA-256은 project byte identity이며 public registry provenance나 ALLOW가 아니다.
+실제 compiler 관찰·build Policy·output publication은 별도로 요구한다.
+
+선택된 모든 package를 먼저 pinned Go의 고정 `-o /dev/null` no-write mode로
+실제 컴파일한다. Go의 directory `-o` mode는 main package만 build하므로 전체
+선택 coverage로 사용하지 않는다. 그다음 동일 readonly source/cache의 bounded
+고정 role query가 main package 존재를 나타낼 때만 고정 output directory build를
+실행한다. Role query는 출력 명령의 형태만 선택하는 data이며 권한·Policy·관찰
+완료 authority가 아니다. Library-only 선택도 실제 compiler 성공과 모든 관찰이
+필수이고 publish할 payload가 없는 bounded output archive를 허용한다. 어느
+compiler/query/output 실패도 성공한 부재로 치환하지 않는다.
+
+Compiler output은 별도의 transaction-bound named tmpfs volume으로 받는다.
+입력 volume은 build 동안 읽기 전용이고 output은 200 MiB의 고정 writable
+data mount다. 두 volume의 생성 identity·options·exact container attachments를
+검증하며 Host project bind mount를 허용하지 않는다. Output을 Host에서 실행하지
+않고 bounded data archive로 수집한 뒤 모든 관찰·runtime cleanup을 확인한다.
+최대 128 regular files·개별 64 MiB·aggregate 200 MiB와 경로·중복·link·special
+member 검사를 적용하고 private archive headers를 재구성한다.
+
+Build source의 별도 byte-binding verification, 실제 recorded Evidence와 기존
+M3 Policy의 completed ALLOW, original source·retained cache·graph의 재검증 뒤에만
+새 `.heliopause/builds/<Run>`에 atomic publish한다. 기존 output을 덮지 않으며
+receipt는 source/cache/graph/output/고정 build recipe와 Evidence digest를 연결한다.
+출력 실행의 안전성·기능 정상이나 registry source provenance를 증명하지 않는다.
+
 build 단계에서는 dependency acquisition network를 허용하지 않는다. 필요한 module이
 verified cache에 없으면 build 중 외부 download로 보충하지 않고 resolver 단계로
 되돌아가 검증한 뒤 다시 build한다.
+
+### Go build observation budget
+
+신규 `go-module-build`의 remote connection별 charged-record ceiling은 250,000이다.
+이전 single-output recipe의 retained gRPC 41-module build 정상 반복 측정
+최대 118,428에 약 2.1배 여유를 둔 초기 유한 한도이며 모든 Go project의 완료를 보장하는 값은 아니다.
+한도 초과는 기존 EVENT_LIMIT와 incomplete observation으로 차단한다. 실제
+현재 all-selected recipe의 실제 CLI completion은 이 production 상한 아래 별도로
+검증했다. 측정 최대값을 새 recipe의 event count로 전용하지 않는다. 검증 소비자와
+최종 qualification은 [Go qualification evidence](./evidence/m12-002-go-build-qualification/result.json)와 Queue가 소유한다.
+
+Host transaction의 preparation/build 공용 normalized-event 원장은 20,000으로
+제한한다. Count가 붙은 workspace summary도 해당 원장에 누적하며 stream을
+새로 열어 예산을 보충하지 않는다. Physical collector는 10,000 records / 2 MiB,
+workspace summary saturation은 10,000, CPU 1 core·memory 512 MiB·build transaction
+3 minutes를 유지한다. Helper charged events, physical records, summary count와
+Host aggregate는 서로 다른 단위다. 기존 resolver·Python/PyTorch·npm/GitHub
+profile의 예산과 판정은 바꾸지 않는다. 메모리 경계 근처 peak는 OOM 확정 근거가 아니다.
 
 ## Inspection
 
@@ -724,6 +883,21 @@ required observation incomplete → no ALLOW.
 
 ## Project transaction
 
+Cargo resolver는 초기 charged event 상한10,000을 유지한다. Go의 측정된 resolver/
+build 한도를 Cargo에 전용하지 않는다. 새 verified vendor cache의 초기 aggregate는
+regular files10,000(각 controller-generated checksum 포함), directory 포함 entries20,000,
+expanded bytes200MiB, canonical receipt4MiB다. 개별 crate의 기존 archive/file/control
+한도는 그대로 적용한다. 독립 승인·Evidence와 모든 파일을 staging 및 재사용 때
+재확인하며, archive가 `.cargo-checksum.json` 권위를 제공할 수 없다. 이 초기 한도는
+실제 정상 처리량과 초과 차단 근거 없이 자동 확장하지 않는다.
+
+`cargo add`는 원본 complete source/control guard를 선택 이전부터 유지하고 한 번의
+private selection을 canonical crate acquisition·독립 검증·검사·Evidence·Policy·cache와
+대조한 후 publish한다. Retained approval은 project와 분리한 controller-owned state에
+control/local-manifest/graph/cache/Evidence를 연결한다. Project checksum marker는
+승인 authority가 아니다. 경쟁 파일은 덮어쓰지 않으며 rollback의 소유권이 불명확하면
+원래 오류와 recovery journal을 보존해 후속 transaction을 차단한다.
+
 `cargo add` transaction set:
 
 ```text
@@ -743,6 +917,56 @@ HAA build record
 
 기존 target directory를 무조건 덮어쓰지 않는다. private build tree에서
 post-build verification 후 bounded commit한다.
+
+### Locked default build and bounded output
+
+`helox cargo build`는 flags/selector 없이 pinned Linux/amd64 default target만 빌드한다.
+원래 project의 complete controls/source guard를 유지하면서 locked complete graph를
+독립 acquire/verify/inspect하고 controller-owned approval/Evidence/vendor cache를
+재확인한다. Approval 뒤 live selector를 다시 평가하지 않는다. Cargo/Rustup/Rustc/
+wrapper/flags/target/cache 및 credential 환경은 고정한 container 입력만 사용한다.
+
+빌드 입력은 complete local source와 approved vendor cache를 immutable transport로
+고정하고, Cargo metadata의 graph/features/targets를 frozen snapshot과 다시 대조한다.
+Project/cache와 controller의 Cargo source-replacement config는 UID/GID1000의
+read-only input volume에 함께 두고 content/mode/ownership/inventory를 재확인한다.
+Cargo cwd는 read-only `/`이며 mutable parent의 config replacement를 승인하지 않는다.
+Target은 별도 operation-private executable volume이다. 이 volume의 build program은
+계속 untrusted ARTIFACT이며 CONTROL 또는 network 권한을 얻지 않는다.
+
+고정 metadata/build는 `--frozen --offline --locked`를 함께 사용하고 network none,
+read-only OCI root, demotion/no-new-privileges, pids64, memory512MiB, CPU1 core,
+input512MiB/noexec, target200MiB, temporary512MiB/noexec, operation180seconds를
+유지한다. `cargo-build`의 charged connection limit10,000과 normalized10,000/2MiB도
+유지한다. Go의 확장된 event/cache 예산을 Cargo에 자동 전용하지 않는다.
+
+Cargo driver→Rustc→fixed native compiler/linker 및 build program 전이는 kernel image,
+sealed topology, recorded group/start/exact creator와 one-shot lifecycle을 사용한다.
+동일 pinned launcher의 linker reexec도 exact kernel group에서 한 번만 인정한다.
+Compiler/loader의 고정 SDK/ABI와 own process metadata는 runtime input data이며,
+mutable process name·package/vendor 이름·artifact 출력·serialized diagnostic boolean은
+권한이 아니다. Build program의 pinned Rustc `--version`은 info-only child이며
+compiler producer/CONTROL/network 권한을 얻지 않는다. 다른 subprocess와 filesystem/
+network 시도, drop/incomplete stream은 기존 Findings/Policy/failure로 보존한다.
+
+전체 default debug output TAR는 entries20,000/files10,000/expanded200MiB/
+file64MiB로 확인한다. 첫 empty dot directory만 root data로 인정하고 unsafe roots,
+links/metadata drift/duplicates/escape/trailing data를 거부한다. Archive-local hardlink
+alias는 같은 archive의 regular backing data로만 재구성하며 logical expansion도
+200MiB에 charge한다. Host link를 생성하거나 외부 파일을 따라가지 않는다. 이 output
+규칙은 source/crate/cache의 link 거부 규칙을 바꾸지 않는다. Promotion 대상은
+nonhidden top-level default products(`.d` 제외), 최대128files/200MiB이며 host에서
+실행하지 않는다.
+
+`cargo-build-v3` recipe digest는 pinned runtime, fixed config와 실제 create/metadata/
+build argv, 두 phase topology, resource/transport/output bounds 및 selection/alias
+규칙을 묶는다. Source/cache/graph/output/recipe/개별 files와 recorded Evidence content
+hashes를 independent receipt로 재확인한 뒤 새 `.heliopause/builds/<Run>`에 atomic
+no-overwrite publication한다. Competing/foreign output은 보존하고 uncertain cleanup/
+rollback은 실패다. Retained build도 새 Run/output을 사용하며 기존 output을 덮지 않는다.
+최초 trusted stage/command status와 bounded observer/output diagnostics는 generic build
+result나 cleanup에 가려지지 않게 보존한다. Raw artifact-controlled text/path는 새
+trust authority가 아니다.
 
 ## Qualification
 
@@ -772,7 +996,7 @@ Terraform public Provider 설치를 HAA transaction으로 보호한다.
 ## Public UX
 
 ```bash
-helox terraform init hashicorp/aws@5.50.0
+helox terraform init hashicorp/random@3.7.2
 ```
 
 지원하지 않음:
@@ -849,6 +1073,48 @@ unsigned / mismatch / ambiguous identity
 
 정확한 signer classification은 adapter의 canonical policy table 하나가 소유한다.
 
+### Public discovery and frozen signed acquisition
+
+Provider selection은 고정 public origin의 `providers.v1` discovery, provider version
+목록의 요청한 exact version/platform/protocol, package metadata를 한 번 고정한다.
+목록의 다른 과거 release에 legacy/empty protocol 선언이 있어도 현재 version의
+protocol로 해석하지 않는다. Duplicate version/key·ambiguous JSON·trailing data는
+거부하고, 현재 요청한 platform/protocol의 일치 검사는 그대로 유지한다.
+
+Endpoint policy는 exact filename·version·platform과 연결된 HashiCorp release path
+또는 해당 namespace의 GitHub provider repository/release path다. Registry response가
+호스트·포트·경로·mirror 허용 범위를 추가하지 않는다. GitHub asset/CDN redirect의
+기존 bounded HTTPS byte acquisition만 재사용하며 해당 adapter의 승인과 identity를
+전용하지 않는다. Ambient proxy·credential·Terraform configuration을 소비하지 않는다.
+
+Frozen intake는 discovery(64KiB), versions(2MiB), package(1MiB), checksum(1MiB),
+signature(16KiB), ZIP(64MiB)의 여섯 length-delimited fields로 한 subject에 bind한다.
+Envelope SHA256, registry snapshot SHA256, archive SHA256, unpacked h1와 executable
+SHA256은 서로 다른 identity다. Run-private0700 directory·single-link0600 file을
+anchored read하고 envelope digest를 다시 확인한다. Acquisition은 새로운 resolve를
+하지 않으며 verifier가 같은 frozen bytes를 독립 검증한다.
+
+Signer table은 `verification/terraformprovider` 한 곳에 둔다:
+
+| Binding | Normalized verification |
+| --- | --- |
+| `hashicorp` namespace + pinned full official fingerprint + current official certificate + valid exact checksum signature | required VERIFIED; inspection 계속 |
+| current provider certificate + pinned partner root의 endorsement + valid exact checksum signature | recognized partner VERIFIED; inspection 계속 |
+| valid self-signed/community certificate·checksum signature, recognized endorsement 없음 | required INCOMPLETE·signer review limitation; 자동 ALLOW 없음 |
+| unsigned, invalid/ambiguous signature, checksum/metadata identity mismatch 또는 invalid endorsement | required MISMATCH; 기존 Policy의 BLOCK 입력 |
+
+Partner endorsement는 registry public certificate armor의 **exact decoded packet
+bytes**에 대한 detached signature다. 재직렬화한 entity나 key ID/source label로
+대체하지 않는다. 공식 signer는 published primary fingerprint
+`C874011F0AB405110D02105534365D9472D7468F`에 bind한다. 공식 과거 서명에는 서명 당시
+유효한 historical binding과 같은 전체 signing-key fingerprint의 현재 authoritative
+certificate binding을 모두 요구한다. Current primary/subkey expiry·revocation과
+message signature validity를 유지하며 expiration error 억제·zero-time 검증을 하지 않는다.
+현재 official public certificate와 partner root의 공개 bytes·공식 출처는 source
+qualification evidence와 dependency review에 연결한다.
+
+서명 성공은 provider의 안전성, dynamic observation 완료나 init 설치 성공이 아니다.
+
 ## Transaction set
 
 ```text
@@ -871,6 +1137,61 @@ project discovery
 → post-state verify
 → atomic commit / rollback
 ```
+
+### Guarded controls, package inspection and retained installation
+
+Project guard가 lock·configuration·reachable local module의 원래 bytes와 file/directory
+identity를 고정한 뒤에만 public selection을 수행한다. Maintained HCL2 parser로 `.tf`
+및 `.tf.json`의 literal `required_providers`와 local module source를 읽는다. Explicit
+public source 선언을 요구하고 implicit provider inference, remote/escaping module,
+override file, expression-based source/version, alias·hardlink·ambiguous configuration은
+fail-closed다. Host Terraform, ambient CLI flags/configuration 및 provider mirror는
+실행하거나 소비하지 않는다. Configuration256files·local32modules·file1MiB·aggregate3MiB,
+parser depth64, project control4MiB와 provider32개가 finite upper bound다.
+
+요청 Provider는 CLI의 exact version과 모든 configuration constraint를 만족해야 한다.
+다른 required provider는 기존 lock의 exact selection을 사용한다. 독립 Provider roots를
+요청 Provider의 dependency라고 꾸미지 않는다. Resolution은 requested primary를
+표현하고 complete ProjectDependencySnapshot은 모든 required Provider를 검사·승인한다.
+기존 같은-version lock에서 현재 package의 supported `h1` 또는 `zh`가 적어도 하나
+일치해야 한다. Signed ZIP SHA256(`zh`)과 unpacked file-content hash(`h1`)를 구분하며
+다른 platform의 기존 hash는 보존한다. Selected control과 source 전체를 하나의
+framed graph digest로 연결하며 approval 후 live resolution/download를 반복하지 않는다.
+
+ZIP의 모든 member를 bounded CRC read한다. Flat path·unique case identity·regular
+file·0644/0755만 지원하고 traversal·directory/link/special/setid·encrypted archive,
+추가 ELF/실행 표면과 version/platform mismatch는 거부한다. Exact provider ELF는
+Linux/amd64 ET_EXEC/ET_DYN이며 content와 executable digest를 따로 고정한다. ZIP64MiB,
+member64MiB, expanded aggregate200MiB, archive10,000entries, complete installed set
+200MiB/10,000files/20,000entries의 한도를 유지한다. 한도 밖 package는 자동 설치하지 않는다.
+
+Verified signer에만 같은 acquired subject의 required isolated `-help` probe를 수행한다.
+`terraform-provider` 전용 ARTIFACT profile에서 exact `/work/artifact`를 한 번 실행하고
+network-none, readonly OCI root, 기존 CPU30s/wall30s/memory512MiB/PID64/charged10,000
+경계를 적용한다. 고정 probe의 외부 terminal0(help) 또는 terminal1(plugin host required)를
+기록한다. Terminal1은 consumed exact direct-exec admission과 typed external target exit를
+함께 요구한다. stdout·error string·bare exit error는 완료 authority가 아니다. Missing
+observation, ambiguous admission, timeout/resource/cleanup failure는 required INCOMPLETE다.
+이미 관찰된 의심 사실과 미완료 coverage를 독립 check로 유지한다. Network·unexpected
+exec·filesystem·honeytoken은 기존 Policy로 전달한다. 이 probe는 Provider RPC/schema,
+plan/apply/cloud operation이나 package 전체 기능의 attestation이 아니다.
+
+Complete entry/set ALLOW와 실제 recorded source/static/dynamic Evidence가 있어야 verified
+cache를 stage한다. Intake·registry/archive integrity·unpacked hash·executable를 재해시하고
+cache 전체의 file/directory identity·mode·content inventory와 Evidence record digest를
+receipt에 연결한다. Retained open도 실제 Evidence와 전체 tree를 다시 검증한다.
+Project marker만의 checksum을 approval authority로 사용하지 않는다. Project 밖 trusted
+state는 exact cache receipt와 complete approval을 보존하며 `.terraform/providers`에는
+0644 data의 readonly0444 및 executable0555만 materialize한다. Backend/module/foreign
+`.terraform` state는 adoption하지 않는다.
+
+기존 Terraform transaction owner의 private selected tree·original backup·no-replace
+publication·post-state verification·fsync·rollback을 재사용한다. Configuration, original
+lock/provider/metadata 및 independent approval drift와 concurrent init를 거부한다.
+새 lock/providers/metadata/approval 어느 단계가 실패해도 식별된 자기 output만 제거하고
+원래 상태를 복원한다. 외부에서 바뀐 tree/identity는 지우거나 덮지 않으며 recovery
+backup을 남기고 다음 init를 fail-closed로 중단한다. Retained configuration/lock/installed
+state의 승인 후 변경도 자동 재승인하지 않는다.
 
 ## Existing GitHub Release reuse
 
@@ -968,20 +1289,66 @@ post-freeze 변경으로 취급한다.
 
 ## Feature freeze condition
 
+### First-release support tuples
+
+M12-005는 아래 네 exact tuple을 HAA의 bounded artifact inspection과 원래 graph의
+offline Promotion 범위에서 `RELEASE_SUPPORTED`로 확정한다. Named official
+endpoint와 이미 구현된 resource policy를 사용하며 같은 source `d328756`에서
+CPU·각 CUDA profile을 독립 실행했다. Actual run/checkout/source와 원본 전체 로그는
+[M12-005 qualification](./evidence/m12-005-qualification/README.md), machine-readable
+[support tuples](./evidence/m12-005-qualification/support-tuples.json)가 소유한다.
+Public release 게시와 일반 Host runtime activation은 별도의 후속 gate를 따른다.
+
+| Package/version | Official source profile | Interpreter/ABI/platform target | Resource policy | Qualification / support |
+| --- | --- | --- | --- | --- |
+| `torch==2.14.0+cpu` | `pytorch:cpu` | Python3.14.7 / cp314-cp314 / Linux amd64, manylinux_2_36_x86_64 target | `pytorch:cpu`의 위 두 budget 표 | [actual full / all10SUCCESS](https://github.com/rahoney/heliopause/actions/runs/37561282942); `RELEASE_SUPPORTED` |
+| `torch==2.14.0+cu126` | `pytorch:cu126` | 동일 pinned Python/ABI/platform | `pytorch:cu126`의 위 두 budget 표 | [actual full / all10SUCCESS](https://github.com/rahoney/heliopause/actions/runs/37570546443); `RELEASE_SUPPORTED` |
+| `torch==2.14.0+cu130` | `pytorch:cu130` | 동일 pinned Python/ABI/platform | `pytorch:cu130`의 위 두 budget 표 | [actual full / all10SUCCESS](https://github.com/rahoney/heliopause/actions/runs/37561348597); `RELEASE_SUPPORTED` |
+| `torch==2.14.0+cu132` | `pytorch:cu132` | 동일 pinned Python/ABI/platform | `pytorch:cu132`의 위 두 budget 표 | [actual full / all10SUCCESS](https://github.com/rahoney/heliopause/actions/runs/37566006329); `RELEASE_SUPPORTED` |
+
+Wheel의 manylinux_2_28 tag와 runtime target manylinux_2_36은 서로 다른 identity
+field다. Compatible selected tag와 exact interpreter/source/digest 검사는 유지한다.
+Qualification은 root exact version을 live resolve한 뒤 각 selected node를 freeze하고
+독립 integrity/inspection/Policy/Evidence를 거쳐 offline Promotion한다. Live 실행을
+과거 graph의 frozen full replay로 표현하지 않으며 deterministic static replay와
+실제 lifecycle 실행은 각각의 증거를 가진다.
+
+CUDA tuple의 broader non-root probes에는 explicit inspection-only NumPy2.4.6 pin을
+사용한다. CPU 기본 입력은 empty다. 이 보조 wheel과 entry-point scripts는 target에
+승격하지 않으며 원래 설치 graph를 바꾸지 않는다. 보조 입력 없는 required
+inspection 실패를 성공으로 간주하지 않는다. Pin과 대상 binding은 기존
+`--inspection-prerequisites` 계약 및 exact CI qualification 입력을 따른다.
+`triton.profiler.viewer`는 `NOT_ATTESTED`로 result/Evidence/manifest에 남는다.
+해당 command의 정상 동작이나 승격 후 실행 차단을 보장하지 않는다.
+
+CUDA Toolkit/Host driver compatibility·실제 GPU computation, 다른 Python/ABI/OS/
+architecture, 이 표에 없는 Torch version 및 torchvision/torchaudio 조합은 이번
+first-release tuple qualification에 포함되지 않는다. Ownership table에 프로젝트가
+있거나 selector가 등록됐다는 이유로 그 조합의 release support를 광고하지 않는다.
+다른 입력도 기존 exact source/integrity/resource/completeness 판정을 따라야 하며,
+지원 범위 확대는 deliberate qualification/support 결정으로만 수행한다.
+Public release·일반 Host runtime activation은 M12-02/M13의 별도 완료 기준이다.
+
 다음이 모두 만족되면 M12 기능 개발을 종료한다.
 
-- [ ] PyTorch official source supported without arbitrary index fallback
-- [ ] PyTorch canonical source-ownership table prevents cross-index dependency confusion
-- [ ] first-release PyTorch/CUDA release support matrix finalized with explicit bounds and qualification evidence
-- [ ] registered-but-unqualified PyTorch profiles are not represented as release-supported
-- [ ] Go proxy + SumDB exact graph qualification
-- [ ] `helox go build` uses only HAA-managed verified modules and passes build-time observation qualification
-- [ ] Cargo add/build and build-time observation qualification
-- [ ] Terraform Provider init/checksum/signature qualification
-- [ ] all existing npm/PyPI/GitHub tests remain green
-- [ ] Linux gVisor integration green
-- [ ] canonical `Required` CI green
-- [ ] docs/CLI accurately state supported and unsupported paths
+- [x] PyTorch official source supported without arbitrary index fallback
+- [x] PyTorch canonical source-ownership table prevents cross-index dependency confusion
+- [x] first-release PyTorch/CUDA release support matrix finalized with explicit bounds and qualification evidence
+- [x] registered-but-unqualified PyTorch profiles are not represented as release-supported
+- [x] Go proxy + SumDB exact graph qualification
+- [x] `helox go build` uses only HAA-managed verified modules and passes build-time observation qualification
+- [x] Cargo add/build and build-time observation qualification
+- [x] Terraform Provider init/checksum/signature qualification
+- [x] all existing npm/PyPI/GitHub tests remain green
+- [x] Linux gVisor integration green
+- [x] canonical `Required` CI green
+- [x] docs/CLI accurately state supported and unsupported paths
+
+M12-005의 모든 조건을 같은 source의 실제 qualification과 문서 대조로 확인했다.
+[77개 요구사항 매핑](./evidence/m12-005-qualification/requirement-matrix.json)은
+현재 기본 회귀와 실제 installed/full consumer를 구분한다. GitHub standalone의
+transitive graph는 기존 M6 계약상 N/A이며 Provider 독립 roots를 dependency edge로
+표현하지 않는다. 최종 문서 commit의 원격 Required는 별도 전달 확인이다.
 
 이 시점 이후 Java, Helm, private registries, alternate mirrors 등은 첫 release 뒤로
 넘긴다.

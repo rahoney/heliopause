@@ -1,0 +1,20 @@
+{
+  "scope": "current production watcher-stop candidate, eight actual old direct consumers",
+  "result": "PASS",
+  "raw_local_file": "go-build-watch-stop-final-legacy.log",
+  "raw_sha256": "c905ab922e9f956dea653f1381a17cdec355873fc9d66e61e7f04f800701a762",
+  "actual_pass_tests": [
+    "--- PASS: TestLinuxGVisorLifecycleIntegration (4.15s)",
+    "--- PASS: TestLinuxGVisorArtifactEnvironmentIsolationIntegration (4.02s)",
+    "--- PASS: TestLinuxGitHubReleaseELFDynamicIntegration (1.80s)",
+    "--- PASS: TestLinuxPyTorchResolverIntegration (50.67s)",
+    "--- PASS: TestLinuxPyPISdistBuildIntegration (14.16s)",
+    "--- PASS: TestLinuxPyPIWheelDynamicIntegration (12.81s)",
+    "--- PASS: TestLinuxPythonUtilityLoaderIntegration (69.45s)",
+    "--- PASS: TestLinuxPythonRootPolicyTransactionSequenceIntegration (121.54s)"
+  ],
+  "mandatory_gate": "TestLinuxPyPISdistBuildIntegration",
+  "helper_wait": 0,
+  "restored_original_installation": true,
+  "candidate_receipt_sha256": "08af9139c92894facd1264acded3e6357c39b3b4499dc620b79e7ced325e5c1b"
+}

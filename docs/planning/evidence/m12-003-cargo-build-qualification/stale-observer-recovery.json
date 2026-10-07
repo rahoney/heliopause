@@ -1,0 +1,60 @@
+{
+  "status": "STALE_OWNED_OBSERVER_ENTRIES_REMOVED",
+  "scope": "post-timeout observer filesystem entries only; no project transaction recovery or execution success claim",
+  "no_installed_consumer": "verified complete bounded host proc inventory",
+  "no_live_bound_observer_socket": true,
+  "lock": "exclusive nonblocking lock acquired on exact retained inode",
+  "docker_query": "no existing traced runtime consumers; bounded Docker queries succeeded",
+  "removed": [
+    {
+      "path": "/run/heliopause-observer/.heliopause-supervisor.lock",
+      "device": 62,
+      "inode": 819,
+      "uid": 1000,
+      "gid": 1000,
+      "mode": 384,
+      "type": "regular",
+      "nlink": 1,
+      "size": 0,
+      "mtime_ns": 1791212773258929097
+    },
+    {
+      "path": "/run/heliopause-observer/gvisor-remote.sock",
+      "device": 62,
+      "inode": 821,
+      "uid": 1000,
+      "gid": 1000,
+      "mode": 493,
+      "type": "socket",
+      "nlink": 1,
+      "size": 0,
+      "mtime_ns": 1791212773267154436
+    },
+    {
+      "path": "/run/heliopause-observer/haa-control.sock",
+      "device": 62,
+      "inode": 822,
+      "uid": 1000,
+      "gid": 1000,
+      "mode": 493,
+      "type": "socket",
+      "nlink": 1,
+      "size": 0,
+      "mtime_ns": 1791212773267154436
+    },
+    {
+      "path": "/run/heliopause-observer/haa-output.sock",
+      "device": 62,
+      "inode": 820,
+      "uid": 1000,
+      "gid": 1000,
+      "mode": 493,
+      "type": "socket",
+      "nlink": 1,
+      "size": 0,
+      "mtime_ns": 1791212773258929097
+    }
+  ],
+  "project_recovery": "retained untouched",
+  "time_unix": 1791244522.7531338
+}

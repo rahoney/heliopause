@@ -70,7 +70,7 @@ type CargoResolver interface {
 }
 
 type TerraformResolver interface {
-	Resolve(context.Context, domain.ArtifactReference, domain.InstallContext) (domain.DependencyResolution, error)
+	Init(context.Context, domain.ArtifactReference, domain.InstallContext) (application.TerraformInitResult, error)
 }
 
 // Doctor reports bounded installation and Host readiness checks. A false
@@ -445,9 +445,8 @@ func AddNPMInstall(root *cobra.Command, installer Installer) error {
 	return errors.New("npm install command is not registered")
 }
 
-// AddGoModuleGet binds exact public module resolution to the static command
-// tree. Project mutation remains a later transaction step and is never implied
-// by a successful graph resolution.
+// AddGoModuleGet binds the guarded, inspected and approved frozen project
+// update to the static command tree. A mere resolution does not update files.
 func AddGoModuleGet(root *cobra.Command, resolver GoModuleResolver) error {
 	if root == nil || resolver == nil {
 		return errors.New("go get command requires a resolution use case")
@@ -484,7 +483,7 @@ func AddGoModuleGet(root *cobra.Command, resolver GoModuleResolver) error {
 }
 
 // AddGoModuleDownload binds the complete project snapshot boundary to `go mod
-// download`. It reports a frozen state; verified-cache promotion is separate.
+// download`. The use case completes inspection and verified-cache promotion.
 func AddGoModuleDownload(root *cobra.Command, resolver GoModuleProjectResolver) error {
 	if root == nil || resolver == nil {
 		return errors.New("go mod download command requires a project resolution use case")
@@ -547,7 +546,7 @@ func AddCargoAdd(root *cobra.Command, resolver CargoResolver) error {
 
 func AddTerraformInit(root *cobra.Command, resolver TerraformResolver) error {
 	if root == nil || resolver == nil {
-		return errors.New("terraform init command requires a resolution use case")
+		return errors.New("terraform init command requires a guarded installation use case")
 	}
 	command := findLeaf(root, "terraform", "init")
 	if command == nil {
@@ -570,11 +569,11 @@ func AddTerraformInit(root *cobra.Command, resolver TerraformResolver) error {
 		if err != nil {
 			return err
 		}
-		resolution, err := resolver.Resolve(contextOrBackground(command.Context()), reference, installContext)
+		result, err := resolver.Init(contextOrBackground(command.Context()), reference, installContext)
 		if err != nil {
 			return err
 		}
-		_, err = fmt.Fprintf(command.OutOrStdout(), "Source: %s\nProviders: %d\nLock digest: %s\n", reference.Source(), len(resolution.Graph().Nodes()), resolution.LockfileDigest())
+		_, err = fmt.Fprintf(command.OutOrStdout(), "Source: %s\nProviders: %d\nLock digest: %s\n", reference.Source(), result.ProviderCount, result.Resolution.LockfileDigest())
 		return err
 	}
 	return nil

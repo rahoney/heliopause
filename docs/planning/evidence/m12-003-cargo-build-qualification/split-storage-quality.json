@@ -1,0 +1,46 @@
+{
+  "status": "PARTIAL_PASS",
+  "source_count": 708,
+  "source_scope": "Test-only separate fresh cache harness; no product/CPP/helper/runtime delta from previous707 inventory. Raw old failures preserved.",
+  "checks": [
+    {
+      "profile": "quick",
+      "path": "raw/split-storage-quick.log",
+      "sha256": "a54ded546219c71fe07f1f16167f8ae8e99f1317a7e1b8882b91a5db51bb4aee",
+      "bytes": 1354,
+      "tool_exit": 0
+    },
+    {
+      "profile": "security",
+      "path": "raw/split-storage-security.log",
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95",
+      "bytes": 44,
+      "tool_exit": 0
+    },
+    {
+      "profile": "docs",
+      "path": "raw/split-storage-docs.log",
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9",
+      "bytes": 22,
+      "tool_exit": 0
+    }
+  ],
+  "format_tool_exit": 0,
+  "build_tool_exit": 0,
+  "binaries": [
+    {
+      "role": "bootstrap-test",
+      "sha256": "c88c2edf2ca663a1fb13a302cc32b0e67138c33d05a0b7c86146f0a630df9ffa"
+    },
+    {
+      "role": "observer",
+      "sha256": "68d2f7f232fb7700c5820a5943483fd0245424e16018c5598b31c2f1a54dcf28"
+    },
+    {
+      "role": "policy-helper",
+      "sha256": "d268d1ece6751cf19e52eef1e17d71ed737ea60fd428b7866944e4f8e78b7c5d"
+    }
+  ],
+  "full_cpu_cu126": "IN_PROGRESS; no full acceptance claim",
+  "scope": "Canonical native quick/security/docs and fresh standalone bootstrap test build; same708-source checksum verified before running. New full log excluded while active."
+}

@@ -133,6 +133,41 @@ type fixturePromotionRunner struct {
 	racedTarget string
 }
 
+func TestNPMPromotionProjectPreparesFreshVerifiedControls(t *testing.T) {
+	root := realPromotionRoot(t)
+	target := filepath.Join(root, "target")
+	if err := os.Mkdir(target, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	for name, body := range map[string]string{"package.json": `{"dependencies":{}}`, "package-lock.json": `{"packages":{"":{}}}`} {
+		if err := os.WriteFile(filepath.Join(target, name), []byte(body), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	install, err := domain.NewNPMProjectInstallContext(installContextFor(t, target).Target())
+	if err != nil {
+		t.Fatal(err)
+	}
+	bundle, staged := validStagedNPMFixtureForContext(t, root, install)
+	runner := &fixturePromotionRunner{bundle: bundle}
+	adapter, err := newNPMPromotion(filepath.Join(root, "staging"), runner, "linux", "amd64")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, phase := range []string{"first", "retained"} {
+		if _, err := adapter.Promote(context.Background(), staged, bundle, install); err != nil {
+			t.Fatalf("%s project promotion before runner_calls=%d: %v", phase, runner.calls, err)
+		}
+		plan, err := freezeNPMProject(target)
+		if err != nil || plan.verifyManagedOrEmpty() != nil || rejectInterruptedNPMTransaction(target) != nil {
+			t.Fatalf("%s project did not reconcile: %v", phase, err)
+		}
+	}
+	if runner.calls != 2 {
+		t.Fatalf("actual preparation pipeline invoked runner %d times", runner.calls)
+	}
+}
+
 func (r *fixturePromotionRunner) Run(_ context.Context, project string, arguments []string) error {
 	r.calls++
 	r.arguments = append([]string(nil), arguments...)

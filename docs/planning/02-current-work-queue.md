@@ -8,11 +8,11 @@
 
 ```text
 Current milestone: M12 — Ecosystem Expansion Before Public Release
-Milestone status: IN_PROGRESS
-Active work item: None (M12-001 COMPLETE)
-Next work item: M12-002 — public Go Modules
-Next work item status: NOT_STARTED (M12-001 acceptance closed)
-Ready: Yes
+Milestone status: COMPLETE (technical acceptance; reviewer merge pending)
+Active work item: none (M12-02 complete)
+Next work item: M13 — Production Release & Operations
+Next work item status: NOT_STARTED / Ready: No — reviewer merge and main CI pending; M13 activation blocker remains separate
+Ready: No — delivery handoff
 ```
 
 M0~M7은 원래 정의한 MVP qualification과 evidence를 완료했다. external
@@ -2133,14 +2133,14 @@ M11-FIX-04: COMPLETE
 M11-FIX-05: COMPLETE
 M12: IN_PROGRESS
 M12-001: COMPLETE
-M12-002: NOT_STARTED
-M12-003: NOT_STARTED
-M12-004: NOT_STARTED
+M12-002: COMPLETE
+M12-003: COMPLETE
+M12-004: COMPLETE
 M12-005: NOT_STARTED
 M12-02: RESERVED
 M13: BLOCKED
-Active work item: None (M12-001 COMPLETE)
-Next work item: M12-002 — NOT_STARTED / Ready: Yes
+Active work item: none (M12-002~004 remote qualification complete)
+Next work item: M12-005 — NOT_STARTED / Ready: Yes
 ```
 
 M9-006까지 qualification을 완료했다. M10-001은 release identity·manifest 및
@@ -2173,11 +2173,11 @@ production activation과 최종 배포를 수행한다.
 | Order | ID | Scope | Status |
 | --- | --- | --- | --- |
 | 1 | M12-001 | Official PyTorch source support | COMPLETE |
-| 2 | M12-002 | public Go Modules | NOT_STARTED |
-| 3 | M12-003 | Rust/Cargo and public crates.io | NOT_STARTED |
-| 4 | M12-004 | Terraform Provider installation | NOT_STARTED |
-| 5 | M12-005 | cross-ecosystem qualification and feature freeze | NOT_STARTED |
-| 6 | M12-02 | final red-team/fix gate | RESERVED |
+| 2 | M12-002 | public Go Modules | COMPLETE |
+| 3 | M12-003 | Rust/Cargo and public crates.io | COMPLETE |
+| 4 | M12-004 | Terraform Provider installation and cumulative remote qualification | COMPLETE |
+| 5 | M12-005 | cross-ecosystem qualification and feature freeze | COMPLETE |
+| 6 | M12-02 | final red-team/fix gate | COMPLETE |
 
 ### M12-001 acceptance 종료 (2026-10-03)
 
@@ -2200,6 +2200,138 @@ CPU full E2E가 포함되며 별도 수동 CUDA full 재실행은 이 문서 변
 
 M12 전체는 `IN_PROGRESS`를 유지한다. 다음 M12-002 public Go Modules는
 `NOT_STARTED / Ready: Yes`이며 아직 구현 작업을 시작하지 않았다.
+
+### M12-002 시작 baseline audit (2026-10-04)
+
+PR28 merge `62c3b595e8e27a4a1d836849643c372692a39b8b`와
+[main CI run37132385788](https://github.com/rahoney/heliopause/actions/runs/37132385788)의
+10개 jobs(Required/macOS 포함) success를 확인하고
+`milestone/m12-ecosystem-qualification`에서 시작했다. 사용자 지시에 따라
+원격 main을 다시 fetch하고 로컬 main을 같은 merge SHA로 fast-forward한 뒤
+`milestone/m12-go-cargo-terraform`을 생성하여 기존 checkpoint를 그대로 이어갔다. M12-001은 COMPLETE를 유지한다.
+
+`IMPLEMENTED=YES`, `WIRED=NO`, `QUALIFIED=NO`, `ACCEPTANCE_CLOSED=NO`다.
+기존 `artifact/gomodule` parser, `sandbox/gomodule_resolver.go`/`gomodule_build.go`,
+`promotion/go_get.go`/`go_transaction.go`, `application/gomodule.go`,
+`domain/project_snapshot.go`, CLI/bootstrap을 재사용한다. 기본 단위/stub 회귀의
+존재를 실제 production qualification으로 확대하지 않는다.
+
+`MISSING`: resolved exact graph/content의 검사·Policy·Evidence와 transaction 연결,
+재선택 없는 approved verified cache 승격, 실제 isolated/observed offline build와
+output publication, Host에서 project/replace/toolchain content를 실행하지 않는
+resolver 경계, pinned runtime 및 정상·tamper·cache poisoning·ambient env·race·
+rollback/cleanup과 기존 직접 소비자의 실제 qualification이다. 현 `go get`은
+resolution 뒤 별도 network-enabled selection을 하고 `go mod download`는
+resolution만 보고한다. `GoBuildRunner`는 CLI에 연결되지 않았으며 현재 RunGo는
+Host 실행이다. 이를 성공한 검사·승격·격리 build로 기록하지 않는다.
+
+작업 범위는 기존 보안 모델 안에서 M12-002의 acceptance gap을 채우는 것이다.
+현재 하나의 IN_PROGRESS만 유지하며 local checkpoint를 남긴다.
+NO PUSH / NO REMOTE CI / NO MERGE. 다음 M12-003은 NOT_STARTED다.
+
+### M12-002 parser/private snapshot checkpoint (2026-10-04)
+
+[Parser baseline evidence](./evidence/m12-002-parser-baseline/result.json)는
+실제 Go command 형식과 기존 stub의 차이, 수정 전 FAIL과 직접 정상/negative
+회귀를 연결한다. Existing parser/resolver에 bounded JSON stream, official module
+identity/escaping, project-bound main/synthetic/selected-MVS graph, checksum/control
+binding, private-control reads와 cleanup failure 보존을 적용했다. x/mod dependency
+검토는 [Coding/security rules](../engineering/02-coding-security-rules.md)에 있다.
+
+이 checkpoint는 Go full operation closure가 아니다. Origin metadata는 source
+attestation을 대신하지 않으며, host runner·재선택 promoter·검사/Policy/verified
+cache·실제 isolated build/output publish와 qualification은 위 MISSING에 남는다.
+`M12-002 IN_PROGRESS / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO`를 유지한다.
+PyTorch/공통 observer/기존 runtime lock/workflow·Policy 입력은 변경하지 않았다.
+
+### M12-002 acquisition/SumDB checkpoint (2026-10-04)
+
+[Acquisition evidence](./evidence/m12-002-acquisition/result.json)에 exact public
+`.mod`/`.zip` intake, independent signed SumDB/Merkle/h1 verification, bounded
+non-executing static inspection과 기존 entry Policy/Evidence 경로의 실제 빈 intake
+정상/negative 검증을 연결한다. 신규 SumDB consumer에서 검출된 x/mod 인증
+취약점은 official fixed `v0.40.0` pin으로 교정했고 동일 unlogged-hash fixture의
+old FAIL/fixed PASS를 보존한다. 상세 source/dependency 계약은 M12 leaf와
+coding/security rules가 소유한다.
+
+이는 project command 전체 qualification이 아니다. Source-attested isolated
+resolution, complete graph inspection/cache, 재선택 없는 transaction, observed
+offline build/output publish와 필수 소비자 검증을 계속 진행한다.
+`M12-002 IN_PROGRESS / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO`를 유지한다.
+M12-003/004는 아직 시작하지 않았다. NO PUSH / NO REMOTE CI / NO MERGE.
+
+### M12-002 project inspection/verified cache checkpoint (2026-10-04)
+
+기존 per-entry workflow와 M3/M4 complete-coverage semantics를 재사용하여 primary
+없는 complete project 검사와 ALLOW-only typed verified cache staging을 연결한다.
+Project checksum disagreement를 승인하던 동일 fixture의 before FAIL → after PASS,
+입력/캐시 변조·누락·foreign Run/approval·incomplete checks의 fail-closed 회귀와
+실제 public intake→독립 SumDB→project 검사/Evidence/Policy→cache 소비 결과는
+[project/cache evidence](./evidence/m12-002-project-cache/result.json)가 소유한다.
+이 fixture의 project snapshot은 명시한 qualification 입력이며 isolated resolver
+실행 결과로 주장하지 않는다. `IMPLEMENTED=YES`의 재사용을 유지하고 전체
+`WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO`, M12-002 IN_PROGRESS를 유지한다.
+남은 acceptance는 source-attested isolated resolver·재선택 없는 project transaction,
+실제 observed offline build와 output publish, CLI wiring 및 전체/direct-consumer
+qualification이다. 이 checkpoint 뒤 같은 item을 계속하며 다음 M12-003/004는
+NOT_STARTED다. NO PUSH / NO REMOTE CI / NO MERGE.
+
+### M12-002 isolated source/guarded transaction checkpoint (2026-10-04)
+
+[Source/transaction evidence](./evidence/m12-002-source-transaction/result.json)에
+고정 Go runtime의 registered source 경계, 실제 download/graph→complete snapshot,
+하나의 private selection을 승인 후 재선택 없이 반영하는 guarded transaction과
+required Evidence/cache 재검증을 연결한다. Raw project marker는 승인 권한이
+아니며 기존 journal·rollback을 재사용한다. 동일 missing-record fixture의 이전
+cache adapter FAIL과 보완 후 PASS, control/lock/foreign approval/journal 및
+selected-byte substitution 회귀도 해당 기록의 범위로 남긴다.
+
+실제 `go get`은 EVENT_LIMIT10000에서 실패한다. Budget scope 확인은 pending이며
+한도·관찰·판정을 변경하지 않았다. 독립 download/graph source gate의 PASS를 get
+PASS로 전용하지 않는다. 전체 download workflow, dependency-free project 표현,
+observed offline build/output publish, complete CLI와 최종 qualification은 MISSING이다.
+현재 `M12-002 IN_PROGRESS / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO`를
+유지하고 같은 item을 계속한다. M12-003/004는 NOT_STARTED다.
+NO PUSH / NO REMOTE CI / NO MERGE.
+
+### M12-002 guarded download/dependency-free project checkpoint (2026-10-04)
+
+기존 download use case에 guard·complete project inspection/Policy/Evidence·verified
+cache·current-snapshot transaction을 연결했다. 임의 primary 또는 두 번째 selection은
+없다. Explicit dependency-free graph는 missing snapshot과 구분하고 empty payload
+inventory에 bind한다. 같은 private-control drift fixture의 old resolver FAIL/new
+PASS와 현재 실제 public/empty source snapshot, dependency-free CLI 최초 adoption과
+retained reuse PASS 범위는 [download evidence](./evidence/m12-002-download/result.json)가 소유한다.
+
+필수 positive product gate `TestLinuxGoGetDownloadIntegration`도 실제 실행했다.
+Dependency-free project에서 exact pflag Get는 phase COMMAND/EVENT_LIMIT10000으로
+FAIL하며 primary diagnostic과 원래 controls·approval 부재·guard cleanup을 보존한다.
+이 gate를 expected-failure PASS로 바꾸지 않았다. 이전 사용자 지시의 budget 증가
+금지가 신규 Go/Cargo profile의 최초 예산 정의에도 적용되는지 확인은 pending이다.
+답변 전 기존/신규 한도와 event accounting은 변경하지 않는다.
+
+M12-002는 IN_PROGRESS, 전체 WIRED/QUALIFIED/ACCEPTANCE_CLOSED는 NO다. Remaining
+MISSING은 실제 Get와 public/transitive managed CLI download qualification,
+observed offline build/output publish·build CLI, 최종 security/direct-consumer 및
+CPU/CUDA 영향 검증이다. 다음 M12-003/004는 NOT_STARTED를 유지한다.
+NO PUSH / NO REMOTE CI / NO MERGE.
+
+### M12-002 Go resolver 처리량 측정 (2026-10-04)
+
+사용자가 정상 작업량 측정을 지시하여 신규 Go만 별도 LOCAL observer의 finite
+ceiling으로 조사했다. 제품 source·기존 profile budgets·charging·Policy는 불변이다.
+네 fixture의 fresh source-command 36 connections 완료와 실제 처리량/CPU/memory,
+전체 CLI pflag/Cobra PASS 및 x/tools/gRPC의 별도 syntax/Policy FAIL 범위는
+[측정 evidence](./evidence/m12-002-resolver-budget-measurement/README.md)가 소유한다.
+측정 최대 charged63,018에 근거한 신규 resolver 연결별200,000은 후보이며 제품
+적용/qualification은 아직 아니다. 기존 10,000 및 후보 finite overflow 차단도 확인했다.
+
+새로 확인한 MISSING은 Go module의 malformed negative-test assets와 일반 source의
+syntax inspection 범위다. Raw filename을 승인 authority로 삼거나 package/vendor
+allowlist·test skip·Policy 완화로 통과시키지 않았다. 기존 Get/build/최종 qualification
+MISSING과 함께 닫아야 한다. M12-002 IN_PROGRESS, 전체 WIRED/QUALIFIED/
+ACCEPTANCE_CLOSED NO와 M12-003/004 NOT_STARTED를 유지한다.
+NO PUSH / NO REMOTE CI / NO MERGE.
 
 ### M12-001 종료 전 이력 (당시 상태, 현재 판정 아님)
 
@@ -2422,31 +2554,39 @@ Release support: broader first-release CUDA matrix remains an M12-005 decision
 
 M12-002 — Go
 IMPLEMENTED: YES
-WIRED: NO
-QUALIFIED: NO
-ACCEPTANCE_CLOSED: NO
-Status: NOT_STARTED
-Ready: Yes (M12-001 acceptance closed)
+WIRED: YES
+QUALIFIED: YES (Linux/amd64 local qualification)
+ACCEPTANCE_CLOSED: YES
+Status: COMPLETE
+Evidence: evidence/m12-002-go-build-qualification/result.json
+MISSING: None (work-item local acceptance)
+Delivery pending: new remote Required CI and native macOS; NO PUSH / NO REMOTE CI / NO MERGE
 
 M12-003 — Cargo
 IMPLEMENTED: YES
-WIRED: NO
-QUALIFIED: NO
-ACCEPTANCE_CLOSED: NO
-Status: NOT_STARTED
+WIRED: YES (public add/build production CLI)
+QUALIFIED: YES (Linux/amd64 local qualification)
+ACCEPTANCE_CLOSED: YES
+Status: COMPLETE
+Evidence: evidence/m12-003-cargo-build-qualification/result.json
+MISSING: None (work-item local acceptance)
+Delivery pending: new remote Required CI and native macOS; NO PUSH / NO REMOTE CI / NO MERGE
 
 M12-004 — Terraform
-IMPLEMENTED: NO
-WIRED: NO
-QUALIFIED: NO
-ACCEPTANCE_CLOSED: NO
-Status: NOT_STARTED
+IMPLEMENTED: YES (existing owners reused and acceptance gaps implemented)
+WIRED: YES (public initial/retained complete-project installation CLI)
+QUALIFIED: YES (Linux/amd64 local qualification)
+ACCEPTANCE_CLOSED: YES
+Status: COMPLETE
+Evidence: evidence/m12-004-provider-qualification/result.json
+MISSING: None (work-item local acceptance)
+Delivery pending: new remote Required CI/native macOS/PR merge; NO PUSH / NO REMOTE CI / NO MERGE
 ```
 
 `WIRED: NO`는 코드가 전혀 존재하지 않는다는 뜻이 아니라, 해당 work item의
 required user/runtime path 전체가 acceptance 수준으로 연결되지 않았다는 뜻이다.
 M12-002~004의 상세 MISSING은 해당 work item이 시작될 때 별도 baseline audit로
-확정한다. 현재 활성 work item은 없으며 다음 M12-002가 `NOT_STARTED / Ready: Yes`다.
+확정한다. M12-002~004 local acceptance는 닫혔으며 다음 M12-005는 NOT_STARTED/Ready: Yes다.
 
 ### M11 post-qualification release hardening
 
@@ -2457,6 +2597,392 @@ M12-002~004의 상세 MISSING은 해당 work item이 시작될 때 별도 baseli
 | 3 | M11-FIX-03 | candidate exact 10-file attestation | COMPLETE |
 | 4 | M11-FIX-04 | draft asset binding·post-publish quarantine | COMPLETE |
 | 5 | M11-FIX-05 | observer profile wait timing regression | COMPLETE |
+
+
+### M12-002 Go resolver/source 보완 checkpoint (2026-10-04)
+
+사용자 승인으로 신규 Go resolver만 연결별 200,000 charged records를 적용했다.
+기존 profile/collector/CPU/memory/time 예산과 observer 판정은 유지한다. 정적 검사의
+최초 원인은 의도적으로 invalid한 testdata assets에 일반 source 문법을 강제한
+것이며 pinned Go discovery/explicit compiler·동일 최소 fixture로 대조했다.
+Cobra/tools 전체 CLI, pflag 실제 Get+retained Download와 기존 npm/GitHub ELF/
+필수 sdist/wheel 및 생산 C++ finite-boundary/latch 회귀는 통과했다.
+[Source correction evidence](./evidence/m12-002-go-source-correction/README.md)가
+exact source/입력/결과/검사 범위를 소유한다.
+
+큰 gRPC graph는 source/inspection을 통과한 뒤 별도 cache file bound로 FAIL했다.
+당시 전체 preflight 11,572 files/약190.5 MiB이며 file cap20,000 승인은 pending이었다.
+아래 cache checkpoint가 이 상태를 supersede한다. M12-002 IN_PROGRESS와 전체 WIRED/QUALIFIED/ACCEPTANCE_CLOSED NO,
+M12-003/004 NOT_STARTED를 유지한다. Observed offline build/output publish와 최종
+qualification MISSING을 계속한다. NO PUSH / NO REMOTE CI / NO MERGE.
+
+### M12-002 Go verified cache file budget checkpoint (2026-10-04)
+
+사용자가 Go cache aggregate file cap20,000을 명시 승인했다. 기존 512 MiB와
+module archive10,000 entries 및 receipt4 MiB를 유지하고 directory 포함 파생
+filesystem entry bound만40,000으로 맞춘다. Observer/Policy/runtime/workflow와
+기존 profile 예산은 이 변경의 입력이 아니다.
+[Cache budget evidence](./evidence/m12-002-go-cache-budget/README.md)가 같은
+aggregate fixture의 old source FAIL→new PASS, exact20,000 경계·초과 reuse 거부,
+aggregate20,002 승격 차단과 임시 cache 정리를 소유한다. Maintained actual CLI의
+dependency-free Download 및 pflag/gRPC41 Get+retained Download도 PASS다.
+
+Observed offline Go build/output publication과 최종 local qualification은
+MISSING이다. 전체 `WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO`, M12-002
+IN_PROGRESS와 M12-003/004 NOT_STARTED를 유지하고 같은 item의 남은 작업을 계속한다.
+NO PUSH / NO REMOTE CI / NO MERGE.
+
+
+### M12-002 Go build input preparation checkpoint (2026-10-04)
+
+[Build input evidence](./evidence/m12-002-go-build-inputs/README.md)는 기존 미연결
+Go build wrapper의 command/cancellation 경계 before FAIL→after PASS와 retained
+approval·Evidence/cache 재검사, bounded anchored source snapshot의 정상/변조/링크
+회귀를 연결한다. 기존 components를 확장하며 원본 project code를 Host에서 실행하지
+않는다. Local source identity를 registry attestation이나 Policy ALLOW로 사용하지 않는다.
+이 checkpoint는 build 입력 준비이며 registered ARTIFACT Go/compiler의 실제 isolated
+execution·offline graph revalidation·build-time Evidence/Policy·bounded output publish·
+CLI wiring과 최종 qualification은 MISSING이다. 전체 WIRED/QUALIFIED/ACCEPTANCE_CLOSED
+NO, M12-002 IN_PROGRESS와 M12-003/004 NOT_STARTED를 유지하고 같은 item을 계속한다.
+NO PUSH / NO REMOTE CI / NO MERGE.
+
+### M12-002 observed Go build / output wiring 진행 (2026-10-05)
+
+신규 Go build profile·offline compiler 관찰과 separate local-source verification,
+기존 Run/Evidence/M3 Policy, retained guard/cache 재검증과 bounded output publish를
+실제 `helox go build`에 연결했다. Canonical Go leaf가 예산·source/output 경계를
+소유한다. Dependency-free 연속 2회·public pflag·gRPC 41 modules의 production CLI
+ALLOW/publish와 explicit invalid testdata의 실제 compiler 실패 보존을 확인했다.
+Output 수집 첫 실패는 Docker archive reader가 gVisor private scratch를 읽지 못한
+것이며 exact named output data volume으로 같은 최소 source fixture가 통과했다.
+입력 RO·event charging·기존 profile의 예산·Policy를 유지한다.
+
+이 wiring checkpoint 당시 IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO /
+ACCEPTANCE_CLOSED=NO였다. 아래 최종 local acceptance 종료가 이 상태를 supersede한다.
+MISSING은 새 library/cgo/security 및 wired CI 호출의 실제 로컬 통합, 변경 observer의
+기존 직접 소비자(sdist 포함), 같은 최종 실행 후보 CPU/cu126 full과 cu130/cu132
+focused 공통 경로, final canonical/security/docs/corpus/Darwin test compilation 및
+qualification evidence다. 과거 M12-001 remote PASS를 새 후보 PASS로 전용하지 않는다.
+M12-002 IN_PROGRESS, M12-003/004 NOT_STARTED를 유지하며 계속 진행한다.
+NO PUSH / NO REMOTE CI / NO MERGE.
+
+
+### M12-002 local acceptance 종료 (2026-10-05)
+
+`IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES`,
+`COMPLETE / MISSING: None`으로 닫는다. Linux/amd64의 실제 source4·Get/download3·
+build CLI9 정상/부정, offline compiler coverage·Policy·output publication과
+기존 직접 소비자8(필수 sdist 포함), 네 profile 추가sequence3, ordinary 실제
+npm/PyPI install/promote 및 canonical 검사를 같은 최종 실행 후보에서 확인했다.
+CPU full526.62s/cu126 full2082.74s와 viewer NOT_ATTESTED·검사 전용 NumPy 승격
+제외, exact helper wait0·원래 설치 복원도 PASS다. Exact source/binary·입력·각 scope와
+causal proofs는 [qualification evidence](./evidence/m12-002-go-build-qualification/result.json)가 소유한다.
+
+cu130/cu132는 실제 공통 경로 focused 회귀만 실행했으며 새 후보 full PASS로
+기록하지 않는다. Native macOS와 새 remote Required는 NOT_RUN이다. Darwin
+TEST compile이나 M12-001 원격 green을 그 증거로 전용하지 않는다. 이는 사용자
+승인된 로컬 work-item 완료와 후속 진행이며 원격 전달·전체 M12 qualification·
+CUDA RELEASE_SUPPORTED 결정은 완료 선언에 포함하지 않는다. Prior full failure의
+미확정 원인은 evidence의 범위를 유지한다.
+
+종료 문서만의 delta는 실행 입력 동일성을 대조하고 전체 후보 docs/security를
+검사한다. 다음 M12-003은 `NOT_STARTED / Ready: Yes`이며 baseline audit 뒤 하나의
+IN_PROGRESS로 전환한다. M12-004는 아직 NOT_STARTED다.
+NO PUSH / NO REMOTE CI / NO MERGE.
+
+
+### M12-003 시작 baseline audit (2026-10-05)
+
+Baseline은 M12-002 로컬 완료 `bdd3a29`이며 `IMPLEMENTED=YES / WIRED=NO /
+QUALIFIED=NO / ACCEPTANCE_CLOSED=NO`다. 기존 `artifact/cargo`의 exact reference·
+metadata/graph, `sandbox/CargoResolver`, `application/CargoResolutionService`,
+`promotion/cargo_transaction.go`, CLI/bootstrap을 재사용한다. `cargo add`는 현재
+resolve만 수행하고 `cargo build`는 static unavailable leaf다. 기존 stub/unit PASS는
+실제 acquisition·Policy·transaction·observed build의 qualification이 아니다.
+
+`MISSING`: 실제 metadata와 frozen Cargo.lock·독립 sparse-index checksum의 연결,
+complete graph/feature/target 상태; anchored controls와 local source 및 pinned Rust/Cargo
+runtime을 사용하는 isolated resolver; canonical crate intake/검증/정적 검사/Run·
+Evidence·Policy와 verified cache; guarded Cargo.toml/Cargo.lock transaction 및 재선택
+금지·경쟁/rollback/cleanup; offline observed build.rs/proc-macro/native subprocess와
+bounded no-overwrite output publish; canonical leaf의 실제 정상·부정/security
+qualification과 영향받는 직접 소비자 및 canonical/platform 검사다.
+
+Read: [Cargo canonical contract](./16-m12-01-ecosystem-expansion-contract.md#5-m12-003--rust--cargo),
+[Adapter 책임](../architecture/02-adapters-and-providers.md),
+[Inspection/Sandbox/Policy](../architecture/03-inspection-sandbox-policy.md), 관련 Artifact/
+Inspection/Evidence·Promotion contracts와 Engineering check/security 규칙을 따른다.
+기존 구현을 대체하지 않고 확인한 acceptance gap만 같은 owner에서 보완한다.
+M12-003만 IN_PROGRESS이며 M12-004는 NOT_STARTED다. 새 profile의 예산은 Go 예산을
+자동 전용하지 않고 실제 처리량과 실패 경계를 따로 확인한다.
+NO PUSH / NO REMOTE CI / NO MERGE.
+
+### M12-003 실제 parser/source acquisition 부분 checkpoint (2026-10-05)
+
+동일 고정 Cargo metadata/lock의 old resolver FAIL→frozen lock과 연결한 bounded parser
+PASS를 확인했다. Complete nodes·edges·workspace/features/target 상태를 정규화하며
+checksum 선언과 공식 source 인증은 구분한다. 공식 Rust1.99.0-bookworm OCI digest를
+runtime lock에 고정하고 실제 SDK version query와 substituted/missing runtime 부정
+회귀를 확인했다. 등록된 gVisor Cargo 실행은 아직 NOT_RUN이다.
+
+빈 owned intake의 `itoa@1.0.17`은 canonical HTTPS acquire→독립 sparse-index/lock/bytes
+검증→bounded static archive 검사→Evidence→기존 Policy ALLOW가 실제 PASS다.
+Parser/index/archive/intake/integrity/runtime 부정과 canonical quick/security/docs/
+vulnerability도 PASS다. [부분 evidence](./evidence/m12-003-cargo-acquisition/result.json)가
+source/입력/실제 실행 범위를 소유한다. Source 성공은 project add/build 완료가 아니다.
+
+`WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO`와 M12-003 IN_PROGRESS를 유지한다.
+MISSING은 anchored complete project/source controls, isolated resolver, complete snapshot과
+verified cache, guarded frozen add transaction/rollback, offline observed build와 bounded
+no-overwrite output 및 whole qualification/직접 소비자·platform 검증이다. M12-004는
+NOT_STARTED다. NO PUSH / NO REMOTE CI / NO MERGE.
+
+### M12-003 isolated source·verified cache 부분 검증 (2026-10-05)
+
+같은 최소 itoa1.0.17 frozen source fixture가 registered gVisor에서 source PASS3.38s다.
+판정 불변 kernel image/role/open/topology 진단으로 각 최초 차단을 연결했고, exact
+Cargo CONTROL의 고정 runtime 입력과 SDK info-only child만 narrow하게 교정했다.
+Mutable guest SocketPair return buffer는 FD authority로 쓰지 않는다. 실제 kernel
+NewFDs 결과를 전용 typed point로 전달하고 exact entry/result·thread/start/args에
+대조한 producer/consumer의 before FAIL→after latches 및 kernel tests가 PASS다.
+Canonical six-member runtime build와 source/patch roundtrip을 확인했다. 기존 profile
+예산·Policy는 유지한다. 새 common runtime의 전체 직접 소비자/qualification은 별도다.
+
+공식 itoa의 빈 intake acquire→독립 sparse-index/lock/bytes 검증→static inspection→
+Evidence2·Policy ALLOW→verified vendor cache 재사용도 실제 PASS0.213s다. 공통
+Evidence/inventory helper의 기존 Go 소비자와 Cargo cache 정상/부정·initial 한도
+경계는 PASS다. Cache 한도·reserved checksum 권한은 Cargo canonical leaf가 소유한다.
+기존 Cargo control plan의 alias·oversize·동일 바이트 inode 교체 네 누락은 같은
+final fixture의 old1270 FAIL→anchored bounded single-link/identity 교정 PASS다.
+[부분 source/cache evidence](./evidence/m12-003-cargo-source-cache/result.json)가 source·runtime·원본 hash와
+각 실행 범위를 소유한다. 같은 후보의 Cargo source4.10s·Go source6.54s·필수 sdist
+15.94s·wheel dynamic8.55s 및 canonical quick/security/docs가 PASS다. 이를 whole
+CLI add/build 또는 새 CPU/CUDA qualification으로 전용하지 않는다.
+
+`IMPLEMENTED=YES / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO`를 유지한다.
+MISSING은 independent retained approval·original source/control guard와 guarded frozen
+add publication/rollback, actual CLI wiring, offline observed build.rs/proc-macro/native
+helper 및 bounded no-overwrite output, 이후 최종 후보의 실제 직접 소비자(필수
+sdist 포함)와 CPU/cu126 full·cu130/cu132 focused, canonical/platform/
+security/CI wiring 및 whole acceptance evidence다. Native macOS/new remote Required는
+NOT_RUN이며 M12-003만 IN_PROGRESS, M12-004는 NOT_STARTED다.
+NO PUSH / NO REMOTE CI / NO MERGE.
+
+### M12-003 guarded Cargo add 부분 checkpoint (2026-10-05)
+
+실제 최초 추가와 retained reuse가 itoa1 crate21.87s·serde7 crates25.15s에서 PASS다.
+Complete graph의 acquire/독립 검증/검사·Evidence·Policy·vendor cache와 frozen control
+publication을 연결했으며 공통 application workflow의 Go get 직접 소비자30.86s도
+PASS다. Matching marker의 old internal primitive와 Cargo direct VM metadata read의
+same-final before FAIL→after PASS, source/control/state/cache/Evidence·경쟁 publication·
+rollback/uncertainty·foreign lock/recovery journal 부정과 shared Go/Cargo boundary matrix,
+canonical quick/security/docs/Linux platform·Darwin TEST compile을 확인했다.
+[부분 add evidence](./evidence/m12-003-cargo-add/result.json)가 각 실행과 source/test-only
+후속 delta를 소유한다. Native macOS/new remote Required는 NOT_RUN이다.
+
+M12-003만 IN_PROGRESS이며 `IMPLEMENTED=YES / WIRED=NO / QUALIFIED=NO /
+ACCEPTANCE_CLOSED=NO`를 유지한다. Whole WIRED/qualification MISSING은 offline observed
+Cargo build.rs/proc-macro/native helper·bounded no-overwrite output, final candidate의
+필수 sdist 포함 직접 소비자·CPU/cu126 full·cu130/cu132 focused, CI wiring과 whole
+acceptance evidence다. M12-004는 NOT_STARTED다. NO PUSH / NO REMOTE CI / NO MERGE.
+
+### M12-003 observed build와 중단 재개 qualification (2026-10-06)
+
+기존 Cargo/공통 project build owner에 실제 offline build와 bounded no-overwrite
+publication이 연결됐다. 같은 실행 후보의 Cargo 정상·보안·retained13개, Go/Cargo
+관련14개, 필수 sdist와 기존 직접 소비자 및 CPU full518.36s가 PASS다. Actual
+source707·binaries·원본과 각 범위는
+[build qualification evidence](./evidence/m12-003-cargo-build-qualification/result.json)가 소유한다.
+`IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO`다.
+
+cu126 첫 회계 FAIL, WSL 중단 retry, native 재개40m timeout과 D-backed loop의
+40m timeout은 각각 보존한다. 마지막 실행은 publish-intent journal fsync에서
+중단됐으며 helper parent wait0·bounded Docker absence·original12 복원은 확인했다.
+Incomplete project journal/lock/private workspace는 그대로 보존한다. Post-timeout
+동기화200회는 native0.548s/loop4.385s로 측정됐지만 원래 aggregate 지연 인과는
+미확정이다. 제품의 durable intent/해시/rollback/40m 상한을 바꾸지 않는다.
+
+현재 MISSING은 같은 제품 후보의 최종 cu126 full과 전체 후보 종료 검사·evidence다.
+Qualification harness만 별도 fresh cache root를 선택할 수 있도록 보완한다. 캐시는
+D-backed ext4에, private workspace/target/journal은 같은 native filesystem에 둔다.
+기존 verified copy가 두 filesystem을 잇고 publication rename은 native 내부에 남는다.
+원래 observed provider/runtime/Profile·Policy·모든 assertion은 유지한다. 해당 환경의
+실제 full 결과 전에는 성공으로 표시하지 않는다. M12-003만 IN_PROGRESS이며
+M12-004는 NOT_STARTED다. NO PUSH / NO REMOTE CI / NO MERGE.
+
+### M12-003 압축 후 qualification 재개 (2026-10-06)
+
+후보708·보존 바이너리3·original runtime12·gVisor bundle의 동일성을 확인하고
+사라진 native projection·실행 파일·canonical `/run`을 복구했다. F의 동일52GiB
+ext4는 보관 증거 확인용 읽기 전용 mount로 연결했다. VHDX 길이 감소와 C의
+실제 여유90GB 이상은 확인됐으나 압축 worker의 최종 종료 receipt는 미확인이다.
+새 여유 공간에서 같은 실행 후보의 fresh native cache/target/private/journal로
+cu126 full을 기존40분 상한으로 실행 중이다. 이전 full 실패를 보존하고 제품의
+durability·Policy·관찰·자원 한도는 변경하지 않았다. 결과·parent-owned cleanup·
+original12 복원과 최종 전체 후보 검사 전에는 QUALIFIED/ACCEPTANCE_CLOSED를
+NO로 유지한다. M12-003 하나만 IN_PROGRESS, M12-004는 NOT_STARTED다.
+NO PUSH / NO REMOTE CI / NO MERGE.
+
+### M12-003 재개 full 통과와 종료 검사 (2026-10-06)
+
+같은708-path/c88c test 후보의 fresh native cu126 full은2070.42s/actual0 PASS다.
+16,117개 파일 게시, 검사 전용 NumPy의29개 승격집합 제외와 viewer NOT_ATTESTED의
+결과·승격 Evidence 참조, helper parentwait0/bounded Docker absence/original12 복원을
+확인했다. 이전 timeout·중단·capacity 실패는 별도 증거로 보존한다. 과거 지연의
+정확한 원인을 새 PASS만으로 확정하지 않는다.
+
+[현재 full 결과](./evidence/m12-003-cargo-build-qualification/reclaimed-native-cu126-full-result.json)와
+[CI aggregate 시간 검토](./evidence/m12-003-cargo-build-qualification/ci-duration-review.json)가
+실제 입력·소요 시간과 individual test/보안 한도 보존을 소유한다. 전체 후보 종료
+검사·evidence가 남아 있어 M12-003 IN_PROGRESS/acceptance NO, M12-004 NOT_STARTED다.
+NO PUSH / NO REMOTE CI / NO MERGE.
+
+### M12-004 frozen public source·signature 부분 checkpoint (2026-10-06)
+
+기존 metadata/resolver owner에 실제 schema·discovery·요청 version/platform/protocol
+binding을 보완했고, 신규 acquired subject는 원래 registry bytes·signed checksum·
+signature·ZIP을 Run에 고정한다. Acquire는 재선택하지 않는다. 독립 verifier는 full
+signer/current key·partner endorsement와 exact archive checksum을 검증한다.
+Actual official random3.7.2와 partner integrations/github6.6.0 source gate2.686s는
+VERIFIED이며 frozen selection·mirror/redirect·intake alias·signature·expiry/revocation
+부정 및 canonical quick/security/vulnerability도 exit0다.
+
+Whole item의 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED는 계속 NO다.
+현재 init은 아직 resolution 출력만 연결되어 있다. MISSING은 bounded ZIP/executable/
+h1 검사·실제 fixed dynamic probe, complete project/lock selection과 독립 승인 staging,
+original guard 아래 provider-tree·lock·metadata 전체 publish/rollback 및 실제 CLI·
+보안·경쟁·partial commit qualification이다. [부분 source evidence](./evidence/m12-004-provider-source/result.json)는
+원래 FAIL과 source-bound PASS를 구분한다. 같은 M12-004를 계속하며 원격 작업은 없다.
+
+### M12-004 시작 baseline audit (2026-10-06)
+
+기준 commit은 `8c56f873eb7ce395af4ba984190413492b096e63`이다. 기존
+`artifact/terraformprovider`의 exact reference·metadata parser·resolver·graph,
+`application/terraform.go`와 CLI/bootstrap의 조회 연결,
+`promotion/terraform_transaction.go`의 lock plan·private workspace·backup/rollback
+primitive를 재사용한다. Full item은 `IMPLEMENTED=NO / WIRED=NO /
+QUALIFIED=NO / ACCEPTANCE_CLOSED=NO`다. 기존 조회 성공을 설치 완료로 쓰지 않는다.
+
+MISSING은 실제 discovery/version/package 응답과 endpoint binding, frozen signed
+acquisition과 full signer/trust 확인, ZIP/executable 정적 검사 및 fixed dynamic
+probe, 독립 Evidence/Policy 승인, original guard 아래 provider tree·lock·metadata
+전체 publish/rollback, retained state 검증, public official/partner 및 보안·경쟁·
+부분 commit qualification이다. 관련 owner의 baseline hash와 재사용 경계는
+[baseline evidence](./evidence/m12-004-provider-baseline/result.json)에 기록했다.
+M12-004만 IN_PROGRESS이며 NO PUSH / NO REMOTE CI / NO MERGE를 유지한다.
+
+### M12-003 local acceptance 종료 (2026-10-06)
+
+`IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES`,
+`COMPLETE / MISSING: None`으로 로컬 acceptance를 닫는다. Actual Cargo13·Go/Cargo14,
+mandatory sdist 포함 기존 직접 소비자·ordinary CLI/promotion, 같은708 후보의
+CPU523.65s/cu1262070.42s full과 terminal cleanup/restoration을 확인했다.
+최종875-path candidate의 workflow/security/docs·Darwin TEST compile도 PASS다.
+[Qualification 결과](./evidence/m12-003-cargo-build-qualification/result.json)가
+원본·same-source/runtime·각 검증 범위와 과거 실패 보존을 연결한다.
+
+최종 종료 문서는 실행 source708 대비 허용된6개 documentation/workflow/format-policy
+경로만 바꾸며 전체 docs/security/whitespace를 확인해 로컬 checkpoint를 남긴다.
+Native macOS·새 remote Required는 NOT_RUN이고 CUDA release-support matrix 결정은
+M12-005에 남는다. 다음 M12-004는 NOT_STARTED/Ready: Yes이며 baseline audit 후
+유일한 IN_PROGRESS로 시작한다. NO PUSH / NO REMOTE CI / NO MERGE.
+
+### M12-004 local acceptance 종료 (2026-10-07)
+
+`IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES`,
+`COMPLETE / MISSING: None`으로 로컬 acceptance를 닫는다. 기존 resolver, generic
+project update, GitHub ELF lifecycle과 Terraform transaction primitive를 재사용했다.
+Public official random3.7.2/partner integrations/github6.6.0의 signed source,
+bounded ZIP/ELF·HCL controls, fixed help0/1 observation, 독립 Evidence/entry+set ALLOW,
+private verified cache와 guarded provider tree/lock/metadata/retained approval을 연결한다.
+Actual 최초·retained 여섯 calls와 checksum/remote module/foreign cache/concurrent
+네 product negatives, hostile ownership/mode/post-state/rollback 회귀를 확인했다.
+
+최종 exact943-source timing 후보의 CPU507.82s/cu1261921.07s full, public probe/security,
+기존 직접 소비자12·네 proc maps·실제 npm/pip·Go/Cargo14·Cargo13·promotion2는 모두
+PASS다. 각 helper wait0, 독립 bounded Docker absence와 original12 bytes/modes 복원을
+확인했다. Viewer NOT_ATTESTED와 검사 전용 NumPy 승격 제외는 유지한다. Go build9
+634.10s/get-download3 242.79s/Cargo13 302.60s는 기존 CI 상한 안이다.
+
+[Qualification 결과](./evidence/m12-004-provider-qualification/result.json)가 raw,
+세 후보의 변경 경계, full input/target·stored Evidence와 actual CI budget을 연결한다.
+첫 cu126815.92s late gap의 원인은 미확정이며 후속 PASS/오류 진단을 회계 수정으로
+쓰지 않는다. Deliberate preparation98·진단 SourceID fixture·가상 mutex fixture의
+실패도 보존했다. 전체1198-path 후보 docs/workflow/security와 staged 검사를 확인하고
+최종 종료 변경은 명시적인 documentation/evidence/format-policy 경로만 바꾼다.
+
+Scope는 Provider installation only이며 RPC/plan/apply/cloud behavior는 NOT_ATTESTED다.
+Native macOS/new remote Required는 NOT_RUN, cu130/cu132는 공통 경로 focused scope다.
+M12 전체는 IN_PROGRESS이며 broader release support/feature freeze는 다음 M12-005에
+남는다. 다음 item은 `NOT_STARTED / Ready: Yes`이고 구현을 시작하지 않았다.
+NO PUSH / NO REMOTE CI / NO MERGE / NO AGENTS.
+
+### M12-002~004 원격 전달·CI 후속 시작 (2026-10-07)
+
+사용자가 누적 변경의 push, PR CI, 원인에 따른 수정·재검증·오답노트 기록을
+all green까지 반복하고 불필요한 성공 테스트 아티팩트를 정리하도록 요청했다.
+기존 local acceptance와 실패 원본은 보존하며 현재 활성 item은 M12-004 후속 하나다.
+M12-005는 NOT_STARTED/Ready: Yes이고 이 원격 후속 완료 뒤 baseline audit로 재개한다.
+
+Baseline은 local6da451a와 remote main62c3b59다. Main 이후16 commits에
+M12-002 bdd3a29, M12-003 8c56f87, M12-004 6da451a가 모두 포함된다.
+IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES(local), remote qualification=NO,
+ACCEPTANCE_CLOSED=YES(local), remote delivery closed=NO다. 기존 구현을 다시 만들지 않는다.
+MISSING은 같은 최종 후보의 PR Required 및9 prerequisites 실제 성공, 필요한 오류
+교정·회귀, raw run/job/source 연결, 완료 기록과 성공 테스트 전용 데이터 정리다.
+
+이번 요청은 push와 PR CI를 허용한다. Main merge, M12-005 구현이나 support 범위
+확장은 포함하지 않는다. 과거 NO PUSH/NO REMOTE CI는 당시 local 작업 범위 기록이다.
+실패는 최초 원인과 정확한 입력을 보존하며 M12-001 green code와 비교해 확인된
+회귀만 수정한다. Skip/Required 삭제/예산 완화로 성공을 만들지 않는다.
+성공한 테스트 데이터는 보존 증거와 후속 사용 여부·현재 process/resource를 확인한
+뒤 본 작업의 전용 경로만 제거한다. 실패 재현 입력·runtime originals는 유지한다.
+
+### 원격 첫 macOS 실패와 동일 입력 교정 (2026-10-07)
+
+PR29/run37497646753의 macOS job112386202588에서
+TestPyTorchQualificationCacheIsFreshAndSeparate가 no-symlink parent 조건으로 실패했다.
+실제 checkout은 PR merge0ec1e77이며 branch candidate1170ce2다. M12-001 main62c3b59에는
+이 test/helper 추가가 없고 M12-003 8c56f87에서 추가됐다. Linux TMPDIR를 symlink alias로
+고정한 동일 두 test도 beforeFAIL0.016s로 같은 오류를 재현했다. 정상 test의 임시
+parent와 negative test의 기준 root만 EvalSymlinks로 고정한다. Helper의 symlink·mode
+거부와 freshness 계약은 변경하지 않으며 negative를 다른 symlink 오류로 가리지 않는다.
+Native macOS 재검증과 최종 all green은 아직 남아 있고 같은 후속 item을 계속한다.
+
+### 원격 Cargo fixture 작업 디렉터리 교정 (2026-10-07)
+
+c106172/run37499465550은 native macOS 포함8 prerequisites가 SUCCESS이고
+Linux112393261447/Required112404529823은 FAIL이다. 최초 오류는 Cargo source
+integration의 상대 fixture 경로 ENOENT다. Fixture는 tracked blob1eb7451이며
+누락된 것이 아니다. 직접 설치한 test binary는 repository cwd를 유지하지만
+일반 go test는 package cwd에서 실행한다. 같은 compiled metadata consumer는
+repository cwd에서 FAIL, internal/sandbox cwd에서 PASS0.02s다. 기존 lifecycle
+step의 Cargo source 명령만 package cwd의 subshell에서 실행하며 source/argv,
+helper 신원·복원, Policy와 모든 예산을 유지한다. 원래 failed job의 helper wait0와
+RESTORED는 제품 성공과 구분한다. Full 후속 CI와 Required는 아직 남아 있다.
+
+### M12-002~004 원격 qualification과 성공 데이터 정리 완료 (2026-10-07)
+
+PR29의 qualified head132baea, checkoutc375a45/run37503579865에서 Required와
+9 prerequisites 모두 실제 SUCCESS다. 두 source tree의 전체 tracked blob/mode는
+동일하다. Native macOS 재검증, 실제 Cargo source1.30s, Go download/build/Cgo와
+Cargo add/build/security, Terraform probe/security/init 및 부정 검증, CPU full288.73s,
+기존 PyPI sdist8.76s/wheel4.59s와 npm/PyPI promotion까지 실제 PASS를 확인했다.
+CI production client를 명시적으로 다시 설치하고 helper parent wait0를 확인했다.
+최종 cleanup은 original0/CONFIRMED_STOPPED/client_error0/client_restore0/NOT_REQUIRED다.
+과거 최초 실패·cancelled와 이번 완료 결과를 구분하며30 job raw 본문/SHA를 보존한다.
+
+IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES다.
+MISSING=[]이며 source qualification과 데이터 정리의
+[종료 근거](./evidence/m12-002-004-remote-ci/result.json)를 연결한다.
+완료된 테스트 전용 네 root는 전체 파일 SHA/metadata·원본 Evidence와 현재 사용 여부를
+확인한 뒤 삭제했고, 두 batch의 WSL 가용 공간 증가 합계는30,309,568,512B(약28.2GiB)다.
+실패 cu126 재현 입력과 runtime originals는 유지하며 Windows VHDX 축소로 확대하지 않는다.
+
+이 종료 변경은 문서·증거·raw 형식 예외만 포함하며 qualified source의 나머지
+tracked blob/mode 전체를 대조한다. 새 종료 HEAD의 원격 Required는 push 뒤 별도로
+확인한다. M12-004는 COMPLETE, active item은 없고 다음 M12-005는
+NOT_STARTED/Ready: Yes다. M12 전체와 broader release/feature freeze는 아직 완료가 아니다.
 
 ## Step 13 Invariant
 
@@ -2481,3 +3007,84 @@ M12-002~004의 상세 MISSING은 해당 work item이 시작될 때 별도 baseli
 - [x] repository-wide 변경 승인 경계
 - [x] M1 이후 작업의 지연 생성 원칙
 - [x] 독립 repository의 정확한 재개 지점
+
+### M12-005 baseline audit 시작 (2026-10-07)
+
+현재01175bb와 실제 remote CI run37510273661 completed/success를 확인했다.
+[Baseline audit](./evidence/m12-005-qualification/README.md)의 기존 구현을 재사용하고
+MISSING qualification·지원 matrix·문서 일치성·구조 검토·성공 데이터 정리만 수행한다.
+M12-005는 `IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO`다.
+사용자는 commit/push/CI 오류 수정과 불필요한 성공 테스트 데이터 정리를 포함한005
+완주를 승인했다. 현재 하나의IN_PROGRESS를 유지하며 M12-02는RESERVED다.
+
+### M12-005 추가 미사용 API 정리 checkpoint (2026-10-07)
+
+AST identifier triage와 실제 bootstrap/factory·tracked reference를 대조하여
+production/test consumer가 없는 초기 Terraform resolution service와 registry
+getter, 옛 string-only PyPI aggregate, executor 없는 Python probe wrapper를
+제거했다. 기존 guarded init·extras를 유지하는 typed aggregate·endpoint constant·
+configured executor probe는 그대로다. [추가 source boundary](./evidence/m12-005-qualification/additional-code-cleanup-boundary.json)가
+40-line scope를 소유한다. Canonical quick/build/architecture/vet/Staticcheck/default,
+docs/security는 actual0다. 이는 완료된 subsystem의 대체 구현이 아니다.
+
+앞선005 cu13037555305508/bb28b47와 ordinary37556677169/8791fdc의 실제 all10
+SUCCESS, full 및 새 npm inspect 결과는 당시 source evidence로 보존한다. 추가 정리
+전 cu13237560044655는 obsolete source를 실행하지 않도록 명시적으로 취소했으며
+제품 failure나 qualification PASS로 해석하지 않는다. 새 source의 CPU·세CUDA와
+Required를 독립 실행한 후에만005 acceptance/feature freeze를 닫는다. 현재005
+IN_PROGRESS와 M12-02RESERVED/ReadyNo를 유지한다.
+
+### M12-005 qualification·feature freeze 완료 (2026-10-07)
+
+현재 source `d328756`의 네 profile에서 Required와9 prerequisites를 각각 실제
+SUCCESS로 확인했다. CPU·cu126·cu130·cu132 full, 실제 npm/PyPI/GitHub/Go/Cargo/
+Provider consumer,102 observer latches와 helper 종료·복원은 각각 원본 증거와
+소스/checkout tree·mode에 대응한다. [Qualification result](./evidence/m12-005-qualification/result.json)가
+기본763/2217 회귀,77개 요구사항,지원 tuple,CLI/문서·구조 검토와 정리 범위를 연결한다.
+
+M12-005: `IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES`.
+MISSING: 없음. 기존 구현을 재사용했고 미사용 초기 API201 net lines와 직접 재현한
+npm media-type 결함만 기존 owner에서 정리했다. 성공 데이터5 roots를 삭제하고
+Evidence282개를 해시 보존하여 약21.97GiB의 WSL 가용 공간을 확보했다. 실패 데이터와
+기존 runtime/shared cache는 보존한다. 과거 미확정 CUDA 지연의 해결이나 Windows
+VHDX 압축으로 기록하지 않는다.
+
+네 torch2.14.0 profile의 명시적 bounded support만 확정하며 GPU 계산/driver/
+Toolkit, 다른 ABI/OS/version 또는 torchvision/torchaudio를 검증했다고 주장하지
+않는다. CUDA inspection-only NumPy와 viewer NOT_ATTESTED 제한을 유지한다.
+Final documentation/evidence commit의 원격 Required와 whole checkout 동일성은
+별도 전달 확인이며 실제 완료 결과는 PR29 및 외부 closure receipt에 기록한다.
+
+Active item은 없고 M12-02는 `NOT_STARTED / Ready: Yes`다. 이번 변경은 red-team을
+수행하거나 NO_RELEASE_BLOCKING_FINDINGS를 선언하지 않는다. M12 전체는
+IN_PROGRESS이며 main reviewer merge와 public release는 후속 gate를 따른다.
+
+### M12-02 final red-team baseline audit 시작 (2026-10-07)
+
+사용자는005 완료 후보19411ca에서 최종 검토·확정 결함 수정·회귀와 최종 CI까지
+진행하도록 승인했다. [Baseline audit](./evidence/m12-02-red-team/README.md)에
+IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO와
+여덟 검토 영역·실제 MISSING을 기록했다. 기존 구현과005 full 증거를 재사용하며
+새 기능이나 Core/Policy 계약 변경은 하지 않는다. M12-02만 IN_PROGRESS다.
+M13은NOT_STARTED이며 이번 범위는 reviewer의 main merge 전 검토 완료까지다.
+
+### M12-02 검토·remediation 완료 (2026-10-07)
+
+기준19411ca의 기존 구현을 재사용해 여덟 책임 영역을 검토했다. Go/Cargo와 기존
+npm/PyPI backup의 외부 데이터 삭제 및 npm 프로젝트 selected control의 EEXIST를
+동일 fixture로 재현했고 기존 owner에서 FIX-01~03으로 수정했다. 처음 FIX-01의
+안전한 원본 복원 차단은 기존 회귀가 반증해 보완했다. 새 Core/Policy/runtime 역할,
+허용 목록이나 예산 변경은 없다. [최종 결과](./evidence/m12-02-red-team/result.json)가
+local before/after와 같은 기능 source68099a5의 네 원격 실행·원문 hash를 연결한다.
+
+M12-02: `IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES`.
+MISSING: 없음(이 작업의 기술 acceptance). CPU·cu126·cu130·cu132 각10SUCCESS,
+실제45/46소비자·npm first/retained2회·102latches·5helperwait0와 최종 cleanup을
+검증했다. 기존 bounded 지원 tuple과 viewer NOT_ATTESTED·NumPy 승격 제외를 유지한다.
+작성자 검토를 외부 독립 감사나 reviewer 승인으로 표시하지 않는다.
+
+이 완료 변경은 문서·증거만이며 qualified source와 실행 입력 bytes/mode의 일치를
+[source boundary](./evidence/m12-02-red-team/source-boundary.json)에 기록한다.
+문서 HEAD의 원격 Required 확인은 PR29와 외부 closure receipt가 소유한다.
+Reviewer merge·main CI가 전달에 남고, M13은 NOT_STARTED다. M13-001의 기존
+repository activation blocker도 해당 항목의 원래 해제 조건을 유지한다.

@@ -6,6 +6,9 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+
+	artifactcargo "github.com/rahoney/heliopause/internal/artifact/cargo"
+	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
 const cargoTransactionMetadata = ".heliopause/cargo-transaction.json"
@@ -13,37 +16,77 @@ const cargoTransactionMetadata = ".heliopause/cargo-transaction.json"
 type cargoProjectPlan struct {
 	root                 string
 	cargoToml, cargoLock [32]byte
+	rootInfo             os.FileInfo
+	members              map[string]os.FileInfo
+	controls             []domain.ProjectControlFile
+	authorized           bool
 }
 
-func freezeCargoProject(root string) (cargoProjectPlan, error) {
-	if !filepath.IsAbs(root) || trustedExistingDirectory(root) != nil {
+func freezeCargoProject(root string) (result cargoProjectPlan, resultErr error) {
+	if !filepath.IsAbs(root) || filepath.Clean(root) != root || root == "/" || trustedExistingDirectory(root) != nil {
 		return cargoProjectPlan{}, errors.New("cargo project root is untrusted")
 	}
-	toml, err := os.ReadFile(filepath.Join(root, "Cargo.toml"))
-	if err != nil || len(toml) == 0 {
-		return cargoProjectPlan{}, errors.New("cargo.toml is unavailable")
+	info, err := os.Lstat(root)
+	if err != nil {
+		return result, errors.New("cargo project root is unavailable")
 	}
-	lock, err := os.ReadFile(filepath.Join(root, "Cargo.lock"))
-	if err != nil || len(lock) == 0 {
-		return cargoProjectPlan{}, errors.New("cargo.lock is unavailable")
+	directory, err := os.OpenRoot(root)
+	if err != nil {
+		return result, errors.New("open anchored Cargo controls")
 	}
-	return cargoProjectPlan{root: root, cargoToml: sha256.Sum256(toml), cargoLock: sha256.Sum256(lock)}, nil
+	defer func() {
+		resultErr = errors.Join(resultErr, directory.Close())
+		if resultErr != nil {
+			result = cargoProjectPlan{}
+		}
+	}()
+	opened, err := directory.Stat(".")
+	if err != nil || !os.SameFile(info, opened) {
+		return result, errors.New("cargo control root identity changed")
+	}
+	plan := cargoProjectPlan{root: root, rootInfo: info, members: map[string]os.FileInfo{}}
+	for _, name := range []string{"Cargo.toml", "Cargo.lock"} {
+		body, member, err := readGoTransactionControl(directory, name)
+		present := true
+		if name == "Cargo.lock" && errors.Is(err, os.ErrNotExist) {
+			body, member, err, present = nil, nil, nil, false
+		}
+		if err != nil || (present && (member == nil || !pypiSingleLink(member) || len(body) == 0)) {
+			return result, errors.New("cargo control is not bounded single-link content")
+		}
+		if name == "Cargo.toml" {
+			if err := artifactcargo.ValidateProjectManifest(body, name); err != nil {
+				return result, err
+			}
+			plan.cargoToml = sha256.Sum256(body)
+		} else {
+			plan.cargoLock = sha256.Sum256(body)
+		}
+		control, err := domain.NewProjectControlFile(name, body, present)
+		if err != nil {
+			return result, err
+		}
+		plan.controls = append(plan.controls, control)
+		plan.members[name] = member
+	}
+	return plan, nil
 }
 func (p cargoProjectPlan) verifyUnchanged() error {
 	current, err := freezeCargoProject(p.root)
-	if err != nil || current.cargoToml != p.cargoToml || current.cargoLock != p.cargoLock {
+	if err != nil || p.rootInfo == nil || !os.SameFile(p.rootInfo, current.rootInfo) || p.rootInfo.Mode() != current.rootInfo.Mode() || current.cargoToml != p.cargoToml || current.cargoLock != p.cargoLock {
 		return errors.New("cargo project changed during transaction")
+	}
+	for _, name := range []string{"Cargo.toml", "Cargo.lock"} {
+		before, after := p.members[name], current.members[name]
+		if (before == nil) != (after == nil) || (before != nil && (!os.SameFile(before, after) || before.Mode() != after.Mode())) {
+			return errors.New("cargo control identity changed during transaction")
+		}
 	}
 	return nil
 }
 func (p cargoProjectPlan) verifyManaged() error {
-	body, err := os.ReadFile(filepath.Join(p.root, cargoTransactionMetadata))
-	if err != nil {
-		return errors.New("cargo project is not HAA-managed")
-	}
-	want := "{\"cargo_toml_sha256\":\"" + hex.EncodeToString(p.cargoToml[:]) + "\",\"cargo_lock_sha256\":\"" + hex.EncodeToString(p.cargoLock[:]) + "\"}\n"
-	if string(body) != want {
-		return errors.New("cargo managed project metadata does not match current state")
+	if !p.authorized {
+		return errors.New("cargo project requires independent complete approval")
 	}
 	return nil
 }
@@ -52,9 +95,11 @@ func (p cargoProjectPlan) privateWorkspace() (string, error) {
 	if err != nil {
 		return "", errors.New("create Cargo private transaction workspace")
 	}
-	for _, name := range []string{"Cargo.toml", "Cargo.lock"} {
-		body, readErr := os.ReadFile(filepath.Join(p.root, name))
-		if readErr != nil || os.WriteFile(filepath.Join(workspace, name), body, 0o600) != nil {
+	for _, control := range p.controls {
+		if !control.Present() {
+			continue
+		}
+		if os.WriteFile(filepath.Join(workspace, control.Name()), control.Body(), 0o600) != nil {
 			_ = os.RemoveAll(workspace)
 			return "", errors.New("copy Cargo transaction control files")
 		}
@@ -63,13 +108,32 @@ func (p cargoProjectPlan) privateWorkspace() (string, error) {
 }
 
 type cargoProjectTransaction struct {
-	plan                             cargoProjectPlan
-	workspace, backup                string
-	moved, published                 map[string]bool
-	metadataMoved, metadataPublished bool
+	checkpoint            func(string) error
+	backupInfo            os.FileInfo
+	plan                  cargoProjectPlan
+	workspace             string
+	backup                string
+	moved                 map[string]bool
+	published             map[string]bool
+	metadataMoved         bool
+	metadataPublished     bool
+	metadataInfo          os.FileInfo
+	originalMetadataInfo  os.FileInfo
+	originalMetadataHash  [32]byte
+	selectedDirectoryInfo os.FileInfo
+	selectedHashes        map[string][32]byte
+	metadataDirectoryInfo os.FileInfo
+	publishApproval       func() error
+	rollbackApproval      func() error
+	boundary              *os.Root
+	selectedInfo          map[string]os.FileInfo
+	expectedControls      []domain.ProjectControlFile
 }
 
-func beginCargoProjectTransaction(plan cargoProjectPlan, workspace string) (*cargoProjectTransaction, error) {
+func beginCargoProjectTransaction(plan cargoProjectPlan, workspace string, expected ...domain.ProjectControlFile) (*cargoProjectTransaction, error) {
+	if len(expected) != 0 && len(expected) != 2 {
+		return nil, errors.New("cargo transaction selected controls are incomplete")
+	}
 	if err := plan.verifyUnchanged(); err != nil {
 		return nil, err
 	}
@@ -83,13 +147,106 @@ func beginCargoProjectTransaction(plan cargoProjectPlan, workspace string) (*car
 	if err != nil {
 		return nil, errors.New("create Cargo rollback transaction")
 	}
-	return &cargoProjectTransaction{plan: plan, workspace: workspace, backup: backup, moved: map[string]bool{}, published: map[string]bool{}}, nil
+	boundary, err := os.OpenRoot(plan.root)
+	if err != nil {
+		_ = os.RemoveAll(backup)
+		return nil, errors.New("open Cargo transaction boundary")
+	}
+	opened, err := boundary.Stat(".")
+	if err != nil || !os.SameFile(plan.rootInfo, opened) {
+		_ = boundary.Close()
+		_ = os.RemoveAll(backup)
+		return nil, errors.New("cargo transaction root identity changed")
+	}
+	t := &cargoProjectTransaction{plan: plan, workspace: workspace, backup: backup, boundary: boundary, moved: map[string]bool{}, published: map[string]bool{}, selectedInfo: map[string]os.FileInfo{}, selectedHashes: map[string][32]byte{}}
+	t.backupInfo, err = boundary.Lstat(filepath.Base(backup))
+	if err != nil {
+		return nil, errors.Join(err, boundary.Close())
+	}
+	t.expectedControls = append([]domain.ProjectControlFile(nil), expected...)
+	if err := t.prepareSelectedControls(); err != nil {
+		cleanupErr := t.removeBackup(false)
+		return nil, errors.Join(err, cleanupErr, boundary.Close())
+	}
+	return t, nil
 }
-func (t *cargoProjectTransaction) commit() error {
-	if err := t.plan.verifyUnchanged(); err != nil {
+
+func (t *cargoProjectTransaction) prepareSelectedControls() error {
+	source, err := os.OpenRoot(t.workspace)
+	if err != nil {
+		return errors.New("open selected Cargo controls")
+	}
+	defer source.Close()
+	directory := filepath.Join(filepath.Base(t.backup), "selected")
+	if err := t.boundary.Mkdir(directory, 0o700); err != nil {
+		return errors.New("create bounded Cargo publication directory")
+	}
+	t.selectedDirectoryInfo, err = t.boundary.Lstat(directory)
+	if err != nil {
 		return err
 	}
+	for _, name := range []string{"Cargo.toml", "Cargo.lock"} {
+		body, member, err := readGoTransactionControl(source, name)
+		if err != nil || !pypiSingleLink(member) {
+			return errors.New("selected Cargo control is unavailable")
+		}
+		if len(t.expectedControls) != 0 {
+			actual, err := domain.NewProjectControlFile(name, body, true)
+			matched := false
+			for _, wanted := range t.expectedControls {
+				if wanted.Name() == name && wanted.Present() && wanted.Digest() == actual.Digest() {
+					matched = true
+				}
+			}
+			if err != nil || !matched {
+				return errors.New("cargo transaction selected controls differ from approved bytes")
+			}
+		}
+		if name == "Cargo.toml" {
+			if err := artifactcargo.ValidateProjectManifest(body, name); err != nil {
+				return err
+			}
+		}
+		f, err := t.boundary.OpenFile(filepath.Join(directory, name), os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+		if err != nil {
+			return errors.New("create selected Cargo control")
+		}
+		_, writeErr := f.Write(body)
+		info, statErr := f.Stat()
+		syncErr := f.Sync()
+		closeErr := f.Close()
+		if writeErr != nil || statErr != nil || syncErr != nil || closeErr != nil {
+			return errors.New("persist selected Cargo control")
+		}
+		t.selectedInfo[name] = info
+		t.selectedHashes[name] = sha256.Sum256(body)
+	}
+	return nil
+}
+
+func syncCargoTransactionRoot(root *os.Root) error {
+	f, err := root.Open(".")
+	if err != nil {
+		return errors.New("open Cargo transaction directory for sync")
+	}
+	return errors.Join(f.Sync(), f.Close())
+}
+
+func (t *cargoProjectTransaction) commit() (resultErr error) {
+	defer func() { resultErr = errors.Join(resultErr, t.boundary.Close()) }()
+	if err := t.check("before-backup"); err != nil {
+		return t.fail(err)
+	}
+	if err := t.verifyBoundary(); err != nil {
+		return t.fail(err)
+	}
+	if err := t.plan.verifyUnchanged(); err != nil {
+		return t.fail(err)
+	}
 	if err := t.backupCurrent(); err != nil {
+		return t.fail(err)
+	}
+	if err := t.check("before-publication"); err != nil {
 		return t.fail(err)
 	}
 	if err := t.publishWorkspace(); err != nil {
@@ -98,27 +255,53 @@ func (t *cargoProjectTransaction) commit() error {
 	if err := t.publishMetadata(); err != nil {
 		return t.fail(err)
 	}
-	if err := syncDirectory(t.plan.root); err != nil {
+	if err := t.check("before-approval"); err != nil {
+		return t.fail(err)
+	}
+	if t.publishApproval != nil {
+		if err := t.publishApproval(); err != nil {
+			return t.fail(err)
+		}
+	}
+	if err := syncCargoTransactionRoot(t.boundary); err != nil {
 		return t.fail(errors.New("sync committed Cargo project"))
 	}
-	if err := os.RemoveAll(t.backup); err != nil {
+	if err := t.verifyBoundary(); err != nil {
+		return err
+	}
+	if err := t.removeBackup(true); err != nil {
 		return errors.New("remove committed Cargo rollback backup; project is fail-closed")
 	}
-	return nil
+	return syncCargoTransactionRoot(t.boundary)
 }
+
 func (t *cargoProjectTransaction) fail(cause error) error {
-	if rollbackErr := t.rollback(); rollbackErr != nil {
+	rollbackErr := t.rollback()
+	if rollbackErr != nil {
 		return errors.Join(cause, rollbackErr, errors.New("cargo transaction rollback is incomplete; project is fail-closed"))
 	}
-	if err := os.RemoveAll(t.backup); err != nil {
+	if err := t.removeBackup(false); err != nil {
 		return errors.Join(cause, errors.New("remove rolled back Cargo transaction; project is fail-closed"))
 	}
 	return cause
 }
+
 func (t *cargoProjectTransaction) backupCurrent() error {
-	metadata := filepath.Join(t.plan.root, cargoTransactionMetadata)
-	if info, err := os.Lstat(metadata); err == nil {
-		if !info.Mode().IsRegular() || info.Mode()&os.ModeSymlink != 0 || os.Rename(metadata, filepath.Join(t.backup, "cargo-transaction.json")) != nil {
+	if err := t.verifyBoundary(); err != nil {
+		return err
+	}
+	if info, err := t.boundary.Lstat(".heliopause"); err == nil && (!info.IsDir() || info.Mode()&os.ModeSymlink != 0) {
+		return errors.New("cargo metadata directory is untrusted")
+	} else if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return errors.New("cargo metadata directory is unavailable")
+	}
+	if body, info, err := readGoTransactionControl(t.boundary, cargoTransactionMetadata); err == nil {
+		if !info.Mode().IsRegular() || info.Mode()&os.ModeSymlink != 0 {
+			return errors.New("inspect current Cargo transaction metadata")
+		}
+		t.originalMetadataInfo = info
+		t.originalMetadataHash = sha256.Sum256(body)
+		if err := renameRootNoReplace(t.boundary, cargoTransactionMetadata, filepath.Join(filepath.Base(t.backup), "cargo-transaction.json")); err != nil {
 			return errors.New("backup current Cargo transaction metadata")
 		}
 		t.metadataMoved = true
@@ -126,69 +309,195 @@ func (t *cargoProjectTransaction) backupCurrent() error {
 		return errors.New("inspect current Cargo transaction metadata")
 	}
 	for _, name := range []string{"Cargo.toml", "Cargo.lock"} {
-		info, err := os.Lstat(filepath.Join(t.plan.root, name))
-		if err != nil || !info.Mode().IsRegular() || info.Mode()&os.ModeSymlink != 0 || os.Rename(filepath.Join(t.plan.root, name), filepath.Join(t.backup, name)) != nil {
+		body, info, err := readGoTransactionControl(t.boundary, name)
+		if name == "Cargo.lock" && errors.Is(err, os.ErrNotExist) && t.plan.members[name] == nil {
+			continue
+		}
+		if err != nil || !info.Mode().IsRegular() || info.Mode()&os.ModeSymlink != 0 {
+			return errors.New("inspect current Cargo transaction member")
+		}
+		if !os.SameFile(t.plan.members[name], info) {
+			return errors.New("cargo transaction original member identity changed")
+		}
+		matched := false
+		actual, controlErr := domain.NewProjectControlFile(name, body, true)
+		for _, expected := range t.plan.controls {
+			if expected.Name() == name && expected.Digest() == actual.Digest() {
+				matched = true
+			}
+		}
+		if controlErr != nil || !matched || !pypiSingleLink(info) {
+			return errors.New("cargo original control changed before backup")
+		}
+		if err := renameRootNoReplace(t.boundary, name, filepath.Join(filepath.Base(t.backup), name)); err != nil {
 			return errors.New("backup current Cargo transaction member")
 		}
 		t.moved[name] = true
 	}
 	return nil
 }
+
 func (t *cargoProjectTransaction) publishWorkspace() error {
+	if err := t.verifyBoundary(); err != nil {
+		return err
+	}
 	for _, name := range []string{"Cargo.toml", "Cargo.lock"} {
-		info, err := os.Lstat(filepath.Join(t.workspace, name))
-		if err != nil || !info.Mode().IsRegular() || info.Mode()&os.ModeSymlink != 0 || os.Rename(filepath.Join(t.workspace, name), filepath.Join(t.plan.root, name)) != nil {
+		selected := filepath.Join(filepath.Base(t.backup), "selected", name)
+		body, info, err := readGoTransactionControl(t.boundary, selected)
+		if err != nil || !info.Mode().IsRegular() || info.Mode()&os.ModeSymlink != 0 {
+			return errors.New("verified Cargo transaction output is unavailable")
+		}
+		if _, err := t.boundary.Lstat(name); !errors.Is(err, os.ErrNotExist) {
+			return errors.New("cargo transaction publication destination changed")
+		}
+		if !os.SameFile(t.selectedInfo[name], info) {
+			return errors.New("selected Cargo transaction member identity changed")
+		}
+		if len(t.expectedControls) != 0 {
+			actual, controlErr := domain.NewProjectControlFile(name, body, true)
+			matched := false
+			for _, expected := range t.expectedControls {
+				if expected.Name() == name && expected.Digest() == actual.Digest() {
+					matched = true
+				}
+			}
+			if controlErr != nil || !matched || !pypiSingleLink(info) {
+				return errors.New("cargo selected control changed before publication")
+			}
+		}
+		if err := t.boundary.Link(selected, name); err != nil {
 			return errors.New("publish verified Cargo transaction member")
 		}
 		t.published[name] = true
+		if err := t.boundary.Remove(selected); err != nil {
+			return errors.New("remove published Cargo transaction staging member")
+		}
 	}
 	return nil
 }
+
 func (t *cargoProjectTransaction) publishMetadata() error {
-	directory := filepath.Join(t.plan.root, ".heliopause")
-	if err := os.Mkdir(directory, 0o700); err != nil && !errors.Is(err, os.ErrExist) {
+	if err := t.verifyBoundary(); err != nil {
+		return err
+	}
+	if err := t.boundary.Mkdir(".heliopause", 0o700); err != nil && !errors.Is(err, os.ErrExist) {
 		return errors.New("create Cargo transaction metadata directory")
 	}
-	if err := trustedExistingDirectory(directory); err != nil {
+	info, err := t.boundary.Lstat(".heliopause")
+	if err != nil || !info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
 		return errors.New("cargo transaction metadata directory is untrusted")
 	}
+	t.metadataDirectoryInfo = info
 	current, err := freezeCargoProject(t.plan.root)
 	if err != nil {
 		return err
 	}
 	value := "{\"cargo_toml_sha256\":\"" + hex.EncodeToString(current.cargoToml[:]) + "\",\"cargo_lock_sha256\":\"" + hex.EncodeToString(current.cargoLock[:]) + "\"}\n"
-	if err := writeNPMTransactionMetadata(directory, filepath.Join(directory, "cargo-transaction.json"), []byte(value)); err != nil {
+	metadata, err := t.boundary.OpenRoot(".heliopause")
+	if err != nil {
+		return errors.New("open Cargo metadata boundary")
+	}
+	defer metadata.Close()
+	opened, err := metadata.Stat(".")
+	if err != nil || !os.SameFile(info, opened) {
+		return errors.New("cargo metadata boundary identity changed")
+	}
+	f, err := metadata.OpenFile(".cargo-transaction.tmp", os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+	if err != nil {
+		return errors.New("create Cargo metadata record")
+	}
+	defer metadata.Remove(".cargo-transaction.tmp")
+	_, writeErr := f.Write([]byte(value))
+	metadataInfo, statErr := f.Stat()
+	syncErr := f.Sync()
+	closeErr := f.Close()
+	if writeErr != nil || statErr != nil || syncErr != nil || closeErr != nil {
+		return errors.New("persist Cargo metadata record")
+	}
+	if err := metadata.Link(".cargo-transaction.tmp", "cargo-transaction.json"); err != nil {
 		return errors.New("publish Cargo transaction metadata")
 	}
 	t.metadataPublished = true
-	return nil
+	t.metadataInfo = metadataInfo
+	if err := metadata.Remove(".cargo-transaction.tmp"); err != nil {
+		return errors.New("remove Cargo metadata staging link")
+	}
+	return syncCargoTransactionRoot(metadata)
 }
+
 func (t *cargoProjectTransaction) rollback() error {
+	if err := t.verifyBackupBoundary(); err != nil {
+		return err
+	}
+	if err := t.verifyBoundary(); err != nil {
+		return err
+	}
 	var result error
+	if t.rollbackApproval != nil {
+		result = errors.Join(result, t.rollbackApproval())
+	}
 	if t.metadataPublished {
-		if err := os.Remove(filepath.Join(t.plan.root, cargoTransactionMetadata)); err != nil && !errors.Is(err, os.ErrNotExist) {
+		info, err := t.boundary.Lstat(cargoTransactionMetadata)
+		directory, directoryErr := t.boundary.Lstat(".heliopause")
+		if err != nil || directoryErr != nil || !os.SameFile(t.metadataInfo, info) || !os.SameFile(t.metadataDirectoryInfo, directory) {
+			result = errors.Join(result, errors.New("cargo rollback metadata identity changed"))
+		} else if err := t.boundary.Remove(cargoTransactionMetadata); err != nil {
 			result = errors.Join(result, errors.New("remove uncommitted Cargo transaction metadata"))
 		}
 	}
 	if t.metadataMoved {
-		if err := os.Rename(filepath.Join(t.backup, "cargo-transaction.json"), filepath.Join(t.plan.root, cargoTransactionMetadata)); err != nil {
+		backup := filepath.Join(filepath.Base(t.backup), "cargo-transaction.json")
+		info, err := t.boundary.Lstat(backup)
+		if err != nil || !os.SameFile(t.originalMetadataInfo, info) || controlBackupUnchanged(t.boundary, backup, controlBackupRecord{t.originalMetadataInfo, t.originalMetadataHash}) != nil {
+			result = errors.Join(result, errors.New("cargo rollback original metadata identity changed"))
+		} else if err := t.boundary.Link(backup, cargoTransactionMetadata); err != nil {
 			result = errors.Join(result, errors.New("restore Cargo transaction metadata"))
+		} else if err := t.boundary.Remove(backup); err != nil {
+			result = errors.Join(result, errors.New("remove restored Cargo metadata backup"))
 		}
 	}
 	for _, name := range []string{"Cargo.lock", "Cargo.toml"} {
 		if t.published[name] {
-			if err := os.Remove(filepath.Join(t.plan.root, name)); err != nil {
+			info, err := t.boundary.Lstat(name)
+			if err != nil || !os.SameFile(t.selectedInfo[name], info) || controlBackupUnchanged(t.boundary, name, controlBackupRecord{t.selectedInfo[name], t.selectedHashes[name]}) != nil {
+				result = errors.Join(result, errors.New("cargo rollback published member identity changed"))
+				continue
+			}
+			if err := t.boundary.Remove(name); err != nil {
 				result = errors.Join(result, errors.New("remove uncommitted Cargo transaction member"))
 			}
 		}
 		if t.moved[name] {
-			if err := os.Rename(filepath.Join(t.backup, name), filepath.Join(t.plan.root, name)); err != nil {
+			backup := filepath.Join(filepath.Base(t.backup), name)
+			info, err := t.boundary.Lstat(backup)
+			if err != nil || !os.SameFile(t.plan.members[name], info) || controlBackupUnchanged(t.boundary, backup, t.backupRecords(true)[name]) != nil {
+				result = errors.Join(result, errors.New("cargo rollback original member identity changed"))
+				continue
+			}
+			if err := t.boundary.Link(backup, name); err != nil {
 				result = errors.Join(result, errors.New("restore Cargo transaction member"))
+			} else if err := t.boundary.Remove(backup); err != nil {
+				result = errors.Join(result, errors.New("remove restored Cargo transaction backup member"))
 			}
 		}
 	}
-	if err := syncDirectory(t.plan.root); err != nil {
+	if err := syncCargoTransactionRoot(t.boundary); err != nil {
 		result = errors.Join(result, errors.New("sync rolled back Cargo transaction"))
 	}
 	return result
+}
+
+func (t *cargoProjectTransaction) check(phase string) error {
+	if t.checkpoint != nil {
+		return t.checkpoint(phase)
+	}
+	return nil
+}
+func (t *cargoProjectTransaction) verifyBoundary() error {
+	root, err := os.Lstat(t.plan.root)
+	backup, backupErr := t.boundary.Lstat(filepath.Base(t.backup))
+	if err != nil || backupErr != nil || !os.SameFile(t.plan.rootInfo, root) || !os.SameFile(t.backupInfo, backup) || !backup.IsDir() || backup.Mode() != t.backupInfo.Mode() {
+		return errors.New("cargo transaction boundary changed")
+	}
+	return nil
 }

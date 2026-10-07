@@ -396,9 +396,13 @@ func (r *Resolver) fetchMetadata(ctx context.Context, packageName string) (packu
 	if response.StatusCode != http.StatusOK {
 		return packument{}, fmt.Errorf("npm metadata returned unexpected status %d", response.StatusCode)
 	}
-	contentType := response.Header.Get("Content-Type")
-	if !strings.HasPrefix(strings.ToLower(contentType), "application/json") {
-		return packument{}, errors.New("npm metadata response is not JSON")
+	contentTypes := response.Header.Values("Content-Type")
+	if len(contentTypes) != 1 {
+		return packument{}, errors.New("npm metadata response has missing or ambiguous content type")
+	}
+	mediaType, _, err := mime.ParseMediaType(contentTypes[0])
+	if err != nil || (mediaType != metadataAccept && mediaType != "application/json") {
+		return packument{}, errors.New("npm metadata response has unsupported content type")
 	}
 	body, err := readLimited(response.Body, metadataLimit)
 	if err != nil {

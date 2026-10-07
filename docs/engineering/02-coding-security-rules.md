@@ -71,6 +71,133 @@ module path·release tag·checksum 신뢰성
 - [Cobra Apache-2.0 license](https://github.com/spf13/cobra/blob/v1.10.2/LICENSE.txt)
 - [GitHub global advisory query for Cobra](https://api.github.com/advisories?ecosystem=go&affects=github.com%2Fspf13%2Fcobra&per_page=100)
 
+### M12-002 Go module parser dependency review
+
+2026-10-04에 `golang.org/x/mod v0.39.0`을 고정한다. 필요한 범위는
+`internal/artifact/gomodule`의 Go module identity/major-version validation,
+proxy path·version escaping과 실행 전 `go.mod` grammar/directive 검사다.
+Standard library에는 이 문법 parser가 없고 문자열·regexp 대체는 quoted/block
+`replace`와 path/version 의미를 정확히 처리하지 못한다. 기존 adapter에 이
+공식 library를 적용하며 Core/Application에는 외부 type/import를 전달하지 않는다.
+
+- [공식 tag](https://go.googlesource.com/mod/+/refs/tags/v0.39.0)의 commit은
+  `13be9020bbbfae457b59b82c999f8c309cb21ffc`이며 Go Authors의 유지보수·review 경로를 따른다.
+- [go.mod](https://raw.githubusercontent.com/golang/mod/v0.39.0/go.mod)의 Go floor는
+  `1.25.0`으로 project의 고정 `1.26.8`을 올리지 않는다. Module graph에는
+  `x/tools v0.48.0` requirement가 있지만 현재 build-selected import는
+  `modfile`, `module`, `semver`, `internal/lazyregexp`이며 `x/tools` package는 없다.
+- [License](https://raw.githubusercontent.com/golang/mod/v0.39.0/LICENSE)는
+  BSD-3-Clause다. 재배포 시 copyright/license 유지 의무를 따른다.
+- Canonical proxy/SumDB로 고정 pin을 준비하고 `.zip`/`go.mod` h1을 `go.sum`에 기록했다.
+  Warm quality cache를 사용했으며 이를 cold acquisition qualification으로 기록하지 않는다.
+- 새 import의 canonical `vulnerability`는 exit0을 확인했다. 이는 현재 scanner/DB/호출
+  범위의 결과이며 package 안전성 보증이 아니다. 후속 후보에서 새로운 import가 생기면
+  해당 소비 범위를 다시 확인한다. 업그레이드는 자동으로 수행하지 않는다.
+
+2026-10-04의 동일 pin 후속 소비자 검토: `sumdb`·`sumdb/dirhash`를 current Go
+intake/verifier에, `modfile`을 Go static inspector에 연결한다. 공식
+[SumDB client API](https://pkg.go.dev/golang.org/x/mod/sumdb)와
+[h1 algorithm](https://pkg.go.dev/golang.org/x/mod/sumdb/dirhash)을 재사용한다.
+Signed notes는 Go standard library의 Ed25519로 확인하며 자체 signature/Merkle
+구현을 만들지 않는다. 고정 verifier key는 pinned Go1.26.8 source의
+`cmd/go/internal/modfetch/key.go`와 동일한 public key다. Private key나 credential은
+제품 입력에 없다. Config/cache callback은 operation-private 상태이며 project
+`go.sum`·peer text를 verifier key로 사용하지 않는다. HTTPS endpoint·redirect·proxy와
+payload/request/time bounds는 Go adapter/verifier가 소유한다. Core/Application에는
+외부 library type을 전달하지 않으며 Architecture checker에 실제 owner의 import만
+등록한다. 신규 import의 vulnerability 재검증 결과는 해당 checkpoint evidence가 소유한다.
+
+**SumDB 연결 후 pin 교정:** parser-only `v0.39.0` scan의 PASS는 신규 SumDB
+consumer에 전용하지 않는다. 실제 `Client.Lookup`·tile verifier가 reachable해지면서
+[GO-2026-6180](https://pkg.go.dev/vuln/GO-2026-6180)와
+[GO-2026-6179](https://pkg.go.dev/vuln/GO-2026-6179)가 검출되어 공식 수정 pin
+`v0.40.0`을 선택했다. [공식 tag](https://go.googlesource.com/mod/+/refs/tags/v0.40.0)의
+commit은 `d3398d06de5fa5c71083d3d1c26f2cda73508e0f`이다. Go floor는 여전히
+`1.25.0`, license는 BSD-3-Clause이고 x/tools requirement는 `v0.49.0`이나 build에
+import하지 않는다. Canonical proxy/SumDB로 exact zip/mod h1을 확보했고 automatic
+latest 또는 자체 crypto 보완을 사용하지 않았다. Authenticated record 밖에 넣은
+matching checksum을 거부하는 같은 regression의 old/fixed 결과와 새 candidate
+vulnerability/check scope는 해당 acquisition checkpoint evidence에 연결한다.
+
+**Verified cache 연결 후 ZIP consumer:** 같은 fixed `v0.40.0`의 공식
+`zip.Unzip`을 operation-private cache materialization에 사용한다. 앞단의 HAA
+archive/count/expanded bounds와 재해시는 유지하며 공식 Unicode case-folding·
+file/ancestor collision·nested go.mod 규칙을 재사용한다. Library의 VCS acquisition/
+creation API를 호출하지 않는다. 새 import의 upstream ZIP tests가 `x/tools/txtar`를
+사용하므로 canonical tidy가 이미 선택된 `x/tools v0.49.0`의 zip/mod checksum을
+요구했고 이를 고정 Go로 `go.sum`에 기록했다. `go.mod`의 버전 선택과 production
+import graph의 x/tools 미사용은 유지한다. 신규 ZIP 호출 범위의 vulnerability 및
+빈 quality cache bootstrap→offline consumer 검증은 project/cache evidence가 소유한다.
+
+
+### M12-003 Cargo TOML parser dependency review
+
+2026-10-05에 `github.com/pelletier/go-toml/v2 v2.4.3`을 exact pin한다.
+실제 Cargo.toml/Cargo.lock의 quoted/dotted keys, inline tables, arrays와 duplicate
+선언을 읽는 현재 adapter에 필요하며 표준 라이브러리에는 TOML parser가 없다.
+문자열/regexp 대체나 자체 문법 parser를 만들지 않는다. 외부 type은
+`internal/artifact/cargo` 안에서만 사용하고 Core/Application에 전달하지 않는다.
+
+[공식 release](https://github.com/pelletier/go-toml/releases/tag/v2.4.3)는 2026-07-05
+발표되었고 nested array/inline-table의 stack exhaustion 방어를 포함한다.
+[go.mod](https://raw.githubusercontent.com/pelletier/go-toml/v2.4.3/go.mod)의 Go floor는
+1.21.0이며 외부 module requirement가 없어 기존 Go1.26.8을 유지한다.
+[License](https://raw.githubusercontent.com/pelletier/go-toml/v2.4.3/LICENSE)는 MIT이며
+배포 시 copyright/license를 유지한다. Maintainer의 release/수정 활동을 확인했고
+단일 parser 공급망에 대한 의존은 남는다. Canonical proxy/SumDB로 zip/mod를
+고정하고 scanner를 실제 새 consumer에 적용한다. Registry authentication이나
+Policy ALLOW는 parser 성공과 별개의 후속 책임이다. 실제 lock/metadata·crate manifest
+consumer의 canonical vulnerability는 exit0을 확인했으며 해당 후보와 범위는
+[Cargo acquisition evidence](../planning/evidence/m12-003-cargo-acquisition/result.json)가 소유한다.
+후속 CLI/build consumer의 새 scan은 별도로 수행한다. Input byte/count/depth,
+source/checksum 및 graph/controls의 semantic validation은 adapter에서 유지한다.
+
+### M12-004 OpenPGP verification dependency review
+
+`github.com/ProtonMail/go-crypto v1.5.2`의 `openpgp/v2`를 Terraform checksum
+문서·partner certificate의 detached signature와 현재 key binding 검증에 사용한다.
+Go standard library에는 유지보수되는 OpenPGP certificate/message verifier가 없으며
+직접 packet/crypto 구현이나 deprecated `x/crypto/openpgp`로 대체하지 않는다.
+[고정 release](https://github.com/ProtonMail/go-crypto/releases/tag/v1.5.2)는
+2026-09-28의 serialization 교정을 포함한다. Go floor1.23은 product1.26.8과 맞는다.
+[BSD-3-Clause license](https://github.com/ProtonMail/go-crypto/blob/v1.5.2/LICENSE)를
+배포 notice 검토에 포함한다. 직접 transitive는 CIRCL1.6.3(BSD-3-Clause),
+x/crypto0.41.0(BSD-3-Clause), x/sys0.35.0 최소치이며 기존 x/sys0.47.0을 유지한다.
+실제 선택 graph·SumDB checksum은 고정 module preparation에서 확인한다.
+
+외부 type은 verifier adapter 안에만 둔다. Full fingerprint, current primary/subkey
+binding·expiry·revocation, strong signature hash, 단일 signature packet과 exact
+signed bytes를 확인하며 expiry 오류를 억제하지 않는다. Registry 선언이나 certificate
+source label을 signer trust authority로 사용하지 않는다. 공개 HashiCorp/partner
+certificate bytes는 공식 security/upstream public-key 자료에서 고정하고 fingerprint를
+별도로 대조한다. 추가·reachable verifier 연결 뒤 canonical vulnerability profile을
+실행한다. Source checkpoint의 실제 reachable verifier·acquisition 후보에서
+canonical security·vulnerability profile이 exit0였으며 상세 graph·raw는
+[M12-004 source evidence](../planning/evidence/m12-004-provider-source/result.json)를
+따른다. 이 결과를 이후 HCL·ZIP·동적 실행 연결의 검사나 전체 acceptance로 전용하지 않는다.
+
+### M12-004 HCL control parsing dependency review
+
+`github.com/hashicorp/hcl/v2 v2.24.0`을 project의 native/JSON HCL과 dependency
+lock의 bounded syntax parsing에 사용한다. 표준 library는 HCL grammar를 지원하지
+않으므로 별도 정규식 parser나 Host Terraform 실행으로 대체하지 않는다.
+[고정 release](https://github.com/hashicorp/hcl/releases/tag/v2.24.0)와
+[고정 module graph](https://github.com/hashicorp/hcl/blob/v2.24.0/go.mod)의 Go floor는
+1.23이며 product1.26.8과 맞는다. [MPL-2.0 원본 license](https://github.com/hashicorp/hcl/blob/v2.24.0/LICENSE)를
+notice/source 제공 검토에 포함한다. Runtime transitive cty1.16.3(MIT),
+levenshtein1.2.1(MIT), textseg/v15(MIT), wordwrap1.0.1(MIT)와 실제 선택한 x/text
+pin은 준비 graph에 기록한다. Actual HCL consumer의 canonical scanner가
+기존 x/text0.28.0에서 [GO-2026-5970](https://pkg.go.dev/vuln/GO-2026-5970)을
+reachable로 보고했으므로 공식 fixed0.39.0으로 고정한다. Go floor1.25는
+product1.26.8과 맞으며 pre-parser UTF8 검사로 취약점 scanner를 우회하지 않는다. 기존 더 높은 x/mod·x/tools·x/sys·x/crypto pin은 유지한다.
+
+외부 syntax/value type은 Terraform artifact adapter 안에만 둔다. Literal provider
+identity·constraint·lock hash·local module source만 읽고 EvalContext/function·network·
+Host 실행·ambient configuration은 제공하지 않는다. Bytes·nesting·file/module bounds와
+중복·불명확한 제어 입력의 fail-closed 검사를 parser 앞뒤에서 유지한다. Parser의
+raw diagnostic은 개인 project content를 노출할 수 있어 고정된 adapter error로 바꾼다.
+Actual consumer 연결 뒤 canonical quick/security/vulnerability를 검사한다.
+
 ## 3. Package와 API 작성
 
 - Step 8의 dependency direction과 package 책임을 따른다.

@@ -1,0 +1,28 @@
+{
+  "qualified_functional_source": "68099a5b5e1966124ad24a8d50086846882fe291",
+  "delta": "documentation and evidence only",
+  "unchanged_existing_entries": 1416,
+  "qualified_tree_entries": 1423,
+  "identity": [
+    {
+      "role": "qualified entire Git tree/modes inventory",
+      "sha256": "b455f1c01bebfa3c04b51648a17ba4563613ffcfa212552774f399485bbff19c"
+    },
+    {
+      "role": "unchanged entries inventory including all source/tests/workflows/runtime/policy/tool/dependency locks",
+      "sha256": "491b265c35a5db516e31e8a7c7b2bb9dec6e82974b2fc03c61d49a62d73b1b3d"
+    }
+  ],
+  "changed_existing_document_paths": [
+    "README.md",
+    "PROJECT-DECISIONS.md",
+    "docs/planning/README.md",
+    "docs/planning/02-current-work-queue.md",
+    "docs/planning/17-m12-02-fix-list.md",
+    "docs/planning/evidence/m12-02-red-team/README.md",
+    "docs/planning/evidence/m12-02-red-team/review-matrix.md"
+  ],
+  "new_entries_allowed": "only docs/planning/evidence/m12-02-red-team/*.json closure evidence; actual index diff checked before commit",
+  "checks": "canonical docs/security/qualification-freshness/release-gate run after projection; receipts external",
+  "delivery": "new documentation HEAD ordinary CI and whole checkout equality verified after push; its raw and receipt held externally and linked from PR29"
+}

@@ -1,0 +1,26 @@
+Exact source/binary probe candidate verified
+runtime before bytes/identity/modes verified
+runtime candidate bytes/identity/modes verified
+Bounded complete host executable query: no installed executable consumer
+no existing traced runtime consumers; bounded Docker queries succeeded
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+/etc/heliopause/pod-init.json: OK
+helper launch: bash=/usr/bin/bash version=5.2.21(1)-release owner=655137
+helper ready: pid=655190 attempt=14
+observer_attribution sequence=1 profile=npm-lifecycle counts=NETWORK/CONNECT/INET/CONTROL_GROUP/OTHER:14
+{"schema_version":"helox.operation-result/v1","operation_id":"op_ec4goeekiqezjyjppb4ju5xdiy","operation":"INSTALL","operation_status":"COMPLETED","artifact":{"reference":{"source_id":"npm","locator":"is-number@7.0.0"}},"checks":[{"id":"npm-declared-integrity","kind":"VERIFICATION","required":true,"capability":"SUPPORTED","execution_status":"COMPLETED"},{"id":"npm-static-archive","kind":"INSPECTION","required":true,"capability":"SUPPORTED","execution_status":"COMPLETED"},{"id":"npm-dynamic-lifecycle","kind":"INSPECTION","required":true,"capability":"SUPPORTED","execution_status":"COMPLETED"}],"evidence_references":[{"id":"npm-declared-integrity-result","handle":"evidence:run_5zpdjnamdgjlhrcnyl4krbfxsq:npm-declared-integrity-result"},{"id":"npm-static-archive-result","handle":"evidence:run_5zpdjnamdgjlhrcnyl4krbfxsq:npm-static-archive-result"},{"id":"npm-dynamic-lifecycle-result","handle":"evidence:run_5zpdjnamdgjlhrcnyl4krbfxsq:npm-dynamic-lifecycle-result"}],"dependency_policy_attribution":[{"node":"lock-cea938ada7edc7cbce5a1360495944a7","package":"is-number","version":"7.0.0","source":"npm","entry_policy_decision":"ALLOW","entry_policy_reasons":["M3_REQUIRED_CHECKS_COMPLETED"],"dynamic_finding_codes":null}],"policy":{"decision":"ALLOW","id":"m4-npm-install-promotion","version":1,"reasons":["M4_VERIFIED_SET_COMPLETED"]},"target":"/home/winamp/.local/state/heliopause/m12-004/qualification/ordinary-cli-timing/npm-target","verified_set":{"manifest_id":"3bab000663aeaf11576e45921caf5a4ded13d96abfb01beacf64f3f70c05a0e6","sbom_handle":"staging:3bab000663aeaf11576e45921caf5a4ded13d96abfb01beacf64f3f70c05a0e6:sbom.cdx.json","staging_handle":"staging:3bab000663aeaf11576e45921caf5a4ded13d96abfb01beacf64f3f70c05a0e6","entry_count":1},"promotion_status":"COMPLETED"}
+observer_attribution sequence=1 profile=pypi-wheel counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/PYTHON:15
+{"schema_version":"helox.operation-result/v1","operation_id":"op_v52bn533yrla4wb7j6zs3qem4m","operation":"INSTALL","operation_status":"COMPLETED","artifact":{"reference":{"source_id":"pypi","locator":"packaging@25.0"}},"checks":[{"id":"pypi-declared-sha256","kind":"VERIFICATION","required":true,"capability":"SUPPORTED","execution_status":"COMPLETED"},{"id":"pypi-static-archive","kind":"INSPECTION","required":true,"capability":"SUPPORTED","execution_status":"COMPLETED"},{"id":"pypi-dynamic-import","kind":"INSPECTION","required":true,"capability":"SUPPORTED","execution_status":"COMPLETED"}],"evidence_references":[{"id":"pypi-declared-sha256-result","handle":"evidence:run_uam6ljr3baazfppxhcmwja2hum:pypi-declared-sha256-result"},{"id":"pypi-static-archive-result","handle":"evidence:run_uam6ljr3baazfppxhcmwja2hum:pypi-static-archive-result"},{"id":"pypi-dynamic-import-result","handle":"evidence:run_uam6ljr3baazfppxhcmwja2hum:pypi-dynamic-import-result"}],"dependency_policy_attribution":[{"node":"pypi-a08217d00fbe041ba9f9f3cea594d590","package":"packaging","version":"25.0","source":"pypi","entry_policy_decision":"ALLOW","entry_policy_reasons":["M3_REQUIRED_CHECKS_COMPLETED"],"dynamic_finding_codes":null}],"policy":{"decision":"ALLOW","id":"m5-pypi-pip","version":1,"reasons":["M5_VERIFIED_SET_COMPLETED"]},"target":"/home/winamp/.local/state/heliopause/m12-004/qualification/ordinary-cli-timing/pypi-target","verified_set":{"manifest_id":"2a7d1e0fc48a1252cd3b8339bbe4df0ea9cf7c8724d5228736b5691e74530912","sbom_handle":"staging:2a7d1e0fc48a1252cd3b8339bbe4df0ea9cf7c8724d5228736b5691e74530912:sbom.cdx.json","staging_handle":"staging:2a7d1e0fc48a1252cd3b8339bbe4df0ea9cf7c8724d5228736b5691e74530912","entry_count":1},"promotion_status":"COMPLETED"}
+ordinary npm/pip product CLI both actual ALLOW and bounded publication verified
+helper reaped: pid=655190 wait=0
+no existing traced runtime consumers; bounded Docker queries succeeded
+runtime before bytes/identity/modes verified
+/etc/heliopause/pod-init.json: OK
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=655190

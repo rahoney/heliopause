@@ -55,8 +55,10 @@ jobs:
             --output "$dist/helox-runtime-images.json"
           node_image="$(jq -er '.node_image.reference' scripts/runtimes.lock.json)"
           python_image="$(jq -er '.python_image.reference' scripts/runtimes.lock.json)"
+          go_image="$(jq -er '.go_image.reference' scripts/runtimes.lock.json)"
           docker buildx imagetools inspect "$node_image" >/dev/null
           docker buildx imagetools inspect "$python_image" >/dev/null
+          docker buildx imagetools inspect "$go_image" >/dev/null
           go run ./scripts/release-manifest \
             --version "$GITHUB_REF_NAME" \
             --commit "$GITHUB_SHA" \

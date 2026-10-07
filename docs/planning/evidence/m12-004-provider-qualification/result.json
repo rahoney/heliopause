@@ -1,0 +1,78 @@
+{
+  "work_item": "M12-004",
+  "status": "LOCAL_ACCEPTANCE_COMPLETE",
+  "IMPLEMENTED": "YES",
+  "WIRED": "YES",
+  "QUALIFIED": "YES (Linux/amd64 local)",
+  "ACCEPTANCE_CLOSED": "YES",
+  "baseline_head": "8c56f873eb7ce395af4ba984190413492b096e63",
+  "source_checkpoint": "e788c1a",
+  "scope": "Public Provider installation only; official random3.7.2 and partner integrations/github6.6.0 actual signed/static/isolated fixed-help/Policy/cache/guarded initial+retained complete project installation. RPC/plan/apply/cloud behavior NOT_ATTESTED.",
+  "candidate": "final-executable-candidate-timing.json",
+  "exact_source_count": 943,
+  "provider_init": {
+    "positive": {
+      "raw": "raw/provider-init-timing-runtime.log",
+      "raw_sha256": "9e88e933d187f518d3c65e22edc808cdca193cdd9471a2cd2ef46b6ad4d4b9d4",
+      "seconds": 69.89,
+      "cases": 6,
+      "original12_restored": true,
+      "helper_wait": 0
+    },
+    "negative": {
+      "raw": "raw/provider-init-timing-negative-runtime.log",
+      "raw_sha256": "29ed10daa7dc2745c560356f12d34804c1a2077d60a9318edf9b14790cbe8d7c",
+      "seconds": 6.06,
+      "cases": 4,
+      "original12_restored": true,
+      "helper_wait": 0
+    }
+  },
+  "actual_scope": "actual-scope-summary.json",
+  "full_results": {
+    "cpu": {
+      "status": "PASS",
+      "test_seconds": 507.82,
+      "timeout_seconds": 900,
+      "tool_wrapper_exit": 0,
+      "raw": "raw/cpu-timing-final-full-runtime.log",
+      "raw_sha256": "3d95dd30ba85dd2f58340aafb9706e6c5d3261706b46176c1d4d4b0308b93114",
+      "terminal_restore_confirmed": true,
+      "candidate": "final-executable-candidate-timing.json",
+      "input_target_inventory": "cpu-input-target-inventory.json"
+    },
+    "cu126": {
+      "status": "PASS",
+      "test_seconds": 1921.07,
+      "timeout_seconds": 2400,
+      "tool_wrapper_exit": 0,
+      "raw": "raw/cu126-timing-final-full-runtime.log",
+      "raw_sha256": "d376ddeeea14fb6fcf645beabbbf850427ec9c08e16cdb830151172d153acfb9",
+      "terminal_restore_confirmed": true,
+      "candidate": "final-executable-candidate-timing.json",
+      "input_target_inventory": "cu126-input-target-inventory.json"
+    }
+  },
+  "causal_proofs": "causal-proofs.json",
+  "prior_cu126_failure": {
+    "raw": "raw/cu126-full-runtime.log",
+    "status": "FAIL",
+    "sample_gap_ns": 1183829770,
+    "root_cause": "UNCONFIRMED; subsequent PASS and timing diagnostics are not a claimed fix"
+  },
+  "prior_deliberate_hold": {
+    "raw": "raw/python-proc-maps-cu132-runtime.log",
+    "exit": 98,
+    "scope": "pre-install preparation hold, NOT_REACHED; after-hold actual PASS recorded separately"
+  },
+  "native_macos": "NOT_RUN; Darwin TEST compile only",
+  "remote_required": "NOT_RUN",
+  "cu130_cu132": "Focused common-path only; full NOT_RUN",
+  "release_support": "Broader release matrix remains M12-005",
+  "missing": [],
+  "delivery": "Local commit only; NO PUSH / NO REMOTE CI / NO MERGE / NO AGENTS",
+  "next_work_item": "M12-005 \u2014 NOT_STARTED / Ready: Yes",
+  "closure_checks": "closure-checks.json",
+  "actual_ci_budget": "actual-ci-time-budget.json",
+  "closure_source_boundary": "closure-source-boundary.json"
+}

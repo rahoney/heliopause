@@ -1,0 +1,149 @@
+{
+  "scope": "Actual product/CPP/helper candidate consistency across separate installed package consumers; source-only quality delta is explicit.",
+  "consumer_receipts": [
+    {
+      "name": "cargo-build-security-retained-final-runtime-receipt.json",
+      "raw_sha256": "1ab8f3209c38920aeb9e568bdaa971074884b41a455648f8e08314b75ef592c0",
+      "binaries": [
+        {
+          "role": "sandbox-test",
+          "sha256": "117879861318ef4f5de7dd2c24b5154b0856e9c2cdc71f02db3eaa2790673eed"
+        },
+        {
+          "role": "observer",
+          "sha256": "68d2f7f232fb7700c5820a5943483fd0245424e16018c5598b31c2f1a54dcf28"
+        },
+        {
+          "role": "policy-helper",
+          "sha256": "d268d1ece6751cf19e52eef1e17d71ed737ea60fd428b7866944e4f8e78b7c5d"
+        }
+      ],
+      "package": "internal/bootstrap",
+      "quality_only_delta": [],
+      "source_delta_to_full_cpu": [
+        "scripts/check/workflow.go",
+        "scripts/check/workflow_test.go"
+      ]
+    },
+    {
+      "name": "cargo-build-final-direct-consumers-runtime-receipt.json",
+      "raw_sha256": "53468fe07dba2a430c39414f8e1861e8c7756260c39657ed7d58f427e4f2f71b",
+      "binaries": [
+        {
+          "role": "sandbox-test",
+          "sha256": "287f4c80d78966822d1665212a1237e9c353cabd7a05d53685e32f2307c2a280"
+        },
+        {
+          "role": "observer",
+          "sha256": "68d2f7f232fb7700c5820a5943483fd0245424e16018c5598b31c2f1a54dcf28"
+        },
+        {
+          "role": "policy-helper",
+          "sha256": "d268d1ece6751cf19e52eef1e17d71ed737ea60fd428b7866944e4f8e78b7c5d"
+        }
+      ],
+      "package": "internal/sandbox",
+      "quality_only_delta": [],
+      "source_delta_to_full_cpu": [
+        "scripts/check/workflow.go",
+        "scripts/check/workflow_test.go"
+      ]
+    },
+    {
+      "name": "cargo-build-final-ordinary-cli-runtime-receipt.json",
+      "raw_sha256": "f823fb1dda84e9228cd883faa029cf04a4babe537b8b63c590cca139a62c702a",
+      "binaries": [
+        {
+          "role": "sandbox-test",
+          "sha256": "3db30d270e6225c41a7ed433a685bc28f606952dc020ca4363c36d359ffb92f8"
+        },
+        {
+          "role": "observer",
+          "sha256": "68d2f7f232fb7700c5820a5943483fd0245424e16018c5598b31c2f1a54dcf28"
+        },
+        {
+          "role": "policy-helper",
+          "sha256": "d268d1ece6751cf19e52eef1e17d71ed737ea60fd428b7866944e4f8e78b7c5d"
+        }
+      ],
+      "package": "cmd/helox (product CLI)",
+      "quality_only_delta": [
+        "scripts/check/workflow.go",
+        "scripts/check/workflow_test.go"
+      ],
+      "source_delta_to_full_cpu": []
+    },
+    {
+      "name": "cargo-build-final-promotion-runtime-receipt.json",
+      "raw_sha256": "01afb9ac2643920420b58096afd4731d9f2049f5bb80e1c9ba3379bda6c732c1",
+      "binaries": [
+        {
+          "role": "sandbox-test",
+          "sha256": "c41e1460ecf5d6cb95bd935c3909429653b29b6229ed48c386d25c762a131e35"
+        },
+        {
+          "role": "observer",
+          "sha256": "68d2f7f232fb7700c5820a5943483fd0245424e16018c5598b31c2f1a54dcf28"
+        },
+        {
+          "role": "policy-helper",
+          "sha256": "d268d1ece6751cf19e52eef1e17d71ed737ea60fd428b7866944e4f8e78b7c5d"
+        }
+      ],
+      "package": "internal/promotion",
+      "quality_only_delta": [
+        "scripts/check/workflow.go",
+        "scripts/check/workflow_test.go"
+      ],
+      "source_delta_to_full_cpu": []
+    },
+    {
+      "name": "cargo-build-final-go-cargo-add-runtime-receipt.json",
+      "raw_sha256": "1aa67abaf48eadccfe87002cdcdca768a929d0de626b0643d7702e8c5338c913",
+      "binaries": [
+        {
+          "role": "sandbox-test",
+          "sha256": "117879861318ef4f5de7dd2c24b5154b0856e9c2cdc71f02db3eaa2790673eed"
+        },
+        {
+          "role": "observer",
+          "sha256": "68d2f7f232fb7700c5820a5943483fd0245424e16018c5598b31c2f1a54dcf28"
+        },
+        {
+          "role": "policy-helper",
+          "sha256": "d268d1ece6751cf19e52eef1e17d71ed737ea60fd428b7866944e4f8e78b7c5d"
+        }
+      ],
+      "package": "internal/bootstrap",
+      "quality_only_delta": [
+        "scripts/check/workflow.go",
+        "scripts/check/workflow_test.go"
+      ],
+      "source_delta_to_full_cpu": []
+    },
+    {
+      "name": "cargo-build-final-cpu-full-runtime-receipt.json",
+      "raw_sha256": "b66733959e566d5657100ded824d538fa6641168b2d58dc52b5629a589eab294",
+      "binaries": [
+        {
+          "role": "sandbox-test",
+          "sha256": "117879861318ef4f5de7dd2c24b5154b0856e9c2cdc71f02db3eaa2790673eed"
+        },
+        {
+          "role": "observer",
+          "sha256": "68d2f7f232fb7700c5820a5943483fd0245424e16018c5598b31c2f1a54dcf28"
+        },
+        {
+          "role": "policy-helper",
+          "sha256": "d268d1ece6751cf19e52eef1e17d71ed737ea60fd428b7866944e4f8e78b7c5d"
+        }
+      ],
+      "package": "internal/bootstrap",
+      "quality_only_delta": [
+        "scripts/check/workflow.go",
+        "scripts/check/workflow_test.go"
+      ],
+      "source_delta_to_full_cpu": []
+    }
+  ]
+}

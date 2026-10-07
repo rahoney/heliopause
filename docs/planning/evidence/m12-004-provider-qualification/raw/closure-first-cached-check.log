@@ -1,0 +1,149 @@
+docs/planning/evidence/m12-004-provider-qualification/provider-profile-fixture.txt:21: new blank line at EOF.
+docs/planning/evidence/m12-004-provider-qualification/raw/cu126-full-runtime.log:22: trailing whitespace.
++        
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:5: trailing whitespace.
++Computing main repo mapping: 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:6: trailing whitespace.
++Computing main repo mapping: 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:7: trailing whitespace.
++Computing main repo mapping: 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:8: trailing whitespace.
++Computing main repo mapping: 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:9: trailing whitespace.
++Computing main repo mapping: 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:10: trailing whitespace.
++Computing main repo mapping: 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:11: trailing whitespace.
++Computing main repo mapping: 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:12: trailing whitespace.
++Computing main repo mapping: 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:14: trailing whitespace.
++Computing main repo mapping: 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:15: trailing whitespace.
++Loading: 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:18: trailing whitespace.
++ 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:19: trailing whitespace.
++  go.opentelemetry.io/auto/sdk: v1.1.0 -> v1.2.1 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:20: trailing whitespace.
++  go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc: v0.61.0 -> v0.67.0 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:21: trailing whitespace.
++  golang.org/x/crypto: v0.42.0 -> v0.49.0 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:22: trailing whitespace.
++  golang.org/x/term: v0.35.0 -> v0.42.0 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:23: trailing whitespace.
++  golang.org/x/net: v0.44.0 -> v0.52.0 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:24: trailing whitespace.
++  go.opentelemetry.io/otel: v1.37.0 -> v1.43.0 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:25: trailing whitespace.
++  go.opentelemetry.io/otel/metric: v1.28.0 -> v1.43.0 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:26: trailing whitespace.
++  github.com/felixge/httpsnoop: v1.0.2 -> v1.0.4 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:27: trailing whitespace.
++  go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp: v0.53.0 -> v0.67.0 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:28: trailing whitespace.
++  go.opentelemetry.io/otel/trace: v1.28.0 -> v1.43.0 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:29: trailing whitespace.
++  github.com/opencontainers/image-spec: v1.0.2 -> v1.1.1 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:30: trailing whitespace.
++  cloud.google.com/go: v0.105.0 -> v0.123.0 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:31: trailing whitespace.
++  cloud.google.com/go/iam: v0.8.0 -> v1.7.0 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:32: trailing whitespace.
++  cloud.google.com/go/compute/metadata: v0.8.0 -> v0.9.0 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:33: trailing whitespace.
++  github.com/googleapis/enterprise-certificate-proxy: v0.3.6 -> v0.3.14 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:34: trailing whitespace.
++  golang.org/x/oauth2: v0.30.0 -> v0.36.0 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:35: trailing whitespace.
++  google.golang.org/genproto: v0.0.0-20250707201910-8d1bb00bc6a7 -> v0.0.0-20260319201613-d00831a3d3e7 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:36: trailing whitespace.
++  github.com/googleapis/gax-go/v2: v2.15.0 -> v2.21.0 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:40: trailing whitespace.
++  bazel run @io_bazel_rules_go//go -- get go.opentelemetry.io/auto/sdk@v1.2.1 go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc@v0.67.0 golang.org/x/crypto@v0.49.0 golang.org/x/term@v0.42.0 golang.org/x/net@v0.52.0 go.opentelemetry.io/otel@v1.43.0 go.opentelemetry.io/otel/metric@v1.43.0 github.com/felixge/httpsnoop@v1.0.4 go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp@v0.67.0 go.opentelemetry.io/otel/trace@v1.43.0 github.com/opencontainers/image-spec@v1.1.1 cloud.google.com/go@v0.123.0 cloud.google.com/go/iam@v1.7.0 cloud.google.com/go/compute/metadata@v0.9.0 github.com/googleapis/enterprise-certificate-proxy@v0.3.14 golang.org/x/oauth2@v0.36.0 google.golang.org/genproto@v0.0.0-20260319201613-d00831a3d3e7 github.com/googleapis/gax-go/v2@v2.21.0 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:1142: trailing whitespace.
++      |       ~~~~~~~~~~~~~                                  
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:1144: trailing whitespace.
++      |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~       
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:1146: trailing whitespace.
++      |       ~~~~~~                                         
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:1148: trailing whitespace.
++      |     ~~                                               
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:1317: trailing whitespace.
++Computing main repo mapping: 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-after-build-latches.log:1319: trailing whitespace.
++Loading: 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:5: trailing whitespace.
++Computing main repo mapping: 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:6: trailing whitespace.
++Computing main repo mapping: 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:7: trailing whitespace.
++Computing main repo mapping: 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:8: trailing whitespace.
++Computing main repo mapping: 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:9: trailing whitespace.
++Computing main repo mapping: 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:10: trailing whitespace.
++Computing main repo mapping: 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:11: trailing whitespace.
++Computing main repo mapping: 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:12: trailing whitespace.
++Computing main repo mapping: 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:13: trailing whitespace.
++Computing main repo mapping: 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:15: trailing whitespace.
++Computing main repo mapping: 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:16: trailing whitespace.
++Loading: 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:19: trailing whitespace.
++ 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:20: trailing whitespace.
++  go.opentelemetry.io/auto/sdk: v1.1.0 -> v1.2.1 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:21: trailing whitespace.
++  go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc: v0.61.0 -> v0.67.0 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:22: trailing whitespace.
++  golang.org/x/crypto: v0.42.0 -> v0.49.0 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:23: trailing whitespace.
++  golang.org/x/term: v0.35.0 -> v0.42.0 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:24: trailing whitespace.
++  golang.org/x/net: v0.44.0 -> v0.52.0 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:25: trailing whitespace.
++  go.opentelemetry.io/otel: v1.37.0 -> v1.43.0 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:26: trailing whitespace.
++  go.opentelemetry.io/otel/metric: v1.28.0 -> v1.43.0 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:27: trailing whitespace.
++  github.com/felixge/httpsnoop: v1.0.2 -> v1.0.4 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:28: trailing whitespace.
++  go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp: v0.53.0 -> v0.67.0 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:29: trailing whitespace.
++  go.opentelemetry.io/otel/trace: v1.28.0 -> v1.43.0 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:30: trailing whitespace.
++  github.com/opencontainers/image-spec: v1.0.2 -> v1.1.1 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:31: trailing whitespace.
++  cloud.google.com/go: v0.105.0 -> v0.123.0 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:32: trailing whitespace.
++  cloud.google.com/go/iam: v0.8.0 -> v1.7.0 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:33: trailing whitespace.
++  cloud.google.com/go/compute/metadata: v0.8.0 -> v0.9.0 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:34: trailing whitespace.
++  github.com/googleapis/enterprise-certificate-proxy: v0.3.6 -> v0.3.14 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:35: trailing whitespace.
++  golang.org/x/oauth2: v0.30.0 -> v0.36.0 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:36: trailing whitespace.
++  google.golang.org/genproto: v0.0.0-20250707201910-8d1bb00bc6a7 -> v0.0.0-20260319201613-d00831a3d3e7 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:37: trailing whitespace.
++  github.com/googleapis/gax-go/v2: v2.15.0 -> v2.21.0 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:41: trailing whitespace.
++  bazel run @io_bazel_rules_go//go -- get go.opentelemetry.io/auto/sdk@v1.2.1 go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc@v0.67.0 golang.org/x/crypto@v0.49.0 golang.org/x/term@v0.42.0 golang.org/x/net@v0.52.0 go.opentelemetry.io/otel@v1.43.0 go.opentelemetry.io/otel/metric@v1.43.0 github.com/felixge/httpsnoop@v1.0.4 go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp@v0.67.0 go.opentelemetry.io/otel/trace@v1.43.0 github.com/opencontainers/image-spec@v1.1.1 cloud.google.com/go@v0.123.0 cloud.google.com/go/iam@v1.7.0 cloud.google.com/go/compute/metadata@v0.9.0 github.com/googleapis/enterprise-certificate-proxy@v0.3.14 golang.org/x/oauth2@v0.36.0 google.golang.org/genproto@v0.0.0-20260319201613-d00831a3d3e7 github.com/googleapis/gax-go/v2@v2.21.0 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:1161: trailing whitespace.
++      |       ~~~~~~~~~~~~~                                  
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:1163: trailing whitespace.
++      |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~       
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:1165: trailing whitespace.
++      |       ~~~~~~                                         
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:1167: trailing whitespace.
++      |     ~~                                               
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:1311: trailing whitespace.
++Computing main repo mapping: 
+docs/planning/evidence/m12-004-provider-qualification/raw/provider-profile-before-upstream-build-latches.log:1313: trailing whitespace.
++Loading: 

@@ -1,0 +1,3 @@
+ok  	github.com/rahoney/heliopause/internal/artifact/gomodule	0.009s [no tests to run]
+ok  	github.com/rahoney/heliopause/internal/promotion	13.545s
+ok  	github.com/rahoney/heliopause/internal/sandbox	0.082s

@@ -15,11 +15,16 @@ const npmTransactionMetadata = ".heliopause/npm-transaction.json"
 // mutation. A changed or missing control file invalidates the transaction.
 type npmProjectPlan struct {
 	root        string
+	rootInfo    os.FileInfo
 	packageJSON [32]byte
 	packageLock [32]byte
+	controls    map[string]pypiFileSnapshot
 }
 
-type npmProjectGuard struct{ path string }
+type npmProjectGuard struct {
+	path string
+	info os.FileInfo
+}
 
 func acquireNPMProjectGuard(root string) (npmProjectGuard, error) {
 	path := filepath.Join(root, ".heliopause-npm-transaction.lock")
@@ -27,16 +32,21 @@ func acquireNPMProjectGuard(root string) (npmProjectGuard, error) {
 	if err != nil {
 		return npmProjectGuard{}, errors.New("npm project is already being mutated or lock is unavailable")
 	}
-	if err := file.Close(); err != nil {
+	info, statErr := file.Stat()
+	if err := errors.Join(statErr, file.Close()); err != nil {
 		_ = os.Remove(path)
 		return npmProjectGuard{}, errors.New("close npm project transaction lock")
 	}
-	return npmProjectGuard{path: path}, nil
+	return npmProjectGuard{path: path, info: info}, nil
 }
 
 func (g npmProjectGuard) release() error {
 	if g.path == "" {
 		return errors.New("npm project transaction lock is unavailable")
+	}
+	now, err := os.Lstat(g.path)
+	if err != nil || g.info == nil || !os.SameFile(g.info, now) || now.Mode() != g.info.Mode() || !pypiSingleLink(now) {
+		return errors.New("npm project transaction lock changed")
 	}
 	if err := os.Remove(g.path); err != nil {
 		return errors.New("remove npm project transaction lock")
@@ -56,13 +66,33 @@ func freezeNPMProject(root string) (npmProjectPlan, error) {
 	if err != nil || len(lock) == 0 {
 		return npmProjectPlan{}, errors.New("npm project package-lock.json is unavailable")
 	}
-	return npmProjectPlan{root: root, packageJSON: sha256.Sum256(manifest), packageLock: sha256.Sum256(lock)}, nil
+	info, err := os.Lstat(root)
+	if err != nil {
+		return npmProjectPlan{}, err
+	}
+	controls := map[string]pypiFileSnapshot{}
+	for _, name := range []string{"package.json", "package-lock.json"} {
+		controls[name], err = snapshotPyPIFile(filepath.Join(root, name))
+		if err != nil {
+			return npmProjectPlan{}, err
+		}
+	}
+	manifestDigest, lockDigest := sha256.Sum256(manifest), sha256.Sum256(lock)
+	if controls["package.json"].Digest != hex.EncodeToString(manifestDigest[:]) || controls["package-lock.json"].Digest != hex.EncodeToString(lockDigest[:]) {
+		return npmProjectPlan{}, errors.New("npm controls changed while freezing")
+	}
+	return npmProjectPlan{root: root, rootInfo: info, controls: controls, packageJSON: sha256.Sum256(manifest), packageLock: sha256.Sum256(lock)}, nil
 }
 
 func (p npmProjectPlan) verifyUnchanged() error {
 	current, err := freezeNPMProject(p.root)
-	if err != nil || current.packageJSON != p.packageJSON || current.packageLock != p.packageLock {
+	if err != nil || !os.SameFile(p.rootInfo, current.rootInfo) || p.rootInfo.Mode() != current.rootInfo.Mode() || current.packageJSON != p.packageJSON || current.packageLock != p.packageLock {
 		return errors.New("npm project changed during transaction")
+	}
+	for name, before := range p.controls {
+		if !before.matches(filepath.Join(p.root, name)) {
+			return errors.New("npm control identity changed")
+		}
 	}
 	return nil
 }
@@ -140,11 +170,15 @@ func (p npmProjectPlan) privateWorkspace() (string, error) {
 // Verified Set and its binding metadata have both been made durable.  It never
 // reports a successful promotion while a rollback backup remains.
 type npmProjectTransaction struct {
-	plan      npmProjectPlan
-	workspace string
-	backup    string
-	moved     map[string]bool
-	published map[string]bool
+	plan          npmProjectPlan
+	workspace     string
+	backup        string
+	backupInfo    os.FileInfo
+	workspaceInfo os.FileInfo
+	moved         map[string]bool
+	published     map[string]bool
+	before        map[string]*npmTransactionMember
+	outputs       map[string]*npmTransactionMember
 }
 
 func beginNPMProjectTransaction(plan npmProjectPlan, workspace string) (*npmProjectTransaction, error) {
@@ -161,7 +195,15 @@ func beginNPMProjectTransaction(plan npmProjectPlan, workspace string) (*npmProj
 	if err != nil {
 		return nil, errors.New("create npm rollback transaction")
 	}
-	return &npmProjectTransaction{plan: plan, workspace: workspace, backup: backup, moved: map[string]bool{}, published: map[string]bool{}}, nil
+	backupInfo, err := os.Lstat(backup)
+	if err != nil {
+		return nil, err
+	}
+	workspaceInfo, err := os.Lstat(workspace)
+	if err != nil {
+		return nil, err
+	}
+	return &npmProjectTransaction{plan: plan, workspace: workspace, backup: backup, backupInfo: backupInfo, workspaceInfo: workspaceInfo, moved: map[string]bool{}, published: map[string]bool{}, before: map[string]*npmTransactionMember{}, outputs: map[string]*npmTransactionMember{}}, nil
 }
 
 func rejectInterruptedNPMTransaction(root string) error {
@@ -196,8 +238,13 @@ func (t *npmProjectTransaction) commit() (resultErr error) {
 	if err := syncDirectory(t.plan.root); err != nil {
 		return t.fail(errors.New("sync committed npm project"))
 	}
-	if err := os.RemoveAll(t.backup); err != nil {
-		return errors.New("remove committed npm rollback backup; project is fail-closed")
+	for name, output := range t.outputs {
+		if err := output.verify(t.target(name)); err != nil {
+			return t.fail(err)
+		}
+	}
+	if err := t.removeBackup(true); err != nil {
+		return errors.Join(err, errors.New("remove committed npm rollback backup; project is fail-closed"))
 	}
 	if err := syncDirectory(t.plan.root); err != nil {
 		return errors.New("sync completed npm transaction; project is fail-closed")
@@ -210,13 +257,16 @@ func (t *npmProjectTransaction) fail(cause error) error {
 	if rollbackErr != nil {
 		return errors.Join(cause, rollbackErr, errors.New("npm transaction rollback is incomplete; project is fail-closed"))
 	}
-	if err := os.RemoveAll(t.backup); err != nil {
+	if err := t.removeBackup(false); err != nil {
 		return errors.Join(cause, err, errors.New("remove rolled back npm transaction; project is fail-closed"))
 	}
 	return cause
 }
 
 func (t *npmProjectTransaction) backupCurrent() error {
+	if err := t.verifyBoundaries(); err != nil {
+		return err
+	}
 	for _, name := range []string{"package.json", "package-lock.json", "node_modules", "haa"} {
 		source := t.target(name)
 		info, err := os.Lstat(source)
@@ -229,16 +279,27 @@ func (t *npmProjectTransaction) backupCurrent() error {
 		if ((name == "node_modules" || name == "haa") && !info.IsDir()) || (name != "node_modules" && name != "haa" && !info.Mode().IsRegular()) {
 			return errors.New("current npm transaction member has unsupported type")
 		}
-		if err := os.Rename(source, filepath.Join(t.backup, name)); err != nil {
+		record, err := snapshotNPMTransactionMember(source)
+		if err != nil {
+			return err
+		}
+		if err := record.verify(source); err != nil {
+			return err
+		}
+		if err := renameNoReplace(source, filepath.Join(t.backup, name)); err != nil {
 			return errors.New("backup current npm transaction member")
 		}
 		t.moved[name] = true
+		t.before[name] = record
 	}
 	return nil
 }
 
 func (t *npmProjectTransaction) publishWorkspace() error {
 	for _, name := range []string{"package.json", "package-lock.json", "node_modules", "haa"} {
+		if err := t.verifyBoundaries(); err != nil {
+			return err
+		}
 		source := filepath.Join(t.workspace, name)
 		if name == "haa" {
 			source = filepath.Join(t.workspace, ".heliopause")
@@ -247,10 +308,18 @@ func (t *npmProjectTransaction) publishWorkspace() error {
 		if err != nil || info.Mode()&os.ModeSymlink != 0 || ((name == "node_modules" || name == "haa") && !info.IsDir()) || (name != "node_modules" && name != "haa" && !info.Mode().IsRegular()) {
 			return errors.New("verified npm transaction output is unavailable")
 		}
-		if err := os.Rename(source, t.target(name)); err != nil {
+		record, err := snapshotNPMTransactionMember(source)
+		if err != nil {
+			return err
+		}
+		if err := record.verify(source); err != nil {
+			return err
+		}
+		if err := renameNoReplace(source, t.target(name)); err != nil {
 			return errors.New("publish verified npm transaction member")
 		}
 		t.published[name] = true
+		t.outputs[name] = record
 	}
 	return nil
 }
@@ -268,6 +337,11 @@ func (t *npmProjectTransaction) publishMetadata() error {
 	if err := writeNPMTransactionMetadata(directory, t.target("metadata"), []byte(value)); err != nil {
 		return err
 	}
+	snapshot, err := snapshotPyPIFile(t.target("metadata"))
+	if err != nil {
+		return err
+	}
+	t.outputs["haa"].files["npm-transaction.json"] = snapshot
 	if err := syncDirectory(directory); err != nil {
 		return errors.New("sync npm transaction metadata")
 	}
@@ -292,15 +366,25 @@ func writeNPMTransactionMetadata(directory, target string, value []byte) error {
 }
 
 func (t *npmProjectTransaction) rollback() error {
+	if err := t.verifyBoundaries(); err != nil {
+		return err
+	}
 	var result error
 	for _, name := range []string{"haa", "node_modules", "package-lock.json", "package.json"} {
+		if t.moved[name] {
+			if err := t.before[name].verify(filepath.Join(t.backup, name)); err != nil {
+				result = errors.Join(result, err)
+				continue
+			}
+		}
 		if t.published[name] {
-			if err := os.RemoveAll(t.target(name)); err != nil {
-				result = errors.Join(result, errors.New("remove uncommitted npm transaction member"))
+			if err := t.outputs[name].remove(t.target(name)); err != nil {
+				result = errors.Join(result, err, errors.New("remove uncommitted npm transaction member"))
+				continue
 			}
 		}
 		if t.moved[name] {
-			if err := os.Rename(filepath.Join(t.backup, name), t.target(name)); err != nil {
+			if err := renameNoReplace(filepath.Join(t.backup, name), t.target(name)); err != nil {
 				result = errors.Join(result, errors.New("restore npm transaction member"))
 			}
 		}

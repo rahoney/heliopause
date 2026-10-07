@@ -1,0 +1,21 @@
+{
+  "checks": [
+    {
+      "profile": "security",
+      "tool_session": 4191,
+      "tool_exit": 0,
+      "path": "raw/split-storage-native-evidence-security.log",
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95",
+      "bytes": 44
+    }
+  ],
+  "source_count": 708,
+  "scope": "Checksum-verified708 executed source and current portable evidence copied to native Linux checkout; canonical gosec/Gitleaks both0. Current checkout import failure retained independently; no confirmed low-level cause, no disabled rule or skipped package.",
+  "prior_portable_raw_audit": {
+    "raw_count": 114,
+    "verified_raw_claims": 237,
+    "verified_distinct_raw_files": 114,
+    "tool_exit": 0
+  },
+  "full_acceptance": "PENDING"
+}

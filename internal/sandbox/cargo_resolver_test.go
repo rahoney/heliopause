@@ -2,6 +2,7 @@ package sandbox
 
 import (
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,9 +12,9 @@ import (
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
-type cargoRunnerFixture struct{ calls []string }
+type cargoRunnerFixture struct{ calls, directories []string }
 
-func (r *cargoRunnerFixture) RunCargo(_ context.Context, _ string, environment []string, arguments ...string) ([]byte, error) {
+func (r *cargoRunnerFixture) RunCargo(_ context.Context, directory string, environment []string, arguments ...string) ([]byte, error) {
 	home := ""
 	for _, entry := range environment {
 		if strings.HasPrefix(entry, "CARGO_HOME=") {
@@ -24,7 +25,8 @@ func (r *cargoRunnerFixture) RunCargo(_ context.Context, _ string, environment [
 		return nil, context.Canceled
 	}
 	r.calls = append(r.calls, strings.Join(arguments, " "))
-	return []byte(`{"packages":[{"id":"registry+https://github.com/rust-lang/crates.io-index#serde@1.0.200","name":"serde","version":"1.0.200","source":"registry+https://github.com/rust-lang/crates.io-index","checksum":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}],"resolve":{"nodes":[{"id":"registry+https://github.com/rust-lang/crates.io-index#serde@1.0.200","deps":[]}]}}`), nil
+	r.directories = append(r.directories, directory)
+	return []byte(strings.ReplaceAll(`{"version":1,"workspace_root":"FIXTURE","workspace_members":["root"],"packages":[{"id":"root","name":"app","version":"0.1.0","source":null,"manifest_path":"FIXTURE/Cargo.toml"},{"id":"registry+https://github.com/rust-lang/crates.io-index#serde@1.0.200","name":"serde","version":"1.0.200","source":"registry+https://github.com/rust-lang/crates.io-index"}],"resolve":{"root":"root","nodes":[{"id":"root","features":[],"deps":[{"name":"serde","pkg":"registry+https://github.com/rust-lang/crates.io-index#serde@1.0.200","dep_kinds":[{"kind":null,"target":null}]}]},{"id":"registry+https://github.com/rust-lang/crates.io-index#serde@1.0.200","features":[],"deps":[]}]}}`, "FIXTURE", directory)), nil
 }
 
 func TestCargoResolverEnvironmentRejectsRegistrySubstitution(t *testing.T) {
@@ -50,7 +52,7 @@ func TestCargoResolverPinsCanonicalSparseRegistry(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(project, "Cargo.toml"), []byte("[package]\nname = \"app\"\nversion = \"0.1.0\"\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(project, "Cargo.lock"), []byte("version = 3\n"), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(project, "Cargo.lock"), []byte("version = 3\n[[package]]\nname=\"app\"\nversion=\"0.1.0\"\ndependencies=[\"serde\"]\n[[package]]\nname=\"serde\"\nversion=\"1.0.200\"\nsource=\"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum=\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	target, _ := domain.NewInstallTarget(project)
@@ -64,6 +66,31 @@ func TestCargoResolverPinsCanonicalSparseRegistry(t *testing.T) {
 	}
 	if len(runner.calls) != 1 || runner.calls[0] != "metadata --locked --format-version 1" {
 		t.Fatalf("Cargo calls = %#v", runner.calls)
+	}
+}
+
+func TestCargoResolverRejectsOriginalExecutionDirectory(t *testing.T) {
+	runner := &cargoRunnerFixture{}
+	resolver, _ := NewCargoResolver(runner)
+	reference, _ := artifactcargo.ParseReference("serde@1.0.200")
+	project := t.TempDir()
+	manifest := []byte("[package]\nname='app'\nversion='0.1.0'\n")
+	lock := []byte("version=4\n[[package]]\nname='app'\nversion='0.1.0'\ndependencies=['serde']\n[[package]]\nname='serde'\nversion='1.0.200'\nsource='registry+https://github.com/rust-lang/crates.io-index'\nchecksum='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'\n")
+	for name, body := range map[string][]byte{"Cargo.toml": manifest, "Cargo.lock": lock} {
+		if err := os.WriteFile(filepath.Join(project, name), body, 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	target, _ := domain.NewInstallTarget(project)
+	install, _ := domain.NewInstallContext(target)
+	if _, err := resolver.ResolveDependencies(context.Background(), reference, install); err != nil {
+		t.Fatal(err)
+	}
+	if len(runner.directories) != 1 || runner.directories[0] == project {
+		t.Fatal("original project reached Cargo execution")
+	}
+	if _, err := os.Lstat(runner.directories[0]); !errors.Is(err, os.ErrNotExist) {
+		t.Fatal("private project remains after resolution")
 	}
 }
 
@@ -84,7 +111,7 @@ func TestCargoResolverRejectsControlFileDrift(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(project, "Cargo.toml"), []byte("[package]\nname = \"app\"\nversion = \"0.1.0\"\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(project, "Cargo.lock"), []byte("version = 3\n"), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(project, "Cargo.lock"), []byte("version = 3\n[[package]]\nname=\"app\"\nversion=\"0.1.0\"\ndependencies=[\"serde\"]\n[[package]]\nname=\"serde\"\nversion=\"1.0.200\"\nsource=\"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum=\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	target, _ := domain.NewInstallTarget(project)

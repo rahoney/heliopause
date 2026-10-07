@@ -3,6 +3,7 @@
 package promotion
 
 import (
+	"os"
 	"syscall"
 	"unsafe"
 )
@@ -13,6 +14,19 @@ const (
 )
 
 func renameNoReplace(oldPath, newPath string) error {
+	return renameNoReplaceAt(-100, oldPath, newPath)
+}
+
+func renameRootNoReplace(root *os.Root, oldPath, newPath string) error {
+	directory, err := root.Open(".")
+	if err != nil {
+		return err
+	}
+	defer directory.Close()
+	return renameNoReplaceAt(int(directory.Fd()), oldPath, newPath)
+}
+
+func renameNoReplaceAt(directoryFD int, oldPath, newPath string) error {
 	oldPointer, err := syscall.BytePtrFromString(oldPath)
 	if err != nil {
 		return err
@@ -21,8 +35,7 @@ func renameNoReplace(oldPath, newPath string) error {
 	if err != nil {
 		return err
 	}
-	atFDCWD := -100
-	_, _, errno := syscall.Syscall6(amd64Renameat2, uintptr(atFDCWD), uintptr(unsafe.Pointer(oldPointer)), uintptr(atFDCWD), uintptr(unsafe.Pointer(newPointer)), renameNoReplaceFlag, 0)
+	_, _, errno := syscall.Syscall6(amd64Renameat2, uintptr(directoryFD), uintptr(unsafe.Pointer(oldPointer)), uintptr(directoryFD), uintptr(unsafe.Pointer(newPointer)), renameNoReplaceFlag, 0)
 	if errno != 0 {
 		return errno
 	}

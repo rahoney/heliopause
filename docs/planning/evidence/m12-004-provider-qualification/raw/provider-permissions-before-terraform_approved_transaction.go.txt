@@ -1,0 +1,621 @@
+package promotion
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"errors"
+	"io"
+	"os"
+	"path/filepath"
+	"strings"
+	"syscall"
+
+	artifactterraform "github.com/rahoney/heliopause/internal/artifact/terraformprovider"
+	"github.com/rahoney/heliopause/internal/core/domain"
+)
+
+// TerraformProjectPromotion connects the existing transaction to independent
+// retained approval and the complete verified provider cache, without executing
+// Terraform, resolving again, or accepting project hash markers as authority.
+type TerraformProjectPromotion struct {
+	cache      *TerraformVerifiedCache
+	stateRoot  string
+	checkpoint func(string) error
+}
+type terraformProjectApproval struct {
+	Schema      int                    `json:"schema"`
+	Cache       string                 `json:"cache"`
+	CacheDigest string                 `json:"cache_digest"`
+	Approval    terraformCacheDocument `json:"approval"`
+}
+
+func NewTerraformProjectPromotion(cache *TerraformVerifiedCache, state string) (*TerraformProjectPromotion, error) {
+	if cache == nil || !filepath.IsAbs(state) || filepath.Clean(state) != state || state == "/" || !separateRoots([]string{cache.intakeRoot, cache.evidenceRoot, cache.cacheRoot, state}) {
+		return nil, errors.New("terraform promotion requires separate trusted cache/state roots")
+	}
+	return &TerraformProjectPromotion{cache: cache, stateRoot: state}, nil
+}
+
+type approvedTerraformProjectGuard struct {
+	owner                       *TerraformProjectPromotion
+	install                     domain.InstallContext
+	guard                       goProjectGuard
+	plan                        terraformProjectPlan
+	capture                     artifactterraform.ProjectCapture
+	state                       *os.Root
+	stateInfo                   os.FileInfo
+	stateName                   string
+	stateBody                   []byte
+	stateFileInfo               os.FileInfo
+	terraformInfo               os.FileInfo
+	providerFiles               []terraformFileRecord
+	providerMembers             map[string]os.FileInfo
+	marker                      []byte
+	markerInfo, metadataDirInfo os.FileInfo
+	closed, committed           bool
+}
+
+func (p *TerraformProjectPromotion) Begin(ctx context.Context, install domain.InstallContext) (result *approvedTerraformProjectGuard, resultErr error) {
+	if p == nil || ctx == nil || ctx.Err() != nil || !install.Valid() || !separateRoots([]string{install.Target().String(), p.cache.intakeRoot, p.cache.evidenceRoot, p.cache.cacheRoot, p.stateRoot}) {
+		return nil, errors.New("terraform project mutation request is invalid")
+	}
+	guard, e := acquireProjectTransactionGuard(install.Target().String(), ".heliopause-terraform-transaction.lock")
+	if e != nil {
+		return nil, e
+	}
+	g := &approvedTerraformProjectGuard{owner: p, install: install, guard: guard}
+	defer func() {
+		if resultErr != nil {
+			resultErr = errors.Join(resultErr, g.Close())
+			result = nil
+		}
+	}()
+	file, e := guard.root.Open(".")
+	if e != nil {
+		return nil, e
+	}
+	entries, re := file.ReadDir(10001)
+	ce := file.Close()
+	if re != nil && !errors.Is(re, io.EOF) || ce != nil || len(entries) > 10000 {
+		return nil, errors.New("terraform recovery inventory exceeds bounds")
+	}
+	for _, entry := range entries {
+		if strings.HasPrefix(entry.Name(), ".heliopause-terraform-commit-") {
+			return nil, errors.New("terraform incomplete transaction requires recovery")
+		}
+	}
+	g.capture, e = artifactterraform.CaptureProject(ctx, install.Target().String())
+	if e != nil {
+		return nil, e
+	}
+	if _, e := artifactterraform.Requirements(g.capture.Controls); e != nil {
+		return nil, e
+	}
+	g.plan, e = freezeTerraformProject(install.Target().String())
+	if e != nil {
+		return nil, e
+	}
+	g.terraformInfo, g.providerFiles, g.providerMembers, e = inspectTerraformInstallation(ctx, guard.root, install.Target().String())
+	if e != nil {
+		return nil, e
+	}
+	if info, e := guard.root.Lstat(".heliopause"); e == nil {
+		if !info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
+			return nil, errors.New("terraform metadata directory is untrusted")
+		}
+		g.metadataDirInfo = info
+	} else if !errors.Is(e, os.ErrNotExist) {
+		return nil, e
+	}
+	g.marker, g.markerInfo, e = readGoTransactionControl(guard.root, terraformTransactionMetadata)
+	if errors.Is(e, os.ErrNotExist) {
+		g.marker, g.markerInfo = nil, nil
+	} else if e != nil || !pypiSingleLink(g.markerInfo) {
+		return nil, errors.New("terraform project marker is invalid")
+	}
+	if e := ensureTrustedRoot(p.stateRoot); e != nil {
+		return nil, e
+	}
+	g.stateInfo, e = os.Lstat(p.stateRoot)
+	if e != nil {
+		return nil, e
+	}
+	g.state, e = os.OpenRoot(p.stateRoot)
+	if e != nil {
+		return nil, e
+	}
+	opened, e := g.state.Stat(".")
+	if e != nil || !os.SameFile(g.stateInfo, opened) {
+		return nil, errors.New("terraform approval root changed")
+	}
+	g.stateName = terraformHash([]byte(install.Target().String())) + ".json"
+	g.stateBody, g.stateFileInfo, e = readGoTransactionControl(g.state, g.stateName)
+	if errors.Is(e, os.ErrNotExist) {
+		g.stateBody, g.stateFileInfo = nil, nil
+		if g.markerInfo != nil || g.terraformInfo != nil {
+			return nil, errors.New("terraform managed/provider state has no independent retained approval")
+		}
+	} else if e != nil || !pypiSingleLink(g.stateFileInfo) {
+		return nil, errors.New("terraform retained approval is unavailable or aliased")
+	} else if e := g.verifyRetained(ctx); e != nil {
+		return nil, e
+	}
+	if e := g.VerifyUnchanged(ctx); e != nil {
+		return nil, e
+	}
+	return g, nil
+}
+
+func inspectTerraformInstallation(ctx context.Context, root *os.Root, directory string) (os.FileInfo, []terraformFileRecord, map[string]os.FileInfo, error) {
+	info, e := root.Lstat(".terraform")
+	if errors.Is(e, os.ErrNotExist) {
+		return nil, nil, nil, nil
+	}
+	if e != nil || !info.IsDir() || info.Mode().Perm() != 0o755 || info.Mode()&os.ModeSymlink != 0 {
+		return nil, nil, nil, errors.New("terraform installation directory is untrusted")
+	}
+	f, e := root.Open(".terraform")
+	if e != nil {
+		return nil, nil, nil, e
+	}
+	entries, re := f.ReadDir(3)
+	ce := f.Close()
+	if re != nil && !errors.Is(re, io.EOF) || ce != nil || len(entries) != 1 || entries[0].Name() != "providers" {
+		return nil, nil, nil, errors.New("terraform installation contains unmanaged module/backend/cache state")
+	}
+	records, members, e := terraformTreeInventory(ctx, filepath.Join(directory, ".terraform", "providers"))
+	return info, records, members, e
+}
+
+func equalTerraformControls(a, b []domain.ProjectControlFile) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for _, left := range a {
+		matched := false
+		for _, right := range b {
+			if left.Name() == right.Name() && left.Present() == right.Present() && left.Digest() == right.Digest() {
+				matched = true
+			}
+		}
+		if !matched {
+			return false
+		}
+	}
+	return true
+}
+
+func (g *approvedTerraformProjectGuard) verifyRetained(ctx context.Context) error {
+	var doc terraformProjectApproval
+	decoder := json.NewDecoder(bytes.NewReader(g.stateBody))
+	decoder.DisallowUnknownFields()
+	if decoder.Decode(&doc) != nil {
+		return errors.New("terraform retained approval grammar is invalid")
+	}
+	canonical, e := json.Marshal(doc)
+	if e != nil || !bytes.Equal(canonical, g.stateBody) || doc.Schema != 1 || doc.Approval.Project+".json" != g.stateName || g.markerInfo == nil || g.terraformInfo == nil {
+		return errors.New("terraform retained approval binding is invalid")
+	}
+	for _, control := range g.capture.Controls {
+		matched := false
+		for _, record := range doc.Approval.Controls {
+			if control.Present() && record.Path == control.Name() && record.SHA256 == control.Digest().String() {
+				matched = true
+			}
+		}
+		if !matched {
+			return errors.New("terraform current controls differ from retained approval")
+		}
+	}
+	want, e := terraformApprovalMarker(g.stateBody)
+	if e != nil || !bytes.Equal(want, g.marker) {
+		return errors.New("terraform marker differs from independent retained state")
+	}
+	digest, e := domain.NewSHA256Digest(doc.CacheDigest)
+	if e != nil {
+		return e
+	}
+	if _, e := g.owner.cache.openDocument(ctx, doc.Cache, digest, doc.Approval); e != nil {
+		return e
+	}
+	if !sameTerraformFiles(g.providerFiles, doc.Approval.Files) {
+		return errors.New("terraform installed provider tree differs from retained approval")
+	}
+	return nil
+}
+
+func terraformApprovalMarker(body []byte) ([]byte, error) {
+	return json.Marshal(struct {
+		ApprovalDigest string `json:"approval_sha256"`
+	}{terraformHash(body)})
+}
+
+func (g *approvedTerraformProjectGuard) Controls() []domain.ProjectControlFile {
+	return append([]domain.ProjectControlFile(nil), g.capture.Controls...)
+}
+
+func (g *approvedTerraformProjectGuard) VerifyUnchanged(ctx context.Context) error {
+	if g == nil || ctx == nil || ctx.Err() != nil || g.closed || g.committed {
+		return errors.New("terraform project guard is not active")
+	}
+	if e := g.guard.verify(); e != nil {
+		return e
+	}
+	if e := g.plan.verifyUnchanged(); e != nil {
+		return e
+	}
+	metadata, metadataErr := g.guard.root.Lstat(".heliopause")
+	if g.metadataDirInfo == nil && errors.Is(metadataErr, os.ErrNotExist) {
+		metadata, metadataErr = nil, nil
+	}
+	if metadataErr != nil || (metadata == nil) != (g.metadataDirInfo == nil) || metadata != nil && (!os.SameFile(metadata, g.metadataDirInfo) || metadata.Mode() != g.metadataDirInfo.Mode()) {
+		return errors.New("terraform metadata directory changed during transaction")
+	}
+	current, e := artifactterraform.CaptureProject(ctx, g.install.Target().String())
+	if e != nil || !equalTerraformControls(current.Controls, g.capture.Controls) || !sameTerraformMembers(current.Members, g.capture.Members) {
+		return errors.New("terraform frozen configuration or lock identity changed")
+	}
+	info, records, members, e := inspectTerraformInstallation(ctx, g.guard.root, g.install.Target().String())
+	if e != nil || (info == nil) != (g.terraformInfo == nil) || info != nil && !os.SameFile(info, g.terraformInfo) || !sameTerraformFiles(records, g.providerFiles) || !sameTerraformMembers(members, g.providerMembers) {
+		return errors.New("terraform installed provider state changed during transaction")
+	}
+	marker, mi, e := readGoTransactionControl(g.guard.root, terraformTransactionMetadata)
+	if g.markerInfo == nil && errors.Is(e, os.ErrNotExist) {
+		marker, mi, e = nil, nil, nil
+	}
+	if e != nil || !bytes.Equal(marker, g.marker) || (mi == nil) != (g.markerInfo == nil) || mi != nil && (!os.SameFile(mi, g.markerInfo) || !pypiSingleLink(mi)) {
+		return errors.New("terraform metadata changed during transaction")
+	}
+	return g.verifyStateOriginal()
+}
+
+func (g *approvedTerraformProjectGuard) verifyStateOriginal() error {
+	info, e := os.Lstat(g.owner.stateRoot)
+	if e != nil || !os.SameFile(info, g.stateInfo) || info.Mode() != g.stateInfo.Mode() {
+		return errors.New("terraform retained approval root changed")
+	}
+	body, fi, e := readGoTransactionControl(g.state, g.stateName)
+	if g.stateFileInfo == nil && errors.Is(e, os.ErrNotExist) {
+		return nil
+	}
+	if e != nil || !pypiSingleLink(fi) || !os.SameFile(fi, g.stateFileInfo) || !bytes.Equal(body, g.stateBody) {
+		return errors.New("terraform retained approval changed during transaction")
+	}
+	return nil
+}
+
+func (g *approvedTerraformProjectGuard) Commit(ctx context.Context, update domain.ProjectDependencyUpdate, staged domain.StagedProjectSet) (resultErr error) {
+	if g == nil || !update.Valid() || !staged.Valid() || update.Snapshot().Context() != g.install || update.Snapshot().Source() != artifactterraform.Source() || !equalTerraformControls(g.Controls(), update.OriginalControls()) {
+		return errors.New("terraform frozen update differs from guarded project")
+	}
+	if e := g.VerifyUnchanged(ctx); e != nil {
+		return e
+	}
+	selected := update.Snapshot()
+	snapshot := staged.Set().Inspected().Snapshot()
+	if selected.GraphDigest() != snapshot.GraphDigest() || selected.Context() != snapshot.Context() || selected.Source() != snapshot.Source() {
+		return errors.New("terraform cache approval differs from selected snapshot")
+	}
+	a, b := selected.Dependencies(), snapshot.Dependencies()
+	if len(a) != len(b) {
+		return errors.New("terraform cache dependency coverage differs")
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return errors.New("terraform cache subject differs")
+		}
+	}
+	tree, e := g.owner.cache.OpenProjectCache(ctx, staged)
+	if e != nil {
+		return e
+	}
+	doc, e := g.owner.cache.approval(ctx, staged.Set())
+	if e != nil {
+		return e
+	}
+	doc.Files, _, e = terraformTreeInventory(ctx, tree)
+	if e != nil {
+		return e
+	}
+	var lockBody []byte
+	for _, control := range update.SelectedControls() {
+		matched := false
+		for _, record := range doc.Controls {
+			if record.Path == control.Name() && record.SHA256 == control.Digest().String() {
+				matched = true
+			}
+		}
+		if !matched || !control.Present() {
+			return errors.New("terraform selected control approval differs")
+		}
+		switch control.Name() {
+		case artifactterraform.LockControl:
+			lockBody = control.Body()
+		case artifactterraform.ConfigurationControl:
+			for _, old := range g.Controls() {
+				if old.Name() == control.Name() && old.Digest() != control.Digest() {
+					return errors.New("terraform selection modified frozen configuration")
+				}
+			}
+		default:
+			return errors.New("terraform selection contains an unsupported control")
+		}
+	}
+	locks, e := artifactterraform.ParseLock(lockBody)
+	if e != nil || len(locks) != len(doc.Entries) {
+		return errors.New("terraform selected lock coverage differs")
+	}
+	for _, entry := range doc.Entries {
+		path, e := terraformProviderPath(entry.Name, entry.Version)
+		if e != nil {
+			return e
+		}
+		address := "registry.terraform.io/" + strings.Replace(entry.Name, "_", "/", 1)
+		matched := false
+		for _, l := range locks {
+			if l.Address == address && l.Version == entry.Version && artifactterraform.VerifyPackageLock(l, artifactterraform.PackageContents{H1: entry.H1, ZH: entry.ZH}) == nil {
+				matched = true
+			}
+		}
+		if !matched {
+			return errors.New("terraform selected lock hash/version differs from inspected package")
+		}
+		for _, file := range doc.Files {
+			if file.Path == filepath.ToSlash(filepath.Join(path, entry.Executable)) && file.SHA256 != entry.ExecutableDigest {
+				return errors.New("terraform selected executable digest differs")
+			}
+		}
+	}
+	approval, e := json.Marshal(terraformProjectApproval{1, staged.ContentHandle(), staged.Digest().String(), doc})
+	if e != nil || len(approval) > 4<<20 {
+		return errors.New("terraform retained approval exceeds bounds")
+	}
+	marker, e := terraformApprovalMarker(approval)
+	if e != nil {
+		return e
+	}
+	workspace, e := g.plan.privateWorkspace()
+	if e != nil {
+		return e
+	}
+	defer func() { resultErr = errors.Join(resultErr, os.RemoveAll(workspace)) }()
+	if e := os.WriteFile(filepath.Join(workspace, artifactterraform.LockControl), lockBody, 0o600); e != nil {
+		return e
+	}
+	if e := g.VerifyUnchanged(ctx); e != nil {
+		return e
+	}
+	plan := g.plan
+	plan.authorized = true
+	transaction, e := beginTerraformProjectTransaction(plan, workspace)
+	if e != nil {
+		return e
+	}
+	transaction.providers = true
+	transaction.originalTerraformInfo = g.terraformInfo
+	transaction.originalProviderRecords = g.providerFiles
+	transaction.originalProviderMembers = g.providerMembers
+	transaction.originalMetadataFrozen = true
+	transaction.originalMetadataInfo = g.markerInfo
+	transaction.originalMetadataValue = g.marker
+	transaction.metadataValue = marker
+	transaction.metadataDirectoryInfo = g.metadataDirInfo
+	privateTerraform := filepath.Join(transaction.backup, "selected", ".terraform")
+	if e := os.Mkdir(privateTerraform, 0o755); e != nil {
+		_ = transaction.boundary.Close()
+		return e
+	}
+	if e := copyTerraformProviders(ctx, tree, filepath.Join(privateTerraform, "providers"), doc.Files); e != nil {
+		_ = transaction.boundary.Close()
+		return e
+	}
+	transaction.selectedTerraformInfo, e = transaction.boundary.Lstat(filepath.Join(filepath.Base(transaction.backup), "selected", ".terraform"))
+	if e != nil {
+		_ = transaction.boundary.Close()
+		return e
+	}
+	transaction.providerRecords, transaction.providerMembers, e = terraformTreeInventory(ctx, filepath.Join(privateTerraform, "providers"))
+	if e != nil {
+		_ = transaction.boundary.Close()
+		return e
+	}
+	transaction.checkpoint = func(phase string) error {
+		if g.owner.checkpoint != nil {
+			if e := g.owner.checkpoint(phase); e != nil {
+				return e
+			}
+		}
+		if phase == "before-backup" {
+			return g.VerifyUnchanged(ctx)
+		}
+		if phase == "before-approval" || phase == "after-approval" {
+			current, e := artifactterraform.CaptureProject(ctx, g.install.Target().String())
+			if e != nil {
+				return e
+			}
+			for _, old := range g.capture.Controls {
+				if old.Name() == artifactterraform.ConfigurationControl {
+					for _, now := range current.Controls {
+						if now.Name() == old.Name() && now.Digest() != old.Digest() {
+							return errors.New("terraform configuration changed before approval")
+						}
+					}
+				}
+			}
+			for name, old := range g.capture.Members {
+				if name != artifactterraform.LockControl {
+					now := current.Members[name]
+					if now == nil || !os.SameFile(old, now) {
+						return errors.New("terraform configuration identity changed before approval")
+					}
+				}
+			}
+			if _, e := g.owner.cache.OpenProjectCache(ctx, staged); e != nil {
+				return e
+			}
+			if e := transaction.verifyPublished(ctx); e != nil {
+				return e
+			}
+		}
+		return ctx.Err()
+	}
+	var statePublished bool
+	var publishedStateInfo os.FileInfo
+	transaction.publishApproval = func() error {
+		if e := g.verifyStateOriginal(); e != nil {
+			return e
+		}
+		e := g.writeState(approval, &statePublished)
+		if statePublished {
+			publishedStateInfo, _ = g.state.Lstat(g.stateName)
+		}
+		return e
+	}
+	transaction.rollbackApproval = func() error {
+		if !statePublished {
+			return nil
+		}
+		body, info, e := readGoTransactionControl(g.state, g.stateName)
+		if e != nil || publishedStateInfo == nil || !pypiSingleLink(info) || !os.SameFile(info, publishedStateInfo) || !bytes.Equal(body, approval) {
+			return errors.New("terraform approval rollback identity is uncertain")
+		}
+		if g.stateFileInfo == nil {
+			if e := g.state.Remove(g.stateName); e != nil {
+				return e
+			}
+			return syncDirectory(g.owner.stateRoot)
+		}
+		var restored bool
+		return g.writeState(g.stateBody, &restored)
+	}
+	if e := transaction.commit(); e != nil {
+		return e
+	}
+	g.committed = true
+	return nil
+}
+
+func (g *approvedTerraformProjectGuard) CommitSnapshot(context.Context, domain.ProjectDependencySnapshot, domain.StagedProjectSet) error {
+	return errors.New("terraform init requires an exact frozen provider update")
+}
+
+func copyTerraformProviders(ctx context.Context, source, destination string, expected []terraformFileRecord) error {
+	root, e := os.OpenRoot(source)
+	if e != nil {
+		return e
+	}
+	defer root.Close()
+	if e := os.Mkdir(destination, 0o755); e != nil {
+		return e
+	}
+	for _, record := range expected {
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+		if record.Path == "." {
+			continue
+		}
+		target := filepath.Join(destination, filepath.FromSlash(record.Path))
+		if record.Kind == "directory" {
+			if e := os.Mkdir(target, 0o755); e != nil {
+				return e
+			}
+			continue
+		}
+		before, e := root.Lstat(record.Path)
+		if e != nil || !before.Mode().IsRegular() || !pypiSingleLink(before) || before.Size() != record.Size || uint32(before.Mode().Perm()) != record.Mode {
+			return errors.New("terraform copy input changed")
+		}
+		f, e := root.OpenFile(record.Path, os.O_RDONLY|syscall.O_NONBLOCK, 0)
+		if e != nil {
+			return e
+		}
+		opened, e := f.Stat()
+		if e != nil || !os.SameFile(before, opened) {
+			_ = f.Close()
+			return errors.New("terraform copy input identity changed")
+		}
+		body, re := io.ReadAll(io.LimitReader(f, record.Size+1))
+		ce := f.Close()
+		if re != nil || ce != nil || int64(len(body)) != record.Size || terraformHash(body) != record.SHA256 {
+			return errors.New("terraform copy input digest changed")
+		}
+		if e := writeRecord(filepath.Dir(target), filepath.Base(target), body); e != nil {
+			return e
+		}
+		if e := os.Chmod(target, os.FileMode(record.Mode)); e != nil {
+			return e
+		}
+	}
+	actual, _, e := terraformTreeInventory(ctx, destination)
+	if e != nil || !sameTerraformFiles(actual, expected) {
+		return errors.New("terraform private installation differs from approved cache")
+	}
+	return syncTree(destination)
+}
+
+func (g *approvedTerraformProjectGuard) writeState(body []byte, published *bool) error {
+	info, e := os.Lstat(g.owner.stateRoot)
+	if e != nil || !os.SameFile(info, g.stateInfo) {
+		return errors.New("terraform state root identity changed")
+	}
+	run, e := domain.NewRunID()
+	if e != nil {
+		return e
+	}
+	name := ".terraform-approval-" + run.String()
+	f, e := g.state.OpenFile(name, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+	if e != nil {
+		return e
+	}
+	defer g.state.Remove(name)
+	_, we := f.Write(body)
+	se, ce := f.Sync(), f.Close()
+	if e := errors.Join(we, se, ce); e != nil {
+		return e
+	}
+	if g.stateFileInfo == nil && !*published {
+		if e := g.state.Link(name, g.stateName); e != nil {
+			return e
+		}
+	} else {
+		if e := g.state.Rename(name, g.stateName); e != nil {
+			return e
+		}
+	}
+	*published = true
+	return syncCargoTransactionRoot(g.state)
+}
+
+func (g *approvedTerraformProjectGuard) Close() (resultErr error) {
+	if g == nil || g.closed {
+		return nil
+	}
+	g.closed = true
+	if g.state != nil {
+		resultErr = errors.Join(resultErr, g.state.Close())
+	}
+	resultErr = errors.Join(resultErr, g.guard.release())
+	return resultErr
+}
+
+func (t *terraformProjectTransaction) verifyPublished(ctx context.Context) error {
+	body, info, e := readGoTransactionControl(t.boundary, artifactterraform.LockControl)
+	if e != nil || !os.SameFile(info, t.selectedInfo) || !bytes.Equal(body, t.expectedLock) {
+		return errors.New("terraform published lock differs from selection")
+	}
+	info, e = t.boundary.Lstat(".terraform")
+	if e != nil || !os.SameFile(info, t.selectedTerraformInfo) {
+		return errors.New("terraform published provider root changed")
+	}
+	files, members, e := terraformTreeInventory(ctx, filepath.Join(t.plan.root, ".terraform", "providers"))
+	if e != nil || !sameTerraformFiles(files, t.providerRecords) || !sameTerraformMembers(members, t.providerMembers) {
+		return errors.New("terraform published providers differ from selection")
+	}
+	marker, info, e := readGoTransactionControl(t.boundary, terraformTransactionMetadata)
+	if e != nil || !os.SameFile(info, t.metadataInfo) || !bytes.Equal(marker, t.metadataValue) {
+		return errors.New("terraform published metadata differs from approval")
+	}
+	return nil
+}

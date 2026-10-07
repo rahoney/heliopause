@@ -19,9 +19,9 @@ Heliopause 구현 milestone, 의존 순서와 현재 실행 작업을 기록한�
 | [11-m8-production-trust-hardening-contract.md](./11-m8-production-trust-hardening-contract.md) | M8 | Complete | production Host tool, observer, privilege와 observation trust remediation |
 | [12-m9-product-install-ux-contract.md](./12-m9-product-install-ux-contract.md) | M9 | Complete | transactional npm/pip/GitHub install UX와 hostile boundary |
 | [13-m10-verified-distribution-bootstrap-contract.md](./13-m10-verified-distribution-bootstrap-contract.md) | M10 | Complete | release identity, artifact manifest와 verified bootstrap chain |
-| [14-m11-dynamic-detection-depth-contract.md](./14-m11-dynamic-detection-depth-contract.md) | M11 | In progress | bounded process/filesystem/network detection과 raw payload non-retention |
-| [16-m12-01-ecosystem-expansion-contract.md](./16-m12-01-ecosystem-expansion-contract.md) | M12 | In progress | PyTorch·Go Modules·Cargo·Terraform Provider 생태계 확장 |
-| [17-m12-02-fix-list.md](./17-m12-02-fix-list.md) | M12-02 | Reserved | final red-team/fix gate |
+| [14-m11-dynamic-detection-depth-contract.md](./14-m11-dynamic-detection-depth-contract.md) | M11 | Complete | bounded process/filesystem/network detection과 raw payload non-retention |
+| [16-m12-01-ecosystem-expansion-contract.md](./16-m12-01-ecosystem-expansion-contract.md) | M12 | Complete | PyTorch·Go Modules·Cargo·Terraform Provider 생태계 확장; reviewer merge pending |
+| [17-m12-02-fix-list.md](./17-m12-02-fix-list.md) | M12-02 | Complete | final red-team/fix gate |
 | [18-m13-production-release-operations-contract.md](./18-m13-production-release-operations-contract.md) | M13 | Blocked | protected release 운영 설정과 최종 public deployment |
 
 ## Rule

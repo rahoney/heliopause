@@ -1,0 +1,14 @@
+{
+  "scope": "current exact normal product CLI + decoder fuzz/trusted executor + actual npm/PyPI install/content assertions + promotion adapters",
+  "result": "PASS",
+  "raw_local_file": "go-build-watch-stop-final-ordinary.log",
+  "raw_sha256": "2474301b3112faac72027a4d2a51b9701e04034e300dc2cc1b6cd49a6c165d88",
+  "actual_pass_tests": [
+    "--- PASS: TestLinuxTrustedHostExecutorIntegration (3.41s)",
+    "--- PASS: TestLinuxNPMPromotionIntegration (2.51s)",
+    "--- PASS: TestLinuxPyPIPromotionIntegration (3.45s)"
+  ],
+  "helper_wait": 0,
+  "restored_original_installation": true,
+  "candidate_receipt_sha256": "08af9139c92894facd1264acded3e6357c39b3b4499dc620b79e7ced325e5c1b"
+}

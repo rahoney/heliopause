@@ -1,0 +1,344 @@
+=== RUN   TestParsePackageLockV3BuildsExactConnectedGraph
+=== PAUSE TestParsePackageLockV3BuildsExactConnectedGraph
+=== RUN   TestParsePackageLockV3RejectsUnsupportedOrIncompleteSemantics
+=== PAUSE TestParsePackageLockV3RejectsUnsupportedOrIncompleteSemantics
+=== RUN   TestParsePackageLockV3PreservesHostInstallActionForPolicy
+=== PAUSE TestParsePackageLockV3PreservesHostInstallActionForPolicy
+=== RUN   TestParseReference
+=== PAUSE TestParseReference
+=== RUN   TestResolveExactVersionAndTag
+=== PAUSE TestResolveExactVersionAndTag
+=== RUN   TestResolveRegistryMetadataMediaTypes
+=== PAUSE TestResolveRegistryMetadataMediaTypes
+=== RUN   TestResolveRejectsUnsafeOrMalformedMetadata
+=== PAUSE TestResolveRejectsUnsafeOrMalformedMetadata
+=== RUN   TestResolvePreservesContextCancellation
+=== PAUSE TestResolvePreservesContextCancellation
+=== RUN   TestResolveKeepsMissingIntegrityForVerification
+=== PAUSE TestResolveKeepsMissingIntegrityForVerification
+=== RUN   TestAcquireStreamsOnlyToRunLocalIntake
+=== PAUSE TestAcquireStreamsOnlyToRunLocalIntake
+=== RUN   TestAcquireRejectsUnsafeTarballAndRemovesPartialIntake
+=== PAUSE TestAcquireRejectsUnsafeTarballAndRemovesPartialIntake
+=== RUN   TestAcquireEnforcesTarballLimitAndRemovesPartialIntake
+=== PAUSE TestAcquireEnforcesTarballLimitAndRemovesPartialIntake
+=== RUN   TestCreateRunDirectoryRejectsSymlinkAncestor
+=== PAUSE TestCreateRunDirectoryRejectsSymlinkAncestor
+=== CONT  TestParsePackageLockV3BuildsExactConnectedGraph
+=== CONT  TestResolvePreservesContextCancellation
+--- PASS: TestParsePackageLockV3BuildsExactConnectedGraph (0.00s)
+=== CONT  TestResolveExactVersionAndTag
+=== CONT  TestResolveRejectsUnsafeOrMalformedMetadata
+=== CONT  TestResolveRegistryMetadataMediaTypes
+=== RUN   TestResolveRegistryMetadataMediaTypes/application/vnd.npm.install-v1+json
+=== PAUSE TestResolveRegistryMetadataMediaTypes/application/vnd.npm.install-v1+json
+=== RUN   TestResolveRegistryMetadataMediaTypes/application/vnd.npm.install-v1+json;_charset=utf-8
+=== PAUSE TestResolveRegistryMetadataMediaTypes/application/vnd.npm.install-v1+json;_charset=utf-8
+=== RUN   TestResolveRegistryMetadataMediaTypes/Application/Vnd.Npm.Install-V1+Json
+=== PAUSE TestResolveRegistryMetadataMediaTypes/Application/Vnd.Npm.Install-V1+Json
+=== RUN   TestResolveRegistryMetadataMediaTypes/application/json
+=== PAUSE TestResolveRegistryMetadataMediaTypes/application/json
+=== RUN   TestResolveRegistryMetadataMediaTypes/application/json;_charset=utf-8
+=== CONT  TestAcquireStreamsOnlyToRunLocalIntake
+=== CONT  TestParseReference
+=== CONT  TestResolveKeepsMissingIntegrityForVerification
+=== CONT  TestParsePackageLockV3RejectsUnsupportedOrIncompleteSemantics
+=== RUN   TestParsePackageLockV3RejectsUnsupportedOrIncompleteSemantics/legacy_version
+=== PAUSE TestParsePackageLockV3RejectsUnsupportedOrIncompleteSemantics/legacy_version
+=== CONT  TestAcquireRejectsUnsafeTarballAndRemovesPartialIntake
+=== CONT  TestCreateRunDirectoryRejectsSymlinkAncestor
+=== CONT  TestAcquireEnforcesTarballLimitAndRemovesPartialIntake
+=== PAUSE TestResolveRegistryMetadataMediaTypes/application/json;_charset=utf-8
+=== RUN   TestParseReference/tiny
+=== CONT  TestParsePackageLockV3PreservesHostInstallActionForPolicy
+=== RUN   TestParsePackageLockV3RejectsUnsupportedOrIncompleteSemantics/wrong_root_dependency
+=== PAUSE TestParsePackageLockV3RejectsUnsupportedOrIncompleteSemantics/wrong_root_dependency
+=== RUN   TestParsePackageLockV3RejectsUnsupportedOrIncompleteSemantics/non_registry_tarball
+=== RUN   TestResolveRejectsUnsafeOrMalformedMetadata/redirect
+=== RUN   TestResolveRegistryMetadataMediaTypes/[]
+=== PAUSE TestResolveRegistryMetadataMediaTypes/[]
+=== PAUSE TestParsePackageLockV3RejectsUnsupportedOrIncompleteSemantics/non_registry_tarball
+=== RUN   TestParsePackageLockV3RejectsUnsupportedOrIncompleteSemantics/missing_resolved_child
+=== PAUSE TestParsePackageLockV3RejectsUnsupportedOrIncompleteSemantics/missing_resolved_child
+=== CONT  TestParsePackageLockV3RejectsUnsupportedOrIncompleteSemantics/legacy_version
+=== CONT  TestParsePackageLockV3RejectsUnsupportedOrIncompleteSemantics/missing_resolved_child
+=== PAUSE TestParseReference/tiny
+=== RUN   TestParseReference/tiny@1.2.3
+=== CONT  TestParsePackageLockV3RejectsUnsupportedOrIncompleteSemantics/non_registry_tarball
+=== CONT  TestParsePackageLockV3RejectsUnsupportedOrIncompleteSemantics/wrong_root_dependency
+--- PASS: TestParsePackageLockV3PreservesHostInstallActionForPolicy (0.00s)
+=== PAUSE TestParseReference/tiny@1.2.3
+=== RUN   TestParseReference/tiny@latest
+=== PAUSE TestParseReference/tiny@latest
+=== RUN   TestParseReference/@scope/tiny
+=== PAUSE TestParseReference/@scope/tiny
+=== RUN   TestParseReference/@scope/tiny@next
+=== PAUSE TestParseReference/@scope/tiny@next
+=== RUN   TestParseReference/invalid_
+=== PAUSE TestParseReference/invalid_
+=== RUN   TestParseReference/invalid__package
+=== PAUSE TestParseReference/invalid__package
+=== RUN   TestParseReference/invalid_tiny@^1.2.3
+=== PAUSE TestParseReference/invalid_tiny@^1.2.3
+=== RUN   TestResolveRegistryMetadataMediaTypes/[application/json-invalid]
+=== RUN   TestParseReference/invalid_tiny@*
+=== PAUSE TestParseReference/invalid_tiny@*
+=== PAUSE TestResolveRejectsUnsafeOrMalformedMetadata/redirect
+=== PAUSE TestResolveRegistryMetadataMediaTypes/[application/json-invalid]
+=== RUN   TestResolveRejectsUnsafeOrMalformedMetadata/non_JSON
+=== RUN   TestResolveRegistryMetadataMediaTypes/[application/jsonp]
+=== PAUSE TestResolveRegistryMetadataMediaTypes/[application/jsonp]
+=== PAUSE TestResolveRejectsUnsafeOrMalformedMetadata/non_JSON
+=== RUN   TestResolveRejectsUnsafeOrMalformedMetadata/bad_JSON
+=== PAUSE TestResolveRejectsUnsafeOrMalformedMetadata/bad_JSON
+=== RUN   TestResolveRejectsUnsafeOrMalformedMetadata/missing_selected_version
+=== PAUSE TestResolveRejectsUnsafeOrMalformedMetadata/missing_selected_version
+=== RUN   TestResolveRejectsUnsafeOrMalformedMetadata/wrong_tarball_host
+--- PASS: TestParsePackageLockV3RejectsUnsupportedOrIncompleteSemantics (0.00s)
+    --- PASS: TestParsePackageLockV3RejectsUnsupportedOrIncompleteSemantics/legacy_version (0.00s)
+    --- PASS: TestParsePackageLockV3RejectsUnsupportedOrIncompleteSemantics/missing_resolved_child (0.00s)
+    --- PASS: TestParsePackageLockV3RejectsUnsupportedOrIncompleteSemantics/non_registry_tarball (0.00s)
+    --- PASS: TestParsePackageLockV3RejectsUnsupportedOrIncompleteSemantics/wrong_root_dependency (0.00s)
+=== PAUSE TestResolveRejectsUnsafeOrMalformedMetadata/wrong_tarball_host
+=== RUN   TestResolveRejectsUnsafeOrMalformedMetadata/oversized
+=== PAUSE TestResolveRejectsUnsafeOrMalformedMetadata/oversized
+=== CONT  TestResolveRejectsUnsafeOrMalformedMetadata/redirect
+=== CONT  TestResolveRejectsUnsafeOrMalformedMetadata/wrong_tarball_host
+=== RUN   TestResolveExactVersionAndTag/@scope/tiny
+=== RUN   TestResolveRegistryMetadataMediaTypes/[application/vnd.other+json]
+=== PAUSE TestResolveRegistryMetadataMediaTypes/[application/vnd.other+json]
+=== RUN   TestResolveRegistryMetadataMediaTypes/[application/vnd.npm.install-v1+json;_broken]
+=== PAUSE TestResolveRegistryMetadataMediaTypes/[application/vnd.npm.install-v1+json;_broken]
+=== RUN   TestResolveRegistryMetadataMediaTypes/[application/json;_charset=utf-8;_charset=ascii]
+=== PAUSE TestResolveRegistryMetadataMediaTypes/[application/json;_charset=utf-8;_charset=ascii]
+=== RUN   TestResolveRegistryMetadataMediaTypes/[application/vnd.npm.install-v1+json_text/plain]
+=== PAUSE TestResolveRegistryMetadataMediaTypes/[application/vnd.npm.install-v1+json_text/plain]
+=== RUN   TestResolveRegistryMetadataMediaTypes/[application/json_application/vnd.npm.install-v1+json]
+=== PAUSE TestResolveRegistryMetadataMediaTypes/[application/json_application/vnd.npm.install-v1+json]
+=== RUN   TestResolveExactVersionAndTag/@scope/tiny@latest
+=== CONT  TestResolveRejectsUnsafeOrMalformedMetadata/missing_selected_version
+=== RUN   TestResolveExactVersionAndTag/@scope/tiny@1.2.3
+=== CONT  TestResolveRejectsUnsafeOrMalformedMetadata/bad_JSON
+=== RUN   TestParseReference/invalid_git+https://example.test/x
+=== PAUSE TestParseReference/invalid_git+https://example.test/x
+=== RUN   TestParseReference/invalid_https://example.test/x
+=== PAUSE TestParseReference/invalid_https://example.test/x
+=== RUN   TestParseReference/invalid_@scope
+=== PAUSE TestParseReference/invalid_@scope
+=== RUN   TestParseReference/invalid_@scope//tiny
+=== PAUSE TestParseReference/invalid_@scope//tiny
+=== CONT  TestResolveRejectsUnsafeOrMalformedMetadata/oversized
+--- PASS: TestResolvePreservesContextCancellation (0.01s)
+=== CONT  TestResolveRejectsUnsafeOrMalformedMetadata/non_JSON
+--- PASS: TestResolveKeepsMissingIntegrityForVerification (0.01s)
+=== CONT  TestResolveRegistryMetadataMediaTypes/application/vnd.npm.install-v1+json
+--- PASS: TestAcquireRejectsUnsafeTarballAndRemovesPartialIntake (0.01s)
+=== CONT  TestResolveRegistryMetadataMediaTypes/[application/json_application/vnd.npm.install-v1+json]
+=== CONT  TestResolveRegistryMetadataMediaTypes/[application/vnd.npm.install-v1+json_text/plain]
+=== CONT  TestResolveRegistryMetadataMediaTypes/[application/json;_charset=utf-8;_charset=ascii]
+=== CONT  TestResolveRegistryMetadataMediaTypes/[application/vnd.npm.install-v1+json;_broken]
+--- PASS: TestCreateRunDirectoryRejectsSymlinkAncestor (0.01s)
+=== CONT  TestResolveRegistryMetadataMediaTypes/[application/vnd.other+json]
+=== CONT  TestResolveRegistryMetadataMediaTypes/[application/jsonp]
+=== CONT  TestResolveRegistryMetadataMediaTypes/[application/json-invalid]
+--- PASS: TestAcquireStreamsOnlyToRunLocalIntake (0.02s)
+=== CONT  TestResolveRegistryMetadataMediaTypes/application/json;_charset=utf-8
+=== CONT  TestResolveRegistryMetadataMediaTypes/[]
+=== CONT  TestResolveRegistryMetadataMediaTypes/application/json
+=== CONT  TestResolveRegistryMetadataMediaTypes/Application/Vnd.Npm.Install-V1+Json
+=== CONT  TestResolveRegistryMetadataMediaTypes/application/vnd.npm.install-v1+json;_charset=utf-8
+=== CONT  TestParseReference/tiny
+=== CONT  TestParseReference/invalid_tiny@^1.2.3
+=== CONT  TestParseReference/invalid_@scope//tiny
+=== CONT  TestParseReference/invalid_@scope
+=== CONT  TestParseReference/invalid_https://example.test/x
+=== CONT  TestParseReference/invalid_git+https://example.test/x
+=== CONT  TestParseReference/invalid_tiny@*
+=== CONT  TestParseReference/@scope/tiny@next
+=== CONT  TestParseReference/invalid__package
+=== CONT  TestParseReference/invalid_
+=== CONT  TestParseReference/tiny@latest
+=== CONT  TestParseReference/@scope/tiny
+=== CONT  TestParseReference/tiny@1.2.3
+--- PASS: TestParseReference (0.00s)
+    --- PASS: TestParseReference/tiny (0.00s)
+    --- PASS: TestParseReference/invalid_tiny@^1.2.3 (0.00s)
+    --- PASS: TestParseReference/invalid_@scope//tiny (0.00s)
+    --- PASS: TestParseReference/invalid_@scope (0.00s)
+    --- PASS: TestParseReference/invalid_https://example.test/x (0.00s)
+    --- PASS: TestParseReference/invalid_git+https://example.test/x (0.00s)
+    --- PASS: TestParseReference/invalid_tiny@* (0.00s)
+    --- PASS: TestParseReference/@scope/tiny@next (0.00s)
+    --- PASS: TestParseReference/invalid__package (0.00s)
+    --- PASS: TestParseReference/invalid_ (0.00s)
+    --- PASS: TestParseReference/tiny@latest (0.00s)
+    --- PASS: TestParseReference/@scope/tiny (0.00s)
+    --- PASS: TestParseReference/tiny@1.2.3 (0.00s)
+--- PASS: TestResolveExactVersionAndTag (0.03s)
+    --- PASS: TestResolveExactVersionAndTag/@scope/tiny (0.00s)
+    --- PASS: TestResolveExactVersionAndTag/@scope/tiny@latest (0.00s)
+    --- PASS: TestResolveExactVersionAndTag/@scope/tiny@1.2.3 (0.00s)
+--- PASS: TestResolveRejectsUnsafeOrMalformedMetadata (0.00s)
+    --- PASS: TestResolveRejectsUnsafeOrMalformedMetadata/wrong_tarball_host (0.01s)
+    --- PASS: TestResolveRejectsUnsafeOrMalformedMetadata/oversized (0.01s)
+    --- PASS: TestResolveRejectsUnsafeOrMalformedMetadata/redirect (0.01s)
+    --- PASS: TestResolveRejectsUnsafeOrMalformedMetadata/bad_JSON (0.02s)
+    --- PASS: TestResolveRejectsUnsafeOrMalformedMetadata/non_JSON (0.02s)
+    --- PASS: TestResolveRejectsUnsafeOrMalformedMetadata/missing_selected_version (0.02s)
+--- PASS: TestResolveRegistryMetadataMediaTypes (0.00s)
+    --- PASS: TestResolveRegistryMetadataMediaTypes/application/vnd.npm.install-v1+json (0.01s)
+    --- PASS: TestResolveRegistryMetadataMediaTypes/[application/vnd.npm.install-v1+json_text/plain] (0.00s)
+    --- PASS: TestResolveRegistryMetadataMediaTypes/[application/json_application/vnd.npm.install-v1+json] (0.00s)
+    --- PASS: TestResolveRegistryMetadataMediaTypes/[] (0.00s)
+    --- PASS: TestResolveRegistryMetadataMediaTypes/application/json;_charset=utf-8 (0.01s)
+    --- PASS: TestResolveRegistryMetadataMediaTypes/[application/json;_charset=utf-8;_charset=ascii] (0.01s)
+    --- PASS: TestResolveRegistryMetadataMediaTypes/[application/jsonp] (0.01s)
+    --- PASS: TestResolveRegistryMetadataMediaTypes/application/json (0.00s)
+    --- PASS: TestResolveRegistryMetadataMediaTypes/[application/vnd.npm.install-v1+json;_broken] (0.01s)
+    --- PASS: TestResolveRegistryMetadataMediaTypes/Application/Vnd.Npm.Install-V1+Json (0.00s)
+    --- PASS: TestResolveRegistryMetadataMediaTypes/[application/json-invalid] (0.01s)
+    --- PASS: TestResolveRegistryMetadataMediaTypes/[application/vnd.other+json] (0.01s)
+    --- PASS: TestResolveRegistryMetadataMediaTypes/application/vnd.npm.install-v1+json;_charset=utf-8 (0.00s)
+--- PASS: TestAcquireEnforcesTarballLimitAndRemovesPartialIntake (0.34s)
+PASS
+ok  	github.com/rahoney/heliopause/internal/artifact/npm	0.351s
+=== RUN   TestIntegrityVerifier
+=== PAUSE TestIntegrityVerifier
+=== RUN   TestIntegrityVerifierPreservesCancellation
+=== PAUSE TestIntegrityVerifierPreservesCancellation
+=== CONT  TestIntegrityVerifier
+=== CONT  TestIntegrityVerifierPreservesCancellation
+--- PASS: TestIntegrityVerifierPreservesCancellation (0.00s)
+=== RUN   TestIntegrityVerifier/matching_SHA-512
+=== PAUSE TestIntegrityVerifier/matching_SHA-512
+=== RUN   TestIntegrityVerifier/mismatch
+=== PAUSE TestIntegrityVerifier/mismatch
+=== RUN   TestIntegrityVerifier/missing_declaration
+=== PAUSE TestIntegrityVerifier/missing_declaration
+=== RUN   TestIntegrityVerifier/non_SHA-512_declaration
+=== PAUSE TestIntegrityVerifier/non_SHA-512_declaration
+=== CONT  TestIntegrityVerifier/matching_SHA-512
+=== CONT  TestIntegrityVerifier/missing_declaration
+=== CONT  TestIntegrityVerifier/mismatch
+=== CONT  TestIntegrityVerifier/non_SHA-512_declaration
+--- PASS: TestIntegrityVerifier (0.00s)
+    --- PASS: TestIntegrityVerifier/matching_SHA-512 (0.00s)
+    --- PASS: TestIntegrityVerifier/missing_declaration (0.00s)
+    --- PASS: TestIntegrityVerifier/mismatch (0.00s)
+    --- PASS: TestIntegrityVerifier/non_SHA-512_declaration (0.00s)
+PASS
+ok  	github.com/rahoney/heliopause/internal/verification/npm	0.004s
+=== RUN   TestCargoAddInvokesResolverWithCanonicalReference
+--- PASS: TestCargoAddInvokesResolverWithCanonicalReference (0.00s)
+=== RUN   TestCargoBuildKeepsFixedSelectorAndFirstFailure
+=== RUN   TestCargoBuildKeepsFixedSelectorAndFirstFailure/[cargo_build]
+=== RUN   TestCargoBuildKeepsFixedSelectorAndFirstFailure/[cargo_build_./...]
+=== RUN   TestCargoBuildKeepsFixedSelectorAndFirstFailure/[cargo_build_--release]
+=== RUN   TestCargoBuildKeepsFixedSelectorAndFirstFailure/[cargo_build_--target-dir_/tmp/foreign]
+--- PASS: TestCargoBuildKeepsFixedSelectorAndFirstFailure (0.00s)
+    --- PASS: TestCargoBuildKeepsFixedSelectorAndFirstFailure/[cargo_build] (0.00s)
+    --- PASS: TestCargoBuildKeepsFixedSelectorAndFirstFailure/[cargo_build_./...] (0.00s)
+    --- PASS: TestCargoBuildKeepsFixedSelectorAndFirstFailure/[cargo_build_--release] (0.00s)
+    --- PASS: TestCargoBuildKeepsFixedSelectorAndFirstFailure/[cargo_build_--target-dir_/tmp/foreign] (0.00s)
+=== RUN   TestGitHubReleaseInstallParsesExactReferenceAndTarget
+--- PASS: TestGitHubReleaseInstallParsesExactReferenceAndTarget (0.00s)
+=== RUN   TestGitHubReleaseInstallDefaultsToScopedNonExistingTarget
+--- PASS: TestGitHubReleaseInstallDefaultsToScopedNonExistingTarget (0.00s)
+=== RUN   TestGoModuleDownloadInvokesProjectResolver
+--- PASS: TestGoModuleDownloadInvokesProjectResolver (0.00s)
+=== RUN   TestExecuteInstallPresentsCompletedAndFailedPromotionWithoutLosingPolicy
+=== PAUSE TestExecuteInstallPresentsCompletedAndFailedPromotionWithoutLosingPolicy
+=== RUN   TestExecuteInstallReportsNonAllowWithoutVerifiedSet
+=== PAUSE TestExecuteInstallReportsNonAllowWithoutVerifiedSet
+=== RUN   TestNPMInstallDefaultsToCurrentProject
+=== PAUSE TestNPMInstallDefaultsToCurrentProject
+=== RUN   TestPyPIInstallParsesOnlyCanonicalReferenceAndTarget
+=== PAUSE TestPyPIInstallParsesOnlyCanonicalReferenceAndTarget
+=== RUN   TestPyPIInstallWithoutActiveVenvFailsClosed
+--- PASS: TestPyPIInstallWithoutActiveVenvFailsClosed (0.00s)
+=== RUN   TestSyntheticInspectCLIContracts
+=== PAUSE TestSyntheticInspectCLIContracts
+=== RUN   TestExecuteInspectRejectsMissingAdapterDependency
+=== PAUSE TestExecuteInspectRejectsMissingAdapterDependency
+=== RUN   TestRootHelp
+=== PAUSE TestRootHelp
+=== RUN   TestSourceHelpShowsStaticSubcommands
+=== PAUSE TestSourceHelpShowsStaticSubcommands
+=== RUN   TestNewRejectsNilWriters
+=== PAUSE TestNewRejectsNilWriters
+=== RUN   TestDoctorRendersEveryCheckAndFailsClosed
+=== PAUSE TestDoctorRendersEveryCheckAndFailsClosed
+=== RUN   TestTerraformInitInvokesGuardedInstallation
+--- PASS: TestTerraformInitInvokesGuardedInstallation (0.00s)
+=== CONT  TestExecuteInstallPresentsCompletedAndFailedPromotionWithoutLosingPolicy
+=== RUN   TestExecuteInstallPresentsCompletedAndFailedPromotionWithoutLosingPolicy/completed
+=== CONT  TestExecuteInspectRejectsMissingAdapterDependency
+--- PASS: TestExecuteInspectRejectsMissingAdapterDependency (0.00s)
+=== CONT  TestDoctorRendersEveryCheckAndFailsClosed
+=== CONT  TestSyntheticInspectCLIContracts
+=== CONT  TestNPMInstallDefaultsToCurrentProject
+=== CONT  TestPyPIInstallParsesOnlyCanonicalReferenceAndTarget
+--- PASS: TestDoctorRendersEveryCheckAndFailsClosed (0.00s)
+--- PASS: TestNPMInstallDefaultsToCurrentProject (0.00s)
+=== CONT  TestNewRejectsNilWriters
+=== RUN   TestNewRejectsNilWriters/stdout
+=== PAUSE TestNewRejectsNilWriters/stdout
+=== RUN   TestNewRejectsNilWriters/stderr
+=== PAUSE TestNewRejectsNilWriters/stderr
+=== CONT  TestNewRejectsNilWriters/stdout
+=== RUN   TestSyntheticInspectCLIContracts/safe
+=== PAUSE TestSyntheticInspectCLIContracts/safe
+=== RUN   TestSyntheticInspectCLIContracts/review
+=== PAUSE TestSyntheticInspectCLIContracts/review
+--- PASS: TestPyPIInstallParsesOnlyCanonicalReferenceAndTarget (0.00s)
+=== CONT  TestExecuteInstallReportsNonAllowWithoutVerifiedSet
+=== CONT  TestNewRejectsNilWriters/stderr
+=== CONT  TestRootHelp
+=== RUN   TestSyntheticInspectCLIContracts/blocked
+=== PAUSE TestSyntheticInspectCLIContracts/blocked
+=== RUN   TestExecuteInstallReportsNonAllowWithoutVerifiedSet/MANUAL_REVIEW
+=== RUN   TestSyntheticInspectCLIContracts/acquire_error
+=== PAUSE TestSyntheticInspectCLIContracts/acquire_error
+=== RUN   TestSyntheticInspectCLIContracts/resolve_error
+=== PAUSE TestSyntheticInspectCLIContracts/resolve_error
+=== CONT  TestSyntheticInspectCLIContracts/safe
+--- PASS: TestNewRejectsNilWriters (0.00s)
+    --- PASS: TestNewRejectsNilWriters/stdout (0.00s)
+    --- PASS: TestNewRejectsNilWriters/stderr (0.00s)
+=== CONT  TestSyntheticInspectCLIContracts/acquire_error
+=== CONT  TestSourceHelpShowsStaticSubcommands
+=== CONT  TestSyntheticInspectCLIContracts/resolve_error
+=== RUN   TestSourceHelpShowsStaticSubcommands/pip
+=== RUN   TestExecuteInstallPresentsCompletedAndFailedPromotionWithoutLosingPolicy/promotion_failure
+=== CONT  TestSyntheticInspectCLIContracts/blocked
+--- PASS: TestRootHelp (0.00s)
+=== RUN   TestExecuteInstallReportsNonAllowWithoutVerifiedSet/BLOCK
+=== CONT  TestSyntheticInspectCLIContracts/review
+=== RUN   TestSourceHelpShowsStaticSubcommands/pypi
+--- PASS: TestExecuteInstallReportsNonAllowWithoutVerifiedSet (0.00s)
+    --- PASS: TestExecuteInstallReportsNonAllowWithoutVerifiedSet/MANUAL_REVIEW (0.00s)
+    --- PASS: TestExecuteInstallReportsNonAllowWithoutVerifiedSet/BLOCK (0.00s)
+--- PASS: TestExecuteInstallPresentsCompletedAndFailedPromotionWithoutLosingPolicy (0.00s)
+    --- PASS: TestExecuteInstallPresentsCompletedAndFailedPromotionWithoutLosingPolicy/completed (0.00s)
+    --- PASS: TestExecuteInstallPresentsCompletedAndFailedPromotionWithoutLosingPolicy/promotion_failure (0.00s)
+--- PASS: TestSyntheticInspectCLIContracts (0.00s)
+    --- PASS: TestSyntheticInspectCLIContracts/safe (0.00s)
+    --- PASS: TestSyntheticInspectCLIContracts/acquire_error (0.00s)
+    --- PASS: TestSyntheticInspectCLIContracts/review (0.00s)
+    --- PASS: TestSyntheticInspectCLIContracts/resolve_error (0.00s)
+    --- PASS: TestSyntheticInspectCLIContracts/blocked (0.00s)
+=== RUN   TestSourceHelpShowsStaticSubcommands/github
+=== RUN   TestSourceHelpShowsStaticSubcommands/go
+=== RUN   TestSourceHelpShowsStaticSubcommands/cargo
+=== RUN   TestSourceHelpShowsStaticSubcommands/terraform
+=== RUN   TestSourceHelpShowsStaticSubcommands/npm
+--- PASS: TestSourceHelpShowsStaticSubcommands (0.00s)
+    --- PASS: TestSourceHelpShowsStaticSubcommands/pip (0.00s)
+    --- PASS: TestSourceHelpShowsStaticSubcommands/pypi (0.00s)
+    --- PASS: TestSourceHelpShowsStaticSubcommands/github (0.00s)
+    --- PASS: TestSourceHelpShowsStaticSubcommands/go (0.00s)
+    --- PASS: TestSourceHelpShowsStaticSubcommands/cargo (0.00s)
+    --- PASS: TestSourceHelpShowsStaticSubcommands/terraform (0.00s)
+    --- PASS: TestSourceHelpShowsStaticSubcommands/npm (0.00s)
+PASS
+ok  	github.com/rahoney/heliopause/internal/cli	0.017s

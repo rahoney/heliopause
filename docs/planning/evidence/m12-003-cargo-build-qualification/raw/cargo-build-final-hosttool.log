@@ -1,0 +1,4 @@
+=== RUN   TestLinuxTrustedHostExecutorIntegration
+--- PASS: TestLinuxTrustedHostExecutorIntegration (3.66s)
+PASS
+ok  	github.com/rahoney/heliopause/internal/hosttool	3.670s

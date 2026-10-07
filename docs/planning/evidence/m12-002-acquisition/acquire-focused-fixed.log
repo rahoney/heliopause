@@ -1,0 +1,3 @@
+ok  	github.com/rahoney/heliopause/internal/artifact/gomodule	0.045s
+ok  	github.com/rahoney/heliopause/internal/verification/gomodule	0.049s
+ok  	github.com/rahoney/heliopause/internal/inspection/gomodule	0.028s

@@ -1,0 +1,182 @@
+=== RUN   TestNPMTransactionPreservesForeignBackup
+=== RUN   TestNPMTransactionPreservesForeignBackup/commit
+    m12_legacy_backup_test.go:67: foreign backup deleted: "" open /tmp/TestNPMTransactionPreservesForeignBackupcommit3058887765/001/.heliopause-npm-commit-3573767594/foreign.txt: no such file or directory
+    m12_legacy_backup_test.go:70: uncertain backup cleanup reported success
+    m12_legacy_backup_test.go:73: recovery boundary did not block next transaction
+=== RUN   TestNPMTransactionPreservesForeignBackup/rollback
+    m12_legacy_backup_test.go:67: foreign backup deleted: "" open /tmp/TestNPMTransactionPreservesForeignBackuprollback1796830019/001/.heliopause-npm-commit-2734118521/foreign.txt: no such file or directory
+    m12_legacy_backup_test.go:73: recovery boundary did not block next transaction
+--- FAIL: TestNPMTransactionPreservesForeignBackup (0.05s)
+    --- FAIL: TestNPMTransactionPreservesForeignBackup/commit (0.03s)
+    --- FAIL: TestNPMTransactionPreservesForeignBackup/rollback (0.02s)
+=== RUN   TestNPMTransactionPreservesForeignPublishedMember
+=== RUN   TestNPMTransactionPreservesForeignPublishedMember/node_modules
+    m12_legacy_backup_test.go:99: foreign publication deleted: "" open /tmp/TestNPMTransactionPreservesForeignPublishedMembernode_modules32186061/001/node_modules/foreign.txt: no such file or directory
+=== RUN   TestNPMTransactionPreservesForeignPublishedMember/haa
+    m12_legacy_backup_test.go:99: foreign publication deleted: "" open /tmp/TestNPMTransactionPreservesForeignPublishedMemberhaa1732662616/001/.heliopause/foreign.txt: no such file or directory
+--- FAIL: TestNPMTransactionPreservesForeignPublishedMember (0.02s)
+    --- FAIL: TestNPMTransactionPreservesForeignPublishedMember/node_modules (0.01s)
+    --- FAIL: TestNPMTransactionPreservesForeignPublishedMember/haa (0.01s)
+=== RUN   TestVenvTransactionPreservesForeignBackup
+=== RUN   TestVenvTransactionPreservesForeignBackup/commit
+    m12_legacy_backup_test.go:140: foreign backup deleted: "" open /tmp/TestVenvTransactionPreservesForeignBackupcommit3317259323/001/.heliopause-pypi-commit-683900377/foreign.txt: no such file or directory
+    m12_legacy_backup_test.go:143: uncertain backup cleanup reported success or released recovery boundary
+=== RUN   TestVenvTransactionPreservesForeignBackup/rollback
+    m12_legacy_backup_test.go:140: foreign backup deleted: "" open /tmp/TestVenvTransactionPreservesForeignBackuprollback1718694169/001/.heliopause-pypi-commit-3951251869/foreign.txt: no such file or directory
+    m12_legacy_backup_test.go:143: uncertain backup cleanup reported success or released recovery boundary
+--- FAIL: TestVenvTransactionPreservesForeignBackup (0.16s)
+    --- FAIL: TestVenvTransactionPreservesForeignBackup/commit (0.08s)
+    --- FAIL: TestVenvTransactionPreservesForeignBackup/rollback (0.08s)
+=== RUN   TestNPMRollbackPreservesChangedOriginal
+=== RUN   TestNPMRollbackPreservesChangedOriginal/package.json/content
+    m12_legacy_backup_test.go:213: changed or foreign member identity lost: lstat /tmp/TestNPMRollbackPreservesChangedOriginalpackage.jsoncontent929098928/001/.heliopause-npm-commit-2752218154/package.json: no such file or directory
+    m12_legacy_backup_test.go:215: backup uncertainty did not block next transaction
+=== RUN   TestNPMRollbackPreservesChangedOriginal/package.json/mode
+    m12_legacy_backup_test.go:213: changed or foreign member identity lost: lstat /tmp/TestNPMRollbackPreservesChangedOriginalpackage.jsonmode4228783240/001/.heliopause-npm-commit-3341527271/package.json: no such file or directory
+    m12_legacy_backup_test.go:215: backup uncertainty did not block next transaction
+=== RUN   TestNPMRollbackPreservesChangedOriginal/package.json/inode
+    m12_legacy_backup_test.go:213: changed or foreign member identity lost: lstat /tmp/TestNPMRollbackPreservesChangedOriginalpackage.jsoninode3608673403/001/.heliopause-npm-commit-4246875551/package.json: no such file or directory
+    m12_legacy_backup_test.go:215: backup uncertainty did not block next transaction
+=== RUN   TestNPMRollbackPreservesChangedOriginal/package.json/hardlink
+    m12_legacy_backup_test.go:213: changed or foreign member identity lost: lstat /tmp/TestNPMRollbackPreservesChangedOriginalpackage.jsonhardlink3687199236/001/.heliopause-npm-commit-3084856028/package.json: no such file or directory
+    m12_legacy_backup_test.go:215: backup uncertainty did not block next transaction
+=== RUN   TestNPMRollbackPreservesChangedOriginal/package.json/missing
+=== RUN   TestNPMRollbackPreservesChangedOriginal/node_modules/old/content
+    m12_legacy_backup_test.go:213: changed or foreign member identity lost: lstat /tmp/TestNPMRollbackPreservesChangedOriginalnode_modulesoldcontent1933300468/001/.heliopause-npm-commit-1823924846/node_modules/old: no such file or directory
+    m12_legacy_backup_test.go:215: backup uncertainty did not block next transaction
+=== RUN   TestNPMRollbackPreservesChangedOriginal/node_modules/old/mode
+    m12_legacy_backup_test.go:213: changed or foreign member identity lost: lstat /tmp/TestNPMRollbackPreservesChangedOriginalnode_modulesoldmode1982610080/001/.heliopause-npm-commit-2481565763/node_modules/old: no such file or directory
+    m12_legacy_backup_test.go:215: backup uncertainty did not block next transaction
+=== RUN   TestNPMRollbackPreservesChangedOriginal/node_modules/old/inode
+    m12_legacy_backup_test.go:213: changed or foreign member identity lost: lstat /tmp/TestNPMRollbackPreservesChangedOriginalnode_modulesoldinode1582130058/001/.heliopause-npm-commit-3906603401/node_modules/old: no such file or directory
+    m12_legacy_backup_test.go:215: backup uncertainty did not block next transaction
+=== RUN   TestNPMRollbackPreservesChangedOriginal/node_modules/old/hardlink
+    m12_legacy_backup_test.go:213: changed or foreign member identity lost: lstat /tmp/TestNPMRollbackPreservesChangedOriginalnode_modulesoldhardlin2537762040/001/.heliopause-npm-commit-3754280819/node_modules/old: no such file or directory
+    m12_legacy_backup_test.go:215: backup uncertainty did not block next transaction
+=== RUN   TestNPMRollbackPreservesChangedOriginal/node_modules/old/missing
+    m12_legacy_backup_test.go:213: changed or foreign member identity lost: lstat /tmp/TestNPMRollbackPreservesChangedOriginalnode_modulesoldmissing1231676165/001/.heliopause-npm-commit-843134298/node_modules/old.foreign: no such file or directory
+    m12_legacy_backup_test.go:215: backup uncertainty did not block next transaction
+--- FAIL: TestNPMRollbackPreservesChangedOriginal (0.09s)
+    --- FAIL: TestNPMRollbackPreservesChangedOriginal/package.json/content (0.01s)
+    --- FAIL: TestNPMRollbackPreservesChangedOriginal/package.json/mode (0.01s)
+    --- FAIL: TestNPMRollbackPreservesChangedOriginal/package.json/inode (0.01s)
+    --- FAIL: TestNPMRollbackPreservesChangedOriginal/package.json/hardlink (0.01s)
+    --- PASS: TestNPMRollbackPreservesChangedOriginal/package.json/missing (0.01s)
+    --- FAIL: TestNPMRollbackPreservesChangedOriginal/node_modules/old/content (0.01s)
+    --- FAIL: TestNPMRollbackPreservesChangedOriginal/node_modules/old/mode (0.01s)
+    --- FAIL: TestNPMRollbackPreservesChangedOriginal/node_modules/old/inode (0.01s)
+    --- FAIL: TestNPMRollbackPreservesChangedOriginal/node_modules/old/hardlink (0.01s)
+    --- FAIL: TestNPMRollbackPreservesChangedOriginal/node_modules/old/missing (0.01s)
+=== RUN   TestNPMTransactionPreservesCompetingDestination
+    m12_legacy_backup_test.go:234: competing destination was overwritten
+    m12_legacy_backup_test.go:237: changed or foreign member identity lost: <nil>
+--- FAIL: TestNPMTransactionPreservesCompetingDestination (0.01s)
+=== RUN   TestNPMGuardPreservesReplacedLock
+    m12_legacy_backup_test.go:254: foreign lock release accepted
+    m12_legacy_backup_test.go:256: changed or foreign member identity lost: lstat /tmp/TestNPMGuardPreservesReplacedLock1184566411/001/.heliopause-npm-transaction.lock: no such file or directory
+--- FAIL: TestNPMGuardPreservesReplacedLock (0.00s)
+=== RUN   TestVenvTransactionPreservesChangedBackup
+=== RUN   TestVenvTransactionPreservesChangedBackup/file-0/content/commit
+    m12_legacy_backup_test.go:291: uncertain cleanup reported success or released recovery
+    m12_legacy_backup_test.go:296: changed or foreign member identity lost: lstat /tmp/TestVenvTransactionPreservesChangedBackupfile-0contentcommit1345581739/001/.heliopause-pypi-commit-3194555900/file-0: no such file or directory
+=== RUN   TestVenvTransactionPreservesChangedBackup/file-0/content/rollback
+=== RUN   TestVenvTransactionPreservesChangedBackup/file-0/mode/commit
+    m12_legacy_backup_test.go:291: uncertain cleanup reported success or released recovery
+    m12_legacy_backup_test.go:296: changed or foreign member identity lost: lstat /tmp/TestVenvTransactionPreservesChangedBackupfile-0modecommit170891497/001/.heliopause-pypi-commit-1182028807/file-0: no such file or directory
+=== RUN   TestVenvTransactionPreservesChangedBackup/file-0/mode/rollback
+=== RUN   TestVenvTransactionPreservesChangedBackup/file-0/inode/commit
+    m12_legacy_backup_test.go:291: uncertain cleanup reported success or released recovery
+    m12_legacy_backup_test.go:296: changed or foreign member identity lost: lstat /tmp/TestVenvTransactionPreservesChangedBackupfile-0inodecommit3721449243/001/.heliopause-pypi-commit-3021206911/file-0: no such file or directory
+=== RUN   TestVenvTransactionPreservesChangedBackup/file-0/inode/rollback
+=== RUN   TestVenvTransactionPreservesChangedBackup/file-0/hardlink/commit
+    m12_legacy_backup_test.go:291: uncertain cleanup reported success or released recovery
+    m12_legacy_backup_test.go:296: changed or foreign member identity lost: lstat /tmp/TestVenvTransactionPreservesChangedBackupfile-0hardlinkcommit3887216899/001/.heliopause-pypi-commit-4019884019/file-0: no such file or directory
+=== RUN   TestVenvTransactionPreservesChangedBackup/file-0/hardlink/rollback
+=== RUN   TestVenvTransactionPreservesChangedBackup/file-0/missing/commit
+    m12_legacy_backup_test.go:291: uncertain cleanup reported success or released recovery
+    m12_legacy_backup_test.go:296: changed or foreign member identity lost: lstat /tmp/TestVenvTransactionPreservesChangedBackupfile-0missingcommit3090226330/001/.heliopause-pypi-commit-2778759045/file-0.foreign: no such file or directory
+=== RUN   TestVenvTransactionPreservesChangedBackup/file-0/missing/rollback
+=== RUN   TestVenvTransactionPreservesChangedBackup/metadata/content/commit
+    m12_legacy_backup_test.go:291: uncertain cleanup reported success or released recovery
+    m12_legacy_backup_test.go:296: changed or foreign member identity lost: lstat /tmp/TestVenvTransactionPreservesChangedBackupmetadatacontentcommi3375329791/001/.heliopause-pypi-commit-2169712568/metadata: no such file or directory
+=== RUN   TestVenvTransactionPreservesChangedBackup/metadata/content/rollback
+=== RUN   TestVenvTransactionPreservesChangedBackup/metadata/mode/commit
+    m12_legacy_backup_test.go:291: uncertain cleanup reported success or released recovery
+    m12_legacy_backup_test.go:296: changed or foreign member identity lost: lstat /tmp/TestVenvTransactionPreservesChangedBackupmetadatamodecommit3257873582/001/.heliopause-pypi-commit-210746648/metadata: no such file or directory
+=== RUN   TestVenvTransactionPreservesChangedBackup/metadata/mode/rollback
+=== RUN   TestVenvTransactionPreservesChangedBackup/metadata/inode/commit
+    m12_legacy_backup_test.go:291: uncertain cleanup reported success or released recovery
+    m12_legacy_backup_test.go:296: changed or foreign member identity lost: lstat /tmp/TestVenvTransactionPreservesChangedBackupmetadatainodecommit3696974769/001/.heliopause-pypi-commit-1148690213/metadata: no such file or directory
+=== RUN   TestVenvTransactionPreservesChangedBackup/metadata/inode/rollback
+=== RUN   TestVenvTransactionPreservesChangedBackup/metadata/hardlink/commit
+    m12_legacy_backup_test.go:291: uncertain cleanup reported success or released recovery
+    m12_legacy_backup_test.go:296: changed or foreign member identity lost: lstat /tmp/TestVenvTransactionPreservesChangedBackupmetadatahardlinkcomm2562674074/001/.heliopause-pypi-commit-4239653885/metadata: no such file or directory
+=== RUN   TestVenvTransactionPreservesChangedBackup/metadata/hardlink/rollback
+=== RUN   TestVenvTransactionPreservesChangedBackup/metadata/missing/commit
+    m12_legacy_backup_test.go:291: uncertain cleanup reported success or released recovery
+    m12_legacy_backup_test.go:296: changed or foreign member identity lost: lstat /tmp/TestVenvTransactionPreservesChangedBackupmetadatamissingcommi1742446457/001/.heliopause-pypi-commit-316608148/metadata.foreign: no such file or directory
+=== RUN   TestVenvTransactionPreservesChangedBackup/metadata/missing/rollback
+=== RUN   TestVenvTransactionPreservesChangedBackup/ledger.json/content/commit
+    m12_legacy_backup_test.go:291: uncertain cleanup reported success or released recovery
+    m12_legacy_backup_test.go:296: changed or foreign member identity lost: lstat /tmp/TestVenvTransactionPreservesChangedBackupledger.jsoncontentco2710039112/001/.heliopause-pypi-commit-733400967/ledger.json: no such file or directory
+=== RUN   TestVenvTransactionPreservesChangedBackup/ledger.json/content/rollback
+    m12_legacy_backup_test.go:291: uncertain cleanup reported success or released recovery
+    m12_legacy_backup_test.go:296: changed or foreign member identity lost: lstat /tmp/TestVenvTransactionPreservesChangedBackupledger.jsoncontentro352912255/001/.heliopause-pypi-commit-3834032903/ledger.json: no such file or directory
+=== RUN   TestVenvTransactionPreservesChangedBackup/ledger.json/mode/commit
+    m12_legacy_backup_test.go:291: uncertain cleanup reported success or released recovery
+    m12_legacy_backup_test.go:296: changed or foreign member identity lost: lstat /tmp/TestVenvTransactionPreservesChangedBackupledger.jsonmodecommi2937851/001/.heliopause-pypi-commit-3857225170/ledger.json: no such file or directory
+=== RUN   TestVenvTransactionPreservesChangedBackup/ledger.json/mode/rollback
+    m12_legacy_backup_test.go:291: uncertain cleanup reported success or released recovery
+    m12_legacy_backup_test.go:296: changed or foreign member identity lost: lstat /tmp/TestVenvTransactionPreservesChangedBackupledger.jsonmoderollb612347269/001/.heliopause-pypi-commit-1368944361/ledger.json: no such file or directory
+=== RUN   TestVenvTransactionPreservesChangedBackup/ledger.json/inode/commit
+    m12_legacy_backup_test.go:291: uncertain cleanup reported success or released recovery
+    m12_legacy_backup_test.go:296: changed or foreign member identity lost: lstat /tmp/TestVenvTransactionPreservesChangedBackupledger.jsoninodecomm3865004868/001/.heliopause-pypi-commit-115148594/ledger.json: no such file or directory
+=== RUN   TestVenvTransactionPreservesChangedBackup/ledger.json/inode/rollback
+    m12_legacy_backup_test.go:291: uncertain cleanup reported success or released recovery
+    m12_legacy_backup_test.go:296: changed or foreign member identity lost: lstat /tmp/TestVenvTransactionPreservesChangedBackupledger.jsoninoderoll475270469/001/.heliopause-pypi-commit-3137507707/ledger.json: no such file or directory
+=== RUN   TestVenvTransactionPreservesChangedBackup/ledger.json/hardlink/commit
+    m12_legacy_backup_test.go:291: uncertain cleanup reported success or released recovery
+    m12_legacy_backup_test.go:296: changed or foreign member identity lost: lstat /tmp/TestVenvTransactionPreservesChangedBackupledger.jsonhardlinkc1843809391/001/.heliopause-pypi-commit-1665917832/ledger.json: no such file or directory
+=== RUN   TestVenvTransactionPreservesChangedBackup/ledger.json/hardlink/rollback
+    m12_legacy_backup_test.go:291: uncertain cleanup reported success or released recovery
+    m12_legacy_backup_test.go:296: changed or foreign member identity lost: lstat /tmp/TestVenvTransactionPreservesChangedBackupledger.jsonhardlinkr2872448519/001/.heliopause-pypi-commit-1538162794/ledger.json: no such file or directory
+=== RUN   TestVenvTransactionPreservesChangedBackup/ledger.json/missing/commit
+    m12_legacy_backup_test.go:291: uncertain cleanup reported success or released recovery
+    m12_legacy_backup_test.go:296: changed or foreign member identity lost: lstat /tmp/TestVenvTransactionPreservesChangedBackupledger.jsonmissingco3396728551/001/.heliopause-pypi-commit-601486713/ledger.json.foreign: no such file or directory
+=== RUN   TestVenvTransactionPreservesChangedBackup/ledger.json/missing/rollback
+    m12_legacy_backup_test.go:291: uncertain cleanup reported success or released recovery
+    m12_legacy_backup_test.go:296: changed or foreign member identity lost: lstat /tmp/TestVenvTransactionPreservesChangedBackupledger.jsonmissingro3543042329/001/.heliopause-pypi-commit-2221527432/ledger.json.foreign: no such file or directory
+--- FAIL: TestVenvTransactionPreservesChangedBackup (2.36s)
+    --- FAIL: TestVenvTransactionPreservesChangedBackup/file-0/content/commit (0.08s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/file-0/content/rollback (0.07s)
+    --- FAIL: TestVenvTransactionPreservesChangedBackup/file-0/mode/commit (0.08s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/file-0/mode/rollback (0.07s)
+    --- FAIL: TestVenvTransactionPreservesChangedBackup/file-0/inode/commit (0.08s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/file-0/inode/rollback (0.08s)
+    --- FAIL: TestVenvTransactionPreservesChangedBackup/file-0/hardlink/commit (0.08s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/file-0/hardlink/rollback (0.07s)
+    --- FAIL: TestVenvTransactionPreservesChangedBackup/file-0/missing/commit (0.08s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/file-0/missing/rollback (0.07s)
+    --- FAIL: TestVenvTransactionPreservesChangedBackup/metadata/content/commit (0.08s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/metadata/content/rollback (0.08s)
+    --- FAIL: TestVenvTransactionPreservesChangedBackup/metadata/mode/commit (0.10s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/metadata/mode/rollback (0.07s)
+    --- FAIL: TestVenvTransactionPreservesChangedBackup/metadata/inode/commit (0.08s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/metadata/inode/rollback (0.07s)
+    --- FAIL: TestVenvTransactionPreservesChangedBackup/metadata/hardlink/commit (0.08s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/metadata/hardlink/rollback (0.08s)
+    --- FAIL: TestVenvTransactionPreservesChangedBackup/metadata/missing/commit (0.10s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/metadata/missing/rollback (0.08s)
+    --- FAIL: TestVenvTransactionPreservesChangedBackup/ledger.json/content/commit (0.09s)
+    --- FAIL: TestVenvTransactionPreservesChangedBackup/ledger.json/content/rollback (0.08s)
+    --- FAIL: TestVenvTransactionPreservesChangedBackup/ledger.json/mode/commit (0.08s)
+    --- FAIL: TestVenvTransactionPreservesChangedBackup/ledger.json/mode/rollback (0.08s)
+    --- FAIL: TestVenvTransactionPreservesChangedBackup/ledger.json/inode/commit (0.08s)
+    --- FAIL: TestVenvTransactionPreservesChangedBackup/ledger.json/inode/rollback (0.08s)
+    --- FAIL: TestVenvTransactionPreservesChangedBackup/ledger.json/hardlink/commit (0.08s)
+    --- FAIL: TestVenvTransactionPreservesChangedBackup/ledger.json/hardlink/rollback (0.08s)
+    --- FAIL: TestVenvTransactionPreservesChangedBackup/ledger.json/missing/commit (0.08s)
+    --- FAIL: TestVenvTransactionPreservesChangedBackup/ledger.json/missing/rollback (0.08s)
+FAIL
+FAIL	github.com/rahoney/heliopause/internal/promotion	2.691s
+FAIL

@@ -1,0 +1,151 @@
+{
+  "source_candidate": "d328756f0087624093808215d1fbedd47767ef58",
+  "scope": "Direct compiled public source/profile/resource APIs; no integration or release-support claim",
+  "runtime_lock": {
+    "path": "scripts/runtimes.lock.json",
+    "sha256": "272ab2bc91d6371203a0f4a85fc39fd44cab49001d51dfaec88749e8c964468d"
+  },
+  "python_target": {
+    "reference": "python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52",
+    "python_version": "3.14.7",
+    "pip_version": "26.2.1",
+    "target": {
+      "interpreter": "cp314",
+      "abi": "cp314",
+      "platform": "manylinux_2_36_x86_64"
+    }
+  },
+  "profiles": [
+    {
+      "artifact_limits": {
+        "MaxCompressed": 67108864,
+        "MaxUncompressed": 268435456,
+        "MaxFiles": 10000,
+        "MaxMetadata": 1048576
+      },
+      "distribution_hosts": [
+        "files.pythonhosted.org"
+      ],
+      "duration_seconds": 300,
+      "graph_artifacts": 64,
+      "graph_compressed_bytes": 67108864,
+      "graph_files": 10000,
+      "graph_uncompressed_bytes": 268435456,
+      "index_url": "https://pypi.org/simple/",
+      "profile": "pypi",
+      "promotion_tmpfs_bytes": 134217728,
+      "required_import_unit_limit": 32,
+      "runtime_memory_bytes": 536870912,
+      "runtime_tmpfs_bytes": 268435456,
+      "source_id": "pypi",
+      "temporary_disk_bytes": 536870912,
+      "transaction_cpu_seconds": 30
+    },
+    {
+      "artifact_limits": {
+        "MaxCompressed": 268435456,
+        "MaxUncompressed": 1073741824,
+        "MaxFiles": 20000,
+        "MaxMetadata": 2097152
+      },
+      "distribution_hosts": [
+        "download.pytorch.org",
+        "download-r2.pytorch.org"
+      ],
+      "duration_seconds": 900,
+      "graph_artifacts": 64,
+      "graph_compressed_bytes": 536870912,
+      "graph_files": 20000,
+      "graph_uncompressed_bytes": 2147483648,
+      "index_url": "https://download.pytorch.org/whl/cpu/",
+      "profile": "pytorch:cpu",
+      "promotion_tmpfs_bytes": 1073741824,
+      "required_import_unit_limit": 64,
+      "runtime_memory_bytes": 2147483648,
+      "runtime_tmpfs_bytes": 2147483648,
+      "source_id": "pytorch-cpu",
+      "temporary_disk_bytes": 4294967296,
+      "transaction_cpu_seconds": 180
+    },
+    {
+      "artifact_limits": {
+        "MaxCompressed": 1610612736,
+        "MaxUncompressed": 2147483648,
+        "MaxFiles": 20000,
+        "MaxMetadata": 2097152
+      },
+      "distribution_hosts": [
+        "download.pytorch.org",
+        "download-r2.pytorch.org"
+      ],
+      "duration_seconds": 2400,
+      "graph_artifacts": 64,
+      "graph_compressed_bytes": 5368709120,
+      "graph_files": 24000,
+      "graph_uncompressed_bytes": 8589934592,
+      "index_url": "https://download.pytorch.org/whl/cu126/",
+      "profile": "pytorch:cu126",
+      "promotion_tmpfs_bytes": 12884901888,
+      "required_import_unit_limit": 64,
+      "runtime_memory_bytes": 4294967296,
+      "runtime_tmpfs_bytes": 12884901888,
+      "source_id": "pytorch-cu126",
+      "temporary_disk_bytes": 25769803776,
+      "transaction_cpu_seconds": 300
+    },
+    {
+      "artifact_limits": {
+        "MaxCompressed": 1073741824,
+        "MaxUncompressed": 2147483648,
+        "MaxFiles": 20000,
+        "MaxMetadata": 2097152
+      },
+      "distribution_hosts": [
+        "download.pytorch.org",
+        "download-r2.pytorch.org"
+      ],
+      "duration_seconds": 2400,
+      "graph_artifacts": 64,
+      "graph_compressed_bytes": 4294967296,
+      "graph_files": 24000,
+      "graph_uncompressed_bytes": 8589934592,
+      "index_url": "https://download.pytorch.org/whl/cu130/",
+      "profile": "pytorch:cu130",
+      "promotion_tmpfs_bytes": 12884901888,
+      "required_import_unit_limit": 64,
+      "runtime_memory_bytes": 4294967296,
+      "runtime_tmpfs_bytes": 12884901888,
+      "source_id": "pytorch-cu130",
+      "temporary_disk_bytes": 25769803776,
+      "transaction_cpu_seconds": 300
+    },
+    {
+      "artifact_limits": {
+        "MaxCompressed": 1073741824,
+        "MaxUncompressed": 2147483648,
+        "MaxFiles": 20000,
+        "MaxMetadata": 2097152
+      },
+      "distribution_hosts": [
+        "download.pytorch.org",
+        "download-r2.pytorch.org"
+      ],
+      "duration_seconds": 2400,
+      "graph_artifacts": 64,
+      "graph_compressed_bytes": 4294967296,
+      "graph_files": 24000,
+      "graph_uncompressed_bytes": 8589934592,
+      "index_url": "https://download.pytorch.org/whl/cu132/",
+      "profile": "pytorch:cu132",
+      "promotion_tmpfs_bytes": 12884901888,
+      "required_import_unit_limit": 64,
+      "runtime_memory_bytes": 4294967296,
+      "runtime_tmpfs_bytes": 12884901888,
+      "source_id": "pytorch-cu132",
+      "temporary_disk_bytes": 25769803776,
+      "transaction_cpu_seconds": 300
+    }
+  ],
+  "actual_exit": 0,
+  "compiled_output_sha256": "7d6759b8a1143ca8bfb12f76a7c5f6c3bd9f2c5c791c76157ec4262dbf422ef4"
+}

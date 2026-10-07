@@ -1,0 +1,40 @@
+{
+  "scope": "Cumulative M12-002/003/004 PR source qualification COMPLETE",
+  "base_main": "62c3b595e8e27a4a1d836849643c372692a39b8b",
+  "pr_number": 29,
+  "pr_url": "https://github.com/rahoney/heliopause/pull/29",
+  "attempts": [
+    {
+      "head": "1170ce2ddee6b0a9133238972624f5315fd355f6",
+      "run_id": 37497646753,
+      "status": "failure",
+      "primary": "macOS symlink TempDir fixture; Linux cancelled by next push, not qualified"
+    },
+    {
+      "head": "c106172bf8a7faff0ec01e4c3966ee5a6c854d4d",
+      "run_id": 37499465550,
+      "status": "failure",
+      "native_macos": "success",
+      "primary": "Cargo source fixture relative path with direct compiled binary repository cwd",
+      "linux_cleanup": "helper wait0, confirmed stopped, RESTORED"
+    },
+    {
+      "head": "132baead052842deddc63c6016c7d2811958cb0a",
+      "run_id": 37503579865,
+      "status": "success",
+      "all_jobs_success": true
+    }
+  ],
+  "limits": "No merge, M12-005 implementation, Required/skip/budget/policy relaxation or replacement of existing product implementation",
+  "qualified_ci_terminal": "qualified-ci-terminal.json",
+  "actual_scope": "actual-scope-summary.json",
+  "cleanup": "cleanup-summary.json",
+  "final_status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES",
+    "ACCEPTANCE_CLOSED": "YES",
+    "MISSING": []
+  },
+  "closure_head_verification": "Documentation/evidence-only closure reuses exact qualified source with full tracked blob/mode boundary; new closure HEAD remote Required must be checked after push, not claimed here."
+}

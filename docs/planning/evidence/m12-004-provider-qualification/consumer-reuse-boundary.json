@@ -1,0 +1,27 @@
+{
+  "scope": "Earlier actual sandbox consumers use byte-identical final sandbox-test/CPP/helper binaries. Two TF promotion/test source changes do not alter those execution inputs. Corrected actual init and remaining CLI/full use freshly built corrected bootstrap/CLI/promotion binaries.",
+  "source_delta": [
+    "internal/promotion/terraform_approved_transaction.go",
+    "internal/promotion/terraform_cache_test.go"
+  ],
+  "identical_binaries": [
+    {
+      "role": "qualified-permissions-sandbox.test",
+      "sha256": "11dc067f74ec7c34c1a01069a1fc122b86a3fe67ddbb0ec2ebbbaf4635f03870"
+    },
+    {
+      "role": "provider-probe-observer",
+      "sha256": "e19c02874f610139f06ed2b6616c73eb27a62d81fdfe2981883f5546cf5bec92"
+    },
+    {
+      "role": "cargo-source-policy-helper",
+      "sha256": "d268d1ece6751cf19e52eef1e17d71ed737ea60fd428b7866944e4f8e78b7c5d"
+    }
+  ],
+  "earlier_candidate": "final-executable-candidate-initial.json",
+  "corrected_candidate": "final-executable-candidate-permissions.json",
+  "earlier_actuals": "campaign.json",
+  "remaining_actuals": "continuation.json",
+  "historical_only": true,
+  "final_timing_candidate": "All actual consumers re-run; this earlier reuse proof is not applied to timing candidate"
+}

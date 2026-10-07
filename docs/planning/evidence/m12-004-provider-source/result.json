@@ -1,0 +1,150 @@
+{
+  "status": "PARTIAL_SOURCE_VERIFICATION_COMPLETE",
+  "work_item": "M12-004",
+  "baseline_head": "8c56f873eb7ce395af4ba984190413492b096e63",
+  "scope": "Bounded public discovery/exact selection, frozen intake and independent signed checksum/archive verification. No provider execution or installation acceptance.",
+  "owner_status": {
+    "parser_acquisition_verifier": "IMPLEMENTED; partial direct qualification",
+    "whole_IMPLEMENTED": "NO",
+    "WIRED": "NO (init remains resolution only)",
+    "QUALIFIED": "NO (whole work item)",
+    "ACCEPTANCE_CLOSED": "NO"
+  },
+  "public_results": [
+    {
+      "reference": "hashicorp/random@3.7.2",
+      "archive_sha256": "7b8434212eef0f8c83f5a90c6d76feaf850f6502b61b53c329e85b3b281cba34",
+      "signer": "C874011F0AB405110D02105534365D9472D7468F",
+      "trust": "HASHICORP_OFFICIAL",
+      "outcome": "VERIFIED"
+    },
+    {
+      "reference": "integrations/github@6.6.0",
+      "archive_sha256": "772edb5890d72b32868f9fdc0a9a1d4f4701d8e7f8acb37a7ac530d053c776e3",
+      "signer": "F31928FACE52F1A13A6C60EA38027F80D7FD5FB2",
+      "trust": "RECOGNIZED_PARTNER",
+      "outcome": "VERIFIED"
+    }
+  ],
+  "public_elapsed_seconds": 2.686,
+  "checks": {
+    "quick": "actual exit0; source-candidate.json",
+    "focused": "actual exit0; frozen selection, redirected/incomplete acquisition, intake aliases, signature tampering, historical/current key, revoked/expired current keys",
+    "security": "actual exit0",
+    "vulnerability": "actual exit0 after real verifier/acquisition calls; not a claim that all module advisories are absent"
+  },
+  "failures_preserved": [
+    "Old signing_keys array rejected actual official and partner metadata.",
+    "Registry official certificate expires 2026-04-18; current same-primary certificate expires 2030-03-01. Historical/current bindings both required.",
+    "Actual official versions list includes unrelated legacy protocol4 and empty prerelease declarations; these do not define requested3.7.2 capability.",
+    "Initial import alias and architecture preparation failures are NOT_REACHED.",
+    "Initial Gitleaks public fingerprint/constructed negative armor false positives preserved locally; no real secret, ignore change or scanner weakening."
+  ],
+  "missing": [
+    "bounded archive/executable/h1 static inspection",
+    "required fixed sandbox dynamic probe and affected direct consumers",
+    "project discovery/control lock semantics",
+    "independently approved staging and guarded provider-tree/lock/metadata publish/rollback",
+    "actual init CLI wiring and public/security/concurrency/partial-commit qualification"
+  ],
+  "remote_ci": "NOT_RUN",
+  "native_macos": "NOT_RUN",
+  "authorization": "NO PUSH / NO REMOTE CI / NO MERGE; continue M12-004",
+  "raw_inventory": [
+    {
+      "path": "raw/actual-schema-before-formatted-quick.log",
+      "size_bytes": 4676,
+      "sha256": "cc4bc974d766162a1ee15baa810cc168b8f762c4382f4a13f8111950f3f80c13"
+    },
+    {
+      "path": "raw/parser-after-quick.log",
+      "size_bytes": 1354,
+      "sha256": "0fa18d6da0e4c726e76dcca6b212d2ed18dbc706582f1aa0bee51ab5d9aad031"
+    },
+    {
+      "path": "raw/public-source-final-quick.log",
+      "size_bytes": 1354,
+      "sha256": "a420528d421fd233f6047eb60b64f050f81fa1d9c90acaaaf27151394f263479"
+    },
+    {
+      "path": "raw/public-source-final-security.log",
+      "size_bytes": 44,
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95"
+    },
+    {
+      "path": "raw/public-source-final-vulnerability.log",
+      "size_bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "raw/public-source-final.log",
+      "size_bytes": 1539,
+      "sha256": "7f8f7087e0f8e7ad23e489238f749740be7442af9e9d13423c1479234dc814a8"
+    },
+    {
+      "path": "raw/public-source-first.log",
+      "size_bytes": 949,
+      "sha256": "7b14c09d74b4f4147176fe68ab4a2219238188cb97cc707536085f295c817814"
+    },
+    {
+      "path": "raw/signature-actual-focused.log",
+      "size_bytes": 2597,
+      "sha256": "d3d34b3cc0785aa92f5ef23cba2b828ab5bab10381b12ffc8ffce827419eb768"
+    },
+    {
+      "path": "raw/source-final-focused.log",
+      "size_bytes": 4832,
+      "sha256": "4abbeb9c3daee5c2e62367e28048d93475025e3f5bede2fecb399e6a4c6f0db8"
+    },
+    {
+      "path": "raw/terraform-provider-github_6.6.0/checksums.raw",
+      "size_bytes": 1714,
+      "sha256": "1bedbdd7581318c3f9a0056b45ac11afb95f573da33e48f73de64873e7cbb12e"
+    },
+    {
+      "path": "raw/terraform-provider-github_6.6.0/discovery.json",
+      "size_bytes": 62,
+      "sha256": "b9f54de00c40ba5b8c37a4cecc04b8907c3bbc82c4b404a55bbfbb73b93a11f7"
+    },
+    {
+      "path": "raw/terraform-provider-github_6.6.0/package.json",
+      "size_bytes": 4954,
+      "sha256": "f0a535afb83a4e94b0b3f8a22f6298258f6e1b50073829e454bce32926facb7c"
+    },
+    {
+      "path": "raw/terraform-provider-github_6.6.0/signature.raw",
+      "size_bytes": 566,
+      "sha256": "707368f4a095256ec71d170300947ce0678c0125e21fb6758c57c4a917017dae"
+    },
+    {
+      "path": "raw/terraform-provider-github_6.6.0/versions.json",
+      "size_bytes": 64425,
+      "sha256": "0fb1d3fecdfb0e8776a46b43b6b2672420592ba7356f30f36cad504af76eb0f1"
+    },
+    {
+      "path": "raw/terraform-provider-random_3.7.2/checksums.raw",
+      "size_bytes": 1368,
+      "sha256": "879660c20ecf5060b3ddaddb44b0d678a9b77a8f9de459735e47bc44534fb240"
+    },
+    {
+      "path": "raw/terraform-provider-random_3.7.2/discovery.json",
+      "size_bytes": 62,
+      "sha256": "b9f54de00c40ba5b8c37a4cecc04b8907c3bbc82c4b404a55bbfbb73b93a11f7"
+    },
+    {
+      "path": "raw/terraform-provider-random_3.7.2/package.json",
+      "size_bytes": 8600,
+      "sha256": "cf8682d7fb2d0d064eeb83986d29e7f7d243be5ca3e6ba94fc97af1db7627804"
+    },
+    {
+      "path": "raw/terraform-provider-random_3.7.2/signature.raw",
+      "size_bytes": 566,
+      "sha256": "ce80b4578c8e9bcd09b2febf547aebcb4b12bcf6c57610602c698d3db034c1c3"
+    },
+    {
+      "path": "raw/terraform-provider-random_3.7.2/versions.json",
+      "size_bytes": 16307,
+      "sha256": "32d1dd6219c312833b760d813fb950530b54091de02c1d296931e291f78134d4"
+    }
+  ]
+}

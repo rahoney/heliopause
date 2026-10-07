@@ -62,12 +62,12 @@ func observerExpectedTopology(profile string) ([]observerMountExpectation, bool)
 	tmp := observerMountExpectation{"/tmp", "workspace", "/", "tmpfs", false, true, true, false}
 	runtime := observerMountExpectation{"/haa-runtime", "helper", "/", "tmpfs", false, false, true, false}
 	switch profile {
-	case "npm-lifecycle":
+	case "npm-lifecycle", "go-module-resolver", "go-module-build", "cargo-resolver", "cargo-build":
 		return []observerMountExpectation{root, tmp, runtime}, true
 	case "pypi-wheel", "pypi-wheel-pytorch-cpu", "pypi-wheel-pytorch-cu126", "pypi-wheel-pytorch-cu130", "pypi-wheel-pytorch-cu132":
 		site := observerMountExpectation{"/haa-site", "workspace", "/", "tmpfs", false, false, true, false}
 		return []observerMountExpectation{root, tmp, site, runtime}, true
-	case "github-elf":
+	case "github-elf", "terraform-provider":
 		work := observerMountExpectation{"/work", "workspace", "/", "tmpfs", false, false, true, false}
 		return []observerMountExpectation{root, tmp, work, runtime}, true
 	default:
@@ -83,7 +83,7 @@ const (
 	pythonClosureObservation pythonClosurePhase = "OBSERVATION"
 )
 
-// observationTraceLedger is shared by every phase of one Python observation
+// observationTraceLedger is shared by every phase of one observation
 // transaction. SharedObserver.mu protects it, including concurrent anchor and
 // probe streams. A new stream never replenishes the authorization.
 type observationTraceLedger struct {
@@ -93,15 +93,51 @@ type observationTraceLedger struct {
 	bytes     uint64
 }
 
+// The Go build ledger aggregates preparation and compiler streams, including
+// counted workspace summaries. This does not increase physical collector limits.
+const maximumGoBuildLedgerEvents = 20000
+
 func newObservationTraceLedger(profile string) (*observationTraceLedger, error) {
-	if !isPythonObserverProfile(profile) {
+	if !isPythonObserverProfile(profile) && profile != goBuildProfile && profile != cargoBuildProfile {
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
 	}
 	budget := traceBudgetForProfile(profile)
 	if budget.events <= 0 || budget.bytes == 0 {
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
 	}
-	return &observationTraceLedger{maxEvents: uint64(budget.events), maxBytes: budget.bytes}, nil
+
+	maxEvents := uint64(budget.events)
+	if profile == goBuildProfile {
+		maxEvents = maximumGoBuildLedgerEvents
+	}
+	return &observationTraceLedger{maxEvents: maxEvents, maxBytes: budget.bytes}, nil
+}
+
+func goBuildInputExpectedTopology(readOnly bool) ([]observerMountExpectation, bool) {
+	base, ok := observerExpectedTopology(goBuildProfile)
+	if !ok {
+		return nil, false
+	}
+	// The pinned runtime exposes Docker's named tmpfs as 9p. Host noexec is
+	// separately checked; it does not assert a guest 9p flag. The build input
+	// is read-only and distinct from the writable scratch /tmp mount.
+	return append(base, observerMountExpectation{goBuildGuestInput, "workspace", "/tmp", "9p", readOnly, false, false, false}), true
+}
+
+func goBuildOutputExpectedTopology(readOnly bool) ([]observerMountExpectation, bool) {
+	base, ok := goBuildInputExpectedTopology(readOnly)
+	if !ok {
+		return nil, false
+	}
+	return append(base, observerMountExpectation{goBuildGuestOutput, "workspace", "/tmp", "9p", false, false, false, false}), true
+}
+
+func cargoBuildExpectedTopology(readOnly bool) ([]observerMountExpectation, bool) {
+	base, ok := observerExpectedTopology(cargoBuildProfile)
+	if !ok {
+		return nil, false
+	}
+	return append(base, observerMountExpectation{cargoBuildGuestInput, "workspace", "/tmp", "9p", readOnly, false, false, false}, observerMountExpectation{cargoBuildGuestTarget, "workspace", "/tmp", "9p", false, false, false, false}), true
 }
 
 func (l *observationTraceLedger) charge(record helperRecord, bytes uint64) error {
@@ -112,11 +148,12 @@ func (l *observationTraceLedger) charge(record helperRecord, bytes uint64) error
 	if record.Count != nil {
 		events = *record.Count
 	}
+	diagnostic := FaultLedgerDiagnostic{l.events, l.maxEvents, l.bytes, l.maxBytes, events, bytes}
 	if events > l.maxEvents-l.events {
-		return observerFault{reason: "EVENT_LIMIT"}
+		return observerFault{reason: "EVENT_LIMIT", ledger: diagnostic}
 	}
 	if bytes > l.maxBytes-l.bytes {
-		return observerFault{reason: "BYTE_LIMIT"}
+		return observerFault{reason: "BYTE_LIMIT", ledger: diagnostic}
 	}
 	l.events += events
 	l.bytes += bytes
@@ -217,29 +254,40 @@ const ObserverControlEndpoint = "/run/heliopause-observer/haa-control.sock"
 var observerControlEndpoint = ObserverControlEndpoint
 
 type helperRecord struct {
-	ContainerID          string  `json:"container_id"`
-	Kind                 string  `json:"kind"`
-	Reason               string  `json:"reason,omitempty"`
-	FaultSite            string  `json:"fault_site,omitempty"`
-	FaultImageLocator    uint64  `json:"fault_image_locator,omitempty"`
-	EventSource          string  `json:"event_source,omitempty"`
-	Family               string  `json:"family,omitempty"`
-	ProcessRelation      string  `json:"process_relation,omitempty"`
-	ProcessClass         string  `json:"process_class,omitempty"`
-	ClassificationReason string  `json:"classification_reason,omitempty"`
-	ParentRelation       string  `json:"parent_relation,omitempty"`
-	Count                *uint64 `json:"count,omitempty"`
+	ContainerID          string                 `json:"container_id"`
+	Kind                 string                 `json:"kind"`
+	Reason               string                 `json:"reason,omitempty"`
+	FaultSite            string                 `json:"fault_site,omitempty"`
+	FaultImageLocator    uint64                 `json:"fault_image_locator,omitempty"`
+	FaultOpen            *FaultOpenDiagnostic   `json:"fault_open,omitempty"`
+	FaultBudget          *FaultBudgetDiagnostic `json:"fault_budget,omitempty"`
+	FaultRaw             *FaultRawDiagnostic    `json:"fault_raw,omitempty"`
+	EventSource          string                 `json:"event_source,omitempty"`
+	Family               string                 `json:"family,omitempty"`
+	ProcessRelation      string                 `json:"process_relation,omitempty"`
+	ProcessClass         string                 `json:"process_class,omitempty"`
+	ClassificationReason string                 `json:"classification_reason,omitempty"`
+	ParentRelation       string                 `json:"parent_relation,omitempty"`
+	Count                *uint64                `json:"count,omitempty"`
 }
 
 type observerFault struct {
 	reason, site string
 	imageLocator uint64
+	open         FaultOpenDiagnostic
+	budget       FaultBudgetDiagnostic
+	raw          FaultRawDiagnostic
+	ledger       FaultLedgerDiagnostic
 }
 
-func (e observerFault) Error() string                  { return "observer stream is incomplete" }
-func (e observerFault) TraceFaultReason() string       { return e.reason }
-func (e observerFault) TraceFaultSite() string         { return e.site }
-func (e observerFault) TraceFaultImageLocator() uint64 { return e.imageLocator }
+func (e observerFault) Error() string                           { return "observer stream is incomplete" }
+func (e observerFault) TraceFaultReason() string                { return e.reason }
+func (e observerFault) TraceFaultSite() string                  { return e.site }
+func (e observerFault) TraceFaultImageLocator() uint64          { return e.imageLocator }
+func (e observerFault) TraceFaultOpen() FaultOpenDiagnostic     { return e.open }
+func (e observerFault) TraceFaultBudget() FaultBudgetDiagnostic { return e.budget }
+func (e observerFault) TraceFaultRaw() FaultRawDiagnostic       { return e.raw }
+func (e observerFault) TraceFaultLedger() FaultLedgerDiagnostic { return e.ledger }
 
 const maximumHelperRecordBytes = 1024
 
@@ -277,13 +325,13 @@ func validAttribution(record helperRecord) bool {
 	case "network-attempt":
 		return validFixed(record.EventSource, "SOCKET", "CONNECT", "SENDTO", "SENDMSG", "SENDMMSG") && validFixed(record.Family, "INET", "INET6", "PACKET") &&
 			validFixed(record.ProcessRelation, "BOOTSTRAP_ROOT", "BOOTSTRAP_CHILD", "DIRECT_EXEC_SESSION", "TRACKED_EXPECTED_GROUP", "TRACKED_UNEXPECTED_GROUP", "CONTROL_GROUP", "ARTIFACT_GROUP", "UNKNOWN") &&
-			validFixed(record.ProcessClass, "SHELL", "PYTHON", "PIP", "NODE", "NPM", "ARTIFACT", "OTHER") && record.ClassificationReason == "" && record.ParentRelation == ""
+			validFixed(record.ProcessClass, "SHELL", "PYTHON", "PIP", "NODE", "NPM", "GO", "ARTIFACT", "OTHER") && record.ClassificationReason == "" && record.ParentRelation == ""
 	case "trusted-control-network":
 		return validFixed(record.EventSource, "CONNECT", "SENDTO", "SENDMSG", "SENDMMSG") && validFixed(record.Family, "INET", "INET6") &&
-			record.ProcessRelation == "DIRECT_EXEC_SESSION" && validFixed(record.ProcessClass, "SHELL", "PYTHON", "PIP", "NODE", "NPM", "ARTIFACT", "OTHER") && record.ClassificationReason == "" && record.ParentRelation == ""
+			record.ProcessRelation == "DIRECT_EXEC_SESSION" && validFixed(record.ProcessClass, "SHELL", "PYTHON", "PIP", "NODE", "NPM", "GO", "ARTIFACT", "OTHER") && record.ClassificationReason == "" && record.ParentRelation == ""
 	case "process-exec-unexpected":
 		return record.EventSource == "SENTRY_EXEC" && record.Family == "" && record.ProcessRelation == "" &&
-			validFixed(record.ProcessClass, "SHELL", "PYTHON", "PIP", "NODE", "NPM", "ARTIFACT", "SLEEP", "MKDIR", "CAT", "CHMOD", "OTHER") &&
+			validFixed(record.ProcessClass, "SHELL", "PYTHON", "PIP", "NODE", "NPM", "GO", "ARTIFACT", "SLEEP", "MKDIR", "CAT", "CHMOD", "OTHER") &&
 			validFixed(record.ClassificationReason, "INVALID_PROCESS_IDENTITY", "START_TIME_MISMATCH", "CLASS_MISMATCH", "UNMODELED_PARENT", "BOOTSTRAP_ENDED", "DIRECT_EXEC_NOT_ALLOWED", "TRACKING_LIMIT", "UNKNOWN_CLASS", "ARTIFACT_ROLE", "ARTIFACT_LDCONFIG_QUERY", "OTHER") &&
 			validFixed(record.ParentRelation, "BOOTSTRAP_ROOT", "BOOTSTRAP_CHILD", "TRACKED_PARENT", "TRACKED_GROUP", "ROOT", "UNTRACKED_PARENT", "ARTIFACT_GROUP", "UNKNOWN")
 	default:
@@ -434,6 +482,33 @@ func (o *SharedObserver) StartProfile(ctx context.Context, containerID, profile 
 	return o.startProfile(ctx, containerID, profile, nil)
 }
 
+func (o *SharedObserver) StartGoBuildInputProfile(ctx context.Context, containerID string, readOnly bool, budget *observationTraceLedger) (TraceReader, error) {
+	if budget == nil {
+		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	topology, ok := goBuildInputExpectedTopology(readOnly)
+	if !ok {
+		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	return o.startProfileWithBudget(ctx, containerID, goBuildProfile, topology, budget)
+}
+
+func (o *SharedObserver) StartGoBuildOutputProfile(ctx context.Context, containerID string, readOnly bool, budget *observationTraceLedger) (TraceReader, error) {
+	topology, ok := goBuildOutputExpectedTopology(readOnly)
+	if budget == nil || !ok {
+		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	return o.startProfileWithBudget(ctx, containerID, goBuildProfile, topology, budget)
+}
+
+func (o *SharedObserver) StartCargoBuildProfile(ctx context.Context, containerID string, readOnly bool, budget *observationTraceLedger) (TraceReader, error) {
+	topology, ok := cargoBuildExpectedTopology(readOnly)
+	if budget == nil || !ok {
+		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	return o.startProfileWithBudget(ctx, containerID, cargoBuildProfile, topology, budget)
+}
+
 func (o *SharedObserver) StartPythonClosureProfile(ctx context.Context, containerID, profile string, phase pythonClosurePhase) (TraceReader, error) {
 	return o.StartPythonClosureProfileWithBudget(ctx, containerID, profile, phase, nil)
 }
@@ -525,7 +600,8 @@ func (o *SharedObserver) startProfileWithBudget(ctx context.Context, containerID
 }
 
 func validObserverProfile(profile string) bool {
-	return profile == "npm-lifecycle" || profile == "pypi-wheel" || profile == "pypi-wheel-pytorch-cpu" || profile == "pypi-wheel-pytorch-cu126" || profile == "pypi-wheel-pytorch-cu130" || profile == "pypi-wheel-pytorch-cu132" || profile == "github-elf"
+	_, ok := observerExpectedTopology(profile)
+	return ok
 }
 
 func (o *SharedObserver) receive() {
@@ -563,7 +639,17 @@ func (o *SharedObserver) receive() {
 				reason = "STREAM_FAULT"
 			}
 			if o.fault == nil {
-				o.fault = observerFault{reason: reason, site: record.FaultSite, imageLocator: record.FaultImageLocator}
+				fault := observerFault{reason: reason, site: record.FaultSite, imageLocator: record.FaultImageLocator}
+				if record.FaultOpen != nil {
+					fault.open = *record.FaultOpen
+				}
+				if record.FaultBudget != nil {
+					fault.budget = *record.FaultBudget
+				}
+				if record.FaultRaw != nil {
+					fault.raw = *record.FaultRaw
+				}
+				o.fault = fault
 			}
 			batch := o.beginTeardownLocked(reader.session)
 			closeSharedTraceReaderDone(reader)
@@ -850,6 +936,40 @@ func (r *sharedTraceReader) Next(ctx context.Context) (TraceRecord, error) {
 
 // Fault sites are diagnostic enums from the pinned helper, never policy input.
 func validFaultSite(record helperRecord) bool {
+	if record.FaultRaw != nil {
+		r := record.FaultRaw
+		if (r.SocketpairObserved && r.SocketpairSource != "GUEST_RETURN_BUFFER") ||
+			(!r.SocketpairObserved && (r.SocketpairFDMatch || r.SocketpairDomain != 0 || r.SocketpairType != 0 || r.SocketpairSource != "")) {
+			return false
+		}
+		if record.Kind != "stream-fault" || record.Reason != "FD_STATE_UNKNOWN" || record.FaultSite != "RAW" ||
+			!validFixed(r.Check, "ARGUMENT", "TABLE", "DESCRIPTOR", "CLASSIFICATION", "FAMILY") ||
+			(r.Sysno != 44 && r.Sysno != 46 && r.Sysno != 307 && r.Sysno != 206 && r.Sysno != 211 && r.Sysno != 269) ||
+			!validFixed(r.KernelImage, "UNKNOWN", "BOUNDARY", "SETPRIV", "SHELL", "ENV", "NPM_CLI", "NODE", "CARGO", "TAR", "RUSTC", "GCC", "COLLECT2", "LLD_LAUNCHER", "RUST_LLD") ||
+			!validFixed(r.Role, "CONTROL", "ARTIFACT", "UNKNOWN") || !validFixed(r.Provenance, "OCI_ROOT", "DIRECT_EXEC_ROOT", "CLONE_CHILD", "UNKNOWN") {
+			return false
+		}
+	}
+	if record.FaultBudget != nil {
+		b := record.FaultBudget
+		if record.Kind != "stream-fault" || record.Reason != "EVENT_LIMIT" || record.FaultSite != "EVENT_LIMIT" || b.Limit == 0 || b.Limit > maximumPyTorchCPUTraceEvents || b.Charged > b.Limit || b.Close > b.Charged || b.Fcntl > b.Charged || b.Raw > b.Charged || b.Other > b.Charged || b.Close+b.Fcntl+b.Raw+b.Other > b.Charged || b.Workspace > maximumTraceEvents {
+			return false
+		}
+	}
+	if record.FaultOpen != nil {
+		open := record.FaultOpen
+		if open.RustcArgc > 33 {
+			return false
+		}
+		if record.Kind != "stream-fault" || !validFixed(record.FaultSite, "OPEN_RESULT_CLASSIFICATION_IMAGE", "OPEN_RESULT_CLASSIFICATION_PROC", "OPEN_RESULT_CLASSIFICATION_SYS", "OPEN_RESULT_CLASSIFICATION_OTHER", "OPEN_RESULT_CLASSIFICATION_PROCESS_NAME") ||
+			!validFixed(open.Image, "SHELL", "PYTHON", "PIP", "NODE", "NPM", "GO", "ARTIFACT", "SLEEP", "MKDIR", "CAT", "CHMOD", "OTHER") ||
+			(open.KernelImage != "" && !validFixed(open.KernelImage, "UNKNOWN", "BOUNDARY", "SETPRIV", "SHELL", "ENV", "NPM_CLI", "NODE", "CARGO", "TAR", "RUSTC", "GCC", "COLLECT2", "LLD_LAUNCHER", "RUST_LLD")) ||
+			!validFixed(open.Role, "CONTROL", "ARTIFACT", "UNKNOWN") || !validFixed(open.Provenance, "OCI_ROOT", "DIRECT_EXEC_ROOT", "CLONE_CHILD", "UNKNOWN") ||
+			!validFixed(open.Subject, "DEV_NULL", "PROC_SELF_AUXV", "PROC_SELF_MAPS", "PROC_SELF_STATM", "PROC_SELF_CGROUP", "PROC_SELF_MOUNTINFO", "VM_OVERCOMMIT_MEMORY", "THP_PAGE_SIZE", "CGROUP_CPU_QUOTA", "OCI_IMAGE", "OTHER") ||
+			!validFixed(open.Mount, "oci-root", "system", "workspace", "helper") {
+			return false
+		}
+	}
 	if record.FaultImageLocator != 0 && (record.Kind != "stream-fault" || record.FaultSite != "OPEN_RESULT_CLASSIFICATION_IMAGE") {
 		return false
 	}

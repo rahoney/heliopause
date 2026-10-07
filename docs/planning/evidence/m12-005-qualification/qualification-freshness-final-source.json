@@ -1,0 +1,9 @@
+{
+  "source_commit": "d328756f0087624093808215d1fbedd47767ef58",
+  "profile": "qualification-freshness",
+  "command": "go run ./scripts/check qualification-freshness",
+  "actual_exit": 0,
+  "raw_role": "qualification-freshness-final-source.log",
+  "bytes": 41,
+  "sha256": "a139e18892192652dc1d7880e1d1bda7b269e445b80081de6776ebbe4d82c2c0"
+}

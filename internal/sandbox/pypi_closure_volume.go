@@ -16,12 +16,16 @@ const closureManifestLabel = "io.heliopause.closure-manifest-sha256"
 const closureTmpfsOptions = ",nosuid,nodev,uid=1000,gid=1000,mode=0700"
 
 type closureVolume struct {
-	name        string
-	transaction string
-	manifestID  string
-	createdAt   string
-	mountpoint  string
-	capacity    int64
+	name                    string
+	transaction             string
+	manifestID              string
+	createdAt               string
+	mountpoint              string
+	capacity                int64
+	goBuild                 bool
+	goBuildOutput           bool
+	projectBuildDestination string
+	projectBuildExecutable  bool
 }
 
 type dockerVolumeInspection struct {
@@ -43,8 +47,27 @@ func closureVolumeName(transaction string) (string, error) {
 }
 
 func createClosureVolume(ctx context.Context, runner CommandRunner, transaction, manifestID string, capacity int64) (closureVolume, error) {
+	return createInputVolume(ctx, runner, transaction, manifestID, capacity, false)
+}
+
+// Both consumers use the same exact identity and attachment checks. The Go
+// input mount is fixed backend configuration; artifact paths cannot select it.
+func createGoBuildInputVolume(ctx context.Context, runner CommandRunner, transaction, manifestID string) (closureVolume, error) {
+	return createInputVolume(ctx, runner, transaction, manifestID, goBuildInputCapacity, true)
+}
+
+func createGoBuildOutputVolume(ctx context.Context, runner CommandRunner, transaction, manifestID string) (closureVolume, error) {
+	volume, err := createInputVolume(ctx, runner, transaction+"-output", manifestID, goBuildOutputCapacity, true)
+	volume.goBuildOutput = true
+	return volume, err
+}
+
+func createInputVolume(ctx context.Context, runner CommandRunner, transaction, manifestID string, capacity int64, goBuild bool, project ...projectBuildVolumeConfig) (closureVolume, error) {
 	if ctx == nil || runner == nil || capacity <= 0 || len(manifestID) != 64 {
 		return closureVolume{}, errors.New("python closure volume configuration is invalid")
+	}
+	if len(project) > 1 || (len(project) == 1 && (goBuild || (project[0].destination != cargoBuildGuestInput && project[0].destination != cargoBuildGuestTarget) || project[0].executable != (project[0].destination == cargoBuildGuestTarget))) {
+		return closureVolume{}, errors.New("project volume mount contract is invalid")
 	}
 	name, err := closureVolumeName(transaction)
 	if err != nil {
@@ -56,7 +79,12 @@ func createClosureVolume(ctx context.Context, runner CommandRunner, transaction,
 	if listErr != nil || len(listed) > 1024 || strings.TrimSpace(string(listed)) != "" {
 		return closureVolume{}, errors.New("python closure volume identity already exists")
 	}
-	options := "size=" + strconv.FormatInt(capacity, 10) + closureTmpfsOptions
+	volume := closureVolume{name: name, transaction: transaction, manifestID: manifestID, capacity: capacity, goBuild: goBuild}
+	if len(project) == 1 {
+		volume.projectBuildDestination = project[0].destination
+		volume.projectBuildExecutable = project[0].executable
+	}
+	options := volume.tmpfsOptions()
 	created, err := runner.Output(ctx, "docker", "volume", "create", "--driver", "local",
 		"--opt", "type=tmpfs", "--opt", "device=tmpfs", "--opt", "o="+options,
 		"--label", closureVolumeLabel+"="+transaction,
@@ -64,7 +92,6 @@ func createClosureVolume(ctx context.Context, runner CommandRunner, transaction,
 	if err != nil || strings.TrimSpace(string(created)) != name {
 		return closureVolume{}, errors.New("python closure volume creation failed")
 	}
-	volume := closureVolume{name: name, transaction: transaction, manifestID: manifestID, capacity: capacity}
 	if err := volume.verify(ctx, runner); err != nil {
 		// Never adopt a volume whose post-create identity is uncertain. The caller
 		// must still fail closed if this best-effort cleanup cannot complete.
@@ -72,6 +99,27 @@ func createClosureVolume(ctx context.Context, runner CommandRunner, transaction,
 		return closureVolume{}, err
 	}
 	return volume, nil
+}
+
+func (v closureVolume) tmpfsOptions() string {
+	options := "size=" + strconv.FormatInt(v.capacity, 10) + closureTmpfsOptions
+	if v.goBuild || (v.projectBuildDestination != "" && !v.projectBuildExecutable) {
+		options += ",noexec"
+	}
+	return options
+}
+
+func (v closureVolume) destination() string {
+	if v.projectBuildDestination != "" {
+		return v.projectBuildDestination
+	}
+	if v.goBuildOutput {
+		return goBuildGuestOutput
+	}
+	if v.goBuild {
+		return goBuildGuestInput
+	}
+	return pythonSitePath
 }
 
 func (v *closureVolume) verify(ctx context.Context, runner CommandRunner) error {
@@ -86,7 +134,7 @@ func (v *closureVolume) verify(ctx context.Context, runner CommandRunner) error 
 	if json.Unmarshal(body, &actual) != nil || actual.Name != v.name || actual.Driver != "local" ||
 		actual.Scope != "local" || actual.Mountpoint == "" || actual.CreatedAt == "" ||
 		actual.Options["type"] != "tmpfs" || actual.Options["device"] != "tmpfs" ||
-		actual.Options["o"] != "size="+strconv.FormatInt(v.capacity, 10)+closureTmpfsOptions ||
+		actual.Options["o"] != v.tmpfsOptions() ||
 		actual.Labels[closureVolumeLabel] != v.transaction ||
 		actual.Labels[closureManifestLabel] != v.manifestID || len(actual.Options) != 3 {
 		return errors.New("python closure volume topology is untrusted")
@@ -102,7 +150,7 @@ func (v closureVolume) mountArgument(readOnly bool) (string, error) {
 	if v.name == "" || v.createdAt == "" || v.mountpoint == "" {
 		return "", errors.New("python closure volume is not attested")
 	}
-	argument := "type=volume,source=" + v.name + ",target=" + pythonSitePath + ",volume-nocopy"
+	argument := "type=volume,source=" + v.name + ",target=" + v.destination() + ",volume-nocopy"
 	if readOnly {
 		argument += ",readonly"
 	}
@@ -161,7 +209,7 @@ func (v *closureVolume) verifyContainerMount(ctx context.Context, runner Command
 	}
 	actualMatches, configuredMatches := 0, 0
 	for _, mount := range actual.Mounts {
-		if mount.Destination != pythonSitePath {
+		if mount.Destination != v.destination() {
 			continue
 		}
 		actualMatches++
@@ -171,7 +219,7 @@ func (v *closureVolume) verifyContainerMount(ctx context.Context, runner Command
 		}
 	}
 	for _, mount := range actual.HostMounts {
-		if mount.Target != pythonSitePath {
+		if mount.Target != v.destination() {
 			continue
 		}
 		configuredMatches++

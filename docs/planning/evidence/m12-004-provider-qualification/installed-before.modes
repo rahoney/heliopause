@@ -1,0 +1,4 @@
+0 0 755 /usr/libexec/heliopause/helox
+0 0 755 /usr/libexec/heliopause/haa-network-policy-helper
+0 0 755 /usr/libexec/heliopause/haa_gvisor_observer
+0 0 644 /etc/heliopause/network-policy.json

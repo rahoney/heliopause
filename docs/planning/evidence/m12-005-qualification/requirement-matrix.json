@@ -1,0 +1,1497 @@
+{
+  "scope": "Current candidate default controlled normal/hostile regressions. Real public source, installed SDK, helper, dynamic full and promotion consumers are independently recorded in remote qualification; env-gated SKIP is never PASS.",
+  "execution": {
+    "actual_exit": 0,
+    "raw_role": "additional-cleanup-default-tests.jsonl externally retained",
+    "sha256": "e8a91aa6522b203c928a48a25352e897cf2bb02ed68db980083e7a7dde1e3002",
+    "package_terminals": 42,
+    "passed_packages": 35,
+    "top_level_test_passes": 763,
+    "all_test_case_passes": 2217,
+    "portable_actual_case_receipt": "current-default-checks.json"
+  },
+  "requirements": [
+    {
+      "ecosystem": "npm",
+      "scenario": "normal exact install",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/promotion/npm_promotion_test.go",
+          "symbol": "TestNPMPromotionUsesPinnedOfflineRuntimeAndPublishesExactSet",
+          "line": 18,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/artifact/npm/resolver_test.go",
+          "symbol": "TestResolveRegistryMetadataMediaTypes",
+          "line": 76,
+          "package": "github.com/rahoney/heliopause/internal/artifact/npm",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "npm",
+      "scenario": "transitive dependency",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/artifact/npm/lockfile_test.go",
+          "symbol": "TestParsePackageLockV3BuildsExactConnectedGraph",
+          "line": 12,
+          "package": "github.com/rahoney/heliopause/internal/artifact/npm",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "npm",
+      "scenario": "source substitution attack",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/artifact/npm/lockfile_test.go",
+          "symbol": "TestParsePackageLockV3RejectsUnsupportedOrIncompleteSemantics",
+          "line": 37,
+          "package": "github.com/rahoney/heliopause/internal/artifact/npm",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/artifact/npm/resolver_test.go",
+          "symbol": "TestResolveRejectsUnsafeOrMalformedMetadata",
+          "line": 112,
+          "package": "github.com/rahoney/heliopause/internal/artifact/npm",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "npm",
+      "scenario": "digest/checksum mismatch",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/verification/npm/integrity_test.go",
+          "symbol": "TestIntegrityVerifier",
+          "line": 12,
+          "package": "github.com/rahoney/heliopause/internal/verification/npm",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "npm",
+      "scenario": "resolver network failure",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/sandbox/npm_resolver_test.go",
+          "symbol": "TestNPMResolverFailsClosedOnReadinessFailure",
+          "line": 228,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/sandbox/resolver_network_policy_test.go",
+          "symbol": "TestResolverNetworkPolicyFailsClosedOnServiceOrCleanupFailure",
+          "line": 41,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "npm",
+      "scenario": "sandbox observation incomplete",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/sandbox/npm_resolver_test.go",
+          "symbol": "TestNPMResolverObserverFaultRetainsDiagnosticAndFailsClosed",
+          "line": 168,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "npm",
+      "scenario": "unexpected process/filesystem/network signal where applicable",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/sandbox/collector_test.go",
+          "symbol": "TestCollectTraceNormalizesKindsWithoutPayload",
+          "line": 17,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/sandbox/collector_test.go",
+          "symbol": "TestTraceBudgetsAreProfileBoundedAndFailClosed",
+          "line": 323,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "npm",
+      "scenario": "target mutation race",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/promotion/npm_transaction_test.go",
+          "symbol": "TestNPMProjectGuardRejectsConcurrentMutation",
+          "line": 32,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/promotion/npm_transaction_test.go",
+          "symbol": "TestNPMProjectPlanFailsClosedOnControlFileChange",
+          "line": 9,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "npm",
+      "scenario": "Promotion rollback",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/promotion/npm_transaction_test.go",
+          "symbol": "TestNPMProjectTransactionRollsBackPartialPublish",
+          "line": 149,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "npm",
+      "scenario": "Evidence generation",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/promotion/m7_qualification_test.go",
+          "symbol": "TestM7QualificationRetainsExactManifestSBOMAndArtifactsThroughPromotion",
+          "line": 14,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "npm",
+      "scenario": "CLI exit/result contract",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/cli/result_test.go",
+          "symbol": "TestSyntheticInspectCLIContracts",
+          "line": 18,
+          "package": "github.com/rahoney/heliopause/internal/cli",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/cli/install_result_test.go",
+          "symbol": "TestExecuteInstallPresentsCompletedAndFailedPromotionWithoutLosingPolicy",
+          "line": 18,
+          "package": "github.com/rahoney/heliopause/internal/cli",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "PyPI/pip",
+      "scenario": "normal exact install",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/promotion/pypi_promotion_test.go",
+          "symbol": "TestRecordDestinationsDriveExactSympyVenvTransaction",
+          "line": 62,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "PyPI/pip",
+      "scenario": "transitive dependency",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/artifact/pypi/simple_test.go",
+          "symbol": "TestSimpleReportCrossCheckBuildsExactGraph",
+          "line": 72,
+          "package": "github.com/rahoney/heliopause/internal/artifact/pypi",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "PyPI/pip",
+      "scenario": "source substitution attack",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/artifact/pypi/simple_test.go",
+          "symbol": "TestSimpleAPIAndReportRejectIncompleteOrUnsafeMetadata",
+          "line": 109,
+          "package": "github.com/rahoney/heliopause/internal/artifact/pypi",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "PyPI/pip",
+      "scenario": "digest/checksum mismatch",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/artifact/pypi/wheel_test.go",
+          "symbol": "TestInspectWheelRejectsUnsafeAndMismatchedInputs",
+          "line": 462,
+          "package": "github.com/rahoney/heliopause/internal/artifact/pypi",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/promotion/pypi_promotion_test.go",
+          "symbol": "TestValidatePyPIOutputRejectsRecordIntegrityAndOutputMismatches",
+          "line": 383,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "PyPI/pip",
+      "scenario": "resolver network failure",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/sandbox/pypi_resolver_test.go",
+          "symbol": "TestPyPIResolverFailsClosedForObserverOrEndpointFailure",
+          "line": 122,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "PyPI/pip",
+      "scenario": "sandbox observation incomplete",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/sandbox/pypi_transaction_diagnostic_test.go",
+          "symbol": "TestPythonCleanupPreservesPrimaryIncompleteResult",
+          "line": 326,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/sandbox/pypi_observation_transaction_test.go",
+          "symbol": "TestObservationTransactionCannotSkipOrSubstituteUnit",
+          "line": 25,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "PyPI/pip",
+      "scenario": "unexpected process/filesystem/network signal where applicable",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/sandbox/collector_test.go",
+          "symbol": "TestCollectTraceNormalizesKindsWithoutPayload",
+          "line": 17,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/sandbox/collector_test.go",
+          "symbol": "TestTraceBudgetsAreProfileBoundedAndFailClosed",
+          "line": 323,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "PyPI/pip",
+      "scenario": "target mutation race",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/promotion/pypi_venv_transaction_test.go",
+          "symbol": "TestVenvDriftAndConcurrentGuard",
+          "line": 356,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "PyPI/pip",
+      "scenario": "Promotion rollback",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/promotion/pypi_venv_transaction_test.go",
+          "symbol": "TestVenvRollbackPhases",
+          "line": 167,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/promotion/pypi_venv_transaction_test.go",
+          "symbol": "TestVenvRollbackFailureRetainsRecovery",
+          "line": 211,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "PyPI/pip",
+      "scenario": "Evidence generation",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/promotion/m7_qualification_test.go",
+          "symbol": "TestM7QualificationRetainsExactManifestSBOMAndArtifactsThroughPromotion",
+          "line": 14,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "PyPI/pip",
+      "scenario": "CLI exit/result contract",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/cli/result_test.go",
+          "symbol": "TestSyntheticInspectCLIContracts",
+          "line": 18,
+          "package": "github.com/rahoney/heliopause/internal/cli",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/cli/install_result_test.go",
+          "symbol": "TestExecuteInstallPresentsCompletedAndFailedPromotionWithoutLosingPolicy",
+          "line": 18,
+          "package": "github.com/rahoney/heliopause/internal/cli",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "GitHub Release",
+      "scenario": "normal exact install",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/artifact/githubrelease/client_test.go",
+          "symbol": "TestClientResolveAndAcquireBindsAPIAsset",
+          "line": 15,
+          "package": "github.com/rahoney/heliopause/internal/artifact/githubrelease",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/promotion/githubrelease_promotion_test.go",
+          "symbol": "TestGitHubReleasePromotionPublishesExactStagedAsset",
+          "line": 16,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "GitHub Release",
+      "scenario": "transitive dependency",
+      "status": "NOT_APPLICABLE_BY_CANONICAL_SCOPE",
+      "tests": [],
+      "notes": [
+        "N/A: M6 standalone exact Release asset has no package dependency graph; no fabricated edges."
+      ]
+    },
+    {
+      "ecosystem": "GitHub Release",
+      "scenario": "source substitution attack",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/artifact/githubrelease/reference_test.go",
+          "symbol": "TestParseReferenceRejectsAmbiguousOrUnsafeSelector",
+          "line": 16,
+          "package": "github.com/rahoney/heliopause/internal/artifact/githubrelease",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/artifact/githubrelease/release_test.go",
+          "symbol": "TestParseReleaseForSelectorFailsClosed",
+          "line": 18,
+          "package": "github.com/rahoney/heliopause/internal/artifact/githubrelease",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "GitHub Release",
+      "scenario": "digest/checksum mismatch",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/artifact/githubrelease/client_test.go",
+          "symbol": "TestClientAcquireFailsClosedOnDigestOrSizeMismatch",
+          "line": 61,
+          "package": "github.com/rahoney/heliopause/internal/artifact/githubrelease",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "GitHub Release",
+      "scenario": "resolver network failure",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/application/m7_qualification_test.go",
+          "symbol": "TestM7QualificationAcquireFailureHasNoPolicyOrPromotion",
+          "line": 117,
+          "package": "github.com/rahoney/heliopause/internal/application",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "GitHub Release",
+      "scenario": "sandbox observation incomplete",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/sandbox/backend_test.go",
+          "symbol": "TestBackendObserverFailureIsIncompleteAndDisposesContainer",
+          "line": 99,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/sandbox/direct_exec_admission_test.go",
+          "symbol": "TestSessionBindsProfileAdmissionAndInvalidation",
+          "line": 501,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "GitHub Release",
+      "scenario": "unexpected process/filesystem/network signal where applicable",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/sandbox/collector_test.go",
+          "symbol": "TestCollectTraceNormalizesKindsWithoutPayload",
+          "line": 17,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/sandbox/collector_test.go",
+          "symbol": "TestTraceBudgetsAreProfileBoundedAndFailClosed",
+          "line": 323,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "GitHub Release",
+      "scenario": "target mutation race",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/promotion/githubrelease_promotion_test.go",
+          "symbol": "TestGitHubReleasePromotionNeverOverwritesExistingTarget",
+          "line": 38,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "GitHub Release",
+      "scenario": "Promotion rollback",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/application/install_promote_test.go",
+          "symbol": "TestInstallPreservesAllowAndStopsAfterStagingFailure",
+          "line": 34,
+          "package": "github.com/rahoney/heliopause/internal/application",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": [
+        "New destination only; failure before atomic publication leaves no published target. No existing-target replacement is supported."
+      ]
+    },
+    {
+      "ecosystem": "GitHub Release",
+      "scenario": "Evidence generation",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/promotion/m7_qualification_test.go",
+          "symbol": "TestM7QualificationRetainsExactManifestSBOMAndArtifactsThroughPromotion",
+          "line": 14,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "GitHub Release",
+      "scenario": "CLI exit/result contract",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/cli/result_test.go",
+          "symbol": "TestSyntheticInspectCLIContracts",
+          "line": 18,
+          "package": "github.com/rahoney/heliopause/internal/cli",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/cli/install_result_test.go",
+          "symbol": "TestExecuteInstallPresentsCompletedAndFailedPromotionWithoutLosingPolicy",
+          "line": 18,
+          "package": "github.com/rahoney/heliopause/internal/cli",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "PyTorch official source",
+      "scenario": "normal exact install",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/sandbox/pytorch_static_replay_test.go",
+          "symbol": "TestPyTorchStaticReplayAllProfiles",
+          "line": 19,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/promotion/pypi_promotion_test.go",
+          "symbol": "TestRecordDestinationsDriveExactSympyVenvTransaction",
+          "line": 62,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": [
+        "Named Python profile uses the existing exact RECORD/owned-venv transaction. Profile-qualified full executions additionally verify exact promotion/source/prerequisite exclusion."
+      ]
+    },
+    {
+      "ecosystem": "PyTorch official source",
+      "scenario": "transitive dependency",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/artifact/pypi/source_profile_test.go",
+          "symbol": "TestPyTorchMixedSourceTransitiveDependencyEvaluatesMarkers",
+          "line": 76,
+          "package": "github.com/rahoney/heliopause/internal/artifact/pypi",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/artifact/pypi/simple_test.go",
+          "symbol": "TestPyTorch214TransitiveMetadataMarkers",
+          "line": 13,
+          "package": "github.com/rahoney/heliopause/internal/artifact/pypi",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "PyTorch official source",
+      "scenario": "source substitution attack",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/artifact/pypi/source_profile_test.go",
+          "symbol": "TestPyTorchSourceOwnershipRejectsConfusion",
+          "line": 261,
+          "package": "github.com/rahoney/heliopause/internal/artifact/pypi",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "PyTorch official source",
+      "scenario": "digest/checksum mismatch",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/sandbox/pytorch_static_replay_test.go",
+          "symbol": "TestPyTorchReplayAdversarialChecks",
+          "line": 254,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/artifact/pypi/source_profile_test.go",
+          "symbol": "TestPyTorchSimpleProjectRequiresWheelHashForSelectedCandidate",
+          "line": 169,
+          "package": "github.com/rahoney/heliopause/internal/artifact/pypi",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "PyTorch official source",
+      "scenario": "resolver network failure",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/sandbox/pypi_resolver_test.go",
+          "symbol": "TestPyPIResolverFailsClosedForObserverOrEndpointFailure",
+          "line": 122,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "PyTorch official source",
+      "scenario": "sandbox observation incomplete",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/sandbox/pypi_observation_transaction_test.go",
+          "symbol": "TestObservationTransactionCannotSkipOrSubstituteUnit",
+          "line": 25,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/sandbox/pypi_transaction_diagnostic_test.go",
+          "symbol": "TestPythonCleanupPreservesPrimaryIncompleteResult",
+          "line": 326,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "PyTorch official source",
+      "scenario": "unexpected process/filesystem/network signal where applicable",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/sandbox/collector_test.go",
+          "symbol": "TestCollectTraceNormalizesKindsWithoutPayload",
+          "line": 17,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/sandbox/collector_test.go",
+          "symbol": "TestTraceBudgetsAreProfileBoundedAndFailClosed",
+          "line": 323,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "PyTorch official source",
+      "scenario": "target mutation race",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/promotion/pypi_venv_transaction_test.go",
+          "symbol": "TestVenvDriftAndConcurrentGuard",
+          "line": 356,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": [
+        "Named Python profile uses the existing exact RECORD/owned-venv transaction. Profile-qualified full executions additionally verify exact promotion/source/prerequisite exclusion."
+      ]
+    },
+    {
+      "ecosystem": "PyTorch official source",
+      "scenario": "Promotion rollback",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/promotion/pypi_venv_transaction_test.go",
+          "symbol": "TestVenvRollbackPhases",
+          "line": 167,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": [
+        "Named Python profile uses the existing exact RECORD/owned-venv transaction. Profile-qualified full executions additionally verify exact promotion/source/prerequisite exclusion."
+      ]
+    },
+    {
+      "ecosystem": "PyTorch official source",
+      "scenario": "Evidence generation",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/inspection/pypi/prerequisite_test.go",
+          "symbol": "TestInspectionPrerequisiteEvidenceBindsInputsAndPreservesFindings",
+          "line": 162,
+          "package": "github.com/rahoney/heliopause/internal/inspection/pypi",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "PyTorch official source",
+      "scenario": "CLI exit/result contract",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/cli/result_test.go",
+          "symbol": "TestSyntheticInspectCLIContracts",
+          "line": 18,
+          "package": "github.com/rahoney/heliopause/internal/cli",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/cli/install_result_test.go",
+          "symbol": "TestExecuteInstallPresentsCompletedAndFailedPromotionWithoutLosingPolicy",
+          "line": 18,
+          "package": "github.com/rahoney/heliopause/internal/cli",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "Go Modules",
+      "scenario": "normal exact install",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/promotion/go_approved_transaction_test.go",
+          "symbol": "TestGoProjectGuardCommitsOneFrozenApprovedSelection",
+          "line": 15,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "Go Modules",
+      "scenario": "transitive dependency",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/artifact/gomodule/project_sum_test.go",
+          "symbol": "TestProjectSnapshotRequiresExactControlChecksumPair",
+          "line": 9,
+          "package": "github.com/rahoney/heliopause/internal/artifact/gomodule",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "Go Modules",
+      "scenario": "source substitution attack",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/artifact/gomodule/client_test.go",
+          "symbol": "TestPublicAcquisitionRejectsSourceSubstitutionAndRedirect",
+          "line": 74,
+          "package": "github.com/rahoney/heliopause/internal/artifact/gomodule",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "Go Modules",
+      "scenario": "digest/checksum mismatch",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/verification/gomodule/integrity_test.go",
+          "symbol": "TestSumDBCannotTrustAProjectDeclaredChecksum",
+          "line": 173,
+          "package": "github.com/rahoney/heliopause/internal/verification/gomodule",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "Go Modules",
+      "scenario": "resolver network failure",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/verification/gomodule/integrity_test.go",
+          "symbol": "TestSumDBUnavailableHasNoSuccessfulReport",
+          "line": 183,
+          "package": "github.com/rahoney/heliopause/internal/verification/gomodule",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/sandbox/gomodule_isolated_runner_test.go",
+          "symbol": "TestGoModuleRunnerFailureRetainsOnlyTrustedDiagnostics",
+          "line": 188,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "Go Modules",
+      "scenario": "sandbox observation incomplete",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/promotion/go_build_output_test.go",
+          "symbol": "TestGoBuildApplicationPublishesOnlyRecordedBoundApproval",
+          "line": 101,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "Go Modules",
+      "scenario": "unexpected process/filesystem/network signal where applicable",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/sandbox/gomodule_build_test.go",
+          "symbol": "TestGoBuildRuntimeKeepsArtifactsOfflineAndExistingBounds",
+          "line": 126,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "Go Modules",
+      "scenario": "target mutation race",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/promotion/go_approved_transaction_test.go",
+          "symbol": "TestGoProjectGuardRejectsControlDrift",
+          "line": 47,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/promotion/go_build_source_test.go",
+          "symbol": "TestGoBuildSourceRejectsDriftBeforePublication",
+          "line": 136,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "Go Modules",
+      "scenario": "Promotion rollback",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/promotion/go_approved_transaction_test.go",
+          "symbol": "TestGoTransactionRollsBackOnApprovalFailure",
+          "line": 241,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "Go Modules",
+      "scenario": "Evidence generation",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/promotion/go_cache_evidence_test.go",
+          "symbol": "TestGoCacheRequiresRecordedEvidenceAtBothBoundaries",
+          "line": 10,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "Go Modules",
+      "scenario": "CLI exit/result contract",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/cli/result_test.go",
+          "symbol": "TestSyntheticInspectCLIContracts",
+          "line": 18,
+          "package": "github.com/rahoney/heliopause/internal/cli",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/cli/install_result_test.go",
+          "symbol": "TestExecuteInstallPresentsCompletedAndFailedPromotionWithoutLosingPolicy",
+          "line": 18,
+          "package": "github.com/rahoney/heliopause/internal/cli",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "Cargo/crates.io",
+      "scenario": "normal exact install",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/promotion/cargo_approved_transaction_test.go",
+          "symbol": "TestCargoApprovedGuardCommitsFrozenControlsAndRetainsApproval",
+          "line": 108,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "Cargo/crates.io",
+      "scenario": "transitive dependency",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/artifact/cargo/project_test.go",
+          "symbol": "TestCargoCompleteProjectSnapshotBindsLocalManifestsFeaturesAndRuntime",
+          "line": 100,
+          "package": "github.com/rahoney/heliopause/internal/artifact/cargo",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "Cargo/crates.io",
+      "scenario": "source substitution attack",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/artifact/cargo/project_test.go",
+          "symbol": "TestCargoManifestRejectsSourceSubstitutionAndExternalPaths",
+          "line": 49,
+          "package": "github.com/rahoney/heliopause/internal/artifact/cargo",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "Cargo/crates.io",
+      "scenario": "digest/checksum mismatch",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/verification/cargo/integrity_test.go",
+          "symbol": "TestCargoIntegrityRequiresThreeMatchingIdentities",
+          "line": 31,
+          "package": "github.com/rahoney/heliopause/internal/verification/cargo",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "Cargo/crates.io",
+      "scenario": "resolver network failure",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/artifact/cargo/client_test.go",
+          "symbol": "TestCargoPublicAcquisitionRejectsSubstitutionRedirectAndIncomplete",
+          "line": 110,
+          "package": "github.com/rahoney/heliopause/internal/artifact/cargo",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "Cargo/crates.io",
+      "scenario": "sandbox observation incomplete",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/promotion/cargo_build_output_test.go",
+          "symbol": "TestCargoBuildApplicationPublishesOnlyRecordedBoundApproval",
+          "line": 24,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "Cargo/crates.io",
+      "scenario": "unexpected process/filesystem/network signal where applicable",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/sandbox/cargo_build_security_test.go",
+          "symbol": "TestCargoBuildPreparationBindsExactControlsAndReadOnlyConfiguration",
+          "line": 70,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "Cargo/crates.io",
+      "scenario": "target mutation race",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/promotion/cargo_approved_transaction_test.go",
+          "symbol": "TestCargoApprovedTransactionRefusesPublicationRace",
+          "line": 347,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "Cargo/crates.io",
+      "scenario": "Promotion rollback",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/promotion/cargo_approved_transaction_test.go",
+          "symbol": "TestCargoApprovedTransactionRollbackAndUncertainty",
+          "line": 230,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "Cargo/crates.io",
+      "scenario": "Evidence generation",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/promotion/cargo_cache_test.go",
+          "symbol": "TestCargoCacheRejectsMissingApprovalCancellationAndOverlappingRoots",
+          "line": 299,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "Cargo/crates.io",
+      "scenario": "CLI exit/result contract",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/cli/result_test.go",
+          "symbol": "TestSyntheticInspectCLIContracts",
+          "line": 18,
+          "package": "github.com/rahoney/heliopause/internal/cli",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/cli/install_result_test.go",
+          "symbol": "TestExecuteInstallPresentsCompletedAndFailedPromotionWithoutLosingPolicy",
+          "line": 18,
+          "package": "github.com/rahoney/heliopause/internal/cli",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "Terraform Provider",
+      "scenario": "normal exact install",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/promotion/terraform_cache_test.go",
+          "symbol": "TestTerraformGuardPublishesRetainedStateAndRollsBackEveryPhase",
+          "line": 311,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "Terraform Provider",
+      "scenario": "transitive dependency",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/artifact/terraformprovider/client_linux_test.go",
+          "symbol": "TestAcquisitionConsumesSingleFrozenRegistrySelection",
+          "line": 79,
+          "package": "github.com/rahoney/heliopause/internal/artifact/terraformprovider",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": [
+        "Complete project includes all selected independent Provider roots; not invented primary dependency edges. Actual complete-two first/retained init qualifies this in remote execution. Remote modules are unsupported."
+      ]
+    },
+    {
+      "ecosystem": "Terraform Provider",
+      "scenario": "source substitution attack",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/artifact/terraformprovider/provider_test.go",
+          "symbol": "TestProviderRejectsRegistryBindingDrift",
+          "line": 35,
+          "package": "github.com/rahoney/heliopause/internal/artifact/terraformprovider",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "Terraform Provider",
+      "scenario": "digest/checksum mismatch",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/verification/terraformprovider/signature_test.go",
+          "symbol": "TestSignedPackageRejectsTamperingAndAmbiguity",
+          "line": 55,
+          "package": "github.com/rahoney/heliopause/internal/verification/terraformprovider",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "Terraform Provider",
+      "scenario": "resolver network failure",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/artifact/terraformprovider/client_linux_test.go",
+          "symbol": "TestRegistryRedirectAndIncompleteDownloadsFailClosed",
+          "line": 123,
+          "package": "github.com/rahoney/heliopause/internal/artifact/terraformprovider",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "Terraform Provider",
+      "scenario": "sandbox observation incomplete",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/sandbox/terraform_provider_test.go",
+          "symbol": "TestTerraformHelpRequiresExactConsumedTerminalAndFixedArguments",
+          "line": 25,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "Terraform Provider",
+      "scenario": "unexpected process/filesystem/network signal where applicable",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/sandbox/terraform_provider_test.go",
+          "symbol": "TestTerraformFaultRetainsOnlyAcceptedSuspiciousCounts",
+          "line": 70,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "Terraform Provider",
+      "scenario": "target mutation race",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/promotion/terraform_cache_test.go",
+          "symbol": "TestTerraformGuardRejectsControlAndApprovalAuthorityDrift",
+          "line": 412,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "Terraform Provider",
+      "scenario": "Promotion rollback",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/promotion/terraform_cache_test.go",
+          "symbol": "TestTerraformRollbackPreservesForeignMutationAndRecoveryBackup",
+          "line": 547,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "Terraform Provider",
+      "scenario": "Evidence generation",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/promotion/terraform_cache_test.go",
+          "symbol": "TestTerraformVerifiedCacheRequiresRecordedEvidenceAndExactTree",
+          "line": 239,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "ecosystem": "Terraform Provider",
+      "scenario": "CLI exit/result contract",
+      "status": "DEFAULT_REGRESSION_PASS",
+      "tests": [
+        {
+          "path": "internal/cli/terraform_test.go",
+          "symbol": "TestTerraformInitInvokesGuardedInstallation",
+          "line": 14,
+          "package": "github.com/rahoney/heliopause/internal/cli",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "hostile_regressions": [
+    {
+      "milestone": "M7",
+      "tests": [
+        {
+          "path": "internal/application/m7_qualification_test.go",
+          "symbol": "TestM7QualificationBindsExactBytesAcrossEcosystems",
+          "line": 26,
+          "package": "github.com/rahoney/heliopause/internal/application",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/application/m7_qualification_test.go",
+          "symbol": "TestM7QualificationNonAllowNeverInvokesPromotion",
+          "line": 81,
+          "package": "github.com/rahoney/heliopause/internal/application",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/application/m7_qualification_test.go",
+          "symbol": "TestM7QualificationAcquireFailureHasNoPolicyOrPromotion",
+          "line": 117,
+          "package": "github.com/rahoney/heliopause/internal/application",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/promotion/m7_qualification_test.go",
+          "symbol": "TestM7QualificationRetainsExactManifestSBOMAndArtifactsThroughPromotion",
+          "line": 14,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ]
+    },
+    {
+      "milestone": "M8",
+      "tests": [
+        {
+          "path": "internal/hosttool/executor_test.go",
+          "symbol": "TestVerifyExecutableRejectsHostileIdentity",
+          "line": 18,
+          "package": "github.com/rahoney/heliopause/internal/hosttool",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/sandbox/direct_exec_admission_test.go",
+          "symbol": "TestSessionBindsProfileAdmissionAndInvalidation",
+          "line": 501,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/sandbox/observer_supervisor_test.go",
+          "symbol": "TestObserverSupervisorFailStopUsesOwnedProcessAndPoisonsAllSessions",
+          "line": 85,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/sandbox/resolver_network_policy_test.go",
+          "symbol": "TestResolverNetworkPolicyFailsClosedOnServiceOrCleanupFailure",
+          "line": 41,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ]
+    },
+    {
+      "milestone": "M9",
+      "tests": [
+        {
+          "path": "internal/promotion/m9_qualification_test.go",
+          "symbol": "TestM9QualificationRejectsUnmanagedNPMDependencyGraph",
+          "line": 9,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/promotion/m9_qualification_test.go",
+          "symbol": "TestM9QualificationRejectsInterruptedNPMCommit",
+          "line": 26,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/promotion/m9_qualification_test.go",
+          "symbol": "TestM9QualificationRejectsModifiedHAAOwnedVenvState",
+          "line": 51,
+          "package": "github.com/rahoney/heliopause/internal/promotion",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ]
+    },
+    {
+      "milestone": "M11",
+      "tests": [
+        {
+          "path": "internal/sandbox/collector_test.go",
+          "symbol": "TestCollectTraceNormalizesKindsWithoutPayload",
+          "line": 17,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/sandbox/shared_observer_test.go",
+          "symbol": "TestSharedObserverFlushesAttributionOnStreamFault",
+          "line": 597,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/sandbox/collector_test.go",
+          "symbol": "TestTraceBudgetsAreProfileBoundedAndFailClosed",
+          "line": 323,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/sandbox/shared_observer_test.go",
+          "symbol": "TestDecodeHelperRecordAcceptsOnlyBoundedAttribution",
+          "line": 660,
+          "package": "github.com/rahoney/heliopause/internal/sandbox",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        },
+        {
+          "path": "internal/core/domain/sandbox_test.go",
+          "symbol": "TestSandboxObservationSummaryIsBoundedAndDoesNotRetainPayloads",
+          "line": 37,
+          "package": "github.com/rahoney/heliopause/internal/core/domain",
+          "execution": "DEFAULT_REGRESSION_PASS"
+        }
+      ]
+    }
+  ],
+  "candidate_basis": {
+    "parent_commit": "8791fdcff573b1d85681ca74b65cf5a9e3ccf27a",
+    "functional_delta": "additional-code-cleanup-boundary.json",
+    "scope": "Precommit native source-byte projection; checked source/mode boundary, documents separately reconciled. Native Git metadata is not candidate identity.",
+    "postcommit_functional_boundary": "current-source-boundary.json"
+  },
+  "source_commit": "d328756f0087624093808215d1fbedd47767ef58"
+}

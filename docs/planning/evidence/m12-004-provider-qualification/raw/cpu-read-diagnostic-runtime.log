@@ -1,0 +1,26 @@
+Exact source/binary probe candidate verified
+Separate diagnostic overlay and input receipt verified
+runtime before bytes/identity/modes verified
+runtime candidate bytes/identity/modes verified
+Bounded complete host executable query: no installed executable consumer
+no existing traced runtime consumers; bounded Docker queries succeeded
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+/etc/heliopause/pod-init.json: OK
+helper launch: bash=/usr/bin/bash version=5.2.21(1)-release owner=466353
+helper ready: pid=466401 attempt=14
+=== RUN   TestLinuxRetainedPythonTransactionIntegration
+    observation_resource_integration_linux_test.go:705: root=pytorch:cu126 artifact=example digest=761e83bfc454bef03635bc07f82684a664ce199da1e32e3419826393892878a0 closure=2 prerequisites=0 target_units=1 input_units=0 executed_units=1 authorizations=1 closes=1 status=COMPLETED code=
+--- PASS: TestLinuxRetainedPythonTransactionIntegration (31.25s)
+PASS
+helper reaped: pid=466401 wait=0
+no existing traced runtime consumers; bounded Docker queries succeeded
+runtime before bytes/identity/modes verified
+/etc/heliopause/pod-init.json: OK
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=466401

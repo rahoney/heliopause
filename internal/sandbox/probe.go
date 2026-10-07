@@ -102,9 +102,10 @@ func probeGVisorRuntime(ctx context.Context, operatingSystem string, executor Ex
 }
 
 // RequiredObservationPoints defines the observation point schemas required by
-// M12-001 filesystem attribution.
+// kernel-owned filesystem and descriptor attribution.
 var RequiredObservationPoints = []string{
 	"syscall/open_result",
+	"syscall/socketpair_result",
 	"sentry/mount_topology_snapshot",
 	"sentry/mount_topology_mutation",
 }

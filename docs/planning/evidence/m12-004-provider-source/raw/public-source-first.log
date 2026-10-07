@@ -1,0 +1,11 @@
+=== RUN   TestPublicTerraformProviderSourceIntegration
+=== RUN   TestPublicTerraformProviderSourceIntegration/hashicorp/random@3.7.2
+    source_integration_linux_test.go:44: terraform Registry version identity is invalid or ambiguous
+=== RUN   TestPublicTerraformProviderSourceIntegration/integrations/github@6.6.0
+    source_integration_linux_test.go:77: Exact public provider verified; archive=772edb5890d72b32868f9fdc0a9a1d4f4701d8e7f8acb37a7ac530d053c776e3; envelope=715f444c220d9044e0891b3e24846544b5a3fbb87e91b75a9a3c51a77c2aff73; signer=F31928FACE52F1A13A6C60EA38027F80D7FD5FB2; trust=RECOGNIZED_PARTNER
+--- FAIL: TestPublicTerraformProviderSourceIntegration (2.50s)
+    --- FAIL: TestPublicTerraformProviderSourceIntegration/hashicorp/random@3.7.2 (0.33s)
+    --- PASS: TestPublicTerraformProviderSourceIntegration/integrations/github@6.6.0 (2.18s)
+FAIL
+FAIL	github.com/rahoney/heliopause/internal/verification/terraformprovider	2.523s
+FAIL

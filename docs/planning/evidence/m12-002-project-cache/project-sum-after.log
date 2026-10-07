@@ -1,0 +1,16 @@
+=== RUN   TestProjectSnapshotRequiresExactControlChecksumPair
+=== RUN   TestProjectSnapshotRequiresExactControlChecksumPair/archive-mismatch
+=== RUN   TestProjectSnapshotRequiresExactControlChecksumPair/mod-mismatch
+=== RUN   TestProjectSnapshotRequiresExactControlChecksumPair/missing-archive
+=== RUN   TestProjectSnapshotRequiresExactControlChecksumPair/missing-mod
+=== RUN   TestProjectSnapshotRequiresExactControlChecksumPair/duplicate
+=== RUN   TestProjectSnapshotRequiresExactControlChecksumPair/malformed
+--- PASS: TestProjectSnapshotRequiresExactControlChecksumPair (0.00s)
+    --- PASS: TestProjectSnapshotRequiresExactControlChecksumPair/archive-mismatch (0.00s)
+    --- PASS: TestProjectSnapshotRequiresExactControlChecksumPair/mod-mismatch (0.00s)
+    --- PASS: TestProjectSnapshotRequiresExactControlChecksumPair/missing-archive (0.00s)
+    --- PASS: TestProjectSnapshotRequiresExactControlChecksumPair/missing-mod (0.00s)
+    --- PASS: TestProjectSnapshotRequiresExactControlChecksumPair/duplicate (0.00s)
+    --- PASS: TestProjectSnapshotRequiresExactControlChecksumPair/malformed (0.00s)
+PASS
+ok  	github.com/rahoney/heliopause/internal/artifact/gomodule	0.012s

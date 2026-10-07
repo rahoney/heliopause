@@ -62,21 +62,22 @@ type observationResourcePolicy struct {
 }
 
 type observationTransaction struct {
-	mu            sync.Mutex
-	policy        observationResourcePolicy
-	reserveUsec   uint64
-	expected      map[string]*observationUnitState
-	order         []string
-	active        string
-	launched      int
-	usageUsec     uint64
-	events        uint64
-	bytes         uint64
-	lastSample    time.Time
-	failed        bool
-	preparationOK bool
-	anchorAlive   bool
-	cleanupOK     bool
+	mu              sync.Mutex
+	policy          observationResourcePolicy
+	reserveUsec     uint64
+	expected        map[string]*observationUnitState
+	order           []string
+	active          string
+	launched        int
+	usageUsec       uint64
+	events          uint64
+	bytes           uint64
+	lastSample      time.Time
+	failed          bool
+	terminalFailure bool
+	preparationOK   bool
+	anchorAlive     bool
+	cleanupOK       bool
 }
 
 func newObservationTransaction(policy observationResourcePolicy, units []observationUnit, now time.Time) (*observationTransaction, error) {
@@ -257,6 +258,10 @@ func (t *observationTransaction) finishUnit(e externalUnitEvidence, at time.Time
 	}
 	if e.terminalOutcome != observationZeroExit && !(unit.unit.coverage == artifactpypi.PostInstallCommandObservation && e.terminalOutcome == observationNonzeroExit) {
 		t.failed = true
+		// Only complete external terminal evidence and an accepted final sample
+		// reach this state. Periodic samples now account teardown; they cannot
+		// restore admission, required coverage or transaction completion.
+		t.terminalFailure = true
 		return errors.New("python observation unit had a nonqualifying external outcome")
 	}
 	t.events += e.events

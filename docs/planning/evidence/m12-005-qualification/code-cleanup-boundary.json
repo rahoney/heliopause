@@ -1,0 +1,34 @@
+{
+  "baseline": "01175bbe62a2ab8d1b9ee873861839351de1e485",
+  "changes": [
+    {
+      "path": "internal/application/gomodule.go",
+      "before_sha256": "771b28dae46a16bca8f0c79beda83265c30e448423b25718a0e2b8a7ce4247e8",
+      "after_sha256": "708f7b98a94815f3a5aec9fa7dee7f69d859f60a967b9f33c18d22070b3c0572",
+      "removed_net_lines": 24
+    },
+    {
+      "path": "internal/application/cargo.go",
+      "before_sha256": "c9bee83520d1ae2915bad7329275449004ec440b6c4fc955e8f522679a11e5e2",
+      "after_sha256": "841b05365b596fceb7ac0bf264a2fe78a54874bda50bceadb2681488dc6ed162",
+      "removed_net_lines": 23
+    },
+    {
+      "path": "internal/application/gomodule_test.go",
+      "before_sha256": "461f530d5dcb7efe3e397cd06b7fc2ac48339e198646cea8d5494b95c968c07d",
+      "after_sha256": "e53333a806d4b0a7333df09090274f0c74a48833e082c18b9fd67288ee26e808",
+      "removed_net_lines": 26
+    },
+    {
+      "path": "internal/hosttool/executor.go",
+      "before_sha256": "485e4ad8865243e662a2c027f5af1691509871caf245d91587dca0d468e517b2",
+      "after_sha256": "e5b4e1badd97c5467f1a8e435b272cd066897a9586a5d499b204689a109cb0d0",
+      "removed_net_lines": 88
+    }
+  ],
+  "production_callers_of_removed_services": 0,
+  "production_consumers_of_removed_host_sdk_methods": 0,
+  "shared_isolated_resolver_observer_resource_policy_unchanged": true,
+  "old_wrapper_stub_test_removed": 1,
+  "guarded_resolution_failure_regression_preserved": true
+}

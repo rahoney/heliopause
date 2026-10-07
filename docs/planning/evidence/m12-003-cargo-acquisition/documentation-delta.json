@@ -1,0 +1,19 @@
+{
+  "unchanged_source_paths": 644,
+  "documentation_only": [
+    {
+      "path": "docs/engineering/02-coding-security-rules.md",
+      "qualified_sha256": "a9309b845683eaa41dc84f1aadea3e5c2bc929b50009f329fb9d920811de52c9",
+      "current_sha256": "908cdaff7f308d99581ac36180e2da0f35335751614d5471f7aa4df00e6bdee7",
+      "mode": "0o644"
+    },
+    {
+      "path": "docs/planning/02-current-work-queue.md",
+      "qualified_sha256": "ecb78855c5875406079675673d8a270cd13684b186d344bccb38d0f18cf702a5",
+      "current_sha256": "48a6d1e589afb4e845ee1efc50ad90d174d5c5a151819e36afd47413a2a6cbc6",
+      "mode": "0o644"
+    }
+  ],
+  "new_evidence_directory": "docs/planning/evidence/m12-003-cargo-acquisition",
+  "reuse_scope": "partial acquisition candidate only; no whole work item qualification"
+}

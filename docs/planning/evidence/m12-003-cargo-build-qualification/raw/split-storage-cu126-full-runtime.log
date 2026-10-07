@@ -1,0 +1,116 @@
+Verified fresh split-cache test binary/source708 and unchanged observer/helper; no overlay
+runtime before bytes/identity/modes verified
+runtime candidate bytes/identity/modes verified
+no existing traced runtime consumers; bounded Docker queries succeeded
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+/etc/heliopause/pod-init.json: OK
+helper launch: bash=/usr/bin/bash version=5.2.21(1)-release owner=290872
+helper ready: pid=290928 attempt=14
+=== RUN   TestLinuxPyTorchFullIntegration
+    pytorch_linux_integration_test.go:40: retained integration evidence: /tmp/haa-m12-split-e2e/pytorch-cu126-1671769759
+    pytorch_linux_integration_test.go:48: retained integration cache: /tmp/haa-m12-qualification-disk/split-cache/pytorch-cu126-1661727912
+observer_attribution sequence=1 profile=pypi-wheel-pytorch-cu126 counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/PYTHON:526
+observer_attribution sequence=2 profile=pypi-wheel counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/PYTHON:15
+panic: test timed out after 40m0s
+	running tests:
+		TestLinuxPyTorchFullIntegration (40m0s)
+
+goroutine 14687 [running]:
+testing.(*M).startAlarm.func1()
+	testing/testing.go:2802 +0x354
+created by time.goFunc
+	time/sleep.go:215 +0x2d
+
+goroutine 1 [chan receive, 39 minutes]:
+testing.(*T).Run(0x10d46a8e6908, {0xb80dda?, 0x0?}, 0xbc1d30)
+	testing/testing.go:2109 +0x4e5
+testing.runTests.func1(0x10d46a8e6908)
+	testing/testing.go:2585 +0x3e
+testing.tRunner(0x10d46a8e6908, 0x10d46a9dfc58)
+	testing/testing.go:2036 +0xea
+testing.runTests({0xb7e2fc, 0x1d}, {0xb9b759, 0x30}, 0x10d46a8ae120, {0x1068e80, 0x29, 0x29}, {0xc2a9333937ff33b4, 0x22ecb3c2de1, ...})
+	testing/testing.go:2583 +0x505
+testing.(*M).Run(0x10d46a99d180)
+	testing/testing.go:2443 +0x6ac
+main.main()
+	_testmain.go:128 +0x9b
+
+goroutine 21 [syscall]:
+syscall.Syscall(0x4a, 0x8, 0x0, 0x0)
+	syscall/syscall_linux.go:74 +0x25
+syscall.Fsync(0x0?)
+	syscall/zsyscall_linux_amd64.go:463 +0x25
+internal/poll.(*FD).Fsync.func1(...)
+	internal/poll/fd_fsync_posix.go:18
+internal/poll.ignoringEINTR(...)
+	internal/poll/fd_posix.go:74
+internal/poll.(*FD).Fsync(0x0?)
+	internal/poll/fd_fsync_posix.go:17 +0xe7
+os.(*File).Sync(0x10d46ad037b0)
+	os/file_posix.go:167 +0x3b
+github.com/rahoney/heliopause/internal/promotion.(*pypiVenvTransaction).appendJournal(0x10d46a8d4180, {0xae4160?, 0x10d46a8b73c0?})
+	github.com/rahoney/heliopause/internal/promotion/pypi_venv_transaction.go:733 +0x312
+github.com/rahoney/heliopause/internal/promotion.(*pypiVenvTransaction).journalIntent(...)
+	github.com/rahoney/heliopause/internal/promotion/pypi_venv_transaction.go:743
+github.com/rahoney/heliopause/internal/promotion.(*pypiVenvTransaction).commit(0x10d46a8d4180, {0x10d4727c0000, 0x3ef5, 0x10d46a9c2c00?})
+	github.com/rahoney/heliopause/internal/promotion/pypi_venv_transaction.go:834 +0x11ee
+github.com/rahoney/heliopause/internal/promotion.(*PyPIPromotion).promoteActiveVenv(_, {_, _}, {_, _}, {{{0x10d46b9a0040, 0x40}}, {{{{...}, {...}, {...}, ...}, ...}, ...}, ...}, ...)
+	github.com/rahoney/heliopause/internal/promotion/pypi_promotion.go:172 +0x528
+github.com/rahoney/heliopause/internal/promotion.(*PyPIPromotion).Promote(_, {_, _}, {{{_, _}}, {_, _}}, {{{0x10d46b9a0040, 0x40}}, {{{{...}, ...}, ...}, ...}, ...}, ...)
+	github.com/rahoney/heliopause/internal/promotion/pypi_promotion.go:68 +0x9f6
+github.com/rahoney/heliopause/internal/application.(*InstallService).Install(_, {_, _}, {{{{0xb6ec96, 0xd}}, {0x10d46a9fc6d8, 0x12}}, {{{0x10d46a976c00, 0x36}}, {0xb6d223, ...}}})
+	github.com/rahoney/heliopause/internal/application/install_promote.go:69 +0xe1f
+github.com/rahoney/heliopause/internal/bootstrap.pyTorchResourceInstaller.Install({{0xbc95e0, 0x10d46a8b3a40}, {{0xb6ec89, 0xd}, {{0xb6ec96, 0xd}}, {0xb8f594, 0x27}, {0xb75157, 0x14}, ...}}, ...)
+	github.com/rahoney/heliopause/internal/bootstrap/bootstrap.go:456 +0x35f
+github.com/rahoney/heliopause/internal/cli.ExecuteInstall({0xbcf4b8?, 0x10d46aa03e30?}, {0xbc96c0?, 0x10d46a918690?}, {{{{0xb6ec96, 0xd}}, {0x10d46a9fc6d8, 0x12}}, {{{0x10d46a976c00, 0x36}}, ...}}, ...)
+	github.com/rahoney/heliopause/internal/cli/install_result.go:23 +0xe9
+github.com/rahoney/heliopause/internal/cli.AddPyPIInstallSources.func1(0x10d46aa13808, {0x10d46aa10540, 0x1, 0xb66cf7?})
+	github.com/rahoney/heliopause/internal/cli/root.go:247 +0x6ff
+github.com/spf13/cobra.(*Command).execute(0x10d46aa13808, {0x10d46aa104d0, 0x7, 0x7})
+	github.com/spf13/cobra@v1.10.2/command.go:1015 +0xb14
+github.com/spf13/cobra.(*Command).ExecuteC(0x10d46aa12008)
+	github.com/spf13/cobra@v1.10.2/command.go:1148 +0x465
+github.com/spf13/cobra.(*Command).Execute(...)
+	github.com/spf13/cobra@v1.10.2/command.go:1071
+github.com/spf13/cobra.(*Command).ExecuteContext(0xacb680?, {0xbcf4b8?, 0x10d46aa03e30?})
+	github.com/spf13/cobra@v1.10.2/command.go:1064 +0x47
+github.com/rahoney/heliopause/internal/bootstrap.Run({0xbcf4b8, 0x10d46aa03e30}, {0x10d46a8fe540, 0x9, 0xe}, {0xbc9800?, 0x10d46a99acc0?}, {0xbc9800?, 0x10d46a99acf0?})
+	github.com/rahoney/heliopause/internal/bootstrap/bootstrap.go:396 +0x219b
+github.com/rahoney/heliopause/internal/bootstrap_test.TestLinuxPyTorchFullIntegration(0x10d46a8e6b48)
+	github.com/rahoney/heliopause/internal/bootstrap/pytorch_linux_integration_test.go:67 +0xc05
+testing.tRunner(0x10d46a8e6b48, 0xbc1d30)
+	testing/testing.go:2036 +0xea
+created by testing.(*T).Run in goroutine 1
+	testing/testing.go:2101 +0x4c5
+
+goroutine 50 [IO wait, 8 minutes]:
+internal/poll.runtime_pollWait(0x7833859f3000, 0x72)
+	runtime/netpoll.go:351 +0x85
+internal/poll.(*pollDesc).wait(0x10d46abd6080?, 0x10d46aad0400?, 0x0)
+	internal/poll/fd_poll_runtime.go:84 +0x27
+internal/poll.(*pollDesc).waitRead(...)
+	internal/poll/fd_poll_runtime.go:89
+internal/poll.(*FD).ReadFrom(0x10d46abd6080, {0x10d46aad0400, 0x400, 0x400})
+	internal/poll/fd_unix.go:214 +0x270
+net.(*netFD).readFrom(0x10d46abd6080, {0x10d46aad0400?, 0x10d46ad00008?, 0x10d46a82ba20?})
+	net/fd_posix.go:74 +0x25
+net.(*UnixConn).readFrom(0x10d46ab360a8, {0x10d46aad0400?, 0x913652?, 0x10d46a960750?})
+	net/unixsock_posix.go:103 +0x25
+net.(*UnixConn).ReadFromUnix(0x10d46ab360a8, {0x10d46aad0400?, 0x1?, 0x1?})
+	net/unixsock.go:110 +0x30
+github.com/rahoney/heliopause/internal/sandbox.(*SharedObserver).receive(0x10d46abd8000)
+	github.com/rahoney/heliopause/internal/sandbox/shared_observer.go:610 +0x69
+created by github.com/rahoney/heliopause/internal/sandbox.newSharedObserver in goroutine 21
+	github.com/rahoney/heliopause/internal/sandbox/shared_observer.go:396 +0x27f
+helper reaped: pid=290928 wait=0
+no existing traced runtime consumers; bounded Docker queries succeeded
+runtime before bytes/identity/modes verified
+/etc/heliopause/pod-init.json: OK
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+cleanup: original=2 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=290928

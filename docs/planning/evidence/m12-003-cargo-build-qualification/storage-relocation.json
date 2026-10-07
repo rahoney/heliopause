@@ -1,0 +1,20 @@
+{
+  "source_driver_sha256": "3d4ce66a1104ea033e8b103ea96ef67fc01b734d6de060fb49347a0438cbf991",
+  "new_driver_sha256": "0ddb99a38987462cfded4320ecb3c51f1380a0a6ddac48c14cb2378b90d0f1e3",
+  "only_delta": "HELOX_INTEGRATION_EVIDENCE_ROOT=/tmp/haa-m12-qualification-disk/e2e",
+  "source_code": "UNCHANGED707",
+  "runtime_policy_limits": "UNCHANGED",
+  "private_source_destination": "same new ext4 filesystem; no cross-filesystem publication",
+  "reason": "Cfree15GiB below observed17GiB retained full run; Dfree80GiB with fresh32GiB image",
+  "latency_root_cause": "UNCONFIRMED; relocation is capacity isolation, not a proven latency fix",
+  "prep_tool_exit": 0,
+  "image_path": "/mnt/d/Heliopause-qualification/m12-003-cu126.ext4",
+  "mount_path": "/tmp/haa-m12-qualification-disk",
+  "filesystem": "ext4",
+  "image_bytes": 34359738368,
+  "actual_D_backing_allocation": "32GiB observed; not sparse-space recovery",
+  "C_free_after_trim": "15GiB unchanged",
+  "fstrim_exit": 0,
+  "fstrim_logical_bytes": 801732886528,
+  "mount_probe": "/dev/loop0 ext4 /tmp/haa-m12-qualification-disk ro,nosuid,nodev,relatime\n/dev/loop0 ext4 /tmp/haa-m12-qualification-disk rw,nosuid,nodev,relatime"
+}

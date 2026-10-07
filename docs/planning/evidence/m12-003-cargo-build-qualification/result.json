@@ -1,0 +1,53 @@
+{
+  "work_item": "M12-003",
+  "status": "LOCAL_ACCEPTANCE_COMPLETE",
+  "IMPLEMENTED": "YES",
+  "WIRED": "YES (Linux/amd64 actual public add/build CLI)",
+  "QUALIFIED": "YES (Linux/amd64 local qualification)",
+  "ACCEPTANCE_CLOSED": "YES (work-item local acceptance; remote delivery separate)",
+  "scope": "Same product/observer/runtime candidate actual Cargo13, Go/Cargo14 and legacy/direct consumers; same708 CPU523.65s/cu1262070.42s full PASS with exact terminal cleanup/restoration. Final closure documentation-only checks precede local commit.",
+  "cpu_full": {
+    "status": "PASS",
+    "seconds": 518.36
+  },
+  "cu126": {
+    "first": "FAIL811.67s; CPU counter read deadline, latency cause unconfirmed",
+    "retry": "INTERRUPTED/UNOBSERVED after WSL interruption",
+    "resume": "FAIL test timeout2400s; tool exit2; private output SHA256 before current file publication, 14848/16117 outputs published; original12 restored",
+    "disk_preflight": "NOT_REACHED/product; wrapper1 existing stale observer entries refused; bounded owner-absence + exact inode cleanup recorded separately",
+    "disk_run": "FAIL timeout2400s/tool2 at journal publish-intent fsync; helperwait0/boundedDockerabsence/original12 restored"
+  },
+  "native_macos": "NOT_RUN",
+  "remote_required": "NOT_RUN",
+  "runtime_recovery": "Original12 hash/UID/GID/mode restored; reboot after last old sample and no live installed consumer verified; restore command exited0.",
+  "missing": [],
+  "split_storage": {
+    "executed_source": "executed-split-source-portable.json",
+    "source_count": 708,
+    "cpu_full": "PASS523.65s/tool0; split-storage-cpu-full-result.json",
+    "first_cu126": "FAIL128.71s/tool1; unchanged24GiB temporary disk preflight rejected sharedDvolume15.9GB; split-storage-cu126-capacity-failure.json",
+    "capacity_correction": "Exact task-owned NTFSimage32->52GiB/ext4 online actual0; UUID and preserved journal hash unchanged; cache-volume-growth.json",
+    "cu126_retry": "FAIL actual2/40m timeout at native target journal publish-intent Fsync; helperwait0/boundedDockerabsence/original12 restored; split-storage-cu126-full-result.json"
+  },
+  "reclaimed_native_full": "reclaimed-native-cu126-full-result.json",
+  "schema": "m12-local-qualification.v1",
+  "check_results": "canonical-checks.json",
+  "candidate_receipt": "executed-split-source-portable.json",
+  "candidate_receipt_sha256": "c7e64ce1c735b4fc8463222261eabf0e78a5ab93a8742e27c750e76ca293c8f9",
+  "full_results": [
+    "split-storage-cpu-full-result.json",
+    "reclaimed-native-cu126-full-result.json"
+  ],
+  "runtime_custody": "runtime-custody.json",
+  "actual_run_bindings": "actual-cargo-run-bindings.json",
+  "consumer_client_bindings": "consumer-client-bindings.json",
+  "causal_proofs": [
+    "minimal-first-fault-chain.json",
+    "compiler-causal-pairs.json"
+  ],
+  "raw_log_inventory": "portable-log-inventory.json",
+  "ci_duration_review": "ci-duration-review.json",
+  "cu130_cu132": "Four-profile common-path focused regression only; new candidate full NOT_RUN",
+  "release_support": "Broader release-support matrix remains M12-005",
+  "delivery": "NO PUSH / NO REMOTE CI / NO MERGE"
+}

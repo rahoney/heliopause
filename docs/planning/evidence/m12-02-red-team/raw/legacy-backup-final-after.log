@@ -1,0 +1,108 @@
+=== RUN   TestNPMTransactionPreservesForeignBackup
+=== RUN   TestNPMTransactionPreservesForeignBackup/commit
+=== RUN   TestNPMTransactionPreservesForeignBackup/rollback
+--- PASS: TestNPMTransactionPreservesForeignBackup (0.05s)
+    --- PASS: TestNPMTransactionPreservesForeignBackup/commit (0.03s)
+    --- PASS: TestNPMTransactionPreservesForeignBackup/rollback (0.02s)
+=== RUN   TestNPMTransactionPreservesForeignPublishedMember
+=== RUN   TestNPMTransactionPreservesForeignPublishedMember/node_modules
+=== RUN   TestNPMTransactionPreservesForeignPublishedMember/haa
+--- PASS: TestNPMTransactionPreservesForeignPublishedMember (0.02s)
+    --- PASS: TestNPMTransactionPreservesForeignPublishedMember/node_modules (0.01s)
+    --- PASS: TestNPMTransactionPreservesForeignPublishedMember/haa (0.01s)
+=== RUN   TestVenvTransactionPreservesForeignBackup
+=== RUN   TestVenvTransactionPreservesForeignBackup/commit
+=== RUN   TestVenvTransactionPreservesForeignBackup/rollback
+--- PASS: TestVenvTransactionPreservesForeignBackup (0.19s)
+    --- PASS: TestVenvTransactionPreservesForeignBackup/commit (0.10s)
+    --- PASS: TestVenvTransactionPreservesForeignBackup/rollback (0.09s)
+=== RUN   TestNPMRollbackPreservesChangedOriginal
+=== RUN   TestNPMRollbackPreservesChangedOriginal/package.json/content
+=== RUN   TestNPMRollbackPreservesChangedOriginal/package.json/mode
+=== RUN   TestNPMRollbackPreservesChangedOriginal/package.json/inode
+=== RUN   TestNPMRollbackPreservesChangedOriginal/package.json/hardlink
+=== RUN   TestNPMRollbackPreservesChangedOriginal/package.json/missing
+=== RUN   TestNPMRollbackPreservesChangedOriginal/node_modules/old/content
+=== RUN   TestNPMRollbackPreservesChangedOriginal/node_modules/old/mode
+=== RUN   TestNPMRollbackPreservesChangedOriginal/node_modules/old/inode
+=== RUN   TestNPMRollbackPreservesChangedOriginal/node_modules/old/hardlink
+=== RUN   TestNPMRollbackPreservesChangedOriginal/node_modules/old/missing
+--- PASS: TestNPMRollbackPreservesChangedOriginal (0.12s)
+    --- PASS: TestNPMRollbackPreservesChangedOriginal/package.json/content (0.01s)
+    --- PASS: TestNPMRollbackPreservesChangedOriginal/package.json/mode (0.01s)
+    --- PASS: TestNPMRollbackPreservesChangedOriginal/package.json/inode (0.01s)
+    --- PASS: TestNPMRollbackPreservesChangedOriginal/package.json/hardlink (0.01s)
+    --- PASS: TestNPMRollbackPreservesChangedOriginal/package.json/missing (0.01s)
+    --- PASS: TestNPMRollbackPreservesChangedOriginal/node_modules/old/content (0.01s)
+    --- PASS: TestNPMRollbackPreservesChangedOriginal/node_modules/old/mode (0.01s)
+    --- PASS: TestNPMRollbackPreservesChangedOriginal/node_modules/old/inode (0.01s)
+    --- PASS: TestNPMRollbackPreservesChangedOriginal/node_modules/old/hardlink (0.01s)
+    --- PASS: TestNPMRollbackPreservesChangedOriginal/node_modules/old/missing (0.01s)
+=== RUN   TestNPMTransactionPreservesCompetingDestination
+--- PASS: TestNPMTransactionPreservesCompetingDestination (0.01s)
+=== RUN   TestNPMGuardPreservesReplacedLock
+--- PASS: TestNPMGuardPreservesReplacedLock (0.00s)
+=== RUN   TestVenvTransactionPreservesChangedBackup
+=== RUN   TestVenvTransactionPreservesChangedBackup/file-0/content/commit
+=== RUN   TestVenvTransactionPreservesChangedBackup/file-0/content/rollback
+=== RUN   TestVenvTransactionPreservesChangedBackup/file-0/mode/commit
+=== RUN   TestVenvTransactionPreservesChangedBackup/file-0/mode/rollback
+=== RUN   TestVenvTransactionPreservesChangedBackup/file-0/inode/commit
+=== RUN   TestVenvTransactionPreservesChangedBackup/file-0/inode/rollback
+=== RUN   TestVenvTransactionPreservesChangedBackup/file-0/hardlink/commit
+=== RUN   TestVenvTransactionPreservesChangedBackup/file-0/hardlink/rollback
+=== RUN   TestVenvTransactionPreservesChangedBackup/file-0/missing/commit
+=== RUN   TestVenvTransactionPreservesChangedBackup/file-0/missing/rollback
+=== RUN   TestVenvTransactionPreservesChangedBackup/metadata/content/commit
+=== RUN   TestVenvTransactionPreservesChangedBackup/metadata/content/rollback
+=== RUN   TestVenvTransactionPreservesChangedBackup/metadata/mode/commit
+=== RUN   TestVenvTransactionPreservesChangedBackup/metadata/mode/rollback
+=== RUN   TestVenvTransactionPreservesChangedBackup/metadata/inode/commit
+=== RUN   TestVenvTransactionPreservesChangedBackup/metadata/inode/rollback
+=== RUN   TestVenvTransactionPreservesChangedBackup/metadata/hardlink/commit
+=== RUN   TestVenvTransactionPreservesChangedBackup/metadata/hardlink/rollback
+=== RUN   TestVenvTransactionPreservesChangedBackup/metadata/missing/commit
+=== RUN   TestVenvTransactionPreservesChangedBackup/metadata/missing/rollback
+=== RUN   TestVenvTransactionPreservesChangedBackup/ledger.json/content/commit
+=== RUN   TestVenvTransactionPreservesChangedBackup/ledger.json/content/rollback
+=== RUN   TestVenvTransactionPreservesChangedBackup/ledger.json/mode/commit
+=== RUN   TestVenvTransactionPreservesChangedBackup/ledger.json/mode/rollback
+=== RUN   TestVenvTransactionPreservesChangedBackup/ledger.json/inode/commit
+=== RUN   TestVenvTransactionPreservesChangedBackup/ledger.json/inode/rollback
+=== RUN   TestVenvTransactionPreservesChangedBackup/ledger.json/hardlink/commit
+=== RUN   TestVenvTransactionPreservesChangedBackup/ledger.json/hardlink/rollback
+=== RUN   TestVenvTransactionPreservesChangedBackup/ledger.json/missing/commit
+=== RUN   TestVenvTransactionPreservesChangedBackup/ledger.json/missing/rollback
+--- PASS: TestVenvTransactionPreservesChangedBackup (2.73s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/file-0/content/commit (0.09s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/file-0/content/rollback (0.10s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/file-0/mode/commit (0.11s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/file-0/mode/rollback (0.09s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/file-0/inode/commit (0.10s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/file-0/inode/rollback (0.10s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/file-0/hardlink/commit (0.09s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/file-0/hardlink/rollback (0.08s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/file-0/missing/commit (0.09s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/file-0/missing/rollback (0.08s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/metadata/content/commit (0.09s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/metadata/content/rollback (0.08s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/metadata/mode/commit (0.10s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/metadata/mode/rollback (0.08s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/metadata/inode/commit (0.09s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/metadata/inode/rollback (0.08s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/metadata/hardlink/commit (0.09s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/metadata/hardlink/rollback (0.09s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/metadata/missing/commit (0.09s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/metadata/missing/rollback (0.10s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/ledger.json/content/commit (0.09s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/ledger.json/content/rollback (0.09s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/ledger.json/mode/commit (0.09s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/ledger.json/mode/rollback (0.09s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/ledger.json/inode/commit (0.09s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/ledger.json/inode/rollback (0.09s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/ledger.json/hardlink/commit (0.09s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/ledger.json/hardlink/rollback (0.10s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/ledger.json/missing/commit (0.09s)
+    --- PASS: TestVenvTransactionPreservesChangedBackup/ledger.json/missing/rollback (0.09s)
+PASS
+ok  	github.com/rahoney/heliopause/internal/promotion	3.146s

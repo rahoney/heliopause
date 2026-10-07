@@ -1,0 +1,5 @@
+=== RUN   TestGoPublicModuleAcquisitionIntegration
+    public_integration_test.go:71: source=go-proxy version=v1.0.9 digest=5742d159f3efbff133a1cb0887e5632f5a52e5a5bb71874f70376b115a82ad0f checks=2 evidence=2 policy=ALLOW
+--- PASS: TestGoPublicModuleAcquisitionIntegration (0.34s)
+PASS
+ok  	github.com/rahoney/heliopause/internal/inspection/gomodule	0.352s

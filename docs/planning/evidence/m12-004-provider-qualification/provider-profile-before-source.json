@@ -1,0 +1,18 @@
+[
+  {
+    "path": "tools/gvisor-observer/observer.cc",
+    "sha256": "60dfe4e4229c514ac4f4c73ed4f5c1d2e813c0c2b81bebdac97c32e12321fe5c"
+  },
+  {
+    "path": "tools/gvisor-observer/observer_latch_test.cc",
+    "sha256": "6a8420957a22a7ef95c0dfd71a4a15d8b6bddcc4413473dc32e701e7600d42b9"
+  },
+  {
+    "path": "scripts/runtimes.lock.json",
+    "sha256": "272ab2bc91d6371203a0f4a85fc39fd44cab49001d51dfaec88749e8c964468d"
+  },
+  {
+    "path": "tools/gvisor-observer/BUILD",
+    "sha256": "03c1b35a9af479d53b0b26ecc1f71a6e2c9b7560379cfc66aeabf1caba2b7c97"
+  }
+]

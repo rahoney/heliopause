@@ -1,0 +1,79 @@
+{
+  "scope": "Portable fixture-only correction; production/shared runtime/helper/policy/budgets unchanged",
+  "source_delta": [
+    {
+      "path": ".gitattributes",
+      "qualified_sha256": "79c88d1ea53fa1d99bd742793bc375407f972e50739d059b690020fcd3bd3d06",
+      "current_sha256": "77f0c30471a1502d98ecb32aa0a2986018c1b7634f4df12e80c3c02e92c71b8b"
+    },
+    {
+      "path": "PROJECT-DECISIONS.md",
+      "qualified_sha256": "255af7bd7ddb152f13a800eb4943cb18944bbd868eda8823d4f5a2e354a6b201",
+      "current_sha256": "6ebf04d3f936fbb6a8b0eab089a872194ea6cbdb4e6a60155b818484c28fd9af"
+    },
+    {
+      "path": "README.md",
+      "qualified_sha256": "0686418ed7c8687adaecee2810275be3c29e637f23b14e8fdbb9e8e567ecf1cd",
+      "current_sha256": "a0a2571b39f72ef843010de70422da5abba7f0d32adee7ced4fe8939ecb4300b"
+    },
+    {
+      "path": "docs/planning/02-current-work-queue.md",
+      "qualified_sha256": "e61926639af382d1b151277a6ef7a00f8446b6d10af6c63dc6a2bc04372412e1",
+      "current_sha256": "ff9374757ef49aa49760f179d729ecfcb2aa5dc0c9f55f051d71adaa28ca6b3a"
+    },
+    {
+      "path": "docs/planning/16-m12-01-ecosystem-expansion-contract.md",
+      "qualified_sha256": "b0f67c06eb3c10c94f0ead58b04dd3b72f456c5cae954515d0d9cf343728345f",
+      "current_sha256": "94ccd4b8e015a000f5ed3db5ef1b8b634cdaec297edcacd3bd4492e0012ec2fc"
+    },
+    {
+      "path": "internal/bootstrap/pytorch_storage_test.go",
+      "qualified_sha256": "161a375cdd3abe587ef0326fae666dd6855e6ca4ffa52773be6d69be4c24bf80",
+      "current_sha256": "eedb76711cc2d9870804ff84de23989b537ac4f3f8a72709973bcc64a04613e8"
+    }
+  ],
+  "checks": [
+    {
+      "profile": "alias-before",
+      "exit_code": 1,
+      "path": "macos-temp-alias-before.log",
+      "sha256": "73b47d1b863a0481e646efb2cb929f5d47c7ddb51bb8c405b2fb1310936d6624"
+    },
+    {
+      "profile": "alias-after",
+      "exit_code": 0,
+      "path": "macos-temp-alias-after.log",
+      "sha256": "bab32b59e062764a074465b915af0877eb2d992f9b52fa1882bc21f6bd15d3fd"
+    },
+    {
+      "profile": "quick",
+      "exit_code": 0,
+      "path": "macos-fixture-quick.log",
+      "sha256": "74b9588fbaa78dca58a4c353011f3c501e13abe0434faf612497e5257684b999"
+    },
+    {
+      "profile": "docs",
+      "exit_code": 0,
+      "path": "macos-fixture-docs.log",
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "profile": "security",
+      "exit_code": 0,
+      "path": "macos-fixture-security.log",
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95"
+    },
+    {
+      "profile": "Darwin TEST compile",
+      "exit_code": 0,
+      "path": "macos-fixture-darwin-test-compile.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "first_failed_run": 37497646753,
+  "first_failed_job": 112386202588,
+  "branch_candidate": "1170ce2ddee6b0a9133238972624f5315fd355f6",
+  "checkout_merge_sha": "0ec1e77a22b97ceb108bd3484c6a04cea10f3455",
+  "native_macos_after": "PENDING",
+  "first_linux_result": "Not yet completed; next push may cancel earlier PR run"
+}

@@ -1,0 +1,29 @@
+{
+  "status": "FAIL",
+  "actual_tool_exit": 1,
+  "test_seconds": 128.71,
+  "timeout_seconds": 2400,
+  "raw_logs": [
+    {
+      "path": "raw/split-storage-cu126-capacity-failure.log",
+      "sha256": "66424ac757349b8af6253d05ba47fac591ef83082230d6cb6df024b31db3878b",
+      "bytes": 2165
+    },
+    {
+      "path": "raw/split-storage-first-pressure.jsonl",
+      "sha256": "e87ac772859760a4c2ecd3302c878d32921507c0a13a223acf9bd557e007360e",
+      "bytes": 14062
+    }
+  ],
+  "source_count": 708,
+  "stage": "Intake.download first CheckTemporaryDisk before download materialization",
+  "cause": "CONFIRMED: shared D cache filesystem had15940734976B available at wrapper preflight; canonicalcu126 maxTemporaryDisk24GiB=25769803776B. Intake.download OR check starts with CheckTemporaryDisk, so it rejects before length/beginArtifact predicates. Harness estimated peak-only but missed unchanged production minimum.",
+  "source_file": "internal/artifact/pypi/intake.go:129; resource_policy.go:66/CheckTemporaryDisk",
+  "resolution_scope": "Grow task-owned cache filesystem while preserving old evidence and canonical24GiB policy; no product/source/timeout change. Retry is CUDA only with same708 source/test; actual CPU523.65 PASS preserved.",
+  "cleanup": {
+    "helper_parent_wait": 0,
+    "bounded_docker_absence": true,
+    "original12_bytes_uid_gid_modes_restored": true
+  },
+  "whole_acceptance": "NO"
+}

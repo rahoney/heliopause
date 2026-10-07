@@ -8,8 +8,9 @@
 - Go module path: `github.com/rahoney/heliopause`
 - 구현 언어: Go
 - CLI framework: Cobra
-- 현재 상태: M0–M11 qualification 및 post-qualification release hardening 완료. M12 생태계 확장을 진행 중이며, M12-001 공식 PyTorch source support의 acceptance를 완료했다. M12-02 최종 red-team/fix gate와 M13 Production Release & Operations는 선행 작업 완료 후 진행
-- 다음 작업: M12-002 — public Go Modules (`NOT_STARTED` / `Ready: Yes`)
+- 현재 상태: M0–M11 qualification 및 post-qualification release hardening, M12-001~005 생태계 acceptance·전체 qualification·feature freeze와 M12-02 최종 red-team/fix gate 완료. PR29 reviewer merge와 main CI 확인 후 M13 Production Release & Operations로 이어간다.
+- 완료 작업: M12-02 — final red-team/fix gate (`COMPLETE`)
+- 현재 작업: 없음 — reviewer merge 인계; M13은 `NOT_STARTED`
 - 진행 상태의 canonical owner: [`docs/planning/02-current-work-queue.md`](docs/planning/02-current-work-queue.md)
 
 Heliopause는 Apache-2.0으로 배포한다. 외부 기여는 `CLA.md`의 Harmony
@@ -20,7 +21,9 @@ Copyright License 및 Option Five 조건과 자동 CLA status check를 충족해
 
 ## Project Notes
 
-상세 설계·결정·작업 계획 문서는 로컬 작업 환경에서 관리하며 이 저장소의 배포 대상에 포함하지 않는다.
+상세 설계·결정·작업 계획은 [Documentation Guide](./docs/README.md)를 통해
+버전 관리되는 canonical 문서에서 확인한다. 개인 작업 메모와 로컬 실행 상태는
+별도이며, source 문서가 runtime 배포나 일반 Host 설치 완료를 뜻하지 않는다.
 
 ## Build
 
@@ -47,10 +50,11 @@ go run ./scripts/check freshness
 
 ## Commands
 
-지원하는 공개 입력은 anonymous public npm Registry, PyPI와 public GitHub
-Release asset이다. npm/pip install은 기본적으로 현재 managed project 또는
+지원하는 공개 입력은 anonymous public npm Registry, PyPI, named official PyTorch
+source, public GitHub Release asset, Go proxy/SumDB, crates.io와 Terraform Provider다.
+npm/pip install은 기본적으로 현재 managed project 또는
 active virtual environment를 사용하며, `--target`은 고급 absolute destination
-override다. GitHub install은 M9-005 전까지 `--target`을 요구한다.
+override다. GitHub install은 기본 user bin destination 또는 새 `--target`을 사용한다.
 
 ```sh
 helox doctor
@@ -66,6 +70,14 @@ helox pip install '<project>[@<version>]' --target /absolute/venv
 helox github inspect '<owner>/<repo>@<tag>#<asset>'
 helox github install '<owner>/<repo>@<tag>#<asset>'
 helox github install '<owner>/<repo>@<tag>#<asset>' --target /absolute/new-target
+
+helox pip install 'torch@2.14.0+cpu' --source pytorch:cpu
+helox go get 'github.com/spf13/pflag@v1.0.10'
+helox go mod download
+helox go build ./...
+helox cargo add 'itoa@1.0.17'
+helox cargo build
+helox terraform init 'hashicorp/random@3.7.2'
 ```
 
 `inspect`는 `ALLOW`여도 target에 반입하지 않는다. `install`은 모든 필수
@@ -77,28 +89,36 @@ helox github install '<owner>/<repo>@<tag>#<asset>' --target /absolute/new-targe
 
 | Host / input | MVP support |
 | --- | --- |
-| Linux amd64 + pinned Docker/runsc/observer | npm, PyPI wheel/sdist와 GitHub Release ELF/ZIP/tar.gz 검사; 정책이 허용한 exact set의 새 target Promotion |
+| Linux amd64 + pinned Docker/runsc/observer | npm, PyPI wheel/sdist와 GitHub Release ELF/ZIP/tar.gz 검사; approved managed project/venv 또는 새 target으로 exact set Promotion. PyTorch·Go·Cargo·Provider의 M12 qualification 상태는 아래 표 참조 |
 | macOS native | CLI build와 기본 실행만 검증됨. Linux dynamic backend와 automatic Promotion은 지원하지 않음 |
 | Windows 11 + WSL2 Ubuntu 24.04 | WSL2 내부 Linux CLI build와 기본 실행만 검증됨. Windows-native backend가 아니며 dynamic/Promotion support를 뜻하지 않음 |
 | 기타 OS/architecture/runtime | 지원하지 않으며 누락된 capability를 안전으로 간주하지 않음 |
 
-## Planned pre-release expansion
+## M12 qualification
 
-현재 구현된 MVP 지원 범위와 다음 생태계 확장 범위를 구분한다. 아래 경로는 M12
-qualification이 완료되기 전까지 공개 지원으로 간주하지 않는다.
+다음 생태계 경로의 acceptance와 M12-005 전체 qualification·feature freeze를 완료했다.
+Qualified source 경로와 일반 사용자용 public installer/배포 완료는 각각의 acceptance를
+따른다. Runtime/helper를 준비하지 않은 Host에서 동적 실행을 지원한다고 주장하지 않는다.
 
-| Milestone | Planned path |
-| --- | --- |
-| M12-001 | 공식 PyTorch source profile을 통한 `helox pip install` |
-| M12-002 | public Go Modules: `helox go get`, `helox go mod download`, `helox go build` |
-| M12-003 | public crates.io: `helox cargo add`, `helox cargo build` |
-| M12-004 | public Terraform Provider 설치: `helox terraform init` |
-| M12-005 | 전체 생태계 qualification 및 feature freeze |
-| M12-02 | 최종 red-team/fix gate |
+| Milestone | Implemented path | Status |
+| --- | --- | --- |
+| M12-001 | 공식 PyTorch source profile을 통한 `helox pip install` | acceptance complete; four bounded release tuples qualified |
+| M12-002 | public Go Modules: `helox go get`, `helox go mod download`, `helox go build` | acceptance complete |
+| M12-003 | public crates.io: `helox cargo add`, `helox cargo build` | acceptance complete |
+| M12-004 | public Terraform Provider 설치: `helox terraform init` | installation acceptance complete; RPC/cloud behavior not attested |
+| M12-005 | 전체 생태계 qualification 및 feature freeze | COMPLETE |
+| M12-02 | 최종 red-team/fix gate | COMPLETE; reviewer merge pending |
 
 PyTorch profile roles are CPU (primary non-CUDA), cu126 (compatibility), cu130
 (primary CUDA), and cu132 (extended compatibility). `cu128` is removed and is
 not selectable. CUDA qualification is explicit workflow-dispatch only.
+
+First-release PyTorch 지원 tuple의 exact version·Python/ABI/platform·resource bound와
+qualifying scope는 [canonical support tuple](./docs/planning/16-m12-01-ecosystem-expansion-contract.md#first-release-support-tuples)을
+따른다. CUDA broader module 검사는 `--inspection-prerequisites`로 명시한 고정
+NumPy2.4.6을 검사 전용으로 사용하며 target에는 설치하지 않는다. 기본 입력은 empty이고
+필수 검사가 불완전하면 자동 승격하지 않는다. `triton.profiler.viewer`의
+`NOT_ATTESTED` 결과는 기능 정상·나중 실행 차단·GPU computation 검증을 뜻하지 않는다.
 
 `scripts/version-support.lock.json` records externally managed baselines.
 Developer checks warn after 90 days; strict qualification freshness fails stale

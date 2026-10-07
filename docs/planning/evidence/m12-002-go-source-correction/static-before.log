@@ -1,0 +1,35 @@
+=== RUN   TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject
+=== RUN   TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject/normal
+=== RUN   TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject/module_identity
+=== RUN   TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject/syntax
+=== RUN   TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject/negative_test_asset
+    static_test.go:100: [{M12_GO_SOURCE_INVALID [{go-module-static-result}]}]
+=== RUN   TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject/nested_negative_test_asset
+    static_test.go:100: [{M12_GO_SOURCE_INVALID [{go-module-static-result}]}]
+=== RUN   TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject/testdata_file_is_source
+=== RUN   TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject/similar_directory_is_source
+=== RUN   TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject/case_sensitive_directory_is_source
+=== RUN   TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject/test_asset_traversal
+=== RUN   TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject/test_asset_duplicate
+=== RUN   TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject/test_asset_symlink
+=== RUN   TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject/traversal
+=== RUN   TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject/duplicate
+=== RUN   TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject/symlink
+--- FAIL: TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject (0.04s)
+    --- PASS: TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject/normal (0.00s)
+    --- PASS: TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject/module_identity (0.00s)
+    --- PASS: TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject/syntax (0.00s)
+    --- FAIL: TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject/negative_test_asset (0.00s)
+    --- FAIL: TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject/nested_negative_test_asset (0.00s)
+    --- PASS: TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject/testdata_file_is_source (0.00s)
+    --- PASS: TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject/similar_directory_is_source (0.00s)
+    --- PASS: TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject/case_sensitive_directory_is_source (0.00s)
+    --- PASS: TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject/test_asset_traversal (0.00s)
+    --- PASS: TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject/test_asset_duplicate (0.00s)
+    --- PASS: TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject/test_asset_symlink (0.00s)
+    --- PASS: TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject/traversal (0.00s)
+    --- PASS: TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject/duplicate (0.00s)
+    --- PASS: TestModuleStaticInspectionDoesNotExecuteSourceAndRejectsMalformedSubject/symlink (0.00s)
+FAIL
+FAIL	github.com/rahoney/heliopause/internal/inspection/gomodule	0.052s
+FAIL

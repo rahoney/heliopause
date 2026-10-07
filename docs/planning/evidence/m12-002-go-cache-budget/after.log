@@ -1,0 +1,8 @@
+=== RUN   TestGoCacheAggregateFileBudget
+=== RUN   TestGoCacheAggregateFileBudget/at-limit
+=== RUN   TestGoCacheAggregateFileBudget/over-limit
+--- PASS: TestGoCacheAggregateFileBudget (11.27s)
+    --- PASS: TestGoCacheAggregateFileBudget/at-limit (9.41s)
+    --- PASS: TestGoCacheAggregateFileBudget/over-limit (1.85s)
+PASS
+ok  	github.com/rahoney/heliopause/internal/promotion	11.280s

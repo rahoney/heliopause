@@ -1,0 +1,15 @@
+{
+  "scope": "current exact final source four actual registered gVisor gates",
+  "result": "PASS",
+  "raw_local_file": "go-build-watch-stop-final-source.log",
+  "raw_sha256": "6eb1764b19676bae68d7485f0561cdc6dafc8709a0f3f48bb7812a2816728faa",
+  "actual_pass_tests": [
+    "--- PASS: TestLinuxGoIsolatedResolverIntegration (16.37s)",
+    "--- PASS: TestLinuxGoIsolatedProjectResolverIntegration (7.55s)",
+    "--- PASS: TestLinuxGoSourceProjectSnapshotIntegration (7.35s)",
+    "--- PASS: TestLinuxGoDependencyFreeProjectSnapshotIntegration (6.73s)"
+  ],
+  "helper_wait": 0,
+  "original_installation_restored": true,
+  "candidate_receipt_sha256": "08af9139c92894facd1264acded3e6357c39b3b4499dc620b79e7ced325e5c1b"
+}

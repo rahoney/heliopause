@@ -46,3 +46,27 @@ func (M4) EvaluateSet(set domain.InspectedDependencySet) (domain.PolicyDecision,
 func m4Decision(decision domain.Decision, reason string) (domain.PolicyDecision, error) {
 	return domain.NewPolicyDecision(decision, m4PolicyID, m4PolicyVersion, []string{reason})
 }
+
+// EvaluateProjectSet applies the existing complete-coverage/entry-ALLOW policy
+// to a frozen project snapshot without inventing a primary artifact.
+func (M4) EvaluateProjectSet(set domain.InspectedProjectSet) (domain.PolicyDecision, error) {
+	if !set.Valid() {
+		return domain.PolicyDecision{}, errors.New("complete inspected project set is required")
+	}
+	for _, inspection := range set.Inspections() {
+		if inspection.PolicyDecision().Decision() == domain.DecisionBlock {
+			return m4Decision(domain.DecisionBlock, "M4_DEPENDENCY_BLOCKED")
+		}
+	}
+	for _, inspection := range set.Inspections() {
+		if inspection.PolicyDecision().Decision() != domain.DecisionAllow {
+			return m4Decision(domain.DecisionManualReview, "M4_DEPENDENCY_REVIEW_REQUIRED")
+		}
+		for _, check := range inspection.Checks() {
+			if check.Required() && (check.Capability() != domain.CapabilitySupported || check.Status() != domain.ExecutionCompleted) {
+				return m4Decision(domain.DecisionManualReview, "M4_REQUIRED_CHECK_INCOMPLETE")
+			}
+		}
+	}
+	return m4Decision(domain.DecisionAllow, "M4_VERIFIED_SET_COMPLETED")
+}

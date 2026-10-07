@@ -1,0 +1,49 @@
+verified fresh Cargo source and observer candidate; no overlay
+runtime before bytes/identity/modes verified
+runtime candidate bytes/identity/modes verified
+no existing traced runtime consumers; bounded Docker queries succeeded
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+/etc/heliopause/pod-init.json: OK
+helper launch: bash=/usr/bin/bash version=5.2.21(1)-release owner=2149289
+helper ready: pid=2149336 attempt=15
+=== RUN   TestLinuxCargoDependencyFreeBuildCLIIntegration
+--- PASS: TestLinuxCargoDependencyFreeBuildCLIIntegration (14.84s)
+=== RUN   TestLinuxCargoBuildScriptBuildCLIIntegration
+--- PASS: TestLinuxCargoBuildScriptBuildCLIIntegration (14.09s)
+=== RUN   TestLinuxCargoBuildConfigurationSecurityCLIIntegration
+=== RUN   TestLinuxCargoBuildConfigurationSecurityCLIIntegration/working-directory
+    cargo_build_cli_integration_test.go:206: actual Cargo build denied: operation completed with exit code 20 stdout=Operation: INSPECT
+        Operation ID: op_ulelmjavz3edo23yr3ttefenxq
+        Status: COMPLETED
+        Run ID: run_vzyxlfkxy22mdqzwsrvu2scy4a
+        Run outcome: COMPLETED
+        Artifact: project-local/project-68376a90a1101881ad468cff5a06dd34c9243061418e99312bf377a7e56fd8ae@snapshot (cargo-source)
+        Digest: sha256:eb98ad8bbdcc0a663604a18dbc945a294d3a8297d265c2f1baf8d4e06dfac40b
+        Policy: BLOCK (m3-npm-dynamic-inspect v1)
+        Reasons: [M3_FILESYSTEM_VIOLATION]
+=== RUN   TestLinuxCargoBuildConfigurationSecurityCLIIntegration/cargo-home
+    cargo_build_cli_integration_test.go:206: actual Cargo build denied: operation completed with exit code 20 stdout=Operation: INSPECT
+        Operation ID: op_zarcs7a2joctvjz4wzl2wptega
+        Status: COMPLETED
+        Run ID: run_ho3myd3muxw63u7cyv345bs4cq
+        Run outcome: COMPLETED
+        Artifact: project-local/project-d4d88ca7a6128500be9fd442f30d4e2aad779793631e79635903b7a0fd9c223d@snapshot (cargo-source)
+        Digest: sha256:64c821e8cc5707904cde0208b3f71195d74ac863ac3af247615a581de94417d1
+        Policy: BLOCK (m3-npm-dynamic-inspect v1)
+        Reasons: [M3_FILESYSTEM_VIOLATION]
+--- PASS: TestLinuxCargoBuildConfigurationSecurityCLIIntegration (29.87s)
+    --- PASS: TestLinuxCargoBuildConfigurationSecurityCLIIntegration/working-directory (14.95s)
+    --- PASS: TestLinuxCargoBuildConfigurationSecurityCLIIntegration/cargo-home (14.91s)
+PASS
+helper reaped: pid=2149336 wait=0
+no existing traced runtime consumers; bounded Docker queries succeeded
+runtime before bytes/identity/modes verified
+/etc/heliopause/pod-init.json: OK
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=2149336

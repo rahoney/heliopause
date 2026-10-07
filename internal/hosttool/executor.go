@@ -41,86 +41,6 @@ type Config struct {
 	DockerPath         string `json:"docker_path"`
 	DockerEndpoint     string `json:"docker_endpoint"`
 	ObserverHelperPath string `json:"observer_helper_path"`
-	GoPath             string `json:"go_path,omitempty"`
-}
-
-// GoCommandRunner is the explicit environment/working-directory boundary
-// consumed by ecosystem adapters. It never inherits the caller environment.
-func (e *Executor) RunGo(ctx context.Context, directory string, environment []string, arguments ...string) ([]byte, error) {
-	if e == nil || !filepath.IsAbs(directory) || filepath.Clean(directory) != directory || verifyNoSymlinkPath(directory, false) != nil {
-		return nil, errors.New("trusted Go working directory is unavailable")
-	}
-	if _, err := os.Stat(directory); err != nil {
-		return nil, errors.New("trusted Go working directory is unavailable")
-	}
-	if _, err := e.tool("go"); err != nil {
-		for _, candidate := range []string{"/usr/local/go/bin/go", "/usr/bin/go", "/bin/go"} {
-			if verified, verifyErr := verifySystemExecutable(candidate); verifyErr == nil {
-				e.tools["go"] = verified
-				break
-			}
-		}
-	}
-	command, err := e.command(ctx, "go", arguments...)
-	if err != nil {
-		return nil, err
-	}
-	command.Dir = directory
-	command.Env = append(minimalEnvironment(e.clientHome), append([]string(nil), environment...)...)
-	return command.Output()
-}
-
-// RunCargo executes the verified absolute Cargo binary with a caller-supplied
-// canonical registry environment. It never inherits Cargo config or proxies.
-func (e *Executor) RunCargo(ctx context.Context, directory string, environment []string, arguments ...string) ([]byte, error) {
-	if e == nil || !filepath.IsAbs(directory) || filepath.Clean(directory) != directory || verifyNoSymlinkPath(directory, false) != nil {
-		return nil, errors.New("trusted Cargo working directory is unavailable")
-	}
-	if _, err := os.Stat(directory); err != nil {
-		return nil, errors.New("trusted Cargo working directory is unavailable")
-	}
-	if _, err := e.tool("cargo"); err != nil {
-		for _, candidate := range []string{"/usr/local/bin/cargo", "/usr/bin/cargo", "/bin/cargo"} {
-			if verified, verifyErr := verifySystemExecutable(candidate); verifyErr == nil {
-				e.tools["cargo"] = verified
-				break
-			}
-		}
-	}
-	command, err := e.command(ctx, "cargo", arguments...)
-	if err != nil {
-		return nil, err
-	}
-	command.Dir = directory
-	command.Env = append(minimalEnvironment(e.clientHome), append([]string(nil), environment...)...)
-	return command.Output()
-}
-
-// RunTerraform executes the verified Terraform CLI with an explicit isolated
-// CLI configuration. Provider credentials, mirrors and ambient config are not
-// inherited by this boundary.
-func (e *Executor) RunTerraform(ctx context.Context, directory string, environment []string, arguments ...string) ([]byte, error) {
-	if e == nil || !filepath.IsAbs(directory) || filepath.Clean(directory) != directory || verifyNoSymlinkPath(directory, false) != nil {
-		return nil, errors.New("trusted Terraform working directory is unavailable")
-	}
-	if _, err := os.Stat(directory); err != nil {
-		return nil, errors.New("trusted Terraform working directory is unavailable")
-	}
-	if _, err := e.tool("terraform"); err != nil {
-		for _, candidate := range []string{"/usr/local/bin/terraform", "/usr/bin/terraform", "/bin/terraform"} {
-			if verified, verifyErr := verifySystemExecutable(candidate); verifyErr == nil {
-				e.tools["terraform"] = verified
-				break
-			}
-		}
-	}
-	command, err := e.command(ctx, "terraform", arguments...)
-	if err != nil {
-		return nil, err
-	}
-	command.Dir = directory
-	command.Env = append(minimalEnvironment(e.clientHome), append([]string(nil), environment...)...)
-	return command.Output()
 }
 
 type identity struct {
@@ -224,14 +144,6 @@ func newExecutor(ctx context.Context, config Config, includeFirewall bool) (*Exe
 		return nil, errors.New("capture local Docker endpoint identity")
 	}
 	executor := &Executor{tools: map[string]identity{"docker": docker}, endpoint: endpoint, endpointID: endpointInfo, clientHome: clientHome}
-	if config.GoPath != "" {
-		goTool, goErr := verifySystemExecutable(config.GoPath)
-		if goErr != nil {
-			_ = executor.Close()
-			return nil, fmt.Errorf("verify Go executable: %w", goErr)
-		}
-		executor.tools["go"] = goTool
-	}
 	if err := executor.validateDaemon(ctx); err != nil {
 		_ = executor.Close()
 		return nil, err

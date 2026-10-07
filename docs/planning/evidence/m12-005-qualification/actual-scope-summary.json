@@ -1,0 +1,61 @@
+{
+  "source_candidate": "d328756f0087624093808215d1fbedd47767ef58",
+  "source_functional_files": 491,
+  "default_regression_receipt": "current-default-checks.json",
+  "requirement_matrix": "requirement-matrix.json",
+  "profile_qualifications": [
+    {
+      "profile": "cpu",
+      "run_id": 37561282942,
+      "url": "https://github.com/rahoney/heliopause/actions/runs/37561282942",
+      "source_commit": "d328756f0087624093808215d1fbedd47767ef58",
+      "checkout": "1a8d0dbd526a68e9a68f5dd10519f7937ed08a84",
+      "full_invocation_seconds": [
+        291.53
+      ],
+      "actual_top_level_pass_count": 45,
+      "receipt": "remote-ci/final-source-ordinary-actual-scope.json"
+    },
+    {
+      "profile": "cu130",
+      "run_id": 37561348597,
+      "url": "https://github.com/rahoney/heliopause/actions/runs/37561348597",
+      "source_commit": "d328756f0087624093808215d1fbedd47767ef58",
+      "checkout": "d328756f0087624093808215d1fbedd47767ef58",
+      "full_invocation_seconds": [
+        285.44,
+        972.98
+      ],
+      "actual_top_level_pass_count": 46,
+      "receipt": "remote-ci/final-source-cu130-actual-scope.json"
+    },
+    {
+      "profile": "cu132",
+      "run_id": 37566006329,
+      "url": "https://github.com/rahoney/heliopause/actions/runs/37566006329",
+      "source_commit": "d328756f0087624093808215d1fbedd47767ef58",
+      "checkout": "d328756f0087624093808215d1fbedd47767ef58",
+      "full_invocation_seconds": [
+        290.95,
+        949.5
+      ],
+      "actual_top_level_pass_count": 46,
+      "receipt": "remote-ci/final-source-cu132-actual-scope.json"
+    },
+    {
+      "profile": "cu126",
+      "run_id": 37570546443,
+      "url": "https://github.com/rahoney/heliopause/actions/runs/37570546443",
+      "source_commit": "d328756f0087624093808215d1fbedd47767ef58",
+      "checkout": "d328756f0087624093808215d1fbedd47767ef58",
+      "full_invocation_seconds": [
+        232.68,
+        1047.88
+      ],
+      "actual_top_level_pass_count": 46,
+      "receipt": "remote-ci/final-source-cu126-actual-scope.json"
+    }
+  ],
+  "separate_roles": "Actual installed/public/lifecycle consumers are separate from controlled default regressions and env-gated SKIP. Historical bb28/8791 scopes are not the reduced-source profile qualifications.",
+  "final_closure_head_required": "Separate post-document-closure HEAD Required+9 actualSUCCESS and whole-checkout tree/mode verification still required."
+}

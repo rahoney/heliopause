@@ -1,0 +1,65 @@
+[
+  {
+    "path": "/usr/libexec/heliopause/gvisor/containerd-shim-runsc-v1",
+    "relative": "containerd-shim-runsc-v1",
+    "sha512": "d6c107c5362cfe226507635c29ea81ace8fdd8d512cb08d9f96a8ab246bc1798e1d43e6e558b04e2465da962fcb9e3d82d6a355062d10f921be0c480c66c23a6",
+    "size": 43495554,
+    "uid": 0,
+    "gid": 0,
+    "mode": "0o755"
+  },
+  {
+    "path": "/usr/libexec/heliopause/gvisor/gvisor-bin/checkpointgofer",
+    "relative": "gvisor-bin/checkpointgofer",
+    "sha512": "7cf2801b226f650f947df5ff7151fa8dd709a33ae39f0f4aa84dbaba5badbb54c0c90d843cc8449fbda789126296d6a79fbd978dc2b51388484e3482b4783f72",
+    "size": 69027766,
+    "uid": 0,
+    "gid": 0,
+    "mode": "0o755"
+  },
+  {
+    "path": "/usr/libexec/heliopause/gvisor/gvisor-bin/gvisor-sentry-prewarmer",
+    "relative": "gvisor-bin/gvisor-sentry-prewarmer",
+    "sha512": "f0c131766303ca4733a4e42bd171d8ddf42a0a0087564605b3207b0f4c148d9ff355bad25e27d388c7c9cf06265160b3a02047ec195c035d9e8f428d8f608ce6",
+    "size": 1416,
+    "uid": 0,
+    "gid": 0,
+    "mode": "0o755"
+  },
+  {
+    "path": "/usr/libexec/heliopause/gvisor/gvisor-bin/gvisor_sentry",
+    "relative": "gvisor-bin/gvisor_sentry",
+    "sha512": "26a4268457de2ac6fcb9f6f99e8af9369ba77b1c6ef801d406fd6f74a24c0652e9cac2ad45aa38a025f45e1620034a77d3eaf9c919cd9a01a9799d9f63420544",
+    "size": 51817407,
+    "uid": 0,
+    "gid": 0,
+    "mode": "0o755"
+  },
+  {
+    "path": "/usr/libexec/heliopause/gvisor/gvisor-bin/runsc-metric-server",
+    "relative": "gvisor-bin/runsc-metric-server",
+    "sha512": "62a2778d64b7febc2e2f634d390b11df2ceb6db6a5098938c2fb930ad2224291976f7b892bd0b54fe97050c68124e51ddbfc59593d2f4d99ec051f7f19244da8",
+    "size": 52888835,
+    "uid": 0,
+    "gid": 0,
+    "mode": "0o755"
+  },
+  {
+    "path": "/usr/libexec/heliopause/gvisor/runsc",
+    "relative": "runsc",
+    "sha512": "e6d11bd75242b5a53be1e4d8b95b3024b2032541e26e9dab2e30ae87d0f64d35ce8c38f55c5edd497a8ab3a4f378bb9e4ce14d648c743e001413dd71065f71ed",
+    "size": 109368428,
+    "uid": 0,
+    "gid": 0,
+    "mode": "0o755"
+  },
+  {
+    "path": "/usr/libexec/heliopause/gvisor/gvisor-bundle.manifest.json",
+    "relative": "gvisor-bundle.manifest.json",
+    "sha512": "409d073dc9fff2acaf015bf5c226df44b3ebd7249ff8e7391c90f5609a5bcaca18995e7e209f53c6f2d4247715e9599bf53debc600c784ecef0677fdf980484b",
+    "size": 1902,
+    "uid": 0,
+    "gid": 0,
+    "mode": "0o644"
+  }
+]

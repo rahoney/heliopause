@@ -1,0 +1,33 @@
+verified fresh Cargo source and observer candidate; no overlay
+runtime before bytes/identity/modes verified
+runtime candidate bytes/identity/modes verified
+no existing traced runtime consumers; bounded Docker queries succeeded
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+/etc/heliopause/pod-init.json: OK
+helper launch: bash=/usr/bin/bash version=5.2.21(1)-release owner=2427038
+helper ready: pid=2427088 attempt=16
+=== RUN   TestLinuxPyTorchFullIntegration
+    pytorch_linux_integration_test.go:39: retained integration evidence: /home/winamp/.local/state/heliopause/m12-003/qualification/e2e/pytorch-cu126-3218538844
+observer_attribution sequence=1 profile=pypi-wheel-pytorch-cu126 counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/PYTHON:526
+observer_attribution sequence=2 profile=pypi-wheel counts=NETWORK/TRUSTED_CONTROL/CONNECT/INET/DIRECT_EXEC_SESSION/PYTHON:15
+    pytorch_linux_integration_test.go:61: PyTorch cu126 install failed: python transaction stage=install profile=pypi-wheel-pytorch-cu126 artifact=torch@2.14.0+cu126 digest=b15e1e62ab842d099ae9b19312374f62579668171efed8b676108b60fa75e5b0 transaction=sbx_6fmzj5icrqv2666uuam4z3s2ti unit= unit_artifact_digest= elapsed_ms=83841 request=CANCELED command= cpu_limit_s=300 memory_limit=4294967296 tmpfs_limit=12884901888 wall_limit_ms=2400000 trace_event_limit=100000 trace_byte_limit=16777216: CANCELED
+        primary_code=M5_PYPI_DYNAMIC_INSTALL_FAILED python transaction cleanup: python transaction stage=cleanup profile=pypi-wheel-pytorch-cu126 artifact=torch@2.14.0+cu126 digest=b15e1e62ab842d099ae9b19312374f62579668171efed8b676108b60fa75e5b0 transaction=sbx_6fmzj5icrqv2666uuam4z3s2ti unit= unit_artifact_digest= elapsed_ms=87613 request=CANCELED command= cpu_limit_s=300 memory_limit=4294967296 tmpfs_limit=12884901888 wall_limit_ms=2400000 trace_event_limit=100000 trace_byte_limit=16777216: python observation CPU counter is unavailable: request_context=OK read_context=DEADLINE_EXCEEDED resource=RESOURCE_ERROR
+        python observation CPU accounting is unavailable or late: failed_before=false termination=true last_sample_present=true gap_ns=4684021993 poll_ns=1000000000 wall_remaining_ns=2312950605489 usage_us=81905713 prior_usage_us=77851886
+        python transaction stage=phase-termination profile=pypi-wheel-pytorch-cu126 artifact=torch@2.14.0+cu126 digest=b15e1e62ab842d099ae9b19312374f62579668171efed8b676108b60fa75e5b0 transaction=sbx_6fmzj5icrqv2666uuam4z3s2ti unit= unit_artifact_digest= elapsed_ms=87117 request=CANCELED command= cpu_limit_s=300 memory_limit=4294967296 tmpfs_limit=12884901888 wall_limit_ms=2400000 trace_event_limit=100000 trace_byte_limit=16777216: phase=preparation container=414ea1ab9e530185c06cc0243f4c415ed6c29152acf2c7a3e319f73bffe1f8a0 helper=OK parent_match=true cumulative_cpu_us=81905713 limitation=M3_DYNAMIC_OBSERVER_FAILED trace={reason=PROFILE_LOOKUP_FAILURE events=117 bytes=13338 session_complete=false last_kind=process-exec-expected kinds=process-exec-expected:117 fault_site=PROFILE_LOOKUP}
+        stdout={"schema_version":"helox.operation-result/v1","operation_id":"op_frletqpal7wcups6pxaxkhd2pu","operation":"INSTALL","operation_status":"FAILED","artifact":{"reference":{"source_id":"pytorch-cu126","locator":"torch@2.14.0+cu126"}},"checks":[],"evidence_references":[],"target":"/home/winamp/.local/state/heliopause/m12-003/qualification/e2e/pytorch-cu126-3218538844/target","promotion_status":"FAILED","error":{"code":"INSTALL_INSPECTION_FAILED","message":"Install operation failed."}}
+        
+        stderr=
+--- FAIL: TestLinuxPyTorchFullIntegration (811.67s)
+FAIL
+helper reaped: pid=2427088 wait=0
+no existing traced runtime consumers; bounded Docker queries succeeded
+runtime before bytes/identity/modes verified
+/etc/heliopause/pod-init.json: OK
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+cleanup: original=1 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=2427088

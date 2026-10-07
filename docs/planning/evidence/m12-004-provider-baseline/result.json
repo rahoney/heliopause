@@ -1,0 +1,94 @@
+{
+  "scope": "M12-004 baseline audit before source edits. Existing partial implementations are reused; remaining acceptance gaps only.",
+  "baseline_head": "8c56f873eb7ce395af4ba984190413492b096e63",
+  "work_item_status": {
+    "IMPLEMENTED": "NO (full item; partial owners present)",
+    "WIRED": "NO (resolver only)",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO"
+  },
+  "files": [
+    {
+      "path": "internal/artifact/terraformprovider/provider.go",
+      "sha256": "30e69f46395cfda58265a8d7a89c698c35b4d0c986c296f35ff8d8305a9b8742"
+    },
+    {
+      "path": "internal/artifact/terraformprovider/resolver.go",
+      "sha256": "f09ddfa78da0a96f963a84de8dd0ddc0d8d42dc08ce6d969a0f9f19c8c0e5c43"
+    },
+    {
+      "path": "internal/artifact/terraformprovider/provider_test.go",
+      "sha256": "64ca19d35d734babf07d56e53aa862fdb5f9d34e27e561bc7324a45d01b02a55"
+    },
+    {
+      "path": "internal/application/terraform.go",
+      "sha256": "ca56170a3824eba72cc3062fc250f604e14052ea4bbd0e4fc9437fbf23ca95a5"
+    },
+    {
+      "path": "internal/cli/root.go",
+      "sha256": "252db52531a74101d09798dfecec65f27f47d16c847344a45a6cb5072f0756d8"
+    },
+    {
+      "path": "internal/cli/terraform_test.go",
+      "sha256": "5ebddc2c0a2db40f9e2258f243ecb98cce2e8977818abfff52d5ad9e489698d3"
+    },
+    {
+      "path": "internal/bootstrap/bootstrap.go",
+      "sha256": "6329ee7f74b035021dff6392edd9d59c633ca6fd638e9ff206ec811d804ae992"
+    },
+    {
+      "path": "internal/promotion/terraform_transaction.go",
+      "sha256": "a17ed29025da5a445d06dc4e26d7d78b7f7f105a006c8c4663787bc3a45a14b3"
+    },
+    {
+      "path": "internal/promotion/terraform_transaction_test.go",
+      "sha256": "e89918d252f6600955dc8d096bd319b434fb2cc546357ceb516dde52e875a377"
+    }
+  ],
+  "owners": [
+    {
+      "owner": "artifact/terraformprovider",
+      "existing": "Exact reference parser, version/package parsers, single-provider LockedDependencyGraph, public resolver",
+      "remaining": "Actual discovery/version/package schema and cross-field binding, bounded redirect/endpoint policy, frozen intake acquisition. Actual signing_keys object is incompatible with current fixture array; declared key IDs are not verified signatures."
+    },
+    {
+      "owner": "verification and inspection",
+      "existing": "Generic verification/inspection/Evidence/Policy contracts and GitHub ELF mechanics",
+      "remaining": "Provider signer/current certificate/trust and exact checksum verification; bounded ZIP and executable digest; required fixed -help observation without host execution."
+    },
+    {
+      "owner": "promotion/terraform_transaction.go",
+      "existing": "Lock hash plan, private lock workspace, backup/publish/rollback primitives",
+      "remaining": "Anchor and bound controls/single-link identities; independent approval; provider-tree plus lock and metadata complete publication, no-overwrite competition, retained-state validation and uncertainty preservation. Existing project marker is not independent authority."
+    },
+    {
+      "owner": "application/terraform.go + cli/root.go + bootstrap",
+      "existing": "Resolution service and exact init resolver command wiring",
+      "remaining": "Complete inspection/Policy/Staging/guarded provider installation and result reporting. Resolution count is not installation acceptance."
+    }
+  ],
+  "canonical": "docs/planning/16-m12-01-ecosystem-expansion-contract.md section6",
+  "authorization": "Through M12-004 local work; NO PUSH/REMOTE CI/MERGE; no agents",
+  "additional_reuse_boundaries": [
+    {
+      "owner": "application/project_update.go",
+      "reuse": "Existing guarded single-selection ordering: Begin \u2192 ResolveProjectDependencyUpdate \u2192 VerifyUnchanged \u2192 InspectProject \u2192 StageProject \u2192 Commit \u2192 Close. Provider-specific meaning stays in existing adapters/promotion; Core/Policy gains no Terraform branch.",
+      "remaining": "Terraform must produce a complete selected project snapshot and match original/selected control and acquisition bindings before using this path."
+    },
+    {
+      "owner": "core/domain/project_update.go",
+      "existing": "ProjectControlFile bounds4MiB/simple basename; ProjectDependencyUpdate bounds32controls and requires complete matching selected controls.",
+      "remaining": "Respect these existing bounds. Nested module controls cannot be passed as relative paths; determine explicit current supported discovery scope without weakening Domain validation."
+    },
+    {
+      "owner": "hosttool/executor.go:RunTerraform",
+      "existing": "Unused verified Host Terraform method exists; rg confirms no current product callers.",
+      "remaining": "Provider-install-only implementation does not require or execute Host Terraform/provider; presence of this legacy helper does not authorize untrusted Host execution."
+    },
+    {
+      "owner": "sandbox/github_elf.go and shared_observer.go",
+      "reuse": "Existing demoted one-shot ELF entry/profile mechanics and exact topology/finite30s/512MiB/no-network boundaries.",
+      "remaining": "Existing backend accepts only github-release and profile only github-elf. Do not reuse a GitHub ALLOW as Terraform identity, or infer actual provider startup-read support before execution."
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+=== RUN   TestPublicTerraformProviderSourceIntegration
+=== RUN   TestPublicTerraformProviderSourceIntegration/hashicorp/random@3.7.2
+    source_integration_linux_test.go:92: ZIP fully read; files=2; h1=h1:356j/3XnXEKr9nyicLUufzoF4Yr6hRy481KIxRVpK0c=; zh=zh:7b8434212eef0f8c83f5a90c6d76feaf850f6502b61b53c329e85b3b281cba34; executable=terraform-provider-random_v3.7.2_x5; executableSHA256=b2e1c417324b1100b67360e044d69636043320ffe024d0546f18b74ed99a7c39
+    source_integration_linux_test.go:93: Exact public provider verified; archive=7b8434212eef0f8c83f5a90c6d76feaf850f6502b61b53c329e85b3b281cba34; envelope=43cd1fc27fb3a890570339ec3880084d29333b61f41e2fb2b15072d4a47f1f67; signer=C874011F0AB405110D02105534365D9472D7468F; trust=HASHICORP_OFFICIAL
+    source_integration_linux_test.go:94: Qualification intake directory=/tmp/TestPublicTerraformProviderSourceIntegrationhashicorprandom@3.2156105694/001; Run=run_jegh7otknyydams4j7w7rfw44y
+=== RUN   TestPublicTerraformProviderSourceIntegration/integrations/github@6.6.0
+    source_integration_linux_test.go:92: ZIP fully read; files=4; h1=h1:Fp0RrNe+w167AQkVUWC1WRAsyjhhHN7aHWUky7VkKW8=; zh=zh:772edb5890d72b32868f9fdc0a9a1d4f4701d8e7f8acb37a7ac530d053c776e3; executable=terraform-provider-github_v6.6.0; executableSHA256=eb5a89fb6f8ac65d81ed98398a89155b21b1b072ef032e7cad34ca10b477884f
+    source_integration_linux_test.go:93: Exact public provider verified; archive=772edb5890d72b32868f9fdc0a9a1d4f4701d8e7f8acb37a7ac530d053c776e3; envelope=715f444c220d9044e0891b3e24846544b5a3fbb87e91b75a9a3c51a77c2aff73; signer=F31928FACE52F1A13A6C60EA38027F80D7FD5FB2; trust=RECOGNIZED_PARTNER
+    source_integration_linux_test.go:94: Qualification intake directory=/tmp/TestPublicTerraformProviderSourceIntegrationintegrationsgithub1925055313/001; Run=run_tjvyisqndujx4p7gwpnsxut2cu
+--- PASS: TestPublicTerraformProviderSourceIntegration (2.86s)
+    --- PASS: TestPublicTerraformProviderSourceIntegration/hashicorp/random@3.7.2 (0.95s)
+    --- PASS: TestPublicTerraformProviderSourceIntegration/integrations/github@6.6.0 (1.91s)
+PASS
+ok  	github.com/rahoney/heliopause/internal/verification/terraformprovider	2.874s

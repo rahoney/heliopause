@@ -1,0 +1,14 @@
+--- FAIL: TestPythonCPUWatchStopPreservesPendingAccounting (0.00s)
+    --- FAIL: TestPythonCPUWatchStopPreservesPendingAccounting/valid_pending_read (0.00s)
+        pypi_transaction_diagnostic_test.go:93: ordinary stop canceled pending accounting=true err=python observation CPU counter is unavailable aborts=1
+    --- FAIL: TestPythonCPUWatchStopPreservesPendingAccounting/missing_pending_read (0.00s)
+        pypi_transaction_diagnostic_test.go:93: ordinary stop canceled pending accounting=true err=python observation CPU counter is unavailable aborts=1
+    --- FAIL: TestPythonCPUWatchStopPreservesPendingAccounting/regressed_pending_read (0.00s)
+        pypi_transaction_diagnostic_test.go:93: ordinary stop canceled pending accounting=true err=python observation CPU counter is unavailable aborts=1
+    --- FAIL: TestPythonCPUWatchStopPreservesPendingAccounting/exhausted_pending_read (0.00s)
+        pypi_transaction_diagnostic_test.go:93: ordinary stop canceled pending accounting=true err=python observation CPU counter is unavailable aborts=1
+    --- FAIL: TestPythonCPUWatchStopPreservesPendingAccounting/expired_pending_read (0.00s)
+        pypi_transaction_diagnostic_test.go:93: ordinary stop canceled pending accounting=true err=python observation CPU counter is unavailable aborts=1
+FAIL
+FAIL	github.com/rahoney/heliopause/internal/sandbox	0.007s
+FAIL

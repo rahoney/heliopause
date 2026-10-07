@@ -1,0 +1,115 @@
+[
+  {
+    "name": "terraform-boundary-final",
+    "command": [
+      "bash",
+      "/home/winamp/.local/state/heliopause/m12-004/run-qualified-consumers.sh",
+      "^TestLinuxTerraformProvider(Probe|Security)Integration$",
+      "none",
+      "5m",
+      "sandbox"
+    ],
+    "status": "PASS",
+    "started_utc": "2026-10-06T12:47:26.009417+00:00",
+    "exit_code": 0,
+    "finished_utc": "2026-10-06T12:47:42.974779+00:00",
+    "raw_log": "terraform-boundary-final-runtime.log",
+    "raw_sha256": "30b33ed670eb11fde5adc3bb4e3097f3a554892559651528f08629f6e4835dfc",
+    "candidate": "final-executable-candidate-initial.json"
+  },
+  {
+    "name": "legacy-direct",
+    "command": [
+      "bash",
+      "/home/winamp/.local/state/heliopause/m12-004/run-qualified-consumers.sh",
+      "^TestLinux(GVisorLifecycle|GitHubReleaseELFDynamic|PyPISdistBuild|PyPIWheelDynamic|PythonRootPolicyTransactionSequence|PythonRenamedProcessTransaction|PythonPinnedLibutilTransaction|RetainedPythonTransaction|GoIsolatedResolver|GoIsolatedProjectResolver|GoSourceProjectSnapshot|GoDependencyFreeProjectSnapshot|CargoSourceProjectSnapshot)Integration$",
+      "none",
+      "15m",
+      "sandbox"
+    ],
+    "status": "PASS",
+    "started_utc": "2026-10-06T12:47:42.977162+00:00",
+    "exit_code": 0,
+    "finished_utc": "2026-10-06T12:50:28.035678+00:00",
+    "raw_log": "legacy-direct-runtime.log",
+    "raw_sha256": "4c7f9ee4ee561c31b936c5b9f20c9da78e0d66cdd9d99ea971b8464330613deb",
+    "candidate": "final-executable-candidate-initial.json",
+    "actual_top_level_passes": 12,
+    "diagnostic_not_run": [
+      "TestLinuxRetainedPythonTransactionIntegration: SKIP, requires an authenticated retained manifest/explicit opt-in; not counted as PASS"
+    ]
+  },
+  {
+    "name": "python-proc-maps-cpu",
+    "command": [
+      "bash",
+      "/home/winamp/.local/state/heliopause/m12-004/run-qualified-consumers.sh",
+      "^TestLinuxPythonProcMapsTransactionIntegration$",
+      "none",
+      "5m",
+      "sandbox"
+    ],
+    "status": "PASS",
+    "started_utc": "2026-10-06T12:50:28.037277+00:00",
+    "exit_code": 0,
+    "finished_utc": "2026-10-06T12:50:42.926011+00:00",
+    "raw_log": "python-proc-maps-cpu-runtime.log",
+    "raw_sha256": "6099bdcc1b54e8f7f5be1823c64707dad4a9f4e2c1e8375b07f506946f423975",
+    "candidate": "final-executable-candidate-initial.json"
+  },
+  {
+    "name": "python-proc-maps-cu126",
+    "command": [
+      "bash",
+      "/home/winamp/.local/state/heliopause/m12-004/run-qualified-consumers.sh",
+      "^TestLinuxPythonProcMapsTransactionIntegration$",
+      "cu126",
+      "5m",
+      "sandbox"
+    ],
+    "status": "PASS",
+    "started_utc": "2026-10-06T12:50:42.927583+00:00",
+    "exit_code": 0,
+    "finished_utc": "2026-10-06T12:50:57.730137+00:00",
+    "raw_log": "python-proc-maps-cu126-runtime.log",
+    "raw_sha256": "3832d4e6b1e3b20323444b9ea81d4df8bd23a99b368e8a07e6c84ccff5274fd5",
+    "candidate": "final-executable-candidate-initial.json"
+  },
+  {
+    "name": "python-proc-maps-cu130",
+    "command": [
+      "bash",
+      "/home/winamp/.local/state/heliopause/m12-004/run-qualified-consumers.sh",
+      "^TestLinuxPythonProcMapsTransactionIntegration$",
+      "cu130",
+      "5m",
+      "sandbox"
+    ],
+    "status": "PASS",
+    "started_utc": "2026-10-06T12:50:57.732136+00:00",
+    "exit_code": 0,
+    "finished_utc": "2026-10-06T12:51:12.859261+00:00",
+    "raw_log": "python-proc-maps-cu130-runtime.log",
+    "raw_sha256": "ed46f1ee271e66a270d373b0d345c0bed7f55dbf17bdc98904062f5c3d7eb200",
+    "candidate": "final-executable-candidate-initial.json"
+  },
+  {
+    "name": "python-proc-maps-cu132",
+    "command": [
+      "bash",
+      "/home/winamp/.local/state/heliopause/m12-004/run-qualified-consumers.sh",
+      "^TestLinuxPythonProcMapsTransactionIntegration$",
+      "cu132",
+      "5m",
+      "sandbox"
+    ],
+    "status": "FAIL",
+    "started_utc": "2026-10-06T12:51:12.860938+00:00",
+    "exit_code": 98,
+    "finished_utc": "2026-10-06T12:51:12.863375+00:00",
+    "raw_log": "python-proc-maps-cu132-runtime.log",
+    "raw_sha256": "0eccc1f592355e8c6e1f118463cb110ba11b0373e3da1714087719ea50876346",
+    "scope": "PREPARATION_HELD_NOT_REACHED: deliberate stop after previous consumer restoration before new source audit; exit98",
+    "candidate": "final-executable-candidate-initial.json"
+  }
+]

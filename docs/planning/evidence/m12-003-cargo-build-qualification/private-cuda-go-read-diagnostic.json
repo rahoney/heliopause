@@ -1,0 +1,10 @@
+{
+  "scope": "Post-timeout pinned Go diagnostic, current cache/storage state only; not acceptance or original invocation timing",
+  "hash_method": "exact io.Copy(sha256.New(), *os.File)",
+  "bytes": 1037548593,
+  "sha256": "ff4bf65fa8ba1962a06123fdffe2fb4d9a1e5dadb1aa87651fdf2cd2e79e5d06",
+  "hash_seconds": 2.703511303,
+  "identity_unchanged": true,
+  "append_fsync_samples": 200,
+  "append_fsync_seconds": 0.514690864
+}

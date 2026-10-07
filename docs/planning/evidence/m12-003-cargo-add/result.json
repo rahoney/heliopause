@@ -1,0 +1,145 @@
+{
+  "work_item": "M12-003",
+  "scope": "PARTIAL_GUARDED_CARGO_ADD_CHECKPOINT",
+  "baseline": "f602548",
+  "whole_work_item_status": {
+    "implemented": "YES",
+    "wired": "NO",
+    "qualified": "NO",
+    "acceptance_closed": "NO"
+  },
+  "actual_gates": [
+    {
+      "test": "TestLinuxCargoAddIntegration",
+      "elapsed_seconds": 21.87,
+      "crates": 1,
+      "first_add_and_retained_reuse": "PASS"
+    },
+    {
+      "test": "TestLinuxCargoTransitiveAddIntegration",
+      "elapsed_seconds": 25.15,
+      "crates": 7,
+      "first_add_and_retained_reuse": "PASS"
+    },
+    {
+      "test": "TestLinuxGoGetDownloadIntegration",
+      "elapsed_seconds": 30.86,
+      "status": "PASS"
+    }
+  ],
+  "guard_security": {
+    "cargo_cases": "PASS; 2.117s",
+    "shared_go_cargo_update_boundary_matrix": "PASS; 0.032s",
+    "covers": [
+      "independent retained approval and local manifest binding",
+      "missing/corrupt Evidence and approval",
+      "original control/source content, inode and presence drift",
+      "foreign cache and exact owned lock",
+      "matching project marker cannot authorize publication",
+      "selected content/inode and competing publication destination",
+      "clean rollback and foreign-member uncertainty",
+      "stale journal fail-closed",
+      "primary failure preservation"
+    ]
+  },
+  "causal_regressions": {
+    "raw_marker": {
+      "same_fixture": true,
+      "old_f602548_exit": 1,
+      "new_exit": 0,
+      "scope": "previously unwired internal transaction primitive; no shipped Host exploit claim"
+    },
+    "cargo_direct_vm_metadata": {
+      "old_actual_add": "STREAM_FAULT",
+      "same_final_latch_before": 1,
+      "same_final_latch_after": 0,
+      "new_actual_add": "PASS",
+      "guard": "exact pinned Cargo CONTROL direct root, expected identity/start, system /proc, readonly flags557056",
+      "kernel_executable": "/usr/local/rustup/toolchains/1.99.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "read": "/proc/sys/vm/overcommit_memory"
+    }
+  },
+  "fixture_correction": {
+    "expected_crates_before": 2,
+    "actual_complete_frozen_graph": 7,
+    "verification": "7 crates retained without graph/event deletion"
+  },
+  "helper_parent_wait": 0,
+  "original_installed_files_restored": 12,
+  "canonical": {
+    "quick": 0,
+    "security": 0,
+    "docs": 0,
+    "platform_linux": 0,
+    "darwin_amd64_test_compile": 0,
+    "darwin_native": "NOT_RUN"
+  },
+  "missing": [
+    "offline observed Cargo build/proc-macro/build-script/native helper",
+    "bounded no-overwrite output publication",
+    "final direct consumer/full CPU/cu126/focused cu130/cu132 matrix",
+    "CI wiring and whole qualification"
+  ],
+  "new_remote_ci": "NOT_RUN",
+  "new_native_macos": "NOT_RUN",
+  "raw_log_hashes": [
+    {
+      "name": "cargo-add-transitive-final-runtime.log",
+      "sha256": "c85b329f69dadba14b7b819c3321fb077fc67e7d174c7423b7a1ed1d287a7b64"
+    },
+    {
+      "name": "cargo-add-guard-security-final.log",
+      "sha256": "f8df7306ddc450f72d5e496c81f874f201ac0f338371c00dcb08fe1dbb53e188"
+    },
+    {
+      "name": "cargo-marker-final-before.log",
+      "sha256": "6ab0dc0e6dfcfefe0eb23ba9a525820cfe4f2835c846d54edeed2a3a008b1df2"
+    },
+    {
+      "name": "cargo-root-vm-final-before-latch.log",
+      "sha256": "47b6906b0d6851bb60f3af7796e1e8958302a862e9dc6863184b6107bc27a1f5"
+    },
+    {
+      "name": "cargo-root-vm-final-after-latch.log",
+      "sha256": "faebed603244b93622b476b7258c61216a0927fb3734094ebe43ea8060595d69"
+    },
+    {
+      "name": "cargo-transitive-count-diagnostic-runtime.log",
+      "sha256": "e56ca1085931d76937109106549b5b663619ab6df8b7384e6fd5441e6dfece9e"
+    },
+    {
+      "name": "cargo-add-transitive-go-consumer-runtime.log",
+      "sha256": "c908afdf3305b22e8430aaa7ce6319205a7aab0061d28ddc2b53da77d86894a4"
+    },
+    {
+      "name": "cargo-add-checkpoint-quick.log",
+      "sha256": "b9097e47b41622524f1bf66baca387cb334762144b7b3389c1851bb8056cbf86"
+    },
+    {
+      "name": "cargo-add-checkpoint-security.log",
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95"
+    },
+    {
+      "name": "cargo-add-checkpoint-docs.log",
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "name": "cargo-add-checkpoint-platform.log",
+      "sha256": "fb49a92d2cfca9e6f197611a2e0567108e2eb01175e865442baea47d308e8ef7"
+    },
+    {
+      "name": "cargo-add-darwin-test-compile.log",
+      "sha256": "6c483a9e7310a169604043c250598128baac8cf7362661202a7bdbd526f5679f"
+    }
+  ],
+  "source_files": [
+    {
+      "path": "qualified-source.json",
+      "sha256": "e44ec5adc2631c17bd2c028bcf2d491ea33c2af7e83f6074a80b8ebff1e2d97d"
+    },
+    {
+      "path": "executed-source.json",
+      "sha256": "7c531b5a74387ded8d4a80c48e8494ca93f4d1a559ce1a4112bab7004ae40c95"
+    }
+  ]
+}

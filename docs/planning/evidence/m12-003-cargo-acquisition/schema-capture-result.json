@@ -1,0 +1,12 @@
+{
+  "scope": "actual official Cargo metadata grammar only; bounded diagnostic offline directory source on RO owned data volume; not production source-boundary/observer qualification",
+  "image": "rust:1.99.0-bookworm@sha256:59037199c44290f2befcdd58dcc540164763fc296950255aaefeef096a1866b0",
+  "cargo_path": "/usr/local/rustup/toolchains/1.99.0-x86_64-unknown-linux-gnu/bin/cargo",
+  "exit": 0,
+  "metadata_sha256": "4e58d9e3e5ca9f9affaf6f5faa3fa77f772412d0541807895cf13528ef4ef86e",
+  "lock_sha256": "ffef3b59221fd6c3b394a98c7405a5ff1711b1184de90a791d3b6a6707ea6890",
+  "crate_sha256": "92ecc6618181def0457392ccd0ee51198e065e016d1d527a7ac1b6dc7c1f09d2",
+  "source_replacement": "diagnostic fixture only; forbidden as product input",
+  "artifact_build_executed": false,
+  "host_artifact_executed": false
+}

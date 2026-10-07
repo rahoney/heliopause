@@ -1,0 +1,32 @@
+verified fresh Cargo source and observer candidate; no overlay
+runtime before bytes/identity/modes verified
+runtime candidate bytes/identity/modes verified
+no existing traced runtime consumers; bounded Docker queries succeeded
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+/etc/heliopause/pod-init.json: OK
+helper launch: bash=/usr/bin/bash version=5.2.21(1)-release owner=2088002
+helper ready: pid=2088058 attempt=13
+=== RUN   TestLinuxCargoDependencyFreeBuildCLIIntegration
+    cargo_build_cli_integration_test.go:55: actual Cargo build failed: observed cargo build failed: phase=BUILD command_status=LIFECYCLE_ERROR reason=STREAM_FAULT events=45 bytes=5130 session_complete=false last_kind=process-exec-expected kinds=process-exec-expected:45 fault_site=OPEN_RESULT_CLASSIFICATION_IMAGE image_locator_fnv1a64=c0825b4756cd6aab open_image=OTHER open_role=ARTIFACT open_provenance=CLONE_CHILD open_subject=OCI_IMAGE open_mount=oci-root open_flags=557056 open_locator_fnv1a64=c0825b4756cd6aab open_kernel_image=RUST_LLD open_executable_fnv1a64=2f2cc7f1fd1d5a23 open_executable_pinned=true open_go_driver_creator=false open_cargo_driver_creator=false open_rustc_version_query=false open_cargo_compiler_creator=true open_native_cc_invocation=false open_lld_same_group=true open_rustc_metadata_query=false open_rustc_argc=0 open_rustc_argv_fnv1a64=0000000000000000 open_mountpoint_fnv1a64=af63a24c860189fe stdout=Operation: INSPECT
+        Operation ID: op_kn7knirhkpvalnsu5qogyecfxu
+        Status: FAILED
+        Run ID: run_6c2lmfquefhetgrlva5txbeua4
+        Run outcome: FAILED
+        Artifact: project-local/project-4611d8fb5bb2f11dbc29b3eaf7256aaa74a620bec9699d7fcfc90bc6a9f472b8@snapshot (cargo-source)
+        Digest: sha256:fc43cb3651b30236614bafc1e6e5f05044958dd2f625064984968e4e60d1b96a
+        Error: M12_CARGO_BUILD_OBSERVATION_FAILED: Project build did not complete.
+         stderr=
+--- FAIL: TestLinuxCargoDependencyFreeBuildCLIIntegration (11.70s)
+FAIL
+helper reaped: pid=2088058 wait=0
+no existing traced runtime consumers; bounded Docker queries succeeded
+runtime before bytes/identity/modes verified
+/etc/heliopause/pod-init.json: OK
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+cleanup: original=1 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=2088058

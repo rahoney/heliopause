@@ -73,6 +73,42 @@ func TestResolveExactVersionAndTag(t *testing.T) {
 	}
 }
 
+func TestResolveRegistryMetadataMediaTypes(t *testing.T) {
+	t.Parallel()
+	for _, contentType := range []string{metadataAccept, metadataAccept + "; charset=utf-8", "Application/Vnd.Npm.Install-V1+Json", "application/json", "application/json; charset=utf-8"} {
+		t.Run(contentType, func(t *testing.T) {
+			t.Parallel()
+			resolver := newTestResolver(t, "https://registry.test/", roundTripFunc(func(request *http.Request) (*http.Response, error) {
+				if request.Header.Get("Accept") != metadataAccept {
+					t.Fatalf("Accept = %q", request.Header.Get("Accept"))
+				}
+				return response(http.StatusOK, contentType, metadataJSON("https://registry.test/", "tiny", "1.2.3", "latest")), nil
+			}))
+			resolved, err := resolver.Resolve(context.Background(), mustReference(t, "tiny@1.2.3"))
+			if err != nil || resolved.Identity().Name() != "tiny" || resolved.Identity().Version() != "1.2.3" {
+				t.Fatalf("Resolve() = %#v, %v", resolved, err)
+			}
+		})
+	}
+	for _, headers := range [][]string{
+		{}, {"application/json-invalid"}, {"application/jsonp"}, {"application/vnd.other+json"},
+		{metadataAccept + "; broken"}, {"application/json; charset=utf-8; charset=ascii"},
+		{metadataAccept, "text/plain"}, {"application/json", metadataAccept},
+	} {
+		t.Run(fmt.Sprint(headers), func(t *testing.T) {
+			t.Parallel()
+			resolver := newTestResolver(t, "https://registry.test/", roundTripFunc(func(*http.Request) (*http.Response, error) {
+				result := response(http.StatusOK, "", metadataJSON("https://registry.test/", "tiny", "1.2.3", "latest"))
+				result.Header["Content-Type"] = headers
+				return result, nil
+			}))
+			if _, err := resolver.Resolve(context.Background(), mustReference(t, "tiny@1.2.3")); err == nil {
+				t.Fatal("unsupported or ambiguous media type was accepted")
+			}
+		})
+	}
+}
+
 func TestResolveRejectsUnsafeOrMalformedMetadata(t *testing.T) {
 	t.Parallel()
 

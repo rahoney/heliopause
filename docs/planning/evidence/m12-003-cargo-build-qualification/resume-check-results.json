@@ -1,0 +1,56 @@
+{
+  "checks": [
+    {
+      "path": "raw/resume-final-quick.log",
+      "sha256": "cfe7a99df1226a22b24908aec53ffd7934eb5d8073b5975f44e9f4dd718b1b6b",
+      "bytes": 1453,
+      "tool_exit": 1,
+      "scope": "OneDrive current checkout: default test command timeout6m; no success claim"
+    },
+    {
+      "path": "raw/resume-native-quick.log",
+      "sha256": "ba81e933ceb309c2d0f8474ed0077a81ea62f68b5a2f531c81fcf8c42fd2055b",
+      "bytes": 1354,
+      "tool_exit": 0,
+      "scope": "Source-identical707 Linux checkout canonical profile; no skip or timeout change"
+    },
+    {
+      "path": "raw/resume-evidence-workflow.log",
+      "sha256": "2edbc2a0d08a6499c5c8e2bcbab74529b29c67a43792c72f546a655df7fe2996",
+      "bytes": 1071,
+      "tool_exit": 0,
+      "scope": "Current repository workflow semantic validation"
+    },
+    {
+      "path": "raw/resume-evidence-security.log",
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95",
+      "bytes": 44,
+      "tool_exit": 0,
+      "scope": "Current tree including new portable evidence"
+    },
+    {
+      "path": "raw/resume-evidence-docs.log",
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9",
+      "bytes": 22,
+      "tool_exit": 0,
+      "scope": "Current repository documentation"
+    }
+  ],
+  "group_tool_exit": 0,
+  "source_guard": "Actual707 source/observer candidate comparison before Linux canonical run passed",
+  "native_macos": "NOT_RUN",
+  "closure": "still waiting actual cu126 full",
+  "staged_evidence_security": {
+    "profile": "go run ./scripts/check security",
+    "tool_session": 19488,
+    "tool_exit": 0,
+    "scope": "Current tree after 109 raw files and portable receipts were staged; gosec and Gitleaks passed. Tool output only; no new raw log was captured."
+  },
+  "portable_raw_audit": {
+    "tool_exit": 0,
+    "raw_count": 109,
+    "verified_raw_claims": 229,
+    "verified_distinct_raw_files": 109,
+    "scope": "Per-record and paired raw SHA256/byte claims agree with preserved portable originals; active full log is not included."
+  }
+}

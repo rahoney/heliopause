@@ -1,0 +1,503 @@
+Extracting Bazel installation...
+Starting local Bazel server (8.3.1) and connecting to it...
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+WARNING: For repository 'bazel_skylib', the root module requires module version bazel_skylib@1.7.1, but got bazel_skylib@1.8.2 in the resolved dependency graph. Please update the version in your MODULE.bazel or set --check_direct_dependencies=off
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Loading: 
+Loading: 2 packages loaded
+Loading: 2 packages loaded
+    currently loading: 
+Loading: 2 packages loaded
+    currently loading: 
+Loading: 2 packages loaded
+    currently loading: 
+DEBUG: /home/winamp/.local/state/heliopause/m12-003/kernel-runtime-candidate/.cache/bazel/_bazel_builder/96951a818541d50030092b5a173ad47c/external/gazelle+/internal/bzlmod/go_deps.bzl:660:36: The following Go modules were required by the root module at the given versions, but were implicitly updated to higher versions due to transitive dependencies:
+ 
+  go.opentelemetry.io/auto/sdk: v1.1.0 -> v1.2.1 
+  go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc: v0.61.0 -> v0.67.0 
+  golang.org/x/crypto: v0.42.0 -> v0.49.0 
+  golang.org/x/term: v0.35.0 -> v0.42.0 
+  golang.org/x/net: v0.44.0 -> v0.52.0 
+  go.opentelemetry.io/otel: v1.37.0 -> v1.43.0 
+  go.opentelemetry.io/otel/metric: v1.28.0 -> v1.43.0 
+  github.com/felixge/httpsnoop: v1.0.2 -> v1.0.4 
+  go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp: v0.53.0 -> v0.67.0 
+  go.opentelemetry.io/otel/trace: v1.28.0 -> v1.43.0 
+  github.com/opencontainers/image-spec: v1.0.2 -> v1.1.1 
+  cloud.google.com/go: v0.105.0 -> v0.123.0 
+  cloud.google.com/go/iam: v0.8.0 -> v1.7.0 
+  cloud.google.com/go/compute/metadata: v0.8.0 -> v0.9.0 
+  github.com/googleapis/enterprise-certificate-proxy: v0.3.6 -> v0.3.14 
+  golang.org/x/oauth2: v0.30.0 -> v0.36.0 
+  google.golang.org/genproto: v0.0.0-20250707201910-8d1bb00bc6a7 -> v0.0.0-20260319201613-d00831a3d3e7 
+  github.com/googleapis/gax-go/v2: v2.15.0 -> v2.21.0 
+
+Update the root module's dependencies to match the resolved versions via:
+
+  bazel run @io_bazel_rules_go//go -- get go.opentelemetry.io/auto/sdk@v1.2.1 go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc@v0.67.0 golang.org/x/crypto@v0.49.0 golang.org/x/term@v0.42.0 golang.org/x/net@v0.52.0 go.opentelemetry.io/otel@v1.43.0 go.opentelemetry.io/otel/metric@v1.43.0 github.com/felixge/httpsnoop@v1.0.4 go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp@v0.67.0 go.opentelemetry.io/otel/trace@v1.43.0 github.com/opencontainers/image-spec@v1.1.1 cloud.google.com/go@v0.123.0 cloud.google.com/go/iam@v1.7.0 cloud.google.com/go/compute/metadata@v0.9.0 github.com/googleapis/enterprise-certificate-proxy@v0.3.14 golang.org/x/oauth2@v0.36.0 google.golang.org/genproto@v0.0.0-20260319201613-d00831a3d3e7 github.com/googleapis/gax-go/v2@v2.21.0 
+
+Analyzing: target //:release (3 packages loaded, 0 targets configured)
+Analyzing: target //:release (3 packages loaded, 0 targets configured)
+
+WARNING: /home/winamp/.local/state/heliopause/m12-003/kernel-runtime-candidate/gvisor/runsc/prewarmer/BUILD:19:8: target 'gvisor-sentry-prewarmer' is both a rule and a file; please choose another name for the rule
+Analyzing: target //:release (68 packages loaded, 14 targets configured)
+
+Analyzing: target //:release (74 packages loaded, 14 targets configured)
+
+Analyzing: target //:release (74 packages loaded, 14 targets configured)
+
+Analyzing: target //:release (89 packages loaded, 170 targets configured)
+
+Analyzing: target //:release (98 packages loaded, 2712 targets configured)
+
+Analyzing: target //:release (101 packages loaded, 2731 targets configured)
+
+Analyzing: target //:release (101 packages loaded, 2731 targets configured)
+
+Analyzing: target //:release (101 packages loaded, 2731 targets configured)
+
+Analyzing: target //:release (101 packages loaded, 2731 targets configured)
+
+Analyzing: target //:release (101 packages loaded, 2731 targets configured)
+
+Analyzing: target //:release (101 packages loaded, 2731 targets configured)
+
+Analyzing: target //:release (101 packages loaded, 2731 targets configured)
+
+Analyzing: target //:release (105 packages loaded, 8513 targets configured)
+
+Analyzing: target //:release (243 packages loaded, 9982 targets configured)
+
+Analyzing: target //:release (399 packages loaded, 12417 targets configured)
+
+Analyzing: target //:release (430 packages loaded, 21863 targets configured)
+
+Analyzing: target //:release (439 packages loaded, 37387 targets configured)
+
+Analyzing: target //:release (442 packages loaded, 52930 targets configured)
+
+Analyzing: target //:release (442 packages loaded, 52936 targets configured)
+
+Analyzing: target //:release (461 packages loaded, 53057 targets configured)
+
+Analyzing: target //:release (474 packages loaded, 53492 targets configured)
+
+Analyzing: target //:release (514 packages loaded, 53840 targets configured)
+
+Analyzing: target //:release (628 packages loaded, 54334 targets configured)
+
+Analyzing: target //:release (764 packages loaded, 54834 targets configured)
+
+Analyzing: target //:release (1038 packages loaded, 55738 targets configured)
+
+Analyzing: target //:release (1092 packages loaded, 56084 targets configured)
+
+Analyzing: target //:release (1165 packages loaded, 56627 targets configured)
+
+Analyzing: target //:release (1175 packages loaded, 57437 targets configured)
+
+Analyzing: target //:release (1180 packages loaded, 58967 targets configured)
+
+Analyzing: target //:release (1223 packages loaded, 59307 targets configured)
+
+Analyzing: target //:release (1223 packages loaded, 59307 targets configured)
+
+Analyzing: target //:release (1276 packages loaded, 59480 targets configured)
+
+INFO: Analyzed target //:release (1284 packages loaded, 59563 targets configured).
+[187 / 1,255] [Prepa] Creating symlink pkg/tcpip/transport/tcp/tcp_unsafe_state_autogen_tools/go ... ( 1 action running)
+[607 / 2,732] Executing genrule //runsc/sandbox/bpf:af_xdp_ebpf; 0s processwrapper-sandbox ... (4 actions, 2 running)
+[1,026 / 3,859] [Prepa] Creating symlink pkg/safecopy/safecopy_unsafe_state_autogen_tools/go [for tool] ... (2 actions, 0 running)
+[1,473 / 5,129] Generating Descriptor Set proto_library //pkg/sentry/unimpl:unimplemented_syscall_proto [for tool]; 0s processwrapper-sandbox ... (3 actions, 1 running)
+[1,585 / 5,288] Executing genrule //runsc/boot/filter:filter_precompiled_gen [for tool]; 0s processwrapper-sandbox ... (4 actions, 3 running)
+INFO: From Executing genrule //pkg/sentry/platform/systrap/sysmsg:sighandler_go [for tool]:
++ set -e
++ set -u
++ FILE=sighandler
++ NAME=Sighandler
++ PREFIX=Sighandler_blob_offset__
++ BLOB=Sighandler_blob
++ OBJNAME=bazel-out/aarch64-opt-exec-ST-c1691d43938d/bin/pkg/sentry/platform/systrap/sysmsg/sighandler.built-in.bin.o
++ AWK_CMD='$2 ~ /^[tBCTA]$/ { print "var Sighandler_blob_offset__" $3 " = 0x" $1 }'
++ cat
++ nm bazel-out/aarch64-opt-exec-ST-c1691d43938d/bin/pkg/sentry/platform/systrap/sysmsg/sighandler.built-in.bin.o
++ grep __export_
++ tr . _
++ awk '$2 ~ /^[tBCTA]$/ { print "var Sighandler_blob_offset__" $3 " = 0x" $1 }'
+INFO: From Executing genrule //pkg/sentry/platform/systrap/sysmsg:sighandler_go [for tool]:
++ set -e
++ set -u
++ FILE=sighandler
++ NAME=Sighandler
++ PREFIX=Sighandler_blob_offset__
++ BLOB=Sighandler_blob
++ OBJNAME=bazel-out/k8-opt-exec-ST-04c87098fb12/bin/pkg/sentry/platform/systrap/sysmsg/sighandler.built-in.bin.o
++ AWK_CMD='$2 ~ /^[tBCTA]$/ { print "var Sighandler_blob_offset__" $3 " = 0x" $1 }'
++ cat
++ nm bazel-out/k8-opt-exec-ST-04c87098fb12/bin/pkg/sentry/platform/systrap/sysmsg/sighandler.built-in.bin.o
++ grep __export_
++ tr . _
++ awk '$2 ~ /^[tBCTA]$/ { print "var Sighandler_blob_offset__" $3 " = 0x" $1 }'
+INFO: From Executing genrule //pkg/sentry/platform/systrap/sysmsg:sighandler_go:
++ set -e
++ set -u
++ FILE=sighandler
++ NAME=Sighandler
++ PREFIX=Sighandler_blob_offset__
++ BLOB=Sighandler_blob
++ OBJNAME=bazel-out/aarch64-opt-ST-c1691d43938d/bin/pkg/sentry/platform/systrap/sysmsg/sighandler.built-in.bin.o
++ AWK_CMD='$2 ~ /^[tBCTA]$/ { print "var Sighandler_blob_offset__" $3 " = 0x" $1 }'
++ cat
++ nm bazel-out/aarch64-opt-ST-c1691d43938d/bin/pkg/sentry/platform/systrap/sysmsg/sighandler.built-in.bin.o
++ grep __export_
++ tr . _
++ awk '$2 ~ /^[tBCTA]$/ { print "var Sighandler_blob_offset__" $3 " = 0x" $1 }'
+[1,620 / 5,288] GoToolchainBinaryBuild external/rules_go++go_sdk+main___download_0/builder [for tool]; 1s processwrapper-sandbox ... (3 actions running)
+INFO: From Executing genrule //pkg/sentry/platform/systrap/sysmsg:sighandler_go:
++ set -e
++ set -u
++ FILE=sighandler
++ NAME=Sighandler
++ PREFIX=Sighandler_blob_offset__
++ BLOB=Sighandler_blob
++ OBJNAME=bazel-out/k8-opt-ST-04c87098fb12/bin/pkg/sentry/platform/systrap/sysmsg/sighandler.built-in.bin.o
++ AWK_CMD='$2 ~ /^[tBCTA]$/ { print "var Sighandler_blob_offset__" $3 " = 0x" $1 }'
++ cat
++ nm bazel-out/k8-opt-ST-04c87098fb12/bin/pkg/sentry/platform/systrap/sysmsg/sighandler.built-in.bin.o
++ grep __export_
++ tr . _
++ awk '$2 ~ /^[tBCTA]$/ { print "var Sighandler_blob_offset__" $3 " = 0x" $1 }'
+[1,623 / 5,288] GoToolchainBinaryBuild external/rules_go++go_sdk+main___download_0/builder [for tool]; 2s processwrapper-sandbox
+[1,623 / 5,288] GoToolchainBinaryBuild external/rules_go++go_sdk+main___download_0/builder [for tool]; 11s processwrapper-sandbox
+[1,624 / 5,288] [Prepa] Creating symlink external/rules_go++go_sdk+main___download_0/builder_reset/builder [for tool] ... (3 actions, 0 running)
+[1,629 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg [for tool]; 1s processwrapper-sandbox ... (4 actions running)
+[1,629 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg [for tool]; 11s processwrapper-sandbox ... (4 actions running)
+[1,629 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg [for tool]; 41s processwrapper-sandbox ... (4 actions running)
+[1,630 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg; 58s processwrapper-sandbox ... (4 actions, 3 running)
+[1,635 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg [for tool]; 59s processwrapper-sandbox ... (3 actions running)
+[1,638 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg [for tool]; 60s processwrapper-sandbox ... (3 actions, 2 running)
+[1,659 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg [for tool]; 2s processwrapper-sandbox ... (4 actions, 3 running)
+[1,671 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg [for tool]; 3s processwrapper-sandbox ... (4 actions, 3 running)
+[1,695 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg [for tool]; 4s processwrapper-sandbox ... (4 actions, 3 running)
+[1,713 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg [for tool]; 5s processwrapper-sandbox ... (4 actions, 3 running)
+[1,721 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg [for tool]; 6s processwrapper-sandbox ... (4 actions, 3 running)
+[1,729 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg [for tool]; 7s processwrapper-sandbox ... (4 actions, 3 running)
+[1,740 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg [for tool]; 8s processwrapper-sandbox ... (4 actions, 3 running)
+[1,751 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg [for tool]; 9s processwrapper-sandbox ... (4 actions, 3 running)
+[1,761 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg [for tool]; 10s processwrapper-sandbox ... (4 actions running)
+[1,765 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg [for tool]; 11s processwrapper-sandbox ... (4 actions, 3 running)
+[1,775 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg [for tool]; 13s processwrapper-sandbox ... (4 actions, 3 running)
+[1,781 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg [for tool]; 14s processwrapper-sandbox ... (4 actions running)
+[1,787 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg [for tool]; 15s processwrapper-sandbox ... (4 actions running)
+[1,799 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg [for tool]; 16s processwrapper-sandbox ... (4 actions, 3 running)
+[1,818 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg [for tool]; 17s processwrapper-sandbox ... (4 actions, 3 running)
+[1,834 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg [for tool]; 18s processwrapper-sandbox ... (4 actions, 3 running)
+[1,865 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[1,895 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg; 1s processwrapper-sandbox ... (4 actions, 3 running)
+[1,907 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg; 2s processwrapper-sandbox ... (4 actions, 3 running)
+[1,915 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg; 3s processwrapper-sandbox ... (4 actions, 3 running)
+[1,924 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg; 5s processwrapper-sandbox ... (4 actions, 3 running)
+[1,932 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg; 6s processwrapper-sandbox ... (4 actions, 3 running)
+[1,938 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg; 7s processwrapper-sandbox ... (4 actions running)
+[1,944 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg; 8s processwrapper-sandbox ... (3 actions, 2 running)
+[1,946 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg; 10s processwrapper-sandbox ... (4 actions running)
+[1,948 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg; 11s processwrapper-sandbox ... (4 actions running)
+[1,952 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg; 12s processwrapper-sandbox ... (3 actions running)
+[1,952 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg; 13s processwrapper-sandbox ... (4 actions running)
+[1,955 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg; 14s processwrapper-sandbox ... (3 actions running)
+[1,956 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg; 15s processwrapper-sandbox ... (4 actions running)
+[1,957 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg; 16s processwrapper-sandbox ... (4 actions running)
+[1,960 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg; 17s processwrapper-sandbox ... (4 actions, 3 running)
+[1,961 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg; 19s processwrapper-sandbox ... (4 actions running)
+[1,962 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg; 20s processwrapper-sandbox ... (4 actions, 3 running)
+[1,964 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg; 21s processwrapper-sandbox ... (4 actions, 3 running)
+[1,967 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg; 23s processwrapper-sandbox ... (4 actions, 3 running)
+[1,975 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg; 24s processwrapper-sandbox ... (4 actions, 3 running)
+[1,978 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg; 25s processwrapper-sandbox ... (4 actions, 3 running)
+[1,983 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg; 26s processwrapper-sandbox ... (4 actions running)
+[1,990 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg; 27s processwrapper-sandbox ... (4 actions running)
+[2,000 / 5,288] GoStdlib external/rules_go+/stdlib_/pkg; 27s processwrapper-sandbox ... (4 actions running)
+[2,009 / 5,288] GoCompilePkg external/gazelle++go_deps+org_golang_x_tools/go/ssa/ssa.a [for tool]; 0s processwrapper-sandbox ... (4 actions running)
+[2,029 / 5,288] GoCompilePkg external/gazelle++go_deps+com_github_vishvananda_netlink/netlink.a; 0s processwrapper-sandbox ... (4 actions running)
+[2,063 / 5,288] go_marshal: @@//pkg/sentry/loader:loader_abi_autogen [for tool]; 0s processwrapper-sandbox ... (4 actions, 3 running)
+INFO: From go_marshal: @@//pkg/sentry/loader:loader_abi_autogen [for tool]:
+stdout (/home/winamp/.local/state/heliopause/m12-003/kernel-runtime-candidate/.cache/bazel/_bazel_builder/96951a818541d50030092b5a173ad47c/execroot/_main/bazel-out/_tmp/actions/stdout-2055) 1818073 exceeds maximum size of --experimental_ui_max_stdouterr_bytes=1048576 bytes; skipping
+[2,113 / 5,288] GoCompilePkg external/gazelle++go_deps+com_github_cilium_ebpf/btf/btf.a; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[2,205 / 5,288] go_marshal: @@//pkg/sentry/loader:loader_abi_autogen; 0s processwrapper-sandbox ... (4 actions, 3 running)
+stdout (/home/winamp/.local/state/heliopause/m12-003/kernel-runtime-candidate/.cache/bazel/_bazel_builder/96951a818541d50030092b5a173ad47c/execroot/_main/bazel-out/_tmp/actions/stdout-2178) 1818073 exceeds maximum size of --experimental_ui_max_stdouterr_bytes=1048576 bytes; skipping
+INFO: From go_marshal: @@//pkg/sentry/loader:loader_abi_autogen:
+[2,298 / 5,288] GoCompilePkg external/gazelle++go_deps+com_github_containerd_continuity/sysx/sysx.a; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[2,388 / 5,288] GoCompilePkg pkg/state/state.a; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[2,451 / 5,288] GoCompilePkg pkg/state/state.a; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[2,562 / 5,288] GoCompilePkg external/gazelle++go_deps+com_github_containerd_containerd_v2/pkg/dialer/dialer.a; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[2,695 / 5,288] GoCompilePkg external/gazelle++go_deps+org_golang_x_text/unicode/norm/norm.a; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[2,822 / 5,288] GoCompilePkg external/gazelle++go_deps+org_golang_x_net/http2/http2.a; 0s processwrapper-sandbox ... (3 actions, 2 running)
+[2,931 / 5,288] GoCompilePkg external/gazelle++go_deps+co_honnef_go_tools/staticcheck/sa4005/sa4005.a [for tool]; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[3,041 / 5,288] GoCompilePkg external/gazelle++go_deps+co_honnef_go_tools/staticcheck/sa4019/sa4019.a [for tool]; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[3,149 / 5,288] GoCompilePkg external/gazelle++go_deps+com_github_gogo_protobuf/proto/proto.a; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[3,225 / 5,288] GoCompilePkg external/gazelle++go_deps+org_golang_google_protobuf/reflect/protoreflect/protoreflect.a; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[3,344 / 5,288] GoCompilePkg external/gazelle++go_deps+co_honnef_go_tools/analysis/callcheck/callcheck.a [for tool]; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[3,440 / 5,288] GoCompilePkg external/gazelle++go_deps+co_honnef_go_tools/staticcheck/sa1014/sa1014.a [for tool]; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[3,533 / 5,288] GoCompilePkg external/gazelle++go_deps+org_golang_google_grpc/resolver/resolver.a; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[3,619 / 5,288] GoCompilePkg external/gazelle++go_deps+co_honnef_go_tools/staticcheck/sa9005/sa9005.a [for tool]; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[3,699 / 5,288] GoCompilePkg external/gazelle++go_deps+org_golang_google_protobuf/internal/filedesc/filedesc.a; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[3,722 / 5,288] GoCompilePkg external/gazelle++go_deps+org_golang_google_protobuf/encoding/prototext/prototext.a; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[3,740 / 5,288] GoCompilePkg external/gazelle++go_deps+org_golang_google_protobuf/internal/impl/impl.a; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[3,760 / 5,288] GoImports runsc/boot/filter/config/config_state_autogen_with_imports.go [for tool]; 1s processwrapper-sandbox ... (3 actions, 2 running)
+[3,780 / 5,288] GoImports runsc/boot/filter/config/config_state_autogen_with_imports.go [for tool]; 2s processwrapper-sandbox ... (4 actions, 3 running)
+[3,795 / 5,288] GoImports runsc/boot/filter/config/config_state_autogen_with_imports.go [for tool]; 3s processwrapper-sandbox ... (4 actions, 3 running)
+[3,810 / 5,288] GoImports runsc/boot/filter/config/config_state_autogen_with_imports.go [for tool]; 4s processwrapper-sandbox ... (4 actions, 3 running)
+[3,828 / 5,288] GoImports runsc/boot/filter/config/config_state_autogen_with_imports.go [for tool]; 5s processwrapper-sandbox ... (4 actions, 3 running)
+[3,840 / 5,288] GoImports pkg/shim/v1/plugin/plugin_linux_state_autogen_with_imports.go; 4s processwrapper-sandbox ... (4 actions, 3 running)
+[3,859 / 5,288] GoCompilePkg external/gazelle++go_deps+com_google_cloud_go_monitoring/apiv3/v2/monitoringpb/monitoringpb.a; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[3,882 / 5,288] GoCompilePkg external/gazelle++go_deps+com_google_cloud_go_storage/internal/apiv2/storagepb/storagepb.a; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[3,901 / 5,288] GoCompilePkg external/gazelle++go_deps+org_golang_google_protobuf/reflect/protodesc/protodesc.a; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[3,923 / 5,288] GoImports pkg/tcpip/checksum/checksum_state_autogen_with_imports.go; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[3,942 / 5,288] GoCompilePkg external/gazelle++go_deps+com_github_cncf_xds_go/xds/service/orca/v3/orca.a; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[3,961 / 5,288] GoCompilePkg external/gazelle++go_deps+com_google_cloud_go_storage/experimental/experimental.a; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[3,973 / 5,288] GoImports pkg/sentry/platform/kvm/kvm_state_autogen_with_imports.go [for tool]; 0s processwrapper-sandbox ... (3 actions, 2 running)
+[3,986 / 5,288] GoCompilePkg external/gazelle++go_deps+com_github_cncf_xds_go/xds/type/matcher/v3/matcher.a; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[3,994 / 5,288] GoCompilePkg external/gazelle++go_deps+org_golang_google_api/storage/v1/storage.a; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[4,009 / 5,288] GoCompilePkg external/gazelle++go_deps+com_github_envoyproxy_go_control_plane_envoy/config/core/v3/core.a; 1s processwrapper-sandbox ... (3 actions running)
+[4,025 / 5,288] GoImports tools/nogo/flags/flags_state_autogen_with_imports.go [for tool]; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[4,038 / 5,288] GoCompilePkg external/gazelle++go_deps+com_github_containerd_containerd_v2/pkg/shim/shim.a; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[4,048 / 5,288] GoCompilePkg external/gazelle++go_deps+com_github_envoyproxy_go_control_plane_envoy/extensions/transport_sockets/tls/v3/tls.a; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[4,060 / 5,288] GoCompilePkg external/gazelle++go_deps+com_github_envoyproxy_go_control_plane_envoy/config/endpoint/v3/endpoint.a; 0s processwrapper-sandbox ... (3 actions, 2 running)
+[4,072 / 5,288] GoImports pkg/sentry/platform/systrap/systrap_amd64_state_autogen_with_imports.go [for tool]; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[4,080 / 5,288] GoCompilePkg external/gazelle++go_deps+com_github_envoyproxy_go_control_plane_envoy/config/route/v3/route.a; 1s processwrapper-sandbox ... (4 actions, 3 running)
+[4,095 / 5,288] GoImports tools/nogo/config/config_state_autogen_with_imports.go [for tool]; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[4,111 / 5,288] GoImports tools/nogo/config/config_state_autogen_with_imports.go [for tool]; 1s processwrapper-sandbox ... (4 actions, 3 running)
+[4,122 / 5,288] GoImports tools/nogo/config/config_state_autogen_with_imports.go [for tool]; 2s processwrapper-sandbox ... (4 actions, 3 running)
+[4,133 / 5,288] GoImports tools/nogo/config/config_state_autogen_with_imports.go [for tool]; 3s processwrapper-sandbox ... (4 actions, 3 running)
+[4,142 / 5,288] GoImports tools/nogo/config/config_state_autogen_with_imports.go [for tool]; 5s processwrapper-sandbox ... (4 actions, 3 running)
+[4,150 / 5,288] GoImports tools/nogo/config/config_state_autogen_with_imports.go [for tool]; 6s processwrapper-sandbox ... (4 actions running)
+[4,161 / 5,288] GoImports tools/checkescape/checkescape_state_autogen_with_imports.go [for tool]; 0s processwrapper-sandbox ... (4 actions running)
+[4,170 / 5,288] GoImports pkg/eventchannel/eventchannel_state_autogen_with_imports.go; 0s processwrapper-sandbox ... (4 actions running)
+[4,193 / 5,288] GoCompilePkg external/gazelle++go_deps+org_golang_google_grpc/internal/xds/resolver/resolver.a; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[4,206 / 5,288] GoLink tools/nogo/nogo_/nogo [for tool]; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[4,215 / 5,288] GoCompilePkg external/gazelle++go_deps+com_google_cloud_go_storage/storage.a; 1s processwrapper-sandbox ... (3 actions, 2 running)
+[4,221 / 5,288] GoCompilePkg external/gazelle++go_deps+com_google_cloud_go_storage/storage.a; 2s processwrapper-sandbox ... (4 actions, 3 running)
+[4,226 / 5,288] Analyzing Go Standard Library [for tool]; 2s local ... (4 actions, 3 running)
+[4,234 / 5,288] Analyzing Go Standard Library [for tool]; 4s local ... (4 actions, 3 running)
+[4,239 / 5,288] Analyzing Go Standard Library [for tool]; 5s local ... (4 actions running)
+[4,242 / 5,288] Analyzing Go Standard Library [for tool]; 6s local ... (4 actions, 3 running)
+[4,245 / 5,288] Analyzing Go Standard Library [for tool]; 7s local ... (4 actions, 3 running)
+[4,252 / 5,288] Analyzing Go Standard Library [for tool]; 8s local ... (3 actions, 2 running)
+[4,255 / 5,288] Analyzing Go Standard Library [for tool]; 10s local ... (4 actions, 3 running)
+[4,256 / 5,288] Analyzing Go Standard Library [for tool]; 11s local ... (4 actions running)
+[4,258 / 5,288] Analyzing Go Standard Library [for tool]; 12s local ... (4 actions, 3 running)
+[4,268 / 5,288] Analyzing Go Standard Library [for tool]; 13s local ... (4 actions, 3 running)
+[4,277 / 5,288] Analyzing Go Standard Library [for tool]; 14s local ... (4 actions, 3 running)
+[4,286 / 5,288] Analyzing Go Standard Library [for tool]; 15s local ... (4 actions, 3 running)
+[4,294 / 5,288] Analyzing Go Standard Library [for tool]; 16s local ... (4 actions, 3 running)
+[4,303 / 5,288] Analyzing Go Standard Library [for tool]; 17s local ... (4 actions, 3 running)
+[4,311 / 5,288] Analyzing Go Standard Library [for tool]; 18s local ... (4 actions, 3 running)
+[4,319 / 5,288] Analyzing Go Standard Library [for tool]; 20s local ... (3 actions, 2 running)
+[4,328 / 5,288] Analyzing Go Standard Library [for tool]; 21s local ... (4 actions, 3 running)
+[4,337 / 5,288] Analyzing Go Standard Library [for tool]; 22s local ... (4 actions running)
+[4,346 / 5,288] Analyzing Go Standard Library [for tool]; 23s local ... (4 actions running)
+[4,357 / 5,288] Analyzing Go Standard Library [for tool]; 24s local ... (4 actions, 3 running)
+[4,362 / 5,288] Analyzing Go Standard Library [for tool]; 25s local ... (4 actions, 3 running)
+[4,369 / 5,288] Analyzing Go Standard Library [for tool]; 26s local ... (4 actions, 3 running)
+[4,378 / 5,288] Analyzing Go Standard Library [for tool]; 27s local ... (4 actions, 3 running)
+[4,392 / 5,288] Analyzing Go Standard Library [for tool]; 28s local ... (4 actions, 3 running)
+[4,403 / 5,288] Analyzing Go Standard Library [for tool]; 29s local ... (4 actions, 3 running)
+[4,409 / 5,288] Analyzing Go Standard Library [for tool]; 30s local ... (4 actions, 3 running)
+[4,416 / 5,288] Analyzing Go Standard Library [for tool]; 31s local ... (4 actions, 3 running)
+[4,423 / 5,288] Analyzing Go Standard Library [for tool]; 33s local ... (3 actions, 2 running)
+[4,427 / 5,288] Analyzing Go Standard Library [for tool]; 34s local ... (4 actions running)
+[4,432 / 5,288] Analyzing Go Standard Library [for tool]; 35s local ... (4 actions running)
+[4,438 / 5,288] Analyzing Go Standard Library [for tool]; 36s local ... (4 actions, 3 running)
+[4,444 / 5,288] Analyzing Go Standard Library [for tool]; 37s local ... (4 actions, 3 running)
+[4,449 / 5,288] Analyzing Go Standard Library [for tool]; 38s local ... (4 actions, 3 running)
+[4,456 / 5,288] Analyzing Go Standard Library [for tool]; 39s local ... (4 actions, 3 running)
+[4,464 / 5,288] Analyzing Go Standard Library [for tool]; 40s local ... (4 actions, 3 running)
+[4,477 / 5,288] Analyzing Go Standard Library [for tool]; 41s local ... (4 actions, 2 running)
+[4,483 / 5,288] Analyzing Go Standard Library [for tool]; 42s local ... (4 actions, 3 running)
+[4,488 / 5,288] Analyzing Go Standard Library [for tool]; 43s local ... (4 actions, 3 running)
+[4,498 / 5,288] Analyzing Go Standard Library [for tool]; 45s local ... (4 actions, 3 running)
+[4,506 / 5,288] Analyzing Go Standard Library [for tool]; 46s local ... (4 actions, 3 running)
+[4,514 / 5,288] Analyzing Go Standard Library [for tool]; 47s local ... (3 actions, 2 running)
+[4,520 / 5,288] Analyzing Go Standard Library [for tool]; 48s local ... (4 actions running)
+[4,527 / 5,288] Analyzing Go Standard Library [for tool]; 49s local ... (4 actions running)
+[4,534 / 5,288] Analyzing Go Standard Library [for tool]; 50s local ... (4 actions, 3 running)
+[4,538 / 5,288] Analyzing Go Standard Library [for tool]; 51s local ... (4 actions running)
+[4,542 / 5,288] Analyzing Go Standard Library [for tool]; 52s local ... (3 actions, 2 running)
+[4,546 / 5,288] Analyzing Go Standard Library [for tool]; 53s local ... (4 actions, 3 running)
+[4,554 / 5,288] Analyzing Go Standard Library [for tool]; 54s local ... (4 actions, 3 running)
+[4,559 / 5,288] Analyzing Go Standard Library [for tool]; 56s local ... (4 actions running)
+[4,564 / 5,288] Analyzing Go Standard Library [for tool]; 57s local ... (4 actions, 3 running)
+[4,571 / 5,288] Analyzing Go Standard Library [for tool]; 58s local ... (3 actions, 2 running)
+[4,576 / 5,288] Analyzing Go Standard Library [for tool]; 60s local ... (3 actions running)
+[4,580 / 5,288] Analyzing Go Standard Library [for tool]; 61s local ... (4 actions running)
+[4,587 / 5,288] Analyzing Go Standard Library [for tool]; 62s local ... (4 actions running)
+[4,593 / 5,288] Analyzing Go Standard Library [for tool]; 63s local ... (4 actions running)
+[4,599 / 5,288] Analyzing Go Standard Library [for tool]; 64s local ... (4 actions running)
+[4,605 / 5,288] Analyzing Go Standard Library [for tool]; 65s local ... (4 actions running)
+[4,608 / 5,288] Analyzing Go Standard Library [for tool]; 66s local ... (4 actions running)
+[4,614 / 5,288] Analyzing Go Standard Library [for tool]; 67s local ... (3 actions running)
+[4,617 / 5,288] Analyzing Go Standard Library [for tool]; 68s local ... (4 actions running)
+[4,628 / 5,288] Analyzing Go Standard Library [for tool]; 69s local ... (4 actions, 3 running)
+[4,635 / 5,288] Analyzing Go Standard Library [for tool]; 70s local ... (3 actions, 2 running)
+[4,639 / 5,288] Analyzing Go Standard Library [for tool]; 71s local ... (4 actions, 3 running)
+[4,644 / 5,288] Analyzing Go Standard Library [for tool]; 72s local ... (4 actions, 3 running)
+[4,650 / 5,288] Analyzing Go Standard Library [for tool]; 73s local ... (4 actions, 3 running)
+[4,655 / 5,288] Analyzing Go Standard Library [for tool]; 74s local ... (4 actions, 3 running)
+[4,660 / 5,288] Analyzing Go Standard Library [for tool]; 75s local ... (4 actions, 3 running)
+[4,665 / 5,288] Analyzing Go Standard Library [for tool]; 77s local ... (4 actions, 3 running)
+[4,674 / 5,288] Analyzing Go Standard Library [for tool]; 78s local ... (4 actions running)
+[4,684 / 5,288] Analyzing Go Standard Library [for tool]; 79s local ... (3 actions running)
+[4,695 / 5,288] Analyzing Go Standard Library [for tool]; 80s local ... (4 actions, 3 running)
+[4,705 / 5,288] Analyzing Go Standard Library [for tool]; 81s local ... (4 actions, 3 running)
+[4,714 / 5,288] Analyzing Go Standard Library [for tool]; 82s local ... (4 actions, 3 running)
+[4,723 / 5,288] Analyzing Go Standard Library [for tool]; 83s local ... (4 actions, 3 running)
+[4,732 / 5,288] Analyzing Go Standard Library [for tool]; 84s local ... (4 actions running)
+[4,743 / 5,288] Analyzing Go Standard Library [for tool]; 85s local ... (4 actions, 3 running)
+[4,754 / 5,288] Analyzing Go Standard Library [for tool]; 86s local ... (3 actions, 2 running)
+[4,764 / 5,288] Analyzing Go Standard Library [for tool]; 87s local ... (3 actions, 2 running)
+[4,773 / 5,288] Analyzing Go Standard Library [for tool]; 88s local ... (4 actions, 3 running)
+[4,784 / 5,288] Analyzing Go Standard Library [for tool]; 89s local ... (4 actions, 3 running)
+[4,789 / 5,288] Analyzing Go Standard Library [for tool]; 91s local ... (4 actions, 3 running)
+[4,795 / 5,288] Analyzing Go Standard Library [for tool]; 92s local ... (4 actions, 3 running)
+[4,806 / 5,288] Analyzing Go Standard Library [for tool]; 93s local ... (4 actions, 3 running)
+[4,817 / 5,288] Analyzing Go Standard Library [for tool]; 94s local ... (4 actions running)
+[4,830 / 5,288] Analyzing Go Standard Library [for tool]; 95s local ... (4 actions, 3 running)
+[4,834 / 5,288] Analyzing Go Standard Library [for tool]; 97s local ... (4 actions running)
+[4,834 / 5,288] Analyzing Go Standard Library [for tool]; 107s local ... (4 actions running)
+[4,834 / 5,288] Analyzing Go Standard Library [for tool]; 137s local ... (4 actions running)
+INFO: From Analyzing Go Standard Library [for tool]:
+error resolving GOVERSION: open <source file src/go.mod>: no such file or directory
+[4,835 / 5,288] Analyzing Go Standard Library; 155s local ... (4 actions, 3 running)
+INFO: From Analyzing Go Standard Library:
+error resolving GOVERSION: open <source file src/go.mod>: no such file or directory
+[4,839 / 5,288] Analyzing Go Standard Library; 62s local ... (4 actions, 3 running)
+[4,839 / 5,288] Analyzing Go Standard Library; 63s local ... (4 actions running)
+[4,846 / 5,288] Analyzing Go Standard Library; 64s local ... (4 actions running)
+[4,846 / 5,288] Analyzing Go Standard Library; 74s local ... (4 actions running)
+[4,846 / 5,288] Analyzing Go Standard Library; 105s local ... (4 actions running)
+INFO: From Analyzing Go Standard Library:
+error resolving GOVERSION: open <source file src/go.mod>: no such file or directory
+[4,847 / 5,288] Analyzing Go Standard Library; 156s local ... (4 actions, 3 running)
+INFO: From Analyzing Go Standard Library:
+error resolving GOVERSION: open <source file src/go.mod>: no such file or directory
+[4,851 / 5,288] Analyzing Go Standard Library [for tool]; 96s local ... (4 actions, 3 running)
+[4,856 / 5,288] Analyzing Go Standard Library [for tool]; 97s local ... (4 actions, 3 running)
+[4,867 / 5,288] Analyzing Go Standard Library [for tool]; 98s local ... (4 actions, 3 running)
+[4,875 / 5,288] Analyzing Go Standard Library [for tool]; 100s local ... (4 actions running)
+[4,888 / 5,288] Analyzing Go Standard Library [for tool]; 101s local ... (4 actions, 3 running)
+[4,894 / 5,288] Analyzing Go Standard Library [for tool]; 102s local ... (4 actions, 3 running)
+[4,900 / 5,288] Analyzing Go Standard Library [for tool]; 103s local ... (4 actions, 3 running)
+[4,904 / 5,288] Analyzing Go Standard Library [for tool]; 104s local ... (4 actions, 3 running)
+[4,911 / 5,288] Analyzing Go Standard Library [for tool]; 105s local ... (4 actions, 3 running)
+[4,920 / 5,288] Analyzing Go Standard Library [for tool]; 106s local ... (4 actions, 3 running)
+[4,927 / 5,288] Analyzing Go Standard Library [for tool]; 107s local ... (4 actions, 3 running)
+[4,939 / 5,288] Analyzing Go Standard Library [for tool]; 108s local ... (4 actions, 3 running)
+[4,950 / 5,288] Analyzing Go Standard Library [for tool]; 110s local ... (4 actions, 3 running)
+[4,956 / 5,288] Analyzing Go Standard Library [for tool]; 111s local ... (4 actions running)
+[4,963 / 5,288] Analyzing Go Standard Library [for tool]; 112s local ... (4 actions running)
+[4,964 / 5,288] Analyzing Go Standard Library [for tool]; 113s local ... (4 actions running)
+[4,969 / 5,288] Analyzing Go Standard Library [for tool]; 114s local ... (4 actions, 3 running)
+[4,976 / 5,288] Analyzing Go Standard Library [for tool]; 115s local ... (4 actions, 3 running)
+[4,984 / 5,288] Analyzing Go Standard Library [for tool]; 116s local ... (4 actions, 3 running)
+[4,992 / 5,288] Analyzing Go Standard Library [for tool]; 117s local ... (4 actions, 3 running)
+[4,994 / 5,288] Analyzing Go Standard Library [for tool]; 118s local ... (4 actions, 3 running)
+[4,999 / 5,288] Analyzing Go Standard Library [for tool]; 120s local ... (4 actions running)
+[5,000 / 5,288] Analyzing Go Standard Library [for tool]; 121s local ... (4 actions running)
+[5,003 / 5,288] Analyzing Go Standard Library [for tool]; 122s local ... (4 actions, 3 running)
+[5,006 / 5,288] Analyzing Go Standard Library [for tool]; 123s local ... (4 actions, 3 running)
+[5,014 / 5,288] Analyzing Go Standard Library [for tool]; 124s local ... (4 actions, 3 running)
+[5,019 / 5,288] Analyzing Go Standard Library [for tool]; 126s local ... (3 actions running)
+[5,022 / 5,288] Analyzing Go Standard Library [for tool]; 127s local ... (3 actions, 2 running)
+[5,026 / 5,288] Analyzing Go Standard Library [for tool]; 128s local ... (4 actions, 3 running)
+[5,030 / 5,288] Analyzing Go Standard Library [for tool]; 129s local ... (4 actions, 3 running)
+[5,034 / 5,288] Analyzing Go Standard Library [for tool]; 131s local ... (3 actions running)
+[5,035 / 5,288] Analyzing Go Standard Library [for tool]; 133s local ... (3 actions, 2 running)
+[5,038 / 5,288] Analyzing Go Standard Library [for tool]; 134s local ... (4 actions, 3 running)
+[5,042 / 5,288] Analyzing Go Standard Library [for tool]; 135s local ... (4 actions, 3 running)
+[5,046 / 5,288] Analyzing Go Standard Library [for tool]; 137s local ... (4 actions, 3 running)
+[5,047 / 5,288] Analyzing Go Standard Library [for tool]; 138s local ... (4 actions running)
+[5,050 / 5,288] Analyzing Go Standard Library [for tool]; 139s local ... (4 actions, 3 running)
+[5,053 / 5,288] Analyzing Go Standard Library [for tool]; 141s local ... (4 actions running)
+[5,056 / 5,288] Analyzing Go Standard Library [for tool]; 142s local ... (4 actions running)
+[5,059 / 5,288] Analyzing Go Standard Library [for tool]; 143s local ... (4 actions, 3 running)
+[5,064 / 5,288] Analyzing Go Standard Library [for tool]; 144s local ... (4 actions, 3 running)
+[5,066 / 5,288] Analyzing Go Standard Library [for tool]; 146s local ... (4 actions running)
+[5,067 / 5,288] Analyzing Go Standard Library [for tool]; 147s local ... (4 actions running)
+[5,070 / 5,288] Analyzing Go Standard Library [for tool]; 148s local ... (4 actions running)
+[5,074 / 5,288] Analyzing Go Standard Library [for tool]; 149s local ... (4 actions, 3 running)
+[5,075 / 5,288] Analyzing Go Standard Library [for tool]; 151s local ... (4 actions running)
+[5,076 / 5,288] Analyzing Go Standard Library [for tool]; 152s local ... (4 actions, 3 running)
+[5,079 / 5,288] Analyzing Go Standard Library [for tool]; 153s local ... (4 actions, 3 running)
+[5,080 / 5,288] Analyzing Go Standard Library [for tool]; 155s local ... (4 actions running)
+[5,081 / 5,288] Analyzing Go Standard Library [for tool]; 156s local ... (4 actions, 3 running)
+[5,084 / 5,288] Analyzing Go Standard Library [for tool]; 157s local ... (4 actions, 3 running)
+[5,093 / 5,288] Analyzing Go Standard Library [for tool]; 158s local ... (4 actions, 3 running)
+[5,097 / 5,288] Analyzing Go Standard Library [for tool]; 160s local ... (4 actions, 3 running)
+[5,100 / 5,288] Analyzing Go Standard Library [for tool]; 161s local ... (4 actions running)
+INFO: From Analyzing Go Standard Library [for tool]:
+error resolving GOVERSION: open <source file src/go.mod>: no such file or directory
+[5,101 / 5,288] Analyzing Go Standard Library [for tool]; 159s local ... (4 actions, 3 running)
+[5,103 / 5,288] Analyzing Go Standard Library [for tool]; 161s local ... (4 actions running)
+[5,109 / 5,288] Analyzing Go Standard Library [for tool]; 162s local ... (3 actions running)
+INFO: From Analyzing Go Standard Library [for tool]:
+error resolving GOVERSION: open <source file src/go.mod>: no such file or directory
+[5,117 / 5,288] GoCompilePkg pkg/goid/goid.a [for tool]; 0s processwrapper-sandbox ... (4 actions running)
+[5,126 / 5,288] Executing genrule //runsc/checkpointgofer:checkpointgofer_flate; 1s processwrapper-sandbox ... (4 actions running)
+[5,134 / 5,288] Executing genrule //runsc/checkpointgofer:checkpointgofer_flate; 2s processwrapper-sandbox ... (3 actions, 2 running)
+[5,150 / 5,288] Executing genrule //runsc/checkpointgofer:checkpointgofer_flate; 3s processwrapper-sandbox ... (4 actions, 3 running)
+[5,162 / 5,288] Executing genrule //runsc/checkpointgofer:checkpointgofer_flate; 4s processwrapper-sandbox ... (3 actions, 2 running)
+[5,166 / 5,288] Executing genrule //runsc/checkpointgofer:checkpointgofer_flate; 5s processwrapper-sandbox ... (3 actions, 2 running)
+[5,176 / 5,288] Executing genrule //runsc/checkpointgofer:checkpointgofer_flate; 6s processwrapper-sandbox ... (4 actions, 3 running)
+[5,189 / 5,288] Executing genrule //runsc/checkpointgofer:checkpointgofer_flate; 7s processwrapper-sandbox ... (4 actions, 3 running)
+[5,201 / 5,288] GoCompilePkg pkg/lisafs/lisafs.a [for tool]; 0s processwrapper-sandbox ... (4 actions, 3 running)
+[5,207 / 5,288] GoCompilePkg pkg/sentry/pgalloc/pgalloc.a [for tool]; 1s processwrapper-sandbox ... (4 actions, 3 running)
+[5,220 / 5,288] GoCompilePkg pkg/sentry/kernel/auth/auth.a [for tool]; 0s processwrapper-sandbox ... (2 actions, 1 running)
+[5,225 / 5,288] GoCompilePkg pkg/sentry/vfs/vfs.a [for tool]; 0s processwrapper-sandbox
+[5,235 / 5,288] GoCompilePkg pkg/sentry/fsimpl/overlay/overlay.a [for tool]; 0s processwrapper-sandbox ... (2 actions running)
+[5,239 / 5,288] [Prepa] GoCompilePkg pkg/sentry/fsimpl/kernfs/kernfs.a [for tool]
+[5,247 / 5,288] [Prepa] GoCompilePkg pkg/sentry/kernel/kernel.a [for tool]
+[5,248 / 5,288] GoCompilePkg pkg/sentry/kernel/kernel.a [for tool]; 1s processwrapper-sandbox
+[5,249 / 5,288] [Prepa] GoCompilePkg pkg/sentry/devices/nvproxy/nvproxy.a [for tool] ... (3 actions, 0 running)
+[5,253 / 5,288] GoCompilePkg pkg/sentry/devices/nvproxy/nvproxy.a [for tool]; 1s processwrapper-sandbox ... (4 actions, 3 running)
+[5,260 / 5,288] [Prepa] GoCompilePkg runsc/boot/filter/config/config.a [for tool]
+[5,262 / 5,288] GoLink runsc/boot/filter/filter_precompiled_gen_bin_/filter_precompiled_gen_bin [for tool]; 0s processwrapper-sandbox
+[5,263 / 5,288] Executing genrule //runsc/boot/filter:filter_precompiled; 1s processwrapper-sandbox
+[5,263 / 5,288] Executing genrule //runsc/boot/filter:filter_precompiled; 10s processwrapper-sandbox
+[5,264 / 5,288] [Prepa] Generating state library @@//runsc/boot/filter:filter_state_autogen_with_imports
+[5,266 / 5,288] GoCompilePkg runsc/boot/filter/filter.a; 1s processwrapper-sandbox
+[5,267 / 5,288] [Prepa] GoCompilePkg runsc/boot/boot.a
+[5,268 / 5,288] [Prepa] GoCompilePkg runsc/cmd/sandboxsetup/sandboxsetup.a
+[5,272 / 5,288] GoLink runsc/cmd/sentry/gvisor_sentry_/gvisor_sentry; 0s processwrapper-sandbox ... (2 actions, 1 running)
+[5,274 / 5,288] GoLink runsc/cmd/sentry/gvisor_sentry_/gvisor_sentry; 1s processwrapper-sandbox ... (3 actions running)
+[5,278 / 5,288] GoLink runsc/cmd/sentry/gvisor_sentry_/gvisor_sentry; 2s processwrapper-sandbox ... (3 actions running)
+[5,280 / 5,288] GoLink runsc/cmd/metricserver/runsc-metric-server_/runsc-metric-server; 2s processwrapper-sandbox
+[5,281 / 5,288] Executing genrule //runsc/cmd/metricserver:metricserver_flate; 0s processwrapper-sandbox
+[5,282 / 5,288] [Prepa] GoCompilePkg runsc/cmd/metricserver/metricserver.a
+[5,286 / 5,288] GoLink runsc/runsc_/runsc; 0s processwrapper-sandbox
+[5,287 / 5,288] [Prepa] ReleaseFiles release/runsc
+INFO: Found 1 target...
+Target //:release up-to-date:
+  bazel-bin/release/runsc
+  bazel-bin/release/containerd-shim-runsc-v1
+  bazel-bin/release/gvisor-bin/checkpointgofer
+  bazel-bin/release/gvisor-bin/runsc-metric-server
+  bazel-bin/release/gvisor-bin/gvisor_sentry
+  bazel-bin/release/gvisor-bin/gvisor-sentry-prewarmer
+INFO: Elapsed time: 664.300s, Critical Path: 317.62s
+INFO: 5288 processes: 1544 internal, 42 local, 3702 processwrapper-sandbox.
+INFO: Build completed successfully, 5288 total actions
+Complete canonical bundle built and verified; not installed.

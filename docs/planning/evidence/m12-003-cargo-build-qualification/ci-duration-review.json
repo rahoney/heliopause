@@ -1,0 +1,48 @@
+{
+  "scope": "Explicit measured aggregate CI duration review under canonical CI quality gate section6. Only gvisor-integration job allocation changes60\u2192120minutes; no individual test/context/resource/profile limit change.",
+  "prior_job_minutes": 60,
+  "new_job_minutes": 120,
+  "measurements": [
+    {
+      "task": "Distinct Go/Cargo add and Go build14 cases",
+      "seconds": 888.02,
+      "raw": "raw/cargo-build-final-go-cargo-add-runtime.log",
+      "sha256": "6cd21071cfe7d2847e947ef0a9384170220754582e0a7d1f7370586cb914f32e",
+      "bytes": 11911
+    },
+    {
+      "task": "Distinct Cargo build13 cases",
+      "seconds": 302.3,
+      "raw": "raw/cargo-build-security-retained-final-runtime.log",
+      "sha256": "0519bbf874e92195e4dd0cdf26ee9c8fe2dd019b4b63997b2a51a624bb9817da",
+      "bytes": 20631
+    },
+    {
+      "task": "Same708 CPU full",
+      "seconds": 523.65,
+      "raw": "raw/split-storage-cpu-full-runtime.log",
+      "sha256": "2e5947cabcafb4711fba631ef28009ef586dbfcecda6aec7c6461e0c3a97d9cb",
+      "bytes": 1562
+    },
+    {
+      "task": "Inner canonical runtime bundle build",
+      "seconds": 664.3,
+      "raw": "raw/socketpair-runtime-canonical-build.log",
+      "sha256": "c6c65528a1a173fd875604080db0ef1ca0915b2094eb72e797f1010a109befea",
+      "bytes": 43808
+    },
+    {
+      "task": "Same708 fresh-native cu126 full",
+      "seconds": 2070.42,
+      "raw": "raw/reclaimed-native-cu126-full-runtime.log",
+      "sha256": "b2c1b235e919cb5e5c7156f11143cc4e09913dba71c1455f6538effcc1a6cdcf",
+      "bytes": 2135
+    }
+  ],
+  "known_measured_subtotal_seconds": 4448.69,
+  "additional_required_work": "Setup, observer build, ordinary npm/pip, lifecycle/source/direct consumers, promotion, network overhead. Measured local subtotal is not a hosted cold-run upper bound.",
+  "individual_test_limits": "5m/10m/15m/40m and all product/artifact security bounds unchanged",
+  "workflow_before_sha256": "ccc66de6814f3cc2ba8f1cbb0c1db74cebdd4f49334ea83463b0d38d32d05ea1",
+  "workflow_after_sha256": "f47c82e691f9e030752ddb1b1fbcf24b46321a30c3c7dc3a594b4f4bc607e9de",
+  "remote_validation": "NOT_RUN; no timeout failure normalized to PASS"
+}

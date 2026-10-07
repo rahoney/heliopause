@@ -165,7 +165,7 @@ sh scripts/verify-gvisor-runtime-bundle.sh "$runtime_lock" "$work_root/gvisor/ba
 
 # Required observer capabilities are verified from the built, locked runsc.
 meta_output="$("$output_directory/runsc" trace metadata)"
-for point in syscall/open_result sentry/mount_topology_snapshot sentry/mount_topology_mutation; do
+for point in syscall/open_result syscall/socketpair_result sentry/mount_topology_snapshot sentry/mount_topology_mutation; do
   case "$meta_output" in *"$point"*) ;; *) echo "built runsc missing $point" >&2; exit 1 ;; esac
 done
 

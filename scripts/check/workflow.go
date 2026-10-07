@@ -100,6 +100,9 @@ func runtimeLockStrings(value any) []string {
 
 func validateCIWorkflow(contents string) []string {
 	findings := validateWorkflowStructure(contents, true)
+	findings = append(findings, validateCargoIntegrationGates(contents)...)
+	findings = append(findings, validateTerraformIntegrationGates(contents)...)
+	findings = append(findings, validateLifecycleIntegrationCommands(contents, "npm inspect", []string{`HELOX_NPM_INSPECT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxNPMInspectCLIIntegration$'`})...)
 	requiredSnippets := []string{
 		"name: Heliopause CI",
 		"  pull_request:",
@@ -125,6 +128,11 @@ func validateCIWorkflow(contents string) []string {
 		"HELOX_PYTORCH_PROFILE=cu126",
 		"HELOX_PYTORCH_PROFILE=cu130",
 		"HELOX_PYTORCH_PROFILE=cu132",
+		`docker pull "$go_image"`,
+
+		`HELOX_GO_RESOLVER_INTEGRATION=1 HELOX_GO_RESOLVER_PROJECT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxGo(IsolatedResolver|IsolatedProjectResolver|SourceProjectSnapshot|DependencyFreeProjectSnapshot)Integration$'`,
+		`HELOX_GO_RESOLVER_INTEGRATION=1 HELOX_GO_RESOLVER_PROJECT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestLinuxGo(GetDownload|TransitiveGetDownload|DependencyFreeDownload)Integration$'`,
+		`HELOX_GO_BUILD_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=15m -test.run '^TestLinuxGo(DependencyFreeBuildCLI|PublicBuildCLI|TransitiveBuildCLI|InvalidTestdataBuildCLI|CgoBuildCLI|LibraryBuildCLI|MixedPackagesBuildCLI|MixedInvalidPackageBuildCLI|BuildSecurityCLI)Integration$'`,
 		"HELOX_PROMOTION_INTEGRATION=1 go test -v -timeout=5m ./internal/promotion -run TestLinuxNPMPromotionIntegration",
 		"check-latest: false",
 		"cache: false",
@@ -256,6 +264,7 @@ func validateReleaseWorkflow(contents string) []string {
 		"go run ./scripts/runtime-image-manifest",
 		"docker buildx imagetools inspect \"$node_image\"",
 		"docker buildx imagetools inspect \"$python_image\"",
+		"docker buildx imagetools inspect \"$go_image\"",
 		"go run ./scripts/release-manifest",
 		"--workflow-run \"$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\"",
 		"--runtime-images \"$dist/helox-runtime-images.json\"",
@@ -437,4 +446,56 @@ func workflowJobIDs(contents string) []string {
 	}
 	sort.Strings(jobs)
 	return jobs
+}
+
+// These fixed commands belong to the actual unconditional lifecycle step.
+// Their presence in comments, another job or a skipped step supplies no gate.
+var cargoIntegrationCommands = []string{
+	`rust_image="$(jq -er '.rust_image.reference' "$runtime_lock")"`,
+	`docker pull "$rust_image"`,
+	`HELOX_CARGO_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxCargoSourceProjectSnapshotIntegration$'`,
+	`HELOX_CARGO_RESOLVER_INTEGRATION=1 HELOX_CARGO_ADD_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestLinuxCargo(Add|TransitiveAdd)Integration$'`,
+	`HELOX_CARGO_RESOLVER_INTEGRATION=1 HELOX_CARGO_BUILD_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=15m -test.run '^TestLinuxCargo.*Build.*CLIIntegration$|^TestLinuxCargoProcMacroSecurityCLIIntegration$'`,
+}
+
+var terraformIntegrationCommands = []string{
+	`HELOX_RUN_TERRAFORM_SOURCE_INTEGRATION=1 go test -v -timeout=3m ./internal/verification/terraformprovider -run '^TestPublicTerraformProviderSourceIntegration$'`,
+	`HELOX_TERRAFORM_PROVIDER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxTerraformProvider(Probe|Security)Integration$'`,
+	`HELOX_TERRAFORM_INIT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestLinuxTerraformInit(Integration|NegativeIntegration)$'`,
+}
+
+func validateTerraformIntegrationGates(contents string) []string {
+	return validateLifecycleIntegrationCommands(contents, "Terraform", terraformIntegrationCommands)
+}
+func validateCargoIntegrationGates(contents string) []string {
+	return validateLifecycleIntegrationCommands(contents, "Cargo", cargoIntegrationCommands)
+}
+func validateLifecycleIntegrationCommands(contents, label string, commands []string) []string {
+	doc, err := parseWorkflow(contents)
+	if err != nil {
+		return nil
+	} // The structural validator owns parse failures.
+	job := workflowMap(workflowMap(doc["jobs"])["gvisor-integration"])
+	steps, _ := job["steps"].([]any)
+	counts := map[string]int{}
+	for _, raw := range steps {
+		step := workflowMap(raw)
+		if step["name"] != "Install pinned runtime and run lifecycle integration" {
+			continue
+		}
+		if step["if"] != nil || job["if"] != nil || step["continue-on-error"] != nil || job["continue-on-error"] != nil {
+			continue
+		}
+		run, _ := step["run"].(string)
+		for _, line := range strings.Split(run, "\n") {
+			counts[strings.TrimSpace(line)]++
+		}
+	}
+	var findings []string
+	for _, command := range commands {
+		if counts[command] != 1 {
+			findings = append(findings, fmt.Sprintf("%s integration requires one active lifecycle command %q", label, command))
+		}
+	}
+	return findings
 }

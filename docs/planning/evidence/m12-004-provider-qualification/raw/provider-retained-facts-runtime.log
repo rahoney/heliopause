@@ -1,0 +1,49 @@
+Exact source/binary probe candidate verified
+runtime before bytes/identity/modes verified
+runtime candidate bytes/identity/modes verified
+Bounded complete host executable query: no installed executable consumer
+no existing traced runtime consumers; bounded Docker queries succeeded
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+/etc/heliopause/pod-init.json: OK
+helper launch: bash=/usr/bin/bash version=5.2.21(1)-release owner=275805
+helper ready: pid=275848 attempt=13
+=== RUN   TestLinuxTerraformProviderProbeIntegration
+=== RUN   TestLinuxTerraformProviderProbeIntegration/hashicorp/random@3.7.2
+    terraform_provider_integration_linux_test.go:89: Exact public provider help probe completed: reference=hashicorp/random@3.7.2 archive=7b8434212eef0f8c83f5a90c6d76feaf850f6502b61b53c329e85b3b281cba34 envelope=43cd1fc27fb3a890570339ec3880084d29333b61f41e2fb2b15072d4a47f1f67 {"schema":"m11-004","session":"sbx_tcjrdlffxlsdrhbgaj37iiobea","status":"COMPLETED","unique_subjects":4,"total":39,"counts":{"FILESYSTEM:filesystem-workspace-access":2,"PROCESS:lifecycle-completed":1,"PROCESS:process-exec-expected":35,"PROCESS:terraform-help-exit-0":1}}
+=== RUN   TestLinuxTerraformProviderProbeIntegration/integrations/github@6.6.0
+    direct_exec_admission.go:99: discard command failed: docker ["exec" "--user" "0:0" "85c1de42e962801a9e0577f5c03a300be94310dee128dbffc3a1893bed8b0a37" "/haa-runtime/haa-boundary" "--origin-handoff-elf" "f97588597665ffb1646f8397f8c66bea1d4138df5d05a7abb5e8862924634086" "/work/artifact" "-help"]: exit status 1; bounded output="This binary is a plugin. These are not meant to be executed directly.\nPlease execute the program that consumes these plugins, which will\nload any plugins automatically\n"
+    terraform_provider_integration_linux_test.go:89: Exact public provider help probe completed: reference=integrations/github@6.6.0 archive=772edb5890d72b32868f9fdc0a9a1d4f4701d8e7f8acb37a7ac530d053c776e3 envelope=715f444c220d9044e0891b3e24846544b5a3fbb87e91b75a9a3c51a77c2aff73 {"schema":"m11-004","session":"sbx_hrpknirpwvqac573wohfotihym","status":"COMPLETED","unique_subjects":4,"total":39,"counts":{"FILESYSTEM:filesystem-workspace-access":2,"PROCESS:lifecycle-completed":1,"PROCESS:process-exec-expected":35,"PROCESS:terraform-help-exit-1":1}}
+--- PASS: TestLinuxTerraformProviderProbeIntegration (5.35s)
+    --- PASS: TestLinuxTerraformProviderProbeIntegration/hashicorp/random@3.7.2 (2.23s)
+    --- PASS: TestLinuxTerraformProviderProbeIntegration/integrations/github@6.6.0 (3.12s)
+=== RUN   TestLinuxTerraformProviderSecurityIntegration
+=== RUN   TestLinuxTerraformProviderSecurityIntegration/normal
+    terraform_provider_security_integration_linux_test.go:203: actual_provider_boundary=normal {"schema":"m11-004","session":"sbx_fguulbpsh37t3dxi6cwcwg2sve","status":"COMPLETED","unique_subjects":4,"total":38,"counts":{"FILESYSTEM:filesystem-workspace-access":1,"PROCESS:lifecycle-completed":1,"PROCESS:process-exec-expected":35,"PROCESS:terraform-help-exit-0":1}}
+=== RUN   TestLinuxTerraformProviderSecurityIntegration/network
+observer_attribution sequence=1 profile=terraform-provider counts=NETWORK/CONNECT/INET/ARTIFACT_GROUP/OTHER:1
+    terraform_provider_security_integration_linux_test.go:203: actual_provider_boundary=network {"schema":"m11-004","session":"sbx_ecr57ycjjzjkdkfdypgj7jjjwq","status":"COMPLETED","unique_subjects":5,"total":39,"counts":{"FILESYSTEM:filesystem-workspace-access":1,"NETWORK:network-attempt":1,"PROCESS:lifecycle-completed":1,"PROCESS:process-exec-expected":35,"PROCESS:terraform-help-exit-0":1}}
+=== RUN   TestLinuxTerraformProviderSecurityIntegration/filesystem
+    terraform_provider_security_integration_linux_test.go:203: actual_provider_boundary=filesystem {"schema":"m11-004","session":"sbx_vvp5jwf2pyfxefypfx7jj3mvoa","status":"INCOMPLETE","limitation":"M3_DYNAMIC_OBSERVER_FAILED","unique_subjects":0,"total":0,"counts":{}}
+=== RUN   TestLinuxTerraformProviderSecurityIntegration/unexpected-process
+    direct_exec_admission.go:63: command failed: docker ["exec" "--user" "0:0" "e95c2d317e653afbb39c5a61c90d1a403a71bef03d4acb9435d47591e7baafa6" "/haa-runtime/haa-boundary" "--origin-launch" "f0ebcfa4f69eab9f51899036589eef42eab824bae31cd0f34b4aebc6913025e7" "/bin/sh" "-ceu" "test \"$(id -u)\" = 1000; test \"$(id -g)\" = 1000; grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/1/status; grep -Eq '^Gid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/1/status; grep -Eq '^Groups:[[:space:]]*$' /proc/1/status; for field in CapInh CapPrm CapEff CapBnd CapAmb; do grep -Eq \"^${field}:[[:space:]]+0000000000000000$\" /proc/1/status; done; grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/self/status; grep -Eq '^Gid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/self/status; grep -Eq '^Groups:[[:space:]]*$' /proc/self/status; for field in CapInh CapPrm CapEff CapBnd CapAmb; do grep -Eq \"^${field}:[[:space:]]+0000000000000000$\" /proc/self/status; done"]: exit status 127; stdout="OCI runtime exec failed: executing processes for container: executing command \"/haa-runtime/haa-boundary --origin-launch f0ebcfa4f69eab9f51899036589eef42eab824bae31cd0f34b4aebc6913025e7 /bin/sh -ceu test \\\"$(id -u)\\\" = 1000; test \\\"$(id -g)\\\" = 1000; grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/1/status; grep -Eq '^Gid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/1/status; grep -Eq '^Groups:[[:space:]]*$' /proc/1/status; for field in CapInh CapPrm CapEff CapBnd CapAmb; do grep -Eq \\\"^${field}:[[:space:]]+0000000000000000$\\\" /proc/1/status; done; grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/self/status; grep -Eq '^Gid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/self/status; grep -Eq '^Groups:[[:space:]]*$' /proc/self/status; for field in CapInh CapPrm CapEff CapBnd CapAmb; do grep -Eq \\\"^${field}:[[:space:]]+0000000000000000$\\\" /proc/self/status; done\" in sandbox: failed to load /haa-runtime/haa-boundary: no such file or directory"; stderr=""
+integration command failed: docker ["exec" "--user" "0:0" "e95c2d317e653afbb39c5a61c90d1a403a71bef03d4acb9435d47591e7baafa6" "/haa-runtime/haa-boundary" "--origin-launch" "f0ebcfa4f69eab9f51899036589eef42eab824bae31cd0f34b4aebc6913025e7" "/bin/sh" "-ceu" "test \"$(id -u)\" = 1000; test \"$(id -g)\" = 1000; grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/1/status; grep -Eq '^Gid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/1/status; grep -Eq '^Groups:[[:space:]]*$' /proc/1/status; for field in CapInh CapPrm CapEff CapBnd CapAmb; do grep -Eq \"^${field}:[[:space:]]+0000000000000000$\" /proc/1/status; done; grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/self/status; grep -Eq '^Gid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/self/status; grep -Eq '^Groups:[[:space:]]*$' /proc/self/status; for field in CapInh CapPrm CapEff CapBnd CapAmb; do grep -Eq \"^${field}:[[:space:]]+0000000000000000$\" /proc/self/status; done"]: exit status 127; stdout="OCI runtime exec failed: executing processes for container: executing command \"/haa-runtime/haa-boundary --origin-launch f0ebcfa4f69eab9f51899036589eef42eab824bae31cd0f34b4aebc6913025e7 /bin/sh -ceu test \\\"$(id -u)\\\" = 1000; test \\\"$(id -g)\\\" = 1000; grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/1/status; grep -Eq '^Gid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/1/status; grep -Eq '^Groups:[[:space:]]*$' /proc/1/status; for field in CapInh CapPrm CapEff CapBnd CapAmb; do grep -Eq \\\"^${field}:[[:space:]]+0000000000000000$\\\" /proc/1/status; done; grep -Eq '^Uid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/self/status; grep -Eq '^Gid:[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000[[:space:]]+1000$' /proc/self/status; grep -Eq '^Groups:[[:space:]]*$' /proc/self/status; for field in CapInh CapPrm CapEff CapBnd CapAmb; do grep -Eq \\\"^${field}:[[:space:]]+0000000000000000$\\\" /proc/self/status; done\" in sandbox: failed to load /haa-runtime/haa-boundary: no such file or directory"; stderr=""
+observer_attribution sequence=1 profile=terraform-provider counts=PROCESS/SENTRY_EXEC/OTHER/ARTIFACT_ROLE/ARTIFACT_GROUP:1
+    terraform_provider_security_integration_linux_test.go:203: actual_provider_boundary=unexpected-process {"schema":"m11-004","session":"sbx_4rd6g7lv5gkwydude5cdox5lgq","status":"INCOMPLETE","limitation":"M3_DYNAMIC_OBSERVER_FAILED","unique_subjects":1,"total":1,"counts":{"PROCESS:process-exec-unexpected":1}}
+--- PASS: TestLinuxTerraformProviderSecurityIntegration (4.67s)
+    --- PASS: TestLinuxTerraformProviderSecurityIntegration/normal (1.07s)
+    --- PASS: TestLinuxTerraformProviderSecurityIntegration/network (1.10s)
+    --- PASS: TestLinuxTerraformProviderSecurityIntegration/filesystem (1.12s)
+    --- PASS: TestLinuxTerraformProviderSecurityIntegration/unexpected-process (1.37s)
+PASS
+helper reaped: pid=275848 wait=0
+no existing traced runtime consumers; bounded Docker queries succeeded
+runtime before bytes/identity/modes verified
+/etc/heliopause/pod-init.json: OK
+/usr/libexec/heliopause/helox: OK
+/usr/libexec/heliopause/haa-network-policy-helper: OK
+/usr/libexec/heliopause/haa_gvisor_observer: OK
+/etc/heliopause/network-policy.json: OK
+cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=275848

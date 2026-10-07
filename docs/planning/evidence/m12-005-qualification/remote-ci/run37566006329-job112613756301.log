@@ -1,0 +1,338 @@
+﻿2026-10-07T03:16:50.6222274Z Current runner version: '2.337.0'
+2026-10-07T03:16:50.6258249Z ##[group]Runner Image Provisioner
+2026-10-07T03:16:50.6259892Z Hosted Compute Agent
+2026-10-07T03:16:50.6260917Z Version: 20260901.588
+2026-10-07T03:16:50.6261949Z Commit: f88ec8081b781fac6c440065ac7ff9e710ce3d0b
+2026-10-07T03:16:50.6263172Z Build Date: 2026-09-01T19:56:44Z
+2026-10-07T03:16:50.6264439Z Worker ID: {701dfc88-b9c5-4acf-a231-03959c8a20f7}
+2026-10-07T03:16:50.6265943Z Azure Region: eastus
+2026-10-07T03:16:50.6267047Z ##[endgroup]
+2026-10-07T03:16:50.6269408Z ##[group]Operating System
+2026-10-07T03:16:50.6270497Z Ubuntu
+2026-10-07T03:16:50.6271396Z 24.04.5
+2026-10-07T03:16:50.6272301Z LTS
+2026-10-07T03:16:50.6273298Z ##[endgroup]
+2026-10-07T03:16:50.6274214Z ##[group]Runner Image
+2026-10-07T03:16:50.6275139Z Image: ubuntu-24.04
+2026-10-07T03:16:50.6276625Z Version: 20260927.320.1
+2026-10-07T03:16:50.6278832Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260927.320/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-07T03:16:50.6281567Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260927.320
+2026-10-07T03:16:50.6283831Z ##[endgroup]
+2026-10-07T03:16:50.6286090Z ##[group]GITHUB_TOKEN Permissions
+2026-10-07T03:16:50.6289039Z Contents: read
+2026-10-07T03:16:50.6290064Z Metadata: read
+2026-10-07T03:16:50.6291090Z ##[endgroup]
+2026-10-07T03:16:50.6294192Z Secret source: Actions
+2026-10-07T03:16:50.6296024Z Cache mode: write
+2026-10-07T03:16:50.6297465Z Prepare workflow directory
+2026-10-07T03:16:50.6891547Z Prepare all required actions
+2026-10-07T03:16:50.6963066Z Getting action download info
+2026-10-07T03:16:50.8953722Z Download action repository 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+2026-10-07T03:16:51.0259096Z Download action repository 'actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e' (SHA:b7ad1dad31e06c5925ef5d2fc7ad053ef454303e)
+2026-10-07T03:16:51.3160370Z Complete job name: Representative Wheel Corpus
+2026-10-07T03:16:51.3918402Z ##[group]Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+2026-10-07T03:16:51.3919471Z with:
+2026-10-07T03:16:51.3919931Z   persist-credentials: false
+2026-10-07T03:16:51.3920472Z   repository: rahoney/heliopause
+2026-10-07T03:16:51.3924515Z   token: ***
+2026-10-07T03:16:51.3924947Z   ssh-strict: true
+2026-10-07T03:16:51.3925629Z   ssh-user: git
+2026-10-07T03:16:51.3926071Z   clean: true
+2026-10-07T03:16:51.3926560Z   sparse-checkout-cone-mode: true
+2026-10-07T03:16:51.3927090Z   fetch-depth: 1
+2026-10-07T03:16:51.3927528Z   fetch-tags: false
+2026-10-07T03:16:51.3927973Z   show-progress: true
+2026-10-07T03:16:51.3928431Z   lfs: false
+2026-10-07T03:16:51.3928844Z   submodules: false
+2026-10-07T03:16:51.3929302Z   set-safe-directory: true
+2026-10-07T03:16:51.3929817Z   allow-unsafe-pr-checkout: false
+2026-10-07T03:16:51.3930576Z env:
+2026-10-07T03:16:51.3930996Z   GOTOOLCHAIN: local
+2026-10-07T03:16:51.3931445Z ##[endgroup]
+2026-10-07T03:16:51.4952049Z Syncing repository: rahoney/heliopause
+2026-10-07T03:16:51.4955028Z ##[group]Getting Git version info
+2026-10-07T03:16:51.4956164Z Working directory is '/home/runner/work/heliopause/heliopause'
+2026-10-07T03:16:51.4957780Z [command]/usr/bin/git version
+2026-10-07T03:16:51.5033212Z git version 2.55.0
+2026-10-07T03:16:51.5077163Z ##[endgroup]
+2026-10-07T03:16:51.5085272Z Temporarily overriding HOME='/home/runner/work/_temp/5d3617d9-019e-4e37-a199-75f296c5be11' before making global git config changes
+2026-10-07T03:16:51.5088395Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-07T03:16:51.5090657Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/heliopause/heliopause
+2026-10-07T03:16:51.5136748Z Deleting the contents of '/home/runner/work/heliopause/heliopause'
+2026-10-07T03:16:51.5139022Z ##[group]Determining repository object format
+2026-10-07T03:16:51.5140778Z ##[endgroup]
+2026-10-07T03:16:51.5142012Z ##[group]Initializing the repository
+2026-10-07T03:16:51.5146607Z [command]/usr/bin/git init /home/runner/work/heliopause/heliopause
+2026-10-07T03:16:51.5285814Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-07T03:16:51.5287102Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-07T03:16:51.5288640Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-07T03:16:51.5290341Z hint: call:
+2026-10-07T03:16:51.5291098Z hint:
+2026-10-07T03:16:51.5292045Z hint: 	git config --global init.defaultBranch <name>
+2026-10-07T03:16:51.5293268Z hint:
+2026-10-07T03:16:51.5294331Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-07T03:16:51.5296349Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-07T03:16:51.5297669Z hint:
+2026-10-07T03:16:51.5298378Z hint: 	git branch -m <name>
+2026-10-07T03:16:51.5299162Z hint:
+2026-10-07T03:16:51.5300313Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-07T03:16:51.5302260Z Initialized empty Git repository in /home/runner/work/heliopause/heliopause/.git/
+2026-10-07T03:16:51.5304690Z [command]/usr/bin/git remote add origin https://github.com/rahoney/heliopause
+2026-10-07T03:16:51.5358585Z ##[endgroup]
+2026-10-07T03:16:51.5363817Z ##[group]Disabling automatic garbage collection
+2026-10-07T03:16:51.5364524Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-07T03:16:51.5402559Z ##[endgroup]
+2026-10-07T03:16:51.5403360Z ##[group]Setting up auth
+2026-10-07T03:16:51.5408220Z Removing SSH command configuration
+2026-10-07T03:16:51.5409970Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-07T03:16:51.5448360Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-07T03:16:51.5843534Z Removing HTTP extra header
+2026-10-07T03:16:51.5853743Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-07T03:16:51.5902410Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-07T03:16:51.6136701Z Removing includeIf entries pointing to credentials config files
+2026-10-07T03:16:51.6140436Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-07T03:16:51.6187622Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-07T03:16:51.6445024Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-8d7a8e13-d0b4-4a57-98fe-40b99b4cd211.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-07T03:16:51.6494820Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/heliopause/heliopause/.git.path /home/runner/work/_temp/git-credentials-8d7a8e13-d0b4-4a57-98fe-40b99b4cd211.config
+2026-10-07T03:16:51.6618654Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/heliopause/heliopause/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-8d7a8e13-d0b4-4a57-98fe-40b99b4cd211.config
+2026-10-07T03:16:51.6665735Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-8d7a8e13-d0b4-4a57-98fe-40b99b4cd211.config
+2026-10-07T03:16:51.6706543Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-8d7a8e13-d0b4-4a57-98fe-40b99b4cd211.config
+2026-10-07T03:16:51.6739641Z ##[endgroup]
+2026-10-07T03:16:51.6740980Z ##[group]Fetching the repository
+2026-10-07T03:16:51.6748441Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +d328756f0087624093808215d1fbedd47767ef58:refs/remotes/origin/milestone/m12-go-cargo-terraform
+2026-10-07T03:16:52.1556633Z From https://github.com/rahoney/heliopause
+2026-10-07T03:16:52.1558968Z  * [new ref]         d328756f0087624093808215d1fbedd47767ef58 -> origin/milestone/m12-go-cargo-terraform
+2026-10-07T03:16:52.1568064Z [command]/usr/bin/git branch --list --remote origin/milestone/m12-go-cargo-terraform
+2026-10-07T03:16:52.1604924Z   origin/milestone/m12-go-cargo-terraform
+2026-10-07T03:16:52.1619222Z [command]/usr/bin/git rev-parse refs/remotes/origin/milestone/m12-go-cargo-terraform
+2026-10-07T03:16:52.1648237Z d328756f0087624093808215d1fbedd47767ef58
+2026-10-07T03:16:52.1658483Z ##[endgroup]
+2026-10-07T03:16:52.1659928Z ##[group]Determining the checkout info
+2026-10-07T03:16:52.1661553Z ##[endgroup]
+2026-10-07T03:16:52.1662424Z [command]/usr/bin/git sparse-checkout disable
+2026-10-07T03:16:52.1722974Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-07T03:16:52.1762725Z ##[group]Checking out the ref
+2026-10-07T03:16:52.1768607Z [command]/usr/bin/git checkout --progress --force -B milestone/m12-go-cargo-terraform refs/remotes/origin/milestone/m12-go-cargo-terraform
+2026-10-07T03:16:52.2969562Z Switched to a new branch 'milestone/m12-go-cargo-terraform'
+2026-10-07T03:16:52.2974348Z branch 'milestone/m12-go-cargo-terraform' set up to track 'origin/milestone/m12-go-cargo-terraform'.
+2026-10-07T03:16:52.2986756Z ##[endgroup]
+2026-10-07T03:16:52.3040123Z [command]/usr/bin/git log -1 --format=%H
+2026-10-07T03:16:52.3071823Z d328756f0087624093808215d1fbedd47767ef58
+2026-10-07T03:16:52.3080815Z ##[group]Removing auth
+2026-10-07T03:16:52.3084865Z Removing SSH command configuration
+2026-10-07T03:16:52.3086335Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-07T03:16:52.3130822Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-07T03:16:52.3368827Z Removing HTTP extra header
+2026-10-07T03:16:52.3372639Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-07T03:16:52.3409777Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-07T03:16:52.3635002Z Removing includeIf entries pointing to credentials config files
+2026-10-07T03:16:52.3638415Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-07T03:16:52.3670192Z includeif.gitdir:/home/runner/work/heliopause/heliopause/.git.path
+2026-10-07T03:16:52.3672177Z includeif.gitdir:/home/runner/work/heliopause/heliopause/.git/worktrees/*.path
+2026-10-07T03:16:52.3674328Z includeif.gitdir:/github/workspace/.git.path
+2026-10-07T03:16:52.3675963Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-07T03:16:52.3680545Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/heliopause/heliopause/.git.path
+2026-10-07T03:16:52.3707027Z /home/runner/work/_temp/git-credentials-8d7a8e13-d0b4-4a57-98fe-40b99b4cd211.config
+2026-10-07T03:16:52.3717866Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/heliopause/heliopause/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-8d7a8e13\-d0b4\-4a57\-98fe\-40b99b4cd211\.config
+2026-10-07T03:16:52.3789754Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/heliopause/heliopause/.git/worktrees/*.path
+2026-10-07T03:16:52.3822223Z /home/runner/work/_temp/git-credentials-8d7a8e13-d0b4-4a57-98fe-40b99b4cd211.config
+2026-10-07T03:16:52.3832306Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/heliopause/heliopause/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-8d7a8e13\-d0b4\-4a57\-98fe\-40b99b4cd211\.config
+2026-10-07T03:16:52.3869720Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-10-07T03:16:52.3910092Z /github/runner_temp/git-credentials-8d7a8e13-d0b4-4a57-98fe-40b99b4cd211.config
+2026-10-07T03:16:52.3922623Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-8d7a8e13\-d0b4\-4a57\-98fe\-40b99b4cd211\.config
+2026-10-07T03:16:52.3978443Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-07T03:16:52.4027127Z /github/runner_temp/git-credentials-8d7a8e13-d0b4-4a57-98fe-40b99b4cd211.config
+2026-10-07T03:16:52.4035725Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-8d7a8e13\-d0b4\-4a57\-98fe\-40b99b4cd211\.config
+2026-10-07T03:16:52.4075191Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-07T03:16:52.4307910Z Removing credentials config '/home/runner/work/_temp/git-credentials-8d7a8e13-d0b4-4a57-98fe-40b99b4cd211.config'
+2026-10-07T03:16:52.4316779Z ##[endgroup]
+2026-10-07T03:16:52.4627719Z ##[group]Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e
+2026-10-07T03:16:52.4628934Z with:
+2026-10-07T03:16:52.4629442Z   go-version: 1.26.8
+2026-10-07T03:16:52.4630042Z   check-latest: false
+2026-10-07T03:16:52.4630611Z   cache: false
+2026-10-07T03:16:52.4640364Z   token: ***
+2026-10-07T03:16:52.4640858Z env:
+2026-10-07T03:16:52.4641318Z   GOTOOLCHAIN: local
+2026-10-07T03:16:52.4641869Z ##[endgroup]
+2026-10-07T03:16:52.5837603Z Setup go version spec 1.26.8
+2026-10-07T03:16:52.5856585Z Found in cache @ /opt/hostedtoolcache/go/1.26.8/x64
+2026-10-07T03:16:52.5858356Z Added go to the path
+2026-10-07T03:16:52.5860012Z Successfully set up Go version 1.26.8
+2026-10-07T03:16:52.6528883Z go version go1.26.8 linux/amd64
+2026-10-07T03:16:52.6529688Z 
+2026-10-07T03:16:52.6530850Z ##[group]go env
+2026-10-07T03:16:52.8052189Z AR='ar'
+2026-10-07T03:16:52.8053490Z CC='gcc'
+2026-10-07T03:16:52.8149481Z CGO_CFLAGS='-O2 -g'
+2026-10-07T03:16:52.8151044Z CGO_CPPFLAGS=''
+2026-10-07T03:16:52.8152247Z CGO_CXXFLAGS='-O2 -g'
+2026-10-07T03:16:52.8153266Z CGO_ENABLED='1'
+2026-10-07T03:16:52.8154167Z CGO_FFLAGS='-O2 -g'
+2026-10-07T03:16:52.8155073Z CGO_LDFLAGS='-O2 -g'
+2026-10-07T03:16:52.8156588Z CXX='g++'
+2026-10-07T03:16:52.8158250Z GCCGO='gccgo'
+2026-10-07T03:16:52.8160152Z GO111MODULE=''
+2026-10-07T03:16:52.8161846Z GOAMD64='v1'
+2026-10-07T03:16:52.8163350Z GOARCH='amd64'
+2026-10-07T03:16:52.8164867Z GOAUTH='netrc'
+2026-10-07T03:16:52.8166892Z GOBIN=''
+2026-10-07T03:16:52.8168463Z GOCACHE='/home/runner/.cache/go-build'
+2026-10-07T03:16:52.8170218Z GOCACHEPROG=''
+2026-10-07T03:16:52.8171745Z GODEBUG=''
+2026-10-07T03:16:52.8173249Z GOENV='/home/runner/.config/go/env'
+2026-10-07T03:16:52.8174362Z GOEXE=''
+2026-10-07T03:16:52.8175691Z GOEXPERIMENT=''
+2026-10-07T03:16:52.8176874Z GOFIPS140='off'
+2026-10-07T03:16:52.8177904Z GOFLAGS=''
+2026-10-07T03:16:52.8179570Z GOGCCFLAGS='-fPIC -m64 -pthread -Wl,--no-gc-sections -fmessage-length=0 -ffile-prefix-map=/tmp/go-build3360205400=/tmp/go-build -gno-record-gcc-switches'
+2026-10-07T03:16:52.8181276Z GOHOSTARCH='amd64'
+2026-10-07T03:16:52.8182270Z GOHOSTOS='linux'
+2026-10-07T03:16:52.8183247Z GOINSECURE=''
+2026-10-07T03:16:52.8184321Z GOMOD='/home/runner/work/heliopause/heliopause/go.mod'
+2026-10-07T03:16:52.8186118Z GOMODCACHE='/home/runner/go/pkg/mod'
+2026-10-07T03:16:52.8187247Z GONOPROXY=''
+2026-10-07T03:16:52.8188207Z GONOSUMDB=''
+2026-10-07T03:16:52.8189111Z GOOS='linux'
+2026-10-07T03:16:52.8190015Z GOPATH='/home/runner/go'
+2026-10-07T03:16:52.8190952Z GOPRIVATE=''
+2026-10-07T03:16:52.8191923Z GOPROXY='https://proxy.golang.org,direct'
+2026-10-07T03:16:52.8193004Z GOROOT='/opt/hostedtoolcache/go/1.26.8/x64'
+2026-10-07T03:16:52.8194028Z GOSUMDB='sum.golang.org'
+2026-10-07T03:16:52.8194952Z GOTELEMETRY='local'
+2026-10-07T03:16:52.8196234Z GOTELEMETRYDIR='/home/runner/.config/go/telemetry'
+2026-10-07T03:16:52.8197583Z GOTMPDIR=''
+2026-10-07T03:16:52.8198473Z GOTOOLCHAIN='local'
+2026-10-07T03:16:52.8199559Z GOTOOLDIR='/opt/hostedtoolcache/go/1.26.8/x64/pkg/tool/linux_amd64'
+2026-10-07T03:16:52.8200686Z GOVCS=''
+2026-10-07T03:16:52.8201550Z GOVERSION='go1.26.8'
+2026-10-07T03:16:52.8202441Z GOWORK=''
+2026-10-07T03:16:52.8203335Z PKG_CONFIG='pkg-config'
+2026-10-07T03:16:52.8203838Z 
+2026-10-07T03:16:52.8204880Z ##[endgroup]
+2026-10-07T03:16:52.8280430Z ##[group]Run go run ./scripts/check bootstrap-modules
+2026-10-07T03:16:52.8281601Z [36;1mgo run ./scripts/check bootstrap-modules[0m
+2026-10-07T03:16:52.8584764Z shell: /usr/bin/bash -e {0}
+2026-10-07T03:16:52.8585964Z env:
+2026-10-07T03:16:52.8586795Z   GOTOOLCHAIN: local
+2026-10-07T03:16:52.8587659Z ##[endgroup]
+2026-10-07T03:16:52.8903776Z go: downloading go.yaml.in/yaml/v3 v3.0.4
+2026-10-07T03:17:06.3503266Z [check] prepare module cache
+2026-10-07T03:17:06.3504691Z [check] download product modules
+2026-10-07T03:17:08.0975211Z ##[group]Run python3 scripts/prepare-wheel-corpus.py --root "$HELOX_CORPUS_ROOT"
+2026-10-07T03:17:08.0976220Z [36;1mpython3 scripts/prepare-wheel-corpus.py --root "$HELOX_CORPUS_ROOT"[0m
+2026-10-07T03:17:08.1043591Z shell: /usr/bin/bash -e {0}
+2026-10-07T03:17:08.1043884Z env:
+2026-10-07T03:17:08.1044102Z   GOTOOLCHAIN: local
+2026-10-07T03:17:08.1044412Z   HELOX_CORPUS_ROOT: /home/runner/work/_temp/wheel-corpus
+2026-10-07T03:17:08.1044759Z ##[endgroup]
+2026-10-07T03:17:08.5391360Z setuptools-84.0.0-py3-none-any.whl 51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670 https://files.pythonhosted.org/packages/95/9c/c510029fc6ef33a6275cd2c5d3cecd6613dfd6aa401d57c54f1c18852ccf/setuptools-84.0.0-py3-none-any.whl
+2026-10-07T03:17:08.5644304Z filelock-4.0.3-py3-none-any.whl 30cd166e2aee2c7534ce2c33c6367c4cd051b8368e20e2c4eb0c34f699bacfab https://files.pythonhosted.org/packages/7a/6d/db8b86e168fef0cf904737e275bccb683558088ef971e92d3b41ce980699/filelock-4.0.3-py3-none-any.whl
+2026-10-07T03:17:08.6896624Z filelock-4.0.4-py3-none-any.whl 0df72be195ca7892216d16f2edce8d9b93a571f02402972020a8cff84c594c7b https://files.pythonhosted.org/packages/bc/ac/8b9c6dc2aa7e9cf5582e20a337006c3428c3d752c2255dbaca2c78a8be45/filelock-4.0.4-py3-none-any.whl
+2026-10-07T03:17:08.9308712Z sympy-1.14.0-py3-none-any.whl e091cc3e99d2141a0ba2847328f5479b05d94a6635cb96148ccb3f34671bd8f5 https://files.pythonhosted.org/packages/a2/09/77d55d46fd61b4a135c444fc97158ef34a095e5681d0a6c10b75bf356191/sympy-1.14.0-py3-none-any.whl
+2026-10-07T03:17:09.0375914Z markupsafe-3.0.3-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl 457a69a9577064c05a97c41f4e65148652db078a3a509039e64d3467b9e7ef97 https://files.pythonhosted.org/packages/41/3c/a36c2450754618e62008bf7435ccb0f88053e07592e6028a34776213d877/markupsafe-3.0.3-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
+2026-10-07T03:17:09.2791043Z haa-cu126-toolkit-audit.whl 79d8605baeb6c2f695761e0efb54bc62dbc3c9e32eb0742df7669c07befaa8f7 https://files.pythonhosted.org/packages/ad/88/2dbc37975fffb874418b14380418a1b99cb36f2101fd1d08c54e06ee8c95/cuda_toolkit-12.6.3-py2.py3-none-any.whl
+2026-10-07T03:17:11.1642742Z haa-cu126-first-nccl.whl 35ad42e7d5d722a83c36a3a478e281c20a5646383deaf1b9ed1a9ab7d61bed53 https://files.pythonhosted.org/packages/31/5a/cac7d231f322b66caa16fd4b136ebc8e4b18b2805811c2d58dc47210cdea/nvidia_nccl_cu12-2.29.3-py3-none-manylinux_2_18_x86_64.whl
+2026-10-07T03:17:12.4468473Z haa-cu126-first-cufft.whl ccba62eb9cef5559abd5e0d54ceed2d9934030f51163df018532142a8ec533e5 https://files.pythonhosted.org/packages/8f/16/73727675941ab8e6ffd86ca3a4b7b47065edcca7a997920b831f8147c99d/nvidia_cufft_cu12-11.3.0.4-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
+2026-10-07T03:17:12.7329725Z cuda_pathfinder-1.8.2-py3-none-any.whl 4e65059febdb4d19d5cbc4798677e19db2b582f2f702f457b609e571690d357e https://files.pythonhosted.org/packages/98/59/239c7259e669c46ddbcac0aa60e3a0ef00bfeaaa687f905b24dd6a7a10fe/cuda_pathfinder-1.8.2-py3-none-any.whl
+2026-10-07T03:17:13.4658041Z cuda_bindings-12.9.9-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl 94e4f9bd6b9b21aad545e0d441707094e4ff88ab420d62b85fcdc8b6da1e039f https://files.pythonhosted.org/packages/e3/95/182a020efbe1bade0de1f5ec0d3e4101cb6deba7216b219f07ce08fa6146/cuda_bindings-12.9.9-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl
+2026-10-07T03:17:13.7277637Z haa-cu130-toolkit-audit.whl d693caaa261214ddd7dbb60d68e71cbed884e68c2be7509778f3051da0b91c3f https://files.pythonhosted.org/packages/d1/c7/a79086a62c98befcdb8349656c6f114e2db3b8b2422f6e25c97a7f2a9a3c/cuda_toolkit-13.0.3.0-py2.py3-none-any.whl
+2026-10-07T03:17:13.7998662Z haa-cu130-cupti-audit.whl 4eb01c08e859bf924d222250d2e8f8b8ff6d3db4721288cf35d14252a4d933c8 https://files.pythonhosted.org/packages/33/6d/737d164b4837a9bbd202f5ae3078975f0525a55730fe871d8ed4e3b952b0/nvidia_cuda_cupti-13.0.85-py3-none-manylinux_2_25_x86_64.whl
+2026-10-07T03:17:14.4982766Z cuda_bindings-13.4.3-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl bbacde6f75665b197016b986164cfdaa33b17515e5e635a63ddb75926aaa71c3 https://files.pythonhosted.org/packages/a3/49/7a3769c43e432b0434dd46424058b47af4347167f0dfca1ecb27e2de92a1/cuda_bindings-13.4.3-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl
+2026-10-07T03:17:14.7027988Z haa-cu132-toolkit-audit.whl 646d0e3668ce6f78f2312bb9cc0f668b9cbfcbef187eaa6a39eb2ea6dbec2a31 https://files.pythonhosted.org/packages/bd/6a/f79c134fa8e6d5fe028584933be063ce7961b1a85ce217f261cdda176e48/cuda_toolkit-13.2.1-py2.py3-none-any.whl
+2026-10-07T03:17:14.8311581Z haa-cu132-cupti-audit.whl f75aca6bef89c625a4076a820302bb06764daa1d21595286f6bee5e237d3a187 https://files.pythonhosted.org/packages/b7/2d/cbf8f6288259c502165282fdaa2b733daae98434e3f2aee2b7952ba87c6f/nvidia_cuda_cupti-13.2.75-py3-none-manylinux_2_25_x86_64.whl
+2026-10-07T03:17:15.5807810Z networkx-3.6.1-py3-none-any.whl d47fbf302e7d9cbbb9e2555a0d267983d2aa476bac30e90dfbe5669bd57f3762 https://files.pythonhosted.org/packages/9e/c9/b2622292ea83fbb4ec318f5b9ab867d0a28ab43c5717bb85b0a5f6b3b0a4/networkx-3.6.1-py3-none-any.whl
+2026-10-07T03:17:15.5861745Z cuda_bindings-13.4.3-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl bbacde6f75665b197016b986164cfdaa33b17515e5e635a63ddb75926aaa71c3 verified existing
+2026-10-07T03:17:16.0223866Z networkx-3.7-py3-none-any.whl e3fd2c13a7814cee3746340d8d7f8598a67f16a58bf47fb7f8793fab6efca1b0 https://files.pythonhosted.org/packages/7e/cd/fe58041e9011f307c490e3e17dd48cc516448f7c698a3f2d9d9d65d7e6a8/networkx-3.7-py3-none-any.whl
+2026-10-07T03:17:16.3627334Z jinja2-3.1.6-py3-none-any.whl 85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67 https://files.pythonhosted.org/packages/62/a1/3d680cbfd5f4b8f15abc1d571870c5fc3e594bb582bc3b64ea099db13e56/jinja2-3.1.6-py3-none-any.whl
+2026-10-07T03:17:16.3756775Z ##[group]Run go run ./scripts/check corpus
+2026-10-07T03:17:16.3757168Z [36;1mgo run ./scripts/check corpus[0m
+2026-10-07T03:17:16.3819359Z shell: /usr/bin/bash -e {0}
+2026-10-07T03:17:16.3819605Z env:
+2026-10-07T03:17:16.3819793Z   GOTOOLCHAIN: local
+2026-10-07T03:17:16.3820082Z   HELOX_CORPUS_ROOT: /home/runner/work/_temp/wheel-corpus
+2026-10-07T03:17:16.3820395Z ##[endgroup]
+2026-10-07T03:17:41.6593302Z === RUN   TestModelC_MissingCorpusDirectoryFails
+2026-10-07T03:17:41.6596380Z --- PASS: TestModelC_MissingCorpusDirectoryFails (0.00s)
+2026-10-07T03:17:41.6597037Z === RUN   TestModelC_CorpusHashMismatchFails
+2026-10-07T03:17:41.6597635Z --- PASS: TestModelC_CorpusHashMismatchFails (0.00s)
+2026-10-07T03:17:41.6598473Z === RUN   TestModelC_RealCorpusQualification
+2026-10-07T03:17:41.6599396Z === RUN   TestModelC_RealCorpusQualification/setuptools-84.0.0-py3-none-any.whl
+2026-10-07T03:17:41.6601186Z     real_corpus_integration_test.go:77: setuptools-84.0.0-py3-none-any.whl profile=pytorch:cpu direct=24 units=26
+2026-10-07T03:17:41.6602510Z === RUN   TestModelC_RealCorpusQualification/filelock-4.0.3-py3-none-any.whl
+2026-10-07T03:17:41.6604030Z     real_corpus_integration_test.go:77: filelock-4.0.3-py3-none-any.whl profile=pytorch:cpu direct=1 units=1
+2026-10-07T03:17:41.6605819Z === RUN   TestModelC_RealCorpusQualification/filelock-4.0.4-py3-none-any.whl
+2026-10-07T03:17:41.6607334Z     real_corpus_integration_test.go:77: filelock-4.0.4-py3-none-any.whl profile=pytorch:cpu direct=1 units=1
+2026-10-07T03:17:41.6608586Z === RUN   TestModelC_RealCorpusQualification/sympy-1.14.0-py3-none-any.whl
+2026-10-07T03:17:41.6609970Z     real_corpus_integration_test.go:77: sympy-1.14.0-py3-none-any.whl profile=pytorch:cpu direct=2 units=2
+2026-10-07T03:17:41.6611533Z === RUN   TestModelC_RealCorpusQualification/markupsafe-3.0.3-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
+2026-10-07T03:17:41.6614045Z     real_corpus_integration_test.go:77: markupsafe-3.0.3-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl profile=pytorch:cpu direct=2 units=2
+2026-10-07T03:17:41.6616033Z === RUN   TestModelC_RealCorpusQualification/haa-cu126-toolkit-audit.whl
+2026-10-07T03:17:41.6617475Z     real_corpus_integration_test.go:77: cuda_toolkit-12.6.3-py2.py3-none-any.whl profile=pytorch:cu126 direct=0 units=0
+2026-10-07T03:17:41.6618678Z === RUN   TestModelC_RealCorpusQualification/haa-cu126-first-nccl.whl
+2026-10-07T03:17:41.6620021Z     real_corpus_integration_test.go:77: nvidia_nccl_cu12-2.29.3-py3-none-manylinux_2_18_x86_64.whl profile=pytorch:cu126 direct=0 units=0
+2026-10-07T03:17:41.6620873Z === RUN   TestModelC_RealCorpusQualification/haa-cu126-first-cufft.whl
+2026-10-07T03:17:41.6621837Z     real_corpus_integration_test.go:77: nvidia_cufft_cu12-11.3.0.4-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl profile=pytorch:cu126 direct=1 units=1
+2026-10-07T03:17:41.6622674Z === RUN   TestModelC_RealCorpusQualification/cuda_pathfinder-1.8.2-py3-none-any.whl
+2026-10-07T03:17:41.6623482Z     real_corpus_integration_test.go:77: cuda_pathfinder-1.8.2-py3-none-any.whl profile=pytorch:cu126 direct=1 units=1
+2026-10-07T03:17:41.6624330Z === RUN   TestModelC_RealCorpusQualification/cuda_bindings-12.9.9-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl
+2026-10-07T03:17:41.6625763Z     real_corpus_integration_test.go:77: cuda_bindings-12.9.9-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl profile=pytorch:cu126 direct=34 units=36
+2026-10-07T03:17:41.6626562Z === RUN   TestModelC_RealCorpusQualification/haa-cu130-toolkit-audit.whl
+2026-10-07T03:17:41.6627340Z     real_corpus_integration_test.go:77: cuda_toolkit-13.0.3.0-py2.py3-none-any.whl profile=pytorch:cu130 direct=0 units=0
+2026-10-07T03:17:41.6627996Z === RUN   TestModelC_RealCorpusQualification/haa-cu130-cupti-audit.whl
+2026-10-07T03:17:41.6629113Z     real_corpus_integration_test.go:77: nvidia_cuda_cupti-13.0.85-py3-none-manylinux_2_25_x86_64.whl profile=pytorch:cu130 direct=0 units=0
+2026-10-07T03:17:41.6630067Z === RUN   TestModelC_RealCorpusQualification/cuda_bindings-13.4.3-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl
+2026-10-07T03:17:41.6631209Z     real_corpus_integration_test.go:77: cuda_bindings-13.4.3-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl profile=pytorch:cu130 direct=31 units=31
+2026-10-07T03:17:41.6631986Z === RUN   TestModelC_RealCorpusQualification/haa-cu132-toolkit-audit.whl
+2026-10-07T03:17:41.6632747Z     real_corpus_integration_test.go:77: cuda_toolkit-13.2.1-py2.py3-none-any.whl profile=pytorch:cu132 direct=0 units=0
+2026-10-07T03:17:41.6633379Z === RUN   TestModelC_RealCorpusQualification/haa-cu132-cupti-audit.whl
+2026-10-07T03:17:41.6634221Z     real_corpus_integration_test.go:77: nvidia_cuda_cupti-13.2.75-py3-none-manylinux_2_25_x86_64.whl profile=pytorch:cu132 direct=0 units=0
+2026-10-07T03:17:41.6634935Z === RUN   TestModelC_RealCorpusQualification/networkx-3.6.1-py3-none-any.whl
+2026-10-07T03:17:41.6636280Z     real_corpus_integration_test.go:77: networkx-3.6.1-py3-none-any.whl profile=pytorch:cpu direct=2 units=2
+2026-10-07T03:17:41.6637128Z === RUN   TestModelC_RealCorpusQualification/cuda_bindings-13.4.3-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl#01
+2026-10-07T03:17:41.6638275Z     real_corpus_integration_test.go:77: cuda_bindings-13.4.3-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl profile=pytorch:cu132 direct=31 units=31
+2026-10-07T03:17:41.6639238Z === RUN   TestModelC_RealCorpusQualification/networkx-3.7-py3-none-any.whl
+2026-10-07T03:17:41.6639964Z     real_corpus_integration_test.go:77: networkx-3.7-py3-none-any.whl profile=pytorch:cpu direct=2 units=2
+2026-10-07T03:17:41.6640573Z === RUN   TestModelC_RealCorpusQualification/jinja2-3.1.6-py3-none-any.whl
+2026-10-07T03:17:41.6641277Z     real_corpus_integration_test.go:77: jinja2-3.1.6-py3-none-any.whl profile=pytorch:cpu direct=2 units=2
+2026-10-07T03:17:41.6641787Z === NAME  TestModelC_RealCorpusQualification
+2026-10-07T03:17:41.6642538Z     real_corpus_integration_test.go:83: REAL_CORPUS_CLASSIFICATION: REPRESENTATIVE_REAL_CORPUS (19 authenticated packages verified)
+2026-10-07T03:17:41.6643178Z --- PASS: TestModelC_RealCorpusQualification (8.83s)
+2026-10-07T03:17:41.6643768Z     --- PASS: TestModelC_RealCorpusQualification/setuptools-84.0.0-py3-none-any.whl (0.02s)
+2026-10-07T03:17:41.6644494Z     --- PASS: TestModelC_RealCorpusQualification/filelock-4.0.3-py3-none-any.whl (0.00s)
+2026-10-07T03:17:41.6645173Z     --- PASS: TestModelC_RealCorpusQualification/filelock-4.0.4-py3-none-any.whl (0.00s)
+2026-10-07T03:17:41.6646162Z     --- PASS: TestModelC_RealCorpusQualification/sympy-1.14.0-py3-none-any.whl (0.16s)
+2026-10-07T03:17:41.6647147Z     --- PASS: TestModelC_RealCorpusQualification/markupsafe-3.0.3-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (0.00s)
+2026-10-07T03:17:41.6648036Z     --- PASS: TestModelC_RealCorpusQualification/haa-cu126-toolkit-audit.whl (0.00s)
+2026-10-07T03:17:41.6648670Z     --- PASS: TestModelC_RealCorpusQualification/haa-cu126-first-nccl.whl (4.59s)
+2026-10-07T03:17:41.6649290Z     --- PASS: TestModelC_RealCorpusQualification/haa-cu126-first-cufft.whl (2.73s)
+2026-10-07T03:17:41.6649989Z     --- PASS: TestModelC_RealCorpusQualification/cuda_pathfinder-1.8.2-py3-none-any.whl (0.00s)
+2026-10-07T03:17:41.6650918Z     --- PASS: TestModelC_RealCorpusQualification/cuda_bindings-12.9.9-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (0.15s)
+2026-10-07T03:17:41.6651735Z     --- PASS: TestModelC_RealCorpusQualification/haa-cu130-toolkit-audit.whl (0.00s)
+2026-10-07T03:17:41.6652362Z     --- PASS: TestModelC_RealCorpusQualification/haa-cu130-cupti-audit.whl (0.38s)
+2026-10-07T03:17:41.6653224Z     --- PASS: TestModelC_RealCorpusQualification/cuda_bindings-13.4.3-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (0.13s)
+2026-10-07T03:17:41.6654036Z     --- PASS: TestModelC_RealCorpusQualification/haa-cu132-toolkit-audit.whl (0.00s)
+2026-10-07T03:17:41.6654810Z     --- PASS: TestModelC_RealCorpusQualification/haa-cu132-cupti-audit.whl (0.41s)
+2026-10-07T03:17:41.6655733Z     --- PASS: TestModelC_RealCorpusQualification/networkx-3.6.1-py3-none-any.whl (0.05s)
+2026-10-07T03:17:41.6656659Z     --- PASS: TestModelC_RealCorpusQualification/cuda_bindings-13.4.3-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl#01 (0.14s)
+2026-10-07T03:17:41.6657510Z     --- PASS: TestModelC_RealCorpusQualification/networkx-3.7-py3-none-any.whl (0.05s)
+2026-10-07T03:17:41.6658163Z     --- PASS: TestModelC_RealCorpusQualification/jinja2-3.1.6-py3-none-any.whl (0.00s)
+2026-10-07T03:17:41.6658585Z PASS
+2026-10-07T03:17:41.6658957Z ok  	github.com/rahoney/heliopause/internal/artifact/pypi	8.837s
+2026-10-07T03:17:41.6752152Z Post job cleanup.
+2026-10-07T03:17:41.8060821Z Post job cleanup.
+2026-10-07T03:17:41.8965707Z [command]/usr/bin/git version
+2026-10-07T03:17:41.9011810Z git version 2.55.0
+2026-10-07T03:17:41.9061326Z Temporarily overriding HOME='/home/runner/work/_temp/5d5db9c9-33e8-4bed-b335-f2fea8ec4e60' before making global git config changes
+2026-10-07T03:17:41.9062984Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-07T03:17:41.9068430Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/heliopause/heliopause
+2026-10-07T03:17:41.9101839Z Removing SSH command configuration
+2026-10-07T03:17:41.9109850Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-07T03:17:41.9169074Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-07T03:17:41.9397848Z Removing HTTP extra header
+2026-10-07T03:17:41.9404296Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-07T03:17:41.9441348Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-07T03:17:41.9721181Z Removing includeIf entries pointing to credentials config files
+2026-10-07T03:17:41.9722145Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-07T03:17:41.9765149Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-07T03:17:42.0164756Z Cleaning up orphan processes
