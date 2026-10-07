@@ -85,3 +85,24 @@ Status: IN_PROGRESS — remediation·동일 입력/기존 소비자 로컬 회�
   identity preflight가 거부해 body는 NOT_RUN이다. Current CPU/세 CUDA full·실제
   프로젝트·전체 CI가 남는다. [로컬 근거](./evidence/m12-02-red-team/fix-02-local.json)와
   [여덟 영역 검토](./evidence/m12-02-red-team/review-matrix.md)를 참조한다.
+
+## FIX-03 — 기존 npm 프로젝트의 selected control 준비 충돌
+
+Status: IN_PROGRESS — 동일 fixture의 기준선 실패·수정 후 로컬 회귀 통과, 실제 소비자 대기.
+
+- `193e1aa`의 [CI 37586753502](https://github.com/rahoney/heliopause/actions/runs/37586753502)는
+  새 `TestLinuxNPMPromotionIntegration/project-first-and-retained`에서 runner 호출 전에
+  `package.json: file exists`로 실패했다. 기존 new-target 설치 성공과 프로젝트 설치를
+  구분한다. 이 실행의 CPU full·Go/Cargo/TF 소비자 성공은 전체 CI 실패를 덮지 않는다.
+- `npm_promotion.go`는 기준 `19411ca`와 해당 실패 후보에서 동일하다.
+  `privateWorkspace`가 복사한 frozen controls와 `preparePromotionProject`가 O_EXCL로
+  생성하는 selected controls가 같은 경로여서 충돌했다. 같은 최종 fixture를 기준
+  production에 적용해 actual exit 1로 재현했다. FIX-01/02의 회귀로 단정하지 않는다.
+- 기존 private workspace의 원본 복사본은 유지하고 빈 `selected` 하위 디렉터리에서
+  complete Verified Set의 controls를 생성한다. 기존 offline runner·검증·transaction을
+  재사용하며 no-replace 쓰기와 host controls 보호를 유지한다.
+- 수정 후 composed first/retained 회귀와 canonical 일곱 profile은 actual exit 0다.
+  [로컬 근거](./evidence/m12-02-red-team/fix-03-local.json)는 원본·source·fixture를
+  연결한다. 실패 후보의 진행 중 cu126은 수정 후보로 전환하기 위해 취소했으며 제품
+  실패나 qualification 성공으로 표시하지 않는다. 수정 후보의 실제 npm 소비자와
+  CPU/cu126/cu130/cu132·최종 CI가 완료되어야 FIX-03과 M12-02를 닫는다.

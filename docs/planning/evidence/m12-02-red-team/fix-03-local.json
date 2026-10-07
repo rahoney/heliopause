@@ -1,0 +1,156 @@
+{
+  "baseline": "19411caa06009b614e18c7c58771b5e19f9d26af",
+  "failed_candidate": "193e1aa84905e5523b443367f63cb620df10baa5",
+  "failed_ci": {
+    "run": 37586753502,
+    "conclusion": "failure",
+    "primary": "private npm selected package.json creation: file exists, before first project runner",
+    "full_job_bodies_preserved": 10,
+    "actual_passed_consumers": 43,
+    "cpu_full_seconds": 275.46,
+    "cleanup_original_exit": 1
+  },
+  "causal": {
+    "baseline": "19411caa06009b614e18c7c58771b5e19f9d26af",
+    "fixture_sha256": "ca64ac3ea0b7befa2bcca007971003474ecf748df6d05b3247102bb882f5b382",
+    "baseline_exit": 1,
+    "current_source_restored": true,
+    "source": [
+      {
+        "path": "internal/promotion/npm_transaction.go",
+        "sha256": "14498851e4d7a650c7e3ecd5663b64748cb18432bd9d3d91f8259f8d4073f7c4"
+      },
+      {
+        "path": "internal/promotion/npm_promotion.go",
+        "sha256": "22fc6df916a63254d52857172786ee50fb184f5d11c774360a2d80266466c09e"
+      },
+      {
+        "path": "internal/promotion/npm_transaction_member.go",
+        "sha256": "870495e4717e84b65f3f456f17b0b989dcc21cd014eb9ed4e9b4fb0a261f1136"
+      }
+    ]
+  },
+  "before_exit": 1,
+  "baseline_exit": 1,
+  "after_exit": 0,
+  "after_scope": "composed project first and retained with fixture runner, two calls; actual offline consumer pending",
+  "source": [
+    {
+      "path": "internal/promotion/npm_promotion.go",
+      "sha256": "22fc6df916a63254d52857172786ee50fb184f5d11c774360a2d80266466c09e"
+    },
+    {
+      "path": "internal/promotion/npm_promotion_test.go",
+      "sha256": "ca64ac3ea0b7befa2bcca007971003474ecf748df6d05b3247102bb882f5b382"
+    }
+  ],
+  "canonical_checks": [
+    {
+      "profile": "quick",
+      "exit_code": 0,
+      "seconds": 75.192,
+      "log": "fix-03-quick.log",
+      "sha256": "dc70e9b4a67a29febda35cbf9f19c5c011b1ae845dd9e6cd55c66e8dc6704062"
+    },
+    {
+      "profile": "docs",
+      "exit_code": 0,
+      "seconds": 0.155,
+      "log": "fix-03-docs.log",
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "profile": "security",
+      "exit_code": 0,
+      "seconds": 3.554,
+      "log": "fix-03-security.log",
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95"
+    },
+    {
+      "profile": "vulnerability",
+      "exit_code": 0,
+      "seconds": 2.205,
+      "log": "fix-03-vulnerability.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "profile": "fuzz",
+      "exit_code": 0,
+      "seconds": 25.55,
+      "log": "fix-03-fuzz.log",
+      "sha256": "3aa3160b72810b361e1c3f0c05b03f34b39479b2e7a00326e7e700780ef72dff"
+    },
+    {
+      "profile": "qualification-freshness",
+      "exit_code": 0,
+      "seconds": 0.103,
+      "log": "fix-03-qualification-freshness.log",
+      "sha256": "a139e18892192652dc1d7880e1d1bda7b269e445b80081de6776ebbe4d82c2c0"
+    },
+    {
+      "profile": "release-gate",
+      "exit_code": 0,
+      "seconds": 0.102,
+      "log": "fix-03-release-gate.log",
+      "sha256": "11e43c6a182a612ea79ba5d521d90153efd0f567857993ea20db4c3f95039b73"
+    }
+  ],
+  "raw": [
+    {
+      "path": "raw/npm-project-preparation-before.log",
+      "bytes": 438,
+      "sha256": "bbc15a041b5af79b341e851288da9aef2abea88ca3e7728a206ee99afce10bfc"
+    },
+    {
+      "path": "raw/npm-project-preparation-baseline.log",
+      "bytes": 438,
+      "sha256": "c8ec9eaae329fa555736fd1ad21536ebd0fdb5add2101ad7fcf310fe6ccf27ab"
+    },
+    {
+      "path": "raw/npm-project-preparation-after.log",
+      "bytes": 200,
+      "sha256": "3550e15135660483dae7893a60b5379a5d31d4bf117b026b65e69914242ceb41"
+    },
+    {
+      "path": "raw/fix-03-quick.log",
+      "bytes": 1354,
+      "sha256": "dc70e9b4a67a29febda35cbf9f19c5c011b1ae845dd9e6cd55c66e8dc6704062"
+    },
+    {
+      "path": "raw/fix-03-docs.log",
+      "bytes": 22,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "path": "raw/fix-03-security.log",
+      "bytes": 44,
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95"
+    },
+    {
+      "path": "raw/fix-03-vulnerability.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "raw/fix-03-fuzz.log",
+      "bytes": 126,
+      "sha256": "3aa3160b72810b361e1c3f0c05b03f34b39479b2e7a00326e7e700780ef72dff"
+    },
+    {
+      "path": "raw/fix-03-qualification-freshness.log",
+      "bytes": 41,
+      "sha256": "a139e18892192652dc1d7880e1d1bda7b269e445b80081de6776ebbe4d82c2c0"
+    },
+    {
+      "path": "raw/fix-03-release-gate.log",
+      "bytes": 21,
+      "sha256": "11e43c6a182a612ea79ba5d521d90153efd0f567857993ea20db4c3f95039b73"
+    }
+  ],
+  "remote_qualification": "PENDING",
+  "obsolete_cu126": {
+    "run": 37586754952,
+    "operation": "intentional cancellation for corrected candidate",
+    "qualified": false
+  }
+}

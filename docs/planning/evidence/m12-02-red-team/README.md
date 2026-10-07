@@ -52,3 +52,14 @@ Status: IN_PROGRESS. Remaining review and remote results pending.
 구분한다. [여덟 영역 검토](./review-matrix.md)는 owner·거부 조건·변경 범위와 현재
 판정을 연결한다. 원격 실제 소비자·CPU/세 CUDA full·최종 CI가 완료되기 전에는
 FIX-01/02와 M12-02 acceptance를 닫지 않는다.
+
+## FIX-03 및 첫 후보의 원격 실패
+
+[fix-03-local.json](./fix-03-local.json)은 기존 npm 프로젝트 준비의 동일 fixture
+기준선 FAIL과 수정 후 first/retained PASS, canonical 일곱 profile을 연결한다.
+`193e1aa` ordinary CI의 실제 최초 오류는 private selected control의 EEXIST이며
+첫 프로젝트 offline runner는 미실행이다. 전체 10개 job 원본은 외부 local M12-02의
+`remote-ci/`에 보존하며 [실패 실행](https://github.com/rahoney/heliopause/actions/runs/37586753502)을
+참조한다. 해당 실행의 43개 정상 소비자·CPU full275.46s는 부분 성공이다.
+같은 후보의 cu126 취소는 후보 교체이며 새 후보의 qualification을 대신하지 않는다.
+Source 수정은 기존 npm 준비 owner에 한정하며 FIX-01/02 remediation을 유지한다.

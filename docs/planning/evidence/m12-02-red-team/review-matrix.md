@@ -1,6 +1,6 @@
 # M12-02 여덟 영역 검토
 
-기준은 `19411ca`와 FIX-01/02 correction이다. 작성자의 repository 검토이며 외부
+기준은 `19411ca`와 FIX-01/02/03 correction이다. 작성자의 repository 검토이며 외부
 독립 감사·GitHub reviewer 승인을 뜻하지 않는다. canonical 문서의 기존 invariant와
 M12-005의 77개 요구사항 매핑을 기준으로 실제 owner·호출부·거부 조건을 확인했다.
 원격 실제 소비자 결과는 완료 후 이 evidence의 result에 별도로 연결한다.
@@ -13,7 +13,7 @@ M12-005의 77개 요구사항 매핑을 기준으로 실제 owner·호출부·�
 | Observation/attribution | `sandbox/direct_exec_admission_test.go`와 실제 owner의 fresh cryptographic admission/ACK/session invalidation; Python transaction ledger/accounting/cleanup; `inspection/pypi/command_observation.go`, `inspection/terraformprovider/inspection.go` | 새 release blocker 미발견. 출력 token·help exit0·stop 시도를 완료 authority로 사용하지 않음. Required incomplete는 승격하지 않으며 TF suspicious facts와 coverage를 구분. Viewer NOT_ATTESTED와 functionality/later-enforcement false는 유지. Current actual runtime 및102 latch 결과는 원격에서 재검증 |
 | Policy/Evidence binding | `application/project_inspect.go`, `project_update.go`, `project_build.go`, `cargo_build.go`; Domain `NewInspectedProjectSet`/`NewProjectVerifiedSet`; `promotion/project_cache_evidence.go`, `evidence/local/read.go`, Policy M3/M4 | 새 release blocker 미발견. Marker만으로 승인하지 않고 실제 record의 run/check/subject/digest를 재검사. Complete independent ALLOW가 없는 cache/add/build/init는 거부. Default tests에서 missing/foreign/tampered Evidence·approval 및 exact coverage negatives 확인 |
 | Transaction/rollback | 기존 npm/PyPI·Go/Cargo/TF transaction과 GitHub no-replace new-target publish; identity/content/mode/single-link, competing destination, backup cleanup, first-cause preservation, recovery boundary | **FIX-01/02 확정.** Go/Cargo4개 최초 삭제와 npm/PyPI6개 최초 삭제 사례를 실제 owner에서 재현. Go/Cargo40개 및 legacy48개 정상/부정 사례와 기존 rollback 회귀 PASS. 첫 FIX-01의 안전한 복원 차단은 반증·보완. Current remote project/add/init/full 결과 대기 |
-| Cross-ecosystem regression | 현재 correction의 canonical quick/docs/security/vulnerability/fuzz/freshness/release-gate, 기존 public/runtime CLI/inspection/promotion Required 소비자 | Local actual0와 실제 default/negative tests 확인. Compile·warm quality cache·환경 SKIP를 installed/full PASS로 확대하지 않음. 새 npm 프로젝트 첫/retained offline 소비자를 기존 Required integration test에 추가. Local runtime preflight 거부는 제품 설치 실패로 합치지 않으며 새 CI에서 판정 |
+| Cross-ecosystem regression | 현재 correction의 canonical quick/docs/security/vulnerability/fuzz/freshness/release-gate, 기존 public/runtime CLI/inspection/promotion Required 소비자 | **FIX-03 확정.** 새 Required npm 프로젝트 소비자가 기존 preparation의 EEXIST를 actual CI에서 검출. 동일 기준선 fixture FAIL→빈 selected child를 쓰는 수정 후 composed first/retained PASS. Local canonical actual0는 실제 offline 성공을 대신하지 않으며 새 CI에서 판정 |
 | Release integration impact | `releaseinstall/installer.go`의 verifier-before-write/manifest/assets/runtime binding, release build/publish workflows의 tag/exact run/main ancestry/Required/attestation/draft asset verification | 새 release blocker 미발견. 기존 binary/observer/helper 및 lock/Policy/resource/support 계약을 유지하는 bounded transaction correction. Canonical release-gate PASS는 실제 publish 증명이 아님. Tag 생성·publish·main merge는 미실행이며 M13 운영 acceptance를 대체하지 않음 |
 
 ## 변경 및 재사용 경계
@@ -41,4 +41,9 @@ project 첫/retained 소비자와 나머지 생태계의 정상 동작을 판정
 ABI/OS/torch version, torchvision/torchaudio, TF RPC/cloud 및 일반 Host crash recovery
 인증을 이번 red-team 결과로 새로 허용하지 않는다.
 
-Status: REVIEWED — FIX-01/02 remote qualification and acceptance closure pending.
+FIX-03은 frozen original controls의 private 복사본과 selected output을 같은 디렉터리에
+생성하던 기존 준비 충돌을 수정한다. 원본 복사본은 private parent에 보존하고 selected
+controls는 빈 child에 생성한다. No-replace/host controls 보호와 기존 검증·transaction을
+재사용하며 overwrite 허용이나 fixture/Required skip은 추가하지 않는다.
+
+Status: REVIEWED — FIX-01/02/03 remote qualification and acceptance closure pending.

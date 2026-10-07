@@ -1,0 +1,6 @@
+=== RUN   TestNPMPromotionProjectPreparesFreshVerifiedControls
+    npm_promotion_test.go:159: first project promotion before runner_calls=0: create Promotion input: open /tmp/TestNPMPromotionProjectPreparesFreshVerifiedControls1904948037/001/.target.haa-work-3662051481/package.json: file exists
+--- FAIL: TestNPMPromotionProjectPreparesFreshVerifiedControls (0.04s)
+FAIL
+FAIL	github.com/rahoney/heliopause/internal/promotion	0.043s
+FAIL

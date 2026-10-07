@@ -1,0 +1,4 @@
+=== RUN   TestNPMPromotionProjectPreparesFreshVerifiedControls
+--- PASS: TestNPMPromotionProjectPreparesFreshVerifiedControls (0.10s)
+PASS
+ok  	github.com/rahoney/heliopause/internal/promotion	0.107s

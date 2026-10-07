@@ -101,6 +101,13 @@ func (p *NPMPromotion) Promote(ctx context.Context, staged domain.StagedSet, bun
 			return domain.PromotedInstall{}, err
 		}
 		defer os.RemoveAll(workspace)
+		// The frozen control copies remain in the private parent. Generate the
+		// selected Verified Set in a fresh child; no-replace writes must never
+		// overwrite either those copies or the live project's controls.
+		workspace = filepath.Join(workspace, "selected")
+		if err := os.Mkdir(workspace, 0o700); err != nil {
+			return domain.PromotedInstall{}, errors.New("create selected npm project workspace")
+		}
 		manifest, lock, err := preparePromotionProject(workspace, stagedRoot, bundle)
 		if err != nil {
 			return domain.PromotedInstall{}, err
