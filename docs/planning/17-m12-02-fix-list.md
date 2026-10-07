@@ -2,7 +2,7 @@
 
 - 파일명: `17-m12-02-fix-list.md`
 - 시점: M12 Ecosystem Expansion 전체 qualification 완료 직후
-- 상태: IN_PROGRESS / Ready: Yes
+- 상태: COMPLETE — 기술 acceptance 완료; reviewer merge pending
 
 이 문서는 M12에서 추가한 **PyTorch, Go Modules, Cargo/crates.io, Terraform Provider**
 지원과 기존 npm/PyPI/GitHub 경로를 함께 최종 red-team 검토한 뒤,
@@ -32,9 +32,9 @@ release integration impact
 NO_RELEASE_BLOCKING_FINDINGS
 ```
 
-Status: IN_PROGRESS
-Ready: Yes — M12-001~005 기능 qualification·feature freeze 완료
-Next: final red-team review and release-blocking remediation, if found
+Status: COMPLETE
+Ready: No active work item — reviewer merge handoff
+Next: PR29 reviewer merge, main CI, then M13
 
 ## 검토 기준선
 
@@ -46,7 +46,7 @@ M12-005의 검증은 재사용하며, 위 여덟 영역의 최종 검토와 확�
 
 ## FIX-01 — Go/Cargo rollback 보관 영역의 외부 파일 삭제
 
-Status: IN_PROGRESS — remediation·동일 입력/기존 소비자 로컬 회귀 통과, 원격 검증 대기.
+Status: COMPLETE — 동일 입력 회귀와 같은 후보의 실제 소비자·원격 검증 완료.
 
 - 기준: `19411ca`, `internal/promotion/go_transaction.go`와
   `internal/promotion/cargo_transaction.go`의 commit/fail cleanup.
@@ -67,7 +67,7 @@ Status: IN_PROGRESS — remediation·동일 입력/기존 소비자 로컬 회�
 
 ## FIX-02 — npm/PyPI backup cleanup 및 npm rollback의 외부 파일 삭제
 
-Status: IN_PROGRESS — remediation·동일 입력/기존 소비자 로컬 회귀 통과, 원격 검증 대기.
+Status: COMPLETE — 동일 입력 회귀와 같은 후보의 실제 소비자·원격 검증 완료.
 
 - 기준: `19411ca`, `internal/promotion/npm_transaction.go`와
   `internal/promotion/pypi_venv_transaction.go`.
@@ -88,7 +88,7 @@ Status: IN_PROGRESS — remediation·동일 입력/기존 소비자 로컬 회�
 
 ## FIX-03 — 기존 npm 프로젝트의 selected control 준비 충돌
 
-Status: IN_PROGRESS — 동일 fixture의 기준선 실패·수정 후 로컬 회귀 통과, 실제 소비자 대기.
+Status: COMPLETE — 동일 fixture의 기준선 실패·수정 후 first/retained 실제 소비자 검증 완료.
 
 - `193e1aa`의 [CI 37586753502](https://github.com/rahoney/heliopause/actions/runs/37586753502)는
   새 `TestLinuxNPMPromotionIntegration/project-first-and-retained`에서 runner 호출 전에
@@ -106,3 +106,12 @@ Status: IN_PROGRESS — 동일 fixture의 기준선 실패·수정 후 로컬 �
   연결한다. 실패 후보의 진행 중 cu126은 수정 후보로 전환하기 위해 취소했으며 제품
   실패나 qualification 성공으로 표시하지 않는다. 수정 후보의 실제 npm 소비자와
   CPU/cu126/cu130/cu132·최종 CI가 완료되어야 FIX-03과 M12-02를 닫는다.
+
+## 최종 판정
+
+확정한 FIX-01~03은 모두 remediation과 영향받는 실제 소비자 검증을 완료했다.
+검토 범위에서 미해결 release blocker는 없다. 같은 기능 후보 `68099a5`의 CPU와
+cu126/cu130/cu132에서 각10SUCCESS를 확인했고 full40job 원문·checkout tree/mode를
+대조했다. 앞 절의 local checkpoint 대기 상태는 당시의 범위이며 현재 완료 판정과
+[최종 검증 결과](./evidence/m12-02-red-team/result.json)가 후속 원격 결과를 소유한다.
+이 판정은 외부 독립 감사·reviewer 승인·main merge나 public release를 뜻하지 않는다.

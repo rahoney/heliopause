@@ -8,9 +8,9 @@
 - Go module path: `github.com/rahoney/heliopause`
 - 구현 언어: Go
 - CLI framework: Cobra
-- 현재 상태: M0–M11 qualification 및 post-qualification release hardening 완료. M12-001~005 생태계 acceptance·전체 qualification과 feature freeze를 완료했다. M12-02 최종 red-team/fix gate를 진행하며, 이를 완료한 뒤 M13 Production Release & Operations를 진행한다.
-- 완료 작업: M12-005 — Cross-ecosystem qualification and feature freeze (`COMPLETE`)
-- 현재 작업: M12-02 — final red-team/fix gate (`IN_PROGRESS / Ready: Yes`)
+- 현재 상태: M0–M11 qualification 및 post-qualification release hardening, M12-001~005 생태계 acceptance·전체 qualification·feature freeze와 M12-02 최종 red-team/fix gate 완료. PR29 reviewer merge와 main CI 확인 후 M13 Production Release & Operations로 이어간다.
+- 완료 작업: M12-02 — final red-team/fix gate (`COMPLETE`)
+- 현재 작업: 없음 — reviewer merge 인계; M13은 `NOT_STARTED`
 - 진행 상태의 canonical owner: [`docs/planning/02-current-work-queue.md`](docs/planning/02-current-work-queue.md)
 
 Heliopause는 Apache-2.0으로 배포한다. 외부 기여는 `CLA.md`의 Harmony
@@ -107,7 +107,7 @@ Qualified source 경로와 일반 사용자용 public installer/배포 완료는
 | M12-003 | public crates.io: `helox cargo add`, `helox cargo build` | acceptance complete |
 | M12-004 | public Terraform Provider 설치: `helox terraform init` | installation acceptance complete; RPC/cloud behavior not attested |
 | M12-005 | 전체 생태계 qualification 및 feature freeze | COMPLETE |
-| M12-02 | 최종 red-team/fix gate | IN_PROGRESS / Ready: Yes |
+| M12-02 | 최종 red-team/fix gate | COMPLETE; reviewer merge pending |
 
 PyTorch profile roles are CPU (primary non-CUDA), cu126 (compatibility), cu130
 (primary CUDA), and cu132 (extended compatibility). `cu128` is removed and is

@@ -43,7 +43,7 @@
 `raw/`에 bytes 그대로 보존한다. 원격 소비자·CI는 아직 대기 중이며 로컬 PASS로
 대체하지 않는다.
 
-Status: IN_PROGRESS. Remaining review and remote results pending.
+Local checkpoint는 당시 범위다. 현재 최종 판정은 아래 결과를 따른다.
 
 ## FIX-02 및 검토 matrix
 
@@ -63,3 +63,17 @@ FIX-01/02와 M12-02 acceptance를 닫지 않는다.
 참조한다. 해당 실행의 43개 정상 소비자·CPU full275.46s는 부분 성공이다.
 같은 후보의 cu126 취소는 후보 교체이며 새 후보의 qualification을 대신하지 않는다.
 Source 수정은 기존 npm 준비 owner에 한정하며 FIX-01/02 remediation을 유지한다.
+
+## 최종 완료 판정
+
+Status: COMPLETE. IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED: YES.
+MISSING: 없음(이번 기술 acceptance). 여덟 영역 검토와 FIX-01~03을 완료했다.
+[최종 결과](./result.json)는 기능 source68099a5의 네 CI·full·실제 소비자와
+full40job raw의 hash 및 실패 후보의 보존 범위를 연결한다. Raw CI 원문은 local
+M12-02 `remote-ci/`와 해당 GitHub 실행에 보존한다. 로컬 인과 로그는 `raw/`에 있다.
+
+[Source boundary](./source-boundary.json)는 완료 문서·증거 변경의 재사용 경계를
+소유한다. 문서 HEAD의 별도 Required 확인은 PR29 및 외부 closure receipt에 남겨
+새 evidence-only commit으로 다시 미검증 HEAD를 만들지 않는다. Reviewer merge와
+main CI 확인 뒤 M13으로 인계한다. 기존 지원 범위와 feature freeze를 유지하며
+실제 publish·M13 activation·외부 독립 감사는 이번 완료 범위가 아니다.

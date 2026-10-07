@@ -8,11 +8,11 @@
 
 ```text
 Current milestone: M12 — Ecosystem Expansion Before Public Release
-Milestone status: IN_PROGRESS
-Active work item: M12-02 — final red-team/fix gate
+Milestone status: COMPLETE (technical acceptance; reviewer merge pending)
+Active work item: none (M12-02 complete)
 Next work item: M13 — Production Release & Operations
-Next work item status: NOT_STARTED / Ready: No — M12-02 acceptance pending
-Ready: Yes
+Next work item status: NOT_STARTED / Ready: No — reviewer merge and main CI pending; M13 activation blocker remains separate
+Ready: No — delivery handoff
 ```
 
 M0~M7은 원래 정의한 MVP qualification과 evidence를 완료했다. external
@@ -2177,7 +2177,7 @@ production activation과 최종 배포를 수행한다.
 | 3 | M12-003 | Rust/Cargo and public crates.io | COMPLETE |
 | 4 | M12-004 | Terraform Provider installation and cumulative remote qualification | COMPLETE |
 | 5 | M12-005 | cross-ecosystem qualification and feature freeze | COMPLETE |
-| 6 | M12-02 | final red-team/fix gate | IN_PROGRESS / Ready: Yes |
+| 6 | M12-02 | final red-team/fix gate | COMPLETE |
 
 ### M12-001 acceptance 종료 (2026-10-03)
 
@@ -3067,3 +3067,24 @@ IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO와
 여덟 검토 영역·실제 MISSING을 기록했다. 기존 구현과005 full 증거를 재사용하며
 새 기능이나 Core/Policy 계약 변경은 하지 않는다. M12-02만 IN_PROGRESS다.
 M13은NOT_STARTED이며 이번 범위는 reviewer의 main merge 전 검토 완료까지다.
+
+### M12-02 검토·remediation 완료 (2026-10-07)
+
+기준19411ca의 기존 구현을 재사용해 여덟 책임 영역을 검토했다. Go/Cargo와 기존
+npm/PyPI backup의 외부 데이터 삭제 및 npm 프로젝트 selected control의 EEXIST를
+동일 fixture로 재현했고 기존 owner에서 FIX-01~03으로 수정했다. 처음 FIX-01의
+안전한 원본 복원 차단은 기존 회귀가 반증해 보완했다. 새 Core/Policy/runtime 역할,
+허용 목록이나 예산 변경은 없다. [최종 결과](./evidence/m12-02-red-team/result.json)가
+local before/after와 같은 기능 source68099a5의 네 원격 실행·원문 hash를 연결한다.
+
+M12-02: `IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES`.
+MISSING: 없음(이 작업의 기술 acceptance). CPU·cu126·cu130·cu132 각10SUCCESS,
+실제45/46소비자·npm first/retained2회·102latches·5helperwait0와 최종 cleanup을
+검증했다. 기존 bounded 지원 tuple과 viewer NOT_ATTESTED·NumPy 승격 제외를 유지한다.
+작성자 검토를 외부 독립 감사나 reviewer 승인으로 표시하지 않는다.
+
+이 완료 변경은 문서·증거만이며 qualified source와 실행 입력 bytes/mode의 일치를
+[source boundary](./evidence/m12-02-red-team/source-boundary.json)에 기록한다.
+문서 HEAD의 원격 Required 확인은 PR29와 외부 closure receipt가 소유한다.
+Reviewer merge·main CI가 전달에 남고, M13은 NOT_STARTED다. M13-001의 기존
+repository activation blocker도 해당 항목의 원래 해제 조건을 유지한다.
