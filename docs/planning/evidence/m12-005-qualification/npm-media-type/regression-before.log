@@ -1,0 +1,73 @@
+=== RUN   TestResolveRegistryMetadataMediaTypes
+=== PAUSE TestResolveRegistryMetadataMediaTypes
+=== CONT  TestResolveRegistryMetadataMediaTypes
+=== RUN   TestResolveRegistryMetadataMediaTypes/application/vnd.npm.install-v1+json
+=== PAUSE TestResolveRegistryMetadataMediaTypes/application/vnd.npm.install-v1+json
+=== RUN   TestResolveRegistryMetadataMediaTypes/application/vnd.npm.install-v1+json;_charset=utf-8
+=== PAUSE TestResolveRegistryMetadataMediaTypes/application/vnd.npm.install-v1+json;_charset=utf-8
+=== RUN   TestResolveRegistryMetadataMediaTypes/Application/Vnd.Npm.Install-V1+Json
+=== PAUSE TestResolveRegistryMetadataMediaTypes/Application/Vnd.Npm.Install-V1+Json
+=== RUN   TestResolveRegistryMetadataMediaTypes/application/json
+=== PAUSE TestResolveRegistryMetadataMediaTypes/application/json
+=== RUN   TestResolveRegistryMetadataMediaTypes/application/json;_charset=utf-8
+=== PAUSE TestResolveRegistryMetadataMediaTypes/application/json;_charset=utf-8
+=== RUN   TestResolveRegistryMetadataMediaTypes/[]
+=== PAUSE TestResolveRegistryMetadataMediaTypes/[]
+=== RUN   TestResolveRegistryMetadataMediaTypes/[application/json-invalid]
+=== PAUSE TestResolveRegistryMetadataMediaTypes/[application/json-invalid]
+=== RUN   TestResolveRegistryMetadataMediaTypes/[application/jsonp]
+=== PAUSE TestResolveRegistryMetadataMediaTypes/[application/jsonp]
+=== RUN   TestResolveRegistryMetadataMediaTypes/[application/vnd.other+json]
+=== PAUSE TestResolveRegistryMetadataMediaTypes/[application/vnd.other+json]
+=== RUN   TestResolveRegistryMetadataMediaTypes/[application/vnd.npm.install-v1+json;_broken]
+=== PAUSE TestResolveRegistryMetadataMediaTypes/[application/vnd.npm.install-v1+json;_broken]
+=== RUN   TestResolveRegistryMetadataMediaTypes/[application/json;_charset=utf-8;_charset=ascii]
+=== PAUSE TestResolveRegistryMetadataMediaTypes/[application/json;_charset=utf-8;_charset=ascii]
+=== RUN   TestResolveRegistryMetadataMediaTypes/[application/vnd.npm.install-v1+json_text/plain]
+=== PAUSE TestResolveRegistryMetadataMediaTypes/[application/vnd.npm.install-v1+json_text/plain]
+=== RUN   TestResolveRegistryMetadataMediaTypes/[application/json_application/vnd.npm.install-v1+json]
+=== PAUSE TestResolveRegistryMetadataMediaTypes/[application/json_application/vnd.npm.install-v1+json]
+=== CONT  TestResolveRegistryMetadataMediaTypes/application/vnd.npm.install-v1+json
+=== CONT  TestResolveRegistryMetadataMediaTypes/[application/jsonp]
+=== CONT  TestResolveRegistryMetadataMediaTypes/[application/json;_charset=utf-8;_charset=ascii]
+=== CONT  TestResolveRegistryMetadataMediaTypes/[application/vnd.npm.install-v1+json;_broken]
+=== CONT  TestResolveRegistryMetadataMediaTypes/[application/vnd.other+json]
+=== CONT  TestResolveRegistryMetadataMediaTypes/[application/json-invalid]
+=== CONT  TestResolveRegistryMetadataMediaTypes/[application/json_application/vnd.npm.install-v1+json]
+=== CONT  TestResolveRegistryMetadataMediaTypes/[application/vnd.npm.install-v1+json_text/plain]
+=== CONT  TestResolveRegistryMetadataMediaTypes/application/json
+=== CONT  TestResolveRegistryMetadataMediaTypes/Application/Vnd.Npm.Install-V1+Json
+=== CONT  TestResolveRegistryMetadataMediaTypes/[]
+=== CONT  TestResolveRegistryMetadataMediaTypes/application/vnd.npm.install-v1+json;_charset=utf-8
+=== NAME  TestResolveRegistryMetadataMediaTypes/application/vnd.npm.install-v1+json
+    resolver_test.go:89: Resolve() = domain.ResolvedArtifact{identity:domain.ResolvedArtifactIdentity{source:domain.SourceID{value:""}, name:"", version:"", variant:""}, acquisitionLocator:"", declaredIntegrity:""}, npm metadata response is not JSON
+=== NAME  TestResolveRegistryMetadataMediaTypes/[application/json-invalid]
+    resolver_test.go:106: unsupported or ambiguous media type was accepted
+=== NAME  TestResolveRegistryMetadataMediaTypes/[application/json_application/vnd.npm.install-v1+json]
+    resolver_test.go:106: unsupported or ambiguous media type was accepted
+=== NAME  TestResolveRegistryMetadataMediaTypes/Application/Vnd.Npm.Install-V1+Json
+    resolver_test.go:89: Resolve() = domain.ResolvedArtifact{identity:domain.ResolvedArtifactIdentity{source:domain.SourceID{value:""}, name:"", version:"", variant:""}, acquisitionLocator:"", declaredIntegrity:""}, npm metadata response is not JSON
+=== NAME  TestResolveRegistryMetadataMediaTypes/[application/jsonp]
+    resolver_test.go:106: unsupported or ambiguous media type was accepted
+=== CONT  TestResolveRegistryMetadataMediaTypes/application/json;_charset=utf-8
+=== NAME  TestResolveRegistryMetadataMediaTypes/[application/json;_charset=utf-8;_charset=ascii]
+    resolver_test.go:106: unsupported or ambiguous media type was accepted
+=== NAME  TestResolveRegistryMetadataMediaTypes/application/vnd.npm.install-v1+json;_charset=utf-8
+    resolver_test.go:89: Resolve() = domain.ResolvedArtifact{identity:domain.ResolvedArtifactIdentity{source:domain.SourceID{value:""}, name:"", version:"", variant:""}, acquisitionLocator:"", declaredIntegrity:""}, npm metadata response is not JSON
+--- FAIL: TestResolveRegistryMetadataMediaTypes (0.00s)
+    --- FAIL: TestResolveRegistryMetadataMediaTypes/[application/json_application/vnd.npm.install-v1+json] (0.01s)
+    --- FAIL: TestResolveRegistryMetadataMediaTypes/[application/jsonp] (0.01s)
+    --- PASS: TestResolveRegistryMetadataMediaTypes/[application/vnd.npm.install-v1+json;_broken] (0.01s)
+    --- PASS: TestResolveRegistryMetadataMediaTypes/application/json (0.01s)
+    --- PASS: TestResolveRegistryMetadataMediaTypes/[application/vnd.npm.install-v1+json_text/plain] (0.01s)
+    --- FAIL: TestResolveRegistryMetadataMediaTypes/application/vnd.npm.install-v1+json (0.01s)
+    --- FAIL: TestResolveRegistryMetadataMediaTypes/[application/json-invalid] (0.01s)
+    --- PASS: TestResolveRegistryMetadataMediaTypes/[application/vnd.other+json] (0.01s)
+    --- FAIL: TestResolveRegistryMetadataMediaTypes/Application/Vnd.Npm.Install-V1+Json (0.01s)
+    --- FAIL: TestResolveRegistryMetadataMediaTypes/[application/json;_charset=utf-8;_charset=ascii] (0.01s)
+    --- FAIL: TestResolveRegistryMetadataMediaTypes/application/vnd.npm.install-v1+json;_charset=utf-8 (0.01s)
+    --- PASS: TestResolveRegistryMetadataMediaTypes/[] (0.01s)
+    --- PASS: TestResolveRegistryMetadataMediaTypes/application/json;_charset=utf-8 (0.00s)
+FAIL
+FAIL	github.com/rahoney/heliopause/internal/artifact/npm	0.019s
+FAIL

@@ -102,6 +102,7 @@ func validateCIWorkflow(contents string) []string {
 	findings := validateWorkflowStructure(contents, true)
 	findings = append(findings, validateCargoIntegrationGates(contents)...)
 	findings = append(findings, validateTerraformIntegrationGates(contents)...)
+	findings = append(findings, validateLifecycleIntegrationCommands(contents, "npm inspect", []string{`HELOX_NPM_INSPECT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxNPMInspectCLIIntegration$'`})...)
 	requiredSnippets := []string{
 		"name: Heliopause CI",
 		"  pull_request:",

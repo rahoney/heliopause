@@ -61,3 +61,20 @@ Staticcheck does not prove that exported but unwired APIs have consumers. Manual
 reference/wiring review is the evidence for this cleanup; no Host exploit claim
 is made. Final checks and actual installed Host/isolated ecosystem consumers must
 qualify the reduced candidate.
+
+## Confirmed npm inspect acceptance gap
+
+The public npm registry returned HTTP200 and the requested
+`application/vnd.npm.install-v1+json` representation. Replaying those exact
+9,995 metadata bytes through the existing resolver failed with
+`npm metadata response is not JSON`. Its prefix-only check rejected the
+negotiated representation and also accepted invalid JSON media-type prefixes.
+The existing owner now parses one unambiguous MIME header and accepts only that
+negotiated type or `application/json`. The request, authority, bounds, identity,
+SRI verification and downstream inspection/Policy remain unchanged.
+
+[Same-input failure/correction evidence](./npm-media-type/result.json) includes
+the official format reference, frozen capture and normal/negative regression.
+A public `is-number@7.0.0` inspect CLI test is wired to the existing authenticated
+Linux lifecycle job. Its actual execution remains pending; npm install uses a
+different resolver and cannot substitute for this test.
