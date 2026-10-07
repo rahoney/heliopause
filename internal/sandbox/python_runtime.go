@@ -3,7 +3,6 @@ package sandbox
 import (
 	"context"
 	"errors"
-	"runtime"
 	"strings"
 
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
@@ -42,12 +41,6 @@ type PythonCapability struct {
 	Available      bool
 	LimitationCode string
 	Runtime        PythonRuntime
-}
-
-// ProbePython checks M5's Linux amd64 gVisor prerequisites and the presence of
-// the exact immutable Python runtime image without downloading it.
-func ProbePython(ctx context.Context) (PythonCapability, error) {
-	return probePython(ctx, runtime.GOOS, runtime.GOARCH, nil)
 }
 
 func probePython(ctx context.Context, operatingSystem, architecture string, executor Executor) (PythonCapability, error) {

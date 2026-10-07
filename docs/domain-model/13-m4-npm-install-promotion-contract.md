@@ -35,7 +35,7 @@ exact primary reference
 ```
 
 - resolver는 M3 dynamic Sandbox와 별개의 disposable trusted infrastructure helper다. untrusted package code/lifecycle script를 실행하지 않으며, public `registry.npmjs.org` allowlist 외 egress, Host bind mount, credential, user/global `.npmrc`를 허용하지 않는다.
-- exact Node image는 M3의 digest-pinned Node 22.23.1 image를 사용하고, 그 upstream bundled npm 10.9.8을 M4 runtime lock으로 고정한다. Node 22 image에 npm 11.15.0을 별도 설치하면 runtime identity와 resolver dependency boundary가 바뀌므로 사용하지 않는다. helper startup의 npm version mismatch는 fail-closed 한다.
+- exact Node image와 bundled npm은 `scripts/runtimes.lock.json`이 소유한다. 현재 qualification은 Node24.21.0 image와 bundled npm11.19.0을 사용한다. 별도 npm 설치나 ambient version으로 대체하면 runtime identity와 resolver dependency boundary가 바뀌므로 허용하지 않는다. Helper startup의 version mismatch는 fail-closed다. M4 당시 Node22.23.1/npm10.9.8 결과는 역사적 qualification 범위다.
 - resolver command는 `--package-lock-only`, `--ignore-scripts`, `--no-audit`, `--no-fund`, empty HOME/cache와 서로 다른 빈 user/global npm config 경로 및 fixed public registry를 사용한다. package metadata resolution 이외 install·tarball execution·lifecycle 실행은 하지 않는다.
 - canonical parser는 lockfile v3, root dependency와 package entry mapping, exact registry `resolved` URL, SHA-512 SRI, package name/version을 요구한다. git, URL/file/link/workspace/alias, bundled dependency, missing/duplicate/non-registry integrity, unsupported optional/platform branch 또는 unsupported lock semantics는 incomplete이며 Promotion하지 않는다.
 - resolver output은 bounded and sanitized data만 Application으로 넘긴다. raw lockfile, registry response, URL query, Host path, npm stderr는 result/Evidence summary에 직접 노출하지 않는다.
@@ -113,7 +113,7 @@ staged exact tarballs
 - target must not exist before Promotion. Promotion never overwrites/merges an existing directory. Before publish, trusted controller verifies generated target and parent containment, `fsync`s required files/directories, then performs one rename; failure before rename removes the temporary target best-effort.
 - a failure after Policy `ALLOW` is `Operation FAILED` with a Promotion limitation. It never rewrites the completed inspection Policy Decision to `BLOCK`.
 
-M4-005의 Promotion runtime은 digest-pinned `node:22.23.1-slim` image와 bundled npm `10.9.8`을 사용한다. Docker는 `--pull never`, `--network none`, read-only root, all-capability drop, no-new-privileges, bounded PID/memory/CPU, empty temporary HOME/cache/config로 실행하고 workspace 외 Host path를 mount하지 않는다. Docker client 자체도 빈 temporary `HOME`/`DOCKER_CONFIG`를 사용하여 Host registry credential을 읽지 않는다.
+Promotion runtime은 같은 canonical lock의 digest-pinned Node image와 bundled npm을 사용한다. Docker는 `--pull never`, `--network none`, read-only root, all-capability drop, no-new-privileges, bounded PID/memory/CPU, empty temporary HOME/cache/config로 실행하고 workspace 외 Host path를 mount하지 않는다. Docker client 자체도 빈 temporary `HOME`/`DOCKER_CONFIG`를 사용하여 Host registry credential을 읽지 않는다.
 
 generated lock의 모든 `resolved`는 target-local `.heliopause/artifacts/<sha256>.tgz` file source이며 registry URL을 포함하지 않는다. runtime 종료 후 controller는 package/lock/Manifest/SBOM 불변, target-local tarball SHA-256, installed package path·name·version, exact package set, no-symlink/no-special-file를 다시 검증한다. Linux amd64 publish는 `renameat2(RENAME_NOREPLACE)`를 사용하여 validation과 rename 사이에 target이 생기는 경합도 덮어쓰지 않고 실패한다.
 

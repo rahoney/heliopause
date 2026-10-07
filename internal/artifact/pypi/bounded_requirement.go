@@ -284,14 +284,3 @@ func AggregateBoundedRequirements(project string, requirements []BoundedRequirem
 	}
 	return AggregatedBoundedRequirement{request: request, extras: extras}, nil
 }
-
-// AggregateBoundedRequirement is retained as the string-only compatibility
-// view. Resolver code must use AggregateBoundedRequirements to preserve
-// extra semantics.
-func AggregateBoundedRequirement(project string, requirements []BoundedRequirement) (string, error) {
-	aggregated, err := AggregateBoundedRequirements(project, requirements)
-	if err != nil {
-		return "", err
-	}
-	return aggregated.Request(), nil
-}

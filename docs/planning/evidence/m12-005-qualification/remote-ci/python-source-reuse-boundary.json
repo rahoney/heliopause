@@ -1,0 +1,1054 @@
+{
+  "before": "bb28b4744d6d124169c26e8dba77f4ef8c832db2",
+  "after": "8791fdcff573b1d85681ca74b65cf5a9e3ccf27a",
+  "functional_changes": [
+    {
+      "path": ".github/workflows/heliopause-ci.yml"
+    },
+    {
+      "path": "internal/artifact/npm/resolver.go"
+    },
+    {
+      "path": "internal/artifact/npm/resolver_test.go"
+    },
+    {
+      "path": "internal/bootstrap/npm_inspect_integration_test.go"
+    },
+    {
+      "path": "scripts/check/workflow.go"
+    }
+  ],
+  "unchanged_python_runtime_inputs": [
+    {
+      "path": "go.mod",
+      "git_blob": "695af0f89f971f27f3e9bcf6e18da074596ac022"
+    },
+    {
+      "path": "go.sum",
+      "git_blob": "4090a12ca8ed313571377e5f04a4ae393b562f89"
+    },
+    {
+      "path": "internal/application/inspect.go",
+      "git_blob": "a0c1c343b4ce20ef9db05325d3144499ff6d105b"
+    },
+    {
+      "path": "internal/application/install_inspect.go",
+      "git_blob": "ba799a198423471c2bcaef7fc8fbfe24587832a6"
+    },
+    {
+      "path": "internal/application/install_promote.go",
+      "git_blob": "82cc357b123f702a158ee6d337a69c0e4df4824e"
+    },
+    {
+      "path": "internal/artifact/pypi/bounded_requirement.go",
+      "git_blob": "3e6613a9c4842ccc60785e645e7af40babca1889"
+    },
+    {
+      "path": "internal/artifact/pypi/bounded_requirement_test.go",
+      "git_blob": "0faf7f7c6dab8fd9bab4b73e254c55c64e7b8832"
+    },
+    {
+      "path": "internal/artifact/pypi/corpus_test.go",
+      "git_blob": "4c5043a028a11334ef444e7ab8f0ea324b3b639b"
+    },
+    {
+      "path": "internal/artifact/pypi/entry_point_identity_test.go",
+      "git_blob": "e71622a2905644190082b95939c672ea2b5aba20"
+    },
+    {
+      "path": "internal/artifact/pypi/graph_artifact.go",
+      "git_blob": "14201c10b4d10ee60a2dfbe92db8d99b96b05c57"
+    },
+    {
+      "path": "internal/artifact/pypi/inspection_prerequisite.go",
+      "git_blob": "8b72451e0494b8c9faeb2e1d24e22b87020f0680"
+    },
+    {
+      "path": "internal/artifact/pypi/inspection_prerequisite_test.go",
+      "git_blob": "259951eebf0ebeeb69208d504fdf00c7dcb61038"
+    },
+    {
+      "path": "internal/artifact/pypi/intake.go",
+      "git_blob": "a41c3bbd1ab635520f396aabdb8245e2813659f6"
+    },
+    {
+      "path": "internal/artifact/pypi/observation_plan.go",
+      "git_blob": "09b9dc45e5e19c0c954f574e915694b131650d31"
+    },
+    {
+      "path": "internal/artifact/pypi/real_corpus_integration_test.go",
+      "git_blob": "bd67b44cd96a917e3de57976203e028f1e9df08f"
+    },
+    {
+      "path": "internal/artifact/pypi/reference.go",
+      "git_blob": "62645fd86080d4d7af5b83177245b006e419b685"
+    },
+    {
+      "path": "internal/artifact/pypi/reference_test.go",
+      "git_blob": "673b48d604df2a400edd4de40b5fbbb14638240c"
+    },
+    {
+      "path": "internal/artifact/pypi/resource_policy.go",
+      "git_blob": "56d85fecb201ccde232ab4f9969f8b273fe03927"
+    },
+    {
+      "path": "internal/artifact/pypi/resource_policy_test.go",
+      "git_blob": "6e671d5581f04c53f242f5e7b8302f45a9e33304"
+    },
+    {
+      "path": "internal/artifact/pypi/resource_role_test.go",
+      "git_blob": "9a1b1bf3d2b12a5dc9ed6a4102319065baedc322"
+    },
+    {
+      "path": "internal/artifact/pypi/sdist.go",
+      "git_blob": "c42f9480857d2b3af0f348bd195788606eb7963c"
+    },
+    {
+      "path": "internal/artifact/pypi/sdist_test.go",
+      "git_blob": "069f798ef3def36c70aae729a4a8f0d7a3a0d95d"
+    },
+    {
+      "path": "internal/artifact/pypi/simple.go",
+      "git_blob": "79901ea4869cf438d7c08432060d952a718010d7"
+    },
+    {
+      "path": "internal/artifact/pypi/simple_test.go",
+      "git_blob": "90135ab71913eefad308f53753ec175e1a5a1dbf"
+    },
+    {
+      "path": "internal/artifact/pypi/source_profile.go",
+      "git_blob": "be548b2ac8191b3fdd2309e4925f810af68f445f"
+    },
+    {
+      "path": "internal/artifact/pypi/source_profile_test.go",
+      "git_blob": "61fa3851ffe360e25cc647fef795a01127aafdf1"
+    },
+    {
+      "path": "internal/artifact/pypi/testdata/real-corpus.json",
+      "git_blob": "913aa17dd38fd2fc850e9244b4c759d0908c7497"
+    },
+    {
+      "path": "internal/artifact/pypi/wheel.go",
+      "git_blob": "c0108b2ba742e08bbea6f4ed628f537ab692ed86"
+    },
+    {
+      "path": "internal/artifact/pypi/wheel_test.go",
+      "git_blob": "84c7e366e4ea13c0df99dad7f3ee6530b3c6f163"
+    },
+    {
+      "path": "internal/bootstrap/bootstrap.go",
+      "git_blob": "fe8a7e13ba80e55534565231140daae1988570e4"
+    },
+    {
+      "path": "internal/bootstrap/pypi_prerequisite.go",
+      "git_blob": "f4f92b4ea62ebf1691a29c9f5fe6b3e398bd5f9a"
+    },
+    {
+      "path": "internal/bootstrap/pypi_prerequisite_test.go",
+      "git_blob": "9d7dd9f723245da0f32718397044504a6cc17e51"
+    },
+    {
+      "path": "internal/core/domain/artifact.go",
+      "git_blob": "af7708c188f44e439ede2e6a76998b1f4cd91902"
+    },
+    {
+      "path": "internal/core/domain/artifact_test.go",
+      "git_blob": "31add93bcbd71608591d5656955f3618cee2af42"
+    },
+    {
+      "path": "internal/core/domain/check.go",
+      "git_blob": "ec2bbf336f8270f22418774f1456473f9e5258fd"
+    },
+    {
+      "path": "internal/core/domain/check_test.go",
+      "git_blob": "899d241bdfd5b011335de870420f944ae7dea187"
+    },
+    {
+      "path": "internal/core/domain/derivation.go",
+      "git_blob": "c12606f7cd8736409b5b9d362de32dba9cc1e307"
+    },
+    {
+      "path": "internal/core/domain/derivation_test.go",
+      "git_blob": "4d7238ddcf3c33f125ef0d9031523808ec47c388"
+    },
+    {
+      "path": "internal/core/domain/evidence.go",
+      "git_blob": "bf79b000bc07f6ae34e5f078c346ca753b304c2e"
+    },
+    {
+      "path": "internal/core/domain/identifier.go",
+      "git_blob": "ba132e2d95b097532aec2c1a58d6ab65bd2a35f7"
+    },
+    {
+      "path": "internal/core/domain/identifier_test.go",
+      "git_blob": "47488166749855efe6a9b13de86f91170e90c4ba"
+    },
+    {
+      "path": "internal/core/domain/install.go",
+      "git_blob": "4371d202b6082bdc3c384bfa457554d3fd06f709"
+    },
+    {
+      "path": "internal/core/domain/install_test.go",
+      "git_blob": "0e0754451a9b8001746137480c1424dd86072cd1"
+    },
+    {
+      "path": "internal/core/domain/manifest.go",
+      "git_blob": "e71dc4a49e9d7d51bbb6376a01b1b8b9f8bd7956"
+    },
+    {
+      "path": "internal/core/domain/manifest_test.go",
+      "git_blob": "986e6a30832a70f9a5848987e1a4c2a61b4ad3d4"
+    },
+    {
+      "path": "internal/core/domain/operation.go",
+      "git_blob": "a5316a9f5223f96ec65ce0ec6703736d9e4c3fe5"
+    },
+    {
+      "path": "internal/core/domain/project_build.go",
+      "git_blob": "bb40e0134aef34325af1edb7134d6eba0381f5ea"
+    },
+    {
+      "path": "internal/core/domain/project_snapshot.go",
+      "git_blob": "ead5a3e35b0de1f28acee483bb891393685bd28e"
+    },
+    {
+      "path": "internal/core/domain/project_staged_set.go",
+      "git_blob": "16b0cd7e0e79c1af35d88f75a24adb1bdbe22e39"
+    },
+    {
+      "path": "internal/core/domain/project_update.go",
+      "git_blob": "f8e0433f85795dcd009272a73b5f4387cd96a1e1"
+    },
+    {
+      "path": "internal/core/domain/project_update_test.go",
+      "git_blob": "375677598765876225ded16c2ec824625ad5df96"
+    },
+    {
+      "path": "internal/core/domain/project_verified_set.go",
+      "git_blob": "6f0c497caafc1f09d0df7cd4556d224d1af71480"
+    },
+    {
+      "path": "internal/core/domain/project_verified_set_test.go",
+      "git_blob": "ce66f7cc37b622b508bfd0e68ffd9796a82724cd"
+    },
+    {
+      "path": "internal/core/domain/resolved.go",
+      "git_blob": "34da029346bebd68212797403d93d797aa2e7653"
+    },
+    {
+      "path": "internal/core/domain/run.go",
+      "git_blob": "c51f7194a2d05fba8aa4586d6cc33994f3aac527"
+    },
+    {
+      "path": "internal/core/domain/run_test.go",
+      "git_blob": "609172b012ba2f43d1c456b896993d09c8b1fc47"
+    },
+    {
+      "path": "internal/core/domain/sandbox.go",
+      "git_blob": "cf77b17c11074626bac38aee7f1de4af03ec56a5"
+    },
+    {
+      "path": "internal/core/domain/sandbox_test.go",
+      "git_blob": "a7e184f3093418d7ff4791f851a745b73612c341"
+    },
+    {
+      "path": "internal/core/domain/verified_set.go",
+      "git_blob": "ef6dc08cced5279a2c387aa77c383f94287820d3"
+    },
+    {
+      "path": "internal/core/domain/verified_set_test.go",
+      "git_blob": "513df94c4da1db0001643c202cde411789e9e304"
+    },
+    {
+      "path": "internal/core/ports/ports.go",
+      "git_blob": "b67c9f51a183239082e733dfe2b98469524863e1"
+    },
+    {
+      "path": "internal/hosttool/executor.go",
+      "git_blob": "1be7eb18aee4f263e170d0dbed8bf3a553e7a7bd"
+    },
+    {
+      "path": "internal/hosttool/executor_test.go",
+      "git_blob": "04cbdd3617eb7fe692018aa9eede3f17134af14e"
+    },
+    {
+      "path": "internal/hosttool/identity_other.go",
+      "git_blob": "22a113632c96cc4502745c734df8b9c9616963dd"
+    },
+    {
+      "path": "internal/hosttool/identity_unix.go",
+      "git_blob": "002da0633765b950dba314db5c5bab3102a54f19"
+    },
+    {
+      "path": "internal/hosttool/linux_integration_test.go",
+      "git_blob": "7866d3f2130ff4018dce0bbe029a80726cf6cecf"
+    },
+    {
+      "path": "internal/hosttool/observation_keeper_linux.go",
+      "git_blob": "6e40274f39b31cb18bb7505a001b48a8ec4079ac"
+    },
+    {
+      "path": "internal/hosttool/observation_keeper_runtime_test.go",
+      "git_blob": "8f6375484d57157687292bcd936ad2ef133036da"
+    },
+    {
+      "path": "internal/hosttool/observation_resource_linux.go",
+      "git_blob": "5aa199eda187c592f70665ddbd45cf9062609c2c"
+    },
+    {
+      "path": "internal/hosttool/observation_resource_linux_test.go",
+      "git_blob": "7eeeb456be12107d7c456d4b565f39dd3e296469"
+    },
+    {
+      "path": "internal/hosttool/observer.go",
+      "git_blob": "b8b06c7be9550cd8ada9b58bd2b3e1fbca30d4eb"
+    },
+    {
+      "path": "internal/hosttool/policy_engine.go",
+      "git_blob": "525237da59480dd680c840bec45ee6e7bb2cf9a8"
+    },
+    {
+      "path": "internal/hosttool/policy_engine_test.go",
+      "git_blob": "b488745330606b100da19231ab12e35632fad413"
+    },
+    {
+      "path": "internal/hosttool/policy_peer_linux.go",
+      "git_blob": "3dcc871e447db5c5289f0e7e13590a97647555c6"
+    },
+    {
+      "path": "internal/hosttool/policy_service_linux.go",
+      "git_blob": "81f88a5bc54870b6337ec0101772cc1d3cc14692"
+    },
+    {
+      "path": "internal/inspection/pypi/command_observation.go",
+      "git_blob": "acb3afe59567cc5dc6d6469569f85955caf3e5ea"
+    },
+    {
+      "path": "internal/inspection/pypi/command_observation_test.go",
+      "git_blob": "ca8f272efd2f32621e3ae6f17273c8b08cac6c5b"
+    },
+    {
+      "path": "internal/inspection/pypi/composite.go",
+      "git_blob": "c9dba09b76e228d5a25d60ffe318fbf764767558"
+    },
+    {
+      "path": "internal/inspection/pypi/composite_graph_test.go",
+      "git_blob": "687707da2187d4702ccebcb41b5ddf0daef6780f"
+    },
+    {
+      "path": "internal/inspection/pypi/derivation.go",
+      "git_blob": "6f923ea40f150e48f45b9fadb728ba3bfa73ddaf"
+    },
+    {
+      "path": "internal/inspection/pypi/derivation_test.go",
+      "git_blob": "f34fca3f2ff6988e7b0cf79804d22036d076ef30"
+    },
+    {
+      "path": "internal/inspection/pypi/dynamic.go",
+      "git_blob": "f81fc5fc14dcbf2b340b7ebdaddfd8557e3fade0"
+    },
+    {
+      "path": "internal/inspection/pypi/dynamic_test.go",
+      "git_blob": "d75b531d2f522b2da7ef9d8e890b66b1109f5f53"
+    },
+    {
+      "path": "internal/inspection/pypi/prerequisite.go",
+      "git_blob": "bd04dcd0e09bdbe2afb63a464eb40d3f636d0bb7"
+    },
+    {
+      "path": "internal/inspection/pypi/prerequisite_test.go",
+      "git_blob": "301518733308c2a21563a0b09f336c5c86c01bd8"
+    },
+    {
+      "path": "internal/inspection/pypi/static.go",
+      "git_blob": "05273425b50c619112b25c641a6d273849d30af9"
+    },
+    {
+      "path": "internal/inspection/pypi/static_test.go",
+      "git_blob": "b35d9bcb4cfb80b77cfd9863c33d897efaa8daf3"
+    },
+    {
+      "path": "internal/promotion/cargo_approved_transaction.go",
+      "git_blob": "cd18dbdeeacbb81efd137080bafba8ebf08941c3"
+    },
+    {
+      "path": "internal/promotion/cargo_approved_transaction_test.go",
+      "git_blob": "6dd0c65fb9b8d213299a1e499247d7f68ff6ffeb"
+    },
+    {
+      "path": "internal/promotion/cargo_build_inputs.go",
+      "git_blob": "2b7582709e35a079e0ac3bdecef0bea9e46805ec"
+    },
+    {
+      "path": "internal/promotion/cargo_build_output.go",
+      "git_blob": "535adeaa3374f8d9d4586980c32ae28968e13b5e"
+    },
+    {
+      "path": "internal/promotion/cargo_build_output_test.go",
+      "git_blob": "7363eec88beb88f1adc21209bc7b7bf505db0b6e"
+    },
+    {
+      "path": "internal/promotion/cargo_cache.go",
+      "git_blob": "d916a59398159a797829edd214334561353cb357"
+    },
+    {
+      "path": "internal/promotion/cargo_cache_test.go",
+      "git_blob": "bb27e240f52e59ea772e5f4ffb0e7a5a23e48b44"
+    },
+    {
+      "path": "internal/promotion/cargo_transaction.go",
+      "git_blob": "b8e7d2a57c27698e658f4794fbef81b84326a055"
+    },
+    {
+      "path": "internal/promotion/cargo_transaction_test.go",
+      "git_blob": "435dd31b4a118798db0798f1469b86a48c53bde8"
+    },
+    {
+      "path": "internal/promotion/githubrelease_promotion.go",
+      "git_blob": "335f47991af256fdbdbbd1d4685fc3bf2d35d262"
+    },
+    {
+      "path": "internal/promotion/githubrelease_promotion_test.go",
+      "git_blob": "68a98d590dfed8ccadc27cfed11011e2c3c30e66"
+    },
+    {
+      "path": "internal/promotion/go_approved_transaction.go",
+      "git_blob": "75ca04a572f952b803febfb4a2a70c4280218a5a"
+    },
+    {
+      "path": "internal/promotion/go_approved_transaction_test.go",
+      "git_blob": "8fe5a02bfc2c062318ab8459e599eb8cc2590227"
+    },
+    {
+      "path": "internal/promotion/go_build_cache.go",
+      "git_blob": "4c6e513c59025122e0907a9e4881f3b7003dbf23"
+    },
+    {
+      "path": "internal/promotion/go_build_cache_test.go",
+      "git_blob": "3e4393adefbd180e5235c87e7f9b0fdc8a5c04f6"
+    },
+    {
+      "path": "internal/promotion/go_build_inputs.go",
+      "git_blob": "9eac5cd52bf085974f2e935f9c5181149f0083cd"
+    },
+    {
+      "path": "internal/promotion/go_build_inputs_test.go",
+      "git_blob": "5488ca149f56b48b5b71a0af1ccea26ae153d081"
+    },
+    {
+      "path": "internal/promotion/go_build_output.go",
+      "git_blob": "0c17f20741329975ba31654f3c91fe7407f37eab"
+    },
+    {
+      "path": "internal/promotion/go_build_output_test.go",
+      "git_blob": "ed11a89a3e59fbdd204ca0d8963ddcf248ce60f2"
+    },
+    {
+      "path": "internal/promotion/go_build_source.go",
+      "git_blob": "1f28778d814ff11814d735b52d180555e62dd312"
+    },
+    {
+      "path": "internal/promotion/go_build_source_test.go",
+      "git_blob": "905a7b607fa8acd35cd94cd6f2d40b4bf8edfc94"
+    },
+    {
+      "path": "internal/promotion/go_cache.go",
+      "git_blob": "23e972b54994011c4f17415d5a227f6d309d6f1e"
+    },
+    {
+      "path": "internal/promotion/go_cache_evidence_test.go",
+      "git_blob": "62d6e36de62f3e04563fbf77d34e423e300b202c"
+    },
+    {
+      "path": "internal/promotion/go_cache_test.go",
+      "git_blob": "b40b72e96aca1b415beea1e65e154d0590448ee1"
+    },
+    {
+      "path": "internal/promotion/go_empty_project_test.go",
+      "git_blob": "69bb181fd836e3c0a4e4d9a9cce2fe4dc528f827"
+    },
+    {
+      "path": "internal/promotion/go_get.go",
+      "git_blob": "ffe0d600ffb8d4056013c76e96d5bda689402e2c"
+    },
+    {
+      "path": "internal/promotion/go_get_test.go",
+      "git_blob": "33e4a328aa78d587ccdfeaf4ae182a9dec4b032e"
+    },
+    {
+      "path": "internal/promotion/go_transaction.go",
+      "git_blob": "b49049f7144adff5b30ee7d8f561565306777202"
+    },
+    {
+      "path": "internal/promotion/go_transaction_test.go",
+      "git_blob": "b2db729bb20ef83fc7fc19fc38fb714efaab69ca"
+    },
+    {
+      "path": "internal/promotion/linux_integration_test.go",
+      "git_blob": "d2dd56bb53993da405de48b0ab261c56ac21e81c"
+    },
+    {
+      "path": "internal/promotion/m7_qualification_test.go",
+      "git_blob": "9070b7ed1db8226daf6c8ac963ab146ae36caea2"
+    },
+    {
+      "path": "internal/promotion/m9_qualification_test.go",
+      "git_blob": "c1d9e21888d4af21081ef130dcc68c2004a0b7de"
+    },
+    {
+      "path": "internal/promotion/npm_promotion.go",
+      "git_blob": "0f307de66624fa8f144649061186d2669fa52ce5"
+    },
+    {
+      "path": "internal/promotion/npm_promotion_test.go",
+      "git_blob": "8dc79d34eef2f4994bf240c7216613b216443906"
+    },
+    {
+      "path": "internal/promotion/npm_transaction.go",
+      "git_blob": "e893d1f943056500f5269addb5cdd1806bf2fb36"
+    },
+    {
+      "path": "internal/promotion/npm_transaction_test.go",
+      "git_blob": "02bce68517fe3e117ae4f77d341ba7deca4e4a40"
+    },
+    {
+      "path": "internal/promotion/project_build_archive.go",
+      "git_blob": "c144e9c547963aa5bdc61b9f87b786de8b87acce"
+    },
+    {
+      "path": "internal/promotion/project_cache_evidence.go",
+      "git_blob": "1ae6c6c9aba15feb5b718f521b0c00fc6ccca9a6"
+    },
+    {
+      "path": "internal/promotion/pypi_promotion.go",
+      "git_blob": "125e4ebde8a3c4b3ce14bbfbb657f3c77622b56f"
+    },
+    {
+      "path": "internal/promotion/pypi_promotion_test.go",
+      "git_blob": "00e9afaf3cff7575abfa24e656b3df8a1a0f8417"
+    },
+    {
+      "path": "internal/promotion/pypi_venv_transaction.go",
+      "git_blob": "a13ddd46aceac1b22220a608b67d3e8883eac26a"
+    },
+    {
+      "path": "internal/promotion/pypi_venv_transaction_test.go",
+      "git_blob": "785120182d3c1ffa1154897c9fc05ef51eaa099a"
+    },
+    {
+      "path": "internal/promotion/rename_linux.go",
+      "git_blob": "16ced43b85e3e49ce055e99464c7d463a79184b3"
+    },
+    {
+      "path": "internal/promotion/rename_other.go",
+      "git_blob": "d8ec970c67d4766693529cd4d0168d92812f4c93"
+    },
+    {
+      "path": "internal/promotion/rename_test.go",
+      "git_blob": "a4fbfb40a96ed832503cc1c70741f749f5979a3e"
+    },
+    {
+      "path": "internal/promotion/staging.go",
+      "git_blob": "44d7ef93b59cb40e4afe47da80b318e2a9ded0f2"
+    },
+    {
+      "path": "internal/promotion/staging_source_policy_test.go",
+      "git_blob": "a82510ba58191d7e51efcdba3f401465bdc5a75d"
+    },
+    {
+      "path": "internal/promotion/staging_test.go",
+      "git_blob": "1e903ff13654a4273ec388ce32a2b2bbc9628a68"
+    },
+    {
+      "path": "internal/promotion/terraform_approved_transaction.go",
+      "git_blob": "fc98bb06002f07e004b682958d30327ac7fdde09"
+    },
+    {
+      "path": "internal/promotion/terraform_cache.go",
+      "git_blob": "1e9c97b7808315af96191b42a41f28b20a4f816f"
+    },
+    {
+      "path": "internal/promotion/terraform_cache_test.go",
+      "git_blob": "6c0eaf76a505338424a21f72b023c001be0da950"
+    },
+    {
+      "path": "internal/promotion/terraform_transaction.go",
+      "git_blob": "086e549baabef59bcd6588b7c112011338d1e5dd"
+    },
+    {
+      "path": "internal/promotion/terraform_transaction_test.go",
+      "git_blob": "af172374ead80789b70272627d1705e9bd93b970"
+    },
+    {
+      "path": "internal/runtimeidentity/gvisor_bundle_manifest.go",
+      "git_blob": "1bf1a3b58cf509daee270dccbd28774cfcca2a61"
+    },
+    {
+      "path": "internal/runtimeidentity/gvisor_bundle_manifest_test.go",
+      "git_blob": "9d41b9cac66e9519b5a75921314d920a7cb82294"
+    },
+    {
+      "path": "internal/runtimeidentity/gvisor_version.go",
+      "git_blob": "d4582a54d3c3fb3e82c6fa77add4ff11de24509c"
+    },
+    {
+      "path": "internal/runtimeidentity/gvisor_version_test.go",
+      "git_blob": "2eedb5e9b7cf33ea63b00f8a5c16c32dd5820215"
+    },
+    {
+      "path": "internal/runtimeidentity/patch.go",
+      "git_blob": "fc422c89f36a90f6252a800a84fb00ed7f9b3f14"
+    },
+    {
+      "path": "internal/runtimeidentity/patch_drift_test.go",
+      "git_blob": "777aa490802c89ca73e24fc8b298627b97a96722"
+    },
+    {
+      "path": "internal/runtimeidentity/runtime_lock_gen.go",
+      "git_blob": "bb693205673d725e6d6157d4d35c8bd7dcc45b3c"
+    },
+    {
+      "path": "internal/sandbox/authority.go",
+      "git_blob": "e8247d6e51095de97a52ac3ed4c170d5ff4c44f9"
+    },
+    {
+      "path": "internal/sandbox/authority_test.go",
+      "git_blob": "4124c7ec8b8675969f78747005ff56448a1450cd"
+    },
+    {
+      "path": "internal/sandbox/backend.go",
+      "git_blob": "d0c520ab73b1004f6819caa21d34ee25eac2ed9e"
+    },
+    {
+      "path": "internal/sandbox/backend_test.go",
+      "git_blob": "4fb6c31ca695346b2560c25279c7b16e6d00f607"
+    },
+    {
+      "path": "internal/sandbox/boundary_helper.go",
+      "git_blob": "5ce83f591b89cd4b32569fa00e608805d9c53f26"
+    },
+    {
+      "path": "internal/sandbox/boundary_helper_test.go",
+      "git_blob": "c4affa15ef74f36dcf89a0a61bca64826a49fdb1"
+    },
+    {
+      "path": "internal/sandbox/cargo_actual_metadata_test.go",
+      "git_blob": "05bdd51ff571046276d9d991be7eabd261cfda8c"
+    },
+    {
+      "path": "internal/sandbox/cargo_build_inputs.go",
+      "git_blob": "d8b4c5962055596a372eac4d805bd3bdfad6657f"
+    },
+    {
+      "path": "internal/sandbox/cargo_build_output.go",
+      "git_blob": "39570813320d8f053c5ce2f92a263a4de54d3e3b"
+    },
+    {
+      "path": "internal/sandbox/cargo_build_output_test.go",
+      "git_blob": "17aa79dd630c1ccf4bd1e03349838eafb8f05fb2"
+    },
+    {
+      "path": "internal/sandbox/cargo_build_runtime.go",
+      "git_blob": "ef03b6a9fe99d81ba7578eff4dbb1223c4d364bc"
+    },
+    {
+      "path": "internal/sandbox/cargo_build_security_test.go",
+      "git_blob": "894ce005953ae116f4d58111b539685ae2fd1548"
+    },
+    {
+      "path": "internal/sandbox/cargo_isolated_integration_test.go",
+      "git_blob": "e948eed545960ab4b69997216f11443f9ccae161"
+    },
+    {
+      "path": "internal/sandbox/cargo_isolated_runner.go",
+      "git_blob": "08d47c38646e59b3c4a44d3093960b7a38fb2a6b"
+    },
+    {
+      "path": "internal/sandbox/cargo_isolated_runner_test.go",
+      "git_blob": "2c7fdf694e87f508baaa3b8b56f856f2f6f6c781"
+    },
+    {
+      "path": "internal/sandbox/cargo_observed_build.go",
+      "git_blob": "88163f91713161e5d005d1c565438f34b453d787"
+    },
+    {
+      "path": "internal/sandbox/cargo_project_resolver.go",
+      "git_blob": "c5fbf9bb9426220aa1b4421a39a69e573f0e74d6"
+    },
+    {
+      "path": "internal/sandbox/cargo_project_resolver_test.go",
+      "git_blob": "d5f68a36b39cf733dfa2e62c248e7edfa685c9c0"
+    },
+    {
+      "path": "internal/sandbox/cargo_project_source.go",
+      "git_blob": "d167405231d5d2f70902fe085a97be554c116e59"
+    },
+    {
+      "path": "internal/sandbox/cargo_project_source_test.go",
+      "git_blob": "e818c2430671ebada6c167ca247b9abe335f5ba9"
+    },
+    {
+      "path": "internal/sandbox/cargo_resolver.go",
+      "git_blob": "0ed35b2a967a7bed31695f48e09e9729238ce402"
+    },
+    {
+      "path": "internal/sandbox/cargo_resolver_test.go",
+      "git_blob": "c86bae2d3bf926ee1c04ec8aec8f035d2c8194c3"
+    },
+    {
+      "path": "internal/sandbox/cargo_runtime.go",
+      "git_blob": "5de902ab33a67fbe201e488fb032f08982e2be75"
+    },
+    {
+      "path": "internal/sandbox/cargo_runtime_test.go",
+      "git_blob": "b84db0279197809a7fd1919a3900e806cf2f6fe7"
+    },
+    {
+      "path": "internal/sandbox/collector.go",
+      "git_blob": "2c65b7177c84224691487929f1bac7dd69fed9a5"
+    },
+    {
+      "path": "internal/sandbox/collector_test.go",
+      "git_blob": "e17c43fe24265384c28375cd97eabb5e7620bd7a"
+    },
+    {
+      "path": "internal/sandbox/direct_exec_admission.go",
+      "git_blob": "1f3cc5f043c502107375aed87b5b0bf7bd76b23e"
+    },
+    {
+      "path": "internal/sandbox/direct_exec_admission_test.go",
+      "git_blob": "a5f21f66d46e262ed7d4913e2e7f3200d90d6558"
+    },
+    {
+      "path": "internal/sandbox/docker_introducer.go",
+      "git_blob": "fa2e8da6983de4aea880b50f3536372ea6c75466"
+    },
+    {
+      "path": "internal/sandbox/docker_introducer_test.go",
+      "git_blob": "fc7b2adf7350e3ebd1219bc0df46122417ca0cb9"
+    },
+    {
+      "path": "internal/sandbox/fault_open_diagnostic_test.go",
+      "git_blob": "6c6fbf5c46760204a2d3d9224544b7ac96985fbe"
+    },
+    {
+      "path": "internal/sandbox/github_elf.go",
+      "git_blob": "e3a29ad531dbcfcc3c7260e5d2f7a1f0fcec0705"
+    },
+    {
+      "path": "internal/sandbox/github_elf_test.go",
+      "git_blob": "0947d538cbc65ae01c0ef17289b3e1f723927f48"
+    },
+    {
+      "path": "internal/sandbox/go_runtime.go",
+      "git_blob": "ebc7de8c065f6760587ee5bd99142acce1b2c90c"
+    },
+    {
+      "path": "internal/sandbox/go_runtime_test.go",
+      "git_blob": "d28a4c7a51781dcee48e5666d2b1e5d784ce3d94"
+    },
+    {
+      "path": "internal/sandbox/gomodule_build.go",
+      "git_blob": "97f25b8c4ff2f2963cffd1be0f0b737a9759bddf"
+    },
+    {
+      "path": "internal/sandbox/gomodule_build_inputs.go",
+      "git_blob": "0fbb47985008b2c7d75d8d0c9aaec1875d40eb4a"
+    },
+    {
+      "path": "internal/sandbox/gomodule_build_inputs_test.go",
+      "git_blob": "9aeee0d131c5b398b8151027c0b3c697ab86e180"
+    },
+    {
+      "path": "internal/sandbox/gomodule_build_integration_test.go",
+      "git_blob": "fc782adc63f92407fdc5f16237b6bf7579242a67"
+    },
+    {
+      "path": "internal/sandbox/gomodule_build_materialization.go",
+      "git_blob": "8c21357a406736adf49f70e2146c0ca9953ad674"
+    },
+    {
+      "path": "internal/sandbox/gomodule_build_materialization_test.go",
+      "git_blob": "8be38dec9939101c09ccbd69378a6be6485243fe"
+    },
+    {
+      "path": "internal/sandbox/gomodule_build_runtime.go",
+      "git_blob": "7f2021856ecb6f388455a4a07f8e77bcbe16f7b9"
+    },
+    {
+      "path": "internal/sandbox/gomodule_build_source_reader.go",
+      "git_blob": "9dc095ac9437b37df9401af623779910ea61abc8"
+    },
+    {
+      "path": "internal/sandbox/gomodule_build_test.go",
+      "git_blob": "9d8c79f5e46fa773d815ff1f2b3eb0b2dec2a5a8"
+    },
+    {
+      "path": "internal/sandbox/gomodule_cleanup_unix_test.go",
+      "git_blob": "8d5d5c18c4fd570fcf2fa1f794a4abea45b10cf2"
+    },
+    {
+      "path": "internal/sandbox/gomodule_empty_project_test.go",
+      "git_blob": "19f3e5462d208ee76ba84139b1a7c1c678dcde7f"
+    },
+    {
+      "path": "internal/sandbox/gomodule_isolated_integration_test.go",
+      "git_blob": "2b32bf5fd2a620f957fc098902710ae83851a8d7"
+    },
+    {
+      "path": "internal/sandbox/gomodule_isolated_runner.go",
+      "git_blob": "ddfe8fbbb33d6268ba534cb82842c695b8453996"
+    },
+    {
+      "path": "internal/sandbox/gomodule_isolated_runner_test.go",
+      "git_blob": "7717cb2dedf66f57d087004ab41e74af5d1cc273"
+    },
+    {
+      "path": "internal/sandbox/gomodule_observed_build.go",
+      "git_blob": "22e4aace608136b75d9b849ac82ccb6c8cef6b7a"
+    },
+    {
+      "path": "internal/sandbox/gomodule_resolver.go",
+      "git_blob": "40dd04def32315e820fa0f5cbaeb6efa08a5accd"
+    },
+    {
+      "path": "internal/sandbox/gomodule_resolver_test.go",
+      "git_blob": "ba8f7454dcb7420722bc04d64908307b15507ad6"
+    },
+    {
+      "path": "internal/sandbox/gomodule_update_test.go",
+      "git_blob": "b3c16cb327dbddde8cd91fb473614c363a5b7213"
+    },
+    {
+      "path": "internal/sandbox/linux_backend.go",
+      "git_blob": "7db180c92cd78ca1e1c33dfd7eec77b52f8f16a9"
+    },
+    {
+      "path": "internal/sandbox/linux_integration_test.go",
+      "git_blob": "adaada32dd104ae6aa12a883aafbf1369273cbf7"
+    },
+    {
+      "path": "internal/sandbox/npm_resolver.go",
+      "git_blob": "c702541c3082f916b96c2075a060e0db0aaa9464"
+    },
+    {
+      "path": "internal/sandbox/npm_resolver_test.go",
+      "git_blob": "a13163f010d1e489db00a1762e6e8797c588df0e"
+    },
+    {
+      "path": "internal/sandbox/observation_resource_integration_linux_test.go",
+      "git_blob": "9f78f1b2b7ad9c0128a155e6203f81cc8278f340"
+    },
+    {
+      "path": "internal/sandbox/observer_supervisor.go",
+      "git_blob": "ae6c3ca6f75a2c793522b784212075407e688d06"
+    },
+    {
+      "path": "internal/sandbox/observer_supervisor_test.go",
+      "git_blob": "0853f28a4f29cbc08e5f5e3f9a29f3415288a8c2"
+    },
+    {
+      "path": "internal/sandbox/probe.go",
+      "git_blob": "2c8ec438fb5317ee34f25d0ce93c47cd011ed2b4"
+    },
+    {
+      "path": "internal/sandbox/probe_test.go",
+      "git_blob": "e84d58a7887cc26f99f1dcad49269a3508eb005e"
+    },
+    {
+      "path": "internal/sandbox/probed.go",
+      "git_blob": "478098cbe9c034e16058d4aef152188864eb87d0"
+    },
+    {
+      "path": "internal/sandbox/probed_test.go",
+      "git_blob": "52bd9990784bef874f3ec3ae85f44f64c58478d6"
+    },
+    {
+      "path": "internal/sandbox/pypi_build.go",
+      "git_blob": "90371ffe2f587147400376fef26a71f8e61cd4da"
+    },
+    {
+      "path": "internal/sandbox/pypi_build_test.go",
+      "git_blob": "15e1a46197e05b1e3e2cc02ba8dc1c546b90cc31"
+    },
+    {
+      "path": "internal/sandbox/pypi_closure_error_test.go",
+      "git_blob": "9501cde0db0a4917a338165f68bd17e3eceea64a"
+    },
+    {
+      "path": "internal/sandbox/pypi_closure_installation.go",
+      "git_blob": "d4fc9b769c1e37aca615e25f6f23003e9624188b"
+    },
+    {
+      "path": "internal/sandbox/pypi_closure_installation_test.go",
+      "git_blob": "b579fdc3b696ddfd846a5c56522f201cfc5d585d"
+    },
+    {
+      "path": "internal/sandbox/pypi_closure_manifest.go",
+      "git_blob": "d2ddb14c19881be41b9b72f18ca3a143568af393"
+    },
+    {
+      "path": "internal/sandbox/pypi_closure_volume.go",
+      "git_blob": "8c7a146d73d082ce5c491dbbbb510af766968c08"
+    },
+    {
+      "path": "internal/sandbox/pypi_closure_volume_test.go",
+      "git_blob": "beb4d296093f5368c2d11a16d0b0bc0eec13b7f1"
+    },
+    {
+      "path": "internal/sandbox/pypi_dynamic.go",
+      "git_blob": "e60d6745d8d65416702fc62034bd77acab391461"
+    },
+    {
+      "path": "internal/sandbox/pypi_dynamic_factory.go",
+      "git_blob": "553525730c78d83f9dc12e9c547ce8f2a186dbe9"
+    },
+    {
+      "path": "internal/sandbox/pypi_dynamic_test.go",
+      "git_blob": "5b9b1dd414a8af77c8ee9f9a189f8f5e25040c4f"
+    },
+    {
+      "path": "internal/sandbox/pypi_observation_cpu.go",
+      "git_blob": "09609403fca768ff028ff9e1ba9b8daf039aa061"
+    },
+    {
+      "path": "internal/sandbox/pypi_observation_runtime.go",
+      "git_blob": "7decb61a8acde97e890e29a45012fa51df5fac02"
+    },
+    {
+      "path": "internal/sandbox/pypi_observation_runtime_test.go",
+      "git_blob": "5164986637c85faf14df3ea553a0e49d89f25c5d"
+    },
+    {
+      "path": "internal/sandbox/pypi_observation_transaction.go",
+      "git_blob": "7209f1c365b94a625dd90d153c8192eeae5a7fba"
+    },
+    {
+      "path": "internal/sandbox/pypi_observation_transaction_test.go",
+      "git_blob": "2250df0b18ccf6f5946f9812b1abeaab33528acb"
+    },
+    {
+      "path": "internal/sandbox/pypi_resolver.go",
+      "git_blob": "3f884b6541defe668decc745da7070497df01c7d"
+    },
+    {
+      "path": "internal/sandbox/pypi_resolver_test.go",
+      "git_blob": "3c6f4caea621a860d86daa75c0d237aff72ebe3d"
+    },
+    {
+      "path": "internal/sandbox/pypi_transaction_diagnostic_test.go",
+      "git_blob": "413510b86795a998304581dbcbf9473ba6a22faa"
+    },
+    {
+      "path": "internal/sandbox/pypi_trusted_transaction.go",
+      "git_blob": "3f720d5ab8c0552f4edcc923da068e6af9c7bfe9"
+    },
+    {
+      "path": "internal/sandbox/pypi_typed_observation_test.go",
+      "git_blob": "4ef471ae49a45d6587fa4f25e7d8e76d0517123f"
+    },
+    {
+      "path": "internal/sandbox/python_runtime.go",
+      "git_blob": "a82d8eb1cd30835ecd10f0ac3b42a704b8a9c8d3"
+    },
+    {
+      "path": "internal/sandbox/python_runtime_test.go",
+      "git_blob": "f3abff730bf29f6950eaaa337467fc4a45bb680a"
+    },
+    {
+      "path": "internal/sandbox/pytorch_closure_integration_test.go",
+      "git_blob": "54d7c170aa60166f3c4eb5ef4418ebc8020669de"
+    },
+    {
+      "path": "internal/sandbox/pytorch_static_replay_test.go",
+      "git_blob": "a23a64f7fd890da1c1d095071210629943ad1cee"
+    },
+    {
+      "path": "internal/sandbox/resolver_network_policy.go",
+      "git_blob": "a557e5f9005aaa5af7c83ee00b14f96dee2040c5"
+    },
+    {
+      "path": "internal/sandbox/resolver_network_policy_test.go",
+      "git_blob": "7c3dd26af29c475b7e072e26b15e77b3e9a8655f"
+    },
+    {
+      "path": "internal/sandbox/resolver_policy_integration_linux_test.go",
+      "git_blob": "de8beeb37ed4d9a8f9dfae27d0ffb10f98ef5529"
+    },
+    {
+      "path": "internal/sandbox/resolver_policy_integration_other_test.go",
+      "git_blob": "bc38f66d6d7d5e61c7cbf6d3e426e71037cf0af4"
+    },
+    {
+      "path": "internal/sandbox/resolver_policy_port.go",
+      "git_blob": "2f69459d5ec674672a0c6f724b21af1cd65fd70e"
+    },
+    {
+      "path": "internal/sandbox/shared_observer.go",
+      "git_blob": "8c5de0d8ff5e5a48d96471ea1b48a23014894cd2"
+    },
+    {
+      "path": "internal/sandbox/shared_observer_test.go",
+      "git_blob": "19812223e043e61901d4b3f51386f861d42d2841"
+    },
+    {
+      "path": "internal/sandbox/terraform_provider.go",
+      "git_blob": "59f27fa1defae632553a0bc264f49362d6917a2c"
+    },
+    {
+      "path": "internal/sandbox/terraform_provider_integration_linux_test.go",
+      "git_blob": "5156713f664f079c1a0dfac36a9e3544863d3f7b"
+    },
+    {
+      "path": "internal/sandbox/terraform_provider_security_integration_linux_test.go",
+      "git_blob": "208c54bea3bba30228a3b6ef378a8d54486f0d87"
+    },
+    {
+      "path": "internal/sandbox/terraform_provider_test.go",
+      "git_blob": "09c48d3a730774cb32e4b0ed9d78683306b7459f"
+    },
+    {
+      "path": "internal/sandbox/testdata/credential-path-corpus.txt",
+      "git_blob": "fd24e5eb92db38b69f03ebd566ec0ab8898ce026"
+    },
+    {
+      "path": "internal/verification/pypi/integrity.go",
+      "git_blob": "a918ab91537c1c42dae324d32b6deb731123de30"
+    },
+    {
+      "path": "scripts/runtimes.lock.json",
+      "git_blob": "026d2db29322c94d13471a16acfdf0273772f8e3"
+    },
+    {
+      "path": "tools/gvisor-observer/BUILD",
+      "git_blob": "270b2580fe5ce608e471cca2a708b369758823bf"
+    },
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "git_blob": "e3ddd7b0c451bcf523303f15bc7da4c1a7ef55e4"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "git_blob": "c9e16fa2ce0829e2a533b4d89efab7267a18a91c"
+    },
+    {
+      "path": "tools/gvisor-observer/pod-init.json",
+      "git_blob": "83f2777d473a545af03d97cbb3688c508b14e3ff"
+    },
+    {
+      "path": "tools/gvisor/release-20260810.0.patch",
+      "git_blob": "d0c3eee3c971130c43040a1be1d9dc769e99f283"
+    },
+    {
+      "path": "tools/gvisor/release-20260907.0.patch",
+      "git_blob": "001e1b06235d997f1eb7457595ae12573710866a"
+    }
+  ],
+  "interpretation": "cu130 full ran the cleanup executable before the narrow npm metadata parser correction. Python/PyTorch product, observation/admission/accounting/resource/Policy/Promotion and integration fixtures/locks are exact unchanged blobs. Qualification may reuse this component evidence for the bounded cu130 tuple; it is not a claim of identical whole executable bytes or an execution on the later Git HEAD. New npm actual CLI and Required, CPU/cu126/cu132 executions are independently required on8791.",
+  "status": "EXACT_COMPONENT_SOURCE_BOUNDARY_AND_CU130_ACTUAL_RESULT_VERIFIED",
+  "run_id": 37555305508,
+  "job_id": 112580062610,
+  "cpu_full_seconds": 216.67,
+  "cu130_full_seconds": 714.69,
+  "actual_job_capture": "remote-ci/cu130-job-captures.json"
+}

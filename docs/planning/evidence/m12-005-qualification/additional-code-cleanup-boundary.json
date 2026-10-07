@@ -1,0 +1,175 @@
+{
+  "scope": "Read-only AST identifier triage for uniquely named exported free functions with no production identifier occurrence beyond declaration; not type-aware reachability or unused verdict. Interfaces/methods and repeated names excluded.",
+  "candidates": [
+    {
+      "path": "internal/application/terraform.go",
+      "name": "NewTerraformResolutionService",
+      "line": 14,
+      "test_identifier_occurrences": 0
+    },
+    {
+      "path": "internal/artifact/cargo/metadata.go",
+      "name": "ParseMetadata",
+      "line": 77,
+      "test_identifier_occurrences": 2
+    },
+    {
+      "path": "internal/artifact/gomodule/module.go",
+      "name": "ValidateResolverEnvironment",
+      "line": 59,
+      "test_identifier_occurrences": 4
+    },
+    {
+      "path": "internal/artifact/npm/resolver.go",
+      "name": "NewResolver",
+      "line": 74,
+      "test_identifier_occurrences": 3
+    },
+    {
+      "path": "internal/artifact/pypi/bounded_requirement.go",
+      "name": "AggregateBoundedRequirement",
+      "line": 291,
+      "test_identifier_occurrences": 0
+    },
+    {
+      "path": "internal/artifact/pypi/simple.go",
+      "name": "ParseSimpleProject",
+      "line": 148,
+      "test_identifier_occurrences": 18
+    },
+    {
+      "path": "internal/artifact/pypi/simple.go",
+      "name": "ParseSimpleProjectForProfile",
+      "line": 154,
+      "test_identifier_occurrences": 1
+    },
+    {
+      "path": "internal/artifact/terraformprovider/provider.go",
+      "name": "RegistryEndpoint",
+      "line": 31,
+      "test_identifier_occurrences": 0
+    },
+    {
+      "path": "internal/artifact/terraformprovider/provider.go",
+      "name": "VerifyLockHash",
+      "line": 237,
+      "test_identifier_occurrences": 1
+    },
+    {
+      "path": "internal/cli/root.go",
+      "name": "AddPyPIInstall",
+      "line": 192,
+      "test_identifier_occurrences": 1
+    },
+    {
+      "path": "internal/core/domain/artifact.go",
+      "name": "NewAcquiredArtifact",
+      "line": 109,
+      "test_identifier_occurrences": 31
+    },
+    {
+      "path": "internal/core/domain/identifier.go",
+      "name": "ParseOperationID",
+      "line": 30,
+      "test_identifier_occurrences": 7
+    },
+    {
+      "path": "internal/core/domain/install.go",
+      "name": "NewLockedDependencyWithHostInstallAction",
+      "line": 120,
+      "test_identifier_occurrences": 1
+    },
+    {
+      "path": "internal/runtimeidentity/patch.go",
+      "name": "ApplyPatchDeterministic",
+      "line": 104,
+      "test_identifier_occurrences": 3
+    },
+    {
+      "path": "internal/runtimeidentity/patch.go",
+      "name": "ValidatePatchFile",
+      "line": 31,
+      "test_identifier_occurrences": 4
+    },
+    {
+      "path": "internal/sandbox/pypi_resolver.go",
+      "name": "NewPyTorchResolver",
+      "line": 70,
+      "test_identifier_occurrences": 2
+    },
+    {
+      "path": "internal/sandbox/python_runtime.go",
+      "name": "ProbePython",
+      "line": 49,
+      "test_identifier_occurrences": 0
+    },
+    {
+      "path": "internal/sandbox/shared_observer.go",
+      "name": "NewSharedObserver",
+      "line": 361,
+      "test_identifier_occurrences": 15
+    }
+  ],
+  "review": {
+    "removed": [
+      "TerraformResolutionService/NewTerraformResolutionService/Resolve",
+      "AggregateBoundedRequirement",
+      "RegistryEndpoint",
+      "ProbePython"
+    ],
+    "reason": "Zero production and zero test callers after AST identifier triage and exact tracked references/current bootstrap/factory review. Existing init/typed aggregation/endpoint constant/configured probe remain owners. No supported subsystem replacement.",
+    "retained": "Remaining candidates have current test/API/neutral contract roles; text occurrence alone is not reachability. No blanket exported-function deletion.",
+    "baseline": "8791fdcff573b1d85681ca74b65cf5a9e3ccf27a",
+    "boundaries": [
+      {
+        "path": "internal/application/terraform.go",
+        "before_sha256": "ac8ab4d03df80b3d60d5f5063f8b02a4d9385e7abfe720797670a6132808aeeb",
+        "after_sha256": "b094e1ea0564b570266ae2722ede25854c47ec074df2eecb760dff24f7f2877a"
+      },
+      {
+        "path": "internal/artifact/pypi/bounded_requirement.go",
+        "before_sha256": "7ce664f50eb019778df2a56386e3b40725b153af184f12a91a23c98efb0c9d52",
+        "after_sha256": "901c1b8f15b001683b52938a72a2ec2a6a3e913316a713452cac8807a3568a54"
+      },
+      {
+        "path": "internal/artifact/terraformprovider/provider.go",
+        "before_sha256": "46859a9808047fdcd4236ed0a0b3d565696dd5b3f8bc4c4a5787347215ddbe52",
+        "after_sha256": "55598aaaff411f8f56d5b6eb7945c19139a029b6faabadf998ae44fb9387d63f"
+      },
+      {
+        "path": "internal/sandbox/python_runtime.go",
+        "before_sha256": "a0b84fe9f4525f21c9fade309edaad7e268e0baee9e2ff71c013df3ca413aadf",
+        "after_sha256": "e3a3478b4094eff47e8543aca93189e1c2931d5c4dedcbd55294e9035a0656e4"
+      }
+    ],
+    "qualification": "New source native checks, pushed HEAD Required and all CPU/cu126/cu130/cu132 actual qualifications required. Earlier005 source results remain historical proof only.",
+    "net_removed_source_lines": 40,
+    "canonical_checks": [
+      {
+        "profile": "format",
+        "actual_exit": 0,
+        "raw_role": "additional-cleanup-format.log",
+        "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+      },
+      {
+        "profile": "quick",
+        "actual_exit": 0,
+        "raw_role": "additional-cleanup-quick.log",
+        "sha256": "fce04c3924381c281fa3069a4073d960e773de94a14a655a736ac84d273fad64"
+      },
+      {
+        "profile": "docs",
+        "actual_exit": 0,
+        "raw_role": "additional-cleanup-docs.log",
+        "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+      },
+      {
+        "profile": "security",
+        "actual_exit": 0,
+        "raw_role": "additional-cleanup-security.log",
+        "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95"
+      }
+    ],
+    "default_test_result": "current-default-checks.json"
+  }
+}

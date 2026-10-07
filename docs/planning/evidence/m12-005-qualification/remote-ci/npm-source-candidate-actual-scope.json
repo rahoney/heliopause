@@ -1,0 +1,278 @@
+{
+  "source_commit": "8791fdcff573b1d85681ca74b65cf5a9e3ccf27a",
+  "checkout": "6f0a519852c7ddcc1ac80d4e91f6bcd45214f885",
+  "run_id": 37556677169,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/37556677169",
+  "selected_cuda_profile": null,
+  "total_jobs": 10,
+  "all_jobs": "SUCCESS",
+  "actual_top_level_passes": [
+    {
+      "test": "TestLinuxTrustedHostExecutorIntegration",
+      "duration_seconds": 4.22
+    },
+    {
+      "test": "TestPublicTerraformProviderSourceIntegration",
+      "duration_seconds": 1.31
+    },
+    {
+      "test": "TestLinuxPyTorchResolverIntegration",
+      "duration_seconds": 29.45
+    },
+    {
+      "test": "TestLinuxGoIsolatedResolverIntegration",
+      "duration_seconds": 4.69
+    },
+    {
+      "test": "TestLinuxGoIsolatedProjectResolverIntegration",
+      "duration_seconds": 2.3
+    },
+    {
+      "test": "TestLinuxGoSourceProjectSnapshotIntegration",
+      "duration_seconds": 2.4
+    },
+    {
+      "test": "TestLinuxGoDependencyFreeProjectSnapshotIntegration",
+      "duration_seconds": 2.05
+    },
+    {
+      "test": "TestLinuxCargoSourceProjectSnapshotIntegration",
+      "duration_seconds": 1.38
+    },
+    {
+      "test": "TestLinuxTerraformProviderProbeIntegration",
+      "duration_seconds": 2.24
+    },
+    {
+      "test": "TestLinuxTerraformProviderSecurityIntegration",
+      "duration_seconds": 1.96
+    },
+    {
+      "test": "TestLinuxNPMInspectCLIIntegration",
+      "duration_seconds": 5.84
+    },
+    {
+      "test": "TestLinuxGoDependencyFreeDownloadIntegration",
+      "duration_seconds": 17.19
+    },
+    {
+      "test": "TestLinuxGoGetDownloadIntegration",
+      "duration_seconds": 22.98
+    },
+    {
+      "test": "TestLinuxGoTransitiveGetDownloadIntegration",
+      "duration_seconds": 79.32
+    },
+    {
+      "test": "TestLinuxGoDependencyFreeBuildCLIIntegration",
+      "duration_seconds": 38.99
+    },
+    {
+      "test": "TestLinuxGoPublicBuildCLIIntegration",
+      "duration_seconds": 48.09
+    },
+    {
+      "test": "TestLinuxGoTransitiveBuildCLIIntegration",
+      "duration_seconds": 142.58
+    },
+    {
+      "test": "TestLinuxGoInvalidTestdataBuildCLIIntegration",
+      "duration_seconds": 14.37
+    },
+    {
+      "test": "TestLinuxGoCgoBuildCLIIntegration",
+      "duration_seconds": 29.07
+    },
+    {
+      "test": "TestLinuxGoLibraryBuildCLIIntegration",
+      "duration_seconds": 14.97
+    },
+    {
+      "test": "TestLinuxGoMixedPackagesBuildCLIIntegration",
+      "duration_seconds": 24.15
+    },
+    {
+      "test": "TestLinuxGoMixedInvalidPackageBuildCLIIntegration",
+      "duration_seconds": 23.03
+    },
+    {
+      "test": "TestLinuxGoBuildSecurityCLIIntegration",
+      "duration_seconds": 44.35
+    },
+    {
+      "test": "TestLinuxCargoAddIntegration",
+      "duration_seconds": 17.84
+    },
+    {
+      "test": "TestLinuxCargoTransitiveAddIntegration",
+      "duration_seconds": 19.55
+    },
+    {
+      "test": "TestLinuxCargoDependencyFreeBuildCLIIntegration",
+      "duration_seconds": 10.32
+    },
+    {
+      "test": "TestLinuxCargoPublicBuildCLIIntegration",
+      "duration_seconds": 29.29
+    },
+    {
+      "test": "TestLinuxCargoTransitiveBuildCLIIntegration",
+      "duration_seconds": 37.89
+    },
+    {
+      "test": "TestLinuxCargoLibraryBuildCLIIntegration",
+      "duration_seconds": 19.38
+    },
+    {
+      "test": "TestLinuxCargoWorkspaceBuildCLIIntegration",
+      "duration_seconds": 19.96
+    },
+    {
+      "test": "TestLinuxCargoBuildScriptBuildCLIIntegration",
+      "duration_seconds": 20.3
+    },
+    {
+      "test": "TestLinuxCargoProcMacroBuildCLIIntegration",
+      "duration_seconds": 20.37
+    },
+    {
+      "test": "TestLinuxCargoBuildFilesystemSecurityCLIIntegration",
+      "duration_seconds": 9.64
+    },
+    {
+      "test": "TestLinuxCargoBuildNetworkSecurityCLIIntegration",
+      "duration_seconds": 10.12
+    },
+    {
+      "test": "TestLinuxCargoBuildConfigurationSecurityCLIIntegration",
+      "duration_seconds": 20.16
+    },
+    {
+      "test": "TestLinuxCargoBuildUnexpectedChildSecurityCLIIntegration",
+      "duration_seconds": 9.7
+    },
+    {
+      "test": "TestLinuxCargoInvalidSourceBuildCLIIntegration",
+      "duration_seconds": 9.5
+    },
+    {
+      "test": "TestLinuxCargoProcMacroSecurityCLIIntegration",
+      "duration_seconds": 19.79
+    },
+    {
+      "test": "TestLinuxTerraformInitIntegration",
+      "duration_seconds": 52.46
+    },
+    {
+      "test": "TestLinuxTerraformInitNegativeIntegration",
+      "duration_seconds": 7.12
+    },
+    {
+      "test": "TestLinuxPyTorchFullIntegration",
+      "duration_seconds": 251.2
+    },
+    {
+      "test": "TestLinuxPyPISdistBuildIntegration",
+      "duration_seconds": 8.12
+    },
+    {
+      "test": "TestLinuxPyPIWheelDynamicIntegration",
+      "duration_seconds": 4.01
+    },
+    {
+      "test": "TestLinuxNPMPromotionIntegration",
+      "duration_seconds": 2.25
+    },
+    {
+      "test": "TestLinuxPyPIPromotionIntegration",
+      "duration_seconds": 3.29
+    }
+  ],
+  "actual_top_level_pass_count": 45,
+  "full_invocation_seconds": [
+    251.2
+  ],
+  "helper_parent_waits": [
+    "0",
+    "0",
+    "0",
+    "0",
+    "0"
+  ],
+  "final_cleanup": "original0 CONFIRMED_STOPPED helper_stop0 client_error0 client_restore0 NOT_REQUIRED",
+  "latch_passes": 102,
+  "actual_npm_inspect_result": {
+    "schema_version": "helox.operation-result/v1",
+    "operation_id": "op_4cbc2yiohq2jee2pmzgvrmhveu",
+    "operation": "INSPECT",
+    "operation_status": "COMPLETED",
+    "run": {
+      "id": "run_rgh7dheuggk5io3zquhkhif6zu",
+      "outcome": "COMPLETED"
+    },
+    "artifact": {
+      "reference": {
+        "source_id": "npm",
+        "locator": "is-number@7.0.0"
+      },
+      "resolved_identity": {
+        "source_id": "npm",
+        "name": "is-number",
+        "version": "7.0.0",
+        "variant": "tarball"
+      },
+      "digest": {
+        "algorithm": "sha256",
+        "value": "7b75c1057198cf97696909a9bee176c9c5e9bcb5b03bf3ecef2f484defadd51e"
+      }
+    },
+    "checks": [
+      {
+        "id": "npm-declared-integrity",
+        "kind": "VERIFICATION",
+        "required": true,
+        "capability": "SUPPORTED",
+        "execution_status": "COMPLETED"
+      },
+      {
+        "id": "npm-static-archive",
+        "kind": "INSPECTION",
+        "required": true,
+        "capability": "SUPPORTED",
+        "execution_status": "COMPLETED"
+      },
+      {
+        "id": "npm-dynamic-lifecycle",
+        "kind": "INSPECTION",
+        "required": true,
+        "capability": "SUPPORTED",
+        "execution_status": "COMPLETED"
+      }
+    ],
+    "evidence_references": [
+      {
+        "id": "npm-declared-integrity-result",
+        "handle": "evidence:run_rgh7dheuggk5io3zquhkhif6zu:npm-declared-integrity-result"
+      },
+      {
+        "id": "npm-static-archive-result",
+        "handle": "evidence:run_rgh7dheuggk5io3zquhkhif6zu:npm-static-archive-result"
+      },
+      {
+        "id": "npm-dynamic-lifecycle-result",
+        "handle": "evidence:run_rgh7dheuggk5io3zquhkhif6zu:npm-dynamic-lifecycle-result"
+      }
+    ],
+    "policy": {
+      "decision": "ALLOW",
+      "id": "m3-npm-dynamic-inspect",
+      "version": 1,
+      "reasons": [
+        "M3_REQUIRED_CHECKS_COMPLETED"
+      ]
+    }
+  },
+  "whole_tree_modes_equal": true,
+  "tree_inventory_sha256": "02f6a69db1227cc23e7085d323332e71a12ded2ba7b4d99f7e86ef9338f1841c",
+  "tree_paths": 1278
+}

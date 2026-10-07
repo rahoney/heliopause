@@ -7,9 +7,11 @@ argv/path/content, Host log와 target-controlled data는 Core·Application·Poli
 
 ## 1. Exact upstream schema boundary
 
-M11의 sole upstream schema owner는 `scripts/runtimes.lock.json`의 gVisor
-`release-20260810.0` / commit `5ceb9a5fd5750d6c73dd166441f28306039300d0`이다.
-helper, runsc와 test source checkout은 이 identity를 함께 사용한다.
+현재 sole upstream schema owner는 `scripts/runtimes.lock.json`의 gVisor
+`release-20260907.0` / commit `7c6199801fd233d6d55309af4645d4746a077de7`과
+그 lock의 exact HAA patch/build-input identity다. Helper, runsc와 test source
+checkout은 이 identity를 함께 사용한다. M11 당시 qualification의 이전 upstream
+identity는 역사적 evidence에 남으며 현재 runtime 지원으로 전용하지 않는다.
 
 - gVisor seccheck의 remote sink protobuf framing/protocol은 그대로 사용한다.
 - `runsc trace metadata`의 human-readable output은 upstream이 안정성을 보장하지

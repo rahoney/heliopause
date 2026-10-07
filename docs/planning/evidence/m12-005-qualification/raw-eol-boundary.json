@@ -1,0 +1,30 @@
+{
+  "scope": "Whole staged candidate firstcheck; original decoded body trailing EOL blanks preserved, exact20 raw paths only",
+  "before_actual_exit": 2,
+  "diagnostic_raw_role": "additional-cleanup-whole-staged-check-before-attributes.log",
+  "diagnostic_sha256": "490160fe277ba0e1565dfae4f2d346f29851349d49701cfb0b0bb8487aea4688",
+  "findings": 393,
+  "exceptions": [
+    "docs/planning/evidence/m12-005-qualification/remote-ci/run37555305508-job112580062344.log",
+    "docs/planning/evidence/m12-005-qualification/remote-ci/run37555305508-job112580062555.log",
+    "docs/planning/evidence/m12-005-qualification/remote-ci/run37555305508-job112580062609.log",
+    "docs/planning/evidence/m12-005-qualification/remote-ci/run37555305508-job112580062610.log",
+    "docs/planning/evidence/m12-005-qualification/remote-ci/run37555305508-job112580062620.log",
+    "docs/planning/evidence/m12-005-qualification/remote-ci/run37555305508-job112580062640.log",
+    "docs/planning/evidence/m12-005-qualification/remote-ci/run37555305508-job112580062664.log",
+    "docs/planning/evidence/m12-005-qualification/remote-ci/run37555305508-job112580062691.log",
+    "docs/planning/evidence/m12-005-qualification/remote-ci/run37555305508-job112580062695.log",
+    "docs/planning/evidence/m12-005-qualification/remote-ci/run37555305508-job112590833084.log",
+    "docs/planning/evidence/m12-005-qualification/remote-ci/run37556677169-job112584750520.log",
+    "docs/planning/evidence/m12-005-qualification/remote-ci/run37556677169-job112584750615.log",
+    "docs/planning/evidence/m12-005-qualification/remote-ci/run37556677169-job112584750628.log",
+    "docs/planning/evidence/m12-005-qualification/remote-ci/run37556677169-job112584750644.log",
+    "docs/planning/evidence/m12-005-qualification/remote-ci/run37556677169-job112584750661.log",
+    "docs/planning/evidence/m12-005-qualification/remote-ci/run37556677169-job112584750713.log",
+    "docs/planning/evidence/m12-005-qualification/remote-ci/run37556677169-job112584750730.log",
+    "docs/planning/evidence/m12-005-qualification/remote-ci/run37556677169-job112584750760.log",
+    "docs/planning/evidence/m12-005-qualification/remote-ci/run37556677169-job112584750808.log",
+    "docs/planning/evidence/m12-005-qualification/remote-ci/run37556677169-job112594855816.log"
+  ],
+  "raw_unmodified": true
+}

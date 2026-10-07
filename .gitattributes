@@ -39,3 +39,25 @@ docs/planning/evidence/m12-002-004-remote-ci/raw/run-37503579865-job-11240645740
 docs/planning/evidence/m12-002-004-remote-ci/raw/run-37503579865-job-112406457449.log whitespace=-blank-at-eol
 docs/planning/evidence/m12-002-004-remote-ci/raw/run-37503579865-job-112424624693.log whitespace=-blank-at-eol
 docs/planning/evidence/m12-002-004-remote-ci/raw/run-37503579865-job-112406457746.log whitespace=-blank-at-eol
+
+# M12-005 preserved full GitHub decoded bodies: exact raw EOL exception only.
+docs/planning/evidence/m12-005-qualification/remote-ci/run37555305508-job112580062344.log whitespace=-blank-at-eol
+docs/planning/evidence/m12-005-qualification/remote-ci/run37555305508-job112580062555.log whitespace=-blank-at-eol
+docs/planning/evidence/m12-005-qualification/remote-ci/run37555305508-job112580062609.log whitespace=-blank-at-eol
+docs/planning/evidence/m12-005-qualification/remote-ci/run37555305508-job112580062610.log whitespace=-blank-at-eol
+docs/planning/evidence/m12-005-qualification/remote-ci/run37555305508-job112580062620.log whitespace=-blank-at-eol
+docs/planning/evidence/m12-005-qualification/remote-ci/run37555305508-job112580062640.log whitespace=-blank-at-eol
+docs/planning/evidence/m12-005-qualification/remote-ci/run37555305508-job112580062664.log whitespace=-blank-at-eol
+docs/planning/evidence/m12-005-qualification/remote-ci/run37555305508-job112580062691.log whitespace=-blank-at-eol
+docs/planning/evidence/m12-005-qualification/remote-ci/run37555305508-job112580062695.log whitespace=-blank-at-eol
+docs/planning/evidence/m12-005-qualification/remote-ci/run37555305508-job112590833084.log whitespace=-blank-at-eol
+docs/planning/evidence/m12-005-qualification/remote-ci/run37556677169-job112584750520.log whitespace=-blank-at-eol
+docs/planning/evidence/m12-005-qualification/remote-ci/run37556677169-job112584750615.log whitespace=-blank-at-eol
+docs/planning/evidence/m12-005-qualification/remote-ci/run37556677169-job112584750628.log whitespace=-blank-at-eol
+docs/planning/evidence/m12-005-qualification/remote-ci/run37556677169-job112584750644.log whitespace=-blank-at-eol
+docs/planning/evidence/m12-005-qualification/remote-ci/run37556677169-job112584750661.log whitespace=-blank-at-eol
+docs/planning/evidence/m12-005-qualification/remote-ci/run37556677169-job112584750713.log whitespace=-blank-at-eol
+docs/planning/evidence/m12-005-qualification/remote-ci/run37556677169-job112584750730.log whitespace=-blank-at-eol
+docs/planning/evidence/m12-005-qualification/remote-ci/run37556677169-job112584750760.log whitespace=-blank-at-eol
+docs/planning/evidence/m12-005-qualification/remote-ci/run37556677169-job112584750808.log whitespace=-blank-at-eol
+docs/planning/evidence/m12-005-qualification/remote-ci/run37556677169-job112594855816.log whitespace=-blank-at-eol

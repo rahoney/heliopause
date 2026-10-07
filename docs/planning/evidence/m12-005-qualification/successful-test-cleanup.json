@@ -1,0 +1,105 @@
+{
+  "status": "COMPLETE",
+  "scope": "Five historical successful full CPU/cu126 disposable cache and target roots only",
+  "started_utc": "2026-10-07T01:10:40.314521+00:00",
+  "finished_utc": "2026-10-07T01:43:39.594517+00:00",
+  "primary_inventory_sha256": "7b9f57e1632396bcc29a61763b620b0e49a90395dc0e935695a473d0c2608366",
+  "primary_receipt_sha256": "291690b31113bd31b1d9c65125930316a6bd85533af5d784dc9606382ae96721",
+  "consumer_query": {
+    "process_query": "COMPLETE_NO_USERS",
+    "pids_checked": 72,
+    "fds_checked": 1027,
+    "nested_mounts": "ABSENT",
+    "docker_query_exit": 0,
+    "docker_containers": 0
+  },
+  "removed": [
+    {
+      "root_label": "pytorch-cpu-1103701892",
+      "logical_file_bytes": 968316621,
+      "inventoried_records": 16335,
+      "retained_evidence_records": 32,
+      "retained_evidence_sha_verified": true
+    },
+    {
+      "root_label": "pytorch-cu126-3391760296",
+      "logical_file_bytes": 10235870534,
+      "inventoried_records": 17608,
+      "retained_evidence_records": 93,
+      "retained_evidence_sha_verified": true
+    },
+    {
+      "root_label": "pytorch-cpu-1567343427",
+      "logical_file_bytes": 968320052,
+      "inventoried_records": 16335,
+      "retained_evidence_records": 32,
+      "retained_evidence_sha_verified": true
+    },
+    {
+      "root_label": "pytorch-cu126-3692674748",
+      "logical_file_bytes": 10235873965,
+      "inventoried_records": 17608,
+      "retained_evidence_records": 93,
+      "retained_evidence_sha_verified": true
+    },
+    {
+      "root_label": "pytorch-cpu-638034440",
+      "logical_file_bytes": 968320051,
+      "inventoried_records": 16335,
+      "retained_evidence_records": 32,
+      "retained_evidence_sha_verified": true
+    }
+  ],
+  "logical_bytes_removed": 23376701223,
+  "measured_wsl_available_delta_bytes": 23592923136,
+  "prior_004_cleanup_counted_again": false,
+  "successful_full_proofs": [
+    {
+      "raw_label": "final2-full-cpu.log",
+      "sha256": "e75f2bd0cbb9218c6e99c4e8a274f05797b05ba661823417518bb732b34b1303"
+    },
+    {
+      "raw_label": "final2-full-cu126.log",
+      "sha256": "871a054f56cb16f5988ee18a682159dc97ec145d7d2fab77197c37706554ac94"
+    },
+    {
+      "raw_label": "go-build-watch-stop-final-full-cpu.log",
+      "sha256": "526ba5001639ef0b2e221235156b3926c17f5bb15df6a8f6ebec2557f020291c"
+    },
+    {
+      "raw_label": "go-build-watch-stop-final-full-cu126.log",
+      "sha256": "fe070e693e14c37f3316f5fbe185a46776fa98e2fdbeb9a3d1fb0b76538f495d"
+    }
+  ],
+  "retained": [
+    "Every selected root normalized Evidence record with exact hashes",
+    "original success logs and qualified source/input receipts",
+    "prior failed cu126 input and primary error",
+    "failed archive images and custody backups",
+    "original installed runtime and shared quality tool cache"
+  ],
+  "not_claimed": [
+    "Windows VHDX compaction",
+    "physical Windows capacity recovery",
+    "prior failed CUDA scheduling cause resolved"
+  ],
+  "additional_batch": {
+    "primary_inventory_sha256": "6d8873ec895bce6bb3aab99de281b646c2a5bc4ecc994549732ad614f96b020e",
+    "primary_receipt_sha256": "a4bce83f7931624c73534d94d14628e4c311cb62745a0c7d7f795b1fa352e7d7",
+    "consumer_query": {
+      "process_query": "COMPLETE_NO_USERS",
+      "pids_checked": 74,
+      "fds_checked": 1028,
+      "nested_mounts": "ABSENT",
+      "docker_query_exit": 0,
+      "docker_containers": 0
+    },
+    "success_proof": {
+      "raw_label": "go-build-terminal-final-full-cpu.log",
+      "sha256": "7099060da5b92ea02f933a587044ace5f00bf1d54feeb36d023ce9e167728770"
+    },
+    "started_utc": "2026-10-07T01:43:37.516651+00:00",
+    "finished_utc": "2026-10-07T01:43:39.594517+00:00",
+    "failed_sibling_retained": "pytorch-cu126-4135428608"
+  }
+}

@@ -89,28 +89,36 @@ helox terraform init 'hashicorp/random@3.7.2'
 
 | Host / input | MVP support |
 | --- | --- |
-| Linux amd64 + pinned Docker/runsc/observer | npm, PyPI wheel/sdist와 GitHub Release ELF/ZIP/tar.gz 검사; 정책이 허용한 exact set의 새 target Promotion |
+| Linux amd64 + pinned Docker/runsc/observer | npm, PyPI wheel/sdist와 GitHub Release ELF/ZIP/tar.gz 검사; approved managed project/venv 또는 새 target으로 exact set Promotion. PyTorch·Go·Cargo·Provider의 M12 qualification 상태는 아래 표 참조 |
 | macOS native | CLI build와 기본 실행만 검증됨. Linux dynamic backend와 automatic Promotion은 지원하지 않음 |
 | Windows 11 + WSL2 Ubuntu 24.04 | WSL2 내부 Linux CLI build와 기본 실행만 검증됨. Windows-native backend가 아니며 dynamic/Promotion support를 뜻하지 않음 |
 | 기타 OS/architecture/runtime | 지원하지 않으며 누락된 capability를 안전으로 간주하지 않음 |
 
-## Planned pre-release expansion
+## M12 qualification
 
-현재 구현된 MVP 지원 범위와 다음 생태계 확장 범위를 구분한다. 아래 경로는 M12
-qualification이 완료되기 전까지 공개 지원으로 간주하지 않는다.
+다음 생태계 경로는 구현되어 있으며, 전체 feature freeze는 M12-005에서 검증 중이다.
+Qualified source 경로와 일반 사용자용 public installer/배포 완료는 각각의 acceptance를
+따른다. Runtime/helper를 준비하지 않은 Host에서 동적 실행을 지원한다고 주장하지 않는다.
 
-| Milestone | Planned path |
-| --- | --- |
-| M12-001 | 공식 PyTorch source profile을 통한 `helox pip install` |
-| M12-002 | public Go Modules: `helox go get`, `helox go mod download`, `helox go build` |
-| M12-003 | public crates.io: `helox cargo add`, `helox cargo build` |
-| M12-004 | public Terraform Provider 설치: `helox terraform init` |
-| M12-005 | 전체 생태계 qualification 및 feature freeze |
-| M12-02 | 최종 red-team/fix gate |
+| Milestone | Implemented path | Status |
+| --- | --- | --- |
+| M12-001 | 공식 PyTorch source profile을 통한 `helox pip install` | acceptance complete; release tuple freeze in M12-005 |
+| M12-002 | public Go Modules: `helox go get`, `helox go mod download`, `helox go build` | acceptance complete |
+| M12-003 | public crates.io: `helox cargo add`, `helox cargo build` | acceptance complete |
+| M12-004 | public Terraform Provider 설치: `helox terraform init` | installation acceptance complete; RPC/cloud behavior not attested |
+| M12-005 | 전체 생태계 qualification 및 feature freeze | IN_PROGRESS |
+| M12-02 | 최종 red-team/fix gate | RESERVED |
 
 PyTorch profile roles are CPU (primary non-CUDA), cu126 (compatibility), cu130
 (primary CUDA), and cu132 (extended compatibility). `cu128` is removed and is
 not selectable. CUDA qualification is explicit workflow-dispatch only.
+
+First-release PyTorch 후보의 exact version·Python/ABI/platform·resource bound와
+qualifying scope는 [canonical support tuple](./docs/planning/16-m12-01-ecosystem-expansion-contract.md#first-release-tuple-candidate--qualification-pending)을
+따른다. CUDA broader module 검사는 `--inspection-prerequisites`로 명시한 고정
+NumPy2.4.6을 검사 전용으로 사용하며 target에는 설치하지 않는다. 기본 입력은 empty이고
+필수 검사가 불완전하면 자동 승격하지 않는다. `triton.profiler.viewer`의
+`NOT_ATTESTED` 결과는 기능 정상·나중 실행 차단·GPU computation 검증을 뜻하지 않는다.
 
 `scripts/version-support.lock.json` records externally managed baselines.
 Developer checks warn after 90 days; strict qualification freshness fails stale

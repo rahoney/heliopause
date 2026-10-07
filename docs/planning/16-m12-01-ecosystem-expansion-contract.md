@@ -1289,6 +1289,44 @@ post-freeze 변경으로 취급한다.
 
 ## Feature freeze condition
 
+### First-release tuple candidate — qualification pending
+
+M12-005의 first-release 후보는 `torch`의 아래 네 exact tuple이다. 이 목록은
+현재 lock의 named endpoints와 이미 구현된 bounded resource policy를 사용한다.
+현재는 마지막 qualification 진행 중이며 이 표 자체로 `RELEASE_SUPPORTED`를
+선언하지 않는다. Actual run/checkout/source boundary 및 feature-freeze 종료는
+[M12-005 evidence](./evidence/m12-005-qualification/README.md)가 소유한다.
+
+| Package/version | Official source profile | Interpreter/ABI/platform target | Resource policy | Qualification |
+| --- | --- | --- | --- | --- |
+| `torch==2.14.0+cpu` | `pytorch:cpu` | Python3.14.7 / cp314-cp314 / Linux amd64, manylinux_2_36_x86_64 target | `pytorch:cpu`의 위 두 budget 표 | final candidate pending |
+| `torch==2.14.0+cu126` | `pytorch:cu126` | 동일 pinned Python/ABI/platform | `pytorch:cu126`의 위 두 budget 표 | final candidate pending |
+| `torch==2.14.0+cu130` | `pytorch:cu130` | 동일 pinned Python/ABI/platform | `pytorch:cu130`의 위 두 budget 표 | final candidate pending |
+| `torch==2.14.0+cu132` | `pytorch:cu132` | 동일 pinned Python/ABI/platform | `pytorch:cu132`의 위 두 budget 표 | final candidate pending |
+
+Wheel의 manylinux_2_28 tag와 runtime target manylinux_2_36은 서로 다른 identity
+field다. Compatible selected tag와 exact interpreter/source/digest 검사는 유지한다.
+Qualification은 root exact version을 live resolve한 뒤 각 selected node를 freeze하고
+독립 integrity/inspection/Policy/Evidence를 거쳐 offline Promotion한다. Live 실행을
+과거 graph의 frozen full replay로 표현하지 않으며 deterministic static replay와
+실제 lifecycle 실행은 각각의 증거를 가진다.
+
+CUDA 후보의 broader non-root probes에는 explicit inspection-only NumPy2.4.6 pin을
+사용한다. CPU 기본 입력은 empty다. 이 보조 wheel과 entry-point scripts는 target에
+승격하지 않으며 원래 설치 graph를 바꾸지 않는다. 보조 입력 없는 required
+inspection 실패를 성공으로 간주하지 않는다. Pin과 대상 binding은 기존
+`--inspection-prerequisites` 계약 및 exact CI qualification 입력을 따른다.
+`triton.profiler.viewer`는 `NOT_ATTESTED`로 result/Evidence/manifest에 남는다.
+해당 command의 정상 동작이나 승격 후 실행 차단을 보장하지 않는다.
+
+CUDA Toolkit/Host driver compatibility·실제 GPU computation, 다른 Python/ABI/OS/
+architecture, 이 표에 없는 Torch version 및 torchvision/torchaudio 조합은 이번
+first-release tuple qualification에 포함되지 않는다. Ownership table에 프로젝트가
+있거나 selector가 등록됐다는 이유로 그 조합의 release support를 광고하지 않는다.
+다른 입력도 기존 exact source/integrity/resource/completeness 판정을 따라야 하며,
+지원 범위 확대는 deliberate qualification/support 결정으로만 수행한다.
+Public release·일반 Host runtime activation은 M12-02/M13의 별도 완료 기준이다.
+
 다음이 모두 만족되면 M12 기능 개발을 종료한다.
 
 - [ ] PyTorch official source supported without arbitrary index fallback

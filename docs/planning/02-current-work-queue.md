@@ -3016,3 +3016,20 @@ MISSING qualification·지원 matrix·문서 일치성·구조 검토·성공 �
 M12-005는 `IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO`다.
 사용자는 commit/push/CI 오류 수정과 불필요한 성공 테스트 데이터 정리를 포함한005
 완주를 승인했다. 현재 하나의IN_PROGRESS를 유지하며 M12-02는RESERVED다.
+
+### M12-005 추가 미사용 API 정리 checkpoint (2026-10-07)
+
+AST identifier triage와 실제 bootstrap/factory·tracked reference를 대조하여
+production/test consumer가 없는 초기 Terraform resolution service와 registry
+getter, 옛 string-only PyPI aggregate, executor 없는 Python probe wrapper를
+제거했다. 기존 guarded init·extras를 유지하는 typed aggregate·endpoint constant·
+configured executor probe는 그대로다. [추가 source boundary](./evidence/m12-005-qualification/additional-code-cleanup-boundary.json)가
+40-line scope를 소유한다. Canonical quick/build/architecture/vet/Staticcheck/default,
+docs/security는 actual0다. 이는 완료된 subsystem의 대체 구현이 아니다.
+
+앞선005 cu13037555305508/bb28b47와 ordinary37556677169/8791fdc의 실제 all10
+SUCCESS, full 및 새 npm inspect 결과는 당시 source evidence로 보존한다. 추가 정리
+전 cu13237560044655는 obsolete source를 실행하지 않도록 명시적으로 취소했으며
+제품 failure나 qualification PASS로 해석하지 않는다. 새 source의 CPU·세CUDA와
+Required를 독립 실행한 후에만005 acceptance/feature freeze를 닫는다. 현재005
+IN_PROGRESS와 M12-02RESERVED/ReadyNo를 유지한다.

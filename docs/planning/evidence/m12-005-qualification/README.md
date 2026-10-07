@@ -76,5 +76,22 @@ SRI verification and downstream inspection/Policy remain unchanged.
 [Same-input failure/correction evidence](./npm-media-type/result.json) includes
 the official format reference, frozen capture and normal/negative regression.
 A public `is-number@7.0.0` inspect CLI test is wired to the existing authenticated
-Linux lifecycle job. Its actual execution remains pending; npm install uses a
-different resolver and cannot substitute for this test.
+Linux lifecycle job. Its actual 5.84s execution on `8791fdc` passed in
+[run37556677169](https://github.com/rahoney/heliopause/actions/runs/37556677169):
+COMPLETED/ALLOW, all three required verification/static/dynamic checks completed
+and all three Evidence references retained. npm install uses a different resolver
+and has its own actual promotion test in that same run. Final closure HEAD CI
+is separately required.
+
+## Additional zero-consumer cleanup
+
+The read-only AST/reference and actual bootstrap/factory review found four
+additional unused API groups, with no production or test callers:
+`TerraformResolutionService`, string-only `AggregateBoundedRequirement`,
+`RegistryEndpoint`, and executor-less `ProbePython`. The current guarded init,
+typed aggregate retaining extras, endpoint constant and configured probe are
+unchanged. [Exact before/after scope](./additional-code-cleanup-boundary.json)
+records the 40-line removal. The M5 contract now names the actual configured
+helper; capability/identity/Policy/resource rules are unchanged. Earlier005 remote
+runs remain historical qualification, and the new source needs independent
+CPU/cu126/cu130/cu132 and Required results before feature freeze.

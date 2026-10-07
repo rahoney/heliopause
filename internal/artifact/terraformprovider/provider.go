@@ -27,8 +27,7 @@ var providerSource = mustSource("terraform-registry")
 
 var defaultDownloadHosts = map[string]bool{"releases.hashicorp.com": true, "github.com": true}
 
-func Source() domain.SourceID  { return providerSource }
-func RegistryEndpoint() string { return registryEndpoint }
+func Source() domain.SourceID { return providerSource }
 
 func ParseReference(value string) (domain.ArtifactReference, error) {
 	parts := strings.Split(value, "@")

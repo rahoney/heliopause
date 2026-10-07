@@ -1,0 +1,120 @@
+{
+  "scope": "Actual built current-source CLI help/command/flag wiring; no artifact inspect/install or runtime capability claimed",
+  "buildvcs": false,
+  "binary": {
+    "role": "review CLI",
+    "sha256": "d1c2bb9ee8f4d3ee8684c937c046b54a0d6b50c2a4edf57c6335492f03cc59e4"
+  },
+  "commands": [
+    {
+      "argv": [
+        "--help"
+      ],
+      "actual_exit": 0,
+      "raw_label": "root.log",
+      "sha256": "b9f5bb194859cea2b395e823ee6458c785524fd16a0c75ab32889dc21282ff7d"
+    },
+    {
+      "argv": [
+        "npm",
+        "inspect",
+        "--help"
+      ],
+      "actual_exit": 0,
+      "raw_label": "npm-inspect.log",
+      "sha256": "1c824dff7b24caffb4212ffb64960f2b65028ac3e50a97ac86b79684256c8c6c"
+    },
+    {
+      "argv": [
+        "npm",
+        "install",
+        "--help"
+      ],
+      "actual_exit": 0,
+      "raw_label": "npm-install.log",
+      "sha256": "cd0c39d57be0327ac542823ba028b498e2b788cea03d1c297fa732c7a774b207"
+    },
+    {
+      "argv": [
+        "pypi",
+        "inspect",
+        "--help"
+      ],
+      "actual_exit": 0,
+      "raw_label": "pypi-inspect.log",
+      "sha256": "8c6998a360d7098d327e876253aeac52ce93cbac60e83b0827c8dbecc5b1e564"
+    },
+    {
+      "argv": [
+        "pip",
+        "install",
+        "--help"
+      ],
+      "actual_exit": 0,
+      "raw_label": "pip-install.log",
+      "sha256": "23fc60d7b8e588ee286ae7c5719a7c21be80633d7e22b9616e56524273b98800"
+    },
+    {
+      "argv": [
+        "github",
+        "install",
+        "--help"
+      ],
+      "actual_exit": 0,
+      "raw_label": "github-install.log",
+      "sha256": "78d8c63e34240bf16cb1f050f55bdc39eb6d0428b155108123b60ed3adef1c34"
+    },
+    {
+      "argv": [
+        "go",
+        "get",
+        "--help"
+      ],
+      "actual_exit": 0,
+      "raw_label": "go-get.log",
+      "sha256": "2aa6fe3cc6e6f29c37252a068f779703866e370d0c2d8ed19fb2b9f9cdd446e3"
+    },
+    {
+      "argv": [
+        "go",
+        "build",
+        "--help"
+      ],
+      "actual_exit": 0,
+      "raw_label": "go-build.log",
+      "sha256": "a922508137074d129e43bea52922cc97095f38e4ed4c01422e80498b6ce1e653"
+    },
+    {
+      "argv": [
+        "cargo",
+        "add",
+        "--help"
+      ],
+      "actual_exit": 0,
+      "raw_label": "cargo-add.log",
+      "sha256": "5f476500e50a24738b912027d3a3659d78589305d5a7622c6ea2cf0d95146458"
+    },
+    {
+      "argv": [
+        "cargo",
+        "build",
+        "--help"
+      ],
+      "actual_exit": 0,
+      "raw_label": "cargo-build.log",
+      "sha256": "e4f2383f23297a7ff65f2aa202ba8c3d60f9766da52f15c8c5e95dc3f1ae0acd"
+    },
+    {
+      "argv": [
+        "terraform",
+        "init",
+        "--help"
+      ],
+      "actual_exit": 0,
+      "raw_label": "terraform-init.log",
+      "sha256": "a55da4926b6a0fbce9a2aefaec42374d86e4b1cb6148ed80e0215cedd666b70b"
+    }
+  ],
+  "source_candidate": "8791fdcff573b1d85681ca74b65cf5a9e3ccf27a",
+  "source_boundary": "current-source-boundary.json"
+}

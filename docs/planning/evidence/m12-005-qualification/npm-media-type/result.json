@@ -1,5 +1,5 @@
 {
-  "status": "NARROW_RESOLVER_REGRESSION_VERIFIED_ACTUAL_CLI_PENDING",
+  "status": "RESOLVER_AND_ACTUAL_NPM_INSPECT_CLI_VERIFIED_FINAL_CLOSURE_PENDING",
   "baseline_commit": "bb28b4744d6d124169c26e8dba77f4ef8c832db2",
   "cause": "Requested abbreviated npm metadata media type was rejected by application/json-prefix-only response check; prefix check also accepted malformed/unknown JSON media types.",
   "primary_source": "internal/artifact/npm/resolver.go:Resolver.fetchMetadata",
@@ -30,7 +30,7 @@
     "SRI verification",
     "Policy/dynamic inspection/promotion"
   ],
-  "remaining": "Actual installed CLI gate and final HEAD Required CI; resolver regression alone does not qualify npm install or full ecosystem.",
+  "remaining": "Final documentation/evidence closure HEAD Required CI; real npm install/promotion is separately qualified by the existing actual consumers in that run.",
   "raw_inventory": [
     {
       "path": "metadata.json",
@@ -62,5 +62,18 @@
       "sha256": "5e87c7a19f8f9bfd56f12f7efce8160d9304b350c2bda244570a5950486b19f7",
       "bytes": 21682
     }
-  ]
+  ],
+  "source_candidate": "8791fdcff573b1d85681ca74b65cf5a9e3ccf27a",
+  "actual_cli": {
+    "run_id": 37556677169,
+    "job_id": 112584750760,
+    "test": "TestLinuxNPMInspectCLIIntegration",
+    "duration_seconds": 5.84,
+    "operation_status": "COMPLETED",
+    "decision": "ALLOW",
+    "required_checks_completed": 3,
+    "retained_evidence_references": 3,
+    "scope_receipt": "../remote-ci/npm-source-candidate-actual-scope.json",
+    "all_jobs": "10 SUCCESS"
+  }
 }
