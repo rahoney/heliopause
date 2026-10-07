@@ -105,7 +105,7 @@ Step 14 — Implementation: M0·M1·M2·M3·M4·M5-001..007·M6-001..007·M7-001
 Documentation hierarchy and task routing migration: Complete
 
 M12-001 acceptance와 M12-002 public Go Modules·M12-003 public Cargo의 로컬
-acceptance와 M12-004 public Terraform Provider installation의 acceptance는 완료했다. M12-002~004 누적 변경의 원격 Required 및9 prerequisites와 성공 테스트 데이터 정리를 완료했다. 다음 M12-005는 `NOT_STARTED / Ready: Yes`다. M12 전체는 계속 `IN_PROGRESS`이며, CUDA
+acceptance와 M12-004 public Terraform Provider installation의 acceptance는 완료했다. M12-002~004 누적 변경의 원격 Required 및9 prerequisites와 성공 테스트 데이터 정리를 완료했다. 현재 M12-005는 `IN_PROGRESS`다. M12 전체는 계속 `IN_PROGRESS`이며, CUDA
 qualification을 broader first-release `RELEASE_SUPPORTED` 결정으로 확대하지
 않는다. 그 결정은 M12-005 feature freeze에 남긴다. 현재 milestone과
 active/next work item은 [Current Work Queue](./docs/planning/02-current-work-queue.md)를 참조한다.

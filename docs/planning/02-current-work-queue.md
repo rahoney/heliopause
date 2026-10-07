@@ -9,9 +9,9 @@
 ```text
 Current milestone: M12 — Ecosystem Expansion Before Public Release
 Milestone status: IN_PROGRESS
-Active work item: none (M12-002~004 remote qualification complete)
-Next work item: M12-005 — Cross-ecosystem qualification and feature freeze
-Next work item status: NOT_STARTED / Ready: Yes
+Active work item: M12-005 — Cross-ecosystem qualification and feature freeze
+Next work item: M12-02 — final red-team/fix gate
+Next work item status: RESERVED / Ready: No
 Ready: Yes
 ```
 
@@ -2176,7 +2176,7 @@ production activation과 최종 배포를 수행한다.
 | 2 | M12-002 | public Go Modules | COMPLETE |
 | 3 | M12-003 | Rust/Cargo and public crates.io | COMPLETE |
 | 4 | M12-004 | Terraform Provider installation and cumulative remote qualification | COMPLETE |
-| 5 | M12-005 | cross-ecosystem qualification and feature freeze | NOT_STARTED |
+| 5 | M12-005 | cross-ecosystem qualification and feature freeze | IN_PROGRESS |
 | 6 | M12-02 | final red-team/fix gate | RESERVED |
 
 ### M12-001 acceptance 종료 (2026-10-03)
@@ -3007,3 +3007,12 @@ NOT_STARTED/Ready: Yes다. M12 전체와 broader release/feature freeze는 아�
 - [x] repository-wide 변경 승인 경계
 - [x] M1 이후 작업의 지연 생성 원칙
 - [x] 독립 repository의 정확한 재개 지점
+
+### M12-005 baseline audit 시작 (2026-10-07)
+
+현재01175bb와 실제 remote CI run37510273661 completed/success를 확인했다.
+[Baseline audit](./evidence/m12-005-qualification/README.md)의 기존 구현을 재사용하고
+MISSING qualification·지원 matrix·문서 일치성·구조 검토·성공 데이터 정리만 수행한다.
+M12-005는 `IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO`다.
+사용자는 commit/push/CI 오류 수정과 불필요한 성공 테스트 데이터 정리를 포함한005
+완주를 승인했다. 현재 하나의IN_PROGRESS를 유지하며 M12-02는RESERVED다.

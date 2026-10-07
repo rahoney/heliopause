@@ -9,8 +9,8 @@
 - 구현 언어: Go
 - CLI framework: Cobra
 - 현재 상태: M0–M11 qualification 및 post-qualification release hardening 완료. M12 생태계 확장을 진행 중이며, M12-001 공식 PyTorch source support와 M12-002 public Go Modules와 M12-003 public Cargo와 M12-004 public Terraform Provider installation의 acceptance를 완료했고, M12-002~004 누적 변경의 원격 Required 및9 prerequisites 검증과 성공 테스트 데이터 정리를 완료했다. M12-02 최종 red-team/fix gate와 M13 Production Release & Operations는 선행 작업 완료 후 진행
-- 진행 작업: 없음 — M12-002~004 누적 원격 qualification 완료 ([종료 근거](docs/planning/evidence/m12-002-004-remote-ci/result.json))
-- 다음 작업: M12-005 — Cross-ecosystem qualification and feature freeze (`NOT_STARTED / Ready: Yes`)
+- 진행 작업: M12-005 — Cross-ecosystem qualification and feature freeze (`IN_PROGRESS`)
+- 다음 작업: M12-02 — final red-team/fix gate (`RESERVED / Ready: No`)
 - 진행 상태의 canonical owner: [`docs/planning/02-current-work-queue.md`](docs/planning/02-current-work-queue.md)
 
 Heliopause는 Apache-2.0으로 배포한다. 외부 기여는 `CLA.md`의 Harmony
@@ -21,7 +21,9 @@ Copyright License 및 Option Five 조건과 자동 CLA status check를 충족해
 
 ## Project Notes
 
-상세 설계·결정·작업 계획 문서는 로컬 작업 환경에서 관리하며 이 저장소의 배포 대상에 포함하지 않는다.
+상세 설계·결정·작업 계획은 [Documentation Guide](./docs/README.md)를 통해
+버전 관리되는 canonical 문서에서 확인한다. 개인 작업 메모와 로컬 실행 상태는
+별도이며, source 문서가 runtime 배포나 일반 Host 설치 완료를 뜻하지 않는다.
 
 ## Build
 
@@ -48,10 +50,11 @@ go run ./scripts/check freshness
 
 ## Commands
 
-지원하는 공개 입력은 anonymous public npm Registry, PyPI와 public GitHub
-Release asset이다. npm/pip install은 기본적으로 현재 managed project 또는
+지원하는 공개 입력은 anonymous public npm Registry, PyPI, named official PyTorch
+source, public GitHub Release asset, Go proxy/SumDB, crates.io와 Terraform Provider다.
+npm/pip install은 기본적으로 현재 managed project 또는
 active virtual environment를 사용하며, `--target`은 고급 absolute destination
-override다. GitHub install은 M9-005 전까지 `--target`을 요구한다.
+override다. GitHub install은 기본 user bin destination 또는 새 `--target`을 사용한다.
 
 ```sh
 helox doctor
@@ -67,6 +70,14 @@ helox pip install '<project>[@<version>]' --target /absolute/venv
 helox github inspect '<owner>/<repo>@<tag>#<asset>'
 helox github install '<owner>/<repo>@<tag>#<asset>'
 helox github install '<owner>/<repo>@<tag>#<asset>' --target /absolute/new-target
+
+helox pip install 'torch@2.14.0+cpu' --source pytorch:cpu
+helox go get 'github.com/spf13/pflag@v1.0.10'
+helox go mod download
+helox go build ./...
+helox cargo add 'itoa@1.0.17'
+helox cargo build
+helox terraform init 'hashicorp/random@3.7.2'
 ```
 
 `inspect`는 `ALLOW`여도 target에 반입하지 않는다. `install`은 모든 필수

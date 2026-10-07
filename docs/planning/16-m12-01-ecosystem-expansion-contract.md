@@ -314,7 +314,22 @@ conservative limits를 유지한다.
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | default PyPI | existing conservative limits | existing conservative limits | existing conservative limits | existing conservative limits | existing conservative limits | existing conservative limits | existing conservative limits | existing conservative limits |
 | `pytorch:cpu` | 256 MiB | 1 GiB | 20,000 | 2 MiB | 512 MiB | 2 GiB | 4 GiB | 15 minutes |
-| `pytorch:cu126` | 1 GiB | 2.5 GiB | 20,000 | 2 MiB | 4.5 GiB | 8 GiB | 24 GiB | 40 minutes |
+| `pytorch:cu126` | 1.5 GiB | 2 GiB | 20,000 | 2 MiB | 5 GiB | 8 GiB | 24 GiB | 40 minutes |
+| `pytorch:cu130` | 1 GiB | 2 GiB | 20,000 | 2 MiB | 4 GiB | 8 GiB | 24 GiB | 40 minutes |
+| `pytorch:cu132` | 1 GiB | 2 GiB | 20,000 | 2 MiB | 4 GiB | 8 GiB | 24 GiB | 40 minutes |
+
+M12-005 문서 대조에서 이전 cu126 표의 값이 기존 qualification 구현과 다름을
+확인하여 `internal/artifact/pypi/resource_policy.go`의 실제 bounded policy와 맞췄다.
+위 CUDA 값은 M12-001 qualification 후보부터 존재한 값이며 이번 변경에서
+실행 예산을 상향하거나 판정을 완화하지 않았다. Source profile 등록과 이 표만으로
+release support를 선언하지 않으며 아래 support freeze의 실제 검증 근거를 요구한다.
+
+| Root profile | Graph files / artifacts | Runtime memory / tmpfs | Promotion tmpfs | Transaction CPU ceiling | Required import units/artifact |
+| --- | --- | --- | --- | --- | --- |
+| `pytorch:cpu` | 20,000 / 64 | 2 GiB / 2 GiB | 1 GiB | 180 CPU seconds | 64 |
+| `pytorch:cu126` | 24,000 / 64 | 4 GiB / 12 GiB | 12 GiB | 300 CPU seconds | 64 |
+| `pytorch:cu130` | 24,000 / 64 | 4 GiB / 12 GiB | 12 GiB | 300 CPU seconds | 64 |
+| `pytorch:cu132` | 24,000 / 64 | 4 GiB / 12 GiB | 12 GiB | 300 CPU seconds | 64 |
 
 기존 구현에 대응 resource-bound abstraction이 있으면 그것을 canonical owner로
 재사용한다. 이 계약은 별도의 중복 abstraction을 요구하지 않는다.
