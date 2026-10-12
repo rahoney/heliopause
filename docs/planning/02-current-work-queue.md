@@ -9,7 +9,7 @@
 ```text
 Current milestone: M12 — Ecosystem Expansion Before Public Release
 Milestone status: COMPLETE (technical acceptance; reviewer merge pending)
-Active work item: None — SEC-2026-10-12 bounded repair qualified; final documentation delivery CI pending
+Active work item: SEC-2026-10-12 — final CI APT mirror stall repair
 Next work item: M13 — Production Release & Operations
 Next work item status: NOT_STARTED / Ready: No — reviewer merge and main CI pending; M13 activation blocker remains separate
 Ready: No — delivery handoff
@@ -17,8 +17,9 @@ Ready: No — delivery handoff
 
 ### SEC-2026-10-12 — Scheduled Security Go patch
 
-- Status: `COMPLETE` for the host security patch and bounded SumDB diagnostic
-  repair. Final documentation delivery CI remains a separate fresh HEAD check;
+- Status: `IN_PROGRESS` for the newly observed CI APT mirror stall. The host
+  security patch and bounded SumDB diagnostic repair remain qualified.
+  Final delivery CI remains a separate fresh HEAD check;
   M12/M13 historical acceptance is unchanged.
 - Baseline: `main@bdc2d891ca0edb719be8a28b1a8576decd3d01f2`;
   [scheduled run 38240142380](https://github.com/rahoney/heliopause/actions/runs/38240142380),
@@ -73,6 +74,18 @@ Ready: No — delivery handoff
   `scripts/runtimes.lock.json`,
   generated runtime identities, qualified Go guest image and historical M12
   evidence remain exact inputs; no old qualification is relabeled for Go 1.26.9.
+- Delivery follow-up: CI38263676518 (CI306), job114860325477, remains in
+  `apt-get update` in the user-provided live tail, retrying the hosted Azure
+  Ubuntu mirror while the official HTTPS archive returns indexes. This is
+  before runtime installation and integration tests; it is separate from the
+  historical SumDB failure. The APT commands were unchanged from the baseline.
+  The bounded CI repair uses the official archive with the existing Ubuntu
+  signed sources, per-request timeouts and whole-command limits. No package
+  pin, runtime identity, product code or test acceptance is changed.
+  APT follow-up audit: `IMPLEMENTED=YES`, `WIRED=YES`, `QUALIFIED=NO`,
+  `ACCEPTANCE_CLOSED=NO`; local canonical workflow/docs/security and isolated
+  signed APT acquisition checks PASS. `MISSING`: fresh remote Linux/Required
+  validation. See the [APT follow-up](../engineering/evidence/security-go1269/apt-followup.md).
 
 M0~M7은 원래 정의한 MVP qualification과 evidence를 완료했다. external
 security review에서 확인된 production trust-boundary gap은 과거 M7 evidence를

@@ -16,6 +16,10 @@ full-Race status is not the current Required status. The host patch and bounded
 diagnostic repair are qualified; broader full-Race and guest-runtime follow-ups
 remain separate.
 
+Final delivery CI306 stalled in Ubuntu APT mirror acquisition before runtime
+setup. A bounded workflow repair and its separate validation are tracked in
+the [APT follow-up](./apt-followup.md); its fresh remote result is pending.
+
 ## ROOT_CAUSE
 
 [Run 38240142380](https://github.com/rahoney/heliopause/actions/runs/38240142380)
