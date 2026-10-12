@@ -43,6 +43,11 @@ Original local logs and command/hash receipts are in
 attempt could not create sockets/resolve the host and is preserved separately
 in `apt-followup/`; it does not reproduce the remote mirror stall.
 
-Fresh remote Linux/Required results are pending. The prior host security and
-SumDB diagnostic qualification remain historical evidence for their exact
-source, not a pass for this new workflow candidate.
+The completed CI306 raw log confirms88m32.37s without further APT output before
+concurrency cancellation; no integration test had started. Its exact transport
+or internal APT cause remains unknown. CI307 at2eea071 completes package-index
+acquisition (12.4MB/3s), package download (126MB/4s) and runtime installation.
+The APT repair therefore passes that actual hosted acquisition. Linux/Required
+subsequently fail on a distinct Cargo configuration read, tracked in the
+[Cargo follow-up](./cargo-gai-followup.md). Prior host security and SumDB
+qualification remain historical evidence for their exact source.

@@ -9,7 +9,7 @@
 ```text
 Current milestone: M12 — Ecosystem Expansion Before Public Release
 Milestone status: COMPLETE (technical acceptance; reviewer merge pending)
-Active work item: SEC-2026-10-12 — final CI APT mirror stall repair
+Active work item: SEC-2026-10-12 — Cargo resolver runtime-read regression repair
 Next work item: M13 — Production Release & Operations
 Next work item status: NOT_STARTED / Ready: No — reviewer merge and main CI pending; M13 activation blocker remains separate
 Ready: No — delivery handoff
@@ -17,7 +17,7 @@ Ready: No — delivery handoff
 
 ### SEC-2026-10-12 — Scheduled Security Go patch
 
-- Status: `IN_PROGRESS` for the newly observed CI APT mirror stall. The host
+- Status: `IN_PROGRESS` for the CI307 Cargo resolver runtime-read failure. The host
   security patch and bounded SumDB diagnostic repair remain qualified.
   Final delivery CI remains a separate fresh HEAD check;
   M12/M13 historical acceptance is unchanged.
@@ -74,18 +74,25 @@ Ready: No — delivery handoff
   `scripts/runtimes.lock.json`,
   generated runtime identities, qualified Go guest image and historical M12
   evidence remain exact inputs; no old qualification is relabeled for Go 1.26.9.
-- Delivery follow-up: CI38263676518 (CI306), job114860325477, remains in
-  `apt-get update` in the user-provided live tail, retrying the hosted Azure
-  Ubuntu mirror while the official HTTPS archive returns indexes. This is
-  before runtime installation and integration tests; it is separate from the
-  historical SumDB failure. The APT commands were unchanged from the baseline.
-  The bounded CI repair uses the official archive with the existing Ubuntu
-  signed sources, per-request timeouts and whole-command limits. No package
-  pin, runtime identity, product code or test acceptance is changed.
-  APT follow-up audit: `IMPLEMENTED=YES`, `WIRED=YES`, `QUALIFIED=NO`,
-  `ACCEPTANCE_CLOSED=NO`; local canonical workflow/docs/security and isolated
-  signed APT acquisition checks PASS. `MISSING`: fresh remote Linux/Required
-  validation. See the [APT follow-up](../engineering/evidence/security-go1269/apt-followup.md).
+- Delivery follow-up: CI306 stalled in hosted APT acquisition and was cancelled
+  by the next push, before runtime tests. The bounded official-mirror and
+  timeout repair passes actual APT acquisition/install in CI307. APT audit:
+  `IMPLEMENTED=YES`, `WIRED=YES`, `QUALIFIED=YES`, `ACCEPTANCE_CLOSED=YES`
+  for package acquisition. The later Cargo failure remains separate; full
+  delivery Required is not green. See the [APT follow-up](../engineering/evidence/security-go1269/apt-followup.md).
+- CI307 follow-up baseline: `2eea071`, Linux job114896785383. APT acquisition
+  completed and Go transitive download passed82.80s. Cargo transitive build
+  failed during private selection with `OPEN_RESULT_CLASSIFICATION_IMAGE`.
+  Its pinned CONTROL/direct-root Cargo read locator matches `/etc/gai.conf`,
+  absent from `IsPinnedCargoResolverRead`. Observer/test/runtime lock are
+  identical to `main@bdc2d89` and the successful CI305 source. Existing Cargo
+  resolver is `IMPLEMENTED=YES`, `WIRED=YES`; this repair is `QUALIFIED=NO`,
+  `ACCEPTANCE_CLOSED=NO`. The exact image catalogue confirms the diagnostic
+  locator; the same final regression fails before and passes after the one-line
+  path addition. All102 observer latch groups and canonical Quick/security/
+  vulnerability/docs pass under Go1.26.9. `MISSING`: actual Cargo/common Linux
+  consumers and fresh Required CI. M12 contracts and runtime identity checks
+  remain unchanged. See the [Cargo follow-up](../engineering/evidence/security-go1269/cargo-gai-followup.md).
 
 M0~M7은 원래 정의한 MVP qualification과 evidence를 완료했다. external
 security review에서 확인된 production trust-boundary gap은 과거 M7 evidence를

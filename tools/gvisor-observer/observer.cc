@@ -2103,6 +2103,7 @@ bool IsPinnedCargoResolverRead(const gvisor::common::ContextData& context,
     return path == "/usr/lib/x86_64-linux-gnu/librt.so.1" ||
         path == "/lib/x86_64-linux-gnu/librt.so.1" ||
         path == "/etc/host.conf" ||
+        path == "/etc/gai.conf" ||
         path == "/etc/nsswitch.conf" ||
         path == "/usr/share/zoneinfo/Etc/UTC" ||
         path == "/etc/ssl/certs/ca-certificates.crt";

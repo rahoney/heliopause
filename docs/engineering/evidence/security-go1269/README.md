@@ -8,7 +8,7 @@ The local validation records below predate the user-authorized push. On follow-u
 `c73f3f5` was pushed and draft [PR30](https://github.com/rahoney/heliopause/pull/30)
 opened. CI runs are recorded separately from the immutable local raw logs.
 
-Latest source `e01ba19` is validated: [CI38258121064](https://github.com/rahoney/heliopause/actions/runs/38258121064)
+Host patch and diagnostic source `e01ba19` is validated: [CI38258121064](https://github.com/rahoney/heliopause/actions/runs/38258121064)
 has Required plus all nine prerequisites SUCCESS. See the
 [SumDB follow-up](./sumdb-followup.md) and [remote result](./remote-result.json).
 The original `result.json` preserves the earlier local snapshot; its blocked
@@ -18,7 +18,11 @@ remain separate.
 
 Final delivery CI306 stalled in Ubuntu APT mirror acquisition before runtime
 setup. A bounded workflow repair and its separate validation are tracked in
-the [APT follow-up](./apt-followup.md); its fresh remote result is pending.
+the [APT follow-up](./apt-followup.md). CI307 confirms successful APT setup,
+but exposes a missing exact Cargo `/etc/gai.conf` read in the existing observer.
+The [Cargo follow-up](./cargo-gai-followup.md) records the one-line repair,
+same-fixture before FAIL/after PASS and full102 latch groups plus canonical Go
+checks. Fresh actual Linux/Required qualification remains pending.
 
 ## ROOT_CAUSE
 
@@ -186,19 +190,19 @@ Scheduled Security38249522013 also passed history secrets, vulnerability and
 bounded fuzz on the host patch. The current nine prerequisites contain no Race
 job; `platform` and `quick` do not run `-race`.
 
-Only the documentation closure HEAD needs its own fresh Required result after
-push. Its executable, toolchain and runtime inputs remain identical to
-`e01ba19`; no source qualification is relabeled for a different compiler.
+The current Cargo observer repair needs its own fresh Linux/Required result
+after push. CI307 passed APT setup but failed the Cargo consumer; e01ba19's
+success is not reused as qualification of the new source. No source
+qualification is relabeled for a different compiler.
 Main remains unmerged and still selects Go1.26.8; rerunning that old main would
 not consume this branch's patch. No merge was made.
 
 ## PUSH_READINESS
 
-**READY for the bounded repair; source already pushed and Required SUCCESS.**
-The documentation closure is validated separately before its authorized push,
-then its final HEAD CI is checked. The original broader full-Race fixture
-findings remain open, with targeted verifier Race passing on both Go versions.
-Guest runtime qualification, reviewer merge and production release approval
-remain separate. The historical SumDB failure's lost underlying cause is not
-claimed solved by the diagnostic-only change; the affected real consumer and
-the complete Required matrix now pass without weakening checks.
+**READY to push the locally validated Cargo repair; remote qualification pending.**
+The host patch and diagnostic repair already passed CI305. Current Cargo repair
+has before/after and full observer regression evidence, plus canonical Go
+checks. Fresh Linux/Required must pass before this follow-up is qualified.
+The broader full-Race fixture findings and guest runtime patch remain separate;
+reviewer merge and production release are not performed. The historical SumDB
+failure's lost underlying cause is not claimed solved by the diagnostic change.
