@@ -6,7 +6,9 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"path"
 	"path/filepath"
@@ -57,16 +59,17 @@ func (v *IntegrityVerifier) Verify(ctx context.Context, artifact domain.Acquired
 	}
 	lookupCtx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
+	started := time.Now()
 	ops := &databaseOps{ctx: lookupCtx, http: v.http, key: v.key}
 	client := sumdb.NewClient(ops)
 	name, version := artifact.Identity().Name(), artifact.Identity().Version()
 	zipLines, err := client.Lookup(name, version)
 	if err != nil {
-		return domain.VerificationReport{}, errors.New("go SumDB authenticated archive lookup failed")
+		return domain.VerificationReport{}, ops.lookupError("archive", started)
 	}
 	modLines, err := client.Lookup(name, version+"/go.mod")
 	if err != nil {
-		return domain.VerificationReport{}, errors.New("go SumDB authenticated control lookup failed")
+		return domain.VerificationReport{}, ops.lookupError("control", started)
 	}
 	if !exactLine(zipLines, name+" "+version+" "+archiveSum) || !exactLine(modLines, name+" "+version+"/go.mod "+modSum) {
 		return verificationReport(artifact, false, "M12_GO_SUMDB_MISMATCH")
@@ -110,41 +113,57 @@ type databaseOps struct {
 	latest   []byte
 	requests int
 	bytes    int64
+	// The upstream client formats errors with %v, losing their types. Keep only
+	// bounded local diagnostics, never the upstream error text or request path.
+	lastRemoteFailure string
+	lastRemoteStage   string
+	lastHTTPStatus    int
+	securityFailure   bool
 }
 
 func (o *databaseOps) ReadRemote(relative string) ([]byte, error) {
 	if len(relative) > 2048 || (!strings.HasPrefix(relative, "/lookup/") && !strings.HasPrefix(relative, "/tile/")) || relative != path.Clean(relative) || strings.ContainsAny(relative, "?#\\\r\n") {
-		return nil, errors.New("go SumDB path is invalid")
+		return nil, o.remoteFailure("path", "invalid_path", 0)
+	}
+	stage := "lookup"
+	if strings.HasPrefix(relative, "/tile/") {
+		stage = "tile"
 	}
 	o.mu.Lock()
 	o.requests++
 	allowed := o.requests <= 64
 	o.mu.Unlock()
 	if !allowed {
-		return nil, errors.New("go SumDB request bound exceeded")
+		return nil, o.remoteFailure(stage+"-request", "request_bound", 0)
 	}
 	req, err := http.NewRequestWithContext(o.ctx, http.MethodGet, "https://sum.golang.org"+relative, nil)
 	if err != nil {
-		return nil, errors.New("go SumDB request is invalid")
+		return nil, o.remoteFailure(stage+"-request", "invalid_request", 0)
 	}
 	response, err := o.http.Do(req)
 	if err != nil {
-		return nil, errors.New("go SumDB request failed")
+		return nil, o.remoteFailure(stage+"-request", remoteErrorCategory(err), 0)
 	}
 	defer response.Body.Close()
-	if response.StatusCode != http.StatusOK || response.ContentLength > 1<<20 {
-		return nil, errors.New("go SumDB response is invalid")
+	if response.StatusCode != http.StatusOK {
+		return nil, o.remoteFailure(stage+"-headers", "http_status", response.StatusCode)
+	}
+	if response.ContentLength > 1<<20 {
+		return nil, o.remoteFailure(stage+"-headers", "response_bound", response.StatusCode)
 	}
 	body, err := io.ReadAll(io.LimitReader(response.Body, (1<<20)+1))
-	if err != nil || len(body) == 0 || len(body) > 1<<20 {
-		return nil, errors.New("go SumDB response exceeds bounds")
+	if err != nil {
+		return nil, o.remoteFailure(stage+"-body", remoteErrorCategory(err), response.StatusCode)
+	}
+	if len(body) == 0 || len(body) > 1<<20 {
+		return nil, o.remoteFailure(stage+"-body", "response_bound", response.StatusCode)
 	}
 	o.mu.Lock()
 	o.bytes += int64(len(body))
 	allowed = o.bytes <= 4<<20
 	o.mu.Unlock()
 	if !allowed {
-		return nil, errors.New("go SumDB total response bound exceeded")
+		return nil, o.remoteFailure(stage+"-body", "total_response_bound", response.StatusCode)
 	}
 	return body, nil
 }
@@ -176,4 +195,59 @@ func (*databaseOps) ReadCache(string) ([]byte, error) {
 }
 func (*databaseOps) WriteCache(string, []byte) {}
 func (*databaseOps) Log(string)                {}
-func (*databaseOps) SecurityError(string)      {} // Client returns ErrSecurity; raw peer text is not published.
+func (o *databaseOps) SecurityError(string) {
+	o.mu.Lock()
+	o.securityFailure = true
+	o.mu.Unlock()
+}
+
+func remoteErrorCategory(err error) string {
+	switch {
+	case errors.Is(err, context.DeadlineExceeded):
+		return "deadline"
+	case errors.Is(err, context.Canceled):
+		return "cancelled"
+	case errors.Is(err, io.EOF), errors.Is(err, io.ErrUnexpectedEOF):
+		return "incomplete_response"
+	}
+	var timeout net.Error
+	if errors.As(err, &timeout) && timeout.Timeout() {
+		return "timeout"
+	}
+	var dns *net.DNSError
+	if errors.As(err, &dns) {
+		return "dns"
+	}
+	return "transport"
+}
+
+func (o *databaseOps) remoteFailure(stage, category string, status int) error {
+	o.mu.Lock()
+	o.lastRemoteStage, o.lastRemoteFailure, o.lastHTTPStatus = stage, category, status
+	o.mu.Unlock()
+	return errors.New("go SumDB " + category)
+}
+
+func (o *databaseOps) lookupError(stage string, started time.Time) error {
+	o.mu.Lock()
+	defer o.mu.Unlock()
+	cause := errors.New("record or proof rejected")
+	if o.lastRemoteFailure != "" {
+		cause = errors.New("remote request failed")
+	}
+	if o.ctx.Err() != nil {
+		cause = o.ctx.Err()
+	} else if o.lastRemoteFailure == "deadline" {
+		cause = context.DeadlineExceeded
+	} else if o.lastRemoteFailure == "cancelled" {
+		cause = context.Canceled
+	}
+	if o.securityFailure {
+		cause = errors.New("signed tree consistency rejected")
+	}
+	// A failed partial tile may be recovered by the upstream full-tile fallback.
+	// These fields describe observations, not proof that the last remote failure
+	// caused the final rejection. No peer error is wrapped or logged.
+	return fmt.Errorf("go SumDB authenticated %s lookup failed: %w (last_remote_failure=%s last_remote_stage=%s last_http_status=%d requests=%d bytes=%d elapsed_ms=%d)",
+		stage, cause, o.lastRemoteFailure, o.lastRemoteStage, o.lastHTTPStatus, o.requests, o.bytes, time.Since(started).Milliseconds())
+}

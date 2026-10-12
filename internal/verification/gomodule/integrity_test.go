@@ -8,6 +8,7 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
+	"errors"
 	"io"
 	"net/http"
 	"os"
@@ -76,6 +77,72 @@ func testModule(t *testing.T, contents string) (root string, artifact domain.Acq
 		t.Fatal(err)
 	}
 	return
+}
+
+type diagnosticTimeout struct{}
+
+func (diagnosticTimeout) Error() string   { return "PRIVATE_PEER_ERROR" }
+func (diagnosticTimeout) Timeout() bool   { return true }
+func (diagnosticTimeout) Temporary() bool { return true }
+
+type diagnosticReadFailure struct{}
+
+func (diagnosticReadFailure) Read([]byte) (int, error) {
+	return 0, errors.New("PRIVATE_PEER_ERROR")
+}
+
+func TestSumDBLookupFailurePreservesSafeDiagnostics(t *testing.T) {
+	for _, name := range []string{"deadline", "cancelled", "timeout", "transport", "http", "body", "invalid-record"} {
+		t.Run(name, func(t *testing.T) {
+			root, artifact, _, _ := testModule(t, "package module\n")
+			v, err := NewIntegrityVerifier(root)
+			if err != nil {
+				t.Fatal(err)
+			}
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			want := "last_remote_failure=transport"
+			var cause error
+			v.http.Transport = databaseTransport(func(r *http.Request) (*http.Response, error) {
+				switch name {
+				case "deadline":
+					want, cause = "last_remote_failure=deadline", context.DeadlineExceeded
+					return nil, context.DeadlineExceeded
+				case "cancelled":
+					want, cause = "last_remote_failure=cancelled", context.Canceled
+					cancel()
+					return nil, context.Canceled
+				case "timeout":
+					want = "last_remote_failure=timeout"
+					return nil, diagnosticTimeout{}
+				case "transport":
+					return nil, errors.New("PRIVATE_PEER_ERROR")
+				case "http":
+					want = "last_http_status=503"
+					return &http.Response{StatusCode: 503, Body: io.NopCloser(strings.NewReader("PRIVATE_PEER_ERROR")), Request: r}, nil
+				case "body":
+					want = "last_remote_stage=lookup-body"
+					return &http.Response{StatusCode: 200, Body: io.NopCloser(diagnosticReadFailure{}), Request: r}, nil
+				default:
+					want = "record or proof rejected"
+					return &http.Response{StatusCode: 200, Body: io.NopCloser(strings.NewReader("PRIVATE_PEER_ERROR")), Request: r}, nil
+				}
+			})
+			report, err := v.Verify(ctx, artifact)
+			if err == nil || report.Outcome() == domain.VerificationVerified {
+				t.Fatal("failed lookup produced successful verification")
+			}
+			if !strings.Contains(err.Error(), want) || !strings.Contains(err.Error(), "requests=1") {
+				t.Fatalf("missing normalized failure information: %v", err)
+			}
+			if strings.Contains(err.Error(), "PRIVATE_PEER_ERROR") || strings.Contains(err.Error(), "example.com/module") {
+				t.Fatal("lookup error disclosed raw peer text or module path")
+			}
+			if cause != nil && !errors.Is(err, cause) {
+				t.Fatalf("lost context cause: %v", err)
+			}
+		})
+	}
 }
 
 func signedDatabase(t *testing.T, zipSum, modSum, fault string) (string, *http.Client, *int) {
