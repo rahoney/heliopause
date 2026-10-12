@@ -4,6 +4,9 @@ Local maintenance scope: `SEC-2026-10-12`, based on
 `main@bdc2d891ca0edb719be8a28b1a8576decd3d01f2`. QA is not a separate repository.
 The original checkout and its pre-existing untracked documents were preserved;
 the repair was prepared in an isolated local branch `security/go1.26.9`.
+The local validation records below predate the user-authorized push. On follow-up,
+`c73f3f5` was pushed and draft [PR30](https://github.com/rahoney/heliopause/pull/30)
+opened. CI runs are recorded separately from the immutable local raw logs.
 
 ## ROOT_CAUSE
 
@@ -112,7 +115,7 @@ receiver without synchronization. The original `main@bdc2d89` source and Go
 production/test files are byte-identical to this candidate. The seventh test,
 `TestSharedObserverAttributesOneContainerAndClosesItsStream`, passed in that
 single baseline run, so its failure under the old compiler is not established.
-The baseline directly establishes a pre-existing Race gate failure without
+The baseline directly establishes a pre-existing local Race failure without
 establishing identical detection across compiler versions. The original new
 toolchain race trace is [`raw/race.log`](./raw/race.log); the portable baseline
 comparison is in `result.json`, with its unedited original old-toolchain log
@@ -165,16 +168,23 @@ toolchain.
 
 ## CI_RECHECK_NEEDED
 
-YES. A future authorized push/PR needs the normal Required matrix, including
-native macOS, Linux integration and race. Scheduled Security also needs a run
+YES. The authorized push/PR needs the normal Required matrix, including
+native macOS and Linux integration. Its nine prerequisites do not include a
+Race job, and neither `platform` nor `quick` runs `-race`. The separate local
+Race failure therefore does not predict Required's aggregate result. Scheduled Security also needs a run
 on the patched commit. Rerunning old `bdc2d89` would still select 1.26.8. Local
 cross compilation is not native macOS execution, and local results do not
-replace those remote gates. No push, workflow dispatch/rerun or merge was made.
+replace those remote gates. Initial runs on `c73f3f5` are
+[CI 38249446186](https://github.com/rahoney/heliopause/actions/runs/38249446186) and
+[Scheduled Security 38249522013](https://github.com/rahoney/heliopause/actions/runs/38249522013).
+This follow-up only corrects documentation and result labels; executable inputs,
+Go identity and local raw logs are unchanged. No merge was made.
 
 ## PUSH_READINESS
 
-**NOT_READY** for a green Required gate: the existing test harness Race blocker
-remains. The host security patch is prepared for review with successful scanner
+**NOT_READY** for full qualification: the existing local test harness Race blocker
+remains. Current Required CI can succeed independently because it has no Race
+job. The host security patch is prepared for review with successful scanner
 results and a reproduced baseline failure, not marked fully qualified or
-acceptance-closed. No push, remote CI trigger or merge was performed. Runtime
+acceptance-closed. Push and CI were subsequently authorized and started. Runtime
 image qualification and production release approval remain separate.

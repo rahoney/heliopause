@@ -1,5 +1,5 @@
 {
-  "status": "BLOCKED_REQUIRED_RACE",
+  "status": "BLOCKED_LOCAL_RACE_QUALIFICATION",
   "base_commit": "bdc2d891ca0edb719be8a28b1a8576decd3d01f2",
   "toolchain": "go1.26.9",
   "reachable_vulnerabilities": 0,
@@ -556,7 +556,7 @@
       "internal/sandbox/shared_observer.go": "bb9b1722c18e5bfa9b718236805a9804b21b5659564b39ad5a340ec450852721",
       "internal/sandbox/shared_observer_test.go": "a5b7d64cf1d1674d5bd2fce10c3880773a18eba833002bbec185056830d42153"
     },
-    "conclusion": "A pre-existing Race gate failure is reproduced on untouched main under Go 1.26.8; identical detection of all seven tests is not established",
+    "conclusion": "A pre-existing local Race failure is reproduced on untouched main under Go 1.26.8; identical detection of all seven tests is not established",
     "old_raw_log": "/tmp/haa-security-go1269-validation/race-go1268-baseline.log",
     "old_raw_log_sha256": "cba81d93b5a0c46cf58ed6963844da4bff7079633feead04053e1173aae11d7d",
     "old_raw_log_retention": "Unedited local original retained outside commit because compiler trace includes a personal GOROOT path"
@@ -588,9 +588,21 @@
     "follow_up": "Separate official image integrity/provenance and bounded resolver/build/observation qualification"
   },
   "ci_recheck_needed": true,
-  "push_readiness": "NOT_READY_REQUIRED_RACE",
+  "push_readiness": "NOT_READY_FULL_QUALIFICATION_LOCAL_RACE",
   "push_performed": false,
   "remote_ci_triggered": false,
   "merge_performed": false,
-  "additional_full_e2e_needed_by_direct_impact": false
+  "additional_full_e2e_needed_by_direct_impact": false,
+  "snapshot_stage": "LOCAL_VALIDATION_BEFORE_USER_AUTHORIZED_PUSH",
+  "follow_up": {
+    "user_authorized_push_and_ci": true,
+    "pushed_commit": "c73f3f5c09bf2fd91e1ac3d9e6504079c08a9c4d",
+    "pull_request": "https://github.com/rahoney/heliopause/pull/30",
+    "initial_ci_run": 38249446186,
+    "initial_security_run": 38249522013,
+    "current_required_prerequisites": 9,
+    "race_in_current_required_workflow": false,
+    "merge_performed": false,
+    "executable_inputs_unchanged": true
+  }
 }

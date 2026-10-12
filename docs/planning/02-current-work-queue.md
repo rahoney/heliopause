@@ -17,7 +17,7 @@ Ready: No — delivery handoff
 
 ### SEC-2026-10-12 — Scheduled Security Go patch
 
-- Status: `BLOCKED` (local host patch implemented; existing Required Race failures;
+- Status: `BLOCKED` (local host patch implemented; existing local Race failures;
   M12/M13 historical acceptance is unchanged).
 - Baseline: `main@bdc2d891ca0edb719be8a28b1a8576decd3d01f2`;
   [scheduled run 38240142380](https://github.com/rahoney/heliopause/actions/runs/38240142380),
@@ -36,9 +36,16 @@ Ready: No — delivery handoff
   with Go 1.26.8; the affected production/test files are unchanged. The seventh
   passed in that single baseline run; identical detection is not claimed.
 - `MISSING` / unblock: separately repair the test fixture synchronization and
-  pass Required Race on the candidate, then obtain normal Required/native CI
+  pass local Race on the candidate, then obtain normal Required/native CI
   and Scheduled Security results after an authorized push. No suppression,
   retry-to-green, runtime replacement or unrelated product repair was made.
+- CI scope correction: the current workflow aggregates nine prerequisites and
+  does not include a Race job; `platform`/`quick` do not use `-race`. Local Race
+  remains an unresolved qualification check, independently of Required status.
+  Following user authorization, `c73f3f5` was pushed and draft
+  [PR30](https://github.com/rahoney/heliopause/pull/30) opened. Initial runs:
+  [Required CI](https://github.com/rahoney/heliopause/actions/runs/38249446186),
+  [Scheduled Security](https://github.com/rahoney/heliopause/actions/runs/38249522013).
 - Evidence: [report](../engineering/evidence/security-go1269/README.md) and
   [machine-readable results](../engineering/evidence/security-go1269/result.json).
 - Read: [Quality Toolchain](../engineering/03-quality-toolchain.md),
