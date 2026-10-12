@@ -1,0 +1,626 @@
+?   	github.com/rahoney/heliopause/cmd/haa-network-policy-helper	[no test files]
+ok  	github.com/rahoney/heliopause/cmd/helox	3.429s
+ok  	github.com/rahoney/heliopause/internal/application	1.409s
+ok  	github.com/rahoney/heliopause/internal/artifact/cargo	3.565s
+ok  	github.com/rahoney/heliopause/internal/artifact/githubrelease	1.070s
+ok  	github.com/rahoney/heliopause/internal/artifact/gomodule	1.399s
+ok  	github.com/rahoney/heliopause/internal/artifact/npm	2.367s
+?   	github.com/rahoney/heliopause/internal/artifact/projectbuild	[no test files]
+ok  	github.com/rahoney/heliopause/internal/artifact/pypi	1.788s
+ok  	github.com/rahoney/heliopause/internal/artifact/terraformprovider	1.253s
+ok  	github.com/rahoney/heliopause/internal/bootstrap	1.051s
+ok  	github.com/rahoney/heliopause/internal/cli	1.052s
+ok  	github.com/rahoney/heliopause/internal/core/domain	1.208s
+?   	github.com/rahoney/heliopause/internal/core/ports	[no test files]
+ok  	github.com/rahoney/heliopause/internal/evidence	1.021s
+ok  	github.com/rahoney/heliopause/internal/evidence/local	1.680s
+ok  	github.com/rahoney/heliopause/internal/hosttool	1.047s
+?   	github.com/rahoney/heliopause/internal/inspection/cargo	[no test files]
+ok  	github.com/rahoney/heliopause/internal/inspection/githubrelease	1.040s
+ok  	github.com/rahoney/heliopause/internal/inspection/gomodule	1.083s
+ok  	github.com/rahoney/heliopause/internal/inspection/npm	1.049s
+?   	github.com/rahoney/heliopause/internal/inspection/projectbuild	[no test files]
+ok  	github.com/rahoney/heliopause/internal/inspection/pypi	1.980s
+ok  	github.com/rahoney/heliopause/internal/inspection/terraformprovider	1.040s
+ok  	github.com/rahoney/heliopause/internal/networkpolicy	1.021s
+ok  	github.com/rahoney/heliopause/internal/policy	1.038s
+ok  	github.com/rahoney/heliopause/internal/promotion	141.718s
+ok  	github.com/rahoney/heliopause/internal/releaseinstall	1.295s
+ok  	github.com/rahoney/heliopause/internal/runtimeidentity	1.150s
+==================
+WARNING: DATA RACE
+Read at 0x00c000689a88 by goroutine 221:
+  github.com/rahoney/heliopause/internal/sandbox.TestAmbiguousCancelPoisonsSessionAndInvalidatesIt()
+      /tmp/haa-security-go1269/internal/sandbox/direct_exec_admission_test.go:1176 +0x3f7
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.(*T).Run.gowrap1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0x38
+
+Previous write at 0x00c000689a88 by goroutine 223:
+  github.com/rahoney/heliopause/internal/sandbox.TestAmbiguousCancelPoisonsSessionAndInvalidatesIt.func1()
+      /tmp/haa-security-go1269/internal/sandbox/direct_exec_admission_test.go:1158 +0x1dd
+  github.com/rahoney/heliopause/internal/sandbox.withAdmissionControl.func3.1()
+      /tmp/haa-security-go1269/internal/sandbox/direct_exec_admission_test.go:158 +0x274
+  github.com/rahoney/heliopause/internal/sandbox.withAdmissionControl.func3.gowrap1()
+      /tmp/haa-security-go1269/internal/sandbox/direct_exec_admission_test.go:161 +0x38
+
+Goroutine 221 (running) created at:
+  testing.(*T).Run()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0xb12
+  testing.runTests.func1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2585 +0x84
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.runTests()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2583 +0x9e9
+  testing.(*M).Run()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2443 +0xf4b
+  main.main()
+      _testmain.go:578 +0x164
+
+Goroutine 223 (running) created at:
+  github.com/rahoney/heliopause/internal/sandbox.withAdmissionControl.func3()
+      /tmp/haa-security-go1269/internal/sandbox/direct_exec_admission_test.go:148 +0x38
+==================
+--- FAIL: TestAmbiguousCancelPoisonsSessionAndInvalidatesIt (0.10s)
+    testing.go:1712: race detected during execution of test
+==================
+WARNING: DATA RACE
+Read at 0x00c000689ac8 by goroutine 224:
+  github.com/rahoney/heliopause/internal/sandbox.TestReadinessAuthorityAmbiguityDoesNotRetryPoisonedSession()
+      /tmp/haa-security-go1269/internal/sandbox/direct_exec_admission_test.go:1205 +0x2f1
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.(*T).Run.gowrap1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0x38
+
+Previous write at 0x00c000689ac8 by goroutine 226:
+  github.com/rahoney/heliopause/internal/sandbox.TestReadinessAuthorityAmbiguityDoesNotRetryPoisonedSession.func1()
+      /tmp/haa-security-go1269/internal/sandbox/direct_exec_admission_test.go:1189 +0x87
+  github.com/rahoney/heliopause/internal/sandbox.withAdmissionControl.func3.1()
+      /tmp/haa-security-go1269/internal/sandbox/direct_exec_admission_test.go:158 +0x274
+  github.com/rahoney/heliopause/internal/sandbox.withAdmissionControl.func3.gowrap1()
+      /tmp/haa-security-go1269/internal/sandbox/direct_exec_admission_test.go:161 +0x38
+
+Goroutine 224 (running) created at:
+  testing.(*T).Run()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0xb12
+  testing.runTests.func1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2585 +0x84
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.runTests()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2583 +0x9e9
+  testing.(*M).Run()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2443 +0xf4b
+  main.main()
+      _testmain.go:578 +0x164
+
+Goroutine 226 (running) created at:
+  github.com/rahoney/heliopause/internal/sandbox.withAdmissionControl.func3()
+      /tmp/haa-security-go1269/internal/sandbox/direct_exec_admission_test.go:148 +0x38
+==================
+--- FAIL: TestReadinessAuthorityAmbiguityDoesNotRetryPoisonedSession (0.10s)
+    testing.go:1712: race detected during execution of test
+==================
+WARNING: DATA RACE
+Read at 0x00c0003f7528 by goroutine 242:
+  github.com/rahoney/heliopause/internal/sandbox.TestAmbiguousStatusPoisonsSession()
+      /tmp/haa-security-go1269/internal/sandbox/direct_exec_admission_test.go:1449 +0x524
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.(*T).Run.gowrap1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0x38
+
+Previous write at 0x00c0003f7528 by goroutine 244:
+  github.com/rahoney/heliopause/internal/sandbox.TestAmbiguousStatusPoisonsSession.func1()
+      /tmp/haa-security-go1269/internal/sandbox/direct_exec_admission_test.go:1438 +0x1dd
+  github.com/rahoney/heliopause/internal/sandbox.withAdmissionControl.func3.1()
+      /tmp/haa-security-go1269/internal/sandbox/direct_exec_admission_test.go:158 +0x274
+  github.com/rahoney/heliopause/internal/sandbox.withAdmissionControl.func3.gowrap1()
+      /tmp/haa-security-go1269/internal/sandbox/direct_exec_admission_test.go:161 +0x38
+
+Goroutine 242 (running) created at:
+  testing.(*T).Run()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0xb12
+  testing.runTests.func1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2585 +0x84
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.runTests()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2583 +0x9e9
+  testing.(*M).Run()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2443 +0xf4b
+  main.main()
+      _testmain.go:578 +0x164
+
+Goroutine 244 (running) created at:
+  github.com/rahoney/heliopause/internal/sandbox.withAdmissionControl.func3()
+      /tmp/haa-security-go1269/internal/sandbox/direct_exec_admission_test.go:148 +0x38
+==================
+--- FAIL: TestAmbiguousStatusPoisonsSession (0.10s)
+    testing.go:1712: race detected during execution of test
+==================
+WARNING: DATA RACE
+Read at 0x00c0006b44a8 by goroutine 245:
+  github.com/rahoney/heliopause/internal/sandbox.TestAmbiguousCompletePoisonsSession()
+      /tmp/haa-security-go1269/internal/sandbox/direct_exec_admission_test.go:1477 +0x491
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.(*T).Run.gowrap1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0x38
+
+Previous write at 0x00c0006b44a8 by goroutine 247:
+  github.com/rahoney/heliopause/internal/sandbox.TestAmbiguousCompletePoisonsSession.func1()
+      /tmp/haa-security-go1269/internal/sandbox/direct_exec_admission_test.go:1466 +0x29c
+  github.com/rahoney/heliopause/internal/sandbox.withAdmissionControl.func3.1()
+      /tmp/haa-security-go1269/internal/sandbox/direct_exec_admission_test.go:158 +0x274
+  github.com/rahoney/heliopause/internal/sandbox.withAdmissionControl.func3.gowrap1()
+      /tmp/haa-security-go1269/internal/sandbox/direct_exec_admission_test.go:161 +0x38
+
+Goroutine 245 (running) created at:
+  testing.(*T).Run()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0xb12
+  testing.runTests.func1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2585 +0x84
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.runTests()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2583 +0x9e9
+  testing.(*M).Run()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2443 +0xf4b
+  main.main()
+      _testmain.go:578 +0x164
+
+Goroutine 247 (running) created at:
+  github.com/rahoney/heliopause/internal/sandbox.withAdmissionControl.func3()
+      /tmp/haa-security-go1269/internal/sandbox/direct_exec_admission_test.go:148 +0x38
+==================
+--- FAIL: TestAmbiguousCompletePoisonsSession (0.10s)
+    testing.go:1712: race detected during execution of test
+==================
+WARNING: DATA RACE
+Read at 0x00c0003f7e28 by goroutine 248:
+  github.com/rahoney/heliopause/internal/sandbox.TestSuccessfulRunnerWaitsForDelayedSentryExecWithoutCancel()
+      /tmp/haa-security-go1269/internal/sandbox/direct_exec_admission_test.go:1527 +0x844
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.(*T).Run.gowrap1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0x38
+
+Previous write at 0x00c0003f7e28 by goroutine 250:
+  github.com/rahoney/heliopause/internal/sandbox.TestSuccessfulRunnerWaitsForDelayedSentryExecWithoutCancel.func1()
+      /tmp/haa-security-go1269/internal/sandbox/direct_exec_admission_test.go:1507 +0x431
+  github.com/rahoney/heliopause/internal/sandbox.withAdmissionControl.func3.1()
+      /tmp/haa-security-go1269/internal/sandbox/direct_exec_admission_test.go:158 +0x274
+  github.com/rahoney/heliopause/internal/sandbox.withAdmissionControl.func3.gowrap1()
+      /tmp/haa-security-go1269/internal/sandbox/direct_exec_admission_test.go:161 +0x38
+
+Goroutine 248 (running) created at:
+  testing.(*T).Run()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0xb12
+  testing.runTests.func1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2585 +0x84
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.runTests()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2583 +0x9e9
+  testing.(*M).Run()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2443 +0xf4b
+  main.main()
+      _testmain.go:578 +0x164
+
+Goroutine 250 (running) created at:
+  github.com/rahoney/heliopause/internal/sandbox.withAdmissionControl.func3()
+      /tmp/haa-security-go1269/internal/sandbox/direct_exec_admission_test.go:148 +0x38
+==================
+--- FAIL: TestSuccessfulRunnerWaitsForDelayedSentryExecWithoutCancel (0.01s)
+    testing.go:1712: race detected during execution of test
+==================
+WARNING: DATA RACE
+Read at 0x00c00028d178 by goroutine 749:
+  github.com/rahoney/heliopause/internal/sandbox.(*SharedObserver).writeAttributionDiagnostic()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:891 +0x84
+  github.com/rahoney/heliopause/internal/sandbox.(*SharedObserver).receive()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:670 +0x469
+  github.com/rahoney/heliopause/internal/sandbox.newSharedObserver.gowrap1()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:396 +0x2e
+
+Previous write at 0x00c00028d178 by goroutine 748:
+  github.com/rahoney/heliopause/internal/sandbox.TestSharedObserverAttributesOneContainerAndClosesItsStream()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer_test.go:512 +0x3b5
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.(*T).Run.gowrap1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0x38
+
+Goroutine 749 (running) created at:
+  github.com/rahoney/heliopause/internal/sandbox.newSharedObserver()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:396 +0x5d9
+  github.com/rahoney/heliopause/internal/sandbox.NewSharedObserver()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:362 +0x56
+  github.com/rahoney/heliopause/internal/sandbox.TestSharedObserverAttributesOneContainerAndClosesItsStream()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer_test.go:498 +0x4c
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.(*T).Run.gowrap1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0x38
+
+Goroutine 748 (running) created at:
+  testing.(*T).Run()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0xb12
+  testing.runTests.func1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2585 +0x84
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.runTests()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2583 +0x9e9
+  testing.(*M).Run()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2443 +0xf4b
+  main.main()
+      _testmain.go:578 +0x164
+==================
+==================
+WARNING: DATA RACE
+Write at 0x00c00052e5c0 by goroutine 749:
+  bytes.(*Buffer).Write()
+      /tmp/haa-toolchains/go1.26.9/go/src/bytes/buffer.go:194 +0x3a
+  fmt.Fprintf()
+      /tmp/haa-toolchains/go1.26.9/go/src/fmt/print.go:225 +0xaa
+  github.com/rahoney/heliopause/internal/sandbox.(*SharedObserver).writeAttributionDiagnostic()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:903 +0x6d7
+  github.com/rahoney/heliopause/internal/sandbox.(*SharedObserver).receive()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:670 +0x469
+  github.com/rahoney/heliopause/internal/sandbox.newSharedObserver.gowrap1()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:396 +0x2e
+
+Previous write at 0x00c00052e5c0 by goroutine 748:
+  github.com/rahoney/heliopause/internal/sandbox.TestSharedObserverAttributesOneContainerAndClosesItsStream()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer_test.go:511 +0x36f
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.(*T).Run.gowrap1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0x38
+
+Goroutine 749 (running) created at:
+  github.com/rahoney/heliopause/internal/sandbox.newSharedObserver()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:396 +0x5d9
+  github.com/rahoney/heliopause/internal/sandbox.NewSharedObserver()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:362 +0x56
+  github.com/rahoney/heliopause/internal/sandbox.TestSharedObserverAttributesOneContainerAndClosesItsStream()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer_test.go:498 +0x4c
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.(*T).Run.gowrap1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0x38
+
+Goroutine 748 (running) created at:
+  testing.(*T).Run()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0xb12
+  testing.runTests.func1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2585 +0x84
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.runTests()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2583 +0x9e9
+  testing.(*M).Run()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2443 +0xf4b
+  main.main()
+      _testmain.go:578 +0x164
+==================
+==================
+WARNING: DATA RACE
+Read at 0x00c00052e5a0 by goroutine 749:
+  bytes.(*Buffer).tryGrowByReslice()
+      /tmp/haa-toolchains/go1.26.9/go/src/bytes/buffer.go:134 +0x48
+  bytes.(*Buffer).Write()
+      /tmp/haa-toolchains/go1.26.9/go/src/bytes/buffer.go:195 +0xb9
+  fmt.Fprintf()
+      /tmp/haa-toolchains/go1.26.9/go/src/fmt/print.go:225 +0xaa
+  github.com/rahoney/heliopause/internal/sandbox.(*SharedObserver).writeAttributionDiagnostic()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:903 +0x6d7
+  github.com/rahoney/heliopause/internal/sandbox.(*SharedObserver).receive()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:670 +0x469
+  github.com/rahoney/heliopause/internal/sandbox.newSharedObserver.gowrap1()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:396 +0x2e
+
+Previous write at 0x00c00052e5a0 by goroutine 748:
+  github.com/rahoney/heliopause/internal/sandbox.TestSharedObserverAttributesOneContainerAndClosesItsStream()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer_test.go:511 +0x36f
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.(*T).Run.gowrap1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0x38
+
+Goroutine 749 (running) created at:
+  github.com/rahoney/heliopause/internal/sandbox.newSharedObserver()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:396 +0x5d9
+  github.com/rahoney/heliopause/internal/sandbox.NewSharedObserver()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:362 +0x56
+  github.com/rahoney/heliopause/internal/sandbox.TestSharedObserverAttributesOneContainerAndClosesItsStream()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer_test.go:498 +0x4c
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.(*T).Run.gowrap1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0x38
+
+Goroutine 748 (running) created at:
+  testing.(*T).Run()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0xb12
+  testing.runTests.func1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2585 +0x84
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.runTests()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2583 +0x9e9
+  testing.(*M).Run()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2443 +0xf4b
+  main.main()
+      _testmain.go:578 +0x164
+==================
+==================
+WARNING: DATA RACE
+Read at 0x00c00052e5b8 by goroutine 749:
+  bytes.(*Buffer).Len()
+      /tmp/haa-toolchains/go1.26.9/go/src/bytes/buffer.go:97 +0x64
+  bytes.(*Buffer).grow()
+      /tmp/haa-toolchains/go1.26.9/go/src/bytes/buffer.go:145 +0x3f
+  bytes.(*Buffer).Write()
+      /tmp/haa-toolchains/go1.26.9/go/src/bytes/buffer.go:197 +0xc4
+  fmt.Fprintf()
+      /tmp/haa-toolchains/go1.26.9/go/src/fmt/print.go:225 +0xaa
+  github.com/rahoney/heliopause/internal/sandbox.(*SharedObserver).writeAttributionDiagnostic()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:903 +0x6d7
+  github.com/rahoney/heliopause/internal/sandbox.(*SharedObserver).receive()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:670 +0x469
+  github.com/rahoney/heliopause/internal/sandbox.newSharedObserver.gowrap1()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:396 +0x2e
+
+Previous write at 0x00c00052e5b8 by goroutine 748:
+  github.com/rahoney/heliopause/internal/sandbox.TestSharedObserverAttributesOneContainerAndClosesItsStream()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer_test.go:511 +0x36f
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.(*T).Run.gowrap1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0x38
+
+Goroutine 749 (running) created at:
+  github.com/rahoney/heliopause/internal/sandbox.newSharedObserver()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:396 +0x5d9
+  github.com/rahoney/heliopause/internal/sandbox.NewSharedObserver()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:362 +0x56
+  github.com/rahoney/heliopause/internal/sandbox.TestSharedObserverAttributesOneContainerAndClosesItsStream()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer_test.go:498 +0x4c
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.(*T).Run.gowrap1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0x38
+
+Goroutine 748 (running) created at:
+  testing.(*T).Run()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0xb12
+  testing.runTests.func1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2585 +0x84
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.runTests()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2583 +0x9e9
+  testing.(*M).Run()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2443 +0xf4b
+  main.main()
+      _testmain.go:578 +0x164
+==================
+--- FAIL: TestSharedObserverAttributesOneContainerAndClosesItsStream (0.00s)
+    testing.go:1712: race detected during execution of test
+==================
+WARNING: DATA RACE
+Read at 0x00c00051e0f8 by goroutine 755:
+  github.com/rahoney/heliopause/internal/sandbox.(*SharedObserver).writeAttributionDiagnostic()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:891 +0x84
+  github.com/rahoney/heliopause/internal/sandbox.(*SharedObserver).receive()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:636 +0xd5e
+  github.com/rahoney/heliopause/internal/sandbox.newSharedObserver.gowrap1()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:396 +0x2e
+
+Previous write at 0x00c00051e0f8 by goroutine 754:
+  github.com/rahoney/heliopause/internal/sandbox.TestSharedObserverFlushesAttributionOnStreamFault()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer_test.go:613 +0x3be
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.(*T).Run.gowrap1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0x38
+
+Goroutine 755 (running) created at:
+  github.com/rahoney/heliopause/internal/sandbox.newSharedObserver()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:396 +0x5d9
+  github.com/rahoney/heliopause/internal/sandbox.NewSharedObserver()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:362 +0x56
+  github.com/rahoney/heliopause/internal/sandbox.TestSharedObserverFlushesAttributionOnStreamFault()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer_test.go:599 +0x4c
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.(*T).Run.gowrap1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0x38
+
+Goroutine 754 (running) created at:
+  testing.(*T).Run()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0xb12
+  testing.runTests.func1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2585 +0x84
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.runTests()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2583 +0x9e9
+  testing.(*M).Run()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2443 +0xf4b
+  main.main()
+      _testmain.go:578 +0x164
+==================
+==================
+WARNING: DATA RACE
+Write at 0x00c000991340 by goroutine 755:
+  bytes.(*Buffer).Write()
+      /tmp/haa-toolchains/go1.26.9/go/src/bytes/buffer.go:194 +0x3a
+  fmt.Fprintf()
+      /tmp/haa-toolchains/go1.26.9/go/src/fmt/print.go:225 +0xaa
+  github.com/rahoney/heliopause/internal/sandbox.(*SharedObserver).writeAttributionDiagnostic()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:903 +0x6d7
+  github.com/rahoney/heliopause/internal/sandbox.(*SharedObserver).receive()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:636 +0xd5e
+  github.com/rahoney/heliopause/internal/sandbox.newSharedObserver.gowrap1()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:396 +0x2e
+
+Previous write at 0x00c000991340 by goroutine 754:
+  github.com/rahoney/heliopause/internal/sandbox.TestSharedObserverFlushesAttributionOnStreamFault()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer_test.go:612 +0x376
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.(*T).Run.gowrap1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0x38
+
+Goroutine 755 (running) created at:
+  github.com/rahoney/heliopause/internal/sandbox.newSharedObserver()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:396 +0x5d9
+  github.com/rahoney/heliopause/internal/sandbox.NewSharedObserver()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:362 +0x56
+  github.com/rahoney/heliopause/internal/sandbox.TestSharedObserverFlushesAttributionOnStreamFault()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer_test.go:599 +0x4c
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.(*T).Run.gowrap1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0x38
+
+Goroutine 754 (running) created at:
+  testing.(*T).Run()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0xb12
+  testing.runTests.func1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2585 +0x84
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.runTests()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2583 +0x9e9
+  testing.(*M).Run()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2443 +0xf4b
+  main.main()
+      _testmain.go:578 +0x164
+==================
+==================
+WARNING: DATA RACE
+Read at 0x00c000991320 by goroutine 755:
+  bytes.(*Buffer).tryGrowByReslice()
+      /tmp/haa-toolchains/go1.26.9/go/src/bytes/buffer.go:134 +0x48
+  bytes.(*Buffer).Write()
+      /tmp/haa-toolchains/go1.26.9/go/src/bytes/buffer.go:195 +0xb9
+  fmt.Fprintf()
+      /tmp/haa-toolchains/go1.26.9/go/src/fmt/print.go:225 +0xaa
+  github.com/rahoney/heliopause/internal/sandbox.(*SharedObserver).writeAttributionDiagnostic()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:903 +0x6d7
+  github.com/rahoney/heliopause/internal/sandbox.(*SharedObserver).receive()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:636 +0xd5e
+  github.com/rahoney/heliopause/internal/sandbox.newSharedObserver.gowrap1()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:396 +0x2e
+
+Previous write at 0x00c000991320 by goroutine 754:
+  github.com/rahoney/heliopause/internal/sandbox.TestSharedObserverFlushesAttributionOnStreamFault()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer_test.go:612 +0x376
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.(*T).Run.gowrap1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0x38
+
+Goroutine 755 (running) created at:
+  github.com/rahoney/heliopause/internal/sandbox.newSharedObserver()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:396 +0x5d9
+  github.com/rahoney/heliopause/internal/sandbox.NewSharedObserver()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:362 +0x56
+  github.com/rahoney/heliopause/internal/sandbox.TestSharedObserverFlushesAttributionOnStreamFault()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer_test.go:599 +0x4c
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.(*T).Run.gowrap1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0x38
+
+Goroutine 754 (running) created at:
+  testing.(*T).Run()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0xb12
+  testing.runTests.func1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2585 +0x84
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.runTests()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2583 +0x9e9
+  testing.(*M).Run()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2443 +0xf4b
+  main.main()
+      _testmain.go:578 +0x164
+==================
+==================
+WARNING: DATA RACE
+Read at 0x00c000991338 by goroutine 755:
+  bytes.(*Buffer).Len()
+      /tmp/haa-toolchains/go1.26.9/go/src/bytes/buffer.go:97 +0x64
+  bytes.(*Buffer).grow()
+      /tmp/haa-toolchains/go1.26.9/go/src/bytes/buffer.go:145 +0x3f
+  bytes.(*Buffer).Write()
+      /tmp/haa-toolchains/go1.26.9/go/src/bytes/buffer.go:197 +0xc4
+  fmt.Fprintf()
+      /tmp/haa-toolchains/go1.26.9/go/src/fmt/print.go:225 +0xaa
+  github.com/rahoney/heliopause/internal/sandbox.(*SharedObserver).writeAttributionDiagnostic()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:903 +0x6d7
+  github.com/rahoney/heliopause/internal/sandbox.(*SharedObserver).receive()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:636 +0xd5e
+  github.com/rahoney/heliopause/internal/sandbox.newSharedObserver.gowrap1()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:396 +0x2e
+
+Previous write at 0x00c000991338 by goroutine 754:
+  github.com/rahoney/heliopause/internal/sandbox.TestSharedObserverFlushesAttributionOnStreamFault()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer_test.go:612 +0x376
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.(*T).Run.gowrap1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0x38
+
+Goroutine 755 (running) created at:
+  github.com/rahoney/heliopause/internal/sandbox.newSharedObserver()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:396 +0x5d9
+  github.com/rahoney/heliopause/internal/sandbox.NewSharedObserver()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer.go:362 +0x56
+  github.com/rahoney/heliopause/internal/sandbox.TestSharedObserverFlushesAttributionOnStreamFault()
+      /tmp/haa-security-go1269/internal/sandbox/shared_observer_test.go:599 +0x4c
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.(*T).Run.gowrap1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0x38
+
+Goroutine 754 (running) created at:
+  testing.(*T).Run()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2101 +0xb12
+  testing.runTests.func1()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2585 +0x84
+  testing.tRunner()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2036 +0x21c
+  testing.runTests()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2583 +0x9e9
+  testing.(*M).Run()
+      /tmp/haa-toolchains/go1.26.9/go/src/testing/testing.go:2443 +0xf4b
+  main.main()
+      _testmain.go:578 +0x164
+==================
+--- FAIL: TestSharedObserverFlushesAttributionOnStreamFault (0.00s)
+    testing.go:1712: race detected during execution of test
+FAIL
+FAIL	github.com/rahoney/heliopause/internal/sandbox	16.189s
+ok  	github.com/rahoney/heliopause/internal/testutil/fakeworkflow	1.023s
+ok  	github.com/rahoney/heliopause/internal/verification/cargo	1.061s
+ok  	github.com/rahoney/heliopause/internal/verification/githubrelease	1.017s
+ok  	github.com/rahoney/heliopause/internal/verification/gomodule	1.112s
+ok  	github.com/rahoney/heliopause/internal/verification/npm	1.019s
+?   	github.com/rahoney/heliopause/internal/verification/projectbuild	[no test files]
+?   	github.com/rahoney/heliopause/internal/verification/pypi	[no test files]
+ok  	github.com/rahoney/heliopause/internal/verification/terraformprovider	1.121s
+ok  	github.com/rahoney/heliopause/scripts	1.465s
+ok  	github.com/rahoney/heliopause/scripts/check	12.135s
+ok  	github.com/rahoney/heliopause/scripts/release-manifest	3.939s
+ok  	github.com/rahoney/heliopause/scripts/runtime-image-manifest	1.040s
+FAIL

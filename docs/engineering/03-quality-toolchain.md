@@ -100,8 +100,8 @@ They are quality tooling only: none enters the product module graph.
 
 | Tool | Exact identity | Install and compatibility |
 | --- | --- | --- |
-| gosec | `github.com/securego/gosec/v2/cmd/gosec@v2.28.0` | checksum-verified `go install` with Go `1.26.8`; upstream requires Go `1.25+` |
-| govulncheck | `golang.org/x/vuln/cmd/govulncheck@v1.7.0` | checksum-verified `go install` with Go `1.26.8`; module Go floor `1.25` |
+| gosec | `github.com/securego/gosec/v2/cmd/gosec@v2.28.0` | checksum-verified `go install` with Go `1.26.9`; upstream requires Go `1.25+` |
+| govulncheck | `golang.org/x/vuln/cmd/govulncheck@v1.7.0` | checksum-verified `go install` with Go `1.26.9`; module Go floor `1.25` |
 | Gitleaks | official `v8.18.4` archive, per-platform SHA-256 lock | HTTPS download to the external tool cache and digest verification before extraction; newer `v8.28.0` and `v8.30.1` default-rule false negatives are excluded pending an upstream fix |
 
 The bootstrap checks an installed executable's supported version identity. A
@@ -129,7 +129,17 @@ The canonical `scripts/version-support.lock.json` records each externally
 managed baseline, its official source, support decision, and review date. The
 deterministic `scripts/check freshness` profile warns once a review is older
 than 90 days; `qualification-freshness` fails stale records for qualification
-or release use. The current Go minimum and toolchain are both `1.26.8`.
+or release use. The current Go minimum and toolchain are both `1.26.9`.
+
+2026-10-12 Scheduled Security remediation raises the product build floor and
+host CI/release/quality-tool setup to the official Go 1.26.9 security patch.
+`go.mod`'s `go 1.26.9` is the minimum accepted toolchain, not an exact compiler
+selection; CI's exact setup version and `GOTOOLCHAIN=local` select the compiler.
+No floating toolchain or new major is introduced. The separate M12 guest Go
+image remains bound to `scripts/runtimes.lock.json`; its version/digest and
+historical qualification are not replaced by this host-toolchain repair.
+Sources, integrity and new validation are recorded in the
+[Scheduled Security repair evidence](./evidence/security-go1269/README.md).
 
 정확한 Go와 현재 사용하는 tool version은 아래 M0-002 lock에서 고정한다. 아직 사용하지 않는 미래 도구의 임의 최신 version은 미리 적지 않는다.
 

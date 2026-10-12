@@ -9,11 +9,46 @@
 ```text
 Current milestone: M12 — Ecosystem Expansion Before Public Release
 Milestone status: COMPLETE (technical acceptance; reviewer merge pending)
-Active work item: none (M12-02 complete)
+Active work item: SEC-2026-10-12 — Scheduled Security Go patch (BLOCKED: pre-existing test harness races)
 Next work item: M13 — Production Release & Operations
 Next work item status: NOT_STARTED / Ready: No — reviewer merge and main CI pending; M13 activation blocker remains separate
 Ready: No — delivery handoff
 ```
+
+### SEC-2026-10-12 — Scheduled Security Go patch
+
+- Status: `BLOCKED` (local host patch implemented; existing Required Race failures;
+  M12/M13 historical acceptance is unchanged).
+- Baseline: `main@bdc2d891ca0edb719be8a28b1a8576decd3d01f2`;
+  [scheduled run 38240142380](https://github.com/rahoney/heliopause/actions/runs/38240142380),
+  job `114780428275`: history secrets PASS, vulnerability FAIL, fuzz SKIPPED.
+- Baseline audit: `IMPLEMENTED=YES`, `WIRED=YES`, `QUALIFIED=NO`,
+  `ACCEPTANCE_CLOSED=NO`. Existing `scripts/check/security.go:runVulnerability`,
+  `scripts/check/tools.go:bootstrap` and four workflows already implement the
+  gate; only the host/product Go security patch and fresh validation are missing.
+- Current audit: `IMPLEMENTED=YES`, `WIRED=YES`, `QUALIFIED=NO`,
+  `ACCEPTANCE_CLOSED=NO`. Official archive integrity, canonical Quick/security/
+  history/vulnerability/fuzz/docs/freshness, public Go and cold bootstrap
+  integration, cross compile and CLI smoke passed under Go 1.26.9.
+- Exact blocker: `go test -race -count=1 -timeout=15m ./...` failed on seven
+  tests in `internal/sandbox/direct_exec_admission_test.go` and
+  `shared_observer_test.go`. Six also fail on untouched `main@bdc2d89`
+  with Go 1.26.8; the affected production/test files are unchanged. The seventh
+  passed in that single baseline run; identical detection is not claimed.
+- `MISSING` / unblock: separately repair the test fixture synchronization and
+  pass Required Race on the candidate, then obtain normal Required/native CI
+  and Scheduled Security results after an authorized push. No suppression,
+  retry-to-green, runtime replacement or unrelated product repair was made.
+- Evidence: [report](../engineering/evidence/security-go1269/README.md) and
+  [machine-readable results](../engineering/evidence/security-go1269/result.json).
+- Read: [Quality Toolchain](../engineering/03-quality-toolchain.md),
+  [CI Quality Gate](../engineering/04-ci-quality-gate.md),
+  [Trusted Tooling](../threat-model/04-trusted-tooling-and-evidence.md),
+  [M10 runtime identity contract](./13-m10-verified-distribution-bootstrap-contract.md),
+  [M12 Go contract](./16-m12-01-ecosystem-expansion-contract.md#4-m12-002--go-modules).
+- Scope: host/product build toolchain only. `scripts/runtimes.lock.json`,
+  generated runtime identities, qualified Go guest image and historical M12
+  evidence remain exact inputs; no old qualification is relabeled for Go 1.26.9.
 
 M0~M7은 원래 정의한 MVP qualification과 evidence를 완료했다. external
 security review에서 확인된 production trust-boundary gap은 과거 M7 evidence를

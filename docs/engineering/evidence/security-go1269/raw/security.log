@@ -1,0 +1,2 @@
+[check] gosec
+[check] Gitleaks current tree

@@ -10,7 +10,7 @@
 - CLI framework: Cobra
 - 현재 상태: M0–M11 qualification 및 post-qualification release hardening, M12-001~005 생태계 acceptance·전체 qualification·feature freeze와 M12-02 최종 red-team/fix gate 완료. PR29 reviewer merge와 main CI 확인 후 M13 Production Release & Operations로 이어간다.
 - 완료 작업: M12-02 — final red-team/fix gate (`COMPLETE`)
-- 현재 작업: 없음 — reviewer merge 인계; M13은 `NOT_STARTED`
+- 현재 작업: SEC-2026-10-12 — Go 보안 패치 로컬 검증; 기존 test harness race로 qualification `BLOCKED`, M13은 `NOT_STARTED`
 - 진행 상태의 canonical owner: [`docs/planning/02-current-work-queue.md`](docs/planning/02-current-work-queue.md)
 
 Heliopause는 Apache-2.0으로 배포한다. 외부 기여는 `CLA.md`의 Harmony
@@ -27,7 +27,9 @@ Copyright License 및 Option Five 조건과 자동 CLA status check를 충족해
 
 ## Build
 
-Heliopause는 Go `1.26.8` 이상이 필요하며, 검증된 개발 toolchain도 Go `1.26.8`이다.
+Heliopause는 Go `1.26.9` 이상이 필요하며, 개발·CI toolchain은 Go `1.26.9`로 고정한다.
+새 툴체인의 보안 검사와 로컬 검증 범위·남은 Race blocker는
+[검증 보고서](docs/engineering/evidence/security-go1269/README.md)를 따른다.
 
 다음 build 명령은 source checkout을 가진 개발자·검증자가 사용하는 경로다. 일반
 사용자는 최종적으로 GitHub Release의 검증된 bootstrap entrance를 사용해야 하며,
