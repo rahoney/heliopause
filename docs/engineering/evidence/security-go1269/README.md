@@ -8,6 +8,14 @@ The local validation records below predate the user-authorized push. On follow-u
 `c73f3f5` was pushed and draft [PR30](https://github.com/rahoney/heliopause/pull/30)
 opened. CI runs are recorded separately from the immutable local raw logs.
 
+Latest source `e01ba19` is validated: [CI38258121064](https://github.com/rahoney/heliopause/actions/runs/38258121064)
+has Required plus all nine prerequisites SUCCESS. See the
+[SumDB follow-up](./sumdb-followup.md) and [remote result](./remote-result.json).
+The original `result.json` preserves the earlier local snapshot; its blocked
+full-Race status is not the current Required status. The host patch and bounded
+diagnostic repair are qualified; broader full-Race and guest-runtime follow-ups
+remain separate.
+
 ## ROOT_CAUSE
 
 [Run 38240142380](https://github.com/rahoney/heliopause/actions/runs/38240142380)
@@ -168,23 +176,25 @@ toolchain.
 
 ## CI_RECHECK_NEEDED
 
-YES. The authorized push/PR needs the normal Required matrix, including
-native macOS and Linux integration. Its nine prerequisites do not include a
-Race job, and neither `platform` nor `quick` runs `-race`. The separate local
-Race failure therefore does not predict Required's aggregate result. Scheduled Security also needs a run
-on the patched commit. Rerunning old `bdc2d89` would still select 1.26.8. Local
-cross compilation is not native macOS execution, and local results do not
-replace those remote gates. Initial runs on `c73f3f5` are
-[CI 38249446186](https://github.com/rahoney/heliopause/actions/runs/38249446186) and
-[Scheduled Security 38249522013](https://github.com/rahoney/heliopause/actions/runs/38249522013).
-This follow-up only corrects documentation and result labels; executable inputs,
-Go identity and local raw logs are unchanged. No merge was made.
+The actual source candidate `e01ba19` passed the complete normal Required
+matrix, including native macOS and Linux integration, in CI38258121064.
+Scheduled Security38249522013 also passed history secrets, vulnerability and
+bounded fuzz on the host patch. The current nine prerequisites contain no Race
+job; `platform` and `quick` do not run `-race`.
+
+Only the documentation closure HEAD needs its own fresh Required result after
+push. Its executable, toolchain and runtime inputs remain identical to
+`e01ba19`; no source qualification is relabeled for a different compiler.
+Main remains unmerged and still selects Go1.26.8; rerunning that old main would
+not consume this branch's patch. No merge was made.
 
 ## PUSH_READINESS
 
-**NOT_READY** for full qualification: the existing local test harness Race blocker
-remains. Current Required CI can succeed independently because it has no Race
-job. The host security patch is prepared for review with successful scanner
-results and a reproduced baseline failure, not marked fully qualified or
-acceptance-closed. Push and CI were subsequently authorized and started. Runtime
-image qualification and production release approval remain separate.
+**READY for the bounded repair; source already pushed and Required SUCCESS.**
+The documentation closure is validated separately before its authorized push,
+then its final HEAD CI is checked. The original broader full-Race fixture
+findings remain open, with targeted verifier Race passing on both Go versions.
+Guest runtime qualification, reviewer merge and production release approval
+remain separate. The historical SumDB failure's lost underlying cause is not
+claimed solved by the diagnostic-only change; the affected real consumer and
+the complete Required matrix now pass without weakening checks.

@@ -9,7 +9,7 @@
 ```text
 Current milestone: M12 — Ecosystem Expansion Before Public Release
 Milestone status: COMPLETE (technical acceptance; reviewer merge pending)
-Active work item: SEC-2026-10-12 — Scheduled Security Go patch (IN_PROGRESS: SumDB integration failure diagnosis)
+Active work item: None — SEC-2026-10-12 bounded repair qualified; final documentation delivery CI pending
 Next work item: M13 — Production Release & Operations
 Next work item status: NOT_STARTED / Ready: No — reviewer merge and main CI pending; M13 activation blocker remains separate
 Ready: No — delivery handoff
@@ -17,8 +17,9 @@ Ready: No — delivery handoff
 
 ### SEC-2026-10-12 — Scheduled Security Go patch
 
-- Status: `IN_PROGRESS` (host patch implemented; investigate remote SumDB failure;
-  M12/M13 historical acceptance is unchanged).
+- Status: `COMPLETE` for the host security patch and bounded SumDB diagnostic
+  repair. Final documentation delivery CI remains a separate fresh HEAD check;
+  M12/M13 historical acceptance is unchanged.
 - Baseline: `main@bdc2d891ca0edb719be8a28b1a8576decd3d01f2`;
   [scheduled run 38240142380](https://github.com/rahoney/heliopause/actions/runs/38240142380),
   job `114780428275`: history secrets PASS, vulnerability FAIL, fuzz SKIPPED.
@@ -26,29 +27,33 @@ Ready: No — delivery handoff
   `ACCEPTANCE_CLOSED=NO`. Existing `scripts/check/security.go:runVulnerability`,
   `scripts/check/tools.go:bootstrap` and four workflows already implement the
   gate; only the host/product Go security patch and fresh validation are missing.
-- Current audit: `IMPLEMENTED=YES`, `WIRED=YES`, `QUALIFIED=NO`,
-  `ACCEPTANCE_CLOSED=NO`. Official archive integrity, canonical Quick/security/
+- Current audit: `IMPLEMENTED=YES`, `WIRED=YES`, `QUALIFIED=YES`,
+  `ACCEPTANCE_CLOSED=YES` within this bounded maintenance scope. Official archive integrity, canonical Quick/security/
   history/vulnerability/fuzz/docs/freshness, public Go and cold bootstrap
   integration, cross compile and CLI smoke passed under Go 1.26.9.
-- Remote follow-up: Scheduled Security38249522013 SUCCESS; candidate
-  `a32cdb0` CI38249811910 has eight successful prerequisites, but Linux
-  `TestLinuxGoTransitiveGetDownloadIntegration` fails at retained SumDB lookup.
-  Current repair adds bounded failure classification at the existing verifier
-  owner, then obtains fresh local and remote consumer validation. The previous
-  generic error does not establish a timeout or a Go toolchain regression.
+- Remote follow-up: Scheduled Security38249522013 SUCCESS. Candidate
+  `a32cdb0` CI38249811910 failed at retained SumDB lookup. The bounded diagnostic
+  repair `e01ba19` passes [CI38258121064](https://github.com/rahoney/heliopause/actions/runs/38258121064),
+  Required and all nine prerequisites. The same transitive gRPC get/download
+  passes82.97s; all45 Linux top-level consumers and cleanup pass. The previous
+  underlying error was discarded and cannot be recovered. Exact Go1.26.8/1.26.9
+  authentication comparisons and new full CI do not reproduce that failure;
+  no specific historical timeout/outage or universal absence of a compiler
+  regression is inferred. Future failures retain safe bounded diagnostics.
 - Additional local finding: `go test -race -count=1 -timeout=15m ./...` failed on seven
   tests in `internal/sandbox/direct_exec_admission_test.go` and
   `shared_observer_test.go`. Six also fail on untouched `main@bdc2d89`
   with Go 1.26.8; the affected production/test files are unchanged. The seventh
   passed in that single baseline run; identical detection is not claimed.
-- `MISSING`: identify the remote SumDB failure with safe diagnostics and obtain
-  fresh Required/native CI on the candidate. The separate local full-Race
-  finding remains open; targeted verifier Race passes on both actual Go
-  versions. No suppression, timeout increase, retry-to-green or runtime
-  replacement is used to qualify this repair.
+- `MISSING`: none for the validated host patch and diagnostic repair. Check
+  final documentation HEAD Required before delivery. The historical SumDB
+  underlying cause remains unknown; the separate local full-Race finding and
+  guest runtime patch remain follow-ups. Targeted verifier Race passes on both
+  actual Go versions. No suppression, timeout increase, retry-to-green or
+  runtime replacement is used to qualify this repair.
 - CI scope correction: the current workflow aggregates nine prerequisites and
   does not include a Race job; `platform`/`quick` do not use `-race`. Local Race
-  remains an unresolved qualification check, independently of Required status.
+  remains an unresolved broader qualification finding, independently of Required status.
   Following user authorization, `c73f3f5` was pushed and draft
   [PR30](https://github.com/rahoney/heliopause/pull/30) opened. Initial runs:
   [Required CI](https://github.com/rahoney/heliopause/actions/runs/38249446186),
@@ -56,7 +61,9 @@ Ready: No — delivery handoff
 - Evidence: [report](../engineering/evidence/security-go1269/README.md) and
   [machine-readable results](../engineering/evidence/security-go1269/result.json).
   [SumDB diagnostic follow-up](../engineering/evidence/security-go1269/sumdb-followup.md)
-  records the new source and local before/after validation; remote CI is pending.
+  and [remote result](../engineering/evidence/security-go1269/remote-result.json)
+  record the source, local before/after and actual remote validation. The original
+  local result is a historical snapshot, not the current remote CI status.
 - Read: [Quality Toolchain](../engineering/03-quality-toolchain.md),
   [CI Quality Gate](../engineering/04-ci-quality-gate.md),
   [Trusted Tooling](../threat-model/04-trusted-tooling-and-evidence.md),

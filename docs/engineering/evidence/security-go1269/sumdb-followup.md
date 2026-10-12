@@ -46,6 +46,32 @@ directory as `sumdb-diagnostics-before.log`, `sumdb-diagnostics-after.{log,json}
 `public-go-integration-{2,3}.log`.
 
 This change fixes an established diagnostic gap. It does not assert that a
-network outage caused the earlier run, or qualify the full Linux integration.
-The authorized candidate push and new Required CI provide the next evidence.
-The separate pre-existing full-Race fixture findings remain open.
+network outage caused the earlier run. The separate pre-existing full-Race
+fixture findings remain open.
+
+## Remote consumer result
+
+Candidate `e01ba19` passed [CI38258121064](https://github.com/rahoney/heliopause/actions/runs/38258121064):
+Required and all nine prerequisites are SUCCESS. Actual PR checkout `1309095`
+has the same whole Git tree as the candidate (`a29a0eb065a1e3444afc5c0af6c7a9b2c96b53ee`).
+Linux and native macOS logs confirm actual Go1.26.9. The Linux runner image
+`20261004.327.1` is the same version as the prior failed run.
+
+The previously failing `TestLinuxGoTransitiveGetDownloadIntegration` passed in
+82.97s (old green:81.86s; failed run:127.97s). The complete Linux job passed 45
+top-level tests, including subsequent Go/Cargo build and security cases,
+Terraform init, PyTorch CPU full275.56s, sdist/wheel and npm/PyPI promotion.
+All five helper waits returned0; final cleanup recorded original0,
+CONFIRMED_STOPPED, client_error0 and client_restore0. No retry, suppression,
+timeout increase, skipped gate or runtime replacement was added.
+
+The original Scheduled Security failure is remediated. The later SumDB
+failure is not reproduced by the controlled version comparisons or this full
+remote consumer run. Its lost underlying error remains unrecoverable; passing
+CI does not establish a historical timeout/outage or universally exclude a
+compiler defect. Future failures now retain bounded diagnostics for repair.
+
+[Remote result](./remote-result.json) records the exact source, jobs, timing,
+tree equality, raw-log hash and remaining scope. The documentation-only closure
+keeps executable/toolchain/runtime inputs identical to this qualified source;
+its new HEAD Required result must still be checked separately before delivery.

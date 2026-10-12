@@ -1,0 +1,111 @@
+{
+  "status": "HOST_SECURITY_PATCH_AND_SUMDB_DIAGNOSTICS_VALIDATED",
+  "source_commit": "e01ba19b438372d71a7e6e9027ce86c49d675240",
+  "ci_run": 38258121064,
+  "ci_url": "https://github.com/rahoney/heliopause/actions/runs/38258121064",
+  "conclusion": "success",
+  "checkout_commit": "13090957537a9b46916dcfa603aade150fc5e35b",
+  "source_and_checkout_tree": "a29a0eb065a1e3444afc5c0af6c7a9b2c96b53ee",
+  "go_version": "go1.26.9",
+  "linux_runner_image": "20261004.327.1",
+  "jobs": [
+    {
+      "name": "Quick",
+      "id": 114841370406,
+      "conclusion": "success",
+      "started_at": "2026-10-12T13:47:07Z",
+      "completed_at": "2026-10-12T13:49:48Z"
+    },
+    {
+      "name": "gVisor Linux Integration",
+      "id": 114841370531,
+      "conclusion": "success",
+      "started_at": "2026-10-12T13:47:07Z",
+      "completed_at": "2026-10-12T14:28:10Z"
+    },
+    {
+      "name": "Docs",
+      "id": 114841370632,
+      "conclusion": "success",
+      "started_at": "2026-10-12T13:47:07Z",
+      "completed_at": "2026-10-12T13:47:31Z"
+    },
+    {
+      "name": "Security",
+      "id": 114841370649,
+      "conclusion": "success",
+      "started_at": "2026-10-12T13:47:07Z",
+      "completed_at": "2026-10-12T13:48:43Z"
+    },
+    {
+      "name": "macOS",
+      "id": 114841370831,
+      "conclusion": "success",
+      "started_at": "2026-10-12T13:47:08Z",
+      "completed_at": "2026-10-12T13:53:29Z"
+    },
+    {
+      "name": "Representative Wheel Corpus",
+      "id": 114841370851,
+      "conclusion": "success",
+      "started_at": "2026-10-12T13:47:08Z",
+      "completed_at": "2026-10-12T13:48:11Z"
+    },
+    {
+      "name": "Minimum Go",
+      "id": 114841370903,
+      "conclusion": "success",
+      "started_at": "2026-10-12T13:47:08Z",
+      "completed_at": "2026-10-12T13:48:51Z"
+    },
+    {
+      "name": "gVisor Observer Helper",
+      "id": 114841370934,
+      "conclusion": "success",
+      "started_at": "2026-10-12T13:47:07Z",
+      "completed_at": "2026-10-12T13:52:39Z"
+    },
+    {
+      "name": "Vulnerability",
+      "id": 114841371115,
+      "conclusion": "success",
+      "started_at": "2026-10-12T13:47:07Z",
+      "completed_at": "2026-10-12T13:48:59Z"
+    },
+    {
+      "name": "Required",
+      "id": 114858483446,
+      "conclusion": "success",
+      "started_at": "2026-10-12T14:28:13Z",
+      "completed_at": "2026-10-12T14:28:40Z"
+    }
+  ],
+  "linux": {
+    "actual_top_level_tests": 45,
+    "grpc_transitive_get_download_seconds": 82.97,
+    "go_transitive_build_seconds": 160.63,
+    "pytorch_cpu_full_seconds": 275.56,
+    "helper_wait_zero_count": 5,
+    "cleanup": "original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED",
+    "raw": {
+      "file": "remote-38258121064-job114841370531.log",
+      "sha256": "a62c658a3e1cd0c4a248404743b6215b96c9880e7c11a94350c48799bc5959c3"
+    }
+  },
+  "prior_failed_run": 38249811910,
+  "prior_green_run": 37627224299,
+  "root_cause_scope": {
+    "scheduled_security": "Go1.26.8 reachable standard-library vulnerabilities; host patch to Go1.26.9 verified",
+    "diagnostic_gap": "Existing verifier discarded HTTP/context/proof failure information; seven before/after cases verify the bounded diagnostic repair",
+    "historical_sumdb_failure": "Underlying cause unknown because the prior message discarded it. Exact Go1.26.8/1.26.9 bounded authentication comparisons and fresh Required CI pass. Do not infer a particular network outage or a disproven compiler regression from success alone."
+  },
+  "remaining": {
+    "module_only_advisories": 21,
+    "reachable_vulnerabilities": 0,
+    "imported_package_vulnerabilities": 0,
+    "guest_runtime": "Unchanged separately qualified Go1.26.8 image; separate runtime patch follow-up",
+    "full_race": "Seven local fixture failures remain; six reproduced on baseline Go1.26.8. No Race job in Required; targeted verifier race tests pass on both versions.",
+    "merge": "Not performed",
+    "closure_docs_ci": "A documentation-only closure may follow; its Required result must be checked separately."
+  }
+}
