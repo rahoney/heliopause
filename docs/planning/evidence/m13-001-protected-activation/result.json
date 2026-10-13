@@ -1,0 +1,255 @@
+{
+  "status": "M13_001_CONFIGURATION_ACCEPTANCE_COMPLETE",
+  "baseline_commit": "2e196a188adce22005fce201c23da1dc27a43426",
+  "before": {
+    "main_ruleset": {
+      "id": 21396883,
+      "enforcement": "disabled"
+    },
+    "develop": "absent (authenticated404)",
+    "environments": 0,
+    "immutable_releases": false
+  },
+  "after": {
+    "main": {
+      "id": 21396883,
+      "name": "Protect main",
+      "target": "branch",
+      "enforcement": "active",
+      "conditions": {
+        "ref_name": {
+          "exclude": [],
+          "include": [
+            "refs/heads/main"
+          ]
+        }
+      },
+      "bypass_actors": [],
+      "rules": [
+        {
+          "type": "deletion"
+        },
+        {
+          "type": "non_fast_forward"
+        },
+        {
+          "type": "pull_request",
+          "parameters": {
+            "required_approving_review_count": 0,
+            "dismiss_stale_reviews_on_push": false,
+            "required_reviewers": [],
+            "require_code_owner_review": false,
+            "require_last_push_approval": false,
+            "required_review_thread_resolution": true,
+            "require_extra_approval_for_unattributed_changes": false,
+            "allowed_merge_methods": [
+              "merge",
+              "squash"
+            ]
+          }
+        },
+        {
+          "type": "required_status_checks",
+          "parameters": {
+            "strict_required_status_checks_policy": true,
+            "do_not_enforce_on_create": false,
+            "required_status_checks": [
+              {
+                "context": "Required",
+                "integration_id": 15368
+              },
+              {
+                "context": "license/cla",
+                "integration_id": 128106
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "develop_ruleset": {
+      "id": 24969937,
+      "name": "Protect develop",
+      "target": "branch",
+      "enforcement": "active",
+      "conditions": {
+        "ref_name": {
+          "exclude": [],
+          "include": [
+            "refs/heads/develop"
+          ]
+        }
+      },
+      "bypass_actors": [],
+      "rules": [
+        {
+          "type": "deletion"
+        },
+        {
+          "type": "non_fast_forward"
+        },
+        {
+          "type": "pull_request",
+          "parameters": {
+            "required_approving_review_count": 0,
+            "dismiss_stale_reviews_on_push": false,
+            "required_reviewers": [],
+            "require_code_owner_review": false,
+            "require_last_push_approval": false,
+            "required_review_thread_resolution": true,
+            "require_extra_approval_for_unattributed_changes": false,
+            "allowed_merge_methods": [
+              "merge",
+              "squash"
+            ]
+          }
+        },
+        {
+          "type": "required_status_checks",
+          "parameters": {
+            "strict_required_status_checks_policy": true,
+            "do_not_enforce_on_create": false,
+            "required_status_checks": [
+              {
+                "context": "Required",
+                "integration_id": 15368
+              },
+              {
+                "context": "license/cla",
+                "integration_id": 128106
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "release_tag_creation": {
+      "id": 24969939,
+      "name": "Release tag creation",
+      "target": "tag",
+      "enforcement": "active",
+      "conditions": {
+        "ref_name": {
+          "exclude": [],
+          "include": [
+            "refs/tags/v*"
+          ]
+        }
+      },
+      "bypass_actors": [
+        {
+          "actor_id": 168336203,
+          "actor_type": "User",
+          "bypass_mode": "always"
+        }
+      ],
+      "rules": [
+        {
+          "type": "creation"
+        }
+      ]
+    },
+    "release_tag_immutability": {
+      "id": 24969940,
+      "name": "Release tags cannot change",
+      "target": "tag",
+      "enforcement": "active",
+      "conditions": {
+        "ref_name": {
+          "exclude": [],
+          "include": [
+            "refs/tags/v*"
+          ]
+        }
+      },
+      "bypass_actors": [],
+      "rules": [
+        {
+          "type": "update"
+        },
+        {
+          "type": "deletion"
+        },
+        {
+          "type": "non_fast_forward"
+        }
+      ]
+    },
+    "main_branch": {
+      "sha": "2e196a188adce22005fce201c23da1dc27a43426",
+      "protected": true
+    },
+    "develop_branch": {
+      "sha": "2e196a188adce22005fce201c23da1dc27a43426",
+      "protected": true
+    },
+    "immutable_releases": {
+      "enabled": true,
+      "enforced_by_owner": false
+    },
+    "release_environment": {
+      "id": 24138487071,
+      "name": "release",
+      "can_admins_bypass": false,
+      "prevent_self_review": false,
+      "reviewers": [
+        {
+          "type": "User",
+          "id": 168336203
+        }
+      ],
+      "deployment_branch_policy": {
+        "protected_branches": false,
+        "custom_branch_policies": true
+      }
+    },
+    "release_policies": [
+      {
+        "id": 62857129,
+        "name": "main",
+        "type": "branch"
+      }
+    ]
+  },
+  "raw_receipt_sha256": {
+    "rulesets-21396883.json": "6665ef96109097d1d391eb3c68ab80e52bbaa469456c6e1b66f8c58c986a988e",
+    "verified-final.json": "f2de8ff0702393daccb102580ad9a791b875c00a9d3326a0bb8bfc0f7bb987f3",
+    "immutable-releases.json": "15395015acd3161cee6e98e2365bb906a953bdc160159bb34c67a08d2b02036f",
+    "collaborators-rahoney-permission.json": "8ca56b18c089a0c7ea5dea70f29265faa12ade4f8cb7a26e8ca589a4a9f13512",
+    "application-receipt.json": "adbfe1d96df2a0ca16b565e0cfa1d7f6bfd4dbc45b4b850105eeff437165ed77",
+    "branches-develop.json": "e423dda4fd0353a796f5ade06d1711a16bb9ec7b8d6a241bd0957f5a72bece3e",
+    "repository.json": "403fab9afc6e34426c29ee7684c30cc3b9d96c6bc6b31ce0f934c45703e32945",
+    "environments.json": "6091878f4e9c3e631bde7075266ec0987c05bcdc66b11d7c25021d852a7768c4"
+  },
+  "checks": {
+    "all_api_readback_assertions": "PASS",
+    "live_hostile_push_pr_cases": "NOT_RUN (M13-002)",
+    "public_release": "NOT_RUN",
+    "local_canonical": {
+      "docs": {
+        "result": "PASS",
+        "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+      },
+      "workflow": {
+        "result": "PASS",
+        "log_sha256": "7111d3d9fe36958f1cfe50f5885f3c72f642a54b0761337cd7fb98fd43d4ff6c"
+      },
+      "release-gate": {
+        "result": "PASS",
+        "log_sha256": "11e43c6a182a612ea79ba5d521d90153efd0f567857993ea20db4c3f95039b73"
+      }
+    }
+  },
+  "remaining_release_readiness": [
+    "guest Go1.26.8 patch qualification",
+    "full-Race fixture disposition",
+    "module advisory release-impact assessment"
+  ],
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES",
+    "ACCEPTANCE_CLOSED": "YES"
+  },
+  "missing": []
+}

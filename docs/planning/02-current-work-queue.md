@@ -7,20 +7,23 @@
 ## 1. 현재 상태
 
 ```text
-Current milestone: M12 — Ecosystem Expansion Before Public Release
-Milestone status: COMPLETE (technical acceptance; reviewer merge pending)
-Active work item: SEC-2026-10-12 — Cargo resolver runtime-read regression repair
-Next work item: M13 — Production Release & Operations
-Next work item status: NOT_STARTED / Ready: No — reviewer merge and main CI pending; M13 activation blocker remains separate
-Ready: No — delivery handoff
+Current milestone: M13 — Production Release & Operations (entry audit and repository hardening)
+Milestone status: IN_PROGRESS (public release readiness not declared)
+Active work item: none (M13-001 complete)
+Next work item: M13-002 — protected branch qualification
+Next work item status: NOT_STARTED / Ready: Yes — protected PR qualification; public release readiness remains open
+Ready: Yes — M13-002 baseline audit
 ```
 
 ### SEC-2026-10-12 — Scheduled Security Go patch
 
-- Status: `IN_PROGRESS` for the CI307 Cargo resolver runtime-read failure. The host
-  security patch and bounded SumDB diagnostic repair remain qualified.
-  Final delivery CI remains a separate fresh HEAD check;
-  M12/M13 historical acceptance is unchanged.
+- Status: `COMPLETE` for the bounded host security and CI repair. PR30 is merged
+  at main `2e196a1`; main CI38328099413 is SUCCESS (Required plus nine jobs).
+  PR CI308 also passed all45 Linux consumers, Cargo transitive build and PyTorch
+  CPU full. The following baseline/follow-up paragraphs retain their historical
+  scope; their pending labels are superseded by this delivery result.
+  Guest runtime patch, full-Race fixtures and module advisory assessment remain
+  separate release-readiness follow-ups; no public release approval is inferred.
 - Baseline: `main@bdc2d891ca0edb719be8a28b1a8576decd3d01f2`;
   [scheduled run 38240142380](https://github.com/rahoney/heliopause/actions/runs/38240142380),
   job `114780428275`: history secrets PASS, vulnerability FAIL, fuzz SKIPPED.
@@ -46,8 +49,8 @@ Ready: No — delivery handoff
   `shared_observer_test.go`. Six also fail on untouched `main@bdc2d89`
   with Go 1.26.8; the affected production/test files are unchanged. The seventh
   passed in that single baseline run; identical detection is not claimed.
-- `MISSING`: none for the validated host patch and diagnostic repair. Check
-  final documentation HEAD Required before delivery. The historical SumDB
+- `MISSING`: none for the bounded host patch and CI repair; PR30 merge and
+  main CI delivery are complete. The historical SumDB
   underlying cause remains unknown; the separate local full-Race finding and
   guest runtime patch remain follow-ups. Targeted verifier Race passes on both
   actual Go versions. No suppression, timeout increase, retry-to-green or
@@ -2610,11 +2613,53 @@ M12-005 feature freeze에서 수행한다. canonical lock 등록만으로 releas
 
 | Order | ID | Scope | Status |
 | --- | --- | --- | --- |
-| 1 | M13-001 | protected main/develop/tag/release environment/immutable release activation | BLOCKED |
+| 1 | M13-001 | protected main/develop/tag/release environment/immutable release activation | COMPLETE |
 | 2 | M13-002 | `develop → main` 실제 protected PR qualification | NOT_STARTED |
 | 3 | M13-003 | canonical release build·manifest·attestation·OS package assets | NOT_STARTED |
 | 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | NOT_STARTED |
 | 5 | M13-005 | exact publication·clean Host bootstrap·doctor·cross-ecosystem smoke·quarantine | NOT_STARTED |
+
+### M13-001 — protected repository activation
+
+Status: COMPLETE — live configuration/readback scope
+Baseline: main2e196a1; PR29/30 merged, main CI38328099413 ten SUCCESS.
+Read: [M13 contract](./18-m13-production-release-operations-contract.md),
+[M10 distribution](./13-m10-verified-distribution-bootstrap-contract.md),
+[CI gate](../engineering/04-ci-quality-gate.md), CONTRIBUTING.md.
+
+Baseline audit: IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO
+for complete live protection. Existing M10 implementation and the disabled main
+ruleset are reused; per-responsibility statuses and exact evidence are in the
+[activation audit](./evidence/m13-001-protected-activation/README.md).
+
+Scope:
+- Confirm delivery and distinguish remaining guest/Race/module findings.
+- Activate existing main protection and create/protect develop at qualified main.
+- Restrict v* creation and prohibit tag modification/deletion; configure release
+  environment approval and exact workflow-ref policy; enable immutable releases.
+- Capture and verify live state independently of local source checks.
+
+Acceptance:
+1. Existing implementation is identified before changes; missing settings only
+   are applied from the versioned plan.
+2. Main/develop require PR, resolved conversations, up-to-date Required and
+   license/cla from their pinned apps, with no bypass; deletion/force push blocked.
+3. Tag creation authority is separate from no-bypass update/deletion protection.
+4. Release environment requires the owner review and permits only main execution;
+   immutable releases enabled. No tag/publication is triggered by this item.
+5. Fresh API readback matches all settings; canonical docs/workflow/release-gate
+   checks pass, and before/after receipts are preserved without credentials.
+6. Remaining release findings retain owners/reopen conditions. Public release and
+   M13-002 hostile PR/push qualification are not claimed by configuration readback.
+
+Current audit: IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
+for M13-001 configuration acceptance. Rules21396883/24969937/24969939/24969940,
+release environment24138487071 with owner review and admin bypass disabled,
+main-only deployment policy62857129 and immutable releases match the exact plan.
+Canonical docs/workflow/release-gate PASS; final closure docs/security checked
+before commit. MISSING: none in M13-001 scope. No item is IN_PROGRESS.
+M13-002..005 remain NOT_STARTED; settings activation does not close the overall
+no-known-release-blocking-finding entry assessment.
 
 ### M12 baseline audit status
 

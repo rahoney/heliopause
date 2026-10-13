@@ -89,7 +89,7 @@
 | Verified Distribution & Bootstrap | M10 | Complete | [M10 Verified Distribution & Bootstrap Contract](./docs/planning/13-m10-verified-distribution-bootstrap-contract.md), [Current Work Queue](./docs/planning/02-current-work-queue.md) |
 | Dynamic Detection Depth | M11 | Complete | [M11 Dynamic Detection Depth Contract](./docs/planning/14-m11-dynamic-detection-depth-contract.md), [Current Work Queue](./docs/planning/02-current-work-queue.md) |
 | M11 Release Hardening Fixes | M11-FIX-01..05 | Complete | [M11 이후 Release Hardening Fix List](./docs/planning/15-m11-02-fix-list.md), [Current Work Queue](./docs/planning/02-current-work-queue.md) |
-| Ecosystem Expansion Before Public Release | M12 | Complete — reviewer merge pending | [M12 Ecosystem Expansion Contract](./docs/planning/16-m12-01-ecosystem-expansion-contract.md) |
+| Ecosystem Expansion Before Public Release | M12 | Complete — merged / main CI verified | [M12 Ecosystem Expansion Contract](./docs/planning/16-m12-01-ecosystem-expansion-contract.md) |
 | Official PyTorch Source Qualification | M12-001 | Complete | [Closure Evidence](./docs/planning/evidence/m12-001-closure/result.json), [Current Work Queue](./docs/planning/02-current-work-queue.md) |
 | Public Go Modules Qualification | M12-002 | Complete | [Qualification Evidence](./docs/planning/evidence/m12-002-go-build-qualification/result.json), [Current Work Queue](./docs/planning/02-current-work-queue.md) |
 | Public Cargo/crates.io Qualification | M12-003 | Complete | [Qualification Evidence](./docs/planning/evidence/m12-003-cargo-build-qualification/result.json), [Current Work Queue](./docs/planning/02-current-work-queue.md) |
@@ -97,7 +97,7 @@
 | Go·Cargo·Terraform Cumulative Remote Qualification | M12-002~004 | Complete | [Remote CI Evidence](./docs/planning/evidence/m12-002-004-remote-ci/result.json), [Current Work Queue](./docs/planning/02-current-work-queue.md) |
 | Cross-Ecosystem Qualification and Feature Freeze | M12-005 | Complete | [Qualification Evidence](./docs/planning/evidence/m12-005-qualification/README.md), [Current Work Queue](./docs/planning/02-current-work-queue.md) |
 | M12 Final Red-Team Fix Gate | M12-02 | Complete | [M12-02 Final Red-Team Fix List](./docs/planning/17-m12-02-fix-list.md) |
-| Production Release & Operations | M13 | Defined | [M13 Production Release & Operations Contract](./docs/planning/18-m13-production-release-operations-contract.md) |
+| Production Release & Operations | M13 | M13-001 complete; M13-002 next | [M13 Production Release & Operations Contract](./docs/planning/18-m13-production-release-operations-contract.md) |
 
 ## Current Stage
 
@@ -112,7 +112,9 @@ M12-001~004 acceptance 및 누적 원격 qualification을 완료했다. M12-005�
 M12-02의 여덟 영역 검토와 FIX-01~03 remediation을 완료했다. 같은 기능 후보의
 CPU·cu126·cu130·cu132 및 각 Required CI를 검증해 M12 기술 acceptance는 `COMPLETE`다.
 [검토 결과](./docs/planning/evidence/m12-02-red-team/result.json)가 소스와 원본을 연결한다.
-Reviewer의 PR29 merge와 main CI 확인 후 M13으로 인계한다. 현재 milestone과
+PR29·PR30은 merge됐고 main2e196a1의 CI38328099413도 SUCCESS다. M13-001의
+저장소 보호 설정 적용·API 검증을 완료했고 M13-002는 미시작이다.
+guest runtime·Race 등 출시 영향 판단은 남는다. 현재 milestone과
 active/next work item은 [Current Work Queue](./docs/planning/02-current-work-queue.md)를 참조한다.
 
 M7 MVP qualification evidence는 보존한다. external security review에서 확인된
