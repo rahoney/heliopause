@@ -12,7 +12,7 @@ Milestone status: IN_PROGRESS (public release readiness not declared)
 Active work item: M13-002 — protected branch qualification
 Next work item: M13-003 — canonical release build and OS packages (not authorized)
 Next work item status: NOT_STARTED / Ready: No — M13-002 acceptance remains open
-Ready: PR31 Required/CLA verified; next live case needs separate user approval
+Ready: PR31 conversation rejection verified; next live case needs separate approval
 ```
 
 ### SEC-2026-10-12 — Scheduled Security Go patch
@@ -2664,7 +2664,8 @@ no-known-release-blocking-finding entry assessment.
 ### M13-002 — protected branch qualification
 
 Status: IN_PROGRESS — approved exact e1e3aa8 feature push and develop PR31
-creation completed; fresh CI/CLA verification passed. Merge is not authorized.
+creation completed; fresh CI/CLA and one authorized develop conversation rejection
+verified. Normal merge and further remote mutations are not authorized.
 Read: [M13 contract](./18-m13-production-release-operations-contract.md),
 [CI gate](../engineering/04-ci-quality-gate.md), CONTRIBUTING.md,
 [M13-001 evidence](./evidence/m13-001-protected-activation/README.md).
@@ -2690,14 +2691,21 @@ historical main CI. Actual CLA service reports license/cla success. Both context
 are isRequired=true on PR31, with App identities15368/128106. Main/develop remain
 at2e196a1; rules are unchanged. The tested merge commit6950673 has the same whole
 tree64e2961 as e1e3aa8. Gate BLOCKED during incomplete checks became CLEAN after
-success; PR remains open/unmerged, auto-merge null, review threads0. All ten raw
+success; that snapshot was open/unmerged, auto-merge null, review threads0. All ten raw
 job logs and fresh API/GraphQL receipts are preserved locally and bound by the
 [new remote result](./evidence/m13-002-protected-path/remote-result.json).
 
-MISSING: live normal/negative enforcement cases, reviewer-authorized merges and
-final audit. No mutation-based enforcement PASS is claimed from read-only gate
-transitions. Current approval covers only the
-exact feature push and develop PR creation; no further push or merge is authorized.
+New actual case: [conversation rejection](./evidence/m13-002-protected-path/thread-rejection.json)
+PASS on develop/PR31. One real diff thread (comment4258640332) changed CLEAN→BLOCKED;
+Required/CLA stayed green and required at exact e1e3aa8. The separately approved
+single ordinary exact-head merge request returned HTTP405 explicitly citing the
+unresolved conversation. Main/develop stayed at2e196a1, PR remained open/unmerged,
+and resolving that test thread restored CLEAN. No bypass/force/auto-merge was used.
+
+MISSING: remaining target-specific negative cases, normal protected PR merges and
+final audit. This develop conversation case does not qualify main, missing
+Required/CLA, stale branch, direct/force push or a separate override attempt.
+The single-attempt approval is consumed; no further push or merge is authorized.
 Force-push needs a design/decision compatible with existing history preservation;
 genuine missing CLA may need a willing real unsigned participant. Do not weaken
 rules, fabricate statuses/identity or mark those cases waived/qualified.

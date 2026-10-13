@@ -1,19 +1,20 @@
 # M13-002 protected branch qualification
 
 Status: IN_PROGRESS — exact e1e3aa8 feature push and develop PR31 creation approved
-and completed; new CI/CLA verification passed. No live mutation-based
-enforcement case has passed yet. Merge is not authorized.
+and completed; new CI/CLA verification passed. The separately authorized PR31
+unresolved-review-thread merge rejection passed. Normal merge is not authorized.
 
 The [new remote result](./remote-result.json) records this authorized phase,
 distinct from the historical baseline and local checks below. PR31 is open at
 exact e1e3aa8, targeting develop2e196a1. CI38355837742 checks merge6950673,
 whose whole tree64e2961 matches the feature head. No additional push, merge,
-protected-ref update, rule mutation or release action has been performed.
+protected-ref update, rule mutation or release action has been performed. One
+subsequently authorized normal merge request was rejected as recorded below.
 
 CI38355837742 completed SUCCESS: Required and all nine prerequisite jobs passed.
 GraphQL confirms Required/App15368 and license/cla/App128106 are required on
 PR31. Its gate transitioned from BLOCKED during incomplete checks to CLEAN after
-success; it is still open/unmerged with auto-merge null and zero review threads.
+success; that snapshot was open/unmerged with auto-merge null and zero threads.
 Ten complete original job logs are captured. Linux actual45 top-level tests,
 CPU full287.35s, observer102 latches and all five helper waits0 with final
 CONFIRMED_STOPPED/original0 cleanup are recorded in the new result. No fresh
@@ -25,13 +26,46 @@ reported success. Its public App ID128106 matches the pinned rule; GitHub
 GraphQL marks the status `isRequired=true` on this PR. This natural status
 transition is not an executed missing-CLA merge rejection. Likewise, observing
 BLOCKED while CI is incomplete is read-only gate evidence, not an attempted
-merge. All mutation-based enforcement cases remain open.
+merge. The subsequent actual conversation rejection is independently recorded below;
+other mutation-based enforcement cases remain open.
 
 Reader preparation failures are separate from CI: the combined `/status`
 response omits detailed status `creator` fields, causing two initial local
 readers to stop. Those responses remain preserved. The corrected reader uses
 `/statuses`; it neither changes the service nor fabricates a status. An empty
 repository webhook list does not enumerate GitHub App internal subscriptions.
+
+## Actual conversation rejection — PR31 / develop
+
+[The new case result](./thread-rejection.json) records a separately approved
+single normal merge attempt against exact head `e1e3aa8`. The test created one
+real inline review thread on this file's PR diff, RIGHT line8, comment4258640332,
+thread `PRRT_kwDOT2M-Hs6r28gs`. It was not an issue/conversation comment.
+
+Before the request, Required and CLA were SUCCESS and required, all eleven
+contexts succeeded, exact head/base were unchanged, the sole review thread was
+unresolved, and the gate had changed CLEAN→BLOCKED. Develop rules24969937 still
+required conversation resolution, strict checks and no bypass; no approval-count
+or merge-conflict blocker was present. The actor has admin permission but used
+the ordinary endpoint, without an override/force/auto-merge option.
+
+One `PUT /repos/rahoney/heliopause/pulls/31/merge` with exact head SHA and
+`merge_method=merge` returned HTTP405. GitHub explicitly reported:
+“A conversation must be resolved before this pull request can be merged.”
+The [exact request](./raw/thread-merge-request.json),
+[response](./raw/thread-merge-response.json) and
+[receipt](./raw/thread-merge-receipt.json) are preserved byte-for-byte.
+Post-rejection reads confirmed main/develop stayed at2e196a1 and PR31 remained
+open/unmerged. Only this test thread was then resolved; the final gate is CLEAN,
+with zero unresolved threads, unchanged head/base and successful Required/CLA.
+
+This case is PASS for actual develop conversation enforcement. It is not a
+main-target test, separate override attempt, normal merge qualification, or a
+missing-check/freshness/direct-push/force-push result. Overall M13-002 remains
+IN_PROGRESS / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO. Full original readbacks are
+local under `docs/github-logs/m13-002-thread-test/`. No additional push, successful
+merge, settings change or release occurred. Further remote mutations need a
+separate scope of approval; the one-attempt authorization has been consumed.
 
 ## Local result-record validation
 
@@ -169,11 +203,12 @@ on those two links. The receipts were then written, and the finalized docs check
 passed. This preparation failure is retained as a terminal excerpt in the local
 raw directory, not presented as an enforcement test or omitted from the history.
 
-Current missing work: live normal/negative cases, their raw evidence, authorized
+Current missing work: remaining live normal/negative cases, their raw evidence, authorized
 reviewer merges and final acceptance audit.
 The real CLA service has reported success for PR31. State remains IN_PROGRESS;
 M13-001 stays COMPLETE and M13-003..005 stay NOT_STARTED. The approved push/PR
-does not authorize any additional remote write. Fresh raw responses, the creation
+did not authorize additional remote writes. The subsequent single conversation
+rejection test had its own explicit approval. Fresh raw responses, the creation
 receipt and completed job logs are preserved locally in
 `docs/github-logs/m13-002-pr/`; subsequent result recording is not a push to PR31.
 
