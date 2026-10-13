@@ -9,10 +9,10 @@
 ```text
 Current milestone: M13 — Production Release & Operations (entry audit and repository hardening)
 Milestone status: IN_PROGRESS (public release readiness not declared)
-Active work item: none (M13-001 complete)
-Next work item: M13-002 — protected branch qualification
-Next work item status: NOT_STARTED / Ready: Yes — protected PR qualification; public release readiness remains open
-Ready: Yes — M13-002 baseline audit
+Active work item: M13-002 — protected branch qualification
+Next work item: M13-003 — canonical release build and OS packages (not authorized)
+Next work item status: NOT_STARTED / Ready: No — M13-002 acceptance remains open
+Ready: M13-002 local preparation; remote push/merge requires explicit user approval
 ```
 
 ### SEC-2026-10-12 — Scheduled Security Go patch
@@ -2614,7 +2614,7 @@ M12-005 feature freeze에서 수행한다. canonical lock 등록만으로 releas
 | Order | ID | Scope | Status |
 | --- | --- | --- | --- |
 | 1 | M13-001 | protected main/develop/tag/release environment/immutable release activation | COMPLETE |
-| 2 | M13-002 | `develop → main` 실제 protected PR qualification | NOT_STARTED |
+| 2 | M13-002 | `feature → develop → main` 실제 protected PR qualification | IN_PROGRESS |
 | 3 | M13-003 | canonical release build·manifest·attestation·OS package assets | NOT_STARTED |
 | 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | NOT_STARTED |
 | 5 | M13-005 | exact publication·clean Host bootstrap·doctor·cross-ecosystem smoke·quarantine | NOT_STARTED |
@@ -2657,9 +2657,39 @@ for M13-001 configuration acceptance. Rules21396883/24969937/24969939/24969940,
 release environment24138487071 with owner review and admin bypass disabled,
 main-only deployment policy62857129 and immutable releases match the exact plan.
 Canonical docs/workflow/release-gate PASS; final closure docs/security checked
-before commit. MISSING: none in M13-001 scope. No item is IN_PROGRESS.
-M13-002..005 remain NOT_STARTED; settings activation does not close the overall
+before commit. MISSING: none in M13-001 scope. No item was IN_PROGRESS at that closure.
+M13-002 is IN_PROGRESS; M13-003..005 remain NOT_STARTED. Settings activation does not close the overall
 no-known-release-blocking-finding entry assessment.
+
+### M13-002 — protected branch qualification
+
+Status: IN_PROGRESS — new baseline/read-only audit and local candidate preparation;
+awaiting explicit authorization for the first feature push and develop PR.
+Read: [M13 contract](./18-m13-production-release-operations-contract.md),
+[CI gate](../engineering/04-ci-quality-gate.md), CONTRIBUTING.md,
+[M13-001 evidence](./evidence/m13-001-protected-activation/README.md).
+
+Baseline audit: IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO /
+ACCEPTANCE_CLOSED=NO. Existing PR CI/CLA and active rules are reused unchanged.
+New remote GET/refs confirm main/develop2e196a1, milestoneb3c8b7d,
+zero feature refs/open PRs and zero checks/statuses for b3c8b7d. The admin actor
+cannot bypass either branch ruleset. M13-001 is remotely delivered on the
+milestone branch; its documentation delta has not reached main/develop.
+
+Acceptance: actual feature → develop → main protected PR merges with exact fresh
+Required/CLA evidence; server enforcement of stale/missing checks, unresolved
+threads, direct pushes, non-fast-forward updates and admin bypass attempts;
+preserved request/result/ref evidence and final checks. A readback, no-op push,
+unrelated rejection or historical CI is not a new enforcement PASS.
+
+MISSING: all live normal/negative cases, new PR CI/CLA, reviewer-authorized
+merges and final audit. Push/merge are explicitly approval-gated by the user.
+Force-push needs a design/decision compatible with existing history preservation;
+genuine missing CLA may need a willing real unsigned participant. Do not weaken
+rules, fabricate statuses/identity or mark those cases waived/qualified.
+Detailed baseline, target-specific matrix, evidence custody and authorization
+boundaries: [qualification plan](./evidence/m13-002-protected-path/README.md).
+Release tags/publication and M13-003 implementation remain outside this task.
 
 ### M12 baseline audit status
 
