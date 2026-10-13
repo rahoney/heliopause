@@ -12,7 +12,7 @@ Milestone status: IN_PROGRESS (public release readiness not declared)
 Active work item: M13-002 — protected branch qualification
 Next work item: M13-003 — canonical release build and OS packages (not authorized)
 Next work item status: NOT_STARTED / Ready: No — M13-002 acceptance remains open
-Ready: M13-002 local preparation; remote push/merge requires explicit user approval
+Ready: PR31 Required/CLA verified; next live case needs separate user approval
 ```
 
 ### SEC-2026-10-12 — Scheduled Security Go patch
@@ -2663,8 +2663,8 @@ no-known-release-blocking-finding entry assessment.
 
 ### M13-002 — protected branch qualification
 
-Status: IN_PROGRESS — new baseline/read-only audit and local candidate preparation;
-awaiting explicit authorization for the first feature push and develop PR.
+Status: IN_PROGRESS — approved exact e1e3aa8 feature push and develop PR31
+creation completed; fresh CI/CLA verification passed. Merge is not authorized.
 Read: [M13 contract](./18-m13-production-release-operations-contract.md),
 [CI gate](../engineering/04-ci-quality-gate.md), CONTRIBUTING.md,
 [M13-001 evidence](./evidence/m13-001-protected-activation/README.md).
@@ -2682,8 +2682,22 @@ threads, direct pushes, non-fast-forward updates and admin bypass attempts;
 preserved request/result/ref evidence and final checks. A readback, no-op push,
 unrelated rejection or historical CI is not a new enforcement PASS.
 
-MISSING: all live normal/negative cases, new PR CI/CLA, reviewer-authorized
-merges and final audit. Push/merge are explicitly approval-gated by the user.
+Delivery: [PR31](https://github.com/rahoney/heliopause/pull/31),
+feature/m13-002-protected-path@e1e3aa8 → develop@2e196a1. New
+[CI38355837742](https://github.com/rahoney/heliopause/actions/runs/38355837742)
+completed SUCCESS with Required plus all nine prerequisites, independently of
+historical main CI. Actual CLA service reports license/cla success. Both contexts
+are isRequired=true on PR31, with App identities15368/128106. Main/develop remain
+at2e196a1; rules are unchanged. The tested merge commit6950673 has the same whole
+tree64e2961 as e1e3aa8. Gate BLOCKED during incomplete checks became CLEAN after
+success; PR remains open/unmerged, auto-merge null, review threads0. All ten raw
+job logs and fresh API/GraphQL receipts are preserved locally and bound by the
+[new remote result](./evidence/m13-002-protected-path/remote-result.json).
+
+MISSING: live normal/negative enforcement cases, reviewer-authorized merges and
+final audit. No mutation-based enforcement PASS is claimed from read-only gate
+transitions. Current approval covers only the
+exact feature push and develop PR creation; no further push or merge is authorized.
 Force-push needs a design/decision compatible with existing history preservation;
 genuine missing CLA may need a willing real unsigned participant. Do not weaken
 rules, fabricate statuses/identity or mark those cases waived/qualified.

@@ -1,7 +1,56 @@
 # M13-002 protected branch qualification
 
-Status: IN_PROGRESS — baseline/read-only audit and local candidate preparation;
-remote write authorization pending. No live enforcement case has passed yet.
+Status: IN_PROGRESS — exact e1e3aa8 feature push and develop PR31 creation approved
+and completed; new CI/CLA verification passed. No live mutation-based
+enforcement case has passed yet. Merge is not authorized.
+
+The [new remote result](./remote-result.json) records this authorized phase,
+distinct from the historical baseline and local checks below. PR31 is open at
+exact e1e3aa8, targeting develop2e196a1. CI38355837742 checks merge6950673,
+whose whole tree64e2961 matches the feature head. No additional push, merge,
+protected-ref update, rule mutation or release action has been performed.
+
+CI38355837742 completed SUCCESS: Required and all nine prerequisite jobs passed.
+GraphQL confirms Required/App15368 and license/cla/App128106 are required on
+PR31. Its gate transitioned from BLOCKED during incomplete checks to CLEAN after
+success; it is still open/unmerged with auto-merge null and zero review threads.
+Ten complete original job logs are captured. Linux actual45 top-level tests,
+CPU full287.35s, observer102 latches and all five helper waits0 with final
+CONFIRMED_STOPPED/original0 cleanup are recorded in the new result. No fresh
+CUDA full run is claimed. These results bind exact e1e3aa8; later local result
+documentation is not a new PR candidate and is not automatically remotely qualified.
+
+The CLA status was initially absent, then the actual `cla-assistant[bot]`
+reported success. Its public App ID128106 matches the pinned rule; GitHub
+GraphQL marks the status `isRequired=true` on this PR. This natural status
+transition is not an executed missing-CLA merge rejection. Likewise, observing
+BLOCKED while CI is incomplete is read-only gate evidence, not an attempted
+merge. All mutation-based enforcement cases remain open.
+
+Reader preparation failures are separate from CI: the combined `/status`
+response omits detailed status `creator` fields, causing two initial local
+readers to stop. Those responses remain preserved. The corrected reader uses
+`/statuses`; it neither changes the service nor fabricates a status. An empty
+repository webhook list does not enumerate GitHub App internal subscriptions.
+
+## Local result-record validation
+
+The full working-directory security check failed with354 `generic-api-key`
+findings in40 untracked raw API captures. [The triage](./security-triage.json)
+binds every finding to the public App identifier returned by unauthenticated
+GitHub APIs: GitHub Actions353 and CLA Assistant1. These are public `client_id`
+values, not client secrets. The original failure and response bytes are preserved;
+no scanner rule, ignore, product code or credential was changed.
+
+Raw API custody was outside the commit candidate before this discovery because
+of public profile data. The full versioned candidate is therefore exported with
+all tracked files plus the explicitly listed result records and checked using
+unchanged canonical `docs` and `security` profiles. This is a separate scope;
+it does not turn the original working-directory failure into PASS. Candidate
+path/mode/hash inventory, command results and complete logs are retained locally
+in `docs/github-logs/m13-002-pr/final-candidate-validation/`.
+The initial `remote-record-*` check files remain untracked preparation evidence
+and are not final-candidate validation. Original raw custody remains local.
 
 ## Baseline audit — 2026-10-13
 
@@ -78,9 +127,10 @@ expected-to-fail pushes, ref-creation APIs and admin/negative merge attempts:
 if a gate is defective, the attempt could succeed. Local preparation and GETs
 are authorized; the read-only probe cannot issue a mutation.
 
-First approval will identify the local feature commit, its full changed-path
+The first approval identified the local feature commit, its full changed-path
 inventory, its ancestry at `b3c8b7d`/main, and local check results. It covers only
-publishing that reviewed feature ref and opening its develop PR. PR review-thread
+publishing exact e1e3aa8 to that feature ref and opening its develop PR31; those
+two actions are now complete. PR review-thread
 writes and each successful/negative merge or protected-branch push require
 explicitly scoped approval before execution. No release tag, release workflow
 dispatch, publication, rule mutation or M13-003 implementation is included.
@@ -119,10 +169,13 @@ on those two links. The receipts were then written, and the finalized docs check
 passed. This preparation failure is retained as a terminal excerpt in the local
 raw directory, not presented as an enforcement test or omitted from the history.
 
-Current missing work: live normal/negative cases, their raw evidence, exact PR
-CI/CLA qualification, authorized reviewer merges and final acceptance audit.
-State remains IN_PROGRESS / awaiting first remote-write approval; M13-001 stays
-COMPLETE and M13-003..005 stay NOT_STARTED.
+Current missing work: live normal/negative cases, their raw evidence, authorized
+reviewer merges and final acceptance audit.
+The real CLA service has reported success for PR31. State remains IN_PROGRESS;
+M13-001 stays COMPLETE and M13-003..005 stay NOT_STARTED. The approved push/PR
+does not authorize any additional remote write. Fresh raw responses, the creation
+receipt and completed job logs are preserved locally in
+`docs/github-logs/m13-002-pr/`; subsequent result recording is not a push to PR31.
 
 Official semantics used in the plan:
 [rules and expected App/freshness/thread enforcement](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets),

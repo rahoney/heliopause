@@ -114,7 +114,9 @@ CPU·cu126·cu130·cu132 및 각 Required CI를 검증해 M12 기술 acceptance�
 [검토 결과](./docs/planning/evidence/m12-02-red-team/result.json)가 소스와 원본을 연결한다.
 PR29·PR30은 merge됐고 main2e196a1의 CI38328099413도 SUCCESS다. M13-001의
 저장소 보호 설정 적용·API 검증을 완료했다. M13-002의 새 baseline 확인과
-로컬 검증 후보 준비를 시작했으며 실제 push·merge 시험은 사용자 승인 대기다.
+로컬 검증 후보 준비를 완료했다. 승인된 e1e3aa8을 feature 브랜치에 push하고
+develop 대상 PR31을 생성했다. 새 Required 포함10개 CI job과 CLA 성공 및 두 필수
+check 연결을 확인했으며 실제 merge·차단 시험은 별도 승인 대기다.
 guest runtime·Race 등 출시 영향 판단은 남는다. 현재 milestone과
 active/next work item은 [Current Work Queue](./docs/planning/02-current-work-queue.md)를 참조한다.
 
