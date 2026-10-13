@@ -12,7 +12,7 @@ Milestone status: IN_PROGRESS (public release readiness not declared)
 Active work item: M13-002 — protected branch qualification
 Next work item: M13-003 — canonical release build and OS packages (not authorized)
 Next work item status: NOT_STARTED / Ready: No — M13-002 acceptance remains open
-Ready: PR31 conversation rejection verified; next live case needs separate approval
+Ready: independent PR32 created; own CI/CLA pending; merges need separate approval
 ```
 
 ### SEC-2026-10-12 — Scheduled Security Go patch
@@ -2705,7 +2705,13 @@ and resolving that test thread restored CLEAN. No bypass/force/auto-merge was us
 MISSING: remaining target-specific negative cases, normal protected PR merges and
 final audit. This develop conversation case does not qualify main, missing
 Required/CLA, stale branch, direct/force push or a separate override attempt.
-The single-attempt approval is consumed; no further push or merge is authorized.
+The single-attempt conversation approval is consumed. A subsequent scoped approval
+allowed independent feature/m13-002-stale-probe creation/push and develop PR32.
+PR32 is headff441d3 with sole parent2e196a1, one new12-line markdown file and no
+M13-001/PR31/local-record commits in its ancestry. Its paths are disjoint from
+PR31 and local merge-tree has no conflict. Its own CI/CLA are pending; this is
+not stale rejection PASS. [Preparation evidence](./evidence/m13-002-protected-path/stale-pr-preparation.json)
+records the boundary. No merge or rejection request is authorized.
 Force-push needs a design/decision compatible with existing history preservation;
 genuine missing CLA may need a willing real unsigned participant. Do not weaken
 rules, fabricate statuses/identity or mark those cases waived/qualified.

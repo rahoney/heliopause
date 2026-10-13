@@ -67,6 +67,34 @@ local under `docs/github-logs/m13-002-thread-test/`. No additional push, success
 merge, settings change or release occurred. Further remote mutations need a
 separate scope of approval; the one-attempt authorization has been consumed.
 
+## Independent stale-test PR preparation
+
+[PR32](https://github.com/rahoney/heliopause/pull/32) was created under a new
+approval limited to auxiliary feature push and develop PR creation/readback.
+Its exact head is `ff441d3d3bde941d0fd759972539ed8707475ee1`, directly parented
+by freshly read remote develop `2e196a188adce22005fce201c23da1dc27a43426`.
+It adds only `docs/planning/evidence/m13-002-stale-probe/README.md` (12 lines).
+M13-001, PR31 and local result-record commits are not ancestors; all other
+tracked blobs/modes equal develop. The original milestone worktree is separate.
+
+The [preparation result](./stale-pr-preparation.json) binds candidate, remote
+state and original receipts. Its own CI/CLA are pending. Current BLOCKED is
+incomplete-check evidence, not stale rejection. Local docs/security passed.
+The marker and PR31 modify disjoint paths, and local merge-tree is conflict-free.
+Keeping PR32 head unchanged while an independently approved normal PR31 merge
+advances develop should create the strict-freshness condition; actual enforcement
+remains untested. After advancement, capture effective rules, ancestry, current
+head/merge checks, genuine CLA and review state. Additional pending/failing checks
+or other blockers must not be reported as an isolated stale rejection.
+
+Normal PR31 merge would intentionally append its reviewed docs to develop. A
+later expected-to-fail PR32 merge request could succeed if freshness enforcement
+is defective, adding this harmless marker; stop and preserve evidence in that
+case, without rollback or additional merges. Both requests require separate
+approval. Do not update/rebase the auxiliary head before observing stale state.
+No merge request, protected-ref push, rule change or release occurred in this
+preparation phase. M13-002 qualification/acceptance remains open.
+
 ## Local result-record validation
 
 The full working-directory security check failed with354 `generic-api-key`

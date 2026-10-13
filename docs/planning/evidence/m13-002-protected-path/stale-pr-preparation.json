@@ -1,0 +1,427 @@
+{
+  "status": "AUXILIARY_PR_CREATED_EXTERNAL_CI_CLA_PENDING",
+  "observed_utc": "2026-10-13T13:26:54.752690+00:00",
+  "recorded_utc": "2026-10-13T13:28:02.160732+00:00",
+  "authorization": "Independent feature from current remote develop, one harmless document, feature push and develop PR creation/readback only. No merge or rejection request, protected push, rules change or release.",
+  "candidate": {
+    "branch": "feature/m13-002-stale-probe",
+    "head": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+    "parent": "2e196a188adce22005fce201c23da1dc27a43426",
+    "tree": "7cbc074f59fa3e7f97edc9941519351609d6940b",
+    "commit_count_above_develop": 1,
+    "changed_paths": [
+      "docs/planning/evidence/m13-002-stale-probe/README.md"
+    ],
+    "tracked_file_count": 1453,
+    "all_other_blobs_modes_equal_base": true,
+    "excluded_commits_not_ancestors": [
+      "b3c8b7dc487046afdad52a215c101d761f055098",
+      "e1e3aa8c9976ec7cf30c46b3a0103fc2899c08a2",
+      "0b1187644825bff73e80514dd0d637eaad39d1e1",
+      "65bc6e4cfb8e592c9dd31f6c24f407c6520d51ab"
+    ],
+    "pr31_changed_paths_disjoint": true,
+    "local_combined_tree_conflict_free": true,
+    "local_combined_tree": "2f2795b6a2ff215029b897e02786f05a2e0ae60c",
+    "preview_is_not_remote_merge_or_rejection": true
+  },
+  "pr": {
+    "number": 32,
+    "html_url": "https://github.com/rahoney/heliopause/pull/32",
+    "state": "open",
+    "draft": false,
+    "merged": false,
+    "mergeable": true,
+    "mergeable_state": "blocked",
+    "merge_commit_sha": "8e5067ffb828415db8b58c7848cfde40346d09f1",
+    "auto_merge": null,
+    "head_sha": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+    "base_sha": "2e196a188adce22005fce201c23da1dc27a43426",
+    "base": "develop"
+  },
+  "ci": {
+    "id": 38403196699,
+    "name": "Heliopause CI",
+    "status": "in_progress",
+    "conclusion": null,
+    "head_sha": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+    "url": "https://github.com/rahoney/heliopause/actions/runs/38403196699",
+    "jobs": [
+      {
+        "id": 115315864052,
+        "name": "Security",
+        "status": "completed",
+        "conclusion": "success",
+        "active_steps": []
+      },
+      {
+        "id": 115315864340,
+        "name": "Vulnerability",
+        "status": "completed",
+        "conclusion": "success",
+        "active_steps": []
+      },
+      {
+        "id": 115315864467,
+        "name": "Minimum Go",
+        "status": "completed",
+        "conclusion": "success",
+        "active_steps": []
+      },
+      {
+        "id": 115315864494,
+        "name": "macOS",
+        "status": "completed",
+        "conclusion": "success",
+        "active_steps": []
+      },
+      {
+        "id": 115315864569,
+        "name": "Docs",
+        "status": "completed",
+        "conclusion": "success",
+        "active_steps": []
+      },
+      {
+        "id": 115315864625,
+        "name": "Quick",
+        "status": "completed",
+        "conclusion": "success",
+        "active_steps": []
+      },
+      {
+        "id": 115315864705,
+        "name": "gVisor Linux Integration",
+        "status": "in_progress",
+        "conclusion": null,
+        "active_steps": [
+          "Install pinned runtime and run lifecycle integration"
+        ]
+      },
+      {
+        "id": 115315864710,
+        "name": "Representative Wheel Corpus",
+        "status": "completed",
+        "conclusion": "success",
+        "active_steps": []
+      },
+      {
+        "id": 115315864812,
+        "name": "gVisor Observer Helper",
+        "status": "completed",
+        "conclusion": "success",
+        "active_steps": []
+      }
+    ]
+  },
+  "cla": {
+    "state": "ABSENT",
+    "observed_statuses": [],
+    "interpretation": "No genuine service status has been posted yet. Not a failed signature or an enforcement PASS. PR31/PR32 Git authors match; underlying service delay is unconfirmed.",
+    "historical_pass_reused": false
+  },
+  "protection": {
+    "rules_match_baseline": true,
+    "strict_up_to_date": true,
+    "required_checks": [
+      {
+        "context": "Required",
+        "integration_id": 15368
+      },
+      {
+        "context": "license/cla",
+        "integration_id": 128106
+      }
+    ],
+    "required_review_thread_resolution": true,
+    "required_approval_count": 0,
+    "bypass_actors": [],
+    "current_user_can_bypass": "never",
+    "graphql_mergeStateStatus": "BLOCKED",
+    "graphql_mergeable": "MERGEABLE",
+    "unresolved_threads": 0,
+    "review_decision": null,
+    "current_blocker": "Required aggregate is not complete; CLA status absent. This is not a stale condition because develop has not advanced."
+  },
+  "refs": {
+    "refs/heads/develop": "2e196a188adce22005fce201c23da1dc27a43426",
+    "refs/heads/feature/m13-002-protected-path": "e1e3aa8c9976ec7cf30c46b3a0103fc2899c08a2",
+    "refs/heads/feature/m13-002-stale-probe": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+    "refs/heads/main": "2e196a188adce22005fce201c23da1dc27a43426",
+    "refs/heads/milestone/m13-production-release-operations": "b3c8b7dc487046afdad52a215c101d761f055098"
+  },
+  "identity": {
+    "pr32_head": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+    "pr32_merge": "8e5067ffb828415db8b58c7848cfde40346d09f1",
+    "pr32_whole_tree": "7cbc074f59fa3e7f97edc9941519351609d6940b",
+    "pr32_head_merge_tree_equal": true,
+    "pr31_head": "e1e3aa8c9976ec7cf30c46b3a0103fc2899c08a2",
+    "pr31_current_synthetic_merge": "1a62625ac7916e6b37e5e5c368f45fab3b259fd9",
+    "pr31_current_merge_tree_equals_head": true,
+    "note": "PR31 synthetic merge SHA was regenerated since original CI. This is not a new CI PASS on that SHA; original tested tree matches unchanged PR31 head. Future successful merge must be separately approved and observed."
+  },
+  "local_candidate_checks": {
+    "scope": "Complete independent feature worktree from remote develop, plus sole new markdown marker",
+    "profiles": {
+      "docs": {
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "docs"
+        ],
+        "started_utc": "2026-10-13T13:08:59.884536+00:00",
+        "completed_utc": "2026-10-13T13:09:00.687099+00:00",
+        "exit_code": 0,
+        "path": "docs/github-logs/m13-002-stale-preparation/candidate-docs.log",
+        "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+      },
+      "security": {
+        "command": [
+          "go",
+          "run",
+          "./scripts/check",
+          "security"
+        ],
+        "started_utc": "2026-10-13T13:09:00.698165+00:00",
+        "completed_utc": "2026-10-13T13:09:11.770037+00:00",
+        "exit_code": 0,
+        "path": "docs/github-logs/m13-002-stale-preparation/candidate-security.log",
+        "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95"
+      }
+    },
+    "files": 1453,
+    "status": "PASS"
+  },
+  "completed_job_log_receipts": [
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/job-logs/115315864052.log",
+      "sha256": "55fde4c3a522ef2c5d081f3dea7bb53a3b51718a19de231d968e0d8d41fff6de",
+      "bytes": 21716
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/job-logs/115315864340.log",
+      "sha256": "c1d28370d201ea0d5834c48ab7c0ed70712e1dddacb6d7d2e874b9a8a28e5f53",
+      "bytes": 21630
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/job-logs/115315864467.log",
+      "sha256": "3a2c15dd3b54c837b11fcf3f3b0cbc41c6f1012fbe33d29a1f9724a54d01a7b8",
+      "bytes": 21117
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/job-logs/115315864494.log",
+      "sha256": "56dda76617af05bde393dd3a3cb39e241aaa46751d5d572c8687e7debf6074f4",
+      "bytes": 20717
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/job-logs/115315864569.log",
+      "sha256": "cc06747329326f8eeb81e8b31ed3948e103330476eaee06679affb7a1c17c848",
+      "bytes": 20450
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/job-logs/115315864625.log",
+      "sha256": "c0da467c4e73c83a1126f3fb181de10f1c62e3d64a8535eddc7faaada2ceef24",
+      "bytes": 23771
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/job-logs/115315864710.log",
+      "sha256": "1cda05aa8bd8444bd4897fa36655bb9cd2da13e822f1356719f37ae7589afed6",
+      "bytes": 35293
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/job-logs/115315864812.log",
+      "sha256": "aff06a510ee95fc67d9637098dfa960a5f9beebf0b510d499a03eb01fd4cb535",
+      "bytes": 242442
+    }
+  ],
+  "future_test": {
+    "status": "NOT_RUN / NOT_AUTHORIZED",
+    "feasibility": "Independent head has sole parent current develop and excludes PR31. Keeping auxiliary head unchanged while a separately authorized PR31 normal merge advances develop creates a behind-base relationship. Changed paths are disjoint and offline combined-tree preview is conflict-free. Actual server freshness rejection still must be tested.",
+    "ready_for_normal_merge_approval": false,
+    "preconditions": [
+      "First finish PR32 own Required and genuine license/cla; verify isRequired=true and CLEAN.",
+      "Re-read PR31 exact e1e3aa8 and PR32 exact ff441d3, develop2e196a1, both CI/CLA and all review/rule state.",
+      "Obtain separate authorization for normal PR31 merge and a later exact-head stale rejection attempt.",
+      "After actual base advancement re-read ancestry, head and synthetic merge checks, CLA, review state and effective rules; do not auto-update the auxiliary head.",
+      "If new checks are pending/failing or another blocker appears, wait/investigate; do not attribute a combined rejection to freshness alone."
+    ],
+    "risks": [
+      "Normal PR31 merge intentionally appends reviewed documentation to develop; capture actual result SHA and preserve it.",
+      "A future expected-to-fail PR32 merge can succeed if the rule is defective, appending the 12-line marker; stop immediately without rollback or further merge.",
+      "Do not silently change the auxiliary HEAD, weaken rules, fabricate statuses or use historical PASS as new qualification."
+    ]
+  },
+  "work_item": {
+    "status": "IN_PROGRESS",
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO",
+    "missing": [
+      "PR32 CI/CLA completion and clean gate",
+      "separately approved base advancement and actual stale rejection",
+      "other remaining M13-002 cases"
+    ]
+  },
+  "push_diagnostic": {
+    "stage": "subprocess.communicate text decode",
+    "exception": "UnicodeDecodeError",
+    "note": "The push subprocess was launched; text-mode stderr decoding failed. Do not retry push based on this local reader exception. Query remote state first. Original child output was not captured because decoding failed.",
+    "remote_refs": {
+      "refs/heads/develop": "2e196a188adce22005fce201c23da1dc27a43426",
+      "refs/heads/feature/m13-002-protected-path": "e1e3aa8c9976ec7cf30c46b3a0103fc2899c08a2",
+      "refs/heads/main": "2e196a188adce22005fce201c23da1dc27a43426"
+    }
+  },
+  "successful_push": {
+    "exit_code": 0,
+    "command": [
+      "git",
+      "-c",
+      "push.followTags=false",
+      "push",
+      "--porcelain",
+      "origin",
+      "ff441d3d3bde941d0fd759972539ed8707475ee1:refs/heads/feature/m13-002-stale-probe"
+    ],
+    "remote_refs": {
+      "refs/heads/develop": "2e196a188adce22005fce201c23da1dc27a43426",
+      "refs/heads/feature/m13-002-protected-path": "e1e3aa8c9976ec7cf30c46b3a0103fc2899c08a2",
+      "refs/heads/feature/m13-002-stale-probe": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+      "refs/heads/main": "2e196a188adce22005fce201c23da1dc27a43426"
+    },
+    "protected_refs_unchanged": true,
+    "first_invocation": "Output decode exception, child exit unavailable, following read confirmed remote auxiliary ref absent; original-worktree invocation succeeded."
+  },
+  "snapshot": "docs/github-logs/m13-002-stale-preparation/remote/20261013T132652669950Z",
+  "critical_receipts": [
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/candidate-checks.json",
+      "sha256": "cec40525e86ce705029ec889d93454a1b986ff8e4fd61fc811a1536793ee9c88",
+      "bytes": 1015
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/candidate.json",
+      "sha256": "95ddc4a59f1ce88450832c7fc2850362088a948f0b52b8715df9c4f8f4f1fefa",
+      "bytes": 843
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/creation-tool-result.json",
+      "sha256": "2d9bc93f9f873b5c6c6bafde42f7f6fe493b442aa5941ee5284a84d9362034b5",
+      "bytes": 2471
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/merge-tree-identity.json",
+      "sha256": "c7c49a1654dac28b7ec3547e9db11e838dc1402cd86cdd3b69509f43fb6829ba",
+      "bytes": 637
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/push-reader-error.json",
+      "sha256": "55dfbe75ad7b33901d853bcd7a8483772e4f00a41f68a7abc53cb5b36f087536",
+      "bytes": 569
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/push-result.json",
+      "sha256": "9003ffa00982cb9cbc578ae6e87513d6c38071a435e7e315d353e6d86435fab0",
+      "bytes": 769
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/remote/20261013T132652669950Z/develop-effective-rules.json",
+      "sha256": "82aded8780680c5d72fec2ae26cdff3a50172713468a6e253582e647cd15fd70",
+      "bytes": 1024
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/remote/20261013T132652669950Z/develop-ruleset.json",
+      "sha256": "0d981954d6b00b39c6e5705583045ea31bb9c98244d849beb55cb4ac8bcf964d",
+      "bytes": 1222
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/remote/20261013T132652669950Z/graphql-query.txt",
+      "sha256": "c2d2ce150a5a2b64e34bdbfb16c49730cc578b71a80c82ce1a40eefd9568ff1b",
+      "bytes": 578
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/remote/20261013T132652669950Z/graphql.json",
+      "sha256": "a5290542a38a535f8466a2e9a906c60a8768eecae8c2580d0c596b20389e4318",
+      "bytes": 1900
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/remote/20261013T132652669950Z/head-checks.json",
+      "sha256": "8f598110bd5dee5923ba74cd9ab321113bfb4414ae48fc4b10a295c14c601381",
+      "bytes": 31692
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/remote/20261013T132652669950Z/head-status-list.json",
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "bytes": 2
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/remote/20261013T132652669950Z/head-status.json",
+      "sha256": "c061662b591c1a551560796263d6d470653276ad784b57cf31308ad0a45abdfd",
+      "bytes": 4495
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/remote/20261013T132652669950Z/issue-comments.json",
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "bytes": 2
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/remote/20261013T132652669950Z/main-effective-rules.json",
+      "sha256": "1b928bd04b083c53f0f9e3009a4021df3995dfb3270fb59be743f18f98e47011",
+      "bytes": 1024
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/remote/20261013T132652669950Z/main-ruleset.json",
+      "sha256": "59f782111e7e79128c0d54e6b658ae09754a9cc7144cc3383ea534bb14d5caba",
+      "bytes": 1216
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/remote/20261013T132652669950Z/merge-checks.json",
+      "sha256": "e83cfac35507982a40cfeb776ce85aa0367e7646f81fe857df4a6c841ea8a170",
+      "bytes": 33
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/remote/20261013T132652669950Z/merge-status.json",
+      "sha256": "68d01656449451e146c12d25936f8481f06f81146ef59639c9778c3b98e6aa83",
+      "bytes": 4495
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/remote/20261013T132652669950Z/pr.json",
+      "sha256": "07482d1be2f24879b9bb6c5797b9c48fe4ab9223cd236bee91b96519c3595286",
+      "bytes": 16732
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/remote/20261013T132652669950Z/refs.json",
+      "sha256": "6848f63b8b658c367607363bb166223ee68aced34d0a4ce27eb566a41bcee14c",
+      "bytes": 11988
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/remote/20261013T132652669950Z/requests.json",
+      "sha256": "ae44ae250b57316a52f8ad668d773cef3b6c92d5b247f80f92d1aff946510016",
+      "bytes": 3561
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/remote/20261013T132652669950Z/run-38403196699-jobs.json",
+      "sha256": "7799cb86778926b7d79319cef67cd6a8b1f5b07f8ac5d1ab5595bd29a807befe",
+      "bytes": 18867
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/remote/20261013T132652669950Z/runs.json",
+      "sha256": "41bbf6b5ffabd6ddcad026a1ba8fbfadaae37577febafa46cb94ec5ba2f2680d",
+      "bytes": 12807
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/remote/20261013T132652669950Z/summary.json",
+      "sha256": "f585e25a7412ddc42f5ea66a7f253f7f884d90633b85fe1e2eccc783e6298c92",
+      "bytes": 12274
+    }
+  ],
+  "raw_archive": {
+    "path": "docs/github-logs/m13-002-stale-preparation/raw-inventory.json",
+    "sha256": "67883d0c26b65279e0b479848a5e4009ddb09cc56b19c7ff64207abb3ff2103f",
+    "file_count": 343,
+    "custody": "Local original responses/logs outside commit candidate; summaries do not imply remote custody."
+  },
+  "handoff": "GitHub CI remains running. Local read-only polling stopped; this assistant turn does not automatically resume. Recheck around 2026-10-13 22:55 Asia/Seoul (estimate from prior run duration, not a completion guarantee)."
+}

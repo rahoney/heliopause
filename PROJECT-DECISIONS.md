@@ -118,6 +118,7 @@ PR29·PR30은 merge됐고 main2e196a1의 CI38328099413도 SUCCESS다. M13-001의
 develop 대상 PR31을 생성했다. 새 Required 포함10개 CI job과 CLA 성공 및 두 필수
 check 연결을 확인했다. 별도 승인된 미해결 리뷰 스레드 시험의 일반 병합 요청
 1회가 HTTP405로 차단됐고, 브랜치 미변경과 스레드 해결 후 CLEAN 복귀를 확인했다.
+현재 원격 develop에서 독립 보조 PR32를 만들었으며 그 후보의 새 CI·CLA를 확인 중이다.
 남은 차단 시험·정상 merge는 별도 승인 대기다.
 guest runtime·Race 등 출시 영향 판단은 남는다. 현재 milestone과
 active/next work item은 [Current Work Queue](./docs/planning/02-current-work-queue.md)를 참조한다.
