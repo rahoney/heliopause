@@ -1,0 +1,13 @@
+[check] prepare module cache
+[check] download product modules
+[check] prepare quality tool cache
+[check] install staticcheck
+[check] verify staticcheck identity
+[check] install gosec
+[check] verify gosec identity
+[check] install govulncheck
+[check] verify govulncheck identity
+[check] install gitleaks
+[check] verify gitleaks identity
+[check] install actionlint
+[check] verify actionlint identity

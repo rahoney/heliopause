@@ -6760,6 +6760,7 @@ int main(int argc, char** argv) {
   }
   if (argc == 2 && strcmp(argv[1], "--cargo-dns-configuration-only") == 0) {
     const bool passed = VerifyCargoResolverRuntimeReadBoundary("/etc/host.conf") &&
+        VerifyCargoResolverRuntimeReadBoundary("/etc/gai.conf") &&
         VerifyCargoResolverRuntimeReadBoundary("/etc/nsswitch.conf");
     fprintf(stderr, "Cargo DNS configuration boundary: %s\n", passed ? "PASS" : "FAIL");
     return passed ? 0 : 1;
@@ -6956,6 +6957,7 @@ int main(int argc, char** argv) {
       VerifyCargoRustcQueryBoundary("/sys/fs/cgroup/cpu/cpu.cfs_period_us", "/sys/fs/cgroup/cpu", "system", true);
   const bool cargo_rustc_sysroot_directory = VerifyCargoRustcQueryBoundary("/usr/local/rustup/toolchains/1.99.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib", "/", "oci-root", true);
   const bool cargo_dns_configuration = VerifyCargoResolverRuntimeReadBoundary("/etc/host.conf") &&
+      VerifyCargoResolverRuntimeReadBoundary("/etc/gai.conf") &&
       VerifyCargoResolverRuntimeReadBoundary("/etc/nsswitch.conf");
   const bool cargo_resolver_file = VerifyCargoResolverRuntimeReadBoundary("/etc/resolv.conf", "/etc/resolv.conf", "system") &&
       VerifyCargoResolverRuntimeReadBoundary("/etc/hosts", "/etc/hosts", "system");

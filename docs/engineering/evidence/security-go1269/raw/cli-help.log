@@ -1,0 +1,22 @@
+Inspect software artifacts before trusted promotion
+
+Usage:
+  helox [flags]
+  helox [command]
+
+Available Commands:
+  cargo       Inspect and build public crates.io packages
+  completion  Generate the autocompletion script for the specified shell
+  doctor      Check installed release and trusted Host runtime readiness
+  github      Inspect and install public GitHub Release assets
+  go          Inspect and build public Go Modules
+  help        Help about any command
+  npm         Inspect and install npm registry packages
+  pip         Inspect and install PyPI distributions
+  pypi        Inspect and install PyPI distributions
+  terraform   Install public Terraform Providers
+
+Flags:
+  -h, --help   help for helox
+
+Use "helox [command] --help" for more information about a command.

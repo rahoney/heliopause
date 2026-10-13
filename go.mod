@@ -1,6 +1,6 @@
 module github.com/rahoney/heliopause
 
-go 1.26.8
+go 1.26.9
 
 require (
 	github.com/hashicorp/hcl/v2 v2.24.0

@@ -1,0 +1,5 @@
+=== RUN   TestColdModulePreparationToOfflineTidy
+    bootstrap_integration_test.go:29: outer GOMODCACHE=/tmp/haa-security-go1269-quality/go-mod; inner cache=/tmp/TestColdModulePreparationToOfflineTidy2331222475/001
+--- PASS: TestColdModulePreparationToOfflineTidy (10.53s)
+PASS
+ok  	github.com/rahoney/heliopause/scripts/check	10.533s

@@ -50,7 +50,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '1.26.8'
+          go-version: '1.26.9'
           check-latest: false
           cache: false
       - name: Prepare pinned module dependencies
@@ -79,7 +79,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '1.26.8'
+          go-version: '1.26.9'
           check-latest: false
           cache: false
       - name: Bootstrap pinned dependencies and tools
@@ -105,7 +105,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '1.26.8'
+          go-version: '1.26.9'
           check-latest: false
           cache: false
       - name: Run canonical Docs profile
@@ -127,7 +127,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '1.26.8'
+          go-version: '1.26.9'
           check-latest: false
           cache: false
       - name: Bootstrap pinned dependencies and tools
@@ -153,7 +153,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '1.26.8'
+          go-version: '1.26.9'
           check-latest: false
           cache: false
       - name: Bootstrap pinned dependencies and tools
@@ -179,7 +179,7 @@ jobs:
       - name: Set up minimum Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '1.26.8'
+          go-version: '1.26.9'
           check-latest: false
           cache: false
       - name: Bootstrap product modules
@@ -206,7 +206,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '1.26.8'
+          go-version: '1.26.9'
           check-latest: false
           cache: false
       - name: Bootstrap product modules
@@ -273,7 +273,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '1.26.8'
+          go-version: '1.26.9'
           check-latest: false
           cache: false
       - name: Install pinned runtime and run lifecycle integration
@@ -289,6 +289,11 @@ jobs:
           python_image="$(jq -er '.python_image.reference' "$runtime_lock")"
           go_image="$(jq -er '.go_image.reference' "$runtime_lock")"
           rust_image="$(jq -er '.rust_image.reference' "$runtime_lock")"
+          # The hosted runner's Azure mirror can stall before runtime setup.
+          # Keep Ubuntu's signed sources; use its official HTTPS archive directly.
+          test -f /etc/apt/apt-mirrors.txt
+          printf '%s\n' 'https://archive.ubuntu.com/ubuntu/' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null
+          apt_options=(-o Acquire::Retries=1 -o Acquire::http::Timeout=15 -o Acquire::https::Timeout=15)
           conflicting_packages=()
           for package in docker.io docker-compose docker-compose-v2 docker-doc podman-docker containerd runc moby-engine moby-cli; do
             if dpkg-query -W -f='${db:Status-Abbrev}' "$package" 2>/dev/null | grep -q '^ii'; then
@@ -308,8 +313,8 @@ jobs:
             'Components: stable' \
             'Architectures: amd64' \
             'Signed-By: /etc/apt/keyrings/docker.asc' | sudo tee /etc/apt/sources.list.d/docker.sources >/dev/null
-          sudo apt-get update
-          sudo apt-get install -y --allow-downgrades --no-install-recommends \
+          sudo timeout --kill-after=30s 10m apt-get "${apt_options[@]}" -o APT::Update::Error-Mode=any update
+          sudo timeout --kill-after=30s 15m apt-get "${apt_options[@]}" install -y --allow-downgrades --no-install-recommends \
             "docker-ce=$docker_package_version" \
             "docker-ce-cli=$docker_package_version" \
             "containerd.io=$containerd_package_version" \
@@ -501,7 +506,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '1.26.8'
+          go-version: '1.26.9'
           check-latest: false
           cache: false
       - name: Aggregate required job results

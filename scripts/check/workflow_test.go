@@ -126,7 +126,7 @@ func TestValidateCIWorkflowRejectsSecurityRegressions(t *testing.T) {
 		"missing always":                              strings.Replace(string(contents), "    if: ${{ always() }}\n", "", 1),
 		"write token":                                 strings.Replace(string(contents), "  contents: read", "  contents: write", 1),
 		"moving macOS runner":                         strings.Replace(string(contents), "runs-on: macos-26-intel", "runs-on: macos-latest", 1),
-		"missing minimum Go":                          strings.ReplaceAll(string(contents), "go-version: '1.26.8'", "go-version: '1.26.7'"),
+		"unpatched Go":                                strings.ReplaceAll(string(contents), "go-version: '1.26.9'", "go-version: '1.26.8'"),
 		"missing pinned Go image":                     strings.Replace(string(contents), `docker pull "$go_image"`, `echo skipped`, 1),
 		"Go build integration silently skipped":       strings.Replace(string(contents), "HELOX_GO_BUILD_CLI_INTEGRATION=1", "HELOX_GO_BUILD_CLI_INTEGRATION=0", 1),
 		"Go source integration silently skipped":      strings.ReplaceAll(string(contents), "HELOX_GO_RESOLVER_INTEGRATION=1", "HELOX_GO_RESOLVER_INTEGRATION=0"),

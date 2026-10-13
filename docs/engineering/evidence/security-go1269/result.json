@@ -1,0 +1,608 @@
+{
+  "status": "BLOCKED_LOCAL_RACE_QUALIFICATION",
+  "base_commit": "bdc2d891ca0edb719be8a28b1a8576decd3d01f2",
+  "toolchain": "go1.26.9",
+  "reachable_vulnerabilities": 0,
+  "remaining_module_advisories": [
+    {
+      "id": "GO-2026-6629",
+      "module": "golang.org/x/text",
+      "found_in": "golang.org/x/text@v0.39.0",
+      "fixed_in": "golang.org/x/text@v0.41.0",
+      "reachable": false,
+      "imported_vulnerable_package": false
+    },
+    {
+      "id": "GO-2026-6355",
+      "module": "golang.org/x/crypto",
+      "found_in": "golang.org/x/crypto@v0.41.0",
+      "fixed_in": "golang.org/x/crypto@v0.56.0",
+      "reachable": false,
+      "imported_vulnerable_package": false
+    },
+    {
+      "id": "GO-2026-6354",
+      "module": "golang.org/x/crypto",
+      "found_in": "golang.org/x/crypto@v0.41.0",
+      "fixed_in": "golang.org/x/crypto@v0.56.0",
+      "reachable": false,
+      "imported_vulnerable_package": false
+    },
+    {
+      "id": "GO-2026-6303",
+      "module": "golang.org/x/crypto",
+      "found_in": "golang.org/x/crypto@v0.41.0",
+      "fixed_in": "golang.org/x/crypto@v0.55.0",
+      "reachable": false,
+      "imported_vulnerable_package": false
+    },
+    {
+      "id": "GO-2026-5932",
+      "module": "golang.org/x/crypto",
+      "found_in": "golang.org/x/crypto@v0.41.0",
+      "fixed_in": "N/A",
+      "reachable": false,
+      "imported_vulnerable_package": false
+    },
+    {
+      "id": "GO-2026-5033",
+      "module": "golang.org/x/crypto",
+      "found_in": "golang.org/x/crypto@v0.41.0",
+      "fixed_in": "golang.org/x/crypto@v0.52.0",
+      "reachable": false,
+      "imported_vulnerable_package": false
+    },
+    {
+      "id": "GO-2026-5023",
+      "module": "golang.org/x/crypto",
+      "found_in": "golang.org/x/crypto@v0.41.0",
+      "fixed_in": "golang.org/x/crypto@v0.52.0",
+      "reachable": false,
+      "imported_vulnerable_package": false
+    },
+    {
+      "id": "GO-2026-5021",
+      "module": "golang.org/x/crypto",
+      "found_in": "golang.org/x/crypto@v0.41.0",
+      "fixed_in": "golang.org/x/crypto@v0.52.0",
+      "reachable": false,
+      "imported_vulnerable_package": false
+    },
+    {
+      "id": "GO-2026-5020",
+      "module": "golang.org/x/crypto",
+      "found_in": "golang.org/x/crypto@v0.41.0",
+      "fixed_in": "golang.org/x/crypto@v0.52.0",
+      "reachable": false,
+      "imported_vulnerable_package": false
+    },
+    {
+      "id": "GO-2026-5019",
+      "module": "golang.org/x/crypto",
+      "found_in": "golang.org/x/crypto@v0.41.0",
+      "fixed_in": "golang.org/x/crypto@v0.52.0",
+      "reachable": false,
+      "imported_vulnerable_package": false
+    },
+    {
+      "id": "GO-2026-5018",
+      "module": "golang.org/x/crypto",
+      "found_in": "golang.org/x/crypto@v0.41.0",
+      "fixed_in": "golang.org/x/crypto@v0.52.0",
+      "reachable": false,
+      "imported_vulnerable_package": false
+    },
+    {
+      "id": "GO-2026-5017",
+      "module": "golang.org/x/crypto",
+      "found_in": "golang.org/x/crypto@v0.41.0",
+      "fixed_in": "golang.org/x/crypto@v0.52.0",
+      "reachable": false,
+      "imported_vulnerable_package": false
+    },
+    {
+      "id": "GO-2026-5016",
+      "module": "golang.org/x/crypto",
+      "found_in": "golang.org/x/crypto@v0.41.0",
+      "fixed_in": "golang.org/x/crypto@v0.52.0",
+      "reachable": false,
+      "imported_vulnerable_package": false
+    },
+    {
+      "id": "GO-2026-5015",
+      "module": "golang.org/x/crypto",
+      "found_in": "golang.org/x/crypto@v0.41.0",
+      "fixed_in": "golang.org/x/crypto@v0.52.0",
+      "reachable": false,
+      "imported_vulnerable_package": false
+    },
+    {
+      "id": "GO-2026-5014",
+      "module": "golang.org/x/crypto",
+      "found_in": "golang.org/x/crypto@v0.41.0",
+      "fixed_in": "golang.org/x/crypto@v0.52.0",
+      "reachable": false,
+      "imported_vulnerable_package": false
+    },
+    {
+      "id": "GO-2026-5013",
+      "module": "golang.org/x/crypto",
+      "found_in": "golang.org/x/crypto@v0.41.0",
+      "fixed_in": "golang.org/x/crypto@v0.52.0",
+      "reachable": false,
+      "imported_vulnerable_package": false
+    },
+    {
+      "id": "GO-2026-5006",
+      "module": "golang.org/x/crypto",
+      "found_in": "golang.org/x/crypto@v0.41.0",
+      "fixed_in": "golang.org/x/crypto@v0.52.0",
+      "reachable": false,
+      "imported_vulnerable_package": false
+    },
+    {
+      "id": "GO-2026-5005",
+      "module": "golang.org/x/crypto",
+      "found_in": "golang.org/x/crypto@v0.41.0",
+      "fixed_in": "golang.org/x/crypto@v0.52.0",
+      "reachable": false,
+      "imported_vulnerable_package": false
+    },
+    {
+      "id": "GO-2025-4135",
+      "module": "golang.org/x/crypto",
+      "found_in": "golang.org/x/crypto@v0.41.0",
+      "fixed_in": "golang.org/x/crypto@v0.45.0",
+      "reachable": false,
+      "imported_vulnerable_package": false
+    },
+    {
+      "id": "GO-2025-4134",
+      "module": "golang.org/x/crypto",
+      "found_in": "golang.org/x/crypto@v0.41.0",
+      "fixed_in": "golang.org/x/crypto@v0.45.0",
+      "reachable": false,
+      "imported_vulnerable_package": false
+    },
+    {
+      "id": "GO-2025-4116",
+      "module": "golang.org/x/crypto",
+      "found_in": "golang.org/x/crypto@v0.41.0",
+      "fixed_in": "golang.org/x/crypto@v0.43.0",
+      "reachable": false,
+      "imported_vulnerable_package": false
+    }
+  ],
+  "remote_ci": "NOT_RUN",
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO"
+  },
+  "official_toolchain_integrity": {
+    "source": "https://go.dev/dl/?mode=json&include=all",
+    "release": "go1.26.9",
+    "archive": {
+      "filename": "go1.26.9.linux-amd64.tar.gz",
+      "os": "linux",
+      "arch": "amd64",
+      "version": "go1.26.9",
+      "sha256": "42d158b4d8f7b61ac0a830567c940a86098fb7aac52e467a5ebec03ef5cc2f8d",
+      "size": 66935201,
+      "kind": "archive"
+    },
+    "actual_sha256": "42d158b4d8f7b61ac0a830567c940a86098fb7aac52e467a5ebec03ef5cc2f8d",
+    "verified": true
+  },
+  "execution_environment": {
+    "toolchain": "/tmp/haa-toolchains/go1.26.9/go/bin/go",
+    "GOTOOLCHAIN": "local",
+    "GOENV": "off",
+    "GOWORK": "off",
+    "GOMAXPROCS": "4",
+    "canonical_tool_cache": "/tmp/haa-security-go1269-quality",
+    "canonical_outer_module_cache": "/tmp/haa-security-go1269-outer-mod",
+    "canonical_outer_build_cache": "/tmp/haa-security-go1269-outer-build",
+    "regression_module_cache": "/tmp/haa-security-go1269-quality/go-mod",
+    "regression_build_cache": "/tmp/haa-security-go1269-quality/go-build",
+    "HELOX_RUNSC_BINARY": "/tmp/haa-security-go1269-runtime/runsc",
+    "runtime_bundle_verifier": "scripts/verify-gvisor-runtime-bundle.sh",
+    "runtime_lock_unchanged": true,
+    "installed_runtime_unchanged": true
+  },
+  "checks": [
+    {
+      "profile": "format",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 11.31,
+      "log": "raw/format.log",
+      "sha256": "daddb29f63ebe68199344d9cc511f40ffce1f6f565cb4773d2a4e6431dbddbc2"
+    },
+    {
+      "profile": "bootstrap",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "bootstrap"
+      ],
+      "exit_code": 1,
+      "elapsed_seconds": 7.84,
+      "log": null,
+      "evidence": "Initial terminal output; later successful retry reused bootstrap.log",
+      "failure": "Go SumDB cache write denied by filesystem sandbox; approved retry required"
+    },
+    {
+      "profile": "bootstrap",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "bootstrap"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 72.14,
+      "log": "raw/bootstrap.log",
+      "sha256": "289a27638dce8999e43f00bd51aaa53ce8fba60161902e202e0648139a0688ae"
+    },
+    {
+      "profile": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 1,
+      "elapsed_seconds": 185.96,
+      "log": null,
+      "evidence": "Initial terminal output; later retry reused quick.log",
+      "failure": "Sandbox observer path checks and noncanonical ambient installed runsc"
+    },
+    {
+      "profile": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 1,
+      "elapsed_seconds": 19.18,
+      "log": "raw/quick-host-old-runtime.log",
+      "failure": "Ambient installed runsc differs from canonical lock and lacks syscall/socketpair_result",
+      "sha256": "520e1548395303f76875188e5446b30b25bde088b2b7f156bf8e14a5e433f54d"
+    },
+    {
+      "profile": "quick",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 14.19,
+      "log": "raw/quick.log",
+      "sha256": "5c81611ca9b0d5addb5cb7b63009b9fcc36ccf86881d571fb301d996d44a331e"
+    },
+    {
+      "profile": "vulnerability",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "vulnerability"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 3.86,
+      "log": "raw/vulnerability.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "profile": "security",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 9.83,
+      "log": "raw/security.log",
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95"
+    },
+    {
+      "profile": "security-history",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security-history"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 9.62,
+      "log": "raw/security-history.log",
+      "sha256": "c431c3a290bd629674e9693f5f307a8196fc92c50eb6bebd26f6c1d601ee6674"
+    },
+    {
+      "profile": "fuzz",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "fuzz"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 57.93,
+      "log": "raw/fuzz.log",
+      "sha256": "3aa3160b72810b361e1c3f0c05b03f34b39479b2e7a00326e7e700780ef72dff"
+    },
+    {
+      "profile": "docs",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.37,
+      "log": "raw/docs.log",
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "profile": "qualification-freshness",
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "qualification-freshness"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.33,
+      "log": "raw/qualification-freshness.log",
+      "sha256": "a139e18892192652dc1d7880e1d1bda7b269e445b80081de6776ebbe4d82c2c0"
+    },
+    {
+      "check": "vulnerability-detail",
+      "command": [
+        "/tmp/haa-security-go1269-quality/bin/govulncheck",
+        "-show",
+        "verbose",
+        "./..."
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 3.67,
+      "log": "raw/vulnerability-detail.log",
+      "sha256": "ca746b6455df5a839c736690798dedcfc19bf1398f39e3df3448a806b4b1834c"
+    },
+    {
+      "check": "tool-build-identity",
+      "command": [
+        "go",
+        "version",
+        "-m",
+        "/tmp/haa-security-go1269-quality/bin/staticcheck",
+        "/tmp/haa-security-go1269-quality/bin/gosec",
+        "/tmp/haa-security-go1269-quality/bin/govulncheck",
+        "/tmp/haa-security-go1269-quality/bin/actionlint"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.09,
+      "log": "raw/tool-build-identity.log",
+      "sha256": "8a80a7f0446cf5baee95e2f8b3424fdb249fa1e52e5444cc8521fa8f66476254"
+    },
+    {
+      "check": "public-go-integration",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-tags=integration",
+        "-timeout=4m",
+        "./internal/inspection/gomodule",
+        "-run=^TestGoPublic(ModuleAcquisition|ProjectVerifiedCache)Integration$",
+        "-v"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 2.1,
+      "log": "raw/public-go-integration.log",
+      "sha256": "0aa39e66acb5140e8847ef881dfae4b253081df5571e0d6e1b491c9ebe8cf807"
+    },
+    {
+      "check": "cold-bootstrap-integration",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-tags=bootstrapintegration",
+        "-timeout=4m",
+        "./scripts/check",
+        "-run=^TestColdModulePreparationToOfflineTidy$",
+        "-v"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 11.55,
+      "log": "raw/cold-bootstrap-integration.log",
+      "sha256": "4e8eb9c45bd3ab8f2748e0db31304840ca2a4df52d378a60bd1497dfa2ad84bf",
+      "scope": "empty inner consumer cache; warm outer compiler/module cache"
+    },
+    {
+      "check": "darwin-test-compile",
+      "command": [
+        "go",
+        "test",
+        "-exec=/bin/true",
+        "-run=^$",
+        "./..."
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 32.11,
+      "log": "raw/darwin-test-compile.log",
+      "sha256": "203e966902989133df023bdaddb505083701b14321e470ca73c82deaedfc5b87",
+      "environment": {
+        "GOOS": "darwin",
+        "GOARCH": "amd64",
+        "CGO_ENABLED": "0"
+      },
+      "scope": "TEST cross compilation only; no native execution"
+    },
+    {
+      "check": "linux-arm64-build",
+      "command": [
+        "go",
+        "build",
+        "./..."
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 22.17,
+      "log": "raw/linux-arm64-build.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "environment": {
+        "GOOS": "linux",
+        "GOARCH": "arm64",
+        "CGO_ENABLED": "0"
+      }
+    },
+    {
+      "check": "cli-build",
+      "command": [
+        "go",
+        "build",
+        "-trimpath",
+        "-buildvcs=true",
+        "-o",
+        "/tmp/haa-security-go1269-validation/helox",
+        "./cmd/helox"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.33,
+      "log": "raw/cli-build.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "check": "cli-help",
+      "command": [
+        "/tmp/haa-security-go1269-validation/helox",
+        "--help"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.01,
+      "log": "raw/cli-help.log",
+      "sha256": "b9f5bb194859cea2b395e823ee6458c785524fd16a0c75ab32889dc21282ff7d"
+    },
+    {
+      "check": "race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "-timeout=15m",
+        "./..."
+      ],
+      "exit_code": 1,
+      "elapsed_seconds": 192.42,
+      "log": "raw/race.log",
+      "sha256": "2565df1c9e50e569b99383b3e7a439c7e6f6c72d33d18df574c6007ebaf9f0e8"
+    }
+  ],
+  "race_baseline_comparison": {
+    "source_commit": "bdc2d891ca0edb719be8a28b1a8576decd3d01f2",
+    "old_toolchain": "go1.26.8 linux/amd64",
+    "old_command": [
+      "go",
+      "test",
+      "-race",
+      "-count=1",
+      "-timeout=3m",
+      "./internal/sandbox",
+      "-run=^(TestAmbiguousCancelPoisonsSessionAndInvalidatesIt|TestReadinessAuthorityAmbiguityDoesNotRetryPoisonedSession|TestAmbiguousStatusPoisonsSession|TestAmbiguousCompletePoisonsSession|TestSuccessfulRunnerWaitsForDelayedSentryExecWithoutCancel|TestSharedObserverAttributesOneContainerAndClosesItsStream|TestSharedObserverFlushesAttributionOnStreamFault)$",
+      "-v"
+    ],
+    "old_exit_code": 1,
+    "old_elapsed_seconds": 48.78,
+    "old_failed_tests": [
+      "TestAmbiguousCancelPoisonsSessionAndInvalidatesIt",
+      "TestAmbiguousCompletePoisonsSession",
+      "TestAmbiguousStatusPoisonsSession",
+      "TestReadinessAuthorityAmbiguityDoesNotRetryPoisonedSession",
+      "TestSharedObserverFlushesAttributionOnStreamFault",
+      "TestSuccessfulRunnerWaitsForDelayedSentryExecWithoutCancel"
+    ],
+    "new_failed_tests": [
+      "TestAmbiguousCancelPoisonsSessionAndInvalidatesIt",
+      "TestAmbiguousCompletePoisonsSession",
+      "TestAmbiguousStatusPoisonsSession",
+      "TestReadinessAuthorityAmbiguityDoesNotRetryPoisonedSession",
+      "TestSharedObserverAttributesOneContainerAndClosesItsStream",
+      "TestSharedObserverFlushesAttributionOnStreamFault",
+      "TestSuccessfulRunnerWaitsForDelayedSentryExecWithoutCancel"
+    ],
+    "not_reproduced_in_single_old_baseline_run": [
+      "TestSharedObserverAttributesOneContainerAndClosesItsStream"
+    ],
+    "unchanged_file_sha256": {
+      "internal/sandbox/direct_exec_admission.go": "fd83722be92bd01a031a386c7327c3c96d46b80f38d67b18de183e628b6f9fd7",
+      "internal/sandbox/direct_exec_admission_test.go": "fa2c59d369fb83b4155b95af49a68b1317fde30cf0e628862619ae2f5b6ef736",
+      "internal/sandbox/shared_observer.go": "bb9b1722c18e5bfa9b718236805a9804b21b5659564b39ad5a340ec450852721",
+      "internal/sandbox/shared_observer_test.go": "a5b7d64cf1d1674d5bd2fce10c3880773a18eba833002bbec185056830d42153"
+    },
+    "conclusion": "A pre-existing local Race failure is reproduced on untouched main under Go 1.26.8; identical detection of all seven tests is not established",
+    "old_raw_log": "/tmp/haa-security-go1269-validation/race-go1268-baseline.log",
+    "old_raw_log_sha256": "cba81d93b5a0c46cf58ed6963844da4bff7079633feead04053e1173aae11d7d",
+    "old_raw_log_retention": "Unedited local original retained outside commit because compiler trace includes a personal GOROOT path"
+  },
+  "unchanged_contract_inputs_sha256": {
+    "go.sum": "c0dadb3b4f3f3d57610e0e4b3f12d21bbabbab9ac4409b9508f887235b6482f2",
+    "scripts/runtimes.lock.json": "272ab2bc91d6371203a0f4a85fc39fd44cab49001d51dfaec88749e8c964468d",
+    "internal/runtimeidentity/runtime_lock_gen.go": "95d6b4899c4f2633f5e8f64989c7c0db84700161354bebc0fbc2ae115b3f5fed"
+  },
+  "changed_executable_inputs_sha256": {
+    ".github/workflows/heliopause-ci.yml": "4ec1e6614b7cc8b7d7b8b77921d61e6fcf2b503c202f55904e74ee73bc68f1ef",
+    ".github/workflows/heliopause-release-build.yml": "d46a24553fd44469c8f3617bc83247663ea7d1f31cc6bb15a4a84b1d276dfecd",
+    ".github/workflows/heliopause-release-publish.yml": "b25731b912256dcac9f511361b1fbedc4e1734771d842838e72a4def1824de86",
+    ".github/workflows/heliopause-security.yml": "84d89f7527159bdc149052774fffd642fe2c390a2ab82b3db8ea7d1671e2633a",
+    "go.mod": "3b2d1acdf2eb5b65ab9c6dfde628ef68f668e520fadedce4a60b1cef7ea11ac5",
+    "scripts/check/tools.go": "6f384f3423381e1ccf2bbaaff866b992f0db66bddff9b5c92e9089c1bf1a29ce",
+    "scripts/check/tools_test.go": "0270e157ce0b21a393234b32bc2589cbb9ada605e1857c91945bff8be7ba84fa",
+    "scripts/check/workflow.go": "b5f32bd0e59689389222cfebf1bcbdf0e4756f00959aeb03ebdb2862f0b98498",
+    "scripts/check/workflow_test.go": "732b054d3a498af0981bd4ef69761472e226cffa4d9bd3d791bcf8043055c774",
+    "scripts/tools.lock.json": "e6374837af8c4c858f9619e0c454c92389f90d4f6e3ea88300567b1c85b09a14",
+    "scripts/version-support.lock.json": "dc18ed86dc7d820ec6364ab973968047f842d2741ac4f2c424658aaf8c709c74"
+  },
+  "imported_package_vulnerabilities": 0,
+  "remaining_module_advisory_count": 21,
+  "guest_runtime": {
+    "image": "golang:1.26.8-bookworm@sha256:abe4f87f354c4f6d7ee3fb11b241c6b6c24a32ca50a2ebcc30493a2168e14048",
+    "changed": false,
+    "security_patched_by_host_scan": false,
+    "follow_up": "Separate official image integrity/provenance and bounded resolver/build/observation qualification"
+  },
+  "ci_recheck_needed": true,
+  "push_readiness": "NOT_READY_FULL_QUALIFICATION_LOCAL_RACE",
+  "push_performed": false,
+  "remote_ci_triggered": false,
+  "merge_performed": false,
+  "additional_full_e2e_needed_by_direct_impact": false,
+  "snapshot_stage": "LOCAL_VALIDATION_BEFORE_USER_AUTHORIZED_PUSH",
+  "follow_up": {
+    "user_authorized_push_and_ci": true,
+    "pushed_commit": "c73f3f5c09bf2fd91e1ac3d9e6504079c08a9c4d",
+    "pull_request": "https://github.com/rahoney/heliopause/pull/30",
+    "initial_ci_run": 38249446186,
+    "initial_security_run": 38249522013,
+    "current_required_prerequisites": 9,
+    "race_in_current_required_workflow": false,
+    "merge_performed": false,
+    "executable_inputs_unchanged": true
+  }
+}
