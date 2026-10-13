@@ -1,15 +1,54 @@
 # M13-002 protected branch qualification
 
-Status: IN_PROGRESS — exact e1e3aa8 feature push and develop PR31 creation approved
-and completed; new CI/CLA verification passed. The separately authorized PR31
-unresolved-review-thread merge rejection passed. Normal merge is not authorized.
+Status: IN_PROGRESS / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO. PR31 normal develop
+merge and its earlier conversation rejection passed. PR32 is now BEHIND; an
+actual stale merge rejection has not been attempted or authorized.
 
-The [new remote result](./remote-result.json) records this authorized phase,
-distinct from the historical baseline and local checks below. PR31 is open at
-exact e1e3aa8, targeting develop2e196a1. CI38355837742 checks merge6950673,
-whose whole tree64e2961 matches the feature head. No additional push, merge,
-protected-ref update, rule mutation or release action has been performed. One
-subsequently authorized normal merge request was rejected as recorded below.
+## Normal PR31 merge and PR32 stale-state observation
+
+The [new result](./develop-merge.json) records the separately authorized normal
+merge. Immediately before execution, PR32 Required/CLA were SUCCESS and its gate
+was CLEAN. PR31 was also CLEAN at exact `e1e3aa8c9976ec7cf30c46b3a0103fc2899c08a2`,
+targeting develop, with successful required contexts and no unresolved threads.
+Both protections matched M13-001, with empty bypass lists and actor bypass never.
+
+One ordinary exact-head PR31 merge request returned HTTP200/merged=true.
+The [request](./raw/develop-merge-request.json),
+[response](./raw/develop-merge-response.json) and
+[receipt](./raw/develop-merge-receipt.json) retain their original bytes.
+Develop advanced to `84591ef4296a852a1439781ab62cc4103a59db0a`, parents2e196a1/e1e3aa8,
+with the same tree64e2961 as qualified PR31. Main stayed at
+`2e196a188adce22005fce201c23da1dc27a43426`. Local result-record commits were excluded.
+
+PR32 remains open/unmerged at exact `ff441d3d3bde941d0fd759972539ed8707475ee1`.
+Its gate changed CLEAN→BEHIND while Required/CLA stayed SUCCESS and required.
+No unresolved thread, requested change or content conflict was observed. Ancestry
+comparison shows develop-only3 and PR32-only1 commits with merge base2e196a1.
+This distinguishes the stale state from failed checks or a review/conflict blocker.
+No automatic CI rerun was observed through 2026-10-13T14:41:12Z: run38403196699
+remained the only head-filtered PR run, completed SUCCESS at attempt1.
+
+PR `base.sha`/`baseRefOid` and synthetic merge metadata still identify the original
+tested snapshot2e196a1/8e5067f. Actual develop advancement is independently established
+by live Git refs, fetch and commit/compare APIs. The successful old checks are not
+qualification of a new merge with the advanced base. Original metadata is preserved;
+the reason for its refresh timing is not asserted. GitHub defines
+[BEHIND as an out-of-date head](https://docs.github.com/en/graphql/reference/pulls#mergestatestatus).
+
+No PR32 merge request, additional push, protection change, main merge or release
+was performed. Actual stale rejection is NOT_RUN. Any next exact-head rejection
+test needs separate approval and fresh preconditions; a defective gate could allow
+that merge, requiring immediate stop and evidence preservation without rollback.
+Full original readbacks are local under `docs/github-logs/m13-002-base-advance/`
+and the latest timestamped `docs/github-logs/m13-002-stale-preparation/remote/`.
+
+## Historical PR31 CI/CLA verification before merge
+
+The [remote result](./remote-result.json) records the earlier authorized push/PR
+phase. PR31 was then open at exact e1e3aa8, targeting develop2e196a1.
+CI38355837742 checked merge6950673, whose whole tree64e2961 matches the feature head.
+No successful merge had occurred at that snapshot. Subsequent conversation rejection
+and normal merge have separate results and authorizations.
 
 CI38355837742 completed SUCCESS: Required and all nine prerequisite jobs passed.
 GraphQL confirms Required/App15368 and license/cla/App128106 are required on
@@ -56,7 +95,7 @@ The [exact request](./raw/thread-merge-request.json),
 [response](./raw/thread-merge-response.json) and
 [receipt](./raw/thread-merge-receipt.json) are preserved byte-for-byte.
 Post-rejection reads confirmed main/develop stayed at2e196a1 and PR31 remained
-open/unmerged. Only this test thread was then resolved; the final gate is CLEAN,
+open/unmerged. Only this test thread was then resolved; that phase ended with gate CLEAN,
 with zero unresolved threads, unchanged head/base and successful Required/CLA.
 
 This case is PASS for actual develop conversation enforcement. It is not a
@@ -64,7 +103,7 @@ main-target test, separate override attempt, normal merge qualification, or a
 missing-check/freshness/direct-push/force-push result. Overall M13-002 remains
 IN_PROGRESS / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO. Full original readbacks are
 local under `docs/github-logs/m13-002-thread-test/`. No additional push, successful
-merge, settings change or release occurred. Further remote mutations need a
+merge, settings change or release occurred in that conversation-test phase. Further remote mutations need a
 separate scope of approval; the one-attempt authorization has been consumed.
 
 ## Independent stale-test PR preparation
@@ -78,22 +117,19 @@ M13-001, PR31 and local result-record commits are not ancestors; all other
 tracked blobs/modes equal develop. The original milestone worktree is separate.
 
 The [preparation result](./stale-pr-preparation.json) binds candidate, remote
-state and original receipts. Its own CI/CLA are pending. Current BLOCKED is
-incomplete-check evidence, not stale rejection. Local docs/security passed.
-The marker and PR31 modify disjoint paths, and local merge-tree is conflict-free.
-Keeping PR32 head unchanged while an independently approved normal PR31 merge
-advances develop should create the strict-freshness condition; actual enforcement
-remains untested. After advancement, capture effective rules, ancestry, current
-head/merge checks, genuine CLA and review state. Additional pending/failing checks
-or other blockers must not be reported as an isolated stale rejection.
+state and original receipts. Its own CI38403196699 completed Required plus nine
+prerequisites SUCCESS, and actual CLA reported SUCCESS; both contexts are required.
+Its gate became CLEAN before the approved PR31 merge. Ten complete job logs and
+whole head/test-merge tree equality are preserved. Linux45 actual top-level tests,
+CPU286.41s, observer102 latches, five helper waits0 and final original0 confirmed
+cleanup belong to this candidate's own run. No fresh CUDA qualification is claimed.
+Local docs/security passed. The marker and PR31 modify disjoint paths.
 
-Normal PR31 merge would intentionally append its reviewed docs to develop. A
-later expected-to-fail PR32 merge request could succeed if freshness enforcement
-is defective, adding this harmless marker; stop and preserve evidence in that
-case, without rollback or additional merges. Both requests require separate
-approval. Do not update/rebase the auxiliary head before observing stale state.
-No merge request, protected-ref push, rule change or release occurred in this
-preparation phase. M13-002 qualification/acceptance remains open.
+The preparation phase performed no merge request, protected-ref push, rule change
+or release. Its initially incomplete checks were not stale rejection evidence.
+The later separately authorized PR31 merge and resulting PR32 BEHIND state are
+recorded above. Preserve the auxiliary head for a separately authorized negative
+test; M13-002 qualification/acceptance remains open.
 
 ## Local result-record validation
 
@@ -110,7 +146,9 @@ all tracked files plus the explicitly listed result records and checked using
 unchanged canonical `docs` and `security` profiles. This is a separate scope;
 it does not turn the original working-directory failure into PASS. Candidate
 path/mode/hash inventory, command results and complete logs are retained locally
-in `docs/github-logs/m13-002-pr/final-candidate-validation/`.
+in `docs/github-logs/m13-002-pr/final-candidate-validation/` for the earlier record.
+The latest merge/stale record uses the same full-candidate boundary, with inventory
+and canonical check logs under `docs/github-logs/m13-002-base-advance/record-validation/`.
 The initial `remote-record-*` check files remain untracked preparation evidence
 and are not final-candidate validation. Original raw custody remains local.
 

@@ -1,0 +1,248 @@
+{
+  "status": "PR31_NORMAL_DEVELOP_MERGE_PASS_PR32_STALE_STATE_OBSERVED",
+  "recorded_utc": "2026-10-13T14:43:31.180526+00:00",
+  "authorization": "Conditionally approve PR31 ordinary develop merge only, after PR32 Required/CLA SUCCESS and CLEAN. No PR32 merge attempt, push, rules mutation, main merge or release.",
+  "preconditions": {
+    "snapshot": "docs/github-logs/m13-002-base-advance/immediate-pre-merge-summary.json",
+    "pr32_head": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+    "pr32_gate": "CLEAN",
+    "pr31_head": "e1e3aa8c9976ec7cf30c46b3a0103fc2899c08a2",
+    "pr31_target": "develop",
+    "pr31_gate": "CLEAN",
+    "both_required_and_cla_success_and_isRequired": true,
+    "both_all_eleven_contexts_success": true,
+    "unresolved_threads_both": 0,
+    "effective_main_develop_rules_match_M13_001": true,
+    "bypass_actors": [],
+    "current_user_can_bypass": "never"
+  },
+  "pr31_normal_merge": {
+    "result": "PASS",
+    "request_count": 1,
+    "http_status": 200,
+    "request": {
+      "method": "PUT",
+      "endpoint": "/repos/rahoney/heliopause/pulls/31/merge",
+      "body": {
+        "sha": "e1e3aa8c9976ec7cf30c46b3a0103fc2899c08a2",
+        "merge_method": "merge",
+        "commit_title": "M13-002 보호 PR 검증 문서를 develop에 병합 (#31)",
+        "commit_message": "PR31의 정확한 e1e3aa8과 두 PR의 Required·CLA 및 보호 조건을 재확인한 승인된 정상 병합이다. PR32의 head는 유지하며 별도 병합 요청은 하지 않는다."
+      },
+      "utc": "2026-10-13T14:39:07.194071+00:00"
+    },
+    "response": {
+      "sha": "84591ef4296a852a1439781ab62cc4103a59db0a",
+      "merged": true,
+      "message": "Pull Request successfully merged"
+    },
+    "receipt": {
+      "http_status": 200,
+      "sha256": "3967cd12737414addb4e7c840e6343cdd6bf4322e3617ea37bb6ddd7fdc40b34",
+      "request_id": "E582:113DEE:2C295:31502:6ACE428B",
+      "date": "Tue, 13 Oct 2026 14:39:11 GMT",
+      "utc": "2026-10-13T14:39:11.000699+00:00"
+    },
+    "admin_override": false,
+    "force": false,
+    "auto_merge": false,
+    "actual_develop_head": "84591ef4296a852a1439781ab62cc4103a59db0a",
+    "merge_parents": [
+      "2e196a188adce22005fce201c23da1dc27a43426",
+      "e1e3aa8c9976ec7cf30c46b3a0103fc2899c08a2"
+    ],
+    "tree": "64e29611987c1ce55887db50255aacc6fba90843",
+    "same_tree_as_qualified_e1e3aa8": true,
+    "local_record_commits_excluded": [
+      "0b1187644825bff73e80514dd0d637eaad39d1e1",
+      "65bc6e4cfb8e592c9dd31f6c24f407c6520d51ab",
+      "6ad466b98cc821707ba788fab042682aa3fe5996"
+    ],
+    "raw_request": "raw/develop-merge-request.json",
+    "raw_response": "raw/develop-merge-response.json",
+    "raw_receipt": "raw/develop-merge-receipt.json"
+  },
+  "main": {
+    "before": "2e196a188adce22005fce201c23da1dc27a43426",
+    "after": "2e196a188adce22005fce201c23da1dc27a43426",
+    "unchanged": true
+  },
+  "pr32": {
+    "head": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+    "head_unchanged": true,
+    "state": "OPEN",
+    "merged": false,
+    "gate_before": "CLEAN",
+    "gate_after": "BEHIND",
+    "mergeable": "MERGEABLE",
+    "Required": "SUCCESS, isRequired=true",
+    "license/cla": "SUCCESS, isRequired=true",
+    "unresolved_threads": 0,
+    "changes_requested": false,
+    "rules_unchanged": true,
+    "cause_observation": "GitHub explicitly classifies the head as BEHIND; live develop advanced and ancestry comparison is diverged (develop-only3, auxiliary-only1). Existing check contexts remain successful, no review/conflict blocker observed. This is observed stale gate, not an executed merge rejection.",
+    "actual_ancestry": {
+      "actual_develop": "84591ef4296a852a1439781ab62cc4103a59db0a",
+      "main": "2e196a188adce22005fce201c23da1dc27a43426",
+      "merge_parents": [
+        "2e196a188adce22005fce201c23da1dc27a43426",
+        "e1e3aa8c9976ec7cf30c46b3a0103fc2899c08a2"
+      ],
+      "merged_tree": "64e29611987c1ce55887db50255aacc6fba90843",
+      "pr32_head": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+      "compare_status": "diverged",
+      "new_develop_ahead_of_pr32": 3,
+      "pr32_unique_commits": 1,
+      "merge_base": "2e196a188adce22005fce201c23da1dc27a43426",
+      "pr32_gate": "BEHIND",
+      "pr32_merged": false
+    },
+    "pr_base_metadata": "2e196a188adce22005fce201c23da1dc27a43426",
+    "pr_synthetic_merge_metadata": "8e5067ffb828415db8b58c7848cfde40346d09f1",
+    "metadata_boundary": "PR baseRefOid/base.sha and synthetic merge still report original tested snapshot in these observations. Actual develop HEAD is independently established by live Git ref, fetch and commit/compare APIs; do not replace it with the PR snapshot or claim old checks tested the advanced-base merge.",
+    "automatic_ci_rerun": {
+      "observed": false,
+      "observed_utc": "2026-10-13T14:41:12.512293+00:00",
+      "head_filtered_pull_request_run_count": 1,
+      "run_id": 38403196699,
+      "run_attempt": 1,
+      "all_ten_jobs_success": true,
+      "new_run_or_pending_check_observed": false
+    },
+    "merge_attempt_count": 0,
+    "rejection_qualification": "NOT_RUN / not authorized"
+  },
+  "official_BEHIND_semantics": "https://docs.github.com/en/graphql/reference/pulls#mergestatestatus",
+  "latest_raw_snapshot": "docs/github-logs/m13-002-stale-preparation/remote/20261013T144110229843Z",
+  "raw_receipts": [
+    {
+      "path": "docs/github-logs/m13-002-base-advance/actual-develop-commit/response.json",
+      "sha256": "a51d9f25d7df7a3279e8b3e0fa45a0445c8672ccaf78828924761f79ea45d6fc",
+      "bytes": 2961
+    },
+    {
+      "path": "docs/github-logs/m13-002-base-advance/immediate-pre-merge-gql31/response.json",
+      "sha256": "28a6a3f098e29cccd4d91f248184d6934326288668f49f0a2e5b9f79cf31040b",
+      "bytes": 2196
+    },
+    {
+      "path": "docs/github-logs/m13-002-base-advance/immediate-pre-merge-gql32/response.json",
+      "sha256": "a14de79361a489b10e64da717bd8b18299467dff0c94839504ad1092d5f37381",
+      "bytes": 2148
+    },
+    {
+      "path": "docs/github-logs/m13-002-base-advance/immediate-pre-merge-summary.json",
+      "sha256": "65fd571a8d4597a64e019be5cdcfdfdc1012d668a3c50c5e4e4ffa1ab0a1a58f",
+      "bytes": 7562
+    },
+    {
+      "path": "docs/github-logs/m13-002-base-advance/normal-merge/receipt.json",
+      "sha256": "9cef48e251673c25bb7453d17429a08f11fac96cc254b6dc9ce009a7627e8fbd",
+      "bytes": 245
+    },
+    {
+      "path": "docs/github-logs/m13-002-base-advance/normal-merge/request.json",
+      "sha256": "a6b84869e60937c3f55509a2b85d632bdc0a31bed09e0a8fdf93ca442cc370ce",
+      "bytes": 521
+    },
+    {
+      "path": "docs/github-logs/m13-002-base-advance/normal-merge/response.json",
+      "sha256": "3967cd12737414addb4e7c840e6343cdd6bf4322e3617ea37bb6ddd7fdc40b34",
+      "bytes": 109
+    },
+    {
+      "path": "docs/github-logs/m13-002-base-advance/post-identity.json",
+      "sha256": "3a7eaec29a4d3a2bbd7b29f89da09c7b9f9ced42685c43045822e0263d7c6a07",
+      "bytes": 565
+    },
+    {
+      "path": "docs/github-logs/m13-002-base-advance/post-merge-gql32/response.json",
+      "sha256": "4b848e51d1b70aff296ea7bb91e6d214f5f86a0a96895b433303a52d440e1c87",
+      "bytes": 2149
+    },
+    {
+      "path": "docs/github-logs/m13-002-base-advance/post-merge-summary.json",
+      "sha256": "161f83b640b58d65b875cca2ecead8f0a3df5177678654463c9eae5ad5be8ec5",
+      "bytes": 7564
+    },
+    {
+      "path": "docs/github-logs/m13-002-base-advance/pr32-vs-develop-ancestry/response.json",
+      "sha256": "b775e16e70e09f72f11f84dd0cb6fd3e89a6a7266adbb1148088669fe518a262",
+      "bytes": 101568
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/remote/20261013T144110229843Z/summary.json",
+      "sha256": "700ba7e0c41aed273aab444d4cd07757e1ea286b7676eff4189f359092fc38a4",
+      "bytes": 11632
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/remote/20261013T144110229843Z/graphql.json",
+      "sha256": "4b848e51d1b70aff296ea7bb91e6d214f5f86a0a96895b433303a52d440e1c87",
+      "bytes": 2149
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/remote/20261013T144110229843Z/refs.json",
+      "sha256": "c4dbff32c21bc657bf77440d621cd75e8732fe855903114ae22fa751c38bdc13",
+      "bytes": 11988
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/remote/20261013T144110229843Z/head-checks.json",
+      "sha256": "0f64588a22d45bb00dcb1225f8f34dce095abc625eda25c1202bcb63952b94fd",
+      "bytes": 35229
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/remote/20261013T144110229843Z/head-status-list.json",
+      "sha256": "4ef854d13d5bcc2707278b038306e332d71a33adac3d20a8c01dd9b1943beb8c",
+      "bytes": 1578
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/remote/20261013T144110229843Z/merge-checks.json",
+      "sha256": "e83cfac35507982a40cfeb776ce85aa0367e7646f81fe857df4a6c841ea8a170",
+      "bytes": 33
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/remote/20261013T144110229843Z/merge-status.json",
+      "sha256": "68d01656449451e146c12d25936f8481f06f81146ef59639c9778c3b98e6aa83",
+      "bytes": 4495
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/remote/20261013T144110229843Z/runs.json",
+      "sha256": "3ce4d8d2a0bc26f43564a902f0ca14e6662efee52d53fdf6156632c18af3467d",
+      "bytes": 12810
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/remote/20261013T144110229843Z/develop-ruleset.json",
+      "sha256": "0d981954d6b00b39c6e5705583045ea31bb9c98244d849beb55cb4ac8bcf964d",
+      "bytes": 1222
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/remote/20261013T144110229843Z/develop-effective-rules.json",
+      "sha256": "82aded8780680c5d72fec2ae26cdff3a50172713468a6e253582e647cd15fd70",
+      "bytes": 1024
+    },
+    {
+      "path": "docs/github-logs/m13-002-stale-preparation/remote/20261013T144110229843Z/main-ruleset.json",
+      "sha256": "59f782111e7e79128c0d54e6b658ae09754a9cc7144cc3383ea534bb14d5caba",
+      "bytes": 1216
+    }
+  ],
+  "raw_archive": {
+    "path": "docs/github-logs/m13-002-base-advance/raw-inventory.json",
+    "sha256": "1b6253e7cd5da9098c31e512c24286fb900d1e4b21303dca472fd2350f603fff",
+    "file_count": 153,
+    "custody": "Original responses preserved locally; exact safe merge request/response/receipt also versioned."
+  },
+  "work_item": {
+    "status": "IN_PROGRESS",
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO",
+    "missing": [
+      "Separately authorized actual PR32 stale rejection",
+      "Other target-specific M13-002 negatives and normal develop-to-main path",
+      "Final acceptance audit"
+    ]
+  },
+  "next_scope": "No further remote mutation authorized. Preserve PR32 head; next exact-head normal-API rejection test requires separate approval and fresh conditions. Expected rejection may succeed if enforcement is defective; stop without rollback in that case."
+}

@@ -12,7 +12,7 @@ Milestone status: IN_PROGRESS (public release readiness not declared)
 Active work item: M13-002 — protected branch qualification
 Next work item: M13-003 — canonical release build and OS packages (not authorized)
 Next work item status: NOT_STARTED / Ready: No — M13-002 acceptance remains open
-Ready: independent PR32 created; own CI/CLA pending; merges need separate approval
+Ready: PR31 normally merged; PR32 BEHIND with successful CI/CLA; stale rejection needs separate approval
 ```
 
 ### SEC-2026-10-12 — Scheduled Security Go patch
@@ -2663,16 +2663,16 @@ no-known-release-blocking-finding entry assessment.
 
 ### M13-002 — protected branch qualification
 
-Status: IN_PROGRESS — approved exact e1e3aa8 feature push and develop PR31
-creation completed; fresh CI/CLA and one authorized develop conversation rejection
-verified. Normal merge and further remote mutations are not authorized.
+Status: IN_PROGRESS — exact e1e3aa8 PR31 normally merged into develop after
+PR32 CI/CLA SUCCESS and CLEAN. PR32 is now BEHIND with unchanged head and
+successful checks. Actual PR32 rejection and further remote mutations are not authorized.
 Read: [M13 contract](./18-m13-production-release-operations-contract.md),
 [CI gate](../engineering/04-ci-quality-gate.md), CONTRIBUTING.md,
 [M13-001 evidence](./evidence/m13-001-protected-activation/README.md).
 
 Baseline audit: IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO /
 ACCEPTANCE_CLOSED=NO. Existing PR CI/CLA and active rules are reused unchanged.
-New remote GET/refs confirm main/develop2e196a1, milestoneb3c8b7d,
+Initial baseline GET/refs confirmed main/develop2e196a1, milestoneb3c8b7d,
 zero feature refs/open PRs and zero checks/statuses for b3c8b7d. The admin actor
 cannot bypass either branch ruleset. M13-001 is remotely delivered on the
 milestone branch; its documentation delta has not reached main/develop.
@@ -2683,7 +2683,7 @@ threads, direct pushes, non-fast-forward updates and admin bypass attempts;
 preserved request/result/ref evidence and final checks. A readback, no-op push,
 unrelated rejection or historical CI is not a new enforcement PASS.
 
-Delivery: [PR31](https://github.com/rahoney/heliopause/pull/31),
+Pre-merge delivery snapshot: [PR31](https://github.com/rahoney/heliopause/pull/31),
 feature/m13-002-protected-path@e1e3aa8 → develop@2e196a1. New
 [CI38355837742](https://github.com/rahoney/heliopause/actions/runs/38355837742)
 completed SUCCESS with Required plus all nine prerequisites, independently of
@@ -2702,16 +2702,30 @@ single ordinary exact-head merge request returned HTTP405 explicitly citing the
 unresolved conversation. Main/develop stayed at2e196a1, PR remained open/unmerged,
 and resolving that test thread restored CLEAN. No bypass/force/auto-merge was used.
 
-MISSING: remaining target-specific negative cases, normal protected PR merges and
+MISSING: remaining target-specific negative cases, normal develop-to-main merge and
 final audit. This develop conversation case does not qualify main, missing
 Required/CLA, stale branch, direct/force push or a separate override attempt.
 The single-attempt conversation approval is consumed. A subsequent scoped approval
 allowed independent feature/m13-002-stale-probe creation/push and develop PR32.
 PR32 is headff441d3 with sole parent2e196a1, one new12-line markdown file and no
 M13-001/PR31/local-record commits in its ancestry. Its paths are disjoint from
-PR31 and local merge-tree has no conflict. Its own CI/CLA are pending; this is
-not stale rejection PASS. [Preparation evidence](./evidence/m13-002-protected-path/stale-pr-preparation.json)
-records the boundary. No merge or rejection request is authorized.
+PR31 and local merge-tree has no conflict. Its own CI38403196699 completed all
+ten jobs SUCCESS and genuine CLA succeeded; both contexts are required and its
+pre-advancement gate was CLEAN. [Preparation evidence](./evidence/m13-002-protected-path/stale-pr-preparation.json)
+binds these fresh results.
+
+Latest authorized phase: [normal merge and stale observation](./evidence/m13-002-protected-path/develop-merge.json).
+Both PRs were CLEAN with exact heads, required successful contexts, no unresolved
+threads and unchanged protections immediately before one normal exact-head PR31
+merge request. HTTP200/merged=true advanced develop to84591ef; its parents are
+2e196a1/e1e3aa8 and tree64e2961 matches the qualified PR31 candidate. Main stayed
+2e196a1. PR32 remains open at exactff441d3 and changed CLEAN→BEHIND, with successful
+Required/CLA, no unresolved threads and no content conflict. No automatic CI rerun
+was observed through 2026-10-13T14:41:12Z (one run, attempt1). PR base/merge metadata
+still identifies the old tested snapshot; live refs, fetched commit and ancestry
+comparison establish actual develop advancement. Old checks are not new-base CI.
+Actual stale merge rejection is NOT_RUN: no PR32 merge request was sent. The PR31
+normal-merge authorization is consumed; further remote writes need separate approval.
 Force-push needs a design/decision compatible with existing history preservation;
 genuine missing CLA may need a willing real unsigned participant. Do not weaken
 rules, fabricate statuses/identity or mark those cases waived/qualified.
