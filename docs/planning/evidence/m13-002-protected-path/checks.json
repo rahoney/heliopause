@@ -1,0 +1,102 @@
+{
+  "status": "PASS",
+  "toolchain": "go1.26.9",
+  "scope": "local documentation/workflow/security only; live PR qualification NOT_RUN",
+  "environment": {
+    "PATH": "/tmp/haa-m13-002-toolchain/go/bin:/usr/bin:/bin",
+    "GOTOOLCHAIN": "local",
+    "GOENV": "off",
+    "GOCACHE": "/tmp/haa-m13-002-go-build",
+    "GOMODCACHE": "preexisting canonical pinned quality module cache; read reuse via task-cache symlink",
+    "HELOX_TOOL_CACHE": "/tmp/haa-m13-002-quality-tools"
+  },
+  "profiles": {
+    "docs": {
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "started_utc": "2026-10-13T05:54:12.469162+00:00",
+      "completed_utc": "2026-10-13T05:54:19.308639+00:00",
+      "exit_code": 0,
+      "result": "PASS",
+      "log": "docs/planning/evidence/m13-002-protected-path/raw/docs.log",
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    "workflow": {
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "workflow"
+      ],
+      "started_utc": "2026-10-13T05:54:19.322349+00:00",
+      "completed_utc": "2026-10-13T05:54:24.441477+00:00",
+      "exit_code": 0,
+      "result": "PASS",
+      "log": "docs/planning/evidence/m13-002-protected-path/raw/workflow.log",
+      "sha256": "1cecf63447563bee7e3bdd79ac5f99413229645b58b8704c6df0d88ca1dcbeba"
+    },
+    "release-gate": {
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "release-gate"
+      ],
+      "started_utc": "2026-10-13T05:54:24.455815+00:00",
+      "completed_utc": "2026-10-13T05:54:25.073666+00:00",
+      "exit_code": 0,
+      "result": "PASS",
+      "log": "docs/planning/evidence/m13-002-protected-path/raw/release-gate.log",
+      "sha256": "11e43c6a182a612ea79ba5d521d90153efd0f567857993ea20db4c3f95039b73"
+    },
+    "security": {
+      "command": [
+        "go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "started_utc": "2026-10-13T05:54:25.090540+00:00",
+      "completed_utc": "2026-10-13T05:55:19.815594+00:00",
+      "exit_code": 0,
+      "result": "PASS",
+      "log": "docs/planning/evidence/m13-002-protected-path/raw/security.log",
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95"
+    }
+  },
+  "preparation_failures": [
+    {
+      "step": "initial sandbox credential helper",
+      "result": "UNAVAILABLE",
+      "qualification_result": false,
+      "followup": "Explicitly approved host read-only invocation succeeded; no mutation performed"
+    },
+    {
+      "step": "initial documentation check before receipt creation",
+      "result": "FAIL",
+      "cause": "baseline.json and checks.json link targets not yet written",
+      "qualification_result": false,
+      "followup": "Receipts created; finalized docs profile exit0",
+      "terminal_excerpt": "docs/github-logs/m13-002-20261013-baseline/initial-docs-terminal-excerpt.txt"
+    }
+  ],
+  "final_precommit_validation": {
+    "completed_utc": "2026-10-13T06:01:34.486084+00:00",
+    "checked_index_tree": "4b419ac802a09585e08732bc23357f133d63b4e4",
+    "docs": {
+      "exit_code": 0,
+      "result": "PASS",
+      "terminal_stdout": "[check] documentation\n"
+    },
+    "security": {
+      "exit_code": 0,
+      "result": "PASS",
+      "terminal_stdout": "[check] gosec\n[check] Gitleaks current tree\n"
+    },
+    "scope": "After final plan/Queue/lesson updates, before recording this validation receipt; no source/workflow/rule changes"
+  }
+}

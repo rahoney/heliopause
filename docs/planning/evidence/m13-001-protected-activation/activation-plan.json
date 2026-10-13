@@ -1,0 +1,185 @@
+{
+  "repository": "rahoney/heliopause",
+  "baseline_commit": "2e196a188adce22005fce201c23da1dc27a43426",
+  "main_ruleset_id": 21396883,
+  "main_ruleset": {
+    "name": "Protect main",
+    "target": "branch",
+    "conditions": {
+      "ref_name": {
+        "exclude": [],
+        "include": [
+          "refs/heads/main"
+        ]
+      }
+    },
+    "rules": [
+      {
+        "type": "deletion"
+      },
+      {
+        "type": "non_fast_forward"
+      },
+      {
+        "type": "pull_request",
+        "parameters": {
+          "required_approving_review_count": 0,
+          "dismiss_stale_reviews_on_push": false,
+          "required_reviewers": [],
+          "require_code_owner_review": false,
+          "require_last_push_approval": false,
+          "required_review_thread_resolution": true,
+          "require_extra_approval_for_unattributed_changes": false,
+          "allowed_merge_methods": [
+            "merge",
+            "squash"
+          ]
+        }
+      },
+      {
+        "type": "required_status_checks",
+        "parameters": {
+          "strict_required_status_checks_policy": true,
+          "do_not_enforce_on_create": false,
+          "required_status_checks": [
+            {
+              "context": "Required",
+              "integration_id": 15368
+            },
+            {
+              "context": "license/cla",
+              "integration_id": 128106
+            }
+          ]
+        }
+      }
+    ],
+    "bypass_actors": [],
+    "enforcement": "active"
+  },
+  "develop_ruleset": {
+    "name": "Protect develop",
+    "target": "branch",
+    "conditions": {
+      "ref_name": {
+        "exclude": [],
+        "include": [
+          "refs/heads/develop"
+        ]
+      }
+    },
+    "rules": [
+      {
+        "type": "deletion"
+      },
+      {
+        "type": "non_fast_forward"
+      },
+      {
+        "type": "pull_request",
+        "parameters": {
+          "required_approving_review_count": 0,
+          "dismiss_stale_reviews_on_push": false,
+          "required_reviewers": [],
+          "require_code_owner_review": false,
+          "require_last_push_approval": false,
+          "required_review_thread_resolution": true,
+          "require_extra_approval_for_unattributed_changes": false,
+          "allowed_merge_methods": [
+            "merge",
+            "squash"
+          ]
+        }
+      },
+      {
+        "type": "required_status_checks",
+        "parameters": {
+          "strict_required_status_checks_policy": true,
+          "do_not_enforce_on_create": false,
+          "required_status_checks": [
+            {
+              "context": "Required",
+              "integration_id": 15368
+            },
+            {
+              "context": "license/cla",
+              "integration_id": 128106
+            }
+          ]
+        }
+      }
+    ],
+    "bypass_actors": [],
+    "enforcement": "active"
+  },
+  "release_tag_creation": {
+    "name": "Release tag creation",
+    "target": "tag",
+    "enforcement": "active",
+    "conditions": {
+      "ref_name": {
+        "include": [
+          "refs/tags/v*"
+        ],
+        "exclude": []
+      }
+    },
+    "bypass_actors": [
+      {
+        "actor_id": 168336203,
+        "actor_type": "User",
+        "bypass_mode": "always"
+      }
+    ],
+    "rules": [
+      {
+        "type": "creation"
+      }
+    ]
+  },
+  "release_tag_immutability": {
+    "name": "Release tags cannot change",
+    "target": "tag",
+    "enforcement": "active",
+    "conditions": {
+      "ref_name": {
+        "include": [
+          "refs/tags/v*"
+        ],
+        "exclude": []
+      }
+    },
+    "bypass_actors": [],
+    "rules": [
+      {
+        "type": "update"
+      },
+      {
+        "type": "deletion"
+      },
+      {
+        "type": "non_fast_forward"
+      }
+    ]
+  },
+  "release_environment": {
+    "wait_timer": 0,
+    "prevent_self_review": false,
+    "reviewers": [
+      {
+        "type": "User",
+        "id": 168336203
+      }
+    ],
+    "deployment_branch_policy": {
+      "protected_branches": false,
+      "custom_branch_policies": true
+    },
+    "can_admins_bypass": false
+  },
+  "release_deployment_policy": {
+    "name": "main",
+    "type": "branch"
+  },
+  "immutable_releases": true
+}

@@ -168,8 +168,8 @@ public 이후 검증 실패는 기존 release의 overwrite/re-tag가 아니라
 
 | Order | ID | Scope | Status |
 | --- | --- | --- | --- |
-| 1 | M13-001 | protected main/develop/tag/release environment/immutable release activation | BLOCKED |
-| 2 | M13-002 | `feature → develop → main` 실제 protected PR qualification | NOT_STARTED |
+| 1 | M13-001 | protected main/develop/tag/release environment/immutable release activation | COMPLETE |
+| 2 | M13-002 | `feature → develop → main` 실제 protected PR qualification | IN_PROGRESS |
 | 3 | M13-003 | canonical release build·manifest·attestation·OS package assets | NOT_STARTED |
 | 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | NOT_STARTED |
 | 5 | M13-005 | exact publication·clean Host bootstrap·doctor·cross-ecosystem smoke·quarantine | NOT_STARTED |
@@ -461,20 +461,13 @@ M13은 기능 개발 milestone이 아니다.
 M13 진입 후 새로운 ecosystem이나 주요 product feature를 추가하지 않는다.
 release-blocking bug가 아닌 개선 아이디어는 post-release backlog로 넘긴다.
 
-Status: BLOCKED
+Status: IN_PROGRESS — M13-001 configuration complete; M13-002 baseline and local
+preparation active, with live enforcement qualification still pending.
 
-Blocker:
-
-```text
-M12 Ecosystem Expansion 미완료
-M12-02 final red-team gate 미완료
-repository owner의 production activation 승인 전
-```
-
-Next:
-
-```text
-M12 완료
-→ 17-m12-02-fix-list.md close
-→ M13-001 release environment / tag policy / Ruleset activation
-```
+M12/M12-02 technical acceptance and PR29/30 delivery are complete. Main
+CI38328099413 is SUCCESS. The owner authorized live protection configuration on
+2026-10-13. Work-item scope, acceptance and current missing work are owned by
+[current work in the Queue](./02-current-work-queue.md#m13-002--protected-branch-qualification).
+The no-known-release-blocking-finding condition remains subject to disposition
+of guest Go patch, Race fixtures and advisory follow-ups. Protection settings
+alone do not authorize publication or close that release-readiness condition.

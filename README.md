@@ -8,9 +8,10 @@
 - Go module path: `github.com/rahoney/heliopause`
 - 구현 언어: Go
 - CLI framework: Cobra
-- 현재 상태: M0–M11 qualification 및 post-qualification release hardening, M12-001~005 생태계 acceptance·전체 qualification·feature freeze와 M12-02 최종 red-team/fix gate 완료. PR29 reviewer merge와 main CI 확인 후 M13 Production Release & Operations로 이어간다.
-- 완료 작업: M12-02 — final red-team/fix gate (`COMPLETE`)
-- 현재 작업: SEC-2026-10-12 — Go 보안 패치 로컬 검증; 기존 test harness race로 qualification `BLOCKED`, M13은 `NOT_STARTED`
+- 현재 상태: M0–M11 qualification 및 post-qualification release hardening, M12-001~005 생태계 acceptance·전체 qualification·feature freeze와 M12-02 최종 red-team/fix gate 완료. PR29·PR30 merge와 main CI를 확인했고 M13-001 저장소 보호 설정 적용·재조회를 완료했다.
+- 완료 작업: M12·M12-02 및 보안 패치 전달, M13-001 — 저장소 보호 설정 (`COMPLETE`)
+- 현재 작업: M13-002 — 보호된 PR 흐름 실제 검증 (`IN_PROGRESS`); baseline·로컬 후보 준비 중이며 실제 push·merge는 사용자 승인 필요
+- 다음 작업: M13-003 — release build·OS package (`NOT_STARTED`, 이번 요청 범위 밖); 공개 출시 준비 완료는 별도 판정
 - 진행 상태의 canonical owner: [`docs/planning/02-current-work-queue.md`](docs/planning/02-current-work-queue.md)
 
 Heliopause는 Apache-2.0으로 배포한다. 외부 기여는 `CLA.md`의 Harmony
@@ -28,7 +29,7 @@ Copyright License 및 Option Five 조건과 자동 CLA status check를 충족해
 ## Build
 
 Heliopause는 Go `1.26.9` 이상이 필요하며, 개발·CI toolchain은 Go `1.26.9`로 고정한다.
-새 툴체인의 보안 검사와 로컬 검증 범위·남은 Race blocker는
+새 툴체인의 검증 이력과 별도 guest runtime·Race 후속 항목은
 [검증 보고서](docs/engineering/evidence/security-go1269/README.md)를 따른다.
 
 다음 build 명령은 source checkout을 가진 개발자·검증자가 사용하는 경로다. 일반
