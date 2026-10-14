@@ -10,7 +10,7 @@
 - CLI framework: Cobra
 - 현재 상태: M0–M11 qualification 및 post-qualification release hardening, M12-001~005 생태계 acceptance·전체 qualification·feature freeze와 M12-02 최종 red-team/fix gate 완료. PR29·PR30 merge와 main CI를 확인했고 M13-001 저장소 보호 설정 적용·재조회를 완료했다.
 - 완료 작업: M12·M12-02 및 보안 패치 전달, M13-001 — 저장소 보호 설정 (`COMPLETE`)
-- 현재 작업: M13-002 — 보호된 PR 흐름 실제 검증 (`IN_PROGRESS`); PR31 정상 develop 병합·리뷰 대화 차단 확인. PR32 병합 요청 1회는 HTTP405로 거절됐으며 필수 검사 expected 응답으로 stale 원인 분리는 미완료; 추가 요청은 중단했고 남은 경로는 별도 승인 필요
+- 현재 작업: M13-002 — 보호된 PR 흐름 실제 검증 (`IN_PROGRESS`); PR31 정상 develop 병합·리뷰 차단 확인. PR32의 단회 HTTP405는 읽기 전용 rule-suite 분석으로 실제 후보0fd006b의 Strict 필수 검사 실패에 연결했다. 독립 stale 원인 분리는 미완료이며 남은 시험·승인 묶음 계획을 정리했다.
 - 다음 작업: M13-003 — release build·OS package (`NOT_STARTED`, 이번 요청 범위 밖); 공개 출시 준비 완료는 별도 판정
 - 진행 상태의 canonical owner: [`docs/planning/02-current-work-queue.md`](docs/planning/02-current-work-queue.md)
 

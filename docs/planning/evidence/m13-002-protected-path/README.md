@@ -5,6 +5,47 @@ merge and its earlier conversation rejection passed. PR32's separately approved
 one-shot ordinary merge request was rejected HTTP405. Its reported expected-check
 blocker does not isolate stale enforcement; further mutations have stopped.
 
+## Read-only Strict-check analysis
+
+The [analysis](./strict-check-analysis.json) adds GitHub rule-suite4516024742 to
+the preserved one-shot result without repeating the request or its CI. Its target,
+before84591ef, original actor and UTC-normalized time match the sole request;
+the proposed commit message identifies PR32. GitHub exposes no HTTP request-ID
+join, so these explicit correlation fields are retained. The failed rule is
+`required_status_checks` in active develop ruleset24969937. Its exact two contexts
+are `Required`/App15368 and `license/cla`/App128106. The other evaluations
+(`pull_request`, `non_fast_forward`, `deletion`) passed for this ordinary merge.
+
+| SHA role | SHA | Required | license/cla | Identity boundary |
+| --- | --- | --- | --- | --- |
+| PR32 head, registered Check Run source | ff441d3 | SUCCESS | SUCCESS |10 Check Runs/suite104052117715 and one genuine status on this SHA |
+| Old test merge |8e5067f | absent | absent | parents2e196a1/ff441d3; tree7cbc074 equals the historically qualified head |
+| Current potential/synthetic merge |3635960 | absent | absent | parents84591ef/ff441d3; tree2f2795b |
+| Actual proposed update in the failed rule suite |0fd006b | absent | absent | parents84591ef/ff441d3; tree2f2795b, distinct SHA from3635960 |
+
+Thus the expected contexts belong to rule evaluation of the proposed0fd006b
+update, not a failed rerun of the old head's green checks. The rule-suite identifies
+the evaluated update and failed rule; it does not reveal every internal status
+lookup or establish that3635960 was the sole lookup SHA. Equal trees do not move
+check authority between commits. `baseRef.target.oid` confirms live84591ef while
+`baseRefOid` still reports the older2e196a1 snapshot.
+
+[GitHub's Strict contract](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets#require-status-checks-to-pass-before-merging)
+requires base freshness in addition to required checks. The documented
+[head/test-merge fallback](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks#conflicts-between-head-commit-and-test-merge-commit)
+does not remove that freshness prerequisite. The observed rejection is consistent
+with this combined Strict flow. Proven: a stale candidate was actually rejected
+by the exact Strict required-check rule with no branch change. Still unproven:
+freshness-only causality with missing candidate checks removed as a variable.
+The original `stale-rejection.json` and its independent-stale NOT_QUALIFIED label
+remain byte-identical. Repeating the same develop attempt is not recommended.
+Accepting the bounded Strict-flow evidence for the operational stale case is an
+explicit reviewer evidence decision, not an automatic PASS or a weakened rule.
+
+The `non_fast_forward` PASS above means the proposed merge is forward from its
+first parent84591ef. It is not a hostile force-push rejection. Rule-suite API
+semantics are documented in [GitHub's repository rule-suite API](https://docs.github.com/en/rest/repos/rule-suites).
+
 ## PR32 one-shot rejection — expected-check cause, stale not qualified
 
 The [result](./stale-rejection.json) records the 2026-10-14 approval and sole request.
@@ -224,7 +265,128 @@ The original M13-001 `/tmp/haa-m13-admin-audit` directory is currently absent.
 The versioned M13-001 plan/result/main-ci remain available. This audit preserves
 new responses and never presents an old digest as a newly recovered raw response.
 
-## Execution and evidence plan
+## Remaining qualification and approval plan
+
+This coverage mapping reuses existing executions. It does not rerun M13-001,
+PR31, historical full CI or the PR32 request. Apply target-specific claims only
+to their recorded branch; a required App binding is not an isolated negative.
+
+| Acceptance behavior | develop evidence | main evidence / remaining gap | Minimum next work |
+| --- | --- | --- | --- |
+| Normal feature → develop | PR31 actual merge PASS | Not this behavior's target | Reuse; another merge only if needed to deliver reviewed records |
+| Required/CLA successful admission | Fresh PR31/32 results preserved | New develop→main candidate required | Use the required PR CI once per final candidate |
+| Missing Required alone | Not isolated by the two-context PR32 rejection | NOT_RUN | During needed signed-candidate PR CI, capture pending Required only when genuine CLA is already green |
+| Missing CLA alone | NOT_RUN | NOT_RUN | Genuine unsigned contribution, Required green, real CLA absent/failed; no fabricated author/status/signature |
+| Stale under Strict checks | Actual target-rule rejection proven; independent freshness-only remains unqualified | NOT_RUN | Decide bounded evidence sufficiency; reuse a needed main sibling for its target-specific stale case |
+| Unresolved conversation | PR31 actual rejection PASS | NOT_RUN | One main thread/create/ordinary rejection/resolve sequence on a needed green PR |
+| Ordinary admin blocked by a live rule | PR31 admin-permission conversation rejection already proves this bounded behavior | NOT_RUN | Reuse the main conversation attempt for this same ordinary-admin requirement |
+| Direct push without PR | NOT_RUN | NOT_RUN | One reviewed documentation-only fast-forward candidate/attempt per target; preserve rule-specific evaluation even if other blockers also fail |
+| Hostile non-fast-forward update | No actual rejection; normal-merge PASS is inapplicable | No actual rejection found | Separate history-preserving test-scope decision below |
+| Normal develop → main / final audit | Delivery and remaining develop cases first | NOT_RUN | Exact fresh PR CI/CLA, reviewer-authorized merge, new main CI and final evidence audit |
+
+The admin row follows this plan's declared ordinary-endpoint test. Reusing PR31's
+admin actor under a real unresolved conversation does not claim a special CLI,
+UI or API override mode was executed. A separately requested special mode would
+need its own precise requirement; duplicating the ordinary admin request adds
+no coverage. Similarly, do not repeat the already proven combined two-context
+required-check rejection merely to collect another identical405.
+
+### Minimum sequence without rewriting protected history
+
+1. Decide two evidence boundaries before remote work: whether the existing bounded
+   Strict-flow rejection satisfies the operational develop stale case, and what
+   force-push evidence can satisfy the original target-specific requirement.
+   Neither independent-stale nor force-push acceptance is silently waived.
+2. Prepare exact doc-only fast-forward direct-push candidates from fresh main and
+   develop heads. A future approved batch can attempt each once before changing
+   either base through PRs. A rule-suite `pull_request` failure identifies the PR
+   gate; additional missing-check failures are labelled combined. If accepted,
+   stop: even forward-only success moves a protected ref and may start CI.
+3. If both targets need isolated missing-CLA coverage, use one willing real
+   unsigned contributor and one genuine doc-only probe commit based on the frozen
+   current develop. Open its develop and main PRs before any base advancement or
+   signature. Wait for each PR's genuine Required result, then make at most one
+   approved exact-head rejection attempt per target while CLA is truly absent or
+   failed. Only after both captures may the contributor personally sign. A prior
+   signature is not revoked; no one signs for the contributor. If this state is
+   unavailable, leave the isolated CLA cases open rather than manufacture it.
+4. Keep the signed main probe as a sibling: its doc marker must be disjoint from
+   the final delivery candidate and absent from that candidate. Do not merge the
+   probe into develop, or its later inclusion/auto-closure could remove the main
+   stale test. The develop probe can be closed only within an approved cleanup
+   scope; preserve its branch, evidence and original head.
+5. Deliver the reviewed records through a signed feature→develop PR. Capture its
+   missing-Required case once while CLA is green and Required is genuinely pending;
+   then let the same CI finish. Use a normal protected merge only for delivery,
+   not to repeat PR31 qualification. Prepare local forward merges before publishing
+   the final candidate, rather than knowingly publishing a stale intermediate head.
+6. Open the actual develop→main PR. Its one required CI provides the main
+   missing-Required opportunity under the same guards. After green CI/CLA, use one
+   explicitly approved unresolved thread and ordinary admin rejection to cover
+   both main conversation and ordinary-admin behavior, then resolve that thread.
+7. The reviewer approves the exact final develop→main merge separately after its
+   current conditions are reviewable. This necessary base advancement can make
+   the retained main probe stale. If fresh reads show its original head/green
+   contexts, a genuine new base delta, BEHIND, no conflict or unresolved thread,
+   one specifically approved main stale attempt supplies that target's evidence.
+   No extra base-advancing PR or repeated develop stale attempt is needed. If the
+   probe is merged/closed, not stale or otherwise blocked, stop the dependent case.
+8. Preserve actual rule-suite/ref evidence, verify the new main CI and complete
+   the final acceptance audit. Final documentation delivery may require its own
+   reviewed candidate; do not claim old CI applies to a new SHA. Close probe PRs
+   only under an explicit cleanup scope, without deleting or rewriting refs.
+
+Each final candidate gets only its necessary PR CI. Do not suppress checks, make
+deliberately failing CI, revoke CLA, cancel/retry runs to manufacture a window,
+or run CUDA/full product qualification for these documentation-only probes.
+Isolated CLA cases may require two target PR runs even for the same contributor;
+they cannot be replaced by one combined pending Required+CLA response. Actual
+CI counts depend on participants, valid windows and final candidate changes;
+no fixed total or guaranteed capture window is asserted.
+
+### Approval bundles and separate decisions
+
+| Scope | Can be reviewed as one bounded approval | Guard / separate approval |
+| --- | --- | --- |
+| Forward-only qualification batch | Listed doc-only feature pushes and PR creation; at most one targeted negative per named condition/ref; one main test thread/create/resolve sequence; conditional green feature→develop delivery; optional probe PR closure without ref deletion | First present exact candidates/diffs, actions/count limits and current refs. Fresh check/App/thread/rule guards before every operation. Any unexpected acceptance or transport uncertainty stops all further mutation; no recovery/retry |
+| Genuine CLA participant | The above batch can include the contributor's actual commit and two negative captures before signing | Identify a willing unsigned contributor first. Their real signature is a personal action, not delegated agent approval |
+| Final normal main merge | Exact develop→main candidate and its fresh Required/CLA/review evidence | Separate reviewer approval when the final SHA/base and CI are known; optionally name the conditional retained-main-probe attempt and its one-call limit in that same final scope |
+| Force-push evidence | Local graph checks and existing rule-suite reads are already allowed | A protected disposable probe requires separately approved setup and an explicit acceptance-scope decision; it is not exact-main/develop execution evidence |
+| Actual non-fast-forward main/develop update | Excluded from the forward-only batch | A separate high-risk decision is required; if enforcement fails it rewrites the protected ref. No automatic restoration is part of any proposal |
+
+This is a plan, not new remote authorization. No push, merge, protection change,
+release or CI dispatch occurred during this analysis. The forward-only bundle is
+not risk-free: an expected-to-fail operation can succeed and advance a protected
+ref. The finite candidate/action list must be made concrete before execution
+approval; this document does not authorize arbitrary later SHAs or retries.
+
+### Non-fast-forward evidence without damaging production history
+
+Prefer matching existing live rule-suite evidence with an actual
+`non_fast_forward` failure. None was found in the bounded queries (develop's
+last24h failures were conversation/required-check cases; main's last7d fail
+query was empty), and prior execution records contain no authorized hostile
+force attempt. This does not prove absence outside those query windows.
+
+Without such evidence, first validate the proposed ancestry locally. A future
+separately protected disposable branch/repository can exercise the real GitHub
+non-fast-forward rule while leaving production main/develop histories intact.
+It needs approved setup with no weakening of existing rules. Its result proves
+that probe's enforcement and may be combined with live main/develop wiring only
+if the user/reviewer explicitly accepts that evidence method. Under the current
+exact-target requirement, main/develop hostile execution otherwise stays open.
+
+There is no guaranteed harmless live non-fast-forward update of an existing
+main/develop ref if its protection fails. A wrong lease, dry-run, local refusal,
+`force=false` API validation, a force flag on a fast-forward/no-op, or an atomic
+push rejected only by another ref does not test the target rule. A backup ref
+preserves reachability but does not make a production rewind history-preserving.
+Do not execute a rewind to discover whether rollback will be available. If the
+requirement remains exact-target hostile execution, safe closure needs either
+matching real evidence or a separately accepted risk; otherwise M13-002 remains
+open. M13-003 must not start to bypass that unresolved decision.
+
+## Execution and evidence controls
 
 Every live case begins with fresh refs, exact PR head/base/merge-candidate SHAs,
 actor permission and effective-rule readback. Preserve the request, HTTP/exit

@@ -125,8 +125,12 @@ PR32는 다른 검사·리뷰·충돌 차단 없이 CLEAN→BEHIND로 변경됐�
 [병합 및 stale 관측 증거](./docs/planning/evidence/m13-002-protected-path/develop-merge.json)를 보존했다.
 별도 승인한 PR32 일반 병합 요청 1회는 HTTP405로 거절됐다. 서버 응답은 필수 검사
 2개가 expected라는 사유이며, 독립 stale 차단 PASS는 확정하지 않았다. PR32 미병합과
-세 브랜치 HEAD 동일성을 확인하고 추가 요청을 중단했다. 원본·해석 경계와 남은 순서는
-[시험 결과](./docs/planning/evidence/m13-002-protected-path/stale-rejection.json)를 따른다.
+세 브랜치 HEAD 동일성을 확인하고 추가 요청을 중단했다. 기존 시험 원본은 그대로
+보존하고 읽기 전용 rule-suite4516024742 분석으로 실제 업데이트 후보0fd006b와
+실패한 Strict required_status_checks를 확인했다. 독립 freshness-only PASS는
+선언하지 않았다. [분석](./docs/planning/evidence/m13-002-protected-path/strict-check-analysis.json)과
+[남은 검증·승인 계획](./docs/planning/evidence/m13-002-protected-path/README.md#remaining-qualification-and-approval-plan)이
+필수 참가자·조건부 forward-only 묶음·별도 main merge/force-push 결정을 구분한다.
 guest runtime·Race 등 출시 영향 판단은 남는다. 현재 milestone과
 active/next work item은 [Current Work Queue](./docs/planning/02-current-work-queue.md)를 참조한다.
 

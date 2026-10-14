@@ -466,6 +466,10 @@ rejection and normal PR31 merge verified. The single approved PR32 request was
 rejected HTTP405 for expected required checks; independent stale enforcement is
 not qualified. Further mutations stopped. Remaining negative cases, develop-to-main
 path and final qualification remain open; exact evidence is owned by the Queue.
+Read-only rule-suite analysis now identifies the proposed update and failed Strict
+required-check rule; the original independent-stale qualification remains open.
+The Queue links the minimal remaining execution and approval plan. No release or
+additional remote mutation is authorized by that planning update.
 
 M12/M12-02 technical acceptance and PR29/30 delivery are complete. Main
 CI38328099413 is SUCCESS. The owner authorized live protection configuration on

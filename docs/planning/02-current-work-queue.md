@@ -12,7 +12,7 @@ Milestone status: IN_PROGRESS (public release readiness not declared)
 Active work item: M13-002 — protected branch qualification
 Next work item: M13-003 — canonical release build and OS packages (not authorized)
 Next work item status: NOT_STARTED / Ready: No — M13-002 acceptance remains open
-Ready: PR32 one-shot request rejected HTTP405 (required checks expected); stale cause not isolated; further mutations stopped
+Ready: Read-only rule-suite analysis identifies evaluated SHA0fd006b and required-check failure; remaining plan ready; remote actions unapproved
 ```
 
 ### SEC-2026-10-12 — Scheduled Security Go patch
@@ -2729,7 +2729,7 @@ comparison establish actual develop advancement. Old checks are not new-base CI.
 At that phase, actual stale rejection was NOT_RUN and no PR32 merge request had
 been sent. The subsequent one-shot execution below supersedes that pending label.
 
-Latest phase: [PR32 rejection result](./evidence/m13-002-protected-path/stale-rejection.json).
+Executed phase: [PR32 rejection result](./evidence/m13-002-protected-path/stale-rejection.json).
 On 2026-10-14 the explicitly approved ordinary exact-head merge request was sent
 once after fresh HEADff441d3/develop84591ef/BEHIND, successful required Required/CLA,
 zero unresolved threads and admin bypass never were confirmed. HTTP405 reports
@@ -2740,8 +2740,25 @@ which is not a protected-branch update. The specific internal refresh/evaluation
 cause is unknown. This is a real rejection with an unexpected reported blocker,
 not an isolated stale, missing Required, missing CLA or separate bypass PASS.
 The one-shot authorization is consumed; no retry or other mutation was made.
-Next: review existing head/test-merge/effective-check evidence read-only and define
-a rule-preserving isolation/disposition before requesting any further mutation.
+Read-only follow-up: [Strict-check analysis](./evidence/m13-002-protected-path/strict-check-analysis.json)
+correlates rule-suite4516024742 with the original request by target/before SHA,
+actor, normalized time and PR32 commit/parents. The actual proposed update is
+0fd006b, not headff441d3 or potential merge3635960. Only required_status_checks
+in rule24969937 failed; its exact contexts are Required/App15368 and
+license/cla/App128106. The head retains both successes;0fd006b/3635960 each lack
+checks/statuses and share advanced-base parents/tree. This proves the bounded
+Strict-rule stale-candidate rejection, not freshness-only causality. Original
+stale-rejection bytes and its independent NOT_QUALIFIED label are preserved.
+No remote mutation or CI was triggered; the same develop attempt will not be repeated.
+The [remaining qualification plan](./evidence/m13-002-protected-path/README.md#remaining-qualification-and-approval-plan)
+maps existing PR31 ordinary-admin/conversation proof without duplicate calls and
+combines future main conversation/admin coverage. It separates bounded doc-only
+forward operations from final reviewer main merge and force-push scope/risk.
+Next decisions: bounded Strict-flow evidence sufficiency, a willing genuinely
+unsigned CLA contributor, and the force-push evidence method. A protected disposable
+probe cannot silently replace exact-main/develop hostile evidence; no harmless
+live non-fast-forward update is guaranteed if enforcement fails. Prepare exact
+candidate/action inventories before requesting a forward-only approval bundle.
 Target-specific remaining negatives, normal develop-to-main and final audit stay
 open. Current audit remains IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO /
 ACCEPTANCE_CLOSED=NO. M13-003..005 remain NOT_STARTED.
