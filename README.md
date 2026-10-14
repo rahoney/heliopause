@@ -10,7 +10,7 @@
 - CLI framework: Cobra
 - 현재 상태: M0–M11 qualification 및 post-qualification release hardening, M12-001~005 생태계 acceptance·전체 qualification·feature freeze와 M12-02 최종 red-team/fix gate 완료. PR29·PR30 merge와 main CI를 확인했고 M13-001 저장소 보호 설정 적용·재조회를 완료했다.
 - 완료 작업: M12·M12-02 및 보안 패치 전달, M13-001 — 저장소 보호 설정 (`COMPLETE`)
-- 현재 작업: M13-002 — 보호된 PR 흐름 실제 검증 (`IN_PROGRESS`); 기존 PR31·PR32 증거를 보존하고 [정확한 후보·승인 묶음](./docs/planning/evidence/m13-002-protected-path/forward-only-plan.json)을 로컬 준비했다. 실제 미서명 기여자가 없어 CLA 부정 시험은 `NOT_TESTED`로 보류한다. 나머지 검증은 진행 가능하나 acceptance 종료·최종 main 병합·출시는 별도 조건과 승인이 필요하다. 원격 변경은 하지 않았다.
+- 현재 작업: M13-002 — 보호된 PR 흐름 실제 검증 (`IN_PROGRESS`); 승인 묶음 A는 direct push 두 건 차단을 확인한 뒤 PR32 main-retarget의 `BLOCKED` 상태로 3/8회에서 중단했다. 병합 요청·새 PR 생성은 0회다. [실행 결과·다음 승인 범위](./docs/planning/evidence/m13-002-protected-path/bundle-a-result.json)를 보존했으며 CLA 부정 시험은 `NOT_TESTED`다. 정상 main 병합·출시는 별도 조건과 승인이 필요하다.
 - 다음 작업: M13-003 — release build·OS package (`NOT_STARTED`, 이번 요청 범위 밖); 공개 출시 준비 완료는 별도 판정
 - 진행 상태의 canonical owner: [`docs/planning/02-current-work-queue.md`](docs/planning/02-current-work-queue.md)
 

@@ -2668,6 +2668,12 @@ verified. The separately approved PR32 exact-head request was rejected HTTP405 f
 expected required checks. PR32 remains open/BEHIND with unchanged head and refs;
 independent stale enforcement is not qualified. One-shot approval is consumed and
 further remote mutations are not authorized.
+Current execution update: the later approved bundle A stopped at A3 after3/8
+writes. Both target direct-push PR-gate rejections passed; PR32 retarget succeeded
+but its main gate remained BLOCKED after read-only settlement. A4..A8 NOT_RUN,
+zero merge requests/new PRs. Current PR32 base is main, not develop. See the
+[bundle result](./evidence/m13-002-protected-path/bundle-a-result.json) and
+[unapproved revised scope](./evidence/m13-002-protected-path/bundle-a-resume-plan.json).
 Read: [M13 contract](./18-m13-production-release-operations-contract.md),
 [CI gate](../engineering/04-ci-quality-gate.md), CONTRIBUTING.md,
 [M13-001 evidence](./evidence/m13-001-protected-activation/README.md).
@@ -2795,6 +2801,26 @@ after required negatives/gap disposition. Actual main/develop non-fast-forward
 and disposable-probe setup/method decisions remain separate. No remote write,
 new CI, protection edit, release or M13-003 work occurred during preparation.
 Next: review the finite scope A; no execution authorization is implied.
+
+Bundle A execution (supersedes the preceding preparation's next action): direct
+main6b3ae56 and develop68916c7 pushes each received GH013 with explicit PR-rule
+failure plus expected-check failure, suites4519783788/4519788734. Both refs stayed
+main2e196a1/develop84591ef. Retarget PR32/headff to main returned200; subsequent
+REST/GraphQL BLOCKED prevented the planned isolated conversation case. Head
+Required/CLA remain successful/required and threads0; actual main→head is1ahead/
+0behind, while potential3635960 retains obsolete develop-parent metadata. That
+observation does not establish the internal blocker. Writes stopped permanently
+for this invocation at3/8; no merge API request, thread, new PR, rerun or repair.
+Original frozen plan and prior results remain unchanged. CLA stays NOT_TESTED.
+
+Next approval proposal: five bounded writes on one necessary actual develop→main
+PR (create, guarded Required-only negative, then green-CI thread/conversation-admin
+negative/resolve), exacthead84591ef/base2e196a1, existing18 documentation/evidence
+paths. PR32 remains untouched and direct cases are reused. This revised scope is
+not authorized; the normal positive merge approval is not ready until actual PR,
+fresh CI/CLA and required negative results/dispositions exist. No guessed PR ID
+or historical CI substitution. Current audit remains IMPLEMENTED=YES / WIRED=YES /
+QUALIFIED=NO / ACCEPTANCE_CLOSED=NO; M13-003..005 stay NOT_STARTED.
 
 Force-push needs a design/decision compatible with existing history preservation;
 genuine missing CLA may need a willing real unsigned participant. Do not weaken

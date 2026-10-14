@@ -3,7 +3,58 @@
 Status: IN_PROGRESS / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO. PR31 normal develop
 merge and its earlier conversation rejection passed. PR32's separately approved
 one-shot ordinary merge request was rejected HTTP405. Its reported expected-check
-blocker does not isolate stale enforcement; further mutations have stopped.
+blocker does not isolate stale enforcement. The later approved bundle A stopped
+after three writes at the PR32 main-retarget prerequisite; see the current result.
+
+## Bundle A execution — stopped at retarget prerequisite
+
+The user approved the exact `a770a9d` frozen plan, maximum8 remote writes.
+[Actual result](./bundle-a-result.json): **3 writes, zero merge requests**.
+
+| Action | Actual result | Evidence boundary |
+| --- | --- | --- |
+| A1 main direct push | Server GH013 rejection; suite4519783788 fails pull_request and required_status_checks; main unchanged | Actual direct-push PR gate PASS, combined with missing-check blocking; no isolated Required/CLA claim |
+| A2 develop direct push | Server GH013 rejection; suite4519788734 fails the same two rules; develop unchanged | Same bounded direct-push PASS on develop |
+| A3 PR32 base develop→main | HTTP200, exact headff441d3 retained; both protected refs and feature unchanged | Metadata change succeeded, but required CLEAN prerequisite did not |
+| A4..A8 | NOT_RUN_AFTER_STOP | No review thread, conversation/admin merge request, new develop→main PR or Required-only request |
+
+Retarget's immediate REST state was UNKNOWN while GraphQL was BLOCKED. The
+permitted read-only settlement check subsequently returned BLOCKED in both
+interfaces, despite10 successful head Check Runs, genuine required CLA success,
+zero unresolved threads and MERGEABLE content. The actual main2e196a1→headff441d3
+comparison is1ahead/0behind. Potential merge3635960 still reports develop84591ef/
+headff parents and zero checks/statuses. That obsolete-parent metadata is an
+observation; the exact internal BLOCKED cause is **not established**. Do not
+declare a GitHub bug, failed CLA, genuine main staleness or conversation failure.
+Only the original PR32 CI38403196699/attempt1 was observed; no automatic retarget
+rerun was found in the bounded head/event query. No manual CI was started.
+
+The A3 guard requires CLEAN before adding a thread. Its stop marker is retained
+and all later writes were stopped. No PATCH retry, head update, retarget reversal,
+status refresh, automatic recovery or cleanup mutation occurred. Main2e196a1,
+develop84591ef and featureff441d3 are unchanged; PR32 is open/unmerged on main.
+The frozen plan and original stale/Strict/conversation/develop-merge records are
+byte-identical. Full HTTP bodies/headers and Git byte output remain local under
+`docs/github-logs/m13-002-bundle-a/`; versioned selected fields, original Git
+rejection output and hash inventories bind the receipts without editing them.
+
+The [revised proposal](./bundle-a-resume-plan.json) is **not authorized**. Its
+maximum5 writes use the already-needed develop84591ef→main2e196a1 PR: create it,
+capture one genuine Required-only opportunity during its natural CI, then after
+green gates create one diff thread, attempt one conversation/admin rejection and
+resolve only that thread after expected rejection. No new push or extra probe
+CI is proposed; PR32 stays untouched and direct-push PASS is not repeated. The
+new PR number binds only to its successful create response/readback. The exact
+thread is line8 of the reviewed18-file payload's protected-path README at84591ef.
+Every write has fresh rules/refs/App/thread guards and immediate stop controls.
+
+The next normal develop→main merge approval is **not ready**: no such PR or fresh
+84591ef PR CI exists yet, and main conversation/admin qualification is missing.
+After the revised scope's results, separately review its exact PR/head84591ef/
+base2e196a1 and green gates for one intermediate normal merge. This cannot be
+pre-approved using historical CI or an invented PR number. CLA negative remains
+NOT_TESTED; non-fast-forward/main stale/final audit and final merge dispositions
+remain open. M13-002 stays IN_PROGRESS / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO.
 
 ## Concrete forward-only preparation
 

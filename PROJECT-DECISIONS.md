@@ -137,6 +137,12 @@ CLA 부정 시험은 `NOT_TESTED`로 보류한다. 기존 필수 설정·정상 
 나머지 검증은 계속할 수 있으나 현재 계약의 acceptance gap은 종료 전에 별도
 해소해야 한다. main stale을 최종 병합 전에 검증하기 위한 중간 보호 병합과
 최종 develop→main 병합, 실제 non-fast-forward 위험은 각각 별도 승인 범위다.
+후속 승인된 묶음 A는 두 direct push의 서버 PR-rule 차단을 확인했다. PR32의 main
+retarget는 성공했으나 읽기 전용 재확인에서도 BLOCKED여서3/8회 쓰기에서 중단했다.
+두 보호 브랜치·feature HEAD는 유지됐고 병합 요청·새 PR·수동 CI는0회다.
+[실행 결과](./docs/planning/evidence/m13-002-protected-path/bundle-a-result.json)와
+[수정 제안](./docs/planning/evidence/m13-002-protected-path/bundle-a-resume-plan.json)을 기록했다.
+다음 정상 병합은 실제 develop→main PR·새 CI·main 부정 결과가 확보된 뒤 승인 요청한다.
 guest runtime·Race 등 출시 영향 판단은 남는다. 현재 milestone과
 active/next work item은 [Current Work Queue](./docs/planning/02-current-work-queue.md)를 참조한다.
 
