@@ -131,6 +131,12 @@ PR32는 다른 검사·리뷰·충돌 차단 없이 CLEAN→BEHIND로 변경됐�
 선언하지 않았다. [분석](./docs/planning/evidence/m13-002-protected-path/strict-check-analysis.json)과
 [남은 검증·승인 계획](./docs/planning/evidence/m13-002-protected-path/README.md#remaining-qualification-and-approval-plan)이
 필수 참가자·조건부 forward-only 묶음·별도 main merge/force-push 결정을 구분한다.
+현재는 [정확한 로컬 후보·유한 실행 계획](./docs/planning/evidence/m13-002-protected-path/forward-only-plan.json)을
+준비했고 원격 변경은 하지 않았다. 사용자가 실제 미서명 기여자 부재를 확인하여
+CLA 부정 시험은 `NOT_TESTED`로 보류한다. 기존 필수 설정·정상 성공 증거는 유지한다.
+나머지 검증은 계속할 수 있으나 현재 계약의 acceptance gap은 종료 전에 별도
+해소해야 한다. main stale을 최종 병합 전에 검증하기 위한 중간 보호 병합과
+최종 develop→main 병합, 실제 non-fast-forward 위험은 각각 별도 승인 범위다.
 guest runtime·Race 등 출시 영향 판단은 남는다. 현재 milestone과
 active/next work item은 [Current Work Queue](./docs/planning/02-current-work-queue.md)를 참조한다.
 

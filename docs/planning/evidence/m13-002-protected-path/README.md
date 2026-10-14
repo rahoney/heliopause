@@ -5,6 +5,68 @@ merge and its earlier conversation rejection passed. PR32's separately approved
 one-shot ordinary merge request was rejected HTTP405. Its reported expected-check
 blocker does not isolate stale enforcement; further mutations have stopped.
 
+## Concrete forward-only preparation
+
+The [frozen plan](./forward-only-plan.json) records current refs, exact candidate
+SHAs, file/blob/mode inventories, eight bounded future writes, expected outcomes,
+side effects and stop conditions. This phase performed read-only requests and
+local preparation only; no remote write or CI was triggered. Existing PR31 and
+PR32 execution evidence is reused byte-for-byte. Develop's actual Strict-rule
+stale-candidate rejection is covered within its recorded scope; no repeat or
+independent freshness-only claim is proposed.
+
+| Future approval scope | Concrete content | Excluded / remaining dependency |
+| --- | --- | --- |
+| A: forward-only probes and PR preparation | One ordinary direct push each: main `6b3ae56d19a9b0d59e4df8585d834b647e9da558` from2e196a1; develop `68916c7ae69e6c9af8ad80c449a52f10fe6f3bc6` from84591ef. Each adds one six-line documentation marker. Then retarget PR32/headff441d3 to main2e196a1, create one exact inline thread, attempt one ordinary conversation/admin rejection, resolve only that thread after expected rejection. Open develop84591ef→main2e196a1 PR and use its necessary CI for one Required-only rejection if real CLA is already green | Max2 Git pushes +6 API mutations; no successful protected merge, force, rule edit, fabricated CLA, retry or automatic recovery. A negative unexpectedly accepted stops all further writes |
+| Intermediate main advancement and main stale case | Separately review the new develop→main PR's exact84591ef/head,2e196a1/base,18 existing documentation/evidence files and fresh gates before a normal merge. Its actual returned main SHA then makes retained PR32 a possible main stale candidate | Returned merge SHA and new PR number cannot be fixed now; main stale needs its own exact base/one-call approval. This is an intermediate qualification merge, not final closure |
+| Delivery and final main merge | After actual main advancement, prepare a forward delivery candidate including that main ancestry and chosen new records; its necessary PR CI can cover develop Required-only. Final develop→main follows only after applicable negatives and explicit disposition of remaining gaps | Local `de694147bee4ea6b35b287117a5eacc9ba060a8a` is a retained7d65a05 tree snapshot, not an approved future publish SHA. Final current head/base/diff/CI require separate reviewer approval |
+| Non-fast-forward | Prefer an explicitly accepted protected disposable probe method that preserves production history | No probe setup authorized. Actual hostile main/develop update always remains a separate high-risk approval; disposable evidence does not silently satisfy exact-target acceptance |
+
+The latest ordering supersedes the older generic sequence's step7 below: required
+main stale evidence cannot depend on the final merge that requires that evidence.
+An intermediate canonical develop→main advancement is needed unless another
+evidence method is explicitly accepted. Future PR/thread IDs bind only to the
+successful create receipt plus exact readback; never guess a PR number or accept
+an arbitrary later head. Every write requires fresh refs/rules/required App and
+thread guards. Base retarget can change timeline/review context, and any naturally
+triggered CI must be observed; no manual rerun is proposed.
+
+The user confirms no actual unsigned contributor is available. The isolated
+missing-CLA cases are **NOT_TESTED**, deferred while independent work continues.
+Existing required `license/cla`/App128106 wiring and actual signed PR successes
+are preserved. No arbitrary account, fake contribution, signature reset, CLA
+version change or injected status is permitted. The older participant sequence
+below is conditional background, not an executable part of A.
+
+The official CLA Assistant [README](https://github.com/cla-assistant/cla-assistant/blob/main/README.md),
+[troubleshooting](https://github.com/cla-assistant/cla-assistant/blob/main/COMMON_ISSUES.md)
+and [contribution guide](https://github.com/cla-assistant/cla-assistant/blob/main/CONTRIBUTING.md)
+provide hosted signing, real-status recheck and self-hosted development guidance.
+No applicable hosted negative-test mode was found in those reviewed sources.
+Recheck does not make a signed contributor unsigned and can write PR status;
+its URL was not invoked. An isolated self-hosted test does not prove production
+App128106 enforcement. This bounded review does not assert no provider method
+could exist.
+
+Under the unchanged [M13-002 contract](../../18-m13-production-release-operations-contract.md#m13-002--protected-branch-qualification),
+`missing CLA` is a required hostile case. NOT_TESTED therefore remains an
+acceptance gap: QUALIFIED=NO / ACCEPTANCE_CLOSED=NO, while other checks may proceed.
+Closure needs real applicable evidence or an explicit canonical acceptance/method
+disposition. Deferral does not waive the requirement. Formal release is not ready
+under the current ordered M13 plan; M13-003..005 are still NOT_STARTED. This is a
+project acceptance judgment, not a claim that NOT_TESTED itself fails GitHub CI
+or that the currently successful CLA service is broken. Final merge/release
+authorization remains separate.
+
+Both new direct-push candidates passed pinned canonical docs/security checks.
+The first sandbox security invocation had a compiled-cache lookup failure;
+its original FAIL is retained, and the same candidate/command passed with host
+cache access. The delivery snapshot's whole tree/modes equal already checked
+7d65a05, so those checks were reused. Raw captures, diffs, local retention refs,
+bundle and profile logs remain in local `docs/github-logs/m13-002-forward-plan/`;
+selected metadata/hashes are versioned in the frozen plan. Whole-worktree public
+API response scanner findings are not relabelled by versioned-candidate checks.
+
 ## Read-only Strict-check analysis
 
 The [analysis](./strict-check-analysis.json) adds GitHub rule-suite4516024742 to
@@ -276,7 +338,7 @@ to their recorded branch; a required App binding is not an isolated negative.
 | Normal feature → develop | PR31 actual merge PASS | Not this behavior's target | Reuse; another merge only if needed to deliver reviewed records |
 | Required/CLA successful admission | Fresh PR31/32 results preserved | New develop→main candidate required | Use the required PR CI once per final candidate |
 | Missing Required alone | Not isolated by the two-context PR32 rejection | NOT_RUN | During needed signed-candidate PR CI, capture pending Required only when genuine CLA is already green |
-| Missing CLA alone | NOT_RUN | NOT_RUN | Genuine unsigned contribution, Required green, real CLA absent/failed; no fabricated author/status/signature |
+| Missing CLA alone | NOT_TESTED | NOT_TESTED | Deferred: user confirms no real unsigned participant; preserve required binding/positive results, no fabricated author/status/signature |
 | Stale under Strict checks | Actual target-rule rejection proven; independent freshness-only remains unqualified | NOT_RUN | Decide bounded evidence sufficiency; reuse a needed main sibling for its target-specific stale case |
 | Unresolved conversation | PR31 actual rejection PASS | NOT_RUN | One main thread/create/ordinary rejection/resolve sequence on a needed green PR |
 | Ordinary admin blocked by a live rule | PR31 admin-permission conversation rejection already proves this bounded behavior | NOT_RUN | Reuse the main conversation attempt for this same ordinary-admin requirement |

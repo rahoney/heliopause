@@ -470,6 +470,12 @@ Read-only rule-suite analysis now identifies the proposed update and failed Stri
 required-check rule; the original independent-stale qualification remains open.
 The Queue links the minimal remaining execution and approval plan. No release or
 additional remote mutation is authorized by that planning update.
+Concrete local candidates/action limits are now recorded through the Queue;
+no remote write occurred. With no actual unsigned contributor available, the
+missing-CLA hostile case is NOT_TESTED/deferred, not waived or qualified.
+Other checks may proceed, while this unchanged acceptance gap requires actual
+evidence or an explicit canonical disposition before M13-002 closure. Final
+main merge and publication remain separately gated; M13-003..005 are NOT_STARTED.
 
 M12/M12-02 technical acceptance and PR29/30 delivery are complete. Main
 CI38328099413 is SUCCESS. The owner authorized live protection configuration on

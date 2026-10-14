@@ -2754,14 +2754,47 @@ The [remaining qualification plan](./evidence/m13-002-protected-path/README.md#r
 maps existing PR31 ordinary-admin/conversation proof without duplicate calls and
 combines future main conversation/admin coverage. It separates bounded doc-only
 forward operations from final reviewer main merge and force-push scope/risk.
-Next decisions: bounded Strict-flow evidence sufficiency, a willing genuinely
-unsigned CLA contributor, and the force-push evidence method. A protected disposable
-probe cannot silently replace exact-main/develop hostile evidence; no harmless
+The earlier generic plan listed evidence/participant/force method decisions;
+the current concrete preparation and confirmed CLA deferral below supersede that
+next-step list. A protected disposable probe cannot silently replace exact-main/
+develop hostile evidence; no harmless
 live non-fast-forward update is guaranteed if enforcement fails. Prepare exact
 candidate/action inventories before requesting a forward-only approval bundle.
 Target-specific remaining negatives, normal develop-to-main and final audit stay
 open. Current audit remains IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO /
 ACCEPTANCE_CLOSED=NO. M13-003..005 remain NOT_STARTED.
+
+Current local preparation (source record7d65a05): the
+[concrete forward-only plan](./evidence/m13-002-protected-path/forward-only-plan.json)
+freezes two one-file direct-push candidates (main6b3ae56, develop68916c7), exact
+current refs/diffs and an eight-write future approval scope. This scope combines
+the two expected direct-push rejections, PR32 main retarget/thread/ordinary-admin
+rejection/resolve, and develop84591ef→main2e196a1 PR creation plus a genuine
+Required-only opportunity during its needed CI. No successful merge is included.
+Original develop Strict rejection is reused within its bounded proven scope;
+no repeat or independent freshness-only claim is proposed. Future allocated PR
+and thread IDs bind only to exact successful receipts/readback.
+
+The user confirms no actual unsigned contributor is available: isolated CLA
+rejection is NOT_TESTED and deferred, with required App128106 wiring and actual
+signed-PR success preserved. No account/fake contribution/signature/CLA change
+will manufacture it. Official hosted-app documentation revealed no applicable
+safe live negative mode in the reviewed sources; recheck/self-hosted tests do not
+replace real production-App enforcement. Other qualification may proceed, but
+unchanged M13-002 acceptance explicitly requires missing-CLA rejection: closure
+needs real evidence or an explicit canonical disposition. NOT_TESTED is not PASS
+or a broken CLA service result. Formal release remains unready under the ordered
+M13 plan, independently of the current signed PR's successful CLA status.
+
+Latest ordering supersedes the earlier generic plan where final main merge
+preceded main stale evidence. A separate intermediate develop→main advancement
+can first produce the actual main SHA for a main stale case; later forward
+delivery incorporates that ancestry. Each future unknown SHA/diff is frozen for
+its own approval, and the final develop→main merge remains separately approved
+after required negatives/gap disposition. Actual main/develop non-fast-forward
+and disposable-probe setup/method decisions remain separate. No remote write,
+new CI, protection edit, release or M13-003 work occurred during preparation.
+Next: review the finite scope A; no execution authorization is implied.
 
 Force-push needs a design/decision compatible with existing history preservation;
 genuine missing CLA may need a willing real unsigned participant. Do not weaken
