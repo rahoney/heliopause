@@ -2663,17 +2663,36 @@ no-known-release-blocking-finding entry assessment.
 
 ### M13-002 — protected branch qualification
 
-Status: IN_PROGRESS — PR31 normal develop merge and conversation rejection remain
-verified. The separately approved PR32 exact-head request was rejected HTTP405 for
-expected required checks. PR32 remains open/BEHIND with unchanged head and refs;
-independent stale enforcement is not qualified. One-shot approval is consumed and
-further remote mutations are not authorized.
+Status: IN_PROGRESS — A′ completed within5 approved writes. PR33 at exact
+develop84591ef→main2e196a1 has fresh10job/CLA success and is open/unmerged/CLEAN
+after main Required-only and conversation/ordinary-admin rejection plus test-thread
+resolution. All three refs are unchanged. Normal merge is not authorized; remaining
+target-specific cases/dispositions and final audit keep qualification open.
 Current execution update: the later approved bundle A stopped at A3 after3/8
 writes. Both target direct-push PR-gate rejections passed; PR32 retarget succeeded
 but its main gate remained BLOCKED after read-only settlement. A4..A8 NOT_RUN,
 zero merge requests/new PRs. Current PR32 base is main, not develop. See the
 [bundle result](./evidence/m13-002-protected-path/bundle-a-result.json) and
 [unapproved revised scope](./evidence/m13-002-protected-path/bundle-a-resume-plan.json).
+Latest phase: user approved A′ maximum5 writes. PR33 is now the actual normal
+develop84591ef→main2e196a1 candidate, original18 docs/evidence paths. One ordinary
+exact-head PUT with realCLA success/Required absent was rejected405 explicitly
+for `Required`; suite4521104354 fails only required_status_checks and refs are
+unchanged. [A′ result](./evidence/m13-002-protected-path/bundle-a-prime-result.json)
+is COMPLETE_WITHIN_APPROVED_SCOPE after exactly5/5 writes. Same natural
+CI38574753115/attempt1 completed all10jobs SUCCESS with genuine requiredCLA;
+CLEAN preceded one diff thread. Exact-head ordinary admin PUT returned405 for
+conversation resolution only, suite4521761091 pull_request failure; refs unchanged.
+Only threadPRRT_kwDOT2M-Hs6sXNWE was resolved, restoring CLEAN/threads0. PR33 is
+still open/unmerged at84591ef/main2e196a1, all three refs unchanged. No PR32 mutation,
+rerun, force, protection edit, release or positive merge.
+[Exact normal merge approval](./evidence/m13-002-protected-path/normal-main-merge-approval.json)
+is ready for user review, not authorized: one ordinary PR33 exacthead84591ef PUT,
+then matching main receipt/ref/parents/tree and newmainCI readback. Intermediate
+normal qualification only; no dependent stale call/final closure is included.
+CLA negative stays NOT_TESTED; main stale/develop Required-only/nonFF method,
+record delivery and final audit remain open. Overall audit remains IMPLEMENTED=YES /
+WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO; M13-003..005 remain NOT_STARTED.
 Read: [M13 contract](./18-m13-production-release-operations-contract.md),
 [CI gate](../engineering/04-ci-quality-gate.md), CONTRIBUTING.md,
 [M13-001 evidence](./evidence/m13-001-protected-activation/README.md).

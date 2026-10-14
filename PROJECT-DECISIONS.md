@@ -143,6 +143,14 @@ retarget는 성공했으나 읽기 전용 재확인에서도 BLOCKED여서3/8회
 [실행 결과](./docs/planning/evidence/m13-002-protected-path/bundle-a-result.json)와
 [수정 제안](./docs/planning/evidence/m13-002-protected-path/bundle-a-resume-plan.json)을 기록했다.
 다음 정상 병합은 실제 develop→main PR·새 CI·main 부정 결과가 확보된 뒤 승인 요청한다.
+승인된 수정 묶음 A′는 develop84591ef→main2e196a1 PR33을 생성했다. 실제 CLA
+성공·Required 누락 상태의 단회 일반 PUT은 Required만을 명시한405로 거절됐다.
+Suite4521104354 및 refs동일을 보존했고, 같은 자연CI38574753115/attempt1의10job과
+CLA 성공 뒤 main 대화·일반관리자 요청의 단회405도 확인했다(suite4521761091).
+생성한 시험 스레드만 해결하여 CLEAN으로 복귀했으며 A′는5/5회 쓰기로 완료했다.
+[A′ 결과](./docs/planning/evidence/m13-002-protected-path/bundle-a-prime-result.json)가
+현재 단계와 원본을 소유한다. [정확한 PR33 정상 병합 요청](./docs/planning/evidence/m13-002-protected-path/normal-main-merge-approval.json)은
+검토 가능하지만 미승인이다. 실제 main 병합·새 mainCI 및 남은 acceptance는 별도다.
 guest runtime·Race 등 출시 영향 판단은 남는다. 현재 milestone과
 active/next work item은 [Current Work Queue](./docs/planning/02-current-work-queue.md)를 참조한다.
 

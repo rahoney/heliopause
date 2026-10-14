@@ -1,0 +1,726 @@
+{
+  "status": "BUNDLE_A_PRIME_COMPLETE_WITHIN_APPROVED_SCOPE",
+  "recorded_utc": "2026-10-14T14:30:31.935211+00:00",
+  "plan": "bundle-a-resume-plan.json",
+  "source_plan_commit": "15bde96ca62d237da56df284ccd065455227236a",
+  "original_plan_commit": "a770a9d",
+  "PR": 33,
+  "url": "https://github.com/rahoney/heliopause/pull/33",
+  "head": "84591ef4296a852a1439781ab62cc4103a59db0a",
+  "base": "2e196a188adce22005fce201c23da1dc27a43426",
+  "branches": "develop→main",
+  "authorized_maximum_writes": 5,
+  "writes_so_far": 5,
+  "positive_merges": 0,
+  "CI_dispatches_reruns_pushes_force_protection_release": 0,
+  "CLA_unsigned_negative": "NOT_TESTED",
+  "creation": {
+    "step": "A1",
+    "status": "PASS",
+    "utc": "2026-10-14T13:47:17.939156+00:00",
+    "directory": "docs/github-logs/m13-002-bundle-a-prime/A1-20261014T134709601944Z",
+    "http_status": 201,
+    "PR": 33,
+    "url": "https://github.com/rahoney/heliopause/pull/33",
+    "head": "84591ef4296a852a1439781ab62cc4103a59db0a",
+    "base": "2e196a188adce22005fce201c23da1dc27a43426",
+    "gate": "BLOCKED",
+    "refs_unchanged": true
+  },
+  "main_missing_Required": {
+    "status": "PASS",
+    "request": {
+      "method": "PUT",
+      "endpoint": "/repos/rahoney/heliopause/pulls/33/merge",
+      "body": {
+        "sha": "84591ef4296a852a1439781ab62cc4103a59db0a",
+        "merge_method": "merge"
+      },
+      "utc": "2026-10-14T13:52:24.020586+00:00"
+    },
+    "receipt": {
+      "http_status": 405,
+      "sha256": "dbd28551af69883d8c3c7306e420443aa38d4733f2613ff99a20d38641a8efa7",
+      "bytes": 200,
+      "request_id": "C0F7:D4616:3F9A4:6D70C:6ACF8918",
+      "server_date": "Wed, 14 Oct 2026 13:52:25 GMT",
+      "utc": "2026-10-14T13:52:25.589699+00:00"
+    },
+    "response": {
+      "message": "Repository rule violations found\n\nRequired status check \"Required\" is expected.\n\n",
+      "documentation_url": "https://docs.github.com/rest/pulls/pulls#merge-a-pull-request",
+      "status": "405"
+    },
+    "Required_pre": "ABSENT",
+    "CLA_pre": "SUCCESS, isRequired=true, real cla-assistant[bot] service; effective App128106",
+    "head_Required_App": 15368,
+    "gate_pre": "BLOCKED",
+    "unresolved_pre": 0,
+    "actor_admin_bypass_never": true,
+    "rule_suite": {
+      "id": 4521104354,
+      "target": "refs/heads/main",
+      "before": "2e196a188adce22005fce201c23da1dc27a43426",
+      "after": "d1ef690304200e3e0b0a5891c312c81546eb0477",
+      "pushed_at": "2026-10-14T22:52:25+09:00",
+      "actor_matches_approved": true,
+      "evaluations": [
+        {
+          "rule_source": {
+            "type": "ruleset",
+            "id": 21396883,
+            "name": "Protect main"
+          },
+          "enforcement": "active",
+          "result": "fail",
+          "rule_type": "required_status_checks",
+          "details": "Required status check \"Required\" is expected."
+        },
+        {
+          "rule_source": {
+            "type": "ruleset",
+            "id": 21396883,
+            "name": "Protect main"
+          },
+          "enforcement": "active",
+          "result": "pass",
+          "rule_type": "pull_request"
+        },
+        {
+          "rule_source": {
+            "type": "ruleset",
+            "id": 21396883,
+            "name": "Protect main"
+          },
+          "enforcement": "active",
+          "result": "pass",
+          "rule_type": "non_fast_forward"
+        },
+        {
+          "rule_source": {
+            "type": "ruleset",
+            "id": 21396883,
+            "name": "Protect main"
+          },
+          "enforcement": "active",
+          "result": "pass",
+          "rule_type": "deletion"
+        }
+      ]
+    },
+    "SHA_evidence": {
+      "actual": "d1ef690304200e3e0b0a5891c312c81546eb0477",
+      "actual_parents": [
+        "2e196a188adce22005fce201c23da1dc27a43426",
+        "84591ef4296a852a1439781ab62cc4103a59db0a"
+      ],
+      "potential": "8e13dccb6cf089e361d5f4381f4d68e17d7ab4ef",
+      "potential_parents": [
+        "2e196a188adce22005fce201c23da1dc27a43426",
+        "84591ef4296a852a1439781ab62cc4103a59db0a"
+      ],
+      "head": "84591ef4296a852a1439781ab62cc4103a59db0a",
+      "trees": {
+        "actual": "64e29611987c1ce55887db50255aacc6fba90843",
+        "potential": "64e29611987c1ce55887db50255aacc6fba90843",
+        "head": "64e29611987c1ce55887db50255aacc6fba90843"
+      },
+      "current_main_parent_included": true,
+      "actual_proposed_message": "Merge pull request #33 from rahoney/develop\n\nM13-002 develop→main 보호 경로 중간 검증",
+      "source": "All are read-only new-case SHA evidence, no repeated merge request."
+    },
+    "pre_refs": {
+      "main": "2e196a188adce22005fce201c23da1dc27a43426",
+      "develop": "84591ef4296a852a1439781ab62cc4103a59db0a",
+      "feature": "ff441d3d3bde941d0fd759972539ed8707475ee1"
+    },
+    "post_refs": {
+      "main": "2e196a188adce22005fce201c23da1dc27a43426",
+      "develop": "84591ef4296a852a1439781ab62cc4103a59db0a",
+      "feature": "ff441d3d3bde941d0fd759972539ed8707475ee1"
+    },
+    "refs_unchanged": true,
+    "scope": "Actual main Required-only rejection; no missingCLA/freshness-only/admin conversation claim. One ordinary exact-head PUT, no retry."
+  },
+  "natural_CI": {
+    "id": 38574753115,
+    "url": "https://github.com/rahoney/heliopause/actions/runs/38574753115",
+    "head": "84591ef4296a852a1439781ab62cc4103a59db0a",
+    "attempt": 1,
+    "status": "completed",
+    "conclusion": "success",
+    "total_jobs": 10,
+    "successful_jobs": 10,
+    "jobs": [
+      {
+        "id": 115888802963,
+        "name": "Quick",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-14T13:47:22Z",
+        "completed_at": "2026-10-14T13:50:17Z"
+      },
+      {
+        "id": 115888803410,
+        "name": "Security",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-14T13:47:22Z",
+        "completed_at": "2026-10-14T13:49:23Z"
+      },
+      {
+        "id": 115888803491,
+        "name": "macOS",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-14T13:47:25Z",
+        "completed_at": "2026-10-14T13:54:45Z"
+      },
+      {
+        "id": 115888803519,
+        "name": "Vulnerability",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-14T13:47:21Z",
+        "completed_at": "2026-10-14T13:48:49Z"
+      },
+      {
+        "id": 115888803604,
+        "name": "Docs",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-14T13:47:21Z",
+        "completed_at": "2026-10-14T13:47:45Z"
+      },
+      {
+        "id": 115888803645,
+        "name": "Minimum Go",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-14T13:47:21Z",
+        "completed_at": "2026-10-14T13:49:17Z"
+      },
+      {
+        "id": 115888803705,
+        "name": "gVisor Linux Integration",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-14T13:47:21Z",
+        "completed_at": "2026-10-14T14:23:47Z"
+      },
+      {
+        "id": 115888803916,
+        "name": "gVisor Observer Helper",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-14T13:47:21Z",
+        "completed_at": "2026-10-14T13:52:34Z"
+      },
+      {
+        "id": 115888803954,
+        "name": "Representative Wheel Corpus",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-14T13:47:21Z",
+        "completed_at": "2026-10-14T13:48:12Z"
+      },
+      {
+        "id": 115907515713,
+        "name": "Required",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-14T14:23:50Z",
+        "completed_at": "2026-10-14T14:24:16Z"
+      }
+    ],
+    "new_actual_PR_CI": "One natural opened-PR run, not historical CI reuse; no manual rerun/dispatch.",
+    "raw_terminal_logs": [
+      {
+        "job_id": 115888802963,
+        "name": "Quick",
+        "conclusion": "success",
+        "path": "docs/github-logs/m13-002-bundle-a-prime/ci-logs-20261014T142705021641Z/job-115888802963/job.log",
+        "sha256": "d25ad00ef07ae2bcee156ab9d0f7cd1e4e5659686c0013768a1aa6cb6bbbaf44",
+        "bytes": 23770
+      },
+      {
+        "job_id": 115888803410,
+        "name": "Security",
+        "conclusion": "success",
+        "path": "docs/github-logs/m13-002-bundle-a-prime/ci-logs-20261014T142705021641Z/job-115888803410/job.log",
+        "sha256": "b3fdcd434c9848d5defaaf5c4ad701b8d3c7c3dc36949adbe23e7fb8a8aaa0de",
+        "bytes": 21717
+      },
+      {
+        "job_id": 115888803491,
+        "name": "macOS",
+        "conclusion": "success",
+        "path": "docs/github-logs/m13-002-bundle-a-prime/ci-logs-20261014T142705021641Z/job-115888803491/job.log",
+        "sha256": "aa24515151aad2943482d7b9ed8ec6bfc0000d2dda5d31d1a78f49e1eb191b2f",
+        "bytes": 20718
+      },
+      {
+        "job_id": 115888803519,
+        "name": "Vulnerability",
+        "conclusion": "success",
+        "path": "docs/github-logs/m13-002-bundle-a-prime/ci-logs-20261014T142705021641Z/job-115888803519/job.log",
+        "sha256": "9c934aae25afed0d820fc5b5928e8334af5ac4b7e51c4eec1ad69273e48e95d2",
+        "bytes": 21630
+      },
+      {
+        "job_id": 115888803604,
+        "name": "Docs",
+        "conclusion": "success",
+        "path": "docs/github-logs/m13-002-bundle-a-prime/ci-logs-20261014T142705021641Z/job-115888803604/job.log",
+        "sha256": "efe23ce9738855f5d082e76408400e133e85ac6e31efdb326e9c2788e28239ae",
+        "bytes": 20453
+      },
+      {
+        "job_id": 115888803645,
+        "name": "Minimum Go",
+        "conclusion": "success",
+        "path": "docs/github-logs/m13-002-bundle-a-prime/ci-logs-20261014T142705021641Z/job-115888803645/job.log",
+        "sha256": "a108423a7cbe59dc890963901f40db3fda4f55c20970d665f5c1ce0835c9869c",
+        "bytes": 20399
+      },
+      {
+        "job_id": 115888803705,
+        "name": "gVisor Linux Integration",
+        "conclusion": "success",
+        "path": "docs/github-logs/m13-002-bundle-a-prime/ci-logs-20261014T142705021641Z/job-115888803705/job.log",
+        "sha256": "2cbdda4d7b6119be2ab7037fd463f0de2b310dc5f4e1127ef5ea0408284a8352",
+        "bytes": 415508
+      },
+      {
+        "job_id": 115888803916,
+        "name": "gVisor Observer Helper",
+        "conclusion": "success",
+        "path": "docs/github-logs/m13-002-bundle-a-prime/ci-logs-20261014T142705021641Z/job-115888803916/job.log",
+        "sha256": "750d5cb645b537bb550d9cefa8d1dce9231cecb4240dd30bce6db2368f83504d",
+        "bytes": 243220
+      },
+      {
+        "job_id": 115888803954,
+        "name": "Representative Wheel Corpus",
+        "conclusion": "success",
+        "path": "docs/github-logs/m13-002-bundle-a-prime/ci-logs-20261014T142705021641Z/job-115888803954/job.log",
+        "sha256": "3cb01d984cfb4a584bebc9edb9ccf67aa9e563e080fa85c8b2dfabe55e2d81ed",
+        "bytes": 35293
+      },
+      {
+        "job_id": 115907515713,
+        "name": "Required",
+        "conclusion": "success",
+        "path": "docs/github-logs/m13-002-bundle-a-prime/ci-logs-20261014T142705021641Z/job-115907515713/job.log",
+        "sha256": "3cc240ef8df91c97c108ad230715378415f88bbfd62ab968dfbcfd05b47ab3b7",
+        "bytes": 22234
+      }
+    ],
+    "Required_and_CLA_contexts": [
+      {
+        "name": "Required",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "isRequired": true,
+        "checkSuite": {
+          "app": {
+            "databaseId": 15368,
+            "slug": "github-actions"
+          }
+        }
+      },
+      {
+        "context": "license/cla",
+        "state": "SUCCESS",
+        "isRequired": true,
+        "creator": {
+          "login": "cla-assistant"
+        }
+      }
+    ]
+  },
+  "conversation_admin": "PASS_BOUNDED_ORDINARY_ADMIN_ENDPOINT",
+  "test_thread": "RESOLVED_ONLY_CREATED_THREAD",
+  "normal_merge_approval": "READY_FOR_USER_REVIEW_NOT_AUTHORIZED: normal-main-merge-approval.json",
+  "original_records_preservation": "See local original-records.json; all seven prior versioned execution/plan records byte-identical.",
+  "whole_approved_scope_complete": true,
+  "authorization": {
+    "approved_by": "user",
+    "maximum_remote_writes": 5,
+    "actual_remote_writes": 5,
+    "source_resume_plan_commit": "15bde96ca62d237da56df284ccd065455227236a",
+    "resume_plan_sha256": "228c85f1ce881f5fa3d88fff91c7da1a58a418d46a25d9ee5322a9c6dfa3be73",
+    "positive_merge_authorized": false,
+    "CI_rerun_dispatch_PR32_mutation_protection_force_release_authorized": false
+  },
+  "write_ledger": [
+    {
+      "step": "A-prime-1",
+      "HTTP_status": 201,
+      "intent": "docs/github-logs/m13-002-bundle-a-prime/A1.intent.json",
+      "intent_sha256": "72475fda3e1d03545b395e5cb8e065ecde9e20fa51c096140ea734977621ef20",
+      "result": {
+        "step": "A1",
+        "status": "PASS",
+        "utc": "2026-10-14T13:47:17.939156+00:00",
+        "directory": "docs/github-logs/m13-002-bundle-a-prime/A1-20261014T134709601944Z",
+        "http_status": 201,
+        "PR": 33,
+        "url": "https://github.com/rahoney/heliopause/pull/33",
+        "head": "84591ef4296a852a1439781ab62cc4103a59db0a",
+        "base": "2e196a188adce22005fce201c23da1dc27a43426",
+        "gate": "BLOCKED",
+        "refs_unchanged": true
+      }
+    },
+    {
+      "step": "A-prime-2",
+      "HTTP_status": 405,
+      "intent": "docs/github-logs/m13-002-bundle-a-prime/A2.intent.json",
+      "intent_sha256": "7dcb949bfc71955c3daa0d9359b090187f4d950263240c7027fb5b73ba0e3fad",
+      "result": {
+        "step": "A2",
+        "status": "PASS",
+        "utc": "2026-10-14T13:52:29.451945+00:00",
+        "directory": "docs/github-logs/m13-002-bundle-a-prime/A2-20261014T135221640924Z",
+        "PR": 33,
+        "head": "84591ef4296a852a1439781ab62cc4103a59db0a",
+        "base": "2e196a188adce22005fce201c23da1dc27a43426",
+        "http_status": 405,
+        "message": "Repository rule violations found\n\nRequired status check \"Required\" is expected.\n\n",
+        "refs_unchanged": true,
+        "rule_suite": 4521104354,
+        "actual_proposed_sha": "d1ef690304200e3e0b0a5891c312c81546eb0477",
+        "pre_potential_merge": "8e13dccb6cf089e361d5f4381f4d68e17d7ab4ef",
+        "Required_pre": "ABSENT",
+        "CLA_pre": "SUCCESS required actual App128106",
+        "rule_details": "Required status check \"Required\" is expected.",
+        "isolated_Required_evidence": true
+      }
+    },
+    {
+      "step": "A-prime-3",
+      "HTTP_status": 201,
+      "intent": "docs/github-logs/m13-002-bundle-a-prime/A3.intent.json",
+      "intent_sha256": "1116779ffe930b7c9a6725d76dbc7ccf2c6e2062a52e73088e63f7a44580ab82",
+      "result": {
+        "step": "A3",
+        "status": "PASS",
+        "utc": "2026-10-14T14:25:22.696640+00:00",
+        "directory": "docs/github-logs/m13-002-bundle-a-prime/A3-20261014T142514201092Z",
+        "PR": 33,
+        "head": "84591ef4296a852a1439781ab62cc4103a59db0a",
+        "base": "2e196a188adce22005fce201c23da1dc27a43426",
+        "http_status": 201,
+        "comment_id": 4272061243,
+        "comment_node_id": "PRRC_kwDOT2M-Hs7-ons7",
+        "thread_id": "PRRT_kwDOT2M-Hs6sXNWE",
+        "comment_url": "https://github.com/rahoney/heliopause/pull/33#discussion_r4272061243",
+        "gate": "BLOCKED",
+        "refs_unchanged": true,
+        "fresh_CI_run": 38574753115
+      }
+    },
+    {
+      "step": "A-prime-4",
+      "HTTP_status": 405,
+      "intent": "docs/github-logs/m13-002-bundle-a-prime/A4.intent.json",
+      "intent_sha256": "2437ce9ae24b4db8dfb5c452843acd276b918a8f50dfe87ba8c30121a598c847",
+      "result": {
+        "step": "A4",
+        "status": "PASS",
+        "utc": "2026-10-14T14:25:51.335564+00:00",
+        "directory": "docs/github-logs/m13-002-bundle-a-prime/A4-20261014T142543122745Z",
+        "PR": 33,
+        "head": "84591ef4296a852a1439781ab62cc4103a59db0a",
+        "base": "2e196a188adce22005fce201c23da1dc27a43426",
+        "http_status": 405,
+        "message": "Repository rule violations found\n\nA conversation must be resolved before this pull request can be merged.\n\n",
+        "thread_id": "PRRT_kwDOT2M-Hs6sXNWE",
+        "rule_suite": 4521761091,
+        "actual_proposed_sha": "19b11cff2d45a8e11fe2847995ccc77bf9332f92",
+        "refs_unchanged": true,
+        "ordinary_admin": true,
+        "bypass": "never"
+      }
+    },
+    {
+      "step": "A-prime-5",
+      "HTTP_status": 200,
+      "intent": "docs/github-logs/m13-002-bundle-a-prime/A5.intent.json",
+      "intent_sha256": "143b0461d5afe3695f243625e6039cde7f7e5c50982b249a3621d4caceba402c",
+      "result": {
+        "step": "A5",
+        "status": "PASS",
+        "utc": "2026-10-14T14:26:32.229021+00:00",
+        "directory": "docs/github-logs/m13-002-bundle-a-prime/A5-20261014T142626046066Z",
+        "PR": 33,
+        "head": "84591ef4296a852a1439781ab62cc4103a59db0a",
+        "base": "2e196a188adce22005fce201c23da1dc27a43426",
+        "http_status": 200,
+        "thread_id": "PRRT_kwDOT2M-Hs6sXNWE",
+        "isResolved": true,
+        "gate": "CLEAN",
+        "refs_unchanged": true
+      }
+    }
+  ],
+  "conversation_and_ordinary_admin": {
+    "status": "PASS",
+    "PR": 33,
+    "head": "84591ef4296a852a1439781ab62cc4103a59db0a",
+    "base": "2e196a188adce22005fce201c23da1dc27a43426",
+    "thread": {
+      "id": "PRRT_kwDOT2M-Hs6sXNWE",
+      "comment_id": 4272061243,
+      "url": "https://github.com/rahoney/heliopause/pull/33#discussion_r4272061243",
+      "path": "docs/planning/evidence/m13-002-protected-path/README.md",
+      "line": 8,
+      "side": "RIGHT",
+      "commit": "84591ef4296a852a1439781ab62cc4103a59db0a",
+      "resolved": true
+    },
+    "gates": [
+      "CLEAN + all10checks/realCLA SUCCESS",
+      "one new unresolved thread→BLOCKED",
+      "one ordinary exact-head admin request→HTTP405 conversation rejection",
+      "only createdthread resolved→CLEAN"
+    ],
+    "request": {
+      "method": "PUT",
+      "endpoint": "/repos/rahoney/heliopause/pulls/33/merge",
+      "body": {
+        "sha": "84591ef4296a852a1439781ab62cc4103a59db0a",
+        "merge_method": "merge"
+      },
+      "utc": "2026-10-14T14:25:45.922833+00:00"
+    },
+    "receipt": {
+      "http_status": 405,
+      "sha256": "ac2af0ef4b11c5ae7f81b9664e1f0740c8ccc835e5a4d89f5f0ebcd7812ebd7a",
+      "bytes": 224,
+      "request_id": "C11D:3E2B8C:79EF4:D136C:6ACF90EA",
+      "server_date": "Wed, 14 Oct 2026 14:25:47 GMT",
+      "utc": "2026-10-14T14:25:47.663033+00:00"
+    },
+    "response": {
+      "message": "Repository rule violations found\n\nA conversation must be resolved before this pull request can be merged.\n\n",
+      "documentation_url": "https://docs.github.com/rest/pulls/pulls#merge-a-pull-request",
+      "status": "405"
+    },
+    "rule_suite": {
+      "id": 4521761091,
+      "target": "refs/heads/main",
+      "before": "2e196a188adce22005fce201c23da1dc27a43426",
+      "after": "19b11cff2d45a8e11fe2847995ccc77bf9332f92",
+      "pushed_at": "2026-10-14T23:25:47+09:00",
+      "actor_matches_approved_admin": true,
+      "evaluations": [
+        {
+          "rule_source": {
+            "type": "ruleset",
+            "id": 21396883,
+            "name": "Protect main"
+          },
+          "enforcement": "active",
+          "result": "fail",
+          "rule_type": "pull_request",
+          "details": "A conversation must be resolved before this pull request can be merged."
+        },
+        {
+          "rule_source": {
+            "type": "ruleset",
+            "id": 21396883,
+            "name": "Protect main"
+          },
+          "enforcement": "active",
+          "result": "pass",
+          "rule_type": "required_status_checks"
+        },
+        {
+          "rule_source": {
+            "type": "ruleset",
+            "id": 21396883,
+            "name": "Protect main"
+          },
+          "enforcement": "active",
+          "result": "pass",
+          "rule_type": "non_fast_forward"
+        },
+        {
+          "rule_source": {
+            "type": "ruleset",
+            "id": 21396883,
+            "name": "Protect main"
+          },
+          "enforcement": "active",
+          "result": "pass",
+          "rule_type": "deletion"
+        }
+      ]
+    },
+    "refs_unchanged": true,
+    "resolve_request": {
+      "method": "POST",
+      "endpoint": "/graphql",
+      "body": {
+        "query": "mutation($threadId:ID!){resolveReviewThread(input:{threadId:$threadId}){thread{id isResolved}}}",
+        "variables": {
+          "threadId": "PRRT_kwDOT2M-Hs6sXNWE"
+        }
+      },
+      "utc": "2026-10-14T14:26:28.696260+00:00"
+    },
+    "resolve_receipt": {
+      "http_status": 200,
+      "sha256": "714db1837936ebea5095ae463ef482cca64a0eeeba9ec39c823befb798d5f961",
+      "bytes": 92,
+      "request_id": "D42C:100D9A:79C48:D1CED:6ACF9114",
+      "server_date": "Wed, 14 Oct 2026 14:26:29 GMT",
+      "utc": "2026-10-14T14:26:29.768965+00:00"
+    },
+    "resolve_response": {
+      "data": {
+        "resolveReviewThread": {
+          "thread": {
+            "id": "PRRT_kwDOT2M-Hs6sXNWE",
+            "isResolved": true
+          }
+        }
+      }
+    },
+    "scope": "Actual main conversation and bounded ordinary-admin enforcement. No special override/force/bypass mode; no target-develop reassignment."
+  },
+  "final_state": {
+    "observed_utc": "2026-10-14T14:29:00.162752+00:00",
+    "snapshot": "docs/github-logs/m13-002-bundle-a-prime/observe-20261014T142857772492Z",
+    "refs": {
+      "main": "2e196a188adce22005fce201c23da1dc27a43426",
+      "develop": "84591ef4296a852a1439781ab62cc4103a59db0a",
+      "feature": "ff441d3d3bde941d0fd759972539ed8707475ee1"
+    },
+    "PR": {
+      "number": 33,
+      "state": "OPEN",
+      "merged": false,
+      "draft": false,
+      "head": "84591ef4296a852a1439781ab62cc4103a59db0a",
+      "base": "main",
+      "live_base": "2e196a188adce22005fce201c23da1dc27a43426",
+      "gate": "CLEAN",
+      "mergeable": "MERGEABLE",
+      "auto_merge": null,
+      "unresolved_threads": 0,
+      "test_thread_resolved": true,
+      "potentialMergeCommit": {
+        "oid": "82dd4d07d2464fd0fa331bc30a30eb6bc004dba7",
+        "parents": {
+          "nodes": [
+            {
+              "oid": "2e196a188adce22005fce201c23da1dc27a43426"
+            },
+            {
+              "oid": "84591ef4296a852a1439781ab62cc4103a59db0a"
+            }
+          ]
+        },
+        "statusCheckRollup": null
+      }
+    },
+    "Required_CLA": "SUCCESS and required at exact head84591ef",
+    "both_rulesets": "active Strict unchanged; Required/App15368 + license/cla/App128106; bypass actors empty, current admin bypass never",
+    "PR32": "No mutation in A′; original headff/open/main retained; original A STOP remains preserved."
+  },
+  "M13_002_audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO",
+    "completed_this_scope": [
+      "actual develop→main PR/fresh10jobCI+CLA admission prerequisites",
+      "main isolated missingRequired rejection",
+      "main unresolvedconversation rejection",
+      "main bounded ordinary-admin rejection",
+      "test-thread-only resolve/CLEAN restoration"
+    ],
+    "MISSING": [
+      "separately approved actual normal develop→main merge and newmainCI",
+      "main Strict stale candidate case after actual approved main advancement",
+      "develop isolated missingRequired case on later necessary deliveryPR",
+      "genuine missingCLA negative NOT_TESTED, or explicit canonical disposition",
+      "hostile nonFF evidence/method decision preserving production history",
+      "later record delivery/final audit and any final main merge approval"
+    ]
+  },
+  "raw_preservation": {
+    "versioned_exact_original_copies": [
+      {
+        "path": "raw/a-prime-required-request.json",
+        "sha256": "45cffc0aa30ede7f27da928a49e1aff24769b983ce6a72b3659032697c7c9feb",
+        "source": "docs/github-logs/m13-002-bundle-a-prime/A2-20261014T135221640924Z/mutation/request.json",
+        "bytes": 225
+      },
+      {
+        "path": "raw/a-prime-required-response.json",
+        "sha256": "dbd28551af69883d8c3c7306e420443aa38d4733f2613ff99a20d38641a8efa7",
+        "source": "docs/github-logs/m13-002-bundle-a-prime/A2-20261014T135221640924Z/mutation/response.json",
+        "bytes": 200
+      },
+      {
+        "path": "raw/a-prime-conversation-request.json",
+        "sha256": "102b4c5e27152d86464ea6ea6e12d49884962cc6c5b5f30ba2cce623c0f8acf1",
+        "source": "docs/github-logs/m13-002-bundle-a-prime/A4-20261014T142543122745Z/mutation/request.json",
+        "bytes": 225
+      },
+      {
+        "path": "raw/a-prime-conversation-response.json",
+        "sha256": "ac2af0ef4b11c5ae7f81b9664e1f0740c8ccc835e5a4d89f5f0ebcd7812ebd7a",
+        "source": "docs/github-logs/m13-002-bundle-a-prime/A4-20261014T142543122745Z/mutation/response.json",
+        "bytes": 224
+      },
+      {
+        "path": "raw/a-prime-resolve-response.json",
+        "sha256": "714db1837936ebea5095ae463ef482cca64a0eeeba9ec39c823befb798d5f961",
+        "source": "docs/github-logs/m13-002-bundle-a-prime/A5-20261014T142626046066Z/mutation/response.json",
+        "bytes": 92
+      }
+    ],
+    "original_seven_records": [
+      {
+        "path": "docs/planning/evidence/m13-002-protected-path/forward-only-plan.json",
+        "sha256": "10525a4d5fbbf39ff9edf47e31b0d553d47cbb8d6b3cbe395757885e9e272a09"
+      },
+      {
+        "path": "docs/planning/evidence/m13-002-protected-path/bundle-a-resume-plan.json",
+        "sha256": "228c85f1ce881f5fa3d88fff91c7da1a58a418d46a25d9ee5322a9c6dfa3be73"
+      },
+      {
+        "path": "docs/planning/evidence/m13-002-protected-path/bundle-a-result.json",
+        "sha256": "9872070f5e385d7746ce2c852c41c852eb17991b1a17976092c6dfa31ef1b2e7"
+      },
+      {
+        "path": "docs/planning/evidence/m13-002-protected-path/stale-rejection.json",
+        "sha256": "14a4e377fa68eca254cc70f100ca15098d84906795ee5203e3be139d8fb1528a"
+      },
+      {
+        "path": "docs/planning/evidence/m13-002-protected-path/strict-check-analysis.json",
+        "sha256": "acfc90381487946baf614ae45ef8cd8e34b1eb4bc4dbb29ed4f0d618ab1edc2c"
+      },
+      {
+        "path": "docs/planning/evidence/m13-002-protected-path/thread-rejection.json",
+        "sha256": "8e5253c28cb07f1cca5c576d97af318b5cd59be64de6d8ff9410555b982007d1"
+      },
+      {
+        "path": "docs/planning/evidence/m13-002-protected-path/develop-merge.json",
+        "sha256": "57991960db58725f0029c34e2e39ead308a6b2f5b0acb2dcbafeb09370e5aaaf"
+      }
+    ],
+    "CI_logs": "10 original byte-preserved completed-job logs retained locally; selected hashes above. No raw trimming/scanner suppression.",
+    "whole_worktree_security_boundary": "Full public API responses/preexisting untracked materials are outside the versioned candidate; prior worktree scanner FAIL is not relabelled.",
+    "local_inventory": {
+      "path": "docs/github-logs/m13-002-bundle-a-prime/execution-raw-inventory.json",
+      "sha256": "f5e2f5eb11023ef2e69de73fda4d5fd136b054468ff075746820b3662dc8eaa1",
+      "files": 1027
+    }
+  }
+}

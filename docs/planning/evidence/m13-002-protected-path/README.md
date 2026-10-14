@@ -1,10 +1,51 @@
 # M13-002 protected branch qualification
 
-Status: IN_PROGRESS / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO. PR31 normal develop
-merge and its earlier conversation rejection passed. PR32's separately approved
-one-shot ordinary merge request was rejected HTTP405. Its reported expected-check
-blocker does not isolate stale enforcement. The later approved bundle A stopped
-after three writes at the PR32 main-retarget prerequisite; see the current result.
+Status: IN_PROGRESS / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO. A′ completed within5
+approved writes: PR33 fresh10job/CLA success, main Required-only and conversation/
+ordinary-admin rejection, then created-thread-only resolution and CLEAN. PR33
+remains open/unmerged at exact develop84591ef→main2e196a1; normal merge is unapproved.
+Original PR31/PR32 and stopped bundle A evidence remain preserved below.
+
+## Bundle A′ execution
+
+Status: COMPLETE_WITHIN_APPROVED_SCOPE — exactly5/5 writes, zero positive merges.
+User approved the revised maximum5-write scope. Actual
+[PR33](https://github.com/rahoney/heliopause/pull/33) is develop84591ef→main2e196a1,
+the original18 documentation/evidence paths. No push or PR32 mutation occurred.
+The [result](./bundle-a-prime-result.json) preserves the new main Required-only
+rejection: genuine required CLA success, Required absent, BLOCKED, zero threads,
+current base included and admin bypass never preceded one exact-head ordinary
+PUT. HTTP405 explicitly states `Required status check "Required" is expected.`
+Suite4521104354 fails only required_status_checks; all three refs are unchanged.
+Actual proposed d1ef690 and pre-potential8e13dcc both have parents2e196a1/84591ef
+and the same tree64e2961 as head84591ef. No repeated PR32/develop stale request.
+
+The same natural PR CI38574753115/attempt1 completed all10 jobs SUCCESS. All ten
+original terminal job logs are preserved locally and bound by the result's hashes.
+Genuine CLA success and both required context/App bindings were verified at exact
+head84591ef; the fresh gate was CLEAN before one approved diff thread was created.
+Comment4272061243/threadPRRT_kwDOT2M-Hs6sXNWE made CLEAN→BLOCKED. One ordinary
+exact-head admin PUT returned405 explicitly requiring conversation resolution;
+suite4521761091 fails only pull_request. Both protected refs and feature remained
+unchanged. Resolving only that new thread restored CLEAN with zero unresolved
+threads. This covers main conversation and the bounded ordinary-admin endpoint,
+not a special override mode. No repeat of PR32 or develop conversation/direct cases.
+
+Final readback: PR33 open/unmerged/non-draft, head84591ef, base main/live2e196a1,
+CLEAN/MERGEABLE, auto-merge null; main2e196a1/develop84591ef/featureff441d3 unchanged.
+Rules remain active Strict, required Apps15368/128106 and admin bypass never.
+The [exact normal merge request](./normal-main-merge-approval.json) is ready for
+user review and **not authorized**. It proposes one separately approved ordinary
+PUT for PR33/head84591ef/base2e196a1, then receipt/ref/tree and new main CI readback.
+An actual main advancement starts natural main CI; no automatic rollback/retry
+or dependent PR32 test is included. This is intermediate normal-path qualification,
+not final M13 closure or release.
+
+Remaining acceptance: actual normal develop→main merge/new main CI, main Strict
+stale case after approved advancement, develop Required-only on a later needed
+delivery PR, missing-CLA negative NOT_TESTED/disposition, hostile non-fast-forward
+evidence/method decision, later record delivery and final audit/merge approval.
+Overall M13-002 remains IN_PROGRESS / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO.
 
 ## Bundle A execution — stopped at retarget prerequisite
 
@@ -387,15 +428,15 @@ to their recorded branch; a required App binding is not an isolated negative.
 | Acceptance behavior | develop evidence | main evidence / remaining gap | Minimum next work |
 | --- | --- | --- | --- |
 | Normal feature → develop | PR31 actual merge PASS | Not this behavior's target | Reuse; another merge only if needed to deliver reviewed records |
-| Required/CLA successful admission | Fresh PR31/32 results preserved | New develop→main candidate required | Use the required PR CI once per final candidate |
-| Missing Required alone | Not isolated by the two-context PR32 rejection | NOT_RUN | During needed signed-candidate PR CI, capture pending Required only when genuine CLA is already green |
+| Required/CLA successful admission | Fresh PR31/32 results preserved | PR33 fresh10job/CLA success; actual normal merge pending | Reuse current evidence; separate exact normal merge approval |
+| Missing Required alone | Not isolated by the two-context PR32 rejection | PR33 actual Required-only405 PASS, suite4521104354 | Only develop remains; use a later needed delivery PR CI with realCLA green |
 | Missing CLA alone | NOT_TESTED | NOT_TESTED | Deferred: user confirms no real unsigned participant; preserve required binding/positive results, no fabricated author/status/signature |
-| Stale under Strict checks | Actual target-rule rejection proven; independent freshness-only remains unqualified | NOT_RUN | Decide bounded evidence sufficiency; reuse a needed main sibling for its target-specific stale case |
-| Unresolved conversation | PR31 actual rejection PASS | NOT_RUN | One main thread/create/ordinary rejection/resolve sequence on a needed green PR |
-| Ordinary admin blocked by a live rule | PR31 admin-permission conversation rejection already proves this bounded behavior | NOT_RUN | Reuse the main conversation attempt for this same ordinary-admin requirement |
-| Direct push without PR | NOT_RUN | NOT_RUN | One reviewed documentation-only fast-forward candidate/attempt per target; preserve rule-specific evaluation even if other blockers also fail |
+| Stale under Strict checks | Actual target-rule rejection proven; independent freshness-only remains unqualified | NOT_RUN | Reuse bounded develop evidence; separately review main case after approved advancement |
+| Unresolved conversation | PR31 actual rejection PASS | PR33 actual rejection PASS, suite4521761091 | Reuse both; test thread resolved and CLEAN restored |
+| Ordinary admin blocked by a live rule | PR31 bounded ordinary-admin rejection PASS | PR33 same ordinary-admin/conversation request PASS | Reuse both; no special override claim or duplicate call |
+| Direct push without PR | Actual GH013 PR-rule rejection PASS, suite4519788734 | Actual GH013 PR-rule rejection PASS, suite4519783788 | Reuse both; combined missing-check blockers remain labelled |
 | Hostile non-fast-forward update | No actual rejection; normal-merge PASS is inapplicable | No actual rejection found | Separate history-preserving test-scope decision below |
-| Normal develop → main / final audit | Delivery and remaining develop cases first | NOT_RUN | Exact fresh PR CI/CLA, reviewer-authorized merge, new main CI and final evidence audit |
+| Normal develop → main / final audit | Later delivery/remaining develop cases still open | PR33 ready for exact intermediate merge approval; merge NOT_RUN | Separately approve normal merge/newmainCI; final closure only after remaining gaps |
 
 The admin row follows this plan's declared ordinary-endpoint test. Reusing PR31's
 admin actor under a real unresolved conversation does not claim a special CLI,
