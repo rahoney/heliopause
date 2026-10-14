@@ -123,7 +123,10 @@ check 연결을 확인했다. 별도 승인된 미해결 리뷰 스레드 시험
 develop은84591ef로 전진했고 main2e196a1과 PR32 headff441d3는 그대로다.
 PR32는 다른 검사·리뷰·충돌 차단 없이 CLEAN→BEHIND로 변경됐다.
 [병합 및 stale 관측 증거](./docs/planning/evidence/m13-002-protected-path/develop-merge.json)를 보존했다.
-실제 PR32 병합 거절 시험은 미실행이며 남은 차단 시험·main 경로는 별도 승인 대기다.
+별도 승인한 PR32 일반 병합 요청 1회는 HTTP405로 거절됐다. 서버 응답은 필수 검사
+2개가 expected라는 사유이며, 독립 stale 차단 PASS는 확정하지 않았다. PR32 미병합과
+세 브랜치 HEAD 동일성을 확인하고 추가 요청을 중단했다. 원본·해석 경계와 남은 순서는
+[시험 결과](./docs/planning/evidence/m13-002-protected-path/stale-rejection.json)를 따른다.
 guest runtime·Race 등 출시 영향 판단은 남는다. 현재 milestone과
 active/next work item은 [Current Work Queue](./docs/planning/02-current-work-queue.md)를 참조한다.
 

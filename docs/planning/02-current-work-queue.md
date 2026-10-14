@@ -12,7 +12,7 @@ Milestone status: IN_PROGRESS (public release readiness not declared)
 Active work item: M13-002 — protected branch qualification
 Next work item: M13-003 — canonical release build and OS packages (not authorized)
 Next work item status: NOT_STARTED / Ready: No — M13-002 acceptance remains open
-Ready: PR31 normally merged; PR32 BEHIND with successful CI/CLA; stale rejection needs separate approval
+Ready: PR32 one-shot request rejected HTTP405 (required checks expected); stale cause not isolated; further mutations stopped
 ```
 
 ### SEC-2026-10-12 — Scheduled Security Go patch
@@ -2663,9 +2663,11 @@ no-known-release-blocking-finding entry assessment.
 
 ### M13-002 — protected branch qualification
 
-Status: IN_PROGRESS — exact e1e3aa8 PR31 normally merged into develop after
-PR32 CI/CLA SUCCESS and CLEAN. PR32 is now BEHIND with unchanged head and
-successful checks. Actual PR32 rejection and further remote mutations are not authorized.
+Status: IN_PROGRESS — PR31 normal develop merge and conversation rejection remain
+verified. The separately approved PR32 exact-head request was rejected HTTP405 for
+expected required checks. PR32 remains open/BEHIND with unchanged head and refs;
+independent stale enforcement is not qualified. One-shot approval is consumed and
+further remote mutations are not authorized.
 Read: [M13 contract](./18-m13-production-release-operations-contract.md),
 [CI gate](../engineering/04-ci-quality-gate.md), CONTRIBUTING.md,
 [M13-001 evidence](./evidence/m13-001-protected-activation/README.md).
@@ -2702,7 +2704,7 @@ single ordinary exact-head merge request returned HTTP405 explicitly citing the
 unresolved conversation. Main/develop stayed at2e196a1, PR remained open/unmerged,
 and resolving that test thread restored CLEAN. No bypass/force/auto-merge was used.
 
-MISSING: remaining target-specific negative cases, normal develop-to-main merge and
+MISSING: independent stale disposition, remaining target-specific negative cases, normal develop-to-main merge and
 final audit. This develop conversation case does not qualify main, missing
 Required/CLA, stale branch, direct/force push or a separate override attempt.
 The single-attempt conversation approval is consumed. A subsequent scoped approval
@@ -2714,7 +2716,7 @@ ten jobs SUCCESS and genuine CLA succeeded; both contexts are required and its
 pre-advancement gate was CLEAN. [Preparation evidence](./evidence/m13-002-protected-path/stale-pr-preparation.json)
 binds these fresh results.
 
-Latest authorized phase: [normal merge and stale observation](./evidence/m13-002-protected-path/develop-merge.json).
+Previous authorized phase: [normal merge and stale observation](./evidence/m13-002-protected-path/develop-merge.json).
 Both PRs were CLEAN with exact heads, required successful contexts, no unresolved
 threads and unchanged protections immediately before one normal exact-head PR31
 merge request. HTTP200/merged=true advanced develop to84591ef; its parents are
@@ -2724,8 +2726,26 @@ Required/CLA, no unresolved threads and no content conflict. No automatic CI rer
 was observed through 2026-10-13T14:41:12Z (one run, attempt1). PR base/merge metadata
 still identifies the old tested snapshot; live refs, fetched commit and ancestry
 comparison establish actual develop advancement. Old checks are not new-base CI.
-Actual stale merge rejection is NOT_RUN: no PR32 merge request was sent. The PR31
-normal-merge authorization is consumed; further remote writes need separate approval.
+At that phase, actual stale rejection was NOT_RUN and no PR32 merge request had
+been sent. The subsequent one-shot execution below supersedes that pending label.
+
+Latest phase: [PR32 rejection result](./evidence/m13-002-protected-path/stale-rejection.json).
+On 2026-10-14 the explicitly approved ordinary exact-head merge request was sent
+once after fresh HEADff441d3/develop84591ef/BEHIND, successful required Required/CLA,
+zero unresolved threads and admin bypass never were confirmed. HTTP405 reports
+`2 of 2 required status checks are expected.` Main2e196a1, develop84591ef and
+featureff441d3 are unchanged; PR32 is open/unmerged/BEHIND. Its synthetic merge
+metadata changed8e5067f→3635960 (advanced develop/head parents, zero checks/statuses),
+which is not a protected-branch update. The specific internal refresh/evaluation
+cause is unknown. This is a real rejection with an unexpected reported blocker,
+not an isolated stale, missing Required, missing CLA or separate bypass PASS.
+The one-shot authorization is consumed; no retry or other mutation was made.
+Next: review existing head/test-merge/effective-check evidence read-only and define
+a rule-preserving isolation/disposition before requesting any further mutation.
+Target-specific remaining negatives, normal develop-to-main and final audit stay
+open. Current audit remains IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO /
+ACCEPTANCE_CLOSED=NO. M13-003..005 remain NOT_STARTED.
+
 Force-push needs a design/decision compatible with existing history preservation;
 genuine missing CLA may need a willing real unsigned participant. Do not weaken
 rules, fabricate statuses/identity or mark those cases waived/qualified.

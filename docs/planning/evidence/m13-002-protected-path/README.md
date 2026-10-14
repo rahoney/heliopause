@@ -1,8 +1,39 @@
 # M13-002 protected branch qualification
 
 Status: IN_PROGRESS / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO. PR31 normal develop
-merge and its earlier conversation rejection passed. PR32 is now BEHIND; an
-actual stale merge rejection has not been attempted or authorized.
+merge and its earlier conversation rejection passed. PR32's separately approved
+one-shot ordinary merge request was rejected HTTP405. Its reported expected-check
+blocker does not isolate stale enforcement; further mutations have stopped.
+
+## PR32 one-shot rejection — expected-check cause, stale not qualified
+
+The [result](./stale-rejection.json) records the 2026-10-14 approval and sole request.
+Immediately before execution, exact headff441d3, live develop84591ef and BEHIND
+matched the approved scope. Required/App15368 and genuine CLA/pinned App128106
+were successful and required, all eleven contexts were green, unresolved threads
+were0, and the admin actor had bypass never under unchanged effective rules.
+
+The ordinary exact-head merge returned HTTP405 with the precise server reason
+`2 of 2 required status checks are expected.` Original request body, response and
+receipt are preserved in [safe raw evidence](./raw/stale-merge-response.json).
+Independent post-reads confirmed main2e196a1, develop84591ef and featureff441d3
+unchanged, with PR32 open/unmerged/BEHIND and its head contexts still successful.
+The entire API object is not unchanged: synthetic merge metadata moved from
+8e5067f (old base/head) to3635960 (advanced develop/head); the latter had zero
+checks/statuses. Read-only commit/check receipts preserve that distinction.
+
+The server's expected-check reason and changed synthetic candidate do not prove
+an isolated strict-freshness cause or a service/protection defect. The internal
+evaluation/refresh cause remains unknown. Stale, isolated missing Required/CLA
+and a separate admin-bypass case are not closed by this rejection. General
+[GitHub head/test-merge semantics](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks#conflicts-between-head-commit-and-test-merge-commit)
+do not establish the cause of this specific evaluation. The one-shot approval
+is consumed. No retry, push, rule change, recovery or release was performed.
+
+Next, review the existing head/test-merge/effective-check evidence read-only and
+define a rule-preserving isolation or disposition. The result owns the ordered
+remaining M13-002 cases and exact approval boundaries. A new mutation requires
+new scoped approval; M13-003 remains NOT_STARTED / Ready: No.
 
 ## Normal PR31 merge and PR32 stale-state observation
 
@@ -35,10 +66,9 @@ qualification of a new merge with the advanced base. Original metadata is preser
 the reason for its refresh timing is not asserted. GitHub defines
 [BEHIND as an out-of-date head](https://docs.github.com/en/graphql/reference/pulls#mergestatestatus).
 
-No PR32 merge request, additional push, protection change, main merge or release
-was performed. Actual stale rejection is NOT_RUN. Any next exact-head rejection
-test needs separate approval and fresh preconditions; a defective gate could allow
-that merge, requiring immediate stop and evidence preservation without rollback.
+During that historical phase no PR32 merge request, additional push, protection
+change, main merge or release was performed; actual stale rejection was NOT_RUN.
+The separately approved one-shot request above supersedes only that pending label.
 Full original readbacks are local under `docs/github-logs/m13-002-base-advance/`
 and the latest timestamped `docs/github-logs/m13-002-stale-preparation/remote/`.
 
@@ -128,8 +158,8 @@ Local docs/security passed. The marker and PR31 modify disjoint paths.
 The preparation phase performed no merge request, protected-ref push, rule change
 or release. Its initially incomplete checks were not stale rejection evidence.
 The later separately authorized PR31 merge and resulting PR32 BEHIND state are
-recorded above. Preserve the auxiliary head for a separately authorized negative
-test; M13-002 qualification/acceptance remains open.
+recorded above. The later one-shot rejection now has its own result. Preserve
+the auxiliary head; M13-002 qualification/acceptance remains open.
 
 ## Local result-record validation
 
@@ -147,8 +177,12 @@ unchanged canonical `docs` and `security` profiles. This is a separate scope;
 it does not turn the original working-directory failure into PASS. Candidate
 path/mode/hash inventory, command results and complete logs are retained locally
 in `docs/github-logs/m13-002-pr/final-candidate-validation/` for the earlier record.
-The latest merge/stale record uses the same full-candidate boundary, with inventory
+The PR31 merge/stale-state record uses the same full-candidate boundary, with inventory
 and canonical check logs under `docs/github-logs/m13-002-base-advance/record-validation/`.
+The PR32 one-shot result uses that same explicit full-versioned-candidate boundary;
+its inventory and final check receipts are under
+`docs/github-logs/m13-002-stale-rejection/record-validation/`. Full original API
+custody remains local and outside that versioned candidate.
 The initial `remote-record-*` check files remain untracked preparation evidence
 and are not final-candidate validation. Original raw custody remains local.
 

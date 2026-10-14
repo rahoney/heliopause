@@ -462,8 +462,10 @@ M13 진입 후 새로운 ecosystem이나 주요 product feature를 추가하지 
 release-blocking bug가 아닌 개선 아이디어는 post-release backlog로 넘긴다.
 
 Status: IN_PROGRESS — M13-001 configuration complete; M13-002 develop conversation
-rejection and normal PR31 merge verified, PR32 stale state observed. Remaining
-negative cases, develop-to-main path and final qualification remain open.
+rejection and normal PR31 merge verified. The single approved PR32 request was
+rejected HTTP405 for expected required checks; independent stale enforcement is
+not qualified. Further mutations stopped. Remaining negative cases, develop-to-main
+path and final qualification remain open; exact evidence is owned by the Queue.
 
 M12/M12-02 technical acceptance and PR29/30 delivery are complete. Main
 CI38328099413 is SUCCESS. The owner authorized live protection configuration on
