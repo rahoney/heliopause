@@ -209,6 +209,9 @@ bounded safe extraction을 확인한 state-local SDK를 사용하며 전체 SDK 
 `--go`는 현재 Go 선택을 유지하는 요청의 명시 SDK 경로이며 새 Go에는 ambient SDK를 받지 않는다.
 Host 기본 SDK와 설치는 바꾸지 않는다. 각 `verification-*` directory의 logs/result와
 최신 `verification.json`을 남겨 첫 실패를 다음 실행으로 덮지 않는다.
+UPG-004 compiler 검사 연결 뒤 verify는 `state/quality-tools`의 독립 executable
+cache를 명시한다. Caller의 기본 `HELOX_TOOL_CACHE`·Go config/workspace/flags로
+후보 bootstrap이 active quality binaries를 덮어쓰지 않으며 cache/bin alias도 거부한다.
 
 `configuration=PASS`는 설정 검증 결과다. `required_qualification`은 변경 종류의
 installed/CPU/CUDA/Required/activation 작업을 별도로 남기며 `migration_complete=false`를

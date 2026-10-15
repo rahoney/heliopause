@@ -400,12 +400,12 @@ func (b *cappedBuffer) Write(p []byte) (int, error) {
 func goEnvironment(goBin string) []string {
 	env := []string{}
 	for _, entry := range os.Environ() {
-		if strings.HasPrefix(entry, "GOROOT=") || strings.HasPrefix(entry, "GOTOOLCHAIN=") || strings.HasPrefix(entry, "PATH=") {
+		if strings.HasPrefix(entry, "GOROOT=") || strings.HasPrefix(entry, "GOTOOLCHAIN=") || strings.HasPrefix(entry, "PATH=") || strings.HasPrefix(entry, "GOENV=") || strings.HasPrefix(entry, "GOFLAGS=") || strings.HasPrefix(entry, "GOWORK=") {
 			continue
 		}
 		env = append(env, entry)
 	}
-	return append(env, "GOTOOLCHAIN=local", "GOROOT="+filepath.Dir(filepath.Dir(goBin)), "PATH="+filepath.Dir(goBin)+string(os.PathListSeparator)+os.Getenv("PATH"))
+	return append(env, "GOTOOLCHAIN=local", "GOENV=off", "GOWORK=off", "GOFLAGS=", "GOROOT="+filepath.Dir(filepath.Dir(goBin)), "PATH="+filepath.Dir(goBin)+string(os.PathListSeparator)+os.Getenv("PATH"))
 }
 func checkGo(goBin, root string) error {
 	selected, err := selectedVersion(root, "go")

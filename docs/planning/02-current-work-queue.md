@@ -9,7 +9,7 @@
 ```text
 Current milestone: Runtime upgrade maintenance — prerequisite to M13 resumption
 Milestone status: IN_PROGRESS (ownership checks implemented; runtime migration not completed)
-Active work item: UPG-004 — gVisor/archived quality tool compiler candidates (NOT_STARTED / Ready)
+Active work item: UPG-004 — gVisor/archived quality tool compiler candidates (IN_PROGRESS)
 Next work item: UPG-005 — installed ecosystem / CPU / supported CUDA qualification
 Next work item status: NOT_STARTED / Ready: No — UPG-004 acceptance remains open
 M13 status: ON_HOLD by user request on 2026-10-15; M13-002 acceptance remains open
@@ -31,7 +31,7 @@ Baseline audit·작업별 Read/acceptance·검증 순서·M13 재개 조건:
 | UPG-001 | baseline audit / design / detailed plan | COMPLETE | 소스 변경 전 목표별 audit와 design/plan 작성; [closure evidence](../engineering/evidence/runtime-upgrade-maintenance/upg-001.json) |
 | UPG-002 | all owned version consumers / manifest / drift | COMPLETE | [ownership/manifest evidence](../engineering/evidence/runtime-upgrade-maintenance/upg-002.json); canonical Quick, security,12 focused regressions/54 cases PASS |
 | UPG-003 | explicit plan/apply/verify / same-version rehearsal | COMPLETE | [updater evidence](../engineering/evidence/runtime-upgrade-maintenance/upg-003.json); actual no-op2/2, canonical verify7 profiles,10 tests/28 cases PASS |
-| UPG-004 | gVisor·archived quality tool Go1.26.9 candidates | NOT_STARTED / Ready | UPG-003 완료; 시작 audit 뒤 기존 builders 재사용 |
+| UPG-004 | gVisor·archived quality tool Go1.26.9 candidates | IN_PROGRESS | adbf422 기준 시작 audit; 기존 builders/source installer 재사용, compiler 전환 검증 필요 |
 | UPG-005 | installed ecosystem / CPU / cu126 / cu130 / cu132 qualification | NOT_STARTED | UPG-004 의존 |
 | UPG-006 | verified activation / retirement / M13 handoff | NOT_STARTED | UPG-005 의존 |
 
@@ -82,6 +82,32 @@ Source/tool/runtime pins and installed binaries are unchanged. Scoped audit:
 IMPLEMENTED=YES/WIRED=YES/QUALIFIED=YES/ACCEPTANCE_CLOSED=YES/MISSING=none for UPG-003.
 Native macOS execution, actual new SDK activation, gVisor/quality compiler rebuild,
 installed/CPU/CUDA/remote qualification and final migration remain separate.
+
+UPG-004 start audit (baseline `adbf422c7ca82a15ee35d2ae8834172eba03bd77`):
+existing complete bundle/observer builders, strict bundle verifier and source tool
+installer IMPLEMENTED=YES/WIRED=YES; selected-Go SDK preparation/candidate capture,
+Gitleaks exact source compiler build and actual compiler enforcement
+IMPLEMENTED=NO/WIRED=NO/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO.
+MISSING: Go1.26.9 gVisor SDK/patch/module-lock preparation shared by local/CI/release;
+two reproducible complete builds, member/compiler/capability/102-latch evidence;
+same-release Gitleaks source identity/flags/output and documented detection corpus
+comparison; actual compiler checks for every managed Go tool and wrong-input
+regressions. Existing builds/validators are extended, not replaced. Candidate
+preparation does not install/activate the helper or claim full qualification.
+
+UPG-004 quality-tool component: [Gitleaks/compiler evidence](../engineering/evidence/runtime-upgrade-maintenance/upg-004-gitleaks.json).
+Gitleaks remains8.18.4 at the official tag/module h1 and now source-builds with the
+selected Go; schema2 rejects archived active installs. All5 managed candidate
+binaries prove actual Go1.26.9/package/platform metadata. Two independent Linux
+builds plus canonical bootstrap produce identical Gitleaks output; Darwin both
+architectures cross-build without claiming native execution. Three reconstructed
+M7 detection/benign classes match the official archive and canonical security;
+compiler/lock negatives pass21 cases. Actual updater verify passes7 profiles with
+state-local executables and an untouched caller-cache sentinel. Quality component
+audit is YES/YES/YES/YES/MISSING=none. Overall UPG-004 remains IN_PROGRESS:
+gVisor SDK/common preparation, candidate capture, reproducible full bundle/observer
+and capabilities/102 latches remain. Global SDK/binary activation and full
+installed/CPU/CUDA/remote qualification have not been performed.
 
 M13-001 COMPLETE는 유지한다. M13-002는 ON_HOLD이며 PR33·남은 CLA/stale/merge
 acceptance와 기존 원본을 보존한다. M13 재개 시 새 Git/remote/PR/check 관측과

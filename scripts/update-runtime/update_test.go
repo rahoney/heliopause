@@ -514,3 +514,59 @@ func TestSDKExtractionAndIntegrity(t *testing.T) {
 		})
 	}
 }
+
+func TestVerificationKeepsQualityExecutablesInState(t *testing.T) {
+	state, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	active := t.TempDir()
+	t.Setenv("HELOX_TOOL_CACHE", active)
+	t.Setenv("GOENV", "/ignored/caller/go-env")
+	t.Setenv("GOWORK", "/ignored/caller/go.work")
+	t.Setenv("GOFLAGS", "-modfile=/ignored/caller/go.mod")
+	env, err := verificationEnvironment("/selected-sdk/bin/go", state)
+	if err != nil {
+		t.Fatal(err)
+	}
+	values := map[string]string{}
+	for _, entry := range env {
+		k, v, ok := strings.Cut(entry, "=")
+		if ok {
+			if _, duplicate := values[k]; duplicate {
+				t.Fatal("duplicate environment key:", k)
+			}
+			values[k] = v
+		}
+	}
+	for key, want := range map[string]string{"HELOX_TOOL_CACHE": filepath.Join(state, "quality-tools"), "GOENV": "off", "GOWORK": "off", "GOFLAGS": "", "GOTOOLCHAIN": "local", "GOROOT": "/selected-sdk"} {
+		if values[key] != want {
+			t.Fatal("candidate verification retained caller configuration:", key)
+		}
+	}
+	entries, err := os.ReadDir(active)
+	if err != nil || len(entries) != 0 {
+		t.Fatal("active tool cache was changed", err)
+	}
+}
+
+func TestVerificationRejectsQualityBinAlias(t *testing.T) {
+	for _, component := range []string{"quality-tools", "quality-tools/bin"} {
+		t.Run(component, func(t *testing.T) {
+			state, err := filepath.EvalSymlinks(t.TempDir())
+			if err != nil {
+				t.Fatal(err)
+			}
+			path := filepath.Join(state, component)
+			if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.Symlink(t.TempDir(), path); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := verificationEnvironment("/selected-sdk/bin/go", state); err == nil {
+				t.Fatal("candidate executable cache escaped state")
+			}
+		})
+	}
+}

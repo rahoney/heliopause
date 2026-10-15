@@ -192,6 +192,10 @@ func verifyPlan(p plan, state, goPath string, out io.Writer) error {
 	if err := checkGo(goPath, candidate); err != nil {
 		return err
 	}
+	env, err := verificationEnvironment(goPath, state)
+	if err != nil {
+		return err
+	}
 	// Do not let an editable plan reduce canonical checks or claim runtime qualification.
 	checks := []string{"bootstrap", "quick", "security", "workflow", "release-gate", "docs", "qualification-freshness"}
 	if !reflect.DeepEqual(p.Checks, checks) {
@@ -227,7 +231,7 @@ func verifyPlan(p plan, state, goPath string, out io.Writer) error {
 	}
 	for _, profile := range checks {
 		fmt.Fprintf(out, "verify: %s\n", profile)
-		log, checkErr := command(candidate, goEnvironment(goPath), goPath, "run", "./scripts/check", profile)
+		log, checkErr := command(candidate, env, goPath, "run", "./scripts/check", profile)
 		status := "PASS"
 		if checkErr != nil {
 			status = "FAIL"
@@ -259,4 +263,24 @@ func verifyPlan(p plan, state, goPath string, out io.Writer) error {
 	}
 	fmt.Fprintf(out, "configuration PASS; runtime qualification/activation remains separate: %s\n", strings.Join(p.RequiredQualification, ", "))
 	return nil
+}
+
+func verificationEnvironment(goPath, state string) ([]string, error) {
+	cache := filepath.Join(state, "quality-tools")
+	for _, directory := range []string{cache, filepath.Join(cache, "bin")} {
+		if err := os.MkdirAll(directory, 0o700); err != nil {
+			return nil, err
+		}
+		resolved, err := filepath.EvalSymlinks(directory)
+		if err != nil || resolved != directory {
+			return nil, errors.New("candidate quality executable cache must stay inside real state directories")
+		}
+	}
+	env := []string{}
+	for _, entry := range goEnvironment(goPath) {
+		if !strings.HasPrefix(entry, "HELOX_TOOL_CACHE=") {
+			env = append(env, entry)
+		}
+	}
+	return append(env, "HELOX_TOOL_CACHE="+cache), nil
 }

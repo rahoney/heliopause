@@ -95,21 +95,51 @@ deterministic Quality Gate에서 AI 기반 scanner mode, 원격 code upload와 �
 
 ### M7-005 security tool identity lock
 
-2026-08-21 KST M7-005 activation review locks the following tool identities.
+2026-08-21 KST M7-005 activation review selected the following releases;
+2026-10-15 UPG-004 retains those releases and migrates Gitleaks to the selected Go source build.
 They are quality tooling only: none enters the product module graph.
 
 | Tool | Exact identity | Install and compatibility |
 | --- | --- | --- |
 | gosec | `github.com/securego/gosec/v2/cmd/gosec@v2.28.0` | checksum-verified `go install` with Go `1.26.9`; upstream requires Go `1.25+` |
 | govulncheck | `golang.org/x/vuln/cmd/govulncheck@v1.7.0` | checksum-verified `go install` with Go `1.26.9`; module Go floor `1.25` |
-| Gitleaks | official `v8.18.4` archive, per-platform SHA-256 lock | HTTPS download to the external tool cache and digest verification before extraction; newer `v8.28.0` and `v8.30.1` default-rule false negatives are excluded pending an upstream fix |
+| Gitleaks | `github.com/zricethezav/gitleaks/v8@v8.18.4`, explicit module h1 in tool lock | selected-Go source install with upstream version ldflags, trimpath and CGO disabled; newer `v8.28.0` and `v8.30.1` default-rule false negatives remain excluded pending an upstream fix |
 
 The bootstrap checks an installed executable's supported version identity. A
 Go-installed tool which upstream intentionally labels `dev` is additionally
 bound by its exact `package@version` installation and checksum verification;
-Gitleaks release assets are bound by the published digest and `version` output.
+The Gitleaks source build is bound by its exact package/release, explicit module
+h1 and upstream version flags. Every managed Go tool's actual build metadata must
+match the selected compiler, package and host platform before its version command
+executes. Gitleaks also requires the selected module version/h1, no replacement,
+trimpath and CGO disabled. A matching version string alone cannot approve an old
+compiler or an archive built with another Go version.
 Tool download, checksum, extraction, version mismatch or scanner failure is a
 failed profile, never an unavailable-success fallback.
+
+The tool lock explicitly migrates schemaVersion1→2 for `moduleSum` and `ldflags`.
+Schema1/archive installation is no longer an active managed-tool input. Product
+`go.mod`/`go.sum` remain independent. The retained Gitleaks release's historical
+module path differs from the renamed GitHub repository; the official tag's peeled
+commit `02808f45d038526bfcceebcbf6421c1047997ff9` matches canonical module metadata.
+The version flags follow the selected release's
+[official build configuration](https://github.com/gitleaks/gitleaks/blob/v8.18.4/.goreleaser.yml).
+
+Output digest belongs to the actual reproducible build receipt/evidence, rather
+than another per-Go/per-platform selection lock. Rebuilding the same source under
+a newly selected Go computes a new output identity; an old archive hash is never
+reused for that output. Bootstrap rebuilds source tools and read-only checks compare
+actual compiler metadata, so a language upgrade does not require editing a second
+tool compiler version or precomputed cross-platform executable hash table.
+
+Canonical security/history now executes the synthetic Gitleaks detection contract
+with its explicit managed cache. The corpus reconstructs the documented M7
+canonical GitHub PAT and generic credential classes plus benign release metadata;
+it does not claim recovery of original raw M7 token bytes. A local explicit
+official-archive control can compare normalized findings with the new build.
+Default Go tests do not acquire this external tool or depend on private corpus.
+Compiler-candidate preparation and comparison do not activate the host tool or
+complete gVisor/installed/CPU/CUDA qualification.
 
 M7-005 adds one `.gitleaksignore` fingerprint only for historical commit
 `aeb8fb81d531fd89ab67235245f3062de370a7d8`, where the product's own
@@ -188,7 +218,9 @@ ABI requires their compatibility review and fresh affected qualification.
 Support review dates/decisions and historical qualification receipts are never
 automatically refreshed. Terraform/GitHub subjects remain user-selected signed
 artifacts; their adapters and parser/module dependencies retain their existing
-owners. gVisor and archived Gitleaks compiler rebuilding remains UPG-004.
+owners. UPG-004's [Gitleaks/compiler candidate](./evidence/runtime-upgrade-maintenance/upg-004-gitleaks.json)
+reuses source installation and checks actual compilers; gVisor rebuilding and
+coherent installed qualification/activation remain open.
 
 Implementation and remaining stages follow the
 [runtime upgrade design](./05-runtime-upgrade-maintenance.md) and

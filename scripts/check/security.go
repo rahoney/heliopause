@@ -14,6 +14,10 @@ func (c *checker) securitySteps(history bool) []checkStep {
 	return []checkStep{
 		{"gosec", c.runGosec},
 		{gitleaksName, func() error { return c.runGitleaks(gitleaksName, gitleaksArgs...) }},
+		{"Gitleaks detection contract", func() error {
+			_, err := c.runCommandWithTimeout("Gitleaks detection contract", time.Minute, overrideEnvironment(c.offlineEnvironment(), map[string]string{"HELOX_GITLEAKS_CONTRACT": "1", "HELOX_TOOL_CACHE": c.toolCache, "HELOX_GITLEAKS_BASELINE": ""}), c.goExecutable, "test", "./scripts/check", "-run=^TestGitleaksDetectionContract$", "-count=1", "-v")
+			return err
+		}},
 	}
 }
 
