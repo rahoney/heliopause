@@ -188,6 +188,29 @@ ACCEPTANCE_CLOSED=NO. Final code commit, same-candidate CPU/three CUDA and fresh
 Required/native platform are still MISSING. Prior40dda27 results retain their own
 source identity and are not rewritten as this new executable candidate.
 
+UPG-005 final baa8512: small4 PASS23.93s, ordinaryCLI2 PASS35.36s and CPUfull
+PASS482.43s, each primary0/restore0. cu126 FAIL884.09s during installation.
+First accounting rejection is gap1.106363289s > existing1s, composed of
+trusted Read619.130156ms + before-read487.232044ms + ledger lock0.001089ms.
+Usage66.251083s <300s and wall remaining2328.65s; neither aggregate limit exhausted.
+Later CANCELED/PROFILE_LOOKUP_FAILURE do not replace that first cause. Helper
+wait0/originals12 restore confirmed. Target preparation/NumPy acquisition passed
+this earlier boundary; cu130/cu132 NOT_RUN. Existing CPU accounting/helper owner
+audit YES/YES/NO/NO. MISSING: narrow latency substage diagnosis and controlled
+regression if a defect is proven, then same-candidate full acceptance. Budgets,
+late rejection and authentication stay unchanged; no blind full retry.
+
+UPG-005 retained installation diagnosis: first timing overlay FAIL232.03s/restore0;
+request receive/decode1142.94ms while peerAuth0.08ms/engine33.87ms. Same code/input
+with OS scalar telemetry PASS338.10s/restore0. That success does not fix the earlier
+failure. Telemetry confirms peak shared memory12.53GiB, available memory minimum
+295.48MiB, increased swap/direct reclaim; helper quota unlimited/no throttling.
+Initial local RAM preflight missed peak working-set headroom. Preserve strict1s
+rejection, CPU/wall/tmpfs/support and add conservative local execution capacity
+readback before another full. Windows32GB/WSL~16GB, no .wslconfig; a24GB memory-only
+proposal is prepared and user decision pending because it affects all WSL distros.
+No WSL restart, production activation or remote mutation is performed.
+
 M13-001 COMPLETE는 유지한다. M13-002는 ON_HOLD이며 PR33·남은 CLA/stale/merge
 acceptance와 기존 원본을 보존한다. M13 재개 시 새 Git/remote/PR/check 관측과
 maintenance 변경을 반영한 baseline audit가 필요하다. 보류 전 CLEAN은 현재 상태가 아니다.

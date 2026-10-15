@@ -265,6 +265,71 @@
       "owner": "local UPG-005 state",
       "path": "preflight/qualification-preparation-preview.json",
       "sha256": "be1f26567bc1d563fc7a3bacc53b93ca0383207165f972f0efca80934cf69cf8"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/prepared-campaign.json",
+      "sha256": "cd8604e9f0207f6a5431d19924666ce849ded9e0d0abf46765d824d0c2a38d8f"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/prepared-cpu-full/result.json",
+      "sha256": "758f8417264c78b14066222b9a24812a3a5fd6b15bd2e20c2ac914a10294e75b"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/prepared-cu126-full/result.json",
+      "sha256": "e3b26dd6e862adf19ba594cf06f785c89a0cd580a02e63de084f9fee605bde1c"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "lifecycle/prepared-cu126-full/cleanup-state.json",
+      "sha256": "f1cda5784c9e25987ca0b27fb2873c8324437755419aed06c396d005260d5fe5"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/resource-read-diagnostic/result.json",
+      "sha256": "0a63ca89389da2569f34aebe60940e0d6ffd517eca496fe6739cb83e7cf13e5a"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "lifecycle/resource-read-diagnostic/cleanup-state.json",
+      "sha256": "5b60ed5a2dc17d7e66d7156e632a6a3de82825ac2e3fd9a5c7826e1364bf6fa8"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "diagnostics/read-latency/official-inputs.json",
+      "sha256": "e4e3473bc9df3cd01c9d4dcd30178557db06a3f8f7018c8a4f4afb229197f11a"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "diagnostics/read-latency/overlay-receipt.json",
+      "sha256": "9a607822cf1854290fd564d8ff6844cef085f667bcd8b2f79df194660b34adad"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/resource-read-pressure-diagnostic/result.json",
+      "sha256": "764d21efa5c9f7f534e4d50a9e33937b0e11a59bd5d47d8753ac28319aa8e682"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "lifecycle/resource-read-pressure-diagnostic/cleanup-state.json",
+      "sha256": "a092a9315ff881130dcdf4a5ff6ac0d53ac623d18390fec4d8cd27647affa89b"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "diagnostics/read-latency/os-pressure-summary.json",
+      "sha256": "df548798cc8ea4b0bc610ca4714d0b2b9ae01fa96237a6991e1859a753dd8e68"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "preflight/resource-memory-owner.json",
+      "sha256": "68c4c2b00441ba6c34de6c5eb7e6fdba31f9a8b88fa11374d16335ba29adc0ec"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "preflight/ram-capacity-negative.json",
+      "sha256": "4316013ce1e4c662e37107598c3c3e7d8d73ebc57f563523651e971778ef03aa"
     }
   ],
   "boundaries": [
@@ -275,7 +340,7 @@
     "no remote write/dispatch/merge; M13 remains ON_HOLD",
     "activation and retirement remain UPG-006"
   ],
-  "active_scope": "explicit preparation and early binding qualified locally; same final candidate full matrix and remote qualification remain open",
+  "active_scope": "local RAM preflight corrected before further full profiles; WSL global capacity proposal awaiting user decision; full migration open",
   "actual_final_40dda27": {
     "source_commit": "40dda277c868be1f6dc6a1d6c74879201cbd0f29",
     "consumer_cases": 15,
@@ -402,5 +467,162 @@
         "native_execution": false
       }
     ]
+  },
+  "actual_final_baa8512": {
+    "source_commit": "baa8512476334d95429920e92b63ec669e027fe8",
+    "cases": [
+      {
+        "name": "prepared-small",
+        "status": "PASS",
+        "seconds": 23.93,
+        "exit_code": 0,
+        "restore_exit_code": 0,
+        "runtime_sha256": "1ee667043c0aef8040857cdeba5052899d1978843d4119994f9902adffb8cbb3"
+      },
+      {
+        "name": "prepared-ordinary-cli",
+        "status": "PASS",
+        "seconds": 35.36,
+        "exit_code": 0,
+        "restore_exit_code": 0,
+        "runtime_sha256": "92ad0e136a2ccb86b16bbb43e71ef848b6f5581aff958d77ce6c9a051811781e"
+      },
+      {
+        "name": "prepared-cpu-full",
+        "status": "PASS",
+        "seconds": 482.43,
+        "exit_code": 0,
+        "restore_exit_code": 0,
+        "runtime_sha256": "f00a8f0eb3c42e7fa1cdbffddc4a1ef1fd01412a0ae26e5b6c606e8fabf67b5f"
+      },
+      {
+        "name": "prepared-cu126-full",
+        "status": "FAIL",
+        "seconds": 884.09,
+        "exit_code": 1,
+        "restore_exit_code": 0,
+        "runtime_sha256": "128f722cd34feb54c1798cffc3c2610cd11332d9323c4f9a3ff43cb65e95618c"
+      }
+    ],
+    "cu130_full": "NOT_RUN",
+    "cu132_full": "NOT_RUN"
+  },
+  "cpu_read_latency_gap": {
+    "status": "CONFIRMED_REJECTION; underlying substage latency NOT_ESTABLISHED",
+    "phase": "install",
+    "profile": "cu126",
+    "install_elapsed_ms": 71349,
+    "gap_ns": 1106363289,
+    "poll_ns": 1000000000,
+    "read_ns": 619130156,
+    "before_read_gap_ns": 487232044,
+    "ledger_lock_ns": 1089,
+    "usage_us": 66251083,
+    "prior_usage_us": 65140260,
+    "wall_remaining_ns": 2328653021976,
+    "primary_error": "M5_PYPI_DYNAMIC_INSTALL_FAILED/CANCELED",
+    "first_accounting_failure": "failed_before=false termination=false",
+    "followup_errors": [
+      "failed_before=true termination=true",
+      "PROFILE_LOOKUP_FAILURE during teardown"
+    ],
+    "old_binding_gap_reached_beyond": true,
+    "sdk_causality": "NOT_ESTABLISHED",
+    "helper_parent_wait": 0,
+    "originals_restored": 12,
+    "component_audit": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO",
+      "MISSING": [
+        "bounded existing helper/client latency diagnosis",
+        "deterministic before/after if a defect is established",
+        "affected actual consumers and same-candidate full matrix"
+      ]
+    },
+    "retained_diagnostic": {
+      "scope": "30 independently official-authenticated retained wheels plus synthetic native probe; installation only, not full qualifier",
+      "result": {
+        "status": "FAIL",
+        "seconds": 232.03,
+        "exit_code": 1,
+        "restore_exit_code": 0,
+        "runtime_sha256": "4b22d1ad52a46de2814aca79d5710de838a871f4e04437deb314ce2971a8bf6c"
+      },
+      "failure": "Read request context OK; 1s read context deadline exceeded during install72.241s",
+      "server_elapsed_ns": 1176915707,
+      "server_authorize_ns": 82357,
+      "server_receive_decode_ns": 1142941635,
+      "server_engine_ns": 33866876,
+      "client_elapsed_ns": 1000983358,
+      "client_socket_verify_ns": 38718,
+      "client_dial_ns": 178040,
+      "client_encode_ns": 32446,
+      "overlay_receipt_sha256": "9a607822cf1854290fd564d8ff6844cef085f667bcd8b2f79df194660b34adad",
+      "cause_boundary": "regional timing from diagnostic execution, not recovered substage values for original full619ms; OS/scheduler/GC cause remains unknown",
+      "next": "bounded OS pressure/cgroup scheduling telemetry during retained installation"
+    },
+    "pressure_diagnostic": {
+      "scope": "same timing overlay and independently authenticated retained inputs; separate diagnostic, not full qualification",
+      "result": {
+        "status": "PASS",
+        "seconds": 338.1,
+        "exit_code": 0,
+        "restore_exit_code": 0,
+        "runtime_sha256": "7556fa19411c2a5936444a476b85cea5b042100056e385347a2aeb9c9eddbd49"
+      },
+      "os_summary": {
+        "scope": "successful retained installation diagnostic only; not full qualification or original-failure cause proof",
+        "raw_sha256": "da0633a285ddc6a5148eb7f160c6f0c846385ca52938519a9a3484e440b14db7",
+        "samples": 356,
+        "started_utc": "2026-10-15T19:34:55.040446+00:00",
+        "finished_utc": "2026-10-15T19:41:05.484740+00:00",
+        "max_sample_interval_seconds": 1.029093097007717,
+        "min_available_memory_kib": 302576,
+        "max_shared_memory_kib": 13134164,
+        "baseline_swap_used_kib": 530160,
+        "max_swap_used_kib": 1810488,
+        "vmstat_deltas": {
+          "pswpin": 195694,
+          "pswpout": 317185,
+          "allocstall_normal": 19,
+          "allocstall_movable": 1716,
+          "pgmajfault": 1311,
+          "pgsteal_direct": 92406,
+          "pgscan_direct": 2479884
+        },
+        "max_some_pressure_avg10": {
+          "cpu": 44.99,
+          "memory": 14.83,
+          "io": 4.18
+        },
+        "helper_cpu_quota_values": [
+          "max 100000"
+        ],
+        "helper_throttle_values": [
+          "0"
+        ]
+      },
+      "finding": "strong host memory pressure established in the successful diagnostic; direct cause of earlier failed read is not proven",
+      "preflight_gap": "initial RAM readback did not budget peak shared tmpfs plus runtime/controller/OS headroom",
+      "host_capacity": {
+        "windows_visible_memory_kib": 33505244,
+        "wsl_total_memory_kib": 16352040,
+        "wslconfig_present": false
+      },
+      "proposed_action": "24GB WSL memory-only setting prepared; user decision pending; no restart authorized/performed"
+    },
+    "local_capacity_preflight": {
+      "status": "PASS_EXPECTED_REJECTION_BEFORE_INSTALLATION",
+      "policy_owner": "internal/artifact/pypi/resource_policy.go",
+      "selected_cuda_runtime_memory": 4294967296,
+      "selected_cuda_runtime_tmpfs": 12884901888,
+      "local_controller_os_reserve": 2147483648,
+      "required_available_memory": 19327352832,
+      "source_policy_sha256": "6b20245312d7e1aa6dc49b2ddcb48a70b2ca59cf32d64a8e0f1a65aee227a61b",
+      "scope": "task-local conservative execution guard; product/CI budgets and support unchanged",
+      "ordinary_candidate_restored": true
+    }
   }
 }

@@ -321,6 +321,11 @@ format/schema/drift
   대용량 download 뒤에야 불가능한 조합을 발견하지 않도록 한다.
 - Disk·memory·시간·artifact graph 예산과 retained data를 preflight에서 확인한다.
   기존 budget을 올리거나 필수 coverage를 낮춰 성공시키지 않는다.
+- RAM은 시작 시 free 값만 읽지 않고 selected resource policy의 shared tmpfs와
+  runtime memory, controller/OS 여유를 함께 계산한다. 이번 local execution driver의
+  capacity preflight와 실제 peak/PSI/swap를 기록한다. 기존 product/CI resource
+  한도·지원 tuple은 유지한다. WSL 전역 VM 용량 설정과 전체 재시작은 영향 범위를
+  제시하고 해당 권한이 확인된 경우에만 적용한다.
 - 같은 실패 입력의 무조건 재시도 대신 최초 오류와 exact stage/category를 보존한다.
   환경·네트워크·resource·fixture·제품 원인을 분리하고 새 가설/입력이 있을 때 재실행한다.
 - 동일 인증 artifact의 download cache는 허용 계약 아래 재사용할 수 있지만,
