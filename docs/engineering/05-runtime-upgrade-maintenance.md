@@ -1,7 +1,8 @@
 # Runtime upgrade maintenance design
 
-상태: 2026-10-15 설계 기준. 아래 command·receipt·추가 검사는 구현 목표이며,
-현재 제공되는 기능이라는 뜻이 아니다. 실행 순서와 작업 상태는
+상태: 2026-10-15 UPG-003 구현 기준. Ownership/manifest/drift와 developer
+plan/apply/verify는 구현됐으며 실제 단계별 검증 상태는 Queue/evidence를 따른다.
+gVisor/compiler migration, installed qualification과 activation은 후속 목표다. 실행 순서와 작업 상태는
 [유지보수 계획](../planning/19-runtime-upgrade-maintenance-plan.md)과
 [Current Work Queue](../planning/02-current-work-queue.md)가 소유한다.
 
@@ -51,8 +52,10 @@ micromamba/nvm 환경도 자동 정리 대상이 아니다. HAA-owned SDK와 그
 
 기존 JSON schema는 명시적 version migration으로만 확장한다. Node version처럼
 현재 tag에서 암묵적으로 얻는 값을 명시 필드로 추가하면 image tag와 양방향 검증한다.
-Host Go archive의 platform/URL/size/SHA-256은 runtime lock의 해당 Go 선택에 연결된
-좁은 metadata로 둔다. 새로운 독립 version lock을 만들지 않는다.
+Host Go archive의 platform/URL/size/SHA-256은 해당 Go 선택에 연결한 frozen proposal의
+배포물 metadata로 둔다. 선택 버전의 owner는 runtime lock 하나로 유지하며,
+developer SDK 준비만을 위해 product runtime lock schema를 확장하지 않는다.
+새로운 독립 version lock을 만들지 않는다.
 
 ### Quality tool의 실제 compiler 확인
 
@@ -123,6 +126,9 @@ explicit component/version request
 ### apply
 
 - plan의 baseline HEAD/hash와 현재 입력을 비교한다. 변경됐으면 후보를 다시 계산한다.
+- 실제 적용은 같은 baseline의 새 isolated Git worktree에서 수행한다. 원래 checkout의
+  사용자 source는 수정하지 않고 candidate diff와 검증 결과를 일반 Git review 경로로
+  전달한다. 외부 state directory에 plan/journal을 두어 검사 source에 실행 로그를 섞지 않는다.
 - 현재/목표 버전, 배포물 identity와 선언된 생성 파일만 변경한다. Historical log,
   qualification receipt, parser fixture, 사용자 project lock에는 일괄 치환하지 않는다.
 - Go directive는 기존 `go.mod`의 지원 문법을 지키고, workflow는 선언된 setup field만
@@ -131,8 +137,9 @@ explicit component/version request
 - `apply`는 명시적인 source mutation 경로다. Canonical check profile은 계속
   read-only이며 formatter의 source mutation은 `format`만 소유한다.
 - 다중 파일 쓰기를 원자적이라고 주장하지 않는다. Isolated candidate에서 준비하고
-  before/after hash와 write journal을 보존한다. 실패 시 자신이 쓴 동일 파일만
-  identity 확인 후 되돌린다. 외부 변경이나 복구 불확실성은 보존·진단한다.
+  frozen plan의 before/after bytes/hash와 write-ahead journal을 보존한다. 중단 뒤
+  각 파일이 정확한 before/after 중 하나일 때만 남은 쓰기를 재개한다. 원래 checkout은
+  수정하지 않으므로 source rollback을 가장하지 않는다. 외부 변경은 보존·진단한다.
 - Generator 재실행은 byte-identical하고, same-version apply의 두 번째 실행은 no-op이다.
 
 ### verify와 Go bootstrap
@@ -145,6 +152,68 @@ Go update command는 pin 변경 전에 현재 검증된 SDK로 빌드해 둔다.
 적용 전 host 기본 SDK를 바꾸지 않고 target SDK로 검증한다. 최종 전환은 성공한
 후보와 연결된 기존 설치 절차가 수행한다. Tool cache도 compiler identity에 맞춰
 준비하고, 임의 PATH 도구나 floating latest로 대신하지 않는다.
+
+### 구현된 명령과 기록
+
+Owner는 `scripts/update-runtime` 한 directory다. 기존 고정 YAML parser를 setup-go
+scalar의 구조/위치 확인에 재사용한다. JSON은 표준 decoder의 token span으로 선언된
+field만 편집하며 나머지 bytes와 historical fixture/receipt는 보존한다. 새 dependency나
+product interface는 없다. Linux와 macOS를 대상으로 하며 Windows에서는 WSL 경로를 사용한다.
+
+깨끗한 versioned repository에서 현재 SDK로 coordinator를 먼저 빌드한다.
+State는 repository와 겹치지 않는 absolute directory이며 재부팅 뒤 복구가 필요하면
+`/tmp`가 아닌 영구 저장소를 선택한다. 각 요청은 새로운 state를 사용한다.
+
+```sh
+go build -trimpath -o /absolute/persistent/update-runtime ./scripts/update-runtime
+/absolute/persistent/update-runtime plan --root . --state /absolute/persistent/go-reconcile --component go --version 1.26.9
+/absolute/persistent/update-runtime apply --root . --state /absolute/persistent/go-reconcile
+/absolute/persistent/update-runtime verify --root . --state /absolute/persistent/go-reconcile
+```
+
+`plan`의 component는 `go`, `node`, `python`, `rust`, `terraform`, `github`다.
+앞의 네 component는 exact stable `X.Y.Z`를 받는다. 새 버전은 공식 release metadata와
+공식 OCI index에서 linux/amd64 manifest를 고정하고 body digest까지 확인한다.
+Node는 공식 release의 npm, Python은 해당 CPython tag의 ensurepip pip를 연결하며,
+실제 image contents와 실행 호환성은 후속 runtime qualification에서 확인한다.
+Go는 공식 supported download 목록의 Linux amd64/macOS amd64/arm64 archive를 고정한다.
+Registry의 anonymous token은 process 안에서만 사용하며 plan/log에 저장하지 않는다.
+
+새 버전 요청에는 `--review /absolute/review.json`을 추가한다. 입력은 기존
+`scripts/version-support.lock.json`과 동일한 field를 가진 record의 JSON array다.
+변경된 owner만 정확히 포함한다: Go1개, Node/npm2개, Python/pip2개, Rust/Cargo1개.
+실제로 검토한 selected/latest/support/decision/reason/date를 제공하고 기존 role과
+official source를 유지한다. 도구는 검토 날짜나 지원 결정을 자동 생성하지 않는다.
+과거 기록·다른 component를 한꺼번에 새 검토로 표시하지 않는다.
+
+같은 버전은 network resolve·review 갱신·SDK 준비 없이 기존 digest를 보존한다.
+2026-10-15의 별도 live metadata probe에서 Node/Python/Rust 태그는 기존 lock과 다른
+amd64 digest를 반환했다. 같은 version의 tag를 다시 조회한 것을 같은 frozen image로
+취급하지 않으며, reconciliation에 digest refresh를 섞지 않는다.
+
+Terraform/GitHub는 `--version` 없이 adapter/common-runtime 영향만 계획한다.
+사용자가 지정한 Provider/package/release asset의 version·hash·signature는 수정하지 않는다.
+
+`apply`는 source HEAD·tracked/index cleanliness·전체 tracked bytes/modes와 선언된
+generator/patch를 대조한다. Untracked source/unknown workflow는 거부한다. State의
+`candidate`에 detached worktree를 만들고 그곳만 수정한다. Full mode를 보존하며,
+두 번째 적용은 이미 after인 파일을 다시 쓰지 않는다. `plan.json`과 `journal.json`을
+fsync/rename으로 기록하고 operation lock을 사용한다. 실패 후 같은 `apply`로 재개하되
+외부 변경·HEAD/index 변경·불명확한 상태에서는 덮어쓰지 않고 원인을 먼저 조사한다.
+Candidate diff는 정상 branch/commit/PR 검토로 전달하며 자동 merge/push는 없다.
+
+`verify`는 bootstrap→quick→security→workflow→release-gate→docs→qualification-freshness를
+기존 canonical checker로 실행한다. Go upgrade는 frozen official archive의 size/hash와
+bounded safe extraction을 확인한 state-local SDK를 사용하며 전체 SDK inventory를 기록한다.
+다른 요청은 선택 Go와 실제 compiler/platform이 같은 absolute executable을 사용한다.
+`--go`는 현재 Go 선택을 유지하는 요청의 명시 SDK 경로이며 새 Go에는 ambient SDK를 받지 않는다.
+Host 기본 SDK와 설치는 바꾸지 않는다. 각 `verification-*` directory의 logs/result와
+최신 `verification.json`을 남겨 첫 실패를 다음 실행으로 덮지 않는다.
+
+`configuration=PASS`는 설정 검증 결과다. `required_qualification`은 변경 종류의
+installed/CPU/CUDA/Required/activation 작업을 별도로 남기며 `migration_complete=false`를
+유지한다. 그 목록은 기존 Required/qualification 계약을 줄이거나 완료 authority가 되지 않는다.
+UPG-003의 실제 검증과 한계는 [evidence](./evidence/runtime-upgrade-maintenance/upg-003.json)가 소유한다.
 
 ## 5. gVisor Go 전환
 

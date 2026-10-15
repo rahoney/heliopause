@@ -98,7 +98,7 @@
 | Cross-Ecosystem Qualification and Feature Freeze | M12-005 | Complete | [Qualification Evidence](./docs/planning/evidence/m12-005-qualification/README.md), [Current Work Queue](./docs/planning/02-current-work-queue.md) |
 | M12 Final Red-Team Fix Gate | M12-02 | Complete | [M12-02 Final Red-Team Fix List](./docs/planning/17-m12-02-fix-list.md) |
 | Production Release & Operations | M13 | M13-001 complete; M13-002 ON_HOLD by user request | [M13 Production Release & Operations Contract](./docs/planning/18-m13-production-release-operations-contract.md) |
-| Runtime Upgrade Maintenance | UPG-001..006 | UPG-001..002 complete; UPG-003 next | [Design](./docs/engineering/05-runtime-upgrade-maintenance.md), [Plan](./docs/planning/19-runtime-upgrade-maintenance-plan.md) |
+| Runtime Upgrade Maintenance | UPG-001..006 | UPG-001..003 complete; UPG-004 Ready | [Design](./docs/engineering/05-runtime-upgrade-maintenance.md), [Plan](./docs/planning/19-runtime-upgrade-maintenance-plan.md) |
 
 ## Current Stage
 
@@ -108,7 +108,8 @@ Documentation hierarchy and task routing migration: Complete
 
 2026-10-15 사용자가 M13을 보류하고 버전 갱신 유지보수의 설계·계획을 먼저
 정리하도록 요청했다. UPG-001 baseline audit/design/planning을
-`milestone/runtime-upgrade-maintenance`에서 완료했고 사용자 진행 요청에 따른 UPG-002 owner/manifest/drift 연결도 검증했다. UPG-003 updater가 다음 작업이다. 상세 결정은
+`milestone/runtime-upgrade-maintenance`에서 완료했고 UPG-002 owner/manifest/drift와
+UPG-003 updater/no-op·복구·canonical verify를 검증했다. UPG-004 compiler 후보 build가 Ready다. 상세 결정은
 [Runtime upgrade design](./docs/engineering/05-runtime-upgrade-maintenance.md),
 작업·완료·재개 조건은 [plan](./docs/planning/19-runtime-upgrade-maintenance-plan.md)과
 Queue가 소유한다. 아래 M13 기록은 보류 전 관측이며 새 원격 상태를 뜻하지 않는다.

@@ -9,9 +9,9 @@
 ```text
 Current milestone: Runtime upgrade maintenance — prerequisite to M13 resumption
 Milestone status: IN_PROGRESS (ownership checks implemented; runtime migration not completed)
-Active work item: none — UPG-002 closure; UPG-003 starts next
-Next work item: UPG-003 — explicit plan/apply/verify and same-version rehearsal
-Next work item status: NOT_STARTED / Ready: Yes — UPG-002 acceptance closed
+Active work item: UPG-004 — gVisor/archived quality tool compiler candidates (NOT_STARTED / Ready)
+Next work item: UPG-005 — installed ecosystem / CPU / supported CUDA qualification
+Next work item status: NOT_STARTED / Ready: No — UPG-004 acceptance remains open
 M13 status: ON_HOLD by user request on 2026-10-15; M13-002 acceptance remains open
 ```
 
@@ -30,8 +30,8 @@ Baseline audit·작업별 Read/acceptance·검증 순서·M13 재개 조건:
 | --- | --- | --- | --- |
 | UPG-001 | baseline audit / design / detailed plan | COMPLETE | 소스 변경 전 목표별 audit와 design/plan 작성; [closure evidence](../engineering/evidence/runtime-upgrade-maintenance/upg-001.json) |
 | UPG-002 | all owned version consumers / manifest / drift | COMPLETE | [ownership/manifest evidence](../engineering/evidence/runtime-upgrade-maintenance/upg-002.json); canonical Quick, security,12 focused regressions/54 cases PASS |
-| UPG-003 | explicit plan/apply/verify / same-version rehearsal | NOT_STARTED | UPG-002 의존 |
-| UPG-004 | gVisor·archived quality tool Go1.26.9 candidates | NOT_STARTED | UPG-003 의존 |
+| UPG-003 | explicit plan/apply/verify / same-version rehearsal | COMPLETE | [updater evidence](../engineering/evidence/runtime-upgrade-maintenance/upg-003.json); actual no-op2/2, canonical verify7 profiles,10 tests/28 cases PASS |
+| UPG-004 | gVisor·archived quality tool Go1.26.9 candidates | NOT_STARTED / Ready | UPG-003 완료; 시작 audit 뒤 기존 builders 재사용 |
 | UPG-005 | installed ecosystem / CPU / cu126 / cu130 / cu132 qualification | NOT_STARTED | UPG-004 의존 |
 | UPG-006 | verified activation / retirement / M13 handoff | NOT_STARTED | UPG-005 의존 |
 
@@ -61,6 +61,27 @@ Final native Quick, security/release-gate, generator idempotence and focused12/5
 regressions passed. Current scoped audit: IMPLEMENTED=YES/WIRED=YES/QUALIFIED=YES/
 ACCEPTANCE_CLOSED=YES/MISSING=none for UPG-002. Updater, actual compiler rebuild,
 installed/CPU/CUDA/remote qualification and activation remain UPG-003..006.
+
+UPG-003 start audit (baseline `16cfe2948b604605a20241547a0ab67e0bee4287`):
+unified updater IMPLEMENTED=NO/WIRED=NO/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO.
+MISSING: explicit official-metadata plan; isolated candidate apply with baseline/
+hash preconditions and durable recovery journal; target-SDK canonical verify;
+same-version no-op and coordinated four-language/negative/fault regressions.
+Existing generator, selected-version checks and canonical profiles are reused.
+Source edits remain separate from Host activation and privileged lifecycle.
+
+UPG-003 closure: one developer command now resolves exact official metadata,
+freezes coordinated patches and runs existing canonical checks in an isolated
+Git worktree. Actual current Go1.26.9 plans2/apply2 produced identical plan IDs,
+zero source diff and no additional SDK. Persistent state/journal and all7 verify
+profiles passed. Four independent synthetic component upgrades and recovery/
+stale-input/foreign-edit/architecture/digest/SDK negatives passed10 tests/28 cases.
+Official live metadata resolution passed for all4 current runtimes; same-version
+reconciliation preserves original image digests, even when a live tag differs.
+Source/tool/runtime pins and installed binaries are unchanged. Scoped audit:
+IMPLEMENTED=YES/WIRED=YES/QUALIFIED=YES/ACCEPTANCE_CLOSED=YES/MISSING=none for UPG-003.
+Native macOS execution, actual new SDK activation, gVisor/quality compiler rebuild,
+installed/CPU/CUDA/remote qualification and final migration remain separate.
 
 M13-001 COMPLETE는 유지한다. M13-002는 ON_HOLD이며 PR33·남은 CLA/stale/merge
 acceptance와 기존 원본을 보존한다. M13 재개 시 새 Git/remote/PR/check 관측과
