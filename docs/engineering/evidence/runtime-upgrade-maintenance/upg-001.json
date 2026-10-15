@@ -1,0 +1,138 @@
+{
+  "schema": "haa.runtime-upgrade-maintenance-planning/v1",
+  "date": "2026-10-15",
+  "baseline_commit": "f5a03530f514f7fdf1a3ec7ce52f15dd515b1019",
+  "maintenance_branch": "milestone/runtime-upgrade-maintenance",
+  "preserved_m13_branch": "milestone/m13-production-release-operations",
+  "work_item": "UPG-001",
+  "scope": "Baseline audit, detailed design/plan, documentation routing and explicit user-requested M13 hold. No source/runtime/installation/remote mutation.",
+  "design_owner": "docs/engineering/05-runtime-upgrade-maintenance.md",
+  "acceptance_owner": "docs/planning/19-runtime-upgrade-maintenance-plan.md",
+  "queue_owner": "docs/planning/02-current-work-queue.md",
+  "planning_audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES",
+    "ACCEPTANCE_CLOSED": "YES",
+    "MISSING": []
+  },
+  "candidate_documents": [
+    {
+      "path": "README.md",
+      "sha256": "68e972a7149f51022c3c2c90a3951c4ab705543887b5f71eba1ccfd6830a24f6"
+    },
+    {
+      "path": "PROJECT-DECISIONS.md",
+      "sha256": "4225297fef452d32449f39aba6a425d234c8f3e56168f4ec8994148f4221eabd"
+    },
+    {
+      "path": "docs/README.md",
+      "sha256": "869efa2b7f1c38a216b3d3b8d3f1c6c7499e356fa1c9ce4bf2564a165598afdd"
+    },
+    {
+      "path": "docs/engineering/README.md",
+      "sha256": "7707165849cae691586742a454c62f6bbed1e6dcb1661eeba42bf46b1dd4aeed"
+    },
+    {
+      "path": "docs/engineering/05-runtime-upgrade-maintenance.md",
+      "sha256": "3e9c5c4eb862d75afa0c6d03a57a12bb861017bca5c5688e3138cb51a512e63f"
+    },
+    {
+      "path": "docs/planning/README.md",
+      "sha256": "3992a36a39cf36f2541f9d38836f693d58ccd03dd60851c75bbb3d703aea3f14"
+    },
+    {
+      "path": "docs/planning/01-milestones.md",
+      "sha256": "8233ecfddb6100477ca105bff215e30c89e38f174c6c39fde819ad673e398156"
+    },
+    {
+      "path": "docs/planning/02-current-work-queue.md",
+      "sha256": "b557d4aded34d0378042c062a8481b2765b699b4055a138c5628916d211fa47e"
+    },
+    {
+      "path": "docs/planning/19-runtime-upgrade-maintenance-plan.md",
+      "sha256": "b9e4378c36de8b8d02daee42f7334e97ca8bafa6f35adc40719e48a562673b34"
+    }
+  ],
+  "source_audit": {
+    "reused": [
+      "scripts/runtimes.lock.json",
+      "scripts/tools.lock.json",
+      "scripts/version-support.lock.json",
+      "scripts/generate-runtime-lock.go",
+      "scripts/check/tools.go:checkGoVersionConsistency",
+      "scripts/check/runner.go:foundationSteps",
+      "scripts/build-gvisor-runtime-bundle.sh",
+      "scripts/build-gvisor-observer-release.sh",
+      "scripts/runtime-image-manifest/main.go:buildManifest",
+      "internal/releaseinstall",
+      "existing ecosystem integration and PyTorch qualification contracts"
+    ],
+    "confirmed_gaps": [
+      "Unified explicit plan/apply/verify command is absent",
+      "All-consumer ownership and integrity cross-checks incomplete",
+      "Runtime image manifest omits Rust",
+      "Node runtime image manifest version currently uses npm version",
+      "Pinned gVisor Bazel SDK derives Go1.26.3; no Go1.26.9 rebuilt bundle yet",
+      "Official archive Gitleaks8.18.4 binary embeds Go1.22.1 despite setupGo1.26.9; other four source-installed tools embed1.26.9. Rebuild at same scanner release and behavior comparison are included in UPG-004."
+    ],
+    "replacement_required": false
+  },
+  "checks": {
+    "initial_docs": "PASS",
+    "workflow": "PASS",
+    "release_gate": "PASS",
+    "full_worktree_security": {
+      "status": "FAIL",
+      "stage": "Gitleaks current tree",
+      "findings": 597,
+      "preceding_gosec": "PASS",
+      "scope": "All597 findings attributed to pre-existing untracked docs/github-logs; versioned candidate findings0. Original failure and redacted path summary retained; no source/ignore/raw editing to suppress findings."
+    },
+    "final_candidate_docs": "PASS on candidate before final review closure; final frozen-candidate confirmation recorded in local closure-terminal.json",
+    "final_candidate_security": "PASS on complete1506-file bytes/modes-matched native candidate; final frozen-candidate confirmation recorded in local closure-terminal.json",
+    "preparation_failures": {
+      "affected": [
+        "initial security",
+        "initial workflow",
+        "initial release-gate"
+      ],
+      "stage": "Log redirection before checker execution",
+      "cause": "Log directory preparation raced independent checker launches",
+      "followup": "Confirmed directory preparation exit0 before starting replacement invocations; original failures excluded from successful check claims."
+    },
+    "not_rerun": [
+      "Full Quick/platform/real integration/CPU/CUDA: no executable source or runtime input changed; these belong to later implementation items."
+    ]
+  },
+  "raw_evidence_owner": "docs/github-logs/runtime-upgrade-maintenance/upg-001",
+  "m13": {
+    "status": "ON_HOLD",
+    "hold_reason": "Explicit user priority change on2026-10-15",
+    "remote_readback_this_item": false,
+    "normal_main_merge_authorized": false,
+    "resume_requires": [
+      "UPG acceptance closure and delivered maintenance source",
+      "Fresh remote/PR/check/CLA/conversation observation",
+      "New M13 baseline audit with remaining acceptance"
+    ]
+  },
+  "implementation_status": {
+    "UPG-002": "NOT_STARTED",
+    "UPG-003": "NOT_STARTED",
+    "UPG-004": "NOT_STARTED",
+    "UPG-005": "NOT_STARTED",
+    "UPG-006": "NOT_STARTED"
+  },
+  "closure_terminal": "docs/github-logs/runtime-upgrade-maintenance/upg-001/closure-terminal.json (local; no remote custody claim)",
+  "review": [
+    "Existing implementation retained; no replacement/source/CI job scaffolding",
+    "All supported ecosystems and shared host/build components accounted for",
+    "Terraform/GitHub signed subjects separated from owned compiler/runtime inputs",
+    "Same-version automation rehearsal precedes actual gVisor/compiler transition",
+    "Supported CPU and three CUDA tuples independently qualified for common runtime change",
+    "Unknown stop/restore, disk/graph/resource bounds and persistent reboot recovery preserved",
+    "M13 pre-hold remote evidence not relabelled as current; fresh baseline required at resumption",
+    "Runtime manifest Rust omission and Node/npm version mismatch recorded as future scoped gaps; not silently fixed in planning"
+  ]
+}

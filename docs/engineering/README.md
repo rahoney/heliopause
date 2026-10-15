@@ -10,6 +10,7 @@ Heliopause 구현에 적용할 저장소 구조, 코딩·보안 규칙과 품질
 | [02-coding-security-rules.md](./02-coding-security-rules.md) | Step 9 | Complete | 코딩 규칙과 보안 구현 규칙 작업 |
 | [03-quality-toolchain.md](./03-quality-toolchain.md) | Step 10 | Complete | formatter·linter·type check·test·scan 작업 |
 | [04-ci-quality-gate.md](./04-ci-quality-gate.md) | Step 11 | Complete | CI workflow와 merge gate 작업 |
+| [05-runtime-upgrade-maintenance.md](./05-runtime-upgrade-maintenance.md) | Runtime upgrade maintenance | Design | owned version owner·생성·검증·전환·retirement와 PyTorch 영향 범위 |
 
 ## Rule
 

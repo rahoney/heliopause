@@ -7,13 +7,41 @@
 ## 1. 현재 상태
 
 ```text
-Current milestone: M13 — Production Release & Operations (entry audit and repository hardening)
-Milestone status: IN_PROGRESS (public release readiness not declared)
-Active work item: M13-002 — protected branch qualification
-Next work item: M13-003 — canonical release build and OS packages (not authorized)
-Next work item status: NOT_STARTED / Ready: No — M13-002 acceptance remains open
-Ready: Read-only rule-suite analysis identifies evaluated SHA0fd006b and required-check failure; remaining plan ready; remote actions unapproved
+Current milestone: Runtime upgrade maintenance — prerequisite to M13 resumption
+Milestone status: IN_PROGRESS (design/planning first; runtime migration not completed)
+Active work item: none — UPG-001 design/planning closure; no implementation item started
+Next work item: UPG-002 — ownership inventory and read-only drift checks
+Next work item status: NOT_STARTED / Ready: Yes — UPG-001 design/planning complete
+M13 status: ON_HOLD by user request on 2026-10-15; M13-002 acceptance remains open
 ```
+
+### Runtime upgrade maintenance — 2026-10-15 priority change
+
+사용자가 M13을 잠시 보류하고 버전 갱신 자동화의 상세 설계·계획을 먼저 정리한
+뒤 구현하도록 요청했다. 기존 M13 branch는 `f5a0353`에 보존하고 같은 commit에서
+`milestone/runtime-upgrade-maintenance`를 분기했다. Tracked/index clean 기준선과
+기존 미추적 사용자 자료를 유지했다. 원격 branch/PR/ruleset/설치 변경은 없다.
+
+기술 owner: [Runtime upgrade design](../engineering/05-runtime-upgrade-maintenance.md).
+Baseline audit·작업별 Read/acceptance·검증 순서·M13 재개 조건:
+[Runtime upgrade plan](./19-runtime-upgrade-maintenance-plan.md).
+
+| Item | Scope | Status | Acceptance evidence |
+| --- | --- | --- | --- |
+| UPG-001 | baseline audit / design / detailed plan | COMPLETE | 소스 변경 전 목표별 audit와 design/plan 작성; [closure evidence](../engineering/evidence/runtime-upgrade-maintenance/upg-001.json) |
+| UPG-002 | all owned version consumers / manifest / drift | NOT_STARTED | UPG-001 이후 현재 버전 유지로 시작 |
+| UPG-003 | explicit plan/apply/verify / same-version rehearsal | NOT_STARTED | UPG-002 의존 |
+| UPG-004 | gVisor·archived quality tool Go1.26.9 candidates | NOT_STARTED | UPG-003 의존 |
+| UPG-005 | installed ecosystem / CPU / cu126 / cu130 / cu132 qualification | NOT_STARTED | UPG-004 의존 |
+| UPG-006 | verified activation / retirement / M13 handoff | NOT_STARTED | UPG-005 의존 |
+
+이번 범위는 owned versions의 갱신 절차와 Go/gVisor1.26.9 전환이다. 모든 언어의
+최신판 동시 도입, 사용자 프로젝트/provider 재작성, 새 CUDA profile 또는 M13 공개
+배포를 포함하지 않는다. UPG-001 완료와 전체 유지보수 완료는 구분한다.
+
+M13-001 COMPLETE는 유지한다. M13-002는 ON_HOLD이며 PR33·남은 CLA/stale/merge
+acceptance와 기존 원본을 보존한다. M13 재개 시 새 Git/remote/PR/check 관측과
+maintenance 변경을 반영한 baseline audit가 필요하다. 보류 전 CLEAN은 현재 상태가 아니다.
 
 ### SEC-2026-10-12 — Scheduled Security Go patch
 
@@ -30,7 +58,8 @@ generator and canonical checks are reused; no replacement implementation.
 MISSING: permanent1.26.9 host activation, old-SDK cleanup, digest-bound1.26.9
 guest update with affected-consumer checks, and reproducible final evidence.
 This maintenance does not execute or qualify the pending protected PR merge;
-M13-002 remains the sole IN_PROGRESS milestone work item.
+At that maintenance phase M13-002 remained the sole IN_PROGRESS milestone work item.
+The user-requested 2026-10-15 hold and UPG sequence above supersede that active status.
 
 Progress: permanent1.26.9 installation, login/interactive/default command selection
 and persistent GOTOOLCHAIN=local are verified. Exact12 old SDK/cache paths were
@@ -2650,7 +2679,7 @@ M12-005 feature freeze에서 수행한다. canonical lock 등록만으로 releas
 | Order | ID | Scope | Status |
 | --- | --- | --- | --- |
 | 1 | M13-001 | protected main/develop/tag/release environment/immutable release activation | COMPLETE |
-| 2 | M13-002 | `feature → develop → main` 실제 protected PR qualification | IN_PROGRESS |
+| 2 | M13-002 | `feature → develop → main` 실제 protected PR qualification | ON_HOLD — runtime upgrade maintenance 우선 |
 | 3 | M13-003 | canonical release build·manifest·attestation·OS package assets | NOT_STARTED |
 | 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | NOT_STARTED |
 | 5 | M13-005 | exact publication·clean Host bootstrap·doctor·cross-ecosystem smoke·quarantine | NOT_STARTED |
@@ -2694,12 +2723,15 @@ release environment24138487071 with owner review and admin bypass disabled,
 main-only deployment policy62857129 and immutable releases match the exact plan.
 Canonical docs/workflow/release-gate PASS; final closure docs/security checked
 before commit. MISSING: none in M13-001 scope. No item was IN_PROGRESS at that closure.
-M13-002 is IN_PROGRESS; M13-003..005 remain NOT_STARTED. Settings activation does not close the overall
+Before the user-requested hold M13-002 was IN_PROGRESS; it is now ON_HOLD.
+M13-003..005 remain NOT_STARTED. Settings activation does not close the overall
 no-known-release-blocking-finding entry assessment.
 
 ### M13-002 — protected branch qualification
 
-Status: IN_PROGRESS — A′ completed within5 approved writes. PR33 at exact
+Status: ON_HOLD — user-requested runtime upgrade maintenance takes priority.
+The following is the last observed pre-hold state, not a fresh remote readback:
+A′ completed within5 approved writes. PR33 at exact
 develop84591ef→main2e196a1 has fresh10job/CLA success and is open/unmerged/CLEAN
 after main Required-only and conversation/ordinary-admin rejection plus test-thread
 resolution. All three refs are unchanged. Normal merge is not authorized; remaining

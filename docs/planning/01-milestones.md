@@ -4,6 +4,12 @@
 
 Milestone은 calendar 일정이나 작업 티켓이 아니다. Step 13 Work Queue가 현재 실행할 작은 작업과 우선순위를 관리하며, 이 문서는 구현 순서·경계·exit criteria의 canonical source다.
 
+2026-10-15 사용자 요청으로 M13을 일시 보류하고 Runtime Upgrade Maintenance를
+재개 전 선행 작업으로 배치한다. 기존 M13 exit criteria는 유지하며, 선행 작업의
+범위·단계별 acceptance·M13 인계 조건은
+[maintenance plan](./19-runtime-upgrade-maintenance-plan.md)이 소유한다.
+현재 상태는 Queue를 따른다. M13-001의 기존 완료와 M13-002의 미완료 증거는 보존한다.
+
 ## 1. 첫 검증 사용자와 운영 형태
 
 MVP의 첫 검증 사용자는 자신의 개발 환경에서 외부 Software Artifact를 설치하거나 검사하려는 **로컬 개발자/operator**로 둔다.

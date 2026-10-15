@@ -97,13 +97,21 @@
 | Go·Cargo·Terraform Cumulative Remote Qualification | M12-002~004 | Complete | [Remote CI Evidence](./docs/planning/evidence/m12-002-004-remote-ci/result.json), [Current Work Queue](./docs/planning/02-current-work-queue.md) |
 | Cross-Ecosystem Qualification and Feature Freeze | M12-005 | Complete | [Qualification Evidence](./docs/planning/evidence/m12-005-qualification/README.md), [Current Work Queue](./docs/planning/02-current-work-queue.md) |
 | M12 Final Red-Team Fix Gate | M12-02 | Complete | [M12-02 Final Red-Team Fix List](./docs/planning/17-m12-02-fix-list.md) |
-| Production Release & Operations | M13 | M13-001 complete; M13-002 in progress | [M13 Production Release & Operations Contract](./docs/planning/18-m13-production-release-operations-contract.md) |
+| Production Release & Operations | M13 | M13-001 complete; M13-002 ON_HOLD by user request | [M13 Production Release & Operations Contract](./docs/planning/18-m13-production-release-operations-contract.md) |
+| Runtime Upgrade Maintenance | UPG-001..006 | UPG-001 design/planning complete; implementation not started | [Design](./docs/engineering/05-runtime-upgrade-maintenance.md), [Plan](./docs/planning/19-runtime-upgrade-maintenance-plan.md) |
 
 ## Current Stage
 
 Step 14 — Implementation: M0·M1·M2·M3·M4·M5-001..007·M6-001..007·M7-001..006·M8-001..007 `COMPLETE`
 
 Documentation hierarchy and task routing migration: Complete
+
+2026-10-15 사용자가 M13을 보류하고 버전 갱신 유지보수의 설계·계획을 먼저
+정리하도록 요청했다. UPG-001 baseline audit/design/planning을
+`milestone/runtime-upgrade-maintenance`에서 완료했고 UPG-002 구현은 아직 시작하지 않았다. 상세 결정은
+[Runtime upgrade design](./docs/engineering/05-runtime-upgrade-maintenance.md),
+작업·완료·재개 조건은 [plan](./docs/planning/19-runtime-upgrade-maintenance-plan.md)과
+Queue가 소유한다. 아래 M13 기록은 보류 전 관측이며 새 원격 상태를 뜻하지 않는다.
 
 M12-001~004 acceptance 및 누적 원격 qualification을 완료했다. M12-005의
 전체 생태계 qualification, 구현·설계 대조와 성공 테스트 데이터 정리를 완료하고
