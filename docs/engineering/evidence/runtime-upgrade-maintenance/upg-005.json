@@ -183,7 +183,7 @@
     },
     {
       "owner": "local UPG-005 state",
-      "path": "preflight/source-frozen.json",
+      "path": "preflight/source-frozen-c56bb31.json",
       "sha256": "e9708cc6a478dd72895f2cc64c12b47eb4c2af87cd0538a7e5e41746cc5e0255"
     },
     {
@@ -193,7 +193,7 @@
     },
     {
       "owner": "local UPG-005 state",
-      "path": "preflight/candidate-builds.json",
+      "path": "preflight/candidate-builds-c56bb31.json",
       "sha256": "e97af0e8aa762ef43934db5db382825524a1e2d6c6416a293374eed1d39365c0"
     },
     {
@@ -215,6 +215,56 @@
       "owner": "local UPG-005 state",
       "path": "qualification/ordinary-cli-preview/result.json",
       "sha256": "c05d9708352dc0ad8a4850601e56c4e9d6a6223999ae1faf2422f5587eefaba7"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/final-consumer-summary.json",
+      "sha256": "4f48a963bba2b9c34a0c378e5d8f2bf459094312359b5cf9d4fda955122ee605"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/final-trusted-host/result.json",
+      "sha256": "fc96fe997918d2d635e01d9b79a37ca0be678dcc3c009bdedeb182804a2d5876"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/final-helper-fuzz.json",
+      "sha256": "98b2f00754a2be78ec1096c50990408f1ae2f2642a8e5e077786bbf3ddbbf793"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/final-terraform-source.json",
+      "sha256": "680ba0bbbedcaa87560cde61d97d76cfde8e8f2c0b9b9e8ceec3e7b6cdf145cb"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/cpu-full/result.json",
+      "sha256": "f2c4687faace3dfb25d92208446f0bb574f2cacdc6da4f6c4dbec4834d784b5d"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/cu126-full/result.json",
+      "sha256": "15d5fb76bf25c725e48f28b6eae220c79348d10b239d1a782f99446be94b509f"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/cu126-full/confirmed-prerequisite-drift.json",
+      "sha256": "a362b30d6848732af7ac256ae2eb53d5847b3a357d020bcc0379dc86ef10cf29"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/qualification-preflight/result.json",
+      "sha256": "9ed95163ecf9301290e64f3bdb547d91b0049c7f3677ff332d1908af0b185a12"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "lifecycle/qualification-preflight/cleanup-state.json",
+      "sha256": "6dec31e3d9795a9619aea4a23e687e02656dc0fdbe6f55ce3dff74d5b5b082ec"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "preflight/qualification-preparation-preview.json",
+      "sha256": "be1f26567bc1d563fc7a3bacc53b93ca0383207165f972f0efca80934cf69cf8"
     }
   ],
   "boundaries": [
@@ -225,5 +275,132 @@
     "no remote write/dispatch/merge; M13 remains ON_HOLD",
     "activation and retirement remain UPG-006"
   ],
-  "active_scope": "fixture correction qualified on preview; final source and expensive qualification still open"
+  "active_scope": "explicit preparation and early binding qualified locally; same final candidate full matrix and remote qualification remain open",
+  "actual_final_40dda27": {
+    "source_commit": "40dda277c868be1f6dc6a1d6c74879201cbd0f29",
+    "consumer_cases": 15,
+    "go_selected_top_level": 60,
+    "ordinary_cli_consumers": 2,
+    "all_consumer_cases": "PASS primary0/restore0/no skipped",
+    "cpu_full": {
+      "status": "PASS",
+      "seconds": 484.09,
+      "exit_code": 0,
+      "restore_exit_code": 0,
+      "runtime_sha256": "8a14bc291d53b6a28af61cc12134924f4862d1c53c326a7ee36f07c1ddb5e04b"
+    },
+    "cu126_full": {
+      "status": "FAIL",
+      "seconds": 588.88,
+      "exit_code": 1,
+      "restore_exit_code": 0,
+      "runtime_sha256": "1a1fecdd4bfde79a8c57eadd4bd869d9a8d4e78863e3a8d9d9dddfc12b70fe4f"
+    },
+    "cu130_full": "NOT_RUN",
+    "cu132_full": "NOT_RUN"
+  },
+  "live_qualification_binding_gap": {
+    "cause": "official compatible cuda-bindings12.9.10 selected; explicit trusted target still12.9.9",
+    "official_metadata": [
+      {
+        "version": "12.9.9",
+        "url": "https://pypi.org/pypi/cuda-bindings/12.9.9/json",
+        "status": 200,
+        "body_sha256": "c077e8e9c8bb61c5e08d773cb8b6e69a86049f97a272ca3fa4a75b49dab13444",
+        "filename": "cuda_bindings-12.9.9-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+        "expected_sha256": "94e4f9bd6b9b21aad545e0d441707094e4ff88ab420d62b85fcdc8b6da1e039f",
+        "size": 7440112,
+        "upload_time": "2026-09-23T03:21:02.947779Z"
+      },
+      {
+        "version": "12.9.10",
+        "url": "https://pypi.org/pypi/cuda-bindings/12.9.10/json",
+        "status": 200,
+        "body_sha256": "5e35ebd34e10d7327bcef863bf16a36b88c26f8316ca33ed99ae336d0b8d4df5",
+        "filename": "cuda_bindings-12.9.10-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+        "expected_sha256": "bd68d16edb117b9ee664b2d03e3f91ba94231acf6b039128efa315a748f9d194",
+        "size": 7440133,
+        "upload_time": "2026-10-15T14:12:15.927300Z"
+      }
+    ],
+    "actual_selected_sha256": "bd68d16edb117b9ee664b2d03e3f91ba94231acf6b039128efa315a748f9d194",
+    "originals_restored": true,
+    "sdk_regression_established": false,
+    "IMPLEMENTED": "YES",
+    "QUALIFIED": "YES",
+    "MISSING": [
+      "new same-candidate CPU/three CUDA full and remote Required"
+    ],
+    "contracts_preserved": [
+      "normal CLI exact caller pin and empty default",
+      "fixed NumPy2.4.6 source/hash",
+      "no artifact-output augmentation",
+      "original graph and auxiliary target exclusion",
+      "NOT_ATTESTED viewer",
+      "existing budget/coverage/Required"
+    ],
+    "WIRED": "YES",
+    "ACCEPTANCE_CLOSED": "NO",
+    "scoped_qualification": "preparation/early-binding component only; full matrix remains open",
+    "preparation_preview": {
+      "source_commit": "ff6ea504847fcb9b7e2449c44b281f0d9b954bc5",
+      "status": "PASS",
+      "seconds": 326.85,
+      "exit_code": 0,
+      "restore_exit_code": 0,
+      "expected_tests": [
+        "TestLinuxInspectionPrerequisiteAcquisitionIntegration",
+        "TestLinuxPyTorchQualificationPreparationIntegration"
+      ],
+      "missing_pass": [],
+      "skipped": [],
+      "runtime_sha256": "c721080e9e618172f2994d5c6bba67265f86df3f3814dcb7821b5fa80edfa9b8",
+      "main_intakes_on_stale_pin": 0,
+      "helper_parent_wait": 0,
+      "original_files_restored": 12,
+      "authenticated_auxiliary_profiles": [
+        "cpu",
+        "cu126",
+        "cu130",
+        "cu132"
+      ]
+    },
+    "canonical_checks": [
+      {
+        "profile": "security",
+        "exit_code": 0,
+        "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+      },
+      {
+        "profile": "workflow",
+        "exit_code": 0,
+        "sha256": "c4dc413b5545e08bddc9dcab9632134266903d92da34bd25597bd6705daf287a"
+      },
+      {
+        "profile": "docs",
+        "exit_code": 0,
+        "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+      },
+      {
+        "profile": "release-gate",
+        "exit_code": 0,
+        "sha256": "11e43c6a182a612ea79ba5d521d90153efd0f567857993ea20db4c3f95039b73"
+      },
+      {
+        "profile": "quick",
+        "exit_code": 0,
+        "sha256": "c5d9be1647075ebc27d13bb1c580371c21a836c60e0c90c0bfa97f6f576b97dd"
+      },
+      {
+        "profile": "vulnerability",
+        "exit_code": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "profile": "Darwin amd64 bootstrap test cross-compile",
+        "exit_code": 0,
+        "native_execution": false
+      }
+    ]
+  }
 }

@@ -162,6 +162,32 @@ its8 individual passes remain historical; final candidate/full CPU/three CUDA/
 remote Required and activation remain open. No product resolver/helper, firewall
 privilege, budget, support tuple or coverage assertion is changed.
 
+UPG-005 actual full progress: final40dda27 CPU PASS484.09s with helper wait0 and
+all12 originals restored. cu126 FAIL588.88s before inspection: explicit prerequisite
+target12.9.9 hash is absent because permitted live metadata selected cuda-bindings
+12.9.10. Actual wheel matches independent official PyPI SHA; both old/new identities
+and publish times are recorded locally. No SDK regression or same-filename mutation
+is established. cu130/cu132 NOT_RUN. Do not retry the stale input or change corpus.
+
+New gap baseline audit before source changes: existing exact prerequisite parser/
+loader/binding, production resolver and test/CI consumers IMPLEMENTED=YES/WIRED=YES.
+Trusted live qualification preparation and stale-pin pre-intake validation
+IMPLEMENTED=NO/WIRED=NO/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO. MISSING: explicit test-only
+plan for fixed NumPy and unique public non-root selected cuda-bindings; existing
+resolver metadata freeze/receipt; reused early target check; workflow plan/env
+wiring and negative/actual small regressions; same final candidate full matrix.
+Design owner is runtime upgrade design section6. Existing defaults, exact CLI
+input, helper authority, resource/support/Required and promotion are unchanged.
+
+UPG-005 preparation component verification: preview ff6ea504 passes canonical
+Quick/security/workflow/docs/release-gate, selector/early-resolver negatives, and
+actual installed preparation plus four-profile auxiliary authentication326.85s.
+Wrong target rejects with main intake0; helper parentwait0 and originals12 restored.
+Scoped preparation audit YES/YES/YES/YES; full-matrix audit remains QUALIFIED=NO/
+ACCEPTANCE_CLOSED=NO. Final code commit, same-candidate CPU/three CUDA and fresh
+Required/native platform are still MISSING. Prior40dda27 results retain their own
+source identity and are not rewritten as this new executable candidate.
+
 M13-001 COMPLETE는 유지한다. M13-002는 ON_HOLD이며 PR33·남은 CLA/stale/merge
 acceptance와 기존 원본을 보존한다. M13 재개 시 새 Git/remote/PR/check 관측과
 maintenance 변경을 반영한 baseline audit가 필요하다. 보류 전 CLEAN은 현재 상태가 아니다.

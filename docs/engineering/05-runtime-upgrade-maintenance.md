@@ -329,6 +329,41 @@ format/schema/drift
   source/resource policy, 실제 명령/exit, coverage와 cleanup을 연결한다.
   한 profile의 PASS를 다른 profile 또는 변경된 compiler의 PASS로 전용하지 않는다.
 
+### Live dependency와 명시 qualification 입력 준비
+
+2026-10-16 실제 cu126은 root가 허용한 범위에서 새 cuda-bindings12.9.10을 선택했다.
+고정된 보조 입력의 target hash는12.9.9였으므로 기존 검증이 올바르게 거부했다.
+현재 버전 문자열만 같은 root의 live graph를 과거 graph와 동일하게 취급하지 않는다.
+Historical corpus/support receipt는 갱신 대상이 아니며 SDK 회귀로 분류하지 않는다.
+
+보완 범위는 기존 bootstrap composition과 trusted integration fixture다. Production
+CLI의 `--inspection-prerequisites`는 계속 exact caller pin이고 default는 empty다.
+기존 resolver/loader·typed helper·namespace·원장·Policy·승격을 재사용한다.
+
+- Test-only qualification 준비를 명시적으로 선택한 CUDA profile에서만 수행한다.
+  알려진 plan ID는 cuda-bindings의 broader non-root probe와 고정 NumPy2.4.6의
+  source/version/filename/SHA를 선언한다. Aux pin은 이 test-only plan 한 곳이 소유하며
+  자동 최신화·artifact error/출력 기반 augmentation은 하지 않는다. CPU는 empty다.
+- 기존 trusted resolver를 사용해 공식 source의 locked metadata graph를 먼저 얻는다.
+  요청한 Torch root·profile/runtime/target과 선택된 public-PyPI non-root cuda-bindings가
+  유일한지 확인한다. Version/URL/declared integrity와 graph/runtime fingerprint를
+  qualification receipt에 고정한다. Expected target hash를 payload bytes에서 만들지 않는다.
+- 이 선언 metadata에서 exact targetSHA를 준비해 기존 CLI pin으로 전달한다. NumPy가
+  이미 원래 graph에 있거나 target이 없거나/primary/다른 source/모호하면 review가
+  필요한 오류로 거부한다. 보조 wheel·scripts는 계속 target에 승격하지 않는다.
+- Production composition은 기존 parser/target validation을 resolver 직후에도 사용해
+  stale/root/replacement pin을 main artifact intake 전에 거부한다. Loader의 기존
+  검증도 유지한다. Metadata selection 사이 새 release가 나오면 정확한 pin 불일치를
+  fail-closed로 알리며 자동 fallback/retry 또는 다른 target으로 바꾸지 않는다.
+- 준비 helper는 test binary에만 존재한다. Product command/interface·새 privileged
+  executor·CI job은 추가하지 않는다. CI는 세 profile에 동일한 명시 plan ID를 전달하고
+  기존 NOT_ATTESTED viewer·NumPy exclusion·15m/40m·Required 계약을 유지한다.
+
+검증: empty/default·unknown plan·CPU augmentation·wrong source/root/missing/duplicate
+binding을 거부하는 작은 회귀, stale target에서 main intake0, 실제 작은 non-root
+cuda-bindings+NumPy 준비/검사, workflow 실제 env 전달, 최종 같은 후보 CPU/세 CUDA와
+Required. 기존 실패를 보존하며 새 metadata 입력/후보의 결과를 분리한다.
+
 ## 7. 기록·중단·전환·정리
 
 기존 report/evidence 구조를 사용해 baseline, proposal, apply journal, candidate,

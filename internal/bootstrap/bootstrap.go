@@ -265,9 +265,11 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err != nil {
 			return err
 		}
-		inspection.WithInspectionPrerequisites(inspectionPrerequisiteLoader(func() (string, error) {
+		readPrerequisite := func() (string, error) {
 			return installCommand.Flags().GetString("inspection-prerequisites")
-		}, resolver, intake))
+		}
+		inspection.WithInspectionPrerequisites(inspectionPrerequisiteLoader(readPrerequisite, resolver, intake))
+		resolver = prerequisiteCheckingResolver{resolver: resolver, read: readPrerequisite}
 		directArtifact, err := artifactpypi.NewGraphArtifact(resolver, intake)
 		if err != nil {
 			return err

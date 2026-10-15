@@ -160,7 +160,10 @@ Depends: UPG-004. Read: 설계6/7절, M12 tuple/resource 계약, canonical workf
 2. Disk/resource·downloaded graph·installed backup·helper ownership·복구 preflight.
 3. Canonical bootstrap/Quick/security/vulnerability/workflow/docs/release-gate/
    qualification-freshness 및 compile/platform 검사.
-4. 작은 실제 resolver/build/install과 observer/lifecycle 정상·부정 회귀.
+4. Live CUDA qualification은 설계6절의 명시 test-only plan으로 official selected
+   metadata와 exact auxiliary target pin을 준비한다. Stale pin은 main intake 이전에
+   거부하며 frozen corpus 또는 원래 dependency graph를 강제로 바꾸지 않는다.
+   작은 실제 resolver/build/install과 observer/lifecycle 정상·부정 회귀.
 5. 기존 npm/PyPI/GitHub/Go/Cargo/Terraform installed integration과 CPU full.
 6. 같은 candidate로 cu126, cu130, cu132를 독립 full 실행한다.
 7. Final candidate 검사, raw/source/runtime/result 결합과 실제 cleanup 확인.
