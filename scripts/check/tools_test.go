@@ -10,6 +10,34 @@ import (
 	"testing"
 )
 
+func TestGoVersionConsistencyRejectsMixedSDKs(t *testing.T) {
+	t.Parallel()
+	for _, test := range []struct {
+		name, module, guest, tool string
+		wantError                 bool
+	}{
+		{"same version", "1.26.9", "1.26.9", "1.26.9", false},
+		{"retired 1.26.5 guest", "1.26.9", "1.26.5", "1.26.9", true},
+		{"retired 1.26.7 guest", "1.26.9", "1.26.7", "1.26.9", true},
+		{"unpatched guest", "1.26.9", "1.26.8", "1.26.9", true},
+		{"old product floor", "1.26.7", "1.26.9", "1.26.9", true},
+		{"old tool compiler", "1.26.9", "1.26.9", "1.26.7", true},
+		{"partial future upgrade", "1.27.2", "1.26.9", "1.27.2", true},
+		{"complete future upgrade", "1.27.2", "1.27.2", "1.27.2", false},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			root := t.TempDir()
+			writeTestFile(t, filepath.Join(root, "go.mod"), "module example.test/app\n\ngo "+test.module+"\n")
+			writeTestFile(t, filepath.Join(root, "scripts", "runtimes.lock.json"), `{"go_image":{"go_version":"`+test.guest+`"}}`)
+			c := checker{root: root, toolLock: toolLock{Tools: []toolSpec{{SetupGo: test.module}, {SetupGo: test.tool}}}}
+			if err := c.checkGoVersionConsistency(); (err != nil) != test.wantError {
+				t.Fatalf("mixed Go inputs: error = %v, want error %v", err, test.wantError)
+			}
+		})
+	}
+}
+
 func TestReadToolLock(t *testing.T) {
 	t.Parallel()
 

@@ -19,6 +19,50 @@ import (
 
 const toolLockSchemaVersion = 1
 
+// checkGoVersionConsistency keeps the product floor, quality compiler and
+// isolated Go SDK on the same explicitly selected version.
+func (c *checker) checkGoVersionConsistency() error {
+	body, err := os.ReadFile(filepath.Join(c.root, "go.mod"))
+	if err != nil {
+		return err
+	}
+	moduleVersion := ""
+	for _, line := range strings.Split(string(body), "\n") {
+		fields := strings.Fields(line)
+		if len(fields) == 0 || fields[0] != "go" {
+			continue
+		}
+		if moduleVersion != "" || len(fields) < 2 || (len(fields) > 2 && !strings.HasPrefix(fields[2], "//")) {
+			return errors.New("go version consistency: invalid or duplicate go directive")
+		}
+		moduleVersion = fields[1]
+	}
+	if moduleVersion == "" {
+		return errors.New("go version consistency: invalid or missing go directive")
+	}
+	body, err = os.ReadFile(filepath.Join(c.root, "scripts", "runtimes.lock.json"))
+	if err != nil {
+		return err
+	}
+	var lock struct {
+		GoImage struct {
+			Version string `json:"go_version"`
+		} `json:"go_image"`
+	}
+	if err := json.Unmarshal(body, &lock); err != nil {
+		return err
+	}
+	if len(c.toolLock.Tools) == 0 || lock.GoImage.Version != moduleVersion {
+		return errors.New("go version consistency: guest SDK must match go.mod")
+	}
+	for _, tool := range c.toolLock.Tools {
+		if tool.SetupGo != moduleVersion {
+			return errors.New("go version consistency: quality compiler must match go.mod")
+		}
+	}
+	return nil
+}
+
 type toolLock struct {
 	SchemaVersion int        `json:"schemaVersion"`
 	Tools         []toolSpec `json:"tools"`

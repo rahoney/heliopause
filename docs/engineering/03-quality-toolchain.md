@@ -135,11 +135,33 @@ or release use. The current Go minimum and toolchain are both `1.26.9`.
 host CI/release/quality-tool setup to the official Go 1.26.9 security patch.
 `go.mod`'s `go 1.26.9` is the minimum accepted toolchain, not an exact compiler
 selection; CI's exact setup version and `GOTOOLCHAIN=local` select the compiler.
-No floating toolchain or new major is introduced. The separate M12 guest Go
-image remains bound to `scripts/runtimes.lock.json`; its version/digest and
-historical qualification are not replaced by this host-toolchain repair.
+No floating toolchain or new major is introduced. That host-only repair did not
+replace the separate M12 guest image or its historical qualification. The
+2026-10-15 single-version maintenance updates that guest to1.26.9 with a fresh
+official image digest and separately verifies affected Go consumers.
 Sources, integrity and new validation are recorded in the
 [Scheduled Security repair evidence](./evidence/security-go1269/README.md).
+
+### Single active Go SDK
+
+The local development SDK lives permanently at `$HOME/.local/go`; login and
+interactive shells select its `bin`, and persistent `GOTOOLCHAIN=local` prevents
+automatic additional SDK downloads. Temporary `/tmp` installations are not the
+default development environment. Retire old host SDK trees and downloaded
+`golang.org/toolchain` SDK archives after confirming the replacement and the
+absence of active old-SDK consumers. Preserve historical evidence and parser
+fixtures: a recorded version string is not an installed compiler.
+
+Every canonical checker invocation requires the exact compiler selected by the
+tool lock. The existing runtime-lock drift stage additionally requires
+`go.mod`, every quality tool's `setupGo`, and the Go guest SDK to agree. The guest
+retains its immutable image digest; version equality does not replace image
+verification or affected-consumer qualification. For a future explicit upgrade,
+update the permanent host SDK, product floor, tool/CI/release pins, support record
+and guest image together, regenerate runtime identities and run the canonical
+checks plus affected Go resolver/build consumers before retiring the old SDK.
+Actual host retirement, image identity, check scope and local activation are
+recorded in the [single-version maintenance evidence](./evidence/go-single-version-20261015/README.md).
 
 정확한 Go와 현재 사용하는 tool version은 아래 M0-002 lock에서 고정한다. 아직 사용하지 않는 미래 도구의 임의 최신 version은 미리 적지 않는다.
 

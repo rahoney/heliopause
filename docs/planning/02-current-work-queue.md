@@ -17,6 +17,42 @@ Ready: Read-only rule-suite analysis identifies evaluated SHA0fd006b and require
 
 ### SEC-2026-10-12 — Scheduled Security Go patch
 
+#### 2026-10-15 local Go single-version maintenance
+
+User-authorized prerequisite to M13 resumption: retain one active Go version,
+1.26.9; retire host 1.26.5/1.26.7 and downloaded older SDKs. Existing host CI,
+release and tool setup pins already use1.26.9. Baseline audit:
+IMPLEMENTED=YES / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO for consistent
+local/guest selection. The login PATH still selects the retained1.26.7 SDK,
+the temporary1.26.9 install is absent, downloaded1.26.7/1.26.8 SDKs remain,
+and the Go guest lock selects1.26.8. Existing installation, runtime-lock
+generator and canonical checks are reused; no replacement implementation.
+MISSING: permanent1.26.9 host activation, old-SDK cleanup, digest-bound1.26.9
+guest update with affected-consumer checks, and reproducible final evidence.
+This maintenance does not execute or qualify the pending protected PR merge;
+M13-002 remains the sole IN_PROGRESS milestone work item.
+
+Progress: permanent1.26.9 installation, login/interactive/default command selection
+and persistent GOTOOLCHAIN=local are verified. Exact12 old SDK/cache paths were
+retired after active/unknown consumer0 and unchanged inventory checks. Official
+1.26.9 guest digest is locked/generated and its network-disabled image build
+smoke passed. The existing runtime-lock drift check now rejects host/product/
+quality/guest version disagreement; final native canonical Quick/security/
+vulnerability/workflow/release-gate/qualification-freshness and worktree docs PASS.
+Original OneDrive timeout and excluded preparation/initial checker failures are
+preserved. Automatic approval review initially rejected the privileged11-file
+installation change; after concrete binaries/backups were prepared the user
+explicitly approved actual16-test Go qualification and successful local activation.
+That phase completed: all16 existing Go integrations and the installed production
+CLI's actual managed download/build passed. The authorized1.26.9 bundle remains
+active;11 installed hashes/root owners/modes and exact guest identity match the
+candidate. Three helper waits0/final original0 CONFIRMED_STOPPED and no remaining
+endpoints/containers were independently checked. Current local audit:
+IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES;
+MISSING=none for this local maintenance. New-source remote CI, separate full-Race/
+release findings and M13-002 protected-path acceptance remain open. Details:
+[single-version maintenance](../engineering/evidence/go-single-version-20261015/README.md).
+
 - Status: `COMPLETE` for the bounded host security and CI repair. PR30 is merged
   at main `2e196a1`; main CI38328099413 is SUCCESS (Required plus nine jobs).
   PR CI308 also passed all45 Linux consumers, Cargo transitive build and PyTorch

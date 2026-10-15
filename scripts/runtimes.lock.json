@@ -39,8 +39,8 @@
     }
   },
   "go_image": {
-    "reference": "golang:1.26.8-bookworm@sha256:abe4f87f354c4f6d7ee3fb11b241c6b6c24a32ca50a2ebcc30493a2168e14048",
-    "go_version": "1.26.8",
+    "reference": "golang:1.26.9-bookworm@sha256:bcef992b77b1e2031aaaa51da75cebc32da8e9c182e12e633ea79023c79d9eff",
+    "go_version": "1.26.9",
     "architecture": "amd64"
   },
   "rust_image": {

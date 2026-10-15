@@ -29,8 +29,17 @@ Copyright License 및 Option Five 조건과 자동 CLA status check를 충족해
 ## Build
 
 Heliopause는 Go `1.26.9` 이상이 필요하며, 개발·CI toolchain은 Go `1.26.9`로 고정한다.
-새 툴체인의 검증 이력과 별도 guest runtime·Race 후속 항목은
-[검증 보고서](docs/engineering/evidence/security-go1269/README.md)를 따른다.
+
+개발용 Go는 영구 경로 `$HOME/.local/go`의 단일 SDK를 사용하고 해당 `bin`을
+PATH에 둔다. `GOTOOLCHAIN=local`로 자동 SDK 추가 다운로드를 금지한다. 버전
+업데이트 시 host SDK, `go.mod`, quality tool/CI pins와 Go guest runtime lock을
+함께 갱신하고 검증한 뒤 이전 SDK를 제거한다. Canonical Quick은 이 버전들의
+불일치를 거부한다.
+
+Host·Go guest 단일화와 로컬 설치 검증은
+[단일화 보고서](docs/engineering/evidence/go-single-version-20261015/README.md)를 따른다.
+이전 보안 수리와 별도 full-Race 후속 항목은
+[보안 검증 보고서](docs/engineering/evidence/security-go1269/README.md)에 보존한다.
 
 다음 build 명령은 source checkout을 가진 개발자·검증자가 사용하는 경로다. 일반
 사용자는 최종적으로 GitHub Release의 검증된 bootstrap entrance를 사용해야 하며,

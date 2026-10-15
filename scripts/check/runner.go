@@ -100,6 +100,9 @@ func newChecker(root string, stdout io.Writer) (*checker, error) {
 	if err != nil {
 		return nil, err
 	}
+	if runtime.Version() != "go"+lock.Tools[0].SetupGo {
+		return nil, fmt.Errorf("runner Go is %s, require go%s from tool lock", runtime.Version(), lock.Tools[0].SetupGo)
+	}
 	toolCache, err := resolveToolCache(root, os.Getenv("HELOX_TOOL_CACHE"))
 	if err != nil {
 		return nil, err
@@ -257,6 +260,9 @@ func (c *checker) foundationSteps(includeDocs bool) []checkStep {
 	steps := []checkStep{
 		{"format check", c.checkFormat},
 		{"runtime lock drift", func() error {
+			if err := c.checkGoVersionConsistency(); err != nil {
+				return err
+			}
 			return c.runGo("runtime lock drift", "run", "./scripts/generate-runtime-lock.go", "-check")
 		}},
 		{"version support freshness", func() error { return checkVersionSupport(c.root, false, c.stdout) }},
