@@ -60,10 +60,10 @@ type GVisorBundleMemberLock struct {
 }
 
 var GVisorRuntimeBundleMembers = []GVisorBundleMemberLock{
-	{Path: "containerd-shim-runsc-v1", Size: 43502412, SHA512: "d0aa0cecaf048b1d42bc530e15a977f937d5e3f92996bc77c89817b899000ca5658e83f71a9f7adf91cad58961133549ef41239493f34c38c2572612d358826a"},
-	{Path: "gvisor-bin/checkpointgofer", Size: 69039544, SHA512: "9c9faca22def369d1b009bf0ba1fd7cb86dad4cb0c3fc334f06d5fca07e7feee8c9c02925242d412345d934ce069fb0a9635000727cb4d49a97545686b8d1ea4"},
+	{Path: "containerd-shim-runsc-v1", Size: 43763177, SHA512: "8743a12c2107e99f8b04ffb6f1e6c01a3a972753bcff993a4974eeaaf91e364f9fb21bd6bed3fed0b9ffa5e81eb1abdebdf794e5f5d60e5c0ee930006fca2579"},
+	{Path: "gvisor-bin/checkpointgofer", Size: 69307944, SHA512: "e746c256fc3ec7831fbb8a18c0c49bad2a12d9edadd460eb4ec7bdcc9639b89bf362cbb96a5ea9b88b8badd8827b8b8cb80ab7aaf066dd00f8231b3e46cbae75"},
 	{Path: "gvisor-bin/gvisor-sentry-prewarmer", Size: 1416, SHA512: "f0c131766303ca4733a4e42bd171d8ddf42a0a0087564605b3207b0f4c148d9ff355bad25e27d388c7c9cf06265160b3a02047ec195c035d9e8f428d8f608ce6"},
-	{Path: "gvisor-bin/gvisor_sentry", Size: 51831363, SHA512: "97e71e1b575aa03a21ad3b816756b2a039f692a678d43382306838f94766f6cdb52a9515b211a557aa460fd64eb31edb9fdfb2702b80219994e6836b452c921e"},
-	{Path: "gvisor-bin/runsc-metric-server", Size: 52895599, SHA512: "4a9cad01e92b3df8db5c4864494eb7bcc24a73af7491b764191b4f7964609f25e232681dc9a62f2d31b9d6d52a819276dd2b98b60847c326f2b781dc0199eb15"},
-	{Path: "runsc", Size: 109388472, SHA512: "e3d0748b4f24f6472e0cb83b7728bd31b8cf4dbdd212f01bdc3f2c0fecaf6aea6449b3fcc2f1e90bd15f4603fa96bbe8a4a38bb8491603703557a1d84c7374d5"},
+	{Path: "gvisor-bin/gvisor_sentry", Size: 52220923, SHA512: "dc890b8b1b0b6d753dd8a979f5600faad0a10c65e833f01162690dcc469b1a3e0524226c57e58869c2666b84cf65b66f9d7029c7fdd303944f30cfb15268c337"},
+	{Path: "gvisor-bin/runsc-metric-server", Size: 53298557, SHA512: "796a98755d3ce02d1ba7d489dd054be10910f8ae79090fa04e1ed44e04730eb071c216f8b345aa0f40d9d2a3b8a2b9f272d5d3d7f5f73c1540391dcd2c3a93b3"},
+	{Path: "runsc", Size: 109851720, SHA512: "72cf15650a96bf9ec817138736d96e410b61f77db5d8e17f4ce84115ccfb6b2ce1db11bb06ec3da4c789ed6b8d361ec22983f948b91e1bf6300fa653b336ad05"},
 }

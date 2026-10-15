@@ -244,6 +244,49 @@ scanner version 변경이나 탐지 규칙 완화로 compiler 전환을 대신�
 hash 검사를 완화하지 않는다. 비호환이 발생하면 SDK patch/runtime-internal owner를
 분석한다. Go1.26.9 비호환은 현재 확인되지 않았으며 최신 gVisor로의 무조건 변경도 하지 않는다.
 
+### 구현된 SDK 준비와 observed-output 계획 연결
+
+`scripts/prepare-gvisor-build-source.sh`가 exact commit/HAA patch를 복원하고,
+`go_image.go_version`에서 upstream `go.mod`의 SDK 선택을 파생한다. Upstream 최소
+Go보다 낮추지 않고 독립 toolchain selector나 변경된 SDK patch를 거부한다.
+SDK patch 자체는 exact upstream bytes를 유지한다. Bundle과 observer의 기존
+local/release/CI entrypoint가 이 준비와 locked builder image/Bazel을 공유한다.
+Bundle의5개 Go binary는 실제 compiler metadata를 검사한다. Prewarmer는 shell이고
+observer는 C++이므로 이 둘에 Go metadata를 요구하지 않는다. Observer의 C++
+compiler는 locked builder image가 소유하며102 latches를 실행한다.
+
+향후 Go 변경은 다음 두 계획으로 진행한다. 첫 계획은 새 SDK와 설정을 준비하고,
+두 번째 계획은 실제 build outputs까지 포함한다. 기존 계획을 사후 수정하지 않는다.
+
+1. 깨끗한 baseline에서 요청한 Go로 `plan`/`apply`하여 첫 격리 candidate를 만든다.
+   Frozen official archive로 target SDK를 준비하고 candidate의 기존 builder를 실행한다.
+2. 첫 candidate에서 `sh scripts/build-gvisor-runtime-bundle.sh --capture ABS_OUTPUT`을
+   실행한다. 여섯 실제 산출물·compiler·source/SDK provenance를 확인한 외부 candidate
+   lock과 `.receipt.json`을 만들고, 해당 lock으로 기존 strict verifier도 실행한다.
+3. 같은 원래 baseline에 새 state를 사용해 동일 version/review와
+   `plan ... --gvisor-capture ABS_OUTPUT/candidate-runtime-lock.json`을 요청한다.
+   Receipt의 실제 source/bundle을 다시 읽어 capture를 재계산하고, source/patch/
+   builder/architecture 변경 없이 member size/hash·Bazel module lock만 수용한다.
+   기존 generator가 product identity를 생성한다. 이어 이 최종 계획을 `apply`/`verify`한다.
+4. 최종 후보의 기존 strict build, installed integration, CPU/지원 CUDA와 Required를
+   검증한 후 기존 설치 계약으로 전환한다. Configuration PASS만으로 전환하지 않는다.
+
+`--capture` 성공 뒤에도 재검증에 필요한 build 작업 경로를 보존하고 그 위치를
+출력한다. Receipt가 참조하는 source/build/module 입력을 최종 계획 검증 전에
+삭제하거나 옮기지 않는다. 재부팅을 넘겨야 하면 영구 `TMPDIR`와 영구 output/state를
+명시한다. Default strict build의 성공 cleanup은 유지하며 실패 입력은 두 모드 모두
+보존한다. Capture 결과는 배포 승인이나 설치 authority가 아니다.
+
+Capture는 HEAD 값만으로 실제 source 일치를 주장하지 않는다. 임시 Git repository와
+별도 index에서 exact upstream+HAA patch를 재구성하고, 새 patch 파일을 포함한 실제
+source와 비교한다. `go.mod`는 해당 결과에 선택 Go directive만 바꾼 bytes여야 한다.
+원래 source/index는 수정하지 않는다. 생성된 Bazel module lock은 별도 hash 입력이며,
+`tools/haa_gvisor_observer` overlay는 독립 observer build/latch의 검증 대상이다.
+
+Frozen plan schema는2다. Schema1 계획을 자동 변환하지 않으며 깨끗한 동일 baseline에서
+새 state로 다시 계획한다. 같은 version의 명시적 capture도 실제 identity가 달라지면
+전체 Go 영향 qualification을 남긴다. 이미 일치한 capture는 source diff를 만들지 않는다.
+
 ## 6. 검증과 PyTorch 비용 관리
 
 아래 표는 영향을 설명하는 최소 계획이다. 현재 Required·release acceptance가

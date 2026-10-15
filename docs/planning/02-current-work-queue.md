@@ -9,9 +9,9 @@
 ```text
 Current milestone: Runtime upgrade maintenance — prerequisite to M13 resumption
 Milestone status: IN_PROGRESS (ownership checks implemented; runtime migration not completed)
-Active work item: UPG-004 — gVisor/archived quality tool compiler candidates (IN_PROGRESS)
+Active work item: none — UPG-004 candidate acceptance closed
 Next work item: UPG-005 — installed ecosystem / CPU / supported CUDA qualification
-Next work item status: NOT_STARTED / Ready: No — UPG-004 acceptance remains open
+Next work item status: NOT_STARTED / Ready: Yes — UPG-004 candidate acceptance closed
 M13 status: ON_HOLD by user request on 2026-10-15; M13-002 acceptance remains open
 ```
 
@@ -31,7 +31,7 @@ Baseline audit·작업별 Read/acceptance·검증 순서·M13 재개 조건:
 | UPG-001 | baseline audit / design / detailed plan | COMPLETE | 소스 변경 전 목표별 audit와 design/plan 작성; [closure evidence](../engineering/evidence/runtime-upgrade-maintenance/upg-001.json) |
 | UPG-002 | all owned version consumers / manifest / drift | COMPLETE | [ownership/manifest evidence](../engineering/evidence/runtime-upgrade-maintenance/upg-002.json); canonical Quick, security,12 focused regressions/54 cases PASS |
 | UPG-003 | explicit plan/apply/verify / same-version rehearsal | COMPLETE | [updater evidence](../engineering/evidence/runtime-upgrade-maintenance/upg-003.json); actual no-op2/2, canonical verify7 profiles,10 tests/28 cases PASS |
-| UPG-004 | gVisor·archived quality tool Go1.26.9 candidates | IN_PROGRESS | adbf422 기준 시작 audit; 기존 builders/source installer 재사용, compiler 전환 검증 필요 |
+| UPG-004 | gVisor·archived quality tool Go1.26.9 candidates | COMPLETE | [quality compiler](../engineering/evidence/runtime-upgrade-maintenance/upg-004-gitleaks.json) / [gVisor build](../engineering/evidence/runtime-upgrade-maintenance/upg-004-gvisor.json); actual/reproducible candidates and observed-output plans qualified |
 | UPG-005 | installed ecosystem / CPU / cu126 / cu130 / cu132 qualification | NOT_STARTED | UPG-004 의존 |
 | UPG-006 | verified activation / retirement / M13 handoff | NOT_STARTED | UPG-005 의존 |
 
@@ -104,10 +104,26 @@ architectures cross-build without claiming native execution. Three reconstructed
 M7 detection/benign classes match the official archive and canonical security;
 compiler/lock negatives pass21 cases. Actual updater verify passes7 profiles with
 state-local executables and an untouched caller-cache sentinel. Quality component
-audit is YES/YES/YES/YES/MISSING=none. Overall UPG-004 remains IN_PROGRESS:
-gVisor SDK/common preparation, candidate capture, reproducible full bundle/observer
-and capabilities/102 latches remain. Global SDK/binary activation and full
-installed/CPU/CUDA/remote qualification have not been performed.
+audit is YES/YES/YES/YES/MISSING=none. At quality-component commit ed6adbc, overall
+UPG-004 remained IN_PROGRESS with gVisor SDK/common preparation, capture and
+full bundle/observer evidence still open. The later closure below records those
+results. Global activation and full installed/CPU/CUDA/remote qualification remain open.
+
+UPG-004 closure (2026-10-16): the shared preparation selects Go from the runtime
+owner, preserves the exact upstream SDK patch and feeds existing local/CI/release
+builders. Independent cold-cache bundle and C++ observer builds are byte-identical;
+all5 Go members report1.26.9, four trace capabilities and102 latches pass. Actual
+default strict bundle and shared observer entrypoints pass. Capture mode retains
+its actual source/outputs/receipt; schema2 plans reconstruct source+patch and bind
+observed member/module identities to coordinated generation. Same-SDK actual
+plans/apply produce zero diff; synthetic changed outputs require both generated
+identity and full Go qualification. Source/SDK/member/compiler/wiring negatives
+and final canonical Quick/security/workflow/docs/release-gate pass; vulnerability/
+platform/qualification-freshness also pass. The first concurrent-build Quick
+5m timeout is retained separately; unchanged frozen inputs pass7 profiles after
+build completion. Scoped audit: YES/YES/YES/YES/MISSING=none. Global installed
+binaries, CPU/three CUDA, new remote Required and activation remain UPG-005/006.
+UPG-005 is NOT_STARTED/ReadyYes and requires its own baseline audit.
 
 M13-001 COMPLETE는 유지한다. M13-002는 ON_HOLD이며 PR33·남은 CLA/stale/merge
 acceptance와 기존 원본을 보존한다. M13 재개 시 새 Git/remote/PR/check 관측과

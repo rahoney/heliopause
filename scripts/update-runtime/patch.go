@@ -277,6 +277,12 @@ func renderChanges(p plan, state string) ([]change, error) {
 	} else if len(p.Review) != 0 || !reflect.DeepEqual(p.Metadata, metadata{}) {
 		return nil, errors.New("same-version plan must not refresh metadata or reviews")
 	}
+	if p.GvisorCapture != nil {
+		files[runtimeFile], err = gvisorCaptureChanges(p, state, files[runtimeFile])
+		if err != nil {
+			return nil, err
+		}
+	}
 	for path, body := range files {
 		full := filepath.Join(shadow, path)
 		if err := os.MkdirAll(filepath.Dir(full), 0o755); err != nil {
@@ -304,7 +310,7 @@ func renderChanges(p plan, state string) ([]change, error) {
 		}
 	}
 	sort.Slice(changes, func(i, j int) bool { return changes[i].Path < changes[j].Path })
-	if p.Current == p.Version && len(changes) != 0 {
+	if p.Current == p.Version && p.GvisorCapture == nil && len(changes) != 0 {
 		return nil, errors.New("same-version baseline has generated drift; reconcile it explicitly first")
 	}
 	return changes, nil

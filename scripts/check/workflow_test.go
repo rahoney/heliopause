@@ -19,6 +19,34 @@ func TestRepositoryCIWorkflow(t *testing.T) {
 	}
 }
 
+func TestGvisorObserverSharedSDKPreparationIsActive(t *testing.T) {
+	root, err := filepath.Abs("../..")
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, err := os.ReadFile(filepath.Join(root, workflowRelativePath))
+	if err != nil {
+		t.Fatal(err)
+	}
+	original := string(body)
+	command := `scripts/build-gvisor-observer-release.sh "$RUNNER_TEMP/haa_gvisor_observer"`
+	selected := selectedGoForTest(t)
+	if findings := validateCIWorkflow(original, selected); len(findings) != 0 {
+		t.Fatal(findings)
+	}
+	for name, fixture := range map[string]string{
+		"commented preparation": strings.Replace(original, command, "# "+command, 1),
+		"duplicate preparation": strings.Replace(original, command, command+"\n          "+command, 1),
+		"conditional build":     strings.Replace(original, "      - name: Build exact gVisor observer helper with Bazel\n", "      - name: Build exact gVisor observer helper with Bazel\n        if: false\n", 1),
+	} {
+		t.Run(name, func(t *testing.T) {
+			if findings := validateCIWorkflow(fixture, selected); len(findings) == 0 {
+				t.Fatal("inactive/unknown SDK preparation accepted")
+			}
+		})
+	}
+}
+
 func TestRuntimeLockWorkflowRejectsCopiedIdentity(t *testing.T) {
 	t.Parallel()
 	root, err := filepath.Abs(filepath.Join("..", ".."))

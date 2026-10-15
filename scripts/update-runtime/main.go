@@ -41,20 +41,21 @@ type change struct {
 	After  []byte `json:"after"`
 }
 type plan struct {
-	Schema                int              `json:"schema"`
-	ID                    string           `json:"id"`
-	Root                  string           `json:"root"`
-	Head                  string           `json:"head"`
-	Component             string           `json:"component"`
-	Current               string           `json:"current"`
-	Version               string           `json:"version"`
-	Inputs                []inputFile      `json:"inputs"`
-	Metadata              metadata         `json:"metadata"`
-	Review                []map[string]any `json:"review"`
-	GeneratorSHA256       string           `json:"generator_sha256"`
-	Changes               []change         `json:"changes"`
-	Checks                []string         `json:"checks"`
-	RequiredQualification []string         `json:"required_qualification"`
+	Schema                int                 `json:"schema"`
+	ID                    string              `json:"id"`
+	Root                  string              `json:"root"`
+	Head                  string              `json:"head"`
+	Component             string              `json:"component"`
+	Current               string              `json:"current"`
+	Version               string              `json:"version"`
+	Inputs                []inputFile         `json:"inputs"`
+	Metadata              metadata            `json:"metadata"`
+	Review                []map[string]any    `json:"review"`
+	GeneratorSHA256       string              `json:"generator_sha256"`
+	Changes               []change            `json:"changes"`
+	Checks                []string            `json:"checks"`
+	RequiredQualification []string            `json:"required_qualification"`
+	GvisorCapture         *gvisorCaptureInput `json:"gvisor_capture,omitempty"`
 }
 type journal struct {
 	PlanID       string   `json:"plan_id"`
@@ -72,7 +73,10 @@ func main() {
 
 func run(args []string, out io.Writer) error {
 	if len(args) == 0 {
-		return errors.New("usage: update-runtime <plan|apply|verify> --root REPO --state EXTERNAL_DIR [--component go|node|python|rust|terraform|github --version X.Y.Z --review JSON] [--go ABSOLUTE_TARGET_GO]")
+		return errors.New("usage: update-runtime <plan|apply|verify> --root REPO --state EXTERNAL_DIR [--component go|node|python|rust|terraform|github --version X.Y.Z --review JSON --gvisor-capture ABSOLUTE_CAPTURE_LOCK] [--go ABSOLUTE_TARGET_GO]; update-runtime capture-gvisor --help")
+	}
+	if args[0] == "capture-gvisor" {
+		return captureGvisor(args[1:], out)
 	}
 	fs := flag.NewFlagSet("update-runtime "+args[0], flag.ContinueOnError)
 	fs.SetOutput(out)
@@ -81,6 +85,7 @@ func run(args []string, out io.Writer) error {
 	component := fs.String("component", "", "explicit runtime or inspection subject")
 	version := fs.String("version", "", "exact stable version; inspection subjects use no version")
 	review := fs.String("review", "", "JSON array of reviewed support records for changed versions")
+	gvisorCapture := fs.String("gvisor-capture", "", "explicit observed gVisor candidate lock and its capture receipt")
 	goPath := fs.String("go", "", "absolute target Go executable; verified against owner and official archive")
 	if err := fs.Parse(args[1:]); err != nil {
 		return err
@@ -123,6 +128,24 @@ func run(args []string, out io.Writer) error {
 		if err != nil {
 			return err
 		}
+		if *gvisorCapture != "" {
+			if p.Component != "go" {
+				return errors.New("gVisor capture can only be linked to the selected Go owner")
+			}
+			capture, err := readGvisorCapture(*gvisorCapture)
+			if err != nil {
+				return err
+			}
+			p.GvisorCapture = &capture
+			p.Changes, err = renderChanges(p, absState)
+			if err != nil {
+				return err
+			}
+			if len(p.Changes) != 0 {
+				p.RequiredQualification = qualification("go")
+			}
+			p.ID = planID(p)
+		}
 		if err := saveJSON(filepath.Join(absState, "plan.json"), p); err != nil {
 			return err
 		}
@@ -133,10 +156,10 @@ func run(args []string, out io.Writer) error {
 	if err := loadJSON(filepath.Join(absState, "plan.json"), &p); err != nil {
 		return err
 	}
-	if p.Root != absRoot || p.Schema != 1 || p.ID != planID(p) {
+	if p.Root != absRoot || p.Schema != 2 || p.ID != planID(p) {
 		return errors.New("plan identity/root mismatch")
 	}
-	if *component != "" || *version != "" || *review != "" {
+	if *component != "" || *version != "" || *review != "" || *gvisorCapture != "" {
 		return errors.New("apply/verify use frozen plan inputs only")
 	}
 	if args[0] == "apply" {
@@ -150,7 +173,7 @@ func makePlan(root, state, component, version, reviewPath string) (plan, error) 
 }
 
 func makePlanResolving(root, state, component, version, reviewPath string, resolve func(string, string) (metadata, error)) (plan, error) {
-	p := plan{Schema: 1, Root: root, Component: component, Version: version, Changes: []change{}, Review: []map[string]any{}, Checks: []string{"bootstrap", "quick", "security", "workflow", "release-gate", "docs", "qualification-freshness"}, RequiredQualification: []string{}}
+	p := plan{Schema: 2, Root: root, Component: component, Version: version, Changes: []change{}, Review: []map[string]any{}, Checks: []string{"bootstrap", "quick", "security", "workflow", "release-gate", "docs", "qualification-freshness"}, RequiredQualification: []string{}}
 	if _, err := os.Lstat(filepath.Join(state, "plan.json")); err == nil {
 		return p, errors.New("state already contains a plan; use a new state directory")
 	} else if !errors.Is(err, os.ErrNotExist) {

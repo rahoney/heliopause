@@ -1,0 +1,567 @@
+{
+  "schema_version": 1,
+  "work_item": "UPG-004",
+  "component": "gVisor selected-Go build and observed-output updater linkage",
+  "date": "2026-10-16",
+  "baseline": "ed6adbcecae50b72bf9dd01e59ca3172c7e51659",
+  "status": "QUALIFIED_CANDIDATE",
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES",
+    "ACCEPTANCE_CLOSED": "YES",
+    "MISSING": []
+  },
+  "selected_go": "1.26.9",
+  "gvisor": {
+    "release": "release-20260907.0",
+    "commit": "7c6199801fd233d6d55309af4645d4746a077de7",
+    "source_repository": "https://github.com/google/gvisor.git",
+    "patch": {
+      "path": "tools/gvisor/release-20260907.0.patch",
+      "sha256": "4e932cede0d3d1c8596346b06191c2aaed2f8974289d690ade1594948b7674f3"
+    },
+    "build": {
+      "bazel_module_lock_sha256": "8402c7beb4baf2c666f4b78e400ea3f15514b56117598c2cb5411d6a35208d34",
+      "builder": {
+        "image_repository": "us-central1-docker.pkg.dev/gvisor-presubmit/gvisor-presubmit-images/default_x86_64",
+        "image_tag": "c48008cead6d6826",
+        "image_digest": "sha256:9afba722516843795c026fbe3b7cd8a8f6b729d241e656a70af1ad46fe09406c",
+        "architecture": "amd64"
+      }
+    },
+    "runtime_bundle": {
+      "architecture": "amd64",
+      "members": [
+        {
+          "path": "containerd-shim-runsc-v1",
+          "size": 43763177,
+          "sha512": "8743a12c2107e99f8b04ffb6f1e6c01a3a972753bcff993a4974eeaaf91e364f9fb21bd6bed3fed0b9ffa5e81eb1abdebdf794e5f5d60e5c0ee930006fca2579"
+        },
+        {
+          "path": "gvisor-bin/checkpointgofer",
+          "size": 69307944,
+          "sha512": "e746c256fc3ec7831fbb8a18c0c49bad2a12d9edadd460eb4ec7bdcc9639b89bf362cbb96a5ea9b88b8badd8827b8b8cb80ab7aaf066dd00f8231b3e46cbae75"
+        },
+        {
+          "path": "gvisor-bin/gvisor-sentry-prewarmer",
+          "size": 1416,
+          "sha512": "f0c131766303ca4733a4e42bd171d8ddf42a0a0087564605b3207b0f4c148d9ff355bad25e27d388c7c9cf06265160b3a02047ec195c035d9e8f428d8f608ce6"
+        },
+        {
+          "path": "gvisor-bin/gvisor_sentry",
+          "size": 52220923,
+          "sha512": "dc890b8b1b0b6d753dd8a979f5600faad0a10c65e833f01162690dcc469b1a3e0524226c57e58869c2666b84cf65b66f9d7029c7fdd303944f30cfb15268c337"
+        },
+        {
+          "path": "gvisor-bin/runsc-metric-server",
+          "size": 53298557,
+          "sha512": "796a98755d3ce02d1ba7d489dd054be10910f8ae79090fa04e1ed44e04730eb071c216f8b345aa0f40d9d2a3b8a2b9f272d5d3d7f5f73c1540391dcd2c3a93b3"
+        },
+        {
+          "path": "runsc",
+          "size": 109851720,
+          "sha512": "72cf15650a96bf9ec817138736d96e410b61f77db5d8e17f4ce84115ccfb6b2ce1db11bb06ec3da4c789ed6b8d361ec22983f948b91e1bf6300fa653b336ad05"
+        }
+      ]
+    }
+  },
+  "bazel": {
+    "version": "8.3.1",
+    "linux_x86_64_url": "https://github.com/bazelbuild/bazel/releases/download/8.3.1/bazel-8.3.1-linux-x86_64",
+    "linux_x86_64_sha512": "c876a1619c885f44f3bdc87998eca59c79581954631c9d7fab4eb53cc0409b68e4be74c08ef3fe599c51b75d56262070f0c314f9908336221e7764fdf981b7f5"
+  },
+  "observations": {
+    "gvisor-independent-build-comparison": {
+      "independent_source_and_bazel_caches": true,
+      "complete_candidate_lock_bytes_identical": true,
+      "members": [
+        {
+          "path": "containerd-shim-runsc-v1",
+          "size_equal": true,
+          "sha512_equal": true
+        },
+        {
+          "path": "gvisor-bin/checkpointgofer",
+          "size_equal": true,
+          "sha512_equal": true
+        },
+        {
+          "path": "gvisor-bin/gvisor-sentry-prewarmer",
+          "size_equal": true,
+          "sha512_equal": true
+        },
+        {
+          "path": "gvisor-bin/gvisor_sentry",
+          "size_equal": true,
+          "sha512_equal": true
+        },
+        {
+          "path": "gvisor-bin/runsc-metric-server",
+          "size_equal": true,
+          "sha512_equal": true
+        },
+        {
+          "path": "runsc",
+          "size_equal": true,
+          "sha512_equal": true
+        }
+      ],
+      "module_lock_identity_equal": true
+    },
+    "gvisor-observer-independent-comparison": {
+      "language": "C++",
+      "locked_builder_same": true,
+      "independent_source_and_cache": true,
+      "latches_a": 102,
+      "latches_b": 102,
+      "outputs": [
+        {
+          "path": "haa_gvisor_observer",
+          "size_a": 3084560,
+          "size_b": 3084560,
+          "sha512_a": "7007c8e4316670a26f9f199dbbc5bfd562e78058ac7fce169ea87939e61b147347b5b32e34730f1543aa93324efb4add15f54122bdbc48d352d7c4cd7bae8f9f",
+          "sha512_b": "7007c8e4316670a26f9f199dbbc5bfd562e78058ac7fce169ea87939e61b147347b5b32e34730f1543aa93324efb4add15f54122bdbc48d352d7c4cd7bae8f9f",
+          "bytes_equal": true
+        },
+        {
+          "path": "haa_gvisor_observer_latch_test",
+          "size_a": 3699776,
+          "size_b": 3699776,
+          "sha512_a": "118bda445426ef15da9040d92864f2b30f3c65e1d11acc5b4e1cab5df91641a883e2cac6363a945214c6bb6b7589938cade4992bf55b80c13d81025688429c94",
+          "sha512_b": "118bda445426ef15da9040d92864f2b30f3c65e1d11acc5b4e1cab5df91641a883e2cac6363a945214c6bb6b7589938cade4992bf55b80c13d81025688429c94",
+          "bytes_equal": true
+        }
+      ]
+    },
+    "gvisor-observer-entrypoint-comparison": {
+      "shared_CI_release_entrypoint_output_equal_to_independent_locked_builds": true,
+      "latches": 102,
+      "language": "C++",
+      "compiler_owner": "locked image",
+      "sha512": "7007c8e4316670a26f9f199dbbc5bfd562e78058ac7fce169ea87939e61b147347b5b32e34730f1543aa93324efb4add15f54122bdbc48d352d7c4cd7bae8f9f"
+    },
+    "gvisor-actual-sdk-a": {
+      "selected_go": "1.26.9",
+      "actual_sdk_VERSION": "go1.26.9",
+      "actual_sdk_path": "/tmp/haa-upg004-gvisor-bazel-probe/.cache/bazel/_bazel_builder/66f45a502eda3b8ac9367b1801205d76/external/rules_go++go_sdk+main___download_0",
+      "official_archive": {
+        "os": "linux",
+        "arch": "amd64",
+        "url": "https://go.dev/dl/go1.26.9.linux-amd64.tar.gz",
+        "size": 66935201,
+        "sha256": "42d158b4d8f7b61ac0a830567c940a86098fb7aac52e467a5ebec03ef5cc2f8d"
+      },
+      "patched_scope_sha256": "5051bd9ecf638d7f479638f2c955a910ff1f0b2f55a30643bdbbeedf0d032977",
+      "SDK_archive_cache_matches": [
+        {
+          "path": "/tmp/haa-upg004-gvisor-bazel-probe/.cache/bazel/_bazel_builder/cache/repos/v1/content_addressable/sha256/42d158b4d8f7b61ac0a830567c940a86098fb7aac52e467a5ebec03ef5cc2f8d/file",
+          "size": 66935201,
+          "sha256": "42d158b4d8f7b61ac0a830567c940a86098fb7aac52e467a5ebec03ef5cc2f8d",
+          "official_size_hash_match": true
+        }
+      ]
+    },
+    "gvisor-runtime-lock-admission": {
+      "scope": "observed reproducible bundle identity only; no installed activation or full qualification",
+      "members_independent_build_equal": true,
+      "unrelated_runtime_fields_unchanged": true,
+      "runtime_lock_sha256": "0aad637569001429aa21568a8f02ca05bb8f3f5de533b75633f04b4ecb44b27d"
+    },
+    "gvisor-observer-release-entrypoint": {
+      "entrypoint": "shared CI/release scripts/build-gvisor-observer-release.sh",
+      "language": "C++",
+      "compiler_owner": "runtime-lock builder image; no floating host compiler",
+      "exit_code": 0,
+      "elapsed_seconds": 325.54,
+      "output": "/tmp/haa-upg004-observer-release-strict",
+      "installed_helper_changed": false
+    },
+    "gvisor-sdk-patch-dry-run": {
+      "selected_go": "1.26.9",
+      "pinned_gvisor_commit": "7c6199801fd233d6d55309af4645d4746a077de7",
+      "upstream_sdk_patch_sha256": "c222e2b1f22e2f07d8e0f1e5251388634053bcd492dc94a13c3888e2b42c1dbd",
+      "dry_run_exit_code": 0,
+      "active_sdk_source_unchanged": true,
+      "checked_files": [
+        {
+          "path": "src/go/types/scope.go",
+          "sha256": "7dc254ba6e81e9352fd9051b38265ed5e658d55f15b258a61c85260a0428ec9f"
+        }
+      ],
+      "actual_patched_sdk_build": "NOT_RUN"
+    },
+    "gvisor-sdk-small-build": {
+      "phase": "Go SDK/unsafe helper small test, not complete bundle qualification",
+      "selected_go": "1.26.9",
+      "builder_image": "us-central1-docker.pkg.dev/gvisor-presubmit/gvisor-presubmit-images/default_x86_64@sha256:9afba722516843795c026fbe3b7cd8a8f6b729d241e656a70af1ad46fe09406c",
+      "bazel": "8.3.1",
+      "jobs": 4,
+      "local_ram_mb": 8192,
+      "exit_code": 0
+    }
+  },
+  "raw_references": [
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/gvisor-independent-build-comparison.json",
+      "sha256": "e8cc0bd7c759dcc11503247c2342d1f6efafb92d0cb92f44771670da9a140101"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/gvisor-observer-independent-comparison.json",
+      "sha256": "6f693bdd00930abddb7ddedbe0292a98c673ee37eb00b4a41c5ce3f8e2bb8ae4"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/gvisor-observer-entrypoint-comparison.json",
+      "sha256": "83afe93acf29c95574f4d31a17bca4bad4caa561d3c4a80842c64641f791a430"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/gvisor-actual-sdk-a.json",
+      "sha256": "68a57255584b5899623aacee04f536d777fee541597acf5eb41b1a0b36ce9316"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/gvisor-runtime-lock-admission.json",
+      "sha256": "be9a318841142c980a3e695e275be3c85e750afa5d94ca4d83b34e0ec10d1c02"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/gvisor-observer-release-entrypoint.json",
+      "sha256": "911852e7443c15b89b7c46935218915ef825e74930102eeb01673bd6fc40b10b"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/gvisor-sdk-patch-dry-run.json",
+      "sha256": "27b71a02e324030c07e3cd674ad53dd6065b79805def6fb5a35eeec1ba796b8e"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/gvisor-sdk-small-build.json",
+      "sha256": "a37b863b1e97c2d1a0336083dae85362c67ca36f6d005f8ee00cd0154591d121"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/verification-2999426983-verify-quick.log",
+      "sha256": "2c47c1002d5298a1b370e433c7447c3fdb4b7c95195aa52b33ad5f006697891f"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/verification-2999426983-verify-bootstrap.log",
+      "sha256": "289a27638dce8999e43f00bd51aaa53ce8fba60161902e202e0648139a0688ae"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/verification-509283153-verify-docs.log",
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/verification-509283153-verify-workflow.log",
+      "sha256": "2394d9b6c48eba12c21b335f3816006231b0c6da03ebb7d7b201b4c51f806217"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/verification-509283153-verify-security.log",
+      "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/verification-509283153-verify-release-gate.log",
+      "sha256": "11e43c6a182a612ea79ba5d521d90153efd0f567857993ea20db4c3f95039b73"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/verification-509283153-verify-quick.log",
+      "sha256": "a02d5ddfdc352ca4c33d7d176392ac6d31cf88a6cec2e2470e80ad5f33ae38b5"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/verification-509283153-verify-bootstrap.log",
+      "sha256": "289a27638dce8999e43f00bd51aaa53ce8fba60161902e202e0648139a0688ae"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/verification-509283153-verify-qualification-freshness.log",
+      "sha256": "a139e18892192652dc1d7880e1d1bda7b269e445b80081de6776ebbe4d82c2c0"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/gvisor-actual-source-provenance.log",
+      "sha256": "9c5a3ec56ffb13237c37b7d313fd0b539e3c585b4cc46973f6a66967c05bc1f0"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/gvisor-actual-source-provenance-corrected.log",
+      "sha256": "d8ac396b02fc7f96c3285fe022bf3df538b4fc190fb32e20373395430bc34352"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/gvisor-source-provenance-regression.log",
+      "sha256": "0f61411c33a68cd2055159c6b018102e57e0daa2f96b0e06133811bdc1ef28fd"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/gvisor-observed-plan-apply-before-fixture-completion.log",
+      "sha256": "643aba90ac48f1478b09daec23ac7d47e502e322b5fb7f6d0cf0db8fe8c16525"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/gvisor-source-proof-plan.log",
+      "sha256": "78a27dfd1bd3867703144e6fe40ca809203db0d01cb90c8fd933143b9d90b858"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/gvisor-source-proof-apply.log",
+      "sha256": "06d729ec73941e351569437d29eee0d8722b456703dbec61ace8df86bbf59e34"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/gvisor-capture-entrypoint.log",
+      "sha256": "06df2bac1e73843d571c5b65aafaf05126011fdb483968e6b5a922078f2d7993"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/gvisor-portable-capture-regression.log",
+      "sha256": "5255b100f2ab0ce5b48910282730936dd3bbac65b5e35cc3b7c48ce2a3d43a25"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/gvisor-portable-whole-quick.log",
+      "sha256": "04f83229aad4bb9f74cf0c7c3d0d916a0352a54f2e00109c4498b99ef750cc82"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/gvisor-whole-checks.json",
+      "sha256": "fcdd5de12e427d8ba711be77edc89d9b07618abec8c25a3c39f8e22e341a864d"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/gvisor-final-checks.json",
+      "sha256": "7c259a75a37d8532186e89945ebe79bf9d185196d055149b755a30d2ac09ef21"
+    }
+  ],
+  "boundaries": [
+    "global installed product/helper/runtime binaries remain unchanged",
+    "CPU/cu126/cu130/cu132 and fresh remote Required remain UPG-005",
+    "activation and old-owned SDK/cache retirement remain UPG-006",
+    "observer is C++, prewarmer is shell; five runtime members are Go",
+    "same frozen SDK/source/build inputs reproduce outputs; native macOS execution NOT_RUN",
+    "existing full-Race findings remain open",
+    "local raw logs referenced here are not committed or claimed remotely archived"
+  ],
+  "capture_plan": {
+    "plans_equal": true,
+    "changed_files": 0,
+    "capture_receipt_inputs_retained": true,
+    "capture_matches_independent_builds": true
+  },
+  "actual_verification_attempts": [
+    {
+      "plan_id": "54b8ff4f52ca7699873deee06bb46a14a2fcca66d543762ef3e964a9787015f6",
+      "attempt": "verification-2999426983",
+      "configuration": "FAIL",
+      "go": "/home/winamp/.local/go/bin/go",
+      "results": [
+        {
+          "profile": "bootstrap",
+          "status": "PASS",
+          "log_sha256": "289a27638dce8999e43f00bd51aaa53ce8fba60161902e202e0648139a0688ae"
+        },
+        {
+          "profile": "quick",
+          "status": "FAIL",
+          "log_sha256": "2c47c1002d5298a1b370e433c7447c3fdb4b7c95195aa52b33ad5f006697891f"
+        }
+      ],
+      "required_qualification": [],
+      "migration_complete": false
+    },
+    {
+      "plan_id": "54b8ff4f52ca7699873deee06bb46a14a2fcca66d543762ef3e964a9787015f6",
+      "attempt": "verification-509283153",
+      "configuration": "PASS",
+      "go": "/home/winamp/.local/go/bin/go",
+      "results": [
+        {
+          "profile": "bootstrap",
+          "status": "PASS",
+          "log_sha256": "289a27638dce8999e43f00bd51aaa53ce8fba60161902e202e0648139a0688ae"
+        },
+        {
+          "profile": "quick",
+          "status": "PASS",
+          "log_sha256": "a02d5ddfdc352ca4c33d7d176392ac6d31cf88a6cec2e2470e80ad5f33ae38b5"
+        },
+        {
+          "profile": "security",
+          "status": "PASS",
+          "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+        },
+        {
+          "profile": "workflow",
+          "status": "PASS",
+          "log_sha256": "2394d9b6c48eba12c21b335f3816006231b0c6da03ebb7d7b201b4c51f806217"
+        },
+        {
+          "profile": "release-gate",
+          "status": "PASS",
+          "log_sha256": "11e43c6a182a612ea79ba5d521d90153efd0f567857993ea20db4c3f95039b73"
+        },
+        {
+          "profile": "docs",
+          "status": "PASS",
+          "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+        },
+        {
+          "profile": "qualification-freshness",
+          "status": "PASS",
+          "log_sha256": "a139e18892192652dc1d7880e1d1bda7b269e445b80081de6776ebbe4d82c2c0"
+        }
+      ],
+      "required_qualification": [],
+      "migration_complete": false
+    }
+  ],
+  "timeout_analysis": {
+    "first_attempt": "promotion package 5m alarm during aggregate-file-budget while complete cold Bazel build active",
+    "next_attempt": "same frozen source/runtime/tool inputs and unchanged timeout; after Bazel completed; all seven profiles PASS",
+    "scope": "controlled isolation passed; exact low-level scheduling/I/O contribution not established; first failure retained",
+    "limits_coverage_changed": false
+  },
+  "canonical_profiles": [
+    {
+      "profile": "security",
+      "exit_code": 0,
+      "seconds": 16.56,
+      "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "profile": "workflow",
+      "exit_code": 0,
+      "seconds": 1.69,
+      "sha256": "cde9fbff62a68c06d19c7ef2de19d2cda5101c0ad5a62bd2e2d2508d805624e8"
+    },
+    {
+      "profile": "release-gate",
+      "exit_code": 0,
+      "seconds": 0.6,
+      "sha256": "11e43c6a182a612ea79ba5d521d90153efd0f567857993ea20db4c3f95039b73"
+    },
+    {
+      "profile": "vulnerability",
+      "exit_code": 0,
+      "seconds": 5.52,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "profile": "qualification-freshness",
+      "exit_code": 0,
+      "seconds": 0.44,
+      "sha256": "a139e18892192652dc1d7880e1d1bda7b269e445b80081de6776ebbe4d82c2c0"
+    },
+    {
+      "profile": "platform",
+      "exit_code": 0,
+      "seconds": 78.73,
+      "sha256": "fb49a92d2cfca9e6f197611a2e0567108e2eb01175e865442baea47d308e8ef7"
+    }
+  ],
+  "actual_source_verification": {
+    "private_index_reconstruction": "PASS on actual retained complete release source",
+    "root_and_original_index_mutated": false,
+    "produced_module_lock": "observed and hashed separately",
+    "observer_overlay": "independent HAA target, checked by matching overlay/build/latch evidence",
+    "regressions": [
+      "changed tracked source rejected",
+      "unexpected new source rejected",
+      "wrong SDK/patch/selector/member/compiler rejected",
+      "same-SDK output changes require lock+generated identity and full Go qualification"
+    ],
+    "macos_fixture": "Linux amd64 ELF cross-build explicitly; no native macOS PASS claimed"
+  },
+  "capture_entrypoint": {
+    "mode": "--capture",
+    "exit_code": 0,
+    "bazel_elapsed_seconds": 780.321,
+    "candidate_lock_bytes_equal": true,
+    "receipt_copied_to_output": true,
+    "receipt_inputs_retained": true,
+    "default_strict_entrypoint": "previous actual complete build PASS"
+  },
+  "audit_scope": "UPG-004 candidate build/compiler/reproducibility/source/plan linkage only; installed/full qualification and activation remain UPG-005/006",
+  "whole_candidate_checks": [
+    {
+      "profile": "quick",
+      "exit_code": 0,
+      "seconds": 134.85,
+      "sha256": "f27b1d89d84d6fae40795d50079ba2c14a084859cf9419d383383061f1b17299"
+    },
+    {
+      "profile": "security",
+      "exit_code": 0,
+      "seconds": 9.89,
+      "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "profile": "workflow",
+      "exit_code": 0,
+      "seconds": 1.17,
+      "sha256": "f1f8d48c99cd8a714641cbb3228c4e8260df642498549a6d658ba2a429ceac05"
+    },
+    {
+      "profile": "docs",
+      "exit_code": 0,
+      "seconds": 0.37,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "profile": "release-gate",
+      "exit_code": 0,
+      "seconds": 0.41,
+      "sha256": "11e43c6a182a612ea79ba5d521d90153efd0f567857993ea20db4c3f95039b73"
+    }
+  ],
+  "final_portable_fixture_quick": "PASS after the only subsequent source delta: explicit Linux amd64 ELF fixture target",
+  "source_inputs": [
+    {
+      "path": ".github/workflows/heliopause-ci.yml",
+      "sha256": "b71642ad8774cb10be49ea70051274ca4f0ac2d76fee6e40cdb92989156aebe9",
+      "mode": "0o644"
+    },
+    {
+      "path": "scripts/runtimes.lock.json",
+      "sha256": "0aad637569001429aa21568a8f02ca05bb8f3f5de533b75633f04b4ecb44b27d",
+      "mode": "0o644"
+    },
+    {
+      "path": "internal/runtimeidentity/runtime_lock_gen.go",
+      "sha256": "f3c0cf79356dce6b3d0322b565c69c7fbb669c6ba24570f61110837a9163ab31",
+      "mode": "0o644"
+    },
+    {
+      "path": "scripts/build-gvisor-observer-release.sh",
+      "sha256": "3501cec6e5519abc8746d30b7d8249d102c27ecf313912efbbdd343e2101fb4c",
+      "mode": "0o755"
+    },
+    {
+      "path": "scripts/build-gvisor-runtime-bundle.sh",
+      "sha256": "e4e3386df8760ba498a97a43b156d2cb068f9da9f04320715a7adc3ff04dd197",
+      "mode": "0o755"
+    },
+    {
+      "path": "scripts/prepare-gvisor-build-source.sh",
+      "sha256": "d4cf3af556ee5647d29c13ba1127d4624cd072fcf9ae739ee664790a8e0f7d0f",
+      "mode": "0o644"
+    },
+    {
+      "path": "scripts/prepare_gvisor_build_source_test.go",
+      "sha256": "60b4af20de2a62a8a9fc3c6adf893718a83cf404c2c85b1d9a9fba607df1e199",
+      "mode": "0o644"
+    },
+    {
+      "path": "scripts/check/workflow.go",
+      "sha256": "94bbb5e15f3c9985d361a28e50653fe4bf67cfa1a5abd1f7986fc2d3b2a1814f",
+      "mode": "0o644"
+    },
+    {
+      "path": "scripts/check/workflow_test.go",
+      "sha256": "f80dc36e3029b29768db86e74e487d3021f2c45247a88563d0ffc3c52141890f",
+      "mode": "0o644"
+    },
+    {
+      "path": "scripts/update-runtime/main.go",
+      "sha256": "9db892c77fe25822488e95260b36bef04befb5129678ec72be05c12029d298a7",
+      "mode": "0o644"
+    },
+    {
+      "path": "scripts/update-runtime/patch.go",
+      "sha256": "24730a5e134dee53efdfeb98872568457b9607b31c4e67fbc02a1222fea32a50",
+      "mode": "0o644"
+    },
+    {
+      "path": "scripts/update-runtime/gvisor.go",
+      "sha256": "7169afb718727a4d4570390d8d10e61a69026232584fcb83318f6122d9566bbe",
+      "mode": "0o644"
+    },
+    {
+      "path": "scripts/update-runtime/gvisor_test.go",
+      "sha256": "cb113fa45cd7d42462006e6ea8625512b94092ced922b212b1c08682f51b5f00",
+      "mode": "0o644"
+    }
+  ]
+}

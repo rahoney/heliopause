@@ -130,6 +130,9 @@ func validateCIWorkflow(contents, selectedGo string) []string {
 	findings = append(findings, validateGoWorkflowVersions(contents, selectedGo)...)
 	findings = append(findings, validateCargoIntegrationGates(contents)...)
 	findings = append(findings, validateTerraformIntegrationGates(contents)...)
+	findings = append(findings, validateActiveJobCommands(contents, "gvisor-observer", "Build exact gVisor observer helper with Bazel", "gVisor observer SDK", []string{
+		`scripts/build-gvisor-observer-release.sh "$RUNNER_TEMP/haa_gvisor_observer"`,
+	})...)
 	findings = append(findings, validateLifecycleIntegrationCommands(contents, "npm inspect", []string{`HELOX_NPM_INSPECT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxNPMInspectCLIIntegration$'`})...)
 	requiredSnippets := []string{
 		"name: Heliopause CI",
@@ -496,16 +499,20 @@ func validateCargoIntegrationGates(contents string) []string {
 	return validateLifecycleIntegrationCommands(contents, "Cargo", cargoIntegrationCommands)
 }
 func validateLifecycleIntegrationCommands(contents, label string, commands []string) []string {
+	return validateActiveJobCommands(contents, "gvisor-integration", "Install pinned runtime and run lifecycle integration", label, commands)
+}
+
+func validateActiveJobCommands(contents, jobID, stepName, label string, commands []string) []string {
 	doc, err := parseWorkflow(contents)
 	if err != nil {
 		return nil
 	} // The structural validator owns parse failures.
-	job := workflowMap(workflowMap(doc["jobs"])["gvisor-integration"])
+	job := workflowMap(workflowMap(doc["jobs"])[jobID])
 	steps, _ := job["steps"].([]any)
 	counts := map[string]int{}
 	for _, raw := range steps {
 		step := workflowMap(raw)
-		if step["name"] != "Install pinned runtime and run lifecycle integration" {
+		if step["name"] != stepName {
 			continue
 		}
 		if step["if"] != nil || job["if"] != nil || step["continue-on-error"] != nil || job["continue-on-error"] != nil {
