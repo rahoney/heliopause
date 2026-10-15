@@ -10,6 +10,10 @@ import (
 
 func TestBuildManifestBindsOfficialImmutableImages(t *testing.T) {
 	lock := runtimeLock{SchemaVersion: 1}
+	lock.RustImage.Reference = "rust:1.99.0-bookworm@sha256:" + strings.Repeat("d", 64)
+	lock.RustImage.RustVersion = "1.99.0"
+	lock.RustImage.Architecture = "amd64"
+	lock.RustImage.Target = "x86_64-unknown-linux-gnu"
 	lock.GoImage.Reference = "golang:1.26.8-bookworm@sha256:" + strings.Repeat("c", 64)
 	lock.GoImage.GoVersion = "1.26.8"
 	lock.GoImage.Architecture = "amd64"
@@ -22,11 +26,14 @@ func TestBuildManifestBindsOfficialImmutableImages(t *testing.T) {
 	if err != nil {
 		t.Fatalf("buildManifest: %v", err)
 	}
-	if manifest.Schema != manifestSchema || manifest.CustomGHCRImage || !manifest.Provenance.Required || len(manifest.Images) != 3 {
+	if manifest.Schema != manifestSchema || manifest.CustomGHCRImage || !manifest.Provenance.Required || len(manifest.Images) != 4 {
 		t.Fatalf("manifest = %#v", manifest)
 	}
-	if manifest.Images[0].Repository != "docker.io/library/node" || manifest.Images[1].Repository != "docker.io/library/python" || manifest.Images[2].Repository != "docker.io/library/golang" {
+	if manifest.Images[0].Repository != "docker.io/library/node" || manifest.Images[1].Repository != "docker.io/library/python" || manifest.Images[2].Repository != "docker.io/library/golang" || manifest.Images[3].Repository != "docker.io/library/rust" {
 		t.Fatalf("image repositories = %#v", manifest.Images)
+	}
+	if manifest.Images[0].Version != "22.23.1" || manifest.Images[0].Version == lock.NodeImage.NPMVersion {
+		t.Fatal("Node manifest version must identify Node, not npm")
 	}
 }
 
@@ -34,7 +41,7 @@ func TestRunRejectsMutableOrNonOfficialImages(t *testing.T) {
 	root := t.TempDir()
 	lockPath := filepath.Join(root, "runtimes.lock.json")
 	outputPath := filepath.Join(root, "runtime-images.json")
-	body := []byte(`{"schema_version":1,"go_image":{"reference":"golang:1.26.8-bookworm@sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc","go_version":"1.26.8","architecture":"amd64"},"node_image":{"reference":"node:latest","npm_version":"10.9.8"},"python_image":{"reference":"python:3.14.7-slim-bookworm@sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","python_version":"3.14.7","pip_version":"26.2.1"}}`)
+	body := []byte(`{"schema_version":1,"go_image":{"reference":"golang:1.26.8-bookworm@sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc","go_version":"1.26.8","architecture":"amd64"},"node_image":{"reference":"node:latest","npm_version":"10.9.8"},"python_image":{"reference":"python:3.14.7-slim-bookworm@sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","python_version":"3.14.7","pip_version":"26.2.1"},"rust_image":{"reference":"rust:1.99.0-bookworm@sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd","rust_version":"1.99.0","architecture":"amd64","target":"x86_64-unknown-linux-gnu"}}`)
 	if err := os.WriteFile(lockPath, body, 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -47,7 +54,7 @@ func TestRunWritesNoOverwriteManifest(t *testing.T) {
 	root := t.TempDir()
 	lockPath := filepath.Join(root, "runtimes.lock.json")
 	outputPath := filepath.Join(root, "runtime-images.json")
-	body := []byte(`{"schema_version":1,"go_image":{"reference":"golang:1.26.8-bookworm@sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc","go_version":"1.26.8","architecture":"amd64"},"node_image":{"reference":"node:22.23.1-slim@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","npm_version":"10.9.8"},"python_image":{"reference":"python:3.14.7-slim-bookworm@sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","python_version":"3.14.7","pip_version":"26.2.1"}}`)
+	body := []byte(`{"schema_version":1,"go_image":{"reference":"golang:1.26.8-bookworm@sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc","go_version":"1.26.8","architecture":"amd64"},"node_image":{"reference":"node:22.23.1-slim@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","npm_version":"10.9.8"},"python_image":{"reference":"python:3.14.7-slim-bookworm@sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","python_version":"3.14.7","pip_version":"26.2.1"},"rust_image":{"reference":"rust:1.99.0-bookworm@sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd","rust_version":"1.99.0","architecture":"amd64","target":"x86_64-unknown-linux-gnu"}}`)
 	if err := os.WriteFile(lockPath, body, 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -59,7 +66,7 @@ func TestRunWritesNoOverwriteManifest(t *testing.T) {
 	if err != nil || json.Unmarshal(encoded, &manifest) != nil {
 		t.Fatalf("read manifest: %v", err)
 	}
-	if manifest.Schema != manifestSchema || len(manifest.Images) != 3 {
+	if manifest.Schema != manifestSchema || len(manifest.Images) != 4 {
 		t.Fatalf("manifest = %#v", manifest)
 	}
 	if err := run([]string{"--runtime-lock", lockPath, "--output", outputPath}); err == nil {
@@ -90,5 +97,47 @@ func TestManifestRejectsMissingOrSubstitutedGoImage(t *testing.T) {
 		if _, err := buildManifest(lock); err == nil {
 			t.Fatal("unverified Go image accepted")
 		}
+	}
+}
+
+func TestManifestRejectsMissingOrMismatchedRuntimeBindings(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "runtimes.lock.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var pinned runtimeLock
+	if err := json.Unmarshal(body, &pinned); err != nil {
+		t.Fatal(err)
+	}
+	nodeVersion := strings.TrimPrefix(strings.SplitN(pinned.NodeImage.Reference, "-slim@", 2)[0], "node:")
+	for name, mutate := range map[string]func(*runtimeLock){
+		"missing Rust":             func(lock *runtimeLock) { lock.RustImage.Reference = "" },
+		"substituted Rust version": func(lock *runtimeLock) { lock.RustImage.RustVersion = "1.0.0" },
+		"wrong Rust architecture":  func(lock *runtimeLock) { lock.RustImage.Architecture = "arm64" },
+		"wrong Rust target":        func(lock *runtimeLock) { lock.RustImage.Target = "aarch64-unknown-linux-gnu" },
+		"Node npm used as image tag": func(lock *runtimeLock) {
+			lock.NodeImage.Reference = strings.Replace(lock.NodeImage.Reference, nodeVersion, lock.NodeImage.NPMVersion, 1)
+			lock.NodeImage.NPMVersion = "latest"
+		},
+		"Python version mismatches tag": func(lock *runtimeLock) { lock.PythonImage.PythonVersion = "3.13.0" },
+		"Python tag adds repository path": func(lock *runtimeLock) {
+			lock.PythonImage.Reference = strings.Replace(lock.PythonImage.Reference, "@", "/extra@", 1)
+		},
+		"uppercase digest": func(lock *runtimeLock) { lock.RustImage.Reference = strings.ToUpper(lock.RustImage.Reference) },
+	} {
+		t.Run(name, func(t *testing.T) {
+			lock := pinned
+			mutate(&lock)
+			if _, err := buildManifest(lock); err == nil {
+				t.Fatal("invalid runtime binding accepted")
+			}
+		})
+	}
+	manifest, err := buildManifest(pinned)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(manifest.Images) != 4 || manifest.Images[0].Version != nodeVersion || manifest.Images[0].Version == pinned.NodeImage.NPMVersion || manifest.Images[3].Version != pinned.RustImage.RustVersion {
+		t.Fatalf("runtime versions: %#v", manifest.Images)
 	}
 }

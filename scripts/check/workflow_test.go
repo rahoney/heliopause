@@ -58,7 +58,7 @@ func TestValidateReleaseWorkflowRejectsSecurityRegressions(t *testing.T) {
 	for name, fixture := range tests {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			if findings := validateReleaseWorkflow(fixture); len(findings) == 0 {
+			if findings := validateReleaseWorkflow(fixture, selectedGoForTest(t)); len(findings) == 0 {
 				t.Fatal("validateReleaseWorkflow findings = none, want non-empty")
 			}
 		})
@@ -102,7 +102,7 @@ func TestValidateReleasePublishWorkflowRejectsSecurityRegressions(t *testing.T) 
 	for name, fixture := range tests {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			if findings := validateReleasePublishWorkflow(fixture); len(findings) == 0 {
+			if findings := validateReleasePublishWorkflow(fixture, selectedGoForTest(t)); len(findings) == 0 {
 				t.Fatal("validateReleasePublishWorkflow findings = none, want non-empty")
 			}
 		})
@@ -126,7 +126,7 @@ func TestValidateCIWorkflowRejectsSecurityRegressions(t *testing.T) {
 		"missing always":                              strings.Replace(string(contents), "    if: ${{ always() }}\n", "", 1),
 		"write token":                                 strings.Replace(string(contents), "  contents: read", "  contents: write", 1),
 		"moving macOS runner":                         strings.Replace(string(contents), "runs-on: macos-26-intel", "runs-on: macos-latest", 1),
-		"unpatched Go":                                strings.ReplaceAll(string(contents), "go-version: '1.26.9'", "go-version: '1.26.8'"),
+		"unpatched Go":                                strings.ReplaceAll(string(contents), "go-version: '"+selectedGoForTest(t)+"'", "go-version: '1.26.8'"),
 		"missing pinned Go image":                     strings.Replace(string(contents), `docker pull "$go_image"`, `echo skipped`, 1),
 		"Go build integration silently skipped":       strings.Replace(string(contents), "HELOX_GO_BUILD_CLI_INTEGRATION=1", "HELOX_GO_BUILD_CLI_INTEGRATION=0", 1),
 		"Go source integration silently skipped":      strings.ReplaceAll(string(contents), "HELOX_GO_RESOLVER_INTEGRATION=1", "HELOX_GO_RESOLVER_INTEGRATION=0"),
@@ -145,7 +145,7 @@ func TestValidateCIWorkflowRejectsSecurityRegressions(t *testing.T) {
 	for name, fixture := range tests {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			if findings := validateCIWorkflow(fixture); len(findings) == 0 {
+			if findings := validateCIWorkflow(fixture, selectedGoForTest(t)); len(findings) == 0 {
 				t.Fatal("validateCIWorkflow findings = none, want non-empty")
 			}
 		})
@@ -165,7 +165,7 @@ func TestCargoRequiredGatesMustBeActiveInTheirLifecycleOwner(t *testing.T) {
 		t.Run(command, func(t *testing.T) {
 			// A shell comment inside a valid YAML run block must not satisfy a gate.
 			fixture := strings.Replace(string(contents), line, "          # "+command, 1)
-			if len(validateCIWorkflow(fixture)) == 0 {
+			if len(validateCIWorkflow(fixture, selectedGoForTest(t))) == 0 {
 				t.Fatal("commented Cargo gate satisfied Required contract")
 			}
 		})
@@ -185,7 +185,7 @@ func TestCargoIntegrationRejectsSkippedOrSubstitutedOwner(t *testing.T) {
 		"duplicate command": strings.Replace(source, `          docker pull "$rust_image"`, `          docker pull "$rust_image"`+"\n"+`          docker pull "$rust_image"`, 1),
 	} {
 		t.Run(name, func(t *testing.T) {
-			if len(validateCIWorkflow(fixture)) == 0 {
+			if len(validateCIWorkflow(fixture, selectedGoForTest(t))) == 0 {
 				t.Fatal("inactive or duplicate Cargo gate accepted")
 			}
 		})
@@ -213,10 +213,27 @@ func TestTerraformRequiredGatesRejectCommentsDuplicatesAndDisabledFlags(t *testi
 			"substituted-target": strings.Replace(source, command, strings.Replace(command, "Integration", "OtherIntegration", 1), 1),
 		} {
 			t.Run(name+command, func(t *testing.T) {
-				if len(validateCIWorkflow(fixture)) == 0 {
+				if len(validateCIWorkflow(fixture, selectedGoForTest(t))) == 0 {
 					t.Fatal("inactive Terraform gate accepted")
 				}
 			})
 		}
 	}
+}
+
+func selectedGoForTest(t *testing.T) string {
+	t.Helper()
+	root, err := filepath.Abs("../..")
+	if err != nil {
+		t.Fatal(err)
+	}
+	tools, err := readToolLock(filepath.Join(root, "scripts", "tools.lock.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	owners, err := runtimeVersionOwners(root, tools)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return owners["Go"]
 }

@@ -163,6 +163,37 @@ checks plus affected Go resolver/build consumers before retiring the old SDK.
 Actual host retirement, image identity, check scope and local activation are
 recorded in the [single-version maintenance evidence](./evidence/go-single-version-20261015/README.md).
 
+### Runtime upgrade ownership checks
+
+Runtime upgrade maintenance UPG-002 connects the existing runtime drift stage to
+the selected versions in `scripts/runtimes.lock.json`, all tool setup compilers
+and `scripts/version-support.lock.json`. Node's interpreter version comes from
+its exact official image tag; npm remains a separate bundled-tool identity.
+The runtime lock schema and image digests remain unchanged. The manifest emits
+Node, Python, Go and Rust with each actual interpreter/compiler version.
+
+Workflow validators read the selected Go version from the runtime owner and
+check every real `actions/setup-go` step, including alternate/floating selectors
+and mixed jobs. New workflow consumers require an explicit owner. Active Go
+source cannot introduce a separate pinned official runtime image literal;
+generated identities, historical test fixtures and exact retired-image policy
+tokens have separate roles. These checks do not prove executable safety.
+
+The existing generator also reads the four PyTorch qualification versions from
+their support records. The full integration consumer uses those generated
+versions and the canonical Python target/version for its venv layout and
+post-install assertions. Inspection-only prerequisite artifact pins remain
+explicit frozen qualification inputs in the existing workflow; changing Python
+ABI requires their compatibility review and fresh affected qualification.
+Support review dates/decisions and historical qualification receipts are never
+automatically refreshed. Terraform/GitHub subjects remain user-selected signed
+artifacts; their adapters and parser/module dependencies retain their existing
+owners. gVisor and archived Gitleaks compiler rebuilding remains UPG-004.
+
+Implementation and remaining stages follow the
+[runtime upgrade design](./05-runtime-upgrade-maintenance.md) and
+[execution plan](../planning/19-runtime-upgrade-maintenance-plan.md).
+
 정확한 Go와 현재 사용하는 tool version은 아래 M0-002 lock에서 고정한다. 아직 사용하지 않는 미래 도구의 임의 최신 version은 미리 적지 않는다.
 
 ### M0-002 Go와 Staticcheck identity lock

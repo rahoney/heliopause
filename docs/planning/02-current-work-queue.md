@@ -8,10 +8,10 @@
 
 ```text
 Current milestone: Runtime upgrade maintenance — prerequisite to M13 resumption
-Milestone status: IN_PROGRESS (design/planning first; runtime migration not completed)
-Active work item: none — UPG-001 design/planning closure; no implementation item started
-Next work item: UPG-002 — ownership inventory and read-only drift checks
-Next work item status: NOT_STARTED / Ready: Yes — UPG-001 design/planning complete
+Milestone status: IN_PROGRESS (ownership checks implemented; runtime migration not completed)
+Active work item: none — UPG-002 closure; UPG-003 starts next
+Next work item: UPG-003 — explicit plan/apply/verify and same-version rehearsal
+Next work item status: NOT_STARTED / Ready: Yes — UPG-002 acceptance closed
 M13 status: ON_HOLD by user request on 2026-10-15; M13-002 acceptance remains open
 ```
 
@@ -29,7 +29,7 @@ Baseline audit·작업별 Read/acceptance·검증 순서·M13 재개 조건:
 | Item | Scope | Status | Acceptance evidence |
 | --- | --- | --- | --- |
 | UPG-001 | baseline audit / design / detailed plan | COMPLETE | 소스 변경 전 목표별 audit와 design/plan 작성; [closure evidence](../engineering/evidence/runtime-upgrade-maintenance/upg-001.json) |
-| UPG-002 | all owned version consumers / manifest / drift | NOT_STARTED | UPG-001 이후 현재 버전 유지로 시작 |
+| UPG-002 | all owned version consumers / manifest / drift | COMPLETE | [ownership/manifest evidence](../engineering/evidence/runtime-upgrade-maintenance/upg-002.json); canonical Quick, security,12 focused regressions/54 cases PASS |
 | UPG-003 | explicit plan/apply/verify / same-version rehearsal | NOT_STARTED | UPG-002 의존 |
 | UPG-004 | gVisor·archived quality tool Go1.26.9 candidates | NOT_STARTED | UPG-003 의존 |
 | UPG-005 | installed ecosystem / CPU / cu126 / cu130 / cu132 qualification | NOT_STARTED | UPG-004 의존 |
@@ -38,6 +38,29 @@ Baseline audit·작업별 Read/acceptance·검증 순서·M13 재개 조건:
 이번 범위는 owned versions의 갱신 절차와 Go/gVisor1.26.9 전환이다. 모든 언어의
 최신판 동시 도입, 사용자 프로젝트/provider 재작성, 새 CUDA profile 또는 M13 공개
 배포를 포함하지 않는다. UPG-001 완료와 전체 유지보수 완료는 구분한다.
+
+UPG-002 start audit (2026-10-15, baseline `b4eaa5b`): existing lock/generator and
+Go setup consistency IMPLEMENTED=YES/WIRED=YES; complete consumer/support/workflow
+inventory and four-image manifest QUALIFIED=NO/ACCEPTANCE_CLOSED=NO.
+MISSING: Node runtime version instead of npm in manifest; Rust entry and release
+inspection; selected Go literals in workflow/tool validators; support/version/ABI
+cross-checks and missing/duplicate/unknown consumer regression. Canonical checks
+remain read-only. Images, tool releases, user artifacts and installed bundle stay
+at the existing versions; gVisor/Gitleaks compiler rebuild belongs to UPG-004.
+
+UPG-002 closure: selected Go values now feed all actual workflow setup validators;
+reviewed versions and every active tool setup are cross-checked. Unknown workflow
+or independent official-image literals in active Go source fail the existing
+read-only runtime drift check. The existing manifest includes Rust and uses Node's
+version instead of npm. Python image/version/ABI drift is rejected. Full PyTorch
+integration uses generated reviewed torch versions and canonical Python target
+paths/assertions; frozen inspection-prerequisite and historical fixtures remain.
+Actionlint's existing v1.7.12 now has an actual official release review record.
+Runtime/tool lock bytes and all four local amd64 image identities are unchanged.
+Final native Quick, security/release-gate, generator idempotence and focused12/54
+regressions passed. Current scoped audit: IMPLEMENTED=YES/WIRED=YES/QUALIFIED=YES/
+ACCEPTANCE_CLOSED=YES/MISSING=none for UPG-002. Updater, actual compiler rebuild,
+installed/CPU/CUDA/remote qualification and activation remain UPG-003..006.
 
 M13-001 COMPLETE는 유지한다. M13-002는 ON_HOLD이며 PR33·남은 CLA/stale/merge
 acceptance와 기존 원본을 보존한다. M13 재개 시 새 Git/remote/PR/check 관측과

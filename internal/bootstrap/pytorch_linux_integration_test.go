@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/rahoney/heliopause/internal/bootstrap"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func TestLinuxPyTorchFullIntegration(t *testing.T) {
@@ -23,7 +24,7 @@ func TestLinuxPyTorchFullIntegration(t *testing.T) {
 		t.Fatal("PyTorch full qualification requires Linux")
 	}
 	profile := os.Getenv("HELOX_PYTORCH_PROFILE")
-	version := map[string]string{"cpu": "2.14.0+cpu", "cu126": "2.14.0+cu126", "cu130": "2.14.0+cu130", "cu132": "2.14.0+cu132"}[profile]
+	version := map[string]string{"cpu": runtimeidentity.PyTorchCPUVersion, "cu126": runtimeidentity.PyTorchCU126Version, "cu130": runtimeidentity.PyTorchCU130Version, "cu132": runtimeidentity.PyTorchCU132Version}[profile]
 	if version == "" {
 		t.Fatalf("unsupported PyTorch qualification profile %q", profile)
 	}
@@ -48,12 +49,14 @@ func TestLinuxPyTorchFullIntegration(t *testing.T) {
 		t.Logf("retained integration cache: %s", cache)
 	}
 	target := filepath.Join(root, "target")
-	for _, relative := range []string{"lib/python3.14/site-packages", "bin", "share"} {
+	pythonParts := strings.Split(runtimeidentity.PythonVersion, ".")
+	pythonMinor := strings.Join(pythonParts[:2], ".")
+	for _, relative := range []string{filepath.Join("lib", "python"+pythonMinor, "site-packages"), "bin", "share"} {
 		if err := os.MkdirAll(filepath.Join(target, relative), 0o700); err != nil {
 			t.Fatal(err)
 		}
 	}
-	if err := os.WriteFile(filepath.Join(target, "pyvenv.cfg"), []byte("version = 3.14.7\n"), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(target, "pyvenv.cfg"), []byte("version = "+runtimeidentity.PythonVersion+"\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), map[string]time.Duration{"cpu": 15 * time.Minute, "cu126": 40 * time.Minute, "cu130": 40 * time.Minute, "cu132": 40 * time.Minute}[profile])
@@ -68,7 +71,7 @@ func TestLinuxPyTorchFullIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("PyTorch %s install failed: %v\nstdout=%s\nstderr=%s", profile, err, stdout.String(), stderr.String())
 	}
-	if info, statErr := os.Stat(filepath.Join(target, "lib", "python3.14", "site-packages", "torch")); statErr != nil || !info.IsDir() {
+	if info, statErr := os.Stat(filepath.Join(target, "lib", "python"+pythonMinor, "site-packages", "torch")); statErr != nil || !info.IsDir() {
 		t.Fatalf("PyTorch %s target is missing: %v", profile, statErr)
 	}
 	if profile == "cpu" {
@@ -151,7 +154,7 @@ func TestLinuxPyTorchFullIntegration(t *testing.T) {
 			}
 		}
 		for _, pattern := range []string{pin.Project, pin.Project + ".libs", pin.Project + "-*.dist-info"} {
-			matches, err := filepath.Glob(filepath.Join(target, "lib/python3.14/site-packages", pattern))
+			matches, err := filepath.Glob(filepath.Join(target, "lib", "python"+pythonMinor, "site-packages", pattern))
 			if err != nil || len(matches) != 0 {
 				t.Fatalf("inspection-only target content %s: %v %v", pattern, matches, err)
 			}

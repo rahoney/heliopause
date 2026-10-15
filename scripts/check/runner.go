@@ -263,6 +263,9 @@ func (c *checker) foundationSteps(includeDocs bool) []checkStep {
 			if err := c.checkGoVersionConsistency(); err != nil {
 				return err
 			}
+			if err := checkRuntimeVersionOwners(c.root, c.toolLock); err != nil {
+				return err
+			}
 			return c.runGo("runtime lock drift", "run", "./scripts/generate-runtime-lock.go", "-check")
 		}},
 		{"version support freshness", func() error { return checkVersionSupport(c.root, false, c.stdout) }},

@@ -35,6 +35,10 @@ const (
 	PythonInterpreterTag         = "cp314"
 	PythonABITag                 = "cp314"
 	PythonPlatformTag            = "manylinux_2_36_x86_64"
+	PyTorchCPUVersion            = "2.14.0+cpu"
+	PyTorchCU126Version          = "2.14.0+cu126"
+	PyTorchCU130Version          = "2.14.0+cu130"
+	PyTorchCU132Version          = "2.14.0+cu132"
 )
 
 type PythonSourceProfileLock struct {

@@ -15,8 +15,9 @@ import (
 const manifestSchema = "helox.runtime-image-manifest/v1"
 
 var (
-	digestPattern  = regexp.MustCompile(`^sha256:[0-9a-f]{64}$`)
-	versionPattern = regexp.MustCompile(`^[0-9]+\.[0-9]+\.[0-9]+$`)
+	digestPattern        = regexp.MustCompile(`^sha256:[0-9a-f]{64}$`)
+	versionPattern       = regexp.MustCompile(`^[0-9]+\.[0-9]+\.[0-9]+$`)
+	nodeReferencePattern = regexp.MustCompile(`^node:([0-9]+\.[0-9]+\.[0-9]+)-slim@sha256:[0-9a-f]{64}$`)
 )
 
 type runtimeLock struct {
@@ -35,6 +36,12 @@ type runtimeLock struct {
 		PythonVersion string `json:"python_version"`
 		PipVersion    string `json:"pip_version"`
 	} `json:"python_image"`
+	RustImage struct {
+		Reference    string `json:"reference"`
+		RustVersion  string `json:"rust_version"`
+		Architecture string `json:"architecture"`
+		Target       string `json:"target"`
+	} `json:"rust_image"`
 }
 
 type runtimeImageManifest struct {
@@ -120,17 +127,25 @@ func buildManifest(lock runtimeLock) (runtimeImageManifest, error) {
 	if lock.SchemaVersion != 1 {
 		return runtimeImageManifest{}, errors.New("runtime lock schema is unsupported")
 	}
-	node, err := imageEntry("node", lock.NodeImage.Reference, "docker.io/library/node", lock.NodeImage.NPMVersion)
+	nodeMatch := nodeReferencePattern.FindStringSubmatch(lock.NodeImage.Reference)
+	if len(nodeMatch) != 2 || !versionPattern.MatchString(lock.NodeImage.NPMVersion) {
+		return runtimeImageManifest{}, errors.New("node runtime image identity is invalid")
+	}
+	node, err := imageEntry("node", lock.NodeImage.Reference, "docker.io/library/node", nodeMatch[1], "-slim")
 	if err != nil {
 		return runtimeImageManifest{}, err
 	}
-	python, err := imageEntry("python", lock.PythonImage.Reference, "docker.io/library/python", lock.PythonImage.PythonVersion)
-	if err != nil {
-		return runtimeImageManifest{}, err
+	python, err := imageEntry("python", lock.PythonImage.Reference, "docker.io/library/python", lock.PythonImage.PythonVersion, "-slim-bookworm")
+	if err != nil || !versionPattern.MatchString(lock.PythonImage.PipVersion) {
+		return runtimeImageManifest{}, errors.New("python runtime image identity is invalid")
 	}
-	goImage, err := imageEntry("golang", lock.GoImage.Reference, "docker.io/library/golang", lock.GoImage.GoVersion)
+	goImage, err := imageEntry("golang", lock.GoImage.Reference, "docker.io/library/golang", lock.GoImage.GoVersion, "-bookworm")
 	if err != nil || lock.GoImage.Architecture != "amd64" || !strings.HasPrefix(lock.GoImage.Reference, "golang:"+lock.GoImage.GoVersion+"-bookworm@") {
 		return runtimeImageManifest{}, errors.New("go runtime image identity is invalid")
+	}
+	rustImage, err := imageEntry("rust", lock.RustImage.Reference, "docker.io/library/rust", lock.RustImage.RustVersion, "-bookworm")
+	if err != nil || lock.RustImage.Architecture != "amd64" || lock.RustImage.Target != "x86_64-unknown-linux-gnu" {
+		return runtimeImageManifest{}, errors.New("rust runtime image identity is invalid")
 	}
 	return runtimeImageManifest{
 		Schema:              manifestSchema,
@@ -140,16 +155,16 @@ func buildManifest(lock runtimeLock) (runtimeImageManifest, error) {
 			Required:     true,
 			Verification: "release candidate attestation must bind this manifest and each exact image reference",
 		},
-		Images: []runtimeImageEntry{node, python, goImage},
+		Images: []runtimeImageEntry{node, python, goImage, rustImage},
 	}, nil
 }
 
-func imageEntry(name, reference, repository, version string) (runtimeImageEntry, error) {
+func imageEntry(name, reference, repository, version, variant string) (runtimeImageEntry, error) {
 	separator := strings.LastIndex(reference, "@")
 	if separator <= len(name)+1 || reference == "" || version == "" || !versionPattern.MatchString(version) || !digestPattern.MatchString(reference[separator+1:]) {
 		return runtimeImageEntry{}, errors.New("runtime image identity is invalid")
 	}
-	if !strings.HasPrefix(reference, name+":") {
+	if reference[:separator] != name+":"+version+variant {
 		return runtimeImageEntry{}, errors.New("runtime image repository is not an official image")
 	}
 	return runtimeImageEntry{Name: name, Reference: reference, Repository: repository, Digest: reference[strings.LastIndex(reference, "@")+1:], Version: version}, nil
