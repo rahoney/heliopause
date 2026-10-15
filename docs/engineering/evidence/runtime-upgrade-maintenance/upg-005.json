@@ -1,0 +1,229 @@
+{
+  "schema_version": 1,
+  "work_item": "UPG-005",
+  "status": "IN_PROGRESS",
+  "date": "2026-10-16",
+  "baseline": "c56bb3160f8ff74f125fac5754a0b4f8127dda3e",
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO",
+    "MISSING": [
+      "final exact candidate installed cross-ecosystem and negative consumers",
+      "CPU/cu126/cu130/cu132 independent full qualification",
+      "fresh Required/native platform and supported-profile remote qualification",
+      "final cleanup and activation handoff"
+    ]
+  },
+  "local_state": "$HOME/.local/state/heliopause/runtime-upgrades/upg005-20261016",
+  "preflight": {
+    "original_files": 12,
+    "durable_bytes_hash_owner_mode_backup": "PASS",
+    "installed_consumers": 0,
+    "containers": 0,
+    "lifecycle_handles": 0,
+    "docker": "29.8.1",
+    "registration": "existing STRICT sidecar and fixed pod-init path",
+    "four_frozen_images": "linux/amd64 and immutable digest matched",
+    "installed_gvisor_compiler_before": "go1.26.3",
+    "candidate_gvisor_compiler": "go1.26.9",
+    "candidate_product_helper_test_binaries": "six actual go1.26.9 builds PASS"
+  },
+  "baseline_cases": {
+    "small-lifecycle": {
+      "status": "PASS",
+      "exit_code": 0,
+      "restore_exit_code": 0,
+      "seconds": 25.23,
+      "expected_tests": [
+        "TestLinuxGVisorLifecycleIntegration",
+        "TestLinuxGitHubReleaseELFDynamicIntegration",
+        "TestLinuxPyPISdistBuildIntegration",
+        "TestLinuxPyPIWheelDynamicIntegration"
+      ],
+      "missing_pass": [],
+      "skipped": [],
+      "runtime_sha256": "cf795dec44c966f41d14e3a7756a0d244b4293aa4be2c97835ccd201ae7db365"
+    },
+    "trusted-host": {
+      "status": "PASS",
+      "exit_code": 0,
+      "restore_exit_code": 0,
+      "seconds": 5.03,
+      "expected_tests": [
+        "TestLinuxTrustedHostExecutorIntegration"
+      ],
+      "missing_pass": [],
+      "skipped": [],
+      "runtime_sha256": "bff784899455c9417b2675d5b85cede2f6b658de6ab90ced5a459bf86925228a"
+    },
+    "resolver-consumers": {
+      "status": "FAIL",
+      "exit_code": 1,
+      "restore_exit_code": 0,
+      "seconds": 85.92,
+      "expected_tests": [
+        "TestLinuxCargoSourceProjectSnapshotIntegration",
+        "TestLinuxGoIsolatedResolverIntegration",
+        "TestLinuxGoIsolatedProjectResolverIntegration",
+        "TestLinuxGoSourceProjectSnapshotIntegration",
+        "TestLinuxGoDependencyFreeProjectSnapshotIntegration",
+        "TestLinuxPyPIResolverIntegration",
+        "TestLinuxPyTorchResolverIntegration",
+        "TestLinuxTerraformProviderProbeIntegration",
+        "TestLinuxTerraformProviderSecurityIntegration"
+      ],
+      "missing_pass": [
+        "TestLinuxPyPIResolverIntegration"
+      ],
+      "skipped": [],
+      "runtime_sha256": "a64970f33cb084db6fc223529ff67568da886525cdd312bc347a9d387a01740b"
+    }
+  },
+  "resolver_fixture_gap": {
+    "old_file_sha256": "0f9e5bf5bb2b5c697963bc0af65c3df1518e91833bbaf4ff7e32d6dc6f14b88c",
+    "same_bytes_as_preserved_m13_baseline": true,
+    "existing_owner": "internal/sandbox/resolver_policy_integration_linux_test.go:newIntegrationResolverPolicyService",
+    "contract": "ordinary-user client; installed root-owned typed helper owns firewall authority",
+    "actual_failure": "PyPI resolver fixture rejected euid1000 before resolver execution because of stale root-only guard",
+    "selected_batch_passed": 8,
+    "selected_batch_status": "FAIL",
+    "npm_legacy_name": "TestLinuxNPMResolverNetworkPolicyIntegration; initial local filter omitted actual suffix",
+    "correction": "require ordinary user in both existing fixtures; retain helper implementation and result assertions",
+    "qualification": "PASS",
+    "component_audit": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "YES",
+      "ACCEPTANCE_CLOSED": "YES",
+      "MISSING": []
+    },
+    "preview_source_commit": "29e2e75c26e6b6f6af9f4e792da5efeb5ab23cca",
+    "checks": [
+      {
+        "profile": "quick",
+        "exit_code": 0,
+        "seconds": 88.83,
+        "sha256": "f991838bfa459efa9e562e84f65c98de7dabbb1f589033b9ef9d691f14aac7f7"
+      },
+      {
+        "profile": "security",
+        "exit_code": 0,
+        "seconds": 6.88,
+        "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+      },
+      {
+        "profile": "docs",
+        "exit_code": 0,
+        "seconds": 0.3,
+        "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+      }
+    ],
+    "root_negative": {
+      "status": "PASS_EXPECTED_REJECTION",
+      "process_exit_code": 1,
+      "scope": "both existing resolver tests reject root before constructing resolver/helper client",
+      "source_commit": "29e2e75c26e6b6f6af9f4e792da5efeb5ab23cca",
+      "binary_sha256": "bbd19b8d12588746c15a2b1b47945a5f23a8b5e458561b1aa41c5e3e28fa45f9",
+      "log_sha256": "ed2cdee21f0c31512366abfd8b6cfc9d15ba7e4ea22593f09b3da3ac4df4554a",
+      "installation_mutated": false
+    },
+    "actual_cases": {
+      "resolver-precondition-regression": {
+        "status": "PASS",
+        "source_commit": "29e2e75c26e6b6f6af9f4e792da5efeb5ab23cca",
+        "exit_code": 0,
+        "restore_exit_code": 0,
+        "seconds": 15.83,
+        "expected_tests": [
+          "TestLinuxNPMResolverNetworkPolicyIntegration",
+          "TestLinuxPyPIResolverIntegration"
+        ],
+        "missing_pass": [],
+        "skipped": [],
+        "runtime_sha256": "7875785ff757f4104f3a7463ab74b0effcf6ce57382c9e2e2b788964545a1160"
+      },
+      "ordinary-cli-preview": {
+        "status": "PASS",
+        "source_commit": "29e2e75c26e6b6f6af9f4e792da5efeb5ab23cca",
+        "exit_code": 0,
+        "restore_exit_code": 0,
+        "seconds": 35.26,
+        "expected_tests": [
+          "npm is-number@7.0.0 install",
+          "pip packaging@25.0 install"
+        ],
+        "missing_pass": [],
+        "skipped": [],
+        "runtime_sha256": "820588148a05a903260d02ef51608af809fa3b8141a204a39557062d4c3ac7f0"
+      }
+    }
+  },
+  "raw_references": [
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/small-lifecycle/result.json",
+      "sha256": "818836e8313f05bf1f8fd02c426c3094114550c11a230a83b6a193c8144a910a"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/trusted-host/result.json",
+      "sha256": "4b8620b0e3b5d617fdab4b95c96f009babbda5b4e3416193997fe37ba9f08a0c"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/resolver-consumers/result.json",
+      "sha256": "ba8236429a3b035143d57ed5f2cd89e2e1ca04356394f96e6765dff7ba591836"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "preflight/durable-originals.json",
+      "sha256": "06348d462bda8f9ef0575db2229f28434ef3c8dd3def7b6ae9341a4577d010d2"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "preflight/source-frozen.json",
+      "sha256": "e9708cc6a478dd72895f2cc64c12b47eb4c2af87cd0538a7e5e41746cc5e0255"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "preflight/runtime-images.json",
+      "sha256": "17432eeadab662ed2ae65f633c11f313f5f0ed69e65da95ccaf777b2882c7429"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "preflight/candidate-builds.json",
+      "sha256": "e97af0e8aa762ef43934db5db382825524a1e2d6c6416a293374eed1d39365c0"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "preflight/docker-query-bound-diagnostic.json",
+      "sha256": "ff634b03d236649ca48e6e5cc790ea4324906f5f4c7f6da5888100fcbdb6e39b"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "preflight/bounded-consumers-root.json",
+      "sha256": "aec13e2a783a5547b18378e6a6e5b8e3005d62b98e984a5de23365ba11fd4619"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/resolver-precondition-regression/result.json",
+      "sha256": "dee9071a1d3e68696079e12277a943bd3ffea4982df4f14d6e491e9d2b36cd47"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/ordinary-cli-preview/result.json",
+      "sha256": "c05d9708352dc0ad8a4850601e56c4e9d6a6223999ae1faf2422f5587eefaba7"
+    }
+  ],
+  "boundaries": [
+    "baseline small passes do not qualify a later changed test binary or full profile",
+    "initial failed resolver batch remains FAIL despite eight individual passes",
+    "global installation restored after each completed case",
+    "full-Race fixture findings remain separate/open",
+    "no remote write/dispatch/merge; M13 remains ON_HOLD",
+    "activation and retirement remain UPG-006"
+  ],
+  "active_scope": "fixture correction qualified on preview; final source and expensive qualification still open"
+}

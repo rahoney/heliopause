@@ -8,10 +8,10 @@
 
 ```text
 Current milestone: Runtime upgrade maintenance — prerequisite to M13 resumption
-Milestone status: IN_PROGRESS (ownership checks implemented; runtime migration not completed)
-Active work item: none — UPG-004 candidate acceptance closed
-Next work item: UPG-005 — installed ecosystem / CPU / supported CUDA qualification
-Next work item status: NOT_STARTED / Ready: Yes — UPG-004 candidate acceptance closed
+Milestone status: IN_PROGRESS (compiler candidates qualified; installed/full qualification in progress)
+Active work item: UPG-005 — installed ecosystem / CPU / supported CUDA qualification (IN_PROGRESS)
+Next work item: UPG-006 — verified activation / retirement / M13 handoff
+Next work item status: NOT_STARTED / Ready: No — UPG-005 qualification remains open
 M13 status: ON_HOLD by user request on 2026-10-15; M13-002 acceptance remains open
 ```
 
@@ -32,7 +32,7 @@ Baseline audit·작업별 Read/acceptance·검증 순서·M13 재개 조건:
 | UPG-002 | all owned version consumers / manifest / drift | COMPLETE | [ownership/manifest evidence](../engineering/evidence/runtime-upgrade-maintenance/upg-002.json); canonical Quick, security,12 focused regressions/54 cases PASS |
 | UPG-003 | explicit plan/apply/verify / same-version rehearsal | COMPLETE | [updater evidence](../engineering/evidence/runtime-upgrade-maintenance/upg-003.json); actual no-op2/2, canonical verify7 profiles,10 tests/28 cases PASS |
 | UPG-004 | gVisor·archived quality tool Go1.26.9 candidates | COMPLETE | [quality compiler](../engineering/evidence/runtime-upgrade-maintenance/upg-004-gitleaks.json) / [gVisor build](../engineering/evidence/runtime-upgrade-maintenance/upg-004-gvisor.json); actual/reproducible candidates and observed-output plans qualified |
-| UPG-005 | installed ecosystem / CPU / cu126 / cu130 / cu132 qualification | NOT_STARTED | UPG-004 의존 |
+| UPG-005 | installed ecosystem / CPU / cu126 / cu130 / cu132 qualification | IN_PROGRESS | c56bb31 기준 시작 audit; 기존 installed lifecycle와 지원 tuple 재사용, 새 후보의 실제 qualification 필요 |
 | UPG-006 | verified activation / retirement / M13 handoff | NOT_STARTED | UPG-005 의존 |
 
 이번 범위는 owned versions의 갱신 절차와 Go/gVisor1.26.9 전환이다. 모든 언어의
@@ -124,6 +124,43 @@ platform/qualification-freshness also pass. The first concurrent-build Quick
 build completion. Scoped audit: YES/YES/YES/YES/MISSING=none. Global installed
 binaries, CPU/three CUDA, new remote Required and activation remain UPG-005/006.
 UPG-005 is NOT_STARTED/ReadyYes and requires its own baseline audit.
+
+UPG-005 start audit (2026-10-16, baseline c56bb3160f8ff74f125fac5754a0b4f8127dda3e):
+existing installed lifecycle, seven-ecosystem consumers, CPU/three CUDA and
+Required workflow IMPLEMENTED=YES/WIRED=YES. Qualification of the new bundle and
+final product binaries QUALIFIED=NO/ACCEPTANCE_CLOSED=NO. MISSING: exact product/
+helper/test-binary freeze; durable installed originals and bounded ownership/
+resource preflight; actual small/lifecycle/hostile and cross-ecosystem consumers;
+CPU plus independently cu126/cu130/cu132 with unchanged contracts; fresh native
+platform/Required and supported-profile remote results; exact cleanup/restore
+and final evidence. Reuse scripts/ci-integration-cleanup.sh and existing test/
+workflow bodies; no replacement executor, new runtime contract or CI jobs.
+UPG-004 canonical results establish configuration/build validity, not these
+installed/full acceptances. The separate known full-Race fixture findings keep
+their prior scope pending disposition; Required does not contain a Race job.
+
+UPG-005 newly confirmed fixture gap: npm/PyPI resolver tests in
+internal/sandbox/linux_integration_test.go still require euid0, while the existing
+resolver_policy_integration_linux_test.go explicitly uses the ordinary-user
+installed typed helper. The file is unchanged from preserved M13 baseline f5a0353.
+Actual new-bundle resolver batch passed8 consumers but failed the PyPI guard
+before resolver execution; helper wait0 and original12 restoration passed. Do not
+run the entire client as root or weaken firewall/coverage. Narrow correction:
+require ordinary-user in the two existing fixtures and retain the existing typed
+helper and assertions. Fixture precondition start audit: IMPLEMENTED=NO/WIRED=YES/QUALIFIED=NO/
+ACCEPTANCE_CLOSED=NO; MISSING: corrected guards and actual two-resolver regression
+plus canonical checks. Product resolver/helper implementations are reused.
+
+UPG-005 fixture correction closure: [partial qualification evidence](../engineering/evidence/runtime-upgrade-maintenance/upg-005.json).
+Both existing resolver tests now require the ordinary user and preserve the
+installed typed helper/result assertions. Actual npm/PyPI resolvers pass2 cases;
+root execution is rejected before resolver construction in2 negatives. Canonical
+Quick/security/docs pass. Actual ordinary npm is-number7.0.0 and pip packaging25.0
+install/promotion also pass; both cases confirm parent wait0 and all12 originals
+restored. Scoped fixture audit YES/YES/YES/YES/MISSING=none. Initial batch FAIL and
+its8 individual passes remain historical; final candidate/full CPU/three CUDA/
+remote Required and activation remain open. No product resolver/helper, firewall
+privilege, budget, support tuple or coverage assertion is changed.
 
 M13-001 COMPLETE는 유지한다. M13-002는 ON_HOLD이며 PR33·남은 CLA/stale/merge
 acceptance와 기존 원본을 보존한다. M13 재개 시 새 Git/remote/PR/check 관측과
