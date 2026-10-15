@@ -208,7 +208,11 @@ failure. Telemetry confirms peak shared memory12.53GiB, available memory minimum
 Initial local RAM preflight missed peak working-set headroom. Preserve strict1s
 rejection, CPU/wall/tmpfs/support and add conservative local execution capacity
 readback before another full. Windows32GB/WSL~16GB, no .wslconfig; a24GB memory-only
-proposal is prepared and user decision pending because it affects all WSL distros.
+proposal was prepared for separate user review because it affects all WSL distros.
+User approved the testing24GB memory-only setting. The previously absent config
+was created and independently read back from Windows/Linux with matching SHA.
+Status CONFIG_WRITTEN_PENDING_RESTART; actual running WSL remains~16GB.
+Restart, post-restart RAM preflight and new CUDA qualification remain MISSING.
 No WSL restart, production activation or remote mutation is performed.
 
 M13-001 COMPLETE는 유지한다. M13-002는 ON_HOLD이며 PR33·남은 CLA/stale/merge

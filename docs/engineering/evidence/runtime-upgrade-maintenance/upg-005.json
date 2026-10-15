@@ -330,6 +330,11 @@
       "owner": "local UPG-005 state",
       "path": "preflight/ram-capacity-negative.json",
       "sha256": "4316013ce1e4c662e37107598c3c3e7d8d73ebc57f563523651e971778ef03aa"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "preflight/wslconfig-application.json",
+      "sha256": "7c52b476629783f5840faa11c02f800c69d37ebd69648243b96e5be9d3fb9fd7"
     }
   ],
   "boundaries": [
@@ -340,7 +345,7 @@
     "no remote write/dispatch/merge; M13 remains ON_HOLD",
     "activation and retirement remain UPG-006"
   ],
-  "active_scope": "local RAM preflight corrected before further full profiles; WSL global capacity proposal awaiting user decision; full migration open",
+  "active_scope": "test-only WSL memory24GB setting written/verified; awaiting restart and actual RAM readback before further full profiles; full migration open",
   "actual_final_40dda27": {
     "source_commit": "40dda277c868be1f6dc6a1d6c74879201cbd0f29",
     "consumer_cases": 15,
@@ -611,7 +616,16 @@
         "wsl_total_memory_kib": 16352040,
         "wslconfig_present": false
       },
-      "proposed_action": "24GB WSL memory-only setting prepared; user decision pending; no restart authorized/performed"
+      "proposed_action": "user approved testing memory-only24GB setting; new config written and independently verified from Windows/Linux; WSL restart not performed",
+      "wsl_memory_configuration": {
+        "status": "CONFIG_WRITTEN_PENDING_RESTART",
+        "requested_memory": "24GB",
+        "prior_file_present": false,
+        "linux_and_windows_readback_match": true,
+        "restart_performed": false,
+        "active_memory_verified_after_restart": false,
+        "qualification_after_change": "NOT_RUN"
+      }
     },
     "local_capacity_preflight": {
       "status": "PASS_EXPECTED_REJECTION_BEFORE_INSTALLATION",
