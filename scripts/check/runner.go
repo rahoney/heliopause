@@ -237,7 +237,7 @@ func (c *checker) runProfile(profile string) error {
 
 func (c *checker) platformSteps() []checkStep {
 	return []checkStep{
-		{"production build", func() error { return c.runGo("production build", "build", "./...") }},
+		{"production build", func() error { return c.runGo("production build", "build", "-trimpath", "./...") }},
 		{"default test", func() error {
 			return c.runGoWithTimeout("default test", 6*time.Minute, "test", "-timeout=5m", "./...")
 		}},
@@ -271,7 +271,7 @@ func (c *checker) foundationSteps(includeDocs bool) []checkStep {
 		{"version support freshness", func() error { return checkVersionSupport(c.root, false, c.stdout) }},
 		{"module drift", c.checkModuleDrift},
 		{"module integrity", func() error { return c.runGo("module integrity", "mod", "verify") }},
-		{"production build", func() error { return c.runGo("production build", "build", "./...") }},
+		{"production build", func() error { return c.runGo("production build", "build", "-trimpath", "./...") }},
 		{"test build validity", func() error { return c.runGo("test build validity", "test", "-run", "^$", "./...") }},
 		{"architecture", c.checkArchitecture},
 	}

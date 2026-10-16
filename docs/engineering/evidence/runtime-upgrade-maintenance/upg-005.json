@@ -824,5 +824,100 @@
       "sum_per_batch_available_increase": 55622868992,
       "metric_scope": "sum of five individual completed-test deletion batches, including new test output generated in this turn; not whole-turn net space gain or Windows VHD compaction"
     }
+  },
+  "remote_initial_8afeffa": {
+    "pr": 34,
+    "run": 38920741069,
+    "head": "8afeffa81dab514369e1341e8817c4126409a66d",
+    "merge": "36ce170889e7cbed91edaf481a7928d741382e62",
+    "merge_tree_equals_head": true,
+    "macos_job": 117039701759,
+    "macos": "FAIL nested native build at120.01s; preceding production build PASS",
+    "linux": "PASS",
+    "other_seven_prerequisites": "PASS",
+    "raw_decoded_macos_sha256": "b3f7056db4e4cc9aafe7dc9fe9899e2dd547e7541b7917642bec83c49770aef4",
+    "required": "FAIL macOS prerequisite; remaining eight prerequisites PASS",
+    "raw_decoded_linux_sha256": "320d907892ec6b1d9bdcaafa4df9460d58fb7d486586349ec7ada00897a22f9c"
+  },
+  "native_build_preparation_gap": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO",
+    "fixture_unchanged_from_main": true,
+    "native_build_deadline_seconds": 120,
+    "scope": "reuse existing native assertions and canonical build/test; match preparation flags; no budget/coverage reduction",
+    "linux_comparison": [
+      {
+        "case": "unmatched",
+        "phase": "prepare",
+        "seconds": 18.131,
+        "compiler_invocations": 0,
+        "exit_code": 0,
+        "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "case": "unmatched",
+        "phase": "nested",
+        "seconds": 17.544,
+        "compiler_invocations": 356,
+        "exit_code": 0,
+        "log_sha256": "c2ef0c79d9f9a63e62328bd7475e70edfea83eba5e4350bbeedc9c7f487d1b3c"
+      },
+      {
+        "case": "matched",
+        "phase": "prepare",
+        "seconds": 21.708,
+        "compiler_invocations": 0,
+        "exit_code": 0,
+        "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "case": "matched",
+        "phase": "nested",
+        "seconds": 1.121,
+        "compiler_invocations": 0,
+        "exit_code": 0,
+        "log_sha256": "8d3a83e6a3902da3e4d978f3cb58664e550ee7c71743824eea16c1de0127cea7"
+      }
+    ],
+    "finding": "independent empty-cache Go1.26.9 comparison confirms trimpath preparation reuses compiler inputs; native macOS elapsed cause not fully established",
+    "MISSING": [
+      "actual fresh native macOS/Required",
+      "remaining supported CUDA remote qualification"
+    ],
+    "canonical_checks": [
+      {
+        "profile": "quick",
+        "exit_code": 0,
+        "seconds": 208.6,
+        "sha256": "fc3a337cf845dd7b44d9f19cea935726bb9f94d5e1b3f3426478b3299974d6cd"
+      },
+      {
+        "profile": "platform",
+        "exit_code": 0,
+        "seconds": 7.09,
+        "sha256": "fb49a92d2cfca9e6f197611a2e0567108e2eb01175e865442baea47d308e8ef7"
+      },
+      {
+        "profile": "security",
+        "exit_code": 0,
+        "seconds": 4.87,
+        "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+      },
+      {
+        "profile": "workflow",
+        "exit_code": 0,
+        "seconds": 0.72,
+        "sha256": "a9d0afe878b5cc017419a4754afde924a4196a69fa7415fdf4eb23bc2ea131f4"
+      },
+      {
+        "profile": "docs",
+        "exit_code": 0,
+        "seconds": 0.16,
+        "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+      }
+    ],
+    "linux_preparation_scope": "controlled reuse comparison and corrected-candidate native Linux Quick/platform/security/workflow/docs PASS; remote native closure still pending"
   }
 }

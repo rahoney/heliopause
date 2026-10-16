@@ -298,6 +298,13 @@ go run ./scripts/check format
 | `e2e` | 환경별 | build된 `helox`의 사용자 operation 검증 |
 | `docs` | No | canonical Markdown local link와 code fence 검사 |
 
+`platform`과 `quick`의 production build는 `go build -trimpath ./...`를 사용한다.
+Native CLI/default-path 및 release fixture의 실제 nested build와 compiler cache
+입력을 맞춰 이미 준비한 dependency compilation을 재사용한다. Native fixture는
+자기 binary를 계속 빌드·실행하며 기존2분 build deadline, 전체 package 선택,
+default test5분/상위6분 bound를 유지한다. Cache 준비는 기능 assertion이나 native
+macOS 실행 검증의 대체 증거가 아니다.
+
 `quick + security + docs`는 `bootstrap`이 완료된 뒤 외부 service 없이 반복 가능한 기본 local 검증 집합이다. `platform`은 `bootstrap-modules` 뒤에 실행하며 quality tool의 setup Go와 minimum supported Go를 결합하지 않는다. `quick`의 formatting 단계는 항상 `gofmt -l` 기반 read-only format check이며 source를 수정하지 않는다. 이 profile들은 `GOTOOLCHAIN=local`과 offline module resolution을 사용해 toolchain이나 module을 암묵적으로 내려받지 않는다. cache miss는 자동 network fallback이 아니라 prerequisite failure다. `vulnerability`는 advisory database가 시간에 따라 변하고 network가 필요하므로 deterministic 검사와 분리한다. network failure를 취약점 없음으로 취급하지 않는다.
 
 `race`, `integration`, `e2e`는 platform·runtime prerequisite가 있으므로 별도 profile로 유지한다. Step 11에서 어떤 event와 runner가 각 profile을 의무 실행하는지 정한다.

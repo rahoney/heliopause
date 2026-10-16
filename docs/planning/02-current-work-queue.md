@@ -266,7 +266,37 @@ available increases55,622,868,992B. This includes new output generated during
 this work; it is not whole-turn net free-space gain or Windows VHD compaction.
 Fresh remote Required/nativeMac/three independent CUDA qualification remains.
 UPG-005 is IN_PROGRESS and UPG-006 NOT_STARTED until acceptance is confirmed.
-Production activation and remote mutation are not performed.
+Local-record commit8afeffa was pushed to the user-owned public maintenance branch
+after owner/admin/push verification and current-tree/reachable-history secret
+checks. Draft PR34 is open; CI313/run38920741069 tests merge36ce170, whose whole
+tree equals branch8afeffa. Eight prerequisites including Linux passed; Required failed only because
+native macOS117039701759 failed TestNativeBinaryDefaultPaths at120.01s:
+nested go build -trimpath was killed at the existing2m context; preceding
+production build succeeded. The fixture is unchanged from main. No blind rerun,
+budget increase, test skip or production activation is performed.
+
+UPG-005 native-build preparation gap baseline audit before source changes:
+IMPLEMENTED=YES/WIRED=YES for native path assertions and canonical platform
+build/test; QUALIFIED=NO/ACCEPTANCE_CLOSED=NO. MISSING: controlled cache-input
+comparison for production build without trimpath versus the existing nested
+trimpath build; minimal preparation alignment if confirmed; unchanged deadline/
+assertions and actual new native macOS/Required qualification. The pinned Go
+source includes BuildTrimpath in buildActionID. This establishes separate cache
+keys, not all causes of remote elapsed time or a Go SDK regression. Existing
+implementation is reused; product runtime/full local acceptances remain scoped.
+Controlled selected-Go Linux comparison used independent empty build caches:
+unmatched preparation caused356 nested compiler invocations/17.544s; matched
+trimpath preparation caused0/1.121s. This confirms cache reuse only, not exact
+macOS scheduling causality. Both existing canonical production-build steps now
+use trimpath; native fixture flags/deadline/assertions and every selected package
+remain. Candidate Quick/platform/security/docs/workflow and new native remote
+qualification are pending before closure. Linux CI313 completed SUCCESS before correction publication; its actual
+first-candidate result and decoded raw are preserved. No active run is cancelled.
+Corrected candidate selected-Go Linux canonical Quick208.60s/platform7.09s/
+security4.87s/workflow0.72s/docs0.16s PASS with read-only whole-source identity
+checks. Native/default-path assertions and all existing tests remain; macOS
+requalification is not inferred from Linux success. Final record checks precede
+the scoped correction commit and fresh actual remote results.
 
 M13-001 COMPLETE는 유지한다. M13-002는 ON_HOLD이며 PR33·남은 CLA/stale/merge
 acceptance와 기존 원본을 보존한다. M13 재개 시 새 Git/remote/PR/check 관측과

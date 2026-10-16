@@ -55,9 +55,9 @@ func TestNativeBinaryDefaultPaths(t *testing.T) {
 	}
 	binaryPath := filepath.Join(t.TempDir(), "helox")
 
-	// Hosted macOS runners can take longer than 30 seconds for this deliberately
-	// uncached, nested production build. Keep a bound while avoiding a scheduler-
-	// load-dependent failure in the canonical platform profile.
+	// Use the same trimmed production flags as canonical preparation so this
+	// bounded native-path fixture can reuse dependency compilation. It still
+	// builds and executes its own native binary in independent working directories.
 	buildContext, cancelBuild := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancelBuild()
 	build := exec.CommandContext(buildContext, goExecutable, "build", "-trimpath", "-o", binaryPath, "./cmd/helox")
