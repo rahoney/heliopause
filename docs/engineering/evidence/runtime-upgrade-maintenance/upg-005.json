@@ -10,10 +10,9 @@
     "QUALIFIED": "NO",
     "ACCEPTANCE_CLOSED": "NO",
     "MISSING": [
-      "final exact candidate installed cross-ecosystem and negative consumers",
-      "same-candidate cu132 independent full qualification; CPU/cu126/cu130 already PASS",
-      "fresh Required/native platform and supported-profile remote qualification",
-      "final cleanup and activation handoff"
+      "fresh same-code Required cross-ecosystem and negative consumers plus native platform",
+      "independent supported CUDA remote qualification",
+      "final remote evidence and activation handoff"
     ]
   },
   "local_state": "$HOME/.local/state/heliopause/runtime-upgrades/upg005-20261016",
@@ -345,7 +344,7 @@
     "no remote write/dispatch/merge; M13 remains ON_HOLD",
     "activation and retirement remain UPG-006"
   ],
-  "active_scope": "same baa8512 CPU/postrestart cu126/cu130 full PASS; completed-test cleanup continues; cu132/fresh remote/full migration open",
+  "active_scope": "same baa8512 CPU/cu126/cu130/cu132 local full PASS and all original restorations confirmed; completed unnecessary test data cleanup PASS; fresh remote Required/nativeMac/three CUDA and full migration open",
   "actual_final_40dda27": {
     "source_commit": "40dda277c868be1f6dc6a1d6c74879201cbd0f29",
     "consumer_cases": 15,
@@ -511,32 +510,7 @@
     ],
     "cu130_full": "NOT_RUN",
     "cu132_full": "NOT_RUN",
-    "postrestart_cu126_full": {
-      "name": "postrestart-ready-cu126-full",
-      "source_commit": "baa8512476334d95429920e92b63ec669e027fe8",
-      "status": "PASS",
-      "seconds": 2344.78,
-      "exit_code": 0,
-      "restore_exit_code": 0,
-      "runtime_sha256": "39cc83bfd200b3f474926e5115384564bd902aa17f4bc4d5fa89019d4b388808",
-      "helper_parent_wait": 0,
-      "original_files_restored": 12,
-      "not_attested_module": "triton.profiler.viewer",
-      "auxiliary_input_excluded_from_promoted_entries": 29
-    },
-    "postrestart_cu130_full": {
-      "name": "postrestart-ready-cu130-full",
-      "source_commit": "baa8512476334d95429920e92b63ec669e027fe8",
-      "status": "PASS",
-      "seconds": 1959.83,
-      "exit_code": 0,
-      "restore_exit_code": 0,
-      "runtime_sha256": "bb3a1ac114bcf55033d87c35f6f883963bf792da179a5e91b00dea37e20df7cd",
-      "helper_parent_wait": 0,
-      "original_files_restored": 12,
-      "not_attested_module": "triton.profiler.viewer",
-      "auxiliary_input_excluded_from_promoted_entries": 29
-    }
+    "scope": "historical before-restart results; postrestart_20261016 owns later full results"
   },
   "cpu_read_latency_gap": {
     "status": "CONFIRMED_REJECTION; underlying substage latency NOT_ESTABLISHED",
@@ -772,6 +746,83 @@
         "JSON from discarded target",
         "candidate and durable originals"
       ]
+    },
+    "cu132_full": {
+      "name": "postrestart-ready-cu132-full",
+      "source_commit": "baa8512476334d95429920e92b63ec669e027fe8",
+      "status": "PASS",
+      "seconds": 2005.17,
+      "exit_code": 0,
+      "restore_exit_code": 0,
+      "runtime_sha256": "976248d03f9072200b19e0bea12985ea685458268c7c4f0873497e78f3319be8",
+      "helper_parent_wait": 0,
+      "original_files_restored": 12,
+      "not_attested_module": "triton.profiler.viewer",
+      "auxiliary_input_excluded_from_promoted_entries": 29
+    },
+    "local_full_matrix": {
+      "source_commit": "baa8512476334d95429920e92b63ec669e027fe8",
+      "profiles": [
+        {
+          "profile": "cpu",
+          "status": "PASS",
+          "seconds": 482.43,
+          "case": "prepared-cpu-full",
+          "result_owner": "actual_final_baa8512"
+        },
+        {
+          "profile": "cu126",
+          "status": "PASS",
+          "seconds": 2344.78,
+          "result_owner": "postrestart_20261016.cu126_full"
+        },
+        {
+          "profile": "cu130",
+          "status": "PASS",
+          "seconds": 1959.83,
+          "result_owner": "postrestart_20261016.cu130_full"
+        },
+        {
+          "profile": "cu132",
+          "status": "PASS",
+          "seconds": 2005.17,
+          "result_owner": "postrestart_20261016.cu132_full"
+        }
+      ],
+      "historical_failures_retained": true,
+      "historical_latency_causality": "NOT_ESTABLISHED"
+    },
+    "cu132_completed_test_cleanup": {
+      "status": "PASS",
+      "files_deleted": 16158,
+      "logical_bytes_deleted": 11437557165,
+      "wsl_available_bytes_increase": 11482320896,
+      "inventory_sha256": "18220bb7e4997aed5387730ea6c02233ed17ea4a1e3fd48f8a93274bc846a32e",
+      "preserved": [
+        "actual Evidence93",
+        "qualification receipt and staging manifest",
+        "runtime/result/cleanup/source receipts",
+        "JSON from discarded target",
+        "candidate and durable originals"
+      ]
+    },
+    "remaining_completed_test_cleanup": {
+      "status": "PASS",
+      "files_deleted": 109640,
+      "logical_bytes_deleted": 8858768369,
+      "wsl_available_bytes_increase": 9257005056,
+      "inventory_sha256": "031642fc61e9de87a62244188115df63f5d1b3e09ee80b101ea4f0dfd5ccfa60",
+      "preserved_structured_files": 51,
+      "scope": "regenerable HAA Go/Staticcheck/Bazel build results; completed rehearsal snapshots and inactive historical tool cache; completed ordinary CLI targets/cache and first failed startup CLI copy",
+      "cache_link_target_directories_recreated_empty": true,
+      "historical_tool_byte_equivalence_claimed": false,
+      "active_tools_candidate_sdk_runtime_and_originals_retained": true
+    },
+    "cleanup_totals": {
+      "files_deleted": 188702,
+      "logical_bytes_deleted": 55006293900,
+      "sum_per_batch_available_increase": 55622868992,
+      "metric_scope": "sum of five individual completed-test deletion batches, including new test output generated in this turn; not whole-turn net space gain or Windows VHD compaction"
     }
   }
 }

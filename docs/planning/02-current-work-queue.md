@@ -247,6 +247,25 @@ from29 promoted entries are verified. Its completed payload cleanup removed
 manifest, qualification and cleanup receipts remain. The remaining cu132 follows
 record validation. Same-candidate cross-ecosystem/fresh remote/activation
 acceptance is still open.
+
+Postrestart-ready-cu132-full PASS2005.17s/primary0/restore0; helper parentwait0,
+all12 original identities and zero consumers/containers/handles verified. Viewer
+NOT_ATTESTED and auxiliary exclusion from29 promoted entries are preserved.
+Same baa8512 local full matrix is now CPU482.43s/cu1262344.78s/cu1301959.83s/
+cu1322005.17s PASS. Historical failed attempts remain; this does not establish
+the original latency's cause. Successful cu132 cleanup removed16,158 files,
+logical11,437,557,165B/WSL available+11,482,320,896B. Remaining completed-test
+cleanup removed109,640 files, logical8,858,768,369B/available+9,257,005,056B:
+regenerable Go/Staticcheck/Bazel results, completed rehearsal snapshots/inactive
+historical tool cache and CLI copies/targets. Actual root references and locks
+were checked, structured CLI evidence preserved and cache symlink target
+directories recreated empty. Historical tools were not byte-identical to active
+tools and are recorded as obsolete verified cache, not reusable identical input.
+Five deletion batches total188,702 files/logical55,006,293,900B and per-batch
+available increases55,622,868,992B. This includes new output generated during
+this work; it is not whole-turn net free-space gain or Windows VHD compaction.
+Fresh remote Required/nativeMac/three independent CUDA qualification remains.
+UPG-005 is IN_PROGRESS and UPG-006 NOT_STARTED until acceptance is confirmed.
 Production activation and remote mutation are not performed.
 
 M13-001 COMPLETE는 유지한다. M13-002는 ON_HOLD이며 PR33·남은 CLA/stale/merge
