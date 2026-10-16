@@ -11,7 +11,7 @@
     "ACCEPTANCE_CLOSED": "NO",
     "MISSING": [
       "final exact candidate installed cross-ecosystem and negative consumers",
-      "CPU/cu126/cu130/cu132 independent full qualification",
+      "same-candidate cu132 independent full qualification; CPU/cu126/cu130 already PASS",
       "fresh Required/native platform and supported-profile remote qualification",
       "final cleanup and activation handoff"
     ]
@@ -345,7 +345,7 @@
     "no remote write/dispatch/merge; M13 remains ON_HOLD",
     "activation and retirement remain UPG-006"
   ],
-  "active_scope": "test-only WSL memory24GB setting written/verified; awaiting restart and actual RAM readback before further full profiles; full migration open",
+  "active_scope": "same baa8512 CPU/postrestart cu126/cu130 full PASS; completed-test cleanup continues; cu132/fresh remote/full migration open",
   "actual_final_40dda27": {
     "source_commit": "40dda277c868be1f6dc6a1d6c74879201cbd0f29",
     "consumer_cases": 15,
@@ -510,7 +510,33 @@
       }
     ],
     "cu130_full": "NOT_RUN",
-    "cu132_full": "NOT_RUN"
+    "cu132_full": "NOT_RUN",
+    "postrestart_cu126_full": {
+      "name": "postrestart-ready-cu126-full",
+      "source_commit": "baa8512476334d95429920e92b63ec669e027fe8",
+      "status": "PASS",
+      "seconds": 2344.78,
+      "exit_code": 0,
+      "restore_exit_code": 0,
+      "runtime_sha256": "39cc83bfd200b3f474926e5115384564bd902aa17f4bc4d5fa89019d4b388808",
+      "helper_parent_wait": 0,
+      "original_files_restored": 12,
+      "not_attested_module": "triton.profiler.viewer",
+      "auxiliary_input_excluded_from_promoted_entries": 29
+    },
+    "postrestart_cu130_full": {
+      "name": "postrestart-ready-cu130-full",
+      "source_commit": "baa8512476334d95429920e92b63ec669e027fe8",
+      "status": "PASS",
+      "seconds": 1959.83,
+      "exit_code": 0,
+      "restore_exit_code": 0,
+      "runtime_sha256": "bb3a1ac114bcf55033d87c35f6f883963bf792da179a5e91b00dea37e20df7cd",
+      "helper_parent_wait": 0,
+      "original_files_restored": 12,
+      "not_attested_module": "triton.profiler.viewer",
+      "auxiliary_input_excluded_from_promoted_entries": 29
+    }
   },
   "cpu_read_latency_gap": {
     "status": "CONFIRMED_REJECTION; underlying substage latency NOT_ESTABLISHED",
@@ -618,13 +644,14 @@
       },
       "proposed_action": "user approved testing memory-only24GB setting; new config written and independently verified from Windows/Linux; WSL restart not performed",
       "wsl_memory_configuration": {
-        "status": "CONFIG_WRITTEN_PENDING_RESTART",
+        "status": "ACTIVE_MEMORY_VERIFIED_AFTER_USER_RESTART",
         "requested_memory": "24GB",
         "prior_file_present": false,
         "linux_and_windows_readback_match": true,
-        "restart_performed": false,
-        "active_memory_verified_after_restart": false,
-        "qualification_after_change": "NOT_RUN"
+        "restart_performed": true,
+        "active_memory_verified_after_restart": true,
+        "qualification_after_change": "postrestart small4 PASS27.00s and cu126 full PASS2344.78s; historical failure and causal uncertainty retained",
+        "restart_actor": "user"
       }
     },
     "local_capacity_preflight": {
@@ -637,6 +664,114 @@
       "source_policy_sha256": "6b20245312d7e1aa6dc49b2ddcb48a70b2ca59cf32d64a8e0f1a65aee227a61b",
       "scope": "task-local conservative execution guard; product/CI budgets and support unchanged",
       "ordinary_candidate_restored": true
+    }
+  },
+  "postrestart_20261016": {
+    "preflight": {
+      "status": "PASS",
+      "verified_utc": "2026-10-16T11:58:23.386249+00:00",
+      "source_commit": "baa8512476334d95429920e92b63ec669e027fe8",
+      "source": "/tmp/haa-upg005-final-preparation-source",
+      "source_files_verified_bytes_and_modes": 1527,
+      "wslconfig_sha256": "c8ba0f93e3a5429dd96e5d52b42525b2770b06c53f687ebebfd909f1b01ab984",
+      "memory_bytes": {
+        "MemTotal": 25202302976,
+        "MemAvailable": 23311159296
+      },
+      "required_available_bytes": 19327352832,
+      "qualification_after_restart": "NOT_RUN"
+    },
+    "initial_case": {
+      "name": "postrestart-cu126-full",
+      "status": "FAIL",
+      "seconds": 0.2,
+      "exit_code": 1,
+      "restore_exit_code": 1,
+      "runtime_sha256": "46667846f5d7e0a1d32e517206e8841697c42e88274cac4ea4c7053a7056549b"
+    },
+    "startup_cause": "canonical runtime directories disappeared on restart; ServeNetworkPolicy rejects missing parent before executor/listeners",
+    "separate_recovery": "root complete proc/executable, recorded parent/wrapper, Unix sockets and successful Docker absence revalidated; current installed candidate/original bytes compared; originals12 restored and canonical directories prepared",
+    "historical_unknown_retained": true,
+    "local_guard": "pre-install canonical directory mode/UID/GID checks; frozen product/test/helper unchanged",
+    "small_case": {
+      "name": "postrestart-small",
+      "status": "PASS",
+      "seconds": 27.0,
+      "exit_code": 0,
+      "restore_exit_code": 0,
+      "runtime_sha256": "a2ed697c2730ea477ce0cacae98b838288b269e6a65feb8d3491a9f74faf2b72"
+    },
+    "cleanup_request": "user authorized revalidation/restoration/runtime directories and all unnecessary completed test data deletion; retained evidence/active inputs inventoried separately",
+    "completed_test_cleanup": {
+      "status": "PASS",
+      "files_deleted": 30537,
+      "logical_bytes_deleted": 9231393994,
+      "wsl_available_bytes_increase": 9315295232,
+      "inventory_sha256": "6f9f4edb22e6a14e1545bf214469e5513018df39e40edb75d1498fc16b890a6d",
+      "scope": "successful CPU installed targets/intake/staging artifact copies; obsolete candidate-history binaries; completed lifecycle CLI copies; duplicate old failed wheels with retained identical input",
+      "preserved": [
+        "current candidate",
+        "durable originals12",
+        "distinct failed inputs",
+        "raw logs/results/source/build/cleanup receipts",
+        "actual Evidence",
+        "JSON from discarded success targets"
+      ],
+      "windows_vhd_compaction": "NOT_PERFORMED"
+    },
+    "cu126_full": {
+      "name": "postrestart-ready-cu126-full",
+      "source_commit": "baa8512476334d95429920e92b63ec669e027fe8",
+      "status": "PASS",
+      "seconds": 2344.78,
+      "exit_code": 0,
+      "restore_exit_code": 0,
+      "runtime_sha256": "39cc83bfd200b3f474926e5115384564bd902aa17f4bc4d5fa89019d4b388808",
+      "helper_parent_wait": 0,
+      "original_files_restored": 12,
+      "not_attested_module": "triton.profiler.viewer",
+      "auxiliary_input_excluded_from_promoted_entries": 29
+    },
+    "cu126_completed_test_cleanup": {
+      "status": "PASS",
+      "files_deleted": 16209,
+      "logical_bytes_deleted": 13914708718,
+      "wsl_available_bytes_increase": 13959614464,
+      "inventory_sha256": "58d03807080e1d53e77ff7ead08f060a0d0495f41e9473c17f7aa6574efb6921",
+      "preserved": [
+        "actual Evidence93",
+        "qualification receipt and staging manifest",
+        "runtime/result/cleanup/source receipts",
+        "JSON from discarded target",
+        "candidate and durable originals"
+      ]
+    },
+    "cu130_full": {
+      "name": "postrestart-ready-cu130-full",
+      "source_commit": "baa8512476334d95429920e92b63ec669e027fe8",
+      "status": "PASS",
+      "seconds": 1959.83,
+      "exit_code": 0,
+      "restore_exit_code": 0,
+      "runtime_sha256": "bb3a1ac114bcf55033d87c35f6f883963bf792da179a5e91b00dea37e20df7cd",
+      "helper_parent_wait": 0,
+      "original_files_restored": 12,
+      "not_attested_module": "triton.profiler.viewer",
+      "auxiliary_input_excluded_from_promoted_entries": 29
+    },
+    "cu130_completed_test_cleanup": {
+      "status": "PASS",
+      "files_deleted": 16158,
+      "logical_bytes_deleted": 11563865654,
+      "wsl_available_bytes_increase": 11608633344,
+      "inventory_sha256": "8942ef7814752ce9b4fa115620fc78dcacd72edbbfb1fdf466719861c76b4364",
+      "preserved": [
+        "actual Evidence93",
+        "qualification receipt and staging manifest",
+        "runtime/result/cleanup/source receipts",
+        "JSON from discarded target",
+        "candidate and durable originals"
+      ]
     }
   }
 }

@@ -211,9 +211,43 @@ readback before another full. Windows32GB/WSL~16GB, no .wslconfig; a24GB memory-
 proposal was prepared for separate user review because it affects all WSL distros.
 User approved the testing24GB memory-only setting. The previously absent config
 was created and independently read back from Windows/Linux with matching SHA.
-Status CONFIG_WRITTEN_PENDING_RESTART; actual running WSL remains~16GB.
-Restart, post-restart RAM preflight and new CUDA qualification remain MISSING.
-No WSL restart, production activation or remote mutation is performed.
+Post-restart readback (2026-10-16): user restarted WSL; actual MemTotal
+25,202,302,976B and MemAvailable23,311,159,296B exceed the unchanged local CUDA
+capacity requirement19,327,352,832B. Config SHA matches its approved bytes.
+The missing native source was reconstructed from baa8512 and all1,527 file
+bytes/modes match the frozen inventory. Root audit confirms all12 originals,
+zero installed consumers/containers/handles. First postrestart-cu126-full failed
+at helper startup0.2s before CUDA execution because canonical /run directories
+were missing. Historical UNKNOWN/restore1 is retained. A separate root complete
+proc/executable/socket/Docker check and startup-before-executor source evidence
+established recovery safety; originals12 restored and both canonical runtime
+directories prepared. The local harness now checks directory identities before
+installation; fresh small installed regressions precede another full case.
+New CUDA qualification remains open; RAM readback alone is not a latency fix.
+User authorized revalidation/restoration/runtime directories and removal of
+completed unnecessary test data, with actual consumer/inventory checks.
+Post-restart small4 PASS27.00s/primary0/restore0, helper parentwait0 and original12
+readback PASS. Completed-test cleanup removed30,537 unnecessary files after full
+SHA/metadata and root proc/FD/maps/mount/Docker reference checks: logical
+9,231,393,994B, WSL available increase9,315,295,232B. Current candidate, originals,
+distinct failed inputs and actual Evidence/raw/results remain. No VHD compaction
+claim is made. Fresh postrestart-ready-cu126-full now runs with the same baa8512
+candidate and unchanged40m/accounting/coverage bounds.
+Final result: postrestart-ready-cu126-full PASS2344.78s/primary0/restore0,
+helper parentwait0 and all12 originals verified. Viewer NOT_ATTESTED is retained
+in result/promotion references; auxiliary input remains outside29 promoted
+entries. This is a new full qualification result, not proof of the historical
+latency's cause. Successful cu126 payload cleanup removed16,209 files, logical
+13,914,708,718B/WSL available+13,959,614,464B, retaining93 actual Evidence and
+qualification/staging/result/cleanup records. Fresh postrestart-ready-cu130-full
+passed1959.83s/primary0/restore0 with the same candidate; root audit confirms
+original12/consumer0/container0/handle0. Viewer limitation and auxiliary exclusion
+from29 promoted entries are verified. Its completed payload cleanup removed
+16,158 files, logical11,563,865,654B/WSL available+11,608,633,344B; actual Evidence,
+manifest, qualification and cleanup receipts remain. The remaining cu132 follows
+record validation. Same-candidate cross-ecosystem/fresh remote/activation
+acceptance is still open.
+Production activation and remote mutation are not performed.
 
 M13-001 COMPLETE는 유지한다. M13-002는 ON_HOLD이며 PR33·남은 CLA/stale/merge
 acceptance와 기존 원본을 보존한다. M13 재개 시 새 Git/remote/PR/check 관측과
