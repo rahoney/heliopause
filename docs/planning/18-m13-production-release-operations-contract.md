@@ -277,6 +277,22 @@ exact source commit
 
 패키지 lifecycle script에서 network download나 arbitrary shell extension을 하지 않는다.
 
+Linux amd64 package payload는 `/usr/lib/heliopause/releases/<version>/`에 CLI,
+observer, network-policy helper와 runtime lock/image manifest를 root 소유로
+설치한다. CLI·observer는 `0555`, privileged helper는 `0500`, metadata는
+`0444`이며 `/usr/bin/helox`는 해당 version의 CLI를 가리킨다. 제공 systemd
+unit는 기본 비활성이고, 실제 caller identity로 보호한
+`/etc/heliopause/network-policy.json`이 있어야 시작할 수 있다. 추측한 UID/GID의
+동작 config를 생성하거나 기존 active runsc/observer를 교체하지 않는다.
+고정 post-install 안내는 controlled runtime 설정 후 `helox doctor` 실행을
+요구한다. OS package 설치 성공과 verified runtime activation은 별도다.
+
+Checksum 생성과 publish의 file set은 같은 manifest verifier를 소비한다.
+Publish는 manifest attestation/source를 먼저 검증한 뒤 basename·role·platform·
+size·digest·metadata·exact directory set 검증이 성공한 목록만 별도 control
+file로 전달한다. Checksum 파일의 임의 경로나 artifact 자체의 file list를
+publication authority로 취급하지 않는다.
+
 ### M13-004 — convenience publication
 
 #### npm

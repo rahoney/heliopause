@@ -10,7 +10,7 @@
 Current milestone: M13 — Production Release & Operations
 Milestone status: IN_PROGRESS — runtime maintenance main delivery COMPLETE
 Active work item: M13-003 — canonical release build and OS package preparation (approved C2 exception)
-Active work item status: IN_PROGRESS — baseline audit before implementation; full-scope IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO
+Active work item status: IN_PROGRESS — implementation wired, local checks PASS; remote source CI pending; QUALIFIED=NO / ACCEPTANCE_CLOSED=NO
 Waiting predecessor: M13-002 — actual missing-CLA NOT_TESTED / BLOCKED; acceptance open
 Next work item: M13-004 — NOT_STARTED / NOT_READY; no publication authority
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -3001,7 +3001,7 @@ M12-005 feature freeze에서 수행한다. canonical lock 등록만으로 releas
 | --- | --- | --- | --- |
 | 1 | M13-001 | protected main/develop/tag/release environment/immutable release activation | COMPLETE |
 | 2 | M13-002 | `feature → develop → main` 실제 protected PR qualification | BLOCKED — actual missing-CLA; approved C2 permits preparation only |
-| 3 | M13-003 | canonical release build·manifest·attestation·OS package assets | IN_PROGRESS — baseline audit / preparation only |
+| 3 | M13-003 | canonical release build·manifest·attestation·OS package assets | IN_PROGRESS — implementation / preparation checks |
 | 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | NOT_STARTED |
 | 5 | M13-005 | exact publication·clean Host bootstrap·doctor·cross-ecosystem smoke·quarantine | NOT_STARTED |
 
@@ -3267,26 +3267,34 @@ Release tags/publication and M13-003 implementation remain outside this task.
 
 ### M13-003 — canonical release build and OS package preparation
 
-Status: IN_PROGRESS — baseline audit, before production source edits. The explicit
-C2 exception permits implementation/build/package preparation while M13-002 waits
-on actual CLA evidence. No tag, publication, publish activation or release action.
+Status: IN_PROGRESS — implementation wired and local preparation checks PASS;
+remote source CI remains pending. The approved C2 exception is still in effect.
 Read: [M13 contract](./18-m13-production-release-operations-contract.md#m13-003--canonical-release-build-and-os-packages),
 [M10 distribution contract](./13-m10-verified-distribution-bootstrap-contract.md),
 [CI gate](../engineering/04-ci-quality-gate.md), directory/Architecture rules and
 current release build/publish/manifest/install consumers.
 
-Full-scope baseline: IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO.
-Existing native6/helper builds, runtime manifest, SBOM/checksum, attestation/upload
-and verifier-gated installer/publish code are identified for reuse, not replacement.
-Initial missing work: real .deb/.rpm generation, manifest/checksum/package identity
-wiring and qualification; current publish workflow repeats a fixed native asset set.
-The [completed baseline audit](./evidence/m13-003-release-build/baseline-20261017.md)
-records per-responsibility implementation/wiring/qualification, exact source/tests
-and the missing-only sequence. Reuse existing M10 responsibilities; add a pinned
-Go packaging library without changing the managed quality tool/compiler owners.
-Least-privilege package layout and real format/reproducibility tests remain gaps.
-Only this item is IN_PROGRESS. M13-004/005 remain NOT_STARTED; blocked M13-002 is not
-silently closed and a local source check is not publication authority.
+Current implementation: IMPLEMENTED=YES / WIRED=YES (source workflow) /
+QUALIFIED=NO / ACCEPTANCE_CLOSED=NO. The baseline audit preceded source edits.
+Existing native/helper/runtime/SBOM/installer responsibilities are reused.
+Pinned nFPM library builds deterministic real .deb/.rpm bytes with root-owned,
+versioned payload and an inactive narrow service; no live workstation install.
+Manifest roles bind both packages, canonical checksums and all publish consumers.
+Actual package format/content/reproducibility/negative tests, manifest exact-set
+negatives and existing native installer regressions PASS. Whole Quick/security/
+vulnerability/workflow/docs/release-gate PASS on the connected source candidate.
+Native Linux platform checks and Darwin amd64/arm64 test compilation PASS; native macOS execution remains remote evidence.
+
+Evidence: [baseline](./evidence/m13-003-release-build/baseline-20261017.md),
+[preparation result](./evidence/m13-003-release-build/preparation-20261017.md).
+MISSING: new source Required CI, actual protected tag build/attestation, clean-host
+OS installation/lifecycle smoke and verified publication qualification. The latter
+release operations are NOT_RUN under the predecessor CLA gate and C2 exception;
+local release-gate PASS is a static contract result, not publication permission.
+M13-002 remains BLOCKED on actual missing-CLA evidence. Only M13-003 is IN_PROGRESS;
+M13-004/005 remain NOT_STARTED. Completed disposable test/build data is removed
+after final checks while evidence, active runtime/rollback and shared SDK/modules
+are preserved.
 
 ### M12 baseline audit status
 

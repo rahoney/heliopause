@@ -102,7 +102,7 @@
 
 ## Current Stage
 
-2026-10-17 사용자가 제한된 Strict 운영 증거 인정과 C2 준비 작업 순서 예외를 모두 승인했다. M13-002의 실제 missing-CLA 시험은 NOT_TESTED / BLOCKED / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO로 남긴다. M13-003의 baseline audit와 구현·build·package 준비만 진행하며 공개 release·편의 채널 publish·release tag·publish activation은 금지한다. 상세 결정은 [M13 계약](./docs/planning/18-m13-production-release-operations-contract.md#m13-002--protected-branch-qualification), 승인 기록은 [S/C2](./docs/planning/evidence/m13-002-protected-path/remaining-decisions-20261017.md), 현재 작업과 gap은 Queue가 소유한다. PR35/36 정상 전달과 main CI324는 완료 증거로 유지하며, 아래 이전 단계 문구는 역사적 기록이다.
+2026-10-17 사용자가 제한된 Strict 운영 증거 인정과 C2 준비 작업 순서 예외를 모두 승인했다. M13-002의 실제 missing-CLA 시험은 NOT_TESTED / BLOCKED / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO로 남긴다. M13-003은 baseline audit 후 OS package·manifest·workflow 연결과 로컬 검사를 진행했으며 공개 release·편의 채널 publish·release tag·publish activation은 금지한다. 상세 결정은 [M13 계약](./docs/planning/18-m13-production-release-operations-contract.md#m13-002--protected-branch-qualification), 승인 기록은 [S/C2](./docs/planning/evidence/m13-002-protected-path/remaining-decisions-20261017.md), 현재 작업과 gap은 Queue가 소유한다. PR35/36 정상 전달과 main CI324는 완료 증거로 유지하며, 아래 이전 단계 문구는 역사적 기록이다.
 
 Step 14 — Implementation: M0·M1·M2·M3·M4·M5-001..007·M6-001..007·M7-001..006·M8-001..007 `COMPLETE`
 
