@@ -1,0 +1,197 @@
+{
+  "schema_version": 1,
+  "work_item": "M13-002",
+  "status": "IN_PROGRESS",
+  "date": "2026-10-17",
+  "authorization": "user requested orderly handling of old PRs and continued work after maintenance merge/main CI success; no new main merge/release/protection weakening",
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO",
+    "MISSING": [
+      "protected PR delivery of latest main and resumed records into develop; do not direct-push protected refs",
+      "target-specific main stale/develop Required-only negative gaps with isolated actual server evidence",
+      "missing-CLA actual applicable negative evidence or separately approved canonical disposition; remains NOT_TESTED",
+      "history-preserving method/disposition for genuine non-fast-forward and separate bypass cases; no force/no-op substitution",
+      "fresh normal develop-to-main candidate and reviewer merge after qualification; old PR33 exact-head proposal superseded",
+      "final source/ref/Required/CLA/conversation audit and delivery records; M13-003..005 remain NOT_STARTED"
+    ]
+  },
+  "baseline": {
+    "main": "32f1b8ed4f271e65bfdb016245c46166eb046e54",
+    "develop": "84591ef4296a852a1439781ab62cc4103a59db0a",
+    "main_ci": {
+      "run_id": 39004659770,
+      "conclusion": "success",
+      "jobs": 10
+    },
+    "rules": {
+      "main": 21396883,
+      "develop": 24969937,
+      "enforcement": "active",
+      "bypass_actors": [],
+      "strict": true,
+      "required": [
+        {
+          "context": "Required",
+          "integration_id": 15368
+        },
+        {
+          "context": "license/cla",
+          "integration_id": 128106
+        }
+      ],
+      "conversation_resolution": true,
+      "deletion_and_non_fast_forward_blocks": true
+    }
+  },
+  "existing_implementation": {
+    "owners": [
+      ".github/workflows/heliopause-ci.yml",
+      "scripts/check",
+      "CONTRIBUTING.md",
+      "docs/planning/18-m13-production-release-operations-contract.md"
+    ],
+    "action": "reuse; no product/CI implementation rewrite"
+  },
+  "pr_disposition": {
+    "32": {
+      "state": "open",
+      "role": "stale validation only; title/body mark non-merge target",
+      "head": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+      "head_unchanged": true,
+      "fresh_gate": "BEHIND",
+      "normal_merge": false
+    },
+    "33": {
+      "state": "closed",
+      "merged": false,
+      "reason": "previous file changes delivered via PR34; old normal merge proposal withdrawn",
+      "head": "84591ef4296a852a1439781ab62cc4103a59db0a",
+      "merge_base": "e1e3aa8c9976ec7cf30c46b3a0103fc2899c08a2",
+      "merge_base_to_develop_files": 0,
+      "main_to_develop_ahead": 1,
+      "main_to_develop_behind": 25,
+      "historical_required_and_conversation_evidence_preserved": true
+    },
+    "34": {
+      "state": "merged",
+      "merge": "32f1b8ed4f271e65bfdb016245c46166eb046e54",
+      "main_delivery_complete": true
+    }
+  },
+  "local_preparation": {
+    "main": "32f1b8ed4f271e65bfdb016245c46166eb046e54",
+    "branch": "milestone/m13-protected-path-resume",
+    "head": "dbd3f48fa87e9624997f2416e31db02d4431528d",
+    "parents": [
+      "32f1b8ed4f271e65bfdb016245c46166eb046e54",
+      "84591ef4296a852a1439781ab62cc4103a59db0a"
+    ],
+    "tree": "e0ef4af098077357f0389b6e2d55f9d48f5c0aa6",
+    "source_tree_unchanged": true,
+    "preserved_old_m13": "f5a03530f514f7fdf1a3ec7ce52f15dd515b1019"
+  },
+  "support_boundaries": [
+    "maintenance actual local/remote CPU and CUDA proof retained; no repeated matrix for record-only reconciliation",
+    "existing full-Race remains separate open follow-up; Required success does not close it",
+    "release-installation unavailable/doctor actualexit1 and public release remain M13-003..005 scope",
+    "no fabricated CLA identity/status; no rewriting historical requests or weakening acceptance"
+  ],
+  "raw_custody": {
+    "owner": "docs/github-logs/m13-002-resume-20261017T070738Z",
+    "policy": "selected noncredential metadata only versioned; original responses/logs local; hashes do not assert remote raw custody",
+    "files": [
+      {
+        "path": "develop-rules.json",
+        "sha256": "82aded8780680c5d72fec2ae26cdff3a50172713468a6e253582e647cd15fd70"
+      },
+      {
+        "path": "graphql.json",
+        "sha256": "6b5fe231378be7fdfd9ea9404e4dfe2949ecbf6916ba8192de3bb11e9b463c94"
+      },
+      {
+        "path": "local-sync.json",
+        "sha256": "2429fe73fd85c1a2ee214bf40cc776227abbae176d78ad8b3174c19c794abe4c"
+      },
+      {
+        "path": "main-ci-jobs.json",
+        "sha256": "5d5a0341a7bfc9b9d873c65d6d7a5a8069a28e79b80e6326ff196c7b2a1494c4"
+      },
+      {
+        "path": "main-develop-compare.json",
+        "sha256": "72f5ac27c491ffeaa07673c8d5cf08301a39adba19beab14f3deedee9cc3e9c4"
+      },
+      {
+        "path": "main-rules.json",
+        "sha256": "1b928bd04b083c53f0f9e3009a4021df3995dfb3270fb59be743f18f98e47011"
+      },
+      {
+        "path": "main-runs.json",
+        "sha256": "216d22416127a41d326c3d19787d7ce3b925b549ab9b0ca826419627d1d0f97b"
+      },
+      {
+        "path": "open-prs.json",
+        "sha256": "6bbf3312a6551c0f238f42b226ab644dec75619dbed576d66e8b655a9d51ac49"
+      },
+      {
+        "path": "pr32-checks.json",
+        "sha256": "5b5cce39d29b7bb64212bfd060fd2b126add838ea1d71ae4202a1d43bee60bef"
+      },
+      {
+        "path": "pr32-merge-checks.json",
+        "sha256": "e83cfac35507982a40cfeb776ce85aa0367e7646f81fe857df4a6c841ea8a170"
+      },
+      {
+        "path": "pr32-statuses.json",
+        "sha256": "b8c241b2ffe7a4478252be3abec1243e56fe4f672484b4370053a248e0bcb600"
+      },
+      {
+        "path": "pr32.json",
+        "sha256": "0d24eff1f61d0098c968fa55c78fbe04c2dd5abc5c95fc51716a5b401c6b7935"
+      },
+      {
+        "path": "pr33-checks.json",
+        "sha256": "dbf1cb0458c6435942e7d516f6029c0ce289d39f5cb8e927d1b27f6c03ee5322"
+      },
+      {
+        "path": "pr33-merge-checks.json",
+        "sha256": "e83cfac35507982a40cfeb776ce85aa0367e7646f81fe857df4a6c841ea8a170"
+      },
+      {
+        "path": "pr33-statuses.json",
+        "sha256": "318b3312d9b124706b3dee0626b4538321579f5d530315a1edac010a8a548e6b"
+      },
+      {
+        "path": "pr33.json",
+        "sha256": "492ae95e041d5ee91672c69aca5e223a8d1403c8bb27ef0824fc56713eaf0d23"
+      },
+      {
+        "path": "refs.json",
+        "sha256": "eb0e7f3c07221a65cf322835cd2f187234ea3c05a14d0d17da2c80656b9e1f7d"
+      },
+      {
+        "path": "requests.json",
+        "sha256": "cabc7da08734c16774ff86105dea2d83b4ca21d40f578d5f5ed093ae00ab2f43"
+      },
+      {
+        "path": "ruleset21396883.json",
+        "sha256": "59f782111e7e79128c0d54e6b658ae09754a9cc7144cc3383ea534bb14d5caba"
+      },
+      {
+        "path": "ruleset24969937.json",
+        "sha256": "0d981954d6b00b39c6e5705583045ea31bb9c98244d849beb55cb4ac8bcf964d"
+      },
+      {
+        "path": "summary.json",
+        "sha256": "3699ffc85072abbe76577a873d4b996ff7ed22885847e40730efe83d23cf1e96"
+      },
+      {
+        "path": "pr-dispositions.json",
+        "sha256": "01701f42ca3ceb682a0a96f382f6117737fbd935d6c1ad3c59859773cef2b4f1"
+      }
+    ]
+  },
+  "next": "one fresh develop synchronization PR from milestone/m13-protected-path-resume, exact Required/CLA verification; keep PR32 independently stale"
+}

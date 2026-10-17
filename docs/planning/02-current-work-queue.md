@@ -7,12 +7,13 @@
 ## 1. 현재 상태
 
 ```text
-Current milestone: Runtime upgrade maintenance — prerequisite to M13 resumption
-Milestone status: QUALIFIED (UPG-001..006 acceptance/evidence closed; final metadata-head delivery CI and reviewer merge are separate)
-Active work item: none — UPG-001..006 COMPLETE; observe final delivery CI and hand off for reviewer merge
-Next work item: fresh M13-002 baseline after maintenance reviewer merge/delivery
-Next work item status: ON_HOLD / NOT_READY — reviewer merge and fresh source/remote/approval audit required
-M13 status: ON_HOLD by user request on 2026-10-15; M13-002 acceptance remains open
+Current milestone: M13 — Production Release & Operations
+Milestone status: IN_PROGRESS — runtime maintenance main delivery COMPLETE
+Active work item: M13-002 — protected branch qualification / fresh baseline and develop synchronization
+Active work item status: IN_PROGRESS — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO
+Next work item: M13-003 — canonical release build and OS package assets
+Next work item status: NOT_STARTED / NOT_READY — M13-002 acceptance remains open
+Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
 
 ### Runtime upgrade maintenance — 2026-10-15 priority change
@@ -2999,7 +3000,7 @@ M12-005 feature freeze에서 수행한다. canonical lock 등록만으로 releas
 | Order | ID | Scope | Status |
 | --- | --- | --- | --- |
 | 1 | M13-001 | protected main/develop/tag/release environment/immutable release activation | COMPLETE |
-| 2 | M13-002 | `feature → develop → main` 실제 protected PR qualification | ON_HOLD — runtime upgrade maintenance 우선 |
+| 2 | M13-002 | `feature → develop → main` 실제 protected PR qualification | IN_PROGRESS — fresh baseline / protected develop synchronization |
 | 3 | M13-003 | canonical release build·manifest·attestation·OS package assets | NOT_STARTED |
 | 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | NOT_STARTED |
 | 5 | M13-005 | exact publication·clean Host bootstrap·doctor·cross-ecosystem smoke·quarantine | NOT_STARTED |
@@ -3049,8 +3050,24 @@ no-known-release-blocking-finding entry assessment.
 
 ### M13-002 — protected branch qualification
 
-Status: ON_HOLD — user-requested runtime upgrade maintenance takes priority.
-The following is the last observed pre-hold state, not a fresh remote readback:
+Status: IN_PROGRESS — resumed by user after PR34 merge and actual main CI320 ten SUCCESS.
+
+Fresh baseline/disposition: [2026-10-17 resume evidence](./evidence/m13-002-protected-path/resume-20261017.json).
+Main32f1b8e includes maintenance; develop84591ef is1ahead25behind with no new
+merge-base-to-develop files. PR33 closed without merge because its file changes
+are delivered; old exact-head normal merge proposal is superseded. PR32 remains
+open solely for stale validation, exact head unchanged and clearly marked non-merge.
+Existing active strict Required/CLA/conversation/nonFF/deletion rules and successful
+historical target-specific negatives are reused. Prepare one current develop sync
+PR from milestone/m13-protected-path-resume; no direct protected push/main merge.
+Audit: IMPLEMENTED=YES/WIRED=YES/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO.
+MISSING: protected develop synchronization; target-specific stale/Required gaps;
+missing-CLA remains NOT_TESTED pending actual evidence/approved disposition;
+history-preserving nonFF/separate bypass method; fresh normal develop→main
+qualification/reviewer merge and final audit. M13-003..005 stay NOT_STARTED.
+
+The following is historical pre-hold evidence; its PR33 merge proposal and CLEAN
+state are not current execution authority:
 A′ completed within5 approved writes. PR33 at exact
 develop84591ef→main2e196a1 has fresh10job/CLA success and is open/unmerged/CLEAN
 after main Required-only and conversation/ordinary-admin rejection plus test-thread
