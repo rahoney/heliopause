@@ -9,10 +9,11 @@
 ```text
 Current milestone: M13 — Production Release & Operations
 Milestone status: IN_PROGRESS — runtime maintenance main delivery COMPLETE
-Active work item: M13-003 — canonical release build and OS package qualification (approved C3 disposition)
-Active work item status: IN_PROGRESS — source CI325 ten SUCCESS; actual release qualification remains; QUALIFIED=NO / ACCEPTANCE_CLOSED=NO
-Predecessor: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
-Next work item: M13-004 — NOT_STARTED / awaiting M13-003 acceptance; concrete publication approval still required
+Active work item: M13-004 — convenience installation channels; baseline audit and account preparation
+Active work item status: IN_PROGRESS — no source implementation yet; npm/PyPI owner accounts pending
+Predecessor: M13-003 — COMPLETE; protected v0.1.0 build, twelve attestations and OS package lifecycle PASS
+Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
+Next work item: M13-005 — NOT_STARTED; exact public publication and booted clean-Host qualification remain
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
 
@@ -3262,35 +3263,54 @@ Detailed baseline, target-specific matrix, evidence custody and authorization
 boundaries: [qualification plan](./evidence/m13-002-protected-path/README.md).
 Release tags/publication and M13-003 implementation remain outside this task.
 
-### M13-003 — canonical release build and OS package preparation
+### M13-003 — canonical release build and OS packages
 
-Status: IN_PROGRESS — implementation wired, local checks and exact source CI325
-PASS; remaining actual release build/package qualification under approved C3.
+Status: COMPLETE. Audit: IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES /
+ACCEPTANCE_CLOSED=YES / MISSING=none within the build/package scope.
 Read: [M13 contract](./18-m13-production-release-operations-contract.md#m13-003--canonical-release-build-and-os-packages),
-[M10 distribution contract](./13-m10-verified-distribution-bootstrap-contract.md),
-[CI gate](../engineering/04-ci-quality-gate.md), directory/Architecture rules and
-current release build/publish/manifest/install consumers.
+[M10 distribution contract](./13-m10-verified-distribution-bootstrap-contract.md)
+and [CI gate](../engineering/04-ci-quality-gate.md).
 
-Audit: IMPLEMENTED=YES / WIRED=YES (source workflow) / QUALIFIED=NO /
-ACCEPTANCE_CLOSED=NO. Baseline audit preceded source edits. Existing native/helper/
-runtime/SBOM/installer responsibilities are reused. Actual deb/rpm bytes, metadata,
-permissions, reproducibility/negative tests, manifest exact set and native installer
-regressions PASS. Whole Quick/security/vulnerability/workflow/docs/release-gate and
-Linux platform checks PASS. Darwin cross-test compilation and actual native macOS
-CI PASS. PR37 source1ac1bf6 and checkout25c4b27 have the same whole tree3af3728;
-CI325/run39023951914 Required+9 prerequisites SUCCESS, Linux45 consumers/CPUfull
-192.25s/helper5wait0/final confirmed cleanup are verified from10 original logs.
+Existing native/helper/runtime/installer responsibilities were reused. Actual
+source CI325/326, approved PR37 ordinary merge, exact new main CI327 and separately
+approved protected v0.1.0 build/run39036210335 are verified. Manifest-first and all12
+actual-file attestations match exact source/tag/workflow/run; fixed-root offline
+positive and three negatives passed. Actual network-disabled Ubuntu/Rocky native
+package install/reinstall/remove, payload ownership/modes, unit guards, preserved
+caller config and truthful unavailable doctor passed. No booted Host or public
+publication success is inferred. Those remain M13-005 per the canonical contract;
+the preparation-era combined MISSING list is reconciled in the qualification report.
 
 Evidence: [baseline](./evidence/m13-003-release-build/baseline-20261017.md),
-[preparation result](./evidence/m13-003-release-build/preparation-20261017.md).
-MISSING: final C3 documentation/check delivery and reviewer-approved normal
-protected merge/new main CI; actual protected-source release build/attestation;
-clean-host OS install/lifecycle and exact publication qualification. A static
-release-gate PASS does not authorize a concrete tag or publication. C3 removes
-only the missing-CLA predecessor block within its explicit scope. Only M13-003 is
-IN_PROGRESS; M13-004/005 await its acceptance and their own baseline audits.
-Completed test/build roots and private caches are deleted after last use; original
-evidence, active runtime/rollback and shared SDK/modules are preserved.
+[preparation](./evidence/m13-003-release-build/preparation-20261017.md),
+[actual qualification](./evidence/m13-003-release-build/qualification-20261017.md)
+and [bound result](./evidence/m13-003-release-build/qualification-20261017.json).
+Actions candidate retention expires2026-10-24T13:29:00Z; later publication requires
+fresh exact-candidate availability/provenance checks, not a moved tag.
+Completed payloads/tools/containers/new images are removed; private check caches
+are removed after last use. Necessary evidence and existing shared/runtime files remain.
+
+### M13-004 — convenience installation channels
+
+Status: IN_PROGRESS — baseline audit and owner account preparation; no source edits.
+Audit: IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO for the
+complete channel scope. Existing verifier-gated native installer/doctor and release
+manifest/build/publish consumers are reused; their historical acceptance is retained.
+Read: [M13 convenience contract](./18-m13-production-release-operations-contract.md#m13-004--convenience-publication),
+[M10 trust contract](./13-m10-verified-distribution-bootstrap-contract.md), directory
+and Architecture rules, existing installer and workflow consumers.
+
+[Baseline and ordered plan](./evidence/m13-004-convenience/baseline-20261017.md)
+records each responsibility independently. MISSING: owner accounts and official
+names, bounded verified native bootstrap wiring, npm/PyPI wrappers, reviewed
+Homebrew formula, protected OIDC/provenance publication wiring and channel-specific
+checks. User confirmed npm/PyPI accounts do not exist yet and will register when
+needed; official signup/email-verification/2FA instructions were supplied. Account
+names and readiness are the only requested return data; no credentials are needed.
+
+Only M13-004 is IN_PROGRESS. M13-005 remains NOT_STARTED. Account setup is not
+package publication approval; no registry upload, tap creation, Release draft or
+publish dispatch has occurred. Concrete publication remains separately reviewed.
 
 ### M12 baseline audit status
 

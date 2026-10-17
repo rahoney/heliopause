@@ -10,7 +10,7 @@
 - CLI framework: Cobra
 - 현재 상태: M0–M11 qualification 및 post-qualification release hardening, M12-001~005 생태계 acceptance·전체 qualification·feature freeze와 M12-02 최종 red-team/fix gate 완료. PR29·PR30 merge와 main CI를 확인했고 M13-001 저장소 보호 설정 적용·재조회를 완료했다.
 - 완료 작업: M12·M12-02 및 보안 패치 전달, M13-001 — 저장소 보호 설정 (`COMPLETE`)
-- 현재 작업: M13-003 — canonical release build·OS package qualification (`IN_PROGRESS`). `.deb`·`.rpm`과 manifest 기반 검증 및 PR37 source CI325 전체 통과. 실제 릴리스 build·attestation·clean-host 설치 검증은 남아 있다.
+- 현재 작업: M13-004 — 설치 채널 baseline audit·계정 준비 (`IN_PROGRESS`). M13-003의 보호된 `v0.1.0` 빌드·12개 attestation·실제 `.deb`/`.rpm` lifecycle 검증은 [완료](docs/planning/evidence/m13-003-release-build/qualification-20261017.md)했다. 공개 배포와 부팅된 clean Host 검증은 M13-005에 남아 있다.
 - 선행 판정: M13-002는 [승인된 C3](docs/planning/18-m13-production-release-operations-contract.md#m13-002--protected-branch-qualification)에 따라 `ACCEPTED_WITH_EXCEPTION / QUALIFIED=NO / ACCEPTANCE_CLOSED=YES`다. 실제 missing-CLA는 `NOT_TESTED / DEFERRED`이며 최초 외부 기여 병합 전에 검증한다. 필수 CLA 보호·서명은 유지하고 구체적 merge·tag·publish는 별도 후보 검토를 따른다.
 - 유지보수 완료: `UPG-001..006 COMPLETE / QUALIFIED`, PR34/main CI320 전달 완료. 공개 attested release·상시 service·기존 full-Race 후속은 별도 범위로 유지한다.
 - 진행 상태의 canonical owner: [`docs/planning/02-current-work-queue.md`](docs/planning/02-current-work-queue.md)

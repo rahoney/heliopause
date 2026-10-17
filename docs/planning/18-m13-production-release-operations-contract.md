@@ -170,8 +170,8 @@ public 이후 검증 실패는 기존 release의 overwrite/re-tag가 아니라
 | --- | --- | --- | --- |
 | 1 | M13-001 | protected main/develop/tag/release environment/immutable release activation | COMPLETE |
 | 2 | M13-002 | `feature → develop → main` 실제 protected PR qualification | ACCEPTED_WITH_EXCEPTION — C3 / full QUALIFIED=NO |
-| 3 | M13-003 | canonical release build·manifest·attestation·OS package assets | IN_PROGRESS — source CI PASS / actual release qualification |
-| 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | NOT_STARTED |
+| 3 | M13-003 | canonical release build·manifest·attestation·OS package assets | COMPLETE — protected v0.1.0 build/attestation/package lifecycle |
+| 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | IN_PROGRESS — baseline/account preparation |
 | 5 | M13-005 | exact publication·clean Host bootstrap·doctor·cross-ecosystem smoke·quarantine | NOT_STARTED |
 
 ### M13-001 — protected activation

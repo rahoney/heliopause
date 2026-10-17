@@ -22,8 +22,8 @@ Heliopause 구현 milestone, 의존 순서와 현재 실행 작업을 기록한�
 | [14-m11-dynamic-detection-depth-contract.md](./14-m11-dynamic-detection-depth-contract.md) | M11 | Complete | bounded process/filesystem/network detection과 raw payload non-retention |
 | [16-m12-01-ecosystem-expansion-contract.md](./16-m12-01-ecosystem-expansion-contract.md) | M12 | Complete | PyTorch·Go Modules·Cargo·Terraform Provider 생태계 확장; reviewer merge pending |
 | [17-m12-02-fix-list.md](./17-m12-02-fix-list.md) | M12-02 | Complete | final red-team/fix gate |
-| [18-m13-production-release-operations-contract.md](./18-m13-production-release-operations-contract.md) | M13 | On hold | protected release 운영 설정과 최종 public deployment |
-| [19-runtime-upgrade-maintenance-plan.md](./19-runtime-upgrade-maintenance-plan.md) | UPG-001..006 | Plan complete / implementation not started | M13 재개 전 버전 갱신 자동화의 baseline audit·실행 순서·acceptance·인계 |
+| [18-m13-production-release-operations-contract.md](./18-m13-production-release-operations-contract.md) | M13 | In progress | protected release 운영 설정과 최종 public deployment |
+| [19-runtime-upgrade-maintenance-plan.md](./19-runtime-upgrade-maintenance-plan.md) | UPG-001..006 | Complete / qualified | M13 재개 전 버전 갱신 자동화의 baseline audit·실행 순서·acceptance·인계 |
 
 ## Rule
 
