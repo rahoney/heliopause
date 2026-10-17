@@ -217,6 +217,20 @@ hostile cases:
 
 는 모두 실패해야 한다.
 
+#### 2026-10-17 승인된 준비 작업 순서 예외
+
+M13-002의 실제 missing-CLA 부정 시험은 NOT_TESTED로 남기고
+QUALIFIED=NO / ACCEPTANCE_CLOSED=NO를 유지한다. 실제 미서명 기여자 부재에
+한해 사용자가 승인한 작업 순서 예외로 M13-003의 구현·build·package 준비를
+진행할 수 있다. 실제 public release, 편의 채널 publish, release tag 생성과
+publish activation은 이 CLA 관문이 닫히거나 별도 명시적 canonical 결정이
+있기 전까지 금지한다. 필수 CLA App·정상 서명·보호 설정은 유지한다.
+
+승인과 제한된 Strict 운영 증거 판정은
+[결정 기록](./evidence/m13-002-protected-path/remaining-decisions-20261017.md)이 소유한다.
+M13-002는 CLA 실증을 기다리는 BLOCKED 상태이며, M13-003 준비만 IN_PROGRESS다.
+이는 CLA 시험의 PASS·면제나 M13-002 acceptance 종료가 아니다.
+
 ### M13-003 — canonical release build and OS packages
 
 release build는 exact protected source에서 다음을 만든다.
@@ -465,11 +479,12 @@ Current status: M13-001 configuration is complete. M13-002 protected normal
 PR35/36 delivery and actual main CI324 ten SUCCESS are verified; the explicitly
 approved disposable nonFF method passed within its recorded scope and temporary
 resources are deleted. [Post-delivery evidence](./evidence/m13-002-protected-path/post-delivery-review-20261017.json)
-owns those facts. Overall M13-002 remains IN_PROGRESS / QUALIFIED=NO /
-ACCEPTANCE_CLOSED=NO. [Remaining decisions](./evidence/m13-002-protected-path/remaining-decisions-20261017.md)
-are proposed only; the actual missing-CLA case is NOT_TESTED and independent
-freshness-only remains NOT_QUALIFIED. Current acceptance and work order are
-unchanged; M13-003..005 remain NOT_STARTED. No publication is authorized.
+owns those facts. M13-002 remains BLOCKED on the actual missing-CLA case, with QUALIFIED=NO /
+ACCEPTANCE_CLOSED=NO. The owner approved bounded operational Strict evidence and
+the preparation-only work-order exception above. M13-003 baseline audit and
+implementation/build/package preparation may proceed; publication/tag/publish
+activation remains prohibited by the actual CLA gate. M13-004/005 are NOT_STARTED.
+
 
 Historical pre-maintenance handoff (superseded as current execution authority):
 

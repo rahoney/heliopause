@@ -97,12 +97,12 @@
 | Go·Cargo·Terraform Cumulative Remote Qualification | M12-002~004 | Complete | [Remote CI Evidence](./docs/planning/evidence/m12-002-004-remote-ci/result.json), [Current Work Queue](./docs/planning/02-current-work-queue.md) |
 | Cross-Ecosystem Qualification and Feature Freeze | M12-005 | Complete | [Qualification Evidence](./docs/planning/evidence/m12-005-qualification/README.md), [Current Work Queue](./docs/planning/02-current-work-queue.md) |
 | M12 Final Red-Team Fix Gate | M12-02 | Complete | [M12-02 Final Red-Team Fix List](./docs/planning/17-m12-02-fix-list.md) |
-| Production Release & Operations | M13 | M13-001 complete; M13-002 normal delivery complete / remaining acceptance review | [M13 Production Release & Operations Contract](./docs/planning/18-m13-production-release-operations-contract.md) |
+| Production Release & Operations | M13 | M13-002 blocked on actual CLA; approved M13-003 preparation exception | [M13 Production Release & Operations Contract](./docs/planning/18-m13-production-release-operations-contract.md) |
 | Runtime Upgrade Maintenance | UPG-001..006 | UPG-001..006 complete/qualified; PR34 merged/main CI320 SUCCESS | [Design](./docs/engineering/05-runtime-upgrade-maintenance.md), [Plan](./docs/planning/19-runtime-upgrade-maintenance-plan.md) |
 
 ## Current Stage
 
-2026-10-17 PR35/36의 정상 develop→main 전달과 실제 main5b1b2f5/CI324 ten SUCCESS를 확인했다. PR32/33은 병합 없이 종료했고 승인된 별도 nonFF 시험은 제한된 범위에서 통과·정리했다. M13-002는 IN_PROGRESS / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO다. 실제 남은 항목과 선택지는 [전달 후 evidence](./docs/planning/evidence/m13-002-protected-path/post-delivery-review-20261017.json), [남은 결정](./docs/planning/evidence/m13-002-protected-path/remaining-decisions-20261017.md)과 Queue를 따른다. Strict 독립 인과나 missing-CLA 성공을 주장하지 않으며, M13-003 준비 예외 제안은 아직 승인되지 않았다. 아래 유지보수·이전 PR 인계 문구는 역사적 기록이다.
+2026-10-17 사용자가 제한된 Strict 운영 증거 인정과 C2 준비 작업 순서 예외를 모두 승인했다. M13-002의 실제 missing-CLA 시험은 NOT_TESTED / BLOCKED / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO로 남긴다. M13-003의 baseline audit와 구현·build·package 준비만 진행하며 공개 release·편의 채널 publish·release tag·publish activation은 금지한다. 상세 결정은 [M13 계약](./docs/planning/18-m13-production-release-operations-contract.md#m13-002--protected-branch-qualification), 승인 기록은 [S/C2](./docs/planning/evidence/m13-002-protected-path/remaining-decisions-20261017.md), 현재 작업과 gap은 Queue가 소유한다. PR35/36 정상 전달과 main CI324는 완료 증거로 유지하며, 아래 이전 단계 문구는 역사적 기록이다.
 
 Step 14 — Implementation: M0·M1·M2·M3·M4·M5-001..007·M6-001..007·M7-001..006·M8-001..007 `COMPLETE`
 

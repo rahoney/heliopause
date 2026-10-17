@@ -1,6 +1,6 @@
 # M13-002 protected branch qualification
 
-Status: IN_PROGRESS / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO /
+Status: BLOCKED (actual missing-CLA case) / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO /
 ACCEPTANCE_CLOSED=NO. Current facts and raw bindings are owned by
 [post-delivery evidence](./post-delivery-review-20261017.json); the initial
 [resume snapshot](./resume-20261017.json) remains a historical baseline.
@@ -10,11 +10,13 @@ complete. PR32/33 are CLOSED/unmerged. The approved disposable nonFF test passed
 within its limited method; both temporary resources were deleted. Existing
 negatives are reused without repeating failed requests or changing old raw.
 
-Only [decisions S/C](./remaining-decisions-20261017.md) remain: operational Strict
-acceptance within its proven bound and the unavailable actual missing-CLA case.
-No automatic stale/CLA PASS, work-order exception or publication is authorized.
-M13-003..005 remain NOT_STARTED. The sections below are chronological historical
-execution/proposals and cannot override this current state or grant fresh writes.
+The owner approved [decisions S/C2](./remaining-decisions-20261017.md): bounded
+operational Strict evidence is accepted with independent freshness-only still
+NOT_QUALIFIED. Actual missing-CLA remains NOT_TESTED; overall acceptance stays open.
+Only M13-003 implementation/build/package preparation is allowed by the explicit
+work-order exception. Public release/channel publish/release tag/publish activation
+are prohibited until that gate closes or a separate explicit canonical decision.
+M13-004/005 remain NOT_STARTED. Historical sections below grant no fresh writes.
 
 ## Bundle A′ execution
 

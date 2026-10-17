@@ -9,10 +9,10 @@
 ```text
 Current milestone: M13 — Production Release & Operations
 Milestone status: IN_PROGRESS — runtime maintenance main delivery COMPLETE
-Active work item: M13-002 — protected branch qualification / fresh baseline and develop synchronization
-Active work item status: IN_PROGRESS — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO
-Next work item: M13-003 — canonical release build and OS package assets
-Next work item status: NOT_STARTED / NOT_READY — M13-002 acceptance remains open
+Active work item: M13-003 — canonical release build and OS package preparation (approved C2 exception)
+Active work item status: IN_PROGRESS — baseline audit before implementation; full-scope IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO
+Waiting predecessor: M13-002 — actual missing-CLA NOT_TESTED / BLOCKED; acceptance open
+Next work item: M13-004 — NOT_STARTED / NOT_READY; no publication authority
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
 
@@ -3000,8 +3000,8 @@ M12-005 feature freeze에서 수행한다. canonical lock 등록만으로 releas
 | Order | ID | Scope | Status |
 | --- | --- | --- | --- |
 | 1 | M13-001 | protected main/develop/tag/release environment/immutable release activation | COMPLETE |
-| 2 | M13-002 | `feature → develop → main` 실제 protected PR qualification | IN_PROGRESS — normal delivery verified / final acceptance decisions |
-| 3 | M13-003 | canonical release build·manifest·attestation·OS package assets | NOT_STARTED |
+| 2 | M13-002 | `feature → develop → main` 실제 protected PR qualification | BLOCKED — actual missing-CLA; approved C2 permits preparation only |
+| 3 | M13-003 | canonical release build·manifest·attestation·OS package assets | IN_PROGRESS — baseline audit / preparation only |
 | 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | NOT_STARTED |
 | 5 | M13-005 | exact publication·clean Host bootstrap·doctor·cross-ecosystem smoke·quarantine | NOT_STARTED |
 
@@ -3050,8 +3050,8 @@ no-known-release-blocking-finding entry assessment.
 
 ### M13-002 — protected branch qualification
 
-Status: IN_PROGRESS — protected normal delivery and approved disposable nonFF complete;
-remaining acceptance/method decisions only.
+Status: BLOCKED — actual missing-CLA remains NOT_TESTED; the owner approved S/C2.
+Normal delivery and approved disposable nonFF are complete within their scopes.
 
 Read: [M13 contract](./18-m13-production-release-operations-contract.md),
 [post-delivery evidence](./evidence/m13-002-protected-path/post-delivery-review-20261017.json),
@@ -3068,14 +3068,15 @@ explicitly accepted limited method. Existing target-specific direct/conversation
 ordinary-admin negatives are reused; no repeat or reimplementation is needed.
 
 Audit: IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO.
-MISSING: explicit bounded operational Strict disposition (main4574721519 and
-develop4516024742; independent freshness-only NOT_QUALIFIED unchanged); actual
-missing-CLA negative or explicit canonical disposition (NOT_TESTED, no real
-unsigned participant available). Decisions S/C are concrete proposals, not approved
-changes. M13-003..005 remain NOT_STARTED / NOT_READY under the current order.
-No new source implementation, protection weakening, PR probe, CI rerun or release
-is needed to make these decisions reviewable. A C2 work-order exception would
-keep M13-002 acceptance open and prohibit publication; it requires explicit approval.
+MISSING: actual missing-CLA negative; no real unsigned participant is available.
+Exact blocker: no genuine eligible missing/failed CLA state exists for a server
+rejection test. Last actual main CI324/signed PR success does not qualify that case.
+Unblock: actual applicable rejection or a separate explicit canonical disposition.
+The owner accepted bounded operational Strict evidence on both targets, preserving
+independent freshness-only NOT_QUALIFIED and original raw classifications. C2 permits
+only M13-003 preparation under the [contract exception](./18-m13-production-release-operations-contract.md#m13-002--protected-branch-qualification).
+Public release/channel publish/release tag/publish activation remain prohibited.
+M13-002 acceptance is open, not COMPLETE. No repeated stale/force/direct test.
 
 The following is historical pre-hold evidence; its PR33 merge proposal and CLEAN
 state are not current execution authority:
@@ -3263,6 +3264,29 @@ rules, fabricate statuses/identity or mark those cases waived/qualified.
 Detailed baseline, target-specific matrix, evidence custody and authorization
 boundaries: [qualification plan](./evidence/m13-002-protected-path/README.md).
 Release tags/publication and M13-003 implementation remain outside this task.
+
+### M13-003 — canonical release build and OS package preparation
+
+Status: IN_PROGRESS — baseline audit, before production source edits. The explicit
+C2 exception permits implementation/build/package preparation while M13-002 waits
+on actual CLA evidence. No tag, publication, publish activation or release action.
+Read: [M13 contract](./18-m13-production-release-operations-contract.md#m13-003--canonical-release-build-and-os-packages),
+[M10 distribution contract](./13-m10-verified-distribution-bootstrap-contract.md),
+[CI gate](../engineering/04-ci-quality-gate.md), directory/Architecture rules and
+current release build/publish/manifest/install consumers.
+
+Full-scope baseline: IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO.
+Existing native6/helper builds, runtime manifest, SBOM/checksum, attestation/upload
+and verifier-gated installer/publish code are identified for reuse, not replacement.
+Initial missing work: real .deb/.rpm generation, manifest/checksum/package identity
+wiring and qualification; current publish workflow repeats a fixed native asset set.
+The [completed baseline audit](./evidence/m13-003-release-build/baseline-20261017.md)
+records per-responsibility implementation/wiring/qualification, exact source/tests
+and the missing-only sequence. Reuse existing M10 responsibilities; add a pinned
+Go packaging library without changing the managed quality tool/compiler owners.
+Least-privilege package layout and real format/reproducibility tests remain gaps.
+Only this item is IN_PROGRESS. M13-004/005 remain NOT_STARTED; blocked M13-002 is not
+silently closed and a local source check is not publication authority.
 
 ### M12 baseline audit status
 

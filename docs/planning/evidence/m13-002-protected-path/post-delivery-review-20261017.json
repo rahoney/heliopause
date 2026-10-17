@@ -2,15 +2,14 @@
   "schema_version": 1,
   "work_item": "M13-002",
   "date": "2026-10-17",
-  "status": "IN_PROGRESS",
+  "status": "BLOCKED",
   "audit": {
     "IMPLEMENTED": "YES",
     "WIRED": "YES",
     "QUALIFIED": "NO",
     "ACCEPTANCE_CLOSED": "NO",
     "MISSING": [
-      "reviewer disposition of bounded operational Strict evidence; independent freshness-only remains NOT_QUALIFIED",
-      "actual missing-CLA negative or explicit canonical work-order/method disposition; NOT_TESTED remains open"
+      "actual missing-CLA negative remains NOT_TESTED; real eligible unsigned contributor unavailable; public release gate stays closed"
     ]
   },
   "current": {
@@ -57,24 +56,24 @@
     "main_suite": 4574721519,
     "operational": "CONFIRMED_BOUND_TO_TARGET_SPECIFIC_STRICT_REQUIRED_CHECK_RULE",
     "primary_classification": "REJECTED_NOT_ISOLATED / independent NOT_QUALIFIED; unchanged",
-    "reviewer_disposition": "PENDING; remaining-decisions-20261017.md Decision S",
+    "reviewer_disposition": "APPROVED: bounded operational Strict rejection on main/develop; independent freshness-only remains NOT_QUALIFIED",
     "same_input_repeat": "NOT_PROPOSED"
   },
   "missing_CLA": {
     "actual_negative": "NOT_TESTED",
     "real_unsigned_participant": "UNAVAILABLE as previously confirmed by owner",
     "waiver": "NONE",
-    "reviewer_disposition": "PENDING; remaining-decisions-20261017.md Decision C"
+    "reviewer_disposition": "APPROVED C2 work-order exception only; actual negative/acceptance remain open"
   },
   "permissions": {
     "already_consumed": [
       "normal PR35/36 delivery",
       "disposable nonFF test and limited evidence method"
     ],
-    "new_proposal": "Decision S and C require explicit disposition; continue instruction does not fabricate results or waive acceptance",
+    "new_proposal": "User explicitly approved both recommended S/C2; M13-003 implementation/build/package preparation only; no public release/channel publish/release tag/publish activation until CLA gate closure or separate explicit canonical decision",
     "publication": "NOT_AUTHORIZED"
   },
-  "M13_003_to_005": "NOT_STARTED / NOT_READY under current unchanged order",
+  "M13_003_to_005": "M13-003 baseline audit/preparation IN_PROGRESS under C2; M13-004/005 NOT_STARTED",
   "cleanup": {
     "completed_native_check_source_and_regenerable_cache": "DELETED; prior10806files/logical280351960B",
     "nonFF_probe_and_ruleset": "DELETED",
@@ -148,5 +147,11 @@
     }
   ],
   "raw_custody": "Full originals remain local under docs/github-logs; selected hashes are versioned here, not a claim that full raw is remotely stored. Historical raw results are unchanged.",
-  "observed_utc": "2026-10-17T09:20:34.220112+00:00"
+  "observed_utc": "2026-10-17T09:20:34.220112+00:00",
+  "approved_decisions": {
+    "S": "BOUNDED_OPERATIONAL_STRICT_REJECTION accepted",
+    "C2": "M13-002 remains BLOCKED / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO; M13-003 preparation permitted",
+    "user_instruction": "그래 그러면 모두 권장안대로 진행하자.",
+    "canonical_clause": "../../18-m13-production-release-operations-contract.md#m13-002--protected-branch-qualification"
+  }
 }

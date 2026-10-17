@@ -10,8 +10,8 @@
 - CLI framework: Cobra
 - 현재 상태: M0–M11 qualification 및 post-qualification release hardening, M12-001~005 생태계 acceptance·전체 qualification·feature freeze와 M12-02 최종 red-team/fix gate 완료. PR29·PR30 merge와 main CI를 확인했고 M13-001 저장소 보호 설정 적용·재조회를 완료했다.
 - 완료 작업: M12·M12-02 및 보안 패치 전달, M13-001 — 저장소 보호 설정 (`COMPLETE`)
-- 현재 작업: M13-002 — 보호된 PR 흐름 검증 (`IN_PROGRESS`). PR35/36의 develop→main 정상 병합과 main CI324 ten SUCCESS, 승인된 별도 nonFF 시험·정리를 완료했다. 최신 판정은 [전달 후 evidence](docs/planning/evidence/m13-002-protected-path/post-delivery-review-20261017.json)를 따른다.
-- 다음 작업: M13-002의 제한된 Strict 증거와 실제 미서명 CLA 시험의 [남은 결정](docs/planning/evidence/m13-002-protected-path/remaining-decisions-20261017.md). 현재 계약에서 M13-003 이후는 `NOT_STARTED / NOT_READY`다.
+- 현재 작업: M13-003 — canonical release build·OS package 준비 (`IN_PROGRESS`, baseline audit). 기존 native/manifest/attestation 구현을 재사용하고 실제 gap만 구현한다.
+- 선행 관문: M13-002는 실제 미서명 CLA 부정 시험을 기다리는 `BLOCKED / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO`다. 사용자가 [준비 작업 순서 예외](docs/planning/18-m13-production-release-operations-contract.md#m13-002--protected-branch-qualification)를 승인했다. 공개 release·publish·release tag·publish activation은 아직 금지한다.
 - 유지보수 완료: `UPG-001..006 COMPLETE / QUALIFIED`, PR34/main CI320 전달 완료. 공개 attested release·상시 service·기존 full-Race 후속은 별도 범위로 유지한다.
 - 진행 상태의 canonical owner: [`docs/planning/02-current-work-queue.md`](docs/planning/02-current-work-queue.md)
 
