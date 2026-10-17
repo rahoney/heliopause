@@ -97,12 +97,12 @@
 | Go·Cargo·Terraform Cumulative Remote Qualification | M12-002~004 | Complete | [Remote CI Evidence](./docs/planning/evidence/m12-002-004-remote-ci/result.json), [Current Work Queue](./docs/planning/02-current-work-queue.md) |
 | Cross-Ecosystem Qualification and Feature Freeze | M12-005 | Complete | [Qualification Evidence](./docs/planning/evidence/m12-005-qualification/README.md), [Current Work Queue](./docs/planning/02-current-work-queue.md) |
 | M12 Final Red-Team Fix Gate | M12-02 | Complete | [M12-02 Final Red-Team Fix List](./docs/planning/17-m12-02-fix-list.md) |
-| Production Release & Operations | M13 | M13-001 complete; M13-002 resumed with fresh maintenance baseline | [M13 Production Release & Operations Contract](./docs/planning/18-m13-production-release-operations-contract.md) |
+| Production Release & Operations | M13 | M13-001 complete; M13-002 normal delivery complete / remaining acceptance review | [M13 Production Release & Operations Contract](./docs/planning/18-m13-production-release-operations-contract.md) |
 | Runtime Upgrade Maintenance | UPG-001..006 | UPG-001..006 complete/qualified; PR34 merged/main CI320 SUCCESS | [Design](./docs/engineering/05-runtime-upgrade-maintenance.md), [Plan](./docs/planning/19-runtime-upgrade-maintenance-plan.md) |
 
 ## Current Stage
 
-2026-10-17 PR34의 실제 main32f1b8e 병합과 CI320 ten SUCCESS를 확인한 뒤 사용자의 계속 작업 지시에 따라 M13-002를 재개했다. 기존 구현을 재사용하고 최신 기준선에서 과거 PR을 정리한다. PR33은 내용 전달 완료로 병합 없이 종료했고 PR32는 stale 시험용으로 보존한다. 보호된 develop 동기화와 남은 acceptance만 수행하며 상세 상태·근거는 [재개 evidence](./docs/planning/evidence/m13-002-protected-path/resume-20261017.json)와 Queue를 따른다. 아래 유지보수 인계/보류 문구는 이전 단계의 역사적 기록이다.
+2026-10-17 PR35/36의 정상 develop→main 전달과 실제 main5b1b2f5/CI324 ten SUCCESS를 확인했다. PR32/33은 병합 없이 종료했고 승인된 별도 nonFF 시험은 제한된 범위에서 통과·정리했다. M13-002는 IN_PROGRESS / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO다. 실제 남은 항목과 선택지는 [전달 후 evidence](./docs/planning/evidence/m13-002-protected-path/post-delivery-review-20261017.json), [남은 결정](./docs/planning/evidence/m13-002-protected-path/remaining-decisions-20261017.md)과 Queue를 따른다. Strict 독립 인과나 missing-CLA 성공을 주장하지 않으며, M13-003 준비 예외 제안은 아직 승인되지 않았다. 아래 유지보수·이전 PR 인계 문구는 역사적 기록이다.
 
 Step 14 — Implementation: M0·M1·M2·M3·M4·M5-001..007·M6-001..007·M7-001..006·M8-001..007 `COMPLETE`
 

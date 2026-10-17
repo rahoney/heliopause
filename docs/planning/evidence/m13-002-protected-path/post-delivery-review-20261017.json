@@ -1,0 +1,152 @@
+{
+  "schema_version": 1,
+  "work_item": "M13-002",
+  "date": "2026-10-17",
+  "status": "IN_PROGRESS",
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO",
+    "MISSING": [
+      "reviewer disposition of bounded operational Strict evidence; independent freshness-only remains NOT_QUALIFIED",
+      "actual missing-CLA negative or explicit canonical work-order/method disposition; NOT_TESTED remains open"
+    ]
+  },
+  "current": {
+    "main": "5b1b2f502206789db38df0a9764af8996654bf76",
+    "develop": "0136353619a0f288acfed6b5d5d2ae27adbf70bb",
+    "source_tree": "247aca5cde1eda153e0e169e764e1affc6d8c523",
+    "open_PRs": 0,
+    "PR32": "CLOSED_UNMERGED; original head preserved",
+    "PR33": "CLOSED_UNMERGED; superseded proposal",
+    "PR35": "MERGED; protected develop synchronization",
+    "PR36": "MERGED; protected main delivery",
+    "main_CI324": "10_SUCCESS; actual push/main checkout; Linux45/CPU285.18s/helper5wait0/finalconfirmedcleanup/nativeMacGo1.26.9"
+  },
+  "newly_closed_gaps": {
+    "develop_Required_only": {
+      "status": "PASS",
+      "suite": 4574545429,
+      "PR": 35
+    },
+    "normal_protected_delivery": {
+      "status": "PASS",
+      "PRs": [
+        35,
+        36
+      ],
+      "CI_runs": [
+        39013011886,
+        39015924558,
+        39017771630
+      ]
+    },
+    "non_fast_forward": {
+      "status": "PASS_ON_APPROVED_DISPOSABLE_SCOPE",
+      "explicit_user_method_approval": true,
+      "suite": 4575025940,
+      "writes": 5,
+      "temporary_resources": "DELETED",
+      "production_refs_and_rules": "UNCHANGED",
+      "exact_target_hostile_main_develop_execution": "NOT_RUN; disclosed limitation"
+    }
+  },
+  "stale": {
+    "develop_suite": 4516024742,
+    "main_suite": 4574721519,
+    "operational": "CONFIRMED_BOUND_TO_TARGET_SPECIFIC_STRICT_REQUIRED_CHECK_RULE",
+    "primary_classification": "REJECTED_NOT_ISOLATED / independent NOT_QUALIFIED; unchanged",
+    "reviewer_disposition": "PENDING; remaining-decisions-20261017.md Decision S",
+    "same_input_repeat": "NOT_PROPOSED"
+  },
+  "missing_CLA": {
+    "actual_negative": "NOT_TESTED",
+    "real_unsigned_participant": "UNAVAILABLE as previously confirmed by owner",
+    "waiver": "NONE",
+    "reviewer_disposition": "PENDING; remaining-decisions-20261017.md Decision C"
+  },
+  "permissions": {
+    "already_consumed": [
+      "normal PR35/36 delivery",
+      "disposable nonFF test and limited evidence method"
+    ],
+    "new_proposal": "Decision S and C require explicit disposition; continue instruction does not fabricate results or waive acceptance",
+    "publication": "NOT_AUTHORIZED"
+  },
+  "M13_003_to_005": "NOT_STARTED / NOT_READY under current unchanged order",
+  "cleanup": {
+    "completed_native_check_source_and_regenerable_cache": "DELETED; prior10806files/logical280351960B",
+    "nonFF_probe_and_ruleset": "DELETED",
+    "preserved": "installed runtime/rollback/SDK/modules/user data/actual evidence"
+  },
+  "raw_bindings": [
+    {
+      "path": "docs/github-logs/m13-002-resume-20261017T070738Z/delivery-final.json",
+      "sha256": "0509eb44381990c569af9b94c1a5918513c66eba216679d4a9eaabc0e6aed3d8",
+      "bytes": 4060
+    },
+    {
+      "path": "docs/github-logs/m13-002-resume-20261017T070738Z/ci323-final.json",
+      "sha256": "70229030db8e674833649baebbebf06dca42af9098564603bc222be6b91dbbfa",
+      "bytes": 974
+    },
+    {
+      "path": "docs/github-logs/m13-002-resume-20261017T070738Z/ci324-final.json",
+      "sha256": "b7ac63d04dd1fd41ff3a67c484f7b47dfbcadc55b2558c4b5d2301804c387c56",
+      "bytes": 974
+    },
+    {
+      "path": "docs/github-logs/m13-002-resume-20261017T070738Z/develop-required-result.json",
+      "sha256": "89b3a20ba3723cbf55e5fa563f231553de4ba886cabfce932833a9cef2cf77fc",
+      "bytes": 905
+    },
+    {
+      "path": "docs/github-logs/m13-002-resume-20261017T070738Z/main-stale-result.json",
+      "sha256": "f92ca91d65a32ea9b89e808f7d9a078af3547dc33d2dc8ef597d60df99e8b7c8",
+      "bytes": 2195
+    },
+    {
+      "path": "docs/github-logs/m13-002-resume-20261017T070738Z/main-stale-assessment.json",
+      "sha256": "6633eb6aaad0503d844a9722e5d798212ea83a64f2917757d5cc9e3ab5b411fe",
+      "bytes": 1576
+    },
+    {
+      "path": "docs/github-logs/m13-002-resume-20261017T070738Z/nonff-disposable-result.json",
+      "sha256": "d05dd077d957010ea49f1f5e1ff486e5b8f7836fbfbe64005e384c19f43ca059",
+      "bytes": 676
+    },
+    {
+      "path": "docs/github-logs/m13-002-resume-20261017T070738Z/nonff-disposable-execution/qualification.json",
+      "sha256": "61f9cb2df13519b38be1556a30ffab08ad545eb2024a73951c89e59e725e544e",
+      "bytes": 985
+    },
+    {
+      "path": "docs/github-logs/m13-002-resume-20261017T070738Z/nonff-disposable-execution/writes.json",
+      "sha256": "eaf5cbf6bac5de0787b8ba6ebdd89842884679a19c4b6114c698599ee7374a26",
+      "bytes": 1601
+    },
+    {
+      "path": "docs/github-logs/m13-002-resume-20261017T070738Z/cleanup-result.json",
+      "sha256": "7083286278f0915ccfa7d7b463742b3c2d2e70ba311b6cd44e3972e3b38131be",
+      "bytes": 575
+    },
+    {
+      "path": "docs/github-logs/m13-002-resume-20261017T070738Z/local-main-sync.json",
+      "sha256": "52af307e1fce85b806c06971b819f5363237d73710cf10d4e610378d75f66e0e",
+      "bytes": 519
+    },
+    {
+      "path": "docs/github-logs/m13-002-resume-20261017T070738Z/final-receipts-inventory.json",
+      "sha256": "3517c9e3e206ee64e34e3d041ee02fa3669589c63fcd3b60531090586428dcd4",
+      "bytes": 121699
+    },
+    {
+      "path": "docs/github-logs/m13-002-resume-20261017T070738Z/main-delivery-post-20261017T092028340086Z/summary.json",
+      "sha256": "0df32b63512b9266dfa6b73cbffff23e4218dd485008f7dae88ff95d7a04a3e3",
+      "bytes": 2533
+    }
+  ],
+  "raw_custody": "Full originals remain local under docs/github-logs; selected hashes are versioned here, not a claim that full raw is remotely stored. Historical raw results are unchanged.",
+  "observed_utc": "2026-10-17T09:20:34.220112+00:00"
+}

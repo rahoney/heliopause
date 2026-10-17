@@ -3000,7 +3000,7 @@ M12-005 feature freeze에서 수행한다. canonical lock 등록만으로 releas
 | Order | ID | Scope | Status |
 | --- | --- | --- | --- |
 | 1 | M13-001 | protected main/develop/tag/release environment/immutable release activation | COMPLETE |
-| 2 | M13-002 | `feature → develop → main` 실제 protected PR qualification | IN_PROGRESS — fresh baseline / protected develop synchronization |
+| 2 | M13-002 | `feature → develop → main` 실제 protected PR qualification | IN_PROGRESS — normal delivery verified / final acceptance decisions |
 | 3 | M13-003 | canonical release build·manifest·attestation·OS package assets | NOT_STARTED |
 | 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | NOT_STARTED |
 | 5 | M13-005 | exact publication·clean Host bootstrap·doctor·cross-ecosystem smoke·quarantine | NOT_STARTED |
@@ -3050,21 +3050,32 @@ no-known-release-blocking-finding entry assessment.
 
 ### M13-002 — protected branch qualification
 
-Status: IN_PROGRESS — resumed by user after PR34 merge and actual main CI320 ten SUCCESS.
+Status: IN_PROGRESS — protected normal delivery and approved disposable nonFF complete;
+remaining acceptance/method decisions only.
 
-Fresh baseline/disposition: [2026-10-17 resume evidence](./evidence/m13-002-protected-path/resume-20261017.json).
-Main32f1b8e includes maintenance; develop84591ef is1ahead25behind with no new
-merge-base-to-develop files. PR33 closed without merge because its file changes
-are delivered; old exact-head normal merge proposal is superseded. PR32 remains
-open solely for stale validation, exact head unchanged and clearly marked non-merge.
-Existing active strict Required/CLA/conversation/nonFF/deletion rules and successful
-historical target-specific negatives are reused. Prepare one current develop sync
-PR from milestone/m13-protected-path-resume; no direct protected push/main merge.
-Audit: IMPLEMENTED=YES/WIRED=YES/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO.
-MISSING: protected develop synchronization; target-specific stale/Required gaps;
-missing-CLA remains NOT_TESTED pending actual evidence/approved disposition;
-history-preserving nonFF/separate bypass method; fresh normal develop→main
-qualification/reviewer merge and final audit. M13-003..005 stay NOT_STARTED.
+Read: [M13 contract](./18-m13-production-release-operations-contract.md),
+[post-delivery evidence](./evidence/m13-002-protected-path/post-delivery-review-20261017.json),
+[remaining decisions](./evidence/m13-002-protected-path/remaining-decisions-20261017.md).
+
+Current baseline: main5b1b2f5 / develop0136353. PR35/36 normal protected merges and
+main CI324 ten SUCCESS are independently verified. PR32/33 are CLOSED/unmerged;
+old proposals and the initial [resume snapshot](./evidence/m13-002-protected-path/resume-20261017.json)
+are historical, not current instructions. Develop Required-only suite4574545429
+closes that target gap. The owner-approved disposable nonFF method passed via
+suite4575025940; both temporary resources were deleted, production refs/rules
+unchanged. Exact-target hostile force execution remains NOT_RUN within the
+explicitly accepted limited method. Existing target-specific direct/conversation/
+ordinary-admin negatives are reused; no repeat or reimplementation is needed.
+
+Audit: IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO.
+MISSING: explicit bounded operational Strict disposition (main4574721519 and
+develop4516024742; independent freshness-only NOT_QUALIFIED unchanged); actual
+missing-CLA negative or explicit canonical disposition (NOT_TESTED, no real
+unsigned participant available). Decisions S/C are concrete proposals, not approved
+changes. M13-003..005 remain NOT_STARTED / NOT_READY under the current order.
+No new source implementation, protection weakening, PR probe, CI rerun or release
+is needed to make these decisions reviewable. A C2 work-order exception would
+keep M13-002 acceptance open and prohibit publication; it requires explicit approval.
 
 The following is historical pre-hold evidence; its PR33 merge proposal and CLEAN
 state are not current execution authority:

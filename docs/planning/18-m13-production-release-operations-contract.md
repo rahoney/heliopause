@@ -461,6 +461,18 @@ M13은 기능 개발 milestone이 아니다.
 M13 진입 후 새로운 ecosystem이나 주요 product feature를 추가하지 않는다.
 release-blocking bug가 아닌 개선 아이디어는 post-release backlog로 넘긴다.
 
+Current status: M13-001 configuration is complete. M13-002 protected normal
+PR35/36 delivery and actual main CI324 ten SUCCESS are verified; the explicitly
+approved disposable nonFF method passed within its recorded scope and temporary
+resources are deleted. [Post-delivery evidence](./evidence/m13-002-protected-path/post-delivery-review-20261017.json)
+owns those facts. Overall M13-002 remains IN_PROGRESS / QUALIFIED=NO /
+ACCEPTANCE_CLOSED=NO. [Remaining decisions](./evidence/m13-002-protected-path/remaining-decisions-20261017.md)
+are proposed only; the actual missing-CLA case is NOT_TESTED and independent
+freshness-only remains NOT_QUALIFIED. Current acceptance and work order are
+unchanged; M13-003..005 remain NOT_STARTED. No publication is authorized.
+
+Historical pre-maintenance handoff (superseded as current execution authority):
+
 Status: IN_PROGRESS — M13-001 configuration complete; M13-002 develop conversation
 rejection and normal PR31 merge verified. The single approved PR32 request was
 rejected HTTP405 for expected required checks; independent stale enforcement is
