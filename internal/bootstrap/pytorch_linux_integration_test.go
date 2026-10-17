@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/rahoney/heliopause/internal/bootstrap"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 func TestLinuxPyTorchFullIntegration(t *testing.T) {
@@ -23,7 +24,7 @@ func TestLinuxPyTorchFullIntegration(t *testing.T) {
 		t.Fatal("PyTorch full qualification requires Linux")
 	}
 	profile := os.Getenv("HELOX_PYTORCH_PROFILE")
-	version := map[string]string{"cpu": "2.14.0+cpu", "cu126": "2.14.0+cu126", "cu130": "2.14.0+cu130", "cu132": "2.14.0+cu132"}[profile]
+	version := map[string]string{"cpu": runtimeidentity.PyTorchCPUVersion, "cu126": runtimeidentity.PyTorchCU126Version, "cu130": runtimeidentity.PyTorchCU130Version, "cu132": runtimeidentity.PyTorchCU132Version}[profile]
 	if version == "" {
 		t.Fatalf("unsupported PyTorch qualification profile %q", profile)
 	}
@@ -48,12 +49,14 @@ func TestLinuxPyTorchFullIntegration(t *testing.T) {
 		t.Logf("retained integration cache: %s", cache)
 	}
 	target := filepath.Join(root, "target")
-	for _, relative := range []string{"lib/python3.14/site-packages", "bin", "share"} {
+	pythonParts := strings.Split(runtimeidentity.PythonVersion, ".")
+	pythonMinor := strings.Join(pythonParts[:2], ".")
+	for _, relative := range []string{filepath.Join("lib", "python"+pythonMinor, "site-packages"), "bin", "share"} {
 		if err := os.MkdirAll(filepath.Join(target, relative), 0o700); err != nil {
 			t.Fatal(err)
 		}
 	}
-	if err := os.WriteFile(filepath.Join(target, "pyvenv.cfg"), []byte("version = 3.14.7\n"), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(target, "pyvenv.cfg"), []byte("version = "+runtimeidentity.PythonVersion+"\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), map[string]time.Duration{"cpu": 15 * time.Minute, "cu126": 40 * time.Minute, "cu130": 40 * time.Minute, "cu132": 40 * time.Minute}[profile])
@@ -61,6 +64,20 @@ func TestLinuxPyTorchFullIntegration(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 	args := []string{"pip", "install", "torch@" + version, "--source", "pytorch:" + profile, "--target", target}
 	prerequisite := os.Getenv("HELOX_PYTORCH_INSPECTION_PREREQUISITE")
+	if plan := os.Getenv("HELOX_PYTORCH_QUALIFICATION_PLAN"); plan != "" {
+		if prerequisite != "" {
+			t.Fatal("qualification plan and manual prerequisite pin are mutually exclusive")
+		}
+		var receipt []byte
+		prerequisite, receipt, err = bootstrap.PreparePyTorchQualification(ctx, profile, version, target, plan)
+		if err != nil {
+			t.Fatalf("explicit qualification preparation failed: %v", err)
+		}
+		if err := os.WriteFile(filepath.Join(root, "qualification-plan.json"), receipt, 0o600); err != nil {
+			t.Fatal(err)
+		}
+		t.Logf("explicit qualification metadata/input frozen: %s", receipt)
+	}
 	if prerequisite != "" {
 		args = append(args, "--inspection-prerequisites", prerequisite)
 	}
@@ -68,7 +85,7 @@ func TestLinuxPyTorchFullIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("PyTorch %s install failed: %v\nstdout=%s\nstderr=%s", profile, err, stdout.String(), stderr.String())
 	}
-	if info, statErr := os.Stat(filepath.Join(target, "lib", "python3.14", "site-packages", "torch")); statErr != nil || !info.IsDir() {
+	if info, statErr := os.Stat(filepath.Join(target, "lib", "python"+pythonMinor, "site-packages", "torch")); statErr != nil || !info.IsDir() {
 		t.Fatalf("PyTorch %s target is missing: %v", profile, statErr)
 	}
 	if profile == "cpu" {
@@ -151,7 +168,7 @@ func TestLinuxPyTorchFullIntegration(t *testing.T) {
 			}
 		}
 		for _, pattern := range []string{pin.Project, pin.Project + ".libs", pin.Project + "-*.dist-info"} {
-			matches, err := filepath.Glob(filepath.Join(target, "lib/python3.14/site-packages", pattern))
+			matches, err := filepath.Glob(filepath.Join(target, "lib", "python"+pythonMinor, "site-packages", pattern))
 			if err != nil || len(matches) != 0 {
 				t.Fatalf("inspection-only target content %s: %v %v", pattern, matches, err)
 			}
@@ -182,6 +199,65 @@ func TestLinuxPyTorchFullIntegration(t *testing.T) {
 		}
 		t.Logf("inspection input excluded from %d promoted entries; separate supplemented evidence retained", len(stagedManifest.Entries))
 	}
+}
+
+func TestLinuxPyTorchQualificationPreparationIntegration(t *testing.T) {
+	if os.Getenv("HELOX_PYTORCH_PREPARATION_INTEGRATION") != "1" {
+		t.Skip("requires explicit installed qualification metadata preflight")
+	}
+	if runtime.GOOS != "linux" {
+		t.Fatal("qualification metadata preflight requires Linux")
+	}
+	root := t.TempDir()
+	if parent := os.Getenv("HELOX_INTEGRATION_EVIDENCE_ROOT"); parent != "" {
+		if err := os.MkdirAll(parent, 0o700); err != nil {
+			t.Fatal(err)
+		}
+		var err error
+		root, err = os.MkdirTemp(parent, "qualification-preflight-")
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	t.Setenv("XDG_CACHE_HOME", filepath.Join(root, "cache"))
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	defer cancel()
+	target := filepath.Join(root, "target")
+	raw, receipt, err := bootstrap.PreparePyTorchQualification(ctx, "cu126", runtimeidentity.PyTorchCU126Version, target, "cuda-bindings-numpy")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, "qualification-plan.json"), receipt, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	var pin map[string]string
+	if err := json.Unmarshal([]byte(raw), &pin); err != nil {
+		t.Fatal(err)
+	}
+	if pin["project"] != "numpy" || pin["version"] != "2.4.6" || pin["target_sha256"] == "" {
+		t.Fatal("explicit prepared pin unavailable")
+	}
+	// An intentionally unselected caller pin must fail on metadata, without
+	// downloading the main multi-GiB graph. Payload hashes are never expectations.
+	pin["target_sha256"] = strings.Repeat("0", 64)
+	stale, err := json.Marshal(pin)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var stdout, stderr bytes.Buffer
+	err = bootstrap.Run(ctx, []string{"pip", "install", "torch@" + runtimeidentity.PyTorchCU126Version, "--source", "pytorch:cu126", "--target", target, "--inspection-prerequisites", string(stale)}, &stdout, &stderr)
+	if err == nil || !strings.Contains(err.Error(), "inspection prerequisite target is not selected") {
+		t.Fatalf("unexpected stale-pin outcome: %v", err)
+	}
+	intake := filepath.Join(root, "cache/heliopause/intake")
+	entries, readErr := os.ReadDir(intake)
+	if readErr != nil && !os.IsNotExist(readErr) {
+		t.Fatal(readErr)
+	}
+	if len(entries) != 0 {
+		t.Fatal("stale pin reached main payload acquisition")
+	}
+	t.Logf("official selected metadata/input retained: %s; main intake=0; root=%s", receipt, root)
 }
 
 // The optional qualification cache is fresh per invocation. Private mutation

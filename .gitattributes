@@ -1,4 +1,6 @@
 # Preserve captured output and fixtures verbatim; exemptions use exact paths.
+docs/planning/evidence/m13-002-protected-path/raw/bundle-a-main-direct-push.log whitespace=-blank-at-eol
+docs/planning/evidence/m13-002-protected-path/raw/bundle-a-develop-direct-push.log whitespace=-blank-at-eol
 docs/planning/evidence/m12-ci-repair/cpu-before-destination-fix.log whitespace=-blank-at-eol
 docs/planning/evidence/m12-ci-repair/go-build-metadata.txt whitespace=-blank-at-eol
 docs/planning/evidence/m12-003-cargo-build-qualification/raw/cargo-build-final-cu126-full-runtime.log whitespace=-blank-at-eol

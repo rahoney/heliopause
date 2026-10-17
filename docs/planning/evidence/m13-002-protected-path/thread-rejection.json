@@ -1,0 +1,239 @@
+{
+  "case": "PR31 unresolved diff review conversation; develop only",
+  "status": "PASS",
+  "recorded_utc": "2026-10-13T12:35:22.109958+00:00",
+  "authorization": "One real diff thread, one normal exact-head merge attempt, resolve test thread after verified rejection. No bypass/force/auto merge, normal successful merge, push, settings change or release authorized.",
+  "head": "e1e3aa8c9976ec7cf30c46b3a0103fc2899c08a2",
+  "base_branch": "develop",
+  "base": "2e196a188adce22005fce201c23da1dc27a43426",
+  "thread": {
+    "id": "PRRT_kwDOT2M-Hs6r28gs",
+    "comment_id": 4258640332,
+    "url": "https://github.com/rahoney/heliopause/pull/31#discussion_r4258640332",
+    "path": "docs/planning/evidence/m13-002-protected-path/README.md",
+    "line": 8,
+    "side": "RIGHT",
+    "commit": "e1e3aa8c9976ec7cf30c46b3a0103fc2899c08a2",
+    "resolved_after_rejection": true
+  },
+  "pre_merge": {
+    "Required": "SUCCESS, isRequired=true, GitHub Actions App15368",
+    "license/cla": "SUCCESS, isRequired=true, cla-assistant",
+    "all_eleven_check_contexts_success": true,
+    "unresolved_thread_count": 1,
+    "gate": "BLOCKED",
+    "required_approving_review_count": 0,
+    "up_to_date_base": true,
+    "rules_unchanged": true,
+    "actor_has_admin_permission": true,
+    "current_user_can_bypass": "never"
+  },
+  "merge_request": {
+    "count": 1,
+    "method": "PUT",
+    "endpoint": "/repos/rahoney/heliopause/pulls/31/merge",
+    "body": {
+      "sha": "e1e3aa8c9976ec7cf30c46b3a0103fc2899c08a2",
+      "merge_method": "merge"
+    },
+    "admin_override": false,
+    "force": false,
+    "auto_merge": false,
+    "retry": false
+  },
+  "rejection": {
+    "http_status": 405,
+    "message": "Repository rule violations found\n\nA conversation must be resolved before this pull request can be merged.\n\n",
+    "request_id": "E56B:25A986:3A77C:41418:6ACE24EC",
+    "cause": "Unresolved review conversation, explicitly named by GitHub; not missing CI/CLA, stale head, approval requirement or conflict.",
+    "raw_request": "raw/thread-merge-request.json",
+    "raw_response": "raw/thread-merge-response.json",
+    "raw_receipt": "raw/thread-merge-receipt.json"
+  },
+  "observations": [
+    {
+      "phase": "baseline",
+      "gate": "CLEAN",
+      "unresolved_count": 0,
+      "refs": {
+        "main": "2e196a188adce22005fce201c23da1dc27a43426",
+        "develop": "2e196a188adce22005fce201c23da1dc27a43426"
+      },
+      "head": "e1e3aa8c9976ec7cf30c46b3a0103fc2899c08a2",
+      "merged": false
+    },
+    {
+      "phase": "before-create",
+      "gate": "CLEAN",
+      "unresolved_count": 0,
+      "refs": {
+        "main": "2e196a188adce22005fce201c23da1dc27a43426",
+        "develop": "2e196a188adce22005fce201c23da1dc27a43426"
+      },
+      "head": "e1e3aa8c9976ec7cf30c46b3a0103fc2899c08a2",
+      "merged": false
+    },
+    {
+      "phase": "after-create",
+      "gate": "BLOCKED",
+      "unresolved_count": 1,
+      "refs": {
+        "main": "2e196a188adce22005fce201c23da1dc27a43426",
+        "develop": "2e196a188adce22005fce201c23da1dc27a43426"
+      },
+      "head": "e1e3aa8c9976ec7cf30c46b3a0103fc2899c08a2",
+      "merged": false
+    },
+    {
+      "phase": "pre-merge",
+      "gate": "BLOCKED",
+      "unresolved_count": 1,
+      "refs": {
+        "main": "2e196a188adce22005fce201c23da1dc27a43426",
+        "develop": "2e196a188adce22005fce201c23da1dc27a43426"
+      },
+      "head": "e1e3aa8c9976ec7cf30c46b3a0103fc2899c08a2",
+      "merged": false
+    },
+    {
+      "phase": "post-rejection",
+      "gate": "BLOCKED",
+      "unresolved_count": 1,
+      "refs": {
+        "main": "2e196a188adce22005fce201c23da1dc27a43426",
+        "develop": "2e196a188adce22005fce201c23da1dc27a43426"
+      },
+      "head": "e1e3aa8c9976ec7cf30c46b3a0103fc2899c08a2",
+      "merged": false
+    },
+    {
+      "phase": "before-resolve",
+      "gate": "BLOCKED",
+      "unresolved_count": 1,
+      "refs": {
+        "main": "2e196a188adce22005fce201c23da1dc27a43426",
+        "develop": "2e196a188adce22005fce201c23da1dc27a43426"
+      },
+      "head": "e1e3aa8c9976ec7cf30c46b3a0103fc2899c08a2",
+      "merged": false
+    },
+    {
+      "phase": "final",
+      "gate": "CLEAN",
+      "unresolved_count": 0,
+      "refs": {
+        "main": "2e196a188adce22005fce201c23da1dc27a43426",
+        "develop": "2e196a188adce22005fce201c23da1dc27a43426"
+      },
+      "head": "e1e3aa8c9976ec7cf30c46b3a0103fc2899c08a2",
+      "merged": false
+    }
+  ],
+  "final": {
+    "pr_state": "OPEN",
+    "merged": false,
+    "gate": "CLEAN",
+    "unresolved_count": 0,
+    "test_thread_resolved": true,
+    "Required_and_CLA_success": true,
+    "main_develop_unchanged": true,
+    "head_unchanged": true,
+    "rules_unchanged": true
+  },
+  "scope_limit": "Actual develop conversation rejection via ordinary endpoint by an admin-permission actor. No override/bypass mechanism was invoked. Does not qualify main conversation enforcement, missing Required/CLA, stale branch, direct/force push, or normal feature-to-develop/develop-to-main merges.",
+  "work_item": {
+    "status": "IN_PROGRESS",
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO"
+  },
+  "raw_custody": "Original API/GraphQL bodies and complete requests/receipts are local under docs/github-logs/m13-002-thread-test; exact safe merge request/response/receipt also copied into versioned evidence.",
+  "raw_inventory": {
+    "path": "docs/github-logs/m13-002-thread-test/raw-inventory.json",
+    "sha256": "fd151b51cb59fb792064526dbbabe3df33f3e77dc3bfdca903198503c21e969b",
+    "file_count": 153
+  },
+  "critical_receipts": [
+    {
+      "path": "docs/github-logs/m13-002-thread-test/baseline-rules/response.json",
+      "bytes": 1222,
+      "sha256": "0d981954d6b00b39c6e5705583045ea31bb9c98244d849beb55cb4ac8bcf964d"
+    },
+    {
+      "path": "docs/github-logs/m13-002-thread-test/baseline-summary.json",
+      "bytes": 3092,
+      "sha256": "e2bff9c464f64a366b06b53079b418294e00b06f31c51f0d446cafd733447bc5"
+    },
+    {
+      "path": "docs/github-logs/m13-002-thread-test/create-thread/response.json",
+      "bytes": 2835,
+      "sha256": "be76fae90301fe8409e5751a83fbdfb5a7372742e4712272fafc5e4e21ed47b7"
+    },
+    {
+      "path": "docs/github-logs/m13-002-thread-test/execution-script.py",
+      "bytes": 9662,
+      "sha256": "58b1ed6b4a011cba1559311bc865a8f9cbc11aaf9e2bfaaa05224096696103e7"
+    },
+    {
+      "path": "docs/github-logs/m13-002-thread-test/final-graphql/response.json",
+      "bytes": 2806,
+      "sha256": "757e5fa643d0cc13bdc65acf14591dac084c63f992b0eeef81c6b1d58b3fe303"
+    },
+    {
+      "path": "docs/github-logs/m13-002-thread-test/final-rules/response.json",
+      "bytes": 1222,
+      "sha256": "0d981954d6b00b39c6e5705583045ea31bb9c98244d849beb55cb4ac8bcf964d"
+    },
+    {
+      "path": "docs/github-logs/m13-002-thread-test/final-summary.json",
+      "bytes": 3092,
+      "sha256": "68a6db4862993c343c875db3489a87a8f7b87ffd8a9b9376da82b11eb0e82db9"
+    },
+    {
+      "path": "docs/github-logs/m13-002-thread-test/merge-attempt/receipt.json",
+      "bytes": 254,
+      "sha256": "607fa2e7a26bde962eee2100e3fdbd6011d0a2f45059f7218c74eab3da21723f"
+    },
+    {
+      "path": "docs/github-logs/m13-002-thread-test/merge-attempt/request.json",
+      "bytes": 225,
+      "sha256": "0c3658dde3c928e389fe240479d419e038acac163eda81dc18aef10e496a7eb5"
+    },
+    {
+      "path": "docs/github-logs/m13-002-thread-test/merge-attempt/response.json",
+      "bytes": 224,
+      "sha256": "ac2af0ef4b11c5ae7f81b9664e1f0740c8ccc835e5a4d89f5f0ebcd7812ebd7a"
+    },
+    {
+      "path": "docs/github-logs/m13-002-thread-test/post-rejection-summary.json",
+      "bytes": 3127,
+      "sha256": "d5fe89d6594adf410f56eee6ccc6325d8a35ad5679726115748756283a1edfe1"
+    },
+    {
+      "path": "docs/github-logs/m13-002-thread-test/pre-merge-graphql/response.json",
+      "bytes": 2809,
+      "sha256": "2fa63ae241be07a681fe8e94092c365251b41d315d2b306537ed7adea053fcb8"
+    },
+    {
+      "path": "docs/github-logs/m13-002-thread-test/pre-merge-rules/response.json",
+      "bytes": 1222,
+      "sha256": "0d981954d6b00b39c6e5705583045ea31bb9c98244d849beb55cb4ac8bcf964d"
+    },
+    {
+      "path": "docs/github-logs/m13-002-thread-test/pre-merge-summary.json",
+      "bytes": 3127,
+      "sha256": "d5fe89d6594adf410f56eee6ccc6325d8a35ad5679726115748756283a1edfe1"
+    },
+    {
+      "path": "docs/github-logs/m13-002-thread-test/resolve-thread/response.json",
+      "bytes": 92,
+      "sha256": "54dcb98f1df02287a7bb3558f021b53f71392b16af1c4d6a4ea8f10820386ce0"
+    },
+    {
+      "path": "docs/github-logs/m13-002-thread-test/thread.json",
+      "bytes": 741,
+      "sha256": "6a1d589e80f4802faf71945903aa5d015e5e45d982f8ff13b1550582c4ec2f87"
+    }
+  ]
+}

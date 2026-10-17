@@ -4,6 +4,8 @@ import (
 	"archive/tar"
 	"compress/gzip"
 	"crypto/sha256"
+	"debug/buildinfo"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,11 +15,56 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"runtime/debug"
 	"strings"
 	"time"
 )
 
-const toolLockSchemaVersion = 1
+const toolLockSchemaVersion = 2
+
+// checkGoVersionConsistency keeps the product floor, quality compiler and
+// isolated Go SDK on the same explicitly selected version.
+func (c *checker) checkGoVersionConsistency() error {
+	body, err := os.ReadFile(filepath.Join(c.root, "go.mod"))
+	if err != nil {
+		return err
+	}
+	moduleVersion := ""
+	for _, line := range strings.Split(string(body), "\n") {
+		fields := strings.Fields(line)
+		if len(fields) == 0 || fields[0] != "go" {
+			continue
+		}
+		if moduleVersion != "" || len(fields) < 2 || (len(fields) > 2 && !strings.HasPrefix(fields[2], "//")) {
+			return errors.New("go version consistency: invalid or duplicate go directive")
+		}
+		moduleVersion = fields[1]
+	}
+	if moduleVersion == "" {
+		return errors.New("go version consistency: invalid or missing go directive")
+	}
+	body, err = os.ReadFile(filepath.Join(c.root, "scripts", "runtimes.lock.json"))
+	if err != nil {
+		return err
+	}
+	var lock struct {
+		GoImage struct {
+			Version string `json:"go_version"`
+		} `json:"go_image"`
+	}
+	if err := json.Unmarshal(body, &lock); err != nil {
+		return err
+	}
+	if len(c.toolLock.Tools) == 0 || lock.GoImage.Version != moduleVersion {
+		return errors.New("go version consistency: guest SDK must match go.mod")
+	}
+	for _, tool := range c.toolLock.Tools {
+		if tool.SetupGo != moduleVersion {
+			return errors.New("go version consistency: quality compiler must match go.mod")
+		}
+	}
+	return nil
+}
 
 type toolLock struct {
 	SchemaVersion int        `json:"schemaVersion"`
@@ -34,6 +81,8 @@ type toolSpec struct {
 	Install          string      `json:"install"`
 	SetupGo          string      `json:"setupGo"`
 	Assets           []toolAsset `json:"assets"`
+	ModuleSum        string      `json:"moduleSum,omitempty"`
+	LDFlags          string      `json:"ldflags,omitempty"`
 }
 
 type toolAsset struct {
@@ -96,29 +145,28 @@ func validateToolLock(lock toolLock) error {
 		"actionlint":  "github.com/rhysd/actionlint/cmd/actionlint",
 		"gosec":       "github.com/securego/gosec/v2/cmd/gosec",
 		"govulncheck": "golang.org/x/vuln/cmd/govulncheck",
-		"gitleaks":    "",
+		"gitleaks":    "github.com/zricethezav/gitleaks/v8",
 	}
 	seen := make(map[string]bool, len(want))
 	for _, tool := range lock.Tools {
 		packagePath, known := want[tool.Command]
-		if !known || seen[tool.Command] || tool.Version == "" || tool.ExpectedVersion == "" || tool.SetupGo != "1.26.9" {
+		if !known || seen[tool.Command] || tool.Version == "" || tool.ExpectedVersion == "" || !exactRuntimeVersion.MatchString(tool.SetupGo) || tool.SetupGo != lock.Tools[0].SetupGo {
 			return &checkFailure{class: unavailable, step: "tool lock", detail: "tool identity is incomplete, duplicated or unexpected"}
 		}
 		seen[tool.Command] = true
 		if strings.Contains(tool.Version, "@") || strings.EqualFold(tool.Version, "latest") {
 			return &checkFailure{class: unavailable, step: "tool lock", detail: "tool version must be an exact release without @"}
 		}
-		if tool.Install == "archive" {
-			if packagePath != "" || tool.Package != "" || len(tool.Assets) == 0 {
-				return &checkFailure{class: unavailable, step: "tool lock", detail: "archive tool identity is incomplete"}
-			}
-			for _, asset := range tool.Assets {
-				if (asset.GOOS != "linux" && asset.GOOS != "darwin") || (asset.GOARCH != "amd64" && asset.GOARCH != "arm64") || !strings.HasPrefix(asset.URL, "https://github.com/gitleaks/gitleaks/releases/download/") || len(asset.SHA256) != 64 {
-					return &checkFailure{class: unavailable, step: "tool lock", detail: "archive asset is incomplete or untrusted"}
-				}
-			}
-		} else if tool.Install != "" || tool.Package != packagePath {
+		if tool.Install != "" || len(tool.Assets) != 0 || tool.Package != packagePath {
 			return &checkFailure{class: unavailable, step: "tool lock", detail: "Go-installed tool identity is unexpected"}
+		}
+		if tool.Command == "gitleaks" {
+			sum, err := base64.StdEncoding.DecodeString(strings.TrimPrefix(tool.ModuleSum, "h1:"))
+			if !strings.HasPrefix(tool.ModuleSum, "h1:") || err != nil || len(sum) != sha256.Size || tool.LDFlags != "-s -w -X="+tool.Package+"/cmd.Version="+strings.TrimPrefix(tool.Version, "v") {
+				return &checkFailure{class: unavailable, step: "tool lock", detail: "gitleaks source checksum or version flags are incomplete"}
+			}
+		} else if tool.ModuleSum != "" || tool.LDFlags != "" {
+			return &checkFailure{class: unavailable, step: "tool lock", detail: "unexpected source build override"}
 		}
 	}
 	if len(seen) != len(want) {
@@ -281,7 +329,14 @@ func (c *checker) installTool(tool toolSpec) error {
 		return c.installArchiveTool(tool)
 	}
 	identity := tool.Package + "@" + tool.Version
-	_, err := c.runCommandWithTimeout(tool.Command+" install", 10*time.Minute, c.bootstrapEnvironment(), c.goExecutable, "install", identity)
+	args := []string{"install"}
+	env := c.bootstrapEnvironment()
+	if tool.LDFlags != "" {
+		args = append(args, "-trimpath", "-ldflags="+tool.LDFlags)
+		env = overrideEnvironment(env, map[string]string{"CGO_ENABLED": "0", "GOEXPERIMENT": "", "GOAMD64": "v1", "GOARM64": "v8.0"})
+	}
+	args = append(args, identity)
+	_, err := c.runCommandWithTimeout(tool.Command+" install", 10*time.Minute, env, c.goExecutable, args...)
 	return err
 }
 
@@ -446,6 +501,13 @@ func (c *checker) verifyTool(tool toolSpec) error {
 	if err != nil || !info.Mode().IsRegular() || info.Mode()&0o111 == 0 {
 		return &checkFailure{class: unavailable, step: tool.Command, detail: "pinned executable is missing from the project tool cache"}
 	}
+	metadata, err := buildinfo.ReadFile(executable)
+	if err != nil {
+		return &checkFailure{class: unavailable, step: tool.Command, detail: "managed Go tool has no readable compiler metadata", cause: err}
+	}
+	if err := validateToolBuildInfo(tool, metadata); err != nil {
+		return err
+	}
 	arguments := tool.VersionArguments
 	if len(arguments) == 0 {
 		arguments = []string{"-version"}
@@ -456,6 +518,26 @@ func (c *checker) verifyTool(tool toolSpec) error {
 	}
 	actual := strings.TrimSpace(output)
 	return validateToolVersion(tool, actual)
+}
+
+func validateToolBuildInfo(tool toolSpec, info *debug.BuildInfo) error {
+	if info == nil || info.GoVersion != "go"+tool.SetupGo || info.Path != tool.Package {
+		return &checkFailure{class: unavailable, step: tool.Command, detail: "actual compiler/package does not match the selected tool owner; run canonical bootstrap"}
+	}
+	settings := map[string]string{}
+	for _, setting := range info.Settings {
+		if _, exists := settings[setting.Key]; exists {
+			return &checkFailure{class: unavailable, step: tool.Command, detail: "duplicate executable build setting"}
+		}
+		settings[setting.Key] = setting.Value
+	}
+	if settings["GOOS"] != runtime.GOOS || settings["GOARCH"] != runtime.GOARCH {
+		return &checkFailure{class: unavailable, step: tool.Command, detail: "executable build platform does not match the host"}
+	}
+	if tool.ModuleSum != "" && (info.Main.Path != tool.Package || info.Main.Version != tool.Version || info.Main.Sum != tool.ModuleSum || info.Main.Replace != nil || settings["-trimpath"] != "true" || settings["CGO_ENABLED"] != "0") {
+		return &checkFailure{class: unavailable, step: tool.Command, detail: "source module checksum/version or deterministic build settings do not match lock"}
+	}
+	return nil
 }
 
 func validateToolVersion(tool toolSpec, actual string) error {

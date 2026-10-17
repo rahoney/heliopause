@@ -1,0 +1,9 @@
+{
+  "method": "PUT",
+  "endpoint": "/repos/rahoney/heliopause/pulls/31/merge",
+  "body": {
+    "sha": "e1e3aa8c9976ec7cf30c46b3a0103fc2899c08a2",
+    "merge_method": "merge"
+  },
+  "utc": "2026-10-13T12:32:44.408755+00:00"
+}

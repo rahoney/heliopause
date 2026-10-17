@@ -1,0 +1,247 @@
+{
+  "case": "PR32 / develop exact-head stale candidate ordinary merge attempt",
+  "status": "REJECTED_REQUIRED_CHECKS_EXPECTED_STALE_NOT_QUALIFIED",
+  "recorded_utc": "2026-10-14T08:50:10.486552+00:00",
+  "authorization": {
+    "approved_by": "user",
+    "scope": "One ordinary exact-head PR32 stale rejection attempt and result preservation; no other remote mutation",
+    "maximum_merge_api_attempts": 1,
+    "actual_merge_api_attempts": 1,
+    "consumed": true
+  },
+  "preconditions": {
+    "observed_utc": "2026-10-14T08:46:44.558557+00:00",
+    "head": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+    "target": "develop",
+    "live_develop": "84591ef4296a852a1439781ab62cc4103a59db0a",
+    "live_main": "2e196a188adce22005fce201c23da1dc27a43426",
+    "PR_base_snapshot": "2e196a188adce22005fce201c23da1dc27a43426",
+    "gate": "BEHIND",
+    "content_mergeability": "MERGEABLE",
+    "Required": "SUCCESS, isRequired=true, App15368",
+    "license/cla": "SUCCESS, isRequired=true, pinned App128106, genuine cla-assistant[bot] status",
+    "all_eleven_contexts_success": true,
+    "unresolved_threads": 0,
+    "changes_requested": false,
+    "actor_admin": true,
+    "actor_bypass": "never",
+    "bypass_actors": [],
+    "main_and_develop_rules_match_previous_readback": true
+  },
+  "merge_request": {
+    "method": "PUT",
+    "endpoint": "/repos/rahoney/heliopause/pulls/32/merge",
+    "body": {
+      "sha": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+      "merge_method": "merge"
+    },
+    "utc": "2026-10-14T08:46:44.590516+00:00"
+  },
+  "http_result": {
+    "http_status": 405,
+    "response": {
+      "message": "Repository rule violations found\n\n2 of 2 required status checks are expected.\n\n",
+      "documentation_url": "https://docs.github.com/rest/pulls/pulls#merge-a-pull-request",
+      "status": "405"
+    },
+    "receipt": {
+      "http_status": 405,
+      "sha256": "71268987f14987205f187ea9152cd62972ca26b758de982dc22ef52c2f317013",
+      "bytes": 196,
+      "request_id": "C0DC:2BE693:29DCA:2D1E2:6ACF4175",
+      "date": "Wed, 14 Oct 2026 08:46:47 GMT",
+      "utc": "2026-10-14T08:46:46.298629+00:00"
+    },
+    "original_bytes_preserved": true
+  },
+  "classification": {
+    "actual_server_reported_blocker": "2 of 2 required status checks are expected.",
+    "ordinary_merge_rejected": true,
+    "independent_strict_freshness_enforcement": "NOT_QUALIFIED",
+    "isolated_missing_Required_case": "NOT_QUALIFIED",
+    "isolated_missing_CLA_case": "NOT_QUALIFIED",
+    "separate_admin_bypass_case": "NOT_RUN",
+    "reason": "Head rollup showed both required contexts successful and PR was BEHIND, but HTTP response reports expected required checks rather than an explicit stale cause. The combined state cannot isolate which condition caused the rejection.",
+    "no_gate_defect_or_service_failure_inferred": true
+  },
+  "postconditions": {
+    "observed_utc": "2026-10-14T08:46:49.296668+00:00",
+    "before_refs": {
+      "main": "2e196a188adce22005fce201c23da1dc27a43426",
+      "develop": "84591ef4296a852a1439781ab62cc4103a59db0a",
+      "feature/m13-002-stale-probe": "ff441d3d3bde941d0fd759972539ed8707475ee1"
+    },
+    "after_refs": {
+      "main": "2e196a188adce22005fce201c23da1dc27a43426",
+      "develop": "84591ef4296a852a1439781ab62cc4103a59db0a",
+      "feature/m13-002-stale-probe": "ff441d3d3bde941d0fd759972539ed8707475ee1"
+    },
+    "refs_unchanged": true,
+    "PR32_state": "OPEN",
+    "PR32_merged": false,
+    "head_unchanged": true,
+    "gate": "BEHIND",
+    "auto_merge": null,
+    "unresolved_threads": 0,
+    "head_rollup": "SUCCESS",
+    "synthetic_merge": {
+      "scope": "Read-only preservation of changed synthetic merge metadata after the sole approved request; no new enforcement test",
+      "old_merge": "8e5067ffb828415db8b58c7848cfde40346d09f1",
+      "new_merge": "363596006e66811dcf91888c92172b484e7e9f4e",
+      "commits": {
+        "old": {
+          "sha": "8e5067ffb828415db8b58c7848cfde40346d09f1",
+          "parents": [
+            "2e196a188adce22005fce201c23da1dc27a43426",
+            "ff441d3d3bde941d0fd759972539ed8707475ee1"
+          ],
+          "tree": "7cbc074f59fa3e7f97edc9941519351609d6940b"
+        },
+        "new": {
+          "sha": "363596006e66811dcf91888c92172b484e7e9f4e",
+          "parents": [
+            "84591ef4296a852a1439781ab62cc4103a59db0a",
+            "ff441d3d3bde941d0fd759972539ed8707475ee1"
+          ],
+          "tree": "2f2795b6a2ff215029b897e02786f05a2e0ae60c"
+        }
+      },
+      "new_merge_check_count": 0,
+      "new_merge_statuses": [],
+      "interpretation": "The server response identifies expected required checks. Derived merge metadata changed while protected/feature branch refs and PR head/open state stayed unchanged. An isolated strict-freshness cause is not proven."
+    },
+    "boundary": "Branch refs and PR head/open state are unchanged. The entire PR API object is not unchanged: synthetic merge metadata refreshed from old-base8e5067f to advanced-base3635960. Refresh timing/internal cause is not established."
+  },
+  "safety": {
+    "additional_push": false,
+    "additional_merge": false,
+    "protection_mutation": false,
+    "automatic_recovery": false,
+    "release_action": false,
+    "mutation_retry": false,
+    "STOP": {
+      "status": "STOP_UNEXPECTED_BLOCKING_REASON",
+      "observed_utc": "2026-10-14T08:50:08.820790+00:00",
+      "http_status": 405,
+      "message": "Repository rule violations found\n\n2 of 2 required status checks are expected.\n\n",
+      "stale_qualification": "NOT_QUALIFIED",
+      "reason": "Required-checks expected is the actual reported cause; independent strict-freshness enforcement is not isolated. One-shot authorization consumed. No further mutation, retry or recovery."
+    },
+    "post_metadata_reads": "Only GET requests preserving derived commit identities and check/status absence"
+  },
+  "work_item": {
+    "status": "IN_PROGRESS",
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO",
+    "missing": [
+      "Read-only disposition of expected-check versus strict-freshness cause; independent stale qualification remains open",
+      "Other target-specific normal/negative M13-002 cases",
+      "Normal develop-to-main protected PR with fresh CI/CLA and main CI",
+      "Final acceptance audit"
+    ]
+  },
+  "next_sequence": [
+    {
+      "step": 1,
+      "action": "Review the observed head/test-merge/effective-check evidence and define a rule-preserving way to isolate freshness",
+      "authorization": "Read-only analysis only; another mutation needs new exact approval"
+    },
+    {
+      "step": 2,
+      "action": "Prepare reviewed target-specific missing Required/CLA, direct-push and admin cases without fabricating service state",
+      "authorization": "Each concrete remote mutation requires separate scoped approval; real unsigned participant may be needed for CLA"
+    },
+    {
+      "step": 3,
+      "action": "Design or explicitly disposition the real non-fast-forward case without rewriting protected history",
+      "authorization": "No execution authorized; do not silently waive"
+    },
+    {
+      "step": 4,
+      "action": "After remaining develop/main cases, use authorized forward-only PR synchronization where needed and qualify develop-to-main with fresh CI/CLA",
+      "authorization": "Candidate push/PR and successful reviewer merge need their own scope"
+    },
+    {
+      "step": 5,
+      "action": "Final M13-002 evidence and canonical checks, then acceptance audit",
+      "authorization": "M13-003 remains NOT_STARTED / Ready: No"
+    }
+  ],
+  "raw_custody": {
+    "execution_root": "docs/github-logs/m13-002-stale-rejection/execution-20261014T084639822803Z",
+    "post_metadata_root": "docs/github-logs/m13-002-stale-rejection/post-metadata-20261014T084827466524Z",
+    "inventory": "docs/github-logs/m13-002-stale-rejection/execution-inventory.json",
+    "inventory_sha256": "967767c5487295aab5eae3824229db894e6dc205b609b9e7b0ead4bc96b1545c",
+    "raw_file_count": 73,
+    "versioned_safe_raw": [
+      {
+        "path": "raw/stale-merge-request.json",
+        "sha256": "ee4d9d67c6eedb46e61c1f01a8a5f3989599e704fcf8295b975f4c9d2e0723c9",
+        "bytes": 225
+      },
+      {
+        "path": "raw/stale-merge-request-body.json",
+        "sha256": "146e99350b2a96431481b26a37fef149717ae4c01d08597edbb7fcea3be685b8",
+        "bytes": 73
+      },
+      {
+        "path": "raw/stale-merge-response.json",
+        "sha256": "71268987f14987205f187ea9152cd62972ca26b758de982dc22ef52c2f317013",
+        "bytes": 196
+      },
+      {
+        "path": "raw/stale-merge-receipt.json",
+        "sha256": "321b9e16061a3f01fb3c21d013f4d5b0286c6c26d12819bb941d9a3f6a928d41",
+        "bytes": 261
+      },
+      {
+        "path": "raw/stale-pre-main-ref.json",
+        "sha256": "5d334d360085aa66aeb7fe7746ea9a3061a4abcf366f31711b87dcf2709e91c8",
+        "bytes": 334
+      },
+      {
+        "path": "raw/stale-pre-develop-ref.json",
+        "sha256": "b62b9037d5d5eadc72456197b2268b2ff0a814737c229239375d1987b8bfe0d6",
+        "bytes": 344
+      },
+      {
+        "path": "raw/stale-pre-feature-ref.json",
+        "sha256": "7ea19da82bf91dfff8b444f438f4aedd1884e4a9b6eb6487dd62c82e9d1564d5",
+        "bytes": 413
+      },
+      {
+        "path": "raw/stale-pre-graphql.json",
+        "sha256": "4b848e51d1b70aff296ea7bb91e6d214f5f86a0a96895b433303a52d440e1c87",
+        "bytes": 2149
+      },
+      {
+        "path": "raw/stale-post-main-ref.json",
+        "sha256": "5d334d360085aa66aeb7fe7746ea9a3061a4abcf366f31711b87dcf2709e91c8",
+        "bytes": 334
+      },
+      {
+        "path": "raw/stale-post-develop-ref.json",
+        "sha256": "b62b9037d5d5eadc72456197b2268b2ff0a814737c229239375d1987b8bfe0d6",
+        "bytes": 344
+      },
+      {
+        "path": "raw/stale-post-feature-ref.json",
+        "sha256": "7ea19da82bf91dfff8b444f438f4aedd1884e4a9b6eb6487dd62c82e9d1564d5",
+        "bytes": 413
+      },
+      {
+        "path": "raw/stale-post-graphql.json",
+        "sha256": "4b848e51d1b70aff296ea7bb91e6d214f5f86a0a96895b433303a52d440e1c87",
+        "bytes": 2149
+      }
+    ],
+    "privacy": "Full authenticated API responses remain local outside the versioned candidate. No credential is logged or stored."
+  },
+  "official_semantics": {
+    "strict_vs_loose": "https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets#require-status-checks-to-pass-before-merging",
+    "head_and_test_merge": "https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks#conflicts-between-head-commit-and-test-merge-commit",
+    "interpretation_limit": "General documentation does not establish why this specific server evaluation reported expected checks."
+  }
+}

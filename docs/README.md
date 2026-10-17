@@ -95,6 +95,8 @@ Read:
 
 Read:
 
+- 버전 갱신 유지보수면 [Runtime upgrade design](./engineering/05-runtime-upgrade-maintenance.md)와
+  [실행 계획](./planning/19-runtime-upgrade-maintenance-plan.md)
 - [Threat Model — Trusted Tooling and Evidence](./threat-model/04-trusted-tooling-and-evidence.md)
 - [MVP — Ecosystems, Platforms, and Artifacts](./mvp-scope/01-ecosystems-platforms-artifacts.md)
 - [Architecture — Foundation and Dependencies](./architecture/01-foundation-and-dependencies.md)

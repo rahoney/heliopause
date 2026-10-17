@@ -1,0 +1,11 @@
+{
+  "method": "PUT",
+  "endpoint": "/repos/rahoney/heliopause/pulls/31/merge",
+  "body": {
+    "sha": "e1e3aa8c9976ec7cf30c46b3a0103fc2899c08a2",
+    "merge_method": "merge",
+    "commit_title": "M13-002 보호 PR 검증 문서를 develop에 병합 (#31)",
+    "commit_message": "PR31의 정확한 e1e3aa8과 두 PR의 Required·CLA 및 보호 조건을 재확인한 승인된 정상 병합이다. PR32의 head는 유지하며 별도 병합 요청은 하지 않는다."
+  },
+  "utc": "2026-10-13T14:39:07.194071+00:00"
+}

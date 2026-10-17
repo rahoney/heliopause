@@ -95,21 +95,51 @@ deterministic Quality Gate에서 AI 기반 scanner mode, 원격 code upload와 �
 
 ### M7-005 security tool identity lock
 
-2026-08-21 KST M7-005 activation review locks the following tool identities.
+2026-08-21 KST M7-005 activation review selected the following releases;
+2026-10-15 UPG-004 retains those releases and migrates Gitleaks to the selected Go source build.
 They are quality tooling only: none enters the product module graph.
 
 | Tool | Exact identity | Install and compatibility |
 | --- | --- | --- |
 | gosec | `github.com/securego/gosec/v2/cmd/gosec@v2.28.0` | checksum-verified `go install` with Go `1.26.9`; upstream requires Go `1.25+` |
 | govulncheck | `golang.org/x/vuln/cmd/govulncheck@v1.7.0` | checksum-verified `go install` with Go `1.26.9`; module Go floor `1.25` |
-| Gitleaks | official `v8.18.4` archive, per-platform SHA-256 lock | HTTPS download to the external tool cache and digest verification before extraction; newer `v8.28.0` and `v8.30.1` default-rule false negatives are excluded pending an upstream fix |
+| Gitleaks | `github.com/zricethezav/gitleaks/v8@v8.18.4`, explicit module h1 in tool lock | selected-Go source install with upstream version ldflags, trimpath and CGO disabled; newer `v8.28.0` and `v8.30.1` default-rule false negatives remain excluded pending an upstream fix |
 
 The bootstrap checks an installed executable's supported version identity. A
 Go-installed tool which upstream intentionally labels `dev` is additionally
 bound by its exact `package@version` installation and checksum verification;
-Gitleaks release assets are bound by the published digest and `version` output.
+The Gitleaks source build is bound by its exact package/release, explicit module
+h1 and upstream version flags. Every managed Go tool's actual build metadata must
+match the selected compiler, package and host platform before its version command
+executes. Gitleaks also requires the selected module version/h1, no replacement,
+trimpath and CGO disabled. A matching version string alone cannot approve an old
+compiler or an archive built with another Go version.
 Tool download, checksum, extraction, version mismatch or scanner failure is a
 failed profile, never an unavailable-success fallback.
+
+The tool lock explicitly migrates schemaVersion1→2 for `moduleSum` and `ldflags`.
+Schema1/archive installation is no longer an active managed-tool input. Product
+`go.mod`/`go.sum` remain independent. The retained Gitleaks release's historical
+module path differs from the renamed GitHub repository; the official tag's peeled
+commit `02808f45d038526bfcceebcbf6421c1047997ff9` matches canonical module metadata.
+The version flags follow the selected release's
+[official build configuration](https://github.com/gitleaks/gitleaks/blob/v8.18.4/.goreleaser.yml).
+
+Output digest belongs to the actual reproducible build receipt/evidence, rather
+than another per-Go/per-platform selection lock. Rebuilding the same source under
+a newly selected Go computes a new output identity; an old archive hash is never
+reused for that output. Bootstrap rebuilds source tools and read-only checks compare
+actual compiler metadata, so a language upgrade does not require editing a second
+tool compiler version or precomputed cross-platform executable hash table.
+
+Canonical security/history now executes the synthetic Gitleaks detection contract
+with its explicit managed cache. The corpus reconstructs the documented M7
+canonical GitHub PAT and generic credential classes plus benign release metadata;
+it does not claim recovery of original raw M7 token bytes. A local explicit
+official-archive control can compare normalized findings with the new build.
+Default Go tests do not acquire this external tool or depend on private corpus.
+Compiler-candidate preparation and comparison do not activate the host tool or
+complete gVisor/installed/CPU/CUDA qualification.
 
 M7-005 adds one `.gitleaksignore` fingerprint only for historical commit
 `aeb8fb81d531fd89ab67235245f3062de370a7d8`, where the product's own
@@ -135,11 +165,70 @@ or release use. The current Go minimum and toolchain are both `1.26.9`.
 host CI/release/quality-tool setup to the official Go 1.26.9 security patch.
 `go.mod`'s `go 1.26.9` is the minimum accepted toolchain, not an exact compiler
 selection; CI's exact setup version and `GOTOOLCHAIN=local` select the compiler.
-No floating toolchain or new major is introduced. The separate M12 guest Go
-image remains bound to `scripts/runtimes.lock.json`; its version/digest and
-historical qualification are not replaced by this host-toolchain repair.
+No floating toolchain or new major is introduced. That host-only repair did not
+replace the separate M12 guest image or its historical qualification. The
+2026-10-15 single-version maintenance updates that guest to1.26.9 with a fresh
+official image digest and separately verifies affected Go consumers.
 Sources, integrity and new validation are recorded in the
 [Scheduled Security repair evidence](./evidence/security-go1269/README.md).
+
+### Single active Go SDK
+
+The local development SDK lives permanently at `$HOME/.local/go`; login and
+interactive shells select its `bin`, and persistent `GOTOOLCHAIN=local` prevents
+automatic additional SDK downloads. Temporary `/tmp` installations are not the
+default development environment. Retire old host SDK trees and downloaded
+`golang.org/toolchain` SDK archives after confirming the replacement and the
+absence of active old-SDK consumers. Preserve historical evidence and parser
+fixtures: a recorded version string is not an installed compiler.
+
+Every canonical checker invocation requires the exact compiler selected by the
+tool lock. The existing runtime-lock drift stage additionally requires
+`go.mod`, every quality tool's `setupGo`, and the Go guest SDK to agree. The guest
+retains its immutable image digest; version equality does not replace image
+verification or affected-consumer qualification. For a future explicit upgrade,
+update the permanent host SDK, product floor, tool/CI/release pins, support record
+and guest image together, regenerate runtime identities and run the canonical
+checks plus affected Go resolver/build consumers before retiring the old SDK.
+Actual host retirement, image identity, check scope and local activation are
+recorded in the [single-version maintenance evidence](./evidence/go-single-version-20261015/README.md).
+
+### Runtime upgrade ownership checks
+
+Runtime upgrade maintenance UPG-002 connects the existing runtime drift stage to
+the selected versions in `scripts/runtimes.lock.json`, all tool setup compilers
+and `scripts/version-support.lock.json`. Node's interpreter version comes from
+its exact official image tag; npm remains a separate bundled-tool identity.
+The runtime lock schema and image digests remain unchanged. The manifest emits
+Node, Python, Go and Rust with each actual interpreter/compiler version.
+
+Workflow validators read the selected Go version from the runtime owner and
+check every real `actions/setup-go` step, including alternate/floating selectors
+and mixed jobs. New workflow consumers require an explicit owner. Active Go
+source cannot introduce a separate pinned official runtime image literal;
+generated identities, historical test fixtures and exact retired-image policy
+tokens have separate roles. These checks do not prove executable safety.
+
+The existing generator also reads the four PyTorch qualification versions from
+their support records. The full integration consumer uses those generated
+versions and the canonical Python target/version for its venv layout and
+post-install assertions. Inspection-only prerequisite artifact pins remain
+explicit frozen qualification inputs in the existing workflow; changing Python
+ABI requires their compatibility review and fresh affected qualification.
+Support review dates/decisions and historical qualification receipts are never
+automatically refreshed. Terraform/GitHub subjects remain user-selected signed
+artifacts; their adapters and parser/module dependencies retain their existing
+owners. UPG-004's [Gitleaks/compiler candidate](./evidence/runtime-upgrade-maintenance/upg-004-gitleaks.json)
+reuses source installation and checks actual compilers. UPG-005 qualified the
+actual local/remote CPU and three CUDA profiles; UPG-006 activated the qualified
+controlled runtime and default five managed Go tools at1.26.9. Actual metadata,
+production consumers, bounded doctor and retirement are recorded in
+[activation evidence](./evidence/runtime-upgrade-maintenance/upg-006.json). Public
+attested release installation and M13 activation remain separate.
+
+Implementation and remaining stages follow the
+[runtime upgrade design](./05-runtime-upgrade-maintenance.md) and
+[execution plan](../planning/19-runtime-upgrade-maintenance-plan.md).
 
 정확한 Go와 현재 사용하는 tool version은 아래 M0-002 lock에서 고정한다. 아직 사용하지 않는 미래 도구의 임의 최신 version은 미리 적지 않는다.
 
@@ -212,6 +301,13 @@ go run ./scripts/check format
 | `integration` | 환경별 | 명시적 external tool/storage/runtime contract 검증 |
 | `e2e` | 환경별 | build된 `helox`의 사용자 operation 검증 |
 | `docs` | No | canonical Markdown local link와 code fence 검사 |
+
+`platform`과 `quick`의 production build는 `go build -trimpath ./...`를 사용한다.
+Native CLI/default-path 및 release fixture의 실제 nested build와 compiler cache
+입력을 맞춰 이미 준비한 dependency compilation을 재사용한다. Native fixture는
+자기 binary를 계속 빌드·실행하며 기존2분 build deadline, 전체 package 선택,
+default test5분/상위6분 bound를 유지한다. Cache 준비는 기능 assertion이나 native
+macOS 실행 검증의 대체 증거가 아니다.
 
 `quick + security + docs`는 `bootstrap`이 완료된 뒤 외부 service 없이 반복 가능한 기본 local 검증 집합이다. `platform`은 `bootstrap-modules` 뒤에 실행하며 quality tool의 setup Go와 minimum supported Go를 결합하지 않는다. `quick`의 formatting 단계는 항상 `gofmt -l` 기반 read-only format check이며 source를 수정하지 않는다. 이 profile들은 `GOTOOLCHAIN=local`과 offline module resolution을 사용해 toolchain이나 module을 암묵적으로 내려받지 않는다. cache miss는 자동 network fallback이 아니라 prerequisite failure다. `vulnerability`는 advisory database가 시간에 따라 변하고 network가 필요하므로 deterministic 검사와 분리한다. network failure를 취약점 없음으로 취급하지 않는다.
 

@@ -17,7 +17,7 @@ func TestCIWorkflowStructureMutations(t *testing.T) {
 		t.Fatal(err)
 	}
 	good := string(body)
-	if findings := validateCIWorkflow(good); len(findings) != 0 {
+	if findings := validateCIWorkflow(good, selectedGoForTest(t)); len(findings) != 0 {
 		t.Fatalf("corrected workflow: %v", findings)
 	}
 	start := strings.Index(good, "  wheel-corpus:\n")
@@ -50,7 +50,7 @@ func TestCIWorkflowStructureMutations(t *testing.T) {
 	}
 	for name, fixture := range fixtures {
 		t.Run(name, func(t *testing.T) {
-			if len(validateCIWorkflow(fixture)) == 0 {
+			if len(validateCIWorkflow(fixture, selectedGoForTest(t))) == 0 {
 				t.Fatal("real policy accepted broken workflow")
 			}
 			// Exercise canonical on-disk entry point, not a separate test validator.
@@ -72,7 +72,7 @@ func TestCIWorkflowStructureMutations(t *testing.T) {
 			if err := os.WriteFile(target, []byte(fixture), 0644); err != nil {
 				t.Fatal(err)
 			}
-			if err := checkWorkflow(dir, workflowRelativePath, validateCIWorkflow); err == nil {
+			if err := checkWorkflow(dir, workflowRelativePath, func(body string) []string { return validateCIWorkflow(body, selectedGoForTest(t)) }); err == nil {
 				t.Fatal("canonical checker accepted corrupted disposable workflow")
 			}
 		})

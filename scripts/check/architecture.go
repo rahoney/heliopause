@@ -195,7 +195,8 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/core/domain": true,
 			modulePath + "/internal/core/ports":  true,
 		},
-		modulePath + "/scripts/check": {},
+		modulePath + "/scripts/check":          {},
+		modulePath + "/scripts/update-runtime": {},
 	}
 	allowedExternalImports := map[string]map[string]bool{
 		modulePath + "/cmd/helox": {},
@@ -239,6 +240,7 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 		modulePath + "/internal/runtimeidentity":              {},
 		modulePath + "/internal/testutil/fakeworkflow":        {},
 		modulePath + "/scripts/check":                         {"go.yaml.in/yaml/v3": true},
+		modulePath + "/scripts/update-runtime":                {"go.yaml.in/yaml/v3": true},
 	}
 	forbiddenConcreteImports := map[string]map[string]bool{
 		modulePath + "/internal/core/domain": {

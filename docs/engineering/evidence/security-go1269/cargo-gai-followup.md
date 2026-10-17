@@ -49,8 +49,9 @@ Rust image digest remains
 the preserved data-only catalogue SHA-256 is
 `0e927e4d000bba2e3464e9b98cfb52b1e07f84da4e9dd87b01c718cfec1375e3`.
 No installed local runtime was replaced. These focused regressions do not
-replace fresh actual Cargo and common-consumer Linux/Required CI, which remains
-pending on the pushed candidate. The change is restricted to Cargo resolver
+replace actual Cargo and common-consumer Linux/Required CI. CI308 subsequently
+passed all ten jobs and45 Linux consumers, including Cargo transitive37.65s and
+PyTorch CPU full282.09s. PR30 then merged and main CI38328099413 also passed. The change is restricted to Cargo resolver
 CONTROL reads; there is no direct CUDA-profile change requiring a new GPU E2E
 campaign. Existing full latches cover the shared classifier's negative boundary.
 Original logs, source snapshots, exact build inputs and receipts are preserved

@@ -1,0 +1,1353 @@
+{
+  "status": "LOCAL_PREPARATION_COMPLETE_REMOTE_EXECUTION_NOT_AUTHORIZED",
+  "recorded_utc": "2026-10-14T12:16:47.166452+00:00",
+  "source_record_commit": "7d65a05b53cf107c41d17e1257ff1256127c69bc",
+  "authorization": {
+    "this_phase": "Read-only investigation, local Git object/ref preparation, checks and plan records only.",
+    "remote_mutations": 0,
+    "remote_pushes": 0,
+    "PRs_created": 0,
+    "merge_requests": 0,
+    "CI_triggered_or_retried": 0,
+    "not_authorized": [
+      "push",
+      "PR creation or retarget/comments",
+      "merge",
+      "protection edits",
+      "release",
+      "remote branch history changes"
+    ]
+  },
+  "observed": {
+    "refs": {
+      "refs/heads/develop": "84591ef4296a852a1439781ab62cc4103a59db0a",
+      "refs/heads/feature/m13-002-stale-probe": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+      "refs/heads/main": "2e196a188adce22005fce201c23da1dc27a43426",
+      "refs/heads/milestone/m13-production-release-operations": "b3c8b7dc487046afdad52a215c101d761f055098"
+    },
+    "open_PRs": [
+      {
+        "number": 32,
+        "head": "feature/m13-002-stale-probe",
+        "head_sha": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+        "base": "develop",
+        "author_is_existing_maintainer": true
+      }
+    ],
+    "PR32": {
+      "head": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+      "base": "develop",
+      "gate": "BEHIND",
+      "unresolved_threads": 0,
+      "head_checks": [
+        {
+          "name": "Required",
+          "head_sha": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+          "status": "completed",
+          "conclusion": "success",
+          "app_id": 15368
+        },
+        {
+          "name": "gVisor Observer Helper",
+          "head_sha": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+          "status": "completed",
+          "conclusion": "success",
+          "app_id": 15368
+        },
+        {
+          "name": "Representative Wheel Corpus",
+          "head_sha": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+          "status": "completed",
+          "conclusion": "success",
+          "app_id": 15368
+        },
+        {
+          "name": "gVisor Linux Integration",
+          "head_sha": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+          "status": "completed",
+          "conclusion": "success",
+          "app_id": 15368
+        },
+        {
+          "name": "Quick",
+          "head_sha": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+          "status": "completed",
+          "conclusion": "success",
+          "app_id": 15368
+        },
+        {
+          "name": "Docs",
+          "head_sha": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+          "status": "completed",
+          "conclusion": "success",
+          "app_id": 15368
+        },
+        {
+          "name": "macOS",
+          "head_sha": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+          "status": "completed",
+          "conclusion": "success",
+          "app_id": 15368
+        },
+        {
+          "name": "Minimum Go",
+          "head_sha": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+          "status": "completed",
+          "conclusion": "success",
+          "app_id": 15368
+        },
+        {
+          "name": "Vulnerability",
+          "head_sha": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+          "status": "completed",
+          "conclusion": "success",
+          "app_id": 15368
+        },
+        {
+          "name": "Security",
+          "head_sha": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+          "status": "completed",
+          "conclusion": "success",
+          "app_id": 15368
+        }
+      ],
+      "required_contexts": [
+        {
+          "name": "Required",
+          "status": "COMPLETED",
+          "conclusion": "SUCCESS",
+          "isRequired": true,
+          "checkSuite": {
+            "app": {
+              "databaseId": 15368,
+              "slug": "github-actions"
+            }
+          }
+        },
+        {
+          "context": "license/cla",
+          "state": "SUCCESS",
+          "isRequired": true,
+          "creator": {
+            "login": "cla-assistant"
+          }
+        }
+      ]
+    },
+    "rules": {
+      "main": {
+        "id": 21396883,
+        "enforcement": "active",
+        "conditions": {
+          "ref_name": {
+            "exclude": [],
+            "include": [
+              "refs/heads/main"
+            ]
+          }
+        },
+        "bypass_actors": [],
+        "current_user_can_bypass": "never",
+        "rules": [
+          {
+            "type": "deletion"
+          },
+          {
+            "type": "non_fast_forward"
+          },
+          {
+            "type": "pull_request",
+            "parameters": {
+              "required_approving_review_count": 0,
+              "dismiss_stale_reviews_on_push": false,
+              "required_reviewers": [],
+              "require_code_owner_review": false,
+              "require_last_push_approval": false,
+              "required_review_thread_resolution": true,
+              "require_extra_approval_for_unattributed_changes": false,
+              "allowed_merge_methods": [
+                "merge",
+                "squash"
+              ]
+            }
+          },
+          {
+            "type": "required_status_checks",
+            "parameters": {
+              "strict_required_status_checks_policy": true,
+              "do_not_enforce_on_create": false,
+              "required_status_checks": [
+                {
+                  "context": "Required",
+                  "integration_id": 15368
+                },
+                {
+                  "context": "license/cla",
+                  "integration_id": 128106
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "develop": {
+        "id": 24969937,
+        "enforcement": "active",
+        "conditions": {
+          "ref_name": {
+            "exclude": [],
+            "include": [
+              "refs/heads/develop"
+            ]
+          }
+        },
+        "bypass_actors": [],
+        "current_user_can_bypass": "never",
+        "rules": [
+          {
+            "type": "deletion"
+          },
+          {
+            "type": "non_fast_forward"
+          },
+          {
+            "type": "pull_request",
+            "parameters": {
+              "required_approving_review_count": 0,
+              "dismiss_stale_reviews_on_push": false,
+              "required_reviewers": [],
+              "require_code_owner_review": false,
+              "require_last_push_approval": false,
+              "required_review_thread_resolution": true,
+              "require_extra_approval_for_unattributed_changes": false,
+              "allowed_merge_methods": [
+                "merge",
+                "squash"
+              ]
+            }
+          },
+          {
+            "type": "required_status_checks",
+            "parameters": {
+              "strict_required_status_checks_policy": true,
+              "do_not_enforce_on_create": false,
+              "required_status_checks": [
+                {
+                  "context": "Required",
+                  "integration_id": 15368
+                },
+                {
+                  "context": "license/cla",
+                  "integration_id": 128106
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "actor_permission": "admin",
+    "readback_paths": [
+      "docs/github-logs/m13-002-forward-plan/readback-20261014T115408617726Z",
+      "docs/github-logs/m13-002-forward-plan/analysis-20261014T120935051398Z"
+    ]
+  },
+  "coverage": [
+    {
+      "item": "normal_feature_develop",
+      "status": "COVERED",
+      "basis_or_gap": "PR31 actual e1e3aa8→develop845; fresh10job/CLA and merge receipt; reuse develop-merge.json."
+    },
+    {
+      "item": "strict_stale_develop",
+      "status": "COVERED_BOUNDED",
+      "basis_or_gap": "PR32 actual stale-candidate update rejected by Strict required_status_checks, rule-suite4516024742. No independent freshness-only causality claim; no repeat."
+    },
+    {
+      "item": "conversation_develop",
+      "status": "COVERED",
+      "basis_or_gap": "PR31 one405 plus exact unchangedrefs/resolveCLEAN; thread-rejection.json."
+    },
+    {
+      "item": "ordinary_admin_develop",
+      "status": "COVERED_BOUNDED",
+      "basis_or_gap": "Same PR31 real admin ordinary API rejection; no duplicate admin-only trial or special override claim."
+    },
+    {
+      "item": "successful_required_CLA_develop",
+      "status": "COVERED",
+      "basis_or_gap": "Actual PR31/PR32 fresh service results; no new CI needed solely to repeat success."
+    },
+    {
+      "item": "missing_Required_main_develop",
+      "status": "MISSING",
+      "basis_or_gap": "Two-context Strict405 does not isolate Required alone. Main A8 uses needed845→main CI; develop uses later needed delivery PR CI once, only with realCLA green."
+    },
+    {
+      "item": "missing_CLA_main_develop",
+      "status": "NOT_TESTED",
+      "basis_or_gap": "User confirms no actual unsigned contributor is available. Existing required App128106 binding and real signed PR successes remain valid. No account/contribution fabrication; live unsigned-contributor rejection deferred, not waived or PASS."
+    },
+    {
+      "item": "direct_push_main_develop",
+      "status": "MISSING",
+      "basis_or_gap": "A1/A2 fixed doc-only candidates; each server PR-gate failure required."
+    },
+    {
+      "item": "conversation_admin_main",
+      "status": "MISSING",
+      "basis_or_gap": "A3–A6 reuse PR32 headff with current main2e, different target; one conversation rejection covers bounded ordinary admin."
+    },
+    {
+      "item": "strict_stale_main",
+      "status": "MISSING",
+      "basis_or_gap": "Requires actual main advancement before stale sibling check; no develop proof reassigned to main."
+    },
+    {
+      "item": "hostile_non_fast_forward_main_develop",
+      "status": "MISSING_SEPARATE_DECISION",
+      "basis_or_gap": "No matching existing failure in prior bounded rule-suite read. Normal FF rule PASS, dry-run/no-op/wrong lease do not qualify."
+    },
+    {
+      "item": "normal_develop_main_final_audit",
+      "status": "MISSING_SEPARATE_APPROVAL",
+      "basis_or_gap": "New actual develop→main CI/CLA, exact reviewer-approved final merge, new main CI and evidence audit required after necessary negatives."
+    }
+  ],
+  "local_candidates": [
+    {
+      "kind": "direct-main",
+      "sha": "6b3ae56d19a9b0d59e4df8585d834b647e9da558",
+      "tree": "bce664743e7da8cb4c60c7855ba2c73f9317a112",
+      "parents": [
+        "2e196a188adce22005fce201c23da1dc27a43426"
+      ],
+      "base": "2e196a188adce22005fce201c23da1dc27a43426",
+      "local_retention_ref": "refs/haa/m13-002/forward-plan/direct-main",
+      "changed_files": [
+        {
+          "path": "docs/planning/evidence/m13-002-forward-probes/direct-main.md",
+          "mode": "100644",
+          "blob": "14c3e0961c3d38c7fdef110440f6bd570c17cd77",
+          "sha256": "445a93fd21d5a736d3bb18225db5c6e4d3852b21e75d8e666f15dd801115eb80",
+          "bytes": 294
+        }
+      ],
+      "diff": "docs/github-logs/m13-002-forward-plan/direct-main.diff",
+      "diff_sha256": "62acf58274be2cbb503c9696c61b4d3f598e48bd397e3b6a252661f76b21e1e0",
+      "fast_forward_from_base": true,
+      "remote_target_ref": "refs/heads/main",
+      "expected_result": "Server rejects active pull_request rule; original target ref remains exactly at base. Missing-check failures may coexist and are labelled combined.",
+      "candidate_source": "Current configured maintainer identity, no fabricated unsigned author",
+      "created_at_utc": "2026-10-14T11:57:25.864697+00:00"
+    },
+    {
+      "kind": "direct-develop",
+      "sha": "68916c7ae69e6c9af8ad80c449a52f10fe6f3bc6",
+      "tree": "674ea833373087a2cb7aa2ec1b2494b6918fd4ad",
+      "parents": [
+        "84591ef4296a852a1439781ab62cc4103a59db0a"
+      ],
+      "base": "84591ef4296a852a1439781ab62cc4103a59db0a",
+      "local_retention_ref": "refs/haa/m13-002/forward-plan/direct-develop",
+      "changed_files": [
+        {
+          "path": "docs/planning/evidence/m13-002-forward-probes/direct-develop.md",
+          "mode": "100644",
+          "blob": "956d24faca8b0dbe566f23df54dbf23d9f7d9525",
+          "sha256": "9be14432ae26e4edd9cc4bfb6e9797530c84e7f5f1d6de7bcc1c84c42895e6e5",
+          "bytes": 300
+        }
+      ],
+      "diff": "docs/github-logs/m13-002-forward-plan/direct-develop.diff",
+      "diff_sha256": "f6d27808703fd98f7a7efeb2efd167be31740cbb108089b909480310aa085d0c",
+      "fast_forward_from_base": true,
+      "remote_target_ref": "refs/heads/develop",
+      "expected_result": "Server rejects active pull_request rule; original target ref remains exactly at base. Missing-check failures may coexist and are labelled combined.",
+      "candidate_source": "Current configured maintainer identity, no fabricated unsigned author",
+      "created_at_utc": "2026-10-14T11:57:25.864697+00:00"
+    },
+    {
+      "kind": "delivery",
+      "sha": "de694147bee4ea6b35b287117a5eacc9ba060a8a",
+      "tree": "08e6059dba0f13be7a632b724d490e9aac978bf8",
+      "parents": [
+        "7d65a05b53cf107c41d17e1257ff1256127c69bc",
+        "84591ef4296a852a1439781ab62cc4103a59db0a"
+      ],
+      "base": "84591ef4296a852a1439781ab62cc4103a59db0a",
+      "local_retention_ref": "refs/haa/m13-002/forward-plan/delivery",
+      "changed_files": [
+        {
+          "path": "PROJECT-DECISIONS.md",
+          "mode": "100644",
+          "blob": "d0c6f183df9bf29a7664e331773bf5b462c19e2c",
+          "sha256": "bf344ac4e669a5ae307c01fc76856b9b5d3f79bfb47dbba51ccf4a52d6166c1f",
+          "bytes": 21409
+        },
+        {
+          "path": "README.md",
+          "mode": "100644",
+          "blob": "9bee19899fce04d26cfee6287550b5a0e85ec618",
+          "sha256": "dd6b55e22608637973d97ca6a089811b9cbc409bba3049d13d2fa3dcbd91f731",
+          "bytes": 10405
+        },
+        {
+          "path": "docs/planning/02-current-work-queue.md",
+          "mode": "100644",
+          "blob": "cf09e6bdfc66c164a55ecfe9d7af29d67cf0f0df",
+          "sha256": "ef36bd888546903eac9c7e5f323eb4fc97f843aa674daf3d1502dff5cab0225f",
+          "bytes": 193798
+        },
+        {
+          "path": "docs/planning/18-m13-production-release-operations-contract.md",
+          "mode": "100644",
+          "blob": "b34da3feba1e08a70d98c082c708ce0f62f2f67d",
+          "sha256": "f43519ee47e5b694b64d529bbd8bfef09c5b61436aa44923623c6c9a20c7ad4c",
+          "bytes": 14182
+        },
+        {
+          "path": "docs/planning/evidence/m13-002-protected-path/README.md",
+          "mode": "100644",
+          "blob": "b36222d0b01149eeb6e926be0d047088d99d7b7e",
+          "sha256": "e510af5a6c6296e6165f42ccfaacf5f531ea07851c9478450941621600a98e8f",
+          "bytes": 36372
+        },
+        {
+          "path": "docs/planning/evidence/m13-002-protected-path/develop-merge.json",
+          "mode": "100644",
+          "blob": "903281bfb2c1ba9eea5b357ed7e92775fbf69719",
+          "sha256": "57991960db58725f0029c34e2e39ead308a6b2f5b0acb2dcbafeb09370e5aaaf",
+          "bytes": 10977
+        },
+        {
+          "path": "docs/planning/evidence/m13-002-protected-path/raw/develop-merge-receipt.json",
+          "mode": "100644",
+          "blob": "cc2de489d4f05ed87d360326c82a0cc697c5faac",
+          "sha256": "9cef48e251673c25bb7453d17429a08f11fac96cc254b6dc9ce009a7627e8fbd",
+          "bytes": 245
+        },
+        {
+          "path": "docs/planning/evidence/m13-002-protected-path/raw/develop-merge-request.json",
+          "mode": "100644",
+          "blob": "49ebeb1d0afd48e74d3bcb54abf4d1e0d0060af4",
+          "sha256": "a6b84869e60937c3f55509a2b85d632bdc0a31bed09e0a8fdf93ca442cc370ce",
+          "bytes": 521
+        },
+        {
+          "path": "docs/planning/evidence/m13-002-protected-path/raw/develop-merge-response.json",
+          "mode": "100644",
+          "blob": "52fdbf04eee58c52ecf2e692615e6166b687d5ee",
+          "sha256": "3967cd12737414addb4e7c840e6343cdd6bf4322e3617ea37bb6ddd7fdc40b34",
+          "bytes": 109
+        },
+        {
+          "path": "docs/planning/evidence/m13-002-protected-path/raw/stale-merge-receipt.json",
+          "mode": "100644",
+          "blob": "e9dc7a5db0381e08d7c70ae8088892beb108f493",
+          "sha256": "321b9e16061a3f01fb3c21d013f4d5b0286c6c26d12819bb941d9a3f6a928d41",
+          "bytes": 261
+        },
+        {
+          "path": "docs/planning/evidence/m13-002-protected-path/raw/stale-merge-request-body.json",
+          "mode": "100644",
+          "blob": "8fe4191b595826efd495f1d2be3ca2bb214fdfe2",
+          "sha256": "146e99350b2a96431481b26a37fef149717ae4c01d08597edbb7fcea3be685b8",
+          "bytes": 73
+        },
+        {
+          "path": "docs/planning/evidence/m13-002-protected-path/raw/stale-merge-request.json",
+          "mode": "100644",
+          "blob": "8e8878d6ad7758dcbe9c52c99a9640e0122f513c",
+          "sha256": "ee4d9d67c6eedb46e61c1f01a8a5f3989599e704fcf8295b975f4c9d2e0723c9",
+          "bytes": 225
+        },
+        {
+          "path": "docs/planning/evidence/m13-002-protected-path/raw/stale-merge-response.json",
+          "mode": "100644",
+          "blob": "11b746c1f5dc1f9ab009e4c0e0de8300e94ea588",
+          "sha256": "71268987f14987205f187ea9152cd62972ca26b758de982dc22ef52c2f317013",
+          "bytes": 196
+        },
+        {
+          "path": "docs/planning/evidence/m13-002-protected-path/raw/stale-post-develop-ref.json",
+          "mode": "100644",
+          "blob": "4471c8de404a5468ffa9fe07e1edc559a9cfff69",
+          "sha256": "b62b9037d5d5eadc72456197b2268b2ff0a814737c229239375d1987b8bfe0d6",
+          "bytes": 344
+        },
+        {
+          "path": "docs/planning/evidence/m13-002-protected-path/raw/stale-post-feature-ref.json",
+          "mode": "100644",
+          "blob": "df9590a532ef5257687aea1ded525b92983f4a5a",
+          "sha256": "7ea19da82bf91dfff8b444f438f4aedd1884e4a9b6eb6487dd62c82e9d1564d5",
+          "bytes": 413
+        },
+        {
+          "path": "docs/planning/evidence/m13-002-protected-path/raw/stale-post-graphql.json",
+          "mode": "100644",
+          "blob": "afc4f351d87046bfbf29da9e5083ee6883b62876",
+          "sha256": "4b848e51d1b70aff296ea7bb91e6d214f5f86a0a96895b433303a52d440e1c87",
+          "bytes": 2149
+        },
+        {
+          "path": "docs/planning/evidence/m13-002-protected-path/raw/stale-post-main-ref.json",
+          "mode": "100644",
+          "blob": "488b4cbea4155b14430d87d6a0989f1523544832",
+          "sha256": "5d334d360085aa66aeb7fe7746ea9a3061a4abcf366f31711b87dcf2709e91c8",
+          "bytes": 334
+        },
+        {
+          "path": "docs/planning/evidence/m13-002-protected-path/raw/stale-pre-develop-ref.json",
+          "mode": "100644",
+          "blob": "4471c8de404a5468ffa9fe07e1edc559a9cfff69",
+          "sha256": "b62b9037d5d5eadc72456197b2268b2ff0a814737c229239375d1987b8bfe0d6",
+          "bytes": 344
+        },
+        {
+          "path": "docs/planning/evidence/m13-002-protected-path/raw/stale-pre-feature-ref.json",
+          "mode": "100644",
+          "blob": "df9590a532ef5257687aea1ded525b92983f4a5a",
+          "sha256": "7ea19da82bf91dfff8b444f438f4aedd1884e4a9b6eb6487dd62c82e9d1564d5",
+          "bytes": 413
+        },
+        {
+          "path": "docs/planning/evidence/m13-002-protected-path/raw/stale-pre-graphql.json",
+          "mode": "100644",
+          "blob": "afc4f351d87046bfbf29da9e5083ee6883b62876",
+          "sha256": "4b848e51d1b70aff296ea7bb91e6d214f5f86a0a96895b433303a52d440e1c87",
+          "bytes": 2149
+        },
+        {
+          "path": "docs/planning/evidence/m13-002-protected-path/raw/stale-pre-main-ref.json",
+          "mode": "100644",
+          "blob": "488b4cbea4155b14430d87d6a0989f1523544832",
+          "sha256": "5d334d360085aa66aeb7fe7746ea9a3061a4abcf366f31711b87dcf2709e91c8",
+          "bytes": 334
+        },
+        {
+          "path": "docs/planning/evidence/m13-002-protected-path/raw/thread-merge-receipt.json",
+          "mode": "100644",
+          "blob": "6817c5c836343f2f2005670efa1353b3947a00c4",
+          "sha256": "607fa2e7a26bde962eee2100e3fdbd6011d0a2f45059f7218c74eab3da21723f",
+          "bytes": 254
+        },
+        {
+          "path": "docs/planning/evidence/m13-002-protected-path/raw/thread-merge-request.json",
+          "mode": "100644",
+          "blob": "43017848f4ee0925d2602c569ed4602f8a6289b5",
+          "sha256": "0c3658dde3c928e389fe240479d419e038acac163eda81dc18aef10e496a7eb5",
+          "bytes": 225
+        },
+        {
+          "path": "docs/planning/evidence/m13-002-protected-path/raw/thread-merge-response.json",
+          "mode": "100644",
+          "blob": "47565d6cfd9c1b2dd7d2ebc00973dd9cf2aeb68e",
+          "sha256": "ac2af0ef4b11c5ae7f81b9664e1f0740c8ccc835e5a4d89f5f0ebcd7812ebd7a",
+          "bytes": 224
+        },
+        {
+          "path": "docs/planning/evidence/m13-002-protected-path/remote-result.json",
+          "mode": "100644",
+          "blob": "4c543cda781db552a0c9050736910960803aed89",
+          "sha256": "51cd66b27e38db4c468f1e73bf2011b64293124e3ad773d3dffff609acc5bad6",
+          "bytes": 16722
+        },
+        {
+          "path": "docs/planning/evidence/m13-002-protected-path/security-triage.json",
+          "mode": "100644",
+          "blob": "8731e0d0210729c2115a1c74a8e0d4fd5df5605e",
+          "sha256": "21a35b4994ec00c1840ef35abd86631fb717bea07a768eabc0ce85315a47d8f2",
+          "bytes": 9966
+        },
+        {
+          "path": "docs/planning/evidence/m13-002-protected-path/stale-pr-preparation.json",
+          "mode": "100644",
+          "blob": "35425dd679f24c94e58584e639fde694aa3affe5",
+          "sha256": "9dc363d5a100d3b8e5b8854c25e2c25d653ada7c9edca5828310592fa7e3dabc",
+          "bytes": 16922
+        },
+        {
+          "path": "docs/planning/evidence/m13-002-protected-path/stale-rejection.json",
+          "mode": "100644",
+          "blob": "5750a33b4026cf13539839a4ca2ea856978a4ce4",
+          "sha256": "14a4e377fa68eca254cc70f100ca15098d84906795ee5203e3be139d8fb1528a",
+          "bytes": 10867
+        },
+        {
+          "path": "docs/planning/evidence/m13-002-protected-path/strict-check-analysis.json",
+          "mode": "100644",
+          "blob": "9648d5f169b61d4b54a65e458c4678b778ae2b52",
+          "sha256": "acfc90381487946baf614ae45ef8cd8e34b1eb4bc4dbb29ed4f0d618ab1edc2c",
+          "bytes": 10753
+        },
+        {
+          "path": "docs/planning/evidence/m13-002-protected-path/thread-rejection.json",
+          "mode": "100644",
+          "blob": "f2585811fa0ae190ffd3aab8fb79cf9fe1f161b3",
+          "sha256": "8e5253c28cb07f1cca5c576d97af318b5cd59be64de6d8ff9410555b982007d1",
+          "bytes": 8761
+        }
+      ],
+      "diff": "docs/github-logs/m13-002-forward-plan/delivery.diff",
+      "diff_sha256": "d5850f3b31e67da9b98d9c3aaa7b55c4be92ab5faab36f27e43b0dcee3233ea9",
+      "fast_forward_from_base": true,
+      "remote_target_ref": "refs/heads/feature/m13-002-forward-delivery",
+      "payload_snapshot": "7d65a05b53cf107c41d17e1257ff1256127c69bc",
+      "whole_tree_and_modes_equal_payload_snapshot": true,
+      "scope": "Deliver committed documentation/results through7d65a05. This later local planning record is a control document outside the frozen payload; it is not silently added to the candidate.",
+      "created_at_utc": "2026-10-14T11:57:25.864697+00:00"
+    }
+  ],
+  "candidate_custody": {
+    "local_bundle": "docs/github-logs/m13-002-forward-plan/local-candidates.bundle",
+    "sha256": "01b6f0ab14970bd583c38780990bb1180a96bafa5600ffac322e2da8c330121f",
+    "branch_index_worktree_unchanged_by_candidate_creation": true,
+    "remote_source_branches_for_direct_probes": "None; A1/A2 push exact local commit SHA directly to target, without force. Retention refs are local only.",
+    "delivery": "de694147 tree exactly7d65a05; retained as frozen preparation only. Publishing excluded from A. The final plan and future results are outside this snapshot; later concrete reviewed candidate must include desired records and returned main ancestry."
+  },
+  "main_path_intermediate": {
+    "head": "84591ef4296a852a1439781ab62cc4103a59db0a",
+    "base": "2e196a188adce22005fce201c23da1dc27a43426",
+    "count": 18,
+    "boundary": "All18 paths are documentation or preserved evidence (.md/.json/.log); no product/workflow/config/tool files. Not a new CI result.",
+    "diff": "docs/github-logs/m13-002-forward-plan/main-path-baseline.diff",
+    "diff_sha256": "a75353cdcb1f736e2f6015630a7df932ee3643f7d29283e09137419ea8be7b2b",
+    "scope": "Intermediate normal develop→main candidate, not final closure. Current branch source845 and base2e fixed; future PR number/synthetic merge SHA unavailable until server receipt.",
+    "files_inventory": "file_inventories.intermediate_develop_to_main"
+  },
+  "ready_for_one_future_bounded_approval": {
+    "id": "A",
+    "label": "Forward-only probes and PR preparation; no successful protected merge",
+    "max_write_invocations": 8,
+    "maximum_Git_push_invocations": 2,
+    "maximum_API_mutations": 6,
+    "common_controls": [
+      "Future explicit approval of this finite action list is required; current authorization permits local work/read-only requests only.",
+      "Fresh readback before each write: exact main/develop/PR head, expected open/draft/base/auto-merge state, target rules active and unchanged, Strict enabled, App15368 Required and App128106 license/cla, admin actor bypass never.",
+      "No force flags, reset, protection edit, status injection, dispatch, CI cancellation/retry, auto-merge, ref deletion or automatic restoration.",
+      "One invocation per listed write; any transport uncertainty or unexpected API/exit result stops all further writes. Read-only preservation/readback is allowed. Never blind retry.",
+      "Every expected negative must identify the intended server rule using original HTTP/Git output and correlated rule-suite. Unrelated/local rejection is NOT_QUALIFIED; simultaneous blockers are labelled combined.",
+      "After each negative, independently read both protected refs and PR state. Unexpected acceptance/ref movement/merged=true stops immediately without later cleanup writes."
+    ],
+    "actions": [
+      {
+        "id": "A1",
+        "operation": "ordinary fast-forward Git push, expected server rejection",
+        "request": {
+          "argv": [
+            "git",
+            "push",
+            "origin",
+            "6b3ae56d19a9b0d59e4df8585d834b647e9da558:refs/heads/main"
+          ],
+          "source_retention_ref": "refs/haa/m13-002/forward-plan/direct-main",
+          "target": "refs/heads/main",
+          "expected_old_sha": "2e196a188adce22005fce201c23da1dc27a43426"
+        },
+        "max_invocations": 1,
+        "head_sha": "6b3ae56d19a9b0d59e4df8585d834b647e9da558",
+        "PR": null,
+        "changed_files": [
+          {
+            "path": "docs/planning/evidence/m13-002-forward-probes/direct-main.md",
+            "mode": "100644",
+            "blob": "14c3e0961c3d38c7fdef110440f6bd570c17cd77",
+            "sha256": "445a93fd21d5a736d3bb18225db5c6e4d3852b21e75d8e666f15dd801115eb80",
+            "bytes": 294
+          }
+        ],
+        "guards": [
+          "Candidate sole parent equals expected target SHA; target ancestry verified; no PR associated with this candidate on target."
+        ],
+        "expected": "Server pull_request rule rejects; main and develop unchanged. Other failed checks may coexist and must be labelled combined. Local refusal/network/auth failure is not this PASS.",
+        "side_effects": "If protection fails, the ref advances by exactly one reviewed doc-only commit; main may start push CI. Stop, preserve; no rollback.",
+        "stop_conditions": "Common controls apply; do not execute subsequent writes unless this exact expected result and independent ref/state readback are confirmed."
+      },
+      {
+        "id": "A2",
+        "operation": "ordinary fast-forward Git push, expected server rejection",
+        "request": {
+          "argv": [
+            "git",
+            "push",
+            "origin",
+            "68916c7ae69e6c9af8ad80c449a52f10fe6f3bc6:refs/heads/develop"
+          ],
+          "source_retention_ref": "refs/haa/m13-002/forward-plan/direct-develop",
+          "target": "refs/heads/develop",
+          "expected_old_sha": "84591ef4296a852a1439781ab62cc4103a59db0a"
+        },
+        "max_invocations": 1,
+        "head_sha": "68916c7ae69e6c9af8ad80c449a52f10fe6f3bc6",
+        "PR": null,
+        "changed_files": [
+          {
+            "path": "docs/planning/evidence/m13-002-forward-probes/direct-develop.md",
+            "mode": "100644",
+            "blob": "956d24faca8b0dbe566f23df54dbf23d9f7d9525",
+            "sha256": "9be14432ae26e4edd9cc4bfb6e9797530c84e7f5f1d6de7bcc1c84c42895e6e5",
+            "bytes": 300
+          }
+        ],
+        "guards": [
+          "Candidate sole parent equals expected target SHA; target ancestry verified; no PR associated with this candidate on target."
+        ],
+        "expected": "Server pull_request rule rejects; main and develop unchanged. Other failed checks may coexist and must be labelled combined. Local refusal/network/auth failure is not this PASS.",
+        "side_effects": "If protection fails, the ref advances by exactly one reviewed doc-only commit; main may start push CI. Stop, preserve; no rollback.",
+        "stop_conditions": "Common controls apply; do not execute subsequent writes unless this exact expected result and independent ref/state readback are confirmed."
+      },
+      {
+        "id": "A3",
+        "operation": "retarget existing probe, retaining original develop evidence",
+        "request": {
+          "method": "PATCH",
+          "endpoint": "/repos/rahoney/heliopause/pulls/32",
+          "body": {
+            "base": "main"
+          },
+          "expected_main_sha": "2e196a188adce22005fce201c23da1dc27a43426",
+          "expected_develop_sha": "84591ef4296a852a1439781ab62cc4103a59db0a"
+        },
+        "max_invocations": 1,
+        "head_sha": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+        "PR": 32,
+        "changed_files": [
+          "docs/planning/evidence/m13-002-stale-probe/README.md"
+        ],
+        "guards": [
+          "Preserve original PR32 develop receipts before PATCH. Original stale request is never repeated. If retarget does not produce the guarded main candidate, stop."
+        ],
+        "expected": "PR32 open at headff441d3, base main; current main is an ancestor, no conflicts/threads; genuine Required/CLA green and required on the retargeted PR. Poll UNKNOWN without mutating.",
+        "side_effects": "PR base/timeline/review interpretation changes. No ref update. Any naturally triggered CI must finish; no promised zero-CI retarget.",
+        "stop_conditions": "Common controls apply; do not execute subsequent writes unless this exact expected result and independent ref/state readback are confirmed."
+      },
+      {
+        "id": "A4",
+        "operation": "create one main diff review thread",
+        "request": {
+          "method": "POST",
+          "endpoint": "/repos/rahoney/heliopause/pulls/32/comments",
+          "body": {
+            "body": "M13-002 main 대화 해결 규칙 검증용 스레드입니다. 승인된 단회 거절 결과와 브랜치 미변경을 확인한 뒤 이 스레드만 해결합니다.",
+            "commit_id": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+            "path": "docs/planning/evidence/m13-002-stale-probe/README.md",
+            "side": "RIGHT",
+            "line": 8
+          }
+        },
+        "max_invocations": 1,
+        "head_sha": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+        "PR": 32,
+        "changed_files": [],
+        "guards": [
+          "A3 guard passes; required checks green, no prior unresolved threads; exact diff line8 still present."
+        ],
+        "expected": "One unresolved thread; only this additional gate changes CLEAN to BLOCKED. Bind returned comment ID to exact GraphQL review thread ID by readback.",
+        "side_effects": "One public test comment/thread. Thread is intentionally unresolved until A6, which is allowed only after expected A5 rejection.",
+        "stop_conditions": "Common controls apply; do not execute subsequent writes unless this exact expected result and independent ref/state readback are confirmed."
+      },
+      {
+        "id": "A5",
+        "operation": "main conversation + bounded ordinary-admin negative",
+        "request": {
+          "method": "PUT",
+          "endpoint": "/repos/rahoney/heliopause/pulls/32/merge",
+          "body": {
+            "sha": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+            "merge_method": "merge"
+          },
+          "target": "main",
+          "expected_old_sha": "2e196a188adce22005fce201c23da1dc27a43426"
+        },
+        "max_invocations": 1,
+        "head_sha": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+        "PR": 32,
+        "changed_files": [
+          "docs/planning/evidence/m13-002-stale-probe/README.md"
+        ],
+        "guards": [
+          "Only A4 thread unresolved; base main current2e196a1 included; Required/CLA success belongs to current applicable candidate; admin bypass never."
+        ],
+        "expected": "HTTP405 explicitly citing unresolved conversation, correlated pull_request rule failure; PR open/unmerged; both refs unchanged. One call covers both main conversation and ordinary-admin rows.",
+        "side_effects": "Expected no ref change. Unexpected merge would append the12-line probe to main and trigger main CI; stop without resolving/undoing anything.",
+        "stop_conditions": "Common controls apply; do not execute subsequent writes unless this exact expected result and independent ref/state readback are confirmed."
+      },
+      {
+        "id": "A6",
+        "operation": "resolve only the created test thread",
+        "request": {
+          "method": "POST",
+          "endpoint": "/graphql",
+          "query": "mutation($threadId:ID!){resolveReviewThread(input:{threadId:$threadId}){thread{id isResolved}}}",
+          "variables": {
+            "threadId": "Exact A4 response/readback binding, never an arbitrary existing thread"
+          }
+        },
+        "max_invocations": 1,
+        "head_sha": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+        "PR": 32,
+        "changed_files": [],
+        "guards": [
+          "A5 expected rejection, specific rule and unchanged refs already preserved. No automatic cleanup after unexpected state."
+        ],
+        "expected": "Exact created thread resolved; zero unresolved threads, PR32 open atff/main2e, gate CLEAN.",
+        "side_effects": "One thread state update. No branch/merge change.",
+        "stop_conditions": "Common controls apply; do not execute subsequent writes unless this exact expected result and independent ref/state readback are confirmed."
+      },
+      {
+        "id": "A7",
+        "operation": "open actual intermediate develop-to-main qualification PR",
+        "request": {
+          "method": "POST",
+          "endpoint": "/repos/rahoney/heliopause/pulls",
+          "body": {
+            "title": "M13-002 develop→main 보호 경로 중간 검증",
+            "head": "develop",
+            "base": "main",
+            "draft": false,
+            "body": "M13-002의 현재 develop 기록18개 파일을 main 보호 경로에서 검증합니다. Required·CLA 개별 차단 기회와 새 CI를 확인하는 중간 후보이며, 병합은 별도 승인이 필요합니다. Release 또는 M13-002 종료 병합을 승인하지 않습니다."
+          },
+          "expected_head_sha": "84591ef4296a852a1439781ab62cc4103a59db0a",
+          "expected_base_sha": "2e196a188adce22005fce201c23da1dc27a43426"
+        },
+        "max_invocations": 1,
+        "head_sha": "84591ef4296a852a1439781ab62cc4103a59db0a",
+        "PR": "Allocated by A7 create response; cannot preassign a number",
+        "changed_files": {
+          "inventory": "file_inventories.intermediate_develop_to_main",
+          "count": 18
+        },
+        "guards": [
+          "Current refs unchanged; no existing open develop→main PR or unexpected branch delta. Compare exact18 file blob/mode inventory."
+        ],
+        "expected": "New open non-draft PR from develop845 to main2e; bind returned PR number plus exact readback. One necessary genuine pull_request CI begins. No merge approved.",
+        "side_effects": "Public PR + necessary CI/service activity;18 existing documentation/evidence paths, no source/workflow changes. PR number is server allocated.",
+        "stop_conditions": "Common controls apply; do not execute subsequent writes unless this exact expected result and independent ref/state readback are confirmed."
+      },
+      {
+        "id": "A8",
+        "operation": "isolated missing Required on main if genuine window exists",
+        "request": {
+          "method": "PUT",
+          "endpoint": "/repos/rahoney/heliopause/pulls/{A7.receipt.number}/merge",
+          "body": {
+            "sha": "84591ef4296a852a1439781ab62cc4103a59db0a",
+            "merge_method": "merge"
+          },
+          "target": "main",
+          "expected_old_sha": "2e196a188adce22005fce201c23da1dc27a43426"
+        },
+        "max_invocations": 1,
+        "head_sha": "84591ef4296a852a1439781ab62cc4103a59db0a",
+        "PR": "Exact A7 receipt number",
+        "changed_files": {
+          "inventory": "file_inventories.intermediate_develop_to_main",
+          "count": 18
+        },
+        "guards": [
+          "A7 exact returned PR number and readback; current base included, no conflict/thread; genuine CLA green/isRequired/App128106; Required genuinely absent/pending/App15368. If missing-Required-only window never exists, NOT_RUN, no fabricated failure/rerun."
+        ],
+        "expected": "HTTP405/rule-suite identifies missing/pending Required only while genuine license/cla succeeds; both refs unchanged and PR open. Let same natural CI finish.",
+        "side_effects": "Expected no ref change. Unexpected success advances main to an unqualified candidate and can start CI; stop. No second attempt if window disappears.",
+        "stop_conditions": "Common controls apply; do not execute subsequent writes unless this exact expected result and independent ref/state readback are confirmed."
+      }
+    ],
+    "not_included": [
+      "CLA probes without genuine unsigned contributor",
+      "delivery feature publish/merge at not-yet-known SHA",
+      "intermediate main successful merge",
+      "main stale call against not-yet-returned base SHA",
+      "final develop→main successful merge",
+      "force-push or protection setup/change",
+      "cleanup closure/deletion of other PRs/branches"
+    ]
+  },
+  "CLA_condition": {
+    "status": "NOT_TESTED",
+    "participant": "User confirmed no actual unsigned contributor is available.",
+    "disposition": "Defer this live negative; continue other planning/qualification within their own authorization. Not waiver, failure, PASS or evidence of broken enforcement.",
+    "preserved_positive_evidence": "Required license/cla/App128106 active on both rulesets, actual PR31/32 service success and protected PR31 admission.",
+    "prohibited": [
+      "arbitrary/test account or fake contribution",
+      "spoofed author/identity",
+      "deleting or revoking signatures",
+      "changing CLA/Gist version to invalidate existing signatures",
+      "injecting statuses, changing required App or weakening rules"
+    ],
+    "revisit_condition": "A genuine willing unsigned contributor and actual legitimate contribution become available, or an official applicable safe production-App negative method is verified and separately approved.",
+    "official_method_review": {
+      "status": "NO_APPLICABLE_SAFE_LIVE_NEGATIVE_METHOD_FOUND_IN_REVIEWED_OFFICIAL_DOCS",
+      "reviewed_utc": "2026-10-14T12:16:47.166419+00:00",
+      "sources": [
+        {
+          "url": "https://github.com/cla-assistant/cla-assistant/blob/main/README.md",
+          "finding": "Official README describes hosted signing/status flow and self-hosted local webhook/unit-test development. A separately hosted instance/app is not the production license/cla App128106 enforcement path."
+        },
+        {
+          "url": "https://github.com/cla-assistant/cla-assistant/blob/main/COMMON_ISSUES.md",
+          "finding": "Manual recheck refreshes actual signing status; it does not turn a signed contributor into an unsigned one. Recheck may write PR status/comment, so its URL was not invoked during read-only work."
+        },
+        {
+          "url": "https://github.com/cla-assistant/cla-assistant/blob/main/CONTRIBUTING.md",
+          "finding": "Developer contribution/test guidance provides no documented hosted production negative-test mode applicable without a genuine unsigned contributor or state/config changes."
+        }
+      ],
+      "bounded_conclusion": "No documented applicable hosted negative-test mode found in these official sources; this is not exhaustive proof that no private/provider method exists. No instance installed, App changed, recheck called or provider contacted."
+    }
+  },
+  "separate_approvals_and_dependencies": [
+    {
+      "id": "B-main-intermediate",
+      "ready_now": false,
+      "reason": "A7 exact PR, freshRequired/realCLA success and applicable main qualification results must exist. Deferred CLA live negative remains an explicit acceptance gap; intermediate merge does not close it.",
+      "operation": "Reviewer-approved one ordinary exact845 develop→main merge, base2e; request body sha845/merge_method merge.",
+      "changes": {
+        "inventory": "file_inventories.intermediate_develop_to_main",
+        "count": 18
+      },
+      "expected": "main advances forward to server-returned M1; develop845/PR32ff unchanged. Preserve merge receipt/parents/tree and new main CI.",
+      "side_effects": "Actual protected main update and main CI. M13-002 remains open.",
+      "stop": "Any other SHA/diff/gate, failed CI, unclear service result or unexpected merge result; no retry/recovery.",
+      "returned_SHA_binding": "M1 is the successful merge receipt SHA verified against live main; not predicted or authorized by A."
+    },
+    {
+      "id": "B-main-stale",
+      "ready_now": false,
+      "operation": "After M1 known, one separately approved ordinary PUT PR32 shaff/merge_method merge against mainM1, only if actual BEHIND and other gates clear.",
+      "changes": [
+        "docs/planning/evidence/m13-002-stale-probe/README.md"
+      ],
+      "expected": "Strict required-check rejection with rule-suite and unchanged refs. Bounded stale-flow claim; do not repeat develop test.",
+      "side_effects": "Unexpected success appends marker to main; stop.",
+      "stop": "Probe closed/merged/head changed, notBEHIND, conflicts/threads, missing original successes, base differs from exact reviewed M1 or another blocker.",
+      "SHA_status": "headff fixed; baseM1 unavailable now, so not executable in A."
+    },
+    {
+      "id": "C-forward-delivery",
+      "ready_now": false,
+      "source_branch": "refs/heads/feature/m13-002-forward-delivery",
+      "target": "develop",
+      "PR": "Not allocated",
+      "operation": "Locally merge actual M1 forward into retained delivery preparation and include chosen new records; verify exact content/ancestry, freeze C2 SHA/diff before approval. Publish once/open PR/capture isolated develop Required opportunity during needed CI; aftergreenCI/CLA separately scoped normal feature→develop delivery merge.",
+      "expected": "C2 contains current mainM1 and develop845; normal merge returns developD2. No standalone main→develop sync needed if this ancestry/content check passes.",
+      "changes": "30 frozen7d record paths in local_candidates delivery, plus explicitly reviewed later plan/result records; exact final list/C2 cannot be fixed before M1 and new evidence.",
+      "side_effects": "New feature ref/PR/CI and intended forward develop update.",
+      "stop": "Any unknown/conflicting ancestry/delta/CI, no realRequired-only window, or unexpected negative acceptance. Do not silently publish the olderde694 preparation after main advancement."
+    },
+    {
+      "id": "D-final-main",
+      "ready_now": false,
+      "source_branch": "develop",
+      "head": "D2 returned by authorized C merge, still unknown",
+      "target": "main",
+      "base": "M1 still current",
+      "PR": "Not allocated",
+      "operation": "Actual final develop→main PR, one fresh CI/realCLA, all required negatives and force method resolved, then separate reviewer approval for exact D2/M1 merge.",
+      "changes": "Exact C-approved main delta + any later reviewed records, inventoried before approval.",
+      "expected": "Normal protected final merge, matching refs/receipt/tree and successful new main CI; final audit can close M13-002 only when all acceptance rows satisfied.",
+      "side_effects": "Actual protected main update and main push CI.",
+      "stop": "Any remaining acceptance gap, stale or changedSHA, failedRequired/CLA, unresolvedthread or unexpected outcome. Post-merge receipt documentation may need a later separately reviewed delivery; no oldCI reuse."
+    },
+    {
+      "id": "F-force-method",
+      "ready_now": false,
+      "operation": "Prefer actual matching historic non_fast_forward failure if available without rerun; otherwise choose a separately approved protected disposable probe with explicit acceptance-method decision.",
+      "target": "A named disposable protected ref/repository still to be chosen; not main/develop.",
+      "SHA_files_PR": "Not specified, excluded from all executable bundles until setup/candidate precisely reviewed.",
+      "expected": "Real server non-fast-forward rule failure, not client refusal or unrelated rule.",
+      "limit": "Probe execution + live target wiring only covers original main/develop requirement if reviewer explicitly accepts that evidence method. Otherwise exact-target hostile rows remain open.",
+      "production_history": "Actual main/develop non-fast-forward attempt always needs separate high-risk approval; if unexpectedly allowed it rewrites the ref. No automatic restoration or prior backup makes it history-preserving."
+    }
+  ],
+  "ordering_correction": {
+    "supersedes": "7d65a05 README Minimum sequence step7 proposed final merge before main stale; latest user requires necessary negatives before final merge.",
+    "resolution": "Intermediate canonical develop845→main2e merge may advance main to M1 first; main sibling PR32 then supplies main stale case, later delivery includes M1 forward, and final developD2→mainM1 is separately approved last.",
+    "if_intermediate_main_change_not_accepted": "Do not perform a shortcut feature→main positive merge or call a final merge intermediate after the fact. Main stale-before-final needs another approved base-advancement/evidence-method decision; do not waive acceptance."
+  },
+  "minimum_path": [
+    "A finite forward-only probes/PR preparation; CLA live negative stays NOT_TESTED. Resolve force evidence method independently; do not repeat covered cases.",
+    "Continue remaining independent qualification while CLA live negative is deferred. Before acceptance closure/final main authorization, obtain genuine missing-CLA evidence or an explicit approved canonical disposition; no invented account/contribution.",
+    "Separately approve exact intermediate845→main2e after needed evidence/gates; preserve returnedM1 and mainCI.",
+    "Freeze/approve main stale attempt atff/M1; separately prepare C2 delivery containing M1 and new records.",
+    "During C2 neededCI capture develop missingRequired if genuineCLA green; let sameCI finish and authorize normal feature→develop delivery yieldingD2.",
+    "After all applicable negative results and force decision/evidence, final developD2→mainM1 PR gets its freshCI/CLA and separate exact reviewer merge approval; verify mainCI and close audit."
+  ],
+  "CI_budget": "No replay of historical CI, PR31, PR32 develop attempt, M13-001 or baseline. Use each necessary actual PR CI once; use pending window opportunistically, never cancel/rerun/manufacture it. Retarget may trigger service work; inspect actual state. Genuine CLA probes and intermediate main advancement may need additional real PR CI. No fixed total or guaranteed window.",
+  "local_validation": {
+    "candidate_exports": [
+      {
+        "kind": "direct-main",
+        "sha": "6b3ae56d19a9b0d59e4df8585d834b647e9da558",
+        "root": "/tmp/haa-m13-002-forward-direct-main",
+        "files": 1453,
+        "entire_tree_bytes_modes_match": true
+      },
+      {
+        "kind": "direct-develop",
+        "sha": "68916c7ae69e6c9af8ad80c449a52f10fe6f3bc6",
+        "root": "/tmp/haa-m13-002-forward-direct-develop",
+        "files": 1464,
+        "entire_tree_bytes_modes_match": true
+      },
+      {
+        "kind": "delivery",
+        "sha": "de694147bee4ea6b35b287117a5eacc9ba060a8a",
+        "root": "/tmp/haa-m13-002-forward-delivery",
+        "files": 1488,
+        "entire_tree_bytes_modes_match": true
+      }
+    ],
+    "direct_candidate_results": "docs/github-logs/m13-002-forward-plan/local-validation/result.json",
+    "delivery_source_reuse": {
+      "source": "7d65a05b53cf107c41d17e1257ff1256127c69bc",
+      "entire_tree_and_modes_equal": true,
+      "prior_result": "docs/github-logs/m13-002-stale-rejection/analysis-20261014T092849513721Z/validation/result.json",
+      "profiles": [
+        "docs",
+        "security"
+      ],
+      "no_rerun": true
+    },
+    "whole_record_candidate_checks": "Recorded in local forward-plan/record-validation after final documentation edits; do not interpret as remote acceptance."
+  },
+  "raw_custody": {
+    "historical_unchanged": [
+      {
+        "path": "stale-rejection.json",
+        "sha256": "14a4e377fa68eca254cc70f100ca15098d84906795ee5203e3be139d8fb1528a",
+        "unchanged_from": "7d65a05b53cf107c41d17e1257ff1256127c69bc"
+      },
+      {
+        "path": "strict-check-analysis.json",
+        "sha256": "acfc90381487946baf614ae45ef8cd8e34b1eb4bc4dbb29ed4f0d618ab1edc2c",
+        "unchanged_from": "7d65a05b53cf107c41d17e1257ff1256127c69bc"
+      },
+      {
+        "path": "thread-rejection.json",
+        "sha256": "8e5253c28cb07f1cca5c576d97af318b5cd59be64de6d8ff9410555b982007d1",
+        "unchanged_from": "7d65a05b53cf107c41d17e1257ff1256127c69bc"
+      },
+      {
+        "path": "develop-merge.json",
+        "sha256": "57991960db58725f0029c34e2e39ead308a6b2f5b0acb2dcbafeb09370e5aaaf",
+        "unchanged_from": "7d65a05b53cf107c41d17e1257ff1256127c69bc"
+      }
+    ],
+    "new_readonly_originals": [
+      {
+        "path": "docs/github-logs/m13-002-forward-plan/readback-20261014T115408617726Z/head-statuses/receipt.json",
+        "sha256": "b397345d695a54bac54e0a0cd7065214dc629102349030a0d1bc54d9277f3499",
+        "bytes": 201
+      },
+      {
+        "path": "docs/github-logs/m13-002-forward-plan/readback-20261014T115408617726Z/head-statuses/request.json",
+        "sha256": "bee480e7569bc36a6d6b45aa7182b4eb461cbc367200cddbaad7a01387bcbad4",
+        "bytes": 136
+      },
+      {
+        "path": "docs/github-logs/m13-002-forward-plan/readback-20261014T115408617726Z/head-statuses/response.json",
+        "sha256": "4ef854d13d5bcc2707278b038306e332d71a33adac3d20a8c01dd9b1943beb8c",
+        "bytes": 1578
+      },
+      {
+        "path": "docs/github-logs/m13-002-forward-plan/readback-20261014T115408617726Z/open-prs/receipt.json",
+        "sha256": "a23ffe0a7758d95f9122fe5b3d76403fdf4d08194c3d73eb03504707b370f9a8",
+        "bytes": 201
+      },
+      {
+        "path": "docs/github-logs/m13-002-forward-plan/readback-20261014T115408617726Z/open-prs/request.json",
+        "sha256": "3ca311966e7f2ab6e2795d4e5536e28e2ee12d7d7c76cfa58ea914fac79a7bdb",
+        "bytes": 95
+      },
+      {
+        "path": "docs/github-logs/m13-002-forward-plan/readback-20261014T115408617726Z/open-prs/response.json",
+        "sha256": "3679891fca24bd4682f26aefd065712d4fa7d00a09d2d68915642bffacaf117f",
+        "bytes": 16516
+      },
+      {
+        "path": "docs/github-logs/m13-002-forward-plan/readback-20261014T115408617726Z/pr32/receipt.json",
+        "sha256": "b7e84f7cc94fe9a9a99e53c2a22b23bba70bdc49877baaa7cc255efedf724cb5",
+        "bytes": 202
+      },
+      {
+        "path": "docs/github-logs/m13-002-forward-plan/readback-20261014T115408617726Z/pr32/request.json",
+        "sha256": "c72039cf1f5d87c523b37cb74a48934f2933b730181baa233fa73de3ce60be23",
+        "bytes": 74
+      },
+      {
+        "path": "docs/github-logs/m13-002-forward-plan/readback-20261014T115408617726Z/pr32/response.json",
+        "sha256": "fffd6613dec52cb8cdc4750a2c0b62f1fa53a36b02cb3e5912cdc4ba520ba96b",
+        "bytes": 16731
+      },
+      {
+        "path": "docs/github-logs/m13-002-forward-plan/readback-20261014T115408617726Z/refs/receipt.json",
+        "sha256": "5960511160d464ce153cb7a7a6ebed18000304940a4055a6d155e9d543abf14a",
+        "bytes": 202
+      },
+      {
+        "path": "docs/github-logs/m13-002-forward-plan/readback-20261014T115408617726Z/refs/request.json",
+        "sha256": "73361041401bcf5e369d1563ad9812edc43696229d6cafa1a03073b388935ee6",
+        "bytes": 90
+      },
+      {
+        "path": "docs/github-logs/m13-002-forward-plan/readback-20261014T115408617726Z/refs/response.json",
+        "sha256": "c4dbff32c21bc657bf77440d621cd75e8732fe855903114ae22fa751c38bdc13",
+        "bytes": 11988
+      },
+      {
+        "path": "docs/github-logs/m13-002-forward-plan/readback-20261014T115408617726Z/summary.json",
+        "sha256": "54329520b2f0b542646554aea0263143c659c0b3e50945c24254817fa1009ef7",
+        "bytes": 1576
+      },
+      {
+        "path": "docs/github-logs/m13-002-forward-plan/analysis-20261014T120935051398Z/actor-permission/receipt.json",
+        "sha256": "1c81148d983515b281c3e4e065c944f75003cfb6eec42e2239d02b2a30d6679c",
+        "bytes": 219
+      },
+      {
+        "path": "docs/github-logs/m13-002-forward-plan/analysis-20261014T120935051398Z/actor-permission/request.json",
+        "sha256": "32d14a37e57ea8ea13246c6d7699e0ffd68418f74d1fb5c63a0f4b68b117914b",
+        "bytes": 114
+      },
+      {
+        "path": "docs/github-logs/m13-002-forward-plan/analysis-20261014T120935051398Z/actor-permission/response.json",
+        "sha256": "bc5601db943e4a514005c9014706c64a12b57c2936b27e72ca6f5d0dc4b4149c",
+        "bytes": 1068
+      },
+      {
+        "path": "docs/github-logs/m13-002-forward-plan/analysis-20261014T120935051398Z/develop-ruleset/receipt.json",
+        "sha256": "aa9affe194570760e455cd5a26cf681930d28824db085a0164f928a4e977b92a",
+        "bytes": 219
+      },
+      {
+        "path": "docs/github-logs/m13-002-forward-plan/analysis-20261014T120935051398Z/develop-ruleset/request.json",
+        "sha256": "8f3841abc863dff74e734f6a6fdedc357fec851d10f2f6ca6cf2a1c60dc96911",
+        "bytes": 99
+      },
+      {
+        "path": "docs/github-logs/m13-002-forward-plan/analysis-20261014T120935051398Z/develop-ruleset/response.json",
+        "sha256": "0d981954d6b00b39c6e5705583045ea31bb9c98244d849beb55cb4ac8bcf964d",
+        "bytes": 1222
+      },
+      {
+        "path": "docs/github-logs/m13-002-forward-plan/analysis-20261014T120935051398Z/graphql/receipt.json",
+        "sha256": "dcc173d6e2a6186d214ccba62cdda29e1ef087c5f95e343f5ebcf08eb8dce25c",
+        "bytes": 218
+      },
+      {
+        "path": "docs/github-logs/m13-002-forward-plan/analysis-20261014T120935051398Z/graphql/request.json",
+        "sha256": "82f3cdace9c3aaa698c9211aa4ae7ff0dafb3e2778071dfe939983059d3c0851",
+        "bytes": 782
+      },
+      {
+        "path": "docs/github-logs/m13-002-forward-plan/analysis-20261014T120935051398Z/graphql/response.json",
+        "sha256": "ef33a43e9a37118dd34a5511cf000057260a0852eb9af1abd1247948937c3d9a",
+        "bytes": 2444
+      },
+      {
+        "path": "docs/github-logs/m13-002-forward-plan/analysis-20261014T120935051398Z/head-checks/receipt.json",
+        "sha256": "9f7ddf343f5ce992e4039b9157baab733c51a39f13f36dc9a562085cccb03151",
+        "bytes": 219
+      },
+      {
+        "path": "docs/github-logs/m13-002-forward-plan/analysis-20261014T120935051398Z/head-checks/request.json",
+        "sha256": "d3e3ba4948c7df1d3f19e99ccb67c6e6e23e301316de6a23fd9c998b778506f6",
+        "bytes": 154
+      },
+      {
+        "path": "docs/github-logs/m13-002-forward-plan/analysis-20261014T120935051398Z/head-checks/response.json",
+        "sha256": "0f64588a22d45bb00dcb1225f8f34dce095abc625eda25c1202bcb63952b94fd",
+        "bytes": 35229
+      },
+      {
+        "path": "docs/github-logs/m13-002-forward-plan/analysis-20261014T120935051398Z/main-ruleset/receipt.json",
+        "sha256": "25f9447d5c6dd6fc0230f516ab7b1dd01afdb96dbcc12d95105e542b32d4f950",
+        "bytes": 218
+      },
+      {
+        "path": "docs/github-logs/m13-002-forward-plan/analysis-20261014T120935051398Z/main-ruleset/request.json",
+        "sha256": "3121962b45a2154d4d33bbed9275e6b4dc20748f22173ac7ac8925335c77de6f",
+        "bytes": 99
+      },
+      {
+        "path": "docs/github-logs/m13-002-forward-plan/analysis-20261014T120935051398Z/main-ruleset/response.json",
+        "sha256": "59f782111e7e79128c0d54e6b658ae09754a9cc7144cc3383ea534bb14d5caba",
+        "bytes": 1216
+      },
+      {
+        "path": "docs/github-logs/m13-002-forward-plan/analysis-20261014T120935051398Z/summary.json",
+        "sha256": "7a1c29e6791b46604f494c2fa6bfd17c6136ae9057ff6283e397b6702cefb43b",
+        "bytes": 12056
+      }
+    ],
+    "policy": "Original full responses kept locally byte-for-byte; selected noncredential metadata versioned here. Existing whole-worktree scanner FAIL from public App response fields is preserved, not relabelled.",
+    "local_preparation_diagnostic": "docs/github-logs/m13-002-forward-plan/preparation-diagnostic.json"
+  },
+  "official_sources": [
+    {
+      "url": "https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#pull_request",
+      "basis": "Default PR types opened/synchronize/reopened; repository pull_request has no types override. Do not guarantee retarget has no service/CI work; inspect actual run state."
+    },
+    {
+      "url": "https://docs.github.com/en/pull-requests/how-tos/create-pull-requests/changing-the-base-branch-of-a-pull-request",
+      "basis": "Base retarget affects commit timeline/review context; preserve original develop evidence before retarget."
+    }
+  ],
+  "acceptance_and_release_assessment": {
+    "M13_002_closure": "BLOCKED_BY_ACCEPTANCE_GAP_UNDER_CURRENT_CONTRACT",
+    "basis": "docs/planning/18-m13-production-release-operations-contract.md section6 M13-002 explicitly lists missing CLA among hostile cases that must fail; Queue acceptance requires actual server enforcement. Required binding/positive success do not replace this isolated live negative.",
+    "remaining_work": "May continue all independent other checks; keep item IN_PROGRESS, QUALIFIED=NO, ACCEPTANCE_CLOSED=NO. No need to repeat existing positive/Strict checks or alter protection.",
+    "formal_release": "Not ready under current project plan: required M13-002 qualification is not closed and M13-003..005/release acceptance are still pending. A deferred CLA test is a project acceptance gap; it is not itself a failed CLA service result for the currently signed PR.",
+    "machine_gate_boundary": "Do not claim a NOT_TESTED report field automatically fails GitHub Required or a release workflow. Effective live license/cla requirement remains active and signed PRs can pass it. This disposition concerns canonical project acceptance and release readiness.",
+    "resolution": "Actual applicable negative evidence, or an explicitly approved canonical acceptance/evidence-method disposition before claiming closure/release readiness. This user instruction authorizes deferral and continuing other work, not silent acceptance removal or final main merge."
+  },
+  "file_inventories": {
+    "intermediate_develop_to_main": [
+      {
+        "path": "PROJECT-DECISIONS.md",
+        "status": "M",
+        "mode": "100644",
+        "blob": "50e865ac642502736426c1f4561cae2fefa92a83",
+        "sha256": "a97d947d616ddedeaa98bb77c59b514630c938a6174971bf2563371f3f36d48b",
+        "bytes": 19769
+      },
+      {
+        "path": "README.md",
+        "status": "M",
+        "mode": "100644",
+        "blob": "8f54702a3413423c7b31aa9c72d7e37b69363c31",
+        "sha256": "2b0305503f281c1314eac40e2f48ca15dececddf439fa3855d473b9e8931f1ee",
+        "bytes": 10210
+      },
+      {
+        "path": "docs/engineering/evidence/security-go1269/README.md",
+        "status": "M",
+        "mode": "100644",
+        "blob": "edb20b788cf76b007e957a882574e3718487f47d",
+        "sha256": "5461107108094c6e53e898a2bac32f207d6045e428fe5f82d478649b81540c08",
+        "bytes": 12502
+      },
+      {
+        "path": "docs/engineering/evidence/security-go1269/cargo-gai-followup.md",
+        "status": "M",
+        "mode": "100644",
+        "blob": "ab6f721dd8fbf3b5dcdbabde6bafda30d35a4dc1",
+        "sha256": "53d5b626d7b97547447f60f33113db40228bae1411323f0bce86ac19f6676ae4",
+        "bytes": 3670
+      },
+      {
+        "path": "docs/planning/02-current-work-queue.md",
+        "status": "M",
+        "mode": "100644",
+        "blob": "a76f7201930c0fafccf75c5535507a56f9fbca68",
+        "sha256": "b476c5aa0500f9be266126f6585de0ab41b773ffdfd60d334a09093771caf2e0",
+        "bytes": 187670
+      },
+      {
+        "path": "docs/planning/17-m12-02-fix-list.md",
+        "status": "M",
+        "mode": "100644",
+        "blob": "69cbbfe247490f83b85c48343375197af3b51b9d",
+        "sha256": "ac25146b9059f10852dd67fa0ec2c86e71cdbee940eaf935e0bfb033bd7a7435",
+        "bytes": 7520
+      },
+      {
+        "path": "docs/planning/18-m13-production-release-operations-contract.md",
+        "status": "M",
+        "mode": "100644",
+        "blob": "0bb95b57e5320c92efcd4d4a2363e8715eab4223",
+        "sha256": "0d67226b48929b86a9e683df4de9aa22b49ecf6583d7f66744a52a6adc50bd76",
+        "bytes": 13618
+      },
+      {
+        "path": "docs/planning/evidence/m13-001-protected-activation/README.md",
+        "status": "A",
+        "mode": "100644",
+        "blob": "3d4c0957adef79c29c8fb3fa3c9ca0357c27690d",
+        "sha256": "2c3fe05ee07a149893ce01c2e4f0068e5f10879be9035fff4eeafd07eade856d",
+        "bytes": 6251
+      },
+      {
+        "path": "docs/planning/evidence/m13-001-protected-activation/activation-plan.json",
+        "status": "A",
+        "mode": "100644",
+        "blob": "8076f01532a9e2bb07077f23d5a2fdebb4fb695a",
+        "sha256": "20693612010281ee4bdb7b1f51906c035f516d8e0e38032be86a739be0715d92",
+        "bytes": 4200
+      },
+      {
+        "path": "docs/planning/evidence/m13-001-protected-activation/main-ci.json",
+        "status": "A",
+        "mode": "100644",
+        "blob": "ad738152d9e9b14edfe6ecc1e16bbb7359a295cf",
+        "sha256": "82801e10d5db5f4e9dc9af6b15f19fa869b6d5772984c5a28b0857aa8b2ae1fb",
+        "bytes": 1583
+      },
+      {
+        "path": "docs/planning/evidence/m13-001-protected-activation/result.json",
+        "status": "A",
+        "mode": "100644",
+        "blob": "0b70672d0a2404ba11f16b2473ff2d3042d3939e",
+        "sha256": "61ef504a1c49131956fc0581e63858a302322b2ccd8ca39b49022f2c6e1d2b8a",
+        "bytes": 6919
+      },
+      {
+        "path": "docs/planning/evidence/m13-002-protected-path/README.md",
+        "status": "A",
+        "mode": "100644",
+        "blob": "53b47329e510efdcb295c59d2041b51ed5e8248d",
+        "sha256": "a62dd387035bfca367cf06ccf1803f86be635af62f5bd77b97de4352fc6f67c3",
+        "bytes": 10454
+      },
+      {
+        "path": "docs/planning/evidence/m13-002-protected-path/baseline.json",
+        "status": "A",
+        "mode": "100644",
+        "blob": "17f903e4d1e02424c6407517ce8e054341006089",
+        "sha256": "ec2a11f91c383b437771865ed2c277688eee082cb3af7054824c211052dc9dda",
+        "bytes": 8342
+      },
+      {
+        "path": "docs/planning/evidence/m13-002-protected-path/checks.json",
+        "status": "A",
+        "mode": "100644",
+        "blob": "8751b3d040246f54f16b67745cfd312a924678e2",
+        "sha256": "63676aa00ba1baa22880e570b56047e4b46560b22ed3a0b3c726c89be7c017e9",
+        "bytes": 3521
+      },
+      {
+        "path": "docs/planning/evidence/m13-002-protected-path/raw/docs.log",
+        "status": "A",
+        "mode": "100644",
+        "blob": "7f41a84b3f54aafef7d64644eaffb0f58d31cf0f",
+        "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9",
+        "bytes": 22
+      },
+      {
+        "path": "docs/planning/evidence/m13-002-protected-path/raw/release-gate.log",
+        "status": "A",
+        "mode": "100644",
+        "blob": "00834aa125b7aca346868c5d5cc899f04519ead4",
+        "sha256": "11e43c6a182a612ea79ba5d521d90153efd0f567857993ea20db4c3f95039b73",
+        "bytes": 21
+      },
+      {
+        "path": "docs/planning/evidence/m13-002-protected-path/raw/security.log",
+        "status": "A",
+        "mode": "100644",
+        "blob": "0405df0ac1f6ae94604a3c713b36c13657aeb65f",
+        "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95",
+        "bytes": 44
+      },
+      {
+        "path": "docs/planning/evidence/m13-002-protected-path/raw/workflow.log",
+        "status": "A",
+        "mode": "100644",
+        "blob": "df15398c8ba1496dc0c13da2f6b8d8ee255dcabc",
+        "sha256": "1cecf63447563bee7e3bdd79ac5f99413229645b58b8704c6df0d88ca1dcbeba",
+        "bytes": 1071
+      }
+    ]
+  }
+}

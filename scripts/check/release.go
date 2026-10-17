@@ -14,6 +14,18 @@ import (
 // explicitly authorizes public release assets.
 func checkReleaseGate(root string) error {
 	var findings []string
+	selectedGo := ""
+	tools, err := readToolLock(filepath.Join(root, "scripts", "tools.lock.json"))
+	if err != nil {
+		findings = append(findings, "release version owners: "+err.Error())
+	} else if owners, err := runtimeVersionOwners(root, tools); err != nil {
+		findings = append(findings, "release version owners: "+err.Error())
+	} else {
+		selectedGo = owners["Go"]
+		if err := checkRuntimeVersionOwners(root, tools); err != nil {
+			findings = append(findings, err.Error())
+		}
+	}
 	if err := checkVersionSupport(root, true, io.Discard); err != nil {
 		findings = append(findings, "strict version support freshness: "+err.Error())
 	}
@@ -46,7 +58,7 @@ func checkReleaseGate(root string) error {
 	workflowBody, err := os.ReadFile(workflowPath)
 	if err != nil {
 		findings = append(findings, "release build workflow is unavailable")
-	} else if workflowFindings := validateReleaseWorkflow(string(workflowBody)); len(workflowFindings) != 0 {
+	} else if workflowFindings := validateReleaseWorkflow(string(workflowBody), selectedGo); len(workflowFindings) != 0 {
 		findings = append(findings, workflowFindings...)
 	}
 	publishPath := filepath.Join(root, filepath.FromSlash(".github/workflows/heliopause-release-publish.yml"))
@@ -55,7 +67,7 @@ func checkReleaseGate(root string) error {
 		findings = append(findings, "public release publication workflow is not configured")
 	} else if publishBody, readErr := os.ReadFile(publishPath); readErr != nil {
 		findings = append(findings, "public release publication workflow is unreadable")
-	} else if workflowFindings := validateReleasePublishWorkflow(string(publishBody)); len(workflowFindings) != 0 {
+	} else if workflowFindings := validateReleasePublishWorkflow(string(publishBody), selectedGo); len(workflowFindings) != 0 {
 		findings = append(findings, workflowFindings...)
 	}
 	if len(findings) == 0 {

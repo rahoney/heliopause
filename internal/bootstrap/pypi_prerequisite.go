@@ -75,6 +75,56 @@ func parseInspectionPrerequisiteRequest(raw string) (inspectionPrerequisiteReque
 	return request, nil
 }
 
+func validateInspectionPrerequisiteTarget(request inspectionPrerequisiteRequest, graph domain.LockedDependencyGraph) error {
+	found := false
+	for _, node := range graph.Nodes() {
+		if node.Artifact().Identity().Name() == request.Project {
+			return errors.New("inspection prerequisite cannot replace a selected dependency")
+		}
+		if node.Artifact().DeclaredIntegrity() == "sha256:"+request.TargetSHA256 {
+			if node.Node() == graph.Primary() {
+				return errors.New("requested artifact must be inspected in its original environment")
+			}
+			found = true
+		}
+	}
+	if !found {
+		return errors.New("inspection prerequisite target is not selected")
+	}
+	return nil
+}
+
+// Reject stale caller pins after metadata resolution, before the main intake.
+// The loader still validates the same binding before acquiring auxiliary bytes.
+type prerequisiteCheckingResolver struct {
+	resolver ports.DependencyResolver
+	read     func() (string, error)
+}
+
+func (r prerequisiteCheckingResolver) ResolveDependencies(ctx context.Context, reference domain.ArtifactReference, install domain.InstallContext) (domain.DependencyResolution, error) {
+	raw, err := r.read()
+	if err != nil {
+		return domain.DependencyResolution{}, err
+	}
+	var request inspectionPrerequisiteRequest
+	if raw != "" {
+		request, err = parseInspectionPrerequisiteRequest(raw)
+		if err != nil {
+			return domain.DependencyResolution{}, err
+		}
+	}
+	resolution, err := r.resolver.ResolveDependencies(ctx, reference, install)
+	if err != nil {
+		return domain.DependencyResolution{}, err
+	}
+	if raw != "" {
+		if err := validateInspectionPrerequisiteTarget(request, resolution.Graph()); err != nil {
+			return domain.DependencyResolution{}, err
+		}
+	}
+	return resolution, nil
+}
+
 func inspectionPrerequisiteLoader(read func() (string, error), resolver ports.DependencyResolver, intake ports.Artifact) inspectionpypi.InspectionPrerequisiteLoader {
 	return func(ctx context.Context, graph domain.LockedDependencyGraph) ([]inspectionpypi.InspectionPrerequisite, error) {
 		raw, err := read()
@@ -85,20 +135,8 @@ func inspectionPrerequisiteLoader(read func() (string, error), resolver ports.De
 		if err != nil {
 			return nil, err
 		}
-		found := false
-		for _, node := range graph.Nodes() {
-			if node.Artifact().Identity().Name() == request.Project {
-				return nil, errors.New("inspection prerequisite cannot replace a selected dependency")
-			}
-			if node.Artifact().DeclaredIntegrity() == "sha256:"+request.TargetSHA256 {
-				if node.Node() == graph.Primary() {
-					return nil, errors.New("requested artifact must be inspected in its original environment")
-				}
-				found = true
-			}
-		}
-		if !found {
-			return nil, errors.New("inspection prerequisite target is not selected")
+		if err := validateInspectionPrerequisiteTarget(request, graph); err != nil {
+			return nil, err
 		}
 		// Existing isolated official-PyPI selection cross-checks the caller pin;
 		// neither wheel output nor a private cache determines the expected hash.

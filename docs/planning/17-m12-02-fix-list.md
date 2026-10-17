@@ -2,7 +2,7 @@
 
 - 파일명: `17-m12-02-fix-list.md`
 - 시점: M12 Ecosystem Expansion 전체 qualification 완료 직후
-- 상태: COMPLETE — 기술 acceptance 완료; reviewer merge pending
+- 상태: COMPLETE — 기술 acceptance 및 PR29 merge/main CI 전달 완료
 
 이 문서는 M12에서 추가한 **PyTorch, Go Modules, Cargo/crates.io, Terraform Provider**
 지원과 기존 npm/PyPI/GitHub 경로를 함께 최종 red-team 검토한 뒤,
@@ -33,8 +33,8 @@ NO_RELEASE_BLOCKING_FINDINGS
 ```
 
 Status: COMPLETE
-Ready: No active work item — reviewer merge handoff
-Next: PR29 reviewer merge, main CI, then M13
+Ready: No active work item — delivery complete
+Next: M13; PR29 and security follow-up PR30 are merged, main CI38328099413 SUCCESS
 
 ## 검토 기준선
 

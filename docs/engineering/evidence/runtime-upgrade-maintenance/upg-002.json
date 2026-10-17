@@ -1,0 +1,242 @@
+{
+  "schema": "haa.runtime-upgrade-maintenance-ownership/v1",
+  "date": "2026-10-15",
+  "baseline_commit": "b4eaa5bda0b8d237d6a3a7f339b319625c6e0946",
+  "work_item": "UPG-002",
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES",
+    "ACCEPTANCE_CLOSED": "YES",
+    "MISSING": []
+  },
+  "scope": "Version ownership inventory, selected-version drift and four-runtime release manifest. Existing versions retained; updater/compiler rebuilding/full qualification remain later items.",
+  "checks": {
+    "baseline-quick-git.log": {
+      "status": "PASS",
+      "sha256": "ea69ab565522b089dac8deb95ea0dd787ffbbe12db3fc5820a056a4f0618918b"
+    },
+    "quick-final.log": {
+      "status": "PASS",
+      "sha256": "911c4965976192ce9dba237462b2e763d594a0d5aedb481679cc85fe671c0424"
+    },
+    "security-1.log": {
+      "status": "PASS",
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95"
+    },
+    "release-gate-2.log": {
+      "status": "PASS",
+      "sha256": "11e43c6a182a612ea79ba5d521d90153efd0f567857993ea20db4c3f95039b73"
+    },
+    "owner-regressions-final.log": {
+      "status": "PASS",
+      "sha256": "f77895403c3f7a01c0a727ef5491960d6a98dc047278c9add813154b0605b46f"
+    },
+    "format-final.log": {
+      "status": "PASS",
+      "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+    },
+    "generator-idempotence.json": {
+      "status": "PASS",
+      "sha256": "8381646231b140b6e4597f796b8cf211e30a139fe46079de48e6780b4c7dc10f"
+    },
+    "runtime-pin-verification.json": {
+      "status": "PASS",
+      "sha256": "e940de1340d10fcf899e30b239661f976dba39ef1849f49382f3f9532fba77a4"
+    }
+  },
+  "regressions": {
+    "top_level_tests": [
+      "TestRuntimeVersionOwnersAllowCoordinatedFutureGoInputs",
+      "TestRuntimeVersionOwnersRejectNewExecutableImageConsumer",
+      "TestGoSetupCannotUseFloatingOrAlternateSelectors",
+      "TestValidateCIWorkflowRejectsSecurityRegressions",
+      "TestRuntimeVersionOwnersRejectPartialOrUnownedUpdates",
+      "TestFormatCheckAndExplicitFormatProfile",
+      "TestModuleDriftIsFinding",
+      "TestRuntimeLockRejectsImageVersionAndABIDrift",
+      "TestPyTorchVersionOwnersRejectMissingDuplicateAndProfileSubstitution",
+      "TestBuildManifestBindsOfficialImmutableImages",
+      "TestManifestRejectsMissingOrSubstitutedGoImage",
+      "TestManifestRejectsMissingOrMismatchedRuntimeBindings"
+    ],
+    "subtest_passes": 54,
+    "failures": []
+  },
+  "runtime_pin_verification": {
+    "runtime_lock_bytes_unchanged": true,
+    "tool_lock_bytes_unchanged": true,
+    "runtime_lock_sha256": "636959dd2e5fad7a292c8d8d055f866c7668e39b85cb52ab7152e31bf49fb933",
+    "images": [
+      {
+        "role": "node_image",
+        "reference": "node:24.21.0-slim@sha256:713cfbf4a0ac19f40e1bb9919893e126b74a5c8cf5d0623c9f89515c8f74c6fa",
+        "exit_code": 0,
+        "identity_architecture": "sha256:1cc81b664ff520c96dde07893e717ff070f9f7bd8bbcec50e10fa2f3cb5c4b1c amd64",
+        "error": ""
+      },
+      {
+        "role": "python_image",
+        "reference": "python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52",
+        "exit_code": 0,
+        "identity_architecture": "sha256:f9a89f9c7592a9cf06f0e9538dc4f52464c03f4a9e7b2ed78df6cccd41340191 amd64",
+        "error": ""
+      },
+      {
+        "role": "go_image",
+        "reference": "golang:1.26.9-bookworm@sha256:bcef992b77b1e2031aaaa51da75cebc32da8e9c182e12e633ea79023c79d9eff",
+        "exit_code": 0,
+        "identity_architecture": "sha256:6880d90c0623e6e55560894ff82266f5a06c0f7b1c9ee7f6e2def900d9bc2956 amd64",
+        "error": ""
+      },
+      {
+        "role": "rust_image",
+        "reference": "rust:1.99.0-bookworm@sha256:59037199c44290f2befcdd58dcc540164763fc296950255aaefeef096a1866b0",
+        "exit_code": 0,
+        "identity_architecture": "sha256:8bd5dad432581a7d8379c44079495b3a46821602ce78e651996696de4c47ba4c amd64",
+        "error": ""
+      }
+    ],
+    "host_go": "go version go1.26.9 linux/amd64",
+    "host_toolchain_selection": "local"
+  },
+  "runtime_manifest_images": [
+    {
+      "name": "node",
+      "reference": "node:24.21.0-slim@sha256:713cfbf4a0ac19f40e1bb9919893e126b74a5c8cf5d0623c9f89515c8f74c6fa",
+      "repository": "docker.io/library/node",
+      "digest": "sha256:713cfbf4a0ac19f40e1bb9919893e126b74a5c8cf5d0623c9f89515c8f74c6fa",
+      "runtime_version": "24.21.0"
+    },
+    {
+      "name": "python",
+      "reference": "python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52",
+      "repository": "docker.io/library/python",
+      "digest": "sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52",
+      "runtime_version": "3.14.7"
+    },
+    {
+      "name": "golang",
+      "reference": "golang:1.26.9-bookworm@sha256:bcef992b77b1e2031aaaa51da75cebc32da8e9c182e12e633ea79023c79d9eff",
+      "repository": "docker.io/library/golang",
+      "digest": "sha256:bcef992b77b1e2031aaaa51da75cebc32da8e9c182e12e633ea79023c79d9eff",
+      "runtime_version": "1.26.9"
+    },
+    {
+      "name": "rust",
+      "reference": "rust:1.99.0-bookworm@sha256:59037199c44290f2befcdd58dcc540164763fc296950255aaefeef096a1866b0",
+      "repository": "docker.io/library/rust",
+      "digest": "sha256:59037199c44290f2befcdd58dcc540164763fc296950255aaefeef096a1866b0",
+      "runtime_version": "1.99.0"
+    }
+  ],
+  "ownership_inventory": {
+    "host_product_quality_guest_Go": {
+      "owner": "scripts/runtimes.lock.json:go_image.go_version",
+      "consumers": [
+        "go.mod go directive",
+        "scripts/tools.lock.json setupGo",
+        "four Actions workflow setup steps",
+        "checker compiled runtime/Go executable"
+      ],
+      "host_archive_metadata": "Official integrity-bound preparation remains UPG-003; current installed SDK/selected version already verified."
+    },
+    "Node_npm": {
+      "owner": "runtime lock node_image reference / npm_version",
+      "consumers": [
+        "generated product identity",
+        "resolver/probe/Promotion",
+        "four-image manifest",
+        "review record"
+      ]
+    },
+    "Python_pip_ABI": {
+      "owner": "runtime lock python_image",
+      "consumers": [
+        "generated identity",
+        "resolver/inspection/Promotion",
+        "full qualification venv layout and assertions",
+        "review record",
+        "manifest"
+      ]
+    },
+    "Rust_Cargo": {
+      "owner": "runtime lock rust_image",
+      "consumers": [
+        "generated identity",
+        "resolver/build",
+        "release image inspection",
+        "manifest",
+        "review record"
+      ]
+    },
+    "quality_tool_releases": {
+      "owner": "scripts/tools.lock.json",
+      "consumers": [
+        "bootstrap/version validation",
+        "support records"
+      ],
+      "prebuilt_compiler_gap": "Gitleaks8.18.4 official archive embeds Go1.22.1; source rebuilding and actual compiler verification remain UPG-004."
+    },
+    "gVisor_Bazel_Docker_containerd": {
+      "owner": "runtime lock gvisor/bazel/docker",
+      "consumers": [
+        "existing builders/verifier/generated runtime identities",
+        "support records"
+      ],
+      "gvisor_compiler_gap": "Pinned source/Bazel Go1.26.3 remains UPG-004; not claimed unified by setup-version checks."
+    },
+    "PyTorch": {
+      "owner": "version-support.lock.json four pinned PyTorch qualification versions; runtime lock named sources/Python target",
+      "consumers": [
+        "generated qualification constants",
+        "existing full integration test"
+      ],
+      "frozen_prerequisite_owner": "Existing workflow explicit artifact/hash/ABI pins; reviewed qualification inputs, not automatic dependency inference."
+    },
+    "Terraform": {
+      "owner": "User exact provider/constraints/lock and signed registry metadata; go.mod HCL/cty implementation dependencies",
+      "consumers": [
+        "existing adapter/verification/inspection/project transaction"
+      ],
+      "managed_Terraform_CLI": false
+    },
+    "GitHub_release": {
+      "owner": "User exact release/asset/signature identity and existing adapter dependencies",
+      "consumers": [
+        "existing verifier/inspection/Promotion"
+      ],
+      "rewrite_signed_subjects": false
+    }
+  },
+  "official_review": {
+    "component": "Actionlint",
+    "retained_version": "v1.7.12",
+    "source": "https://github.com/rhysd/actionlint/releases/tag/v1.7.12",
+    "observed_latest_stable": "v1.7.12",
+    "raw_sha256": "f8aee5f291f5f61f478f84f22637c57680b792c56d3d6fe830b656f365d9c705"
+  },
+  "failures_preserved": [
+    {
+      "invocation": "baseline-quick.log",
+      "stage": "architecture package inventory",
+      "cause": "Incomplete parent /tmp/.git caused VCS exit128; same source passed after isolated native Git initialization."
+    },
+    {
+      "invocation": "first native projection",
+      "cause": "Git checkout normalizes full744 mode to755; identical bytes and one mode difference corrected only in projection."
+    },
+    {
+      "invocation": "release-gate-1.log / format.log",
+      "cause": "Go cache read-only before checker execution; same pinned inputs passed with required cache access."
+    }
+  ],
+  "limitations": [
+    "No runtime/tool version or installed bundle mutation",
+    "No remote write/CI/merge/publication",
+    "No new compiler or real ecosystem/CPU/CUDA qualification",
+    "Literal and workflow guards supplement architecture/security review; not a general proof against constructed runtime inputs"
+  ],
+  "raw_evidence_owner": "docs/github-logs/runtime-upgrade-maintenance/upg-002",
+  "final_candidate_receipt": "Local closure-terminal.json records final docs/security/frozen blob comparison; raw hashes do not imply remote custody."
+}

@@ -1,0 +1,1084 @@
+{
+  "schema_version": 1,
+  "work_item": "UPG-005",
+  "status": "COMPLETE",
+  "date": "2026-10-17",
+  "baseline": "c56bb3160f8ff74f125fac5754a0b4f8127dda3e",
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES",
+    "ACCEPTANCE_CLOSED": "YES",
+    "MISSING": []
+  },
+  "local_state": "$HOME/.local/state/heliopause/runtime-upgrades/upg005-20261016",
+  "preflight": {
+    "original_files": 12,
+    "durable_bytes_hash_owner_mode_backup": "PASS",
+    "installed_consumers": 0,
+    "containers": 0,
+    "lifecycle_handles": 0,
+    "docker": "29.8.1",
+    "registration": "existing STRICT sidecar and fixed pod-init path",
+    "four_frozen_images": "linux/amd64 and immutable digest matched",
+    "installed_gvisor_compiler_before": "go1.26.3",
+    "candidate_gvisor_compiler": "go1.26.9",
+    "candidate_product_helper_test_binaries": "six actual go1.26.9 builds PASS"
+  },
+  "baseline_cases": {
+    "small-lifecycle": {
+      "status": "PASS",
+      "exit_code": 0,
+      "restore_exit_code": 0,
+      "seconds": 25.23,
+      "expected_tests": [
+        "TestLinuxGVisorLifecycleIntegration",
+        "TestLinuxGitHubReleaseELFDynamicIntegration",
+        "TestLinuxPyPISdistBuildIntegration",
+        "TestLinuxPyPIWheelDynamicIntegration"
+      ],
+      "missing_pass": [],
+      "skipped": [],
+      "runtime_sha256": "cf795dec44c966f41d14e3a7756a0d244b4293aa4be2c97835ccd201ae7db365"
+    },
+    "trusted-host": {
+      "status": "PASS",
+      "exit_code": 0,
+      "restore_exit_code": 0,
+      "seconds": 5.03,
+      "expected_tests": [
+        "TestLinuxTrustedHostExecutorIntegration"
+      ],
+      "missing_pass": [],
+      "skipped": [],
+      "runtime_sha256": "bff784899455c9417b2675d5b85cede2f6b658de6ab90ced5a459bf86925228a"
+    },
+    "resolver-consumers": {
+      "status": "FAIL",
+      "exit_code": 1,
+      "restore_exit_code": 0,
+      "seconds": 85.92,
+      "expected_tests": [
+        "TestLinuxCargoSourceProjectSnapshotIntegration",
+        "TestLinuxGoIsolatedResolverIntegration",
+        "TestLinuxGoIsolatedProjectResolverIntegration",
+        "TestLinuxGoSourceProjectSnapshotIntegration",
+        "TestLinuxGoDependencyFreeProjectSnapshotIntegration",
+        "TestLinuxPyPIResolverIntegration",
+        "TestLinuxPyTorchResolverIntegration",
+        "TestLinuxTerraformProviderProbeIntegration",
+        "TestLinuxTerraformProviderSecurityIntegration"
+      ],
+      "missing_pass": [
+        "TestLinuxPyPIResolverIntegration"
+      ],
+      "skipped": [],
+      "runtime_sha256": "a64970f33cb084db6fc223529ff67568da886525cdd312bc347a9d387a01740b"
+    }
+  },
+  "resolver_fixture_gap": {
+    "old_file_sha256": "0f9e5bf5bb2b5c697963bc0af65c3df1518e91833bbaf4ff7e32d6dc6f14b88c",
+    "same_bytes_as_preserved_m13_baseline": true,
+    "existing_owner": "internal/sandbox/resolver_policy_integration_linux_test.go:newIntegrationResolverPolicyService",
+    "contract": "ordinary-user client; installed root-owned typed helper owns firewall authority",
+    "actual_failure": "PyPI resolver fixture rejected euid1000 before resolver execution because of stale root-only guard",
+    "selected_batch_passed": 8,
+    "selected_batch_status": "FAIL",
+    "npm_legacy_name": "TestLinuxNPMResolverNetworkPolicyIntegration; initial local filter omitted actual suffix",
+    "correction": "require ordinary user in both existing fixtures; retain helper implementation and result assertions",
+    "qualification": "PASS",
+    "component_audit": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "YES",
+      "ACCEPTANCE_CLOSED": "YES",
+      "MISSING": []
+    },
+    "preview_source_commit": "29e2e75c26e6b6f6af9f4e792da5efeb5ab23cca",
+    "checks": [
+      {
+        "profile": "quick",
+        "exit_code": 0,
+        "seconds": 88.83,
+        "sha256": "f991838bfa459efa9e562e84f65c98de7dabbb1f589033b9ef9d691f14aac7f7"
+      },
+      {
+        "profile": "security",
+        "exit_code": 0,
+        "seconds": 6.88,
+        "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+      },
+      {
+        "profile": "docs",
+        "exit_code": 0,
+        "seconds": 0.3,
+        "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+      }
+    ],
+    "root_negative": {
+      "status": "PASS_EXPECTED_REJECTION",
+      "process_exit_code": 1,
+      "scope": "both existing resolver tests reject root before constructing resolver/helper client",
+      "source_commit": "29e2e75c26e6b6f6af9f4e792da5efeb5ab23cca",
+      "binary_sha256": "bbd19b8d12588746c15a2b1b47945a5f23a8b5e458561b1aa41c5e3e28fa45f9",
+      "log_sha256": "ed2cdee21f0c31512366abfd8b6cfc9d15ba7e4ea22593f09b3da3ac4df4554a",
+      "installation_mutated": false
+    },
+    "actual_cases": {
+      "resolver-precondition-regression": {
+        "status": "PASS",
+        "source_commit": "29e2e75c26e6b6f6af9f4e792da5efeb5ab23cca",
+        "exit_code": 0,
+        "restore_exit_code": 0,
+        "seconds": 15.83,
+        "expected_tests": [
+          "TestLinuxNPMResolverNetworkPolicyIntegration",
+          "TestLinuxPyPIResolverIntegration"
+        ],
+        "missing_pass": [],
+        "skipped": [],
+        "runtime_sha256": "7875785ff757f4104f3a7463ab74b0effcf6ce57382c9e2e2b788964545a1160"
+      },
+      "ordinary-cli-preview": {
+        "status": "PASS",
+        "source_commit": "29e2e75c26e6b6f6af9f4e792da5efeb5ab23cca",
+        "exit_code": 0,
+        "restore_exit_code": 0,
+        "seconds": 35.26,
+        "expected_tests": [
+          "npm is-number@7.0.0 install",
+          "pip packaging@25.0 install"
+        ],
+        "missing_pass": [],
+        "skipped": [],
+        "runtime_sha256": "820588148a05a903260d02ef51608af809fa3b8141a204a39557062d4c3ac7f0"
+      }
+    }
+  },
+  "raw_references": [
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/small-lifecycle/result.json",
+      "sha256": "818836e8313f05bf1f8fd02c426c3094114550c11a230a83b6a193c8144a910a"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/trusted-host/result.json",
+      "sha256": "4b8620b0e3b5d617fdab4b95c96f009babbda5b4e3416193997fe37ba9f08a0c"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/resolver-consumers/result.json",
+      "sha256": "ba8236429a3b035143d57ed5f2cd89e2e1ca04356394f96e6765dff7ba591836"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "preflight/durable-originals.json",
+      "sha256": "06348d462bda8f9ef0575db2229f28434ef3c8dd3def7b6ae9341a4577d010d2"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "preflight/source-frozen-c56bb31.json",
+      "sha256": "e9708cc6a478dd72895f2cc64c12b47eb4c2af87cd0538a7e5e41746cc5e0255"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "preflight/runtime-images.json",
+      "sha256": "17432eeadab662ed2ae65f633c11f313f5f0ed69e65da95ccaf777b2882c7429"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "preflight/candidate-builds-c56bb31.json",
+      "sha256": "e97af0e8aa762ef43934db5db382825524a1e2d6c6416a293374eed1d39365c0"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "preflight/docker-query-bound-diagnostic.json",
+      "sha256": "ff634b03d236649ca48e6e5cc790ea4324906f5f4c7f6da5888100fcbdb6e39b"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "preflight/bounded-consumers-root.json",
+      "sha256": "aec13e2a783a5547b18378e6a6e5b8e3005d62b98e984a5de23365ba11fd4619"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/resolver-precondition-regression/result.json",
+      "sha256": "dee9071a1d3e68696079e12277a943bd3ffea4982df4f14d6e491e9d2b36cd47"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/ordinary-cli-preview/result.json",
+      "sha256": "c05d9708352dc0ad8a4850601e56c4e9d6a6223999ae1faf2422f5587eefaba7"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/final-consumer-summary.json",
+      "sha256": "4f48a963bba2b9c34a0c378e5d8f2bf459094312359b5cf9d4fda955122ee605"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/final-trusted-host/result.json",
+      "sha256": "fc96fe997918d2d635e01d9b79a37ca0be678dcc3c009bdedeb182804a2d5876"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/final-helper-fuzz.json",
+      "sha256": "98b2f00754a2be78ec1096c50990408f1ae2f2642a8e5e077786bbf3ddbbf793"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/final-terraform-source.json",
+      "sha256": "680ba0bbbedcaa87560cde61d97d76cfde8e8f2c0b9b9e8ceec3e7b6cdf145cb"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/cpu-full/result.json",
+      "sha256": "f2c4687faace3dfb25d92208446f0bb574f2cacdc6da4f6c4dbec4834d784b5d"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/cu126-full/result.json",
+      "sha256": "15d5fb76bf25c725e48f28b6eae220c79348d10b239d1a782f99446be94b509f"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/cu126-full/confirmed-prerequisite-drift.json",
+      "sha256": "a362b30d6848732af7ac256ae2eb53d5847b3a357d020bcc0379dc86ef10cf29"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/qualification-preflight/result.json",
+      "sha256": "9ed95163ecf9301290e64f3bdb547d91b0049c7f3677ff332d1908af0b185a12"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "lifecycle/qualification-preflight/cleanup-state.json",
+      "sha256": "6dec31e3d9795a9619aea4a23e687e02656dc0fdbe6f55ce3dff74d5b5b082ec"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "preflight/qualification-preparation-preview.json",
+      "sha256": "be1f26567bc1d563fc7a3bacc53b93ca0383207165f972f0efca80934cf69cf8"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/prepared-campaign.json",
+      "sha256": "cd8604e9f0207f6a5431d19924666ce849ded9e0d0abf46765d824d0c2a38d8f"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/prepared-cpu-full/result.json",
+      "sha256": "758f8417264c78b14066222b9a24812a3a5fd6b15bd2e20c2ac914a10294e75b"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/prepared-cu126-full/result.json",
+      "sha256": "e3b26dd6e862adf19ba594cf06f785c89a0cd580a02e63de084f9fee605bde1c"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "lifecycle/prepared-cu126-full/cleanup-state.json",
+      "sha256": "f1cda5784c9e25987ca0b27fb2873c8324437755419aed06c396d005260d5fe5"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/resource-read-diagnostic/result.json",
+      "sha256": "0a63ca89389da2569f34aebe60940e0d6ffd517eca496fe6739cb83e7cf13e5a"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "lifecycle/resource-read-diagnostic/cleanup-state.json",
+      "sha256": "5b60ed5a2dc17d7e66d7156e632a6a3de82825ac2e3fd9a5c7826e1364bf6fa8"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "diagnostics/read-latency/official-inputs.json",
+      "sha256": "e4e3473bc9df3cd01c9d4dcd30178557db06a3f8f7018c8a4f4afb229197f11a"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "diagnostics/read-latency/overlay-receipt.json",
+      "sha256": "9a607822cf1854290fd564d8ff6844cef085f667bcd8b2f79df194660b34adad"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "qualification/resource-read-pressure-diagnostic/result.json",
+      "sha256": "764d21efa5c9f7f534e4d50a9e33937b0e11a59bd5d47d8753ac28319aa8e682"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "lifecycle/resource-read-pressure-diagnostic/cleanup-state.json",
+      "sha256": "a092a9315ff881130dcdf4a5ff6ac0d53ac623d18390fec4d8cd27647affa89b"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "diagnostics/read-latency/os-pressure-summary.json",
+      "sha256": "df548798cc8ea4b0bc610ca4714d0b2b9ae01fa96237a6991e1859a753dd8e68"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "preflight/resource-memory-owner.json",
+      "sha256": "68c4c2b00441ba6c34de6c5eb7e6fdba31f9a8b88fa11374d16335ba29adc0ec"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "preflight/ram-capacity-negative.json",
+      "sha256": "4316013ce1e4c662e37107598c3c3e7d8d73ebc57f563523651e971778ef03aa"
+    },
+    {
+      "owner": "local UPG-005 state",
+      "path": "preflight/wslconfig-application.json",
+      "sha256": "7c52b476629783f5840faa11c02f800c69d37ebd69648243b96e5be9d3fb9fd7"
+    }
+  ],
+  "boundaries": [
+    "baseline small passes do not qualify a later changed test binary or full profile",
+    "initial failed resolver batch remains FAIL despite eight individual passes",
+    "global installation restored after each completed case",
+    "full-Race fixture findings remain separate/open",
+    "maintenance branch/PR34 and ordinary plus three supported CUDA remote runs verified; no main merge or public release; M13 remains ON_HOLD",
+    "activation and retirement remain UPG-006"
+  ],
+  "active_scope": "same baa8512 local CPU/cu126/cu130/cu132 full and original12 restorations PASS; cfe7737 ordinary/nativeMac and independent cu126/cu130/cu132 remote full/Required PASS; completed unnecessary payload/cache/source copies removed; final qualified-evidence docs/security PASS; closure-only metadata checks accompany the commit; activation remains UPG-006",
+  "actual_final_40dda27": {
+    "source_commit": "40dda277c868be1f6dc6a1d6c74879201cbd0f29",
+    "consumer_cases": 15,
+    "go_selected_top_level": 60,
+    "ordinary_cli_consumers": 2,
+    "all_consumer_cases": "PASS primary0/restore0/no skipped",
+    "cpu_full": {
+      "status": "PASS",
+      "seconds": 484.09,
+      "exit_code": 0,
+      "restore_exit_code": 0,
+      "runtime_sha256": "8a14bc291d53b6a28af61cc12134924f4862d1c53c326a7ee36f07c1ddb5e04b"
+    },
+    "cu126_full": {
+      "status": "FAIL",
+      "seconds": 588.88,
+      "exit_code": 1,
+      "restore_exit_code": 0,
+      "runtime_sha256": "1a1fecdd4bfde79a8c57eadd4bd869d9a8d4e78863e3a8d9d9dddfc12b70fe4f"
+    },
+    "cu130_full": "NOT_RUN",
+    "cu132_full": "NOT_RUN"
+  },
+  "live_qualification_binding_gap": {
+    "cause": "official compatible cuda-bindings12.9.10 selected; explicit trusted target still12.9.9",
+    "official_metadata": [
+      {
+        "version": "12.9.9",
+        "url": "https://pypi.org/pypi/cuda-bindings/12.9.9/json",
+        "status": 200,
+        "body_sha256": "c077e8e9c8bb61c5e08d773cb8b6e69a86049f97a272ca3fa4a75b49dab13444",
+        "filename": "cuda_bindings-12.9.9-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+        "expected_sha256": "94e4f9bd6b9b21aad545e0d441707094e4ff88ab420d62b85fcdc8b6da1e039f",
+        "size": 7440112,
+        "upload_time": "2026-09-23T03:21:02.947779Z"
+      },
+      {
+        "version": "12.9.10",
+        "url": "https://pypi.org/pypi/cuda-bindings/12.9.10/json",
+        "status": 200,
+        "body_sha256": "5e35ebd34e10d7327bcef863bf16a36b88c26f8316ca33ed99ae336d0b8d4df5",
+        "filename": "cuda_bindings-12.9.10-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+        "expected_sha256": "bd68d16edb117b9ee664b2d03e3f91ba94231acf6b039128efa315a748f9d194",
+        "size": 7440133,
+        "upload_time": "2026-10-15T14:12:15.927300Z"
+      }
+    ],
+    "actual_selected_sha256": "bd68d16edb117b9ee664b2d03e3f91ba94231acf6b039128efa315a748f9d194",
+    "originals_restored": true,
+    "sdk_regression_established": false,
+    "IMPLEMENTED": "YES",
+    "QUALIFIED": "YES",
+    "MISSING": [
+      "new same-candidate CPU/three CUDA full and remote Required"
+    ],
+    "contracts_preserved": [
+      "normal CLI exact caller pin and empty default",
+      "fixed NumPy2.4.6 source/hash",
+      "no artifact-output augmentation",
+      "original graph and auxiliary target exclusion",
+      "NOT_ATTESTED viewer",
+      "existing budget/coverage/Required"
+    ],
+    "WIRED": "YES",
+    "ACCEPTANCE_CLOSED": "NO",
+    "scoped_qualification": "preparation/early-binding component only; full matrix remains open",
+    "preparation_preview": {
+      "source_commit": "ff6ea504847fcb9b7e2449c44b281f0d9b954bc5",
+      "status": "PASS",
+      "seconds": 326.85,
+      "exit_code": 0,
+      "restore_exit_code": 0,
+      "expected_tests": [
+        "TestLinuxInspectionPrerequisiteAcquisitionIntegration",
+        "TestLinuxPyTorchQualificationPreparationIntegration"
+      ],
+      "missing_pass": [],
+      "skipped": [],
+      "runtime_sha256": "c721080e9e618172f2994d5c6bba67265f86df3f3814dcb7821b5fa80edfa9b8",
+      "main_intakes_on_stale_pin": 0,
+      "helper_parent_wait": 0,
+      "original_files_restored": 12,
+      "authenticated_auxiliary_profiles": [
+        "cpu",
+        "cu126",
+        "cu130",
+        "cu132"
+      ]
+    },
+    "canonical_checks": [
+      {
+        "profile": "security",
+        "exit_code": 0,
+        "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+      },
+      {
+        "profile": "workflow",
+        "exit_code": 0,
+        "sha256": "c4dc413b5545e08bddc9dcab9632134266903d92da34bd25597bd6705daf287a"
+      },
+      {
+        "profile": "docs",
+        "exit_code": 0,
+        "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+      },
+      {
+        "profile": "release-gate",
+        "exit_code": 0,
+        "sha256": "11e43c6a182a612ea79ba5d521d90153efd0f567857993ea20db4c3f95039b73"
+      },
+      {
+        "profile": "quick",
+        "exit_code": 0,
+        "sha256": "c5d9be1647075ebc27d13bb1c580371c21a836c60e0c90c0bfa97f6f576b97dd"
+      },
+      {
+        "profile": "vulnerability",
+        "exit_code": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "profile": "Darwin amd64 bootstrap test cross-compile",
+        "exit_code": 0,
+        "native_execution": false
+      }
+    ]
+  },
+  "actual_final_baa8512": {
+    "source_commit": "baa8512476334d95429920e92b63ec669e027fe8",
+    "cases": [
+      {
+        "name": "prepared-small",
+        "status": "PASS",
+        "seconds": 23.93,
+        "exit_code": 0,
+        "restore_exit_code": 0,
+        "runtime_sha256": "1ee667043c0aef8040857cdeba5052899d1978843d4119994f9902adffb8cbb3"
+      },
+      {
+        "name": "prepared-ordinary-cli",
+        "status": "PASS",
+        "seconds": 35.36,
+        "exit_code": 0,
+        "restore_exit_code": 0,
+        "runtime_sha256": "92ad0e136a2ccb86b16bbb43e71ef848b6f5581aff958d77ce6c9a051811781e"
+      },
+      {
+        "name": "prepared-cpu-full",
+        "status": "PASS",
+        "seconds": 482.43,
+        "exit_code": 0,
+        "restore_exit_code": 0,
+        "runtime_sha256": "f00a8f0eb3c42e7fa1cdbffddc4a1ef1fd01412a0ae26e5b6c606e8fabf67b5f"
+      },
+      {
+        "name": "prepared-cu126-full",
+        "status": "FAIL",
+        "seconds": 884.09,
+        "exit_code": 1,
+        "restore_exit_code": 0,
+        "runtime_sha256": "128f722cd34feb54c1798cffc3c2610cd11332d9323c4f9a3ff43cb65e95618c"
+      }
+    ],
+    "cu130_full": "NOT_RUN",
+    "cu132_full": "NOT_RUN",
+    "scope": "historical before-restart results; postrestart_20261016 owns later full results"
+  },
+  "cpu_read_latency_gap": {
+    "status": "CONFIRMED_REJECTION; underlying substage latency NOT_ESTABLISHED",
+    "phase": "install",
+    "profile": "cu126",
+    "install_elapsed_ms": 71349,
+    "gap_ns": 1106363289,
+    "poll_ns": 1000000000,
+    "read_ns": 619130156,
+    "before_read_gap_ns": 487232044,
+    "ledger_lock_ns": 1089,
+    "usage_us": 66251083,
+    "prior_usage_us": 65140260,
+    "wall_remaining_ns": 2328653021976,
+    "primary_error": "M5_PYPI_DYNAMIC_INSTALL_FAILED/CANCELED",
+    "first_accounting_failure": "failed_before=false termination=false",
+    "followup_errors": [
+      "failed_before=true termination=true",
+      "PROFILE_LOOKUP_FAILURE during teardown"
+    ],
+    "old_binding_gap_reached_beyond": true,
+    "sdk_causality": "NOT_ESTABLISHED",
+    "helper_parent_wait": 0,
+    "originals_restored": 12,
+    "component_audit": {
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO",
+      "MISSING": [
+        "bounded existing helper/client latency diagnosis",
+        "deterministic before/after if a defect is established",
+        "affected actual consumers and same-candidate full matrix"
+      ]
+    },
+    "retained_diagnostic": {
+      "scope": "30 independently official-authenticated retained wheels plus synthetic native probe; installation only, not full qualifier",
+      "result": {
+        "status": "FAIL",
+        "seconds": 232.03,
+        "exit_code": 1,
+        "restore_exit_code": 0,
+        "runtime_sha256": "4b22d1ad52a46de2814aca79d5710de838a871f4e04437deb314ce2971a8bf6c"
+      },
+      "failure": "Read request context OK; 1s read context deadline exceeded during install72.241s",
+      "server_elapsed_ns": 1176915707,
+      "server_authorize_ns": 82357,
+      "server_receive_decode_ns": 1142941635,
+      "server_engine_ns": 33866876,
+      "client_elapsed_ns": 1000983358,
+      "client_socket_verify_ns": 38718,
+      "client_dial_ns": 178040,
+      "client_encode_ns": 32446,
+      "overlay_receipt_sha256": "9a607822cf1854290fd564d8ff6844cef085f667bcd8b2f79df194660b34adad",
+      "cause_boundary": "regional timing from diagnostic execution, not recovered substage values for original full619ms; OS/scheduler/GC cause remains unknown",
+      "next": "bounded OS pressure/cgroup scheduling telemetry during retained installation"
+    },
+    "pressure_diagnostic": {
+      "scope": "same timing overlay and independently authenticated retained inputs; separate diagnostic, not full qualification",
+      "result": {
+        "status": "PASS",
+        "seconds": 338.1,
+        "exit_code": 0,
+        "restore_exit_code": 0,
+        "runtime_sha256": "7556fa19411c2a5936444a476b85cea5b042100056e385347a2aeb9c9eddbd49"
+      },
+      "os_summary": {
+        "scope": "successful retained installation diagnostic only; not full qualification or original-failure cause proof",
+        "raw_sha256": "da0633a285ddc6a5148eb7f160c6f0c846385ca52938519a9a3484e440b14db7",
+        "samples": 356,
+        "started_utc": "2026-10-15T19:34:55.040446+00:00",
+        "finished_utc": "2026-10-15T19:41:05.484740+00:00",
+        "max_sample_interval_seconds": 1.029093097007717,
+        "min_available_memory_kib": 302576,
+        "max_shared_memory_kib": 13134164,
+        "baseline_swap_used_kib": 530160,
+        "max_swap_used_kib": 1810488,
+        "vmstat_deltas": {
+          "pswpin": 195694,
+          "pswpout": 317185,
+          "allocstall_normal": 19,
+          "allocstall_movable": 1716,
+          "pgmajfault": 1311,
+          "pgsteal_direct": 92406,
+          "pgscan_direct": 2479884
+        },
+        "max_some_pressure_avg10": {
+          "cpu": 44.99,
+          "memory": 14.83,
+          "io": 4.18
+        },
+        "helper_cpu_quota_values": [
+          "max 100000"
+        ],
+        "helper_throttle_values": [
+          "0"
+        ]
+      },
+      "finding": "strong host memory pressure established in the successful diagnostic; direct cause of earlier failed read is not proven",
+      "preflight_gap": "initial RAM readback did not budget peak shared tmpfs plus runtime/controller/OS headroom",
+      "host_capacity": {
+        "windows_visible_memory_kib": 33505244,
+        "wsl_total_memory_kib": 16352040,
+        "wslconfig_present": false
+      },
+      "proposed_action": "user approved testing memory-only24GB setting; new config written and independently verified from Windows/Linux; WSL restart not performed",
+      "wsl_memory_configuration": {
+        "status": "ACTIVE_MEMORY_VERIFIED_AFTER_USER_RESTART",
+        "requested_memory": "24GB",
+        "prior_file_present": false,
+        "linux_and_windows_readback_match": true,
+        "restart_performed": true,
+        "active_memory_verified_after_restart": true,
+        "qualification_after_change": "postrestart small4 PASS27.00s and cu126 full PASS2344.78s; historical failure and causal uncertainty retained",
+        "restart_actor": "user"
+      }
+    },
+    "local_capacity_preflight": {
+      "status": "PASS_EXPECTED_REJECTION_BEFORE_INSTALLATION",
+      "policy_owner": "internal/artifact/pypi/resource_policy.go",
+      "selected_cuda_runtime_memory": 4294967296,
+      "selected_cuda_runtime_tmpfs": 12884901888,
+      "local_controller_os_reserve": 2147483648,
+      "required_available_memory": 19327352832,
+      "source_policy_sha256": "6b20245312d7e1aa6dc49b2ddcb48a70b2ca59cf32d64a8e0f1a65aee227a61b",
+      "scope": "task-local conservative execution guard; product/CI budgets and support unchanged",
+      "ordinary_candidate_restored": true
+    }
+  },
+  "postrestart_20261016": {
+    "preflight": {
+      "status": "PASS",
+      "verified_utc": "2026-10-16T11:58:23.386249+00:00",
+      "source_commit": "baa8512476334d95429920e92b63ec669e027fe8",
+      "source": "/tmp/haa-upg005-final-preparation-source",
+      "source_files_verified_bytes_and_modes": 1527,
+      "wslconfig_sha256": "c8ba0f93e3a5429dd96e5d52b42525b2770b06c53f687ebebfd909f1b01ab984",
+      "memory_bytes": {
+        "MemTotal": 25202302976,
+        "MemAvailable": 23311159296
+      },
+      "required_available_bytes": 19327352832,
+      "qualification_after_restart": "NOT_RUN"
+    },
+    "initial_case": {
+      "name": "postrestart-cu126-full",
+      "status": "FAIL",
+      "seconds": 0.2,
+      "exit_code": 1,
+      "restore_exit_code": 1,
+      "runtime_sha256": "46667846f5d7e0a1d32e517206e8841697c42e88274cac4ea4c7053a7056549b"
+    },
+    "startup_cause": "canonical runtime directories disappeared on restart; ServeNetworkPolicy rejects missing parent before executor/listeners",
+    "separate_recovery": "root complete proc/executable, recorded parent/wrapper, Unix sockets and successful Docker absence revalidated; current installed candidate/original bytes compared; originals12 restored and canonical directories prepared",
+    "historical_unknown_retained": true,
+    "local_guard": "pre-install canonical directory mode/UID/GID checks; frozen product/test/helper unchanged",
+    "small_case": {
+      "name": "postrestart-small",
+      "status": "PASS",
+      "seconds": 27.0,
+      "exit_code": 0,
+      "restore_exit_code": 0,
+      "runtime_sha256": "a2ed697c2730ea477ce0cacae98b838288b269e6a65feb8d3491a9f74faf2b72"
+    },
+    "cleanup_request": "user authorized revalidation/restoration/runtime directories and all unnecessary completed test data deletion; retained evidence/active inputs inventoried separately",
+    "completed_test_cleanup": {
+      "status": "PASS",
+      "files_deleted": 30537,
+      "logical_bytes_deleted": 9231393994,
+      "wsl_available_bytes_increase": 9315295232,
+      "inventory_sha256": "6f9f4edb22e6a14e1545bf214469e5513018df39e40edb75d1498fc16b890a6d",
+      "scope": "successful CPU installed targets/intake/staging artifact copies; obsolete candidate-history binaries; completed lifecycle CLI copies; duplicate old failed wheels with retained identical input",
+      "preserved": [
+        "current candidate",
+        "durable originals12",
+        "distinct failed inputs",
+        "raw logs/results/source/build/cleanup receipts",
+        "actual Evidence",
+        "JSON from discarded success targets"
+      ],
+      "windows_vhd_compaction": "NOT_PERFORMED"
+    },
+    "cu126_full": {
+      "name": "postrestart-ready-cu126-full",
+      "source_commit": "baa8512476334d95429920e92b63ec669e027fe8",
+      "status": "PASS",
+      "seconds": 2344.78,
+      "exit_code": 0,
+      "restore_exit_code": 0,
+      "runtime_sha256": "39cc83bfd200b3f474926e5115384564bd902aa17f4bc4d5fa89019d4b388808",
+      "helper_parent_wait": 0,
+      "original_files_restored": 12,
+      "not_attested_module": "triton.profiler.viewer",
+      "auxiliary_input_excluded_from_promoted_entries": 29
+    },
+    "cu126_completed_test_cleanup": {
+      "status": "PASS",
+      "files_deleted": 16209,
+      "logical_bytes_deleted": 13914708718,
+      "wsl_available_bytes_increase": 13959614464,
+      "inventory_sha256": "58d03807080e1d53e77ff7ead08f060a0d0495f41e9473c17f7aa6574efb6921",
+      "preserved": [
+        "actual Evidence93",
+        "qualification receipt and staging manifest",
+        "runtime/result/cleanup/source receipts",
+        "JSON from discarded target",
+        "candidate and durable originals"
+      ]
+    },
+    "cu130_full": {
+      "name": "postrestart-ready-cu130-full",
+      "source_commit": "baa8512476334d95429920e92b63ec669e027fe8",
+      "status": "PASS",
+      "seconds": 1959.83,
+      "exit_code": 0,
+      "restore_exit_code": 0,
+      "runtime_sha256": "bb3a1ac114bcf55033d87c35f6f883963bf792da179a5e91b00dea37e20df7cd",
+      "helper_parent_wait": 0,
+      "original_files_restored": 12,
+      "not_attested_module": "triton.profiler.viewer",
+      "auxiliary_input_excluded_from_promoted_entries": 29
+    },
+    "cu130_completed_test_cleanup": {
+      "status": "PASS",
+      "files_deleted": 16158,
+      "logical_bytes_deleted": 11563865654,
+      "wsl_available_bytes_increase": 11608633344,
+      "inventory_sha256": "8942ef7814752ce9b4fa115620fc78dcacd72edbbfb1fdf466719861c76b4364",
+      "preserved": [
+        "actual Evidence93",
+        "qualification receipt and staging manifest",
+        "runtime/result/cleanup/source receipts",
+        "JSON from discarded target",
+        "candidate and durable originals"
+      ]
+    },
+    "cu132_full": {
+      "name": "postrestart-ready-cu132-full",
+      "source_commit": "baa8512476334d95429920e92b63ec669e027fe8",
+      "status": "PASS",
+      "seconds": 2005.17,
+      "exit_code": 0,
+      "restore_exit_code": 0,
+      "runtime_sha256": "976248d03f9072200b19e0bea12985ea685458268c7c4f0873497e78f3319be8",
+      "helper_parent_wait": 0,
+      "original_files_restored": 12,
+      "not_attested_module": "triton.profiler.viewer",
+      "auxiliary_input_excluded_from_promoted_entries": 29
+    },
+    "local_full_matrix": {
+      "source_commit": "baa8512476334d95429920e92b63ec669e027fe8",
+      "profiles": [
+        {
+          "profile": "cpu",
+          "status": "PASS",
+          "seconds": 482.43,
+          "case": "prepared-cpu-full",
+          "result_owner": "actual_final_baa8512"
+        },
+        {
+          "profile": "cu126",
+          "status": "PASS",
+          "seconds": 2344.78,
+          "result_owner": "postrestart_20261016.cu126_full"
+        },
+        {
+          "profile": "cu130",
+          "status": "PASS",
+          "seconds": 1959.83,
+          "result_owner": "postrestart_20261016.cu130_full"
+        },
+        {
+          "profile": "cu132",
+          "status": "PASS",
+          "seconds": 2005.17,
+          "result_owner": "postrestart_20261016.cu132_full"
+        }
+      ],
+      "historical_failures_retained": true,
+      "historical_latency_causality": "NOT_ESTABLISHED"
+    },
+    "cu132_completed_test_cleanup": {
+      "status": "PASS",
+      "files_deleted": 16158,
+      "logical_bytes_deleted": 11437557165,
+      "wsl_available_bytes_increase": 11482320896,
+      "inventory_sha256": "18220bb7e4997aed5387730ea6c02233ed17ea4a1e3fd48f8a93274bc846a32e",
+      "preserved": [
+        "actual Evidence93",
+        "qualification receipt and staging manifest",
+        "runtime/result/cleanup/source receipts",
+        "JSON from discarded target",
+        "candidate and durable originals"
+      ]
+    },
+    "remaining_completed_test_cleanup": {
+      "status": "PASS",
+      "files_deleted": 109640,
+      "logical_bytes_deleted": 8858768369,
+      "wsl_available_bytes_increase": 9257005056,
+      "inventory_sha256": "031642fc61e9de87a62244188115df63f5d1b3e09ee80b101ea4f0dfd5ccfa60",
+      "preserved_structured_files": 51,
+      "scope": "regenerable HAA Go/Staticcheck/Bazel build results; completed rehearsal snapshots and inactive historical tool cache; completed ordinary CLI targets/cache and first failed startup CLI copy",
+      "cache_link_target_directories_recreated_empty": true,
+      "historical_tool_byte_equivalence_claimed": false,
+      "active_tools_candidate_sdk_runtime_and_originals_retained": true
+    },
+    "cleanup_totals": {
+      "files_deleted": 188702,
+      "logical_bytes_deleted": 55006293900,
+      "sum_per_batch_available_increase": 55622868992,
+      "metric_scope": "sum of five individual completed-test deletion batches, including new test output generated in this turn; not whole-turn net space gain or Windows VHD compaction"
+    }
+  },
+  "remote_initial_8afeffa": {
+    "pr": 34,
+    "run": 38920741069,
+    "head": "8afeffa81dab514369e1341e8817c4126409a66d",
+    "merge": "36ce170889e7cbed91edaf481a7928d741382e62",
+    "merge_tree_equals_head": true,
+    "macos_job": 117039701759,
+    "macos": "FAIL nested native build at120.01s; preceding production build PASS",
+    "linux": "PASS",
+    "other_seven_prerequisites": "PASS",
+    "raw_decoded_macos_sha256": "b3f7056db4e4cc9aafe7dc9fe9899e2dd547e7541b7917642bec83c49770aef4",
+    "required": "FAIL macOS prerequisite; remaining eight prerequisites PASS",
+    "raw_decoded_linux_sha256": "320d907892ec6b1d9bdcaafa4df9460d58fb7d486586349ec7ada00897a22f9c"
+  },
+  "native_build_preparation_gap": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES",
+    "ACCEPTANCE_CLOSED": "YES",
+    "fixture_unchanged_from_main": true,
+    "native_build_deadline_seconds": 120,
+    "scope": "reuse existing native assertions and canonical build/test; match preparation flags; no budget/coverage reduction",
+    "linux_comparison": [
+      {
+        "case": "unmatched",
+        "phase": "prepare",
+        "seconds": 18.131,
+        "compiler_invocations": 0,
+        "exit_code": 0,
+        "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "case": "unmatched",
+        "phase": "nested",
+        "seconds": 17.544,
+        "compiler_invocations": 356,
+        "exit_code": 0,
+        "log_sha256": "c2ef0c79d9f9a63e62328bd7475e70edfea83eba5e4350bbeedc9c7f487d1b3c"
+      },
+      {
+        "case": "matched",
+        "phase": "prepare",
+        "seconds": 21.708,
+        "compiler_invocations": 0,
+        "exit_code": 0,
+        "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "case": "matched",
+        "phase": "nested",
+        "seconds": 1.121,
+        "compiler_invocations": 0,
+        "exit_code": 0,
+        "log_sha256": "8d3a83e6a3902da3e4d978f3cb58664e550ee7c71743824eea16c1de0127cea7"
+      }
+    ],
+    "finding": "independent empty-cache Go1.26.9 comparison confirms trimpath preparation reuses compiler inputs; native macOS elapsed cause not fully established",
+    "MISSING": [],
+    "canonical_checks": [
+      {
+        "profile": "quick",
+        "exit_code": 0,
+        "seconds": 208.6,
+        "sha256": "fc3a337cf845dd7b44d9f19cea935726bb9f94d5e1b3f3426478b3299974d6cd"
+      },
+      {
+        "profile": "platform",
+        "exit_code": 0,
+        "seconds": 7.09,
+        "sha256": "fb49a92d2cfca9e6f197611a2e0567108e2eb01175e865442baea47d308e8ef7"
+      },
+      {
+        "profile": "security",
+        "exit_code": 0,
+        "seconds": 4.87,
+        "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+      },
+      {
+        "profile": "workflow",
+        "exit_code": 0,
+        "seconds": 0.72,
+        "sha256": "a9d0afe878b5cc017419a4754afde924a4196a69fa7415fdf4eb23bc2ea131f4"
+      },
+      {
+        "profile": "docs",
+        "exit_code": 0,
+        "seconds": 0.16,
+        "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+      }
+    ],
+    "linux_preparation_scope": "controlled reuse comparison and corrected-candidate native Linux Quick/platform/security/workflow/docs PASS; remote native closure still pending",
+    "native_actual_closure": {
+      "head": "cfe773710ab45ab2b2fedca7fda9b523de96dda3",
+      "run": 38928160837,
+      "macos_job": 117064990716,
+      "all_ten_jobs_success": true,
+      "merge": "5f6f2930a5077db3e9018c776b1270e6882b8e0a",
+      "merge_tree_equals_head": true,
+      "deadline_assertions_unchanged": true,
+      "historical_elapsed_cause_fully_proven": false
+    }
+  },
+  "remote_qualified": {
+    "head": "cfe773710ab45ab2b2fedca7fda9b523de96dda3",
+    "ordinary": {
+      "run": 38928160837,
+      "url": "https://github.com/rahoney/heliopause/actions/runs/38928160837",
+      "all_ten_jobs_success": true,
+      "native_macos": "PASS",
+      "linux_cpu_seconds": 275.15,
+      "merge_tree_equals_head": true,
+      "raw": [
+        {
+          "job": 117064990716,
+          "sha256": "e11bce792057d796e952f8950c0f3ae211d3202836ad8803ddb90e442090c636",
+          "bytes": 24178,
+          "path": "ci314-job117064990716-decoded.log"
+        },
+        {
+          "job": 117064990818,
+          "sha256": "af7e5bb27c79c88ea18ec4cbcd8c85f04a70b4cf205a3727b3a0a005ce4c2864",
+          "bytes": 459676,
+          "path": "ci314-job117064990818-decoded.log"
+        }
+      ]
+    },
+    "supported_cuda": [
+      {
+        "profile": "cu126",
+        "head": "cfe773710ab45ab2b2fedca7fda9b523de96dda3",
+        "run_id": 38936267407,
+        "url": "https://github.com/rahoney/heliopause/actions/runs/38936267407",
+        "conclusion": "success",
+        "full_qualification_verified": true,
+        "all_ten_jobs_success": true,
+        "cpu_seconds": 205.44,
+        "cuda_seconds": 928.04,
+        "explicit_plan": "cuda-bindings-numpy",
+        "target_version": "12.9.10",
+        "viewer_not_attested_preserved": true,
+        "auxiliary_excluded_from_promoted_entries": 29,
+        "helper_wait_zero": 5,
+        "final_cleanup": "cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED",
+        "decoded_raw_sha256": "be8185bc90a730671d15cdfafd35d8a2a9a20e174cb0278edd1f9884fe5dad74",
+        "recorded_utc": "2026-10-17T00:13:34.449896+00:00"
+      },
+      {
+        "profile": "cu130",
+        "head": "cfe773710ab45ab2b2fedca7fda9b523de96dda3",
+        "run_id": 38985391376,
+        "url": "https://github.com/rahoney/heliopause/actions/runs/38985391376",
+        "conclusion": "success",
+        "full_qualification_verified": true,
+        "all_ten_jobs_success": true,
+        "cpu_seconds": 192.07,
+        "cuda_seconds": 758.8,
+        "explicit_plan": "cuda-bindings-numpy",
+        "target_version": "13.4.4",
+        "qualification_metadata": {
+          "expected_identity_origin": "official source resolver metadata, before main intake; never payload bytes or artifact output",
+          "explicit_input": {
+            "target_sha256": "680e70dcb8b61fdae16d3bb4876c41d55aadc9fe8b3825ea567f2f2c85606b0a",
+            "source": "pypi",
+            "project": "numpy",
+            "version": "2.4.6",
+            "filename": "numpy-2.4.6-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+            "sha256": "a2c306dea656c12c68f51f4cea133cbe78ca7435eb28c735eac1d3ebe73be6e8",
+            "reason": "BROADER_MODULE_PROBES"
+          },
+          "plan": "cuda-bindings-numpy",
+          "profile": "cu130",
+          "resolution_sha256": "5fdcf9e9c00aecfedcc7d22694e6644a16254357a12e56e8e18b6221ff64620b",
+          "runtime": "python:3.14.7;pip:26.2.1;target:cp314/cp314/manylinux_2_36_x86_64;source:pytorch:cu130",
+          "schema_version": 1,
+          "target_declared_integrity": "sha256:680e70dcb8b61fdae16d3bb4876c41d55aadc9fe8b3825ea567f2f2c85606b0a",
+          "target_project": "cuda-bindings",
+          "target_source": "pypi",
+          "target_url": "https://files.pythonhosted.org/packages/15/65/0b8f2f2509e5f1a8e556a2e083ac0287fe4af79afdba3153454229306f39/cuda_bindings-13.4.4-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+          "target_version": "13.4.4",
+          "torch_version": "2.14.0+cu130"
+        },
+        "viewer_not_attested_preserved": true,
+        "auxiliary_excluded_from_promoted_entries": 29,
+        "helper_wait_zero": 5,
+        "final_cleanup": "cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED",
+        "decoded_raw_sha256": "ea9705b4e1846af724250dbf36761004a28796a80092c5534cf028184f234f14",
+        "recorded_utc": "2026-10-17T01:22:14.227018+00:00"
+      },
+      {
+        "profile": "cu132",
+        "head": "cfe773710ab45ab2b2fedca7fda9b523de96dda3",
+        "run_id": 38990568515,
+        "url": "https://github.com/rahoney/heliopause/actions/runs/38990568515",
+        "conclusion": "success",
+        "full_qualification_verified": true,
+        "all_ten_jobs_success": true,
+        "cpu_seconds": 278.12,
+        "cuda_seconds": 1098.68,
+        "explicit_plan": "cuda-bindings-numpy",
+        "target_version": "13.4.4",
+        "qualification_metadata": {
+          "expected_identity_origin": "official source resolver metadata, before main intake; never payload bytes or artifact output",
+          "explicit_input": {
+            "target_sha256": "680e70dcb8b61fdae16d3bb4876c41d55aadc9fe8b3825ea567f2f2c85606b0a",
+            "source": "pypi",
+            "project": "numpy",
+            "version": "2.4.6",
+            "filename": "numpy-2.4.6-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+            "sha256": "a2c306dea656c12c68f51f4cea133cbe78ca7435eb28c735eac1d3ebe73be6e8",
+            "reason": "BROADER_MODULE_PROBES"
+          },
+          "plan": "cuda-bindings-numpy",
+          "profile": "cu132",
+          "resolution_sha256": "49f4f1acf5a3cfb515c69e4785041d1cef7905157ca0241864cb59a750bcd18e",
+          "runtime": "python:3.14.7;pip:26.2.1;target:cp314/cp314/manylinux_2_36_x86_64;source:pytorch:cu132",
+          "schema_version": 1,
+          "target_declared_integrity": "sha256:680e70dcb8b61fdae16d3bb4876c41d55aadc9fe8b3825ea567f2f2c85606b0a",
+          "target_project": "cuda-bindings",
+          "target_source": "pypi",
+          "target_url": "https://files.pythonhosted.org/packages/15/65/0b8f2f2509e5f1a8e556a2e083ac0287fe4af79afdba3153454229306f39/cuda_bindings-13.4.4-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+          "target_version": "13.4.4",
+          "torch_version": "2.14.0+cu132"
+        },
+        "viewer_not_attested_preserved": true,
+        "auxiliary_excluded_from_promoted_entries": 29,
+        "helper_wait_zero": 5,
+        "final_cleanup": "cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED",
+        "decoded_raw_sha256": "61fc5f94047bbfbd9f5bc6df968e3f1159648b1d4aee6d663ad777f045465600",
+        "recorded_utc": "2026-10-17T02:23:14.854026+00:00"
+      }
+    ],
+    "scope": "actual default/nativeMac and Required cross-ecosystem consumers plus independent supported CUDA full; no GPU execution/driver/toolkit attestation or production activation claim"
+  },
+  "source_boundary_after_local_full": {
+    "local_execution_commit": "baa8512476334d95429920e92b63ec669e027fe8",
+    "remote_commit": "cfe773710ab45ab2b2fedca7fda9b523de96dda3",
+    "changed_paths": [
+      "cmd/helox/main_test.go",
+      "docs/engineering/03-quality-toolchain.md",
+      "docs/engineering/05-runtime-upgrade-maintenance.md",
+      "docs/engineering/evidence/runtime-upgrade-maintenance/upg-005.json",
+      "docs/planning/02-current-work-queue.md",
+      "scripts/check/runner.go"
+    ],
+    "changes": "documentation/evidence, existing checker production preparation trimpath, native fixture comment; product/runtime/policy source and frozen local executable identities unchanged"
+  },
+  "final_record_checks": [
+    {
+      "profile": "docs",
+      "exit_code": 0,
+      "seconds": 1.22,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "profile": "security",
+      "exit_code": 0,
+      "seconds": 61.68,
+      "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    }
+  ]
+}

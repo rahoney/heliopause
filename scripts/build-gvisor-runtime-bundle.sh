@@ -9,8 +9,13 @@ test "$(uname -s)" = Linux && test "$(uname -m)" = x86_64 || {
   exit 1
 }
 
+capture=0
+if [ "${1:-}" = --capture ]; then
+  capture=1
+  shift
+fi
 if [ "$#" -ne 1 ]; then
-  echo "usage: $0 ABSOLUTE_OUTPUT_DIRECTORY" >&2
+  echo "usage: $0 [--capture] ABSOLUTE_OUTPUT_DIRECTORY" >&2
   exit 2
 fi
 
@@ -26,9 +31,7 @@ test ! -e "$output_directory" || {
 
 runtime_lock=scripts/runtimes.lock.json
 test -f "$runtime_lock"
-gvisor_repository=$(jq -er '.gvisor.source_repository' "$runtime_lock")
 gvisor_commit=$(jq -er '.gvisor.commit' "$runtime_lock")
-gvisor_patch_path=$(jq -er '.gvisor.patch.path' "$runtime_lock")
 gvisor_patch_sha256=$(jq -er '.gvisor.patch.sha256' "$runtime_lock")
 gvisor_module_lock_sha256=$(jq -er '.gvisor.build.bazel_module_lock_sha256' "$runtime_lock")
 builder_repository=$(jq -er '.gvisor.build.builder.image_repository' "$runtime_lock")
@@ -38,6 +41,7 @@ builder_architecture=$(jq -er '.gvisor.build.builder.architecture' "$runtime_loc
 bundle_architecture=$(jq -er '.gvisor.runtime_bundle.architecture' "$runtime_lock")
 bazel_sha512=$(jq -er '.bazel.linux_x86_64_sha512' "$runtime_lock")
 bazel_version=$(jq -er '.bazel.version' "$runtime_lock")
+selected_go=$(jq -er '.go_image.go_version' "$runtime_lock")
 
 test "$bundle_architecture" = amd64
 test "$builder_architecture" = amd64
@@ -49,60 +53,27 @@ case "$builder_digest" in sha256:???????????????????????????????????????????????
 case "$builder_tag" in ????????????????) ;; *) echo "gVisor builder tag is invalid" >&2; exit 1 ;; esac
 case "${builder_digest#sha256:}" in *[!0-9a-f]* ) echo "gVisor builder digest is invalid" >&2; exit 1 ;; esac
 case "$builder_tag" in *[!0-9a-f]* ) echo "gVisor builder tag is invalid" >&2; exit 1 ;; esac
-case "$gvisor_commit" in
-  *[!0-9a-f]*) echo "runtime lock gVisor commit is invalid" >&2; exit 1 ;;
-esac
-test "$(printf %s "$gvisor_commit" | wc -c | tr -d ' ')" = 40 || {
-  echo "runtime lock gVisor commit is invalid" >&2
-  exit 1
-}
-case "$gvisor_patch_path" in
-  tools/gvisor/*.patch) ;;
-  *) echo "runtime lock gVisor patch path is invalid" >&2; exit 1 ;;
-esac
-case "$gvisor_patch_path" in
-  *..*) echo "runtime lock gVisor patch path cannot escape" >&2; exit 1 ;;
-esac
-test -f "$gvisor_patch_path" || {
-  echo "runtime lock gVisor patch file missing: $gvisor_patch_path" >&2
-  exit 1
-}
-actual_patch_sha256="$(sha256sum "$gvisor_patch_path" | awk '{print $1}')"
-test "$actual_patch_sha256" = "$gvisor_patch_sha256" || {
-  echo "runtime lock gVisor patch sha256 mismatch" >&2
-  exit 1
-}
-patch_abs="$(cd "$(dirname "$gvisor_patch_path")" && pwd)/$(basename "$gvisor_patch_path")"
 
 work_root=$(mktemp -d "${TMPDIR:-/tmp}/helox-release-gvisor.XXXXXX")
 cleanup() {
+  status=$1
+  if [ "$status" -ne 0 ]; then
+    echo "gVisor failed build inputs retained: $work_root" >&2
+    return "$status"
+  fi
+  if [ "$capture" -eq 1 ]; then
+    echo "gVisor capture inputs retained for frozen-plan verification: $work_root" >&2
+    return 0
+  fi
   chmod -R u+w "$work_root" 2>/dev/null || true
   rm -rf "$work_root"
 }
-trap cleanup EXIT HUP INT TERM
+trap 'cleanup "$?"' EXIT
+trap 'exit 129' HUP
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
-gvisor_source="${GVISOR_LOCAL_REPO:-$gvisor_repository}"
-# A depth-one, tagless checkout fixes the stamped source description to the
-# pinned commit. Full-clone tag reachability is mutable repository metadata
-# and must not influence an exact runtime identity.
-git init "$work_root/gvisor" >/dev/null
-git -C "$work_root/gvisor" fetch --quiet --depth=1 --no-tags "$gvisor_source" "$gvisor_commit"
-git -C "$work_root/gvisor" checkout --quiet --detach FETCH_HEAD
-test "$(git -C "$work_root/gvisor" rev-parse HEAD)" = "$gvisor_commit"
-test -z "$(git -C "$work_root/gvisor" tag --contains HEAD)" || {
-  echo "canonical gVisor source checkout unexpectedly contains tags" >&2
-  exit 1
-}
-test -z "$(git -C "$work_root/gvisor" status --porcelain)" || {
-  echo "gVisor upstream source is not clean" >&2
-  exit 1
-}
-git -C "$work_root/gvisor" apply --check "$patch_abs"
-git -C "$work_root/gvisor" apply "$patch_abs"
-test -n "$(git -C "$work_root/gvisor" status --porcelain)" || {
-  echo "gVisor patch produced no changes" >&2
-  exit 1
-}
+sh scripts/prepare-gvisor-build-source.sh "$runtime_lock" "$work_root/gvisor"
 expected_stamp="$(printf %.12s "$gvisor_commit")-dirty"
 actual_stamp="$(git -C "$work_root/gvisor" describe --always --tags --abbrev=12 --dirty)"
 test "$actual_stamp" = "$expected_stamp" || {
@@ -156,12 +127,34 @@ test -f "$module_lock_path" || {
   exit 1
 }
 actual_module_lock_sha256="$(sha256sum "$module_lock_path" | awk '{print $1}')"
-test "$actual_module_lock_sha256" = "$gvisor_module_lock_sha256" || {
-  echo "gVisor Bazel module lock sha256 mismatch: expected=$gvisor_module_lock_sha256 actual=$actual_module_lock_sha256" >&2
-  exit 1
-}
-
-sh scripts/verify-gvisor-runtime-bundle.sh "$runtime_lock" "$work_root/gvisor/bazel-bin/release" "$output_directory"
+verification_lock="$runtime_lock"
+if [ "$capture" -eq 1 ]; then
+  verification_lock="$work_root/candidate-runtime-lock.json"
+  GOTOOLCHAIN=local go run ./scripts/update-runtime capture-gvisor \
+    --root "$PWD" --built-dir "$work_root/gvisor/bazel-bin/release" \
+    --module-lock "$module_lock_path" --source-manifest "$work_root/gvisor.haa-source.json" \
+    --output "$verification_lock"
+  gvisor_module_lock_sha256=$actual_module_lock_sha256
+else
+  test "$actual_module_lock_sha256" = "$gvisor_module_lock_sha256" || {
+    echo "gVisor Bazel module lock sha256 mismatch: expected=$gvisor_module_lock_sha256 actual=$actual_module_lock_sha256" >&2
+    exit 1
+  }
+fi
+sh scripts/verify-gvisor-runtime-bundle.sh "$verification_lock" "$work_root/gvisor/bazel-bin/release" "$output_directory"
+for member in containerd-shim-runsc-v1 gvisor-bin/checkpointgofer gvisor-bin/gvisor_sentry gvisor-bin/runsc-metric-server runsc; do
+  binary="$output_directory/$member"
+  test "$(GOTOOLCHAIN=local go version "$binary")" = "$binary: go$selected_go" || {
+    echo "gVisor member compiler mismatch: $member" >&2
+    exit 1
+  }
+done
+if [ "$capture" -eq 1 ]; then
+  cp "$verification_lock" "$output_directory/candidate-runtime-lock.json"
+  cp "$verification_lock.receipt.json" "$output_directory/candidate-runtime-lock.json.receipt.json"
+  cp "$module_lock_path" "$output_directory/MODULE.bazel.lock"
+  cp "$work_root/gvisor.haa-source.json" "$output_directory/gvisor-source-preparation.json"
+fi
 
 # Required observer capabilities are verified from the built, locked runsc.
 meta_output="$("$output_directory/runsc" trace metadata)"
@@ -177,7 +170,7 @@ jq -cn \
   --arg bazel_version "$bazel_version" \
   --arg bazel_sha512 "$bazel_sha512" \
   --arg architecture "$bundle_architecture" \
-  --argjson members "$(jq -c '.gvisor.runtime_bundle.members' "$runtime_lock")" \
+  --argjson members "$(jq -c '.gvisor.runtime_bundle.members' "$verification_lock")" \
   --arg builder_repository "$builder_repository" \
   --arg builder_tag "$builder_tag" \
   --arg builder_digest "$builder_digest" \

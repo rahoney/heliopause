@@ -1,0 +1,230 @@
+{
+  "status": "READ_ONLY_EVALUATED_UPDATE_SHA_AND_RULE_IDENTIFIED",
+  "recorded_utc": "2026-10-14T09:41:08.949058+00:00",
+  "historical_result": {
+    "path": "stale-rejection.json",
+    "sha256": "14a4e377fa68eca254cc70f100ca15098d84906795ee5203e3be139d8fb1528a",
+    "bytes_unchanged_from_f79656e": true,
+    "merge_request_count_remains": 1
+  },
+  "remote_mutations_this_phase": 0,
+  "CI_runs_or_retries_triggered": 0,
+  "current": {
+    "refs": {
+      "main": "2e196a188adce22005fce201c23da1dc27a43426",
+      "develop": "84591ef4296a852a1439781ab62cc4103a59db0a",
+      "feature/m13-002-stale-probe": "ff441d3d3bde941d0fd759972539ed8707475ee1"
+    },
+    "PR32": {
+      "state": "open",
+      "merged": false,
+      "mergeable": true,
+      "mergeable_state": "behind",
+      "merge_commit_sha": "363596006e66811dcf91888c92172b484e7e9f4e",
+      "head": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+      "base_snapshot": "2e196a188adce22005fce201c23da1dc27a43426"
+    },
+    "baseRef_target": "84591ef4296a852a1439781ab62cc4103a59db0a",
+    "baseRefOid_snapshot": "2e196a188adce22005fce201c23da1dc27a43426",
+    "potentialMergeCommit": "363596006e66811dcf91888c92172b484e7e9f4e",
+    "head_check_suite": {
+      "id": 104052117715,
+      "head_sha": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+      "head_branch": "feature/m13-002-stale-probe",
+      "conclusion": "success",
+      "latest_check_runs_count": 10
+    },
+    "rules_unchanged_since_request": true
+  },
+  "sha_evidence": [
+    {
+      "role": "PR head / registered check source",
+      "sha": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+      "parents": [
+        "2e196a188adce22005fce201c23da1dc27a43426"
+      ],
+      "tree": "7cbc074f59fa3e7f97edc9941519351609d6940b",
+      "check_count": 10,
+      "status_count": 1,
+      "Required": "success",
+      "license/cla": "success"
+    },
+    {
+      "role": "old test merge",
+      "sha": "8e5067ffb828415db8b58c7848cfde40346d09f1",
+      "parents": [
+        "2e196a188adce22005fce201c23da1dc27a43426",
+        "ff441d3d3bde941d0fd759972539ed8707475ee1"
+      ],
+      "tree": "7cbc074f59fa3e7f97edc9941519351609d6940b",
+      "check_count": 0,
+      "status_count": 0,
+      "Required": "ABSENT",
+      "license/cla": "ABSENT"
+    },
+    {
+      "role": "current potential merge",
+      "sha": "363596006e66811dcf91888c92172b484e7e9f4e",
+      "parents": [
+        "84591ef4296a852a1439781ab62cc4103a59db0a",
+        "ff441d3d3bde941d0fd759972539ed8707475ee1"
+      ],
+      "tree": "2f2795b6a2ff215029b897e02786f05a2e0ae60c",
+      "check_count": 0,
+      "status_count": 0,
+      "Required": "ABSENT",
+      "license/cla": "ABSENT"
+    },
+    {
+      "role": "failed update evaluated by rule suite4516024742",
+      "sha": "0fd006b55a97be9728cd2aa672776885975d0b80",
+      "parents": [
+        "84591ef4296a852a1439781ab62cc4103a59db0a",
+        "ff441d3d3bde941d0fd759972539ed8707475ee1"
+      ],
+      "tree": "2f2795b6a2ff215029b897e02786f05a2e0ae60c",
+      "check_count": 0,
+      "status_count": 0,
+      "Required": "ABSENT",
+      "license/cla": "ABSENT"
+    }
+  ],
+  "reported_two_checks": [
+    {
+      "context": "Required",
+      "integration_id": 15368
+    },
+    {
+      "context": "license/cla",
+      "integration_id": 128106
+    }
+  ],
+  "rule_suite": {
+    "id": 4516024742,
+    "ref": "refs/heads/develop",
+    "before_sha": "84591ef4296a852a1439781ab62cc4103a59db0a",
+    "after_sha": "0fd006b55a97be9728cd2aa672776885975d0b80",
+    "pushed_at": "2026-10-14T17:46:47+09:00",
+    "result": "fail",
+    "rule_evaluations": [
+      {
+        "rule_source": {
+          "type": "ruleset",
+          "id": 24969937,
+          "name": "Protect develop"
+        },
+        "enforcement": "active",
+        "result": "fail",
+        "rule_type": "required_status_checks",
+        "details": "2 of 2 required status checks are expected."
+      },
+      {
+        "rule_source": {
+          "type": "ruleset",
+          "id": 24969937,
+          "name": "Protect develop"
+        },
+        "enforcement": "active",
+        "result": "pass",
+        "rule_type": "pull_request"
+      },
+      {
+        "rule_source": {
+          "type": "ruleset",
+          "id": 24969937,
+          "name": "Protect develop"
+        },
+        "enforcement": "active",
+        "result": "pass",
+        "rule_type": "non_fast_forward"
+      },
+      {
+        "rule_source": {
+          "type": "ruleset",
+          "id": 24969937,
+          "name": "Protect develop"
+        },
+        "enforcement": "active",
+        "result": "pass",
+        "rule_type": "deletion"
+      }
+    ],
+    "correlation": "UTC-normalized pushed_at exactly matches preserved HTTP Date08:46:47Z; same target, before SHA and original test actor; proposed commit message identifies PR32 and parents match develop/head. The API does not expose an HTTP request-ID join."
+  },
+  "findings": {
+    "proven": [
+      "The recorded failed update is0fd006b, not the successful headff441d3 and not the potential merge3635960",
+      "The actual failing rule is required_status_checks in active develop ruleset24969937; its two required contexts are Required/App15368 and license/cla/App128106",
+      "Headff441d3 has10 successful Check Runs plus successful genuine CLA; old test merge8e5067f has no own checks/statuses",
+      "Potential merge3635960 and evaluated update0fd006b share advanced-base parents and tree2f2795b, but are distinct SHAs and both lack checks/statuses",
+      "The ordinary admin request was rejected, PR32 stayed open/BEHIND and all protected/feature refs stayed unchanged"
+    ],
+    "inference": "The rejection is consistent with the documented Strict flow: an old-base green head does not establish that the latest-base candidate is qualified. Expected contexts belong to rule evaluation of the proposed0fd006b update. The API does not expose every internal status-resolution lookup, so an exact internal lookup algorithm is not asserted.",
+    "not_proven": [
+      "Freshness-only causality with absent candidate checks removed as a variable",
+      "An isolated missing Required or isolated missing CLA rejection",
+      "A hostile non-fast-forward rejection: non_fast_forward PASS in this suite means this proposed merge was a fast-forward update from its first parent",
+      "A distinct special admin override mechanism or main-target negative from develop evidence"
+    ]
+  },
+  "evidence_level": {
+    "strict_config": "CONFIRMED",
+    "stale_candidate_actual_rejection": "CONFIRMED_BOUND_TO_STRICT_REQUIRED_CHECK_RULE",
+    "independent_freshness_only": "NOT_QUALIFIED",
+    "repeat_same_develop_attempt": "NOT_RECOMMENDED; consumes risk/CI without resolving status-selection ambiguity",
+    "acceptance_boundary": "Preserve the original NOT_QUALIFIED classification for independent stale. Reviewer may accept this bounded Strict-flow evidence for the operational stale case explicitly; no acceptance waiver or automatic PASS is made."
+  },
+  "coverage_reuse": {
+    "M13_001_configuration": "Reuse historical closure; current reads serve requested analysis, not a new qualification run",
+    "normal_feature_to_develop": "Reuse PR31 actual normal merge; no repeated test",
+    "develop_conversation": "Reuse PR31 actual thread rejection",
+    "develop_admin_ordinary_path": "Existing admin-permission PR31 request under a live conversation blocker already demonstrates the ordinary-admin row of the plan; no separate duplicate call. This is not a special override-mode test.",
+    "main_admin_ordinary_path": "Combine with a future main conversation rejection, rather than adding an identical admin-only attempt"
+  },
+  "force_push_boundary": {
+    "develop_recent_failures": "The queried last24h fail list contains the PR31 conversation and PR32 required-check cases; neither is a non_fast_forward rejection",
+    "main_recent_failures": "Week-filtered first page returned empty. This is a bounded absence of found evidence, not proof that enforcement is absent",
+    "preferred_next": "Local graph/payload checks and existing rule-suite evidence first; if no actual non-fast-forward rejection exists, propose a protected disposable probe with explicit acceptance-scope decision before setup",
+    "unqualified_substitutes": [
+      "force flag on a fast-forward/no-op",
+      "wrong lease or dry-run/local refusal",
+      "force=false API intrinsic validation",
+      "atomic transaction rejected only by another ref",
+      "unprotected disposable branch"
+    ],
+    "live_target_risk": "A real force=true non-fast-forward update of main/develop can rewrite a protected ref if enforcement fails. It cannot be guaranteed history-preserving and is excluded from the forward-only approval bundle."
+  },
+  "official_sources": [
+    {
+      "url": "https://docs.github.com/en/rest/repos/rule-suites",
+      "use": "Rule-suite before_sha/after_sha/ref/results and per-rule evaluations",
+      "paraphrase": "Rule-suite records describe evaluated repository ref updates and their rule results."
+    },
+    {
+      "url": "https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets#require-status-checks-to-pass-before-merging",
+      "use": "Strict requires a topic branch up to date with its base; pinned source matters",
+      "paraphrase": "Strict adds base freshness to required checks. Old green input is not a proof of fresh-base qualification."
+    },
+    {
+      "url": "https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks#conflicts-between-head-commit-and-test-merge-commit",
+      "use": "Head/test-merge check source distinction; current-branch prerequisites",
+      "paraphrase": "The documented head fallback when test-merge statuses are absent does not remove the separate freshness requirement. It does not authorize copying check results to another SHA."
+    }
+  ],
+  "work_item": {
+    "status": "IN_PROGRESS",
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO",
+    "next": "Ordered plan and approval boundaries in the existing qualification README",
+    "M13_003": "NOT_STARTED / Ready: No"
+  },
+  "raw_custody": {
+    "root": "docs/github-logs/m13-002-stale-rejection/analysis-20261014T092849513721Z",
+    "inventory": "docs/github-logs/m13-002-stale-rejection/analysis-20261014T092849513721Z/inventory.json",
+    "inventory_sha256": "8741d1fdf32479cbcb783f48be6d878615ebaf934dc5cdd67de8d72feed25c38",
+    "file_count": 77,
+    "privacy": "Original API responses remain local outside the versioned candidate; this document is a selected-field analysis, not edited raw or a remote copy of full originals."
+  }
+}

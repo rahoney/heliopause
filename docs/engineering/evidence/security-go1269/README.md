@@ -24,6 +24,13 @@ The [Cargo follow-up](./cargo-gai-followup.md) records the one-line repair,
 same-fixture before FAIL/after PASS and full102 latch groups plus canonical Go
 checks. Fresh actual Linux/Required qualification remains pending.
 
+Current delivery closure (2026-10-13): PR30 is merged at main2e196a1.
+CI308 on b4ee265 and the separate main CI38328099413 both completed all ten
+jobs successfully. The Cargo source repair and bounded APT/host security scope
+are qualified. Earlier pending labels above and in immutable result snapshots
+are historical; guest runtime and Race/advisory follow-ups remain open.
+See [main delivery evidence](../../../planning/evidence/m13-001-protected-activation/main-ci.json).
+
 ## ROOT_CAUSE
 
 [Run 38240142380](https://github.com/rahoney/heliopause/actions/runs/38240142380)
@@ -190,19 +197,15 @@ Scheduled Security38249522013 also passed history secrets, vulnerability and
 bounded fuzz on the host patch. The current nine prerequisites contain no Race
 job; `platform` and `quick` do not run `-race`.
 
-The current Cargo observer repair needs its own fresh Linux/Required result
-after push. CI307 passed APT setup but failed the Cargo consumer; e01ba19's
-success is not reused as qualification of the new source. No source
-qualification is relabeled for a different compiler.
-Main remains unmerged and still selects Go1.26.8; rerunning that old main would
-not consume this branch's patch. No merge was made.
+The repaired source passed CI308. The owner merged PR30, and merged main2e196a1
+passed its separate CI38328099413 with all ten jobs SUCCESS. No further rerun
+is required for this unchanged maintenance source. Guest runtime and broader
+release-readiness follow-ups remain separate.
 
 ## PUSH_READINESS
 
-**READY to push the locally validated Cargo repair; remote qualification pending.**
-The host patch and diagnostic repair already passed CI305. Current Cargo repair
-has before/after and full observer regression evidence, plus canonical Go
-checks. Fresh Linux/Required must pass before this follow-up is qualified.
-The broader full-Race fixture findings and guest runtime patch remain separate;
-reviewer merge and production release are not performed. The historical SumDB
-failure's lost underlying cause is not claimed solved by the diagnostic change.
+**DELIVERED: PR30 merged; merged main CI SUCCESS.**
+Bounded host security, APT and Cargo repair is complete. Broader full-Race,
+guest-runtime patch and module advisory assessments remain release follow-ups.
+The historical SumDB underlying cause remains unknown; diagnostic and actual
+consumer validation do not recover the discarded historical error.

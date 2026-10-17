@@ -1,0 +1,196 @@
+{
+  "status": "BASELINE_READBACK_COMPLETE_LIVE_QUALIFICATION_NOT_RUN",
+  "observed_utc": "2026-10-13T05:53:24.476302+00:00",
+  "repository": "rahoney/heliopause",
+  "baseline_main_develop": "2e196a188adce22005fce201c23da1dc27a43426",
+  "m13_001_commit": "b3c8b7dc487046afdad52a215c101d761f055098",
+  "local_milestone_branch": "milestone/m13-production-release-operations",
+  "local_head_before_preparation": "b3c8b7dc487046afdad52a215c101d761f055098",
+  "refs": {
+    "refs/heads/develop": "2e196a188adce22005fce201c23da1dc27a43426",
+    "refs/heads/main": "2e196a188adce22005fce201c23da1dc27a43426",
+    "refs/heads/milestone/m0-foundation": "011dd4fa7652c04b911cb0ef566b7698a4ed0f3d",
+    "refs/heads/milestone/m1-domain-workflow": "e1ba0d5b8d793ab26df525ff0c5113095072f953",
+    "refs/heads/milestone/m10-bootstrap-contract": "5bc555f5f26a2307962418865e64e34a782d688f",
+    "refs/heads/milestone/m10-cla": "f3d2ed23fab429f5ac18347b9861cdb9d894611b",
+    "refs/heads/milestone/m10-installer-doctor": "63e2ac069f7b1ead63b76f97472f38312c899376",
+    "refs/heads/milestone/m10-public-release": "0f9414144dbc0f380763b13ae2ffb379f49d7cdf",
+    "refs/heads/milestone/m10-release-gate": "63d12aacf64ab7e84fcb94eb5c04371a195dc735",
+    "refs/heads/milestone/m10-release-manifest": "9af82dbc0a2ab99a0c631532d188d5825da3da9c",
+    "refs/heads/milestone/m10-runtime-image": "241f5a6dca69cf10332dcddc35cc08293997354b",
+    "refs/heads/milestone/m11-release-hardening": "76f6c139c19c49db54be909ff77d6416952c3467",
+    "refs/heads/milestone/m12-go-cargo-terraform": "c7f564e459713a2f415e52859c1a96df87d8372c",
+    "refs/heads/milestone/m13-production-release-operations": "b3c8b7dc487046afdad52a215c101d761f055098",
+    "refs/heads/milestone/m2-npm-static-inspect": "c4ab899f8b049948bda416ca0c6c0eedd5d5a549",
+    "refs/heads/milestone/m4-npm-install-promotion": "1dc22b8cc949941886d9ffef713399df0b031aa8",
+    "refs/heads/milestone/m5-pypi-pip": "ff9b6003a23fdca95704096089aff60cbf6ac997",
+    "refs/heads/milestone/m6-github-releases": "d17609fe4937f6aa448b2b83edd7cb50dde59f22",
+    "refs/heads/milestone/m7-mvp-qualification": "ebd96a0026f4725c5e75bf401a7ceb16cd3112c0",
+    "refs/heads/milestone/m8-production-trust-hardening": "dac187bc46036c60d464542b16489847fdb8fb66",
+    "refs/heads/milestone/m9-cli-tree-ux": "3236e1cb2b6b8b1861474942897a2c075e8abfa0",
+    "refs/heads/milestone/m9-github-defaults": "adcd60a6e9ade41ba0090045aefe268c060c71df",
+    "refs/heads/milestone/m9-pip-install-ux": "3040f9145eaf4ee9c9267f2a58048ae9a8ce46b2",
+    "refs/heads/milestone/m9-product-install-ux": "75ab5fbbe1a8a2c83ada03657c97d2e71ebd4101",
+    "refs/heads/milestone/m9-qualification": "363a11961881bfb57b61760e2027d3014c277b47",
+    "refs/heads/recovery/m12-reconciliation": "c4c09a4b8a35d81c6d92d7a276898daceda97ec5",
+    "refs/heads/security/go1.26.9": "b4ee26587a0426d8ba834ac68b8c5934b4bcfce5"
+  },
+  "feature_refs": [],
+  "open_pr_count": 0,
+  "actor": {
+    "login": "rahoney",
+    "permission": "admin",
+    "role_name": "admin"
+  },
+  "rules": {
+    "main-ruleset": {
+      "id": 21396883,
+      "semantic_plan_match": true,
+      "enforcement": "active",
+      "current_user_can_bypass": "never",
+      "bypass_actors": []
+    },
+    "develop-ruleset": {
+      "id": 24969937,
+      "semantic_plan_match": true,
+      "enforcement": "active",
+      "current_user_can_bypass": "never",
+      "bypass_actors": []
+    },
+    "tag-create-ruleset": {
+      "id": 24969939,
+      "semantic_plan_match": true,
+      "enforcement": "active",
+      "current_user_can_bypass": "always",
+      "bypass_actors": [
+        {
+          "actor_id": 168336203,
+          "actor_type": "User",
+          "bypass_mode": "always"
+        }
+      ]
+    },
+    "tag-immutable-ruleset": {
+      "id": 24969940,
+      "semantic_plan_match": true,
+      "enforcement": "active",
+      "current_user_can_bypass": "never",
+      "bypass_actors": []
+    }
+  },
+  "effective_main_develop_rules_match": true,
+  "exact_b3c8b7d_checks": {
+    "check_run_count": 0,
+    "status_count": 0
+  },
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO"
+  },
+  "live_cases": {
+    "normal_feature_develop": "NOT_RUN_AWAITING_AUTHORIZATION",
+    "normal_develop_main": "NOT_RUN_AWAITING_AUTHORIZATION",
+    "missing_required": "NOT_RUN_AWAITING_AUTHORIZATION",
+    "missing_cla": "NOT_RUN_AWAITING_AUTHORIZATION",
+    "stale_branch": "NOT_RUN_AWAITING_AUTHORIZATION",
+    "unresolved_conversation": "NOT_RUN_AWAITING_AUTHORIZATION",
+    "direct_push": "NOT_RUN_AWAITING_AUTHORIZATION",
+    "admin_bypass_merge": "NOT_RUN_AWAITING_AUTHORIZATION",
+    "force_push": "NOT_RUN_AWAITING_AUTHORIZATION"
+  },
+  "preexisting_untracked_preserved_count": 98,
+  "raw_receipts": [
+    {
+      "path": "docs/github-logs/m13-002-20261013-baseline/actor-summary.json",
+      "sha256": "84aa32e1583de3a2a0fa75c43a1c7d15c35c2f24561795f86ae8f093922ac9df",
+      "bytes": 25
+    },
+    {
+      "path": "docs/github-logs/m13-002-20261013-baseline/develop-rules.json",
+      "sha256": "82aded8780680c5d72fec2ae26cdff3a50172713468a6e253582e647cd15fd70",
+      "bytes": 1024
+    },
+    {
+      "path": "docs/github-logs/m13-002-20261013-baseline/develop-ruleset.json",
+      "sha256": "0d981954d6b00b39c6e5705583045ea31bb9c98244d849beb55cb4ac8bcf964d",
+      "bytes": 1222
+    },
+    {
+      "path": "docs/github-logs/m13-002-20261013-baseline/m13-001-checks.json",
+      "sha256": "e83cfac35507982a40cfeb776ce85aa0367e7646f81fe857df4a6c841ea8a170",
+      "bytes": 33
+    },
+    {
+      "path": "docs/github-logs/m13-002-20261013-baseline/m13-001-status.json",
+      "sha256": "928d0d9dc488035f86cfa77209711f4773d46878c3ed0073e717e9c986cbac3f",
+      "bytes": 4495
+    },
+    {
+      "path": "docs/github-logs/m13-002-20261013-baseline/main-rules.json",
+      "sha256": "1b928bd04b083c53f0f9e3009a4021df3995dfb3270fb59be743f18f98e47011",
+      "bytes": 1024
+    },
+    {
+      "path": "docs/github-logs/m13-002-20261013-baseline/main-ruleset.json",
+      "sha256": "59f782111e7e79128c0d54e6b658ae09754a9cc7144cc3383ea534bb14d5caba",
+      "bytes": 1216
+    },
+    {
+      "path": "docs/github-logs/m13-002-20261013-baseline/open-prs.json",
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "bytes": 2
+    },
+    {
+      "path": "docs/github-logs/m13-002-20261013-baseline/permission.json",
+      "sha256": "bc5601db943e4a514005c9014706c64a12b57c2936b27e72ca6f5d0dc4b4149c",
+      "bytes": 1068
+    },
+    {
+      "path": "docs/github-logs/m13-002-20261013-baseline/preexisting-untracked-inventory.json",
+      "sha256": "878302df997e0c25344e3ec7baa1c1c9542d60993549542ac00c469de0d891d2",
+      "bytes": 18279
+    },
+    {
+      "path": "docs/github-logs/m13-002-20261013-baseline/readonly-probe.py",
+      "sha256": "848f8d63076a6e949f0494494dd56511583cefe47676d8f3fbd0e3d84ab389bf",
+      "bytes": 3372
+    },
+    {
+      "path": "docs/github-logs/m13-002-20261013-baseline/refs.json",
+      "sha256": "9c1494074805db0333b07817cb773e223269215411bc60e3175c10b2aa4b3342",
+      "bytes": 11150
+    },
+    {
+      "path": "docs/github-logs/m13-002-20261013-baseline/remote-heads.txt",
+      "sha256": "dc40ce98dc31cdd854401102e88f6e518cec10db1c4850f9dea3e8abc237b83a",
+      "bytes": 2152
+    },
+    {
+      "path": "docs/github-logs/m13-002-20261013-baseline/requests.json",
+      "sha256": "6f69e1c109cf776de8610a4cdf11167e09f767cf08e0e92111cb1952925de63f",
+      "bytes": 4025
+    },
+    {
+      "path": "docs/github-logs/m13-002-20261013-baseline/rulesets.json",
+      "sha256": "9bf91c0d3e275f1b2c24948e086134ed00dd8e3c5c21ab13162300b154d75d8d",
+      "bytes": 1780
+    },
+    {
+      "path": "docs/github-logs/m13-002-20261013-baseline/tag-create-ruleset.json",
+      "sha256": "51cc47d91079c3d7dc61b6a9a57d7bdfd457123a644ebdec9589b46c3e6f0d40",
+      "bytes": 661
+    },
+    {
+      "path": "docs/github-logs/m13-002-20261013-baseline/tag-immutable-ruleset.json",
+      "sha256": "72150546c821d4a04ac9f720aba8b4f8101045ea56001249f24d6674ac678c54",
+      "bytes": 647
+    }
+  ],
+  "raw_custody": "local only; original bodies not included in commit candidate",
+  "m13_001_old_tmp_raw": "ABSENT; not reconstructed",
+  "security_settings_changed": false,
+  "push_performed": false,
+  "merge_performed": false
+}

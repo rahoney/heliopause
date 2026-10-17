@@ -17,82 +17,48 @@ esac
 
 runtime_lock=scripts/runtimes.lock.json
 test -f "$runtime_lock"
-gvisor_repository=$(jq -er '.gvisor.source_repository' "$runtime_lock")
-gvisor_commit=$(jq -er '.gvisor.commit' "$runtime_lock")
-gvisor_patch_path=$(jq -er '.gvisor.patch.path' "$runtime_lock")
-gvisor_patch_sha256=$(jq -er '.gvisor.patch.sha256' "$runtime_lock")
-bazel_url=$(jq -er '.bazel.linux_x86_64_url' "$runtime_lock")
 bazel_sha512=$(jq -er '.bazel.linux_x86_64_sha512' "$runtime_lock")
+bazel_version=$(jq -er '.bazel.version' "$runtime_lock")
+builder_repository=$(jq -er '.gvisor.build.builder.image_repository' "$runtime_lock")
+builder_digest=$(jq -er '.gvisor.build.builder.image_digest' "$runtime_lock")
+test "$builder_repository" = us-central1-docker.pkg.dev/gvisor-presubmit/gvisor-presubmit-images/default_x86_64
+printf '%s\n' "$builder_digest" | LC_ALL=C grep -Eq '^sha256:[0-9a-f]{64}$'
 
-case "$gvisor_commit" in
-  *[!0-9a-f]*)
-    echo "runtime lock gVisor commit is invalid" >&2
-    exit 1
-    ;;
-esac
-test "$(printf %s "$gvisor_commit" | wc -c | tr -d ' ')" = 40 || {
-  echo "runtime lock gVisor commit is invalid" >&2
-  exit 1
-}
-
-case "$gvisor_patch_path" in
-  tools/gvisor/*.patch) ;;
-  *) echo "runtime lock gVisor patch path is invalid" >&2; exit 1 ;;
-esac
-case "$gvisor_patch_path" in
-  *..*) echo "runtime lock gVisor patch path cannot escape" >&2; exit 1 ;;
-esac
-test -f "$gvisor_patch_path" || {
-  echo "runtime lock gVisor patch file missing: $gvisor_patch_path" >&2
-  exit 1
-}
-test "$(sha256sum "$gvisor_patch_path" | awk '{print $1}')" = "$gvisor_patch_sha256" || {
-  echo "runtime lock gVisor patch sha256 mismatch" >&2
-  exit 1
-}
-patch_abs="$(cd "$(dirname "$gvisor_patch_path")" && pwd)/$(basename "$gvisor_patch_path")"
 
 work_root=$(mktemp -d "${TMPDIR:-/tmp}/helox-release-observer.XXXXXX")
-cleanup() { rm -rf "$work_root"; }
-trap cleanup EXIT HUP INT TERM
+cleanup() {
+  status=$1
+  if [ "$status" -ne 0 ]; then
+    echo "observer failed build inputs retained: $work_root" >&2
+    return "$status"
+  fi
+  rm -rf "$work_root"
+}
+trap 'cleanup "$?"' EXIT
+trap 'exit 129' HUP
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
-gvisor_source="${GVISOR_LOCAL_REPO:-$gvisor_repository}"
-git clone --filter=blob:none "$gvisor_source" "$work_root/gvisor"
-git -C "$work_root/gvisor" checkout --detach "$gvisor_commit"
-test "$(git -C "$work_root/gvisor" rev-parse HEAD)" = "$gvisor_commit"
-test -z "$(git -C "$work_root/gvisor" status --porcelain)" || {
-  echo "gVisor upstream source is not clean" >&2
-  exit 1
-}
-
-git -C "$work_root/gvisor" apply --check "$patch_abs" || {
-  echo "gVisor patch failed application check" >&2
-  exit 1
-}
-git -C "$work_root/gvisor" apply "$patch_abs" || {
-  echo "gVisor patch application failed" >&2
-  exit 1
-}
-test -n "$(git -C "$work_root/gvisor" status --porcelain)" || {
-  echo "gVisor patch produced no changes" >&2
-  exit 1
-}
-
-if [ -n "${BAZEL_PATH:-}" ] && [ -x "${BAZEL_PATH}" ]; then
-  cp "${BAZEL_PATH}" "$work_root/bazel"
-else
-  curl --fail --location --silent --show-error --output "$work_root/bazel" "$bazel_url"
-fi
-test "$(sha512sum "$work_root/bazel" | awk '{print $1}')" = "$bazel_sha512"
-chmod 0755 "$work_root/bazel"
+sh scripts/prepare-gvisor-build-source.sh "$runtime_lock" "$work_root/gvisor"
 
 cp -R tools/gvisor-observer "$work_root/gvisor/tools/haa_gvisor_observer"
-(
-  cd "$work_root/gvisor"
-  "$work_root/bazel" build -c opt //tools/haa_gvisor_observer:haa_gvisor_observer
-  "$work_root/bazel" build -c opt //tools/haa_gvisor_observer:haa_gvisor_observer_latch_test
-  "$work_root/gvisor/bazel-bin/tools/haa_gvisor_observer/haa_gvisor_observer_latch_test"
-)
+builder_ref="$builder_repository@$builder_digest"
+if ! docker image inspect "$builder_ref" >/dev/null 2>&1; then
+  docker pull --platform linux/amd64 "$builder_ref"
+fi
+test "$(docker image inspect --format '{{.Os}}/{{.Architecture}}' "$builder_ref")" = linux/amd64
+docker image inspect --format '{{json .RepoDigests}}' "$builder_ref" | jq -e --arg ref "$builder_ref" 'index($ref) != null' >/dev/null
+docker run --rm --pull=never --platform linux/amd64 \
+  --user "$(id -u):$(id -g)" --env "HOME=$work_root" --env USER=builder \
+  --env "EXPECTED_BAZEL_VERSION=$bazel_version" --env "EXPECTED_BAZEL_SHA512=$bazel_sha512" \
+  --mount "type=bind,src=$work_root,dst=$work_root" \
+  --workdir "$work_root/gvisor" --entrypoint /bin/sh "$builder_ref" -c '
+    set -eu
+    test "$(/usr/local/bin/bazel --version)" = "bazel $EXPECTED_BAZEL_VERSION"
+    test "$(sha512sum /usr/local/bin/bazel | awk "{print \$1}")" = "$EXPECTED_BAZEL_SHA512"
+    /usr/local/bin/bazel build -c opt --jobs=4 --local_ram_resources=8192 //tools/haa_gvisor_observer:haa_gvisor_observer //tools/haa_gvisor_observer:haa_gvisor_observer_latch_test
+    bazel-bin/tools/haa_gvisor_observer/haa_gvisor_observer_latch_test
+  '
 
 test ! -e "$output_path"
 install -m 0755 "$work_root/gvisor/bazel-bin/tools/haa_gvisor_observer/haa_gvisor_observer" "$output_path"
