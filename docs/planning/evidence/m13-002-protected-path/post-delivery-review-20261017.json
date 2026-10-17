@@ -2,14 +2,14 @@
   "schema_version": 1,
   "work_item": "M13-002",
   "date": "2026-10-17",
-  "status": "BLOCKED",
+  "status": "ACCEPTED_WITH_EXCEPTION",
   "audit": {
     "IMPLEMENTED": "YES",
     "WIRED": "YES",
     "QUALIFIED": "NO",
-    "ACCEPTANCE_CLOSED": "NO",
+    "ACCEPTANCE_CLOSED": "YES",
     "MISSING": [
-      "actual missing-CLA negative remains NOT_TESTED; real eligible unsigned contributor unavailable; public release gate stays closed"
+      "actual missing-CLA negative remains NOT_TESTED / DEFERRED under owner-approved C3; required before first external contribution merge"
     ]
   },
   "current": {
@@ -62,18 +62,18 @@
   "missing_CLA": {
     "actual_negative": "NOT_TESTED",
     "real_unsigned_participant": "UNAVAILABLE as previously confirmed by owner",
-    "waiver": "NONE",
-    "reviewer_disposition": "APPROVED C2 work-order exception only; actual negative/acceptance remain open"
+    "waiver": "actual-test prerequisite deferred by explicit C3 risk acceptance; CLA obligation and required check NOT waived",
+    "reviewer_disposition": "APPROVED C3; conditional evidence deferral for initial maintainer-only release; canonical clause owns limits"
   },
   "permissions": {
     "already_consumed": [
       "normal PR35/36 delivery",
       "disposable nonFF test and limited evidence method"
     ],
-    "new_proposal": "User explicitly approved both recommended S/C2; M13-003 implementation/build/package preparation only; no public release/channel publish/release tag/publish activation until CLA gate closure or separate explicit canonical decision",
+    "new_proposal": "APPROVED S/C2 followed by explicit C3; canonical scope only; no concrete merge/tag/publish execution",
     "publication": "NOT_AUTHORIZED"
   },
-  "M13_003_to_005": "M13-003 baseline audit/preparation IN_PROGRESS under C2; M13-004/005 NOT_STARTED",
+  "M13_003_to_005": "M13-003 source CI325 PASS, actual release qualification IN_PROGRESS under C3; M13-004/005 NOT_STARTED",
   "cleanup": {
     "completed_native_check_source_and_regenerable_cache": "DELETED; prior10806files/logical280351960B",
     "nonFF_probe_and_ruleset": "DELETED",
@@ -144,6 +144,21 @@
       "path": "docs/github-logs/m13-002-resume-20261017T070738Z/main-delivery-post-20261017T092028340086Z/summary.json",
       "sha256": "0df32b63512b9266dfa6b73cbffff23e4218dd485008f7dae88ff95d7a04a3e3",
       "bytes": 2533
+    },
+    {
+      "path": "docs/github-logs/m13-003-20261017/ci325-final.json",
+      "sha256": "a9af0f7bea9fe2e8b19ee11125ab5f2d6c7923b1b578bb55df3bbeaa81ff07e7",
+      "bytes": 1059
+    },
+    {
+      "path": "docs/github-logs/m13-003-20261017/c3-approval/approval.json",
+      "sha256": "a4beab2e9d0fccff4b905db41439e8c4431091505582c71f4680296bd14ed3a2",
+      "bytes": 463
+    },
+    {
+      "path": "docs/github-logs/m13-003-20261017/c3-approval/approved-proposal.md",
+      "sha256": "894c22e62b3527982f82d1841344e6db0eb82165a094324984337577f6659ab2",
+      "bytes": 6273
     }
   ],
   "raw_custody": "Full originals remain local under docs/github-logs; selected hashes are versioned here, not a claim that full raw is remotely stored. Historical raw results are unchanged.",
@@ -152,6 +167,15 @@
     "S": "BOUNDED_OPERATIONAL_STRICT_REJECTION accepted",
     "C2": "M13-002 remains BLOCKED / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO; M13-003 preparation permitted",
     "user_instruction": "그래 그러면 모두 권장안대로 진행하자.",
-    "canonical_clause": "../../18-m13-production-release-operations-contract.md#m13-002--protected-branch-qualification"
-  }
+    "canonical_clause": "../../18-m13-production-release-operations-contract.md#m13-002--protected-branch-qualification",
+    "C3": {
+      "status": "APPROVED",
+      "user_instruction": "승인할게.",
+      "record": "cla-deferral-proposal-20261017.md",
+      "reviewed_proposal_sha256": "894c22e62b3527982f82d1841344e6db0eb82165a094324984337577f6659ab2",
+      "qualification": "NO for full hostile matrix",
+      "acceptance_closed": "YES within revised scope"
+    }
+  },
+  "current_snapshot_scope": "Historical delivery readback at observed_utc; open_PRs=0 belongs to that snapshot, not the later PR37 state"
 }

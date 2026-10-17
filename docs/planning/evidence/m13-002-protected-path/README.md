@@ -1,22 +1,23 @@
 # M13-002 protected branch qualification
 
-Status: BLOCKED (actual missing-CLA case) / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO /
-ACCEPTANCE_CLOSED=NO. Current facts and raw bindings are owned by
-[post-delivery evidence](./post-delivery-review-20261017.json); the initial
-[resume snapshot](./resume-20261017.json) remains a historical baseline.
+Status: ACCEPTED_WITH_EXCEPTION / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO /
+ACCEPTANCE_CLOSED=YES (approved C3 scope). Actual missing-CLA is NOT_TESTED /
+DEFERRED. The [canonical C3 clause](../../18-m13-production-release-operations-contract.md#m13-002--protected-branch-qualification)
+owns initial maintainer-only release limits and the mandatory real test before
+first external-contribution merge. [C3 approval](./cla-deferral-proposal-20261017.md)
+records the owner's explicit decision; prior S/C2 and raw test results are retained.
 
-PR35/36 protected develop→main delivery and actual main CI324 ten SUCCESS are
-complete. PR32/33 are CLOSED/unmerged. The approved disposable nonFF test passed
-within its limited method; both temporary resources were deleted. Existing
-negatives are reused without repeating failed requests or changing old raw.
+PR35/36 delivery/main CI324, target-specific Required/conversation/direct/admin
+cases and the accepted disposable nonFF method are complete within recorded
+scopes. PR32/33 CLOSED/unmerged; temporary resources deleted. Accepted bounded
+Strict evidence does not qualify independent freshness-only. No repeated hostile
+requests or fake identities/statuses are proposed. Current source preparation
+PR37 CI325 is10SUCCESS; actual release qualification remains M13-003 work.
 
-The owner approved [decisions S/C2](./remaining-decisions-20261017.md): bounded
-operational Strict evidence is accepted with independent freshness-only still
-NOT_QUALIFIED. Actual missing-CLA remains NOT_TESTED; overall acceptance stays open.
-Only M13-003 implementation/build/package preparation is allowed by the explicit
-work-order exception. Public release/channel publish/release tag/publish activation
-are prohibited until that gate closes or a separate explicit canonical decision.
-M13-004/005 remain NOT_STARTED. Historical sections below grant no fresh writes.
+[Post-delivery evidence](./post-delivery-review-20261017.json) binds the original
+snapshot and later disposition. M13-004/005 remain NOT_STARTED; history below is
+not current execution authority or blanket full qualification. Concrete normal
+merge/tag/publication requires the existing exact candidate/reviewer process.
 
 ## Bundle A′ execution
 

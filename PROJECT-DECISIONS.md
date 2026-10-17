@@ -97,12 +97,12 @@
 | Go·Cargo·Terraform Cumulative Remote Qualification | M12-002~004 | Complete | [Remote CI Evidence](./docs/planning/evidence/m12-002-004-remote-ci/result.json), [Current Work Queue](./docs/planning/02-current-work-queue.md) |
 | Cross-Ecosystem Qualification and Feature Freeze | M12-005 | Complete | [Qualification Evidence](./docs/planning/evidence/m12-005-qualification/README.md), [Current Work Queue](./docs/planning/02-current-work-queue.md) |
 | M12 Final Red-Team Fix Gate | M12-02 | Complete | [M12-02 Final Red-Team Fix List](./docs/planning/17-m12-02-fix-list.md) |
-| Production Release & Operations | M13 | M13-002 blocked on actual CLA; approved M13-003 preparation exception | [M13 Production Release & Operations Contract](./docs/planning/18-m13-production-release-operations-contract.md) |
+| Production Release & Operations | M13 | M13-002 accepted with C3 exception; M13-003 actual release qualification in progress | [M13 Production Release & Operations Contract](./docs/planning/18-m13-production-release-operations-contract.md) |
 | Runtime Upgrade Maintenance | UPG-001..006 | UPG-001..006 complete/qualified; PR34 merged/main CI320 SUCCESS | [Design](./docs/engineering/05-runtime-upgrade-maintenance.md), [Plan](./docs/planning/19-runtime-upgrade-maintenance-plan.md) |
 
 ## Current Stage
 
-2026-10-17 사용자가 제한된 Strict 운영 증거 인정과 C2 준비 작업 순서 예외를 모두 승인했다. M13-002의 실제 missing-CLA 시험은 NOT_TESTED / BLOCKED / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO로 남긴다. M13-003은 baseline audit 후 OS package·manifest·workflow 연결과 로컬 검사를 진행했으며 공개 release·편의 채널 publish·release tag·publish activation은 금지한다. 상세 결정은 [M13 계약](./docs/planning/18-m13-production-release-operations-contract.md#m13-002--protected-branch-qualification), 승인 기록은 [S/C2](./docs/planning/evidence/m13-002-protected-path/remaining-decisions-20261017.md), 현재 작업과 gap은 Queue가 소유한다. PR35/36 정상 전달과 main CI324는 완료 증거로 유지하며, 아래 이전 단계 문구는 역사적 기록이다.
+2026-10-17 사용자가 S/C2 이후 C3 조건부 유예를 명시 승인했다. M13-002는 `ACCEPTED_WITH_EXCEPTION / QUALIFIED=NO / ACCEPTANCE_CLOSED=YES`이며 실제 missing-CLA는 `NOT_TESTED / DEFERRED`로 보존한다. 정확한 범위·중단/종료 조건은 [M13 계약](./docs/planning/18-m13-production-release-operations-contract.md#m13-002--protected-branch-qualification) 한 곳이 소유하고, 승인 입력은 [C3 기록](./docs/planning/evidence/m13-002-protected-path/cla-deferral-proposal-20261017.md)을 따른다. M13-003 source1ac1bf6의 PR37 CI325는 실제10SUCCESS이며 남은 실제 build/package qualification을 이어간다. 구체적 병합·release tag·publish 실행 승인은 별도 후보 검토를 따른다. M13-004/005는 미착수이며 현재 작업은 Queue가 소유한다. 아래 이전 단계 문구는 역사적 기록이다.
 
 Step 14 — Implementation: M0·M1·M2·M3·M4·M5-001..007·M6-001..007·M7-001..006·M8-001..007 `COMPLETE`
 

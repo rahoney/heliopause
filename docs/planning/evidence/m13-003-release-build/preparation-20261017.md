@@ -1,6 +1,6 @@
 # M13-003 preparation — 2026-10-17
 
-Scope: approved S/C2 preparation, based on `25e480c70ac7030462de34e574756d2f93fe900b`.
+Initial scope: approved S/C2 preparation, based on `25e480c70ac7030462de34e574756d2f93fe900b`.
 [Baseline audit](./baseline-20261017.md) completed before source edits.
 IMPLEMENTED=YES / WIRED=YES (source) / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO.
 
@@ -54,14 +54,31 @@ TCP/AF_UNIX socket restrictions. The same first candidate passed host Quick
 regression. `connected-check` predates the added native-installer regression;
 its focused PASS is not substituted for final-source checks.
 
+## Actual source CI and later C3 approval
+
+Exact source `1ac1bf6b30d23815c879d132693d9eeed5ada57c` passed
+[PR37 CI325](https://github.com/rahoney/heliopause/actions/runs/39023951914): all10
+jobs SUCCESS, including Required. PR checkout `25c4b274a3ec3ec97a6afbc75e836fb2de648c84`
+has the same whole tree `3af3728a846821ef72130aafaa49c8e2d0c53f00`. Actual Go1.26.9
+native macOS default tests and Linux45 consumers/CPU full192.25s/helper5wait0/final
+CONFIRMED_STOPPED with client_error0/client_restore0 were checked in10 original
+logs. Raw receipt: `ci325-final.json`, originals/hash inventory: `ci325-proof/`.
+No actual tag or release provenance is inferred from source CI.
+
+The owner subsequently approved [C3](../m13-002-protected-path/cla-deferral-proposal-20261017.md).
+The canonical M13-002 clause supersedes C2's preparation-only ordering. Original
+missing-CLA evidence remains NOT_TESTED / DEFERRED, full hostile QUALIFIED=NO;
+M13-002 acceptance is closed only within that explicit exception scope.
+
 ## Remaining qualification
 
-M13-002 actual missing-CLA remains NOT_TESTED / BLOCKED. This preparation does not
-close it. New source Required CI is pending. Actual release tag/build provenance,
-clean-host OS package install/lifecycle and immutable public release qualification
-are NOT_RUN. C2 prohibits tag/publication/publish activation until the predecessor
-CLA gate closes or a separate explicit canonical decision changes that boundary.
-M13-004/005 remain NOT_STARTED.
+M13-003 remains IN_PROGRESS / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO. Source CI is
+complete; final C3 documentation/check delivery, reviewer-approved normal merge
+and actual main CI remain before protected-source release qualification. Actual
+tag/build provenance, clean-host OS install/lifecycle and immutable publication
+qualification are NOT_RUN. Concrete source/version/tag/publish actions require
+the existing candidate/reviewer approval; C3 is not execution permission.
+M13-004/005 remain NOT_STARTED and require their own baseline audits in order.
 
 Temporary native source, private compiler/Staticcheck caches and test payloads are
 removed after their final use. Original logs, user files, shared verified modules,

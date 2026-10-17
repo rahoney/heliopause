@@ -169,8 +169,8 @@ public 이후 검증 실패는 기존 release의 overwrite/re-tag가 아니라
 | Order | ID | Scope | Status |
 | --- | --- | --- | --- |
 | 1 | M13-001 | protected main/develop/tag/release environment/immutable release activation | COMPLETE |
-| 2 | M13-002 | `feature → develop → main` 실제 protected PR qualification | IN_PROGRESS |
-| 3 | M13-003 | canonical release build·manifest·attestation·OS package assets | NOT_STARTED |
+| 2 | M13-002 | `feature → develop → main` 실제 protected PR qualification | ACCEPTED_WITH_EXCEPTION — C3 / full QUALIFIED=NO |
+| 3 | M13-003 | canonical release build·manifest·attestation·OS package assets | IN_PROGRESS — source CI PASS / actual release qualification |
 | 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | NOT_STARTED |
 | 5 | M13-005 | exact publication·clean Host bootstrap·doctor·cross-ecosystem smoke·quarantine | NOT_STARTED |
 
@@ -217,19 +217,37 @@ hostile cases:
 
 는 모두 실패해야 한다.
 
-#### 2026-10-17 승인된 준비 작업 순서 예외
+#### 2026-10-17 승인된 C3 조건부 유예
 
-M13-002의 실제 missing-CLA 부정 시험은 NOT_TESTED로 남기고
-QUALIFIED=NO / ACCEPTANCE_CLOSED=NO를 유지한다. 실제 미서명 기여자 부재에
-한해 사용자가 승인한 작업 순서 예외로 M13-003의 구현·build·package 준비를
-진행할 수 있다. 실제 public release, 편의 채널 publish, release tag 생성과
-publish activation은 이 CLA 관문이 닫히거나 별도 명시적 canonical 결정이
-있기 전까지 금지한다. 필수 CLA App·정상 서명·보호 설정은 유지한다.
+실제 missing-CLA 시험은 NOT_TESTED / DEFERRED로 보존한다. 소유자가
+유지보수자 본인 변경으로 진행하는 초기 릴리스 범위의 증거 공백을 명시적으로
+수용하여, 이 한 항목의 M13 후속 작업·초기 릴리스 선행 차단을 유예한다.
+기존 S 판정은 유지하며 C2의 준비 전용 순서 예외를 이 C3 범위로 대체한다.
 
-승인과 제한된 Strict 운영 증거 판정은
-[결정 기록](./evidence/m13-002-protected-path/remaining-decisions-20261017.md)이 소유한다.
-M13-002는 CLA 실증을 기다리는 BLOCKED 상태이며, M13-003 준비만 IN_PROGRESS다.
-이는 CLA 시험의 PASS·면제나 M13-002 acceptance 종료가 아니다.
+M13-002는 IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO (전체 hostile matrix) /
+ACCEPTANCE_CLOSED=YES (승인 예외 범위)인 ACCEPTED_WITH_EXCEPTION으로 기록한다.
+실제 미서명 PR 차단이나 독립 freshness-only의 미검증 결과를 PASS로 바꾸거나,
+M13 전체의 무조건적인 full qualification을 주장하지 않는다.
+
+필수 CLA 검사·서명 의무·Strict·대화 해결·직접 push/force 금지·관리자 무우회
+보호는 유지하며 실제 missing/failed CLA PR은 병합하지 않는다. 가짜 신원/기여,
+status 주입이나 서명 초기화로 시험을 만들지 않는다. 최초 외부 기여를
+병합하기 전에 실제 미서명 기여자의 차단 시험을 완료하고, 그 전에는 외부
+기여 병합을 보류한다. 실제 차단 실패 또는 보호 설정·App 신원 불명확이
+확인되면 유예를 중단하고 후속 병합·배포를 멈춘다.
+
+M13-003..005는 Queue의 선행조건과 각 acceptance를 따라 순차 진행한다.
+이 승인은 특정 PR 병합·release version/source/tag·public publish 실행을
+지정하는 승인이 아니다. 구체적 후보와 검증 결과를 준비한 뒤 기존 reviewer·
+배포 승인 절차를 따른다. Namespace·소유권·OIDC, 실제 build/attestation,
+clean-host 설치·rollback과 publication 검증은 여전히 필수다.
+
+유예는 최초 외부 기여 병합 전 실제 시험으로 종료한다. 초기 릴리스 이후에도
+시험이 불가능하면 후속 릴리스에 이 승인을 자동 확대하지 않고 당시 증거와
+보호 상태로 범위를 다시 판단한다. 종료 시 승인 예외·미검증 상태·원본 이력을
+함께 보존한다. 정확한 승인 입력과 결과는
+[C3 승인 기록](./evidence/m13-002-protected-path/cla-deferral-proposal-20261017.md),
+기존 S/C2 이력은 [결정 기록](./evidence/m13-002-protected-path/remaining-decisions-20261017.md)이 소유한다.
 
 ### M13-003 — canonical release build and OS packages
 
