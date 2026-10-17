@@ -10,8 +10,8 @@
 - CLI framework: Cobra
 - 현재 상태: M0–M11 qualification 및 post-qualification release hardening, M12-001~005 생태계 acceptance·전체 qualification·feature freeze와 M12-02 최종 red-team/fix gate 완료. PR29·PR30 merge와 main CI를 확인했고 M13-001 저장소 보호 설정 적용·재조회를 완료했다.
 - 완료 작업: M12·M12-02 및 보안 패치 전달, M13-001 — 저장소 보호 설정 (`COMPLETE`)
-- 현재 작업: Runtime upgrade maintenance — `UPG-001..004 COMPLETE`: 설계·owner/manifest/drift, plan/apply/verify와 Go1.26.9 gVisor·품질 도구의 재현 가능한 후보를 검증했다. UPG-005 설치 환경·CPU·지원 CUDA qualification이 `IN_PROGRESS`다. [설계](./docs/engineering/05-runtime-upgrade-maintenance.md)와 [계획](./docs/planning/19-runtime-upgrade-maintenance-plan.md)을 따른다.
-- 다음 작업: UPG-006 — 검증된 전환·retirement·M13 인계 (`NOT_STARTED`). UPG-005의 실제 qualification 이후 수행한다.
+- 현재 작업: Runtime upgrade maintenance — `UPG-001..005 COMPLETE`: 실제 설치 환경·로컬 CPU/세 CUDA와 새 원격 일반/nativeMac/세 CUDA qualification을 검증했다. UPG-006 검증된 전환·retirement·운영 인계가 `IN_PROGRESS`다. [설계](./docs/engineering/05-runtime-upgrade-maintenance.md)와 [계획](./docs/planning/19-runtime-upgrade-maintenance-plan.md)을 따른다.
+- 다음 작업: 유지보수 최종 qualification·reviewer 전달. UPG-006 acceptance와 정상 병합을 확인한 뒤 새 M13 baseline을 감사하며, M13 보류와 별도 병합 승인 조건을 유지한다.
 - 보류 작업: M13-002 — 보호된 PR 흐름 검증 (`ON_HOLD`, 2026-10-15 사용자 요청). [A′ 결과](./docs/planning/evidence/m13-002-protected-path/bundle-a-prime-result.json)와 PR33 정상 main 병합의 별도 승인 조건을 보존한다. CLA 부정 시험·전체 acceptance·출시는 미완료이며 M13-003 이후는 시작하지 않는다.
 - 진행 상태의 canonical owner: [`docs/planning/02-current-work-queue.md`](docs/planning/02-current-work-queue.md)
 

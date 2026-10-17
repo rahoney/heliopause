@@ -8,10 +8,10 @@
 
 ```text
 Current milestone: Runtime upgrade maintenance — prerequisite to M13 resumption
-Milestone status: IN_PROGRESS (compiler candidates qualified; installed/full qualification in progress)
-Active work item: UPG-005 — installed ecosystem / CPU / supported CUDA qualification (IN_PROGRESS)
-Next work item: UPG-006 — verified activation / retirement / M13 handoff
-Next work item status: NOT_STARTED / Ready: No — UPG-005 qualification remains open
+Milestone status: IN_PROGRESS (UPG-001..005 qualified; verified activation/retirement remains)
+Active work item: UPG-006 — verified activation / retirement / M13 handoff (IN_PROGRESS)
+Next work item: maintenance qualification / reviewer delivery, then fresh M13 baseline
+Next work item status: NOT_READY — UPG-006 acceptance and reviewer merge remain; M13 stays ON_HOLD
 M13 status: ON_HOLD by user request on 2026-10-15; M13-002 acceptance remains open
 ```
 
@@ -32,8 +32,8 @@ Baseline audit·작업별 Read/acceptance·검증 순서·M13 재개 조건:
 | UPG-002 | all owned version consumers / manifest / drift | COMPLETE | [ownership/manifest evidence](../engineering/evidence/runtime-upgrade-maintenance/upg-002.json); canonical Quick, security,12 focused regressions/54 cases PASS |
 | UPG-003 | explicit plan/apply/verify / same-version rehearsal | COMPLETE | [updater evidence](../engineering/evidence/runtime-upgrade-maintenance/upg-003.json); actual no-op2/2, canonical verify7 profiles,10 tests/28 cases PASS |
 | UPG-004 | gVisor·archived quality tool Go1.26.9 candidates | COMPLETE | [quality compiler](../engineering/evidence/runtime-upgrade-maintenance/upg-004-gitleaks.json) / [gVisor build](../engineering/evidence/runtime-upgrade-maintenance/upg-004-gvisor.json); actual/reproducible candidates and observed-output plans qualified |
-| UPG-005 | installed ecosystem / CPU / cu126 / cu130 / cu132 qualification | IN_PROGRESS | c56bb31 기준 시작 audit; 기존 installed lifecycle와 지원 tuple 재사용, 새 후보의 실제 qualification 필요 |
-| UPG-006 | verified activation / retirement / M13 handoff | NOT_STARTED | UPG-005 의존 |
+| UPG-005 | installed ecosystem / CPU / cu126 / cu130 / cu132 qualification | COMPLETE | [qualification evidence](../engineering/evidence/runtime-upgrade-maintenance/upg-005.json); same local full matrix and fresh ordinary/nativeMac/three independent remote CUDA Required PASS; originals/cleanup and final docs/security verified |
+| UPG-006 | verified activation / retirement / M13 handoff | IN_PROGRESS | [start audit](../engineering/evidence/runtime-upgrade-maintenance/upg-006.json); reuse existing qualified implementation; default Gitleaks and coherent gVisor activation, operator checks/rehearsal/retirement remain |
 
 이번 범위는 owned versions의 갱신 절차와 Go/gVisor1.26.9 전환이다. 모든 언어의
 최신판 동시 도입, 사용자 프로젝트/provider 재작성, 새 CUDA profile 또는 M13 공개
@@ -297,6 +297,41 @@ security4.87s/workflow0.72s/docs0.16s PASS with read-only whole-source identity
 checks. Native/default-path assertions and all existing tests remain; macOS
 requalification is not inferred from Linux success. Final record checks precede
 the scoped correction commit and fresh actual remote results.
+
+
+UPG-005 final runtime qualification (2026-10-17): same baa8512 local full matrix
+CPU482.43s/cu1262344.78s/cu1301959.83s/cu1322005.17s and original12 restoration
+remain PASS. cfe7737 changes only documented preparation/cache alignment and a
+fixture comment beyond the local candidate; product/runtime/policy source stays
+unchanged. Fresh ordinary CI314/run38928160837 has native macOS/Linux/Required
+and all10jobs SUCCESS. Same cfe7737 independent remote runs cu12638936267407,
+cu13038985391376 and cu13238990568515 each have all10jobs SUCCESS and actual full
+CUDA928.04s/758.80s/1098.68s (their CPU205.44s/192.07s/278.12s). Explicit profile
+metadata, viewer NOT_ATTESTED, auxiliary exclusion from29 promoted entries,
+each5helperwait0/finaloriginal0 CONFIRMED_STOPPED/clienterror0/clientrestore0
+are verified from decoded raw. Requested cu130/cu132 one-hour timers were
+actually3608s/3614s before terminal queries. Final evidence/record checks remain
+before UPG-005 closure; activation/retirement belongs to UPG-006. Detailed actual
+results and source/runtime boundaries are owned by upg-005.json and referenced
+local raw receipts. No old failure/UNKNOWN is relabelled and no resource/coverage
+bound or support tuple changed. Completed transport duplicates were deleted
+after byte comparison; original evidence and rollback backup remain.
+
+
+UPG-005 closure: qualification audit YES/YES/YES/YES/MISSING=none. Actual final
+evidence docs/security passed with whole-source read-only checks; closure-only
+state metadata checks accompany this commit. UPG-006 start audit before any
+implementation/installation mutation is recorded in upg-006.json, baseline
+cfe7737. Existing installation, bootstrap, doctor, lifecycle and updater are
+IMPLEMENTED=YES/WIRED=YES and reused. Candidate components and prior recovery/
+coordinated fixtures are qualified; operational closure remains NO. MISSING:
+default Gitleaks activation, coherent global gVisor/candidate readback, bounded
+doctor/production smoke, current no-op/future fixture rehearsal, safe retirement
+and exact operator/M13 handoff. Original12/root consumer0 audit passes; current
+global gVisor compiler1.26.3 and Gitleaks1.22.1 distinguish preparation from actual
+activation. Host/default other quality compilers already1.26.9. Public attested
+release installation remains M13 and unavailable doctor checks stay unavailable.
+No existing implementation replacement, product protocol or new CI job is needed.
 
 M13-001 COMPLETE는 유지한다. M13-002는 ON_HOLD이며 PR33·남은 CLA/stale/merge
 acceptance와 기존 원본을 보존한다. M13 재개 시 새 Git/remote/PR/check 관측과

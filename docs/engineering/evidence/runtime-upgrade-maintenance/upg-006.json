@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "work_item": "UPG-006",
+  "status": "IN_PROGRESS",
+  "date": "2026-10-17",
+  "baseline": "cfe773710ab45ab2b2fedca7fda9b523de96dda3",
+  "predecessor": "UPG-005 COMPLETE actual local/remote CPU and three supported CUDA; final docs/security PASS",
+  "audit": [
+    {
+      "responsibility": "selected host SDK and immutable guest identity",
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "YES",
+      "ACCEPTANCE_CLOSED": "YES",
+      "MISSING": [],
+      "evidence": "go-single-version-20261015 and UPG005 same-runtime public Go consumers; host actual1.26.9"
+    },
+    {
+      "responsibility": "managed Go quality source installation",
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "YES",
+      "ACCEPTANCE_CLOSED": "NO",
+      "MISSING": [
+        "activate qualified Gitleaks via existing canonical bootstrap and read actual metadata/security"
+      ],
+      "owner": "scripts/check/tools.go; UPG004 quality compiler evidence",
+      "current": "four default tools1.26.9; default Gitleaks compiler1.22.1; qualified state-local Gitleaks1.26.9"
+    },
+    {
+      "responsibility": "controlled installed CLI/helper/observer/coherent six-member runtime",
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "YES",
+      "ACCEPTANCE_CLOSED": "NO",
+      "MISSING": [
+        "fresh root ownership/original12/consumer audit, existing installation with durable journal, final protected metadata/hash readback and production smoke"
+      ],
+      "owner": "existing controlled installation and scripts/ci-integration-cleanup.sh / ci-helper-smoke.sh",
+      "current": "original global CLI/helper1.26.9 and gVisor1.26.3; qualified candidate runtime1.26.9"
+    },
+    {
+      "responsibility": "backup, uncertain cleanup and interrupted recovery",
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "YES",
+      "ACCEPTANCE_CLOSED": "NO",
+      "MISSING": [
+        "document activation/rollback journal and exact observed recovery/fault scope; preserve UNKNOWN and durable original12"
+      ],
+      "owner": "existing lifecycle owner; update-runtime apply journal/recovery tests; actual UPG005 startup/recovery and original restoration receipts"
+    },
+    {
+      "responsibility": "current-version reconciliation and future-version fixture",
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "YES",
+      "ACCEPTANCE_CLOSED": "NO",
+      "MISSING": [
+        "canonical current-version plan/apply/verify rehearsal and same-source existing coordinated fixture/recovery regressions"
+      ],
+      "owner": "scripts/update-runtime; TestSameVersionPlanAndApply, TestCoordinatedComponentFixtures, TestInterruptedApplyRecovery and existing negatives"
+    },
+    {
+      "responsibility": "operator guidance, retirement and M13 handoff",
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO",
+      "MISSING": [
+        "actual bounded doctor result and production consumer; exact completed cache retirement; version/update coverage; separate Race/release follow-up disposition and reviewer merge boundary"
+      ],
+      "owner": "runtime upgrade design sections7/8, quality toolchain, Queue; public release remains M13"
+    }
+  ],
+  "observed_baseline": {
+    "host_go": "go version go1.26.9 linux/amd64",
+    "tools_and_runtime": [
+      {
+        "role": "default-quality-tool",
+        "command": "staticcheck",
+        "path": "$HOME/.cache/heliopause/quality-tools/bin/staticcheck",
+        "exists": true,
+        "metadata_exit": 0,
+        "actual_compiler": "go1.26.9",
+        "sha256": "dc8da69fc4543f68dd89e221592369ba800a44b6e719e78fd526f07b88113415"
+      },
+      {
+        "role": "default-quality-tool",
+        "command": "gosec",
+        "path": "$HOME/.cache/heliopause/quality-tools/bin/gosec",
+        "exists": true,
+        "metadata_exit": 0,
+        "actual_compiler": "go1.26.9",
+        "sha256": "c3362909305f620c210ecfd6053432141368062b649fe87cc25237da56453bd1"
+      },
+      {
+        "role": "default-quality-tool",
+        "command": "govulncheck",
+        "path": "$HOME/.cache/heliopause/quality-tools/bin/govulncheck",
+        "exists": true,
+        "metadata_exit": 0,
+        "actual_compiler": "go1.26.9",
+        "sha256": "0bad037aeb406ccb4180ddfa063ee668c4b140ba5f194c16f835ce8c90147597"
+      },
+      {
+        "role": "default-quality-tool",
+        "command": "gitleaks",
+        "path": "$HOME/.cache/heliopause/quality-tools/bin/gitleaks",
+        "exists": true,
+        "metadata_exit": 0,
+        "actual_compiler": "go1.22.1",
+        "sha256": "46a05260e7cce527f132cb618de59d22262b8b5eb47f66c288447b95c7a98b7e"
+      },
+      {
+        "role": "default-quality-tool",
+        "command": "actionlint",
+        "path": "$HOME/.cache/heliopause/quality-tools/bin/actionlint",
+        "exists": true,
+        "metadata_exit": 0,
+        "actual_compiler": "go1.26.9",
+        "sha256": "a26d2946aa5da367b099b05ac8a2a6ea12c68d43f1a5f84f5b0e9f7ab18e36d9"
+      },
+      {
+        "role": "current-installed-runtime",
+        "path": "/usr/libexec/heliopause/helox",
+        "metadata_exit": 0,
+        "actual_compiler": "go1.26.9",
+        "sha256": "bddfc66d4f2e992c6d50e0a14ef382921260197b91e1175c51e503fbdfb85ede"
+      },
+      {
+        "role": "current-installed-runtime",
+        "path": "/usr/libexec/heliopause/haa-network-policy-helper",
+        "metadata_exit": 0,
+        "actual_compiler": "go1.26.9",
+        "sha256": "33d00888cf56a4c5cd71ef49af2b0277f80f2ad7cf5ed7feb3e494d46fd216da"
+      },
+      {
+        "role": "current-installed-runtime",
+        "path": "/usr/libexec/heliopause/gvisor/runsc",
+        "metadata_exit": 0,
+        "actual_compiler": "go1.26.3",
+        "sha256": "084eb77a8989bd5e73a920594379299782d0bb980de84984b5d0483531a6bb17"
+      }
+    ],
+    "original12_and_consumer_audit": "existing root audit PASS; immediately recheck before privileged replacement",
+    "installed_mutated": false
+  },
+  "scope": "reuse existing controlled local installation, canonical bootstrap, helper lifecycle, updater, doctor and tests; no replacement implementation or new product command",
+  "boundaries": [
+    "public release attestation/install/activation remain M13; no fake verifier or healthy unavailable doctor check",
+    "full-Race fixtures and release follow-ups retain separate open scope",
+    "retire only inventoried inactive HAA-owned completed data; preserve rollback originals and actual evidence",
+    "no main merge, protected rule mutation or public release"
+  ],
+  "local_evidence_owner": "$HOME/.local/state/heliopause/runtime-upgrades/upg005-20261016/preflight/upg006-readonly-baseline.json"
+}

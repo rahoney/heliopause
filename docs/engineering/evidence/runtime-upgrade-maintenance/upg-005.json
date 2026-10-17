@@ -1,19 +1,15 @@
 {
   "schema_version": 1,
   "work_item": "UPG-005",
-  "status": "IN_PROGRESS",
-  "date": "2026-10-16",
+  "status": "COMPLETE",
+  "date": "2026-10-17",
   "baseline": "c56bb3160f8ff74f125fac5754a0b4f8127dda3e",
   "audit": {
     "IMPLEMENTED": "YES",
     "WIRED": "YES",
-    "QUALIFIED": "NO",
-    "ACCEPTANCE_CLOSED": "NO",
-    "MISSING": [
-      "fresh same-code Required cross-ecosystem and negative consumers plus native platform",
-      "independent supported CUDA remote qualification",
-      "final remote evidence and activation handoff"
-    ]
+    "QUALIFIED": "YES",
+    "ACCEPTANCE_CLOSED": "YES",
+    "MISSING": []
   },
   "local_state": "$HOME/.local/state/heliopause/runtime-upgrades/upg005-20261016",
   "preflight": {
@@ -341,10 +337,10 @@
     "initial failed resolver batch remains FAIL despite eight individual passes",
     "global installation restored after each completed case",
     "full-Race fixture findings remain separate/open",
-    "no remote write/dispatch/merge; M13 remains ON_HOLD",
+    "maintenance branch/PR34 and ordinary plus three supported CUDA remote runs verified; no main merge or public release; M13 remains ON_HOLD",
     "activation and retirement remain UPG-006"
   ],
-  "active_scope": "same baa8512 CPU/cu126/cu130/cu132 local full PASS and all original restorations confirmed; completed unnecessary test data cleanup PASS; fresh remote Required/nativeMac/three CUDA and full migration open",
+  "active_scope": "same baa8512 local CPU/cu126/cu130/cu132 full and original12 restorations PASS; cfe7737 ordinary/nativeMac and independent cu126/cu130/cu132 remote full/Required PASS; completed unnecessary payload/cache/source copies removed; final qualified-evidence docs/security PASS; closure-only metadata checks accompany the commit; activation remains UPG-006",
   "actual_final_40dda27": {
     "source_commit": "40dda277c868be1f6dc6a1d6c74879201cbd0f29",
     "consumer_cases": 15,
@@ -842,8 +838,8 @@
   "native_build_preparation_gap": {
     "IMPLEMENTED": "YES",
     "WIRED": "YES",
-    "QUALIFIED": "NO",
-    "ACCEPTANCE_CLOSED": "NO",
+    "QUALIFIED": "YES",
+    "ACCEPTANCE_CLOSED": "YES",
     "fixture_unchanged_from_main": true,
     "native_build_deadline_seconds": 120,
     "scope": "reuse existing native assertions and canonical build/test; match preparation flags; no budget/coverage reduction",
@@ -882,10 +878,7 @@
       }
     ],
     "finding": "independent empty-cache Go1.26.9 comparison confirms trimpath preparation reuses compiler inputs; native macOS elapsed cause not fully established",
-    "MISSING": [
-      "actual fresh native macOS/Required",
-      "remaining supported CUDA remote qualification"
-    ],
+    "MISSING": [],
     "canonical_checks": [
       {
         "profile": "quick",
@@ -918,6 +911,174 @@
         "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
       }
     ],
-    "linux_preparation_scope": "controlled reuse comparison and corrected-candidate native Linux Quick/platform/security/workflow/docs PASS; remote native closure still pending"
-  }
+    "linux_preparation_scope": "controlled reuse comparison and corrected-candidate native Linux Quick/platform/security/workflow/docs PASS; remote native closure still pending",
+    "native_actual_closure": {
+      "head": "cfe773710ab45ab2b2fedca7fda9b523de96dda3",
+      "run": 38928160837,
+      "macos_job": 117064990716,
+      "all_ten_jobs_success": true,
+      "merge": "5f6f2930a5077db3e9018c776b1270e6882b8e0a",
+      "merge_tree_equals_head": true,
+      "deadline_assertions_unchanged": true,
+      "historical_elapsed_cause_fully_proven": false
+    }
+  },
+  "remote_qualified": {
+    "head": "cfe773710ab45ab2b2fedca7fda9b523de96dda3",
+    "ordinary": {
+      "run": 38928160837,
+      "url": "https://github.com/rahoney/heliopause/actions/runs/38928160837",
+      "all_ten_jobs_success": true,
+      "native_macos": "PASS",
+      "linux_cpu_seconds": 275.15,
+      "merge_tree_equals_head": true,
+      "raw": [
+        {
+          "job": 117064990716,
+          "sha256": "e11bce792057d796e952f8950c0f3ae211d3202836ad8803ddb90e442090c636",
+          "bytes": 24178,
+          "path": "ci314-job117064990716-decoded.log"
+        },
+        {
+          "job": 117064990818,
+          "sha256": "af7e5bb27c79c88ea18ec4cbcd8c85f04a70b4cf205a3727b3a0a005ce4c2864",
+          "bytes": 459676,
+          "path": "ci314-job117064990818-decoded.log"
+        }
+      ]
+    },
+    "supported_cuda": [
+      {
+        "profile": "cu126",
+        "head": "cfe773710ab45ab2b2fedca7fda9b523de96dda3",
+        "run_id": 38936267407,
+        "url": "https://github.com/rahoney/heliopause/actions/runs/38936267407",
+        "conclusion": "success",
+        "full_qualification_verified": true,
+        "all_ten_jobs_success": true,
+        "cpu_seconds": 205.44,
+        "cuda_seconds": 928.04,
+        "explicit_plan": "cuda-bindings-numpy",
+        "target_version": "12.9.10",
+        "viewer_not_attested_preserved": true,
+        "auxiliary_excluded_from_promoted_entries": 29,
+        "helper_wait_zero": 5,
+        "final_cleanup": "cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED",
+        "decoded_raw_sha256": "be8185bc90a730671d15cdfafd35d8a2a9a20e174cb0278edd1f9884fe5dad74",
+        "recorded_utc": "2026-10-17T00:13:34.449896+00:00"
+      },
+      {
+        "profile": "cu130",
+        "head": "cfe773710ab45ab2b2fedca7fda9b523de96dda3",
+        "run_id": 38985391376,
+        "url": "https://github.com/rahoney/heliopause/actions/runs/38985391376",
+        "conclusion": "success",
+        "full_qualification_verified": true,
+        "all_ten_jobs_success": true,
+        "cpu_seconds": 192.07,
+        "cuda_seconds": 758.8,
+        "explicit_plan": "cuda-bindings-numpy",
+        "target_version": "13.4.4",
+        "qualification_metadata": {
+          "expected_identity_origin": "official source resolver metadata, before main intake; never payload bytes or artifact output",
+          "explicit_input": {
+            "target_sha256": "680e70dcb8b61fdae16d3bb4876c41d55aadc9fe8b3825ea567f2f2c85606b0a",
+            "source": "pypi",
+            "project": "numpy",
+            "version": "2.4.6",
+            "filename": "numpy-2.4.6-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+            "sha256": "a2c306dea656c12c68f51f4cea133cbe78ca7435eb28c735eac1d3ebe73be6e8",
+            "reason": "BROADER_MODULE_PROBES"
+          },
+          "plan": "cuda-bindings-numpy",
+          "profile": "cu130",
+          "resolution_sha256": "5fdcf9e9c00aecfedcc7d22694e6644a16254357a12e56e8e18b6221ff64620b",
+          "runtime": "python:3.14.7;pip:26.2.1;target:cp314/cp314/manylinux_2_36_x86_64;source:pytorch:cu130",
+          "schema_version": 1,
+          "target_declared_integrity": "sha256:680e70dcb8b61fdae16d3bb4876c41d55aadc9fe8b3825ea567f2f2c85606b0a",
+          "target_project": "cuda-bindings",
+          "target_source": "pypi",
+          "target_url": "https://files.pythonhosted.org/packages/15/65/0b8f2f2509e5f1a8e556a2e083ac0287fe4af79afdba3153454229306f39/cuda_bindings-13.4.4-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+          "target_version": "13.4.4",
+          "torch_version": "2.14.0+cu130"
+        },
+        "viewer_not_attested_preserved": true,
+        "auxiliary_excluded_from_promoted_entries": 29,
+        "helper_wait_zero": 5,
+        "final_cleanup": "cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED",
+        "decoded_raw_sha256": "ea9705b4e1846af724250dbf36761004a28796a80092c5534cf028184f234f14",
+        "recorded_utc": "2026-10-17T01:22:14.227018+00:00"
+      },
+      {
+        "profile": "cu132",
+        "head": "cfe773710ab45ab2b2fedca7fda9b523de96dda3",
+        "run_id": 38990568515,
+        "url": "https://github.com/rahoney/heliopause/actions/runs/38990568515",
+        "conclusion": "success",
+        "full_qualification_verified": true,
+        "all_ten_jobs_success": true,
+        "cpu_seconds": 278.12,
+        "cuda_seconds": 1098.68,
+        "explicit_plan": "cuda-bindings-numpy",
+        "target_version": "13.4.4",
+        "qualification_metadata": {
+          "expected_identity_origin": "official source resolver metadata, before main intake; never payload bytes or artifact output",
+          "explicit_input": {
+            "target_sha256": "680e70dcb8b61fdae16d3bb4876c41d55aadc9fe8b3825ea567f2f2c85606b0a",
+            "source": "pypi",
+            "project": "numpy",
+            "version": "2.4.6",
+            "filename": "numpy-2.4.6-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+            "sha256": "a2c306dea656c12c68f51f4cea133cbe78ca7435eb28c735eac1d3ebe73be6e8",
+            "reason": "BROADER_MODULE_PROBES"
+          },
+          "plan": "cuda-bindings-numpy",
+          "profile": "cu132",
+          "resolution_sha256": "49f4f1acf5a3cfb515c69e4785041d1cef7905157ca0241864cb59a750bcd18e",
+          "runtime": "python:3.14.7;pip:26.2.1;target:cp314/cp314/manylinux_2_36_x86_64;source:pytorch:cu132",
+          "schema_version": 1,
+          "target_declared_integrity": "sha256:680e70dcb8b61fdae16d3bb4876c41d55aadc9fe8b3825ea567f2f2c85606b0a",
+          "target_project": "cuda-bindings",
+          "target_source": "pypi",
+          "target_url": "https://files.pythonhosted.org/packages/15/65/0b8f2f2509e5f1a8e556a2e083ac0287fe4af79afdba3153454229306f39/cuda_bindings-13.4.4-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl",
+          "target_version": "13.4.4",
+          "torch_version": "2.14.0+cu132"
+        },
+        "viewer_not_attested_preserved": true,
+        "auxiliary_excluded_from_promoted_entries": 29,
+        "helper_wait_zero": 5,
+        "final_cleanup": "cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED",
+        "decoded_raw_sha256": "61fc5f94047bbfbd9f5bc6df968e3f1159648b1d4aee6d663ad777f045465600",
+        "recorded_utc": "2026-10-17T02:23:14.854026+00:00"
+      }
+    ],
+    "scope": "actual default/nativeMac and Required cross-ecosystem consumers plus independent supported CUDA full; no GPU execution/driver/toolkit attestation or production activation claim"
+  },
+  "source_boundary_after_local_full": {
+    "local_execution_commit": "baa8512476334d95429920e92b63ec669e027fe8",
+    "remote_commit": "cfe773710ab45ab2b2fedca7fda9b523de96dda3",
+    "changed_paths": [
+      "cmd/helox/main_test.go",
+      "docs/engineering/03-quality-toolchain.md",
+      "docs/engineering/05-runtime-upgrade-maintenance.md",
+      "docs/engineering/evidence/runtime-upgrade-maintenance/upg-005.json",
+      "docs/planning/02-current-work-queue.md",
+      "scripts/check/runner.go"
+    ],
+    "changes": "documentation/evidence, existing checker production preparation trimpath, native fixture comment; product/runtime/policy source and frozen local executable identities unchanged"
+  },
+  "final_record_checks": [
+    {
+      "profile": "docs",
+      "exit_code": 0,
+      "seconds": 1.22,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "profile": "security",
+      "exit_code": 0,
+      "seconds": 61.68,
+      "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    }
+  ]
 }
