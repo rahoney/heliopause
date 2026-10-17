@@ -1,0 +1,163 @@
+{
+  "status": "PROPOSED_NOT_AUTHORIZED",
+  "reason": "Original A stop at PR32 mainBLOCKED forbids later writes. Use necessary actual develop→main PR to avoid extra probeCI/refresh mutations.",
+  "source_result": "bundle-a-result.json",
+  "protected_refs": {
+    "main": "2e196a188adce22005fce201c23da1dc27a43426",
+    "develop": "84591ef4296a852a1439781ab62cc4103a59db0a",
+    "feature/m13-002-stale-probe": "ff441d3d3bde941d0fd759972539ed8707475ee1"
+  },
+  "PR32": "Remain open/main/headff; no retarget, comment, merge attempt, refresh push or cleanup. Original develop evidence remains preserved.",
+  "maximum_remote_writes": 5,
+  "positive_merge_included": false,
+  "file_inventory": {
+    "source": "forward-only-plan.json:file_inventories.intermediate_develop_to_main",
+    "head": "84591ef4296a852a1439781ab62cc4103a59db0a",
+    "base": "2e196a188adce22005fce201c23da1dc27a43426",
+    "count": 18,
+    "paths": [
+      "PROJECT-DECISIONS.md",
+      "README.md",
+      "docs/engineering/evidence/security-go1269/README.md",
+      "docs/engineering/evidence/security-go1269/cargo-gai-followup.md",
+      "docs/planning/02-current-work-queue.md",
+      "docs/planning/17-m12-02-fix-list.md",
+      "docs/planning/18-m13-production-release-operations-contract.md",
+      "docs/planning/evidence/m13-001-protected-activation/README.md",
+      "docs/planning/evidence/m13-001-protected-activation/activation-plan.json",
+      "docs/planning/evidence/m13-001-protected-activation/main-ci.json",
+      "docs/planning/evidence/m13-001-protected-activation/result.json",
+      "docs/planning/evidence/m13-002-protected-path/README.md",
+      "docs/planning/evidence/m13-002-protected-path/baseline.json",
+      "docs/planning/evidence/m13-002-protected-path/checks.json",
+      "docs/planning/evidence/m13-002-protected-path/raw/docs.log",
+      "docs/planning/evidence/m13-002-protected-path/raw/release-gate.log",
+      "docs/planning/evidence/m13-002-protected-path/raw/security.log",
+      "docs/planning/evidence/m13-002-protected-path/raw/workflow.log"
+    ]
+  },
+  "global_guards": [
+    "Fresh protected refs, exact PR state and effective rules before each write. Both active Strict rulesets unchanged; admin bypass never; required Apps15368/128106.",
+    "One intent/call per action, no automatic retry/cleanup/repair. Unexpected result, ref movement, merged=true or transport uncertainty stops all further writes.",
+    "No dummy/failing CI, dispatch/rerun, newpush, force, protection edit, CLA/signature/account fabrication or release. CLA remains NOT_TESTED.",
+    "Use only actual PR number returned by first successful create and exact readback; no guessed number."
+  ],
+  "actions": [
+    {
+      "id": "A-prime-1",
+      "request": {
+        "method": "POST",
+        "endpoint": "/repos/rahoney/heliopause/pulls",
+        "body": {
+          "title": "M13-002 develop→main 보호 경로 중간 검증",
+          "head": "develop",
+          "base": "main",
+          "draft": false,
+          "body": "M13-002의 현재 develop 기록18개 파일을 main 보호 경로에서 검증합니다. Required·CLA 개별 차단 기회와 새 CI를 확인하는 중간 후보이며, 병합은 별도 승인이 필요합니다. Release 또는 M13-002 종료 병합을 승인하지 않습니다."
+        }
+      },
+      "PR": "Allocated by successful response plus readback exactdevelop845→main2e",
+      "head": "84591ef4296a852a1439781ab62cc4103a59db0a",
+      "expected": "New open non-draft normal-path PR, both refs unchanged; one natural openedPRCI.",
+      "side_effects": "Public PR and necessaryCI; no source/ref update.",
+      "stop": "Duplicate/race, differentdiff/head/base, unexpected response or transport uncertainty."
+    },
+    {
+      "id": "A-prime-2",
+      "request": {
+        "method": "PUT",
+        "endpoint": "/repos/rahoney/heliopause/pulls/{A-prime-1.receipt.number}/merge",
+        "body": {
+          "sha": "84591ef4296a852a1439781ab62cc4103a59db0a",
+          "merge_method": "merge"
+        }
+      },
+      "expected": "Specific missingRequired rejection; PR remains open and refs unchanged.",
+      "guards": [
+        "GenuineCLA success and required App128106, Required/App15368 genuinely absent/pending, actual BLOCKED, currentmainincluded, no conflict/thread/approval blocker.",
+        "If no genuine isolated window, NOT_RUN without manufactured failure/rerun; no second attempt."
+      ],
+      "side_effects": "Unexpected success advances protected main and startsCI; stop immediately."
+    },
+    {
+      "id": "A-prime-3",
+      "request": {
+        "method": "POST",
+        "endpoint": "/repos/rahoney/heliopause/pulls/{A-prime-1.receipt.number}/comments",
+        "body": {
+          "body": "M13-002 main 대화 해결 규칙 검증용 스레드입니다. 승인된 단회 거절 결과와 브랜치 미변경을 확인한 뒤 이 스레드만 해결합니다.",
+          "commit_id": "84591ef4296a852a1439781ab62cc4103a59db0a",
+          "path": "docs/planning/evidence/m13-002-protected-path/README.md",
+          "side": "RIGHT",
+          "line": 8
+        }
+      },
+      "diff_binding": {
+        "blob": "53b47329e510efdcb295c59d2041b51ed5e8248d",
+        "line8": "The local milestone branch starts at `b3c8b7dc487046afdad52a215c101d761f055098`."
+      },
+      "guards": [
+        "Same naturalCI completed all10success, genuineCLA success, bothrequired, CLEAN/MERGEABLE, zero unresolvedthreads and exactcurrentbase/head.",
+        "Verify changed-file/addition line8 and bind returned comment node to exact new thread."
+      ],
+      "expected": "One unresolved thread, CLEAN→BLOCKED, refs unchanged.",
+      "side_effects": "Public test comment/thread; resolve only after expected negative."
+    },
+    {
+      "id": "A-prime-4",
+      "request": {
+        "method": "PUT",
+        "endpoint": "/repos/rahoney/heliopause/pulls/{A-prime-1.receipt.number}/merge",
+        "body": {
+          "sha": "84591ef4296a852a1439781ab62cc4103a59db0a",
+          "merge_method": "merge"
+        }
+      },
+      "guards": [
+        "Exactly the new thread unresolved; allothergates stillclear; exactcurrenthead/base; actualBLOCKED and adminbypassnever."
+      ],
+      "expected": "HTTP405 explicitlyconversation rejection; correlated intendedrule failure and refs/PRunchanged. One call covers ordinary-admin main case.",
+      "side_effects": "Unexpected success advances main; stop without resolve/revert."
+    },
+    {
+      "id": "A-prime-5",
+      "request": {
+        "method": "POST",
+        "endpoint": "/graphql",
+        "query": "mutation($threadId:ID!){resolveReviewThread(input:{threadId:$threadId}){thread{id isResolved}}}",
+        "thread_binding": "Only A-prime-3 exact create response/readback thread"
+      },
+      "guards": [
+        "A-prime-4 expectedconversation rejection and unchangedrefs preserved."
+      ],
+      "expected": "Only createdthread resolved, zero unresolved, CLEAN, unchangedrefs.",
+      "side_effects": "Thread state only; no automaticcleanup after unexpectedstate."
+    }
+  ],
+  "separate_normal_merge_request_after_results": {
+    "status": "NOT_READY_UNTIL_PR_AND_FRESH_EVIDENCE_EXIST",
+    "head": "84591ef4296a852a1439781ab62cc4103a59db0a",
+    "base": "2e196a188adce22005fce201c23da1dc27a43426",
+    "PR": "Exact returned normalPR number, not yetallocated",
+    "request": {
+      "method": "PUT",
+      "endpoint": "/repos/rahoney/heliopause/pulls/{actual_normal_PR_number}/merge",
+      "body": {
+        "sha": "84591ef4296a852a1439781ab62cc4103a59db0a",
+        "merge_method": "merge"
+      }
+    },
+    "limit": "One separately reviewer-approved ordinary positive merge; intermediate mainadvancement, not finalM13closure.",
+    "required_before_approval": [
+      "Fresh10jobRequired success/genuineCLA, exact18-filepayload, currentrefs/Strict/Appbypassguard, no threads/conflicts and reviewable mainnegative results/dispositions."
+    ],
+    "expected_effects": "main advances forward to verified server-returned M1; develop845 and featureff unchanged; mainpushCI naturallyruns.",
+    "stop": "Anydifferentstate/SHA/error/uncertainty; no retry/recovery.",
+    "excluded": [
+      "mainstale call untilM1 knownand separatelyapproved",
+      "finalmainmerge",
+      "force/protection/release",
+      "CLAwaiver"
+    ]
+  }
+}

@@ -461,8 +461,21 @@ M13은 기능 개발 milestone이 아니다.
 M13 진입 후 새로운 ecosystem이나 주요 product feature를 추가하지 않는다.
 release-blocking bug가 아닌 개선 아이디어는 post-release backlog로 넘긴다.
 
-Status: IN_PROGRESS — M13-001 configuration complete; M13-002 baseline and local
-preparation active, with live enforcement qualification still pending.
+Status: IN_PROGRESS — M13-001 configuration complete; M13-002 develop conversation
+rejection and normal PR31 merge verified. The single approved PR32 request was
+rejected HTTP405 for expected required checks; independent stale enforcement is
+not qualified. Further mutations stopped. Remaining negative cases, develop-to-main
+path and final qualification remain open; exact evidence is owned by the Queue.
+Read-only rule-suite analysis now identifies the proposed update and failed Strict
+required-check rule; the original independent-stale qualification remains open.
+The Queue links the minimal remaining execution and approval plan. No release or
+additional remote mutation is authorized by that planning update.
+Concrete local candidates/action limits are now recorded through the Queue;
+no remote write occurred. With no actual unsigned contributor available, the
+missing-CLA hostile case is NOT_TESTED/deferred, not waived or qualified.
+Other checks may proceed, while this unchanged acceptance gap requires actual
+evidence or an explicit canonical disposition before M13-002 closure. Final
+main merge and publication remain separately gated; M13-003..005 are NOT_STARTED.
 
 M12/M12-02 technical acceptance and PR29/30 delivery are complete. Main
 CI38328099413 is SUCCESS. The owner authorized live protection configuration on

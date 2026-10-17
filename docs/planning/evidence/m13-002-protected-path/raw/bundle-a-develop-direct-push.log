@@ -1,0 +1,10 @@
+remote: error: GH013: Repository rule violations found for refs/heads/develop.        
+remote: Review all repository rules at https://github.com/rahoney/heliopause/rules?ref=refs%2Fheads%2Fdevelop        
+remote: 
+remote: - Changes must be made through a pull request.        
+remote: 
+remote: - 2 of 2 required status checks are expected.        
+remote: 
+To https://github.com/rahoney/heliopause.git
+ ! [remote rejected] 68916c7ae69e6c9af8ad80c449a52f10fe6f3bc6 -> develop (push declined due to repository rule violations)
+error: failed to push some refs to 'https://github.com/rahoney/heliopause.git'

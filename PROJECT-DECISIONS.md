@@ -97,13 +97,24 @@
 | Go·Cargo·Terraform Cumulative Remote Qualification | M12-002~004 | Complete | [Remote CI Evidence](./docs/planning/evidence/m12-002-004-remote-ci/result.json), [Current Work Queue](./docs/planning/02-current-work-queue.md) |
 | Cross-Ecosystem Qualification and Feature Freeze | M12-005 | Complete | [Qualification Evidence](./docs/planning/evidence/m12-005-qualification/README.md), [Current Work Queue](./docs/planning/02-current-work-queue.md) |
 | M12 Final Red-Team Fix Gate | M12-02 | Complete | [M12-02 Final Red-Team Fix List](./docs/planning/17-m12-02-fix-list.md) |
-| Production Release & Operations | M13 | M13-001 complete; M13-002 in progress | [M13 Production Release & Operations Contract](./docs/planning/18-m13-production-release-operations-contract.md) |
+| Production Release & Operations | M13 | M13-001 complete; M13-002 resumed with fresh maintenance baseline | [M13 Production Release & Operations Contract](./docs/planning/18-m13-production-release-operations-contract.md) |
+| Runtime Upgrade Maintenance | UPG-001..006 | UPG-001..006 complete/qualified; PR34 merged/main CI320 SUCCESS | [Design](./docs/engineering/05-runtime-upgrade-maintenance.md), [Plan](./docs/planning/19-runtime-upgrade-maintenance-plan.md) |
 
 ## Current Stage
+
+2026-10-17 PR34의 실제 main32f1b8e 병합과 CI320 ten SUCCESS를 확인한 뒤 사용자의 계속 작업 지시에 따라 M13-002를 재개했다. 기존 구현을 재사용하고 최신 기준선에서 과거 PR을 정리한다. PR33은 내용 전달 완료로 병합 없이 종료했고 PR32는 stale 시험용으로 보존한다. 보호된 develop 동기화와 남은 acceptance만 수행하며 상세 상태·근거는 [재개 evidence](./docs/planning/evidence/m13-002-protected-path/resume-20261017.json)와 Queue를 따른다. 아래 유지보수 인계/보류 문구는 이전 단계의 역사적 기록이다.
 
 Step 14 — Implementation: M0·M1·M2·M3·M4·M5-001..007·M6-001..007·M7-001..006·M8-001..007 `COMPLETE`
 
 Documentation hierarchy and task routing migration: Complete
+
+2026-10-15 사용자가 M13을 보류하고 버전 갱신 유지보수의 설계·계획을 먼저
+정리하도록 요청했다. UPG-001 baseline audit/design/planning을
+`milestone/runtime-upgrade-maintenance`에서 완료했고 UPG-002 owner/manifest/drift와
+UPG-003 updater/no-op·복구·canonical verify와 UPG-004 compiler 후보 build·재현성·capture 계획 연결을 검증했다. UPG-005의 실제 local CPU/세 CUDA 및 fresh ordinary/nativeMac/세 CUDA remote qualification을 완료했다. UPG-006의 기존 구현·설치 상태를 source 변경 전에 감사하고 실제 controlled 전환·retirement·운영 인계를 완료했다. 최종 metadata-head CI와 reviewer 정상 병합은 별도로 확인하며 M13 보류·새 baseline/별도 병합 승인 조건은 유지한다. 상세 결정은
+[Runtime upgrade design](./docs/engineering/05-runtime-upgrade-maintenance.md),
+작업·완료·재개 조건은 [plan](./docs/planning/19-runtime-upgrade-maintenance-plan.md)과
+Queue가 소유한다. 아래 M13 기록은 보류 전 관측이며 새 원격 상태를 뜻하지 않는다.
 
 M12-001~004 acceptance 및 누적 원격 qualification을 완료했다. M12-005의
 전체 생태계 qualification, 구현·설계 대조와 성공 테스트 데이터 정리를 완료하고
@@ -114,7 +125,43 @@ CPU·cu126·cu130·cu132 및 각 Required CI를 검증해 M12 기술 acceptance�
 [검토 결과](./docs/planning/evidence/m12-02-red-team/result.json)가 소스와 원본을 연결한다.
 PR29·PR30은 merge됐고 main2e196a1의 CI38328099413도 SUCCESS다. M13-001의
 저장소 보호 설정 적용·API 검증을 완료했다. M13-002의 새 baseline 확인과
-로컬 검증 후보 준비를 시작했으며 실제 push·merge 시험은 사용자 승인 대기다.
+로컬 검증 후보 준비를 완료했다. 승인된 e1e3aa8을 feature 브랜치에 push하고
+develop 대상 PR31을 생성했다. 새 Required 포함10개 CI job과 CLA 성공 및 두 필수
+check 연결을 확인했다. 별도 승인된 미해결 리뷰 스레드 시험의 일반 병합 요청
+1회가 HTTP405로 차단됐고, 브랜치 미변경과 스레드 해결 후 CLEAN 복귀를 확인했다.
+독립 보조 PR32의 새 Required 포함10개 job·CLA SUCCESS와 CLEAN을 확인한 뒤,
+별도 승인에 따라 정확한 e1e3aa8의 PR31을 정상 보호 경로로 develop에 병합했다.
+develop은84591ef로 전진했고 main2e196a1과 PR32 headff441d3는 그대로다.
+PR32는 다른 검사·리뷰·충돌 차단 없이 CLEAN→BEHIND로 변경됐다.
+[병합 및 stale 관측 증거](./docs/planning/evidence/m13-002-protected-path/develop-merge.json)를 보존했다.
+별도 승인한 PR32 일반 병합 요청 1회는 HTTP405로 거절됐다. 서버 응답은 필수 검사
+2개가 expected라는 사유이며, 독립 stale 차단 PASS는 확정하지 않았다. PR32 미병합과
+세 브랜치 HEAD 동일성을 확인하고 추가 요청을 중단했다. 기존 시험 원본은 그대로
+보존하고 읽기 전용 rule-suite4516024742 분석으로 실제 업데이트 후보0fd006b와
+실패한 Strict required_status_checks를 확인했다. 독립 freshness-only PASS는
+선언하지 않았다. [분석](./docs/planning/evidence/m13-002-protected-path/strict-check-analysis.json)과
+[남은 검증·승인 계획](./docs/planning/evidence/m13-002-protected-path/README.md#remaining-qualification-and-approval-plan)이
+필수 참가자·조건부 forward-only 묶음·별도 main merge/force-push 결정을 구분한다.
+현재는 [정확한 로컬 후보·유한 실행 계획](./docs/planning/evidence/m13-002-protected-path/forward-only-plan.json)을
+준비했고 원격 변경은 하지 않았다. 사용자가 실제 미서명 기여자 부재를 확인하여
+CLA 부정 시험은 `NOT_TESTED`로 보류한다. 기존 필수 설정·정상 성공 증거는 유지한다.
+나머지 검증은 계속할 수 있으나 현재 계약의 acceptance gap은 종료 전에 별도
+해소해야 한다. main stale을 최종 병합 전에 검증하기 위한 중간 보호 병합과
+최종 develop→main 병합, 실제 non-fast-forward 위험은 각각 별도 승인 범위다.
+후속 승인된 묶음 A는 두 direct push의 서버 PR-rule 차단을 확인했다. PR32의 main
+retarget는 성공했으나 읽기 전용 재확인에서도 BLOCKED여서3/8회 쓰기에서 중단했다.
+두 보호 브랜치·feature HEAD는 유지됐고 병합 요청·새 PR·수동 CI는0회다.
+[실행 결과](./docs/planning/evidence/m13-002-protected-path/bundle-a-result.json)와
+[수정 제안](./docs/planning/evidence/m13-002-protected-path/bundle-a-resume-plan.json)을 기록했다.
+다음 정상 병합은 실제 develop→main PR·새 CI·main 부정 결과가 확보된 뒤 승인 요청한다.
+승인된 수정 묶음 A′는 develop84591ef→main2e196a1 PR33을 생성했다. 실제 CLA
+성공·Required 누락 상태의 단회 일반 PUT은 Required만을 명시한405로 거절됐다.
+Suite4521104354 및 refs동일을 보존했고, 같은 자연CI38574753115/attempt1의10job과
+CLA 성공 뒤 main 대화·일반관리자 요청의 단회405도 확인했다(suite4521761091).
+생성한 시험 스레드만 해결하여 CLEAN으로 복귀했으며 A′는5/5회 쓰기로 완료했다.
+[A′ 결과](./docs/planning/evidence/m13-002-protected-path/bundle-a-prime-result.json)가
+현재 단계와 원본을 소유한다. [정확한 PR33 정상 병합 요청](./docs/planning/evidence/m13-002-protected-path/normal-main-merge-approval.json)은
+검토 가능하지만 미승인이다. 실제 main 병합·새 mainCI 및 남은 acceptance는 별도다.
 guest runtime·Race 등 출시 영향 판단은 남는다. 현재 milestone과
 active/next work item은 [Current Work Queue](./docs/planning/02-current-work-queue.md)를 참조한다.
 

@@ -1,0 +1,293 @@
+{
+  "schema_version": 1,
+  "work_item": "UPG-003",
+  "date": "2026-10-15",
+  "baseline": "16cfe2948b604605a20241547a0ab67e0bee4287",
+  "scope": "developer plan/apply/verify; current-version reconciliation and synthetic independent upgrades; no host activation",
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES",
+    "ACCEPTANCE_CLOSED": "YES",
+    "MISSING": []
+  },
+  "implementation": {
+    "entrypoint": "scripts/update-runtime",
+    "existing_owners_reused": [
+      "scripts/runtimes.lock.json",
+      "scripts/tools.lock.json",
+      "scripts/version-support.lock.json",
+      "scripts/generate-runtime-lock.go",
+      "scripts/check"
+    ],
+    "new_dependency": false,
+    "source_inputs": [
+      {
+        "path": "scripts/check/architecture.go",
+        "sha256": "683b83b2a12b53644fe6c2c6897ed4bde4c1ca8704f03c3b6f8c1c877b979233",
+        "mode": "0o644"
+      },
+      {
+        "path": "scripts/update-runtime/apply.go",
+        "sha256": "400eed0f282e4586ae87ce53b1fe8c89c8829b5749ea04e1c706ea706acac78e",
+        "mode": "0o644"
+      },
+      {
+        "path": "scripts/update-runtime/lock_unix.go",
+        "sha256": "10a6fb2e2becb17f09ae4aaf3d2cdba6dbc93ccfd1b7ad7007c6270d80449a1d",
+        "mode": "0o644"
+      },
+      {
+        "path": "scripts/update-runtime/main.go",
+        "sha256": "45e21e79010e9eb283e690bff750403b970175f025a00b59fbf594840ef3b8c9",
+        "mode": "0o644"
+      },
+      {
+        "path": "scripts/update-runtime/metadata.go",
+        "sha256": "845d63e35b6d020041fbf2e00d19e9d704d0abe773fd88c74634ad25a7807ef4",
+        "mode": "0o644"
+      },
+      {
+        "path": "scripts/update-runtime/patch.go",
+        "sha256": "31cdeeedea258ef5876cd170f40ecfde6a113f4cc227709210f0b564d0104d9c",
+        "mode": "0o644"
+      },
+      {
+        "path": "scripts/update-runtime/sdk.go",
+        "sha256": "92a76421adf97e8d57524fe0b471d730a29035b16e4d887a0161c7d666d1c6e9",
+        "mode": "0o644"
+      },
+      {
+        "path": "scripts/update-runtime/update_test.go",
+        "sha256": "25dd9912d9d070918e6d3ff1617aa9c6408953987339ef8d597facb4a4767bd3",
+        "mode": "0o644"
+      }
+    ]
+  },
+  "rehearsal": {
+    "projection_file_count": 1516,
+    "projection": "native complete source; original bytes/full modes checked before execution",
+    "head": "910ce640ee6010f6a5c2a543218487eecd217a65",
+    "plan_id": "4cd30b5a4de6d08e32dfc776ca72740ac5b4977f004c98b5d74d7f7cb5a0d2ed",
+    "plans": 2,
+    "applies": 2,
+    "plans_identical": true,
+    "source_changes": 0,
+    "new_sdk": false,
+    "state": "persistent owner-only directory under ~/.local/state/heliopause/runtime-upgrades/upg003-20261015-a",
+    "journal_phase": "APPLIED",
+    "configuration": "PASS",
+    "migration_complete": false,
+    "canonical_profiles": [
+      {
+        "profile": "bootstrap",
+        "status": "PASS",
+        "log_sha256": "289a27638dce8999e43f00bd51aaa53ce8fba60161902e202e0648139a0688ae"
+      },
+      {
+        "profile": "quick",
+        "status": "PASS",
+        "log_sha256": "7c221f95de1d1e2746376ac39e2159f1c54e443d6697a1ad14413111c3af251b"
+      },
+      {
+        "profile": "security",
+        "status": "PASS",
+        "log_sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95"
+      },
+      {
+        "profile": "workflow",
+        "status": "PASS",
+        "log_sha256": "17c2f14c1f18c78f950c31d785fe0ceab70faf92f03dfcf66dbec383cdc6aa56"
+      },
+      {
+        "profile": "release-gate",
+        "status": "PASS",
+        "log_sha256": "11e43c6a182a612ea79ba5d521d90153efd0f567857993ea20db4c3f95039b73"
+      },
+      {
+        "profile": "docs",
+        "status": "PASS",
+        "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+      },
+      {
+        "profile": "qualification-freshness",
+        "status": "PASS",
+        "log_sha256": "a139e18892192652dc1d7880e1d1bda7b269e445b80081de6776ebbe4d82c2c0"
+      }
+    ]
+  },
+  "regressions": {
+    "top_level": 10,
+    "subtests": 28,
+    "status": "PASS",
+    "scope": [
+      "four independent future version fixtures; generated identities, workflows, tool setup, reviews and Python ABI",
+      "same-version plans identical; repeated apply produces zero diff/SDK",
+      "Terraform/GitHub are inspection subjects and unchanged",
+      "stale HEAD/bytes/modes, dirty/untracked source and unknown consumers rejected",
+      "partial/tampered patch rejected",
+      "network failure does not mutate source or prepare executable",
+      "write interruption resumes exact before/after files with first failure preserved",
+      "external candidate edits preserved; concurrent state lock rejected",
+      "wrong/ambiguous architecture, digest, provenance, bundled version and SDK hash rejected",
+      "bounded SDK extraction rejects escape, links and duplicates; old SDK rejects a new selected owner"
+    ],
+    "synthetic_versions_are_not_real_release_or_qualification_evidence": true
+  },
+  "official_metadata_probe": {
+    "scope": "read-only official metadata probe; not OCI execution or a pin update",
+    "records": [
+      {
+        "component": "go",
+        "locked_reference": "golang:1.26.9-bookworm@sha256:bcef992b77b1e2031aaaa51da75cebc32da8e9c182e12e633ea79023c79d9eff",
+        "current_tag_amd64_reference": "golang:1.26.9-bookworm@sha256:bcef992b77b1e2031aaaa51da75cebc32da8e9c182e12e633ea79023c79d9eff",
+        "bundled": null,
+        "official_archive_platforms": [
+          "darwin/amd64",
+          "darwin/arm64",
+          "linux/amd64"
+        ],
+        "documents": [
+          {
+            "url": "https://registry-1.docker.io/v2/library/golang/manifests/1.26.9-bookworm",
+            "size": 6526,
+            "sha256": "d9c68c2c51161e12fd77e4c6320687c9cd86e1af1e3ad6e6cd63ff970641453c"
+          },
+          {
+            "url": "https://registry-1.docker.io/v2/library/golang/manifests/sha256:bcef992b77b1e2031aaaa51da75cebc32da8e9c182e12e633ea79023c79d9eff",
+            "size": 2322,
+            "sha256": "bcef992b77b1e2031aaaa51da75cebc32da8e9c182e12e633ea79023c79d9eff"
+          },
+          {
+            "url": "https://go.dev/dl/?mode=json",
+            "size": 22807,
+            "sha256": "1c4adcd4a38044b2ee040eb1a640c06f8d76b3afa59fd117f5fb633ba6651f78"
+          }
+        ]
+      },
+      {
+        "component": "node",
+        "locked_reference": "node:24.21.0-slim@sha256:713cfbf4a0ac19f40e1bb9919893e126b74a5c8cf5d0623c9f89515c8f74c6fa",
+        "current_tag_amd64_reference": "node:24.21.0-slim@sha256:51b1100cc2a83d370c6a60952e3f2989c8a43159d0e38586e090f3b3326efefd",
+        "bundled": "11.19.0",
+        "official_archive_platforms": [],
+        "documents": [
+          {
+            "url": "https://registry-1.docker.io/v2/library/node/manifests/24.21.0-slim",
+            "size": 3929,
+            "sha256": "d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20"
+          },
+          {
+            "url": "https://registry-1.docker.io/v2/library/node/manifests/sha256:51b1100cc2a83d370c6a60952e3f2989c8a43159d0e38586e090f3b3326efefd",
+            "size": 1929,
+            "sha256": "51b1100cc2a83d370c6a60952e3f2989c8a43159d0e38586e090f3b3326efefd"
+          },
+          {
+            "url": "https://nodejs.org/dist/index.json",
+            "size": 333611,
+            "sha256": "b52f521b8e24898364b74f03596afef1f97c1448014df7c2b5ebdcd2b69ca4a9"
+          }
+        ]
+      },
+      {
+        "component": "python",
+        "locked_reference": "python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52",
+        "current_tag_amd64_reference": "python:3.14.7-slim-bookworm@sha256:998acd06f485adfd6890e3e15a4b542543e0cf22ff904310095da328a5e3e561",
+        "bundled": "26.2.1",
+        "official_archive_platforms": [],
+        "documents": [
+          {
+            "url": "https://registry-1.docker.io/v2/library/python/manifests/3.14.7-slim-bookworm",
+            "size": 6541,
+            "sha256": "82bc3c539b8813ada9d68c63b40158fa002f7f33de9bf3312a3dfdc0620dff56"
+          },
+          {
+            "url": "https://registry-1.docker.io/v2/library/python/manifests/sha256:998acd06f485adfd6890e3e15a4b542543e0cf22ff904310095da328a5e3e561",
+            "size": 1751,
+            "sha256": "998acd06f485adfd6890e3e15a4b542543e0cf22ff904310095da328a5e3e561"
+          },
+          {
+            "url": "https://raw.githubusercontent.com/python/cpython/v3.14.7/Lib/ensurepip/__init__.py",
+            "size": 8240,
+            "sha256": "18bdd155b4cdf3d6d667a98f9ab7a21782e33600b92c4e73d641eaca80e9afa9"
+          }
+        ]
+      },
+      {
+        "component": "rust",
+        "locked_reference": "rust:1.99.0-bookworm@sha256:59037199c44290f2befcdd58dcc540164763fc296950255aaefeef096a1866b0",
+        "current_tag_amd64_reference": "rust:1.99.0-bookworm@sha256:b36c246742b4d323472588f789601be34eb4af053255e2af53969078ee8dcec7",
+        "bundled": null,
+        "official_archive_platforms": [],
+        "documents": [
+          {
+            "url": "https://registry-1.docker.io/v2/library/rust/manifests/1.99.0-bookworm",
+            "size": 6481,
+            "sha256": "114c7a4425406451c2866b6aafe69fe29b1b298832db1277d411ac73c82d04d6"
+          },
+          {
+            "url": "https://registry-1.docker.io/v2/library/rust/manifests/sha256:b36c246742b4d323472588f789601be34eb4af053255e2af53969078ee8dcec7",
+            "size": 1940,
+            "sha256": "b36c246742b4d323472588f789601be34eb4af053255e2af53969078ee8dcec7"
+          }
+        ]
+      }
+    ]
+  },
+  "failed_attempts": [
+    {
+      "stage": "projection preparation",
+      "result": "file hash mismatch while additional source edits overlapped preparation",
+      "disposition": "no dependent check started; frozen projection rebuilt and verified"
+    },
+    {
+      "stage": "quick-1",
+      "result": "Staticcheck ST1005 for four capitalized error strings",
+      "disposition": "strings corrected; canonical Quick passed"
+    },
+    {
+      "stage": "quick-2",
+      "result": "test fixture strict JSON decoder rejected omitted schema_version field",
+      "disposition": "fixture schema completed; four component/recovery tests and canonical Quick passed"
+    }
+  ],
+  "boundaries": [
+    "runtime/tool lock and existing image pins unchanged",
+    "official metadata probe is not image execution or tag refresh",
+    "new target SDK extraction tested with bounded synthetic archives; no new real Go release selected or activated",
+    "native macOS execution and full platform/installed qualification remain UPG-005",
+    "gVisor/Gitleaks actual compiler rebuild remains UPG-004",
+    "CPU/cu126/cu130/cu132/remote Required/privileged activation not run or claimed by UPG-003",
+    "existing separate full-Race findings remain open"
+  ],
+  "raw_references": [
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-003/quick-1.log",
+      "sha256": "1a66b3fa26b4a2b89d9337893f1fa8e8035a36ba126bc2d94b057622d830bfa9"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-003/quick-2.log",
+      "sha256": "f4f7252dce3117560f0bfaceb637f94e4b27522322839cf03d4cba445aff8aa4"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-003/quick-3.log",
+      "sha256": "d7e189fb79a58e129232364ea3a4b03853a7355d0ab0b92d6f20a1543e6b0448"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-003/updater-regressions.log",
+      "sha256": "90e88b93b26ee56e06a1f01c3d52e8d74489659d643037b9fce1827d043595d1"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-003/official-resolver-live.log",
+      "sha256": "46da302e13b6c5834debf7710a699ca41f7f55cf5e7e6f2b4e0c563aa1be107b"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-003/rehearsal-initial.log",
+      "sha256": "84d7fc0695a56ae748817614903bbcbadb3933f7331139161c3b416dffb2cea5"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-003/official-resolver-summary.json",
+      "sha256": "95161a2dfe2247e27668fe563385582dc5a207464cb254f8e70490110dcedb37"
+    }
+  ]
+}

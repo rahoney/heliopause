@@ -1,0 +1,314 @@
+{
+  "schema_version": 1,
+  "work_item": "UPG-004",
+  "component": "Gitleaks and managed quality compiler enforcement",
+  "date": "2026-10-15",
+  "baseline": "adbf422c7ca82a15ee35d2ae8834172eba03bd77",
+  "audit_scope": "quality-tool component only; gVisor SDK/bundle acceptance remains open",
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES",
+    "ACCEPTANCE_CLOSED": "YES",
+    "MISSING": []
+  },
+  "source_identity": {
+    "gitleaks-module": {
+      "exit_code": 0,
+      "command": [
+        "go",
+        "mod",
+        "download",
+        "-json",
+        "github.com/zricethezav/gitleaks/v8@v8.18.4"
+      ],
+      "identity": {
+        "Path": "github.com/zricethezav/gitleaks/v8",
+        "Version": "v8.18.4",
+        "Sum": "h1:mWOfVGO8ksok21iOb7h4DZMcUxyvsol8l6o1uNOQxww=",
+        "GoModSum": "h1:3EFYK+ZNDHPNQinyZTVGHG7/sFsApEZ9DrCGA1AP63M=",
+        "Origin": {
+          "VCS": "git",
+          "URL": "https://github.com/zricethezav/gitleaks",
+          "Hash": "02808f45d038526bfcceebcbf6421c1047997ff9",
+          "Ref": "refs/tags/v8.18.4"
+        }
+      }
+    },
+    "gitleaks-official-tag": {
+      "exit_code": 0,
+      "command": [
+        "git",
+        "ls-remote",
+        "https://github.com/gitleaks/gitleaks.git",
+        "refs/tags/v8.18.4",
+        "refs/tags/v8.18.4^{}"
+      ],
+      "refs": [
+        "77c3c6a34b2577d71083442326c60b8fd58926ec\trefs/tags/v8.18.4",
+        "02808f45d038526bfcceebcbf6421c1047997ff9\trefs/tags/v8.18.4^{}"
+      ]
+    }
+  },
+  "changes": {
+    "tool_lock_schema": "1 -> 2; source module h1 and exact upstream version ldflags; archived installs rejected",
+    "tool_release_unchanged": "v8.18.4",
+    "product_module_graph_unchanged": true,
+    "compiler_owner": "runtime selected Go -> every tool setupGo -> actual build metadata",
+    "actual_read_only_checks": [
+      "Go compiler version",
+      "package path",
+      "host GOOS/GOARCH",
+      "Gitleaks main module/version/h1/no replacement",
+      "Gitleaks trimpath/CGO0",
+      "supported version command"
+    ],
+    "output_hash_owner": "actual reproducible build receipt/evidence; no second per-Go/per-platform executable version lock",
+    "canonical_security": "explicit synthetic contract step, same jobs/profiles; no automatic external-tool dependency in default Go tests",
+    "updater_cache": "state-local quality executable cache; caller cache and Go config/workspace/flags not inherited; cache/bin aliases rejected"
+  },
+  "independent_linux_builds": [
+    {
+      "scope": "independent cold Go build cache; main module already prepared through canonical proxy/SumDB",
+      "output": {
+        "path": "/tmp/haa-upg004-gitleaks-build-a/bin/gitleaks",
+        "size": 8253602,
+        "sha256": "6741b23f836bd3651e152df0e64b8e7161a5ea4773560a9e17d0ce7d0aa1e38e"
+      },
+      "version": "8.18.4"
+    },
+    {
+      "scope": "independent cold Go build cache; authenticated module cache reused",
+      "output": {
+        "path": "/tmp/haa-upg004-gitleaks-build-b/bin/gitleaks",
+        "size": 8253602,
+        "sha256": "6741b23f836bd3651e152df0e64b8e7161a5ea4773560a9e17d0ce7d0aa1e38e"
+      },
+      "version": "8.18.4"
+    }
+  ],
+  "independent_outputs_identical": true,
+  "cross_builds": [
+    {
+      "target": "darwin/amd64",
+      "exit_code": 0,
+      "native_execution": "NOT_RUN",
+      "output": {
+        "path": "/tmp/haa-upg004-gitleaks-darwin/bin/darwin_amd64/gitleaks",
+        "size": 8414832,
+        "sha256": "9e1a8ebc2d66c8c484bffa8d2a883f951db87dbe69356e9d3b513a5ced464d76"
+      }
+    },
+    {
+      "target": "darwin/arm64",
+      "exit_code": 0,
+      "native_execution": "NOT_RUN",
+      "output": {
+        "path": "/tmp/haa-upg004-gitleaks-darwin/bin/darwin_arm64/gitleaks",
+        "size": 7873410,
+        "sha256": "f4b97564453823636ea766c701d453db6384f02239174d2cf095b6d2557936ed"
+      }
+    }
+  ],
+  "canonical_bootstrap_candidate": {
+    "scope": "isolated canonical bootstrap candidate; global installed binaries unchanged",
+    "records": [
+      {
+        "command": "staticcheck",
+        "compiler": "go1.26.9",
+        "size": 16385768,
+        "sha256": "566b267e74cddad8f9aad38eacdb8ebb66f237bbeb1ad7ba85abcc7ff7037a85",
+        "path": "/tmp/haa-upg004-quality/bin/staticcheck"
+      },
+      {
+        "command": "gosec",
+        "compiler": "go1.26.9",
+        "size": 69489727,
+        "sha256": "792c563535e9762f9bb21872a15d50ba32e516a00bc1ae0f2d8fa32175889676",
+        "path": "/tmp/haa-upg004-quality/bin/gosec"
+      },
+      {
+        "command": "govulncheck",
+        "compiler": "go1.26.9",
+        "size": 15076163,
+        "sha256": "9855db956f8bb420aba88b7aad9156073a8544980ef165d28908defd7e8b58e6",
+        "path": "/tmp/haa-upg004-quality/bin/govulncheck"
+      },
+      {
+        "command": "actionlint",
+        "compiler": "go1.26.9",
+        "size": 8420462,
+        "sha256": "e2ed12cc7a913914caa3ce6d2ea20f91b0975665b3e91892e72269faeae6b25d",
+        "path": "/tmp/haa-upg004-quality/bin/actionlint"
+      },
+      {
+        "command": "gitleaks",
+        "compiler": "go1.26.9",
+        "size": 8253602,
+        "sha256": "6741b23f836bd3651e152df0e64b8e7161a5ea4773560a9e17d0ce7d0aa1e38e",
+        "path": "/tmp/haa-upg004-quality/bin/gitleaks"
+      }
+    ],
+    "gitleaks_matches_independent_builds": true
+  },
+  "regressions": {
+    "compiler_lock": {
+      "top_level": 3,
+      "subtests": 21,
+      "status": "PASS"
+    },
+    "detection_contract": {
+      "top_level": 1,
+      "subtests": 3,
+      "status": "PASS",
+      "classes": [
+        "canonical GitHub PAT",
+        "synthetic generic credential",
+        "benign release metadata"
+      ],
+      "official_archive_normalized_findings_equal": true,
+      "original_m7_raw_tokens_recovered": false,
+      "scope": "reconstructed documented case classes; not all secret rules or new-release acceptance"
+    },
+    "updater_cache": "actual seven-profile no-op verify with caller sentinel unchanged plus deterministic Go-environment and cache/bin-alias tests"
+  },
+  "actual_state_verification": {
+    "state": "/home/winamp/.local/state/heliopause/runtime-upgrades/upg004-20261015-gitleaks-verify",
+    "caller_cache_unchanged": true,
+    "quality_bin": "/home/winamp/.local/state/heliopause/runtime-upgrades/upg004-20261015-gitleaks-verify/quality-tools/bin",
+    "cache_scope": "state-local executables; explicitly shared warm authenticated module/compiler caches",
+    "new_sdk": false,
+    "verification": {
+      "plan_id": "426379aa4ecfc7bb90630282fe12ab510ffe66c7ecbda9d49d77085a131699a6",
+      "attempt": "verification-483305076",
+      "configuration": "PASS",
+      "go": "/home/winamp/.local/go/bin/go",
+      "results": [
+        {
+          "profile": "bootstrap",
+          "status": "PASS",
+          "log_sha256": "289a27638dce8999e43f00bd51aaa53ce8fba60161902e202e0648139a0688ae"
+        },
+        {
+          "profile": "quick",
+          "status": "PASS",
+          "log_sha256": "7c221f95de1d1e2746376ac39e2159f1c54e443d6697a1ad14413111c3af251b"
+        },
+        {
+          "profile": "security",
+          "status": "PASS",
+          "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+        },
+        {
+          "profile": "workflow",
+          "status": "PASS",
+          "log_sha256": "7373f5e8d2cc567119324e38ae3ef125b763e7f59d8a0c403526072e7e75de86"
+        },
+        {
+          "profile": "release-gate",
+          "status": "PASS",
+          "log_sha256": "11e43c6a182a612ea79ba5d521d90153efd0f567857993ea20db4c3f95039b73"
+        },
+        {
+          "profile": "docs",
+          "status": "PASS",
+          "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+        },
+        {
+          "profile": "qualification-freshness",
+          "status": "PASS",
+          "log_sha256": "a139e18892192652dc1d7880e1d1bda7b269e445b80081de6776ebbe4d82c2c0"
+        }
+      ],
+      "required_qualification": [],
+      "migration_complete": false
+    }
+  },
+  "final_behavior": {
+    "official_control_tree_findings": 0,
+    "new_source_canonical_security": "PASS with zero current-tree findings and all three required synthetic cases",
+    "isolated_verification_gitleaks_matches_independent_builds": true,
+    "caller_cache_unchanged": true,
+    "all_seven_profiles": "PASS"
+  },
+  "source_inputs": [
+    {
+      "path": "scripts/check/tools.go",
+      "sha256": "59d13b4129e3ac093cd9966d3e5ecc0c50f753e1c17ff8c6c54023d3db6cf5d0",
+      "mode": "0o644"
+    },
+    {
+      "path": "scripts/check/tools_test.go",
+      "sha256": "ead14f8a86f7b25fc28043d62a8773369819ef176ec1b605d2e70e381eddfac8",
+      "mode": "0o644"
+    },
+    {
+      "path": "scripts/check/security.go",
+      "sha256": "0bfb27e7f4efddee7878a43224761c7da3498d5151a536091e9b3bf1a9adeeaa",
+      "mode": "0o644"
+    },
+    {
+      "path": "scripts/check/gitleaks_test.go",
+      "sha256": "4f60eab118ef22cb92af0cdf26ffcdf67cd57aaa7fb72de2560255aef105f7d4",
+      "mode": "0o644"
+    },
+    {
+      "path": "scripts/tools.lock.json",
+      "sha256": "ab782891cb23f5b248df25b8570bbcb628f530e5ebfd049a8f5e0cd593518dca",
+      "mode": "0o644"
+    },
+    {
+      "path": "scripts/update-runtime/main.go",
+      "sha256": "56d92f0cf1d57efa38a93e82334e0c95f097c1ff00a1135e6601bcbc7c13aff2",
+      "mode": "0o644"
+    },
+    {
+      "path": "scripts/update-runtime/apply.go",
+      "sha256": "c081ac6e7fc318d9d75902378b950b340fcd1cf81b851529154680bb8102ae73",
+      "mode": "0o644"
+    },
+    {
+      "path": "scripts/update-runtime/update_test.go",
+      "sha256": "78a5b3bd9790ee8b02f9e02950d06aa67f68badfcb190ddd287ce24a9c558456",
+      "mode": "0o644"
+    }
+  ],
+  "raw_references": [
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/gitleaks-quick-1.log",
+      "sha256": "c5d9be1647075ebc27d13bb1c580371c21a836c60e0c90c0bfa97f6f576b97dd"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/gitleaks-security-1.log",
+      "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/gitleaks-archive-compatibility-1.log",
+      "sha256": "2bbb045dd7eeb02381230e6f5eed09ca8200b82d100228c2fdd53e44f8ddb09c"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/gitleaks-compiler-regressions-1.log",
+      "sha256": "15bb1c280110f44fc39477a16a899c138d9ef1914c310c0fe0a4b64e3785d84d"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/gitleaks-bootstrap-source.log",
+      "sha256": "289a27638dce8999e43f00bd51aaa53ce8fba60161902e202e0648139a0688ae"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/gitleaks-updater-isolated-verify.log",
+      "sha256": "280d239e922b5f10d6363beba64dd0e063e0933a805f633e2fc6db2326aebf37"
+    },
+    {
+      "path": "docs/github-logs/runtime-upgrade-maintenance/upg-004/gitleaks-official-tree-control.log",
+      "sha256": "c1db421b1fc416301224f8c8e25fd1e5d672e759af7f2325eb73c9028bfc71f7"
+    }
+  ],
+  "boundaries": [
+    "global installed quality binaries and host SDK were not replaced",
+    "native Darwin execution NOT_RUN; actual cross-builds recorded separately",
+    "no gVisor SDK/bundle/observer build success claimed here",
+    "runtime image pins and support review dates unchanged",
+    "CPU/cu126/cu130/cu132/remote Required/privileged activation remain UPG-005/006",
+    "existing separate full-Race findings remain open"
+  ]
+}

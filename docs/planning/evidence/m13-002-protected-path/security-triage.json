@@ -1,0 +1,234 @@
+{
+  "status": "ALL_354_FINDINGS_CONFIRMED_PUBLIC_APP_IDENTIFIERS",
+  "original_worktree_security_result": "FAIL",
+  "finding_count": 354,
+  "file_count": 40,
+  "rule": "generic-api-key",
+  "classification": "Every finding byte span is the public client_id field of GitHub Actions or CLA Assistant; no client secret or access token is among these findings. No general claim about undiscovered secrets.",
+  "verification": "Every scanner span maps to a public identifier occurrence (columns restart per 10000-byte fragment) against untouched original JSON, App id/slug match, value equality with unauthenticated public App API response.",
+  "by_app": {
+    "github-actions": 353,
+    "cla-assistant": 1
+  },
+  "official_semantics": "https://github.blog/changelog/2024-05-01-github-apps-can-now-use-the-client-id-to-fetch-installation-tokens/",
+  "public_api_receipts": [
+    {
+      "path": "docs/github-logs/m13-002-pr/github-actions-app-public.json",
+      "sha256": "b44eb514d435b509136d91e192fb948589f81e6b0bba52d7c3c5954d17318c21",
+      "authentication": "none"
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/cla-app-public.json",
+      "sha256": "7834aa5269493a115074213b9326ded6d3d7bb684b859c56a63fe93ed40009c1",
+      "authentication": "none"
+    }
+  ],
+  "original_scan": {
+    "path": "docs/github-logs/m13-002-pr/record-preparation/gitleaks-redacted-findings.json",
+    "sha256": "42b3c2e3b2fd69148e983bfcb9a8502cccab1d490117f87ce5d66b7480e11895"
+  },
+  "source_files": [
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T061716292231Z/head-checks.json",
+      "sha256": "c5df76426719b93df982e314054425374de4aeb0b69a8e399252670db01051a5",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T061803253700Z/head-checks.json",
+      "sha256": "a599d799544de49226e5a32c7f00f8f0785169f0e0c226114c6aa6606eb33fb1",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T062000126773Z/head-checks.json",
+      "sha256": "ce98e1c89292cf2b8ebe38d1a920f6f8a70bb8a5a9ef1715c802d4d16af25c80",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T062228291774Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T062326549847Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T062538514011Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T062753089246Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T063048057146Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T063306191358Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T063519084826Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T063636202278Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T063730886467Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T063823220844Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T063916993932Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T064010541957Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T064103443378Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T064156885602Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T064249319332Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T064342651049Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T064436041357Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T064528600849Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T064622901791Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T064716814357Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T064810258863Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T064902762810Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T064956666059Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T065050334152Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T065143568139Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T065237224554Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T065329709667Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T065423399657Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T065515795294Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T065609456002Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T065702910635Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T065755387127Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T065848468421Z/head-checks.json",
+      "sha256": "559f32b3688cd7ff002791e52b041525226fecdbf477f0bd02b2f36d1ffaa11b",
+      "findings": 9
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T065941653273Z/head-checks.json",
+      "sha256": "9ae6ffbaac821764ebfedfb9b443e3b1158a9e8248c625614c071b9c6adae485",
+      "findings": 10
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T071334079945Z/head-checks.json",
+      "sha256": "9ae6ffbaac821764ebfedfb9b443e3b1158a9e8248c625614c071b9c6adae485",
+      "findings": 10
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/cla-app-public.json",
+      "sha256": "7834aa5269493a115074213b9326ded6d3d7bb684b859c56a63fe93ed40009c1",
+      "findings": 1
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/cla-audit-062307453486/historical-pr30-checks.json",
+      "sha256": "92449c261409150df7cb471bb385098961cd1cae0fffba91506a092a2c34c5cd",
+      "findings": 9
+    }
+  ],
+  "disposition": "Preserve original bytes and failed worktree check. Do not rotate public identifiers, alter product code, suppress scanner rules, or reclassify full worktree as PASS. Validate full exact versioned candidate separately; raw custody was already outside candidate before discovery.",
+  "candidate_validation_raw_directory": "docs/github-logs/m13-002-pr/final-candidate-validation/"
+}

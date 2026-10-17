@@ -7,15 +7,401 @@
 ## 1. 현재 상태
 
 ```text
-Current milestone: M13 — Production Release & Operations (entry audit and repository hardening)
-Milestone status: IN_PROGRESS (public release readiness not declared)
-Active work item: M13-002 — protected branch qualification
-Next work item: M13-003 — canonical release build and OS packages (not authorized)
-Next work item status: NOT_STARTED / Ready: No — M13-002 acceptance remains open
-Ready: M13-002 local preparation; remote push/merge requires explicit user approval
+Current milestone: M13 — Production Release & Operations
+Milestone status: IN_PROGRESS — runtime maintenance main delivery COMPLETE
+Active work item: M13-002 — protected branch qualification / fresh baseline and develop synchronization
+Active work item status: IN_PROGRESS — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO
+Next work item: M13-003 — canonical release build and OS package assets
+Next work item status: NOT_STARTED / NOT_READY — M13-002 acceptance remains open
+Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
 
+### Runtime upgrade maintenance — 2026-10-15 priority change
+
+사용자가 M13을 잠시 보류하고 버전 갱신 자동화의 상세 설계·계획을 먼저 정리한
+뒤 구현하도록 요청했다. 기존 M13 branch는 `f5a0353`에 보존하고 같은 commit에서
+`milestone/runtime-upgrade-maintenance`를 분기했다. Tracked/index clean 기준선과
+기존 미추적 사용자 자료를 유지했다. 원격 branch/PR/ruleset/설치 변경은 없다.
+
+기술 owner: [Runtime upgrade design](../engineering/05-runtime-upgrade-maintenance.md).
+Baseline audit·작업별 Read/acceptance·검증 순서·M13 재개 조건:
+[Runtime upgrade plan](./19-runtime-upgrade-maintenance-plan.md).
+
+| Item | Scope | Status | Acceptance evidence |
+| --- | --- | --- | --- |
+| UPG-001 | baseline audit / design / detailed plan | COMPLETE | 소스 변경 전 목표별 audit와 design/plan 작성; [closure evidence](../engineering/evidence/runtime-upgrade-maintenance/upg-001.json) |
+| UPG-002 | all owned version consumers / manifest / drift | COMPLETE | [ownership/manifest evidence](../engineering/evidence/runtime-upgrade-maintenance/upg-002.json); canonical Quick, security,12 focused regressions/54 cases PASS |
+| UPG-003 | explicit plan/apply/verify / same-version rehearsal | COMPLETE | [updater evidence](../engineering/evidence/runtime-upgrade-maintenance/upg-003.json); actual no-op2/2, canonical verify7 profiles,10 tests/28 cases PASS |
+| UPG-004 | gVisor·archived quality tool Go1.26.9 candidates | COMPLETE | [quality compiler](../engineering/evidence/runtime-upgrade-maintenance/upg-004-gitleaks.json) / [gVisor build](../engineering/evidence/runtime-upgrade-maintenance/upg-004-gvisor.json); actual/reproducible candidates and observed-output plans qualified |
+| UPG-005 | installed ecosystem / CPU / cu126 / cu130 / cu132 qualification | COMPLETE | [qualification evidence](../engineering/evidence/runtime-upgrade-maintenance/upg-005.json); same local full matrix and fresh ordinary/nativeMac/three independent remote CUDA Required PASS; originals/cleanup and final docs/security verified |
+| UPG-006 | verified activation / retirement / M13 handoff | COMPLETE | [activation/handoff evidence](../engineering/evidence/runtime-upgrade-maintenance/upg-006.json); actual default quality5/installed Go7 at1.26.9, production2 and scoped doctor, no-op/7canonical profiles, exact completed-test cleanup and final docs/security PASS; public release/Race/reviewer merge retain separate scope |
+
+이번 범위는 owned versions의 갱신 절차와 Go/gVisor1.26.9 전환이다. 모든 언어의
+최신판 동시 도입, 사용자 프로젝트/provider 재작성, 새 CUDA profile 또는 M13 공개
+배포를 포함하지 않는다. UPG-001 완료와 전체 유지보수 완료는 구분한다.
+
+UPG-002 start audit (2026-10-15, baseline `b4eaa5b`): existing lock/generator and
+Go setup consistency IMPLEMENTED=YES/WIRED=YES; complete consumer/support/workflow
+inventory and four-image manifest QUALIFIED=NO/ACCEPTANCE_CLOSED=NO.
+MISSING: Node runtime version instead of npm in manifest; Rust entry and release
+inspection; selected Go literals in workflow/tool validators; support/version/ABI
+cross-checks and missing/duplicate/unknown consumer regression. Canonical checks
+remain read-only. Images, tool releases, user artifacts and installed bundle stay
+at the existing versions; gVisor/Gitleaks compiler rebuild belongs to UPG-004.
+
+UPG-002 closure: selected Go values now feed all actual workflow setup validators;
+reviewed versions and every active tool setup are cross-checked. Unknown workflow
+or independent official-image literals in active Go source fail the existing
+read-only runtime drift check. The existing manifest includes Rust and uses Node's
+version instead of npm. Python image/version/ABI drift is rejected. Full PyTorch
+integration uses generated reviewed torch versions and canonical Python target
+paths/assertions; frozen inspection-prerequisite and historical fixtures remain.
+Actionlint's existing v1.7.12 now has an actual official release review record.
+Runtime/tool lock bytes and all four local amd64 image identities are unchanged.
+Final native Quick, security/release-gate, generator idempotence and focused12/54
+regressions passed. Current scoped audit: IMPLEMENTED=YES/WIRED=YES/QUALIFIED=YES/
+ACCEPTANCE_CLOSED=YES/MISSING=none for UPG-002. Updater, actual compiler rebuild,
+installed/CPU/CUDA/remote qualification and activation remain UPG-003..006.
+
+UPG-003 start audit (baseline `16cfe2948b604605a20241547a0ab67e0bee4287`):
+unified updater IMPLEMENTED=NO/WIRED=NO/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO.
+MISSING: explicit official-metadata plan; isolated candidate apply with baseline/
+hash preconditions and durable recovery journal; target-SDK canonical verify;
+same-version no-op and coordinated four-language/negative/fault regressions.
+Existing generator, selected-version checks and canonical profiles are reused.
+Source edits remain separate from Host activation and privileged lifecycle.
+
+UPG-003 closure: one developer command now resolves exact official metadata,
+freezes coordinated patches and runs existing canonical checks in an isolated
+Git worktree. Actual current Go1.26.9 plans2/apply2 produced identical plan IDs,
+zero source diff and no additional SDK. Persistent state/journal and all7 verify
+profiles passed. Four independent synthetic component upgrades and recovery/
+stale-input/foreign-edit/architecture/digest/SDK negatives passed10 tests/28 cases.
+Official live metadata resolution passed for all4 current runtimes; same-version
+reconciliation preserves original image digests, even when a live tag differs.
+Source/tool/runtime pins and installed binaries are unchanged. Scoped audit:
+IMPLEMENTED=YES/WIRED=YES/QUALIFIED=YES/ACCEPTANCE_CLOSED=YES/MISSING=none for UPG-003.
+Native macOS execution, actual new SDK activation, gVisor/quality compiler rebuild,
+installed/CPU/CUDA/remote qualification and final migration remain separate.
+
+UPG-004 start audit (baseline `adbf422c7ca82a15ee35d2ae8834172eba03bd77`):
+existing complete bundle/observer builders, strict bundle verifier and source tool
+installer IMPLEMENTED=YES/WIRED=YES; selected-Go SDK preparation/candidate capture,
+Gitleaks exact source compiler build and actual compiler enforcement
+IMPLEMENTED=NO/WIRED=NO/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO.
+MISSING: Go1.26.9 gVisor SDK/patch/module-lock preparation shared by local/CI/release;
+two reproducible complete builds, member/compiler/capability/102-latch evidence;
+same-release Gitleaks source identity/flags/output and documented detection corpus
+comparison; actual compiler checks for every managed Go tool and wrong-input
+regressions. Existing builds/validators are extended, not replaced. Candidate
+preparation does not install/activate the helper or claim full qualification.
+
+UPG-004 quality-tool component: [Gitleaks/compiler evidence](../engineering/evidence/runtime-upgrade-maintenance/upg-004-gitleaks.json).
+Gitleaks remains8.18.4 at the official tag/module h1 and now source-builds with the
+selected Go; schema2 rejects archived active installs. All5 managed candidate
+binaries prove actual Go1.26.9/package/platform metadata. Two independent Linux
+builds plus canonical bootstrap produce identical Gitleaks output; Darwin both
+architectures cross-build without claiming native execution. Three reconstructed
+M7 detection/benign classes match the official archive and canonical security;
+compiler/lock negatives pass21 cases. Actual updater verify passes7 profiles with
+state-local executables and an untouched caller-cache sentinel. Quality component
+audit is YES/YES/YES/YES/MISSING=none. At quality-component commit ed6adbc, overall
+UPG-004 remained IN_PROGRESS with gVisor SDK/common preparation, capture and
+full bundle/observer evidence still open. The later closure below records those
+results. Global activation and full installed/CPU/CUDA/remote qualification remain open.
+
+UPG-004 closure (2026-10-16): the shared preparation selects Go from the runtime
+owner, preserves the exact upstream SDK patch and feeds existing local/CI/release
+builders. Independent cold-cache bundle and C++ observer builds are byte-identical;
+all5 Go members report1.26.9, four trace capabilities and102 latches pass. Actual
+default strict bundle and shared observer entrypoints pass. Capture mode retains
+its actual source/outputs/receipt; schema2 plans reconstruct source+patch and bind
+observed member/module identities to coordinated generation. Same-SDK actual
+plans/apply produce zero diff; synthetic changed outputs require both generated
+identity and full Go qualification. Source/SDK/member/compiler/wiring negatives
+and final canonical Quick/security/workflow/docs/release-gate pass; vulnerability/
+platform/qualification-freshness also pass. The first concurrent-build Quick
+5m timeout is retained separately; unchanged frozen inputs pass7 profiles after
+build completion. Scoped audit: YES/YES/YES/YES/MISSING=none. Global installed
+binaries, CPU/three CUDA, new remote Required and activation remain UPG-005/006.
+UPG-005 is NOT_STARTED/ReadyYes and requires its own baseline audit.
+
+UPG-005 start audit (2026-10-16, baseline c56bb3160f8ff74f125fac5754a0b4f8127dda3e):
+existing installed lifecycle, seven-ecosystem consumers, CPU/three CUDA and
+Required workflow IMPLEMENTED=YES/WIRED=YES. Qualification of the new bundle and
+final product binaries QUALIFIED=NO/ACCEPTANCE_CLOSED=NO. MISSING: exact product/
+helper/test-binary freeze; durable installed originals and bounded ownership/
+resource preflight; actual small/lifecycle/hostile and cross-ecosystem consumers;
+CPU plus independently cu126/cu130/cu132 with unchanged contracts; fresh native
+platform/Required and supported-profile remote results; exact cleanup/restore
+and final evidence. Reuse scripts/ci-integration-cleanup.sh and existing test/
+workflow bodies; no replacement executor, new runtime contract or CI jobs.
+UPG-004 canonical results establish configuration/build validity, not these
+installed/full acceptances. The separate known full-Race fixture findings keep
+their prior scope pending disposition; Required does not contain a Race job.
+
+UPG-005 newly confirmed fixture gap: npm/PyPI resolver tests in
+internal/sandbox/linux_integration_test.go still require euid0, while the existing
+resolver_policy_integration_linux_test.go explicitly uses the ordinary-user
+installed typed helper. The file is unchanged from preserved M13 baseline f5a0353.
+Actual new-bundle resolver batch passed8 consumers but failed the PyPI guard
+before resolver execution; helper wait0 and original12 restoration passed. Do not
+run the entire client as root or weaken firewall/coverage. Narrow correction:
+require ordinary-user in the two existing fixtures and retain the existing typed
+helper and assertions. Fixture precondition start audit: IMPLEMENTED=NO/WIRED=YES/QUALIFIED=NO/
+ACCEPTANCE_CLOSED=NO; MISSING: corrected guards and actual two-resolver regression
+plus canonical checks. Product resolver/helper implementations are reused.
+
+UPG-005 fixture correction closure: [partial qualification evidence](../engineering/evidence/runtime-upgrade-maintenance/upg-005.json).
+Both existing resolver tests now require the ordinary user and preserve the
+installed typed helper/result assertions. Actual npm/PyPI resolvers pass2 cases;
+root execution is rejected before resolver construction in2 negatives. Canonical
+Quick/security/docs pass. Actual ordinary npm is-number7.0.0 and pip packaging25.0
+install/promotion also pass; both cases confirm parent wait0 and all12 originals
+restored. Scoped fixture audit YES/YES/YES/YES/MISSING=none. Initial batch FAIL and
+its8 individual passes remain historical; final candidate/full CPU/three CUDA/
+remote Required and activation remain open. No product resolver/helper, firewall
+privilege, budget, support tuple or coverage assertion is changed.
+
+UPG-005 actual full progress: final40dda27 CPU PASS484.09s with helper wait0 and
+all12 originals restored. cu126 FAIL588.88s before inspection: explicit prerequisite
+target12.9.9 hash is absent because permitted live metadata selected cuda-bindings
+12.9.10. Actual wheel matches independent official PyPI SHA; both old/new identities
+and publish times are recorded locally. No SDK regression or same-filename mutation
+is established. cu130/cu132 NOT_RUN. Do not retry the stale input or change corpus.
+
+New gap baseline audit before source changes: existing exact prerequisite parser/
+loader/binding, production resolver and test/CI consumers IMPLEMENTED=YES/WIRED=YES.
+Trusted live qualification preparation and stale-pin pre-intake validation
+IMPLEMENTED=NO/WIRED=NO/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO. MISSING: explicit test-only
+plan for fixed NumPy and unique public non-root selected cuda-bindings; existing
+resolver metadata freeze/receipt; reused early target check; workflow plan/env
+wiring and negative/actual small regressions; same final candidate full matrix.
+Design owner is runtime upgrade design section6. Existing defaults, exact CLI
+input, helper authority, resource/support/Required and promotion are unchanged.
+
+UPG-005 preparation component verification: preview ff6ea504 passes canonical
+Quick/security/workflow/docs/release-gate, selector/early-resolver negatives, and
+actual installed preparation plus four-profile auxiliary authentication326.85s.
+Wrong target rejects with main intake0; helper parentwait0 and originals12 restored.
+Scoped preparation audit YES/YES/YES/YES; full-matrix audit remains QUALIFIED=NO/
+ACCEPTANCE_CLOSED=NO. Final code commit, same-candidate CPU/three CUDA and fresh
+Required/native platform are still MISSING. Prior40dda27 results retain their own
+source identity and are not rewritten as this new executable candidate.
+
+UPG-005 final baa8512: small4 PASS23.93s, ordinaryCLI2 PASS35.36s and CPUfull
+PASS482.43s, each primary0/restore0. cu126 FAIL884.09s during installation.
+First accounting rejection is gap1.106363289s > existing1s, composed of
+trusted Read619.130156ms + before-read487.232044ms + ledger lock0.001089ms.
+Usage66.251083s <300s and wall remaining2328.65s; neither aggregate limit exhausted.
+Later CANCELED/PROFILE_LOOKUP_FAILURE do not replace that first cause. Helper
+wait0/originals12 restore confirmed. Target preparation/NumPy acquisition passed
+this earlier boundary; cu130/cu132 NOT_RUN. Existing CPU accounting/helper owner
+audit YES/YES/NO/NO. MISSING: narrow latency substage diagnosis and controlled
+regression if a defect is proven, then same-candidate full acceptance. Budgets,
+late rejection and authentication stay unchanged; no blind full retry.
+
+UPG-005 retained installation diagnosis: first timing overlay FAIL232.03s/restore0;
+request receive/decode1142.94ms while peerAuth0.08ms/engine33.87ms. Same code/input
+with OS scalar telemetry PASS338.10s/restore0. That success does not fix the earlier
+failure. Telemetry confirms peak shared memory12.53GiB, available memory minimum
+295.48MiB, increased swap/direct reclaim; helper quota unlimited/no throttling.
+Initial local RAM preflight missed peak working-set headroom. Preserve strict1s
+rejection, CPU/wall/tmpfs/support and add conservative local execution capacity
+readback before another full. Windows32GB/WSL~16GB, no .wslconfig; a24GB memory-only
+proposal was prepared for separate user review because it affects all WSL distros.
+User approved the testing24GB memory-only setting. The previously absent config
+was created and independently read back from Windows/Linux with matching SHA.
+Post-restart readback (2026-10-16): user restarted WSL; actual MemTotal
+25,202,302,976B and MemAvailable23,311,159,296B exceed the unchanged local CUDA
+capacity requirement19,327,352,832B. Config SHA matches its approved bytes.
+The missing native source was reconstructed from baa8512 and all1,527 file
+bytes/modes match the frozen inventory. Root audit confirms all12 originals,
+zero installed consumers/containers/handles. First postrestart-cu126-full failed
+at helper startup0.2s before CUDA execution because canonical /run directories
+were missing. Historical UNKNOWN/restore1 is retained. A separate root complete
+proc/executable/socket/Docker check and startup-before-executor source evidence
+established recovery safety; originals12 restored and both canonical runtime
+directories prepared. The local harness now checks directory identities before
+installation; fresh small installed regressions precede another full case.
+New CUDA qualification remains open; RAM readback alone is not a latency fix.
+User authorized revalidation/restoration/runtime directories and removal of
+completed unnecessary test data, with actual consumer/inventory checks.
+Post-restart small4 PASS27.00s/primary0/restore0, helper parentwait0 and original12
+readback PASS. Completed-test cleanup removed30,537 unnecessary files after full
+SHA/metadata and root proc/FD/maps/mount/Docker reference checks: logical
+9,231,393,994B, WSL available increase9,315,295,232B. Current candidate, originals,
+distinct failed inputs and actual Evidence/raw/results remain. No VHD compaction
+claim is made. Fresh postrestart-ready-cu126-full now runs with the same baa8512
+candidate and unchanged40m/accounting/coverage bounds.
+Final result: postrestart-ready-cu126-full PASS2344.78s/primary0/restore0,
+helper parentwait0 and all12 originals verified. Viewer NOT_ATTESTED is retained
+in result/promotion references; auxiliary input remains outside29 promoted
+entries. This is a new full qualification result, not proof of the historical
+latency's cause. Successful cu126 payload cleanup removed16,209 files, logical
+13,914,708,718B/WSL available+13,959,614,464B, retaining93 actual Evidence and
+qualification/staging/result/cleanup records. Fresh postrestart-ready-cu130-full
+passed1959.83s/primary0/restore0 with the same candidate; root audit confirms
+original12/consumer0/container0/handle0. Viewer limitation and auxiliary exclusion
+from29 promoted entries are verified. Its completed payload cleanup removed
+16,158 files, logical11,563,865,654B/WSL available+11,608,633,344B; actual Evidence,
+manifest, qualification and cleanup receipts remain. The remaining cu132 follows
+record validation. Same-candidate cross-ecosystem/fresh remote/activation
+acceptance is still open.
+
+Postrestart-ready-cu132-full PASS2005.17s/primary0/restore0; helper parentwait0,
+all12 original identities and zero consumers/containers/handles verified. Viewer
+NOT_ATTESTED and auxiliary exclusion from29 promoted entries are preserved.
+Same baa8512 local full matrix is now CPU482.43s/cu1262344.78s/cu1301959.83s/
+cu1322005.17s PASS. Historical failed attempts remain; this does not establish
+the original latency's cause. Successful cu132 cleanup removed16,158 files,
+logical11,437,557,165B/WSL available+11,482,320,896B. Remaining completed-test
+cleanup removed109,640 files, logical8,858,768,369B/available+9,257,005,056B:
+regenerable Go/Staticcheck/Bazel results, completed rehearsal snapshots/inactive
+historical tool cache and CLI copies/targets. Actual root references and locks
+were checked, structured CLI evidence preserved and cache symlink target
+directories recreated empty. Historical tools were not byte-identical to active
+tools and are recorded as obsolete verified cache, not reusable identical input.
+Five deletion batches total188,702 files/logical55,006,293,900B and per-batch
+available increases55,622,868,992B. This includes new output generated during
+this work; it is not whole-turn net free-space gain or Windows VHD compaction.
+Fresh remote Required/nativeMac/three independent CUDA qualification remains.
+UPG-005 is IN_PROGRESS and UPG-006 NOT_STARTED until acceptance is confirmed.
+Local-record commit8afeffa was pushed to the user-owned public maintenance branch
+after owner/admin/push verification and current-tree/reachable-history secret
+checks. Draft PR34 is open; CI313/run38920741069 tests merge36ce170, whose whole
+tree equals branch8afeffa. Eight prerequisites including Linux passed; Required failed only because
+native macOS117039701759 failed TestNativeBinaryDefaultPaths at120.01s:
+nested go build -trimpath was killed at the existing2m context; preceding
+production build succeeded. The fixture is unchanged from main. No blind rerun,
+budget increase, test skip or production activation is performed.
+
+UPG-005 native-build preparation gap baseline audit before source changes:
+IMPLEMENTED=YES/WIRED=YES for native path assertions and canonical platform
+build/test; QUALIFIED=NO/ACCEPTANCE_CLOSED=NO. MISSING: controlled cache-input
+comparison for production build without trimpath versus the existing nested
+trimpath build; minimal preparation alignment if confirmed; unchanged deadline/
+assertions and actual new native macOS/Required qualification. The pinned Go
+source includes BuildTrimpath in buildActionID. This establishes separate cache
+keys, not all causes of remote elapsed time or a Go SDK regression. Existing
+implementation is reused; product runtime/full local acceptances remain scoped.
+Controlled selected-Go Linux comparison used independent empty build caches:
+unmatched preparation caused356 nested compiler invocations/17.544s; matched
+trimpath preparation caused0/1.121s. This confirms cache reuse only, not exact
+macOS scheduling causality. Both existing canonical production-build steps now
+use trimpath; native fixture flags/deadline/assertions and every selected package
+remain. Candidate Quick/platform/security/docs/workflow and new native remote
+qualification are pending before closure. Linux CI313 completed SUCCESS before correction publication; its actual
+first-candidate result and decoded raw are preserved. No active run is cancelled.
+Corrected candidate selected-Go Linux canonical Quick208.60s/platform7.09s/
+security4.87s/workflow0.72s/docs0.16s PASS with read-only whole-source identity
+checks. Native/default-path assertions and all existing tests remain; macOS
+requalification is not inferred from Linux success. Final record checks precede
+the scoped correction commit and fresh actual remote results.
+
+
+UPG-005 final runtime qualification (2026-10-17): same baa8512 local full matrix
+CPU482.43s/cu1262344.78s/cu1301959.83s/cu1322005.17s and original12 restoration
+remain PASS. cfe7737 changes only documented preparation/cache alignment and a
+fixture comment beyond the local candidate; product/runtime/policy source stays
+unchanged. Fresh ordinary CI314/run38928160837 has native macOS/Linux/Required
+and all10jobs SUCCESS. Same cfe7737 independent remote runs cu12638936267407,
+cu13038985391376 and cu13238990568515 each have all10jobs SUCCESS and actual full
+CUDA928.04s/758.80s/1098.68s (their CPU205.44s/192.07s/278.12s). Explicit profile
+metadata, viewer NOT_ATTESTED, auxiliary exclusion from29 promoted entries,
+each5helperwait0/finaloriginal0 CONFIRMED_STOPPED/clienterror0/clientrestore0
+are verified from decoded raw. Requested cu130/cu132 one-hour timers were
+actually3608s/3614s before terminal queries. Final evidence/record checks remain
+before UPG-005 closure; activation/retirement belongs to UPG-006. Detailed actual
+results and source/runtime boundaries are owned by upg-005.json and referenced
+local raw receipts. No old failure/UNKNOWN is relabelled and no resource/coverage
+bound or support tuple changed. Completed transport duplicates were deleted
+after byte comparison; original evidence and rollback backup remain.
+
+
+UPG-005 closure: qualification audit YES/YES/YES/YES/MISSING=none. Actual final
+evidence docs/security passed with whole-source read-only checks; closure-only
+state metadata checks accompany this commit. UPG-006 start audit before any
+implementation/installation mutation is recorded in upg-006.json, baseline
+cfe7737. Existing installation, bootstrap, doctor, lifecycle and updater are
+IMPLEMENTED=YES/WIRED=YES and reused. Candidate components and prior recovery/
+coordinated fixtures are qualified; operational closure remains NO. MISSING:
+default Gitleaks activation, coherent global gVisor/candidate readback, bounded
+doctor/production smoke, current no-op/future fixture rehearsal, safe retirement
+and exact operator/M13 handoff. Original12/root consumer0 audit passes; current
+global gVisor compiler1.26.3 and Gitleaks1.22.1 distinguish preparation from actual
+activation. Host/default other quality compilers already1.26.9. Public attested
+release installation remains M13 and unavailable doctor checks stay unavailable.
+No existing implementation replacement, product protocol or new CI job is needed.
+
+
+UPG-006 closure (2026-10-17): existing installation/bootstrap/lifecycle/updater
+implementations were reused without product source replacement. Default quality5
+and installed CLI/helper/five Go runtime members all report actualGo1.26.9;
+Gitleaks matches the reproducibly qualified output. Original12 rollback backups
+and protected installed hash/owner/modes remain verified. Ordinary npm/pip2
+complete ALLOW/promotion in39.05s with confirmed helper wait0. Actual doctor has
+four Host readiness OK under the owned helper, while full exit1 and unavailable
+public release installation remain unchanged/M13. All helpers are then stopped;
+this is controlled local file activation, not persistent/public service activation.
+Current-version plan/apply/second no-op/verify passes all7 canonical profiles,
+zero source changes/no new SDK/caller active quality binaries unchanged. Existing
+coordinated future-version/recovery fixtures are included by unfiltered Quick;
+no actual future SDK qualification is claimed. Completed private rehearsal and
+test outputs40006 files/logical2458104726B were deleted after inventory, operation
+lock and actual references/installed-file checks; actual Evidence10 preserved.
+Separate first source/reader/output-parent failures and confirmed original restore
+remain historical. Arbitrary mount query failure stays UNKNOWN; only proven
+resource-empty stable zombies were separately classified for cleanup.
+Operating guide/evidence docs/security PASS. Final audit YES/YES/YES/YES/MISSING=none
+within UPG006; final metadata-head Required is observed separately after push.
+Reviewer merge/main delivery and a fresh M13 baseline still block M13 resumption.
+Known Race/release follow-ups are not closed by this result. Remaining final-check
+caches/source copies are inventoried and disposed after verification, while active
+inputs, rollback data and original evidence remain.
+
+M13-001 COMPLETE는 유지한다. M13-002는 ON_HOLD이며 PR33·남은 CLA/stale/merge
+acceptance와 기존 원본을 보존한다. M13 재개 시 새 Git/remote/PR/check 관측과
+maintenance 변경을 반영한 baseline audit가 필요하다. 보류 전 CLEAN은 현재 상태가 아니다.
+
 ### SEC-2026-10-12 — Scheduled Security Go patch
+
+#### 2026-10-15 local Go single-version maintenance
+
+User-authorized prerequisite to M13 resumption: retain one active Go version,
+1.26.9; retire host 1.26.5/1.26.7 and downloaded older SDKs. Existing host CI,
+release and tool setup pins already use1.26.9. Baseline audit:
+IMPLEMENTED=YES / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO for consistent
+local/guest selection. The login PATH still selects the retained1.26.7 SDK,
+the temporary1.26.9 install is absent, downloaded1.26.7/1.26.8 SDKs remain,
+and the Go guest lock selects1.26.8. Existing installation, runtime-lock
+generator and canonical checks are reused; no replacement implementation.
+MISSING: permanent1.26.9 host activation, old-SDK cleanup, digest-bound1.26.9
+guest update with affected-consumer checks, and reproducible final evidence.
+This maintenance does not execute or qualify the pending protected PR merge;
+At that maintenance phase M13-002 remained the sole IN_PROGRESS milestone work item.
+The user-requested 2026-10-15 hold and UPG sequence above supersede that active status.
+
+Progress: permanent1.26.9 installation, login/interactive/default command selection
+and persistent GOTOOLCHAIN=local are verified. Exact12 old SDK/cache paths were
+retired after active/unknown consumer0 and unchanged inventory checks. Official
+1.26.9 guest digest is locked/generated and its network-disabled image build
+smoke passed. The existing runtime-lock drift check now rejects host/product/
+quality/guest version disagreement; final native canonical Quick/security/
+vulnerability/workflow/release-gate/qualification-freshness and worktree docs PASS.
+Original OneDrive timeout and excluded preparation/initial checker failures are
+preserved. Automatic approval review initially rejected the privileged11-file
+installation change; after concrete binaries/backups were prepared the user
+explicitly approved actual16-test Go qualification and successful local activation.
+That phase completed: all16 existing Go integrations and the installed production
+CLI's actual managed download/build passed. The authorized1.26.9 bundle remains
+active;11 installed hashes/root owners/modes and exact guest identity match the
+candidate. Three helper waits0/final original0 CONFIRMED_STOPPED and no remaining
+endpoints/containers were independently checked. Current local audit:
+IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES;
+MISSING=none for this local maintenance. New-source remote CI, separate full-Race/
+release findings and M13-002 protected-path acceptance remain open. Details:
+[single-version maintenance](../engineering/evidence/go-single-version-20261015/README.md).
 
 - Status: `COMPLETE` for the bounded host security and CI repair. PR30 is merged
   at main `2e196a1`; main CI38328099413 is SUCCESS (Required plus nine jobs).
@@ -2614,7 +3000,7 @@ M12-005 feature freeze에서 수행한다. canonical lock 등록만으로 releas
 | Order | ID | Scope | Status |
 | --- | --- | --- | --- |
 | 1 | M13-001 | protected main/develop/tag/release environment/immutable release activation | COMPLETE |
-| 2 | M13-002 | `feature → develop → main` 실제 protected PR qualification | IN_PROGRESS |
+| 2 | M13-002 | `feature → develop → main` 실제 protected PR qualification | IN_PROGRESS — fresh baseline / protected develop synchronization |
 | 3 | M13-003 | canonical release build·manifest·attestation·OS package assets | NOT_STARTED |
 | 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | NOT_STARTED |
 | 5 | M13-005 | exact publication·clean Host bootstrap·doctor·cross-ecosystem smoke·quarantine | NOT_STARTED |
@@ -2658,20 +3044,67 @@ release environment24138487071 with owner review and admin bypass disabled,
 main-only deployment policy62857129 and immutable releases match the exact plan.
 Canonical docs/workflow/release-gate PASS; final closure docs/security checked
 before commit. MISSING: none in M13-001 scope. No item was IN_PROGRESS at that closure.
-M13-002 is IN_PROGRESS; M13-003..005 remain NOT_STARTED. Settings activation does not close the overall
+Before the user-requested hold M13-002 was IN_PROGRESS; it is now ON_HOLD.
+M13-003..005 remain NOT_STARTED. Settings activation does not close the overall
 no-known-release-blocking-finding entry assessment.
 
 ### M13-002 — protected branch qualification
 
-Status: IN_PROGRESS — new baseline/read-only audit and local candidate preparation;
-awaiting explicit authorization for the first feature push and develop PR.
+Status: IN_PROGRESS — resumed by user after PR34 merge and actual main CI320 ten SUCCESS.
+
+Fresh baseline/disposition: [2026-10-17 resume evidence](./evidence/m13-002-protected-path/resume-20261017.json).
+Main32f1b8e includes maintenance; develop84591ef is1ahead25behind with no new
+merge-base-to-develop files. PR33 closed without merge because its file changes
+are delivered; old exact-head normal merge proposal is superseded. PR32 remains
+open solely for stale validation, exact head unchanged and clearly marked non-merge.
+Existing active strict Required/CLA/conversation/nonFF/deletion rules and successful
+historical target-specific negatives are reused. Prepare one current develop sync
+PR from milestone/m13-protected-path-resume; no direct protected push/main merge.
+Audit: IMPLEMENTED=YES/WIRED=YES/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO.
+MISSING: protected develop synchronization; target-specific stale/Required gaps;
+missing-CLA remains NOT_TESTED pending actual evidence/approved disposition;
+history-preserving nonFF/separate bypass method; fresh normal develop→main
+qualification/reviewer merge and final audit. M13-003..005 stay NOT_STARTED.
+
+The following is historical pre-hold evidence; its PR33 merge proposal and CLEAN
+state are not current execution authority:
+A′ completed within5 approved writes. PR33 at exact
+develop84591ef→main2e196a1 has fresh10job/CLA success and is open/unmerged/CLEAN
+after main Required-only and conversation/ordinary-admin rejection plus test-thread
+resolution. All three refs are unchanged. Normal merge is not authorized; remaining
+target-specific cases/dispositions and final audit keep qualification open.
+Current execution update: the later approved bundle A stopped at A3 after3/8
+writes. Both target direct-push PR-gate rejections passed; PR32 retarget succeeded
+but its main gate remained BLOCKED after read-only settlement. A4..A8 NOT_RUN,
+zero merge requests/new PRs. Current PR32 base is main, not develop. See the
+[bundle result](./evidence/m13-002-protected-path/bundle-a-result.json) and
+[unapproved revised scope](./evidence/m13-002-protected-path/bundle-a-resume-plan.json).
+Latest phase: user approved A′ maximum5 writes. PR33 is now the actual normal
+develop84591ef→main2e196a1 candidate, original18 docs/evidence paths. One ordinary
+exact-head PUT with realCLA success/Required absent was rejected405 explicitly
+for `Required`; suite4521104354 fails only required_status_checks and refs are
+unchanged. [A′ result](./evidence/m13-002-protected-path/bundle-a-prime-result.json)
+is COMPLETE_WITHIN_APPROVED_SCOPE after exactly5/5 writes. Same natural
+CI38574753115/attempt1 completed all10jobs SUCCESS with genuine requiredCLA;
+CLEAN preceded one diff thread. Exact-head ordinary admin PUT returned405 for
+conversation resolution only, suite4521761091 pull_request failure; refs unchanged.
+Only threadPRRT_kwDOT2M-Hs6sXNWE was resolved, restoring CLEAN/threads0. PR33 is
+still open/unmerged at84591ef/main2e196a1, all three refs unchanged. No PR32 mutation,
+rerun, force, protection edit, release or positive merge.
+[Exact normal merge approval](./evidence/m13-002-protected-path/normal-main-merge-approval.json)
+is ready for user review, not authorized: one ordinary PR33 exacthead84591ef PUT,
+then matching main receipt/ref/parents/tree and newmainCI readback. Intermediate
+normal qualification only; no dependent stale call/final closure is included.
+CLA negative stays NOT_TESTED; main stale/develop Required-only/nonFF method,
+record delivery and final audit remain open. Overall audit remains IMPLEMENTED=YES /
+WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO; M13-003..005 remain NOT_STARTED.
 Read: [M13 contract](./18-m13-production-release-operations-contract.md),
 [CI gate](../engineering/04-ci-quality-gate.md), CONTRIBUTING.md,
 [M13-001 evidence](./evidence/m13-001-protected-activation/README.md).
 
 Baseline audit: IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO /
 ACCEPTANCE_CLOSED=NO. Existing PR CI/CLA and active rules are reused unchanged.
-New remote GET/refs confirm main/develop2e196a1, milestoneb3c8b7d,
+Initial baseline GET/refs confirmed main/develop2e196a1, milestoneb3c8b7d,
 zero feature refs/open PRs and zero checks/statuses for b3c8b7d. The admin actor
 cannot bypass either branch ruleset. M13-001 is remotely delivered on the
 milestone branch; its documentation delta has not reached main/develop.
@@ -2682,8 +3115,137 @@ threads, direct pushes, non-fast-forward updates and admin bypass attempts;
 preserved request/result/ref evidence and final checks. A readback, no-op push,
 unrelated rejection or historical CI is not a new enforcement PASS.
 
-MISSING: all live normal/negative cases, new PR CI/CLA, reviewer-authorized
-merges and final audit. Push/merge are explicitly approval-gated by the user.
+Pre-merge delivery snapshot: [PR31](https://github.com/rahoney/heliopause/pull/31),
+feature/m13-002-protected-path@e1e3aa8 → develop@2e196a1. New
+[CI38355837742](https://github.com/rahoney/heliopause/actions/runs/38355837742)
+completed SUCCESS with Required plus all nine prerequisites, independently of
+historical main CI. Actual CLA service reports license/cla success. Both contexts
+are isRequired=true on PR31, with App identities15368/128106. Main/develop remain
+at2e196a1; rules are unchanged. The tested merge commit6950673 has the same whole
+tree64e2961 as e1e3aa8. Gate BLOCKED during incomplete checks became CLEAN after
+success; that snapshot was open/unmerged, auto-merge null, review threads0. All ten raw
+job logs and fresh API/GraphQL receipts are preserved locally and bound by the
+[new remote result](./evidence/m13-002-protected-path/remote-result.json).
+
+New actual case: [conversation rejection](./evidence/m13-002-protected-path/thread-rejection.json)
+PASS on develop/PR31. One real diff thread (comment4258640332) changed CLEAN→BLOCKED;
+Required/CLA stayed green and required at exact e1e3aa8. The separately approved
+single ordinary exact-head merge request returned HTTP405 explicitly citing the
+unresolved conversation. Main/develop stayed at2e196a1, PR remained open/unmerged,
+and resolving that test thread restored CLEAN. No bypass/force/auto-merge was used.
+
+MISSING: independent stale disposition, remaining target-specific negative cases, normal develop-to-main merge and
+final audit. This develop conversation case does not qualify main, missing
+Required/CLA, stale branch, direct/force push or a separate override attempt.
+The single-attempt conversation approval is consumed. A subsequent scoped approval
+allowed independent feature/m13-002-stale-probe creation/push and develop PR32.
+PR32 is headff441d3 with sole parent2e196a1, one new12-line markdown file and no
+M13-001/PR31/local-record commits in its ancestry. Its paths are disjoint from
+PR31 and local merge-tree has no conflict. Its own CI38403196699 completed all
+ten jobs SUCCESS and genuine CLA succeeded; both contexts are required and its
+pre-advancement gate was CLEAN. [Preparation evidence](./evidence/m13-002-protected-path/stale-pr-preparation.json)
+binds these fresh results.
+
+Previous authorized phase: [normal merge and stale observation](./evidence/m13-002-protected-path/develop-merge.json).
+Both PRs were CLEAN with exact heads, required successful contexts, no unresolved
+threads and unchanged protections immediately before one normal exact-head PR31
+merge request. HTTP200/merged=true advanced develop to84591ef; its parents are
+2e196a1/e1e3aa8 and tree64e2961 matches the qualified PR31 candidate. Main stayed
+2e196a1. PR32 remains open at exactff441d3 and changed CLEAN→BEHIND, with successful
+Required/CLA, no unresolved threads and no content conflict. No automatic CI rerun
+was observed through 2026-10-13T14:41:12Z (one run, attempt1). PR base/merge metadata
+still identifies the old tested snapshot; live refs, fetched commit and ancestry
+comparison establish actual develop advancement. Old checks are not new-base CI.
+At that phase, actual stale rejection was NOT_RUN and no PR32 merge request had
+been sent. The subsequent one-shot execution below supersedes that pending label.
+
+Executed phase: [PR32 rejection result](./evidence/m13-002-protected-path/stale-rejection.json).
+On 2026-10-14 the explicitly approved ordinary exact-head merge request was sent
+once after fresh HEADff441d3/develop84591ef/BEHIND, successful required Required/CLA,
+zero unresolved threads and admin bypass never were confirmed. HTTP405 reports
+`2 of 2 required status checks are expected.` Main2e196a1, develop84591ef and
+featureff441d3 are unchanged; PR32 is open/unmerged/BEHIND. Its synthetic merge
+metadata changed8e5067f→3635960 (advanced develop/head parents, zero checks/statuses),
+which is not a protected-branch update. The specific internal refresh/evaluation
+cause is unknown. This is a real rejection with an unexpected reported blocker,
+not an isolated stale, missing Required, missing CLA or separate bypass PASS.
+The one-shot authorization is consumed; no retry or other mutation was made.
+Read-only follow-up: [Strict-check analysis](./evidence/m13-002-protected-path/strict-check-analysis.json)
+correlates rule-suite4516024742 with the original request by target/before SHA,
+actor, normalized time and PR32 commit/parents. The actual proposed update is
+0fd006b, not headff441d3 or potential merge3635960. Only required_status_checks
+in rule24969937 failed; its exact contexts are Required/App15368 and
+license/cla/App128106. The head retains both successes;0fd006b/3635960 each lack
+checks/statuses and share advanced-base parents/tree. This proves the bounded
+Strict-rule stale-candidate rejection, not freshness-only causality. Original
+stale-rejection bytes and its independent NOT_QUALIFIED label are preserved.
+No remote mutation or CI was triggered; the same develop attempt will not be repeated.
+The [remaining qualification plan](./evidence/m13-002-protected-path/README.md#remaining-qualification-and-approval-plan)
+maps existing PR31 ordinary-admin/conversation proof without duplicate calls and
+combines future main conversation/admin coverage. It separates bounded doc-only
+forward operations from final reviewer main merge and force-push scope/risk.
+The earlier generic plan listed evidence/participant/force method decisions;
+the current concrete preparation and confirmed CLA deferral below supersede that
+next-step list. A protected disposable probe cannot silently replace exact-main/
+develop hostile evidence; no harmless
+live non-fast-forward update is guaranteed if enforcement fails. Prepare exact
+candidate/action inventories before requesting a forward-only approval bundle.
+Target-specific remaining negatives, normal develop-to-main and final audit stay
+open. Current audit remains IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO /
+ACCEPTANCE_CLOSED=NO. M13-003..005 remain NOT_STARTED.
+
+Current local preparation (source record7d65a05): the
+[concrete forward-only plan](./evidence/m13-002-protected-path/forward-only-plan.json)
+freezes two one-file direct-push candidates (main6b3ae56, develop68916c7), exact
+current refs/diffs and an eight-write future approval scope. This scope combines
+the two expected direct-push rejections, PR32 main retarget/thread/ordinary-admin
+rejection/resolve, and develop84591ef→main2e196a1 PR creation plus a genuine
+Required-only opportunity during its needed CI. No successful merge is included.
+Original develop Strict rejection is reused within its bounded proven scope;
+no repeat or independent freshness-only claim is proposed. Future allocated PR
+and thread IDs bind only to exact successful receipts/readback.
+
+The user confirms no actual unsigned contributor is available: isolated CLA
+rejection is NOT_TESTED and deferred, with required App128106 wiring and actual
+signed-PR success preserved. No account/fake contribution/signature/CLA change
+will manufacture it. Official hosted-app documentation revealed no applicable
+safe live negative mode in the reviewed sources; recheck/self-hosted tests do not
+replace real production-App enforcement. Other qualification may proceed, but
+unchanged M13-002 acceptance explicitly requires missing-CLA rejection: closure
+needs real evidence or an explicit canonical disposition. NOT_TESTED is not PASS
+or a broken CLA service result. Formal release remains unready under the ordered
+M13 plan, independently of the current signed PR's successful CLA status.
+
+Latest ordering supersedes the earlier generic plan where final main merge
+preceded main stale evidence. A separate intermediate develop→main advancement
+can first produce the actual main SHA for a main stale case; later forward
+delivery incorporates that ancestry. Each future unknown SHA/diff is frozen for
+its own approval, and the final develop→main merge remains separately approved
+after required negatives/gap disposition. Actual main/develop non-fast-forward
+and disposable-probe setup/method decisions remain separate. No remote write,
+new CI, protection edit, release or M13-003 work occurred during preparation.
+Next: review the finite scope A; no execution authorization is implied.
+
+Bundle A execution (supersedes the preceding preparation's next action): direct
+main6b3ae56 and develop68916c7 pushes each received GH013 with explicit PR-rule
+failure plus expected-check failure, suites4519783788/4519788734. Both refs stayed
+main2e196a1/develop84591ef. Retarget PR32/headff to main returned200; subsequent
+REST/GraphQL BLOCKED prevented the planned isolated conversation case. Head
+Required/CLA remain successful/required and threads0; actual main→head is1ahead/
+0behind, while potential3635960 retains obsolete develop-parent metadata. That
+observation does not establish the internal blocker. Writes stopped permanently
+for this invocation at3/8; no merge API request, thread, new PR, rerun or repair.
+Original frozen plan and prior results remain unchanged. CLA stays NOT_TESTED.
+
+Next approval proposal: five bounded writes on one necessary actual develop→main
+PR (create, guarded Required-only negative, then green-CI thread/conversation-admin
+negative/resolve), exacthead84591ef/base2e196a1, existing18 documentation/evidence
+paths. PR32 remains untouched and direct cases are reused. This revised scope is
+not authorized; the normal positive merge approval is not ready until actual PR,
+fresh CI/CLA and required negative results/dispositions exist. No guessed PR ID
+or historical CI substitution. Current audit remains IMPLEMENTED=YES / WIRED=YES /
+QUALIFIED=NO / ACCEPTANCE_CLOSED=NO; M13-003..005 stay NOT_STARTED.
+
 Force-push needs a design/decision compatible with existing history preservation;
 genuine missing CLA may need a willing real unsigned participant. Do not weaken
 rules, fabricate statuses/identity or mark those cases waived/qualified.

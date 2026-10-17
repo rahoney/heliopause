@@ -18,8 +18,53 @@ func TestRuntimeLockAndGeneratedIdentityAreCurrent(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !bytes.Equal(generated, render(lock)) {
+	qualification, err := readPyTorchVersions("version-support.lock.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(generated, render(lock, qualification)) {
 		t.Fatal("generated runtime identity differs from the canonical lock")
+	}
+}
+
+func TestRuntimeLockRejectsImageVersionAndABIDrift(t *testing.T) {
+	base, err := readLock("runtimes.lock.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for name, mutate := range map[string]func(*runtimeLock){
+		"Node floating tag":  func(lock *runtimeLock) { lock.NodeImage.Reference = "node:latest@sha256:" + fmt.Sprintf("%064d", 0) },
+		"Python tag version": func(lock *runtimeLock) { lock.PythonImage.PythonVersion = "3.13.0" },
+		"interpreter tag":    func(lock *runtimeLock) { lock.PythonImage.Target.Interpreter = "cp313" },
+		"ABI tag":            func(lock *runtimeLock) { lock.PythonImage.Target.ABI = "cp313" },
+		"Python platform":    func(lock *runtimeLock) { lock.PythonImage.Target.Platform = "manylinux_2_36_aarch64" },
+	} {
+		t.Run(name, func(t *testing.T) {
+			lock := base
+			mutate(&lock)
+			if err := validate(lock); err == nil {
+				t.Fatal("mismatched runtime target accepted")
+			}
+		})
+	}
+}
+
+func TestPyTorchVersionOwnersRejectMissingDuplicateAndProfileSubstitution(t *testing.T) {
+	for name, records := range map[string]string{
+		"missing":         `[]`,
+		"duplicate":       `[{"component":"PyTorch CPU","pinned_version":"2.14.0+cpu"},{"component":"PyTorch CPU","pinned_version":"2.14.0+cpu"}]`,
+		"wrong profile":   `[{"component":"PyTorch cu126","pinned_version":"2.14.0+cu130"}]`,
+		"unknown profile": `[{"component":"PyTorch cu999","pinned_version":"2.14.0+cu999"}]`,
+	} {
+		t.Run(name, func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), "support.json")
+			if err := os.WriteFile(path, []byte(`{"schema_version":1,"records":`+records+`}`), 0o600); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := readPyTorchVersions(path); err == nil {
+				t.Fatal("invalid qualification version owner accepted")
+			}
+		})
 	}
 }
 

@@ -17,17 +17,44 @@ const releasePublishWorkflowRelativePath = ".github/workflows/heliopause-release
 
 var actionReference = regexp.MustCompile(`(?m)^\s*uses:\s*(\S+)\s*(?:#.*)?$`)
 
+func retiredRuntimeImagePolicyToken(value string) bool {
+	return value == "node:22.23.1-slim@sha256:" || value == "python:3.14.7-slim-bookworm@sha256:"
+}
+
 func checkCIWorkflow(root string) error {
-	if err := checkWorkflow(root, workflowRelativePath, validateCIWorkflow); err != nil {
+	tools, err := readToolLock(filepath.Join(root, "scripts", "tools.lock.json"))
+	if err != nil {
 		return err
 	}
-	if err := checkWorkflow(root, securityWorkflowRelativePath, validateSecurityWorkflow); err != nil {
+	owners, err := runtimeVersionOwners(root, tools)
+	if err != nil {
 		return err
 	}
-	if err := checkWorkflow(root, releaseWorkflowRelativePath, validateReleaseWorkflow); err != nil {
+	selected := owners["Go"]
+	entries, err := os.ReadDir(filepath.Join(root, ".github", "workflows"))
+	if err != nil {
 		return err
 	}
-	return checkWorkflow(root, releasePublishWorkflowRelativePath, validateReleasePublishWorkflow)
+	for _, entry := range entries {
+		name := entry.Name()
+		if !strings.HasSuffix(name, ".yml") && !strings.HasSuffix(name, ".yaml") {
+			continue
+		}
+		path := ".github/workflows/" + name
+		if path != workflowRelativePath && path != securityWorkflowRelativePath && path != releaseWorkflowRelativePath && path != releasePublishWorkflowRelativePath {
+			return fmt.Errorf("unowned workflow version consumer %s", path)
+		}
+	}
+	if err := checkWorkflow(root, workflowRelativePath, func(body string) []string { return validateCIWorkflow(body, selected) }); err != nil {
+		return err
+	}
+	if err := checkWorkflow(root, securityWorkflowRelativePath, func(body string) []string { return validateSecurityWorkflow(body, selected) }); err != nil {
+		return err
+	}
+	if err := checkWorkflow(root, releaseWorkflowRelativePath, func(body string) []string { return validateReleaseWorkflow(body, selected) }); err != nil {
+		return err
+	}
+	return checkWorkflow(root, releasePublishWorkflowRelativePath, func(body string) []string { return validateReleasePublishWorkflow(body, selected) })
 }
 
 func checkWorkflow(root, relativePath string, validate func(string) []string) error {
@@ -98,10 +125,14 @@ func runtimeLockStrings(value any) []string {
 	return values
 }
 
-func validateCIWorkflow(contents string) []string {
+func validateCIWorkflow(contents, selectedGo string) []string {
 	findings := validateWorkflowStructure(contents, true)
+	findings = append(findings, validateGoWorkflowVersions(contents, selectedGo)...)
 	findings = append(findings, validateCargoIntegrationGates(contents)...)
 	findings = append(findings, validateTerraformIntegrationGates(contents)...)
+	findings = append(findings, validateActiveJobCommands(contents, "gvisor-observer", "Build exact gVisor observer helper with Bazel", "gVisor observer SDK", []string{
+		`scripts/build-gvisor-observer-release.sh "$RUNNER_TEMP/haa_gvisor_observer"`,
+	})...)
 	findings = append(findings, validateLifecycleIntegrationCommands(contents, "npm inspect", []string{`HELOX_NPM_INSPECT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxNPMInspectCLIIntegration$'`})...)
 	requiredSnippets := []string{
 		"name: Heliopause CI",
@@ -113,7 +144,6 @@ func validateCIWorkflow(contents string) []string {
 		"runs-on: ubuntu-24.04",
 		"runs-on: macos-26-intel",
 		"persist-credentials: false",
-		"go-version: '1.26.9'",
 		".docker.ci_ubuntu_24_04_amd64.docker_ce_package",
 		".docker.ci_ubuntu_24_04_amd64.containerd_package",
 		"test \"$(docker version --format '{{.Server.Version}}')\" = \"$docker_engine_version\"",
@@ -211,8 +241,8 @@ func validateCIWorkflow(contents string) []string {
 	return findings
 }
 
-func validateSecurityWorkflow(contents string) []string {
-	var findings []string
+func validateSecurityWorkflow(contents, selectedGo string) []string {
+	findings := validateGoWorkflowVersions(contents, selectedGo)
 	for _, snippet := range []string{
 		"name: Heliopause Scheduled Security",
 		"  schedule:\n    - cron: '17 3 * * 1'",
@@ -221,7 +251,6 @@ func validateSecurityWorkflow(contents string) []string {
 		"fetch-depth: 0",
 		"persist-credentials: false",
 		"runs-on: ubuntu-24.04",
-		"go-version: '1.26.9'",
 		"run: go run ./scripts/check security-history",
 		"run: go run ./scripts/check vulnerability",
 		"run: go run ./scripts/check fuzz",
@@ -246,8 +275,8 @@ func validateSecurityWorkflow(contents string) []string {
 	return findings
 }
 
-func validateReleaseWorkflow(contents string) []string {
-	var findings []string
+func validateReleaseWorkflow(contents, selectedGo string) []string {
+	findings := validateGoWorkflowVersions(contents, selectedGo)
 	for _, snippet := range []string{
 		"name: Heliopause Release Build",
 		"  push:\n    tags:\n      - 'v*'",
@@ -255,7 +284,6 @@ func validateReleaseWorkflow(contents string) []string {
 		"runs-on: ubuntu-24.04",
 		"GOTOOLCHAIN: local",
 		"persist-credentials: false",
-		"go-version: '1.26.9'",
 		"check-latest: false",
 		"cache: false",
 		"go build -trimpath -buildvcs=true",
@@ -265,6 +293,7 @@ func validateReleaseWorkflow(contents string) []string {
 		"docker buildx imagetools inspect \"$node_image\"",
 		"docker buildx imagetools inspect \"$python_image\"",
 		"docker buildx imagetools inspect \"$go_image\"",
+		"docker buildx imagetools inspect \"$rust_image\"",
 		"go run ./scripts/release-manifest",
 		"--workflow-run \"$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\"",
 		"--runtime-images \"$dist/helox-runtime-images.json\"",
@@ -315,8 +344,8 @@ func validateReleaseWorkflow(contents string) []string {
 	return findings
 }
 
-func validateReleasePublishWorkflow(contents string) []string {
-	var findings []string
+func validateReleasePublishWorkflow(contents, selectedGo string) []string {
+	findings := validateGoWorkflowVersions(contents, selectedGo)
 	expectedFiles := []string{
 		"haa_gvisor_observer-linux-amd64",
 		"haa-network-policy-helper-linux-amd64",
@@ -338,7 +367,6 @@ func validateReleasePublishWorkflow(contents string) []string {
 		"runs-on: ubuntu-24.04",
 		"environment: release",
 		"persist-credentials: false",
-		"go-version: '1.26.9'",
 		"gh run view \"$SOURCE_RUN_ID\" -R \"$GH_REPO\"",
 		"test \"$(jq -er '.workflowName' <<<\"$run_json\")\" = 'Heliopause Release Build'",
 		"repos/$GH_REPO/branches/main",
@@ -471,16 +499,20 @@ func validateCargoIntegrationGates(contents string) []string {
 	return validateLifecycleIntegrationCommands(contents, "Cargo", cargoIntegrationCommands)
 }
 func validateLifecycleIntegrationCommands(contents, label string, commands []string) []string {
+	return validateActiveJobCommands(contents, "gvisor-integration", "Install pinned runtime and run lifecycle integration", label, commands)
+}
+
+func validateActiveJobCommands(contents, jobID, stepName, label string, commands []string) []string {
 	doc, err := parseWorkflow(contents)
 	if err != nil {
 		return nil
 	} // The structural validator owns parse failures.
-	job := workflowMap(workflowMap(doc["jobs"])["gvisor-integration"])
+	job := workflowMap(workflowMap(doc["jobs"])[jobID])
 	steps, _ := job["steps"].([]any)
 	counts := map[string]int{}
 	for _, raw := range steps {
 		step := workflowMap(raw)
-		if step["name"] != "Install pinned runtime and run lifecycle integration" {
+		if step["name"] != stepName {
 			continue
 		}
 		if step["if"] != nil || job["if"] != nil || step["continue-on-error"] != nil || job["continue-on-error"] != nil {

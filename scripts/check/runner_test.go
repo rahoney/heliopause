@@ -1,10 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
 	"testing"
@@ -202,5 +204,16 @@ func writeTestFile(t *testing.T, path, contents string) {
 
 func writeTestToolLock(t *testing.T, root string) {
 	t.Helper()
-	writeTestFile(t, filepath.Join(root, "scripts", "tools.lock.json"), validTestToolLock)
+	var lock toolLock
+	if err := json.Unmarshal([]byte(validTestToolLock), &lock); err != nil {
+		t.Fatal(err)
+	}
+	for i := range lock.Tools {
+		lock.Tools[i].SetupGo = strings.TrimPrefix(runtime.Version(), "go")
+	}
+	body, err := json.MarshalIndent(lock, "", "  ")
+	if err != nil {
+		t.Fatal(err)
+	}
+	writeTestFile(t, filepath.Join(root, "scripts", "tools.lock.json"), string(body))
 }

@@ -1,0 +1,364 @@
+{
+  "status": "BUNDLE_A_STOPPED_AT_A3",
+  "recorded_utc": "2026-10-14T12:49:33.403789+00:00",
+  "source_plan_commit": "a770a9d5d815f1a38e6ea4ec22d2c3e4f07e1395",
+  "source_plan_sha256": "10525a4d5fbbf39ff9edf47e31b0d553d47cbb8d6b3cbe395757885e9e272a09",
+  "authorization": "User explicitly approved frozen A1..A8 with max8 writes and stop-on-unexpected conditions. STOP marker preserved; no continuation/retry/recovery writes.",
+  "write_ledger": {
+    "maximum": 8,
+    "actual": 3,
+    "Git_push_invocations": 2,
+    "REST_PATCH_invocations": 1,
+    "merge_API_requests": 0,
+    "review_comments_or_resolutions": 0,
+    "PRs_created": 0,
+    "positive_protected_merges": 0,
+    "force_pushes": 0,
+    "protection_edits": 0,
+    "CI_dispatches_or_retries": 0,
+    "releases": 0
+  },
+  "cases": [
+    {
+      "step": "A1",
+      "status": "PASS",
+      "utc": "2026-10-14T12:41:24.773507+00:00",
+      "directory": "docs/github-logs/m13-002-bundle-a/A1-20261014T124115269556Z",
+      "case": "direct push",
+      "target": "main",
+      "head": "6b3ae56d19a9b0d59e4df8585d834b647e9da558",
+      "base": "2e196a188adce22005fce201c23da1dc27a43426",
+      "git_exit": 1,
+      "refs_unchanged": true,
+      "rule_suite": {
+        "id": 4519783788,
+        "target": "refs/heads/main",
+        "before": "2e196a188adce22005fce201c23da1dc27a43426",
+        "after": "6b3ae56d19a9b0d59e4df8585d834b647e9da558",
+        "pushed_at": "2026-10-14T21:41:22+09:00",
+        "actor_matches_approved_actor": true,
+        "result": "fail",
+        "evaluations": [
+          {
+            "rule_source": {
+              "type": "secret_scanning"
+            },
+            "enforcement": "active",
+            "result": "pass",
+            "rule_type": "secret_scanning"
+          },
+          {
+            "rule_source": {
+              "type": "ruleset",
+              "id": 21396883,
+              "name": "Protect main"
+            },
+            "enforcement": "active",
+            "result": "fail",
+            "rule_type": "pull_request",
+            "details": "Changes must be made through a pull request."
+          },
+          {
+            "rule_source": {
+              "type": "ruleset",
+              "id": 21396883,
+              "name": "Protect main"
+            },
+            "enforcement": "active",
+            "result": "fail",
+            "rule_type": "required_status_checks",
+            "details": "2 of 2 required status checks are expected."
+          },
+          {
+            "rule_source": {
+              "type": "ruleset",
+              "id": 21396883,
+              "name": "Protect main"
+            },
+            "enforcement": "active",
+            "result": "pass",
+            "rule_type": "non_fast_forward"
+          },
+          {
+            "rule_source": {
+              "type": "ruleset",
+              "id": 21396883,
+              "name": "Protect main"
+            },
+            "enforcement": "active",
+            "result": "pass",
+            "rule_type": "deletion"
+          }
+        ]
+      },
+      "failed_rules": [
+        "pull_request",
+        "required_status_checks"
+      ],
+      "qualification": "PASS: actual server PR-rule rejection, combined with missing required-check rejection; not an isolated Required/CLA test.",
+      "git_output": {
+        "path": "raw/bundle-a-main-direct-push.log",
+        "sha256": "ed7bd31f990f477f83dcfa385b4ffb135a79760bd6b5ce8f18e4a24bf8f861f4",
+        "bytes": 595
+      },
+      "Git_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "A2",
+      "status": "PASS",
+      "utc": "2026-10-14T12:41:42.556709+00:00",
+      "directory": "docs/github-logs/m13-002-bundle-a/A2-20261014T124133833214Z",
+      "case": "direct push",
+      "target": "develop",
+      "head": "68916c7ae69e6c9af8ad80c449a52f10fe6f3bc6",
+      "base": "84591ef4296a852a1439781ab62cc4103a59db0a",
+      "git_exit": 1,
+      "refs_unchanged": true,
+      "rule_suite": {
+        "id": 4519788734,
+        "target": "refs/heads/develop",
+        "before": "84591ef4296a852a1439781ab62cc4103a59db0a",
+        "after": "68916c7ae69e6c9af8ad80c449a52f10fe6f3bc6",
+        "pushed_at": "2026-10-14T21:41:39+09:00",
+        "actor_matches_approved_actor": true,
+        "result": "fail",
+        "evaluations": [
+          {
+            "rule_source": {
+              "type": "secret_scanning"
+            },
+            "enforcement": "active",
+            "result": "pass",
+            "rule_type": "secret_scanning"
+          },
+          {
+            "rule_source": {
+              "type": "ruleset",
+              "id": 24969937,
+              "name": "Protect develop"
+            },
+            "enforcement": "active",
+            "result": "fail",
+            "rule_type": "pull_request",
+            "details": "Changes must be made through a pull request."
+          },
+          {
+            "rule_source": {
+              "type": "ruleset",
+              "id": 24969937,
+              "name": "Protect develop"
+            },
+            "enforcement": "active",
+            "result": "fail",
+            "rule_type": "required_status_checks",
+            "details": "2 of 2 required status checks are expected."
+          },
+          {
+            "rule_source": {
+              "type": "ruleset",
+              "id": 24969937,
+              "name": "Protect develop"
+            },
+            "enforcement": "active",
+            "result": "pass",
+            "rule_type": "non_fast_forward"
+          },
+          {
+            "rule_source": {
+              "type": "ruleset",
+              "id": 24969937,
+              "name": "Protect develop"
+            },
+            "enforcement": "active",
+            "result": "pass",
+            "rule_type": "deletion"
+          }
+        ]
+      },
+      "failed_rules": [
+        "pull_request",
+        "required_status_checks"
+      ],
+      "qualification": "PASS: actual server PR-rule rejection, combined with missing required-check rejection; not an isolated Required/CLA test.",
+      "git_output": {
+        "path": "raw/bundle-a-develop-direct-push.log",
+        "sha256": "9a4718ea880d03c44a4692729dde6e67085334991c6f2c3ed754c6ba8b11f139",
+        "bytes": 604
+      },
+      "Git_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "step": "A3",
+      "status": "STOPPED_AFTER_SUCCESSFUL_RETARGET",
+      "directory": "docs/github-logs/m13-002-bundle-a/A3-20261014T124331733842Z",
+      "request": {
+        "method": "PATCH",
+        "endpoint": "/repos/rahoney/heliopause/pulls/32",
+        "body": {
+          "base": "main"
+        },
+        "utc": "2026-10-14T12:43:33.512295+00:00"
+      },
+      "response": {
+        "http_status": 200,
+        "sha256": "fe904b443a7f277305b31bf0e72c9f57cac3092c7a7cced6c9732be480851623",
+        "bytes": 16725,
+        "request_id": "C128:20E95:71993:C0CED:6ACF78F5",
+        "server_date": "Wed, 14 Oct 2026 12:43:34 GMT",
+        "utc": "2026-10-14T12:43:34.884411+00:00"
+      },
+      "actual_effect": "PR32 base develop→main; exact headff retained; all three branch refs unchanged.",
+      "initial_observation": {
+        "REST_mergeable_state": "unknown",
+        "REST_mergeable": null,
+        "GraphQL_gate": "BLOCKED"
+      },
+      "post_stop_readback": {
+        "path": "docs/github-logs/m13-002-bundle-a/post-stop-20261014T124647447556Z",
+        "REST": {
+          "state": "open",
+          "merged": false,
+          "mergeable": true,
+          "mergeable_state": "blocked",
+          "merge_commit_sha": "363596006e66811dcf91888c92172b484e7e9f4e",
+          "updated_at": "2026-10-14T12:43:34Z"
+        },
+        "GraphQL_gate": "BLOCKED",
+        "mergeable": "MERGEABLE",
+        "head": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+        "base": "main",
+        "baseRefOid": "2e196a188adce22005fce201c23da1dc27a43426",
+        "live_base": "2e196a188adce22005fce201c23da1dc27a43426",
+        "unresolved_threads": 0,
+        "head_Required_CLA": "SUCCESS, both required; original10 Check Runs + genuine CLA status",
+        "potentialMergeCommit": {
+          "oid": "363596006e66811dcf91888c92172b484e7e9f4e",
+          "parents": {
+            "nodes": [
+              {
+                "oid": "84591ef4296a852a1439781ab62cc4103a59db0a"
+              },
+              {
+                "oid": "ff441d3d3bde941d0fd759972539ed8707475ee1"
+              }
+            ]
+          },
+          "statusCheckRollup": null
+        },
+        "compare": {
+          "status": "ahead",
+          "ahead_by": 1,
+          "behind_by": 0,
+          "total_commits": 1
+        },
+        "changed_files": [
+          "docs/planning/evidence/m13-002-stale-probe/README.md"
+        ],
+        "potential_checks": 0,
+        "potential_statuses": 0,
+        "head_runs": [
+          {
+            "id": 38403196699,
+            "event": "pull_request",
+            "status": "completed",
+            "conclusion": "success",
+            "head_sha": "ff441d3d3bde941d0fd759972539ed8707475ee1",
+            "attempt": 1,
+            "created_at": "2026-10-13T13:13:06Z",
+            "pull_requests": [
+              32
+            ]
+          }
+        ]
+      },
+      "stop_reason": "Frozen A3 requires main CLEAN before A4. Read-only settlement still reports BLOCKED with successful head checks and no threads. No isolated conversation/admin request is safe to classify here.",
+      "cause_boundary": "Old develop-parent potential merge is observed after retarget; actual internal BLOCKED cause is not established. Do not claim GitHub bug, missing CLA, true main staleness or intended conversation enforcement.",
+      "write_retry": false
+    }
+  ],
+  "not_executed": [
+    {
+      "step": "A4",
+      "status": "NOT_RUN_AFTER_STOP",
+      "reason": "A3 main CLEAN prerequisite not met; all later writes stopped."
+    },
+    {
+      "step": "A5",
+      "status": "NOT_RUN_AFTER_STOP",
+      "reason": "A3 main CLEAN prerequisite not met; all later writes stopped."
+    },
+    {
+      "step": "A6",
+      "status": "NOT_RUN_AFTER_STOP",
+      "reason": "A3 main CLEAN prerequisite not met; all later writes stopped."
+    },
+    {
+      "step": "A7",
+      "status": "NOT_RUN_AFTER_STOP",
+      "reason": "A3 main CLEAN prerequisite not met; all later writes stopped."
+    },
+    {
+      "step": "A8",
+      "status": "NOT_RUN_AFTER_STOP",
+      "reason": "A3 main CLEAN prerequisite not met; all later writes stopped."
+    }
+  ],
+  "CLA_unsigned_negative": "NOT_TESTED; no real participant, no fabricated account/contribution or signature changes.",
+  "refs": {
+    "main": "2e196a188adce22005fce201c23da1dc27a43426",
+    "develop": "84591ef4296a852a1439781ab62cc4103a59db0a",
+    "feature": "ff441d3d3bde941d0fd759972539ed8707475ee1"
+  },
+  "retarget_metadata_changed_but_refs_unchanged": true,
+  "whole_bundle_complete": false,
+  "M13_002_audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO",
+    "MISSING": [
+      "main conversation/ordinary-admin negative",
+      "isolated missing Required on main/develop",
+      "genuine missing CLA negative NOT_TESTED",
+      "main Strict stale case",
+      "hostile non-fast-forward evidence/disposition",
+      "actual normal develop→main path and final audit"
+    ]
+  },
+  "remaining_minimum_route": "Keep PR32 untouched. A separately approved revised five-write scope can create the already-needed develop→main PR, use its naturalCI for Required-only negative, then after green gates use that same fresh PR for conversation/admin negative and resolve. No extra probeCI or direct-push repetition. Normal positive merge remains separately approved after this new PR/gates/results exist.",
+  "normal_develop_main_approval": "NOT_READY: no develop→main PR was created, no candidate845 fresh PR CI was started, main conversation/admin evidence missing. Do not request or execute a positive merge against an unallocated PR or historical CI.",
+  "next_plan": "bundle-a-resume-plan.json",
+  "custody": {
+    "original_records": [
+      {
+        "path": "forward-only-plan.json",
+        "sha256": "10525a4d5fbbf39ff9edf47e31b0d553d47cbb8d6b3cbe395757885e9e272a09",
+        "unchanged_from": "a770a9d5d815f1a38e6ea4ec22d2c3e4f07e1395"
+      },
+      {
+        "path": "stale-rejection.json",
+        "sha256": "14a4e377fa68eca254cc70f100ca15098d84906795ee5203e3be139d8fb1528a",
+        "unchanged_from": "a770a9d5d815f1a38e6ea4ec22d2c3e4f07e1395"
+      },
+      {
+        "path": "strict-check-analysis.json",
+        "sha256": "acfc90381487946baf614ae45ef8cd8e34b1eb4bc4dbb29ed4f0d618ab1edc2c",
+        "unchanged_from": "a770a9d5d815f1a38e6ea4ec22d2c3e4f07e1395"
+      },
+      {
+        "path": "thread-rejection.json",
+        "sha256": "8e5253c28cb07f1cca5c576d97af318b5cd59be64de6d8ff9410555b982007d1",
+        "unchanged_from": "a770a9d5d815f1a38e6ea4ec22d2c3e4f07e1395"
+      },
+      {
+        "path": "develop-merge.json",
+        "sha256": "57991960db58725f0029c34e2e39ead308a6b2f5b0acb2dcbafeb09370e5aaaf",
+        "unchanged_from": "a770a9d5d815f1a38e6ea4ec22d2c3e4f07e1395"
+      }
+    ],
+    "raw_inventory": "docs/github-logs/m13-002-bundle-a/execution-raw-inventory.json",
+    "raw_inventory_sha256": "92bbbcecabd487a1289b494d8fb933d73f04565d123f2aa5c2187a48ecc5c2aa",
+    "count": 342,
+    "full_original_API_responses_and_headers": "Retained locally with request/response hashes; selected fields are versioned here. No raw edits or whole-worktree scanner FAIL relabelling."
+  }
+}

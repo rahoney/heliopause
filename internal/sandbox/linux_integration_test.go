@@ -176,10 +176,10 @@ func TestLinuxGitHubReleaseELFDynamicIntegration(t *testing.T) {
 
 func TestLinuxNPMResolverNetworkPolicyIntegration(t *testing.T) {
 	if os.Getenv("HELOX_NPM_RESOLVER_INTEGRATION") != "1" {
-		t.Skip("requires privileged Linux Docker firewall integration")
+		t.Skip("requires pinned Linux Docker and installed typed network-policy helper")
 	}
-	if os.Geteuid() != 0 {
-		t.Fatal("resolver network policy integration requires explicit CAP_NET_ADMIN elevation")
+	if os.Geteuid() == 0 {
+		t.Fatal("resolver integration requires an ordinary-user client and installed typed network-policy helper")
 	}
 	supervisor := integrationObserverSupervisor(t)
 	defer supervisor.Close()
@@ -208,8 +208,8 @@ func TestLinuxPyPIResolverIntegration(t *testing.T) {
 	if os.Getenv("HELOX_PYPI_RESOLVER_INTEGRATION") != "1" {
 		t.Skip("requires pinned Linux Python/gVisor and Docker firewall integration")
 	}
-	if os.Geteuid() != 0 {
-		t.Fatal("PyPI resolver network policy integration requires explicit CAP_NET_ADMIN elevation")
+	if os.Geteuid() == 0 {
+		t.Fatal("PyPI resolver integration requires an ordinary-user client and installed typed network-policy helper")
 	}
 	supervisor := integrationObserverSupervisor(t)
 	defer supervisor.Close()

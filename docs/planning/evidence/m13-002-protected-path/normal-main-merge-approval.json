@@ -1,0 +1,87 @@
+{
+  "status": "READY_FOR_USER_REVIEW_NOT_AUTHORIZED",
+  "PR": 33,
+  "url": "https://github.com/rahoney/heliopause/pull/33",
+  "source_branch": "develop",
+  "head": "84591ef4296a852a1439781ab62cc4103a59db0a",
+  "target_branch": "main",
+  "expected_old_main": "2e196a188adce22005fce201c23da1dc27a43426",
+  "request": {
+    "method": "PUT",
+    "endpoint": "/repos/rahoney/heliopause/pulls/33/merge",
+    "body": {
+      "sha": "84591ef4296a852a1439781ab62cc4103a59db0a",
+      "merge_method": "merge"
+    }
+  },
+  "maximum_calls": 1,
+  "purpose": "Intermediate actual normal develop→main qualification/base advancement; not final M13-002 closure or release.",
+  "file_inventory": {
+    "source": "forward-only-plan.json:file_inventories.intermediate_develop_to_main",
+    "head": "84591ef4296a852a1439781ab62cc4103a59db0a",
+    "base": "2e196a188adce22005fce201c23da1dc27a43426",
+    "count": 18,
+    "paths": [
+      "PROJECT-DECISIONS.md",
+      "README.md",
+      "docs/engineering/evidence/security-go1269/README.md",
+      "docs/engineering/evidence/security-go1269/cargo-gai-followup.md",
+      "docs/planning/02-current-work-queue.md",
+      "docs/planning/17-m12-02-fix-list.md",
+      "docs/planning/18-m13-production-release-operations-contract.md",
+      "docs/planning/evidence/m13-001-protected-activation/README.md",
+      "docs/planning/evidence/m13-001-protected-activation/activation-plan.json",
+      "docs/planning/evidence/m13-001-protected-activation/main-ci.json",
+      "docs/planning/evidence/m13-001-protected-activation/result.json",
+      "docs/planning/evidence/m13-002-protected-path/README.md",
+      "docs/planning/evidence/m13-002-protected-path/baseline.json",
+      "docs/planning/evidence/m13-002-protected-path/checks.json",
+      "docs/planning/evidence/m13-002-protected-path/raw/docs.log",
+      "docs/planning/evidence/m13-002-protected-path/raw/release-gate.log",
+      "docs/planning/evidence/m13-002-protected-path/raw/security.log",
+      "docs/planning/evidence/m13-002-protected-path/raw/workflow.log"
+    ]
+  },
+  "preapproval_evidence": {
+    "result": "bundle-a-prime-result.json",
+    "PR": 33,
+    "head": "84591ef4296a852a1439781ab62cc4103a59db0a",
+    "base": "2e196a188adce22005fce201c23da1dc27a43426",
+    "natural_CI": 38574753115,
+    "attempt": 1,
+    "all_ten_jobs": "SUCCESS",
+    "real_CLA": "SUCCESS required App128106",
+    "gate": "CLEAN",
+    "unresolved_threads": 0,
+    "Required_negative_rule_suite": 4521104354,
+    "conversation_admin_rule_suite": 4521761091,
+    "exact_test_thread_resolved": "PRRT_kwDOT2M-Hs6sXNWE",
+    "refs_unchanged": true,
+    "final_readback": "docs/github-logs/m13-002-bundle-a-prime/observe-20261014T142857772492Z"
+  },
+  "fresh_execution_guards": [
+    "User separately approves this exact normal merge after current evidence is reviewable. A′ explicitly forbids positive merge.",
+    "Exactmain2e196a1/develop84591ef/featureff441d3 and PR33 head84591ef/base main/currentbase included; effective rules unchanged activeStrict, App15368/App128106 required, adminbypassnever.",
+    "PR33 open/non-draft/unmerged, auto-merge null, MERGEABLE/CLEAN, genuineRequired+all9prerequisitejobs andCLA success from current actualPR candidate; zero unresolvedthreads/conflicts.",
+    "If anySHA/state/diff/gate changes or response is uncertain, stop; no retry/recovery/force."
+  ],
+  "expected_effects": [
+    "HTTP200/merged=true and main moves forward to server-returnedM1; verify receipt against live ref, parentsmain2e/develop845 and tree64e29611987c1ce55887db50255aacc6fba90843.",
+    "develop84591ef/featureff441d3 unchanged; PR33 becomesmerged.",
+    "Natural main pushCI starts; fresh main result belongs toM1, not oldhead845 check. Read-only monitoring/evidence required."
+  ],
+  "risks": [
+    "An actual protected main update; it triggers necessary mainCI and cannot be silently rolledback if follow-upfails.",
+    "Response uncertainty does not authorize a second call or automaticrestore."
+  ],
+  "not_included": [
+    "PR32 mutation or mainstale request before actualM1 is separately reviewed",
+    "feature push/develop delivery/finalmainclosuremerge",
+    "force/nonFF/setup/protection/bypass",
+    "CLAnegative fabrication/waiver",
+    "tag/release/publish/dispatch/rerun"
+  ],
+  "remaining_acceptance": "mainstale, developRequired-only, missingCLA NOT_TESTED, hostile nonFF method/evidence, later delivery/final audit remain separate.",
+  "current_scope_remote_writes": 5,
+  "current_scope_positive_merges": 0
+}

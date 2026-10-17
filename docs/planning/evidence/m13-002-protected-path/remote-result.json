@@ -1,0 +1,469 @@
+{
+  "status": "PR_CI_CLA_VERIFIED_ENFORCEMENT_ACCEPTANCE_OPEN",
+  "recorded_utc": "2026-10-13T07:17:12.634063+00:00",
+  "authorization": {
+    "approved_head": "e1e3aa8c9976ec7cf30c46b3a0103fc2899c08a2",
+    "approved_actions": [
+      "push exact commit to feature/m13-002-protected-path",
+      "create develop PR"
+    ],
+    "performed_actions": [
+      "push exact commit to feature/m13-002-protected-path",
+      "create develop PR31"
+    ],
+    "merge_performed": false,
+    "protected_ref_push_performed": false,
+    "rule_mutation_performed": false,
+    "release_action_performed": false,
+    "additional_push_performed": false
+  },
+  "pr": {
+    "number": 31,
+    "html_url": "https://github.com/rahoney/heliopause/pull/31",
+    "state": "open",
+    "draft": false,
+    "merged": false,
+    "mergeable": true,
+    "mergeable_state": "clean",
+    "merge_commit_sha": "69506733a583d2598af94b3f423b89ef6a143f6c",
+    "auto_merge": null,
+    "head_sha": "e1e3aa8c9976ec7cf30c46b3a0103fc2899c08a2",
+    "base_sha": "2e196a188adce22005fce201c23da1dc27a43426",
+    "base": "develop"
+  },
+  "source_identity": {
+    "feature_head": "e1e3aa8c9976ec7cf30c46b3a0103fc2899c08a2",
+    "base": "2e196a188adce22005fce201c23da1dc27a43426",
+    "tested_merge_commit": "69506733a583d2598af94b3f423b89ef6a143f6c",
+    "feature_and_merge_tree": "64e29611987c1ce55887db50255aacc6fba90843",
+    "whole_tree_equal": true
+  },
+  "ci": {
+    "id": 38355837742,
+    "name": "Heliopause CI",
+    "status": "completed",
+    "conclusion": "success",
+    "head_sha": "e1e3aa8c9976ec7cf30c46b3a0103fc2899c08a2",
+    "url": "https://github.com/rahoney/heliopause/actions/runs/38355837742",
+    "jobs": [
+      {
+        "id": 115158394235,
+        "name": "gVisor Linux Integration",
+        "status": "completed",
+        "conclusion": "success",
+        "active_steps": []
+      },
+      {
+        "id": 115158394433,
+        "name": "gVisor Observer Helper",
+        "status": "completed",
+        "conclusion": "success",
+        "active_steps": []
+      },
+      {
+        "id": 115158394474,
+        "name": "Representative Wheel Corpus",
+        "status": "completed",
+        "conclusion": "success",
+        "active_steps": []
+      },
+      {
+        "id": 115158394480,
+        "name": "Quick",
+        "status": "completed",
+        "conclusion": "success",
+        "active_steps": []
+      },
+      {
+        "id": 115158394492,
+        "name": "Docs",
+        "status": "completed",
+        "conclusion": "success",
+        "active_steps": []
+      },
+      {
+        "id": 115158394544,
+        "name": "Vulnerability",
+        "status": "completed",
+        "conclusion": "success",
+        "active_steps": []
+      },
+      {
+        "id": 115158394549,
+        "name": "macOS",
+        "status": "completed",
+        "conclusion": "success",
+        "active_steps": []
+      },
+      {
+        "id": 115158394563,
+        "name": "Minimum Go",
+        "status": "completed",
+        "conclusion": "success",
+        "active_steps": []
+      },
+      {
+        "id": 115158394579,
+        "name": "Security",
+        "status": "completed",
+        "conclusion": "success",
+        "active_steps": []
+      },
+      {
+        "id": 115171177965,
+        "name": "Required",
+        "status": "completed",
+        "conclusion": "success",
+        "active_steps": []
+      }
+    ]
+  },
+  "required_check": [
+    {
+      "name": "Required",
+      "status": "completed",
+      "conclusion": "success",
+      "app_id": 15368,
+      "app_slug": "github-actions",
+      "html_url": "https://github.com/rahoney/heliopause/actions/runs/38355837742/job/115171177965"
+    }
+  ],
+  "cla": {
+    "result": "SUCCESS",
+    "status": {
+      "context": "license/cla",
+      "state": "success",
+      "creator": "cla-assistant[bot]",
+      "target_url": "https://cla-assistant.io/rahoney/heliopause?pullRequest=31"
+    },
+    "expected_app_id": 128106,
+    "public_app_identity_matches": true,
+    "graphql_is_required": true,
+    "initial_absence": "Observed initially, then genuine service status arrived; no service/rule/signature change performed"
+  },
+  "protection": {
+    "semantic_plan_match": true,
+    "effective_rules_match": true,
+    "rules": {
+      "main": {
+        "id": 21396883,
+        "enforcement": "active",
+        "current_user_can_bypass": "never",
+        "bypass_actors": []
+      },
+      "develop": {
+        "id": 24969937,
+        "enforcement": "active",
+        "current_user_can_bypass": "never",
+        "bypass_actors": []
+      }
+    },
+    "graphql_merge_state": "CLEAN",
+    "graphql_review_threads": {
+      "totalCount": 0,
+      "nodes": []
+    },
+    "observed_initial_state": "BLOCKED while Required/CLA were incomplete",
+    "scope": "Fresh PR rule evaluation only; no mutation-based rejection/normal merge has been tested"
+  },
+  "final_refs": {
+    "refs/heads/develop": "2e196a188adce22005fce201c23da1dc27a43426",
+    "refs/heads/feature/m13-002-protected-path": "e1e3aa8c9976ec7cf30c46b3a0103fc2899c08a2",
+    "refs/heads/main": "2e196a188adce22005fce201c23da1dc27a43426",
+    "refs/heads/milestone/m13-production-release-operations": "b3c8b7dc487046afdad52a215c101d761f055098"
+  },
+  "raw_snapshot": "docs/github-logs/m13-002-pr/20261013T071334079945Z",
+  "graphql_raw": "docs/github-logs/m13-002-pr/20261013T071335623567Z-graphql.json",
+  "job_log_captures": [
+    {
+      "job_id": 115158394235,
+      "name": "gVisor Linux Integration",
+      "path": "docs/github-logs/m13-002-pr/job-logs/115158394235.log",
+      "bytes": 433111,
+      "sha256": "9cfe178c661ff2d57203dc79f148c4085869ee6942dd2e0f466a86a62d1c5901"
+    },
+    {
+      "job_id": 115158394433,
+      "name": "gVisor Observer Helper",
+      "path": "docs/github-logs/m13-002-pr/job-logs/115158394433.log",
+      "bytes": 242389,
+      "sha256": "2dc291cc6fa74ac2eee58ad60b8df4ec261e5d7c7fc0b348546259be23d2641d"
+    },
+    {
+      "job_id": 115158394474,
+      "name": "Representative Wheel Corpus",
+      "path": "docs/github-logs/m13-002-pr/job-logs/115158394474.log",
+      "bytes": 35300,
+      "sha256": "0749e568bf33354c2453592ff1a86bf872b1cc9623bcca6bb58a955424dcdd6e"
+    },
+    {
+      "job_id": 115158394480,
+      "name": "Quick",
+      "path": "docs/github-logs/m13-002-pr/job-logs/115158394480.log",
+      "bytes": 23771,
+      "sha256": "8e69a9631647cd55caafbf034d861bc8f20df1bd6890b7d3320133ece1a50ee6"
+    },
+    {
+      "job_id": 115158394492,
+      "name": "Docs",
+      "path": "docs/github-logs/m13-002-pr/job-logs/115158394492.log",
+      "bytes": 20451,
+      "sha256": "898c6575d8a1016fbf203e61e3bea0821ff94932e95523a9988a0c52d5d1e7a5"
+    },
+    {
+      "job_id": 115158394544,
+      "name": "Vulnerability",
+      "path": "docs/github-logs/m13-002-pr/job-logs/115158394544.log",
+      "bytes": 21637,
+      "sha256": "a2829670711051f04ab51b2c2dd59fbe0212611fd98f4af892f5659847d8b426"
+    },
+    {
+      "job_id": 115158394549,
+      "name": "macOS",
+      "path": "docs/github-logs/m13-002-pr/job-logs/115158394549.log",
+      "bytes": 20715,
+      "sha256": "5005bce2d5d0e2a4679425bd69d5533a3f9b4ce2abc2acb3a2e63c77ae5ffd5a"
+    },
+    {
+      "job_id": 115158394563,
+      "name": "Minimum Go",
+      "path": "docs/github-logs/m13-002-pr/job-logs/115158394563.log",
+      "bytes": 21121,
+      "sha256": "8bb15aa7864e22e5b459887c9a62d9f1c5c4831a70b9f7cb3e182a87665e4262"
+    },
+    {
+      "job_id": 115158394579,
+      "name": "Security",
+      "path": "docs/github-logs/m13-002-pr/job-logs/115158394579.log",
+      "bytes": 21723,
+      "sha256": "97902b8c39eb3688bfcc7d519d53a69abd976789138f37df9fddd187ecb2ea2c"
+    },
+    {
+      "job_id": 115171177965,
+      "name": "Required",
+      "path": "docs/github-logs/m13-002-pr/job-logs/115171177965.log",
+      "bytes": 22227,
+      "sha256": "6205fa8769dd70e51e253d859b3051cc57e943f96971261baf283d8a8520bd49"
+    }
+  ],
+  "runtime_ci_scope": {
+    "top_level_tests_passed": 45,
+    "pytorch_cpu_full_seconds": "287.35s",
+    "observer_latch_passes": 102,
+    "helper_wait_zero_count": 5,
+    "final_cleanup_confirmed": true,
+    "cuda_full_qualification": "NOT_RUN; no historical CUDA PASS reused"
+  },
+  "raw_receipts": [
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T061630755583Z/develop-effective-rules.json",
+      "sha256": "82aded8780680c5d72fec2ae26cdff3a50172713468a6e253582e647cd15fd70",
+      "bytes": 1024
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T061630755583Z/develop-ruleset.json",
+      "sha256": "0d981954d6b00b39c6e5705583045ea31bb9c98244d849beb55cb4ac8bcf964d",
+      "bytes": 1222
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T061630755583Z/main-effective-rules.json",
+      "sha256": "1b928bd04b083c53f0f9e3009a4021df3995dfb3270fb59be743f18f98e47011",
+      "bytes": 1024
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T061630755583Z/main-ruleset.json",
+      "sha256": "59f782111e7e79128c0d54e6b658ae09754a9cc7144cc3383ea534bb14d5caba",
+      "bytes": 1216
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T061630755583Z/refs.json",
+      "sha256": "23009c9dd6fd144f4b96f6034949dfbb0f773407ddfdd3f9b1c672613621dd2a",
+      "bytes": 11574
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T061630755583Z/requests.json",
+      "sha256": "bc08000205921a61d4bb8ff5055d90936208846c50246947b5cf48a19fecb80f",
+      "bytes": 1161
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T061630755583Z/summary.json",
+      "sha256": "55bc87785a36cc775b1bbba12d4af7c82e7a97f7b0a02f5d0e12e1dfff40b218",
+      "bytes": 781
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T061911694462Z-graphql.json",
+      "sha256": "cea901bf1aa2226159fb132e86c7c55a256c339c88e3095bea7c8113a4f23ab6",
+      "bytes": 1891
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T071334079945Z/develop-effective-rules.json",
+      "sha256": "82aded8780680c5d72fec2ae26cdff3a50172713468a6e253582e647cd15fd70",
+      "bytes": 1024
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T071334079945Z/develop-ruleset.json",
+      "sha256": "0d981954d6b00b39c6e5705583045ea31bb9c98244d849beb55cb4ac8bcf964d",
+      "bytes": 1222
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T071334079945Z/head-checks.json",
+      "sha256": "9ae6ffbaac821764ebfedfb9b443e3b1158a9e8248c625614c071b9c6adae485",
+      "bytes": 35259
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T071334079945Z/head-status-list.json",
+      "sha256": "b9cce1a45a64bbeea7585ea5c7a92823f1455bce01a17b2837c09fc4cb5b1da5",
+      "bytes": 1578
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T071334079945Z/head-status.json",
+      "sha256": "2881c982078f4298df0739f630220520302cb917386d837cee4fc5e3d466b102",
+      "bytes": 4969
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T071334079945Z/issue-comments.json",
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "bytes": 2
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T071334079945Z/main-effective-rules.json",
+      "sha256": "1b928bd04b083c53f0f9e3009a4021df3995dfb3270fb59be743f18f98e47011",
+      "bytes": 1024
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T071334079945Z/main-ruleset.json",
+      "sha256": "59f782111e7e79128c0d54e6b658ae09754a9cc7144cc3383ea534bb14d5caba",
+      "bytes": 1216
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T071334079945Z/merge-checks.json",
+      "sha256": "e83cfac35507982a40cfeb776ce85aa0367e7646f81fe857df4a6c841ea8a170",
+      "bytes": 33
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T071334079945Z/merge-status.json",
+      "sha256": "5a690b7b309841bd60b31595f0fb91b53711786f0d9cf3a7a9f55901a5746849",
+      "bytes": 4495
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T071334079945Z/pr.json",
+      "sha256": "59b01dc4e8b9a842d2633f97fe6cf7ffdbe4bc9b8f62c815414eae15883ef0d9",
+      "bytes": 16800
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T071334079945Z/refs.json",
+      "sha256": "23009c9dd6fd144f4b96f6034949dfbb0f773407ddfdd3f9b1c672613621dd2a",
+      "bytes": 11574
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T071334079945Z/requests.json",
+      "sha256": "b158da9cba5a7fe008431195a4e1940ba27457f76da9fb05ddfbce875b07937b",
+      "bytes": 3561
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T071334079945Z/run-38355837742-jobs.json",
+      "sha256": "5fa817c8cd10375b546025adf0795787cc59c38f1c15246a93a37171866b82c3",
+      "bytes": 21183
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T071334079945Z/runs.json",
+      "sha256": "5158c9dafc7ebc51079f2bd90a0db515571c06f7caaa77eb3b8177c48037ebec",
+      "bytes": 13010
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T071334079945Z/summary.json",
+      "sha256": "6c5c37ab13edbf61cbe3a0c5f884de8f845e19c69e39ae7b261f186586bb29b5",
+      "bytes": 8452
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/20261013T071335623567Z-graphql.json",
+      "sha256": "c9c513bd10edd68958d24b346f833f93a5294684f794db713e64bd7109c6dd3c",
+      "bytes": 2148
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/cla-app-public.json",
+      "sha256": "7834aa5269493a115074213b9326ded6d3d7bb684b859c56a63fe93ed40009c1",
+      "bytes": 2613
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/creation-tool-result.json",
+      "sha256": "a405dba10344ef2bdb0d7bdddd5915ae51b7e86df38cafbb2fedb25bb2a1f6bc",
+      "bytes": 2535
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/job-logs/115158394235.log",
+      "sha256": "9cfe178c661ff2d57203dc79f148c4085869ee6942dd2e0f466a86a62d1c5901",
+      "bytes": 433111
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/job-logs/115158394433.log",
+      "sha256": "2dc291cc6fa74ac2eee58ad60b8df4ec261e5d7c7fc0b348546259be23d2641d",
+      "bytes": 242389
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/job-logs/115158394474.log",
+      "sha256": "0749e568bf33354c2453592ff1a86bf872b1cc9623bcca6bb58a955424dcdd6e",
+      "bytes": 35300
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/job-logs/115158394480.log",
+      "sha256": "8e69a9631647cd55caafbf034d861bc8f20df1bd6890b7d3320133ece1a50ee6",
+      "bytes": 23771
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/job-logs/115158394492.log",
+      "sha256": "898c6575d8a1016fbf203e61e3bea0821ff94932e95523a9988a0c52d5d1e7a5",
+      "bytes": 20451
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/job-logs/115158394544.log",
+      "sha256": "a2829670711051f04ab51b2c2dd59fbe0212611fd98f4af892f5659847d8b426",
+      "bytes": 21637
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/job-logs/115158394549.log",
+      "sha256": "5005bce2d5d0e2a4679425bd69d5533a3f9b4ce2abc2acb3a2e63c77ae5ffd5a",
+      "bytes": 20715
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/job-logs/115158394563.log",
+      "sha256": "8bb15aa7864e22e5b459887c9a62d9f1c5c4831a70b9f7cb3e182a87665e4262",
+      "bytes": 21121
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/job-logs/115158394579.log",
+      "sha256": "97902b8c39eb3688bfcc7d519d53a69abd976789138f37df9fddd187ecb2ea2c",
+      "bytes": 21723
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/job-logs/115171177965.log",
+      "sha256": "6205fa8769dd70e51e253d859b3051cc57e943f96971261baf283d8a8520bd49",
+      "bytes": 22227
+    },
+    {
+      "path": "docs/github-logs/m13-002-pr/push-operation.json",
+      "sha256": "713f9d408ee2d399ba7ef133a199acf1ff459bbac74d1eb9079d22902538aec8",
+      "bytes": 447
+    }
+  ],
+  "additional_raw_archive": {
+    "path": "docs/github-logs/m13-002-pr/raw-inventory.json",
+    "file_count": 642,
+    "sha256": "519fc5c54fab94f923f7a308bff1eb9954a5af4feb44775c836cf3a2abc5c2fb"
+  },
+  "raw_custody": "Local untracked original responses/logs; no private profile data copied into commit candidate",
+  "diagnostic_reader_correction": "Combined-status records omitted creator. Initial readers raised KeyError; original responses retained. Detailed /statuses reader corrected. Not a CI/product/CLA failure.",
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO"
+  },
+  "missing": [
+    "actual normal feature-develop-main merges",
+    "stale/missing-check/unresolved-thread/direct-push/admin-bypass rejection cases",
+    "safe force-push disposition",
+    "final M13-002 acceptance"
+  ],
+  "next_approval": "Plan and approve the next exact live case separately; current approval does not permit review-thread writes or any merge attempt"
+}

@@ -1,0 +1,388 @@
+{
+  "schema_version": 1,
+  "status": "COMPLETE_LOCAL_GO_SINGLE_VERSION_ACCEPTANCE",
+  "observed_at": "2026-10-15T08:40:05.084346+00:00",
+  "baseline_commit": "61a5baf7b6d2319a1c75acb953d06580ab3b9995",
+  "scope": "Permanent host SDK, HAA Go guest runtime, coordinated version checks and coherent local installed product; not public release or remote CI qualification.",
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES",
+    "ACCEPTANCE_CLOSED": "YES",
+    "MISSING": []
+  },
+  "host": {
+    "version": "go1.26.9",
+    "permanent_location": "$HOME/.local/go",
+    "stable_command_location": "$HOME/.local/bin/{go,gofmt}",
+    "login_and_interactive_path_updated": true,
+    "default_nonlogin_command_verified": true,
+    "GOTOOLCHAIN": "local",
+    "official_archive": {
+      "filename": "go1.26.9.linux-amd64.tar.gz",
+      "os": "linux",
+      "arch": "amd64",
+      "version": "go1.26.9",
+      "sha256": "42d158b4d8f7b61ac0a830567c940a86098fb7aac52e467a5ebec03ef5cc2f8d",
+      "size": 66935201,
+      "kind": "archive"
+    },
+    "retired_versions": [
+      "1.26.5 already absent",
+      "1.26.7",
+      "1.26.8 downloaded SDKs"
+    ],
+    "removed_exact_paths": 12,
+    "logical_regular_bytes_removed": 878216358,
+    "active_old_sdk_references": 0,
+    "unknown_process_queries": 0,
+    "old_paths_absent_after_checks": true
+  },
+  "guest": {
+    "reference": "golang:1.26.9-bookworm@sha256:bcef992b77b1e2031aaaa51da75cebc32da8e9c182e12e633ea79023c79d9eff",
+    "image_id": "sha256:6880d90c0623e6e55560894ff82266f5a06c0f7b1c9ee7f6e2def900d9bc2956",
+    "architecture": "amd64"
+  },
+  "checks": [
+    {
+      "profile": "bootstrap",
+      "exit_code": 0,
+      "scope": "original worktree tool preparation"
+    },
+    {
+      "profile": "quick",
+      "exit_code": 0,
+      "scope": "native tracked-source projection; Go bytes/modes compared; explicit independently verified runsc bundle"
+    },
+    {
+      "profile": "security",
+      "exit_code": 0,
+      "source_scope": "verified native tracked projection"
+    },
+    {
+      "profile": "vulnerability",
+      "exit_code": 0,
+      "source_scope": "verified native tracked projection"
+    },
+    {
+      "profile": "workflow",
+      "exit_code": 0,
+      "source_scope": "verified native tracked projection"
+    },
+    {
+      "profile": "release-gate",
+      "exit_code": 0,
+      "source_scope": "verified native tracked projection"
+    },
+    {
+      "profile": "qualification-freshness",
+      "exit_code": 0,
+      "source_scope": "verified native tracked projection"
+    },
+    {
+      "profile": "docs",
+      "exit_code": 0,
+      "scope": "worktree including new report and existing untracked lessons; final closure recheck separately recorded"
+    }
+  ],
+  "observer_latches": 102,
+  "go_integrations": [
+    {
+      "test": "TestLinuxGoIsolatedResolverIntegration",
+      "seconds": 12.03
+    },
+    {
+      "test": "TestLinuxGoIsolatedProjectResolverIntegration",
+      "seconds": 4.9
+    },
+    {
+      "test": "TestLinuxGoSourceProjectSnapshotIntegration",
+      "seconds": 5.54
+    },
+    {
+      "test": "TestLinuxGoDependencyFreeProjectSnapshotIntegration",
+      "seconds": 4.45
+    },
+    {
+      "test": "TestLinuxGoDependencyFreeDownloadIntegration",
+      "seconds": 19.37
+    },
+    {
+      "test": "TestLinuxGoGetDownloadIntegration",
+      "seconds": 30.89
+    },
+    {
+      "test": "TestLinuxGoTransitiveGetDownloadIntegration",
+      "seconds": 194.29
+    },
+    {
+      "test": "TestLinuxGoDependencyFreeBuildCLIIntegration",
+      "seconds": 58.65
+    },
+    {
+      "test": "TestLinuxGoPublicBuildCLIIntegration",
+      "seconds": 75.06
+    },
+    {
+      "test": "TestLinuxGoTransitiveBuildCLIIntegration",
+      "seconds": 302.71
+    },
+    {
+      "test": "TestLinuxGoInvalidTestdataBuildCLIIntegration",
+      "seconds": 18.93
+    },
+    {
+      "test": "TestLinuxGoCgoBuildCLIIntegration",
+      "seconds": 51.89
+    },
+    {
+      "test": "TestLinuxGoLibraryBuildCLIIntegration",
+      "seconds": 18.93
+    },
+    {
+      "test": "TestLinuxGoMixedPackagesBuildCLIIntegration",
+      "seconds": 38.29
+    },
+    {
+      "test": "TestLinuxGoMixedInvalidPackageBuildCLIIntegration",
+      "seconds": 31.45
+    },
+    {
+      "test": "TestLinuxGoBuildSecurityCLIIntegration",
+      "seconds": 65.18
+    }
+  ],
+  "production_smoke": {
+    "actual_installed_cli": true,
+    "managed_download": "PASS",
+    "managed_build": "COMPLETED/ALLOW; output published",
+    "compiler": "go1.26.9"
+  },
+  "installed_files": [
+    {
+      "role": "production CLI",
+      "path": "/usr/libexec/heliopause/helox",
+      "sha256": "bddfc66d4f2e992c6d50e0a14ef382921260197b91e1175c51e503fbdfb85ede",
+      "mode": "0o755",
+      "uid": 0,
+      "gid": 0
+    },
+    {
+      "role": "network helper",
+      "path": "/usr/libexec/heliopause/haa-network-policy-helper",
+      "sha256": "33d00888cf56a4c5cd71ef49af2b0277f80f2ad7cf5ed7feb3e494d46fd216da",
+      "mode": "0o755",
+      "uid": 0,
+      "gid": 0
+    },
+    {
+      "role": "observer",
+      "path": "/usr/libexec/heliopause/haa_gvisor_observer",
+      "sha256": "6817e22298373e439e48ce03a0c26b76b5aee954a473f137751eb35872f42062",
+      "mode": "0o755",
+      "uid": 0,
+      "gid": 0
+    },
+    {
+      "role": "pod-init",
+      "path": "/etc/heliopause/pod-init.json",
+      "sha256": "20b623863b0fe2a3b9949ad30ccb01e646e0ddf37a7824d8ec2fa7789d5582e4",
+      "mode": "0o600",
+      "uid": 0,
+      "gid": 0
+    },
+    {
+      "role": "gVisor member",
+      "path": "/usr/libexec/heliopause/gvisor/containerd-shim-runsc-v1",
+      "sha256": "4245d236a25d9e8afce43d72983c449f3eab4c8202aa825975e0e1f5bfd17721",
+      "mode": "0o755",
+      "uid": 0,
+      "gid": 0
+    },
+    {
+      "role": "gVisor member",
+      "path": "/usr/libexec/heliopause/gvisor/gvisor-bin/checkpointgofer",
+      "sha256": "6efb6c05369c1e22d5e894be36a7d24e757b9925b4ca37e831ab40deea9aff4d",
+      "mode": "0o755",
+      "uid": 0,
+      "gid": 0
+    },
+    {
+      "role": "gVisor member",
+      "path": "/usr/libexec/heliopause/gvisor/gvisor-bin/gvisor-sentry-prewarmer",
+      "sha256": "3315d7ad7c2d3751d349e4976fa02da1da6fd7e41746c35622304e5fabe4fce0",
+      "mode": "0o755",
+      "uid": 0,
+      "gid": 0
+    },
+    {
+      "role": "gVisor member",
+      "path": "/usr/libexec/heliopause/gvisor/gvisor-bin/gvisor_sentry",
+      "sha256": "8f74fdf79623ad43636fc14bd859a14fd96e3d0e52770f99a4d96d11e6ac59fa",
+      "mode": "0o755",
+      "uid": 0,
+      "gid": 0
+    },
+    {
+      "role": "gVisor member",
+      "path": "/usr/libexec/heliopause/gvisor/gvisor-bin/runsc-metric-server",
+      "sha256": "260efd86a548f431056d99bdade777e6c9b6e8c588cfae41683eee1b3ab8f4c8",
+      "mode": "0o755",
+      "uid": 0,
+      "gid": 0
+    },
+    {
+      "role": "gVisor member",
+      "path": "/usr/libexec/heliopause/gvisor/runsc",
+      "sha256": "084eb77a8989bd5e73a920594379299782d0bb980de84984b5d0483531a6bb17",
+      "mode": "0o755",
+      "uid": 0,
+      "gid": 0
+    },
+    {
+      "role": "gVisor manifest",
+      "path": "/usr/libexec/heliopause/gvisor/gvisor-bundle.manifest.json",
+      "sha256": "e48a8d3919d60558cc99af63c403a4ca292fb4cdc77e6763aa0e253b1047d5d9",
+      "mode": "0o644",
+      "uid": 0,
+      "gid": 0
+    }
+  ],
+  "cleanup": {
+    "original_exit": 0,
+    "helper_state": "CONFIRMED_STOPPED",
+    "helper_wait_zero_count": 3,
+    "helper_stop": 0,
+    "client_error": 0,
+    "client_restore": 0,
+    "restoration": "NOT_REQUIRED_AFTER_SUCCESSFUL_AUTHORIZED_ACTIVATION",
+    "helper_observer_endpoints_absent": true,
+    "running_containers": 0
+  },
+  "authorization": {
+    "initial_auto_review_rejection": "privileged local binary/config replacement risk; rejected command did not execute",
+    "subsequent_user_approval": "explicit11-file change/16-test qualification and successful1.26.9 local activation",
+    "remote_operations": 0
+  },
+  "preserved_boundaries": [
+    "All non-Go runtime lock fields byte-equivalent as parsed JSON to baseline",
+    "Core/Policy/budgets/observer predicates unchanged",
+    "Historical evidence and parser fixtures retain original versions",
+    "Independently pinned third-party gVisor/Bazel build SDK retained; not an HAA host/guest SDK selection",
+    "Existing M13-002/PR33 protected-path acceptance remains open; new candidate remote CI not run",
+    "Separate full-Race/release-readiness findings remain outside this local maintenance acceptance"
+  ],
+  "initial_failures": [
+    "OneDrive architecture package inventory timeout; native verified source used without changing timeout",
+    "Premature check before native copy exit0: no go.mod, excluded from validation",
+    "Architecture rejected added external parser import: removed without allowlist change",
+    "Staticcheck ST1005: corrected before final Quick",
+    "Ordinary-user final reader could not read canonical root-only0600 pod-init; root readback then passed"
+  ],
+  "raw_receipts": [
+    {
+      "path": "docs/github-logs/go-single-20261015/host-install.json",
+      "sha256": "169d87d429289e88b009d74bea0ca63131a66da8d5712811f0723dd533082571"
+    },
+    {
+      "path": "docs/github-logs/go-single-20261015/host-retirement.json",
+      "sha256": "dab532794fb487bcb0b6043acd5dbf1441b309bca4c21027e045e9e0725b8086"
+    },
+    {
+      "path": "docs/github-logs/go-single-20261015/host-final-verification.json",
+      "sha256": "401047ec94186dd19c4868f8cb8147a319d341caa4dcd71578668cb7572db50b"
+    },
+    {
+      "path": "docs/github-logs/go-single-20261015/installed-before.json",
+      "sha256": "2bce7507a052c7a20f35a0e9deaece5c634bb50e7bfe12d7afe22817ce920ede"
+    },
+    {
+      "path": "docs/github-logs/go-single-20261015/installed-final.json",
+      "sha256": "cc24b51dc57ad7cbca0538a50d6ae5d748a28c88c6fbceec052fca075bd34a6c"
+    },
+    {
+      "path": "docs/github-logs/go-single-20261015/candidate-binaries.json",
+      "sha256": "03ef7d4158f2c944a74a908cd1c7b812dd3a5d397387dd4782f63bd326ee7c5e"
+    },
+    {
+      "path": "docs/github-logs/go-single-20261015/approval-proposal.json",
+      "sha256": "0953e67a607e6235212e77a682879700e6ec8112dbbb0bfe01e78d56dd524222"
+    },
+    {
+      "path": "docs/github-logs/go-single-20261015/bootstrap.log",
+      "sha256": "289a27638dce8999e43f00bd51aaa53ce8fba60161902e202e0648139a0688ae"
+    },
+    {
+      "path": "docs/github-logs/go-single-20261015/quick-final.log",
+      "sha256": "23ddc07c482a032b3d081c9ba5af784ba47fb1afa1c2522f3206d23b84d5bb87"
+    },
+    {
+      "path": "docs/github-logs/go-single-20261015/security.log",
+      "sha256": "9b90950ef9745500bcf6c2ac7c821b6730aa945eca086dcfac73d0bb0ad2cd95"
+    },
+    {
+      "path": "docs/github-logs/go-single-20261015/vulnerability.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/go-single-20261015/workflow.log",
+      "sha256": "a9d0afe878b5cc017419a4754afde924a4196a69fa7415fdf4eb23bc2ea131f4"
+    },
+    {
+      "path": "docs/github-logs/go-single-20261015/release-gate.log",
+      "sha256": "11e43c6a182a612ea79ba5d521d90153efd0f567857993ea20db4c3f95039b73"
+    },
+    {
+      "path": "docs/github-logs/go-single-20261015/qualification-freshness.log",
+      "sha256": "a139e18892192652dc1d7880e1d1bda7b269e445b80081de6776ebbe4d82c2c0"
+    },
+    {
+      "path": "docs/github-logs/go-single-20261015/docs-current.log",
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "path": "docs/github-logs/go-single-20261015/observer-build.log",
+      "sha256": "1e3ee9dddf133088ff8e4d43855aaa1159f13b278756948c186cdaee9e03323c"
+    },
+    {
+      "path": "docs/github-logs/go-single-20261015/image-manifest.json",
+      "sha256": "fa2028491630f55ef6e284dc8458ade7a8788229a0c06227e2d36ee6571c328c"
+    },
+    {
+      "path": "docs/github-logs/go-single-20261015/image-pull.log",
+      "sha256": "8c591f73f70aaa793a7f00200144e2c127651604fd2d1915c4dda23e663199a1"
+    },
+    {
+      "path": "docs/github-logs/go-single-20261015/image-build-smoke.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/github-logs/go-single-20261015/integration.log",
+      "sha256": "0b377be2b7278e9e24b9fc9e90c245fc495697146f1ad7a4ae97eeddaf64914b"
+    },
+    {
+      "path": "docs/github-logs/go-single-20261015/production-download.log",
+      "sha256": "3e8be11d945abee1a1ad5f6da5838d2ebd4cc3213c8b1eee09b757b00c6a0859"
+    },
+    {
+      "path": "docs/github-logs/go-single-20261015/production-build.log",
+      "sha256": "91e66d12dc9f0500666833fc1010f29af002a9e609a70417ad0a3780a6d39698"
+    },
+    {
+      "path": "docs/github-logs/go-single-20261015/quick-onedrive-first.log",
+      "sha256": "4a37824f694466e01a2e75d54c4f36c6432cd7b1299e9dc0f9b0aa78c4a1ea60"
+    },
+    {
+      "path": "docs/github-logs/go-single-20261015/native-before-copy-ready.log",
+      "sha256": "f718031b71a6eb82bab59b71d6f3fe40fc7744ce7bfb810d8499a7ac0b9e304c"
+    },
+    {
+      "path": "docs/github-logs/go-single-20261015/quick-native-external-import-rejected.log",
+      "sha256": "efdb4e85f98f6fe585e251c7ca67226c8e441db489fae96157ebb5536593c0d1"
+    },
+    {
+      "path": "docs/github-logs/go-single-20261015/quick-native-st1005.log",
+      "sha256": "5da7f624ce05da8de1607b972ecf748d8fd72068d3c29ba0ceaa2464ec1037cc"
+    }
+  ]
+}

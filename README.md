@@ -10,8 +10,9 @@
 - CLI framework: Cobra
 - 현재 상태: M0–M11 qualification 및 post-qualification release hardening, M12-001~005 생태계 acceptance·전체 qualification·feature freeze와 M12-02 최종 red-team/fix gate 완료. PR29·PR30 merge와 main CI를 확인했고 M13-001 저장소 보호 설정 적용·재조회를 완료했다.
 - 완료 작업: M12·M12-02 및 보안 패치 전달, M13-001 — 저장소 보호 설정 (`COMPLETE`)
-- 현재 작업: M13-002 — 보호된 PR 흐름 실제 검증 (`IN_PROGRESS`); baseline·로컬 후보 준비 중이며 실제 push·merge는 사용자 승인 필요
-- 다음 작업: M13-003 — release build·OS package (`NOT_STARTED`, 이번 요청 범위 밖); 공개 출시 준비 완료는 별도 판정
+- 현재 작업: M13-002 — 보호된 PR 흐름 검증 (`IN_PROGRESS`). PR34 병합과 main CI320 전체 성공 후 최신 기준선을 감사했고, 과거 PR33은 병합 없이 닫고 PR32는 stale 검증 전용으로 보존한다. 최신 main을 develop에 전달할 보호 PR을 준비한다.
+- 다음 작업: M13-002의 남은 target별 부정 시험·정상 develop→main 검증과 최종 감사. M13-003 이후는 acceptance 종료 전까지 `NOT_STARTED / NOT_READY`다.
+- 유지보수 완료: `UPG-001..006 COMPLETE / QUALIFIED`, PR34/main CI320 전달 완료. 공개 attested release·상시 service·기존 full-Race 후속은 별도 범위로 유지한다.
 - 진행 상태의 canonical owner: [`docs/planning/02-current-work-queue.md`](docs/planning/02-current-work-queue.md)
 
 Heliopause는 Apache-2.0으로 배포한다. 외부 기여는 `CLA.md`의 Harmony
@@ -29,8 +30,17 @@ Copyright License 및 Option Five 조건과 자동 CLA status check를 충족해
 ## Build
 
 Heliopause는 Go `1.26.9` 이상이 필요하며, 개발·CI toolchain은 Go `1.26.9`로 고정한다.
-새 툴체인의 검증 이력과 별도 guest runtime·Race 후속 항목은
-[검증 보고서](docs/engineering/evidence/security-go1269/README.md)를 따른다.
+
+개발용 Go는 영구 경로 `$HOME/.local/go`의 단일 SDK를 사용하고 해당 `bin`을
+PATH에 둔다. `GOTOOLCHAIN=local`로 자동 SDK 추가 다운로드를 금지한다. 버전
+업데이트 시 host SDK, `go.mod`, quality tool/CI pins와 Go guest runtime lock을
+함께 갱신하고 검증한 뒤 이전 SDK를 제거한다. Canonical Quick은 이 버전들의
+불일치를 거부한다.
+
+Host·Go guest 단일화와 로컬 설치 검증은
+[단일화 보고서](docs/engineering/evidence/go-single-version-20261015/README.md)를 따른다.
+이전 보안 수리와 별도 full-Race 후속 항목은
+[보안 검증 보고서](docs/engineering/evidence/security-go1269/README.md)에 보존한다.
 
 다음 build 명령은 source checkout을 가진 개발자·검증자가 사용하는 경로다. 일반
 사용자는 최종적으로 GitHub Release의 검증된 bootstrap entrance를 사용해야 하며,
