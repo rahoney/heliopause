@@ -398,3 +398,78 @@ old SDK 선택은 구분한다. 원본 증거·실패 입력·일반 dependency 
 업데이트 기능의 완료는 현재 버전 no-op, 조정된 fixture upgrade, 부분 갱신/잘못된
 digest/중단·dirty 입력 거부, 실제 Go/gVisor1.26.9 후보의 검증·전환과 모든 지원
 생태계의 영향 판정이 연결된 상태다. M13 보류를 해제하는 기준은 계획 문서에 둔다.
+
+## 9. 현재 설치 전환과 운영 인계
+
+UPG-006은 검증된 후보를 현재 controlled Linux 개발 설치에 적용하는 작업이다.
+일반 사용자의 서명된 공개 release 설치와 배포는 M10/M13 계약을 그대로 따른다.
+로컬 build나 임의 verifier로 release attestation을 만들지 않는다. 실제 전환의
+hash·owner·mode·compiler·consumer·doctor와 정리 범위는
+[UPG-006 evidence](./evidence/runtime-upgrade-maintenance/upg-006.json)가 소유한다.
+
+### 전환 순서와 실패 처리
+
+1. Queue의 선행 qualification, exact source/runtime/tool identities와 현재 설치를
+   확인한다. 원래 사용자 checkout은 유지하고 updater에는 clean 별도 Git source를
+   사용한다. SDK는 현재 선택된 absolute Go를 지정하며 자동 SDK download를 켜지 않는다.
+2. 기존 설치 파일의 bytes/hash/UID/GID/full mode를 영구 backup에 보존한다.
+   root의 설치 journal·민감 config를 일반 사용자가 읽지 못한 경우 필요한 root
+   readback만 수행하며 권한을 낮추지 않는다. Git executable bit와 native full mode는
+   다르므로 재부팅 후 임시 source 복원도 frozen inventory의 bytes/full modes를 따른다.
+3. canonical bootstrap으로 기본 managed quality cache를 준비하고 actual compiler를
+   확인한다. 기존 qualified output과 비교하며 version 문자열만으로 활성화를 판정하지
+   않는다. caller active binaries와 updater의 독립 verification cache는 구분한다.
+4. helper/container/process/handle 상태와 원본을 설치 직전에 확인한다. 기존 controlled
+   installation과 canonical owning-shell helper lifecycle을 재사용해 coherent bundle을
+   적용한다. 여러 파일의 순차 쓰기를 하나의 atomic transaction이라고 주장하지 않는다.
+   완료 전에 끊기면 journal의 완료 목록과 실제 before/after hash를 먼저 대조한다.
+5. 실제 ordinary-user production consumer와 installed doctor를 실행하고 helper의
+   parent wait·cleanup 및 마지막 protected file identities를 확인한다. 설치 성공과
+   테스트 준비 실패, doctor의 일부 readiness와 전체 healthy 상태를 각각 기록한다.
+   원래 실패를 후속 cleanup이나 성공으로 덮지 않는다.
+6. confirmed stop과 identity 검증 뒤에만 원본 복원 또는 성공한 후보 유지를 수행한다.
+   UNKNOWN 아래 dependent restore/rebind/retirement를 하지 않는다. 재부팅으로 임시
+   경로가 없어졌다면 영구 backup·기존 Git source·frozen modes를 복구해 검증한 뒤
+   기존 절차로 이어간다. Protected journal 자체가 실행 권한이나 완료 authority는 아니다.
+
+Controlled local activation은 보호된 파일의 전환이다. 이 작업의 helper는 실제
+검증 동안 기존 소유 lifecycle로 실행하고 parent wait를 확인한 뒤 종료한다.
+상시 service 활성화나 일반 사용자 공개 bootstrap 제공을 이 결과로 주장하지 않는다.
+
+현재 `helox doctor`의 release-installation은 공개 attested release가 없으면
+UNAVAILABLE/exit1이다. 나머지 Host readiness가 OK여도 전체 doctor를 healthy로
+바꾸지 않는다. 이 상태와 M13 미출시 범위를 보존하며 로컬 runtime activation을
+공개 installer 제공 또는 production release 완료로 확대하지 않는다.
+
+### 생태계별 갱신 책임
+
+| 대상 | 기존 entrypoint 또는 적용 제외 이유 | 영향 검증 |
+| --- | --- | --- |
+| HAA Go·Go guest·gVisor·quality tools | `update-runtime plan --component go --version X.Y.Z`, apply/verify와 실제 bundle capture/build 및 승인된 설치 | compiler/drift, installed cross-ecosystem, CPU/지원 CUDA, actual Required/native platform |
+| Node/npm | `--component node`; npm은 선택한 official Node의 bundled identity | named image/manifest, npm resolver·inspect·install·Promotion |
+| Python/pip | `--component python`; pip/ABI는 선택한 interpreter와 함께 검토 | wheel/entry-point/Promotion 및 영향받은 CPU/지원 CUDA full |
+| Rust/Cargo | `--component rust` | source/add/transitive/offline build와 security·rollback |
+| Terraform Provider | `--component terraform`은 adapter/common-runtime 영향만 계획; 사용자 constraints/lock·서명된 provider는 재작성하지 않음 | actual registry integrity/signature/protocol·guard·init |
+| GitHub Releases | `--component github`은 common-runtime 영향만 계획; 사용자 release/asset의 version·hash·signature는 독립 입력 | signed asset resolve/acquire/inspect·negative consumers |
+| PyTorch CPU/cu126/cu130/cu132 | SDK updater의 자동 package-version 선택 대상이 아님; 기존 reviewed support tuple/named source와 generator가 owner | common Go/gVisor 변경에는 네 독립 full qualification; GPU/driver/Toolkit attestation으로 확대하지 않음 |
+
+다음 실제 언어 버전은 official metadata·review·새 frozen plan과 필요한 actual
+qualification을 다시 요구한다. 기존 coordinated next-version fixtures와 interruption/
+dirty/digest/state-lock tests는 편집·복구 계약의 회귀이며 실제 미래 SDK나 지원 tuple의
+검증 결과가 아니다. Same-version reconciliation은 새 SDK나 source diff를 만들지
+않아야 하고 configuration PASS를 migration/activation authority로 사용하지 않는다.
+
+### 보존과 정리
+
+활성 SDK·기본 quality binaries·설치 runtime, 영구 rollback originals, 실제 원본
+Evidence/log/manifest/receipt와 현재 복원에 필요한 후보는 보존한다. 이전 compiler로
+빌드된 비활성 rollback binary는 활성 SDK 선택과 구분한다. 완료된 테스트의 targets,
+intake/staging payload 사본, test executable·temporary source와 regenerable build
+cache는 exact inventory 및 실제 proc/FD/maps/mount/container·operation-lock 확인 후
+삭제한다. 공유 dependency module과 다른 사용자 환경을 임의 정리하지 않는다.
+논리적 삭제 byte, 실제 filesystem available 변화와 Windows VHD 회수는 다른 수치다.
+
+전체 qualification 뒤에도 separate full-Race fixture finding, release-installation과
+reviewer merge는 해당 owner의 남은 작업이다. 유지보수 branch를 검토 가능한 상태로
+전달하고 실제 reviewer merge/전달 CI와 새 M13 baseline 확인 전에는 보류 전의
+M13 CLEAN·승인 후보를 재사용하거나 M13 보류를 자동 해제하지 않는다.

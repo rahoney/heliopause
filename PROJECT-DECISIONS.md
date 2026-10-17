@@ -98,7 +98,7 @@
 | Cross-Ecosystem Qualification and Feature Freeze | M12-005 | Complete | [Qualification Evidence](./docs/planning/evidence/m12-005-qualification/README.md), [Current Work Queue](./docs/planning/02-current-work-queue.md) |
 | M12 Final Red-Team Fix Gate | M12-02 | Complete | [M12-02 Final Red-Team Fix List](./docs/planning/17-m12-02-fix-list.md) |
 | Production Release & Operations | M13 | M13-001 complete; M13-002 ON_HOLD by user request | [M13 Production Release & Operations Contract](./docs/planning/18-m13-production-release-operations-contract.md) |
-| Runtime Upgrade Maintenance | UPG-001..006 | UPG-001..005 complete; UPG-006 IN_PROGRESS | [Design](./docs/engineering/05-runtime-upgrade-maintenance.md), [Plan](./docs/planning/19-runtime-upgrade-maintenance-plan.md) |
+| Runtime Upgrade Maintenance | UPG-001..006 | UPG-001..006 complete/qualified; reviewer delivery and M13 resumption remain separate | [Design](./docs/engineering/05-runtime-upgrade-maintenance.md), [Plan](./docs/planning/19-runtime-upgrade-maintenance-plan.md) |
 
 ## Current Stage
 
@@ -109,7 +109,7 @@ Documentation hierarchy and task routing migration: Complete
 2026-10-15 사용자가 M13을 보류하고 버전 갱신 유지보수의 설계·계획을 먼저
 정리하도록 요청했다. UPG-001 baseline audit/design/planning을
 `milestone/runtime-upgrade-maintenance`에서 완료했고 UPG-002 owner/manifest/drift와
-UPG-003 updater/no-op·복구·canonical verify와 UPG-004 compiler 후보 build·재현성·capture 계획 연결을 검증했다. UPG-005의 실제 local CPU/세 CUDA 및 fresh ordinary/nativeMac/세 CUDA remote qualification을 완료했다. UPG-006의 기존 구현·설치 상태를 source 변경 전에 감사했고 검증된 전환·retirement·운영 인계를 진행한다. 상세 결정은
+UPG-003 updater/no-op·복구·canonical verify와 UPG-004 compiler 후보 build·재현성·capture 계획 연결을 검증했다. UPG-005의 실제 local CPU/세 CUDA 및 fresh ordinary/nativeMac/세 CUDA remote qualification을 완료했다. UPG-006의 기존 구현·설치 상태를 source 변경 전에 감사하고 실제 controlled 전환·retirement·운영 인계를 완료했다. 최종 metadata-head CI와 reviewer 정상 병합은 별도로 확인하며 M13 보류·새 baseline/별도 병합 승인 조건은 유지한다. 상세 결정은
 [Runtime upgrade design](./docs/engineering/05-runtime-upgrade-maintenance.md),
 작업·완료·재개 조건은 [plan](./docs/planning/19-runtime-upgrade-maintenance-plan.md)과
 Queue가 소유한다. 아래 M13 기록은 보류 전 관측이며 새 원격 상태를 뜻하지 않는다.

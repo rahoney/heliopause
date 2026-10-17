@@ -219,8 +219,12 @@ Support review dates/decisions and historical qualification receipts are never
 automatically refreshed. Terraform/GitHub subjects remain user-selected signed
 artifacts; their adapters and parser/module dependencies retain their existing
 owners. UPG-004's [Gitleaks/compiler candidate](./evidence/runtime-upgrade-maintenance/upg-004-gitleaks.json)
-reuses source installation and checks actual compilers; gVisor rebuilding and
-coherent installed qualification/activation remain open.
+reuses source installation and checks actual compilers. UPG-005 qualified the
+actual local/remote CPU and three CUDA profiles; UPG-006 activated the qualified
+controlled runtime and default five managed Go tools at1.26.9. Actual metadata,
+production consumers, bounded doctor and retirement are recorded in
+[activation evidence](./evidence/runtime-upgrade-maintenance/upg-006.json). Public
+attested release installation and M13 activation remain separate.
 
 Implementation and remaining stages follow the
 [runtime upgrade design](./05-runtime-upgrade-maintenance.md) and

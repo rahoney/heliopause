@@ -1,78 +1,17 @@
 {
   "schema_version": 1,
   "work_item": "UPG-006",
-  "status": "IN_PROGRESS",
+  "status": "COMPLETE",
   "date": "2026-10-17",
   "baseline": "cfe773710ab45ab2b2fedca7fda9b523de96dda3",
   "predecessor": "UPG-005 COMPLETE actual local/remote CPU and three supported CUDA; final docs/security PASS",
-  "audit": [
-    {
-      "responsibility": "selected host SDK and immutable guest identity",
-      "IMPLEMENTED": "YES",
-      "WIRED": "YES",
-      "QUALIFIED": "YES",
-      "ACCEPTANCE_CLOSED": "YES",
-      "MISSING": [],
-      "evidence": "go-single-version-20261015 and UPG005 same-runtime public Go consumers; host actual1.26.9"
-    },
-    {
-      "responsibility": "managed Go quality source installation",
-      "IMPLEMENTED": "YES",
-      "WIRED": "YES",
-      "QUALIFIED": "YES",
-      "ACCEPTANCE_CLOSED": "NO",
-      "MISSING": [
-        "activate qualified Gitleaks via existing canonical bootstrap and read actual metadata/security"
-      ],
-      "owner": "scripts/check/tools.go; UPG004 quality compiler evidence",
-      "current": "four default tools1.26.9; default Gitleaks compiler1.22.1; qualified state-local Gitleaks1.26.9"
-    },
-    {
-      "responsibility": "controlled installed CLI/helper/observer/coherent six-member runtime",
-      "IMPLEMENTED": "YES",
-      "WIRED": "YES",
-      "QUALIFIED": "YES",
-      "ACCEPTANCE_CLOSED": "NO",
-      "MISSING": [
-        "fresh root ownership/original12/consumer audit, existing installation with durable journal, final protected metadata/hash readback and production smoke"
-      ],
-      "owner": "existing controlled installation and scripts/ci-integration-cleanup.sh / ci-helper-smoke.sh",
-      "current": "original global CLI/helper1.26.9 and gVisor1.26.3; qualified candidate runtime1.26.9"
-    },
-    {
-      "responsibility": "backup, uncertain cleanup and interrupted recovery",
-      "IMPLEMENTED": "YES",
-      "WIRED": "YES",
-      "QUALIFIED": "YES",
-      "ACCEPTANCE_CLOSED": "NO",
-      "MISSING": [
-        "document activation/rollback journal and exact observed recovery/fault scope; preserve UNKNOWN and durable original12"
-      ],
-      "owner": "existing lifecycle owner; update-runtime apply journal/recovery tests; actual UPG005 startup/recovery and original restoration receipts"
-    },
-    {
-      "responsibility": "current-version reconciliation and future-version fixture",
-      "IMPLEMENTED": "YES",
-      "WIRED": "YES",
-      "QUALIFIED": "YES",
-      "ACCEPTANCE_CLOSED": "NO",
-      "MISSING": [
-        "canonical current-version plan/apply/verify rehearsal and same-source existing coordinated fixture/recovery regressions"
-      ],
-      "owner": "scripts/update-runtime; TestSameVersionPlanAndApply, TestCoordinatedComponentFixtures, TestInterruptedApplyRecovery and existing negatives"
-    },
-    {
-      "responsibility": "operator guidance, retirement and M13 handoff",
-      "IMPLEMENTED": "YES",
-      "WIRED": "YES",
-      "QUALIFIED": "NO",
-      "ACCEPTANCE_CLOSED": "NO",
-      "MISSING": [
-        "actual bounded doctor result and production consumer; exact completed cache retirement; version/update coverage; separate Race/release follow-up disposition and reviewer merge boundary"
-      ],
-      "owner": "runtime upgrade design sections7/8, quality toolchain, Queue; public release remains M13"
-    }
-  ],
+  "audit": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES",
+    "ACCEPTANCE_CLOSED": "YES",
+    "MISSING": []
+  },
   "observed_baseline": {
     "host_go": "go version go1.26.9 linux/amd64",
     "tools_and_runtime": [
@@ -153,5 +92,551 @@
     "retire only inventoried inactive HAA-owned completed data; preserve rollback originals and actual evidence",
     "no main merge, protected rule mutation or public release"
   ],
-  "local_evidence_owner": "$HOME/.local/state/heliopause/runtime-upgrades/upg005-20261016/preflight/upg006-readonly-baseline.json"
+  "local_evidence_owner": "$HOME/.local/state/heliopause/runtime-upgrades/upg005-20261016/preflight/upg006-readonly-baseline.json",
+  "actual_activation": {
+    "scope": "controlled local protected files and readiness within an existing owned helper lifecycle; helper is stopped after verification; not persistent-service/public release activation",
+    "quality": {
+      "canonical_bootstrap_exit": 0,
+      "seconds": 52.2,
+      "tools": [
+        {
+          "command": "staticcheck",
+          "sha256": "dc8da69fc4543f68dd89e221592369ba800a44b6e719e78fd526f07b88113415",
+          "actual_compiler": "go1.26.9"
+        },
+        {
+          "command": "gosec",
+          "sha256": "c3362909305f620c210ecfd6053432141368062b649fe87cc25237da56453bd1",
+          "actual_compiler": "go1.26.9"
+        },
+        {
+          "command": "govulncheck",
+          "sha256": "0bad037aeb406ccb4180ddfa063ee668c4b140ba5f194c16f835ce8c90147597",
+          "actual_compiler": "go1.26.9"
+        },
+        {
+          "command": "gitleaks",
+          "sha256": "6741b23f836bd3651e152df0e64b8e7161a5ea4773560a9e17d0ce7d0aa1e38e",
+          "actual_compiler": "go1.26.9"
+        },
+        {
+          "command": "actionlint",
+          "sha256": "a26d2946aa5da367b099b05ac8a2a6ea12c68d43f1a5f84f5b0e9f7ab18e36d9",
+          "actual_compiler": "go1.26.9"
+        }
+      ],
+      "gitleaks_matches_qualified_sha256": "6741b23f836bd3651e152df0e64b8e7161a5ea4773560a9e17d0ce7d0aa1e38e",
+      "old_gitleaks_rollback_backup_retained": true,
+      "log_sha256": "289a27638dce8999e43f00bd51aaa53ce8fba60161902e202e0648139a0688ae"
+    },
+    "runtime": {
+      "status": "ACTIVATED_LOCAL_CONTROLLED",
+      "root_original12_backup_verified": true,
+      "installed_candidate12_verified": true,
+      "rows": [
+        {
+          "path": "/usr/libexec/heliopause/helox",
+          "sha256": "3a7fc8a359f73cadc147a225d897c89cec110a9508158e67d76e89738779052f",
+          "uid": 0,
+          "gid": 0,
+          "mode": "0o755",
+          "size": 22126882
+        },
+        {
+          "path": "/usr/libexec/heliopause/haa-network-policy-helper",
+          "sha256": "d196561d50b2e073b71414aa0e12d89339863c5d0a47751390f30e7cae00a70f",
+          "uid": 0,
+          "gid": 0,
+          "mode": "0o755",
+          "size": 7260219
+        },
+        {
+          "path": "/usr/libexec/heliopause/haa_gvisor_observer",
+          "sha256": "d9c502d857c37bfbaea7d4bffbe6d9c3c82e1edc2322556673f516ca01903ce9",
+          "uid": 0,
+          "gid": 0,
+          "mode": "0o755",
+          "size": 3084560
+        },
+        {
+          "path": "/etc/heliopause/network-policy.json",
+          "sha256": "2acf7e15a49b0c1b823d9011dd4aaf654e8eef433c1fdf1786e2971923897c64",
+          "uid": 0,
+          "gid": 0,
+          "mode": "0o644",
+          "size": 143
+        },
+        {
+          "path": "/etc/heliopause/pod-init.json",
+          "sha256": "20b623863b0fe2a3b9949ad30ccb01e646e0ddf37a7824d8ec2fa7789d5582e4",
+          "uid": 0,
+          "gid": 0,
+          "mode": "0o600",
+          "size": 5660
+        },
+        {
+          "path": "/usr/libexec/heliopause/gvisor/containerd-shim-runsc-v1",
+          "sha256": "4d035abeb632ff2503995fb58b68e26fb9c83ef794a4b183fffb72f2691e1217",
+          "uid": 0,
+          "gid": 0,
+          "mode": "0o755",
+          "size": 43763177
+        },
+        {
+          "path": "/usr/libexec/heliopause/gvisor/gvisor-bin/checkpointgofer",
+          "sha256": "3d0b60e9bb4d09155fc77f4cdc76beea5fc4c989ca933af02072dbeb9264ac07",
+          "uid": 0,
+          "gid": 0,
+          "mode": "0o755",
+          "size": 69307944
+        },
+        {
+          "path": "/usr/libexec/heliopause/gvisor/gvisor-bin/gvisor-sentry-prewarmer",
+          "sha256": "3315d7ad7c2d3751d349e4976fa02da1da6fd7e41746c35622304e5fabe4fce0",
+          "uid": 0,
+          "gid": 0,
+          "mode": "0o755",
+          "size": 1416
+        },
+        {
+          "path": "/usr/libexec/heliopause/gvisor/gvisor-bin/gvisor_sentry",
+          "sha256": "332c838667e7911bb4e84ef6695b3301031017c4120a35e1886c939ae8ac3326",
+          "uid": 0,
+          "gid": 0,
+          "mode": "0o755",
+          "size": 52220923
+        },
+        {
+          "path": "/usr/libexec/heliopause/gvisor/gvisor-bin/runsc-metric-server",
+          "sha256": "ea116bbbb348a18b365a72c4ed7c4e021a76ddfec2a8bae77c1885d4771a7784",
+          "uid": 0,
+          "gid": 0,
+          "mode": "0o755",
+          "size": 53298557
+        },
+        {
+          "path": "/usr/libexec/heliopause/gvisor/runsc",
+          "sha256": "fac2eeeecc2689df023b18a6000d942f5ff1b47f46c2dbee8144c84a9786c909",
+          "uid": 0,
+          "gid": 0,
+          "mode": "0o755",
+          "size": 109851720
+        },
+        {
+          "path": "/usr/libexec/heliopause/gvisor/gvisor-bundle.manifest.json",
+          "sha256": "45d4272c7b495e2a13567547bb2d1cb30af0b74bc2b959f08b93b85929ec5174",
+          "uid": 0,
+          "gid": 0,
+          "mode": "0o644",
+          "size": 1902
+        }
+      ],
+      "consumers": {
+        "containers": 0,
+        "proc_count": 55,
+        "installed_consumers": 0,
+        "runtime_handles": 0
+      },
+      "journal_phase": "ACTIVATED",
+      "activated_utc": "2026-10-17T02:59:14.396081+00:00",
+      "actual_go_members": [
+        {
+          "path": "/usr/libexec/heliopause/helox",
+          "actual_compiler": "go1.26.9"
+        },
+        {
+          "path": "/usr/libexec/heliopause/haa-network-policy-helper",
+          "actual_compiler": "go1.26.9"
+        },
+        {
+          "path": "/usr/libexec/heliopause/gvisor/containerd-shim-runsc-v1",
+          "actual_compiler": "go1.26.9"
+        },
+        {
+          "path": "/usr/libexec/heliopause/gvisor/gvisor-bin/checkpointgofer",
+          "actual_compiler": "go1.26.9"
+        },
+        {
+          "path": "/usr/libexec/heliopause/gvisor/gvisor-bin/gvisor_sentry",
+          "actual_compiler": "go1.26.9"
+        },
+        {
+          "path": "/usr/libexec/heliopause/gvisor/gvisor-bin/runsc-metric-server",
+          "actual_compiler": "go1.26.9"
+        },
+        {
+          "path": "/usr/libexec/heliopause/gvisor/runsc",
+          "actual_compiler": "go1.26.9"
+        }
+      ],
+      "production_consumers": {
+        "npm": "COMPLETED/ALLOW/PROMOTED",
+        "pip": "COMPLETED/ALLOW/PROMOTED"
+      },
+      "doctor": {
+        "doctor_exit_code": 1,
+        "overall_doctor_healthy": false,
+        "host_runtime_checks_healthy": true,
+        "release_installation": "release-installation=UNAVAILABLE (RELEASE_INSTALLATION_UNAVAILABLE)",
+        "checks": [
+          "release-installation=UNAVAILABLE (RELEASE_INSTALLATION_UNAVAILABLE)",
+          "trusted-host-runtime=OK (OK)",
+          "observer-helper=OK (OK)",
+          "network-policy-service=OK (OK)",
+          "runtime-images=OK (OK)"
+        ],
+        "scope": "actual default user release root; unavailable release installation remains unavailable/M13, not healthy"
+      },
+      "quality_tools": "default5 actualGo1.26.9; qualified Gitleaks exact digest",
+      "finalized_utc": "2026-10-17T02:59:14.822600+00:00"
+    },
+    "production_consumers": {
+      "count": 2,
+      "seconds": 39.05,
+      "operation_status": "COMPLETED",
+      "policy": "ALLOW",
+      "promotion_status": "COMPLETED",
+      "parent_wait_zero": true,
+      "runtime_sha256": "318d00a12cd66f6ee03269be5b3d2c47dd1e0c802da511e37ee35e3ce2f80689"
+    },
+    "doctor": {
+      "wrapper_exit": 0,
+      "actual_doctor_exit": 1,
+      "overall_healthy": false,
+      "host_checks_healthy": true,
+      "checks": [
+        "release-installation=UNAVAILABLE (RELEASE_INSTALLATION_UNAVAILABLE)",
+        "trusted-host-runtime=OK (OK)",
+        "observer-helper=OK (OK)",
+        "network-policy-service=OK (OK)",
+        "runtime-images=OK (OK)"
+      ],
+      "parent_wait_zero": true,
+      "runtime_sha256": "b5c5a4e9d1cb30cf476ab92097a96a556ccaaf80381caa8afc6a1b6d8c554cdb"
+    }
+  },
+  "preparation_failures": [
+    {
+      "status": "FAIL_BEFORE_COPY_OR_INSTALL",
+      "cause": "Git tar default0664/frozen0644 then Git executable bit/full frozen0744 difference",
+      "correction": "explicit per-command tar.umask and frozen full modes; final all1527 bytes/modes PASS",
+      "scope": "source restoration preparation; no SDK/product inference"
+    },
+    {
+      "status": "ROOT_JOURNAL_READER_FAILURE_AFTER_SUCCESSFUL_INSTALL",
+      "cause": "ordinary reader denied root600 protected installation journal",
+      "correction": "root read-only existing original/source/candidate/consumer checks; no chmod/reinstallation"
+    },
+    {
+      "status": "FAIL_BEFORE_NPM_PIP",
+      "primary": 1,
+      "seconds": 1.72,
+      "helper_parent_wait": 0,
+      "original12_restore_exit": 0,
+      "cause": "task operator omitted qualification/<case> output parent",
+      "correction": "new case with empty0700 parent prepared before installation; actual two production consumers PASS39.05s",
+      "first_runtime_sha256": "c954bd939f04eb4220dd63a9880d8f0bbcdc54eb229e261944e8c7c9d91db34b"
+    }
+  ],
+  "current_missing": [],
+  "reconciliation": {
+    "source": "9a3b02aa8bafa3cccc9e1d3bc7534896f75444fc",
+    "steps": [
+      {
+        "step": "build",
+        "exit_code": 0,
+        "seconds": 4.89,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "step": "plan",
+        "exit_code": 0,
+        "seconds": 1.82,
+        "sha256": "8f02356eab6a5ddf72038545fbc8c129b50aae6b29c91fec1576b1fdf8e61d0e"
+      },
+      {
+        "step": "apply",
+        "exit_code": 0,
+        "seconds": 1.27,
+        "sha256": "7d8379d178665aed8acd641e94398be5201c89e2939b45624c45350dfdafa97b"
+      },
+      {
+        "step": "apply-noop",
+        "exit_code": 0,
+        "seconds": 0.57,
+        "sha256": "7d8379d178665aed8acd641e94398be5201c89e2939b45624c45350dfdafa97b"
+      },
+      {
+        "step": "verify",
+        "exit_code": 0,
+        "seconds": 261.81,
+        "sha256": "b58a46a5c9b4ca964e6cf0528fdfc11c9b9d17e6275ffa1196f2bd8cb8d8bd58"
+      }
+    ],
+    "plan_id": "0159e26db48ad4695ca76fc3fd48057cdf75049904b8ef68f462e14cdad9b5e2",
+    "changes": 0,
+    "additional_sdk": false,
+    "caller_default_quality_tools_unchanged": true,
+    "canonical_results": [
+      {
+        "profile": "bootstrap",
+        "status": "PASS",
+        "log_sha256": "289a27638dce8999e43f00bd51aaa53ce8fba60161902e202e0648139a0688ae"
+      },
+      {
+        "profile": "quick",
+        "status": "PASS",
+        "log_sha256": "a54ded546219c71fe07f1f16167f8ae8e99f1317a7e1b8882b91a5db51bb4aee"
+      },
+      {
+        "profile": "security",
+        "status": "PASS",
+        "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+      },
+      {
+        "profile": "workflow",
+        "status": "PASS",
+        "log_sha256": "9f629b0e9a8b7a67b85205621cf5b3b3942703b7b73de5cbbbe419f782d700d9"
+      },
+      {
+        "profile": "release-gate",
+        "status": "PASS",
+        "log_sha256": "11e43c6a182a612ea79ba5d521d90153efd0f567857993ea20db4c3f95039b73"
+      },
+      {
+        "profile": "docs",
+        "status": "PASS",
+        "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+      },
+      {
+        "profile": "qualification-freshness",
+        "status": "PASS",
+        "log_sha256": "a139e18892192652dc1d7880e1d1bda7b269e445b80081de6776ebbe4d82c2c0"
+      }
+    ],
+    "configuration": "PASS",
+    "coordinator_migration_complete": false,
+    "coordinator_scope": "configuration-only flag remains false; actual controlled activation is evidenced separately",
+    "fixture_scope": "existing coordinated next-version/recovery/SDK/dirty/state-lock tests run by canonical Quick unfiltered default suite; synthetic future versions are not actual future SDK activation",
+    "completed_private_state_cleanup": "candidate worktree/cache/generator retired after verification and operation lock; recreate clean source/new state for a new operation"
+  },
+  "completed_test_cleanup": {
+    "status": "PASS",
+    "scope": "completed same-version candidate worktree/private verification cache and generator; completed production test targets/cache/home and duplicate CLI copies; active default tools/shared dependency modules/runtime candidate/originals preserved",
+    "files_deleted": 40006,
+    "logical_regular_bytes_deleted": 2458104726,
+    "symlinks_unlinked_without_following": 5,
+    "preserved_evidence_files": 10,
+    "inventory_sha256": "afe308ed3be759a3b0d5f3603cd0f5dd0bf7372b7cb372f9a53a04c06da01dd6",
+    "capacity_before": 915958562816,
+    "capacity_after": 918567235584,
+    "finished_utc": "2026-10-17T03:21:46.287521+00:00",
+    "operation_lock_held": true,
+    "runtime_files_unchanged": true,
+    "available_delta": 2608672768,
+    "mount_query_boundary": "EINVAL was first rejected; only stable stateZ/starttime with maps0/FD0 and exe/mnt namespace targetENOENT classified as resource-empty; arbitrary query failure remains UNKNOWN"
+  },
+  "remote_closure_predecessor": {
+    "head": "9a3b02aa8bafa3cccc9e1d3bc7534896f75444fc",
+    "run": 38995940953,
+    "all_ten_success": true,
+    "merge": "8fcd300cfdad496d9c147b46c9b42a6d1bf90ccd",
+    "merge_tree_equals_head": true,
+    "cpu_seconds": 281.95,
+    "raw": [
+      {
+        "job": 117288408115,
+        "sha256": "bb45b336df5e574b8166e137316987daccb19e9e027767ae31461aa6d98df684",
+        "path": "ci318-job117288408115-decoded.log",
+        "bytes": 455601
+      },
+      {
+        "job": 117288408117,
+        "sha256": "7fb0615a38559c85f11d3b259ac37bb266d1b13a2aca41ed8eb4bd78a05228df",
+        "path": "ci318-job117288408117-decoded.log",
+        "bytes": 21097
+      }
+    ],
+    "recorded_utc": "2026-10-17T03:26:09.299906+00:00"
+  },
+  "baseline_audit": [
+    {
+      "responsibility": "selected host SDK and immutable guest identity",
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "YES",
+      "ACCEPTANCE_CLOSED": "YES",
+      "MISSING": [],
+      "evidence": "go-single-version-20261015 and UPG005 same-runtime public Go consumers; host actual1.26.9"
+    },
+    {
+      "responsibility": "managed Go quality source installation",
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "YES",
+      "ACCEPTANCE_CLOSED": "NO",
+      "MISSING": [
+        "activate qualified Gitleaks via existing canonical bootstrap and read actual metadata/security"
+      ],
+      "owner": "scripts/check/tools.go; UPG004 quality compiler evidence",
+      "current": "four default tools1.26.9; default Gitleaks compiler1.22.1; qualified state-local Gitleaks1.26.9"
+    },
+    {
+      "responsibility": "controlled installed CLI/helper/observer/coherent six-member runtime",
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "YES",
+      "ACCEPTANCE_CLOSED": "NO",
+      "MISSING": [
+        "fresh root ownership/original12/consumer audit, existing installation with durable journal, final protected metadata/hash readback and production smoke"
+      ],
+      "owner": "existing controlled installation and scripts/ci-integration-cleanup.sh / ci-helper-smoke.sh",
+      "current": "original global CLI/helper1.26.9 and gVisor1.26.3; qualified candidate runtime1.26.9"
+    },
+    {
+      "responsibility": "backup, uncertain cleanup and interrupted recovery",
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "YES",
+      "ACCEPTANCE_CLOSED": "NO",
+      "MISSING": [
+        "document activation/rollback journal and exact observed recovery/fault scope; preserve UNKNOWN and durable original12"
+      ],
+      "owner": "existing lifecycle owner; update-runtime apply journal/recovery tests; actual UPG005 startup/recovery and original restoration receipts"
+    },
+    {
+      "responsibility": "current-version reconciliation and future-version fixture",
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "YES",
+      "ACCEPTANCE_CLOSED": "NO",
+      "MISSING": [
+        "canonical current-version plan/apply/verify rehearsal and same-source existing coordinated fixture/recovery regressions"
+      ],
+      "owner": "scripts/update-runtime; TestSameVersionPlanAndApply, TestCoordinatedComponentFixtures, TestInterruptedApplyRecovery and existing negatives"
+    },
+    {
+      "responsibility": "operator guidance, retirement and M13 handoff",
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "NO",
+      "ACCEPTANCE_CLOSED": "NO",
+      "MISSING": [
+        "actual bounded doctor result and production consumer; exact completed cache retirement; version/update coverage; separate Race/release follow-up disposition and reviewer merge boundary"
+      ],
+      "owner": "runtime upgrade design sections7/8, quality toolchain, Queue; public release remains M13"
+    }
+  ],
+  "final_responsibility_audit": [
+    {
+      "responsibility": "selected host SDK and immutable guest identity",
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "YES",
+      "ACCEPTANCE_CLOSED": "YES",
+      "MISSING": [],
+      "evidence": "go-single-version-20261015 and UPG005 same-runtime public Go consumers; host actual1.26.9",
+      "closure_evidence": "host actual1.26.9 and unchanged immutable Go guest/public Go qualification"
+    },
+    {
+      "responsibility": "managed Go quality source installation",
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "YES",
+      "ACCEPTANCE_CLOSED": "YES",
+      "MISSING": [],
+      "owner": "scripts/check/tools.go; UPG004 quality compiler evidence",
+      "baseline_observed": "four default tools1.26.9; default Gitleaks compiler1.22.1; qualified state-local Gitleaks1.26.9",
+      "closure_evidence": "actual_activation.quality: default5 actual1.26.9 and qualified Gitleaks bytes"
+    },
+    {
+      "responsibility": "controlled installed CLI/helper/observer/coherent six-member runtime",
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "YES",
+      "ACCEPTANCE_CLOSED": "YES",
+      "MISSING": [],
+      "owner": "existing controlled installation and scripts/ci-integration-cleanup.sh / ci-helper-smoke.sh",
+      "baseline_observed": "original global CLI/helper1.26.9 and gVisor1.26.3; qualified candidate runtime1.26.9",
+      "closure_evidence": "actual_activation.runtime/production_consumers/doctor: candidate12/Go7 and scoped readiness; public release unavailable preserved"
+    },
+    {
+      "responsibility": "backup, uncertain cleanup and interrupted recovery",
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "YES",
+      "ACCEPTANCE_CLOSED": "YES",
+      "MISSING": [],
+      "owner": "existing lifecycle owner; update-runtime apply journal/recovery tests; actual UPG005 startup/recovery and original restoration receipts",
+      "closure_evidence": "durable original12 plus actual confirmed first-consumer restoration and documented recovery/fault limits"
+    },
+    {
+      "responsibility": "current-version reconciliation and future-version fixture",
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "YES",
+      "ACCEPTANCE_CLOSED": "YES",
+      "MISSING": [],
+      "owner": "scripts/update-runtime; TestSameVersionPlanAndApply, TestCoordinatedComponentFixtures, TestInterruptedApplyRecovery and existing negatives",
+      "closure_evidence": "reconciliation: no-op2/7canonical profiles, no SDK and caller bins unchanged; synthetic fixtures only"
+    },
+    {
+      "responsibility": "operator guidance, retirement and M13 handoff",
+      "IMPLEMENTED": "YES",
+      "WIRED": "YES",
+      "QUALIFIED": "YES",
+      "ACCEPTANCE_CLOSED": "YES",
+      "MISSING": [],
+      "owner": "runtime upgrade design sections7/8, quality toolchain, Queue; public release remains M13",
+      "closure_evidence": "completed_test_cleanup and operating guide docs/security PASS; final-check inputs remain active until disposal"
+    }
+  ],
+  "final_record_checks": [
+    {
+      "profile": "docs",
+      "exit_code": 0,
+      "seconds": 0.52,
+      "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "profile": "security",
+      "exit_code": 0,
+      "seconds": 20.45,
+      "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    }
+  ],
+  "delivery": {
+    "branch": "milestone/runtime-upgrade-maintenance",
+    "pr": 34,
+    "reviewer_merge": "NOT_PERFORMED",
+    "final_metadata_head_required": "query actual run after final commit/push; record in persistent remote receipt and PR",
+    "M13": "ON_HOLD; do not resume until reviewer merge/delivery and fresh M13 baseline/permission conditions"
+  },
+  "dispositions": [
+    {
+      "item": "public attested release installation and persistent service/public activation",
+      "status": "DEFERRED_M13",
+      "evidence": "actual default-root doctor release-installation UNAVAILABLE/exit1 preserved; controlled owned helper4 host checks OK"
+    },
+    {
+      "item": "separate full-Race fixture findings",
+      "status": "OPEN_FOLLOWUP_NOT_RERUN",
+      "evidence": "existing security-go1269 evidence; Required is not a Race job; no success of this maintenance relabels the Race result"
+    },
+    {
+      "item": "ordinary dependency modules and other host environments",
+      "status": "PRESERVED",
+      "evidence": "cleanup restricted to completed private rehearsal/test artifacts; global shared modules and active SDK/tools retained"
+    },
+    {
+      "item": "current runtime candidates/original12/old Gitleaks backup",
+      "status": "RETAINED_FOR_ROLLBACK",
+      "evidence": "active root file identities and durable backups; no helper uncertainty used as restoration authority"
+    }
+  ],
+  "failure_scope_limits": [
+    "actual coordinator write-interruption/dirty/digest/state-lock fixtures and known root startup/consumer preparation restoration are verified only in their observed scope",
+    "no injected host power loss during a partial multi-file privileged replacement; no global atomic-install or universal crash-recovery claim",
+    "full doctor remains actualexit1 until public release installation is available; owned controlled-runtime readiness is a separate observed result"
+  ]
 }

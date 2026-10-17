@@ -8,10 +8,10 @@
 
 ```text
 Current milestone: Runtime upgrade maintenance — prerequisite to M13 resumption
-Milestone status: IN_PROGRESS (UPG-001..005 qualified; verified activation/retirement remains)
-Active work item: UPG-006 — verified activation / retirement / M13 handoff (IN_PROGRESS)
-Next work item: maintenance qualification / reviewer delivery, then fresh M13 baseline
-Next work item status: NOT_READY — UPG-006 acceptance and reviewer merge remain; M13 stays ON_HOLD
+Milestone status: QUALIFIED (UPG-001..006 acceptance/evidence closed; final metadata-head delivery CI and reviewer merge are separate)
+Active work item: none — UPG-001..006 COMPLETE; observe final delivery CI and hand off for reviewer merge
+Next work item: fresh M13-002 baseline after maintenance reviewer merge/delivery
+Next work item status: ON_HOLD / NOT_READY — reviewer merge and fresh source/remote/approval audit required
 M13 status: ON_HOLD by user request on 2026-10-15; M13-002 acceptance remains open
 ```
 
@@ -33,7 +33,7 @@ Baseline audit·작업별 Read/acceptance·검증 순서·M13 재개 조건:
 | UPG-003 | explicit plan/apply/verify / same-version rehearsal | COMPLETE | [updater evidence](../engineering/evidence/runtime-upgrade-maintenance/upg-003.json); actual no-op2/2, canonical verify7 profiles,10 tests/28 cases PASS |
 | UPG-004 | gVisor·archived quality tool Go1.26.9 candidates | COMPLETE | [quality compiler](../engineering/evidence/runtime-upgrade-maintenance/upg-004-gitleaks.json) / [gVisor build](../engineering/evidence/runtime-upgrade-maintenance/upg-004-gvisor.json); actual/reproducible candidates and observed-output plans qualified |
 | UPG-005 | installed ecosystem / CPU / cu126 / cu130 / cu132 qualification | COMPLETE | [qualification evidence](../engineering/evidence/runtime-upgrade-maintenance/upg-005.json); same local full matrix and fresh ordinary/nativeMac/three independent remote CUDA Required PASS; originals/cleanup and final docs/security verified |
-| UPG-006 | verified activation / retirement / M13 handoff | IN_PROGRESS | [start audit](../engineering/evidence/runtime-upgrade-maintenance/upg-006.json); reuse existing qualified implementation; default Gitleaks and coherent gVisor activation, operator checks/rehearsal/retirement remain |
+| UPG-006 | verified activation / retirement / M13 handoff | COMPLETE | [activation/handoff evidence](../engineering/evidence/runtime-upgrade-maintenance/upg-006.json); actual default quality5/installed Go7 at1.26.9, production2 and scoped doctor, no-op/7canonical profiles, exact completed-test cleanup and final docs/security PASS; public release/Race/reviewer merge retain separate scope |
 
 이번 범위는 owned versions의 갱신 절차와 Go/gVisor1.26.9 전환이다. 모든 언어의
 최신판 동시 도입, 사용자 프로젝트/provider 재작성, 새 CUDA profile 또는 M13 공개
@@ -332,6 +332,32 @@ global gVisor compiler1.26.3 and Gitleaks1.22.1 distinguish preparation from act
 activation. Host/default other quality compilers already1.26.9. Public attested
 release installation remains M13 and unavailable doctor checks stay unavailable.
 No existing implementation replacement, product protocol or new CI job is needed.
+
+
+UPG-006 closure (2026-10-17): existing installation/bootstrap/lifecycle/updater
+implementations were reused without product source replacement. Default quality5
+and installed CLI/helper/five Go runtime members all report actualGo1.26.9;
+Gitleaks matches the reproducibly qualified output. Original12 rollback backups
+and protected installed hash/owner/modes remain verified. Ordinary npm/pip2
+complete ALLOW/promotion in39.05s with confirmed helper wait0. Actual doctor has
+four Host readiness OK under the owned helper, while full exit1 and unavailable
+public release installation remain unchanged/M13. All helpers are then stopped;
+this is controlled local file activation, not persistent/public service activation.
+Current-version plan/apply/second no-op/verify passes all7 canonical profiles,
+zero source changes/no new SDK/caller active quality binaries unchanged. Existing
+coordinated future-version/recovery fixtures are included by unfiltered Quick;
+no actual future SDK qualification is claimed. Completed private rehearsal and
+test outputs40006 files/logical2458104726B were deleted after inventory, operation
+lock and actual references/installed-file checks; actual Evidence10 preserved.
+Separate first source/reader/output-parent failures and confirmed original restore
+remain historical. Arbitrary mount query failure stays UNKNOWN; only proven
+resource-empty stable zombies were separately classified for cleanup.
+Operating guide/evidence docs/security PASS. Final audit YES/YES/YES/YES/MISSING=none
+within UPG006; final metadata-head Required is observed separately after push.
+Reviewer merge/main delivery and a fresh M13 baseline still block M13 resumption.
+Known Race/release follow-ups are not closed by this result. Remaining final-check
+caches/source copies are inventoried and disposed after verification, while active
+inputs, rollback data and original evidence remain.
 
 M13-001 COMPLETE는 유지한다. M13-002는 ON_HOLD이며 PR33·남은 CLA/stale/merge
 acceptance와 기존 원본을 보존한다. M13 재개 시 새 Git/remote/PR/check 관측과
