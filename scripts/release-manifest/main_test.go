@@ -33,7 +33,7 @@ func TestBuildReleaseProducesBoundManifestAndSBOM(t *testing.T) {
 	if err != nil || json.Unmarshal(body, &manifest) != nil {
 		t.Fatalf("read manifest: %v", err)
 	}
-	if manifest.Schema != manifestSchema || manifest.Version != "v1.2.3" || manifest.SourceCommit != strings.Repeat("b", 40) || manifest.WorkflowRun != workflowRun || len(manifest.Assets) != 6 {
+	if manifest.Schema != manifestSchema || manifest.Version != "v1.2.3" || manifest.SourceCommit != strings.Repeat("b", 40) || manifest.WorkflowRun != workflowRun || len(manifest.Assets) != 8 {
 		t.Fatalf("manifest = %#v", manifest)
 	}
 	if manifest.RuntimeLock.GVisorCommit != strings.Repeat("a", 40) || manifest.SBOM.Name != filepath.Base(sbomPath) || manifest.SBOM.SHA256 == "" {
@@ -102,6 +102,8 @@ func releaseAssets(t *testing.T, root, binary string) []string {
 		"helox-darwin-arm64",
 		"haa_gvisor_observer-linux-amd64",
 		"haa-network-policy-helper-linux-amd64",
+		"helox-linux-amd64.deb",
+		"helox-linux-amd64.rpm",
 	}
 	paths := make([]string, 0, len(names))
 	for _, name := range names {

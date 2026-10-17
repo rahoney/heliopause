@@ -9,10 +9,10 @@
 ```text
 Current milestone: M13 — Production Release & Operations
 Milestone status: IN_PROGRESS — runtime maintenance main delivery COMPLETE
-Active work item: M13-002 — protected branch qualification / fresh baseline and develop synchronization
-Active work item status: IN_PROGRESS — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO
-Next work item: M13-003 — canonical release build and OS package assets
-Next work item status: NOT_STARTED / NOT_READY — M13-002 acceptance remains open
+Active work item: M13-003 — canonical release build and OS package qualification (approved C3 disposition)
+Active work item status: IN_PROGRESS — source CI325 ten SUCCESS; actual release qualification remains; QUALIFIED=NO / ACCEPTANCE_CLOSED=NO
+Predecessor: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
+Next work item: M13-004 — NOT_STARTED / awaiting M13-003 acceptance; concrete publication approval still required
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
 
@@ -3000,8 +3000,8 @@ M12-005 feature freeze에서 수행한다. canonical lock 등록만으로 releas
 | Order | ID | Scope | Status |
 | --- | --- | --- | --- |
 | 1 | M13-001 | protected main/develop/tag/release environment/immutable release activation | COMPLETE |
-| 2 | M13-002 | `feature → develop → main` 실제 protected PR qualification | IN_PROGRESS — fresh baseline / protected develop synchronization |
-| 3 | M13-003 | canonical release build·manifest·attestation·OS package assets | NOT_STARTED |
+| 2 | M13-002 | `feature → develop → main` 실제 protected PR qualification | ACCEPTED_WITH_EXCEPTION — C3; actual missing-CLA NOT_TESTED / DEFERRED |
+| 3 | M13-003 | canonical release build·manifest·attestation·OS package assets | IN_PROGRESS — source CI PASS / actual release qualification |
 | 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | NOT_STARTED |
 | 5 | M13-005 | exact publication·clean Host bootstrap·doctor·cross-ecosystem smoke·quarantine | NOT_STARTED |
 
@@ -3050,21 +3050,30 @@ no-known-release-blocking-finding entry assessment.
 
 ### M13-002 — protected branch qualification
 
-Status: IN_PROGRESS — resumed by user after PR34 merge and actual main CI320 ten SUCCESS.
+Status: ACCEPTED_WITH_EXCEPTION — user approved C3 for the initial maintainer-only
+release. Actual missing-CLA remains NOT_TESTED / DEFERRED; full QUALIFIED=NO.
 
-Fresh baseline/disposition: [2026-10-17 resume evidence](./evidence/m13-002-protected-path/resume-20261017.json).
-Main32f1b8e includes maintenance; develop84591ef is1ahead25behind with no new
-merge-base-to-develop files. PR33 closed without merge because its file changes
-are delivered; old exact-head normal merge proposal is superseded. PR32 remains
-open solely for stale validation, exact head unchanged and clearly marked non-merge.
-Existing active strict Required/CLA/conversation/nonFF/deletion rules and successful
-historical target-specific negatives are reused. Prepare one current develop sync
-PR from milestone/m13-protected-path-resume; no direct protected push/main merge.
-Audit: IMPLEMENTED=YES/WIRED=YES/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO.
-MISSING: protected develop synchronization; target-specific stale/Required gaps;
-missing-CLA remains NOT_TESTED pending actual evidence/approved disposition;
-history-preserving nonFF/separate bypass method; fresh normal develop→main
-qualification/reviewer merge and final audit. M13-003..005 stay NOT_STARTED.
+Read: [M13 contract](./18-m13-production-release-operations-contract.md#m13-002--protected-branch-qualification),
+[C3 approval](./evidence/m13-002-protected-path/cla-deferral-proposal-20261017.md),
+[post-delivery evidence](./evidence/m13-002-protected-path/post-delivery-review-20261017.json).
+
+Audit: IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=YES
+within the explicitly revised C3 acceptance scope. Normal PR35/36 delivery and
+actual main CI324 are verified; PR32/33 are CLOSED/unmerged. Develop Required-only
+suite4574545429 and approved disposable nonFF suite4575025940 close their bounded
+gaps. Existing direct/conversation/ordinary-admin negatives and accepted bounded
+operational Strict evidence are reused; independent freshness-only NOT_QUALIFIED
+and exact-target hostile force NOT_RUN within the accepted method remain visible.
+No replay or fake identity/status/signature reset is proposed.
+
+MISSING (deferred evidence): actual eligible missing-CLA server rejection. A genuine
+unsigned contributor remains unavailable. Owner: repository maintainer. Deadline:
+complete the real test before the first external-contribution merge; until then
+external contributions cannot merge. Unknown protection/App identity or actual
+failure suspends C3. The single canonical C3 clause owns scope and release limits.
+M13-003 qualification may proceed in order; no particular merge/tag/publish is
+authorized by this acceptance. M13-004/005 remain NOT_STARTED. Historical paragraphs
+below do not restore the earlier C2 blocker or grant new writes.
 
 The following is historical pre-hold evidence; its PR33 merge proposal and CLEAN
 state are not current execution authority:
@@ -3252,6 +3261,36 @@ rules, fabricate statuses/identity or mark those cases waived/qualified.
 Detailed baseline, target-specific matrix, evidence custody and authorization
 boundaries: [qualification plan](./evidence/m13-002-protected-path/README.md).
 Release tags/publication and M13-003 implementation remain outside this task.
+
+### M13-003 — canonical release build and OS package preparation
+
+Status: IN_PROGRESS — implementation wired, local checks and exact source CI325
+PASS; remaining actual release build/package qualification under approved C3.
+Read: [M13 contract](./18-m13-production-release-operations-contract.md#m13-003--canonical-release-build-and-os-packages),
+[M10 distribution contract](./13-m10-verified-distribution-bootstrap-contract.md),
+[CI gate](../engineering/04-ci-quality-gate.md), directory/Architecture rules and
+current release build/publish/manifest/install consumers.
+
+Audit: IMPLEMENTED=YES / WIRED=YES (source workflow) / QUALIFIED=NO /
+ACCEPTANCE_CLOSED=NO. Baseline audit preceded source edits. Existing native/helper/
+runtime/SBOM/installer responsibilities are reused. Actual deb/rpm bytes, metadata,
+permissions, reproducibility/negative tests, manifest exact set and native installer
+regressions PASS. Whole Quick/security/vulnerability/workflow/docs/release-gate and
+Linux platform checks PASS. Darwin cross-test compilation and actual native macOS
+CI PASS. PR37 source1ac1bf6 and checkout25c4b27 have the same whole tree3af3728;
+CI325/run39023951914 Required+9 prerequisites SUCCESS, Linux45 consumers/CPUfull
+192.25s/helper5wait0/final confirmed cleanup are verified from10 original logs.
+
+Evidence: [baseline](./evidence/m13-003-release-build/baseline-20261017.md),
+[preparation result](./evidence/m13-003-release-build/preparation-20261017.md).
+MISSING: final C3 documentation/check delivery and reviewer-approved normal
+protected merge/new main CI; actual protected-source release build/attestation;
+clean-host OS install/lifecycle and exact publication qualification. A static
+release-gate PASS does not authorize a concrete tag or publication. C3 removes
+only the missing-CLA predecessor block within its explicit scope. Only M13-003 is
+IN_PROGRESS; M13-004/005 await its acceptance and their own baseline audits.
+Completed test/build roots and private caches are deleted after last use; original
+evidence, active runtime/rollback and shared SDK/modules are preserved.
 
 ### M12 baseline audit status
 

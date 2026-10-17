@@ -40,6 +40,52 @@ func TestInstallVerifiesBundleAndAtomicallyActivates(t *testing.T) {
 	}
 }
 
+// OS package assets share the release manifest, but the verified native
+// installer must continue selecting only its own CLI/helper roles.
+func TestInstallNativePayloadFromManifestWithOSPackages(t *testing.T) {
+	root := t.TempDir()
+	bundle := releaseBundle(t, root, "v1.2.3", "packages")
+	path := filepath.Join(bundle, manifestName)
+	body, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var value manifest
+	if err := json.Unmarshal(body, &value); err != nil {
+		t.Fatal(err)
+	}
+	for _, item := range []struct{ name, role string }{{"helox-linux-amd64.deb", "os-package-deb"}, {"helox-linux-amd64.rpm", "os-package-rpm"}} {
+		payload := []byte(item.name)
+		if err := os.WriteFile(filepath.Join(bundle, item.name), payload, 0o600); err != nil {
+			t.Fatal(err)
+		}
+		value.Assets = append(value.Assets, asset{Name: item.name, Platform: "linux/amd64", Role: item.role, SHA256: digest(payload), Size: int64(len(payload))})
+	}
+	body, err = json.Marshal(value)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, body, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	installer, err := newInstaller(allowVerifier{}, "linux", "amd64")
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := installer.Install(context.Background(), Request{BundleDirectory: bundle, InstallRoot: filepath.Join(root, "installed")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if check := checkInstallation(result.InstallRoot, "linux", "amd64"); !check.Healthy {
+		t.Fatalf("native doctor: %#v", check)
+	}
+	for _, name := range []string{"helox-linux-amd64.deb", "helox-linux-amd64.rpm"} {
+		if _, err := os.Lstat(filepath.Join(result.InstallRoot, "versions", "v1.2.3", name)); !errors.Is(err, os.ErrNotExist) {
+			t.Fatalf("unselected OS package installed: %s: %v", name, err)
+		}
+	}
+}
+
 func TestCheckInstallationFailsClosedForUnavailableOrTamperedState(t *testing.T) {
 	if check := CheckInstallation(filepath.Join(t.TempDir(), "missing")); check.Healthy || check.Detail == "" {
 		t.Fatalf("missing installation check=%#v", check)

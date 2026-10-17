@@ -169,8 +169,8 @@ public 이후 검증 실패는 기존 release의 overwrite/re-tag가 아니라
 | Order | ID | Scope | Status |
 | --- | --- | --- | --- |
 | 1 | M13-001 | protected main/develop/tag/release environment/immutable release activation | COMPLETE |
-| 2 | M13-002 | `feature → develop → main` 실제 protected PR qualification | IN_PROGRESS |
-| 3 | M13-003 | canonical release build·manifest·attestation·OS package assets | NOT_STARTED |
+| 2 | M13-002 | `feature → develop → main` 실제 protected PR qualification | ACCEPTED_WITH_EXCEPTION — C3 / full QUALIFIED=NO |
+| 3 | M13-003 | canonical release build·manifest·attestation·OS package assets | IN_PROGRESS — source CI PASS / actual release qualification |
 | 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | NOT_STARTED |
 | 5 | M13-005 | exact publication·clean Host bootstrap·doctor·cross-ecosystem smoke·quarantine | NOT_STARTED |
 
@@ -217,6 +217,38 @@ hostile cases:
 
 는 모두 실패해야 한다.
 
+#### 2026-10-17 승인된 C3 조건부 유예
+
+실제 missing-CLA 시험은 NOT_TESTED / DEFERRED로 보존한다. 소유자가
+유지보수자 본인 변경으로 진행하는 초기 릴리스 범위의 증거 공백을 명시적으로
+수용하여, 이 한 항목의 M13 후속 작업·초기 릴리스 선행 차단을 유예한다.
+기존 S 판정은 유지하며 C2의 준비 전용 순서 예외를 이 C3 범위로 대체한다.
+
+M13-002는 IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO (전체 hostile matrix) /
+ACCEPTANCE_CLOSED=YES (승인 예외 범위)인 ACCEPTED_WITH_EXCEPTION으로 기록한다.
+실제 미서명 PR 차단이나 독립 freshness-only의 미검증 결과를 PASS로 바꾸거나,
+M13 전체의 무조건적인 full qualification을 주장하지 않는다.
+
+필수 CLA 검사·서명 의무·Strict·대화 해결·직접 push/force 금지·관리자 무우회
+보호는 유지하며 실제 missing/failed CLA PR은 병합하지 않는다. 가짜 신원/기여,
+status 주입이나 서명 초기화로 시험을 만들지 않는다. 최초 외부 기여를
+병합하기 전에 실제 미서명 기여자의 차단 시험을 완료하고, 그 전에는 외부
+기여 병합을 보류한다. 실제 차단 실패 또는 보호 설정·App 신원 불명확이
+확인되면 유예를 중단하고 후속 병합·배포를 멈춘다.
+
+M13-003..005는 Queue의 선행조건과 각 acceptance를 따라 순차 진행한다.
+이 승인은 특정 PR 병합·release version/source/tag·public publish 실행을
+지정하는 승인이 아니다. 구체적 후보와 검증 결과를 준비한 뒤 기존 reviewer·
+배포 승인 절차를 따른다. Namespace·소유권·OIDC, 실제 build/attestation,
+clean-host 설치·rollback과 publication 검증은 여전히 필수다.
+
+유예는 최초 외부 기여 병합 전 실제 시험으로 종료한다. 초기 릴리스 이후에도
+시험이 불가능하면 후속 릴리스에 이 승인을 자동 확대하지 않고 당시 증거와
+보호 상태로 범위를 다시 판단한다. 종료 시 승인 예외·미검증 상태·원본 이력을
+함께 보존한다. 정확한 승인 입력과 결과는
+[C3 승인 기록](./evidence/m13-002-protected-path/cla-deferral-proposal-20261017.md),
+기존 S/C2 이력은 [결정 기록](./evidence/m13-002-protected-path/remaining-decisions-20261017.md)이 소유한다.
+
 ### M13-003 — canonical release build and OS packages
 
 release build는 exact protected source에서 다음을 만든다.
@@ -262,6 +294,22 @@ exact source commit
 - post-install `helox doctor` 안내
 
 패키지 lifecycle script에서 network download나 arbitrary shell extension을 하지 않는다.
+
+Linux amd64 package payload는 `/usr/lib/heliopause/releases/<version>/`에 CLI,
+observer, network-policy helper와 runtime lock/image manifest를 root 소유로
+설치한다. CLI·observer는 `0555`, privileged helper는 `0500`, metadata는
+`0444`이며 `/usr/bin/helox`는 해당 version의 CLI를 가리킨다. 제공 systemd
+unit는 기본 비활성이고, 실제 caller identity로 보호한
+`/etc/heliopause/network-policy.json`이 있어야 시작할 수 있다. 추측한 UID/GID의
+동작 config를 생성하거나 기존 active runsc/observer를 교체하지 않는다.
+고정 post-install 안내는 controlled runtime 설정 후 `helox doctor` 실행을
+요구한다. OS package 설치 성공과 verified runtime activation은 별도다.
+
+Checksum 생성과 publish의 file set은 같은 manifest verifier를 소비한다.
+Publish는 manifest attestation/source를 먼저 검증한 뒤 basename·role·platform·
+size·digest·metadata·exact directory set 검증이 성공한 목록만 별도 control
+file로 전달한다. Checksum 파일의 임의 경로나 artifact 자체의 file list를
+publication authority로 취급하지 않는다.
 
 ### M13-004 — convenience publication
 
@@ -460,6 +508,19 @@ M13은 기능 개발 milestone이 아니다.
 
 M13 진입 후 새로운 ecosystem이나 주요 product feature를 추가하지 않는다.
 release-blocking bug가 아닌 개선 아이디어는 post-release backlog로 넘긴다.
+
+Current status: M13-001 configuration is complete. M13-002 protected normal
+PR35/36 delivery and actual main CI324 ten SUCCESS are verified; the explicitly
+approved disposable nonFF method passed within its recorded scope and temporary
+resources are deleted. [Post-delivery evidence](./evidence/m13-002-protected-path/post-delivery-review-20261017.json)
+owns those facts. M13-002 remains BLOCKED on the actual missing-CLA case, with QUALIFIED=NO /
+ACCEPTANCE_CLOSED=NO. The owner approved bounded operational Strict evidence and
+the preparation-only work-order exception above. M13-003 baseline audit and
+implementation/build/package preparation may proceed; publication/tag/publish
+activation remains prohibited by the actual CLA gate. M13-004/005 are NOT_STARTED.
+
+
+Historical pre-maintenance handoff (superseded as current execution authority):
 
 Status: IN_PROGRESS — M13-001 configuration complete; M13-002 develop conversation
 rejection and normal PR31 merge verified. The single approved PR32 request was

@@ -294,6 +294,11 @@ func validateReleaseWorkflow(contents, selectedGo string) []string {
 		"docker buildx imagetools inspect \"$python_image\"",
 		"docker buildx imagetools inspect \"$go_image\"",
 		"docker buildx imagetools inspect \"$rust_image\"",
+		"go run ./scripts/release-packages",
+		"--source-date-epoch \"$(git show -s --format=%ct \"$GITHUB_SHA\")\"",
+		"--checksums-output \"$dist/helox-release-checksums.txt\"",
+		"--asset \"$dist/helox-linux-amd64.deb\"",
+		"--asset \"$dist/helox-linux-amd64.rpm\"",
 		"go run ./scripts/release-manifest",
 		"--workflow-run \"$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\"",
 		"--runtime-images \"$dist/helox-runtime-images.json\"",
@@ -306,6 +311,13 @@ func validateReleaseWorkflow(contents, selectedGo string) []string {
 			findings = append(findings, fmt.Sprintf("missing required release workflow contract %q", snippet))
 		}
 	}
+	findings = append(findings, validateActiveJobCommands(contents, "build-and-attest", "Build deterministic native release assets", "OS package", []string{
+		`go run ./scripts/release-packages \`,
+		`--source-date-epoch "$(git show -s --format=%ct "$GITHUB_SHA")" \`,
+		`--checksums-output "$dist/helox-release-checksums.txt" \`,
+		`--asset "$dist/helox-linux-amd64.deb" \`,
+		`--asset "$dist/helox-linux-amd64.rpm"`,
+	})...)
 	for _, token := range []string{
 		"pull_request:", "pull_request_target:", "workflow_dispatch:", "schedule:", "contents: write", "packages: write", "secrets:",
 		"@main", "@master", "@latest", "ubuntu-latest", "actions/create-release", "gh release", "softprops/action-gh-release",
@@ -346,18 +358,6 @@ func validateReleaseWorkflow(contents, selectedGo string) []string {
 
 func validateReleasePublishWorkflow(contents, selectedGo string) []string {
 	findings := validateGoWorkflowVersions(contents, selectedGo)
-	expectedFiles := []string{
-		"haa_gvisor_observer-linux-amd64",
-		"haa-network-policy-helper-linux-amd64",
-		"helox-darwin-amd64",
-		"helox-darwin-arm64",
-		"helox-linux-amd64",
-		"helox-linux-arm64",
-		"helox-runtime-images.json",
-		"helox-release-manifest.json",
-		"helox-release-sbom.cdx.json",
-		"helox-release-checksums.txt",
-	}
 	for _, snippet := range []string{
 		"name: Heliopause Verified Release Publish",
 		"  workflow_dispatch:",
@@ -375,7 +375,6 @@ func validateReleasePublishWorkflow(contents, selectedGo string) []string {
 		".name == \"Required\" and .status == \"completed\" and .conclusion == \"success\" and .app.slug == \"github-actions\"",
 		"gh run download \"$SOURCE_RUN_ID\" -R \"$GH_REPO\" -n \"$artifact_name\"",
 		"sha256sum -c helox-release-checksums.txt",
-		"haa_gvisor_observer-linux-amd64",
 		"helox-release-checksums.txt",
 		"test -z \"$(comm -3",
 		"gh attestation verify",
@@ -399,28 +398,7 @@ func validateReleasePublishWorkflow(contents, selectedGo string) []string {
 			findings = append(findings, fmt.Sprintf("missing required release publication contract %q", snippet))
 		}
 	}
-	for _, section := range []struct {
-		name  string
-		start string
-		end   string
-	}{
-		{"candidate exact set", "Verify candidate identity and download immutable artifact", "Verify manifest asset bindings"},
-		{"candidate provenance", "Verify GitHub artifact provenance", "Re-run canonical release gate"},
-		{"draft asset binding", "Verify draft release asset bindings before publication", "Publish and verify immutable release"},
-	} {
-		start := strings.Index(contents, section.start)
-		end := strings.Index(contents, section.end)
-		if start < 0 || end <= start {
-			findings = append(findings, "release publication "+section.name+" section is unavailable")
-			continue
-		}
-		body := contents[start:end]
-		for _, name := range expectedFiles {
-			if !strings.Contains(body, name) {
-				findings = append(findings, fmt.Sprintf("release publication %s omits %q", section.name, name))
-			}
-		}
-	}
+	findings = append(findings, validateReleaseBundleConsumers(contents)...)
 	draftVerification := strings.Index(contents, "Verify draft release asset bindings before publication")
 	publish := strings.Index(contents, "gh release edit \"$RELEASE_TAG\" -R \"$GH_REPO\" --draft=false")
 	if draftVerification < 0 || publish < 0 || draftVerification > publish {
@@ -460,6 +438,82 @@ func validateReleasePublishWorkflow(contents, selectedGo string) []string {
 		findings = append(findings, fmt.Sprintf("release publication workflow jobs are %q, require %q", jobs, "publish"))
 	}
 	sort.Strings(findings)
+	return findings
+}
+
+// The manifest verifier owns package names and exact set validation. The workflow
+// must authenticate that manifest before consuming its output, then pass the same
+// verified control file to every publication/provenance consumer.
+func validateReleaseBundleConsumers(contents string) []string {
+	doc, err := parseWorkflow(contents)
+	if err != nil {
+		return nil
+	}
+	job := workflowMap(workflowMap(doc["jobs"])["publish"])
+	steps, _ := job["steps"].([]any)
+	commands := map[string][]string{
+		"Verify candidate identity and download immutable artifact": {
+			`gh attestation verify "$candidate/helox-release-manifest.json" \`,
+			`--source-digest "$source_sha" \`,
+			`expected_names="$(go run ./scripts/release-manifest \`,
+			`--verify-bundle "$candidate" \`,
+			`--version "$RELEASE_TAG" \`,
+			`--commit "$source_sha" \`,
+			`--workflow-run "$GITHUB_SERVER_URL/$GH_REPO/actions/runs/$SOURCE_RUN_ID")"`,
+			`mapfile -t expected_files <<<"$expected_names"`,
+			`(umask 077; set -o noclobber; printf '%s\n' "${expected_files[@]}" > "$RUNNER_TEMP/helox-release-files.txt")`,
+		},
+		"Verify GitHub artifact provenance": {
+			`mapfile -t expected_files < "$RUNNER_TEMP/helox-release-files.txt"`,
+			`for name in "${expected_files[@]}"; do`,
+			`gh attestation verify "$candidate/$name" \`,
+		},
+		"Refuse an existing release and create a draft": {
+			`mapfile -t expected_files < "$RUNNER_TEMP/helox-release-files.txt"`,
+			`release_files+=("$candidate/$name")`,
+			`"${release_files[@]}"`,
+		},
+		"Verify draft release asset bindings before publication": {
+			`mapfile -t expected_files < "$RUNNER_TEMP/helox-release-files.txt"`,
+			`test "$(jq -er '.assets | length' <<<"$release_json")" -eq "${#expected_files[@]}"`,
+			`for name in "${expected_files[@]}"; do`,
+		},
+		"Publish and verify immutable release": {
+			`mapfile -t expected_files < "$RUNNER_TEMP/helox-release-files.txt"`,
+			`for name in "${expected_files[@]}"; do`,
+			`gh release verify-asset "$RELEASE_TAG" "$candidate/$name" -R "$GH_REPO" || status=1`,
+		},
+	}
+	var findings []string
+	for name, required := range commands {
+		bodies := []string{}
+		for _, raw := range steps {
+			step := workflowMap(raw)
+			if step["name"] == name && step["if"] == nil && job["if"] == nil && step["continue-on-error"] == nil && job["continue-on-error"] == nil {
+				run, _ := step["run"].(string)
+				bodies = append(bodies, run)
+			}
+		}
+		if len(bodies) != 1 {
+			findings = append(findings, "release bundle requires one active step: "+name)
+			continue
+		}
+		lines := strings.Split(bodies[0], "\n")
+		prior := -1
+		for _, command := range required {
+			count, position := 0, -1
+			for i, line := range lines {
+				if strings.TrimSpace(line) == command {
+					count++
+					position = i
+				}
+			}
+			if count != 1 || position <= prior {
+				findings = append(findings, fmt.Sprintf("release bundle %s requires ordered active command %q", name, command))
+			}
+			prior = position
+		}
+	}
 	return findings
 }
 

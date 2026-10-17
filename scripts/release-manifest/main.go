@@ -118,6 +118,8 @@ func run(arguments []string) error {
 	sbomPath := flags.String("sbom-output", "", "CycloneDX SBOM output")
 	runtimeImagesPath := flags.String("runtime-images", "", "runtime image manifest")
 	manifestPath := flags.String("output", "", "release manifest output")
+	checksumsPath := flags.String("checksums-output", "", "canonical checksum output alongside the manifest")
+	bundle := flags.String("verify-bundle", "", "verify a complete bundle and print its exact file names")
 	var assets stringList
 	flags.Var(&assets, "asset", "release asset path (repeatable)")
 	if err := flags.Parse(arguments); err != nil {
@@ -126,7 +128,28 @@ func run(arguments []string) error {
 	if flags.NArg() != 0 {
 		return errors.New("positional arguments are not supported")
 	}
-	return buildRelease(*version, *commit, *workflowRun, *runtimeLockPath, *sbomPath, *runtimeImagesPath, *manifestPath, assets)
+	if *bundle != "" {
+		if len(assets) != 0 || *checksumsPath != "" || *manifestPath != "" || *runtimeLockPath != "" || *sbomPath != "" || *runtimeImagesPath != "" {
+			return errors.New("bundle verification cannot also build outputs")
+		}
+		names, err := verifyBundle(*bundle, *version, *commit, *workflowRun)
+		if err != nil {
+			return err
+		}
+		for _, name := range names {
+			if _, err := fmt.Fprintln(os.Stdout, name); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	if err := buildRelease(*version, *commit, *workflowRun, *runtimeLockPath, *sbomPath, *runtimeImagesPath, *manifestPath, assets); err != nil {
+		return err
+	}
+	if *checksumsPath != "" {
+		return writeChecksums(*manifestPath, *checksumsPath, *version, *commit, *workflowRun)
+	}
+	return nil
 }
 
 func buildRelease(version, commit, workflowRun, runtimeLockPath, sbomPath, runtimeImagesPath, manifestPath string, assetPaths []string) error {
@@ -184,8 +207,11 @@ func buildRelease(version, commit, workflowRun, runtimeLockPath, sbomPath, runti
 	return writeNewFile(manifestPath, append(body, '\n'))
 }
 
-func collectAssets(paths []string) ([]releaseAsset, string, error) {
-	expected := map[string]struct {
+func assetSpecs() map[string]struct {
+	platform string
+	role     string
+} {
+	return map[string]struct {
 		platform string
 		role     string
 	}{
@@ -195,7 +221,13 @@ func collectAssets(paths []string) ([]releaseAsset, string, error) {
 		"helox-darwin-arm64":                    {platform: "darwin/arm64", role: "helox"},
 		"haa_gvisor_observer-linux-amd64":       {platform: "linux/amd64", role: "gvisor-observer"},
 		"haa-network-policy-helper-linux-amd64": {platform: "linux/amd64", role: "network-policy-helper"},
+		"helox-linux-amd64.deb":                 {platform: "linux/amd64", role: "os-package-deb"},
+		"helox-linux-amd64.rpm":                 {platform: "linux/amd64", role: "os-package-rpm"},
 	}
+}
+
+func collectAssets(paths []string) ([]releaseAsset, string, error) {
+	expected := assetSpecs()
 	if len(paths) != len(expected) {
 		return nil, "", errors.New("release asset set is incomplete")
 	}

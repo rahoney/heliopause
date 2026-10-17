@@ -61,6 +61,13 @@ jobs:
           docker buildx imagetools inspect "$python_image" >/dev/null
           docker buildx imagetools inspect "$rust_image" >/dev/null
           docker buildx imagetools inspect "$go_image" >/dev/null
+          go run ./scripts/release-packages \
+            --version "$GITHUB_REF_NAME" \
+            --source-date-epoch "$(git show -s --format=%ct "$GITHUB_SHA")" \
+            --assets-dir "$dist" \
+            --output-dir "$dist" \
+            --runtime-lock scripts/runtimes.lock.json \
+            --license LICENSE
           go run ./scripts/release-manifest \
             --version "$GITHUB_REF_NAME" \
             --commit "$GITHUB_SHA" \
@@ -69,25 +76,15 @@ jobs:
             --sbom-output "$dist/helox-release-sbom.cdx.json" \
             --runtime-images "$dist/helox-runtime-images.json" \
             --output "$dist/helox-release-manifest.json" \
+            --checksums-output "$dist/helox-release-checksums.txt" \
             --asset "$dist/helox-linux-amd64" \
             --asset "$dist/helox-linux-arm64" \
             --asset "$dist/helox-darwin-amd64" \
             --asset "$dist/helox-darwin-arm64" \
             --asset "$dist/haa_gvisor_observer-linux-amd64" \
-            --asset "$dist/haa-network-policy-helper-linux-amd64"
-          (
-            cd "$dist"
-            LC_ALL=C sha256sum \
-              haa_gvisor_observer-linux-amd64 \
-              haa-network-policy-helper-linux-amd64 \
-              helox-darwin-amd64 \
-              helox-darwin-arm64 \
-              helox-linux-amd64 \
-              helox-linux-arm64 \
-              helox-runtime-images.json \
-              helox-release-manifest.json \
-              helox-release-sbom.cdx.json > helox-release-checksums.txt
-          )
+            --asset "$dist/haa-network-policy-helper-linux-amd64" \
+            --asset "$dist/helox-linux-amd64.deb" \
+            --asset "$dist/helox-linux-amd64.rpm"
       - name: Attest release candidate provenance
         uses: actions/attest@a1948c3f048ba23858d222213b7c278aabede763 # v4.1.1
         with:

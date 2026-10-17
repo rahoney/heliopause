@@ -1,13 +1,23 @@
 # M13-002 protected branch qualification
 
-현재 재개 기준선과 과거 PR 처리는 [2026-10-17 resume evidence](./resume-20261017.json)가 소유한다. PR34/main 전달 완료 후 M13-002 IN_PROGRESS이며 PR33은 병합 없이 종료, PR32는 검증 전용으로 보존한다. 아래 과거 normal-main 승인 제안은 superseded이며 새 실행 권한이 아니다.
+Status: ACCEPTED_WITH_EXCEPTION / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO /
+ACCEPTANCE_CLOSED=YES (approved C3 scope). Actual missing-CLA is NOT_TESTED /
+DEFERRED. The [canonical C3 clause](../../18-m13-production-release-operations-contract.md#m13-002--protected-branch-qualification)
+owns initial maintainer-only release limits and the mandatory real test before
+first external-contribution merge. [C3 approval](./cla-deferral-proposal-20261017.md)
+records the owner's explicit decision; prior S/C2 and raw test results are retained.
 
+PR35/36 delivery/main CI324, target-specific Required/conversation/direct/admin
+cases and the accepted disposable nonFF method are complete within recorded
+scopes. PR32/33 CLOSED/unmerged; temporary resources deleted. Accepted bounded
+Strict evidence does not qualify independent freshness-only. No repeated hostile
+requests or fake identities/statuses are proposed. Current source preparation
+PR37 CI325 is10SUCCESS; actual release qualification remains M13-003 work.
 
-Status: IN_PROGRESS / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO. A′ completed within5
-approved writes: PR33 fresh10job/CLA success, main Required-only and conversation/
-ordinary-admin rejection, then created-thread-only resolution and CLEAN. PR33
-remains open/unmerged at exact develop84591ef→main2e196a1; normal merge is unapproved.
-Original PR31/PR32 and stopped bundle A evidence remain preserved below.
+[Post-delivery evidence](./post-delivery-review-20261017.json) binds the original
+snapshot and later disposition. M13-004/005 remain NOT_STARTED; history below is
+not current execution authority or blanket full qualification. Concrete normal
+merge/tag/publication requires the existing exact candidate/reviewer process.
 
 ## Bundle A′ execution
 

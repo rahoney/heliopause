@@ -81,6 +81,10 @@ func TestValidateReleaseWorkflowRejectsSecurityRegressions(t *testing.T) {
 		"PR trigger":                  strings.Replace(string(contents), "  push:\n", "  pull_request:\n  push:\n", 1),
 		"non-tag trigger":             strings.Replace(string(contents), "      - 'v*'", "      - '*'", 1),
 		"release publishing":          string(contents) + "\n      - run: gh release create $GITHUB_REF_NAME\n",
+		"commented package build":     strings.Replace(string(contents), "          go run ./scripts/release-packages", "          # go run ./scripts/release-packages", 1),
+		"conditional package build":   strings.Replace(string(contents), "      - name: Build deterministic native release assets\n", "      - name: Build deterministic native release assets\n        if: false\n", 1),
+		"missing package build":       strings.Replace(string(contents), "go run ./scripts/release-packages", "echo skipped", 1),
+		"missing package identity":    strings.Replace(string(contents), "--asset \"$dist/helox-linux-amd64.deb\"", "--asset \"$dist/unbound.deb\"", 1),
 		"missing release gate":        strings.Replace(string(contents), "go run ./scripts/check release-gate", "echo skipped", 1),
 	}
 	for name, fixture := range tests {
@@ -106,20 +110,18 @@ func TestValidateReleasePublishWorkflowRejectsSecurityRegressions(t *testing.T) 
 	}
 
 	tests := map[string]string{
-		"floating action":          strings.Replace(string(contents), "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", "actions/checkout@main", 1),
-		"push trigger":             strings.Replace(string(contents), "  workflow_dispatch:\n", "  push:\n    tags:\n      - 'v*'\n  workflow_dispatch:\n", 1),
-		"clobber":                  string(contents) + "\n      --clobber\n",
-		"missing attestation":      strings.Replace(string(contents), "          gh attestation verify", "          echo skipped", 1),
-		"missing main provenance":  strings.Replace(string(contents), "repos/$GH_REPO/compare/$tag_sha...$main_sha", "repos/$GH_REPO/compare/skipped", 1),
-		"missing Required success": strings.Replace(string(contents), ".name == \"Required\" and .status == \"completed\" and .conclusion == \"success\" and .app.slug == \"github-actions\"", ".name == \"Skipped\"", 1),
-		"missing draft binding":    strings.Replace(string(contents), "Verify draft release asset bindings before publication", "Verify skipped release assets", 1),
-		"missing quarantine":       strings.Replace(string(contents), "PUBLISHED_BUT_QUARANTINED", "PUBLISHED", 1),
-		"missing exact candidate asset": strings.Replace(
-			string(contents),
-			"            helox-release-sbom.cdx.json\n",
-			"",
-			1,
-		),
+		"floating action":                  strings.Replace(string(contents), "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", "actions/checkout@main", 1),
+		"push trigger":                     strings.Replace(string(contents), "  workflow_dispatch:\n", "  push:\n    tags:\n      - 'v*'\n  workflow_dispatch:\n", 1),
+		"clobber":                          string(contents) + "\n      --clobber\n",
+		"missing attestation":              strings.Replace(string(contents), "          gh attestation verify", "          echo skipped", 1),
+		"missing main provenance":          strings.Replace(string(contents), "repos/$GH_REPO/compare/$tag_sha...$main_sha", "repos/$GH_REPO/compare/skipped", 1),
+		"missing Required success":         strings.Replace(string(contents), ".name == \"Required\" and .status == \"completed\" and .conclusion == \"success\" and .app.slug == \"github-actions\"", ".name == \"Skipped\"", 1),
+		"missing draft binding":            strings.Replace(string(contents), "Verify draft release asset bindings before publication", "Verify skipped release assets", 1),
+		"missing quarantine":               strings.Replace(string(contents), "PUBLISHED_BUT_QUARANTINED", "PUBLISHED", 1),
+		"missing exact bundle verifier":    strings.Replace(string(contents), "--verify-bundle \"$candidate\"", "--skip-bundle \"$candidate\"", 1),
+		"commented manifest attestation":   strings.Replace(string(contents), "          gh attestation verify \"$candidate/helox-release-manifest.json\"", "          # gh attestation verify \"$candidate/helox-release-manifest.json\"", 1),
+		"conditional bundle verification":  strings.Replace(string(contents), "      - name: Verify candidate identity and download immutable artifact\n", "      - name: Verify candidate identity and download immutable artifact\n        if: false\n", 1),
+		"missing verified provenance list": strings.Replace(string(contents), "          mapfile -t expected_files < \"$RUNNER_TEMP/helox-release-files.txt\"", "          expected_files=(helox-linux-amd64)", 1),
 		"draft verification after publication": strings.Replace(
 			strings.Replace(string(contents), "Verify draft release asset bindings before publication", "Draft binding skipped", 1),
 			"          gh release edit \"$RELEASE_TAG\" -R \"$GH_REPO\" --draft=false",
