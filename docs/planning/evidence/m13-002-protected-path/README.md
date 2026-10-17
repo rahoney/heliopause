@@ -1,5 +1,8 @@
 # M13-002 protected branch qualification
 
+현재 재개 기준선과 과거 PR 처리는 [2026-10-17 resume evidence](./resume-20261017.json)가 소유한다. PR34/main 전달 완료 후 M13-002 IN_PROGRESS이며 PR33은 병합 없이 종료, PR32는 검증 전용으로 보존한다. 아래 과거 normal-main 승인 제안은 superseded이며 새 실행 권한이 아니다.
+
+
 Status: IN_PROGRESS / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO. A′ completed within5
 approved writes: PR33 fresh10job/CLA success, main Required-only and conversation/
 ordinary-admin rejection, then created-thread-only resolution and CLEAN. PR33
