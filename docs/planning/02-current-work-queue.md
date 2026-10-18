@@ -14,7 +14,7 @@ Last completed work item: CLI-UX-002 — OS preferred display-language auto; loc
 Predecessor: M13-003 — COMPLETE; protected v0.1.0 build, twelve attestations and OS package lifecycle PASS
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001 and CLI-UX-002 COMPLETE for their documented scopes
-Active work item status: IN_PROGRESS — npm bounded lane qualified; public PyPI managed upgrade locally qualified; native/named/remote gaps remain
+Active work item status: IN_PROGRESS — npm and bounded public PyPI qualified; named-source and later ecosystem update gaps remain
 Next work item: CLI-UX-003 — NOT_STARTED; branded interactive launcher after SEC-UPD-001 acceptance
 Then: M13-004 — BLOCKED on SEC-UPD-001 and owner package naming; M13-005 NOT_STARTED
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -3346,19 +3346,22 @@ existing venv transaction, typed prerequisite/source forwarding and native -U/
 CLI consumers, including24.2→25.0 and fresh no-op inspection. A directly reproduced
 empty retired dist-info inventory gap was corrected and requalified. Originals
 were restored and completed trial payloads/operators deleted.
-[Public managed-venv local qualification](./evidence/update-quarantine/pypi-managed-qualification-20261019.md)
-does not close complete PyPI acceptance: independent native enrollment, named-source
-audit/qualification and new remote/native-platform checks remain MISSING. No
-candidate was permanently activated.
-Next within the same PyPI lane is the [native ownership audit](./evidence/update-quarantine/pypi-native-baseline-20261019.md).
+[Public managed-venv qualification](./evidence/update-quarantine/pypi-managed-qualification-20261019.md)
+includes subsequent same-source CI331. It does not close complete PyPI acceptance;
+the separate bounded native result follows, while named-source and later update
+lanes remain MISSING. No candidate was permanently activated.
+The [native ownership audit](./evidence/update-quarantine/pypi-native-baseline-20261019.md)
+preserves its pre-source baseline and the following qualified implementation.
 The reviewed native implementation slice now freezes claims before selection,
 authenticates the old wheel footprint and reuses the original transaction.
 Targeted inventory/ownership/rollback fixtures, final canonical checks and
-eleven actual native/managed CLI consumers pass. Original helper/client state was
+eleven actual native/managed CLI consumers pass. Source2e8844f CI332 also completed
+Required plus nine prerequisites SUCCESS, same-tree checkout/native macOS and
+Linux45 consumers/CPUfull288.11s with confirmed cleanup. Original helper/client state was
 restored, Evidence preserved and completed trial data/operators deleted.
 [Bounded native local qualification](./evidence/update-quarantine/pypi-native-qualification-20261019.md)
-closes the local subset; new native-source remote qualification and independent
-named-source audit/implementation remain MISSING. Next is named-source within the
+closes this bounded local/remote native subset. Independent named-source
+implementation and affected qualification remain MISSING. Next is named-source within the
 same PyPI lane; no other work item becomes IN_PROGRESS. Its independent
 [named-source baseline and reviewed edit map](./evidence/update-quarantine/pytorch-update-baseline-20261019.md)
 records existing source-pinned traversal and the actual upgrade gaps before code.

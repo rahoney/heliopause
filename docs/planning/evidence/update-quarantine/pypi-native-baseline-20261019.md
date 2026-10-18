@@ -109,5 +109,7 @@ Current candidate d6ff000b…c66ef46 passed Quick92.48s/security6.86s/docs0.28s 
 Race25.06s with matching source inventories; eleven actual native/managed CLI operations, default cache removal and unchanged
 negatives also passed. Confirmed helper cleanup/original restoration and disposable
 trial deletion are complete. [Local qualification](./pypi-native-qualification-20261019.md)
-owns exact evidence. IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES bounded local /
-ACCEPTANCE_CLOSED=NO for this native slice. MISSING: new-source remote qualification. Named-source and complete PyPI acceptance remain separately open.
+owns exact evidence, including subsequent same-source CI332 ten SUCCESS.
+IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES bounded local/remote /
+ACCEPTANCE_CLOSED=YES for source2e8844f and this native subset. MISSING: none
+within that subset; newer named source is independently unqualified. Named-source and complete PyPI acceptance remain separately open.

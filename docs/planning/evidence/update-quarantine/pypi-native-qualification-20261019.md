@@ -7,7 +7,7 @@ inspection, M5 Policy, staging and venv transaction/rollback are reused.
 
 | Scope | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
 | --- | --- | --- | --- | --- | --- |
-| Explicit public native wheel enrollment in documented site/dist-info subset | YES | YES | YES bounded local | NO | New candidate remote/platform regression |
+| Explicit public native wheel enrollment in documented site/dist-info subset | YES | YES | YES bounded local and remote | YES bounded subset | None within this subset; named/complete PyPI below |
 | New-set full inspection before enrolled replacement | YES | YES | YES bounded local | NO complete PyPI | Named-source work and remaining lane acceptance |
 | Named PyTorch updates | NO | NO | NO | NO | Independent source/selection/ownership audit and affected qualification |
 
@@ -91,6 +91,19 @@ pypi-native-candidate-installed summary/operations/Evidence/manifests,
 pypi-native-manifest-proof.json, pypi-native-postanalysis.json and
 pypi-native-trial-cleanup.json. These qualify only this local source/subset.
 Managed checkpointc93ce58 CI331 is separate historical evidence; new native
-remote/platform qualification remains open. Complete PyPI/SEC-UPD-001 acceptance
+remote/platform qualification is now recorded below. Complete PyPI/SEC-UPD-001 acceptance
 also requires named-source work and later ecosystem lanes. CLI-UX-003 remains
 deferred, with no merge, tag, public publication or package-name decision.
+
+## Same-source remote closure
+
+Source2e8844f41d9aadea7c0ad2a0dbd59bdb9b239a8a passed CI332/run39154516210:
+Required plus nine prerequisites SUCCESS. Quick, native macOS and Linux identify
+checkout23e00971230a19e6d47771cf0a3d53aef36c5369; fetched full tree
+0a49b47d29656adccc20d646a055f9fc92d80dd2 equals the source tree. Linux passed45
+top-level consumers, CPU PyTorch full288.11s, five helper waits0 and final original0/
+CONFIRMED_STOPPED/client_error0/client_restore0. Local raw ci332-fourth-jobs.json,
+three decoded job logs and ci332-completed-qualification.json own the evidence.
+This closes the bounded native subset's remaining remote gap. It does not qualify
+newer named input/extras/version-comparison source or a named update command.
+Complete PyPI/SEC-UPD-001 remains IN_PROGRESS with named/later lanes missing.

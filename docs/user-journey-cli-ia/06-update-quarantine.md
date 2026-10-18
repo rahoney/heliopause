@@ -5,10 +5,12 @@ The bounded npm lane is qualified for29c58f0 including fresh CI330 ten SUCCESS.
 Current lane: [PyPI input/metadata implementation after baseline and selection review](../planning/evidence/update-quarantine/pypi-baseline-20261019.md).
 Public resolver/session/CLI and actual managed-venv consumers are locally qualified
 in the [bounded PyPI record](../planning/evidence/update-quarantine/pypi-managed-qualification-20261019.md).
-[Bounded native enrollment](../planning/evidence/update-quarantine/pypi-native-qualification-20261019.md) is locally qualified; its fresh remote and named-source qualification remain missing. The managed source c93ce58 passed CI331; its detailed remote scope is recorded separately from the new native source. Other lanes wait for
+[Bounded native enrollment](../planning/evidence/update-quarantine/pypi-native-qualification-20261019.md) is qualified locally and by same-source CI332; named-source update qualification remains missing. The managed source c93ce58 passed CI331; its detailed remote scope is recorded separately from the new native source. Other lanes wait for
 their independent baseline/qualification. See the [npm evidence](../planning/evidence/update-quarantine/npm-qualification-20261018.md).
-Next is the independent [native venv ownership baseline](../planning/evidence/update-quarantine/pypi-native-baseline-20261019.md);
-its authenticated original-footprint gap is reviewed before production changes.
+The [native venv baseline](../planning/evidence/update-quarantine/pypi-native-baseline-20261019.md)
+preserves its pre-source review and bounded closure. Current work follows the
+[named PyTorch update baseline](../planning/evidence/update-quarantine/pytorch-update-baseline-20261019.md)
+and extends its existing source-pinned traversal after reviewed data changes.
 This leaf owns the user-requested update-command contract. It supplements the
 installation journey, never weakens existing Policy or adds implicit Host execution.
 
