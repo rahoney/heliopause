@@ -17,19 +17,26 @@ import (
 )
 
 type presentation struct {
-	out, diagnostic                 io.Writer
-	output, locale, color, progress string
-	language                        string
-	tty, diagnosticTTY              bool
-	width                           int
-	verbose                         bool
-	localeExplicit, skipSaved       bool
-	warnedSettings                  bool
-	writeErr                        error
-	reported                        bool
-	startedAt                       time.Time
-	reportedError                   bool
-	interruption                    string
+	out, diagnostic                  io.Writer
+	output, locale, color, progress  string
+	language                         string
+	languageSource, languageFallback string
+	pendingLanguage                  string
+	detectLanguage                   func() ([]string, string, error)
+	languageDetected                 bool
+	detectedTags                     []string
+	detectedSource                   string
+	detectionError                   error
+	tty, diagnosticTTY               bool
+	width                            int
+	verbose                          bool
+	localeExplicit, skipSaved        bool
+	warnedSettings                   bool
+	writeErr                         error
+	reported                         bool
+	startedAt                        time.Time
+	reportedError                    bool
+	interruption                     string
 }
 type presentationWriter struct {
 	io.Writer
@@ -57,7 +64,7 @@ func attachPresentation(root *cobra.Command, stdout, stderr io.Writer) {
 	flags.BoolVar(&p.verbose, "verbose", false, "Show bounded runtime diagnostics")
 	root.PersistentPreRunE = func(command *cobra.Command, args []string) error {
 		p.localeExplicit = root.PersistentFlags().Changed("lang")
-		p.skipSaved = command.CommandPath() == "helox config language" && len(args) == 1
+		p.prepareLanguageSetting(command, args)
 		return p.configure()
 	}
 	help := root.HelpFunc()
@@ -107,7 +114,7 @@ func PreparePresentation(root *cobra.Command, args []string) (string, error) {
 		source = top.Name()
 	}
 	p.localeExplicit = root.PersistentFlags().Changed("lang")
-	p.skipSaved = command.CommandPath() == "helox config language" && len(command.Flags().Args()) == 1
+	p.prepareLanguageSetting(command, command.Flags().Args())
 	if err = p.configure(); err != nil {
 		return "", err
 	}
@@ -155,39 +162,38 @@ func (p *presentation) configure() error {
 			return errors.New("unsupported CLI presentation option; use --help")
 		}
 	}
+	p.languageSource, p.languageFallback = "FLAG", ""
 	language := normalizeLanguage(p.locale)
 	if language == "" {
 		return errors.New("unsupported language; choose auto, en, ko, de, fr, es, pt-BR or ja")
 	}
 	if !p.localeExplicit {
 		if override := os.Getenv("HELOX_LANG"); override != "" {
+			p.languageSource = "ENV_HELOX_LANG"
 			language = normalizeLanguage(override)
 			if language == "" {
 				language = "en"
 			}
+		} else if p.skipSaved && p.pendingLanguage != "" {
+			language, p.languageSource = p.pendingLanguage, "SAVED"
 		} else if !p.skipSaved {
 			saved, err := readLanguageSettings()
 			if err != nil {
 				language = "en"
+				p.languageSource = "SETTINGS_FALLBACK"
+				p.languageFallback = "LANGUAGE_SETTINGS_UNAVAILABLE"
 				if !p.warnedSettings {
 					_, _ = fmt.Fprintln(p.diagnostic, "Language settings unavailable; using English. Use helox config language auto to reset.")
 					p.warnedSettings = true
 				}
 			} else {
+				p.languageSource = "SAVED"
 				language = saved
 			}
 		}
 	}
 	if language == "auto" {
-		language = "en"
-		for _, name := range []string{"LC_ALL", "LC_MESSAGES", "LANG"} {
-			if value := os.Getenv(name); value != "" {
-				if detected := normalizeLanguage(value); detected != "" && detected != "auto" {
-					language = detected
-				}
-				break
-			}
-		}
+		language = p.automaticLanguage()
 	}
 	p.language = language
 	return nil

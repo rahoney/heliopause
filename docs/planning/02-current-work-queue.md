@@ -10,7 +10,7 @@
 Current milestone: M13 — Production Release & Operations
 Milestone status: IN_PROGRESS — runtime maintenance main delivery COMPLETE
 Active work item: CLI-UX-002 — OS preferred display-language auto
-Active work item status: IN_PROGRESS — detailed plan and second review before source; user authorized language implementation
+Active work item status: IN_PROGRESS — local source/PTY/installed auto qualified; native macOS CI and final closure pending
 Predecessor: M13-003 — COMPLETE; protected v0.1.0 build, twelve attestations and OS package lifecycle PASS
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisite: CLI-UX-001 — historical bounded completion; OS-language correction remains open
@@ -3319,10 +3319,11 @@ catalogs are reused; no replacement or new runtime/CI scaffold is justified.
   update selection/CLI, guarded existing-state ownership/replacement and actual
   per-ecosystem benign/malicious-fixture/unchanged-on-failure qualification. Read
   [update quarantine contract](../user-journey-cli-ia/06-update-quarantine.md).
-- CLI-UX-002: IN_PROGRESS. IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO /
-  ACCEPTANCE_CLOSED=NO for OS preferred-language auto. MISSING bounded Windows/WSL
-  and macOS/native detection/fallback, displayed selection source and platform
-  qualification. Read [OS-language correction](../user-journey-cli-ia/05-terminal-presentation.md#os-display-language-correction--cli-ux-002).
+- CLI-UX-002: IN_PROGRESS. IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO /
+  ACCEPTANCE_CLOSED=NO for full platform scope. Local exact source checks, real
+  WSL/PTY and installed auto are qualified; MISSING ordinary native macOS CI and
+  final closure. [Qualification](./evidence/cli-os-language/qualification-20261018.md).
+  Read [OS-language correction](../user-journey-cli-ia/05-terminal-presentation.md#os-display-language-correction--cli-ux-002).
 
 Only CLI-UX-002 is IN_PROGRESS after the user requested detailed planning, a second
 review and then language implementation. SEC-UPD-001 receives a detailed plan only.

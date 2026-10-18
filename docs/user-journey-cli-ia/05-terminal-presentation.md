@@ -13,7 +13,8 @@ Policy, result schemas, exit codes, bounds and least-privilege execution remain.
   Terraform textual contracts must not silently become a new JSON schema.
 - `--lang auto|en|ko|de|fr|es|pt-BR|ja`: explicit language wins. Otherwise
   HELOX_LANG and a saved CLI preference take precedence over system locale; auto
-  uses LC_ALL, LC_MESSAGES then LANG, with English fallback. Locale affects CLI strings only,
+  now reads OS display preference, then bounded process locale hints and English
+  fallback (see CLI-UX-002 below). Locale affects CLI strings only,
   never isolated child environments, package identities, identifiers or JSON enums.
   English/Korean cover complete user-facing templates. German, French, Spanish,
   Brazilian Portuguese and Japanese cover core menus/descriptions; missing
@@ -70,9 +71,10 @@ are replayed. Strings are bounded and escaped for safe terminal rendering.
 
 ## OS display-language correction — CLI-UX-002
 
-Status: newly required; not implemented/qualified by CLI-UX-001. The locale-only
-algorithm described above is the current implementation, not the user's complete
-OS-language intent. Command names such as install stay English independently of
+Status: implemented/wired with local qualification; native macOS CI pending.
+[Current qualification](../planning/evidence/cli-os-language/qualification-20261018.md)
+owns exact source and platform scope. The former locale-only algorithm was not
+the user's complete OS-language intent. Command names such as install stay English independently of
 translated descriptions and preferred UI language. A terminal does not have to
 use English locale, but an English/C locale must not hide an available OS display
 preference when the user selects auto.
@@ -92,8 +94,8 @@ requirements. Record the effective language and selection source in language
 settings output so English fallback is understandable. A failing/unsupported
 lookup must never prevent inspection or contaminate JSON result stdout.
 [Baseline and qualification gaps](../planning/evidence/prepublication-gaps/baseline-20261018.md)
-remain open; retaining auto is the selected target, not a claim that its OS lookup
-already works.
+remain historical; actual implementation/remaining qualification follows the
+current result above.
 
 ### CLI-UX-002 exact change / validation plan
 

@@ -34,7 +34,8 @@ func TestProcessHelpSmoke(t *testing.T) {
 	if ctx.Err() != nil {
 		t.Fatalf("process smoke test context: %v", ctx.Err())
 	}
-	if !strings.Contains(string(output), "Usage:\n  helox") {
+	// The help heading follows the OS language; command syntax stays stable.
+	if !strings.Contains(string(output), "\n  helox [") {
 		t.Fatalf("help output missing usage: %q", output)
 	}
 }
@@ -83,7 +84,7 @@ func TestNativeBinaryDefaultPaths(t *testing.T) {
 		if contextErr != nil {
 			t.Fatalf("native helox %q context: %v", arguments, contextErr)
 		}
-		if !strings.Contains(string(output), "Usage:\n  helox") {
+		if !strings.Contains(string(output), "\n  helox [") {
 			t.Fatalf("native helox %q output missing usage: %q", arguments, output)
 		}
 	}

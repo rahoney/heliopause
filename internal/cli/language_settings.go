@@ -123,7 +123,12 @@ func addLanguageSettings(root *cobra.Command, p *presentation) {
 			if err := writeLanguageSettings(args[0]); err != nil {
 				return err
 			}
+			p.skipSaved, p.pendingLanguage = false, ""
+			if err := p.configure(); err != nil {
+				return err
+			}
 			p.line("%s: %s", p.text("Saved language", "저장한 언어"), normalizeLanguage(args[0]))
+			p.languageSelectionOutput()
 			return p.writeErr
 		}
 		saved, err := readLanguageSettings()
@@ -131,7 +136,7 @@ func addLanguageSettings(root *cobra.Command, p *presentation) {
 			return err
 		}
 		p.line("%s: %s", p.text("Saved language", "저장한 언어"), saved)
-		p.line("%s: %s", p.text("Current language", "현재 언어"), p.language)
+		p.languageSelectionOutput()
 		return p.writeErr
 	}
 	config.AddCommand(language)

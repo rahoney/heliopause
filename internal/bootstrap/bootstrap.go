@@ -42,6 +42,11 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 			resultErr = cli.PresentRuntimeError(command, resultErr)
 		}
 	}()
+	if err := cli.SetLanguageDetector(command, func() ([]string, string, error) {
+		return hosttool.PreferredDisplayLanguages(ctx)
+	}); err != nil {
+		return err
+	}
 	command.SetArgs(args)
 	source, err := cli.PreparePresentation(command, args)
 	if err != nil {
