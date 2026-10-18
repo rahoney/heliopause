@@ -247,3 +247,52 @@ the unchanged canonical helper lifecycle. Source IMPLEMENTED/WIRED=YES;
 QUALIFIED/ACCEPTANCE_CLOSED=NO. Actual per-profile outcomes, confirmed restoration,
 completed disposable-data deletion and new-source remote qualification remain
 MISSING. This checkpoint does not close named or whole-PyPI acceptance.
+
+## Actual CPU result and reviewed retired-tree correction
+
+The same source88f352d/CLI9a98529 actually installed CPU2.14.0 in535.25s and
+updated to2.14.1 in772.64s. Both have10 entries, all30 required checks completed,
+M5 ALLOW and promotion COMPLETED;32 Evidence includes two legitimate command
+attestations. The following native-shaped no-op failed in5.15s before selection:
+unsafe bounded snapshot path. Original helper wait0/CONFIRMED_STOPPED, client/
+observer restoration and fresh root identity/process/socket/Docker checks pass.
+
+The old torch dist-info has114 directories including the root, no files and no
+METADATA. The original transaction intentionally retains directories after removing
+obsolete owned files. The shallow retired-directory check recognizes only an empty
+top level; nested empty license directories incorrectly trigger missing-METADATA
+snapshotting. This is the remaining inventory gap of the same empty-retired-state
+case, not a new transaction or inspection failure. Raw reproduction and the two
+operation results are pytorch-retired-tree-reproduction.json and
+pytorch-wired-cpu-resume-installed. Whole named acceptance remains open.
+
+Correction review before source: extend only the existing inventory classifier
+and original-state guard. Recognize a bounded directory-only tree as no installed
+distribution; never omit a tree containing files, symlinks or unknown objects.
+Use root-scoped directory reads, enforce cumulative100,000 retired directories and
+depth64, and freeze the exact membership, inode and mode of every directory in the
+existing transaction guard. Revalidate the entire tree before selection/commit;
+new empty directories also constitute drift. Preserve missing-METADATA refusal for
+nonempty trees, identity/content/source checks and the original offline transaction.
+Do not delete directories to hide the failure, infer old ownership, relax required
+checks or rewrite Promotion. First reproduce with a nested empty fixture, then
+exercise file/new-directory/removal/replacement/symlink/bounds refusal and existing
+flat retirement/managed/native consumers. Canonical checks and an actual fresh
+no-op on the retained real update target must pass before closing this gap.
+
+The bounded correction now uses pypi_update_retired.go and the existing session's
+directory guard. The direct original-error RED2.73s becomes GREEN3.56s, including
+unchanged tree, file/new-directory/removal/replacement/symlink and exact count/
+depth bounds. The same fixed Go source passes canonical Quick96.13s,
+security8.15s, docs0.93s and targeted Race26.59s. Original transaction, scanners,
+Policy and resource profiles are unchanged. A new CLI27,141,710B was built with
+Go1.26.9/CGO0 in2.02s; exact identity is in pytorch-retired-tree-candidate.json.
+Actual fresh-U/no-op passed777.42s on the original failing CPU2.14.1 target,
+preserving all114 retired directories and producing entirely fresh Evidence.
+Stale prerequisite, missing version and retained-conflict refusals leave the
+target unchanged. Eleven affected public/native consumers also pass. Canonical
+stop/restoration and fresh root postguards pass; completed CPU2,029,581,107B and
+public/native29,400,444B trial payloads/tools were deleted after Evidence capture.
+The [qualification record](./pytorch-update-qualification-20261019.md) owns the
+actual per-source boundary, checks, cleanup and remaining CUDA/new-remote scope.
+Raw pytorch-retired-tree-* owns the original source/check/operation receipts.

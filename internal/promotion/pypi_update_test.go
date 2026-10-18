@@ -287,6 +287,90 @@ func TestPyPIUpgradeRecognizesEmptyRetiredMetadataDirectoryAndGuardsItsContents(
 	}
 }
 
+func TestPyPIUpgradeRecognizesRetiredDirectoryOnlyTreeAndGuardsEveryDirectory(t *testing.T) {
+	for _, mode := range []string{"unchanged", "new-file", "new-directory", "removed-directory", "replaced-directory", "symlink", "nonempty-at-start"} {
+		t.Run(mode, func(t *testing.T) {
+			root, plan, install := managedPyPIUpgradeFixture(t)
+			retired := filepath.Join(plan.site, "fixture-0.9.dist-info")
+			child := filepath.Join(retired, "licenses", "third_party")
+			if err := os.MkdirAll(child, 0o700); err != nil {
+				t.Fatal(err)
+			}
+			userFile := filepath.Join(child, "user-data")
+			if mode == "nonempty-at-start" {
+				if err := os.WriteFile(userFile, []byte("preserve"), 0o600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			resolver := &pypiUpgradeSelectionFixture{}
+			promoter, _ := newPyPIPromotion(filepath.Join(root, "staging"), &venvGuardCheckingRunner{}, "linux", "amd64")
+			preparation, _ := NewPyPIUpdatePreparation(promoter, resolver)
+			source, _ := domain.NewSourceID("pypi")
+			session, err := preparation.BeginInstallUpdate(context.Background(), source, "fixture", install, false)
+			if mode == "nonempty-at-start" {
+				if err == nil || session != nil || resolver.calls != 0 {
+					t.Fatal("nonempty metadata tree silently omitted", err)
+				}
+				body, err := os.ReadFile(userFile)
+				if err != nil || string(body) != "preserve" {
+					t.Fatal("user data changed", err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatal("directory-only retired metadata treated as an installed distribution", err)
+			}
+			if len(session.(*pypiUpdateSession).input.MetadataFiles()) != 1 {
+				t.Fatal("retired tree became a distribution")
+			}
+			switch mode {
+			case "new-file":
+				if err := os.WriteFile(userFile, []byte("preserve"), 0o600); err != nil {
+					t.Fatal(err)
+				}
+			case "new-directory":
+				if err := os.Mkdir(filepath.Join(child, "new"), 0o700); err != nil {
+					t.Fatal(err)
+				}
+			case "removed-directory":
+				if err := os.Remove(child); err != nil {
+					t.Fatal(err)
+				}
+			case "replaced-directory", "symlink":
+				// Keep the old inode alive so replacement cannot reuse it.
+				old, err := os.Open(child)
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer old.Close()
+				if err := os.Remove(child); err != nil {
+					t.Fatal(err)
+				}
+				if mode == "symlink" {
+					if err := os.Symlink(realPromotionRoot(t), child); err != nil {
+						t.Fatal(err)
+					}
+				} else if err := os.Mkdir(child, 0o700); err != nil {
+					t.Fatal(err)
+				}
+			}
+			_, err = session.ResolveDependencies(context.Background(), session.Reference(), install)
+			if err == nil || (mode == "unchanged") != (resolver.calls == 1) {
+				t.Fatal("retired subtree drift was not guarded before selection", err, resolver.calls)
+			}
+			if err := session.Close(); err != nil {
+				t.Fatal(err)
+			}
+			if mode == "new-file" {
+				body, err := os.ReadFile(userFile)
+				if err != nil || string(body) != "preserve" {
+					t.Fatal("guard mutated user data", err)
+				}
+			}
+		})
+	}
+}
+
 func TestPyPIUpgradeGuardFreezesMetadataAndOwnershipBeforeSelection(t *testing.T) {
 	for _, mode := range []string{"selection-failure", "metadata-drift", "payload-drift", "new-distribution", "direct-source", "replaced-lock", "cancelled"} {
 		t.Run(mode, func(t *testing.T) {

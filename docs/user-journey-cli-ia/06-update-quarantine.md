@@ -395,7 +395,18 @@ existing ledger owner requires its exact single-owned installed METADATA before
 selection, including retained distributions. Different paths to one original
 file object reject as aliases. Unit fixtures alone are not actual native qualification. The bounded native
 qualification record now links canonical and eleven installed-client consumers;
-new-source remote and named-source work remain open.
+named-source work remains open. The [named qualification](../planning/evidence/update-quarantine/pytorch-update-qualification-20261019.md)
+records CPU version-change/fresh no-op, affected public/native consumers and the
+remaining CUDA/new-source remote boundary separately.
+
+For original-state inventory, retired dist-info without METADATA may contain only
+directories left by the existing transaction. Bound the cumulative retired tree
+to100,000 directories, depth64 and relative path4096B; use root-scoped reads and
+freeze exact membership/inode/mode/mtime in the existing guard. Files, symlinks,
+unknown objects, new empty directories and any identity/content drift refuse
+unchanged. This grants no old ownership or safety approval and does not delete
+directories to bypass validation. pypi_update_retired.go owns this classifier;
+the original transaction and required inspection/Policy remain unchanged.
 
 ### Named-source retained extras and version review
 

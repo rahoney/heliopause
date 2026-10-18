@@ -43,7 +43,7 @@ type pypiUpdateSession struct {
 	directories                []string
 	metadata                   map[string]pypiFileSnapshot
 	managedVersions            map[string]string
-	emptyMetadata              map[string]bool
+	emptyMetadata              map[string]map[string]os.FileInfo
 	nativeInventory            pypiNativeInventory
 	adopt                      bool
 	resolution                 domain.DependencyResolution
@@ -80,7 +80,7 @@ func (p *PyPIUpdatePreparation) BeginInstallUpdate(ctx context.Context, source d
 	if err != nil {
 		return nil, ports.NewInstallUpdateFailure("UPDATE_OWNERSHIP_INVALID", err)
 	}
-	s := &pypiUpdateSession{owner: p, install: install, transaction: transaction, metadata: map[string]pypiFileSnapshot{}, emptyMetadata: map[string]bool{}}
+	s := &pypiUpdateSession{owner: p, install: install, transaction: transaction, metadata: map[string]pypiFileSnapshot{}, emptyMetadata: map[string]map[string]os.FileInfo{}}
 	defer func() {
 		if resultErr != nil {
 			resultErr = errors.Join(resultErr, s.Close())
@@ -100,20 +100,31 @@ func (p *PyPIUpdatePreparation) BeginInstallUpdate(ctx context.Context, source d
 	}
 	files := []artifactpypi.InstalledMetadataFile{}
 	total := 0
+	retiredBudget := pypiUpgradeDirectoryLimit
 	for _, name := range s.directories {
 		directory := filepath.Join(plan.site, name)
 		if err := transaction.freezeParents(directory); err != nil {
 			return nil, err
 		}
-		empty, err := pypiUpgradeEmptyDirectory(directory)
+		tree, empty, err := snapshotPyPIRetiredMetadata(directory, retiredBudget)
 		if err != nil {
 			return nil, err
 		}
 		if empty {
 			// The existing transaction removes obsolete owned files while
-			// retaining directories. An empty directory is no distribution;
-			// retain its identity and emptiness guard, never infer ownership.
-			s.emptyMetadata[directory] = true
+			// retaining directories. A directory-only tree is no distribution;
+			// freeze every original identity and membership, never ownership.
+			for relative, before := range tree {
+				path := filepath.Join(directory, relative)
+				if err := transaction.freezeParents(path); err != nil {
+					return nil, err
+				}
+				if !sameRetiredMetadataDirectory(before, transaction.directories[path]) {
+					return nil, errors.New("retired metadata directory changed while freezing")
+				}
+			}
+			retiredBudget -= len(tree)
+			s.emptyMetadata[directory] = tree
 			continue
 		}
 		if err := rejectPyPIUpgradeDirectSource(directory); err != nil {
@@ -168,8 +179,8 @@ func pypiUpgradeMetadataDirectories(site string) ([]string, error) {
 		return nil, err
 	}
 	defer file.Close()
-	entries, err := file.ReadDir(100001)
-	if err != nil && err != io.EOF || len(entries) > 100000 {
+	entries, err := file.ReadDir(pypiUpgradeDirectoryLimit + 1)
+	if err != nil && err != io.EOF || len(entries) > pypiUpgradeDirectoryLimit {
 		return nil, errors.New("PyPI environment inventory exceeds supported bounds")
 	}
 	names := []string{}
@@ -200,22 +211,6 @@ func rejectPyPIUpgradeDirectSource(directory string) error {
 	return nil
 }
 
-func pypiUpgradeEmptyDirectory(directory string) (bool, error) {
-	if trustedExistingDirectory(directory) != nil {
-		return false, errors.New("untrusted installed metadata directory")
-	}
-	file, err := os.Open(directory)
-	if err != nil {
-		return false, err
-	}
-	entries, readErr := file.ReadDir(1)
-	closeErr := file.Close()
-	if readErr != nil && readErr != io.EOF || closeErr != nil {
-		return false, errors.Join(readErr, closeErr)
-	}
-	return len(entries) == 0, nil
-}
-
 func (s *pypiUpdateSession) Reference() domain.ArtifactReference {
 	return s.input.Requirement().Reference()
 }
@@ -234,10 +229,15 @@ func (s *pypiUpdateSession) verify(ctx context.Context) error {
 	if err != nil || !reflect.DeepEqual(names, s.directories) {
 		return ports.NewInstallUpdateFailure("UPDATE_SOURCE_CHANGED", errors.New("installed distribution inventory changed"))
 	}
-	for directory := range s.emptyMetadata {
-		empty, err := pypiUpgradeEmptyDirectory(directory)
-		if err != nil || !empty {
-			return ports.NewInstallUpdateFailure("UPDATE_SOURCE_CHANGED", errors.New("retired metadata directory gained contents"))
+	for directory, before := range s.emptyMetadata {
+		tree, empty, err := snapshotPyPIRetiredMetadata(directory, len(before))
+		if err != nil || !empty || len(tree) != len(before) {
+			return ports.NewInstallUpdateFailure("UPDATE_SOURCE_CHANGED", errors.New("retired metadata tree changed"))
+		}
+		for relative, original := range before {
+			if !sameRetiredMetadataDirectory(original, tree[relative]) {
+				return ports.NewInstallUpdateFailure("UPDATE_SOURCE_CHANGED", errors.New("retired metadata directory identity changed"))
+			}
 		}
 	}
 	for path, before := range s.metadata {

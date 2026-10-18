@@ -3376,9 +3376,21 @@ held transaction; bounded original/first/final/constraint controls bind the whol
 selection. Canonical Quick130.31s/security9.27s/docs1.45s and targeted Race29.61s
 pass for the same candidate. Four-profile control/source/graph/resource and
 retained CUDA component fixtures pass; these are not live source qualification.
-Actual installed-path CPU version-change/no-op/negative qualification is running;
-actual CPU/CUDA completion, cleanup and new-source remote qualification remain
-MISSING. No candidate is permanently activated. The
+Actual installed-path CPU2.14.0 to2.14.1 update passed772.64s with10 entries,
+required30 checks/32 Evidence, M5 ALLOW and completed promotion. The subsequent
+no-op exposed a shallow inventory check on nested directory-only retired metadata;
+its bounded guard correction is in progress under the same item and reviewed
+named baseline. The correction's RED/GREEN and current Quick96.13s/security/docs/
+Race26.59s pass. Actual fresh no-op777.42s on the same114-directory tree and three
+negative-preservation consumers pass, with entirely fresh Evidence. Eleven
+affected public/native consumers also pass. Canonical stop/restoration and fresh
+root postguards are confirmed, and completed CPU2.03GB/public29.4MB trial data
+were deleted. The [named qualification](./evidence/update-quarantine/pytorch-update-qualification-20261019.md)
+keeps source88 version-change/CI334 and the subsequent local correction separate.
+CI334 Required plus nine prerequisites, same-tree/native macOS/Linux45 consumers
+and confirmed cleanup all pass for88. Actual cu126/cu130/cu132 update qualification
+and the retirement correction's new-source remote result remain MISSING. Next is
+cu126 within this same item. No candidate is permanently activated. The
 managed candidatec93ce58 in draft PR38 passed all ten CI331/run39148017283 jobs;
 its actual checkout and consumer scope are recorded independently. Native source
 is newer and does not inherit that qualification.
