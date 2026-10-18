@@ -54,18 +54,21 @@ func (s *InstallService) Install(ctx context.Context, request InstallRequest) (I
 		outcome.failureCode = "VERIFIED_SET_INVALID"
 		return outcome, fmt.Errorf("construct complete ALLOW set: %w", err)
 	}
+	ports.ReportProgress(ctx, ports.Progress{Stage: "manifest"})
 	bundle, err := s.manifest.Build(ctx, inspected.OperationID(), request.Context(), inspected.Resolution(), verified)
 	if err != nil {
 		outcome.failureCode = "MANIFEST_GENERATION_FAILED"
 		return outcome, fmt.Errorf("build verified Manifest and SBOM: %w", err)
 	}
 	outcome.bundle = bundle
+	ports.ReportProgress(ctx, ports.Progress{Stage: "stage"})
 	staged, err := s.staging.Stage(ctx, bundle)
 	if err != nil {
 		outcome.failureCode = "STAGING_FAILED"
 		return outcome, fmt.Errorf("stage verified set: %w", err)
 	}
 	outcome.staged = staged
+	ports.ReportProgress(ctx, ports.Progress{Stage: "install"})
 	promoted, err := s.promotion.Promote(ctx, staged, bundle, request.Context())
 	if err != nil {
 		outcome.failureCode = "PROMOTION_FAILED"

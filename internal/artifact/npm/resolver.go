@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 )
 
 const (
@@ -202,7 +203,7 @@ func (r *Resolver) downloadTarball(ctx context.Context, rawURL, directory string
 	hash := sha256.New()
 	integrityHash := sha512.New()
 	limited := io.LimitReader(response.Body, tarballLimit+1)
-	written, copyErr := io.Copy(io.MultiWriter(temporary, hash, integrityHash), limited)
+	written, copyErr := io.Copy(io.MultiWriter(temporary, hash, integrityHash), ports.DownloadReader(ctx, limited, response.ContentLength))
 	syncErr := temporary.Sync()
 	closeErr := temporary.Close()
 	if copyErr != nil {

@@ -31,13 +31,22 @@ func ExecuteInspect(ctx context.Context, inspector Inspector, request applicatio
 	if ctx == nil || inspector == nil || output == nil {
 		return 2, errors.New("inspect CLI adapter requires context, use case, and output")
 	}
+	ctx, finishProgress := beginProgress(ctx, output, machine)
+	defer func() { _ = finishProgress() }()
 	result, operationErr := inspector.Inspect(ctx, request)
+	if !machine {
+		if writer, ok := output.(*presentationWriter); ok {
+			writer.presentation.interruption = interruptionCode(operationErr)
+		}
+	}
+	progressErr := finishProgress()
 	var presentationErr error
 	if machine {
 		presentationErr = WriteJSONResult(output, result)
 	} else {
 		presentationErr = WriteHumanResult(output, result)
 	}
+	presentationErr = errors.Join(presentationErr, progressErr)
 	if presentationErr != nil {
 		return 1, errors.Join(operationErr, presentationErr)
 	}
@@ -69,6 +78,9 @@ func ExitCode(result domain.OperationResult) int {
 func WriteHumanResult(output io.Writer, result domain.OperationResult) error {
 	if output == nil || result.OperationID().String() == "" {
 		return errors.New("human presenter requires output and a valid Operation Result")
+	}
+	if writer, ok := output.(*presentationWriter); ok && writer.presentation.human() {
+		return writer.presentation.renderResult(result)
 	}
 	if _, err := fmt.Fprintf(output, "Operation: %s\nOperation ID: %s\nStatus: %s\n", result.Operation(), result.OperationID(), result.Status()); err != nil {
 		return fmt.Errorf("write human Operation Result: %w", err)

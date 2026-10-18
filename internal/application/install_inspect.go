@@ -90,6 +90,7 @@ func (s *InstallInspectService) Inspect(ctx context.Context, request InstallRequ
 	if err != nil {
 		return InspectedInstall{}, fmt.Errorf("generate operation ID: %w", err)
 	}
+	ports.ReportProgress(ctx, ports.Progress{Stage: "resolve"})
 	resolution, err := s.resolver.ResolveDependencies(ctx, request.reference, request.context)
 	if err != nil {
 		return newPartialInspectedInstall(operationID, request, domain.DependencyResolution{}), fmt.Errorf("resolve locked dependency graph: %w", err)
@@ -130,6 +131,7 @@ func (s *InstallInspectService) Inspect(ctx context.Context, request InstallRequ
 	if err != nil {
 		return partial, fmt.Errorf("construct inspected dependency set: %w", err)
 	}
+	ports.ReportProgress(ctx, ports.Progress{Stage: "policy"})
 	decision, err := s.setPolicy.EvaluateSet(set)
 	if err != nil {
 		return partial, fmt.Errorf("evaluate dependency set policy: %w", err)
@@ -168,6 +170,7 @@ func (s *InstallInspectService) inspectGraphAware(ctx context.Context, operation
 		item := &pendingDependencyInspection{dependency: dependency, runID: runID, run: run}
 		pending = append(pending, item)
 		byNode[dependency.Node()] = item
+		ports.ReportProgress(ctx, ports.Progress{Stage: "download"})
 		artifact, err := s.artifact.Acquire(ctx, runID, dependency.Artifact())
 		if err != nil {
 			return failPending("ARTIFACT_ACQUIRE_FAILED", err)
@@ -178,6 +181,7 @@ func (s *InstallInspectService) inspectGraphAware(ctx context.Context, operation
 		if !acquiredMatchesLocked(artifact, dependency, runID) {
 			return failPending("ARTIFACT_BINDING_INVALID", fmt.Errorf("acquired artifact binding is invalid for dependency %s", dependency.Node().String()))
 		}
+		ports.ReportProgress(ctx, ports.Progress{Stage: "verify"})
 		verification, err := s.verification.Verify(ctx, artifact)
 		if err != nil {
 			return failPending("VERIFICATION_PROVIDER_FAILED", err)
@@ -192,6 +196,7 @@ func (s *InstallInspectService) inspectGraphAware(ctx context.Context, operation
 		}
 		artifacts[dependency.Node()] = item.artifact
 	}
+	ports.ReportProgress(ctx, ports.Progress{Stage: "inspect"})
 	reports, err := inspector.InspectGraph(ctx, graph, artifacts)
 	if err != nil {
 		return failPending("INSPECTION_PROVIDER_FAILED", err)
@@ -211,6 +216,7 @@ func (s *InstallInspectService) inspectGraphAware(ctx context.Context, operation
 		if err != nil {
 			return failPending("POLICY_INPUT_INVALID", err)
 		}
+		ports.ReportProgress(ctx, ports.Progress{Stage: "policy"})
 		decision, err := s.entryPolicy.Evaluate(input)
 		if err != nil {
 			return failPending("POLICY_EVALUATION_FAILED", err)
@@ -258,6 +264,7 @@ func (s *InstallInspectService) inspectGraphAware(ctx context.Context, operation
 	if err != nil {
 		return partial, fmt.Errorf("construct inspected dependency set: %w", err)
 	}
+	ports.ReportProgress(ctx, ports.Progress{Stage: "policy"})
 	decision, err := s.setPolicy.EvaluateSet(set)
 	if err != nil {
 		return partial, fmt.Errorf("evaluate dependency set policy: %w", err)
@@ -426,10 +433,12 @@ func (s *InstallInspectService) inspectAcquiredDependency(ctx context.Context, o
 	if err := run.BindAcquiredArtifact(artifact); err != nil {
 		return domain.DependencyInspection{}, failDependencyRun(run, "ARTIFACT_BINDING_FAILED", err)
 	}
+	ports.ReportProgress(ctx, ports.Progress{Stage: "verify"})
 	verification, err := s.verification.Verify(ctx, artifact)
 	if err != nil {
 		return domain.DependencyInspection{}, failDependencyRun(run, "VERIFICATION_PROVIDER_FAILED", err)
 	}
+	ports.ReportProgress(ctx, ports.Progress{Stage: "inspect"})
 	inspection, err := s.inspection.Inspect(ctx, artifact)
 	if err != nil {
 		return domain.DependencyInspection{}, failDependencyRun(run, "INSPECTION_PROVIDER_FAILED", err)
@@ -446,6 +455,7 @@ func (s *InstallInspectService) inspectAcquiredDependency(ctx context.Context, o
 	if err != nil {
 		return domain.DependencyInspection{}, failDependencyRun(run, "POLICY_INPUT_INVALID", err)
 	}
+	ports.ReportProgress(ctx, ports.Progress{Stage: "policy"})
 	decision, err := s.entryPolicy.Evaluate(input)
 	if err != nil {
 		return domain.DependencyInspection{}, failDependencyRun(run, "POLICY_EVALUATION_FAILED", err)
@@ -472,6 +482,7 @@ func (s *InstallInspectService) inspectDependency(ctx context.Context, operation
 	if err := run.Activate(); err != nil {
 		return domain.DependencyInspection{}, DependencyPolicyDiagnostic{}, failDependencyRun(run, "RUN_ACTIVATION_FAILED", err)
 	}
+	ports.ReportProgress(ctx, ports.Progress{Stage: "download"})
 	artifact, err := s.artifact.Acquire(ctx, runID, dependency.Artifact())
 	if err != nil {
 		return domain.DependencyInspection{}, DependencyPolicyDiagnostic{}, failDependencyRun(run, "ARTIFACT_ACQUIRE_FAILED", err)
@@ -479,11 +490,13 @@ func (s *InstallInspectService) inspectDependency(ctx context.Context, operation
 	if err := run.BindAcquiredArtifact(artifact); err != nil {
 		return domain.DependencyInspection{}, DependencyPolicyDiagnostic{}, failDependencyRun(run, "ARTIFACT_BINDING_FAILED", err)
 	}
+	ports.ReportProgress(ctx, ports.Progress{Stage: "verify"})
 	verification, err := s.verification.Verify(ctx, artifact)
 	if err != nil {
 		return domain.DependencyInspection{}, DependencyPolicyDiagnostic{}, failDependencyRun(run, "VERIFICATION_PROVIDER_FAILED", err)
 	}
 	checks := []domain.CheckExecution{verification.Execution()}
+	ports.ReportProgress(ctx, ports.Progress{Stage: "inspect"})
 	inspection, err := s.inspection.Inspect(ctx, artifact)
 	if err != nil {
 		return domain.DependencyInspection{}, DependencyPolicyDiagnostic{}, failDependencyRun(run, "INSPECTION_PROVIDER_FAILED", err)
@@ -498,6 +511,7 @@ func (s *InstallInspectService) inspectDependency(ctx context.Context, operation
 	if err != nil {
 		return domain.DependencyInspection{}, DependencyPolicyDiagnostic{}, failDependencyRun(run, "POLICY_INPUT_INVALID", err)
 	}
+	ports.ReportProgress(ctx, ports.Progress{Stage: "policy"})
 	decision, err := s.entryPolicy.Evaluate(input)
 	if err != nil {
 		return domain.DependencyInspection{}, DependencyPolicyDiagnostic{}, failDependencyRun(run, "POLICY_EVALUATION_FAILED", err)

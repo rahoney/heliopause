@@ -31,6 +31,7 @@ func executeProjectUpdate(ctx context.Context, reference domain.ArtifactReferenc
 			resolution = domain.DependencyResolution{}
 		}
 	}()
+	ports.ReportProgress(ctx, ports.Progress{Stage: "resolve"})
 	update, err := resolver.ResolveProjectDependencyUpdate(ctx, reference, installContext, guard.Controls())
 	if err != nil {
 		return domain.DependencyResolution{}, fmt.Errorf("resolve exact %s graph: %w", label, err)
@@ -41,6 +42,7 @@ func executeProjectUpdate(ctx context.Context, reference domain.ArtifactReferenc
 	if err := guard.VerifyUnchanged(ctx); err != nil {
 		return resolution, err
 	}
+	ports.ReportProgress(ctx, ports.Progress{Stage: "inspect"})
 	verified, err := inspection.InspectProject(ctx, update.Snapshot())
 	if err != nil {
 		return resolution, fmt.Errorf("inspect complete selected %s project: %w", label, err)
@@ -48,10 +50,12 @@ func executeProjectUpdate(ctx context.Context, reference domain.ArtifactReferenc
 	if err := guard.VerifyUnchanged(ctx); err != nil {
 		return resolution, err
 	}
+	ports.ReportProgress(ctx, ports.Progress{Stage: "stage"})
 	staged, err := staging.StageProject(ctx, verified)
 	if err != nil {
 		return resolution, fmt.Errorf("stage approved %s project cache: %w", label, err)
 	}
+	ports.ReportProgress(ctx, ports.Progress{Stage: "install"})
 	if err := guard.Commit(ctx, update, staged); err != nil {
 		return domain.DependencyResolution{}, fmt.Errorf("promote exact %s graph: %w", label, err)
 	}

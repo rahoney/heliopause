@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 )
 
 const (
@@ -198,7 +199,7 @@ func (c *Client) downloadAsset(ctx context.Context, asset resolvedLocator, direc
 	temporaryPath := temporary.Name()
 	defer func() { _ = os.Remove(temporaryPath) }()
 	hash := sha256.New()
-	written, copyErr := io.Copy(io.MultiWriter(temporary, hash), io.LimitReader(response.Body, int64(asset.size)+1))
+	written, copyErr := io.Copy(io.MultiWriter(temporary, hash), ports.DownloadReader(ctx, io.LimitReader(response.Body, int64(asset.size)+1), int64(asset.size)))
 	syncErr, closeErr := temporary.Sync(), temporary.Close()
 	if copyErr != nil || syncErr != nil || closeErr != nil || written == 0 || uint64(written) != asset.size {
 		return "", 0, errors.New("stream GitHub Release asset failed or differed from declared size")

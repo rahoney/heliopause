@@ -9,8 +9,8 @@
 - 구현 언어: Go
 - CLI framework: Cobra
 - 현재 상태: M0–M11 qualification 및 post-qualification release hardening, M12-001~005 생태계 acceptance·전체 qualification·feature freeze와 M12-02 최종 red-team/fix gate 완료. PR29·PR30 merge와 main CI를 확인했고 M13-001 저장소 보호 설정 적용·재조회를 완료했다.
-- 완료 작업: M12·M12-02 및 보안 패치 전달, M13-001 — 저장소 보호 설정 (`COMPLETE`)
-- 현재 작업: M13-004 — 설치 채널 baseline audit·계정 준비 (`IN_PROGRESS`). M13-003의 보호된 `v0.1.0` 빌드·12개 attestation·실제 `.deb`/`.rpm` lifecycle 검증은 [완료](docs/planning/evidence/m13-003-release-build/qualification-20261017.md)했다. 공개 배포와 부팅된 clean Host 검증은 M13-005에 남아 있다.
+- 완료 작업: M12·M12-02 및 보안 패치 전달, M13-001 저장소 보호·M13-003 build/package 검증, CLI-UX-001 로컬 CLI 사용성 (`COMPLETE`)
+- 현재 작업: M13-004 — 설치 채널 (`BLOCKED`: 사용자 패키지 이름 결정 대기). CLI-UX-001의 7개 언어·진행 표시·정형 리포트와 실제 로컬 검사·설치는 [검증 완료](docs/planning/evidence/m13-cli-ux/qualification-20261018.md)했다. 공개 배포는 미실행이다.
 - 선행 판정: M13-002는 [승인된 C3](docs/planning/18-m13-production-release-operations-contract.md#m13-002--protected-branch-qualification)에 따라 `ACCEPTED_WITH_EXCEPTION / QUALIFIED=NO / ACCEPTANCE_CLOSED=YES`다. 실제 missing-CLA는 `NOT_TESTED / DEFERRED`이며 최초 외부 기여 병합 전에 검증한다. 필수 CLA 보호·서명은 유지하고 구체적 merge·tag·publish는 별도 후보 검토를 따른다.
 - 유지보수 완료: `UPG-001..006 COMPLETE / QUALIFIED`, PR34/main CI320 전달 완료. 공개 attested release·상시 service·기존 full-Race 후속은 별도 범위로 유지한다.
 - 진행 상태의 canonical owner: [`docs/planning/02-current-work-queue.md`](docs/planning/02-current-work-queue.md)
@@ -69,7 +69,16 @@ npm/pip install은 기본적으로 현재 managed project 또는
 active virtual environment를 사용하며, `--target`은 고급 absolute destination
 override다. GitHub install은 기본 user bin destination 또는 새 `--target`을 사용한다.
 
+터미널에서는 사람용 결과를 기본 표시하고, 기존 npm/PyPI/GitHub 출력은
+파이프로 보내면 JSON을 유지한다. 언어는 시스템 locale을 따르며 저장하거나
+일회성으로 지정할 수 있다. 영어·한국어 전체 문구와 독일어·프랑스어·스페인어·
+브라질 포르투갈어·일본어 핵심 설명을 지원하고 누락 번역은 영어로 표시한다.
+[표시 계약](docs/user-journey-cli-ia/05-terminal-presentation.md)을 따른다.
+
 ```sh
+helox config language ko       # 저장; auto로 시스템 언어 복귀
+helox --lang en --help         # 이번 명령에만 적용
+helox --output json npm inspect is-number@7.0.0
 helox doctor
 
 helox npm inspect '<package>[@<version>]'

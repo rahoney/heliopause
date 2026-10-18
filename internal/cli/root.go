@@ -47,6 +47,7 @@ func New(stdout, stderr io.Writer) (*cobra.Command, error) {
 	command.SetOut(stdout)
 	command.SetErr(stderr)
 	initializeCommandTree(command)
+	attachPresentation(command, stdout, stderr)
 
 	return command, nil
 }
@@ -102,6 +103,15 @@ func AddDoctor(root *cobra.Command, doctor Doctor) error {
 	}
 	command.RunE = func(command *cobra.Command, _ []string) error {
 		report := doctor.Diagnose(contextOrBackground(command.Context()))
+		if p := presentationFor(command.OutOrStdout()); p.human() {
+			if err := p.renderDoctor(report); err != nil {
+				return err
+			}
+			if !report.Healthy {
+				return ExitError{Code: 1}
+			}
+			return nil
+		}
 		for _, check := range report.Checks {
 			status := "UNAVAILABLE"
 			if check.Healthy {
@@ -133,7 +143,7 @@ func AddGitHubReleaseInspect(root *cobra.Command, parser ReferenceParser, inspec
 			if err != nil {
 				return err
 			}
-			code, err := ExecuteInspect(contextOrBackground(command.Context()), inspector, request, true, command.OutOrStdout())
+			code, err := ExecuteInspect(contextOrBackground(command.Context()), inspector, request, machineOutput(command), command.OutOrStdout())
 			if err != nil {
 				return err
 			}
@@ -173,7 +183,7 @@ func AddGitHubReleaseInstall(root *cobra.Command, parser ReferenceParser, instal
 			if err != nil {
 				return err
 			}
-			code, err := ExecuteInstall(contextOrBackground(command.Context()), installer, request, true, command.OutOrStdout())
+			code, err := ExecuteInstall(contextOrBackground(command.Context()), installer, request, machineOutput(command), command.OutOrStdout())
 			if err != nil {
 				return err
 			}
@@ -244,7 +254,7 @@ func AddPyPIInstallSources(root *cobra.Command, installers map[string]Installer)
 			if err != nil {
 				return err
 			}
-			exitCode, operationErr := ExecuteInstall(contextOrBackground(command.Context()), installer, request, true, command.OutOrStdout())
+			exitCode, operationErr := ExecuteInstall(contextOrBackground(command.Context()), installer, request, machineOutput(command), command.OutOrStdout())
 			if operationErr != nil {
 				return operationErr
 			}
@@ -365,7 +375,7 @@ func AddPyPIInspect(root *cobra.Command, inspector Inspector) error {
 			if err != nil {
 				return err
 			}
-			exitCode, operationErr := ExecuteInspect(contextOrBackground(command.Context()), inspector, request, true, command.OutOrStdout())
+			exitCode, operationErr := ExecuteInspect(contextOrBackground(command.Context()), inspector, request, machineOutput(command), command.OutOrStdout())
 			if operationErr != nil {
 				return operationErr
 			}
@@ -394,7 +404,7 @@ func AddNPMInspect(root *cobra.Command, inspector Inspector) error {
 			if err != nil {
 				return err
 			}
-			exitCode, operationErr := ExecuteInspect(contextOrBackground(command.Context()), inspector, request, true, command.OutOrStdout())
+			exitCode, operationErr := ExecuteInspect(contextOrBackground(command.Context()), inspector, request, machineOutput(command), command.OutOrStdout())
 			if operationErr != nil {
 				return operationErr
 			}
@@ -431,7 +441,7 @@ func AddNPMInstall(root *cobra.Command, installer Installer) error {
 			if err != nil {
 				return err
 			}
-			exitCode, operationErr := ExecuteInstall(contextOrBackground(command.Context()), installer, request, true, command.OutOrStdout())
+			exitCode, operationErr := ExecuteInstall(contextOrBackground(command.Context()), installer, request, machineOutput(command), command.OutOrStdout())
 			if operationErr != nil {
 				return operationErr
 			}
@@ -472,9 +482,16 @@ func AddGoModuleGet(root *cobra.Command, resolver GoModuleResolver) error {
 		if err != nil {
 			return err
 		}
-		resolution, err := resolver.Get(contextOrBackground(command.Context()), reference, installContext)
+		progressContext, finishProgress := beginProgress(contextOrBackground(command.Context()), command.OutOrStdout(), machineOutput(command))
+		defer func() { _ = finishProgress() }()
+		resolution, err := resolver.Get(progressContext, reference, installContext)
+		progressErr := finishProgress()
+		err = errors.Join(err, progressErr)
 		if err != nil {
 			return err
+		}
+		if p := presentationFor(command.OutOrStdout()); p.human() {
+			return p.renderProjectSummary(reference.Source().String(), "Modules", len(resolution.Graph().Nodes()), resolution.LockfileDigest().String())
 		}
 		_, err = fmt.Fprintf(command.OutOrStdout(), "Source: %s\nModules: %d\nLock digest: %s\n", reference.Source(), len(resolution.Graph().Nodes()), resolution.LockfileDigest())
 		return err
@@ -499,9 +516,16 @@ func AddGoModuleDownload(root *cobra.Command, resolver GoModuleProjectResolver) 
 		if err != nil {
 			return err
 		}
-		snapshot, err := resolver.Resolve(contextOrBackground(command.Context()), installContext)
+		progressContext, finishProgress := beginProgress(contextOrBackground(command.Context()), command.OutOrStdout(), machineOutput(command))
+		defer func() { _ = finishProgress() }()
+		snapshot, err := resolver.Resolve(progressContext, installContext)
+		progressErr := finishProgress()
+		err = errors.Join(err, progressErr)
 		if err != nil {
 			return err
+		}
+		if p := presentationFor(command.OutOrStdout()); p.human() {
+			return p.renderProjectSummary(snapshot.Source().String(), "Modules", len(snapshot.Dependencies()), snapshot.GraphDigest().String())
 		}
 		_, err = fmt.Fprintf(command.OutOrStdout(), "Source: %s\nModules: %d\nGraph digest: %s\n", snapshot.Source(), len(snapshot.Dependencies()), snapshot.GraphDigest())
 		return err
@@ -534,9 +558,16 @@ func AddCargoAdd(root *cobra.Command, resolver CargoResolver) error {
 		if err != nil {
 			return err
 		}
-		resolution, err := resolver.Resolve(contextOrBackground(command.Context()), reference, installContext)
+		progressContext, finishProgress := beginProgress(contextOrBackground(command.Context()), command.OutOrStdout(), machineOutput(command))
+		defer func() { _ = finishProgress() }()
+		resolution, err := resolver.Resolve(progressContext, reference, installContext)
+		progressErr := finishProgress()
+		err = errors.Join(err, progressErr)
 		if err != nil {
 			return err
+		}
+		if p := presentationFor(command.OutOrStdout()); p.human() {
+			return p.renderProjectSummary(reference.Source().String(), "Crates", len(resolution.Graph().Nodes()), resolution.LockfileDigest().String())
 		}
 		_, err = fmt.Fprintf(command.OutOrStdout(), "Source: %s\nCrates: %d\nLock digest: %s\n", reference.Source(), len(resolution.Graph().Nodes()), resolution.LockfileDigest())
 		return err
@@ -569,9 +600,16 @@ func AddTerraformInit(root *cobra.Command, resolver TerraformResolver) error {
 		if err != nil {
 			return err
 		}
-		result, err := resolver.Init(contextOrBackground(command.Context()), reference, installContext)
+		progressContext, finishProgress := beginProgress(contextOrBackground(command.Context()), command.OutOrStdout(), machineOutput(command))
+		defer func() { _ = finishProgress() }()
+		result, err := resolver.Init(progressContext, reference, installContext)
+		progressErr := finishProgress()
+		err = errors.Join(err, progressErr)
 		if err != nil {
 			return err
+		}
+		if p := presentationFor(command.OutOrStdout()); p.human() {
+			return p.renderProjectSummary(reference.Source().String(), "Providers", result.ProviderCount, result.Resolution.LockfileDigest().String())
 		}
 		_, err = fmt.Fprintf(command.OutOrStdout(), "Source: %s\nProviders: %d\nLock digest: %s\n", reference.Source(), result.ProviderCount, result.Resolution.LockfileDigest())
 		return err

@@ -87,6 +87,7 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/bootstrap": true,
 		},
 		modulePath + "/internal/cli": {
+			modulePath + "/internal/core/ports":                 true,
 			modulePath + "/internal/application":                true,
 			modulePath + "/internal/artifact/cargo":             true,
 			modulePath + "/internal/artifact/gomodule":          true,
@@ -108,9 +109,11 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/artifact/pypi": true,
 		},
 		modulePath + "/internal/artifact/npm": {
+			modulePath + "/internal/core/ports":  true,
 			modulePath + "/internal/core/domain": true,
 		},
 		modulePath + "/internal/artifact/pypi": {
+			modulePath + "/internal/core/ports":      true,
 			modulePath + "/internal/core/domain":     true,
 			modulePath + "/internal/runtimeidentity": true,
 		},
@@ -201,6 +204,7 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 	allowedExternalImports := map[string]map[string]bool{
 		modulePath + "/cmd/helox": {},
 		modulePath + "/internal/cli": {
+			"golang.org/x/sys/unix":  true,
 			"github.com/spf13/cobra": true,
 		},
 		modulePath + "/internal/core/domain":   {},

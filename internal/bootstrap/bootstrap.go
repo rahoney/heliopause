@@ -37,11 +37,23 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 	if err != nil {
 		return err
 	}
+	defer func() {
+		if resultErr != nil {
+			resultErr = cli.PresentRuntimeError(command, resultErr)
+		}
+	}()
 	command.SetArgs(args)
+	source, err := cli.PreparePresentation(command, args)
+	if err != nil {
+		return err
+	}
 	if helpRequested(args) {
 		return command.ExecuteContext(ctx)
 	}
-	if len(args) > 0 && args[0] == "doctor" {
+	if source == "config" {
+		return command.ExecuteContext(ctx)
+	}
+	if source == "doctor" {
 		root, rootErr := releaseinstall.DefaultRoot()
 		if rootErr != nil {
 			return rootErr
@@ -54,12 +66,16 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 	var trustedExecutor *hosttool.Executor
 	var observerSupervisor *sandbox.ObserverSupervisor
 	var processObserver sandbox.TraceObserver
-	if runtime.GOOS == "linux" && len(args) > 0 && (args[0] == "npm" || args[0] == "pypi" || args[0] == "pip" || args[0] == "github" || args[0] == "go" || args[0] == "cargo" || args[0] == "terraform") {
+	if runtime.GOOS == "linux" && source != "" && (source == "npm" || source == "pypi" || source == "pip" || source == "github" || source == "go" || source == "cargo" || source == "terraform") {
 		trustedExecutor, err = hosttool.NewSystem(ctx)
 		if err != nil {
 			return err
 		}
-		defer func() { resultErr = errors.Join(resultErr, trustedExecutor.Close()) }()
+		defer func() {
+			cleanupErr := trustedExecutor.Close()
+			cli.PresentFinalizationError(command, cleanupErr)
+			resultErr = errors.Join(resultErr, cleanupErr)
+		}()
 		launcher, launcherErr := hosttool.NewSystemObserverLauncher()
 		if launcherErr != nil {
 			return launcherErr
@@ -70,10 +86,15 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err != nil {
 			return err
 		}
+		observerSupervisor.SetDiagnosticWriter(cli.DiagnosticWriter(command))
 		processObserver = observerSupervisor.Observer()
-		defer func() { resultErr = errors.Join(resultErr, observerSupervisor.Close()) }()
+		defer func() {
+			cleanupErr := observerSupervisor.Close()
+			cli.PresentFinalizationError(command, cleanupErr)
+			resultErr = errors.Join(resultErr, cleanupErr)
+		}()
 	}
-	if len(args) > 0 && args[0] == "go" {
+	if source != "" && source == "go" {
 		if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" {
 			return errors.New("automatic Go Module resolution requires Linux amd64")
 		}
@@ -107,7 +128,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 			return err
 		}
 	}
-	if len(args) > 0 && args[0] == "cargo" {
+	if source != "" && source == "cargo" {
 		if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" {
 			return errors.New("automatic Cargo resolution requires Linux amd64")
 		}
@@ -134,7 +155,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 			return err
 		}
 	}
-	if len(args) > 0 && args[0] == "terraform" {
+	if source != "" && source == "terraform" {
 		if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" {
 			return errors.New("automatic Terraform Provider installation requires Linux amd64")
 		}
@@ -146,7 +167,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 			return err
 		}
 	}
-	if len(args) > 0 && args[0] == "npm" {
+	if source != "" && source == "npm" {
 		cacheRoot, err := os.UserCacheDir()
 		if err != nil {
 			return err
@@ -222,7 +243,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 			return err
 		}
 	}
-	if len(args) > 0 && (args[0] == "pypi" || args[0] == "pip") {
+	if source != "" && (source == "pypi" || source == "pip") {
 		cacheRoot, err := os.UserCacheDir()
 		if err != nil {
 			return err
@@ -323,7 +344,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 			return err
 		}
 	}
-	if len(args) > 0 && args[0] == "github" {
+	if source != "" && source == "github" {
 		cacheRoot, err := os.UserCacheDir()
 		if err != nil {
 			return err

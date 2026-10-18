@@ -83,10 +83,12 @@ func (s *ProjectBuildService) Build(ctx context.Context, install domain.InstallC
 	if err := run.BindAcquiredArtifact(inputs.Source()); err != nil {
 		return fail("M12_GO_BUILD_INPUT_FAILED", err)
 	}
+	ports.ReportProgress(ctx, ports.Progress{Stage: "verify"})
 	verification, err := s.verification.Verify(ctx, inputs.Source())
 	if err != nil {
 		return fail("M12_GO_BUILD_VERIFICATION_FAILED", err)
 	}
+	ports.ReportProgress(ctx, ports.Progress{Stage: "build"})
 	report, err := s.inspection.InspectBuild(ctx, inputs)
 	if err != nil {
 		return fail("M12_GO_BUILD_OBSERVATION_FAILED", err)
@@ -96,6 +98,7 @@ func (s *ProjectBuildService) Build(ctx context.Context, install domain.InstallC
 	}
 	checks := append([]domain.CheckExecution{verification.Execution()}, report.Inspection().Executions()...)
 	facts := append(verification.Evidence(), report.Inspection().Evidence()...)
+	ports.ReportProgress(ctx, ports.Progress{Stage: "evidence"})
 	refs, err := s.evidence.Record(ctx, runID, facts)
 	if err != nil {
 		r, e := failRun(run, reference, inputs.Source(), checks, nil, "EVIDENCE_RECORD_FAILED", "Build Evidence recording failed.", err)

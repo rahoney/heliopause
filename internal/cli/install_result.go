@@ -20,13 +20,22 @@ func ExecuteInstall(ctx context.Context, installer Installer, request applicatio
 	if ctx == nil || installer == nil || output == nil {
 		return 2, errors.New("install CLI adapter requires context, use case, and output")
 	}
+	ctx, finishProgress := beginProgress(ctx, output, machine)
+	defer func() { _ = finishProgress() }()
 	outcome, operationErr := installer.Install(ctx, request)
+	if !machine {
+		if writer, ok := output.(*presentationWriter); ok {
+			writer.presentation.interruption = interruptionCode(operationErr)
+		}
+	}
+	progressErr := finishProgress()
 	var presentationErr error
 	if machine {
 		presentationErr = WriteJSONInstallResult(output, outcome, operationErr)
 	} else {
 		presentationErr = WriteHumanInstallResult(output, outcome, operationErr)
 	}
+	presentationErr = errors.Join(presentationErr, progressErr)
 	if presentationErr != nil {
 		return 1, errors.Join(operationErr, presentationErr)
 	}
@@ -58,6 +67,9 @@ func WriteHumanInstallResult(output io.Writer, outcome application.InstallOutcom
 		return errors.New("human presenter requires a started Install operation")
 	}
 	status, promotion := installStatuses(outcome, operationErr)
+	if writer, ok := output.(*presentationWriter); ok && writer.presentation.human() {
+		return writer.presentation.renderInstall(outcome, operationErr)
+	}
 	if _, err := fmt.Fprintf(output, "Operation: %s\nOperation ID: %s\nStatus: %s\nTarget: %s\nPromotion: %s\n", domain.OperationInstall, inspection.OperationID(), status, inspection.Request().Context().Target(), promotion); err != nil {
 		return err
 	}

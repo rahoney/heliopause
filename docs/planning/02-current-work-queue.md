@@ -9,11 +9,12 @@
 ```text
 Current milestone: M13 — Production Release & Operations
 Milestone status: IN_PROGRESS — runtime maintenance main delivery COMPLETE
-Active work item: M13-004 — convenience installation channels; baseline audit and account preparation
-Active work item status: IN_PROGRESS — no source implementation yet; npm/PyPI owner accounts pending
+Active work item: M13-004 — convenience installation channels
+Active work item status: BLOCKED — owner package-name decision; accounts ready; no channel source edits
 Predecessor: M13-003 — COMPLETE; protected v0.1.0 build, twelve attestations and OS package lifecycle PASS
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
-Next work item: M13-005 — NOT_STARTED; exact public publication and booted clean-Host qualification remain
+Prepublication prerequisite: CLI-UX-001 — COMPLETE / local qualification and installed CLI verified
+Next work item: M13-005 — NOT_STARTED; requires M13-004 and a reviewed publication candidate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
 
@@ -3002,8 +3003,9 @@ M12-005 feature freeze에서 수행한다. canonical lock 등록만으로 releas
 | --- | --- | --- | --- |
 | 1 | M13-001 | protected main/develop/tag/release environment/immutable release activation | COMPLETE |
 | 2 | M13-002 | `feature → develop → main` 실제 protected PR qualification | ACCEPTED_WITH_EXCEPTION — C3; actual missing-CLA NOT_TESTED / DEFERRED |
-| 3 | M13-003 | canonical release build·manifest·attestation·OS package assets | IN_PROGRESS — source CI PASS / actual release qualification |
-| 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | NOT_STARTED |
+| 3 | M13-003 | canonical release build·manifest·attestation·OS package assets | COMPLETE — protected v0.1.0 candidate qualification |
+| 3a | CLI-UX-001 | multilingual terminal progress and structured human results | COMPLETE — local source / installed CLI qualification |
+| 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | BLOCKED — owner package-name decision |
 | 5 | M13-005 | exact publication·clean Host bootstrap·doctor·cross-ecosystem smoke·quarantine | NOT_STARTED |
 
 ### M13-001 — protected repository activation
@@ -3290,9 +3292,22 @@ fresh exact-candidate availability/provenance checks, not a moved tag.
 Completed payloads/tools/containers/new images are removed; private check caches
 are removed after last use. Necessary evidence and existing shared/runtime files remain.
 
+### CLI-UX-001 — user-facing terminal remediation
+
+Status: COMPLETE — local source and installed development CLI qualification.
+IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES for the
+[terminal presentation contract](../user-journey-cli-ia/05-terminal-presentation.md).
+[Baseline](./evidence/m13-cli-ux/baseline-20261018.md) preserves the initial gaps;
+[qualification](./evidence/m13-cli-ux/qualification-20261018.md) owns the final
+checks, seven-language PTY cases, actual npm inspection/install/JSON/failure,
+protected local CLI activation/rollback and cleanup boundary. MISSING: none in
+this bounded item. Native macOS execution and full ecosystem/CUDA reruns are not
+claimed by local UX qualification. Inspection/Policy/exit codes are retained.
+Public v0.1.0 predates this UI source and was not retagged or republished.
+
 ### M13-004 — convenience installation channels
 
-Status: IN_PROGRESS — baseline audit and owner account preparation; no source edits.
+Status: BLOCKED — owner package-name decision; CLI-UX-001 complete; no channel source edits.
 Audit: IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO for the
 complete channel scope. Existing verifier-gated native installer/doctor and release
 manifest/build/publish consumers are reused; their historical acceptance is retained.
@@ -3301,14 +3316,15 @@ Read: [M13 convenience contract](./18-m13-production-release-operations-contract
 and Architecture rules, existing installer and workflow consumers.
 
 [Baseline and ordered plan](./evidence/m13-004-convenience/baseline-20261017.md)
-records each responsibility independently. MISSING: owner accounts and official
+records each responsibility independently. MISSING: owner-approved official
 names, bounded verified native bootstrap wiring, npm/PyPI wrappers, reviewed
 Homebrew formula, protected OIDC/provenance publication wiring and channel-specific
-checks. User confirmed npm/PyPI accounts do not exist yet and will register when
-needed; official signup/email-verification/2FA instructions were supplied. Account
-names and readiness are the only requested return data; no credentials are needed.
+checks. On2026-10-18 the user reported both rahoney accounts/email/2FA/GitHub
+links complete. This closes account preparation only; publisher binding and all
+package names remain unconfirmed. No credentials are needed.
 
-Only M13-004 is IN_PROGRESS. M13-005 remains NOT_STARTED. Account setup is not
+No work item is IN_PROGRESS. M13-004 resumes after owner naming; the local UX
+prerequisite is complete. M13-005 remains NOT_STARTED. Account setup is not
 package publication approval; no registry upload, tap creation, Release draft or
 publish dispatch has occurred. Concrete publication remains separately reviewed.
 
