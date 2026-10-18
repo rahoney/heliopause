@@ -3361,7 +3361,11 @@ closes the local subset; new native-source remote qualification and independent
 named-source audit/implementation remain MISSING. Next is named-source within the
 same PyPI lane; no other work item becomes IN_PROGRESS. Its independent
 [named-source baseline and reviewed edit map](./evidence/update-quarantine/pytorch-update-baseline-20261019.md)
-records existing source-pinned traversal and the actual upgrade gaps before code. The
+records existing source-pinned traversal and the actual upgrade gaps before code.
+The first named source-bound input/proposal data slice passes Quick/Race and
+focused regressions, preserving public controls and per-node source identity.
+Named resolver/CLI/Promotion/resource wiring, CUDA retained extras and actual
+CPU/CUDA update qualification remain MISSING; no named upgrade is enabled yet. The
 managed candidatec93ce58 in draft PR38 passed all ten CI331/run39148017283 jobs;
 its actual checkout and consumer scope are recorded independently. Native source
 is newer and does not inherit that qualification.

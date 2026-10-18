@@ -18,14 +18,34 @@ const upgradeInputLimit = 4 << 20
 type UpgradeRequirement struct {
 	project, requirement, exact string
 	bounded                     *BoundedRequirement
+	source                      domain.SourceID
 }
 
 func ParseUpgradeRequirement(value string) (UpgradeRequirement, error) {
+	return ParseUpgradeRequirementForSource(value, PublicPyPIProfile().Source())
+}
+
+// ParseUpgradeRequirementForSource binds native upgrade intent to one existing
+// canonical profile. A named profile cannot select an ordinary public project.
+func ParseUpgradeRequirementForSource(value string, source domain.SourceID) (result UpgradeRequirement, resultErr error) {
+	profile, ok := ProfileForSource(source)
+	if !ok {
+		return result, errors.New("upgrade source profile is unsupported")
+	}
+	defer func() {
+		if resultErr == nil {
+			if IsPyTorchSource(source) && !sourceOwnsProject(profile, source, result.project) {
+				result, resultErr = UpgradeRequirement{}, errors.New("upgrade root is not owned by the named source")
+				return
+			}
+			result.source = source
+		}
+	}()
 	if value == "" || len(value) > 512 || value != strings.TrimSpace(value) || strings.ContainsAny(value, "[];:/\\\x00\r\n\t") {
-		return UpgradeRequirement{}, errors.New("pip upgrade requires one supported public project requirement")
+		return UpgradeRequirement{}, errors.New("pip upgrade requires one supported project requirement")
 	}
 	if strings.Contains(value, "@") {
-		reference, err := ParseReference(value)
+		reference, err := ParseReferenceForSource(value, source)
 		if err != nil {
 			return UpgradeRequirement{}, err
 		}
@@ -39,7 +59,7 @@ func ParseUpgradeRequirement(value string) (UpgradeRequirement, error) {
 	if strings.Count(value, "==") == 1 && !strings.ContainsAny(value, ",<>~*") {
 		parts := strings.SplitN(value, "==", 2)
 		project, err := NormalizeProjectName(strings.TrimSpace(parts[0]))
-		version, versionErr := NormalizeVersion(strings.TrimSpace(parts[1]))
+		version, versionErr := normalizeVersionForProfile(strings.TrimSpace(parts[1]), IsPyTorchSource(source))
 		if err != nil || versionErr != nil {
 			return UpgradeRequirement{}, errors.New("pip upgrade exact requirement is invalid")
 		}
@@ -52,7 +72,7 @@ func ParseUpgradeRequirement(value string) (UpgradeRequirement, error) {
 	project := requirement.Project()
 	match := boundedRequirementHead.FindStringSubmatch(value)
 	specifier := strings.TrimSpace(match[3])
-	result := UpgradeRequirement{project: project, requirement: project + specifier}
+	result = UpgradeRequirement{project: project, requirement: project + specifier}
 	if specifier != "" {
 		result.bounded = &requirement
 	}
@@ -62,7 +82,7 @@ func ParseUpgradeRequirement(value string) (UpgradeRequirement, error) {
 func (r UpgradeRequirement) Project() string     { return r.project }
 func (r UpgradeRequirement) Requirement() string { return r.requirement }
 func (r UpgradeRequirement) Reference() domain.ArtifactReference {
-	reference, _ := ParseReference(r.project)
+	reference, _ := ParseReferenceForSource(r.project, r.source)
 	return reference
 }
 
@@ -70,21 +90,26 @@ func (r UpgradeRequirement) Reference() domain.ArtifactReference {
 // components. Other explicitly pinned versions retain canonical exact identity;
 // automatic root selection never opts into a prerelease.
 func (r UpgradeRequirement) AcceptsVersion(version string) bool {
-	canonical, err := NormalizeVersion(version)
-	if r.project == "" || err != nil || canonical != version {
+	profile, ok := ProfileForSource(r.source)
+	canonical, err := normalizeVersionForProfile(version, IsPyTorchSource(r.source))
+	if !ok || r.project == "" || err != nil || canonical != version {
 		return false
+	}
+	comparisonVersion := version
+	if IsPyTorchSource(r.source) && !strings.Contains(r.exact, "+") {
+		comparisonVersion = strings.SplitN(version, "+", 2)[0]
 	}
 	if r.exact != "" {
-		if numericRelease.MatchString(r.exact) && numericRelease.MatchString(version) {
+		if numericRelease.MatchString(r.exact) && numericRelease.MatchString(comparisonVersion) {
 			constraint, err := ParseBoundedRequirement(r.project + "==" + r.exact)
-			return err == nil && constraint.Satisfies(version)
+			return err == nil && constraint.Satisfies(comparisonVersion)
 		}
-		return version == r.exact
+		return comparisonVersion == r.exact
 	}
-	if !IsFinalVersion(version) {
+	if !isFinalVersionForProfile(version, profile) {
 		return false
 	}
-	return r.bounded == nil || r.bounded.Satisfies(version)
+	return r.bounded == nil || r.bounded.Satisfies(comparisonVersion)
 }
 
 // InstalledMetadataFile contains inert data only. Its directory is one exact
@@ -151,7 +176,7 @@ type UpgradeInput struct {
 }
 
 func NewUpgradeInput(requirement UpgradeRequirement, files []InstalledMetadataFile, python string) (UpgradeInput, error) {
-	if requirement.project == "" || len(files) > maxPyPIReportEntries || !strings.HasPrefix(python, "3.14.") || len(strings.Split(python, ".")) != 3 || !numericRelease.MatchString(python) {
+	if requirement.Reference().Source().String() == "" || len(files) > maxPyPIReportEntries || !strings.HasPrefix(python, "3.14.") || len(strings.Split(python, ".")) != 3 || !numericRelease.MatchString(python) {
 		return UpgradeInput{}, errors.New("upgrade input requires a bounded supported Python environment")
 	}
 	canonical, err := NormalizeVersion(python)
@@ -198,13 +223,18 @@ type upgradeInputWire struct {
 	Requirement string                  `json:"requirement"`
 	Python      string                  `json:"python"`
 	Installed   []InstalledMetadataFile `json:"installed"`
+	Source      string                  `json:"source_id,omitempty"`
 }
 
 func (u UpgradeInput) Control() (domain.ProjectControlFile, error) {
 	if u.requirement.project == "" || u.python == "" {
 		return domain.ProjectControlFile{}, errors.New("validated upgrade input is required")
 	}
-	body, err := json.Marshal(upgradeInputWire{1, u.requirement.requirement, u.python, u.MetadataFiles()})
+	wire := upgradeInputWire{Version: 1, Requirement: u.requirement.requirement, Python: u.python, Installed: u.MetadataFiles()}
+	if u.requirement.source != PublicPyPIProfile().Source() {
+		wire.Source = u.requirement.source.String()
+	}
+	body, err := json.Marshal(wire)
 	if err != nil {
 		return domain.ProjectControlFile{}, err
 	}
@@ -223,7 +253,15 @@ func ParseUpgradeInput(controls []domain.ProjectControlFile, python string) (Upg
 	if json.Unmarshal(body, &wire) != nil || wire.Version != 1 || wire.Python != python {
 		return UpgradeInput{}, errors.New("frozen upgrade input is invalid")
 	}
-	requirement, err := ParseUpgradeRequirement(wire.Requirement)
+	source := PublicPyPIProfile().Source()
+	if wire.Source != "" {
+		var err error
+		source, err = domain.NewSourceID(wire.Source)
+		if err != nil {
+			return UpgradeInput{}, err
+		}
+	}
+	requirement, err := ParseUpgradeRequirementForSource(wire.Requirement, source)
 	if err != nil {
 		return UpgradeInput{}, err
 	}

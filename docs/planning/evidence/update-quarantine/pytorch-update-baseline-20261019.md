@@ -139,3 +139,35 @@ old safety approval. Existing public defaults and public native ownership scope
 remain intact. Implementation is authorized for the documented gap; no existing
 implemented scanner/transaction is being replaced. Named IMPLEMENTED/WIRED/
 QUALIFIED/ACCEPTANCE_CLOSED remain NO until corresponding source/evidence exists.
+
+## First source slice — source-bound selection data
+
+The existing upgrade_input.go now has ParseUpgradeRequirementForSource and an
+optional canonical source_id in its immutable input. Public v1 controls remain
+byte-for-byte unchanged. Named root intent preserves exact/local/numeric version
+semantics and rejects unknown profiles or a public project under a named root.
+upgrade_selection.go reuses the original proposal/retained-constraint owner for
+source-aware deltas and mixed-source final binding. ProposeSourcePinnedUpgrade
+and ValidateSourcePinnedFinal require a complete named traversal and compare all
+fresh first-pass candidates, including same-version bytes, against the second
+selection. Unrelated installed distributions remain constraints, not graph roots.
+
+New upgrade_named_test.go exercises all four profile inputs, local/no-op/transitive
+selection data, public compatibility, source substitution, incomplete graphs and
+same-version content changes between traversals. Focused9.32s, canonical
+Quick100.47s and targeted Race23.90s PASS for this fixed source. Final docs/security
+receipts use pytorch-data-docs/security. This is implemented data only: named
+resolver selection, CLI/Promotion binding, resource wrapper and actual named
+update qualification remain MISSING. No named update command is newly enabled.
+
+Further review before traversal: installed CUDA METADATA can request the existing
+bounded cuda-toolkit extras. Public upgrade input currently rejects active extras
+because pip constraints cannot encode them. Named support must preserve their
+version constraint AND selected component requirements through the existing
+extra-aware candidate traversal. Do not delete the extra list, treat it as a plain
+constraint, or make arbitrary extras valid. Evaluate only the existing canonical
+CUDA extra/marker subset as inert data, bind retained extra obligations and actual
+new candidate edges, and test superseded metadata versus unchanged requirements.
+This remains a named/CUDA implementation gap; data-input success above does not
+qualify it. Existing public rejection stays until a separately validated scope
+can represent the original requirements without loss.
