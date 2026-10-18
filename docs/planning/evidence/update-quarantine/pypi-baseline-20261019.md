@@ -84,3 +84,13 @@ QUALIFIED=NO / ACCEPTANCE_CLOSED=NO for this data slice, not command availabilit
 MISSING remains the concrete early venv session/inventory, pinned isolated resolver
 binding, native enrollment, CLI/reporting and actual upgrade qualification. Public
 and named-source existing install paths have not been changed by this slice.
+
+## Subsequent public managed-venv wiring
+
+The later [local qualification](./pypi-managed-qualification-20261019.md) supersedes
+the missing resolver/session/CLI/actual-consumer status above for its bounded
+public managed-venv scope. It reuses the existing transaction and private offline
+output path, records the actual no-op inventory failure/correction and confirms
+restoration/deletion of completed trial data. Complete PyPI acceptance remains
+open for native enrollment, named-source and new remote qualification; the first
+data-only slice did not itself qualify those later responsibilities.

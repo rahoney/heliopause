@@ -14,7 +14,7 @@ Last completed work item: CLI-UX-002 — OS preferred display-language auto; loc
 Predecessor: M13-003 — COMPLETE; protected v0.1.0 build, twelve attestations and OS package lifecycle PASS
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001 and CLI-UX-002 COMPLETE for their documented scopes
-Active work item status: IN_PROGRESS — npm lane baseline/selection and guarded replacement first
+Active work item status: IN_PROGRESS — npm bounded lane qualified; public PyPI managed upgrade locally qualified; native/named/remote gaps remain
 Next work item: CLI-UX-003 — NOT_STARTED; branded interactive launcher after SEC-UPD-001 acceptance
 Then: M13-004 — BLOCKED on SEC-UPD-001 and owner package naming; M13-005 NOT_STARTED
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -3339,9 +3339,17 @@ native macOS,45 Linux consumers and confirmed helper cleanup. Its
 [qualification](./evidence/update-quarantine/npm-qualification-20261018.md)
 records actual seven-operation CLI/observer evidence and cleanup. Next is the
 independent [PyPI baseline/upgrade gap](./evidence/update-quarantine/pypi-baseline-20261019.md);
-its pinned-tool selection semantics and second review are complete; bounded
-requirement/inert installed-metadata parsing is now being implemented and tested.
-Resolver/session/CLI/actual upgrade qualification remain MISSING.
+its pinned-tool selection semantics, second review and bounded input data are
+implemented. Public PyPI two-phase resolver, original-state session retaining the
+existing venv transaction, typed prerequisite/source forwarding and native -U/
+--upgrade command wiring passed final canonical checks and seven actual UID1000
+CLI consumers, including24.2→25.0 and fresh no-op inspection. A directly reproduced
+empty retired dist-info inventory gap was corrected and requalified. Originals
+were restored and completed trial payloads/operators deleted.
+[Public managed-venv local qualification](./evidence/update-quarantine/pypi-managed-qualification-20261019.md)
+does not close complete PyPI acceptance: independent native enrollment, named-source
+audit/qualification and new remote/native-platform checks remain MISSING. No
+candidate was permanently activated.
 Other lanes remain unimplemented/unqualified.
 [implementation baseline](./evidence/update-quarantine/baseline-20261018.md)
 records existing responsibilities and actual missing acceptance.

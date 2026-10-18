@@ -51,6 +51,10 @@ func newPyPIPromotion(stagingRoot string, runner DockerRunner, goos, goarch stri
 }
 
 func (p *PyPIPromotion) Promote(ctx context.Context, staged domain.StagedSet, bundle domain.VerifiedBundle, installContext domain.InstallContext) (promoted domain.PromotedInstall, resultErr error) {
+	return p.promote(ctx, staged, bundle, installContext, nil, nil)
+}
+
+func (p *PyPIPromotion) promote(ctx context.Context, staged domain.StagedSet, bundle domain.VerifiedBundle, installContext domain.InstallContext, held *pypiVenvTransaction, verify func(context.Context) error) (promoted domain.PromotedInstall, resultErr error) {
 	if ctx == nil || ctx.Err() != nil || p == nil || p.goos != "linux" || p.goarch != "amd64" {
 		return domain.PromotedInstall{}, errors.New("automatic PyPI Promotion requires Linux amd64")
 	}
@@ -65,6 +69,12 @@ func (p *PyPIPromotion) Promote(ctx context.Context, staged domain.StagedSet, bu
 		return domain.PromotedInstall{}, errors.New("PyPI staged records are unavailable or untrusted")
 	}
 	if installContext.Mode() == domain.InstallPythonVenv {
+		if held != nil {
+			if held.plan.root != installContext.Target().String() || verify == nil {
+				return promoted, errors.New("PyPI update transaction does not bind the target")
+			}
+			return p.promoteHeldVenv(ctx, stagedRoot, bundle, installContext, held, verify)
+		}
 		return p.promoteActiveVenv(ctx, stagedRoot, bundle, installContext)
 	}
 	if installContext.Mode() != domain.InstallNewTarget {
@@ -141,7 +151,13 @@ func (p *PyPIPromotion) promoteActiveVenv(ctx context.Context, stagedRoot string
 		return domain.PromotedInstall{}, err
 	}
 	defer func() { resultErr = errors.Join(resultErr, transaction.close()) }()
-	temporary, err := os.MkdirTemp(plan.root, ".haa-pypi-work-")
+	return p.promoteHeldVenv(ctx, stagedRoot, bundle, installContext, transaction, nil)
+}
+
+// Both ordinary installation and upgrade use the same offline output validator
+// and transaction. Upgrade supplies its already-held pre-resolution guard.
+func (p *PyPIPromotion) promoteHeldVenv(ctx context.Context, stagedRoot string, bundle domain.VerifiedBundle, installContext domain.InstallContext, transaction *pypiVenvTransaction, verify func(context.Context) error) (promoted domain.PromotedInstall, resultErr error) {
+	temporary, err := os.MkdirTemp(transaction.plan.root, ".haa-pypi-work-")
 	if err != nil {
 		return domain.PromotedInstall{}, errors.New("create private PyPI virtual environment workspace")
 	}
@@ -168,6 +184,14 @@ func (p *PyPIPromotion) promoteActiveVenv(ctx context.Context, stagedRoot string
 	desired, err := validatedPyPIDestinations(output, expected, requirements, resourcePolicy.WheelLimits().MaxMetadata)
 	if err != nil {
 		return domain.PromotedInstall{}, err
+	}
+	if err := ctx.Err(); err != nil {
+		return domain.PromotedInstall{}, err
+	}
+	if verify != nil {
+		if err := verify(ctx); err != nil {
+			return domain.PromotedInstall{}, err
+		}
 	}
 	if err := transaction.commit(desired); err != nil {
 		return domain.PromotedInstall{}, err

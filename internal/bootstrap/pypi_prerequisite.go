@@ -102,6 +102,14 @@ type prerequisiteCheckingResolver struct {
 }
 
 func (r prerequisiteCheckingResolver) ResolveDependencies(ctx context.Context, reference domain.ArtifactReference, install domain.InstallContext) (domain.DependencyResolution, error) {
+	return r.resolve(ctx, reference, install, nil, false)
+}
+
+func (r prerequisiteCheckingResolver) ResolveDependencyUpdate(ctx context.Context, reference domain.ArtifactReference, install domain.InstallContext, controls []domain.ProjectControlFile) (domain.DependencyResolution, error) {
+	return r.resolve(ctx, reference, install, controls, true)
+}
+
+func (r prerequisiteCheckingResolver) resolve(ctx context.Context, reference domain.ArtifactReference, install domain.InstallContext, controls []domain.ProjectControlFile, update bool) (domain.DependencyResolution, error) {
 	raw, err := r.read()
 	if err != nil {
 		return domain.DependencyResolution{}, err
@@ -113,7 +121,16 @@ func (r prerequisiteCheckingResolver) ResolveDependencies(ctx context.Context, r
 			return domain.DependencyResolution{}, err
 		}
 	}
-	resolution, err := r.resolver.ResolveDependencies(ctx, reference, install)
+	var resolution domain.DependencyResolution
+	if update {
+		resolver, ok := r.resolver.(ports.DependencyUpdateResolver)
+		if !ok {
+			return domain.DependencyResolution{}, errors.New("python resolver does not support guarded upgrades")
+		}
+		resolution, err = resolver.ResolveDependencyUpdate(ctx, reference, install, controls)
+	} else {
+		resolution, err = r.resolver.ResolveDependencies(ctx, reference, install)
+	}
 	if err != nil {
 		return domain.DependencyResolution{}, err
 	}

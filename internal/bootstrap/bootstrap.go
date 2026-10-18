@@ -364,7 +364,23 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 				installers[profile.Source().String()] = pyTorchResourceInstaller{installer: installer, profile: profile}
 			}
 		}
-		if err := cli.AddPyPIInstallSources(command, installers); err != nil {
+		updateResolver, ok := resolver.(ports.DependencyUpdateResolver)
+		if !ok {
+			return errors.New("python resolver lacks guarded upgrade selection")
+		}
+		pypiPromoter, ok := promoter.(*promotion.PyPIPromotion)
+		if !ok {
+			return errors.New("python Promotion lacks guarded upgrade preparation")
+		}
+		preparation, err := promotion.NewPyPIUpdatePreparation(pypiPromoter, updateResolver)
+		if err != nil {
+			return err
+		}
+		updater, err := application.NewInstallUpdateService(installer, preparation)
+		if err != nil {
+			return err
+		}
+		if err := cli.AddPyPIInstallSourcesAndUpdates(command, installers, map[string]cli.Installer{"pypi": updater}); err != nil {
 			return err
 		}
 	}
@@ -505,6 +521,14 @@ func (r pythonSourceResolver) ResolveDependencies(ctx context.Context, reference
 	return domain.DependencyResolution{}, errors.New("selected Python source profile is unsupported")
 }
 
+func (r pythonSourceResolver) ResolveDependencyUpdate(ctx context.Context, reference domain.ArtifactReference, install domain.InstallContext, controls []domain.ProjectControlFile) (domain.DependencyResolution, error) {
+	resolver, ok := r.routes[reference.Source().String()].(ports.DependencyUpdateResolver)
+	if !ok {
+		return domain.DependencyResolution{}, errors.New("selected Python source does not support guarded upgrades")
+	}
+	return resolver.ResolveDependencyUpdate(ctx, reference, install, controls)
+}
+
 func installDependencyResolver(goos, goarch string, executor sandbox.TrustedExecutor, observer sandbox.TraceObserver) (ports.DependencyResolver, error) {
 	if goos == "linux" && goarch == "amd64" {
 		policyService, err := newSystemResolverPolicyAdapter()
@@ -527,6 +551,10 @@ func (unsupportedInstallResolver) ResolveDependencies(context.Context, domain.Ar
 }
 
 type unsupportedPyPIInstallResolver struct{}
+
+func (unsupportedPyPIInstallResolver) ResolveDependencyUpdate(context.Context, domain.ArtifactReference, domain.InstallContext, []domain.ProjectControlFile) (domain.DependencyResolution, error) {
+	return domain.DependencyResolution{}, errors.New("automatic PyPI upgrade requires Linux amd64")
+}
 
 func (unsupportedPyPIInstallResolver) ResolveDependencies(context.Context, domain.ArtifactReference, domain.InstallContext) (domain.DependencyResolution, error) {
 	return domain.DependencyResolution{}, errors.New("automatic PyPI install requires Linux amd64")

@@ -3,7 +3,9 @@
 Status: IN_PROGRESS; user authorized implementation after reviewed planning.
 The bounded npm lane is qualified for29c58f0 including fresh CI330 ten SUCCESS.
 Current lane: [PyPI input/metadata implementation after baseline and selection review](../planning/evidence/update-quarantine/pypi-baseline-20261019.md).
-Resolver/session/CLI and actual upgrade qualification remain missing. Other lanes wait for
+Public resolver/session/CLI and actual managed-venv consumers are locally qualified
+in the [bounded PyPI record](../planning/evidence/update-quarantine/pypi-managed-qualification-20261019.md).
+Native enrollment, named-source and new remote qualification remain missing. Other lanes wait for
 their independent baseline/qualification. See the [npm evidence](../planning/evidence/update-quarantine/npm-qualification-20261018.md).
 This leaf owns the user-requested update-command contract. It supplements the
 installation journey, never weakens existing Policy or adds implicit Host execution.

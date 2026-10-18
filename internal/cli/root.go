@@ -206,11 +206,20 @@ func AddPyPIInstall(root *cobra.Command, installer Installer) error {
 // AddPyPIInstallSources wires one bounded pip install command to the
 // canonical PyPI and named PyTorch source profiles.
 func AddPyPIInstallSources(root *cobra.Command, installers map[string]Installer) error {
+	return AddPyPIInstallSourcesAndUpdates(root, installers, nil)
+}
+
+// AddPyPIInstallSourcesAndUpdates binds native upgrade intent to the guarded
+// workflow, preserving the ordinary install path for all existing profiles.
+func AddPyPIInstallSourcesAndUpdates(root *cobra.Command, installers map[string]Installer, updaters map[string]Installer) error {
 	if root == nil || len(installers) == 0 {
 		return errors.New("pypi install command requires root and use case")
 	}
 	if installCommand := findLeaf(root, "pip", "install"); installCommand != nil {
 		installCommand.RunE = func(command *cobra.Command, args []string) error {
+			if err := validatePyPIInstallArgs(command, args); err != nil {
+				return err
+			}
 			source, err := command.Flags().GetString("source")
 			if err != nil {
 				return err
@@ -234,10 +243,7 @@ func AddPyPIInstallSources(root *cobra.Command, installers map[string]Installer)
 			if !ok || installer == nil {
 				return errors.New("selected Python source is unavailable on this Host")
 			}
-			reference, err := artifactpypi.ParseReferenceForSource(args[0], sourceID)
-			if err != nil {
-				return err
-			}
+			upgrade, _ := command.Flags().GetBool("upgrade")
 			target, err := command.Flags().GetString("target")
 			if err != nil {
 				return err
@@ -250,7 +256,21 @@ func AddPyPIInstallSources(root *cobra.Command, installers map[string]Installer)
 			if err != nil {
 				return err
 			}
-			request, err := application.NewInstallRequest(reference, installContext)
+			var request application.InstallRequest
+			if upgrade {
+				installer = updaters[sourceID.String()]
+				if installer == nil {
+					return errors.New("guarded upgrade is unavailable for the selected Python source")
+				}
+				adopt, _ := command.Flags().GetBool("adopt")
+				request, err = application.NewInstallUpdateRequest(sourceID, args[0], installContext, adopt)
+			} else {
+				reference, parseErr := artifactpypi.ParseReferenceForSource(args[0], sourceID)
+				if parseErr != nil {
+					return parseErr
+				}
+				request, err = application.NewInstallRequest(reference, installContext)
+			}
 			if err != nil {
 				return err
 			}
@@ -647,6 +667,10 @@ func initializeCommandTree(root *cobra.Command) {
 	pypi.AddCommand(newStaticLeaf("inspect <project>[@<version>]", "Inspect a PyPI distribution", false))
 	pip := ensurePipCommand(root)
 	pipInstall := newStaticLeaf("install <project>[@<version>]", "Install a PyPI distribution into the active virtual environment", true)
+	pipInstall.Args = validatePyPIInstallArgs
+	pipInstall.Long = pypiUpgradeDescriptionEnglish
+	pipInstall.Flags().BoolP("upgrade", "U", false, "Inspect the complete selected closure before upgrading one distribution (only-if-needed)")
+	pipInstall.Flags().Bool("adopt", false, "Request native venv enrollment; unavailable without independent ownership verification")
 	pipInstall.Flags().String("source", "pypi", pythonSourceHelp())
 	pipInstall.Flags().String("inspection-prerequisites", "", "Explicit pinned JSON for one inspection-only non-root leaf prerequisite; not installed into the target")
 	pip.AddCommand(pipInstall)

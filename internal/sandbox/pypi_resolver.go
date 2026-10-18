@@ -144,7 +144,11 @@ func (r *PyPIResolver) Close() error {
 // ResolveDependencies performs the complete default-deny resolver lifecycle.
 // Any failure to create, verify, attribute, collect or clean up that lifecycle
 // clears the result and returns an error.
-func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain.ArtifactReference, _ domain.InstallContext) (resolution domain.DependencyResolution, resultErr error) {
+func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain.ArtifactReference, _ domain.InstallContext) (domain.DependencyResolution, error) {
+	return r.resolveDependencies(ctx, reference, nil)
+}
+
+func (r *PyPIResolver) resolveDependencies(ctx context.Context, reference domain.ArtifactReference, upgrade *artifactpypi.UpgradeInput) (resolution domain.DependencyResolution, resultErr error) {
 	if r == nil || r.runner == nil || r.endpoints == nil || r.observer == nil || r.probe == nil || ctx == nil || reference.Source() != r.profile.Source() {
 		return domain.DependencyResolution{}, errors.New("valid PyPI resolver request is required")
 	}
@@ -253,17 +257,28 @@ func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain
 		runtimeIdentity := "python:" + capability.Runtime.PythonVersion + ";pip:" + capability.Runtime.PipVersion + ";target:" + capability.Runtime.InterpreterTag + "/" + capability.Runtime.ABITag + "/" + capability.Runtime.PlatformTag + ";source:" + r.profile.Name()
 		return domain.NewDependencyResolution(graph, runtimeIdentity, digest)
 	}
-	pipArguments := pypiResolveArguments(r.profile, request)
-	if _, err := r.runner.Output(resolveCtx, "docker", append(boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-m", "pip"), pipArguments...)...); err != nil {
-		return domain.DependencyResolution{}, errors.New("run locked pip resolution failed")
-	}
-	reportBytes, err := r.runner.Output(resolveCtx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", boundedReadScript, pypiResolverProjectDir+"/report.json", "4194304")...)
-	if err != nil {
-		return domain.DependencyResolution{}, errors.New("read pip installation report failed")
-	}
-	report, err := artifactpypi.ParseInstallationReport(reference, reportBytes, capability.Runtime.PipVersion, capability.Runtime.PythonVersion)
-	if err != nil {
-		return domain.DependencyResolution{}, err
+	var report artifactpypi.InstallationReport
+	var reportBytes []byte
+	var selectedControls []domain.ProjectControlFile
+	if upgrade != nil {
+		selection, err := r.resolveUpgradeSelection(resolveCtx, containerID, capability.Runtime, *upgrade)
+		if err != nil {
+			return domain.DependencyResolution{}, err
+		}
+		report, reportBytes, selectedControls = selection.report, selection.body, selection.controls
+	} else {
+		pipArguments := pypiResolveArguments(r.profile, request)
+		if _, err := r.runner.Output(resolveCtx, "docker", append(boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-m", "pip"), pipArguments...)...); err != nil {
+			return domain.DependencyResolution{}, errors.New("run locked pip resolution failed")
+		}
+		reportBytes, err = r.runner.Output(resolveCtx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", boundedReadScript, pypiResolverProjectDir+"/report.json", "4194304")...)
+		if err != nil {
+			return domain.DependencyResolution{}, errors.New("read pip installation report failed")
+		}
+		report, err = artifactpypi.ParseInstallationReport(reference, reportBytes, capability.Runtime.PipVersion, capability.Runtime.PythonVersion)
+		if err != nil {
+			return domain.DependencyResolution{}, err
+		}
 	}
 	// Source ownership remains that of each node. Metadata bounds belong to
 	// the canonical root transaction, including an explicitly resolved input.
@@ -309,7 +324,11 @@ func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain
 		return domain.DependencyResolution{}, err
 	}
 	runtimeIdentity := "python:" + capability.Runtime.PythonVersion + ";pip:" + capability.Runtime.PipVersion + ";target:" + capability.Runtime.InterpreterTag + "/" + capability.Runtime.ABITag + "/" + capability.Runtime.PlatformTag + ";source:" + r.profile.Name()
-	return domain.NewDependencyResolution(graph, runtimeIdentity, digest)
+	resolution, err = domain.NewDependencyResolution(graph, runtimeIdentity, digest)
+	if err != nil || len(selectedControls) == 0 {
+		return resolution, err
+	}
+	return resolution.WithProjectControls(selectedControls)
 }
 
 func preparePyPIResolverProject(ctx context.Context, runner CommandRunner, containerID string) error {

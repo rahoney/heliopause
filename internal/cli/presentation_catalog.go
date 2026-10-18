@@ -45,6 +45,9 @@ func localizeHelp(root *cobra.Command, p *presentation) {
 		if command.CommandPath() == "helox npm update" {
 			command.Long = p.text(npmUpdateDescriptionEnglish, npmUpdateDescriptionKorean)
 		}
+		if command.CommandPath() == "helox pip install" {
+			command.Long = p.text(pypiUpgradeDescriptionEnglish, pypiUpgradeDescriptionKorean)
+		}
 		if text, ok := descriptions[command.CommandPath()]; ok {
 			command.Short = p.text(text[0], text[1])
 		}
@@ -58,6 +61,7 @@ func localizeHelp(root *cobra.Command, p *presentation) {
 			"verbose":                  {"Show bounded runtime diagnostics", "제한된 진단 정보와 검사 기록 식별자를 표시합니다"},
 			"target":                   {"Installation target path", "검증한 파일을 설치할 대상 경로"},
 			"adopt":                    {"Explicitly replace supported native project dependencies after full inspection", "지원하는 기존 프로젝트를 명시적으로 등록하고 전체 검사 후 의존성을 교체합니다"},
+			"upgrade":                  {"Inspect the complete selected closure before upgrading (only-if-needed)", "선택된 전체 의존성을 검사한 뒤 only-if-needed 전략으로 업데이트합니다"},
 			"source":                   {"Explicit package source", "검사에 사용할 명시적 패키지 출처"},
 			"inspection-prerequisites": {"Explicit inspection-only pinned input; not installed into the target", "검사용으로만 사용할 고정된 추가 입력; 설치 대상에는 반입하지 않습니다"},
 		} {
@@ -67,6 +71,9 @@ func localizeHelp(root *cobra.Command, p *presentation) {
 			if flag := command.PersistentFlags().Lookup(key); flag != nil {
 				flag.Usage = p.text(text[0], text[1])
 			}
+		}
+		if command.CommandPath() == "helox pip install" {
+			command.Flags().Lookup("adopt").Usage = p.text("Request native venv enrollment; unavailable without independent ownership verification", "일반 venv 등록 요청: 독립적인 소유권 검증이 없어 현재 지원하지 않습니다")
 		}
 		for _, child := range command.Commands() {
 			visit(child)
