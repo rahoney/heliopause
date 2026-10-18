@@ -3359,7 +3359,9 @@ restored, Evidence preserved and completed trial data/operators deleted.
 [Bounded native local qualification](./evidence/update-quarantine/pypi-native-qualification-20261019.md)
 closes the local subset; new native-source remote qualification and independent
 named-source audit/implementation remain MISSING. Next is named-source within the
-same PyPI lane; no other work item becomes IN_PROGRESS. The
+same PyPI lane; no other work item becomes IN_PROGRESS. Its independent
+[named-source baseline and reviewed edit map](./evidence/update-quarantine/pytorch-update-baseline-20261019.md)
+records existing source-pinned traversal and the actual upgrade gaps before code. The
 managed candidatec93ce58 in draft PR38 passed all ten CI331/run39148017283 jobs;
 its actual checkout and consumer scope are recorded independently. Native source
 is newer and does not inherit that qualification.
