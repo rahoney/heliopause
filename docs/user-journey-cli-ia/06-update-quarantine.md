@@ -7,6 +7,8 @@ Public resolver/session/CLI and actual managed-venv consumers are locally qualif
 in the [bounded PyPI record](../planning/evidence/update-quarantine/pypi-managed-qualification-20261019.md).
 Native enrollment, named-source and new remote qualification remain missing. Other lanes wait for
 their independent baseline/qualification. See the [npm evidence](../planning/evidence/update-quarantine/npm-qualification-20261018.md).
+Next is the independent [native venv ownership baseline](../planning/evidence/update-quarantine/pypi-native-baseline-20261019.md);
+its authenticated original-footprint gap is reviewed before production changes.
 This leaf owns the user-requested update-command contract. It supplements the
 installation journey, never weakens existing Policy or adds implicit Host execution.
 
@@ -296,3 +298,86 @@ obsolete. Native enrollment needs independent canonical installed-footprint proo
 before replacing/removing its claimed paths; otherwise reject it unchanged. The
 first managed-venv wiring may use the existing validated ledger while native
 enrollment remains MISSING. An explicit --adopt request alone is insufficient.
+
+### Native PyPI ownership review before implementation
+
+The independent native baseline follows the managed checkpointc93ce58. Pinned
+Python3.14.7/pip26.2.1 offline fixtures confirm that a real venv RECORD uses
+../../../bin, ../../../share and ../../../include/site/python3.14 paths, unlike
+the private --target recipe. Default compilation adds an unhashed
+module/__pycache__/name.cpython-314.pyc row; INSTALLER is pip plus newline and
+REQUESTED is empty. These are tool-semantics facts, not ownership or safety proof.
+Original source, stdout, failures and cleanup remain in local native-layout raw.
+
+Implementation sequence after the second review:
+
+1. Under the existing early transaction, distinguish exact ledger-owned METADATA
+   from unmanaged metadata. An incomplete conflicting HAA owner rejects. With
+   explicit --adopt only, freeze native RECORD bytes, each bounded referenced
+   original file and its parents before any external selection/lookup. Interpret
+   canonical site-relative paths and exactly three-parent cross-scheme native
+   paths through the existing venv binder; reject aliases, escapes, links,
+   duplicate/ambiguous claims and overlap with a different HAA owner. These are
+   untrusted snapshot claims, not transaction ownership. Bound each RECORD to1MiB,
+   combined native RECORD controls to4MiB, all referenced files to10,000, each file
+   to256MiB and combined payload to1GiB. Preserve unrelated native files unchanged.
+2. After complete proposed selection but before inspection/ALLOW, look up only
+   selected native old distributions through the existing isolated exact public
+   resolver. Reuse Intake.Acquire and InspectWheel for the authentic old wheel,
+   including its declared/observed digest and Surface.InstalledFiles. Compare
+   canonical ordinary file hashes/sizes to the early snapshots, using that
+   existing role/location map and venv binder. Require complete unambiguous
+   footprint coverage. Old sdist/direct-source/unproven layouts reject unchanged;
+   other old graph candidates do not become inspection nodes or approved files.
+3. The initial native footprint supports site/dist-info wheel payload and the
+   independently verified standard pip-generated RECORD/INSTALLER/REQUESTED.
+   Selected native scripts/entry points/cross-scheme payloads remain unsupported;
+   unrelated bootstrap pip scripts may be snapshotted and retained without new
+   ownership. Default timestamp bytecode may be removed only at the exact cache
+   location derived from an authenticated original Python module, with bounded
+   original bytes, matching pinned runtime magic/cache tag, flags0, original
+   source timestamp/size and stable fingerprint. Never load or execute bytecode;
+   this proves a generated cache role for removal, not safe/authenticated bytecode
+   contents. Optimization/hash-based or unknown caches reject. Any runtime-metadata
+   probe reuses trusted Docker execution with only empty private output mounted,
+   immutable Python -I, no packages/target interpreter/network and bounded output.
+4. Recheck all originals, then add only proven selected native paths to the held
+   transaction's in-memory current state with the authentic old wheel digest.
+   Never derive Artifact integrity from local fingerprints or write enrollment
+   metadata before new-set ALLOW. Bind old provenance, exact original hashes and
+   generated-role distinctions into an immutable selection control. Reuse full
+   new-set inspection, original derived-wheel rules and exact offline Promotion.
+   Rollback must restore the original native payload and actual ledger absence,
+   including failures after publication or metadata changes.
+
+Second review explicitly preserves pre-selection snapshots, private/native RECORD
+separation, exact HAA metadata ownership, generated-cache vs approved-byte
+distinction, no post-ALLOW resolution, shared/foreign protection and nil-ledger
+rollback. Tests must include a RECORD that falsely claims a user file, wrong old
+wheel hash/source/metadata, changed original files after selection, ambiguous
+owners, forged/unsupported cache roles, missing required new inspection and
+partial commit/recovery conflicts. Actual native positive/default-bytecode and
+unchanged refusal consumers plus existing managed/NPM/canonical regressions are
+required. Native enrollment is still unimplemented until those checks pass.
+
+Concrete edit owners: new promotion/pypi_native_inventory.go owns bounded native
+claims/snapshots and uses pypiVenvPlan.bind; new pypi_native_ownership.go owns old
+intake/static footprint and bounded trusted runtime metadata, using existing
+Artifact/DependencyResolver/DockerRunner collaborators. Extend pypi_update.go
+in place for explicit adoption, pre-selection snapshot checks, proof control and
+verified in-memory transaction enrollment. Add a constructor-time immutable
+WithNativeEnrollment copy of PyPIUpdatePreparation; no new generic Port, scanner
+or runtime config is needed. Bootstrap passes its existing intake/root and raw
+source resolver for old-footprint metadata lookup, while the new upgrade still
+passes through prerequisiteCheckingResolver and its actual new-graph validation.
+The inspection prerequisite loader already uses that raw resolver for its own
+distinct lookup; an old footprint query must not misapply the new inspection-only
+prerequisite to a different old graph. Tests must prove the new selected graph's
+prerequisite validation is preserved. Leave the original PyPIPromotion, wheel
+mapper, full inspection and transaction engine intact, changing only proven gaps.
+The existing pypiFileSnapshot.matches currently re-reads without a byte limit.
+Native bounded snapshots must retain an optional private read bound through every
+original-state/backup/rollback comparison; otherwise a grown native file can
+escape its initial read limit. Extend that existing fingerprint in place, retain
+the original default for large HAA-owned Python payloads and the explicit64MiB npm
+bound, and test the affected existing consumers. This is no new global file cap.

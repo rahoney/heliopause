@@ -3350,6 +3350,10 @@ were restored and completed trial payloads/operators deleted.
 does not close complete PyPI acceptance: independent native enrollment, named-source
 audit/qualification and new remote/native-platform checks remain MISSING. No
 candidate was permanently activated.
+Next within the same PyPI lane is the [native ownership audit](./evidence/update-quarantine/pypi-native-baseline-20261019.md).
+Current native enrollment stays unsupported while original-footprint and generated
+file proof are reviewed/probed. Candidatec93ce58 is now pushed to existing draft
+PR38; new CI331/run39148017283 is pending, not yet qualified.
 Other lanes remain unimplemented/unqualified.
 [implementation baseline](./evidence/update-quarantine/baseline-20261018.md)
 records existing responsibilities and actual missing acceptance.
