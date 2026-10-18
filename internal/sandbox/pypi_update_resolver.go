@@ -13,10 +13,17 @@ import (
 // lifecycle with frozen inert metadata. Named-source upgrades have a separate
 // selection contract and are not implicitly redirected to public PyPI.
 func (r *PyPIResolver) ResolveDependencyUpdate(ctx context.Context, reference domain.ArtifactReference, install domain.InstallContext, controls []domain.ProjectControlFile) (resolution domain.DependencyResolution, resultErr error) {
-	if r == nil || ctx == nil || !install.Valid() || install.Mode() != domain.InstallPythonVenv || r.profile.Source() != artifactpypi.PublicPyPIProfile().Source() || reference.Source() != r.profile.Source() {
+	if r == nil || ctx == nil || !install.Valid() || install.Mode() != domain.InstallPythonVenv || reference.Source() != r.profile.Source() {
 		return domain.DependencyResolution{}, errors.New("public PyPI upgrade requires a supported existing virtual environment")
 	}
-	ctx, cancel := context.WithTimeout(ctx, pypiResolverTimeout)
+	duration := pypiResolverTimeout
+	if artifactpypi.IsPyTorchSource(r.profile.Source()) {
+		if artifactpypi.RootSourceProfileNameFromContext(ctx) != r.profile.Name() {
+			return domain.DependencyResolution{}, errors.New("named upgrade requires its root resource context")
+		}
+		duration = r.profile.ResourcePolicy().Duration()
+	}
+	ctx, cancel := context.WithTimeout(ctx, duration)
 	defer cancel()
 	defer func() {
 		if err := ctx.Err(); err != nil {

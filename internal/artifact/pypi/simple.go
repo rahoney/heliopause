@@ -592,6 +592,9 @@ func unsupportedRequirementDiagnostic(parent, requirement string, cause error) e
 }
 
 func boundedExtraSet(extras []string) error {
+	if len(extras) > len(allowedCUDAToolkitExtras) {
+		return errors.New("unsupported requested extra count")
+	}
 	result := make(map[string]bool, len(extras))
 	for _, extra := range extras {
 		if !allowedCUDAToolkitExtras[extra] || result[extra] {

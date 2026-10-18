@@ -27,10 +27,9 @@ func (u UpgradeInput) ParseUpgradeDelta(body []byte, pip string) (UpgradeProposa
 	if !supported || u.python == "" || pip == "" || len(body) == 0 || len(body) > maxReportBytes {
 		return UpgradeProposal{}, errors.New("bounded upgrade delta and frozen input are required")
 	}
-	var report pipReport
-	decoder := json.NewDecoder(bytes.NewReader(body))
-	if decoder.Decode(&report) != nil || ensureSingleJSONValue(decoder) != nil || report.Version != "1" || report.PipVersion != pip || report.Environment.ImplementationName != "cpython" || report.Environment.ImplementationVersion != u.python || report.Environment.PythonFullVersion != u.python || report.Environment.PlatformMachine != "x86_64" || report.Environment.SysPlatform != "linux" || report.Install == nil || len(report.Install) > maxPyPIReportEntries {
-		return UpgradeProposal{}, errors.New("upgrade delta runtime or bounds are invalid")
+	report, err := parseUpgradeDeltaReport(body, pip, u.python)
+	if err != nil {
+		return UpgradeProposal{}, err
 	}
 	candidates := make([]Candidate, 0, len(report.Install))
 	for _, item := range report.Install {
@@ -171,9 +170,25 @@ func (p UpgradeProposal) ValidateFinal(report InstallationReport) error {
 	}
 	for _, changed := range p.changed {
 		candidate, present := selected[changed.project]
-		if !present || changed.source != candidate.source || changed.project != candidate.project || changed.version != candidate.version || changed.filename != candidate.filename || changed.url != candidate.url || changed.sha256 != candidate.sha256 || changed.requiresPython != candidate.requiresPython || changed.primary != candidate.primary || !slices.Equal(changed.dependencies, candidate.dependencies) || !slices.Equal(changed.requirements, candidate.requirements) {
+		if !present || !sameUpgradeCandidate(changed, candidate) {
 			return errors.New("upgrade changed candidate was omitted or substituted between selections")
 		}
 	}
 	return nil
+}
+
+func parseUpgradeDeltaReport(body []byte, pip, python string) (pipReport, error) {
+	if len(body) == 0 || len(body) > maxReportBytes || pip == "" || python == "" {
+		return pipReport{}, errors.New("bounded upgrade delta and runtime are required")
+	}
+	var report pipReport
+	decoder := json.NewDecoder(bytes.NewReader(body))
+	if decoder.Decode(&report) != nil || ensureSingleJSONValue(decoder) != nil || report.Version != "1" || report.PipVersion != pip || report.Environment.ImplementationName != "cpython" || report.Environment.ImplementationVersion != python || report.Environment.PythonFullVersion != python || report.Environment.PlatformMachine != "x86_64" || report.Environment.SysPlatform != "linux" || report.Install == nil || len(report.Install) > maxPyPIReportEntries {
+		return pipReport{}, errors.New("upgrade delta runtime or bounds are invalid")
+	}
+	return report, nil
+}
+
+func sameUpgradeCandidate(left, right Candidate) bool {
+	return left.source == right.source && left.project == right.project && left.version == right.version && left.filename == right.filename && left.url == right.url && left.sha256 == right.sha256 && left.requiresPython == right.requiresPython && left.primary == right.primary && slices.Equal(left.dependencies, right.dependencies) && slices.Equal(left.requirements, right.requirements) && slices.Equal(left.requestedExtras, right.requestedExtras)
 }

@@ -3369,9 +3369,16 @@ The first named source-bound input/proposal data slice passes Quick/Race and
 focused regressions, preserving public controls and per-node source identity.
 Known CUDA retained extras now have typed obligations and conditional constraints,
 and incoming named local versions have a source-aware numeric comparison. Their
-focused/actual-method fixtures and canonical Quick/Race pass. Named resolver/CLI/
-Promotion/resource wiring and actual CPU/CUDA update qualification remain MISSING;
-no named upgrade is enabled yet. The
+focused/actual-method fixtures and canonical Quick/Race pass. The current named
+resolver/CLI/Promotion/resource wiring is IMPLEMENTED=YES / WIRED=YES /
+QUALIFIED=NO / ACCEPTANCE_CLOSED=NO. It reuses the source-pinned traversal and
+held transaction; bounded original/first/final/constraint controls bind the whole
+selection. Canonical Quick130.31s/security9.27s/docs1.45s and targeted Race29.61s
+pass for the same candidate. Four-profile control/source/graph/resource and
+retained CUDA component fixtures pass; these are not live source qualification.
+Actual installed-path CPU version-change/no-op/negative qualification is running;
+actual CPU/CUDA completion, cleanup and new-source remote qualification remain
+MISSING. No candidate is permanently activated. The
 managed candidatec93ce58 in draft PR38 passed all ten CI331/run39148017283 jobs;
 its actual checkout and consumer scope are recorded independently. Native source
 is newer and does not inherit that qualification.

@@ -202,3 +202,48 @@ pytorch-named-local-causal.json and the matching green/legacy-red logs. Final
 docs/security receipts use pytorch-extra-core-docs/security. Named update resolver,
 per-node no-op/first-final report controls, session/CLI/resource binding and actual
 CPU/CUDA update qualification remain MISSING. No named upgrade is enabled yet.
+
+## Source-pinned producer and command wiring checkpoint
+
+The subsequent current candidate implements the missing producer and wiring in
+place. sandbox/pypi_named_update.go extends the existing source-pinned traversal
+with private update state. The root upgrades; dependencies use only-if-needed
+against frozen inert METADATA. Every selected node, including an empty delta,
+gets a fresh exact candidate and the original Simple/Core Metadata checks.
+The complete first traversal fixes versions and retained constraints; the second
+source-pinned traversal accepts only the same exact candidates and extra context.
+upgrade_node_selection.go and upgrade_source_controls.go bind original input,
+first/final per-node raw reports and actual retained constraints in four canonical
+controls. Each encoded control remains bounded to4MiB, and each phase retains
+the64-record/16MiB aggregate bounds. A first record contains both its single-node
+delta and fresh candidate report; this is not a claim of64 physical pip calls.
+
+promotion/pypi_update.go validates the complete controls, graph, runtime and digest
+before reusing its original held transaction and new-set inspection/promotion.
+Bootstrap routes each named updater through the existing root resource wrapper;
+the resolver requires the matching context and preserves the15/40-minute named
+duration. Public defaults and independent public-native footprint proof remain.
+CLI explicit --source and native -U/--upgrade selectors now reach this path, with
+accurate English/Korean help. Unproven native named files still reject unchanged.
+
+The same fixed candidate passes canonical Quick130.31s, security9.27s, docs1.45s
+and targeted Race29.61s. Four-profile fixtures cover changed/no-op producer data,
+source/input/constraint/graph/runtime/digest substitution, held original guards,
+explicit CLI intent and named resource deadlines. A CUDA source-shaped producer
+fixture preserves retained cublas+cudart extras, conditional constraints and real
+component edges through the final exact lookup. Focused5.53s passes. The first
+Quick's graph-negative fixture changed a reference without changing resolved
+nodes; its corrected fixture substitutes the artifact hash. The first CUDA
+fixture lacked authenticated Requires-Python; both own report and HTML metadata
+were corrected. Neither fixture error demonstrates a product defect or justifies
+relaxing production authentication. Failed raw results remain failed.
+
+Raw inventories/receipts: local update-quarantine-20261018/pytorch-wired-*,
+pytorch-cuda-session-{focused,green} and their format/source inventories. Candidate
+CLI27,129,791B was built with pinned Go1.26.9/CGO0 in3.45s from the same inputs;
+its exact identity is recorded in pytorch-wired-candidate.json. Actual UID1000
+installed-path CPU2.14.0+cpu to2.14.1+cpu/no-op/negative tests are now running under
+the unchanged canonical helper lifecycle. Source IMPLEMENTED/WIRED=YES;
+QUALIFIED/ACCEPTANCE_CLOSED=NO. Actual per-profile outcomes, confirmed restoration,
+completed disposable-data deletion and new-source remote qualification remain
+MISSING. This checkpoint does not close named or whole-PyPI acceptance.

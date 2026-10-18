@@ -7,7 +7,10 @@ import (
 	"errors"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/rahoney/heliopause/internal/application"
+	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/core/ports"
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
@@ -17,6 +20,49 @@ type upgradeSelectionPorts struct {
 	prerequisiteSelectionPorts
 	updates  int
 	controls []domain.ProjectControlFile
+}
+
+type namedUpdateResourceFixture struct {
+	t       *testing.T
+	profile artifactpypi.SourceProfile
+	calls   int
+}
+
+func (i *namedUpdateResourceFixture) Install(ctx context.Context, request application.InstallRequest) (application.InstallOutcome, error) {
+	i.t.Helper()
+	i.calls++
+	deadline, ok := ctx.Deadline()
+	remaining := time.Until(deadline)
+	wanted := i.profile.ResourcePolicy().Duration()
+	if !ok || remaining > wanted || remaining < wanted-time.Second || artifactpypi.RootSourceProfileNameFromContext(ctx) != i.profile.Name() || request.Reference().Source() != i.profile.Source() {
+		i.t.Fatal("named update lost resource policy or deadline", remaining, ctx)
+	}
+	return application.InstallOutcome{}, ctx.Err()
+}
+
+func TestPyTorchUpgradeResourceWrapperCoversUpdateRequestAndCancellation(t *testing.T) {
+	for _, name := range []string{"cpu", "cu126", "cu130", "cu132"} {
+		profile, _ := artifactpypi.PyTorchProfile(name)
+		for _, cancelled := range []bool{false, true} {
+			target, _ := domain.NewInstallTarget("/tmp/haa-named-update-resource")
+			install, _ := domain.NewPythonVenvInstallContext(target)
+			request, err := application.NewInstallUpdateRequest(profile.Source(), "torch>=2,<4", install, false)
+			if err != nil {
+				t.Fatal(err)
+			}
+			fixture := &namedUpdateResourceFixture{t: t, profile: profile}
+			wrapper := pyTorchResourceInstaller{installer: fixture, profile: profile}
+			ctx, cancel := context.WithCancel(context.Background())
+			if cancelled {
+				cancel()
+			}
+			_, err = wrapper.Install(ctx, request)
+			cancel()
+			if fixture.calls != 1 || cancelled != errors.Is(err, context.Canceled) {
+				t.Fatal("update wrapper lost cancellation", err)
+			}
+		}
+	}
 }
 
 func (p *upgradeSelectionPorts) ResolveDependencyUpdate(_ context.Context, _ domain.ArtifactReference, _ domain.InstallContext, controls []domain.ProjectControlFile) (domain.DependencyResolution, error) {

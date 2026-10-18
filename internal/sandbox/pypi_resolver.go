@@ -241,6 +241,9 @@ func (r *PyPIResolver) resolveDependencies(ctx context.Context, reference domain
 	resolveCtx, cancel := context.WithTimeout(ctx, resolveTimeout)
 	defer cancel()
 	if artifactpypi.IsPyTorchSource(r.profile.Source()) {
+		if upgrade != nil {
+			return r.resolvePyTorchDependencyUpgrade(resolveCtx, containerID, capability.Runtime, reference, *upgrade)
+		}
 		candidates, reportBytes, resolveErr := r.resolvePyTorchGraph(resolveCtx, containerID, capability.Runtime, reference)
 		if resolveErr != nil {
 			return domain.DependencyResolution{}, resolveErr
@@ -341,9 +344,16 @@ func preparePyPIResolverProject(ctx context.Context, runner CommandRunner, conta
 const defaultPyPIResolverDuration = 5 * time.Minute
 
 func (r *PyPIResolver) resolvePyTorchGraph(ctx context.Context, containerID string, runtime PythonRuntime, reference domain.ArtifactReference) ([]artifactpypi.Candidate, []byte, error) {
+	return r.resolvePyTorchGraphWithUpgrade(ctx, containerID, runtime, reference, nil)
+}
+
+func (r *PyPIResolver) resolvePyTorchGraphWithUpgrade(ctx context.Context, containerID string, runtime PythonRuntime, reference domain.ArtifactReference, upgrade *pyTorchUpgradeTraversal) ([]artifactpypi.Candidate, []byte, error) {
 	request, err := pypiRequirement(reference)
 	if err != nil {
 		return nil, nil, errors.New("PyTorch resolver reference is invalid")
+	}
+	if upgrade != nil && !upgrade.final {
+		request = upgrade.input.Requirement().Requirement()
 	}
 	type pending struct {
 		request string
@@ -403,6 +413,12 @@ func (r *PyPIResolver) resolvePyTorchGraph(ctx context.Context, containerID stri
 			}
 			requestedExtras = aggregated.Extras()
 		}
+		if upgrade != nil && !current.primary {
+			selectedRequest, requestedExtras, err = upgrade.withRetainedExtras(project, requests[project], candidates)
+			if err != nil {
+				return nil, nil, err
+			}
+		}
 		if reportCount >= maxPyTorchReports || len(reports) > maxPyTorchReportBytes-maxPyTorchSingleReport {
 			return nil, nil, errors.New("PyTorch resolver report traversal exceeds bound")
 		}
@@ -410,7 +426,13 @@ func (r *PyPIResolver) resolvePyTorchGraph(ctx context.Context, containerID stri
 		if remainingReportBytes > maxPyTorchSingleReport {
 			remainingReportBytes = maxPyTorchSingleReport
 		}
-		candidate, report, err := r.resolvePyTorchCandidate(ctx, containerID, runtime, candidateReference, current.profile, selectedRequest, requestedExtras, remainingReportBytes)
+		var candidate artifactpypi.Candidate
+		var report []byte
+		if upgrade == nil {
+			candidate, report, err = r.resolvePyTorchCandidate(ctx, containerID, runtime, candidateReference, current.profile, selectedRequest, requestedExtras, remainingReportBytes)
+		} else {
+			candidate, report, err = r.resolvePyTorchUpgradeCandidate(ctx, containerID, runtime, current.profile, selectedRequest, requestedExtras, current.primary, remainingReportBytes, upgrade)
+		}
 		if err != nil {
 			return nil, nil, err
 		}
@@ -447,10 +469,24 @@ func (r *PyPIResolver) resolvePyTorchGraph(ctx context.Context, containerID stri
 }
 
 func (r *PyPIResolver) resolvePyTorchCandidate(ctx context.Context, containerID string, runtime PythonRuntime, reference domain.ArtifactReference, profile artifactpypi.SourceProfile, requirement string, requestedExtras []string, reportLimit int) (artifactpypi.Candidate, []byte, error) {
+	return r.resolvePyTorchCandidateWithUpgrade(ctx, containerID, runtime, reference, profile, requirement, requestedExtras, reportLimit, false, "")
+}
+
+func (r *PyPIResolver) resolvePyTorchCandidateWithUpgrade(ctx context.Context, containerID string, runtime PythonRuntime, reference domain.ArtifactReference, profile artifactpypi.SourceProfile, requirement string, requestedExtras []string, reportLimit int, ignoreInstalled bool, constraints string) (artifactpypi.Candidate, []byte, error) {
 	if reportLimit <= 0 || reportLimit > maxPyTorchSingleReport {
 		return artifactpypi.Candidate{}, nil, errors.New("PyTorch resolver report bound is invalid")
 	}
-	arguments := append([]string{"install", "--dry-run", "--report", pypiResolverProjectDir + "/report.json", "--disable-pip-version-check", "--no-input", "--no-cache-dir", "--isolated", "--no-deps", "--index-url", profile.IndexURL()}, requirement)
+	arguments := []string{"install", "--dry-run", "--report", pypiResolverProjectDir + "/report.json", "--disable-pip-version-check", "--no-input", "--no-cache-dir", "--isolated", "--no-deps", "--index-url", profile.IndexURL()}
+	if ignoreInstalled {
+		arguments = append(arguments, "--ignore-installed")
+	}
+	if constraints != "" {
+		if constraints != pypiResolverProjectDir+"/upgrade-constraints.txt" {
+			return artifactpypi.Candidate{}, nil, errors.New("source-pinned upgrade constraint path is invalid")
+		}
+		arguments = append(arguments, "--constraint", constraints)
+	}
+	arguments = append(arguments, requirement)
 	if _, err := r.runner.Output(ctx, "docker", append(boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-m", "pip"), arguments...)...); err != nil {
 		return artifactpypi.Candidate{}, nil, errors.New("run source-pinned pip resolution failed")
 	}

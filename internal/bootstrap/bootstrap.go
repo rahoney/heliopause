@@ -385,7 +385,13 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err != nil {
 			return err
 		}
-		if err := cli.AddPyPIInstallSourcesAndUpdates(command, installers, map[string]cli.Installer{"pypi": updater}); err != nil {
+		updaters := map[string]cli.Installer{"pypi": updater}
+		for _, profile := range artifactpypi.AllSourceProfiles() {
+			if artifactpypi.IsPyTorchSource(profile.Source()) {
+				updaters[profile.Source().String()] = pyTorchResourceInstaller{installer: updater, profile: profile}
+			}
+		}
+		if err := cli.AddPyPIInstallSourcesAndUpdates(command, installers, updaters); err != nil {
 			return err
 		}
 	}

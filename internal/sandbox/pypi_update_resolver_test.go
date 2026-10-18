@@ -148,6 +148,48 @@ func TestPyPIUpgradeResolverRejectsCancelledInvalidAndWrongSourceBeforeResources
 	}
 }
 
+func TestPyTorchUpgradeResolverKeepsNamedDeadlineAndRejectsMissingResourceContext(t *testing.T) {
+	for _, name := range []string{"cpu", "cu126", "cu130", "cu132"} {
+		for _, present := range []bool{false, true} {
+			profile, _ := artifactpypi.PyTorchProfile(name)
+			requirement, _ := artifactpypi.ParseUpgradeRequirementForSource("torch", profile.Source())
+			input, err := artifactpypi.NewUpgradeInput(requirement, []artifactpypi.InstalledMetadataFile{{Directory: "torch-1.0.dist-info", Body: []byte("Name: torch\nVersion: 1.0\n\n")}}, PinnedPythonRuntime().PythonVersion)
+			if err != nil {
+				t.Fatal(err)
+			}
+			control, _ := input.Control()
+			runner := &pypiUpgradeRecordingRunner{}
+			probed := false
+			probe := func(ctx context.Context) (PythonCapability, error) {
+				probed = true
+				deadline, ok := ctx.Deadline()
+				remaining := time.Until(deadline)
+				if !ok || remaining > profile.ResourcePolicy().Duration() || remaining < profile.ResourcePolicy().Duration()-time.Second {
+					t.Fatal("named update inherited public timeout", remaining)
+				}
+				return PythonCapability{}, errors.New("controlled pre-resource stop")
+			}
+			resolver, err := NewPyTorchResolver(runner, pypiStaticEndpoints{}, &recordingObserver{}, probe, &recordingResolverPolicyService{}, profile)
+			if err != nil {
+				t.Fatal(err)
+			}
+			ctx := context.Background()
+			if present {
+				ctx, err = artifactpypi.ContextWithResourcePolicy(ctx, profile)
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
+			target, _ := domain.NewInstallTarget("/tmp/haa-named-deadline-original")
+			install, _ := domain.NewPythonVenvInstallContext(target)
+			_, err = resolver.ResolveDependencyUpdate(ctx, requirement.Reference(), install, []domain.ProjectControlFile{control})
+			if err == nil || probed != present || len(runner.calls) != 0 {
+				t.Fatal("profile/deadline preflight failed", err, probed)
+			}
+		}
+	}
+}
+
 func TestPyPIUpgradeResolverDeadlinePreservesCauseAndConfirmedCleanup(t *testing.T) {
 	reference, install, control := frozenPyPIUpgradeFixture(t)
 	runner := &pypiUpgradeRecordingRunner{recordingRunner: recordingRunner{responses: pypiUpgradeResponses(t), waitForContext: true, waitForContextAt: 8}}

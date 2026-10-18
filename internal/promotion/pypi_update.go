@@ -52,13 +52,17 @@ type pypiUpdateSession struct {
 }
 
 func (p *PyPIUpdatePreparation) BeginInstallUpdate(ctx context.Context, source domain.SourceID, selector string, install domain.InstallContext, adopt bool) (result ports.InstallUpdateSession, resultErr error) {
-	if p == nil || ctx == nil || !install.Valid() || install.Mode() != domain.InstallPythonVenv || source != artifactpypi.PublicPyPIProfile().Source() || p.promoter.goos != "linux" || p.promoter.goarch != "amd64" {
+	profile, supported := artifactpypi.ProfileForSource(source)
+	if p == nil || ctx == nil || !install.Valid() || install.Mode() != domain.InstallPythonVenv || !supported || p.promoter.goos != "linux" || p.promoter.goarch != "amd64" {
 		return nil, errors.New("PyPI upgrade requires a supported existing Linux amd64 virtual environment")
 	}
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	requirement, err := artifactpypi.ParseUpgradeRequirement(selector)
+	if artifactpypi.IsPyTorchSource(source) && artifactpypi.RootSourceProfileNameFromContext(ctx) != profile.Name() {
+		return nil, errors.New("named upgrade requires its root resource context")
+	}
+	requirement, err := artifactpypi.ParseUpgradeRequirementForSource(selector, source)
 	if err != nil {
 		return nil, err
 	}
@@ -260,36 +264,50 @@ func (s *pypiUpdateSession) ResolveDependencies(ctx context.Context, reference d
 	if err != nil {
 		return domain.DependencyResolution{}, err
 	}
-	selected := map[string][]byte{}
-	for _, item := range resolution.ProjectControls() {
-		if !item.Present() || selected[item.Name()] != nil {
-			return domain.DependencyResolution{}, errors.New("PyPI selected controls are invalid")
-		}
-		selected[item.Name()] = item.Body()
-	}
-	if len(selected) != 3 || !bytes.Equal(selected[artifactpypi.UpgradeInputControlName], control.Body()) {
-		return domain.DependencyResolution{}, errors.New("PyPI resolver changed original selection input")
-	}
 	runtime := sandbox.PinnedPythonRuntime()
-	proposal, err := s.input.ParseUpgradeDelta(selected["pypi-update-delta.json"], runtime.PipVersion)
-	if err != nil {
-		return domain.DependencyResolution{}, err
-	}
-	report, err := artifactpypi.ParseInstallationReport(proposal.Reference(), selected["pypi-update-report.json"], runtime.PipVersion, runtime.PythonVersion)
-	if err != nil {
-		return domain.DependencyResolution{}, err
-	}
-	if err := proposal.ValidateFinal(report); err != nil {
-		return domain.DependencyResolution{}, err
-	}
-	graph, err := artifactpypi.BuildLockedGraph(reference, report.Candidates())
-	if err != nil {
-		return domain.DependencyResolution{}, err
-	}
-	sum := sha256.Sum256(selected["pypi-update-report.json"])
-	expectedRuntime := "python:" + runtime.PythonVersion + ";pip:" + runtime.PipVersion + ";target:" + runtime.InterpreterTag + "/" + runtime.ABITag + "/" + runtime.PlatformTag + ";source:" + artifactpypi.PublicPyPIProfile().Name()
-	if !reflect.DeepEqual(graph, resolution.Graph()) || resolution.RuntimeIdentity() != expectedRuntime || resolution.LockfileDigest().String() != hex.EncodeToString(sum[:]) {
-		return domain.DependencyResolution{}, errors.New("PyPI selected graph/runtime/digest does not bind complete controls")
+	var graph domain.LockedDependencyGraph
+	if artifactpypi.IsPyTorchSource(reference.Source()) {
+		selection, err := s.input.ParseSourcePinnedUpgrade(resolution.ProjectControls(), runtime.PipVersion)
+		if err != nil {
+			return domain.DependencyResolution{}, err
+		}
+		graph = selection.Graph()
+		profile, _ := artifactpypi.ProfileForSource(reference.Source())
+		expectedRuntime := "python:" + runtime.PythonVersion + ";pip:" + runtime.PipVersion + ";target:" + runtime.InterpreterTag + "/" + runtime.ABITag + "/" + runtime.PlatformTag + ";source:" + profile.Name()
+		if !reflect.DeepEqual(graph, resolution.Graph()) || resolution.RuntimeIdentity() != expectedRuntime || resolution.LockfileDigest() != selection.Digest() {
+			return domain.DependencyResolution{}, errors.New("named selected graph/runtime/digest does not bind complete controls")
+		}
+	} else {
+		selected := map[string][]byte{}
+		for _, item := range resolution.ProjectControls() {
+			if !item.Present() || selected[item.Name()] != nil {
+				return domain.DependencyResolution{}, errors.New("PyPI selected controls are invalid")
+			}
+			selected[item.Name()] = item.Body()
+		}
+		if len(selected) != 3 || !bytes.Equal(selected[artifactpypi.UpgradeInputControlName], control.Body()) {
+			return domain.DependencyResolution{}, errors.New("PyPI resolver changed original selection input")
+		}
+		proposal, err := s.input.ParseUpgradeDelta(selected["pypi-update-delta.json"], runtime.PipVersion)
+		if err != nil {
+			return domain.DependencyResolution{}, err
+		}
+		report, err := artifactpypi.ParseInstallationReport(proposal.Reference(), selected["pypi-update-report.json"], runtime.PipVersion, runtime.PythonVersion)
+		if err != nil {
+			return domain.DependencyResolution{}, err
+		}
+		if err := proposal.ValidateFinal(report); err != nil {
+			return domain.DependencyResolution{}, err
+		}
+		graph, err = artifactpypi.BuildLockedGraph(reference, report.Candidates())
+		if err != nil {
+			return domain.DependencyResolution{}, err
+		}
+		sum := sha256.Sum256(selected["pypi-update-report.json"])
+		expectedRuntime := "python:" + runtime.PythonVersion + ";pip:" + runtime.PipVersion + ";target:" + runtime.InterpreterTag + "/" + runtime.ABITag + "/" + runtime.PlatformTag + ";source:" + artifactpypi.PublicPyPIProfile().Name()
+		if !reflect.DeepEqual(graph, resolution.Graph()) || resolution.RuntimeIdentity() != expectedRuntime || resolution.LockfileDigest().String() != hex.EncodeToString(sum[:]) {
+			return domain.DependencyResolution{}, errors.New("PyPI selected graph/runtime/digest does not bind complete controls")
+		}
 	}
 	// Existing native files are retained as constraints, never promoted to HAA
 	// ownership merely because an untrusted RECORD names their paths.
