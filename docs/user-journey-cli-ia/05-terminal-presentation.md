@@ -67,3 +67,30 @@ missing installation or label ALL SAFE from a limited experiment. Unknown reason
 codes stay visible and escaped, with a generic explanation rather than a guessed
 root cause. No arbitrary provider output, credentials, URLs or terminal controls
 are replayed. Strings are bounded and escaped for safe terminal rendering.
+
+## OS display-language correction — CLI-UX-002
+
+Status: newly required; not implemented/qualified by CLI-UX-001. The locale-only
+algorithm described above is the current implementation, not the user's complete
+OS-language intent. Command names such as install stay English independently of
+translated descriptions and preferred UI language. A terminal does not have to
+use English locale, but an English/C locale must not hide an available OS display
+preference when the user selects auto.
+
+Target: preserve explicit --lang, HELOX_LANG and saved explicit language precedence.
+Auto reads the current user's OS preferred display languages: Windows user through
+WSL interoperability, macOS user language preferences, or supported native Linux
+language preferences. Select the first supported preference; when the OS lookup
+is unavailable use supported process-locale hints and finally English. Saved auto
+must remain auto, not persist a detected language. Remote/container/headless
+execution uses the available execution-host preference, with honest fallback;
+no local VS Code/client UI language can be inferred from an arbitrary server.
+
+Reads must be bounded and display-only, with no OS locale changes, elevated
+privileges, arbitrary artifact-provided commands, network or new daemon/runtime
+requirements. Record the effective language and selection source in language
+settings output so English fallback is understandable. A failing/unsupported
+lookup must never prevent inspection or contaminate JSON result stdout.
+[Baseline and qualification gaps](../planning/evidence/prepublication-gaps/baseline-20261018.md)
+remain open; retaining auto is the selected target, not a claim that its OS lookup
+already works.

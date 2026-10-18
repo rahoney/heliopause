@@ -9,12 +9,13 @@
 ```text
 Current milestone: M13 — Production Release & Operations
 Milestone status: IN_PROGRESS — runtime maintenance main delivery COMPLETE
-Active work item: M13-004 — convenience installation channels
-Active work item status: BLOCKED — owner package-name decision; accounts ready; no channel source edits
+Active work item: SEC-UPD-001 — update quarantine command coverage
+Active work item status: NOT_STARTED / Ready — baseline complete; required before channel publication
 Predecessor: M13-003 — COMPLETE; protected v0.1.0 build, twelve attestations and OS package lifecycle PASS
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
-Prepublication prerequisite: CLI-UX-001 — COMPLETE / local qualification and installed CLI verified
-Next work item: M13-005 — NOT_STARTED; requires M13-004 and a reviewed publication candidate
+Prepublication prerequisite: CLI-UX-001 — historical bounded completion; OS-language correction remains open
+Next work item: CLI-UX-002 — NOT_STARTED / Ready; OS preferred display-language auto
+Then: M13-004 — BLOCKED on update/OS-language prerequisites and owner package naming; M13-005 NOT_STARTED
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
 
@@ -3305,9 +3306,32 @@ this bounded item. Native macOS execution and full ecosystem/CUDA reruns are not
 claimed by local UX qualification. Inspection/Policy/exit codes are retained.
 Public v0.1.0 predates this UI source and was not retagged or republished.
 
+### Prepublication corrections — SEC-UPD-001 then CLI-UX-002
+
+User clarified that auto means OS display-language preference and that guarded
+updates are essential to protecting existing users from compromised new releases.
+[Baseline audit and order](./evidence/prepublication-gaps/baseline-20261018.md)
+precedes source changes. Existing inspection/Policy, transactions, settings and
+catalogs are reused; no replacement or new runtime/CI scaffold is justified.
+
+- SEC-UPD-001: NOT_STARTED / Ready. IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO /
+  ACCEPTANCE_CLOSED=NO for complete scoped update-command coverage. MISSING exact
+  update selection/CLI, guarded existing-state ownership/replacement and actual
+  per-ecosystem benign/malicious-fixture/unchanged-on-failure qualification. Read
+  [update quarantine contract](../user-journey-cli-ia/06-update-quarantine.md).
+- CLI-UX-002: NOT_STARTED / Ready. IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO /
+  ACCEPTANCE_CLOSED=NO for OS preferred-language auto. MISSING bounded Windows/WSL
+  and macOS/native detection/fallback, displayed selection source and platform
+  qualification. Read [OS-language correction](../user-journey-cli-ia/05-terminal-presentation.md#os-display-language-correction--cli-ux-002).
+
+No work item is IN_PROGRESS in this audit. Existing CLI-UX-001 receipts qualify
+its historical locale-only implementation, not these new requirements. Neither
+update-command availability nor running a native package manager outside helox
+may be reported as HAA update protection without actual corresponding evidence.
+
 ### M13-004 — convenience installation channels
 
-Status: BLOCKED — owner package-name decision; CLI-UX-001 complete; no channel source edits.
+Status: BLOCKED — SEC-UPD-001, CLI-UX-002 and owner package-name decision; no channel source edits.
 Audit: IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO for the
 complete channel scope. Existing verifier-gated native installer/doctor and release
 manifest/build/publish consumers are reused; their historical acceptance is retained.
@@ -3323,8 +3347,8 @@ checks. On2026-10-18 the user reported both rahoney accounts/email/2FA/GitHub
 links complete. This closes account preparation only; publisher binding and all
 package names remain unconfirmed. No credentials are needed.
 
-No work item is IN_PROGRESS. M13-004 resumes after owner naming; the local UX
-prerequisite is complete. M13-005 remains NOT_STARTED. Account setup is not
+No work item is IN_PROGRESS. M13-004 resumes after both correction items and owner
+naming; the prior bounded CLI-UX-001 acceptance remains historical. M13-005 remains NOT_STARTED. Account setup is not
 package publication approval; no registry upload, tap creation, Release draft or
 publish dispatch has occurred. Concrete publication remains separately reviewed.
 

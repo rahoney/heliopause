@@ -10,7 +10,7 @@
 - CLI framework: Cobra
 - 현재 상태: M0–M11 qualification 및 post-qualification release hardening, M12-001~005 생태계 acceptance·전체 qualification·feature freeze와 M12-02 최종 red-team/fix gate 완료. PR29·PR30 merge와 main CI를 확인했고 M13-001 저장소 보호 설정 적용·재조회를 완료했다.
 - 완료 작업: M12·M12-02 및 보안 패치 전달, M13-001 저장소 보호·M13-003 build/package 검증, CLI-UX-001 로컬 CLI 사용성 (`COMPLETE`)
-- 현재 작업: M13-004 — 설치 채널 (`BLOCKED`: 사용자 패키지 이름 결정 대기). CLI-UX-001의 7개 언어·진행 표시·정형 리포트와 실제 로컬 검사·설치는 [검증 완료](docs/planning/evidence/m13-cli-ux/qualification-20261018.md)했다. 공개 배포는 미실행이다.
+- 현재 우선순위: SEC-UPD-001 업데이트 검역 명령 → CLI-UX-002 OS 표시 언어 자동 감지 → M13-004 설치 채널. [배포 전 공백 audit](docs/planning/evidence/prepublication-gaps/baseline-20261018.md)를 완료했으며 두 보완의 구현·검증은 아직 미실행이다. 채널은 이 선행조건과 사용자 패키지 이름 결정을 기다린다. 기존 CLI-UX-001의 locale 기반 출력·실제 검사·설치 검증은 유지한다. 공개 배포는 미실행이다.
 - 선행 판정: M13-002는 [승인된 C3](docs/planning/18-m13-production-release-operations-contract.md#m13-002--protected-branch-qualification)에 따라 `ACCEPTED_WITH_EXCEPTION / QUALIFIED=NO / ACCEPTANCE_CLOSED=YES`다. 실제 missing-CLA는 `NOT_TESTED / DEFERRED`이며 최초 외부 기여 병합 전에 검증한다. 필수 CLA 보호·서명은 유지하고 구체적 merge·tag·publish는 별도 후보 검토를 따른다.
 - 유지보수 완료: `UPG-001..006 COMPLETE / QUALIFIED`, PR34/main CI320 전달 완료. 공개 attested release·상시 service·기존 full-Race 후속은 별도 범위로 유지한다.
 - 진행 상태의 canonical owner: [`docs/planning/02-current-work-queue.md`](docs/planning/02-current-work-queue.md)
