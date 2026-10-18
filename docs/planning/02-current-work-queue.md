@@ -3336,7 +3336,11 @@ IN_PROGRESS. Execute one ecosystem at a time. The bounded npm lane is locally
 IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=NO pending new
 remote Required qualification; its [local qualification](./evidence/update-quarantine/npm-qualification-20261018.md)
 records actual seven-operation CLI/observer evidence and cleanup. Next is the
-independent PyPI baseline/upgrade gap; other lanes remain unimplemented/unqualified.
+independent [PyPI baseline/upgrade gap](./evidence/update-quarantine/pypi-baseline-20261019.md);
+its pinned-tool selection semantics and second review are complete; bounded
+requirement/inert installed-metadata parsing is now being implemented and tested.
+Resolver/session/CLI/actual upgrade qualification remain MISSING.
+Other lanes remain unimplemented/unqualified.
 [implementation baseline](./evidence/update-quarantine/baseline-20261018.md)
 records existing responsibilities and actual missing acceptance.
 Existing CLI-UX-001 receipts qualify

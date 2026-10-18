@@ -2,7 +2,8 @@
 
 Status: IN_PROGRESS; user authorized implementation after reviewed planning.
 The bounded npm lane is locally qualified; new remote qualification remains open.
-Next lane: independent PyPI baseline/upgrade implementation. Other lanes wait for
+Current lane: [PyPI input/metadata implementation after baseline and selection review](../planning/evidence/update-quarantine/pypi-baseline-20261019.md).
+Resolver/session/CLI and actual upgrade qualification remain missing. Other lanes wait for
 their independent baseline/qualification. See the [npm evidence](../planning/evidence/update-quarantine/npm-qualification-20261018.md).
 This leaf owns the user-requested update-command contract. It supplements the
 installation journey, never weakens existing Policy or adds implicit Host execution.
@@ -223,3 +224,68 @@ new set. UPDATE is an explicit additional operation value in the existing result
 schema; INSTALL defaults remain unchanged. Stable controller-selected update
 rejection codes distinguish adoption, ownership, unsupported originals and
 concurrent changes with English/Korean explanations.
+
+### PyPI selection review before implementation
+
+The [PyPI baseline](../planning/evidence/update-quarantine/pypi-baseline-20261019.md)
+separates existing owned-venv transactions from the missing upgrade selection.
+Start with public PyPI; audit the distinct named PyTorch resolver separately and
+never qualify its CPU/CUDA path using public-PyPI evidence. The scoped native
+form is pip install --upgrade/-U with one project, supported exact/numeric public
+specifier, active Python3.14 venv or absolute --target, default only-if-needed,
+and explicit --adopt for supported native files. Eager strategy, arbitrary indexes,
+extras/editable/direct URLs and unsupported metadata reject before composition.
+
+1. Begin the existing venv transaction before selection. Freeze pyvenv.cfg,
+   metadata/RECORD, ownership and affected original file identities as bounded
+   data. Never run the target Python or import its packages. Explicit enrollment
+   cannot turn local metadata/checksums into prior ALLOW or overwrite foreign
+   paths; default install retains its current collision rules.
+2. Supply only validated inert installed METADATA to the pinned isolated pip
+   resolver and select with --upgrade --upgrade-strategy only-if-needed. Its
+   dry-run delta can omit the root or be empty; it is not a complete graph and
+   cannot authorize inspection completion/promotion.
+3. Merge changed versions with the frozen inventory. Freshly resolve only the
+   requested root closure before inspection, constrained by all proposed exact
+   versions and the active requirements of unchanged installed distributions.
+   Superseded old-version requirements must not constrain the changed packages.
+   Do not request unrelated distributions as additional roots or re-resolve them
+   from a different source. Retained constraints must prevent newly introduced
+   conflicts with their actual metadata. Compare changed candidates across both
+   selections and cross-check final candidates against canonical public metadata.
+   Reuse the existing final single-primary report parser and complete graph.
+4. Bind frozen input and final selection into the update's Manifest; inspect
+   every final selected entry, including unchanged-version/transitive-only/no-op
+   selections. Preserve the existing source-sdist/build-input/derived-wheel
+   extension and binding: npm's strict no-derivation graph comparison cannot be
+   reused to reject legitimate authenticated derived-wheel nodes. Reuse the same
+   held transaction through existing private offline output validation and commit,
+   rechecking originals/cancellation before publication. Do not acquire a second
+   guard or re-resolve after ALLOW. Existing rollback/recovery semantics remain.
+
+Pinned pip26.2.1/Python3.14.7 controlled offline probes verify normal upgrade,
+retained-version behavior, retained-metadata conflict rejection, empty no-op delta,
+transitive-only delta and missing installed root. These are tool-semantics proofs,
+not production gVisor/inspection/enrollment qualification. New parser, filesystem,
+actual supported CLI positive/negative, observer/lifecycle and affected canonical
+consumers remain required before the PyPI lane closes.
+
+The current input parser bounds each installed METADATA to the existing1MiB
+wheel metadata limit, at most the existing1,024 report projects, and a4MiB opaque
+input control including base64 metadata. Native selection supports bare names,
+canonical exact versions (including existing name@version compatibility), and
+the existing bounded numeric requirement grammar; unimplemented specifiers reject.
+Active extra constraints, unsupported markers and folded option-like requirements
+reject rather than lose meaning. These are input/selection limits, not enrollment
+or runtime qualification. Native venv RECORD paths must use actual venv scheme
+roots through the existing destination binder; the private --target output mapper
+has different relative-depth semantics and cannot be applied unchanged to them.
+For an existing HAA-owned distribution, use its validated transaction ledger for
+exact installed ownership; its preserved RECORD can still contain the private
+output recipe's cross-scheme depths. Never reinterpret that ledger-owned output
+as a native pip layout. A mixed native/managed environment must not let a native
+RECORD claim override existing HAA ownership. Native shared/ambiguous ownership
+rejects rather than inventing an authenticated Artifact digest from a local file
+snapshot. Unrelated retained output is protected, not granted new inspection
+approval. Retained editable/direct-source inputs need truthful rejection when
+their paths/source cannot be represented in the supported update selection.
