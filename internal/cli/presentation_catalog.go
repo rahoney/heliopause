@@ -18,6 +18,7 @@ func localizeHelp(root *cobra.Command, p *presentation) {
 		"helox npm":                   {"Inspect and install npm registry packages", "npm 패키지 검사·설치"},
 		"helox npm inspect":           {"Inspect an npm package", "프로젝트에 설치하지 않고 npm 패키지를 검사합니다"},
 		"helox npm install":           {"Inspect and install an npm package", "npm 패키지와 의존성을 검사하고 허용된 파일만 설치합니다"},
+		"helox npm update":            {"Update an npm project after complete quarantine checks", "새 npm 버전과 전체 의존성을 검사한 뒤 프로젝트를 업데이트합니다"},
 		"helox pypi":                  {"Inspect and install PyPI distributions", "PyPI 배포 파일 검사·설치"},
 		"helox pypi inspect":          {"Inspect a PyPI distribution", "프로젝트에 설치하지 않고 PyPI 배포 파일을 검사합니다"},
 		"helox pip":                   {"Inspect and install PyPI distributions", "PyPI 배포 파일 검사·설치"},
@@ -41,6 +42,9 @@ func localizeHelp(root *cobra.Command, p *presentation) {
 	}
 	var visit func(*cobra.Command)
 	visit = func(command *cobra.Command) {
+		if command.CommandPath() == "helox npm update" {
+			command.Long = p.text(npmUpdateDescriptionEnglish, npmUpdateDescriptionKorean)
+		}
 		if text, ok := descriptions[command.CommandPath()]; ok {
 			command.Short = p.text(text[0], text[1])
 		}
@@ -53,6 +57,7 @@ func localizeHelp(root *cobra.Command, p *presentation) {
 			"progress":                 {"Progress: auto, always or never", "진행 표시: auto(자동), always(사용), never(미사용)"},
 			"verbose":                  {"Show bounded runtime diagnostics", "제한된 진단 정보와 검사 기록 식별자를 표시합니다"},
 			"target":                   {"Installation target path", "검증한 파일을 설치할 대상 경로"},
+			"adopt":                    {"Explicitly replace supported native project dependencies after full inspection", "지원하는 기존 프로젝트를 명시적으로 등록하고 전체 검사 후 의존성을 교체합니다"},
 			"source":                   {"Explicit package source", "검사에 사용할 명시적 패키지 출처"},
 			"inspection-prerequisites": {"Explicit inspection-only pinned input; not installed into the target", "검사용으로만 사용할 고정된 추가 입력; 설치 대상에는 반입하지 않습니다"},
 		} {

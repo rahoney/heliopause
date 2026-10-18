@@ -11,6 +11,7 @@ type OperationType string
 const (
 	OperationInspect OperationType = "INSPECT"
 	OperationInstall OperationType = "INSTALL"
+	OperationUpdate  OperationType = "UPDATE"
 )
 
 // OperationStatus is independent from Run Outcome and Policy Decision.

@@ -10,8 +10,12 @@ import (
 // InstallRequest is the validated M4 request boundary before resolution or any
 // target filesystem action is attempted.
 type InstallRequest struct {
-	reference domain.ArtifactReference
-	context   domain.InstallContext
+	reference      domain.ArtifactReference
+	context        domain.InstallContext
+	updateSource   domain.SourceID
+	updateSelector string
+	update         bool
+	adopt          bool
 }
 
 func NewInstallRequest(reference domain.ArtifactReference, context domain.InstallContext) (InstallRequest, error) {
@@ -23,6 +27,20 @@ func NewInstallRequest(reference domain.ArtifactReference, context domain.Instal
 
 func (r InstallRequest) Reference() domain.ArtifactReference { return r.reference }
 func (r InstallRequest) Context() domain.InstallContext      { return r.context }
+
+func (r InstallRequest) Operation() domain.OperationType {
+	if r.update {
+		return domain.OperationUpdate
+	}
+	return domain.OperationInstall
+}
+
+func (r InstallRequest) Source() domain.SourceID {
+	if r.update {
+		return r.updateSource
+	}
+	return r.reference.Source()
+}
 
 // InspectedInstall preserves the exact operation and resolver context needed
 // to build a Manifest after the complete set-level Policy decision.

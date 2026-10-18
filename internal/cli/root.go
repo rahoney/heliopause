@@ -638,6 +638,11 @@ func initializeCommandTree(root *cobra.Command) {
 	npm := ensureNPMCommand(root)
 	npm.AddCommand(newStaticLeaf("inspect <package-reference>", "Inspect an npm package", false))
 	npm.AddCommand(newStaticLeaf("install <package-reference>", "Install an npm package into the current project", true))
+	npmUpdate := newStaticLeaf("update [package]", "Update an npm project after complete quarantine checks", true)
+	npmUpdate.Args = validateNPMUpdateArgs
+	npmUpdate.Long = npmUpdateDescriptionEnglish
+	npmUpdate.Flags().Bool("adopt", false, "Explicitly replace supported native project dependencies after full inspection")
+	npm.AddCommand(npmUpdate)
 	pypi := ensurePyPICommand(root)
 	pypi.AddCommand(newStaticLeaf("inspect <project>[@<version>]", "Inspect a PyPI distribution", false))
 	pip := ensurePipCommand(root)

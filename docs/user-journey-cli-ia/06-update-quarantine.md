@@ -1,7 +1,9 @@
 # Update quarantine — SEC-UPD-001
 
 Status: IN_PROGRESS; user authorized implementation after reviewed planning.
-Current lane: npm. Other lanes wait for independent baseline/qualification.
+The bounded npm lane is locally qualified; new remote qualification remains open.
+Next lane: independent PyPI baseline/upgrade implementation. Other lanes wait for
+their independent baseline/qualification. See the [npm evidence](../planning/evidence/update-quarantine/npm-qualification-20261018.md).
 This leaf owns the user-requested update-command contract. It supplements the
 installation journey, never weakens existing Policy or adds implicit Host execution.
 
@@ -69,7 +71,8 @@ An earlier bounded install/UX qualification does not close this update acceptanc
 
 ## Implementation map and scoped command semantics
 
-This is a reviewed implementation plan, not implemented command support. Execute
+This is a reviewed implementation plan. The bounded npm implementation and local
+qualification are recorded above; the remaining rows are planned support. Execute
 one ecosystem at a time after CLI-UX-002; keep other lanes unmodified until their
 own baseline/selection contract is verified. Minimum planned forms are:
 
@@ -142,7 +145,7 @@ confirmed cleanup; preserve failures/rollback state, delete completed disposable
 payloads/caches after final use. Update lessons only for confirmed findings.
 
 Native semantics references:
-[npm update](https://docs.npmjs.com/cli/v8/commands/npm-update/),
+[npm update](https://docs.npmjs.com/cli/v10/commands/npm-update/),
 [pip upgrade behavior](https://pip.pypa.io/en/stable/development/architecture/upgrade-options/),
 [Cargo update](https://doc.rust-lang.org/cargo/commands/cargo-update.html).
 Implementation must check the repository-pinned guest tool behavior as well;
@@ -203,3 +206,20 @@ The implementation slice must pass actual positive selection/replacement plus
 blocked/incomplete/tampered/concurrent/foreign/cancel/rollback negatives before its
 acceptance is closed. The remaining ecosystem lanes and broader supported project
 coverage remain MISSING until their own actual evidence is recorded.
+
+Current npm control/inventory bounds are4MiB per manifest/lock,32 levels of
+JSON nesting,200,000 values, one public direct root,128-character public range/tag,
+64MiB per original file,100,000 inventory entries and1GiB per transaction member.
+Registry selection has a2-minute context with existing confirmed resolver cleanup.
+The fixed npm update invocation must also be admitted by the existing observer's
+exact boundary/launcher/interpreter tuples. Preserve the historical install tuple;
+qualify the added update tuple with pinned observer build/latches and actual CLI.
+Command changes cannot be validated by Go fake runners alone and never justify
+broader Node filesystem/network authority.
+Original package metadata must match the lock; unlisted packages, files outside
+locked package directories, symlinks/hardlinks and foreign HAA namespace content
+are not adopted. Missing package output can only come from the complete inspected
+new set. UPDATE is an explicit additional operation value in the existing result
+schema; INSTALL defaults remain unchanged. Stable controller-selected update
+rejection codes distinguish adoption, ownership, unsupported originals and
+concurrent changes with English/Korean explanations.

@@ -247,6 +247,25 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err := cli.AddNPMInstall(command, installer); err != nil {
 			return err
 		}
+		updateResolver, ok := dependencyResolver.(ports.DependencyUpdateResolver)
+		if !ok {
+			return errors.New("npm resolver lacks guarded update selection")
+		}
+		npmPromoter, ok := promoter.(*promotion.NPMPromotion)
+		if !ok {
+			return errors.New("npm Promotion lacks guarded update preparation")
+		}
+		preparation, err := promotion.NewNPMUpdatePreparation(npmPromoter, updateResolver)
+		if err != nil {
+			return err
+		}
+		updater, err := application.NewInstallUpdateService(installer, preparation)
+		if err != nil {
+			return err
+		}
+		if err := cli.AddNPMUpdate(command, updater); err != nil {
+			return err
+		}
 	}
 	if source != "" && (source == "pypi" || source == "pip") {
 		cacheRoot, err := os.UserCacheDir()
@@ -498,6 +517,10 @@ func installDependencyResolver(goos, goarch string, executor sandbox.TrustedExec
 }
 
 type unsupportedInstallResolver struct{}
+
+func (unsupportedInstallResolver) ResolveDependencyUpdate(context.Context, domain.ArtifactReference, domain.InstallContext, []domain.ProjectControlFile) (domain.DependencyResolution, error) {
+	return domain.DependencyResolution{}, errors.New("automatic npm update requires Linux amd64")
+}
 
 func (unsupportedInstallResolver) ResolveDependencies(context.Context, domain.ArtifactReference, domain.InstallContext) (domain.DependencyResolution, error) {
 	return domain.DependencyResolution{}, errors.New("automatic npm install requires Linux amd64")

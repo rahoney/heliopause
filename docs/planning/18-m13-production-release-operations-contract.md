@@ -173,7 +173,7 @@ public 이후 검증 실패는 기존 release의 overwrite/re-tag가 아니라
 | 3 | M13-003 | canonical release build·manifest·attestation·OS package assets | COMPLETE — protected v0.1.0 build/attestation/package lifecycle |
 | 3a | CLI-UX-001 | multilingual terminal progress and structured human results | COMPLETE — [local qualification](./evidence/m13-cli-ux/qualification-20261018.md) |
 | 3b | CLI-UX-002 | OS preferred display-language auto | COMPLETE — [qualification](./evidence/cli-os-language/qualification-20261018.md); native macOS/CI328 PASS |
-| 3c | SEC-UPD-001 | guarded update-command coverage | IN_PROGRESS — npm first; detailed reviewed plan |
+| 3c | SEC-UPD-001 | guarded update-command coverage | IN_PROGRESS — bounded npm locally qualified / remote pending; PyPI next |
 | 3d | CLI-UX-003 | branded interactive launcher | NOT_STARTED — after SEC-UPD-001 acceptance |
 | 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | BLOCKED — SEC-UPD-001 and owner package-name decision; accounts ready / CLI-UX-002 complete |
 | 5 | M13-005 | exact publication·clean Host bootstrap·doctor·cross-ecosystem smoke·quarantine | NOT_STARTED |

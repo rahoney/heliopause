@@ -118,6 +118,14 @@ func PreparePresentation(root *cobra.Command, args []string) (string, error) {
 	if err = p.configure(); err != nil {
 		return "", err
 	}
+	if command.CommandPath() == "helox npm update" {
+		help, _ := command.Flags().GetBool("help")
+		if !help {
+			if err := command.ValidateArgs(command.Flags().Args()); err != nil {
+				return "", err
+			}
+		}
+	}
 	if p.language != "en" {
 		localizeHelp(root, p)
 	}

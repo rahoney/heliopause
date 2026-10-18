@@ -29,6 +29,7 @@ type ManifestContext struct {
 	InstallContext  domain.InstallContext
 	ResolverRuntime string
 	LockfileDigest  domain.ContentDigest
+	ProjectControls []domain.ProjectControlFile
 }
 
 // Generator adapts deterministic record generation to the Application-owned
@@ -42,7 +43,7 @@ func (Generator) Build(ctx context.Context, operationID domain.OperationID, inst
 	if err := ctx.Err(); err != nil {
 		return domain.VerifiedBundle{}, err
 	}
-	return BuildVerifiedBundle(ManifestContext{OperationID: operationID, InstallContext: installContext, ResolverRuntime: resolution.RuntimeIdentity(), LockfileDigest: resolution.LockfileDigest()}, set)
+	return BuildVerifiedBundle(ManifestContext{OperationID: operationID, InstallContext: installContext, ResolverRuntime: resolution.RuntimeIdentity(), LockfileDigest: resolution.LockfileDigest(), ProjectControls: resolution.ProjectControls()}, set)
 }
 
 // BuildVerifiedBundle emits compact deterministic UTF-8 JSON for both the HAA
@@ -69,6 +70,18 @@ func BuildVerifiedBundle(context ManifestContext, set domain.VerifiedSet) (domai
 		Edges:       edges,
 		Derivations: derivations,
 	}
+	if len(context.ProjectControls) > 32 {
+		return domain.VerifiedBundle{}, errors.New("selection controls exceed bounds")
+	}
+	seenControls := map[string]bool{}
+	for _, control := range context.ProjectControls {
+		if control.Name() == "" || control.Digest().String() == "" || !control.Present() || seenControls[control.Name()] {
+			return domain.VerifiedBundle{}, errors.New("selection control is invalid")
+		}
+		seenControls[control.Name()] = true
+		payload.ProjectControls = append(payload.ProjectControls, manifestControl{Name: control.Name(), SHA256: control.Digest().String(), Content: control.Body()})
+	}
+	sort.Slice(payload.ProjectControls, func(i, j int) bool { return payload.ProjectControls[i].Name < payload.ProjectControls[j].Name })
 	unsigned, err := canonicalManifestPayload(payload)
 	if err != nil {
 		return domain.VerifiedBundle{}, errors.New("serialize canonical Manifest payload")
@@ -113,15 +126,22 @@ type manifestDocument struct {
 }
 
 type manifestPayload struct {
-	Schema      string               `json:"schema"`
-	OperationID string               `json:"operation_id"`
-	Target      manifestTarget       `json:"target"`
-	Resolver    manifestResolver     `json:"resolver"`
-	Primary     string               `json:"primary"`
-	Policy      manifestPolicy       `json:"policy"`
-	Entries     []manifestEntry      `json:"entries"`
-	Edges       []manifestEdge       `json:"edges"`
-	Derivations []manifestDerivation `json:"derivations,omitempty"`
+	Schema          string               `json:"schema"`
+	OperationID     string               `json:"operation_id"`
+	Target          manifestTarget       `json:"target"`
+	Resolver        manifestResolver     `json:"resolver"`
+	Primary         string               `json:"primary"`
+	Policy          manifestPolicy       `json:"policy"`
+	Entries         []manifestEntry      `json:"entries"`
+	Edges           []manifestEdge       `json:"edges"`
+	Derivations     []manifestDerivation `json:"derivations,omitempty"`
+	ProjectControls []manifestControl    `json:"project_controls,omitempty"`
+}
+
+type manifestControl struct {
+	Name    string `json:"name"`
+	SHA256  string `json:"sha256"`
+	Content []byte `json:"content"`
 }
 
 type manifestTarget struct {

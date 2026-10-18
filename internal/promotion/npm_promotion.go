@@ -118,6 +118,9 @@ func (p *NPMPromotion) Promote(ctx context.Context, staged domain.StagedSet, bun
 		if err := validatePromotionOutput(workspace, bundle, manifest, lock); err != nil {
 			return domain.PromotedInstall{}, err
 		}
+		if err := applyNPMSelectionControls(workspace, bundle); err != nil {
+			return domain.PromotedInstall{}, err
+		}
 		if err := plan.verifyUnchanged(); err != nil {
 			return domain.PromotedInstall{}, err
 		}
@@ -169,6 +172,9 @@ func (p *NPMPromotion) Promote(ctx context.Context, staged domain.StagedSet, bun
 		return domain.PromotedInstall{}, err
 	}
 	if err := validatePromotionOutput(temporary, bundle, manifest, lock); err != nil {
+		return domain.PromotedInstall{}, err
+	}
+	if err := applyNPMSelectionControls(temporary, bundle); err != nil {
 		return domain.PromotedInstall{}, err
 	}
 	if err := syncTree(temporary); err != nil {

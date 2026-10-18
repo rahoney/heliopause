@@ -5642,7 +5642,7 @@ bool VerifyResolverNpmVersionProductionPath() {
 // Drives the actual SENTRY_EXEC and SENTRY_CLONE path for the one fixed
 // GenerateLockfile command. Each negative starts from the full valid boundary
 // lineage and changes exactly one authorization-relevant condition.
-bool VerifyResolverLockGenerationProductionPath() {
+bool VerifyResolverLockGenerationProductionPath(bool update = false) {
   struct Path {
     gvisor::sentry::ExecveInfo boundary;
     gvisor::sentry::ExecveInfo demotion;
@@ -5668,7 +5668,7 @@ bool VerifyResolverLockGenerationProductionPath() {
   path.boundary.add_argv(admission_nonce);
   path.boundary.add_argv("/bin/sh");
   path.boundary.add_argv("-ceu");
-  path.boundary.add_argv(kLockGenerationCommand);
+  path.boundary.add_argv(update ? kLockUpdateCommand : kLockGenerationCommand);
 
   path.demotion = path.boundary;
   path.demotion.mutable_context_data()->set_process_name("setpriv");
@@ -5686,7 +5686,7 @@ bool VerifyResolverLockGenerationProductionPath() {
   path.shell.clear_argv();
   path.shell.add_argv("/bin/sh");
   path.shell.add_argv("-ceu");
-  path.shell.add_argv(kLockGenerationCommand);
+  path.shell.add_argv(update ? kLockUpdateCommand : kLockGenerationCommand);
 
   *path.clone.mutable_context_data() = root;
   path.clone.set_created_thread_group_id(341);
@@ -5704,9 +5704,13 @@ bool VerifyResolverLockGenerationProductionPath() {
   path.npm.set_binary_path(kNpmCLIPath);
   path.npm.set_execfn(kNpmPath);
   path.npm.add_argv(kNpmPath);
-  const char* lock_args[] = {"install", "--package-lock-only", "--ignore-scripts", "--no-audit", "--no-fund",
+  std::vector<const char*> lock_args = {"install", "--package-lock-only", "--ignore-scripts", "--no-audit", "--no-fund",
       "--registry=https://registry.npmjs.org/", "--userconfig=/tmp/haa-user.npmrc",
       "--globalconfig=/tmp/haa-global.npmrc"};
+  if (update) {
+    lock_args[0] = "update";
+    lock_args.insert(lock_args.begin() + 5, "--save=false");
+  }
   for (const char* argument : lock_args) path.npm.add_argv(argument);
 
   path.node = path.npm;
@@ -6863,6 +6867,7 @@ int main(int argc, char** argv) {
         VerifyFilesystemClassification() && VerifyExactNpmNodeInterpreterTransition() &&
         VerifyUnexpectedExecDiagnosticRetention() && VerifyResolverNpmVersionNodeTransition() &&
         VerifyResolverNpmVersionProductionPath() && VerifyResolverLockGenerationProductionPath() &&
+        VerifyResolverLockGenerationProductionPath(true) &&
         VerifyAuthoritativeProcessGroupLifecycle() && VerifyDirectExecAdmission() &&
         VerifyAdmissionTerminalControlProtocol() && VerifyStrictControlParser() ? 0 : 1;
   }
@@ -7022,7 +7027,8 @@ int main(int argc, char** argv) {
   fprintf(stderr, "STARTING resolver_npm_version_production_path\n");
   const bool resolver_npm_version_production_path = VerifyResolverNpmVersionProductionPath();
   fprintf(stderr, "STARTING resolver_lock_generation_production_path\n");
-  const bool resolver_lock_generation_production_path = VerifyResolverLockGenerationProductionPath();
+  const bool resolver_lock_generation_production_path = VerifyResolverLockGenerationProductionPath() &&
+      VerifyResolverLockGenerationProductionPath(true);
   fprintf(stderr, "STARTING process_group_lifecycle\n");
   const bool process_group_lifecycle = VerifyAuthoritativeProcessGroupLifecycle();
   fprintf(stderr, "STARTING direct_exec_admission\n");

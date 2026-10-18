@@ -938,6 +938,11 @@ constexpr char kLockGenerationCommand[] =
     "--package-lock-only --ignore-scripts --no-audit --no-fund "
     "--registry=https://registry.npmjs.org/ --userconfig=/tmp/haa-user.npmrc "
     "--globalconfig=/tmp/haa-global.npmrc";
+constexpr char kLockUpdateCommand[] =
+    "cd /tmp/haa-resolver; HOME=/tmp npm_config_cache=/tmp/cache npm update "
+    "--package-lock-only --ignore-scripts --no-audit --no-fund --save=false "
+    "--registry=https://registry.npmjs.org/ --userconfig=/tmp/haa-user.npmrc "
+    "--globalconfig=/tmp/haa-global.npmrc";
 
 CommandPhase ClassifyCommandShape(const gvisor::sentry::ExecveInfo& message) {
   for (int index = 0; index < message.argv_size(); ++index) {
@@ -1131,14 +1136,14 @@ bool IsExactNpmVersionLauncher(const gvisor::sentry::ExecveInfo& message) {
 }
 
 // This is the complete boundary invocation emitted only by
-// NPMResolver.GenerateLockfile. The command string is trusted controller
+// NPMResolver's install/update selection. The command string is trusted controller
 // source, not artifact input; any resolver-side drift fails closed here.
 bool IsExactResolverLockGenerationBoundary(const gvisor::sentry::ExecveInfo& message) {
   return message.binary_path() == kBoundaryHelperPath && message.execfn() == kBoundaryHelperPath &&
       message.argv_size() == 6 && message.argv(0) == kBoundaryHelperPath &&
       message.argv(1) == kLaunchMode && ValidAdmissionNonce(message.argv(2)) &&
       message.argv(3) == "/bin/sh" && message.argv(4) == "-ceu" &&
-      message.argv(5) == kLockGenerationCommand;
+      (message.argv(5) == kLockGenerationCommand || message.argv(5) == kLockUpdateCommand);
 }
 
 bool IsExactLockGenerationArguments(const gvisor::sentry::ExecveInfo& message,
@@ -1148,23 +1153,32 @@ bool IsExactLockGenerationArguments(const gvisor::sentry::ExecveInfo& message,
       "--registry=https://registry.npmjs.org/", "--userconfig=/tmp/haa-user.npmrc",
       "--globalconfig=/tmp/haa-global.npmrc",
   };
-  if (message.argv_size() != first_argument +
-      static_cast<int>(sizeof(kArguments) / sizeof(kArguments[0]))) return false;
-  for (size_t index = 0; index < sizeof(kArguments) / sizeof(kArguments[0]); ++index) {
-    if (message.argv(first_argument + static_cast<int>(index)) != kArguments[index]) return false;
+  static constexpr const char* kUpdateArguments[] = {
+      "update", "--package-lock-only", "--ignore-scripts", "--no-audit", "--no-fund",
+      "--save=false", "--registry=https://registry.npmjs.org/", "--userconfig=/tmp/haa-user.npmrc",
+      "--globalconfig=/tmp/haa-global.npmrc",
+  };
+  if (message.argv_size() <= first_argument) return false;
+  const bool update = message.argv(first_argument) == "update";
+  const auto* arguments = update ? kUpdateArguments : kArguments;
+  const size_t count = update ? sizeof(kUpdateArguments) / sizeof(kUpdateArguments[0]) :
+      sizeof(kArguments) / sizeof(kArguments[0]);
+  if (message.argv_size() != first_argument + static_cast<int>(count)) return false;
+  for (size_t index = 0; index < count; ++index) {
+    if (message.argv(first_argument + static_cast<int>(index)) != arguments[index]) return false;
   }
   return true;
 }
 
 bool IsExactLockGenerationNpmLauncher(const gvisor::sentry::ExecveInfo& message) {
   return message.binary_path() == kNpmCLIPath && message.execfn() == kNpmPath &&
-      message.argv_size() == 9 && message.argv(0) == kNpmPath &&
+      message.argv_size() >= 1 && message.argv(0) == kNpmPath &&
       IsExactLockGenerationArguments(message, 1);
 }
 
 bool IsExactLockGenerationNpmNodeInterpreter(const gvisor::sentry::ExecveInfo& message) {
   return message.binary_path() == kNodePath && message.execfn() == kNodePath &&
-      message.argv_size() == 10 && message.argv(0) == "node" && message.argv(1) == kNpmPath &&
+      message.argv_size() >= 2 && message.argv(0) == "node" && message.argv(1) == kNpmPath &&
       IsExactLockGenerationArguments(message, 2);
 }
 

@@ -70,7 +70,7 @@ func WriteHumanInstallResult(output io.Writer, outcome application.InstallOutcom
 	if writer, ok := output.(*presentationWriter); ok && writer.presentation.human() {
 		return writer.presentation.renderInstall(outcome, operationErr)
 	}
-	if _, err := fmt.Fprintf(output, "Operation: %s\nOperation ID: %s\nStatus: %s\nTarget: %s\nPromotion: %s\n", domain.OperationInstall, inspection.OperationID(), status, inspection.Request().Context().Target(), promotion); err != nil {
+	if _, err := fmt.Fprintf(output, "Operation: %s\nOperation ID: %s\nStatus: %s\nTarget: %s\nPromotion: %s\n", inspection.Request().Operation(), inspection.OperationID(), status, inspection.Request().Context().Target(), promotion); err != nil {
 		return err
 	}
 	if decision := inspection.Decision(); decision.PolicyID() != "" {
@@ -84,7 +84,11 @@ func WriteHumanInstallResult(output io.Writer, outcome application.InstallOutcom
 		}
 	}
 	if operationErr != nil {
-		_, err := fmt.Fprintf(output, "Error: %s: Install operation failed.\n", outcome.FailureCode())
+		message := "Install operation failed."
+		if inspection.Request().Operation() == domain.OperationUpdate {
+			message = "Update operation failed."
+		}
+		_, err := fmt.Fprintf(output, "Error: %s: %s\n", outcome.FailureCode(), message)
 		return err
 	}
 	return nil
@@ -97,8 +101,8 @@ func WriteJSONInstallResult(output io.Writer, outcome application.InstallOutcome
 	}
 	status, promotion := installStatuses(outcome, operationErr)
 	document := installMachineResult{
-		SchemaVersion: operationResultSchema, OperationID: inspection.OperationID().String(), Operation: string(domain.OperationInstall),
-		OperationStatus: status, Artifact: machineArtifact{Reference: machineReference{SourceID: inspection.Request().Reference().Source().String(), Locator: inspection.Request().Reference().Locator()}},
+		SchemaVersion: operationResultSchema, OperationID: inspection.OperationID().String(), Operation: string(inspection.Request().Operation()),
+		OperationStatus: status, Artifact: machineArtifact{Reference: machineReference{SourceID: inspection.Request().Source().String(), Locator: inspection.Request().Reference().Locator()}},
 		Checks: []machineCheck{}, EvidenceReferences: []machineEvidenceReference{}, Target: inspection.Request().Context().Target().String(), PromotionStatus: promotion,
 	}
 	for _, diagnostic := range inspection.GraphStaticDiagnostics() {
@@ -139,6 +143,9 @@ func WriteJSONInstallResult(output io.Writer, outcome application.InstallOutcome
 	}
 	if operationErr != nil {
 		document.Error = &machineError{Code: outcome.FailureCode(), Message: "Install operation failed."}
+		if inspection.Request().Operation() == domain.OperationUpdate {
+			document.Error.Message = "Update operation failed."
+		}
 	}
 	return json.NewEncoder(output).Encode(document)
 }

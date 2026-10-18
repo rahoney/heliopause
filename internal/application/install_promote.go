@@ -41,6 +41,11 @@ func NewInstallService(inspection *InstallInspectService, manifest ports.Manifes
 }
 
 func (s *InstallService) Install(ctx context.Context, request InstallRequest) (InstallOutcome, error) {
+	if request.update {
+		if _, ok := s.promotion.(ports.InstallUpdateSession); !ok {
+			return InstallOutcome{failureCode: "UPDATE_PREPARATION_FAILED"}, errors.New("update requires an original-state session before resolution")
+		}
+	}
 	inspected, err := s.inspection.Inspect(ctx, request)
 	if err != nil {
 		return InstallOutcome{inspection: inspected, failureCode: "INSTALL_INSPECTION_FAILED"}, err

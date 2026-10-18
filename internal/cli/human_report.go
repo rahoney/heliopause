@@ -52,7 +52,7 @@ func (p *presentation) renderInstall(outcome application.InstallOutcome, operati
 	status, promotion := installStatuses(outcome, operationErr)
 	decision := inspection.Decision()
 	policy := string(decision.Decision())
-	p.reportHeader("INSTALL", status, policy, promotion)
+	p.reportHeader(string(inspection.Request().Operation()), status, policy, promotion)
 	reference := inspection.Request().Reference()
 	p.line("%s %s / %s", p.text("Artifact:", "대상:"), safeTerminal(reference.Source().String()), safeTerminal(reference.Locator()))
 	p.line("%s %s", p.text("Target:", "설치 위치:"), safeTerminal(inspection.Request().Context().Target().String()))
@@ -103,7 +103,9 @@ func (p *presentation) renderInstall(outcome application.InstallOutcome, operati
 func (p *presentation) reportHeader(operation, status, policy, promotion string) {
 	p.reported = true
 	label := p.text("Inspection", "검사")
-	if operation == "INSTALL" {
+	if operation == "UPDATE" {
+		label = p.text("Update", "업데이트")
+	} else if operation == "INSTALL" {
 		label = p.text("Installation", "설치")
 	} else if strings.Contains(operation, "BUILD") {
 		label = p.text("Build", "빌드")
@@ -248,6 +250,20 @@ func (p *presentation) errorExplanation(code string) string {
 	}
 
 	switch code {
+	case "UPDATE_ADOPTION_REQUIRED":
+		return p.text("This native project has no HAA ownership record. Use --adopt only to enroll a supported project after complete inspection.", "일반 npm 프로젝트에는 HAA 소유 기록이 없습니다. 지원하는 프로젝트를 전체 검사 후 등록하려면 --adopt를 명시하세요.")
+	case "UPDATE_OWNERSHIP_INVALID":
+		return p.text("Existing HAA ownership or metadata is inconsistent. Adoption cannot override it; check the original project state.", "기존 HAA 소유 기록 또는 메타데이터가 일치하지 않습니다. --adopt로 우회할 수 없으므로 원래 프로젝트 상태를 확인하세요.")
+	case "UPDATE_ORIGINAL_STATE_UNSUPPORTED":
+		return p.text("The existing dependency tree contains foreign or inconsistent files. They were not authorized for replacement.", "기존 의존성 폴더에 다른 파일이나 불일치가 있어 교체를 허용하지 않았습니다.")
+	case "UPDATE_UNSUPPORTED_PROJECT":
+		return p.text("This npm update supports one public direct dependency and its supported transitive graph. Legacy local-file controls need an explicit inspected install to establish version intent.", "현재 npm 업데이트는 공개 출처의 단일 직접 의존성과 지원하는 하위 의존성 그래프를 처리합니다. 이전 로컬 파일 참조는 명시적 검사·설치로 버전 선택 의도를 다시 지정해야 합니다.")
+	case "UPDATE_SOURCE_CHANGED":
+		return p.text("Original project files or the mutation lock changed during the update. The replacement was stopped.", "업데이트 도중 원래 프로젝트 파일 또는 변경 잠금이 바뀌어 교체를 중단했습니다.")
+	case "UPDATE_PREPARATION_FAILED":
+		return p.text("The existing project could not be prepared for a guarded update. Check its supported format, path and ownership.", "기존 프로젝트의 업데이트 준비에 실패했습니다. 지원 형식·경로·소유 상태를 확인하세요.")
+	case "UPDATE_GUARD_CLOSE_FAILED":
+		return p.text("Update guard cleanup failed. Confirm the target and ownership record before retrying; replacement may already have completed.", "업데이트 잠금 정리에 실패했습니다. 교체가 이미 끝났을 수 있으므로 대상 파일과 소유 기록을 확인한 뒤 재시도하세요.")
 	case "ARTIFACT_RESOLVE_FAILED":
 		return p.text("Exact version/dependency resolution failed; check source availability.", "정확한 버전·의존성 확인에 실패했습니다. 패키지 출처의 응답을 확인하세요.")
 	case "ARTIFACT_ACQUIRE_FAILED":

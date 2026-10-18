@@ -3332,7 +3332,11 @@ catalogs are reused; no replacement or new runtime/CI scaffold is justified.
 The detailed plans, second review and CLI-UX-002 implementation are complete.
 On2026-10-18 the user authorized SEC-UPD-001 implementation and deferred the
 interactive launcher until guarded updates are qualified. Only SEC-UPD-001 is
-IN_PROGRESS. Execute one ecosystem at a time, beginning with npm;
+IN_PROGRESS. Execute one ecosystem at a time. The bounded npm lane is locally
+IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=NO pending new
+remote Required qualification; its [local qualification](./evidence/update-quarantine/npm-qualification-20261018.md)
+records actual seven-operation CLI/observer evidence and cleanup. Next is the
+independent PyPI baseline/upgrade gap; other lanes remain unimplemented/unqualified.
 [implementation baseline](./evidence/update-quarantine/baseline-20261018.md)
 records existing responsibilities and actual missing acceptance.
 Existing CLI-UX-001 receipts qualify

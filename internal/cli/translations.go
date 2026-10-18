@@ -19,6 +19,9 @@ func secondaryLanguageIndex(language string) int {
 }
 
 var coreTranslations = map[string][5]string{
+	"Update": {"Aktualisierung", "Mise à jour", "Actualización", "Atualização", "更新"},
+	"Update an npm project after complete quarantine checks":                         {"npm-Projekt nach vollständiger Quarantäneprüfung aktualisieren", "Mettre à jour un projet npm après les contrôles de quarantaine", "Actualizar un proyecto npm después de la cuarentena completa", "Atualizar um projeto npm após a quarentena completa", "完全な検疫後に npm プロジェクトを更新します"},
+	"Explicitly replace supported native project dependencies after full inspection": {"Unterstützte bestehende Projektabhängigkeiten nach vollständiger Prüfung ausdrücklich ersetzen", "Remplacer explicitement les dépendances prises en charge après inspection complète", "Reemplazar explícitamente las dependencias compatibles tras la inspección completa", "Substituir explicitamente as dependências compatíveis após a inspeção completa", "完全な検査後、対応する既存プロジェクトの依存関係を明示的に置き換えます"},
 	"Usage:":                  {"Verwendung:", "Utilisation :", "Uso:", "Uso:", "使い方:"},
 	"Available Commands:":     {"Verfügbare Befehle:", "Commandes disponibles :", "Comandos disponibles:", "Comandos disponíveis:", "利用可能なコマンド:"},
 	"Global Flags:":           {"Globale Optionen:", "Options globales :", "Opciones globales:", "Opções globais:", "共通オプション:"},

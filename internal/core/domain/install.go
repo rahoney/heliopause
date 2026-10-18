@@ -277,12 +277,13 @@ func (g LockedDependencyGraph) Derivations() []DerivedGraphBinding {
 }
 
 // DependencyResolution binds an exact graph to the resolver runtime and raw
-// lockfile content identity that produced it. Raw lockfile bytes stay inside
-// the resolver adapter.
+// lockfile content identity that produced it. Optional opaque control records
+// preserve the selected bytes without interpreting ecosystem syntax in Core.
 type DependencyResolution struct {
 	graph           LockedDependencyGraph
 	runtimeIdentity string
 	lockfileDigest  ContentDigest
+	controls        []ProjectControlFile
 }
 
 func NewDependencyResolution(graph LockedDependencyGraph, runtimeIdentity string, lockfileDigest ContentDigest) (DependencyResolution, error) {
@@ -299,4 +300,25 @@ func (r DependencyResolution) Graph() LockedDependencyGraph { return r.graph }
 func (r DependencyResolution) RuntimeIdentity() string      { return r.runtimeIdentity }
 func (r DependencyResolution) LockfileDigest() ContentDigest {
 	return r.lockfileDigest
+}
+
+// WithProjectControls retains bounded opaque selection inputs for exact later
+// publication. Content is not approval; adapters validate ecosystem semantics.
+func (r DependencyResolution) WithProjectControls(controls []ProjectControlFile) (DependencyResolution, error) {
+	if r.lockfileDigest.String() == "" || len(controls) == 0 || len(controls) > 32 {
+		return DependencyResolution{}, errors.New("selection controls require a valid resolution")
+	}
+	copy := append([]ProjectControlFile(nil), controls...)
+	sort.Slice(copy, func(i, j int) bool { return copy[i].Name() < copy[j].Name() })
+	for i, control := range copy {
+		if control.Name() == "" || control.Digest().String() == "" || !control.Present() || i > 0 && copy[i-1].Name() == control.Name() {
+			return DependencyResolution{}, errors.New("selection controls are invalid")
+		}
+	}
+	r.controls = copy
+	return r, nil
+}
+
+func (r DependencyResolution) ProjectControls() []ProjectControlFile {
+	return append([]ProjectControlFile(nil), r.controls...)
 }
