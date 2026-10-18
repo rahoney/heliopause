@@ -123,15 +123,23 @@ type InstalledProject struct {
 	project, version, directory string
 	metadata                    []byte
 	requirements                []string
+	extraRequirements           []BoundedRequirement
 }
 
 func (p InstalledProject) Project() string { return p.project }
 func (p InstalledProject) Version() string { return p.version }
+
+// Requirements returns active version constraints. Extra obligations are kept
+// separately by UpgradeInput.RequiredUpgradeExtras and the immutable metadata.
 func (p InstalledProject) Requirements() []string {
 	return append([]string(nil), p.requirements...)
 }
 
 func parseUpgradeInstalledMetadata(file InstalledMetadataFile, python string) (InstalledProject, error) {
+	return parseUpgradeInstalledMetadataWithExtras(file, python, nil)
+}
+
+func parseUpgradeInstalledMetadataWithExtras(file InstalledMetadataFile, python string, activeExtras []string) (InstalledProject, error) {
 	if len(file.Body) == 0 || len(file.Body) > defaultWheelMaxMetadata || len(file.Directory) == 0 || len(file.Directory) > 255 {
 		return InstalledProject{}, errors.New("installed dependency metadata is empty")
 	}
@@ -149,16 +157,21 @@ func parseUpgradeInstalledMetadata(file InstalledMetadataFile, python string) (I
 		if len(requirement) > 1024 || strings.ContainsAny(requirement, "\r\n\x00\t") || requirement != strings.TrimSpace(requirement) {
 			return InstalledProject{}, errors.New("installed dependency requirement exceeds supported bounds")
 		}
-		_, active, err := parseDeclaredDependencyForProfile(requirement, PublicPyPIProfile(), python)
+		_, active, err := parseDeclaredDependencyForProfileWithExtras(requirement, PublicPyPIProfile(), python, activeExtras)
 		if err != nil {
 			return InstalledProject{}, errors.New("installed dependency requirement is unsupported")
 		}
 		if active {
 			value := strings.TrimSpace(strings.SplitN(requirement, ";", 2)[0])
-			// pip constraints cannot express extras. They must not silently lose
-			// their meaning when preserving an installed environment.
+			// Only the existing bounded CUDA subset has a separate typed
+			// obligation. A plain pip constraint alone cannot retain extras.
 			if strings.ContainsAny(value, "[]") {
-				return InstalledProject{}, errors.New("installed dependency extras cannot be preserved as constraints")
+				extra, err := ParseBoundedRequirement(requirement)
+				if err != nil || len(extra.Extras()) == 0 || extra.Project() == project {
+					return InstalledProject{}, errors.New("installed dependency extras cannot be preserved as constraints")
+				}
+				result.extraRequirements = append(result.extraRequirements, extra)
+				value = extra.VersionConstraint()
 			}
 			result.requirements = append(result.requirements, value)
 		}

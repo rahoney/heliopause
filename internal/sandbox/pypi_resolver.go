@@ -418,7 +418,7 @@ func (r *PyPIResolver) resolvePyTorchGraph(ctx context.Context, containerID stri
 		if len(report) > maxPyTorchReportBytes-len(reports) {
 			return nil, nil, errors.New("PyTorch resolver report traversal exceeds bound")
 		}
-		if candidate.Source() != current.profile.Source() || (!current.primary && !artifactpypi.CandidateSatisfiesBoundedRequirements(candidate.Version(), requests[project])) {
+		if candidate.Source() != current.profile.Source() || (!current.primary && !candidate.SatisfiesBoundedRequirements(requests[project])) {
 			return nil, nil, errors.New("PyTorch dependency candidate does not satisfy all requirements")
 		}
 		candidates[project] = candidate.WithPrimary(current.primary)

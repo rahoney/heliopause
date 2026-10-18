@@ -171,3 +171,34 @@ new candidate edges, and test superseded metadata versus unchanged requirements.
 This remains a named/CUDA implementation gap; data-input success above does not
 qualify it. Existing public rejection stays until a separately validated scope
 can represent the original requirements without loss.
+
+## CUDA obligations and named incoming-version checkpoint
+
+Direct pytorch-retained-extras-red1.17s reproduced the inability to represent the
+supported retained CUDA extra request. Existing bounded requirements now expose
+VersionConstraint while the immutable input separately retains typed extra
+obligations. upgrade_extras.go derives them from unchanged old versions and fresh
+selected metadata; unchanged Toolkit metadata is evaluated with the actual extra
+set to preserve conditional component constraints. Changed parent/Toolkit metadata
+is excluded. Candidate retains its requested extra context, and complete first/
+final selections must preserve it and real component edges. Public updates may
+retain this known CUDA metadata as constraints without making it another root;
+arbitrary extras/unknown active forms remain unsupported. Contract06 owns the
+reviewed boundaries. The red/focused first green9.09s and follow-up8.87s remain
+separate exact-source receipts.
+
+The existing traversal also used a source-less numeric predicate for incoming
+named dependencies. A source-shaped torchvision-to-torch production-method
+fixture passed2.69s with Candidate.SatisfiesBoundedRequirements. Overlaying only
+the previous predicate in the private projection made the same fixture fail with
+the exact requirement mismatch on CPU/cu126/cu130/cu132; original source hash was
+restored. The new method validates canonical source/project and applies numeric
+bounds to a named build's public release part. Public local versions and wrong
+projects still reject. This narrow consumer proof is not live install evidence.
+
+This current fixed source passed canonical format2.33s, Quick99.03s and targeted
+Race24.98s. Source inventories/raw causal evidence are pytorch-extra-core-*,
+pytorch-named-local-causal.json and the matching green/legacy-red logs. Final
+docs/security receipts use pytorch-extra-core-docs/security. Named update resolver,
+per-node no-op/first-final report controls, session/CLI/resource binding and actual
+CPU/CUDA update qualification remain MISSING. No named upgrade is enabled yet.

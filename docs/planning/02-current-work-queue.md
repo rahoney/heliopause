@@ -3364,8 +3364,11 @@ same PyPI lane; no other work item becomes IN_PROGRESS. Its independent
 records existing source-pinned traversal and the actual upgrade gaps before code.
 The first named source-bound input/proposal data slice passes Quick/Race and
 focused regressions, preserving public controls and per-node source identity.
-Named resolver/CLI/Promotion/resource wiring, CUDA retained extras and actual
-CPU/CUDA update qualification remain MISSING; no named upgrade is enabled yet. The
+Known CUDA retained extras now have typed obligations and conditional constraints,
+and incoming named local versions have a source-aware numeric comparison. Their
+focused/actual-method fixtures and canonical Quick/Race pass. Named resolver/CLI/
+Promotion/resource wiring and actual CPU/CUDA update qualification remain MISSING;
+no named upgrade is enabled yet. The
 managed candidatec93ce58 in draft PR38 passed all ten CI331/run39148017283 jobs;
 its actual checkout and consumer scope are recorded independently. Native source
 is newer and does not inherit that qualification.

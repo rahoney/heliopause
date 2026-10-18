@@ -75,16 +75,17 @@ func (f SimpleFile) Size() uint64           { return f.size }
 // Candidate is one exact pip report selection after its project, version and
 // declared dependency names have been normalized. It is adapter-only data.
 type Candidate struct {
-	project        string
-	source         domain.SourceID
-	version        string
-	filename       string
-	url            string
-	sha256         string
-	requiresPython string
-	primary        bool
-	dependencies   []string
-	requirements   []string
+	project         string
+	source          domain.SourceID
+	version         string
+	filename        string
+	url             string
+	sha256          string
+	requiresPython  string
+	primary         bool
+	dependencies    []string
+	requirements    []string
+	requestedExtras []string
 }
 
 func (c Candidate) Project() string         { return c.project }
@@ -99,6 +100,8 @@ func (c Candidate) Dependencies() []string  { return append([]string(nil), c.dep
 func (c Candidate) DependencyRequirements() []string {
 	return append([]string(nil), c.requirements...)
 }
+
+func (c Candidate) RequestedExtras() []string { return append([]string(nil), c.requestedExtras...) }
 
 // WithPrimary returns a copy with the graph role selected by the resolver.
 func (c Candidate) WithPrimary(primary bool) Candidate {
@@ -557,7 +560,9 @@ func parseReportCandidate(item pipInstall, profile SourceProfile, expectedPython
 	}
 	sort.Strings(dependencies)
 	sort.Strings(requirements)
-	return Candidate{project: project, source: source, version: version, filename: filename, url: item.DownloadInfo.URL, sha256: sha256, requiresPython: item.Metadata.RequiresPython, primary: item.Requested, dependencies: dependencies, requirements: requirements}, nil
+	extras := append([]string(nil), activeExtras...)
+	sort.Strings(extras)
+	return Candidate{project: project, source: source, version: version, filename: filename, url: item.DownloadInfo.URL, sha256: sha256, requiresPython: item.Metadata.RequiresPython, primary: item.Requested, dependencies: dependencies, requirements: requirements, requestedExtras: extras}, nil
 }
 
 func unsupportedRequirementDiagnostic(parent, requirement string, cause error) error {

@@ -64,9 +64,40 @@ func TestUpgradeNamedControlRoundtripPreservesSourceAndPublicWire(t *testing.T) 
 	public, _ := ParseUpgradeRequirement("root")
 	publicInput, _ := NewUpgradeInput(public, nil, pythonRuntimeVersionForTest)
 	publicControl, _ := publicInput.Control()
-	want := `{"version":1,"requirement":"root","python":"3.14.7","installed":[]}`
+	want := `{"version":1,"requirement":"root","python":"` + pythonRuntimeVersionForTest + `","installed":[]}`
 	if string(publicControl.Body()) != want {
 		t.Fatal("public v1 representation changed", string(publicControl.Body()))
+	}
+}
+
+func TestUpgradeNamedIncomingRequirementComparisonRetainsSourceBoundary(t *testing.T) {
+	for _, name := range []string{"cpu", "cu126", "cu130", "cu132"} {
+		profile := mustPyTorchProfile(t, name)
+		candidate, err := parseReportCandidate(namedUpgradeCandidate(profile, "2.14.0+"+name), profile, pythonRuntimeVersionForTest, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, value := range []string{"torch==2.14", "torch>=2,<3"} {
+			requirement, _ := ParseBoundedRequirement(value)
+			if !candidate.SatisfiesBoundedRequirements([]BoundedRequirement{requirement}) {
+				t.Fatal("named local build failed numeric incoming requirement", name, value)
+			}
+		}
+		for _, value := range []string{"torch<2", "another>=1"} {
+			requirement, _ := ParseBoundedRequirement(value)
+			if candidate.SatisfiesBoundedRequirements([]BoundedRequirement{requirement}) {
+				t.Fatal("conflicting/wrong-project requirement accepted", name, value)
+			}
+		}
+		candidate.source = PublicPyPIProfile().Source()
+		if candidate.SatisfiesBoundedRequirements([]BoundedRequirement{{project: "torch"}}) {
+			t.Fatal("named source could be replaced by public")
+		}
+	}
+	public := Candidate{project: "dependency", source: PublicPyPIProfile().Source(), version: "2.0+local"}
+	requirement, _ := ParseBoundedRequirement("dependency>=1")
+	if public.SatisfiesBoundedRequirements([]BoundedRequirement{requirement}) {
+		t.Fatal("public local version accepted")
 	}
 }
 

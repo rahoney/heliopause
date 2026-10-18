@@ -14,11 +14,12 @@ import (
 // UpgradeProposal is selection data, never a complete inspected set or ALLOW.
 // A dry-run delta can legitimately omit the root and unchanged dependencies.
 type UpgradeProposal struct {
-	input       UpgradeInput
-	reference   domain.ArtifactReference
-	versions    map[string]string
-	changed     []Candidate
-	constraints []byte
+	input          UpgradeInput
+	reference      domain.ArtifactReference
+	versions       map[string]string
+	changed        []Candidate
+	constraints    []byte
+	requiredExtras map[string][]string
 }
 
 func (u UpgradeInput) ParseUpgradeDelta(body []byte, pip string) (UpgradeProposal, error) {
@@ -52,7 +53,16 @@ func (u UpgradeInput) ProposeSourcePinnedUpgrade(candidates []Candidate) (Upgrad
 	if _, err := BuildLockedGraph(u.requirement.Reference(), candidates); err != nil {
 		return UpgradeProposal{}, err
 	}
-	return u.proposeUpgrade(candidates)
+	proposal, err := u.proposeUpgrade(candidates)
+	if err != nil {
+		return UpgradeProposal{}, err
+	}
+	for _, candidate := range candidates {
+		if !slices.Equal(candidate.requestedExtras, proposal.requiredExtras[candidate.project]) {
+			return UpgradeProposal{}, errors.New("source-pinned first selection omitted or added upgrade extras")
+		}
+	}
+	return proposal, nil
 }
 
 func (u UpgradeInput) proposeUpgrade(candidates []Candidate) (UpgradeProposal, error) {
@@ -82,6 +92,10 @@ func (u UpgradeInput) proposeUpgrade(candidates []Candidate) (UpgradeProposal, e
 		return UpgradeProposal{}, err
 	}
 	proposal.reference = reference
+	proposal.requiredExtras, err = u.upgradeExtraObligations(proposal.versions, candidates)
+	if err != nil {
+		return UpgradeProposal{}, err
+	}
 	names := make([]string, 0, len(proposal.versions))
 	for name := range proposal.versions {
 		names = append(names, name)
@@ -93,7 +107,14 @@ func (u UpgradeInput) proposeUpgrade(candidates []Candidate) (UpgradeProposal, e
 	}
 	for _, project := range u.installed {
 		if project.version == proposal.versions[project.project] {
-			lines = append(lines, project.requirements...)
+			retained := project
+			if extras := proposal.requiredExtras[project.project]; len(extras) > 0 {
+				retained, err = parseUpgradeInstalledMetadataWithExtras(InstalledMetadataFile{project.directory, project.metadata}, u.python, extras)
+				if err != nil {
+					return UpgradeProposal{}, err
+				}
+			}
+			lines = append(lines, retained.requirements...)
 		}
 	}
 	proposal.constraints = []byte(strings.Join(lines, "\n") + "\n")
@@ -133,6 +154,9 @@ func (p UpgradeProposal) ValidateFinal(report InstallationReport) error {
 	for _, candidate := range report.candidates {
 		if _, duplicate := selected[candidate.project]; duplicate || !sourceOwnsProject(profile, candidate.source, candidate.project) || p.versions[candidate.project] != candidate.version {
 			return errors.New("final upgrade candidate differs from frozen version selection")
+		}
+		if !slices.Equal(candidate.requestedExtras, p.requiredExtras[candidate.project]) {
+			return errors.New("final upgrade candidate omitted or added required extras")
 		}
 		if candidate.primary {
 			primary++

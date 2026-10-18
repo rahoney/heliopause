@@ -394,3 +394,46 @@ selection, including retained distributions. Different paths to one original
 file object reject as aliases. Unit fixtures alone are not actual native qualification. The bounded native
 qualification record now links canonical and eleven installed-client consumers;
 new-source remote and named-source work remain open.
+
+### Named-source retained extras and version review
+
+The [named baseline](../planning/evidence/update-quarantine/pytorch-update-baseline-20261019.md)
+owns the independent source audit, pinned single-source selection semantics and
+data checkpoint. Extend the existing source-pinned traversal, preserving its
+source ownership and actual Simple/Core Metadata cross-check. A named update is
+not enabled by the source-aware input/proposal data alone.
+
+Before wiring CUDA, represent its existing bounded cuda-toolkit extra requirements
+without putting extras into pip constraint lines or silently dropping components.
+Keep original METADATA unchanged in the immutable input. Parse only the already
+supported canonical CUDA extra/marker subset as inert data; arbitrary extras stay
+unsupported. Retain the plain version constraint together with a separate typed
+extra obligation, derived from unchanged installed distributions and the actual
+new candidates. Superseded metadata contributes neither its old constraint nor
+its outgoing extra request. Re-evaluate retained toolkit metadata using the
+required extra set so conditional component requirements remain real constraints.
+
+The existing bounded requirement owner should provide the plain constraint form;
+the existing Candidate/report parser should retain its actual requested extra
+context. Final source-pinned selection must carry every required extra through
+the original extra-aware per-node parser and real dependency edges. An unselected
+retained distribution remains protected original state, not an extra graph root.
+Known retained CUDA extras may be represented for a public update only when this
+same typed obligation and conditional-requirement model preserves their complete
+meaning; keep the existing arbitrary-extra rejection. Do not infer extra safety,
+approval, implicit installation or new Host execution from metadata.
+
+Tests must cover unchanged parents/toolkit, changed parent/toolkit, combined
+incoming extra requests, inactive/unknown markers, missing/forged component edges,
+control roundtrip and new final source/bytes substitution. Pinning a compatible
+installed version still requires a fresh complete candidate and full inspection.
+Per-node no-deps selection uses inert metadata only; final exact constrained
+traversal retains all required extras and original resource/report bounds.
+
+Named local versions also need source-aware numeric requirement comparison in
+the existing traversal: use the validated named version's public release part
+for numeric bounds, while public-source local versions remain invalid. Reuse
+existing parsing/comparison in place, with explicit source binding and tests;
+do not allow a suffix to select a profile or make an arbitrary version valid.
+These are remaining representation/selection gaps, not permission to replace an
+implemented scanner, Policy, wheel mapper or transaction.
