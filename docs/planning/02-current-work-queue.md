@@ -3333,8 +3333,10 @@ The detailed plans, second review and CLI-UX-002 implementation are complete.
 On2026-10-18 the user authorized SEC-UPD-001 implementation and deferred the
 interactive launcher until guarded updates are qualified. Only SEC-UPD-001 is
 IN_PROGRESS. Execute one ecosystem at a time. The bounded npm lane is locally
-IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=NO pending new
-remote Required qualification; its [local qualification](./evidence/update-quarantine/npm-qualification-20261018.md)
+IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES for29c58f0:
+fresh CI330 Required and nine prerequisites SUCCESS, actual same-tree checkout,
+native macOS,45 Linux consumers and confirmed helper cleanup. Its
+[qualification](./evidence/update-quarantine/npm-qualification-20261018.md)
 records actual seven-operation CLI/observer evidence and cleanup. Next is the
 independent [PyPI baseline/upgrade gap](./evidence/update-quarantine/pypi-baseline-20261019.md);
 its pinned-tool selection semantics and second review are complete; bounded

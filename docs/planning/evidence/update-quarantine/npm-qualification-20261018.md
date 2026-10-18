@@ -1,7 +1,8 @@
 # SEC-UPD-001 — bounded npm qualification / 2026-10-18
 
-Status: locally QUALIFIED for the scoped npm lane; complete SEC-UPD-001 acceptance
-remains open. Base8e3e773, implementation pending its own commit. The other five
+Status: QUALIFIED / ACCEPTANCE_CLOSED=YES for the scoped npm lane; complete
+SEC-UPD-001 acceptance remains open. Qualified source29c58f0f52388e7d4a36e613fbdce50df9a60a77,
+implementation base8e3e773. The other five
 ecosystem lanes are not qualified by these results. Public publication and the
 deferred interactive launcher have not started.
 
@@ -54,6 +55,8 @@ Every check records exact source inventory, log digest, exit and duration.
 | npm-admitted-installed/evidence and manifests | Original inspection Evidence and exact Manifest/SBOM copies preserved before removing disposable package/cache payloads; successful no-op update has fresh Evidence references |
 | npm-admitted-installed-lifecycle / installed-after | Original0, helper wait0/CONFIRMED_STOPPED, observer restored, canonical client restore0/RESTORED; fresh root process/socket/Docker queries and all four original protected hashes/owners/modes PASS |
 | npm-admitted-cleanup | Completed npm fixture/cache/lifecycle/client payloads53,235,006 logical bytes deleted; active reusable check source/cache, pending whole-source observer and necessary root rollback retained |
+| CI330/run39138729054 | Required and all nine prerequisites SUCCESS; native macOS included; actual checkout d35577db1678b9e3f1f064eb86b6d2ad053b4ea3 has the exact same whole tree as29c58f0 |
+| ci330-completed-qualification.json / original Linux and macOS logs | Linux45 top-level consumers PASS, CPU full278.20s, five helper wait0 and final original0/CONFIRMED_STOPPED/helper_stop0/client_error0/client_restore0/NOT_REQUIRED; original/default consumers retained |
 
 Controlled component regressions additionally verify same-name primary v2 and
 transitive-only v2 are independently acquired/verified/inspected/Evidence-recorded
@@ -82,7 +85,10 @@ fixed update tuple; the final same-source actual seven-operation consumer above
 then passed. Original failed raw logs/operators and confirmed original restore
 remain preserved. No Node/proc allowance was used as a workaround.
 
-New remote Required/native macOS/ordinary Linux integration and later complete
-SEC-UPD qualification are pending. Historical language CI329 success is not
-evidence for this source. Original installed CLI/observer were restored after this
+Fresh remote Required/native macOS/ordinary Linux integration are complete for
+29c58f0 in [CI330](https://github.com/rahoney/heliopause/actions/runs/39138729054).
+Later complete SEC-UPD qualification remains pending. Historical language CI329
+was not used as evidence for this source. PyPI data checkpoint268725e and later
+source have their own checks and are not qualified by this historical CI.
+Original installed CLI/observer were restored after this
 local test; this report is not permanent local activation or release publication.

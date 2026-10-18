@@ -1,7 +1,7 @@
 # Update quarantine — SEC-UPD-001
 
 Status: IN_PROGRESS; user authorized implementation after reviewed planning.
-The bounded npm lane is locally qualified; new remote qualification remains open.
+The bounded npm lane is qualified for29c58f0 including fresh CI330 ten SUCCESS.
 Current lane: [PyPI input/metadata implementation after baseline and selection review](../planning/evidence/update-quarantine/pypi-baseline-20261019.md).
 Resolver/session/CLI and actual upgrade qualification remain missing. Other lanes wait for
 their independent baseline/qualification. See the [npm evidence](../planning/evidence/update-quarantine/npm-qualification-20261018.md).
@@ -289,3 +289,8 @@ rejects rather than inventing an authenticated Artifact digest from a local file
 snapshot. Unrelated retained output is protected, not granted new inspection
 approval. Retained editable/direct-source inputs need truthful rejection when
 their paths/source cannot be represented in the supported update selection.
+An untrusted native RECORD must never gain authority to mark arbitrary user files
+obsolete. Native enrollment needs independent canonical installed-footprint proof
+before replacing/removing its claimed paths; otherwise reject it unchanged. The
+first managed-venv wiring may use the existing validated ledger while native
+enrollment remains MISSING. An explicit --adopt request alone is insufficient.
