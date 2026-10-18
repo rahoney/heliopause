@@ -92,3 +92,22 @@ removal proof and not authenticated/approved code. Preserve exact original ledge
 absence on rollback. Proposed bounds, test cases, constructor/wiring and execution
 role cautions are canonical in06. No native production Go source changed during
 this review. All native acceptance statuses remain NO.
+
+## Implementation checkpoint after the historical baseline
+
+The table above preserves the pre-source audit. Native claim inventory, canonical
+old-wheel ownership proof, empty trusted-runtime metadata query and transaction
+wiring are now implemented with explicit adoption. No scanner or transaction was
+replaced. Canonical06 owns current limits, scope and edit locations. Original
+state is frozen before selection; selected native files enter only in-memory
+ownership after independent proof; ledger absence and original cache/RECORD
+restore on rollback. Partial HAA metadata ownership and actual file-object aliases
+reject. Intake/staging overlap rejects before mutation. New graph prerequisite
+validation remains wrapped; old provenance lookup uses the raw existing resolver.
+
+Current candidate d6ff000b…c66ef46 passed Quick92.48s/security6.86s/docs0.28s and
+Race25.06s with matching source inventories; eleven actual native/managed CLI operations, default cache removal and unchanged
+negatives also passed. Confirmed helper cleanup/original restoration and disposable
+trial deletion are complete. [Local qualification](./pypi-native-qualification-20261019.md)
+owns exact evidence. IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES bounded local /
+ACCEPTANCE_CLOSED=NO for this native slice. MISSING: new-source remote qualification. Named-source and complete PyPI acceptance remain separately open.

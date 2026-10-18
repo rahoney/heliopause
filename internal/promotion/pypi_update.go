@@ -25,13 +25,14 @@ import (
 type PyPIUpdatePreparation struct {
 	promoter *PyPIPromotion
 	resolver ports.DependencyUpdateResolver
+	native   *pypiNativeEnrollment
 }
 
 func NewPyPIUpdatePreparation(promoter *PyPIPromotion, resolver ports.DependencyUpdateResolver) (*PyPIUpdatePreparation, error) {
 	if promoter == nil || resolver == nil {
 		return nil, errors.New("PyPI upgrade requires existing Promotion and isolated selection")
 	}
-	return &PyPIUpdatePreparation{promoter, resolver}, nil
+	return &PyPIUpdatePreparation{promoter: promoter, resolver: resolver}, nil
 }
 
 type pypiUpdateSession struct {
@@ -41,7 +42,10 @@ type pypiUpdateSession struct {
 	transaction                *pypiVenvTransaction
 	directories                []string
 	metadata                   map[string]pypiFileSnapshot
+	managedVersions            map[string]string
 	emptyMetadata              map[string]bool
+	nativeInventory            pypiNativeInventory
+	adopt                      bool
 	resolution                 domain.DependencyResolution
 	resolved, promoted, closed bool
 	closeErr                   error
@@ -61,6 +65,9 @@ func (p *PyPIUpdatePreparation) BeginInstallUpdate(ctx context.Context, source d
 	if strings.Contains(install.Target().String(), ",") {
 		return nil, errors.New("PyPI upgrade path is unsupported by the Docker mount boundary")
 	}
+	if p.native != nil && !separateRoots([]string{install.Target().String(), p.native.intakeRoot, p.promoter.stagingRoot}) {
+		return nil, ports.NewInstallUpdateFailure("UPDATE_ORIGINAL_STATE_UNSUPPORTED", errors.New("virtual environment overlaps trusted intake or staging"))
+	}
 	plan, err := discoverPythonVenv(install.Target().String())
 	if err != nil {
 		return nil, err
@@ -76,7 +83,7 @@ func (p *PyPIUpdatePreparation) BeginInstallUpdate(ctx context.Context, source d
 			result = nil
 		}
 	}()
-	if transaction.metadata == nil {
+	if transaction.metadata == nil && (!adopt || p.native == nil) {
 		code := "UPDATE_ADOPTION_REQUIRED"
 		if adopt {
 			code = "UPDATE_ORIGINAL_STATE_UNSUPPORTED"
@@ -131,6 +138,17 @@ func (p *PyPIUpdatePreparation) BeginInstallUpdate(ctx context.Context, source d
 	s.input, err = artifactpypi.NewUpgradeInput(requirement, files, sandbox.PinnedPythonRuntime().PythonVersion)
 	if err != nil {
 		return nil, ports.NewInstallUpdateFailure("UPDATE_ORIGINAL_STATE_UNSUPPORTED", err)
+	}
+	s.managedVersions, err = managedPyPIInventory(transaction, s.input)
+	if err != nil {
+		return nil, ports.NewInstallUpdateFailure("UPDATE_OWNERSHIP_INVALID", err)
+	}
+	if adopt && p.native != nil {
+		s.nativeInventory, err = capturePyPINativeInventory(ctx, transaction, s.input)
+		if err != nil {
+			return nil, ports.NewInstallUpdateFailure("UPDATE_ORIGINAL_STATE_UNSUPPORTED", err)
+		}
+		s.adopt = true
 	}
 	if err := s.verify(ctx); err != nil {
 		return nil, err
@@ -279,19 +297,43 @@ func (s *pypiUpdateSession) ResolveDependencies(ctx context.Context, reference d
 	for _, project := range s.input.Installed() {
 		installed[project.Project()] = project.Version()
 	}
-	owned := map[string]string{}
-	for _, destination := range s.transaction.current.Files {
-		for _, owner := range destination.owners() {
-			if old := owned[owner.Distribution]; old != "" && old != owner.Version {
-				return domain.DependencyResolution{}, ports.NewInstallUpdateFailure("UPDATE_OWNERSHIP_INVALID", errors.New("installed ownership has conflicting versions"))
-			}
-			owned[owner.Distribution] = owner.Version
-		}
-	}
+	unmanaged := false
 	for _, node := range graph.Nodes() {
 		name := node.Artifact().Identity().Name()
-		if version := installed[name]; version != "" && owned[name] != version {
-			return domain.DependencyResolution{}, ports.NewInstallUpdateFailure("UPDATE_ORIGINAL_STATE_UNSUPPORTED", errors.New("selected native distribution has no independently verified ownership"))
+		if version := installed[name]; version != "" && s.managedVersions[name] != version {
+			if !s.adopt {
+				return domain.DependencyResolution{}, ports.NewInstallUpdateFailure("UPDATE_ADOPTION_REQUIRED", errors.New("selected native distribution requires explicit independent enrollment"))
+			}
+			if s.owner.native == nil || s.nativeInventory.projects[name] == nil {
+				return domain.DependencyResolution{}, ports.NewInstallUpdateFailure("UPDATE_ORIGINAL_STATE_UNSUPPORTED", errors.New("selected native distribution has no independently verified ownership"))
+			}
+			unmanaged = true
+		}
+	}
+	if unmanaged {
+		selection, err := s.owner.native.selectOwnership(ctx, graph, install, s.nativeInventory)
+		if err != nil {
+			return domain.DependencyResolution{}, ports.NewInstallUpdateFailure("UPDATE_ORIGINAL_STATE_UNSUPPORTED", err)
+		}
+		if len(selection.destinations) == 0 || !selection.control.Present() {
+			return domain.DependencyResolution{}, errors.New("native selection has no original ownership proof")
+		}
+		resolution, err = resolution.WithProjectControls(append(resolution.ProjectControls(), selection.control))
+		if err != nil {
+			return domain.DependencyResolution{}, err
+		}
+		if err := s.verify(ctx); err != nil {
+			return domain.DependencyResolution{}, err
+		}
+		for _, destination := range selection.destinations {
+			if _, present := s.transaction.current.Files[destination.key()]; present {
+				return domain.DependencyResolution{}, errors.New("native ownership proof overlaps an existing owner")
+			}
+		}
+		// These are independently proven old files, not raw RECORD claims.
+		// The on-disk ledger is still absent/unchanged until full new-set ALLOW.
+		for _, destination := range selection.destinations {
+			s.transaction.current.Files[destination.key()] = destination
 		}
 	}
 	if err := s.verify(ctx); err != nil {

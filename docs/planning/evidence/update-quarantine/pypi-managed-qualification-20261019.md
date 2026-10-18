@@ -5,7 +5,7 @@ public-PyPI managed-venv implementation after the independent
 [baseline and selection review](./pypi-baseline-20261019.md). Exact production
 source: local raw pypi-admitted-quick-source.json. Subsequent documentation changes
 do not alter that Go source. No public release, permanent installed activation,
-main merge or new remote qualification is claimed.
+or main merge is claimed. The subsequent c93ce58 remote result is recorded below.
 
 | Scope | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
 | --- | --- | --- | --- | --- | --- |
@@ -104,3 +104,20 @@ Complete PyPI and SEC-UPD-001 acceptance stays open. Native enrollment, named
 PyTorch/affected qualification and later ecosystem lanes remain missing. These
 results do not qualify native macOS, new remote CI, CUDA or general pip argument
 compatibility. CLI-UX-003 and publication stay deferred.
+
+## Subsequent same-source remote qualification
+
+Commitc93ce58db3ef13a72c9a2667eec5aecc5693bf7a passed CI331/run39148017283:
+Required and all nine prerequisites SUCCESS. Quick, native macOS and Linux logs
+identify checkout03867cef0aeceaa47a472144dc862866bd246fd5, whose full tree
+138f0d291801789b0013293ef822f9396bea7419 equals the pushed source tree. Linux
+passed45 top-level consumers (44 TestLinux and the public Terraform source test),
+including CPU PyTorch full228.80s, and five helper waits0 with final original0,
+CONFIRMED_STOPPED and client_error0/client_restore0. The parser's first local
+receipt attempt counted only the44 TestLinux names and stopped before writing a
+receipt; final count includes the separately named public source consumer.
+Original logs were unchanged. This is source/platform regression qualification
+for the managed implementation; the dedicated seven-operation update trial above
+is local evidence. It does not qualify newer native enrollment source or named
+PyTorch updates/CUDA. Local raw ci331-completed-qualification.json, completed jobs,
+actual-checkout response and three decoded job logs own this linkage.

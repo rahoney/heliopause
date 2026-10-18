@@ -73,7 +73,7 @@ func localizeHelp(root *cobra.Command, p *presentation) {
 			}
 		}
 		if command.CommandPath() == "helox pip install" {
-			command.Flags().Lookup("adopt").Usage = p.text("Request native venv enrollment; unavailable without independent ownership verification", "일반 venv 등록 요청: 독립적인 소유권 검증이 없어 현재 지원하지 않습니다")
+			command.Flags().Lookup("adopt").Usage = p.text("Enroll supported native wheel files after independent ownership verification and full inspection", "공식 wheel과 기존 파일의 소유권을 대조하고 전체 검사 후 지원하는 일반 venv를 등록합니다")
 		}
 		for _, child := range command.Commands() {
 			visit(child)

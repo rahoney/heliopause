@@ -3351,9 +3351,18 @@ does not close complete PyPI acceptance: independent native enrollment, named-so
 audit/qualification and new remote/native-platform checks remain MISSING. No
 candidate was permanently activated.
 Next within the same PyPI lane is the [native ownership audit](./evidence/update-quarantine/pypi-native-baseline-20261019.md).
-Current native enrollment stays unsupported while original-footprint and generated
-file proof are reviewed/probed. Candidatec93ce58 is now pushed to existing draft
-PR38; new CI331/run39148017283 is pending, not yet qualified.
+The reviewed native implementation slice now freezes claims before selection,
+authenticates the old wheel footprint and reuses the original transaction.
+Targeted inventory/ownership/rollback fixtures, final canonical checks and
+eleven actual native/managed CLI consumers pass. Original helper/client state was
+restored, Evidence preserved and completed trial data/operators deleted.
+[Bounded native local qualification](./evidence/update-quarantine/pypi-native-qualification-20261019.md)
+closes the local subset; new native-source remote qualification and independent
+named-source audit/implementation remain MISSING. Next is named-source within the
+same PyPI lane; no other work item becomes IN_PROGRESS. The
+managed candidatec93ce58 in draft PR38 passed all ten CI331/run39148017283 jobs;
+its actual checkout and consumer scope are recorded independently. Native source
+is newer and does not inherit that qualification.
 Other lanes remain unimplemented/unqualified.
 [implementation baseline](./evidence/update-quarantine/baseline-20261018.md)
 records existing responsibilities and actual missing acceptance.

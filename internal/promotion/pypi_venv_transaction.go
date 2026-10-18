@@ -153,6 +153,9 @@ type pypiFileSnapshot struct {
 	Device uint64
 	Inode  uint64
 	info   os.FileInfo
+	// Zero preserves existing large managed-payload semantics. A bounded
+	// original keeps its bound through later backup/rollback comparisons.
+	readBound int64
 }
 
 // Fail closed if link-count evidence is unavailable on an unsupported Host.
@@ -191,7 +194,7 @@ func snapshotPyPIFile(path string) (pypiFileSnapshot, error) {
 	if !ok {
 		return pypiFileSnapshot{}, errors.New("file identity unavailable")
 	}
-	return pypiFileSnapshot{hex.EncodeToString(h.Sum(nil)), n, info.Mode(), device, inode, info}, nil
+	return pypiFileSnapshot{hex.EncodeToString(h.Sum(nil)), n, info.Mode(), device, inode, info, 0}, nil
 }
 
 func pypiObjectIdentity(info os.FileInfo) (uint64, uint64, bool) {
@@ -213,7 +216,13 @@ func pypiObjectIdentity(info os.FileInfo) (uint64, uint64, bool) {
 }
 
 func (s pypiFileSnapshot) matches(path string) bool {
-	now, err := snapshotPyPIFile(path)
+	var now pypiFileSnapshot
+	var err error
+	if s.readBound > 0 {
+		now, err = snapshotBoundedPromotionFile(path, s.readBound)
+	} else {
+		now, err = snapshotPyPIFile(path)
+	}
 	return err == nil && os.SameFile(s.info, now.info) && s.Digest == now.Digest && s.Size == now.Size && s.Mode == now.Mode
 }
 

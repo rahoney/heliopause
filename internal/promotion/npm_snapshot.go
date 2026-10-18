@@ -48,7 +48,7 @@ func snapshotBoundedPromotionFile(path string, limit int64) (pypiFileSnapshot, e
 	if !ok {
 		return pypiFileSnapshot{}, errors.New("file identity is unavailable")
 	}
-	return pypiFileSnapshot{hex.EncodeToString(hash.Sum(nil)), n, before.Mode(), device, inode, before}, nil
+	return pypiFileSnapshot{hex.EncodeToString(hash.Sum(nil)), n, before.Mode(), device, inode, before, limit}, nil
 }
 
 func npmSnapshotMatches(before pypiFileSnapshot, path string) bool {

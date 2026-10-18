@@ -157,60 +157,77 @@ func (p *updateFindingPorts) Verify(ctx context.Context, artifact domain.Acquire
 }
 
 func TestInstallUpdateInspectsNewPrimaryAndTransitiveBytesBeforePolicy(t *testing.T) {
-	for _, mode := range []string{"primary-v2", "transitive-only-v2", "inspection-incomplete", "integrity-mismatch"} {
-		t.Run(mode, func(t *testing.T) {
-			old := twoNodeGraph(t)
-			badName := "first"
-			if mode == "transitive-only-v2" {
-				badName = "second"
-			}
-			nodes := old.Nodes()
-			for i, node := range nodes {
-				identity := node.Artifact().Identity()
-				if identity.Name() != badName {
-					continue
-				}
-				identity, _ = domain.NewResolvedArtifactIdentity(identity.Source(), identity.Name(), "2.0.0", identity.Variant())
-				artifact, _ := domain.NewResolvedArtifact(identity, strings.ReplaceAll(node.Artifact().AcquisitionLocator(), "1.0.0", "2.0.0"), "sha512-new-version")
-				nodes[i], _ = domain.NewLockedDependency(node.Node(), node.Role(), artifact)
-			}
-			graph, err := domain.NewLockedDependencyGraph(nodes, old.Edges())
-			if err != nil {
-				t.Fatal(err)
-			}
-			fixtures := &updateFindingPorts{multiInspectionPorts: newMultiInspectionPorts(t, graph), badName: badName, mode: mode}
-			inspection, err := application.NewInstallInspectService(&lockedResolver{graph: graph}, fixtures, fixtures, fixtures, fixtures, policy.M3{}, policy.M4{}, domain.NewOperationID, domain.NewRunID)
-			if err != nil {
-				t.Fatal(err)
-			}
-			calls := []string{}
-			base, _ := application.NewInstallService(inspection, &manifestPort{calls: &calls}, &stagingPort{calls: &calls}, &promotionPort{calls: &calls})
-			source, _ := domain.NewSourceID("npm")
-			reference, _ := domain.NewArtifactReference(source, "first")
-			target, _ := domain.NewInstallTarget("/tmp/guarded-npm-update")
-			install, _ := domain.NewNPMProjectInstallContext(target)
-			session := &updateSessionFixture{reference: reference, resolver: &lockedResolver{graph: graph}, promoter: &promotionPort{calls: &calls}, calls: &calls}
-			updater, _ := application.NewInstallUpdateService(base, updatePreparationFixture{session: session, calls: &calls})
-			request, _ := application.NewInstallUpdateRequest(source, "", install, false)
-			outcome, err := updater.Install(context.Background(), request)
-			want := domain.DecisionBlock
-			if mode == "inspection-incomplete" {
-				want = domain.DecisionManualReview
-			}
-			if err != nil || outcome.Inspection().Decision().Decision() != want || !reflect.DeepEqual(calls, []string{"begin", "resolve", "close"}) {
-				t.Fatal("new unsafe/incomplete selection reached publication", outcome, calls, err)
-			}
-			for _, name := range []string{"first", "second"} {
-				for _, phase := range []string{"acquire:", "verify:", "inspect:", "evidence:"} {
-					if !containsCall(fixtures.calls, phase+name) {
-						t.Fatal("selected dependency skipped", phase, name, fixtures.calls)
+	for _, ecosystem := range []string{"npm", "pypi"} {
+		t.Run(ecosystem, func(t *testing.T) {
+			for _, mode := range []string{"primary-v2", "transitive-only-v2", "inspection-incomplete", "integrity-mismatch"} {
+				t.Run(mode, func(t *testing.T) {
+					old := twoNodeGraph(t)
+					badName := "first"
+					if mode == "transitive-only-v2" {
+						badName = "second"
 					}
-				}
-			}
-			for _, item := range outcome.Inspection().Set().Inspections() {
-				if item.Artifact().Identity().Name() == badName && item.Artifact().Identity().Version() != "2.0.0" {
-					t.Fatal("stale version evidence reused")
-				}
+					nodes := old.Nodes()
+					for i, node := range nodes {
+						identity := node.Artifact().Identity()
+						version := identity.Version()
+						if identity.Name() == badName {
+							version = "2.0.0"
+						}
+						source, _ := domain.NewSourceID(ecosystem)
+						variant := identity.Variant()
+						if ecosystem == "pypi" {
+							variant = "wheel"
+						}
+						identity, _ = domain.NewResolvedArtifactIdentity(source, identity.Name(), version, variant)
+						artifact, _ := domain.NewResolvedArtifact(identity, strings.ReplaceAll(node.Artifact().AcquisitionLocator(), "1.0.0", version), "sha512-new-version")
+						nodes[i], _ = domain.NewLockedDependency(node.Node(), node.Role(), artifact)
+					}
+					graph, err := domain.NewLockedDependencyGraph(nodes, old.Edges())
+					if err != nil {
+						t.Fatal(err)
+					}
+					fixtures := &updateFindingPorts{multiInspectionPorts: newMultiInspectionPorts(t, graph), badName: badName, mode: mode}
+					var setPolicy application.DependencySetPolicy = policy.M4{}
+					if ecosystem == "pypi" {
+						setPolicy = policy.M5{}
+					}
+					inspection, err := application.NewInstallInspectService(&lockedResolver{graph: graph}, fixtures, fixtures, fixtures, fixtures, policy.M3{}, setPolicy, domain.NewOperationID, domain.NewRunID)
+					if err != nil {
+						t.Fatal(err)
+					}
+					calls := []string{}
+					base, _ := application.NewInstallService(inspection, &manifestPort{calls: &calls}, &stagingPort{calls: &calls}, &promotionPort{calls: &calls})
+					source, _ := domain.NewSourceID(ecosystem)
+					reference, _ := domain.NewArtifactReference(source, "first")
+					target, _ := domain.NewInstallTarget("/tmp/guarded-" + ecosystem + "-update")
+					install, _ := domain.NewNPMProjectInstallContext(target)
+					if ecosystem == "pypi" {
+						install, _ = domain.NewPythonVenvInstallContext(target)
+					}
+					session := &updateSessionFixture{reference: reference, resolver: &lockedResolver{graph: graph}, promoter: &promotionPort{calls: &calls}, calls: &calls}
+					updater, _ := application.NewInstallUpdateService(base, updatePreparationFixture{session: session, calls: &calls})
+					request, _ := application.NewInstallUpdateRequest(source, "", install, false)
+					outcome, err := updater.Install(context.Background(), request)
+					want := domain.DecisionBlock
+					if mode == "inspection-incomplete" {
+						want = domain.DecisionManualReview
+					}
+					if err != nil || outcome.Inspection().Decision().Decision() != want || !reflect.DeepEqual(calls, []string{"begin", "resolve", "close"}) {
+						t.Fatal("new unsafe/incomplete selection reached publication", outcome, calls, err)
+					}
+					for _, name := range []string{"first", "second"} {
+						for _, phase := range []string{"acquire:", "verify:", "inspect:", "evidence:"} {
+							if !containsCall(fixtures.calls, phase+name) {
+								t.Fatal("selected dependency skipped", phase, name, fixtures.calls)
+							}
+						}
+					}
+					for _, item := range outcome.Inspection().Set().Inspections() {
+						if item.Artifact().Identity().Name() == badName && item.Artifact().Identity().Version() != "2.0.0" {
+							t.Fatal("stale version evidence reused")
+						}
+					}
+				})
 			}
 		})
 	}

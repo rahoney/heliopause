@@ -313,6 +313,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		readPrerequisite := func() (string, error) {
 			return installCommand.Flags().GetString("inspection-prerequisites")
 		}
+		nativeLookupResolver := resolver
 		inspection.WithInspectionPrerequisites(inspectionPrerequisiteLoader(readPrerequisite, resolver, intake))
 		resolver = prerequisiteCheckingResolver{resolver: resolver, read: readPrerequisite}
 		directArtifact, err := artifactpypi.NewGraphArtifact(resolver, intake)
@@ -373,6 +374,10 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 			return errors.New("python Promotion lacks guarded upgrade preparation")
 		}
 		preparation, err := promotion.NewPyPIUpdatePreparation(pypiPromoter, updateResolver)
+		if err != nil {
+			return err
+		}
+		preparation, err = preparation.WithNativeEnrollment(nativeLookupResolver, intake, filepath.Join(root, "intake"))
 		if err != nil {
 			return err
 		}

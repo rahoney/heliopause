@@ -670,7 +670,7 @@ func initializeCommandTree(root *cobra.Command) {
 	pipInstall.Args = validatePyPIInstallArgs
 	pipInstall.Long = pypiUpgradeDescriptionEnglish
 	pipInstall.Flags().BoolP("upgrade", "U", false, "Inspect the complete selected closure before upgrading one distribution (only-if-needed)")
-	pipInstall.Flags().Bool("adopt", false, "Request native venv enrollment; unavailable without independent ownership verification")
+	pipInstall.Flags().Bool("adopt", false, "Enroll supported native wheel files after independent ownership verification and full inspection")
 	pipInstall.Flags().String("source", "pypi", pythonSourceHelp())
 	pipInstall.Flags().String("inspection-prerequisites", "", "Explicit pinned JSON for one inspection-only non-root leaf prerequisite; not installed into the target")
 	pip.AddCommand(pipInstall)

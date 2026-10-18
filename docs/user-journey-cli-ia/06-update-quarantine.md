@@ -5,7 +5,7 @@ The bounded npm lane is qualified for29c58f0 including fresh CI330 ten SUCCESS.
 Current lane: [PyPI input/metadata implementation after baseline and selection review](../planning/evidence/update-quarantine/pypi-baseline-20261019.md).
 Public resolver/session/CLI and actual managed-venv consumers are locally qualified
 in the [bounded PyPI record](../planning/evidence/update-quarantine/pypi-managed-qualification-20261019.md).
-Native enrollment, named-source and new remote qualification remain missing. Other lanes wait for
+[Bounded native enrollment](../planning/evidence/update-quarantine/pypi-native-qualification-20261019.md) is locally qualified; its fresh remote and named-source qualification remain missing. The managed source c93ce58 passed CI331; its detailed remote scope is recorded separately from the new native source. Other lanes wait for
 their independent baseline/qualification. See the [npm evidence](../planning/evidence/update-quarantine/npm-qualification-20261018.md).
 Next is the independent [native venv ownership baseline](../planning/evidence/update-quarantine/pypi-native-baseline-20261019.md);
 its authenticated original-footprint gap is reviewed before production changes.
@@ -358,7 +358,7 @@ wheel hash/source/metadata, changed original files after selection, ambiguous
 owners, forged/unsupported cache roles, missing required new inspection and
 partial commit/recovery conflicts. Actual native positive/default-bytecode and
 unchanged refusal consumers plus existing managed/NPM/canonical regressions are
-required. Native enrollment is still unimplemented until those checks pass.
+required. Native enrollment has a working implementation slice, but qualification and acceptance remain open until those checks pass.
 
 Concrete edit owners: new promotion/pypi_native_inventory.go owns bounded native
 claims/snapshots and uses pypiVenvPlan.bind; new pypi_native_ownership.go owns old
@@ -381,3 +381,16 @@ original-state/backup/rollback comparison; otherwise a grown native file can
 escape its initial read limit. Extend that existing fingerprint in place, retain
 the original default for large HAA-owned Python payloads and the explicit64MiB npm
 bound, and test the affected existing consumers. This is no new global file cap.
+
+Native source checkpoint after the reviewed baseline: bounded inventory, independent
+old-wheel proof and runtime metadata live in pypi_native_inventory.go,
+pypi_native_ownership.go and pypi_native_runtime.go; pypi_native_*_test.go covers
+claims, original drift, canonical footprint/cache roles and nil-ledger rollback.
+Reject intake/staging roots overlapping the venv before any mutation. Bound the
+complete old-footprint lookup to five minutes under the original transaction;
+the empty trusted-runtime metadata query has its own thirty-second limit. Every
+existing ledger owner requires its exact single-owned installed METADATA before
+selection, including retained distributions. Different paths to one original
+file object reject as aliases. Unit fixtures alone are not actual native qualification. The bounded native
+qualification record now links canonical and eleven installed-client consumers;
+new-source remote and named-source work remain open.

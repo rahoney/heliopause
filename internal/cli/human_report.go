@@ -251,7 +251,7 @@ func (p *presentation) errorExplanation(code string) string {
 
 	switch code {
 	case "UPDATE_ADOPTION_REQUIRED":
-		return p.text("This native project has no HAA ownership record. Use --adopt only to enroll a supported project after complete inspection.", "일반 npm 프로젝트에는 HAA 소유 기록이 없습니다. 지원하는 프로젝트를 전체 검사 후 등록하려면 --adopt를 명시하세요.")
+		return p.text("This native project has no HAA ownership record. Use --adopt only to enroll a supported project after complete inspection.", "일반 프로젝트·가상환경에는 HAA 소유 기록이 없습니다. 지원하는 프로젝트를 전체 검사 후 등록하려면 --adopt를 명시하세요.")
 	case "UPDATE_OWNERSHIP_INVALID":
 		return p.text("Existing HAA ownership or metadata is inconsistent. Adoption cannot override it; check the original project state.", "기존 HAA 소유 기록 또는 메타데이터가 일치하지 않습니다. --adopt로 우회할 수 없으므로 원래 프로젝트 상태를 확인하세요.")
 	case "UPDATE_ORIGINAL_STATE_UNSUPPORTED":
