@@ -57,7 +57,7 @@ type pypiUpgradeSelection struct {
 // pip is imported from the immutable runtime before adding the data-only path.
 // sys.path.insert does not process .pth files. No target package/interpreter,
 // entry_points file, executable or editable loader is copied into this directory.
-const pypiUpgradeSelectionScript = `import base64,json,pathlib,sys
+const pypiUpgradeMetadataScript = `import base64,json,pathlib,sys
 from pip._internal.cli.main import main
 path=pathlib.Path(sys.argv[1])
 wire=json.loads(path.read_bytes())
@@ -71,8 +71,9 @@ for item in wire['installed']:
  directory=installed/name
  directory.mkdir(mode=0o700)
  (directory/'METADATA').write_bytes(body)
-sys.path.insert(0,str(installed))
-raise SystemExit(main(sys.argv[2:]))`
+sys.path.insert(0,str(installed))`
+
+const pypiUpgradeSelectionScript = pypiUpgradeMetadataScript + "\nraise SystemExit(main(sys.argv[2:]))"
 
 const pypiUpgradeWriteScript = `import sys
 body=sys.stdin.buffer.read(4194305)

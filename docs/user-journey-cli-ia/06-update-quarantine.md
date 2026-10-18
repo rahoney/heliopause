@@ -450,3 +450,11 @@ existing parsing/comparison in place, with explicit source binding and tests;
 do not allow a suffix to select a profile or make an arbitrary version valid.
 These are remaining representation/selection gaps, not permission to replace an
 implemented scanner, Policy, wheel mapper or transaction.
+
+Named UPDATE returns a bounded pip report from the same trusted invocation after
+successful selection; pip's human output is separate from report bytes. Failure
+must not return a stale report. Within one traversal phase only an identical
+source/project/aggregate requirement and extra context may reuse the already
+fresh candidate, with every incoming requirement checked. Changed intent and the
+next phase require fresh selection. This is an adapter efficiency constraint,
+not permission to increase observer limits or reuse previous inspection approval.

@@ -4,8 +4,8 @@ Status: IN_PROGRESS. Named source IMPLEMENTED=YES / WIRED=YES /
 QUALIFIED=NO / ACCEPTANCE_CLOSED=NO for the complete named lane. Only
 SEC-UPD-001 is active. The [baseline and correction review](./pytorch-update-baseline-20261019.md)
 owns the before-source audit; [contract06](../../../user-journey-cli-ia/06-update-quarantine.md)
-owns supported behavior. Actual CUDA updates and the retirement correction's
-new-source remote qualification remain MISSING. No candidate is permanently
+owns supported behavior. Actual CUDA updates remain MISSING; the retirement correction's
+same-source CI335 remote qualification is complete. No candidate is permanently
 activated; main merge, publication and CLI-UX-003 remain later work.
 
 ## Source and fixed local checks
@@ -117,3 +117,51 @@ pytorch-retired-public-* for eleven affected consumers; ci334-completed-qualific
 and its three decoded job logs. Whole named/PyPI acceptance awaits actual
 CPU/CUDA scope completion and new-source remote qualification. Native named
 footprints remain outside the independently qualified public-native subset.
+
+Source86c85c5 CI335/run39167405799 completed Required plus nine prerequisites
+SUCCESS. Actual checkout9099844ad21af5fc93fe1d68f3a6530f66235f6e shares the exact
+full treebd67b859180038b4d65db3b2f667fc599ef01f06. Native macOS,45 actual Linux
+consumers, CPUfull242.16s, five helper wait0 and final original0/CONFIRMED_STOPPED
+are verified from the decoded logs in ci335-completed-qualification.json. This
+qualifies affected ordinary CI consumers for the retirement correction; actual
+named CUDA UPDATE cases remain independently open.
+
+## CUDA selection event-limit correction candidate
+
+The source86 actual cu126 seed completed2186.76s,29 entries/all87 required
+checks/Evidence93, ALLOW and completed promotion. The first operator stopped
+only because it assumed one dynamic Evidence ID; the corrected offline validator
+checks normal, not-applicable and supplemented records against actual check IDs,
+entry identity and complete unique handles. It rejects a deliberately mismatched
+required-check count. Reusing that successful seed reached actual UPDATE, but
+failed409.04s before inspection with EVENT_LIMIT charged100000. The original
+failure, helperwait0/restoration and fresh root postguard are preserved. Completed
+first/resume lifecycle copies26,488,645B each were deleted; completed seed intake/
+staging payload7,330,104,300B was deleted while retaining the active target and
+Evidence/Manifest/SBOM. No update success is claimed from the seed.
+
+The reviewed in-place correction returns each bounded report from its producing
+trusted pip invocation, and reuses only identical same-phase aggregate intent.
+The report-reader regression is RED3.34s (six extra launches) to GREEN2.83s;
+shared-dependency RED2.92s (six selections) to GREEN2.93s (three, preserving fresh
+first/final reports). A changed aggregate still reselects. Source/profile,
+constraints/extras, Simple/Core Metadata checks, complete controls and all observer
+limits remain. The public update script's bytes are exactly unchanged.
+
+The same final Go inputs pass canonical format2.36s, Quick105.15s,
+security6.60s, docs0.26s and relevant Race10.04s. A networkless pinned
+Python3.14.7/pip26.2.1 runtime confirms root/dependency empty delta, exact fresh
+report, pip failure with a stale report and oversize refusal. Failed commands
+return no stdout; successful bytes equal the actual bounded report. Disposable
+fixture bytes were deleted after the synchronous containers ended and an empty
+Docker query. These are wrapper semantics, not artifact qualification.
+
+New CLI27,150,062B built3.03s, Go1.26.9/CGO0/trimpath, SHA-256
+`d42bdc2a4af53ecbf2812dea2233132af6dc92a02d9bc17923fe21b47b867aa6`.
+Raw pytorch-report-final-* binds its fixed source/check/build inputs;
+pytorch-report-runtime owns exact wrapper scripts/results, and
+pytorch-report-public-script-identity.json owns public-script equivalence.
+The new actual cu126 trial reuses the successful seed without reinstalling it.
+Actual update/no-op/negative results, other affected named profiles, confirmed
+restoration/cleanup and this new Go source's remote qualification remain MISSING.
+CI335 belongs to source86 and does not qualify this subsequent candidate.

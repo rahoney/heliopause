@@ -32,9 +32,11 @@ func (r *namedUpgradeRunner) Output(ctx context.Context, binary string, args ...
 				break
 			}
 		}
-		return nil, nil
+		if !strings.Contains(joined, pyTorchUpgradeReportScript) {
+			return nil, nil
+		}
 	}
-	if strings.Contains(joined, pypiResolverProjectDir+"/changes.json") {
+	if strings.Contains(joined, "--report "+pypiResolverProjectDir+"/changes.json") || strings.Contains(joined, pypiResolverProjectDir+"/changes.json") && !strings.Contains(joined, pyTorchUpgradeReportScript) {
 		body, err := r.base.Output(ctx, binary, pypiResolverProjectDir+"/report.json")
 		if err != nil || !r.noop {
 			return body, err
@@ -45,6 +47,12 @@ func (r *namedUpgradeRunner) Output(ctx context.Context, binary string, args ...
 		}
 		wire["install"] = []any{}
 		return json.Marshal(wire)
+	}
+	if strings.Contains(joined, pyTorchUpgradeFreshScript) {
+		if _, err := r.base.Output(ctx, binary, args...); err != nil {
+			return nil, err
+		}
+		return r.base.Output(ctx, binary, pypiResolverProjectDir+"/report.json")
 	}
 	return r.base.Output(ctx, binary, args...)
 }
@@ -108,7 +116,7 @@ func TestPyTorchUpgradeUsesInertOnlyIfNeededThenFreshExactConstrainedTraversal(t
 						if !strings.Contains(text, "--no-deps") {
 							t.Fatal("single-source version selection delegated dependencies")
 						}
-						if strings.Contains(text, pypiUpgradeSelectionScript) {
+						if strings.Contains(text, pypiUpgradeMetadataScript) {
 							rootSelections++
 							if !strings.Contains(text, "--upgrade --upgrade-strategy only-if-needed") {
 								t.Fatal("root upgrade intent lost")
@@ -136,5 +144,38 @@ func TestPyTorchUpgradeUsesInertOnlyIfNeededThenFreshExactConstrainedTraversal(t
 				}
 			})
 		}
+	}
+}
+
+func TestPyTorchUpgradeDoesNotLaunchSeparateReportReaders(t *testing.T) {
+	profile, _ := artifactpypi.PyTorchProfile("cu126")
+	requirement, _ := artifactpypi.ParseUpgradeRequirementForSource("torchvision", profile.Source())
+	input, err := artifactpypi.NewUpgradeInput(requirement, []artifactpypi.InstalledMetadataFile{
+		{Directory: "torchvision-2.14.0+cu126.dist-info", Body: []byte("Name: torchvision\nVersion: 2.14.0+cu126\nRequires-Dist: torch==2.14\n\n")},
+		{Directory: "torch-2.14.0+cu126.dist-info", Body: []byte("Name: torch\nVersion: 2.14.0+cu126\n\n")},
+	}, PinnedPythonRuntime().PythonVersion)
+	if err != nil {
+		t.Fatal(err)
+	}
+	runner := &namedUpgradeRunner{base: namedLocalGraphRunner{profile: profile}, noop: true}
+	resolver := &PyPIResolver{runner: runner, profile: profile}
+	ctx, _ := artifactpypi.ContextWithResourcePolicy(context.Background(), profile)
+	resolution, err := resolver.resolvePyTorchDependencyUpgrade(ctx, "0123456789abcdef", PinnedPythonRuntime(), requirement.Reference(), input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := input.ParseSourcePinnedUpgrade(resolution.ProjectControls(), PinnedPythonRuntime().PipVersion); err != nil {
+		t.Fatal(err)
+	}
+	readers := 0
+	for _, call := range runner.calls {
+		for _, arg := range call {
+			if arg == boundedReadScript {
+				readers++
+			}
+		}
+	}
+	if readers != 0 {
+		t.Fatalf("named update launches %d separate report readers; reports must be returned by the successful pip invocation", readers)
 	}
 }

@@ -22,8 +22,24 @@ type pyTorchUpgradeTraversal struct {
 // that private data; pip is imported before changing its data-only search path.
 const pyTorchUpgradeSelectionScript = `import sys
 from pip._internal.cli.main import main
-sys.path.insert(0,sys.argv[1])
-raise SystemExit(main(sys.argv[2:]))`
+sys.path.insert(0,sys.argv[1])`
+
+// Return only the bounded report after pip succeeds, in its own trusted process.
+// Human pip output stays on stderr. A failed selection cannot return a stale
+// report, and no additional observed Python process is needed just to read it.
+const pyTorchUpgradeReportScript = `
+import contextlib
+limit=int(sys.argv[3])
+if limit<=0 or limit>4194304: raise ValueError('invalid report bound')
+if sys.argv[2] not in ('/tmp/haa-pypi-resolver/changes.json','/tmp/haa-pypi-resolver/report.json'): raise ValueError('invalid report path')
+with contextlib.redirect_stdout(sys.stderr):
+ result=main(sys.argv[4:])
+if result: raise SystemExit(result)
+with open(sys.argv[2],'rb') as report: body=report.read(limit+1)
+if not body or len(body)>limit: raise ValueError('report exceeds bound')
+sys.stdout.buffer.write(body)`
+
+const pyTorchUpgradeFreshScript = "import sys\nfrom pip._internal.cli.main import main" + pyTorchUpgradeReportScript
 
 func (s *pyTorchUpgradeTraversal) withRetainedExtras(project string, incoming []artifactpypi.BoundedRequirement, current map[string]artifactpypi.Candidate) (string, []string, error) {
 	selected := current
@@ -202,16 +218,16 @@ func (r *PyPIResolver) selectPyTorchUpgradeNode(ctx context.Context, containerID
 		if !primary {
 			return nil, errors.New("named upgrade metadata must be prepared by its root")
 		}
-		launch = boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", pypiUpgradeSelectionScript, pypiResolverProjectDir+"/update-input.json")
+		launch = boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", pypiUpgradeMetadataScript+pyTorchUpgradeReportScript, pypiResolverProjectDir+"/update-input.json", pypiResolverProjectDir+"/changes.json", "4194304")
 		state.started = true
 	} else {
-		launch = boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", pyTorchUpgradeSelectionScript, pypiResolverProjectDir+"/installed-metadata")
+		launch = boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", pyTorchUpgradeSelectionScript+pyTorchUpgradeReportScript, pypiResolverProjectDir+"/installed-metadata", pypiResolverProjectDir+"/changes.json", "4194304")
 	}
-	if _, err := r.runner.Output(ctx, "docker", append(launch, arguments...)...); err != nil {
+	body, err := r.runner.Output(ctx, "docker", append(launch, arguments...)...)
+	if err != nil {
 		return nil, errors.New("select source-pinned only-if-needed upgrade failed")
 	}
-	body, err := r.runner.Output(ctx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", boundedReadScript, pypiResolverProjectDir+"/changes.json", "4194304")...)
-	if err != nil || len(body) == 0 || len(body) > 4<<20 {
+	if len(body) == 0 || len(body) > 4<<20 {
 		return nil, errors.New("read source-pinned upgrade selection failed")
 	}
 	return body, nil

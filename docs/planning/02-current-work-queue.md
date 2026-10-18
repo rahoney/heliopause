@@ -3389,11 +3389,23 @@ were deleted. The [named qualification](./evidence/update-quarantine/pytorch-upd
 keeps source88 version-change/CI334 and the subsequent local correction separate.
 CI334 Required plus nine prerequisites, same-tree/native macOS/Linux45 consumers
 and confirmed cleanup all pass for88. Actual cu126/cu130/cu132 update qualification
-and the retirement correction's new-source remote result remain MISSING. Next is
-cu126 within this same item. No candidate is permanently activated. The
+remain MISSING. The retirement correction source86 passed CI335 ten SUCCESS,
+same full tree/native macOS/Linux45 consumers/CPUfull242.16s/five helperwait0 and
+confirmed cleanup. The actual cu126 seed completed2186.76s with29 entries,
+required87/Evidence93; a harness-only Evidence-ID assertion stopped before UPDATE.
+Its corrected validator passes on that frozen result and rejects mismatched
+coverage. The successful seed is reused for actual cu126 UPDATE in this same item. No candidate is permanently activated. The
 managed candidatec93ce58 in draft PR38 passed all ten CI331/run39148017283 jobs;
 its actual checkout and consumer scope are recorded independently. Native source
 is newer and does not inherit that qualification.
+The first reused-seed cu126 UPDATE failed409.04s before inspection at the
+unchanged observer EVENT_LIMIT. Originals and fresh root postguard pass. The
+reviewed in-place report-return/identical-intent correction passes canonical
+Quick105.15s/security/docs/relevant Race10.04s, direct RED/GREEN regressions and
+five pinned runtime wrapper cases. New CLI d42bdc2 is under actual cu126 trial;
+this does not inherit CI335 or complete named qualification. Successful seed
+payload7.33GB and both completed lifecycle copies were deleted; its target remains
+active for the new actual UPDATE. The named baseline/qualification own exact scope.
 Other lanes remain unimplemented/unqualified.
 [implementation baseline](./evidence/update-quarantine/baseline-20261018.md)
 records existing responsibilities and actual missing acceptance.

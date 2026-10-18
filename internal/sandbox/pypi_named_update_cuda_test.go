@@ -14,10 +14,12 @@ import (
 // Own source-shaped data exercises the real traversal/control producer, without
 // claiming live source authentication or CUDA runtime qualification.
 type namedCUDAUpgradeRunner struct {
-	profile artifactpypi.SourceProfile
-	project string
-	calls   []string
-	inputs  [][]byte
+	profile           artifactpypi.SourceProfile
+	project           string
+	calls             []string
+	inputs            [][]byte
+	shared            bool
+	sharedRequirement string
 }
 
 func (r *namedCUDAUpgradeRunner) Output(_ context.Context, _ string, args ...string) ([]byte, error) {
@@ -38,7 +40,9 @@ func (r *namedCUDAUpgradeRunner) Output(_ context.Context, _ string, args ...str
 				break
 			}
 		}
-		return nil, nil
+		if !strings.Contains(joined, pyTorchUpgradeReportScript) {
+			return nil, nil
+		}
 	}
 	version := "13.2"
 	requirements := []string{}
@@ -48,6 +52,13 @@ func (r *namedCUDAUpgradeRunner) Output(_ context.Context, _ string, args ...str
 		version = "2.14.0+" + strings.TrimPrefix(r.profile.Name(), "pytorch:")
 		profile = r.profile
 		requirements = []string{`cuda-toolkit[cudart]==13.2; platform_system == "Linux"`}
+		if r.shared {
+			bound := r.sharedRequirement
+			if bound == "" {
+				bound = ">=13.2"
+			}
+			requirements = append(requirements, "nvidia-cublas"+bound)
+		}
 	case "cuda-toolkit":
 		requirements = []string{`nvidia-cublas>=13.2; extra == "cublas"`, `nvidia-cudart>=13.2; extra == "cudart"`}
 	case "nvidia-cublas", "nvidia-cudart":
@@ -62,7 +73,7 @@ func (r *namedCUDAUpgradeRunner) Output(_ context.Context, _ string, args ...str
 	if strings.Contains(joined, pypiResolverProjectDir+"/changes.json") || strings.Contains(joined, pypiResolverProjectDir+"/report.json") {
 		runtime := PinnedPythonRuntime()
 		install := []any{}
-		if strings.Contains(joined, "/report.json") {
+		if strings.Contains(joined, "--report "+pypiResolverProjectDir+"/report.json") || !strings.Contains(joined, pyTorchUpgradeReportScript) && strings.Contains(joined, "/report.json") {
 			metadata := map[string]any{"name": r.project, "version": version, "requires_dist": requirements}
 			if r.project == "torch" {
 				metadata["requires_python"] = ">=3.14"
@@ -125,6 +136,53 @@ func TestPyTorchUpgradeTraversalPreservesRetainedCUDAExtrasAndRealComponentEdges
 			}
 			if !constrainedToolkit {
 				t.Fatal("final exact toolkit lookup lost retained extras")
+			}
+		})
+	}
+}
+
+func TestPyTorchUpgradeSharedDependencyKeepsOneFreshLookupPerPhase(t *testing.T) {
+	for _, scenario := range []struct {
+		name, bound string
+		calls       int
+	}{{"identical", ">=13.2", 3}, {"changed", ">=13.1", 6}} {
+		t.Run(scenario.name, func(t *testing.T) {
+			profile, _ := artifactpypi.PyTorchProfile("cu132")
+			requirement, _ := artifactpypi.ParseUpgradeRequirementForSource("torch", profile.Source())
+			files := []artifactpypi.InstalledMetadataFile{}
+			for _, item := range []struct{ name, version, requires string }{
+				{"torch", "2.14.0+cu132", "Requires-Dist: cuda-toolkit[cudart]==13.2; platform_system == \"Linux\"\nRequires-Dist: nvidia-cublas>=13.2\n"},
+				{"retained", "1.0", "Requires-Dist: cuda-toolkit[cublas]==13.2; platform_system == \"Linux\"\n"},
+				{"cuda-toolkit", "13.2", "Requires-Dist: nvidia-cublas>=13.2; extra == \"cublas\"\nRequires-Dist: nvidia-cudart>=13.2; extra == \"cudart\"\n"},
+				{"nvidia-cublas", "13.2", ""}, {"nvidia-cudart", "13.2", ""},
+			} {
+				files = append(files, artifactpypi.InstalledMetadataFile{Directory: strings.ReplaceAll(item.name, "-", "_") + "-" + item.version + ".dist-info", Body: []byte("Name: " + item.name + "\nVersion: " + item.version + "\n" + item.requires + "\n")})
+			}
+			input, err := artifactpypi.NewUpgradeInput(requirement, files, PinnedPythonRuntime().PythonVersion)
+			if err != nil {
+				t.Fatal(err)
+			}
+			runner := &namedCUDAUpgradeRunner{profile: profile, shared: true, sharedRequirement: scenario.bound}
+			resolver := &PyPIResolver{runner: runner, profile: profile}
+			ctx, _ := artifactpypi.ContextWithResourcePolicy(context.Background(), profile)
+			resolution, err := resolver.resolvePyTorchDependencyUpgrade(ctx, "0123456789abcdef", PinnedPythonRuntime(), requirement.Reference(), input)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(resolution.Graph().Nodes()) != 4 || len(resolution.Graph().Edges()) != 4 {
+				t.Fatal("shared edge lost")
+			}
+			if _, err := input.ParseSourcePinnedUpgrade(resolution.ProjectControls(), PinnedPythonRuntime().PipVersion); err != nil {
+				t.Fatal(err)
+			}
+			count := 0
+			for _, call := range runner.calls {
+				if strings.Contains(call, "--report ") && strings.Contains(call, "--index-url https://pypi.org/simple/ nvidia-cublas") || strings.Contains(call, "--report ") && strings.Contains(call, "nvidia-cublas==13.2") {
+					count++
+				}
+			}
+			if count != scenario.calls {
+				t.Fatalf("shared dependency got %d pip selections; want %d; only identical intent may reuse a same-phase candidate", count, scenario.calls)
 			}
 		})
 	}

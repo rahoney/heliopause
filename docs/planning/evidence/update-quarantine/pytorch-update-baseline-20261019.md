@@ -296,3 +296,46 @@ public/native29,400,444B trial payloads/tools were deleted after Evidence captur
 The [qualification record](./pytorch-update-qualification-20261019.md) owns the
 actual per-source boundary, checks, cleanup and remaining CUDA/new-remote scope.
 Raw pytorch-retired-tree-* owns the original source/check/operation receipts.
+
+## CUDA resolver event-limit correction review
+
+Source86/CLI9e actual cu126 seed completed2186.76s with29 entries/all87 required
+checks and93 Evidence. After a harness-only Evidence-ID correction, its real
+UPDATE failed409.04s before inspection: resolver EVENT_LIMIT, charged100000,
+close82471/fcntl3521/raw605/other13403, workspace1445. No new ALLOW or promotion
+occurred. Canonical helperwait0/restoration and fresh root postguard pass. Original
+raw cu126-resume-installed preserves the primary failure; do not rerun unchanged
+or increase observer/resource limits to manufacture success.
+
+Baseline: existing named traversal/selection/authentication is IMPLEMENTED=YES /
+WIRED=YES. Complete named QUALIFIED/ACCEPTANCE_CLOSED remain NO. MISSING is fitting
+actual two-phase CUDA selection inside the unchanged observed lifecycle, then
+actual update/no-op/refusal and affected source checks. The original candidate
+path launches pip, then a separate Python solely to read its bounded report;
+named first-phase selection repeats that pattern. Every extra launch is observed.
+The shared traversal also reselects a previously selected project for another
+incoming edge even when its canonical aggregate request/extras are identical.
+The successful seed SBOM has29 nodes/34 edges; that is a real repeated-input
+opportunity, not proof that launch reduction alone resolves this limit.
+
+Edit review before source: extend existing pypi_named_update.go/pypi_resolver.go,
+without replacing traversal or changing observer/Policy. In named UPDATE only,
+return the bounded report from the same trusted Python invocation after pinned
+pip exits successfully. Import immutable pip before the inert metadata path;
+redirect pip human stdout to stderr and return only exact report bytes. Preserve
+empty/oversize/exit failure and all report parsers/Simple/Core Metadata checks.
+Factor the existing inert metadata preparation into an identical constant prefix;
+public update and original install keep their current invocation behavior. Keep
+root upgrade vs dependency only-if-needed, exact final constraints and fresh
+candidate lookup in both phases. Reuse a same-phase candidate only for the exact
+same source/project/canonical aggregate request/extras, rechecking every incoming
+requirement; changed constraints/extras must reselect. No cross-phase/cross-run
+cache or previous ALLOW reuse. Preserve report/project/edge/byte bounds.
+
+First add a failing exact command-count/complete-controls fixture, then verify
+combined output with the pinned Python/pip in a disposable networkless runtime,
+including pip failure/stale report/oversize refusal. Exercise changed aggregate,
+retained extras, source/graph/control failures and all existing affected tests;
+canonical format/Quick/security/docs and relevant Race precede a new candidate.
+Actual CUDA result determines whether this bounded reduction is sufficient; no
+success claim or old CI335 transfer to the new Go inputs is permitted.

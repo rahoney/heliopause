@@ -366,6 +366,8 @@ func (r *PyPIResolver) resolvePyTorchGraphWithUpgrade(ctx context.Context, conta
 	requests := make(map[string][]artifactpypi.BoundedRequirement)
 	sources := make(map[string]domain.SourceID)
 	seenRequests := make(map[string]bool)
+	upgradeRequirements := make(map[string]bool)
+	upgradeRequests := make(map[string]string)
 	reports := make([]byte, 0)
 	maxProjects := artifactpypi.ResourcePolicyFromContext(ctx).MaxGraphArtifacts()
 	if maxProjects <= 0 || maxProjects > maxPyTorchReports {
@@ -397,7 +399,19 @@ func (r *PyPIResolver) resolvePyTorchGraphWithUpgrade(ctx context.Context, conta
 			if err != nil || bounded.Project() != project {
 				return nil, nil, errors.New("PyTorch dependency requirement is unsupported")
 			}
-			requests[project] = append(requests[project], bounded)
+			add := true
+			if upgrade != nil {
+				single, err := artifactpypi.AggregateBoundedRequirements(project, []artifactpypi.BoundedRequirement{bounded})
+				if err != nil {
+					return nil, nil, err
+				}
+				key := project + "\x00" + single.Request()
+				add = !upgradeRequirements[key]
+				upgradeRequirements[key] = true
+			}
+			if add {
+				requests[project] = append(requests[project], bounded)
+			}
 		}
 		candidateReference, err := artifactpypi.ParseReferenceForSource(project, current.profile.Source())
 		if err != nil {
@@ -417,6 +431,15 @@ func (r *PyPIResolver) resolvePyTorchGraphWithUpgrade(ctx context.Context, conta
 			selectedRequest, requestedExtras, err = upgrade.withRetainedExtras(project, requests[project], candidates)
 			if err != nil {
 				return nil, nil, err
+			}
+			// Only identical same-phase intent reuses its already fresh candidate.
+			// Every incoming edge still contributes its requirement; a changed
+			// constraint or extra context must go through selection again.
+			if candidate, exists := candidates[project]; exists && upgradeRequests[project] == selectedRequest {
+				if candidate.Source() != current.profile.Source() || !candidate.SatisfiesBoundedRequirements(requests[project]) {
+					return nil, nil, errors.New("repeated named upgrade request does not satisfy incoming requirements")
+				}
+				continue
 			}
 		}
 		if reportCount >= maxPyTorchReports || len(reports) > maxPyTorchReportBytes-maxPyTorchSingleReport {
@@ -444,6 +467,9 @@ func (r *PyPIResolver) resolvePyTorchGraphWithUpgrade(ctx context.Context, conta
 			return nil, nil, errors.New("PyTorch dependency candidate does not satisfy all requirements")
 		}
 		candidates[project] = candidate.WithPrimary(current.primary)
+		if upgrade != nil {
+			upgradeRequests[project] = selectedRequest
+		}
 		reports = append(reports, report...)
 		for _, requirement := range candidate.DependencyRequirements() {
 			dependency, err := artifactpypi.DependencyProject(requirement)
@@ -487,10 +513,17 @@ func (r *PyPIResolver) resolvePyTorchCandidateWithUpgrade(ctx context.Context, c
 		arguments = append(arguments, "--constraint", constraints)
 	}
 	arguments = append(arguments, requirement)
-	if _, err := r.runner.Output(ctx, "docker", append(boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-m", "pip"), arguments...)...); err != nil {
-		return artifactpypi.Candidate{}, nil, errors.New("run source-pinned pip resolution failed")
+	var reportBytes []byte
+	var err error
+	if ignoreInstalled {
+		launch := boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", pyTorchUpgradeFreshScript, "", pypiResolverProjectDir+"/report.json", strconv.Itoa(reportLimit))
+		reportBytes, err = r.runner.Output(ctx, "docker", append(launch, arguments...)...)
+	} else {
+		if _, err = r.runner.Output(ctx, "docker", append(boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-m", "pip"), arguments...)...); err != nil {
+			return artifactpypi.Candidate{}, nil, errors.New("run source-pinned pip resolution failed")
+		}
+		reportBytes, err = r.runner.Output(ctx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", boundedReadScript, pypiResolverProjectDir+"/report.json", strconv.Itoa(reportLimit))...)
 	}
-	reportBytes, err := r.runner.Output(ctx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", boundedReadScript, pypiResolverProjectDir+"/report.json", strconv.Itoa(reportLimit))...)
 	if err != nil {
 		return artifactpypi.Candidate{}, nil, errors.New("read source-pinned pip report failed")
 	}
