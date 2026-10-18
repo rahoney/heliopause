@@ -1,6 +1,7 @@
 # Update quarantine — SEC-UPD-001
 
-Status: required prepublication work; implementation/qualification incomplete.
+Status: IN_PROGRESS; user authorized implementation after reviewed planning.
+Current lane: npm. Other lanes wait for independent baseline/qualification.
 This leaf owns the user-requested update-command contract. It supplements the
 installation journey, never weakens existing Policy or adds implicit Host execution.
 
@@ -146,3 +147,59 @@ Native semantics references:
 [Cargo update](https://doc.rust-lang.org/cargo/commands/cargo-update.html).
 Implementation must check the repository-pinned guest tool behavior as well;
 current external documentation alone does not qualify that executable.
+
+### npm retained public controls / implementation baseline
+
+The implementation audit at97ed00c found that generatedNPMProject writes local
+file: tarball references for exact offline installation. Those references cannot
+serve as public update constraints. Preserve the resolver's public package.json
+and package-lock.json as bounded opaque control records, bind their digests/bytes
+into trusted Manifest identity, and use local artifact recipes only in private
+installation workspaces. Publish selected public controls only after exact output
+validation and before the existing guarded atomic commit. The public lock digest
+must match the one used for resolution. Legacy local-file controls must never be
+silently treated as registry constraints; explicit migration must preserve user
+intent, otherwise reject unchanged. The existing one-primary npm graph subset
+remains the first supported lane; multi-root support must use complete project
+snapshots, never fabricated primary edges. See
+[implementation baseline](../planning/evidence/update-quarantine/baseline-20261018.md).
+
+### npm first implementation slice — exact owners
+
+- Extend DependencyResolution with optional bounded ProjectControlFile values
+  (existing immutable control type), preserving old constructors/default behavior.
+  The npm isolated resolver supplies public selection manifest/lock bytes; the
+  evidence Generator includes these opaque controls in the hashed Manifest.
+  Promotion validates their digests, lock digest and selected graph binding.
+- Keep generatedNPMProject as the private local-tarball installation recipe.
+  After offline output/digest validation, restore authenticated public selection
+  controls in the private workspace before the existing atomic publish. Extend
+  current install as needed so newly managed targets retain their constraints.
+- Add an Application update wrapper around the existing InstallService pipeline.
+  A typed Infrastructure update session captures and guards original controls/
+  payload before selection, supplies one resolver and the existing Promotion
+  boundary, and closes the same guard even on reject/cancel/failure. Do not build
+  a second inspection/Policy pipeline. Per-request copies avoid shared mutable
+  service rebinding. Update results explicitly identify UPDATE; old INSTALL
+  results retain their existing fields/enums/exit behavior.
+- npm update accepts zero or one validated package name, current project or an
+  absolute --target, and explicit --adopt only for the qualified foreign-state
+  subset. Isolated pinned npm update preserves root ranges and uses copied
+  controls, ignore-scripts/no-audit/no-fund and fixed public registry/config paths.
+  Never forward arbitrary flags or execute project scripts/interpreters on Host.
+- Extend npmProjectPlan with optional early member snapshots used by updates,
+  so all existing verifyUnchanged calls guard the originally captured payload
+  rather than a fresh post-inspection baseline. Reuse the lock, backup, atomic
+  commit, metadata and rollback implementation. Foreign/native adoption requires
+  explicit intent, bounded regular-file inventory and no ambiguous prior ledger;
+  malformed controls, local/git/workspace sources and unsupported roots reject
+  without publication. Missing node_modules may be installed only from the
+  inspected complete selected set.
+- Legacy HAA local-file projects cannot recover lost original range intent.
+  Reject an implicit migration; a newly inspected explicit install may establish
+  retained public constraints. Never reinterpret a local path as a registry range.
+
+The implementation slice must pass actual positive selection/replacement plus
+blocked/incomplete/tampered/concurrent/foreign/cancel/rollback negatives before its
+acceptance is closed. The remaining ecosystem lanes and broader supported project
+coverage remain MISSING until their own actual evidence is recorded.

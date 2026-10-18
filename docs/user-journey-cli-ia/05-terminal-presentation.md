@@ -162,3 +162,16 @@ References: [Microsoft UI culture](https://learn.microsoft.com/en-us/powershell/
 [Apple global preferences](https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/UserDefaults/AboutPreferenceDomains/AboutPreferenceDomains.html).
 Actual pre-implementation fixed Windows read returned ko-KR in0.50s on this WSL;
 this is a probe-method check, not application wiring/qualification.
+
+## Deferred branded launcher — CLI-UX-003
+
+User-confirmed order on2026-10-18: implement and qualify SEC-UPD-001 guarded
+updates first, then this separate UX item. Bare helox in a real stdin/stdout TTY
+should display Heliopause Artifact Airlock and localized menus for currently
+available settings, usage/examples, explicitly requested environment diagnostics
+and exit. Arrow keys move, Enter selects, Esc goes back, q exits. Reuse language
+selection/catalogs and existing command services. Preserve direct subcommands,
+--help and machine/CI behavior without prompts. Support narrow terminals and
+NO_COLOR; restore terminal modes/cursor on exit, cancellation and errors.
+This records the requested work; implementation/dependencies and qualification
+are NOT_STARTED and require that item's baseline after SEC-UPD-001.

@@ -9,12 +9,13 @@
 ```text
 Current milestone: M13 — Production Release & Operations
 Milestone status: IN_PROGRESS — runtime maintenance main delivery COMPLETE
-Active work item: none — requested documentation/review and CLI-UX-002 scope complete
+Active work item: SEC-UPD-001 — guarded ecosystem update commands
 Last completed work item: CLI-UX-002 — OS preferred display-language auto; local/installed and CI328 ten SUCCESS
 Predecessor: M13-003 — COMPLETE; protected v0.1.0 build, twelve attestations and OS package lifecycle PASS
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001 and CLI-UX-002 COMPLETE for their documented scopes
-Next work item: SEC-UPD-001 — NOT_STARTED / Ready; detailed plan only in this request
+Active work item status: IN_PROGRESS — npm lane baseline/selection and guarded replacement first
+Next work item: CLI-UX-003 — NOT_STARTED; branded interactive launcher after SEC-UPD-001 acceptance
 Then: M13-004 — BLOCKED on SEC-UPD-001 and owner package naming; M13-005 NOT_STARTED
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
@@ -3007,7 +3008,8 @@ M12-005 feature freeze에서 수행한다. canonical lock 등록만으로 releas
 | 3 | M13-003 | canonical release build·manifest·attestation·OS package assets | COMPLETE — protected v0.1.0 candidate qualification |
 | 3a | CLI-UX-001 | multilingual terminal progress and structured human results | COMPLETE — local source / installed CLI qualification |
 | 3b | CLI-UX-002 | OS preferred display-language auto | COMPLETE — native macOS/CI328 and local installed CLI PASS |
-| 3c | SEC-UPD-001 | guarded ecosystem update commands | NOT_STARTED / Ready — detailed plan complete |
+| 3c | SEC-UPD-001 | guarded ecosystem update commands | IN_PROGRESS — npm first, then remaining scoped ecosystems |
+| 3d | CLI-UX-003 | branded interactive launcher | NOT_STARTED — after SEC-UPD-001 acceptance |
 | 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | BLOCKED — SEC-UPD-001 and owner package-name decision |
 | 5 | M13-005 | exact publication·clean Host bootstrap·doctor·cross-ecosystem smoke·quarantine | NOT_STARTED |
 
@@ -3316,7 +3318,7 @@ updates are essential to protecting existing users from compromised new releases
 precedes source changes. Existing inspection/Policy, transactions, settings and
 catalogs are reused; no replacement or new runtime/CI scaffold is justified.
 
-- SEC-UPD-001: NOT_STARTED / Ready. IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO /
+- SEC-UPD-001: IN_PROGRESS. IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO /
   ACCEPTANCE_CLOSED=NO for complete scoped update-command coverage. MISSING exact
   update selection/CLI, guarded existing-state ownership/replacement and actual
   per-ecosystem benign/malicious-fixture/unchanged-on-failure qualification. Read
@@ -3327,13 +3329,28 @@ catalogs are reused; no replacement or new runtime/CI scaffold is justified.
   ordinary CI328 ten jobs including native macOS passed. [Qualification](./evidence/cli-os-language/qualification-20261018.md).
   Read [OS-language correction](../user-journey-cli-ia/05-terminal-presentation.md#os-display-language-correction--cli-ux-002).
 
-The user-requested detailed plans, second review and CLI-UX-002 implementation
-are complete. No work item is IN_PROGRESS. SEC-UPD-001 remains NOT_STARTED/Ready;
-its detailed plan is complete and implementation is outside this request.
+The detailed plans, second review and CLI-UX-002 implementation are complete.
+On2026-10-18 the user authorized SEC-UPD-001 implementation and deferred the
+interactive launcher until guarded updates are qualified. Only SEC-UPD-001 is
+IN_PROGRESS. Execute one ecosystem at a time, beginning with npm;
+[implementation baseline](./evidence/update-quarantine/baseline-20261018.md)
+records existing responsibilities and actual missing acceptance.
 Existing CLI-UX-001 receipts qualify
 its historical locale-only implementation, not these new requirements. Neither
 update-command availability nor running a native package manager outside helox
 may be reported as HAA update protection without actual corresponding evidence.
+
+### CLI-UX-003 — branded interactive launcher (deferred)
+
+Status: NOT_STARTED; prerequisite SEC-UPD-001 acceptance. The user explicitly
+requested this order on2026-10-18. Bare helox in a real interactive terminal will
+show Heliopause Artifact Airlock, localized settings/help/examples and exit, with
+arrow/Enter/back navigation. Current root RunE only displays Help; no menu source
+is implemented. Reuse the existing language settings/catalogs and command tree.
+Direct commands/help/JSON/CI remain non-interactive; cancellation must restore
+terminal state. Read [launcher scope](../user-journey-cli-ia/05-terminal-presentation.md#deferred-branded-launcher--cli-ux-003)
+before its own baseline/implementation. Do not start this item while updates remain
+unqualified; do not add future UI packages/interfaces/dependencies now.
 
 ### M13-004 — convenience installation channels
 
@@ -3353,8 +3370,8 @@ checks. On2026-10-18 the user reported both rahoney accounts/email/2FA/GitHub
 links complete. This closes account preparation only; publisher binding and all
 package names remain unconfirmed. No credentials are needed.
 
-No work item is IN_PROGRESS. M13-004 resumes after both correction items and owner
-naming; the prior bounded CLI-UX-001 acceptance remains historical. M13-005 remains NOT_STARTED. Account setup is not
+Only SEC-UPD-001 is IN_PROGRESS. The user-requested CLI-UX-003 launcher follows
+its acceptance; M13-004 resumes after update/UX prerequisites and owner naming; the prior bounded CLI-UX-001 acceptance remains historical. M13-005 remains NOT_STARTED. Account setup is not
 package publication approval; no registry upload, tap creation, Release draft or
 publish dispatch has occurred. Concrete publication remains separately reviewed.
 
