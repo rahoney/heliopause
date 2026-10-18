@@ -1,14 +1,12 @@
 {
   "work_item": "CLI-UX-002",
-  "status": "LOCAL_QUALIFIED_NATIVE_CI_PENDING",
+  "status": "COMPLETE",
   "audit": {
     "IMPLEMENTED": "YES",
     "WIRED": "YES",
-    "QUALIFIED": "NO",
-    "ACCEPTANCE_CLOSED": "NO",
-    "MISSING": [
-      "ordinary native macOS CI and final closure"
-    ]
+    "QUALIFIED": "YES",
+    "ACCEPTANCE_CLOSED": "YES",
+    "MISSING": []
   },
   "plan_commit": "4d6cc0fb174918a1cf64b117d32fafece2510947",
   "second_review": {
@@ -352,7 +350,101 @@
       0
     ]
   },
-  "remote_ci": "PENDING",
+  "remote_ci": {
+    "status": "PASS",
+    "run_id": 39120811016,
+    "run_number": 328,
+    "url": "https://github.com/rahoney/heliopause/actions/runs/39120811016",
+    "pr": 38,
+    "head": "3482e77275b83e5aec873bca5b85ce89c6260706",
+    "actual_checkout": "cf9925284c75fffd3797db8d74765e13a6959694",
+    "whole_checkout_tree_equals_head": true,
+    "jobs": [
+      {
+        "id": 117655868304,
+        "name": "gVisor Observer Helper",
+        "conclusion": "success"
+      },
+      {
+        "id": 117655868506,
+        "name": "gVisor Linux Integration",
+        "conclusion": "success"
+      },
+      {
+        "id": 117655868510,
+        "name": "Security",
+        "conclusion": "success"
+      },
+      {
+        "id": 117655868527,
+        "name": "Representative Wheel Corpus",
+        "conclusion": "success"
+      },
+      {
+        "id": 117655868531,
+        "name": "Docs",
+        "conclusion": "success"
+      },
+      {
+        "id": 117655868543,
+        "name": "Quick",
+        "conclusion": "success"
+      },
+      {
+        "id": 117655868566,
+        "name": "Vulnerability",
+        "conclusion": "success"
+      },
+      {
+        "id": 117655868610,
+        "name": "Minimum Go",
+        "conclusion": "success"
+      },
+      {
+        "id": 117655868643,
+        "name": "macOS",
+        "conclusion": "success"
+      },
+      {
+        "id": 117663871783,
+        "name": "Required",
+        "conclusion": "success"
+      }
+    ],
+    "native_macos": "platform build and actual default test suite PASS; no positive desktop AppleLanguages preference inferred",
+    "cuda": "not dispatched; presentation-only change",
+    "linux_top_level_consumers": 45,
+    "pytorch_cpu_seconds": 280.49,
+    "linux_cleanup": "original0 / CONFIRMED_STOPPED / helper_stop0 / client_error0 / client_restore0"
+  },
   "raw_owner": "docs/github-logs/cli-os-language-20261018/",
-  "scope": "No update implementation or publication; historical full-Race/native macOS preference success not inferred from local tests"
+  "scope": "Language acceptance complete for documented bounded OS reads/fallback; update commands not implemented, no main merge or publication, no historical full-Race claim.",
+  "source_commit": "3482e77275b83e5aec873bca5b85ce89c6260706",
+  "postcheck": {
+    "status": "PASS",
+    "protected_files": 4,
+    "active_consumers": 0,
+    "unknown_consumers": 0,
+    "runtime_endpoints": 0,
+    "previous_cli_backup_verified": true,
+    "raw": "postcheck.json"
+  },
+  "closure_boundary": "Source hashes remain exactly source_commit; closure changes documentation/evidence only. Final PR-head CI receipt is retained under raw_owner without a self-referencing evidence-only commit.",
+  "cleanup": {
+    "status": "PASS",
+    "total_logical_bytes": 1707429444,
+    "final_cleanup_logical_bytes": 1625802285,
+    "earlier_payload_logical_bytes": 81627159,
+    "shared_modules_toolchains_runtime_necessary_rollback_original_evidence": "preserved; symlink targets not followed",
+    "measurement": "logical file bytes only; no physical disk/VHDX reclamation claim",
+    "raw": "final-cleanup.json"
+  },
+  "closure_docs_check": {
+    "profile": "docs",
+    "exit_code": 0,
+    "seconds": 0.26,
+    "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9",
+    "source_inventory": "closure-final-docs-source.json",
+    "scope": "Canonical final Markdown and qualification status PASS; subsequent additions are cleanup/check receipts in this JSON only, parsed and source hashes rechecked before commit."
+  }
 }

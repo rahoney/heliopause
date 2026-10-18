@@ -1,7 +1,7 @@
 # CLI-UX-002 — OS display-language qualification
 
-IMPLEMENTED=YES / WIRED=YES. Local QUALIFIED=YES; full platform
-QUALIFIED=NO / ACCEPTANCE_CLOSED=NO pending ordinary native macOS CI.
+Status: COMPLETE. IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES /
+ACCEPTANCE_CLOSED=YES / MISSING=none for this documented language scope.
 This report is updated only from actual evidence; cross-compilation is not native
 execution. User scope: detailed plans plus second review, then language work;
 update commands remain NOT_STARTED and publication remains held.
@@ -67,7 +67,7 @@ native source/build/Staticcheck cache; complete tracked plus new source inventor
   fallback and repair. Actual automatic calls measured about0.31–0.33s; explicit
   selections about0.02s. These measurements are this host, not a timing guarantee.
 
-## Local activation and remaining boundary
+## Local activation and closure boundary
 
 Qualified local-development CLI SHA256:
 eeb11993682e14a7c285dd3f79e924b587a31c9d5df9394b0d997ed2db942b13
@@ -79,8 +79,23 @@ Actual ordinary-user installed CLI returned saved auto/current ko/WINDOWS_UI;
 explicit --lang en returned English/FLAG. Tool sandbox interop denial independently
 returned English/OS_LANGUAGE_UNAVAILABLE without breaking help/config.
 
-Installed JSON artifact smoke, final cleanup/postcheck and ordinary native CI are
-recorded in the result as they complete. Do not infer those from help output.
+Installed ordinary-UID1000 npm inspect is-number@7.0.0 JSON smoke PASS8.01s:
+COMPLETED/ALLOW with three required checks and original Evidence preserved. The
+unchanged canonical helper lifecycle returned wait0/CONFIRMED_STOPPED and primary0/
+cleanup0. Final protected-file/idle/rollback postcheck PASS.
+
+Source commit3482e77275b83e5aec873bca5b85ce89c6260706 passed all ten ordinary
+[CI328 jobs](https://github.com/rahoney/heliopause/actions/runs/39120811016),
+including native macOS platform build/default tests, Linux integration and Required.
+Actual checkout cf9925284c75fffd3797db8d74765e13a6959694 has the same complete
+tree as that head. macOS suite success covers native execution, parsing and
+fallback; it does not prove a positive desktop AppleLanguages preference on a
+headless runner. Windows UI selection was positively observed on the actual WSL.
+
+Closure edits documentation/evidence only; eight Go/test hashes remain exactly
+qualified. Final PR-head CI is retained in the local raw owner without an extra
+self-referencing evidence commit. [Draft PR38](https://github.com/rahoney/heliopause/pull/38)
+remains for review; main is unmerged. Disposable cleanup amounts are in result.json.
 User preference is read-only in tests; all writes use private settings/cache.
 Preserve original Evidence and necessary rollback, delete completed private
 source/cache/test settings/binaries after last use. No release/tag/name/publish or

@@ -9,13 +9,13 @@
 ```text
 Current milestone: M13 — Production Release & Operations
 Milestone status: IN_PROGRESS — runtime maintenance main delivery COMPLETE
-Active work item: CLI-UX-002 — OS preferred display-language auto
-Active work item status: IN_PROGRESS — local source/PTY/installed auto qualified; native macOS CI and final closure pending
+Active work item: none — requested documentation/review and CLI-UX-002 scope complete
+Last completed work item: CLI-UX-002 — OS preferred display-language auto; local/installed and CI328 ten SUCCESS
 Predecessor: M13-003 — COMPLETE; protected v0.1.0 build, twelve attestations and OS package lifecycle PASS
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
-Prepublication prerequisite: CLI-UX-001 — historical bounded completion; OS-language correction remains open
+Prepublication prerequisites: CLI-UX-001 and CLI-UX-002 COMPLETE for their documented scopes
 Next work item: SEC-UPD-001 — NOT_STARTED / Ready; detailed plan only in this request
-Then: M13-004 — BLOCKED on update/OS-language prerequisites and owner package naming; M13-005 NOT_STARTED
+Then: M13-004 — BLOCKED on SEC-UPD-001 and owner package naming; M13-005 NOT_STARTED
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
 
@@ -3006,7 +3006,9 @@ M12-005 feature freeze에서 수행한다. canonical lock 등록만으로 releas
 | 2 | M13-002 | `feature → develop → main` 실제 protected PR qualification | ACCEPTED_WITH_EXCEPTION — C3; actual missing-CLA NOT_TESTED / DEFERRED |
 | 3 | M13-003 | canonical release build·manifest·attestation·OS package assets | COMPLETE — protected v0.1.0 candidate qualification |
 | 3a | CLI-UX-001 | multilingual terminal progress and structured human results | COMPLETE — local source / installed CLI qualification |
-| 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | BLOCKED — owner package-name decision |
+| 3b | CLI-UX-002 | OS preferred display-language auto | COMPLETE — native macOS/CI328 and local installed CLI PASS |
+| 3c | SEC-UPD-001 | guarded ecosystem update commands | NOT_STARTED / Ready — detailed plan complete |
+| 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | BLOCKED — SEC-UPD-001 and owner package-name decision |
 | 5 | M13-005 | exact publication·clean Host bootstrap·doctor·cross-ecosystem smoke·quarantine | NOT_STARTED |
 
 ### M13-001 — protected repository activation
@@ -3319,14 +3321,15 @@ catalogs are reused; no replacement or new runtime/CI scaffold is justified.
   update selection/CLI, guarded existing-state ownership/replacement and actual
   per-ecosystem benign/malicious-fixture/unchanged-on-failure qualification. Read
   [update quarantine contract](../user-journey-cli-ia/06-update-quarantine.md).
-- CLI-UX-002: IN_PROGRESS. IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO /
-  ACCEPTANCE_CLOSED=NO for full platform scope. Local exact source checks, real
-  WSL/PTY and installed auto are qualified; MISSING ordinary native macOS CI and
-  final closure. [Qualification](./evidence/cli-os-language/qualification-20261018.md).
+- CLI-UX-002: COMPLETE. IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES /
+  ACCEPTANCE_CLOSED=YES / MISSING=none for the documented bounded OS-language scope.
+  Exact local source checks, WSL/PTY16 cases, installed auto/JSON inspect and
+  ordinary CI328 ten jobs including native macOS passed. [Qualification](./evidence/cli-os-language/qualification-20261018.md).
   Read [OS-language correction](../user-journey-cli-ia/05-terminal-presentation.md#os-display-language-correction--cli-ux-002).
 
-Only CLI-UX-002 is IN_PROGRESS after the user requested detailed planning, a second
-review and then language implementation. SEC-UPD-001 receives a detailed plan only.
+The user-requested detailed plans, second review and CLI-UX-002 implementation
+are complete. No work item is IN_PROGRESS. SEC-UPD-001 remains NOT_STARTED/Ready;
+its detailed plan is complete and implementation is outside this request.
 Existing CLI-UX-001 receipts qualify
 its historical locale-only implementation, not these new requirements. Neither
 update-command availability nor running a native package manager outside helox
@@ -3334,7 +3337,7 @@ may be reported as HAA update protection without actual corresponding evidence.
 
 ### M13-004 — convenience installation channels
 
-Status: BLOCKED — SEC-UPD-001, CLI-UX-002 and owner package-name decision; no channel source edits.
+Status: BLOCKED — SEC-UPD-001 and owner package-name decision; CLI-UX-002 is complete; no channel source edits.
 Audit: IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO for the
 complete channel scope. Existing verifier-gated native installer/doctor and release
 manifest/build/publish consumers are reused; their historical acceptance is retained.

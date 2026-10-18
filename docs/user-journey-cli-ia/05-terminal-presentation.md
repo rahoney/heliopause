@@ -71,7 +71,8 @@ are replayed. Strings are bounded and escaped for safe terminal rendering.
 
 ## OS display-language correction — CLI-UX-002
 
-Status: implemented/wired with local qualification; native macOS CI pending.
+Status: COMPLETE for the documented bounded OS reads and fallback; local WSL/PTY,
+installed CLI and ordinary CI328 including native macOS PASS.
 [Current qualification](../planning/evidence/cli-os-language/qualification-20261018.md)
 owns exact source and platform scope. The former locale-only algorithm was not
 the user's complete OS-language intent. Command names such as install stay English independently of
