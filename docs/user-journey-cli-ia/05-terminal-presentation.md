@@ -94,3 +94,68 @@ lookup must never prevent inspection or contaminate JSON result stdout.
 [Baseline and qualification gaps](../planning/evidence/prepublication-gaps/baseline-20261018.md)
 remain open; retaining auto is the selected target, not a claim that its OS lookup
 already works.
+
+### CLI-UX-002 exact change / validation plan
+
+Pre-source baseline: 8bbe0a5; OS lookup IMPLEMENTED=NO/WIRED=NO/QUALIFIED=NO/
+ACCEPTANCE_CLOSED=NO; settings/catalogs/presenters already YES and reused.
+Only CLI-UX-002 becomes IN_PROGRESS after the documentation review checkpoint.
+
+- Extend cli/presentation.go configure only at the automatic-selection branch.
+  Keep explicit flag > HELOX_LANG > saved explicit preference. Inject a narrow
+  display-language callback through bootstrap.Run before PreparePresentation;
+  no Host executable invocation/import in CLI, no new Core/Policy Port or package.
+  Cache the OS probe once per command instance, including unavailable results;
+  parsing/pre-run/help must not spawn the same probe repeatedly. Manual selections
+  do not probe. Pass the existing process context through the composition closure.
+- Add a read-only display preference provider inside existing internal/hosttool.
+  It is separate from artifact tool admission and cannot register executable
+  roles or accept caller-controlled command/paths. macOS reads only global
+  AppleLanguages using fixed /usr/bin/defaults read -g AppleLanguages. WSL is
+  detected from bounded kernel information and uses fixed standard
+  /mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe with NoLogo,
+  NoProfile, NonInteractive and a constant .NET CurrentUICulture.Name query.
+  This reads the active Windows UI language, not keyboard/input preferences.
+  Use fixed working directories, bounded/minimal local environment, no shell
+  interpolation/PATH lookup/profile/module load/privilege/network. Do not loosen
+  existing artifact-executable identity or runtime helper rules for this probe.
+- Windows NTFS permission mapping is not Unix root0755: document that standard
+  Windows system path relies on Windows system-directory access control; it is
+  display telemetry only. Nonstandard automount/system-drive layouts or disabled
+  interop are unavailable, with explicit setting and locale/English fallback;
+  never search arbitrary PATH or user-provided scripts to make lookup succeed.
+  macOS uses its existing trusted system executable verification. Native Linux
+  falls back to process display locale hints (including bounded LANGUAGE lists).
+- Budget the external read at 2 seconds plus at most 100ms pipe-drain allowance,
+  at most4KiB stdout and4KiB stderr; stop/reap on context, overflow or time limit.
+  Reject malformed/empty/oversized output and non-language tokens. Never replay
+  raw stdout/stderr/errors. macOS preferred arrays and Windows primary UI tag
+  are parsed as bounded language tags, then the first supported tag is chosen.
+- Extend language_settings.go output with effective language source and a stable
+  fallback reason, including immediately after saving auto. Saved JSON stays
+  language-only and must persist auto; don't cache detected language to disk or
+  change OS/shell settings. Reuse text catalogs; en/ko explanatory labels cover
+  new settings output, other languages may use English fallback.
+- Unit-test platform selection and strict parsing with injected command results;
+  separately test real bounded process timeout/overflow/nonzero behavior. CLI
+  regressions cover all seven tags, unsupported/malformed preferences, source
+  reporting, overrides without probing, saved-auto persistence, one probe across
+  bootstrap/pre-run/help, JSON cleanliness and no-HOME/minimal-process behavior.
+  Include bootstrap tests in the actual check source inventory, not only CLI.
+- Validate canonical format/Quick/security/docs/workflow and targeted Race,
+  Darwin amd64/arm64 test compilation, actual compiled-binary PTY/config/help on
+  WSL (English process locale plus Windows UI preference), overrides and fallback.
+  Native macOS tests belong to ordinary PR CI; cross-compilation is not native
+  preference lookup evidence. Do not rerun CUDA because only presentation changes.
+- Review final diff for accidental Policy/runtime/helper changes, unsafe command
+  selection, duplicate probes, swallowed errors, stale setting confirmations and
+  unverified platform claims. Before updating installed local CLI preserve exact
+  old hash/owner/mode and root rollback; confirm no active consumers/unknown
+  resources, atomically replace only the qualified CLI, and verify hashes again.
+  Helpers/config/runtime images stay unchanged. Preserve necessary rollback and
+  raw evidence; delete completed private source/cache/binary/test settings.
+
+References: [Microsoft UI culture](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/get-uiculture),
+[Apple global preferences](https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/UserDefaults/AboutPreferenceDomains/AboutPreferenceDomains.html).
+Actual pre-implementation fixed Windows read returned ko-KR in0.50s on this WSL;
+this is a probe-method check, not application wiring/qualification.

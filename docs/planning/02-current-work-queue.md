@@ -9,12 +9,12 @@
 ```text
 Current milestone: M13 — Production Release & Operations
 Milestone status: IN_PROGRESS — runtime maintenance main delivery COMPLETE
-Active work item: SEC-UPD-001 — update quarantine command coverage
-Active work item status: NOT_STARTED / Ready — baseline complete; required before channel publication
+Active work item: CLI-UX-002 — OS preferred display-language auto
+Active work item status: IN_PROGRESS — detailed plan and second review before source; user authorized language implementation
 Predecessor: M13-003 — COMPLETE; protected v0.1.0 build, twelve attestations and OS package lifecycle PASS
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisite: CLI-UX-001 — historical bounded completion; OS-language correction remains open
-Next work item: CLI-UX-002 — NOT_STARTED / Ready; OS preferred display-language auto
+Next work item: SEC-UPD-001 — NOT_STARTED / Ready; detailed plan only in this request
 Then: M13-004 — BLOCKED on update/OS-language prerequisites and owner package naming; M13-005 NOT_STARTED
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
@@ -3306,7 +3306,7 @@ this bounded item. Native macOS execution and full ecosystem/CUDA reruns are not
 claimed by local UX qualification. Inspection/Policy/exit codes are retained.
 Public v0.1.0 predates this UI source and was not retagged or republished.
 
-### Prepublication corrections — SEC-UPD-001 then CLI-UX-002
+### Prepublication corrections — CLI-UX-002 then SEC-UPD-001
 
 User clarified that auto means OS display-language preference and that guarded
 updates are essential to protecting existing users from compromised new releases.
@@ -3319,12 +3319,14 @@ catalogs are reused; no replacement or new runtime/CI scaffold is justified.
   update selection/CLI, guarded existing-state ownership/replacement and actual
   per-ecosystem benign/malicious-fixture/unchanged-on-failure qualification. Read
   [update quarantine contract](../user-journey-cli-ia/06-update-quarantine.md).
-- CLI-UX-002: NOT_STARTED / Ready. IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO /
+- CLI-UX-002: IN_PROGRESS. IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO /
   ACCEPTANCE_CLOSED=NO for OS preferred-language auto. MISSING bounded Windows/WSL
   and macOS/native detection/fallback, displayed selection source and platform
   qualification. Read [OS-language correction](../user-journey-cli-ia/05-terminal-presentation.md#os-display-language-correction--cli-ux-002).
 
-No work item is IN_PROGRESS in this audit. Existing CLI-UX-001 receipts qualify
+Only CLI-UX-002 is IN_PROGRESS after the user requested detailed planning, a second
+review and then language implementation. SEC-UPD-001 receives a detailed plan only.
+Existing CLI-UX-001 receipts qualify
 its historical locale-only implementation, not these new requirements. Neither
 update-command availability nor running a native package manager outside helox
 may be reported as HAA update protection without actual corresponding evidence.
