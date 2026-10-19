@@ -274,6 +274,7 @@ func (p pypiVenvPlan) verifyState(state pypiVenvState) error {
 }
 
 type pypiVenvGuard struct {
+	file     *os.File
 	path     string
 	identity os.FileInfo
 }
@@ -285,20 +286,25 @@ func acquirePyPIVenvGuard(root string) (pypiVenvGuard, error) {
 		return pypiVenvGuard{}, errors.New("virtual environment is already being mutated")
 	}
 	info, se := f.Stat()
-	err = errors.Join(se, f.Sync(), f.Close())
+	err = errors.Join(se, f.Sync())
 	if err != nil {
-		return pypiVenvGuard{}, err
+		return pypiVenvGuard{}, errors.Join(err, f.Close())
 	}
-	return pypiVenvGuard{path, info}, nil
+	return pypiVenvGuard{path: path, identity: info, file: f}, nil
 }
 func (g pypiVenvGuard) verify() error {
 	now, err := os.Lstat(g.path)
 	if err != nil || !os.SameFile(g.identity, now) || !now.Mode().IsRegular() || !pypiSingleLink(now) {
 		return errors.New("transaction guard identity changed")
 	}
-	return nil
+	return verifyPinnedMutationLock(g.file, g.identity, now)
 }
-func (g pypiVenvGuard) release() error {
+func (g pypiVenvGuard) release() (resultErr error) {
+	defer func() {
+		if g.file != nil {
+			resultErr = errors.Join(resultErr, g.file.Close())
+		}
+	}()
 	if err := g.verify(); err != nil {
 		return err
 	}
@@ -391,7 +397,11 @@ func beginPyPIVenvTransaction(p pypiVenvPlan) (_ *pypiVenvTransaction, resultErr
 func (t *pypiVenvTransaction) close() error {
 	// Uncertain recovery retains both the guard and the recovery directory.
 	if t.recovery {
-		return t.guard.verify()
+		err := t.guard.verify()
+		if t.guard.file != nil {
+			err = errors.Join(err, t.guard.file.Close())
+		}
+		return err
 	}
 	return t.guard.release()
 }

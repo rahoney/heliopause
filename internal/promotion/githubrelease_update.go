@@ -10,7 +10,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"syscall"
 
 	artifactgithub "github.com/rahoney/heliopause/internal/artifact/githubrelease"
 	"github.com/rahoney/heliopause/internal/core/domain"
@@ -61,7 +60,6 @@ func (p *GitHubReleaseUpdatePreparation) BeginInstallUpdate(ctx context.Context,
 }
 
 type githubReplacementSession struct {
-	lock                                                                                          *os.File
 	owner                                                                                         *GitHubReleasePromotion
 	install                                                                                       domain.InstallContext
 	reference                                                                                     domain.ArtifactReference
@@ -108,14 +106,6 @@ func (p *GitHubReleasePromotion) begin(ctx context.Context, install domain.Insta
 			result = nil
 		}
 	}()
-	// Keeping the original inode open prevents unlink/recreate ABA reuse.
-	s.lock, err = s.guard.root.OpenFile(filepath.Base(s.guard.path), os.O_RDONLY|syscall.O_NONBLOCK, 0)
-	if err != nil {
-		return nil, err
-	}
-	if err := s.verifyLock(); err != nil {
-		return nil, err
-	}
 	if err := s.checkRecovery(); err != nil {
 		return nil, err
 	}
@@ -233,18 +223,6 @@ func (s *githubReplacementSession) verifyState() error {
 	return nil
 }
 
-func (s *githubReplacementSession) verifyLock() error {
-	if s.lock == nil || s.guard.root == nil {
-		return errors.New("GitHub original lock descriptor unavailable")
-	}
-	current, err := s.guard.root.Lstat(filepath.Base(s.guard.path))
-	held, heldErr := s.lock.Stat()
-	if err != nil || heldErr != nil || !os.SameFile(s.guard.fileInfo, current) || !os.SameFile(current, held) || !pypiSingleLink(held) || held.Size() != 0 || held.Mode().Perm() != 0o600 || !held.ModTime().Equal(s.guard.fileInfo.ModTime()) {
-		return errors.New("GitHub original lock identity or content changed")
-	}
-	return s.guard.verify()
-}
-
 func (s *githubReplacementSession) verify(ctx context.Context) error {
 	if s == nil || s.closed || ctx == nil {
 		return errors.New("GitHub original-state session is unavailable")
@@ -252,7 +230,7 @@ func (s *githubReplacementSession) verify(ctx context.Context) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	if err := s.verifyLock(); err != nil {
+	if err := s.guard.verify(); err != nil {
 		return err
 	}
 	parent, err := os.Lstat(filepath.Dir(s.install.Target().String()))
@@ -635,14 +613,7 @@ func (s *githubReplacementSession) Close() error {
 		s.closeErr = errors.Join(s.closeErr, s.state.Close())
 	}
 	if s.guard.root != nil {
-		if err := s.verifyLock(); err != nil {
-			s.closeErr = errors.Join(s.closeErr, err, s.guard.root.Close())
-		} else {
-			s.closeErr = errors.Join(s.closeErr, s.guard.release())
-		}
-	}
-	if s.lock != nil {
-		s.closeErr = errors.Join(s.closeErr, s.lock.Close())
+		s.closeErr = errors.Join(s.closeErr, s.guard.release())
 	}
 	return s.closeErr
 }

@@ -24,6 +24,7 @@ type npmProjectPlan struct {
 }
 
 type npmProjectGuard struct {
+	file *os.File
 	path string
 	info os.FileInfo
 }
@@ -35,11 +36,10 @@ func acquireNPMProjectGuard(root string) (npmProjectGuard, error) {
 		return npmProjectGuard{}, errors.New("npm project is already being mutated or lock is unavailable")
 	}
 	info, statErr := file.Stat()
-	if err := errors.Join(statErr, file.Close()); err != nil {
-		_ = os.Remove(path)
-		return npmProjectGuard{}, errors.New("close npm project transaction lock")
+	if statErr != nil {
+		return npmProjectGuard{}, errors.Join(errors.New("inspect npm project transaction lock"), statErr, file.Close())
 	}
-	return npmProjectGuard{path: path, info: info}, nil
+	return npmProjectGuard{path: path, info: info, file: file}, nil
 }
 
 func (g npmProjectGuard) verify() error {
@@ -50,10 +50,15 @@ func (g npmProjectGuard) verify() error {
 	if err != nil || g.info == nil || !os.SameFile(g.info, now) || now.Mode() != g.info.Mode() || !pypiSingleLink(now) {
 		return errors.New("npm project transaction lock changed")
 	}
-	return nil
+	return verifyPinnedMutationLock(g.file, g.info, now)
 }
 
-func (g npmProjectGuard) release() error {
+func (g npmProjectGuard) release() (resultErr error) {
+	defer func() {
+		if g.file != nil {
+			resultErr = errors.Join(resultErr, g.file.Close())
+		}
+	}()
 	if err := g.verify(); err != nil {
 		return err
 	}

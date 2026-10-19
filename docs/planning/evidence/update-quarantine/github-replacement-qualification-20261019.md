@@ -55,3 +55,9 @@ The original two failures remain unchanged. The common lock owner used by older
 lanes must receive its own demonstrated correction before full update acceptance;
 the [lock identity plan](./transaction-lock-identity-correction-20261019.md) owns
 its exact RED scope/edit map/second review and follow-up evidence.
+
+The committed plan1ea19b7's common guard correction passes the same direct matrix
+and GitHub transaction corpus6.60s, including retained recovery names/closed FD.
+GitHub now uses that shared pinned descriptor rather than opening a second one.
+Full canonical/default/Race, actual affected consumers and new-source CI remain
+pending under the correction owner; this is a focused result only.

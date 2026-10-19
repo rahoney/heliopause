@@ -28,6 +28,7 @@ type goProjectPlan struct {
 }
 
 type goProjectGuard struct {
+	file     *os.File
 	path     string
 	root     *os.Root
 	rootInfo os.FileInfo
@@ -65,19 +66,22 @@ func acquireProjectTransactionGuard(root, lockName string) (goProjectGuard, erro
 		return goProjectGuard{}, errors.New("go project is already being mutated or lock is unavailable")
 	}
 	fileInfo, statErr := file.Stat()
-	if err := file.Close(); err != nil || statErr != nil {
-		_ = directory.Remove(filepath.Base(path))
-		_ = directory.Close()
-		return goProjectGuard{}, errors.New("close Go project transaction lock")
+	if statErr != nil {
+		return goProjectGuard{}, errors.Join(errors.New("inspect Go project transaction lock"), statErr, file.Close(), directory.Close())
 	}
-	return goProjectGuard{path, directory, info, fileInfo}, nil
+	return goProjectGuard{path: path, root: directory, rootInfo: info, fileInfo: fileInfo, file: file}, nil
 }
 
 func (g goProjectGuard) release() (resultErr error) {
 	if g.path == "" || g.root == nil {
 		return errors.New("go project transaction lock is unavailable")
 	}
-	defer func() { resultErr = errors.Join(resultErr, g.root.Close()) }()
+	defer func() {
+		resultErr = errors.Join(resultErr, g.root.Close())
+		if g.file != nil {
+			resultErr = errors.Join(resultErr, g.file.Close())
+		}
+	}()
 	if err := g.verify(); err != nil {
 		return err
 	}
@@ -88,12 +92,15 @@ func (g goProjectGuard) release() (resultErr error) {
 }
 
 func (g goProjectGuard) verify() error {
+	if g.root == nil || g.file == nil {
+		return errors.New("go project guard descriptor unavailable")
+	}
 	rootInfo, rootErr := os.Lstat(filepath.Dir(g.path))
 	info, err := g.root.Lstat(filepath.Base(g.path))
 	if rootErr != nil || err != nil || !os.SameFile(g.rootInfo, rootInfo) || !os.SameFile(g.fileInfo, info) || !info.Mode().IsRegular() {
 		return errors.New("go project guard identity changed")
 	}
-	return nil
+	return verifyPinnedMutationLock(g.file, g.fileInfo, info)
 }
 
 func freezeGoProject(root string) (goProjectPlan, error) {

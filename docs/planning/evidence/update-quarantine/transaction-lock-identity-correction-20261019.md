@@ -94,3 +94,21 @@ calling release. That branch must still close the retained descriptor after its
 final identity check. Add a recovery test that verifies name preservation,
 continued acquisition refusal and closed FD. Ordinary and failure releases close
 their descriptors exactly once; session owners retain their existing idempotence.
+
+## Bounded same-input GREEN
+
+After the committed pre-edit plan1ea19b7, mutation-lock-identity-green executes
+6.60s and passes every ordinary/foreign condition across all three physical
+owners, the PyPI recovery name/closed-FD/acquisition-refusal case, and the full
+current GitHub transaction corpus. Each existing exclusive creator retains its
+own FD; a private verifyPinnedMutationLock checks held/path/original identity,
+regular empty0600/single-link content and mtime. Release closes the FD on success
+and refusal while preserving uncertain names. The PyPI recovery branch closes
+its FD without unlinking. GitHub removes its duplicate second open and reuses
+the corrected common owner. Existing selection, Evidence, transaction structure,
+SDK/runtime/observer/budgets remain unchanged.
+
+MISSING: full canonical/default/Race, actual small affected installed consumers
+with original restoration/deletion, and exact new-source remote acceptance.
+This focused GREEN does not reclassify historical failures or imply those
+remaining results already passed.
