@@ -30,7 +30,7 @@ its publisher with receipt/state support, rather than replacing that publisher.
 | core/domain/install.go and install tests | Add current-lane managed GitHub asset mode/constructor; preserve all existing modes, Valid and RequiresNewTarget meaning | Old NEW_TARGET remains true; new mode false; foreign/zero modes invalid. No generic Core port/interface or future placeholder |
 | artifact/githubrelease client/reference helpers | Expose bounded normalized reference/repository binding from the already validated frozen resolved locator, not lossy owner-repo display identity | Hyphen collision, exact owner/repo/tag/asset/numeric-ID binding, malformed locator, no second resolve/read; unchanged original parser/acquisition tests |
 | promotion/githubrelease_promotion.go and scoped receipt/session/transaction helpers | Extend existing exact staged publication with optional configured independent state/Evidence and installed marker; implement existing InstallUpdatePreparation/Session for --replace | Direct RED for missing receipt/managed replacement; original no-overwrite retains refusal; new production installs record ownership without altering bytes/format/inspection |
-| promotion existing guard/member/rooted no-replace/sync helpers | Reuse anchored parent guard and existing bounded member snapshots; protect exact old target and independent state, publish only selected staged asset, rollback conservatively | Every original/staged/state/parent swap, symlink/hardlink/mode/time drift, cancellation, concurrent guard, interrupted backup; unknown foreign files survive successful/failing cleanup |
+| promotion existing guard/bounded-file/rooted no-replace/sync helpers | Reuse anchored parent guard and snapshotBoundedPromotionFile with the existing M6 asset bound; protect exact old target and independent state, publish only selected staged asset, rollback conservatively | Every original/staged/state/parent swap, symlink/hardlink/mode/time drift, cancellation, concurrent guard, interrupted backup; unknown foreign files survive successful/failing cleanup |
 | application existing InstallUpdateService | Reuse directly; no source edit unless an actual required gap is demonstrated | Existing ordering/ALLOW/close failure tests plus GitHub session binding; no inspection/staging skip or success after late failure |
 | cli/root.go, presentation/catalog/translations and existing install report | Add --replace static validation and per-request new mode; bind update service only for explicit intent | Explicit --target required; unsupported adopt/latest/native flags refuse before runtime; old new/default target still strict; EN/KO explanations, seven-language core help and JSON same facts |
 | bootstrap/bootstrap.go GitHub composition | Reuse same client/verifier/inspector/Evidence/Policy/staging/publisher; bind managed initial publisher and per-request replacement service | Static help without runtime, no shared mutable session, old install/inspect unaffected |
@@ -89,3 +89,26 @@ as replacement; metadata must never approve bytes that were not published.
 
 This review is a plan, not implementation/qualification. Activate only after
 Terraform CI342 acceptance, then recheck audited inputs for intervening changes.
+
+### Concrete reuse-boundary review before source
+
+The generic npm member verifier calls snapshotNPMFile with64MiB, while M6 already
+allows an asset up to512MiB. Reusing that entire tree verifier would silently
+narrow GitHub support. Reuse snapshotBoundedPromotionFile and its stored bound
+instead, with512MiB for the single asset and a small explicit metadata bound;
+check the exact two-file directory membership through a confined root. Preserve
+the existing acquisition/archive/resource bounds. Add a synthetic over64MiB
+bounded-snapshot test without executing/downloading a large public artifact.
+Existing snapshot matches checks identity/hash/size/mode but not original mtime;
+the GitHub guard must explicitly compare original mtime as well and verify this
+with a same-bytes/timestamp-only drift test. No existing npm/PyPI behavior is changed.
+
+New receipt construction also binds Manifest target/context, primary graph
+identity, resolved locator declaration/size, inspected digest and all Evidence
+to the actual destination before publication; self-consistent JSON/hash alone
+does not establish these relationships. Test wrong-target bundles and receipt
+swaps independently. Repository binding stays behind the existing artifact
+adapter's typed locator parser; no raw REST parsing or ambiguous name splitting
+is moved into Core/Application. Initial target/state failure and close failure
+must retain the first error and accurate publication status. Exact publication,
+approved independent state and safe cleanup are separate acceptance assertions.
