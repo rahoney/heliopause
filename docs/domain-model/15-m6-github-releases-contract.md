@@ -136,3 +136,10 @@ its acceptance criteria.
 - [Verifying release integrity](https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/secure-your-dependencies/verify-release-integrity) — immutable release and local asset verification semantics
 - [Artifact attestations](https://docs.github.com/en/actions/concepts/security/artifact-attestations) — provenance requires cryptographic verification and is not an independent safety verdict
 - [Verify artifact attestations](https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations/use-artifact-attestations) — verified attestation is an optional future input, not raw metadata
+
+## SEC-UPD-001 scoped extension
+
+The original NEW_TARGET/no-overwrite contract above remains strict. Explicit
+managed-target replacement is a separate request mode whose current semantics
+are owned by the [reviewed update contract](../user-journey-cli-ia/06-update-quarantine.md#github-managed-asset-replacement--reviewed-initial-semantics).
+It is planned, not implemented or qualified by historical M6 evidence.

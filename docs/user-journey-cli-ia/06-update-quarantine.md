@@ -131,8 +131,8 @@ An earlier bounded install/UX qualification does not close this update acceptanc
 ## Implementation map and scoped command semantics
 
 This is the reviewed implementation map. Qualified npm/PyPI scopes are recorded
-above; Cargo and bounded Go -u are now qualified. Terraform upgrade and
-GitHub replacement remain to implement. Execute
+above; Cargo and bounded Go -u are now qualified. Terraform upgrade is wired and locally qualified; its new-source remote
+acceptance is pending. GitHub replacement remains to implement. Execute
 one ecosystem at a time after CLI-UX-002; keep other lanes unmodified until their
 own baseline/selection contract is verified. Minimum planned forms are:
 
@@ -614,3 +614,69 @@ facts and truthful NOT_COMPLETED status without asserting a successful rollback.
 The [Go audit, pinned semantics, edit map and second review](../planning/evidence/update-quarantine/go-update-baseline-20261019.md)
 precede product source. The synthetic file-proxy probe is diagnostic-only and
 never permits custom product sources or replaces actual installed qualification.
+
+## GitHub managed asset replacement — reviewed initial semantics
+
+Status: reviewed, NOT_STARTED. Terraform new-source acceptance closes first.
+The [independent baseline/edit map/second review](../planning/evidence/update-quarantine/github-replacement-baseline-20261019.md)
+precedes source. Existing M6 exact selection, acquisition, declared-digest check,
+static/ELF inspection, Policy, Evidence, Manifest/SBOM and staging remain owners.
+
+Supported explicit form:
+
+```text
+helox github install owner/repo@exact-tag#exact-asset --target /absolute/managed-directory --replace
+```
+
+GitHub has no universal package-update command. The existing install command
+keeps exact tag/asset input; --replace selects a proven managed target before
+resolution. Require explicit --target with --replace. No latest, implicit target
+discovery, native-tool forwarding, force, --adopt, token or arbitrary API source.
+Normal install keeps NEW_TARGET/no-overwrite, including its generated default
+directory. A dedicated bounded managed-asset context preserves that invariant;
+replacement never hides behind a NEW_TARGET request or an unrelated npm mode.
+
+Production initial installs extend the existing exact-byte publisher with an
+installed metadata marker and independent controller approval outside the target.
+The target remains a directory containing one unchanged opaque archive or verified
+ELF asset plus controller metadata. Archives are not extracted and embedded
+programs are not executed. The receipt binds exact repository/tag/asset, frozen
+resolved identity/declared digest, observed digest/size/mode, Manifest identity,
+completed checks, real Evidence references/file digests and recorded entry/set
+ALLOW. The marker is a reference/binding, never self-authenticating authority.
+
+Before new resolution, a request-scoped session locks and snapshots the canonical
+parent/target, marker, independent approval and exact full installed membership.
+Validate all old Evidence through the existing trusted reader and all old bytes,
+ordinary modes, single-link file identities and state/parent containment. Refuse
+unmanaged or legacy receiptless targets, corrupt/missing/aliased old proof,
+foreign files, symlinks/hardlinks, interrupted recovery and unsupported layouts.
+Neither --replace nor an old matching asset hash grants adoption. Existing
+receiptless installations need a new managed target; no retrospective ownership
+is invented from old success or user files.
+
+New selection must stay in the exact same normalized owner/repo, proven from
+the typed frozen locator, not ambiguous owner-repo display text. An explicitly
+selected tag or asset basename may differ; no tag ordering or platform equivalence
+is inferred. Resolve once and use its frozen numeric asset identity through the
+same complete inspection/Policy/staging workflow. Reinspection of the same tag
+still creates fresh required checks/Evidence and never reuses an old ALLOW.
+GitHub API digest is a source declaration under M6, not a publisher signature or
+cryptographically verified attestation.
+
+Promotion performs no network/Host execution/Policy reevaluation. Recheck original
+target/state and selected staged bytes before publishing. Use the existing anchored
+guard/no-replace/member/sync primitives to replace only the proven owned directory,
+then bind independent approval to the exact published bytes. Rollback and cleanup
+verify old/new target, parent, state and recovery membership before removing or
+restoring anything; foreign drift is preserved with an explicit recovery failure.
+Never RemoveAll an unproven target/backup or overwrite a target that appeared
+concurrently. Initial receipt publication also needs guarded failure/rollback
+coverage; orphan or partially published approval is not a managed installation.
+
+Human and JSON retain the existing install result/check/Evidence facts and show
+that replacement is confirmed only after publication and session close succeed.
+English/Korean explain exact scope and ownership refusal; other supported core
+labels/help use existing catalogs/fallback. Late failure retains completed security
+facts and primary cause but never claims successful install or rollback. No new
+Core port, runtime/observer/budget, generic updater daemon or CI job is needed.

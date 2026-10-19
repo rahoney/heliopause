@@ -5,10 +5,10 @@ Only SEC-UPD-001 is IN_PROGRESS. The [pre-source audit/edit map/second review](.
 was committed170140c; Go closure/activation was committed2fcd5d0 before Terraform
 production edits. Existing exact selection, signer verification, archive/probe,
 Evidence/Policy/cache and transaction are extended in place.
-MISSING: same-candidate actual upgrade/old-init/refusals/restoration/cleanup and
-new-source Required/exact checkout/native macOS/old-consumer/CPU cleanup evidence.
-Current tests below use controlled synthetic fixtures, not public authenticity
-or actual provider execution. No permanent installation/main merge/release.
+MISSING: new-source Required/exact checkout/native macOS/old-consumer/CPU cleanup
+evidence. Local actual acceptance below is complete; CI342 remains pending.
+The early local tests use controlled synthetic fixtures and are separate from
+the actual public artifacts below. No permanent installation/main merge/release.
 
 ## Wired bounded behavior
 
@@ -81,4 +81,60 @@ runtime composition or wrong pip strategy text. Public metadata availability for
 random3.7.1/3.7.2 and partner github6.6.0/6.7.0 was captured separately; HTTP
 metadata presence is fixture preparation, not signer/artifact verification, and
 its completed temporary operator was archived/deleted. Installed source evidence
-will be added only after actual execution. GitHub replacement and launcher remain pending.
+is recorded below after actual execution. GitHub replacement and launcher remain pending.
+
+## Installed sourcef882921 qualification
+
+Sourcef882921f8962d808969d5e8da80fb9a800bf4bfb/tree94d973d44ab6dd5040d988967e657f17beafcc77
+contains exactly28 changed paths; non-Markdown committed bytes match the final
+complete checked inputs and candidate above. Normal draft PR38 source push starts
+CI342/run39244171743. Documentation-only follow-up is held while that CI runs.
+
+The first actual random3.7.1 exact init succeeds7.88s/Providers1 with all three
+required Evidence. The operator then wrongly compares approval.files, including
+root/subdirectory records, to a file-only actual list. This is an operator failure,
+not a product failure; upgrade is NOT_REACHED in that capture. Preserve original
+terraform-upgrade-installed/result and lifecycle14.00s/exit1, canonical helper
+2481696wait0/CONFIRMED_STOPPED, original restoration and fresh root postguard PASS.
+The corrected whole membership/kind/mode/file size/hash validator passes on the
+actual seed and rejects a deliberate changed digest before reuse. Product and
+all limits remain unchanged; exact operators and correction receipt are archived.
+
+The resume reuses that seed and completes fifteen more actual calls133.35s, for
+sixteen distinct phases overall. It independently authenticates official random
+3.7.1/3.7.2 and partner github6.6.0/6.7.0 with the production signer/static/probe
+pipeline; metadata availability is not used as signer authority.
+
+| Actual consumer | Result |
+| --- | --- |
+| partner seed6.6.0 / complete old two-provider init | PASS9.79s /14.28s; both old versions installed |
+| managed native -upgrade | PASS17.02s; random3.7.2 and github6.7.0, ordinary lock0640 retained, configuration unchanged |
+| managed --upgrade no-op | PASS14.49s; all checks/Evidence fresh, both controls bytes/inode/mode/mtime unchanged |
+| providerless native explicit --adopt | PASS14.55s; both providers freshly inspected and installed |
+| edited managed controls, Korean --adopt | PASS14.57s; translated provider result/scope and fresh Evidence |
+| native -upgrade=false; implicit native/edited controls; no matching version; foreign marker/backend; corrupt approval even with --adopt | All refuse; entire project unchanged in archived assertions and six before/after inventories |
+| old exact init with both current providers retained | PASS14.94s; ordinary route remains valid |
+| reachable local module constraints | PASS13.98s; both older constrained versions selected, root/child configuration unchanged |
+
+Every updated entry completes required signed-package/static/dynamic checks and
+ALLOW before complete publication. Five update phases produce30 fresh Evidence,
+separate from12 seed and6 old exact records. Postanalysis verifies all48 unique
+identity/run/digest/reference bindings and approval Evidence file hashes, final
+complete directory/file membership and permissions, archive/executable digests,
+controls and unchanged refusal snapshots. Preserve normalized Evidence/approvals/
+verified-cache receipts and exact operators under the raw owner; these local raw
+files are not claimed remotely available.
+
+Canonical helper2482678wait0/CONFIRMED_STOPPED, original CLI/observer restoration,
+all four protected installed identities, empty runtime/socket/Docker and fresh
+root postguard PASS. Independent postanalysis PASS precedes deletion. Fresh root
+process executable/cwd/argv/FD checks find no active/unknown references, then
+718984752B of completed trial/cache/lifecycles/candidate/operators are deleted.
+The last cleanup operator4736B is separately checked, archived and deleted.
+Active shared checker/source/cache/observer/SDK and protected original backups
+remain necessary; no completed Terraform payload or operator is retained in/tmp.
+Raw receipts terraform-upgrade-postanalysis.json, terraform-upgrade-cleanup.json
+and terraform-upgrade-cleanup-operator-deleted.json own those exact facts.
+
+CI342 is still pending. Local success does not close new-source native macOS,
+existing remote consumers, CPU or Required acceptance.
