@@ -3344,7 +3344,7 @@ linked qualification owners rather than duplicate progress narratives here.
 | Cargo lock update | YES / YES / YES / YES | [Reviewed audit](./evidence/update-quarantine/cargo-update-baseline-20261019.md) and [current qualification](./evidence/update-quarantine/cargo-update-qualification-20261019.md); source85ac4c1; final local checks and20 installed phases including old add/build, dependency-free/workspace, restoration and145.90MB cleanup PASS; CI338 ten SUCCESS; same checkout tree,36 related Go/Cargo/Terraform consumers, CPU277.12s/five helper wait0/final confirmed cleanup |
 | Scoped Go get -u | YES / YES / YES / YES | [Reviewed audit/plan](./evidence/update-quarantine/go-update-baseline-20261019.md) and [metadata/pruning amendment](./evidence/update-quarantine/go-mvs-metadata-correction-20261019.md) precede their sources. [Current qualification](./evidence/update-quarantine/go-update-qualification-20261019.md): sourcee00 canonical Quick206.98s/security10.79s/docs/Race129.57s and installed15 phases PASS, including Cobra metadata build65.14s and old grpc41-module get114.11s/download87.14s;212 new update/grpc Evidence, canonical restoration/postguards and568.85MB new trial cleanup. Earlier394 CI340 FAILED at pruned lower checksum membership. CI341 ten SUCCESS; actual checkout whole-tree equality/native macOS,36 existing Go/Cargo/Terraform consumers/CPU192.40s/five helperwait0/final confirmed cleanup; MISSING none for bounded Go scope |
 | Terraform project upgrade | YES / YES / YES / YES | [Pre-source audit](./evidence/update-quarantine/terraform-update-baseline-20261019.md) and [final qualification](./evidence/update-quarantine/terraform-update-qualification-20261019.md): sourcef882921 final canonical/related Race and signer-proof Race, actual16 phases/48 independent Evidence, restoration/postguards and718.98MB completed trial cleanup PASS. CI342 ten SUCCESS, exact checkout whole-tree/native macOS,36 existing Go/Cargo/Terraform consumers/CPU192.80s/five helperwait0/final confirmed cleanup. MISSING none for bounded Terraform scope |
-| GitHub managed replacement | YES / YES / NO / NO | Current lane; [independent baseline/edit map/second review](./evidence/update-quarantine/github-replacement-baseline-20261019.md) precedes source. [Current qualification](./evidence/update-quarantine/github-replacement-qualification-20261019.md): independent receipt/old Evidence, held replacement session/rollback/foreign preservation, Application/bootstrap/CLI/report wired; direct lock RED and corrected GitHub transaction GREEN6.69s/report GREEN10.31s. Same-input Quick150.58s/security8.75s/docs/full related Race221.88s PASS; MISSING public actual/restoration/cleanup/new-source CI and installed/remote acceptance for [shared lock correction](./evidence/update-quarantine/transaction-lock-identity-correction-20261019.md) |
+| GitHub managed replacement | YES / YES / NO / NO | Current lane; [independent baseline/edit map/second review](./evidence/update-quarantine/github-replacement-baseline-20261019.md) precedes sourcecb1f944. [Qualification](./evidence/update-quarantine/github-replacement-qualification-20261019.md): same-input Quick150.58s/security8.75s/docs/full related Race221.88s; actual18 GitHub calls49.06s/17 fresh success Evidence plus15 affected npm/PyPI/Cargo/Go/Terraform calls241.65s/32 fresh success Evidence PASS. Canonical helperwait0/original restoration/fresh guard and353343187B completed trial cleanup PASS. MISSING CI343 final Linux/Required and remote consumer review for this source and [shared lock correction](./evidence/update-quarantine/transaction-lock-identity-correction-20261019.md) |
 
 The qualified rows retain their source-specific bounded actual/CI scopes in the
 linked reports. Broader native named PyPI footprints remain unsupported. Go's
@@ -3352,11 +3352,15 @@ original metadata/build failure and CI340 pruning failure stay historical; the
 reviewed amendment and final sourcee00/actual15 phases/CI341 close bounded Go only.
 
 Current lane: GitHub managed asset replacement after Terraform CI342 closure.
-Its independent audit/second review and bound/mtime/Manifest-context amendment
-precede source; all audited production owners are unchanged sincef882921. Reuse
-existing exact resolution/inspection/Policy/Manifest/staging/publication and the
-existing InstallUpdateService/Session. Implement only the listed ownership,
-managed request/transaction/wiring and acceptance gaps.
+Its independent audit/second review and bound/mtime/Manifest-context amendments
+precede sourcecb1f944. Existing resolution/inspection/Policy/Manifest/staging and
+InstallUpdateService/Session are reused; recorded ownership/replacement and the
+demonstrated shared lock/FD mode corrections pass local checks and actual CLI.
+Final review identifies one additional acceptance assertion: explicit real M6
+unsafe/incomplete/mismatched-v2 UPDATE after allowed v1. The
+[pre-test amendment](./evidence/update-quarantine/github-replacement-qualification-20261019.md#final-acceptance-review-amendment-before-test-edits)
+maps its existing Application owner and test-only checks; production is unchanged.
+That assertion, exact new-source remote acceptance and final cross-lane review remain.
 Only SEC-UPD-001 is IN_PROGRESS. The interactive launcher, main merge and
 publication remain pending. No candidate is permanently activated. Completed
 trial payload/cache/lifecycle/operators are deleted after raw/Evidence/approval/

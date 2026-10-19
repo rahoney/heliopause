@@ -7,9 +7,11 @@ The [baseline/edit map/second review](./github-replacement-baseline-20261019.md)
 and [canonical scope](../../../user-journey-cli-ia/06-update-quarantine.md#github-managed-asset-replacement--reviewed-initial-semantics)
 own the exact remaining work. No main merge, permanent activation or publication.
 
-MISSING: actual public archive/ELF consumers, restoration/cleanup and new-source
-CI. Complete same-input canonical/default/Race passes below. The shared mutation-lock gap
-also remains open under its [independent correction plan](./transaction-lock-identity-correction-20261019.md).
+MISSING: new-source CI343 final Linux/Required and full remote consumer review,
+plus the explicit M6 update-policy regression identified in final review below.
+Local public archive/ELF, affected shared-lock consumers, restoration and completed
+trial cleanup PASS below. The [shared correction](./transaction-lock-identity-correction-20261019.md)
+has the same remaining remote boundary.
 
 Raw owner docs/github-logs/update-quarantine-20261018 is local/untracked; no remote
 availability is claimed. First direct CLI admission RED1.27s actually executes
@@ -113,3 +115,91 @@ exact footprint proof, held original FD through close, original/selected/state
 checks across each rollback/publication/cleanup phase, and FD-only asset mode.
 Known foreign state preserves recovery. Existing ordinary new-target behavior,
 common copy mode0 and old source/runtime/inspection/Policy budgets stay intact.
+
+## Installed sourcecb1 qualification and completed cleanup
+
+Source cb1f944581837682f7c714a17d1d5f37cc6b103d, whole tree
+29c8c08e3f63a0d846cb677a461d93f8751eafd8, binds the final local checks and
+candidate above. The first public fixture jq1.8.0.tar.gz is correctly blocked:
+its manual.yml is a TAR hardlink. Declared digest verification and static
+inspection finish with M6_ARCHIVE_INVALID/BLOCK, no promotion. Preserve this
+2.37s/exit20 result; its operator had incorrectly assumed that archive a benign
+positive. No replacement/shared tests are reached in that first campaign. Its
+helper2535020wait0, original restoration and fresh postguard pass; completed first
+trial/operators28418379B and cleanup operator4336B are deleted. Change only the
+positive archive fixture, never relax existing link restrictions.
+
+The same source/candidate runs18 actual calls49.06s, all expected outcomes PASS:
+cli/cli v2.101.0→v2.102.0 opaque tar.gz replacement4.25s, fresh no-op3.96s and
+Korean replacement4.16s; jq1.8.0→1.8.1 bare Linux ELF replacement5.74s and fresh
+no-op5.30s. The ELF path includes its required isolated dynamic check and0500;
+opaque archives remain0400 and are never extracted/executed. Seven successful
+approvals bind17 distinct fresh Evidence records;20 total records include
+inspection preceding ordinary no-overwrite refusal. Actual API-declared digests,
+installed bytes/size/mode, independent state/marker, Evidence subject/hash/checks
+and Manifest/SBOM are reconciled. Publisher signatures/attestations are not claimed.
+
+Eleven unchanged-target refusals cover ordinary no-overwrite, missing target,
+repository switch, foreign file, corrupt independent approval, corrupt old
+Evidence, foreign symlink, hardlinked asset, receiptless layout, unsupported
+adoption and nonexistent release. The controlled external symlink target retains
+its bytes and0644 mode. Each refusal's full before/after snapshot is preserved.
+
+The same installed candidate also passes15 small affected shared-lock consumer
+calls241.65s across npm/PyPI/Cargo/Go/Terraform, with32 fresh successful JSON
+Evidence and39 records including legacy seed calls. The
+[correction owner](./transaction-lock-identity-correction-20261019.md#installed-shared-owner-regression)
+owns exact versions and scope. Combined canonical lifecycle317.66s exits0;
+helper2536336wait0/CONFIRMED_STOPPED, original observer/client RESTORED, fresh root
+postguard checks all four original identities, idle runtime/socket/Docker state.
+
+Independent offline postanalysis rechecks all outputs, required coverage,
+subjects/digests/receipt hashes, disjoint successful handles, refusal snapshots
+and final installed inventories. After preserving normalized Evidence/approvals/
+cache receipts/Manifest/SBOM/final controls/inventories/operators/helper log,
+root reference/identity queries pass with active=[] and unknown=[]. Completed
+both trial/cache trees, lifecycle, candidate and operators353343187B plus final
+cleanup operator are deleted. Active common checker/source/cache/observer and
+protected originals remain until final checks finish.
+
+Local raw owner: github-replacement-resume-installed, shared-lock-installed,
+github-and-shared-postanalysis.json, github-and-shared-cleanup.json and lifecycle/
+postguard/deletion receipts. They are local/untracked, not remote raw attachments.
+CI343 actual checkout2f2aa1f1a930356d12bca5a37667c453b728a243 has the exact source
+whole tree and expected main/source parents. Quick and native macOS Go1.26.9
+production/default tests succeed. Linux and aggregate acceptance still await
+their final conclusions and actual log review; no success is inferred from
+an in-progress job or another source's CI.
+
+## Final acceptance review amendment before test edits
+
+Existing install_update_test.go adverse coverage explicitly selects npm/PyPI
+M3/M4/M5; GitHub's promotion tests cover real old-proof/refusal/rollback, and
+M7's generic non-ALLOW test injects a fixed Policy. They do not directly execute
+an initially allowed GitHub v1 followed by same-source/name v2 unsafe/incomplete/
+integrity-mismatch through InstallUpdateService with real M6 entry/set policies.
+The earlier actual jq archive block is ordinary initial INSTALL, not that UPDATE
+regression. This is a missing acceptance assertion, not demonstrated product
+failure or authority to replace existing production owners.
+
+Before editing tests, record this audit: existing update pipeline IMPLEMENTED=YES /
+WIRED=YES; explicit M6 adverse-update assertion IMPLEMENTED=NO / WIRED=NO /
+QUALIFIED=NO / ACCEPTANCE_CLOSED=NO. MISSING is only that assertion and its checks.
+Extend the existing Application test owner/fixtures in install_update_test.go:
+one GitHub asset graph, real M6 entry/set policies, successful v1 baseline, then
+same-source/name new-version/new-digest fixture producing M6_ARCHIVE_INVALID,
+incomplete required inspection or verification mismatch. Require independent
+acquire/verify/inspect/Evidence, new Run/subject/digest, BLOCK or MANUAL_REVIEW,
+begin/resolve/close only and zero Manifest/staging/promotion. Keep the existing
+npm/PyPI tests and all production source unchanged. No transitive graph applies
+to the explicitly single-asset M6 contract.
+
+Second review: a fixed set decision or old v1 ALLOW would not test the missing
+M6 boundary; a new promotion stub alone would not test fresh inspection. Reuse
+the existing session/call spies and one narrow optional finding code in the
+existing fixture. Run focused real test names, format, canonical Quick/security/
+docs and related Application Race on exact inputs. Preserve cb1's actual/remote
+scope separately. New test-only source needs its own ordinary CI after CI343
+ends; actual product consumers may reuse cb1 only after exact all-production-byte
+and dependency/runtime/observer equality is established. Do not rebuild/repeat
+unchanged installed/GPU campaigns solely for test/document changes.

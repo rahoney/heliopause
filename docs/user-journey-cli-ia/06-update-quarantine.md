@@ -11,8 +11,13 @@ restoration/cleanup profiles and ordinary same-source CI336. The reviewed
 [Cargo lane](../planning/evidence/update-quarantine/cargo-update-qualification-20261019.md)
 is also qualified for source85ac4c1: local actual20 phases, restoration/cleanup
 and same-tree CI338 ten SUCCESS. [Go baseline/selection
-review](../planning/evidence/update-quarantine/go-update-baseline-20261019.md) preceded source; its [wired implementation qualification](../planning/evidence/update-quarantine/go-update-qualification-20261019.md) now qualifies sourcee00 canonical/actual15 phases/restoration/cleanup and same-tree CI341 ten SUCCESS after the preserved CI340 pruning failure. Current lane is Terraform project upgrade. Preserve the existing explicit-version get path.
-Other lanes wait for their independent baseline/qualification. See the
+review](../planning/evidence/update-quarantine/go-update-baseline-20261019.md) preceded source; its [wired implementation qualification](../planning/evidence/update-quarantine/go-update-qualification-20261019.md) qualifies sourcee00 canonical/actual15 phases/restoration/cleanup and same-tree CI341 ten SUCCESS after the preserved CI340 pruning failure.
+[Terraform qualification](../planning/evidence/update-quarantine/terraform-update-qualification-20261019.md)
+closes sourcef882/actual16 phases/CI342. Current lane is
+[GitHub managed replacement](../planning/evidence/update-quarantine/github-replacement-qualification-20261019.md):
+sourcecb1 local canonical/Race,18 actual GitHub calls and15 shared-lock consumer
+calls, restoration and completed trial cleanup PASS; final CI343 acceptance is pending.
+Preserve existing explicit-version get/init paths. See the
 [npm evidence](../planning/evidence/update-quarantine/npm-qualification-20261018.md).
 This leaf owns the user-requested update-command contract. It supplements the
 installation journey, never weakens existing Policy or adds implicit Host execution.

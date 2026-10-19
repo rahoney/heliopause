@@ -118,3 +118,25 @@ Race221.88s now PASS on the shared final candidate recorded by the
 [GitHub qualification](./github-replacement-qualification-20261019.md#final-local-candidate-before-installed-execution).
 MISSING is now the installed small affected consumers/restoration/deletion and
 new-source remote acceptance only. This does not claim fresh CUDA full runs.
+
+## Installed shared-owner regression
+
+Final sourcecb1/candidate7b184e04 passes15 installed calls241.65s: npm is-number
+6→7, public PyPI packaging24.2→25.0, Cargo itoa1.0.16→1.0.18, Go pflag1.0.9→1.0.10
+and Terraform random3.7.1→3.7.2, each followed by fresh managed no-op. All calls
+use ordinary client UID and the canonical helper lifecycle. PyPI venv preparation
+uses the exact registered Python3.14.7 image offline, without Host Python or pip.
+Required checks/Policy/promotion pass,32 successful JSON Evidence are newly
+created for their calls and bind actual identities/digests;39 total normalized
+records also retain old add/get/init seed evidence. Cargo/Go/Terraform no-op
+controls preserve bytes/inode/mode/mtime. All project locks are absent on success.
+
+The same lifecycle runs GitHub's18 full actual calls first. Helper2536336wait0/
+CONFIRMED_STOPPED, original CLI/observer restoration and fresh root four-file/
+process/socket/Docker guard all PASS. Independent output/proof/inventory
+postanalysis PASS; completed trial/cache/lifecycle/candidate/operators are deleted
+after preservation. [GitHub qualification](./github-replacement-qualification-20261019.md#installed-sourcecb1-qualification-and-completed-cleanup)
+owns combined cleanup totals and raw references, avoiding duplicate raw logs.
+MISSING: CI343 final Linux/Required and exact remote consumer review only.
+No observer/runtime/profile/budget/source selection change or full CUDA rerun is
+implied by this bounded Host descriptor correction.
