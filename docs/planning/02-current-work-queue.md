@@ -3318,10 +3318,12 @@ updates are essential to protecting existing users from compromised new releases
 precedes source changes. Existing inspection/Policy, transactions, settings and
 catalogs are reused; no replacement or new runtime/CI scaffold is justified.
 
-- SEC-UPD-001: IN_PROGRESS. IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO /
-  ACCEPTANCE_CLOSED=NO for complete scoped update-command coverage. MISSING exact
-  update selection/CLI, guarded existing-state ownership/replacement and actual
-  per-ecosystem benign/malicious-fixture/unchanged-on-failure qualification. Read
+- SEC-UPD-001: IN_PROGRESS. IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO /
+  ACCEPTANCE_CLOSED=NO for complete scoped update-command coverage. Local
+  implementation/actual/negative/restoration/deletion checks pass. MISSING final
+  exact-source remote consumer/Required review; the added M6 test needs its own CI.
+  [Cross-lane review](./evidence/update-quarantine/final-review-20261019.md) maps
+  acceptance to existing owners. Read
   [update quarantine contract](../user-journey-cli-ia/06-update-quarantine.md).
 - CLI-UX-002: COMPLETE. IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES /
   ACCEPTANCE_CLOSED=YES / MISSING=none for the documented bounded OS-language scope.

@@ -1,0 +1,58 @@
+# SEC-UPD-001 — final cross-lane review / 2026-10-19
+
+Status: IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO.
+Only SEC-UPD-001 is IN_PROGRESS. MISSING: finish production-source CI343 actual
+consumer review, then ordinary CI for the final test/document source. Local
+implementation, actual consumers, restoration, completed trial deletion and final
+M6 acceptance assertions pass. Do not advance CLI-UX-003 before closure.
+
+The [canonical contract](../../../user-journey-cli-ia/06-update-quarantine.md)
+owns command semantics; this leaf owns only the cross-lane completion review.
+Each linked qualification owns its exact source, historical failures, inputs,
+local/remote scope and raw references. Raw remains local/untracked.
+
+| Bounded lane | Qualification owner / supported limit |
+| --- | --- |
+| npm | [npm](./npm-qualification-20261018.md); zero/one selector, one direct root plus supported transitive graph, original ranges; bounded native --adopt |
+| Public PyPI | [managed](./pypi-managed-qualification-20261019.md), [native](./pypi-native-qualification-20261019.md); one named upgrade, only-if-needed, proven venv ownership and retained constraints |
+| Named PyTorch | [CPU/cu126/cu130/cu132](./pytorch-update-qualification-20261019.md); exact named managed tuple/extras; broader native named footprints remain unsupported |
+| Cargo | [Cargo](./cargo-update-qualification-20261019.md); complete lock-only workspace selection, preserved manifest/features, optional one selector and explicit registration |
+| Go | [Go](./go-update-qualification-20261019.md); one existing require selected by get -u, full graph inspection; old-version metadata authenticated only when actually required by valid selected controls |
+| Terraform | [Terraform](./terraform-update-qualification-20261019.md); latest stable constrained public providers across reachable local modules; installation-only, no plan/apply/cloud |
+| GitHub | [GitHub](./github-replacement-qualification-20261019.md); same repository/exact tag+asset, explicit target/replace, independent prior approval; opaque archive or isolated supported ELF |
+
+## Acceptance responsibility reconciliation
+
+| Required behavior | Concrete existing evidence owner |
+| --- | --- |
+| New primary/transitive bytes receive independent acquire/verify/inspect/Evidence; unsafe/incomplete/mismatch never stages or promotes | [Install-update tests](../../../../internal/application/install_update_test.go) npm/PyPI and final real M6 v1→v2 cases; [Cargo](../../../../internal/application/project_update_test.go), [Go](../../../../internal/application/gomodule_upgrade_test.go), [Terraform](../../../../internal/application/terraform_upgrade_test.go) complete-set adverse tests. M6 has one asset and no transitive graph |
+| Original controls/ownership held before selection; exact selected graph/bytes through approval | Each lane's resolver/session tests and actual Manifest/Evidence/installed digest comparison in its qualification; no second live resolve after ALLOW |
+| Old success does not authorize a new version or fresh no-op | Independent new Run/Evidence in the actual version-update/no-op consumers; final GitHub17 and shared-consumer32 JSON-success records are disjoint and reconciled |
+| Native state cannot authorize silent adoption; foreign/shared files remain protected | npm explicit native inventory, public PyPI independently authenticated old wheel/RECORD footprint, Cargo/Go/TF independent approval/cache tests; receiptless GitHub rejects even with explicit replacement |
+| Substituted/staged/corrupt/concurrent state refuses | Per-lane held transaction tests and actual unchanged-target negatives; [three physical lock-owner matrix](../../../../internal/promotion/mutation_lock_identity_test.go) covers rewrite/unlink/recreate/mode/link/mtime and recovery FD close |
+| Commit fault restores proven originals; uncertain foreign state survives and prevents success/retry | Existing npm/PyPI transaction rollback, Cargo/Go/TF upgrade faults and GitHub six-phase rollback/foreign selected/published/backup tests; late close failures remain failures |
+| Human/JSON facts and static unsupported intent agree | CLI/report tests and actual EN/KO/JSON consumers; seven-language core help; unsupported arguments refuse before composition |
+| Real runtime/original restoration and deletion | Per-lane canonical helper wait0/CONFIRMED_STOPPED, original identity/root postguards, preserved proof/inventory and completed payload/cache/operator deletion receipts |
+
+## Final review findings and verification boundary
+
+The GitHub lane revealed a directly reproduced lock identity gap in all three
+physical guard families. Its [pre-edit correction](./transaction-lock-identity-correction-20261019.md)
+extends the original exclusive FD lifetime; controlled matrix, full related Race
+and small actual consumers cover the correction. A distinct selected-path chmod
+failure is corrected using the original created FD. Existing resolver/inspection/
+Policy/observer/runtime/bounds remain intact; full CUDA source-specific results
+retain their original scope rather than becoming new final-source runs.
+
+The final review also identified that generic npm/PyPI adverse-update tests did
+not directly exercise M6's real entry/set policies. Pre-test plan5eb90f7 precedes
+test commit94cc284. Allowed GitHub v1 then unsafe/incomplete/mismatched same-name
+v2 now verifies fresh subject/digest/Run/Evidence and no publication. Same-input
+Host Quick116.81s/security4.51s/docs0.27s/full Application Race3.42s pass.
+The restricted-socket failure and overlapping preparation capture remain separate.
+
+All non-test production/dependency/runtime/observer/CI bytes are identical to the
+cb1f944 actual-qualified candidate. No new installed/GPU runs are claimed for
+test/document changes. CI343 cannot qualify the added test commit; that source
+requires its own ordinary CI. Main merge, permanent local activation, launcher,
+protected tag, registry names and publication remain separate actions.
