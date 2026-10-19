@@ -176,7 +176,10 @@ NO_COLOR; restore terminal modes/cursor on exit, cancellation and errors.
 Status: IN_PROGRESS after SEC-UPD-001 acceptance and ten SUCCESS in its delivery
 CI345. The [baseline/edit map/second review](../planning/evidence/cli-launcher/baseline-20261020.md)
 precedes source edits. Existing help/config/catalogs/doctor are qualified and
-reused; the launcher and terminal input/restoration are not yet implemented or qualified.
+reused. The launcher/input/restoration are now implemented and locally verified;
+[qualification](../planning/evidence/cli-launcher/qualification-20261020.md)
+records19 native PTY and16 actual CLI cases. Native macOS/exact-source CI and
+completed local qualification-data cleanup remain before acceptance closes.
 
 ### Launcher behavior and lifecycle
 

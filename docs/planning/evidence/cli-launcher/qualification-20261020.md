@@ -1,0 +1,97 @@
+# CLI-UX-003 — local qualification / 2026-10-20
+
+Status: IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO.
+MISSING: exact committed-source ordinary CI including native macOS, final
+completed local qualification data cleanup and completion documentation.
+This is local acceptance evidence, not a main merge or permanent CLI activation.
+
+## Existing owners and implementation boundary
+
+The [pre-source baseline/edit map/second review](./baseline-20261020.md) was
+committed as53c18256da7d1aa5fa7b8073a2447374f946f7d3 before product edits.
+[Presentation](../../../user-journey-cli-ia/05-terminal-presentation.md#deferred-branded-launcher--cli-ux-003)
+owns behavior. Existing help, settings, catalogs, Doctor and display-width/color
+owners were reused. No implemented owner was replaced.
+
+- [Root](../../../../internal/cli/root.go) RunE dispatches only eligible bare
+  terminal use to [launcher](../../../../internal/cli/launcher.go); direct commands,
+  help, JSON mode, CI, redirected streams and unusable terminals retain existing
+  behavior. Usage pages call static help, never command RunE or a shell.
+- [Keys](../../../../internal/cli/launcher_keys.go) bound split/unknown/overlong
+  escape input. [Unix input](../../../../internal/cli/launcher_terminal_unix.go)
+  owns exact termios save/restore and context-aware polling; Linux/Darwin ioctl
+  wrappers are build-selected. Existing process SIGINT cancellation remains
+  effective during an explicit synchronous diagnosis.
+- Language menus reuse read/writeLanguageSettings and configure. Auto persists
+  as auto; flags/environment overrides remain visible and take precedence.
+  Existing catalogs cover all seven core menus with complete English/Korean
+  explanations and deterministic English fallback for secondary technical text.
+- [Bootstrap](../../../../internal/bootstrap/bootstrap.go) binds the existing
+  Doctor lazily for bare helox. Only explicit selection resolves the release
+  root and performs readiness checks. The existing doctor presenter is reused
+  without its direct-command exit1 footer inside the navigable menu.
+
+Only five existing Go files are narrowly extended; ten new CLI/bootstrap files
+implement and test this current item. Core/Application/Artifact/Policy/runtime/
+observer/helper/installer/workflow and dependency lock inputs are unchanged.
+
+## Local checks and exact input boundary
+
+Checked source inventory digest:
+2d0d4f86546f9a617de4bdd6f913a3fa76add102a1c4040717d01f277f283d4c.
+It contains1684 source/fixture/document paths, including every new Go test.
+The final workspace overlay proof compares all22 changed/new paths against that
+inventory and confirms the other tracked paths unchanged according to Git.
+Subsequent qualification/status changes are documentation only, separately checked.
+Do not represent the earlier18-case input as the final19-case candidate.
+
+| Check | Wall seconds | Actual scope |
+| --- | --- | --- |
+| canonical format | 0.33 | final candidate, no remaining format changes |
+| focused CLI/bootstrap | 2.62 | actual native PTY19 cases plus key/settings/bounds/error/override/explicit-doctor/no-config-root regressions |
+| canonical security | 7.38 | pinned gosec, current-tree Gitleaks and detection contract |
+| canonical Quick | 17.71 | format, module/runtime drift, production/test build, Architecture, vet, pinned Staticcheck, default suite; normal cache-aware runner, no cold-cache claim |
+| canonical docs | 0.20 | planning-era documents in the checked source inventory |
+| related full Race | 45.22 | cli21.360s, bootstrap1.437s, cmd/helox3.819s; count1 |
+| Darwin amd64 test compile | 18.78 | CLI/bootstrap/cmd test binaries, not native execution |
+| Darwin arm64 test compile | 21.38 | same three packages, not native execution |
+| actual candidate build | 1.07 | pinned Go1.26.9, trimpath |
+
+The earlier236.87s Quick passed before the added live-resize test; the final
+candidate above has its own Quick and focused/Race results. The first focused
+failure was a test prerequisite omission: pip-upgrade example validation needed
+the declared active virtual environment. Only the test supplies t.TempDir as
+VIRTUAL_ENV; production validation was not weakened.
+
+## Actual compiled CLI on WSL/Linux
+
+Candidate identity: role=compiled test CLI,
+sha256=056c4af39e43769eac2226240c4a4cef9939a7d80c3636b362edc2ec90fd500b.
+Sixteen actual binary/PTY cases passed: seven language menus, help/settings/real
+Doctor navigation, live80×24→20×8 resize, Ctrl-C, SIGTERM, explicit help/JSON/CI/
+TERM=dumb exclusions and OS-auto selection. All cases restored exact original
+termios; interactive cases restored cursor/screen and honored NO_COLOR.
+
+The real settings menu persisted Korean. A private saved auto preference remained
+auto and displayed Korean with LC_ALL=C.UTF-8; actual config output reported
+WINDOWS_UI. Existing installed user settings were not modified.
+
+Real explicit diagnosis truthfully displayed unavailable release installation
+and network-policy service, with the other three checks ready. Remaining in the
+menu/exiting it did not turn this into a healthy installation or claim artifact
+inspection. No service repair/start, artifact execution or installation occurred.
+The four installed CLI/observer/network-helper/policy records retained their
+exact hashes, root ownership, modes and single-link identities.
+
+## Proof custody and remaining qualification
+
+Raw remains local/untracked under docs/github-logs/cli-launcher-20261020:
+final-{focused,security,quick,docs,race,darwin-amd64,darwin-arm64,candidate}
+logs/receipts/source inventories, final-workspace-overlay-proof.json,
+actual-final.json and actual-*.txt. These are not remote attachments.
+The committed report preserves normalized scope; native macOS/exact-source
+remote conclusions and completed-data deletion must still be recorded.
+
+No full CUDA campaign is required for this display-only change. Existing bounded
+SEC-UPD-001 qualification remains closed. PR38 stays draft/unmerged; package names,
+main merge, permanent local activation and publication remain separate.

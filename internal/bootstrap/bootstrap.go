@@ -55,6 +55,14 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 	if helpRequested(args) {
 		return command.ExecuteContext(ctx)
 	}
+	if source == "" {
+		// Binding is inert. The launcher alone decides whether to request a
+		// diagnosis; opening help/settings must not resolve or prepare a runtime.
+		if err := cli.AddDoctor(command, doctorService{}); err != nil {
+			return err
+		}
+		return command.ExecuteContext(ctx)
+	}
 	if source == "config" {
 		return command.ExecuteContext(ctx)
 	}
@@ -594,7 +602,15 @@ func (unsupportedPyPIInstallResolver) ResolveDependencies(context.Context, domai
 type doctorService struct{ installRoot string }
 
 func (s doctorService) Diagnose(ctx context.Context) cli.DoctorReport {
-	installation := releaseinstall.CheckInstallation(s.installRoot)
+	root := s.installRoot
+	if root == "" {
+		// Missing user configuration is an unavailable installation check,
+		// not a reason to prevent the interactive launcher from opening.
+		if resolved, err := releaseinstall.DefaultRoot(); err == nil {
+			root = resolved
+		}
+	}
+	installation := releaseinstall.CheckInstallation(root)
 	checks := append([]cli.DoctorCheck{{Name: installation.Name, Healthy: installation.Healthy, Detail: installation.Detail}}, doctorHostChecks(ctx)...)
 	healthy := true
 	for _, check := range checks {

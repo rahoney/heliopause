@@ -42,7 +42,7 @@ func New(stdout, stderr io.Writer) (*cobra.Command, error) {
 			return err
 		}
 
-		return command.Help()
+		return runLauncherOrHelp(command)
 	}
 	command.SetOut(stdout)
 	command.SetErr(stderr)
@@ -101,6 +101,7 @@ func AddDoctor(root *cobra.Command, doctor Doctor) error {
 	if command == nil {
 		return errors.New("doctor command is not registered")
 	}
+	presentationFor(root.OutOrStdout()).doctor = doctor
 	command.RunE = func(command *cobra.Command, _ []string) error {
 		report := doctor.Diagnose(contextOrBackground(command.Context()))
 		if p := presentationFor(command.OutOrStdout()); p.human() {

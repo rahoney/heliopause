@@ -134,6 +134,10 @@ func (p *presentation) localizeHelpText(text string) string {
 }
 
 func (p *presentation) renderDoctor(report DoctorReport) error {
+	return p.renderDoctorNotice(report, true)
+}
+
+func (p *presentation) renderDoctorNotice(report DoctorReport, exitNotice bool) error {
 	p.reported = true
 	title, color := p.text("Ready", "준비 완료"), "32"
 	if !report.Healthy {
@@ -153,7 +157,7 @@ func (p *presentation) renderDoctor(report DoctorReport) error {
 		}
 	}
 	p.line("╰────────────────────────────────────────")
-	if !report.Healthy {
+	if !report.Healthy && exitNotice {
 		p.line("%s", p.text("Some requirements are unavailable. Exit code 1 is intentional; this is not a fully healthy installation.", "준비되지 않은 항목이 있어 종료 코드는 1입니다. 전체 설치 정상으로 판단할 수 없습니다."))
 	}
 	return p.writeErr

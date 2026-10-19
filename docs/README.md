@@ -90,7 +90,7 @@ Read:
 - [User Journey — CLI Structure](./user-journey-cli-ia/02-cli-structure.md)
 - [User Journey — Execution and Interaction](./user-journey-cli-ia/03-execution-and-interaction.md)
 - [Terminal presentation and branded launcher](./user-journey-cli-ia/05-terminal-presentation.md)
-- 대화형 시작 화면 작업이면 [CLI-UX-003 baseline/edit map/second review](./planning/evidence/cli-launcher/baseline-20261020.md)
+- 대화형 시작 화면 작업이면 [CLI-UX-003 baseline/edit map/second review](./planning/evidence/cli-launcher/baseline-20261020.md)와 [qualification](./planning/evidence/cli-launcher/qualification-20261020.md)
 - [Domain — Operation Request and Context](./domain-model/06-operation-request-context.md)
 
 ### Runtime, 배포 또는 trusted tooling

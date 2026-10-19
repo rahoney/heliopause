@@ -14,7 +14,7 @@ Last completed work item: SEC-UPD-001 — COMPLETE; bounded ecosystem updates, f
 Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002 and SEC-UPD-001 COMPLETE for their documented scopes
-Active work item status: IN_PROGRESS — source-owner baseline/edit map/second review complete; launcher implementation and qualification remain
+Active work item status: IN_PROGRESS — launcher implemented/wired; local qualification PASS; native/exact-source CI and completed-data cleanup remain
 Next work item: M13-004 — BLOCKED on CLI-UX-003 and owner package naming
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -3009,7 +3009,7 @@ M12-005 feature freeze에서 수행한다. canonical lock 등록만으로 releas
 | 3a | CLI-UX-001 | multilingual terminal progress and structured human results | COMPLETE — local source / installed CLI qualification |
 | 3b | CLI-UX-002 | OS preferred display-language auto | COMPLETE — native macOS/CI328 and local installed CLI PASS |
 | 3c | SEC-UPD-001 | guarded ecosystem update commands | COMPLETE — final sourcecdac/CI344 qualified |
-| 3d | CLI-UX-003 | branded interactive launcher | IN_PROGRESS — baseline/edit map/second review complete; source and qualification remain |
+| 3d | CLI-UX-003 | branded interactive launcher | IN_PROGRESS — implementation/local19 PTY+16 actual cases PASS; native/exact-source CI remains |
 | 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | BLOCKED — CLI-UX-003 and owner package-name decision |
 | 5 | M13-005 | exact publication·clean Host bootstrap·doctor·cross-ecosystem smoke·quarantine | NOT_STARTED |
 
@@ -3374,11 +3374,16 @@ documentation-delivery CI345 are closed. [Baseline/edit map/second review](./evi
 precedes product edits: existing help/config/catalog/doctor/width owners are
 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES and reused; interactive menus,
 lazy launcher bridge, raw input/restoration and actual PTY/native qualification
-are NO/NO/NO/NO. MISSING: those launcher acceptance gaps and exact-source CI.
+were NO/NO/NO/NO at that baseline. Current audit: launcher IMPLEMENTED=YES /
+WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO. [Local qualification](./evidence/cli-launcher/qualification-20261020.md)
+records canonical Quick/security/docs, full related Race, Darwin test compile,
+native PTY19 and actual compiled CLI16 cases including OS-auto Korean and real
+explicit Doctor. MISSING: native macOS/exact-source ordinary CI, completed local
+qualification-data cleanup and final completion documentation.
 The user explicitly requested this order on2026-10-18. Bare helox in a real interactive terminal will
 show Heliopause Artifact Airlock, localized settings/help/examples and exit, with
-arrow/Enter/back navigation. Current root RunE only displays Help; no menu source
-is implemented. Reuse the existing language settings/catalogs and command tree.
+arrow/Enter/back navigation. Root RunE now dispatches eligible bare terminals to
+the launcher, reusing existing language settings/catalogs and the command tree.
 Direct commands/help/JSON/CI remain non-interactive; cancellation must restore
 terminal state. Read [launcher scope](../user-journey-cli-ia/05-terminal-presentation.md#deferred-branded-launcher--cli-ux-003)
 and the linked baseline before implementation. No new framework/dependency or

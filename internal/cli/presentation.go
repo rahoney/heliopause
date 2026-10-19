@@ -17,6 +17,7 @@ import (
 )
 
 type presentation struct {
+	doctor                           Doctor
 	out, diagnostic                  io.Writer
 	output, locale, color, progress  string
 	language                         string
