@@ -9,13 +9,13 @@
 ```text
 Current milestone: M13 — Production Release & Operations
 Milestone status: IN_PROGRESS — runtime maintenance main delivery COMPLETE
-Active work item: NONE — CLI-UX-003 acceptance complete
+Active work item: M13-004 — installed self-quarantine update design and convenience channels
 Last completed work item: CLI-UX-003 — COMPLETE; source4cfe29e/CI352 ten SUCCESS
 Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
-Active work item status: NONE; final documentation delivery is checked separately on its exact head
-Next work item: M13-004 — BLOCKED on owner-approved official package names
+Active work item status: BLOCKED — reviewed design awaits installation-privilege/platform decision; no self-update source edits
+Next action: approve or revise the narrow installation role; channel names remain a separate owner decision
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
@@ -3010,7 +3010,7 @@ M12-005 feature freeze에서 수행한다. canonical lock 등록만으로 releas
 | 3b | CLI-UX-002 | OS preferred display-language auto | COMPLETE — native macOS/CI328 and local installed CLI PASS |
 | 3c | SEC-UPD-001 | guarded ecosystem update commands | COMPLETE — final sourcecdac/CI344 qualified |
 | 3d | CLI-UX-003 | branded interactive launcher | COMPLETE — source4cfe29e/CI352 ten SUCCESS |
-| 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | BLOCKED — owner package-name decision |
+| 4 | M13-004 | installed self-quarantine update / convenience channels | BLOCKED — installation-role/platform decision; channel names also pending |
 | 5 | M13-005 | exact publication·clean Host bootstrap·doctor·cross-ecosystem smoke·quarantine | NOT_STARTED |
 
 ### M13-001 — protected repository activation
@@ -3383,7 +3383,7 @@ permanent installed CLI activation and publication remain separate; PR38 is draf
 
 ### M13-004 — convenience installation channels
 
-Status: BLOCKED — owner package-name decision; CLI-UX-003, SEC-UPD-001 and CLI-UX-002 complete; no channel source edits.
+Status: BLOCKED — installation-role/platform decision for self-update; official names for channel wiring. CLI-UX-003, SEC-UPD-001 and CLI-UX-002 complete; no self-update/channel source edits.
 Audit: IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO for the
 complete channel scope. Existing verifier-gated native installer/doctor and release
 manifest/build/publish consumers are reused; their historical acceptance is retained.
@@ -3399,8 +3399,19 @@ checks. On2026-10-18 the user reported both rahoney accounts/email/2FA/GitHub
 links complete. This closes account preparation only; publisher binding and all
 package names remain unconfirmed. No credentials are needed.
 
-SEC-UPD-001 and CLI-UX-003 are COMPLETE; no item is IN_PROGRESS. M13-004 resumes
-after owner naming; prior CLI-UX-001 scope remains historical.
+2026-10-20 user priority: installed Heliopause must quarantine its next version;
+first bootstrap is separately verified. M13-004 is the sole active item. Its
+[new baseline/edit map/second review](./evidence/m13-004-convenience/self-update-20261020.md)
+and [product design proposal](../user-journey-cli-ia/07-self-update.md) precede source
+changes. Existing owners are reused. MISSING adds production release acquisition/
+attestation, frozen-set quarantine and protected installation lifecycle. The
+current user installer does not activate root-protected CLI/helpers. The proposed
+separate narrow installation role and initial Linux/amd64/same-runtime scope need
+an explicit Architecture/support decision before that source is implemented.
+Unblock: owner approves or revises that concrete proposal, then finalize verifier,
+IPC and crash-recovery details. Package names block only name-dependent channels;
+account preparation is complete. No new placeholder/executable/Port/job exists.
+SEC-UPD-001 and CLI-UX-003 stay COMPLETE; prior CLI-UX-001 scope remains historical.
 M13-005 remains NOT_STARTED. Account setup is not
 package publication approval; no registry upload, tap creation, Release draft or
 publish dispatch has occurred. Concrete publication remains separately reviewed.

@@ -107,6 +107,8 @@ Read:
   [M8 Production Trust Hardening Contract](./planning/11-m8-production-trust-hardening-contract.md)
 - runtime, release artifact, signing identity, installer 또는 bootstrap 작업이면
   [M10 Verified Distribution & Bootstrap Contract](./planning/13-m10-verified-distribution-bootstrap-contract.md)
+- Heliopause 본체 업데이트 작업이면 [자체 업데이트 설계 제안](./user-journey-cli-ia/07-self-update.md)과
+  [M13-004 baseline/edit map/두 번째 검토](./planning/evidence/m13-004-convenience/self-update-20261020.md)
 - final release environment, protected tag/branch, Ruleset activation 또는 public
   deployment 작업이면
   [M13 Production Release & Operations Contract](./planning/18-m13-production-release-operations-contract.md)
