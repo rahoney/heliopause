@@ -8,8 +8,9 @@ and [named managed-venv CPU/cu126/cu130/cu132 updates](../planning/evidence/upda
 Their source-specific actual/CI scopes remain independent; no broader native named
 support is claimed. The named source306 has four actual update/no-op/refusal/
 restoration/cleanup profiles and ordinary same-source CI336. Current lane:
-[Cargo pre-source audit](../planning/evidence/update-quarantine/cargo-update-baseline-20261019.md),
-then pinned semantics, narrow edit map and second review before implementation.
+[Cargo reviewed edit map](../planning/evidence/update-quarantine/cargo-update-baseline-20261019.md).
+Its pinned-tool semantics and second review are complete; implement only the
+missing lock-selection/enrollment/wiring gaps, then qualify actual consumers.
 Other lanes wait for their independent baseline/qualification. See the
 [npm evidence](../planning/evidence/update-quarantine/npm-qualification-20261018.md).
 This leaf owns the user-requested update-command contract. It supplements the
@@ -461,3 +462,44 @@ source/project/aggregate requirement and extra context may reuse the already
 fresh candidate, with every incoming requirement checked. Changed intent and the
 next phase require fresh selection. This is an adapter efficiency constraint,
 not permission to increase observer limits or reuse previous inspection approval.
+
+### Cargo lock update — reviewed initial semantics
+
+Support current-project helox cargo update, optionally one -p/--package <name>
+or <name>@<locked-version>, plus explicit --adopt for supported enrollment.
+The version in the selector identifies the old locked package; it does not pin
+the proposed version as --precise would. A selector must uniquely identify a
+public registry entry in the frozen Cargo.lock. Reject local/workspace, missing,
+ambiguous and URL selectors. Require a supported anchored current project with
+an existing lock. No selector updates the compatible complete lock graph; one
+selector follows the pinned tool's conservative dependency behavior. Preserve
+every selected manifest/range/feature and local source; exact pins remain exact.
+
+Reject positional selectors, repeated -p, --precise, --recursive, --breaking,
+--workspace, --dry-run, --locked/--offline, custom manifest/lock paths, alternate
+registries, arbitrary configuration and toolchain flags before mutation. HAA's
+existing language/output/progress options retain their own meaning.
+
+Without --adopt, require proven current independent HAA project approval.
+Explicit --adopt may enroll supported native or deliberately changed controls
+only after bounded original capture and whole-new-set inspection. Validate any
+old independent approval/cache/Evidence even when its equality to deliberately
+changed inputs is being superseded. A foreign HAA marker without independent
+approval, corrupt old state/cache or recovery journal still refuses. Old source
+metadata and checksums grant no previous safety trust. Only guarded lock/control
+approval is replaced; arbitrary old crate files and build outputs are not adopted.
+
+Preserve unchanged Cargo.toml/local manifests including identity and permissions;
+keep identical Cargo.lock in place on no-op. A changed lock contains exactly the
+inspected selection and preserves its supported original permission mode. Reuse
+the existing backup/commit/rollback and complete cache approval. CommitSnapshot's
+current-state-only checks and old requested-primary commands remain strict.
+
+Every selected public crate receives existing independent verification/static
+inspection with fresh recorded Evidence and complete-set Policy. No-op has no old
+ALLOW shortcut. Build scripts/macros retain the separate helox cargo build
+isolated observation contract; lock selection does not execute crate builds.
+Human/JSON success requires confirmed publication and successful close. Failure
+and rollback uncertainty cannot become update success. The
+[baseline/edit map and second review](../planning/evidence/update-quarantine/cargo-update-baseline-20261019.md)
+own implementation locations, pinned-tool evidence and acceptance checks.
