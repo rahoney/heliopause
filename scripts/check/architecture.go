@@ -185,6 +185,7 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 		},
 		modulePath + "/internal/promotion": {
 			modulePath + "/internal/core/ports":                 true,
+			modulePath + "/internal/artifact/githubrelease":     true,
 			modulePath + "/internal/artifact/npm":               true,
 			modulePath + "/internal/artifact/terraformprovider": true,
 			modulePath + "/internal/artifact/projectbuild":      true,

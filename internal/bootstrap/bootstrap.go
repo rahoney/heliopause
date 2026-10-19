@@ -459,7 +459,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err != nil {
 			return err
 		}
-		promoter, err := promotion.NewGitHubReleasePromotion(filepath.Join(root, "staging"))
+		promoter, err := promotion.NewRecordedGitHubReleasePromotion(filepath.Join(root, "staging"), filepath.Join(root, "evidence"), filepath.Join(root, "github-installations"), evidence)
 		if err != nil {
 			return err
 		}
@@ -468,6 +468,17 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 			return err
 		}
 		if err := cli.AddGitHubReleaseInstall(command, artifactgithub.ParseReference, installer); err != nil {
+			return err
+		}
+		preparation, err := promotion.NewGitHubReleaseUpdatePreparation(promoter, artifact)
+		if err != nil {
+			return err
+		}
+		updater, err := application.NewInstallUpdateService(installer, preparation)
+		if err != nil {
+			return err
+		}
+		if err := cli.AddGitHubReleaseReplacement(command, updater); err != nil {
 			return err
 		}
 	}

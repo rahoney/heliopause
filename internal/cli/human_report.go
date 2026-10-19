@@ -91,7 +91,19 @@ func (p *presentation) renderInstall(outcome application.InstallOutcome, operati
 		p.line("%s %s@%s — %s / %s", p.text("Sandbox detail:", "격리 검사 상세:"), safeTerminal(item.Package()), safeTerminal(item.Version()), safeTerminal(item.Reason()), safeTerminal(item.FailureClass()))
 	}
 	if operationErr != nil {
-		p.line("%s %s — %s", p.text("Error:", "오류:"), safeTerminal(outcome.FailureCode()), p.errorExplanation(outcome.FailureCode()))
+		explanation := p.errorExplanation(outcome.FailureCode())
+		if inspection.Request().Source().String() == "github-release" {
+			switch outcome.FailureCode() {
+			case "UPDATE_OWNERSHIP_INVALID":
+				explanation = p.text("Matching independent HAA approval, recorded Evidence and installed bytes are required. Choose a new managed target for unproven files; --replace cannot adopt them.", "독립 HAA 승인·Evidence·설치 파일이 일치해야 합니다. 소유 기록이 없는 파일은 새 관리 대상에 설치하세요. --replace로 기존 파일을 인수할 수 없습니다.")
+			case "UPDATE_SOURCE_CHANGED":
+				explanation = p.text("The repository selection or original target state changed. Replacement was stopped.", "저장소 선택 또는 원래 대상 상태가 달라져 교체를 중단했습니다.")
+			}
+		}
+		p.line("%s %s — %s", p.text("Error:", "오류:"), safeTerminal(outcome.FailureCode()), explanation)
+	}
+	if inspection.Request().Source().String() == "github-release" {
+		p.line("%s", p.text("Scope: one exact GitHub asset, declared digest and format checks. Archives stay intact; supported ELF files alone enter isolated dynamic inspection.", "검사 범위: 정확한 GitHub 파일 하나와 출처 선언 해시·파일 형식입니다. Archive는 압축을 풀지 않으며 지원하는 ELF만 격리된 동작 검사를 수행합니다."))
 	}
 	p.line("Operation: %s", inspection.OperationID().String())
 	if p.verbose && outcome.Bundle().ManifestID().String() != "" {

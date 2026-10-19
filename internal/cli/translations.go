@@ -19,6 +19,7 @@ func secondaryLanguageIndex(language string) int {
 }
 
 var coreTranslations = map[string][5]string{
+	"Replace only a proven HAA-managed asset after fresh inspection; requires --target": {"Nur ein nachweislich von HAA verwaltetes Artefakt nach neuer Prüfung ersetzen; --target erforderlich", "Remplacer uniquement un fichier géré par HAA après une nouvelle inspection ; --target requis", "Reemplazar solo un archivo administrado por HAA tras una nueva inspección; requiere --target", "Substituir somente um arquivo gerenciado pelo HAA após nova inspeção; requer --target", "HAA 管理を確認したファイルだけを再検査後に置換します。--target が必要です"},
 	"Provider update:":     {"Provider-Aktualisierung:", "Mise à jour des Providers :", "Actualización de Providers:", "Atualização de Providers:", "Provider の更新:"},
 	"Inspected providers:": {"Geprüfte Provider:", "Providers inspectés :", "Providers inspeccionados:", "Providers inspecionados:", "検査済み Provider 数:"},
 	"Inspect and upgrade every required provider within the current version constraints": {"Alle erforderlichen Provider prüfen und innerhalb der aktuellen Versionsvorgaben aktualisieren", "Vérifier et mettre à jour tous les Providers requis selon les contraintes de version actuelles", "Inspeccionar y actualizar todos los Providers requeridos según las restricciones de versión actuales", "Inspecionar e atualizar todos os Providers exigidos dentro das restrições de versão atuais", "現在のバージョン制約に従い、必要なすべての Provider を検査して更新します"},

@@ -3,6 +3,8 @@ package cli_test
 import (
 	"bytes"
 	"context"
+	"encoding/json"
+	"errors"
 	"strings"
 	"testing"
 
@@ -10,6 +12,8 @@ import (
 	"github.com/rahoney/heliopause/internal/artifact/githubrelease"
 	"github.com/rahoney/heliopause/internal/cli"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
+	"github.com/rahoney/heliopause/internal/policy"
 )
 
 func TestGitHubReplacementStaticAdmission(t *testing.T) {
@@ -89,17 +93,71 @@ func TestGitHubReplacementBindsSeparateModeAndKeepsOldInstall(t *testing.T) {
 }
 
 func TestGitHubReplacementHelpExposesExactScope(t *testing.T) {
-	var out, diagnostic bytes.Buffer
-	root, _ := cli.New(&out, &diagnostic)
-	args := []string{"--lang", "en", "github", "install", "--help"}
-	root.SetArgs(args)
-	if _, err := cli.PreparePresentation(root, args); err != nil {
-		t.Fatal(err)
+	for _, language := range []string{"en", "ko", "de", "fr", "es", "pt-BR", "ja"} {
+		var out, diagnostic bytes.Buffer
+		root, _ := cli.New(&out, &diagnostic)
+		args := []string{"--lang", language, "github", "install", "--help"}
+		root.SetArgs(args)
+		if _, err := cli.PreparePresentation(root, args); err != nil {
+			t.Fatal(err)
+		}
+		if err := root.ExecuteContext(context.Background()); err != nil {
+			t.Fatal(err)
+		}
+		if !strings.Contains(out.String(), "--replace") || language == "en" && !strings.Contains(out.String(), "independent HAA approval") || language == "ko" && !strings.Contains(out.String(), "독립 HAA 승인") {
+			t.Fatal(language, out.String())
+		}
 	}
-	if err := root.ExecuteContext(context.Background()); err != nil {
-		t.Fatal(err)
-	}
-	if !strings.Contains(out.String(), "--replace") || !strings.Contains(out.String(), "independent HAA approval") {
-		t.Fatal(out.String())
+}
+
+type githubOwnershipRefusal struct{}
+
+func (githubOwnershipRefusal) BeginInstallUpdate(context.Context, domain.SourceID, string, domain.InstallContext, bool) (ports.InstallUpdateSession, error) {
+	return nil, ports.NewInstallUpdateFailure("UPDATE_OWNERSHIP_INVALID", errors.New("controlled refusal"))
+}
+
+func TestGitHubReplacementReportsOwnershipFailureWithoutAdoptionAdvice(t *testing.T) {
+	for _, language := range []string{"en", "ko"} {
+		for _, output := range []string{"human", "json"} {
+			var out, diagnostic bytes.Buffer
+			root, _ := cli.New(&out, &diagnostic)
+			base, _ := installCLIFixture(t, policy.M4{}, nil)
+			updater, err := application.NewInstallUpdateService(base, githubOwnershipRefusal{})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := cli.AddGitHubReleaseInstall(root, githubrelease.ParseReference, base); err != nil {
+				t.Fatal(err)
+			}
+			if err := cli.AddGitHubReleaseReplacement(root, updater); err != nil {
+				t.Fatal(err)
+			}
+			args := []string{"--lang", language, "--output", output, "--color", "never", "--progress", "never", "github", "install", "owner/repo@v2#tool.zip", "--target", "/tmp/github-owned-report", "--replace"}
+			root.SetArgs(args)
+			if _, err := cli.PreparePresentation(root, args); err != nil {
+				t.Fatal(err)
+			}
+			if err := root.ExecuteContext(context.Background()); err == nil {
+				t.Fatal("ownership refusal reported as success")
+			}
+			if strings.Contains(out.String(), "--adopt") || strings.Contains(out.String(), "\x1b") {
+				t.Fatal(out.String())
+			}
+			if output == "json" {
+				var doc struct {
+					Operation string `json:"operation"`
+					Status    string `json:"operation_status"`
+					Promotion string `json:"promotion_status"`
+					Error     struct {
+						Code string `json:"code"`
+					} `json:"error"`
+				}
+				if json.Unmarshal(out.Bytes(), &doc) != nil || doc.Operation != "UPDATE" || doc.Status != "FAILED" || doc.Promotion != "FAILED" || doc.Error.Code != "UPDATE_OWNERSHIP_INVALID" {
+					t.Fatal(out.String())
+				}
+			} else if !strings.Contains(out.String(), "UPDATE_OWNERSHIP_INVALID") || language == "ko" && !strings.Contains(out.String(), "새 관리 대상") || language == "en" && !strings.Contains(out.String(), "new managed target") {
+				t.Fatal(out.String())
+			}
+		}
 	}
 }

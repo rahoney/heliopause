@@ -129,3 +129,22 @@ completed trial cleanup. Plan28b6460 and boundary amendmentd402a46 were committe
 before source. All audited production owners remain byte-identical tof882921;
 only documents changed. Activate this bounded GitHub lane with NO/NO/NO/NO and
 exactly the audited MISSING work. Only SEC-UPD-001 is IN_PROGRESS.
+
+## Demonstrated guard-identity correction before the narrow edit
+
+Actual transaction execution6.30s passes normal replacement/fresh proof,
+eleven old-authority refusals, six ordinary rollback phases, foreign selected/
+published/backup preservation, initial rollback and over64MiB snapshot coverage,
+but fails the lock unlink/recreate case: the closed empty lock's inode is reused
+immediately, so the existing generic guard's inode equality admits the new file.
+This is a real new GitHub consumer failure, not the earlier unused-import harness
+compile failure0.57s. Preserve both captures separately.
+
+Keep the original lock descriptor open in the new GitHub session, verify its
+zero size/single link/mode/mtime plus exact pathname identity through resolution,
+publication and close, then release the owned name before closing that descriptor.
+If identity is uncertain, close descriptors while preserving the pathname. This
+is confined to the current GitHub session; do not alter or claim to requalify old
+Go/Cargo/Terraform guard owners without their own demonstrated scope. Repeat the
+same failing fixture and preserve the foreign replacement lock; also test an
+empty replacement lock and mode/content changes without deleting it first.
