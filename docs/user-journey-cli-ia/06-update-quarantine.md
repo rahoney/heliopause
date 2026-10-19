@@ -2,15 +2,16 @@
 
 Status: IN_PROGRESS; user authorized implementation after reviewed planning.
 The bounded npm lane is qualified for29c58f0 including fresh CI330 ten SUCCESS.
-Current lane: [PyPI input/metadata implementation after baseline and selection review](../planning/evidence/update-quarantine/pypi-baseline-20261019.md).
-Public resolver/session/CLI and actual managed-venv consumers are locally qualified
-in the [bounded PyPI record](../planning/evidence/update-quarantine/pypi-managed-qualification-20261019.md).
-[Bounded native enrollment](../planning/evidence/update-quarantine/pypi-native-qualification-20261019.md) is qualified locally and by same-source CI332; named-source update qualification remains missing. The managed source c93ce58 passed CI331; its detailed remote scope is recorded separately from the new native source. Other lanes wait for
-their independent baseline/qualification. See the [npm evidence](../planning/evidence/update-quarantine/npm-qualification-20261018.md).
-The [native venv baseline](../planning/evidence/update-quarantine/pypi-native-baseline-20261019.md)
-preserves its pre-source review and bounded closure. Current work follows the
-[named PyTorch update baseline](../planning/evidence/update-quarantine/pytorch-update-baseline-20261019.md)
-and extends its existing source-pinned traversal after reviewed data changes.
+The reviewed bounded PyPI lane is qualified: [public managed venv](../planning/evidence/update-quarantine/pypi-managed-qualification-20261019.md),
+[public native enrollment](../planning/evidence/update-quarantine/pypi-native-qualification-20261019.md)
+and [named managed-venv CPU/cu126/cu130/cu132 updates](../planning/evidence/update-quarantine/pytorch-update-qualification-20261019.md).
+Their source-specific actual/CI scopes remain independent; no broader native named
+support is claimed. The named source306 has four actual update/no-op/refusal/
+restoration/cleanup profiles and ordinary same-source CI336. Current lane:
+[Cargo pre-source audit](../planning/evidence/update-quarantine/cargo-update-baseline-20261019.md),
+then pinned semantics, narrow edit map and second review before implementation.
+Other lanes wait for their independent baseline/qualification. See the
+[npm evidence](../planning/evidence/update-quarantine/npm-qualification-20261018.md).
 This leaf owns the user-requested update-command contract. It supplements the
 installation journey, never weakens existing Policy or adds implicit Host execution.
 
@@ -78,12 +79,12 @@ An earlier bounded install/UX qualification does not close this update acceptanc
 
 ## Implementation map and scoped command semantics
 
-This is a reviewed implementation plan. The bounded npm implementation and local
-qualification are recorded above; the remaining rows are planned support. Execute
+This is the reviewed implementation map. Qualified npm/PyPI scopes are recorded
+above; Cargo, Go -u, Terraform upgrade and GitHub replacement remain planned. Execute
 one ecosystem at a time after CLI-UX-002; keep other lanes unmodified until their
 own baseline/selection contract is verified. Minimum planned forms are:
 
-| Lane | Planned form / behavior | Existing location / method to reuse or extend | Required gap before wiring |
+| Lane | Supported or planned form / behavior | Existing location / method to reuse or extend | Required boundary behavior / original baseline gap |
 | --- | --- | --- | --- |
 | npm | npm update with zero or one package selector, respecting current package.json ranges and lock state; no implicit major-range rewrite | cli/root.go command registration; sandbox/npm_resolver.go NPMResolver.ResolveDependencies; application/install_inspect.go and install_promote.go; promotion/npm_transaction.go freezeNPMProject/verifyManagedOrEmpty/commit/rollback | Capture original controls before resolution; resolve UPDATE from the existing project rather than synthesize a new install-only manifest; preserve constraints and freeze full selected graph |
 | PyPI | pip install --upgrade with one named distribution; native specifier normalization and default only-if-needed upgrade selection | cli/root.go AddPyPIInstallSources; sandbox/pypi_resolver.go PyPIResolver.ResolveDependencies; promotion/pypi_promotion.go promoteActiveVenv; pypi_venv_transaction.go prepare/commit/rollback | Model supported current venv inventory/constraints without executing its packages; freeze proposed complete set and validate conflicts with retained distributions. Unimplemented strategies/options reject before mutation |
@@ -234,8 +235,8 @@ concurrent changes with English/Korean explanations.
 ### PyPI selection review before implementation
 
 The [PyPI baseline](../planning/evidence/update-quarantine/pypi-baseline-20261019.md)
-separates existing owned-venv transactions from the missing upgrade selection.
-Start with public PyPI; audit the distinct named PyTorch resolver separately and
+separated existing owned-venv transactions from the original upgrade-selection gap.
+The implementation started with public PyPI and audited the named resolver independently;
 never qualify its CPU/CUDA path using public-PyPI evidence. The scoped native
 form is pip install --upgrade/-U with one project, supported exact/numeric public
 specifier, active Python3.14 venv or absolute --target, default only-if-needed,
@@ -298,8 +299,9 @@ their paths/source cannot be represented in the supported update selection.
 An untrusted native RECORD must never gain authority to mark arbitrary user files
 obsolete. Native enrollment needs independent canonical installed-footprint proof
 before replacing/removing its claimed paths; otherwise reject it unchanged. The
-first managed-venv wiring may use the existing validated ledger while native
-enrollment remains MISSING. An explicit --adopt request alone is insufficient.
+first managed-venv checkpoint used the existing validated ledger while native
+enrollment was still missing. The later qualified native path supplies the
+independent proof below. An explicit --adopt request alone is insufficient.
 
 ### Native PyPI ownership review before implementation
 
@@ -360,7 +362,8 @@ wheel hash/source/metadata, changed original files after selection, ambiguous
 owners, forged/unsupported cache roles, missing required new inspection and
 partial commit/recovery conflicts. Actual native positive/default-bytecode and
 unchanged refusal consumers plus existing managed/NPM/canonical regressions are
-required. Native enrollment has a working implementation slice, but qualification and acceptance remain open until those checks pass.
+required. These checks subsequently passed within the linked bounded native
+qualification; the review remains the design contract, not an open native blocker.
 
 Concrete edit owners: new promotion/pypi_native_inventory.go owns bounded native
 claims/snapshots and uses pypiVenvPlan.bind; new pypi_native_ownership.go owns old

@@ -1,11 +1,17 @@
 # SEC-UPD-001 — named PyTorch update qualification / 2026-10-19
 
-Status: IN_PROGRESS. Named source IMPLEMENTED=YES / WIRED=YES /
-QUALIFIED=NO / ACCEPTANCE_CLOSED=NO for the complete named lane. Only
+Status: COMPLETE for the documented named managed-venv update subset.
+IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES /
+MISSING=none within that scope. Only
 SEC-UPD-001 is active. The [baseline and correction review](./pytorch-update-baseline-20261019.md)
 owns the before-source audit; [contract06](../../../user-journey-cli-ia/06-update-quarantine.md)
-owns supported behavior. Actual CUDA updates remain MISSING; the retirement correction's
-same-source CI335 remote qualification is complete. No candidate is permanently
+owns supported behavior. Source306 CPU/cu126/cu130/cu132 actual update/no-op,
+unchanged refusals, confirmed restoration/cleanup and independently matched
+CI336 are qualified. The chronological checkpoints below preserve the earlier
+failures and then-current missing work; the final closure owns current status.
+Together with the separately qualified public managed/native subsets, this closes
+the reviewed bounded PyPI lane. Broader native named footprints are not qualified.
+No candidate is permanently
 activated; main merge, publication and CLI-UX-003 remain later work.
 
 ## Source and fixed local checks
@@ -165,3 +171,167 @@ The new actual cu126 trial reuses the successful seed without reinstalling it.
 Actual update/no-op/negative results, other affected named profiles, confirmed
 restoration/cleanup and this new Go source's remote qualification remain MISSING.
 CI335 belongs to source86 and does not qualify this subsequent candidate.
+
+
+## Source306 actual cu126 closure and remote qualification
+
+The same fixed candidate d42 completed actual cu1262.14.0 to2.14.1 UPDATE in
+2755.32s and a fresh same-version native -U in2848.96s. Each has29 entries,
+all87 required checks completed,93 Evidence, M5 ALLOW and promotion COMPLETED.
+All handles are disjoint from the seed and the other update. Both phases bind
+all29 exact candidate identities/digests to the Manifest; the initial update
+has28 empty deltas and the no-op29, with a fresh candidate report for every node
+and a complete final constrained graph. The two controls contain29 records per
+phase; deduplication grants no previous safety approval.
+
+Inspection-only NumPy is excluded from the installed set, supplemented original
+environment remains NOT_ATTESTED, and Triton viewer remains explicitly
+NOT_ATTESTED/functionality false/later-enforcement false. The synthetic retained
+requirement and user file survive normal updates. Missing version63.20s and
+retained conflict243.26s both refuse with complete target snapshots unchanged.
+These are real ordinary UID1000 installed CLI consumers, not tool-only probes.
+
+The owning lifecycle ends0/5958.90s with helper1441435 actual wait0,
+CONFIRMED_STOPPED, original observer/client restored. A fresh root postguard
+confirms four originals, symlink and process/socket/Docker absence. Raw Evidence,
+Manifest/SBOM, outputs and exact operators remain; completed cu126 target/cache/
+lifecycle13,921,488,798 logicalB were deleted after reference checks. Earlier seed
+and version-update completed payloads were separately trimmed after validation.
+
+CI336/run39172203301 completed Required plus nine prerequisites SUCCESS.
+Actual checkout8431892daf2922eccd5a8480b6becbf2074d0794 has the exact full
+tree78f9b5f33301f138a13672f43e1e0b47a51ec3ed of source3060952cefd2554ab5a211d6823e6f10483473a1.
+Decoded logs confirm native macOS,45 Linux consumers, CPU full280.93s, five
+helper wait0 and final original0/CONFIRMED_STOPPED. This ordinary CI has no actual
+named UPDATE gate. Its independent source match does not qualify unexecuted
+CPU/cu130/cu132 UPDATE cases. The new same-candidate CPU trial is active; only
+SEC-UPD-001 remains IN_PROGRESS and no next ecosystem or UX implementation starts.
+
+Raw owners: pytorch-report-cu126-{installed,postanalysis.json,cleanup.json},
+its lifecycle and fresh installed-after receipt; ci336-completed-qualification.json
+and three decoded job logs. The preceding source86 EVENT_LIMIT failure remains
+preserved separately and is not relabeled as a successful update.
+
+## Acceptance regression ownership cross-check
+
+The final source's Quick covers the following existing owners; this table maps
+acceptance rather than claiming new reruns or live malicious registry releases.
+Controlled adverse fixtures remain inert test data. Ordinary CI and actual
+profile results above qualify their separately stated execution scopes.
+
+| Acceptance | Existing concrete regression owner |
+| --- | --- |
+| Fresh harmful primary-v2/transitive-only-v2, incomplete inspection and integrity mismatch stop before publication | [Application update tests](../../../../internal/application/install_update_test.go), TestInstallUpdateInspectsNewPrimaryAndTransitiveBytesBeforePolicy; generic npm/public-PyPI cases exercise M3/M5 and all selected acquire/verify/inspect/evidence calls |
+| Block/review, original-state session and primary/cleanup cause preservation | Same Application owner: TestInstallUpdateRejectsBeforePublicationAndPreservesPrimaryAndCloseFailure and TestBaseInstallerCannotAcceptAnUpdateWithoutOriginalStateSession |
+| Exact named source/runtime/input/constraints/report/digest/graph and early metadata guards | [Named session tests](../../../../internal/promotion/pypi_named_update_test.go), TestPyTorchUpgradeSessionBindsFrozenInputCompleteControlsAndResourceProfile; all four profiles |
+| New source/control substitution, missing final candidates, real retained constraints and extras | [Source controls](../../../../internal/artifact/pypi/upgrade_source_controls_test.go), [named selection](../../../../internal/artifact/pypi/upgrade_named_test.go) and [CUDA constraints](../../../../internal/artifact/pypi/upgrade_cuda_test.go) |
+| Concurrent original drift, cancellation, staged tampering and partial publication restore originals | [Held update transaction](../../../../internal/promotion/pypi_update_test.go), TestPyPIUpgradeUsesSameEarlyTransactionThroughExactOutputAndRollback |
+| Rollback fault is recovery-required; original directories survive rollback | [Original venv transaction](../../../../internal/promotion/pypi_venv_transaction_test.go), TestVenvRollbackPhases, TestVenvRollbackFailureRetainsRecovery and TestVenvRollbackPreservesExistingDirectories |
+| Actual command/source and resource/prerequisite forwarding | [CLI](../../../../internal/cli/pypi_update_test.go), [bootstrap](../../../../internal/bootstrap/pypi_update_test.go) and the named producer/session tests; live per-profile evidence remains required |
+
+The current implementation reuses these owners; no alternate Policy, transaction
+or old-ALLOW path was introduced. Complete named acceptance still waits for the
+remaining same-candidate actual profiles, not another repetition of already
+passing unchanged Quick/regressions.
+
+
+## Source306 actual CPU closure
+
+The same d42 candidate completed a fresh CPU2.14.0 seed599.49s, actual2.14.1
+UPDATE877.59s and fresh native -U/no-op885.77s. Each result has10 entries,
+all30 required checks completed,32 Evidence, M5 ALLOW and promotion COMPLETED.
+The two updates have completely disjoint Evidence from the seed and each other.
+Both phases retain all ten fresh exact candidates/Manifest digests; UPDATE has
+nine empty first deltas and no-op ten. CPU supplies no inspection prerequisite.
+Missing version20.82s and retained conflict90.05s refuse with full target snapshots
+unchanged; sanitized resolver boundaries have no reported observation fault.
+
+The owning lifecycle ends0/2493.64s, helper1638732 actual wait0,
+CONFIRMED_STOPPED, observer/client restored and fresh root postguard PASS.
+Completed CPU target/cache/lifecycle1,202,985,346 logicalB were deleted after
+reference/Docker checks. Seed413,289,131B and update413,288,803B completed payloads
+were previously trimmed. Original Evidence/Manifest/SBOM/results remain in
+pytorch-report-cpu-installed; postanalysis, after, lifecycle and cleanup receipts
+own this exact scope. Go source remains306 with its independently matched CI336.
+
+Only cu130/cu132 actual cases remain in the named matrix; cu130 is now active
+with the same fixed candidate after fresh original/capacity/input checks. Whole
+named/PyPI qualification and SEC-UPD-001 acceptance remain open. No next ecosystem,
+interactive launcher, merge or publication was started.
+
+
+## Source306 actual cu130 closure
+
+The same candidate d42 completed cu1302.14.0 seed1873.62s, actual2.14.1
+UPDATE2435.60s and native -U/no-op2608.74s. Each result has29 entries, all87
+required checks completed,93 Evidence, M5 ALLOW and promotion COMPLETED. Both
+updates have Evidence disjoint from the seed and each other. First/final phases
+bind all29 fresh exact candidates/Manifest digests; UPDATE has28 empty first
+deltas and no-op29. NumPy remains inspection-only, with original supplemented
+environment and Triton viewer NOT_ATTESTED distinctions preserved.
+
+Missing version52.48s and retained conflict250.26s refuse with full target
+snapshots unchanged and expected sanitized adapter errors/no reported observation
+fault. The owning lifecycle ends0/7266.00s, helper1747275 actual wait0,
+CONFIRMED_STOPPED, observer/client restored and fresh root postguard PASS.
+Completed target/cache/lifecycle11,570,834,928 logicalB were deleted after
+reference/Docker checks; seed6,037,247,510B and update6,037,243,904B completed
+payloads were previously trimmed. Raw pytorch-report-cu130-installed,
+postanalysis/after/lifecycle/cleanup receipts own this scope.
+
+Go source remains306/CI336. CPU, cu126 and cu130 are qualified for this candidate;
+cu132 is now active after original/input/capacity checks. It remains the last
+missing named profile, so whole named/PyPI acceptance stays open. Later ecosystem
+updates and CLI-UX-003 have not started.
+
+## Source306 actual cu132 and final named closure
+
+The same candidate d42 completed cu1322.14.0 seed1928.85s, actual2.14.1
+UPDATE2479.44s and native -U/no-op2592.89s. Each has29 entries, all87 required
+checks completed,93 Evidence, M5 ALLOW and promotion COMPLETED. Both updates
+have Evidence disjoint from the seed and each other. First/final phases each
+bind29 exact candidate identities/digests to the selected Manifest. The first
+UPDATE has18 empty deltas, while no-op has29; the seed/update Manifests show
+eleven changed version/digest identities: torch plus ten transitive entries.
+This is observed selection, not attribution to an upstream release time.
+NumPy remains inspection-only; supplemented original environment and Triton
+viewer remain explicitly NOT_ATTESTED with their existing distinctions.
+
+Missing version49.59s and retained conflict243.19s both refuse with whole target
+snapshots unchanged and the expected sanitized adapter boundary/no reported
+observation fault. Owning lifecycle2018932 ends0/7345.87s; helper2018981 actual
+wait0, CONFIRMED_STOPPED, observer/client restored and fresh root postguard PASS.
+The postanalysis independently validates required Evidence, identities, four
+controls, fresh disjoint handles, no-op deltas, auxiliary exclusion and refusal
+scope. Completed target/cache/lifecycle11,449,132,037 logicalB were deleted after
+reference/Docker checks. Completed seed5,997,264,548B and UPDATE5,999,669,600B
+payloads were separately trimmed after phase validation. All four profiles are
+now complete, so the six exact-archive-matched temporary operators31,802B were
+also deleted after open-reference/script-process/Docker checks. Evidence,
+Manifest/SBOM/raw/operator archives, active reusable check source/cache/observer/
+candidate, shared SDK/runtime and required protected rollback remain.
+
+| Same-source306 actual profile | UPDATE seconds | Fresh no-op seconds | Required checks / Evidence | Refusal, restoration, cleanup |
+| --- | --- | --- | --- | --- |
+| CPU | 877.59 | 885.77 | 30 / 32 | PASS |
+| cu126 | 2755.32 | 2848.96 | 87 / 93 | PASS |
+| cu130 | 2435.60 | 2608.74 | 87 / 93 | PASS |
+| cu132 | 2479.44 | 2592.89 | 87 / 93 | PASS |
+
+CI336 independently qualifies the same Go source's ordinary Linux/native macOS
+consumers, with its full-tree match recorded above; it has no actual named UPDATE
+gate. Existing public/native qualification and affected eleven-consumer retirement
+regression remain separately scoped. Source306's final Quick includes those
+direct regressions, and its public update script is byte-identical; the named
+optimization does not turn historical public/native runs into new live runs.
+No additional unchanged Quick/Race/CUDA rerun is implied by this document closure.
+
+Raw owners: pytorch-report-cu132-{installed,postanalysis.json,installed-after.json,
+installed-lifecycle.json,installed-lifecycle.log,cleanup.json}, its preserved
+seed-update-identity-differences.json and
+pytorch-report-completed-operators-cleanup.json. Earlier failures remain failures.
+Only the bounded named/PyPI acceptance closes; SEC-UPD-001 stays IN_PROGRESS for
+Cargo, Go, Terraform and GitHub. Next is the
+[Cargo baseline](./cargo-update-baseline-20261019.md), completing pinned semantics,
+edit map and second review before source changes. CLI-UX-003, main merge and
+publication remain later work.

@@ -3330,85 +3330,35 @@ catalogs are reused; no replacement or new runtime/CI scaffold is justified.
   Read [OS-language correction](../user-journey-cli-ia/05-terminal-presentation.md#os-display-language-correction--cli-ux-002).
 
 The detailed plans, second review and CLI-UX-002 implementation are complete.
-On2026-10-18 the user authorized SEC-UPD-001 implementation and deferred the
-interactive launcher until guarded updates are qualified. Only SEC-UPD-001 is
-IN_PROGRESS. Execute one ecosystem at a time. The bounded npm lane is locally
-IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES for29c58f0:
-fresh CI330 Required and nine prerequisites SUCCESS, actual same-tree checkout,
-native macOS,45 Linux consumers and confirmed helper cleanup. Its
-[qualification](./evidence/update-quarantine/npm-qualification-20261018.md)
-records actual seven-operation CLI/observer evidence and cleanup. Next is the
-independent [PyPI baseline/upgrade gap](./evidence/update-quarantine/pypi-baseline-20261019.md);
-its pinned-tool selection semantics, second review and bounded input data are
-implemented. Public PyPI two-phase resolver, original-state session retaining the
-existing venv transaction, typed prerequisite/source forwarding and native -U/
---upgrade command wiring passed final canonical checks and seven actual UID1000
-CLI consumers, including24.2→25.0 and fresh no-op inspection. A directly reproduced
-empty retired dist-info inventory gap was corrected and requalified. Originals
-were restored and completed trial payloads/operators deleted.
-[Public managed-venv qualification](./evidence/update-quarantine/pypi-managed-qualification-20261019.md)
-includes subsequent same-source CI331. It does not close complete PyPI acceptance;
-the separate bounded native result follows, while named-source and later update
-lanes remain MISSING. No candidate was permanently activated.
-The [native ownership audit](./evidence/update-quarantine/pypi-native-baseline-20261019.md)
-preserves its pre-source baseline and the following qualified implementation.
-The reviewed native implementation slice now freezes claims before selection,
-authenticates the old wheel footprint and reuses the original transaction.
-Targeted inventory/ownership/rollback fixtures, final canonical checks and
-eleven actual native/managed CLI consumers pass. Source2e8844f CI332 also completed
-Required plus nine prerequisites SUCCESS, same-tree checkout/native macOS and
-Linux45 consumers/CPUfull288.11s with confirmed cleanup. Original helper/client state was
-restored, Evidence preserved and completed trial data/operators deleted.
-[Bounded native local qualification](./evidence/update-quarantine/pypi-native-qualification-20261019.md)
-closes this bounded local/remote native subset. Independent named-source
-implementation and affected qualification remain MISSING. Next is named-source within the
-same PyPI lane; no other work item becomes IN_PROGRESS. Its independent
-[named-source baseline and reviewed edit map](./evidence/update-quarantine/pytorch-update-baseline-20261019.md)
-records existing source-pinned traversal and the actual upgrade gaps before code.
-The first named source-bound input/proposal data slice passes Quick/Race and
-focused regressions, preserving public controls and per-node source identity.
-Known CUDA retained extras now have typed obligations and conditional constraints,
-and incoming named local versions have a source-aware numeric comparison. Their
-focused/actual-method fixtures and canonical Quick/Race pass. The current named
-resolver/CLI/Promotion/resource wiring is IMPLEMENTED=YES / WIRED=YES /
-QUALIFIED=NO / ACCEPTANCE_CLOSED=NO. It reuses the source-pinned traversal and
-held transaction; bounded original/first/final/constraint controls bind the whole
-selection. Canonical Quick130.31s/security9.27s/docs1.45s and targeted Race29.61s
-pass for the same candidate. Four-profile control/source/graph/resource and
-retained CUDA component fixtures pass; these are not live source qualification.
-Actual installed-path CPU2.14.0 to2.14.1 update passed772.64s with10 entries,
-required30 checks/32 Evidence, M5 ALLOW and completed promotion. The subsequent
-no-op exposed a shallow inventory check on nested directory-only retired metadata;
-its bounded guard correction is in progress under the same item and reviewed
-named baseline. The correction's RED/GREEN and current Quick96.13s/security/docs/
-Race26.59s pass. Actual fresh no-op777.42s on the same114-directory tree and three
-negative-preservation consumers pass, with entirely fresh Evidence. Eleven
-affected public/native consumers also pass. Canonical stop/restoration and fresh
-root postguards are confirmed, and completed CPU2.03GB/public29.4MB trial data
-were deleted. The [named qualification](./evidence/update-quarantine/pytorch-update-qualification-20261019.md)
-keeps source88 version-change/CI334 and the subsequent local correction separate.
-CI334 Required plus nine prerequisites, same-tree/native macOS/Linux45 consumers
-and confirmed cleanup all pass for88. Actual cu126/cu130/cu132 update qualification
-remain MISSING. The retirement correction source86 passed CI335 ten SUCCESS,
-same full tree/native macOS/Linux45 consumers/CPUfull242.16s/five helperwait0 and
-confirmed cleanup. The actual cu126 seed completed2186.76s with29 entries,
-required87/Evidence93; a harness-only Evidence-ID assertion stopped before UPDATE.
-Its corrected validator passes on that frozen result and rejects mismatched
-coverage. The successful seed is reused for actual cu126 UPDATE in this same item. No candidate is permanently activated. The
-managed candidatec93ce58 in draft PR38 passed all ten CI331/run39148017283 jobs;
-its actual checkout and consumer scope are recorded independently. Native source
-is newer and does not inherit that qualification.
-The first reused-seed cu126 UPDATE failed409.04s before inspection at the
-unchanged observer EVENT_LIMIT. Originals and fresh root postguard pass. The
-reviewed in-place report-return/identical-intent correction passes canonical
-Quick105.15s/security/docs/relevant Race10.04s, direct RED/GREEN regressions and
-five pinned runtime wrapper cases. New CLI d42bdc2 is under actual cu126 trial;
-this does not inherit CI335 or complete named qualification. Successful seed
-payload7.33GB and both completed lifecycle copies were deleted; its target remains
-active for the new actual UPDATE. The named baseline/qualification own exact scope.
-Other lanes remain unimplemented/unqualified.
-[implementation baseline](./evidence/update-quarantine/baseline-20261018.md)
-records existing responsibilities and actual missing acceptance.
+On2026-10-18 the user authorized SEC-UPD-001 and deferred CLI-UX-003 until update
+acceptance. Only SEC-UPD-001 is IN_PROGRESS. Execute one ecosystem at a time;
+source-specific failures, checks and historical intermediate states belong to the
+linked qualification owners rather than duplicate progress narratives here.
+
+| Scoped update lane | IMPLEMENTED / WIRED / QUALIFIED / ACCEPTANCE_CLOSED | Evidence / remaining work |
+| --- | --- | --- |
+| npm | YES / YES / YES / YES | [Bounded npm qualification](./evidence/update-quarantine/npm-qualification-20261018.md), source29c58f0/CI330; actual native/managed consumers, restoration and cleanup |
+| Public PyPI managed venv | YES / YES / YES / YES | [Managed qualification](./evidence/update-quarantine/pypi-managed-qualification-20261019.md), sourcec93ce58/CI331; actual update/fresh no-op/refusals and bounded retired-metadata correction |
+| Bounded public-native PyPI enrollment | YES / YES / YES / YES | [Native qualification](./evidence/update-quarantine/pypi-native-qualification-20261019.md), source2e8844f/CI332 and separately scoped affected retirement regressions; authentic old wheel footprint, foreign-file protection and exact held transaction |
+| Named PyTorch managed venv, CPU/cu126/cu130/cu132 | YES / YES / YES / YES | [Final named qualification](./evidence/update-quarantine/pytorch-update-qualification-20261019.md), source306/CI336; all four actual version updates/fresh no-ops/unchanged refusals, confirmed helper stop/original restoration/postguards and completed data/operator cleanup |
+| Cargo lock update | NO / NO / NO / NO | Current [pre-source audit](./evidence/update-quarantine/cargo-update-baseline-20261019.md); finish pinned semantics, exact edit map and second review before source |
+| Scoped Go get -u, Terraform project upgrade, GitHub managed replacement | NO / NO / NO / NO | Independent selection/ownership/CLI and actual acceptance remain MISSING; existing selected-version/install infrastructure is reused |
+
+The reviewed bounded PyPI lane is closed; broader native named footprints are not
+qualified. Source306 canonical Quick105.15s/security/docs/relevant Race10.04s,
+source-specific ordinary CI336 and its independent four-profile actual consumers
+are linked in the final named report. Earlier public/native live runs retain their
+original scope; unchanged public-script identity and final direct regressions do
+not relabel them as new runs. No candidate is permanently activated.
+
+Next within SEC-UPD-001 is Cargo. PyPI originals are restored and completed trial
+payloads/cache/lifecycle plus the six final temporary operators are deleted;
+Evidence/Manifest/SBOM/raw archives and active reusable tooling are preserved.
+No Cargo source or native probe has started yet. Complete its baseline's pending
+semantics/edit-map review, implement only proven gaps, then qualify actual update
+and affected add/build consumers. Other lanes, the interactive launcher, main
+merge and publication remain pending. The [implementation baseline](./evidence/update-quarantine/baseline-20261018.md)
+records existing responsibilities and original missing acceptance.
 Existing CLI-UX-001 receipts qualify
 its historical locale-only implementation, not these new requirements. Neither
 update-command availability nor running a native package manager outside helox
