@@ -108,7 +108,11 @@ func projectUpdatePolicy(decision domain.PolicyDecision) machinePolicy {
 }
 
 func writeCargoUpdateReport(output io.Writer, verified domain.ProjectVerifiedSet, cause error, selector string) error {
-	report := cargoUpdateReport{Schema: "helox.project-update-result/v1", Operation: "UPDATE", Status: "FAILED", Promotion: "NOT_COMPLETED", Source: "crates-io", Selector: selector, Entries: []cargoUpdateEntry{}}
+	return writeProjectUpdateReport(output, verified, cause, selector, "crates-io")
+}
+
+func writeProjectUpdateReport(output io.Writer, verified domain.ProjectVerifiedSet, cause error, selector, source string) error {
+	report := cargoUpdateReport{Schema: "helox.project-update-result/v1", Operation: "UPDATE", Status: "FAILED", Promotion: "NOT_COMPLETED", Source: source, Selector: selector, Entries: []cargoUpdateEntry{}}
 	var inspected domain.InspectedProjectSet
 	var decision domain.PolicyDecision
 	if cause == nil && verified.Valid() {
@@ -156,12 +160,20 @@ func writeCargoUpdateReport(output io.Writer, verified domain.ProjectVerifiedSet
 		policy = report.Policy.Decision
 	}
 	p.reportHeader("UPDATE", report.Status, policy, "")
-	p.line("%s %s", p.text("Lockfile update:", "잠금파일 업데이트:"), p.stateLabel(report.Promotion))
+	if source == "go-proxy" {
+		p.line("%s %s", p.text("Dependency control update:", "의존성 설정 업데이트:"), p.stateLabel(report.Promotion))
+	} else {
+		p.line("%s %s", p.text("Lockfile update:", "잠금파일 업데이트:"), p.stateLabel(report.Promotion))
+	}
 	if selector != "" {
 		p.line("%s %s", p.text("Selected package:", "선택한 패키지:"), safeTerminal(selector))
 	}
 	if inspected.Valid() {
-		p.line("%s %d", p.text("Inspected crates:", "검사한 crate 수:"), len(report.Entries))
+		if source == "go-proxy" {
+			p.line("%s %d", p.text("Inspected modules:", "검사한 모듈 수:"), len(report.Entries))
+		} else {
+			p.line("%s %d", p.text("Inspected crates:", "검사한 crate 수:"), len(report.Entries))
+		}
 		for index, entry := range report.Entries {
 			if index == 64 {
 				p.line("… %s", p.text("See JSON for remaining entries.", "나머지 항목은 JSON으로 확인하세요."))
@@ -188,6 +200,10 @@ func writeCargoUpdateReport(output io.Writer, verified domain.ProjectVerifiedSet
 		p.line("%s", p.text("The update is incomplete. Check the original project and any recovery state before retrying.", "업데이트 완료가 확인되지 않았습니다. 재실행 전에 원본 프로젝트와 복구 상태를 확인하세요."))
 		p.reportedError = true
 	}
-	p.line("%s", p.text("Build script and macro behavior is inspected separately with helox cargo build.", "Build script와 macro 동작은 helox cargo build에서 별도로 검사합니다."))
+	if source == "go-proxy" {
+		p.line("%s", p.text("Build behavior is inspected separately with helox go build.", "빌드 동작은 helox go build에서 별도로 검사합니다."))
+	} else {
+		p.line("%s", p.text("Build script and macro behavior is inspected separately with helox cargo build.", "Build script와 macro 동작은 helox cargo build에서 별도로 검사합니다."))
+	}
 	return p.writeErr
 }

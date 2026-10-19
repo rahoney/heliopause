@@ -240,6 +240,11 @@ func (r *IsolatedGoModuleRunner) RunGo(ctx context.Context, workspace string, en
 }
 
 func validGoResolverCommand(arguments []string) bool {
+	if len(arguments) == 3 && arguments[0] == "get" && arguments[1] == "-u" {
+		for _, selector := range arguments[2:] {
+			return artifactgomodule.ValidateUpgradeSelector(selector) == nil
+		}
+	}
 	if len(arguments) == 2 && arguments[0] == "get" {
 		_, err := artifactgomodule.ParseReference(arguments[1])
 		return err == nil

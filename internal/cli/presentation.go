@@ -124,7 +124,7 @@ func PreparePresentation(root *cobra.Command, args []string) (string, error) {
 	if err = p.configure(); err != nil {
 		return "", err
 	}
-	if command.CommandPath() == "helox npm update" || command.CommandPath() == "helox pip install" || command.CommandPath() == "helox cargo update" {
+	if command.CommandPath() == "helox npm update" || command.CommandPath() == "helox pip install" || command.CommandPath() == "helox cargo update" || command.CommandPath() == "helox go get" {
 		help, _ := command.Flags().GetBool("help")
 		if !help {
 			if err := command.ValidateArgs(command.Flags().Args()); err != nil {
@@ -135,7 +135,8 @@ func PreparePresentation(root *cobra.Command, args []string) (string, error) {
 	if p.language != "en" {
 		localizeHelp(root, p)
 	}
-	if p.output == "json" && (source == "go" || (source == "cargo" && command.CommandPath() != "helox cargo update") || source == "terraform" || source == "doctor") {
+	goUpgrade, _ := command.Flags().GetBool("upgrade")
+	if p.output == "json" && ((source == "go" && !(command.CommandPath() == "helox go get" && goUpgrade)) || (source == "cargo" && command.CommandPath() != "helox cargo update") || source == "terraform" || source == "doctor") {
 		return "", errors.New("explicit JSON output is not available for this command")
 	}
 	return source, nil

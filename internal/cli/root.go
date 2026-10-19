@@ -679,7 +679,12 @@ func initializeCommandTree(root *cobra.Command) {
 	githubInstall := newStaticLeaf("install <owner>/<repo>@<tag>#<asset>", "Install a GitHub Release asset", true)
 	github.AddCommand(githubInstall)
 	goCommand := ensureGoCommand(root)
-	goCommand.AddCommand(newStaticLeaf("get <module>@<version>", "Resolve an exact public Go Module graph before transaction", false))
+	goGet := newStaticLeaf("get <module>[@<version>]", "Inspect exact or upgraded public Go Module dependencies", false)
+	goGet.Args = validateGoGetArgs
+	goGet.Long = goUpgradeDescriptionEnglish
+	goGet.Flags().BoolP("upgrade", "u", false, "Inspect the whole selected graph before upgrading one existing module and its imported dependencies")
+	goGet.Flags().Bool("adopt", false, "Explicitly enroll supported native or changed dependency controls with -u")
+	goCommand.AddCommand(goGet)
 	goCommand.AddCommand(newStaticLeaf("build <package>", "Build a Go project from the HAA-verified module cache", false))
 	goMod := &cobra.Command{Use: "mod", Short: "Resolve public Go Modules with the canonical proxy and SumDB"}
 	goMod.AddCommand(newStaticNoArgLeaf("download", "Resolve the current project's exact Go Module graph"))

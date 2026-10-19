@@ -109,6 +109,30 @@ func (r *GoModuleResolver) ResolveDependencies(ctx context.Context, reference do
 }
 
 func (r *GoModuleResolver) ResolveProjectDependencyUpdate(ctx context.Context, reference domain.ArtifactReference, installContext domain.InstallContext, original []domain.ProjectControlFile) (update domain.ProjectDependencyUpdate, resultErr error) {
+	if _, err := artifactgomodule.ParseReference(reference.Locator()); err != nil {
+		return update, err
+	}
+	return r.resolveProjectSelection(ctx, reference, installContext, original, "")
+}
+
+// ResolveProjectDependencyUpgrade preserves the named primary after freezing its
+// exact native -u selection. It never executes the original project's source.
+func (r *GoModuleResolver) ResolveProjectDependencyUpgrade(ctx context.Context, installContext domain.InstallContext, original []domain.ProjectControlFile, selector string) (domain.ProjectDependencyUpdate, error) {
+	mod, _, err := goFrozenControlBodies(original)
+	if err != nil {
+		return domain.ProjectDependencyUpdate{}, err
+	}
+	if err := artifactgomodule.ValidateUpgradeMembership(mod, selector); err != nil {
+		return domain.ProjectDependencyUpdate{}, err
+	}
+	reference, err := domain.NewArtifactReference(artifactgomodule.Source(), selector)
+	if err != nil {
+		return domain.ProjectDependencyUpdate{}, err
+	}
+	return r.resolveProjectSelection(ctx, reference, installContext, original, selector)
+}
+
+func (r *GoModuleResolver) resolveProjectSelection(ctx context.Context, reference domain.ArtifactReference, installContext domain.InstallContext, original []domain.ProjectControlFile, upgrade string) (update domain.ProjectDependencyUpdate, resultErr error) {
 	if r == nil || r.runner == nil || ctx == nil || reference.Source() != artifactgomodule.Source() || !installContext.Valid() {
 		return update, errors.New("valid Go project update request is required")
 	}
@@ -139,7 +163,11 @@ func (r *GoModuleResolver) ResolveProjectDependencyUpdate(ctx context.Context, r
 		return update, err
 	}
 	defer func() { resultErr = errors.Join(resultErr, cleanup()) }()
-	if _, err := r.runner.RunGo(ctx, workspace, environment, "get", reference.Locator()); err != nil {
+	arguments := []string{"get", reference.Locator()}
+	if upgrade != "" {
+		arguments = []string{"get", "-u", upgrade}
+	}
+	if _, err := r.runner.RunGo(ctx, workspace, environment, arguments...); err != nil {
 		return update, goModuleRunnerFailure("private go module selection failed", err)
 	}
 	jsonBody, err := r.runner.RunGo(ctx, workspace, environment, "mod", "download", "-json", "all")
@@ -161,6 +189,12 @@ func (r *GoModuleResolver) ResolveProjectDependencyUpdate(ctx context.Context, r
 	selectedMod, selectedSum, err := readGoProjectControlFiles(workspace)
 	if err != nil {
 		return update, err
+	}
+	if upgrade != "" {
+		reference, err = artifactgomodule.FreezeUpgradeReference(originalMod, selectedMod, upgrade, records)
+		if err != nil {
+			return update, err
+		}
 	}
 	snapshot, err := artifactgomodule.BuildProjectSnapshot(installContext, records, graphBody, selectedMod, selectedSum)
 	if err != nil {

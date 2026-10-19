@@ -93,6 +93,10 @@ func TestCargoUpdateCLIPreflightDoesNotDuplicatePackageSelection(t *testing.T) {
 
 // Synthetic independent facts test presentation only, not public authentication.
 func cargoUpdateFacts(t *testing.T, decision domain.Decision) (domain.InspectedProjectSet, domain.PolicyDecision) {
+	return projectUpdateFactsForSource(t, decision, "crates-io")
+}
+
+func projectUpdateFactsForSource(t *testing.T, decision domain.Decision, sourceID string) (domain.InspectedProjectSet, domain.PolicyDecision) {
 	t.Helper()
 	cwd, err := os.Getwd()
 	if err != nil {
@@ -100,9 +104,15 @@ func cargoUpdateFacts(t *testing.T, decision domain.Decision) (domain.InspectedP
 	}
 	target, _ := domain.NewInstallTarget(cwd)
 	install, _ := domain.NewInstallContext(target)
-	source, _ := domain.NewSourceID("crates-io")
+	source, _ := domain.NewSourceID(sourceID)
 	digest, _ := domain.NewSHA256Digest(strings.Repeat("a", 64))
-	id, _ := domain.NewResolvedArtifactIdentity(source, "itoa", "1.0.17", "crate")
+	name, version, variant := "itoa", "1.0.17", "crate"
+	verification, inspection := "cargo-registry-integrity", "cargo-crate-static"
+	if sourceID == "go-proxy" {
+		name, version, variant = "example.com/module", "v1.2.3", "module"
+		verification, inspection = "go-module-sumdb", "go-module-static"
+	}
+	id, _ := domain.NewResolvedArtifactIdentity(source, name, version, variant)
 	resolved, _ := domain.NewResolvedArtifact(id, "https://static.crates.io/crates/itoa/itoa-1.0.17.crate", "sha256:"+digest.String())
 	manifest, _ := domain.NewProjectControlDigest("Cargo.toml", digest)
 	lock, _ := domain.NewProjectControlDigest("Cargo.lock", digest)
@@ -112,7 +122,7 @@ func cargoUpdateFacts(t *testing.T, decision domain.Decision) (domain.InspectedP
 	}
 	run, _ := domain.NewRunID()
 	node, _ := domain.ProjectDependencyNodeID(id)
-	acquired, err := domain.NewAcquiredArtifactWithDeclaredIntegrity(id, digest, "intake:"+run.String()+":crate", 10, resolved.DeclaredIntegrity())
+	acquired, err := domain.NewAcquiredArtifactWithDeclaredIntegrity(id, digest, "intake:"+run.String()+":"+variant, 10, resolved.DeclaredIntegrity())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -121,7 +131,7 @@ func cargoUpdateFacts(t *testing.T, decision domain.Decision) (domain.InspectedP
 	for _, spec := range []struct {
 		id   string
 		kind domain.CheckKind
-	}{{"cargo-registry-integrity", domain.CheckVerification}, {"cargo-crate-static", domain.CheckInspection}} {
+	}{{verification, domain.CheckVerification}, {inspection, domain.CheckInspection}} {
 		checkID, _ := domain.NewCheckID(spec.id)
 		check, _ := domain.NewCheckExecution(checkID, spec.kind, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
 		checks = append(checks, check)

@@ -58,6 +58,12 @@ type ProjectLockUpdateResolver interface {
 	ResolveProjectLockUpdate(context.Context, domain.InstallContext, []domain.ProjectControlFile, string) (domain.ProjectDependencyUpdate, error)
 }
 
+// ProjectDependencyUpgradeResolver freezes native named selection under the
+// original guard, including its actual requested primary and complete project.
+type ProjectDependencyUpgradeResolver interface {
+	ResolveProjectDependencyUpgrade(context.Context, domain.InstallContext, []domain.ProjectControlFile, string) (domain.ProjectDependencyUpdate, error)
+}
+
 // ProjectMutationGuard holds the original target through selection, approval
 // and commit. Commit accepts only the frozen update and its approved cache.
 type ProjectMutationGuard interface {

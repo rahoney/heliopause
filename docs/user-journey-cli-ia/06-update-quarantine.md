@@ -11,7 +11,7 @@ restoration/cleanup profiles and ordinary same-source CI336. The reviewed
 [Cargo lane](../planning/evidence/update-quarantine/cargo-update-qualification-20261019.md)
 is also qualified for source85ac4c1: local actual20 phases, restoration/cleanup
 and same-tree CI338 ten SUCCESS. Current lane: [Go baseline/selection
-review](../planning/evidence/update-quarantine/go-update-baseline-20261019.md) before source changes; preserve its existing explicit-version get path.
+review](../planning/evidence/update-quarantine/go-update-baseline-20261019.md) preceded source; its [wired implementation qualification](../planning/evidence/update-quarantine/go-update-qualification-20261019.md) is pending final canonical/actual/remote checks. Preserve the existing explicit-version get path.
 Other lanes wait for their independent baseline/qualification. See the
 [npm evidence](../planning/evidence/update-quarantine/npm-qualification-20261018.md).
 This leaf owns the user-requested update-command contract. It supplements the

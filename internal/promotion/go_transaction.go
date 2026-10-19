@@ -24,6 +24,7 @@ type goProjectPlan struct {
 	members    map[string]os.FileInfo
 	controls   []domain.ProjectControlFile
 	authorized bool
+	upgrade    bool
 }
 
 type goProjectGuard struct {
@@ -177,6 +178,9 @@ func (p goProjectPlan) verifyUnchanged() error {
 		if (before == nil) != (after == nil) || before != nil && !os.SameFile(before, after) {
 			return errors.New("go project control identity changed during transaction")
 		}
+		if p.upgrade && before != nil && (before.Mode() != after.Mode() || !before.ModTime().Equal(after.ModTime()) || !pypiSingleLink(after)) {
+			return errors.New("go upgrade original control mode, time or links changed")
+		}
 	}
 	return nil
 }
@@ -184,6 +188,17 @@ func (p goProjectPlan) verifyUnchanged() error {
 func (p goProjectPlan) verifyManaged() error {
 	if !p.authorized {
 		return errors.New("go project requires trusted approval or dependency-free adoption")
+	}
+	return nil
+}
+
+func (p goProjectPlan) validateUpgradeControls() error {
+	if p.upgrade {
+		for _, info := range p.members {
+			if info != nil && (!pypiSingleLink(info) || !info.Mode().IsRegular() || info.Mode() & ^os.ModePerm != 0) {
+				return errors.New("go upgrade controls require single-link ordinary files")
+			}
+		}
 	}
 	return nil
 }
@@ -222,9 +237,13 @@ type goProjectTransaction struct {
 	backupInfo            os.FileInfo
 	selectedInfo          map[string]os.FileInfo
 	expectedControls      []domain.ProjectControlFile
+	checkpoint            func(string) error
 }
 
 func beginGoProjectTransaction(plan goProjectPlan, workspace string, expected ...domain.ProjectControlFile) (*goProjectTransaction, error) {
+	if err := plan.validateUpgradeControls(); err != nil {
+		return nil, err
+	}
 	if len(expected) != 0 && len(expected) != 2 {
 		return nil, errors.New("go transaction selected controls are incomplete")
 	}
@@ -280,9 +299,12 @@ func (t *goProjectTransaction) prepareSelectedControls() error {
 		return err
 	}
 	for _, name := range []string{"go.mod", "go.sum"} {
-		body, _, err := readGoTransactionControl(source, name)
+		body, member, err := readGoTransactionControl(source, name)
 		if err != nil {
 			return errors.New("selected Go control is unavailable")
+		}
+		if t.plan.upgrade && !pypiSingleLink(member) {
+			return errors.New("selected Go upgrade control is aliased")
 		}
 		if len(t.expectedControls) != 0 {
 			actual, err := domain.NewProjectControlFile(name, body, true)
@@ -306,10 +328,16 @@ func (t *goProjectTransaction) prepareSelectedControls() error {
 			return errors.New("create selected Go control")
 		}
 		_, writeErr := f.Write(body)
+		var modeErr error
+		if t.plan.upgrade {
+			if original := t.plan.members[name]; original != nil {
+				modeErr = f.Chmod(original.Mode().Perm())
+			}
+		}
 		info, statErr := f.Stat()
 		syncErr := f.Sync()
 		closeErr := f.Close()
-		if writeErr != nil || statErr != nil || syncErr != nil || closeErr != nil {
+		if writeErr != nil || modeErr != nil || statErr != nil || syncErr != nil || closeErr != nil {
 			return errors.New("persist selected Go control")
 		}
 		t.selectedInfo[name] = info
@@ -328,10 +356,16 @@ func syncGoTransactionRoot(root *os.Root) error {
 
 func (t *goProjectTransaction) commit() (resultErr error) {
 	defer func() { resultErr = errors.Join(resultErr, t.boundary.Close()) }()
+	if err := t.check("before-backup"); err != nil {
+		return t.fail(err)
+	}
 	if err := t.plan.verifyUnchanged(); err != nil {
 		return t.fail(err)
 	}
 	if err := t.backupCurrent(); err != nil {
+		return t.fail(err)
+	}
+	if err := t.check("before-publication"); err != nil {
 		return t.fail(err)
 	}
 	if err := t.publishWorkspace(); err != nil {
@@ -340,10 +374,16 @@ func (t *goProjectTransaction) commit() (resultErr error) {
 	if err := t.publishMetadata(); err != nil {
 		return t.fail(err)
 	}
+	if err := t.check("before-approval"); err != nil {
+		return t.fail(err)
+	}
 	if t.publishApproval != nil {
 		if err := t.publishApproval(); err != nil {
 			return t.fail(err)
 		}
+	}
+	if err := t.check("after-approval"); err != nil {
+		return t.fail(err)
 	}
 	if err := syncGoTransactionRoot(t.boundary); err != nil {
 		return t.fail(errors.New("sync committed Go project"))
@@ -385,7 +425,7 @@ func (t *goProjectTransaction) backupCurrent() error {
 		return errors.New("inspect current Go transaction metadata")
 	}
 	for _, name := range []string{"go.mod", "go.sum"} {
-		info, err := t.boundary.Lstat(name)
+		body, info, err := readGoTransactionControl(t.boundary, name)
 		if name == "go.sum" && errors.Is(err, os.ErrNotExist) && t.plan.members[name] == nil {
 			continue
 		}
@@ -394,6 +434,17 @@ func (t *goProjectTransaction) backupCurrent() error {
 		}
 		if !os.SameFile(t.plan.members[name], info) {
 			return errors.New("go transaction original member identity changed")
+		}
+		if t.plan.upgrade {
+			if !pypiSingleLink(info) || info.Mode() != t.plan.members[name].Mode() || !info.ModTime().Equal(t.plan.members[name].ModTime()) || sha256.Sum256(body) != t.originalHash(name) {
+				return errors.New("go upgrade original control changed before backup")
+			}
+			if !t.replacesControl(name) {
+				if err := t.verifyUpgradeControl(name); err != nil {
+					return err
+				}
+				continue
+			}
 		}
 		if err := renameRootNoReplace(t.boundary, name, filepath.Join(filepath.Base(t.backup), name)); err != nil {
 			return errors.New("backup current Go transaction member")
@@ -406,15 +457,26 @@ func (t *goProjectTransaction) backupCurrent() error {
 func (t *goProjectTransaction) publishWorkspace() error {
 	for _, name := range []string{"go.mod", "go.sum"} {
 		selected := filepath.Join(filepath.Base(t.backup), "selected", name)
-		info, err := t.boundary.Lstat(selected)
+		body, info, err := readGoTransactionControl(t.boundary, selected)
 		if err != nil || !info.Mode().IsRegular() || info.Mode()&os.ModeSymlink != 0 {
 			return errors.New("verified Go transaction output is unavailable")
 		}
-		if _, err := t.boundary.Lstat(name); !errors.Is(err, os.ErrNotExist) {
-			return errors.New("go transaction publication destination changed")
-		}
 		if !os.SameFile(t.selectedInfo[name], info) {
 			return errors.New("selected Go transaction member identity changed")
+		}
+		if t.plan.upgrade {
+			if !pypiSingleLink(info) || info.Mode() != t.selectedInfo[name].Mode() || sha256.Sum256(body) != t.selectedHashes[name] {
+				return errors.New("selected Go upgrade control changed before publication")
+			}
+			if !t.replacesControl(name) {
+				if err := t.verifyUpgradeControl(name); err != nil {
+					return err
+				}
+				continue
+			}
+		}
+		if _, err := t.boundary.Lstat(name); !errors.Is(err, os.ErrNotExist) {
+			return errors.New("go transaction publication destination changed")
 		}
 		if err := t.boundary.Link(selected, name); err != nil {
 			return errors.New("publish verified Go transaction member")
@@ -422,6 +484,53 @@ func (t *goProjectTransaction) publishWorkspace() error {
 		t.published[name] = true
 		if err := t.boundary.Remove(selected); err != nil {
 			return errors.New("remove published Go transaction staging member")
+		}
+	}
+	return nil
+}
+
+func (t *goProjectTransaction) originalHash(name string) [32]byte {
+	if name == "go.mod" {
+		return t.plan.goModHash
+	}
+	return t.plan.goSumHash
+}
+
+func (t *goProjectTransaction) replacesControl(name string) bool {
+	return !t.plan.upgrade || t.plan.members[name] == nil || t.selectedHashes[name] != t.originalHash(name)
+}
+
+func (t *goProjectTransaction) verifyUpgradeControl(name string) error {
+	body, info, err := readGoTransactionControl(t.boundary, name)
+	expected := t.plan.members[name]
+	if t.published[name] {
+		expected = t.selectedInfo[name]
+	}
+	if err != nil || expected == nil || !pypiSingleLink(info) || !os.SameFile(expected, info) || expected.Mode() != info.Mode() || !expected.ModTime().Equal(info.ModTime()) || sha256.Sum256(body) != t.selectedHashes[name] {
+		return errors.New("go upgrade retained or published control changed")
+	}
+	return nil
+}
+
+func (t *goProjectTransaction) check(phase string) error {
+	if t.checkpoint != nil {
+		if err := t.checkpoint(phase); err != nil {
+			return err
+		}
+	}
+	if !t.plan.upgrade {
+		return nil
+	}
+	root, rootErr := os.Lstat(t.plan.root)
+	backup, backupErr := t.boundary.Lstat(filepath.Base(t.backup))
+	if rootErr != nil || backupErr != nil || !os.SameFile(t.plan.rootInfo, root) || !os.SameFile(t.backupInfo, backup) || t.backupInfo.Mode() != backup.Mode() {
+		return errors.New("go upgrade transaction boundary changed")
+	}
+	for _, name := range []string{"go.mod", "go.sum"} {
+		if !t.replacesControl(name) || t.published[name] {
+			if err := t.verifyUpgradeControl(name); err != nil {
+				return err
+			}
 		}
 	}
 	return nil

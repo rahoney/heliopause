@@ -115,11 +115,14 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if resolverErr != nil {
 			return resolverErr
 		}
-		service, projectService, serviceErr := newGoModuleServices(resolver)
+		service, projectService, upgradeService, serviceErr := newGoModuleServices(resolver)
 		if serviceErr != nil {
 			return serviceErr
 		}
 		if err := cli.AddGoModuleGet(command, service); err != nil {
+			return err
+		}
+		if err := cli.AddGoModuleUpgrade(command, upgradeService); err != nil {
 			return err
 		}
 		if err := cli.AddGoModuleDownload(command, projectService); err != nil {

@@ -49,6 +49,9 @@ func localizeHelp(root *cobra.Command, p *presentation) {
 		if command.CommandPath() == "helox cargo update" {
 			command.Long = p.text(cargoUpdateDescriptionEnglish, cargoUpdateDescriptionKorean)
 		}
+		if command.CommandPath() == "helox go get" {
+			command.Long = p.text(goUpgradeDescriptionEnglish, goUpgradeDescriptionKorean)
+		}
 		if command.CommandPath() == "helox pip install" {
 			command.Long = p.text(pypiUpgradeDescriptionEnglish, pypiUpgradeDescriptionKorean)
 		}
@@ -82,6 +85,10 @@ func localizeHelp(root *cobra.Command, p *presentation) {
 		}
 		if command.CommandPath() == "helox cargo update" {
 			command.Flags().Lookup("adopt").Usage = p.text("Enroll supported native or changed controls after complete inspection", "지원하는 일반 프로젝트나 변경한 설정을 전체 검사 후 명시적으로 등록합니다")
+		}
+		if command.CommandPath() == "helox go get" {
+			command.Flags().Lookup("upgrade").Usage = p.text("Inspect every selected module before upgrading one existing requirement and its imported dependencies", "선택된 모든 모듈을 검사한 뒤 기존 의존성 하나와 그 의존성을 업데이트합니다")
+			command.Flags().Lookup("adopt").Usage = p.text("Enroll supported native or changed controls with -u after complete inspection", "-u와 함께 지원하는 일반 프로젝트나 변경한 설정을 전체 검사 후 등록합니다")
 		}
 		for _, child := range command.Commands() {
 			visit(child)
