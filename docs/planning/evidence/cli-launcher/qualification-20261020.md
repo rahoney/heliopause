@@ -1,10 +1,11 @@
 # CLI-UX-003 — qualification / 2026-10-20
 
-Status: COMPLETE. IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES /
-ACCEPTANCE_CLOSED=YES. MISSING: none for bounded launcher acceptance.
-Final test source9ba3e42 / CI350 Required and nine prerequisites are actual
-SUCCESS. Final documentation-delivery CI follows the final PR head. Main merge,
-permanent installed CLI activation and publication remain separate.
+Status: IN_PROGRESS. IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO /
+ACCEPTANCE_CLOSED=NO. MISSING: reviewed private-cache sync extension, fault/scale
+qualification and fresh full native/default/Required delivery after CI351 timeout.
+Terminal/capture behavior remains qualified at source350 and CLI passes at351;
+the final full default deadline is unresolved. Main merge, permanent installed
+CLI activation and publication remain separate.
 The sections below distinguish local, native and full remote qualification.
 
 Native CI346 failure: job118163210310 production build passes but default test
@@ -260,7 +261,7 @@ the complete inventory. Linux repetition/cross-compilation do not replace native
 macOS; the original CI349 syscall/capture-loss cause remains unproven.
 Raw frame-{red,resize-red,focused,final-*} logs/receipts/inventories are local.
 
-## Final full-frame qualification and completion review
+## CI350 full-frame qualification checkpoint
 
 [CI350](https://github.com/rahoney/heliopause/actions/runs/39302611432) is actual
 Required plus nine prerequisites SUCCESS. Source9ba3e421b118f60d813eb6a07cd305e65300dafe
@@ -305,3 +306,21 @@ Native SHA25688eb6d50d851fb367cae8c0c78ca178812ede1a6bd1141f584cb4eec2d5f5711;
 Linux SHA2567ef6df4697f968d59c6af6e7fb73ed0382153ea0edb89f7383fb427df256ca32.
 Raw is local/untracked, not a remote attachment. No evidence-only push follows
 final green. PR38 stays draft; owner names are required before M13-004.
+
+## CI351 default deadline — delivery reopened
+
+Final documentation-only ffaac17/checkout9158142 has exact treeb52fd24 and
+unchanged executable/test inputs. Native CLI passes2.727s; the default command
+hits unchanged6m after partial package output through policy. No exact native
+slow test is identified. Earlier COMPLETE statements describe source350, not
+current delivery acceptance. Raw ci351-macos.log/native-failure are preserved.
+
+Unmodified Linux promotion diagnostic passes123.90s including compilation;
+Cargo files-9999 is27.96s. The controlled same-root TMPDIR boundary baseline is
+readonly inputa0efd6f3, wall79.76s/files-9999 78.93s, files-10000 rejection0.14s.
+Do not compare the two different temp placements as a controlled experiment.
+[Pre-source audit/edit map/review](./baseline-20261020.md#native-ci351-default-budget-and-private-cache-sync--before-source-edits)
+retains the exact large fixture and mandatory publication durability while
+measuring a narrow private-member sync extension. This is not proof of the old
+native syscall/cause. Diagnostic source/cache remains active for matched tests
+and is deleted after final use. Native/full final qualification remains required.

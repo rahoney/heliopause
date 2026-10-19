@@ -945,6 +945,14 @@ expanded bytes200MiB, canonical receipt4MiB다. 개별 crate의 기존 archive/f
 재확인하며, archive가 `.cargo-checksum.json` 권위를 제공할 수 없다. 이 초기 한도는
 실제 정상 처리량과 초과 차단 근거 없이 자동 확장하지 않는다.
 
+Verified Cargo cache의 payload는 아직 공개되지 않은 controller-owned private
+temporary tree에만 작성한다. 이 단계의 개별 write는 최종 tree 동기화까지 초기
+file sync를 모을 수 있지만, seal·전체 inventory·receipt 기록 뒤 모든 파일과
+directory의 실제 sync를 완료하기 전에는 cache를 publish하거나 유효한 handle을
+반환하지 않는다. No-replace rename 뒤 cache parent sync도 유지한다. 어느 barrier든
+실패하면 유효한 staged handle을 반환하지 않고 미공개 tree를 정리하며 최초 오류를
+보존한다. 공유 metadata writer의 즉시 sync 및 다른 생태계 동작은 그대로다.
+
 `cargo add`는 원본 complete source/control guard를 선택 이전부터 유지하고 한 번의
 private selection을 canonical crate acquisition·독립 검증·검사·Evidence·Policy·cache와
 대조한 후 publish한다. Retained approval은 project와 분리한 controller-owned state에

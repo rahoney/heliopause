@@ -97,7 +97,7 @@
 | Go·Cargo·Terraform Cumulative Remote Qualification | M12-002~004 | Complete | [Remote CI Evidence](./docs/planning/evidence/m12-002-004-remote-ci/result.json), [Current Work Queue](./docs/planning/02-current-work-queue.md) |
 | Cross-Ecosystem Qualification and Feature Freeze | M12-005 | Complete | [Qualification Evidence](./docs/planning/evidence/m12-005-qualification/README.md), [Current Work Queue](./docs/planning/02-current-work-queue.md) |
 | M12 Final Red-Team Fix Gate | M12-02 | Complete | [M12-02 Final Red-Team Fix List](./docs/planning/17-m12-02-fix-list.md) |
-| Production Release & Operations | M13 | M13-003, CLI-UX-001/002/003 and SEC-UPD-001 complete; owner package names required before M13-004 | [M13 Production Release & Operations Contract](./docs/planning/18-m13-production-release-operations-contract.md) |
+| Production Release & Operations | M13 | M13-003, CLI-UX-001/002 and SEC-UPD-001 complete; CLI-UX-003 final delivery and owner package names required before M13-004 | [M13 Production Release & Operations Contract](./docs/planning/18-m13-production-release-operations-contract.md) |
 | Runtime Upgrade Maintenance | UPG-001..006 | UPG-001..006 complete/qualified; PR34 merged/main CI320 SUCCESS | [Design](./docs/engineering/05-runtime-upgrade-maintenance.md), [Plan](./docs/planning/19-runtime-upgrade-maintenance-plan.md) |
 
 ## Current Stage
@@ -106,7 +106,7 @@ M13-001 저장소 보호와 M13-003의 보호된 v0.1.0 태그·자연 build·at
 
 CLI-UX-001·002의 다국어 리포트·진행 표시·OS 표시 언어 감지는 로컬 CLI와 원격 검증을 완료했다. [언어 qualification](./docs/planning/evidence/cli-os-language/qualification-20261018.md)이 실제 WSL·설치 CLI와 native macOS/CI328 범위를 연결한다. 후속 SEC-UPD-001도 [전체 검토](./docs/planning/evidence/update-quarantine/final-review-20261019.md)와 최종 소스cdac96d의 [CI344](./docs/planning/evidence/update-quarantine/ci344-closure.json)를 확인해 `COMPLETE / QUALIFIED / ACCEPTANCE_CLOSED`다. 문서화된 여섯 생태계 업데이트·새 검사/Evidence·실패 시 원본 보호·복원·완료 시험 데이터 정리가 검증됐으며, named CPU/cu126/cu130/cu132는 각 소스별 실제 qualification 범위를 유지한다.
 
-사용자가 요청한 Heliopause Artifact Airlock 대화형 시작 화면 CLI-UX-003도 `COMPLETE / QUALIFIED / ACCEPTANCE_CLOSED`다. [기존 owner baseline·수정 위치·두 번째 검토](./docs/planning/evidence/cli-launcher/baseline-20261020.md) 뒤 기존 도움말·언어 설정·진단을 재사용했으며, [qualification](./docs/planning/evidence/cli-launcher/qualification-20261020.md)이 실제 CLI·터미널 복구와 최종 소스9ba3e42/CI350의 native macOS·Linux·Required 열 개 성공, 시험 데이터 정리를 연결한다. 완료 문서 전달 CI는 별도 확인한다. 다음 M13-004는 사용자 패키지 이름 결정이 필요하다. rahoney npm/PyPI 계정 준비는 완료됐지만 패키지 이름·publisher binding은 미정이다. PR38은 draft/unmerged이며 main 병합·영구 CLI 활성화·설치 채널 공개 배포와 M13-005는 별도다. 현재 상태는 [Queue](./docs/planning/02-current-work-queue.md)가 소유하며 아래 이전 단계 문구는 역사적 기록이다.
+CLI-UX-003은 최종 전달을 `IN_PROGRESS`로 재검증한다. 소스9ba3e42/CI350은 열 개 성공이고 문서 전용 CI351에서도 CLI가2.727초에 통과했지만 전체 기본 검사는 기존6분 한도를 넘었다. [소스 수정 전 저장 동기화 감사·계획](./docs/planning/evidence/cli-launcher/baseline-20261020.md#native-ci351-default-budget-and-private-cache-sync--before-source-edits)은 기존 Cargo cache·전체 tree sync·공유 metadata writer를 재사용하며 비공개 payload의 중복 초기 sync만 줄이는 방안을 검증한다. 한도·보안·큰 경계 테스트는 완화하지 않으며 원래 native 원인은 미확정이다. [Qualification](./docs/planning/evidence/cli-launcher/qualification-20261020.md)이 측정·검증 범위를 소유한다. M13-004는 최종 전달과 공식 패키지 이름 결정을 기다린다. rahoney npm/PyPI 계정 준비는 완료됐지만 이름·publisher binding은 미정이다. PR38은 draft/unmerged이며 병합·영구 CLI 활성화·공개 배포는 별도다. 현재 상태는 [Queue](./docs/planning/02-current-work-queue.md)가 소유한다.
 
 Step 14 — Implementation: M0·M1·M2·M3·M4·M5-001..007·M6-001..007·M7-001..006·M8-001..007 `COMPLETE`
 
