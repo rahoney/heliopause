@@ -68,3 +68,19 @@ later snapshot refusal. The [pre-correction edit map](./github-replacement-basel
 requires using the originally created output FD for GitHub's existing0400/0500,
 while preserving the old common copy wrapper. This current failure scope is open
 until the same fixture and affected publication consumers pass.
+
+After pre-correction plan2d97c7c, the existing copy primitive's private optional
+mode form sets0400/0500 on its original output FD only after digest agreement.
+Other callers retain the original mode0 wrapper. Pathname Chmod is removed from
+GitHub publication. github-selected-mode-green7.21s passes the same foreign
+symlink test and all GitHub/shared-lock cases; foreign bytes/mode and the old
+installed target survive. Explicit canonical format2.70s passes on that source.
+Final full canonical/default/Race and actual/new-source remote evidence follow;
+this focused result does not substitute for them.
+
+First github-replacement-final-quick fails19.56s at architecture: the pure CLI
+GitHub parser import lacks its specific declaration. Format/runtime/module/build/
+test-build steps precede this failure; default test/vet/Staticcheck are not
+reached. The reviewed amendment adds the missing CLI parser edge consistently
+with existing sources and requires Core/Application negative checks. Preserve
+the first final-quick name/result; the next complete run gets a new label.

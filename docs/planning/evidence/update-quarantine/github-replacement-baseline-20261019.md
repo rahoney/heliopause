@@ -34,7 +34,7 @@ its publisher with receipt/state support, rather than replacing that publisher.
 | application existing InstallUpdateService | Reuse directly; no source edit unless an actual required gap is demonstrated | Existing ordering/ALLOW/close failure tests plus GitHub session binding; no inspection/staging skip or success after late failure |
 | cli/root.go, presentation/catalog/translations and existing install report | Add --replace static validation and per-request new mode; bind update service only for explicit intent | Explicit --target required; unsupported adopt/latest/native flags refuse before runtime; old new/default target still strict; EN/KO explanations, seven-language core help and JSON same facts |
 | bootstrap/bootstrap.go GitHub composition | Reuse same client/verifier/inspector/Evidence/Policy/staging/publisher; bind managed initial publisher and per-request replacement service | Static help without runtime, no shared mutable session, old install/inspect unaffected |
-| scripts/check/architecture.go promotion import allow-map | Add only promotion → artifact/githubrelease, matching the existing infrastructure-to-artifact edges for the other supported adapters | No Core/Application edge, external dependency or broad layer rule changes; old architecture negatives remain required |
+| scripts/check/architecture.go exact adapter import allow-map | Add promotion → artifact/githubrelease for frozen identity, and CLI → artifact/githubrelease for pure static reference parsing, matching the existing supported adapter edges | No Core/Application edge, external dependency or broad layer rule changes; old architecture negatives remain required |
 
 Initial approval records must retain exact selector/resolved identity/declared
 digest, asset size/mode/hash, Manifest identity, required completed checks, entry/
@@ -114,9 +114,9 @@ is moved into Core/Application. Initial target/state failure and close failure
 must retain the first error and accurate publication status. Exact publication,
 approved independent state and safe cleanup are separate acceptance assertions.
 Promotion reuses its existing ProjectEvidenceReader capability; no concrete
-evidence/local dependency or Manifest-generator import is added. The one new
-artifact adapter edge above is needed to validate exact normalized repository
-ownership behind the existing frozen-locator parser. Existing canonical Manifest
+evidence/local dependency or Manifest-generator import is added. The two exact
+artifact adapter edges above are needed for pure CLI input parsing and normalized
+repository ownership behind the existing frozen-locator parser. Existing canonical Manifest
 self-hash/SBOM verification is supplemented with destination/context, selected
 entry and real Evidence binding rather than importing another layer's generator.
 
@@ -171,3 +171,21 @@ Direct github-selected-mode-red3.14s actually executes the new symlink fixture:
 the external fixture mode changes0644→0400 even though subsequent promotion
 refuses. This confirms the narrow edit above is necessary; preserve the failed
 output/source inventory and do not call refusal alone complete foreign protection.
+
+The same fixture plus current GitHub/shared-lock corpus passes7.21s after the
+planned FD-mode correction; explicit format2.70s passes. This is bounded local
+regression evidence only; complete qualification remains separate.
+
+## Full-check architecture amendment
+
+First final Quick19.56s stops at the actual architecture profile: the CLI's new
+pure ParseReference import was omitted from the initial one-edge edit map. This
+is a missing adapter dependency declaration, not permission to relax layers. The
+current CLI map already permits the npm/PyPI/Go/Cargo/Terraform pure parsers;
+the new GitHub CLI uses ParseReference only and executes no client, scanner,
+sandbox or Policy. Add exactly CLI→artifact/githubrelease alongside the already
+declared promotion edge, then test both positives and Core/Application negatives
+through validateCurrentImports before repeating final Quick. No new concrete
+Core/Application import or external dependency is admitted. Original failing
+Quick/result/full source inventory remain preserved. Its default tests/vet/
+Staticcheck were not reached and are not marked successful.

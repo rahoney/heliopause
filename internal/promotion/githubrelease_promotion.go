@@ -120,17 +120,19 @@ func (p *GitHubReleasePromotion) promote(ctx context.Context, staged domain.Stag
 	if filepath.Base(destination) != artifact.Identity().Variant() {
 		return domain.PromotedInstall{}, errors.New("GitHub Release target filename is invalid")
 	}
-	if err := copyDigestFile(source, destination, artifact.Digest().String()); err != nil {
-		return domain.PromotedInstall{}, err
-	}
 	mode := os.FileMode(0o400)
 	for _, check := range inspection.Checks() {
 		if check.ID().String() == "github-release-elf-dynamic" && check.Status() == domain.ExecutionCompleted {
 			mode = 0o500
 		}
 	}
-	if err := os.Chmod(destination, mode); err != nil {
+	if err := copyDigestFileMode(source, destination, artifact.Digest().String(), mode); err != nil {
 		return domain.PromotedInstall{}, err
+	}
+	if managed != nil {
+		if err := managed.check("after-asset-copy"); err != nil {
+			return result, err
+		}
 	}
 	if managed != nil {
 		if err := managed.recordSelected(); err != nil {

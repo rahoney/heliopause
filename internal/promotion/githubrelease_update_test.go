@@ -531,3 +531,47 @@ func TestGitHubReplacementRejectsRepositoryChangeBeforeSelection(t *testing.T) {
 		t.Fatal("repository switch admitted", s, err, r.calls)
 	}
 }
+
+func TestGitHubReplacementNeverChmodsAForeignSelectedSymlink(t *testing.T) {
+	f := newGitHubOwnershipFixture(t)
+	_, _, oldTree := f.initial(t)
+	bundle, staged, install := f.bundle(t, "v2", "next.zip", []byte("next controlled archive"), true)
+	session, _, err := f.begin(t, bundle, install)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := session.ResolveDependencies(context.Background(), session.Reference(), install); err != nil {
+		t.Fatal(err)
+	}
+	foreign := filepath.Join(f.root, "foreign-file")
+	if err := os.WriteFile(foreign, []byte("foreign bytes"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	before, err := os.Stat(foreign)
+	if err != nil {
+		t.Fatal(err)
+	}
+	f.p.checkpoint = func(phase string) error {
+		if phase != "after-asset-copy" {
+			return nil
+		}
+		path := filepath.Join(session.selectedPath, "next.zip")
+		if err := os.Remove(path); err != nil {
+			return err
+		}
+		return os.Symlink(foreign, path)
+	}
+	if _, err := session.Promote(context.Background(), staged, bundle, install); err == nil {
+		t.Fatal("foreign selected symlink admitted")
+	}
+	after, err := os.Stat(foreign)
+	if err != nil || after.Mode() != before.Mode() {
+		t.Fatal("foreign file permissions changed", before.Mode(), after.Mode(), err)
+	}
+	if body, err := os.ReadFile(foreign); err != nil || string(body) != "foreign bytes" {
+		t.Fatal("foreign file bytes changed", err)
+	}
+	if err := oldTree.verify(f.target); err != nil {
+		t.Fatal("old installed target changed", err)
+	}
+}

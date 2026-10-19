@@ -349,6 +349,12 @@ func copyExactRecord(source, destination string, expected []byte) error {
 }
 
 func copyDigestFile(source, destination, expected string) error {
+	return copyDigestFileMode(source, destination, expected, 0)
+}
+
+// A nonzero final mode is applied only to the originally created output FD
+// after its copied digest agrees. Existing callers keep their original mode0.
+func copyDigestFileMode(source, destination, expected string, mode os.FileMode) error {
 	if err := rejectSymlinkPath(source); err != nil {
 		return err
 	}
@@ -367,6 +373,13 @@ func copyDigestFile(source, destination, expected string) error {
 	}
 	hash := sha256.New()
 	_, copyErr := io.Copy(io.MultiWriter(output, hash), input)
+	if copyErr == nil && mode != 0 {
+		if hex.EncodeToString(hash.Sum(nil)) != expected {
+			copyErr = errors.New("staged artifact digest changed before permissions")
+		} else {
+			copyErr = output.Chmod(mode)
+		}
+	}
 	if copyErr == nil {
 		copyErr = output.Sync()
 	}
