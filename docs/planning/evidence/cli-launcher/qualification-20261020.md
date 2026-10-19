@@ -1,10 +1,9 @@
 # CLI-UX-003 — qualification / 2026-10-20
 
-Status: IN_PROGRESS. IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO /
-ACCEPTANCE_CLOSED=NO. MISSING: fresh native/full exact-source qualification and
-completion documentation after the locally qualified CI349 capture correction.
-CI348's source2d1baa9 remains historically qualified; final documentation-only
-CI349/e2c44bd failed native interrupt capture and reopens this item. Main merge,
+Status: COMPLETE. IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES /
+ACCEPTANCE_CLOSED=YES. MISSING: none for bounded launcher acceptance.
+Final test source9ba3e42 / CI350 Required and nine prerequisites are actual
+SUCCESS. Final documentation-delivery CI follows the final PR head. Main merge,
 permanent installed CLI activation and publication remain separate.
 The sections below distinguish local, native and full remote qualification.
 
@@ -47,9 +46,10 @@ owners were reused. No implemented owner was replaced.
   root and performs readiness checks. The existing doctor presenter is reused
   without its direct-command exit1 footer inside the navigable menu.
 
-Only five existing Go files are narrowly extended; ten new CLI/bootstrap files
-implement and test this current item. Core/Application/Artifact/Policy/runtime/
-observer/helper/installer/workflow and dependency lock inputs are unchanged.
+The initial launcher implementation narrowly extends five existing Go files and
+adds ten CLI/bootstrap files. Later comparison/capture test amendments are recorded
+below. Core/Application/Artifact/Policy/runtime/observer/helper/installer/workflow
+and dependency lock inputs are unchanged.
 
 ## Local checks and exact input boundary
 
@@ -174,7 +174,7 @@ and ef43754 parents; its failure is preserved. Its unfinished Linux job may be
 superseded under ordinary concurrency by this source push and is never reused
 as a pass. Final-source native macOS and full Required are qualified by CI348 below.
 
-## Exact-source remote closure and second review
+## CI348 historical closure checkpoint
 
 [CI348](https://github.com/rahoney/heliopause/actions/runs/39294756818) has actual
 Required plus nine prerequisites SUCCESS. Source2d1baa9291673a1644ccf998f012701de56bfde8
@@ -229,8 +229,9 @@ not the earlier termios inequality or timeout. Exact old syscall/cause is unknow
 [Pre-test amendment](./baseline-20261020.md#native-ci349-interrupt-capture-amendment--before-test-edits)
 records the independently visible cursor-hide readiness gap and full-frame barrier,
 required deterministic regressions and retained output/termios assertions.
-Prior COMPLETE statements above describe the CI348 checkpoint; current acceptance
-is open. Raw ci349-macos.log/failure receipt remain local; Linux is pending.
+Prior COMPLETE statements above describe the CI348 checkpoint; acceptance
+reopened at CI349 and closes only with CI350 below. Raw ci349-macos.log/failure
+receipt and its cancelled partial Linux scope remain local.
 
 ## Full-frame correction — local qualification
 
@@ -258,3 +259,49 @@ Darwin amd64/arm64 CLI test compile12.91s/13.89s PASS. All read-only checks reta
 the complete inventory. Linux repetition/cross-compilation do not replace native
 macOS; the original CI349 syscall/capture-loss cause remains unproven.
 Raw frame-{red,resize-red,focused,final-*} logs/receipts/inventories are local.
+
+## Final full-frame qualification and completion review
+
+[CI350](https://github.com/rahoney/heliopause/actions/runs/39302611432) is actual
+Required plus nine prerequisites SUCCESS. Source9ba3e421b118f60d813eb6a07cd305e65300dafe
+and actual checkoutdb94b6141b8ab77d84e8010d9c3e275f79447bde share whole tree
+dd079721e65f46a4bcf4b85f540cf4187c61d4ed; parents are the exact source and unchanged
+main base ef5ef0e0e0437a9083133674ef8b9e6d693b83a9.
+
+Actual Go1.26.9 darwin/amd64 production/default pass within unchanged bounds;
+selected tests include the required PTY19 and three deterministic capture
+regressions. Success output is suppressed, so no native per-test PASS lines are
+invented. Linux actual Go1.26.9 passes the same45 top-level consumers, related
+36/56 including subtests, CPU full208.50s and helper5wait0. Final original0/
+CONFIRMED_STOPPED/client_error0/client_restore0/NOT_REQUIRED confirms cleanup.
+No CUDA rerun or unrelated runtime acceptance is claimed.
+
+CI349 is preserved as native failure/Linux cancellation/Required failure, not a
+pass. Its cancelled Linux has two top-level passes, no FAIL lines and confirmed
+RESTORED cleanup. The exact historical capture-loss syscall and CI346 timeout
+cause remain UNKNOWN. Source-level early readiness and coalesced resize were
+independently reproduced; the final comparison/frame fixes retain every original
+mode/control/cursor/context/output assertion without delays, retries or skips.
+The private completion file is never alternate success authority.
+
+Review reconciles each baseline responsibility with reused implementation/wiring,
+seven-language and exact-source native behavior, real CLI16, normal/negative/
+interrupt/diagnosis/resize paths, fixed limits and unchanged product/runtime/Policy
+inputs. It explicitly checks readiness after a complete current frame rather
+than setup output. Current acceptance has no missing work. Closing status/link
+changes are five documentation paths only and receive canonical docs/security
+and whole staged-blob checks; final-head delivery is observed separately.
+
+In addition to the three implementation campaigns above, the first documentation
+closure331,974,557B and frame campaign1,503,277,250B were deleted after checks.
+Cumulative completed private data6,357,990,151 logicalB and13 one-shot operators
+are removed; all guards report active[]/unknown[] and four installed identities
+unchanged. Shared pinned tools and necessary evidence remain. This final document
+closure uses its own private source/cache, deleted after its checks with receipt.
+
+Raw local owners: ci350-{quick,macos,linux}.log, ci350-native-qualified.json,
+ci350-linux-verified.json, ci350-final-jobs.json, frame-* and closeout-* receipts.
+Native SHA25688eb6d50d851fb367cae8c0c78ca178812ede1a6bd1141f584cb4eec2d5f5711;
+Linux SHA2567ef6df4697f968d59c6af6e7fb73ed0382153ea0edb89f7383fb427df256ca32.
+Raw is local/untracked, not a remote attachment. No evidence-only push follows
+final green. PR38 stays draft; owner names are required before M13-004.

@@ -173,15 +173,12 @@ and exit. Arrow keys move, Enter selects, Esc goes back, q exits. Reuse language
 selection/catalogs and existing command services. Preserve direct subcommands,
 --help and machine/CI behavior without prompts. Support narrow terminals and
 NO_COLOR; restore terminal modes/cursor on exit, cancellation and errors.
-Status: IN_PROGRESS after documentation CI349 exposed native interrupt capture.
-The historical heading preserves the deferred ordering and
+Status: COMPLETE. The historical heading preserves the deferred ordering and
 existing links. The [baseline/edit map/second review](../planning/evidence/cli-launcher/baseline-20261020.md)
 precedes source edits. Existing help/config/catalogs/Doctor are reused.
 [Qualification](../planning/evidence/cli-launcher/qualification-20261020.md)
-records local PTY19/actual CLI16, native macOS/exact-source CI348 ten SUCCESS,
-completed-test data deletion and unchanged installed identities. The
-[CI349 capture amendment](../planning/evidence/cli-launcher/baseline-20261020.md#native-ci349-interrupt-capture-amendment--before-test-edits)
-requires a full-frame input barrier with all actual restoration assertions retained. Main merge,
+records local PTY19/actual CLI16, native macOS/exact-source CI350 ten SUCCESS,
+completed-test data deletion and unchanged installed identities. Main merge,
 permanent local activation and publication remain separate.
 
 ### Launcher behavior and lifecycle
@@ -235,3 +232,8 @@ alias are normalized in copied test states; every remaining field is compared.
 Linux retains full state equality. Echo/canonical/signal modes, all other flags,
 control characters and actual speed changes remain failures. Product restoration
 still applies the original full snapshot; no extra input flush discards user data.
+
+Native PTY input readiness waits for a complete current frame at the known
+fixture geometry; diagnosis readiness uses its own notice and footer. A prior
+frame cannot release input. The private child-completion witness is diagnostic
+only and never replaces captured output or original terminal assertions.
