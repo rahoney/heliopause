@@ -7,10 +7,11 @@ The reviewed bounded PyPI lane is qualified: [public managed venv](../planning/e
 and [named managed-venv CPU/cu126/cu130/cu132 updates](../planning/evidence/update-quarantine/pytorch-update-qualification-20261019.md).
 Their source-specific actual/CI scopes remain independent; no broader native named
 support is claimed. The named source306 has four actual update/no-op/refusal/
-restoration/cleanup profiles and ordinary same-source CI336. Current lane:
-[Cargo reviewed edit map](../planning/evidence/update-quarantine/cargo-update-baseline-20261019.md).
-Its pinned-tool semantics and second review are complete; implement only the
-missing lock-selection/enrollment/wiring gaps, then qualify actual consumers.
+restoration/cleanup profiles and ordinary same-source CI336. The reviewed
+[Cargo lane](../planning/evidence/update-quarantine/cargo-update-qualification-20261019.md)
+is also qualified for source85ac4c1: local actual20 phases, restoration/cleanup
+and same-tree CI338 ten SUCCESS. Current lane: [Go baseline/selection
+review](../planning/evidence/update-quarantine/go-update-baseline-20261019.md) before source changes; preserve its existing explicit-version get path.
 Other lanes wait for their independent baseline/qualification. See the
 [npm evidence](../planning/evidence/update-quarantine/npm-qualification-20261018.md).
 This leaf owns the user-requested update-command contract. It supplements the
@@ -81,7 +82,8 @@ An earlier bounded install/UX qualification does not close this update acceptanc
 ## Implementation map and scoped command semantics
 
 This is the reviewed implementation map. Qualified npm/PyPI scopes are recorded
-above; Cargo, Go -u, Terraform upgrade and GitHub replacement remain planned. Execute
+above, and the reviewed Cargo lane is now qualified. Go -u, Terraform upgrade and
+GitHub replacement remain planned. Execute
 one ecosystem at a time after CLI-UX-002; keep other lanes unmodified until their
 own baseline/selection contract is verified. Minimum planned forms are:
 

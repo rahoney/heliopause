@@ -1,10 +1,10 @@
 # SEC-UPD-001 — Cargo lock update qualification / 2026-10-19
 
-Status: IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO.
+Status: IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
+for the reviewed bounded Cargo update lane; overall SEC-UPD-001 remains open.
 Local automated and actual installed qualification: PASS.
-MISSING: completion of CI338 Linux integration/Required and its decoded final
-source/consumer/cleanup evidence. Protected restoration and completed trial/tool
-cleanup are confirmed. Only SEC-UPD-001 is
+MISSING: none in this bounded lane. CI338 final source/consumer/cleanup evidence,
+protected local restoration and completed trial/tool cleanup are confirmed. Only SEC-UPD-001 is
 IN_PROGRESS. The [reviewed contract](../../../user-journey-cli-ia/06-update-quarantine.md#cargo-lock-update--reviewed-initial-semantics)
 and [pre-source audit](./cargo-update-baseline-20261019.md) own scope and edit plan.
 Implementation source85ac4c19780faeb073211ffd90759ae2a6ed6d17.
@@ -137,7 +137,15 @@ was replaced or widened. Actual first/add/build and empty/workspace consumers ar
 separate from the synthetic adverse/fault matrix.
 
 Source85ac4c1 was ordinarily pushed to existing draft PR38. CI338/run39210397866
-has Quick, native macOS, Minimum Go, corpus, vulnerability, security, docs and
-observer build SUCCESS. Linux integration and final Required remain pending;
-QUALIFIED and ACCEPTANCE_CLOSED stay NO until exact decoded final evidence arrives.
+is completed SUCCESS with all ten jobs, including native macOS and Required.
+Actual checkout56cad35b544c20a19572316e9b0a718f117487cc has the same complete
+tree ee1a6ab7287b6112954d489b3986784044da7e9a as the implementation. Decoded
+Quick/macOS/Linux logs and cargo-ci338-actual-scope.json independently bind the
+source,36 related existing Go/Cargo/Terraform consumers, CPU full277.12s, five
+helper wait0 and final original0/CONFIRMED_STOPPED/helper_stop0/client_error0/
+client_restore0/NOT_REQUIRED. Existing public/transitive add, workspace/library/
+build-script/proc-macro build and security consumers pass. These standard remote
+consumers are distinct from the new actual UPDATE campaigns above; no live remote
+Cargo UPDATE or named CUDA rerun is inferred. The bounded Cargo lane is closed;
+Go get -u, Terraform and GitHub update lanes remain open under SEC-UPD-001.
 No main merge, tag, package publication or readiness transition was performed.
