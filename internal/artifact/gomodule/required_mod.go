@@ -131,6 +131,17 @@ func projectModuleIntegrities(records []DownloadRecord, graph, mod, sums []byte)
 	for _, record := range records {
 		selected[record.Path] = record
 	}
+	bySum := map[string]string{}
+	for _, line := range strings.Split(string(sums), "\n") {
+		fields := strings.Fields(line)
+		if len(fields) == 0 {
+			continue
+		}
+		if len(fields) != 3 {
+			return nil, errors.New("required Go checksum record is invalid")
+		}
+		bySum[fields[0]+" "+fields[1]] = fields[2]
+	}
 	needed := map[string]map[string]bool{}
 	for _, line := range strings.Split(string(graph), "\n") {
 		for _, vertex := range strings.Fields(line) {
@@ -142,6 +153,12 @@ func projectModuleIntegrities(records []DownloadRecord, graph, mod, sums []byte)
 			if !validModuleVersion(name, version) || semver.Compare(version, record.Version) >= 0 {
 				return nil, errors.New("required Go graph version is invalid")
 			}
+			// Pruned requirements can appear as graph vertices without their
+			// go.mod ever being loaded. Only graph-and-sum membership freezes
+			// an additional acquired control; every included proof stays strict.
+			if _, loaded := bySum[name+" "+version+"/go.mod"]; !loaded {
+				continue
+			}
 			if needed[name] == nil {
 				needed[name] = map[string]bool{}
 			}
@@ -150,17 +167,6 @@ func projectModuleIntegrities(records []DownloadRecord, graph, mod, sums []byte)
 				return nil, errors.New("required Go graph context exceeds bound")
 			}
 		}
-	}
-	bySum := map[string]string{}
-	for _, line := range strings.Split(string(sums), "\n") {
-		fields := strings.Fields(line)
-		if len(fields) == 0 {
-			continue
-		}
-		if len(fields) != 3 {
-			return nil, errors.New("required Go checksum record is invalid")
-		}
-		bySum[fields[0]+" "+fields[1]] = fields[2]
 	}
 	result := map[string]string{}
 	for _, record := range records {

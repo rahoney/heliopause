@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -18,6 +19,61 @@ import (
 
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
+
+func TestProjectSnapshotIgnoresUnloadedPrunedLowerReferences(t *testing.T) {
+	for _, count := range []int{1, MaxRequiredModControls + 4} {
+		t.Run(fmt.Sprint(count), func(t *testing.T) {
+			target, _ := domain.NewInstallTarget("/fixture/pruned")
+			install, _ := domain.NewInstallContext(target)
+			records := []DownloadRecord{
+				{Path: "example.com/a", Version: "v1.0.0", GoMod: "/a.mod", Zip: "/a.zip", Sum: testH1('a'), GoModSum: testH1('b')},
+				{Path: "example.com/b", Version: "v1.1.0", GoMod: "/b.mod", Zip: "/b.zip", Sum: testH1('c'), GoModSum: testH1('d')},
+			}
+			mod := []byte("module example.com/root\ngo 1.26.0\nrequire (\nexample.com/a v1.0.0\nexample.com/b v1.1.0\n)\n")
+			graph := "example.com/root example.com/a@v1.0.0\nexample.com/root example.com/b@v1.1.0\nexample.com/root go@1.26.0\ngo@1.26.0 toolchain@go1.26.0\n"
+			for i := range count {
+				graph += fmt.Sprintf("example.com/a@v1.0.0 example.com/b@v1.0.%d\n", i)
+			}
+			sums := ""
+			for _, record := range records {
+				sums += record.Path + " " + record.Version + " " + record.Sum + "\n" + record.Path + " " + record.Version + "/go.mod " + record.GoModSum + "\n"
+			}
+			snapshot, err := BuildProjectSnapshot(install, records, []byte(graph), mod, []byte(sums))
+			if err != nil {
+				t.Fatalf("unexpanded lower requirements must not require nonexistent control sums: %v", err)
+			}
+			for _, artifact := range snapshot.Dependencies() {
+				if strings.Contains(artifact.DeclaredIntegrity(), ";required-mods=") {
+					t.Fatal("pruned requirements became acquired control subjects")
+				}
+			}
+			ref, _ := ParseReference("example.com/a@v1.0.0")
+			requested, err := BuildLockedGraph(ref, records, []byte(graph), mod, []byte(sums))
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, node := range requested.Nodes() {
+				matched := false
+				for _, artifact := range snapshot.Dependencies() {
+					if node.Artifact() == artifact {
+						matched = true
+					}
+				}
+				if !matched {
+					t.Fatal("requested and complete pruning context differ")
+				}
+			}
+			if count > MaxRequiredModControls {
+				for i := range count {
+					sums += fmt.Sprintf("example.com/b v1.0.%d/go.mod %s\n", i, testH1('e'))
+				}
+				if _, err := BuildProjectSnapshot(install, records, []byte(graph), mod, []byte(sums)); err == nil {
+					t.Fatal("included controls exceeded the unchanged context bound")
+				}
+			}
+		})
+	}
+}
 
 func TestProjectSnapshotRetainsRequiredLowerModuleControls(t *testing.T) {
 	target, _ := domain.NewInstallTarget("/fixture/project")
@@ -62,9 +118,10 @@ func TestProjectSnapshotRetainsRequiredLowerModuleControls(t *testing.T) {
 		}
 	}
 	oldLine := "example.com/b v1.0.0/go.mod " + testH1('e') + "\n"
-	for _, bad := range []string{strings.ReplaceAll(sum, oldLine, ""), sum + oldLine, strings.ReplaceAll(sum, oldLine, "example.com/b v1.0.0/go.mod invalid\n")} {
+	selectedPair := records[0].Path + " " + records[0].Version + "/go.mod " + records[0].GoModSum + "\n"
+	for _, bad := range []string{strings.ReplaceAll(sum, selectedPair, ""), sum + oldLine, strings.ReplaceAll(sum, oldLine, "example.com/b v1.0.0/go.mod invalid\n")} {
 		if _, err := BuildProjectSnapshot(install, records, graph, mod, []byte(bad)); err == nil {
-			t.Fatal("missing or ambiguous required checksum accepted")
+			t.Fatal("missing selected checksum or ambiguous/malformed lower checksum accepted")
 		}
 	}
 	withUnused := sum + "example.com/a v0.9.0/go.mod " + testH1('e') + "\n"
