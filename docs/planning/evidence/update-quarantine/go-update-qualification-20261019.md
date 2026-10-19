@@ -1,13 +1,16 @@
 # SEC-UPD-001 — Go named upgrade qualification / 2026-10-19
 
 Status: IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO.
-Only SEC-UPD-001 is IN_PROGRESS. MISSING: actual installed version update/fresh no-op/native and changed
-enrollment/refusals with complete Evidence, affected old get/download/build,
-confirmed helper stop/original restoration/postguards/disposable cleanup and
-ordinary new-source Required. Final local checks pass; actual and remote acceptance remain open.
+Only SEC-UPD-001 is IN_PROGRESS. Final automated checks and actual update/no-op/
+changed enrollment/download pass, but the first actual campaign FAILED at the
+existing offline build consumer. Required lower-version go.mod metadata is missing
+from the selected cache. MISSING: [reviewed additive correction](./go-mvs-metadata-correction-20261019.md),
+new-source checks and actual same-case build/remaining refusals, final restoration/
+cleanup and ordinary new-source Required. Previous successes retain their scope.
 The [contract](../../../user-journey-cli-ia/06-update-quarantine.md#go-named-upgrade--reviewed-initial-semantics)
 and [pre-source audit/edit map/second review](./go-update-baseline-20261019.md)
-own scope. Plan a1e267b preceded product changes; source checkpoint is pending.
+own scope. Plan a1e267b preceded product changes; implementation sourceb0a2ccb is preserved.
+The additive metadata correction remains planned and unqualified.
 
 ## Implemented bounded behavior
 
@@ -62,6 +65,34 @@ has exact complete input inventory, elapsed time, actual exit and log digest.
 | go-upgrade-adverse-focused | PASS6.06s; named/transitive/retained/no-op selection, non-require/source/membership refusal, native/managed/changed opt-in, corrupt old authority, four phase faults, foreign retained/selected/published drift and uncertain rollback, whole-set unsafe checks and old Go/Cargo/report consumers |
 
 Synthetic adverse/transaction fixtures are not public module authentication,
-malware detection guarantees or actual installed/gVisor qualification. Final
-source/checkpoint, actual cleanup and remote scope will be recorded here only
-after their own outcomes exist. Terraform/GitHub/launcher remain pending.
+malware detection guarantees or actual installed/gVisor qualification. Source,
+actual failure/restoration/cleanup and remote scopes below remain independent. Terraform/GitHub/launcher remain pending.
+
+## Source and first installed campaign
+
+Implementationb0a2ccba60267cd24c8a10ac5859efb44b37a593 was committed after reviewed
+plana1e267b and pushed normally to draft PR38. Non-Markdown runtime inputs match
+the frozen final Quick/security/docs/Race and CLI832 candidate exactly; subsequent
+documentation-only scores/links passed docs0.27s/security4.55s before commit.
+CI339/run39220147935 is this source's independent legacy/remote scope, still
+pending when the first actual consumer exposed the gap. No whole Go acceptance.
+
+Raw go-update-installed and lifecycle record the FAILED145.0s campaign. Exact
+get seeds23.76s/22.78s passed. Native implicit and unsupported patch refusals left
+the project unchanged. Explicit native upgrade22.26s changes Cobra1.9.1→1.10.2 and
+pflag1.0.6→1.0.10 while uuid1.5.0 remains. Fresh no-op22.12s preserves both controls'
+bytes/inode/mode/mtime. Missing selector1.51s and changed-control implicit1.57s
+refuse unchanged. Explicit changed-control Korean21.70s preserves the user comment
+and correct source-specific human/check output. These three updates each have
+8 selected modules/required16 checks and16 Evidence,48 disjoint fresh handles.
+Retained download also passed; exact elapsed time remains in its raw phase row.
+
+The observed build's first offline command exits1 with no compiler execution;
+later foreign-marker/corrupt-state actual cases are NOT_REACHED. Exact pinned
+networkless metadata diagnostics confirm missing pflag1.0.9/go.mod despite selected
+pflag1.0.10. The correction report owns cause/design rather than duplicating it.
+Canonical helper2371841 wait0/CONFIRMED_STOPPED, original CLI/observer restore,
+four protected identities and fresh process/socket/Docker postguard PASS. Failed
+exit1 is preserved. Completed lifecycle/operators/candidate53,815,094B were deleted;
+only necessary reproduction project/cache and active reusable/protected resources
+remain. No product source fix or successful new build is inferred from diagnostics.

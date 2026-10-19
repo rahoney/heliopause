@@ -562,6 +562,54 @@ error/path/text를 새로운 authority 또는 공개 failure detail로 사용하
 Static inspection은 동일 envelope의 bounds·module identity·Go syntax를 확인하며
 source를 import/execute하지 않는다. 실제 project/build qualification 범위는 Queue가 소유한다.
 
+#### Required MVS go.mod metadata — SEC-UPD-001 additive contract
+
+This reviewed addition is not qualified until the new source/proof/cache/build
+consumers pass; [correction audit and edit map](./evidence/update-quarantine/go-mvs-metadata-correction-20261019.md)
+records the actual missing lower-version metadata case. Existing responsibilities
+and bounds above remain. Preserve the version1 envelope when context is empty.
+
+For each selected public module path, derive the exact lower public versions
+appearing in the validated frozen raw requirement graph. Bind one canonical h1
+for each /go.mod from the selected guarded go.sum; declarations are not proof.
+Ignore unused historical sum lines. Require official module/version spelling,
+strictly lower versions, unique canonical lexical order and at most16 references
+per selected module. The existing Domain1024-byte declared-integrity limit also
+applies without expansion; long-version declarations may hit it earlier and must
+refuse rather than truncate. The optional integrity suffix is
+`;required-mods=<version>:<h1>[,<version>:<h1>...]` after the existing selected
+`h1=<archive-h1>;go.mod=<control-h1>` pair. Empty/duplicate/unknown context refuses.
+Requested-primary and complete-project forms use the same frozen declarations;
+neither changes the actual selected graph or invents another dependency role.
+
+When required context exists, `HAA-GO-MODULE-2` uses the same length framing, with
+canonical JSON in the control section: mod is the selected raw byte string and
+required_mods is a nonempty ordered array of version/body raw byte strings
+(JSON byte strings use standard base64). Exact field/membership/order/identity
+checks reject duplicates, unknown/trailing data and omitted/extra controls.
+The complete encoded control section, including current and required controls,
+stays within4MiB; ZIP stays within64MiB and the existing full envelope bound.
+No additional source archive or extracted old module is selected or installed.
+
+Acquire only frozen same-path exact .mod endpoints on the fixed public proxy,
+never arbitrary URLs, resolver/global cache or discovery driven by failure text.
+Metadata-bearing acquisition has a120s total ceiling, the existing two60s request
+ceiling. Authenticate every required old-version /go.mod record independently
+using the pinned SumDB client, retaining its existing60s/64 requests/1MiB response/
+4MiB total limits. Current-version proof or equal bytes do not substitute for
+old-version binding. Check each control's official grammar and exact module path
+without executing it. Full envelope digest/Evidence includes this context.
+
+Only after the same entry/set ALLOW may the existing cache owner materialize
+those required .mod files. Rehash against the approved envelope/declarations,
+reject path/content collisions and include all files in the exact trusted receipt.
+Keep aggregate512MiB/20,000 files/40,000 entries and4MiB receipt unchanged. Cache
+reuse and read-only build archive include the same metadata; the existing offline
+download-all/graph reconciliation remains required before and after compilation.
+No build networking, control rewrite, fake archive, silent metadata fallback or
+new trust authority is permitted. Metadata count does not inflate selected-module
+or installed-artifact counts in CLI results.
+
 Go의 기본 package 탐색이 제외하는 정확한 `testdata` directory의 `.go`는 negative
 parser fixture 등을 포함하는 archive data로 취급한다. 이 구분은 package/vendor
 이름 allowlist나 안전성 판정이 아니다. 모든 bytes의 인증·digest·archive bounds·

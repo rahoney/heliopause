@@ -14,7 +14,7 @@ Last completed work item: CLI-UX-002 — OS preferred display-language auto; loc
 Predecessor: M13-003 — COMPLETE; protected v0.1.0 build, twelve attestations and OS package lifecycle PASS
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001 and CLI-UX-002 COMPLETE for their documented scopes
-Active work item status: IN_PROGRESS — npm, bounded public/named PyPI and Cargo qualified; current Go update audit, then Terraform/GitHub gaps
+Active work item status: IN_PROGRESS — npm, bounded public/named PyPI and Cargo qualified; current Go required-metadata correction, then Terraform/GitHub gaps
 Next work item: CLI-UX-003 — NOT_STARTED; branded interactive launcher after SEC-UPD-001 acceptance
 Then: M13-004 — BLOCKED on SEC-UPD-001 and owner package naming; M13-005 NOT_STARTED
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -3342,7 +3342,7 @@ linked qualification owners rather than duplicate progress narratives here.
 | Bounded public-native PyPI enrollment | YES / YES / YES / YES | [Native qualification](./evidence/update-quarantine/pypi-native-qualification-20261019.md), source2e8844f/CI332 and separately scoped affected retirement regressions; authentic old wheel footprint, foreign-file protection and exact held transaction |
 | Named PyTorch managed venv, CPU/cu126/cu130/cu132 | YES / YES / YES / YES | [Final named qualification](./evidence/update-quarantine/pytorch-update-qualification-20261019.md), source306/CI336; all four actual version updates/fresh no-ops/unchanged refusals, confirmed helper stop/original restoration/postguards and completed data/operator cleanup |
 | Cargo lock update | YES / YES / YES / YES | [Reviewed audit](./evidence/update-quarantine/cargo-update-baseline-20261019.md) and [current qualification](./evidence/update-quarantine/cargo-update-qualification-20261019.md); source85ac4c1; final local checks and20 installed phases including old add/build, dependency-free/workspace, restoration and145.90MB cleanup PASS; CI338 ten SUCCESS; same checkout tree,36 related Go/Cargo/Terraform consumers, CPU277.12s/five helper wait0/final confirmed cleanup |
-| Scoped Go get -u | YES / YES / NO / NO | [Reviewed audit/plan](./evidence/update-quarantine/go-update-baseline-20261019.md) precedes source; [current qualification](./evidence/update-quarantine/go-update-qualification-20261019.md) records direct REDs and focused GREEN6.06s. Final Host Quick132.86s/security9.66s/docs/related Race76.41s and seven-language help pass. MISSING actual update/no-op/enrollment/refusals and old consumers, restoration/cleanup/new-source Required |
+| Scoped Go get -u | YES / YES / NO / NO | [Reviewed audit/plan](./evidence/update-quarantine/go-update-baseline-20261019.md) precedes source; [current qualification](./evidence/update-quarantine/go-update-qualification-20261019.md) records direct REDs and focused GREEN6.06s. Final Host Quick132.86s/security9.66s/docs/related Race76.41s and seven-language help pass. First actual update/no-op/enrollment/download pass, but offline build lacks required lower-version go.mod; [correction audit/plan](./evidence/update-quarantine/go-mvs-metadata-correction-20261019.md) precedes source. MISSING corrected metadata/proof/cache and same-case build/remaining refusals, final cleanup/new-source Required |
 | Terraform project upgrade, GitHub managed replacement | NO / NO / NO / NO | Independent selection/ownership/CLI and actual acceptance remain MISSING; existing selected-version/install infrastructure is reused |
 
 The reviewed bounded PyPI lane is closed; broader native named footprints are not
@@ -3352,7 +3352,7 @@ are linked in the final named report. Earlier public/native live runs retain the
 original scope; unchanged public-script identity and final direct regressions do
 not relabel them as new runs. No candidate is permanently activated.
 
-Cargo acceptance within SEC-UPD-001 is now closed; current lane is Go get -u. Its [independent audit, pinned semantics, exact edit map and second review](./evidence/update-quarantine/go-update-baseline-20261019.md) were complete before source; named selection/enrollment/transaction/CLI are now wired with focused checks. Complete the linked Go qualification before advancing. PyPI originals are restored and completed trial
+Cargo acceptance within SEC-UPD-001 is now closed; current lane is Go get -u. Its [independent audit, pinned semantics, exact edit map and second review](./evidence/update-quarantine/go-update-baseline-20261019.md) were complete before source; named selection/enrollment/transaction/CLI are now wired with focused checks. The first actual build exposes missing required lower-version metadata; complete its reviewed additive correction and linked Go qualification before advancing. PyPI originals are restored and completed trial
 payloads/cache/lifecycle plus the six final temporary operators are deleted;
 Evidence/Manifest/SBOM/raw archives and active reusable tooling are preserved.
 Cargo's reviewed in-place implementation follows direct command-admission and
