@@ -10,8 +10,8 @@ support is claimed. The named source306 has four actual update/no-op/refusal/
 restoration/cleanup profiles and ordinary same-source CI336. The reviewed
 [Cargo lane](../planning/evidence/update-quarantine/cargo-update-qualification-20261019.md)
 is also qualified for source85ac4c1: local actual20 phases, restoration/cleanup
-and same-tree CI338 ten SUCCESS. Current lane: [Go baseline/selection
-review](../planning/evidence/update-quarantine/go-update-baseline-20261019.md) preceded source; its [wired implementation qualification](../planning/evidence/update-quarantine/go-update-qualification-20261019.md) now records sourcee00 canonical and actual15 phases/restoration/cleanup PASS, with new CI341 pending after the preserved CI340 pruning failure. Preserve the existing explicit-version get path.
+and same-tree CI338 ten SUCCESS. [Go baseline/selection
+review](../planning/evidence/update-quarantine/go-update-baseline-20261019.md) preceded source; its [wired implementation qualification](../planning/evidence/update-quarantine/go-update-qualification-20261019.md) now qualifies sourcee00 canonical/actual15 phases/restoration/cleanup and same-tree CI341 ten SUCCESS after the preserved CI340 pruning failure. Current lane is Terraform project upgrade. Preserve the existing explicit-version get path.
 Other lanes wait for their independent baseline/qualification. See the
 [npm evidence](../planning/evidence/update-quarantine/npm-qualification-20261018.md).
 This leaf owns the user-requested update-command contract. It supplements the
@@ -20,7 +20,8 @@ installation journey, never weakens existing Policy or adds implicit Host execut
 ## Terraform project upgrade — reviewed initial semantics
 
 Pre-source [independent audit, edit map and second review](../planning/evidence/update-quarantine/terraform-update-baseline-20261019.md)
-identify the remaining work. Implementation waits for Go acceptance closure.
+identify the remaining work. Go acceptance closed with sourcee00/CI341;
+Terraform implementation now follows that reviewed audit and existing owners.
 Support `helox terraform init -upgrade [--adopt]` (`--upgrade` alias), with no
 positional provider. Preserve exact `init namespace/type@version`. Only the exact
 standalone native -upgrade token is normalized; values/false/duplicates, extra
@@ -128,8 +129,8 @@ An earlier bounded install/UX qualification does not close this update acceptanc
 ## Implementation map and scoped command semantics
 
 This is the reviewed implementation map. Qualified npm/PyPI scopes are recorded
-above, and the reviewed Cargo lane is now qualified. Go -u, Terraform upgrade and
-GitHub replacement remain planned. Execute
+above; Cargo and bounded Go -u are now qualified. Terraform upgrade and
+GitHub replacement remain to implement. Execute
 one ecosystem at a time after CLI-UX-002; keep other lanes unmodified until their
 own baseline/selection contract is verified. Minimum planned forms are:
 

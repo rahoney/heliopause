@@ -5,9 +5,9 @@ in84a2dc0 before source. Implementation is wired with focused source/proof/cache
 consumer/final canonical and actual installed checks PASS; new-source CI340
 failed the existing grpc transitive get consumer. The graph-pruning amendment
 below was committed1317ee2 before correctione00e7f7; its canonical and actual
-installed checks now pass, with new CI341 pending. The independent audit below
+installed checks and new CI341 now pass for the documented Go scope. The independent audit below
 preserves the pre-correction findings.
-Only SEC-UPD-001 is IN_PROGRESS. Go acceptance remains open.
+Only SEC-UPD-001 is IN_PROGRESS. Bounded Go acceptance is now closed; Terraform follows.
 The earlier [Go audit](./go-update-baseline-20261019.md) and sourceb0a2ccb retain
 their actual scope. This document supplements that edit map after a new actual
 consumer exposed a missing representation. It does not replace implemented

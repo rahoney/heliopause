@@ -1,12 +1,11 @@
 # SEC-UPD-001 — Go named upgrade qualification / 2026-10-19
 
-Status: IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO.
+Status: IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES.
 Only SEC-UPD-001 is IN_PROGRESS. Final corrected source394c92d and installed
-qualification pass; QUALIFIED/ACCEPTANCE_CLOSED remain NO. CI340 failed the
-existing grpc exact get at a graph-pruned lower checksum assumption. Correction
-e00e7f7 now passes canonical checks and its own fifteen actual installed phases,
-restoration and cleanup. MISSING only CI341/run39232873898 Required/exact checkout/
-native macOS and actual old-consumer/CPU/cleanup scope. The first
+qualification and sourcee00 CI341 pass. MISSING=none for the bounded named
+upgrade and required-metadata/pruning contracts. CI340 failed the existing grpc
+exact get and remains preserved. Correctione00 passes canonical checks, fifteen
+actual installed phases, restoration/cleanup and new-source remote acceptance. The first
 b0 actual failure remains preserved; the
 [reviewed correction](./go-mvs-metadata-correction-20261019.md) has passed its own
 source checks and the same failed case. All local originals are restored and
@@ -14,7 +13,7 @@ completed trial payload/cache/lifecycle/operators/candidates are deleted.
 The [contract](../../../user-journey-cli-ia/06-update-quarantine.md#go-named-upgrade--reviewed-initial-semantics)
 and [pre-source audit/edit map/second review](./go-update-baseline-20261019.md)
 own scope. Plan a1e267b preceded product changes; implementation sourceb0a2ccb is preserved.
-The additive metadata and pruning corrections are locally validated but not fully qualified;
+The additive metadata and pruning corrections are qualified for the documented scope;
 its [CI340 pruning amendment](./go-mvs-metadata-correction-20261019.md#ci340-graph-pruning-amendment--reviewed-before-source)
 owns the exact failure, diagnosis, source edit and second review before changes.
 
@@ -69,10 +68,16 @@ checker/source/cache/observer/shared SDK and protected originals remain.
 
 Raw go-pruned-source-checkpoint, final profile inputs/results, actual-postanalysis,
 completed-cleanup and cleanup-operator-deleted receipts own these facts. The source
-was pushed normally to draft PR38, starting CI341/run39232873898. Prior CI340's
-failure remains preserved. New Required/exact checkout/native macOS/old-consumer
-CPU/confirmed cleanup is the sole Go acceptance gap. Do not restart that CI with
-a documentation-only push or advance Terraform source before closure.
+was pushed normally to draft PR38. CI341/run39232873898 now has ten SUCCESS,
+including Required/native macOS. Actual checkoutb84188c and sourcee00 have the
+same whole tree63345186686a60584324e390d1f679de45f53dd6. Linux confirms all36
+existing Go/Cargo/Terraform top-level consumers (56 including subtests), CPU full
+192.40s, five helperwait0 and final original0/CONFIRMED_STOPPED/client_error0/
+client_restore0 confirmed cleanup. Quick/native macOS/Linux decoded UTF8 logs,
+final jobs and go-ci341-final-scope/check-out receipts preserve exact hashes and
+results. Prior CI340 failure is not relabelled. Go bounded acceptance is closed;
+Terraform starts only from its independent reviewed audit/plan. Overall
+SEC-UPD-001 remains IN_PROGRESS; no main merge/release/permanent activation.
 
 ## Implemented bounded behavior
 

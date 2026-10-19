@@ -564,8 +564,8 @@ source를 import/execute하지 않는다. 실제 project/build qualification 범
 
 #### Required MVS go.mod metadata — SEC-UPD-001 additive contract
 
-This reviewed addition is not qualified until the new source/proof/cache/build
-consumers pass; [correction audit and edit map](./evidence/update-quarantine/go-mvs-metadata-correction-20261019.md)
+This reviewed addition is qualified for sourcee00 after source/proof/cache/build
+and same-tree CI341 consumers pass; [correction audit and edit map](./evidence/update-quarantine/go-mvs-metadata-correction-20261019.md)
 records the actual missing lower-version metadata case. Existing responsibilities
 and bounds above remain. Preserve the version1 envelope when context is empty.
 

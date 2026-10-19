@@ -128,3 +128,15 @@ selected private backup inventory until removed by verified cleanup. Every phase
 still checks the original retained file and preserves foreign changes on failure.
 No old normal init guard or signing/probe limit is broadened. Review is a design
 check only; all new acceptance flags remain NO until implementation and evidence.
+
+## Activation after Go acceptance closure
+
+Go sourcee00/CI341 is now qualified: all ten jobs SUCCESS, exact checkout tree,
+36 existing Go/Cargo/Terraform consumers, CPU192.40s/five helperwait0/final
+confirmed cleanup. Current documentation head1b38582 has no tracked source edits.
+Between original baseline4231370 and this head, only the two audited Go required-
+metadata files changed under internal; every Terraform/composition/report owner
+audited above is unchanged. Thus this independent edit map/second review170140c
+still applies. Terraform upgrade remains NO/NO/NO/NO with exactly its listed
+MISSING work; existing exact init/proof/probe/cache/transaction remain reused.
+Only SEC-UPD-001 is IN_PROGRESS. Proceed with direct REDs, then the scoped source.

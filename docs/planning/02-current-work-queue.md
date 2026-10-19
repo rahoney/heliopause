@@ -14,7 +14,7 @@ Last completed work item: CLI-UX-002 — OS preferred display-language auto; loc
 Predecessor: M13-003 — COMPLETE; protected v0.1.0 build, twelve attestations and OS package lifecycle PASS
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001 and CLI-UX-002 COMPLETE for their documented scopes
-Active work item status: IN_PROGRESS — npm, bounded public/named PyPI and Cargo qualified; current Go pruning correction qualification, then Terraform/GitHub gaps
+Active work item status: IN_PROGRESS — npm, bounded public/named PyPI, Cargo and Go qualified; current Terraform project upgrade, then GitHub replacement
 Next work item: CLI-UX-003 — NOT_STARTED; branded interactive launcher after SEC-UPD-001 acceptance
 Then: M13-004 — BLOCKED on SEC-UPD-001 and owner package naming; M13-005 NOT_STARTED
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -3342,42 +3342,28 @@ linked qualification owners rather than duplicate progress narratives here.
 | Bounded public-native PyPI enrollment | YES / YES / YES / YES | [Native qualification](./evidence/update-quarantine/pypi-native-qualification-20261019.md), source2e8844f/CI332 and separately scoped affected retirement regressions; authentic old wheel footprint, foreign-file protection and exact held transaction |
 | Named PyTorch managed venv, CPU/cu126/cu130/cu132 | YES / YES / YES / YES | [Final named qualification](./evidence/update-quarantine/pytorch-update-qualification-20261019.md), source306/CI336; all four actual version updates/fresh no-ops/unchanged refusals, confirmed helper stop/original restoration/postguards and completed data/operator cleanup |
 | Cargo lock update | YES / YES / YES / YES | [Reviewed audit](./evidence/update-quarantine/cargo-update-baseline-20261019.md) and [current qualification](./evidence/update-quarantine/cargo-update-qualification-20261019.md); source85ac4c1; final local checks and20 installed phases including old add/build, dependency-free/workspace, restoration and145.90MB cleanup PASS; CI338 ten SUCCESS; same checkout tree,36 related Go/Cargo/Terraform consumers, CPU277.12s/five helper wait0/final confirmed cleanup |
-| Scoped Go get -u | YES / YES / NO / NO | [Reviewed audit/plan](./evidence/update-quarantine/go-update-baseline-20261019.md) and [metadata/pruning amendment](./evidence/update-quarantine/go-mvs-metadata-correction-20261019.md) precede their sources. [Current qualification](./evidence/update-quarantine/go-update-qualification-20261019.md): sourcee00 canonical Quick206.98s/security10.79s/docs/Race129.57s and installed15 phases PASS, including Cobra metadata build65.14s and old grpc41-module get114.11s/download87.14s;212 new update/grpc Evidence, canonical restoration/postguards and568.85MB new trial cleanup. Earlier394 CI340 FAILED at pruned lower checksum membership. MISSING new-source CI341 Required/exact checkout/native macOS/old consumer CPU and cleanup |
-| Terraform project upgrade, GitHub managed replacement | NO / NO / NO / NO | Independent selection/ownership/CLI and actual acceptance remain MISSING; existing selected-version/install infrastructure is reused |
+| Scoped Go get -u | YES / YES / YES / YES | [Reviewed audit/plan](./evidence/update-quarantine/go-update-baseline-20261019.md) and [metadata/pruning amendment](./evidence/update-quarantine/go-mvs-metadata-correction-20261019.md) precede their sources. [Current qualification](./evidence/update-quarantine/go-update-qualification-20261019.md): sourcee00 canonical Quick206.98s/security10.79s/docs/Race129.57s and installed15 phases PASS, including Cobra metadata build65.14s and old grpc41-module get114.11s/download87.14s;212 new update/grpc Evidence, canonical restoration/postguards and568.85MB new trial cleanup. Earlier394 CI340 FAILED at pruned lower checksum membership. CI341 ten SUCCESS; actual checkout whole-tree equality/native macOS,36 existing Go/Cargo/Terraform consumers/CPU192.40s/five helperwait0/final confirmed cleanup; MISSING none for bounded Go scope |
+| Terraform project upgrade | NO / NO / NO / NO | Current lane; [independent audit/edit map/second review](./evidence/update-quarantine/terraform-update-baseline-20261019.md) committed170140c before source; existing exact init, signature/probe/cache/transaction are reused; MISSING constrained complete-project selection, upgrade-only enrollment/retention/CLI and actual acceptance |
+| GitHub managed replacement | NO / NO / NO / NO | Next independent lane; ownership/replacement/CLI actual acceptance remains MISSING; existing explicit install infrastructure is reused |
 
-The reviewed bounded PyPI lane is closed; broader native named footprints are not
-qualified. Source306 canonical Quick105.15s/security/docs/relevant Race10.04s,
-source-specific ordinary CI336 and its independent four-profile actual consumers
-are linked in the final named report. Earlier public/native live runs retain their
-original scope; unchanged public-script identity and final direct regressions do
-not relabel them as new runs. No candidate is permanently activated.
+The qualified rows retain their source-specific bounded actual/CI scopes in the
+linked reports. Broader native named PyPI footprints remain unsupported. Go's
+original metadata/build failure and CI340 pruning failure stay historical; the
+reviewed amendment and final sourcee00/actual15 phases/CI341 close bounded Go only.
 
-Cargo acceptance within SEC-UPD-001 is now closed; current lane is Go get -u. Its [independent audit, pinned semantics, exact edit map and second review](./evidence/update-quarantine/go-update-baseline-20261019.md) were complete before source; named selection/enrollment/transaction/CLI are now wired with focused checks. The required metadata correction passes local actual builds, but CI340 fails existing grpc get because graph-pruned references lack checksums. The [reviewed pruning amendment](./evidence/update-quarantine/go-mvs-metadata-correction-20261019.md#ci340-graph-pruning-amendment--reviewed-before-source) is implemented ine00 and its canonical/actual affected consumers and cleanup pass; complete fresh CI341 before advancing. [Terraform audit/plan](./evidence/update-quarantine/terraform-update-baseline-20261019.md) is committed170140c; it remains plan-only. PyPI originals are restored and completed trial
-payloads/cache/lifecycle plus the six final temporary operators are deleted;
-Evidence/Manifest/SBOM/raw archives and active reusable tooling are preserved.
-Cargo's reviewed in-place implementation follows direct command-admission and
-retained-control REDs. Complete-project selection, explicit enrollment, lock-only
-publication and human/JSON CLI are wired. Final canonical Host Quick259.64s,
-security13.44s/docs and related Race148.85s pass. Two successful installed
-campaigns total20 phases with24 disjoint fresh update Evidence; dependency-free
-updates invent none. All originals are restored and completed target/cache/
-lifecycle/tools/obsolete CLI candidates145,898,901B removed. New-source CI338 is ten SUCCESS including Required/native macOS. Its same-tree
-actual existing Go/Cargo/Terraform consumers, CPU277.12s/five helper wait0 and
-final confirmed cleanup are bound in the Cargo qualification. Implement only the
-remaining Go/Terraform/GitHub acceptance gaps after each respective audit.
-Pinned Cargo1.99.0 networkless semantics
-passed12 operations; owned containers, fixture and temporary operator were deleted.
-Its exact edit map and second review include preserving manifests/unchanged lock
-identity and existing Go/Terraform primary-only consumers. Implement only those
-proven gaps only; actual update and affected add/build qualification are now
-complete. The next Go lane begins with its own current-source audit.
-Other lanes, the interactive launcher, main
-merge and publication remain pending. The [implementation baseline](./evidence/update-quarantine/baseline-20261018.md)
-records existing responsibilities and original missing acceptance.
-Existing CLI-UX-001 receipts qualify
-its historical locale-only implementation, not these new requirements. Neither
-update-command availability nor running a native package manager outside helox
-may be reported as HAA update protection without actual corresponding evidence.
+Current lane: Terraform project upgrade. Its independent audit, exact edit map
+and second review were committed170140c before source; activation after Go closure
+confirms every audited Terraform/composition/report owner is unchanged. Reuse the
+existing exact public selection, signer/probe/Policy/cache and transaction; add
+only the listed current-project selection, upgrade enrollment/retention, CLI and
+acceptance gaps. GitHub managed replacement follows its own independent audit.
+Only SEC-UPD-001 is IN_PROGRESS. The interactive launcher, main merge and
+publication remain pending. No candidate is permanently activated. Completed
+trial payload/cache/lifecycle/operators are deleted after raw/Evidence/approval/
+cache/build receipts are preserved; active reusable tooling and protected originals
+remain. Native commands outside helox are not transparently intercepted. The
+[implementation baseline](./evidence/update-quarantine/baseline-20261018.md) owns
+original missing responsibilities; current status is the table above.
 
 ### CLI-UX-003 — branded interactive launcher (deferred)
 
