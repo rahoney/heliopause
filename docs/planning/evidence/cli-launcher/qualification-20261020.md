@@ -1,9 +1,20 @@
 # CLI-UX-003 — local qualification / 2026-10-20
 
 Status: IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO.
-MISSING: exact committed-source ordinary CI including native macOS, final
-completed local qualification data cleanup and completion documentation.
+MISSING: native timeout diagnosis, exact committed-source ordinary CI including
+native macOS, current diagnostic qualification and completion documentation.
 This is local acceptance evidence, not a main merge or permanent CLI activation.
+
+Native CI346 failure: job118163210310 production build passes but default test
+hits the unchanged outer6m deadline at16:22:31UTC. No partial package output is
+visible in its error. Promotion.test orphan cleanup does not identify the cause.
+The [pre-edit diagnostic amendment](./baseline-20261020.md#native-ci346-timeout-visibility-amendment--before-diagnostic-source-edits)
+adds bounded timeout-output preservation before further qualification.
+The source failure is retained; native qualification remains NO. Earlier status
+query values lagged the completed log and are superseded by this actual failure.
+Local qualification data1,758,485,414 logicalB and four one-shot operators are
+already deleted; raw/proof/shared SDK tools remain. A new diagnostic source/cache
+is current work, separately tracked and removed after its final use.
 
 ## Existing owners and implementation boundary
 

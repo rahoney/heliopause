@@ -14,7 +14,7 @@ Last completed work item: SEC-UPD-001 — COMPLETE; bounded ecosystem updates, f
 Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002 and SEC-UPD-001 COMPLETE for their documented scopes
-Active work item status: IN_PROGRESS — launcher implemented/wired; local qualification PASS; native/exact-source CI and completed-data cleanup remain
+Active work item status: IN_PROGRESS — local launcher qualification PASS; CI346 native default test timeout under investigation; bounded diagnostic-output amendment before source edits
 Next work item: M13-004 — BLOCKED on CLI-UX-003 and owner package naming
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -3378,8 +3378,13 @@ were NO/NO/NO/NO at that baseline. Current audit: launcher IMPLEMENTED=YES /
 WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO. [Local qualification](./evidence/cli-launcher/qualification-20261020.md)
 records canonical Quick/security/docs, full related Race, Darwin test compile,
 native PTY19 and actual compiled CLI16 cases including OS-auto Korean and real
-explicit Doctor. MISSING: native macOS/exact-source ordinary CI, completed local
-qualification-data cleanup and final completion documentation.
+explicit Doctor. MISSING: native timeout diagnosis, native macOS/exact-source
+ordinary CI, current diagnostic qualification and final completion documentation.
+CI346's actual native macOS log reports the existing6m default-suite timeout;
+the exact slow test/cause is not visible. [Pre-edit amendment](./evidence/cli-launcher/baseline-20261020.md#native-ci346-timeout-visibility-amendment--before-diagnostic-source-edits)
+reuses the existing1MiB collector to retain partial timeout diagnostics without
+changing budgets/profile/Required/launcher behavior. Local qualification data
+cleanup is complete; new diagnostic work and native/exact-source CI remain.
 The user explicitly requested this order on2026-10-18. Bare helox in a real interactive terminal will
 show Heliopause Artifact Airlock, localized settings/help/examples and exit, with
 arrow/Enter/back navigation. Root RunE now dispatches eligible bare terminals to

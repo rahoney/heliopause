@@ -274,6 +274,7 @@ go run ./scripts/check <profile>
 - 필요한 tool과 version이 lock manifest와 project-specific tool cache에서 일치하는지 확인한다.
 - check profile은 repository source, module file 또는 config를 수정하지 않는다.
 - 각 단계에 timeout을 적용하고 첫 실패의 명령·분류·종료 상태를 secret 없이 표시한다.
+- timeout도 같은 bounded stdout/stderr collector의 부분 출력을 보존하고 원래 context cause를 유지한다. 부분 출력은 진단이며 검사 성공이나 timeout 원인 확정이 아니다.
 - scanner stdout/stderr를 무제한 buffering하지 않는다.
 - 외부 tool의 `no-fail` option으로 Quality Gate를 우회하지 않는다.
 - 여러 검사를 병렬 실행해 원인과 resource 사용이 불명확해지지 않도록 초기에는 순차 실행한다.
