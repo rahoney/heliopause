@@ -569,10 +569,16 @@ consumers pass; [correction audit and edit map](./evidence/update-quarantine/go-
 records the actual missing lower-version metadata case. Existing responsibilities
 and bounds above remain. Preserve the version1 envelope when context is empty.
 
-For each selected public module path, derive the exact lower public versions
-appearing in the validated frozen raw requirement graph. Bind one canonical h1
-for each /go.mod from the selected guarded go.sum; declarations are not proof.
-Ignore unused historical sum lines. Require official module/version spelling,
+For each selected public module path, derive lower public versions at the
+intersection of the validated frozen raw requirement graph and the selected
+guarded go.sum /go.mod declarations. A graph-mentioned lower requirement without
+such a declaration may be unexpanded under Go graph pruning; do not fabricate an
+acquired subject or require its absent checksum. Validate all checksum grammar,
+duplicates and selected archive/control pairs first. Ignore unused historical
+sum lines and absent pruned references before the required-context count bound.
+Bind the canonical declared h1 for every included control; declarations are not
+proof. Every included old-version proof and the unchanged offline graph/build
+completeness checks remain required. Require official module/version spelling,
 strictly lower versions, unique canonical lexical order and at most16 references
 per selected module. The existing Domain1024-byte declared-integrity limit also
 applies without expansion; long-version declarations may hit it earlier and must

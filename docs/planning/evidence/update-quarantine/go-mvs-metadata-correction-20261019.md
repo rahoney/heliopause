@@ -3,7 +3,9 @@
 Status: cause confirmed; bounded additive correction and second review committed
 in84a2dc0 before source. Implementation is wired with focused source/proof/cache/
 consumer/final canonical and actual installed checks PASS; new-source CI340
-qualification is pending. The independent audit below preserves the pre-correction findings.
+failed the existing grpc transitive get consumer. The graph-pruning amendment
+below must precede its narrow source correction. The independent audit below
+preserves the pre-correction findings.
 Only SEC-UPD-001 is IN_PROGRESS. Go acceptance remains open.
 The earlier [Go audit](./go-update-baseline-20261019.md) and sourceb0a2ccb retain
 their actual scope. This document supplements that edit map after a new actual
@@ -173,4 +175,63 @@ wait0/original restoration/fresh postguards and completed trial/operator cleanup
 The [qualification](./go-update-qualification-20261019.md#corrected-source394--local-actual-qualification-complete)
 owns final timings, file receipts, source binding and cleanup. Original b0 failure,
 networkless diagnostic and all intermediate failures retain their historical scope.
-CI340 remains the sole acceptance gap; no earlier source's CI substitutes for it.
+CI340 failed; no earlier source's CI substitutes for it.
+
+## CI340 graph-pruning amendment — reviewed before source
+
+New-source run39227724529 has8 successful prerequisites, failed Linux integration
+and failed Required. Actual checkoutafda1ea has the same whole tree611119f as394.
+TestLinuxGoTransitiveGetDownloadIntegration fails32.01s at exact grpc1.76.0 get:
+required Go control checksum is missing or invalid. Fifteen related passed test
+rows retain their scope; later old builds/CPU are NOT_REACHED. Three launched
+helpers have wait0; final CONFIRMED_STOPPED/client_error0/client_restore0/RESTORED
+preserves primary exit1. Raw go-ci340-final-jobs/failure-scope and three logs own
+the actual results. Completion was briefly misreported as success in commentary;
+the actual conclusions are FAILURE and were immediately corrected.
+
+Independent pinned Go1.26.9 private grpc1.76.0 get3.78s/download3.27s/graph0.02s
+selects the same41 modules. Its raw graph mentions older protobuf1.5.0 and
+go-cmp0.5.5/0.5.9, but all three have neither go.sum /go.mod entries nor cache
+.mod files. The same cache with GOPROXY=off/GOSUMDB=off independently passes
+download-all0.02s and graph0.02s without those files or any control change.
+These are unexpanded requirements under [Go graph pruning](https://go.dev/ref/mod#graph-pruning),
+not missing authenticated metadata. Selected ZIP/control pairs remain mandatory.
+Pinned SDK cmd/go/internal/modload/buildlist.go readModGraph/enqueue distinguishes
+mentioned requirements from actually loaded go.mod files. Native diagnostics
+are semantics evidence, not installed gVisor acceptance or SumDB attestation.
+Raw go-required-graph-diagnostic owns all commands/controls/graph/cache facts.
+
+The394 projectModuleIntegrities incorrectly equates every lower graph vertex
+with a loaded metadata requirement. Existing representation/acquisition/old-version
+proof/static/cache/observed build are IMPLEMENTED=YES/WIRED=YES; new pruning
+selection QUALIFIED=NO/ACCEPTANCE_CLOSED=NO. MISSING only correct graph-and-sum
+membership, direct regression, canonical checks, same actual legacy grpc consumer,
+Cobra metadata build/upgrade retention and fresh Required/cleanup.
+
+Exact edit: artifact/gomodule/required_mod.go projectModuleIntegrities includes
+only the intersection of lower same-path frozen graph vertices and valid unique
+selected go.sum /go.mod declarations. ValidateProjectSums still validates every
+line, duplicate and selected content pair first. Missing pruned declarations do
+not become acquired subjects or forged checks. Apply the existing16-count and
+1024-byte limits to included refs; ignore absent pruned refs before count, while
+retaining graph identity/normalization validation. No resolver/cache input or
+failure-message-driven fetch, no format/proof/cache/build/Domain/runtime change.
+
+Regression: direct RED for a graph-mentioned lower version absent from sums,
+then GREEN with an empty optional context; keep lower-present-context binding,
+duplicate/malformed/selected-pair missing negatives, unused sum exclusion,
+independent old-version proof/missing/tampered cache tests. A test that required
+an error for every absent lower sum encoded the same incorrect assumption;
+replace that single expectation with pruning coverage rather than weakening
+actual source/proof tests. Include a many-pruned-ref case to avoid counting
+unacquired references against16. Preserve exact snapshot/requested equality.
+
+Second review: graph membership alone and go.sum history alone are each
+insufficient; only their intersection is frozen acquisition context. Absence
+is not verification success. Every included old control still has its independent
+version-specific SumDB proof; the selected pair remains strict. Genuine cache
+incompleteness still fails the unchanged offline download/graph pre/post build.
+The previous Cobra required pflag1.0.9 case must remain captured and pass actual
+build, while grpc pruning must restore the old actual consumer. Do not change
+existing positive CI fixtures, skip them, raise limits or retry the unchanged
+failed source. Terraform stays plan-only until Go acceptance closes.

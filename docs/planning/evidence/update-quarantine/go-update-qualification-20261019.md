@@ -2,16 +2,20 @@
 
 Status: IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO.
 Only SEC-UPD-001 is IN_PROGRESS. Final corrected source394c92d and installed
-qualification pass; QUALIFIED/ACCEPTANCE_CLOSED remain NO until new-source CI340.
-MISSING: ordinary CI340 Required/native macOS/exact checkout and actual legacy
-consumer/cleanup scope. The first b0 actual failure remains preserved; the
+qualification pass; QUALIFIED/ACCEPTANCE_CLOSED remain NO. New-source CI340 failed
+the existing grpc exact get at a graph-pruned lower checksum assumption.
+MISSING: the reviewed narrow pruning correction, its source/actual legacy and
+Cobra metadata consumers, then fresh Required/exact checkout/cleanup. The first
+b0 actual failure remains preserved; the
 [reviewed correction](./go-mvs-metadata-correction-20261019.md) has passed its own
 source checks and the same failed case. All local originals are restored and
 completed trial payload/cache/lifecycle/operators/candidates are deleted.
 The [contract](../../../user-journey-cli-ia/06-update-quarantine.md#go-named-upgrade--reviewed-initial-semantics)
 and [pre-source audit/edit map/second review](./go-update-baseline-20261019.md)
 own scope. Plan a1e267b preceded product changes; implementation sourceb0a2ccb is preserved.
-The additive metadata correction remains planned and unqualified.
+The additive metadata correction is locally validated but not fully qualified;
+its [CI340 pruning amendment](./go-mvs-metadata-correction-20261019.md#ci340-graph-pruning-amendment--reviewed-before-source)
+owns the exact failure, diagnosis, source edit and second review before changes.
 
 ## Implemented bounded behavior
 
