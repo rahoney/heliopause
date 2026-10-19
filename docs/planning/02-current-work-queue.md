@@ -14,7 +14,7 @@ Last completed work item: SEC-UPD-001 — COMPLETE; bounded ecosystem updates, f
 Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002 and SEC-UPD-001 COMPLETE for their documented scopes
-Active work item status: IN_PROGRESS — CI347 native PTY state assertion fails; Darwin kernel-state comparison amendment precedes test-only edits; native/exact-source qualification remains
+Active work item status: IN_PROGRESS — Darwin comparison test correction locally qualified after CI347 failure; fresh native/exact-source qualification remains
 Next work item: M13-004 — BLOCKED on CLI-UX-003 and owner package naming
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -3378,8 +3378,9 @@ were NO/NO/NO/NO at that baseline. Current audit: launcher IMPLEMENTED=YES /
 WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO. [Local qualification](./evidence/cli-launcher/qualification-20261020.md)
 records canonical Quick/security/docs, full related Race, Darwin test compile,
 native PTY19 and actual compiled CLI16 cases including OS-auto Korean and real
-explicit Doctor. MISSING: native timeout diagnosis, native macOS/exact-source
-ordinary CI, current diagnostic qualification and final completion documentation.
+explicit Doctor. MISSING: final-source native macOS/exact-source ordinary CI
+and final completion documentation. Historical CI346 timeout cause remains unknown;
+its diagnostic loss and the Darwin comparison correction are locally qualified.
 CI346's actual native macOS log reports the existing6m default-suite timeout;
 the exact slow test/cause is not visible. [Pre-edit amendment](./evidence/cli-launcher/baseline-20261020.md#native-ci346-timeout-visibility-amendment--before-diagnostic-source-edits)
 reuses the existing1MiB collector to retain partial timeout diagnostics without
@@ -3388,14 +3389,18 @@ cleanup is complete; new diagnostic work and native/exact-source CI remain.
 The planned runner boundary regression is RED4.66s→GREEN2.93s; canonical
 Quick163.69s/security7.95s/docs and whole checker Race30.69s plus Darwin checker
 test compilation PASS. This confirms bounded diagnostic preservation only.
-The original timeout cause is still unknown; wait for the original Linux job
-before pushing the new diagnostic source and obtaining fresh native qualification.
+The original timeout cause is still unknown. The original Linux job finished
+successfully before diagnostic sourceef43754 was pushed for fresh qualification.
 CI347 exposes15 interactive native PTY state-comparison failures with nil ioctl
 error; its default suite returns within bounds and promotion/checker pass.
 [Darwin assertion amendment](./evidence/cli-launcher/baseline-20261020.md#darwin-terminal-state-assertion-amendment--before-test-edits)
 reuses the full saved-state equality after only documented PENDIN/speed-alias
 normalization, with explicit mode/character/speed negatives and field diagnostics.
 No product/timeout/Required change or native skip is authorized by this finding.
+Plan e8df754 precedes the test-only correction: RED5.72s→GREEN1.35s and paired
+Linux/Darwin contract cases, focused PTY19/4.58s, canonical Quick230.44s/
+security6.68s/docs, full CLI Race41.19s and two Darwin test compiles PASS.
+Product bytes remain unchanged; fresh final-source full/native CI remains required.
 The user explicitly requested this order on2026-10-18. Bare helox in a real interactive terminal will
 show Heliopause Artifact Airlock, localized settings/help/examples and exit, with
 arrow/Enter/back navigation. Root RunE now dispatches eligible bare terminals to

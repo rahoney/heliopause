@@ -1,8 +1,9 @@
 # CLI-UX-003 — local qualification / 2026-10-20
 
 Status: IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO.
-MISSING: native timeout diagnosis, exact committed-source ordinary CI including
-native macOS, current diagnostic qualification and completion documentation.
+MISSING: exact committed-source ordinary CI including native macOS and completion
+documentation. The historical CI346 timeout cause remains unknown; its bounded
+diagnostic loss is corrected and locally qualified.
 This is local acceptance evidence, not a main merge or permanent CLI activation.
 
 Native CI346 failure: job118163210310 production build passes but default test
@@ -14,7 +15,9 @@ The source failure is retained; native qualification remains NO. Earlier status
 query values lagged the completed log and are superseded by this actual failure.
 Local qualification data1,758,485,414 logicalB and four one-shot operators are
 already deleted; raw/proof/shared SDK tools remain. A new diagnostic source/cache
-is current work, separately tracked and removed after its final use.
+was subsequently qualified and deleted (1,269,719,952 logicalB plus three operators).
+The current Darwin test-only source/cache is separately tracked and removed after
+its final use; shared pinned tools and proof are retained.
 
 ## Existing owners and implementation boundary
 
@@ -141,3 +144,28 @@ records Apple's documented kernel state normalization, required negative tests
 and the narrow test-only correction. Exact native field deltas are not present
 in the old generic assertion, so no product restoration failure/cause is asserted.
 Product code and restored-snapshot procedure remain unchanged pending evidence.
+
+## Darwin comparison — test-only local verification
+
+Plan commite8df754 precedes the test edits; canonical plan docs9.32s PASS.
+The old equality is extracted unchanged into the test-only comparator. Its pure
+matrix is RED5.72s on five documented Darwin representations. Only canonical
+PENDIN and input-speed0 aliases are normalized in copied Darwin snapshots before
+the original complete equality; Linux retains exact equality. GREEN1.35s covers
+20 paired Linux/Darwin cases, including changed mode/flags/control characters/
+actual speeds and noncanonical PENDIN rejection. Failures now print field values.
+No production restoration, timeout/profile/Required, runtime or dependency changed.
+
+Exact local input:
+de7d2a9cb91d5365af9e4fb8aaaf057f50900a987444298a3cd04215912f12ba.
+Canonical format0.28s, focused4.58s (native Linux PTY19 and the comparison matrix),
+Quick230.44s/security6.68s/docs0.22s, full CLI Race41.19s (package21.654s),
+Darwin amd64/arm64 CLI test compilation12.43s/13.43s PASS. All read-only checks
+preserve the full input inventory. The actual CLI16 proof remains applicable
+only to its identical product bytes; cross-compilation is not native execution.
+Raw termios-* logs/receipts/inventories are local, not remote attachments.
+
+CI347's exact checkout94c7439 has tree648c8bc identical to ef43754, with main/base
+and ef43754 parents; its failure is preserved. Its unfinished Linux job may be
+superseded under ordinary concurrency by this source push and is never reused
+as a pass. Fresh final-source native macOS and full Required qualification remain.

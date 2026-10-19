@@ -303,8 +303,11 @@ func TestLauncherPTYProcess(t *testing.T) {
 		}
 	}
 	restored, err := launcherGetTermios(int(os.Stdin.Fd()))
-	if err != nil || *restored != *original {
-		t.Fatal("PTY original termios not restored", err)
+	if err != nil {
+		t.Fatal("read restored PTY termios:", err)
+	}
+	if !launcherTermiosRestored(*original, *restored, runtime.GOOS == "darwin") {
+		t.Fatalf("PTY original termios not restored: before=%+v after=%+v", *original, *restored)
 	}
 	expectedCalls := 0
 	if mode == "navigate" || mode == "narrow" {
