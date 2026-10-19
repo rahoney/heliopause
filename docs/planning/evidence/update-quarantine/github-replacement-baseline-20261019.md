@@ -148,3 +148,26 @@ is confined to the current GitHub session; do not alter or claim to requalify ol
 Go/Cargo/Terraform guard owners without their own demonstrated scope. Repeat the
 same failing fixture and preserve the foreign replacement lock; also test an
 empty replacement lock and mode/content changes without deleting it first.
+
+## Selected-file permission review before final qualification
+
+The reused publisher copies an asset exclusively, closes its FD, then calls
+pathname Chmod. During managed replacement that path can change to a foreign
+symlink before chmod, changing an unrelated file's permissions before later
+snapshot validation refuses. Add an instance-only after-asset-copy fault seam
+and a direct foreign-symlink permission-preservation RED before correction.
+
+Extend the existing copyDigestFile primitive with a private optional-mode form;
+the original wrapper retains its old mode0 behavior for other consumers. GitHub
+sets its existing0400/0500 on the originally created open output FD only after
+the copied digest agrees, then syncs/closes. Remove its pathname Chmod. No
+dependency/source/runtime/permission policy is widened. Check the same symlink
+case and all old new-target/managed publication/rollback consumers, then include
+the changed common copy owner in final canonical/default/Race and installed smoke.
+This reuses the existing copy implementation; no second publisher or broad
+filesystem refactor is introduced. Foreign bytes and modes must both survive.
+
+Direct github-selected-mode-red3.14s actually executes the new symlink fixture:
+the external fixture mode changes0644→0400 even though subsequent promotion
+refuses. This confirms the narrow edit above is necessary; preserve the failed
+output/source inventory and do not call refusal alone complete foreign protection.

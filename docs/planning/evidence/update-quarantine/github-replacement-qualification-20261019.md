@@ -61,3 +61,10 @@ and GitHub transaction corpus6.60s, including retained recovery names/closed FD.
 GitHub now uses that shared pinned descriptor rather than opening a second one.
 Full canonical/default/Race, actual affected consumers and new-source CI remain
 pending under the correction owner; this is a focused result only.
+
+Final selected-file review also reproduces a distinct pathname-Chmod failure in
+github-selected-mode-red3.14s: a foreign symlink target changes0644→0400 before
+later snapshot refusal. The [pre-correction edit map](./github-replacement-baseline-20261019.md#selected-file-permission-review-before-final-qualification)
+requires using the originally created output FD for GitHub's existing0400/0500,
+while preserving the old common copy wrapper. This current failure scope is open
+until the same fixture and affected publication consumers pass.
