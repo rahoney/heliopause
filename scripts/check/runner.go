@@ -343,7 +343,11 @@ func (c *checker) runCommandWithTimeout(step string, timeout time.Duration, envi
 
 	err := command.Run()
 	if ctx.Err() != nil {
-		return output.String(), &checkFailure{class: executionFailure, step: step, detail: "command timed out", cause: ctx.Err()}
+		detail := "command timed out"
+		if text := strings.TrimSpace(output.String()); text != "" {
+			detail += "\n" + text
+		}
+		return output.String(), &checkFailure{class: executionFailure, step: step, detail: detail, cause: ctx.Err()}
 	}
 	if err != nil {
 		detail := fmt.Sprintf("%s %s", executable, strings.Join(args, " "))

@@ -106,3 +106,24 @@ remote conclusions and completed-data deletion must still be recorded.
 No full CUDA campaign is required for this display-only change. Existing bounded
 SEC-UPD-001 qualification remains closed. PR38 stays draft/unmerged; package names,
 main merge, permanent local activation and publication remain separate.
+
+## Bounded timeout diagnostic — local verification
+
+Pre-edit plan commitc7bca711c29268257f84441dfb1e6287c3a7481f precedes the
+runner/test edits. The original runner boundary test was RED4.66s: both fixed
+stdout/stderr markers had been captured and the DeadlineExceeded cause retained,
+but the error text discarded that output. The narrow timeout-detail extension
+is GREEN2.93s and preserves class/step/cause,1MiB collector, command/argv and
+all original profile/timeout/Required inputs.
+
+Exact diagnostic inputfd543346aae6b9fd90b3f5a66fdb98be2d107b2ea02c17d091d9dd756d1fd890:
+canonical format0.80s, Quick163.69s/security7.95s/docs0.20s, whole checker
+Race30.69s, Darwin amd64/arm64 checker test compile12.39s/11.97s PASS.
+The diagnostic patch affects only scripts/check/runner.go and its new Linux/
+Darwin boundary test. Launcher/product/dependency/runtime/workflow bytes remain
+identical to b19 and retain only their earlier qualified scope.
+
+Raw timeout-output-{red,green} and timeout-diagnostic-* logs/receipts/source
+inventories are preserved locally. Native CI346's original underlying timeout
+cause remains UNKNOWN; diagnostic preservation is not a performance fix.
+The new source still requires native macOS/exact-source remote qualification.
