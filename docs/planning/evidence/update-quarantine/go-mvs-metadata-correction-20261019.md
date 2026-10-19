@@ -2,8 +2,8 @@
 
 Status: cause confirmed; bounded additive correction and second review committed
 in84a2dc0 before source. Implementation is wired with focused source/proof/cache/
-consumer and final canonical checks PASS; actual/new-source remote qualification
-is pending. The independent audit below preserves the pre-correction findings.
+consumer/final canonical and actual installed checks PASS; new-source CI340
+qualification is pending. The independent audit below preserves the pre-correction findings.
 Only SEC-UPD-001 is IN_PROGRESS. Go acceptance remains open.
 The earlier [Go audit](./go-update-baseline-20261019.md) and sourceb0a2ccb retain
 their actual scope. This document supplements that edit map after a new actual
@@ -165,3 +165,12 @@ Its frozen runtime inputs match those checks. Actual same-case replay will use
 current-project download to refresh authenticated metadata without reselecting
 versions, then the unchanged offline observed build. A fresh new-source update/
 no-op/enrollment/refusal campaign and new-source Required remain necessary.
+
+
+Actual source394/CLIb18 same-case replay and fresh full campaign now pass15 phases
+with64 new Evidence, successful unchanged offline observed builds, canonical helper
+wait0/original restoration/fresh postguards and completed trial/operator cleanup.
+The [qualification](./go-update-qualification-20261019.md#corrected-source394--local-actual-qualification-complete)
+owns final timings, file receipts, source binding and cleanup. Original b0 failure,
+networkless diagnostic and all intermediate failures retain their historical scope.
+CI340 remains the sole acceptance gap; no earlier source's CI substitutes for it.

@@ -1,13 +1,13 @@
 # SEC-UPD-001 — Go named upgrade qualification / 2026-10-19
 
 Status: IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO.
-Only SEC-UPD-001 is IN_PROGRESS. Final automated checks and actual update/no-op/
-changed enrollment/download pass, but the first actual campaign FAILED at the
-existing offline build consumer. Required lower-version go.mod metadata is missing
-from the selected cache. The [reviewed additive correction](./go-mvs-metadata-correction-20261019.md) is now
-wired with focused proof/cache/consumer and final Quick128.83s/security8.96s/
-docs/related Race79.42s; MISSING actual same-case build/remaining refusals, final restoration/
-cleanup and ordinary new-source Required. Previous successes retain their scope.
+Only SEC-UPD-001 is IN_PROGRESS. Final corrected source394c92d and installed
+qualification pass; QUALIFIED/ACCEPTANCE_CLOSED remain NO until new-source CI340.
+MISSING: ordinary CI340 Required/native macOS/exact checkout and actual legacy
+consumer/cleanup scope. The first b0 actual failure remains preserved; the
+[reviewed correction](./go-mvs-metadata-correction-20261019.md) has passed its own
+source checks and the same failed case. All local originals are restored and
+completed trial payload/cache/lifecycle/operators/candidates are deleted.
 The [contract](../../../user-journey-cli-ia/06-update-quarantine.md#go-named-upgrade--reviewed-initial-semantics)
 and [pre-source audit/edit map/second review](./go-update-baseline-20261019.md)
 own scope. Plan a1e267b preceded product changes; implementation sourceb0a2ccb is preserved.
@@ -104,3 +104,39 @@ legacy consumers/five helper wait0/final confirmed cleanup captured separately.
 The subsequent correction is not in that source. Completed seed/orphaned cache/
 intake21,815,379B were trimmed; only the current native project/cache/state/Evidence
 remain necessary for corrected-source replay. Actual Go acceptance remains open.
+
+
+## Corrected source394 — local actual qualification complete
+
+Source394c92d26efdb8ccd9146ef44bcc2e512616766d follows reviewed plan84a2dc0.
+HAA1 remains for context-free modules; exact required lower controls use bounded
+HAA2 with separate old-version SumDB proof, static grammar and existing sealed
+cache inventory. Core/Domain, runtime/observer/budgets and offline build code are
+unchanged. Final Quick128.83s/security8.96s/docs0.41s/related Race79.42s pass on the
+same complete inputs. Checkpoint docs0.27s/security5.37s cover only score/link
+updates; non-Markdown inputs remain identical. CLIb18b24ff2f75a47bf82155c9139e12ba978380ddf2cdc495d12e127c8fc37d7f
+was built4.25s/27337786B with Go1.26.9/CGO0 and is now deleted after qualification.
+
+| Campaign | Actual result |
+| --- | --- |
+| go-update-mvs-resume | PASS2 phases/86.37s. Exact current-project download15.21s keeps the failed case controls/versions/graph, refreshes8 modules/16 Evidence and independently verifies pflag1.0.9 metadata under selected1.0.10. No old archive/source is installed. Same offline observed build64.16s COMPLETED/ALLOW with real ELF/output receipt. Helper2407911 wait0, original restoration and fresh root postguard PASS |
+| go-update-mvs-full | PASS13 phases/194.29s. Exact get seeds21.74s/22.12s, native update22.18s and fresh no-op22.15s; Cobra1.9.1→1.10.2/pflag1.0.6→1.0.10 while uuid1.5.0 retained. Changed-control Korean explicit adoption22.01s, old download13.67s/build58.56s pass. Unsupported/implicit/missing/foreign-marker/corrupt-state refusals preserve the full project. Helper2410826 wait0, original restoration and fresh root postguard PASS |
+
+The full campaign's three updates each complete8 modules/required16 checks and
+16 fresh Evidence; together with the exact replay they have64 disjoint handles,
+also disjoint from the preserved b0 campaign's48. go-mvs-actual-postanalysis.json
+binds both raw results, real ELF receipts/hashes, same metadata subject and
+restoration. Scope is actual new-source public/native/managed update and old
+consumers, not a general malware safety or native macOS/gVisor-on-mac claim.
+
+All four final old/new work/cache/lifecycle directories and12 completed operator/
+candidate files130,120,672B were removed after process/FD/argv/Docker checks and
+raw/Evidence/approval/cache/build receipt preservation. Earlier first-campaign
+completion53,815,094B and orphaned payload trim21,815,379B are separate receipts;
+combined Go cleanup205,751,145B. Completed diagnostic copies/operators were also
+removed. Only active reusable checker/source/cache/observer/shared SDK and protected
+original rollback remain. No test candidate is installed permanently.
+
+Source394's CI340/run39227724529 is still pending. No documentation-only push
+will cancel/restart it. Existing b0 CI339 success is not reused for this correction.
+Go acceptance must close before Terraform/GitHub implementation or the launcher.
