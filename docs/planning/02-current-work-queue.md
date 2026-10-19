@@ -14,7 +14,7 @@ Last completed work item: SEC-UPD-001 — COMPLETE; bounded ecosystem updates, f
 Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002 and SEC-UPD-001 COMPLETE for their documented scopes
-Active work item status: IN_PROGRESS — local launcher and bounded diagnostic repair PASS; CI346 native timeout cause unknown; new native/exact-source qualification remains
+Active work item status: IN_PROGRESS — CI347 native PTY state assertion fails; Darwin kernel-state comparison amendment precedes test-only edits; native/exact-source qualification remains
 Next work item: M13-004 — BLOCKED on CLI-UX-003 and owner package naming
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -3390,6 +3390,12 @@ Quick163.69s/security7.95s/docs and whole checker Race30.69s plus Darwin checker
 test compilation PASS. This confirms bounded diagnostic preservation only.
 The original timeout cause is still unknown; wait for the original Linux job
 before pushing the new diagnostic source and obtaining fresh native qualification.
+CI347 exposes15 interactive native PTY state-comparison failures with nil ioctl
+error; its default suite returns within bounds and promotion/checker pass.
+[Darwin assertion amendment](./evidence/cli-launcher/baseline-20261020.md#darwin-terminal-state-assertion-amendment--before-test-edits)
+reuses the full saved-state equality after only documented PENDIN/speed-alias
+normalization, with explicit mode/character/speed negatives and field diagnostics.
+No product/timeout/Required change or native skip is authorized by this finding.
 The user explicitly requested this order on2026-10-18. Bare helox in a real interactive terminal will
 show Heliopause Artifact Airlock, localized settings/help/examples and exit, with
 arrow/Enter/back navigation. Root RunE now dispatches eligible bare terminals to

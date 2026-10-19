@@ -225,3 +225,10 @@ selected Linux/Darwin arguments. Native default CI tests must fail on a missing
 driver rather than skip this acceptance. Actual PTY, cancellation/error cleanup,
 configuration, seven-language/narrow rendering and exact-source native macOS
 qualification remain required before launcher acceptance closes.
+
+Terminal-state qualification compares effective saved settings. Darwin's
+documented automatic PENDIN when returning to canonical input and input-speed0
+alias are normalized in copied test states; every remaining field is compared.
+Linux retains full state equality. Echo/canonical/signal modes, all other flags,
+control characters and actual speed changes remain failures. Product restoration
+still applies the original full snapshot; no extra input flush discards user data.

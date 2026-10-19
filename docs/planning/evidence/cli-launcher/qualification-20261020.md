@@ -127,3 +127,17 @@ Raw timeout-output-{red,green} and timeout-diagnostic-* logs/receipts/source
 inventories are preserved locally. Native CI346's original underlying timeout
 cause remains UNKNOWN; diagnostic preservation is not a performance fix.
 The new source still requires native macOS/exact-source remote qualification.
+
+## CI347 native assertion — qualification remains open
+
+Native macOS118189223070/ef43754 fails in15 interactive PTY cases at the
+all-field terminal-state comparison; ioctl error is nil. Four noninteractive
+cases do not fail. The default suite returns normally within its bound, with
+promotion144.173s/checker21.190s PASS. This does not prove the cause of the earlier
+CI346 timeout. Raw ci347-macos.log is preserved locally.
+
+The [pre-test Darwin amendment](./baseline-20261020.md#darwin-terminal-state-assertion-amendment--before-test-edits)
+records Apple's documented kernel state normalization, required negative tests
+and the narrow test-only correction. Exact native field deltas are not present
+in the old generic assertion, so no product restoration failure/cause is asserted.
+Product code and restored-snapshot procedure remain unchanged pending evidence.
