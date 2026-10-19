@@ -1,7 +1,7 @@
 # SEC-UPD-001 — Go update baseline / 2026-10-19
 
-Status: initial independent responsibility audit complete; pinned-tool semantics,
-exact initial selection contract/edit map and second review remain pending.
+Status: independent responsibility audit, pinned-tool semantics, exact initial
+selection contract/edit map and second review complete; implementation pending.
 No Go source or command flag has been changed. Cargo's reviewed lane is closed
 for source85ac4c1 and CI338; only SEC-UPD-001 is IN_PROGRESS. Current existing
 implementation is that same qualified Go/runtime input, with documentation-only
@@ -43,12 +43,12 @@ is frozen. Inspect this option before adding new Domain representation or relaxi
 the existing Go Commit HasRequestedResolution requirement. No arbitrary primary,
 new graph edges or new fallback authority is justified.
 
-Proposed minimal first scope for review is one already-required public module
-with helox go get -u <module>, plus explicit enrollment where needed. No claim is
-made yet for argument-free -u, package patterns, multiple modules, -u=patch, custom
-proxy/source/toolchain flags or go/toolchain directive changes. Confirm native
-behavior and its interaction with the existing controls-only boundary first;
-record the exact supported form and guards in contract06 before product source.
+The reviewed first scope is one already-required public module with
+helox go get -u <module>, plus explicit enrollment where needed. Argument-free
+-u, package patterns, multiple modules, -u=patch, custom proxy/source/toolchain
+flags and go/toolchain directive changes are unsupported. Pinned behavior and
+the controls-only boundary are confirmed below; canonical06 owns the exact form
+and guards before product source.
 Preserve ordinary explicit-version get, current download/build and strict snapshot
 approval. The selected SDK must never silently update the Host/guest toolchain.
 
@@ -60,9 +60,64 @@ any existing independent old cache/Evidence; old markers and go.sum declarations
 are not prior approval. It replaces only guarded dependency controls/approval,
 not arbitrary old module-cache files or user build outputs.
 
-Next: measure the repository-pinned Go1.26.9 executable using inert diagnostic
-modules and no network, freeze selection/retained/transitive/no-op/toolchain facts,
-clean all owned containers/fixtures, then finish the edit map and second review.
-Such a probe is tool semantics only and never authenticates public module bytes,
-qualifies SumDB, observes a product gVisor profile or closes actual CLI acceptance.
-No observer, runtime or budget change is currently planned.
+## Pinned executable findings
+
+The thirteen network-disabled operations in local raw go-update-semantics/result.json
+use the exact locked Go1.26.9 image, own inert modules and a file proxy. Native
+get -u example.test/a moves both a and its imported b from1.0.0 to1.1.0 while
+unrelated direct c stays1.0.0. Exact get a@v1.1.0 retains b1.0.0; these forms cannot
+be substituted. A second -u preserves both control byte sequences. The selected
+download/graph covers all three public-shaped modules. Patch mode selects1.0.1
+for a/b and is a distinct, initially unsupported option. An unknown selector is
+added by native get, so prior unique require membership is mandatory in HAA.
+Argument-free -u fails without project source. GOTOOLCHAIN=local rejects a module
+requiring1.27.0, but a compatible1.26.9 dependency can still change the root go
+directive. Check non-require directives after selection and refuse that drift.
+This diagnostic's GOSUMDB=off is never a product source permission or proof.
+Every owned container exited and was removed; the disposable fixture was deleted.
+The exact operator and stdout/stderr/control snapshots remain in the raw owner.
+No public acquisition, independent SumDB, gVisor or CLI acceptance is inferred.
+
+## Exact in-place edit map
+
+The canonical06 Go subsection owns supported syntax and product semantics. Only
+the following currently missing responsibilities will change; existing source
+85ac4c1 remains the qualified baseline. No implemented owner is replaced.
+
+| Owner | Minimal change and invariant | Necessary verification |
+| --- | --- | --- |
+| artifact/gomodule/project.go and new focused upgrade tests | Validate one exact module path with official module grammar, unique original require membership, and selected same real module. Compare every non-require directive's parsed tokens; reject source/root/go/toolchain/exclude/retract/tool/godebug/ignore drift; allow native require/indirect/MVS changes. Bind selected exact reference from one download record, never latest text or arbitrary primary | missing/duplicate/path@version/pattern/local/toolchain selectors; directive changes; selected missing/duplicate/path identity; proper-case module and indirect membership |
+| sandbox/gomodule_isolated_runner.go and command tests | Admit only get -u validated-module-path in addition to existing exact get/download/graph; preserve environment, endpoint/role/runtime/budget gates | smallest direct command-admission RED then GREEN; empty/multiple/options/patch/pattern/URL refusals; old exact get/download/graph retained |
+| sandbox/gomodule_resolver.go and upgrade tests | Extract the existing private selection traversal in place. New explicit upgrade entry validates original membership before execution, selects once in the same controls-only workspace, checks non-require directives, obtains selected exact real reference, then existing complete snapshot/primary graph/digest constructor. Existing exact entry retains old request validation | original presence/content race; private-only controls; one selection, complete transitive/unrelated graph, fresh no-op; selected/control/source/digest drift and cleanup failures; old update/download regressions |
+| core/ports/ports.go; application/gomodule.go and tests | Add only the now-needed named-upgrade resolver contract. Reuse executeGuardedProjectUpdate and require HasRequestedResolution for this actual named module; return complete verified set for reports | complete entry checks before set verdict; first/second bad integrity/block/review/incomplete, cancellation, stage/commit/close errors preserve original cause and never stale success; no second resolve |
+| promotion/go_approved_transaction.go | Add BeginUpgrade(ctx,install,adopt) and private begin mode; old Begin/build/download strict. Explicit native/changed enrollment snapshots controls only; independently validate any old canonical approval/cache/Evidence even if current controls changed. Absent state plus foreign marker/recovery/corrupt/aliased state refuses. Preserve verifyRetainedApproval strict wrapper used by build | native/managed/changed opt-in matrix; corrupt cache/state/Evidence, marker and recovery refusal; no implicit adoption; old get/download/build consumers |
+| promotion/go_transaction.go and existing control_transaction_backup.go consumer | Scoped plan.upgrade, single-link/ordinary-mode validation, identical controls retained with inode/mode/mtime; changed controls retain original permission bits and an absent new go.sum is0600. Validate bytes/inode/mode at backup/publication/approval phases; four fault checkpoints, exact moved/published ownership and rollback in place. Reuse shared backupRecords unchanged | direct retention RED; changed/no-op/absent-sum; four phase faults and rollback faults; same-byte foreign inode/mode/link/retained drift and unknown backup refuse; old transaction regressions |
+| bootstrap/go_module.go/bootstrap.go | Reuse one existing public verifier/inspector/Evidence/cache/promoter composition. Add immutable per-request upgrade/adopt adapter; keep exact get and build adapter strict | bootstrap/type/build checks; early CLI validation before composition; no ambient proxy/Host execution or mutable global flags |
+| cli/root.go/presentation.go/catalog.go; cargo_update.go factored report and new Go binding/tests | Existing get leaf accepts one -u module plus --adopt only in upgrade mode; default exact form unchanged. Validate before runtime composition. Reuse/factor project report in place with source-specific labels/build explanation, same JSON schema and completed facts; preserve Cargo wording and behavior | direct and preflight-then-execute, unsupported flags and help/EN/KO plus seven-language fallback, complete/failure human/JSON, source/check/Evidence identity, old explicit Go JSON restriction and Cargo report regressions |
+
+No runtime lock, observer, budgets, build/cache intake rules or CI jobs need a
+change. The shared backup cleanup helper is an unchanged consumer, not a second
+transaction engine. Generic report factoring must keep Cargo byte-level schema
+and accurate source-specific human terms. Named Go selection retains the existing
+strict primary value; Cargo's snapshot-only value is not used by Go promotion.
+
+## Second review and execution order
+
+Review repeated against actual owners and pinned outputs after drafting: corrected
+the temptation to resolve latest instead of native -u; retained source-free private
+selection; required prior membership because native get adds unknown modules;
+added compatible go-directive drift refusal despite GOTOOLCHAIN=local; retained
+the build's strict approval wrapper; scoped file retention/mode changes to upgrade;
+included early preflight/JSON/help/bootstrap and source-specific report consumers.
+No baseline YES responsibility needs replacement or unapproved broadening.
+
+Next: commit this reviewed plan before source; add direct command and retention
+REDs, extend only these gaps, focused checks then canonical format/Quick/security/
+docs and affected Race. Qualify actual installed benign version update, fresh
+no-op, explicit native/changed controls, transitive/retained behavior and unchanged
+refusals using the canonical helper lifecycle. Recheck affected old Go get/download/
+build and shared report Cargo consumers; observer/Python/CUDA inputs are unchanged.
+Preserve failed raw attempts, verify stop/original restoration/fresh postguards,
+delete completed disposable work/cache/operators after retaining evidence, then
+ordinary new-source Required before Go acceptance closure. Terraform/GitHub and
+the launcher remain deferred. No observer, runtime or budget change is planned.

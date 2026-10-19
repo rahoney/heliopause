@@ -513,3 +513,55 @@ entry's identity/digest/run/checks/Evidence/Policy. Completed trusted inspection
 facts can be retained with a failed update, but its publication status remains
 NOT_COMPLETED. That state does not assert successful rollback. Existing
 `helox.operation-result/v1` and other commands' output contracts are unchanged.
+
+### Go named upgrade — reviewed initial semantics
+
+The first supported upgrade form is `helox go get -u <module> [--adopt]` in the
+current project's go.mod directory. One exact public module path must occur once
+in the original require directives, whether direct or indirect. Preserve case
+and official module-path grammar. Reject missing/duplicate membership, package
+patterns/subpackages absent from require, path@version, URLs, multiple selectors,
+argument-free -u, -u=patch, custom proxy/source/build/toolchain flags and go.work
+selection. Ordinary `helox go get <module>@<version>` keeps its existing exact
+semantics; --adopt is valid only for the upgrade form. Native Go commands run
+outside helox do not receive this protection.
+
+Use the pinned guest Go's actual get -u selection once in the existing private
+controls-only workspace. Its imported dependency upgrades and MVS constraints
+are distinct from substituting latest in the old exact-version get path. Keep
+public proxy and independent SumDB proof, local toolchain and fixed isolation/
+observation/resource bounds. Freeze the actual requested module's selected exact
+version, full selected project graph, controls and content digests; reuse strict
+requested-primary Domain and Go promotion checks. Every selected dependency,
+including retained versions, receives fresh acquisition/verification/static
+inspection/Evidence and complete-set Policy before cache staging/publication.
+
+Only require directives (including native indirect/MVS changes) and go.sum may
+change. Compare all other parsed directive tokens before/after selection and
+refuse module/go/toolchain/exclude/retract/tool/godebug/ignore changes. This also
+refuses an otherwise compatible dependency that causes Go to raise the root go
+directive. GOTOOLCHAIN=local independently prevents downloading another SDK.
+No project source, old module cache or build output is executed or adopted for
+selection. Actual module builds retain separate helox go build inspection.
+
+Require proven matching HAA approval or explicit --adopt for supported native or
+deliberately edited controls. Native input is an untrusted bounded control
+snapshot. Validate any independent old canonical approval/cache/Evidence even
+when explicit adoption supersedes its equality with current controls. Foreign
+markers without independent approval, corrupt or aliased state, recovery state,
+symlink/hardlink/non-ordinary-mode controls and incomplete selected coverage
+refuse. No implicit fallback to adoption or old approval reuse is permitted.
+
+Retain byte-identical controls in place, including inode/mode/mtime; preserve
+original ordinary permission bits for changed controls. A newly created absent
+go.sum uses0600. Recheck retained/published content and identities throughout
+the existing guarded commit/rollback; do not replace that infrastructure. Old
+get/download/build behavior remains strict. Complete human/JSON project reports
+use the existing helox.project-update-result/v1 schema with source go-proxy and
+real module/check/Evidence facts. Inspection ALLOW is distinct from confirmed
+publication and close. A failure retains its primary cause, completed diagnostic
+facts and truthful NOT_COMPLETED status without asserting a successful rollback.
+
+The [Go audit, pinned semantics, edit map and second review](../planning/evidence/update-quarantine/go-update-baseline-20261019.md)
+precede product source. The synthetic file-proxy probe is diagnostic-only and
+never permits custom product sources or replaces actual installed qualification.

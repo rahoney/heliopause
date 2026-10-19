@@ -3351,7 +3351,7 @@ are linked in the final named report. Earlier public/native live runs retain the
 original scope; unchanged public-script identity and final direct regressions do
 not relabel them as new runs. No candidate is permanently activated.
 
-Cargo acceptance within SEC-UPD-001 is now closed; current lane is Go get -u. Its [initial independent audit](./evidence/update-quarantine/go-update-baseline-20261019.md) is complete; pinned-tool semantics, exact edit map and second review precede Go source changes. PyPI originals are restored and completed trial
+Cargo acceptance within SEC-UPD-001 is now closed; current lane is Go get -u. Its [independent audit, pinned semantics, exact edit map and second review](./evidence/update-quarantine/go-update-baseline-20261019.md) are complete; implement only those missing Go acceptance gaps next. PyPI originals are restored and completed trial
 payloads/cache/lifecycle plus the six final temporary operators are deleted;
 Evidence/Manifest/SBOM/raw archives and active reusable tooling are preserved.
 Cargo's reviewed in-place implementation follows direct command-admission and
