@@ -1,12 +1,13 @@
 # SEC-UPD-001 — Terraform project upgrade qualification / 2026-10-19
 
-Status: IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO.
+Status: IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES.
 Only SEC-UPD-001 is IN_PROGRESS. The [pre-source audit/edit map/second review](./terraform-update-baseline-20261019.md)
 was committed170140c; Go closure/activation was committed2fcd5d0 before Terraform
 production edits. Existing exact selection, signer verification, archive/probe,
 Evidence/Policy/cache and transaction are extended in place.
-MISSING: new-source Required/exact checkout/native macOS/old-consumer/CPU cleanup
-evidence. Local actual acceptance below is complete; CI342 remains pending.
+MISSING: none for this bounded Terraform lane. Local actual acceptance and
+same-source CI342 are complete; historical pending descriptions below retain
+their original scope and are superseded by the final evidence.
 The early local tests use controlled synthetic fixtures and are separate from
 the actual public artifacts below. No permanent installation/main merge/release.
 
@@ -136,5 +137,22 @@ remain necessary; no completed Terraform payload or operator is retained in/tmp.
 Raw receipts terraform-upgrade-postanalysis.json, terraform-upgrade-cleanup.json
 and terraform-upgrade-cleanup-operator-deleted.json own those exact facts.
 
-CI342 is still pending. Local success does not close new-source native macOS,
-existing remote consumers, CPU or Required acceptance.
+## Final same-source remote acceptance
+
+CI342/run39244171743 completes with ten SUCCESS, including Required. Actual
+Quick/macOS/Linux logs all checkout5aca96b821787a4cceafd4868a50b5b053afba13.
+Its parents are main ef5ef0e and sourcef882921, and the entire Git tree
+94d973d44ab6dd5040d988967e657f17beafcc77 equals the source tree. Native macOS
+Go1.26.9 production build/default tests succeed; this is actual native execution,
+not a cross-compile claim. Linux36 existing top-level Go/Cargo/Terraform consumers
+(56 including subtests), CPU full192.80s and all five helperwait0 pass. Final
+cleanup has original0/CONFIRMED_STOPPED/helper_stop0/client_error0/client_restore0
+and restore_result=NOT_REQUIRED. This remote result is distinct from local
+installed candidate restoration=RESTORED and the actual new upgrade campaign.
+
+Raw terraform-ci342-final-jobs.json, terraform-ci342-checkout-verified.json,
+terraform-ci342-final-scope.json and decoded Quick/macOS/Linux logs preserve exact
+source, checkout, digests and results. The first harness failure remains recorded;
+no legacy CI result substitutes for this source. Only this bounded lane closes.
+Proceed to the independently reviewed GitHub replacement gaps; full SEC-UPD-001
+and the deferred launcher/channel work are not claimed complete.

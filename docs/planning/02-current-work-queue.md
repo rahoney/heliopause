@@ -3343,20 +3343,20 @@ linked qualification owners rather than duplicate progress narratives here.
 | Named PyTorch managed venv, CPU/cu126/cu130/cu132 | YES / YES / YES / YES | [Final named qualification](./evidence/update-quarantine/pytorch-update-qualification-20261019.md), source306/CI336; all four actual version updates/fresh no-ops/unchanged refusals, confirmed helper stop/original restoration/postguards and completed data/operator cleanup |
 | Cargo lock update | YES / YES / YES / YES | [Reviewed audit](./evidence/update-quarantine/cargo-update-baseline-20261019.md) and [current qualification](./evidence/update-quarantine/cargo-update-qualification-20261019.md); source85ac4c1; final local checks and20 installed phases including old add/build, dependency-free/workspace, restoration and145.90MB cleanup PASS; CI338 ten SUCCESS; same checkout tree,36 related Go/Cargo/Terraform consumers, CPU277.12s/five helper wait0/final confirmed cleanup |
 | Scoped Go get -u | YES / YES / YES / YES | [Reviewed audit/plan](./evidence/update-quarantine/go-update-baseline-20261019.md) and [metadata/pruning amendment](./evidence/update-quarantine/go-mvs-metadata-correction-20261019.md) precede their sources. [Current qualification](./evidence/update-quarantine/go-update-qualification-20261019.md): sourcee00 canonical Quick206.98s/security10.79s/docs/Race129.57s and installed15 phases PASS, including Cobra metadata build65.14s and old grpc41-module get114.11s/download87.14s;212 new update/grpc Evidence, canonical restoration/postguards and568.85MB new trial cleanup. Earlier394 CI340 FAILED at pruned lower checksum membership. CI341 ten SUCCESS; actual checkout whole-tree equality/native macOS,36 existing Go/Cargo/Terraform consumers/CPU192.40s/five helperwait0/final confirmed cleanup; MISSING none for bounded Go scope |
-| Terraform project upgrade | YES / YES / NO / NO | Current lane; [independent audit/edit map/second review](./evidence/update-quarantine/terraform-update-baseline-20261019.md) committed170140c before source. Complete constrained selection, request-local enrollment, lock retention, Application/bootstrap/CLI/report are wired; [current qualification](./evidence/update-quarantine/terraform-update-qualification-20261019.md) preserves direct REDs and bounded synthetic GREENs. sourcef882921 final canonical Quick/security/docs/related Race and signer-proof Race, actual16 phases/48 independent Evidence, original restoration/postguards and718.98MB completed trial cleanup PASS. MISSING CI342 new-source remote acceptance only |
-| GitHub managed replacement | NO / NO / NO / NO | Next independent lane; ownership/replacement/CLI actual acceptance remains MISSING; existing explicit install infrastructure is reused |
+| Terraform project upgrade | YES / YES / YES / YES | [Pre-source audit](./evidence/update-quarantine/terraform-update-baseline-20261019.md) and [final qualification](./evidence/update-quarantine/terraform-update-qualification-20261019.md): sourcef882921 final canonical/related Race and signer-proof Race, actual16 phases/48 independent Evidence, restoration/postguards and718.98MB completed trial cleanup PASS. CI342 ten SUCCESS, exact checkout whole-tree/native macOS,36 existing Go/Cargo/Terraform consumers/CPU192.80s/five helperwait0/final confirmed cleanup. MISSING none for bounded Terraform scope |
+| GitHub managed replacement | NO / NO / NO / NO | Current lane; [independent baseline/edit map/second review](./evidence/update-quarantine/github-replacement-baseline-20261019.md) committed28b6460 with boundary amendmentd402a46 before source. MISSING independent installed ownership receipt, pre-resolution managed replacement session/transaction, explicit CLI mode/wiring/reports and actual/new-source CI acceptance. Existing exact install infrastructure is reused |
 
 The qualified rows retain their source-specific bounded actual/CI scopes in the
 linked reports. Broader native named PyPI footprints remain unsupported. Go's
 original metadata/build failure and CI340 pruning failure stay historical; the
 reviewed amendment and final sourcee00/actual15 phases/CI341 close bounded Go only.
 
-Current lane: Terraform project upgrade. Its independent audit, exact edit map
-and second review were committed170140c before source; activation after Go closure
-confirms every audited Terraform/composition/report owner is unchanged. Reuse the
-existing exact public selection, signer/probe/Policy/cache and transaction; add
-only the listed current-project selection, upgrade enrollment/retention, CLI and
-acceptance gaps. GitHub managed replacement follows its own independent audit.
+Current lane: GitHub managed asset replacement after Terraform CI342 closure.
+Its independent audit/second review and bound/mtime/Manifest-context amendment
+precede source; all audited production owners are unchanged sincef882921. Reuse
+existing exact resolution/inspection/Policy/Manifest/staging/publication and the
+existing InstallUpdateService/Session. Implement only the listed ownership,
+managed request/transaction/wiring and acceptance gaps.
 Only SEC-UPD-001 is IN_PROGRESS. The interactive launcher, main merge and
 publication remain pending. No candidate is permanently activated. Completed
 trial payload/cache/lifecycle/operators are deleted after raw/Evidence/approval/

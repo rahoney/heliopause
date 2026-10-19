@@ -131,8 +131,8 @@ An earlier bounded install/UX qualification does not close this update acceptanc
 ## Implementation map and scoped command semantics
 
 This is the reviewed implementation map. Qualified npm/PyPI scopes are recorded
-above; Cargo and bounded Go -u are now qualified. Terraform upgrade is wired and locally qualified; its new-source remote
-acceptance is pending. GitHub replacement remains to implement. Execute
+above; Cargo and bounded Go -u are now qualified. Terraform upgrade is qualified through same-source CI342. GitHub managed
+replacement is the active implementation lane. Execute
 one ecosystem at a time after CLI-UX-002; keep other lanes unmodified until their
 own baseline/selection contract is verified. Minimum planned forms are:
 
@@ -617,7 +617,7 @@ never permits custom product sources or replaces actual installed qualification.
 
 ## GitHub managed asset replacement — reviewed initial semantics
 
-Status: reviewed, NOT_STARTED. Terraform new-source acceptance closes first.
+Status: IN_PROGRESS after Terraform same-source CI342 acceptance closes.
 The [independent baseline/edit map/second review](../planning/evidence/update-quarantine/github-replacement-baseline-20261019.md)
 precedes source. Existing M6 exact selection, acquisition, declared-digest check,
 static/ELF inspection, Policy, Evidence, Manifest/SBOM and staging remain owners.

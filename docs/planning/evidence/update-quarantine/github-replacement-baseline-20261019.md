@@ -112,3 +112,13 @@ adapter's typed locator parser; no raw REST parsing or ambiguous name splitting
 is moved into Core/Application. Initial target/state failure and close failure
 must retain the first error and accurate publication status. Exact publication,
 approved independent state and safe cleanup are separate acceptance assertions.
+
+## Activation after Terraform acceptance
+
+Terraform sourcef882921/CI342 now passes ten SUCCESS with exact whole-tree
+checkout/native macOS,36 old related consumers, CPU192.80s/five helperwait0/final
+confirmed cleanup, plus independent actual16 phases/48 Evidence/restoration and
+completed trial cleanup. Plan28b6460 and boundary amendmentd402a46 were committed
+before source. All audited production owners remain byte-identical tof882921;
+only documents changed. Activate this bounded GitHub lane with NO/NO/NO/NO and
+exactly the audited MISSING work. Only SEC-UPD-001 is IN_PROGRESS.
