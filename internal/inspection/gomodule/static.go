@@ -39,6 +39,12 @@ func (i *StaticInspector) Inspect(ctx context.Context, artifact domain.AcquiredA
 	if err != nil || mod.Module == nil || mod.Module.Mod.Path != artifact.Identity().Name() {
 		return report(artifact, "M12_GO_MODULE_IDENTITY_MISMATCH")
 	}
+	for _, control := range bundle.RequiredMods() {
+		mod, err := modfile.Parse("go.mod", control.Body, nil)
+		if err != nil || mod.Module == nil || mod.Module.Mod.Path != artifact.Identity().Name() {
+			return report(artifact, "M12_GO_MODULE_IDENTITY_MISMATCH")
+		}
+	}
 	reader, err := bundle.ZipReader()
 	if err != nil {
 		return report(artifact, "M12_GO_MODULE_ARCHIVE_INVALID")

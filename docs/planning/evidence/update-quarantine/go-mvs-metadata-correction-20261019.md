@@ -1,7 +1,10 @@
 # SEC-UPD-001 — required Go module metadata correction / 2026-10-19
 
-Status: cause confirmed; bounded additive correction designed; source not changed
-for this follow-up; second review complete before implementation. Only SEC-UPD-001 is IN_PROGRESS. Go acceptance remains open.
+Status: cause confirmed; bounded additive correction and second review committed
+in84a2dc0 before source. Implementation is wired with focused source/proof/cache/
+consumer and final canonical checks PASS; actual/new-source remote qualification
+is pending. The independent audit below preserves the pre-correction findings.
+Only SEC-UPD-001 is IN_PROGRESS. Go acceptance remains open.
 The earlier [Go audit](./go-update-baseline-20261019.md) and sourceb0a2ccb retain
 their actual scope. This document supplements that edit map after a new actual
 consumer exposed a missing representation. It does not replace implemented
@@ -111,3 +114,54 @@ NOT_REACHED refusals. Preserve failed originals, confirm canonical stop/restore/
 fresh postguard, delete completed reproduction payloads/tools, then new-source
 Required/native macOS/actual old consumers before closing Go. CI339 remains
 sourceb0a2ccb's separate legacy scope and cannot qualify this later correction.
+
+
+## Implementation checkpoint — final qualification pending
+
+The optional context is now wired through frozen requested/complete declarations,
+exact public acquisition, HAA1/HAA2 intake, independent old-version proof, static
+control inspection and approved cache/inventory. No Core/Domain or observed builder
+source change was needed. Existing build archive consumes its existing receipt.
+The sandbox's old MVS fixture now includes the lower control sum that real native
+Go emitted; its previous omission cannot stand in for complete metadata context.
+
+Local raw go-mvs-declaration-red reproduces the missing lower control declaration
+in0.82s. First focused23.17s passes the new frozen declaration and old consumers.
+Proof-focused27.57s includes independent signed old-version records, same-content
+current-proof refusal, envelope/source/cache binding and malicious framing/bounds.
+The first expanded consumer run fails2.10s only because a new test helper's byte
+control variable collides with its existing control-digest variable; production
+and other package checks pass. Rename the test variable, retain the failed raw,
+then final focused22.13s passes required metadata, static foreign/malformed controls,
+sealed cache missing/tamper refusal, requested/complete declaration equality,
+missing/duplicate/unused sums and existing Go/Application/Cargo-report consumers.
+Canonical pre-Quick security passes8.58s. These local fixtures do not authenticate
+actual public update payloads or qualify the previously failed installed build.
+
+Earlier CI339/run39220147935 is now all10 SUCCESS for sourceb0a2ccb only. Its actual
+checkout3af740b treea3d602660a4fa893287d7dc73559b9986d01f9c8 equals sourceb0's whole
+tree;36 top-level related Go/Cargo/Terraform consumers (56 including subtests),
+five helper wait0 and final confirmed cleanup pass in captured decoded logs.
+That prior scope cannot replace a new-source CI or the corrected actual consumer.
+
+Completed seed/orphaned cache/intake payload21,815,379B were additionally deleted.
+Native project, current cache run_bl7armqchbxg3n5y5wxtl6tiey, exact native approval
+and recorded Evidence remain as the necessary active reproduction. The native
+state SHA256849ab01028231e2685068d5333afb96f27e26d0593ccc1e89f2f02d81e0486d8 is
+unchanged. All completed local diagnostic/cleanup operators are deleted; their
+frozen captures and shared/protected resources remain. Final correction source,
+actual successful replay, whole-fixture cleanup and remote acceptance remain open.
+
+
+Final local candidate: canonical go-mvs-verified Quick128.83s, security8.96s,
+docs0.41s and related Race79.42s all pass on identical full input inventories.
+The earlier go-mvs-final-quick FAIL17.07s stops at pinned Staticcheck U1000 for the
+now-unused legacy encodeBundle wrapper. Explicitly route context-free acquisition
+through that existing wrapper and context-bearing acquisition through version2;
+no suppression or deleted legacy behavior. The corrected final runs include the
+same source and preserve the original failure. CGO0/Go1.26.9 CLI build4.25s is
+27337786B, SHA256b18b24ff2f75a47bf82155c9139e12ba978380ddf2cdc495d12e127c8fc37d7f.
+Its frozen runtime inputs match those checks. Actual same-case replay will use
+current-project download to refresh authenticated metadata without reselecting
+versions, then the unchanged offline observed build. A fresh new-source update/
+no-op/enrollment/refusal campaign and new-source Required remain necessary.

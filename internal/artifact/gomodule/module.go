@@ -250,7 +250,7 @@ func ParseProjectDownloadJSON(body []byte) ([]DownloadRecord, error) {
 // BuildLockedGraph converts exact download records and `go mod graph` edges
 // into the generic Domain graph. Edges outside the primary closure are rejected
 // rather than silently dropping resolver output.
-func BuildLockedGraph(reference domain.ArtifactReference, records []DownloadRecord, graphOutput, goMod []byte) (domain.LockedDependencyGraph, error) {
+func BuildLockedGraph(reference domain.ArtifactReference, records []DownloadRecord, graphOutput, goMod []byte, selectedSums ...[]byte) (domain.LockedDependencyGraph, error) {
 	if parsed, err := ParseReference(reference.Locator()); err != nil || parsed != reference || len(records) == 0 {
 		return domain.LockedDependencyGraph{}, errors.New("go module graph request is invalid")
 	}
@@ -266,6 +266,16 @@ func BuildLockedGraph(reference domain.ArtifactReference, records []DownloadReco
 	edges, err := normalizeProjectGraph(graphOutput, records, goMod)
 	if err != nil {
 		return domain.LockedDependencyGraph{}, err
+	}
+	var integrities map[string]string
+	if len(selectedSums) > 1 {
+		return domain.LockedDependencyGraph{}, errors.New("go graph checksum context is ambiguous")
+	}
+	if len(selectedSums) == 1 {
+		integrities, err = projectModuleIntegrities(records, graphOutput, goMod, selectedSums[0])
+		if err != nil {
+			return domain.LockedDependencyGraph{}, err
+		}
 	}
 	selected := map[string]bool{primaryKey: true}
 	for changed := true; changed; {
@@ -303,7 +313,11 @@ func BuildLockedGraph(reference domain.ArtifactReference, records []DownloadReco
 		if err != nil {
 			return domain.LockedDependencyGraph{}, err
 		}
-		artifact, err := domain.NewResolvedArtifact(identity, locator, "h1="+record.Sum+";go.mod="+record.GoModSum)
+		integrity := "h1=" + record.Sum + ";go.mod=" + record.GoModSum
+		if integrities != nil {
+			integrity = integrities[record.Path]
+		}
+		artifact, err := domain.NewResolvedArtifact(identity, locator, integrity)
 		if err != nil {
 			return domain.LockedDependencyGraph{}, err
 		}
@@ -359,6 +373,10 @@ func BuildProjectSnapshot(installContext domain.InstallContext, records []Downlo
 	if _, err := normalizeProjectGraph(graphOutput, records, goMod); err != nil {
 		return domain.ProjectDependencySnapshot{}, err
 	}
+	integrities, err := projectModuleIntegrities(records, graphOutput, goMod, goSum)
+	if err != nil {
+		return domain.ProjectDependencySnapshot{}, err
+	}
 	dependencies := make([]domain.ResolvedArtifact, 0, len(records))
 	for _, record := range records {
 		identity, err := domain.NewResolvedArtifactIdentity(goModuleSource, record.Path, record.Version, "module")
@@ -369,7 +387,7 @@ func BuildProjectSnapshot(installContext domain.InstallContext, records []Downlo
 		if err != nil {
 			return domain.ProjectDependencySnapshot{}, err
 		}
-		artifact, err := domain.NewResolvedArtifact(identity, locator, "h1="+record.Sum+";go.mod="+record.GoModSum)
+		artifact, err := domain.NewResolvedArtifact(identity, locator, integrities[record.Path])
 		if err != nil {
 			return domain.ProjectDependencySnapshot{}, err
 		}

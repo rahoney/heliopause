@@ -4,8 +4,9 @@ Status: IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO.
 Only SEC-UPD-001 is IN_PROGRESS. Final automated checks and actual update/no-op/
 changed enrollment/download pass, but the first actual campaign FAILED at the
 existing offline build consumer. Required lower-version go.mod metadata is missing
-from the selected cache. MISSING: [reviewed additive correction](./go-mvs-metadata-correction-20261019.md),
-new-source checks and actual same-case build/remaining refusals, final restoration/
+from the selected cache. The [reviewed additive correction](./go-mvs-metadata-correction-20261019.md) is now
+wired with focused proof/cache/consumer and final Quick128.83s/security8.96s/
+docs/related Race79.42s; MISSING actual same-case build/remaining refusals, final restoration/
 cleanup and ordinary new-source Required. Previous successes retain their scope.
 The [contract](../../../user-journey-cli-ia/06-update-quarantine.md#go-named-upgrade--reviewed-initial-semantics)
 and [pre-source audit/edit map/second review](./go-update-baseline-20261019.md)
@@ -85,7 +86,7 @@ bytes/inode/mode/mtime. Missing selector1.51s and changed-control implicit1.57s
 refuse unchanged. Explicit changed-control Korean21.70s preserves the user comment
 and correct source-specific human/check output. These three updates each have
 8 selected modules/required16 checks and16 Evidence,48 disjoint fresh handles.
-Retained download also passed; exact elapsed time remains in its raw phase row.
+Retained download13.49s passed. The build then fails7.16s at its offline graph.
 
 The observed build's first offline command exits1 with no compiler execution;
 later foreign-marker/corrupt-state actual cases are NOT_REACHED. Exact pinned
@@ -96,3 +97,10 @@ four protected identities and fresh process/socket/Docker postguard PASS. Failed
 exit1 is preserved. Completed lifecycle/operators/candidate53,815,094B were deleted;
 only necessary reproduction project/cache and active reusable/protected resources
 remain. No product source fix or successful new build is inferred from diagnostics.
+
+
+CI339 is now10 SUCCESS for b0a2ccb, with exact same checkout tree and36 related
+legacy consumers/five helper wait0/final confirmed cleanup captured separately.
+The subsequent correction is not in that source. Completed seed/orphaned cache/
+intake21,815,379B were trimmed; only the current native project/cache/state/Evidence
+remain necessary for corrected-source replay. Actual Go acceptance remains open.

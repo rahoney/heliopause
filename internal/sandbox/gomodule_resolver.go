@@ -200,7 +200,7 @@ func (r *GoModuleResolver) resolveProjectSelection(ctx context.Context, referenc
 	if err != nil {
 		return update, err
 	}
-	graph, err := artifactgomodule.BuildLockedGraph(reference, records, graphBody, selectedMod)
+	graph, err := artifactgomodule.BuildLockedGraph(reference, records, graphBody, selectedMod, selectedSum)
 	if err != nil {
 		return update, err
 	}

@@ -89,6 +89,7 @@ func upgradeSums() []byte {
 	for _, pair := range upgradeModules() {
 		result += pair[0] + " " + pair[1] + " " + upgradeH1() + "\n" + pair[0] + " " + pair[1] + "/go.mod " + upgradeH1() + "\n"
 	}
+	result += "example.com/dep v1.0.0/go.mod " + upgradeH1() + "\n"
 	return []byte(result)
 }
 
