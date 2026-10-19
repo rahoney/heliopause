@@ -112,3 +112,9 @@ MISSING: full canonical/default/Race, actual small affected installed consumers
 with original restoration/deletion, and exact new-source remote acceptance.
 This focused GREEN does not reclassify historical failures or imply those
 remaining results already passed.
+
+Complete final same-input Quick150.58s/security8.75s/docs0.34s and full related
+Race221.88s now PASS on the shared final candidate recorded by the
+[GitHub qualification](./github-replacement-qualification-20261019.md#final-local-candidate-before-installed-execution).
+MISSING is now the installed small affected consumers/restoration/deletion and
+new-source remote acceptance only. This does not claim fresh CUDA full runs.

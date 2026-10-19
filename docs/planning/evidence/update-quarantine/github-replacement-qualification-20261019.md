@@ -7,8 +7,8 @@ The [baseline/edit map/second review](./github-replacement-baseline-20261019.md)
 and [canonical scope](../../../user-journey-cli-ia/06-update-quarantine.md#github-managed-asset-replacement--reviewed-initial-semantics)
 own the exact remaining work. No main merge, permanent activation or publication.
 
-MISSING: final canonical/default/related Race; actual public archive/ELF consumers,
-restoration/cleanup and new-source CI. The demonstrated shared mutation-lock gap
+MISSING: actual public archive/ELF consumers, restoration/cleanup and new-source
+CI. Complete same-input canonical/default/Race passes below. The shared mutation-lock gap
 also remains open under its [independent correction plan](./transaction-lock-identity-correction-20261019.md).
 
 Raw owner docs/github-logs/update-quarantine-20261018 is local/untracked; no remote
@@ -84,3 +84,32 @@ test-build steps precede this failure; default test/vet/Staticcheck are not
 reached. The reviewed amendment adds the missing CLI parser edge consistently
 with existing sources and requires Core/Application negative checks. Preserve
 the first final-quick name/result; the next complete run gets a new label.
+
+The exact CLI/promotion parser edges and Core/Application refusal regressions
+execute in github-parser-boundary-green0.99s and PASS; explicit format3.14s
+passes. Complete qualification repeats with a new qualified-series label.
+
+## Final local candidate before installed execution
+
+github-replacement-qualified Quick150.58s, security8.75s, docs0.34s and full related
+Race221.88s all PASS on identical complete input inventories. Quick actually
+executes format/runtime/module drift and integrity, production/test build,
+architecture, checker tests, vet, pinned Staticcheck and default tests. Race
+executes the entire promotion, Application, CLI, bootstrap, GitHub adapter and
+checker packages without a name filter. Source files are not edited during these
+checks; operators/raw captures are outside the checked source inputs.
+
+Same input builds Go1.26.9/CGO0 candidate4.82s,27587056B,
+SHA2567b184e04ac0a001e64901118d7bee451e2b36a8ef3fb252f93d757219985cb85.
+Actual candidate static GitHub install help succeeds in all seven languages with
+--replace/--target, no runtime composition and no pip strategy text. Builder and
+actual lifecycle/worker operators are archived; no installed execution or permanent
+activation is claimed at this point. Both initial Quick and source/test REDs
+remain preserved separately.
+
+Post-tool source review checks: same parsed frozen repository rather than display
+name, one resolver call, no mutable adoption state, independent old Evidence and
+exact footprint proof, held original FD through close, original/selected/state
+checks across each rollback/publication/cleanup phase, and FD-only asset mode.
+Known foreign state preserves recovery. Existing ordinary new-target behavior,
+common copy mode0 and old source/runtime/inspection/Policy budgets stay intact.

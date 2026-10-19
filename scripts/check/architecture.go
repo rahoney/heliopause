@@ -88,6 +88,7 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 		},
 		modulePath + "/internal/cli": {
 			modulePath + "/internal/core/ports":                 true,
+			modulePath + "/internal/artifact/githubrelease":     true,
 			modulePath + "/internal/application":                true,
 			modulePath + "/internal/artifact/cargo":             true,
 			modulePath + "/internal/artifact/gomodule":          true,
