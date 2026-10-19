@@ -1,8 +1,8 @@
 # SEC-UPD-001 — final cross-lane review / 2026-10-19
 
 Status: IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO.
-Only SEC-UPD-001 is IN_PROGRESS. MISSING: finish production-source CI343 actual
-consumer review, then ordinary CI for the final test/document source. Local
+Only SEC-UPD-001 is IN_PROGRESS. MISSING: ordinary CI for the final test/document
+source. Production-source CI343 actual consumer review passes. Local
 implementation, actual consumers, restoration, completed trial deletion and final
 M6 acceptance assertions pass. Do not advance CLI-UX-003 before closure.
 
@@ -56,3 +56,10 @@ cb1f944 actual-qualified candidate. No new installed/GPU runs are claimed for
 test/document changes. CI343 cannot qualify the added test commit; that source
 requires its own ordinary CI. Main merge, permanent local activation, launcher,
 protected tag, registry names and publication remain separate actions.
+
+CI343 now closes the cb1 product boundary: ten completed/SUCCESS jobs, exact
+whole checkout tree/native macOS, Linux45 verbose consumers/36 related/56 with
+subtests, CPU267.82s, five helperwait0 and final confirmed cleanup. The
+[GitHub qualification](./github-replacement-qualification-20261019.md#production-source-ci343-closure)
+owns raw/tree/consumer details. Final test94cc and documentation await their own
+ordinary CI; production identity alone does not qualify newly added tests.

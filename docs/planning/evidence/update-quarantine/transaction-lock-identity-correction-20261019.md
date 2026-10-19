@@ -140,3 +140,15 @@ owns combined cleanup totals and raw references, avoiding duplicate raw logs.
 MISSING: CI343 final Linux/Required and exact remote consumer review only.
 No observer/runtime/profile/budget/source selection change or full CUDA rerun is
 implied by this bounded Host descriptor correction.
+
+## Same-source remote closure
+
+CI343/run39256611615 now completes Required plus nine prerequisites SUCCESS for
+sourcecb1/whole tree29c8c08. Exact checkout/parents, native macOS and Linux all45
+verbose consumers (36 related/56 with subtests), CPU267.82s, five helperwait0 and
+final confirmed cleanup are checked in the
+[GitHub production-source closure](./github-replacement-qualification-20261019.md#production-source-ci343-closure).
+MISSING: none for this demonstrated shared-lock correction. IMPLEMENTED=YES /
+WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES within this bounded scope.
+Historical direct RED and partial GREEN remain unchanged. Full SEC-UPD-001 still
+waits for the separately added real-M6 test source's ordinary CI and final delivery.

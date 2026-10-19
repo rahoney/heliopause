@@ -7,8 +7,8 @@ The [baseline/edit map/second review](./github-replacement-baseline-20261019.md)
 and [canonical scope](../../../user-journey-cli-ia/06-update-quarantine.md#github-managed-asset-replacement--reviewed-initial-semantics)
 own the exact remaining work. No main merge, permanent activation or publication.
 
-MISSING: new-source CI343 final Linux/Required and full remote consumer review,
-then the new test-only source's ordinary CI. The explicit M6 update-policy
+MISSING: the new test-only source's ordinary CI. Production-source CI343 final
+Linux/Required and remote consumer review PASS below. The explicit M6 update-policy
 regression identified in final review now passes the same-input checks below.
 Local public archive/ELF, affected shared-lock consumers, restoration and completed
 trial cleanup PASS below. The [shared correction](./transaction-lock-identity-correction-20261019.md)
@@ -230,3 +230,26 @@ Git diff from cb1 changes only this test and Markdown; no new untracked source,
 production/dependency/runtime/observer/CI byte delta. cb1's installed actual
 consumers remain evidence for those identical product bytes. Ordinary CI for the
 new test-containing commit remains required; do not infer it from CI343.
+
+## Production-source CI343 closure
+
+[CI343/run39256611615](https://github.com/rahoney/heliopause/actions/runs/39256611615)
+has Required and all nine prerequisites completed/SUCCESS. Quick/macOS/Linux
+actual checkout2f2aa1f1a930356d12bca5a37667c453b728a243 has parents main ef5ef0e
+and sourcecb1f944; complete tree29c8c08e3f63a0d846cb677a461d93f8751eafd8 equals
+the product source. Native macOS Go1.26.9 production/default tests pass.
+
+Linux raw confirms all45 verbose top-level consumers, including36 existing
+Go/Cargo/Terraform consumers and56 with their subtests. The separate public
+provider source test is also within45. Their
+exact name set matches prior CI342. CPU PyTorch full267.82s, all five helper
+waits0 and final original0/CONFIRMED_STOPPED/helper_stop0/client_error0/
+client_restore0/restore_result=NOT_REQUIRED are independently checked. Expected
+adverse test outputs remain expected refusals, not job failures. This closes the
+remote boundary for actual-tested productioncb1 and the shared FD corrections.
+
+Raw owners github-ci343-final-jobs.json, checkout-verified.json, final-scope.json
+and three full decoded logs preserve conclusions/tree/consumers/cleanup. The
+later M6 test94cc284 and documentation are unchanged production but different
+source inputs. Hold their acceptance open for the next ordinary CI; previous
+pending descriptions retain their historical scope.
