@@ -9,13 +9,13 @@
 ```text
 Current milestone: M13 — Production Release & Operations
 Milestone status: IN_PROGRESS — runtime maintenance main delivery COMPLETE
-Active work item: CLI-UX-003 — branded interactive launcher
-Last completed work item: SEC-UPD-001 — COMPLETE; bounded ecosystem updates, final source CI344 and documentation-delivery CI345 ten SUCCESS
+Active work item: None — M13-004 awaits owner package-name decision
+Last completed work item: CLI-UX-003 — COMPLETE; source2d1baa9 / CI348 ten SUCCESS; documentation-delivery CI follows the final PR head
 Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
-Prepublication prerequisites: CLI-UX-001, CLI-UX-002 and SEC-UPD-001 COMPLETE for their documented scopes
-Active work item status: IN_PROGRESS — Darwin comparison test correction locally qualified after CI347 failure; fresh native/exact-source qualification remains
-Next work item: M13-004 — BLOCKED on CLI-UX-003 and owner package naming
+Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE for their documented scopes
+Active work item status: No IN_PROGRESS item — launcher acceptance closed
+Next work item: M13-004 — BLOCKED on owner package naming
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
@@ -3009,8 +3009,8 @@ M12-005 feature freeze에서 수행한다. canonical lock 등록만으로 releas
 | 3a | CLI-UX-001 | multilingual terminal progress and structured human results | COMPLETE — local source / installed CLI qualification |
 | 3b | CLI-UX-002 | OS preferred display-language auto | COMPLETE — native macOS/CI328 and local installed CLI PASS |
 | 3c | SEC-UPD-001 | guarded ecosystem update commands | COMPLETE — final sourcecdac/CI344 qualified |
-| 3d | CLI-UX-003 | branded interactive launcher | IN_PROGRESS — implementation/local19 PTY+16 actual cases PASS; native/exact-source CI remains |
-| 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | BLOCKED — CLI-UX-003 and owner package-name decision |
+| 3d | CLI-UX-003 | branded interactive launcher | COMPLETE — local/actual qualification, exact-source native/Linux/Required CI348 and completed-test cleanup PASS |
+| 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | BLOCKED — owner package-name decision |
 | 5 | M13-005 | exact publication·clean Host bootstrap·doctor·cross-ecosystem smoke·quarantine | NOT_STARTED |
 
 ### M13-001 — protected repository activation
@@ -3361,7 +3361,7 @@ limits are preserved. The [shared FD correction](./evidence/update-quarantine/tr
 is also qualified. No completed local update test payload/cache/candidate/operator
 or restored binary backup remains; raw/normalized proofs and shared SDK tools remain.
 
-Next: CLI-UX-003, now IN_PROGRESS after its independent baseline below.
+Follow-up CLI-UX-003 is COMPLETE after its independent baseline and qualification below.
 SEC-UPD-001 has no remaining acceptance work. Main merge, permanent local CLI activation
 and publication remain separate; PR38 is draft/unmerged. Native commands outside
 helox are not transparently intercepted. Earlier source/checkpoint descriptions
@@ -3369,50 +3369,27 @@ retain their original scope, superseded by the current acceptance table above.
 
 ### CLI-UX-003 — branded interactive launcher
 
-Status: IN_PROGRESS; the only active work item. SEC-UPD-001 prerequisite and its
-documentation-delivery CI345 are closed. [Baseline/edit map/second review](./evidence/cli-launcher/baseline-20261020.md)
-precedes product edits: existing help/config/catalog/doctor/width owners are
-IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES and reused; interactive menus,
-lazy launcher bridge, raw input/restoration and actual PTY/native qualification
-were NO/NO/NO/NO at that baseline. Current audit: launcher IMPLEMENTED=YES /
-WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO. [Local qualification](./evidence/cli-launcher/qualification-20261020.md)
-records canonical Quick/security/docs, full related Race, Darwin test compile,
-native PTY19 and actual compiled CLI16 cases including OS-auto Korean and real
-explicit Doctor. MISSING: final-source native macOS/exact-source ordinary CI
-and final completion documentation. Historical CI346 timeout cause remains unknown;
-its diagnostic loss and the Darwin comparison correction are locally qualified.
-CI346's actual native macOS log reports the existing6m default-suite timeout;
-the exact slow test/cause is not visible. [Pre-edit amendment](./evidence/cli-launcher/baseline-20261020.md#native-ci346-timeout-visibility-amendment--before-diagnostic-source-edits)
-reuses the existing1MiB collector to retain partial timeout diagnostics without
-changing budgets/profile/Required/launcher behavior. Local qualification data
-cleanup is complete; new diagnostic work and native/exact-source CI remain.
-The planned runner boundary regression is RED4.66s→GREEN2.93s; canonical
-Quick163.69s/security7.95s/docs and whole checker Race30.69s plus Darwin checker
-test compilation PASS. This confirms bounded diagnostic preservation only.
-The original timeout cause is still unknown. The original Linux job finished
-successfully before diagnostic sourceef43754 was pushed for fresh qualification.
-CI347 exposes15 interactive native PTY state-comparison failures with nil ioctl
-error; its default suite returns within bounds and promotion/checker pass.
-[Darwin assertion amendment](./evidence/cli-launcher/baseline-20261020.md#darwin-terminal-state-assertion-amendment--before-test-edits)
-reuses the full saved-state equality after only documented PENDIN/speed-alias
-normalization, with explicit mode/character/speed negatives and field diagnostics.
-No product/timeout/Required change or native skip is authorized by this finding.
-Plan e8df754 precedes the test-only correction: RED5.72s→GREEN1.35s and paired
-Linux/Darwin contract cases, focused PTY19/4.58s, canonical Quick230.44s/
-security6.68s/docs, full CLI Race41.19s and two Darwin test compiles PASS.
-Product bytes remain unchanged; fresh final-source full/native CI remains required.
-The user explicitly requested this order on2026-10-18. Bare helox in a real interactive terminal will
-show Heliopause Artifact Airlock, localized settings/help/examples and exit, with
-arrow/Enter/back navigation. Root RunE now dispatches eligible bare terminals to
-the launcher, reusing existing language settings/catalogs and the command tree.
-Direct commands/help/JSON/CI remain non-interactive; cancellation must restore
-terminal state. Read [launcher scope](../user-journey-cli-ia/05-terminal-presentation.md#deferred-branded-launcher--cli-ux-003)
-and the linked baseline before implementation. No new framework/dependency or
-Core/Application/runtime contract is required. Preserve the predecessor's qualified scope.
+Status: COMPLETE. IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES /
+ACCEPTANCE_CLOSED=YES. MISSING: none for this bounded work item.
+[Baseline/edit map/second review](./evidence/cli-launcher/baseline-20261020.md)
+precedes implementation and both evidence-driven amendments.
+[Qualification](./evidence/cli-launcher/qualification-20261020.md) owns local
+canonical/Race/actual PTY/configuration proof, the historical timeout and Darwin
+comparison correction, exact-source CI348 ten SUCCESS and completed-data deletion.
+Source2d1baa9 and actual PR checkoutc016fc2 have identical whole treeafcb4d4.
+
+Bare helox reuses existing help/settings/catalogs/Doctor in the branded keyboard
+menu. Seven core languages, full English/Korean explanations, lazy explicit
+diagnosis, bounded rendering/input and cancellation/error restoration are qualified.
+Direct commands/help/JSON/CI remain noninteractive. Existing product/runtime/Policy
+constraints are preserved. Historical CI346 timeout cause remains unknown; no
+budget/Required relaxation was used. Completion documents receive their own
+canonical checks and delivery CI. Main merge, permanent installed CLI activation
+and public publication remain separate; PR38 stays draft/unmerged.
 
 ### M13-004 — convenience installation channels
 
-Status: BLOCKED — CLI-UX-003 and owner package-name decision; SEC-UPD-001 and CLI-UX-002 are complete; no channel source edits.
+Status: BLOCKED — owner package-name decision; CLI-UX-003, SEC-UPD-001 and CLI-UX-002 are complete; no channel source edits.
 Audit: IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO for the
 complete channel scope. Existing verifier-gated native installer/doctor and release
 manifest/build/publish consumers are reused; their historical acceptance is retained.
@@ -3428,8 +3405,8 @@ checks. On2026-10-18 the user reported both rahoney accounts/email/2FA/GitHub
 links complete. This closes account preparation only; publisher binding and all
 package names remain unconfirmed. No credentials are needed.
 
-SEC-UPD-001 is COMPLETE; CLI-UX-003 is the only IN_PROGRESS item. M13-004 resumes
-after UX and owner naming; the prior bounded CLI-UX-001 acceptance remains historical.
+SEC-UPD-001 and CLI-UX-003 are COMPLETE; no item is IN_PROGRESS. M13-004 resumes
+after owner naming; the prior bounded CLI-UX-001 acceptance remains historical.
 M13-005 remains NOT_STARTED. Account setup is not
 package publication approval; no registry upload, tap creation, Release draft or
 publish dispatch has occurred. Concrete publication remains separately reviewed.

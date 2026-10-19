@@ -1,23 +1,24 @@
-# CLI-UX-003 — local qualification / 2026-10-20
+# CLI-UX-003 — qualification / 2026-10-20
 
-Status: IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO.
-MISSING: exact committed-source ordinary CI including native macOS and completion
-documentation. The historical CI346 timeout cause remains unknown; its bounded
-diagnostic loss is corrected and locally qualified.
-This is local acceptance evidence, not a main merge or permanent CLI activation.
+Status: COMPLETE. IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES /
+ACCEPTANCE_CLOSED=YES. MISSING: none for bounded launcher acceptance.
+Source2d1baa9 / CI348 Required and nine prerequisites are actual SUCCESS.
+Final documentation-delivery CI is separately checked; main merge, permanent
+installed CLI activation and publication remain separate.
+The sections below distinguish local, native and full remote qualification.
 
 Native CI346 failure: job118163210310 production build passes but default test
 hits the unchanged outer6m deadline at16:22:31UTC. No partial package output is
 visible in its error. Promotion.test orphan cleanup does not identify the cause.
 The [pre-edit diagnostic amendment](./baseline-20261020.md#native-ci346-timeout-visibility-amendment--before-diagnostic-source-edits)
 adds bounded timeout-output preservation before further qualification.
-The source failure is retained; native qualification remains NO. Earlier status
+The historical failure is retained; native qualification was NO at that checkpoint. Earlier status
 query values lagged the completed log and are superseded by this actual failure.
 Local qualification data1,758,485,414 logicalB and four one-shot operators are
 already deleted; raw/proof/shared SDK tools remain. A new diagnostic source/cache
 was subsequently qualified and deleted (1,269,719,952 logicalB plus three operators).
-The current Darwin test-only source/cache is separately tracked and removed after
-its final use; shared pinned tools and proof are retained.
+The Darwin test-only source/cache was also deleted after final use; shared pinned
+tools and proof are retained. The completed cleanup totals are recorded below.
 
 ## Existing owners and implementation boundary
 
@@ -97,14 +98,14 @@ inspection. No service repair/start, artifact execution or installation occurred
 The four installed CLI/observer/network-helper/policy records retained their
 exact hashes, root ownership, modes and single-link identities.
 
-## Proof custody and remaining qualification
+## Proof custody and qualification boundary
 
 Raw remains local/untracked under docs/github-logs/cli-launcher-20261020:
 final-{focused,security,quick,docs,race,darwin-amd64,darwin-arm64,candidate}
 logs/receipts/source inventories, final-workspace-overlay-proof.json,
 actual-final.json and actual-*.txt. These are not remote attachments.
 The committed report preserves normalized scope; native macOS/exact-source
-remote conclusions and completed-data deletion must still be recorded.
+remote conclusions and completed-data deletion are recorded below.
 
 No full CUDA campaign is required for this display-only change. Existing bounded
 SEC-UPD-001 qualification remains closed. PR38 stays draft/unmerged; package names,
@@ -129,9 +130,10 @@ identical to b19 and retain only their earlier qualified scope.
 Raw timeout-output-{red,green} and timeout-diagnostic-* logs/receipts/source
 inventories are preserved locally. Native CI346's original underlying timeout
 cause remains UNKNOWN; diagnostic preservation is not a performance fix.
-The new source still requires native macOS/exact-source remote qualification.
+That diagnostic checkpoint still required native/exact-source qualification;
+CI347 then exposed the separate assertion and CI348 qualified the final source.
 
-## CI347 native assertion — qualification remains open
+## CI347 native assertion — historical failure
 
 Native macOS118189223070/ef43754 fails in15 interactive PTY cases at the
 all-field terminal-state comparison; ioctl error is nil. Four noninteractive
@@ -143,7 +145,8 @@ The [pre-test Darwin amendment](./baseline-20261020.md#darwin-terminal-state-ass
 records Apple's documented kernel state normalization, required negative tests
 and the narrow test-only correction. Exact native field deltas are not present
 in the old generic assertion, so no product restoration failure/cause is asserted.
-Product code and restored-snapshot procedure remain unchanged pending evidence.
+At that checkpoint product code and the restored-snapshot procedure remained
+unchanged; the final correction also changes only comparison tests.
 
 ## Darwin comparison — test-only local verification
 
@@ -168,4 +171,49 @@ Raw termios-* logs/receipts/inventories are local, not remote attachments.
 CI347's exact checkout94c7439 has tree648c8bc identical to ef43754, with main/base
 and ef43754 parents; its failure is preserved. Its unfinished Linux job may be
 superseded under ordinary concurrency by this source push and is never reused
-as a pass. Fresh final-source native macOS and full Required qualification remain.
+as a pass. Final-source native macOS and full Required are qualified by CI348 below.
+
+## Exact-source remote closure and second review
+
+[CI348](https://github.com/rahoney/heliopause/actions/runs/39294756818) has actual
+Required plus nine prerequisites SUCCESS. Source2d1baa9291673a1644ccf998f012701de56bfde8
+and PR checkoutc016fc21b5ab688222775391384edba5f592fef6 share whole tree
+afcb4d440d256095005ea33deab9e2240df270ff; checkout parents are the exact source
+and main baseef5ef0e0e0437a9083133674ef8b9e6d693b83a9.
+
+Native macOS uses actual Go1.26.9 darwin/amd64. Canonical platform production and
+default suite pass within unchanged bounds (default17:33:13→17:37:16UTC).
+Successful collector output is suppressed: no individually printed native test
+count is invented. The selected default PTY19 and termios-contract tests have no
+skip path. Linux actual Go1.26.9 passes the same45 top-level consumers, related
+36/56 including subtests, and CPU full184.41s. Five helper waits are0; final
+original0/CONFIRMED_STOPPED/client_error0/client_restore0/NOT_REQUIRED confirms
+cleanup. No CUDA rerun or broader runtime qualification is claimed.
+
+CI347's unfinished Linux was cancelled by the normal new-source push. Its helper
+reap/RESTORED precedes two Cargo failure lines during cancellation; this partial
+scope is neither PASS nor independent proof of a Cargo regression. CI346's older
+native timeout cause remains UNKNOWN. The final native success validates the
+bounded comparison correction; it does not prove the old unlogged field delta.
+
+Completed local launcher, diagnostic and Darwin-test data deleted respectively:
+1,758,485,414 + 1,269,719,952 + 1,494,532,978 = 4,522,738,344 logicalB. These three
+campaigns' nine one-shot operators and root-owned operations directories are removed.
+Process checks report active[]/unknown[]; four protected installed identities
+remain unchanged. Shared pinned SDK/modules/tools, source commits and necessary
+proof remain. No completed local payload/candidate/private cache is retained.
+Completion documents use a separate private source/cache, deleted after their
+checks with an independent cleanup receipt; shared pinned tools remain.
+
+Second review reconciles the baseline's missing responsibilities with implementation,
+root/bootstrap wiring, actual configuration/diagnosis/help/terminal behavior,
+positive and error/cancel/override negatives, native and exact-source full CI,
+source/lock/Policy boundaries and cleanup. No missing acceptance remains.
+Queue/status/readme/presentation changes are documentation only, separately checked
+before committing. Final delivery CI is observed without an evidence-only push loop.
+
+Local raw owners: ci348-{quick,macos,linux}.log, ci348-final-jobs.json,
+ci348-native-qualified.json, ci348-linux-verified.json and the three *cleanup.json
+receipts. macOS SHA256ead33240ac2060266b44a3dba72a06fe0a07f82d6be13e2c5ca8ea6cfc894b13;
+Linux SHA256f117df78e9a4e4b9311b91035f6f1a32b3f148c0fb00b4358420b494e56d7445.
+Raw evidence is local/untracked, not a remote attachment.

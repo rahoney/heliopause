@@ -173,13 +173,13 @@ and exit. Arrow keys move, Enter selects, Esc goes back, q exits. Reuse language
 selection/catalogs and existing command services. Preserve direct subcommands,
 --help and machine/CI behavior without prompts. Support narrow terminals and
 NO_COLOR; restore terminal modes/cursor on exit, cancellation and errors.
-Status: IN_PROGRESS after SEC-UPD-001 acceptance and ten SUCCESS in its delivery
-CI345. The [baseline/edit map/second review](../planning/evidence/cli-launcher/baseline-20261020.md)
-precedes source edits. Existing help/config/catalogs/doctor are qualified and
-reused. The launcher/input/restoration are now implemented and locally verified;
-[qualification](../planning/evidence/cli-launcher/qualification-20261020.md)
-records19 native PTY and16 actual CLI cases. Native macOS/exact-source CI and
-completed local qualification-data cleanup remain before acceptance closes.
+Status: COMPLETE. The historical heading preserves the deferred ordering and
+existing links. The [baseline/edit map/second review](../planning/evidence/cli-launcher/baseline-20261020.md)
+precedes source edits. Existing help/config/catalogs/Doctor are reused.
+[Qualification](../planning/evidence/cli-launcher/qualification-20261020.md)
+records local PTY19/actual CLI16, native macOS/exact-source CI348 ten SUCCESS,
+completed-test data deletion and unchanged installed identities. Main merge,
+permanent local activation and publication remain separate.
 
 ### Launcher behavior and lifecycle
 
