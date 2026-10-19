@@ -1,8 +1,8 @@
 # CLI-UX-003 — qualification / 2026-10-20
 
 Status: IN_PROGRESS. IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO /
-ACCEPTANCE_CLOSED=NO. MISSING: reviewed private-cache sync extension, fault/scale
-qualification and fresh full native/default/Required delivery after CI351 timeout.
+ACCEPTANCE_CLOSED=NO. MISSING: fresh full native/default/Required delivery and
+completion documentation after locally qualified private-cache sync extension.
 Terminal/capture behavior remains qualified at source350 and CLI passes at351;
 the final full default deadline is unresolved. Main merge, permanent installed
 CLI activation and publication remain separate.
@@ -324,3 +324,38 @@ retains the exact large fixture and mandatory publication durability while
 measuring a narrow private-member sync extension. This is not proof of the old
 native syscall/cause. Diagnostic source/cache remains active for matched tests
 and is deleted after final use. Native/full final qualification remains required.
+
+## Private Cargo member sync — local qualification
+
+Pre-source plan5f524ff and reviewed docs0.22s precede Go changes. Existing
+writeRecord retains exclusive0600/create/write/immediate File.Sync/close/error
+behavior through the shared private body; all its current callers remain immediate.
+Only unpublished Cargo payload members use deferred initial sync. Checksum/receipt,
+seal/inventory, real syncTree, no-replace publication and parent sync are retained.
+The optional instance-local observer can inspect/abort; it cannot replace real sync.
+
+Unwired test-seam RED2.80s is not proof of an old security defect. Wired fault/
+sealed-before-publication/late-symlink/foreign-identity/exclusive0600 regressions
+GREEN2.71s pass. The original Cargo boundary source is byte-identical. Same
+controlled TMPDIR/command/count1 changes files-9999 78.93→3.13s, command79.76→3.90s;
+all reserved-checksum and over10000 refusals still pass. The diagnostic improvement
+is local Linux evidence, not the old native timeout's exact cause.
+
+Final code input:
+eb47c34e87072dee34dc0ddf394e535bb4a6a12da23d9ec151998910145b25ba.
+Format0.26s; full promotion71.92s retaining all prior passes plus four new tests;
+full promotion Race159.72s; canonical Quick172.17s/security6.18s/docs0.18s;
+Darwin promotion test compile amd6414.19s/arm6415.83s PASS. All readonly checks
+retain the full inventory. Existing caller and constructor APIs, receipt/schema,
+resource limits, required jobs and all5m/6m bounds remain unchanged.
+
+The first full-promotion51.48s failure was the long owned TMPDIR causing the Unix
+socket fixture's bind EINVAL. Product source stayed identical; a short owned0700
+TMPDIR corrected the harness and full promotion passed. The controlled boundary
+keeps its original root for both measurements; different-root whole-wall times
+are not a controlled speed comparison. Both temporary roots are tracked and
+removed after final use. Raw storage-* source/log/receipts own these scopes.
+
+CI351's original Linux45/CPU276.12s/helper5wait0/final confirmed cleanup is preserved,
+but native deadline/Required FAIL means no full CI success claim. Fresh native
+and Linux actual Cargo/CPU consumers must qualify the changed storage path.

@@ -14,7 +14,7 @@ Last completed work item: SEC-UPD-001 — COMPLETE; CLI source350 qualified, fin
 Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002 and SEC-UPD-001 COMPLETE; CLI-UX-003 delivery under revalidation
-Active work item status: IN_PROGRESS — CI351 CLI PASS/default6m timeout; reviewed private-cache sync extension before source edits
+Active work item status: IN_PROGRESS — private-cache sync locally qualified at unchanged limits; fresh native/full delivery remains
 Next work item: M13-004 — BLOCKED on CLI-UX-003 qualification and owner package naming
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -3370,8 +3370,8 @@ retain their original scope, superseded by the current acceptance table above.
 ### CLI-UX-003 — branded interactive launcher
 
 Status: IN_PROGRESS, the only active item. IMPLEMENTED=YES / WIRED=YES /
-QUALIFIED=NO / ACCEPTANCE_CLOSED=NO. MISSING: reviewed private-cache sync extension,
-barrier/unchanged-scale regression and fresh native/full exact-source qualification.
+QUALIFIED=NO / ACCEPTANCE_CLOSED=NO. MISSING: fresh native/full exact-source
+qualification and completion documents after local barrier/unchanged-scale checks.
 CI350 qualified the terminal/capture behavior; CI351 CLI passes2.727s but the full
 default command hits6m. Exact native slow test is unknown. The unchanged Linux
 promotion diagnostic and controlled boundary timing expose a real storage cost.
@@ -3379,7 +3379,9 @@ promotion diagnostic and controlled boundary timing expose a real storage cost.
 preserves every file/size/security limit, final real sync/publication barrier,
 immediate metadata writer and all original tests. [Qualification](./evidence/cli-launcher/qualification-20261020.md)
 owns evidence and the distinction between measured cost and unknown old cause.
-No timeout increase, skip, fixture reduction, new authority or owner replacement.
+The narrow private-write extension passes matched original-scale/fault tests, full
+promotion/Race, canonical checks and Darwin test compilation. No timeout increase,
+skip, fixture reduction, new authority or owner replacement.
 Main merge, permanent activation and publication remain separate; PR38 stays draft.
 
 ### M13-004 — convenience installation channels
