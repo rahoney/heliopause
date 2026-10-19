@@ -173,15 +173,17 @@ and exit. Arrow keys move, Enter selects, Esc goes back, q exits. Reuse language
 selection/catalogs and existing command services. Preserve direct subcommands,
 --help and machine/CI behavior without prompts. Support narrow terminals and
 NO_COLOR; restore terminal modes/cursor on exit, cancellation and errors.
-Status: IN_PROGRESS for final default-budget delivery; terminal/capture behavior
-passed native350 and CLI351. The historical heading preserves deferred ordering and
+Status: COMPLETE at source4cfe29e/CI352 ten SUCCESS, including native macOS and
+actual Linux consumers; earlier terminal/capture successes remain scoped history. The historical heading preserves deferred ordering and
 existing links. The [baseline/edit map/second review](../planning/evidence/cli-launcher/baseline-20261020.md)
 precedes source edits. Existing help/config/catalogs/Doctor are reused.
 [Qualification](../planning/evidence/cli-launcher/qualification-20261020.md)
 records local PTY19/actual CLI16, native macOS/exact-source CI350 ten SUCCESS,
 completed-test data deletion and unchanged installed identities.
 [CI351 storage amendment](../planning/evidence/cli-launcher/baseline-20261020.md#native-ci351-default-budget-and-private-cache-sync--before-source-edits)
-keeps existing UX and required tests while final delivery is requalified. Main merge,
+keeps existing UX, original-scale tests and mandatory final durable publication.
+The changed private storage path passes native/full CI352 at unchanged limits.
+Final documentation delivery is checked separately on its own exact head. Main merge,
 permanent local activation and publication remain separate.
 
 ### Launcher behavior and lifecycle

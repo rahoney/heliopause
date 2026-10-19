@@ -1,11 +1,11 @@
 # CLI-UX-003 — qualification / 2026-10-20
 
-Status: IN_PROGRESS. IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO /
-ACCEPTANCE_CLOSED=NO. MISSING: fresh full native/default/Required delivery and
-completion documentation after locally qualified private-cache sync extension.
-Terminal/capture behavior remains qualified at source350 and CLI passes at351;
-the final full default deadline is unresolved. Main merge, permanent installed
-CLI activation and publication remain separate.
+Status: COMPLETE. IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES /
+ACCEPTANCE_CLOSED=YES. MISSING: none in the launcher scope. Source4cfe29e/CI352
+qualifies native macOS and full Linux consumers at the unchanged bounds/limits.
+Final documentation-only delivery is checked on its own exact head; its raw
+receipt does not replace the implementation qualification. Main merge, permanent
+installed CLI activation and public publication remain separate.
 The sections below distinguish local, native and full remote qualification.
 
 Native CI346 failure: job118163210310 production build passes but default test
@@ -359,3 +359,27 @@ removed after final use. Raw storage-* source/log/receipts own these scopes.
 CI351's original Linux45/CPU276.12s/helper5wait0/final confirmed cleanup is preserved,
 but native deadline/Required FAIL means no full CI success claim. Fresh native
 and Linux actual Cargo/CPU consumers must qualify the changed storage path.
+
+## Private cache source — full remote closure
+
+Source4cfe29ee8731c44331757c64b18116a2647f4c68 and actual
+checkoutf3d6816178f794c9031a33e2454c175206cf18eb share the complete
+treef0f700a6299507ab4c13ff2f65795df0537679ce. CI352/run39316007445 has
+Required and nine prerequisites SUCCESS. Native Go1.26.9 darwin/amd64 production
+and default suite pass at unchanged bounds; default20:06:27→20:11:02UTC.
+Successful output does not print individual test PASS lines; no invented count.
+Linux45 top-level consumers match the prior set, including36 related/56 including
+subtests and actual Cargo consumers. CPU full288.47s; five helper
+waits0 and final original0/CONFIRMED_STOPPED/client restore NOT_REQUIRED pass.
+Raw ci352-source-proof/native-qualified/linux-verified/final-jobs own details.
+The new storage path is qualified; CI351's old exact timeout cause remains UNKNOWN.
+No limit/test reduction, timeout increase, new authority or fresh CUDA claim.
+
+Local final-doc/security inputa027667d matches all1688 staged blobs. Both completed
+storage roots1532486459 logicalB and three operators were deleted after actual
+root process active[]/unknown[] and four protected installed identities unchanged.
+Seven completed campaigns total8222477283 logicalB and18 operators removed; shared
+pinned SDK/bin/modules and proof remain. storage-cleanup.json owns this deletion.
+The final documentation-only five-path change preserves all source/test/workflow
+bytes; its own checks, exact-head CI and cleanup receipts are retained under the
+same raw owner. Do not add a source commit solely to copy its eventual CI result.

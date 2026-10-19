@@ -9,13 +9,13 @@
 ```text
 Current milestone: M13 — Production Release & Operations
 Milestone status: IN_PROGRESS — runtime maintenance main delivery COMPLETE
-Active work item: CLI-UX-003 — native default storage qualification
-Last completed work item: SEC-UPD-001 — COMPLETE; CLI source350 qualified, final CI351 default deadline requires revalidation
+Active work item: NONE — CLI-UX-003 acceptance complete
+Last completed work item: CLI-UX-003 — COMPLETE; source4cfe29e/CI352 ten SUCCESS
 Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
-Prepublication prerequisites: CLI-UX-001, CLI-UX-002 and SEC-UPD-001 COMPLETE; CLI-UX-003 delivery under revalidation
-Active work item status: IN_PROGRESS — private-cache sync locally qualified at unchanged limits; fresh native/full delivery remains
-Next work item: M13-004 — BLOCKED on CLI-UX-003 qualification and owner package naming
+Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
+Active work item status: NONE; final documentation delivery is checked separately on its exact head
+Next work item: M13-004 — BLOCKED on owner-approved official package names
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
@@ -3009,8 +3009,8 @@ M12-005 feature freeze에서 수행한다. canonical lock 등록만으로 releas
 | 3a | CLI-UX-001 | multilingual terminal progress and structured human results | COMPLETE — local source / installed CLI qualification |
 | 3b | CLI-UX-002 | OS preferred display-language auto | COMPLETE — native macOS/CI328 and local installed CLI PASS |
 | 3c | SEC-UPD-001 | guarded ecosystem update commands | COMPLETE — final sourcecdac/CI344 qualified |
-| 3d | CLI-UX-003 | branded interactive launcher | IN_PROGRESS — terminal source350/351 passes; final full default budget revalidation |
-| 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | BLOCKED — CLI-UX-003 and owner package-name decision |
+| 3d | CLI-UX-003 | branded interactive launcher | COMPLETE — source4cfe29e/CI352 ten SUCCESS |
+| 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | BLOCKED — owner package-name decision |
 | 5 | M13-005 | exact publication·clean Host bootstrap·doctor·cross-ecosystem smoke·quarantine | NOT_STARTED |
 
 ### M13-001 — protected repository activation
@@ -3361,7 +3361,7 @@ limits are preserved. The [shared FD correction](./evidence/update-quarantine/tr
 is also qualified. No completed local update test payload/cache/candidate/operator
 or restored binary backup remains; raw/normalized proofs and shared SDK tools remain.
 
-Follow-up CLI-UX-003 is reopened for final native default delivery; prior source350 qualification remains historical.
+Follow-up CLI-UX-003 is COMPLETE at source4cfe29e/CI352; prior failures and narrower successes remain historical.
 SEC-UPD-001 has no remaining acceptance work. Main merge, permanent local CLI activation
 and publication remain separate; PR38 is draft/unmerged. Native commands outside
 helox are not transparently intercepted. Earlier source/checkpoint descriptions
@@ -3369,24 +3369,21 @@ retain their original scope, superseded by the current acceptance table above.
 
 ### CLI-UX-003 — branded interactive launcher
 
-Status: IN_PROGRESS, the only active item. IMPLEMENTED=YES / WIRED=YES /
-QUALIFIED=NO / ACCEPTANCE_CLOSED=NO. MISSING: fresh native/full exact-source
-qualification and completion documents after local barrier/unchanged-scale checks.
-CI350 qualified the terminal/capture behavior; CI351 CLI passes2.727s but the full
-default command hits6m. Exact native slow test is unknown. The unchanged Linux
-promotion diagnostic and controlled boundary timing expose a real storage cost.
-[Pre-source baseline/edit map/review](./evidence/cli-launcher/baseline-20261020.md#native-ci351-default-budget-and-private-cache-sync--before-source-edits)
-preserves every file/size/security limit, final real sync/publication barrier,
-immediate metadata writer and all original tests. [Qualification](./evidence/cli-launcher/qualification-20261020.md)
-owns evidence and the distinction between measured cost and unknown old cause.
-The narrow private-write extension passes matched original-scale/fault tests, full
-promotion/Race, canonical checks and Darwin test compilation. No timeout increase,
-skip, fixture reduction, new authority or owner replacement.
-Main merge, permanent activation and publication remain separate; PR38 stays draft.
+Status: COMPLETE. IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES /
+ACCEPTANCE_CLOSED=YES. MISSING: none in this launcher scope. Source4cfe29e and
+actual checkoutf3d6816 share treef0f700a; CI352 has Required and nine prerequisites
+SUCCESS, including native macOS and Linux45 actual consumers/CPU/helper cleanup.
+[Qualification](./evidence/cli-launcher/qualification-20261020.md) owns the exact
+scope, historical failures and cleanup. The pre-source storage amendment preserves
+all limits, original scale tests and final real durable-publication barrier.
+The old CI351 exact slow test/cause remains UNKNOWN; a new success is not causal proof.
+Final documentation-only delivery is evaluated on its own exact head; raw receipts
+record that result without changing runtime qualification scope. Main merge,
+permanent installed CLI activation and publication remain separate; PR38 is draft.
 
 ### M13-004 — convenience installation channels
 
-Status: BLOCKED — CLI-UX-003 delivery qualification and owner package-name decision; SEC-UPD-001 and CLI-UX-002 complete; no channel source edits.
+Status: BLOCKED — owner package-name decision; CLI-UX-003, SEC-UPD-001 and CLI-UX-002 complete; no channel source edits.
 Audit: IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO for the
 complete channel scope. Existing verifier-gated native installer/doctor and release
 manifest/build/publish consumers are reused; their historical acceptance is retained.
@@ -3402,8 +3399,8 @@ checks. On2026-10-18 the user reported both rahoney accounts/email/2FA/GitHub
 links complete. This closes account preparation only; publisher binding and all
 package names remain unconfirmed. No credentials are needed.
 
-SEC-UPD-001 is COMPLETE; CLI-UX-003 is the only IN_PROGRESS item. M13-004 resumes
-after final UX delivery qualification and owner naming; prior CLI-UX-001 scope remains historical.
+SEC-UPD-001 and CLI-UX-003 are COMPLETE; no item is IN_PROGRESS. M13-004 resumes
+after owner naming; prior CLI-UX-001 scope remains historical.
 M13-005 remains NOT_STARTED. Account setup is not
 package publication approval; no registry upload, tap creation, Release draft or
 publish dispatch has occurred. Concrete publication remains separately reviewed.
