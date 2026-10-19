@@ -1,6 +1,8 @@
 # Update quarantine — SEC-UPD-001
 
-Status: IN_PROGRESS; user authorized implementation after reviewed planning.
+Status: COMPLETE / QUALIFIED / ACCEPTANCE_CLOSED for the documented bounded scope.
+[Final review and sourcecdac/CI344 closure](../planning/evidence/update-quarantine/final-review-20261019.md)
+reconciles every lane; earlier implementation-stage wording is historical.
 The bounded npm lane is qualified for29c58f0 including fresh CI330 ten SUCCESS.
 The reviewed bounded PyPI lane is qualified: [public managed venv](../planning/evidence/update-quarantine/pypi-managed-qualification-20261019.md),
 [public native enrollment](../planning/evidence/update-quarantine/pypi-native-qualification-20261019.md)
@@ -13,10 +15,12 @@ is also qualified for source85ac4c1: local actual20 phases, restoration/cleanup
 and same-tree CI338 ten SUCCESS. [Go baseline/selection
 review](../planning/evidence/update-quarantine/go-update-baseline-20261019.md) preceded source; its [wired implementation qualification](../planning/evidence/update-quarantine/go-update-qualification-20261019.md) qualifies sourcee00 canonical/actual15 phases/restoration/cleanup and same-tree CI341 ten SUCCESS after the preserved CI340 pruning failure.
 [Terraform qualification](../planning/evidence/update-quarantine/terraform-update-qualification-20261019.md)
-closes sourcef882/actual16 phases/CI342. Current lane is
+closes sourcef882/actual16 phases/CI342. The final lane is also qualified:
 [GitHub managed replacement](../planning/evidence/update-quarantine/github-replacement-qualification-20261019.md):
 sourcecb1 local canonical/Race,18 actual GitHub calls and15 shared-lock consumer
-calls, restoration and completed trial cleanup PASS; final CI343 acceptance is pending.
+calls, restoration and completed trial cleanup PASS. CI343 qualifies those
+product bytes; final test/document sourcecdac/CI344 also passes ten jobs and exact
+checkout/native/consumer/cleanup review.
 Preserve existing explicit-version get/init paths. See the
 [npm evidence](../planning/evidence/update-quarantine/npm-qualification-20261018.md).
 This leaf owns the user-requested update-command contract. It supplements the
@@ -137,7 +141,7 @@ An earlier bounded install/UX qualification does not close this update acceptanc
 
 This is the reviewed implementation map. Qualified npm/PyPI scopes are recorded
 above; Cargo and bounded Go -u are now qualified. Terraform upgrade is qualified through same-source CI342. GitHub managed
-replacement is the active implementation lane. Execute
+replacement is also qualified by final sourcecdac/CI344. The historical plan was to execute
 one ecosystem at a time after CLI-UX-002; keep other lanes unmodified until their
 own baseline/selection contract is verified. Minimum planned forms are:
 
@@ -622,7 +626,9 @@ never permits custom product sources or replaces actual installed qualification.
 
 ## GitHub managed asset replacement — reviewed initial semantics
 
-Status: IN_PROGRESS after Terraform same-source CI342 acceptance closes.
+Status: COMPLETE / QUALIFIED / ACCEPTANCE_CLOSED after final sourcecdac/CI344;
+[qualification](../planning/evidence/update-quarantine/github-replacement-qualification-20261019.md)
+owns exact actual/remote scope.
 The [independent baseline/edit map/second review](../planning/evidence/update-quarantine/github-replacement-baseline-20261019.md)
 precedes source. Existing M6 exact selection, acquisition, declared-digest check,
 static/ELF inspection, Policy, Evidence, Manifest/SBOM and staging remain owners.

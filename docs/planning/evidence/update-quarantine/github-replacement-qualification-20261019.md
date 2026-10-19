@@ -1,18 +1,17 @@
 # SEC-UPD-001 — GitHub managed replacement qualification / 2026-10-19
 
-Status: IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO.
-Only SEC-UPD-001 is IN_PROGRESS. Terraform acceptance is complete before this
+Status: IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES.
+Final sourcecdac96d/CI344 closes this bounded lane. Terraform acceptance is complete before this
 lane starts; activation22518c2 and reviewed baseline28b6460/d402a46 precede source.
 The [baseline/edit map/second review](./github-replacement-baseline-20261019.md)
 and [canonical scope](../../../user-journey-cli-ia/06-update-quarantine.md#github-managed-asset-replacement--reviewed-initial-semantics)
 own the exact remaining work. No main merge, permanent activation or publication.
 
-MISSING: the new test-only source's ordinary CI. Production-source CI343 final
-Linux/Required and remote consumer review PASS below. The explicit M6 update-policy
-regression identified in final review now passes the same-input checks below.
-Local public archive/ELF, affected shared-lock consumers, restoration and completed
-trial cleanup PASS below. The [shared correction](./transaction-lock-identity-correction-20261019.md)
-has the same remaining remote boundary.
+MISSING: none in the documented bounded replacement lane. The final M6 test
+source's ordinary CI344, exact whole-tree/native/consumer/cleanup review and
+local actual/restoration/deletion evidence pass. Earlier pending descriptions
+below preserve historical checkpoint scope and are superseded by the final
+closure. The shared lock correction is independently acceptance-closed.
 
 Raw owner docs/github-logs/update-quarantine-20261018 is local/untracked; no remote
 availability is claimed. First direct CLI admission RED1.27s actually executes
@@ -253,3 +252,31 @@ and three full decoded logs preserve conclusions/tree/consumers/cleanup. The
 later M6 test94cc284 and documentation are unchanged production but different
 source inputs. Hold their acceptance open for the next ordinary CI; previous
 pending descriptions retain their historical scope.
+
+## Final sourcecdac CI344 acceptance closure
+
+[CI344](https://github.com/rahoney/heliopause/actions/runs/39262321706) completes
+Required and all nine prerequisites SUCCESS for
+cdac96d8b5b069f6a6716a9f7822160eefc65291. Actual checkout
+fbcaedfcf4dcb2abe58245e7266bd3fbc6f85c3b has the expected main/source parents
+and the identical whole tree18d0c65c35a177c57bd70503a91bf8d2e8f4989f.
+Native macOS Go1.26.9 production/default tests and Quick's complete default suite
+include the final real-M6 update regression. Linux45 verbose top-level consumers,
+36 related Go/Cargo/Terraform consumers (56 with subtests), CPU291.84s, five
+helperwait0 and final original0/CONFIRMED_STOPPED/helper_stop0/client_error0/
+client_restore0/NOT_REQUIRED are reconciled against full decoded logs.
+
+[Normalized closure receipt](./ci344-closure.json) owns job/tree/log hashes and
+exact scope. Raw ci344-{quick,macos,linux}.log and final-jobs.json remain local,
+untracked. The cb1 actual archive/ELF and small existing-consumer campaigns remain
+applicable only to byte-identical production; no new full CUDA run is claimed.
+Final local use also removes common temporary source/cache/observer/checker and
+the two restored original binary backups7449085625B, then cleanup operator5549B.
+Shared SDK/tool-cache symlinks are not followed. Earlier per-campaign deletion
+receipts remain independent. No completed local update test tree remains.
+
+MISSING=none; bounded GitHub and aggregate SEC-UPD-001 acceptance close. The
+following closure edit changes documentation/normalized evidence only. Its local
+canonical documentation validation and subsequent delivery CI are separate from
+sourcecdac's functional acceptance. Main merge, permanent local activation and
+publication have not occurred. CLI-UX-003 is next and requires its own baseline.

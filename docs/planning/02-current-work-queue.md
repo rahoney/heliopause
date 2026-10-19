@@ -3008,9 +3008,9 @@ M12-005 feature freeze에서 수행한다. canonical lock 등록만으로 releas
 | 3 | M13-003 | canonical release build·manifest·attestation·OS package assets | COMPLETE — protected v0.1.0 candidate qualification |
 | 3a | CLI-UX-001 | multilingual terminal progress and structured human results | COMPLETE — local source / installed CLI qualification |
 | 3b | CLI-UX-002 | OS preferred display-language auto | COMPLETE — native macOS/CI328 and local installed CLI PASS |
-| 3c | SEC-UPD-001 | guarded ecosystem update commands | IN_PROGRESS — npm first, then remaining scoped ecosystems |
-| 3d | CLI-UX-003 | branded interactive launcher | NOT_STARTED — after SEC-UPD-001 acceptance |
-| 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | BLOCKED — SEC-UPD-001 and owner package-name decision |
+| 3c | SEC-UPD-001 | guarded ecosystem update commands | COMPLETE — final sourcecdac/CI344 qualified |
+| 3d | CLI-UX-003 | branded interactive launcher | NOT_STARTED / Ready — SEC-UPD-001 acceptance closed |
+| 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | BLOCKED — CLI-UX-003 and owner package-name decision |
 | 5 | M13-005 | exact publication·clean Host bootstrap·doctor·cross-ecosystem smoke·quarantine | NOT_STARTED |
 
 ### M13-001 — protected repository activation
@@ -3318,13 +3318,13 @@ updates are essential to protecting existing users from compromised new releases
 precedes source changes. Existing inspection/Policy, transactions, settings and
 catalogs are reused; no replacement or new runtime/CI scaffold is justified.
 
-- SEC-UPD-001: IN_PROGRESS. IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO /
-  ACCEPTANCE_CLOSED=NO for complete scoped update-command coverage. Local
-  implementation/actual/negative/restoration/deletion checks pass. MISSING final
-  exact-source remote consumer/Required review; the added M6 test needs its own CI.
+- SEC-UPD-001: COMPLETE. IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES /
+  ACCEPTANCE_CLOSED=YES / MISSING=none for the documented bounded coverage.
+  Final sourcecdac/CI344 ten SUCCESS, exact whole tree/native macOS/Linux45/
+  CPU291.84s/five helperwait0/final cleanup closes the added real-M6 regression.
   [Cross-lane review](./evidence/update-quarantine/final-review-20261019.md) maps
-  acceptance to existing owners. Read
-  [update quarantine contract](../user-journey-cli-ia/06-update-quarantine.md).
+  each acceptance to existing owners and [normalized closure](./evidence/update-quarantine/ci344-closure.json).
+  Read [update quarantine contract](../user-journey-cli-ia/06-update-quarantine.md).
 - CLI-UX-002: COMPLETE. IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES /
   ACCEPTANCE_CLOSED=YES / MISSING=none for the documented bounded OS-language scope.
   Exact local source checks, WSL/PTY16 cases, installed auto/JSON inspect and
@@ -3333,7 +3333,8 @@ catalogs are reused; no replacement or new runtime/CI scaffold is justified.
 
 The detailed plans, second review and CLI-UX-002 implementation are complete.
 On2026-10-18 the user authorized SEC-UPD-001 and deferred CLI-UX-003 until update
-acceptance. Only SEC-UPD-001 is IN_PROGRESS. Execute one ecosystem at a time;
+acceptance. At activation only SEC-UPD-001 was IN_PROGRESS; ecosystems were implemented serially.
+Current acceptance is the table below;
 source-specific failures, checks and historical intermediate states belong to the
 linked qualification owners rather than duplicate progress narratives here.
 
@@ -3346,39 +3347,29 @@ linked qualification owners rather than duplicate progress narratives here.
 | Cargo lock update | YES / YES / YES / YES | [Reviewed audit](./evidence/update-quarantine/cargo-update-baseline-20261019.md) and [current qualification](./evidence/update-quarantine/cargo-update-qualification-20261019.md); source85ac4c1; final local checks and20 installed phases including old add/build, dependency-free/workspace, restoration and145.90MB cleanup PASS; CI338 ten SUCCESS; same checkout tree,36 related Go/Cargo/Terraform consumers, CPU277.12s/five helper wait0/final confirmed cleanup |
 | Scoped Go get -u | YES / YES / YES / YES | [Reviewed audit/plan](./evidence/update-quarantine/go-update-baseline-20261019.md) and [metadata/pruning amendment](./evidence/update-quarantine/go-mvs-metadata-correction-20261019.md) precede their sources. [Current qualification](./evidence/update-quarantine/go-update-qualification-20261019.md): sourcee00 canonical Quick206.98s/security10.79s/docs/Race129.57s and installed15 phases PASS, including Cobra metadata build65.14s and old grpc41-module get114.11s/download87.14s;212 new update/grpc Evidence, canonical restoration/postguards and568.85MB new trial cleanup. Earlier394 CI340 FAILED at pruned lower checksum membership. CI341 ten SUCCESS; actual checkout whole-tree equality/native macOS,36 existing Go/Cargo/Terraform consumers/CPU192.40s/five helperwait0/final confirmed cleanup; MISSING none for bounded Go scope |
 | Terraform project upgrade | YES / YES / YES / YES | [Pre-source audit](./evidence/update-quarantine/terraform-update-baseline-20261019.md) and [final qualification](./evidence/update-quarantine/terraform-update-qualification-20261019.md): sourcef882921 final canonical/related Race and signer-proof Race, actual16 phases/48 independent Evidence, restoration/postguards and718.98MB completed trial cleanup PASS. CI342 ten SUCCESS, exact checkout whole-tree/native macOS,36 existing Go/Cargo/Terraform consumers/CPU192.80s/five helperwait0/final confirmed cleanup. MISSING none for bounded Terraform scope |
-| GitHub managed replacement | YES / YES / NO / NO | Current lane; [independent baseline/edit map/second review](./evidence/update-quarantine/github-replacement-baseline-20261019.md) precedes sourcecb1f944. [Qualification](./evidence/update-quarantine/github-replacement-qualification-20261019.md): same-input Quick150.58s/security8.75s/docs/full related Race221.88s; actual18 GitHub calls49.06s/17 fresh success Evidence plus15 affected npm/PyPI/Cargo/Go/Terraform calls241.65s/32 fresh success Evidence PASS. Canonical helperwait0/original restoration/fresh guard and353343187B completed trial cleanup PASS. CI343 ten SUCCESS/exact tree/native macOS/Linux45/CPU267.82s/five helperwait0/final cleanup PASS. MISSING ordinary CI for the added M6 test/document source; [shared lock correction](./evidence/update-quarantine/transaction-lock-identity-correction-20261019.md) acceptance is closed |
+| GitHub managed replacement | YES / YES / YES / YES | Final lane; [independent baseline/edit map/second review](./evidence/update-quarantine/github-replacement-baseline-20261019.md) precedes sourcecb1f944. [Qualification](./evidence/update-quarantine/github-replacement-qualification-20261019.md): same-input Quick150.58s/security8.75s/docs/full related Race221.88s; actual18 GitHub calls49.06s/17 fresh success Evidence plus15 affected npm/PyPI/Cargo/Go/Terraform calls241.65s/32 fresh success Evidence PASS. Canonical helperwait0/original restoration/fresh guard and353343187B completed trial cleanup PASS. CI343 ten SUCCESS/exact tree/native macOS/Linux45/CPU267.82s/five helperwait0/final cleanup PASS. Final sourcecdac/CI344 ten SUCCESS/exact tree/native macOS/Linux45/CPU291.84s/five helperwait0/final cleanup closes the added M6 test/document scope; MISSING none. [Shared lock correction](./evidence/update-quarantine/transaction-lock-identity-correction-20261019.md) acceptance is closed |
 
 The qualified rows retain their source-specific bounded actual/CI scopes in the
 linked reports. Broader native named PyPI footprints remain unsupported. Go's
 original metadata/build failure and CI340 pruning failure stay historical; the
 reviewed amendment and final sourcee00/actual15 phases/CI341 close bounded Go only.
 
-Current lane: GitHub managed asset replacement after Terraform CI342 closure.
-Its independent audit/second review and bound/mtime/Manifest-context amendments
-precede sourcecb1f944. Existing resolution/inspection/Policy/Manifest/staging and
-InstallUpdateService/Session are reused; recorded ownership/replacement and the
-demonstrated shared lock/FD mode corrections pass local checks and actual CLI.
-Final review identifies one additional acceptance assertion: explicit real M6
-unsafe/incomplete/mismatched-v2 UPDATE after allowed v1. The
-[pre-test amendment](./evidence/update-quarantine/github-replacement-qualification-20261019.md#final-acceptance-review-amendment-before-test-edits)
-maps its existing Application owner and test-only checks; production is unchanged.
-That assertion now passes direct serial M6 cases, same-input Host Quick116.81s/
-security4.51s/docs0.27s/full Application Race3.42s. Production bytes are identical
-to actual-qualifiedcb1. CI343 final consumer review now passes with ten SUCCESS/exact whole tree/native
-macOS/Linux45/CPU267.82s/five helperwait0/final cleanup. Shared-lock correction
-acceptance is closed. MISSING: ordinary CI for the added test/document source.
-Cross-lane review is complete; only that exact-source remote boundary remains.
-Only SEC-UPD-001 is IN_PROGRESS. The interactive launcher, main merge and
-publication remain pending. No candidate is permanently activated. Completed
-trial payload/cache/lifecycle/operators are deleted after raw/Evidence/approval/
-cache/build receipts are preserved; active reusable tooling and protected originals
-remain. Native commands outside helox are not transparently intercepted. The
-[implementation baseline](./evidence/update-quarantine/baseline-20261018.md) owns
-original missing responsibilities; current status is the table above.
+SEC-UPD-001 acceptance is closed. The [final review](./evidence/update-quarantine/final-review-20261019.md)
+reconciles per-lane actual/negative evidence, real-M6 adverse-update coverage and
+sourcecdac/CI344 exact-source remote acceptance. Existing source/runtime/Policy
+limits are preserved. The [shared FD correction](./evidence/update-quarantine/transaction-lock-identity-correction-20261019.md)
+is also qualified. No completed local update test payload/cache/candidate/operator
+or restored binary backup remains; raw/normalized proofs and shared SDK tools remain.
 
-### CLI-UX-003 — branded interactive launcher (deferred)
+Next: CLI-UX-003, NOT_STARTED / Ready, with its own baseline before source changes.
+No item is IN_PROGRESS at this closure. Main merge, permanent local CLI activation
+and publication remain separate; PR38 is draft/unmerged. Native commands outside
+helox are not transparently intercepted. Earlier source/checkpoint descriptions
+retain their original scope, superseded by the current acceptance table above.
 
-Status: NOT_STARTED; prerequisite SEC-UPD-001 acceptance. The user explicitly
+### CLI-UX-003 — branded interactive launcher (ready)
+
+Status: NOT_STARTED / Ready; SEC-UPD-001 prerequisite is acceptance-closed. The user explicitly
 requested this order on2026-10-18. Bare helox in a real interactive terminal will
 show Heliopause Artifact Airlock, localized settings/help/examples and exit, with
 arrow/Enter/back navigation. Current root RunE only displays Help; no menu source
@@ -3390,7 +3381,7 @@ unqualified; do not add future UI packages/interfaces/dependencies now.
 
 ### M13-004 — convenience installation channels
 
-Status: BLOCKED — SEC-UPD-001 and owner package-name decision; CLI-UX-002 is complete; no channel source edits.
+Status: BLOCKED — CLI-UX-003 and owner package-name decision; SEC-UPD-001 and CLI-UX-002 are complete; no channel source edits.
 Audit: IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO for the
 complete channel scope. Existing verifier-gated native installer/doctor and release
 manifest/build/publish consumers are reused; their historical acceptance is retained.
@@ -3406,8 +3397,8 @@ checks. On2026-10-18 the user reported both rahoney accounts/email/2FA/GitHub
 links complete. This closes account preparation only; publisher binding and all
 package names remain unconfirmed. No credentials are needed.
 
-Only SEC-UPD-001 is IN_PROGRESS. The user-requested CLI-UX-003 launcher follows
-its acceptance; M13-004 resumes after update/UX prerequisites and owner naming; the prior bounded CLI-UX-001 acceptance remains historical. M13-005 remains NOT_STARTED. Account setup is not
+SEC-UPD-001 is COMPLETE; no item is IN_PROGRESS at this closure. The user-requested
+CLI-UX-003 launcher is next/ready; M13-004 resumes after UX and owner naming; the prior bounded CLI-UX-001 acceptance remains historical. M13-005 remains NOT_STARTED. Account setup is not
 package publication approval; no registry upload, tap creation, Release draft or
 publish dispatch has occurred. Concrete publication remains separately reviewed.
 
