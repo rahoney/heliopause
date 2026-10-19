@@ -2,10 +2,11 @@
 
 Status: IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO.
 Only SEC-UPD-001 is IN_PROGRESS. Final corrected source394c92d and installed
-qualification pass; QUALIFIED/ACCEPTANCE_CLOSED remain NO. New-source CI340 failed
-the existing grpc exact get at a graph-pruned lower checksum assumption.
-MISSING: the reviewed narrow pruning correction, its source/actual legacy and
-Cobra metadata consumers, then fresh Required/exact checkout/cleanup. The first
+qualification pass; QUALIFIED/ACCEPTANCE_CLOSED remain NO. CI340 failed the
+existing grpc exact get at a graph-pruned lower checksum assumption. Correction
+e00e7f7 now passes canonical checks and its own fifteen actual installed phases,
+restoration and cleanup. MISSING only CI341/run39232873898 Required/exact checkout/
+native macOS and actual old-consumer/CPU/cleanup scope. The first
 b0 actual failure remains preserved; the
 [reviewed correction](./go-mvs-metadata-correction-20261019.md) has passed its own
 source checks and the same failed case. All local originals are restored and
@@ -13,9 +14,65 @@ completed trial payload/cache/lifecycle/operators/candidates are deleted.
 The [contract](../../../user-journey-cli-ia/06-update-quarantine.md#go-named-upgrade--reviewed-initial-semantics)
 and [pre-source audit/edit map/second review](./go-update-baseline-20261019.md)
 own scope. Plan a1e267b preceded product changes; implementation sourceb0a2ccb is preserved.
-The additive metadata correction is locally validated but not fully qualified;
+The additive metadata and pruning corrections are locally validated but not fully qualified;
 its [CI340 pruning amendment](./go-mvs-metadata-correction-20261019.md#ci340-graph-pruning-amendment--reviewed-before-source)
 owns the exact failure, diagnosis, source edit and second review before changes.
+
+## Pruning correctione00 — local actual qualification complete
+
+Reviewed plan1317ee2 precedes sourcee00e7f714dd3355cbd70e26aa2234c02c56c1585.
+Only projectModuleIntegrities and its tests change. Graph-mentioned lower versions
+with no valid unique selected /go.mod declaration never become acquired subjects;
+selected pairs and every included old-version independent proof stay strict.
+The1/20-pruned-reference direct RED1.08s preserves both previous checksum and
+count failures. Intermediate source/proof/static/cache/resolver GREEN147.64s
+passed. Final paired count-bound coverage then passes canonical format2.78s,
+Host Quick206.98s/security10.79s/docs0.33s and related Race129.57s on identical
+complete input inventories. No scanner, cache, Domain, runner, observer, budget,
+CI fixture/job or dependency changes. Source checkpoint binds exact Git tree,
+parent and all inputs. Candidate Go1.26.9/CGO0 build4.27s is27337714B with SHA256
+86ce3f7456b6274e70ed2f8f48822f43aa64f375ef4773d1a97b4505e067eecf.
+
+Raw go-update-pruned-full-installed and lifecycle pass15 actual phases413.04s.
+Exact seed Cobra24.89s/uuid22.94s, explicit upgrade23.36s, fresh same-version
+update22.48s and Korean changed-control enrollment23.33s retain the earlier
+bounded semantics, unrelated uuid and unchanged control identity/permissions.
+Each update inspects8 modules/required16 checks with new Evidence;48 handles
+are unique. Unsupported patch, implicit native/changed controls, missing module,
+foreign marker and corrupt old approval refuse with complete target unchanged.
+
+Old download13.90s and observed build65.14s pass. The actual ELF output has the
+same SHA256a0ae4ead71c6e9a6d15d524b6969799f20c1e64689e11eb316b567d04fb5e221
+as the earlier same-code Cobra build. The required pflag1.0.9 .mod remains bound
+to selected pflag1.0.10's exact declaration, checksum and approved readonly cache;
+no old ZIP/extracted source exists. Cache binding/build receipt/output hashes are
+preserved before payload deletion. Same-byte agreement itself is not SumDB proof.
+
+The actual old grpc1.76.0 exact get now passes114.11s with41 modules, and retained
+download passes87.14s with identical controls/versions. All164 Evidence handles
+across these two full inspections are unique and disjoint from48 update handles
+and previous captured source records. None invents context for the three pruned
+lower references. This is actual ordinary installed CLI/gVisor success beyond
+the independent native semantics probe; later remote consumers remain separate.
+
+Canonical helper2439815 wait0/CONFIRMED_STOPPED, original CLI/observer restoration,
+four protected identities and fresh root process/socket/Docker postguard PASS.
+After normalized Evidence/approval/cache receipts, controls, build receipt/ELF
+hashes and exact operators were preserved, all completed new trial payload/cache/
+lifecycle/candidate and temporary operators/pycs568851930B were deleted. The final
+cleanup operator was independently archived/verified and deleted separately.
+The separate native diagnostic's initial cleanup stopped at readonly Go module
+directories; its remainder200649362B and both operators were then deleted after
+changing only owned diagnostic directory write permission. Earlier partial bytes
+were not captured and are not included in an invented total. Active reusable
+checker/source/cache/observer/shared SDK and protected originals remain.
+
+Raw go-pruned-source-checkpoint, final profile inputs/results, actual-postanalysis,
+completed-cleanup and cleanup-operator-deleted receipts own these facts. The source
+was pushed normally to draft PR38, starting CI341/run39232873898. Prior CI340's
+failure remains preserved. New Required/exact checkout/native macOS/old-consumer
+CPU/confirmed cleanup is the sole Go acceptance gap. Do not restart that CI with
+a documentation-only push or advance Terraform source before closure.
 
 ## Implemented bounded behavior
 
