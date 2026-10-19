@@ -34,6 +34,7 @@ its publisher with receipt/state support, rather than replacing that publisher.
 | application existing InstallUpdateService | Reuse directly; no source edit unless an actual required gap is demonstrated | Existing ordering/ALLOW/close failure tests plus GitHub session binding; no inspection/staging skip or success after late failure |
 | cli/root.go, presentation/catalog/translations and existing install report | Add --replace static validation and per-request new mode; bind update service only for explicit intent | Explicit --target required; unsupported adopt/latest/native flags refuse before runtime; old new/default target still strict; EN/KO explanations, seven-language core help and JSON same facts |
 | bootstrap/bootstrap.go GitHub composition | Reuse same client/verifier/inspector/Evidence/Policy/staging/publisher; bind managed initial publisher and per-request replacement service | Static help without runtime, no shared mutable session, old install/inspect unaffected |
+| scripts/check/architecture.go promotion import allow-map | Add only promotion → artifact/githubrelease, matching the existing infrastructure-to-artifact edges for the other supported adapters | No Core/Application edge, external dependency or broad layer rule changes; old architecture negatives remain required |
 
 Initial approval records must retain exact selector/resolved identity/declared
 digest, asset size/mode/hash, Manifest identity, required completed checks, entry/
@@ -112,6 +113,12 @@ adapter's typed locator parser; no raw REST parsing or ambiguous name splitting
 is moved into Core/Application. Initial target/state failure and close failure
 must retain the first error and accurate publication status. Exact publication,
 approved independent state and safe cleanup are separate acceptance assertions.
+Promotion reuses its existing ProjectEvidenceReader capability; no concrete
+evidence/local dependency or Manifest-generator import is added. The one new
+artifact adapter edge above is needed to validate exact normalized repository
+ownership behind the existing frozen-locator parser. Existing canonical Manifest
+self-hash/SBOM verification is supplemented with destination/context, selected
+entry and real Evidence binding rather than importing another layer's generator.
 
 ## Activation after Terraform acceptance
 

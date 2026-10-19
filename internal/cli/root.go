@@ -163,6 +163,12 @@ func AddGitHubReleaseInstall(root *cobra.Command, parser ReferenceParser, instal
 	}
 	if install := findLeaf(root, "github", "install"); install != nil {
 		install.RunE = func(command *cobra.Command, args []string) error {
+			if err := validateGitHubInstallArgs(command, args); err != nil {
+				return err
+			}
+			if replace, _ := command.Flags().GetBool("replace"); replace {
+				return errors.New("github replacement use case is not configured")
+			}
 			reference, err := parser(args[0])
 			if err != nil {
 				return err
@@ -683,6 +689,9 @@ func initializeCommandTree(root *cobra.Command) {
 	github := ensureGitHubCommand(root)
 	github.AddCommand(newStaticLeaf("inspect <owner>/<repo>@<tag>#<asset>", "Inspect a GitHub Release asset", false))
 	githubInstall := newStaticLeaf("install <owner>/<repo>@<tag>#<asset>", "Install a GitHub Release asset", true)
+	githubInstall.Args = validateGitHubInstallArgs
+	githubInstall.Long = githubReplacementDescriptionEnglish
+	githubInstall.Flags().Bool("replace", false, "Replace only a proven HAA-managed asset after fresh inspection; requires --target")
 	github.AddCommand(githubInstall)
 	goCommand := ensureGoCommand(root)
 	goGet := newStaticLeaf("get <module>[@<version>]", "Inspect exact or upgraded public Go Module dependencies", false)

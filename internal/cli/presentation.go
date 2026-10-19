@@ -100,6 +100,9 @@ func PreparePresentation(root *cobra.Command, args []string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	if err := validateGitHubReplacementIntent(root, args); err != nil {
+		return "", err
+	}
 	command, remaining, err := root.Find(args)
 	if err != nil {
 		return "", err
@@ -128,7 +131,7 @@ func PreparePresentation(root *cobra.Command, args []string) (string, error) {
 	if err = p.configure(); err != nil {
 		return "", err
 	}
-	if command.CommandPath() == "helox npm update" || command.CommandPath() == "helox pip install" || command.CommandPath() == "helox cargo update" || command.CommandPath() == "helox go get" || command.CommandPath() == "helox terraform init" {
+	if command.CommandPath() == "helox npm update" || command.CommandPath() == "helox pip install" || command.CommandPath() == "helox cargo update" || command.CommandPath() == "helox go get" || command.CommandPath() == "helox terraform init" || command.CommandPath() == "helox github install" {
 		help, _ := command.Flags().GetBool("help")
 		if !help {
 			if err := command.ValidateArgs(command.Flags().Args()); err != nil {

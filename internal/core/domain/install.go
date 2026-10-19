@@ -36,9 +36,10 @@ func (t InstallTarget) String() string { return t.value }
 type InstallMode string
 
 const (
-	InstallNewTarget  InstallMode = "NEW_TARGET"
-	InstallNPMProject InstallMode = "NPM_PROJECT"
-	InstallPythonVenv InstallMode = "PYTHON_VENV"
+	InstallNewTarget   InstallMode = "NEW_TARGET"
+	InstallNPMProject  InstallMode = "NPM_PROJECT"
+	InstallPythonVenv  InstallMode = "PYTHON_VENV"
+	InstallGitHubAsset InstallMode = "GITHUB_MANAGED_ASSET"
 )
 
 // InstallContext identifies either the M4 explicit new target or an M9 npm
@@ -73,11 +74,20 @@ func NewPythonVenvInstallContext(venvRoot InstallTarget) (InstallContext, error)
 	return InstallContext{target: venvRoot, mode: InstallPythonVenv}, nil
 }
 
+// NewGitHubAssetInstallContext selects an explicitly managed standalone target.
+// The trusted original-state session must prove ownership before resolution.
+func NewGitHubAssetInstallContext(target InstallTarget) (InstallContext, error) {
+	if target.value == "" {
+		return InstallContext{}, errors.New("managed GitHub asset target is required")
+	}
+	return InstallContext{target: target, mode: InstallGitHubAsset}, nil
+}
+
 func (c InstallContext) Target() InstallTarget   { return c.target }
 func (c InstallContext) Mode() InstallMode       { return c.mode }
 func (c InstallContext) RequiresNewTarget() bool { return c.mode == InstallNewTarget }
 func (c InstallContext) Valid() bool {
-	return c.target.value != "" && (c.mode == InstallNewTarget || c.mode == InstallNPMProject || c.mode == InstallPythonVenv)
+	return c.target.value != "" && (c.mode == InstallNewTarget || c.mode == InstallNPMProject || c.mode == InstallPythonVenv || c.mode == InstallGitHubAsset)
 }
 
 // DependencyNodeID is an adapter-generated opaque identifier for one exact
