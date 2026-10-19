@@ -17,6 +17,52 @@ Other lanes wait for their independent baseline/qualification. See the
 This leaf owns the user-requested update-command contract. It supplements the
 installation journey, never weakens existing Policy or adds implicit Host execution.
 
+## Terraform project upgrade — reviewed initial semantics
+
+Pre-source [independent audit, edit map and second review](../planning/evidence/update-quarantine/terraform-update-baseline-20261019.md)
+identify the remaining work. Implementation waits for Go acceptance closure.
+Support `helox terraform init -upgrade [--adopt]` (`--upgrade` alias), with no
+positional provider. Preserve exact `init namespace/type@version`. Only the exact
+standalone native -upgrade token is normalized; values/false/duplicates, extra
+positionals, --adopt without upgrade and native backend/module/mirror/chdir/
+lockfile options refuse before composition. Existing global presentation options
+remain; upgrade permits explicit JSON.
+
+Following the [official provider upgrade semantics](https://developer.hashicorp.com/terraform/cli/commands/init#plugin-installation),
+ignore old selections and select the greatest stable public version satisfying
+all frozen literal constraints across reachable local modules. This initial lane
+accepts stable constraints/releases only,1..32 explicit providers; no provider or
+explicit prerelease constraint is unsupported. Validate the complete bounded
+version list and then the exact selected platform/protocol; do not choose an
+older version to hide unsupported latest platform/protocol. Reuse pinned x/mod
+semver and existing constraint parsing; Host Terraform is never invoked.
+
+Each provider uses one frozen discovery/versions/package selection; the same
+bytes bind its signed acquisition. Complete snapshot selection has no requested
+primary or fabricated dependency edges. Preserve all configuration bytes and
+module identities. An old lock must parse without orphan providers. Same-version
+hashes must still match and retain other-platform hashes; changed versions use
+the new authenticated package. Every selected provider receives fresh existing
+required verification/static/isolated probe/Evidence/entry and set Policy, even
+when nothing changes. RPC/plan/apply/cloud and remote/backend/module work remain
+outside Provider installation scope.
+
+Managed projects validate their independent old approval/cache/Evidence and
+complete installed tree. Explicit --adopt may supersede old control equality,
+never those independent proofs. Providerless native config/lock requires --adopt;
+unmanaged installed .terraform trees, foreign marker, corrupt/aliased authority
+and incomplete recovery refuse unchanged, including explicit adoption attempts.
+Lock hash presence does not grant native provider ownership.
+
+Reuse the existing complete-project workflow/cache/transaction. Snapshot-only
+update admission is confined to upgrade; ordinary exact init stays strict.
+Upgrade retains identical lock bytes/inode/mode/mtime, preserves ordinary existing
+permissions when changing lock, and creates an absent lock0600. Guard retained
+files at all publication/approval/rollback boundaries; preserve foreign mutations
+and recovery evidence. Human/JSON project-update results report source, selected
+identities, actual checks/Evidence/Policy and confirmed operation/promotion; late
+failure never becomes success. Existing signing, probe, bounds and runtime remain.
+
 ## User-facing scope
 
 Users must be able to request supported ecosystem updates through familiar commands
