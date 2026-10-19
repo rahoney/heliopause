@@ -14,7 +14,7 @@ Last completed work item: SEC-UPD-001 — COMPLETE; CLI-UX-003 reopened after fi
 Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002 and SEC-UPD-001 COMPLETE; CLI-UX-003 under revalidation
-Active work item status: IN_PROGRESS — full-frame PTY readiness amendment before test edits; fresh native/exact-source qualification remains
+Active work item status: IN_PROGRESS — full-frame PTY readiness locally qualified; fresh native/full exact-source qualification remains
 Next work item: M13-004 — BLOCKED on CLI-UX-003 revalidation and owner package naming
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -3370,14 +3370,16 @@ retain their original scope, superseded by the current acceptance table above.
 ### CLI-UX-003 — branded interactive launcher
 
 Status: IN_PROGRESS, the only active work item. IMPLEMENTED=YES / WIRED=YES /
-QUALIFIED=NO / ACCEPTANCE_CLOSED=NO. MISSING: complete-frame PTY readiness,
-deterministic regression and fresh native/full exact-source qualification.
+QUALIFIED=NO / ACCEPTANCE_CLOSED=NO. MISSING: fresh native/full exact-source
+qualification and completion documentation after local full-frame correction.
 CI348 qualified source2d1baa9, but documentation-only CI349 native interrupt
 capture failed. Product source is unchanged; the exact original cause is unknown.
 [Pre-test capture amendment](./evidence/cli-launcher/baseline-20261020.md#native-ci349-interrupt-capture-amendment--before-test-edits)
 reuses the driver and assertions and fixes the independently visible early-ready
 protocol gap. [Qualification](./evidence/cli-launcher/qualification-20261020.md)
 retains prior positive/negative/actual/native proof, failures and cleanup scope.
+The amended capture is locally qualified, including deterministic regressions,
+actual PTY/Ctrl-C stress, canonical checks, CLI Race and Darwin test compiles.
 No mode/budget/Required relaxation, skip or product rewrite is justified.
 Main merge, permanent activation and publication remain separate; PR38 stays draft.
 

@@ -1,8 +1,8 @@
 # CLI-UX-003 — qualification / 2026-10-20
 
 Status: IN_PROGRESS. IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO /
-ACCEPTANCE_CLOSED=NO. MISSING: complete-frame PTY readiness regression and fresh
-native/full exact-source qualification after CI349 interrupt capture failure.
+ACCEPTANCE_CLOSED=NO. MISSING: fresh native/full exact-source qualification and
+completion documentation after the locally qualified CI349 capture correction.
 CI348's source2d1baa9 remains historically qualified; final documentation-only
 CI349/e2c44bd failed native interrupt capture and reopens this item. Main merge,
 permanent installed CLI activation and publication remain separate.
@@ -231,3 +231,30 @@ records the independently visible cursor-hide readiness gap and full-frame barri
 required deterministic regressions and retained output/termios assertions.
 Prior COMPLETE statements above describe the CI348 checkpoint; current acceptance
 is open. Raw ci349-macos.log/failure receipt remain local; Linux is pending.
+
+## Full-frame correction — local qualification
+
+Plan e2719ea precedes the test changes (plan docs9.49s PASS). Two deterministic
+capture regressions are RED5.52s on the initial observer. The first correction's
+focused resize fails8s because an immediate20-column redraw can replace the
+80-column first frame before delivery. This is fixture readiness, not a product
+resize failure. The coalesced-output regression is RED1.50s. Final three capture
+regressions are GREEN1.46s: setup ANSI, split footer and a previous frame cannot
+release input; a complete known resized frame can.
+
+Only launcher_pty_test.go changes. Existing native driver,19 cases,8s fixture/
+5m inner/6m outer bounds, real Ctrl-C, context error, original termios, captured
+cursor/marker and NO_COLOR assertions remain required. Each helper's private
+completion file is diagnostic only, written after child assertions; it is never
+an alternate success predicate. Product signal/terminal/restoration source and
+runtime/Policy/dependency/workflow inputs remain unchanged. Actual CLI16 reuse
+concerns identical product source files, not a newly rebuilt binary identity.
+
+Exact final local input:
+6fec4ce146250daa0a4ddd3f386b98fa6c6aafeec681f9f1f07c195535eba93d.
+Canonical format0.26s, focused1.40s/native PTY19, separate Linux Ctrl-C/diagnosis
+interrupt40-of-40/2.23s, Quick177.42s/security6.25s/docs0.20s, full CLI Race41.60s,
+Darwin amd64/arm64 CLI test compile12.91s/13.89s PASS. All read-only checks retain
+the complete inventory. Linux repetition/cross-compilation do not replace native
+macOS; the original CI349 syscall/capture-loss cause remains unproven.
+Raw frame-{red,resize-red,focused,final-*} logs/receipts/inventories are local.

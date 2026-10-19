@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"path/filepath"
 	"regexp"
 	"runtime"
 	"strings"
@@ -35,12 +36,14 @@ func TestLauncherNativePTY(t *testing.T) {
 }
 
 type launcherPTYCapture struct {
-	mu          sync.Mutex
-	buffer      bytes.Buffer
-	ready       chan struct{}
-	doctorReady chan struct{}
-	once        sync.Once
-	doctorOnce  sync.Once
+	mu            sync.Mutex
+	buffer        bytes.Buffer
+	ready         chan struct{}
+	doctorReady   chan struct{}
+	once          sync.Once
+	doctorOnce    sync.Once
+	footer        string
+	resizedFooter string
 }
 
 func (w *launcherPTYCapture) Write(body []byte) (int, error) {
@@ -50,11 +53,21 @@ func (w *launcherPTYCapture) Write(body []byte) (int, error) {
 		return 0, errors.New("PTY fixture output exceeds bound")
 	}
 	n, err := w.buffer.Write(body)
-	if bytes.Contains(w.buffer.Bytes(), []byte("\x1b[?25l")) {
-		w.once.Do(func() { close(w.ready) })
-	}
-	if bytes.Contains(w.buffer.Bytes(), []byte("Checking environment")) {
-		w.doctorOnce.Do(func() { close(w.doctorReady) })
+	// Input must follow the whole current frame, not the alternate-screen
+	// preamble. In particular, VINTR may flush unread PTY output. A previous
+	// frame's footer must not release cancellation during a new diagnosis.
+	if start := bytes.LastIndex(w.buffer.Bytes(), []byte("\x1b[H\x1b[2J")); start >= 0 {
+		frame := w.buffer.Bytes()[start:]
+		complete := w.footer != "" && bytes.Contains(frame, []byte(w.footer))
+		if w.resizedFooter != "" && bytes.Contains(frame, []byte(w.resizedFooter)) {
+			complete = true
+		}
+		if complete {
+			w.once.Do(func() { close(w.ready) })
+			if bytes.Contains(frame, []byte("Checking environment")) {
+				w.doctorOnce.Do(func() { close(w.doctorReady) })
+			}
+		}
 	}
 	return n, err
 }
@@ -63,6 +76,81 @@ func (w *launcherPTYCapture) String() string {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 	return w.buffer.String()
+}
+
+func TestLauncherPTYCaptureWaitsForCompleteFrame(t *testing.T) {
+	const footer = "↑↓  Enter  Esc  q"
+	w := &launcherPTYCapture{ready: make(chan struct{}), doctorReady: make(chan struct{}), footer: footer}
+	write := func(body string) {
+		t.Helper()
+		if n, err := io.WriteString(w, body); err != nil || n != len(body) {
+			t.Fatalf("capture write: %d %v", n, err)
+		}
+	}
+	notReady := func() {
+		t.Helper()
+		select {
+		case <-w.ready:
+			t.Fatal("PTY input released before a complete frame was captured")
+		default:
+		}
+	}
+	write("\x1b[?1049h\x1b[?25l")
+	notReady()
+	write("\x1b[H\x1b[2JHeliopause Artifact Airlock\r\n")
+	notReady()
+	write(footer[:len(footer)-1])
+	notReady()
+	write(footer[len(footer)-1:])
+	select {
+	case <-w.ready:
+	default:
+		t.Fatal("complete split footer did not release input")
+	}
+}
+
+func TestLauncherPTYCaptureDiagnosisWaitsForOwnFrame(t *testing.T) {
+	const footer = "↑↓ move  Enter select  Esc back  q exit"
+	w := &launcherPTYCapture{ready: make(chan struct{}), doctorReady: make(chan struct{}), footer: footer}
+	for _, body := range []string{
+		"\x1b[?1049h\x1b[?25l\x1b[H\x1b[2Jhome\r\n" + footer,
+		"\x1b[H\x1b[2JChecking environment…\r\n",
+		footer[:len(footer)-1],
+	} {
+		if _, err := io.WriteString(w, body); err != nil {
+			t.Fatal(err)
+		}
+		select {
+		case <-w.doctorReady:
+			t.Fatal("diagnosis input borrowed a previous or partial frame footer")
+		default:
+		}
+	}
+	if _, err := io.WriteString(w, footer[len(footer)-1:]); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case <-w.doctorReady:
+	default:
+		t.Fatal("complete diagnosis frame did not release cancellation")
+	}
+}
+
+func TestLauncherPTYCaptureAcceptsCompletedResizedFrame(t *testing.T) {
+	const narrow = "↑↓  Enter  Esc  q"
+	w := &launcherPTYCapture{
+		ready: make(chan struct{}), doctorReady: make(chan struct{}),
+		footer: "↑↓ move  Enter select  Esc back  q exit", resizedFooter: narrow,
+	}
+	// A redraw can replace the first frame before the driver delivers it.
+	if _, err := io.WriteString(w, "\x1b[?1049h\x1b[?25l\x1b[H\x1b[2Jwide\x1b[H\x1b[2Jnarrow\r\n"+narrow); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case <-w.ready:
+	default:
+		t.Fatal("complete resized frame was ignored")
+	}
 }
 
 func runLauncherPTYFixture(t *testing.T, language, mode string) {
@@ -94,15 +182,23 @@ func runLauncherPTYFixture(t *testing.T, language, mode string) {
 		}
 		command.Env = append(command.Env, entry)
 	}
+	privateConfig := t.TempDir()
 	command.Env = append(command.Env, launcherPTYHelper+"="+mode,
-		"HELOX_LAUNCHER_PTY_CONFIG="+t.TempDir(),
+		"HELOX_LAUNCHER_PTY_CONFIG="+privateConfig,
 		"HELOX_LAUNCHER_PTY_LANGUAGE="+language, "TERM=xterm-256color", "NO_COLOR=1")
 	input, err := command.StdinPipe()
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer input.Close()
-	output := &launcherPTYCapture{ready: make(chan struct{}), doctorReady: make(chan struct{})}
+	footer := (&presentation{language: language}).text("↑↓ move  Enter select  Esc back  q exit", "↑↓ 이동  Enter 선택  Esc 뒤로  q 종료")
+	if mode == "narrow" {
+		footer = "↑↓  Enter  Esc  q"
+	}
+	output := &launcherPTYCapture{ready: make(chan struct{}), doctorReady: make(chan struct{}), footer: footer}
+	if mode == "resize" {
+		output.resizedFooter = "↑↓  Enter  Esc  q"
+	}
 	command.Stdout, command.Stderr = output, output
 	if err := command.Start(); err != nil {
 		t.Fatal("native PTY driver unavailable:", err)
@@ -158,7 +254,10 @@ func runLauncherPTYFixture(t *testing.T, language, mode string) {
 	}
 	text := output.String()
 	if !strings.Contains(text, "LAUNCHER_PTY_RESTORED") {
-		t.Fatal("PTY helper did not validate original terminal state", text)
+		// This private witness is diagnostic only: never substitute it for
+		// captured output, termios, cursor/screen or process-success assertions.
+		completed, readErr := os.ReadFile(filepath.Join(privateConfig, "pty-completed"))
+		t.Fatalf("PTY helper did not validate original terminal state: child_completion=%q error=%v\n%s", completed, readErr, text)
 	}
 	excluded := mode == "CI" || mode == "dumb" || mode == "json" || mode == "help"
 	if excluded {
@@ -323,6 +422,9 @@ func TestLauncherPTYProcess(t *testing.T) {
 		t.Fatal("unexpected doctor activity", mode, calls)
 	}
 	if _, err := fmt.Fprintln(os.Stdout, "\nLAUNCHER_PTY_RESTORED"); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(os.Getenv("HELOX_LAUNCHER_PTY_CONFIG"), "pty-completed"), []byte("terminal and doctor assertions completed\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 }
