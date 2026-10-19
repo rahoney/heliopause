@@ -1,10 +1,11 @@
 # CLI-UX-003 — qualification / 2026-10-20
 
-Status: COMPLETE. IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES /
-ACCEPTANCE_CLOSED=YES. MISSING: none for bounded launcher acceptance.
-Source2d1baa9 / CI348 Required and nine prerequisites are actual SUCCESS.
-Final documentation-delivery CI is separately checked; main merge, permanent
-installed CLI activation and publication remain separate.
+Status: IN_PROGRESS. IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO /
+ACCEPTANCE_CLOSED=NO. MISSING: complete-frame PTY readiness regression and fresh
+native/full exact-source qualification after CI349 interrupt capture failure.
+CI348's source2d1baa9 remains historically qualified; final documentation-only
+CI349/e2c44bd failed native interrupt capture and reopens this item. Main merge,
+permanent installed CLI activation and publication remain separate.
 The sections below distinguish local, native and full remote qualification.
 
 Native CI346 failure: job118163210310 production build passes but default test
@@ -217,3 +218,16 @@ ci348-native-qualified.json, ci348-linux-verified.json and the three *cleanup.js
 receipts. macOS SHA256ead33240ac2060266b44a3dba72a06fe0a07f82d6be13e2c5ca8ea6cfc894b13;
 Linux SHA256f117df78e9a4e4b9311b91035f6f1a32b3f148c0fb00b4358420b494e56d7445.
 Raw evidence is local/untracked, not a remote attachment.
+
+## CI349 interrupt capture — acceptance reopened
+
+Native macOS118221490850/checkout30afbac has the exact e2c44bd tree230a9e6;
+only five documents differ from qualified source2d1baa9. Within-bound default
+reports only TestLauncherNativePTY/interrupt failure: driver/helper exit0 and
+initial alternate-screen/cursor-hide bytes, but no restoration marker. This is
+not the earlier termios inequality or timeout. Exact old syscall/cause is unknown.
+[Pre-test amendment](./baseline-20261020.md#native-ci349-interrupt-capture-amendment--before-test-edits)
+records the independently visible cursor-hide readiness gap and full-frame barrier,
+required deterministic regressions and retained output/termios assertions.
+Prior COMPLETE statements above describe the CI348 checkpoint; current acceptance
+is open. Raw ci349-macos.log/failure receipt remain local; Linux is pending.
