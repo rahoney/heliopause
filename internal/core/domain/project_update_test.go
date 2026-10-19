@@ -91,3 +91,43 @@ func TestProjectControlPresenceAndBounds(t *testing.T) {
 		t.Fatal("unbounded control accepted")
 	}
 }
+
+func TestCompleteProjectUpdateDoesNotInventOrRelaxRequestedPrimary(t *testing.T) {
+	snapshot, _ := projectApprovalFixture(t)
+	original, _ := NewProjectControlFile("Cargo.lock", []byte("original"), true)
+	selected, _ := NewProjectControlFile("Cargo.lock", []byte("selected"), true)
+	control, _ := NewProjectControlDigest(selected.Name(), selected.Digest())
+	snapshot.controls = []ProjectControlDigest{control}
+	before, after := []ProjectControlFile{original}, []ProjectControlFile{selected}
+	if _, err := NewProjectDependencyUpdate(before, after, snapshot, DependencyResolution{}); err == nil {
+		t.Fatal("requested-primary constructor accepted no requested resolution")
+	}
+	for _, empty := range []bool{false, true} {
+		candidate := snapshot
+		if empty {
+			var err error
+			candidate, err = NewDependencyFreeProjectSnapshot(snapshot.Context(), snapshot.Source(), snapshot.ControlDigests(), snapshot.GraphDigest())
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+		update, err := NewProjectDependencyUpdateFromSnapshot(before, after, candidate)
+		if err != nil || !update.Valid() || update.HasRequestedResolution() || update.Resolution().LockfileDigest().String() != "" || len(update.Resolution().Graph().Nodes()) != 0 || update.Snapshot().DependencyFree() != empty {
+			t.Fatalf("complete-project identity was lost or primary invented: %v", err)
+		}
+		copyBody := update.SelectedControls()[0].Body()
+		copyBody[0] = 'X'
+		if string(update.SelectedControls()[0].Body()) != "selected" {
+			t.Fatal("complete-project controls are mutable")
+		}
+		wrong, _ := NewProjectControlFile("Cargo.lock", []byte("different"), true)
+		for _, values := range [][]ProjectControlFile{nil, {wrong}, {selected, selected}} {
+			if _, err := NewProjectDependencyUpdateFromSnapshot(before, values, candidate); err == nil {
+				t.Fatal("unbound selected controls accepted")
+			}
+		}
+	}
+	if (ProjectDependencyUpdate{}).HasRequestedResolution() || (ProjectDependencyUpdate{}).Valid() {
+		t.Fatal("zero update acquired validity")
+	}
+}

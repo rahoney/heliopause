@@ -1,7 +1,8 @@
 # SEC-UPD-001 — Cargo update baseline / 2026-10-19
 
 Status: pre-source audit, pinned-tool selection review and second review complete;
-implementation/actual product qualification remain NOT_STARTED. SEC-UPD-001 is the
+implementation and local automated checks are complete; actual product
+qualification remains NOT_STARTED. SEC-UPD-001 is the
 only active work item. PyPI qualification, restoration and completed fixture/tool
 cleanup are confirmed. The independent pinned-tool probe below is complete;
 it is not product qualification. Source3060952 is the inspected Go baseline;
@@ -100,6 +101,15 @@ This establishes pinned tool semantics only. Synthetic source replacement is
 never admitted into the product and does not authenticate public crates, prove
 gVisor observation or close actual CLI acceptance.
 
+The first product-boundary RED is cargo-command-admission-red3.28s: existing exact
+admission rejects update, update -p name and update -p name@locked-version. Existing
+metadata/add and unsupported forms retain their expected outcomes. This is the
+documented new-command gap, not a regression in historical add/build support.
+The first in-place changes add complete-project update data/selector binding and
+private selection while preserving old primary-only consumers. Application/CLI
+wiring, native enrollment, lock-only publication and final qualification remain
+MISSING; no complete Cargo support is claimed from these changes.
+
 Exact initial forms, selector/enrollment meaning, supported originals and rejected
 flags are owned by [contract06's Cargo scope](../../../user-journey-cli-ia/06-update-quarantine.md#cargo-lock-update--reviewed-initial-semantics).
 The observed pinned behavior above supports that scope; it is not permission for
@@ -116,7 +126,7 @@ claimed.
 | Owner | Exact in-place extension | Meaningful verification |
 | --- | --- | --- |
 | core/domain/project_update.go | Add an explicitly complete-snapshot constructor and HasRequestedResolution to the existing immutable update value. Share original/selected control validation; keep the old requested-primary constructor strict. Never invent a primary or relax LockedDependencyGraph | Original constructor still rejects missing/mismatched resolution; new variant binds all controls/context/source/graph and explicit dependency-free snapshots; bytes remain immutable |
-| application/project_update.go and existing Go/Terraform promotion Commit consumers | Preserve the requested-resolution requirement for the existing get/add/init entry points. Factor the existing guard→selection→complete inspection→staging→commit→close workflow for the new complete-project callback; retain errors.Is/primary cause and zero successful result after close failure | Existing pipeline order/fault matrix plus a new no-primary substitution refusal for old consumers; no new Go -u or Terraform upgrade functionality |
+| core/ports/ports.go, application/project_update.go, application/cargo.go and existing Go/Terraform promotion Commit consumers | Preserve the requested-resolution requirement for the existing get/add/init entry points. Factor the existing guard→selection→complete inspection→staging→commit→close workflow for the new complete-project callback; retain errors.Is/primary cause and zero successful result after close failure | Existing pipeline order/fault matrix plus a new no-primary substitution refusal for old consumers; no new Go -u or Terraform upgrade functionality |
 | core/ports/ports.go and application/cargo.go | Add only the now-needed lock-selection port and Cargo update use case, consuming one frozen complete update without ArtifactReference fabrication. Reuse ProjectInspectService, M3/M4 and ProjectCacheStaging | Harmful new/transitive bytes, incomplete integrity/inspection, review/block, no-op fresh runs, cancellation, stage/commit/close failures and no publication on any failed boundary |
 | artifact/cargo/metadata.go and locked_metadata.go, small update helper | Reuse crate grammar and parseLock for bounded optional name@locked-version and unique public-lock membership; no URL/registry or local package selectors | Exact/bare/ambiguous/missing/local/invalid selectors; malformed/untrusted-source lock rejects before SDK |
 | sandbox/cargo_project_resolver.go | Reuse anchored capture/privateWorkspace, original-control comparison, private environment, locked metadata and BuildProjectSnapshot. Add ResolveProjectLockUpdate and narrowly factor shared selection. Update permits only Cargo.lock bytes to change; every local manifest and source file remains exact | Frozen original mismatch, manifest/local source drift, unexpected added files, selected lock/source mutation, cleanup/cancellation, complete workspace/features/empty graph |
@@ -124,7 +134,15 @@ claimed.
 | promotion/cargo_approved_transaction.go | Extend Begin internally for explicit lock-update enrollment. Existing Begin remains strict. Even with --adopt validate canonical project-bound old independent approval/cache/Evidence and retain its original snapshot; only its equality to deliberately changed current controls/local manifests may be superseded by a newly fully inspected set. Missing independent approval plus a foreign HAA marker, corrupt state/cache or recovery journal still refuses. Guard actual current source/controls and old retained state through publication | Managed/native/mixed changed-control intent; implicit adoption refusal; forged marker/corrupt old state/cache; concurrent source/state drift; rollback returns actual pre-update user controls and old approval, not historical pre-user-edit inputs |
 | promotion/cargo_approved_transaction.go and cargo_transaction.go | Feed complete-snapshot updates into existing commitSelection with explicit lock-only intent. Preserve Cargo.toml/local manifests byte/inode/mode; keep an unchanged lock in place on no-op. Changed Cargo.lock preserves its supported original permission mode. Extend existing backup/publish/rollback bookkeeping to skip retained controls while still validating their exact original identity and selected digest. CommitSnapshot keeps its current-state-only restriction | Manifest mutation refusal; unchanged inode/mode; changed lock exact inspected bytes; selected tampering; concurrent retained-control replacement; every commit fault and confirmed rollback/recovery uncertainty; old add/build behavior unchanged |
 | bootstrap/cargo.go and bootstrap.go | Reuse the already constructed public client/verifier/inspector/Evidence/cache/promoter; supply per-request explicit adoption through a small adapter, without mutable global service rebinding | New command wired to real use case, separate requests cannot share adoption/selector state, old add/build wiring retained |
-| cli/root.go, cargo update presenter and presentation_catalog.go | Register no-positional update with a bounded StringArray -p/--package to reject repeated occurrences and explicit --adopt. Use actual complete inspection facts for human/JSON checks, policy and Evidence. Success requires completed publication and close; failed/uncertain rollback never prints success. Preserve existing operation-result schemas; a project-scoped result may express complete-project context without a fake artifact primary. Localize English/Korean help/report explanations through existing presentation | Zero/one selector, repeated/unsupported args, target/cwd, user intent, EN/KO help/human, JSON no ANSI, actual checks/Evidence, policy refusal and uncertain commit failure agree on failure; no speculative rollback-success inference |
+| cli/root.go, presentation.go, cargo update presenter and presentation_catalog.go; reuse human_report.go | Register no-positional update with a bounded StringArray -p/--package to reject repeated occurrences and explicit --adopt. Use actual complete inspection facts for human/JSON checks, policy and Evidence. Success requires completed publication and close; failed/uncertain rollback never prints success. Preserve existing operation-result schemas; a project-scoped result may express complete-project context without a fake artifact primary. Localize English/Korean help/report explanations through existing presentation | Zero/one selector, repeated/unsupported args, target/cwd, user intent, EN/KO help/human, JSON no ANSI, actual checks/Evidence, policy refusal and uncertain commit failure agree on failure; no speculative rollback-success inference |
+
+The retained-control review also inspected `promotion/control_transaction_backup.go`
+(`54bde4146b4e899cacfc21307c3fef1e9ad14a600aa05fdd5338db73b28f5f98`).
+Its existing backupRecords tracks moved originals and unpublished selected files
+independently, so omitted backups and retained staging files already have exact
+cleanup coverage. Reuse it without changing shared cleanup. Direct retention RED
+4.78s confirms manifest replacement, permission change and no-op lock replacement;
+the existing Go/Terraform no-primary refusals pass in that same input.
 
 No scanner, approval cache, source protocol, transaction or observer is replaced.
 An observer/runtime change is not planned. If the exact new command exposes an
@@ -166,3 +184,24 @@ canonical helper lifecycle and exact original restore/postguards before cleanup.
 Preserve original failures, receipts and Evidence; delete completed private data,
 containers and temporary operators. Fresh remote Required/native macOS scope is
 independent of local and networkless tool-semantic success.
+
+The lock-only retention GREEN6.15s passed its direct regression and affected old
+transactions. Enrollment/fault GREEN12.61s additionally passes explicit native/
+changed-input enrollment, current approval, corruption/cache/Evidence/recovery
+refusals, all four commit fault phases, same-byte retained identity substitution
+and existing Cargo build-input consumers. A prior compile failure exposed the
+build consumer of verifyRetainedApproval; its strict existing signature now stays
+intact and only the explicit update path calls the changed-input variant. This
+is focused synthetic qualification, not actual public CLI acceptance.
+
+Before CLI source changes, composition review confirms PreparePresentation parses
+flags before the final Cobra Execute. The new StringArray package selector must
+be reset after preflight validation so a legitimate single occurrence is not
+appended twice during execution. Keep duplicate rejection before runtime setup;
+verify both direct execution and preflight→execution. Allow explicit JSON only
+for cargo update; preserve existing other Cargo/Go/Terraform JSON restrictions.
+Reuse human_report renderChecks/reasons and add exact Cargo check descriptions.
+
+The implemented slice and final local checks now belong to the linked
+[qualification](./cargo-update-qualification-20261019.md). The historical NO rows
+above remain the pre-source baseline, not a new claim that wired code is missing.

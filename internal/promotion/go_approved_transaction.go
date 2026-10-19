@@ -212,7 +212,7 @@ func sameGoTransactionControls(left, right []domain.ProjectControlFile) bool {
 }
 
 func (g *approvedGoProjectGuard) Commit(ctx context.Context, update domain.ProjectDependencyUpdate, staged domain.StagedProjectSet) (resultErr error) {
-	if g == nil || !update.Valid() || !staged.Valid() || update.Snapshot().Context() != g.context || update.Snapshot().Source() != artifactgo.Source() || !sameGoTransactionControls(g.plan.controls, update.OriginalControls()) {
+	if g == nil || !update.HasRequestedResolution() || !staged.Valid() || update.Snapshot().Context() != g.context || update.Snapshot().Source() != artifactgo.Source() || !sameGoTransactionControls(g.plan.controls, update.OriginalControls()) {
 		return errors.New("go transaction update differs from guarded project")
 	}
 	return g.commitSelection(ctx, update.Snapshot(), update.SelectedControls(), staged)

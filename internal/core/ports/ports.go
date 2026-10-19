@@ -52,6 +52,12 @@ type ProjectDependencyUpdateResolver interface {
 	ResolveProjectDependencyUpdate(context.Context, domain.ArtifactReference, domain.InstallContext, []domain.ProjectControlFile) (domain.ProjectDependencyUpdate, error)
 }
 
+// ProjectLockUpdateResolver selects a complete lock graph without a requested
+// primary. Selector grammar and native tool semantics belong to the adapter.
+type ProjectLockUpdateResolver interface {
+	ResolveProjectLockUpdate(context.Context, domain.InstallContext, []domain.ProjectControlFile, string) (domain.ProjectDependencyUpdate, error)
+}
+
 // ProjectMutationGuard holds the original target through selection, approval
 // and commit. Commit accepts only the frozen update and its approved cache.
 type ProjectMutationGuard interface {

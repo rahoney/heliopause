@@ -286,7 +286,7 @@ func (g *approvedTerraformProjectGuard) verifyStateOriginal() error {
 }
 
 func (g *approvedTerraformProjectGuard) Commit(ctx context.Context, update domain.ProjectDependencyUpdate, staged domain.StagedProjectSet) (resultErr error) {
-	if g == nil || !update.Valid() || !staged.Valid() || update.Snapshot().Context() != g.install || update.Snapshot().Source() != artifactterraform.Source() || !equalTerraformControls(g.Controls(), update.OriginalControls()) {
+	if g == nil || !update.HasRequestedResolution() || !staged.Valid() || update.Snapshot().Context() != g.install || update.Snapshot().Source() != artifactterraform.Source() || !equalTerraformControls(g.Controls(), update.OriginalControls()) {
 		return errors.New("terraform frozen update differs from guarded project")
 	}
 	if e := g.VerifyUnchanged(ctx); e != nil {

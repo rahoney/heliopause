@@ -74,6 +74,13 @@ func validCargoResolverCommand(arguments []string) bool {
 	if strings.Join(arguments, "\x00") == "metadata\x00--locked\x00--format-version\x001" {
 		return true
 	}
+	if len(arguments) == 1 && arguments[0] == "update" {
+		return true
+	}
+	if len(arguments) == 3 && arguments[0] == "update" && arguments[1] == "-p" && arguments[2] != "" {
+		selector, err := artifactcargo.ParseUpdateSelector(arguments[2])
+		return err == nil && selector == arguments[2]
+	}
 	if len(arguments) != 2 || arguments[0] != "add" {
 		return false
 	}
@@ -108,6 +115,9 @@ func (r *IsolatedCargoRunner) RunCargo(ctx context.Context, workspace string, en
 	frozen := source.files()
 	if arguments[0] == "metadata" && len(frozen["Cargo.lock"]) == 0 {
 		return nil, errors.New("cargo metadata requires a frozen lock")
+	}
+	if arguments[0] == "update" && len(frozen["Cargo.lock"]) == 0 {
+		return nil, errors.New("cargo update requires a frozen lock")
 	}
 	archive, err := source.archive()
 	if err != nil {
@@ -239,6 +249,9 @@ func (r *IsolatedCargoRunner) RunCargo(ctx context.Context, workspace string, en
 	}
 	if arguments[0] == "metadata" && (!bytes.Equal(selectedManifest, frozen["Cargo.toml"]) || !bytes.Equal(selectedLock, frozen["Cargo.lock"])) {
 		return nil, errors.New("cargo metadata changed frozen controls")
+	}
+	if arguments[0] == "update" && !bytes.Equal(selectedManifest, frozen["Cargo.toml"]) {
+		return nil, errors.New("cargo lock update changed the frozen manifest")
 	}
 	return output, nil
 }

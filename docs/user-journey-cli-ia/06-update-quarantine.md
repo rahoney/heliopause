@@ -503,3 +503,11 @@ Human/JSON success requires confirmed publication and successful close. Failure
 and rollback uncertainty cannot become update success. The
 [baseline/edit map and second review](../planning/evidence/update-quarantine/cargo-update-baseline-20261019.md)
 own implementation locations, pinned-tool evidence and acceptance checks.
+
+Cargo update JSON uses `helox.project-update-result/v1`, a project-scoped result
+without a fabricated primary artifact. It includes operation/publication status,
+source, optional selector, exact graph identity, dependency-free state and each
+entry's identity/digest/run/checks/Evidence/Policy. Completed trusted inspection
+facts can be retained with a failed update, but its publication status remains
+NOT_COMPLETED. That state does not assert successful rollback. Existing
+`helox.operation-result/v1` and other commands' output contracts are unchanged.

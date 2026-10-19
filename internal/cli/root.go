@@ -687,6 +687,12 @@ func initializeCommandTree(root *cobra.Command) {
 	cargo := ensureCargoCommand(root)
 	cargo.AddCommand(newStaticLeaf("add <crate>@<version>", "Resolve and transactionally add a public crates.io crate", false))
 	cargo.AddCommand(newStaticNoArgLeaf("build", "Build a Cargo project from the HAA-verified crate cache"))
+	cargoUpdate := newStaticNoArgLeaf("update", "Inspect the complete selected crate graph before updating Cargo.lock")
+	cargoUpdate.Args = validateCargoUpdateArgs
+	cargoUpdate.Long = cargoUpdateDescriptionEnglish
+	cargoUpdate.Flags().StringArrayP("package", "p", nil, "Select one existing public crate by name or name@locked-version")
+	cargoUpdate.Flags().Bool("adopt", false, "Explicitly enroll supported native or changed project controls after full inspection")
+	cargo.AddCommand(cargoUpdate)
 	terraform := ensureTerraformCommand(root)
 	terraform.AddCommand(newStaticLeaf("init <namespace/type@version>", "Resolve an exact public Terraform Provider", false))
 }

@@ -33,6 +33,7 @@ func localizeHelp(root *cobra.Command, p *presentation) {
 		"helox go build":              {"Build the approved Go project", "허용된 Go 프로젝트를 격리 환경에서 빌드합니다"},
 		"helox cargo":                 {"Inspect and build public crates.io packages", "공개 crates.io 패키지 검사·빌드"},
 		"helox cargo add":             {"Inspect and add Rust dependencies", "Rust 의존성을 검사한 뒤 프로젝트에 추가합니다"},
+		"helox cargo update":          {"Inspect and update the complete Rust lock graph", "전체 Rust 의존성을 검사한 뒤 잠금파일을 업데이트합니다"},
 		"helox cargo build":           {"Build the approved Rust project", "허용된 Rust 프로젝트를 격리 환경에서 빌드합니다"},
 		"helox terraform":             {"Install public Terraform Providers", "공개 Terraform Provider 설치"},
 		"helox terraform init":        {"Inspect and install Terraform Providers", "Terraform Provider를 검사한 뒤 설치합니다"},
@@ -44,6 +45,9 @@ func localizeHelp(root *cobra.Command, p *presentation) {
 	visit = func(command *cobra.Command) {
 		if command.CommandPath() == "helox npm update" {
 			command.Long = p.text(npmUpdateDescriptionEnglish, npmUpdateDescriptionKorean)
+		}
+		if command.CommandPath() == "helox cargo update" {
+			command.Long = p.text(cargoUpdateDescriptionEnglish, cargoUpdateDescriptionKorean)
 		}
 		if command.CommandPath() == "helox pip install" {
 			command.Long = p.text(pypiUpgradeDescriptionEnglish, pypiUpgradeDescriptionKorean)
@@ -60,6 +64,7 @@ func localizeHelp(root *cobra.Command, p *presentation) {
 			"progress":                 {"Progress: auto, always or never", "진행 표시: auto(자동), always(사용), never(미사용)"},
 			"verbose":                  {"Show bounded runtime diagnostics", "제한된 진단 정보와 검사 기록 식별자를 표시합니다"},
 			"target":                   {"Installation target path", "검증한 파일을 설치할 대상 경로"},
+			"package":                  {"Select one existing public crate by name or name@locked-version", "기존 공개 crate 하나를 이름 또는 이름@기존잠금버전으로 선택합니다"},
 			"adopt":                    {"Explicitly replace supported native project dependencies after full inspection", "지원하는 기존 프로젝트를 명시적으로 등록하고 전체 검사 후 의존성을 교체합니다"},
 			"upgrade":                  {"Inspect the complete selected closure before upgrading (only-if-needed)", "선택된 전체 의존성을 검사한 뒤 only-if-needed 전략으로 업데이트합니다"},
 			"source":                   {"Explicit package source", "검사에 사용할 명시적 패키지 출처"},
@@ -74,6 +79,9 @@ func localizeHelp(root *cobra.Command, p *presentation) {
 		}
 		if command.CommandPath() == "helox pip install" {
 			command.Flags().Lookup("adopt").Usage = p.text("Enroll supported native wheel files after independent ownership verification and full inspection", "공식 wheel과 기존 파일의 소유권을 대조하고 전체 검사 후 지원하는 일반 venv를 등록합니다")
+		}
+		if command.CommandPath() == "helox cargo update" {
+			command.Flags().Lookup("adopt").Usage = p.text("Enroll supported native or changed controls after complete inspection", "지원하는 일반 프로젝트나 변경한 설정을 전체 검사 후 명시적으로 등록합니다")
 		}
 		for _, child := range command.Commands() {
 			visit(child)

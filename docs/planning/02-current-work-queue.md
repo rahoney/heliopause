@@ -3341,7 +3341,7 @@ linked qualification owners rather than duplicate progress narratives here.
 | Public PyPI managed venv | YES / YES / YES / YES | [Managed qualification](./evidence/update-quarantine/pypi-managed-qualification-20261019.md), sourcec93ce58/CI331; actual update/fresh no-op/refusals and bounded retired-metadata correction |
 | Bounded public-native PyPI enrollment | YES / YES / YES / YES | [Native qualification](./evidence/update-quarantine/pypi-native-qualification-20261019.md), source2e8844f/CI332 and separately scoped affected retirement regressions; authentic old wheel footprint, foreign-file protection and exact held transaction |
 | Named PyTorch managed venv, CPU/cu126/cu130/cu132 | YES / YES / YES / YES | [Final named qualification](./evidence/update-quarantine/pytorch-update-qualification-20261019.md), source306/CI336; all four actual version updates/fresh no-ops/unchanged refusals, confirmed helper stop/original restoration/postguards and completed data/operator cleanup |
-| Cargo lock update | NO / NO / NO / NO | Current [reviewed pre-source audit](./evidence/update-quarantine/cargo-update-baseline-20261019.md); pinned semantics12 operations, exact edit map and second review complete; implementation/actual qualification next |
+| Cargo lock update | YES / YES / NO / NO | [Reviewed audit](./evidence/update-quarantine/cargo-update-baseline-20261019.md) and [current qualification](./evidence/update-quarantine/cargo-update-qualification-20261019.md); lock-only selection, enrollment, transaction and CLI wired; actual installed update/add/build, restoration/cleanup and new-source remote evidence remain MISSING |
 | Scoped Go get -u, Terraform project upgrade, GitHub managed replacement | NO / NO / NO / NO | Independent selection/ownership/CLI and actual acceptance remain MISSING; existing selected-version/install infrastructure is reused |
 
 The reviewed bounded PyPI lane is closed; broader native named footprints are not
@@ -3354,7 +3354,12 @@ not relabel them as new runs. No candidate is permanently activated.
 Next within SEC-UPD-001 is Cargo. PyPI originals are restored and completed trial
 payloads/cache/lifecycle plus the six final temporary operators are deleted;
 Evidence/Manifest/SBOM/raw archives and active reusable tooling are preserved.
-No Cargo product source has changed yet. Pinned Cargo1.99.0 networkless semantics
+Cargo's reviewed in-place implementation follows direct command-admission and
+retained-control REDs. Complete-project selection, explicit enrollment, lock-only
+publication and human/JSON CLI are wired. Final canonical Host Quick259.64s,
+security13.44s/docs and related Race148.85s pass; actual installed qualification,
+restoration/cleanup and new-source remote evidence remain MISSING.
+Pinned Cargo1.99.0 networkless semantics
 passed12 operations; owned containers, fixture and temporary operator were deleted.
 Its exact edit map and second review include preserving manifests/unchanged lock
 identity and existing Go/Terraform primary-only consumers. Implement only those

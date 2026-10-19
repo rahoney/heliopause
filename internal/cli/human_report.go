@@ -197,9 +197,9 @@ func (p *presentation) renderChecks(checks []domain.CheckExecution) {
 }
 func (p *presentation) checkName(id string) string {
 	switch id {
-	case "npm-declared-integrity", "pypi-declared-sha256", "github-release-declared-sha256":
+	case "npm-declared-integrity", "pypi-declared-sha256", "github-release-declared-sha256", "cargo-registry-integrity":
 		return p.text("Declared integrity / digest", "출처 선언 무결성·해시 검증")
-	case "npm-static-archive", "pypi-static-archive", "github-release-static":
+	case "npm-static-archive", "pypi-static-archive", "github-release-static", "cargo-crate-static":
 		return p.text("Archive / metadata static inspection", "압축파일·메타데이터 정적 검사")
 	case "npm-dynamic-lifecycle", "pypi-dynamic-import", "github-release-elf-dynamic":
 		return p.text("Isolated behavior inspection", "격리 환경 동작 검사")

@@ -104,6 +104,12 @@ func PreparePresentation(root *cobra.Command, args []string) (string, error) {
 	if err = command.ParseFlags(remaining); err != nil {
 		return "", err
 	}
+	// Preflight and Execute parse the same argv. Slice flags must not accumulate
+	// one accepted occurrence twice; explicit repeats were validated before reset.
+	if command.CommandPath() == "helox cargo update" {
+		flag := command.Flags().Lookup("package")
+		defer func() { _ = flag.Value.(interface{ Replace([]string) error }).Replace(nil); flag.Changed = false }()
+	}
 	p := presentationFor(root.OutOrStdout())
 	top := command
 	for top.Parent() != nil && top.Parent() != root {
@@ -118,7 +124,7 @@ func PreparePresentation(root *cobra.Command, args []string) (string, error) {
 	if err = p.configure(); err != nil {
 		return "", err
 	}
-	if command.CommandPath() == "helox npm update" || command.CommandPath() == "helox pip install" {
+	if command.CommandPath() == "helox npm update" || command.CommandPath() == "helox pip install" || command.CommandPath() == "helox cargo update" {
 		help, _ := command.Flags().GetBool("help")
 		if !help {
 			if err := command.ValidateArgs(command.Flags().Args()); err != nil {
@@ -129,7 +135,7 @@ func PreparePresentation(root *cobra.Command, args []string) (string, error) {
 	if p.language != "en" {
 		localizeHelp(root, p)
 	}
-	if p.output == "json" && (source == "go" || source == "cargo" || source == "terraform" || source == "doctor") {
+	if p.output == "json" && (source == "go" || (source == "cargo" && command.CommandPath() != "helox cargo update") || source == "terraform" || source == "doctor") {
 		return "", errors.New("explicit JSON output is not available for this command")
 	}
 	return source, nil
