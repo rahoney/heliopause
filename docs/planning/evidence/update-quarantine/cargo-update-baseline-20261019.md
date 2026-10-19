@@ -1,8 +1,8 @@
 # SEC-UPD-001 — Cargo update baseline / 2026-10-19
 
-Status: pre-source audit, pinned-tool selection review and second review complete;
-implementation and local automated checks are complete; actual product
-qualification remains NOT_STARTED. SEC-UPD-001 is the
+Status: historical pre-source audit, pinned-tool selection review and second
+review complete. Current implementation/local actual qualification and remaining
+remote evidence are owned by [qualification](./cargo-update-qualification-20261019.md). SEC-UPD-001 is the
 only active work item. PyPI qualification, restoration and completed fixture/tool
 cleanup are confirmed. The independent pinned-tool probe below is complete;
 it is not product qualification. Source3060952 is the inspected Go baseline;

@@ -3341,7 +3341,7 @@ linked qualification owners rather than duplicate progress narratives here.
 | Public PyPI managed venv | YES / YES / YES / YES | [Managed qualification](./evidence/update-quarantine/pypi-managed-qualification-20261019.md), sourcec93ce58/CI331; actual update/fresh no-op/refusals and bounded retired-metadata correction |
 | Bounded public-native PyPI enrollment | YES / YES / YES / YES | [Native qualification](./evidence/update-quarantine/pypi-native-qualification-20261019.md), source2e8844f/CI332 and separately scoped affected retirement regressions; authentic old wheel footprint, foreign-file protection and exact held transaction |
 | Named PyTorch managed venv, CPU/cu126/cu130/cu132 | YES / YES / YES / YES | [Final named qualification](./evidence/update-quarantine/pytorch-update-qualification-20261019.md), source306/CI336; all four actual version updates/fresh no-ops/unchanged refusals, confirmed helper stop/original restoration/postguards and completed data/operator cleanup |
-| Cargo lock update | YES / YES / NO / NO | [Reviewed audit](./evidence/update-quarantine/cargo-update-baseline-20261019.md) and [current qualification](./evidence/update-quarantine/cargo-update-qualification-20261019.md); lock-only selection, enrollment, transaction and CLI wired; actual installed update/add/build, restoration/cleanup and new-source remote evidence remain MISSING |
+| Cargo lock update | YES / YES / NO / NO | [Reviewed audit](./evidence/update-quarantine/cargo-update-baseline-20261019.md) and [current qualification](./evidence/update-quarantine/cargo-update-qualification-20261019.md); source85ac4c1; final local checks and20 installed phases including old add/build, dependency-free/workspace, restoration and145.90MB cleanup PASS; CI338 Linux/Required final evidence remains MISSING |
 | Scoped Go get -u, Terraform project upgrade, GitHub managed replacement | NO / NO / NO / NO | Independent selection/ownership/CLI and actual acceptance remain MISSING; existing selected-version/install infrastructure is reused |
 
 The reviewed bounded PyPI lane is closed; broader native named footprints are not
@@ -3357,8 +3357,12 @@ Evidence/Manifest/SBOM/raw archives and active reusable tooling are preserved.
 Cargo's reviewed in-place implementation follows direct command-admission and
 retained-control REDs. Complete-project selection, explicit enrollment, lock-only
 publication and human/JSON CLI are wired. Final canonical Host Quick259.64s,
-security13.44s/docs and related Race148.85s pass; actual installed qualification,
-restoration/cleanup and new-source remote evidence remain MISSING.
+security13.44s/docs and related Race148.85s pass. Two successful installed
+campaigns total20 phases with24 disjoint fresh update Evidence; dependency-free
+updates invent none. All originals are restored and completed target/cache/
+lifecycle/tools/obsolete CLI candidates145,898,901B removed. New-source CI338
+Linux integration/Required final evidence remains MISSING; its other eight jobs
+including native macOS are SUCCESS.
 Pinned Cargo1.99.0 networkless semantics
 passed12 operations; owned containers, fixture and temporary operator were deleted.
 Its exact edit map and second review include preserving manifests/unchanged lock
