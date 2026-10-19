@@ -96,6 +96,10 @@ func attachPresentation(root *cobra.Command, stdout, stderr io.Writer) {
 // PreparePresentation parses the already-built static command tree before any
 // runtime composition, so leading global flags never select the wrong backend.
 func PreparePresentation(root *cobra.Command, args []string) (string, error) {
+	args, err := normalizeTerraformInitArgs(root, args)
+	if err != nil {
+		return "", err
+	}
 	command, remaining, err := root.Find(args)
 	if err != nil {
 		return "", err
@@ -124,7 +128,7 @@ func PreparePresentation(root *cobra.Command, args []string) (string, error) {
 	if err = p.configure(); err != nil {
 		return "", err
 	}
-	if command.CommandPath() == "helox npm update" || command.CommandPath() == "helox pip install" || command.CommandPath() == "helox cargo update" || command.CommandPath() == "helox go get" {
+	if command.CommandPath() == "helox npm update" || command.CommandPath() == "helox pip install" || command.CommandPath() == "helox cargo update" || command.CommandPath() == "helox go get" || command.CommandPath() == "helox terraform init" {
 		help, _ := command.Flags().GetBool("help")
 		if !help {
 			if err := command.ValidateArgs(command.Flags().Args()); err != nil {
@@ -136,7 +140,7 @@ func PreparePresentation(root *cobra.Command, args []string) (string, error) {
 		localizeHelp(root, p)
 	}
 	goUpgrade, _ := command.Flags().GetBool("upgrade")
-	if p.output == "json" && ((source == "go" && !(command.CommandPath() == "helox go get" && goUpgrade)) || (source == "cargo" && command.CommandPath() != "helox cargo update") || source == "terraform" || source == "doctor") {
+	if p.output == "json" && ((source == "go" && !(command.CommandPath() == "helox go get" && goUpgrade)) || (source == "cargo" && command.CommandPath() != "helox cargo update") || (source == "terraform" && !goUpgrade) || source == "doctor") {
 		return "", errors.New("explicit JSON output is not available for this command")
 	}
 	return source, nil

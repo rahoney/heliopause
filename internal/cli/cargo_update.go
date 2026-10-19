@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"strings"
 
 	artifactcargo "github.com/rahoney/heliopause/internal/artifact/cargo"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 	"github.com/spf13/cobra"
 )
 
@@ -125,6 +127,9 @@ func writeProjectUpdateReport(output io.Writer, verified domain.ProjectVerifiedS
 		}
 		code := interruptionCode(cause)
 		if code == "" {
+			code = ports.InstallUpdateFailureCode(cause)
+		}
+		if code == "" {
 			code = "PROJECT_UPDATE_NOT_COMPLETED"
 		}
 		report.Error = &machineError{Code: code, Message: "Project update was not confirmed complete."}
@@ -162,6 +167,8 @@ func writeProjectUpdateReport(output io.Writer, verified domain.ProjectVerifiedS
 	p.reportHeader("UPDATE", report.Status, policy, "")
 	if source == "go-proxy" {
 		p.line("%s %s", p.text("Dependency control update:", "의존성 설정 업데이트:"), p.stateLabel(report.Promotion))
+	} else if source == "terraform-registry" {
+		p.line("%s %s", p.text("Provider update:", "Provider 업데이트:"), p.stateLabel(report.Promotion))
 	} else {
 		p.line("%s %s", p.text("Lockfile update:", "잠금파일 업데이트:"), p.stateLabel(report.Promotion))
 	}
@@ -171,6 +178,8 @@ func writeProjectUpdateReport(output io.Writer, verified domain.ProjectVerifiedS
 	if inspected.Valid() {
 		if source == "go-proxy" {
 			p.line("%s %d", p.text("Inspected modules:", "검사한 모듈 수:"), len(report.Entries))
+		} else if source == "terraform-registry" {
+			p.line("%s %d", p.text("Inspected providers:", "검사한 Provider 수:"), len(report.Entries))
 		} else {
 			p.line("%s %d", p.text("Inspected crates:", "검사한 crate 수:"), len(report.Entries))
 		}
@@ -179,7 +188,11 @@ func writeProjectUpdateReport(output io.Writer, verified domain.ProjectVerifiedS
 				p.line("… %s", p.text("See JSON for remaining entries.", "나머지 항목은 JSON으로 확인하세요."))
 				break
 			}
-			p.line("  %s@%s  %s", safeTerminal(entry.Identity.Name), safeTerminal(entry.Identity.Version), safeTerminal(entry.Policy.Decision))
+			name := entry.Identity.Name
+			if source == "terraform-registry" {
+				name = strings.Replace(name, "_", "/", 1)
+			}
+			p.line("  %s@%s  %s", safeTerminal(name), safeTerminal(entry.Identity.Version), safeTerminal(entry.Policy.Decision))
 			for _, check := range entry.Checks {
 				if check.ExecutionStatus != "COMPLETED" || check.Capability != "SUPPORTED" {
 					p.line("    %s: %s %s", safeTerminal(check.ID), safeTerminal(check.ExecutionStatus), safeTerminal(check.LimitationCode))
@@ -197,11 +210,16 @@ func writeProjectUpdateReport(output io.Writer, verified domain.ProjectVerifiedS
 	}
 	if report.Error != nil {
 		p.line("%s %s", p.text("Error:", "오류:"), report.Error.Code)
+		if report.Error.Code == "UPDATE_ADOPTION_REQUIRED" {
+			p.line("%s", p.text("Explicit enrollment with --adopt is required for supported native or changed controls.", "지원하는 일반 설정이나 변경한 관리 설정을 등록하려면 --adopt를 명시해야 합니다."))
+		}
 		p.line("%s", p.text("The update is incomplete. Check the original project and any recovery state before retrying.", "업데이트 완료가 확인되지 않았습니다. 재실행 전에 원본 프로젝트와 복구 상태를 확인하세요."))
 		p.reportedError = true
 	}
 	if source == "go-proxy" {
 		p.line("%s", p.text("Build behavior is inspected separately with helox go build.", "빌드 동작은 helox go build에서 별도로 검사합니다."))
+	} else if source == "terraform-registry" {
+		p.line("%s", p.text("Provider installation checks do not attest RPC, plan/apply or cloud behavior.", "Provider 설치 검사는 RPC·plan/apply·클라우드 동작의 검증을 의미하지 않습니다."))
 	} else {
 		p.line("%s", p.text("Build script and macro behavior is inspected separately with helox cargo build.", "Build script와 macro 동작은 helox cargo build에서 별도로 검사합니다."))
 	}

@@ -21,7 +21,9 @@ installation journey, never weakens existing Policy or adds implicit Host execut
 
 Pre-source [independent audit, edit map and second review](../planning/evidence/update-quarantine/terraform-update-baseline-20261019.md)
 identify the remaining work. Go acceptance closed with sourcee00/CI341;
-Terraform implementation now follows that reviewed audit and existing owners.
+Terraform implementation now follows that reviewed audit and existing owners;
+[current qualification](../planning/evidence/update-quarantine/terraform-update-qualification-20261019.md)
+tracks source wiring and the remaining actual/remote acceptance.
 Support `helox terraform init -upgrade [--adopt]` (`--upgrade` alias), with no
 positional provider. Preserve exact `init namespace/type@version`. Only the exact
 standalone native -upgrade token is normalized; values/false/duplicates, extra

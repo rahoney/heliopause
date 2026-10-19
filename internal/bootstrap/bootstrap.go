@@ -170,11 +170,14 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" {
 			return errors.New("automatic Terraform Provider installation requires Linux amd64")
 		}
-		service, serviceErr := newTerraformService(trustedExecutor, processObserver)
+		service, upgradeService, serviceErr := newTerraformServices(trustedExecutor, processObserver)
 		if serviceErr != nil {
 			return serviceErr
 		}
 		if err := cli.AddTerraformInit(command, service); err != nil {
+			return err
+		}
+		if err := cli.AddTerraformUpgrade(command, upgradeService); err != nil {
 			return err
 		}
 	}

@@ -13,6 +13,7 @@ import (
 
 	artifactterraform "github.com/rahoney/heliopause/internal/artifact/terraformprovider"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 )
 
 // TerraformProjectPromotion connects the existing transaction to independent
@@ -54,17 +55,29 @@ type approvedTerraformProjectGuard struct {
 	marker                      []byte
 	markerInfo, metadataDirInfo os.FileInfo
 	closed, committed           bool
+	upgrade, adopt              bool
 }
 
 func (p *TerraformProjectPromotion) Begin(ctx context.Context, install domain.InstallContext) (result *approvedTerraformProjectGuard, resultErr error) {
-	if p == nil || ctx == nil || ctx.Err() != nil || !install.Valid() || !separateRoots([]string{install.Target().String(), p.cache.intakeRoot, p.cache.evidenceRoot, p.cache.cacheRoot, p.stateRoot}) {
+	return p.begin(ctx, install, false, false)
+}
+
+func (p *TerraformProjectPromotion) BeginUpgrade(ctx context.Context, install domain.InstallContext, adopt bool) (*approvedTerraformProjectGuard, error) {
+	return p.begin(ctx, install, true, adopt)
+}
+
+func (p *TerraformProjectPromotion) begin(ctx context.Context, install domain.InstallContext, upgrade, adopt bool) (result *approvedTerraformProjectGuard, resultErr error) {
+	if p == nil || ctx == nil || !install.Valid() || !separateRoots([]string{install.Target().String(), p.cache.intakeRoot, p.cache.evidenceRoot, p.cache.cacheRoot, p.stateRoot}) {
 		return nil, errors.New("terraform project mutation request is invalid")
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
 	}
 	guard, e := acquireProjectTransactionGuard(install.Target().String(), ".heliopause-terraform-transaction.lock")
 	if e != nil {
 		return nil, e
 	}
-	g := &approvedTerraformProjectGuard{owner: p, install: install, guard: guard}
+	g := &approvedTerraformProjectGuard{owner: p, install: install, guard: guard, upgrade: upgrade, adopt: adopt}
 	defer func() {
 		if resultErr != nil {
 			resultErr = errors.Join(resultErr, g.Close())
@@ -95,6 +108,10 @@ func (p *TerraformProjectPromotion) Begin(ctx context.Context, install domain.In
 	g.plan, e = freezeTerraformProject(install.Target().String())
 	if e != nil {
 		return nil, e
+	}
+	g.plan.upgrade = upgrade
+	if upgrade && g.plan.lockInfo != nil && (g.plan.lockInfo.Mode()&^os.ModePerm != 0 || g.plan.lockInfo.Mode().Perm()&0o022 != 0) {
+		return nil, errors.New("terraform upgrade requires ordinary non-writable-to-others lock permissions")
 	}
 	g.terraformInfo, g.providerFiles, g.providerMembers, e = inspectTerraformInstallation(ctx, guard.root, install.Target().String())
 	if e != nil {
@@ -135,6 +152,9 @@ func (p *TerraformProjectPromotion) Begin(ctx context.Context, install domain.In
 		g.stateBody, g.stateFileInfo = nil, nil
 		if g.markerInfo != nil || g.terraformInfo != nil {
 			return nil, errors.New("terraform managed/provider state has no independent retained approval")
+		}
+		if upgrade && !adopt {
+			return nil, ports.NewInstallUpdateFailure("UPDATE_ADOPTION_REQUIRED", errors.New("terraform upgrade requires --adopt to enroll providerless native controls"))
 		}
 	} else if e != nil || !pypiSingleLink(g.stateFileInfo) || g.stateFileInfo.Mode() != 0o600 {
 		return nil, errors.New("terraform retained approval is unavailable or aliased")
@@ -204,7 +224,10 @@ func (g *approvedTerraformProjectGuard) verifyRetained(ctx context.Context) erro
 				matched = true
 			}
 		}
-		if !matched {
+		if !matched && !(g.upgrade && g.adopt) {
+			if g.upgrade {
+				return ports.NewInstallUpdateFailure("UPDATE_ADOPTION_REQUIRED", errors.New("terraform current controls differ from retained approval; upgrade enrollment requires --adopt"))
+			}
 			return errors.New("terraform current controls differ from retained approval")
 		}
 	}
@@ -286,7 +309,7 @@ func (g *approvedTerraformProjectGuard) verifyStateOriginal() error {
 }
 
 func (g *approvedTerraformProjectGuard) Commit(ctx context.Context, update domain.ProjectDependencyUpdate, staged domain.StagedProjectSet) (resultErr error) {
-	if g == nil || !update.HasRequestedResolution() || !staged.Valid() || update.Snapshot().Context() != g.install || update.Snapshot().Source() != artifactterraform.Source() || !equalTerraformControls(g.Controls(), update.OriginalControls()) {
+	if g == nil || !update.Valid() || g.upgrade == update.HasRequestedResolution() || !staged.Valid() || update.Snapshot().Context() != g.install || update.Snapshot().Source() != artifactterraform.Source() || !equalTerraformControls(g.Controls(), update.OriginalControls()) {
 		return errors.New("terraform frozen update differs from guarded project")
 	}
 	if e := g.VerifyUnchanged(ctx); e != nil {
@@ -618,7 +641,14 @@ func (g *approvedTerraformProjectGuard) Close() (resultErr error) {
 
 func (t *terraformProjectTransaction) verifyPublished(ctx context.Context) error {
 	body, info, e := readGoTransactionControl(t.boundary, artifactterraform.LockControl)
-	if e != nil || !os.SameFile(info, t.selectedInfo) || !bytes.Equal(body, t.expectedLock) || info.Mode() != t.selectedInfo.Mode() {
+	expectedInfo := t.selectedInfo
+	if t.retainedLock {
+		expectedInfo = t.plan.lockInfo
+		if err := t.verifyRetainedLock(); err != nil {
+			return err
+		}
+	}
+	if e != nil || !os.SameFile(info, expectedInfo) || !bytes.Equal(body, t.expectedLock) || info.Mode() != expectedInfo.Mode() {
 		return errors.New("terraform published lock differs from selection")
 	}
 	info, e = t.boundary.Lstat(".terraform")

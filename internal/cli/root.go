@@ -604,6 +604,12 @@ func AddTerraformInit(root *cobra.Command, resolver TerraformResolver) error {
 		return errors.New("terraform init command is not registered")
 	}
 	command.RunE = func(command *cobra.Command, args []string) error {
+		if err := validateTerraformInitArgs(command, args); err != nil {
+			return err
+		}
+		if upgrade, _ := command.Flags().GetBool("upgrade"); upgrade {
+			return errors.New("terraform upgrade service is unavailable")
+		}
 		reference, err := artifactterraform.ParseReference(args[0])
 		if err != nil {
 			return err
@@ -699,7 +705,12 @@ func initializeCommandTree(root *cobra.Command) {
 	cargoUpdate.Flags().Bool("adopt", false, "Explicitly enroll supported native or changed project controls after full inspection")
 	cargo.AddCommand(cargoUpdate)
 	terraform := ensureTerraformCommand(root)
-	terraform.AddCommand(newStaticLeaf("init <namespace/type@version>", "Resolve an exact public Terraform Provider", false))
+	terraformInit := newStaticLeaf("init [namespace/type@version]", "Resolve exact or upgraded public Terraform Providers", false)
+	terraformInit.Args = validateTerraformInitArgs
+	terraformInit.Long = terraformUpgradeDescriptionEnglish
+	terraformInit.Flags().Bool("upgrade", false, "Inspect every required provider at its newest stable constrained version (native -upgrade supported)")
+	terraformInit.Flags().Bool("adopt", false, "Explicitly enroll supported providerless native or changed managed controls with -upgrade")
+	terraform.AddCommand(terraformInit)
 }
 
 func pythonSourceHelp() string {

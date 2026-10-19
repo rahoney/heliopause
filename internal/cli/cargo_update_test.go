@@ -112,6 +112,10 @@ func projectUpdateFactsForSource(t *testing.T, decision domain.Decision, sourceI
 		name, version, variant = "example.com/module", "v1.2.3", "module"
 		verification, inspection = "go-module-sumdb", "go-module-static"
 	}
+	if sourceID == "terraform-registry" {
+		name, version, variant = "hashicorp_random", "3.7.2", "linux/amd64"
+		verification, inspection = "terraform-signed-package", "terraform-provider-static"
+	}
 	id, _ := domain.NewResolvedArtifactIdentity(source, name, version, variant)
 	resolved, _ := domain.NewResolvedArtifact(id, "https://static.crates.io/crates/itoa/itoa-1.0.17.crate", "sha256:"+digest.String())
 	manifest, _ := domain.NewProjectControlDigest("Cargo.toml", digest)
@@ -128,10 +132,17 @@ func projectUpdateFactsForSource(t *testing.T, decision domain.Decision, sourceI
 	}
 	var checks []domain.CheckExecution
 	var evidence []domain.EvidenceReference
-	for _, spec := range []struct {
+	specs := []struct {
 		id   string
 		kind domain.CheckKind
-	}{{verification, domain.CheckVerification}, {inspection, domain.CheckInspection}} {
+	}{{verification, domain.CheckVerification}, {inspection, domain.CheckInspection}}
+	if sourceID == "terraform-registry" {
+		specs = append(specs, struct {
+			id   string
+			kind domain.CheckKind
+		}{"terraform-provider-dynamic", domain.CheckInspection})
+	}
+	for _, spec := range specs {
 		checkID, _ := domain.NewCheckID(spec.id)
 		check, _ := domain.NewCheckExecution(checkID, spec.kind, true, domain.CapabilitySupported, domain.ExecutionCompleted, "")
 		checks = append(checks, check)

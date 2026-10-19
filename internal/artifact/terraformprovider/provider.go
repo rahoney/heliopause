@@ -79,17 +79,12 @@ func ParseVersionResponse(body []byte, requestedVersion string, platform Platfor
 	if len(body) == 0 || len(body) > 2<<20 || !validProviderVersion(requestedVersion) || !providerSegment.MatchString(platform.OS) || !providerSegment.MatchString(platform.Arch) {
 		return errors.New("terraform Provider version request is invalid")
 	}
-	var document versionDocument
-	if err := decodeRegistryJSON(body, &document, 2<<20); err != nil || len(document.Versions) == 0 || len(document.Versions) > 8192 {
-		return errors.New("terraform Registry version response is invalid")
+	document, err := parseVersionDocument(body)
+	if err != nil {
+		return err
 	}
-	seen := map[string]bool{}
 	available := false
 	for _, entry := range document.Versions {
-		if !validProviderVersion(entry.Version) || seen[entry.Version] || len(entry.Platforms) > 64 || len(entry.Protocols) > 8 {
-			return errors.New("terraform Registry version identity is invalid or ambiguous")
-		}
-		seen[entry.Version] = true
 		if entry.Version != requestedVersion {
 			continue
 		}
@@ -111,6 +106,21 @@ func ParseVersionResponse(body []byte, requestedVersion string, platform Platfor
 		return nil
 	}
 	return errors.New("terraform Provider version is unavailable")
+}
+
+func parseVersionDocument(body []byte) (versionDocument, error) {
+	var document versionDocument
+	if len(body) == 0 || len(body) > 2<<20 || decodeRegistryJSON(body, &document, 2<<20) != nil || len(document.Versions) == 0 || len(document.Versions) > 8192 {
+		return versionDocument{}, errors.New("terraform Registry version response is invalid")
+	}
+	seen := map[string]bool{}
+	for _, entry := range document.Versions {
+		if !validProviderVersion(entry.Version) || seen[entry.Version] || len(entry.Platforms) > 64 || len(entry.Protocols) > 8 {
+			return versionDocument{}, errors.New("terraform Registry version identity is invalid or ambiguous")
+		}
+		seen[entry.Version] = true
+	}
+	return document, nil
 }
 
 // ProviderArtifact binds the Registry response to an exact source artifact.
