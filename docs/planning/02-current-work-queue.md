@@ -9,14 +9,14 @@
 ```text
 Current milestone: M13 — Production Release & Operations
 Milestone status: IN_PROGRESS — runtime maintenance main delivery COMPLETE
-Active work item: SEC-UPD-001 — guarded ecosystem update commands
-Last completed work item: CLI-UX-002 — OS preferred display-language auto; local/installed and CI328 ten SUCCESS
-Predecessor: M13-003 — COMPLETE; protected v0.1.0 build, twelve attestations and OS package lifecycle PASS
+Active work item: CLI-UX-003 — branded interactive launcher
+Last completed work item: SEC-UPD-001 — COMPLETE; bounded ecosystem updates, final source CI344 and documentation-delivery CI345 ten SUCCESS
+Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
-Prepublication prerequisites: CLI-UX-001 and CLI-UX-002 COMPLETE for their documented scopes
-Active work item status: IN_PROGRESS — npm, bounded public/named PyPI, Cargo and Go qualified; current Terraform project upgrade, then GitHub replacement
-Next work item: CLI-UX-003 — NOT_STARTED; branded interactive launcher after SEC-UPD-001 acceptance
-Then: M13-004 — BLOCKED on SEC-UPD-001 and owner package naming; M13-005 NOT_STARTED
+Prepublication prerequisites: CLI-UX-001, CLI-UX-002 and SEC-UPD-001 COMPLETE for their documented scopes
+Active work item status: IN_PROGRESS — source-owner baseline/edit map/second review complete; launcher implementation and qualification remain
+Next work item: M13-004 — BLOCKED on CLI-UX-003 and owner package naming
+Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
 
@@ -3009,7 +3009,7 @@ M12-005 feature freeze에서 수행한다. canonical lock 등록만으로 releas
 | 3a | CLI-UX-001 | multilingual terminal progress and structured human results | COMPLETE — local source / installed CLI qualification |
 | 3b | CLI-UX-002 | OS preferred display-language auto | COMPLETE — native macOS/CI328 and local installed CLI PASS |
 | 3c | SEC-UPD-001 | guarded ecosystem update commands | COMPLETE — final sourcecdac/CI344 qualified |
-| 3d | CLI-UX-003 | branded interactive launcher | NOT_STARTED / Ready — SEC-UPD-001 acceptance closed |
+| 3d | CLI-UX-003 | branded interactive launcher | IN_PROGRESS — baseline/edit map/second review complete; source and qualification remain |
 | 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | BLOCKED — CLI-UX-003 and owner package-name decision |
 | 5 | M13-005 | exact publication·clean Host bootstrap·doctor·cross-ecosystem smoke·quarantine | NOT_STARTED |
 
@@ -3361,23 +3361,28 @@ limits are preserved. The [shared FD correction](./evidence/update-quarantine/tr
 is also qualified. No completed local update test payload/cache/candidate/operator
 or restored binary backup remains; raw/normalized proofs and shared SDK tools remain.
 
-Next: CLI-UX-003, NOT_STARTED / Ready, with its own baseline before source changes.
-No item is IN_PROGRESS at this closure. Main merge, permanent local CLI activation
+Next: CLI-UX-003, now IN_PROGRESS after its independent baseline below.
+SEC-UPD-001 has no remaining acceptance work. Main merge, permanent local CLI activation
 and publication remain separate; PR38 is draft/unmerged. Native commands outside
 helox are not transparently intercepted. Earlier source/checkpoint descriptions
 retain their original scope, superseded by the current acceptance table above.
 
-### CLI-UX-003 — branded interactive launcher (ready)
+### CLI-UX-003 — branded interactive launcher
 
-Status: NOT_STARTED / Ready; SEC-UPD-001 prerequisite is acceptance-closed. The user explicitly
-requested this order on2026-10-18. Bare helox in a real interactive terminal will
+Status: IN_PROGRESS; the only active work item. SEC-UPD-001 prerequisite and its
+documentation-delivery CI345 are closed. [Baseline/edit map/second review](./evidence/cli-launcher/baseline-20261020.md)
+precedes product edits: existing help/config/catalog/doctor/width owners are
+IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES and reused; interactive menus,
+lazy launcher bridge, raw input/restoration and actual PTY/native qualification
+are NO/NO/NO/NO. MISSING: those launcher acceptance gaps and exact-source CI.
+The user explicitly requested this order on2026-10-18. Bare helox in a real interactive terminal will
 show Heliopause Artifact Airlock, localized settings/help/examples and exit, with
 arrow/Enter/back navigation. Current root RunE only displays Help; no menu source
 is implemented. Reuse the existing language settings/catalogs and command tree.
 Direct commands/help/JSON/CI remain non-interactive; cancellation must restore
 terminal state. Read [launcher scope](../user-journey-cli-ia/05-terminal-presentation.md#deferred-branded-launcher--cli-ux-003)
-before its own baseline/implementation. Do not start this item while updates remain
-unqualified; do not add future UI packages/interfaces/dependencies now.
+and the linked baseline before implementation. No new framework/dependency or
+Core/Application/runtime contract is required. Preserve the predecessor's qualified scope.
 
 ### M13-004 — convenience installation channels
 
@@ -3397,8 +3402,9 @@ checks. On2026-10-18 the user reported both rahoney accounts/email/2FA/GitHub
 links complete. This closes account preparation only; publisher binding and all
 package names remain unconfirmed. No credentials are needed.
 
-SEC-UPD-001 is COMPLETE; no item is IN_PROGRESS at this closure. The user-requested
-CLI-UX-003 launcher is next/ready; M13-004 resumes after UX and owner naming; the prior bounded CLI-UX-001 acceptance remains historical. M13-005 remains NOT_STARTED. Account setup is not
+SEC-UPD-001 is COMPLETE; CLI-UX-003 is the only IN_PROGRESS item. M13-004 resumes
+after UX and owner naming; the prior bounded CLI-UX-001 acceptance remains historical.
+M13-005 remains NOT_STARTED. Account setup is not
 package publication approval; no registry upload, tap creation, Release draft or
 publish dispatch has occurred. Concrete publication remains separately reviewed.
 

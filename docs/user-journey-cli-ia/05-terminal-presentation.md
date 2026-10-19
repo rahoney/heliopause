@@ -173,5 +173,52 @@ and exit. Arrow keys move, Enter selects, Esc goes back, q exits. Reuse language
 selection/catalogs and existing command services. Preserve direct subcommands,
 --help and machine/CI behavior without prompts. Support narrow terminals and
 NO_COLOR; restore terminal modes/cursor on exit, cancellation and errors.
-This records the requested work; implementation/dependencies and qualification
-are NOT_STARTED and require that item's baseline after SEC-UPD-001.
+Status: IN_PROGRESS after SEC-UPD-001 acceptance and ten SUCCESS in its delivery
+CI345. The [baseline/edit map/second review](../planning/evidence/cli-launcher/baseline-20261020.md)
+precedes source edits. Existing help/config/catalogs/doctor are qualified and
+reused; the launcher and terminal input/restoration are not yet implemented or qualified.
+
+### Launcher behavior and lifecycle
+
+Interactive entry requires real stdin and stdout terminals, auto/human output,
+nonempty usable TERM, no CI indication and initial geometry of at least20 columns
+and8 rows. Other cases retain existing static help without reading input. Never
+open /dev/tty to bypass redirected stdin. Direct subcommands and --help retain
+their existing execution paths. Extremely small initial terminals use static
+help; narrow supported screens and resized windows use bounded viewports.
+
+The main menu contains usage/examples, language settings, explicitly requested
+environment diagnosis and exit. Display the full product name; arrows navigate,
+Enter selects, Esc returns, q/Ctrl-D exit and Ctrl-C preserves interruption.
+Help/detail screens scroll. Examples are inert text derived/reviewed against
+currently registered commands; there is no embedded shell or automatic install,
+update, inspection, download or repair from menu navigation.
+
+Language changes use the existing atomic preference writer and language selector.
+Show saved/effective language and selection source. Preserve auto and the explicit
+flag/environment override precedence; explain when a saved preference is
+overridden. All seven languages cover core menu labels; English/Korean cover
+complete explanations. Other missing technical descriptions fall back to English.
+
+Only selecting diagnosis calls the existing Doctor service. Release-root lookup
+and Host readiness checks remain lazy; missing configuration is a fixed
+UNAVAILABLE check. A diagnosis inherits cancellation with a30-second call bound.
+Reuse the exact checks/descriptions without the direct doctor's exit1 footer in
+the navigable result screen. Unhealthy/cancelled/limited diagnosis never becomes
+healthy because the menu stays open or exits0; direct doctor still exits1.
+
+The CLI owns a bounded64KiB help buffer, escape decoder and context-aware terminal
+poll loop. Linux/Darwin adapters use existing pinned x/sys; no new dependency,
+framework, unsafe/cgo or product subprocess is required. Save exact input termios
+before changes, own alternate-screen/cursor state before the first write, and
+restore termios/screen/cursor on exit, cancellation, EOF and setup/read/write
+failure. Preserve primary errors when joining cleanup failures. Render within
+actual stdout rows/cells without last-column wrapping, and reuse existing Unicode
+width and color helpers. NO_COLOR/--color=never disable SGR colors while keeping
+navigation controls; explicit --color=always keeps its existing override semantics.
+
+Native /usr/bin/script is an explicit test-only PTY driver with separately
+selected Linux/Darwin arguments. Native default CI tests must fail on a missing
+driver rather than skip this acceptance. Actual PTY, cancellation/error cleanup,
+configuration, seven-language/narrow rendering and exact-source native macOS
+qualification remain required before launcher acceptance closes.
