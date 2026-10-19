@@ -3360,7 +3360,10 @@ Final review identifies one additional acceptance assertion: explicit real M6
 unsafe/incomplete/mismatched-v2 UPDATE after allowed v1. The
 [pre-test amendment](./evidence/update-quarantine/github-replacement-qualification-20261019.md#final-acceptance-review-amendment-before-test-edits)
 maps its existing Application owner and test-only checks; production is unchanged.
-That assertion, exact new-source remote acceptance and final cross-lane review remain.
+That assertion now passes direct serial M6 cases, same-input Host Quick116.81s/
+security4.51s/docs0.27s/full Application Race3.42s. Production bytes are identical
+to actual-qualifiedcb1. MISSING: CI343 final consumer review, then ordinary CI
+for the test-only source and final cross-lane review. Hold push until CI343 ends.
 Only SEC-UPD-001 is IN_PROGRESS. The interactive launcher, main merge and
 publication remain pending. No candidate is permanently activated. Completed
 trial payload/cache/lifecycle/operators are deleted after raw/Evidence/approval/

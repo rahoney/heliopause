@@ -130,8 +130,9 @@ func TestBaseInstallerCannotAcceptAnUpdateWithoutOriginalStateSession(t *testing
 
 type updateFindingPorts struct {
 	*multiInspectionPorts
-	badName string
-	mode    string
+	badName     string
+	mode        string
+	findingCode string
 }
 
 func (p *updateFindingPorts) Inspect(ctx context.Context, artifact domain.AcquiredArtifact) (domain.InspectionReport, error) {
@@ -144,7 +145,11 @@ func (p *updateFindingPorts) Inspect(ctx context.Context, artifact domain.Acquir
 		check, _ = domain.NewCheckExecution(check.ID(), check.Kind(), true, domain.CapabilitySupported, domain.ExecutionIncomplete, "CONTROLLED_UPDATE_FIXTURE")
 		return domain.NewInspectionReport(check, nil, report.Evidence())
 	}
-	finding, _ := domain.NewFinding("M3_HONEYTOKEN_ACCESS", []domain.EvidenceID{report.Evidence()[0].ID()})
+	code := p.findingCode
+	if code == "" {
+		code = "M3_HONEYTOKEN_ACCESS"
+	}
+	finding, _ := domain.NewFinding(code, []domain.EvidenceID{report.Evidence()[0].ID()})
 	return domain.NewInspectionReport(check, []domain.Finding{finding}, report.Evidence())
 }
 
@@ -228,6 +233,115 @@ func TestInstallUpdateInspectsNewPrimaryAndTransitiveBytesBeforePolicy(t *testin
 						}
 					}
 				})
+			}
+		})
+	}
+}
+
+// These inert fixtures exercise M6's actual policies in the existing update
+// orchestrator. Filesystem ownership/rollback and real public bytes are tested
+// independently by the promotion and installed-consumer suites.
+type gitHubUpdatePolicyPorts struct {
+	*updateFindingPorts
+	recorded map[domain.RunID][]domain.Evidence
+}
+
+func (p *gitHubUpdatePolicyPorts) Acquire(ctx context.Context, run domain.RunID, resolved domain.ResolvedArtifact) (domain.AcquiredArtifact, error) {
+	artifact, err := p.multiInspectionPorts.Acquire(ctx, run, resolved)
+	if err != nil {
+		return artifact, err
+	}
+	digest, err := domain.NewSHA256Digest(strings.TrimPrefix(resolved.DeclaredIntegrity(), "sha256:"))
+	if err != nil {
+		return domain.AcquiredArtifact{}, err
+	}
+	return domain.NewAcquiredArtifactWithDeclaredIntegrity(artifact.Identity(), digest, artifact.ContentHandle(), artifact.SizeBytes(), resolved.DeclaredIntegrity())
+}
+
+func (p *gitHubUpdatePolicyPorts) Record(ctx context.Context, run domain.RunID, evidence []domain.Evidence) ([]domain.EvidenceReference, error) {
+	if _, err := p.multiInspectionPorts.Record(ctx, run, evidence); err != nil {
+		return nil, err
+	}
+	p.recorded[run] = append([]domain.Evidence(nil), evidence...)
+	references := make([]domain.EvidenceReference, 0, len(evidence))
+	for _, item := range evidence {
+		ref, err := domain.NewEvidenceReference(item.ID(), "fixture:"+run.String()+":"+item.ID().String())
+		if err != nil {
+			return nil, err
+		}
+		references = append(references, ref)
+	}
+	return references, nil
+}
+
+func (p *gitHubUpdatePolicyPorts) Inspect(ctx context.Context, artifact domain.AcquiredArtifact) (domain.InspectionReport, error) {
+	if p.mode == "integrity-mismatch" {
+		return p.multiInspectionPorts.Inspect(ctx, artifact)
+	}
+	return p.updateFindingPorts.Inspect(ctx, artifact)
+}
+
+func TestGitHubUpdateRechecksUnsafeIncompleteAndMismatchedV2WithM6(t *testing.T) {
+	for _, mode := range []string{"unsafe-v2", "inspection-incomplete", "integrity-mismatch"} {
+		t.Run(mode, func(t *testing.T) {
+			source, _ := domain.NewSourceID("github-release")
+			graph := func(version, digestByte string) domain.LockedDependencyGraph {
+				identity, _ := domain.NewResolvedArtifactIdentity(source, "owner-repo", version, "tool.zip")
+				resolved, _ := domain.NewResolvedArtifact(identity, "fixture:owner/repo@"+version+"#tool.zip", "sha256:"+strings.Repeat(digestByte, 64))
+				id, _ := domain.NewDependencyNodeID("github-release-primary")
+				node, _ := domain.NewLockedDependency(id, domain.DependencyPrimary, resolved)
+				set, err := domain.NewLockedDependencyGraph([]domain.LockedDependency{node}, nil)
+				if err != nil {
+					t.Fatal(err)
+				}
+				return set
+			}
+			old, next := graph("v1", "a"), graph("v2", "b")
+			fixtures := &gitHubUpdatePolicyPorts{updateFindingPorts: &updateFindingPorts{multiInspectionPorts: newMultiInspectionPorts(t, old)}, recorded: make(map[domain.RunID][]domain.Evidence)}
+			fixtures.artifacts[next.Nodes()[0].Artifact().Identity()] = next.Nodes()[0].Artifact()
+			inspection, err := application.NewInstallInspectService(&lockedResolver{graph: old}, fixtures, fixtures, fixtures, fixtures, policy.M6{}, policy.M6{}, domain.NewOperationID, domain.NewRunID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			calls := []string{}
+			base, _ := application.NewInstallService(inspection, &manifestPort{calls: &calls}, &stagingPort{calls: &calls}, &promotionPort{calls: &calls})
+			target, _ := domain.NewInstallTarget("/tmp/guarded-github-update")
+			initial, _ := domain.NewInstallContext(target)
+			reference, _ := domain.NewArtifactReference(source, "owner/repo@v1#tool.zip")
+			request, _ := application.NewInstallRequest(reference, initial)
+			seed, err := base.Install(context.Background(), request)
+			if err != nil || seed.Inspection().Decision().Decision() != domain.DecisionAllow || !reflect.DeepEqual(calls, []string{"manifest", "staging", "promotion"}) {
+				t.Fatal("allowed v1 baseline missing", seed, calls, err)
+			}
+			previous := seed.Inspection().Set().Inspections()[0]
+			calls, fixtures.calls = nil, nil
+			fixtures.badName, fixtures.mode, fixtures.findingCode = "owner-repo", mode, "M6_ARCHIVE_INVALID"
+			reference, _ = domain.NewArtifactReference(source, "owner/repo@v2#tool.zip")
+			session := &updateSessionFixture{reference: reference, resolver: &lockedResolver{graph: next}, promoter: &promotionPort{calls: &calls}, calls: &calls}
+			updater, _ := application.NewInstallUpdateService(base, updatePreparationFixture{session: session, calls: &calls})
+			managed, _ := domain.NewGitHubAssetInstallContext(target)
+			request, _ = application.NewInstallUpdateRequest(source, reference.Locator(), managed, false)
+			outcome, err := updater.Install(context.Background(), request)
+			want, reason := domain.DecisionBlock, "M6_ARCHIVE_INVALID"
+			if mode == "inspection-incomplete" {
+				want, reason = domain.DecisionManualReview, "M6_REQUIRED_CHECK_INCOMPLETE"
+			} else if mode == "integrity-mismatch" {
+				reason = "M6_INTEGRITY_MISMATCH"
+			}
+			if err != nil || outcome.Inspection().Request().Operation() != domain.OperationUpdate || outcome.Inspection().Decision().Decision() != want || !reflect.DeepEqual(calls, []string{"begin", "resolve", "close"}) || outcome.Promoted().Target().String() != "" {
+				t.Fatal("unapproved v2 reached publication", outcome, calls, err)
+			}
+			current := outcome.Inspection().Set().Inspections()[0]
+			if current.PolicyDecision().PolicyID() != "m6-github-release" || !reflect.DeepEqual(current.PolicyDecision().Reasons(), []string{reason}) || current.RunID() == previous.RunID() || current.Artifact().Identity() != next.Nodes()[0].Artifact().Identity() || current.Artifact().Digest() == previous.Artifact().Digest() || reflect.DeepEqual(current.Evidence(), previous.Evidence()) {
+				t.Fatal("new M6 subject/policy/evidence missing", previous, current)
+			}
+			if !reflect.DeepEqual(fixtures.calls, []string{"acquire:owner-repo", "verify:owner-repo", "inspect:owner-repo", "evidence:owner-repo"}) || len(fixtures.recorded) != 2 {
+				t.Fatal("fresh inspection skipped", fixtures.calls, fixtures.recorded)
+			}
+			for _, evidence := range fixtures.recorded[current.RunID()] {
+				if evidence.Identity() != current.Artifact().Identity() || evidence.Digest() != current.Artifact().Digest() {
+					t.Fatal("stale Evidence subject", evidence)
+				}
 			}
 		})
 	}

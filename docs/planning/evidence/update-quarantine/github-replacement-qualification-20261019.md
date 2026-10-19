@@ -8,7 +8,8 @@ and [canonical scope](../../../user-journey-cli-ia/06-update-quarantine.md#githu
 own the exact remaining work. No main merge, permanent activation or publication.
 
 MISSING: new-source CI343 final Linux/Required and full remote consumer review,
-plus the explicit M6 update-policy regression identified in final review below.
+then the new test-only source's ordinary CI. The explicit M6 update-policy
+regression identified in final review now passes the same-input checks below.
 Local public archive/ELF, affected shared-lock consumers, restoration and completed
 trial cleanup PASS below. The [shared correction](./transaction-lock-identity-correction-20261019.md)
 has the same remaining remote boundary.
@@ -203,3 +204,29 @@ scope separately. New test-only source needs its own ordinary CI after CI343
 ends; actual product consumers may reuse cb1 only after exact all-production-byte
 and dependency/runtime/observer equality is established. Do not rebuild/repeat
 unchanged installed/GPU campaigns solely for test/document changes.
+
+After pre-test plan5eb90f7, the existing Application owner adds the three direct
+real-M6 cases. Each starts with allowed v1 and tests same-source/name v2 with new
+digest, fresh Run and recorded Evidence, then requires M6_ARCHIVE_INVALID/BLOCK,
+M6_REQUIRED_CHECK_INCOMPLETE/MANUAL_REVIEW or M6_INTEGRITY_MISMATCH/BLOCK.
+No Manifest/staging/promotion is called; the original session closes. Integrity
+mismatch uses a safe static report, independently exercising verification.
+Existing npm/PyPI cases remain unchanged apart from the optional fixture finding
+code's default preserving their original behavior. Production source is unchanged.
+
+Explicit format2.77s passes. First focused0.97s starts during format preparation;
+although its captured final test bytes match, do not use overlapping operators as
+acceptance. After both end and complete projection equality is checked, serial
+focused0.62s executes all three real test cases. First restricted Quick125.41s
+fails existing Unix socket bind/setsockopt tests with operation not permitted;
+security/docs/Race are NOT_REACHED. Preserve this tool-sandbox failure separately.
+Same complete inputs through authorized Host execution pass canonical
+Quick116.81s/security4.51s/docs0.27s and entire Application Race3.42s.
+Complete input inventories and log hashes agree across all five serial checks.
+
+Raw owners: github-m6-final-local-summary.json, github-m6-host-* and
+github-m6-policy-serial, plus preserved restricted/overlap captures. Exact
+Git diff from cb1 changes only this test and Markdown; no new untracked source,
+production/dependency/runtime/observer/CI byte delta. cb1's installed actual
+consumers remain evidence for those identical product bytes. Ordinary CI for the
+new test-containing commit remains required; do not infer it from CI343.
