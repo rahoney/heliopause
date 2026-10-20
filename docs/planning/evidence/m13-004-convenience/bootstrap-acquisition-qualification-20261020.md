@@ -11,7 +11,7 @@ network·일반 입력·권한은 늘리지 않았다. [설치 인계](../../../
 | frozen held-FD reader/facts | YES | YES | YES, local | YES, component | 없음 |
 | ordinary bounded acquisition/export | YES | YES, bootstrap prepare | YES, local fake-positive/SDK-negative | PARTIAL | actual signed native9 |
 | 7언어 CLI/progress/정직한 report | YES | YES | YES, local | YES, component | 없음 |
-| OS first trust/setup/health·위임 | PARTIAL | PARTIAL, operator handoff | NO, whole path | NO | clean signed host·실제 service/ordinary health/sudo 정책 |
+| OS first trust/setup/health·인증 | PARTIAL | PARTIAL, operator handoff | NO, whole path | NO | clean signed host·실제 service/ordinary health/기존 sudo 인증 |
 | signed base→target/systemd/crash/reboot | PARTIAL | PARTIAL | NO | NO | 실제 새 signed base/target |
 
 Generated digest는64KiB 한도 안의 parse와 동일한 원본 bytes를 해시한다. Lock/runtime
@@ -50,5 +50,8 @@ Go가 만든 XDG telemetry 디렉터리를 flat-file finalizer가 거부해 rece
 
 구현 후 Root helper imports/entry, old-peer update chain, Policy/Evidence와 실제 export
 readback을 다시 대조했다. 현재 설치본은 변경하지 않았다. Public initial acquisition 소스
-연결은 닫았지만 actual signed acquisition/whole OS bootstrap·ordinary health·version별 OS
-위임과 real systemd/crash/reboot는 닫지 않았다. M13-004는 IN_PROGRESS다.
+연결은 닫았지만 actual signed acquisition/whole OS bootstrap·ordinary health·기존 OS
+관리자 인증과 real systemd/crash/reboot는 닫지 않았다. M13-004는 IN_PROGRESS다.
+
+OS 인증은 기존 lifecycle plan의 `sudo -v`→fixed `sudo -n` 계약이다. 새 sudoers 또는
+version별 위임 정책을 별도 필수 acceptance로 만들지 않도록 설치 안내를 대조·교정했다.

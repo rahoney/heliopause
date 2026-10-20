@@ -90,14 +90,16 @@ Register는 설치 서명·전체 bytes·실제 helper inode·canonical configs�
 
 이후 `helox self-update --version vX.Y.Z`는 기존 controller가 검사한 세트만 좁은 Root
 installer에 전달한다. Client는 `/usr/bin/sudo -n -- <실제 이전 설치 helper> serve`를 사용하므로
-관리자 권한 위임이 없는 환경은 실패한다. 전체 CLI의 sudo/setuid나 wildcard 전체 명령을
-대안으로 주지 않는다. Version별 실제 helper 경로에 대한 좁은 OS 권한 정책과 다음 version의
-위임 유지 절차는 실제 signed/systemd qualification에서 검토해야 할 **남은 설치 acceptance**다.
+기존 OS 관리자 실행 권한과 유효한 인증이 필요하다. 관리자 계정은 같은 터미널에서
+먼저 `sudo -v`로 인증한 뒤 일반 권한으로 self-update를 실행한다. 인증이 없거나 만료되면
+실패하며 JSON/report 입력으로 비밀번호를 받지 않는다. 기존의 이 계약을 재사용하며 새
+sudoers 규칙이나 version별 위임 파일을 필수조건으로 추가하지 않는다. 전체 CLI의 sudo/
+setuid는 사용하지 않는다. 실제 signed/systemd 시험에는 OS 인증 성공·실패도 포함한다.
 
 ## 5. 완료·정리 기준
 
 새 signed native9 base/target의 실제 획득→검역→전환→doctor/nominal, BLOCK/취소·동시성,
-중단/재부팅 복구와 OS 위임을 확인해야 전체 기능 완료다. 현재는 로컬 mock-positive와
+중단/재부팅 복구와 기존 OS 관리자 인증을 확인해야 전체 기능 완료다. 현재는 로컬 mock-positive와
 production SDK negative, 실제 kernel/file mechanics·compile만 확인했다. 신규 공개 tag,
 배포·main merge·기존 개발 설치 변경은 이번 문서 작성으로 수행되지 않는다.
 

@@ -15,7 +15,7 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — native update/initial preparation/producer locally checked; whole OS bootstrap and signed lifecycle qualification pending
-Next action: current candidate remote CI/review; actual signed native9 base/target, clean-host bootstrap/OS delegation and systemd/crash/reboot qualification; channel names pending separately
+Next action: current candidate remote CI/review; actual signed native9 base/target, clean-host bootstrap/administrator authentication and systemd/crash/reboot qualification; channel names pending separately
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
@@ -3504,7 +3504,7 @@ Ordinary first acquisition/export and `bootstrap prepare --version vX.Y.Z` are n
 [Native installation handoff](../user-journey-cli-ia/08-native-bootstrap.md) records actual Root-copy
 independent verification, exact OS config/unit, register and ordinary health boundaries.
 CURRENT MISSING: actual newly signed native9 base/target acquisition, whole clean-host OS bootstrap/
-ordinary doctor and nominal quarantine, narrow version-specific OS privilege delegation, actual
+ordinary doctor and nominal quarantine, existing OS administrator authentication, actual
 systemd activation and crash/reboot qualification. Full self-update remains IN_PROGRESS and is not installed or publicly released.
 Package names block only name-dependent channels;
 account preparation is complete. No new placeholder/executable/Port/job exists.
