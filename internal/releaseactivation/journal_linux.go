@@ -171,6 +171,17 @@ func newPreparedJournal(ctx context.Context, current InstalledRelease, stage *pr
 	if err := journal.validate(); err != nil {
 		return updateJournal{}, err
 	}
+	name, err := releaseinstall.SystemCopyStageName(journal.ManifestSHA256)
+	if err != nil {
+		return updateJournal{}, ErrUntrusted
+	}
+	versions := filepath.Join(releaseinstall.SystemInstallRoot, "versions")
+	if err := protectedDirectory(versions); err != nil {
+		return updateJournal{}, err
+	}
+	if _, err := os.Lstat(filepath.Join(versions, name)); !errors.Is(err, os.ErrNotExist) {
+		return updateJournal{}, ErrTransition
+	}
 	return journal, nil
 }
 

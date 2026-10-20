@@ -252,7 +252,7 @@ func (a *rootActivation) activate(ctx context.Context) (resultErr error) {
 	if err := a.services.drained(ctx, a.peer, newProcess); err != nil {
 		return err
 	}
-	if err := a.cleanupOwnedStage(); err != nil {
+	if err := a.cleanupOwnedStage(ctx); err != nil {
 		return err
 	}
 	if err := a.journal.transition(ctx, "COMMITTED"); err != nil {
@@ -261,7 +261,10 @@ func (a *rootActivation) activate(ctx context.Context) (resultErr error) {
 	return a.retire(ctx)
 }
 
-func (a *rootActivation) cleanupOwnedStage() error {
+func (a *rootActivation) cleanupOwnedStage(ctx context.Context) error {
+	if err := a.discardOwnedCopy(ctx); err != nil {
+		return err
+	}
 	if a.workspace != nil {
 		if err := a.workspace.Close(); err != nil {
 			return err
@@ -336,7 +339,7 @@ func (a *rootActivation) abortPrepared(ctx context.Context) error {
 	if err := a.services.runtimeHealthy(ctx); err != nil {
 		return err
 	}
-	if err := a.cleanupOwnedStage(); err != nil {
+	if err := a.cleanupOwnedStage(ctx); err != nil {
 		return err
 	}
 	if err := a.journal.transition(ctx, "ROLLING_BACK"); err != nil {
@@ -419,7 +422,7 @@ func (a *rootActivation) rollback(ctx context.Context) (resultErr error) {
 	if err := a.services.resourcesDrained(ctx, old.ClientUID(), a.controllerPID(), process.pid); err != nil {
 		return err
 	}
-	if err := a.cleanupOwnedStage(); err != nil {
+	if err := a.cleanupOwnedStage(ctx); err != nil {
 		return err
 	}
 	if err := a.journal.transition(ctx, "ROLLED_BACK"); err != nil {

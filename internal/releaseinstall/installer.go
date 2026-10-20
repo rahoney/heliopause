@@ -348,7 +348,19 @@ func activate(ctx context.Context, root, version string, manifestBody []byte, se
 	if _, err := os.Lstat(final); !errors.Is(err, os.ErrNotExist) {
 		return Result{}, errors.New("release version already exists")
 	}
-	stage, err := os.MkdirTemp(versions, ".pending-")
+	var stage string
+	var err error
+	if system {
+		sum := sha256.Sum256(manifestBody)
+		name, nameErr := SystemCopyStageName(hex.EncodeToString(sum[:]))
+		if nameErr != nil {
+			return Result{}, nameErr
+		}
+		stage = filepath.Join(versions, name)
+		err = os.Mkdir(stage, 0700)
+	} else {
+		stage, err = os.MkdirTemp(versions, ".pending-")
+	}
 	if err != nil {
 		return Result{}, errors.New("create release installation stage")
 	}
@@ -378,11 +390,8 @@ func activate(ctx context.Context, root, version string, manifestBody []byte, se
 		}
 	}
 	manifestDigest := sha256.Sum256(manifestBody)
-	recordBody, err := json.MarshalIndent(struct {
-		Version        string `json:"version"`
-		ManifestSHA256 string `json:"manifest_sha256"`
-	}{Version: version, ManifestSHA256: hex.EncodeToString(manifestDigest[:])}, "", "  ")
-	if err != nil || writeNew(filepath.Join(stage, installRecordName), append(recordBody, '\n'), metadataMode) != nil {
+	recordBody, err := installationRecord(version, manifestBody)
+	if err != nil || writeNew(filepath.Join(stage, installRecordName), recordBody, metadataMode) != nil {
 		return Result{}, errors.New("write release installation record")
 	}
 	if err := os.Chmod(stage, directoryMode); err != nil {
@@ -402,6 +411,27 @@ func activate(ctx context.Context, root, version string, manifestBody []byte, se
 		return Result{}, err
 	}
 	return Result{Version: version, InstallRoot: root, ActivePath: filepath.Join(root, "current"), ManifestSHA256: hex.EncodeToString(manifestDigest[:])}, nil
+}
+
+// SystemCopyStageName binds only a basename to the durable manifest identity.
+// It grants no ownership or permission to delete an existing directory.
+func SystemCopyStageName(manifestSHA256 string) (string, error) {
+	if !digestPattern.MatchString(manifestSHA256) {
+		return "", errors.New("invalid system copy identity")
+	}
+	return ".pending-" + manifestSHA256, nil
+}
+
+func installationRecord(version string, manifestBody []byte) ([]byte, error) {
+	sum := sha256.Sum256(manifestBody)
+	body, err := json.MarshalIndent(struct {
+		Version        string `json:"version"`
+		ManifestSHA256 string `json:"manifest_sha256"`
+	}{version, hex.EncodeToString(sum[:])}, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+	return append(body, '\n'), nil
 }
 
 func activateCurrent(root, version string) error {

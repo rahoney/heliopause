@@ -307,11 +307,39 @@ func TestRootActivationTransactionInDisposableNamespace(t *testing.T) {
 	if err := syscall.Mount("", "/", "", syscall.MS_REC|syscall.MS_PRIVATE, ""); err != nil {
 		t.Fatal(err)
 	}
-	for _, kind := range []string{"success", "same-version", "existing-candidate", "health", "start", "stop-unknown", "unknown-config", "self-report"} {
+	for _, kind := range []string{"reservation", "success", "same-version", "existing-candidate", "health", "start", "stop-unknown", "unknown-config", "self-report"} {
 		t.Run(kind, func(t *testing.T) {
 			resetOperationNamespace(t)
 			activation, services := operationFixture(t, kind)
 			defer activation.Close()
+			if kind == "reservation" {
+				value, err := newPreparedJournal(context.Background(), activation.old, activation.stage)
+				if err != nil {
+					t.Fatal(err)
+				}
+				name, err := releaseinstall.SystemCopyStageName(value.ManifestSHA256)
+				if err != nil {
+					t.Fatal(err)
+				}
+				path := filepath.Join(releaseinstall.SystemInstallRoot, "versions", name)
+				if err := os.Mkdir(path, 0700); err != nil {
+					t.Fatal(err)
+				}
+				foreign := filepath.Join(path, "foreign.txt")
+				if err := os.WriteFile(foreign, []byte("retain"), 0600); err != nil {
+					t.Fatal(err)
+				}
+				if _, err := newPreparedJournal(context.Background(), activation.old, activation.stage); !errors.Is(err, ErrTransition) {
+					t.Fatal("pre-existing copy reservation adopted", err)
+				}
+				if err := activation.discardOwnedCopy(context.Background()); !errors.Is(err, ErrCleanup) {
+					t.Fatal("PREPARED abort adopted a future copy", err)
+				}
+				if body, err := os.ReadFile(foreign); err != nil || string(body) != "retain" {
+					t.Fatal("unowned copy changed", err)
+				}
+				return
+			}
 			err := activation.activate(context.Background())
 			success := kind == "success" || kind == "same-version" || kind == "existing-candidate"
 			if (err == nil) != success {

@@ -95,7 +95,7 @@ func Recover(ctx context.Context) (resultErr error) {
 		if err := services.resourcesDrained(ctx, old.ClientUID(), 0, process.pid); err != nil {
 			return err
 		}
-		if err := activation.cleanupOwnedStage(); err != nil {
+		if err := activation.cleanupOwnedStage(ctx); err != nil {
 			return err
 		}
 		return activation.retire(ctx)
