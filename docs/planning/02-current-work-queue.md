@@ -15,7 +15,7 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — native update/initial preparation/producer locally checked; whole OS bootstrap and signed lifecycle qualification pending
-Next action: both approved rc signing builds and independent thirteen-file verification passed; actual native base registered/systemd/ordinary doctor passed in disposable guest; nominal quarantine and signed update/crash/reboot qualification in progress; channel names pending separately
+Next action: actual signed base registered/systemd/ordinary doctor/npm passed; signed update refused native dynamic gaps without promotion; follow native-elf compatibility plan before remaining signed activation/crash/reboot; channel names pending separately
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
@@ -4072,3 +4072,10 @@ MISSING: 없음(이 작업의 기술 acceptance). CPU·cu126·cu130·cu132 각10
 문서 HEAD의 원격 Required 확인은 PR29와 외부 closure receipt가 소유한다.
 Reviewer merge·main CI가 전달에 남고, M13은 NOT_STARTED다. M13-001의 기존
 repository activation blocker도 해당 항목의 원래 해제 조건을 유지한다.
+
+2026-10-20 actual signed lifecycle: rc1/rc2 official builds and independent13-file
+verification passed. Disposable systemd base register/ordinary doctor/npm passed.
+Actual update retained rc1 with MANUAL_REVIEW/NOT_PERFORMED; native ELF runtime
+read classification gaps precede activation. The source audit/edit map/negative
+matrix and second review are in [native ELF plan](./evidence/m13-004-convenience/native-elf-compatibility-plan-20261020.md).
+No public Release, main merge, tag retarget or Host migration occurred.
