@@ -19,6 +19,7 @@ type RuntimeLease struct {
 	installed InstalledRelease
 	closed    bool
 	closeErr  error
+	borrowed  bool
 }
 
 // AcquireRuntimeLease returns nil only for confirmed absence of managed state.
@@ -29,6 +30,12 @@ func AcquireRuntimeLease(ctx context.Context) (*RuntimeLease, error) {
 	}
 	if err := ctx.Err(); err != nil {
 		return nil, err
+	}
+	if issued, ok := ctx.Value(borrowedRuntimeKey{}).(borrowedRuntime); ok {
+		if err := CheckRuntimeController(issued.installed); err != nil {
+			return nil, err
+		}
+		return &RuntimeLease{installed: issued.installed, borrowed: true}, nil
 	}
 	managed, err := managedStatePresent()
 	if err != nil || !managed {
@@ -133,7 +140,7 @@ func (l *RuntimeLease) Installed() (InstalledRelease, error) {
 	}
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	if l.closed || l.file == nil {
+	if l.closed || l.file == nil && !l.borrowed {
 		return InstalledRelease{}, ErrUntrusted
 	}
 	return l.installed, nil

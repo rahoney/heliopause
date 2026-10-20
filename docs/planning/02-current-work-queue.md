@@ -3453,6 +3453,11 @@ BundleVerifier, proof persistence and exact registration swap/restore are locall
 [proof evidence](./evidence/m13-004-convenience/activation-proof-qualification-20261020.md).
 Actual old offline proof and existing reader/journal namespace regressions pass; actual new
 signed native4/full transaction/recovery/RPC/health/public command remain missing.
+Managed runtime/Doctor shared-lease wiring and the fixed inherited-channel ordinary-user
+health entry are locally checked in
+[health evidence](./evidence/m13-004-convenience/activation-health-qualification-20261020.md).
+Actual root→ordinary FD transfer/negative admission and production CLI flag denial pass;
+new signed native4 positive/full root transaction/recovery/RPC/public caller remain missing.
 Package names block only name-dependent channels;
 account preparation is complete. No new placeholder/executable/Port/job exists.
 SEC-UPD-001 and CLI-UX-003 stay COMPLETE; prior CLI-UX-001 scope remains historical.

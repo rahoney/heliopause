@@ -76,6 +76,20 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		}
 		return command.ExecuteContext(ctx)
 	}
+	if source == "npm" || source == "pypi" || source == "pip" || source == "github" || source == "go" || source == "cargo" || source == "terraform" || source == "self-update" {
+		var closeRuntime func() error
+		ctx, closeRuntime, err = commandRuntime(ctx)
+		if err != nil {
+			return err
+		}
+		if closeRuntime != nil {
+			defer func() {
+				cleanupErr := closeRuntime()
+				cli.PresentFinalizationError(command, cleanupErr)
+				resultErr = errors.Join(resultErr, cleanupErr)
+			}()
+		}
+	}
 	var trustedExecutor *hosttool.Executor
 	var observerSupervisor *sandbox.ObserverSupervisor
 	var processObserver sandbox.TraceObserver
@@ -610,8 +624,7 @@ func (s doctorService) Diagnose(ctx context.Context) cli.DoctorReport {
 			root = resolved
 		}
 	}
-	installation := releaseinstall.CheckInstallation(root)
-	checks := append([]cli.DoctorCheck{{Name: installation.Name, Healthy: installation.Healthy, Detail: installation.Detail}}, doctorHostChecks(ctx)...)
+	checks := installationAndHostChecks(ctx, root)
 	healthy := true
 	for _, check := range checks {
 		healthy = healthy && check.Healthy

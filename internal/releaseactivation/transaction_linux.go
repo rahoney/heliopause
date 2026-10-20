@@ -27,6 +27,9 @@ type UpdateOwner struct {
 }
 
 func AcquireUpdateOwner(ctx context.Context, lease *RuntimeLease) (*UpdateOwner, error) {
+	if lease != nil && lease.borrowed {
+		return nil, ErrTransition
+	}
 	installed, err := lease.Installed()
 	if err != nil {
 		return nil, err

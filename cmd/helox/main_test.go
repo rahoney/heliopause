@@ -3,9 +3,11 @@ package main
 import (
 	"bytes"
 	"context"
+	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -87,6 +89,20 @@ func TestNativeBinaryDefaultPaths(t *testing.T) {
 		if !strings.Contains(string(output), "\n  helox [") {
 			t.Fatalf("native helox %q output missing usage: %q", arguments, output)
 		}
+	}
+	// A user-supplied internal flag has no inherited root channel and must
+	// fail quietly without acquiring runtime state or taking arbitrary FDs.
+	if runtime.GOOS != "linux" {
+		return
+	}
+	runContext, cancelRun := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancelRun()
+	command := exec.CommandContext(runContext, binaryPath, "--internal-protected-update-health")
+	command.Dir = t.TempDir()
+	output, err := command.CombinedOutput()
+	var exit *exec.ExitError
+	if !errors.As(err, &exit) || exit.ExitCode() != exitFailure || len(output) != 0 {
+		t.Fatalf("unissued internal health accepted or leaked output: %v %q", err, output)
 	}
 }
 

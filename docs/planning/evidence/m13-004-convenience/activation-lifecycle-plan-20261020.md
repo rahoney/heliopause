@@ -72,6 +72,19 @@
   연결하고 Root creator UID/GID/PID와 실제 parent/pidfd를 확인한다. Kernel의
   [proc exe 접근은 ptrace 권한 검사 대상](https://man7.org/linux/man-pages/man5/proc_pid_exe.5.html)이다.
   Root는 child의 현재 ordinary UID/GID/executable/PID를 별도 kernel facts로 확인한다.
+- Health issuer의 kernel UID/GID는 root0이고 creator PID는 child's actual parent여야 한다.
+  FD3는 root-created socketpair, FD4는 old installer의 read-only descriptor다. Ordinary child가
+  root-private journal을 읽거나 root proc exe의 ptrace 권한을 얻도록 보호를 완화하지 않는다.
+  Channel의 bounded old record를 public stored-proof/member reader로 확인하고 FD4의
+  inode/owner/mode를 그 signed old installer와 비교한다. Root server가 own executable을
+  독립 확인한 뒤 이 channel을 만들며 child의 current UID와 creator UID를 혼동하지 않는다.
+- Candidate health는 Root가 stage basename에서 유도한 fixed state-directory workspace를
+  생성해 configured ordinary UID/GID로 소유시키고 HOME/XDG roots를 거기로 제한한다.
+  사용자 기존 프로젝트/설정/cache를 쓰지 않는다. Root는 child Start의 known PID를 Wait까지
+  소유하며 실제 child UID/GID/exe와 HEALTHY→RELEASE handshake 후 Wait0를 확인한다.
+  Root가 health child 전체를 root로 실행하거나 임의 command를 health frame에 넣지 않는다.
+  Workspace는 실제 resource drainage가 확인된 뒤 owned inode만 삭제하며 실패/중단의
+  unknown 상태에서는 journal의 stage 이름으로 재구성 가능한 경로를 recovery까지 보존한다.
 - Child의 요청은 doctor와 고정된 기존 nominal npm quarantine compatibility뿐이며 임의
   user command를 전달하지 않는다. Root는 borrowed health child의 종료/cleanup 뒤 실제
   installed bytes/service/socket/resource facts를 다시 검증한다. Child return0/출력은
