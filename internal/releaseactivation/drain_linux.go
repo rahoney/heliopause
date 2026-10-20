@@ -22,6 +22,19 @@ func (c *serviceController) drained(ctx context.Context, peer *controllerPeer, s
 	if err := peer.alive(); err != nil {
 		return err
 	}
+	if err := c.resourcesDrained(ctx, peer.uid, int(peer.pid), service.pid); err != nil {
+		return err
+	}
+	if exited, err := service.exited(); err != nil || exited {
+		return ErrTransition
+	}
+	return peer.alive()
+}
+
+func (c *serviceController) resourcesDrained(ctx context.Context, uid uint32, controllerPID, servicePID int) error {
+	if ctx == nil || os.Geteuid() != 0 || uid == 0 {
+		return ErrUntrusted
+	}
 	containers, err := c.output(ctx, 1<<20, "docker", "ps", "--all", "--format", "{{.Names}}")
 	if err != nil {
 		return err
@@ -36,16 +49,13 @@ func (c *serviceController) drained(ctx context.Context, peer *controllerPeer, s
 	if strings.TrimSpace(string(slices)) != "" {
 		return ErrBusy
 	}
-	if err := observerEndpointsAbsent(peer.uid); err != nil {
+	if err := observerEndpointsAbsent(uid); err != nil {
 		return err
 	}
-	if err := protectedConsumersAbsent(ctx, int(peer.pid), service.pid); err != nil {
+	if err := protectedConsumersAbsent(ctx, controllerPID, servicePID); err != nil {
 		return err
 	}
-	if exited, err := service.exited(); err != nil || exited {
-		return ErrTransition
-	}
-	return peer.alive()
+	return nil
 }
 
 func noHAAContainers(body []byte) error {
@@ -88,7 +98,7 @@ func observerEndpointsAbsent(uid uint32) error {
 }
 
 func protectedConsumersAbsent(ctx context.Context, controllerPID, servicePID int) (resultErr error) {
-	if ctx == nil || controllerPID <= 0 || servicePID <= 0 {
+	if ctx == nil || controllerPID < 0 || servicePID < 0 {
 		return ErrUntrusted
 	}
 	if err := ctx.Err(); err != nil {

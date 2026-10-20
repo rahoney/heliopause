@@ -3458,6 +3458,13 @@ health entry are locally checked in
 [health evidence](./evidence/m13-004-convenience/activation-health-qualification-20261020.md).
 Actual root→ordinary FD transfer/negative admission and production CLI flag denial pass;
 new signed native4 positive/full root transaction/recovery/RPC/public caller remain missing.
+The root transaction/recovery and actual fixed serve/recover helper now exist, with local
+[operation/socket/fault evidence](./evidence/m13-004-convenience/activation-operation-qualification-20261020.md).
+Actual root filesystem mechanics pass with crypto/service/health mocks; real signed
+native4/systemd/crash qualification remains open. Actual helper payload review also found
+[inert default-entry gaps](./evidence/m13-004-convenience/native-entry-plan-20261020.md),
+which are next before final public caller/producer/native-bootstrap wiring. Generic M6
+dynamic inspection is retained; helper assets are not exempted or relabeled as safe resources.
 Package names block only name-dependent channels;
 account preparation is complete. No new placeholder/executable/Port/job exists.
 SEC-UPD-001 and CLI-UX-003 stay COMPLETE; prior CLI-UX-001 scope remains historical.

@@ -86,6 +86,7 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 		modulePath + "/cmd/helox": {
 			modulePath + "/internal/bootstrap": true,
 		},
+		modulePath + "/cmd/haa-release-installer": {modulePath + "/internal/releaseactivation": true},
 		modulePath + "/internal/cli": {
 			modulePath + "/internal/core/ports":                 true,
 			modulePath + "/internal/artifact/githubrelease":     true,

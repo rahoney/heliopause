@@ -46,6 +46,18 @@
    healthy facts와 cleanup 뒤 fixed small history로 atomic하게 옮겨 runtime marker를
    해제한다. Response 손실은 이미 건강하게 commit한 설치를 몰래 rollback할 이유가 아니다.
 
+Service `Result`는 종료 이유이며 presence probe가 아니다. Stop 이후 실패 상태도
+actual MainPID/ControlPID0, kernel pidfd exit(보유 시), unit cgroup empty/absent와 socket
+absence를 확인한다. 그 사실만으로 restore 권한을 만들지 않고 독립적인 Docker/
+observation slice/observer endpoint/protected consumer drainage를 추가로 요구한다.
+Old/new 중 하나로 검증한 unit bytes와 실제 signed process version이 partial switch에서
+달라질 수 있으므로 두 identity를 각각 확인한 뒤 fixed unit만 중지한다. Unknown unit,
+unverified running new process 또는 query 실패에서는 restore/rebind를 하지 않는다.
+Recovery에서 old controller가 사라졌더라도 signed old bytes/config/actual service와
+trusted Docker/gVisor 및 pinned runtime images를 독립 확인한다. Normal live rollback은
+가능하면 같은 inherited channel로 ordinary old doctor도 확인한다. 건강한 COMMITTED
+기록의 response/history-cleanup 오류는 자동 rollback하지 않고 marker를 남겨 재확인한다.
+
 ## Fixed helper IPC와 lifecycle handoff
 
 - `server_linux.go`와 `cmd/haa-release-installer`는 fixed one-shot serve/recover operations만
@@ -60,6 +72,13 @@
 - Before ACTIVATE: 기존 ObserverSupervisor.Close→Executor.Close를 실제로 완료하고
   같은 RuntimeLease FD를 해제한다. Failure는 root에게 abort하고 설치를 전환하지 않는다.
   UpdateOwner는 전체 session 끝까지 유지하고 installer lock과 동일 FD를 혼동하지 않는다.
+
+Root helper의 실제 serve/recover entry는 caller environment를 제거한다. Fixed
+root-reserved `/run/heliopause-install/installer.sock`의 중복 endpoint는 installer
+owner lock 아래에서만 확인한다. Actual listener가 있거나 query/identity가 불명확하면
+남긴다. Root-owned socket/type/mode0660/registered GID/보호된 parent가 모두 맞고
+actual connect가 ECONNREFUSED일 때만 stopped socket node를 SameFile 재확인 후
+제거한다. Active session의 Close는 처음 소유한 inode 외 replacement를 삭제하지 않는다.
 
 ## Borrowed exclusive health와 pipeline 연결
 

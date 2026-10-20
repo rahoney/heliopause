@@ -388,7 +388,10 @@ func (c *serviceController) stopped(ctx context.Context, process *serviceProcess
 	if state.pid != 0 || (state.properties["ActiveState"] != "inactive" && state.properties["ActiveState"] != "failed") || state.properties["ControlGroup"] != "" && state.properties["ControlGroup"] != policyControlGroup {
 		return ErrTransition
 	}
-	if state.properties["Result"] != "success" || state.properties["ActiveState"] == "inactive" && state.properties["SubState"] != "dead" || state.properties["ActiveState"] == "failed" && state.properties["SubState"] != "failed" {
+	// Result describes why a service exited; it is not a process-presence
+	// probe. Failure cleanup still requires the caller's independent global
+	// resource drainage before any restore/rebind.
+	if state.properties["ActiveState"] == "inactive" && state.properties["SubState"] != "dead" || state.properties["ActiveState"] == "failed" && state.properties["SubState"] != "failed" {
 		return ErrTransition
 	}
 	if process != nil {
@@ -412,7 +415,17 @@ func (c *serviceController) stop(ctx context.Context, process *serviceProcess) e
 	if process == nil {
 		return ErrUntrusted
 	}
-	unit, err := nativePolicyUnit(process.version)
+	return c.stopKnown(ctx, process, process.version)
+}
+
+// Recovery may find a known new unit on disk while the signed old process is
+// still running. Both identities are independently checked; only this fixed
+// managed unit is stopped, and no caller-supplied unit or PID is accepted.
+func (c *serviceController) stopKnown(ctx context.Context, process *serviceProcess, diskVersion string) error {
+	if process == nil {
+		return ErrUntrusted
+	}
+	unit, err := nativePolicyUnit(diskVersion)
 	if err != nil {
 		return err
 	}

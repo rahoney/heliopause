@@ -180,6 +180,16 @@ func createPreparedJournal(ctx context.Context, current InstalledRelease, stage 
 	if err != nil {
 		return nil, err
 	}
+	return persistPreparedJournal(ctx, value)
+}
+
+func persistPreparedJournal(ctx context.Context, value updateJournal) (*durableJournal, error) {
+	if value.State != "PREPARED" {
+		return nil, ErrTransition
+	}
+	if err := value.validate(); err != nil {
+		return nil, err
+	}
 	body, err := json.Marshal(value)
 	if err != nil {
 		return nil, ErrTransition
