@@ -49,6 +49,7 @@ jobs:
           CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -trimpath -buildvcs=true -o "$dist/helox-darwin-amd64" ./cmd/helox
           CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -trimpath -buildvcs=true -o "$dist/helox-darwin-arm64" ./cmd/helox
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -buildvcs=true -o "$dist/haa-network-policy-helper-linux-amd64" ./cmd/haa-network-policy-helper
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -buildvcs=true -o "$dist/haa-release-installer-linux-amd64" ./cmd/haa-release-installer
           scripts/build-gvisor-observer-release.sh "$dist/haa_gvisor_observer-linux-amd64"
           go run ./scripts/runtime-image-manifest \
             --runtime-lock scripts/runtimes.lock.json \
@@ -83,6 +84,7 @@ jobs:
             --asset "$dist/helox-darwin-arm64" \
             --asset "$dist/haa_gvisor_observer-linux-amd64" \
             --asset "$dist/haa-network-policy-helper-linux-amd64" \
+            --asset "$dist/haa-release-installer-linux-amd64" \
             --asset "$dist/helox-linux-amd64.deb" \
             --asset "$dist/helox-linux-amd64.rpm"
       - name: Attest release candidate provenance

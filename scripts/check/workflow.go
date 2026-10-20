@@ -318,6 +318,10 @@ func validateReleaseWorkflow(contents, selectedGo string) []string {
 		`--asset "$dist/helox-linux-amd64.deb" \`,
 		`--asset "$dist/helox-linux-amd64.rpm"`,
 	})...)
+	findings = append(findings, validateActiveJobCommands(contents, "build-and-attest", "Build deterministic native release assets", "release installer", []string{
+		`CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -buildvcs=true -o "$dist/haa-release-installer-linux-amd64" ./cmd/haa-release-installer`,
+		`--asset "$dist/haa-release-installer-linux-amd64" \`,
+	})...)
 	for _, token := range []string{
 		"pull_request:", "pull_request_target:", "workflow_dispatch:", "schedule:", "contents: write", "packages: write", "secrets:",
 		"@main", "@master", "@latest", "ubuntu-latest", "actions/create-release", "gh release", "softprops/action-gh-release",

@@ -3489,9 +3489,10 @@ The actual session factory and public `self-update --version vX.Y.Z` are now wir
 the existing pipeline, with [local session/CLI evidence](./evidence/m13-004-convenience/session-cli-qualification-20261020.md).
 Exact-version admission, seven-language help/progress and truthful cleanup/recovery reporting
 pass locally; actual CLI tests reject this unmanaged development installation without runtime
-or acquisition changes. CURRENT MISSING: real helper asset producer/native bootstrap and
-registration, a newly signed native4 base/target, real systemd activation and crash/reboot
-qualification. Full self-update remains IN_PROGRESS and is not installed or publicly released.
+or acquisition changes. The actual helper asset producer/manifest/package payload is now locally qualified in
+[producer evidence](./evidence/m13-004-convenience/producer-qualification-20261020.md).
+CURRENT MISSING: initial native bootstrap and registration, new signed native4 base/target,
+actual systemd activation and crash/reboot qualification. Full self-update remains IN_PROGRESS and is not installed or publicly released.
 Package names block only name-dependent channels;
 account preparation is complete. No new placeholder/executable/Port/job exists.
 SEC-UPD-001 and CLI-UX-003 stay COMPLETE; prior CLI-UX-001 scope remains historical.

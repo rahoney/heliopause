@@ -86,6 +86,9 @@ func TestValidateReleaseWorkflowRejectsSecurityRegressions(t *testing.T) {
 		"missing package build":       strings.Replace(string(contents), "go run ./scripts/release-packages", "echo skipped", 1),
 		"missing package identity":    strings.Replace(string(contents), "--asset \"$dist/helox-linux-amd64.deb\"", "--asset \"$dist/unbound.deb\"", 1),
 		"missing release gate":        strings.Replace(string(contents), "go run ./scripts/check release-gate", "echo skipped", 1),
+		"commented installer build":   strings.Replace(string(contents), `          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -buildvcs=true -o "$dist/haa-release-installer-linux-amd64"`, `          # CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -buildvcs=true -o "$dist/haa-release-installer-linux-amd64"`, 1),
+		"missing installer identity":  strings.Replace(string(contents), `--asset "$dist/haa-release-installer-linux-amd64"`, `--asset "$dist/unbound-installer"`, 1),
+		"echoed installer build":      strings.Replace(string(contents), `          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -buildvcs=true -o "$dist/haa-release-installer-linux-amd64"`, `          echo CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -buildvcs=true -o "$dist/haa-release-installer-linux-amd64"`, 1),
 	}
 	for name, fixture := range tests {
 		t.Run(name, func(t *testing.T) {

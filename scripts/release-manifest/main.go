@@ -221,6 +221,7 @@ func assetSpecs() map[string]struct {
 		"helox-darwin-arm64":                    {platform: "darwin/arm64", role: "helox"},
 		"haa_gvisor_observer-linux-amd64":       {platform: "linux/amd64", role: "gvisor-observer"},
 		"haa-network-policy-helper-linux-amd64": {platform: "linux/amd64", role: "network-policy-helper"},
+		"haa-release-installer-linux-amd64":     {platform: "linux/amd64", role: "release-installer"},
 		"helox-linux-amd64.deb":                 {platform: "linux/amd64", role: "os-package-deb"},
 		"helox-linux-amd64.rpm":                 {platform: "linux/amd64", role: "os-package-rpm"},
 	}
