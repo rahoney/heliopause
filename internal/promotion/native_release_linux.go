@@ -12,6 +12,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"sync"
 	"syscall"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
@@ -22,21 +23,33 @@ import (
 // NativeReleasePromotion connects the existing complete ALLOW bundle/staging
 // boundary to the old installed controller's fixed installation client.
 type NativeReleasePromotion struct {
+	mu          sync.Mutex
 	stagingRoot string
 	proof       func(domain.AcquiredArtifact) (releaseinstall.ReleaseManifest, [][]byte, error)
 	activate    func(context.Context, []byte, [][]byte, func(string) (io.ReadCloser, error)) error
+	payload     *nativeStagePayload
+	closed      bool
+	closeErr    error
 }
 
 func NewNativeReleasePromotion(stagingRoot string, lease *releaseactivation.RuntimeLease, proof func(domain.AcquiredArtifact) (releaseinstall.ReleaseManifest, [][]byte, error), drain func() error) (*NativeReleasePromotion, error) {
 	if !filepath.IsAbs(stagingRoot) || filepath.Clean(stagingRoot) != stagingRoot || lease == nil || proof == nil || drain == nil {
 		return nil, releaseactivation.ErrUnmanaged
 	}
-	return &NativeReleasePromotion{stagingRoot, proof, func(ctx context.Context, body []byte, proofs [][]byte, open func(string) (io.ReadCloser, error)) error {
+	return &NativeReleasePromotion{stagingRoot: stagingRoot, proof: proof, activate: func(ctx context.Context, body []byte, proofs [][]byte, open func(string) (io.ReadCloser, error)) error {
 		return releaseactivation.Activate(ctx, lease, body, proofs, open, drain)
 	}}, nil
 }
 
 func (p *NativeReleasePromotion) Promote(ctx context.Context, staged domain.StagedSet, bundle domain.VerifiedBundle, install domain.InstallContext) (result domain.PromotedInstall, resultErr error) {
+	if p == nil {
+		return result, releaseactivation.ErrUntrusted
+	}
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if p.closed || p.payload != nil {
+		return result, releaseactivation.ErrTransition
+	}
 	if ctx == nil || p == nil || p.proof == nil || p.activate == nil || !install.Valid() || install.Mode() != domain.InstallGitHubAsset || install.Target().String() != releaseinstall.SystemInstallRoot || !bundle.Valid() || staged.ManifestID() != bundle.ManifestID() || staged.Handle() != "staging:"+bundle.ManifestID().String() || verifyDocuments(bundle) != nil {
 		return result, releaseactivation.ErrUntrusted
 	}
@@ -127,6 +140,7 @@ func (p *NativeReleasePromotion) Promote(ctx context.Context, staged domain.Stag
 	}
 	defer func() { resultErr = errors.Join(resultErr, artifacts.Close()) }()
 	held := map[string]*os.File{}
+	identities := map[string]os.FileInfo{}
 	defer func() {
 		for _, file := range held {
 			resultErr = errors.Join(resultErr, file.Close())
@@ -145,6 +159,11 @@ func (p *NativeReleasePromotion) Promote(ctx context.Context, staged domain.Stag
 			return result, err
 		}
 		held[name] = file
+		identity, err := file.Stat()
+		if err != nil {
+			return result, err
+		}
+		identities[stagedName] = identity
 		hash := sha256.New()
 		count, err := io.Copy(hash, &nativeContextReader{ctx, io.LimitReader(file, int64(artifact.SizeBytes())+1)})
 		if err != nil || count != int64(artifact.SizeBytes()) || hex.EncodeToString(hash.Sum(nil)) != artifact.Digest().String() {
@@ -159,6 +178,13 @@ func (p *NativeReleasePromotion) Promote(ctx context.Context, staged domain.Stag
 	if err != nil || checked.SHA256() != manifest.SHA256() {
 		return result, errors.Join(releaseactivation.ErrUntrusted, err)
 	}
+	rootInfo, rootErr := root.Stat(".")
+	artifactsInfo, artifactsErr := artifacts.Stat(".")
+	currentArtifacts, currentErr := root.Lstat("artifacts")
+	if rootErr != nil || artifactsErr != nil || currentErr != nil || !os.SameFile(artifactsInfo, currentArtifacts) {
+		return result, errors.Join(releaseactivation.ErrCleanup, rootErr, artifactsErr, currentErr)
+	}
+	p.payload = &nativeStagePayload{rootPath, rootInfo, artifactsInfo, identities}
 	if err := p.activate(ctx, body, proofs, func(name string) (io.ReadCloser, error) {
 		file, ok := held[name]
 		if !ok || name == "helox-release-manifest.json" {

@@ -27,6 +27,8 @@ const heliopauseManifestName = "helox-release-manifest.json"
 // mandatory in the existing install workflow. No root mutation occurs here.
 type HeliopauseReleaseSet struct {
 	mu              sync.RWMutex
+	replayMu        sync.Mutex
+	replayed        map[string]replayedReleaseRun
 	client          *Client
 	reference       domain.ArtifactReference
 	install         domain.InstallContext
@@ -295,7 +297,21 @@ func (s *HeliopauseReleaseSet) Acquire(ctx context.Context, run domain.RunID, re
 	if s.closed || s.view == nil {
 		return domain.AcquiredArtifact{}, errors.New("native release set is unresolved or closed")
 	}
-	return s.view.Acquire(ctx, run, resolved)
+	artifact, err := s.view.Acquire(ctx, run, resolved)
+	if err != nil {
+		return domain.AcquiredArtifact{}, err
+	}
+	owned, err := s.captureReplayRun(run, artifact)
+	if err != nil {
+		return domain.AcquiredArtifact{}, err
+	}
+	s.replayMu.Lock()
+	if s.replayed == nil {
+		s.replayed = map[string]replayedReleaseRun{}
+	}
+	s.replayed[run.String()] = owned
+	s.replayMu.Unlock()
+	return artifact, nil
 }
 
 // ReleaseProof returns copied source facts only for a member of the held set.

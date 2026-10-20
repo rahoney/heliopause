@@ -3480,6 +3480,11 @@ The exact sealed-set Promotion and fixed old-installer client now exist, with
 Actual UID1000 endpoint validation passes in disposable namespaces; signed whole activation
 is still unqualified. Next are per-request source/session/cleanup and public command wiring,
 followed by the real helper producer/native bootstrap and signed/systemd/crash qualification.
+Explicit owned replay/staging payload retention is locally checked in
+[cleanup evidence](./evidence/m13-004-convenience/native-cleanup-qualification-20261020.md).
+Unknown payloads and final records are retained; the next actual session must call cleanup
+only after confirmed runtime drainage. [Session/CLI source map](./evidence/m13-004-convenience/session-cli-plan-20261020.md)
+records that wiring and the remaining public preflight/report gaps before implementation.
 Package names block only name-dependent channels;
 account preparation is complete. No new placeholder/executable/Port/job exists.
 SEC-UPD-001 and CLI-UX-003 stay COMPLETE; prior CLI-UX-001 scope remains historical.
