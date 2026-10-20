@@ -88,6 +88,7 @@
 | `internal/sandbox` | Linux 격리 backend Adapter, Session lifecycle와 raw Observation | Finding 해석, Policy Decision, Host Promotion |
 | `internal/runtimeidentity` | canonical runtime lock에서 생성한 immutable gVisor·Docker·Node·Python identity | lock 외 수동 runtime identity, Core/Application/Policy concern |
 | `internal/hosttool` | root-owned executable identity, minimal child environment와 verified local Docker endpoint를 소유하는 production Infrastructure executor | Core/Application/Policy, shell command 또는 Artifact 입력 기반 tool selection |
+| `internal/releaseactivation` | 승인된 M13-004 설치 역할의 protected registration/provenance·runtime lease·narrow installation lifecycle Adapter | Policy 재판정, 검역 우회, generic root command/임의 target·UID·service 선택 |
 | `internal/evidence` | Evidence/Result/SBOM 저장 Adapter와 trusted writer | Finding 해석, Staging, Promotion |
 | `internal/promotion` | Staging과 trusted Promotion Adapter | Policy 재판정, 재검사, 자유로운 dependency resolve |
 | `internal/testutil` | 여러 package가 공유하는 test-only helper | production workflow 또는 Domain rule |

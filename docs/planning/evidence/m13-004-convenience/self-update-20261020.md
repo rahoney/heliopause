@@ -152,3 +152,8 @@ native target의 동적 검역·보호된 활성화·public CLI는 계속 미완
 Shared installer의 [protected copy/verified existing-version rollback 로컬 검증](./protected-copy-qualification-20261020.md)을
 마쳤다. 실제 root namespace 검증은 copy/ownership/modes 범위이고 provenance는
 mocked fixture다. IPC/lease/journal/service/public command는 아직 미완료다.
+
+Protected state/proof reader와 runtime lease primitive의
+[로컬 검증](./activation-read-qualification-20261020.md)을 마쳤다. Lease primitive는
+caller 인증이나 runtime cleanup wiring을 대신하지 않으며 actual native4 target의
+전체 positive는 아직 없다. 다음은 old controller 인증과 실제 설치 lifecycle 연결이다.

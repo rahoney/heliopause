@@ -3425,6 +3425,11 @@ rollback are qualified locally in
 [copy evidence](./evidence/m13-004-convenience/protected-copy-qualification-20261020.md),
 including actual root/ordinary-user filesystem mechanics in disposable namespaces.
 Provenance was mocked there; RPC/lease/journal/service lifecycle remains next.
+Protected registration/proof reading and advisory runtime lease primitives are
+also locally checked in [reader evidence](./evidence/m13-004-convenience/activation-read-qualification-20261020.md).
+Actual stored v0.1 signature verifies offline; missing installer-role admission
+is correctly refused. Caller authentication, lifecycle wiring and new native4
+signed qualification remain missing.
 IPC and crash-recovery details precede activation source edits. Package names block only name-dependent channels;
 account preparation is complete. No new placeholder/executable/Port/job exists.
 SEC-UPD-001 and CLI-UX-003 stay COMPLETE; prior CLI-UX-001 scope remains historical.

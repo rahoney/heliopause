@@ -134,3 +134,36 @@ Synthetic trusted-verifier fault test와 실제 SDK/public signed target 검증�
 교착, helper를 바꾼 뒤 old controller cleanup을 수행하는 순서, mutable user receipt,
 candidate 자기 보고와 unknown service restore를 모두 제외했다. 기존 user installer와
 application/Policy/관찰 owner를 재사용하고 실제 privilege gap만 구현한다.
+
+## 496dd90 이후의 다음 read/lease source map
+
+Copy/pointer 확장의 [로컬 검증](./protected-copy-qualification-20261020.md)은 해당
+primitive 범위만 닫았다. Protected registration/proof reader와 runtime lease는
+여전히 IMPLEMENTED=NO/WIRED=NO/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO다.
+
+- `releaseactivation/layout_linux.go`: fixed `/var/lib/heliopause`의
+  `protected-installation.json`, `protected-update.json`, `runtime.lock`,
+  `update.lock`, `installer.lock`, `proofs/<manifest-sha256>/` 및 고정 socket을 소유한다.
+  Root-owned/non-writable ancestors와 bounded regular/Nlink1 files만 읽는다.
+  Registration은 schema/management/version/manifest digest/client UID/GID만 선언하며
+  extra/duplicate/case alias/잘못된 값은 거부한다. 임의 path/UID request 권한은 없다.
+- `releaseactivation/installed_linux.go`: 기존 strict manifest/metadata readers와
+  fixed SDK를 재사용해 actual installed7개 subject와 root mode/hash, current pointer,
+  exact proof/source/runtime identity를 읽기 검증한다. Root-owned record 자체를
+  provenance/safety proof로 사용하지 않는다. Active identity view는 private fields다.
+- `releaseactivation/lease_linux.go`: marker의 확정 부재만 legacy로 처리한다.
+  Journal/부분 상태/조회 오류는 fail-closed다. Root-owned persistent file의 shared
+  lock을 확보한 뒤 current registration을 다시 검증하며 Close/handoff는 같은 FD를
+  idempotently 해제한다. Signature/inspection/privilege authority는 lease에서 나오지 않는다.
+- 초기 record 생성은 독립적으로 verified native bootstrap이 exact native paths와
+  healthy runtime/config를 이미 확립한 뒤에만 가능하다. 이 reader가 foreign legacy
+  설치를 자동 등록하거나 root client UID를 user claim/SUDO_UID에서 추론하지 않는다.
+  Native first-bootstrap/channel/migration gap은 별도로 명시하고 정상 update로 숨기지 않는다.
+
+Tests는 malformed/foreign owner·links·record/source/hash/runtime mismatch, unknown
+marker/partial state, actual kernel shared/exclusive blocking·cancel·Close/handoff를
+분리한다. 실제 signed native4 target의 positive는 아직 없으므로 crypto mock을
+주입한 mechanics를 실제 signed activation으로 보고하지 않는다. Default test에 개인
+경로나 privileged 환경의 숨은 입력을 넣지 않는다. 이 단위는 read/lease만 구현하며
+public CLI/RPC 성공 handler를 미리 만들지 않는다. 두 번째 대조에서 root owner,
+signed digest, kernel caller와 Policy를 서로 대체하지 않는지 다시 확인했다.

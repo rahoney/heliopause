@@ -147,6 +147,11 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/verification/githubrelease": true,
 		},
 		modulePath + "/internal/releaseinstall": {modulePath + "/internal/runtimeidentity": true},
+		modulePath + "/internal/releaseactivation": {
+			modulePath + "/internal/releaseinstall":                 true,
+			modulePath + "/internal/runtimeidentity":                true,
+			modulePath + "/internal/verification/releaseprovenance": true,
+		},
 		modulePath + "/internal/inspection/githubrelease": {
 			modulePath + "/internal/core/domain":    true,
 			modulePath + "/internal/core/ports":     true,
@@ -258,6 +263,7 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			"golang.org/x/mod/semver":                                true,
 		},
 		modulePath + "/internal/releaseinstall":           {"golang.org/x/mod/semver": true},
+		modulePath + "/internal/releaseactivation":        {"golang.org/x/mod/semver": true},
 		modulePath + "/internal/inspection/githubrelease": {},
 		modulePath + "/internal/verification/cargo":       {},
 		modulePath + "/internal/verification/terraformprovider": {
