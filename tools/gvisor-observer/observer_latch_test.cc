@@ -1011,6 +1011,105 @@ bool VerifyCargoRustcQueryBoundary(const std::string& pathname =
   return ok;
 }
 
+bool VerifyGitHubArtifactRuntimeReadBoundary() {
+  ProcessState state;
+  gvisor::common::ContextData context;
+  context.set_container_id(kFirstID);
+  context.set_thread_group_id(99);
+  context.set_thread_group_start_time_ns(990);
+  context.set_parent_thread_group_id(0);
+  context.set_is_exec_session(true);
+  context.set_process_name("renamed-artifact");
+  if (!RegisterGroup(&state, context, ProcessState::Role::kArtifact,
+                     ProcessState::Provenance::kDirectExecRoot, false, true)) return false;
+  state.groups[99].current_image_class = ProcessClass::kArtifact;
+  const ProcessState baseline = state;
+  gvisor::syscall::Open open;
+  *open.mutable_context_data() = context;
+  open.set_flags(557056);
+  MountAnchor anchor{10, "/proc", "system"};
+  auto allowed = [&](const char* profile = kProfileGitHub) {
+    return ClassifyFilesystemOpen(open, state, profile, &anchor) == FilesystemClass::kRuntimeRoot;
+  };
+  for (const char* path : {"/proc/99/cgroup", "/proc/99/mountinfo", "/proc/sys/kernel/osrelease"}) {
+    open.set_pathname(path);
+    if (!allowed()) return false;
+  }
+  for (const char* path : {"/proc/98/cgroup", "/proc/99/maps", "/proc/99/environ",
+                           "/proc/sys/kernel/hostname", "/proc/sys/vm/overcommit_memory", "/proc/self/cgroup"}) {
+    open.set_pathname(path);
+    if (allowed()) return false;
+  }
+  open.set_pathname("/proc/99/cgroup");
+  for (uint64_t flags : {kOpenWriteOnly, kOpenReadWrite, kOpenCreate, kOpenTruncate, kOpenAppend}) {
+    open.set_flags(flags);
+    if (allowed()) return false;
+  }
+  open.set_flags(557056);
+  for (const char* profile : {kProfileNPM, kProfilePyPI, kProfileGoResolver, kProfileGoBuild,
+                              kProfileCargoBuild, kProfileTerraformProvider}) {
+    if (allowed(profile)) return false;
+  }
+  anchor.mountpoint = "/proc/99";
+  if (allowed()) return false;
+  anchor.mountpoint = "/proc";
+  anchor.mount_class = "workspace";
+  if (allowed()) return false;
+  anchor.mount_class = "system";
+  open.mutable_context_data()->set_thread_group_start_time_ns(991);
+  if (allowed()) return false;
+  *open.mutable_context_data() = context;
+  for (int scenario = 0; scenario != 9; ++scenario) {
+    state = baseline;
+    auto& group = state.groups[99];
+    switch (scenario) {
+      case 0: group.role = ProcessState::Role::kControl; break;
+      case 1: group.current_image_class = ProcessClass::kShell; break;
+      case 2: group.provenance = ProcessState::Provenance::kCloneChild; break;
+      case 3: group.root_eligible = true; break;
+      case 4: group.root_consumed = false; break;
+      case 5: group.trusted_control_network_active = true; break;
+      case 6: group.demotion_pending = true; break;
+      case 7: group.launch_target_pending = true; break;
+      case 8: group.handoff_target_pending = true; break;
+    }
+    if (allowed()) return false;
+  }
+  state = baseline;
+  anchor = MountAnchor{11, "/sys/fs/cgroup/cpu", "system"};
+  for (const char* path : {"/sys/fs/cgroup/cpu/cpu.cfs_quota_us", "/sys/fs/cgroup/cpu/cpu.cfs_period_us"}) {
+    open.set_pathname(path);
+    if (!allowed()) return false;
+  }
+  open.set_pathname("/sys/fs/cgroup/cpu/cpu.shares");
+  if (allowed()) return false;
+  anchor = MountAnchor{1, "/", "oci-root"};
+  for (const char* path : {"/usr/lib/x86_64-linux-gnu/libm.so.6",
+                           "/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30",
+                           "/lib/x86_64-linux-gnu/libgcc_s.so.1"}) {
+    open.set_pathname(path);
+    if (!allowed()) return false;
+    open.set_flags(kOpenReadWrite);
+    if (allowed()) return false;
+    open.set_flags(557056);
+  }
+  for (const char* path : {"/usr/lib/x86_64-linux-gnu/libstdc++.so.6.evil",
+                           "/usr/lib/x86_64-linux-gnu/libcrypto.so.3", "/etc/passwd",
+                           "/work/libm.so.6", "/home/user/libm.so.6"}) {
+    open.set_pathname(path);
+    if (allowed()) return false;
+  }
+  open.set_pathname("/usr/lib/x86_64-linux-gnu/libm.so.6");
+  anchor.mountpoint = "/usr/lib";
+  if (allowed()) return false;
+  anchor.mountpoint = "/";
+  anchor.mount_class = "system";
+  if (allowed()) return false;
+  return state.groups[99].role == ProcessState::Role::kArtifact &&
+      state.groups[99].current_image_class == ProcessClass::kArtifact &&
+      !state.groups[99].trusted_control_network_active;
+}
+
 bool VerifyGoResolverRuntimeReadBoundary() {
   ProcessState state;
   gvisor::common::ContextData context;
@@ -6983,6 +7082,7 @@ int main(int argc, char** argv) {
   const bool cargo_rustc_abi = VerifyCargoRustcQueryBoundary("/usr/lib/x86_64-linux-gnu/librt.so.1") &&
       VerifyCargoRustcQueryBoundary("/usr/local/rustup/toolchains/1.99.0-x86_64-unknown-linux-gnu/lib/libLLVM.so.23.1-rust-1.99.0-stable");
   const bool go_runtime_read = VerifyGoResolverRuntimeReadBoundary();
+  const bool github_artifact_runtime_read = VerifyGitHubArtifactRuntimeReadBoundary();
   const bool go_build_config_read = VerifyGoBuildConfigurationReadBoundary();
   const bool go_build_handoff_read = VerifyGoBuildHandoffReadBoundary();
   const bool cargo_build_handoff_read = VerifyGoBuildHandoffReadBoundary(kProfileCargoBuild);
@@ -7052,7 +7152,7 @@ int main(int argc, char** argv) {
 	fprintf(stderr, "STARTING pre_attribution_disconnect\n");
 	const bool pre_attribution_disconnect = running && VerifyAcceptedPreAttributionDisconnect(remote, child);
   const bool terraform_profile = VerifyTerraformProviderProfileBoundary();
-  const bool passed = terraform_profile && running && profile && profile_limits && record_boundaries && accessors && network && malformed_socket &&
+  const bool passed = github_artifact_runtime_read && terraform_profile && running && profile && profile_limits && record_boundaries && accessors && network && malformed_socket &&
       malformed_connect && unknown_fd && process && correlation && cloexec && delayed && concurrent_python_streams && roles &&
       oci_bootstrap && demotion && mismatch && dropped && topology_ok && nested_mounts && filesystem && cargo_runtime_read && cargo_self_maps_read && cargo_config_read && cargo_tar_read && cargo_entropy_read && cargo_ca_read && cargo_null_read && cargo_rustc_query && cargo_rustc_metadata && cargo_rustc_abi && cargo_rustc_zlib && cargo_rustc_overcommit && cargo_rustc_maps && cargo_rustc_statm && cargo_rustc_cgroup && go_runtime_read && go_build_config_read && go_build_handoff_read && cargo_build_handoff_read && cargo_build_pinned_target && cargo_build_driver_read && cargo_build_rustc_child && cargo_build_native_cc_child && cargo_build_collect2_child && cargo_build_lld_launcher && cargo_build_rust_lld && cargo_build_link_inputs && cargo_build_link_sdk && cargo_build_rust_c_abi && cargo_build_lld_entropy && cargo_build_program && cargo_build_program_abi && cargo_build_program_maps && cargo_build_program_query && cargo_build_program_null && cargo_build_config && go_build_runtime_read && go_build_creator_diagnostic && go_build_tool_child && go_build_cgo_gcc_creator && go_build_sdk_link_gcc && go_build_sdk_link_native && go_build_linker_resolver && go_build_cc1 && go_build_cc1_headers && go_build_as && go_build_collect2 && go_build_native_linker && go_build_linker_plugin && go_build_linker_null && go_build_linker_runtime && go_build_as_null && go_build_cc1_sdk_cgo && npm_node &&
       cargo_rustc_mountinfo && cargo_rustc_cpu_quota && cargo_rustc_sysroot_directory && cargo_dns_configuration && cargo_resolver_file && cargo_utc && cargo_cloexec_entropy && socketpair_diagnostic && kernel_socketpair && open_result_negative_ok && open_result_positive_ok && no_basename_trust_ok &&
@@ -7097,6 +7197,7 @@ int main(int argc, char** argv) {
       {"Cargo Rustc Zlib ABI boundary", cargo_rustc_zlib},
       {"Cargo Rustc ABI boundary", cargo_rustc_abi},
       {"Go resolver runtime read boundary", go_runtime_read},
+      {"GitHub artifact runtime read boundary", github_artifact_runtime_read},
       {"Go build configuration read boundary", go_build_config_read},
       {"Go build handoff read boundary", go_build_handoff_read},
       {"Cargo build handoff read boundary", cargo_build_handoff_read},

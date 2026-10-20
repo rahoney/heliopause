@@ -14,8 +14,8 @@ Last completed work item: CLI-UX-003 — COMPLETE; source4cfe29e/CI352 ten SUCCE
 Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
-Active work item status: IN_PROGRESS — native update/initial preparation/producer locally checked; whole OS bootstrap and signed lifecycle qualification pending
-Next action: actual signed base registered/systemd/ordinary doctor/npm passed; signed update refused native dynamic gaps without promotion; follow native-elf compatibility plan before remaining signed activation/crash/reboot; channel names pending separately
+Active work item status: IN_PROGRESS — actual signed base/register/systemd/doctor/npm and local native ELF compatibility passed; final remote CI and new signed activation/crash/reboot remain
+Next action: deliver final native ELF compatibility candidate to existing PR38/remote CI; then review fresh signed base/target inputs without retargeting rc1/rc2; channel names pending separately
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
@@ -4079,3 +4079,11 @@ Actual update retained rc1 with MANUAL_REVIEW/NOT_PERFORMED; native ELF runtime
 read classification gaps precede activation. The source audit/edit map/negative
 matrix and second review are in [native ELF plan](./evidence/m13-004-convenience/native-elf-compatibility-plan-20261020.md).
 No public Release, main merge, tag retarget or Host migration occurred.
+
+2026-10-20 native ELF compatibility closure (local): the two actual faults and
+additional sandbox OS marker are bounded in the existing classifier. Two RED
+checks, final103 canonical C++ latches, final Quick/security/docs, actual signed
+native4 independent required3/ALLOW, unchanged nominal npm and unmanaged update
+denial passed. [Signed/native qualification](./evidence/m13-004-convenience/signed-native-qualification-20261020.md)
+keeps original full update NOT_PERFORMED and the remaining fresh-signed
+activation/health/crash/reboot/authentication scope explicit. PR38 remains draft.

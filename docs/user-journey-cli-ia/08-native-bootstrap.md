@@ -104,9 +104,10 @@ setuid는 사용하지 않는다. 실제 signed/systemd 시험에는 OS 인증 �
 ## 5. 완료·정리 기준
 
 새 signed native9 base/target의 실제 획득→검역→전환→doctor/nominal, BLOCK/취소·동시성,
-중단/재부팅 복구와 기존 OS 관리자 인증을 확인해야 전체 기능 완료다. 현재는 로컬 mock-positive와
-production SDK negative, 실제 kernel/file mechanics·compile만 확인했다. 신규 공개 tag,
-배포·main merge·기존 개발 설치 변경은 이번 문서 작성으로 수행되지 않는다.
+중단/재부팅 복구와 기존 OS 관리자 인증을 확인해야 전체 기능 완료다. 실제 signed 입력의 파일 준비·등록·systemd·일반 doctor/npm과
+보완 후보의 native4 동적 호환성까지 확인했다. 새 signed source의 전체 활성화·중단 복구와
+공개 획득 경로는 아직 미완료다. [실제 범위](../planning/evidence/m13-004-convenience/signed-native-qualification-20261020.md)를
+따르며 시험 태그 생성은 공개 Release·main merge·기존 개발 설치 변경을 뜻하지 않는다.
 
 최종 사용 뒤 완료된 ordinary export/test binaries/cache/operator를 정리한다. 현재·이전
 정상 release, recovery journal, public proof와 원본 Evidence는 보존한다. UNKNOWN/실행 중

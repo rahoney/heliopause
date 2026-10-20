@@ -1970,6 +1970,43 @@ bool IsExactPinnedPythonSystemLibrary(const std::string& path) {
   return false;
 }
 
+// Raw ELF programs stay ARTIFACT. Their own sandbox CPU metadata and the
+// locked OCI image's native ABI inputs confer no control/network authority.
+bool IsGitHubArtifactRuntimeRead(const gvisor::common::ContextData& context,
+                                const ProcessState& state,
+                                const std::string& path, uint64_t flags,
+                                const char* profile, const MountAnchor* anchor) {
+  constexpr uint64_t kReadOnlyFlags = kOpenLargefile | 02000000;  // O_CLOEXEC
+  if (profile == nullptr || strcmp(profile, kProfileGitHub) != 0 ||
+      anchor == nullptr || (flags & ~kReadOnlyFlags) != 0 ||
+      !IsAtOrBelowMountpoint(path, anchor->mountpoint)) return false;
+  const auto* group = FindFilesystemGroup(context, state);
+  if (group == nullptr || group->role != ProcessState::Role::kArtifact ||
+      group->provenance != ProcessState::Provenance::kDirectExecRoot ||
+      group->current_image_class != ProcessClass::kArtifact ||
+      group->root_eligible || !group->root_consumed ||
+      group->trusted_control_network_active || group->demotion_pending ||
+      group->launch_target_pending || group->handoff_target_pending) return false;
+  if (anchor->mount_class == "system") {
+    const std::string self = "/proc/" + std::to_string(context.thread_group_id());
+    if (anchor->mountpoint == "/proc") {
+      return path == self + "/cgroup" || path == self + "/mountinfo" ||
+          path == "/proc/sys/kernel/osrelease";
+    }
+    return anchor->mountpoint == "/sys/fs/cgroup/cpu" &&
+        (path == "/sys/fs/cgroup/cpu/cpu.cfs_quota_us" ||
+         path == "/sys/fs/cgroup/cpu/cpu.cfs_period_us");
+  }
+  if (anchor->mount_class != "oci-root" || anchor->mountpoint != "/") return false;
+  std::string library = path;
+  if (HasPrefix(library, "/usr/lib/")) library = "/lib/" + library.substr(9);
+  for (const char* name : {"libm.so.6", "libstdc++.so.6", "libgcc_s.so.1"}) {
+    if (MatchesLibraryNameOrVersion(library,
+        (std::string("/lib/x86_64-linux-gnu/") + name).c_str())) return true;
+  }
+  return false;
+}
+
 bool IsPinnedRuntimeRootRead(const gvisor::common::ContextData& context,
                              const ProcessState& state,
                              const std::string& path, uint64_t flags,
@@ -2843,6 +2880,10 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
       (IsWriteCapableOpen(message.flags()) && path != "/dev/null" &&
        !IsExactBootstrapHelperWrite(message.context_data(), state, path, message.flags()))) {
     return FilesystemClass::kOutside;
+  }
+  if (IsGitHubArtifactRuntimeRead(message.context_data(), state, path,
+                                  message.flags(), profile, anchor)) {
+    return FilesystemClass::kRuntimeRoot;
   }
   if (IsExactBootstrapHelperWrite(message.context_data(), state, path, message.flags()) ||
       IsPinnedCargoResolverRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
