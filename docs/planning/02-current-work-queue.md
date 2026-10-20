@@ -14,8 +14,8 @@ Last completed work item: CLI-UX-003 — COMPLETE; source4cfe29e/CI352 ten SUCCE
 Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
-Active work item status: IN_PROGRESS — actual signed base/register/systemd/doctor/npm and local native ELF compatibility passed; final remote CI and new signed activation/crash/reboot remain
-Next action: deliver final native ELF compatibility candidate to existing PR38/remote CI; then review fresh signed base/target inputs without retargeting rc1/rc2; channel names pending separately
+Active work item status: IN_PROGRESS — actual signed base/register/systemd/doctor/npm and native ELF compatibility/CI356 ten SUCCESS; new signed activation/crash/reboot remain
+Next action: owner review of rc3/rc4 signing inputs frozen to qualified source4ff6c89; then actual signed activation/health/auth/crash/reboot; channel names pending separately
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
@@ -4087,3 +4087,13 @@ native4 independent required3/ALLOW, unchanged nominal npm and unmanaged update
 denial passed. [Signed/native qualification](./evidence/m13-004-convenience/signed-native-qualification-20261020.md)
 keeps original full update NOT_PERFORMED and the remaining fresh-signed
 activation/health/crash/reboot/authentication scope explicit. PR38 remains draft.
+
+2026-10-20 final source4ff6c89/[CI356](https://github.com/rahoney/heliopause/actions/runs/39416778306):
+Required+9 actual SUCCESS; full checkout tree/mode match, native macOS/C++103,
+Linux45 consumers/CPU293.82s, helper5 wait0/final confirmed cleanup verified in
+[remote receipt](./evidence/m13-004-convenience/signed-native-20261020/remote-ci.json).
+Completed trial containers/volume/images/payload/build/operator cleanup and Host
+preservation are in [cleanup receipt](./evidence/m13-004-convenience/signed-native-20261020/cleanup.json).
+[New signing proposal](./evidence/m13-004-convenience/signed-retest-plan-20261020.md)
+freezes rc3/rc4 to4ff6c89 and awaits owner approval; no new refs yet. M13-004
+remains IN_PROGRESS; signed whole activation/recovery and channel names remain open.

@@ -714,5 +714,7 @@
     "credentials_required": false,
     "offline_network_namespace": true,
     "uid": 1000
-  }
+  },
+  "remote_ci": "remote-ci.json",
+  "completed_resource_cleanup": "cleanup.json"
 }

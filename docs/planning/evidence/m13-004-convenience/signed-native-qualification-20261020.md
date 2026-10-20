@@ -35,13 +35,20 @@
   SELF_UPDATE_MANAGED_INSTALLATION_REQUIRED/exit1도 확인했다. 임시 HTTPS transport만
   fixture이며 signature root·검역·Policy·권한 검사는 면제하지 않았다.
 
+최종 source4ff6c89의 [CI356](https://github.com/rahoney/heliopause/actions/runs/39416778306)은
+Required 포함10개 모두 SUCCESS다. [원격 receipt](./signed-native-20261020/remote-ci.json)는
+실제 checkoutc0a0ddd와 전체 tree/mode 일치, native macOS·전체103 C++ latch, Linux45개
+소비자와 CPU full293.82s, helper5개 wait0 및 final original0/CONFIRMED_STOPPED/
+helper_stop0/client_error0/client_restore0를 연결한다. 실제 CUDA full은 이번 실행에 포함하지
+않았다. 다음은 [고정 소스의 재서명 제안](./signed-retest-plan-20261020.md)이다.
+
 ## 해석 한계와 남은 작업
 
 | 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
 | --- | --- | --- | --- | --- | --- |
 | actual signed13 producer/독립 검증 | YES | YES | YES, a22aa12 rc1/rc2 | YES, 해당 입력 | 없음 |
 | actual first files/register/systemd/doctor/npm | YES | YES | YES, disposable Linux guest | YES, 해당 mechanics | 공개 최초 획득/설치는 별도 |
-| raw ELF 호환성 보완 | YES | YES | YES, local103 latch/native4/npm | YES, local 범위 | final source 원격 CI는 별도 기록 |
+| raw ELF 호환성 보완 | YES | YES | YES, local103 latch/native4/npm와 CI356 | YES, 해당 범위 | native 전체 전환은 별도 |
 | 수정된 signed base→target 전체 native 활성화 | YES | YES | NO | NO | 새 official signed inputs와 Root/health/실패·복원/중단·재부팅/OS 인증 |
 | M13-004 전체 설치 채널 | PARTIAL | PARTIAL | NO | NO | 위 native gap, owner 이름/publisher binding/각 채널 |
 
@@ -59,10 +66,12 @@ filesystem별 directory st_size 차이와 준비 직후 TLS readiness race는 �
 이를 제품 수정 성공이나 서명 오류로 합치지 않았다. 첫 doctor의 미지원 JSON 옵션과
 Staticcheck cache의 read-only 권한 실패도 정상 결과로 재분류하지 않았다.
 
-첫 managed guest는 증거 확보와 사후 정상 확인 뒤 종료·삭제했다. Stop command 성공과
-PID1 exit130은 구분하며 reboot qualification으로 쓰지 않는다. 마지막 사용이 끝난 나머지
-전용 guest/volume/image·payload/build/cache/operator도 정리하고 원본 cleanup receipt로
-확인한다. 작은 public proof/manifest·필요 Evidence와 Host/shared runtime은 보존한다.
+두 전용 guest와 volume, task-label image 및 직접 가져온 base 참조는 삭제·부재 조회를
+완료했다. Stop command 성공과 PID1 exit130은 구분하며 reboot qualification으로 쓰지 않는다.
+완료된 payload/build/cache/operator37,051개/unique regular logical1,163,651,761B도 삭제했다.
+[정리 receipt](./signed-native-20261020/cleanup.json)가 실제 범위를 연결한다. 마지막 CI 기록의
+문서 검사에 계속 쓰는 source/cache/helper는 그 소비 뒤 정리한다. 작은 public proof/manifest와
+필요 Evidence는 보존했고 Host 보호 신원10개·runtime6/pod-init·shared image4는 불변이다.
 
 두 번째 검토: 서명 성공, 파일 준비, 등록/진단, native4 동적 호환성과 signed whole activation의
 증거를 분리했다. 첫 fail-stop 뒤 후속 미완료를 별개 원인으로 확대하지 않았고 기존 source를
