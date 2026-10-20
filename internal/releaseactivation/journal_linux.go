@@ -77,7 +77,11 @@ func (j updateJournal) validate() error {
 	if comparison < 0 || (comparison == 0 && j.ManifestSHA256 != j.Old.ManifestSHA256) {
 		return ErrTransition
 	}
-	for _, config := range j.Configs {
+	return validateSavedConfigs(j.Configs)
+}
+
+func validateSavedConfigs(configs [3]savedConfig) error {
+	for _, config := range configs {
 		if len(config.Body) == 0 || len(config.Body) > 16<<10 || bodySHA256(config.Body) != config.SHA256 || config.Mode&^0777 != 0 || config.Mode&0133 != 0 || config.Mode&0400 == 0 || config.GID > 1<<31-1 {
 			return ErrTransition
 		}

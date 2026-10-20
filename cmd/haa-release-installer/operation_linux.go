@@ -9,6 +9,9 @@ import (
 )
 
 func runOperation(ctx context.Context, operation string) error {
+	if operation == "register" {
+		return releaseactivation.Register(ctx)
+	}
 	if operation == "recover" {
 		return releaseactivation.Recover(ctx)
 	}

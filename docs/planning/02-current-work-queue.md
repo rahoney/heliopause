@@ -14,7 +14,7 @@ Last completed work item: CLI-UX-003 — COMPLETE; source4cfe29e/CI352 ten SUCCE
 Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
-Active work item status: IN_PROGRESS — provenance primitive locally qualified; public caller/activation not wired
+Active work item status: IN_PROGRESS — native self-update caller/activation and producer locally checked; initial bootstrap and signed lifecycle qualification pending
 Next action: narrow protected installer and activation/recovery; channel names pending separately
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -3491,8 +3491,10 @@ Exact-version admission, seven-language help/progress and truthful cleanup/recov
 pass locally; actual CLI tests reject this unmanaged development installation without runtime
 or acquisition changes. The actual helper asset producer/manifest/package payload is now locally qualified in
 [producer evidence](./evidence/m13-004-convenience/producer-qualification-20261020.md).
-CURRENT MISSING: initial native bootstrap and registration, new signed native4 base/target,
-actual systemd activation and crash/reboot qualification. Full self-update remains IN_PROGRESS and is not installed or publicly released.
+Explicit registration of an independently verified, preinstalled native layout is locally
+qualified in [enrollment evidence](./evidence/m13-004-convenience/enrollment-qualification-20261020.md).
+CURRENT MISSING: verified initial native loader and ordinary-user bootstrap health,
+new signed native4 base/target, actual systemd activation and crash/reboot qualification. Full self-update remains IN_PROGRESS and is not installed or publicly released.
 Package names block only name-dependent channels;
 account preparation is complete. No new placeholder/executable/Port/job exists.
 SEC-UPD-001 and CLI-UX-003 stay COMPLETE; prior CLI-UX-001 scope remains historical.

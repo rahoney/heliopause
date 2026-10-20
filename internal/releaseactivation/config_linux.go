@@ -50,13 +50,29 @@ func parseNativeConfigs(journal updateJournal) (nativePolicyConfig, hosttool.Con
 	if err := journal.validate(); err != nil {
 		return policy, host, err
 	}
-	if err := canonicalConfig(journal.Configs[0].Body, &policy); err != nil {
+	return parseNativeInstallationConfigs(journal.Old, journal.Configs)
+}
+
+func parseNativeInstallationConfigs(record registration, configs [3]savedConfig) (nativePolicyConfig, hosttool.Config, error) {
+	var policy nativePolicyConfig
+	var host hosttool.Config
+	body, err := json.Marshal(record)
+	if err != nil {
+		return policy, host, ErrUntrusted
+	}
+	if _, err := parseRegistration(body); err != nil {
 		return policy, host, err
 	}
-	if err := canonicalConfig(journal.Configs[1].Body, &host); err != nil {
+	if err := validateSavedConfigs(configs); err != nil {
 		return policy, host, err
 	}
-	if policy.SocketPath != policySocketPath || policy.ClientPath != nativeVersionPath(journal.Old.Version, "helox-linux-amd64") || policy.ClientUID != journal.Old.ClientUID || policy.ClientGID != journal.Old.ClientGID || host.ObserverHelperPath != nativeVersionPath(journal.Old.Version, "haa_gvisor_observer-linux-amd64") {
+	if err := canonicalConfig(configs[0].Body, &policy); err != nil {
+		return policy, host, err
+	}
+	if err := canonicalConfig(configs[1].Body, &host); err != nil {
+		return policy, host, err
+	}
+	if policy.SocketPath != policySocketPath || policy.ClientPath != nativeVersionPath(record.Version, "helox-linux-amd64") || policy.ClientUID != record.ClientUID || policy.ClientGID != record.ClientGID || host.ObserverHelperPath != nativeVersionPath(record.Version, "haa_gvisor_observer-linux-amd64") {
 		return policy, host, ErrUntrusted
 	}
 	if host.DockerPath != "/usr/bin/docker" && host.DockerPath != "/usr/local/bin/docker" {
@@ -66,8 +82,8 @@ func parseNativeConfigs(journal updateJournal) (nativePolicyConfig, hosttool.Con
 	if host.DockerEndpoint != "unix://"+endpoint || !filepath.IsAbs(endpoint) || filepath.Clean(endpoint) != endpoint || strings.ContainsAny(endpoint, "\x00\r\n") {
 		return policy, host, ErrUntrusted
 	}
-	unit, err := nativePolicyUnit(journal.Old.Version)
-	if err != nil || !bytes.Equal(unit, journal.Configs[2].Body) {
+	unit, err := nativePolicyUnit(record.Version)
+	if err != nil || !bytes.Equal(unit, configs[2].Body) {
 		return policy, host, ErrUntrusted
 	}
 	return policy, host, nil
