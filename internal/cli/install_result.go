@@ -152,6 +152,9 @@ func WriteJSONInstallResult(output io.Writer, outcome application.InstallOutcome
 
 func installStatuses(outcome application.InstallOutcome, operationErr error) (string, string) {
 	if operationErr != nil {
+		if outcome.Promoted().Target().String() != "" {
+			return string(domain.OperationFailed), "COMPLETED"
+		}
 		return string(domain.OperationFailed), "FAILED"
 	}
 	if outcome.Promoted().Target().String() != "" {

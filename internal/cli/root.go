@@ -667,6 +667,7 @@ func currentGoProjectContext() (domain.InstallContext, error) {
 }
 
 func initializeCommandTree(root *cobra.Command) {
+	root.AddCommand(newSelfUpdateCommand())
 	root.AddCommand(&cobra.Command{Use: "doctor", Short: "Check installed release and trusted Host runtime readiness", Args: cobra.NoArgs, RunE: func(*cobra.Command, []string) error { return errors.New("doctor command is not configured") }})
 	npm := ensureNPMCommand(root)
 	npm.AddCommand(newStaticLeaf("inspect <package-reference>", "Inspect an npm package", false))

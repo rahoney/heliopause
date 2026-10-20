@@ -102,7 +102,9 @@ func (p *presentation) renderInstall(outcome application.InstallOutcome, operati
 		}
 		p.line("%s %s — %s", p.text("Error:", "오류:"), safeTerminal(outcome.FailureCode()), explanation)
 	}
-	if inspection.Request().Source().String() == "github-release" {
+	if p.selfUpdate {
+		p.line("%s", p.text("Scope: official release provenance, all four native programs, release metadata and the existing quarantine policy. Activation also checks the protected runtime and recovery state.", "검사 범위: 공식 릴리스 서명·출처, native 실행 파일 네 개, 릴리스 메타데이터와 기존 검역 정책입니다. 활성화 시 보호된 실행 환경과 복구 상태도 확인합니다."))
+	} else if inspection.Request().Source().String() == "github-release" {
 		p.line("%s", p.text("Scope: one exact GitHub asset, declared digest and format checks. Archives stay intact; supported ELF files alone enter isolated dynamic inspection.", "검사 범위: 정확한 GitHub 파일 하나와 출처 선언 해시·파일 형식입니다. Archive는 압축을 풀지 않으며 지원하는 ELF만 격리된 동작 검사를 수행합니다."))
 	}
 	p.line("Operation: %s", inspection.OperationID().String())
@@ -256,6 +258,9 @@ func (p *presentation) reason(code string) string {
 	}
 }
 func (p *presentation) errorExplanation(code string) string {
+	if strings.HasPrefix(code, "SELF_UPDATE_") {
+		return p.selfUpdateErrorExplanation(code)
+	}
 	if p.interruption == "OPERATION_CANCELLED" {
 		return p.text("The user cancelled this operation. This is not evidence of a broken runtime.", "사용자가 작업을 중단했습니다. 실행 환경 고장을 뜻하지 않습니다.")
 	}

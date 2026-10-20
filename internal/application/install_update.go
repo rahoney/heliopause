@@ -66,6 +66,9 @@ func (s *InstallUpdateService) Install(ctx context.Context, request InstallReque
 		closeErr := session.Close()
 		if closeErr != nil && outcome.failureCode == "" {
 			outcome.failureCode = "UPDATE_GUARD_CLOSE_FAILED"
+			if code := ports.InstallUpdateFailureCode(closeErr); code != "" {
+				outcome.failureCode = code
+			}
 		}
 		resultErr = errors.Join(resultErr, closeErr)
 	}()

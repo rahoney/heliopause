@@ -37,6 +37,7 @@ type presentation struct {
 	reported                         bool
 	startedAt                        time.Time
 	reportedError                    bool
+	selfUpdate                       bool
 	interruption                     string
 }
 type presentationWriter struct {
@@ -104,6 +105,9 @@ func PreparePresentation(root *cobra.Command, args []string) (string, error) {
 	if err := validateGitHubReplacementIntent(root, args); err != nil {
 		return "", err
 	}
+	if err := validateSelfUpdateIntent(root, args); err != nil {
+		return "", err
+	}
 	command, remaining, err := root.Find(args)
 	if err != nil {
 		return "", err
@@ -127,12 +131,13 @@ func PreparePresentation(root *cobra.Command, args []string) (string, error) {
 	if top != root {
 		source = top.Name()
 	}
+	p.selfUpdate = source == "self-update"
 	p.localeExplicit = root.PersistentFlags().Changed("lang")
 	p.prepareLanguageSetting(command, command.Flags().Args())
 	if err = p.configure(); err != nil {
 		return "", err
 	}
-	if command.CommandPath() == "helox npm update" || command.CommandPath() == "helox pip install" || command.CommandPath() == "helox cargo update" || command.CommandPath() == "helox go get" || command.CommandPath() == "helox terraform init" || command.CommandPath() == "helox github install" {
+	if command.CommandPath() == "helox self-update" || command.CommandPath() == "helox npm update" || command.CommandPath() == "helox pip install" || command.CommandPath() == "helox cargo update" || command.CommandPath() == "helox go get" || command.CommandPath() == "helox terraform init" || command.CommandPath() == "helox github install" {
 		help, _ := command.Flags().GetBool("help")
 		if !help {
 			if err := command.ValidateArgs(command.Flags().Args()); err != nil {
@@ -390,12 +395,20 @@ func beginProgress(ctx context.Context, output io.Writer, machine bool) (context
 }
 func knownStage(stage string) bool {
 	switch stage {
-	case "prepare", "resolve", "download", "verify", "inspect", "policy", "manifest", "stage", "install", "build", "evidence":
+	case "prepare", "resolve", "download", "verify", "inspect", "policy", "manifest", "stage", "install", "build", "evidence", "authorize", "drain", "activate":
 		return true
 	}
 	return false
 }
 func (p *presentation) stage(stage string) string {
+	switch stage {
+	case "authorize":
+		return p.text("Preparing protected installer", "관리자 설치 도우미 준비")
+	case "drain":
+		return p.text("Finishing runtime cleanup", "검사 실행 환경 종료·정리")
+	case "activate":
+		return p.text("Activating release and checking runtime health", "릴리스 전환·실행 환경 정상 확인")
+	}
 	names := map[string][2]string{"prepare": {"Preparing operation", "작업 준비"}, "resolve": {"Resolving exact dependencies", "정확한 버전·의존성 확인"}, "download": {"Downloading artifact", "패키지 다운로드"}, "verify": {"Verifying integrity", "출처·무결성 검증"}, "inspect": {"Static / sandbox inspection", "정적·격리 환경 검사"}, "policy": {"Evaluating policy", "정책 판정"}, "manifest": {"Recording manifest / SBOM", "검증 목록·SBOM 생성"}, "stage": {"Staging verified files", "검증 파일 반입 준비"}, "install": {"Installing verified files", "검증 파일 설치"}, "build": {"Building in sandbox", "격리 환경 빌드"}, "evidence": {"Recording evidence", "검사 근거 기록"}}
 	value, ok := names[stage]
 	if !ok {

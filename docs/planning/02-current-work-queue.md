@@ -3485,6 +3485,13 @@ Explicit owned replay/staging payload retention is locally checked in
 Unknown payloads and final records are retained; the next actual session must call cleanup
 only after confirmed runtime drainage. [Session/CLI source map](./evidence/m13-004-convenience/session-cli-plan-20261020.md)
 records that wiring and the remaining public preflight/report gaps before implementation.
+The actual session factory and public `self-update --version vX.Y.Z` are now wired through
+the existing pipeline, with [local session/CLI evidence](./evidence/m13-004-convenience/session-cli-qualification-20261020.md).
+Exact-version admission, seven-language help/progress and truthful cleanup/recovery reporting
+pass locally; actual CLI tests reject this unmanaged development installation without runtime
+or acquisition changes. CURRENT MISSING: real helper asset producer/native bootstrap and
+registration, a newly signed native4 base/target, real systemd activation and crash/reboot
+qualification. Full self-update remains IN_PROGRESS and is not installed or publicly released.
 Package names block only name-dependent channels;
 account preparation is complete. No new placeholder/executable/Port/job exists.
 SEC-UPD-001 and CLI-UX-003 stay COMPLETE; prior CLI-UX-001 scope remains historical.

@@ -11,13 +11,11 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"strings"
 	"sync"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/releaseinstall"
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
-	"golang.org/x/mod/semver"
 )
 
 const heliopauseManifestName = "helox-release-manifest.json"
@@ -52,10 +50,8 @@ func NewHeliopauseReleaseSet(client *Client, version, activeLockSHA256 string, i
 	if _, err := domain.NewSHA256Digest(activeLockSHA256); err != nil {
 		return nil, errors.New("active runtime lock identity is invalid")
 	}
-	core, _, _ := strings.Cut(version, "-")
-	core, _, _ = strings.Cut(core, "+")
-	if !semver.IsValid(version) || strings.Count(core, ".") != 2 {
-		return nil, errors.New("an exact official release version is required")
+	if err := ValidateHeliopauseVersion(version); err != nil {
+		return nil, err
 	}
 	reference, err := ParseReference("rahoney/heliopause@" + version + "#" + heliopauseManifestName)
 	if err != nil {

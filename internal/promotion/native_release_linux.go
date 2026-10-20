@@ -16,6 +16,7 @@ import (
 	"syscall"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/core/ports"
 	"github.com/rahoney/heliopause/internal/releaseactivation"
 	"github.com/rahoney/heliopause/internal/releaseinstall"
 )
@@ -185,6 +186,7 @@ func (p *NativeReleasePromotion) Promote(ctx context.Context, staged domain.Stag
 		return result, errors.Join(releaseactivation.ErrCleanup, rootErr, artifactsErr, currentErr)
 	}
 	p.payload = &nativeStagePayload{rootPath, rootInfo, artifactsInfo, identities}
+	ports.ReportProgress(ctx, ports.Progress{Stage: "authorize"})
 	if err := p.activate(ctx, body, proofs, func(name string) (io.ReadCloser, error) {
 		file, ok := held[name]
 		if !ok || name == "helox-release-manifest.json" {

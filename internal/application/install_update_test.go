@@ -117,6 +117,22 @@ func TestInstallUpdatePreparationFailureIsStartedUpdateWithoutFabricatedGraph(t 
 	}
 }
 
+func TestInstallUpdateKeepsConfirmedPromotionAndTypedCleanupFailure(t *testing.T) {
+	old, inspection := installWorkflowFixture(t)
+	calls := []string{}
+	base, _ := application.NewInstallService(inspection, &manifestPort{calls: &calls}, &stagingPort{calls: &calls}, &promotionPort{calls: &calls})
+	cause := errors.New("controlled cleanup uncertainty")
+	cleanup := ports.NewInstallUpdateFailure("SELF_UPDATE_OWNED_STAGE_CLEANUP_UNCERTAIN", cause)
+	session := &updateSessionFixture{reference: old.Reference(), resolver: &lockedResolver{graph: twoNodeGraph(t)}, promoter: &promotionPort{calls: &calls}, calls: &calls, closeErr: cleanup}
+	updater, _ := application.NewInstallUpdateService(base, updatePreparationFixture{session: session, calls: &calls})
+	install, _ := domain.NewNPMProjectInstallContext(old.Context().Target())
+	request, _ := application.NewInstallUpdateRequest(old.Source(), "first", install, false)
+	outcome, err := updater.Install(context.Background(), request)
+	if !errors.Is(err, cause) || outcome.FailureCode() != "SELF_UPDATE_OWNED_STAGE_CLEANUP_UNCERTAIN" || outcome.Promoted().Target() != install.Target() || outcome.Inspection().Decision().Decision() != domain.DecisionAllow {
+		t.Fatal("confirmed promotion or cleanup uncertainty lost", outcome, err)
+	}
+}
+
 func TestBaseInstallerCannotAcceptAnUpdateWithoutOriginalStateSession(t *testing.T) {
 	old, inspection := installWorkflowFixture(t)
 	calls := []string{}

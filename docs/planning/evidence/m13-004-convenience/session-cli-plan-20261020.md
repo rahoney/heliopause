@@ -43,6 +43,9 @@
    GitHub 단일 asset 범위로 설명하지 않는다. English/Korean과 기존5언어 catalog/fallback을
    지원한다. 기술 코드는 영어로 유지하며 SDK·서버/응답 불확실성·실제 전환 완료를 구분한다.
    Stable self-update failure reasons는 controller-owned typed failure에만 추가한다.
+   이미 성공한 Promotion 뒤 session cleanup만 실패하면 전체 operation은 FAILED로
+   보고하되 확인된 promotion_status=COMPLETED를 보존한다. 실제 전환 후 응답 손실처럼
+   성공을 확인하지 못한 경우에는 성공한 promotion을 만들어 내지 않는다.
 6. 실제 source가 같은 변경에 존재한 뒤 static command/help를 등록한다. Help/settings는
    기존처럼 inert하다. Root client의 PREPARED→cleanup→SH 해제→ACTIVATE 순서와 관리자
    인증 경계를 유지한다. 이름 미정 채널을 등록하거나 개발용 설치를 자동 인수하지 않는다.

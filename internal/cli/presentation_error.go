@@ -5,6 +5,8 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/rahoney/heliopause/internal/core/ports"
+
 	"github.com/spf13/cobra"
 )
 
@@ -31,8 +33,11 @@ func PresentRuntimeError(command *cobra.Command, cause error) error {
 	}
 	if !p.reportedError {
 		code := "OPERATION_FAILED"
+		typedCode := ports.InstallUpdateFailureCode(cause)
 		message := strings.ToLower(cause.Error())
-		if p.interruption != "" {
+		if typedCode != "" {
+			code = typedCode
+		} else if p.interruption != "" {
 			code = p.interruption
 		} else if strings.Contains(message, "network policy") {
 			code = "NETWORK_POLICY_SERVICE_UNAVAILABLE"

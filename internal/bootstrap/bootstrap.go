@@ -76,10 +76,18 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		}
 		return command.ExecuteContext(ctx)
 	}
+	if source == "self-update" {
+		if err := selfUpdatePlatform(); err != nil {
+			return err
+		}
+	}
 	if source == "npm" || source == "pypi" || source == "pip" || source == "github" || source == "go" || source == "cargo" || source == "terraform" || source == "self-update" {
 		var closeRuntime func() error
 		ctx, closeRuntime, err = commandRuntime(ctx)
 		if err != nil {
+			if source == "self-update" {
+				return selfUpdateFailure(err)
+			}
 			return err
 		}
 		if closeRuntime != nil {
@@ -91,9 +99,14 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		}
 	}
 	var trustedExecutor *hosttool.Executor
+	if source == "self-update" {
+		if err := selfUpdateRuntime(ctx); err != nil {
+			return err
+		}
+	}
 	var observerSupervisor *sandbox.ObserverSupervisor
 	var processObserver sandbox.TraceObserver
-	if runtime.GOOS == "linux" && source != "" && (source == "npm" || source == "pypi" || source == "pip" || source == "github" || source == "go" || source == "cargo" || source == "terraform") {
+	if runtime.GOOS == "linux" && source != "" && (source == "npm" || source == "pypi" || source == "pip" || source == "github" || source == "go" || source == "cargo" || source == "terraform" || source == "self-update") {
 		trustedExecutor, err = hosttool.NewSystem(ctx)
 		if err != nil {
 			return err
@@ -501,6 +514,15 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 			return err
 		}
 		if err := cli.AddGitHubReleaseReplacement(command, updater); err != nil {
+			return err
+		}
+	}
+	if source == "self-update" {
+		updater, err := newSelfUpdater(ctx, trustedExecutor, observerSupervisor, processObserver)
+		if err != nil {
+			return err
+		}
+		if err := cli.AddSelfUpdate(command, updater); err != nil {
 			return err
 		}
 	}

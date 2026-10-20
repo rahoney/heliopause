@@ -8,6 +8,7 @@ import (
 
 func localizeHelp(root *cobra.Command, p *presentation) {
 	descriptions := map[string][2]string{
+		"helox self-update":           {"Quarantine and update Heliopause to one exact official version", "Heliopause 공식 버전 전체를 검역한 뒤 본체를 업데이트합니다"},
 		"helox help":                  {"Help about any command", "명령별 사용법을 표시합니다"},
 		"helox completion":            {"Generate shell completion", "셸 자동 완성 스크립트를 생성합니다"},
 		"helox completion bash":       {"Generate bash completion", "bash 자동 완성 스크립트를 생성합니다"},
@@ -43,6 +44,9 @@ func localizeHelp(root *cobra.Command, p *presentation) {
 	}
 	var visit func(*cobra.Command)
 	visit = func(command *cobra.Command) {
+		if command.CommandPath() == "helox self-update" {
+			command.Long = p.text(selfUpdateDescriptionEnglish, selfUpdateDescriptionKorean)
+		}
 		if command.CommandPath() == "helox npm update" {
 			command.Long = p.text(npmUpdateDescriptionEnglish, npmUpdateDescriptionKorean)
 		}
@@ -66,6 +70,7 @@ func localizeHelp(root *cobra.Command, p *presentation) {
 		}
 		command.InitDefaultHelpFlag()
 		for key, text := range map[string][2]string{
+			"version":                  {"Exact official Heliopause version (vX.Y.Z)", "정확한 Heliopause 공식 버전 (vX.Y.Z)"},
 			"help":                     {"Show help for this command", "이 명령의 사용법을 표시합니다"},
 			"output":                   {"Output: auto, human or json", "출력 형식: auto(자동), human(사람용), json(자동화용)"},
 			"lang":                     {"CLI language: auto, en, ko, de, fr, es, pt-BR or ja", "표시 언어: auto, en, ko, de, fr, es, pt-BR, ja"},
