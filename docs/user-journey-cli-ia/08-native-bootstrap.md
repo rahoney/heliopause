@@ -76,6 +76,11 @@ intent/manifest의 중단 재시도만 가능하고 foreign state는 보존한�
 
 ## 4. 서비스·등록·일반 계정 확인
 
+`bootstrap-files`가 완료된 뒤 canonical gVisor runtime bundle과 pod-init, 고정 runtime
+images를 준비한다. 최초 파일 준비는 `/usr/libexec/heliopause`의 기존 설치를 거부하므로,
+그 아래의 gVisor bundle을 먼저 배치하지 않는다. Runtime 설치 뒤 파일 준비를 반복하지
+않고 다음 등록 단계로 진행한다. 기존 runtime lock과 설치 신원 검증을 그대로 따른다.
+
 관리자는 exact unit의 daemon-reload/start와 실제 service identity/socket/cgroup를 확인한 뒤
 **설치된** `/usr/lib/heliopause/versions/V/haa-release-installer-linux-amd64 register`를 실행한다.
 Register는 설치 서명·전체 bytes·실제 helper inode·canonical configs·runtime·drain·잠금을

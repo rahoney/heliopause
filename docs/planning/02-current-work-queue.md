@@ -15,7 +15,7 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — native update/initial preparation/producer locally checked; whole OS bootstrap and signed lifecycle qualification pending
-Next action: CI355 ten SUCCESS verified; owner-approved first rc tag/signing build, then actual signed native9/bootstrap/administrator authentication and systemd/crash/reboot qualification; channel names pending separately
+Next action: both approved rc signing builds and independent thirteen-file verification passed; actual native base registered/systemd/ordinary doctor passed in disposable guest; nominal quarantine and signed update/crash/reboot qualification in progress; channel names pending separately
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
@@ -3506,7 +3506,12 @@ independent verification, exact OS config/unit, register and ordinary health bou
 Owner approved test tags/official signing builds on2026-10-20. The
 [signed lifecycle plan](./evidence/m13-004-convenience/signed-lifecycle-plan-20261020.md)
 fixes CI355 source a22aa12, first rc1 then rc2, unchanged tag protection and explicit retirement limits.
-CURRENT MISSING: actual newly signed native9 base/target acquisition, whole clean-host OS bootstrap/
+Both approved rc tags now have successful official signing builds on exact source a22aa12.
+Rc1 signed13 independent verification and actual production Root SDK/file preparation pass locally;
+registration/health/systemd remain unqualified. The
+[disposable systemd fixture plan](./evidence/m13-004-convenience/native-systemd-fixture-plan-20261020.md)
+precedes that qualification without changing the Host installation or product trust gates.
+CURRENT MISSING: rc2 material qualification and actual complete-set caller acquisition, whole clean-host OS bootstrap/
 ordinary doctor and nominal quarantine, existing OS administrator authentication, actual
 systemd activation and crash/reboot qualification. Full self-update remains IN_PROGRESS and is not installed or publicly released.
 Package names block only name-dependent channels;
