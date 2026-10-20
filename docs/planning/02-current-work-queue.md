@@ -3471,6 +3471,10 @@ The canonical pinned observer build/full latch and actual default/help/identity 
 actual newly signed complete-set quarantine/systemd activation remain open. Next are existing
 pipeline content-session binding, root client/Promotion, public self-update CLI and actual
 producer/native-bootstrap wiring.
+Per-request content binding now reuses the existing pipeline, with concurrent distinct-version
+isolation/unchanged base and non-ALLOW publication denial locally checked in
+[content-session evidence](./evidence/m13-004-convenience/content-session-qualification-20261020.md).
+Actual session factory/root client/Promotion/public CLI and native bootstrap remain missing.
 Package names block only name-dependent channels;
 account preparation is complete. No new placeholder/executable/Port/job exists.
 SEC-UPD-001 and CLI-UX-003 stay COMPLETE; prior CLI-UX-001 scope remains historical.

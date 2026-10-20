@@ -77,6 +77,9 @@ func (s *InstallUpdateService) Install(ctx context.Context, request InstallReque
 	// resolver/promoter or a cached original-state session.
 	inspection := *s.base.inspection
 	inspection.resolver = session
+	if content, ok := session.(ports.InstallUpdateContentSession); ok {
+		inspection.artifact, inspection.verification, inspection.inspection = content, content, content
+	}
 	inspection.newOperationID = func() (domain.OperationID, error) { return operation, nil }
 	pipeline := *s.base
 	pipeline.inspection, pipeline.promotion = &inspection, session

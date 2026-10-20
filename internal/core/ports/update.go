@@ -47,6 +47,16 @@ type InstallUpdateSession interface {
 	Close() error
 }
 
+// InstallUpdateContentSession binds frozen acquisition and its checks to one
+// update. These ports provide content and reports; the existing Evidence and
+// Policy owners still decide whether the complete set can reach promotion.
+type InstallUpdateContentSession interface {
+	InstallUpdateSession
+	Artifact
+	Verification
+	Inspection
+}
+
 type InstallUpdatePreparation interface {
 	BeginInstallUpdate(context.Context, domain.SourceID, string, domain.InstallContext, bool) (InstallUpdateSession, error)
 }

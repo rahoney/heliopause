@@ -14,7 +14,7 @@ import (
 )
 
 type updatePreparationFixture struct {
-	session *updateSessionFixture
+	session ports.InstallUpdateSession
 	calls   *[]string
 	err     error
 }
