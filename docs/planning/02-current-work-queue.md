@@ -3434,7 +3434,11 @@ The old protected controller/kernel peer gate is locally checked in
 [peer evidence](./evidence/m13-004-convenience/activation-peer-qualification-20261020.md).
 Actual UID/GID/inode/pidfd negatives pass in isolated namespaces with a mocked
 installed crypto snapshot. Fixed payload RPC/staging and full lifecycle remain next.
-IPC and crash-recovery details precede activation source edits. Package names block only name-dependent channels;
+Bounded payload transfer and authenticated root-private staging are locally checked in
+[wire evidence](./evidence/m13-004-convenience/activation-wire-qualification-20261020.md).
+Actual root filesystem mechanics pass with mocked auth/positive crypto, and production
+SDK rejects the unsigned new set before root writes. Durable journal/service lifecycle,
+fixed RPC and public caller remain next. IPC and crash-recovery details precede activation source edits. Package names block only name-dependent channels;
 account preparation is complete. No new placeholder/executable/Port/job exists.
 SEC-UPD-001 and CLI-UX-003 stay COMPLETE; prior CLI-UX-001 scope remains historical.
 M13-005 remains NOT_STARTED. Account setup is not
