@@ -3448,7 +3448,12 @@ are implemented and locally checked in
 Actual process/socket and partial-config mechanics pass; real systemd/global drainage,
 full root transaction/recovery, authenticated helper RPC/health and public pipeline/CLI
 remain missing. Their [next source map](./evidence/m13-004-convenience/activation-lifecycle-plan-20261020.md)
-precedes source edits. Package names block only name-dependent channels;
+precedes source edits. Shared previous-version signature/member reading, mandatory root
+BundleVerifier, proof persistence and exact registration swap/restore are locally checked in
+[proof evidence](./evidence/m13-004-convenience/activation-proof-qualification-20261020.md).
+Actual old offline proof and existing reader/journal namespace regressions pass; actual new
+signed native4/full transaction/recovery/RPC/health/public command remain missing.
+Package names block only name-dependent channels;
 account preparation is complete. No new placeholder/executable/Port/job exists.
 SEC-UPD-001 and CLI-UX-003 stay COMPLETE; prior CLI-UX-001 scope remains historical.
 M13-005 remains NOT_STARTED. Account setup is not

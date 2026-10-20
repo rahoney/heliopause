@@ -66,7 +66,11 @@
 - New CLI의 internal fixed health path만 root-created inherited Unix channel을 검증해
   EX 아래 narrow borrowed lease를 사용할 수 있다. Env/flag/token만으로 lease를 우회하지
   않는다. Socketpair SO_PEERCRED는 생성 시 root issuer의 credential임을 확인하고,
-  root issuer의 실제 old protected installer inode/서명을 journal old view와 연결한다.
+  Root issuer는 채널 생성 전에 자신의 actual old protected installer inode를 검증한다.
+  Ordinary child는 root-private journal 또는 root proc exe 읽기 권한을 가정하지 않는다.
+  Root가 전달하는 bounded old record와 read-only installer FD를 public signed old view에
+  연결하고 Root creator UID/GID/PID와 실제 parent/pidfd를 확인한다. Kernel의
+  [proc exe 접근은 ptrace 권한 검사 대상](https://man7.org/linux/man-pages/man5/proc_pid_exe.5.html)이다.
   Root는 child의 현재 ordinary UID/GID/executable/PID를 별도 kernel facts로 확인한다.
 - Child의 요청은 doctor와 고정된 기존 nominal npm quarantine compatibility뿐이며 임의
   user command를 전달하지 않는다. Root는 borrowed health child의 종료/cleanup 뒤 실제

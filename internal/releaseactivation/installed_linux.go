@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"io"
 	"os"
@@ -68,7 +69,36 @@ func ReadInstalledRelease(ctx context.Context) (InstalledRelease, error) {
 	if err != nil || target != filepath.Join("versions", record.Version) {
 		return InstalledRelease{}, ErrUntrusted
 	}
-	directory := filepath.Join(releaseinstall.SystemInstallRoot, target)
+	installed, err := readRecordedRelease(ctx, record)
+	if err != nil {
+		return InstalledRelease{}, err
+	}
+	after, err := os.Lstat(current)
+	targetAfter, linkErr := os.Readlink(current)
+	if err != nil || linkErr != nil || !os.SameFile(info, after) || targetAfter != target {
+		return InstalledRelease{}, ErrUntrusted
+	}
+	return installed, nil
+}
+
+// readRecordedRelease shares the exact installed-byte/proof checks without
+// requiring the active pointer. Recovery must authenticate the retained old
+// version before changing current. Records come only from protected state.
+func readRecordedRelease(ctx context.Context, record registration) (InstalledRelease, error) {
+	if ctx == nil {
+		return InstalledRelease{}, ErrUntrusted
+	}
+	if err := ctx.Err(); err != nil {
+		return InstalledRelease{}, err
+	}
+	body, err := json.Marshal(record)
+	if err != nil {
+		return InstalledRelease{}, ErrUntrusted
+	}
+	if _, err := parseRegistration(body); err != nil {
+		return InstalledRelease{}, err
+	}
+	directory := filepath.Join(releaseinstall.SystemInstallRoot, "versions", record.Version)
 	if err := protectedDirectory(directory); err != nil {
 		return InstalledRelease{}, err
 	}
@@ -130,11 +160,6 @@ func ReadInstalledRelease(ctx context.Context) (InstalledRelease, error) {
 	expected := releaseprovenance.Identity{Version: manifest.Version(), SourceCommit: manifest.SourceCommit(), WorkflowRun: manifest.WorkflowRun()}
 	for _, proof := range proofs {
 		if _, err := releaseprovenance.Verify(ctx, proof, expected, subjects); err == nil {
-			after, err := os.Lstat(current)
-			targetAfter, linkErr := os.Readlink(current)
-			if err != nil || linkErr != nil || !os.SameFile(info, after) || targetAfter != target {
-				return InstalledRelease{}, ErrUntrusted
-			}
 			return InstalledRelease{record, manifest, append([]byte(nil), proof...)}, nil
 		}
 		if err := ctx.Err(); err != nil {

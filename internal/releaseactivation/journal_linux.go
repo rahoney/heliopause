@@ -225,7 +225,9 @@ func (j *durableJournal) transition(ctx context.Context, state string) error {
 // replaceProtected is private and used only with fixed installation/config
 // paths. A nil expected value means confirmed absence, never blind overwrite.
 func replaceProtected(ctx context.Context, path string, expected, body []byte, mode os.FileMode, gid uint32) (resultErr error) {
-	if ctx == nil || os.Geteuid() != 0 || len(body) == 0 || len(body) > 128<<10 || mode&^0777 != 0 || mode&0133 != 0 || mode&0400 == 0 || gid > 1<<31-1 {
+	// Each caller keeps its narrower schema limit. Proof bundles alone use
+	// the existing one-MiB bound; this primitive exposes no file RPC.
+	if ctx == nil || os.Geteuid() != 0 || len(body) == 0 || len(body) > 1<<20 || mode&^0777 != 0 || mode&0133 != 0 || mode&0400 == 0 || gid > 1<<31-1 {
 		return ErrUntrusted
 	}
 	if err := ctx.Err(); err != nil {
@@ -240,7 +242,7 @@ func replaceProtected(ctx context.Context, path string, expected, body []byte, m
 			return ErrUntrusted
 		}
 	} else {
-		current, err := readProtected(ctx, path, 128<<10)
+		current, err := readProtected(ctx, path, 1<<20)
 		if err != nil || !bytes.Equal(current, expected) {
 			return ErrUntrusted
 		}
