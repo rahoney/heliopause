@@ -40,7 +40,7 @@ func nativePolicyUnit(version string) ([]byte, error) {
 		return nil, ErrUntrusted
 	}
 	return []byte("[Unit]\nDescription=Heliopause typed network-policy helper\nAfter=docker.service\nConditionPathExists=" + policyConfigPath + "\n\n" +
-		"[Service]\nType=simple\nExecStart=" + nativeVersionPath(version, "haa-network-policy-helper-linux-amd64") + "\nUser=root\nGroup=root\nUMask=0077\n" +
+		"[Service]\nType=simple\nExecStart=" + nativeVersionPath(version, "haa-network-policy-helper-linux-amd64") + " serve\nUser=root\nGroup=root\nUMask=0077\n" +
 		"RuntimeDirectory=heliopause-network-policy\nRuntimeDirectoryMode=0755\nRuntimeDirectoryPreserve=yes\nNoNewPrivileges=yes\nRestart=no\nKillMode=control-group\nTimeoutStopSec=15s\n\n[Install]\nWantedBy=multi-user.target\n"), nil
 }
 

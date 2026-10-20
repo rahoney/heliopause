@@ -28,12 +28,16 @@ config/runtime 부재로 exit1이다. 두 파일을 포함한 전체 required se
    target/UID/임의 argv 등 설치 역할은 넣지 않는다.
 3. 실제 소비자인 `scripts/ci-integration-cleanup.sh`, native `nativePolicyUnit`와
    `scripts/release-packages/main.go`의 ExecStart를 `... serve`로 함께 바꾼다.
+   Package의 RuntimeDirectory와 socket 예시도 actual observation-resource socket의
+   고정 parent `heliopause-network-policy`와 일치시킨다. Disabled-by-default/수동
+   runtime 준비 조건은 유지하고 package 설치가 healthy runtime이라고 주장하지 않는다.
    Root/mode/env/owning-shell wait/cleanup·root service/socket invariants는 유지한다.
    실제 다른 시작 호출은 rg inventory로 확인하고 historical evidence/raw는 편집하지 않는다.
 4. Go dispatcher의 inert/reject/cancel 회귀와 기존 canonical helper lifecycle tests,
    native/package unit expectations를 검사한다. 무인자 native 실행을 default command
    자체의 exit0로 확인하며 echo/help 출력만 actual service나 검역 성공이라고 쓰지 않는다.
 5. C++는 canonical pinned `scripts/build-gvisor-observer-release.sh`를 사용한다.
+   기존 full latch test의 argc1 경로에 실제 observer_main default/help 회귀를 추가한다.
    기존 exact gVisor source/Bazel SHA/builder image와 full latch test를 재사용하고 실제
    built binary의 default/help/identity를 확인한다. Floating host compiler/SDK/latest로
    바꾸거나 observer runtime invariants를 면제하지 않는다. 완료 binary/build inputs는

@@ -6872,6 +6872,14 @@ int main(int argc, char** argv) {
         VerifyAdmissionTerminalControlProtocol() && VerifyStrictControlParser() ? 0 : 1;
   }
   if (argc != 1) return 2;
+  char entry_name[] = "haa_gvisor_observer";
+  char help_option[] = "--help";
+  char* default_entry[] = {entry_name, nullptr};
+  char* help_entry[] = {entry_name, help_option, nullptr};
+  if (observer_main(1, default_entry) != 0 || observer_main(2, help_entry) != 0) {
+    fprintf(stderr, "inert observer entry FAIL\n");
+    return 1;
+  }
   char directory[] = "/tmp/haa-observer-latch-XXXXXX";
   if (mkdtemp(directory) == nullptr) return 1;
   const std::string remote = std::string(directory) + "/remote.sock";

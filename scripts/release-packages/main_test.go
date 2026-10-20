@@ -90,7 +90,7 @@ func TestPackagesContainBoundedPayloadAndAreReproducible(t *testing.T) {
 			t.Fatalf("%s CLI link = %#v", format, m)
 		}
 		unit := string(members["usr/lib/systemd/system/helox-network-policy.service"].body)
-		for _, required := range []string{"ConditionPathExists=/etc/heliopause/network-policy.json", "ExecStart=/" + root + "haa-network-policy-helper", "NoNewPrivileges=yes", "Restart=no"} {
+		for _, required := range []string{"ConditionPathExists=/etc/heliopause/network-policy.json", "ExecStart=/" + root + "haa-network-policy-helper serve\n", "RuntimeDirectory=heliopause-network-policy\n", "NoNewPrivileges=yes", "Restart=no"} {
 			if !strings.Contains(unit, required) {
 				t.Fatalf("%s service lacks %q", format, required)
 			}

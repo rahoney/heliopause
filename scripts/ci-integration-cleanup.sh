@@ -118,7 +118,7 @@ haa_start_policy_helper() {
   haa_prepare_policy_helper_launch || return $?
   if [[ -z ${RUNNER_TEMP-} ]]; then haa_helper_unknown 1 'missing helper log directory'; return $?; fi
   printf 'helper launch: bash=%s version=%s owner=%s\n' "$BASH" "$BASH_VERSION" "$$"
-  sudo /usr/libexec/heliopause/haa-network-policy-helper >> "$RUNNER_TEMP/haa-network-policy-helper.log" 2>&1 &
+  sudo /usr/libexec/heliopause/haa-network-policy-helper serve >> "$RUNNER_TEMP/haa-network-policy-helper.log" 2>&1 &
   haa_record_policy_helper_launch "$!" || return $?
   for ((attempt=0; attempt<600; attempt++)); do
     haa_observe_policy_helper || return $?

@@ -151,8 +151,8 @@ func regularInput(path string) error {
 
 func policyService(versionRoot string) string {
 	return "[Unit]\nDescription=Heliopause typed network-policy helper\nAfter=docker.service\nConditionPathExists=/etc/heliopause/network-policy.json\n\n" +
-		"[Service]\nType=simple\nExecStart=" + versionRoot + "/haa-network-policy-helper\nUser=root\nGroup=root\nUmask=0077\n" +
-		"RuntimeDirectory=heliopause-policy\nRuntimeDirectoryMode=0755\nRuntimeDirectoryPreserve=yes\nNoNewPrivileges=yes\nRestart=no\n\n[Install]\nWantedBy=multi-user.target\n"
+		"[Service]\nType=simple\nExecStart=" + versionRoot + "/haa-network-policy-helper serve\nUser=root\nGroup=root\nUmask=0077\n" +
+		"RuntimeDirectory=heliopause-network-policy\nRuntimeDirectoryMode=0755\nRuntimeDirectoryPreserve=yes\nNoNewPrivileges=yes\nRestart=no\n\n[Install]\nWantedBy=multi-user.target\n"
 }
 
 const packageReadme = `This package installs versioned native payload and a CLI symlink.
@@ -162,7 +162,7 @@ download images, create caller credentials, or start/enable a privileged service
 The optional helox-network-policy.service remains disabled. Before enabling it,
 configure the existing protected runtime and a root-owned, non-writable
 /etc/heliopause/network-policy.json using the actual caller client_path,
-client_uid and client_gid and socket_path /run/heliopause-policy/network-policy.sock.
+client_uid and client_gid and socket_path /run/heliopause-network-policy/network-policy.sock.
 No working authorization configuration is generated from guessed IDs.
 
 Run helox doctor after controlled runtime setup. Package installation success

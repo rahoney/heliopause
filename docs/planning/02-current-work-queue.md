@@ -3465,6 +3465,12 @@ native4/systemd/crash qualification remains open. Actual helper payload review a
 [inert default-entry gaps](./evidence/m13-004-convenience/native-entry-plan-20261020.md),
 which are next before final public caller/producer/native-bootstrap wiring. Generic M6
 dynamic inspection is retained; helper assets are not exempted or relabeled as safe resources.
+Inert default/help entries and explicit network service consumers are now implemented and
+locally qualified in [native entry evidence](./evidence/m13-004-convenience/native-entry-qualification-20261020.md).
+The canonical pinned observer build/full latch and actual default/help/identity probes pass;
+actual newly signed complete-set quarantine/systemd activation remain open. Next are existing
+pipeline content-session binding, root client/Promotion, public self-update CLI and actual
+producer/native-bootstrap wiring.
 Package names block only name-dependent channels;
 account preparation is complete. No new placeholder/executable/Port/job exists.
 SEC-UPD-001 and CLI-UX-003 stay COMPLETE; prior CLI-UX-001 scope remains historical.

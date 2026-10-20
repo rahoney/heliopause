@@ -4646,6 +4646,10 @@ int ConnectDatagram(const char* path) {
 }
 
 int main(int argc, char** argv) {
+  if (argc == 1 || (argc == 2 && strcmp(argv[1], "--help") == 0)) {
+    puts("usage: haa_gvisor_observer REMOTE_SEQPACKET_SOCKET HAA_OUTPUT_DGRAM_SOCKET HAA_CONTROL_SEQPACKET_SOCKET [--ready-fd=FD]");
+    return 0;
+  }
   if (argc == 2 && strcmp(argv[1], "--identity") == 0) {
     printf("gvisor-commit=%s\n", HAA_GVISOR_COMMIT);
     return 0;
