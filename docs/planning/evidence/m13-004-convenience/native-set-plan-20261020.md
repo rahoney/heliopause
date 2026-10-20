@@ -72,3 +72,38 @@ aggregate다. M6의 set evaluator는 single node만 받으므로 release 전체 
 authority는 기존 Policy/installer boundary에 둔다. 기존 generic JSON 지원 범위를
 넓히거나 새로운 Core framework를 도입하지 않는다. Protected activation의 concrete
 authority·journal·crash/동시 실행 계약은 여전히 다음 privilege source 변경 전 필수다.
+
+## 다음 source 연결의 정확한 map
+
+앞선 reader/Verification Port의 [검증 범위](./metadata-qualification-20261020.md)는
+닫혔으며 다음은 위 audit에서 아직 NO인 전체 set 연결이다.
+
+- `artifact/githubrelease/heliopause_set_unix.go`: `HeliopauseReleaseSet`이 기존
+  production Client의 한 snapshot에서 exact official tag/manifest를 고정한다.
+  Strict view의 version/runtime lock/gVisor identity와 새 installer를 포함한4 native
+  roles를 요구하고 manifest/SBOM/runtime-images까지7개 graph member를 만든다.
+  API size/digest와 각 manifest record가 다르면 거부하며 전체 download는1GiB 이하다.
+  Native safety/Policy를 source에서 판정하지 않는다. 기존 FrozenIntake를 Artifact로
+  위임하고 검증 provider에 immutable identity/proof만 제공한다. 원래 acquisition
+  Run은 소유 inode를 기록해 Close에서 정리하며 Evidence/검사 Run은 임의 삭제하지 않는다.
+- `releaseinstall/metadata.go`: 현재 producer의 fixed SBOM/runtime-images wire
+  schema만 bounded passive JSON으로 읽는다. 기존 strict duplicate/key reader를
+  공유하고 executable/URL 실행이나 새로운 JSON artifact 일반 지원을 추가하지 않는다.
+- `inspection/githubrelease/release_set.go`: 기존 native CompositeInspector에
+  위임하되 세 고정 metadata에는 해당 schema 검사를 적용한다. exact manifest의
+  member/size/digest/version/source와 일치하지 않는 파일은 거부한다. Runtime image
+  record는 기존 compiled runtime identity와 대조하며 artifact의 설명 문구를 authority로
+  사용하지 않는다. 일반 GitHub inspector의 지원 범위는 유지한다.
+- `verification/releaseprovenance/artifact.go`: 실제 resolved set의 immutable proof를
+  공급하는 좁은 callback constructor로 기존 ArtifactVerifier를 연결한다. Core Port를
+  확대하거나 source→verification import/새 dependency framework를 만들지 않는다.
+- `scripts/check/architecture.go`: 위 실제 provider 간에 필요한 import만 명시한다.
+  Domain/Application은 concrete release/SDK/OS 구현을 참조하지 않는다.
+
+두 번째 대조: metadata를 별도 application pipeline으로 중복 구현하지 않고
+manifest를 primary로 삼아 그 선언 파일을 연결하는 기존 graph를 사용한다. M6 entry,
+M4 set, Evidence/Manifest/SBOM writer와 staging은 그대로다. Default tests는 fake
+production-origin transport와 committed portable 자료만 사용한다. Whole-set 정상과
+부분 실패의 workflow stop, drift·record mismatch·변조·취소·동시 Close·owned cleanup을
+검사한다. Fake proof/source 단독 성공을 실제 새 release의 서명/동적/activation
+qualification으로 전용하지 않는다. CLI와 root installer는 아직 등록하지 않는다.

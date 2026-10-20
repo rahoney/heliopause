@@ -19,7 +19,7 @@ YES는 아래에 명시한 기존 scope에만 적용한다. 전체 경로의 일
 | 일반 아티팩트 검역과 여섯 생태계 update | YES | YES | YES, SEC-UPD-001 | YES, 기존 범위 | `internal/application/inspect.go`: InspectService.Inspect, 기존 provider/Policy/Evidence. 본체 updater로 다시 구현하지 않음 |
 | 설치된 본체의 공식 release 획득·production attestation verifier | NO | NO | NO | NO | `releaseinstall.BundleVerifier`는 계약이고 production caller가 없음. GitHub release declared digest provider는 OIDC attestation verifier가 아님 |
 | 본체 release 전체를 frozen bytes로 검역한 뒤 활성화하는 orchestration | NO | NO | NO | NO | 기존 InspectService 재사용 필요. manifest/provenance·각 executable 검사·모든 ALLOW·activation set 동일성 연결이 없음 |
-| protected CLI/helper 세트 활성화·drain·인증 전환·doctor·재부팅 복구 | NO | NO | NO | NO | user installer는 root 경로를 변경하지 않음. `hosttool.PolicyPeerAuthorizer.AuthorizePeer`는 kernel credential과 protected 실행 파일 inode/digest를 확인. 새 파일 설치만으로 peer가 바뀌지 않음 |
+| protected CLI/helper 세트 활성화·drain·인증 전환·doctor·재부팅 복구 | NO | NO | NO | NO | user installer는 root 경로를 변경하지 않음. `hosttool.PolicyPeerAuthorizer.AuthorizePeer`는 kernel credential과 root-protected 실행 파일 inode를 확인. 기본 constructor는 expected digest를 비워 별도 digest pin은 없음. 새 installer는 signed digest를 독립 재확인해야 하며 새 파일 설치만으로 peer가 바뀌지 않음 |
 | 채널 wrapper·공식 이름·publisher binding | NO | NO | NO | NO | npm/PyPI 계정 rahoney 준비 완료. 이름·Homebrew tap/formula·실제 publisher binding은 미확정. 계정 가입을 다시 요구하지 않음 |
 
 신규 자체 업데이트 전체: IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO /
@@ -98,7 +98,7 @@ SDK/tool cache·raw evidence·복구에 필요한 active/prior release는 보존
 | --- | --- | --- |
 | 기존 installer를 재구현하는가 | Installer.Install/activateCurrentWithSync 및 기존8개 회귀 | 재구현 제외. 새 root lifecycle·검역 gate gap만 명시 |
 | signature=digest=safety로 혼동하는가 | BundleVerifier 계약, Architecture-006, GitHub declared digest verifier | 세 책임 구분. production verifier와 기존 Policy 재사용을 별도 acceptance로 둠 |
-| CLI만 바꿔 실제 검역을 깨뜨리는가 | DefaultRoot의 user root, PolicyPeerAuthorizer의 protected inode/digest | protected 세트/인증 전환·다음 검역까지 acceptance 추가 |
+| CLI만 바꿔 실제 검역을 깨뜨리는가 | DefaultRoot의 user root, PolicyPeerAuthorizer의 root-protected inode/kernel credential | protected 세트/서명 digest 재확인·인증 전환·다음 검역까지 acceptance 추가 |
 | 현재 release가 full runtime을 제공하는가 | release-manifest.assetSpecs의8종, M8 runsc/companion identity | runsc/host config 누락 명시; same-runtime 입증 또는 거부. latest 보충 금지 |
 | OS package install success를 runtime 준비로 오인하는가 | release-packages.packageReadme: no runtime activation/no service enable | package DB/migration/booted host를 별도 미완료로 둠 |
 | helper 경계 변경을 묵시 승인으로 보는가 | Directory의 resolver-only privileged helper, M10 narrow installation | 별도 설치 역할은 제안이며 owner 결정이 남음. network helper 범위 유지 |
@@ -141,3 +141,7 @@ Quick/security/vulnerability/Race와 Darwin compile을 확인했다. 다음은 f
 Strict product manifest reader와 authenticity Verification Port의
 [로컬 검증](./metadata-qualification-20261020.md)을 마쳤다. 기존 실제 signed fixture의
 metadata 검사 성공은 native 전체 set이나 protected activation 완료가 아니다.
+
+이후 [frozen 전체 set의 로컬 연결 검증](./release-set-qualification-20261020.md)을
+마쳤다. source/staging positive와 production SDK 거부를 구분하며 실제 새 signed
+native target의 동적 검역·보호된 활성화·public CLI는 계속 미완료다.

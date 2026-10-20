@@ -207,3 +207,39 @@ func TestAuthenticityPortRejectsSubstitutionsAndPreservesCancellation(t *testing
 		}
 	}
 }
+
+func TestAuthenticityResolvedProofUsesTheExistingVerifier(t *testing.T) {
+	body, identity, _ := actualSignedRelease(t)
+	_, _, artifact := publishedArtifact(t)
+	called := 0
+	verifier, err := NewResolvedArtifactVerifier(func(subject domain.AcquiredArtifact) (Identity, [][]byte, error) {
+		called++
+		if subject != artifact {
+			return Identity{}, nil, errors.New("unexpected proof subject")
+		}
+		return identity, [][]byte{body}, nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	report, err := verifier.Verify(context.Background(), artifact)
+	if err != nil || report.Outcome() != domain.VerificationVerified || called != 1 {
+		t.Fatalf("resolved proof=%v error=%v calls=%d", report, err, called)
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	if _, err := verifier.Verify(ctx, artifact); !errors.Is(err, context.Canceled) || called != 1 {
+		t.Fatal("cancelled request queried proof or lost its cause")
+	}
+	cause := errors.New("proof source unavailable")
+	failed, err := NewResolvedArtifactVerifier(func(domain.AcquiredArtifact) (Identity, [][]byte, error) { return Identity{}, nil, cause })
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := failed.Verify(context.Background(), artifact); !errors.Is(err, cause) {
+		t.Fatal("proof source cause lost")
+	}
+	if _, err := NewResolvedArtifactVerifier(nil); err == nil {
+		t.Fatal("nil proof provider accepted")
+	}
+}

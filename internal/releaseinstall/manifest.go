@@ -2,6 +2,8 @@ package releaseinstall
 
 import (
 	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"io"
@@ -29,10 +31,14 @@ type ReleaseFile struct {
 
 // ReleaseManifest is a bounded, structurally checked view. Authenticity and
 // content inspection still belong to their existing providers and Policy.
-type ReleaseManifest struct{ value manifest }
+type ReleaseManifest struct {
+	value  manifest
+	sha256 string
+}
 
 func (m ReleaseManifest) Version() string      { return m.value.Version }
 func (m ReleaseManifest) SourceCommit() string { return m.value.SourceCommit }
+func (m ReleaseManifest) SHA256() string       { return m.sha256 }
 func (m ReleaseManifest) WorkflowRun() string {
 	match := releaseRunPattern.FindStringSubmatch(m.value.WorkflowRun)
 	if len(match) != 2 {
@@ -95,7 +101,7 @@ func parseManifest(body []byte) (manifest, error) {
 // ParseReleaseManifest is the strict product reader of the existing release
 // wire format. It never reads a path, executes a file or changes installation.
 func ParseReleaseManifest(body []byte) (ReleaseManifest, error) {
-	if len(body) == 0 || len(body) > maximumManifestBytes || !utf8.Valid(body) || !uniqueManifestJSON(body) {
+	if len(body) == 0 || len(body) > maximumManifestBytes || !utf8.Valid(body) || !uniqueMetadataJSON(body, nil) {
 		return ReleaseManifest{}, errors.New("release manifest JSON is invalid or excessive")
 	}
 	value, err := parseManifest(body)
@@ -137,12 +143,13 @@ func ParseReleaseManifest(body []byte) (ReleaseManifest, error) {
 			return ReleaseManifest{}, errors.New("release asset set is incomplete")
 		}
 	}
-	return ReleaseManifest{value: value}, nil
+	sum := sha256.Sum256(body)
+	return ReleaseManifest{value: value, sha256: hex.EncodeToString(sum[:])}, nil
 }
 
 // The decoder's struct matching is case-insensitive; reject noncanonical and
 // duplicate keys before decoding so no consumer can interpret another value.
-func uniqueManifestJSON(body []byte) bool {
+func uniqueMetadataJSON(body []byte, canonicalKeys map[string]bool) bool {
 	decoder := json.NewDecoder(bytes.NewReader(body))
 	var value func(int) bool
 	value = func(depth int) bool {
@@ -166,7 +173,11 @@ func uniqueManifestJSON(body []byte) bool {
 					return false
 				}
 				name, ok := key.(string)
-				if !ok || seen[name] || strings.ToLower(name) != name {
+				canonical := strings.ToLower(name) == name
+				if canonicalKeys != nil {
+					canonical = canonicalKeys[name]
+				}
+				if !ok || seen[name] || !canonical {
 					return false
 				}
 				seen[name] = true

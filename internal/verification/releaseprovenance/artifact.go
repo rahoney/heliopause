@@ -16,6 +16,37 @@ type ArtifactVerifier struct {
 	bundles  [][]byte
 }
 
+// ResolvedArtifactVerifier obtains only the immutable proof selected by the
+// current operation's resolver. The callback supplies facts, not approval.
+type ResolvedArtifactVerifier struct {
+	proof func(domain.AcquiredArtifact) (Identity, [][]byte, error)
+}
+
+func NewResolvedArtifactVerifier(proof func(domain.AcquiredArtifact) (Identity, [][]byte, error)) (*ResolvedArtifactVerifier, error) {
+	if proof == nil {
+		return nil, errors.New("resolved release proof source is required")
+	}
+	return &ResolvedArtifactVerifier{proof}, nil
+}
+
+func (v *ResolvedArtifactVerifier) Verify(ctx context.Context, artifact domain.AcquiredArtifact) (domain.VerificationReport, error) {
+	if v == nil || v.proof == nil || ctx == nil {
+		return domain.VerificationReport{}, errors.New("resolved release authenticity request is invalid")
+	}
+	if err := ctx.Err(); err != nil {
+		return domain.VerificationReport{}, err
+	}
+	identity, bundles, err := v.proof(artifact)
+	if err != nil {
+		return domain.VerificationReport{}, err
+	}
+	verifier, err := NewArtifactVerifier(identity, bundles)
+	if err != nil {
+		return domain.VerificationReport{}, err
+	}
+	return verifier.Verify(ctx, artifact)
+}
+
 func NewArtifactVerifier(expected Identity, bundles [][]byte) (*ArtifactVerifier, error) {
 	if !validIdentity(expected) || len(bundles) == 0 || len(bundles) > 16 {
 		return nil, errors.New("release authenticity configuration is invalid")

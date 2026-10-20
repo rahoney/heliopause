@@ -15,7 +15,7 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — provenance primitive locally qualified; public caller/activation not wired
-Next action: metadata/native-set quarantine wiring, then protected activation; channel names pending separately
+Next action: narrow protected installer and activation/recovery; channel names pending separately
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
@@ -3416,7 +3416,10 @@ the existing archive InspectService/Evidence/Policy, not native activation.
 The strict manifest reader and authenticity Verification Port are also locally
 qualified through existing InspectService/Evidence/Policy in
 [metadata evidence](./evidence/m13-004-convenience/metadata-qualification-20261020.md).
-The complete self-update caller is not wired; full native-set quarantine is next.
+The frozen native/metadata set now connects to the existing complete-set workflow
+as documented in [release-set evidence](./evidence/m13-004-convenience/release-set-qualification-20261020.md).
+Local source/staging and fail-closed SDK tests pass; an actual newly signed native
+target, public self-update caller and protected activation are still missing.
 IPC and crash-recovery details precede activation source edits. Package names block only name-dependent channels;
 account preparation is complete. No new placeholder/executable/Port/job exists.
 SEC-UPD-001 and CLI-UX-003 stay COMPLETE; prior CLI-UX-001 scope remains historical.
