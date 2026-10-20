@@ -320,8 +320,8 @@ publication authority로 취급하지 않는다.
 설치된 본체의 검역형 업데이트 우선 요청(2026-10-20)에 대한 흐름·권한 경계는
 [자체 업데이트 설계 제안](../user-journey-cli-ia/07-self-update.md), 현재 audit와
 수정 위치·검사·재검토는 [실행 계획](./evidence/m13-004-convenience/self-update-20261020.md)을
-참조한다. 제안된 새 설치 역할/지원 범위는 결정 대기이며 이 링크가 기존 privileged
-helper 계약을 변경하거나 구현 완료를 뜻하지 않는다.
+참조한다. 새 설치 전용 역할과 Linux/WSL2 amd64 우선 범위는2026-10-20 사용자
+승인을 받았다. 기존 network helper 권한은 유지하며 구현 완료를 뜻하지 않는다.
 
 #### npm
 

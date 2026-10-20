@@ -135,7 +135,8 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/core/domain":               true,
 			modulePath + "/internal/verification/projectbuild": true,
 		},
-		modulePath + "/internal/verification/projectbuild": {modulePath + "/internal/core/domain": true},
+		modulePath + "/internal/verification/projectbuild":      {modulePath + "/internal/core/domain": true},
+		modulePath + "/internal/verification/releaseprovenance": {},
 		modulePath + "/internal/verification/cargo": {
 			modulePath + "/internal/artifact/cargo": true,
 			modulePath + "/internal/core/domain":    true,
@@ -230,7 +231,14 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 		modulePath + "/internal/inspection/projectbuild":    {},
 		modulePath + "/internal/verification/projectbuild":  {},
 		modulePath + "/internal/verification/gomodule":      {"golang.org/x/mod/sumdb": true},
-		modulePath + "/internal/verification/cargo":         {},
+		modulePath + "/internal/verification/releaseprovenance": {
+			"github.com/sigstore/sigstore-go/pkg/bundle":             true,
+			"github.com/sigstore/sigstore-go/pkg/fulcio/certificate": true,
+			"github.com/sigstore/sigstore-go/pkg/root":               true,
+			"github.com/sigstore/sigstore-go/pkg/verify":             true,
+			"golang.org/x/mod/semver":                                true,
+		},
+		modulePath + "/internal/verification/cargo": {},
 		modulePath + "/internal/verification/terraformprovider": {
 			"github.com/ProtonMail/go-crypto/openpgp/v2":     true,
 			"github.com/ProtonMail/go-crypto/openpgp/armor":  true,

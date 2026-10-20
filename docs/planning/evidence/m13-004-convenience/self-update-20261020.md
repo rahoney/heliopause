@@ -106,6 +106,26 @@ SDK/tool cache·raw evidence·복구에 필요한 active/prior release는 보존
 | 이름 미정이 검역 우선순위·일반 project 명령을 바꾸는가 | 사용자 최신 결정, M13-004 namespace contract | native core 우선, 이름 의존 연결만 보류; project 동일 이름 hijack 금지 |
 | 완료·청소·상태가 누락됐는가 | Queue 상단/상세 및 L08/L16 | plan/implementation/qualification 분리; 상태 요약 함께 수정; 종료 확인 전 삭제 금지 |
 
-남은 **설계 결정**은 설치 전용 권한 경계/초기 platform 범위 승인과 verifier·IPC·복구
-상세다. 승인·상세 확정 전에 코드를 쓰지 않는다. 공식 패키지 이름은 채널 연결의
-별도 owner 입력이다. 이 문서만으로 자체 업데이트 완료를 선언하지 않는다.
+당시 남은 **설계 결정**은 설치 전용 권한 경계/초기 platform 범위 승인과 verifier·IPC·복구
+상세였다. 공식 패키지 이름은 채널 연결의 별도 owner 입력이다.
+
+## 6. 승인 후 재개 — 2026-10-20
+
+사용자의 `진행해`로 별도 설치 역할과 Linux/WSL2 amd64 우선 구현이 승인됐다.
+770c302의 계획 문서8개는 canonical docs/security와 staged blob/mode 검증을 통과한
+후 커밋됐다. 완료한 임시 source/cache 331,624,286 logical bytes와 operator는 삭제했다.
+M13-004는 IN_PROGRESS이며 이름 의존 채널 연결만 pending이다. 기존 audit의 NO는
+승인만으로 YES가 되지 않는다.
+
+첫 구현 단위는 production provenance verifier다. `internal/verification/releaseprovenance`에
+고정 Sigstore library·public root·strict identity/predicate/subject 검증을 구현하고,
+M13-003의 committed 실제 서명 bundle/manifest를 그대로 positive/negative 회귀에 사용한다.
+기존 단순 GitHub digest provider와 `releaseinstall` API는 재작성하지 않는다. verifier
+단독 완료를 전체 본체 업데이트 완료로 보고하지 않는다. IPC·activation 상태 전이는
+해당 소스 변경 전에 별도 구체화하고 이 계획에 연결한다.
+
+첫 구현 단위의 [로컬 검증](./provenance-qualification-20261020.md)은 production
+provenance primitive의 IMPLEMENTED=YES / WIRED=NO / QUALIFIED=YES(local) /
+ACCEPTANCE_CLOSED=NO다. 보안 수정 pin·actual signed/offline 회귀·기존 소비자
+Quick/security/vulnerability/Race와 Darwin compile을 확인했다. 다음은 frozen release
+획득/검역 연결이며, 본체 command/보호된 활성화/전체 qualification은 아직 없다.

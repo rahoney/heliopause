@@ -21,6 +21,11 @@
 - scanner, verifier와 sandbox runtime은 Port 뒤에서 별도 process·tool로 실행될 수 있다. 이를 별도 Heliopause service나 Go module로 취급하지 않는다.
 - gVisor observer helper와 privileged network helper는 서로 다른 trust/privilege
   boundary다. 하나의 범용 Host helper로 합치지 않는다.
+- 2026-10-20 사용자가 승인한 M13-004 본체 업데이트에는 별도의 좁은 설치 전용
+  privileged executable을 허용한다. 보호된 기존 controller가 검역한 공식 릴리스
+  세트의 고정 설치·활성화·복원만 소유하며, 기존 network helper에 설치 권한을
+  추가하지 않는다. 구체 계약은 [자체 업데이트](../user-journey-cli-ia/07-self-update.md)를
+  따른다. 범용 root command API, `sudo helox` 전체 실행과 setuid 본체는 허용하지 않는다.
 
 ### 목표 구조
 

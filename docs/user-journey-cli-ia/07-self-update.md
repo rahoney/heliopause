@@ -1,8 +1,8 @@
 # Heliopause 자체 업데이트 — 설치된 신뢰 체인의 연장
 
-상태: **설계 제안 / 구현 전**. 2026-10-20 사용자 결정은 기존 설치가 있으면
-검역을 거친 업데이트를 우선한다는 것이다. 이 문서의 새 명령·권한 경계는 아직
-제품 기능이나 승인된 Architecture 변경이 아니다. 소스별 현황·수정 위치·검사와
+상태: **설계 승인 / 구현 진행**. 2026-10-20 사용자는 기존 설치가 있으면 검역을
+거친 업데이트를 우선하고, 별도 설치 전용 권한 경계와 Linux/WSL2 amd64 우선 구현을
+승인했다. 새 명령은 아직 제품 완료 기능이 아니다. 소스별 현황·수정 위치·검사와
 재검토 결과는 [실행 계획](../planning/evidence/m13-004-convenience/self-update-20261020.md)이 소유한다.
 
 ## 사용자 경로
@@ -49,17 +49,16 @@
    확인한다. root installer가 나중에 경로를 다시 열어 사용자 파일 교체를 수용하는
    TOCTOU를 막는다. root가 보호한 사본과 검사 세트가 정확히 일치해야 한다.
 
-## 설치 및 권한 경계 — 결정이 필요한 제안
+## 설치 및 권한 경계 — 승인된 방향
 
 현재 user-owned versioned installer만으로는 Linux의 보호된 실제 CLI/runtime을
 교체할 수 없다. 반대로 기존 network-policy helper에 파일 교체·임의 process 실행을
 추가하면 resolver firewall 전용 경계를 훼손한다.
 
-권장안은 **설치 세트의 활성화·복원만 소유하는 별도의 좁은 privileged installer**다.
+승인된 방향은 **설치 세트의 활성화·복원만 소유하는 별도의 좁은 privileged installer**다.
 이는 새 범용 daemon이나 두 번째 제품 CLI가 아니다. 기존 network helper와 observer의
 권한·프로토콜은 유지한다. 다만 현재 [Directory 규칙](../engineering/01-directory-structure.md)의
-privileged executable 허용 범위는 resolver firewall mutation만 명시하므로,
-이 설치 역할의 추가는 명시적 Architecture 결정 후에 구현한다.
+기존 resolver firewall mutation 역할과 분리된 설치 역할을 추가했다.
 
 제안하는 설치 역할의 허용 범위:
 
@@ -83,17 +82,31 @@ privileged executable 허용 범위는 resolver firewall mutation만 명시하�
 - 무인으로 임의 privilege를 얻지 않는다. OS의 관리자 인증이 필요한 설치라면 그
   경계에서 명시하고, `sudo helox` 전체 실행이나 setuid 본체를 요구하지 않는다.
 
-기존 설치 역할을 바꾸는 안에 대한 승인 전에는 이 역할의 executable·socket·config·
-service 또는 placeholder Port를 생성하지 않는다. 사용자 디렉터리의 CLI 교체만으로
-이 경계가 구현됐다고 보고하지 않는다.
+현재 work item에 실제로 필요한 설치 역할만 구현한다. 사용자 디렉터리의 CLI 교체만으로
+이 경계가 구현됐다고 보고하지 않으며, 미래 작업의 placeholder는 생성하지 않는다.
 
 ## Runtime·platform 범위
 
 첫 검역형 업데이트의 실행 qualification은 현재 동적 backend가 지원하는
-**Linux/amd64 + healthy trusted runtime**을 대상으로 제안한다. macOS/arm64에서
+**Linux/amd64 + healthy trusted runtime**을 대상으로 한다. macOS/arm64에서
 required dynamic 검사를 실행할 수 없으면 기존 설치를 보존하고 미지원 사유를
 표시한다. provenance-only bootstrap 지원과 검역형 본체 업데이트 지원은 구분한다.
-지원 플랫폼 축소를 완료 사실로 기록하지 않으며 이 범위는 구현 착수 전 확인한다.
+이 신규 경로의 초기 범위 승인은 기존 artifact/bootstrap 지원을 변경하지 않는다.
+
+## Provenance 구현 결정
+
+`github.com/sigstore/sigstore-go v1.3.0`을 사용해 offline Sigstore bundle을 검증한다.
+user PATH의 `gh`나 bundle이 제공한 verifier를 실행하지 않는다. production trust root는
+M13-003에서 검증·보존한 public-good root를 본체에 고정하며, 릴리스가 제공한 root로
+대체하지 않는다. public-good CT/SCT·transparency log·observer timestamp를 각각
+요구한다. private GitHub root나 unsafe artifact/identity 옵션을 허용하지 않는다.
+
+서명 검증 뒤에도 정확한 artifact SHA-256 subject, OIDC issuer, signer workflow/tag,
+signer/source commit, repository/owner ID, hosted runner, push trigger와 invocation을
+확인한다. SLSA predicate의 workflow/source/run과 manifest도 같은 값으로 연결한다.
+Predicate의 사용자 제어 값만으로 certificate identity 검증을 대신하지 않는다.
+회전은 기존 신뢰로 검증되는 release에서 root를 명시 검토·갱신하며, 새 root만으로
+현재 업데이트를 통과시키지 않는다. root·서명 또는 compatibility 불확실성은 중단한다.
 
 CLI·observer·network helper는 선택한 릴리스 세트로 결합한다. runsc와 companion
 manifest, host-specific pod-init/Docker 설정은 각각 기존 protected owner를 유지한다.

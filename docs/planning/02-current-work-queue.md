@@ -14,8 +14,8 @@ Last completed work item: CLI-UX-003 — COMPLETE; source4cfe29e/CI352 ten SUCCE
 Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
-Active work item status: BLOCKED — reviewed design awaits installation-privilege/platform decision; no self-update source edits
-Next action: approve or revise the narrow installation role; channel names remain a separate owner decision
+Active work item status: IN_PROGRESS — provenance primitive locally qualified; public caller/activation not wired
+Next action: frozen release acquisition/quarantine, then protected activation; channel names pending separately
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
@@ -3010,7 +3010,7 @@ M12-005 feature freeze에서 수행한다. canonical lock 등록만으로 releas
 | 3b | CLI-UX-002 | OS preferred display-language auto | COMPLETE — native macOS/CI328 and local installed CLI PASS |
 | 3c | SEC-UPD-001 | guarded ecosystem update commands | COMPLETE — final sourcecdac/CI344 qualified |
 | 3d | CLI-UX-003 | branded interactive launcher | COMPLETE — source4cfe29e/CI352 ten SUCCESS |
-| 4 | M13-004 | installed self-quarantine update / convenience channels | BLOCKED — installation-role/platform decision; channel names also pending |
+| 4 | M13-004 | installed self-quarantine update / convenience channels | IN_PROGRESS — self-quarantine core; channel names pending separately |
 | 5 | M13-005 | exact publication·clean Host bootstrap·doctor·cross-ecosystem smoke·quarantine | NOT_STARTED |
 
 ### M13-001 — protected repository activation
@@ -3383,7 +3383,7 @@ permanent installed CLI activation and publication remain separate; PR38 is draf
 
 ### M13-004 — convenience installation channels
 
-Status: BLOCKED — installation-role/platform decision for self-update; official names for channel wiring. CLI-UX-003, SEC-UPD-001 and CLI-UX-002 complete; no self-update/channel source edits.
+Status: IN_PROGRESS — self-update installation role and Linux/WSL2 amd64 scope approved on2026-10-20; official names pending only for channel wiring. CLI-UX-003, SEC-UPD-001 and CLI-UX-002 remain complete.
 Audit: IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO for the
 complete channel scope. Existing verifier-gated native installer/doctor and release
 manifest/build/publish consumers are reused; their historical acceptance is retained.
@@ -3406,10 +3406,11 @@ and [product design proposal](../user-journey-cli-ia/07-self-update.md) precede 
 changes. Existing owners are reused. MISSING adds production release acquisition/
 attestation, frozen-set quarantine and protected installation lifecycle. The
 current user installer does not activate root-protected CLI/helpers. The proposed
-separate narrow installation role and initial Linux/amd64/same-runtime scope need
-an explicit Architecture/support decision before that source is implemented.
-Unblock: owner approves or revises that concrete proposal, then finalize verifier,
-IPC and crash-recovery details. Package names block only name-dependent channels;
+separate narrow installation role and initial Linux/amd64/same-runtime scope were
+approved by the owner on2026-10-20. The production provenance primitive is locally qualified as documented in
+[component evidence](./evidence/m13-004-convenience/provenance-qualification-20261020.md).
+Its public caller is not wired; frozen release acquisition/quarantine is next.
+IPC and crash-recovery details precede activation source edits. Package names block only name-dependent channels;
 account preparation is complete. No new placeholder/executable/Port/job exists.
 SEC-UPD-001 and CLI-UX-003 stay COMPLETE; prior CLI-UX-001 scope remains historical.
 M13-005 remains NOT_STARTED. Account setup is not
