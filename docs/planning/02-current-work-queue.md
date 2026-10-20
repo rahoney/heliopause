@@ -3438,7 +3438,11 @@ Bounded payload transfer and authenticated root-private staging are locally chec
 [wire evidence](./evidence/m13-004-convenience/activation-wire-qualification-20261020.md).
 Actual root filesystem mechanics pass with mocked auth/positive crypto, and production
 SDK rejects the unsigned new set before root writes. Durable journal/service lifecycle,
-fixed RPC and public caller remain next. IPC and crash-recovery details precede activation source edits. Package names block only name-dependent channels;
+fixed RPC and public caller remain next. Durable root journal/config snapshots and
+persistent update/installer/exclusive runtime locks are locally checked in
+[journal evidence](./evidence/m13-004-convenience/activation-journal-qualification-20261020.md).
+Actual PREPARED writer and kernel lock mechanics pass; service/health/verified rollback,
+crash recovery and full RPC/caller remain missing. IPC and crash-recovery details precede activation source edits. Package names block only name-dependent channels;
 account preparation is complete. No new placeholder/executable/Port/job exists.
 SEC-UPD-001 and CLI-UX-003 stay COMPLETE; prior CLI-UX-001 scope remains historical.
 M13-005 remains NOT_STARTED. Account setup is not
