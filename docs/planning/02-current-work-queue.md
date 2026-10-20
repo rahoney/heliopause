@@ -15,7 +15,7 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — native update/initial preparation/producer locally checked; whole OS bootstrap and signed lifecycle qualification pending
-Next action: current candidate remote CI/review; actual signed native9 base/target, clean-host bootstrap/administrator authentication and systemd/crash/reboot qualification; channel names pending separately
+Next action: CI355 ten SUCCESS verified; owner-approved first rc tag/signing build, then actual signed native9/bootstrap/administrator authentication and systemd/crash/reboot qualification; channel names pending separately
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
@@ -3503,11 +3503,14 @@ Ordinary first acquisition/export and `bootstrap prepare --version vX.Y.Z` are n
 [bootstrap acquisition evidence](./evidence/m13-004-convenience/bootstrap-acquisition-qualification-20261020.md).
 [Native installation handoff](../user-journey-cli-ia/08-native-bootstrap.md) records actual Root-copy
 independent verification, exact OS config/unit, register and ordinary health boundaries.
+Owner approved test tags/official signing builds on2026-10-20. The
+[signed lifecycle plan](./evidence/m13-004-convenience/signed-lifecycle-plan-20261020.md)
+fixes CI355 source a22aa12, first rc1 then rc2, unchanged tag protection and explicit retirement limits.
 CURRENT MISSING: actual newly signed native9 base/target acquisition, whole clean-host OS bootstrap/
 ordinary doctor and nominal quarantine, existing OS administrator authentication, actual
 systemd activation and crash/reboot qualification. Full self-update remains IN_PROGRESS and is not installed or publicly released.
 Package names block only name-dependent channels;
-account preparation is complete. No new placeholder/executable/Port/job exists.
+account preparation is complete. No future channel placeholder executable/Port/job was added.
 SEC-UPD-001 and CLI-UX-003 stay COMPLETE; prior CLI-UX-001 scope remains historical.
 M13-005 remains NOT_STARTED. Account setup is not
 package publication approval; no registry upload, tap creation, Release draft or
