@@ -3475,6 +3475,11 @@ Per-request content binding now reuses the existing pipeline, with concurrent di
 isolation/unchanged base and non-ALLOW publication denial locally checked in
 [content-session evidence](./evidence/m13-004-convenience/content-session-qualification-20261020.md).
 Actual session factory/root client/Promotion/public CLI and native bootstrap remain missing.
+The exact sealed-set Promotion and fixed old-installer client now exist, with
+[local copy/codec/kernel endpoint evidence](./evidence/m13-004-convenience/native-client-qualification-20261020.md).
+Actual UID1000 endpoint validation passes in disposable namespaces; signed whole activation
+is still unqualified. Next are per-request source/session/cleanup and public command wiring,
+followed by the real helper producer/native bootstrap and signed/systemd/crash qualification.
 Package names block only name-dependent channels;
 account preparation is complete. No new placeholder/executable/Port/job exists.
 SEC-UPD-001 and CLI-UX-003 stay COMPLETE; prior CLI-UX-001 scope remains historical.

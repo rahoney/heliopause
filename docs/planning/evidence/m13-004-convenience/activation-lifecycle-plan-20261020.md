@@ -80,6 +80,28 @@ owner lock 아래에서만 확인한다. Actual listener가 있거나 query/iden
 actual connect가 ECONNREFUSED일 때만 stopped socket node를 SameFile 재확인 후
 제거한다. Active session의 Close는 처음 소유한 inode 외 replacement를 삭제하지 않는다.
 
+Ordinary client는 `/usr/bin/sudo -n -- <검증된 old installer> serve`만 실행한다.
+관리자 인증이 필요한 환경은 먼저 OS의 `sudo -v`로 인증한다. Stdin이나 JSON report를
+sudo 입력으로 사용하지 않고 helper stdout/stderr를 completion authority로 읽지 않는다.
+Socket의 root-reserved parent/root0·registered GID·0660·SameFile과 SO_PEERCRED root0을
+확인한다. sudo monitor의 PID를 실제 server PID로 가정하거나 ordinary process가 root
+`/proc/PID/exe`를 읽을 수 있다고 가정하지 않는다. Serve의 기존 own signed executable
+검사는 socket 생성 전에 유지된다. PREPARED 뒤 실제 cleanup→SH 해제→ACTIVATE 순서를
+지키며, 일부 ACTIVATE write 이후 응답 손실도 전환 불확실성으로 남긴다. Cancellation은
+채널 deadline/close를 사용하고 root transaction을 SIGKILL하지 않는다. 실제 child Wait를
+최대45초 확인하며 미종료는 UNKNOWN/복구 필요로 보고하고 별도 waiter가 reap을 소유한다.
+COMMITTED 응답 뒤 helper 종료 실패도 업데이트 성공으로 덮지 않는다.
+
+`promotion.NativeReleasePromotion`은 existing LocalStaging의 정확한 bundle/record와
+official7 logical members, manifest-selected native4+metadata2를 비교한다. Root target과
+Manifest target이 다르면 거부한다. Private staging root/artifacts의 descriptor를 고정하고
+0400 regular/owning UID/single-link/size를 확인한 파일 FD7개를 보유한다. 모든 digest를
+재검증한 후 동일 FD의 section reader만 client에 제공한다. User path 재개방이나 재획득은
+없고 root가 다시 SDK/bytes를 검증한다. Architecture checker의 promotion→releaseactivation
+(ordinary fixed client)/releaseinstall(strict manifest) 두 실제 Adapter 의존만 추가한다.
+Application/Core에 filesystem/OS dependency를 옮기거나 generic privileged executor를
+제공하지 않는다.
+
 ## Borrowed exclusive health와 pipeline 연결
 
 - New CLI의 internal fixed health path만 root-created inherited Unix channel을 검증해

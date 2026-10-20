@@ -208,6 +208,8 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/runtimeidentity":            true,
 		},
 		modulePath + "/internal/promotion": {
+			modulePath + "/internal/releaseactivation":          true,
+			modulePath + "/internal/releaseinstall":             true,
 			modulePath + "/internal/core/ports":                 true,
 			modulePath + "/internal/artifact/githubrelease":     true,
 			modulePath + "/internal/artifact/npm":               true,
