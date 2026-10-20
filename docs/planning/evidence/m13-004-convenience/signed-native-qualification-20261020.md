@@ -139,8 +139,9 @@ canonical manifest/SBOM/runtime 결합 검사가 통과했다. [공개 receipt](
 - SIGINT 취소는 기존 rc3와 Root journal 부재를 유지했지만 observer cleanup이 실패했다.
   독립 조회에서 프로세스·컨테이너·slice는 없고 control socket/lock이 남았으며 다음 npm이
   거부됐다. [사전 원인·수정 계획과 두 번째 검토](./observer-cancellation-plan-20261021.md)를
-  따른 최소 owner 수리는 실제 child RED2→GREEN4다. 새 source의 전체 검사·원격 CI와
-  **교정된 기존 caller**의 실제 서명 취소 검증은 별도다. 전체 acceptance를 닫지 않는다.
+  따른 최소 owner 수리는 실제 child RED2→GREEN4다. 수리 source4a8c278의 전체 로컬 검사와 [CI358](./signed-native-20261020/observer-remote-ci.json)
+  Required+9 실제 SUCCESS·전체 tree/mode 일치를 확인했다. **교정된 기존 caller**의 실제
+  서명 취소 검증은 [단일 rc6 제안](./signed-caller-plan-20261021.md)에 남으며 전체 acceptance를 닫지 않는다.
 
 전용 환경의 초기 controller 준비 실패는 실제 cgroup 위임 후 동일 rc3/npm으로 교정했다.
 Cold start는 Docker가 hosts를 재생성하고 fixture HTTPS도 비활성이었으므로 첫 재시도는
@@ -154,11 +155,11 @@ ordinary 건강·drain/journal 부재 확인 뒤 idle stop했다.
 
 | 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
 | --- | --- | --- | --- | --- | --- |
-| actual signed13 producer/독립 검증 | YES | YES | YES, a22aa12 rc1/rc2와4ff6c89 rc3/rc4 | YES, 해당 입력 | 없음 |
+| actual signed13 producer/독립 검증 | YES | YES | YES, a22aa12 rc1/rc2·4ff6c89 rc3/rc4·7fedaf3 rc5 | YES, 해당 입력 | 없음 |
 | actual first files/register/systemd/doctor/npm | YES | YES | YES, disposable Linux guest | YES, 해당 mechanics | 공개 최초 획득/설치는 별도 |
 | raw ELF 호환성 보완 | YES | YES | YES, local103 latch/native4/npm와 CI356 | YES, 해당 범위 | native 전체 전환은 별도 |
 | signed base→target native 활성화·복구 | YES | YES | YES, rc3→rc5와 위 실제 범위 | YES, 정상/OS 인증/서비스·Root 중단/guest cold recovery | kernel power-loss는 미시험 한계 |
-| operation 취소 뒤 다음 검사 | YES, owner 연결 수리 중 | YES | NO, actual 실패/로컬 child4 GREEN | NO | 교정 source의 전체 검사·원격 CI와 actual signed caller |
+| operation 취소 뒤 다음 검사 | YES | YES | NO, local child4/관련 Race·CI358 PASS; actual signed caller 미검증 | NO | owner 승인 후 고정 source rc6 actual caller 취소·회복 |
 | M13-004 전체 설치 채널 | PARTIAL | PARTIAL | NO | NO | 위 native gap, owner 이름/publisher binding/각 채널 |
 
 개발용 observer는 새 source의 unsigned 후보이며 native 관리 등록이 없다. 이 성공을

@@ -14,8 +14,8 @@ Last completed work item: CLI-UX-003 — COMPLETE; source4cfe29e/CI352 ten SUCCE
 Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
-Active work item status: IN_PROGRESS — actual signed rc3→rc5 normal/auth/concurrency/service rollback/Root SIGKILL and guest cold recovery passed; cancellation cleanup gap found and minimal observer owner repair under qualification
-Next action: observer-cancellation-plan-20261021.md — qualify corrected caller with canonical profiles and exact-source remote CI, then propose minimal fresh signed input; package names remain separate
+Active work item status: IN_PROGRESS — actual signed rc3→rc5 normal/auth/concurrency/service rollback/Root SIGKILL and guest cold recovery passed; cancellation cleanup gap repaired locally; source4a8c278 CI358 ten SUCCESS; corrected actual signed caller remains
+Next action: owner review of exact source4a8c278/single rc6 proposal in signed-caller-plan-20261021.md; actual corrected caller cancellation/recovery remains, package names separate
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
@@ -4128,3 +4128,13 @@ targets the existing launcher's operation-context auto-kill, with actual child
 RED2→GREEN4. Corrected-source remote CI and actual signed caller cancellation remain
 open; M13-004 stays the sole IN_PROGRESS item. Completed rc5 downloads13/231,996,591B
 were deleted; only the needed qualified rc3 base is retained idle-stopped.
+
+2026-10-21 observer owner source closure: source4a8c278 has [CI358 receipt](./evidence/m13-004-convenience/signed-native-20261020/observer-remote-ci.json)
+Required+9 actual SUCCESS, all10 checkoutdacc156/tree6a81838 equality, native macOS/
+C++103/Linux45 actual PASS·CPU291.99s/helper5 wait0/final confirmed cleanup.
+Canonical local source checks and related owner Race passed; expanded Sandbox Race7
+preexisting failures remain separately recorded. Corrected actual signed caller is
+still MISSING. [One minimal rc6 input](./evidence/m13-004-convenience/signed-caller-plan-20261021.md)
+is frozen to source4a8c278 and awaits owner approval; no ref was created. PR38 stays
+draft. Completed rc5 payloads and operators are removed; only the necessary qualified
+rc3 baseline is retained idle. M13-004 alone remains IN_PROGRESS.

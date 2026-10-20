@@ -136,7 +136,12 @@
       "supervisor": "PASS 1.98s",
       "expanded_sandbox": "FAIL seven preexisting races; baseline six selected plus one bounded attribution reproduction"
     },
-    "new_source_remote_CI": "PENDING",
+    "new_source_remote_CI": {
+      "source": "4a8c2787bdc2cb2d57e15b853d83dcee31b2ce25",
+      "run": 39461816815,
+      "Required_plus_9": "SUCCESS",
+      "receipt": "observer-remote-ci.json"
+    },
     "corrected_signed_caller_cancellation": "NOT_QUALIFIED"
   },
   "cleanup": {
