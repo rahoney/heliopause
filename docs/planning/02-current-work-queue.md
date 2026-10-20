@@ -14,8 +14,8 @@ Last completed work item: CLI-UX-003 — COMPLETE; source4cfe29e/CI352 ten SUCCE
 Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
-Active work item status: IN_PROGRESS — actual rc3 base/rc4 required18 ALLOW and rollback/auth-denial qualified; health callback CLI correction local and CI357 Required+9 SUCCESS; fresh signed target remains
-Next action: owner review of one rc5 target frozen to qualified7fedaf3 for qualified rc3 base per signed-target-plan-20261021.md; whole successful activation/auth-positive/crash/reboot still open
+Active work item status: IN_PROGRESS — actual signed rc3→rc5 normal/auth/concurrency/service rollback/Root SIGKILL and guest cold recovery passed; cancellation cleanup gap found and minimal observer owner repair under qualification
+Next action: observer-cancellation-plan-20261021.md — qualify corrected caller with canonical profiles and exact-source remote CI, then propose minimal fresh signed input; package names remain separate
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
@@ -4113,3 +4113,18 @@ were removed; qualified rc3 baseline was restored/checked and idle-stopped.
 Host originals/shared runtime remain unchanged. [Next exact target proposal](./evidence/m13-004-convenience/signed-target-plan-20261021.md)
 freezes only rc5 to7fedaf3 and awaits owner approval; no new ref yet. Whole
 successful activation/auth-positive/crash/reboot and channel names remain open.
+
+2026-10-21 approved rc5 execution supersedes that proposed-target state:
+[official build39456168381](https://github.com/rahoney/heliopause/actions/runs/39456168381)
+and exact13 independent offline/canonical checks passed. Actual normal rc3→rc5,
+OS password authentication and concurrent second-call refusal reached COMMITTED;
+candidate service SIGKILL rolled back. Root installer SIGKILL preserved VERIFYING
+across guest PID1 cold start; installed recover rolled back and re-execution committed.
+All corresponding ordinary doctor5/npm3 checks passed. Host kernel reboot/public
+Release were not performed. [Receipt](./evidence/m13-004-convenience/signed-native-20261020/rc5-qualification.json)
+also preserves the cancellation failure: old version kept but stale observer lock
+prevented the next inspection. [Reviewed correction](./evidence/m13-004-convenience/observer-cancellation-plan-20261021.md)
+targets the existing launcher's operation-context auto-kill, with actual child
+RED2→GREEN4. Corrected-source remote CI and actual signed caller cancellation remain
+open; M13-004 stays the sole IN_PROGRESS item. Completed rc5 downloads13/231,996,591B
+were deleted; only the needed qualified rc3 base is retained idle-stopped.

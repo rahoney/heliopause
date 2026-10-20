@@ -1,13 +1,14 @@
 # M13-004 — rc3 기준과 보완된 서명 후보 하나의 전체 전환 시험
 
-상태: **OWNER_APPROVAL_REQUIRED / CI357 실제 Required+9 SUCCESS**. 이 문서는 태그 생성 승인이 아니다.
+상태: **OWNER_APPROVED / CI357 실제 Required+9 SUCCESS**. 사용자는 정확한 source의
+rc5 단일 태그 생성과 이 계획의 시험 진행을 승인한 뒤 “이어가”로 재개를 요청했다.
 기존 rc3/rc4의 승인 source4ff6c89와 두 immutable ref는 유지한다. Public Release·main
 merge·Host 영구 migration·배포 채널 이름 결정은 포함하지 않는다.
 
 | 입력 | 고정값 |
 | --- | --- |
 | 현재 base | v0.1.1-rc.3, source4ff6c89234698d6fe0b6b5366f7605538e47b967 |
-| 제안 target | v0.1.1-rc.5, 아직 생성하지 않음 |
+| 승인 target | v0.1.1-rc.5, 원격 재확인 후 정확한 source에 생성 완료 |
 | target source | 7fedaf3430acd4c8a9f37ceaffec33bce143b2ae |
 | qualification | [CI357](https://github.com/rahoney/heliopause/actions/runs/39448071670)의 실제 Required+9 SUCCESS 확인 뒤 생성 가능 |
 | 현재 scope | Linux/WSL2 amd64, 같은 runtime lock·기존 SDK·검역·Policy·Root protocol |
@@ -69,6 +70,11 @@ CI357의 실제 Required 포함10개가 모두 SUCCESS다. 실제 checkout6d65df
 tree/mode가 고정 source7fedaf3와 같고 native macOS/C++103/Linux45·CPU226.62s 및
 helper5 wait0/final confirmed cleanup을 확인했다. [원격 receipt](./signed-native-20261020/health-cli-remote-ci.json)를
 따른다. API 재확인에서 rc5는 부재이며 rc3/rc4는4ff6c89, 두 rules는 active, PR38은
-draft7fedaf3다. 아직 새 tag는 생성하지 않았다. Qualified rc3 guest는 idle stop했고
-필요한 image/owned volume을 보존했다. 재개 시 실제 상태부터 확인해 시작·service 준비와
-ordinary doctor/npm을 다시 확인한다.
+draft7fedaf3다. 사용자 승인 뒤 동일 조건을 다시 확인하고 rc5 하나만 생성했다.
+[Official build39456168381](https://github.com/rahoney/heliopause/actions/runs/39456168381)의
+실제 서명 결과와 전체 전환은 [rc5 receipt](./signed-native-20261020/rc5-qualification.json)와
+[통합 qualification](./signed-native-qualification-20261020.md#rc5-실제-정상-전환os-인증장애-복구와-취소-gap)에 기록했다.
+정상/OS 인증/동시 실행 거부/서비스 rollback/Root SIGKILL·guest cold recovery·재실행은
+통과했고, 취소 cleanup gap은 별도 보완 중이다. Qualified rc3 기준 환경은 순차
+재생성했고 전용 private cgroup controller 준비 뒤 ordinary doctor5OK/npm required3·
+ALLOW를 재확인했다. 최초 setup 실패와 원본 readback은 rc5-base-*에 보존한다.

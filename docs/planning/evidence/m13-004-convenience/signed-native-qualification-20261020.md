@@ -114,14 +114,51 @@ wait0/final confirmed cleanup도 PASS다. 새 CUDA full 실행은 없다. 다음
 필요한 rc3 guest는 실제 drain/journal 부재 뒤 idle stop해 메모리를 해제했다. Host 보호
 신원10개·runtime6/pod-init·공유 image4도 마지막 read-only 재대조에서 불변이었다.
 
-## 해석 한계와 남은 작업
+## rc.5 실제 정상 전환·OS 인증·장애 복구와 취소 gap
+
+사용자 승인대로 source7fedaf3의 rc5 하나만 생성했다. [Official build39456168381](https://github.com/rahoney/heliopause/actions/runs/39456168381)은
+SUCCESS이며 exact13/고정 gh2.102.0·UID1000·독립 network namespace offline13/13와
+canonical manifest/SBOM/runtime 결합 검사가 통과했다. [공개 receipt](./signed-native-20261020/rc5-qualification.json),
+[manifest](./signed-native-20261020/rc5-manifest.json)와 [proof](./signed-native-20261020/rc5-proof.sigstore.json)를 보존했다.
+
+- Actual rc3→rc5는 required18 COMPLETED/entry7·set ALLOW, promotion COMPLETED,
+  durable history COMMITTED/current rc5였다(39.06s). 보호 사본7의 해시·Root 소유권·mode와
+  ordinary doctor5OK/npm required3·ALLOW도 통과했다.
+- 새 rc3 기준에서 fixture NOPASSWD grant를 제외한 sudo denial을 확인했다. 실제
+  비밀번호를 같은 PTY의 OS sudo에만 전달하고 ordinary CLI로 갱신해 COMMITTED,
+  새 doctor/npm과 exact copy를 확인했다. 비밀번호는 로그·인자·제품 설정에 저장하지 않았다.
+- 동시 요청은 두 번째가 acquisition 전에 owned observer endpoint로 거부됐다. 첫
+  요청만 COMMITTED였고 이후 doctor/npm은 정상이었다. 이를 두 installer 동시 진입
+  성공이나 update-lock 오류 코드의 실제 관찰로 확대하지 않는다.
+- 후보 서비스의 PID/exe/starttime/cgroup을 확인하고 pidfd SIGKILL을 주입했다. 원래
+  required18/ALLOW 뒤 FAILED/ROLLED_BACK과 old doctor/npm이 확인됐다.
+- Root installer를 VERIFYING에서 같은 방식으로 중단했다. 확인된 HAA process·자원
+  정지 뒤 journal bytes를 보존해 guest PID1 cold start했다. Installed recover5.01s는
+  ROLLED_BACK/journal 정리/old doctor/npm을 통과했고 동일 target 재실행52.76s도
+  COMMITTED/새 doctor/npm/exact copy를 통과했다. Host kernel/WSL reboot는 아니다.
+- SIGINT 취소는 기존 rc3와 Root journal 부재를 유지했지만 observer cleanup이 실패했다.
+  독립 조회에서 프로세스·컨테이너·slice는 없고 control socket/lock이 남았으며 다음 npm이
+  거부됐다. [사전 원인·수정 계획과 두 번째 검토](./observer-cancellation-plan-20261021.md)를
+  따른 최소 owner 수리는 실제 child RED2→GREEN4다. 새 source의 전체 검사·원격 CI와
+  **교정된 기존 caller**의 실제 서명 취소 검증은 별도다. 전체 acceptance를 닫지 않는다.
+
+전용 환경의 초기 controller 준비 실패는 실제 cgroup 위임 후 동일 rc3/npm으로 교정했다.
+Cold start는 Docker가 hosts를 재생성하고 fixture HTTPS도 비활성이었으므로 첫 재시도는
+공개 API404였다. 원본 실패와 사본 감사의 current 기대 실패를 보존하고 transport 준비 뒤
+같은 signed bytes로 재시도했다. 이를 제품 복구 실패나 처음부터 성공한 시험으로 쓰지 않는다.
+완료된 rc5 다운로드13/231,996,591B는 실제 참조·query errors0 확인 뒤 모두 삭제했다.
+완료된 guest/TLS/임시 비밀번호는 순차 기준 복원으로 제거했고, 필요한 rc3 기준만
+ordinary 건강·drain/journal 부재 확인 뒤 idle stop했다.
+
+## 현재 판정
 
 | 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
 | --- | --- | --- | --- | --- | --- |
 | actual signed13 producer/독립 검증 | YES | YES | YES, a22aa12 rc1/rc2와4ff6c89 rc3/rc4 | YES, 해당 입력 | 없음 |
 | actual first files/register/systemd/doctor/npm | YES | YES | YES, disposable Linux guest | YES, 해당 mechanics | 공개 최초 획득/설치는 별도 |
 | raw ELF 호환성 보완 | YES | YES | YES, local103 latch/native4/npm와 CI356 | YES, 해당 범위 | native 전체 전환은 별도 |
-| 수정된 signed base→target 전체 native 활성화 | YES | YES | PARTIAL, required18/ALLOW·actual rollback/auth-denial | NO | 보완 source CI·새 signed target의 성공/health/auth-positive/중단·재부팅 |
+| signed base→target native 활성화·복구 | YES | YES | YES, rc3→rc5와 위 실제 범위 | YES, 정상/OS 인증/서비스·Root 중단/guest cold recovery | kernel power-loss는 미시험 한계 |
+| operation 취소 뒤 다음 검사 | YES, owner 연결 수리 중 | YES | NO, actual 실패/로컬 child4 GREEN | NO | 교정 source의 전체 검사·원격 CI와 actual signed caller |
 | M13-004 전체 설치 채널 | PARTIAL | PARTIAL | NO | NO | 위 native gap, owner 이름/publisher binding/각 채널 |
 
 개발용 observer는 새 source의 unsigned 후보이며 native 관리 등록이 없다. 이 성공을
