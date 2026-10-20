@@ -145,3 +145,6 @@ metadata 검사 성공은 native 전체 set이나 protected activation 완료가
 이후 [frozen 전체 set의 로컬 연결 검증](./release-set-qualification-20261020.md)을
 마쳤다. source/staging positive와 production SDK 거부를 구분하며 실제 새 signed
 native target의 동적 검역·보호된 활성화·public CLI는 계속 미완료다.
+
+다음 privileged source는 [권한·IPC·lease handoff·journal·복구의 구체 계획과 두 번째 검토](./protected-activation-plan-20261020.md)를
+따른다. 기존 installer의 verified copy/pointer와 실제 cleanup owner를 재사용한다.
