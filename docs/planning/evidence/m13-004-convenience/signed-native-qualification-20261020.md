@@ -40,13 +40,42 @@ Required 포함10개 모두 SUCCESS다. [원격 receipt](./signed-native-2026102
 실제 checkoutc0a0ddd와 전체 tree/mode 일치, native macOS·전체103 C++ latch, Linux45개
 소비자와 CPU full293.82s, helper5개 wait0 및 final original0/CONFIRMED_STOPPED/
 helper_stop0/client_error0/client_restore0를 연결한다. 실제 CUDA full은 이번 실행에 포함하지
-않았다. 다음은 [고정 소스의 재서명 제안](./signed-retest-plan-20261020.md)이다.
+않았다. 후속 시험은 [승인된 고정 소스 재서명 계획](./signed-retest-plan-20261020.md)을 따른다.
+
+## 보완 소스의 새 signed base — rc.3
+
+사용자가 source4ff6c89의 rc.3·rc.4 순차 생성을 승인했다. rc.3의
+[official build39439522714](https://github.com/rahoney/heliopause/actions/runs/39439522714)는
+SUCCESS이며 exact13파일·manifest/SBOM/runtime 결합·독립 UID1000 offline13/13를
+확인했다. 실제 Root stage의 manifest/installer 독립 검증 뒤 production SDK first files,
+새 systemd 환경의 실제 service/register, ordinary doctor5OK/npm required3·ALLOW가
+통과했다. Runtime6/pod-init lock과 이미지4의 exact digest/RootFS/Config도 일치했다.
+[manifest](./signed-native-20261020/rc3-manifest.json)와
+[public proof](./signed-native-20261020/rc3-proof.sigstore.json)를 보존했다.
+
+Docker29 containerd store는 처음부터 owned ext4 volume에 두었다. 활성 소비자 부재를
+확인한 base 파일시스템 image는 후속 fault case의 순차 재현용이며 같은 volume의 동시
+사용은 금지한다. Host 보호 신원10개는 이전 final과 일치했다. 완료된 rc3 다운로드13개
+231,994,106B는 inode/hash·FD/maps/mount 참조와 query errors0 확인 뒤 삭제했다.
+실제 설치와 필요한 기준 image/volume은 후속 소비가 끝날 때까지 보존한다.
+
+원본은 같은 raw owner의 `rc3-acquisition`, `rc3-native-first-files`, `rc3-register`,
+`rc3-doctor`, `rc3-npm-nominal`, `rc3-image-qualified-*`,
+`rc3-qualified-baseline-image`, `rc3-completed-download-*`다. 초기 exact-bundle 검사에는
+시험 proof가 payload 디렉터리에 함께 있어 파일 수가 거부됐다. Proof를 바깥으로 옮긴
+unchanged official13의 canonical 검사는 PASS다. Snapshot commit 뒤 최초 returned-ID
+readback도 비어 operator가 실패했으며, 실제 tag/label readback으로 존재를 확인했다.
+원래 commit stdout은 보존되지 않았으므로 정확한 원인은 미확정이다. 두 준비 오류는
+제품 결함이나 업데이트 성공 증거로 취급하지 않는다.
+
+그 뒤 같은 source에 rc.4를 생성했다. [official build39442575693](https://github.com/rahoney/heliopause/actions/runs/39442575693)는
+SUCCESS다. Whole signed activation/health·실패·복원·중단·OS 인증은 아직 미완료다.
 
 ## 해석 한계와 남은 작업
 
 | 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
 | --- | --- | --- | --- | --- | --- |
-| actual signed13 producer/독립 검증 | YES | YES | YES, a22aa12 rc1/rc2 | YES, 해당 입력 | 없음 |
+| actual signed13 producer/독립 검증 | YES | YES | YES, a22aa12 rc1/rc2와4ff6c89 rc3 | YES, 해당 입력 | rc4 진행 중 |
 | actual first files/register/systemd/doctor/npm | YES | YES | YES, disposable Linux guest | YES, 해당 mechanics | 공개 최초 획득/설치는 별도 |
 | raw ELF 호환성 보완 | YES | YES | YES, local103 latch/native4/npm와 CI356 | YES, 해당 범위 | native 전체 전환은 별도 |
 | 수정된 signed base→target 전체 native 활성화 | YES | YES | NO | NO | 새 official signed inputs와 Root/health/실패·복원/중단·재부팅/OS 인증 |
@@ -55,7 +84,7 @@ helper_stop0/client_error0/client_restore0를 연결한다. 실제 CUDA full은 
 개발용 observer는 새 source의 unsigned 후보이며 native 관리 등록이 없다. 이 성공을
 새 signed Root activation이나 전체 본체 업데이트 완료로 전용하지 않는다. 기존 rc1/rc2는
 보완 전 observer를 포함하므로 재지정하지 않는다. 수정된 구체 후보와 원격 CI를 검토한 뒤
-새 서명 시험 입력으로 이어간다. Public Release 발행·main merge·Host 영구 migration은 없다.
+새 서명 시험 입력으로 이어갔으며 위 rc3 base까지 확인했다. Public Release 발행·main merge·Host 영구 migration은 없다.
 새 CUDA 전체·native macOS 실행이나 실제 Host kernel/WSL reboot를 이 로컬 결과로 주장하지 않는다.
 
 ## 준비 오류·정리·재검토

@@ -1,6 +1,6 @@
-# M13-004 — 보완 소스의 새 서명 시험 입력 제안
+# M13-004 — 보완 소스의 승인된 새 서명 시험
 
-이 문서는 다음 시험을 구체화하며 새 태그 생성 승인을 대신하지 않는다. 기존 승인의
+2026-10-20 사용자가 rc.3·rc.4 시험 태그 생성과 순차 검증을 승인했다. 기존 승인의
 rc1/rc2 source는 a22aa12다. 두 보호 태그를 재지정하거나 immutable rule을 변경하지 않는다.
 
 | 입력 | 제안 |
@@ -9,7 +9,7 @@ rc1/rc2 source는 a22aa12다. 두 보호 태그를 재지정하거나 immutable 
 | 실제 CI | [CI356/run39416778306](https://github.com/rahoney/heliopause/actions/runs/39416778306), Required 포함 열 개 실제 SUCCESS 확인; 서명 입력 실행은 owner 승인 뒤 |
 | 새 base tag | v0.1.1-rc.3 |
 | 새 target tag | v0.1.1-rc.4 |
-| 상태 | OWNER_APPROVAL_REQUIRED; 아직 생성하지 않음 |
+| 상태 | OWNER_APPROVED; rc.3 actual base PASS, rc.4 official build SUCCESS/획득 검증 진행 중 |
 | 유지 범위 | Linux/WSL2 amd64, 기존 runtime lock·SDK·관찰·Policy·좁은 Root 역할 |
 
 [보완 검증](./signed-native-qualification-20261020.md)의 최종103 latch/native4/기존 npm과
@@ -35,9 +35,22 @@ unsigned helper의 managed 설치 덮어쓰기로 대체하지 않는다.
 4. 거부·취소·동시성·OS 관리자 인증 성공/실패, 실제 service 실패/복원, Root 중단과 durable
    journal 재개를 분리한다. Fixture transport는 actual public Release API 성공이 아니며
    guest service/PID1 restart는 Host kernel/WSL reboot의 증거가 아니다.
+   실제 base 검증이 끝나고 소비자가 없는 전용 guest의 파일시스템 기준 사본을 시험용
+   image로 보관할 수 있다. Fault case 사이에는 원본 실행을 종료·확인한 뒤 그 사본과
+   같은 owned inner Docker volume을 순차 재사용하고 doctor를 재확인한다. 동시에 같은
+   volume을 쓰거나 Host 설치를 복원 대상으로 삼지 않는다. 이 사본도 최종 소비 뒤 삭제한다.
 5. 성공·실패의 원본과 작은 public proof/manifest만 남기고 완료된 전용 환경·payload·cache를
    삭제한다. 작은 보호 태그의 삭제는 이후 해당 ref에 한정한 보호 규칙 조정이 필요하다.
 
 Public Release·main merge·기존 Host 영구 migration·package publisher 연결은 실행하지 않는다.
 기존 PR38을 이어 사용하며 M13-004만 IN_PROGRESS다. 두 번째 대조에서 이전 실패의 서명을
 무효화하거나 보호 규칙을 약화하지 않고 정확한 새 source를 검증하는 순서임을 확인했다.
+
+승인 후 실제 재확인에서 source/CI356/PR38 draft/두 active rules와 새 ref 부재를 확인했다.
+rc.3은 위 고정 source로 생성됐고 [official tag build39439522714](https://github.com/rahoney/heliopause/actions/runs/39439522714)가
+SUCCESS다. 독립 offline13/13와 canonical exact bundle, 실제 Root 사본의 독립 검증·SDK
+first files, 고정 runtime6/pod-init·이미지4의 digest/RootFS/Config, 실제 systemd/register,
+ordinary doctor5OK/npm required3·ALLOW를 확인했다. 생성·readback 원본은
+`self-update-signed-20261020/rc3-approved-preflight.json`과 `rc3-created.json`이다.
+그 뒤 같은 source에 rc.4를 생성했고 [official build39442575693](https://github.com/rahoney/heliopause/actions/runs/39442575693)가
+SUCCESS다. 실제 whole activation/health와 fault/recovery는 아직 미완료다.

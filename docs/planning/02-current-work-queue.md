@@ -15,7 +15,7 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — actual signed base/register/systemd/doctor/npm and native ELF compatibility/CI356 ten SUCCESS; new signed activation/crash/reboot remain
-Next action: owner review of rc3/rc4 signing inputs frozen to qualified source4ff6c89; then actual signed activation/health/auth/crash/reboot; channel names pending separately
+Next action: rc3 actual base/register/doctor/npm PASS; rc4 official signing build39442575693 SUCCESS at fixed4ff6c89/acquisition verification running; then actual signed activation/health/auth/crash/reboot; channel names pending separately
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
@@ -4095,5 +4095,8 @@ Linux45 consumers/CPU293.82s, helper5 wait0/final confirmed cleanup verified in
 Completed trial containers/volume/images/payload/build/operator cleanup and Host
 preservation are in [cleanup receipt](./evidence/m13-004-convenience/signed-native-20261020/cleanup.json).
 [New signing proposal](./evidence/m13-004-convenience/signed-retest-plan-20261020.md)
-freezes rc3/rc4 to4ff6c89 and awaits owner approval; no new refs yet. M13-004
+freezes rc3/rc4 to4ff6c89. The owner subsequently approved both trial tags;
+rc3 now points to that exact source and [official build39439522714](https://github.com/rahoney/heliopause/actions/runs/39439522714)
+is SUCCESS with actual base/register/doctor/npm PASS. rc4 was then created at
+the same source; [official build39442575693](https://github.com/rahoney/heliopause/actions/runs/39442575693) is SUCCESS. M13-004
 remains IN_PROGRESS; signed whole activation/recovery and channel names remain open.
