@@ -3442,7 +3442,13 @@ fixed RPC and public caller remain next. Durable root journal/config snapshots a
 persistent update/installer/exclusive runtime locks are locally checked in
 [journal evidence](./evidence/m13-004-convenience/activation-journal-qualification-20261020.md).
 Actual PREPARED writer and kernel lock mechanics pass; service/health/verified rollback,
-crash recovery and full RPC/caller remain missing. IPC and crash-recovery details precede activation source edits. Package names block only name-dependent channels;
+crash recovery and full RPC/caller remain missing. Fixed service/config/drain adapters
+are implemented and locally checked in
+[service evidence](./evidence/m13-004-convenience/activation-service-qualification-20261020.md).
+Actual process/socket and partial-config mechanics pass; real systemd/global drainage,
+full root transaction/recovery, authenticated helper RPC/health and public pipeline/CLI
+remain missing. Their [next source map](./evidence/m13-004-convenience/activation-lifecycle-plan-20261020.md)
+precedes source edits. Package names block only name-dependent channels;
 account preparation is complete. No new placeholder/executable/Port/job exists.
 SEC-UPD-001 and CLI-UX-003 stay COMPLETE; prior CLI-UX-001 scope remains historical.
 M13-005 remains NOT_STARTED. Account setup is not
