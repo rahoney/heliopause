@@ -3493,7 +3493,10 @@ or acquisition changes. The actual helper asset producer/manifest/package payloa
 [producer evidence](./evidence/m13-004-convenience/producer-qualification-20261020.md).
 Explicit registration of an independently verified, preinstalled native layout is locally
 qualified in [enrollment evidence](./evidence/m13-004-convenience/enrollment-qualification-20261020.md).
-CURRENT MISSING: verified initial native loader and ordinary-user bootstrap health,
+The terminal cold-service recovery branch is locally checked in
+[cold recovery evidence](./evidence/m13-004-convenience/cold-recovery-qualification-20261020.md).
+CURRENT MISSING: copy-stage interruption ownership/cleanup, verified initial native loader
+and ordinary-user bootstrap health,
 new signed native4 base/target, actual systemd activation and crash/reboot qualification. Full self-update remains IN_PROGRESS and is not installed or publicly released.
 Package names block only name-dependent channels;
 account preparation is complete. No new placeholder/executable/Port/job exists.

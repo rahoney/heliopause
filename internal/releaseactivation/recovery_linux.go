@@ -84,7 +84,7 @@ func Recover(ctx context.Context) (resultErr error) {
 		if err := verifyRuntimeConfigs(ctx, journal.value, oldConfig); err != nil {
 			return err
 		}
-		process, err := services.active(ctx, installed.Version(), installed.ClientGID())
+		process, err := recoverTerminalService(ctx, services, installed)
 		if err != nil {
 			return err
 		}
@@ -198,4 +198,55 @@ func recoverHealthWorkspace(stage string, installed InstalledRelease) (*healthWo
 		return nil, ErrCleanup
 	}
 	return &healthWorkspace{path: path, identity: identity, uid: owner.Uid}, nil
+}
+
+type terminalRecoveryServices interface {
+	active(context.Context, string, uint32) (*serviceProcess, error)
+	stopped(context.Context, *serviceProcess) error
+	resourcesDrained(context.Context, uint32, int, int) error
+	start(context.Context, string, uint32) (*serviceProcess, error)
+}
+
+// A durable terminal state can survive a boot where the known native unit has
+// not started. Only independent stopped and global-drain facts permit restart.
+func recoverTerminalService(ctx context.Context, services terminalRecoveryServices, installed InstalledRelease) (*serviceProcess, error) {
+	if ctx == nil || services == nil {
+		return nil, ErrUntrusted
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	process, activeErr := services.active(ctx, installed.Version(), installed.ClientGID())
+	if activeErr == nil {
+		if process == nil {
+			return nil, ErrUntrusted
+		}
+		return process, nil
+	}
+	if process != nil {
+		activeErr = errors.Join(activeErr, process.Close())
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, errors.Join(activeErr, err)
+	}
+	if err := services.stopped(ctx, nil); err != nil {
+		return nil, errors.Join(activeErr, err)
+	}
+	if err := services.resourcesDrained(ctx, installed.ClientUID(), 0, 0); err != nil {
+		return nil, errors.Join(activeErr, err)
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	process, err := services.start(ctx, installed.Version(), installed.ClientGID())
+	if err != nil {
+		if process != nil {
+			err = errors.Join(err, process.Close())
+		}
+		return nil, err
+	}
+	if process == nil {
+		return nil, ErrUntrusted
+	}
+	return process, nil
 }
