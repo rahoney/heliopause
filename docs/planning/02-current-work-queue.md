@@ -3430,6 +3430,10 @@ also locally checked in [reader evidence](./evidence/m13-004-convenience/activat
 Actual stored v0.1 signature verifies offline; missing installer-role admission
 is correctly refused. Caller authentication, lifecycle wiring and new native4
 signed qualification remain missing.
+The old protected controller/kernel peer gate is locally checked in
+[peer evidence](./evidence/m13-004-convenience/activation-peer-qualification-20261020.md).
+Actual UID/GID/inode/pidfd negatives pass in isolated namespaces with a mocked
+installed crypto snapshot. Fixed payload RPC/staging and full lifecycle remain next.
 IPC and crash-recovery details precede activation source edits. Package names block only name-dependent channels;
 account preparation is complete. No new placeholder/executable/Port/job exists.
 SEC-UPD-001 and CLI-UX-003 stay COMPLETE; prior CLI-UX-001 scope remains historical.

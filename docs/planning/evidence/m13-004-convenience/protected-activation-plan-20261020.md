@@ -167,3 +167,35 @@ marker/partial state, actual kernel shared/exclusive blocking·cancel·Close/han
 경로나 privileged 환경의 숨은 입력을 넣지 않는다. 이 단위는 read/lease만 구현하며
 public CLI/RPC 성공 handler를 미리 만들지 않는다. 두 번째 대조에서 root owner,
 signed digest, kernel caller와 Policy를 서로 대체하지 않는지 다시 확인했다.
+
+## 5717520 이후의 old controller 인증 map
+
+Reader/lease의 [로컬 검증](./activation-read-qualification-20261020.md) 이후에도 old
+caller gate는 IMPLEMENTED=NO/WIRED=NO/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO다.
+이 다음 변경은 `releaseactivation/peer_linux.go`에 국한하며 RPC 성공 command를
+미리 등록하지 않는다.
+
+- Normal managed runtime lease는 independently checked installed view와 actual
+  ordinary UID/GID 및 `/proc/self/exe`의 active protected inode가 일치해야 한다.
+  다른 user/root/stale CLI는 새 helper/config를 사용하기 전에 거부한다.
+- Root-side Unix peer gate는 SO_PEERCRED의 실제 UID/GID/PID를 먼저 확인하고
+  existing hosttool.PolicyPeerAuthorizer의 protected executable/SameFile 검사를
+  재사용한다. 이전 기본 constructor의 빈 digest를 암묵적 hash pin으로 보지 않는다.
+  Signed current bytes 검증은 이미 독립 installed reader가 수행한다.
+- [pidfd_open](https://man7.org/linux/man-pages/man2/pidfd_open.2.html)으로 같은 peer
+  lifecycle을 붙잡고 exit/reap readiness를 확인한다. PID 숫자/name/claimed UID와
+  조회 오류를 살아 있는 authorized peer로 취급하지 않는다. Unsupported kernel과
+  unknown state는 fail-closed다. broad signal/kill 경로는 추가하지 않는다.
+- Health child에 필요한 groups는 authorized kernel peer의 bounded proc status에서만
+  읽는다. Request/SUDO_UID/환경에서 UID·group을 선택하지 않는다. 전후 pidfd 생존을
+  확인하고 같은 kernel UID/GID와 함께 보존한다. socketpair 생성 시 credential과
+  dropped child's current credential은 앞의 SO_PEERCRED 계약대로 구분한다.
+- 실제 imported hosttool과 pinned x/sys/unix API만 architecture map에 추가한다.
+  Core/Application은 concrete OS auth를 참조하지 않는다.
+
+회귀는 default pure parsing/자기 pidfd lifecycle과 disposable namespace의 actual
+UID/inode/socket credentials를 분리한다. Right basename/wrong inode·foreign UID/GID,
+closed peer/process death·stale executable·proc/group 오류·FD cleanup을 검사한다.
+Crypto mock snapshot을 사용한 kernel gate 성공은 새 signed update나 whole runtime
+activation 성공으로 확대하지 않는다. 이 범위의 두 번째 대조에서 lease/child output/
+user receipt를 authorization으로 올리는 우회를 제외했다.

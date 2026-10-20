@@ -157,3 +157,7 @@ Protected state/proof reader와 runtime lease primitive의
 [로컬 검증](./activation-read-qualification-20261020.md)을 마쳤다. Lease primitive는
 caller 인증이나 runtime cleanup wiring을 대신하지 않으며 actual native4 target의
 전체 positive는 아직 없다. 다음은 old controller 인증과 실제 설치 lifecycle 연결이다.
+
+Old controller UID/GID/protected inode/pidfd의 [로컬 kernel gate 검증](./activation-peer-qualification-20261020.md)을
+마쳤다. 다음 전달 경계는 [fixed bytes protocol/root stage map과 두 번째 검토](./activation-wire-plan-20261020.md)를
+따른다. Whole signed activation과 public command 완료는 아직 아니다.

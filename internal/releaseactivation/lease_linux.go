@@ -66,6 +66,9 @@ func AcquireRuntimeLease(ctx context.Context) (*RuntimeLease, error) {
 	if err != nil {
 		return fail(err)
 	}
+	if err := CheckRuntimeController(installed); err != nil {
+		return fail(err)
+	}
 	if err := ctx.Err(); err != nil {
 		return fail(err)
 	}
