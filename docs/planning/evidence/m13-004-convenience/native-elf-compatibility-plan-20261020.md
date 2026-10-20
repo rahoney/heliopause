@@ -60,6 +60,26 @@ required checks가 INCOMPLETE여서 MANUAL_REVIEW/NOT_PERFORMED였다. rc1 curre
    기록하고 필요한 경계만 보완한다. 일반 proc/OCI root 읽기 예외나 본체만의 safe
    flag/RESOURCE 재분류·무검역 승격·compiler/runtime patch로 우회하지 않는다.
 
+### 첫 후보의 실제 후속 확인
+
+첫 source 후보의 canonical103 latch는 RED(새 항목만 실패)에서 GREEN으로 바뀌었다.
+동일 후보의 Quick149.70s/security/docs도 통과했다. 미등록 개발 경로의 actual signed
+installer/network helper/observer 세 개는 각 required3 완료/ALLOW였다. 이것은 native
+SDK/Root 전환 성공을 뜻하지 않는다. CLI만 추가 첫 fault가 남았다.
+
+`development-cli-typed-fault.json`의 PROC/OTHER locator4484167285412423496는
+정확한 `/proc/sys/kernel/osrelease`와 일치한다. 기존 `displayWSL`의 optional OS
+표시 언어 탐색이 이 고정 marker를 읽는다. Generic ELF의 같은 ARTIFACT/세대/완료된
+handoff·read-only/system `/proc` 경계를 유지하고 이 sandbox OS marker 하나만 추가한다.
+실제 Host 파일을 mount하거나 OS 언어 기능을 끄지 않는다. 인접한 kernel hostname,
+vm metadata와 임의 proc/sys prefix는 계속 거부한다. 이 추가 positive가 첫 후보에서는
+RED인지 확인하고 전체 latch·actual CLI/native4를 다시 확인한다. 새 path는 진단 hash가
+아니라 실제 resolved fixed path와 sealed mount 사실로만 분류한다.
+
+두 번째 대조: 새 marker는 sandbox OS의 공개 식별값이며 completion/resource/privilege
+authority가 아니다. 기존 일반 Host의 Windows/macOS 언어 조회나 command grammar,
+observer 네트워크 역할·한도·Policy를 바꾸지 않는다.
+
 ## 검증 순서
 
 - Source 수정 전에 새 latch의 positive와 negative matrix를 고정한다. 기존 classifier에서
