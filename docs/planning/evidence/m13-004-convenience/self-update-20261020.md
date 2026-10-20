@@ -137,3 +137,7 @@ Quick/security/vulnerability/Race와 Darwin compile을 확인했다. 다음은 f
 획득 연결부의 [로컬 검증](./acquisition-qualification-20261020.md)을 마쳤다.
 다음 source 변경은 [metadata/native set 감사·수정 위치·두 번째 검토](./native-set-plan-20261020.md)를
 따른다. 기존 complete-set application/Policy/staging을 재사용한다.
+
+Strict product manifest reader와 authenticity Verification Port의
+[로컬 검증](./metadata-qualification-20261020.md)을 마쳤다. 기존 실제 signed fixture의
+metadata 검사 성공은 native 전체 set이나 protected activation 완료가 아니다.

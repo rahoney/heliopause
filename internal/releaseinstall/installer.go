@@ -141,14 +141,8 @@ func readManifest(bundle string) (manifest, []byte, error) {
 	if err != nil {
 		return manifest{}, nil, errors.New("release manifest is unavailable")
 	}
-	var value manifest
-	if json.Unmarshal(body, &value) != nil || value.Schema != manifestSchema || !versionPattern.MatchString(value.Version) || !regexp.MustCompile(`^[0-9a-f]{40}$`).MatchString(value.SourceCommit) || value.WorkflowRun == "" || len(value.Assets) == 0 {
-		return manifest{}, nil, errors.New("release manifest is invalid")
-	}
-	if !validRuntimeLock(value.RuntimeLock) || !validRecord(value.SBOM, sbomName) || !validRecord(value.RuntimeImages, runtimeImagesName) {
-		return manifest{}, nil, errors.New("release manifest binding is invalid")
-	}
-	return value, body, nil
+	value, err := parseManifest(body)
+	return value, body, err
 }
 
 func selectFiles(value manifest, goos, goarch string) ([]asset, error) {

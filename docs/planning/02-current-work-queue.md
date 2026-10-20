@@ -3413,7 +3413,10 @@ Frozen discovery/public attestation/FD replay adapters are locally qualified in
 [acquisition evidence](./evidence/m13-004-convenience/acquisition-qualification-20261020.md).
 The actual public proof read and SDK verification pass; the replay regression uses
 the existing archive InspectService/Evidence/Policy, not native activation.
-The complete self-update caller is not wired; metadata/native-set quarantine is next.
+The strict manifest reader and authenticity Verification Port are also locally
+qualified through existing InspectService/Evidence/Policy in
+[metadata evidence](./evidence/m13-004-convenience/metadata-qualification-20261020.md).
+The complete self-update caller is not wired; full native-set quarantine is next.
 IPC and crash-recovery details precede activation source edits. Package names block only name-dependent channels;
 account preparation is complete. No new placeholder/executable/Port/job exists.
 SEC-UPD-001 and CLI-UX-003 stay COMPLETE; prior CLI-UX-001 scope remains historical.
