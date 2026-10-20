@@ -129,3 +129,7 @@ provenance primitive의 IMPLEMENTED=YES / WIRED=NO / QUALIFIED=YES(local) /
 ACCEPTANCE_CLOSED=NO다. 보안 수정 pin·actual signed/offline 회귀·기존 소비자
 Quick/security/vulnerability/Race와 Darwin compile을 확인했다. 다음은 frozen release
 획득/검역 연결이며, 본체 command/보호된 활성화/전체 qualification은 아직 없다.
+
+다음 소스 변경은 [frozen acquisition baseline·정확한 수정 위치·second review](./acquisition-plan-20261020.md)를
+따른다. 실제 API의 Azure/Snappy 응답을 반영하며 기존 Resolve/Acquire의 반복 호출이나
+임의 URL·새 Policy·무제한 decoder로 대체하지 않는다.
