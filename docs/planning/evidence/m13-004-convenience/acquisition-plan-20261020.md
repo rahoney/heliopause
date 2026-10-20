@@ -30,6 +30,8 @@ URL의 SAS query는 repository에 남기지 않았고 완료한 body/operator도
 Snappy block API이고 표준 library에는 해당 decoder가 없다. 별도 module/version을
 추가하거나 decoder를 재구현하지 않는다. decoded length를 먼저 확인해 allocation을
 제한하고, 새 reachable consumer의 vulnerability를 다시 확인한다.
+해당 Snappy package의 BSD-3-Clause license/notice를 확인했다. 기존 module의 direct
+consumer가 추가되므로 tidy에서 direct 표기만 갱신하며 버전은 유지한다.
 
 ## 수정 위치와 순서
 

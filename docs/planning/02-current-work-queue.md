@@ -15,7 +15,7 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — provenance primitive locally qualified; public caller/activation not wired
-Next action: frozen release acquisition/quarantine, then protected activation; channel names pending separately
+Next action: metadata/native-set quarantine wiring, then protected activation; channel names pending separately
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
@@ -3409,7 +3409,11 @@ current user installer does not activate root-protected CLI/helpers. The propose
 separate narrow installation role and initial Linux/amd64/same-runtime scope were
 approved by the owner on2026-10-20. The production provenance primitive is locally qualified as documented in
 [component evidence](./evidence/m13-004-convenience/provenance-qualification-20261020.md).
-Its public caller is not wired; frozen release acquisition/quarantine is next.
+Frozen discovery/public attestation/FD replay adapters are locally qualified in
+[acquisition evidence](./evidence/m13-004-convenience/acquisition-qualification-20261020.md).
+The actual public proof read and SDK verification pass; the replay regression uses
+the existing archive InspectService/Evidence/Policy, not native activation.
+The complete self-update caller is not wired; metadata/native-set quarantine is next.
 IPC and crash-recovery details precede activation source edits. Package names block only name-dependent channels;
 account preparation is complete. No new placeholder/executable/Port/job exists.
 SEC-UPD-001 and CLI-UX-003 stay COMPLETE; prior CLI-UX-001 scope remains historical.

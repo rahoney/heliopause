@@ -81,7 +81,12 @@ func (c *Client) Resolve(ctx context.Context, reference domain.ArtifactReference
 	if err != nil {
 		return domain.ResolvedArtifact{}, err
 	}
-	identity, err := domain.NewResolvedArtifactIdentity(reference.Source(), selector.Owner()+"-"+selector.Repo(), selector.Tag(), selector.Asset())
+	return resolvedArtifactForAsset(reference.Source(), asset)
+}
+
+func resolvedArtifactForAsset(source domain.SourceID, asset ResolvedAsset) (domain.ResolvedArtifact, error) {
+	selector := asset.Selector()
+	identity, err := domain.NewResolvedArtifactIdentity(source, selector.Owner()+"-"+selector.Repo(), selector.Tag(), selector.Asset())
 	if err != nil {
 		return domain.ResolvedArtifact{}, err
 	}
@@ -217,6 +222,7 @@ func (c *Client) request(ctx context.Context, rawURL, accept string, permitRedir
 	}
 	request.Header.Set("Accept", accept)
 	request.Header.Set("User-Agent", "helox/0")
+	request.Header.Set("X-GitHub-Api-Version", APIVersion)
 	clientCopy := *c.httpClient
 	clientCopy.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
 	response, err := clientCopy.Do(request)
