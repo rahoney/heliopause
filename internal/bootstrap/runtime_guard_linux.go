@@ -48,12 +48,16 @@ func TryProtectedHealth(ctx context.Context, args []string) (bool, error) {
 		return false, nil
 	}
 	return true, releaseactivation.RunProtectedHealth(ctx, func(healthContext context.Context, full bool) error {
-		if !(doctorService{}).Diagnose(healthContext).Healthy {
-			return releaseactivation.ErrHealth
-		}
-		if !full {
-			return nil
-		}
-		return Run(healthContext, []string{"npm", "inspect", "is-number@7.0.0", "--format", "json"}, io.Discard, io.Discard)
+		return checkProtectedCompatibilityHealth(healthContext, full, (doctorService{}).Diagnose, Run)
 	})
+}
+
+func checkProtectedCompatibilityHealth(ctx context.Context, full bool, diagnose func(context.Context) cli.DoctorReport, run func(context.Context, []string, io.Writer, io.Writer) error) error {
+	if !diagnose(ctx).Healthy {
+		return releaseactivation.ErrHealth
+	}
+	if !full {
+		return nil
+	}
+	return run(ctx, []string{"npm", "inspect", "is-number@7.0.0", "--output", "json"}, io.Discard, io.Discard)
 }

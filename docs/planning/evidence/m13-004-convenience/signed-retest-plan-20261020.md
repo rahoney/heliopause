@@ -9,7 +9,7 @@ rc1/rc2 source는 a22aa12다. 두 보호 태그를 재지정하거나 immutable 
 | 실제 CI | [CI356/run39416778306](https://github.com/rahoney/heliopause/actions/runs/39416778306), Required 포함 열 개 실제 SUCCESS 확인; 서명 입력 실행은 owner 승인 뒤 |
 | 새 base tag | v0.1.1-rc.3 |
 | 새 target tag | v0.1.1-rc.4 |
-| 상태 | OWNER_APPROVED; rc.3 actual base PASS, rc.4 official build SUCCESS/획득 검증 진행 중 |
+| 상태 | OWNER_APPROVED; rc3 actual base PASS, rc4 required18/ALLOW와 실제 ROLLED_BACK; 보완은 후속 계획 |
 | 유지 범위 | Linux/WSL2 amd64, 기존 runtime lock·SDK·관찰·Policy·좁은 Root 역할 |
 
 [보완 검증](./signed-native-qualification-20261020.md)의 최종103 latch/native4/기존 npm과
@@ -53,4 +53,7 @@ first files, 고정 runtime6/pod-init·이미지4의 digest/RootFS/Config, 실�
 ordinary doctor5OK/npm required3·ALLOW를 확인했다. 생성·readback 원본은
 `self-update-signed-20261020/rc3-approved-preflight.json`과 `rc3-created.json`이다.
 그 뒤 같은 source에 rc.4를 생성했고 [official build39442575693](https://github.com/rahoney/heliopause/actions/runs/39442575693)가
-SUCCESS다. 실제 whole activation/health와 fault/recovery는 아직 미완료다.
+SUCCESS다. Actual required18/ALLOW 뒤 전환은 FAILED/ROLLED_BACK이었다. 기존 버전의
+doctor/npm과 OS 인증 거부·history 불변도 확인했다. [정확한 보완 계획](./protected-health-cli-plan-20261021.md)과
+[receipt](./signed-native-20261020/retest-qualification.json)가 실패·로컬 보완·정리 범위를
+소유한다. Whole activation/health 성공과 fault/recovery는 아직 미완료다.

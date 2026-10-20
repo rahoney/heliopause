@@ -1,6 +1,6 @@
 # Native 최초 설치 인계 — Linux/WSL2 amd64
 
-상태: **소스 연결·로컬 검증 / 실제 서명된 새 설치와 systemd 검증 미완료**.
+상태: **실제 서명된 native 최초 등록·systemd·일반 진단 검증 / 전체 검역형 업데이트 qualification 진행**.
 현재 개발용 설치에 실행하는 migration 절차가 아니다. [자체 업데이트 설계](./07-self-update.md),
 [M10 신뢰 계약](../planning/13-m10-verified-distribution-bootstrap-contract.md),
 [현재 Queue](../planning/02-current-work-queue.md)를 따른다. 아래 V는 승인된 exact

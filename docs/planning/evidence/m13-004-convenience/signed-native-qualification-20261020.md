@@ -69,16 +69,50 @@ readback도 비어 operator가 실패했으며, 실제 tag/label readback으로 
 제품 결함이나 업데이트 성공 증거로 취급하지 않는다.
 
 그 뒤 같은 source에 rc.4를 생성했다. [official build39442575693](https://github.com/rahoney/heliopause/actions/runs/39442575693)는
-SUCCESS다. Whole signed activation/health·실패·복원·중단·OS 인증은 아직 미완료다.
+SUCCESS다. rc4도 exact13/독립 offline13/13/canonical bundle이 통과했다. 실제 파일은
+observer와 runtime-images만 rc3와 같고 나머지11개는 달랐다. 같은 product source의
+version/path/metadata 전환이며 code-change regression으로 확대하지 않는다.
+
+## 실제 전체 검역·실패 복원과 건강 검사 CLI 보완
+
+[새 receipt](./signed-native-20261020/retest-qualification.json)가 정확한 범위를 소유한다.
+설치된 rc3의 production self-update에서 actual rc4 selected7의 required18가 모두
+COMPLETED였고 entry7/set ALLOW였다. Promotion은 FAILED였으며 canonical durable
+history `last-protected-update.json`은 ROLLED_BACK, current/등록/config는 rc3다.
+사후 doctor5OK/npm required3·ALLOW도 실제 통과했다. 실제 Root 실패의 모든 앞선
+경계가 정상이었다고 단정하지 않는다. 성공한 전체 전환은 아직 없다.
+
+Full health callback의 기존 `--format json`은 public CLI에서 거부됐다. 정확한
+[사전 계획·두 번째 검토](./protected-health-cli-plan-20261021.md) 뒤 기존 callback을
+private 함수로 추출하고 옵션 하나를 `--output`으로 교정했다. 동일 인자의 actual
+CLI0.14s/exit1과 실제 parser/dispatch RED4 cases를 보존했다. GREEN semantic7 cases는
+ALLOW 완료, REVIEW/BLOCK/operational failure 전파, unhealthy 진단과 rollback의
+nominal 미실행을 확인했다. Format/Quick88.63s/security4.92s/vulnerability11.91s/
+docs0.23s와 bootstrap/releaseactivation Race39.72s는 PASS다. 최초 제한 sandbox의
+Quick은 Unix socket operation-not-permitted였고 같은 source의 권한 교정 실행을
+분리했다. 이 로컬 보완은 actual 새 signed target의 성공을 대신하지 않는다.
+
+별도 OS 인증 거부 시험에서 fixture NOPASSWD grant를 잠시 제외하고 timestamp를
+지웠다. 실제 sudo denial exit1와 required18/ALLOW 뒤 Root transaction 미생성,
+current/history 불변을 확인하고 exact fixture grant를 복원했다. OS 인증 성공·정상
+전환·추가 service/crash/recovery qualification은 여전히 남는다.
+
+Evidence42개/24,176B와 작은 manifest/proof를 보관했다. 완료된 rc3/rc4 다운로드26개
+합계463,988,221B는 hash/inode·FD/maps/mount·query errors0 확인 뒤 삭제했다. rc4
+guest의 actual drain/transport 종료를 확인한 뒤 해당 container를 제거했다. 같은 owned
+volume을 다른 container가 사용하지 않음을 확인하고 qualified rc3 image로 순차 복원해
+실제 cold start/doctor/npm을 다시 통과했다. 이 과정에서 완료된 rc4 guest rootfs/transport와
+시험 cache도 함께 제거됐다. 필요한 rc3 base/image/volume은 후속 target 검증용이다.
+이 cold start는 Host kernel/WSL reboot의 증거가 아니다.
 
 ## 해석 한계와 남은 작업
 
 | 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
 | --- | --- | --- | --- | --- | --- |
-| actual signed13 producer/독립 검증 | YES | YES | YES, a22aa12 rc1/rc2와4ff6c89 rc3 | YES, 해당 입력 | rc4 진행 중 |
+| actual signed13 producer/독립 검증 | YES | YES | YES, a22aa12 rc1/rc2와4ff6c89 rc3/rc4 | YES, 해당 입력 | 없음 |
 | actual first files/register/systemd/doctor/npm | YES | YES | YES, disposable Linux guest | YES, 해당 mechanics | 공개 최초 획득/설치는 별도 |
 | raw ELF 호환성 보완 | YES | YES | YES, local103 latch/native4/npm와 CI356 | YES, 해당 범위 | native 전체 전환은 별도 |
-| 수정된 signed base→target 전체 native 활성화 | YES | YES | NO | NO | 새 official signed inputs와 Root/health/실패·복원/중단·재부팅/OS 인증 |
+| 수정된 signed base→target 전체 native 활성화 | YES | YES | PARTIAL, required18/ALLOW·actual rollback/auth-denial | NO | 보완 source CI·새 signed target의 성공/health/auth-positive/중단·재부팅 |
 | M13-004 전체 설치 채널 | PARTIAL | PARTIAL | NO | NO | 위 native gap, owner 이름/publisher binding/각 채널 |
 
 개발용 observer는 새 source의 unsigned 후보이며 native 관리 등록이 없다. 이 성공을

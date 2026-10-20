@@ -14,8 +14,8 @@ Last completed work item: CLI-UX-003 — COMPLETE; source4cfe29e/CI352 ten SUCCE
 Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
-Active work item status: IN_PROGRESS — actual signed base/register/systemd/doctor/npm and native ELF compatibility/CI356 ten SUCCESS; new signed activation/crash/reboot remain
-Next action: rc3 actual base/register/doctor/npm PASS; rc4 official signing build39442575693 SUCCESS at fixed4ff6c89/acquisition verification running; then actual signed activation/health/auth/crash/reboot; channel names pending separately
+Active work item status: IN_PROGRESS — actual rc3 base/rc4 required18 ALLOW and rollback/auth-denial qualified; health callback CLI correction locally qualified; remote CI and fresh signed target remain
+Next action: qualify corrected health callback in existing PR38 CI; then fix one new signed target to that exact source for qualified rc3 base; whole successful activation/auth-positive/crash/reboot still open
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
