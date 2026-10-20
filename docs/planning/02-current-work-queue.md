@@ -3420,6 +3420,11 @@ The frozen native/metadata set now connects to the existing complete-set workflo
 as documented in [release-set evidence](./evidence/m13-004-convenience/release-set-qualification-20261020.md).
 Local source/staging and fail-closed SDK tests pass; an actual newly signed native
 target, public self-update caller and protected activation are still missing.
+The shared installer's fixed protected-copy mode and verified existing-version
+rollback are qualified locally in
+[copy evidence](./evidence/m13-004-convenience/protected-copy-qualification-20261020.md),
+including actual root/ordinary-user filesystem mechanics in disposable namespaces.
+Provenance was mocked there; RPC/lease/journal/service lifecycle remains next.
 IPC and crash-recovery details precede activation source edits. Package names block only name-dependent channels;
 account preparation is complete. No new placeholder/executable/Port/job exists.
 SEC-UPD-001 and CLI-UX-003 stay COMPLETE; prior CLI-UX-001 scope remains historical.

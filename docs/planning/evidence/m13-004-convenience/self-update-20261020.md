@@ -148,3 +148,7 @@ native target의 동적 검역·보호된 활성화·public CLI는 계속 미완
 
 다음 privileged source는 [권한·IPC·lease handoff·journal·복구의 구체 계획과 두 번째 검토](./protected-activation-plan-20261020.md)를
 따른다. 기존 installer의 verified copy/pointer와 실제 cleanup owner를 재사용한다.
+
+Shared installer의 [protected copy/verified existing-version rollback 로컬 검증](./protected-copy-qualification-20261020.md)을
+마쳤다. 실제 root namespace 검증은 copy/ownership/modes 범위이고 provenance는
+mocked fixture다. IPC/lease/journal/service/public command는 아직 미완료다.
