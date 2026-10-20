@@ -105,6 +105,15 @@ volume을 다른 container가 사용하지 않음을 확인하고 qualified rc3 
 시험 cache도 함께 제거됐다. 필요한 rc3 base/image/volume은 후속 target 검증용이다.
 이 cold start는 Host kernel/WSL reboot의 증거가 아니다.
 
+보완 source7fedaf3의 [CI357 원격 receipt](./signed-native-20261020/health-cli-remote-ci.json)는
+Required 포함10개 실제 SUCCESS와 모든 job의 checkout6d65dfc를 확인한다. 전체 Git
+tree/mode는 source와 일치하며 native macOS/C++103/Linux45·CPU full226.62s/helper5
+wait0/final confirmed cleanup도 PASS다. 새 CUDA full 실행은 없다. 다음 입력은
+[qualified rc3와 고정 rc5 target 하나](./signed-target-plan-20261021.md)로 구체화했다.
+앞서 승인된 rc3/rc4의 source와 ref는 유지했고 새 target은 아직 owner 승인 전이다.
+필요한 rc3 guest는 실제 drain/journal 부재 뒤 idle stop해 메모리를 해제했다. Host 보호
+신원10개·runtime6/pod-init·공유 image4도 마지막 read-only 재대조에서 불변이었다.
+
 ## 해석 한계와 남은 작업
 
 | 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |

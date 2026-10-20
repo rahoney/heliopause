@@ -69,4 +69,7 @@ Root role·SDK trust·검역·Policy·service 전환/복원·required coverage�
 Unix socket permission 실패는 원본에 남기고 동일 source의 필요한 권한 실행과 구분했다.
 Source·실제 실패/복원·인증 거부·정리 receipt는
 [retest qualification](./signed-native-20261020/retest-qualification.json)을 참조한다.
-Whole signed 성공은 미완료이며 다음은 같은 후보의 실제 PR38 CI다.
+같은 source7fedaf3의 [실제 CI357 결과](./signed-native-20261020/health-cli-remote-ci.json)는
+Required+9 SUCCESS, 전체 checkout tree/mode 일치, native macOS/C++103/Linux45·CPU226.62s,
+helper5 wait0/final confirmed cleanup이다. Whole signed 성공은 미완료이며 다음은 owner가
+검토할 [고정 rc5 target 하나](./signed-target-plan-20261021.md)다.

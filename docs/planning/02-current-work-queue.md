@@ -14,8 +14,8 @@ Last completed work item: CLI-UX-003 — COMPLETE; source4cfe29e/CI352 ten SUCCE
 Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
-Active work item status: IN_PROGRESS — actual rc3 base/rc4 required18 ALLOW and rollback/auth-denial qualified; health callback CLI correction locally qualified; remote CI and fresh signed target remain
-Next action: qualify corrected health callback in existing PR38 CI; then fix one new signed target to that exact source for qualified rc3 base; whole successful activation/auth-positive/crash/reboot still open
+Active work item status: IN_PROGRESS — actual rc3 base/rc4 required18 ALLOW and rollback/auth-denial qualified; health callback CLI correction local and CI357 Required+9 SUCCESS; fresh signed target remains
+Next action: owner review of one rc5 target frozen to qualified7fedaf3 for qualified rc3 base per signed-target-plan-20261021.md; whole successful activation/auth-positive/crash/reboot still open
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
@@ -4100,3 +4100,16 @@ rc3 now points to that exact source and [official build39439522714](https://gith
 is SUCCESS with actual base/register/doctor/npm PASS. rc4 was then created at
 the same source; [official build39442575693](https://github.com/rahoney/heliopause/actions/runs/39442575693) is SUCCESS. M13-004
 remains IN_PROGRESS; signed whole activation/recovery and channel names remain open.
+
+2026-10-21 health callback closure (source7fedaf3): actual rc3→rc4 reached
+required18/ALLOW but rolled back; old doctor/npm and actual OS-auth denial passed.
+The public CLI flag mismatch was corrected after documented review and RED4→
+GREEN semantic7. Local format/Quick/security/vulnerability/docs/related Race and
+[CI357](./evidence/m13-004-convenience/signed-native-20261020/health-cli-remote-ci.json)
+Required+9 actual SUCCESS passed; exact whole checkout tree/mode, native macOS,
+C++103/Linux45·CPU226.62s/helper5 wait0/final confirmed cleanup were verified.
+Completed downloads26/463,988,221B, rc4 guest/transport and one-shot operators
+were removed; qualified rc3 baseline was restored/checked and idle-stopped.
+Host originals/shared runtime remain unchanged. [Next exact target proposal](./evidence/m13-004-convenience/signed-target-plan-20261021.md)
+freezes only rc5 to7fedaf3 and awaits owner approval; no new ref yet. Whole
+successful activation/auth-positive/crash/reboot and channel names remain open.
