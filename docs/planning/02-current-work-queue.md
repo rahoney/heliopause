@@ -3497,7 +3497,9 @@ The terminal cold-service recovery branch is locally checked in
 [cold recovery evidence](./evidence/m13-004-convenience/cold-recovery-qualification-20261020.md).
 Journal-bound system copy interruption cleanup is locally checked in
 [copy interruption evidence](./evidence/m13-004-convenience/copy-interruption-qualification-20261020.md).
-CURRENT MISSING: verified initial native loader and ordinary-user bootstrap health,
+Fixed independently verified initial file preparation and known-source cleanup are locally
+checked in [native bootstrap evidence](./evidence/m13-004-convenience/native-bootstrap-qualification-20261020.md).
+CURRENT MISSING: public initial acquisition/OS setup composition and ordinary-user bootstrap health,
 new signed native4 base/target, actual systemd activation and crash/reboot qualification. Full self-update remains IN_PROGRESS and is not installed or publicly released.
 Package names block only name-dependent channels;
 account preparation is complete. No new placeholder/executable/Port/job exists.

@@ -76,7 +76,7 @@
 | Path | Responsibility | Must not own |
 | --- | --- | --- |
 | `cmd/helox` | process entrypoint; bootstrap 호출과 exit 처리 | workflow, 검사, Policy, Adapter 구현 |
-| `cmd/haa-release-installer` | 승인된 M13-004의 별도 installation-role process entry; fixed serve/recover와 검증·배치된 native 설치의 root-only register, inert help/version | user-facing product CLI, 일반 root command/target/UID/service dispatch, Policy 재판정 |
+| `cmd/haa-release-installer` | 승인된 M13-004의 별도 installation-role process entry; fixed serve/recover와 검증·배치된 native 설치의 root-only register와 initial bootstrap-files, inert help/version | user-facing product CLI, 일반 root command/target/UID/service dispatch, Policy 재판정 |
 | `internal/bootstrap` | Composition Root; 구체 구현 생성·등록·wiring | business rule, 검사 해석, Policy rule |
 | `internal/cli` | Cobra command, 입력 변환, terminal/machine output | Adapter 직접 호출, 검사·판정 로직 |
 | `internal/application` | install·inspect·review use case와 workflow orchestration | 구체 npm/scanner/runtime/storage 구현 생성·참조 |

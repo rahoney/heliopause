@@ -156,10 +156,12 @@ func registerNative(ctx context.Context, recorded func(context.Context, registra
 	if err != nil {
 		return ErrUntrusted
 	}
-	if len(previous) != 0 {
-		return nil
+	if len(previous) == 0 {
+		if err := replaceProtected(ctx, registrationPath, nil, body, 0644, 0); err != nil {
+			return err
+		}
 	}
-	return replaceProtected(ctx, registrationPath, nil, body, 0644, 0)
+	return cleanupBootstrapSource(ctx, checked)
 }
 
 func enrollmentIdentity(ctx context.Context) (registration, [3]savedConfig, error) {
@@ -190,22 +192,12 @@ func enrollmentIdentity(ctx context.Context) (registration, [3]savedConfig, erro
 	if err != nil || manifest.Version() != version {
 		return record, configs, ErrUntrusted
 	}
-	for index, path := range configPaths() {
-		configs[index], err = snapshotConfig(ctx, path)
-		if err != nil {
-			return record, configs, err
-		}
-		// These fixed configs must also be readable by the ordinary controller.
-		if configs[index].Mode&0004 == 0 {
-			return record, configs, ErrUntrusted
-		}
-	}
-	var policy nativePolicyConfig
-	if err := canonicalConfig(configs[0].Body, &policy); err != nil {
+	configs, err = readNativeConfigSnapshots(ctx)
+	if err != nil {
 		return record, configs, err
 	}
-	record = registration{registrationSchema, "NATIVE", version, manifest.SHA256(), policy.ClientUID, policy.ClientGID}
-	if _, _, err := parseNativeInstallationConfigs(record, configs); err != nil {
+	record, err = nativeRegistration(manifest, configs)
+	if err != nil {
 		return record, configs, err
 	}
 	after, err := os.Lstat(path)

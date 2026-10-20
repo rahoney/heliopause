@@ -153,7 +153,7 @@ func protectedConsumersAbsent(ctx context.Context, controllerPID, servicePID int
 }
 
 func protectedConsumerPath(path string) bool {
-	return strings.HasPrefix(path, releaseinstall.SystemInstallRoot+"/versions/") || strings.HasPrefix(path, "/usr/libexec/heliopause/")
+	return strings.HasPrefix(path, releaseinstall.SystemInstallRoot+"/versions/") || strings.HasPrefix(path, "/usr/libexec/heliopause/") || strings.HasPrefix(path, releaseinstall.SystemStagingRoot+"/")
 }
 
 func kernelProcessWithoutExecutable(body []byte) bool {

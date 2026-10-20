@@ -204,6 +204,18 @@ func (r wireRelease) verify(ctx context.Context, current InstalledRelease) ([]by
 	if comparison < 0 || (comparison == 0 && r.manifest.SHA256() != current.manifest.SHA256()) || r.manifest.RuntimeLockSHA256() != current.manifest.RuntimeLockSHA256() || r.manifest.GVisorRelease() != current.manifest.GVisorRelease() || r.manifest.GVisorCommit() != current.manifest.GVisorCommit() {
 		return nil, ErrUntrusted
 	}
+	return r.verifyProvenance(ctx)
+}
+
+// verifyProvenance checks source facts only. Updates first require their old
+// installed-chain gate above; initial bootstrap has its own root-admin boundary.
+func (r wireRelease) verifyProvenance(ctx context.Context) ([]byte, error) {
+	if ctx == nil {
+		return nil, ErrUntrusted
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	subjects := []releaseprovenance.Subject{{Name: "helox-release-manifest.json", SHA256: r.manifest.SHA256()}}
 	for _, file := range r.files {
 		subjects = append(subjects, releaseprovenance.Subject{Name: file.Name, SHA256: file.SHA256})

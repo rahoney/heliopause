@@ -165,3 +165,30 @@ func verifyRuntimeConfigs(ctx context.Context, journal updateJournal, old bool) 
 	}
 	return nil
 }
+
+func readNativeConfigSnapshots(ctx context.Context) ([3]savedConfig, error) {
+	var configs [3]savedConfig
+	for index, path := range configPaths() {
+		value, err := snapshotConfig(ctx, path)
+		if err != nil {
+			return configs, err
+		}
+		if value.Mode&0004 == 0 {
+			return configs, ErrUntrusted
+		}
+		configs[index] = value
+	}
+	return configs, nil
+}
+
+func nativeRegistration(manifest releaseinstall.ReleaseManifest, configs [3]savedConfig) (registration, error) {
+	var policy nativePolicyConfig
+	if err := canonicalConfig(configs[0].Body, &policy); err != nil {
+		return registration{}, err
+	}
+	record := registration{registrationSchema, "NATIVE", manifest.Version(), manifest.SHA256(), policy.ClientUID, policy.ClientGID}
+	if _, _, err := parseNativeInstallationConfigs(record, configs); err != nil {
+		return registration{}, err
+	}
+	return record, nil
+}
