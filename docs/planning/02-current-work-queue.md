@@ -14,8 +14,8 @@ Last completed work item: CLI-UX-003 — COMPLETE; source4cfe29e/CI352 ten SUCCE
 Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
-Active work item status: IN_PROGRESS — native self-update caller/activation and producer locally checked; initial bootstrap and signed lifecycle qualification pending
-Next action: narrow protected installer and activation/recovery; channel names pending separately
+Active work item status: IN_PROGRESS — native update/initial preparation/producer locally checked; whole OS bootstrap and signed lifecycle qualification pending
+Next action: current candidate remote CI/review; actual signed native9 base/target, clean-host bootstrap/OS delegation and systemd/crash/reboot qualification; channel names pending separately
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
