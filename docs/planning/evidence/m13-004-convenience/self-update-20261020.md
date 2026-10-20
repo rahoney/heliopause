@@ -133,3 +133,7 @@ Quick/security/vulnerability/Race와 Darwin compile을 확인했다. 다음은 f
 다음 소스 변경은 [frozen acquisition baseline·정확한 수정 위치·second review](./acquisition-plan-20261020.md)를
 따른다. 실제 API의 Azure/Snappy 응답을 반영하며 기존 Resolve/Acquire의 반복 호출이나
 임의 URL·새 Policy·무제한 decoder로 대체하지 않는다.
+
+획득 연결부의 [로컬 검증](./acquisition-qualification-20261020.md)을 마쳤다.
+다음 source 변경은 [metadata/native set 감사·수정 위치·두 번째 검토](./native-set-plan-20261020.md)를
+따른다. 기존 complete-set application/Policy/staging을 재사용한다.
