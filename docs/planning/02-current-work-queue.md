@@ -3499,8 +3499,13 @@ Journal-bound system copy interruption cleanup is locally checked in
 [copy interruption evidence](./evidence/m13-004-convenience/copy-interruption-qualification-20261020.md).
 Fixed independently verified initial file preparation and known-source cleanup are locally
 checked in [native bootstrap evidence](./evidence/m13-004-convenience/native-bootstrap-qualification-20261020.md).
-CURRENT MISSING: public initial acquisition/OS setup composition and ordinary-user bootstrap health,
-new signed native4 base/target, actual systemd activation and crash/reboot qualification. Full self-update remains IN_PROGRESS and is not installed or publicly released.
+Ordinary first acquisition/export and `bootstrap prepare --version vX.Y.Z` are now locally checked in
+[bootstrap acquisition evidence](./evidence/m13-004-convenience/bootstrap-acquisition-qualification-20261020.md).
+[Native installation handoff](../user-journey-cli-ia/08-native-bootstrap.md) records actual Root-copy
+independent verification, exact OS config/unit, register and ordinary health boundaries.
+CURRENT MISSING: actual newly signed native9 base/target acquisition, whole clean-host OS bootstrap/
+ordinary doctor and nominal quarantine, narrow version-specific OS privilege delegation, actual
+systemd activation and crash/reboot qualification. Full self-update remains IN_PROGRESS and is not installed or publicly released.
 Package names block only name-dependent channels;
 account preparation is complete. No new placeholder/executable/Port/job exists.
 SEC-UPD-001 and CLI-UX-003 stay COMPLETE; prior CLI-UX-001 scope remains historical.

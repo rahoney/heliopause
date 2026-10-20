@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -498,5 +500,39 @@ cc_binary(
 
 	if err := verifyObserverBuildCommit(build, canonical); err != nil {
 		t.Fatalf("expected build with comments and string parens to pass, got: %v", err)
+	}
+}
+
+func TestRuntimeLockDigestUsesCompleteBoundedInput(t *testing.T) {
+	body, err := os.ReadFile("runtimes.lock.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	lock, err := readLock("runtimes.lock.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	sum := sha256.Sum256(body)
+	if lock.lockSHA256 != hex.EncodeToString(sum[:]) {
+		t.Fatal("compiled lock digest differs from source bytes")
+	}
+	path := filepath.Join(t.TempDir(), "lock.json")
+	changed := append(append([]byte(nil), body...), '\n')
+	if err := os.WriteFile(path, changed, 0600); err != nil {
+		t.Fatal(err)
+	}
+	other, err := readLock(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if other.lockSHA256 == lock.lockSHA256 {
+		t.Fatal("raw lock byte change was ignored")
+	}
+	oversized := append(append([]byte(nil), body...), bytes.Repeat([]byte(" "), 64*1024+1-len(body))...)
+	if err := os.WriteFile(path, oversized, 0600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := readLock(path); err == nil {
+		t.Fatal("oversized lock prefix accepted")
 	}
 }

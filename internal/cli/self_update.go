@@ -31,8 +31,12 @@ func validateSelfUpdateArgs(command *cobra.Command, args []string) error {
 }
 
 func validateSelfUpdateIntent(root *cobra.Command, args []string) error {
+	return validateVersionIntent(root, args, "helox self-update", "self-update")
+}
+
+func validateVersionIntent(root *cobra.Command, args []string, path, label string) error {
 	command, remaining, err := root.Find(args)
-	if err != nil || command.CommandPath() != "helox self-update" {
+	if err != nil || command.CommandPath() != path {
 		return err
 	}
 	count := 0
@@ -55,7 +59,7 @@ func validateSelfUpdateIntent(root *cobra.Command, args []string) error {
 		}
 	}
 	if count > 1 {
-		return errors.New("self-update accepts --version exactly once")
+		return errors.New(label + " accepts --version exactly once")
 	}
 	return nil
 }

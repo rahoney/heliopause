@@ -24,6 +24,7 @@ import (
 	inspectionpypi "github.com/rahoney/heliopause/internal/inspection/pypi"
 	"github.com/rahoney/heliopause/internal/policy"
 	"github.com/rahoney/heliopause/internal/promotion"
+	"github.com/rahoney/heliopause/internal/releasebootstrap"
 	"github.com/rahoney/heliopause/internal/releaseinstall"
 	"github.com/rahoney/heliopause/internal/sandbox"
 	verificationgithub "github.com/rahoney/heliopause/internal/verification/githubrelease"
@@ -72,6 +73,12 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 			return rootErr
 		}
 		if err := cli.AddDoctor(command, doctorService{installRoot: root}); err != nil {
+			return err
+		}
+		return command.ExecuteContext(ctx)
+	}
+	if source == "bootstrap" {
+		if err := cli.AddBootstrapPreparation(command, releasebootstrap.New()); err != nil {
 			return err
 		}
 		return command.ExecuteContext(ctx)

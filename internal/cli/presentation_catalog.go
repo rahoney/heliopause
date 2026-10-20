@@ -8,6 +8,8 @@ import (
 
 func localizeHelp(root *cobra.Command, p *presentation) {
 	descriptions := map[string][2]string{
+		"helox bootstrap":             {"Prepare first-install native release files", "최초 native 설치 파일을 준비합니다"},
+		"helox bootstrap prepare":     {"Download and verify one exact native release for first installation", "최초 설치용 공식 native 릴리스를 다운로드하고 출처를 검증합니다"},
 		"helox self-update":           {"Quarantine and update Heliopause to one exact official version", "Heliopause 공식 버전 전체를 검역한 뒤 본체를 업데이트합니다"},
 		"helox help":                  {"Help about any command", "명령별 사용법을 표시합니다"},
 		"helox completion":            {"Generate shell completion", "셸 자동 완성 스크립트를 생성합니다"},
@@ -44,6 +46,9 @@ func localizeHelp(root *cobra.Command, p *presentation) {
 	}
 	var visit func(*cobra.Command)
 	visit = func(command *cobra.Command) {
+		if command.CommandPath() == "helox bootstrap prepare" {
+			command.Long = p.text(bootstrapPreparationEnglish, bootstrapPreparationKorean)
+		}
 		if command.CommandPath() == "helox self-update" {
 			command.Long = p.text(selfUpdateDescriptionEnglish, selfUpdateDescriptionKorean)
 		}

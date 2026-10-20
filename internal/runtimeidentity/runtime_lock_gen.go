@@ -3,6 +3,7 @@
 package runtimeidentity
 
 const (
+	RuntimeLockSHA256            = "0aad637569001429aa21568a8f02ca05bb8f3f5de533b75633f04b4ecb44b27d"
 	GVisorRelease                = "release-20260907.0"
 	GVisorCommit                 = "7c6199801fd233d6d55309af4645d4746a077de7"
 	GVisorSourceRepository       = "https://github.com/google/gvisor.git"

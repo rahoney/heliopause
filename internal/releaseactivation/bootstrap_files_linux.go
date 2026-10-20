@@ -312,7 +312,7 @@ func readBootstrapSet(ctx context.Context) (nativeBootstrapSet, error) {
 	if err != nil {
 		return set, err
 	}
-	if manifest.GVisorRelease() != runtimeidentity.GVisorRelease || manifest.GVisorCommit() != runtimeidentity.GVisorCommit {
+	if manifest.RuntimeLockSHA256() != runtimeidentity.RuntimeLockSHA256 || manifest.GVisorRelease() != runtimeidentity.GVisorRelease || manifest.GVisorCommit() != runtimeidentity.GVisorCommit {
 		return set, ErrUntrusted
 	}
 	proof, err := release.verifyProvenance(ctx)
@@ -409,7 +409,7 @@ func (v initialBundleVerifier) Verify(ctx context.Context, directory string) err
 	if err != nil {
 		return err
 	}
-	if release.manifest.Version() != v.record.Version || release.manifest.SHA256() != v.record.ManifestSHA256 || release.manifest.GVisorRelease() != runtimeidentity.GVisorRelease || release.manifest.GVisorCommit() != runtimeidentity.GVisorCommit {
+	if release.manifest.RuntimeLockSHA256() != runtimeidentity.RuntimeLockSHA256 || release.manifest.Version() != v.record.Version || release.manifest.SHA256() != v.record.ManifestSHA256 || release.manifest.GVisorRelease() != runtimeidentity.GVisorRelease || release.manifest.GVisorCommit() != runtimeidentity.GVisorCommit {
 		return ErrUntrusted
 	}
 	_, err = release.verifyProvenance(ctx)

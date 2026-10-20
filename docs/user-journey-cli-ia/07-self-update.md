@@ -133,3 +133,8 @@ coexistence/migration의 검증 전에는 해당 설치 종류의 자동 갱신�
 진행 중 작업이 사용하지 않는 download/stage/test source/cache/operator는 삭제한다.
 rollback용 현재·직전 정상 release는 의미 없는 테스트 잔재와 구분한다. 활성·복구
 가능성을 확인하지 못한 version을 공간 확보 목적으로 삭제하지 않는다.
+
+## 최초 설치 인계
+
+현재 실제 `bootstrap prepare`와 Root 파일 준비/등록의 경계·정확한 OS 설정·남은
+qualification은 [Native 최초 설치 인계](./08-native-bootstrap.md)를 따른다.
