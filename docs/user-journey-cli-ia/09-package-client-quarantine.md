@@ -1,6 +1,6 @@
 # Package client / tool execution quarantine — 설계
 
-상태: **설계 검토 완료 / 신규 기능 미구현**. 2026-10-21 사용자 요청으로
+상태: **설계 검토 완료 / P1 자료 경계 구현·로컬 검증 / production 미연결**. 2026-10-21 사용자 요청으로
 uv pip·pnpm·Bun과 npx·uvx·bunx·pipx를 하나의 확장 범위로 계획한다.
 [실행 계획·baseline·수정 지도·재검토](../planning/20-package-client-quarantine-plan.md)가
 구현 순서와 검증을 소유한다. 기존 [업데이트 검역](./06-update-quarantine.md)을
@@ -145,3 +145,20 @@ transaction/실행 qualification → 지원표/서명 배포물 갱신 순으로
 최신 후보 발견일 뿐 채택/호환성/취약점 부재 증거가 아니다. 초기 execution 환경은
 기존 Linux/WSL2 amd64 신뢰 환경에서 검증한다. macOS CLI 출력 성공만으로 macOS
 sandbox 지원을 선언하지 않으며 다른 OS/CPU/ABI는 실제 qualification 전까지 미지원이다.
+
+## 6. UV P1의 실제 selection / metadata 경계
+
+선택한 uv0.13.4는 install --report를 제공하지 않는다. Native compile의 pylock1.0은
+version과 복수 wheel 대안을 보존하며 dependency edges를 생략한다. Flat lock만으로
+complete graph/ALLOW를 만들지 않는다. No-index/no-build private materialization의
+표준 WHEEL 태그를 bounded snapshot으로 읽고, 같은 name/version/tag를 가진 lock
+후보가 정확히 하나일 때만 선택한다. 동일 태그로 여러 URL이 남으면 추측하지 않는다.
+선택 파일 전체를 기존 InspectWheel로 검증하고 인증된 Requires-Dist에서 graph를 만든다.
+
+UV resolver의 독립 registry cross-check는 canonical project/version에서 유도한
+`https://pypi.org/pypi/<project>/<version>/json`의 전체 exact-release 응답을 사용한다.
+Response info identity와 모든 release file의 identity·URL·SHA256·size·Requires-Python·
+yanked를 기존 정규화 경계로 검증한다. 전체 프로젝트 Simple 응답을 잘라 놓고 그 API를
+검증했다고 주장하지 않는다. 기존4MiB/1024 file 한도와 public origin 제한을 유지한다.
+Pip/PyTorch의 현재 metadata 경로는 이 UV 경로와 별도로 유지된다. 이 자료 경계의
+구현은 실제 uv CLI/runtime/검역 지원 완료가 아니며 P1 baseline의 독립 상태를 따른다.

@@ -1,0 +1,39 @@
+[
+  {
+    "name": "certifi",
+    "version": "2026.10.19",
+    "wheel_tags": [
+      "py3-none-any"
+    ]
+  },
+  {
+    "name": "charset-normalizer",
+    "version": "3.5.2",
+    "wheel_tags": [
+      "cp314-cp314-manylinux_2_17_x86_64",
+      "cp314-cp314-manylinux2014_x86_64",
+      "cp314-cp314-manylinux_2_28_x86_64"
+    ]
+  },
+  {
+    "name": "idna",
+    "version": "3.20",
+    "wheel_tags": [
+      "py3-none-any"
+    ]
+  },
+  {
+    "name": "requests",
+    "version": "2.32.5",
+    "wheel_tags": [
+      "py3-none-any"
+    ]
+  },
+  {
+    "name": "urllib3",
+    "version": "2.8.0",
+    "wheel_tags": [
+      "py3-none-any"
+    ]
+  }
+]

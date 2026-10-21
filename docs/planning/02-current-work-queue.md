@@ -15,7 +15,7 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — native same-runtime self-quarantine update IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; actual signed rc6 normal/cancellations/fresh replay passed; channel scope remains
-Next action: owner reviews clean source1f2500e full-name CLI preview; client design/second review P0 COMPLETE, implementation P1..P7 NOT_STARTED; channel naming/qualification and protected merge/main CI remain; first stable target v1.0.0
+Next action: P1 uv pip IN_PROGRESS — P1a local source/fuzz/frozen wheel graph PASS, remote CI pending; next P1b pinned tool/runtime then install/upgrade/sync wiring; P2..P7 NOT_STARTED; owner full-name preview and channel/release work remain
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
@@ -27,7 +27,8 @@ uv pip/project·pnpm·Bun·pipx 설치/업데이트와 npx·uvx·bunx·pipx run 
 범위로 설계하고 단계별 실제 검증 후 지원을 연다. 기존 검역 엔진은 재사용한다.
 설계·두 번째 검토 P0와 로컬 검사·preview 갱신을 완료했다. 실제 화면 결과는
 [풀네임 타이틀 보완 기록](./evidence/m13-004-convenience/owner-cli-review-20261021.md)을 따른다.
-새 client 구현 P1~P7은 NOT_STARTED이며 실제 상태 변화 때 이 지점을 갱신한다.
+사용자 계속 지시에 따라 [P1 uv baseline](./evidence/package-client-quarantine/p1-uv-baseline-20261021.md)의
+P1a native lock/선택 검증을 진행한다. P1은 IN_PROGRESS, P2~P7은 NOT_STARTED다.
 공개 채널 이름·publisher binding·PR38/main CI·배포는 기존 미완료로 남는다.
 
 ### Runtime upgrade maintenance — 2026-10-15 priority change

@@ -38,7 +38,8 @@ var (
 
 const maxPyTorchSimpleEntries = 20_000
 
-// SimpleProject is a bounded, parser-normalized PyPI Simple API project page.
+// SimpleProject is bounded, normalized public distribution metadata from a
+// Simple page or an independently validated exact-release JSON response.
 // It never contains a raw HTTP response or unvalidated endpoint.
 type SimpleProject struct {
 	project string
@@ -52,7 +53,7 @@ func (p SimpleProject) Files() []SimpleFile {
 	return append([]SimpleFile(nil), p.files...)
 }
 
-// SimpleFile retains only the file metadata required to cross-check a pip
+// SimpleFile retains only the file metadata required to cross-check a resolver
 // candidate before Controlled Intake observes its content.
 type SimpleFile struct {
 	filename              string

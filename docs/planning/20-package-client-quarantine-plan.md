@@ -2,7 +2,7 @@
 
 2026-10-21, baseline `72a90760bb3c46987642b5d0b3eda450a60310a0`.
 [설계](../user-journey-cli-ia/09-package-client-quarantine.md)가 기능·보안 경계를 소유한다.
-이 문서는 사용자 요청의 사전 설계 작업이며 신규 client source는 아직 작성하지 않았다.
+사전 설계 이후 P1의 uv 자료 경계를 구현하고 로컬 검증했다. Production runtime·CLI 연결은 아직 미완료다.
 Queue의 M13-004만 IN_PROGRESS다. 한 확장 범위를 작은 검증 가능한 단계로 진행한다.
 
 ## 1. Repository baseline audit
@@ -78,7 +78,7 @@ identity를 사용하되 명시 capability/보안 한도까지 사용자 설정�
 | 단계 | 시작 조건 / 수행 | 완료 조건 | 현재 |
 | --- | --- | --- | --- |
 | P0 설계/사전 검토 | 사용자 범위·기존 owner·공식 문서·버전 후보 대조 | 본 문서와 leaf, 재검토·canonical docs/security | COMPLETE — canonical docs/security PASS |
-| P1 client foundation + uv pip | exact uv runtime·좁은 descriptor, 기존 install/update 재사용 | actual uv install/upgrade/sync, 기존 pip/npm 회귀, 실패 불변·정리 | NOT_STARTED |
+| P1 client foundation + uv pip | exact uv runtime·좁은 descriptor, 기존 install/update 재사용 | actual uv install/upgrade/sync, 기존 pip/npm 회귀, 실패 불변·정리 | IN_PROGRESS — [P1a baseline](./evidence/package-client-quarantine/p1-uv-baseline-20261021.md) |
 | P2 pnpm | fixed resolver/lock/layout·공통 descriptor 재사용 | actual add/install/update/peer graph·link 공격·rollback | NOT_STARTED |
 | P3 Bun | fixed Bun resolver/layout/lifecycle | actual install/update·Node vs Bun runtime 요구 분리·회귀 | NOT_STARTED |
 | P4 uv project / persistent tools | uv add/sync/lock-upgrade, uv tool/pipx install·upgrade metadata·exposed scripts | project lock-only vs installed 상태, tool ownership/retired scripts/rollback | NOT_STARTED |
@@ -141,11 +141,11 @@ TTY/생성 파일 반출의 실제 필요한 범위. P1~P6 첫 작업에서 exac
 확정한 뒤 source를 작성한다. 미확정을 완료로 치환하지 않는다. 문서화는 이 조사와
 설계 범위에서 완료할 수 있으나 신규 client 구현 완료는 아니다.
 
-## 7. 이번 전달의 검증 범위
+## 7. P0 설계·브랜드 전달 당시의 검증 범위
 
 설계 commit491a32d, 화면 source1f2500e의 전체 tree를 private 후보와 대조했다.
 Canonical format/quick/security/docs와 실제 clean binary의 PTY·color/NO_COLOR·resize·
 navigation·termios 복원이 통과했다. [검증 영수증](./evidence/package-client-quarantine/design-and-brand-qualification-20261021.json)이
 정확한 source/tree·측정 시간·preview identity·한계를 소유한다. P0는 COMPLETE이고
-P1~P7은 NOT_STARTED다. 원격 CI/native macOS 신규 실행과 owner 최종 화면 확인은
+당시 P1~P7은 NOT_STARTED였다. 현재 단계는 위 순서 표와 Queue를 따른다. 원격 CI/native macOS 신규 실행과 owner 최종 화면 확인은
 이번 로컬 결과에 포함하지 않는다. 새 client/runner 구현·검역 지원 완료가 아니다.
