@@ -29,14 +29,15 @@ non-draft/non-prerelease. [원본 관측 요약·URL·응답 digest](./evidence/
 
 | Component | 관측 최신 안정판 | 현재 HAA pin | 판단 |
 | --- | --- | --- | --- |
-| uv / uvx | 0.13.4 | 없음 | 후보, 미채택 |
+| uv / uvx | 0.13.4 | 0.13.4 공급 pin | signed/native 공급·유지보수·data transport 로컬 검증; 실제 runtime/CLI 미연결 |
 | pnpm / dlx | 12.14.0 | 없음 | 후보, v12 alias/provisioning 의미 확인 필요 |
 | Bun / bunx | 1.4.3 | 없음 | 후보, Node/Bun 실행과 libc/CPU baseline 검증 필요 |
 | pipx | 1.18.4 | 없음 | 후보, exact 버전 backend/metadata 확인 필요 |
 | npm / npx | 12.2.1 | npm11.19.0 / Node24.21.0 | major 변경; npx 작업을 이유로 자동 업그레이드하지 않음 |
 
-Python3.14.7/pip26.2.1/cp314·manylinux_2_36_x86_64, Go1.26.9 및 기존 runtime/image
-pins는 유지한다. 위 API metadata만 읽었고 asset 다운로드·실행·서명 검증은 하지 않았다.
+Python3.14.7/pip26.2.1/cp314·manylinux_2_36_x86_64와 기존 Python/Node/Rust image는
+유지한다. Baseline 이후 Go repository pin은 reachable 보안 patch1.26.10으로 갱신했고
+[독립 qualification](./evidence/package-client-quarantine/go12610-remote-status-20261021.json)은 진행 중이다. Host activation은 별도다. 첫 버전 관측 당시에는 API metadata만 읽었다. 이후 uv의 signed/native 공급·단일 pin·개발 유지보수와 [실제 data transport](./evidence/package-client-quarantine/p1b4-uv-provision-local-20261021.json)를 검증했고, production runtime/admission·CLI는 남는다.
 Registry dist-tag/PyPI release와 exact upstream tag, Node engines/Python Requires-Python,
 Bun libc/CPU 요구를 구현 진입 시 대조한다. 불일치/실패는 UNKNOWN으로 남기고 날짜를
 갱신한 공식 metadata부터 확인한다. 최신판을 지원 버전으로 미리 표시하지 않는다.

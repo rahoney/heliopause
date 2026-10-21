@@ -147,13 +147,37 @@
   },
   "cu130": {
     "run": 39590623512,
-    "status": "in_progress",
-    "prior_cancelled_run": 39584116570
+    "head": "c2c1750f8b7558666a4f6ca12c3bfd61d4297a9b",
+    "conclusion": "failure",
+    "linux": {
+      "conclusion": "success",
+      "cpu_full_seconds": 257.76,
+      "cu130_full_seconds": 980.48,
+      "helper_wait_zero": 5,
+      "final_cleanup": "original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0"
+    },
+    "macos": {
+      "job": 119215272543,
+      "conclusion": "failure",
+      "error": "canonical production build command timed out after2m; context deadline exceeded",
+      "go_patch_cause": "unproven; same c2 source native jobs in CI361/cu126/cu132 passed"
+    },
+    "required": "failure",
+    "new_diagnostic_head": "270c7c834d75cc7f62936c87a5c19606b72d112f",
+    "new_pr_ci": 39605808634,
+    "new_cu126_run": 39605942685,
+    "new_results": "pending"
   },
   "qualified": false,
   "remaining": [
-    "cu126 latency investigation and exact-source successful full qualification",
-    "cu130 independent result",
+    "actual new cu126 timing/OS observation and source qualification",
+    "cu130 native build timeout review/new native evidence",
     "no Host runtime activation"
-  ]
+  ],
+  "diagnostic_source": {
+    "head": "270c7c834d75cc7f62936c87a5c19606b72d112f",
+    "pr_ci": 39605808634,
+    "cu126": 39605942685,
+    "status": "in_progress; separate from c2 qualification"
+  }
 }

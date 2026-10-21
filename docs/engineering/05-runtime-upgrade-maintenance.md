@@ -500,7 +500,7 @@ index/amd64·config·layer metadata의 영수증이며 layer bytes/실행 호환
 
 정책과 실제 서명 입력은 [P1b baseline](../planning/evidence/package-client-quarantine/p1b-uv-runtime-baseline-20261021.md)을
 따른다. HAA release signer 정책을 UV publisher로 확대하지 않는다. 현재 plan/apply의
-UV pin·image 공급 연결과 production uv 명령은 아직 미완료다.
+Metadata 검증 이후 단일 UV pin·frozen maintenance와 [data-only 공급 전달](../planning/evidence/package-client-quarantine/p1b4-uv-provision-local-20261021.json)까지 로컬 검증했다. Running runtime/admission과 production uv 명령은 미완료다.
 
 
 `verify-uv-image`에 `--layers /absolute/frozen-layers`를 추가하면 manifest 순서의 모든
