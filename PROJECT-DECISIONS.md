@@ -195,7 +195,7 @@ deployment를 수행한다.
 
 2026-10-21 추가 요청: [client/runner 확장 설계](./docs/user-journey-cli-ia/09-package-client-quarantine.md)와
 [사전 감사·검증 계획](./docs/planning/20-package-client-quarantine-plan.md)에 uv·pnpm·Bun 및
-일회성 실행 전 검역을 함께 기록한다. P1 uv 자료 경계의 로컬 검증을 마쳤고 production runtime·CLI는 아직 미연결이다. 기존 엔진을 재사용한다.
+일회성 실행 전 검역을 함께 기록한다. P1 uv 자료 경계와 공급 metadata 서명 검증을 로컬에서 마쳤다. CI360에서 발견한 Go1.26.9 취약점의 1.26.10 패치를 별도 후보에서 검증 중이며 production uv runtime·CLI는 아직 미연결이다. 기존 엔진을 재사용한다.
 CLI 강조 대상은 제품 풀네임이고 `helox`는 실행 명령이다. 현재 단일 active item은 유지한다.
 
 ## Open Decisions

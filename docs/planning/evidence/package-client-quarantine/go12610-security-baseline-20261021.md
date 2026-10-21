@@ -1,0 +1,82 @@
+# P1 공통 선행조건 — Go1.26.10 보안 패치 baseline
+
+기준 source76e8112c9674cfd454a509c2a7a43425149fc6cc. M13-004만 IN_PROGRESS다.
+P1b 공급 검증 단위는 커밋으로 보존했고 production UV runtime/CLI는 미완료다.
+CI360 sourceb710b56의 Vulnerability가 GO-2026-6809로 실패해 기존 유지보수 절차로
+공통 보안 선행조건을 먼저 충족한다. 임의 compiler 교체·vulnerability suppression은 없다.
+
+## 독립 audit
+
+| 책임 / 근거 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| 기존 update-runtime plan/apply/verify·capture-gvisor·SDK bootstrap | YES | YES | YES | YES | 재작성 없음, 현재 보안 버전 후보에 실제 사용 |
+| 고정 Go1.26.9 compiler/runtime/tools/bundle | YES | YES | YES | YES | 과거 범위의 완료; 새 advisory에 대해서는 취약 |
+| Go1.26.10 coordinated patch | NO | NO | NO | NO | 공식 metadata/SDK 검증·frozen plan·candidate·전체 bundle/observer·새 qualification |
+| UV publisher metadata verifier | YES | YES | NO | NO | 새 source 원격 CI; 별도 runtime 공급·CLI |
+
+Read: [유지보수](../../../engineering/05-runtime-upgrade-maintenance.md),
+[기존 계획](../../19-runtime-upgrade-maintenance-plan.md),
+[trusted tooling](../../../threat-model/04-trusted-tooling-and-evidence.md).
+공식 [advisory](https://vuln.go.dev/ID/GO-2026-6809.json)는 2026-10-21 공개됐고
+[Go release history](https://go.dev/doc/devel/release#go1.26.10)는 10-19 patch를 확인한다.
+공식 Go archive metadata에서 Linux amd64 66,936,659B/SHA256
+ccfe7ae822d2c2f41f4fe7c956199967a4dac22d0ee0d2b2bfdb440aab3b20c5를 확인했다.
+이 발견만으로 SDK 실행·패치 채택 완료는 아니다.
+
+## 기존 owner를 이용한 수정·검증 순서
+
+1. 검증된 현재 SDK로 update-runtime coordinator를 빌드한다. Clean source와 disjoint
+   task state에서 component go/version1.26.10의 실제 공식 metadata 및 support review를
+   frozen plan으로 기록한다. 적용은 기존 apply의 별도 candidate worktree만 수정한다.
+2. 기존 renderChanges가 go.mod, Go image/runtime lock·generated identities, quality tools의
+   setupGo, 알려진 CI/release workflows, support review 및 observer BUILD 소비자를
+   구조적으로 변경한다. 사용자 파일/과거 fixture/hash/증거는 일괄 치환하지 않는다.
+3. Target SDK는 공식 archive hash/size 확인 뒤 task 경로에 준비한다. Host default SDK,
+   /usr/local/bin/helox, 서비스·runtime 등록은 이 source 작업에서 변경하지 않는다.
+4. Go owner 변경은 gVisor bundle compiler에도 영향을 주므로 기존 --capture 빌드로
+   exact source/patch/SDK의 전체6 member와 module-lock을 확보하고 frozen plan에 연결한다.
+   기존 member hashes를 새 binary에 붙이지 않는다. Observer도 같은 준비 경로로 빌드한다.
+5. Canonical verify의 bootstrap/quick/security/workflow/release-gate/docs/freshness와
+   별도 vulnerability를 새 SDK에서 수행한다. Quality tooling actual compiler/readback,
+   reproducible bundle/observer 및 영향받는 실제 installed/npm/PyPI/GitHub/Go/Cargo/
+   Terraform·CPU/cu126/cu130/cu132 qualification과 원격 Required를 독립적으로 기록한다.
+   실행하지 않은 범위를 이전1.26.9 green으로 완료 처리하지 않는다.
+6. 다음 runtime pin을 가진 최초 설치와 same-runtime self-update 경계는 유지한다.
+   ABI/지원 불일치나 unknown 입력은 거부하고 mismatch를 허용하는 예외를 추가하지 않는다.
+
+## 사전 두 번째 검토
+
+수정 owner는 이미 존재하며 새 updater/새 compiler lock이 필요하지 않다. Compiler patch와
+module version은 별개이고 현재 module pins를 이유 없이 갱신하지 않는다. Go1.27 major로
+자동 전환하지 않는다. Metadata/tag와 actual SDK/bundle 동일성은 별도 검증한다. Plan/apply
+성공은 qualification/Host activation 완료가 아니다. 재빌드 자료는 마지막 소비 후 지우고
+작은 identity/명령/실패/결과만 보존한다. 본 audit는 승인 관문을 신설하지 않는다.
+
+
+## 첫 실제 verify 실패와 좁은 보완 지도
+
+공식 SDK 검증과 bootstrap은 PASS였으나 Quick production build가 VCS status128로
+FAIL이다. 동일 candidate에서 git status는 성공하고 target Go build -x는 cd /tmp 후
+실패했다. 선택한1.26.9/1.26.10의 cmd/go/internal/vcs/vcs.go는 .git directory만 root로
+보므로 Git이 인정한 linked worktree의 .git file을 지나친다. 상위의 unrelated /tmp/.git는
+읽기 전용이며 조작하지 않는다. 이 관측을 compiler patch 회귀라고 단정하지 않는다.
+
+기존 apply의 isolated worktree·journal·full snapshot 보호는 IMPLEMENTED/WIRED YES로
+유지한다. 보완할 gap은 verify의 build 입력 packaging뿐이다. scripts/update-runtime/apply.go
+verifyPlan에서 기존 clean source의 exact HEAD를 attempt 내부 standalone shared clone으로
+투영하고 frozen after bytes와 full modes를 적용한다. checkCandidate로 원래 worktree와
+투영의 전체 tracked inventory·HEAD·bytes·modes·index를 검증 전후 대조한다.
+Canonical profiles와 VCS stamping은 그대로 실행하며 -buildvcs=false, GIT_DIR 전역 override,
+shared /tmp/.git 변경은 사용하지 않는다. Configuration receipt에 실제 checked source를 남긴다.
+
+tests: 실제 standalone .git directory·HEAD/전체 snapshot/after와 mismatch 거부,
+외부 후보 편집 보존을 기존 updater 회귀와 대조한다. 최종 Go candidate는 이 source 보완도
+포함해야 하며 이전 frozen plan을 몰래 바꾸지 않고 새 source에서 다시 생성한다.
+첫 실패 원본 go12610-initial-verify 및 go12610-vcs-*와 verification-865014279는 보존한다.
+
+
+Standalone source 보완의 canonical format/Quick349.90s/security8.19s/docs0.23s는 기존
+Go1.26.9에서 PASS다. [영수증](./verification-source-local-20261021.json)이 exact source를
+소유한다. 최초 Go1.26.10 전체 bundle은710.343s/strict verifier PASS이며 module-lock은
+8402c7be…로 기존과 같다. 새 member bytes/hash는 실제 capture에 기록됐고 기존 hash를
+재사용하지 않았다. 아직 새 observer·재현 build·최종 frozen plan/검역·원격 CI 성공이 아니다.

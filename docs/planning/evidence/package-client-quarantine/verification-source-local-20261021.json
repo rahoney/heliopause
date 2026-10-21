@@ -1,0 +1,57 @@
+{
+  "baseline": "76e8112c9674cfd454a509c2a7a43425149fc6cc",
+  "scope": "existing update-runtime verify uses standalone checked source; apply worktree/journal and frozen snapshot remain authoritative",
+  "checks": {
+    "format": {
+      "args": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "format"
+      ],
+      "exit": 0,
+      "elapsed": 1.27
+    },
+    "quick": {
+      "args": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit": 0,
+      "elapsed": 349.9
+    },
+    "security": {
+      "args": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit": 0,
+      "elapsed": 8.19
+    },
+    "docs": {
+      "args": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit": 0,
+      "elapsed": 0.23
+    }
+  },
+  "files": [
+    {
+      "path": "scripts/update-runtime/apply.go",
+      "sha256": "5dc4b1426dfb89f3bb7acc4677527bce47d2ddb453f000ada9aeccf1636d25af"
+    },
+    {
+      "path": "scripts/update-runtime/verification_source_test.go",
+      "sha256": "1ff11ea58e618c9407d577b05c4d06edda98aaa87f1716bceb621f8a79047bf9"
+    }
+  ],
+  "runtime_patch_status": "Go1.26.10 initial SDK and six-member bundle build PASS; initial verify VCS failure retained; final plan/qualification pending"
+}

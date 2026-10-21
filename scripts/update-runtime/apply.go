@@ -211,16 +211,21 @@ func verifyPlan(p plan, state, goPath string, out io.Writer) error {
 	if err != nil {
 		return err
 	}
+	checkedSource, err := verificationSource(p, candidate, attempt)
+	if err != nil {
+		return err
+	}
 	writeResult := func(status string) error {
 		receipt := struct {
 			PlanID            string   `json:"plan_id"`
 			Attempt           string   `json:"attempt"`
 			Configuration     string   `json:"configuration"`
 			Go                string   `json:"go"`
+			Source            string   `json:"checked_source"`
 			Results           []result `json:"results"`
 			Required          []string `json:"required_qualification"`
 			MigrationComplete bool     `json:"migration_complete"`
-		}{p.ID, filepath.Base(attempt), status, goPath, results, p.RequiredQualification, false}
+		}{p.ID, filepath.Base(attempt), status, goPath, checkedSource, results, p.RequiredQualification, false}
 		if err := saveJSON(filepath.Join(attempt, "result.json"), receipt); err != nil {
 			return err
 		}
@@ -231,7 +236,7 @@ func verifyPlan(p plan, state, goPath string, out io.Writer) error {
 	}
 	for _, profile := range checks {
 		fmt.Fprintf(out, "verify: %s\n", profile)
-		log, checkErr := command(candidate, env, goPath, "run", "./scripts/check", profile)
+		log, checkErr := command(checkedSource, env, goPath, "run", "./scripts/check", profile)
 		status := "PASS"
 		if checkErr != nil {
 			status = "FAIL"
@@ -254,6 +259,9 @@ func verifyPlan(p plan, state, goPath string, out io.Writer) error {
 		if err := checkCandidate(p, candidate, true); err != nil {
 			return err
 		}
+		if err := checkCandidate(p, checkedSource, true); err != nil {
+			return err
+		}
 	}
 	if err := compareSnapshot(p); err != nil {
 		return err
@@ -263,6 +271,44 @@ func verifyPlan(p plan, state, goPath string, out io.Writer) error {
 	}
 	fmt.Fprintf(out, "configuration PASS; runtime qualification/activation remains separate: %s\n", strings.Join(p.RequiredQualification, ", "))
 	return nil
+}
+
+// The selected Go SDK discovers .git directories, while linked worktrees use
+// .git files. A standalone projection retains real VCS stamping and avoids
+// accidentally discovering an unrelated parent repository. The apply worktree
+// and its journal remain authoritative and are checked separately throughout.
+func verificationSource(p plan, candidate, attempt string) (string, error) {
+	if err := checkCandidate(p, candidate, true); err != nil {
+		return "", err
+	}
+	projection := filepath.Join(attempt, "source")
+	if _, err := command(p.Root, nil, "git", "clone", "--no-checkout", "--shared", "--", p.Root, projection); err != nil {
+		return "", err
+	}
+	if _, err := command(projection, nil, "git", "checkout", "--detach", p.Head); err != nil {
+		return "", err
+	}
+	after := make(map[string][]byte, len(p.Changes))
+	for _, change := range p.Changes {
+		after[change.Path] = change.After
+	}
+	for _, input := range p.Inputs {
+		path := filepath.Join(projection, input.Path)
+		if body, changed := after[input.Path]; changed {
+			if err := atomicWrite(path, body, os.FileMode(input.Mode)); err != nil {
+				return "", err
+			}
+		} else if err := os.Chmod(path, os.FileMode(input.Mode)); err != nil {
+			return "", err
+		}
+	}
+	if err := checkCandidate(p, projection, true); err != nil {
+		return "", err
+	}
+	if err := checkCandidate(p, candidate, true); err != nil {
+		return "", err
+	}
+	return projection, nil
 }
 
 func verificationEnvironment(goPath, state string) ([]string, error) {

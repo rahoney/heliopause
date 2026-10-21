@@ -209,6 +209,12 @@ bounded safe extraction을 확인한 state-local SDK를 사용하며 전체 SDK 
 `--go`는 현재 Go 선택을 유지하는 요청의 명시 SDK 경로이며 새 Go에는 ambient SDK를 받지 않는다.
 Host 기본 SDK와 설치는 바꾸지 않는다. 각 `verification-*` directory의 logs/result와
 최신 `verification.json`을 남겨 첫 실패를 다음 실행으로 덮지 않는다.
+실제 checks는 각 attempt의 standalone Git projection에서 실행한다. 선택한 Go의
+VCS 탐색이 linked worktree의 .git file을 지나쳐 상위 저장소를 선택하는 것을 막는다.
+Exact baseline HEAD의 local shared clone에 frozen after bytes와 전체 modes를 적용하고
+checkCandidate로 원래 apply worktree와 checked source를 검사 전후 대조한다. 실제 경로는
+receipt의 checked_source에 기록한다. VCS stamping이나 canonical checks를 끄지 않으며
+원래 worktree·journal과 사용자 source는 그대로 유지한다.
 UPG-004 compiler 검사 연결 뒤 verify는 `state/quality-tools`의 독립 executable
 cache를 명시한다. Caller의 기본 `HELOX_TOOL_CACHE`·Go config/workspace/flags로
 후보 bootstrap이 active quality binaries를 덮어쓰지 않으며 cache/bin alias도 거부한다.

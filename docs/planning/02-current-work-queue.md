@@ -15,7 +15,7 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — native same-runtime self-quarantine update IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; actual signed rc6 normal/cancellations/fresh replay passed; channel scope remains
-Next action: P1 uv pip IN_PROGRESS — P1a local PASS / CI360 Vulnerability FAIL (GO-2026-6809, Go1.26.10 required); P1b supply verifier local PASS, runtime/CLI wiring remains; P2..P7 NOT_STARTED; owner full-name preview and channel/release work remain
+Next action: P1 uv pip IN_PROGRESS — P1a local PASS / CI360 Vulnerability FAIL (GO-2026-6809, Go1.26.10 required); P1b supply verifier local PASS (76e8112); Go1.26.10 frozen plan/apply and SDK verified, canonical checks/bundle build running; runtime/CLI wiring remains; P2..P7 NOT_STARTED; owner full-name preview and channel/release work remain
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
@@ -30,6 +30,8 @@ uv pip/project·pnpm·Bun·pipx 설치/업데이트와 npx·uvx·bunx·pipx run 
 사용자 계속 지시에 따라 [P1 uv baseline](./evidence/package-client-quarantine/p1-uv-baseline-20261021.md)의
 P1a native lock/선택 경계를 커밋b710b56으로 보존하고 CI360을 확인한다. 다음은
 [P1b runtime baseline](./evidence/package-client-quarantine/p1b-uv-runtime-baseline-20261021.md)의 공급 검증이다. P1은 IN_PROGRESS, P2~P7은 NOT_STARTED다.
+[Go1.26.10 보안 선행조건](./evidence/package-client-quarantine/go12610-security-baseline-20261021.md)을
+기존 유지보수 도구의 별도 candidate에서 검증 중이다. Host 설치·서비스는 유지한다.
 공개 채널 이름·publisher binding·PR38/main CI·배포는 기존 미완료로 남는다.
 
 ### Runtime upgrade maintenance — 2026-10-15 priority change
