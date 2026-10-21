@@ -29,8 +29,8 @@ func runtimeVersionOwners(root string, tools toolLock) (map[string]string, error
 	if err := json.Unmarshal(body, &lock); err != nil {
 		return nil, err
 	}
-	wantKeys := map[string]bool{"schema_version": true, "gvisor": true, "docker": true, "go_image": true, "rust_image": true, "node_image": true, "python_image": true, "python_sources": true, "bazel": true}
-	if len(lock) != len(wantKeys) || lock["schema_version"] != float64(1) {
+	wantKeys := map[string]bool{"schema_version": true, "gvisor": true, "docker": true, "go_image": true, "rust_image": true, "node_image": true, "python_image": true, "python_sources": true, "bazel": true, "uv_image": true}
+	if len(lock) != len(wantKeys) || lock["schema_version"] != float64(2) {
 		return nil, errors.New("runtime version owners: missing or unsupported lock component")
 	}
 	for key := range lock {
@@ -42,7 +42,7 @@ func runtimeVersionOwners(root string, tools toolLock) (map[string]string, error
 	for component, path := range map[string]string{
 		"Go": "go_image.go_version", "Docker": "docker.ci_engine_version",
 		"gVisor": "gvisor.release", "Bazel": "bazel.version", "Rust/Cargo": "rust_image.rust_version",
-		"npm": "node_image.npm_version", "Python": "python_image.python_version", "pip": "python_image.pip_version",
+		"uv": "uv_image.uv_version", "npm": "node_image.npm_version", "Python": "python_image.python_version", "pip": "python_image.pip_version",
 	} {
 		value, err := runtimeOwnerString(lock, path)
 		if err != nil {
@@ -139,7 +139,7 @@ func checkRuntimeVersionOwners(root string, tools toolLock) error {
 // Inspect active Go source, including newly added consumers. Historical test
 // fixtures and the generated identity owner are deliberately distinct roles.
 func checkRuntimeLiteralOwners(root string) error {
-	image := regexp.MustCompile(`(?:^|[^A-Za-z0-9_])(node|python|golang|rust):(?:[0-9]|latest)`)
+	image := regexp.MustCompile(`(?:^|[^A-Za-z0-9_])(node|python|golang|rust|ghcr\.io/astral-sh/uv):(?:[0-9]|latest)`)
 	for _, directory := range []string{"cmd", "internal", "scripts"} {
 		err := filepath.WalkDir(filepath.Join(root, directory), func(path string, entry fs.DirEntry, walkErr error) error {
 			if walkErr != nil {

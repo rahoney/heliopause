@@ -1,5 +1,5 @@
 // Command runtime-image-manifest emits the lock-owned runtime image contract.
-// It deliberately does not build or republish upstream Docker Official Images.
+// It does not build or republish upstream official images.
 package main
 
 import (
@@ -36,6 +36,11 @@ type runtimeLock struct {
 		PythonVersion string `json:"python_version"`
 		PipVersion    string `json:"pip_version"`
 	} `json:"python_image"`
+	UVImage struct {
+		Reference    string `json:"reference"`
+		Version      string `json:"uv_version"`
+		Architecture string `json:"architecture"`
+	} `json:"uv_image"`
 	RustImage struct {
 		Reference    string `json:"reference"`
 		RustVersion  string `json:"rust_version"`
@@ -124,7 +129,7 @@ func run(arguments []string) error {
 }
 
 func buildManifest(lock runtimeLock) (runtimeImageManifest, error) {
-	if lock.SchemaVersion != 1 {
+	if lock.SchemaVersion != 2 {
 		return runtimeImageManifest{}, errors.New("runtime lock schema is unsupported")
 	}
 	nodeMatch := nodeReferencePattern.FindStringSubmatch(lock.NodeImage.Reference)
@@ -147,15 +152,21 @@ func buildManifest(lock runtimeLock) (runtimeImageManifest, error) {
 	if err != nil || lock.RustImage.Architecture != "amd64" || lock.RustImage.Target != "x86_64-unknown-linux-gnu" {
 		return runtimeImageManifest{}, errors.New("rust runtime image identity is invalid")
 	}
+	uv := lock.UVImage
+	prefix := "ghcr.io/astral-sh/uv:" + uv.Version + "@"
+	if !versionPattern.MatchString(uv.Version) || uv.Architecture != "amd64" || !strings.HasPrefix(uv.Reference, prefix) || !digestPattern.MatchString(strings.TrimPrefix(uv.Reference, prefix)) {
+		return runtimeImageManifest{}, errors.New("uv upstream runtime image identity is invalid")
+	}
+	uvImage := runtimeImageEntry{Name: "uv", Reference: uv.Reference, Repository: "ghcr.io/astral-sh/uv", Digest: strings.TrimPrefix(uv.Reference, prefix), Version: uv.Version}
 	return runtimeImageManifest{
 		Schema:              manifestSchema,
 		CustomGHCRImage:     false,
-		CustomImageDecision: "upstream immutable image is sufficient; no HAA-owned runtime configuration is required",
+		CustomImageDecision: "upstream official immutable images, including signed Astral uv supply; no HAA-owned image is published",
 		Provenance: provenanceContract{
 			Required:     true,
 			Verification: "release candidate attestation must bind this manifest and each exact image reference",
 		},
-		Images: []runtimeImageEntry{node, python, goImage, rustImage},
+		Images: []runtimeImageEntry{node, python, goImage, rustImage, uvImage},
 	}, nil
 }
 

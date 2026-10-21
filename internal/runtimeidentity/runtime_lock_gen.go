@@ -3,7 +3,7 @@
 package runtimeidentity
 
 const (
-	RuntimeLockSHA256            = "12534181b6687240876979d504be46a8c40288ac52d617831c89d3a9a432cff6"
+	RuntimeLockSHA256            = "b96239f60c905b52d64b65aa308f71f607b9d12001e84398247329041b6af1fb"
 	GVisorRelease                = "release-20260907.0"
 	GVisorCommit                 = "7c6199801fd233d6d55309af4645d4746a077de7"
 	GVisorSourceRepository       = "https://github.com/google/gvisor.git"
@@ -23,6 +23,16 @@ const (
 	ContainerdPackage            = "2.3.5-1~ubuntu.24.04~noble"
 	NodeImageReference           = "node:24.21.0-slim@sha256:713cfbf4a0ac19f40e1bb9919893e126b74a5c8cf5d0623c9f89515c8f74c6fa"
 	NodeNPMVersion               = "11.19.0"
+	UVImageReference             = "ghcr.io/astral-sh/uv:0.13.4@sha256:f0a9c230906ab004ce4786b6e0c60995e30b2bdf585c51377026838573720993"
+	UVVersion                    = "0.13.4"
+	UVArchitecture               = "amd64"
+	UVSourceCommit               = "7456b60bc6bc348e13e06e3691bf08e78d3aef54"
+	UVWorkflowRun                = "39441647119"
+	UVIndexSHA256                = "9f130421e930bfbdc563c00740466603f8723158e90297d07957c2294640262b"
+	UVBundleSHA256               = "39c24b19483ac2fba5fa0877ef6ad9a5f30fc1eb913375fcf2dba1de787ec835"
+	UVConfigSHA256               = "bea3876c0cb2afb25f0858f8bff73a7b334c395064cbe1a84465c9218c799ab1"
+	UVToolPath                   = "/uv"
+	UVToolSHA256                 = "de77a01a86452cc465a734257b5a2073d41115d1b8bbfe84ac636af53851b499"
 	PythonImageReference         = "python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52"
 	PythonVersion                = "3.14.7"
 	PipVersion                   = "26.2.1"
@@ -40,6 +50,7 @@ const (
 	PyTorchCU126Version          = "2.14.0+cu126"
 	PyTorchCU130Version          = "2.14.0+cu130"
 	PyTorchCU132Version          = "2.14.0+cu132"
+	UVToolSize                   = 42544544
 )
 
 type PythonSourceProfileLock struct {

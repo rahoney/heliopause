@@ -67,13 +67,9 @@ func verifyUVImage(args []string, out io.Writer) error {
 		if !filepath.IsAbs(*layers) {
 			return errors.New("uv layer directory must be absolute")
 		}
-		var inputs []releaseprovenance.UVToolLayer
-		for _, layer := range receipt.Layers() {
-			body, err := readUVSupplyFile(*layers, layer.SHA256+".tar.gz", layer.Size)
-			if err != nil {
-				return err
-			}
-			inputs = append(inputs, releaseprovenance.UVToolLayer{Reader: bytes.NewReader(body), Size: int64(len(body))})
+		inputs, _, err := readUVSupplyLayers(*layers, receipt)
+		if err != nil {
+			return err
 		}
 		verified, err := receipt.VerifyToolLayers(context.Background(), documents[3], inputs)
 		if err != nil {

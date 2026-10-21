@@ -94,7 +94,7 @@ func ValidateRuntimeImages(body []byte) error {
 	if err := decodeReleaseMetadata(body, 1<<20, &value, nil); err != nil {
 		return err
 	}
-	if value.Schema != "helox.runtime-image-manifest/v1" || value.CustomGHCRImage == nil || *value.CustomGHCRImage || !metadataText(value.CustomImageDecision, 1024) || !value.Provenance.Required || !metadataText(value.Provenance.Verification, 1024) || len(value.Images) != 4 {
+	if value.Schema != "helox.runtime-image-manifest/v1" || value.CustomGHCRImage == nil || *value.CustomGHCRImage || !metadataText(value.CustomImageDecision, 1024) || !value.Provenance.Required || !metadataText(value.Provenance.Verification, 1024) || len(value.Images) != 5 {
 		return errors.New("runtime image manifest contract is unsupported")
 	}
 	nodeVersion, _, _ := strings.Cut(strings.TrimPrefix(runtimeidentity.NodeImageReference, "node:"), "-slim@")
@@ -103,6 +103,7 @@ func ValidateRuntimeImages(body []byte) error {
 		{Name: "node", Reference: runtimeidentity.NodeImageReference, Repository: "docker.io/library/node", Version: nodeVersion},
 		{Name: "python", Reference: runtimeidentity.PythonImageReference, Repository: "docker.io/library/python", Version: runtimeidentity.PythonVersion},
 		{Name: "golang", Reference: runtimeidentity.GoImageReference, Repository: "docker.io/library/golang", Version: runtimeidentity.GoVersion},
+		{Name: "uv", Reference: runtimeidentity.UVImageReference, Repository: "ghcr.io/astral-sh/uv", Version: runtimeidentity.UVVersion},
 		{Name: "rust", Reference: runtimeidentity.RustImageReference, Repository: "docker.io/library/rust", Version: runtimeidentity.RustVersion},
 	} {
 		_, item.Digest, _ = strings.Cut(item.Reference, "@")

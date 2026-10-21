@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "gvisor": {
     "release": "release-20260907.0",
     "commit": "7c6199801fd233d6d55309af4645d4746a077de7",
@@ -61,6 +61,23 @@
       "interpreter": "cp314",
       "abi": "cp314",
       "platform": "manylinux_2_36_x86_64"
+    }
+  },
+  "uv_image": {
+    "reference": "ghcr.io/astral-sh/uv:0.13.4@sha256:f0a9c230906ab004ce4786b6e0c60995e30b2bdf585c51377026838573720993",
+    "uv_version": "0.13.4",
+    "architecture": "amd64",
+    "provenance": {
+      "source_commit": "7456b60bc6bc348e13e06e3691bf08e78d3aef54",
+      "workflow_run": "39441647119",
+      "index_sha256": "9f130421e930bfbdc563c00740466603f8723158e90297d07957c2294640262b",
+      "bundle_sha256": "39c24b19483ac2fba5fa0877ef6ad9a5f30fc1eb913375fcf2dba1de787ec835",
+      "config_sha256": "bea3876c0cb2afb25f0858f8bff73a7b334c395064cbe1a84465c9218c799ab1"
+    },
+    "tool": {
+      "path": "/uv",
+      "sha256": "de77a01a86452cc465a734257b5a2073d41115d1b8bbfe84ac636af53851b499",
+      "size": 42544544
     }
   },
   "python_sources": [

@@ -59,7 +59,7 @@ func checkOwnerFixture(root string) error {
 
 func TestRuntimeVersionOwnersRejectPartialOrUnownedUpdates(t *testing.T) {
 	t.Parallel()
-	for _, component := range []string{"Go", "Node", "npm", "Python", "pip", "Rust/Cargo", "Docker", "containerd", "Bazel", "gVisor", "Staticcheck", "gosec", "govulncheck", "Gitleaks", "Actionlint"} {
+	for _, component := range []string{"Go", "Node", "npm", "uv", "Python", "pip", "Rust/Cargo", "Docker", "containerd", "Bazel", "gVisor", "Staticcheck", "gosec", "govulncheck", "Gitleaks", "Actionlint"} {
 		t.Run(component, func(t *testing.T) {
 			t.Parallel()
 			root := runtimeOwnerFixture(t)

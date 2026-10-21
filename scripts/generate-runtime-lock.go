@@ -92,6 +92,23 @@ type runtimeLock struct {
 			Platform    string `json:"platform"`
 		} `json:"target"`
 	} `json:"python_image"`
+	UVImage struct {
+		Reference    string `json:"reference"`
+		Version      string `json:"uv_version"`
+		Architecture string `json:"architecture"`
+		Provenance   struct {
+			SourceCommit string `json:"source_commit"`
+			WorkflowRun  string `json:"workflow_run"`
+			IndexSHA256  string `json:"index_sha256"`
+			BundleSHA256 string `json:"bundle_sha256"`
+			ConfigSHA256 string `json:"config_sha256"`
+		} `json:"provenance"`
+		Tool struct {
+			Path   string `json:"path"`
+			Size   int64  `json:"size"`
+			SHA256 string `json:"sha256"`
+		} `json:"tool"`
+	} `json:"uv_image"`
 	PythonSources []struct {
 		Name              string   `json:"name"`
 		SourceID          string   `json:"source_id"`
@@ -444,7 +461,7 @@ func readLock(path string) (runtimeLock, error) {
 }
 
 func validate(lock runtimeLock) error {
-	if lock.SchemaVersion != 1 || !release.MatchString(lock.GVisor.Release) || len(lock.GVisor.Commit) != 40 || !hex512.MatchString(lock.Bazel.SHA512) || !exactVersion.MatchString(lock.Bazel.Version) || !strings.HasPrefix(lock.GVisor.SourceRepository, "https://") || !strings.HasPrefix(lock.Bazel.URL, "https://") {
+	if lock.SchemaVersion != 2 || !release.MatchString(lock.GVisor.Release) || len(lock.GVisor.Commit) != 40 || !hex512.MatchString(lock.Bazel.SHA512) || !exactVersion.MatchString(lock.Bazel.Version) || !strings.HasPrefix(lock.GVisor.SourceRepository, "https://") || !strings.HasPrefix(lock.Bazel.URL, "https://") {
 		return errors.New("gVisor or Bazel identity is invalid")
 	}
 	if lock.GVisor.Patch.Path == "" || !strings.HasPrefix(lock.GVisor.Patch.Path, "tools/gvisor/") || !strings.HasSuffix(lock.GVisor.Patch.Path, ".patch") || strings.Contains(lock.GVisor.Patch.Path, "..") || !hex256.MatchString(lock.GVisor.Patch.SHA256) {
@@ -482,6 +499,10 @@ func validate(lock runtimeLock) error {
 	pythonTag := "cp" + pythonParts[0] + pythonParts[1]
 	if lock.PythonImage.Target.Interpreter != pythonTag || lock.PythonImage.Target.ABI != pythonTag || lock.PythonImage.Target.Platform != "manylinux_2_36_x86_64" {
 		return errors.New("python interpreter, ABI or platform does not match the image target")
+	}
+	uv := lock.UVImage
+	if !exactVersion.MatchString(uv.Version) || uv.Architecture != "amd64" || !regexp.MustCompile(`^ghcr.io/astral-sh/uv:`+regexp.QuoteMeta(uv.Version)+`@sha256:[a-f0-9]{64}$`).MatchString(uv.Reference) || !regexp.MustCompile(`^[a-f0-9]{40}$`).MatchString(uv.Provenance.SourceCommit) || !regexp.MustCompile(`^[1-9][0-9]{0,19}$`).MatchString(uv.Provenance.WorkflowRun) || !hex256.MatchString(uv.Provenance.IndexSHA256) || !hex256.MatchString(uv.Provenance.BundleSHA256) || !hex256.MatchString(uv.Provenance.ConfigSHA256) || uv.Tool.Path != "/uv" || uv.Tool.Size <= 0 || uv.Tool.Size > 64<<20 || !hex256.MatchString(uv.Tool.SHA256) {
+		return errors.New("uv image, provenance or native tool identity is invalid")
 	}
 	if lock.GVisor.RuntimeBundle.Architecture != "amd64" || len(lock.GVisor.RuntimeBundle.Members) != 6 {
 		return errors.New("gVisor runtime bundle identity is invalid")
@@ -563,6 +584,8 @@ func render(lock runtimeLock, qualification map[string]string) []byte {
 		{"GVisorBuilderImageRepository", lock.GVisor.Build.Builder.ImageRepository}, {"GVisorBuilderImageTag", lock.GVisor.Build.Builder.ImageTag}, {"GVisorBuilderImageDigest", lock.GVisor.Build.Builder.ImageDigest}, {"GVisorBuilderArchitecture", lock.GVisor.Build.Builder.Architecture},
 		{"BazelVersion", lock.Bazel.Version}, {"BazelLinuxX8664SHA512", lock.Bazel.SHA512},
 		{"DockerMinimumEngine", lock.Docker.MinimumEngine}, {"DockerCIEngine", lock.Docker.CIEngine}, {"DockerCEPackage", lock.Docker.CIUbuntu.DockerCE}, {"DockerCECLIPackage", lock.Docker.CIUbuntu.DockerCLI}, {"ContainerdPackage", lock.Docker.CIUbuntu.Containerd}, {"NodeImageReference", lock.NodeImage.Reference}, {"NodeNPMVersion", lock.NodeImage.NPMVersion},
+		{"UVImageReference", lock.UVImage.Reference}, {"UVVersion", lock.UVImage.Version}, {"UVArchitecture", lock.UVImage.Architecture},
+		{"UVSourceCommit", lock.UVImage.Provenance.SourceCommit}, {"UVWorkflowRun", lock.UVImage.Provenance.WorkflowRun}, {"UVIndexSHA256", lock.UVImage.Provenance.IndexSHA256}, {"UVBundleSHA256", lock.UVImage.Provenance.BundleSHA256}, {"UVConfigSHA256", lock.UVImage.Provenance.ConfigSHA256}, {"UVToolPath", lock.UVImage.Tool.Path}, {"UVToolSHA256", lock.UVImage.Tool.SHA256},
 		{"PythonImageReference", lock.PythonImage.Reference}, {"PythonVersion", lock.PythonImage.PythonVersion}, {"PipVersion", lock.PythonImage.PipVersion},
 		{"GoImageReference", lock.GoImage.Reference}, {"GoVersion", lock.GoImage.GoVersion}, {"GoArchitecture", lock.GoImage.Architecture},
 		{"RustImageReference", lock.RustImage.Reference}, {"RustVersion", lock.RustImage.RustVersion}, {"RustArchitecture", lock.RustImage.Architecture}, {"RustTarget", lock.RustImage.Target},
@@ -575,6 +598,7 @@ func render(lock runtimeLock, qualification map[string]string) []byte {
 	} {
 		fmt.Fprintf(&output, "\t%s = %q\n", item.name, qualification[item.profile])
 	}
+	fmt.Fprintf(&output, "\tUVToolSize = %d\n", lock.UVImage.Tool.Size)
 	output.WriteString(")\n\ntype PythonSourceProfileLock struct { Name, SourceID, IndexURL, IndexHost string; DistributionHosts, OwnedProjects []string }\n\nvar PythonSourceProfiles = map[string]PythonSourceProfileLock{\n")
 	for _, source := range lock.PythonSources {
 		fmt.Fprintf(&output, "%q: {Name: %q, SourceID: %q, IndexURL: %q, IndexHost: %q, DistributionHosts: %#v, OwnedProjects: %#v},\n", source.Name, source.Name, source.SourceID, source.IndexURL, source.IndexHost, source.DistributionHosts, source.OwnedProjects)

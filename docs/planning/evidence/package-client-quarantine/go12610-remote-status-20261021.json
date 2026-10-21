@@ -1,0 +1,100 @@
+{
+  "head": "c2c1750f8b7558666a4f6ca12c3bfd61d4297a9b",
+  "tree": "106e0a5acb97931792c908866ee3cc29327c8650",
+  "ci361": {
+    "run": 39583932519,
+    "checkout": "6d2d27e5792a1ec9f22de8149a30be09768f00e1",
+    "tree": "106e0a5acb97931792c908866ee3cc29327c8650",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "id": 119168038568,
+        "name": "gVisor Linux Integration",
+        "conclusion": "success"
+      },
+      {
+        "id": 119168038744,
+        "name": "Security",
+        "conclusion": "success"
+      },
+      {
+        "id": 119168038814,
+        "name": "Docs",
+        "conclusion": "success"
+      },
+      {
+        "id": 119168038833,
+        "name": "Quick",
+        "conclusion": "success"
+      },
+      {
+        "id": 119168038900,
+        "name": "Representative Wheel Corpus",
+        "conclusion": "success"
+      },
+      {
+        "id": 119168038905,
+        "name": "gVisor Observer Helper",
+        "conclusion": "success"
+      },
+      {
+        "id": 119168038928,
+        "name": "Minimum Go",
+        "conclusion": "success"
+      },
+      {
+        "id": 119168038960,
+        "name": "Vulnerability",
+        "conclusion": "success"
+      },
+      {
+        "id": 119168039003,
+        "name": "macOS",
+        "conclusion": "success"
+      },
+      {
+        "id": 119185941337,
+        "name": "Required",
+        "conclusion": "success"
+      }
+    ],
+    "cpu_full_seconds": 293.64,
+    "helper_reaped_wait_zero": 5,
+    "final_cleanup": "original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0"
+  },
+  "cu126": {
+    "run": 39584112821,
+    "conclusion": "failure",
+    "cpu_full_seconds": 298.3,
+    "cu126_full_seconds": 491.98,
+    "first_failure": {
+      "phase": "installation",
+      "kind": "trusted CPU accounting sample late",
+      "gap_ns": 1035052225,
+      "poll_ns": 1000000000,
+      "read_ns": 589410876,
+      "before_read_gap_ns": 445640217,
+      "ledger_lock_ns": 1132,
+      "usage_us": 58280074,
+      "cpu_limit_seconds": 300,
+      "wall_remaining_ns": 2337338520997
+    },
+    "cleanup": "original=1 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=RESTORED",
+    "cause": "underlying read/scheduling latency and Go patch causality unproven; no suppression or retry-to-green"
+  },
+  "cu132": {
+    "run": 39584119816,
+    "status": "in_progress"
+  },
+  "cu130": {
+    "run": 39590623512,
+    "status": "pending",
+    "prior_cancelled_run": 39584116570
+  },
+  "qualified": false,
+  "remaining": [
+    "cu126 latency investigation and exact-source successful full qualification",
+    "cu132 and cu130 independent results",
+    "no Host runtime activation"
+  ]
+}

@@ -185,3 +185,8 @@ UV의 native 공급 자료 검증은 모든 signed layer의 compressed hash/size
 files와 io directory만 허용하고 root0:0/0755·static ELF amd64를 확인한다. 뒤 layer의
 UV overwrite·whiteout·links/경로 우회는 거부한다. 도출한 native hash/size는 공급
 동일성 자료이며 Host 실행·sandbox compatibility·검역 ALLOW를 의미하지 않는다.
+
+UV 공급의 version/image/provenance/native identity는 runtime lock schema2의 한 owner에서
+생성한다. Maintenance의 frozen plan은 source lock·support review·generated identity를 함께
+갱신하고 모든 layer를 적용 시 다시 검증한다. 이 pin 채택과 CLI 지원 완료는 별도이며
+현재 production uv invocation·격리 admission은 아직 미연결이다.

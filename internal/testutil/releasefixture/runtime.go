@@ -75,6 +75,8 @@ func BindCurrentRuntime(manifest, sbom, images []byte) (Materials, error) {
 		item["reference"], item["repository"], item["digest"], item["runtime_version"] = identity.reference, identity.repository, digest, identity.version
 		delete(identities, name)
 	}
+	_, uvDigest, _ := strings.Cut(runtimeidentity.UVImageReference, "@")
+	im["images"] = append(entries, map[string]any{"name": "uv", "reference": runtimeidentity.UVImageReference, "repository": "ghcr.io/astral-sh/uv", "digest": uvDigest, "runtime_version": runtimeidentity.UVVersion})
 	m["runtime_lock"] = map[string]any{"sha256": runtimeidentity.RuntimeLockSHA256, "gvisor_release": runtimeidentity.GVisorRelease, "gvisor_commit": runtimeidentity.GVisorCommit}
 	result := Materials{}
 	var err error

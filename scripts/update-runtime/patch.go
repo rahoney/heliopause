@@ -35,6 +35,8 @@ func selectedVersion(root, component string) (string, error) {
 		key, versionKey = "python_image", "python_version"
 	case "rust":
 		key, versionKey = "rust_image", "rust_version"
+	case "uv":
+		key, versionKey = "uv_image", "uv_version"
 	default:
 		return "", errors.New("unknown component")
 	}
@@ -174,10 +176,14 @@ func renderChanges(p plan, state string) ([]change, error) {
 		files[path] = body
 	}
 	if p.Version != p.Current && p.Component != "terraform" && p.Component != "github" {
-		if err := validateMetadata(p.Component, p.Version, p.Metadata); err != nil {
+		if p.Component == "uv" {
+			if err := verifyFrozenUVSupply(p.Version, p.Metadata, state); err != nil {
+				return nil, err
+			}
+		} else if err := validateMetadata(p.Component, p.Version, p.Metadata); err != nil {
 			return nil, err
 		}
-		key := map[string]string{"go": "go_image", "node": "node_image", "python": "python_image", "rust": "rust_image"}[p.Component]
+		key := map[string]string{"go": "go_image", "node": "node_image", "python": "python_image", "rust": "rust_image", "uv": "uv_image"}[p.Component]
 		replacements := map[string]any{"/" + key + "/reference": p.Metadata.Image}
 		owners := map[string]string{}
 		switch p.Component {
@@ -197,6 +203,18 @@ func renderChanges(p plan, state string) ([]change, error) {
 			replacements["/python_image/target/abi"] = abi
 			owners["Python"] = p.Version
 			owners["pip"] = p.Metadata.Bundled
+		case "uv":
+			u := p.Metadata.UV
+			replacements["/uv_image/uv_version"] = p.Version
+			replacements["/uv_image/architecture"] = "amd64"
+			replacements["/uv_image/provenance/source_commit"] = u.Identity.SourceCommit
+			replacements["/uv_image/provenance/workflow_run"] = u.Identity.WorkflowRun
+			replacements["/uv_image/provenance/index_sha256"] = u.Identity.IndexSHA256
+			replacements["/uv_image/provenance/bundle_sha256"] = hash(u.Bundle)
+			replacements["/uv_image/provenance/config_sha256"] = hash(u.Config)
+			replacements["/uv_image/tool/sha256"] = u.ToolSHA256
+			replacements["/uv_image/tool/size"] = u.ToolSize
+			owners["uv"] = p.Version
 		case "rust":
 			replacements["/rust_image/rust_version"] = p.Version
 			owners["Rust/Cargo"] = p.Version

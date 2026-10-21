@@ -136,3 +136,42 @@ Canonical Quick/security/docs와 기존 다섯 target 및 새 UV layer target의
 QUALIFIED=NO/ACCEPTANCE_CLOSED=NO다. Production pin·격리 실행·CLI·원격은 남는다.
 마지막 실제 공급의 중복 추출 UV 파일은 다음 소비에 필요하지 않아 삭제 대상으로 분류하며
 인증된 layer 원본은 다음 frozen-plan/runtime 소비가 끝날 때까지 보존한다.
+
+## P1b3 — b89cb0a 단일 pin과 유지보수 연결 전 점검
+
+기존 lock schema1/generator·runtime-image-manifest·releaseinstall exact4·support drift·
+updater는 IMPLEMENTED/WIRED=YES다. UV pin/maintenance는 NO이며 기존 owner를 확장한다.
+Schema2에 uv_image(reference/uv_version/architecture/provenance/tool)를 추가하고 generator는
+고정 identity만 출력한다. Release image manifest v1은 같은 entry 구조의 exact5로 확대한다.
+현재 compiled tuple은 old4를 계속 거부한다. 과거 signed fixture를 편집하지 않고 unsigned
+file-mechanics binder만 UV entry를 덧붙인다. 기존 node/python/go/rust pin과 ABI는 유지한다.
+
+유지보수의 uv 변경은 --uv-proof/--uv-layers의 명시 absolute 입력을 offline 인증한 뒤
+state 안의 고정 파일로 복사한다. Plan에는 proof bytes와 layer digest/size만 묶고 render/apply는
+state의 실제 모든 layer를 재검증한다. 거대한 blob을 plan에 넣거나 live tag를 다시 조회하지
+않는다. Same-version은 입력 flag를 거부하고 네트워크0/원래 pin 보존이다. 기존 apply의 stale
+source/journal/checked source는 재사용한다. Runtime pin 선택은 sandbox 호환성 완료와 다르다.
+
+정확한 영향: generate-runtime-lock, runtime-image-manifest, check/runtime_versions,
+release-manifest의 lock-schema reader, update-runtime의 selectedVersion/renderChanges/
+UV metadata, testutil/releasefixture 및 releaseinstall.ValidateRuntimeImages다. Go bundle capture의
+lock-schema reader도2로 갱신한다. Bootstrap/activation UV readiness와 CI pull은 실제 UV
+provision/admission과 함께 닫는다. Canonical Quick/security/docs/workflow/release-gate/
+freshness와 schema1/unknown/missing/substitution·same-version/no-network·frozen tamper
+회귀를 검사한 후 actual frozen plan/apply/verify를 별도 실행한다.
+
+## P1b3 단일 pin·유지보수의 로컬 종료
+
+[Pin/maintenance 영수증](./p1b-uv-pin-local-qualification-20261021.json)의 후보는 canonical
+Quick/security/docs/workflow/release-gate/freshness와 실제 서명 자료의 native 공급·변조
+회귀가 PASS다. 실제 developer CLI로 합성 이전 pin0.0.1에서 공식0.13.4의 plan/apply/
+verify를 실행해 세 owner 파일만 변경하고 canonical7개를297.281s에 통과했다. 합성 이전
+버전의 공개 존재나 실제 UV 실행·호환성 증거로 쓰지 않는다. Migration_complete=false다.
+
+현재 pin/maintenance IMPLEMENTED=YES/WIRED=YES(개발 도구)/QUALIFIED=NO/
+ACCEPTANCE_CLOSED=NO다. UV runtime provision/admission과 production CLI는 남는다.
+Go1.26.10 원격 cu126은 sample-late FAIL이며 기존 CPU/macOS/Required의 성공을 보존한다.
+[조사 계획](./go12610-cu126-diagnostic-plan-20261021.md)의 timing/OS 관측은 아직 미구현이다.
+완료한 중복 추출 UV42,544,544B는 참조/query errors0 확인 뒤 삭제했다. 유지보수 fixture의
+source/state/binary도 작은 원본을 보존한 뒤 정리한다. 활성 SDK/cache·qualified runtime과
+다음 runtime 소비가 필요한 두 upstream layer만 보존한다.

@@ -20,7 +20,7 @@ func bundleFixture(t *testing.T) string {
 	buildNativeHeloxTest(t, binary)
 	assets := releaseAssets(t, root, binary)
 	lock := filepath.Join(t.TempDir(), "runtimes.lock.json")
-	if err := os.WriteFile(lock, []byte(`{"schema_version":1,"gvisor":{"release":"release-20260810.0","commit":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}`), 0o600); err != nil {
+	if err := os.WriteFile(lock, []byte(`{"schema_version":2,"gvisor":{"release":"release-20260810.0","commit":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	images := filepath.Join(root, imageFileName)

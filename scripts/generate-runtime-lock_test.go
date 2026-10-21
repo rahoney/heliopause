@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -92,6 +93,35 @@ func TestRuntimeLockRejectsUnknownFieldAndMissingPlatform(t *testing.T) {
 	lock.GVisor.RuntimeBundle.Architecture = "aarch64"
 	if err := validate(lock); err == nil {
 		t.Fatal("unexpected runtime bundle architecture was accepted")
+	}
+}
+
+func TestRuntimeLockRejectsUnboundUVSupply(t *testing.T) {
+	base, err := readLock("runtimes.lock.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for name, mutate := range map[string]func(*runtimeLock){
+		"old schema": func(l *runtimeLock) { l.SchemaVersion = 1 },
+		"foreign publisher": func(l *runtimeLock) {
+			l.UVImage.Reference = strings.Replace(l.UVImage.Reference, "astral-sh", "foreign", 1)
+		},
+		"different version":       func(l *runtimeLock) { l.UVImage.Version = "0.0.1" },
+		"missing source":          func(l *runtimeLock) { l.UVImage.Provenance.SourceCommit = "" },
+		"missing bundle":          func(l *runtimeLock) { l.UVImage.Provenance.BundleSHA256 = "" },
+		"missing index":           func(l *runtimeLock) { l.UVImage.Provenance.IndexSHA256 = "" },
+		"wrong architecture":      func(l *runtimeLock) { l.UVImage.Architecture = "arm64" },
+		"foreign path":            func(l *runtimeLock) { l.UVImage.Tool.Path = "/other" },
+		"oversize":                func(l *runtimeLock) { l.UVImage.Tool.Size = 64<<20 + 1 },
+		"missing native identity": func(l *runtimeLock) { l.UVImage.Tool.SHA256 = "" },
+	} {
+		t.Run(name, func(t *testing.T) {
+			l := base
+			mutate(&l)
+			if err := validate(l); err == nil {
+				t.Fatal("unbound UV supply accepted")
+			}
+		})
 	}
 }
 

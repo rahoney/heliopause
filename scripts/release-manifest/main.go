@@ -167,7 +167,7 @@ func buildRelease(version, commit, workflowRun, runtimeLockPath, sbomPath, runti
 		return fmt.Errorf("read runtime lock: %w", err)
 	}
 	var lock runtimeLock
-	if err := json.Unmarshal(lockBody, &lock); err != nil || lock.SchemaVersion != 1 || lock.GVisor.Release == "" || !commitID.MatchString(lock.GVisor.Commit) {
+	if err := json.Unmarshal(lockBody, &lock); err != nil || lock.SchemaVersion != 2 || lock.GVisor.Release == "" || !commitID.MatchString(lock.GVisor.Commit) {
 		return errors.New("runtime lock is invalid")
 	}
 	assets, primary, err := collectAssets(assetPaths)

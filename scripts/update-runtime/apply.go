@@ -153,6 +153,11 @@ func checkCandidate(p plan, candidate string, complete bool) error {
 }
 
 func verifyPlan(p plan, state, goPath string, out io.Writer) error {
+	if p.Component == "uv" && p.Version != p.Current {
+		if err := verifyFrozenUVSupply(p.Version, p.Metadata, state); err != nil {
+			return err
+		}
+	}
 	var j journal
 	if err := loadJSON(filepath.Join(state, "journal.json"), &j); err != nil {
 		return err

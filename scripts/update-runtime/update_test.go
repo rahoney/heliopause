@@ -166,7 +166,7 @@ func futurePlan(t *testing.T, root, state, component string) plan {
 }
 
 func TestSameVersionPlanAndApply(t *testing.T) {
-	for _, component := range []string{"go", "node", "python", "rust"} {
+	for _, component := range []string{"go", "node", "python", "rust", "uv"} {
 		t.Run(component, func(t *testing.T) {
 			root, state := fixture(t)
 			p := noopPlan(t, root, state, component)

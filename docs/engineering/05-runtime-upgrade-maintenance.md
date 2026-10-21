@@ -35,6 +35,7 @@ owner는 하나이고, 다른 소비자는 그 값을 읽거나 검증 가능한
 | --- | --- | --- |
 | HAA Go compiler | `scripts/runtimes.lock.json`의 `go_image.go_version`을 선택 버전 owner로 사용 | `go.mod` floor, tool `setupGo`, CI/release setup, guest tag/version/digest와 host SDK를 연결 |
 | Node/npm | runtime lock의 Node image와 bundled npm identity | Node tag/version과 실제 image contents 일치; resolver·probe·Promotion 공유 |
+| uv | runtime lock schema2의 uv_image/version/provenance/native tool identity | 공식 signed proof·전체 layer를 고정하고 offline plan/apply에서 재검증; Python ABI는 독립 유지 |
 | Python/pip | runtime lock의 Python image, pip와 ABI/platform target | interpreter·pip·wheel tags·Promotion·PyTorch 지원 tuple 영향을 함께 계산 |
 | Rust/Cargo | runtime lock의 Rust image/version/target | resolver/build와 runtime image manifest의 누락 없는 연결 |
 | gVisor | runtime lock의 source commit·patch·builder·Bazel·bundle members | Go SDK 선택을 HAA Go owner에 연결하고 전체 bundle·observer를 재빌드 |
@@ -507,3 +508,27 @@ UV pin·image 공급 연결과 production uv 명령은 아직 미완료다.
  diffID·root ownership·정확한 reviewed layout와 bounded static amd64 ELF를 검증한다.
 출력은 `helox.uv-image-supply/v2`의 tool SHA256/size이며 실제 native startup·관찰기·Policy
 승인이 아니다. `--layers` 없는 기존 metadata-only 호출은 v1을 유지한다.
+
+### UV pin과 frozen maintenance plan
+
+Runtime lock schema2의 uv_image가 version·official amd64 reference·signed index/source/run·
+bundle/config digest와 native path/size/hash의 유일한 입력이다. Generator와 support drift는
+이 owner를 사용한다. Runtime image manifest v1은 기존 네 이미지와 UV의 exact5를 기록하며
+custom_ghcr_image=false는 HAA 소유 이미지를 새로 게시하지 않는다는 뜻이다.
+
+변경 계획은 다음과 같이 명시한 offline 공급만 사용한다. proof 디렉터리는 위 다섯 metadata
+파일, layers 디렉터리는 검증된 모든 SHA256.tar.gz를 갖춰야 한다.
+
+```sh
+go run ./scripts/update-runtime plan --root /absolute/clean-repo --state /absolute/new-state \
+  --component uv --version X.Y.Z --review /absolute/review.json \
+  --uv-proof /absolute/frozen-proof --uv-layers /absolute/frozen-layers
+go run ./scripts/update-runtime apply --root /absolute/clean-repo --state /absolute/new-state
+go run ./scripts/update-runtime verify --root /absolute/clean-repo --state /absolute/new-state
+```
+
+Plan은 작은 proof bytes와 전체 layer descriptor를 묶고 실제 layer는 state/uv-supply에
+owner-only로 고정한다. Render/apply는 같은 파일의 owner/mode·경로와 모든 digest/diffID·
+native identity를 다시 확인한다. 누락/변조/symlink/권한 변경은 거부하며 source를 재작성하거나
+live tag로 대체하지 않는다. 같은 버전은 supply flag를 거부하고 기존 pin/review를 유지한다.
+Canonical configuration 검증과 실제 UV sandbox/observer/CLI qualification은 별도다.

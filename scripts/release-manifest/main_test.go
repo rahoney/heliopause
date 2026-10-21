@@ -15,7 +15,7 @@ func TestBuildReleaseProducesBoundManifestAndSBOM(t *testing.T) {
 	buildNativeHeloxTest(t, binary)
 	assets := releaseAssets(t, root, binary)
 	runtimeLock := filepath.Join(root, "runtimes.lock.json")
-	if err := os.WriteFile(runtimeLock, []byte(`{"schema_version":1,"gvisor":{"release":"release-20260810.0","commit":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}`), 0o600); err != nil {
+	if err := os.WriteFile(runtimeLock, []byte(`{"schema_version":2,"gvisor":{"release":"release-20260810.0","commit":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	sbomPath := filepath.Join(root, "helox-release-sbom.cdx.json")
@@ -58,7 +58,7 @@ func TestBuildReleaseRejectsIncompleteOrPreexistingOutput(t *testing.T) {
 	buildNativeHeloxTest(t, binary)
 	assets := releaseAssets(t, root, binary)
 	runtimeLock := filepath.Join(root, "runtimes.lock.json")
-	if err := os.WriteFile(runtimeLock, []byte(`{"schema_version":1,"gvisor":{"release":"release-20260810.0","commit":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}`), 0o600); err != nil {
+	if err := os.WriteFile(runtimeLock, []byte(`{"schema_version":2,"gvisor":{"release":"release-20260810.0","commit":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	workflowRun := "https://github.com/rahoney/heliopause/actions/runs/123"
