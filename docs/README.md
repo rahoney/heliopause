@@ -93,6 +93,14 @@ Read:
 - 대화형 시작 화면 작업이면 [CLI-UX-003 baseline/edit map/second review](./planning/evidence/cli-launcher/baseline-20261020.md)와 [qualification](./planning/evidence/cli-launcher/qualification-20261020.md)
 - [Domain — Operation Request and Context](./domain-model/06-operation-request-context.md)
 
+### Package client와 실행 전 검역 확장
+
+Read:
+
+- [Client/runner 설계](./user-journey-cli-ia/09-package-client-quarantine.md)
+- [Baseline·수정 지도·버전 후보·검증·재검토](./planning/20-package-client-quarantine-plan.md)
+- 위 Artifact/CLI/Staging route와 아래 runtime maintenance 문서
+
 ### Runtime, 배포 또는 trusted tooling
 
 Read:

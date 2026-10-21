@@ -24,6 +24,7 @@ Heliopause 구현 milestone, 의존 순서와 현재 실행 작업을 기록한�
 | [17-m12-02-fix-list.md](./17-m12-02-fix-list.md) | M12-02 | Complete | final red-team/fix gate |
 | [18-m13-production-release-operations-contract.md](./18-m13-production-release-operations-contract.md) | M13 | In progress | protected release 운영 설정과 최종 public deployment |
 | [19-runtime-upgrade-maintenance-plan.md](./19-runtime-upgrade-maintenance-plan.md) | UPG-001..006 | Complete / qualified | M13 재개 전 버전 갱신 자동화의 baseline audit·실행 순서·acceptance·인계 |
+| [20-package-client-quarantine-plan.md](./20-package-client-quarantine-plan.md) | Client expansion | 설계 / 구현 전 | baseline·수정 지도·최신 버전 후보·단계별 검증·두 번째 검토 |
 
 ## Rule
 

@@ -193,6 +193,11 @@ deployment를 수행한다.
 | 13 | Current Work Queue | Complete | 실행 가능한 현재 작업과 우선순위 |
 | 14 | Implementation | Defined | 구현 진행 상태는 Current Work Queue가 소유 |
 
+2026-10-21 추가 요청: [client/runner 확장 설계](./docs/user-journey-cli-ia/09-package-client-quarantine.md)와
+[사전 감사·검증 계획](./docs/planning/20-package-client-quarantine-plan.md)에 uv·pnpm·Bun 및
+일회성 실행 전 검역을 함께 기록한다. 신규 client는 미구현이며 기존 엔진을 재사용한다.
+CLI 강조 대상은 제품 풀네임이고 `helox`는 실행 명령이다. 현재 단일 active item은 유지한다.
+
 ## Open Decisions
 
 아래 항목은 후속 단계에서 확정한다. 상세 결정을 이 표에 작성하지 않고 해당 단계의 canonical 문서로 이동한 뒤 상태와 링크만 갱신한다.

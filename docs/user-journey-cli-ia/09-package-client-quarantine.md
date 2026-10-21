@@ -1,0 +1,147 @@
+# Package client / tool execution quarantine — 설계
+
+상태: **설계 검토 완료 / 신규 기능 미구현**. 2026-10-21 사용자 요청으로
+uv pip·pnpm·Bun과 npx·uvx·bunx·pipx를 하나의 확장 범위로 계획한다.
+[실행 계획·baseline·수정 지도·재검토](../planning/20-package-client-quarantine-plan.md)가
+구현 순서와 검증을 소유한다. 기존 [업데이트 검역](./06-update-quarantine.md)을
+대체하거나 새 도구 지원이 이미 완료됐다고 표시하지 않는다.
+
+## 1. 제품 경계와 명령 범위
+
+제품은 외부 artifact의 설치·업데이트 및 실행 전 검역을 제공한다. npm/PyPI는
+source이고 pnpm/Bun/uv/pipx는 client다. Client 이름을 새 registry identity로
+사용하지 않는다. 같은 registry라도 resolver 선택, lock, 배치와 실행 의미는 다르다.
+
+아래는 구현 목표 구문이며 **현재 실행 가능한 명령 목록이 아니다**. Version,
+선택 대상, target, entry point가 명확해야 한다. 지원하지 않는 option은 mutation과
+네트워크 이전에 거부한다. 임의 argv를 원래 프로그램에 전달하는 fallback은 없다.
+
+| Client | 이번 확장에 포함하는 흐름 | 별도 의미와 경계 |
+| --- | --- | --- |
+| uv pip | `helox uv pip install <spec>` / `install --upgrade <spec>` / `sync <requirements>` | pip 호출 alias가 아닌 uv resolver; upgrade와 exact sync의 삭제 대상도 transaction에 포함 |
+| uv project | `helox uv add <spec>` / `sync` / `lock --upgrade` | pyproject.toml·uv.lock·환경의 독립 상태. Lock-only는 설치 완료가 아니며 나중 sync도 동일 graph 검사 필요 |
+| pnpm | `helox pnpm add <spec>` / `install` / `update [name]` | pnpm-lock.yaml·virtual store·peer graph·내부 symlink/hardlink 배치 |
+| Bun | `helox bun add <spec>` / `install` / `update [name]` | bun.lock·선택된 linker·lifecycle 정책. Bun runtime 사용은 별도 실행 identity |
+| npx | `helox npx <package> [args]`, 명시 package/command 형식과 `helox npm exec` | package의 bin과 실행 argv를 분리. 로컬 검색·cache도 검역 우회 불가 |
+| uvx | `helox uvx <tool> [args]`, `helox uv tool run` | package와 command가 다르면 명시 `--from`; extras/추가 dependency도 전체 set에 포함 |
+| bunx | `helox bunx <package> [args]`, `helox bun x` | Node shebang 기본 실행과 명시 Bun 실행을 구분하여 runtime admission |
+| pipx | `helox pipx install <spec>` / `upgrade <name>` / `run <tool> [args]` | 영구 tool venv·entrypoint 소유권과 임시 실행은 다른 작업; backend를 실행마다 자동 탐지하지 않음 |
+| 같은 도구의 연관 진입점 | `helox uv tool install/upgrade`, `helox pnpm dlx` | 같은 typed operation에 연결. pnpx/pnx alias는 선택 버전의 실제 의미와 함께 검증 |
+
+`uv run`, `pnpm exec`, `bun run`은 기존 프로젝트 실행·자동 sync·shell script까지
+포함하므로 이번 초기 실행 범위에서 지원하지 않는다. 잘못된 자동 다운로드 우회가
+되지 않게 명시 거부한다. Publish, bundler, test runner, runtime 자체 설치/업데이트,
+임의 shell 실행, system Python/global 설치도 포함하지 않는다. 이미 지원하는 Go/Cargo
+기능을 제거하지 않는다. 모든 native 옵션 호환을 약속하지 않는다.
+
+첫 구현은 단일 프로젝트·기존 지원 registry/ABI·명시 target에서 시작한다. Workspaces,
+monorepo, editable/local/VCS/direct URL dependency, private credentials, global install,
+임의 index와 runtime provisioning은 capability가 별도로 검증되기 전에는 거부한다.
+각 client lane을 완료할 때 실제 허용 option·selector·lock format·platform 표를
+고정하고 help/examples와 같은 descriptor에서 노출한다. 위 목표 전체의 미완료는
+실행 계획에서 보존하며 제한된 첫 lane 성공으로 전체 완료를 선언하지 않는다.
+
+공식 의미: [uv pip 호환성](https://docs.astral.sh/uv/pip/compatibility/),
+[uv tools](https://docs.astral.sh/uv/guides/tools/),
+[npx](https://docs.npmjs.com/cli/v11/commands/npx/),
+[pnpm layout](https://pnpm.io/symlinked-node-modules-structure),
+[pnpm dlx/pnx](https://pnpm.io/cli/pnx),
+[Bun install](https://bun.sh/docs/pm/cli/install),
+[bunx](https://bun.sh/docs/pm/bunx), [pipx](https://pipx.pypa.io/stable/).
+공식 문서 최신판이 선택한 버전과 항상 같지 않으므로 exact tag의 help/fixture도 대조한다.
+
+## 2. 공통 흐름과 책임
+
+```text
+CLI의 명시 명령/옵션 검증
+→ source + client + intent + frozen project/input context
+→ 고정된 client로 격리 resolution (typed network policy)
+→ exact graph/artifacts/lock/runtime/entrypoint 확정
+→ 기존 acquisition·verification·static·dynamic·entry/set Policy
+→ ALLOW한 동일 bytes를 staging에 보관, 반출 직전 digest 재검증
+→ install/update: guarded promotion / run: 별도 제한된 sandbox 실행
+→ 결과·Evidence·원상복구/정리 확인
+```
+
+기존 Artifact Adapter와 Policy가 검역 권한을 유지한다. Client별 resolver adapter는
+원래 도구의 선택 의미를 기존 graph로 변환하고 알 수 없는 schema/edge를 거부한다.
+인증된 graph 없이 lock 파일 이름만 바꾸거나 uv 명령을 pip로, pnpm을 npm으로 몰래
+대체하지 않는다. npm archive·wheel 검사기는 재사용한다. npm과 Bun의 lifecycle
+기본값 차이는 검사 실험과 승인 manifest에 남기며 skip을 완료로 바꾸지 않는다.
+
+CLI command descriptor는 client/alias/intent/허용 옵션/help key를 소유하고 bootstrap은
+명시적으로 factory를 연결한다. Core가 Cobra/uv/pnpm/Bun을 import하지 않는다.
+하나의 작은 typed registry에서 실제 지원 항목만 선언하며 runtime plugin 로딩이나
+범용 YAML workflow 엔진을 만들지 않는다. 다른 책임의 코드를 한 거대 switch로
+옮기지 않는다. Version·format·capability의 owner와 교차 검증을 분명히 둔다.
+
+## 3. 일회성 실행의 추가 보안 계약
+
+설치 검역 통과는 모든 프로그램 동작이 안전하다는 보증이 아니다. 기존 staging은
+**보관 전용**이다. 실행은 staging 밖의 별도 sandbox에 검증된 파일을 복사·재확인하고
+기존 supervisor/observer·완료 원장으로 통제한다. 검사 뒤 Host에서 `npx <name>` 등을
+다시 호출하거나 일반 PATH/cache에서 실행 파일을 찾지 않는다.
+
+- Artifact identity, 전체 의존성, 정확한 bin/console entrypoint, interpreter/runtime,
+  argv와 source/policy fingerprint를 실행 요청에 연결한다. Package 이름과 command
+  이름이 다르거나 여러 bin이 있으면 ambiguity를 자동 추측하지 않는다.
+- 임시 venv는 의존성 격리일 뿐 보안 sandbox가 아니다. uv/pipx backend와 Python,
+  bunx의 Node/Bun을 고정한다. Artifact shebang의 임의 interpreter를 Host에서 실행하지 않는다.
+- 기본 실행은 외부 네트워크·Host HOME/secret/credential·실제 프로젝트 mount 없이
+  유한 CPU/memory/time/output 한도 내에서 수행한다. 필요한 프로젝트 입력은 명시
+  선택된 snapshot만 전달한다. 프로그램이 후속 npm/pip 등을 실행해 새 dependency를
+  요구하면 실패 이유를 보존하고 별도 검역 intake로 돌려야 한다. 자동 network 허용은 없다.
+- 생성 파일이 필요한 도구는 private output workspace를 쓴다. 출력은 기존 승인 artifact의
+  digest로 포장하지 않는다. 별도의 경로/link/크기/소유권 검사와 충돌 방지 transaction을
+  거쳐 명시 target에 반출하며 코드 출력은 독립 artifact intake가 필요하다. 이 경로의
+  계약과 검증이 닫히기 전에는 파일 생성형 도구를 지원한다고 표시하지 않는다.
+- 실행 stdout/stderr는 신뢰되지 않는 데이터다. 제어문자/OSC·크기 폭주·secret 노출을
+  방어하고, HAA 요약·JSON과 혼합하지 않는다. Structured result에는 quarantine
+  status, policy, execution status/exit, output promotion, cleanup을 따로 기록한다.
+  Artifact의 exit0/stdout marker는 검사 완료 authority가 아니다.
+- 일반 실행 argv의 `--` 경계와 HAA global flags를 구분한다. Shell 문자열 eval,
+  `npx -c`, 임의 interpreter override는 초기 scope에서 거부한다. stdin/TTY 전달은
+  명시 capability이며 interactive 지원 전에는 필요한 tool을 조용히 headless로 실행하지 않는다.
+- SIGINT/timeout/observer fault에 원래 오류를 보존하고 child/helper/container까지
+  drain한다. 정리 불명확을 성공으로 바꾸지 않는다. 재실행은 오염된 cache를 승인으로 보지 않는다.
+
+Host 자산을 노출하거나 임의 Host 실행을 허용해야만 되는 호환성 요구는 기존
+[격리 계약](../threat-model/02-isolation-and-inspection.md) 변경이므로 구현 편의로
+넓히지 않는다. 제한을 설명하거나 별도 결정으로 남긴다.
+
+## 4. 설치·업데이트·cache 일관성
+
+기존 transaction lock·ownership·rollback을 재사용한다. Npm project transaction의
+package-lock 전제를 pnpm/Bun에 적용하지 않고, 각 client layout adapter에서 frozen
+manifest/lock/tree/approval snapshot을 연결한다. pnpm 내부 link는 승인된 owned tree
+안의 정확한 대상만 허용하며 foreign store 공유 hardlink로 승인 이후 수정이 전파되지
+않도록 private copy/reflink와 반출 동일성을 검증한다. 공통 symlink 거부를 전역 완화하지 않는다.
+
+Python은 같은 venv destination/entrypoint ownership을 유지한다. uv sync의 삭제,
+pipx tool metadata·exposed scripts, uv project controls도 하나의 commit/rollback
+단위로 포함한다. Native/unmanaged 환경은 기존 explicit adoption 경계에 따라 별도로
+지원하고 알 수 없는 파일을 삭제하지 않는다. 실패·동시 mutation·disk full·취소 뒤
+기존 설치가 유지되어야 하며, 복구 불명확이면 journal을 보존하고 새 mutation을 막는다.
+
+공유 다운로드 cache, 승인 staging, 임시 실행 환경은 신뢰와 수명이 다르다. Cache hit도
+exact identity/digest·현재 policy/runtime·ownership 재검증이 필요하다. 검사 결과를
+무기한 ALLOW로 재사용하지 않는다. User cache·다른 프로젝트·진행 중 session은
+정리 대상이 아니다. 완료된 task-owned payload/venv/store/image/volume/cache는 참조
+부재를 확인하고 제거하며 작은 manifest·결과·실패 원인만 남긴다.
+
+## 5. 버전과 지원 표시
+
+버전 owner는 기존 [runtime maintenance](../engineering/05-runtime-upgrade-maintenance.md)를
+확장한다. Runtime lock의 exact version/배포물 digest와 generated identity를 사용하며
+quality-tool lock에 product client를 넣지 않는다. npx는 선택 npm, uvx는 선택 uv,
+bunx는 선택 Bun의 identity를 공유한다. Aliases마다 별도 version pin을 만들지 않는다.
+
+공식 최신판 발견 → release notes/engine·ABI·schema·license·보안 검토 → exact 후보
+metadata/asset authenticity → frozen pin/image build → parser·negative·실제 검역·
+transaction/실행 qualification → 지원표/서명 배포물 갱신 순으로 진행한다. 실행 중
+`latest` 설치, ambient PATH version 탐지 또는 사용자 runtime 자동 교체는 없다.
+
+[버전 관측 영수증](../planning/evidence/package-client-quarantine/version-review-20261021.json)은
+최신 후보 발견일 뿐 채택/호환성/취약점 부재 증거가 아니다. 초기 execution 환경은
+기존 Linux/WSL2 amd64 신뢰 환경에서 검증한다. macOS CLI 출력 성공만으로 macOS
+sandbox 지원을 선언하지 않으며 다른 OS/CPU/ABI는 실제 qualification 전까지 미지원이다.
