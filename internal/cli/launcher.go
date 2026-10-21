@@ -407,33 +407,26 @@ func (l *launcher) draw(width, height int) error {
 	width, height = max(2, min(width, 160)), max(2, min(height, 80))
 	l.lastWidth, l.lastHeight = width, height
 	cells := width - 1 // Leave the physical last column unused.
-	var header []string
-	brandRows := 1
-	if l.page == launcherHome && height >= 22 && width >= 60 {
-		header = append(header,
-			"██  ██ ██████ ██      ████  ██  ██",
-			"██  ██ ██     ██     ██  ██  ████ ",
-			"██████ █████  ██     ██  ██   ██  ",
-			"██  ██ ██     ██     ██  ██  ████ ",
-			"██  ██ ██████ ██████  ████  ██  ██",
-			"")
-		brandRows = len(header) + 1 // Include the full product name.
-	} else if height >= 18 && width >= 40 {
-		header = append(header, "H E L O X", "")
-	}
-	header = append(header, launcherWrap("Heliopause Artifact Airlock", cells)...)
+	var description, notice []string
 	if height >= 18 {
-		header = append(header, launcherWrap(l.root.Short, cells)...)
+		description = launcherWrap(l.root.Short, cells)
 	}
+	if l.notice != "" {
+		notice = launcherWrap(l.notice, cells)
+		notice = notice[:min(2, len(notice))]
+	}
+	var header []string
+	brand := launcherBrand(cells, height, len(description)+len(notice)+1, l.page == launcherHome)
+	for _, line := range brand {
+		header = append(header, line.text)
+	}
+	header = append(header, description...)
 	header = append(header, strings.Repeat("─", cells))
 	if l.page == launcherLanguage {
 		header = append(header, launcherWrap(fmt.Sprintf("%s: %s → %s (%s)",
 			l.p.text("Language", "언어"), l.saved, l.p.language, l.p.languageSource), cells)...)
 	}
-	if l.notice != "" {
-		notice := launcherWrap(l.notice, cells)
-		header = append(header, notice[:min(2, len(notice))]...)
-	}
+	header = append(header, notice...)
 	if len(header) > height-2 {
 		header = header[:height-2]
 	}
@@ -463,8 +456,8 @@ func (l *launcher) draw(width, height int) error {
 	}
 	lines := make([]string, 0, height)
 	for i, line := range header {
-		if i < brandRows {
-			line = l.p.paint(line, "1;36")
+		if i < len(brand) {
+			line = l.p.paint(line, brand[i].style)
 		}
 		lines = append(lines, line)
 	}
@@ -475,7 +468,7 @@ func (l *launcher) draw(width, height int) error {
 			line = body[index]
 		}
 		if index == selected {
-			line = l.p.paint(line, "1;36")
+			line = l.p.paint(line, "1;97;44")
 		}
 		lines = append(lines, line)
 	}

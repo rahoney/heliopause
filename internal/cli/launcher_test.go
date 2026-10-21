@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -267,7 +268,7 @@ func TestLauncherBoundsTranslationsAndNoColor(t *testing.T) {
 				t.Fatal("empty core translation", language)
 			}
 		}
-		for _, size := range [][2]int{{80, 24}, {59, 22}, {60, 21}, {60, 22}, {20, 8}, {2, 2}} {
+		for _, size := range [][2]int{{80, 24}, {43, 30}, {44, 27}, {44, 28}, {44, 30}, {67, 24}, {68, 23}, {68, 24}, {111, 24}, {112, 18}, {160, 80}, {20, 8}, {2, 2}} {
 			output.Reset()
 			if err := l.draw(size[0], size[1]); err != nil {
 				t.Fatal(err)
@@ -301,6 +302,64 @@ func TestLauncherBoundsTranslationsAndNoColor(t *testing.T) {
 	var bounded launcherBuffer
 	if _, err := io.Copy(&bounded, strings.NewReader(strings.Repeat("x", (64<<10)+1))); err == nil || bounded.buffer.Len() > 64<<10 {
 		t.Fatal("help bound bypassed via io.Copy")
+	}
+}
+
+func TestLauncherBrandColorPolicyAndMenuSpace(t *testing.T) {
+	l, output := newTestLauncher(t)
+	l.p.tty = true
+	sgr := regexp.MustCompile(`\x1b\[[0-9;]*m`)
+	for _, size := range [][2]int{{80, 24}, {44, 30}, {112, 18}} {
+		for _, notice := range []string{"", "A notice that wraps across several lines when the terminal is narrow; navigation must remain available."} {
+			l.notice = notice
+			l.p.color = "never"
+			output.Reset()
+			if err := l.draw(size[0], size[1]); err != nil {
+				t.Fatal(err)
+			}
+			plain := output.String()
+			if l.bodyHeight < 4 || !strings.Contains(plain, "Heliopause Artifact Airlock") || !strings.Contains(plain, "helox") {
+				t.Fatal("brand obscures product, command or menu", size, l.bodyHeight)
+			}
+			for _, mode := range []struct {
+				color, term, noColor string
+				colored              bool
+			}{
+				{"auto", "xterm-256color", "", true},
+				{"auto", "xterm-256color", "1", false},
+				{"auto", "dumb", "", false},
+				{"never", "xterm-256color", "", false},
+				{"always", "dumb", "1", true},
+			} {
+				t.Setenv("TERM", mode.term)
+				t.Setenv("NO_COLOR", mode.noColor)
+				l.p.color = mode.color
+				output.Reset()
+				if err := l.draw(size[0], size[1]); err != nil {
+					t.Fatal(err)
+				}
+				frame := output.String()
+				if sgr.MatchString(frame) != mode.colored || sgr.ReplaceAllString(frame, "") != plain {
+					t.Fatal("color changes geometry or ignores terminal preference", size, mode)
+				}
+				for _, line := range strings.Split(frame, "\r\n") {
+					if sgr.MatchString(line) && !strings.HasSuffix(line, "\x1b[0m") {
+						t.Fatal("background can bleed beyond a painted row")
+					}
+				}
+			}
+		}
+	}
+	l.notice, l.p.color = "", "never"
+	for _, page := range []launcherPage{launcherLanguage, launcherUsage, launcherDetail} {
+		l.page = page
+		output.Reset()
+		if err := l.draw(112, 30); err != nil {
+			t.Fatal(err)
+		}
+		if strings.Contains(output.String(), "█") {
+			t.Fatal("large home brand leaked into a working page", page)
+		}
 	}
 }
 

@@ -118,3 +118,25 @@ Owner CLI 확인/피드백 → 필요한 보완 및 채널 준비·qualification
 서명 build·publication 검증 순서다. 첫 stable 목표v1.0.0은
 [canonical release boundary](../../18-m13-production-release-operations-contract.md#4-release-activation-boundary)를
 따른다. 기존 rc ref를 바꾸거나 지금 새 release tag를 생성하지 않는다.
+
+## Full-name brand — source 수정 전 baseline / 두 번째 검토
+
+기준72a9076. 기존 launcher draw/input/viewport/paint와 이전 local qualification은
+유지한다. 새 요구인 풀네임 대형 표시·배경/다중 accent만 IMPLEMENTED=NO,
+WIRED=NO, QUALIFIED=NO, ACCEPTANCE_CLOSED=NO다. 기존 owner 대체는 없다.
+
+수정 위치: launcher.go draw의 header 구성과 선택 행 paint, 같은 cli package의 작은
+private launcher_brand.go 표시 helper, launcher_test.go의 화면 경계/color 회귀.
+외부 font/TUI dependency나 실행 경로를 추가하지 않는다. 고정 제품명 전용 3×5 glyph를
+사용하고, 충분한 홈 화면에서 세 단어를 같은 크기로 그린다. 112열 이상은 한 줄,
+68열 이상은 Heliopause / Artifact Airlock 두 줄, 44열 이상·28행 이상은 세 줄로 배치한다.
+그 외에는 읽을 수 있는 fullname과 작은 helox label을 사용한다. 각 layout은 최소 메뉴
+네 줄과 footer를 남긴다. Navy background/cyan·white·gold accents는 기존 paint 정책을
+사용하며 NO_COLOR/never에서는 모든 SGR을 제거한다. Explicit always override는 유지한다.
+
+두 번째 검토: 장식은 홈에만 확장하고 settings/help/detail은 compact다. 제품명 plaintext를
+함께 두어 검색·복사도 가능하게 한다. Physical last column 미사용, line별 SGR reset,
+Unicode cell 폭, all-language body/footer, 작은 resize/cancellation/termios 복원과 실제
+preview를 검사한다. 기존 helox 단독 명령·doctor/실제 update·source/runtime를 바꾸지 않는다.
+검사는 canonical format/quick/security/docs 및 실제 binary PTY로 수행한다. 완료한
+private checkout/build/cache는 삭제하고 사용자 확인 중인 preview만 유지한다.

@@ -202,11 +202,18 @@ Help/detail screens scroll. Examples are inert text derived/reviewed against
 currently registered commands; there is no embedded shell or automatic install,
 update, inspection, download or repair from menu navigation.
 
-Owner preview refinement: the home screen at60+ columns/22+ rows displays a fixed
-five-row HELOX wordmark with the full product name. Smaller screens and other
-pages keep the compact header. Existing color/NO_COLOR and bounded viewport
-rules apply; terminal font size is not changed. Usage labels expose pip install
---upgrade/-U and GitHub Release asset install --replace without adding commands.
+Owner preview refinement: emphasize **Heliopause Artifact Airlock**, with all three
+words in the same five-row block lettering; `helox` is a small command label.
+On the home page use one wordmark row at112+ columns/18+ rows, two at68+/24+,
+or three at44+/28+ when the measured description/notice also leaves four menu
+rows and a footer. Otherwise show the compact full name. Other pages remain
+compact. A navy panel with cyan, white and gold accents uses basic ANSI colors;
+reset every painted row and retain the existing NO_COLOR/never/always semantics.
+Center and pad by visible cells before styling, leaving the physical last column
+unused. No terminal font size, palette or background preference is changed.
+Keep a plain-text full-name caption for searching/copying. The existing usage
+labels expose pip install --upgrade/-U and GitHub asset install --replace.
+New package clients remain design-only until wired and qualified.
 
 Language changes use the existing atomic preference writer and language selector.
 Show saved/effective language and selection source. Preserve auto and the explicit
