@@ -1,0 +1,162 @@
+{
+  "baseline": "a9bd096a59b5077d66ca118851e95f9085b24211",
+  "scope": "local trusted timing, bounded server/CI diagnostics and test-only 1Hz OS observation; no accounting policy repair or actual new cu126 qualification",
+  "checks": {
+    "format": {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.558,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    "quick": {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 44.787,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    "security": {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 4.484,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    "docs": {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.198,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    "workflow": {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.64,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    }
+  },
+  "race": {
+    "label": "focused-race",
+    "args": [
+      "/tmp/haa-uv-runtime-0_e6zmn4/sdk/go/bin/go",
+      "test",
+      "-race",
+      "-count=1",
+      "-run=TestObservationReadTimingCannotEnterWire|TestObservationServerReadTimingIsBoundedAndUnauthoritative|TestPythonCPUWatchLateTimingPreservesFirstFailure|TestPythonCPUSampleDoesNotUseTransportTimingForAuthorization|TestPyTorchPressure",
+      "./internal/hosttool",
+      "./internal/sandbox",
+      "./internal/bootstrap"
+    ],
+    "exit": 0,
+    "seconds": 39.984
+  },
+  "cleanup_script_file": {
+    "label": "cleanup-file",
+    "args": [
+      "/tmp/haa-uv-runtime-0_e6zmn4/sdk/go/bin/go",
+      "test",
+      "-count=1",
+      "-run=TestCIResourceTimingTailIsBoundedAndPreservesOriginalFailure|TestActualCIIntegrationCleanup",
+      "./scripts/check"
+    ],
+    "exit": 0,
+    "seconds": 0.926
+  },
+  "darwin_test_compilation": {
+    "scope": "Darwin test compilation only; no native execution",
+    "results": [
+      {
+        "arch": "amd64",
+        "package": "internal/bootstrap",
+        "exit": 0,
+        "seconds": 17.929
+      },
+      {
+        "arch": "amd64",
+        "package": "internal/sandbox",
+        "exit": 0,
+        "seconds": 2.598
+      },
+      {
+        "arch": "amd64",
+        "package": "scripts/check",
+        "exit": 0,
+        "seconds": 1.407
+      },
+      {
+        "arch": "arm64",
+        "package": "internal/bootstrap",
+        "exit": 0,
+        "seconds": 16.492
+      },
+      {
+        "arch": "arm64",
+        "package": "internal/sandbox",
+        "exit": 0,
+        "seconds": 2.659
+      },
+      {
+        "arch": "arm64",
+        "package": "scripts/check",
+        "exit": 0,
+        "seconds": 1.345
+      }
+    ],
+    "directory": "/tmp/haa-uv-runtime-0_e6zmn4/darwin-test-build"
+  },
+  "source": [
+    {
+      "path": "internal/bootstrap/observation_resource_linux.go",
+      "sha256": "db8c4647f263186a18383944cb6a30334da9c5b8fec32e67216318831afdd11d"
+    },
+    {
+      "path": "internal/bootstrap/pytorch_linux_integration_test.go",
+      "sha256": "300a750a2f9a16619f409b0cd7cfb7569ae64a90caf067d3a9641f420e3c0689"
+    },
+    {
+      "path": "internal/hosttool/observation_resource_linux.go",
+      "sha256": "7120e4eb5dee0b2ef76379654d8ff00bb8648369049f622a2b14465e8a1b12ec"
+    },
+    {
+      "path": "internal/sandbox/pypi_observation_cpu.go",
+      "sha256": "b07b3e78a6a8e17cc815bc4f643783e0d20a5e6ff1dae3fce87d6ce284e3fca0"
+    },
+    {
+      "path": "internal/sandbox/pypi_transaction_diagnostic_test.go",
+      "sha256": "e59b38053a1cc6401eb1175b7eeb68b5ca8c39b65dc6f01720492b66a0303beb"
+    },
+    {
+      "path": "scripts/check/ci_cleanup_test.go",
+      "sha256": "b51aa74c6029479cc0e9c6f87f34873e83959652d2fb7465960081786a257d3c"
+    },
+    {
+      "path": "scripts/ci-integration-cleanup.sh",
+      "sha256": "5a29cead0453d1f0680a11459f19f952d754a3a318056b7d602951bdec7f72d7"
+    },
+    {
+      "path": "internal/hosttool/observation_resource_diagnostic_linux.go",
+      "sha256": "4c3db7941fe2a9d60f52bcb982432e76e63a18a13ce3478dca41594308627df0"
+    },
+    {
+      "path": "internal/hosttool/observation_resource_diagnostic_linux_test.go",
+      "sha256": "5b5dbe471333273ab23dedfb12762aecec18f47761e9d2c56a8bd34fbb462e17"
+    },
+    {
+      "path": "internal/bootstrap/pytorch_pressure_test.go",
+      "sha256": "f94bebb2aa18e140b8f41fb937aeb544f81756976bfffe8d8e719b91377c6fb5"
+    }
+  ],
+  "wire_protocol_changed": false,
+  "accounting_policy_changed": false,
+  "limits": {
+    "server_records_per_service": 16,
+    "ci_log_tail_bytes": 65536,
+    "ci_filtered_records": 16,
+    "os_cadence_seconds": 1,
+    "os_max_records": 4096,
+    "proc_file_bytes": 65536
+  },
+  "remaining": [
+    "actual new remote CI/helper consumer verification",
+    "actual cu126 timing/OS observation and cause assessment",
+    "UV runtime/CLI wiring"
+  ]
+}

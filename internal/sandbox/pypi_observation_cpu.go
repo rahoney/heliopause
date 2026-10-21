@@ -14,6 +14,13 @@ type ObservationResourceLease struct {
 	CgroupParent string
 	CPU          int
 	UsageUsec    uint64
+	ReadTiming   ObservationResourceReadTiming
+}
+
+// Diagnostics from the trusted controller transport, never authorization or
+// an artifact-supplied completion receipt.
+type ObservationResourceReadTiming struct {
+	StartedUnixNS, IdentityNS, DialNS, EncodeNS, ResponseNS, ReverifyNS, TotalNS int64
 }
 
 // ObservationResourceClient is supplied by the composition root. The sandbox
@@ -80,7 +87,7 @@ func (w *observationCPUWatch) sampleAccountingLocked(ctx context.Context, termin
 	lease, err := w.client.Read(readContext, w.transaction)
 	readReturned := time.Now()
 	if err != nil {
-		return fmt.Errorf("python observation CPU counter is unavailable: request_context=%s read_context=%s resource=%s read_ns=%d", pythonResourceErrorReason(ctx.Err()), pythonResourceErrorReason(readContext.Err()), pythonResourceErrorReason(err), readReturned.Sub(readStarted).Nanoseconds())
+		return fmt.Errorf("python observation CPU counter is unavailable: request_context=%s read_context=%s resource=%s read_ns=%d%s", pythonResourceErrorReason(ctx.Err()), pythonResourceErrorReason(readContext.Err()), pythonResourceErrorReason(err), readReturned.Sub(readStarted).Nanoseconds(), lease.ReadTiming.diagnostic())
 	}
 	w.ledger.mu.Lock()
 	defer w.ledger.mu.Unlock()
@@ -97,9 +104,16 @@ func (w *observationCPUWatch) sampleAccountingLocked(ctx context.Context, termin
 		// Trusted scalar timing distinguishes a delayed resource read from a
 		// controller/ledger delay without retaining helper output or changing
 		// the accounting deadline, sticky failure, or completion authority.
-		return fmt.Errorf("%w: read_ns=%d ledger_lock_ns=%d before_read_gap_ns=%d", err, readReturned.Sub(readStarted).Nanoseconds(), sampleAt.Sub(readReturned).Nanoseconds(), readStarted.Sub(previous).Nanoseconds())
+		return fmt.Errorf("%w: read_ns=%d ledger_lock_ns=%d before_read_gap_ns=%d%s", err, readReturned.Sub(readStarted).Nanoseconds(), sampleAt.Sub(readReturned).Nanoseconds(), readStarted.Sub(previous).Nanoseconds(), lease.ReadTiming.diagnostic())
 	}
 	return nil
+}
+
+func (d ObservationResourceReadTiming) diagnostic() string {
+	if d.StartedUnixNS == 0 {
+		return ""
+	}
+	return fmt.Sprintf(" transport_started_unix_ns=%d identity_ns=%d dial_ns=%d encode_ns=%d response_ns=%d reverify_ns=%d transport_total_ns=%d", d.StartedUnixNS, d.IdentityNS, d.DialNS, d.EncodeNS, d.ResponseNS, d.ReverifyNS, d.TotalNS)
 }
 
 // beginTransition and endTransition bracket a trusted Docker create/start or

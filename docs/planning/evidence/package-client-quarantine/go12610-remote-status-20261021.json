@@ -84,17 +84,76 @@
   },
   "cu132": {
     "run": 39584119816,
-    "status": "in_progress"
+    "head": "c2c1750f8b7558666a4f6ca12c3bfd61d4297a9b",
+    "tree": "106e0a5acb97931792c908866ee3cc29327c8650",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "id": 119189956811,
+        "name": "Minimum Go",
+        "conclusion": "success"
+      },
+      {
+        "id": 119189956910,
+        "name": "Representative Wheel Corpus",
+        "conclusion": "success"
+      },
+      {
+        "id": 119189956952,
+        "name": "Security",
+        "conclusion": "success"
+      },
+      {
+        "id": 119189957050,
+        "name": "gVisor Linux Integration",
+        "conclusion": "success"
+      },
+      {
+        "id": 119189957150,
+        "name": "gVisor Observer Helper",
+        "conclusion": "success"
+      },
+      {
+        "id": 119189957168,
+        "name": "macOS",
+        "conclusion": "success"
+      },
+      {
+        "id": 119189957277,
+        "name": "Docs",
+        "conclusion": "success"
+      },
+      {
+        "id": 119189957303,
+        "name": "Vulnerability",
+        "conclusion": "success"
+      },
+      {
+        "id": 119189957434,
+        "name": "Quick",
+        "conclusion": "success"
+      },
+      {
+        "id": 119215071841,
+        "name": "Required",
+        "conclusion": "success"
+      }
+    ],
+    "cpu_full_seconds": 289.67,
+    "cu132_full_seconds": 1054.68,
+    "helper_wait_zero": 5,
+    "final_cleanup": "original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0",
+    "scope": "c2c1750 supported cu132 qualification only; cu126 failure unresolved; new diagnostics not included"
   },
   "cu130": {
     "run": 39590623512,
-    "status": "pending",
+    "status": "in_progress",
     "prior_cancelled_run": 39584116570
   },
   "qualified": false,
   "remaining": [
     "cu126 latency investigation and exact-source successful full qualification",
-    "cu132 and cu130 independent results",
+    "cu130 independent result",
     "no Host runtime activation"
   ]
 }

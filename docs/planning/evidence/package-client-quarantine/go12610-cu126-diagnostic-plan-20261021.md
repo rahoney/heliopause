@@ -39,4 +39,36 @@ OS memory pressure 중 어느 것이 원인인지는 아직 확정하지 않는�
    같은 원인의 해결과 후속 scheduling 조건의 일회성 PASS를 구분한다. 진행 중인 cu132와
    예약된 cu130의 독립 결과는 같은 c2c1750 범위로 보존하며 새 관측 source와 합치지 않는다.
 
-아직 위 timing/OS 관측 코드를 작성하거나 새 진단 run을 dispatch하지 않았다.
+2026-10-21 a9bd096 기준의 다음 구현을 시작한다. 새 진단 run은 아직 미dispatch다.
+
+### 두 번째 검토와 구체적인 전달 위치
+
+Client timing은 Host가 측정한 값만 ObservationResourceLease의 json:"-" local metadata로
+되돌린다. Bootstrap의 기존 observationLease mapper가 sandbox port로 전달하고 기존
+sampleAccountingLocked가 실패를 반환할 때만 fixed scalar를 붙인다. 새 RPC field·optional
+interface·artifact token·성공 로그를 추가하지 않는다. Error나 lease의 timing은 CPU 허가·
+분류·완료 판정에 사용하지 않는다. JSON response로 위조한 timing field는 unknown field다.
+
+Server slow-read timing은 정확한 authenticated read에만 최대16건/서비스 수명으로 제한한다.
+기존 connection을 닫은 뒤 stderr에 쓰므로 client의 EOF를 logging이 지연시키지 않는다.
+추가 writer queue/goroutine·서비스·config는 만들지 않는다. Existing handler/engine·
+requestLimit·timeout/peer/EOF 순서는 보존한다. 타임스탬프와 stage duration만 기록한다.
+구체 수정은 hosttool/observation_resource_linux.go와 작은 같은-package diagnostic helper/test,
+bootstrap/observation_resource_linux.go, sandbox/pypi_observation_cpu.go와 기존 timing 회귀다.
+CI의 기존 CUDA 호출부·ci-integration-cleanup.sh를 읽고 OS 관측과 helper stderr 회수도
+현재 lifecycle에 연결하며 Required job/프로필 예산은 유지한다.
+
+## 구현·로컬 검증 중간 상태
+
+Trusted client timing은 local-only lease metadata와 기존 bootstrap mapper를 통해 실패
+진단에만 전달된다. Server는 connection close 뒤 authenticated read의 지연을 최대16건
+보고한다. CI 종료는 마지막64KiB에서 형식이 맞는 최근16행만 회수하며 원래37 등의 실패
+상태와 helper lifecycle을 보존한다. Full PyTorch test에는 같은 context 수명의1Hz
+메모리/PSI/vmstat/controller RSS 관측을 연결했고 query 실패는 unavailable로 기록한다.
+기존 canonical ResourcePolicy의 memory/tmpfs 값도 기록하되 충분성을 단정하지 않는다.
+
+첫 transport-only Quick141.33s/security6.00s/docs0.208s, OS·CI 회수까지 포함한 후보의
+Quick44.787s/security4.484s/docs0.198s/workflow0.64s가 PASS다. Targeted Race39.984s와
+기존 실제 cleanup/script-file 회귀0.926s도 PASS다. 첫 추가 검증의 자동 승인 검토 시간
+초과는 실행 전이었으며 허용된 한 번 재시도의 결과만 성공으로 기록한다. 전체 기존 Race
+범위나 실제 cu126 지연 해결·새 원격 성공이 아니다. Darwin amd64/arm64의 bootstrap/sandbox/check TEST compilation6개도 PASS다. 실제 native 실행은 새 CI에서 따로 확인한다.

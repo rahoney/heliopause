@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/bootstrap"
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
@@ -61,6 +62,12 @@ func TestLinuxPyTorchFullIntegration(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), map[string]time.Duration{"cpu": 15 * time.Minute, "cu126": 40 * time.Minute, "cu130": 40 * time.Minute, "cu132": 40 * time.Minute}[profile])
 	defer cancel()
+	if source, ok := artifactpypi.PyTorchProfile("pytorch:" + profile); ok {
+		policy := source.ResourcePolicy()
+		t.Logf("pytorch_os_pressure_capacity logical_cpus=%d runtime_memory_bytes=%d runtime_tmpfs_bytes=%d promotion_tmpfs_bytes=%d capacity_sufficiency=NOT_ESTABLISHED", runtime.NumCPU(), policy.RuntimeMemory(), policy.RuntimeTmpfs(), policy.PromotionTmpfs())
+	}
+	stopPressureDiagnostic := startPyTorchPressureDiagnostic(t, ctx)
+	defer stopPressureDiagnostic()
 	var stdout, stderr bytes.Buffer
 	args := []string{"pip", "install", "torch@" + version, "--source", "pytorch:" + profile, "--target", target}
 	prerequisite := os.Getenv("HELOX_PYTORCH_INSPECTION_PREREQUISITE")
