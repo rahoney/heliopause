@@ -5,8 +5,8 @@
 재개방하거나 기능을 다시 구현하지 않는다.
 
 최초 preview 기준: source918e329/tree38b2f3b, 실제 CI359 Required+9 SUCCESS.
-아래 owner 피드백 보완은 별도 변경이며 갱신 preview의 정확한 source/digest는
-빌드 뒤 local raw feedback-preview.json이 소유한다.
+현재 preview는 아래 피드백 보완 source8d949a7의 clean build다. 정확한
+source/digest/build metadata는 local raw feedback-preview.json이 소유한다.
 현재 PC의 `/usr/local/bin/helox`는 `/usr/libexec/heliopause/helox`를 가리키며
 build metadata는4d6cc0f/modified=true다. 이 metadata만으로 당시 overlay 전체를
 복원했다고 주장하지 않는다. 현재 설치본을 최신 source라고 안내하지 않는다.
@@ -92,10 +92,24 @@ Canonical format10.09s, Quick193.20s, security7.85s, docs0.21s가 exit0였다.
 Quick은 production/test build, vet, pinned Staticcheck, 기존 실제19 PTY와 기본
 테스트를 포함한다. 일곱 언어의60×22 banner 경계·작은 화면·NO_COLOR를 검사했다.
 원본 feedback-{format,quick,security,docs}.{json,log}를 보존한다.
-최종 소스/문서 대조와 갱신 preview 기동 확인을 이어간다. 새 구현은
+최종 후보 전체 tree1ad5141이 private/root index와 동일함을 대조해8d949a7로
+커밋했다. 최종 문서 후보 docs0.23s/security4.59s도 exit0였다. 새 구현은
 IMPLEMENTED=YES/WIRED=YES/QUALIFIED=YES(local checks)/ACCEPTANCE_CLOSED=NO다.
 남은 owner 화면 검토·새 source 원격 CI와 공개 설치는 이 검사 성공으로 대체하지
 않는다. 기존 native self-update qualification을 재실행할 이유는 없다.
+
+갱신 preview는 pinned Go1.26.9/CGO_ENABLED0/trimpath/buildvcs로 빌드했고
+vcs.revision=8d949a7fd74ab920df1913771bf97b9f9e42fb35/modified=false다.
+SHA256=875ca049b6747ac02f22921628d3d61dc8a35fe7e8527c8166f30b751503d423,
+42,456,373B. 실제100×30 PTY의 큰 로고·풀네임, 사용법의 두 옵션·End 스크롤,
+59×21→20×8→100×30 전환과 q exit0/exact termios/cursor/화면 복원을 확인한 뒤
+동일 경로의 실행 파일을 원자적으로 갱신했다. pip/GitHub 도움말·언어 조회도
+exit0였다. 원본 feedback-build/preview/preview-attempt/host-cli-unchanged와
+operator 입력을 보존한다. Host CLI SHAeeb11993은 불변이다.
+
+이후 문서 전달 커밋은 세 Go 파일을 변경하지 않는다. 전용 source/cache/operator는
+마지막 문서 검사·커밋 뒤 삭제하며 feedback-cleanup.json이 실제 삭제를 소유한다.
+아직 진행 중인 owner review용 binary·설정만 보존한다.
 
 ## 다음 순서
 
