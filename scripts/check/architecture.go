@@ -228,6 +228,9 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/sandbox":                    true,
 		},
 		modulePath + "/internal/runtimeidentity": {},
+		modulePath + "/internal/testutil/releasefixture": {
+			modulePath + "/internal/runtimeidentity": true,
+		},
 		modulePath + "/internal/testutil/fakeworkflow": {
 			modulePath + "/internal/core/domain": true,
 			modulePath + "/internal/core/ports":  true,

@@ -13,11 +13,13 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/rahoney/heliopause/internal/core/ports"
 	"github.com/rahoney/heliopause/internal/releaseinstall"
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
+	"github.com/rahoney/heliopause/internal/testutil/releasefixture"
 )
 
 type sourceFixture struct {
@@ -113,6 +115,12 @@ func preparationFixture(t *testing.T) *sourceFixture {
 	if err != nil {
 		t.Fatal(err)
 	}
+	materials, err := releasefixture.BindCurrentRuntime(body, f.files["helox-release-sbom.cdx.json"], f.files["helox-runtime-images.json"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	body = materials.Manifest
+	f.files["helox-release-sbom.cdx.json"], f.files["helox-runtime-images.json"] = materials.SBOM, materials.Images
 	f.files["helox-release-manifest.json"] = body
 	f.manifest, err = releaseinstall.ParseReleaseManifest(body)
 	if err != nil {
@@ -167,6 +175,40 @@ func TestOrdinaryPreparationExportsOnlyBoundFilesAndMakesNoInstallationGrant(t *
 	// file mechanics only, never an attestation or initial-install qualification.
 	if _, err := verifyMaterials(ctx, f.manifest, [][]byte{f.proof}); err == nil {
 		t.Fatal("old proof authorized synthetic native9")
+	}
+}
+
+func TestPreparationRejectsForeignRuntimeBeforeVerificationAndFileOpen(t *testing.T) {
+	if os.Geteuid() == 0 {
+		t.Skip("ordinary-user preparation contract")
+	}
+	f := preparationFixture(t)
+	var value map[string]any
+	if err := json.Unmarshal(f.files["helox-release-manifest.json"], &value); err != nil {
+		t.Fatal(err)
+	}
+	foreign := strings.Repeat("a", 64)
+	if foreign == runtimeidentity.RuntimeLockSHA256 {
+		foreign = strings.Repeat("b", 64)
+	}
+	value["runtime_lock"].(map[string]any)["sha256"] = foreign
+	body, err := json.Marshal(value)
+	if err != nil {
+		t.Fatal(err)
+	}
+	f.manifest, err = releaseinstall.ParseReleaseManifest(body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	verified := false
+	deps := preparationDependencies{source: func(context.Context, string, string) (releaseSource, error) { return f, nil }, verify: func(context.Context, releaseinstall.ReleaseManifest, [][]byte) ([]byte, error) {
+		verified = true
+		return []byte("must not verify"), nil
+	}}
+	result, err := prepare(context.Background(), "v0.1.0", deps)
+	var failure *ports.BootstrapPreparationFailure
+	if !errors.As(err, &failure) || failure.Code() != ports.BootstrapProvenanceFailed || verified || f.opens != 0 || f.closeCalls != 1 || result.Directory != "" {
+		t.Fatalf("foreign runtime crossed boundary: %+v %v opens=%d verify=%v", result, err, f.opens, verified)
 	}
 }
 

@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/testutil/releasefixture"
 )
 
 type releaseSetFixture struct {
@@ -70,6 +71,18 @@ func newReleaseSetFixture(t *testing.T, edit func(map[string]any)) *releaseSetFi
 	for _, name := range []string{"helox-release-sbom.cdx.json", "helox-runtime-images.json"} {
 		f.files[name] = read(name)
 	}
+	unsigned, err := json.Marshal(f.metadata)
+	if err != nil {
+		t.Fatal(err)
+	}
+	materials, err := releasefixture.BindCurrentRuntime(unsigned, f.files["helox-release-sbom.cdx.json"], f.files["helox-runtime-images.json"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(materials.Manifest, &f.metadata); err != nil {
+		t.Fatal(err)
+	}
+	f.files["helox-release-sbom.cdx.json"], f.files["helox-runtime-images.json"] = materials.SBOM, materials.Images
 	if edit != nil {
 		edit(f.metadata)
 	}

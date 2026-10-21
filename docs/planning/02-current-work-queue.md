@@ -15,7 +15,7 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — native same-runtime self-quarantine update IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; actual signed rc6 normal/cancellations/fresh replay passed; channel scope remains
-Next action: P1 uv pip IN_PROGRESS — P1a local PASS / CI360 Vulnerability FAIL (GO-2026-6809, Go1.26.10 required); P1b supply verifier local PASS (76e8112); Go1.26.10 frozen plan/apply and SDK verified, canonical checks/bundle build running; runtime/CLI wiring remains; P2..P7 NOT_STARTED; owner full-name preview and channel/release work remain
+Next action: P1 uv pip IN_PROGRESS — P1a local PASS / CI360 Vulnerability FAIL (GO-2026-6809, Go1.26.10 required); P1b supply verifier local PASS (76e8112); Go1.26.10 SDK/reproducible bundle/103 latches/first scan PASS; synthetic fixture corrections local PASS, fresh frozen candidate next; runtime/CLI wiring remains; P2..P7 NOT_STARTED; owner full-name preview and channel/release work remain
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```

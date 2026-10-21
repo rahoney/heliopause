@@ -15,6 +15,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/rahoney/heliopause/internal/testutil/releasefixture"
 )
 
 func wireFixture(t *testing.T) (wireRelease, map[string][]byte) {
@@ -50,6 +52,12 @@ func wireFixture(t *testing.T) (wireRelease, map[string][]byte) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	materials, err := releasefixture.BindCurrentRuntime(body, files["helox-release-sbom.cdx.json"], files["helox-runtime-images.json"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	body = materials.Manifest
+	files["helox-release-sbom.cdx.json"], files["helox-runtime-images.json"] = materials.SBOM, materials.Images
 	release, err := newWireRelease(body, [][]byte{read("actual-signed-bundle.json")})
 	if err != nil {
 		t.Fatal(err)

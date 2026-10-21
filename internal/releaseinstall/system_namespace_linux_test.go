@@ -11,6 +11,8 @@ import (
 	"syscall"
 	"testing"
 	"time"
+
+	"github.com/rahoney/heliopause/internal/testutil/releasefixture"
 )
 
 // The operator must enter new mount/network namespaces before starting this
@@ -222,6 +224,12 @@ func systemBundleFixture(t *testing.T, version, suffix string) string {
 	if err != nil {
 		t.Fatal(err)
 	}
+	materials, err := releasefixture.BindCurrentRuntime(body, sbom, images)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body = materials.Manifest
+	files[sbomName], files[runtimeImagesName] = materials.SBOM, materials.Images
 	files[manifestName] = body
 	for name, body := range files {
 		if err := writeNew(filepath.Join(root, name), body, 0600); err != nil {

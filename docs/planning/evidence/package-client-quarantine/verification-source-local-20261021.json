@@ -3,44 +3,20 @@
   "scope": "existing update-runtime verify uses standalone checked source; apply worktree/journal and frozen snapshot remain authoritative",
   "checks": {
     "format": {
-      "args": [
-        "/home/winamp/.local/go/bin/go",
-        "run",
-        "./scripts/check",
-        "format"
-      ],
       "exit": 0,
-      "elapsed": 1.27
+      "seconds": 1.27
     },
     "quick": {
-      "args": [
-        "/home/winamp/.local/go/bin/go",
-        "run",
-        "./scripts/check",
-        "quick"
-      ],
       "exit": 0,
-      "elapsed": 349.9
+      "seconds": 349.9
     },
     "security": {
-      "args": [
-        "/home/winamp/.local/go/bin/go",
-        "run",
-        "./scripts/check",
-        "security"
-      ],
       "exit": 0,
-      "elapsed": 8.19
+      "seconds": 8.19
     },
     "docs": {
-      "args": [
-        "/home/winamp/.local/go/bin/go",
-        "run",
-        "./scripts/check",
-        "docs"
-      ],
       "exit": 0,
-      "elapsed": 0.23
+      "seconds": 0.23
     }
   },
   "files": [

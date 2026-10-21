@@ -80,3 +80,30 @@ Go1.26.9에서 PASS다. [영수증](./verification-source-local-20261021.json)�
 소유한다. 최초 Go1.26.10 전체 bundle은710.343s/strict verifier PASS이며 module-lock은
 8402c7be…로 기존과 같다. 새 member bytes/hash는 실제 capture에 기록됐고 기존 hash를
 재사용하지 않았다. 아직 새 observer·재현 build·최종 frozen plan/검역·원격 CI 성공이 아니다.
+
+
+## 최종 runtime 후보에서 드러난 합성 fixture 결합
+
+보완 sourcecdb9e93에서 Go1.26.10과 실제 six-member hashes를 함께 고정한 plan
+97f330a3…의 bootstrap은 PASS, Quick는 default tests에서 FAIL이다. VCS production build는
+통과했다. 정확한 실패는 githubrelease의 source/staging-only, releasebootstrap의 file-mechanics
+fixture runtime hash 비교, releaseinstall의 historical SBOM Go-version/current image 검증이다.
+이 세 소비자는 과거 v0.1.0 자료를 읽어 이미 unsigned synthetic assets로 바꾸거나 현재
+compiled runtime과 같다고 가정한다. 현재 same-runtime 거부가 동작한 것이며 prod gate를
+완화하거나 historical signed bytes를 새 버전에 맞춰 편집하지 않는다.
+
+보완 범위: internal/testutil/releasefixture의 단일 unsigned material binder가 generated
+runtimeidentity에서 현재 compiler/image/runtime tuple을 읽어 합성 manifest/SBOM/image metadata를
+생성한다. 실제 네 package의 다섯 fixture 소비자가 재사용하고 기존 HAA signature positive/negative는 원본을
+유지한다. 내부 test helper import 하나만 architecture에 선언한다. 과거 signed proof가
+재결합한 synthetic bytes를 승인하지 못함과 changed runtime 거부를 별도로 유지한다.
+먼저 현재 SDK의 canonical 검사를 통과시키고 해당 source를 기준으로 새 frozen plan을 만든다.
+첫 실패 verification-3192815458/go12610-final-verify 원본을 덮지 않는다. 기존 updater/production
+검증 owner는 재작성하지 않으며 test data 책임 gap만 고친다.
+
+
+합성 fixture 보완 최종 source의 기존 SDK Quick27.61s/security4.62s/docs0.20s는 PASS다.
+[영수증](./runtime-fixture-local-20261021.json)이 source hash와 보존한 경계를 기록한다.
+독립 두 번째 gVisor build590.291s는 전체6 bytes/hash·manifest가 첫 build와 일치했고
+observer103 latch/298.313s도 PASS다. Cdb 기반 Go1.26.10 후보의 별도 vulnerability20.138s도
+PASS다. 이 component/scan 결과를 새 fixture source의 전체 Go patch 종료로 확대하지 않는다.

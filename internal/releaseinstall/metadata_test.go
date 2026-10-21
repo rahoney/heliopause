@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/rahoney/heliopause/internal/testutil/releasefixture"
 )
 
 func publishedMetadata(t *testing.T, name string) []byte {
@@ -17,29 +19,21 @@ func publishedMetadata(t *testing.T, name string) []byte {
 	return body
 }
 
-func TestPassiveReleaseMetadataMatchesCommittedSourceAndRuntime(t *testing.T) {
-	manifest, err := ParseReleaseManifest(publishedManifest(t))
-	if err != nil {
-		t.Fatal(err)
-	}
+func TestPassiveSyntheticReleaseMetadataMatchesCompiledRuntime(t *testing.T) {
+	manifest, sbom, images := syntheticPassiveMetadata(t)
 	if manifest.SHA256() == "" {
 		t.Fatal("strict view lacks its exact input digest")
 	}
-	if err := ValidateReleaseSBOM(publishedMetadata(t, sbomName), manifest); err != nil {
+	if err := ValidateReleaseSBOM(sbom, manifest); err != nil {
 		t.Fatal(err)
 	}
-	if err := ValidateRuntimeImages(publishedMetadata(t, runtimeImagesName)); err != nil {
+	if err := ValidateRuntimeImages(images); err != nil {
 		t.Fatal(err)
 	}
 }
 
 func TestPassiveReleaseMetadataRejectsAmbiguityAndIdentitySubstitution(t *testing.T) {
-	manifest, err := ParseReleaseManifest(publishedManifest(t))
-	if err != nil {
-		t.Fatal(err)
-	}
-	sbom := publishedMetadata(t, sbomName)
-	images := publishedMetadata(t, runtimeImagesName)
+	manifest, sbom, images := syntheticPassiveMetadata(t)
 	mutate := func(body []byte, edit func(map[string]any)) []byte {
 		var value map[string]any
 		if err := json.Unmarshal(body, &value); err != nil {
@@ -104,4 +98,19 @@ func TestPassiveReleaseMetadataRejectsAmbiguityAndIdentitySubstitution(t *testin
 	if err := ValidateReleaseSBOM(sbom, ReleaseManifest{}); err == nil {
 		t.Fatal("zero source accepted")
 	}
+}
+
+// These current-runtime materials are deliberately unsigned. The committed
+// published files and actual signature tests retain their original bytes.
+func syntheticPassiveMetadata(t *testing.T) (ReleaseManifest, []byte, []byte) {
+	t.Helper()
+	materials, err := releasefixture.BindCurrentRuntime(publishedManifest(t), publishedMetadata(t, sbomName), publishedMetadata(t, runtimeImagesName))
+	if err != nil {
+		t.Fatal(err)
+	}
+	manifest, err := ParseReleaseManifest(materials.Manifest)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return manifest, materials.SBOM, materials.Images
 }
