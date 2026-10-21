@@ -15,7 +15,7 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — native same-runtime self-quarantine update IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; actual signed rc6 normal/cancellations/fresh replay passed; channel scope remains
-Next action: P1 uv pip IN_PROGRESS — native UV runtime startup local/CI368 PASS; macOS default-test deadline diagnosis local PASS/native pending; production resolver/install-upgrade-sync/CLI still missing; P2..P7 NOT_STARTED; owner full-name preview and channel/release work remain
+Next action: P1 uv pip IN_PROGRESS — native startup CI368 PASS; offline Python query first faults observed, /dev/null observer candidate NOT_TESTED after auto-review rejection; macOS CI369 default6m FAIL with bounded progress evidence, slow-root summary local PASS; production resolver/CLI still missing; P2..P7 NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
@@ -40,6 +40,14 @@ sync 모델의 연결 gap을 기록했다. Production UV resolver/install-upgrad
 미연결이다. [macOS 진단 지도](./evidence/package-client-quarantine/macos-default-test-diagnostic-plan-20261022.md)와
 [로컬 검증](./evidence/package-client-quarantine/macos-default-test-local-20261022.json)의 bounded
 Go JSON 진행 수집은 기존5m/6m·process cause를 유지한다. 새 native 원인 관측은 남는다.
+후속 CI369의 default6m 종료에서 promotion package와 update-runtime의 진행 구간을
+확인했으나 단일 원인 test는 확정하지 않았다. 같은 진단 owner에 최대8개 완료 root 시간
+요약을 추가해 local canonical5/Race/Darwin compile을 확인했다. 새 native 검증은 남는다.
+C1b UV offline Python inventory는 cgroup→mountinfo→CPU quota→period→/dev/null의
+첫 거부를 관측했다. 앞 네 좁은 read 후보는 각각 C++105 PASS지만 inventory는 아직
+FAIL이다. /dev/null 후보의 build 요청은 자동 승인 검토가 반복된 privileged 시험·예외 누적
+위험으로 거부해 NOT_TESTED/사용자 결정 대기다. 이를 우회하지 않고 완료된 전용 시험
+자료를 정리한다. M13-004만 IN_PROGRESS이며 지원/acceptance를 확대하지 않는다.
 공개 채널 이름·publisher binding·PR38/main CI·배포는 기존 미완료로 남는다.
 
 ### Runtime upgrade maintenance — 2026-10-15 priority change

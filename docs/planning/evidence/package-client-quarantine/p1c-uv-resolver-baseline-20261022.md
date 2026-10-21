@@ -138,3 +138,74 @@ UV sibling의 pylock/selection controls와 digest/graph binding을 독립적으�
 venv transaction/ownership 검사는 재사용한다. Native UV adoption의 marker/file inventory는
 실제 pin에서 별도 확인하며, INSTALLER 값 하나를 출처/안전성 authority로 사용하지 않는다.
 기존 parser/transaction을 대체하거나 old signed state를 재작성하지 않는다.
+
+### C1b offline interpreter query 선행 관측
+
+Production network resolution 전에 exact UV가 고정 Python을 조회하고 설치 metadata를
+읽는 최소 동작을 별도로 관측한다. 기존 uv_runtime_real_test.go의 검증된 startup
+fixture를 test-only callback으로 공유하고 uv pip list의 fixed Python·offline·no-config·
+no-cache·no-download·JSON 명령만 추가한다. Host Python/사용자 target/.pth는 사용하지
+않고 pure Python image의 pip identity와 완전한 외부 trace를 검사한다. 이 시험은 실제
+resolver 선택/typed network/검역 성공이 아니며 production CLI를 열지 않는다.
+
+새 전용 mount+network namespace의 독립 foreground daemon에 exact Python/UV images를
+offline 전달한다. Namespace ID 불일치를 확인하고 기존 성공 recipe의 Root read-only
+runtime/observer view·ordinary UID1000·one-shot admission을 유지한다. Host daemon/service,
+보호 파일·image records·bridge before/after를 대조한다. 첫 fault가 나오면 원본을 보존하고
+profile/image/role/creator/argv/mount/flags의 exact 원인만 검토한다. 예외를 추측해서 넓히지
+않는다. Full production resolver의 cgroup/typed policy qualification은 앞 C1에서 별도로
+수행한다. 종료 뒤 container/volume/endpoint·daemon wait를 확인하고 완료 data는 삭제한다.
+
+C1b의 actual first query는 UV CONTROL/DIRECT_EXEC_ROOT의 system /proc own-PID cgroup
+read(flags557056)에서 STREAM_FAULT였다. Native inventory는 실패했고 interpreter/graph
+성공이 아니다. Container/volume/observer endpoint0·daemon wait0을 확인했다. 별도 최초
+operator의 image save/load는 config/layers만 보존하고 digest 참조를 잃어 test 실행 전에
+중단됐다. 종료된 private daemon에서 Host의 인증된 두 reference→config binding만 frozen
+재현하고 config/RootFS/architecture/OS를 대조한 후 실제 query를 시작했다. Host image DB를
+수정하거나 tagged/latest fallback을 사용하지 않았다.
+
+첫 보완은 observer.cc의 기존 IsPinnedUVRuntimeRead에 현재 kernel TGID의 /proc/<pid>/cgroup
+정확한 read만 추가하는 것이다. 기존 UV-only profile·sealed image/current generation·소비된
+one-shot CONTROL root·system /proc mount·flags557056·exec parent0 조건을 유지한다.
+다른 PID·unresolved self alias·maps/environ·쓰기·ARTIFACT/clone·pending/stale·다른 profile은
+계속 거부한다. 기존 UV runtime-read latch의 정상/negative matrix를 두 allowed path 모두에
+적용하고 실제 full pinned C++ recipe 뒤 같은 fixed inventory를 관측한다. Mountinfo/quota 등
+다음 read는 아직 근거가 없으므로 이 변경에 미리 허용하지 않는다.
+
+Own-cgroup 보완의 pinned C++105 latch는 PASS41.46s였다. 동일 actual 조회의 다음 최초
+fault는 같은 UV root/system /proc/flags557056의 own-PID mountinfo다. 앞 cgroup read와
+trace/container 정리는 통과했으나 inventory 성공은 아니다. 이제 같은 predicate와 세 경로
+전체 negative matrix에 현재 TGID의 mountinfo만 추가한다. 다른 PID의 mountinfo와 별도
+sysfs/quota 경로는 계속 거부하며 다음 fault를 관측한다.
+
+Own-mountinfo 보완의 C++105는 PASS35.469s다. 다음 actual fault는 같은 UV root의
+system CGROUP_CPU_QUOTA/flags557056이다. Bounded diagnostic locator5865f84329325e30을
+known candidate와 대조하면 /sys/fs/cgroup/cpu/cpu.cfs_quota_us이며 mountpoint locator는
+/sys/fs/cgroup/cpu와 대응한다. Locator hash는 진단 대조용이지 인증 authority가 아니다.
+기존 UV predicate의 profile/image/role/generation 조건을 유지하고 이 exact system mount의
+quota read만 추가한다. 기존 proc 세 경로와 새 quota 경로의 모든 negative를 검사하고
+다른 sysfs·period·다른 PID는 계속 거부한다. Python query/child는 아직 승인하지 않는다.
+
+Quota-only 보완의 C++105 PASS35.017s 뒤 actual 조회는 같은 system mount/flags의
+locatoraea5f4520ac7eba5에서 거부됐다. Known exact cpu.cfs_period_us와 대응하며 앞 quota
+경로와 구분했다. Container/volume/endpoint0·daemon wait0·Host 전후 동일이다. 같은
+predicate에 이 period 한 경로만 추가하고 proc 세 경로+quota/period 전체의 flags·mount·
+class/role/generation·타 profile 부정을 재검증한다. 다른 cgroup 파일은 계속 거부한다.
+
+Period 보완의 C++105 PASS37.312s 뒤 다음 actual fault는 UV root의 DEV_NULL,
+system mount locator0be3699c9bd6bd65(/dev), flags557056이다. 같은 strict root 조건에서
+/dev/null의 정확한 read만 추가한다. /dev/zero·urandom·쓰기·다른 mount/역할은 거부한다.
+이것은 query process에 대한 승인이 아니며 단순 stdout/exit0로 검역 완료를 만들지 않는다.
+
+### 자동 승인 검토로 중단된 후보
+
+2026-10-22 /dev/null read 후보를 포함한 다섯 번째 pinned C++ build 요청이 자동 승인
+검토에서 거부됐다. 반복된 privileged runtime 시험과 observer 예외 누적 위험이 이유다.
+해당 요청은 실행되지 않았으며 이 후보의 build/latch/actual inventory는 NOT_TESTED다.
+권한 우회·동일 요청의 간접 실행을 하지 않는다. 기존 actual 결과는 앞 네 C++ 후보와
+다섯 first-fault 원본 범위까지만 유지한다. Native inventory/resolver/CLI acceptance는 열려 있다.
+
+재개 판단 대상은 새 generic runtime grant가 아니라 IsPinnedUVRuntimeRead의 동일 sealed
+UV CONTROL root·exact flags/system /dev·/dev/null read 한 경로다. 다른 role/clone/profile,
+쓰기와 임의 device는 계속 거부하는 구체 후보와 negative matrix를 review한다. 추가 실행은
+사용자 결정 뒤 진행한다. 독립적인 macOS 진단과 완료 data 정리는 계속할 수 있다.
