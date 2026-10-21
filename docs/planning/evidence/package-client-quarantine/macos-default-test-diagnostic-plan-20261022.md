@@ -47,3 +47,26 @@ Oversize event는 bounded raw prefix를 보존하며 metadata 수집만 unavaila
 Offline cache 분류는 Go tool stderr/build-output의 GOPROXY=off만 사용한다. 일반 test
 Output의 같은 fixture 문자열로 다른 실패를 prerequisite 오류로 바꾸지 않는다. 실제 고정
 SDK의 offline missing-module probe에서 build-output 형식을 확인했고 fixture는 삭제했다.
+
+## CI369 관측 뒤의 좁은 진단 보완
+
+Source0fa2f85의 native run39631060147/job119329030437는 build77.93s PASS 뒤 default
+test6m에서 FAIL이다. JSON summary는 started47/finished45·unavailable=false/truncated=false다.
+Promotion package는 elapsed252138ms에 active root test가 없었고 출력에는 ok214.013s가
+있었다. Update-runtime은88248ms, 마지막 root test는2256ms였다. 이 마지막 test를
+6분 지연의 원인으로 단정하지 않는다. SDK test.go는 ok 출력 뒤 cache save를 수행한 후
+deferred package event를 종료하므로 package-active와 test-body-active도 구분한다.
+구체 native syscall/SDK 회귀·cache 지연은 아직 미확정이다. 원본 ci369-macos.log를 보존한다.
+
+기존 positive verbose filtering은 완료된 root test 시간을 버렸다. go_test_capture.go의
+같은 bounded activity owner에 local monotonic elapsed 기준1초 이상 완료 root 함수의
+상위8개만 추가한다. 이미 검증하는 bounded source package/root 이름과 fixed status만
+사용하고 dynamic subtest/Output/환경은 요약 metadata에 사용하지 않는다. 기존 raw1MiB·
+active128/표시16·process cause·5m/6m·test selection은 유지한다. 완료 시간이 길어도
+실패 authority로 쓰지 않는다. Top8 bound·동률 정렬·짧은 함수 제외·실패 보존을 검사한 뒤
+canonical5/Race/Darwin compile로 확인한다. CI369 Linux를 새 push로 취소하지 않는다.
+
+Production build의 trimpath와 default-test compilation의 flag 차이도 source에 있으나
+원래 native timeout 인과는 미확정이다. runtime.Caller로 source를 찾는 sandbox tests가
+있으므로 default test에 trimpath를 즉흥적으로 추가하지 않는다. 준비 step/한도를 늘리거나
+테스트를 제외하는 대신 실제 hot root 구간부터 관측한다.

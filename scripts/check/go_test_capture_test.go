@@ -125,3 +125,28 @@ func TestGoTestCaptureOfflinePrerequisiteUsesToolDiagnostics(t *testing.T) {
 		t.Fatal("Go build diagnostic lost")
 	}
 }
+
+func TestGoTestCaptureRetainsOnlyBoundedSlowRootCompletions(t *testing.T) {
+	now := time.Unix(100, 0)
+	c := newGoTestCapture(func() time.Time { return now })
+	write := func(action, name string) {
+		body, _ := json.Marshal(map[string]string{"Action": action, "Package": "github.com/rahoney/heliopause/internal/promotion", "Test": name})
+		_, _ = c.Write(append(body, '\n'))
+	}
+	for i := 0; i < 12; i++ {
+		name := fmt.Sprintf("TestSlow%02d", i)
+		write("run", name)
+		now = now.Add(time.Duration(i) * time.Second)
+		write("pass", name)
+	}
+	write("run", "TestTie")
+	now = now.Add(11 * time.Second)
+	write("fail", "TestTie")
+	write("run", "TestShort")
+	now = now.Add(500 * time.Millisecond)
+	write("pass", "TestShort")
+	text := c.String()
+	if len(c.slow) != 8 || strings.Count(text, "slow_completed_package=") != 8 || c.slow[0].test != "TestSlow11" || c.slow[1].test != "TestTie" || !strings.Contains(text, "first_failed=") || strings.Contains(text, "test=TestShort") {
+		t.Fatal("slow completion bounds/order/first failure disagrees", text)
+	}
+}

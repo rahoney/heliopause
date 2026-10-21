@@ -19,6 +19,11 @@ type goTestActivity struct {
 	paused            bool
 }
 
+type goTestDuration struct {
+	packageName, test, status string
+	milliseconds              int64
+}
+
 // Diagnostic-only streaming state from the pinned Go tool. Keep source-level
 // root function names, never dynamic subtest inputs or Output as authority.
 type goTestCapture struct {
@@ -31,6 +36,7 @@ type goTestCapture struct {
 	firstFailed                      string
 	offlineMissing                   bool
 	stderrTail                       string
+	slow                             []goTestDuration
 	now                              func() time.Time
 }
 
@@ -139,6 +145,24 @@ func (c *goTestCapture) consume(body []byte) {
 			c.active[key] = activity
 		}
 	case "pass", "fail", "skip":
+		if event.Test != "" {
+			if activity, ok := c.active[key]; ok {
+				elapsed := c.now().Sub(activity.started).Milliseconds()
+				if elapsed >= 1000 {
+					c.slow = append(c.slow, goTestDuration{event.Package, event.Test, event.Action, elapsed})
+					sort.Slice(c.slow, func(i, j int) bool {
+						a, b := c.slow[i], c.slow[j]
+						if a.milliseconds != b.milliseconds {
+							return a.milliseconds > b.milliseconds
+						}
+						return a.packageName+"/"+a.test < b.packageName+"/"+b.test
+					})
+					if len(c.slow) > 8 {
+						c.slow = c.slow[:8]
+					}
+				}
+			}
+		}
 		if event.Action == "fail" && c.firstFailed == "" {
 			c.firstFailed = event.Package + "/" + event.Test
 		}
@@ -224,6 +248,9 @@ func (c *goTestCapture) String() string {
 			elapsed = 0
 		}
 		fmt.Fprintf(&result, "\nactive_package=%s test=%s state=%s elapsed_ms=%d", activity.packageName, activity.test, state, elapsed)
+	}
+	for _, completed := range c.slow {
+		fmt.Fprintf(&result, "\nslow_completed_package=%s test=%s status=%s elapsed_ms=%d", completed.packageName, completed.test, completed.status, completed.milliseconds)
 	}
 	return result.String()
 }
