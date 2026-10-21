@@ -1,8 +1,10 @@
 # Heliopause 자체 업데이트 — 설치된 신뢰 체인의 연장
 
-상태: **설계 승인 / 구현 진행**. 2026-10-20 사용자는 기존 설치가 있으면 검역을
+상태: **승인된 Linux/WSL2 amd64·same-runtime native 경로 구현·검증 완료**.
+[실제 서명 qualification](../planning/evidence/m13-004-convenience/signed-native-qualification-20261020.md#rc6-교정된-caller의-실제-취소회복-종료)을
+따르며 공식 채널 연결·공개 배포는 별도다. 2026-10-20 사용자는 기존 설치가 있으면 검역을
 거친 업데이트를 우선하고, 별도 설치 전용 권한 경계와 Linux/WSL2 amd64 우선 구현을
-승인했다. 새 명령은 아직 제품 완료 기능이 아니다. 소스별 현황·수정 위치·검사와
+승인했다. 현재 개발 Host에 새 버전이 영구 설치됐거나 공개 배포됐다는 뜻은 아니다. 소스별 현황·수정 위치·검사와
 재검토 결과는 [실행 계획](../planning/evidence/m13-004-convenience/self-update-20261020.md)이 소유한다.
 
 ## 사용자 경로

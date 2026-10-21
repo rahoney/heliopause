@@ -161,3 +161,17 @@ caller 인증이나 runtime cleanup wiring을 대신하지 않으며 actual nati
 Old controller UID/GID/protected inode/pidfd의 [로컬 kernel gate 검증](./activation-peer-qualification-20261020.md)을
 마쳤다. 다음 전달 경계는 [fixed bytes protocol/root stage map과 두 번째 검토](./activation-wire-plan-20261020.md)를
 따른다. Whole signed activation과 public command 완료는 아직 아니다.
+
+## 7. 현재 scoped acceptance — 2026-10-21
+
+위 baseline 표와 단계별 NO는 당시 감사 기록이다. Production native same-runtime
+본체 업데이트는 [최종 실제 qualification](./signed-native-qualification-20261020.md#rc6-교정된-caller의-실제-취소회복-종료)으로
+IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES / MISSING=none이다.
+새 구현을 반복하지 않는다. Source4a8c278/CI358과 actual signed rc6의 정상 전환·
+교정된 installed caller 취소 두 경계·fresh whole 재실행을 연결했다. 기존 실제 rc5
+인증·동시성 거부·서비스/Root 중단·guest cold recovery는 그 범위로 재사용한다.
+
+별도 채널 scope는 IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO /
+ACCEPTANCE_CLOSED=NO다. MISSING: owner 공식 npm·PyPI 이름과 Homebrew tap/formula,
+publisher binding, 해당 bounded wrapper와 protected publication/channel qualification.
+Rahoney 계정 준비는 이미 완료다. M13-004만 IN_PROGRESS이며 공개 배포는 M13-005다.

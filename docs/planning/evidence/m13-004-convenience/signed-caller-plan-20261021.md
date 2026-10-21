@@ -1,14 +1,16 @@
 # M13-004 — 교정된 기존 caller의 최소 새 서명 시험 입력
 
-상태: **SOURCE_QUALIFIED / OWNER_APPROVAL_REQUIRED**. rc5 단일 태그 승인은
-소비했고, 이 문서는 새 tag 생성 승인이 아니다. 기존 immutable ref/rules는 유지한다.
+상태: **QUALIFIED / ACCEPTANCE_CLOSED** — 아래 고정 native caller 시험 범위.
+2026-10-21 사용자의
+“이어가”로 source4a8c278의 rc6 하나와 아래 실제 시험을 승인받았다.
+기존 immutable ref/rules는 유지한다. 생성·실행 결과는 별도 원본으로 확인한다.
 
 | 입력 | 고정값 |
 | --- | --- |
 | source | 4a8c2787bdc2cb2d57e15b853d83dcee31b2ce25 |
 | source qualification | [CI358](https://github.com/rahoney/heliopause/actions/runs/39461816815), 실제 Required+9 SUCCESS·checkout 전체 tree/mode 일치 확인 완료 |
-| 제안 새 ref | v0.1.1-rc.6 하나, 아직 생성하지 않음 |
-| 기존 기준 | qualified signed rc3; 원본 image/volume만 idle 보존 |
+| 승인된 새 ref | v0.1.1-rc.6 하나; source4a8c278 그대로 생성·공식 빌드 SUCCESS |
+| 기존 기준 | qualified signed rc3를 사용; 마지막 소비 뒤 guest/image/volume 최종 제거 |
 | 최초 전환 | rc3 → rc6의 실제 signed 전체 검역/정상 COMMITTED/새 doctor·npm |
 | 취소 소비자 | 설치된 rc6가 동일한 actual signed rc6 exact set을 새로 획득·검역하는 실행 |
 
@@ -69,4 +71,21 @@ CI358의 열 개 실제 SUCCESS와 모든 job의 checkoutdacc156, source4a8c278/
 Native macOS/C++103/Linux45 실제 PASS·CPU291.99s/helper5 wait0/final confirmed
 cleanup도 확인했다. 최종 읽기에서 rc6는 부재, rc5는7fedaf3, 두 rules는 active이며
 PR38은 draft4a8c278다. 필요한 rc3 환경은 idle stop 상태다. 이 확인으로 새 tag
-생성 승인을 대신하지 않는다.
+생성 승인을 대신하지 않는다. 이는 승인 전 최종 조회의 역사적 상태다.
+
+## 실제 실행과 종료 — 2026-10-21
+
+사용자 승인 후 [공식 build39519718710](https://github.com/rahoney/heliopause/actions/runs/39519718710)의
+exact13·독립 UID1000 offline13/13·canonical bundle을 확인했다.
+rc3→rc6 정상35.18s, 교정된 rc6의 획득 중 취소2.00s와 native dynamic handoff 중
+취소6.25s, 같은 signed set fresh 전체 재실행30.90s가 각각 acceptance를 통과했다.
+취소는 원래 exit1/context canceled를 보존하고 기존 상태·등록·history·config 불변,
+새 Root transaction 부재·helper/container/slice drain·소켓/lock 부재·다음 doctor/npm을
+확인했다. 두 whole 성공은 required18/ALLOW→COMMITTED·selected7 사본과 건강 검사까지
+확인했다. Native instruction 단위의 신호 시점을 주장하지 않는다.
+
+정확한 결과·첫 감시 도구 오류·정리와 범위 한계는
+[qualification](./signed-native-qualification-20261020.md#rc6-교정된-caller의-실제-취소회복-종료)와
+[receipt](./signed-native-20261020/rc6-qualification.json)가 소유한다.
+사용이 끝난 기준 guest/image/volume도 최종 제거했다. M13-004 전체 채널 acceptance와
+공개 배포 완료로 확대하지 않는다.

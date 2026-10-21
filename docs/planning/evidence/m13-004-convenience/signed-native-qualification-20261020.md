@@ -186,3 +186,51 @@ Staticcheck cache의 read-only 권한 실패도 정상 결과로 재분류하지
 두 번째 검토: 서명 성공, 파일 준비, 등록/진단, native4 동적 호환성과 signed whole activation의
 증거를 분리했다. 첫 fail-stop 뒤 후속 미완료를 별개 원인으로 확대하지 않았고 기존 source를
 다시 구현하지 않았다. M13-004는 계속 IN_PROGRESS다.
+
+## rc6 교정된 caller의 실제 취소·회복 종료
+
+사용자 승인으로 source4a8c278에 rc6 하나를 생성했다. [공식 build39519718710](https://github.com/rahoney/heliopause/actions/runs/39519718710)은
+SUCCESS이며 checkout도 같은 source다. 실제 ZIP232,000,782B의 API digest와
+공식 job 로그가 일치했고, exact13의 고정 gh2.102.0/기존 public root/UID1000
+독립 network namespace offline13/13와 canonical bundle 검사가 통과했다.
+[Manifest](./signed-native-20261020/rc6-manifest.json),
+[public proof](./signed-native-20261020/rc6-proof.sigstore.json),
+[qualification receipt](./signed-native-20261020/rc6-qualification.json)를 보존했다.
+
+| 실제 실행 | 결과 |
+| --- | --- |
+| qualified rc3 → rc6 | 35.18s, required18 = authenticity7/static7/native dynamic4 COMPLETED, entry7/set ALLOW, COMMITTED/current rc6 |
+| 설치된 rc6의 asset 획득 중 SIGINT | 2.00s, exit1/INSTALL_INSPECTION_FAILED/context canceled 보존; 기존 버전·등록·history·config 불변, 새 Root transaction 없음 |
+| 설치된 rc6의 native dynamic handoff 중 SIGINT | 6.25s, actual runsc-trace container/exec_start와 caller·observer identity 확인 뒤 pidfd signal; 원래 취소 보존·상태 불변 |
+| 두 취소 뒤 같은 rc6 signed set fresh 전체 재실행 | 30.90s, required18/ALLOW→COMMITTED; 기존 manifest digest 일치 규칙을 그대로 소비 |
+
+두 취소 모두 helper/container/slice drain과 observer 소켓·supervisor lock 부재를
+확인했으며 다음 ordinary doctor5OK/npm required3·ALLOW가 통과했다. Whole 성공
+두 번은 protected selected7의 실제 bytes/digest/Root ownership/mode/nlink와
+새 doctor/npm까지 확인했다. 동적 검사 handoff 관찰은 native instruction 단위의
+신호 시점 보장이 아니며, 동일 버전 재실행은 rc6→미래 릴리스 시험이라고 하지 않는다.
+실제 보호된 활성화에는 fixture의 정확한 installed rc6 serve 한 경로만 임시 허용했다.
+이 설정을 제품의 versioned sudoers 요구로 일반화하지 않는다.
+
+첫 동적 감시 도구는 runtime을 runsc로 잘못 기대해 actual runsc-trace에서 signal
+이전에 assertion 실패했다. 해당 실행의 원래 required18/ALLOW 뒤 protected installer
+실패와 기존 상태 불변·drain·다음 건강 검사를 별도 보존했다. 이것은 취소 PASS가 아니다.
+Canonical runtime 이름만 교정한 후속 실제 취소 시험이 위6.25s 결과다. 별도 Host
+읽기 도구의 잘못 추정한 pod-init 실행 경로도 기존 원본의 /etc/heliopause/pod-init.json으로
+교정했다. 제품·Host 파일·신뢰 규칙을 바꾸지 않았다. 원본은 같은 raw owner의
+rc6-dynamic-watch-failure-assessment/rc6-host-reader-path-failure와 각 rc6-*다.
+
+현재 native same-runtime self-update 범위는 IMPLEMENTED=YES / WIRED=YES /
+QUALIFIED=YES / ACCEPTANCE_CLOSED=YES / MISSING=none이다. 이전 rc5의 실제 OS 인증·
+동시 실행 거부·서비스 rollback·Root 중단/guest cold recovery 증거를 재사용하며 이를
+새 rc6 fault 실행으로 바꾸지 않는다. HTTPS metadata 전송만 guest fixture이고 실제
+서명·provenance·검역·Policy·Root lifecycle은 그대로 실행했다. Host kernel/WSL reboot,
+새 CUDA full·macOS 동적 검역·공개 Release·main merge·영구 Host migration은 하지 않았다.
+확대 Sandbox Race7 기존 실패의 한계도 유지한다. 공식 이름/publisher·채널 연결과
+M13-005 publication/clean Host acceptance는 별도다.
+
+원본 Evidence와 작은 proof/receipt를 보존한 뒤, 사용이 끝난 전용 guest·기준 image2개·
+inner Docker volume을 확정 drain/소유권/다른 소비자 부재 확인 후 제거했다. Host의
+기존 보호 신원10개·runtime6·shared image4는 불변이다. 완료 download13과 독립
+verifier 작업 사본도 삭제했고 최종 문서 검사만 필요한 source/cache/operator는 그
+소비 뒤 정리한다. 전역 prune·force·기존 tag/rules 변경은 하지 않았다.

@@ -1,6 +1,7 @@
 # M13-004 — 취소와 observer child 수명 경계 보완
 
-상태: 사전 원인·두 번째 대조 뒤 최소 수리 / 로컬·원격 source 검증 완료, actual signed caller 남음. M13-004만 IN_PROGRESS다.
+상태: 사전 원인·두 번째 대조 뒤 최소 수리 / 로컬·원격 source와 actual signed caller 검증 완료.
+이 observer 수명 보완 범위는 QUALIFIED / ACCEPTANCE_CLOSED이며 M13-004 채널 범위는 별도다.
 Actual signed rc3→rc5 정상 전환·OS 인증 성공은 보존한다. 이 항목은 검역·Policy·
 Root 설치 역할을 재구현하지 않는다.
 
@@ -63,4 +64,7 @@ build identity와 고정 argv/env, startup failure Stop·readiness 한도는 유
 포함10 SUCCESS다. 실제 전체 checkout tree/mode와 native macOS/C++103/Linux45·
 CPU291.99s/helper5 wait0/final confirmed cleanup을 확인했다. 새 CUDA full/전체
 Sandbox Race 성공이나 실제 signed 취소 성공으로 확대하지 않는다. 다음 입력은
-[고정 source와 단일 rc6 제안](./signed-caller-plan-20261021.md)이며 owner 승인 전이다.
+[고정 source와 단일 rc6 시험](./signed-caller-plan-20261021.md)으로 이어졌다.
+사용자 승인 후 실제 교정된 caller의 획득 중/native dynamic handoff 중 취소와
+동일 signed set 전체 재실행까지 통과했다. [실제 receipt](./signed-native-20261020/rc6-qualification.json)가
+원본 실패·정상/취소·후속 건강 검사·최종 정리와 범위 한계를 소유한다.

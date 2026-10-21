@@ -175,7 +175,7 @@ public 이후 검증 실패는 기존 release의 overwrite/re-tag가 아니라
 | 3b | CLI-UX-002 | OS preferred display-language auto | COMPLETE — [qualification](./evidence/cli-os-language/qualification-20261018.md); native macOS/CI328 PASS |
 | 3c | SEC-UPD-001 | guarded update-command coverage | IN_PROGRESS — bounded npm qualified including CI330; PyPI implementation active |
 | 3d | CLI-UX-003 | branded interactive launcher | NOT_STARTED — after SEC-UPD-001 acceptance |
-| 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | BLOCKED — SEC-UPD-001 and owner package-name decision; accounts ready / CLI-UX-002 complete |
+| 4 | M13-004 | installed self-quarantine update; npm·PyPI/pipx·Homebrew convenience publication | IN_PROGRESS — native same-runtime path qualified; owner channel names/tap/formula and publisher binding pending |
 | 5 | M13-005 | exact publication·clean Host bootstrap·doctor·cross-ecosystem smoke·quarantine | NOT_STARTED |
 
 ### M13-001 — protected activation
@@ -324,7 +324,10 @@ publication authority로 취급하지 않는다.
 [자체 업데이트 설계 제안](../user-journey-cli-ia/07-self-update.md), 현재 audit와
 수정 위치·검사·재검토는 [실행 계획](./evidence/m13-004-convenience/self-update-20261020.md)을
 참조한다. 새 설치 전용 역할과 Linux/WSL2 amd64 우선 범위는2026-10-20 사용자
-승인을 받았다. 기존 network helper 권한은 유지하며 구현 완료를 뜻하지 않는다.
+승인을 받았다. 기존 network helper 권한은 유지한다.
+승인된 native same-runtime 경로의 구현·실제 서명 qualification은
+[최종 결과](./evidence/m13-004-convenience/signed-native-qualification-20261020.md)가
+소유하며, 아래 채널 acceptance나 M13-005 공개 배포 완료로 확대하지 않는다.
 
 #### npm
 

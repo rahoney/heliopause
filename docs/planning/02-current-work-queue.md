@@ -14,8 +14,8 @@ Last completed work item: CLI-UX-003 — COMPLETE; source4cfe29e/CI352 ten SUCCE
 Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
-Active work item status: IN_PROGRESS — actual signed rc3→rc5 normal/auth/concurrency/service rollback/Root SIGKILL and guest cold recovery passed; cancellation cleanup gap repaired locally; source4a8c278 CI358 ten SUCCESS; corrected actual signed caller remains
-Next action: owner review of exact source4a8c278/single rc6 proposal in signed-caller-plan-20261021.md; actual corrected caller cancellation/recovery remains, package names separate
+Active work item status: IN_PROGRESS — native same-runtime self-quarantine update IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; actual signed rc6 normal/cancellations/fresh replay passed; channel scope remains
+Next action: owner official npm/PyPI names and Homebrew tap/formula decision, then bounded wrapper/publisher/channel qualification; no public publication or Host migration implied
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
@@ -4135,6 +4135,27 @@ C++103/Linux45 actual PASS·CPU291.99s/helper5 wait0/final confirmed cleanup.
 Canonical local source checks and related owner Race passed; expanded Sandbox Race7
 preexisting failures remain separately recorded. Corrected actual signed caller is
 still MISSING. [One minimal rc6 input](./evidence/m13-004-convenience/signed-caller-plan-20261021.md)
-is frozen to source4a8c278 and awaits owner approval; no ref was created. PR38 stays
+is frozen to source4a8c278; the owner approved this one ref and the reviewed tests
+on2026-10-21 with “이어가”. Execution is IN_PROGRESS; no creation success is assumed. PR38 stays
 draft. Completed rc5 payloads and operators are removed; only the necessary qualified
 rc3 baseline is retained idle. M13-004 alone remains IN_PROGRESS.
+
+2026-10-21 corrected signed caller closure: approved source4a8c278/tag rc6
+[official build39519718710](https://github.com/rahoney/heliopause/actions/runs/39519718710)
+and exact13 independent UID1000 offline/canonical verification passed.
+[Receipt](./evidence/m13-004-convenience/signed-native-20261020/rc6-qualification.json)
+connects actual rc3→rc6 required18/ALLOW→COMMITTED35.18s, corrected installed rc6
+acquisition/native dynamic handoff cancellation2.00s/6.25s with original failure
+preserved, unchanged current/registration/history/config and confirmed drain,
+next doctor5/npm3 ALLOW, then same actual signed set fresh whole replay30.90s
+required18/ALLOW→COMMITTED. Initial watcher runtime expectation failure is
+retained separately; no SIGINT was sent then and it is not cancellation PASS.
+Native same-runtime scope: IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES /
+ACCEPTANCE_CLOSED=YES / MISSING=none. Historical rc5 authentication/concurrency/
+service rollback/Root crash/guest cold recovery stays within its recorded scope.
+Completed download13, independent verifier and owned guest/image2/inner volume
+are removed; Host10/runtime6/shared images4 remain unchanged. Final documentation
+operators/cache are retired after their last consumer. No public Release, main
+merge, permanent Host migration, kernel reboot or new CUDA full was performed.
+M13-004 alone remains IN_PROGRESS for owner names/tap/formula and publisher
+bindings, bounded wrappers and channel qualification; M13-005 is NOT_STARTED.
