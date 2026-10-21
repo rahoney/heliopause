@@ -72,3 +72,18 @@ Quick44.787s/security4.484s/docs0.198s/workflow0.64s가 PASS다. Targeted Race39
 기존 실제 cleanup/script-file 회귀0.926s도 PASS다. 첫 추가 검증의 자동 승인 검토 시간
 초과는 실행 전이었으며 허용된 한 번 재시도의 결과만 성공으로 기록한다. 전체 기존 Race
 범위나 실제 cu126 지연 해결·새 원격 성공이 아니다. Darwin amd64/arm64의 bootstrap/sandbox/check TEST compilation6개도 PASS다. 실제 native 실행은 새 CI에서 따로 확인한다.
+
+## 실제 원격 관측 종료 범위
+
+Source270c7c8의 [진단 원격 영수증](./go12610-diagnostic-remote-20261021.json)을 확인했다.
+PR CI366은 Required 포함10 SUCCESS·CPU213.74s·native macOS PASS다. 독립 manual367의
+Linux는 CPU295.16s/cu1261296.54s·helper5wait0·final confirmed cleanup PASS다.
+실제 cu126의1295개 OS 관측은 unavailable0이며 MemAvailable 최저1,959,476KiB,
+Shmem 최대13,193,036KiB와 swap/direct reclaim/PSI 증가를 보였다. 성공한 이번 실행에는
+authenticated slow-read250ms 행이 없었다. 과거 실패의 지연 내부 원인이나 교정 성공을
+입증하지 않으며 max gap1s·CPU/wall·peer/EOF·Required를 유지한다.
+
+Manual367의 macOS는 production build 통과 뒤 default test6m deadline으로 FAIL했고
+Required도 FAIL이다. 같은 source CI366 native 성공과 분리하며 원인은 미확정이다.
+기존 cu130의 build2m timeout과 같은 오류로 합치지 않는다. 새 관측 연결은 실제 확인됐지만
+보안 패치 전체 환경·앞선 sample-late 일반 해결·Host 활성화 완료는 아니다.

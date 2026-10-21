@@ -166,18 +166,20 @@
     "new_diagnostic_head": "270c7c834d75cc7f62936c87a5c19606b72d112f",
     "new_pr_ci": 39605808634,
     "new_cu126_run": 39605942685,
-    "new_results": "pending"
+    "new_results": "CI366 SUCCESS10; diagnostic cu126 Linux SUCCESS/full1296.54s; manual macOS default test6m timeout/Required FAIL"
   },
   "qualified": false,
   "remaining": [
-    "actual new cu126 timing/OS observation and source qualification",
-    "cu130 native build timeout review/new native evidence",
+    "earlier sample-late root cause unproven; new successful full does not establish a fix",
+    "macOS command-deadline variability review; same-source CI366 native success retained",
+    "new UV candidate actual runtime/full consumer qualification",
     "no Host runtime activation"
   ],
   "diagnostic_source": {
     "head": "270c7c834d75cc7f62936c87a5c19606b72d112f",
     "pr_ci": 39605808634,
     "cu126": 39605942685,
-    "status": "in_progress; separate from c2 qualification"
+    "status": "actual timing/OS observations complete; CPU/cu126 passed; separate manual macOS timeout unresolved",
+    "evidence": "go12610-diagnostic-remote-20261021.json"
   }
 }
