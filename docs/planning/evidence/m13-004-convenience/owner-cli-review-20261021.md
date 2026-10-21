@@ -5,8 +5,8 @@
 재개방하거나 기능을 다시 구현하지 않는다.
 
 최초 preview 기준: source918e329/tree38b2f3b, 실제 CI359 Required+9 SUCCESS.
-현재 preview는 아래 피드백 보완 source8d949a7의 clean build다. 정확한
-source/digest/build metadata는 local raw feedback-preview.json이 소유한다.
+현재 preview는 아래 full-name 보완 source1f2500e의 clean build다. 정확한
+source/digest/build metadata는 local raw fullname-preview.json이 소유한다. 이전8d949a7은 교체됐다.
 현재 PC의 `/usr/local/bin/helox`는 `/usr/libexec/heliopause/helox`를 가리키며
 build metadata는4d6cc0f/modified=true다. 이 metadata만으로 당시 overlay 전체를
 복원했다고 주장하지 않는다. 현재 설치본을 최신 source라고 안내하지 않는다.
@@ -140,3 +140,20 @@ Unicode cell 폭, all-language body/footer, 작은 resize/cancellation/termios �
 preview를 검사한다. 기존 helox 단독 명령·doctor/실제 update·source/runtime를 바꾸지 않는다.
 검사는 canonical format/quick/security/docs 및 실제 binary PTY로 수행한다. 완료한
 private checkout/build/cache는 삭제하고 사용자 확인 중인 preview만 유지한다.
+
+### Full-name 보완 로컬 검증 / 현재 preview
+
+source1f2500e/treeef8eeb8, clean Go1.26.9 build(vcs.modified=false). 새 표시 요구는
+IMPLEMENTED=YES / WIRED=YES, 로컬 검사 PASS다. 전체 QUALIFIED/ACCEPTANCE_CLOSED는
+새 native macOS/원격 CI 및 owner 확인 전까지 NO로 둔다. 기존 기능 qualification은 유지한다.
+[영수증](../package-client-quarantine/design-and-brand-qualification-20261021.json)에 정확한
+binary identity와 검사 결과가 있다. Canonical format11.88s/Quick224.14s/security7.24s/
+docs0.21s, 기본 native PTY와 신규 색상/경계 회귀를 포함해 통과했다. 실제 clean binary도
+한국어 홈/사용법/End 이동, 여섯 geometry, NO_COLOR와 강제 color panel, q 종료와
+termios/cursor/alternate-screen 복원을 통과했다. 그림과 글자가 실제 화면에 모두 표시되는지
+캡처를 확인했다. Host CLI SHA는 기존eeb11993으로 유지됐다.
+
+실행 경로는 위와 같은 `/tmp/helox-cli-review-20261021/helox --lang ko`다.
+완료된 전용 source/cache/operator 정리는 local raw fullname-cleanup.json을 따른다.
+진행 중인 owner preview 약42.5MB와 작은 증거만 보존한다. 신규 client 지원은 설계 단계이며
+현재 메뉴에 실행할 수 없는 명령을 추가하지 않았다. 등록·서비스·main·공개 배포는 별도다.

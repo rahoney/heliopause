@@ -77,7 +77,7 @@ identity를 사용하되 명시 capability/보안 한도까지 사용자 설정�
 
 | 단계 | 시작 조건 / 수행 | 완료 조건 | 현재 |
 | --- | --- | --- | --- |
-| P0 설계/사전 검토 | 사용자 범위·기존 owner·공식 문서·버전 후보 대조 | 본 문서와 leaf, 재검토·canonical docs/security | 작성 및 재검토 완료, 최종 검사 대기 |
+| P0 설계/사전 검토 | 사용자 범위·기존 owner·공식 문서·버전 후보 대조 | 본 문서와 leaf, 재검토·canonical docs/security | COMPLETE — canonical docs/security PASS |
 | P1 client foundation + uv pip | exact uv runtime·좁은 descriptor, 기존 install/update 재사용 | actual uv install/upgrade/sync, 기존 pip/npm 회귀, 실패 불변·정리 | NOT_STARTED |
 | P2 pnpm | fixed resolver/lock/layout·공통 descriptor 재사용 | actual add/install/update/peer graph·link 공격·rollback | NOT_STARTED |
 | P3 Bun | fixed Bun resolver/layout/lifecycle | actual install/update·Node vs Bun runtime 요구 분리·회귀 | NOT_STARTED |
@@ -140,3 +140,12 @@ identity를 사용하되 명시 capability/보안 한도까지 사용자 설정�
 TTY/생성 파일 반출의 실제 필요한 범위. P1~P6 첫 작업에서 exact fixture·보안 한도를
 확정한 뒤 source를 작성한다. 미확정을 완료로 치환하지 않는다. 문서화는 이 조사와
 설계 범위에서 완료할 수 있으나 신규 client 구현 완료는 아니다.
+
+## 7. 이번 전달의 검증 범위
+
+설계 commit491a32d, 화면 source1f2500e의 전체 tree를 private 후보와 대조했다.
+Canonical format/quick/security/docs와 실제 clean binary의 PTY·color/NO_COLOR·resize·
+navigation·termios 복원이 통과했다. [검증 영수증](./evidence/package-client-quarantine/design-and-brand-qualification-20261021.json)이
+정확한 source/tree·측정 시간·preview identity·한계를 소유한다. P0는 COMPLETE이고
+P1~P7은 NOT_STARTED다. 원격 CI/native macOS 신규 실행과 owner 최종 화면 확인은
+이번 로컬 결과에 포함하지 않는다. 새 client/runner 구현·검역 지원 완료가 아니다.
