@@ -473,3 +473,24 @@ cache는 exact inventory 및 실제 proc/FD/maps/mount/container·operation-lock
 reviewer merge는 해당 owner의 남은 작업이다. 유지보수 branch를 검토 가능한 상태로
 전달하고 실제 reviewer merge/전달 CI와 새 M13 baseline 확인 전에는 보류 전의
 M13 CLEAN·승인 후보를 재사용하거나 M13 보류를 자동 해제하지 않는다.
+
+
+### UV 공급의 offline provenance 검증
+
+P1의 UV 후보는 채택 전에 다음 명시 단계로 검증한다. Runtime pin/실행·Host 설치를
+변경하지 않고, 같은 고정 Sigstore root로 upstream publisher와 OCI 자료 연결만 확인한다.
+
+```sh
+go run ./scripts/update-runtime verify-uv-image --input /absolute/frozen-uv-proof
+```
+
+디렉터리에는 identity.json(정확한 version/source_commit/workflow_run/index_sha256/
+manifest_sha256), bundle.json, index.json, manifest.json, config.json이 필요하다.
+Bundle은 GitHub의 해당 index digest attestation API 응답에서 bundle 객체만 보존한다.
+원본 OCI 세 파일은 reformat 없이 digest/size를 확인한 bytes다. 출력은 검증된 source·
+index/amd64·config·layer metadata의 영수증이며 layer bytes/실행 호환성/activation을
+승인하지 않는다. CLI 자체가 네트워크를 호출하거나 runtime을 다운로드하지 않는다.
+
+정책과 실제 서명 입력은 [P1b baseline](../planning/evidence/package-client-quarantine/p1b-uv-runtime-baseline-20261021.md)을
+따른다. HAA release signer 정책을 UV publisher로 확대하지 않는다. 현재 plan/apply의
+UV pin·image 공급 연결과 production uv 명령은 아직 미완료다.

@@ -162,3 +162,19 @@ yanked를 기존 정규화 경계로 검증한다. 전체 프로젝트 Simple �
 검증했다고 주장하지 않는다. 기존4MiB/1024 file 한도와 public origin 제한을 유지한다.
 Pip/PyTorch의 현재 metadata 경로는 이 UV 경로와 별도로 유지된다. 이 자료 경계의
 구현은 실제 uv CLI/runtime/검역 지원 완료가 아니며 P1 baseline의 독립 상태를 따른다.
+
+
+## 7. UV runtime 공급의 provenance 경계
+
+기존 HAA release 검증과 별개로 UV publisher를 고정 검증한다. GitHub OIDC issuer,
+astral-sh/uv repository/owner ID, main의 publish-docker-image.yml builder와 release.yml
+caller, workflow_dispatch·github-hosted, source commit과 invocation을 certificate와 SLSA
+predicate 양쪽에서 확인한다. User 선택 regex나 trusted publisher 예외를 추가하지 않는다.
+공개 Sigstore root와 pinned library는 기존 releaseprovenance owner의 것을 공유한다.
+
+서명 대상은 ghcr.io/astral-sh/uv의 multi-platform index 하나다. 실제 index 전체 bytes의
+SHA256과 유일한 linux/amd64 descriptor의 digest/size를 확인하고 child manifest→config의
+전체 digest/size·version/source/revision·platform을 연결한다. 미검증 label·live tag·파일명만으로
+버전을 채택하지 않는다. OCI index64 entries/1MiB, manifest/config 각64KiB, gzip layer 최대4개·
+총 compressed64MiB의 UV 공급 한도이며 기존 artifact resource 정책을 넓히지 않는다.
+현재 offline 공급 영수증은 layer bytes/ABI·observer admission/Policy/activation 승인이 아니다.

@@ -232,8 +232,10 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/core/domain": true,
 			modulePath + "/internal/core/ports":  true,
 		},
-		modulePath + "/scripts/check":          {},
-		modulePath + "/scripts/update-runtime": {},
+		modulePath + "/scripts/check": {},
+		modulePath + "/scripts/update-runtime": {
+			modulePath + "/internal/verification/releaseprovenance": true,
+		},
 	}
 	allowedExternalImports := map[string]map[string]bool{
 		modulePath + "/cmd/helox": {},
