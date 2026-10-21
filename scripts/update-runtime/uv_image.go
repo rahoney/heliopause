@@ -19,6 +19,7 @@ func verifyUVImage(args []string, out io.Writer) error {
 	flags := flag.NewFlagSet("update-runtime verify-uv-image", flag.ContinueOnError)
 	flags.SetOutput(out)
 	input := flags.String("input", "", "absolute frozen proof directory: identity.json, bundle.json, index.json, manifest.json, config.json")
+	layers := flags.String("layers", "", "optional absolute directory of complete signed-image layers named SHA256.tar.gz")
 	if err := flags.Parse(args); err != nil {
 		return err
 	}
@@ -29,27 +30,8 @@ func verifyUVImage(args []string, out io.Writer) error {
 	if err != nil || !info.IsDir() {
 		return errors.New("uv image proof directory is unavailable or a symlink")
 	}
-	read := func(name string, limit int64) ([]byte, error) {
-		location := filepath.Join(*input, name)
-		before, err := os.Lstat(location)
-		if err != nil || !before.Mode().IsRegular() || before.Size() <= 0 || before.Size() > limit {
-			return nil, errors.New("uv image proof file is unavailable or exceeds bound")
-		}
-		file, err := os.Open(location)
-		if err != nil {
-			return nil, err
-		}
-		defer file.Close()
-		after, err := file.Stat()
-		if err != nil || !os.SameFile(before, after) || after.Size() != before.Size() {
-			return nil, errors.New("uv image proof file changed")
-		}
-		body, err := io.ReadAll(io.LimitReader(file, limit+1))
-		if err != nil || int64(len(body)) != before.Size() {
-			return nil, errors.New("uv image proof read failed or changed")
-		}
-		return body, nil
-	}
+	read := func(name string, limit int64) ([]byte, error) { return readUVSupplyFile(*input, name, limit) }
+
 	identityBody, err := read("identity.json", 4096)
 	if err != nil {
 		return err
@@ -75,6 +57,31 @@ func verifyUVImage(args []string, out io.Writer) error {
 	if err != nil {
 		return err
 	}
+	type toolRecord struct {
+		SHA256 string `json:"sha256"`
+		Size   int64  `json:"size"`
+	}
+	var tool *toolRecord
+	schema := "helox.uv-image-supply/v1"
+	if *layers != "" {
+		if !filepath.IsAbs(*layers) {
+			return errors.New("uv layer directory must be absolute")
+		}
+		var inputs []releaseprovenance.UVToolLayer
+		for _, layer := range receipt.Layers() {
+			body, err := readUVSupplyFile(*layers, layer.SHA256+".tar.gz", layer.Size)
+			if err != nil {
+				return err
+			}
+			inputs = append(inputs, releaseprovenance.UVToolLayer{Reader: bytes.NewReader(body), Size: int64(len(body))})
+		}
+		verified, err := receipt.VerifyToolLayers(context.Background(), documents[3], inputs)
+		if err != nil {
+			return err
+		}
+		tool = &toolRecord{verified.SHA256(), verified.Size()}
+		schema = "helox.uv-image-supply/v2"
+	}
 	return json.NewEncoder(out).Encode(struct {
 		Schema   string                            `json:"schema"`
 		Identity releaseprovenance.UVImageIdentity `json:"identity"`
@@ -84,8 +91,35 @@ func verifyUVImage(args []string, out io.Writer) error {
 		} `json:"files"`
 		Invocation string                           `json:"invocation"`
 		Layers     []releaseprovenance.UVImageLayer `json:"layers"`
-	}{"helox.uv-image-supply/v1", receipt.Identity(), []struct {
+		Tool       *toolRecord                      `json:"tool,omitempty"`
+	}{schema, receipt.Identity(), []struct {
 		Role   string `json:"role"`
 		SHA256 string `json:"sha256"`
-	}{{"bundle", receipt.BundleSHA256()}, {"config", receipt.ConfigSHA256()}}, receipt.Invocation(), receipt.Layers()})
+	}{{"bundle", receipt.BundleSHA256()}, {"config", receipt.ConfigSHA256()}}, receipt.Invocation(), receipt.Layers(), tool})
+}
+
+func readUVSupplyFile(directory, name string, limit int64) ([]byte, error) {
+	info, err := os.Lstat(directory)
+	if err != nil || !info.IsDir() {
+		return nil, errors.New("uv supply directory is unavailable or a symlink")
+	}
+	location := filepath.Join(directory, name)
+	before, err := os.Lstat(location)
+	if err != nil || !before.Mode().IsRegular() || before.Size() <= 0 || before.Size() > limit {
+		return nil, errors.New("uv supply file is unavailable or exceeds bound")
+	}
+	file, err := os.Open(location)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	after, err := file.Stat()
+	if err != nil || !os.SameFile(before, after) || after.Size() != before.Size() {
+		return nil, errors.New("uv supply file changed")
+	}
+	body, err := io.ReadAll(io.LimitReader(file, limit+1))
+	if err != nil || int64(len(body)) != before.Size() {
+		return nil, errors.New("uv supply read failed or changed")
+	}
+	return body, nil
 }

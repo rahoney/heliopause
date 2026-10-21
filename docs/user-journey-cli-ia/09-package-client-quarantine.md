@@ -178,3 +178,10 @@ SHA256과 유일한 linux/amd64 descriptor의 digest/size를 확인하고 child 
 버전을 채택하지 않는다. OCI index64 entries/1MiB, manifest/config 각64KiB, gzip layer 최대4개·
 총 compressed64MiB의 UV 공급 한도이며 기존 artifact resource 정책을 넓히지 않는다.
 현재 offline 공급 영수증은 layer bytes/ABI·observer admission/Policy/activation 승인이 아니다.
+
+
+UV의 native 공급 자료 검증은 모든 signed layer의 compressed hash/size와 config diffID를
+확인한다. 합계 compressed/expanded 각64MiB·entries32 이내의 reviewed uv/uvx regular
+files와 io directory만 허용하고 root0:0/0755·static ELF amd64를 확인한다. 뒤 layer의
+UV overwrite·whiteout·links/경로 우회는 거부한다. 도출한 native hash/size는 공급
+동일성 자료이며 Host 실행·sandbox compatibility·검역 ALLOW를 의미하지 않는다.

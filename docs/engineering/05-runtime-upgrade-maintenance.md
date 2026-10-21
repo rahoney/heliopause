@@ -500,3 +500,10 @@ index/amd64·config·layer metadata의 영수증이며 layer bytes/실행 호환
 정책과 실제 서명 입력은 [P1b baseline](../planning/evidence/package-client-quarantine/p1b-uv-runtime-baseline-20261021.md)을
 따른다. HAA release signer 정책을 UV publisher로 확대하지 않는다. 현재 plan/apply의
 UV pin·image 공급 연결과 production uv 명령은 아직 미완료다.
+
+
+`verify-uv-image`에 `--layers /absolute/frozen-layers`를 추가하면 manifest 순서의 모든
+`<sha256>.tar.gz`를 확인해 UV native file까지 연결한다. Compressed digest/size·config
+ diffID·root ownership·정확한 reviewed layout와 bounded static amd64 ELF를 검증한다.
+출력은 `helox.uv-image-supply/v2`의 tool SHA256/size이며 실제 native startup·관찰기·Policy
+승인이 아니다. `--layers` 없는 기존 metadata-only 호출은 v1을 유지한다.

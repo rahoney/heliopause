@@ -87,3 +87,37 @@ func TestOfflineUVImageSupplyRejectsIncompleteAndChangedInputs(t *testing.T) {
 		})
 	}
 }
+
+func TestOfflineUVToolSupplyRejectsUnverifiedLayers(t *testing.T) {
+	for _, name := range []string{"relative", "missing", "substituted", "symlink", "oversize"} {
+		t.Run(name, func(t *testing.T) {
+			layers := t.TempDir()
+			file := filepath.Join(layers, "78fa515da939df1a7735518cd8483877c98aa632744a890e35c0b8c94edae9a6.tar.gz")
+			var err error
+			switch name {
+			case "relative":
+				layers = "."
+			case "substituted":
+				err = os.WriteFile(file, []byte("unverified native image"), 0600)
+			case "symlink":
+				err = os.Symlink(filepath.Join(uvProofDirectory(t), "config.json"), file)
+			case "oversize":
+				var output *os.File
+				output, err = os.Create(file)
+				if err == nil {
+					err = output.Truncate(19395989)
+					if closeErr := output.Close(); err == nil {
+						err = closeErr
+					}
+				}
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			var out bytes.Buffer
+			if err := run([]string{"verify-uv-image", "--input", uvProofDirectory(t), "--layers", layers}, &out); err == nil || out.Len() != 0 {
+				t.Fatalf("unverified layers returned a receipt: %v %s", err, out.String())
+			}
+		})
+	}
+}
