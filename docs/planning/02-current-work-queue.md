@@ -15,7 +15,7 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — native same-runtime self-quarantine update IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; actual signed rc6 normal/cancellations/fresh replay passed; channel scope remains
-Next action: P1 uv pip IN_PROGRESS — P1a local PASS / CI360 Vulnerability FAIL (GO-2026-6809, Go1.26.10 required); P1b signed metadata/native tool closure local PASS; Go1.26.10 final local canonical/vulnerability/fuzz/reproducible bundle/103 latches/12 namespaces PASS; remote Required/CPU PASS, cu126 accounting-late FAIL, cu132 PASS/cu130 Linux PASS but native build timeout/Required FAIL; UV pin/maintenance local PASS, cu126 trusted timing/OS diagnostic local checks PASS; PR366 Required10SUCCESS and new cu126 Linux/full1296.54s PASS; manual macOS default-test6m timeout/Required FAIL; P1b4 UV data-only transport actual PASS; P1b5 UV-only volume/admission/startup105 latches and actual native version/complete trace PASS; fresh source CI and production resolver/CLI next; runtime/CLI wiring remains; P2..P7 NOT_STARTED; owner full-name preview and channel/release work remain
+Next action: P1 uv pip IN_PROGRESS — native UV runtime startup local/CI368 PASS; macOS default-test deadline diagnosis local PASS/native pending; production resolver/install-upgrade-sync/CLI still missing; P2..P7 NOT_STARTED; owner full-name preview and channel/release work remain
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
@@ -31,7 +31,15 @@ uv pip/project·pnpm·Bun·pipx 설치/업데이트와 npx·uvx·bunx·pipx run 
 P1a native lock/선택 경계를 커밋b710b56으로 보존하고 CI360을 확인한다. 다음은
 [P1b runtime baseline](./evidence/package-client-quarantine/p1b-uv-runtime-baseline-20261021.md)의 metadata/native tool 공급은 [로컬 영수증](./evidence/package-client-quarantine/p1b-uv-tool-local-qualification-20261021.json)까지 확인했다. [Pin/maintenance 로컬 검증](./evidence/package-client-quarantine/p1b-uv-pin-local-qualification-20261021.json)도 actual CLI/canonical7 PASS다. 다음은 [cu126 회계 지연 조사](./evidence/package-client-quarantine/go12610-cu126-diagnostic-plan-20261021.md)와 UV production runtime 연결이다. P1은 IN_PROGRESS, P2~P7은 NOT_STARTED다.
 [Go1.26.10 보안 선행조건](./evidence/package-client-quarantine/go12610-security-baseline-20261021.md)을
-기존 유지보수 도구의 별도 candidate에서 [최종 로컬 검증](./evidence/package-client-quarantine/go12610-local-qualification-20261021.json)을 마쳤다. [원격 상태](./evidence/package-client-quarantine/go12610-remote-status-20261021.json)에서 같은 tree의 CI361 Required/CPU/native macOS PASS와 cu126 sample-late FAIL을 확인했다. cu132도 별도 full1054.68s·Required10SUCCESS이며 cu130의 Linux/full980.48s도 PASS이나 native production build2m timeout으로 Required는 FAIL이다. 새 진단 source270c7c8의 PR366·cu126 원격 관측은 진행 중이다. Go 전체 qualification은 미완료다. Host 설치·서비스는 유지한다.
+기존 유지보수 도구의 별도 candidate에서 [최종 로컬 검증](./evidence/package-client-quarantine/go12610-local-qualification-20261021.json)을 마쳤다. [원격 상태](./evidence/package-client-quarantine/go12610-remote-status-20261021.json)에서 같은 tree의 CI361 Required/CPU/native macOS PASS와 cu126 sample-late FAIL을 확인했다. cu132도 별도 full1054.68s·Required10SUCCESS이며 cu130의 Linux/full980.48s도 PASS이나 native production build2m timeout으로 Required는 FAIL이다. 새 진단 source270c7c8의 PR366 Required10SUCCESS·cu126 Linux/full1296.54s PASS를 확인했으나 manual native default-test timeout/Required FAIL이다. Go 전체 qualification은 미완료다. Host 설치·서비스는 유지한다.
+[P1b5 원격 결과](./evidence/package-client-quarantine/p1b5-uv-runtime-remote-20261022.json)는
+CI368의 신규 native UV3.25s·기존 Linux45/CPU259.85s PASS와 macOS default-test6m/
+Required FAIL을 구분한다. [P1c 수정 지도](./evidence/package-client-quarantine/p1c-uv-resolver-baseline-20261022.md)는
+native JSON이 delta-only임을 확인하고 기존 pip promotion identity/control과 multi-root
+sync 모델의 연결 gap을 기록했다. Production UV resolver/install-upgrade-sync/CLI는 아직
+미연결이다. [macOS 진단 지도](./evidence/package-client-quarantine/macos-default-test-diagnostic-plan-20261022.md)와
+[로컬 검증](./evidence/package-client-quarantine/macos-default-test-local-20261022.json)의 bounded
+Go JSON 진행 수집은 기존5m/6m·process cause를 유지한다. 새 native 원인 관측은 남는다.
 공개 채널 이름·publisher binding·PR38/main CI·배포는 기존 미완료로 남는다.
 
 ### Runtime upgrade maintenance — 2026-10-15 priority change
@@ -3398,6 +3406,8 @@ permanent installed CLI activation and publication remain separate; PR38 is draf
 ### M13-004 — convenience installation channels
 
 Current P1 substep: [P1b5 UV-only mount/profile/admission baseline](./evidence/package-client-quarantine/p1b5-uv-runtime-admission-baseline-20261021.md), locally checked in [native startup evidence](./evidence/package-client-quarantine/p1b5-uv-runtime-local-20261021.json). P1 remains IN_PROGRESS; fresh source CI and production UV resolver/CLI remain unwired/unqualified.
+Next active audit: [P1c native resolver/install/upgrade/sync edit map](./evidence/package-client-quarantine/p1c-uv-resolver-baseline-20261022.md). Exact native JSON/interpreter query/selection semantics are investigated before implementation; P2..P7 remain NOT_STARTED.
+CI368 macOS again reached default-test6m deadline. The current prerequisite is [bounded Go test progress diagnosis](./evidence/package-client-quarantine/macos-default-test-diagnostic-plan-20261022.md); no deadline/coverage reduction or blind rerun.
 
 Status: IN_PROGRESS — self-update installation role and Linux/WSL2 amd64 scope approved on2026-10-20; official names pending only for channel wiring. CLI-UX-003, SEC-UPD-001 and CLI-UX-002 remain complete.
 Audit: IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO for the

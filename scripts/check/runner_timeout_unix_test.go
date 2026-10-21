@@ -38,3 +38,20 @@ func TestCommandTimeoutRetainsOutputAndCause(t *testing.T) {
 		}
 	}
 }
+
+func TestGoTestCaptureTimeoutPreservesActiveTestAndCause(t *testing.T) {
+	t.Parallel()
+	c := checker{root: t.TempDir(), stdout: io.Discard}
+	output := newGoTestCapture(time.Now)
+	text, err := c.runCapturedCommand("default test diagnostic fixture", 2*time.Second, []string{"PATH=/usr/bin:/bin"}, "/bin/sh", output, goTestStderr{output}, output.String, "-c",
+		`printf '%s\n' '{"Action":"start","Package":"github.com/rahoney/heliopause/internal/promotion"}' '{"Action":"run","Package":"github.com/rahoney/heliopause/internal/promotion","Test":"TestSlow"}'; printf '%s\n' 'PRESERVED_STDERR_DETAIL' >&2; exec /bin/sleep 30`)
+	var failure *checkFailure
+	if !errors.Is(err, context.DeadlineExceeded) || !errors.As(err, &failure) || failure.class != executionFailure || failure.step != "default test diagnostic fixture" {
+		t.Fatal("process deadline/cause lost", err)
+	}
+	for _, wanted := range []string{"PRESERVED_STDERR_DETAIL", "test=TestSlow state=running", "command timed out"} {
+		if !strings.Contains(err.Error(), wanted) {
+			t.Fatal("first output/active test absent", wanted, text, err)
+		}
+	}
+}

@@ -239,7 +239,7 @@ func (c *checker) platformSteps() []checkStep {
 	return []checkStep{
 		{"production build", func() error { return c.runGo("production build", "build", "-trimpath", "./...") }},
 		{"default test", func() error {
-			return c.runGoWithTimeout("default test", 6*time.Minute, "test", "-timeout=5m", "./...")
+			return c.runDefaultTests()
 		}},
 	}
 }
@@ -251,7 +251,7 @@ func (c *checker) quickSteps() []checkStep {
 		checkStep{"go vet", func() error { return c.runAnalysis("go vet", c.goExecutable, "vet", "./...") }},
 		checkStep{"Staticcheck", c.runStaticcheck},
 		checkStep{"default test", func() error {
-			return c.runGoWithTimeout("default test", 6*time.Minute, "test", "-timeout=5m", "./...")
+			return c.runDefaultTests()
 		}},
 	)
 }
@@ -326,6 +326,23 @@ func (c *checker) runCommand(step, executable string, args ...string) (string, e
 }
 
 func (c *checker) runCommandWithTimeout(step string, timeout time.Duration, environment []string, executable string, args ...string) (string, error) {
+	output := boundedBuffer{limit: outputLimit}
+	return c.runCapturedCommand(step, timeout, environment, executable, &output, &output, output.String, args...)
+}
+
+func (c *checker) runDefaultTests() error {
+	output := newGoTestCapture(time.Now)
+	_, err := c.runCapturedCommand("default test", 6*time.Minute, c.offlineEnvironment(), c.goExecutable,
+		output, goTestStderr{output}, output.String, "test", "-json", "-timeout=5m", "./...")
+	if err != nil && output.offlineMissing {
+		return &checkFailure{class: unavailable, step: "default test", detail: "offline module cache prerequisite is missing", cause: err}
+	}
+	return err
+}
+
+// Both capture modes retain this same executable, context, status and first
+// error owner. Test-event metadata cannot turn a failed process into success.
+func (c *checker) runCapturedCommand(step string, timeout time.Duration, environment []string, executable string, stdout, stderr io.Writer, captured func() string, args ...string) (string, error) {
 	if !filepath.IsAbs(executable) {
 		return "", &checkFailure{class: unavailable, step: step, detail: "executable path is not absolute"}
 	}
@@ -336,28 +353,27 @@ func (c *checker) runCommandWithTimeout(step string, timeout time.Duration, envi
 	command := exec.CommandContext(ctx, executable, args...)
 	command.Dir = c.root
 	command.Env = environment
-	var output boundedBuffer
-	output.limit = outputLimit
-	command.Stdout = &output
-	command.Stderr = &output
+	command.Stdout = stdout
+	command.Stderr = stderr
 
 	err := command.Run()
+	output := captured()
 	if ctx.Err() != nil {
 		detail := "command timed out"
-		if text := strings.TrimSpace(output.String()); text != "" {
+		if text := strings.TrimSpace(output); text != "" {
 			detail += "\n" + text
 		}
-		return output.String(), &checkFailure{class: executionFailure, step: step, detail: detail, cause: ctx.Err()}
+		return output, &checkFailure{class: executionFailure, step: step, detail: detail, cause: ctx.Err()}
 	}
 	if err != nil {
 		detail := fmt.Sprintf("%s %s", executable, strings.Join(args, " "))
-		if text := strings.TrimSpace(output.String()); text != "" {
+		if text := strings.TrimSpace(output); text != "" {
 			detail += "\n" + text
 		}
-		return output.String(), &checkFailure{class: executionFailure, step: step, detail: detail, cause: err}
+		return output, &checkFailure{class: executionFailure, step: step, detail: detail, cause: err}
 	}
 
-	return output.String(), nil
+	return output, nil
 }
 
 func (c *checker) offlineEnvironment() []string {
