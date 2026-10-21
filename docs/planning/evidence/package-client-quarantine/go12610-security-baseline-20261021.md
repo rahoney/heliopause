@@ -107,3 +107,27 @@ runtimeidentity에서 현재 compiler/image/runtime tuple을 읽어 합성 manif
 독립 두 번째 gVisor build590.291s는 전체6 bytes/hash·manifest가 첫 build와 일치했고
 observer103 latch/298.313s도 PASS다. Cdb 기반 Go1.26.10 후보의 별도 vulnerability20.138s도
 PASS다. 이 component/scan 결과를 새 fixture source의 전체 Go patch 종료로 확대하지 않는다.
+
+
+## Fixture 보완 source의 최종 로컬 결과
+
+Source5994732의 fresh plan e64de5ec…는 실제 Go1.26.10 tuple과 six-member hashes를
+함께 적용했고 canonical bootstrap/Quick/security/workflow/release-gate/docs/freshness를
+292.982s에 모두 PASS했다. 같은 source의 vulnerability14.15s와 fuzz77.97s도 PASS다.
+[최종 로컬 영수증](./go12610-local-qualification-20261021.json)이 exact source/pin hashes,
+독립 재현·103 latch와 실제 namespace12 positive를 소유한다. 최초 journal namespace는
+보호 versions directory가 없는 operator 준비에서 실패했고 private versions만 준비한
+동일 binary 후속 성공을 구분한다. Production gate를 수정하지 않았다.
+
+검증한9파일을 원래 branch source에만 가져와 전체 tracked bytes/실행 modes를 checked
+standalone source와 대조했다. Host SDK·설치·서비스는 바꾸지 않았다. 새 source의 원격
+Required/installed CPU·독립 cu126/cu130/cu132와 actual activation은 별도 미완료다.
+M13-004/P1을 COMPLETE로 표시하지 않는다. 다음은 원격 qualification을 확인하면서
+고정 UV runtime 공급·CLI 연결을 진행하는 것이다.
+
+
+원본 checkout의 최종 docs 시도는 기존 untracked github-logs/c3-approval Markdown의
+상대 링크 두 개 때문에 거부됐다. 해당 원본 자료를 편집하거나 검사에서 숨기지 않았다.
+전달 검사는 Git의 전체 tracked tree와 명시14 변경을 담은 별도 standalone checkout에서
+수행하고 최종 index tree를 대조한다. 패치 밖 qualify-wsl2-cli.sh의 로컬0744/검증0755는
+owner 실행·Git executable mode가 같으며 기존 로컬 group/other 권한을 변경하지 않는다.

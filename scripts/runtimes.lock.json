@@ -20,12 +20,12 @@
     "runtime_bundle": {
       "architecture": "amd64",
       "members": [
-        {"path": "containerd-shim-runsc-v1", "size": 43763177, "sha512": "8743a12c2107e99f8b04ffb6f1e6c01a3a972753bcff993a4974eeaaf91e364f9fb21bd6bed3fed0b9ffa5e81eb1abdebdf794e5f5d60e5c0ee930006fca2579"},
-        {"path": "gvisor-bin/checkpointgofer", "size": 69307944, "sha512": "e746c256fc3ec7831fbb8a18c0c49bad2a12d9edadd460eb4ec7bdcc9639b89bf362cbb96a5ea9b88b8badd8827b8b8cb80ab7aaf066dd00f8231b3e46cbae75"},
+        {"path": "containerd-shim-runsc-v1", "size": 43764392, "sha512": "81cc59e3e4d00d3f1f94fa9be4ea9a2a5f4248584c14cc14ed2a4867f0863aa73234ae97ff95221e86e650b4d2f2dc2305f8af9afa133b11f662125c41d933a9"},
+        {"path": "gvisor-bin/checkpointgofer", "size": 69308775, "sha512": "6f0bfb214c13ff2584f6a2517f35150db9b64834a0d91be86798dd92294589de0bced7d88083ab59fe3412bc073e16e72fb81fb23d73391312f164126fce9287"},
         {"path": "gvisor-bin/gvisor-sentry-prewarmer", "size": 1416, "sha512": "f0c131766303ca4733a4e42bd171d8ddf42a0a0087564605b3207b0f4c148d9ff355bad25e27d388c7c9cf06265160b3a02047ec195c035d9e8f428d8f608ce6"},
-        {"path": "gvisor-bin/gvisor_sentry", "size": 52220923, "sha512": "dc890b8b1b0b6d753dd8a979f5600faad0a10c65e833f01162690dcc469b1a3e0524226c57e58869c2666b84cf65b66f9d7029c7fdd303944f30cfb15268c337"},
-        {"path": "gvisor-bin/runsc-metric-server", "size": 53298557, "sha512": "796a98755d3ce02d1ba7d489dd054be10910f8ae79090fa04e1ed44e04730eb071c216f8b345aa0f40d9d2a3b8a2b9f272d5d3d7f5f73c1540391dcd2c3a93b3"},
-        {"path": "runsc", "size": 109851720, "sha512": "72cf15650a96bf9ec817138736d96e410b61f77db5d8e17f4ce84115ccfb6b2ce1db11bb06ec3da4c789ed6b8d361ec22983f948b91e1bf6300fa653b336ad05"}
+        {"path": "gvisor-bin/gvisor_sentry", "size": 52220899, "sha512": "6b3fcdde7d7b05fee7cf976b0f6e3bbd375a3f8da74fbd673e23af44cd3c9dfe8e794d295dc5a809c579a6582d64c718d5eb1e32ee4e8c4ef3d74b7f77721d7e"},
+        {"path": "gvisor-bin/runsc-metric-server", "size": 53298121, "sha512": "62769125f89e08e44f23713567bf1dac10edf3a78473e812449e70b8d6953f0ddbf950da2ad2fcd69fb01d0dfc26fa93205618e4f3b42d352e28dd3e9b599a21"},
+        {"path": "runsc", "size": 109853200, "sha512": "ec53795a33e3f35e31375470a3b539226070f555d2a0d1254bdae11599f8675f70f572444cde07869f84de3380759f4b4d47a5d524eaaa11cea53dbefb19918e"}
       ]
     }
   },
@@ -39,8 +39,8 @@
     }
   },
   "go_image": {
-    "reference": "golang:1.26.9-bookworm@sha256:bcef992b77b1e2031aaaa51da75cebc32da8e9c182e12e633ea79023c79d9eff",
-    "go_version": "1.26.9",
+    "reference": "golang:1.26.10-bookworm@sha256:88750ccdd0f2a77fcc00a14b1a48d6409bd8ddb5d7c2dd6ec0b4a2e916daf9d9",
+    "go_version": "1.26.10",
     "architecture": "amd64"
   },
   "rust_image": {
