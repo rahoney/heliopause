@@ -129,6 +129,7 @@ func validateCIWorkflow(contents, selectedGo string) []string {
 	findings := validateWorkflowStructure(contents, true)
 	findings = append(findings, validateGoWorkflowVersions(contents, selectedGo)...)
 	findings = append(findings, validateCargoIntegrationGates(contents)...)
+	findings = append(findings, validateLifecycleIntegrationCommands(contents, "UV", uvIntegrationCommands)...)
 	findings = append(findings, validateTerraformIntegrationGates(contents)...)
 	findings = append(findings, validateActiveJobCommands(contents, "gvisor-observer", "Build exact gVisor observer helper with Bazel", "gVisor observer SDK", []string{
 		`scripts/build-gvisor-observer-release.sh "$RUNNER_TEMP/haa_gvisor_observer"`,
@@ -536,6 +537,12 @@ func workflowJobIDs(contents string) []string {
 
 // These fixed commands belong to the actual unconditional lifecycle step.
 // Their presence in comments, another job or a skipped step supplies no gate.
+var uvIntegrationCommands = []string{
+	`uv_image="$(jq -er '.uv_image.reference' "$runtime_lock")"`,
+	`docker pull "$uv_image"`,
+	`HELOX_UV_NATIVE_RUNTIME=1 go test -tags=realcorpus -v -timeout=3m ./internal/sandbox -run '^TestUVActualIsolatedNativeStartup$'`,
+}
+
 var cargoIntegrationCommands = []string{
 	`rust_image="$(jq -er '.rust_image.reference' "$runtime_lock")"`,
 	`docker pull "$rust_image"`,

@@ -62,6 +62,12 @@ func observerExpectedTopology(profile string) ([]observerMountExpectation, bool)
 	tmp := observerMountExpectation{"/tmp", "workspace", "/", "tmpfs", false, true, true, false}
 	runtime := observerMountExpectation{"/haa-runtime", "helper", "/", "tmpfs", false, false, true, false}
 	switch profile {
+	case uvResolverProfile:
+		// Named tmpfs is separately verified on the Host and exposed as 9p by
+		// the pinned runtime. Guest flags do not assert its Host tmpfs flags.
+		runtime.FSType, runtime.NoSUID = "9p", false
+		site := observerMountExpectation{"/haa-site", "workspace", "/", "tmpfs", false, false, true, false}
+		return []observerMountExpectation{root, tmp, site, runtime}, true
 	case "npm-lifecycle", "go-module-resolver", "go-module-build", "cargo-resolver", "cargo-build":
 		return []observerMountExpectation{root, tmp, runtime}, true
 	case "pypi-wheel", "pypi-wheel-pytorch-cpu", "pypi-wheel-pytorch-cu126", "pypi-wheel-pytorch-cu130", "pypi-wheel-pytorch-cu132":

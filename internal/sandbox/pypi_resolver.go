@@ -584,6 +584,10 @@ func pypiResolveArguments(profile artifactpypi.SourceProfile, request string) []
 }
 
 func pypiCreateArguments(network string, hostArguments []string) []string {
+	return pythonResolverCreateArguments(network, hostArguments, []string{"--tmpfs", boundaryHelperMount})
+}
+
+func pythonResolverCreateArguments(network string, hostArguments, helperMount []string) []string {
 	arguments := []string{
 		"create", "--pull", "never", "--runtime", gVisorRuntimeName,
 		"--network", network,
@@ -597,8 +601,8 @@ func pypiCreateArguments(network string, hostArguments []string) []string {
 		"--ulimit", "cpu=60:60",
 		"--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=128m,uid=1000,gid=1000,mode=0700",
 		"--tmpfs", pythonSitePath + ":rw,exec,nosuid,nodev,size=128m,uid=1000,gid=1000,mode=0700",
-		"--tmpfs", boundaryHelperMount,
 	}
+	arguments = append(arguments, helperMount...)
 	arguments = append(arguments, isolatedContainerEnvironmentArguments()...)
 	arguments = append(arguments, hostArguments...)
 	arguments = append(arguments, pythonImageReference, "/bin/sh", "-ceu", boundaryContainerCommand())

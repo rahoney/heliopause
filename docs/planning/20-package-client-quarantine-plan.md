@@ -29,7 +29,7 @@ non-draft/non-prerelease. [원본 관측 요약·URL·응답 digest](./evidence/
 
 | Component | 관측 최신 안정판 | 현재 HAA pin | 판단 |
 | --- | --- | --- | --- |
-| uv / uvx | 0.13.4 | 0.13.4 공급 pin | signed/native 공급·유지보수·data transport 로컬 검증; 실제 runtime/CLI 미연결 |
+| uv / uvx | 0.13.4 | 0.13.4 공급 pin | signed/native 공급·유지보수·actual native startup 로컬 검증; production resolver/CLI 미연결 |
 | pnpm / dlx | 12.14.0 | 없음 | 후보, v12 alias/provisioning 의미 확인 필요 |
 | Bun / bunx | 1.4.3 | 없음 | 후보, Node/Bun 실행과 libc/CPU baseline 검증 필요 |
 | pipx | 1.18.4 | 없음 | 후보, exact 버전 backend/metadata 확인 필요 |

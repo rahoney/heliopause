@@ -6813,6 +6813,147 @@ bool VerifyTerraformProviderProfileBoundary() {
    ProcessClassForPath("/work/artifact", kProfileGoBuild) == ProcessClass::kUnknown;
 }
 
+bool VerifyUVRuntimeReadBoundary() {
+  ProcessState state;
+  gvisor::syscall::Open open;
+  auto* context = open.mutable_context_data();
+  context->set_container_id(kFirstID); context->set_thread_group_id(99);
+  context->set_thread_group_start_time_ns(990); context->set_parent_thread_group_id(0);
+  context->set_is_exec_session(true); context->set_process_name("renamed-uv");
+  if (!RegisterGroup(&state, *context, ProcessState::Role::kControl, ProcessState::Provenance::kDirectExecRoot, false, true)) return false;
+  state.groups[99].current_image_class = ProcessClass::kUV;
+  state.groups[99].trusted_control_network_active = true;
+  state.expected_groups[99] = ProcessState::ExpectedGroup{990, ProcessClass::kUV};
+  const ProcessState baseline = state;
+  open.set_pathname("/proc/sys/vm/overcommit_memory"); open.set_flags(557056);
+  MountAnchor anchor{10, "/proc", "system"};
+  auto allowed = [&](const char* profile = kProfileUVResolver) {
+    return ClassifyFilesystemOpen(open, state, profile, &anchor) == FilesystemClass::kHelperOnly;
+  };
+  if (!allowed()) return false;
+  for (const char* path : {"/proc/99/maps", "/proc/99/environ", "/proc/sys/vm/other", "/proc/self/cgroup"}) {
+    open.set_pathname(path); if (allowed()) return false;
+  }
+  open.set_pathname("/proc/sys/vm/overcommit_memory");
+  for (uint64_t flags : {uint64_t{0}, kOpenWriteOnly, kOpenReadWrite, kOpenCreate, kOpenTruncate, kOpenAppend}) {
+    open.set_flags(flags); if (allowed()) return false;
+  }
+  open.set_flags(557056);
+  for (const char* profile : {kProfileNPM, kProfilePyPI, kProfilePyTorchCPU, kProfilePyTorchCU126,
+      kProfilePyTorchCU130, kProfilePyTorchCU132, kProfileCargoResolver, kProfileGoResolver}) {
+    // Existing profiles have their own authorized semantics; the UV-specific
+    // predicate must never supply them a new grant.
+    if (IsPinnedUVRuntimeRead(*context, state, open.pathname(), open.flags(), profile, &anchor)) return false;
+  }
+  for (const char* mount : {"/", "/proc/sys", "/proc/99"}) { anchor.mountpoint = mount; if (allowed()) return false; }
+  anchor.mountpoint = "/proc"; anchor.mount_class = "workspace"; if (allowed()) return false;
+  anchor.mount_class = "system";
+  for (int scenario = 0; scenario < 11; ++scenario) {
+    state = baseline; auto& group = state.groups[99];
+    switch (scenario) {
+      case 0: group.role = ProcessState::Role::kArtifact; break;
+      case 1: group.provenance = ProcessState::Provenance::kCloneChild; break;
+      case 2: group.current_image_class = ProcessClass::kUnknown; break;
+      case 3: group.root_eligible = true; break;
+      case 4: group.root_consumed = false; break;
+      case 5: group.trusted_control_network_active = false; break;
+      case 6: group.demotion_pending = true; break;
+      case 7: group.launch_target_pending = true; break;
+      case 8: group.handoff_target_pending = true; break;
+      case 9: group.start_time_ns++; break;
+      case 10: state.expected_groups[99].process_class = ProcessClass::kUnknown; break;
+    }
+    if (allowed()) return false;
+  }
+  return true;
+}
+
+bool VerifyUVRuntimeAdmissionBoundary() {
+  if (IsPythonProfile(kProfileUVResolver) ||
+      ProcessClassForPath(kUVToolPath, kProfileUVResolver) != ProcessClass::kUV ||
+      ProcessClassForPath("uv", kProfileUVResolver) != ProcessClass::kUnknown ||
+      ProcessClassForPath("/tmp/uv", kProfileUVResolver) != ProcessClass::kUnknown ||
+      ProcessClassForPath(kUVToolPath, kProfilePyPI) != ProcessClass::kUnknown ||
+      ProcessClassForPath("/usr/local/bin/pip", kProfileUVResolver) != ProcessClass::kUnknown)
+    return false;
+  int output[2];
+  if (socketpair(AF_UNIX, SOCK_DGRAM, 0, output) != 0) return false;
+  auto run = [&](const char* scenario) {
+    TopologyState topology;
+    topology.namespace_id = 1; topology.snapshot_seen = true; topology.sealed = true;
+    topology.expected.push_back(ExpectedMount{"/haa-runtime", "helper", "/", "9p", false, false, false, false});
+    topology.anchors.emplace(1, MountAnchor{1, "/", "oci-root"});
+    topology.anchors.emplace(2, MountAnchor{2, "/haa-runtime", "helper"});
+    if (strcmp(scenario, "unsealed") == 0) topology.sealed = false;
+    if (strcmp(scenario, "missing-snapshot") == 0) topology.snapshot_seen = false;
+    if (strcmp(scenario, "namespace") == 0) topology.namespace_id = 0;
+    if (strcmp(scenario, "wrong-class") == 0) topology.expected[0].mount_class = "workspace";
+    if (strcmp(scenario, "wrong-fs") == 0) topology.expected[0].filesystem_type = "tmpfs";
+    if (strcmp(scenario, "noexec") == 0) topology.expected[0].noexec = true;
+    if (strcmp(scenario, "suid") == 0) topology.expected[0].nosuid = true;
+    if (strcmp(scenario, "missing-anchor") == 0) topology.anchors.erase(2);
+    if (strcmp(scenario, "duplicate") == 0) topology.anchors.emplace(3, MountAnchor{3, "/haa-runtime", "helper"});
+    if (strcmp(scenario, "shadow") == 0) topology.anchors.emplace(3, MountAnchor{3, kUVToolPath, "workspace"});
+    if (strcmp(scenario, "parent-shadow") == 0) topology.anchors.emplace(3, MountAnchor{3, "/haa-runtime", "workspace"});
+    const TopologyState* selected = strcmp(scenario, "no-topology") == 0 ? nullptr : &topology;
+    const bool artifact = strcmp(scenario, "artifact") == 0 || strcmp(scenario, "clone") == 0;
+    gvisor::sentry::ExecveInfo event;
+    auto* context = event.mutable_context_data();
+    context->set_container_id(kFirstID); context->set_thread_group_id(99);
+    context->set_thread_group_start_time_ns(990); context->set_is_exec_session(true);
+    context->set_parent_thread_group_id(0); context->set_process_name("haa-boundary");
+    const auto nonce = TestAdmissionNonce(99, 990);
+    auto registration = TestProfileWithAdmission(kProfileUVResolver, kLaunchMode, nonce);
+    ProcessState state;
+    auto parse = [&]() {
+      std::string payload, id; const char* reason = nullptr;
+      return event.SerializeToString(&payload) && ParseSentryProcessAndClassify(
+          payload.data(), payload.size(), output[0], &id, kProfileUVResolver, &registration, &state, &reason, selected);
+    };
+    if (artifact) {
+      const bool clone = strcmp(scenario, "clone") == 0;
+      context->set_is_exec_session(!clone); context->set_parent_thread_group_id(clone ? 98 : 0);
+      if (!RegisterGroup(&state, *context, ProcessState::Role::kArtifact,
+          clone ? ProcessState::Provenance::kCloneChild : ProcessState::Provenance::kDirectExecRoot, false, true)) return false;
+    } else {
+      event.set_binary_path(kBoundaryHelperPath); event.set_execfn(kBoundaryHelperPath);
+      event.add_argv(kBoundaryHelperPath); event.add_argv(kLaunchMode); event.add_argv(nonce); event.add_argv(kUVToolPath);
+      if (strcmp(scenario, "no-nonce") == 0) {
+        registration.pending_admissions.clear();
+        return !parse() && state.groups.empty();
+      }
+      if (!parse() || !ExpectRecordExact(output[1], kFirstID, "process-exec-expected")) return false;
+      event.set_binary_path(kSetprivPath); event.set_execfn(kSetprivPath); event.clear_argv();
+      for (const char* arg : {kSetprivPath, "--reuid=1000", "--regid=1000", "--clear-groups",
+          "--inh-caps=-all", "--ambient-caps=-all", "--bounding-set=-all", "--no-new-privs", "--", kUVToolPath}) event.add_argv(arg);
+      if (!parse() || !ExpectRecordExact(output[1], kFirstID, "process-exec-expected")) return false;
+    }
+    event.set_binary_path(kUVToolPath); event.set_execfn(kUVToolPath); event.clear_argv();
+    event.add_argv(kUVToolPath); event.add_argv("--version"); context->set_process_name("uv");
+    if (strcmp(scenario, "execfn") == 0) event.set_execfn("/tmp/uv");
+    if (strcmp(scenario, "argv0") == 0) event.set_argv(0, "uv");
+    const bool allowed_image = strcmp(scenario, "normal") == 0 || artifact;
+    if (!allowed_image) return !parse();
+    if (!parse()) return false;
+    if (artifact) {
+      return ExpectUnexpectedProcessRecord(output[1], kFirstID, "SENTRY_EXEC", "OTHER", "ARTIFACT_ROLE", "ARTIFACT_GROUP") &&
+          state.groups.at(99).role == ProcessState::Role::kArtifact && !IsTrustedControlNetwork(*context, state);
+    }
+    return ExpectRecordExact(output[1], kFirstID, "process-exec-expected") &&
+        state.groups.at(99).current_image_class == ProcessClass::kUV &&
+        IsTrustedControlNetwork(*context, state) &&
+        registration.pending_admissions.front().state == ProfileRegistration::AdmissionState::kConsumed;
+  };
+  bool passed = true;
+  for (const char* scenario : {"normal", "artifact", "clone", "no-nonce", "unsealed", "missing-snapshot",
+      "namespace", "wrong-class", "wrong-fs", "noexec", "suid", "missing-anchor", "duplicate", "shadow",
+      "parent-shadow", "no-topology", "execfn", "argv0"}) {
+    if (!run(scenario)) { fprintf(stderr, "UV admission scenario failed: %s\n", scenario); passed = false; break; }
+  }
+  close(output[0]); close(output[1]);
+  return passed;
+}
+
 int main(int argc, char** argv) {
   if(argc==2 && strcmp(argv[1],"--cargo-build-program-query-only")==0){const bool passed=VerifyCargoBuildProgramRustcQueryBoundary();fprintf(stderr,"Cargo program query %s\n",passed?"PASS":"FAIL");return passed?0:1;}
   if(argc==2 && strcmp(argv[1],"--cargo-build-program-null-only")==0){const bool passed=VerifyCargoBuildProgramBoundary(true,true,true);fprintf(stderr,"Cargo program null %s\n",passed?"PASS":"FAIL");return passed?0:1;}
@@ -7152,7 +7293,9 @@ int main(int argc, char** argv) {
 	fprintf(stderr, "STARTING pre_attribution_disconnect\n");
 	const bool pre_attribution_disconnect = running && VerifyAcceptedPreAttributionDisconnect(remote, child);
   const bool terraform_profile = VerifyTerraformProviderProfileBoundary();
-  const bool passed = github_artifact_runtime_read && terraform_profile && running && profile && profile_limits && record_boundaries && accessors && network && malformed_socket &&
+  const bool uv_runtime_admission = VerifyUVRuntimeAdmissionBoundary();
+  const bool uv_runtime_read = VerifyUVRuntimeReadBoundary();
+  const bool passed = uv_runtime_read && uv_runtime_admission && github_artifact_runtime_read && terraform_profile && running && profile && profile_limits && record_boundaries && accessors && network && malformed_socket &&
       malformed_connect && unknown_fd && process && correlation && cloexec && delayed && concurrent_python_streams && roles &&
       oci_bootstrap && demotion && mismatch && dropped && topology_ok && nested_mounts && filesystem && cargo_runtime_read && cargo_self_maps_read && cargo_config_read && cargo_tar_read && cargo_entropy_read && cargo_ca_read && cargo_null_read && cargo_rustc_query && cargo_rustc_metadata && cargo_rustc_abi && cargo_rustc_zlib && cargo_rustc_overcommit && cargo_rustc_maps && cargo_rustc_statm && cargo_rustc_cgroup && go_runtime_read && go_build_config_read && go_build_handoff_read && cargo_build_handoff_read && cargo_build_pinned_target && cargo_build_driver_read && cargo_build_rustc_child && cargo_build_native_cc_child && cargo_build_collect2_child && cargo_build_lld_launcher && cargo_build_rust_lld && cargo_build_link_inputs && cargo_build_link_sdk && cargo_build_rust_c_abi && cargo_build_lld_entropy && cargo_build_program && cargo_build_program_abi && cargo_build_program_maps && cargo_build_program_query && cargo_build_program_null && cargo_build_config && go_build_runtime_read && go_build_creator_diagnostic && go_build_tool_child && go_build_cgo_gcc_creator && go_build_sdk_link_gcc && go_build_sdk_link_native && go_build_linker_resolver && go_build_cc1 && go_build_cc1_headers && go_build_as && go_build_collect2 && go_build_native_linker && go_build_linker_plugin && go_build_linker_null && go_build_linker_runtime && go_build_as_null && go_build_cc1_sdk_cgo && npm_node &&
       cargo_rustc_mountinfo && cargo_rustc_cpu_quota && cargo_rustc_sysroot_directory && cargo_dns_configuration && cargo_resolver_file && cargo_utc && cargo_cloexec_entropy && socketpair_diagnostic && kernel_socketpair && open_result_negative_ok && open_result_positive_ok && no_basename_trust_ok &&
@@ -7160,6 +7303,8 @@ int main(int argc, char** argv) {
       resolver_lock_generation_production_path && process_group_lifecycle && direct_exec_admission &&
 		admission_terminal_protocol && direct_exec_admission_bound && session_aware_control && exact_control_peer && control_peer_hup_live_admission && unaccepted_disconnect && pre_attribution_disconnect;
   const std::pair<const char*, bool> latches[] = {
+      {"UV private tool admission boundary", uv_runtime_admission},
+      {"UV exact native startup read boundary", uv_runtime_read},
       {"readiness", running}, {"pod-init profile", profile},
       {"profile record limits", profile_limits}, {"finite profile record boundary", record_boundaries}, {"normalized accessors", accessors},
       {"socket family classification", network}, {"unknown socket family", malformed_socket},

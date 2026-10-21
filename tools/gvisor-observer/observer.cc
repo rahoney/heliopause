@@ -97,6 +97,8 @@ constexpr size_t kMaxTopologyFilesystemTypeBytes = 32;
 constexpr size_t kMaxTopologySnapshotBytes = 64 << 10;
 constexpr char kProfileNPM[] = "npm-lifecycle";
 constexpr char kProfilePyPI[] = "pypi-wheel";
+constexpr char kProfileUVResolver[] = "uv-pip-resolver";
+constexpr char kUVToolPath[] = "/haa-runtime/uv";
 constexpr char kProfilePyTorchCPU[] = "pypi-wheel-pytorch-cpu";
 constexpr char kProfilePyTorchCU126[] = "pypi-wheel-pytorch-cu126";
 constexpr char kProfilePyTorchCU130[] = "pypi-wheel-pytorch-cu130";
@@ -178,6 +180,7 @@ enum class ProcessClass {
   kShell,
   kPython,
   kPip,
+  kUV,
   kNode,
   kNpm,
   kArtifact,
@@ -555,6 +558,28 @@ bool IsPinnedReadOnlyRootPath(const TopologyState* topology, const std::string& 
     else if (IsAtOrBelowMountpoint(path, anchor.mountpoint)) return false;
   }
   return readonly_root && actual_root;
+}
+
+// The controller supplies and rehashes UV on a root-owned private tmpfs.
+// A path on an OCI layer or a nested/shadow mount is never this tool.
+bool IsUVToolImage(const TopologyState* topology, const std::string& path) {
+  if (path != kUVToolPath || topology == nullptr || !topology->sealed ||
+      !topology->snapshot_seen || topology->namespace_id == 0) return false;
+  size_t expected_helpers = 0;
+  for (const auto& mount : topology->expected) {
+    if (mount.mountpoint != "/haa-runtime") continue;
+    if (mount.mount_class != "helper" || mount.parent != "/" ||
+        mount.filesystem_type != "9p" || mount.read_only || mount.noexec || mount.nosuid || mount.nodev)
+      return false;
+    expected_helpers++;
+  }
+  size_t actual_helpers = 0;
+  for (const auto& entry : topology->anchors) {
+    const auto& mount = entry.second;
+    if (mount.mountpoint == "/haa-runtime" && mount.mount_class == "helper") actual_helpers++;
+    else if (mount.mountpoint != "/" && IsAtOrBelowMountpoint(path, mount.mountpoint)) return false;
+  }
+  return expected_helpers == 1 && actual_helpers == 1;
 }
 
 struct ProfileRegistration {
@@ -1265,6 +1290,7 @@ const char* ProcessClassName(ProcessClass process_class) {
     case ProcessClass::kShell: return "SHELL";
     case ProcessClass::kPython: return "PYTHON";
     case ProcessClass::kPip: return "PIP";
+    case ProcessClass::kUV: return "OTHER";
     case ProcessClass::kNode: return "NODE";
     case ProcessClass::kNpm: return "NPM";
     case ProcessClass::kGo: return "GO";
@@ -1310,6 +1336,7 @@ const char* NetworkProcessClassName(ProcessClass process_class) {
     case ProcessClass::kUnknown:
       return ProcessClassName(process_class);
     case ProcessClass::kCargo:
+    case ProcessClass::kUV:
     case ProcessClass::kCargoTar:
     case ProcessClass::kCargoRustc: return "OTHER";
     case ProcessClass::kSleep:
@@ -1397,6 +1424,7 @@ ProcessClass ProcessClassForPath(const std::string& path, const char* profile) {
   if (path == "/usr/bin/cat" || path == "/bin/cat" || path == "cat") return ProcessClass::kCat;
   if (path == "/usr/bin/chmod" || path == "/bin/chmod" || path == "chmod") return ProcessClass::kChmod;
   if (profile == nullptr) return ProcessClass::kUnknown;
+  if (strcmp(profile, kProfileUVResolver) == 0 && path == kUVToolPath) return ProcessClass::kUV;
   if (strcmp(profile, kProfileGoBuild) == 0 || strcmp(profile, kProfileCargoBuild) == 0) {
     if (path == "/haa-runtime/haa-boundary") return ProcessClass::kProjectBuildBoundary;
     if (path == "/usr/bin/setpriv") return ProcessClass::kProjectBuildSetpriv;
@@ -1683,7 +1711,7 @@ enum class FilesystemClass { kWorkspace, kOutside, kHoneytoken, kRuntimeRoot, kH
 bool IsWorkspacePath(const std::string& path, const char* profile) {
   if (profile == nullptr) return false;
   if (strcmp(profile, kProfileGitHub) == 0 || strcmp(profile, kProfileTerraformProvider) == 0) return HasPrefix(path, "/work/");
-  if (IsPythonProfile(profile)) {
+  if (IsPythonProfile(profile) || strcmp(profile, kProfileUVResolver) == 0) {
     return path == "/tmp" || HasPrefix(path, "/tmp/") ||
         path == "/haa-site" || HasPrefix(path, "/haa-site/");
   }
@@ -2109,6 +2137,22 @@ bool IsPinnedRuntimeRootRead(const gvisor::common::ContextData& context,
   return HasPrefix(normalized, kStdlibRoot);
 }
 
+bool IsPinnedUVRuntimeRead(const gvisor::common::ContextData& context,
+                          const ProcessState& state, const std::string& path,
+                          uint64_t flags, const char* profile, const MountAnchor* anchor) {
+  if (profile == nullptr || strcmp(profile, kProfileUVResolver) != 0 ||
+      anchor == nullptr || anchor->mount_class != "system" || anchor->mountpoint != "/proc" ||
+      path != "/proc/sys/vm/overcommit_memory" || flags != 557056 ||
+      !context.is_exec_session() || context.parent_thread_group_id() != 0) return false;
+  const auto* group = FindFilesystemGroup(context, state);
+  return group != nullptr && group->role == ProcessState::Role::kControl &&
+      group->provenance == ProcessState::Provenance::kDirectExecRoot &&
+      group->current_image_class == ProcessClass::kUV &&
+      FilesystemProcessClass(context, state) == ProcessClass::kUV &&
+      !group->root_eligible && group->root_consumed && group->trusted_control_network_active &&
+      !group->demotion_pending && !group->launch_target_pending && !group->handoff_target_pending;
+}
+
 // Cargo's fixed ELF needs the glibc realtime compatibility ABI, and Rust
 // initializes its stack guard from its own memory map. These are resolver-only
 // reads by the kernel-classified Cargo driver and its exact info-only SDK queries;
@@ -2435,7 +2479,7 @@ bool IsPinnedProjectConfigurationRead(
 
 bool IsCanonicalBootstrapProfile(const char* profile) {
   return profile != nullptr &&
-      (strcmp(profile, kProfileNPM) == 0 || strcmp(profile, kProfilePyPI) == 0 ||
+      (strcmp(profile, kProfileUVResolver) == 0 || strcmp(profile, kProfileNPM) == 0 || strcmp(profile, kProfilePyPI) == 0 ||
        strcmp(profile, kProfilePyTorchCPU) == 0 ||
        strcmp(profile, kProfilePyTorchCU126) == 0 ||
        strcmp(profile, kProfilePyTorchCU130) == 0 ||
@@ -2886,6 +2930,7 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
     return FilesystemClass::kRuntimeRoot;
   }
   if (IsExactBootstrapHelperWrite(message.context_data(), state, path, message.flags()) ||
+      IsPinnedUVRuntimeRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
       IsPinnedCargoResolverRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
       IsPinnedCargoBuildDriverRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
       IsPinnedCargoBuildCompilerRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
@@ -3033,7 +3078,7 @@ bool ParseControlRecord(const char* payload, size_t size, ControlPeer* peer,
     const std::string& id = fields["container_id"]; const std::string& profile = fields["profile"];
     const std::string& topology = fields["expected_topology"]; const std::string& generation = fields["session_generation"];
     if (!ValidContainerID(id) || !ValidSessionGeneration(generation) ||
-        (profile != kProfileNPM && profile != kProfilePyPI && profile != kProfilePyTorchCPU &&
+        (profile != kProfileUVResolver && profile != kProfileNPM && profile != kProfilePyPI && profile != kProfilePyTorchCPU &&
          profile != kProfilePyTorchCU126 && profile != kProfilePyTorchCU130 &&
          profile != kProfilePyTorchCU132 && profile != kProfileGitHub && profile != kProfileTerraformProvider && profile != kProfileGoResolver &&
          profile != kProfileGoBuild && profile != kProfileCargoResolver && profile != kProfileCargoBuild) ||
@@ -3481,6 +3526,12 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
   group->second.diagnostic_image_pinned = IsPinnedReadOnlyRootPath(topology, message.binary_path());
   group->second.diagnostic_build_target_image = strcmp(profile,kProfileCargoBuild)==0 && IsCargoBuildTargetImage(topology,message.binary_path());
   group->second.current_image_class = ProcessClassForPath(message.binary_path(), profile);
+  if (group->second.current_image_class == ProcessClass::kUV &&
+      (!IsUVToolImage(topology, message.binary_path()) || message.execfn() != kUVToolPath ||
+       message.argv_size() == 0 || message.argv(0) != kUVToolPath)) {
+    *reason = "PROCESS_PROVENANCE_UNKNOWN";
+    return false;
+  }
   if ((strcmp(profile, kProfileCargoResolver) == 0 || strcmp(profile, kProfileCargoBuild) == 0) &&
       (group->second.current_image_class == ProcessClass::kCargo ||
        group->second.current_image_class == ProcessClass::kCargoTar ||

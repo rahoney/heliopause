@@ -15,7 +15,7 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — native same-runtime self-quarantine update IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; actual signed rc6 normal/cancellations/fresh replay passed; channel scope remains
-Next action: P1 uv pip IN_PROGRESS — P1a local PASS / CI360 Vulnerability FAIL (GO-2026-6809, Go1.26.10 required); P1b signed metadata/native tool closure local PASS; Go1.26.10 final local canonical/vulnerability/fuzz/reproducible bundle/103 latches/12 namespaces PASS; remote Required/CPU PASS, cu126 accounting-late FAIL, cu132 PASS/cu130 Linux PASS but native build timeout/Required FAIL; UV pin/maintenance local PASS, cu126 trusted timing/OS diagnostic local checks PASS; PR366/new cu126 remote observation running; P1b4 UV data-only transport actual PASS; UV tmpfs/admission next; runtime/CLI wiring remains; P2..P7 NOT_STARTED; owner full-name preview and channel/release work remain
+Next action: P1 uv pip IN_PROGRESS — P1a local PASS / CI360 Vulnerability FAIL (GO-2026-6809, Go1.26.10 required); P1b signed metadata/native tool closure local PASS; Go1.26.10 final local canonical/vulnerability/fuzz/reproducible bundle/103 latches/12 namespaces PASS; remote Required/CPU PASS, cu126 accounting-late FAIL, cu132 PASS/cu130 Linux PASS but native build timeout/Required FAIL; UV pin/maintenance local PASS, cu126 trusted timing/OS diagnostic local checks PASS; PR366 Required10SUCCESS and new cu126 Linux/full1296.54s PASS; manual macOS default-test6m timeout/Required FAIL; P1b4 UV data-only transport actual PASS; P1b5 UV-only volume/admission/startup105 latches and actual native version/complete trace PASS; fresh source CI and production resolver/CLI next; runtime/CLI wiring remains; P2..P7 NOT_STARTED; owner full-name preview and channel/release work remain
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
@@ -3396,6 +3396,8 @@ record that result without changing runtime qualification scope. Main merge,
 permanent installed CLI activation and publication remain separate; PR38 is draft.
 
 ### M13-004 — convenience installation channels
+
+Current P1 substep: [P1b5 UV-only mount/profile/admission baseline](./evidence/package-client-quarantine/p1b5-uv-runtime-admission-baseline-20261021.md), locally checked in [native startup evidence](./evidence/package-client-quarantine/p1b5-uv-runtime-local-20261021.json). P1 remains IN_PROGRESS; fresh source CI and production UV resolver/CLI remain unwired/unqualified.
 
 Status: IN_PROGRESS — self-update installation role and Linux/WSL2 amd64 scope approved on2026-10-20; official names pending only for channel wiring. CLI-UX-003, SEC-UPD-001 and CLI-UX-002 remain complete.
 Audit: IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO for the
