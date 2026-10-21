@@ -202,6 +202,12 @@ Help/detail screens scroll. Examples are inert text derived/reviewed against
 currently registered commands; there is no embedded shell or automatic install,
 update, inspection, download or repair from menu navigation.
 
+Owner preview refinement: the home screen at60+ columns/22+ rows displays a fixed
+five-row HELOX wordmark with the full product name. Smaller screens and other
+pages keep the compact header. Existing color/NO_COLOR and bounded viewport
+rules apply; terminal font size is not changed. Usage labels expose pip install
+--upgrade/-U and GitHub Release asset install --replace without adding commands.
+
 Language changes use the existing atomic preference writer and language selector.
 Show saved/effective language and selection source. Preserve auto and the explicit
 flag/environment override precedence; explain when a saved preference is

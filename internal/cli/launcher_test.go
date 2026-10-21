@@ -267,7 +267,7 @@ func TestLauncherBoundsTranslationsAndNoColor(t *testing.T) {
 				t.Fatal("empty core translation", language)
 			}
 		}
-		for _, size := range [][2]int{{80, 24}, {20, 8}, {2, 2}} {
+		for _, size := range [][2]int{{80, 24}, {59, 22}, {60, 21}, {60, 22}, {20, 8}, {2, 2}} {
 			output.Reset()
 			if err := l.draw(size[0], size[1]); err != nil {
 				t.Fatal(err)

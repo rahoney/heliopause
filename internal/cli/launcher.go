@@ -162,6 +162,12 @@ func (l *launcher) items() []string {
 		items := make([]string, len(l.commands))
 		for i, command := range l.commands {
 			items[i] = command.CommandPath()
+			switch items[i] {
+			case "helox pip install":
+				items[i] += "  (--upgrade / -U)"
+			case "helox github install":
+				items[i] += "  (--replace)"
+			}
 		}
 		return items
 	case launcherLanguage:
@@ -402,7 +408,17 @@ func (l *launcher) draw(width, height int) error {
 	l.lastWidth, l.lastHeight = width, height
 	cells := width - 1 // Leave the physical last column unused.
 	var header []string
-	if height >= 18 && width >= 40 {
+	brandRows := 1
+	if l.page == launcherHome && height >= 22 && width >= 60 {
+		header = append(header,
+			"██  ██ ██████ ██      ████  ██  ██",
+			"██  ██ ██     ██     ██  ██  ████ ",
+			"██████ █████  ██     ██  ██   ██  ",
+			"██  ██ ██     ██     ██  ██  ████ ",
+			"██  ██ ██████ ██████  ████  ██  ██",
+			"")
+		brandRows = len(header) + 1 // Include the full product name.
+	} else if height >= 18 && width >= 40 {
 		header = append(header, "H E L O X", "")
 	}
 	header = append(header, launcherWrap("Heliopause Artifact Airlock", cells)...)
@@ -447,7 +463,7 @@ func (l *launcher) draw(width, height int) error {
 	}
 	lines := make([]string, 0, height)
 	for i, line := range header {
-		if i == 0 {
+		if i < brandRows {
 			line = l.p.paint(line, "1;36")
 		}
 		lines = append(lines, line)
