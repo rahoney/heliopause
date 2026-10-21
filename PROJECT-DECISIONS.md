@@ -102,6 +102,11 @@
 
 ## Current Stage
 
+2026-10-21 owner 요청으로 최신 CLI의 직접 사용 확인을 채널 등록보다 먼저 진행한다.
+첫 정식 공개판 목표는 v1.0.0이며, 사용자 검토·보완과 채널 qualification 뒤 보호된
+PR merge/main CI·exact 서명 build를 거쳐 배포한다. 실제 tag/publication 권한은
+[release activation boundary](./docs/planning/18-m13-production-release-operations-contract.md#4-release-activation-boundary)를 따른다.
+
 M13-001 저장소 보호와 M13-003의 보호된 v0.1.0 태그·자연 build·attestation·OS package lifecycle 검증을 완료했다. [M13-003 결과](./docs/planning/evidence/m13-003-release-build/qualification-20261017.md)가 정확한 범위를 소유한다. M13-002는 사용자가 승인한 [C3 조건부 유예](./docs/planning/evidence/m13-002-protected-path/cla-deferral-proposal-20261017.md)에 따라 `ACCEPTED_WITH_EXCEPTION / QUALIFIED=NO / ACCEPTANCE_CLOSED=YES`다. 실제 missing-CLA는 `NOT_TESTED / DEFERRED`로 유지하고 최초 외부 기여 병합 전에 검증한다. 상세 계약은 [M13](./docs/planning/18-m13-production-release-operations-contract.md#m13-002--protected-branch-qualification)을 따른다.
 
 CLI-UX-001·002의 다국어 리포트·진행 표시·OS 표시 언어 감지는 로컬 CLI와 원격 검증을 완료했다. [언어 qualification](./docs/planning/evidence/cli-os-language/qualification-20261018.md)이 실제 WSL·설치 CLI와 native macOS/CI328 범위를 연결한다. 후속 SEC-UPD-001도 [전체 검토](./docs/planning/evidence/update-quarantine/final-review-20261019.md)와 최종 소스cdac96d의 [CI344](./docs/planning/evidence/update-quarantine/ci344-closure.json)를 확인해 `COMPLETE / QUALIFIED / ACCEPTANCE_CLOSED`다. 문서화된 여섯 생태계 업데이트·새 검사/Evidence·실패 시 원본 보호·복원·완료 시험 데이터 정리가 검증됐으며, named CPU/cu126/cu130/cu132는 각 소스별 실제 qualification 범위를 유지한다.

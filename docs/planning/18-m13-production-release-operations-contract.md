@@ -123,6 +123,12 @@ npm, PyPI/pipx, Homebrew는 “일단 설치해 보고 싶은 사용자”의 fr
 
 ## 4. Release activation boundary
 
+2026-10-21 owner 방향: 첫 정식 공개판의 목표는 **v1.0.0**이다. 기존 v0.1.0과
+v0.1.1-rc.*의 검증 기록·immutable ref는 유지한다. 목표 버전 선택은 새 tag 생성이나
+publication 실행 승인이 아니다. 사용자의 최신 CLI 검토와 필요한 보완·채널 qualification,
+보호된 main PR merge 및 해당 source의 CI/서명 build 검증을 먼저 수행한다.
+출시 시 공개 CLI·JSON·종료 코드와 지원 platform/runtime 범위를 명확히 확정한다.
+
 - `release` environment는 required reviewer 승인 없이는 publish job을 실행하지 않는다.
 - `v*` tag는 생성·수정·삭제 Ruleset으로 보호한다.
 - tag commit은 protected `main` history에 속해야 한다.
