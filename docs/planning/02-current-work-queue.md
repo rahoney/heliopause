@@ -45,6 +45,8 @@ M13-004 하나만 IN_PROGRESS이며 G127을 동시에 착수하지 않는다. Go
 
 ### 2026-10-21 owner scope — client expansion and full-name brand
 
+CI386을 기다리는 동안 [C3e3 publication 감사·수정 지도](./evidence/package-client-quarantine/p1f-uv-sync-publication-baseline-20261023.md)를 추가했다. 기존 complete engine을 재구현하지 않으며 source/전체 old-owner guard·complete-only transaction·Python Manifest/SBOM/cache·CLI 순서로 남은 gap을 좁힌다. 실제 native complete qualification과 leaf의 세 source 착수 전 검토는 미완료다.
+
 M13-004만 IN_PROGRESS로 유지한다. [확장 계획](./20-package-client-quarantine-plan.md)은
 uv pip/project·pnpm·Bun·pipx 설치/업데이트와 npx·uvx·bunx·pipx run 등을 하나의
 범위로 설계하고 단계별 실제 검증 후 지원을 연다. 기존 검역 엔진은 재사용한다.

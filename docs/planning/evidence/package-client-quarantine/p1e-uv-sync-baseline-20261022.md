@@ -73,6 +73,9 @@ private session owner에 source-bound 진입을 추가하는 방향을 검토한
 
 ## C3e3 — exact complete publication / CLI
 
+실제 owner별 후속 감사·상세 수정 지도와 source 착수 전 남은 검토는
+[C3e3 publication baseline](./p1f-uv-sync-publication-baseline-20261023.md)이 소유한다.
+
 1. 기존 application guarded-project-update 순서로 guard→native selection→전체 entry inspection/
    Evidence/entry Policy→set Policy→staging→commit→close를 연결한다. Empty도 실제 snapshot/set
    Policy와 guard를 거치며 가짜 artifact/check/성공 Evidence를 만들지 않는다.
