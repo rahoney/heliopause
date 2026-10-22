@@ -77,6 +77,34 @@ Domain/Application/Policy engine을 다시 만들거나 기존 구현을 교체�
   snapshot digest를 재구성한다. Wrapper는 base native controls를 정확히 검증하고 extra proof를
   guest authority로 넘기지 않는다. Full-control replay·변조·다른 target을 commit이 거부해야 한다.
 
+### A1 구현 전 재검토 — 원본 metadata 공통화만 먼저
+
+첫 source 단위는 A 전체가 아니라 다음 공통화다. C3e2b 실제 qualification 뒤 착수한다.
+`pypiUpdateSession`의 directories/metadata/emptyMetadata는 실제로 pypi_update.go의 capture와
+verify 두 본문에서만 사용된다. 새 private `pypiInstalledSnapshot`과 capture/verify helper로
+옮기고 session은 original snapshot을 보유한다. 기존 Begin의 adoption 검사·defer Close와
+NewUpgradeInput의 실제 requirement·native inventory·Resolve/Promote 순서는 유지한다.
+capture 함수는 transaction과 실제 metadata 목록만 다루고 요청 reference/Policy/target mutation을
+생성하지 않는다. metadata Body는 snapshot 내부에 소유하고 외부 반환은 복사한다.
+
+Inventory의 실제 metadata 소비는 managedPyPIInventory와 capturePyPINativeInventory의
+MetadataFiles() 두 곳이다. 기존 UpgradeInput wrapper가 private file-list helper를 부르게 하며
+동일 alias/owner/RECORD hash·resource·native refusal을 유지한다. Count 검사는 기존 공개
+`artifactpypi.UpgradeInputDistributionLimit`을 사용한다. 이 단위에서는 complete deletion,
+source-file guard/control wrapper·old proof 전체화·record/CLI를 구현하지 않는다.
+
+기존 TestPyPIUpgradeGuardFreezesMetadataAndOwnershipBeforeSelection의 drift/cancel/lock,
+retired directory 두 tests, TestNativePyPIInventoryOnlyFreezesClaimsAndDetectsOriginalDrift와
+false path/link/hash/ambiguous claim, UV update의 exact publication/rollback을 재사용한다.
+새 의미 검증은 root 없는 실제 metadata snapshot의 empty/65개 수집과 변경 감지에 한정한다.
+65개는 graph64와 원본1024를 혼동하지 않는 경계다. Helpers에 성공을 미리 가정한 fake root나
+삭제 권한을 넣지 않는다. Canonical5와 영향받은 promotion/Bootstrap/Application Race를 확인하고
+소스·raw·기존 공개 동작과의 경계를 중간 커밋에 연결한다.
+
+두 번째 검토에서 원본 capture 오류의 기존 wrapper code와 primary cause, Close 책임을 보존하는
+위치를 확인했다. 위 세 전체 통합 미결정점은 A1 공통화의 입력이 아니며 A 나머지/B/C/D source
+착수 전 각 해당 지도를 더 좁힌다. 기존 기능 재구현이나 새 미래 Port를 추가하지 않는다.
+
 ### B. Complete-only transaction
 
 - 기존 `prepare/commit` 입구는 merge와 empty refusal을 유지한다. 새 private complete 입구만
