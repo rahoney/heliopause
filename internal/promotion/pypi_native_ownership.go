@@ -226,8 +226,8 @@ func proveNativePythonWheelFootprint(client pypiNativeClient, project *pypiNativ
 	if client == nativeUVClient {
 		for name, body := range map[string]string{"INSTALLER": "uv", "REQUESTED": ""} {
 			claim, ok := project.files["site/"+project.directory+"/"+name]
-			// UV only emits REQUESTED for directly requested distributions.
-			// It is optional for dependencies and is never ownership authority.
+			// REQUESTED is never ownership or root-selection authority. Its
+			// absence does not bypass the same authentic old-wheel proof below.
 			if !ok && name == "REQUESTED" {
 				continue
 			}

@@ -113,7 +113,8 @@ adoption 성공으로 전용하지 않는다. Canonical5/전체 관련 Race 뒤 
 
 후속 코드 검토는 두 형식 조건을 구체화했다. 고정 tag의
 [metadata writer](https://github.com/astral-sh/uv/blob/0.13.4/crates/uv-install-wheel/src/wheel.rs#L859-L906)는
-REQUESTED를 직접 요청한 distribution에만 만든다. 따라서 INSTALLER는 필수 UV 두 bytes,
+REQUESTED를 requested 인자가 true일 때 만든다. 앞 실제 data-only probe에서는 transitive
+dep에도 이 파일이 있었으므로 primary/직접 요청 여부를 이 marker로 추론하지 않는다. INSTALLER는 필수 UV 두 bytes,
 REQUESTED는 있으면 정확한 empty/hash/size를 요구하며 부재 자체를 거부하지 않는다.
 각 파일의 소유권은 여전히 authentic old wheel proof가 결정한다. 또한 UV의 bytecode census는
 필수 import 역할 목록과 다르므로 site/dist-info의 인증된 모든 .py 파일의 __pycache__ 부재를
@@ -125,3 +126,11 @@ unrecorded-cache 무변경 거부→명시 adopt3.11→managed replay와 cfg/use
 ## 로컬 후보 검증과 남은 경계
 
 [최종 로컬 영수증](./p1d-native-uv-local-20261022.json)은 source10경로와 canonical5·관련5package Race130.026s 성공을 연결한다. C3d는 IMPLEMENTED=YES / WIRED=YES / QUALIFIED=LOCAL ONLY / ACCEPTANCE_CLOSED=NO다. UV marker·optional REQUESTED·old-wheel 변조/runtime·RECORD 밖 cache/resource cache·publication 전 cache 생성과 rollback/소유권 미게시를 검증했다. Native fixture는 실제 UV 컨테이너 두 개만 만들고 label/image를 확인한 정리와 성공한 부재 조회를 요구한다. 기본 테스트에서는 실제 fixture를 실행하지 않았다. Actual source CI의 native 원본→거부→adopt→managed replay·기존 공용 소비자/macOS/Required가 남으며, 이를 로컬 unit 성공으로 닫지 않는다.
+
+## CI381 최초 실패와 fixture 전달 교정
+
+[Actual CI381](./p1d-native-uv-ci381-20261022.json)은 같은 전체 tree에서8SUCCESS/2FAIL이다. Managed CLI5단계는 다시 통과했지만 fixture의 docker cp 입력이 read-only rootfs에서 거부되어 native UV 실행·인계는 도달하지 않았다. CPU full도 미도달이다. Helper3wait0·원본 RESTORED와 fixture 정리 assertion을 확인했으며 전체 qualification 성공으로 기록하지 않는다.
+
+교정은 제품 guard/Policy를 바꾸지 않는다. 고정 Python의 길이 제한 stdin writer와 stdout tar로 live guest tmpfs의 데이터를 전달하며 rootfs를 read-only로 유지한다. 고정 UV binary 전용 tmpfs만 exec를 명시하고 wheel/HTML은0444, 별도 /tmp는 noexec다. [로컬 전달 영수증](./p1d-native-uv-fixture-local-20261022.json)은 첫 noexec 거부와 다음 inert fixture PASS6.509s·실제 tool/cfg/site 데이터·두 Host snapshot 동일·전용 자원 정리를 구분한다. 실제 공개 old-wheel proof/adopt/replay 성공은 아니며 새 source CI가 남는다.
+
+교정 후보의 canonical format/Quick50.051s/security/docs/workflow와 bootstrap Race8.806s도 통과했다. 제품 promotion/CLI/Application 실행문은 기존 관련 전체 Race130.026s 후보와 같으며, REQUESTED 설명 주석만 정정했다. 임시 transport-only Go stub/operator/client는 작은 재현 원본 보존 후 삭제했고 Go TMPDIR0이다. 새 actual source CI가 다음 완료 조건이며 sync source는 아직 수정하지 않는다.

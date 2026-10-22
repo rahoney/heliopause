@@ -122,19 +122,33 @@ func uvNativeOriginalFixture(t *testing.T, ctx context.Context, wheel []byte, ta
 	container := create(runtimeidentity.PythonImageReference, "", []string{"infinity"},
 		"--runtime", "runc", "--network", "none", "--read-only", "--user", "1000:1000", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "64", "--memory", "512m", "--cpus", "1",
 		"--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=128m,uid=1000,gid=1000,mode=0700",
-		"--tmpfs", "/haa-fixture:rw,nosuid,nodev,size=96m,uid=1000,gid=1000,mode=0700", "--entrypoint", "/bin/sleep")
+		"--tmpfs", "/haa-fixture:rw,exec,nosuid,nodev,size=96m,uid=1000,gid=1000,mode=0700", "--entrypoint", "/bin/sleep")
 	checked(nil, 16<<10, "start", container)
 	// Only the verified UV binary is executable in this private tmpfs. The
 	// authentic wheel and local registry HTML are copied as inert input data.
 	const filename = "idna-3.10-py3-none-any.whl"
 	wheelSum := sha256.Sum256(wheel)
-	var input bytes.Buffer
-	writer := tar.NewWriter(&input)
-	for _, directory := range []string{"index/", "index/packages/", "index/simple/", "index/simple/idna/"} {
-		if err := writer.WriteHeader(&tar.Header{Name: directory, Typeflag: tar.TypeDir, Mode: 0700, Uid: 1000, Gid: 1000}); err != nil {
-			t.Fatal(err)
-		}
+	guest := func(input []byte, limit int, args ...string) []byte {
+		t.Helper()
+		arguments := []string{"exec", "--interactive", "--user", "1000:1000", container, "/usr/bin/env", "-i", "PATH=/usr/local/bin:/usr/bin:/bin", "HOME=/tmp", "LANG=C", "LC_ALL=C"}
+		return checked(input, limit, append(arguments, args...)...)
 	}
+	// docker cp writes to a read-only container are refused even when its
+	// destination is a live tmpfs. Fixed Python data I/O accesses the guest
+	// mount directly, without relaxing the rootfs or executing artifact code.
+	const writeData = `import os,sys
+p=sys.argv[1]; remaining=int(sys.argv[2]); mode=int(sys.argv[3])
+assert p in ("/haa-fixture/uv","/haa-fixture/index/packages/idna-3.10-py3-none-any.whl","/haa-fixture/index/simple/idna/index.html")
+assert 0 < remaining <= 64*1024*1024 and mode in (292,365)
+os.makedirs(os.path.dirname(p),mode=0o700,exist_ok=True)
+fd=os.open(p,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o600)
+with os.fdopen(fd,"wb") as f:
+ while remaining:
+  b=sys.stdin.buffer.read(min(65536,remaining))
+  if not b: raise RuntimeError("truncated fixture data")
+  f.write(b); remaining-=len(b)
+ if sys.stdin.buffer.read(1): raise RuntimeError("extra fixture data")
+ f.flush(); os.fsync(f.fileno()); os.fchmod(f.fileno(),mode)`
 	for _, entry := range []struct {
 		name string
 		body []byte
@@ -144,21 +158,11 @@ func uvNativeOriginalFixture(t *testing.T, ctx context.Context, wheel []byte, ta
 		{"index/packages/" + filename, wheel, 0444},
 		{"index/simple/idna/index.html", []byte("<a href=\"../../packages/" + filename + "#sha256=" + hex.EncodeToString(wheelSum[:]) + "\">" + filename + "</a>"), 0444},
 	} {
-		if err := writer.WriteHeader(&tar.Header{Name: entry.name, Mode: entry.mode, Size: int64(len(entry.body)), Uid: 1000, Gid: 1000}); err != nil {
-			t.Fatal(err)
-		}
-		if _, err := writer.Write(entry.body); err != nil {
-			t.Fatal(err)
-		}
+		guest(entry.body, 16<<10, "/usr/local/bin/python", "-I", "-B", "-c", writeData, "/haa-fixture/"+entry.name, fmt.Sprint(len(entry.body)), fmt.Sprint(entry.mode))
 	}
-	if err := writer.Close(); err != nil {
-		t.Fatal(err)
-	}
-	checked(input.Bytes(), 16<<10, "cp", "--archive", "-", container+":/haa-fixture")
 	execute := func(args ...string) []byte {
 		t.Helper()
-		arguments := []string{"exec", "--user", "1000:1000", container, "/usr/bin/env", "-i", "PATH=/usr/local/bin:/usr/bin:/bin", "HOME=/tmp", "LANG=C", "LC_ALL=C"}
-		return checked(nil, 64<<10, append(arguments, args...)...)
+		return guest(nil, 64<<10, args...)
 	}
 	checked(nil, 16<<10, "exec", "--detach", "--user", "1000:1000", container, "/usr/local/bin/python", "-I", "-B", "-m", "http.server", "8123", "--bind", "127.0.0.1", "--directory", "/haa-fixture/index")
 	execute("/usr/local/bin/python", "-I", "-B", "-c", `import urllib.request,time
@@ -187,7 +191,17 @@ for i in range(20):
 	if err := os.WriteFile(filepath.Join(target, "pyvenv.cfg"), cfg, 0600); err != nil {
 		t.Fatal(err)
 	}
-	installed := checked(nil, 4<<20, "cp", container+":/tmp/native-venv/"+siteRelative+"/.", "-")
+	installed := guest(nil, 4<<20, "/usr/local/bin/python", "-I", "-B", "-c", `import pathlib,sys,tarfile
+root=pathlib.Path(sys.argv[1]); total=0
+with tarfile.open(fileobj=sys.stdout.buffer,mode="w|") as archive:
+ for count,p in enumerate(sorted(root.rglob("*"))):
+  if count>=256 or p.is_symlink() or not (p.is_dir() or p.is_file()): raise RuntimeError("unsupported fixture data")
+  header=archive.gettarinfo(str(p),arcname=p.relative_to(root).as_posix())
+  total+=header.size
+  if header.size>1048576 or total>4*1024*1024: raise RuntimeError("fixture data exceeds bound")
+  if header.isfile():
+   with p.open("rb") as f: archive.addfile(header,f)
+  else: archive.addfile(header)`, "/tmp/native-venv/"+siteRelative)
 	reader = tar.NewReader(bytes.NewReader(installed))
 	seen := map[string]bool{}
 	for count := 0; ; count++ {
