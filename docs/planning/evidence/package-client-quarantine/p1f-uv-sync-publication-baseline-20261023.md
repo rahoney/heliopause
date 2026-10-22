@@ -161,6 +161,33 @@ canonical5·promotion/Bootstrap/Application Race다. A1 CI387은 다른 source�
 metadata semantics와 whole inventory의 중복 map membership은 다른 책임임을 대조했다.
 기존 artifact RFC822/dependency parser를 약화하거나 fake UpgradeRequirement/graph를 만들지 않는다.
 
+### A2b 구현 전 감사 — primary 없는 전체 original proof bridge
+
+기존 pypiNativeEnrollment.selectOwnership의 oldWheel/whole footprint·UV cache namespace·control
+생성 본문은 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES(기존 selected graph 범위,
+CI386)이며 재구현하지 않는다. Complete original inventory를 직접 증명하는 호출은 NO/NO/NO/NO다.
+MISSING은 동일 본문의 primary-free subject 연결과 새 선택에서 제외된 원본의 실제 proof coverage다.
+
+수정 위치는 pypi_native_ownership.go:selectOwnership 한 owner다. 기존 함수는 실제 graph node의
+project/source subject를 만드는 wrapper로 유지하고 native lookup·archive hash/filename/runtime·
+whole RECORD/footprint·cache absences·bounded proof JSON 본문을 private subject helper로 공유한다.
+새 selectAllOwnership은 A2a로 검증한 실제 native inventory의 전체 project를 정렬해 같은 helper를
+호출한다. Composite ArtifactReference/primary graph를 만들지 않는다. oldWheel의 개별 실제 이전
+wheel lookup은 그대로 필요하다. 기존5m proof 한도·resource/format·control schema/cleanup을 유지한다.
+
+기존 synthetic wheel writer는 default wrapper를 유지한 named fixture helper로 본문을 공유한다.
+기존 이름·version/data·ZIP member 순서/RECORD는 유지하며 실제 두 개의 서로 다른 synthetic
+archive와 native UV 설치 원본을 구성한다. Fake ports는 고정 archive를 전달할 뿐이며 public/native
+runtime qualification이라고 주장하지 않는다. 기존 selected graph 한 원본만 proof 하는 정상
+동작과, primary 없는 전체 inventory 두 원본 proof를 같은 fixture에서 비교한다. 제외된 두 번째
+archive의 손상이 전체 proof를 거부하고 HAA ownership·target publication을 만들지 않아야 한다.
+두 원본의 cache namespace·각 intake scope cleanup과 기존 pip/UV proof·guard 회귀도 확인한다.
+
+같은 기존 proof 본문 재사용·subject source/순서·ctx 오류와 optional proof control을 두 번째로
+검토했다. 이 method만으로 actual sync guard가 WIRED되는 것은 아니다. Source file freeze·held
+original reverify·complete deletion/cache/Policy/CLI는 후속이다. Canonical5와 관련 전체 Race를
+확인하고 실행 중인 CI387 source와 새 후보를 구분해 기록한다.
+
 ### B. Complete-only transaction
 
 - 기존 `prepare/commit` 입구는 merge와 empty refusal을 유지한다. 새 private complete 입구만
