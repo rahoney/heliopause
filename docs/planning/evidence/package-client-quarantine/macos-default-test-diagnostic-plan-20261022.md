@@ -165,3 +165,30 @@ Race36.760s(시험16.714s)·Darwin compile11.016s도 PASS다. Checker/CLI depend
 9 prerequisites가 모두 SUCCESS다. Native macOS의 같은 cache root/trimpath 실행과
 build55.562s·default test envelope171.294s 이내를 확인했다. 이후 public native caller는
 별도 후보이며, 과거 모든 timeout의 정확한 인과를 이 한 실행으로 확정하지 않는다.
+
+
+## CI389 production build — bounded compile progress 보완 전 감사
+
+[CI389 결과](./p1f-cpu-completion-ci389-20261023.json)는 Linux51/CPU216.40s·뒤 네 검사와
+helper5wait0/정리가 PASS지만 macOS production build120s/Required는 FAIL이다. Default test는
+미도달이다. Go1.26.10/darwin-amd64·runner image와 실제 step cache/trimpath는 직전 정상
+CI386/387/388과 같았다. User197369ms/system107962ms는 CPU 사용 관측이며 정확한 package,
+GC/OS 압력·cache miss 또는 새 source 인과는 확정하지 않는다.
+
+기존 build·bounded capture/timeout IMPLEMENTED/WIRED=YES, 해당 후보 macOS QUALIFIED/
+ACCEPTANCE_CLOSED=NO다. Package progress는 NO/NO/NO/NO이며 MISSING은 다음 진단과 실제
+native 결과다. 기존 실행기·cache·validator·platform을 대체하지 않는다.
+
+정확한 수정 위치는 scripts/check/runner.go의 quickSteps/platformSteps 두 production build 호출이다.
+고정 Go의 build -v만 추가한다. 같은 SDK help와 cmd/go/internal/work/exec.go의 BuildV 분기는
+package import path 출력이다. JSON parser·새 progress framework·-x/-work·환경/임시 경로/인자를
+추가하지 않는다. 기존1MiB bounded capture와 timeout의 partial stdout/stderr/error cause 보존을
+재사용한다. 출력된 package는 컴파일 진행 자료이며 해당 package가 정지 원인이라는 증거가 아니다.
+성공 시 기존 quiet 출력과 실패 분류, build2m/default6m·job/Required·artifact CPU/poll/wall 한도는
+유지한다. Source rewriting/warm-up/cache trust·검사 생략은 없다.
+
+두 번째 검토에서 두 실제 consumer와 runGo/runCapturedCommand의 timeout/outputLimit 보존을
+대조했다. 두 flag 변경에 구현을 반복하는 새 unit test는 만들지 않고 canonical format/Quick/
+security/docs/workflow/platform 및 기존 checker timeout/capture Race를 검사한다. Actual native
+source CI가 진단의 유효성과 macOS 완료 기준이며 로컬 cache 성공을 native cold 성능으로 쓰지
+않는다. 진단 추가를 빌드 timeout 원인 해결로 기록하지 않는다.
