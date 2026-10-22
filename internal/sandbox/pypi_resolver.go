@@ -148,8 +148,117 @@ func (r *PyPIResolver) ResolveDependencies(ctx context.Context, reference domain
 	return r.resolveDependencies(ctx, reference, nil)
 }
 
-func (r *PyPIResolver) resolveDependencies(ctx context.Context, reference domain.ArtifactReference, upgrade *artifactpypi.UpgradeInput) (resolution domain.DependencyResolution, resultErr error) {
-	if r == nil || r.runner == nil || r.endpoints == nil || r.observer == nil || r.probe == nil || ctx == nil || reference.Source() != r.profile.Source() {
+func (r *PyPIResolver) resolveDependencies(ctx context.Context, reference domain.ArtifactReference, upgrade *artifactpypi.UpgradeInput) (domain.DependencyResolution, error) {
+	return r.withPythonResolverSession(ctx, reference, func(ctx context.Context, containerID string, pythonRuntime PythonRuntime) (domain.DependencyResolution, error) {
+		request, err := pypiRequirement(reference)
+		if err != nil {
+			return domain.DependencyResolution{}, errors.New("PyPI resolver reference is invalid")
+		}
+		resolveTimeout := pypiResolverTimeout
+		if resourcePolicy := artifactpypi.ResourcePolicyFromContext(ctx); resourcePolicy.Duration() > defaultPyPIResolverDuration {
+			resolveTimeout = resourcePolicy.Duration()
+		}
+		resolveCtx, cancel := context.WithTimeout(ctx, resolveTimeout)
+		defer cancel()
+		if artifactpypi.IsPyTorchSource(r.profile.Source()) {
+			if upgrade != nil {
+				return r.resolvePyTorchDependencyUpgrade(resolveCtx, containerID, pythonRuntime, reference, *upgrade)
+			}
+			candidates, reportBytes, resolveErr := r.resolvePyTorchGraph(resolveCtx, containerID, pythonRuntime, reference)
+			if resolveErr != nil {
+				return domain.DependencyResolution{}, resolveErr
+			}
+			graph, graphErr := artifactpypi.BuildLockedGraph(reference, candidates)
+			if graphErr != nil {
+				return domain.DependencyResolution{}, graphErr
+			}
+			sum := sha256.Sum256(reportBytes)
+			digest, digestErr := domain.NewSHA256Digest(hex.EncodeToString(sum[:]))
+			if digestErr != nil {
+				return domain.DependencyResolution{}, digestErr
+			}
+			runtimeIdentity := "python:" + pythonRuntime.PythonVersion + ";pip:" + pythonRuntime.PipVersion + ";target:" + pythonRuntime.InterpreterTag + "/" + pythonRuntime.ABITag + "/" + pythonRuntime.PlatformTag + ";source:" + r.profile.Name()
+			return domain.NewDependencyResolution(graph, runtimeIdentity, digest)
+		}
+		var report artifactpypi.InstallationReport
+		var reportBytes []byte
+		var selectedControls []domain.ProjectControlFile
+		if upgrade != nil {
+			selection, err := r.resolveUpgradeSelection(resolveCtx, containerID, pythonRuntime, *upgrade)
+			if err != nil {
+				return domain.DependencyResolution{}, err
+			}
+			report, reportBytes, selectedControls = selection.report, selection.body, selection.controls
+		} else {
+			pipArguments := pypiResolveArguments(r.profile, request)
+			if _, err := r.runner.Output(resolveCtx, "docker", append(boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-m", "pip"), pipArguments...)...); err != nil {
+				return domain.DependencyResolution{}, errors.New("run locked pip resolution failed")
+			}
+			reportBytes, err = r.runner.Output(resolveCtx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", boundedReadScript, pypiResolverProjectDir+"/report.json", "4194304")...)
+			if err != nil {
+				return domain.DependencyResolution{}, errors.New("read pip installation report failed")
+			}
+			report, err = artifactpypi.ParseInstallationReport(reference, reportBytes, pythonRuntime.PipVersion, pythonRuntime.PythonVersion)
+			if err != nil {
+				return domain.DependencyResolution{}, err
+			}
+		}
+		// Source ownership remains that of each node. Metadata bounds belong to
+		// the canonical root transaction, including an explicitly resolved input.
+		// An ordinary PyPI context retains its conservative default bound.
+		rootProfile := artifactpypi.PublicPyPIProfile()
+		for _, canonical := range artifactpypi.AllSourceProfiles() {
+			if canonical.Name() == artifactpypi.RootSourceProfileNameFromContext(ctx) {
+				rootProfile = canonical
+				break
+			}
+		}
+		pages := make([]artifactpypi.SimpleProject, 0, len(report.Candidates()))
+		for _, candidate := range report.Candidates() {
+			fetchScript := simpleJSONFetchScript
+			fetchArguments := []string{candidate.Project()}
+			profile := artifactpypi.PublicPyPIProfile()
+			if candidate.Source() != artifactpypi.PublicPyPIProfile().Source() {
+				fetchScript = pytorchHTMLFetchScript
+				fetchArguments = []string{r.profile.IndexURL(), candidate.Project()}
+				profile = r.profile
+			}
+			body, err := r.runner.Output(resolveCtx, "docker", append(boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", fetchScript), fetchArguments...)...)
+			if err != nil {
+				return domain.DependencyResolution{}, errors.New("fetch PyPI Simple metadata failed")
+			}
+			page, err := artifactpypi.ParseSimpleProjectForRootProfile(candidate.Project(), body, profile, rootProfile)
+			if err != nil {
+				return domain.DependencyResolution{}, err
+			}
+			pages = append(pages, page)
+		}
+		candidates, err := artifactpypi.CrossCheckReport(report, pages)
+		if err != nil {
+			return domain.DependencyResolution{}, err
+		}
+		graph, err := artifactpypi.BuildLockedGraph(reference, candidates)
+		if err != nil {
+			return domain.DependencyResolution{}, err
+		}
+		sum := sha256.Sum256(reportBytes)
+		digest, err := domain.NewSHA256Digest(hex.EncodeToString(sum[:]))
+		if err != nil {
+			return domain.DependencyResolution{}, err
+		}
+		runtimeIdentity := "python:" + pythonRuntime.PythonVersion + ";pip:" + pythonRuntime.PipVersion + ";target:" + pythonRuntime.InterpreterTag + "/" + pythonRuntime.ABITag + "/" + pythonRuntime.PlatformTag + ";source:" + r.profile.Name()
+		resolution, err := domain.NewDependencyResolution(graph, runtimeIdentity, digest)
+		if err != nil || len(selectedControls) == 0 {
+			return resolution, err
+		}
+		return resolution.WithProjectControls(selectedControls)
+	})
+}
+
+// withPythonResolverSession keeps the existing PyPI/PyTorch lifecycle and
+// fail-closed cleanup shared with the independent UV metadata/archive reader.
+func (r *PyPIResolver) withPythonResolverSession(ctx context.Context, reference domain.ArtifactReference, operation func(context.Context, string, PythonRuntime) (domain.DependencyResolution, error)) (resolution domain.DependencyResolution, resultErr error) {
+	if r == nil || r.runner == nil || r.endpoints == nil || r.observer == nil || r.probe == nil || ctx == nil || operation == nil || reference.Source() != r.profile.Source() {
 		return domain.DependencyResolution{}, errors.New("valid PyPI resolver request is required")
 	}
 	capability, err := r.probe(ctx)
@@ -230,108 +339,7 @@ func (r *PyPIResolver) resolveDependencies(ctx context.Context, reference domain
 	if err := preparePyPIResolverProject(ctx, r.runner, containerID); err != nil {
 		return domain.DependencyResolution{}, err
 	}
-	request, err := pypiRequirement(reference)
-	if err != nil {
-		return domain.DependencyResolution{}, errors.New("PyPI resolver reference is invalid")
-	}
-	resolveTimeout := pypiResolverTimeout
-	if resourcePolicy := artifactpypi.ResourcePolicyFromContext(ctx); resourcePolicy.Duration() > defaultPyPIResolverDuration {
-		resolveTimeout = resourcePolicy.Duration()
-	}
-	resolveCtx, cancel := context.WithTimeout(ctx, resolveTimeout)
-	defer cancel()
-	if artifactpypi.IsPyTorchSource(r.profile.Source()) {
-		if upgrade != nil {
-			return r.resolvePyTorchDependencyUpgrade(resolveCtx, containerID, capability.Runtime, reference, *upgrade)
-		}
-		candidates, reportBytes, resolveErr := r.resolvePyTorchGraph(resolveCtx, containerID, capability.Runtime, reference)
-		if resolveErr != nil {
-			return domain.DependencyResolution{}, resolveErr
-		}
-		graph, graphErr := artifactpypi.BuildLockedGraph(reference, candidates)
-		if graphErr != nil {
-			return domain.DependencyResolution{}, graphErr
-		}
-		sum := sha256.Sum256(reportBytes)
-		digest, digestErr := domain.NewSHA256Digest(hex.EncodeToString(sum[:]))
-		if digestErr != nil {
-			return domain.DependencyResolution{}, digestErr
-		}
-		runtimeIdentity := "python:" + capability.Runtime.PythonVersion + ";pip:" + capability.Runtime.PipVersion + ";target:" + capability.Runtime.InterpreterTag + "/" + capability.Runtime.ABITag + "/" + capability.Runtime.PlatformTag + ";source:" + r.profile.Name()
-		return domain.NewDependencyResolution(graph, runtimeIdentity, digest)
-	}
-	var report artifactpypi.InstallationReport
-	var reportBytes []byte
-	var selectedControls []domain.ProjectControlFile
-	if upgrade != nil {
-		selection, err := r.resolveUpgradeSelection(resolveCtx, containerID, capability.Runtime, *upgrade)
-		if err != nil {
-			return domain.DependencyResolution{}, err
-		}
-		report, reportBytes, selectedControls = selection.report, selection.body, selection.controls
-	} else {
-		pipArguments := pypiResolveArguments(r.profile, request)
-		if _, err := r.runner.Output(resolveCtx, "docker", append(boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-m", "pip"), pipArguments...)...); err != nil {
-			return domain.DependencyResolution{}, errors.New("run locked pip resolution failed")
-		}
-		reportBytes, err = r.runner.Output(resolveCtx, "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", boundedReadScript, pypiResolverProjectDir+"/report.json", "4194304")...)
-		if err != nil {
-			return domain.DependencyResolution{}, errors.New("read pip installation report failed")
-		}
-		report, err = artifactpypi.ParseInstallationReport(reference, reportBytes, capability.Runtime.PipVersion, capability.Runtime.PythonVersion)
-		if err != nil {
-			return domain.DependencyResolution{}, err
-		}
-	}
-	// Source ownership remains that of each node. Metadata bounds belong to
-	// the canonical root transaction, including an explicitly resolved input.
-	// An ordinary PyPI context retains its conservative default bound.
-	rootProfile := artifactpypi.PublicPyPIProfile()
-	for _, canonical := range artifactpypi.AllSourceProfiles() {
-		if canonical.Name() == artifactpypi.RootSourceProfileNameFromContext(ctx) {
-			rootProfile = canonical
-			break
-		}
-	}
-	pages := make([]artifactpypi.SimpleProject, 0, len(report.Candidates()))
-	for _, candidate := range report.Candidates() {
-		fetchScript := simpleJSONFetchScript
-		fetchArguments := []string{candidate.Project()}
-		profile := artifactpypi.PublicPyPIProfile()
-		if candidate.Source() != artifactpypi.PublicPyPIProfile().Source() {
-			fetchScript = pytorchHTMLFetchScript
-			fetchArguments = []string{r.profile.IndexURL(), candidate.Project()}
-			profile = r.profile
-		}
-		body, err := r.runner.Output(resolveCtx, "docker", append(boundaryExecArguments(containerID, boundaryLaunchMode, "python", "-I", "-c", fetchScript), fetchArguments...)...)
-		if err != nil {
-			return domain.DependencyResolution{}, errors.New("fetch PyPI Simple metadata failed")
-		}
-		page, err := artifactpypi.ParseSimpleProjectForRootProfile(candidate.Project(), body, profile, rootProfile)
-		if err != nil {
-			return domain.DependencyResolution{}, err
-		}
-		pages = append(pages, page)
-	}
-	candidates, err := artifactpypi.CrossCheckReport(report, pages)
-	if err != nil {
-		return domain.DependencyResolution{}, err
-	}
-	graph, err := artifactpypi.BuildLockedGraph(reference, candidates)
-	if err != nil {
-		return domain.DependencyResolution{}, err
-	}
-	sum := sha256.Sum256(reportBytes)
-	digest, err := domain.NewSHA256Digest(hex.EncodeToString(sum[:]))
-	if err != nil {
-		return domain.DependencyResolution{}, err
-	}
-	runtimeIdentity := "python:" + capability.Runtime.PythonVersion + ";pip:" + capability.Runtime.PipVersion + ";target:" + capability.Runtime.InterpreterTag + "/" + capability.Runtime.ABITag + "/" + capability.Runtime.PlatformTag + ";source:" + r.profile.Name()
-	resolution, err = domain.NewDependencyResolution(graph, runtimeIdentity, digest)
-	if err != nil || len(selectedControls) == 0 {
-		return resolution, err
-	}
-	return resolution.WithProjectControls(selectedControls)
+	return operation(ctx, containerID, capability.Runtime)
 }
 
 func preparePyPIResolverProject(ctx context.Context, runner CommandRunner, containerID string) error {

@@ -77,6 +77,15 @@ canonical5·Race7.919s와 자원0/Host 불변을 확인했다. 세 번째 native
 누락 부정 시험에 연결했다. 완료 native 자료 약2.75GB/일회성26파일은 삭제했다.
 다음은 동일 P1c의 public PyPI native 선택·독립 isolated metadata/archive reader이며
 production resolver/guarded install-upgrade-sync·CLI와 전체 remote qualification은 남는다.
+Public producer의 다음 수정은 기존 PyPI/PyTorch lifecycle을 private session helper로
+공유하는 것이다. Native solver를 pip로 바꾸지 않고 독립 metadata/archive reader만 이
+세션을 재사용한다. 구체 지도/두 번째 검토는 C2 baseline에 있으며 새 후보 검증은 진행 중이다.
+기존 session 추출의 canonical5·관련 Race10.199s는 PASS다. Private 독립 archive reader와
+고정 replay/실패 회귀를 추가했고 다음 canonical 검증 및 실제 native producer 연결이 남는다.
+[독립 reader 로컬 검증](./evidence/package-client-quarantine/p1c-uv-reader-local-20261022.json)의
+canonical5·Race10.055s와 기존 parser를 통한 whole archive/graph replay가 PASS다. Metadata/
+archive mismatch·byte/stream·취소/cleanup/trace 실패의 graph 삭제와 임시 파일 제거도 확인했다.
+실제 Python HTTP 및 public native UV caller/guarded CLI는 아직 미연결·미검증이다.
 
 
 

@@ -156,3 +156,42 @@ errors0 확인 뒤 제거했다. 현재 qualified observer·source·고정 SDK/q
 실제 연결이다. 기존 pip/PyTorch setup/trace/cleanup의 필요한 구간만 공유하며 Policy/staging/
 promotion을 새 엔진으로 대체하지 않는다. 이 inert local wheel 시험을 public graph/설치
 검역으로 확대하지 않으며 upgrade/sync·CLI와 P2..P7은 계속 MISSING/NOT_STARTED다.
+
+## C2 public producer의 다음 정확한 수정 지점
+
+기존 pypi_resolver.go resolveDependencies의 request 생성 전 lifecycle만 private
+withPythonResolverSession으로 추출한다. Runtime probe→trusted endpoint/policy prepare→
+create/start trace→start/anchors→고정 runtime 검증→project 준비와 defer의 remove→collect→
+policy close, 최초 cause/cleanup 실패의 결과 삭제를 그대로 보존한다. 기존 pip/PyTorch body는
+그 안에서 실행하며 request 검증과 resolve timeout 생성 위치·예산도 옮기지 않는다.
+Operation callback은 내부의 두 실제 소비자만 사용하며 Core port나 공개 generic runner를
+추가하지 않는다. UV의 독립 reader는 기존 public PyPI Python 역할의 같은 typed-network
+lifecycle 안에서 exact-release JSON과 선택 wheel bytes만 읽고, UV profile의 query child를
+범용 reader로 승격하지 않는다.
+
+두 번째 검토: 기존 구현은 IMPLEMENTED/WIRED=YES이며 폐기·대체하지 않는다. 같은
+lifecycle을 그대로 공유하는 좁은 수정이다. 기존 PyPI/PyTorch 정상·실패·취소·cleanup 및
+source ownership 회귀와 canonical profile을 먼저 확인한다. Native UV 선택/전체 archive
+binding을 완성하기 전 constructor/CLI 지원을 노출하거나 placeholder endpoint를 만들지 않는다.
+
+Private bindUVNativeSelection은 native pylock/controls·stream capability·전체 archive byte
+예산을 network 전에 검사한다. 독립 release JSON의 exact URL·filename·SHA/size/yanked가
+일치한 뒤에만 고정 Python data-reader script로 wheel bytes를 읽고, private0700 workspace의
+0600 file/명시적인 Write-only exact-size bound를 거쳐 기존 BindWheels로 연결한다. Redirect/
+proxy를 받지 않고 JSON4MiB·선택 archive exact size/EOF·TLS 기본 검증을 유지한다. Reader
+deadline은 setup 뒤 기존2m이며 상위 context를 상속한다. Archive FD는 마지막 BindWheels
+reader 뒤 닫고 workspace를 제거한다. Subprocess cause는 unwrap으로 보존하되 raw text는
+반환 메시지에 노출하지 않는다. Runtime identity는 solver UV와 Python target을 명시하며
+pip report/installer identity를 위장하지 않는다. Production native 호출자는 아직 미연결이다.
+
+고정 replay의 whole archive/metadata 불일치·short/extra stream·실패/취소·cleanup/trace
+실패와 workspace 삭제, network 전 거부, writer fast-path/sticky bound를 검사한다. Replay
+runner 성공은 실제 Python HTTP transport·public native resolver qualification이 아니다.
+
+[독립 reader 로컬 영수증](./p1c-uv-reader-local-20261022.json)의 canonical5·관련 Race10.055s는
+PASS다. 기존 session 추출도 canonical5/Race10.199s로 따로 확인했다. 정상 replay는 완전
+archive/RECORD/graph binding을 통과했고 metadata identity/hash/Requires-Python·byte bound,
+archive hash/short/extra·command/cancel/cleanup/trace 부정 입력은 graph를 비웠다. 첫 정상
+fixture의 Requires-Python 불일치는 합성 자료에서만 교정하고 부정 회귀로 보존했다.
+실제 HTTP transport와 public UV native caller는 계속 MISSING이며 source9b0da57의 CI373은
+별도 진행 중이다. macOS default6m 실패 로그도 보존했고 전체 CI 성공으로 쓰지 않는다.
