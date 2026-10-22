@@ -1,0 +1,175 @@
+{
+  "schema_version": 1,
+  "scope": "C3e2a frozen-source codec and C3e2b complete native UV selection/independent reader; fixture cwd correction and existing shared consumers",
+  "run_id": 39829985526,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/39829985526",
+  "source_commit": "7db4ba891ce68fd28a3ba84decafffd1fdd553d2",
+  "checkout": "3d4c8e0c89ef8d0a6aa65ed1e41c1a13fc46f64c",
+  "tree": "78ba8b69e12c6de8de2293f337905dd9c49ee36a",
+  "source_checkout_full_tree_equal": true,
+  "conclusion": "success",
+  "IMPLEMENTED": "YES",
+  "WIRED": "YES at existing primary-free resolver port; production sync CLI NO",
+  "QUALIFIED": "YES for C3e2a/C3e2b and fixture cwd correction only",
+  "ACCEPTANCE_CLOSED": "YES for these units only",
+  "MISSING": [],
+  "P1_remaining": [
+    "C3e3 actual source/target guard and whole original/native ownership",
+    "complete Python cache/Manifest/SBOM/offline publication/transaction and CLI/SKIP wiring",
+    "whole P1 actual acceptance"
+  ],
+  "jobs": [
+    {
+      "id": 120003254091,
+      "name": "Representative Wheel Corpus",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 120003254170,
+      "name": "Docs",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 120003254173,
+      "name": "Security",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 120003254252,
+      "name": "gVisor Linux Integration",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 120003254281,
+      "name": "Vulnerability",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 120003254285,
+      "name": "gVisor Observer Helper",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 120003254299,
+      "name": "Quick",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 120003254420,
+      "name": "macOS",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 120003254427,
+      "name": "Minimum Go",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 120025495668,
+      "name": "Required",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "linux_top_level_passes": 51,
+  "actual_complete_source_cases": [
+    "two-roots entries=2 dependency_free=false controls=4 runtime=uv:0.13.4;python:3.14.7;target:cp314/cp314/manylinux_2_36_x86_64;source:pypi",
+    "complete-closure entries=5 dependency_free=false controls=4 runtime=uv:0.13.4;python:3.14.7;target:cp314/cp314/manylinux_2_36_x86_64;source:pypi",
+    "missing-dependency independent_closure_rejected=true",
+    "explicit-empty-requirements entries=0 dependency_free=true controls=4 runtime=uv:0.13.4;python:3.14.7;target:cp314/cp314/manylinux_2_36_x86_64;source:pypi",
+    "explicit-empty-pylock entries=0 dependency_free=true controls=4 runtime=uv:0.13.4;python:3.14.7;target:cp314/cp314/manylinux_2_36_x86_64;source:pypi"
+  ],
+  "actual_uv_tests": [
+    {
+      "name": "TestUVActualIsolatedNativeStartup",
+      "seconds": 3.91
+    },
+    {
+      "name": "TestUVActualIsolatedEmptyTargetQuery",
+      "seconds": 3.05
+    },
+    {
+      "name": "TestUVActualIsolatedNativeLockCollection",
+      "seconds": 3.51
+    },
+    {
+      "name": "TestUVPublicNativeResolverIntegration",
+      "seconds": 47.35
+    },
+    {
+      "name": "TestUVPublicNativeUpdateResolverIntegration",
+      "seconds": 22.38
+    },
+    {
+      "name": "TestLinuxUVInstallCLIIntegration",
+      "seconds": 194.9
+    },
+    {
+      "name": "TestLinuxPyTorchFullIntegration",
+      "seconds": 245.89
+    }
+  ],
+  "cpu_full": "PASS; CUDA full not run in this source workflow",
+  "native_macos": "Go1.26.10 darwin/amd64 production build and default tests PASS",
+  "helper_waits": [
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "final_cleanup": "cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=311472",
+  "prior_ci385_failure": "Preserved fixture relative cwd ENOENT before complete cases; fresh CI386 executes all five after package-subshell correction; not a native-budget/protocol change",
+  "current_root_delta": "Documentation only since tested source, verified before this receipt; subsequent product changes need fresh qualification",
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci386-linux.log",
+      "bytes": 609564,
+      "sha256": "290a1efd9d614e61a36f241de1c8a3290e1f78a574eb8fcbcee889229377ccfd"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci386-macos.log",
+      "bytes": 21052,
+      "sha256": "cefeda3a6c5b6ae789bed17794126af9d02b3715193901424fcc6e73ff3f965d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci386-docs.log",
+      "bytes": 20464,
+      "sha256": "f3ec78b73421cdf55eb7ace848fe2f544c077ff57c5e4e2fd41a4bc21a712e23"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci386-required.log",
+      "bytes": 22243,
+      "sha256": "6f21efb9513b8aeaa13eec9026959088db8fd496ffcdb5da458e1188b0a9797a"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci386-vulnerability.log",
+      "bytes": 21645,
+      "sha256": "2a7e62d75d2d2efd5ff351a48220a55730c6be7a4cfedacc3da73ba0dd1af40f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci386-final-jobs.json",
+      "bytes": 13513,
+      "sha256": "8b954a25392409029b7f8ca3f3e8a6d34f1b6cd9962c8c740a1c04debaddcc58"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci386-final-run.json",
+      "bytes": 14454,
+      "sha256": "0b88de3796efa100fa97c8a52c91ff1a20c2b1fa1014710daa7fb1d54efd469a"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci386-checkout.json",
+      "bytes": 2850,
+      "sha256": "078f51b022f8728ceb3674de92f7b5b21c023ed8552d3f4ab5717242dd0efa9b"
+    }
+  ]
+}

@@ -398,3 +398,19 @@ format/Quick47.213s/security5.900s/docs/workflow는 PASS다.
 [CWD 교정 로컬 영수증](./p1e-uv-fixture-cwd-local-20261023.json)이 원본·source·범위를
 소유한다. 이 교정의 로컬 실행 위치 검증만 끝났고, C3e2b의 QUALIFIED 및
 ACCEPTANCE_CLOSED는 새 실제 native 다섯 사례와 공유 CI 검증 전까지 NO다.
+
+## C3e2a/b 실제 qualification 종료 — CI386
+
+[CI386 영수증](./p1e-uv-native-source-ci386-20261023.json)은 source7db4ba8과 actual
+checkout3d4c8e0의 전체 tree78ba8b69 일치 및 Required 포함10SUCCESS를 확인했다.
+실제 native two roots2개·complete closure5개·missing dependency의 독립 거부와 explicit empty
+requirements/pylock을 모두 통과했다. 기존 Linux51·UV installed update22.38s/CLI194.90s·
+CPU full245.89s와 native macOS/Go1.26.10·취약점 검사도 PASS다. Helper5 wait0과 마지막
+original0/CONFIRMED_STOPPED·client_error0/client_restore0을 원본에서 확인했다.
+새 CUDA full은 이 실행의 범위가 아니다.
+
+C3e2a/b 및 fixture cwd 교정의 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED는
+해당 source/resolver 범위에서 YES, MISSING은 없다. CI385의 원래 실패와 control operator의
+요약 오류는 별도로 보존한다. 이 native 결과는 실제 user target 삭제/반입이나 sync CLI를
+검증한 것이 아니다. 다음은 [C3e3/A1](./p1f-uv-sync-publication-baseline-20261023.md)의
+기존 Python 원본 metadata 공통화이며 전체 guarded sync/P1과 후속 Go1.27.3 순서는 유지한다.

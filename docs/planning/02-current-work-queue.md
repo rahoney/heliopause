@@ -15,7 +15,7 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — native same-runtime self-quarantine update IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; actual signed rc6 normal/cancellations/fresh replay passed; channel scope remains
-Next action: P1 uv pip IN_PROGRESS — C3e1 closed by CI384; C3e2b CI385 fixture cwd failure locally corrected with shared compiled-consumer observations and canonical5 PASS; fresh native five-case/shared qualification pending, then C3e3 guarded sync and whole P1
+Next action: P1 uv pip IN_PROGRESS — C3e1 closed by CI384; C3e2a/b and fixture cwd correction closed by CI386 ten SUCCESS with actual native five cases/shared consumers; start C3e3/A1 existing Python metadata snapshot sharing, then guarded complete sync and whole P1
 After P1: M13-004/G127 — Go 1.27.3 coordinated migration NOT_STARTED; must finish before P2
 After G127: P2 pnpm, then P3..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
@@ -45,7 +45,7 @@ M13-004 하나만 IN_PROGRESS이며 G127을 동시에 착수하지 않는다. Go
 
 ### 2026-10-21 owner scope — client expansion and full-name brand
 
-CI386을 기다리는 동안 [C3e3 publication 감사·수정 지도](./evidence/package-client-quarantine/p1f-uv-sync-publication-baseline-20261023.md)를 추가했다. 기존 complete engine을 재구현하지 않으며 source/전체 old-owner guard·complete-only transaction·Python Manifest/SBOM/cache·CLI 순서로 남은 gap을 좁힌다. 실제 native complete qualification과 leaf의 세 source 착수 전 검토는 미완료다.
+CI386을 기다리는 동안 [C3e3 publication 감사·수정 지도](./evidence/package-client-quarantine/p1f-uv-sync-publication-baseline-20261023.md)를 추가했다. [CI386 종료](./evidence/package-client-quarantine/p1e-uv-native-source-ci386-20261023.json)는 같은 전체 tree/Required10SUCCESS와 실제 native 다섯 사례·기존 Linux51/UV CLI194.90s/CPU245.89s/native macOS·helper5wait0/정리를 확인했다. C3e2a/b의 네 상태는 해당 resolver 범위에서 YES다. 다음 A1은 기존 원본 metadata capture/verify와 inventory 공통화만 수행한다. Whole guarded sync/P1은 미완료이며 A2/C1/D1 지도와 각 후속 source 직전 검토를 따른다.
 
 M13-004만 IN_PROGRESS로 유지한다. [확장 계획](./20-package-client-quarantine-plan.md)은
 uv pip/project·pnpm·Bun·pipx 설치/업데이트와 npx·uvx·bunx·pipx run 등을 하나의
