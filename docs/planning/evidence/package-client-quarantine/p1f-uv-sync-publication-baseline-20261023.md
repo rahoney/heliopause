@@ -134,6 +134,33 @@ update가 없는 CommitSnapshot 우회·repeated selection/commit·closed guard�
 Proof 실패/취소·누락된 unselected native proof와 forged control/update를 mutation 전 부정 회귀로
 검증한다. 이는 A1 이후 해당 source 단위의 지도이며 전체 통합 검증 완료는 아니다.
 
+### A2a 구현 전 감사 — rootless inventory의 metadata identity 전제
+
+A1의 기존 production wrapper는 NewUpgradeInput을 먼저 거쳐 directory/METADATA identity와
+중복 원본을 검증한다. 이후 FromMetadata helper는 directory identity와 HAA owner를 확인하지만,
+Body Name/Version 대조와 원본 이름 중복 검사를 독립 수행하지 않는다. Native collector는 마지막에
+inventory.projects[name]을 대입한다. 이 사실을 현재 공개 업데이트의 취약점이나 A1 회귀로
+표기하지 않는다. 아직 없는 rootless whole-inventory guard가 같은 입력 전제를 충족해야 한다.
+
+변경 없는 artifact/pypi.NewUpgradeInput parser의 기존 범위는 IMPLEMENTED=YES/WIRED=YES/
+QUALIFIED=YES/ACCEPTANCE_CLOSED=YES다. A1 공통화의 같은-source qualification은 CI387에서
+별도로 확인한다. 독립 rootless inventory 입력 검증은 NO/NO/NO/NO이며
+MISSING은 actual metadata identity/원본 이름 중복 거부와 기존 소비자 검증이다. Baseline은36c6253,
+정확한 수정 위치는 pypi_native_inventory.go:managedPyPIInventoryFromMetadata다.
+
+새 source 전에 rootless file-list helper의 body identity mismatch/ambiguous headers와 같은 이름의
+두 버전·반복 항목을 부정 입력으로 직접 확인한다. 기존 NewUpgradeInput wrapper는 수정하지
+않는다. Shared helper에 기존 parseInstalledMetadata를 재사용해 Body의 normalized Name/Version을
+directory와 대조하고, managed/native 구분 전에 같은 normalized project를 한 번만 허용한다.
+Source metadata는 여전히 unapproved claims이며 이 검사로 파일 소유권을 만들지 않는다.
+Native old-wheel/whole RECORD/파일 identity·resource·cache-absence proof는 별도로 필수다.
+
+검증은 same negative before/after와 기존 원본0/65/managed/native inventory/UV·pip update 및
+canonical5·promotion/Bootstrap/Application Race다. A1 CI387은 다른 source이므로 새 검증에
+전용하지 않고 실행 중인 CI를 새 push로 취소하지 않는다. 두 번째 검토에서 기존 wrapper의
+metadata semantics와 whole inventory의 중복 map membership은 다른 책임임을 대조했다.
+기존 artifact RFC822/dependency parser를 약화하거나 fake UpgradeRequirement/graph를 만들지 않는다.
+
 ### B. Complete-only transaction
 
 - 기존 `prepare/commit` 입구는 merge와 empty refusal을 유지한다. 새 private complete 입구만
