@@ -3564,7 +3564,7 @@ permanent installed CLI activation and publication remain separate; PR38 is draf
 ### M13-004 — convenience installation channels
 
 Current P1 substep: [C3c2b managed UV CLI](./evidence/package-client-quarantine/p1c-installed-cli-ci380-20261022.json) is qualified for fresh/retained/new-root install and the two upgrade modes. Source d1d4fdc/CI380 has10SUCCESS with the same whole checkout tree, actual five-step CLI and existing Linux/macOS consumers.
-Next: [C3d native UV enrollment](./evidence/package-client-quarantine/p1d-native-uv-ownership-baseline-20261022.md) is being implemented using the existing authenticated old-wheel proof and held transaction. Its actual native adoption/replay qualification and complete/multi-root/empty sync remain open. P2..P7 remain NOT_STARTED.
+Next: [C3d native UV enrollment](./evidence/package-client-quarantine/p1d-native-uv-ownership-baseline-20261022.md) is being implemented using the existing authenticated old-wheel proof and held transaction. Its actual native adoption/replay qualification remains open. [C3e complete/multi-root/empty sync audit and edit map](./evidence/package-client-quarantine/p1e-uv-sync-baseline-20261022.md) is prepared; sync source stays NOT_STARTED until C3d qualification. P2..P7 remain NOT_STARTED.
 Cache-aligned [CI374](./evidence/package-client-quarantine/cache-alignment-ci374-20261022.json) passed native macOS and all10 jobs. Historical timeout causes are not universally confirmed; scope/deadlines remain unchanged.
 
 Status: IN_PROGRESS — self-update installation role and Linux/WSL2 amd64 scope approved on2026-10-20; official names pending only for channel wiring. CLI-UX-003, SEC-UPD-001 and CLI-UX-002 remain complete.
