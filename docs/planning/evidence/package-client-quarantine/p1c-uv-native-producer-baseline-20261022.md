@@ -194,4 +194,6 @@ archive/RECORD/graph binding을 통과했고 metadata identity/hash/Requires-Pyt
 archive hash/short/extra·command/cancel/cleanup/trace 부정 입력은 graph를 비웠다. 첫 정상
 fixture의 Requires-Python 불일치는 합성 자료에서만 교정하고 부정 회귀로 보존했다.
 실제 HTTP transport와 public UV native caller는 계속 MISSING이며 source9b0da57의 CI373은
-별도 진행 중이다. macOS default6m 실패 로그도 보존했고 전체 CI 성공으로 쓰지 않는다.
+별도 [최종 영수증](./p1c-native-output-ci373-20261022.json)에 연결했다. Same-tree native output
+세 시험·기존 Linux/CPU287.67s/정리는 PASS, macOS default6m/Required는 FAIL이다.
+이후 reader/cache 후보의 원격 성공이나 전체 CI 성공으로 쓰지 않는다.

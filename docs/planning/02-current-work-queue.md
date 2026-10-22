@@ -93,6 +93,11 @@ action ID 분리를 확인했다. Scope/timeout·원인 판정은 유지한 채 
 [Cache 입력 정렬 로컬 검사](./evidence/package-client-quarantine/macos-cache-alignment-local-20261022.json)는
 canonical6·checker Race36.760s·Darwin compile11.016s PASS다. Source lookup의 실제 비교를
 보존했고 완료 binary/operator7파일은 제거했다. 새 native macOS/전체 Required는 남는다.
+[CI373 최종 결과](./evidence/package-client-quarantine/p1c-native-output-ci373-20261022.json)는
+source9b0da57/checkout tree 일치, native startup3.24s/query3.13s/compile-sync-collection3.58s·
+complete trace29/31/35와 기존 Linux/CPU287.67s·helper5wait0/정리를 확인했다. macOS는
+build94.05s PASS 뒤 default6m/Required FAIL이다. 이 결과를 이후 reader344a93d나 cache
+정렬 후보의 원격 qualification으로 전용하지 않는다. 새 후보 CI가 다음 확인 지점이다.
 
 
 
