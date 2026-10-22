@@ -383,3 +383,15 @@ fixture consumer의 정확한 package-subshell shape를 확인한다. Missing/co
 Canonical profile과 같은 compiled data consumer/관련 tests를 확인한 뒤 fresh source CI에서
 실제 five cases와 공유 소비자를 검증한다. 파일 복제·skip·expected hash 재생성이나 임의
 Host 경로 탐색으로 입력을 찾아 성공시키지 않는다. C3e3 제품 source는 아직 미작성이다.
+
+로컬 교정은 위 지도대로 완료했다. 같은 input constructor의 compiled consumer는
+repository cwd에서 ENOENT/exit1, package cwd에서 다섯 입력 PASS/exit0이었다.
+다만 operator 마지막 요약은 병렬 Quick이 쓰던 shared TMPDIR의 비어 있음을 잘못
+요구해 exit1이었다. 삭제 전 영속화하지 않은 binary digest는 NOT_AVAILABLE이며
+개별 로그·정리·후속 부재에서 좁은 관측만 복원했다. 전체 operator PASS로 바꾸거나
+지나간 신원을 만들려고 다시 실행하지 않았다. 작은 원본은 유지하고 binary/workroot는
+삭제했다. Workflow 두 실제 fixture consumer의 package scope 부정 회귀와 canonical
+format/Quick47.213s/security5.900s/docs/workflow는 PASS다.
+[CWD 교정 로컬 영수증](./p1e-uv-fixture-cwd-local-20261023.json)이 원본·source·범위를
+소유한다. 이 교정의 로컬 실행 위치 검증만 끝났고, C3e2b의 QUALIFIED 및
+ACCEPTANCE_CLOSED는 새 실제 native 다섯 사례와 공유 CI 검증 전까지 NO다.

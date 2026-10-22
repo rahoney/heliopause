@@ -238,6 +238,39 @@ func TestCargoIntegrationRejectsSkippedOrSubstitutedOwner(t *testing.T) {
 	}
 }
 
+func TestCompiledFixtureConsumersRequirePackageSubshell(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "..", workflowRelativePath))
+	if err != nil {
+		t.Fatal(err)
+	}
+	source := string(body)
+	if findings := validatePackageFixtureWorkingDirectories(source); len(findings) != 0 {
+		t.Fatal(findings)
+	}
+	for _, command := range []string{uvPublicResolverIntegrationCommand, cargoSourceIntegrationCommand} {
+		scope := "          (\n            cd internal/sandbox\n            " + command + "\n          )"
+		if strings.Count(source, scope) != 1 {
+			t.Fatal("canonical fixture command has no unique package scope")
+		}
+		for name, replacement := range map[string]string{
+			"missing cd":        "          (\n            " + command + "\n          )",
+			"wrong cd":          strings.Replace(scope, "cd internal/sandbox", "cd internal/cli", 1),
+			"commented cd":      strings.Replace(scope, "cd internal/sandbox", "# cd internal/sandbox", 1),
+			"outside subshell":  "          cd internal/sandbox\n          (\n            " + command + "\n          )",
+			"unscoped command":  "          " + command,
+			"commented command": strings.Replace(scope, command, "# "+command, 1),
+			"duplicate scope":   scope + "\n" + scope,
+		} {
+			t.Run(name+command, func(t *testing.T) {
+				fixture := strings.Replace(source, scope, replacement, 1)
+				if len(validateCIWorkflow(fixture, selectedGoForTest(t))) == 0 {
+					t.Fatal("incorrect fixture cwd scope accepted")
+				}
+			})
+		}
+	}
+}
+
 func TestTerraformRequiredGatesRejectCommentsDuplicatesAndDisabledFlags(t *testing.T) {
 	body, err := os.ReadFile(filepath.Join("..", "..", workflowRelativePath))
 	if err != nil {

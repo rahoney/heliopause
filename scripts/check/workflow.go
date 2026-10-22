@@ -131,6 +131,7 @@ func validateCIWorkflow(contents, selectedGo string) []string {
 	findings = append(findings, validateGoWorkflowVersions(contents, selectedGo)...)
 	findings = append(findings, validateCargoIntegrationGates(contents)...)
 	findings = append(findings, validateLifecycleIntegrationCommands(contents, "UV", uvIntegrationCommands)...)
+	findings = append(findings, validatePackageFixtureWorkingDirectories(contents)...)
 	findings = append(findings, validateTerraformIntegrationGates(contents)...)
 	findings = append(findings, validateActiveJobCommands(contents, "gvisor-observer", "Build exact gVisor observer helper with Bazel", "gVisor observer SDK", []string{
 		`scripts/build-gvisor-observer-release.sh "$RUNNER_TEMP/haa_gvisor_observer"`,
@@ -538,13 +539,16 @@ func workflowJobIDs(contents string) []string {
 
 // These fixed commands belong to the actual unconditional lifecycle step.
 // Their presence in comments, another job or a skipped step supplies no gate.
+const uvPublicResolverIntegrationCommand = `HELOX_UV_PUBLIC_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestUVPublicNativeResolverIntegration$'`
+const cargoSourceIntegrationCommand = `HELOX_CARGO_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxCargoSourceProjectSnapshotIntegration$'`
+
 var uvIntegrationCommands = []string{
 	`HELOX_UV_PUBLIC_UPDATE_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestUVPublicNativeUpdateResolverIntegration$'`,
 	`HELOX_UV_INSTALL_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=6m -test.run '^TestLinuxUVInstallCLIIntegration$'`,
 	`uv_image="$(jq -er '.uv_image.reference' "$runtime_lock")"`,
 	`docker pull "$uv_image"`,
 	`HELOX_UV_NATIVE_RUNTIME=1 go test -tags=realcorpus -v -timeout=3m ./internal/sandbox -run '^TestUVActualIsolated(NativeStartup|EmptyTargetQuery|NativeLockCollection)$'`,
-	`HELOX_UV_PUBLIC_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestUVPublicNativeResolverIntegration$'`,
+	uvPublicResolverIntegrationCommand,
 }
 
 // The same ephemeral job cache and compiler flags must reach both the outer
@@ -582,7 +586,7 @@ func validatePlatformBuildCache(contents string) []string {
 var cargoIntegrationCommands = []string{
 	`rust_image="$(jq -er '.rust_image.reference' "$runtime_lock")"`,
 	`docker pull "$rust_image"`,
-	`HELOX_CARGO_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxCargoSourceProjectSnapshotIntegration$'`,
+	cargoSourceIntegrationCommand,
 	`HELOX_CARGO_RESOLVER_INTEGRATION=1 HELOX_CARGO_ADD_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestLinuxCargo(Add|TransitiveAdd)Integration$'`,
 	`HELOX_CARGO_RESOLVER_INTEGRATION=1 HELOX_CARGO_BUILD_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=15m -test.run '^TestLinuxCargo.*Build.*CLIIntegration$|^TestLinuxCargoProcMacroSecurityCLIIntegration$'`,
 }
@@ -604,13 +608,33 @@ func validateLifecycleIntegrationCommands(contents, label string, commands []str
 }
 
 func validateActiveJobCommands(contents, jobID, stepName, label string, commands []string) []string {
-	doc, err := parseWorkflow(contents)
+	blocks, err := activeJobRunLines(contents, jobID, stepName)
 	if err != nil {
 		return nil
+	}
+	counts := map[string]int{}
+	for _, lines := range blocks {
+		for _, line := range lines {
+			counts[line]++
+		}
+	}
+	var findings []string
+	for _, command := range commands {
+		if counts[command] != 1 {
+			findings = append(findings, fmt.Sprintf("%s integration requires one active lifecycle command %q", label, command))
+		}
+	}
+	return findings
+}
+
+func activeJobRunLines(contents, jobID, stepName string) ([][]string, error) {
+	doc, err := parseWorkflow(contents)
+	if err != nil {
+		return nil, err
 	} // The structural validator owns parse failures.
 	job := workflowMap(workflowMap(doc["jobs"])[jobID])
 	steps, _ := job["steps"].([]any)
-	counts := map[string]int{}
+	var blocks [][]string
 	for _, raw := range steps {
 		step := workflowMap(raw)
 		if step["name"] != stepName {
@@ -620,14 +644,41 @@ func validateActiveJobCommands(contents, jobID, stepName, label string, commands
 			continue
 		}
 		run, _ := step["run"].(string)
+		var lines []string
 		for _, line := range strings.Split(run, "\n") {
-			counts[strings.TrimSpace(line)]++
+			lines = append(lines, strings.TrimSpace(line))
+		}
+		blocks = append(blocks, lines)
+	}
+	return blocks, nil
+}
+
+// These two real consumers read tracked package fixtures. Require the same
+// narrow subshell shape as go test's package cwd, without changing later steps.
+// This validates this repository convention, not arbitrary Bash semantics.
+func validatePackageFixtureWorkingDirectories(contents string) []string {
+	blocks, err := activeJobRunLines(contents, "gvisor-integration", "Install pinned runtime and run lifecycle integration")
+	if err != nil {
+		return nil
+	}
+	counts := map[string]int{}
+	for _, block := range blocks {
+		var lines []string
+		for _, line := range block {
+			if line != "" && !strings.HasPrefix(line, "#") {
+				lines = append(lines, line)
+			}
+		}
+		for i := 2; i+1 < len(lines); i++ {
+			if lines[i-2] == "(" && lines[i-1] == "cd internal/sandbox" && lines[i+1] == ")" {
+				counts[lines[i]]++
+			}
 		}
 	}
 	var findings []string
-	for _, command := range commands {
+	for _, command := range []string{uvPublicResolverIntegrationCommand, cargoSourceIntegrationCommand} {
 		if counts[command] != 1 {
-			findings = append(findings, fmt.Sprintf("%s integration requires one active lifecycle command %q", label, command))
+			findings = append(findings, fmt.Sprintf("fixture integration requires one sandbox package subshell for %q", command))
 		}
 	}
 	return findings

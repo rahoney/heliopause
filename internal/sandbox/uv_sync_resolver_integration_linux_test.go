@@ -16,17 +16,23 @@ import (
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
-// Invoked by the already-required actual public UV integration entry. Reuse
-// its registered caller, pinned runtime, typed policy and observer supervisor.
-func testUVPublicCompleteSelections(t *testing.T, resolver *UVResolver) {
-	t.Helper()
+type uvPublicCompleteSourceCase struct {
+	name           string
+	format         artifactpypi.UVSyncSourceFormat
+	body           []byte
+	allow          bool
+	entries        int
+	closureFailure bool
+}
+
+func uvPublicCompleteSourceCases() ([]uvPublicCompleteSourceCase, error) {
 	body, err := os.ReadFile(filepath.Join("..", "artifact", "pypi", "testdata", "uv-0.13.4-requests.pylock.toml"))
 	if err != nil {
-		t.Fatal(err)
+		return nil, err
 	}
 	lock, err := artifactpypi.ParseUVProjectLock(body, PinnedPythonRuntime().PythonVersion)
 	if err != nil {
-		t.Fatal(err)
+		return nil, err
 	}
 	var complete, roots strings.Builder
 	rootOnly := ""
@@ -40,22 +46,26 @@ func testUVPublicCompleteSelections(t *testing.T, resolver *UVResolver) {
 		}
 	}
 	if rootOnly == "" {
-		t.Fatal("canonical UV fixture lost requests")
+		return nil, errors.New("canonical UV fixture lost requests")
 	}
-	for _, item := range []struct {
-		name           string
-		format         artifactpypi.UVSyncSourceFormat
-		body           []byte
-		allow          bool
-		entries        int
-		closureFailure bool
-	}{
+	return []uvPublicCompleteSourceCase{
 		{"two-roots", artifactpypi.UVSyncRequirements, []byte(roots.String()), false, 2, false},
 		{"complete-closure", artifactpypi.UVSyncRequirements, []byte(complete.String()), false, len(lock.Packages()), false},
 		{"missing-dependency", artifactpypi.UVSyncRequirements, []byte(rootOnly), false, 0, true},
 		{"explicit-empty-requirements", artifactpypi.UVSyncRequirements, nil, true, 0, false},
 		{"explicit-empty-pylock", artifactpypi.UVSyncPylock, uvExplicitEmptyLock(), false, 0, false},
-	} {
+	}, nil
+}
+
+// Invoked by the already-required actual public UV integration entry. Reuse
+// its registered caller, pinned runtime, typed policy and observer supervisor.
+func testUVPublicCompleteSelections(t *testing.T, resolver *UVResolver) {
+	t.Helper()
+	cases, err := uvPublicCompleteSourceCases()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, item := range cases {
 		input, err := artifactpypi.ParseUVSyncInput(item.format, item.body, item.allow, PinnedPythonRuntime().PythonVersion)
 		if err != nil {
 			t.Fatal(err)
@@ -98,5 +108,26 @@ func testUVPublicCompleteSelections(t *testing.T, resolver *UVResolver) {
 			}
 		}
 		t.Logf("uv_public_complete_source case=%s entries=%d dependency_free=%t controls=%d runtime=%s", item.name, len(snapshot.Dependencies()), snapshot.DependencyFree(), len(result.SelectedControls()), UVResolverRuntimeIdentity())
+	}
+}
+
+// This same input constructor also runs without a native runtime so compiled
+// test caller cwd can be checked before the privileged integration setup.
+func TestUVPublicCompleteSourceInputs(t *testing.T) {
+	cases, err := uvPublicCompleteSourceCases()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(cases) != 5 {
+		t.Fatalf("complete source cases=%d, want 5", len(cases))
+	}
+	for _, item := range cases {
+		input, err := artifactpypi.ParseUVSyncInput(item.format, item.body, item.allow, PinnedPythonRuntime().PythonVersion)
+		if err != nil || input.ShouldSkip() {
+			t.Fatalf("invalid actual source input %s: %v", item.name, err)
+		}
+		if controls, err := NewUVSyncOriginalControls(input); err != nil || len(controls) != 4 {
+			t.Fatalf("actual source controls %s: %v", item.name, err)
+		}
 	}
 }

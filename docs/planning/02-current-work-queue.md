@@ -15,7 +15,7 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — native same-runtime self-quarantine update IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; actual signed rc6 normal/cancellations/fresh replay passed; channel scope remains
-Next action: P1 uv pip IN_PROGRESS — C3e1 closed by CI384; C3e2b CI385 eight SUCCESS/two FAIL from shared-fixture package-cwd assumption before five complete cases; correct/replay exact compiled fixture consumer and CI package scope, then fresh native qualification, C3e3 guarded sync and whole P1
+Next action: P1 uv pip IN_PROGRESS — C3e1 closed by CI384; C3e2b CI385 fixture cwd failure locally corrected with shared compiled-consumer observations and canonical5 PASS; fresh native five-case/shared qualification pending, then C3e3 guarded sync and whole P1
 After P1: M13-004/G127 — Go 1.27.3 coordinated migration NOT_STARTED; must finish before P2
 After G127: P2 pnpm, then P3..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
