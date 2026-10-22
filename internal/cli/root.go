@@ -219,10 +219,10 @@ func AddPyPIInstallSources(root *cobra.Command, installers map[string]Installer)
 // AddPyPIInstallSourcesAndUpdates binds native upgrade intent to the guarded
 // workflow, preserving the ordinary install path for all existing profiles.
 func AddPyPIInstallSourcesAndUpdates(root *cobra.Command, installers map[string]Installer, updaters map[string]Installer) error {
-	return addPackageClientInstall(root, PipPackageClient, installers, updaters)
+	return addPackageClientInstall(root, PipPackageClient, installers, map[packageUpgradeMode]map[string]Installer{packageUpgradeRoot: updaters})
 }
 
-func addPackageClientInstall(root *cobra.Command, id PackageClientID, installers map[string]Installer, updaters map[string]Installer) error {
+func addPackageClientInstall(root *cobra.Command, id PackageClientID, installers map[string]Installer, updaters map[packageUpgradeMode]map[string]Installer) error {
 	if root == nil || len(installers) == 0 {
 		return errors.New("pypi install command requires root and use case")
 	}
@@ -265,7 +265,10 @@ func addPackageClientInstall(root *cobra.Command, id PackageClientID, installers
 			if !ok || installer == nil {
 				return errors.New("selected Python source is unavailable on this Host")
 			}
-			upgrade, _ := command.Flags().GetBool("upgrade")
+			upgradeMode, err := descriptor.upgrade(command, args)
+			if err != nil {
+				return err
+			}
 			target, err := command.Flags().GetString("target")
 			if err != nil {
 				return err
@@ -279,8 +282,8 @@ func addPackageClientInstall(root *cobra.Command, id PackageClientID, installers
 				return err
 			}
 			var request application.InstallRequest
-			if upgrade {
-				installer = updaters[sourceID.String()]
+			if upgradeMode != packageNoUpgrade {
+				installer = updaters[upgradeMode][sourceID.String()]
 				if installer == nil {
 					return errors.New("guarded upgrade is unavailable for the selected Python source")
 				}

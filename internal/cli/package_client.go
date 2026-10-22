@@ -20,6 +20,14 @@ const (
 	UVPipPackageClient PackageClientID = "uv-pip"
 )
 
+type packageUpgradeMode uint8
+
+const (
+	packageNoUpgrade packageUpgradeMode = iota
+	packageUpgradeRoot
+	packageUpgradeClosure
+)
+
 type packageClientParent struct{ en, ko string }
 type packageClientDescriptor struct {
 	id                                           PackageClientID
@@ -31,15 +39,17 @@ type packageClientDescriptor struct {
 	validateRaw                                  func([]string) error
 	parse                                        func(string, domain.SourceID) (domain.ArtifactReference, error)
 	flags                                        func(*cobra.Command)
+	upgrade                                      func(*cobra.Command, []string) (packageUpgradeMode, error)
+	flagText                                     map[string]packageClientParent
 }
 
-const uvPipInstallEnglish = "Inspect a public PyPI wheel set selected by UV and install only its approved files.\n\nThis initial path requires an empty existing virtual environment for the pinned Python version. Use one package name or exact name==version (name@version is also accepted). Existing distributions require installed-aware selection and are currently refused. Other indexes, builds, upgrades and sync are not available in this path."
-const uvPipInstallKorean = "UV가 선택한 공개 PyPI wheel과 전체 의존성을 검사하고 허용된 파일만 설치합니다.\n\n현재 경로는 고정된 Python 버전의 비어 있는 기존 가상환경을 요구합니다. 패키지 이름 또는 정확한 name==version을 지정하세요(name@version도 가능). 이미 설치된 패키지가 있는 환경은 기존 상태를 반영한 선택 기능이 필요하므로 현재 거부합니다. 다른 index, build, 업데이트와 sync는 이 경로에서 아직 제공하지 않습니다."
+const uvPipInstallEnglish = "Inspect the complete public PyPI wheel set selected by UV before installing into an existing virtual environment for the pinned Python version.\n\nUse one package name or exact name==version (name@version is also accepted). Ordinary install retains compatible installed versions. --upgrade/-U updates the selected root and its dependencies; --upgrade-package <root> updates only that requested root unless a dependency change is needed. These two options cannot be combined. Existing selected files require verified HAA ownership. Native UV adoption, other indexes, builds and sync are not available in this path. Every selected wheel is freshly inspected, including unchanged versions."
+const uvPipInstallKorean = "UV가 선택한 공개 PyPI wheel과 전체 의존성을 검사하고 고정된 Python 버전의 기존 가상환경에 설치합니다.\n\n패키지 이름 또는 정확한 name==version을 지정하세요(name@version도 가능). 일반 설치는 호환되는 기존 버전을 유지합니다. --upgrade/-U는 요청 패키지와 선택된 의존성을 갱신하고, --upgrade-package <root>는 필요할 때만 의존성을 변경하며 요청 패키지만 갱신합니다. 두 옵션을 함께 사용할 수 없고, <root>에는 요청한 패키지 이름만 지정할 수 있습니다. 선택된 기존 파일은 검증된 HAA 소유 기록이 필요합니다. 일반 UV 설치의 소유권 인계, 다른 index, build와 sync는 아직 제공하지 않습니다. 같은 버전도 선택한 wheel 전체를 새로 검사합니다."
 
 func packageClientDescriptors() []packageClientDescriptor {
 	return []packageClientDescriptor{
-		{id: PipPackageClient, path: []string{"pip", "install"}, parents: []packageClientParent{{"Inspect and install PyPI distributions", "PyPI 배포 파일 검사·설치"}}, route: "pip", use: "install <project>[@<version>]", shortEN: "Install a PyPI distribution into the active virtual environment", shortKO: "Python 배포 파일과 의존성을 검사한 뒤 설치·업데이트(--upgrade/-U)합니다", longEN: pypiUpgradeDescriptionEnglish, longKO: pypiUpgradeDescriptionKorean, namedSources: true, validate: validatePyPIInstallArgs, parse: artifactpypi.ParseReferenceForSource, flags: configurePipInstallFlags},
-		{id: UVPipPackageClient, path: []string{"uv", "pip", "install"}, parents: []packageClientParent{{"Quarantine Python packages with UV", "UV로 Python 패키지를 검역합니다"}, {"Inspect and install public PyPI distributions with UV", "UV pip으로 공개 PyPI 파일을 검사·설치합니다"}}, route: "pypi", use: "install <project>[==<version>]", shortEN: "Quarantine and install a public PyPI wheel set selected by UV", shortKO: "UV가 선택한 공개 PyPI wheel과 의존성을 검역한 뒤 설치합니다", longEN: uvPipInstallEnglish, longKO: uvPipInstallKorean, validate: validateUVPipInstallArgs, validateRaw: validateUVPipRawArgs, parse: parseUVPipInstallReference},
+		{id: PipPackageClient, path: []string{"pip", "install"}, parents: []packageClientParent{{"Inspect and install PyPI distributions", "PyPI 배포 파일 검사·설치"}}, route: "pip", use: "install <project>[@<version>]", shortEN: "Install a PyPI distribution into the active virtual environment", shortKO: "Python 배포 파일과 의존성을 검사한 뒤 설치·업데이트(--upgrade/-U)합니다", longEN: pypiUpgradeDescriptionEnglish, longKO: pypiUpgradeDescriptionKorean, namedSources: true, validate: validatePyPIInstallArgs, parse: artifactpypi.ParseReferenceForSource, flags: configurePipInstallFlags, upgrade: pipPackageUpgradeMode},
+		{id: UVPipPackageClient, path: []string{"uv", "pip", "install"}, parents: []packageClientParent{{"Quarantine Python packages with UV", "UV로 Python 패키지를 검역합니다"}, {"Inspect and install public PyPI distributions with UV", "UV pip으로 공개 PyPI 파일을 검사·설치합니다"}}, route: "pypi", use: "install <project>[==<version>]", shortEN: "Quarantine and install a public PyPI wheel set selected by UV", shortKO: "UV가 선택한 공개 PyPI wheel과 의존성을 검역한 뒤 설치합니다", longEN: uvPipInstallEnglish, longKO: uvPipInstallKorean, validate: validateUVPipInstallArgs, validateRaw: validateUVPipRawArgs, parse: parseUVPipInstallReference, flags: configureUVPipInstallFlags, upgrade: uvPackageUpgradeMode, flagText: uvPipUpgradeFlagText},
 	}
 }
 
@@ -133,6 +143,11 @@ func localizePackageClientCommand(command *cobra.Command, p *presentation) {
 	for _, descriptor := range packageClientDescriptors() {
 		if path == strings.Join(descriptor.path, " ") {
 			command.Short, command.Long = p.text(descriptor.shortEN, descriptor.shortKO), p.text(descriptor.longEN, descriptor.longKO)
+			for name, text := range descriptor.flagText {
+				if flag := command.Flags().Lookup(name); flag != nil {
+					flag.Usage = p.text(text.en, text.ko)
+				}
+			}
 		}
 		for index, parent := range descriptor.parents {
 			if path == strings.Join(descriptor.path[:index+1], " ") {
@@ -182,25 +197,84 @@ func validateUVPipInstallArgs(command *cobra.Command, args []string) error {
 	if strings.Contains(value.String(), ",") {
 		return errors.New("UV pip target cannot contain a comma")
 	}
-	return nil
+	_, err = uvPackageUpgradeMode(command, args)
+	return err
 }
 
 func validateUVPipRawArgs(args []string) error {
-	count := 0
+	counts := map[string]int{}
 	for _, value := range args {
-		if value == "--target" || strings.HasPrefix(value, "--target=") {
-			count++
+		name, _, _ := strings.Cut(value, "=")
+		if name == "--target" || name == "--upgrade-package" {
+			counts[name]++
 		}
 	}
-	if count > 1 {
-		return errors.New("UV pip requires one unambiguous target option")
+	for _, count := range counts {
+		if count > 1 {
+			return errors.New("UV pip requires unambiguous target and upgrade-package options")
+		}
 	}
 	return nil
 }
 
+var uvPipUpgradeFlagText = map[string]packageClientParent{
+	"upgrade":         {"Upgrade the requested root and its selected dependency closure after fresh quarantine", "요청 패키지와 선택된 의존성을 새로 검역한 뒤 업데이트합니다"},
+	"upgrade-package": {"Upgrade only the requested root (one matching bare project name)", "요청한 패키지만 우선 업데이트합니다(동일한 패키지 이름 하나)"},
+}
+
+func configureUVPipInstallFlags(command *cobra.Command) {
+	command.Flags().BoolP("upgrade", "U", false, uvPipUpgradeFlagText["upgrade"].en)
+	command.Flags().String("upgrade-package", "", uvPipUpgradeFlagText["upgrade-package"].en)
+}
+func pipPackageUpgradeMode(command *cobra.Command, _ []string) (packageUpgradeMode, error) {
+	upgrade, err := command.Flags().GetBool("upgrade")
+	if err != nil {
+		return packageNoUpgrade, err
+	}
+	if upgrade {
+		return packageUpgradeRoot, nil
+	}
+	return packageNoUpgrade, nil
+}
+func uvPackageUpgradeMode(command *cobra.Command, args []string) (packageUpgradeMode, error) {
+	upgrade, err := command.Flags().GetBool("upgrade")
+	if err != nil {
+		return packageNoUpgrade, err
+	}
+	selected, err := command.Flags().GetString("upgrade-package")
+	if err != nil {
+		return packageNoUpgrade, err
+	}
+	if command.Flags().Changed("upgrade-package") {
+		if upgrade || len(args) != 1 {
+			return packageNoUpgrade, errors.New("UV upgrade options are ambiguous")
+		}
+		name, err := artifactpypi.NormalizeProjectName(selected)
+		if err != nil {
+			return packageNoUpgrade, errors.New("UV upgrade-package requires the requested bare project name")
+		}
+		reference, err := parseUVPipInstallReference(args[0], artifactpypi.PublicPyPIProfile().Source())
+		if err != nil {
+			return packageNoUpgrade, err
+		}
+		root, err := artifactpypi.RequestedProject(reference)
+		if err != nil || name != root {
+			return packageNoUpgrade, errors.New("UV upgrade-package must match the requested root")
+		}
+		return packageUpgradeRoot, nil
+	}
+	if upgrade {
+		return packageUpgradeClosure, nil
+	}
+	return packageNoUpgrade, nil
+}
+
 func AddUVPipInstall(root *cobra.Command, installer Installer) error {
+	return AddUVPipInstallAndUpdates(root, installer, nil, nil)
+}
+func AddUVPipInstallAndUpdates(root *cobra.Command, installer, closureUpdater, rootUpdater Installer) error {
 	if installer == nil {
 		return errors.New("UV pip install requires a prepared use case")
 	}
-	return addPackageClientInstall(root, UVPipPackageClient, map[string]Installer{"pypi": installer}, nil)
+	return addPackageClientInstall(root, UVPipPackageClient, map[string]Installer{"pypi": installer}, map[packageUpgradeMode]map[string]Installer{packageUpgradeClosure: {"pypi": closureUpdater}, packageUpgradeRoot: {"pypi": rootUpdater}})
 }

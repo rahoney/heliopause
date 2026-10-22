@@ -67,7 +67,12 @@ func TestUVPackageClientRejectsUnsupportedIntentBeforeComposition(t *testing.T) 
 		{"idna>=3", "--target", "/tmp/venv"}, {"idna==3.11rc1", "--target", "/tmp/venv"},
 		{"idna==3.11==4", "--target", "/tmp/venv"}, {"https://example.invalid/a.whl", "--target", "/tmp/venv"},
 		{"idna", "requests", "--target", "/tmp/venv"}, {"idna", "--target", "/tmp/venv", "--target=/tmp/other"},
-		{"idna", "--target", "/tmp/venv", "--upgrade"}, {"idna", "--target", "/tmp/venv", "--adopt"},
+		{"idna", "--target", "/tmp/venv", "--adopt"},
+		{"idna", "--target", "/tmp/venv", "--upgrade", "--upgrade-package", "idna"},
+		{"idna", "--target", "/tmp/venv", "--upgrade-package", "requests"},
+		{"idna", "--target", "/tmp/venv", "--upgrade-package", "idna==3.11"},
+		{"idna", "--target", "/tmp/venv", "--upgrade-package="},
+		{"idna", "--target", "/tmp/venv", "--upgrade-package", "idna", "--upgrade-package=idna"},
 		{"idna", "--target", "/tmp/venv", "--source", "pytorch:cpu"}, {"idna", "--target", "/tmp/venv", "--index-url", "https://example.invalid"},
 	}
 	for _, tail := range cases {
@@ -100,7 +105,7 @@ func TestPackageClientHelpAndLegacySelection(t *testing.T) {
 		if lang == "ko" {
 			want = uvPipInstallKorean
 		}
-		if !strings.Contains(out.String(), want) || !strings.Contains(out.String(), "--target") || strings.Contains(out.String(), "--adopt") || strings.Contains(out.String(), "--source") {
+		if !strings.Contains(out.String(), want) || !strings.Contains(out.String(), "--target") || !strings.Contains(out.String(), "--upgrade-package") || strings.Contains(out.String(), "only-if-needed") || strings.Contains(out.String(), "--adopt") || strings.Contains(out.String(), "--source") {
 			t.Fatal("incorrect client help", lang, out.String())
 		}
 	}
@@ -113,5 +118,49 @@ func TestPackageClientHelpAndLegacySelection(t *testing.T) {
 	}
 	if source, err := PreparePresentation(root, []string{"npm", "--help"}); err != nil || source != "npm" || SelectedPackageClient(root) != "" {
 		t.Fatal("client selection leaked", source, err)
+	}
+}
+
+func TestUVPackageClientPreservesUpgradeModeAndOperation(t *testing.T) {
+	for _, spec := range []struct {
+		flags []string
+		mode  packageUpgradeMode
+	}{
+		{nil, packageNoUpgrade}, {[]string{"--upgrade"}, packageUpgradeClosure}, {[]string{"-U"}, packageUpgradeClosure}, {[]string{"--upgrade-package", "Demo_Package"}, packageUpgradeRoot},
+	} {
+		t.Run(strings.Join(spec.flags, "/"), func(t *testing.T) {
+			root, err := New(io.Discard, io.Discard)
+			if err != nil {
+				t.Fatal(err)
+			}
+			ordinary, all, one := &uvClientRequestRecorder{}, &uvClientRequestRecorder{}, &uvClientRequestRecorder{}
+			if err := AddUVPipInstallAndUpdates(root, ordinary, all, one); err != nil {
+				t.Fatal(err)
+			}
+			args := append([]string{"--output", "json", "uv", "pip", "install", "Demo_Package==1.0", "--target", "/tmp/haa-uv-cli-target"}, spec.flags...)
+			if _, err := PreparePresentation(root, args); err != nil {
+				t.Fatal(err)
+			}
+			root.SetArgs(args)
+			_ = root.ExecuteContext(context.Background())
+			wanted := map[packageUpgradeMode]*uvClientRequestRecorder{packageNoUpgrade: ordinary, packageUpgradeClosure: all, packageUpgradeRoot: one}
+			for mode, recorder := range wanted {
+				count := 0
+				if mode == spec.mode {
+					count = 1
+				}
+				if len(recorder.requests) != count {
+					t.Fatal("wrong service selected", mode, len(recorder.requests))
+				}
+			}
+			request := wanted[spec.mode].requests[0]
+			operation := domain.OperationInstall
+			if spec.mode != packageNoUpgrade {
+				operation = domain.OperationUpdate
+			}
+			if request.Operation() != operation || request.Source().String() != "pypi" || request.Context().Target().String() != "/tmp/haa-uv-cli-target" {
+				t.Fatal("wrong operation/source/target", request)
+			}
+		})
 	}
 }

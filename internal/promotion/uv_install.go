@@ -11,8 +11,8 @@ import (
 	"github.com/rahoney/heliopause/internal/sandbox"
 )
 
-// UVInstallPreparation currently accepts empty existing virtual environments.
-// Installed-aware native selection is a separate guarded-update capability.
+// UVInstallPreparation retains ordinary INSTALL intent for fresh and installed-
+// aware native selection under the same original-state guard.
 type UVInstallPreparation struct {
 	promoter *PyPIPromotion
 	resolver ports.DependencyResolver
@@ -58,12 +58,37 @@ func (p *UVInstallPreparation) BeginInstall(ctx context.Context, reference domai
 		return nil, err
 	}
 	session := &uvInstallSession{owner: p, reference: reference, install: install, transaction: transaction}
+	transferred := false
 	defer func() {
-		if resultErr != nil {
+		if resultErr != nil && !transferred {
 			resultErr = errors.Join(resultErr, session.Close())
 			result = nil
 		}
 	}()
+	directories, err := pypiUpgradeMetadataDirectories(plan.site)
+	if err != nil {
+		return nil, err
+	}
+	if len(directories) != 0 || len(transaction.current.Files) != 0 {
+		resolver, ok := p.resolver.(ports.DependencyUpdateResolver)
+		if !ok {
+			return nil, errors.New("UV installed state requires native installed-aware selection")
+		}
+		preparation, err := NewUVUpdatePreparation(p.promoter, resolver, artifactpypi.UVInstallSelection)
+		if err != nil {
+			return nil, err
+		}
+		requirement, err := artifactpypi.ParseUpgradeRequirement(reference.Locator())
+		if err != nil {
+			return nil, err
+		}
+		transferred = true
+		guarded, err := preparation.shared.prepareInstallUpdate(ctx, requirement, install, false, transaction)
+		if err != nil {
+			return nil, err
+		}
+		return &uvInstalledInstallSession{session: guarded, reference: reference, install: install}, nil
+	}
 	if err := session.verify(ctx); err != nil {
 		return nil, err
 	}
@@ -198,3 +223,22 @@ func uvPythonVenvConfigVersion(body []byte) (string, error) {
 	}
 	return version, nil
 }
+
+// The update marker is deliberately not embedded or forwarded. The public
+// ordinary request stays INSTALL while the inner guard binds a bare reference.
+type uvInstalledInstallSession struct {
+	session   ports.InstallUpdateSession
+	reference domain.ArtifactReference
+	install   domain.InstallContext
+}
+
+func (s *uvInstalledInstallSession) ResolveDependencies(ctx context.Context, reference domain.ArtifactReference, install domain.InstallContext) (domain.DependencyResolution, error) {
+	if reference != s.reference || install != s.install {
+		return domain.DependencyResolution{}, errors.New("UV installed selection request changed")
+	}
+	return s.session.ResolveDependencies(ctx, s.session.Reference(), install)
+}
+func (s *uvInstalledInstallSession) Promote(ctx context.Context, staged domain.StagedSet, bundle domain.VerifiedBundle, install domain.InstallContext) (domain.PromotedInstall, error) {
+	return s.session.Promote(ctx, staged, bundle, install)
+}
+func (s *uvInstalledInstallSession) Close() error { return s.session.Close() }

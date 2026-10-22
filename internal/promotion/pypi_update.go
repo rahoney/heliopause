@@ -83,6 +83,14 @@ func (p *PyPIUpdatePreparation) BeginInstallUpdate(ctx context.Context, source d
 	if err != nil {
 		return nil, ports.NewInstallUpdateFailure("UPDATE_OWNERSHIP_INVALID", err)
 	}
+	return p.prepareInstallUpdate(ctx, requirement, install, adopt, transaction)
+}
+
+// The caller transfers its held transaction; capture and failure cleanup are
+// shared by explicit updates and installed-aware ordinary installation.
+func (p *PyPIUpdatePreparation) prepareInstallUpdate(ctx context.Context, requirement artifactpypi.UpgradeRequirement, install domain.InstallContext, adopt bool, transaction *pypiVenvTransaction) (result ports.InstallUpdateSession, resultErr error) {
+	plan := transaction.plan
+	var err error
 	s := &pypiUpdateSession{owner: p, install: install, transaction: transaction, metadata: map[string]pypiFileSnapshot{}, emptyMetadata: map[string]map[string]os.FileInfo{}}
 	defer func() {
 		if resultErr != nil {

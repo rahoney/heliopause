@@ -83,7 +83,23 @@ func bindUVPipPackageClient(command *cobra.Command, bindings pythonClientBinding
 	if err != nil {
 		return err
 	}
-	return cli.AddUVPipInstall(command, installer)
+	updateResolver, ok := bindings.resolver.(ports.DependencyUpdateResolver)
+	if !ok {
+		return errors.New("UV resolver lacks installed-aware native selection")
+	}
+	upgraders := map[artifactpypi.UVSelectionIntent]cli.Installer{}
+	for _, intent := range []artifactpypi.UVSelectionIntent{artifactpypi.UVUpgradeSelection, artifactpypi.UVUpgradePackageSelection} {
+		preparation, err := promotion.NewUVUpdatePreparation(promoter, updateResolver, intent)
+		if err != nil {
+			return err
+		}
+		updater, err := application.NewInstallUpdateService(bindings.installer, preparation)
+		if err != nil {
+			return err
+		}
+		upgraders[intent] = updater
+	}
+	return cli.AddUVPipInstallAndUpdates(command, installer, upgraders[artifactpypi.UVUpgradeSelection], upgraders[artifactpypi.UVUpgradePackageSelection])
 }
 
 func bindPipPackageClient(command *cobra.Command, bindings pythonClientBindings) error {

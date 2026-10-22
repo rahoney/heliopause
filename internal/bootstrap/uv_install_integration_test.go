@@ -45,73 +45,142 @@ func TestLinuxUVInstallCLIIntegration(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
-	args := []string{"--output", "json", "--lang", "ko", "uv", "pip", "install", "idna==3.11", "--target", venv}
-	var stdout, stderr bytes.Buffer
-	if err := bootstrap.Run(ctx, args, &stdout, &stderr); err != nil {
-		t.Fatalf("actual UV install failed: %v stdout=%s stderr=%s", err, stdout.String(), stderr.String())
-	}
-	var result struct {
-		Schema    string                    `json:"schema_version"`
-		Operation string                    `json:"operation"`
-		Status    string                    `json:"operation_status"`
-		Promotion string                    `json:"promotion_status"`
-		Policy    struct{ Decision string } `json:"policy"`
-		Verified  struct {
-			Manifest string `json:"manifest_id"`
-			Count    int    `json:"entry_count"`
-		} `json:"verified_set"`
-		Checks []struct {
-			Required bool
-			Status   string `json:"execution_status"`
-		} `json:"checks"`
-		Evidence []struct{ ID, Handle string } `json:"evidence_references"`
-	}
-	if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
-		t.Fatal(err, stdout.String())
-	}
-	if result.Schema != "helox.operation-result/v1" || result.Operation != "INSTALL" || result.Status != "COMPLETED" || result.Promotion != "COMPLETED" || result.Policy.Decision != "ALLOW" || result.Verified.Count != 1 || result.Verified.Manifest == "" || len(result.Checks) < 3 || len(result.Evidence) < 3 {
-		t.Fatal("incomplete UV install", stdout.String())
-	}
-	for _, check := range result.Checks {
-		if check.Required && check.Status != "COMPLETED" {
-			t.Fatal("required check incomplete", stdout.String())
-		}
-	}
-	for _, path := range []string{filepath.Join(site, "idna", "__init__.py"), filepath.Join(site, "idna-3.11.dist-info", "METADATA"), filepath.Join(venv, ".heliopause", "pypi-transaction.json")} {
-		if info, err := os.Stat(path); err != nil || !info.Mode().IsRegular() || info.Size() == 0 {
-			t.Fatal("approved file missing", path, err)
-		}
-	}
-	manifestPath := filepath.Join(cache, "heliopause", "staging", result.Verified.Manifest, "manifest.json")
-	body, err := os.ReadFile(manifestPath)
-	if err != nil {
+	userFile := filepath.Join(venv, "user-note.txt")
+	if err := os.WriteFile(userFile, []byte("preserve user data"), 0600); err != nil {
 		t.Fatal(err)
 	}
-	var manifest struct {
-		Resolver struct {
-			Runtime string `json:"runtime_identity"`
-		} `json:"resolver"`
+	for _, step := range []struct {
+		name, spec, version, operation, intent string
+		flags                                  []string
+	}{
+		{"fresh", "idna==3.10", "3.10", "INSTALL", "", nil},
+		{"retained", "idna", "3.10", "INSTALL", "install", nil},
+		{"root-upgrade", "idna==3.11", "3.11", "UPDATE", "upgrade-package", []string{"--upgrade-package", "idna"}},
+		{"closure-noop", "idna==3.11", "3.11", "UPDATE", "upgrade", []string{"-U"}},
+		{"new-root", "packaging==25.0", "25.0", "INSTALL", "install", nil},
+	} {
+		args := append([]string{"--output", "json", "--lang", "ko", "uv", "pip", "install", step.spec, "--target", venv}, step.flags...)
+		var stdout, stderr bytes.Buffer
+		if err := bootstrap.Run(ctx, args, &stdout, &stderr); err != nil {
+			t.Fatalf("actual UV %s failed: %v stdout=%s stderr=%s", step.name, err, stdout.String(), stderr.String())
+		}
+		var result struct {
+			Schema    string                    `json:"schema_version"`
+			Operation string                    `json:"operation"`
+			Status    string                    `json:"operation_status"`
+			Promotion string                    `json:"promotion_status"`
+			Policy    struct{ Decision string } `json:"policy"`
+			Verified  struct {
+				Manifest string `json:"manifest_id"`
+				Count    int    `json:"entry_count"`
+			} `json:"verified_set"`
+			Checks []struct {
+				Required bool
+				Status   string `json:"execution_status"`
+			} `json:"checks"`
+			Evidence []struct{ ID, Handle string } `json:"evidence_references"`
+		}
+		if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
+			t.Fatal(err, stdout.String())
+		}
+		if result.Schema != "helox.operation-result/v1" || result.Operation != step.operation || result.Status != "COMPLETED" || result.Promotion != "COMPLETED" || result.Policy.Decision != "ALLOW" || result.Verified.Count != 1 || result.Verified.Manifest == "" || len(result.Checks) < 3 || len(result.Evidence) < 3 {
+			t.Fatal("incomplete UV CLI operation", step.name, stdout.String())
+		}
+		for _, check := range result.Checks {
+			if check.Required && check.Status != "COMPLETED" {
+				t.Fatal("required check incomplete", stdout.String())
+			}
+		}
+		project := "idna"
+		if step.name == "new-root" {
+			project = "packaging"
+		}
+		for _, path := range []string{filepath.Join(site, project, "__init__.py"), filepath.Join(site, project+"-"+step.version+".dist-info", "METADATA"), filepath.Join(venv, ".heliopause", "pypi-transaction.json")} {
+			if info, err := os.Stat(path); err != nil || !info.Mode().IsRegular() || info.Size() == 0 {
+				t.Fatal("approved file missing", path, err)
+			}
+		}
+		body, err := os.ReadFile(filepath.Join(cache, "heliopause", "staging", result.Verified.Manifest, "manifest.json"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		var manifest struct {
+			Resolver struct {
+				Runtime string `json:"runtime_identity"`
+			} `json:"resolver"`
+			Controls []struct {
+				Name    string `json:"name"`
+				Content []byte `json:"content"`
+			} `json:"project_controls"`
+		}
+		if err := json.Unmarshal(body, &manifest); err != nil || manifest.Resolver.Runtime != sandbox.UVResolverRuntimeIdentity() {
+			t.Fatal("solver identity changed", err, string(body))
+		}
+		count := 0
+		if step.intent != "" {
+			count = 4
+		}
+		if len(manifest.Controls) != count {
+			t.Fatal("selection controls not bound", step.name, string(body))
+		}
+		if step.intent != "" {
+			intent := ""
+			for _, control := range manifest.Controls {
+				if control.Name == "uv-selection-intent.json" {
+					var value struct{ Intent string }
+					if err := json.Unmarshal(control.Content, &value); err != nil {
+						t.Fatal(err)
+					}
+					intent = value.Intent
+				}
+			}
+			if intent != step.intent {
+				t.Fatal("wrong native intent", step.name, intent)
+			}
+		}
+		if body, err := os.ReadFile(filepath.Join(venv, "pyvenv.cfg")); err != nil || !bytes.Equal(body, cfg) {
+			t.Fatal("target configuration changed", err)
+		}
+		if body, err := os.ReadFile(userFile); err != nil || string(body) != "preserve user data" {
+			t.Fatal("user file changed", err)
+		}
+		if step.name == "root-upgrade" {
+			if _, err := os.Lstat(filepath.Join(site, "idna-3.10.dist-info", "METADATA")); !os.IsNotExist(err) {
+				t.Fatal("obsolete owned version retained", err)
+			}
+		}
+		if step.name == "new-root" {
+			if _, err := os.Stat(filepath.Join(site, "idna-3.11.dist-info", "METADATA")); err != nil {
+				t.Fatal("unrelated installed distribution removed", err)
+			}
+		}
+		t.Logf("actual_uv_install step=%s operation=%s status=%s promotion=%s entries=%d controls=%d runtime=%s", step.name, result.Operation, result.Status, result.Promotion, result.Verified.Count, len(manifest.Controls), manifest.Resolver.Runtime)
 	}
-	if err := json.Unmarshal(body, &manifest); err != nil || manifest.Resolver.Runtime != sandbox.UVResolverRuntimeIdentity() {
-		t.Fatal("solver identity is not the pinned UV selection", err, string(body))
-	}
-	if body, err := os.ReadFile(filepath.Join(venv, "pyvenv.cfg")); err != nil || !bytes.Equal(body, cfg) {
-		t.Fatal("target configuration changed", err)
-	}
+	// Unsupported installed requirements are refused before native selection.
 	before := uvCLIRegularFiles(t, venv)
 	evidenceBefore := uvCLIRegularFiles(t, filepath.Join(cache, "heliopause", "evidence"))
-	stdout.Reset()
-	stderr.Reset()
-	if err := bootstrap.Run(ctx, args, &stdout, &stderr); err == nil {
-		t.Fatal("nonempty target used fresh selection", stdout.String())
+	foreign := filepath.Join(site, "foreign-1.0.dist-info")
+	if err := os.Mkdir(foreign, 0700); err != nil {
+		t.Fatal(err)
 	}
-	if !bytes.Contains(stdout.Bytes(), []byte("INSTALL_PREPARATION_FAILED")) {
-		t.Fatal("nonempty target failed at the wrong boundary", stdout.String(), stderr.String())
+	// Unsupported original requirements are rejected before an actual solve.
+	if err := os.WriteFile(filepath.Join(foreign, "METADATA"), []byte("Name: foreign\nVersion: 1.0\nRequires-Dist: local @ file:///tmp/foreign\n\n"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	var stdout, stderr bytes.Buffer
+	if err := bootstrap.Run(ctx, []string{"--output", "json", "uv", "pip", "install", "idna", "--target", venv}, &stdout, &stderr); err == nil {
+		t.Fatal("unsupported original metadata accepted")
+	}
+	if !bytes.Contains(stdout.Bytes(), []byte("UPDATE_ORIGINAL_STATE_UNSUPPORTED")) && !bytes.Contains(stdout.Bytes(), []byte("INSTALL_PREPARATION_FAILED")) {
+		t.Fatal("wrong refusal boundary", stdout.String(), stderr.String())
+	}
+	if err := os.RemoveAll(foreign); err != nil {
+		t.Fatal(err)
 	}
 	if !reflect.DeepEqual(before, uvCLIRegularFiles(t, venv)) || !reflect.DeepEqual(evidenceBefore, uvCLIRegularFiles(t, filepath.Join(cache, "heliopause", "evidence"))) {
-		t.Fatal("refused repeat changed target files or inspection Evidence")
+		t.Fatal("refused original input changed target or Evidence")
 	}
-	t.Logf("actual_uv_install status=%s promotion=%s entries=%d runtime=%s repeat=REFUSED target_and_evidence=UNCHANGED", result.Status, result.Promotion, result.Verified.Count, manifest.Resolver.Runtime)
+
 }
 
 func uvCLIRegularFiles(t *testing.T, root string) map[string][32]byte {

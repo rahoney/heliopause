@@ -67,7 +67,6 @@ func localizeHelp(root *cobra.Command, p *presentation) {
 		if command.CommandPath() == "helox github install" {
 			command.Long = p.text(githubReplacementDescriptionEnglish, githubReplacementDescriptionKorean)
 		}
-		localizePackageClientCommand(command, p)
 		if text, ok := descriptions[command.CommandPath()]; ok {
 			command.Short = p.text(text[0], text[1])
 		}
@@ -95,6 +94,7 @@ func localizeHelp(root *cobra.Command, p *presentation) {
 				flag.Usage = p.text(text[0], text[1])
 			}
 		}
+		localizePackageClientCommand(command, p)
 		if command.CommandPath() == "helox pip install" {
 			command.Flags().Lookup("adopt").Usage = p.text("Enroll supported native wheel files after independent ownership verification and full inspection", "공식 wheel과 기존 파일의 소유권을 대조하고 전체 검사 후 지원하는 일반 venv를 등록합니다")
 		}

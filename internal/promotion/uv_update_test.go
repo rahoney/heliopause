@@ -40,10 +40,17 @@ func (r *uvGuardResolverFixture) ResolveDependencyUpdate(_ context.Context, _ do
 	artifact := r.graph.Nodes()[0].Artifact()
 	name, version := artifact.Identity().Name(), artifact.Identity().Version()
 	changes := []string{}
+	found := false
 	for _, installed := range input.Installed() {
+		if installed.Project() == name {
+			found = true
+		}
 		if installed.Project() == name && installed.Version() != version {
 			changes = append(changes, fmt.Sprintf(`{"name":%q,"version":%q,"action":"uninstalled"}`, name, installed.Version()), fmt.Sprintf(`{"name":%q,"version":%q,"action":"installed"}`, name, version))
 		}
+	}
+	if !found {
+		changes = append(changes, fmt.Sprintf(`{"name":%q,"version":%q,"action":"installed"}`, name, version))
 	}
 	delta := []byte(`{"schema":{"version":"preview"},"dry_run":true,"changes":[` + strings.Join(changes, ",") + `]}`)
 	lock := []byte(fmt.Sprintf("lock-version = \"1.0\"\ncreated-by = \"uv\"\nrequires-python = \">=3.14\"\n[[packages]]\nname = %q\nversion = %q\n[[packages.wheels]]\nurl = %q\nsize = 1\nhashes = { sha256 = %q }\n", name, version, artifact.AcquisitionLocator(), strings.TrimPrefix(artifact.DeclaredIntegrity(), "sha256:")))

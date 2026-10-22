@@ -504,3 +504,21 @@ binding 범위 밖이며 조기 거부한다. Native ownership 인계는 여전�
 요구한다. Sync는 기존 project/explicit-empty 모델의 다음 gap으로 남긴다.
 Canonical format/quick/security/docs/workflow와 전체 관련 Race를 먼저 수행하고 source CI의
 실제 UV CLI와 기존 pip/macOS/cleanup을 확인한다. CI 대기는 clock.sleep으로 유지·조회한다.
+
+
+### C3c2b 로컬 결과
+
+[최종 영수증](./p1c-installed-cli-local-20261022.json)은 canonical5와 promotion/CLI/bootstrap/
+application/artifact-pypi 전체 Race PASS다. 동일 held transaction으로 empty fresh와 managed
+installed-aware 일반 설치를 나누고 ordinary wrapper가 INSTALL identity를 보존한다.
+두 UPDATE 서비스는 descriptor의 private typed mode로 선택하며 원본 SourceID는 pypi다.
+EN/KO의 native upgrade 의미와 다섯 언어 fallback을 유지했다. 기존 pip/named/default/
+native 회귀도 canonical 및 전체 관련 Race에서 통과했다.
+
+실제 authenticated CI의 UV CLI에 fresh3.10→bare retention3.10→root update3.11→closure
+no-op3.11→새 packaging root, 각 전체 검사/ALLOW/반입·정확한 controls/UV runtime와
+원본/user-file/무관한 package 보존·구버전 METADATA 제거 및 unsupported-original 거부를
+연결했다. 로컬 합성 성공을 그 native 성공으로 확대하지 않는다.
+IMPLEMENTED=YES / WIRED=YES / QUALIFIED=LOCAL ONLY / ACCEPTANCE_CLOSED=NO다.
+같은 source의 actual CLI/native/macOS/Required가 다음이며 native ownership·sync는 남는다.
+Task TMPDIR0이고 새 Docker 시험 자원은 만들지 않았다. 필요한 SDK/quality/runtime은 유지한다.
