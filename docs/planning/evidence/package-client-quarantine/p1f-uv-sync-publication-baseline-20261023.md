@@ -516,3 +516,10 @@ exact sources·첫 실패/교정·checks/raw를 소유한다. 모든 검사 뒤 
 native 자원은 없다. Helper IMPLEMENTED=YES/기존 witness WIRED=YES/QUALIFIED=LOCAL ONLY/
 ACCEPTANCE_CLOSED=NO이며 actual sync Begin은 NO다. Fresh source CI·A2c2 actual preparation/
 selection/guard와 C/D·whole P1이 MISSING이다. CI388 source1cf5781 결과와 구분한다.
+
+
+## CI388 결과와 다음 선행 회귀
+
+[CI388 최초 결과](./p1f-uv-original-proof-ci388-20261023.json)는 native UV/CLI 및 앞46개 Linux tests와
+다른8 prerequisites가 PASS지만 CPU full의 unit-completion timestamp reversal로 Linux/Required는
+FAIL이다. A2a/b의 전체 source qualification은 열려 있다. 다음은 [CPU 순서 수정 지도](./p1f-cpu-unit-completion-baseline-20261023.md)를 따른다. B1/A2c1 local 단위와 actual guarded sync/P1 전체는 별도로 남는다.

@@ -15,12 +15,19 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — native same-runtime self-quarantine update IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; actual signed rc6 normal/cancellations/fresh replay passed; channel scope remains
-Next action: P1 uv pip IN_PROGRESS — C3e2a/b closed by CI386; A1 source36c6253 closed by CI387 ten SUCCESS; A2a identity/A2b whole-original proof bridge source1cf5781 CI388 active; B1 complete-only transaction and A2c1 source-file witness canonical5/full related Race locally PASS; next actual whole-original preparation/selection/guard and target sync, approved publication/CLI and whole P1
+Next action: P1 uv pip IN_PROGRESS — CI388 eight SUCCESS/Linux+Required FAIL at existing CPU unit-completion timestamp reversal; investigate/correct under p1f CPU ordering map before actual guarded sync. B1/A2c1 local canonical5/full Race PASS, new source CI pending
 After P1: M13-004/G127 — Go 1.27.3 coordinated migration NOT_STARTED; must finish before P2
 After G127: P2 pnpm, then P3..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-23 CI388 선행 회귀
+
+[최초 결과](./evidence/package-client-quarantine/p1f-uv-original-proof-ci388-20261023.json)의 native
+UV/CLI·46개 Linux 선행 tests·다른8 prerequisites는 PASS지만 CPU full의 unit-outcome 회계 시각
+역전으로 Linux/Required는 FAIL이다. 원본/복원을 보존했고 [수정 지도·두 번째 검토](./evidence/package-client-quarantine/p1f-cpu-unit-completion-baseline-20261023.md)를 먼저 따른다.
+B1/A2c1 local 후보를 이 실패 실행에 포함하거나 기존 CUDA 양의 지연과 같은 원인으로 쓰지 않는다.
 
 ### 2026-10-22 순서 결정 — P1 완료 후 Go1.27.3, 그다음 P2
 
