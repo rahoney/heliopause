@@ -320,3 +320,23 @@ A1의 IMPLEMENTED=YES/WIRED=YES(existing pip/UV 원본 guard), QUALIFIED=LOCAL O
 ACCEPTANCE_CLOSED=NO이며 MISSING은 같은 source의 실제 shared CI다. CI386 결과를 이
 후속 source에 전용하지 않는다. 다음은 검토한 A2 전체 원본 proof/source guard와 B/C/D의 나머지
 gap이며, whole guarded sync/P1은 아직 미완료다.
+
+## A2a identity 전제 / 로컬 검증
+
+사전 지도39e92ac 뒤 direct file-list helper의 다섯 부정 사례를 먼저 확인했다. Name/Version의
+directory 불일치, 같은 프로젝트의 두 버전, 반복 metadata, 중복 Name header는 기존 helper에서
+모두 받아들여져 focused Go test6.112s/exit1·다섯 FAIL였다. 이는 rootless 입력 전제의 관측이며
+기존 공개 wrapper는 NewUpgradeInput으로 이 입력을 이미 거부한다.
+
+Shared helper에서 기존 parseInstalledMetadata로 Body와 directory identity를 대조하고 같은
+normalized project를 managed/native 분류 전에 한 번만 허용했다. 같은 test source digest에서
+다섯 사례 모두4.930s/exit0·PASS다. 원래 실패를 보존했고 tests/허용 문법/기존 parser를 약화하지
+않았다. Canonical format/Quick111.933s/security/docs/workflow와 전체 promotion/Bootstrap/
+Application Race124.980s도 PASS다. [로컬 영수증](./p1f-uv-rootless-identity-local-20261023.json)이
+exact source·before/after·checks와 실제 범위를 소유한다. 완료 operator는 삭제하고2,188B의
+작은 재현 원본만 보존했다. 모든 local 검사 종료 뒤 owned Go TMPDIR0을 확인했다.
+
+A2a IMPLEMENTED/WIRED는 shared inventory 범위에서 YES, QUALIFIED=LOCAL ONLY,
+ACCEPTANCE_CLOSED=NO이며 같은 source의 shared CI가 MISSING이다. CI387은 앞 source36c6253의
+검증이므로 이 변경에 전용하지 않는다. All-original authentic old-wheel proof·actual source/target
+guard·complete publication/CLI 및 whole P1은 별도로 남으며 이 identity 검사로 소유권을 만들지 않는다.

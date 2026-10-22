@@ -62,11 +62,18 @@ func managedPyPIInventoryFromMetadata(transaction *pypiVenvTransaction, metadata
 		}
 	}
 	managed := map[string]string{}
+	seenMetadata := map[string]bool{}
 	for _, metadata := range metadataFiles {
 		name, version, ok := installedDistInfo(metadata.Directory)
 		if !ok {
 			return nil, errors.New("installed ownership metadata identity is invalid")
 		}
+		// These claims must be unambiguous independently of UpgradeInput.
+		bodyName, bodyVersion, err := parseInstalledMetadata(metadata.Body)
+		if err != nil || bodyName != name || bodyVersion != version || seenMetadata[name] {
+			return nil, errors.New("installed METADATA identity is ambiguous or differs from its directory")
+		}
+		seenMetadata[name] = true
 		if destination, present := transaction.current.Files["site/"+metadata.Directory+"/METADATA"]; present {
 			owners := destination.owners()
 			if len(owners) != 1 || owners[0].Distribution != name || owners[0].Version != version || owned[name] != version {

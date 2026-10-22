@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/ports"
 )
 
@@ -71,6 +72,39 @@ func TestInstalledMetadataSnapshotWithoutRequestedRoot(t *testing.T) {
 			}
 			if err := original.verify(context.Background(), transaction); ports.InstallUpdateFailureCode(err) != "UPDATE_SOURCE_CHANGED" {
 				t.Fatal("changed original metadata was not rejected", err)
+			}
+		})
+	}
+}
+
+func TestRootlessInventoryRequiresMetadataIdentityCoverage(t *testing.T) {
+	metadata := func(directory, project, version string) artifactpypi.InstalledMetadataFile {
+		return artifactpypi.InstalledMetadataFile{Directory: directory, Body: []byte("Metadata-Version: 2.4\nName: " + project + "\nVersion: " + version + "\n\n")}
+	}
+	original := metadata("original_name-1.0.dist-info", "original-name", "1.0")
+	for name, files := range map[string][]artifactpypi.InstalledMetadataFile{
+		"different name":        {metadata(original.Directory, "other", "1.0")},
+		"different version":     {metadata(original.Directory, "original-name", "2.0")},
+		"same project versions": {original, metadata("original_name-2.0.dist-info", "original-name", "2.0")},
+		"repeated metadata":     {original, original},
+		"ambiguous headers":     {{Directory: original.Directory, Body: []byte("Name: original-name\nName: other\nVersion: 1.0\n\n")}},
+	} {
+		t.Run(name, func(t *testing.T) {
+			_, plan := makePypiVenvFixture(t)
+			transaction, err := beginPyPIVenvTransaction(plan)
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Cleanup(func() {
+				if err := transaction.close(); err != nil {
+					t.Error(err)
+				}
+			})
+			if _, err := managedPyPIInventoryFromMetadata(transaction, files); err == nil {
+				t.Fatal("invalid rootless metadata was accepted")
+			}
+			if len(transaction.current.Files) != 0 {
+				t.Fatal("invalid metadata changed original ownership")
 			}
 		})
 	}
