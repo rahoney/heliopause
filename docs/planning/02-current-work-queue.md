@@ -15,7 +15,7 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — native same-runtime self-quarantine update IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; actual signed rc6 normal/cancellations/fresh replay passed; channel scope remains
-Next action: P1 uv pip IN_PROGRESS — C1c native startup/query local PASS, final fixture replay PASS/CI source wired; production native selection/data-reader/guarded install-upgrade-sync/CLI missing; CI371 macOS deadline FAIL, terminal/gap diagnostics local PASS; P2..P7 NOT_STARTED
+Next action: P1 uv pip IN_PROGRESS — public native caller implemented; CI375 exact hosts read classification FAIL, narrow correction/qualification active; cache-aligned CI374 ten SUCCESS; guarded install-upgrade-sync/CLI missing; P2..P7 NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
@@ -105,6 +105,22 @@ Sourcef76c564를 push했고 CI374가 진행 중이다. 다음 public native UV c
 canonical5·관련 Race16.610s와 lock-only preflight/snapshot actual 세 fixture를 통과했다.
 완료 native 자료688,406,687B는 제거했다. Public single/multi graph entry를 기존 CI의
 인증된 test-client 단계에 연결했고 다음 source CI가 실제 public/HTTP 완료 조건이다.
+[CI374 종료](./evidence/package-client-quarantine/cache-alignment-ci374-20261022.json)는
+sourcef76c564/same checkout tree·Required 포함10SUCCESS다. macOS build55.562s와
+default test envelope171.294s 이내, Linux native 세 시험/기존 통합·CPU186.73s 및 정리가
+PASS다. Cache 정렬 후보의 native 완료를 확인했고 과거 모든 timeout의 원인은 단정하지 않는다.
+이후 public caller sourceab54d4a는 별도 push했으며 실제 public/HTTP·guarded CLI는 남는다.
+[Guarded client 다음 gap 감사](./evidence/package-client-quarantine/p1c-guarded-client-baseline-20261022.md)는
+기존 promotion/update/enrollment·bootstrap의 재사용 위치와 UV/multi-root gap을 분리했다.
+읽기 전용 baseline이며 구현은 시작하지 않았다. C2의 public actual 결과부터 확인한다.
+
+[CI375 첫 public 결과](./evidence/package-client-quarantine/p1c-public-ci375-20261022.json)는
+sourceab54d4a/same checkout tree에서 idna@3.11 native compile이 exact /etc/hosts의
+read 분류 누락으로 STREAM_FAULT였다. Required/Linux FAIL, 나머지8 prerequisite SUCCESS,
+helper wait0·confirmed stop/원래 client 복원은 확인했다. Public graph/독립 HTTP는
+미통과다. C2 leaf의 수정 지도·두 번째 검토에 따라 UV direct root의 exact system hosts
+읽기만 보완하고 전체 latch/canonical 및 새 actual public 입력으로 검증한다. C3 구현과
+P2..P7은 시작하지 않는다.
 
 
 
@@ -3473,9 +3489,9 @@ permanent installed CLI activation and publication remain separate; PR38 is draf
 
 ### M13-004 — convenience installation channels
 
-Current P1 substep: [P1b5 UV-only mount/profile/admission baseline](./evidence/package-client-quarantine/p1b5-uv-runtime-admission-baseline-20261021.md), locally checked in [native startup evidence](./evidence/package-client-quarantine/p1b5-uv-runtime-local-20261021.json). P1 remains IN_PROGRESS; fresh source CI and production UV resolver/CLI remain unwired/unqualified.
-Next active audit: [P1c native resolver/install/upgrade/sync edit map](./evidence/package-client-quarantine/p1c-uv-resolver-baseline-20261022.md). Exact native JSON/interpreter query/selection semantics are investigated before implementation; P2..P7 remain NOT_STARTED.
-CI368 macOS again reached default-test6m deadline. The current prerequisite is [bounded Go test progress diagnosis](./evidence/package-client-quarantine/macos-default-test-diagnostic-plan-20261022.md); no deadline/coverage reduction or blind rerun.
+Current P1 substep: [C2 public native producer](./evidence/package-client-quarantine/p1c-uv-native-producer-baseline-20261022.md). Native startup/query/output and isolated reader/caller are implemented; CI375 public input failed at the exact system hosts read. Narrow classification correction and actual public qualification are active; application/guarded CLI remain unwired.
+Next audit: [guarded client gap](./evidence/package-client-quarantine/p1c-guarded-client-baseline-20261022.md), read-only until public C2 qualification. P2..P7 remain NOT_STARTED.
+Cache-aligned [CI374](./evidence/package-client-quarantine/cache-alignment-ci374-20261022.json) passed native macOS and all10 jobs. Historical timeout causes are not universally confirmed; scope/deadlines remain unchanged.
 
 Status: IN_PROGRESS — self-update installation role and Linux/WSL2 amd64 scope approved on2026-10-20; official names pending only for channel wiring. CLI-UX-003, SEC-UPD-001 and CLI-UX-002 remain complete.
 Audit: IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO for the

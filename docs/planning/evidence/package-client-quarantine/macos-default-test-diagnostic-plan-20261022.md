@@ -160,3 +160,8 @@ Race36.760s(시험16.714s)·Darwin compile11.016s도 PASS다. Checker/CLI depend
 공유 package는205개이며 Sigstore 공유는0개다. 전체700개 의존성이 bootstrap과 같다고
 과장하지 않는다. 완료 binary/일회성7파일12,607,903B는 Root 참조·query errors0 뒤 제거했다.
 새 native macOS/Required 완료와 과거 timeout의 세부 원인은 계속 미확정이다.
+
+후속 [CI374](./cache-alignment-ci374-20261022.json)는 sourcef76c564/same tree의 Required와
+9 prerequisites가 모두 SUCCESS다. Native macOS의 같은 cache root/trimpath 실행과
+build55.562s·default test envelope171.294s 이내를 확인했다. 이후 public native caller는
+별도 후보이며, 과거 모든 timeout의 정확한 인과를 이 한 실행으로 확정하지 않는다.

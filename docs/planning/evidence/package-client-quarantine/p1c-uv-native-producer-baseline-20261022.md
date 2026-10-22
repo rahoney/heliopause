@@ -237,3 +237,33 @@ PASS다. Actual lock transport/동등성의 세 fixture와 constructor/refusal/c
 기존 resolver의 Race16.610s를 연결했다. 완료 native workspace6,833항목688,406,687B는
 Root 참조·query errors0 확인 뒤 제거했다. Public/HTTP entry는 기존 보호된 CI client에
 연결했지만 아직 실제 실행 결과가 없으므로 qualification/CLI 지원을 닫지 않는다.
+
+## CI375 첫 public 입력 — hosts data read 미분류
+
+Sourceab54d4a의 CI375/Linux119645650316은 idna@3.11 compile2.57s에서
+STREAM_FAULT/OPEN_RESULT_CLASSIFICATION_OTHER로 실패했다. Flags557056,
+CONTROL/DIRECT_EXEC_ROOT, system mount의 locator와 mountpoint 지문
+ab0a49b3f5f1fd68은 모두 exact /etc/hosts와 일치한다. 이 지문은 실제 오류의
+경로 대조용이며 권한 증명이 아니다. Native public graph/독립 HTTP reader는 아직
+통과하지 않았다. Required도 FAIL이고 다른 여덟 prerequisite는 SUCCESS다.
+Helper wait0·CONFIRMED_STOPPED/client restore0은 원래 실패와 별도로 확인했다.
+원본은 docs/github-logs/package-client-quarantine-20261021/ci375-linux.log다.
+
+기존 IsPinnedUVRuntimeRead는 자체 proc/quota/고정 image만 분류하므로
+typed endpoint가 준비한 exact hosts mount의 읽기가 누락됐다. 구현은 유지하고
+이 predicate에 /etc/hosts + 동일 system mountpoint + 기존 flags557056만 추가한다.
+기존 current UV image/소비된 direct root/CONTROL/network-active/세대 및 pending
+거부를 전부 유지한다. Query child·ARTIFACT·다른 profile/경로·쓰기·다른 mount에는
+권한을 추가하지 않는다. DNS/CA subtree 등 관측하지 않은 예외를 묶어 허용하지 않는다.
+
+두 번째 검토: 기존 owned-container/typed network/observer 책임을 그대로 재사용하며
+파일 읽기 분류는 endpoint 정책·실행 승인·완료 authority를 대체하지 않는다. Latch의
+정상 exact mount와 인접 경로/다른 mount·flags/역할/세대 부정 matrix를 확장하고,
+fresh canonical C++ 전체 및 canonical Quick/security/docs/workflow 뒤 새 실제 public
+입력으로 검증한다. C2 public QUALIFIED=NO/ACCEPTANCE_CLOSED=NO, C3 구현/P2..P7은
+시작하지 않는다. 완료된 build/test bulk는 마지막 소비 뒤 삭제한다.
+
+[Exact hosts 로컬 검사](./p1c-public-hosts-local-20261022.json)는 fresh canonical observer
+build300.099s/106 latch와 Quick/security/docs/workflow PASS를 연결한다. Canonical builder의
+완료 workroot 부재도 확인했다. 이것은 좁은 분류/부정 matrix 검증이며 새 public graph/HTTP
+성공은 아니다. CI375 실패를 유지하고 같은 수정 source의 새 원격 qualification을 확인한다.

@@ -2256,7 +2256,9 @@ bool IsPinnedUVRuntimeRead(const gvisor::common::ContextData& context,
       path == "/usr/local/bin/python3.14";
   const bool distribution_read = anchor->mount_class == "oci-root" && anchor->mountpoint == "/" &&
       path == "/usr/lib/os-release";
-  if (!proc_read && !quota_read && !null_read && !interpreter_read && !distribution_read) return false;
+  const bool hosts_read = anchor->mount_class == "system" && anchor->mountpoint == "/etc/hosts" &&
+      path == "/etc/hosts";
+  if (!proc_read && !quota_read && !null_read && !interpreter_read && !distribution_read && !hosts_read) return false;
   const auto* group = FindFilesystemGroup(context, state);
   return group != nullptr && group->role == ProcessState::Role::kControl &&
       group->provenance == ProcessState::Provenance::kDirectExecRoot &&

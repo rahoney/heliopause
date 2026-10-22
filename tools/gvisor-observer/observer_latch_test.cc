@@ -7050,22 +7050,23 @@ bool VerifyUVRuntimeReadBoundary() {
     return ClassifyFilesystemOpen(open, state, profile, &anchor) == FilesystemClass::kHelperOnly;
   };
   if (!allowed()) return false;
-  for (const char* mount : {"/proc", "/sys/fs/cgroup/cpu", "/dev", "/"}) {
+  for (const char* mount : {"/proc", "/sys/fs/cgroup/cpu", "/dev", "/", "/etc/hosts"}) {
     anchor.mountpoint = mount; anchor.mount_class = strcmp(mount, "/") == 0 ? "oci-root" : "system";
     for (const char* path : {"/proc/99/maps", "/proc/99/environ", "/proc/sys/vm/other", "/proc/self/cgroup",
         "/proc/1/cgroup", "/proc/100/cgroup", "/proc/1/mountinfo", "/proc/100/mountinfo",
         "/dev/zero", "/dev/urandom", "/sys/fs/cgroup/cpu/cpu.stat", "/usr/local/bin/python", "/usr/local/bin/pip", "/usr/local/lib/libpython3.14.so.1.0", "/usr/bin/dash", "/usr/local/bin/python3.14.evil",
-        "/usr/lib/os-release.evil", "/etc/os-release", "/usr/lib/../lib/os-release"}) {
+        "/usr/lib/os-release.evil", "/etc/os-release", "/usr/lib/../lib/os-release",
+        "/etc/hosts.evil", "/etc/resolv.conf", "/etc/../etc/hosts"}) {
       open.set_pathname(path); if (allowed()) return false;
     }
   }
   for (const char* path : {"/proc/sys/vm/overcommit_memory", "/proc/99/cgroup", "/proc/99/mountinfo",
-      "/sys/fs/cgroup/cpu/cpu.cfs_quota_us", "/sys/fs/cgroup/cpu/cpu.cfs_period_us", "/dev/null", "/usr/local/bin/python3.14", "/usr/lib/os-release"}) {
+      "/sys/fs/cgroup/cpu/cpu.cfs_quota_us", "/sys/fs/cgroup/cpu/cpu.cfs_period_us", "/dev/null", "/usr/local/bin/python3.14", "/usr/lib/os-release", "/etc/hosts"}) {
     state = baseline;
     open.set_pathname(path);
     const bool image = strcmp(path, "/usr/local/bin/python3.14") == 0 || strcmp(path, "/usr/lib/os-release") == 0;
     const std::string mountpoint = image ? "/" : (strcmp(path, "/dev/null") == 0 ? "/dev" :
-        (HasPrefix(path, "/sys/") ? "/sys/fs/cgroup/cpu" : "/proc"));
+        (strcmp(path, "/etc/hosts") == 0 ? "/etc/hosts" : (HasPrefix(path, "/sys/") ? "/sys/fs/cgroup/cpu" : "/proc")));
     const std::string mount_class = image ? "oci-root" : "system";
     anchor.mountpoint = mountpoint; anchor.mount_class = mount_class;
     if (!allowed()) return false;
@@ -7084,7 +7085,7 @@ bool VerifyUVRuntimeReadBoundary() {
       if (IsPinnedUVRuntimeRead(*context, state, open.pathname(), open.flags(), profile, &anchor)) return false;
     }
     for (const char* mount : {"/", "/proc/sys", "/proc/99", "/sys/fs/cgroup", "/sys/fs/cgroup/cpu/x"}) { anchor.mountpoint = mount; if (mount != mountpoint && allowed()) return false; }
-    for (const char* root : {"/proc", "/sys/fs/cgroup/cpu", "/dev"}) {
+    for (const char* root : {"/proc", "/sys/fs/cgroup/cpu", "/dev", "/etc/hosts"}) {
       anchor.mountpoint = root;
       if (allowed() != (anchor.mountpoint == mountpoint)) return false;
     }
