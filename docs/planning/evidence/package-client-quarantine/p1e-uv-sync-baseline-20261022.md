@@ -172,3 +172,29 @@ native runtime/원본 guard·entry/set Policy·staging·owned publication은 이
 함께 검증한다. 선택 wheel의 filename·archive·Simple metadata와 constraints/graph budget을
 검증한 공통 본문을 재사용하며 complete 목적 때문에 기존 검사를 생략하지 않는다.
 새 external dependency/interface/config/CI job·미래 milestone scaffold는 만들지 않는다.
+
+## C3e1 구현 경계 / 로컬 검증
+
+`ParseUVProjectLock` / `UVProjectLock.BindProject`는 별도 primary 없이 기존 ProjectDependencySnapshot에
+결합한다. 기존 UVLock은 nonempty/single-primary/connected graph 규칙을 유지한다.
+Strict native TOML·wheel alternatives·installed METADATA/WHEEL·전체 archive SHA/RECORD·
+독립 release metadata·Requires-Dist constraints의 본문을 공유하며, complete 소비자는
+모든 선택과 control/실제 wheel URL·integrity/target의 digest를 고정한다. Native output의
+누락/null census와 명시 empty census를 구분한다. Empty도 target·한도의 유효성·동일
+native lock control을 확인하며, 양수 한도 검증을 InspectWheel 호출 전에 공통 적용한다.
+
+Canonical format/Quick/security/docs/workflow와 기존 fuzz profile의 두 parser 실행이
+PASS다. 관련 artifact/Application/promotion 전체 Race129.553s와 sandbox 선택 회귀10.937s도
+PASS이며 [로컬 영수증](./p1e-uv-project-lock-local-20261023.json)에 exact source/check를
+연결했다. 정확한 source의 원격 Required/native macOS/Linux 검증은 남는다. 이 단위는
+IMPLEMENTED=YES / WIRED=YES(adapter 내부만; production sync는 NO) /
+QUALIFIED=NO(새 원격 검증 대기) / ACCEPTANCE_CLOSED=NO다.
+이 단위의 MISSING은 같은 source CI다. 이후 C3e2 native complete producer/reader, C3e3
+guarded publication/CLI와 P1 actual whole qualification도 남는다. 파서 테스트 성공은 실제 삭제·검역
+완료가 아니며, runtime pin·Policy·삭제 authority나 지원 CLI를 이 변경에서 추가하지 않는다.
+
+두 번째 검토는 독립 roots/constraint·missing/self dependency, complete archive 변조,
+명시 empty/누락/null/extra census, unknown/future/direct source·budget, 단일 root empty
+거부와 control/target/실제 wheel 대안 바꿔치기를 포함한다. 기존 구현을 대체하지 않고
+공통 검증을 재사용했다. 완료된 시험의 payload는 남기지 않으며, source/SDK/cache는
+아직 필요한 다음 P1 검증 입력으로 유지한다.

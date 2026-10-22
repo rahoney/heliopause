@@ -6,7 +6,8 @@ import (
 )
 
 // UVInstalledWheelControls are untrusted data from a native UV target. They
-// select archive candidates only; BindWheels must still authenticate each one.
+// select archive candidates only; subsequent archive binding must authenticate
+// each one before a single-root graph or complete snapshot can be returned.
 type UVInstalledWheelControls struct {
 	DistInfo        string
 	Metadata, Wheel []byte
@@ -15,7 +16,11 @@ type UVInstalledWheelControls struct {
 // SelectInstalledWheelControls reuses the wheel metadata grammar and the native
 // snapshot selector without importing anything from the installed environment.
 func (l UVLock) SelectInstalledWheelControls(controls []UVInstalledWheelControls, target WheelTarget) ([]UVLockedWheel, error) {
-	if len(l.packages) == 0 || len(controls) != len(l.packages) {
+	return selectUVInstalledWheelControls(l.packages, l.python, controls, target, false)
+}
+
+func selectUVInstalledWheelControls(packages []UVLockedPackage, python string, controls []UVInstalledWheelControls, target WheelTarget, allowEmpty bool) ([]UVLockedWheel, error) {
+	if controls == nil || (!allowEmpty && len(packages) == 0) || len(controls) != len(packages) {
 		return nil, errors.New("uv installed controls are incomplete")
 	}
 	type installedWheel struct {
@@ -23,7 +28,7 @@ func (l UVLock) SelectInstalledWheelControls(controls []UVInstalledWheelControls
 		Version string   `json:"version"`
 		Tags    []string `json:"wheel_tags"`
 	}
-	var snapshot []installedWheel
+	snapshot := make([]installedWheel, 0, len(controls))
 	var total int
 	for _, control := range controls {
 		for _, body := range [][]byte{control.Metadata, control.Wheel} {
@@ -56,5 +61,5 @@ func (l UVLock) SelectInstalledWheelControls(controls []UVInstalledWheelControls
 	if err != nil {
 		return nil, errors.New("uv installed snapshot encoding failed")
 	}
-	return l.SelectInstalledWheels(body, target)
+	return selectUVInstalledWheels(packages, python, body, target, allowEmpty)
 }

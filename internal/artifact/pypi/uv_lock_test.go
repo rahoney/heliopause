@@ -220,6 +220,10 @@ func FuzzParseUVLockNoPanic(f *testing.F) {
 	}
 	f.Add(body)
 	f.Add([]byte("lock-version='future'"))
+	f.Add(uvProjectBody(nil))
 	reference, _ := ParseReference("requests@2.32.5")
-	f.Fuzz(func(t *testing.T, input []byte) { _, _ = ParseUVLock(reference, input, "3.14.7") })
+	f.Fuzz(func(t *testing.T, input []byte) {
+		_, _ = ParseUVLock(reference, input, "3.14.7")
+		_, _ = ParseUVProjectLock(input, "3.14.7")
+	})
 }
