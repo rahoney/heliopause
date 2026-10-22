@@ -114,7 +114,7 @@ runtime/resource 한도와 지원 범위는 이 지도로 바꾸지 않는다. �
 ## C3e2 사전 감사 — source-bound native producer와 reader
 
 C3e1 source12d9a50의 새 CI384를 기다리며 실제 symbol을 대조한 다음 단위의 지도다.
-C3e2 제품 source는 아직 수정하지 않았다. IMPLEMENTED=NO / WIRED=NO /
+C3e2 제품 source를 수정하기 전의 감사다. IMPLEMENTED=NO / WIRED=NO /
 QUALIFIED=NO / ACCEPTANCE_CLOSED=NO이며 MISSING은 아래 native complete 소비자와
 독립 reader·empty transport 및 실제 native 검증이다. 기존 infrastructure는 YES이며
 다시 구현하지 않는다. C3e3 삭제·CLI는 별도의 후속 gap이다.
@@ -262,3 +262,21 @@ guarded publication/CLI와 P1 actual whole qualification도 남는다. 파서 �
 거부와 control/target/실제 wheel 대안 바꿔치기를 포함한다. 기존 구현을 대체하지 않고
 공통 검증을 재사용했다. 완료된 시험의 payload는 남기지 않으며, source/SDK/cache는
 아직 필요한 다음 P1 검증 입력으로 유지한다.
+
+## C3e2a — frozen source/intent codec의 로컬 경계
+
+사전 지도6fc0629 뒤 `uv_sync_input.go`의 ParseUVSyncInput/Controls/ParseUVSyncControls와
+ValidateSelection을 구현했다. 위 bounded plain exact pins/strict pylock grammar와 원본
+UTF-8 bytes·명시 flag를 별도 present controls로 고정한다. 기본 blank skip은 positive
+selection을 거부하고 explicit empty와 다른 intent digest를 가진다. Native package
+name/version이 원본 목록과 다르거나 pylock 원본 bytes·Python target이 바뀌면 거부한다.
+PEP440 trailing-zero equality는 기존 UpgradeRequirement.AcceptsVersion을 재사용한다.
+이 codec의 목록 일치는 독립 전체 archive/metadata/dependency closure 검증이 아니며,
+root-only 입력의 source match 뒤에도 기존 BindProject가 missing dependency를 거부한다.
+
+이 codec의 IMPLEMENTED=YES / WIRED=YES(adapter 내부; native producer는 NO) /
+QUALIFIED=NO(로컬만) / ACCEPTANCE_CLOSED=NO다. Canonical6와 전체 artifact Race5.270s가
+PASS이며 [로컬 영수증](./p1e-uv-sync-source-local-20261023.json)이 source/check를 소유한다.
+현재 CI384는 앞 C3e1 source12d9a50의 검증이며 이 후속 codec 검증으로 전용하지 않는다.
+이 단위의 MISSING은 새 source 원격 검증이고, C3e2 native lifecycle/reader와 C3e3
+actual guarded sync/CLI 및 whole P1 qualification은 별도로 남는다.
