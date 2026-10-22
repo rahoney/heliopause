@@ -111,6 +111,70 @@ frozen control/guard와 transaction이 함께 있어야 한다. Source control�
 runtime/resource 한도와 지원 범위는 이 지도로 바꾸지 않는다. 완료한 시험은 작은 재현 원본을
 보존하고 exact owned 자원·마지막 참조/성공한 부재 확인 뒤 정리한다.
 
+## C3e2 사전 감사 — source-bound native producer와 reader
+
+C3e1 source12d9a50의 새 CI384를 기다리며 실제 symbol을 대조한 다음 단위의 지도다.
+C3e2 제품 source는 아직 수정하지 않았다. IMPLEMENTED=NO / WIRED=NO /
+QUALIFIED=NO / ACCEPTANCE_CLOSED=NO이며 MISSING은 아래 native complete 소비자와
+독립 reader·empty transport 및 실제 native 검증이다. 기존 infrastructure는 YES이며
+다시 구현하지 않는다. C3e3 삭제·CLI는 별도의 후속 gap이다.
+
+| 실제 위치 / 함수 | 재사용과 정확한 후속 수정 |
+| --- | --- |
+| artifact/pypi의 새 uv_sync_input.go | frozen source format/bytes와 allow-empty flag를 bounded control로 구분한다. Plain source의 초기 허용 grammar·중복 project·range/hash/include/marker 지원 여부를 구현 전에 확정하고 unsupported는 거부한다. Native compile에 원래 목록 밖 dependency를 추가할 권한을 주지 않으며 selected project/version과 원본 입력을 다시 대조한다. Explicit empty pylock은 기존 ParseUVProjectLock을 재사용한다 |
+| sandbox/uv_resolver.go resolveNativeSelectionWithInput | 기존 tool/probe·typed network·observer·named tmpfs·ownership·attachments·종료/cleanup body를 private session 함수로 추출해 재사용한다. 기존 install/update selection 본문은 그대로 callback으로 연결하고 complete source는 별도 private callback으로 들어온다. 임의 primary/reference·Host solver/새 lifecycle을 만들지 않음 |
+| 같은 native compile/sync 본문 | Plain 목록은 고정 tool의 --no-deps compile 후보를 검증한다. 저장된 실제0.13.4 compile help에 해당 option이 있으나 native complete 명령의 실제 성공은 아직 미검증이다. Compile과 독립 closure 확인 모두 원본 목록의 의미를 유지해야 한다. Pylock source는 strict 검증한 같은 bytes를 sync에 전달하고 전후 lock 불변을 확인한다. Default blank skip은 이 positive selection 경로에서 거부 |
+| sandbox/uv_native_output.go scanUVNativeOutputWithInput | 공통 tar/path/owner/mode/한도·padding·동일 source·control 검증을 유지한다. 기존 single-root caller는 control0을 계속 거부한다. 별도 complete caller만 유효 explicit-empty lock·관측/종료가 있을 때 명시 empty census를 생성한다. Missing site/control·변조·extra/truncated output은 성공으로 바꾸지 않음 |
+| sandbox/pypi_resolver.go withPythonResolverSession | 기존 reference/source 확인 wrapper를 보존하고 private source-bound session owner를 추출한다. 기존 pip/PyTorch/UV callback과 runtime·network·observer·cleanup을 공유한다. Complete callback은 실제 public source로 진입하고 가짜 reference나 DependencyResolution을 성공 결과로 만들지 않음 |
+| sandbox/uv_resolver_reader.go bindUVNativeSelection | 기존 full archive·독립 exact-release metadata·stream bounds와 private workspace 정리를 공유한다. 기존 single-root는 BindWheels로, complete 소비자는 BindProject로 끝낸다. Empty는 검증된 native 완료와 source/flag/runtime/target/control을 요구하고 가짜 archive/Run/Evidence를 생성하지 않음 |
+| 기존 ports.ProjectLockUpdateResolver / Domain.NewProjectDependencyUpdateFromSnapshot | complete 선택을 기존 primary-free update에 연결한다. Original/selected control 이름·개수가 같아야 하므로 guard 시작 때 native 결과 control의 absent 원본과 frozen source/intent/runtime를 준비하고 selected에서만 native lock을 present로 전환한다. Absent original은 선택 전 상태이며 empty 성공/삭제 권한이 아님 |
+
+정확한 guard source 캡처·native 결과용 original absent control·동일 이름/개수 계약은
+`project_update.go:newProjectDependencyUpdate`에서 확인했다. Native input codec나 source
+세션을 추가한다고 이 계약을 완화하지 않는다. 원본 cfg/METADATA/ledger와 source 파일의
+동일성은 C3e3 promoter guard가 소유하며 resolver만으로 원본 변경 권한을 만들지 않는다.
+현재 UpgradeInput은 요청 requirement를 필수로 가지므로 sync 원본에 임의 패키지를 넣어
+재사용하지 않는다. Installed state/ownership의 실제 C3e3 공통 추출 위치는 별도로 감사한다.
+
+두 번째 검토: 단순 compile 성공이 complete source 보존 증거는 아니다. 고정0.13.4의
+실제 two-root+dependency·누락 dependency·empty pylock/blank/명시 flag 의미를 검증하고,
+source/flag/runtime/target·native output/readback의 바꿔치기와 cleanup 불확실성을 거부한다.
+Shared source session 추출 뒤 기존 pip/PyTorch·single UV 소비자도 검사한다. Empty tar
+예외는 새 complete entry에서만 허용하고 기존 collector의 빈 결과 거부는 유지한다.
+Canonical profile·관련 Race/fuzz와 실제 native 실행·same-source 원격 소비자 검증을
+연결하기 전 production 지원/qualification을 선언하지 않는다. 새 Core interface·정책·
+버전 pin·CI job이나 미래 client scaffold는 만들지 않는다.
+
+착수 grammar는 한 파일의 bounded UTF-8 plain requirements(빈 줄·주석·public final
+`name==version` pins) 또는 strict UV pylock1.0이다. Plain duplicate normalized project,
+range/extras/marker·include/constraint·option/hash continuation·URL/local/VCS/editable·
+sdist/build는 이 단위에서 거부한다. 원본 bytes는 보존하고 선택된 name/version 집합이
+원본 exact pins와 같은지 확인한다. --no-deps는 해당 목록 유지 후보일 뿐 독립 dependency
+closure 확인을 생략하지 않는다. 확장 grammar를 나중에 지원한다면 같은 codec/native/
+reader/CLI 부정 회귀를 연결한 실제 변경으로 다루며 지금 지원한다고 표시하지 않는다.
+Pylock의 원본 전체 bytes는 native materialization 전후와 같은 control에 묶는다.
+Blank plain의 기본값은 SKIP이고 explicit flag만 positive empty로 구분한다. Runtime
+control은 실제 고정 UV/Python/target 검증을 수행한 producer가 생성하며 caller 문자열로
+pin 인증을 대신하지 않는다. Control 개수/absent 원본의 실제 guard 배치는 C3e3 소비자와
+함께 검사하며 미래 ownership placeholder를 지금 추가하지 않는다.
+
+CI384 대기 중 data-only 추가 관측 계획: 잠긴 UV0.13.4/CPython3.14.7의 인증된 tool을
+UID1000/read-only/network-none/no-cap/NPP 임시 runc에서만 실행한다. Guest loopback
+index의 inert 자체 wheel에 대해 --no-deps compile→pylock→private target sync를 root-only,
+complete-two, empty 세 입력으로 한 번씩 확인한다. 이전 plain sync 다섯 명령을 반복하지
+않는다. Root-only는 native 목록 보존 관측일 뿐 HAA closure 승인/ALLOW가 아니다.
+Actual native lock/count와 fixed guest data-only census, Host 전후와 exact label·image/ID
+cleanup을 보존한다. 새 image를 만들거나 Host interpreter/artifact를 실행하지 않으며
+작은 원본을 보존한 뒤 완료 workroot/client/operator를 제거한다. 이 조사도 실제 public
+공급망·production gVisor/typed network·Policy·사용자 target 삭제 qualification은 아니다.
+
+실제 [data-only 결과](./p1e-uv-sync-compile-format-20261023.json)는 세 compile/sync·독립
+data census 모두 exit0, 13.789s다. Root-only는 dependency를 추가하지 않고1개, complete-two는
+2개, empty는 유효 packages=[]/0개였다. 두 exact container 제거·label 부재·Host12파일/
+images/containers/bridge/service 동일을 확인했고 새 image는0이다. 빈 workroot/client와
+완료 operator 두 개는 작은 원본 보존 후 제거했다. --no-deps 후보의 해당 목록 보존은
+확인됐지만 actual HAA independent binding/gVisor/Policy·guarded 사용자 반입은 미실행이다.
+
 
 ## 고정 native plain requirements 관측 / 구현 지도 보완
 
