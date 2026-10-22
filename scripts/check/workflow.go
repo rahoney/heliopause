@@ -539,6 +539,7 @@ func workflowJobIDs(contents string) []string {
 // These fixed commands belong to the actual unconditional lifecycle step.
 // Their presence in comments, another job or a skipped step supplies no gate.
 var uvIntegrationCommands = []string{
+	`HELOX_UV_PUBLIC_UPDATE_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestUVPublicNativeUpdateResolverIntegration$'`,
 	`HELOX_UV_INSTALL_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=6m -test.run '^TestLinuxUVInstallCLIIntegration$'`,
 	`uv_image="$(jq -er '.uv_image.reference' "$runtime_lock")"`,
 	`docker pull "$uv_image"`,

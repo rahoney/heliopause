@@ -95,32 +95,42 @@ func (u UpgradeInput) proposeUpgrade(candidates []Candidate) (UpgradeProposal, e
 	if err != nil {
 		return UpgradeProposal{}, err
 	}
-	names := make([]string, 0, len(proposal.versions))
-	for name := range proposal.versions {
+	proposal.constraints, err = u.selectedVersionConstraints(proposal.versions, proposal.requiredExtras)
+	if err != nil {
+		return UpgradeProposal{}, err
+	}
+	return proposal, nil
+}
+
+// Both native selectors retain the same original dependency obligations.
+func (u UpgradeInput) selectedVersionConstraints(versions map[string]string, requiredExtras map[string][]string) ([]byte, error) {
+	var err error
+	names := make([]string, 0, len(versions))
+	for name := range versions {
 		names = append(names, name)
 	}
 	sort.Strings(names)
 	lines := make([]string, 0, len(names))
 	for _, name := range names {
-		lines = append(lines, name+"=="+proposal.versions[name])
+		lines = append(lines, name+"=="+versions[name])
 	}
 	for _, project := range u.installed {
-		if project.version == proposal.versions[project.project] {
+		if project.version == versions[project.project] {
 			retained := project
-			if extras := proposal.requiredExtras[project.project]; len(extras) > 0 {
+			if extras := requiredExtras[project.project]; len(extras) > 0 {
 				retained, err = parseUpgradeInstalledMetadataWithExtras(InstalledMetadataFile{project.directory, project.metadata}, u.python, extras)
 				if err != nil {
-					return UpgradeProposal{}, err
+					return nil, err
 				}
 			}
 			lines = append(lines, retained.requirements...)
 		}
 	}
-	proposal.constraints = []byte(strings.Join(lines, "\n") + "\n")
-	if len(proposal.constraints) > upgradeInputLimit {
-		return UpgradeProposal{}, errors.New("retained upgrade constraints exceed bounds")
+	constraints := []byte(strings.Join(lines, "\n") + "\n")
+	if len(constraints) > upgradeInputLimit {
+		return nil, errors.New("retained upgrade constraints exceed bounds")
 	}
-	return proposal, nil
+	return constraints, nil
 }
 
 func (p UpgradeProposal) Reference() domain.ArtifactReference { return p.reference }

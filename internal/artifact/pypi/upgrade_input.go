@@ -13,6 +13,10 @@ import (
 const UpgradeInputControlName = "pypi-update-input.json"
 const upgradeInputLimit = 4 << 20
 
+// UpgradeInputDistributionLimit bounds inert original metadata independently of
+// the artifact budget for the newly selected dependency graph.
+const UpgradeInputDistributionLimit = maxPyPIReportEntries
+
 // UpgradeRequirement is the supported native-shaped selection, not a generic
 // pip argument. All package execution stays behind the existing resolver.
 type UpgradeRequirement struct {
@@ -189,7 +193,7 @@ type UpgradeInput struct {
 }
 
 func NewUpgradeInput(requirement UpgradeRequirement, files []InstalledMetadataFile, python string) (UpgradeInput, error) {
-	if requirement.Reference().Source().String() == "" || len(files) > maxPyPIReportEntries || !strings.HasPrefix(python, "3.14.") || len(strings.Split(python, ".")) != 3 || !numericRelease.MatchString(python) {
+	if requirement.Reference().Source().String() == "" || len(files) > UpgradeInputDistributionLimit || !strings.HasPrefix(python, "3.14.") || len(strings.Split(python, ".")) != 3 || !numericRelease.MatchString(python) {
 		return UpgradeInput{}, errors.New("upgrade input requires a bounded supported Python environment")
 	}
 	canonical, err := NormalizeVersion(python)

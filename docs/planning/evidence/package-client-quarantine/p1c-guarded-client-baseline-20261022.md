@@ -372,3 +372,47 @@ YES다. 앞 절의 native NOT_RUN/NO는 이 결과로 갱신한다. Installed-aw
 ownership·complete/multi-root/empty sync/P1 전체는 여전히 MISSING이며 C3c 착수 지도를 따른다.
 현재1.26.10 기준 P1을 닫은 뒤 [Go1.27.3 전환 계획](./go1273-migration-baseline-20261022.md)을
 P2 전에 수행한다. 순서·상태의 단일 owner는 Queue다.
+
+## C3c1 — native installed-aware producer 착수 지도
+
+기준8a025b8. C3b actual CI377은 qualified이고 metadata-only 전송14개는 data-only 범위에서
+확인됐다. 이번 단위는 guarded CLI를 곧바로 노출하지 않고 실제 UV update resolver와
+독립 whole-archive binding을 연결한다. 기존 empty fresh resolver와 pip update는 보존한다.
+C3c1은 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED NO에서 시작한다. MISSING은
+아래 strict controls/native 전송·선택·독립 binder와 실제 authenticated public producer 검증이다.
+
+| 위치 / 실제 소비자 | 변경과 검증 |
+| --- | --- |
+| artifact/pypi/uv_selection.go 신규 | 기존 UpgradeInput에 native preview dry-run delta를 연결한다. install/upgrade-all/upgrade-package intent만 고정 control로 표현하고 name/version/action pair·원본 uninstall·empty no-op·unknown/중복 JSON을 strict 검증. Pending version map/constraints는 승인 authority가 아님 |
+| upgrade_selection.go proposeUpgrade의 constraints 생성 | 기존 retained metadata/extra 처리 부분만 공통 private helper로 추출해 pip/UV가 재사용. 기존 pip 결과 bytes/검증 의미 유지 |
+| sandbox/uv_resolver.go ResolveDependencyUpdate / resolveNativeSelection | 기존 resource/policy/observer·tool·output lifecycle을 재사용. 검증된 METADATA를 같은 private output mount의 original 하위에 tar로 전달하고 fixed UV dry-run 뒤 선택한 exact constraints로 fresh compile/sync. 사용자 module/Python/RECORD 복사와 host resolver fallback 없음 |
+| sandbox/uv_native_output.go + 새 uv_selection_input.go | 기존 bounded tar transport를 사용. Update 전용 expected input 경로/bytes/modes만 엄격히 재확인하고 기존 scanner를 공유. Fresh 소비자는 original/constraints 경로를 여전히 거부. Original auxiliary empty lock은 데이터와 구분 |
+| sandbox/uv_resolver_reader.go 기존 binder 소비 | native delta/version map·원본 control·intent·pylock을 함께 묶고 기존 independent archive/public metadata graph와 교차 검증. Fake pip report/Candidate나 runtime prefix 허용을 만들지 않음 |
+| 기존 sandbox 실제 integration / CI lifecycle/checker | 설치된 authenticated sandbox-test에서 public packaging의 기존 metadata→retention/선택 upgrade 결과와 unrelated 원본의 비-root 의미를 확인. 누락/skip 회귀와 기존 fresh/public/CLI/pip 소비자도 유지 |
+
+두 번째 검토: native delta는 전체 graph/승인이 아니며 unchanged 및 unrelated 원본은
+constraints로 남는다. Selected root/변경 dependency는 exact version이 독립 graph에 일치해야
+하고 제거-only/ambiguous replacement·retained 요구 충돌은 거부한다. 원본 target guard와
+native ownership·actual UPDATE promotion은 다음 C3c2의 기존 transaction adapter gap이다.
+이번 native producer 성공을 그 acceptance로 전용하지 않는다. Same-runtime/Go pin은 유지한다.
+Canonical format/Quick/security/docs/workflow와 관련 parser/producer Race, actual source CI의
+native transport/typed network 및 기존 소비자·cleanup을 확인한다. 첫 실제 fault를 보존한다.
+
+### C3c1 로컬 결과
+
+[최종 로컬 영수증](./p1c-installed-producer-local-20261022.json)은 canonical format/Quick/
+security/docs/workflow와 artifact 전체·관련 sandbox/checker Race3개 PASS다. 세 가지 native
+선택 intent와 원본/preview delta/선택 pylock controls, METADATA-only tar 전송·반환 원본의
+bytes/mode/owner 검증과 독립 graph 선택 대조를 구현했다. 기존 pip constraints 생성만
+공유하며 fresh collector는 update-only input을 계속 거부한다. 실제 public integration은
+기존 authenticated sandbox-test CI에 연결했으며 아직 native NOT_RUN이다.
+
+사전 회귀에서 original metadata 개수를 selected graph64개 한도로 잘못 묶은 실패를
+입증했다. 기존 UpgradeInput의1024개 한도를 그 owner에서 공유했고 graph64 한도는
+유지했다. 같은 회귀가 final Quick/Race에서 통과했다. 첫 Quick의 test fixture 이름 오류와
+이 의미 오류의 증거는 구분한다. Go1.27 전환/새 runtime·Host 설치나 native 시험 자원은
+만들지 않았고 task TMPDIR는 비어 있다.
+
+C3c1은 IMPLEMENTED=YES, WIRED=YES(native port/CI), QUALIFIED=NO(actual native pending),
+ACCEPTANCE_CLOSED=NO다. 다음은 같은 후보 actual native installed-aware/public/Required CI다.
+Guarded target/update 반입·client/native ownership·sync의 C3c2 이후 MISSING은 그대로 남는다.

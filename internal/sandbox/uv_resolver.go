@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"strings"
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
@@ -84,7 +85,11 @@ func (r *UVResolver) ResolveDependencies(ctx context.Context, reference domain.A
 	return r.reader.bindUVNativeSelection(ctx, reference, native)
 }
 
-func (r *UVResolver) resolveNativeSelection(ctx context.Context, reference domain.ArtifactReference, request string) (result uvNativeOutput, resultErr error) {
+func (r *UVResolver) resolveNativeSelection(ctx context.Context, reference domain.ArtifactReference, request string) (uvNativeOutput, error) {
+	return r.resolveNativeSelectionWithInput(ctx, reference, request, nil)
+}
+
+func (r *UVResolver) resolveNativeSelectionWithInput(ctx context.Context, reference domain.ArtifactReference, request string, selected *uvInstalledSelection) (result uvNativeOutput, resultErr error) {
 	reader := r.reader
 	capability, err := reader.probe(ctx)
 	if err != nil {
@@ -224,6 +229,43 @@ func (r *UVResolver) resolveNativeSelection(ctx context.Context, reference domai
 	common := []string{"--no-build", "--no-config", "--no-cache", "--no-python-downloads", "--no-managed-python", "--python", "/usr/local/bin/python", "--index-url", artifactpypi.PublicPyPIProfile().IndexURL()}
 	compile := append([]string{"pip", "compile", "-", "--format", "pylock.toml", "--output-file", pythonSitePath + "/pylock.toml", "--python-version", capability.Runtime.PythonVersion, "--python-platform", platform}, common...)
 	input := reader.runner.(inputCommandRunner)
+	var expectedInput map[string][]byte
+	if selected != nil {
+		expectedInput = uvOriginalSelectionFiles(selected.input)
+		if err := introduceUVSelectionFiles(selection, input, container, expectedInput, true); err != nil {
+			return uvNativeOutput{}, err
+		}
+		dryRun := []string{"pip", "install", "--dry-run", "--output-format", "json", "--target", pythonSitePath + "/original"}
+		dryRun = append(dryRun, common...)
+		switch selected.intent {
+		case artifactpypi.UVInstallSelection:
+		case artifactpypi.UVUpgradeSelection:
+			dryRun = append(dryRun, "--upgrade")
+		case artifactpypi.UVUpgradePackageSelection:
+			dryRun = append(dryRun, "--upgrade-package", selected.input.Requirement().Project())
+		default:
+			return uvNativeOutput{}, errors.New("UV native selection intent is unsupported")
+		}
+		dryRun = append(dryRun, request)
+		body, err := uvBoundedSelectionOutput(selection, reader.runner, container, append([]string{uvToolGuestPath}, dryRun...))
+		if err != nil {
+			return uvNativeOutput{}, err
+		}
+		selected.proposal, err = selected.input.ParseUVSelection(body)
+		if err != nil {
+			return uvNativeOutput{}, err
+		}
+		constraints := selected.proposal.Constraints()
+		if err := introduceUVSelectionFiles(selection, input, container, map[string][]byte{"constraints.txt": constraints}, false); err != nil {
+			return uvNativeOutput{}, err
+		}
+		expectedInput["constraints.txt"] = constraints
+		request, err = pypiRequirement(selected.proposal.Reference())
+		if err != nil {
+			return uvNativeOutput{}, err
+		}
+		compile = append(compile, "--constraint", pythonSitePath+"/constraints.txt")
+	}
 	if err := input.RunInput(selection, strings.NewReader(request+"\n"), "docker", boundaryInputExecArguments(container, boundaryLaunchMode, append([]string{uvToolGuestPath}, compile...)...)...); err != nil {
 		return uvNativeOutput{}, uvReaderFailure{"native uv compile failed", err}
 	}
@@ -241,7 +283,13 @@ func (r *UVResolver) resolveNativeSelection(ctx context.Context, reference domai
 	if err := output.verifyAttachments(selection, reader.runner, map[string]bool{container: false}); err != nil {
 		return uvNativeOutput{}, err
 	}
-	result, err = readUVNativeOutput(selection, reader.runner, container)
+	if selected == nil {
+		result, err = readUVNativeOutput(selection, reader.runner, container)
+	} else {
+		result, err = readUVNativeTar(selection, reader.runner, container, pythonSitePath+"/.", func(input io.Reader) (uvNativeOutput, error) {
+			return scanUVNativeOutputWithInput(input, expectedInput)
+		})
+	}
 	if err != nil {
 		return uvNativeOutput{}, err
 	}

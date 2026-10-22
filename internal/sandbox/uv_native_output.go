@@ -2,10 +2,12 @@ package sandbox
 
 import (
 	"archive/tar"
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"io"
+	"path"
 	"sort"
 	"strings"
 
@@ -81,6 +83,10 @@ func scanUVNativeLock(input io.Reader) (uvNativeOutput, error) {
 }
 
 func scanUVNativeOutput(input io.Reader) (uvNativeOutput, error) {
+	return scanUVNativeOutputWithInput(input, nil)
+}
+
+func scanUVNativeOutputWithInput(input io.Reader, expectedInput map[string][]byte) (uvNativeOutput, error) {
 	if input == nil {
 		return uvNativeOutput{}, errors.New("uv native output stream is missing")
 	}
@@ -89,6 +95,15 @@ func scanUVNativeOutput(input io.Reader) (uvNativeOutput, error) {
 	// Account separately for file data, bounded tar headers and end padding.
 	bounded := &io.LimitedReader{R: input, N: policy.MaxGraphUncompressed() + uvNativeLockLimit + maxEntries*1024 + 10240}
 	archive := tar.NewReader(bounded)
+	inputDirectories := map[string]bool{}
+	if expectedInput != nil {
+		inputDirectories["original"] = true
+		for name := range expectedInput {
+			if strings.HasPrefix(name, "original/") {
+				inputDirectories[path.Dir(name)] = true
+			}
+		}
+	}
 	seen := make(map[string]bool)
 	controls := make(map[string]*artifactpypi.UVInstalledWheelControls)
 	var result uvNativeOutput
@@ -106,7 +121,7 @@ func scanUVNativeOutput(input io.Reader) (uvNativeOutput, error) {
 		root := name == "." || name == ""
 		// UV's empty auxiliary target lock is discarded. It carries neither
 		// selection data nor an installation/completion proof.
-		auxiliaryLock := name == "site/.lock" && header.Size == 0 && header.Mode == 0o666 &&
+		auxiliaryLock := (name == "site/.lock" || expectedInput != nil && name == "original/.lock") && header.Size == 0 && header.Mode == 0o666 &&
 			(header.Typeflag == tar.TypeReg || header.Typeflag == 0)
 		if entries > maxEntries || header.Uid != 1000 || header.Gid != 1000 || header.Mode&^int64(0o777) != 0 || (header.Mode&0o022 != 0 && !auxiliaryLock) ||
 			seen[name] || (!root && !validClosureDestination(name)) || header.Size < 0 {
@@ -115,16 +130,27 @@ func scanUVNativeOutput(input io.Reader) (uvNativeOutput, error) {
 		}
 		seen[name] = true
 		if header.Typeflag == tar.TypeDir {
-			if header.Size != 0 || (!root && name != "site" && !strings.HasPrefix(name, "site/")) {
+			if header.Size != 0 || (!root && name != "site" && !strings.HasPrefix(name, "site/") && !inputDirectories[name]) {
 				return uvNativeOutput{}, errors.New("uv native directory is unsupported")
 			}
 			continue
 		}
+		original, isInput := expectedInput[name]
 		if root || (header.Typeflag != tar.TypeReg && header.Typeflag != 0) ||
-			(name != "pylock.toml" && !strings.HasPrefix(name, "site/")) || header.Size > policy.MaxGraphUncompressed()-expanded {
+			(name != "pylock.toml" && !strings.HasPrefix(name, "site/") && !isInput && !(expectedInput != nil && name == "original/.lock" && auxiliaryLock)) || header.Size > policy.MaxGraphUncompressed()-expanded {
 			return uvNativeOutput{}, errors.New("uv native file type, location or size is unsupported")
 		}
 		expanded += header.Size
+		if isInput {
+			if header.Mode != 0400 || header.Size != int64(len(original)) {
+				return uvNativeOutput{}, errors.New("UV original selection input identity changed")
+			}
+			body, err := io.ReadAll(io.LimitReader(archive, header.Size))
+			if err != nil || !bytes.Equal(body, original) {
+				return uvNativeOutput{}, errors.New("UV original selection input bytes changed")
+			}
+			continue
+		}
 		parts := strings.Split(name, "/")
 		isControl := len(parts) == 3 && strings.HasSuffix(parts[1], ".dist-info") && (parts[2] == "METADATA" || parts[2] == "WHEEL")
 		if name == "pylock.toml" || isControl {
@@ -171,6 +197,11 @@ func scanUVNativeOutput(input io.Reader) (uvNativeOutput, error) {
 	}
 	if bounded.N == 0 || len(result.lock) == 0 || len(controls) == 0 {
 		return uvNativeOutput{}, errors.New("uv native output is missing or exceeds bounds")
+	}
+	for name := range expectedInput {
+		if !seen[name] {
+			return uvNativeOutput{}, errors.New("UV original selection input disappeared")
+		}
 	}
 	for _, control := range controls {
 		if len(control.Metadata) == 0 || len(control.Wheel) == 0 {

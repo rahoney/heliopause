@@ -39,6 +39,9 @@ M13-004 하나만 IN_PROGRESS이며 G127을 동시에 착수하지 않는다. Go
 현재 취약점은1.26.10에서 수정되어 P1 기능 변화와 runtime 변화를 분리할 수 있는 경계가
 적절하다. 새 reachable advisory/지원 종료가 이 판단의 전제를 바꾸면 긴급 순서를 재평가한다.
 1.27.3은 전환 목표이며 현재 lock/workflow/Host SDK는 이 순서 기록에서 변경하지 않는다.
+후속 요청에 따라 G127 완료 기준에는 실제 compiler/binary/bundle/설치 readback의 버전 일치와
+전환·복구 검증/마지막 참조 확인 뒤 구버전 owned SDK·cache·bundle·시험 자원의 정리를 포함한다.
+현재 P1의 active1.26.10 입력은 유지하며 역사 evidence의 버전 문자열을 실행 잔재로 삭제하지 않는다.
 
 ### 2026-10-21 owner scope — client expansion and full-name brand
 
@@ -180,6 +183,12 @@ source8ec8de7/actual checkout334918f·동일 전체 tree와10SUCCESS다. 실제 
 nonempty 반복 거부·target/Evidence 불변, Linux50/CPU283.72s/helper5wait0/final confirmed
 cleanup와 native macOS·Vulnerability를 통과했다. C3b 빈 venv 설치의 네 상태는 모두 YES다.
 현재 다음은 C3c installed-aware install/upgrade/native ownership·sync이며 P1 전체는 미완료다.
+C3c1 native installed-aware producer를 시작한다. C3 leaf의 사전 감사·정확한 수정 지도·두 번째
+검토를 확인하고 strict delta/원본 metadata controls와 기존 UV native/독립 binder 연결만 구현한다.
+Guarded update 반입·CLI/native ownership·sync는 후속이며 P1 밖으로 이동하지 않는다.
+[C3c1 로컬 결과](./evidence/package-client-quarantine/p1c-installed-producer-local-20261022.json)는
+canonical5/관련 Race3개 PASS다. Native resolver/CI는 연결했고 다음은 실제 public/Required
+검증이다. Original metadata 한도와 selected graph 한도는 구분했고 actual native 성공은 아직 아니다.
 
 
 
