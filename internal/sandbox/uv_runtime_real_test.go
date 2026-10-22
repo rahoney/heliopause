@@ -4,6 +4,7 @@ package sandbox
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"strings"
 	"testing"
@@ -17,6 +18,32 @@ import (
 // This opt-in probe requires a daemon that actually sees the selected bundle,
 // exact images and the candidate observer. A client-only mount view is insufficient.
 func TestUVActualIsolatedNativeStartup(t *testing.T) {
+	withActualUVNativeRuntime(t, func(ctx context.Context, runner CommandRunner, id string) {
+		version, err := runner.Output(ctx, "docker", boundaryExecArguments(id, boundaryLaunchMode, uvToolGuestPath, "--version")...)
+		if err != nil || !strings.HasPrefix(strings.TrimSpace(string(version)), "uv "+runtimeidentity.UVVersion+" ") {
+			t.Fatal("isolated native UV startup failed", err)
+		}
+		t.Logf("isolated_native_uv_version=%s", strings.TrimSpace(string(version)))
+	})
+}
+
+func TestUVActualIsolatedPythonInventory(t *testing.T) {
+	withActualUVNativeRuntime(t, func(ctx context.Context, runner CommandRunner, id string) {
+		body, err := runner.Output(ctx, "docker", boundaryExecArguments(id, boundaryLaunchMode, uvToolGuestPath,
+			"pip", "list", "--python", "/usr/local/bin/python", "--offline", "--no-config", "--no-cache", "--no-python-downloads", "--format", "json")...)
+		if err != nil {
+			t.Fatal("isolated native UV Python inventory failed", err)
+		}
+		var packages []struct{ Name, Version string }
+		if len(body) > 16<<10 || json.Unmarshal(body, &packages) != nil || len(packages) != 1 || packages[0].Name != "pip" || packages[0].Version != runtimeidentity.PipVersion {
+			t.Fatal("isolated native UV inventory differs from the pinned pure Python image")
+		}
+		t.Logf("isolated_native_uv_python_inventory=%s", strings.TrimSpace(string(body)))
+	})
+}
+
+func withActualUVNativeRuntime(t *testing.T, operation func(context.Context, CommandRunner, string)) {
+	t.Helper()
 	if os.Geteuid() == 0 || os.Getenv("HELOX_UV_NATIVE_RUNTIME") != "1" {
 		t.Fatal("requires declared ordinary-user isolated UV runtime qualification")
 	}
@@ -107,9 +134,5 @@ func TestUVActualIsolatedNativeStartup(t *testing.T) {
 	if err := volume.verifyTarget(ctx, runner, id); err != nil {
 		t.Fatal(err)
 	}
-	version, err := runner.Output(ctx, "docker", boundaryExecArguments(id, boundaryLaunchMode, uvToolGuestPath, "--version")...)
-	if err != nil || !strings.HasPrefix(strings.TrimSpace(string(version)), "uv "+runtimeidentity.UVVersion+" ") {
-		t.Fatal("isolated native UV startup failed", err)
-	}
-	t.Logf("isolated_native_uv_version=%s", strings.TrimSpace(string(version)))
+	operation(ctx, runner, id)
 }

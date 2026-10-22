@@ -6831,39 +6831,60 @@ bool VerifyUVRuntimeReadBoundary() {
     return ClassifyFilesystemOpen(open, state, profile, &anchor) == FilesystemClass::kHelperOnly;
   };
   if (!allowed()) return false;
-  for (const char* path : {"/proc/99/maps", "/proc/99/environ", "/proc/sys/vm/other", "/proc/self/cgroup"}) {
-    open.set_pathname(path); if (allowed()) return false;
-  }
-  open.set_pathname("/proc/sys/vm/overcommit_memory");
-  for (uint64_t flags : {uint64_t{0}, kOpenWriteOnly, kOpenReadWrite, kOpenCreate, kOpenTruncate, kOpenAppend}) {
-    open.set_flags(flags); if (allowed()) return false;
-  }
-  open.set_flags(557056);
-  for (const char* profile : {kProfileNPM, kProfilePyPI, kProfilePyTorchCPU, kProfilePyTorchCU126,
-      kProfilePyTorchCU130, kProfilePyTorchCU132, kProfileCargoResolver, kProfileGoResolver}) {
-    // Existing profiles have their own authorized semantics; the UV-specific
-    // predicate must never supply them a new grant.
-    if (IsPinnedUVRuntimeRead(*context, state, open.pathname(), open.flags(), profile, &anchor)) return false;
-  }
-  for (const char* mount : {"/", "/proc/sys", "/proc/99"}) { anchor.mountpoint = mount; if (allowed()) return false; }
-  anchor.mountpoint = "/proc"; anchor.mount_class = "workspace"; if (allowed()) return false;
-  anchor.mount_class = "system";
-  for (int scenario = 0; scenario < 11; ++scenario) {
-    state = baseline; auto& group = state.groups[99];
-    switch (scenario) {
-      case 0: group.role = ProcessState::Role::kArtifact; break;
-      case 1: group.provenance = ProcessState::Provenance::kCloneChild; break;
-      case 2: group.current_image_class = ProcessClass::kUnknown; break;
-      case 3: group.root_eligible = true; break;
-      case 4: group.root_consumed = false; break;
-      case 5: group.trusted_control_network_active = false; break;
-      case 6: group.demotion_pending = true; break;
-      case 7: group.launch_target_pending = true; break;
-      case 8: group.handoff_target_pending = true; break;
-      case 9: group.start_time_ns++; break;
-      case 10: state.expected_groups[99].process_class = ProcessClass::kUnknown; break;
+  for (const char* mount : {"/proc", "/sys/fs/cgroup/cpu", "/dev"}) {
+    anchor.mountpoint = mount;
+    for (const char* path : {"/proc/99/maps", "/proc/99/environ", "/proc/sys/vm/other", "/proc/self/cgroup",
+        "/proc/1/cgroup", "/proc/100/cgroup", "/proc/1/mountinfo", "/proc/100/mountinfo",
+        "/dev/zero", "/dev/urandom", "/sys/fs/cgroup/cpu/cpu.stat"}) {
+      open.set_pathname(path); if (allowed()) return false;
     }
-    if (allowed()) return false;
+  }
+  for (const char* path : {"/proc/sys/vm/overcommit_memory", "/proc/99/cgroup", "/proc/99/mountinfo",
+      "/sys/fs/cgroup/cpu/cpu.cfs_quota_us", "/sys/fs/cgroup/cpu/cpu.cfs_period_us", "/dev/null"}) {
+    state = baseline;
+    open.set_pathname(path);
+    const std::string mountpoint = strcmp(path, "/dev/null") == 0 ? "/dev" :
+        (HasPrefix(path, "/sys/") ? "/sys/fs/cgroup/cpu" : "/proc");
+    anchor.mountpoint = mountpoint;
+    if (!allowed()) return false;
+    context->set_parent_thread_group_id(1); if (allowed()) return false;
+    context->set_parent_thread_group_id(0);
+    context->set_is_exec_session(false); if (allowed()) return false;
+    context->set_is_exec_session(true);
+    for (uint64_t flags : {uint64_t{0}, kOpenWriteOnly, kOpenReadWrite, kOpenCreate, kOpenTruncate, kOpenAppend}) {
+      open.set_flags(flags); if (allowed()) return false;
+    }
+    open.set_flags(557056);
+    for (const char* profile : {kProfileNPM, kProfilePyPI, kProfilePyTorchCPU, kProfilePyTorchCU126,
+        kProfilePyTorchCU130, kProfilePyTorchCU132, kProfileCargoResolver, kProfileGoResolver}) {
+      // Existing profiles have their own authorized semantics; the UV-specific
+      // predicate must never supply them a new grant.
+      if (IsPinnedUVRuntimeRead(*context, state, open.pathname(), open.flags(), profile, &anchor)) return false;
+    }
+    for (const char* mount : {"/", "/proc/sys", "/proc/99", "/sys/fs/cgroup", "/sys/fs/cgroup/cpu/x"}) { anchor.mountpoint = mount; if (allowed()) return false; }
+    for (const char* root : {"/proc", "/sys/fs/cgroup/cpu", "/dev"}) {
+      anchor.mountpoint = root;
+      if (allowed() != (anchor.mountpoint == mountpoint)) return false;
+    }
+    anchor.mountpoint = mountpoint; anchor.mount_class = "workspace"; if (allowed()) return false;
+    anchor.mount_class = "system";
+    for (int scenario = 0; scenario < 11; ++scenario) {
+      state = baseline; auto& group = state.groups[99];
+      switch (scenario) {
+        case 0: group.role = ProcessState::Role::kArtifact; break;
+        case 1: group.provenance = ProcessState::Provenance::kCloneChild; break;
+        case 2: group.current_image_class = ProcessClass::kUnknown; break;
+        case 3: group.root_eligible = true; break;
+        case 4: group.root_consumed = false; break;
+        case 5: group.trusted_control_network_active = false; break;
+        case 6: group.demotion_pending = true; break;
+        case 7: group.launch_target_pending = true; break;
+        case 8: group.handoff_target_pending = true; break;
+        case 9: group.start_time_ns++; break;
+        case 10: state.expected_groups[99].process_class = ProcessClass::kUnknown; break;
+      }
+      if (allowed()) return false;
+    }
   }
   return true;
 }

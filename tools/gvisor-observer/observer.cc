@@ -2141,9 +2141,15 @@ bool IsPinnedUVRuntimeRead(const gvisor::common::ContextData& context,
                           const ProcessState& state, const std::string& path,
                           uint64_t flags, const char* profile, const MountAnchor* anchor) {
   if (profile == nullptr || strcmp(profile, kProfileUVResolver) != 0 ||
-      anchor == nullptr || anchor->mount_class != "system" || anchor->mountpoint != "/proc" ||
-      path != "/proc/sys/vm/overcommit_memory" || flags != 557056 ||
+      anchor == nullptr || anchor->mount_class != "system" || flags != 557056 ||
       !context.is_exec_session() || context.parent_thread_group_id() != 0) return false;
+  const std::string self = "/proc/" + std::to_string(context.thread_group_id());
+  const bool proc_read = anchor->mountpoint == "/proc" &&
+      (path == "/proc/sys/vm/overcommit_memory" || path == self + "/cgroup" || path == self + "/mountinfo");
+  const bool quota_read = anchor->mountpoint == "/sys/fs/cgroup/cpu" &&
+      (path == "/sys/fs/cgroup/cpu/cpu.cfs_quota_us" || path == "/sys/fs/cgroup/cpu/cpu.cfs_period_us");
+  const bool null_read = anchor->mountpoint == "/dev" && path == "/dev/null";
+  if (!proc_read && !quota_read && !null_read) return false;
   const auto* group = FindFilesystemGroup(context, state);
   return group != nullptr && group->role == ProcessState::Role::kControl &&
       group->provenance == ProcessState::Provenance::kDirectExecRoot &&

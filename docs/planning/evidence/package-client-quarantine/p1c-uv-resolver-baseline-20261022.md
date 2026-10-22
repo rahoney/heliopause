@@ -209,3 +209,62 @@ system mount locator0be3699c9bd6bd65(/dev), flags557056이다. 같은 strict roo
 UV CONTROL root·exact flags/system /dev·/dev/null read 한 경로다. 다른 role/clone/profile,
 쓰기와 임의 device는 계속 거부하는 구체 후보와 negative matrix를 review한다. 추가 실행은
 사용자 결정 뒤 진행한다. 독립적인 macOS 진단과 완료 data 정리는 계속할 수 있다.
+
+2026-10-22 사용자가 위 `/dev/null` read 후보의 빌드·격리 검증을 명시 승인했다.
+중단 뒤 보완한 negative matrix는 거부할 경로를 /proc·CPU cgroup·/dev의 실제 각 mount에서
+검사한다. 현재 후보의 기록은 uv-c1b-pending-candidate-static-review.json을 따른다.
+이미 삭제한 incremental cache/operator를 복원하지 않고 canonical fresh build로 검증한다.
+이 승인은 해당 fixed 후보와 offline inventory 시험에 한정되며 Host 활성화나 다음
+미관측 read/child/network 권한을 사전 승인하지 않는다. 새 최초 fault가 나오면 원본과
+현재 경계를 보존하고 다음 변경의 필요·범위를 다시 검토한다.
+
+### 승인한 fixed 후보의 결과와 다음 owner 경계
+
+Fresh canonical C++ build285.319s/전체105 latch와 canonical5가 PASS다. Actual startup은
+4.09s·trace29/3306B/session complete로 PASS다. Offline inventory는3.97s 뒤 새 최초
+fault로 FAIL이며 앞 read 후보 전체의 product acceptance 완료가 아니다. 새 fault는
+CONTROL/CLONE_CHILD의 pinned Python3.14 image가 OCI root의 libpython3.14.so.1.0을
+읽는 단계다. Diagnostic executable locatorb982a2d37572906d와 read32581434d67478c1을
+기존 known Python paths에 대조했다. Hash는 진단이며 query 승인 authority가 아니다.
+Container/volume/observer endpoint0·daemon waits[0,0]·Host 보호 상태 전후 동일이다.
+
+다음 gap은 UV root metadata가 아니라 **고정 interpreter 정보 조회 child의 명시적 역할**이다.
+IsPythonProfile(UV)를 true로 만들거나 CONTROL/clone의 라이브러리 전체 읽기를 허용하지
+않는다. 기존 Cargo의 exact creator/query·sealed executable/runtime-read 경계를 먼저
+대조한다. 현재 query argv/embedded script는 아직 확보하지 않았으므로 예외를 추가하지 않는다.
+
+형식 조사에서는 같은 인증 UV native를 read-only/network-none/UID1000의 pure Python
+derived fixture에서 실행하되 interpreter를 고정 Go stub으로 교체한다. Stub은 argv를
+최대64KiB 데이터로만 기록하고 exit73하며 Python/script를 실행하지 않는다. Carrier는
+실행 전에만 수정하고 source image·Host 파일·사용자 target을 바꾸지 않는다. 이 fixture는
+production interpreter/검역 성공이 아니다. Captured query를 검토한 뒤 exact query identity,
+creator/generation·read-only runtime·network 거부·demotion/exit 경계를 설계하고 negative
+matrix를 먼저 작성한다. 완료한 carrier/derived image/stub/data는 exact owner로 정리한다.
+
+실제 argv 조사에서 native UV는 Python에5개 인자를 전달했다: fixed interpreter,
+-I/-B/-c와146B launcher다. Launcher는 UV의 임의 이름 private temp directory를 sys.path에
+추가한 뒤 python.get_interpreter_info.main을 호출한다. Stub exit73/native exit2·Python
+source 실행0을 확인했고 owned container3/image1은 제거, Host 전후 동일이다. Temp path
+패턴만 허용하는 것은 Python code content/역할의 증명이 아니므로 runtime grant를 추가하지 않는다.
+
+권한 확장 전에 고정 target 모드를 별도로 확인한다. 저장된 exact help의 --python-version/
+--python-platform/--target와 [공식 CLI](https://docs.astral.sh/uv/reference/cli/)를 대조한다.
+Wheel-only/no-build·고정3.14.7/manylinux_2_36 target에서 원래 도구가 interpreter 없이 처리할
+수 있는지는 아직 미확정이다. 같은 no-execution stub과 자체 생성한 inert pure-wheel을
+사용하는 offline runc 조사로 compile/install/list/sync의 command shape만 확인한다.
+Synthetic wheel 성공을 public registry·gVisor·검역/설치 qualification으로 전용하지 않는다.
+원래 native 동작이 이 경로를 지원하면 불필요한 child 권한을 만들지 않고, 지원하지
+않으면 관측한 query 입력/고정 runtime 파일의 authority를 별도 설계한다.
+
+첫 target-mode 조사에서 compile/install/sync는 --no-build와 --only-binary의 native CLI
+충돌로 실제 명령 전 거부됐다. 이것을 interpreter 불필요/필수의 증거로 쓰지 않는다.
+List는 stub을 실제 조회했다. 충돌 옵션만 제거한 별도 입력으로 나머지 경계를 확인하며
+최초 원본을 덮어쓰지 않는다. Production flag 검증에는 이 상호 배타 의미를 반영한다.
+
+충돌을 바로잡은 실제5 cases는 모두 interpreter query를 요청했고 stub73/native2였다.
+Fixed target만으로 query를 없앨 수 있다는 가정은 이 pin/입력에서 반증됐다. Python
+runtime source 조사에서는 UV가 생성한6개 regular files/44,055B를 코드 실행 없이 확보했다.
+get_interpreter_info.py는28,127B이며 launcher는 -I/-B와 private UV runtime만 사용한다.
+Vendored musl 경로는 subprocess 분기를 포함하므로 그 파일의 존재만으로 모든 플랫폼
+query가 info-only라고 일반화하지 않는다. 초기 지원은 기존 pinned glibc Python image에
+한정하고 query의 clone/추가 exec·network는 별도 권한을 얻지 못해야 한다.
