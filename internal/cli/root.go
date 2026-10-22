@@ -219,23 +219,38 @@ func AddPyPIInstallSources(root *cobra.Command, installers map[string]Installer)
 // AddPyPIInstallSourcesAndUpdates binds native upgrade intent to the guarded
 // workflow, preserving the ordinary install path for all existing profiles.
 func AddPyPIInstallSourcesAndUpdates(root *cobra.Command, installers map[string]Installer, updaters map[string]Installer) error {
+	return addPackageClientInstall(root, PipPackageClient, installers, updaters)
+}
+
+func addPackageClientInstall(root *cobra.Command, id PackageClientID, installers map[string]Installer, updaters map[string]Installer) error {
 	if root == nil || len(installers) == 0 {
 		return errors.New("pypi install command requires root and use case")
 	}
-	if installCommand := findLeaf(root, "pip", "install"); installCommand != nil {
+	descriptor, ok := packageClientByID(id)
+	if !ok {
+		return errors.New("unsupported package client binding")
+	}
+	if installCommand, findErr := PackageClientInstallCommand(root, id); findErr == nil {
 		installCommand.RunE = func(command *cobra.Command, args []string) error {
-			if err := validatePyPIInstallArgs(command, args); err != nil {
+			if err := descriptor.validate(command, args); err != nil {
 				return err
 			}
-			source, err := command.Flags().GetString("source")
-			if err != nil {
-				return err
+			source := "pypi"
+			var err error
+			if command.Flags().Lookup("source") != nil {
+				source, err = command.Flags().GetString("source")
+				if err != nil {
+					return err
+				}
 			}
 			if source == "" {
 				source = "pypi"
 			}
 			sourceID := artifactpypi.PublicPyPIProfile().Source()
 			if source != "pypi" {
+				if !descriptor.namedSources {
+					return errors.New("package client source is unsupported")
+				}
 				profileName := strings.TrimPrefix(source, "pytorch:")
 				if profileName == source {
 					return errors.New("pip source must be pypi or a named pytorch profile")
@@ -255,7 +270,7 @@ func AddPyPIInstallSourcesAndUpdates(root *cobra.Command, installers map[string]
 			if err != nil {
 				return err
 			}
-			installTarget, err := activePythonVenv(target)
+			installTarget, err := activePythonVenvForCommand(target, strings.Join(descriptor.path, " "))
 			if err != nil {
 				return err
 			}
@@ -272,7 +287,7 @@ func AddPyPIInstallSourcesAndUpdates(root *cobra.Command, installers map[string]
 				adopt, _ := command.Flags().GetBool("adopt")
 				request, err = application.NewInstallUpdateRequest(sourceID, args[0], installContext, adopt)
 			} else {
-				reference, parseErr := artifactpypi.ParseReferenceForSource(args[0], sourceID)
+				reference, parseErr := descriptor.parse(args[0], sourceID)
 				if parseErr != nil {
 					return parseErr
 				}
@@ -292,15 +307,19 @@ func AddPyPIInstallSourcesAndUpdates(root *cobra.Command, installers map[string]
 		}
 		return nil
 	}
-	return errors.New("pip install command is not registered")
+	return errors.New(strings.Join(descriptor.path, " ") + " command is not registered")
 }
 
 func activePythonVenv(target string) (domain.InstallTarget, error) {
+	return activePythonVenvForCommand(target, "pip install")
+}
+
+func activePythonVenvForCommand(target, command string) (domain.InstallTarget, error) {
 	if target == "" {
 		target = os.Getenv("VIRTUAL_ENV")
 	}
 	if target == "" {
-		return domain.InstallTarget{}, errors.New("pip install requires an active virtual environment")
+		return domain.InstallTarget{}, errors.New(command + " requires an active virtual environment")
 	}
 	value, err := domain.NewInstallTarget(target)
 	if err != nil {
@@ -680,15 +699,7 @@ func initializeCommandTree(root *cobra.Command) {
 	npm.AddCommand(npmUpdate)
 	pypi := ensurePyPICommand(root)
 	pypi.AddCommand(newStaticLeaf("inspect <project>[@<version>]", "Inspect a PyPI distribution", false))
-	pip := ensurePipCommand(root)
-	pipInstall := newStaticLeaf("install <project>[@<version>]", "Install a PyPI distribution into the active virtual environment", true)
-	pipInstall.Args = validatePyPIInstallArgs
-	pipInstall.Long = pypiUpgradeDescriptionEnglish
-	pipInstall.Flags().BoolP("upgrade", "U", false, "Inspect the complete selected closure before upgrading one distribution (only-if-needed)")
-	pipInstall.Flags().Bool("adopt", false, "Enroll supported native wheel files after independent ownership verification and full inspection")
-	pipInstall.Flags().String("source", "pypi", pythonSourceHelp())
-	pipInstall.Flags().String("inspection-prerequisites", "", "Explicit pinned JSON for one inspection-only non-root leaf prerequisite; not installed into the target")
-	pip.AddCommand(pipInstall)
+	initializePackageClientCommands(root)
 	github := ensureGitHubCommand(root)
 	github.AddCommand(newStaticLeaf("inspect <owner>/<repo>@<tag>#<asset>", "Inspect a GitHub Release asset", false))
 	githubInstall := newStaticLeaf("install <owner>/<repo>@<tag>#<asset>", "Install a GitHub Release asset", true)

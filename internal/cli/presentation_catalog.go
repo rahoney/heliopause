@@ -67,9 +67,7 @@ func localizeHelp(root *cobra.Command, p *presentation) {
 		if command.CommandPath() == "helox github install" {
 			command.Long = p.text(githubReplacementDescriptionEnglish, githubReplacementDescriptionKorean)
 		}
-		if command.CommandPath() == "helox pip install" {
-			command.Long = p.text(pypiUpgradeDescriptionEnglish, pypiUpgradeDescriptionKorean)
-		}
+		localizePackageClientCommand(command, p)
 		if text, ok := descriptions[command.CommandPath()]; ok {
 			command.Short = p.text(text[0], text[1])
 		}

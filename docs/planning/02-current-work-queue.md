@@ -143,6 +143,13 @@ C3a는 resolve 전 venv guard를 획득하는 내부 신규 설치 준비 adapte
 canonical5와 application 전체/관련 promotion·sandbox Race3개를 통과했다. 내부 준비 서비스와
 empty-venv guard를 구현했고 task TMPDIR는 비어 있다. Composition/CLI와 실제 target 반입은
 아직 미연결·미검증이다. 다음 C3b는 client/source descriptor와 실제 factory 연결이다.
+C3b 연결 구현을 시작한다. 실제 두 Python client만 descriptor와 factory에 등록하며 기존
+pip/PyTorch 동작과 lazy help를 유지한다. UV 신규 설치는 빈 기존 venv에 한정하고,
+installed bootstrap-test의 실제 검역·반입/비어 있지 않은 대상 거부를 기존 CI에 연결한다.
+[C3b 로컬 결과](./evidence/package-client-quarantine/p1c-guarded-cli-local-20261022.json)는
+canonical5와 CLI/bootstrap/application/promotion/checker 전체 Race PASS다. 실제 빈 venv
+UV CLI 연결은 IMPLEMENTED/WIRED YES, QUALIFIED/ACCEPTANCE_CLOSED NO이며 다음은
+같은 후보의 actual native CLI/Required CI다. 기존 설치·upgrade/native ownership·sync는 남는다.
 
 
 

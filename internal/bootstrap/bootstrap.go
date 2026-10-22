@@ -88,6 +88,13 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 			return err
 		}
 	}
+	pythonClient, err := pythonPackageClientFor(cli.SelectedPackageClient(command))
+	if err != nil {
+		return err
+	}
+	if err := pythonClient.checkPlatform(runtime.GOOS, runtime.GOARCH); err != nil {
+		return err
+	}
 	if source == "npm" || source == "pypi" || source == "pip" || source == "github" || source == "go" || source == "cargo" || source == "terraform" || source == "self-update" {
 		var closeRuntime func() error
 		ctx, closeRuntime, err = commandRuntime(ctx)
@@ -353,15 +360,18 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err != nil {
 			return err
 		}
-		resolver, err := pypiInstallDependencyResolver(runtime.GOOS, runtime.GOARCH, trustedExecutor, processObserver)
+		resolver, err := pythonClient.resolver(runtime.GOOS, runtime.GOARCH, trustedExecutor, processObserver)
 		if err != nil {
 			return err
 		}
-		installCommand, _, err := command.Find([]string{"pip", "install"})
+		installCommand, err := cli.PackageClientInstallCommand(command, pythonClient.id)
 		if err != nil {
 			return err
 		}
 		readPrerequisite := func() (string, error) {
+			if installCommand.Flags().Lookup("inspection-prerequisites") == nil {
+				return "", nil
+			}
 			return installCommand.Flags().GetString("inspection-prerequisites")
 		}
 		nativeLookupResolver := resolver
@@ -382,7 +392,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err != nil {
 			return err
 		}
-		if runtime.GOOS == "linux" {
+		if runtime.GOOS == "linux" && pythonClient.derivation {
 			builder, factoryErr := sandbox.NewLinuxPyPISdistBuilderWithExecutor(filepath.Join(root, "intake"), trustedExecutor, processObserver)
 			if factoryErr != nil {
 				return factoryErr
@@ -410,39 +420,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err != nil {
 			return err
 		}
-		installers := map[string]cli.Installer{"pypi": installer}
-		for _, profile := range artifactpypi.AllSourceProfiles() {
-			if artifactpypi.IsPyTorchSource(profile.Source()) {
-				installers[profile.Source().String()] = pyTorchResourceInstaller{installer: installer, profile: profile}
-			}
-		}
-		updateResolver, ok := resolver.(ports.DependencyUpdateResolver)
-		if !ok {
-			return errors.New("python resolver lacks guarded upgrade selection")
-		}
-		pypiPromoter, ok := promoter.(*promotion.PyPIPromotion)
-		if !ok {
-			return errors.New("python Promotion lacks guarded upgrade preparation")
-		}
-		preparation, err := promotion.NewPyPIUpdatePreparation(pypiPromoter, updateResolver)
-		if err != nil {
-			return err
-		}
-		preparation, err = preparation.WithNativeEnrollment(nativeLookupResolver, intake, filepath.Join(root, "intake"))
-		if err != nil {
-			return err
-		}
-		updater, err := application.NewInstallUpdateService(installer, preparation)
-		if err != nil {
-			return err
-		}
-		updaters := map[string]cli.Installer{"pypi": updater}
-		for _, profile := range artifactpypi.AllSourceProfiles() {
-			if artifactpypi.IsPyTorchSource(profile.Source()) {
-				updaters[profile.Source().String()] = pyTorchResourceInstaller{installer: updater, profile: profile}
-			}
-		}
-		if err := cli.AddPyPIInstallSourcesAndUpdates(command, installers, updaters); err != nil {
+		if err := pythonClient.bind(command, pythonClientBindings{installer: installer, promoter: promoter, resolver: resolver, nativeLookup: nativeLookupResolver, intake: intake, intakeRoot: filepath.Join(root, "intake")}); err != nil {
 			return err
 		}
 	}

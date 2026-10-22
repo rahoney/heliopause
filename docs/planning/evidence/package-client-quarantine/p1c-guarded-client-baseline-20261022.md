@@ -216,3 +216,54 @@ QUALIFIED=YES(local scoped only) / ACCEPTANCE_CLOSED=NO다. Fixture materializer
 실제 UV→검사→사용자 target 반입으로 표시하지 않는다. 다음은 C3b의 typed client/source
 descriptor와 bootstrap factory에 실제 준비 서비스를 연결하고 native end-to-end를 검증하는
 것이다. Nonempty install/upgrade·sync의 남은 gap은 계속 별도로 유지한다.
+
+## C3b — typed client/source와 실제 CLI 구성 연결
+
+기준 d89c934. C2는 qualified이고 C3a 내부 준비 단위는 local checks/Race를 통과했다.
+이번 범위는 실제 `helox uv pip install`의 빈 기존 venv 설치 연결이며 nonempty/upgrade/sync를
+준비되지 않은 fresh solver로 처리하지 않는다. 기존 구현은 모두 재사용한다.
+
+| 수정 위치 | 변경 방법 | 검증 |
+| --- | --- | --- |
+| cli/package_client.go (현재 두 Python client의 신규 작은 descriptor) | 실제 pip/UV의 ID·command path·기존 composition route·validator/reference parser·EN/KO 도움말을 한 owner에 둔다. Domain source는 pypi, 기존 pip route는 유지 | 직접/leading global flags/`--`·도움말·잘못된 spec/target/반복 target·미지원 flags의 runtime 이전 거부 |
+| cli/root.go initializeCommandTree / AddPyPIInstallSourcesAndUpdates | 기존 pip static 구성과 install binding만 두 실제 client용 helper로 공유; 기존 public wrapper 유지. UV는 target/global flags만 노출, bare/exact `==`를 canonical reference로 정규화 | 기존 pip/PyTorch install/update 전체 회귀, UV fake injected installer의 정확한 INSTALL/source/context |
+| cli/presentation.go PreparePresentation | 실제 선택 leaf의 descriptor에서 client ID와 기존 route를 읽는다. Bootstrap의 모든 source 조건에 uv 문자열을 추가하지 않음 | help/settings의 lazy composition·source/client 독립성·JSON/KO |
+| bootstrap/python_client.go / bootstrap.go Python 구성 | 한 registry에서 실제 resolver/검증된 installer binding을 고른다. Pip는 기존 named source·derivation·update/adoption 그대로; UV는 실제 UV resolver·C3a prepared installer와 wheel-only 구성. 미지원 OS는 runtime 준비 전에 거부 | 잘못된 client/platform 거부, 실제 bootstrap CLI native UV result/Manifest runtime 확인 |
+| presentation_catalog.go / human_report.go | descriptor의 새 EN/KO 설명과 일반 설치 준비/정리 오류 설명 연결. 기존 5개 언어 fallback 유지 | 7개 locale help/구조화 JSON, EN/KO 설명 완전성 |
+| bootstrap/uv_install_integration_test.go (신규 실제 소비자) | 기존 NPM inspect처럼 bootstrap.Run을 실제 installed bootstrap-test client 안에서 실행한다. UV cfg fixture→public idna native resolve→entry/set 검사→staging→실제 파일 반입·원본 보존 검증 | nonempty 두 번째 요청 거부·기존 payload/소유 기록 불변·추가 Evidence 부재 |
+| 기존 CI lifecycle / scripts/check UV 명령 validator | bootstrap-test 설치·policy helper 재바인딩 뒤 새 opt-in 실제 test를 조건 없이 추가. 새 job/권한/인증 우회 없음 | command 누락/conditional 회귀와 실제 source CI·helper drain/복원 |
+
+두 번째 검토: 실제 production 소비자가 있는 함수만 공유하고 미래 client entry/flag/설정을
+미리 만들지 않는다. Native `name==version`은 typed canonical reference로만 바꾸고 native
+argv를 전달하지 않는다. Source/runtime/Policy·staging·rollback 의미와 기존 pip 동작을 유지한다.
+UV의 실제 materializer는 현재 기존 pinned offline installer이며 solver identity는 UV로 기록한다.
+사용자 target Python/.pth를 실행하지 않는다. CLI 시험의 venv는 제한된 cfg/디렉터리 fixture이며
+user interpreter 실행 성공이나 native adoption으로 확대하지 않는다.
+
+Canonical format/Quick/security/docs/workflow, 관련 CLI/bootstrap/application/promotion Race와
+actual native CI까지 확인한다. 신규 설치만 통과하면 그 범위만 표시하며 P1 전체와 후속
+installed-aware update/sync의 MISSING을 보존한다. 첫 실제 실패와 완료 시험 자료 정리를 남긴다.
+
+### C3b 로컬 연결 결과 — native qualification 대기
+
+Typed descriptor는 현재 pip/UV 두 client만 등록하며 source는 기존 PyPI로 유지한다.
+Root command annotation의 선택은 표시 writer와 독립이고 bootstrap의 기존 source lane과
+client factory를 연결한다. Pip/PyTorch의 resolver·sdist·named source·upgrade/adoption은
+그대로 재사용한다. UV는 실제 UV resolver와 C3a prepared INSTALL/held venv transaction을
+사용하며 pip resolver fallback이나 fresh solver 기반 nonempty 설치를 제공하지 않는다.
+
+[로컬 영수증](./p1c-guarded-cli-local-20261022.json)의 canonical format/Quick/security/docs/
+workflow와 CLI/bootstrap/application/promotion/checker 전체 Race는 PASS다. 직접/leading
+flags/`--`·bare/exact 입력 정규화·source/client 독립성·미지원 spec/flags/반복 target의 사전
+거부와 7개 locale 도움말을 검사했다. 기존 pip/PyTorch 회귀도 같은 Quick/Race에 포함된다.
+실제 authenticated bootstrap-test 안의 UV→검사→staging→target 반입·manifest UV 신원·
+nonempty 반복 거부/원본·Evidence 불변을 검증할 opt-in test를 기존 무조건 CI lifecycle에
+연결했다. 이 actual native test는 아직 NOT_RUN이며 로컬 default test의 opt-in skip은
+native 성공 증거가 아니다.
+
+이 좁은 CLI 경로는 `IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO /
+ACCEPTANCE_CLOSED=NO`다. MISSING은 같은 후보의 actual native CLI/기존 Linux 소비자와
+native macOS를 포함한 Required CI다. Installed-aware 일반 설치·upgrade·native ownership·
+complete/multi-root/empty sync는 계속 다음 C3 gap이고 P1 전체 acceptance는 열려 있다.
+완료한 로컬 검사의 TMPDIR는 비어 있으며 다음 C3 검증에 쓸 SDK/source/quality/runtime만
+보존한다. 별도 native daemon/image/volume이나 Host 설치·서비스 변경은 만들지 않았다.

@@ -279,6 +279,10 @@ func (p *presentation) errorExplanation(code string) string {
 		return p.text("This npm update supports one public direct dependency and its supported transitive graph. Legacy local-file controls need an explicit inspected install to establish version intent.", "현재 npm 업데이트는 공개 출처의 단일 직접 의존성과 지원하는 하위 의존성 그래프를 처리합니다. 이전 로컬 파일 참조는 명시적 검사·설치로 버전 선택 의도를 다시 지정해야 합니다.")
 	case "UPDATE_SOURCE_CHANGED":
 		return p.text("Original project files or the mutation lock changed during the update. The replacement was stopped.", "업데이트 도중 원래 프로젝트 파일 또는 변경 잠금이 바뀌어 교체를 중단했습니다.")
+	case "INSTALL_PREPARATION_FAILED":
+		return p.text("The installation target could not be prepared. Check the supported virtual environment, existing distributions and ownership.", "설치 대상 준비에 실패했습니다. 지원하는 가상환경·기존 패키지·소유 상태를 확인하세요.")
+	case "INSTALL_GUARD_CLOSE_FAILED":
+		return p.text("Installation guard cleanup failed. Confirm the target and ownership record before retrying; installation may already have completed.", "설치 잠금 정리에 실패했습니다. 설치가 이미 끝났을 수 있으므로 대상 파일과 소유 기록을 확인한 뒤 재시도하세요.")
 	case "UPDATE_PREPARATION_FAILED":
 		return p.text("The existing project could not be prepared for a guarded update. Check its supported format, path and ownership.", "기존 프로젝트의 업데이트 준비에 실패했습니다. 지원 형식·경로·소유 상태를 확인하세요.")
 	case "UPDATE_GUARD_CLOSE_FAILED":

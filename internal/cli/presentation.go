@@ -115,6 +115,12 @@ func PreparePresentation(root *cobra.Command, args []string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	descriptor, packageClient := packageClientForCommand(command)
+	if packageClient && descriptor.validateRaw != nil {
+		if err := descriptor.validateRaw(args); err != nil {
+			return "", err
+		}
+	}
 	command.InitDefaultHelpFlag()
 	if err = command.ParseFlags(remaining); err != nil {
 		return "", err
@@ -134,13 +140,21 @@ func PreparePresentation(root *cobra.Command, args []string) (string, error) {
 	if top != root {
 		source = top.Name()
 	}
+	if root.Annotations == nil {
+		root.Annotations = map[string]string{}
+	}
+	delete(root.Annotations, selectedPackageClientAnnotation)
+	if packageClient {
+		source = descriptor.route
+		root.Annotations[selectedPackageClientAnnotation] = string(descriptor.id)
+	}
 	p.selfUpdate = source == "self-update"
 	p.localeExplicit = root.PersistentFlags().Changed("lang")
 	p.prepareLanguageSetting(command, command.Flags().Args())
 	if err = p.configure(); err != nil {
 		return "", err
 	}
-	if command.CommandPath() == "helox bootstrap prepare" || command.CommandPath() == "helox self-update" || command.CommandPath() == "helox npm update" || command.CommandPath() == "helox pip install" || command.CommandPath() == "helox cargo update" || command.CommandPath() == "helox go get" || command.CommandPath() == "helox terraform init" || command.CommandPath() == "helox github install" {
+	if packageClient || command.CommandPath() == "helox bootstrap prepare" || command.CommandPath() == "helox self-update" || command.CommandPath() == "helox npm update" || command.CommandPath() == "helox pip install" || command.CommandPath() == "helox cargo update" || command.CommandPath() == "helox go get" || command.CommandPath() == "helox terraform init" || command.CommandPath() == "helox github install" {
 		help, _ := command.Flags().GetBool("help")
 		if !help {
 			if err := command.ValidateArgs(command.Flags().Args()); err != nil {

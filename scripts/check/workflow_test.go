@@ -166,6 +166,7 @@ func TestValidateCIWorkflowRejectsSecurityRegressions(t *testing.T) {
 		"missing pinned Rust image":                    strings.Replace(string(contents), `docker pull "$rust_image"`, `echo skipped`, 1),
 		"missing pinned UV image":                      strings.Replace(string(contents), `docker pull "$uv_image"`, `echo skipped`, 1),
 		"UV startup integration silently skipped":      strings.Replace(string(contents), "HELOX_UV_NATIVE_RUNTIME=1", "HELOX_UV_NATIVE_RUNTIME=0", 1),
+		"UV CLI installation silently skipped":         strings.Replace(string(contents), "HELOX_UV_INSTALL_CLI_INTEGRATION=1", "HELOX_UV_INSTALL_CLI_INTEGRATION=0", 1),
 		"UV public resolver silently skipped":          strings.Replace(string(contents), "HELOX_UV_PUBLIC_RESOLVER_INTEGRATION=1", "HELOX_UV_PUBLIC_RESOLVER_INTEGRATION=0", 1),
 		"UV interpreter query silently omitted":        strings.Replace(string(contents), "(NativeStartup|EmptyTargetQuery|NativeLockCollection)", "(NativeStartup|NativeLockCollection)", 1),
 		"UV native output collection silently omitted": strings.Replace(string(contents), "(NativeStartup|EmptyTargetQuery|NativeLockCollection)", "(NativeStartup|EmptyTargetQuery)", 1),
