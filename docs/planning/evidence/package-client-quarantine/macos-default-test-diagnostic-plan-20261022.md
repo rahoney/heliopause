@@ -70,3 +70,35 @@ Production build의 trimpath와 default-test compilation의 flag 차이도 sourc
 원래 native timeout 인과는 미확정이다. runtime.Caller로 source를 찾는 sandbox tests가
 있으므로 default test에 trimpath를 즉흥적으로 추가하지 않는다. 준비 step/한도를 늘리거나
 테스트를 제외하는 대신 실제 hot root 구간부터 관측한다.
+
+## CI371 완료 이벤트와 명령 deadline의 구분
+
+Source3623d1e/native job119573087324는 default6m 종료에서47 started/47 finished·active0,
+불가/누락0이고 개별 package는 모두 pass다. 그래도 실제 command deadline은 FAIL이며
+이벤트로 성공을 만들지 않는다. Root test summary의 local elapsed는 pause·scheduler·
+출력 전달 시간을 포함하므로 단일 test body/CPU 시간으로 해석하지 않는다. CI370의
+같은 tree/native 성공은 별도 영수증이며 source371의 실패 원인은 아직 미확정이다.
+
+Baseline owner: runCapturedCommand의 actual Cmd.Run/context/first cause와 Go JSON 수집은
+IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES(진단 범위) / ACCEPTANCE_CLOSED=NO(원인).
+명령 종료 상태·전체 package 완료 뒤 gap 진단은 IMPLEMENTED=NO / WIRED=NO /
+QUALIFIED=NO / ACCEPTANCE_CLOSED=NO다. MISSING은 다음 두 bounded scalar 관측이다.
+
+1. runner.go의 기존 timeout 오류에 Cmd.ProcessState의 가용 여부, exited/success/exit-code와
+   user/system milliseconds를 붙인다. Cmd.Run/cause/deadline/출력 한도/실행 옵션은 유지한다.
+   프로세스가 아직 실행 중이어서 kill됐는지, exit0 뒤 pipe drain 등에서 deadline을 만났는지
+   구분할 자료이며 exit0도 context failure를 덮지 않는다. PID·argv·새 OS/ps 조회는 추가하지 않는다.
+2. go_test_capture.go의 같은 bounded collector에서 마지막 package terminal의 monotonic
+   시각만 보존한다. started=finished>0/active0일 때 요약 시점과의 gap을 표시한다. Package
+   이벤트는 계속 진단이며 완료 authority가 아니다. 새 이름/개별 로그·비밀을 수집하지 않는다.
+
+기존 actual timeout/cause 시험의 terminal state assertion과 fake-clock completion-gap/
+still-active 회귀, canonical5·checker Race·Darwin compile을 확인한다. 새 native CI 결과가
+나오기 전 cache·SDK·pipe 원인을 단정하거나 timeout/준비 단계를 늘리지 않는다.
+두 번째 검토: 관찰 두 scalar를 더하는 좁은 변경이며 기존 executor 교체, retry·새 daemon,
+임의 프로세스 종료·package skip과 성공 판정 변경은 없다. Source/state 원본은
+ci371-macos-failed.log와 ci371-macos-progress-facts.json이 소유한다.
+
+Local implementation의 canonical5·checker Race15.425s와 Darwin test compile1.776s는
+PASS다. [종료 상태/완료 gap 로컬 영수증](./macos-terminal-local-20261022.json)이 정확한
+source와 범위를 소유한다. 실제 macOS 원인 관측은 새 source의 native CI에서 확인한다.

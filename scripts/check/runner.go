@@ -360,6 +360,12 @@ func (c *checker) runCapturedCommand(step string, timeout time.Duration, environ
 	output := captured()
 	if ctx.Err() != nil {
 		detail := "command timed out"
+		if state := command.ProcessState; state != nil {
+			detail += fmt.Sprintf("\n[command terminal available=true exited=%t success=%t exit_code=%d user_ms=%d system_ms=%d]",
+				state.Exited(), state.Success(), state.ExitCode(), state.UserTime().Milliseconds(), state.SystemTime().Milliseconds())
+		} else {
+			detail += "\n[command terminal available=false]"
+		}
 		if text := strings.TrimSpace(output); text != "" {
 			detail += "\n" + text
 		}

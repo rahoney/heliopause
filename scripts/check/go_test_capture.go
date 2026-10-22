@@ -33,6 +33,7 @@ type goTestCapture struct {
 	dropping, unavailable, truncated bool
 	active                           map[string]goTestActivity
 	started, finished                uint64
+	lastPackageTerminal              time.Time
 	firstFailed                      string
 	offlineMissing                   bool
 	stderrTail                       string
@@ -169,6 +170,7 @@ func (c *goTestCapture) consume(body []byte) {
 		if event.Test == "" {
 			if _, ok := c.active[key]; ok {
 				c.finished++
+				c.lastPackageTerminal = c.now()
 			}
 			for id, activity := range c.active {
 				if activity.packageName == event.Package {
@@ -225,6 +227,13 @@ func (c *goTestCapture) String() string {
 	var result strings.Builder
 	result.WriteString(c.output.String())
 	fmt.Fprintf(&result, "\n[go-test progress started_packages=%d finished_packages=%d active=%d unavailable=%t truncated=%t]", c.started, c.finished, len(c.active), c.unavailable, c.truncated)
+	if c.started > 0 && c.started == c.finished && len(c.active) == 0 && !c.lastPackageTerminal.IsZero() {
+		gap := c.now().Sub(c.lastPackageTerminal).Milliseconds()
+		if gap < 0 {
+			gap = 0
+		}
+		fmt.Fprintf(&result, "\n[go-test completion all_packages_terminal=true terminal_gap_ms=%d]", gap)
+	}
 	if c.firstFailed != "" {
 		fmt.Fprintf(&result, "\nfirst_failed=%s", c.firstFailed)
 	}

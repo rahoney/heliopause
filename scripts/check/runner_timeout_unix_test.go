@@ -37,6 +37,9 @@ func TestCommandTimeoutRetainsOutputAndCause(t *testing.T) {
 			t.Fatalf("timeout error discarded bounded partial output %q: %v", marker, err)
 		}
 	}
+	if !strings.Contains(err.Error(), "available=true exited=false success=false exit_code=-1") {
+		t.Fatalf("actual killed child terminal state was lost: %v", err)
+	}
 }
 
 func TestGoTestCaptureTimeoutPreservesActiveTestAndCause(t *testing.T) {
@@ -49,7 +52,7 @@ func TestGoTestCaptureTimeoutPreservesActiveTestAndCause(t *testing.T) {
 	if !errors.Is(err, context.DeadlineExceeded) || !errors.As(err, &failure) || failure.class != executionFailure || failure.step != "default test diagnostic fixture" {
 		t.Fatal("process deadline/cause lost", err)
 	}
-	for _, wanted := range []string{"PRESERVED_STDERR_DETAIL", "test=TestSlow state=running", "command timed out"} {
+	for _, wanted := range []string{"PRESERVED_STDERR_DETAIL", "test=TestSlow state=running", "command timed out", "available=true exited=false success=false exit_code=-1"} {
 		if !strings.Contains(err.Error(), wanted) {
 			t.Fatal("first output/active test absent", wanted, text, err)
 		}

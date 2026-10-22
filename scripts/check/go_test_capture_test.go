@@ -72,6 +72,41 @@ func TestGoTestCaptureBoundsAndMalformedOutput(t *testing.T) {
 	}
 }
 
+func TestGoTestCaptureCompletionGapRequiresAllPackageTerminals(t *testing.T) {
+	now := time.Unix(100, 0)
+	c := newGoTestCapture(func() time.Time { return now })
+	write := func(action, pkg string) {
+		t.Helper()
+		body, err := json.Marshal(map[string]string{"Action": action, "Package": "github.com/rahoney/heliopause/" + pkg})
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, _ = c.Write(append(body, '\n'))
+	}
+	write("start", "internal/promotion")
+	write("start", "scripts/update-runtime")
+	write("pass", "internal/promotion")
+	now = now.Add(2 * time.Second)
+	if strings.Contains(c.String(), "all_packages_terminal") {
+		t.Fatal("completion gap displayed while another package is active")
+	}
+	write("pass", "scripts/update-runtime")
+	now = now.Add(7 * time.Second)
+	if !strings.Contains(c.String(), "all_packages_terminal=true terminal_gap_ms=7000") {
+		t.Fatal("post-package gap missing", c.String())
+	}
+	write("start", "internal/sandbox")
+	if strings.Contains(c.String(), "all_packages_terminal") {
+		t.Fatal("old completion gap survived a newly active package")
+	}
+	write("fail", "internal/sandbox")
+	now = now.Add(time.Second)
+	text := c.String()
+	if !strings.Contains(text, "terminal_gap_ms=1000") || !strings.Contains(text, "first_failed=github.com/rahoney/heliopause/internal/sandbox/") {
+		t.Fatal("terminal gap changed failure identity", text)
+	}
+}
+
 func TestGoTestCaptureConcurrentStderrAndStdout(t *testing.T) {
 	c := newGoTestCapture(time.Now)
 	var group sync.WaitGroup
