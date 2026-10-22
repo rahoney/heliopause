@@ -1,7 +1,7 @@
 # P1 complete UV sync — 다음 gap의 감사와 수정 지도
 
 Source3871c6f의 C3d actual CI381을 기다리며 기존 owner를 읽은 사전 지도다.
-C3d qualification 전 새 sync source는 수정하지 않는다. M13-004 하나만 IN_PROGRESS이며
+C3d qualification 전 새 sync source는 수정하지 않는다. 이 문서는 P1의 uv pip sync 범위다. uv add/sync/lock 등 uv project 명령은 확장 계획의 P4이며 이 내부 project snapshot 재사용과 구분한다. M13-004 하나만 IN_PROGRESS이며
 P1 acceptance→Go1.27.3→P2 순서를 유지한다. 아래 미완료 항목은 새 승인 관문이 아니다.
 
 Read: [P1 계획](./p1-uv-baseline-20261021.md),

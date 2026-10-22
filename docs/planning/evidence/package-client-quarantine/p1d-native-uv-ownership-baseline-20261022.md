@@ -134,3 +134,9 @@ unrecorded-cache 무변경 거부→명시 adopt3.11→managed replay와 cfg/use
 교정은 제품 guard/Policy를 바꾸지 않는다. 고정 Python의 길이 제한 stdin writer와 stdout tar로 live guest tmpfs의 데이터를 전달하며 rootfs를 read-only로 유지한다. 고정 UV binary 전용 tmpfs만 exec를 명시하고 wheel/HTML은0444, 별도 /tmp는 noexec다. [로컬 전달 영수증](./p1d-native-uv-fixture-local-20261022.json)은 첫 noexec 거부와 다음 inert fixture PASS6.509s·실제 tool/cfg/site 데이터·두 Host snapshot 동일·전용 자원 정리를 구분한다. 실제 공개 old-wheel proof/adopt/replay 성공은 아니며 새 source CI가 남는다.
 
 교정 후보의 canonical format/Quick50.051s/security/docs/workflow와 bootstrap Race8.806s도 통과했다. 제품 promotion/CLI/Application 실행문은 기존 관련 전체 Race130.026s 후보와 같으며, REQUESTED 설명 주석만 정정했다. 임시 transport-only Go stub/operator/client는 작은 재현 원본 보존 후 삭제했고 Go TMPDIR0이다. 새 actual source CI가 다음 완료 조건이며 sync source는 아직 수정하지 않는다.
+
+## CI382 실제 native 인계 성공 / 공용 CI gap
+
+[Actual source0a16a07 결과](./p1d-native-uv-ci382-20261022.json)는 같은 전체 checkout tree의 Linux51·CPU full297.75s와 실제 UV CLI185.82s PASS를 연결한다. 고정 UV가 authentic staged idna3.10 wheel로 실제 원본17항목을 만들었고, RECORD 밖 cache의 target/Evidence 무변경 거부→old-wheel 독립 증명과 명시 adopt3.11/controls5→managed replay/controls4가 통과했다. Required checks/Evidence·cfg/user data 보존·old METADATA 제거와 helper5wait0·final confirmed cleanup도 통과했다. 이 source의 native bounded 기능은 실제 Linux에서 검증됐지만 C3d 전체 ACCEPTANCE_CLOSED는 NO다.
+
+첫 회차는 macOS production build120s timeout으로8SUCCESS/2FAIL이며 기본 테스트는 도달하지 않았다. 직전381 성공 후보와 production 실행문은 같고 원인은 미확정이다. 실패 작업 재실행의 두 번째 회차는 GitHub의 unexpected internal startup error로 job0/check-run0이었다. 이전 macOS job은 현재 회차 소속이 아니어서 재실행 API가 거부했다. 제품 코드·한도·coverage를 바꾸지 않고 이 실제 증거 전달로 새 source CI를 진행한다. macOS/Required가 실제 통과하기 전에는 C3d나 P1 acceptance를 닫지 않는다.
