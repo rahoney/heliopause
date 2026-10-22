@@ -267,3 +267,93 @@ native macOS를 포함한 Required CI다. Installed-aware 일반 설치·upgrade
 complete/multi-root/empty sync는 계속 다음 C3 gap이고 P1 전체 acceptance는 열려 있다.
 완료한 로컬 검사의 TMPDIR는 비어 있으며 다음 C3 검증에 쓸 SDK/source/quality/runtime만
 보존한다. 별도 native daemon/image/volume이나 Host 설치·서비스 변경은 만들지 않았다.
+
+## C3c 착수 지도 — installed-aware 선택 / C3b CI 대기 중 검토
+
+기준8ec8de7. C3b의 actual CI377은 진행 중이고 이 절은 다음 gap의 source 감사다.
+기존 구현을 대체하거나 C3b 결과를 선행 확정하지 않는다. 다음 code 착수는 C3b 실제
+결과를 먼저 확인하고, 아래 전송 방식의 미확정 의미를 bounded native 입력으로 확인한다.
+
+| 기존 책임 / symbol | IMPLEMENTED / WIRED / QUALIFIED / ACCEPTANCE_CLOSED | 실제 남은 일 |
+| --- | --- | --- |
+| upgrade_input.go NewUpgradeInput / MetadataFiles / Control | YES / YES(pip) / YES(existing) / YES(existing) | UV에도 필요한 bounded inert METADATA·원본 digest 의미 재사용; native 선택의 intent는 명시적으로 별도 binding |
+| upgrade_selection.go UpgradeProposal / proposeUpgrade / ValidateFinal | YES / YES(pip/named) / YES(existing) / YES(existing) | UV preview change의 typed name/version/action을 archive-authenticated Candidate와 결합할 실제 adapter; fake pip report 금지 |
+| pypi_update.go original metadata snapshot / managedPyPIInventory / verify / Promote | YES / YES(pip) / YES(existing) / YES(existing) | UV cfg 아래 같은 원본·ledger·retired-directory guard와 graph/manifest 검증 재사용, UV controls만 좁은 소비자로 분리 |
+| uv_resolver.go resolveNativeSelection / uv_resolver_reader.go bindUVNativeSelection | YES / YES(fresh) / YES(C2) / YES(C2) | native installed-aware delta와 frozen original 입력 전송, 선택한 exact version으로 complete single-root closure 재인증 |
+| uv_install.go BeginInstall / verifyOriginal | YES / YES(C3b) / NO(native pending) / NO | 비어 있지 않은 환경의 사전 inventory/guard 및 native original-input binding; fresh solve 거부는 준비 전까지 유지 |
+| pypi_native_ownership.go oldWheel / proveNativePyPIWheelFootprint | YES / YES(pip) / YES(existing) / YES(existing) | UV uv_cache.json schema/body·generated entrypoint/bytecode layout의 독립 proof와 explicit enrollment; marker 단순 교체 금지 |
+
+### Native 선택 전송의 미확정 지점과 유한 조사
+
+기존 UpgradeInput.MetadataFiles는 사용자 Python·module·.pth 없이 bounded METADATA를
+전달할 수 있다. 하지만 UV가 METADATA만 있는 private target을 실제 installed state로
+인식한다는 증거는 아직 없다. 앞 inert wheel retention 조사에서는 full private target을
+사용했으므로 그 성공을 metadata-only 전송 성공으로 전용하지 않는다.
+
+같은 인증된 UV/Python pin과 이전 inert root/dep/extra 관계를 사용하되 새 입력은 다음
+미확정 지점만 조사한다. Host/user venv를 수정하거나 사용자 interpreter를 실행하지 않는다.
+
+1. 기존 private installed state에서 METADATA만 전달한 target과 METADATA+WHEEL target을
+   나누어 UV list 및 dry-run install의 실제 인식 결과를 확인한다. 필요한 최소 native
+   controls가 확정되기 전 RECORD·module·entrypoint나 target Python을 임의로 복사하지 않는다.
+2. 새 root가 dep1/dep2 모두 허용할 때 일반 install, root-only upgrade, 전체 upgrade의
+   dry-run JSON을 비교한다. 기존 full-target retention 성공은 반복하지 않으며 이번
+   metadata-only 결과가 앞에서 관측한 retention과 같은지를 확인한다. Unsupported flag/
+   first fault는 원본 exit/stdout/stderr로 남기고 후속 큰 입력으로 확대하지 않는다.
+3. same-version/no-op의 empty changes, replacement의 old uninstalled→new installed
+   action pair, 신규 root/dep 선택을 구분한다. Preview JSON에는 URL/hash/edge가 없으므로
+   선택 데이터일 뿐이며 전체 wheel/metadata·public source 검증을 대체하지 않는다.
+
+이 조사는 readonly/unprivileged/network-none runc·inert wheels의 데이터 형식 확인이다.
+성공하더라도 gVisor/admission/typed policy·public HTTP·검역/승격 qualification은 별도다.
+Owned exact container/image만 정리하고 Host 전후 상태·참조 조회 실패를 부재로 바꾸지 않는다.
+
+### 확인 후 수정할 위치 / 검증
+
+- artifact/pypi의 UV 전용 parser에서 schema.preview·dry_run=true·bounded change list와
+  known action을 strict하게 검증한다. 같은 name의 정상 old/new action pair와 중복 action을
+  구분하고, unknown schema/action·원본에 없는 uninstall·version mismatch·불완전 pair를
+  거부한다. Empty delta는 명시적 no-op 선택이며 빈 verified graph/자동 ALLOW가 아니다.
+- 기존 UpgradeInput의 원본 installed version/metadata와 native delta를 연결한다. 모든
+  selected version을 fixed constraints로 만들더라도 unrelated installed package를 가짜
+  graph root로 만들지 않는다. Retained dependency의 원본 requirement와 changed version의
+  fresh authenticated metadata를 교차 확인한다. 실제 Candidate가 없는 native JSON으로
+  인증된 Candidate나 pip report를 조립하지 않는다.
+- sandbox의 기존 UV resource/observer/policy 수명을 재사용하고 request와 original metadata를
+  fixed bounded stdin transport로 전달한다. Interpreter는 기존 고정 image의 Python이다.
+  Native delta 뒤 exact selected closure는 기존 pylock/WHEEL/whole archive/public metadata
+  binder로 확인하고 UV identity·original input·delta·lock을 같은 selection controls로 묶는다.
+  단일 primary 규칙은 유지하며 multi-root/empty sync는 기존 project snapshot 경로의 다음 gap이다.
+- promotion에서는 기존 venv transaction/metadata·ownership 확인을 재사용한다. UV 결과만
+  기존 pip delta/report parser에 통과시키거나 runtime prefix를 완화하지 않는다. Fresh install은
+  INSTALL, --upgrade는 기존 UPDATE intent를 보존하고 no-op도 entry/set 검사 후 commit한다.
+  Native enrollment가 준비되기 전 unmanaged selected package는 기존 explicit refusal을 유지한다.
+- CLI는 실제 backend가 준비된 intent만 descriptor에 노출한다. UV install의 --upgrade와
+  --upgrade-package 의미를 같은 동작으로 합치지 않고 fixed native 의미에 대응한다. 기존 pip/
+  PyTorch install/update·named source·adoption 및 UV fresh install의 성공/거부를 함께 검증한다.
+
+두 번째 검토: 기존 pip Update 서비스 전체를 재작성할 필요는 확인되지 않았다. 두 실제
+소비자가 공유할 original-state snapshot/held transaction·Manifest·rollback 책임만 추출하고,
+UV 선택 controls와 client intent adapter를 그 owner에 둔다. Native parser/전송 코드의 세부
+형식은 위 actual probe 뒤 확정한다. 원본 변경·unrelated retention·changed dependency·same
+version/no-op·구형 wheel 제거·부분 게시 rollback·동시 접근·취소/cleanup·unknown control/
+runtime/source·native ownership 변조와 실제 native public/CLI를 acceptance에 포함한다.
+
+### Metadata-only native 형식 조사 완료
+
+[실제14개 입력 영수증](./p1c-uv-metadata-only-format-20261022.json)은 같은 UV0.13.4/
+Python3.14.7의 runc/network-none/read-only/UID1000/no-cap 안에서 METADATA만 있는
+private target과 METADATA+WHEEL target 모두 원래 세 distribution을 인식함을 확인했다.
+두 형식 모두 dry-run 일반/root-only upgrade는 root1→root2만 선택하고 dep1을 유지했고,
+전체 --upgrade는 root와 dep 모두2를 선택했다. Same-version은 dry_run=true/changes=[]다.
+모든 원본 metadata bytes는 불변이었다. 빈 auxiliary .lock은 비교에서 구분했다.
+
+위 전송 미확정 지점은 이 data-only 범위에서 확인됐다. Production은 기존
+UpgradeInput.MetadataFiles의 bounded inert METADATA만 전달하는 방향으로 구체화하며
+사용자 module/RECORD/entrypoint/.pth/Python을 선택 환경에 복사할 이유는 확인되지 않았다.
+독립 whole archive/public metadata·정확한 native runtime/controls와 guarded transaction은
+여전히 필요하다. Native gVisor/public/Policy·actual update qualification으로 확대하지 않는다.
+
+Exact owned containers3와 파생 image1을 --no-prune로 제거했고 Host 파일/image/container/
+bridge/service는 전후 동일했다. Root references0/query errors0 뒤 완료 작업 디렉터리와
+일회성 script3항목10,888B를 삭제했다. 작은 원본 결과/재현 source·정리 증거만 보존했다.

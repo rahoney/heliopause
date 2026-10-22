@@ -150,6 +150,11 @@ installed bootstrap-test의 실제 검역·반입/비어 있지 않은 대상 �
 canonical5와 CLI/bootstrap/application/promotion/checker 전체 Race PASS다. 실제 빈 venv
 UV CLI 연결은 IMPLEMENTED/WIRED YES, QUALIFIED/ACCEPTANCE_CLOSED NO이며 다음은
 같은 후보의 actual native CLI/Required CI다. 기존 설치·upgrade/native ownership·sync는 남는다.
+CI 대기 중 C3 leaf에 C3c source 감사·metadata-only native 전송의 미확정 지점·유한 조사와
+수정/회귀 지도를 기록했다. C3c code는 시작하지 않았으며 C3b actual CI 확인이 우선이다.
+[후속 metadata-only 형식 조사](./evidence/package-client-quarantine/p1c-uv-metadata-only-format-20261022.json)는
+14개 native 입력과 원본 불변·Host 동일성·owned 자원 정리를 확인했다. 다음 UV 선택 입력은
+bounded inert METADATA로 구체화하며 gVisor/public/guarded update 성공으로 확대하지 않는다.
 
 
 
