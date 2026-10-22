@@ -416,3 +416,39 @@ bytes/mode/owner 검증과 독립 graph 선택 대조를 구현했다. 기존 pi
 C3c1은 IMPLEMENTED=YES, WIRED=YES(native port/CI), QUALIFIED=NO(actual native pending),
 ACCEPTANCE_CLOSED=NO다. 다음은 같은 후보 actual native installed-aware/public/Required CI다.
 Guarded target/update 반입·client/native ownership·sync의 C3c2 이후 MISSING은 그대로 남는다.
+
+
+## C3c1 실제 CI378 qualification 종료
+
+[최종 증거](./p1c-installed-producer-ci378-20261022.json)는 sourcea7755ca와 actual checkoutaa8b28c의
+전체 tree37a92f5 일치, Required 포함10SUCCESS를 확인했다. Native installed-aware 세 intent는
+19.60s에 각각 packaging24.2/25.0/25.0, graph1/controls4와 정확한 UV runtime을 통과했다.
+기존 public/fresh CLI·Linux51/CPU231.72s·helper5wait0/최종 confirmed cleanup, macOS와
+Vulnerability도 PASS다. C3c1 네 상태는 모두 YES, 이 producer의 MISSING은 없다.
+원본 METADATA fixture는 ownership 증명이 아니며 실제 대상 update 반입 성공도 아니다.
+
+## C3c2a — managed UV update guard 착수 지도와 두 번째 검토
+
+Baselinea7755ca. 기존 `pypi_update.go`의 BeginInstallUpdate/verify/Promote/Close,
+`managedPyPIInventory`, `pypiVenvTransaction`, `verifyPythonSelectionManifest`는 구현·연결·
+기존 pip qualification이 모두 YES다. 이를 대체하지 않는다. 새 UV managed guard는
+IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO다.
+MISSING은 native producer 결과를 원본 guard부터 exact Manifest/offline publication까지
+연결하는 별도 선택 형식 adapter와 회귀다. 이 단위는 public 기존 HAA 관리 venv의 guard
+port까지이며, ordinary UV install/CLI flags·native UV adoption·complete sync는 다음 gap이다.
+
+| 위치 / 실제 소비자 | 수정 방법과 검사 |
+| --- | --- |
+| promotion/pypi_update.go NewPyPIUpdatePreparation/Begin/Resolve/Promote | 기존 snapshot·ledger·retired tree·native enrollment·rollback 본문 유지. 실제 pip/UV 두 소비자가 다른 venv discovery·selection controls·selection validation·graph extension 판정만 private 함수로 주입한다. 기존 pip public/named 검증 body는 helper로 이동하며 의미/bytes 유지 |
+| promotion/uv_update.go 신규 NewUVUpdatePreparation | public PyPI, 세 known intent, adopt=false를 target guard 전에 검증. 기존 shared preparation에 UV cfg parser와 정확한 intent/원본 controls를 연결. Native adoption은 허용하지 않음 |
+| uv_update.go 선택 검증 | 원본+intent+native delta+pylock 네 control의 present/known/exact bytes를 확인. Strict native delta와 독립 graph version/retained 요구를 재검증. ParseUVLock의 각 package와 graph의 exact name/version/URL/SHA가 일대일이며 lock SHA와 UV runtime이 정확히 일치해야 함. Foreign controls/derived graph를 거부 |
+| promotion/uv_update_test.go 신규 | 세 intent, no-op/replacement, unrelated retention, 원본 변경·동시 lock·native/no ledger/adopt 거부, 잘못된 control/runtime/lock/hash/graph, exact staged manifest·부분 publication rollback/사용자 편집·취소·retired 파일 삭제를 기존 inert wheel fixture와 runner로 확인. 기존 pip/named/native·UV fresh 회귀도 함께 실행 |
+
+두 번째 검토: UV cfg의 creation history와 실제 UV runtime pin은 별개다. Native delta는
+인증·검역 승인이 아니므로 wheel-only lock/graph binding 뒤 기존 전체 검사/Policy/Manifest가
+필요하다. New guard는 existing application InstallUpdatePreparation port를 구현하며 실제
+CLI UPDATE 노출을 앞당기지 않는다. 기존 public/named pip의 ALLOW·native adoption·sdist
+extension은 그대로 검사하고 UV는 정확한 wheel graph만 허용한다. Selection failure는 target
+publication으로 이어지지 않으며 transaction/cleanup이 primary cause를 덮지 않는다.
+Canonical format/quick/security/docs/workflow와 promotion 전체 Race를 먼저 수행한다.
+로컬 합성 materializer PASS를 actual native target update qualification으로 확대하지 않는다.

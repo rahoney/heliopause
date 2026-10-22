@@ -197,7 +197,7 @@ deployment를 수행한다.
 [사전 감사·검증 계획](./docs/planning/20-package-client-quarantine-plan.md)은 기존 검역 엔진을
 재사용한다. [CI377](./docs/planning/evidence/package-client-quarantine/p1c-guarded-cli-ci377-20261022.json)의
 실제 빈 venv UV CLI 설치·원본 불변/반복 거부·Required10SUCCESS로 C3b를 닫았다.
-현재는 P1의 installed-aware 설치/업데이트·native ownership·sync가 남는다. 저장소·CI의
+[CI378](./docs/planning/evidence/package-client-quarantine/p1c-installed-producer-ci378-20261022.json)으로 installed-aware native producer도 검증했다. 현재는 P1의 대상 guard/반입·CLI 업데이트·native ownership·sync가 남는다. 저장소·CI의
 Go1.26.10 보안 패치는 적용되어 있으며 broad CUDA qualification의 별도 한계는 유지한다.
 2026-10-22 요청한 [Go1.27.3 전환](./docs/planning/evidence/package-client-quarantine/go1273-migration-baseline-20261022.md)은
 P1 acceptance 다음/P2 이전에 검증한다. 구체 순서·상태는 Queue가 소유하며 현재 compiler/
