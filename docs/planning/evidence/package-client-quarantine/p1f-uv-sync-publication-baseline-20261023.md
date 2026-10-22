@@ -458,3 +458,38 @@ B1 private transaction은 IMPLEMENTED=YES/legacy body WIRED=YES/QUALIFIED=LOCAL 
 ACCEPTANCE_CLOSED=NO다. Actual complete guard caller는 NO이고 fresh shared source CI와
 원본/source guard·검역/Policy·cache를 통한 실제 반입 연결이 MISSING이다. CI388의 앞 source1cf5781
 결과를 이 새 transaction에 전용하지 않는다. 다음은 A2c 원본 source/target guard와 C/D다.
+
+
+### A2c1 구현 전 감사 — source file을 held transaction에 고정
+
+Baseline1344424에서 bounded single-link/no-symlink file snapshot·pypiFileSnapshot.matches,
+transaction.freezeParents/checkBefore와 UVSyncInput의 immutable body/format/allow intent는 각각
+IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES(기존 소비자 범위)다. 실제 sync source
+path를 이 held transaction에 연결하는 helper는 NO/NO/NO/NO다. MISSING은 아래 연결과
+source/parent drift·alias/overlap 부정 회귀이며 기존 fingerprint/transaction engine을 대체하지 않는다.
+
+첫 source 단위는 private promotion/uv_sync_source.go:freezeUVSyncSource다. 양의 sync만 다루고
+실제 ctx/held transaction·canonical absolute source path·trusted root 목록·format/allow flag를 받는다.
+source와 target/trusted roots의 lexical overlap을 거부하고 기존 bounded snapshot으로 모든 parent의
+symlink 및 regular/single-link를 확인한다. freezeParents로 source ancestry를 같은 transaction의
+identity map에 넣는다. Snapshot과 bounded body read의 digest/size·재검증을 대조한 뒤 기존
+ParseUVSyncInput과 실제 pinned Python을 사용한다. 읽기 전에 미리 정한 source bytes를 믿거나
+file name에서 format/권한을 추론하지 않는다. 기존 parser maxReportBytes와 같은 한도를 exported
+UVSyncSourceByteLimit으로 이름만 공유하고 parser 허용 문법/한도를 변경하지 않는다.
+
+성공하면 source snapshot을 transaction.before에 보관해 같은 checkBefore와 최종 retained-file
+검사가 source bytes/inode/mode·parent identity도 확인하게 한다. Source는 target 밖이라 backup/
+obsolete 대상이 아니고 syncDirectories는 기존대로 target 내부만 다룬다. 성공한 immutable input은
+이후 native 네 control 생성에 사용한다. Default blank SKIP는 CLI preflight의 별도 경로이며 이
+positive helper에서는 거부한다. 누락/parse/취소/불명확한 filesystem 오류를 SKIP로 바꾸지 않는다.
+이 private helper는 원본 proof·Policy·selected update·approved cache나 삭제 authority가 아니다.
+Actual Begin/selection wrapper/Commit은 A2c2와 C 연결 뒤에만 WIRED로 판정한다.
+
+검증은 양의 requirements/explicit empty pylock·allow-empty의 실제 원본 body 고정과 외부 반환
+변조 불가, 기존 complete commit 후 source/user data 보존, content/inode/mode/parent 변경 시
+checkBefore 및 commit 이전 거부다. File/parent symlink·hardlink·target/trusted overlap·비정규/과대
+파일·noncanonical path·invalid/blank source와 취소를 거부한다. Canonical5와 관련 promotion/
+Bootstrap/Application 및 parser 회귀를 확인한다. Source를 guard 밖에서 다시 읽거나 기존
+pypiUpdateSession의 requirement/ownership semantics를 변경하지 않는다. 두 번째 검토에서
+transaction.before의 최종 retained-file 검사와 backup 대상 목록의 분리, 외부 ancestry sync 제외,
+single-link snapshot의 bounded recheck·default blank refusal·한도 단일 owner를 확인했다.
