@@ -1147,7 +1147,7 @@ func TestInvalidateAckLossFailStopsExactSessionOwner(t *testing.T) {
 
 func TestAmbiguousCancelPoisonsSessionAndInvalidatesIt(t *testing.T) {
 	withShortAdmissionTimeout(t)
-	invalidations := 0
+	var invalidations atomic.Int32
 	withAdmissionControl(t, func(listener *net.UnixConn, request admissionRequest) {
 		switch request.Op {
 		case "profile":
@@ -1155,7 +1155,7 @@ func TestAmbiguousCancelPoisonsSessionAndInvalidatesIt(t *testing.T) {
 		case "arm":
 			_, _ = listener.Write(admissionACK(request, "armed"))
 		case "invalidate":
-			invalidations++
+			invalidations.Add(1)
 			response, _ := json.Marshal(map[string]string{"op": "ack", "ack_op": "invalidate", "status": "invalidated", "container_id": request.ContainerID, "session_generation": request.Generation})
 			_, _ = listener.Write(response)
 		}
@@ -1173,20 +1173,20 @@ func TestAmbiguousCancelPoisonsSessionAndInvalidatesIt(t *testing.T) {
 	if err := controlDirectExecAdmission(context.Background(), "cancel", admission); err == nil {
 		t.Fatal("lost CANCEL ACK left session usable")
 	}
-	if invalidations != 1 || activeObserverSession(containerID) != nil {
-		t.Fatalf("cancel ambiguity did not invalidate session: invalidations=%d session=%#v", invalidations, activeObserverSession(containerID))
+	if invalidations.Load() != 1 || activeObserverSession(containerID) != nil {
+		t.Fatalf("cancel ambiguity did not invalidate session: invalidations=%d session=%#v", invalidations.Load(), activeObserverSession(containerID))
 	}
 }
 
 func TestReadinessAuthorityAmbiguityDoesNotRetryPoisonedSession(t *testing.T) {
 	withShortAdmissionTimeout(t)
-	arms := 0
+	var arms atomic.Int32
 	withAdmissionControl(t, func(listener *net.UnixConn, request admissionRequest) {
 		switch request.Op {
 		case "profile":
 			_, _ = listener.Write(profileACK(request))
 		case "arm":
-			arms++ // accepted, but ACK deliberately lost
+			arms.Add(1) // accepted, but ACK deliberately lost
 		case "invalidate":
 			response, _ := json.Marshal(map[string]string{"op": "ack", "ack_op": "invalidate", "status": "invalidated", "container_id": request.ContainerID, "session_generation": request.Generation})
 			_, _ = listener.Write(response)
@@ -1202,8 +1202,8 @@ func TestReadinessAuthorityAmbiguityDoesNotRetryPoisonedSession(t *testing.T) {
 	if err := awaitBoundaryHelper(context.Background(), admissionAwareRunner(runner), containerID); err == nil {
 		t.Fatal("readiness accepted ambiguous authority")
 	}
-	if arms != 1 || len(runner.calls) != 0 || activeObserverSession(containerID) != nil {
-		t.Fatalf("readiness retried poisoned session: arms=%d calls=%#v session=%#v", arms, runner.calls, activeObserverSession(containerID))
+	if arms.Load() != 1 || len(runner.calls) != 0 || activeObserverSession(containerID) != nil {
+		t.Fatalf("readiness retried poisoned session: arms=%d calls=%#v session=%#v", arms.Load(), runner.calls, activeObserverSession(containerID))
 	}
 }
 
@@ -1427,7 +1427,7 @@ func TestCancelConsumptionRaceCompletesAndPreservesRunnerFailure(t *testing.T) {
 
 func TestAmbiguousStatusPoisonsSession(t *testing.T) {
 	withShortAdmissionTimeout(t)
-	invalidations := 0
+	var invalidations atomic.Int32
 	withAdmissionControl(t, func(listener *net.UnixConn, request admissionRequest) {
 		switch request.Op {
 		case "profile":
@@ -1435,7 +1435,7 @@ func TestAmbiguousStatusPoisonsSession(t *testing.T) {
 		case "arm":
 			_, _ = listener.Write(admissionACK(request, "armed"))
 		case "invalidate":
-			invalidations++
+			invalidations.Add(1)
 			response, _ := json.Marshal(map[string]string{"op": "ack", "ack_op": "invalidate", "status": "invalidated", "container_id": request.ContainerID, "session_generation": request.Generation})
 			_, _ = listener.Write(response)
 		}
@@ -1446,14 +1446,14 @@ func TestAmbiguousStatusPoisonsSession(t *testing.T) {
 	if _, err := admissionAwareRunner(runner).Output(context.Background(), "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "/bin/false")...); err == nil {
 		t.Fatal("lost STATUS ACK did not fail closed")
 	}
-	if invalidations != 1 || activeObserverSession(containerID) != nil || session.poisoned == false {
-		t.Fatalf("invalidations=%d session=%#v poisoned=%t", invalidations, activeObserverSession(containerID), session.poisoned)
+	if invalidations.Load() != 1 || activeObserverSession(containerID) != nil || session.poisoned == false {
+		t.Fatalf("invalidations=%d session=%#v poisoned=%t", invalidations.Load(), activeObserverSession(containerID), session.poisoned)
 	}
 }
 
 func TestAmbiguousCompletePoisonsSession(t *testing.T) {
 	withShortAdmissionTimeout(t)
-	invalidations := 0
+	var invalidations atomic.Int32
 	withAdmissionControl(t, func(listener *net.UnixConn, request admissionRequest) {
 		switch request.Op {
 		case "profile":
@@ -1463,7 +1463,7 @@ func TestAmbiguousCompletePoisonsSession(t *testing.T) {
 		case "status":
 			_, _ = listener.Write(admissionACK(request, "consumed"))
 		case "invalidate":
-			invalidations++
+			invalidations.Add(1)
 			response, _ := json.Marshal(map[string]string{"op": "ack", "ack_op": "invalidate", "status": "invalidated", "container_id": request.ContainerID, "session_generation": request.Generation})
 			_, _ = listener.Write(response)
 		}
@@ -1474,37 +1474,37 @@ func TestAmbiguousCompletePoisonsSession(t *testing.T) {
 	if _, err := admissionAwareRunner(runner).Output(context.Background(), "docker", boundaryExecArguments(containerID, boundaryLaunchMode, "/bin/true")...); err == nil {
 		t.Fatal("lost COMPLETE ACK did not fail closed")
 	}
-	if invalidations != 1 || activeObserverSession(containerID) != nil || !session.poisoned {
-		t.Fatalf("invalidations=%d session=%#v poisoned=%t", invalidations, activeObserverSession(containerID), session.poisoned)
+	if invalidations.Load() != 1 || activeObserverSession(containerID) != nil || !session.poisoned {
+		t.Fatalf("invalidations=%d session=%#v poisoned=%t", invalidations.Load(), activeObserverSession(containerID), session.poisoned)
 	}
 }
 
 func TestSuccessfulRunnerWaitsForDelayedSentryExecWithoutCancel(t *testing.T) {
 	var (
-		armCount      int
-		statusCount   int
-		cancelCount   int
-		completeCount int
+		armCount      atomic.Int32
+		statusCount   atomic.Int32
+		cancelCount   atomic.Int32
+		completeCount atomic.Int32
 	)
 	withAdmissionControl(t, func(listener *net.UnixConn, request admissionRequest) {
 		switch request.Op {
 		case "profile":
 			_, _ = listener.Write(profileACK(request))
 		case "arm":
-			armCount++
+			armCount.Add(1)
 			_, _ = listener.Write(admissionACK(request, "armed"))
 		case "status":
-			statusCount++
+			statusCount.Add(1)
 			status := "pending"
-			if statusCount == 2 {
+			if statusCount.Load() == 2 {
 				status = "consumed"
 			}
 			_, _ = listener.Write(admissionACK(request, status))
 		case "cancel":
-			cancelCount++
+			cancelCount.Add(1)
 			_, _ = listener.Write(admissionACK(request, "cancelled"))
 		case "complete":
-			completeCount++
+			completeCount.Add(1)
 			_, _ = listener.Write(admissionACK(request, "completed"))
 		}
 	})
@@ -1515,17 +1515,17 @@ func TestSuccessfulRunnerWaitsForDelayedSentryExecWithoutCancel(t *testing.T) {
 	if err != nil {
 		t.Fatalf("successful runner did not converge after delayed SENTRY_EXEC: %v", err)
 	}
-	if armCount != 1 {
-		t.Fatalf("expected 1 ARM, got %d", armCount)
+	if armCount.Load() != 1 {
+		t.Fatalf("expected 1 ARM, got %d", armCount.Load())
 	}
-	if statusCount != 2 {
-		t.Fatalf("expected pending then consumed STATUS, got %d requests", statusCount)
+	if statusCount.Load() != 2 {
+		t.Fatalf("expected pending then consumed STATUS, got %d requests", statusCount.Load())
 	}
-	if cancelCount != 0 {
-		t.Fatalf("successful pending admission sent CANCEL %d times", cancelCount)
+	if cancelCount.Load() != 0 {
+		t.Fatalf("successful pending admission sent CANCEL %d times", cancelCount.Load())
 	}
-	if completeCount != 1 {
-		t.Fatalf("expected one COMPLETE, got %d", completeCount)
+	if completeCount.Load() != 1 {
+		t.Fatalf("expected one COMPLETE, got %d", completeCount.Load())
 	}
 	session.mu.Lock()
 	poisoned := session.poisoned

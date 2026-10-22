@@ -509,7 +509,9 @@ func TestSharedObserverAttributesOneContainerAndClosesItsStream(t *testing.T) {
 	}
 	defer writer.Close()
 	var diagnostic bytes.Buffer
+	observer.mu.Lock()
 	observer.diagnostic = &diagnostic
+	observer.mu.Unlock()
 	for _, record := range []helperRecord{
 		{ContainerID: "0123456789abcdef", Kind: "container-start"},
 		{ContainerID: "0123456789abcdef", Kind: "network-attempt", EventSource: "SOCKET", Family: "INET", ProcessRelation: "DIRECT_EXEC_SESSION", ProcessClass: "PYTHON"},
@@ -610,7 +612,9 @@ func TestSharedObserverFlushesAttributionOnStreamFault(t *testing.T) {
 	}
 	defer writer.Close()
 	var diagnostic bytes.Buffer
+	observer.mu.Lock()
 	observer.diagnostic = &diagnostic
+	observer.mu.Unlock()
 	for _, record := range []helperRecord{
 		{ContainerID: "0123456789abcdef", Kind: "container-start"},
 		{ContainerID: "0123456789abcdef", Kind: "process-exec-unexpected", EventSource: "SENTRY_EXEC", ProcessClass: "NODE", ClassificationReason: "CLASS_MISMATCH", ParentRelation: "TRACKED_GROUP"},
