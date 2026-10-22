@@ -17,6 +17,7 @@ const (
 	UVSyncPylock            UVSyncSourceFormat = "pylock"
 	UVSyncSourceControlName                    = "uv-sync-source"
 	UVSyncIntentControlName                    = "uv-sync-intent.json"
+	UVSyncSourceByteLimit                      = maxReportBytes
 )
 
 // UVSyncInput freezes unapproved complete source data. A blank requirements
@@ -31,7 +32,7 @@ type UVSyncInput struct {
 
 func ParseUVSyncInput(format UVSyncSourceFormat, body []byte, allowEmpty bool, python string) (UVSyncInput, error) {
 	canonical, err := NormalizeVersion(python)
-	if err != nil || canonical != python || !numericRelease.MatchString(python) || len(strings.Split(python, ".")) != 3 || len(body) > maxReportBytes || !utf8.Valid(body) || bytes.IndexByte(body, 0) >= 0 {
+	if err != nil || canonical != python || !numericRelease.MatchString(python) || len(strings.Split(python, ".")) != 3 || len(body) > UVSyncSourceByteLimit || !utf8.Valid(body) || bytes.IndexByte(body, 0) >= 0 {
 		return UVSyncInput{}, errors.New("UV sync source or Python target is unsupported")
 	}
 	result := UVSyncInput{format: format, body: append([]byte(nil), body...), allowEmpty: allowEmpty, python: python}

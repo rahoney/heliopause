@@ -1,0 +1,194 @@
+{
+  "schema_version": 1,
+  "baseline": "ed61c16ec74ae217e332acc4ab6d2c344e865f72",
+  "scope": "C3e3/A2c1 positive UV sync source file bound to existing held transaction witnesses; synthetic fixtures",
+  "IMPLEMENTED": "YES private capture",
+  "WIRED": "YES existing file/parent witnesses and commit reconciliation; actual sync Begin caller NO",
+  "QUALIFIED": "LOCAL ONLY",
+  "ACCEPTANCE_CLOSED": "NO",
+  "MISSING": [
+    "fresh shared source CI",
+    "actual complete preparation/selection/guard/cache/CLI wiring"
+  ],
+  "source": [
+    {
+      "path": "internal/artifact/pypi/uv_sync_input.go",
+      "bytes": 6278,
+      "sha256": "214a0112a0fec4ee0ed4e3a89d0cfe5d1eba3a432b6c85a7b8a0122953cc077b"
+    },
+    {
+      "path": "internal/promotion/uv_sync_source.go",
+      "bytes": 2755,
+      "sha256": "0dd032e0a51b4613ea9128aefaef6af3f1c5f173113ce6cbc3739190aef1b0ae"
+    },
+    {
+      "path": "internal/promotion/uv_sync_source_test.go",
+      "bytes": 5697,
+      "sha256": "5d20827e70fea3e0774b2fd9798351abccd2e9a4ddff00d7891fb4eb223c58ad"
+    }
+  ],
+  "preserved": "same parser byte bound/grammar; existing snapshot and ancestry, commit/rollback engines; no source or proof is Policy authority",
+  "tests": [
+    "requirements/explicit requirements empty/explicit pylock empty immutable intent and body, source survives existing complete commit",
+    "content/inode/mode/parent drift refuses before backup",
+    "file/parent/trusted-root symlink, hardlink, target/trusted overlap, noncanonical path, directory/FIFO/oversize, invalid/blank/cancelled/missing boundary all refuse without backup"
+  ],
+  "first_failure": {
+    "scope": "new test fixture only; NOT product/parser defect",
+    "quick_seconds": 159.7,
+    "race_seconds": 174.751,
+    "cause": "new empty pylock fixture ==3.14.* fails existing bounded wildcard requiring at least three numeric components",
+    "correction": "only fixture requires-python changed to >=3.14.7; product helper/parser unchanged",
+    "raw": [
+      {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-source-fixture-before_test.go.txt",
+        "bytes": 5697,
+        "sha256": "c8ecf3b169908af0578348872405a04410730113e559931d5caad82497c8d598"
+      },
+      {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-source-fixture-correction.json",
+        "bytes": 2451,
+        "sha256": "688a9092a6bc8b2f53b40eac50955a24d320b86b3d9b166e970cfa9b6d926d32"
+      },
+      {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-source-candidate-quick.json",
+        "bytes": 109,
+        "sha256": "672a1c93e4de29c57cbba34059565d0d14ffe272135959f509165c52d413c291"
+      },
+      {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-source-candidate-quick.log",
+        "bytes": 24561,
+        "sha256": "b013d8d9b74937e554d390eaf21cbf813cbb55dabf53491b861e9feb4e782196"
+      },
+      {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-source-race.json",
+        "bytes": 314,
+        "sha256": "1c66048fbaa3a59eef731db60a56751fd57182a0f92e94d3d5f7a27086257c7f"
+      },
+      {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-source-race.log",
+        "bytes": 549,
+        "sha256": "36acaea4838e1bd59b1f0fe25d92db1741ed57d1f8ff66b1c3620d9e2a52de28"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.339,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-source-corrected-format.json",
+        "bytes": 110,
+        "sha256": "0bbf7c6c9f14d718e9a2aeb3fa19811de41ee67fc0b9cb50e94c70b4c0c232be"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-source-corrected-format.log",
+        "bytes": 15,
+        "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+      }
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 160.639,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-source-corrected-quick.json",
+        "bytes": 111,
+        "sha256": "0ef6a1b2b5b079ba035e15ed25419eea7673a9fc905f7da4292f00037da7fd41"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-source-corrected-quick.log",
+        "bytes": 1354,
+        "sha256": "5f6e005d34ee2eceb1b21eec2974bb49125e55e79a84e0eaf1faa16c70885639"
+      }
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 7.685,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-source-corrected-security.json",
+        "bytes": 112,
+        "sha256": "32ea21443dc8ac7006b204b6b95104968fb9ab87b9cb062d8afa7597fd228407"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-source-corrected-security.log",
+        "bytes": 80,
+        "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+      }
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.222,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-source-corrected-docs.json",
+        "bytes": 108,
+        "sha256": "404c7bac45de58e20d7cb871198876846764f0a8625c4e570d07cd67f2385076"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-source-corrected-docs.log",
+        "bytes": 22,
+        "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+      }
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.727,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-source-corrected-workflow.json",
+        "bytes": 112,
+        "sha256": "07d52d7f0c6962a0b317d726633271b60c915ec359adf85e4b2efbab52cba4fd"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-source-corrected-workflow.log",
+        "bytes": 1071,
+        "sha256": "9f629b0e9a8b7a67b85205621cf5b3b3942703b7b73de5cbbbe419f782d700d9"
+      }
+    }
+  ],
+  "race": {
+    "argv": [
+      "/tmp/haa-uv-runtime-0_e6zmn4/sdk/go/bin/go",
+      "test",
+      "-race",
+      "-count=1",
+      "./internal/promotion",
+      "./internal/bootstrap",
+      "./internal/application",
+      "./internal/artifact/pypi"
+    ],
+    "exit": 0,
+    "seconds": 210.274,
+    "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+  },
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-source-corrected-race.json",
+      "bytes": 314,
+      "sha256": "80e2f50a937db4ba16c0c6d620cf0001a959c1bc775d41560cf4190d9f6a77a1"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-source-corrected-race.log",
+      "bytes": 252,
+      "sha256": "5ac65128463a78f8dfd3bb3d1a61a85897578a3637ffe17c44cd6aa3e6c33c46"
+    }
+  ],
+  "cleanup": {
+    "all_local_checks_completed": true,
+    "owned_go_tmpdir_entries": 0,
+    "manual_native_resources": "NONE; fixture roots removed by test lifecycle; small failure source/logs retained; active source/SDK/runtime/cache retained"
+  },
+  "P1_remaining": [
+    "actual complete target/source guard and whole-original proof wiring",
+    "approved cache/Manifest/SBOM/offline publication",
+    "CLI/SKIP/report and whole P1 acceptance"
+  ]
+}

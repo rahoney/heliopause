@@ -493,3 +493,26 @@ Bootstrap/Application 및 parser 회귀를 확인한다. Source를 guard 밖에�
 pypiUpdateSession의 requirement/ownership semantics를 변경하지 않는다. 두 번째 검토에서
 transaction.before의 최종 retained-file 검사와 backup 대상 목록의 분리, 외부 ancestry sync 제외,
 single-link snapshot의 bounded recheck·default blank refusal·한도 단일 owner를 확인했다.
+
+
+## A2c1 source-file witness / 로컬 검증
+
+사전 지도ed61c16 뒤 freezeUVSyncSource는 positive source의 실제 canonical path와 immutable
+body/format/allow intent를 기존 held transaction의 before/parent witnesses에 연결한다. 같은
+bounded fingerprint와 checkBefore/최종 retained-file 검사로 source·ancestry drift를 거부한다.
+파일/상위/trusted symlink·hardlink·trusted/target overlap·비정규/과대·parse/blank/취소를 거부하며
+기존 parser의 같은 byte limit을 UVSyncSourceByteLimit 이름으로 공유했다. 실제 Begin/selection
+wrapper·proof/Policy/cache/CLI는 이 helper에 포함하지 않는다.
+
+첫 Quick159.7s/관련 Race174.751s는 새 explicit-pylock-empty fixture 한 건에서 실패했다.
+작성한 ==3.14.*는 기존 bounded wildcard의 세 numeric component 최소 조건에 맞지 않았다.
+기존 성공 fixture와 같은 >=3.14.7로 해당 테스트 한 곳만 수정했고 product parser/helper는
+변경하지 않았다. 첫 원본·실패 로그를 보존했으며 재실행을 과거 성공으로 쓰지 않는다.
+
+수정 뒤 canonical format/Quick160.639s/security/docs/workflow와 관련 네 package 전체
+Race210.274s는 PASS다. Positive 세 형식의 immutable body/source 보존, content/inode/mode/
+parent drift와14개 거부 사례를 확인했다. [로컬 영수증](./p1f-uv-sync-source-local-20261023.json)이
+exact sources·첫 실패/교정·checks/raw를 소유한다. 모든 검사 뒤 owned Go TMPDIR0이고 별도
+native 자원은 없다. Helper IMPLEMENTED=YES/기존 witness WIRED=YES/QUALIFIED=LOCAL ONLY/
+ACCEPTANCE_CLOSED=NO이며 actual sync Begin은 NO다. Fresh source CI·A2c2 actual preparation/
+selection/guard와 C/D·whole P1이 MISSING이다. CI388 source1cf5781 결과와 구분한다.
