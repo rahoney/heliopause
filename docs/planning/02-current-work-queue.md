@@ -122,6 +122,14 @@ helper wait0·confirmed stop/원래 client 복원은 확인했다. Public graph/
 읽기만 보완하고 전체 latch/canonical 및 새 actual public 입력으로 검증한다. C3 구현과
 P2..P7은 시작하지 않는다.
 
+C2의 새 CI376을 기다리는 동안 [native retention/empty/venv 형식 조사](./evidence/package-client-quarantine/p1c-uv-retention-format-20261022.json)를
+독립 data-only 범위로 수행했다. 기본/선택 upgrade의 기존 dep 유지, 전체 upgrade의 dep
+갱신, sync의 제외 항목/빈 집합 삭제와 uv venv의 version_info/생성 marker 차이를 확인했다.
+잘못 지정한 첫 empty output filename의 exit2는 operator 오류로 별도 보존했다.
+[C3 지도](./evidence/package-client-quarantine/p1c-guarded-client-baseline-20261022.md)에
+수정 위치와 두 번째 검토를 반영했으며 제품 구현은 NOT_STARTED다. Owned containers6/
+images2와 완료 자료3,143,502B는 제거했고 Host 전후 불변을 확인했다.
+
 
 
 공개 채널 이름·publisher binding·PR38/main CI·배포는 기존 미완료로 남는다.

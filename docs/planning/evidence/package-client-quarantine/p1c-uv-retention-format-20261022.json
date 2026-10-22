@@ -1,0 +1,131 @@
+{
+  "schema_version": 1,
+  "baseline": "35c0f2dfeaf646d8bbe47b47babed86a112c855b",
+  "scope": "C3 read-only format research only; no product implementation or public registry/gVisor/Policy/guarded-promotion qualification",
+  "runtime": {
+    "uv_version": "0.13.4",
+    "python_version": "3.14.7",
+    "uv_native_sha256": "de77a01a86452cc465a734257b5a2073d41115d1b8bbfe84ac636af53851b499",
+    "execution": "runc/network-none/read-only/UID1000/no-cap/private noexec tmpfs; no artifact imports or entrypoints"
+  },
+  "retention": [
+    {
+      "case": "default",
+      "installed_dist_info": [
+        "haa_probe_dep-1.0.dist-info",
+        "haa_probe_extra-1.0.dist-info",
+        "haa_probe_root-2.0.dist-info"
+      ]
+    },
+    {
+      "case": "selected-upgrade",
+      "installed_dist_info": [
+        "haa_probe_dep-1.0.dist-info",
+        "haa_probe_extra-1.0.dist-info",
+        "haa_probe_root-2.0.dist-info"
+      ]
+    },
+    {
+      "case": "full-upgrade",
+      "installed_dist_info": [
+        "haa_probe_dep-2.0.dist-info",
+        "haa_probe_extra-1.0.dist-info",
+        "haa_probe_root-2.0.dist-info"
+      ]
+    },
+    {
+      "case": "multi",
+      "installed_dist_info": [
+        "haa_probe_dep-2.0.dist-info",
+        "haa_probe_extra-1.0.dist-info",
+        "haa_probe_root-2.0.dist-info"
+      ]
+    }
+  ],
+  "multi_compile_sync": "PASS; complete local pylock selected root2/dep2/extra1",
+  "prune_sync": "PASS; extra1 removed and root2/dep2 retained",
+  "empty": {
+    "compile_exit": 0,
+    "sync_exit": 0,
+    "lock_format": "pylock 1.0; requires-python >=3.14.7; packages=[]",
+    "installed_after": []
+  },
+  "venv": {
+    "entries": 40,
+    "regular_bytes": 31647,
+    "pyvenv_cfg": "home = /usr/local/bin\nimplementation = CPython\nuv = 0.13.4\nversion_info = 3.14.7\ninclude-system-site-packages = false\n",
+    "links": [
+      {
+        "path": "bin/python",
+        "target": "/usr/local/bin/python"
+      },
+      {
+        "path": "bin/python3",
+        "target": "python"
+      },
+      {
+        "path": "bin/python3.14",
+        "target": "python"
+      },
+      {
+        "path": "lib64",
+        "target": "lib"
+      }
+    ],
+    "installer": "uv",
+    "requested_marker_on_every_installed_distribution": true,
+    "uv_cache_json_recorded_on_every_distribution": true,
+    "pycache_observed": false,
+    "cache_body_schema_and_console_entrypoints": "NOT_INVESTIGATED; no adoption authority inferred"
+  },
+  "operator_failure": {
+    "case": "first empty compile",
+    "exit": 2,
+    "reason": "incorrect empty-pylock.toml filename; corrected pylock.empty.toml in separate remaining-only probe",
+    "first_result_exit": 1,
+    "successful_commands_before_failure": 13,
+    "successful_commands_in_second_probe": 12,
+    "first_raw": "docs/github-logs/package-client-quarantine-20261021/uv-retention-discovery-result.json",
+    "second_raw": "docs/github-logs/package-client-quarantine-20261021/uv-empty-venv-discovery-result.json"
+  },
+  "host_before_after_identical_both": true,
+  "owned_containers_removed": 6,
+  "owned_derived_images_removed_no_prune": 2,
+  "completed_materials_cleanup": {
+    "targets": [
+      "/tmp/haa-uv-runtime-0_e6zmn4/uv-retention-discovery",
+      "/tmp/haa-uv-runtime-0_e6zmn4/uv-empty-venv-discovery",
+      "/tmp/haa-uv-runtime-0_e6zmn4/uv-retention-discovery.py",
+      "/tmp/haa-uv-runtime-0_e6zmn4/uv-empty-venv-discovery.py",
+      "/tmp/haa-uv-runtime-0_e6zmn4/build-uv-public-hosts-observer.py",
+      "/tmp/haa-uv-runtime-0_e6zmn4/commit-uv-public-hosts.py",
+      "/tmp/haa-uv-runtime-0_e6zmn4/prepare-uv-output-preflight-lock.py",
+      "/tmp/haa-uv-runtime-0_e6zmn4/run-uv-output-preflight-lock.py",
+      "/tmp/haa-uv-runtime-0_e6zmn4/uv-output-preflight-lock-namespace.py",
+      "/tmp/haa-uv-runtime-0_e6zmn4/cleanup-output-preflight-lock.py",
+      "/tmp/haa-uv-runtime-0_e6zmn4/output-preflight-lock-completed-witness.py",
+      "/tmp/haa-uv-runtime-0_e6zmn4/check-uv-c2-public-caller-race.py",
+      "/tmp/haa-uv-runtime-0_e6zmn4/macos-cache-completed-witness.py",
+      "/tmp/haa-uv-runtime-0_e6zmn4/runtime/haa-gvisor-observer-uv-compile-osrelease"
+    ],
+    "entries": 16,
+    "unique_regular_logical_bytes": 3143502,
+    "references": 0,
+    "query_errors": 0,
+    "all_absent": true,
+    "current_observer_retained": "/tmp/haa-uv-runtime-0_e6zmn4/runtime/haa-gvisor-observer-uv-public-hosts",
+    "source_sdk_quality_retained": true
+  },
+  "reproduction_sources": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/completed-uv-query-operators/uv-retention-discovery.py",
+      "sha256": "34bd31b5ec963a64813c1bdb11ea45f86383bbf627941ab34cd21bcf07f45b7d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/completed-uv-query-operators/uv-empty-venv-discovery.py",
+      "sha256": "e82e21dd40ba5b41d8fea49a58c328e7dff856e87ca4843994c7b25b048e049a"
+    }
+  ],
+  "c3_implementation": "NOT_STARTED",
+  "p1_acceptance_closed": false
+}
