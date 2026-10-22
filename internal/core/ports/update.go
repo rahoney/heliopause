@@ -46,10 +46,8 @@ type DependencyUpdateResolver interface {
 // existing inspection/staging, guarded replacement and cleanup. It grants no
 // arbitrary native command forwarding or implicit foreign-state ownership.
 type InstallUpdateSession interface {
-	DependencyResolver
-	Promotion
+	InstallSession
 	Reference() domain.ArtifactReference
-	Close() error
 }
 
 // InstallUpdateContentSession binds frozen acquisition and its checks to one

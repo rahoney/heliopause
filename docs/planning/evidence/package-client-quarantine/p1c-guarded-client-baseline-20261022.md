@@ -2,8 +2,8 @@
 
 최초 기준 sourceab54d4a, 후속 조사 기준35c0f2d/문서948833a. C2 public UV/HTTP는
 [CI376](./p1c-public-ci376-20261022.json)의 실제 단일/다중 graph와10SUCCESS로 qualified다.
-이 문서는 다음 acceptance gap의 감사·수정 지도다. C3 제품 구현은 아직 NOT_STARTED이며,
-이제 아래 gap의 순차 구현을 시작한다. M13-004/P1만 IN_PROGRESS이고 P2..P7로 이동하지 않는다.
+이 문서는 다음 acceptance gap의 감사·수정 지도다. C3a의 사전 target guard부터 구현을
+시작한다. M13-004/P1만 IN_PROGRESS이고 P2..P7로 이동하지 않는다.
 
 Read: [P1c 지도](./p1c-uv-resolver-baseline-20261022.md),
 [C2 producer 지도](./p1c-uv-native-producer-baseline-20261022.md),
@@ -163,3 +163,56 @@ private helper로 공유하며 기존 public pip wrapper/옵션/에러 의미와
 Factory가 없는 항목과 지원하지 않는 source/intent는 runtime/network 준비 전에 거부한다.
 Descriptor에 shell/권한·정책 예외나 미래 P2..P7 placeholder를 넣지 않는다. UV runtime의
 exact identity 재검증도 한 owner에서 생성해 promotion의 별도 문자열 prefix 허용을 피한다.
+
+## C3a — 신규 설치의 사전 target guard / 현재 구현 단위
+
+Fresh compile은 기존 설치의 retention을 표현하지 못하므로 첫 내부 설치 경로는 배포된
+distribution이 없는 기존 venv로 제한한다. 이 제한은 후속 installed-aware 선택을 구현할
+때 해소하며, 전체 UV install/update 지원 완료가 아니다. CLI는 실제 backend qualification
+후 연결한다. 단순히 resolver를 기존 installer에 꽂아 nonempty 환경을 fresh solve하지 않는다.
+
+| 기존/신규 위치 | 감사 | 정확한 변경과 검증 |
+| --- | --- | --- |
+| ports/update.go InstallUpdateSession | 기존 YES/WIRED/QUALIFIED; 신규 일반 install preparation NO | 공통 Resolver/Promotion/Close 수명만 InstallSession으로 추출하고 기존 update는 Reference를 추가로 요구한다. BeginInstall의 실제 UV 준비 port만 추가; 기존 update guard의 타입·의미 유지 |
+| application/install_update.go Install | 기존 YES/WIRED/QUALIFIED; 일반 prepared install NO | per-request copy/rebind 부분만 private helper로 공유한다. 기존 update 요청·content session·실패 code/cleanup 순서는 유지하고 일반 INSTALL wrapper를 추가한다. Operation을 UPDATE로 위장하지 않음 |
+| promotion/pypi_venv_transaction.go discoverPythonVenv | 기존 YES/WIRED/QUALIFIED; version_info adapter NO | bounded cfg 읽기/디렉터리·owner 검증은 공유, 기존 version parser 의미 보존. UV 준비는 version_info/CPython/include-system-site-packages=false와 선언된 Python target을 검증. uv 생성 버전은 history data이며 현재 UV 실행 pin 인증으로 쓰지 않음 |
+| promotion/uv_install.go (신규 adapter) | NO/NO/NO/NO | 기존 venv transaction을 resolve 전에 획득한다. installed/legacy metadata와 기존 managed payload가 있으면 거부. cfg/원본 ledger/metadata inventory를 resolve 전후와 promote 직전에 재확인하고 기존 promoteHeldVenv를 사용 |
+| sandbox/uv_resolver_reader.go runtime identity | 기존 YES/WIRED/QUALIFIED | 정확한 고정 identity 생성만 기존 sandbox owner의 함수로 공유해 준비 session이 결과를 교차 검증한다. Broad prefix·fake pip identity는 금지 |
+
+UV session은 동일 reference/context에서 한 번만 resolve하고 완전 graph/정확한 UV runtime을
+검증한 뒤에만 promote를 허용한다. 기존 staged/bundle·selected graph binding과 file ownership/
+journal/rollback을 재사용한다. User target의 interpreter/.pth/module을 sandbox로 복사하거나
+실행하지 않는다. 신규 생성 marker를 독립 인증 없이 native ownership으로 채택하지 않는다.
+
+두 번째 검토: 이는 기존 구현의 교체가 아니라 두 실제 준비 수명의 공유와 새 adapter다.
+Update의 Reference marker를 없애거나 모든 일반 install을 update session으로 취급하지 않는다.
+UV ordinary session에는 update Reference marker를 주지 않는다. 표준 venv/UV cfg, 중복·충돌·
+잘못된 target, nonempty/legacy metadata, resolve 전후 원본 변경, wrong runtime/ref/context,
+반복 resolve/promote·staging 불일치·취소·Close 실패와 기존 Update 전체 회귀를 검사한다.
+Canonical format/Quick/security/docs, 관련 application/promotion/sandbox Race와 이후 실제
+UV→entry/set 검사→staging→target 반입을 연결하며 source cache/완료 출력 정리를 유지한다.
+
+구현 전후 대조에서 transaction 시작 자체도 기존 discoverPythonVenv를 다시 호출함을
+확인했다. 기존 wrapper는 그대로 두고 private begin-with-discovery를 공유해 UV cfg를 잠금
+획득 뒤에도 검증한다. 신규 session은 고정 Python target과 version/version_info의 충돌을
+검사하며 uv 생성 버전은 bounded history로만 처리한다. 현재 solver pin과 일치해야 한다는
+조건을 cfg history에 잘못 부여해 향후 도구 patch 시 기존 venv를 막지 않는다.
+
+Selected graph뿐 아니라 Manifest의 resolver runtime/lock digest·target path/requires_new·
+전체 controls도 같아야 한다. 기존 Update의 검증 body를 실제 두 소비자가 쓰는 private
+verifyPythonSelectionManifest로 공유하고 기존 실패 메시지를 유지한다. Runtime/digest/
+target/control substitution과 staged tamper는 materializer 실행 전에 거부해야 한다.
+
+### C3a 내부 준비 단위의 로컬 checkpoint
+
+[로컬 검증](./p1c-prepared-install-local-20261022.json)은 format/Quick/security/docs/workflow와
+application 전체 Race9.153s·관련 promotion37.885s/sandbox21.436s를 통과했다. 기존 Update/
+content session과 ordinary INSTALL의 intent/원본 guard·공유 Manifest binding, 취소·변조·
+부분 게시 rollback을 확인했다. 첫 Staticcheck의 사용하지 않은 fixture 변수만 교정했고
+억제 규칙은 추가하지 않았다. 모든 검사 종료 뒤 task TMPDIR의 항목0도 확인했다.
+
+현재 IMPLEMENTED=YES / WIRED=YES(internal library), NO(composition/CLI) /
+QUALIFIED=YES(local scoped only) / ACCEPTANCE_CLOSED=NO다. Fixture materializer 성공을
+실제 UV→검사→사용자 target 반입으로 표시하지 않는다. 다음은 C3b의 typed client/source
+descriptor와 bootstrap factory에 실제 준비 서비스를 연결하고 native end-to-end를 검증하는
+것이다. Nonempty install/upgrade·sync의 남은 gap은 계속 별도로 유지한다.

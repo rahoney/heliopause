@@ -19,6 +19,13 @@ type UVResolver struct{ reader *PyPIResolver }
 
 const uvResolverOwnerLabel = "io.heliopause.uv-resolver"
 
+// UVResolverRuntimeIdentity binds the reviewed solver and target separately
+// from the offline installer. No caller-supplied prefix establishes this pin.
+func UVResolverRuntimeIdentity() string {
+	runtime := PinnedPythonRuntime()
+	return "uv:" + runtimeidentity.UVVersion + ";python:" + runtime.PythonVersion + ";target:" + runtime.InterpreterTag + "/" + runtime.ABITag + "/" + runtime.PlatformTag + ";source:pypi"
+}
+
 func NewUVResolver(runner CommandRunner, endpoints NamedEndpointResolver, observer TraceObserver, probe func(context.Context) (PythonCapability, error), policy ResolverPolicyService) (*UVResolver, error) {
 	reader, err := NewPyPIResolver(runner, endpoints, observer, probe, policy)
 	if err != nil {

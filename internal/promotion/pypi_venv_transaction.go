@@ -74,6 +74,10 @@ func (d pypiDestination) key() string { return d.Scheme + "/" + d.Relative }
 type pypiVenvPlan struct{ root, site string }
 
 func discoverPythonVenv(root string) (pypiVenvPlan, error) {
+	return discoverPythonVenvWithVersion(root, pythonVenvConfigVersion)
+}
+
+func discoverPythonVenvWithVersion(root string, readVersion func([]byte) (string, error)) (pypiVenvPlan, error) {
 	p := pypiVenvPlan{root, filepath.Join(root, "lib", "python3.14", "site-packages")}
 	if !filepath.IsAbs(root) || filepath.Clean(root) != root || root == "/" || trustedExistingDirectory(root) != nil {
 		return p, errors.New("untrusted virtual environment root")
@@ -85,22 +89,9 @@ func discoverPythonVenv(root string) (pypiVenvPlan, error) {
 	if err != nil || !utf8.Valid(cfg) || bytes.IndexByte(cfg, 0) >= 0 {
 		return p, errors.New("invalid virtual environment configuration")
 	}
-	version := ""
-	for _, line := range strings.Split(string(cfg), "\n") {
-		line = strings.TrimSpace(line)
-		if line == "" {
-			continue
-		}
-		key, value, ok := strings.Cut(line, "=")
-		if !ok {
-			return p, errors.New("malformed virtual environment configuration")
-		}
-		if strings.TrimSpace(key) == "version" {
-			if version != "" {
-				return p, errors.New("duplicate virtual environment version")
-			}
-			version = strings.TrimSpace(value)
-		}
+	version, err := readVersion(cfg)
+	if err != nil {
+		return p, err
 	}
 	parts := strings.Split(version, ".")
 	if len(parts) != 3 || parts[0] != "3" || parts[1] != "14" || parts[2] == "" || strings.Trim(parts[2], "0123456789") != "" {
@@ -120,6 +111,27 @@ func discoverPythonVenv(root string) (pypiVenvPlan, error) {
 		return p, errors.New("unsafe virtual environment headers root")
 	}
 	return p, nil
+}
+
+func pythonVenvConfigVersion(cfg []byte) (string, error) {
+	version := ""
+	for _, line := range strings.Split(string(cfg), "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		key, value, ok := strings.Cut(line, "=")
+		if !ok {
+			return "", errors.New("malformed virtual environment configuration")
+		}
+		if strings.TrimSpace(key) == "version" {
+			if version != "" {
+				return "", errors.New("duplicate virtual environment version")
+			}
+			version = strings.TrimSpace(value)
+		}
+	}
+	return version, nil
 }
 func (p pypiVenvPlan) bind(d pypiDestination) (pypiDestination, error) {
 	root := ""
@@ -339,6 +351,10 @@ type pypiVenvTransaction struct {
 }
 
 func beginPyPIVenvTransaction(p pypiVenvPlan) (_ *pypiVenvTransaction, resultErr error) {
+	return beginPyPIVenvTransactionWithDiscovery(p, discoverPythonVenv)
+}
+
+func beginPyPIVenvTransactionWithDiscovery(p pypiVenvPlan, discover func(string) (pypiVenvPlan, error)) (_ *pypiVenvTransaction, resultErr error) {
 	g, err := acquirePyPIVenvGuard(p.root)
 	if err != nil {
 		return nil, err
@@ -348,8 +364,12 @@ func beginPyPIVenvTransaction(p pypiVenvPlan) (_ *pypiVenvTransaction, resultErr
 			resultErr = errors.Join(resultErr, g.release())
 		}
 	}()
-	if _, err := discoverPythonVenv(p.root); err != nil {
+	checked, err := discover(p.root)
+	if err != nil {
 		return nil, err
+	}
+	if checked != p {
+		return nil, errors.New("virtual environment discovery changed under guard")
 	}
 	t := &pypiVenvTransaction{plan: p, guard: g, directories: map[string]os.FileInfo{}, absentDirectories: map[string]bool{}, before: map[string]*pypiFileSnapshot{}}
 	entries, err := os.ReadDir(p.root)

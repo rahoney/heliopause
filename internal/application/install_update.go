@@ -76,17 +76,7 @@ func (s *InstallUpdateService) Install(ctx context.Context, request InstallReque
 	if request.reference.Source() != request.updateSource || request.reference.Locator() == "" {
 		return outcome, errors.New("update preparation returned an invalid reference")
 	}
-	// Rebind only per-request copies. Concurrent installs never share a mutable
-	// resolver/promoter or a cached original-state session.
-	inspection := *s.base.inspection
-	inspection.resolver = session
-	if content, ok := session.(ports.InstallUpdateContentSession); ok {
-		inspection.artifact, inspection.verification, inspection.inspection = content, content, content
-	}
-	inspection.newOperationID = func() (domain.OperationID, error) { return operation, nil }
-	pipeline := *s.base
-	pipeline.inspection, pipeline.promotion = &inspection, session
-	outcome, resultErr = pipeline.Install(ctx, request)
+	outcome, resultErr = s.base.installWithSession(ctx, request, operation, session)
 	if code := ports.InstallUpdateFailureCode(resultErr); code != "" {
 		outcome.failureCode = code
 	}

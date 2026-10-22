@@ -136,6 +136,13 @@ binding은 idna1node/requests5node·4edge를22.75s에 반환했다. C++106/Linux
 CPU295.93s/helper5wait0/final confirmed cleanup, native macOS도 PASS다. C2 single-root
 producer의 acceptance만 닫고 P1 전체/guarded client·CLI는 미완료로 유지한다. 다음은 C3
 지도의 기존 venv transaction/서비스 재사용과 client/source 분리 gap의 순차 구현이다.
+C3a는 resolve 전 venv guard를 획득하는 내부 신규 설치 준비 adapter를 시작한다.
+기존 Update의 per-request rebind와 transaction을 재사용하고, 배포된 distribution이 있는
+환경의 fresh solve는 거부한다. Installed-aware 선택/CLI는 후속 실제 연결 단계다.
+[C3a 로컬 checkpoint](./evidence/package-client-quarantine/p1c-prepared-install-local-20261022.json)는
+canonical5와 application 전체/관련 promotion·sandbox Race3개를 통과했다. 내부 준비 서비스와
+empty-venv guard를 구현했고 task TMPDIR는 비어 있다. Composition/CLI와 실제 target 반입은
+아직 미연결·미검증이다. 다음 C3b는 client/source descriptor와 실제 factory 연결이다.
 
 
 

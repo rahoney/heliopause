@@ -12,7 +12,6 @@ import (
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
 	"github.com/rahoney/heliopause/internal/core/domain"
-	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 const uvReleaseMetadataLimit = 4 << 20
@@ -139,8 +138,7 @@ func (r *PyPIResolver) bindUVNativeSelection(ctx context.Context, reference doma
 		if err != nil {
 			return domain.DependencyResolution{}, err
 		}
-		identity := "uv:" + runtimeidentity.UVVersion + ";python:" + runtime.PythonVersion + ";target:" + runtime.InterpreterTag + "/" + runtime.ABITag + "/" + runtime.PlatformTag + ";source:pypi"
-		return domain.NewDependencyResolution(graph, identity, digest)
+		return domain.NewDependencyResolution(graph, UVResolverRuntimeIdentity(), digest)
 	})
 }
 
