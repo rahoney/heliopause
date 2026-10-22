@@ -110,3 +110,65 @@ frozen control/guard와 transaction이 함께 있어야 한다. Source control�
 대체하는 새 engine·generic framework·future placeholder는 만들지 않는다. 고정 tool/image/
 runtime/resource 한도와 지원 범위는 이 지도로 바꾸지 않는다. 완료한 시험은 작은 재현 원본을
 보존하고 exact owned 자원·마지막 참조/성공한 부재 확인 뒤 정리한다.
+
+
+## 고정 native plain requirements 관측 / 구현 지도 보완
+
+[관측 영수증](./p1e-uv-sync-format-20261023.json)은 inert wheel 다섯 native 사례의 exit0과
+설치 census를 보존한다. 마지막 요약 writer가 lock의 uv_version을 version으로 잘못 읽어
+operator 전체는 exit1이다. 이 오류는 사례·cleanup·Host post snapshot 뒤 발생했다. 원본을
+고치거나 통과한 명령을 재실행하지 않고 개별 JSON/두 snapshot/새 label 부재 조회에서 관측을
+복원했다. Corrected reproducer는 보존만 했으며 실행·전체 PASS로 표시하지 않는다. Owned
+containers0·Host12파일/image/container/bridge/service 전후 동일 뒤 빈 workroot/client와 operator를
+삭제했다. 이 데이터는 public 공급망/검역·Policy·실제 target 삭제 승인이 아니다.
+
+고정0.13.4의 실제 의미:
+
+| Source / flags | Native 결과 | HAA 구현 조건 |
+| --- | --- | --- |
+| root 한 개만 쓴 requirements | 필요한 dependency를 추가하지 않고 root만 설치 | 독립 Requires-Dist 전체 검증에서 incomplete closure 거부. Compile로 목록을 확장해 sync 의미를 바꾸지 않음 |
+| complete three→two entries | 제외한 extra를 제거 | 모든 선택을 새로 검역하고 기존 proven owner의 exact 삭제를 같은 transaction에 bind |
+| 빈 requirements, 기본 옵션 | 건너뛰고 기존 two entries 보존 | No-op: target/ownership/Evidence 무변경. Empty approved deletion snapshot으로 변환하지 않음 |
+| 빈 requirements + --allow-empty-requirements | two entries 제거 | 명시 flag와 frozen empty source가 함께 있어야 positive empty selection 및 owned 삭제 승인 가능 |
+| 앞 probe의 explicit empty pylock1.0 | packages=[]와 유효 header를 포함하고 환경을 비움 | Strict header/target/lock 및 frozen controls로 명시 empty를 확인. 누락 file/zero value와 구분 |
+
+따라서 source control에는 입력 format/bytes와 --allow-empty-requirements의 실제 값도 포함한다.
+Default skip의 receipt/selection을 명시 삭제에 재사용하지 못하도록 digest를 구분한다. CLI는
+원래 flag를 같은 이름으로 제공하고 설명은 EN/KO를 완성한다. 아직 검증하지 않은 include/
+constraint/hash continuation·range/options는 이 조사에서 지원한다고 선언하지 않는다.
+
+기존 cli/cargo_update.go의 writeProjectUpdateReport는 private DTO와 project-update schema를
+사용하며 Policy pointer가 선택적이다. UV sync는 이 presenter의 entry/check/Evidence 표현을
+재사용하되 Cargo 전용 labels를 descriptor로 분리하고 sync intent를 정확히 표시한다. Blank
+requirements 기본 skip은 명시 SKIPPED/NOT_ATTEMPTED·정책 미평가·entry0으로 설명하며, fake
+empty-set ALLOW/Run/check/Evidence나 삭제 완료를 만들지 않는다. 읽기·판정/출력 위치는
+C3e3 구현 전 static preflight와 backend composition의 실제 경계를 감사해 확정한다. 명시
+empty 허용 경로만 기존 ProjectInspect/SetPolicy/staging/guard/rollback에 진입한다.
+
+두 번째 검토: 빈 file 자체는 wipe 권한이 아니다. Native skip과 positive empty lock/명시 flag를
+분리하고, source/flag의 변경·기존 cache receipt 재사용·unselected native owner의 증명·부분
+실패 복원을 부정 회귀로 둔다. 현재 C3d의 새 source CI383이 끝나기 전 sync 제품 source는
+수정하지 않으며 Go1.27.3 순서와 기존 단일-primary invariant를 유지한다.
+
+
+## C3e1 착수 범위 / 정확한 함수와 두 번째 검토
+
+C3d는 CI383의 same-tree/Required10SUCCESS로 닫혔다. C3e1만 새 제품 source 작업으로
+시작하며 current item은 계속 M13-004 하나다. 이 단위의 IMPLEMENTED=NO / WIRED=NO /
+QUALIFIED=NO / ACCEPTANCE_CLOSED=NO이며 MISSING은 complete format/독립 binding/회귀다.
+Runtime producer·promotion·CLI wiring은 이후 C3e2/3의 MISSING으로 남긴다.
+
+| 위치 / symbol | 현재 단위의 정확한 변경 |
+| --- | --- |
+| artifact/pypi/uv_lock.go ParseUVLock / BindWheels | strict TOML package/header/URL/hash/size/target 검증과 independent archive/metadata/Requires-Dist 대조를 private 공통 helper로 추출. 기존 public single-root API·root version/reachability/nonempty rejection과 tests를 유지 |
+| 같은 package의 uv_project_lock.go 새 complete 소비자 | ParseUVProjectLock은 explicit packages=[]/strict header와 multi roots를 구분. BindProject는 existing PythonVenv InstallContext·frozen controls·authentic exact selected wheels를 기존 ProjectDependencySnapshot/NewDependencyFreeProjectSnapshot에 연결. 가짜 primary/새 Core graph 없음 |
+| uv_lock.go / uv_installed_controls.go native selector | private packages/target-only selector를 공유. 기존 single-root empty refusal은 유지하고, parsed explicit-empty project에서만 exact empty controls/snapshot 허용. Null/omitted/extra controls는 미지원 |
+| Complete snapshot digest | exact selected artifact identity/URL/integrity·target/Python·native lock 및 sorted full control digests를 bind. 다른 wheel alternative/flag/source/target의 approval을 같은 graph digest로 재사용하지 못함 |
+| uv_project_lock_test.go | multi/disconnected roots·full dependency closure와 explicit empty 정상; missing/null/unknown/future/target/URL/hash/digest/wheel/control/constraint·duplicate·substitution/budget·mutable input 거부; 기존 single-root/root-version/empty 회귀 보존 |
+
+두 번째 검토: parsed project snapshot은 Policy나 삭제 권한이 아니다. Default blank skip은
+이 positive empty constructor 경로에 들어오지 않는다. Complete source/flag 일치, trusted
+native runtime/원본 guard·entry/set Policy·staging·owned publication은 이후 실제 소비자에서
+함께 검증한다. 선택 wheel의 filename·archive·Simple metadata와 constraints/graph budget을
+검증한 공통 본문을 재사용하며 complete 목적 때문에 기존 검사를 생략하지 않는다.
+새 external dependency/interface/config/CI job·미래 milestone scaffold는 만들지 않는다.

@@ -140,3 +140,9 @@ unrecorded-cache 무변경 거부→명시 adopt3.11→managed replay와 cfg/use
 [Actual source0a16a07 결과](./p1d-native-uv-ci382-20261022.json)는 같은 전체 checkout tree의 Linux51·CPU full297.75s와 실제 UV CLI185.82s PASS를 연결한다. 고정 UV가 authentic staged idna3.10 wheel로 실제 원본17항목을 만들었고, RECORD 밖 cache의 target/Evidence 무변경 거부→old-wheel 독립 증명과 명시 adopt3.11/controls5→managed replay/controls4가 통과했다. Required checks/Evidence·cfg/user data 보존·old METADATA 제거와 helper5wait0·final confirmed cleanup도 통과했다. 이 source의 native bounded 기능은 실제 Linux에서 검증됐지만 C3d 전체 ACCEPTANCE_CLOSED는 NO다.
 
 첫 회차는 macOS production build120s timeout으로8SUCCESS/2FAIL이며 기본 테스트는 도달하지 않았다. 직전381 성공 후보와 production 실행문은 같고 원인은 미확정이다. 실패 작업 재실행의 두 번째 회차는 GitHub의 unexpected internal startup error로 job0/check-run0이었다. 이전 macOS job은 현재 회차 소속이 아니어서 재실행 API가 거부했다. 제품 코드·한도·coverage를 바꾸지 않고 이 실제 증거 전달로 새 source CI를 진행한다. macOS/Required가 실제 통과하기 전에는 C3d나 P1 acceptance를 닫지 않는다.
+
+## C3d scoped qualification 종료 / CI383
+
+[Actual CI383](./p1d-native-uv-ci383-20261023.json)은 sourcea547957와 동일 전체 checkout tree에서 Required 포함10SUCCESS다. Native 원본→cache 무변경 거부→authentic old-wheel proof/adopt→managed replay와 managed5단계가145.34s에 통과했고 Linux51/CPU220.35s·helper5wait0/final confirmed cleanup을 확인했다. Native macOS는 동일 production 실행문과 기존2m 한도에서59.458s build 및 default tests PASS다. 앞382 timeout의 정확한 원인은 여전히 미확정이며 source 성능 수리나 budget 확대의 성공으로 기록하지 않는다.
+
+C3d는 정의한 default public wheel/site/dist-info·no-cache/no-generated-script 범위의 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED가 YES이며 그 scoped MISSING은 없다. Whole P1은 NO를 유지하며 다음 C3e complete/multi/explicit-empty sync와 실제 dependency closure qualification을 진행한다. 추가 조사 중인 held P1e 문서는 이 CI의 전체 HEAD/새 기능 qualification에 포함하지 않는다.

@@ -1,0 +1,175 @@
+{
+  "schema_version": 1,
+  "baseline": "a547957d9fafcaea3b1e63b0ee6adee163db34bf",
+  "scope": "P1e data-only native plain requirements semantics; not product implementation/public registry/Policy/publication qualification",
+  "runtime": {
+    "uv": "0.13.4",
+    "python": "3.14.7",
+    "native_sha256": "de77a01a86452cc465a734257b5a2073d41115d1b8bbfe84ac636af53851b499",
+    "boundary": "locked supply image/tool hash, runc/network-none/read-only/UID1000/no-cap/NPP; private UV-only executable tmpfs; no artifact module import/entrypoint execution"
+  },
+  "operator_exit": 1,
+  "operator_failure": "KeyError version in final summary; lock uses uv_version; occurred after five native cases and cleanup/Host post snapshot",
+  "operator_summary_fix_executed": false,
+  "observed_cases": [
+    {
+      "case": "root-only",
+      "exit": 0,
+      "input_bytes": 20,
+      "input_sha256": "2bff8340eb7b09191cd5b25eb2cf2907111d90d0ad6403b699df363472d775de",
+      "installed": [
+        {
+          "name": "haa-probe-root",
+          "version": "1.0"
+        }
+      ]
+    },
+    {
+      "case": "complete-three",
+      "exit": 0,
+      "input_bytes": 60,
+      "input_sha256": "904aedfda8a914d1c1482a2fe163487950b102902c97869aed78bef943e84096",
+      "installed": [
+        {
+          "name": "haa-probe-dep",
+          "version": "1.0"
+        },
+        {
+          "name": "haa-probe-extra",
+          "version": "1.0"
+        },
+        {
+          "name": "haa-probe-root",
+          "version": "1.0"
+        }
+      ]
+    },
+    {
+      "case": "complete-two",
+      "exit": 0,
+      "input_bytes": 39,
+      "input_sha256": "c2a4a55ceeb2e6cbed387bd24e7c367f5cdaf2fc44cc03f19c461115bb1698ef",
+      "installed": [
+        {
+          "name": "haa-probe-dep",
+          "version": "1.0"
+        },
+        {
+          "name": "haa-probe-root",
+          "version": "1.0"
+        }
+      ]
+    },
+    {
+      "case": "empty-default",
+      "exit": 0,
+      "input_bytes": 0,
+      "input_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "installed": [
+        {
+          "name": "haa-probe-dep",
+          "version": "1.0"
+        },
+        {
+          "name": "haa-probe-root",
+          "version": "1.0"
+        }
+      ]
+    },
+    {
+      "case": "empty-explicit",
+      "exit": 0,
+      "input_bytes": 0,
+      "input_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "installed": []
+    }
+  ],
+  "conclusions": [
+    "Plain sync root-only selected only the named root even though its fixture wheel METADATA requires a dependency; no automatic closure expansion",
+    "Complete three-entry requirements selected three; next two-entry requirements removed the excluded extra",
+    "Empty plain requirements without allow-empty-requirements skipped and preserved the two installed entries",
+    "Empty plain requirements with explicit allow-empty-requirements removed both entries",
+    "Prior native explicit empty pylock1.0 contains packages=[] and clears; do not conflate its explicit lock semantics with plain blank requirements"
+  ],
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-semantics-root-only.json",
+      "bytes": 726,
+      "sha256": "66a806e21a747c4055a7a1c4f96c5adcb66609ed3039675294d1bd7a4067a5b1"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-semantics-complete-three.json",
+      "bytes": 896,
+      "sha256": "30effd8e1a5193fa2c713923a760d2200de897c27533a2c4b0b9353e07c8046b"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-semantics-complete-two.json",
+      "bytes": 776,
+      "sha256": "4335977875f5dcc746686f407b61980ffd580b506443dff678df3dade932f9e4"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-semantics-empty-default.json",
+      "bytes": 826,
+      "sha256": "4d7b2218b5e681d09a4120ace09f9918b4daaa26b7ba9154f4a02d4e8320d967"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-semantics-empty-explicit.json",
+      "bytes": 785,
+      "sha256": "be77f800db272479d221d3a7f6faf545c765ea4619be8af3c33ad7c137a460ba"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-semantics-result.json",
+      "bytes": 6270,
+      "sha256": "31f5fad0536eb2e375f30581369638d8d0defa749aa37b4524929791946197cf"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-semantics-host-before.json",
+      "bytes": 8536,
+      "sha256": "2e3ffaa0d9adf4b63bc4c00c0c200e73654b3530f529e43d520f8a2865cb0ae0"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-semantics-host-after.json",
+      "bytes": 8536,
+      "sha256": "2e3ffaa0d9adf4b63bc4c00c0c200e73654b3530f529e43d520f8a2865cb0ae0"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-sync-semantics-cleanup.json",
+      "bytes": 325,
+      "sha256": "9ce7a1aee8e1ab5cab52bf7e2885209097633fe85d3c0ffdf9f6624456cd7f86"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-empty-venv-discovery-empty-lock.json",
+      "bytes": 587,
+      "sha256": "5cea7195b80d8d6fa4b829b745e42c5558bdd10a6bb8195ff44fd95af6a018a2"
+    }
+  ],
+  "reproducer": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/completed-uv-query-operators/uv-sync-semantics-probe-first.py",
+      "bytes": 10352,
+      "sha256": "39b6ef12f7af6c705be890e15ed8ad9dfe085ee8453fba1f6a582748a8af6b8b"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/completed-uv-query-operators/uv-sync-semantics-probe.py",
+      "bytes": 10355,
+      "sha256": "a5366f185561eda1be77619d55066c6c0fb8e8ebf9aa08fd435e4dea626300e6",
+      "executed": false
+    }
+  ],
+  "host_before_after_identical": true,
+  "cleanup": {
+    "scope": "completed data-only probe; command process exited; exact labelled containers absent; Host snapshots equal",
+    "operator_source_preserved_and_removed": true,
+    "empty_workroot_and_client_removed": true,
+    "owned_label_query_exit": 0,
+    "owned_containers": 0,
+    "go_tmp_entries": 0,
+    "no_images_created": true
+  },
+  "MISSING": [
+    "complete input grammar/hash option qualification and primary-free project binding",
+    "no-op report path with no fake ALLOW/inspection/publication",
+    "source/empty-intent binding, exact owned deletion and rollback",
+    "actual product/source CI and whole P1 acceptance"
+  ]
+}

@@ -1,6 +1,6 @@
 # Package client / tool execution quarantine — 설계
 
-상태: **설계 검토 완료 / P1 native 선택·빈 venv 설치 qualified / installed-aware CLI 연결 검증 중**. 2026-10-21 사용자 요청으로
+상태: **P1 managed UV 설치/업데이트·bounded native 인계는 qualified / complete sync·whole P1 qualification은 진행 예정**. 2026-10-21 사용자 요청으로
 uv pip·pnpm·Bun과 npx·uvx·bunx·pipx를 하나의 확장 범위로 계획한다.
 [실행 계획·baseline·수정 지도·재검토](../planning/20-package-client-quarantine-plan.md)가
 구현 순서와 검증을 소유한다. 기존 [업데이트 검역](./06-update-quarantine.md)을

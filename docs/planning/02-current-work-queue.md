@@ -15,7 +15,7 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — native same-runtime self-quarantine update IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; actual signed rc6 normal/cancellations/fresh replay passed; channel scope remains
-Next action: P1 uv pip IN_PROGRESS — CI382 actual native UV adoption/replay and Linux PASS; native macOS/Required requalification open after build deadline/startup failure, then complete/multi-root/empty sync and whole P1 qualification
+Next action: P1 uv pip IN_PROGRESS — C3d native UV enrollment qualified/closed by CI383 ten SUCCESS; C3e1 primary-free complete/explicit-empty sync format and binding next, then actual dependency closure and whole P1 qualification
 After P1: M13-004/G127 — Go 1.27.3 coordinated migration NOT_STARTED; must finish before P2
 After G127: P2 pnpm, then P3..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
@@ -3564,7 +3564,7 @@ permanent installed CLI activation and publication remain separate; PR38 is draf
 ### M13-004 — convenience installation channels
 
 Current P1 substep: [C3c2b managed UV CLI](./evidence/package-client-quarantine/p1c-installed-cli-ci380-20261022.json) is qualified for fresh/retained/new-root install and the two upgrade modes. Source d1d4fdc/CI380 has10SUCCESS with the same whole checkout tree, actual five-step CLI and existing Linux/macOS consumers.
-Next: [C3d native UV enrollment](./evidence/package-client-quarantine/p1d-native-uv-ownership-baseline-20261022.md) is being implemented using the existing authenticated old-wheel proof and held transaction. [CI382](./evidence/package-client-quarantine/p1d-native-uv-ci382-20261022.json) passed actual native adoption/replay and Linux; macOS build deadline/Required and a job-free GitHub startup failure leave overall qualification open. [C3e complete/multi-root/empty sync audit and edit map](./evidence/package-client-quarantine/p1e-uv-sync-baseline-20261022.md) is prepared; sync source stays NOT_STARTED until C3d qualification. P2..P7 remain NOT_STARTED.
+[C3d native UV enrollment](./evidence/package-client-quarantine/p1d-native-uv-ownership-baseline-20261022.md) is qualified/closed in its bounded scope by [CI383 ten SUCCESS](./evidence/package-client-quarantine/p1d-native-uv-ci383-20261023.json). Native actual adoption/replay, existing Linux consumers and native macOS pass without budget/source-performance changes. Next is [C3e1 complete/multi-root/explicit-empty sync format and binding](./evidence/package-client-quarantine/p1e-uv-sync-baseline-20261022.md); audit/edit map/second review and [native plain input semantics](./evidence/package-client-quarantine/p1e-uv-sync-format-20261023.json) precede implementation. Whole P1 and P2..P7 remain incomplete/NOT_STARTED respectively.
 Cache-aligned [CI374](./evidence/package-client-quarantine/cache-alignment-ci374-20261022.json) passed native macOS and all10 jobs. Historical timeout causes are not universally confirmed; scope/deadlines remain unchanged.
 
 Status: IN_PROGRESS — self-update installation role and Linux/WSL2 amd64 scope approved on2026-10-20; official names pending only for channel wiring. CLI-UX-003, SEC-UPD-001 and CLI-UX-002 remain complete.
