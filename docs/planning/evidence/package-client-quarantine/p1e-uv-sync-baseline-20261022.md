@@ -280,3 +280,33 @@ PASS이며 [로컬 영수증](./p1e-uv-sync-source-local-20261023.json)이 sourc
 현재 CI384는 앞 C3e1 source12d9a50의 검증이며 이 후속 codec 검증으로 전용하지 않는다.
 이 단위의 MISSING은 새 source 원격 검증이고, C3e2 native lifecycle/reader와 C3e3
 actual guarded sync/CLI 및 whole P1 qualification은 별도로 남는다.
+
+## C3e2b 구현 직전 검토 — 기존 session body 유지
+
+Native owner는 private `withUVNativeSession`과 `uvNativeSession`(container/runtime/
+platform/output)을 추출한다. 기존 single selection은 같은 본문을
+`materializeUVSelection`에서 실행하고, complete는 `materializeUVSyncSelection`에서
+위 fixed source/intent만 실행한다. 새 공통 interface/engine을 만들지 않는다. 기존
+`withPythonResolverSession` wrapper는 source-bound private session에 기존 callback을
+연결하며 실패·정리 오류에서 resolution을 비우는 동작을 유지한다. Whole archive
+reader의 workspace/metadata/stream/cleanup도 두 실제 소비자가 공유한다.
+
+`UVResolver.ResolveProjectLockUpdate`는 기존 port의 empty selector와 PythonVenv
+context·source/intent/runtime/선택 전 absent lock controls를 먼저 검증한다. 실제
+고정 tool/probe·관측/종료가 성공한 결과만 독립 reader와 BindProject로 보낸다.
+`NewUVSyncOriginalControls`는 compile-time runtime/control을 준비하는 함수이며
+runtime 인증이나 삭제 승인이 아니다. 실제 producer가 같은 고정 tuple을 검증한다.
+
+Empty transport의 추가 경계: 기존 collector는 metadata/WHEEL 이외 private payload를
+discard한다. Complete empty에서는 site 디렉터리와 유효 explicit-empty native lock,
+명시 empty census를 요구하며 site의 임의 파일/하위 디렉터리를 허용하지 않는다.
+기존 single collector의 control0 거부는 유지한다. 새 callback은 기존 named output에
+fresh site 디렉터리를 trusted tar 입력으로 준비할 수 있지만, 디렉터리 생성 자체를
+native 실행 완료/빈 선택/삭제 authority로 쓰지 않는다. Pylock 원본도 같은 bounded
+tar로 고정 경로에 공급하며 별도 Host 실행·임의 guest script 권한을 추가하지 않는다.
+
+검증은 기존 single/installed-aware UV·pip/PyTorch 회귀와 partial cleanup/첫 cause 보존,
+complete source/flag/runtime/target/native lock 바꿔치기·empty payload 거부를 포함한다.
+실제 native public 두 독립 root·complete dependency closure·missing dependency 거부·
+explicit empty/skip 분기를 기존 고정 실행·network-policy caller·관찰기에서 검증한다.
+이 단계도 guard/staging/사용자 반입 성공이나 P1 전체 acceptance로 확대하지 않는다.
