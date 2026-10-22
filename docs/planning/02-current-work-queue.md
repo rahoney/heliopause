@@ -193,6 +193,7 @@ canonical5/관련 Race3개 PASS다. Native resolver/CI는 연결했고 다음은
 [C3c2a 로컬 결과](./evidence/package-client-quarantine/p1c-managed-guard-local-20261022.json)는 canonical5와 promotion/application/artifact-pypi 전체 Race PASS다. Managed UV guard port와 exact controls/lock/graph·기존 반입/rollback 연결은 구현했으며, 실제 shared pip 소비자/Required CI와 production CLI·actual UV target update는 미완료다. 그 원격 검증 뒤 C3c2b binding을 진행한다.
 [CI379](./evidence/package-client-quarantine/p1c-managed-guard-ci379-20261022.json)의 same-tree10SUCCESS와 실제 공통 소비자·macOS·정리로 해당 원격 gap을 닫았다. C3 leaf의 C3c2b 사전 감사/수정 지도/두 번째 검토대로 일반 installed-aware 설치와 두 UV upgrade intent를 연결한다. Native UV ownership과 sync·P1 전체는 아직 미완료다.
 [C3c2b 로컬 결과](./evidence/package-client-quarantine/p1c-installed-cli-local-20261022.json)는 canonical5/전체 관련5package Race PASS다. 일반 installed-aware INSTALL과 --upgrade/-U·--upgrade-package의 UPDATE를 기존 guard/검역/반입에 연결했고 actual authenticated CLI5단계·부정 검사를 기존 CI에 추가했다. 다음은 같은 source의 실제 CLI/Required 확인이며 아직 native qualification 완료가 아니다.
+CI 대기 중 [native UV 형식 감사](./evidence/package-client-quarantine/p1d-native-uv-ownership-baseline-20261022.md)의 자체 wheel/loopback14명령과 정리를 확인했다. Native public/adoption 또는 현재 CLI qualification으로 전용하지 않으며 C3c2b 완료 뒤의 구현 gap에 반영한다.
 
 
 
