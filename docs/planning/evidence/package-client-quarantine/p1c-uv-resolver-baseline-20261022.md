@@ -268,3 +268,149 @@ get_interpreter_info.py는28,127B이며 launcher는 -I/-B와 private UV runtime�
 Vendored musl 경로는 subprocess 분기를 포함하므로 그 파일의 존재만으로 모든 플랫폼
 query가 info-only라고 일반화하지 않는다. 초기 지원은 기존 pinned glibc Python image에
 한정하고 query의 clone/추가 exec·network는 별도 권한을 얻지 못해야 한다.
+
+## C1c — exact interpreter query 역할의 구현 전 감사·수정 지도
+
+기준3623d1e. Root UV read/startup은 IMPLEMENTED=YES / WIRED=YES(native fixture) /
+QUALIFIED=YES(startup 한정) / ACCEPTANCE_CLOSED=NO(full query/resolver)다.
+Python query 역할은 IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO /
+ACCEPTANCE_CLOSED=NO다. MISSING은 kernel clone/첫 exec에 묶인 조회 역할, 고정
+interpreter ABI/stdlib read, negative matrix와 actual complete trace다. 기존 Cargo
+query·Python profile·공용 read 분기를 대체하지 않는다.
+
+수정 위치는 observer.cc의 GroupState, ParseSentryClone, ParseSentryProcessAndClassify와
+새 UV-query-only predicate, observer_latch_test.cc의 clone/exec parser·open classifier 경계다. Group에
+candidate/active 두 one-shot 값만 추가한다. Candidate는 admitted UV direct root의
+kernel clone에서만 생성하고 매 exec에 소비한다. Parent TGID/start generation과
+expected UV identity/소비된 admission/active control을 다시 대조한다. Query exec는
+고정 OCI Python3.14 image·execfn/argv0 alias 일치·정확히 -I/-B/-c 및 관측한 launcher
+문법이 함께 일치해야 한다. Kernel binary와 execfn은 sealed read-only OCI root로
+검증한다. Query는 ARTIFACT 역할로 제한하며 expected_groups에 등록하거나 네트워크
+authority를 주지 않는다. Clone/re-exec에서 query 권한을 상속·재생성하지 않는다.
+
+Launcher의 두 random temp 성분은 이름만으로 신뢰하지 않는다. 실제 공급에서 검증한
+고정 UV가 private namespace의 유일한 query-code producer이고, writable workspace는
+Host/user target과 연결되지 않으며, resolver는 wheel-only/no-build로 artifact 코드를
+실행하지 않는다는 기존 경계가 선행한다. -I는 사용자 Python 환경/PYTHONPATH를
+배제하고 초기 site는 고정 read-only 이미지뿐이다. 이 producer/creator 경계와 exact
+launcher를 함께 요구한다. 임의 child·다른 script·단순 temp path·mutable comm·진단
+hash는 authority가 아니다. Native pin/query format/ABI 변경은 fail-closed 재검증한다.
+조회 JSON도 선택 wheel/ALLOW/완료의 authority가 아니다.
+
+Query read는 같은 active 역할/creator generation을 매번 확인하고 read-only OCI ABI와
+Python stdlib에 한정한다. 기존 IsExactPinnedPythonSystemLibrary를 재사용한다. 기존
+고정 loader candidate 목록만 순수 matcher로 추출해 두 소비자가 공유하고 원래 Python
+gate·목록·반환 의미는 그대로 유지한다. 고정
+stdlib의 디렉터리·sysconfig·확장 모듈과 Python executable/loader는 interpreter 실행의
+실제 의존성이다. site-packages 디렉터리 조회와 내부 package 실행 권한을 구분한다.
+사용자 wheel/site, 임의 library·Host bind·다른 mount·쓰기·network metadata를 포괄
+허용하지 않는다. 기존 IsPythonProfile과 공용 Python read catalog의 허용 의미는 유지한다.
+추가 system read가 필요하면 실제 첫 fault와 코드 근거를 보존한 뒤 범위를 검토한다.
+
+검증 순서는 full candidate canonical format/Quick/security/docs/workflow와 pinned
+C++ 전체 latch, 동일 isolated namespace의 native startup/query다. Latch는 실제
+clone/exec parser와 open classifier를 통해 정상 두 alias, script/argv·isolated Python 형식, missing/stale/다른
+parent·role·profile·root eligibility·pending·image shadow/writable/unsealed, 재실행과
+grandchild·쓰기·타 path·network 거부를 검사한다. 새 동작은 native fixture에서만
+확인하며 production resolver/CLI는 계속 미연결이다. Shared observer의 최종 qualification은
+기존 Linux/npm/PyPI/Go/Cargo/GitHub 소비자와 필요한 CPU/CUDA를 별도로 확인한다.
+
+두 번째 검토: 조회를 허용하려고 Python profile 전체를 열거나 Cargo predicate를
+위장 호출하지 않는다. ABI catalog 재사용은 현재 helper에 한정하고 old Python read
+동작은 유지한다. Captured source는 데이터로만 감사했고 실제 glibc query 완료는 아직
+관측하지 않았다. Musl의 loader subprocess 분기에 권한을 부여하지 않는다. 실패한
+inventory를 성공으로 덮지 않으며 완료 조사 data10경로/11,947,967B는 Root 참조와
+query errors0 확인 뒤 제거했다. 작은 재현 source와 raw 결과만 남겼다.
+
+추가 source 교차검토에서 pinned gVisor task_clone.go는 t.Origin을 child에 상속하고,
+seccheck.go의 IsExecSession은 이 origin을 표시함을 확인했다. 따라서 docker exec에서
+생긴 clone도 is_exec_session=true다. 초기 latch의 false origin 입력/거부 조건은 실제
+kernel 의미와 불일치하므로 actual probe 전에 교정한다. 상속된 true는 직접 root의
+authority가 아니며 실제 CloneChild provenance·creator TGID/start/UV expected generation을
+계속 필수로 요구한다. 초기 후보의 작은 latch 성공을 actual query 성공으로 쓰지 않는다.
+원본 uv-query-origin-field-audit.json과 각 후보 build source hash를 구분한다.
+
+C1c actual의 최소 query는 기존 offline pip list에 empty private /haa-site target을
+지정한다. 같은 exact-target stub 조사에서 list도 interpreter를 요청함을 이미 관측했다.
+빈 target의 []와 complete external trace를 요구하고, 전체 image의 pip metadata를
+읽기 위해 UV root 권한을 더하지 않는다. 기존 PythonInventory 시험/실패는 그대로
+남기며 새 시험을 전체 inventory·selection·검역 완료로 쓰지 않는다. Native output이
+예상과 다르거나 trace가 incomplete면 실패를 보존하고 권한을 자동 확대하지 않는다.
+
+Origin 교정의 fresh C++106은 PASS277.421s다. 첫 empty-target actual은 startup3.72s가
+PASS이나 query는4.01s/STREAM_FAULT다. Python 선택을 생략해 native UV root가 interpreter
+자동 발견 도중 OCI /usr/bin/dash를 read(flags557056)하려다 차단됐다. Query child에 아직
+도달하지 않았고 새로운 역할의 native qualification은 아니다. 기존 explicit Python
+inventory는 이 자동 발견 read 없이 Python child까지 도달했으므로 최소 target probe에도
+원래 계획의 --python /usr/local/bin/python을 명시한다. Shell read 권한을 추가하지 않는다.
+원본 uv-query-role-actual/result는 보존하고 Host 전후 동일·container/volume/endpoint0·
+daemon waits[0,0]을 확인한 뒤 완료 자료만 제거한다. 수정한 command는 별도 입력/영수증이다.
+
+Explicit Python 입력은 startup3.69s PASS 뒤 query3.98s에서 다음 최초 거부다.
+이번에는 actual PYTHON/ARTIFACT/CLONE_CHILD·sealed executable을 확인했으며,
+system /proc의 /proc/sys/vm/overcommit_memory read(flags32768)다. 새 query 역할은
+연결됐지만 native query 완료는 아니다. 기존 root UV read(flags557056)와 섞지 않고,
+IsPinnedUVPythonQueryRead의 같은 exact active/creator guard 아래 이 한 read만
+분류한다. 다른 proc/PID·sysfs·device·쓰기·다른 flags/mount·root/다른 child/profile은
+계속 거부한다. ABI와 system 두 실제 subject의 role/신원/쓰기 부정을 함께 검사한다.
+원본 uv-query-explicit-actual/result와 next candidate build를 별도로 연결한다. Host 전후
+동일·container/volume/endpoint0·daemon waits[0,0]은 확인했다.
+
+VM-only 후보의 fresh C++106 PASS269.049s 뒤 startup3.55s PASS, query3.90s FAIL이다.
+다음 첫 거부는 같은 pinned PYTHON/ARTIFACT query의 system /proc 자기 TGID/maps
+read(flags557056)다. VM-only 보완의 회귀/전체 조회 완료로 해석하지 않는다. 동일 query
+active/creator guard와 system /proc 아래 현재 TGID의 maps 한 경로만 추가한다. 다른 PID,
+literal self alias·environ/status/cgroup·쓰기·다른 flags는 거부한다. OCI ABI·VM read·own maps
+세 실제 subject의 신원/role/flags/mount 부정을 함께 검사한다. 원본 uv-query-vm-actual/result,
+후속 maps candidate와 완료 data 정리를 분리한다. Host 전후 동일·자원0·daemon wait0이다.
+
+### 다음 production producer 연결에서 유지할 기존 경계
+
+추가 owner 대조에서 pypi_resolver.go의 metadata 교차검증은 별도 고정 Python fetch
+script를 isolated resolver에서 실행한다. 새 UV query child 역할은 이 범용 data-reader의
+authority가 아니다. Intake.Resolve도 isolated resolver 사용을 명시 요구한다. 따라서
+metadata HTTP를 Host resolution fallback으로 옮기거나 UV query에 임의 Python/network
+권한을 덧붙이지 않는다. Existing typed policy·Python data-reader session과 streaming
+Docker data transport의 실제 공통 구간을 재사용하는 연결을 먼저 구체화한다. Native
+pylock/선택 WHEEL·whole archive/독립 metadata binding, promotion controls와 sync 모델은
+여전히 MISSING이며 C1c query의 작은 성공으로 대신 닫지 않는다.
+
+Own-maps 후보의 fresh C++106 PASS277.350s 뒤 startup3.70s PASS, query3.89s FAIL이다.
+다음 거부는 같은 Python query의 readonly OCI /usr/share/zoneinfo/Etc/UTC read557056이다.
+진단 locator07a7ea4562a20073을 기존 pinned-image 경로와 대조했으며 권한 authority가
+아니다. 같은 query/creator/readonly OCI guard 아래 정확한 UTC 파일만 추가하고 다른
+시간대·localtime alias·쓰기·타 flags/mount/역할은 거부한다. ABI/VM/maps/UTC 네 subject의
+negative matrix를 검사한다. 원본 uv-query-maps-actual/result와 다음 UTC 후보를 구분한다.
+Host 전후 동일·container/volume/endpoint0·daemon waits[0,0]을 확인했고 완료 data는 제거한다.
+
+UTC 후보의 fresh C++106 PASS279.679s 뒤 startup3.74s PASS, query3.96s FAIL이다.
+이번 첫 거부는 Python child가 아니라 UV CONTROL/DIRECT_EXEC_ROOT의 readonly OCI
+/usr/local/bin/python3.14 read557056이다. 자식 역할과 분리된 기존 IsPinnedUVRuntimeRead의
+같은 exact UV/admission/current expected generation guard 아래 이 실행 파일의 데이터
+read만 추가한다. Python 실행 authority·clone·library catalog·다른 binary·쓰기·타 flags와
+mount/profile은 계속 거부한다. System metadata6개와 새 OCI image1개에 실제 각 mount/
+class negative matrix를 적용한다. 원본 uv-query-utc-actual/result는 보존하고, 전체 query
+완료나 Root 검역/production 지원으로 확대하지 않는다. Host 전후 동일/자원0/waits[0,0]이다.
+
+Parent-image 후보의 fresh C++106 PASS279.815s와 actual startup3.91s·empty-target
+query4.10s가 모두 PASS다. Query는 []/trace31·3551B/session complete, startup은
+trace29·3306B/session complete이며 Host 전후 동일·잔여 자원0·daemon waits[0,0]이다.
+이는 고정 native query의 로컬 qualification이며 full inventory/selection/검역 결과가 아니다.
+초기 whole-image inventory 진단은 original commit3623d1e/실패 raw로 보존하고 active Go
+fixture에서는 제거한다. 불필요한 system pip metadata 권한을 추가하지 않는다. 실제로
+통과한 startup/empty-target 두 시험만 기존 unconditional CI 명령과 validator에 연결한다.
+Fixture 정리 뒤 같은 두 native 시험을 다시 확인하고 완료 data를 제거한다. Production
+resolver·guarded install/upgrade/sync·CLI는 아직 MISSING이고 P2로 넘어가지 않는다.
+
+### C1c local 종료와 다음 acceptance gap
+
+[최종 로컬 영수증](./p1c-uv-query-local-20261022.json)의 정리된 fixture 재실행은
+startup3.73s/query3.96s·각 complete trace29/31로 PASS다. 성공한 전용 data6,833항목
+688,167,061B도 Root 참조·query errors0 확인 뒤 제거했다. 실제 자료 없는 [] 결과는
+조회 qualification이며 Artifact 선택/안전성 ALLOW가 아니다. 단계 감사는 query
+IMPLEMENTED=YES/WIRED=YES(native fixture·CI source)/QUALIFIED=YES(local query only)/
+ACCEPTANCE_CLOSED=NO(P1 전체)다. 새 source의 remote 소비자·macOS는 아직 남는다.
+
+다음은 같은 P1c의 native selection/고정 data-reader·완전 archive/독립 metadata binding,
+기존 guarded promotion/upgrade/sync와 CLI의 MISSING만 구현한다. 기존 엔진을 대체하거나
+query JSON을 증거/Policy authority로 쓰지 않는다. P2..P7은 NOT_STARTED다.

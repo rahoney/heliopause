@@ -6813,6 +6813,225 @@ bool VerifyTerraformProviderProfileBoundary() {
    ProcessClassForPath("/work/artifact", kProfileGoBuild) == ProcessClass::kUnknown;
 }
 
+bool VerifyUVPythonQueryBoundary() {
+  int output[2];
+  if (socketpair(AF_UNIX, SOCK_DGRAM, 0, output) != 0) return false;
+  auto run = [&](const std::string& scenario) {
+    DrainDatagram(output[1]);
+    ProcessState state;
+    gvisor::common::ContextData parent;
+    parent.set_container_id(kFirstID); parent.set_thread_group_id(99);
+    parent.set_thread_group_start_time_ns(990); parent.set_parent_thread_group_id(0);
+    parent.set_is_exec_session(true); parent.set_process_name("renamed-uv");
+    if (!RegisterGroup(&state, parent, ProcessState::Role::kControl,
+        ProcessState::Provenance::kDirectExecRoot, false, true)) return false;
+    state.groups[99].current_image_class = ProcessClass::kUV;
+    state.groups[99].trusted_control_network_active = true;
+    state.expected_groups[99] = ProcessState::ExpectedGroup{990, ProcessClass::kUV};
+    gvisor::sentry::CloneInfo clone;
+    *clone.mutable_context_data() = parent;
+    clone.set_created_thread_group_id(100); clone.set_created_thread_start_time_ns(1000);
+    std::string payload, id; const char* reason = nullptr;
+    if (!clone.SerializeToString(&payload) || !ParseSentryClone(payload.data(), payload.size(),
+        output[0], &id, &state, &reason)) return false;
+    TopologyState topology;
+    topology.namespace_id = 10; topology.snapshot_seen = true; topology.sealed = true;
+    topology.expected = {{"/", "oci-root", "/", "", true, false, false, false},
+        {"/tmp", "workspace", "/", "tmpfs", false, true, true, false},
+        {"/haa-runtime", "helper", "/", "9p", false, false, false, false}};
+    topology.anchors.emplace(1, MountAnchor{1, "/", "oci-root"});
+    topology.anchors.emplace(2, MountAnchor{2, "/tmp", "workspace"});
+    topology.anchors.emplace(3, MountAnchor{3, "/haa-runtime", "helper"});
+    gvisor::sentry::ExecveInfo image;
+    *image.mutable_context_data() = parent;
+    auto* child = image.mutable_context_data();
+    child->set_thread_group_id(100); child->set_thread_group_start_time_ns(1000);
+    // Kernel task_clone.go inherits OriginExec from the actual UV parent.
+    child->set_parent_thread_group_id(99); child->set_is_exec_session(true);
+    child->set_process_name("arbitrary-name");
+    image.set_binary_path("/usr/local/bin/python3.14");
+    image.set_execfn(scenario == "canonical" ? "/usr/local/bin/python3.14" : "/usr/local/bin/python");
+    image.add_argv(image.execfn()); image.add_argv("-I"); image.add_argv("-B"); image.add_argv("-c");
+    const std::string launcher = "import sys; sys.path = [__import__(\"os\").fsdecode(b\"/tmp/.tmp3l9KcP/.tmpADARLv\")] + sys.path; from python.get_interpreter_info import main; main()";
+    image.add_argv(launcher);
+    if (scenario == "binary") image.set_binary_path("/tmp/python3.14");
+    if (scenario == "execfn") image.set_execfn("/usr/local/bin/python3");
+    if (scenario == "argv0") image.set_argv(0, "python");
+    if (scenario == "no-isolation") image.set_argv(1, "-E");
+    if (scenario == "bytecode") image.set_argv(2, "-s");
+    if (scenario == "module") image.set_argv(3, "-m");
+    if (scenario == "arbitrary-code") image.set_argv(4, "print('query')");
+    if (scenario == "extra-code") image.set_argv(4, launcher + "; print('extra')");
+    if (scenario == "embedded-nul") image.set_argv(4, launcher + std::string(1, '\0'));
+    if (scenario == "traversal") { auto code = launcher; code.replace(code.find("3l9KcP"), 6, "../foo"); image.set_argv(4, code); }
+    if (scenario == "escaped-path") { auto code = launcher; code.replace(code.find("3l9KcP"), 6, "abc\\de"); image.set_argv(4, code); }
+    if (scenario == "wrong-module") { auto code = launcher; code.replace(code.find("get_interpreter_info"), 20, "get_interpreter_evil"); image.set_argv(4, code); }
+    if (scenario == "extra-arg") image.add_argv("/tmp/artifact.py");
+    if (scenario == "short-argv") image.mutable_argv()->RemoveLast();
+    if (scenario == "parent-class") state.groups[99].current_image_class = ProcessClass::kPython;
+    if (scenario == "parent-role") state.groups[99].role = ProcessState::Role::kArtifact;
+    if (scenario == "parent-start") state.groups[99].start_time_ns++;
+    if (scenario == "parent-expected") state.expected_groups.erase(99);
+    if (scenario == "parent-generation") state.expected_groups[99].start_time_ns++;
+    if (scenario == "parent-expected-class") state.expected_groups[99].process_class = ProcessClass::kUnknown;
+    if (scenario == "parent-network") state.groups[99].trusted_control_network_active = false;
+    if (scenario == "parent-eligible") state.groups[99].root_eligible = true;
+    if (scenario == "parent-unconsumed") state.groups[99].root_consumed = false;
+    if (scenario == "parent-pending") state.groups[99].handoff_target_pending = true;
+    if (scenario == "parent-clone") state.groups[99].provenance = ProcessState::Provenance::kCloneChild;
+    if (scenario == "oci-origin") child->set_is_exec_session(false);
+    if (scenario == "wrong-parent") child->set_parent_thread_group_id(98);
+    if (scenario == "direct-root") { child->set_parent_thread_group_id(0); child->set_is_exec_session(true); state.groups[100].provenance = ProcessState::Provenance::kDirectExecRoot; }
+    if (scenario == "artifact-child") state.groups[100].role = ProcessState::Role::kArtifact;
+    if (scenario == "missing-clone") state.groups[100].uv_python_query_candidate = false;
+    if (scenario == "child-network") state.groups[100].trusted_control_network_active = true;
+    if (scenario == "child-pending") state.groups[100].launch_target_pending = true;
+    if (scenario == "unsealed") topology.sealed = false;
+    if (scenario == "missing-snapshot") topology.snapshot_seen = false;
+    if (scenario == "writable-root") topology.expected[0].read_only = false;
+    if (scenario == "image-shadow") topology.anchors.emplace(4, MountAnchor{4, "/usr/local", "workspace"});
+    if (scenario == "runtime-shadow") topology.anchors.emplace(4, MountAnchor{4, "/haa-runtime/uv", "helper"});
+    if (scenario == "query-shadow") topology.anchors.emplace(4, MountAnchor{4, "/tmp/.tmp3l9KcP", "workspace"});
+    if (scenario == "tmp-bind") topology.expected[1].filesystem_type = "9p";
+    if (scenario == "tmp-exec") topology.expected[1].noexec = false;
+    if (scenario == "missing-tmp") topology.anchors.erase(2);
+    const auto* selected = scenario == "no-topology" ? nullptr : &topology;
+    const char* profile = scenario == "other-profile" ? kProfilePyPI : kProfileUVResolver;
+    ProfileRegistration registration;
+    const bool parsed = image.SerializeToString(&payload) && ParseSentryProcessAndClassify(
+        payload.data(), payload.size(), output[0], &id, profile, &registration, &state, &reason, selected);
+    const bool normal = scenario == "normal" || scenario == "canonical";
+    if (normal && (!parsed || !ExpectRecordExact(output[1], kFirstID, "process-exec-expected"))) return false;
+    if (!normal) DrainDatagram(output[1]);
+    if (state.groups[100].uv_python_query_active != normal) return false;
+    gvisor::syscall::Open open;
+    *open.mutable_context_data() = image.context_data(); open.set_flags(557056);
+    open.set_pathname("/usr/local/lib/libpython3.14.so.1.0");
+    MountAnchor anchor{1, "/", "oci-root"};
+    auto readable = [&]() { return IsPinnedUVPythonQueryRead(open.context_data(), state, open.pathname(), open.flags(), profile, &anchor); };
+    if (readable() != normal) return false;
+    anchor = MountAnchor{2, "/proc", "system"};
+    open.set_pathname("/proc/sys/vm/overcommit_memory"); open.set_flags(kOpenLargefile);
+    if (readable() != normal) return false;
+    if (normal && ClassifyFilesystemOpen(open, state, profile, &anchor) != FilesystemClass::kHelperOnly) return false;
+    open.set_pathname("/proc/100/maps"); open.set_flags(557056);
+    if (readable() != normal) return false;
+    if (normal && ClassifyFilesystemOpen(open, state, profile, &anchor) != FilesystemClass::kHelperOnly) return false;
+    if (!normal) return true;
+    for (const char* path : {"/proc/sys/vm/overcommit_ratio", "/proc/99/maps", "/proc/101/maps", "/proc/self/maps", "/proc/100/environ", "/proc/100/status", "/proc/100/cgroup", "/dev/null", "/sys/fs/cgroup/cpu/cpu.cfs_quota_us"}) {
+      open.set_pathname(path); if (readable()) return false;
+    }
+    open.set_pathname("/proc/100/maps");
+    for (uint64_t flags : {uint64_t{0}, kOpenLargefile, kOpenWriteOnly, kOpenReadWrite, kOpenCreate, kOpenTruncate, kOpenAppend}) {
+      open.set_flags(flags); if (readable()) return false;
+    }
+    open.set_pathname("/proc/sys/vm/overcommit_memory");
+    for (uint64_t flags : {uint64_t{0}, uint64_t{557056}, kOpenWriteOnly, kOpenReadWrite, kOpenCreate, kOpenTruncate, kOpenAppend}) {
+      open.set_flags(flags); if (readable()) return false;
+    }
+    for (bool maps : {false, true}) {
+      open.set_pathname(maps ? "/proc/100/maps" : "/proc/sys/vm/overcommit_memory");
+      open.set_flags(maps ? 557056 : kOpenLargefile);
+      for (const auto& wrong : {MountAnchor{2, "/proc/sys", "system"}, MountAnchor{2, "/proc", "workspace"}, MountAnchor{2, "/", "oci-root"}}) {
+        anchor = wrong; if (readable()) return false;
+      }
+    }
+    anchor = MountAnchor{1, "/", "oci-root"};
+    open.set_pathname("/usr/local/lib/libpython3.14.so.1.0"); open.set_flags(557056);
+    if (state.groups[100].role != ProcessState::Role::kArtifact ||
+        state.expected_groups.count(100) != 0 || IsTrustedControlNetwork(*child, state) ||
+        ClassifyFilesystemOpen(open, state, profile, &anchor) != FilesystemClass::kHelperOnly) return false;
+    for (const char* path : {"/etc/ld.so.cache", "/usr/local/bin/../lib/libpython3.14.so.1.0", "/usr/local/bin/python3.14",
+        "/usr/share/zoneinfo/Etc/UTC",
+        "/usr/local/lib/python314.zip", "/usr/local/lib/python3.14", "/usr/local/lib/python3.14/encodings/__init__.py",
+        "/usr/local/lib/python3.14/lib-dynload/_struct.cpython-314-x86_64-linux-gnu.so", "/lib/x86_64-linux-gnu/libc.so.6"}) {
+      open.set_pathname(path); if (!readable()) return false;
+    }
+    for (const char* path : {"/etc/passwd", "/etc/resolv.conf", "/proc/100/environ", "/usr/lib/evil.so", "/usr/local/bin/pip",
+        "/usr/share/zoneinfo/Etc/UTC.evil", "/usr/share/zoneinfo/Europe/London", "/etc/localtime",
+        "/usr/local/lib/python3.14/site-packages/pip/__init__.py", "/usr/local/lib/python3.14/site-packages/evil.pth",
+        "/usr/local/lib/python3.15/encodings/__init__.py", "/usr/local/lib/python3.14/../../evil.py", "/tmp/module.py"}) {
+      open.set_pathname(path); if (readable()) return false;
+    }
+    open.set_pathname("/usr/share/zoneinfo/Etc/UTC");
+    for (uint64_t flags : {uint64_t{0}, kOpenLargefile, kOpenWriteOnly, kOpenReadWrite, kOpenCreate, kOpenTruncate, kOpenAppend}) {
+      open.set_flags(flags); if (readable()) return false;
+    }
+    open.set_flags(557056);
+    for (const auto& wrong : {MountAnchor{2, "/usr/share/zoneinfo", "oci-root"}, MountAnchor{2, "/", "system"}, MountAnchor{2, "/", "workspace"}}) {
+      anchor = wrong; if (readable()) return false;
+    }
+    anchor = MountAnchor{1, "/", "oci-root"};
+    open.set_pathname("/usr/local/lib/libpython3.14.so.1.0");
+    for (uint64_t flags : {kOpenWriteOnly, kOpenReadWrite, kOpenCreate, kOpenTruncate, kOpenAppend}) { open.set_flags(flags); if (readable()) return false; }
+    open.set_flags(557056);
+    for (const auto& wrong : {MountAnchor{2, "/usr/local", "oci-root"}, MountAnchor{2, "/", "workspace"}, MountAnchor{2, "/", "system"}}) {
+      anchor = wrong; if (readable()) return false;
+    }
+    anchor = MountAnchor{1, "/", "oci-root"};
+    const auto accepted = state;
+    for (int subject : {0, 1, 2, 3}) {
+      anchor = subject == 0 || subject == 3 ? MountAnchor{1, "/", "oci-root"} : MountAnchor{2, "/proc", "system"};
+      open.set_pathname(subject == 3 ? "/usr/share/zoneinfo/Etc/UTC" :
+          (subject == 0 ? "/usr/local/lib/libpython3.14.so.1.0" :
+           (subject == 1 ? "/proc/sys/vm/overcommit_memory" : "/proc/100/maps")));
+      open.set_flags(subject == 1 ? kOpenLargefile : 557056);
+      for (int mutation = 0; mutation < 13; ++mutation) {
+        state = accepted;
+        auto& group = state.groups[100];
+        switch (mutation) {
+          case 0: group.role = ProcessState::Role::kControl; break;
+          case 1: group.uv_python_query_active = false; break;
+          case 2: group.start_time_ns++; break;
+          case 3: group.provenance = ProcessState::Provenance::kDirectExecRoot; break;
+          case 4: group.trusted_control_network_active = true; break;
+          case 5: group.current_image_class = ProcessClass::kUnknown; break;
+          case 6: group.root_eligible = true; break;
+          case 7: group.root_consumed = false; break;
+          case 8: group.demotion_pending = true; break;
+          case 9: group.launch_target_pending = true; break;
+          case 10: group.handoff_target_pending = true; break;
+          case 11: state.groups[99].start_time_ns++; break;
+          case 12: state.expected_groups.erase(99); break;
+        }
+        if (readable()) return false;
+      }
+    }
+    anchor = MountAnchor{1, "/", "oci-root"};
+    open.set_pathname("/usr/local/lib/libpython3.14.so.1.0"); open.set_flags(557056);
+    state = accepted;
+    // A query clone inherits neither the active role nor another candidate.
+    *clone.mutable_context_data() = *child;
+    clone.set_created_thread_group_id(101); clone.set_created_thread_start_time_ns(1010);
+    if (!clone.SerializeToString(&payload) || !ParseSentryClone(payload.data(), payload.size(), output[0], &id, &state, &reason)) return false;
+    auto descendant = image;
+    descendant.mutable_context_data()->set_thread_group_id(101);
+    descendant.mutable_context_data()->set_thread_group_start_time_ns(1010);
+    descendant.mutable_context_data()->set_parent_thread_group_id(100);
+    *open.mutable_context_data() = descendant.context_data();
+    if (state.groups[101].uv_python_query_candidate || state.groups[101].uv_python_query_active || readable()) return false;
+    if (!descendant.SerializeToString(&payload) || !ParseSentryProcessAndClassify(payload.data(), payload.size(), output[0], &id, profile, &registration, &state, &reason, selected) ||
+        !ExpectUnexpectedProcessRecord(output[1], kFirstID, "SENTRY_EXEC", "OTHER", "ARTIFACT_ROLE", "ARTIFACT_GROUP") || readable()) return false;
+    // A second exact exec in the original child cannot renew the role.
+    *open.mutable_context_data() = *child;
+    if (!image.SerializeToString(&payload) || !ParseSentryProcessAndClassify(payload.data(), payload.size(), output[0], &id, profile, &registration, &state, &reason, selected) ||
+        !ExpectUnexpectedProcessRecord(output[1], kFirstID, "SENTRY_EXEC", "OTHER", "ARTIFACT_ROLE", "ARTIFACT_GROUP") || readable() || IsTrustedControlNetwork(*child, state)) return false;
+    return true;
+  };
+  bool passed = true;
+  for (const char* scenario : {"normal", "canonical", "binary", "execfn", "argv0", "no-isolation", "bytecode", "module", "arbitrary-code",
+      "extra-code", "embedded-nul", "traversal", "escaped-path", "wrong-module", "extra-arg", "short-argv", "parent-class", "parent-role",
+      "parent-start", "parent-expected", "parent-generation", "parent-expected-class", "parent-network", "parent-eligible", "parent-unconsumed",
+      "parent-pending", "parent-clone", "oci-origin", "wrong-parent", "direct-root", "artifact-child", "missing-clone", "child-network", "child-pending",
+      "unsealed", "missing-snapshot", "writable-root", "image-shadow", "runtime-shadow", "query-shadow", "tmp-bind", "tmp-exec", "missing-tmp", "no-topology", "other-profile"}) {
+    const bool result = run(scenario);
+    if (!result) fprintf(stderr, "UV query boundary failed: %s\n", scenario);
+    passed = result && passed;
+  }
+  close(output[0]); close(output[1]);
+  return passed;
+}
+
 bool VerifyUVRuntimeReadBoundary() {
   ProcessState state;
   gvisor::syscall::Open open;
@@ -6831,21 +7050,23 @@ bool VerifyUVRuntimeReadBoundary() {
     return ClassifyFilesystemOpen(open, state, profile, &anchor) == FilesystemClass::kHelperOnly;
   };
   if (!allowed()) return false;
-  for (const char* mount : {"/proc", "/sys/fs/cgroup/cpu", "/dev"}) {
-    anchor.mountpoint = mount;
+  for (const char* mount : {"/proc", "/sys/fs/cgroup/cpu", "/dev", "/"}) {
+    anchor.mountpoint = mount; anchor.mount_class = strcmp(mount, "/") == 0 ? "oci-root" : "system";
     for (const char* path : {"/proc/99/maps", "/proc/99/environ", "/proc/sys/vm/other", "/proc/self/cgroup",
         "/proc/1/cgroup", "/proc/100/cgroup", "/proc/1/mountinfo", "/proc/100/mountinfo",
-        "/dev/zero", "/dev/urandom", "/sys/fs/cgroup/cpu/cpu.stat"}) {
+        "/dev/zero", "/dev/urandom", "/sys/fs/cgroup/cpu/cpu.stat", "/usr/local/bin/python", "/usr/local/bin/pip", "/usr/local/lib/libpython3.14.so.1.0", "/usr/bin/dash", "/usr/local/bin/python3.14.evil"}) {
       open.set_pathname(path); if (allowed()) return false;
     }
   }
   for (const char* path : {"/proc/sys/vm/overcommit_memory", "/proc/99/cgroup", "/proc/99/mountinfo",
-      "/sys/fs/cgroup/cpu/cpu.cfs_quota_us", "/sys/fs/cgroup/cpu/cpu.cfs_period_us", "/dev/null"}) {
+      "/sys/fs/cgroup/cpu/cpu.cfs_quota_us", "/sys/fs/cgroup/cpu/cpu.cfs_period_us", "/dev/null", "/usr/local/bin/python3.14"}) {
     state = baseline;
     open.set_pathname(path);
-    const std::string mountpoint = strcmp(path, "/dev/null") == 0 ? "/dev" :
-        (HasPrefix(path, "/sys/") ? "/sys/fs/cgroup/cpu" : "/proc");
-    anchor.mountpoint = mountpoint;
+    const bool image = strcmp(path, "/usr/local/bin/python3.14") == 0;
+    const std::string mountpoint = image ? "/" : (strcmp(path, "/dev/null") == 0 ? "/dev" :
+        (HasPrefix(path, "/sys/") ? "/sys/fs/cgroup/cpu" : "/proc"));
+    const std::string mount_class = image ? "oci-root" : "system";
+    anchor.mountpoint = mountpoint; anchor.mount_class = mount_class;
     if (!allowed()) return false;
     context->set_parent_thread_group_id(1); if (allowed()) return false;
     context->set_parent_thread_group_id(0);
@@ -6861,13 +7082,14 @@ bool VerifyUVRuntimeReadBoundary() {
       // predicate must never supply them a new grant.
       if (IsPinnedUVRuntimeRead(*context, state, open.pathname(), open.flags(), profile, &anchor)) return false;
     }
-    for (const char* mount : {"/", "/proc/sys", "/proc/99", "/sys/fs/cgroup", "/sys/fs/cgroup/cpu/x"}) { anchor.mountpoint = mount; if (allowed()) return false; }
+    for (const char* mount : {"/", "/proc/sys", "/proc/99", "/sys/fs/cgroup", "/sys/fs/cgroup/cpu/x"}) { anchor.mountpoint = mount; if (mount != mountpoint && allowed()) return false; }
     for (const char* root : {"/proc", "/sys/fs/cgroup/cpu", "/dev"}) {
       anchor.mountpoint = root;
       if (allowed() != (anchor.mountpoint == mountpoint)) return false;
     }
     anchor.mountpoint = mountpoint; anchor.mount_class = "workspace"; if (allowed()) return false;
-    anchor.mount_class = "system";
+    anchor.mount_class = image ? "system" : "oci-root"; if (allowed()) return false;
+    anchor.mount_class = mount_class;
     for (int scenario = 0; scenario < 11; ++scenario) {
       state = baseline; auto& group = state.groups[99];
       switch (scenario) {
@@ -7314,9 +7536,10 @@ int main(int argc, char** argv) {
 	fprintf(stderr, "STARTING pre_attribution_disconnect\n");
 	const bool pre_attribution_disconnect = running && VerifyAcceptedPreAttributionDisconnect(remote, child);
   const bool terraform_profile = VerifyTerraformProviderProfileBoundary();
+  const bool uv_python_query = VerifyUVPythonQueryBoundary();
   const bool uv_runtime_admission = VerifyUVRuntimeAdmissionBoundary();
   const bool uv_runtime_read = VerifyUVRuntimeReadBoundary();
-  const bool passed = uv_runtime_read && uv_runtime_admission && github_artifact_runtime_read && terraform_profile && running && profile && profile_limits && record_boundaries && accessors && network && malformed_socket &&
+  const bool passed = uv_python_query && uv_runtime_read && uv_runtime_admission && github_artifact_runtime_read && terraform_profile && running && profile && profile_limits && record_boundaries && accessors && network && malformed_socket &&
       malformed_connect && unknown_fd && process && correlation && cloexec && delayed && concurrent_python_streams && roles &&
       oci_bootstrap && demotion && mismatch && dropped && topology_ok && nested_mounts && filesystem && cargo_runtime_read && cargo_self_maps_read && cargo_config_read && cargo_tar_read && cargo_entropy_read && cargo_ca_read && cargo_null_read && cargo_rustc_query && cargo_rustc_metadata && cargo_rustc_abi && cargo_rustc_zlib && cargo_rustc_overcommit && cargo_rustc_maps && cargo_rustc_statm && cargo_rustc_cgroup && go_runtime_read && go_build_config_read && go_build_handoff_read && cargo_build_handoff_read && cargo_build_pinned_target && cargo_build_driver_read && cargo_build_rustc_child && cargo_build_native_cc_child && cargo_build_collect2_child && cargo_build_lld_launcher && cargo_build_rust_lld && cargo_build_link_inputs && cargo_build_link_sdk && cargo_build_rust_c_abi && cargo_build_lld_entropy && cargo_build_program && cargo_build_program_abi && cargo_build_program_maps && cargo_build_program_query && cargo_build_program_null && cargo_build_config && go_build_runtime_read && go_build_creator_diagnostic && go_build_tool_child && go_build_cgo_gcc_creator && go_build_sdk_link_gcc && go_build_sdk_link_native && go_build_linker_resolver && go_build_cc1 && go_build_cc1_headers && go_build_as && go_build_collect2 && go_build_native_linker && go_build_linker_plugin && go_build_linker_null && go_build_linker_runtime && go_build_as_null && go_build_cc1_sdk_cgo && npm_node &&
       cargo_rustc_mountinfo && cargo_rustc_cpu_quota && cargo_rustc_sysroot_directory && cargo_dns_configuration && cargo_resolver_file && cargo_utc && cargo_cloexec_entropy && socketpair_diagnostic && kernel_socketpair && open_result_negative_ok && open_result_positive_ok && no_basename_trust_ok &&
@@ -7324,6 +7547,7 @@ int main(int argc, char** argv) {
       resolver_lock_generation_production_path && process_group_lifecycle && direct_exec_admission &&
 		admission_terminal_protocol && direct_exec_admission_bound && session_aware_control && exact_control_peer && control_peer_hup_live_admission && unaccepted_disconnect && pre_attribution_disconnect;
   const std::pair<const char*, bool> latches[] = {
+      {"UV exact interpreter query boundary", uv_python_query},
       {"UV private tool admission boundary", uv_runtime_admission},
       {"UV exact native startup read boundary", uv_runtime_read},
       {"readiness", running}, {"pod-init profile", profile},

@@ -448,6 +448,10 @@ struct ProcessState {
     uint32_t diagnostic_socketpair_type = 0;
     bool cargo_rustc_query_candidate = false;
     bool cargo_rustc_query_active = false;
+    // One first exec of an admitted UV driver's kernel clone. The query is
+    // demoted to ARTIFACT and never joins expected/control network groups.
+    bool uv_python_query_candidate = false;
+    bool uv_python_query_active = false;
     bool cargo_build_rustc_active = false;
     bool cargo_lld_launcher_candidate = false;
     bool cargo_lld_launcher_active = false;
@@ -624,6 +628,68 @@ bool HasExactCloneCreator(const ProcessState::GroupState& group, const ProcessSt
   const auto creator = state.groups.find(group.clone_creator_group_id);
   return creator != state.groups.end() &&
       creator->second.start_time_ns == group.clone_creator_group_start_time_ns;
+}
+
+bool HasExactUVQueryCreator(const gvisor::common::ContextData& context,
+                            const ProcessState::GroupState& group,
+                            const ProcessState& state) {
+  if (group.role != ProcessState::Role::kArtifact ||
+      group.provenance != ProcessState::Provenance::kCloneChild ||
+      !context.is_exec_session() || group.root_eligible || !group.root_consumed ||
+      group.trusted_control_network_active || group.demotion_pending ||
+      group.launch_target_pending || group.handoff_target_pending ||
+      !HasExactCloneCreator(group, state) ||
+      context.parent_thread_group_id() != group.clone_creator_group_id) return false;
+  const auto& parent = state.groups.find(group.clone_creator_group_id)->second;
+  const auto expected = state.expected_groups.find(group.clone_creator_group_id);
+  return parent.role == ProcessState::Role::kControl &&
+      parent.provenance == ProcessState::Provenance::kDirectExecRoot &&
+      parent.current_image_class == ProcessClass::kUV && !parent.root_eligible &&
+      parent.root_consumed && parent.trusted_control_network_active &&
+      !parent.demotion_pending && !parent.launch_target_pending && !parent.handoff_target_pending &&
+      expected != state.expected_groups.end() && expected->second.start_time_ns == parent.start_time_ns &&
+      expected->second.process_class == ProcessClass::kUV;
+}
+
+// This grammar is the pinned UV's launcher, not arbitrary Python code. The
+// module producer is the authenticated UV in a private, no-build namespace;
+// neither these random names nor a diagnostic hash authenticate code on their own.
+bool IsExactUVPythonQuery(const gvisor::sentry::ExecveInfo& message,
+                          const TopologyState* topology) {
+  if (message.binary_path() != "/usr/local/bin/python3.14" ||
+      (message.execfn() != "/usr/local/bin/python" && message.execfn() != message.binary_path()) ||
+      message.argv_size() != 5 || message.argv(0) != message.execfn() ||
+      message.argv(1) != "-I" || message.argv(2) != "-B" || message.argv(3) != "-c" ||
+      !IsPinnedReadOnlyRootPath(topology, message.binary_path()) ||
+      !IsPinnedReadOnlyRootPath(topology, message.execfn()) || !IsUVToolImage(topology, kUVToolPath)) return false;
+  const std::string prefix = "import sys; sys.path = [__import__(\"os\").fsdecode(b\"";
+  const std::string suffix = "\")] + sys.path; from python.get_interpreter_info import main; main()";
+  const std::string& code = message.argv(4);
+  constexpr size_t kRootBytes = 26;  // /tmp/.tmpXXXXXX/.tmpXXXXXX
+  if (code.size() != prefix.size() + kRootBytes + suffix.size() ||
+      code.compare(0, prefix.size(), prefix) != 0 ||
+      code.compare(prefix.size() + kRootBytes, suffix.size(), suffix) != 0) return false;
+  const std::string root = code.substr(prefix.size(), kRootBytes);
+  if (root.compare(0, 9, "/tmp/.tmp") != 0 || root.compare(15, 5, "/.tmp") != 0) return false;
+  for (size_t i : {size_t{9}, size_t{20}}) {
+    for (size_t j = i; j < i + 6; ++j) {
+      const char c = root[j];
+      if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'))) return false;
+    }
+  }
+  size_t expected_tmp = 0, actual_tmp = 0;
+  for (const auto& mount : topology->expected) {
+    if (mount.mountpoint != "/tmp") continue;
+    if (mount.mount_class != "workspace" || mount.parent != "/" || mount.filesystem_type != "tmpfs" ||
+        mount.read_only || !mount.noexec || !mount.nosuid) return false;
+    expected_tmp++;
+  }
+  for (const auto& entry : topology->anchors) {
+    const auto& mount = entry.second;
+    if (mount.mountpoint == "/tmp" && mount.mount_class == "workspace") actual_tmp++;
+    else if (mount.mountpoint != "/" && IsAtOrBelowMountpoint(root, mount.mountpoint)) return false;
+  }
+  return expected_tmp == 1 && actual_tmp == 1;
 }
 
 bool HasExactCargoResolverCreator(const gvisor::common::ContextData& context,
@@ -2035,6 +2101,23 @@ bool IsGitHubArtifactRuntimeRead(const gvisor::common::ContextData& context,
   return false;
 }
 
+bool IsExactPinnedPythonLoaderCandidate(const std::string& path) {
+  static constexpr const char* kLoaderCandidates[] = {
+      "/usr/local/bin/../lib/glibc-hwcaps/x86-64-v3/libpython3.14.so.1.0",
+      "/usr/local/bin/../lib/glibc-hwcaps/x86-64-v2/libpython3.14.so.1.0",
+      "/usr/local/bin/../lib/tls/x86_64/libpython3.14.so.1.0",
+      "/usr/local/bin/../lib/tls/libpython3.14.so.1.0",
+      "/usr/local/bin/../lib/x86_64/libpython3.14.so.1.0",
+      "/usr/local/bin/../lib/libpython3.14.so.1.0",
+      "/usr/local/bin/../lib/libc.so.6",
+      "/usr/local/bin/../lib/libpython3.14.so.1.0._pth",
+  };
+  for (const char* candidate : kLoaderCandidates) {
+    if (path == candidate) return true;
+  }
+  return false;
+}
+
 bool IsPinnedRuntimeRootRead(const gvisor::common::ContextData& context,
                              const ProcessState& state,
                              const std::string& path, uint64_t flags,
@@ -2067,20 +2150,7 @@ bool IsPinnedRuntimeRootRead(const gvisor::common::ContextData& context,
              context.process_name() != "uname" && context.process_name() != "sh") {
     return false;
   }
-  static constexpr const char* kLoaderCandidates[] = {
-      "/usr/local/bin/../lib/glibc-hwcaps/x86-64-v3/libpython3.14.so.1.0",
-      "/usr/local/bin/../lib/glibc-hwcaps/x86-64-v2/libpython3.14.so.1.0",
-      "/usr/local/bin/../lib/tls/x86_64/libpython3.14.so.1.0",
-      "/usr/local/bin/../lib/tls/libpython3.14.so.1.0",
-      "/usr/local/bin/../lib/x86_64/libpython3.14.so.1.0",
-      "/usr/local/bin/../lib/libpython3.14.so.1.0",
-      "/usr/local/bin/../lib/libc.so.6",
-      "/usr/local/bin/../lib/libpython3.14.so.1.0._pth",
-  };
-  bool exact_loader_candidate = false;
-  for (const char* candidate : kLoaderCandidates) {
-    if (path == candidate) exact_loader_candidate = true;
-  }
+  const bool exact_loader_candidate = IsExactPinnedPythonLoaderCandidate(path);
   if (path != normalized && !exact_loader_candidate) return false;
   if (exact_loader_candidate) return true;
   if (normalized == "/usr/local/lib/glibc-hwcaps/x86-64-v3/libpython3.14.so.1.0" ||
@@ -2137,19 +2207,54 @@ bool IsPinnedRuntimeRootRead(const gvisor::common::ContextData& context,
   return HasPrefix(normalized, kStdlibRoot);
 }
 
+// The query consumes only the immutable interpreter ABI/stdlib. It cannot
+// import installed artifact packages or confer CONTROL/network authority.
+bool IsPinnedUVPythonQueryRead(const gvisor::common::ContextData& context,
+                               const ProcessState& state, const std::string& path,
+                               uint64_t flags, const char* profile, const MountAnchor* anchor) {
+  if (profile == nullptr || strcmp(profile, kProfileUVResolver) != 0 ||
+      anchor == nullptr || IsWriteCapableOpen(flags)) return false;
+  const auto* group = FindFilesystemGroup(context, state);
+  if (group == nullptr || !group->uv_python_query_active ||
+      group->current_image_class != ProcessClass::kPython ||
+      !HasExactUVQueryCreator(context, *group, state)) return false;
+  if (anchor->mount_class == "system") {
+    if (anchor->mountpoint != "/proc") return false;
+    return (flags == kOpenLargefile && path == "/proc/sys/vm/overcommit_memory") ||
+        (flags == 557056 && path == "/proc/" + std::to_string(context.thread_group_id()) + "/maps");
+  }
+  if (anchor->mountpoint != "/" || anchor->mount_class != "oci-root") return false;
+  std::string normalized;
+  if (!NormalizeAbsolutePath(path, &normalized)) return false;
+  const bool loader_candidate = IsExactPinnedPythonLoaderCandidate(path);
+  if (path != normalized && !loader_candidate) return false;
+  if (normalized == "/usr/share/zoneinfo/Etc/UTC") return flags == 557056;
+  if (loader_candidate || normalized == "/etc/ld.so.cache" ||
+      IsExactPinnedPythonSystemLibrary(normalized) ||
+      normalized == "/usr/local/lib/libpython3.14.so.1.0" ||
+      normalized == "/usr/local/lib/python314.zip" ||
+      normalized == "/usr/local/bin/python" || normalized == "/usr/local/bin/python3.14" ||
+      normalized == "/usr/local/lib/python3.14" ||
+      normalized == "/usr/local/lib/python3.14/site-packages") return true;
+  if (HasPrefix(normalized, "/usr/local/lib/python3.14/site-packages/")) return false;
+  return HasPrefix(normalized, "/usr/local/lib/python3.14/");
+}
+
 bool IsPinnedUVRuntimeRead(const gvisor::common::ContextData& context,
                           const ProcessState& state, const std::string& path,
                           uint64_t flags, const char* profile, const MountAnchor* anchor) {
   if (profile == nullptr || strcmp(profile, kProfileUVResolver) != 0 ||
-      anchor == nullptr || anchor->mount_class != "system" || flags != 557056 ||
+      anchor == nullptr || flags != 557056 ||
       !context.is_exec_session() || context.parent_thread_group_id() != 0) return false;
   const std::string self = "/proc/" + std::to_string(context.thread_group_id());
-  const bool proc_read = anchor->mountpoint == "/proc" &&
+  const bool proc_read = anchor->mount_class == "system" && anchor->mountpoint == "/proc" &&
       (path == "/proc/sys/vm/overcommit_memory" || path == self + "/cgroup" || path == self + "/mountinfo");
-  const bool quota_read = anchor->mountpoint == "/sys/fs/cgroup/cpu" &&
+  const bool quota_read = anchor->mount_class == "system" && anchor->mountpoint == "/sys/fs/cgroup/cpu" &&
       (path == "/sys/fs/cgroup/cpu/cpu.cfs_quota_us" || path == "/sys/fs/cgroup/cpu/cpu.cfs_period_us");
-  const bool null_read = anchor->mountpoint == "/dev" && path == "/dev/null";
-  if (!proc_read && !quota_read && !null_read) return false;
+  const bool null_read = anchor->mount_class == "system" && anchor->mountpoint == "/dev" && path == "/dev/null";
+  const bool interpreter_read = anchor->mount_class == "oci-root" && anchor->mountpoint == "/" &&
+      path == "/usr/local/bin/python3.14";
+  if (!proc_read && !quota_read && !null_read && !interpreter_read) return false;
   const auto* group = FindFilesystemGroup(context, state);
   return group != nullptr && group->role == ProcessState::Role::kControl &&
       group->provenance == ProcessState::Provenance::kDirectExecRoot &&
@@ -2937,6 +3042,7 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
   }
   if (IsExactBootstrapHelperWrite(message.context_data(), state, path, message.flags()) ||
       IsPinnedUVRuntimeRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
+      IsPinnedUVPythonQueryRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
       IsPinnedCargoResolverRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
       IsPinnedCargoBuildDriverRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
       IsPinnedCargoBuildCompilerRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
@@ -3220,6 +3326,10 @@ bool ParseSentryClone(const char* payload, size_t payload_size,
   state->groups.find(child_group)->second.diagnostic_image_pinned = creator->second.diagnostic_image_pinned;
   state->groups.find(child_group)->second.cargo_rustc_query_candidate =
       creator->second.current_image_class == ProcessClass::kCargo;
+  state->groups.find(child_group)->second.uv_python_query_candidate =
+      creator->second.role == ProcessState::Role::kControl &&
+      creator->second.provenance == ProcessState::Provenance::kDirectExecRoot &&
+      creator->second.current_image_class == ProcessClass::kUV;
   // One kernel clone of the admitted build driver may execute one locked SDK
   // tool. Neither tool authority nor CONTROL/network privilege is inherited.
   state->groups.find(child_group)->second.go_build_tool_candidate = IsGoBuildDriverGroup(creator->second);
@@ -3490,6 +3600,9 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     new_direct_root = true;
   }
   group->second.runtime_cache_query = false;
+  const bool uv_query_candidate = group->second.uv_python_query_candidate;
+  group->second.uv_python_query_candidate = false;
+  group->second.uv_python_query_active = false;
   const bool cargo_program_candidate=group->second.cargo_build_program_candidate;
   group->second.cargo_build_program_candidate=false;
   group->second.cargo_build_program_active=false;
@@ -3625,6 +3738,22 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
       message.binary_path() == kRustcBinary && message.execfn() == kRustcBinary &&
       ((message.argv_size() == 2 && message.argv(0) == kRustcBinary && message.argv(1) == "-vV") ||
        IsExactCargoRustcMetadataQuery(message));
+  if (strcmp(profile, kProfileUVResolver) == 0 && uv_query_candidate &&
+      group->second.role == ProcessState::Role::kControl &&
+      candidate.expected_groups.find(group_id) == candidate.expected_groups.end() &&
+      IsExactUVPythonQuery(message, topology)) {
+    auto query_group = group->second;
+    query_group.role = ProcessState::Role::kArtifact;
+    if (HasExactUVQueryCreator(message.context_data(), query_group, candidate)) {
+      group->second.role = ProcessState::Role::kArtifact;
+      group->second.current_image_class = ProcessClass::kPython;
+      group->second.uv_python_query_active = true;
+      ApplyExecCloexec(&candidate, group_id);
+      process_state->groups = candidate.groups;
+      process_state->fd_states = candidate.fd_states;
+      return Send(output, *container_id, "process-exec-expected");
+    }
+  }
   if (group->second.provenance == ProcessState::Provenance::kOCIRoot) {
     if (group->second.role != ProcessState::Role::kControl ||
         !candidate.bootstrap_active || group->second.trusted_control_network_active) {

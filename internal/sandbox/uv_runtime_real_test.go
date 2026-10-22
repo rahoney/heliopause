@@ -4,7 +4,6 @@ package sandbox
 
 import (
 	"context"
-	"encoding/json"
 	"os"
 	"strings"
 	"testing"
@@ -27,18 +26,19 @@ func TestUVActualIsolatedNativeStartup(t *testing.T) {
 	})
 }
 
-func TestUVActualIsolatedPythonInventory(t *testing.T) {
+// The empty private target still triggers the native interpreter query. It
+// does not require UV to inspect the image's globally installed pip metadata.
+func TestUVActualIsolatedEmptyTargetQuery(t *testing.T) {
 	withActualUVNativeRuntime(t, func(ctx context.Context, runner CommandRunner, id string) {
 		body, err := runner.Output(ctx, "docker", boundaryExecArguments(id, boundaryLaunchMode, uvToolGuestPath,
-			"pip", "list", "--python", "/usr/local/bin/python", "--offline", "--no-config", "--no-cache", "--no-python-downloads", "--format", "json")...)
+			"pip", "list", "--target", pythonSitePath, "--python", "/usr/local/bin/python", "--offline", "--no-config", "--no-cache", "--no-python-downloads", "--format", "json")...)
 		if err != nil {
-			t.Fatal("isolated native UV Python inventory failed", err)
+			t.Fatal("isolated native UV empty-target interpreter query failed", err)
 		}
-		var packages []struct{ Name, Version string }
-		if len(body) > 16<<10 || json.Unmarshal(body, &packages) != nil || len(packages) != 1 || packages[0].Name != "pip" || packages[0].Version != runtimeidentity.PipVersion {
-			t.Fatal("isolated native UV inventory differs from the pinned pure Python image")
+		if strings.TrimSpace(string(body)) != "[]" {
+			t.Fatal("isolated native UV empty target unexpectedly contains packages")
 		}
-		t.Logf("isolated_native_uv_python_inventory=%s", strings.TrimSpace(string(body)))
+		t.Log("isolated_native_uv_empty_target_query=[]")
 	})
 }
 

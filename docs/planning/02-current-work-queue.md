@@ -15,7 +15,7 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — native same-runtime self-quarantine update IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; actual signed rc6 normal/cancellations/fresh replay passed; channel scope remains
-Next action: P1 uv pip IN_PROGRESS — native startup CI368 PASS; offline Python query first faults observed, approved fixed read candidate C++105/startup PASS; Python child library/query role is the next observed gap; macOS CI369 default6m FAIL with bounded progress evidence, slow-root summary local PASS; production resolver/CLI still missing; P2..P7 NOT_STARTED
+Next action: P1 uv pip IN_PROGRESS — C1c native startup/query local PASS, final fixture replay PASS/CI source wired; production native selection/data-reader/guarded install-upgrade-sync/CLI missing; CI371 macOS deadline FAIL, terminal/gap diagnostics local PASS; P2..P7 NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
@@ -37,24 +37,29 @@ CI368의 신규 native UV3.25s·기존 Linux45/CPU259.85s PASS와 macOS default-
 Required FAIL을 구분한다. [P1c 수정 지도](./evidence/package-client-quarantine/p1c-uv-resolver-baseline-20261022.md)는
 native JSON이 delta-only임을 확인하고 기존 pip promotion identity/control과 multi-root
 sync 모델의 연결 gap을 기록했다. Production UV resolver/install-upgrade-sync/CLI는 아직
-미연결이다. [macOS 진단 지도](./evidence/package-client-quarantine/macos-default-test-diagnostic-plan-20261022.md)와
-[로컬 검증](./evidence/package-client-quarantine/macos-default-test-local-20261022.json)의 bounded
-Go JSON 진행 수집은 기존5m/6m·process cause를 유지한다. 새 native 원인 관측은 남는다.
-후속 CI369의 default6m 종료에서 promotion package와 update-runtime의 진행 구간을
-확인했으나 단일 원인 test는 확정하지 않았다. 같은 진단 owner에 최대8개 완료 root 시간
-요약을 추가해 local canonical5/Race/Darwin compile을 확인했다. 새 native 검증은 남는다.
-C1b UV offline Python inventory는 cgroup→mountinfo→CPU quota→period→/dev/null의
-첫 거부를 관측했다. 앞 네 좁은 read 후보는 각각 C++105 PASS지만 inventory는 아직
-FAIL이다. /dev/null 후보의 build 요청은 자동 승인 검토가 반복된 privileged 시험·예외 누적
-위험으로 거부해 NOT_TESTED/사용자 결정 대기다. 이를 우회하지 않고 완료된 전용 시험
-자료를 정리했다. 사용자가 해당 fixed 후보의 빌드·격리 검증을 명시 승인해 canonical
-fresh build와 fixed inventory 시험을 재개했다. 다음 미관측 권한은 자동 허용하지 않는다.
-CI369는 Linux 기존45/native UV3.07s/CPU267.80s와 정리 PASS, macOS default6m/
-Required FAIL로 종료됐다. 완료 시간 요약을 담은 source66aa7e0를 기존 milestone branch에
-전달했으며 새 원격 결과는 남는다. 승인한 fixed read 후보는 fresh C++105/기본 native
-startup4.09s PASS이고 inventory는 Python child의 libpython read에서 FAIL이다. 조회 argv와
-역할을 조사하며 Python/CONTROL/clone 권한을 포괄 허용하지 않는다. M13-004만
-IN_PROGRESS이고 지원/acceptance는 유지한다.
+미연결이다. [macOS 진단 지도](./evidence/package-client-quarantine/macos-default-test-diagnostic-plan-20261022.md)의
+bounded 진행/완료 root 요약은 기존 한도·process cause를 유지한다. Source66aa7e0의
+[CI370 최종 결과](./evidence/package-client-quarantine/p1c-baseline-ci370-20261022.json)는
+same-tree checkout/Required 포함10SUCCESS·native macOS와 Linux 기존45/native UV3.20s·
+CPU209.50s/정리를 확인했다. 과거 timeout 원인이나 이후 candidate qualification은 아니다.
+승인한 fixed read 후보는 커밋3623d1e/fresh C++105/startup4.09s PASS이며 offline
+inventory의 다음 최초 거부는 Python child libpython read다. [C1c 수정 지도](./evidence/package-client-quarantine/p1c-uv-resolver-baseline-20261022.md)의
+exact clone/creator·첫 query exec·ARTIFACT 역할·readonly ABI/stdlib 후보를 구현 중이다.
+초기 false exec-origin 전제는 실제 pinned kernel의 OriginExec 상속에 맞게 교정한다.
+Native 최소 empty-target query 검증은 아직 남고 전체 inventory 성공으로 확대하지 않는다.
+M13-004/P1만 IN_PROGRESS이며 production 지원/acceptance는 계속 미완료다.
+후속 [CI371](./evidence/package-client-quarantine/p1c-checkpoint-ci371-20261022.json)은
+source3623d1e/same tree의 Linux 기존45·UV3.67s/CPU196.37s/정리는 PASS, macOS
+47started/47finished·active0 뒤 default6m/Required FAIL이다. [종료 상태·완료 gap 진단](./evidence/package-client-quarantine/macos-terminal-local-20261022.json)은
+canonical5·Race15.425s/Darwin compile PASS이며 새 native는 남는다. C1c는 actual
+query 역할을 관측했고 ABI·VM/own maps·UTC와 UV parent의 exact Python image data
+read 후보를 C++106으로 검증 중이다. 개별 첫 거부·완료 자료 정리는 P1c 지도가 소유한다.
+C1c parent-image 후보의 fresh C++106/startup3.91s/query4.10s·complete trace31은 로컬
+PASS다. Whole-image inventory 진단은 초기 commit/raw로만 보존하고 실제로 통과한
+startup/empty-target 두 fixture만 CI에 연결한다. Source 정리 후 final replay도 startup3.73s/query3.96s·complete trace29/31로 PASS다.
+새 원격 qualification은 남는다. 다음 구현은 같은 P1c의 production native 선택/data-reader 연결이다.
+
+
 공개 채널 이름·publisher binding·PR38/main CI·배포는 기존 미완료로 남는다.
 
 ### Runtime upgrade maintenance — 2026-10-15 priority change
