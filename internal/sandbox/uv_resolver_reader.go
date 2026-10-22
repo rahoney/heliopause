@@ -36,28 +36,67 @@ func (r *PyPIResolver) bindUVNativeSelection(ctx context.Context, reference doma
 	if err != nil {
 		return domain.DependencyResolution{}, err
 	}
+	policy := artifactpypi.PublicPyPIProfile().ResourcePolicy()
+	err = r.withUVArchiveInputs(ctx, selected, func(inputs []artifactpypi.UVWheelInput, pages []artifactpypi.SimpleProject) error {
+		graph, err := lock.BindWheels(inputs, pages, target, policy.WheelLimits())
+		if err != nil {
+			return err
+		}
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		sum := sha256.Sum256(native.lock)
+		digest, err := domain.NewSHA256Digest(hex.EncodeToString(sum[:]))
+		if err != nil {
+			return err
+		}
+		resolution, err = domain.NewDependencyResolution(graph, UVResolverRuntimeIdentity(), digest)
+		return err
+	})
+	if err != nil {
+		return domain.DependencyResolution{}, err
+	}
+	return resolution, nil
+}
+
+// Archive bytes and metadata stay inside one bounded workspace/session until
+// the actual consumer finishes its independent binding. No solver is run here.
+func (r *PyPIResolver) withUVArchiveInputs(ctx context.Context, selected []artifactpypi.UVLockedWheel, operation func([]artifactpypi.UVWheelInput, []artifactpypi.SimpleProject) error) (resultErr error) {
+	if r == nil || r.runner == nil || ctx == nil || operation == nil || r.profile.Source() != artifactpypi.PublicPyPIProfile().Source() {
+		return errors.New("uv independent archive reader is unavailable")
+	}
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	if len(selected) == 0 {
+		if err := operation([]artifactpypi.UVWheelInput{}, []artifactpypi.SimpleProject{}); err != nil {
+			return err
+		}
+		return ctx.Err()
+	}
+	runtime := PinnedPythonRuntime()
 	underlying := r.runner
 	if admitted, ok := underlying.(*admissionAwareCommandRunner); ok {
 		underlying = admitted.runner
 	}
 	if _, ok := underlying.(streamingDockerOutput); !ok {
-		return domain.DependencyResolution{}, errors.New("uv archive stream transport is unavailable")
+		return errors.New("uv archive stream transport is unavailable")
 	}
 	stream, ok := r.runner.(streamingDockerOutput)
 	if !ok {
-		return domain.DependencyResolution{}, errors.New("uv admitted archive stream transport is unavailable")
+		return errors.New("uv admitted archive stream transport is unavailable")
 	}
 	policy := artifactpypi.PublicPyPIProfile().ResourcePolicy()
 	var total int64
 	for _, wheel := range selected {
 		if wheel.Size <= 0 || wheel.Size > policy.MaxGraphCompressed()-total {
-			return domain.DependencyResolution{}, errors.New("uv selected archive budget exceeds bounds")
+			return errors.New("uv selected archive budget exceeds bounds")
 		}
 		total += wheel.Size
 	}
 	workspace, err := os.MkdirTemp("", "haa-uv-reader-")
 	if err != nil {
-		return domain.DependencyResolution{}, errors.New("uv private archive workspace unavailable")
+		return errors.New("uv private archive workspace unavailable")
 	}
 	var archives []*os.File
 	defer func() {
@@ -67,16 +106,15 @@ func (r *PyPIResolver) bindUVNativeSelection(ctx context.Context, reference doma
 		}
 		cleanupErr = errors.Join(cleanupErr, os.RemoveAll(workspace))
 		if cleanupErr != nil {
-			resolution = domain.DependencyResolution{}
 			resultErr = errors.Join(resultErr, fmt.Errorf("uv archive workspace cleanup failed: %w", cleanupErr))
 		}
 	}()
 	if err := artifactpypi.CheckTemporaryDisk(workspace, policy); err != nil {
-		return domain.DependencyResolution{}, err
+		return err
 	}
-	return r.withPythonResolverSession(ctx, reference, func(ctx context.Context, container string, actual PythonRuntime) (domain.DependencyResolution, error) {
+	return r.withPythonResolverSourceSession(ctx, r.profile.Source(), func(ctx context.Context, container string, actual PythonRuntime) error {
 		if actual != runtime {
-			return domain.DependencyResolution{}, errors.New("uv independent reader runtime differs from native target")
+			return errors.New("uv independent reader runtime differs from native target")
 		}
 		ctx, cancel := context.WithTimeout(ctx, pypiResolverTimeout)
 		defer cancel()
@@ -85,20 +123,20 @@ func (r *PyPIResolver) bindUVNativeSelection(ctx context.Context, reference doma
 		for _, wheel := range selected {
 			project, version, _, _, _, err := artifactpypi.ParseWheelFilename(wheel.Filename)
 			if err != nil {
-				return domain.DependencyResolution{}, err
+				return err
 			}
 			metadataURL, err := artifactpypi.UVReleaseMetadataURL(project, version)
 			if err != nil {
-				return domain.DependencyResolution{}, err
+				return err
 			}
 			body, err := r.runner.Output(ctx, "docker", boundaryExecArguments(container, boundaryLaunchMode, "python", "-I", "-c", uvDataFetchScript,
 				metadataURL, "json", strconv.Itoa(uvReleaseMetadataLimit), "-1")...)
 			if err != nil {
-				return domain.DependencyResolution{}, uvReaderFailure{"read uv independent release metadata failed", err}
+				return uvReaderFailure{"read uv independent release metadata failed", err}
 			}
 			page, err := artifactpypi.ParseUVReleaseMetadata(project, version, body)
 			if err != nil {
-				return domain.DependencyResolution{}, err
+				return err
 			}
 			declared := false
 			for _, file := range page.Files() {
@@ -107,38 +145,29 @@ func (r *PyPIResolver) bindUVNativeSelection(ctx context.Context, reference doma
 				}
 			}
 			if !declared {
-				return domain.DependencyResolution{}, errors.New("uv selected archive differs from independent release metadata")
+				return errors.New("uv selected archive differs from independent release metadata")
 			}
 			pages = append(pages, page)
 			file, err := os.CreateTemp(workspace, "archive-")
 			if err != nil {
-				return domain.DependencyResolution{}, errors.New("uv private archive file unavailable")
+				return errors.New("uv private archive file unavailable")
 			}
 			archives = append(archives, file)
 			output := &uvArchiveOutput{file: file, remaining: wheel.Size}
 			commandErr := stream.RunOutput(ctx, output, "docker", boundaryExecArguments(container, boundaryLaunchMode, "python", "-I", "-c", uvDataFetchScript,
 				wheel.URL, "archive", strconv.FormatInt(wheel.Size, 10), strconv.FormatInt(wheel.Size, 10))...)
 			if err := errors.Join(output.failure, commandErr, ctx.Err()); err != nil {
-				return domain.DependencyResolution{}, uvReaderFailure{"read uv selected archive failed", err}
+				return uvReaderFailure{"read uv selected archive failed", err}
 			}
 			if output.remaining != 0 || output.failed {
-				return domain.DependencyResolution{}, errors.New("uv selected archive stream size differs from lock")
+				return errors.New("uv selected archive stream size differs from lock")
 			}
 			inputs = append(inputs, artifactpypi.UVWheelInput{URL: wheel.URL, Reader: file, Size: wheel.Size})
 		}
-		graph, err := lock.BindWheels(inputs, pages, target, policy.WheelLimits())
-		if err != nil {
-			return domain.DependencyResolution{}, err
+		if err := operation(inputs, pages); err != nil {
+			return err
 		}
-		if err := ctx.Err(); err != nil {
-			return domain.DependencyResolution{}, err
-		}
-		sum := sha256.Sum256(native.lock)
-		digest, err := domain.NewSHA256Digest(hex.EncodeToString(sum[:]))
-		if err != nil {
-			return domain.DependencyResolution{}, err
-		}
-		return domain.NewDependencyResolution(graph, UVResolverRuntimeIdentity(), digest)
+		return ctx.Err()
 	})
 }
 

@@ -70,6 +70,7 @@ func TestUVPublicNativeResolverIntegration(t *testing.T) {
 		}
 		t.Logf("uv_public_graph reference=%s nodes=%d edges=%d runtime=%s", test.locator, len(result.Graph().Nodes()), len(result.Graph().Edges()), result.RuntimeIdentity())
 	}
+	testUVPublicCompleteSelections(t, resolver)
 }
 
 // Original metadata is an inert selection fixture, not enrollment authority.

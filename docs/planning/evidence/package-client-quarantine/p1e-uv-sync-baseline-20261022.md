@@ -310,3 +310,54 @@ complete source/flag/runtime/target/native lock 바꿔치기·empty payload 거�
 실제 native public 두 독립 root·complete dependency closure·missing dependency 거부·
 explicit empty/skip 분기를 기존 고정 실행·network-policy caller·관찰기에서 검증한다.
 이 단계도 guard/staging/사용자 반입 성공이나 P1 전체 acceptance로 확대하지 않는다.
+
+### Full Race에서 드러난 기존 fixture 경합 — 수정 전 확인
+
+C3e2b 첫 canonical5/기존 fuzz는 PASS지만 full sandbox/artifact Race27.809s는
+기존 admission·SharedObserver 테스트7개에서 DATA RACE로 실패했다. Artifact는 PASS다.
+변경 전344af5e의 정확한 전체 source를 별도 임시 디렉터리에 추출하고 같은 SDK/flags로
+해당7개만 대조해8.013s/exit1·6개 경합을 재현했다. 나머지1개는 대조에서 경합이 보고되지
+않았으며 재실행으로 성공/실패를 강제하지 않는다. 해당 테스트·admission/observer/
+supervisor owner5파일은 현재 후보와 baseline bytes가 같다. 새 UV 변경의 원인으로
+단정하지 않으며 원본 first failure와 별도 baseline을 보존한다.
+
+정확한 교정은 테스트 fixture에 한정한다. `direct_exec_admission_test.go`의 다섯 테스트는
+Unix peer goroutine의 일반 int counter를 caller가 동기화 없이 읽는다. 기존 sync/atomic의
+Int32 Add/Load로 같은 횟수와 fail-closed 의미를 검사한다. `shared_observer_test.go`의
+두 live receiver 테스트는 goroutine 시작 뒤 diagnostic pointer/bytes.Buffer를 직접
+대입한다. 기존 supervisor setter와 같은 observer.mu 아래 sink를 설정한다. 실제 receive의
+두 진단 writer는 이미 같은 mutex 아래 쓰고 done을 닫기 전에 완료하므로 production
+writer/ledger·완료 순서·budget/timeout을 바꾸지 않는다. 단독 aggregation fixture는 concurrent
+receiver가 없으므로 변경하지 않는다. 같은7개 Race와 full sandbox/artifact Race, canonical
+profile을 확인하기 전 해결로 기록하지 않는다. 이 fixture 교정은 별도 커밋으로 분리한다.
+
+동일 two-file 교정 뒤 baseline 전체 sandbox/artifact Race20.993s와 새 후보 전체 Race21.253s는
+모두 PASS다. Canonical format/Quick42.492s/security/docs/workflow도 PASS다. 원본7개 실패·
+baseline6개 재현을 삭제하거나 단순 재시도 성공으로 바꾸지 않았다.
+[Fixture-only 영수증](./p1e-uv-observer-fixture-race-20261023.json)이 source/check를 소유한다.
+대조용 source2020파일/33,549,068B와 archive는 정리했고 active source/SDK/cache만 유지한다.
+
+## C3e1 원격 종료 / C3e2b 현재 경계
+
+[CI384](./p1e-uv-project-lock-ci384-20261023.json)는 source12d9a50과 같은 전체 checkout
+tree32e250의 Required 포함10SUCCESS다. Linux51·native UV 기존 소비자·CLI209.14s·
+CPU full289.19s와 native macOS/Go1.26.10·취약점, helper5wait0/final confirmed cleanup을
+확인했다. C3e1의 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED는 해당 adapter 범위에서
+YES이고 MISSING은 없다. 이 결과에 후속 codec0502a95나 C3e2b source는 포함되지 않는다.
+
+C3e2b는 위 기존 native/source session·archive reader의 본문을 재사용해 existing
+ProjectLockUpdateResolver에 complete 선택을 연결했다. Runtime control은 generated 전체
+RuntimeLockSHA256과 UV resolver tuple을 bind하며 실제 producer는 고정 tool/runtime를
+검증한다. Complete empty collector는 유효 explicit-empty lock·fresh site·no payload와
+명시 empty census를 확인하고 기존 single empty refusal은 유지한다. Source intent와
+전체 archive/독립 metadata/Requires-Dist를 확인한 뒤에만 primary-free snapshot을 만든다.
+
+이 resolver 단위의 IMPLEMENTED=YES / WIRED=YES(existing resolver port; CLI는 NO) /
+QUALIFIED=NO(로컬만) / ACCEPTANCE_CLOSED=NO다. Canonical5/fuzz·fixture 교정 뒤 full
+sandbox/artifact Race가 PASS이며 새 same-source actual qualification이 MISSING이다.
+[Native source 로컬 영수증](./p1e-uv-native-source-local-20261023.json)이 exact source·
+체크와 실제 native 미실행 경계를 소유한다.
+기존 필수 public UV integration에 two roots·전체 요청 closure·누락 dependency 거부·
+명시 empty requirements/pylock 다섯 사례를 연결했고 실제 실행은 새 후보 검증에서 확인한다.
+실제 source/target guard·기존 모든 native owner proof·complete cache/transaction·SKIP 보고·
+CLI는 C3e3이며 P1 전체와 Go1.27.3 순서는 유지한다.

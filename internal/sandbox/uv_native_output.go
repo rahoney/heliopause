@@ -87,6 +87,28 @@ func scanUVNativeOutput(input io.Reader) (uvNativeOutput, error) {
 }
 
 func scanUVNativeOutputWithInput(input io.Reader, expectedInput map[string][]byte) (uvNativeOutput, error) {
+	return scanUVNativeSelectionOutput(input, expectedInput, false)
+}
+
+// Only this complete-project entry may return a present empty census. The
+// native lock must explicitly select no packages, and its private site must
+// contain no payload (the native empty auxiliary lock is not payload).
+func scanUVCompleteNativeOutput(input io.Reader, python string) (uvNativeOutput, error) {
+	result, err := scanUVNativeSelectionOutput(input, nil, true)
+	if err != nil {
+		return uvNativeOutput{}, err
+	}
+	lock, err := artifactpypi.ParseUVProjectLock(result.lock, python)
+	if err != nil || len(lock.Packages()) != len(result.controls) {
+		return uvNativeOutput{}, errors.New("UV complete native census differs from explicit lock")
+	}
+	if result.controls == nil {
+		result.controls = []artifactpypi.UVInstalledWheelControls{}
+	}
+	return result, nil
+}
+
+func scanUVNativeSelectionOutput(input io.Reader, expectedInput map[string][]byte, allowEmpty bool) (uvNativeOutput, error) {
 	if input == nil {
 		return uvNativeOutput{}, errors.New("uv native output stream is missing")
 	}
@@ -108,6 +130,7 @@ func scanUVNativeOutputWithInput(input io.Reader, expectedInput map[string][]byt
 	controls := make(map[string]*artifactpypi.UVInstalledWheelControls)
 	var result uvNativeOutput
 	var entries, expanded, metadataBytes int64
+	var sitePayload bool
 	for {
 		header, err := archive.Next()
 		if errors.Is(err, io.EOF) {
@@ -133,6 +156,9 @@ func scanUVNativeOutputWithInput(input io.Reader, expectedInput map[string][]byt
 			if header.Size != 0 || (!root && name != "site" && !strings.HasPrefix(name, "site/") && !inputDirectories[name]) {
 				return uvNativeOutput{}, errors.New("uv native directory is unsupported")
 			}
+			if strings.HasPrefix(name, "site/") {
+				sitePayload = true
+			}
 			continue
 		}
 		original, isInput := expectedInput[name]
@@ -141,6 +167,9 @@ func scanUVNativeOutputWithInput(input io.Reader, expectedInput map[string][]byt
 			return uvNativeOutput{}, errors.New("uv native file type, location or size is unsupported")
 		}
 		expanded += header.Size
+		if strings.HasPrefix(name, "site/") && !auxiliaryLock {
+			sitePayload = true
+		}
 		if isInput {
 			if header.Mode != 0400 || header.Size != int64(len(original)) {
 				return uvNativeOutput{}, errors.New("UV original selection input identity changed")
@@ -195,7 +224,7 @@ func scanUVNativeOutputWithInput(input io.Reader, expectedInput map[string][]byt
 	if err := drainUVTarPadding(bounded); err != nil {
 		return uvNativeOutput{}, err
 	}
-	if bounded.N == 0 || len(result.lock) == 0 || len(controls) == 0 {
+	if bounded.N == 0 || len(result.lock) == 0 || (!allowEmpty && len(controls) == 0) || (allowEmpty && len(controls) == 0 && (!seen["site"] || sitePayload)) {
 		return uvNativeOutput{}, errors.New("uv native output is missing or exceeds bounds")
 	}
 	for name := range expectedInput {

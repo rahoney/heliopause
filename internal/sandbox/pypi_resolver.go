@@ -257,30 +257,48 @@ func (r *PyPIResolver) resolveDependencies(ctx context.Context, reference domain
 
 // withPythonResolverSession keeps the existing PyPI/PyTorch lifecycle and
 // fail-closed cleanup shared with the independent UV metadata/archive reader.
-func (r *PyPIResolver) withPythonResolverSession(ctx context.Context, reference domain.ArtifactReference, operation func(context.Context, string, PythonRuntime) (domain.DependencyResolution, error)) (resolution domain.DependencyResolution, resultErr error) {
-	if r == nil || r.runner == nil || r.endpoints == nil || r.observer == nil || r.probe == nil || ctx == nil || operation == nil || reference.Source() != r.profile.Source() {
+func (r *PyPIResolver) withPythonResolverSession(ctx context.Context, reference domain.ArtifactReference, operation func(context.Context, string, PythonRuntime) (domain.DependencyResolution, error)) (domain.DependencyResolution, error) {
+	if operation == nil {
 		return domain.DependencyResolution{}, errors.New("valid PyPI resolver request is required")
+	}
+	var resolution domain.DependencyResolution
+	err := r.withPythonResolverSourceSession(ctx, reference.Source(), func(ctx context.Context, container string, runtime PythonRuntime) error {
+		var err error
+		resolution, err = operation(ctx, container, runtime)
+		return err
+	})
+	if err != nil {
+		return domain.DependencyResolution{}, err
+	}
+	return resolution, nil
+}
+
+// Complete-project readers enter with their actual source, without a dummy
+// requested artifact. The original lifecycle and fail-closed cleanup are shared.
+func (r *PyPIResolver) withPythonResolverSourceSession(ctx context.Context, source domain.SourceID, operation func(context.Context, string, PythonRuntime) error) (resultErr error) {
+	if r == nil || r.runner == nil || r.endpoints == nil || r.observer == nil || r.probe == nil || ctx == nil || operation == nil || source != r.profile.Source() {
+		return errors.New("valid PyPI resolver request is required")
 	}
 	capability, err := r.probe(ctx)
 	if err != nil || !capability.Available || capability.Runtime != PinnedPythonRuntime() {
-		return domain.DependencyResolution{}, errors.New("PyPI resolver runtime is unavailable")
+		return errors.New("PyPI resolver runtime is unavailable")
 	}
 	endpointNames := artifactpypiProfileEndpoints(r.profile)
 	addressesByName, err := r.endpoints.Resolve(ctx, endpointNames)
 	if err != nil {
-		return domain.DependencyResolution{}, errors.New("PyPI resolver endpoint preflight failed")
+		return errors.New("PyPI resolver endpoint preflight failed")
 	}
 	addresses, hostArguments, err := resolverNetworkArguments(r.profile, addressesByName)
 	if err != nil {
-		return domain.DependencyResolution{}, errors.New("PyPI resolver endpoint preflight is unsafe")
+		return errors.New("PyPI resolver endpoint preflight is unsafe")
 	}
 	policy, err := NewResolverNetworkPolicy(r.runner, r.policy)
 	if err != nil {
-		return domain.DependencyResolution{}, err
+		return err
 	}
 	network, err := policy.Prepare(ctx, addresses)
 	if err != nil {
-		return domain.DependencyResolution{}, err
+		return err
 	}
 	containerID := ""
 	var trace TraceReader
@@ -309,7 +327,6 @@ func (r *PyPIResolver) withPythonResolverSession(ctx context.Context, reference 
 			cleanupErr = errors.Join(cleanupErr, closeErr)
 		}
 		if cleanupErr != nil {
-			resolution = domain.DependencyResolution{}
 			if resultErr != nil {
 				resultErr = errors.Join(resultErr, cleanupErr)
 			} else {
@@ -320,24 +337,24 @@ func (r *PyPIResolver) withPythonResolverSession(ctx context.Context, reference 
 
 	created, err := r.runner.Output(ctx, "docker", pypiCreateArguments(network, hostArguments)...)
 	if err != nil || !containerIDPattern.MatchString(strings.TrimSpace(string(created))) {
-		return domain.DependencyResolution{}, errors.New("create PyPI resolver container failed")
+		return errors.New("create PyPI resolver container failed")
 	}
 	containerID = strings.TrimSpace(string(created))
 	trace, err = startTrace(ctx, r.observer, containerID, resolverObserverProfile(r.profile))
 	if err != nil {
-		return domain.DependencyResolution{}, errors.New("start PyPI resolver observer failed")
+		return errors.New("start PyPI resolver observer failed")
 	}
 	if _, err := r.runner.Output(ctx, "docker", "start", containerID); err != nil {
-		return domain.DependencyResolution{}, errors.New("start PyPI resolver container failed")
+		return errors.New("start PyPI resolver container failed")
 	}
 	if err := awaitMountAnchors(ctx, r.observer, containerID); err != nil {
-		return domain.DependencyResolution{}, errors.New("PyPI resolver observer mount anchors failed")
+		return errors.New("PyPI resolver observer mount anchors failed")
 	}
 	if err := verifyPyPIResolverRuntime(ctx, r.runner, containerID, capability.Runtime); err != nil {
-		return domain.DependencyResolution{}, err
+		return err
 	}
 	if err := preparePyPIResolverProject(ctx, r.runner, containerID); err != nil {
-		return domain.DependencyResolution{}, err
+		return err
 	}
 	return operation(ctx, containerID, capability.Runtime)
 }

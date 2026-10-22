@@ -89,7 +89,25 @@ func (r *UVResolver) resolveNativeSelection(ctx context.Context, reference domai
 	return r.resolveNativeSelectionWithInput(ctx, reference, request, nil)
 }
 
-func (r *UVResolver) resolveNativeSelectionWithInput(ctx context.Context, reference domain.ArtifactReference, request string, selected *uvInstalledSelection) (result uvNativeOutput, resultErr error) {
+func (r *UVResolver) resolveNativeSelectionWithInput(ctx context.Context, reference domain.ArtifactReference, request string, selected *uvInstalledSelection) (uvNativeOutput, error) {
+	return r.withUVNativeSession(ctx, func(ctx context.Context, session uvNativeSession) (uvNativeOutput, error) {
+		return r.materializeUVSelection(ctx, reference, request, selected, session)
+	})
+}
+
+type uvNativeSession struct {
+	container string
+	runtime   PythonRuntime
+	platform  string
+	output    closureVolume
+}
+
+// Both actual native consumers share the fixed tool, network/observer and
+// volume lifecycle, including clearing output when any cleanup is unproven.
+func (r *UVResolver) withUVNativeSession(ctx context.Context, operation func(context.Context, uvNativeSession) (uvNativeOutput, error)) (result uvNativeOutput, resultErr error) {
+	if r == nil || r.reader == nil || ctx == nil || operation == nil {
+		return uvNativeOutput{}, errors.New("uv native session is unavailable")
+	}
 	reader := r.reader
 	capability, err := reader.probe(ctx)
 	if err != nil {
@@ -226,8 +244,15 @@ func (r *UVResolver) resolveNativeSelectionWithInput(ctx context.Context, refere
 	}
 	selection, cancel := context.WithTimeout(ctx, pypiResolverTimeout)
 	defer cancel()
-	common := []string{"--no-build", "--no-config", "--no-cache", "--no-python-downloads", "--no-managed-python", "--python", "/usr/local/bin/python", "--index-url", artifactpypi.PublicPyPIProfile().IndexURL()}
-	compile := append([]string{"pip", "compile", "-", "--format", "pylock.toml", "--output-file", pythonSitePath + "/pylock.toml", "--python-version", capability.Runtime.PythonVersion, "--python-platform", platform}, common...)
+	return operation(selection, uvNativeSession{container, capability.Runtime, platform, output})
+}
+
+func (r *UVResolver) materializeUVSelection(selection context.Context, reference domain.ArtifactReference, request string, selected *uvInstalledSelection, session uvNativeSession) (result uvNativeOutput, resultErr error) {
+	reader := r.reader
+	container, output, platform := session.container, session.output, session.platform
+	var err error
+	common := uvNativeCommonArguments()
+	compile := append([]string{"pip", "compile", "-", "--format", "pylock.toml", "--output-file", pythonSitePath + "/pylock.toml", "--python-version", session.runtime.PythonVersion, "--python-platform", platform}, common...)
 	input := reader.runner.(inputCommandRunner)
 	var expectedInput map[string][]byte
 	if selected != nil {
@@ -273,7 +298,7 @@ func (r *UVResolver) resolveNativeSelectionWithInput(ctx context.Context, refere
 	if err != nil {
 		return uvNativeOutput{}, err
 	}
-	if _, err := artifactpypi.ParseUVLock(reference, lockSnapshot, capability.Runtime.PythonVersion); err != nil {
+	if _, err := artifactpypi.ParseUVLock(reference, lockSnapshot, session.runtime.PythonVersion); err != nil {
 		return uvNativeOutput{}, err
 	}
 	sync := append([]string{"pip", "sync", pythonSitePath + "/pylock.toml", "--target", pythonSitePath + "/site", "--link-mode", "copy"}, common...)
@@ -300,6 +325,10 @@ func (r *UVResolver) resolveNativeSelectionWithInput(ctx context.Context, refere
 		return uvNativeOutput{}, err
 	}
 	return result, nil
+}
+
+func uvNativeCommonArguments() []string {
+	return []string{"--no-build", "--no-config", "--no-cache", "--no-python-downloads", "--no-managed-python", "--python", "/usr/local/bin/python", "--index-url", artifactpypi.PublicPyPIProfile().IndexURL()}
 }
 
 func removeOwnedUVResolverContainer(ctx context.Context, runner CommandRunner, name, owner, expectedID string) error {

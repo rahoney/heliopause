@@ -71,6 +71,7 @@ func ParseUVSyncInput(format UVSyncSourceFormat, body []byte, allowEmpty bool, p
 }
 
 func (s UVSyncInput) Valid() bool                      { return s.python != "" }
+func (s UVSyncInput) Python() string                   { return s.python }
 func (s UVSyncInput) SourceFormat() UVSyncSourceFormat { return s.format }
 func (s UVSyncInput) Body() []byte                     { return append([]byte(nil), s.body...) }
 func (s UVSyncInput) AllowEmptyRequirements() bool     { return s.allowEmpty }
