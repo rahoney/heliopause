@@ -469,3 +469,38 @@ IMPLEMENTED=YES / WIRED=YES(port), production CLI=NO / QUALIFIED=LOCAL ONLY /
 ACCEPTANCE_CLOSED=NO다. 다음은 공통 owner 추출 후보의 실제 pip/native/Required CI이며,
 그 뒤 ordinary installed-aware UV install·CLI UPDATE와 실제 대상 반입을 연결한다.
 Native UV adoption·complete/multi-root/empty sync와 P1 전체 acceptance는 남는다.
+
+
+## C3c2a 공유 owner의 CI379 검증 종료
+
+[최종 원격 증거](./p1c-managed-guard-ci379-20261022.json)는 source421764a와 checkout7f3480c의
+전체 tree6e057bf 일치 및 Required 포함10SUCCESS다. 기존 pip/named·UV fresh/public,
+native 세 intent24.31s·Linux51/CPU277.12s, macOS/Vulnerability·helper5wait0와 최종
+confirmed cleanup를 확인했다. 공통 owner 추출의 원격 회귀 gap은 닫혔다. UV managed
+대상으로의 실제 반입/CLI는 아직 연결 전이므로 C3c2 전체 acceptance는 열려 있다.
+
+## C3c2b — installed-aware 일반 설치와 CLI 업데이트 연결
+
+Baseline421764a. Producer와 기존 empty-install 서비스/CLI/transaction은 이미 구현됐고,
+C3c2a managed guard port도 로컬/공통 원격 회귀를 통과했다. 이를 다시 구현하지 않는다.
+새 binding은 IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO다.
+MISSING은 아래 일반 설치·두 upgrade intent 연결, 설명/부정 검사와 실제 CLI 반입이다.
+
+| 위치 / symbol | 정확한 변경과 검증 |
+| --- | --- |
+| promotion/pypi_update.go BeginInstallUpdate | transaction 획득 이후의 기존 snapshot/ledger/retired/native 준비 본문만 private held-transaction helper로 추출. 기존 pip caller와 UV 일반 설치가 같은 보호 구간을 재사용하고 unlock/relock하지 않음 |
+| promotion/uv_install.go BeginInstall | 같은 guard 안에서 empty는 기존 fresh 경로, nonempty는 native update resolver port와 UVInstallSelection으로 기존 helper에 전달. 외부 reference/context를 보존하는 InstallSession wrapper가 내부 bare reference로만 변환하며 UPDATE marker를 노출하지 않음. 실패/Close는 기존 transaction의 idempotent 수명 유지 |
+| cli/package_client.go descriptor / root.go shared binding | private typed upgrade mode를 descriptor에서 결정하고 source와 분리. 기존 pip는 root-only, UV는 --upgrade/-U(선택 closure 전체)와 --upgrade-package <root>(지정 root만)로 고정 서비스 선택. 일반 설치는 INSTALL, flags는 UPDATE; Core에 client enum 추가 없음 |
+| UV flag 검증 / 설명 | 두 upgrade 옵션 동시 지정·중복 값·다른 package/constraint를 flag 값에 지정·unknown option은 backend 전에 거부. 초기 단일-primary 범위의 --upgrade-package는 요청 root의 bare name만 허용. Root requirement는 기존 bare/exact 구문. 모든 UV native 옵션 호환을 주장하지 않으며 EN/KO와 다른5언어 fallback 갱신 |
+| bootstrap/python_client.go bindUVPipPackageClient | 기존 qualified resolver/검사/Policy/staging/promoter를 재사용. 두 fixed UVUpdatePreparation + 기존 Application InstallUpdateService를 구성하고 typed CLI binding에 전달. Pip/PyTorch default/named/native와 UV derivation=false 유지 |
+| promotion/CLI/bootstrap tests 및 기존 UV 실제 integration | 일반 nonempty/new root/no-op·세 intent/operation·인수 경계·concurrent guard·변조/rollback을 검사. 실제 authenticated CLI에서 empty 설치→managed retain→명시 update→no-op과 unrelated 파일 보존, 각 검사/ALLOW/Manifest4controls/UV runtime·old 제거를 확인. 첫 actual fault 뒤 큰 후속 입력 중단 |
+
+두 번째 검토: 일반 설치를 UPDATE로 바꾸거나 shared guard를 풀고 새로 잡으면 안 된다.
+내부 frozen input의 bare reference와 사용자의 exact request는 wrapper에서만 대응한다.
+UV --upgrade는 선택한 root closure를 갱신하며 venv 전체의 임의 패키지를 가짜 graph root로
+추가하지 않는다. 다른 dependency를 --upgrade-package로 지정하는 옵션은 이번 단일-primary
+binding 범위 밖이며 조기 거부한다. Native ownership 인계는 여전히 별도이고 실제 native
+설치가 selected graph에 포함되면 기존 explicit refusal을 유지한다. No-op도 새 검사/승인을
+요구한다. Sync는 기존 project/explicit-empty 모델의 다음 gap으로 남긴다.
+Canonical format/quick/security/docs/workflow와 전체 관련 Race를 먼저 수행하고 source CI의
+실제 UV CLI와 기존 pip/macOS/cleanup을 확인한다. CI 대기는 clock.sleep으로 유지·조회한다.

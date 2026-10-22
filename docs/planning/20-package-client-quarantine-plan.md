@@ -2,7 +2,7 @@
 
 2026-10-21, baseline `72a90760bb3c46987642b5d0b3eda450a60310a0`.
 [설계](../user-journey-cli-ia/09-package-client-quarantine.md)가 기능·보안 경계를 소유한다.
-사전 설계 이후 P1의 uv 자료 경계를 구현하고 로컬 검증했다. Production runtime·CLI 연결은 아직 미완료다.
+사전 설계 이후 P1의 native UV 선택과 빈 기존 venv의 CLI 반입을 실제 검증했다. Installed-aware 설치/업데이트 연결을 검증 중이며 native ownership·complete sync는 남는다. 실제 범위는 Queue와 각 source 영수증을 따른다.
 Queue의 M13-004만 IN_PROGRESS다. 한 확장 범위를 작은 검증 가능한 단계로 진행한다.
 
 ## 1. Repository baseline audit

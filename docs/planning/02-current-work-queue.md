@@ -15,7 +15,7 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — native same-runtime self-quarantine update IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; actual signed rc6 normal/cancellations/fresh replay passed; channel scope remains
-Next action: P1 uv pip IN_PROGRESS — C3c1 installed-aware native producer QUALIFIED/ACCEPTANCE_CLOSED (CI378 ten SUCCESS); C3c2 managed target guard/promotion, CLI update, native ownership and complete sync remain
+Next action: P1 uv pip IN_PROGRESS — CI379 shared guard regression ten SUCCESS; C3c2b installed-aware install/CLI upgrade binding active; native ownership and complete sync remain
 After P1: M13-004/G127 — Go 1.27.3 coordinated migration NOT_STARTED; must finish before P2
 After G127: P2 pnpm, then P3..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
@@ -191,6 +191,7 @@ canonical5/관련 Race3개 PASS다. Native resolver/CI는 연결했고 다음은
 검증이다. Original metadata 한도와 selected graph 한도는 구분했고 actual native 성공은 아직 아니다.
 [CI378 종료](./evidence/package-client-quarantine/p1c-installed-producer-ci378-20261022.json)는 같은 전체 tree와 Required 포함10SUCCESS, 실제 native 세 intent19.60s/4controls, Linux51/CPU231.72s·helper5wait0/최종 confirmed cleanup와 macOS/Vulnerability를 확인했다. C3c1 네 상태는 모두 YES다. 다음 C3c2a는 기존 original snapshot/held transaction과 UV 선택 controls를 연결하는 managed guard이며, CLI 변경·native adoption·sync는 후속이다. 정확한 지도와 두 번째 검토는 C3 leaf를 따른다.
 [C3c2a 로컬 결과](./evidence/package-client-quarantine/p1c-managed-guard-local-20261022.json)는 canonical5와 promotion/application/artifact-pypi 전체 Race PASS다. Managed UV guard port와 exact controls/lock/graph·기존 반입/rollback 연결은 구현했으며, 실제 shared pip 소비자/Required CI와 production CLI·actual UV target update는 미완료다. 그 원격 검증 뒤 C3c2b binding을 진행한다.
+[CI379](./evidence/package-client-quarantine/p1c-managed-guard-ci379-20261022.json)의 same-tree10SUCCESS와 실제 공통 소비자·macOS·정리로 해당 원격 gap을 닫았다. C3 leaf의 C3c2b 사전 감사/수정 지도/두 번째 검토대로 일반 installed-aware 설치와 두 UV upgrade intent를 연결한다. Native UV ownership과 sync·P1 전체는 아직 미완료다.
 
 
 
