@@ -76,3 +76,24 @@ compiler와 sandbox tuple을 바꿀 이익보다 원인 분리가 어렵게 되�
 P2..P7까지 기다리면 검증할 client가 더 늘어난다. 따라서 P1 다음 경계가 적절하다.
 정확한1.27.3 도구/gVisor 호환성은 아직 검증하지 않았으며 단순 버전 치환이나 짧은
 명령 하나로 완료된다고 약속하지 않는다. 실행 순서와 현재 상태의 단일 owner는 Queue다.
+
+## 2026-10-22 후속 요청 — 버전 혼용 방지와 구버전 정리
+
+기존 단일 owner/maintenance coordinator를 그대로 사용한다. 준비된 기반은 수작업 수정
+지점과 누락 위험을 줄이지만 새 Go 계열의 실제 SDK/gVisor/도구 호환성을 보장하거나
+필수 qualification 시간을 없애지는 않는다. 별도 compiler lock·임시 PATH fallback은 만들지 않는다.
+
+전환 완료 전에는 go.mod/Go image/generated identity/CI·release setup/tools setupGo뿐 아니라
+실제 SDK, quality binary build info, gVisor6개 member·observer의 capture/manifest와 설치 후
+readback을 같은 선택 버전에 대조한다. Configuration만 새 버전이고 실행 binary는 이전
+버전인 상태를 완료로 처리하지 않는다. 필요한 build-only 도구는 역할·compiler provenance를
+기존 정책대로 구분하며 다른 compiler가 silently 사용되지 않게 한다.
+
+구버전 SDK·build root·cache·다운로드·superseded bundle/observer·시험 환경은 inventory와
+최종 소비자를 기록한다. 새 버전 qualification/전환·복구 검증 뒤 현재 process/FD/maps/mount,
+설치/서비스·작업 문서의 실제 참조와 조회 오류0을 확인한 exact owned 대상만 삭제한다.
+Rollback/recovery가 아직 참조하는 실행 파일은 먼저 없애지 않고 검증된 전환 종료 시점에
+함께 retire한다. 원본 evidence·역사 fixture의 이전 버전 표기는 실행 잔재와 다르므로 보존한다.
+공유 사용자 cache/다른 프로젝트·불명확한 경로·global prune는 정리 범위에 포함하지 않는다.
+정리 후 남은 active SDK/tool/runtime identity, old 경로 부재와 설치·서비스 정상 readback을
+다시 확인하고 작은 증거만 남긴다. 현재 P1 작업 중인 active1.26.10 입력은 먼저 삭제하지 않는다.
