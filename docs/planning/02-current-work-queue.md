@@ -58,6 +58,15 @@ C1c parent-image 후보의 fresh C++106/startup3.91s/query4.10s·complete trace3
 PASS다. Whole-image inventory 진단은 초기 commit/raw로만 보존하고 실제로 통과한
 startup/empty-target 두 fixture만 CI에 연결한다. Source 정리 후 final replay도 startup3.73s/query3.96s·complete trace29/31로 PASS다.
 새 원격 qualification은 남는다. 다음 구현은 같은 P1c의 production native 선택/data-reader 연결이다.
+[C2 baseline/수정 지도](./evidence/package-client-quarantine/p1c-uv-native-producer-baseline-20261022.md)는
+기존 stdin admission·bounded tar와 isolated Python data reader를 재사용하는 단일-root
+producer의 실제 남은 작업을 분리한다. [C2 output 로컬 검증](./evidence/package-client-quarantine/p1c-uv-output-local-20261022.json)은
+native stdin→pylock→sync/list0과 named tmpfs의 bounded control transport, 새 collector/
+RFC822-WHEEL adapter의 canonical5·Race9.454s PASS를 확인했다. Guest-only /tmp의
+docker cp 실패는 별도 보존했고 두 probe의 소유 자원/완료 자료는 제거했다. 다음은 UV
+output volume의 실제 gVisor mount 연결과 typed-network native 선택·독립 data reader다.
+Production resolver/CLI는 아직 미연결이며 P1 acceptance는 열려 있다.
+
 
 
 공개 채널 이름·publisher binding·PR38/main CI·배포는 기존 미완료로 남는다.
