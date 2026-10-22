@@ -522,3 +522,19 @@ no-op3.11→새 packaging root, 각 전체 검사/ALLOW/반입·정확한 contro
 IMPLEMENTED=YES / WIRED=YES / QUALIFIED=LOCAL ONLY / ACCEPTANCE_CLOSED=NO다.
 같은 source의 actual CLI/native/macOS/Required가 다음이며 native ownership·sync는 남는다.
 Task TMPDIR0이고 새 Docker 시험 자원은 만들지 않았다. 필요한 SDK/quality/runtime은 유지한다.
+
+
+## C3c2b actual CI380 qualification 종료
+
+[최종 증거](./p1c-installed-cli-ci380-20261022.json)는 sourced1d4fdc와 checkoutcba3091의
+전체 treee54eeda 일치 및 Required 포함10SUCCESS를 확인했다. UV CLI 다섯 단계118.85s가
+각각 INSTALL/UPDATE·COMPLETED/ALLOW/반입 완료와 정확한0/4controls·UV runtime을
+통과했다. 원본 cfg/user file·무관한 설치를 보존하고 구버전 METADATA를 제거했으며,
+unsupported-original 거부의 target/Evidence 불변도 통과했다. 기존 Linux51/CPU293.60s,
+macOS/Vulnerability와 helper5wait0·최종 confirmed cleanup도 PASS다.
+
+C3c2b의 managed public UV 설치/업데이트 연결은 네 상태 모두 YES, 해당 MISSING은 없다.
+단일-node 실제 CLI 검증과 앞의 native/data-only closure semantics를 구분한다. Native
+ownership·complete/multi-root/empty sync와 전체 P1 qualification은 아직 남는다.
+로컬13f9fc4는 Queue와 native format 문서·JSON3경로만 변경한 별도 문서 후보다. 그 전체
+HEAD의 새 원격 CI를 위 결과로 주장하지 않는다. 기능 입력은 모두 sourced1d와 같다.

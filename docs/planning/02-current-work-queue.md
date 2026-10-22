@@ -15,7 +15,7 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — native same-runtime self-quarantine update IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; actual signed rc6 normal/cancellations/fresh replay passed; channel scope remains
-Next action: P1 uv pip IN_PROGRESS — CI379 shared guard regression ten SUCCESS; C3c2b installed-aware install/CLI upgrade binding active; native ownership and complete sync remain
+Next action: P1 uv pip IN_PROGRESS — CI380 managed UV CLI install/update ten SUCCESS; C3d native UV enrollment active, then complete/multi-root/empty sync and whole P1 qualification
 After P1: M13-004/G127 — Go 1.27.3 coordinated migration NOT_STARTED; must finish before P2
 After G127: P2 pnpm, then P3..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
@@ -194,6 +194,7 @@ canonical5/관련 Race3개 PASS다. Native resolver/CI는 연결했고 다음은
 [CI379](./evidence/package-client-quarantine/p1c-managed-guard-ci379-20261022.json)의 same-tree10SUCCESS와 실제 공통 소비자·macOS·정리로 해당 원격 gap을 닫았다. C3 leaf의 C3c2b 사전 감사/수정 지도/두 번째 검토대로 일반 installed-aware 설치와 두 UV upgrade intent를 연결한다. Native UV ownership과 sync·P1 전체는 아직 미완료다.
 [C3c2b 로컬 결과](./evidence/package-client-quarantine/p1c-installed-cli-local-20261022.json)는 canonical5/전체 관련5package Race PASS다. 일반 installed-aware INSTALL과 --upgrade/-U·--upgrade-package의 UPDATE를 기존 guard/검역/반입에 연결했고 actual authenticated CLI5단계·부정 검사를 기존 CI에 추가했다. 다음은 같은 source의 실제 CLI/Required 확인이며 아직 native qualification 완료가 아니다.
 CI 대기 중 [native UV 형식 감사](./evidence/package-client-quarantine/p1d-native-uv-ownership-baseline-20261022.md)의 자체 wheel/loopback14명령과 정리를 확인했다. Native public/adoption 또는 현재 CLI qualification으로 전용하지 않으며 C3c2b 완료 뒤의 구현 gap에 반영한다.
+[CI380 종료](./evidence/package-client-quarantine/p1c-installed-cli-ci380-20261022.json)는 동일 tree/Required10SUCCESS와 실제 UV CLI5단계118.85s·Linux51/CPU293.60s·macOS·정리를 확인했다. C3c2b 네 상태는 YES다. 다음 C3d는 위 native UV 감사의 기존 old-wheel proof·namespace 보호·native fixture 검증을 재사용한다. Sync와 P1 전체는 미완료다.
 
 
 
@@ -3562,8 +3563,8 @@ permanent installed CLI activation and publication remain separate; PR38 is draf
 
 ### M13-004 — convenience installation channels
 
-Current P1 substep: [C2 public producer](./evidence/package-client-quarantine/p1c-public-ci376-20261022.json) is qualified in its single-root scope. Source35c0f2d/CI376 has10SUCCESS, actual idna1node/requests5node·4edge and existing Linux/macOS qualification.
-Next: [C3 guarded client gap](./evidence/package-client-quarantine/p1c-guarded-client-baseline-20261022.md), now ready for sequential implementation. Application/guarded install-upgrade-sync/CLI remain unwired. P2..P7 remain NOT_STARTED.
+Current P1 substep: [C3c2b managed UV CLI](./evidence/package-client-quarantine/p1c-installed-cli-ci380-20261022.json) is qualified for fresh/retained/new-root install and the two upgrade modes. Source d1d4fdc/CI380 has10SUCCESS with the same whole checkout tree, actual five-step CLI and existing Linux/macOS consumers.
+Next: [C3d native UV enrollment](./evidence/package-client-quarantine/p1d-native-uv-ownership-baseline-20261022.md) is being implemented using the existing authenticated old-wheel proof and held transaction. Its actual native adoption/replay qualification and complete/multi-root/empty sync remain open. P2..P7 remain NOT_STARTED.
 Cache-aligned [CI374](./evidence/package-client-quarantine/cache-alignment-ci374-20261022.json) passed native macOS and all10 jobs. Historical timeout causes are not universally confirmed; scope/deadlines remain unchanged.
 
 Status: IN_PROGRESS — self-update installation role and Linux/WSL2 amd64 scope approved on2026-10-20; official names pending only for channel wiring. CLI-UX-003, SEC-UPD-001 and CLI-UX-002 remain complete.

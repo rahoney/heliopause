@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "run_id": 39772539988,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/39772539988",
+  "source_commit": "d1d4fdcef5df5c5d2b6040df8189cdb1ee032654",
+  "checkout": "cba3091e029af9fb1b3bee5f06358d7b4bc8fea4",
+  "tree": "e54eeda745b7fd7569bec2b50b14c9a13f620d2e",
+  "source_and_checkout_tree_equal": true,
+  "jobs": [
+    {
+      "id": 119803382711,
+      "name": "gVisor Linux Integration",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119803383106,
+      "name": "Vulnerability",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119803383143,
+      "name": "Quick",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119803383171,
+      "name": "gVisor Observer Helper",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119803383202,
+      "name": "Docs",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119803383233,
+      "name": "macOS",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119803383267,
+      "name": "Minimum Go",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119803383306,
+      "name": "Representative Wheel Corpus",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119803383338,
+      "name": "Security",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119823657526,
+      "name": "Required",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "scope": "C3c2b installed-aware managed UV CLI install/update qualification; native UV enrollment and complete sync still open",
+  "linux_top_level_passes": 51,
+  "uv_cli": {
+    "seconds": 118.85,
+    "steps": [
+      "fresh: INSTALL idna3.10 controls0",
+      "retained: INSTALL idna3.10 controls4",
+      "root-upgrade: UPDATE idna3.11 controls4",
+      "closure-noop: UPDATE idna3.11 controls4",
+      "new-root: INSTALL packaging25.0 controls4"
+    ],
+    "all_status": "COMPLETED",
+    "all_promotion": "COMPLETED",
+    "all_decision": "ALLOW",
+    "entries_each": 1,
+    "runtime": "uv:0.13.4;python:3.14.7;target:cp314/cp314/manylinux_2_36_x86_64;source:pypi",
+    "assertions": "each complete required/Evidence, exact controls/runtime; cfg/user data and unrelated installed package retained; obsolete metadata removed; unsupported original refused without target/Evidence change"
+  },
+  "cpu_full_seconds": 293.6,
+  "helpers_reaped": 5,
+  "helper_wait": 0,
+  "cleanup": "original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED",
+  "macos": "PASS; actual Go1.26.10",
+  "vulnerability": "PASS; actual Go1.26.10",
+  "cuda_full": "NOT_RUN",
+  "local_documentation_boundary": {
+    "head": "13f9fc4714d031b1309eda8d2c395409d397debe",
+    "only_changed_paths": [
+      "docs/planning/02-current-work-queue.md",
+      "docs/planning/evidence/package-client-quarantine/p1d-native-uv-format-20261022.json",
+      "docs/planning/evidence/package-client-quarantine/p1d-native-uv-ownership-baseline-20261022.md"
+    ],
+    "claim": "same functional inputs only; not a new whole-HEAD remote CI"
+  },
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci380-docs.log",
+      "bytes": 20466,
+      "sha256": "206119d572e720c1cc3388c5e99ca09d408cb1c9393eed5ddb1ef36e95b9ccd8"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci380-final-jobs.json",
+      "bytes": 13513,
+      "sha256": "37766c7e9c97d2947855ef175558c180a973ce1fb7cb60a6cd4eadc29270544d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci380-linux.log",
+      "bytes": 646525,
+      "sha256": "b303161faaa78a4f5459a83ea096ff2b79dd6973a4cf712077a786831a572547"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci380-macos.log",
+      "bytes": 21053,
+      "sha256": "11e123ba8b7dd257c312b277f77c42212b8a43b2927b1da9c067b2a17da569ed"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci380-vulnerability.log",
+      "bytes": 21642,
+      "sha256": "7b496de87fc1ec37a8f4f4df3862a10e819700cf476426062a22cb26ffe99690"
+    }
+  ],
+  "conclusion": "success"
+}
