@@ -272,7 +272,7 @@ func (c *checker) foundationSteps(includeDocs bool) []checkStep {
 		{"module drift", c.checkModuleDrift},
 		{"module integrity", func() error { return c.runGo("module integrity", "mod", "verify") }},
 		{"production build", func() error { return c.runGo("production build", "build", "-trimpath", "./...") }},
-		{"test build validity", func() error { return c.runGo("test build validity", "test", "-run", "^$", "./...") }},
+		{"test build validity", func() error { return c.runGo("test build validity", "test", "-trimpath", "-run", "^$", "./...") }},
 		{"architecture", c.checkArchitecture},
 	}
 	if includeDocs {
@@ -333,7 +333,7 @@ func (c *checker) runCommandWithTimeout(step string, timeout time.Duration, envi
 func (c *checker) runDefaultTests() error {
 	output := newGoTestCapture(time.Now)
 	_, err := c.runCapturedCommand("default test", 6*time.Minute, c.offlineEnvironment(), c.goExecutable,
-		output, goTestStderr{output}, output.String, "test", "-json", "-timeout=5m", "./...")
+		output, goTestStderr{output}, output.String, "test", "-trimpath", "-json", "-timeout=5m", "./...")
 	if err != nil && output.offlineMissing {
 		return &checkFailure{class: unavailable, step: "default test", detail: "offline module cache prerequisite is missing", cause: err}
 	}

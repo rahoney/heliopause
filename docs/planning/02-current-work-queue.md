@@ -86,6 +86,13 @@ Public producer의 다음 수정은 기존 PyPI/PyTorch lifecycle을 private ses
 canonical5·Race10.055s와 기존 parser를 통한 whole archive/graph replay가 PASS다. Metadata/
 archive mismatch·byte/stream·취소/cleanup/trace 실패의 graph 삭제와 임시 파일 제거도 확인했다.
 실제 Python HTTP 및 public native UV caller/guarded CLI는 아직 미연결·미검증이다.
+Reader source344a93d는 로컬 checkpoint로 보존했다. 반복된 macOS prerequisite에 대해
+[cache 입력 정렬의 baseline/수정 지도·두 번째 검토](./evidence/package-client-quarantine/macos-default-test-diagnostic-plan-20261022.md)를
+추가했다. Native CI373은 build PASS/default6m FAIL이며, 실제 cache root와 -trimpath
+action ID 분리를 확인했다. Scope/timeout·원인 판정은 유지한 채 이 불일치만 정렬한다.
+[Cache 입력 정렬 로컬 검사](./evidence/package-client-quarantine/macos-cache-alignment-local-20261022.json)는
+canonical6·checker Race36.760s·Darwin compile11.016s PASS다. Source lookup의 실제 비교를
+보존했고 완료 binary/operator7파일은 제거했다. 새 native macOS/전체 Required는 남는다.
 
 
 

@@ -185,12 +185,16 @@ jobs:
       - name: Bootstrap product modules
         env:
           HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-platform-tools
-        run: go run ./scripts/check bootstrap-modules
+          GOCACHE: ${{ runner.temp }}/heliopause-platform-tools/go-build
+          GOFLAGS: ''
+        run: go run -trimpath ./scripts/check bootstrap-modules
       - name: Run canonical platform profile offline
         shell: /bin/bash --noprofile --norc -e -u -o pipefail {0}
         env:
           HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-platform-tools
-        run: go run ./scripts/check platform
+          GOCACHE: ${{ runner.temp }}/heliopause-platform-tools/go-build
+          GOFLAGS: ''
+        run: go run -trimpath ./scripts/check platform
 
   macos:
     name: macOS
@@ -212,12 +216,16 @@ jobs:
       - name: Bootstrap product modules
         env:
           HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-platform-tools
-        run: go run ./scripts/check bootstrap-modules
+          GOCACHE: ${{ runner.temp }}/heliopause-platform-tools/go-build
+          GOFLAGS: ''
+        run: go run -trimpath ./scripts/check bootstrap-modules
       - name: Run canonical platform profile offline
         shell: /bin/bash --noprofile --norc -e -u -o pipefail {0}
         env:
           HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-platform-tools
-        run: go run ./scripts/check platform
+          GOCACHE: ${{ runner.temp }}/heliopause-platform-tools/go-build
+          GOFLAGS: ''
+        run: go run -trimpath ./scripts/check platform
 
   gvisor-observer:
     name: gVisor Observer Helper

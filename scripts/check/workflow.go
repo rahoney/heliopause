@@ -127,6 +127,7 @@ func runtimeLockStrings(value any) []string {
 
 func validateCIWorkflow(contents, selectedGo string) []string {
 	findings := validateWorkflowStructure(contents, true)
+	findings = append(findings, validatePlatformBuildCache(contents)...)
 	findings = append(findings, validateGoWorkflowVersions(contents, selectedGo)...)
 	findings = append(findings, validateCargoIntegrationGates(contents)...)
 	findings = append(findings, validateLifecycleIntegrationCommands(contents, "UV", uvIntegrationCommands)...)
@@ -170,7 +171,7 @@ func validateCIWorkflow(contents, selectedGo string) []string {
 		"    if: ${{ always() }}",
 		"    needs:\n      - quick\n      - docs\n      - security\n      - vulnerability\n      - minimum-go\n      - macos\n      - gvisor-observer\n      - gvisor-integration\n      - wheel-corpus",
 		"run: go run ./scripts/check bootstrap-modules",
-		"run: go run ./scripts/check platform",
+		"run: go run -trimpath ./scripts/check platform",
 		"run: go run ./scripts/check corpus",
 		`run: python3 scripts/prepare-wheel-corpus.py --root "$HELOX_CORPUS_ROOT"`,
 		"run: go run ./scripts/check security",
@@ -541,6 +542,38 @@ var uvIntegrationCommands = []string{
 	`uv_image="$(jq -er '.uv_image.reference' "$runtime_lock")"`,
 	`docker pull "$uv_image"`,
 	`HELOX_UV_NATIVE_RUNTIME=1 go test -tags=realcorpus -v -timeout=3m ./internal/sandbox -run '^TestUVActualIsolated(NativeStartup|EmptyTargetQuery|NativeLockCollection)$'`,
+}
+
+// The same ephemeral job cache and compiler flags must reach both the outer
+// checker bootstrap and its offline build/test children. No remote cache is used.
+func validatePlatformBuildCache(contents string) []string {
+	doc, err := parseWorkflow(contents)
+	if err != nil {
+		return nil
+	}
+	const root = "${{ runner.temp }}/heliopause-platform-tools"
+	var findings []string
+	for _, jobID := range []string{"minimum-go", "macos"} {
+		job := workflowMap(workflowMap(doc["jobs"])[jobID])
+		steps, _ := job["steps"].([]any)
+		for _, stage := range []struct{ name, command string }{
+			{"Bootstrap product modules", "go run -trimpath ./scripts/check bootstrap-modules"},
+			{"Run canonical platform profile offline", "go run -trimpath ./scripts/check platform"},
+		} {
+			findings = append(findings, validateActiveJobCommands(contents, jobID, stage.name, jobID+" platform", []string{stage.command})...)
+			for _, raw := range steps {
+				step := workflowMap(raw)
+				if step["name"] != stage.name {
+					continue
+				}
+				env := workflowMap(step["env"])
+				if env["HELOX_TOOL_CACHE"] != root || env["GOCACHE"] != root+"/go-build" || env["GOFLAGS"] != "" {
+					findings = append(findings, fmt.Sprintf("%s %s requires one fixed job-local build cache and empty GOFLAGS", jobID, stage.name))
+				}
+			}
+		}
+	}
+	return findings
 }
 
 var cargoIntegrationCommands = []string{

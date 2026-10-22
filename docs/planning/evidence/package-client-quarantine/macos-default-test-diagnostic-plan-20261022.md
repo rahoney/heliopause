@@ -110,3 +110,53 @@ system108423ms가 관측됐다. 높은 CPU 사용은 그 build 명령의 관찰�
 checker child의 전용 cache, build trimpath/test 기본 flags가 다른 것은 source에서
 확인했지만 실제 native rebuild 비용은 아직 분리 관측하지 않았다. Timeout·coverage/
 prep 확대나 같은 입력 blind rerun은 하지 않는다.
+
+## CI373 뒤 compilation cache 입력 정렬 — 구현 전 감사
+
+Source9b0da57/CI373의 native macOS는 build94.05s PASS 뒤 default6m에서 실패했다.
+47started/46finished·promotion package active214183ms/active root 없음과 exited=false/
+exit-1·user559932/system356096ms를 보존한다. 마지막 package나 CPU 합계를 정확한 과거
+정지 원인으로 확정하지 않는다. Raw ci373-macos-failed.log가 관측을 소유한다.
+
+Baseline audit: production build/기본 시험 IMPLEMENTED=YES·WIRED=YES, 현 후보 전체
+QUALIFIED=NO/ACCEPTANCE_CLOSED=NO다. 기존 실행기·budget·scope는 재구현하지 않는다.
+MISSING은 확인된 서로 다른 compilation 입력 정렬과 새 native qualification이다.
+
+실제 setup log의 GOCACHE는 /Users/runner/Library/Caches/go-build인데 checker child는
+HELOX_TOOL_CACHE/go-build를 사용한다. Build는 -trimpath, test-build/default test는 해당
+flag 없이 실행한다. 고정 Go1.26.10 source cmd/go/internal/work/exec.go는 trimpath를
+action hash에 넣고, 로컬 동일 stdlib errors의 두 go list -export 결과도 BuildID/export
+digest가 달랐다. 원본 macos-cache-flag-mechanism.json은 cache-key 분리의 증거이며 cold
+timing이나 macOS 전체 timeout 인과의 증명은 아니다.
+
+수정 위치/방법:
+
+1. runner.go의 test build validity/default test에 기존 production build와 같은 -trimpath를
+   명시한다. test ./..., inner5m/outer6m, production2m와 오류/complete 판정은 유지한다.
+2. boundary_helper_test.go와 collector_test.go의 두 runtime.Caller 기반 source lookup은
+   다른 repository fixture처럼 go test의 package working directory에서 ../../tools/...를
+   읽는다. 실제 검증 대상 observer source/비교값을 바꾸지 않는다. 검색한 repo Go source의
+   runtime.Caller 사용은 이 두 곳이며 전체 canonical Quick로 다른 source lookup도 확인한다.
+3. 기존 minimum-go/macOS의 bootstrap/platform step에 같은 GOCACHE를 HELOX_TOOL_CACHE의
+   go-build 하위로 명시하고 outer go run도 -trimpath를 사용한다. GOFLAGS는 step에서
+   명시적으로 비운다. runner.temp는 허용된 step env에서만 사용한다. Actions remote cache,
+   setup-go cache, warm-up/test 생략·새 prep 단계·권한·job/Required 수는 바꾸지 않는다.
+4. workflow validator는 실제 두 job의 조건 없는 bootstrap/platform step 명령·env를 YAML로
+   확인한다. 한 job의 누락/잘못된 cache root·flag·조건부 실행은 다른 job/주석 문자열로
+   대체할 수 없다. 기존 actionlint와 structural/Required policy도 유지한다.
+5. canonical format/Quick/security/docs/workflow/platform과 관련 checker Race, Darwin test
+   compile 뒤 새 native macOS/전체 Required를 확인한다. Cache 입력 정렬이 통과해도 과거
+   모든 timeout이 해결됐다고 기록하지 않는다. 필요 없는 별도 cache·시험 바이너리는 삭제한다.
+
+두 번째 검토: 같은 job/source/고정 SDK 안에서 기존 ephemeral build cache만 재사용한다.
+서로 다른 PR/job의 cache restore/publish, module/tool trust나 네트워크 경계를 추가하지
+않는다. 기존 두 source lookup은 lookup 방식만 이동하고 검사 내용은 보존한다. 실제 native
+완료가 acceptance이며 로컬 BuildID 일치나 cross compile을 macOS 성공으로 쓰지 않는다.
+
+[Cache 입력 정렬 로컬 영수증](./macos-cache-alignment-local-20261022.json)의 canonical
+format/Quick/security/docs/workflow/platform은 PASS다. Quick124.093s·platform16.417s는
+기존 로컬 cache를 사용한 결과이며 native cold timing으로 비교하지 않는다. Checker
+Race36.760s(시험16.714s)·Darwin compile11.016s도 PASS다. Checker/CLI dependency 구조의
+공유 package는205개이며 Sigstore 공유는0개다. 전체700개 의존성이 bootstrap과 같다고
+과장하지 않는다. 완료 binary/일회성7파일12,607,903B는 Root 참조·query errors0 뒤 제거했다.
+새 native macOS/Required 완료와 과거 timeout의 세부 원인은 계속 미확정이다.
