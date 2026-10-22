@@ -16,7 +16,7 @@ import (
 
 // UVUpdatePreparation binds the native UV selection format to the existing
 // Python ownership snapshot and held publication transaction. Native UV
-// installations require separate independent enrollment, which is not enabled.
+// installations require explicitly configured independent enrollment and adoption.
 type UVUpdatePreparation struct{ shared *PyPIUpdatePreparation }
 
 func NewUVUpdatePreparation(promoter *PyPIPromotion, resolver ports.DependencyUpdateResolver, intent artifactpypi.UVSelectionIntent) (*UVUpdatePreparation, error) {
@@ -49,13 +49,16 @@ func NewUVUpdatePreparation(promoter *PyPIPromotion, resolver ports.DependencyUp
 }
 
 func (p *UVUpdatePreparation) BeginInstallUpdate(ctx context.Context, source domain.SourceID, selector string, install domain.InstallContext, adopt bool) (ports.InstallUpdateSession, error) {
-	if p == nil || p.shared == nil || source != artifactpypi.PublicPyPIProfile().Source() || adopt || !install.Valid() {
+	if p == nil || p.shared == nil || source != artifactpypi.PublicPyPIProfile().Source() || !install.Valid() {
 		return nil, errors.New("UV update requires public PyPI and existing verified HAA ownership")
 	}
 	if !separateRoots([]string{install.Target().String(), p.shared.promoter.stagingRoot}) {
 		return nil, errors.New("UV update virtual environment overlaps trusted staging")
 	}
-	return p.shared.BeginInstallUpdate(ctx, source, selector, install, false)
+	if adopt && p.shared.native == nil {
+		return nil, ports.NewInstallUpdateFailure("UPDATE_ORIGINAL_STATE_UNSUPPORTED", errors.New("UV native ownership collaborators are unavailable"))
+	}
+	return p.shared.BeginInstallUpdate(ctx, source, selector, install, adopt)
 }
 
 func validateUVUpdateSelection(input artifactpypi.UpgradeInput, intent domain.ProjectControlFile, resolution domain.DependencyResolution) error {
@@ -109,4 +112,18 @@ func validateUVUpdateSelection(input artifactpypi.UpgradeInput, intent domain.Pr
 		}
 	}
 	return nil
+}
+
+// Existing old-wheel acquisition/ownership is reused with a distinct, bounded
+// native UV format. Selection itself continues to use the configured UV guard.
+func (p *UVUpdatePreparation) WithNativeEnrollment(resolver ports.DependencyResolver, intake ports.Artifact, intakeRoot string) (*UVUpdatePreparation, error) {
+	if p == nil || p.shared == nil {
+		return nil, errors.New("UV native enrollment requires the existing guard")
+	}
+	shared, err := p.shared.WithNativeEnrollment(resolver, intake, intakeRoot)
+	if err != nil {
+		return nil, err
+	}
+	shared.native.client = nativeUVClient
+	return &UVUpdatePreparation{shared}, nil
 }

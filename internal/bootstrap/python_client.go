@@ -93,6 +93,10 @@ func bindUVPipPackageClient(command *cobra.Command, bindings pythonClientBinding
 		if err != nil {
 			return err
 		}
+		preparation, err = preparation.WithNativeEnrollment(bindings.nativeLookup, bindings.intake, bindings.intakeRoot)
+		if err != nil {
+			return err
+		}
 		updater, err := application.NewInstallUpdateService(bindings.installer, preparation)
 		if err != nil {
 			return err

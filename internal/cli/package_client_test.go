@@ -105,7 +105,7 @@ func TestPackageClientHelpAndLegacySelection(t *testing.T) {
 		if lang == "ko" {
 			want = uvPipInstallKorean
 		}
-		if !strings.Contains(out.String(), want) || !strings.Contains(out.String(), "--target") || !strings.Contains(out.String(), "--upgrade-package") || strings.Contains(out.String(), "only-if-needed") || strings.Contains(out.String(), "--adopt") || strings.Contains(out.String(), "--source") {
+		if !strings.Contains(out.String(), want) || !strings.Contains(out.String(), "--target") || !strings.Contains(out.String(), "--upgrade-package") || strings.Contains(out.String(), "only-if-needed") || !strings.Contains(out.String(), "--adopt") || strings.Contains(out.String(), "--source") {
 			t.Fatal("incorrect client help", lang, out.String())
 		}
 	}
@@ -126,7 +126,7 @@ func TestUVPackageClientPreservesUpgradeModeAndOperation(t *testing.T) {
 		flags []string
 		mode  packageUpgradeMode
 	}{
-		{nil, packageNoUpgrade}, {[]string{"--upgrade"}, packageUpgradeClosure}, {[]string{"-U"}, packageUpgradeClosure}, {[]string{"--upgrade-package", "Demo_Package"}, packageUpgradeRoot},
+		{nil, packageNoUpgrade}, {[]string{"--upgrade"}, packageUpgradeClosure}, {[]string{"--upgrade", "--adopt"}, packageUpgradeClosure}, {[]string{"-U"}, packageUpgradeClosure}, {[]string{"--upgrade-package", "Demo_Package"}, packageUpgradeRoot}, {[]string{"--upgrade-package", "demo-package", "--adopt"}, packageUpgradeRoot},
 	} {
 		t.Run(strings.Join(spec.flags, "/"), func(t *testing.T) {
 			root, err := New(io.Discard, io.Discard)
@@ -157,6 +157,18 @@ func TestUVPackageClientPreservesUpgradeModeAndOperation(t *testing.T) {
 			operation := domain.OperationInstall
 			if spec.mode != packageNoUpgrade {
 				operation = domain.OperationUpdate
+			}
+			if spec.mode != packageNoUpgrade {
+				adopt := false
+				for _, flag := range spec.flags {
+					if flag == "--adopt" {
+						adopt = true
+					}
+				}
+				expected, err := application.NewInstallUpdateRequest(request.Source(), "Demo_Package==1.0", request.Context(), adopt)
+				if err != nil || expected != request {
+					t.Fatal("native enrollment intent changed", request, err)
+				}
 			}
 			if request.Operation() != operation || request.Source().String() != "pypi" || request.Context().Target().String() != "/tmp/haa-uv-cli-target" {
 				t.Fatal("wrong operation/source/target", request)

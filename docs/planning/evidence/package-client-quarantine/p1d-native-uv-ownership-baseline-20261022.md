@@ -83,3 +83,45 @@ Root 참조0/미확정 query errors0 뒤 완료 workroot/operator6항목20,410B�
 초기 WSL zombie mountinfo EINVAL과 자체 source-copy wrapper 참조로 인한 보류는 원본에
 구분했다. PID 이름만으로 생략하지 않고 실제 Z/동일 start time·빈 FD/maps/cmdline을 확인했다.
 작은 원본·재현 source와 active SDK/quality/runtime만 보존했다.
+
+
+## 구현 착수 수정 지도 / 두 번째 검토
+
+선행 C3c2b는 actual CI380으로 닫혔다. C3d의 네 상태는 아직 NO이며 기존 pip의 bounded
+native owner와 guard·old-wheel acquisition/inspection·rollback을 재사용한다. 첫 native UV
+범위는 registry wheel의 site/dist-info 및 UV marker/REQUESTED다. Generated scripts,
+cross-scheme·direct/local/VCS/build cache와 compiled native cache는 명시 거부한다.
+
+| 정확한 위치 / symbol | 변경과 검증 |
+| --- | --- |
+| promotion/pypi_native_ownership.go pypiNativeEnrollment/oldWheel/proveNativePyPIWheelFootprint | private 두-client format을 도입하되 zero/default는 기존 pip. Exact lookup runtime과 marker/ownership-role만 client별로 고정하고 기존 authentic wheel/RECORD/alias/file proof 본문 재사용. UV lookup은 실제 UV resolver이므로 중앙 UV identity를 정확히 요구; pip identity로 위장/완화 없음 |
+| 같은 owner selectOwnership와 shared pypi_update.go | UV는 인증된 old Python-source 역할의 __pycache__ directory가 없어야 함. Absence paths를 controller selection에 반환하고 기존 transaction.freezeParents/absentDirectories와 Lstat/verify로 mutation 전에 고정. RECORD 밖 cache도 누락하지 않으며 생긴 dir를 삭제·무시하지 않음. Proven files는 모든 검증 뒤 current ownership에 추가 |
+| promotion/uv_update.go WithNativeEnrollment/Begin | 기존 immutable native collaborator 복사와 UV profile만 연결. Native source는 public, explicit adopt=true인 UPDATE만 허용. Unmanaged default refusal 유지하고 original guard/Manifest5controls·old proof→new set inspection 순서 보존 |
+| cli/package_client.go / bootstrap/python_client.go | --adopt는 기존 두 upgrade 모드에서만 허용하고 descriptor EN/KO 설명에 실제 제한 표시. 두 native updater의 실제 UV lookup/intake를 연결. Ordinary install은 암묵 인계하지 않음 |
+| promotion native/session 및 CLI tests | 기존 pip marker/cache·native tests 전체 유지. UV2bytes/emptyREQUESTED·wrong/omitted marker·extra cache/build/source/script·old-byte tamper·exact runtime·explicit adoption·cache absence concurrency/rollback·handoff/replay를 검사 |
+| 기존 authenticated bootstrap UV integration + 좁은 test fixture helper | 첫 검역에서 보존한 authentic old wheel을 고정 UV/Python으로 network-none runc의 자체 loopback index에 설치해 실제 UV 원본을 생성. Host artifact/Python은 실행하지 않고 cfg/site를 bounded tar로 복사. Product old-wheel lookup은 다시 실제 public UV/독립 archive 검증을 수행. Native 위조/compiled-cache refusal 불변→adopt update→managed replay를 확인. Exact owned containers는 label/image 확인 후 제거하고 absence query 성공을 요구 |
+
+두 번째 검토: native fixture의 runc 작업은 외부 프로그램이 만든 원본 데이터 생성이며 제품
+검역/Policy를 대체하지 않는다. 입력 wheel은 앞 실제 검역의 exact staged bytes이며 marker를
+직접 UV로 바꾸거나 원본을 가짜 report로 조립하지 않는다. Native tool은 기존 lock의 exact
+image와 native hash/size, Python image를 쓰고 network-none/UID1000/read-only/no-cap/NPP 및
+고정 guest paths를 유지한다. Host mount/credential·artifact import·native arbitrary args는 없다.
+Fixture code는 실제 integration gate에서만 동작하며 새 CI job/privilege나 제품 observer role/
+시간 예산을 추가하지 않는다. 현재 five-step controller/과거 pip qualification을 새 native
+adoption 성공으로 전용하지 않는다. Canonical5/전체 관련 Race 뒤 actual source CI와 정리를
+확인하고, 첫 actual fault를 보존한다. Whole closure/multi/empty sync는 그 다음 gap이다.
+
+후속 코드 검토는 두 형식 조건을 구체화했다. 고정 tag의
+[metadata writer](https://github.com/astral-sh/uv/blob/0.13.4/crates/uv-install-wheel/src/wheel.rs#L859-L906)는
+REQUESTED를 직접 요청한 distribution에만 만든다. 따라서 INSTALLER는 필수 UV 두 bytes,
+REQUESTED는 있으면 정확한 empty/hash/size를 요구하며 부재 자체를 거부하지 않는다.
+각 파일의 소유권은 여전히 authentic old wheel proof가 결정한다. 또한 UV의 bytecode census는
+필수 import 역할 목록과 다르므로 site/dist-info의 인증된 모든 .py 파일의 __pycache__ 부재를
+freeze한다. Resource Python 파일도 포함하며 기존 pip의 제한된 cache 검증을 바꾸지 않는다.
+실제 native integration은 첫 새 검역에서 보존한 idna3.10 wheel로 외부 UV 원본을 만들고,
+unrecorded-cache 무변경 거부→명시 adopt3.11→managed replay와 cfg/user file 보존을 확인한다.
+네 상태는 원격 actual source qualification 전까지 acceptance 미완료다.
+
+## 로컬 후보 검증과 남은 경계
+
+[최종 로컬 영수증](./p1d-native-uv-local-20261022.json)은 source10경로와 canonical5·관련5package Race130.026s 성공을 연결한다. C3d는 IMPLEMENTED=YES / WIRED=YES / QUALIFIED=LOCAL ONLY / ACCEPTANCE_CLOSED=NO다. UV marker·optional REQUESTED·old-wheel 변조/runtime·RECORD 밖 cache/resource cache·publication 전 cache 생성과 rollback/소유권 미게시를 검증했다. Native fixture는 실제 UV 컨테이너 두 개만 만들고 label/image를 확인한 정리와 성공한 부재 조회를 요구한다. 기본 테스트에서는 실제 fixture를 실행하지 않았다. Actual source CI의 native 원본→거부→adopt→managed replay·기존 공용 소비자/macOS/Required가 남으며, 이를 로컬 unit 성공으로 닫지 않는다.

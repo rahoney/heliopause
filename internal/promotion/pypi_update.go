@@ -310,6 +310,14 @@ func (s *pypiUpdateSession) ResolveDependencies(ctx context.Context, reference d
 		if err != nil {
 			return domain.DependencyResolution{}, err
 		}
+		for _, directory := range selection.absentDirectories {
+			if err := s.transaction.freezeParents(directory); err != nil {
+				return domain.DependencyResolution{}, err
+			}
+			if _, err := os.Lstat(directory); !errors.Is(err, os.ErrNotExist) {
+				return domain.DependencyResolution{}, ports.NewInstallUpdateFailure("UPDATE_ORIGINAL_STATE_UNSUPPORTED", errors.New("native UV Python cache directory is unsupported or changed"))
+			}
+		}
 		if err := s.verify(ctx); err != nil {
 			return domain.DependencyResolution{}, err
 		}

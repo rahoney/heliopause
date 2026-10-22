@@ -25,6 +25,7 @@ type pypiNativeEnrollment struct {
 	intake     ports.Artifact
 	intakeRoot string
 	runner     DockerRunner
+	client     pypiNativeClient
 }
 
 // WithNativeEnrollment adds only the concrete old-footprint collaborators to an
@@ -56,8 +57,9 @@ type pypiNativeProof struct {
 }
 
 type pypiNativeEnrollmentSelection struct {
-	destinations []pypiDestination
-	control      domain.ProjectControlFile
+	destinations      []pypiDestination
+	control           domain.ProjectControlFile
+	absentDirectories []string
 }
 
 func (e *pypiNativeEnrollment) selectOwnership(ctx context.Context, graph domain.LockedDependencyGraph, install domain.InstallContext, inventory pypiNativeInventory) (selection pypiNativeEnrollmentSelection, resultErr error) {
@@ -96,9 +98,16 @@ func (e *pypiNativeEnrollment) selectOwnership(ctx context.Context, graph domain
 		if err != nil {
 			return selection, err
 		}
-		destinations, files, err := proveNativePyPIWheelFootprint(project, wheel, digest, loadRuntime)
+		destinations, files, err := proveNativePythonWheelFootprint(e.client, project, wheel, digest, loadRuntime)
 		if err != nil {
 			return selection, err
+		}
+		if e.client == nativeUVClient {
+			paths, err := nativeUVCacheAbsences(project, wheel)
+			if err != nil {
+				return selection, err
+			}
+			selection.absentDirectories = append(selection.absentDirectories, paths...)
 		}
 		selection.destinations = append(selection.destinations, destinations...)
 		proofs = append(proofs, pypiNativeProof{Source: "pypi", Project: project.project, Version: project.version, Filename: filename, SHA256: digest, Files: files})
@@ -128,8 +137,7 @@ func (e *pypiNativeEnrollment) oldWheel(ctx context.Context, install domain.Inst
 		return inspection, "", "", err
 	}
 	runtime := sandbox.PinnedPythonRuntime()
-	expectedRuntime := "python:" + runtime.PythonVersion + ";pip:" + runtime.PipVersion + ";target:" + runtime.InterpreterTag + "/" + runtime.ABITag + "/" + runtime.PlatformTag + ";source:pypi"
-	if resolution.RuntimeIdentity() != expectedRuntime {
+	if resolution.RuntimeIdentity() != nativeLookupRuntimeIdentity(e.client) || nativeLookupRuntimeIdentity(e.client) == "" {
 		return inspection, "", "", errors.New("native original lookup has a different runtime")
 	}
 	var resolved domain.ResolvedArtifact
@@ -208,6 +216,28 @@ func (e *pypiNativeEnrollment) oldWheel(ctx context.Context, install domain.Inst
 }
 
 func proveNativePyPIWheelFootprint(project *pypiNativeDistribution, wheel artifactpypi.WheelInspection, digest string, loadRuntime func() (pypiNativeRuntime, error)) ([]pypiDestination, []pypiNativeProofFile, error) {
+	return proveNativePythonWheelFootprint(nativePipClient, project, wheel, digest, loadRuntime)
+}
+
+func proveNativePythonWheelFootprint(client pypiNativeClient, project *pypiNativeDistribution, wheel artifactpypi.WheelInspection, digest string, loadRuntime func() (pypiNativeRuntime, error)) ([]pypiDestination, []pypiNativeProofFile, error) {
+	if nativeClientName(client) == "" {
+		return nil, nil, errors.New("native installer format is unsupported")
+	}
+	if client == nativeUVClient {
+		for name, body := range map[string]string{"INSTALLER": "uv", "REQUESTED": ""} {
+			claim, ok := project.files["site/"+project.directory+"/"+name]
+			// UV only emits REQUESTED for directly requested distributions.
+			// It is optional for dependencies and is never ownership authority.
+			if !ok && name == "REQUESTED" {
+				continue
+			}
+			sum := sha256.Sum256([]byte(body))
+			if !ok || claim.unhashed || claim.original.Size != int64(len(body)) || claim.original.Digest != hex.EncodeToString(sum[:]) {
+				return nil, nil, errors.New("native UV metadata differs from supported installer output")
+			}
+		}
+	}
+
 	if wheel.Project != project.project || wheel.Version != project.version || wheel.ObservedSHA256 != digest || wheel.DeclaredSHA256 != digest {
 		return nil, nil, errors.New("native footprint is not bound to the authentic original wheel")
 	}
@@ -252,18 +282,21 @@ func proveNativePyPIWheelFootprint(project *pypiNativeDistribution, wheel artifa
 		}
 		switch key {
 		case "site/" + project.directory + "/INSTALLER":
-			sum := sha256.Sum256([]byte("pip\n"))
-			if claim.unhashed || claim.original.Size != 4 || claim.original.Digest != hex.EncodeToString(sum[:]) {
+			sum := sha256.Sum256([]byte(nativeInstallerMarker(client)))
+			if claim.unhashed || claim.original.Size != int64(len(nativeInstallerMarker(client))) || claim.original.Digest != hex.EncodeToString(sum[:]) {
 				return nil, nil, errors.New("native pip installer marker differs from pinned output")
 			}
-			matched[key] = "pinned-pip-installer-marker"
+			matched[key] = "pinned-" + nativeClientName(client) + "-installer-marker"
 		case "site/" + project.directory + "/REQUESTED":
 			sum := sha256.Sum256(nil)
 			if claim.unhashed || claim.original.Size != 0 || claim.original.Digest != hex.EncodeToString(sum[:]) {
 				return nil, nil, errors.New("native pip requested marker differs from pinned output")
 			}
-			matched[key] = "pinned-pip-requested-marker"
+			matched[key] = "pinned-" + nativeClientName(client) + "-requested-marker"
 		default:
+			if client == nativeUVClient {
+				return nil, nil, errors.New("native UV extra cache, build, script or source files are unsupported")
+			}
 			if claim.destination.Scheme != "site" || !strings.HasSuffix(claim.destination.Relative, ".pyc") {
 				return nil, nil, errors.New("native RECORD claims a file outside the authentic installed footprint")
 			}
