@@ -272,3 +272,24 @@ Unknown query/정리 실패가 최초 오류를 덮지 않아야 한다. 같은 
 reconciliation, C의 Manifest/SBOM·edges 부재와 import boundary, D의 descriptor 중복 lookup 및
 SKIP/positive-empty 차이를 확인했다. 위 세 미결정점은 구현 전 해소 대상으로 남긴다.
 완료한 시험 binary/workroot/container/payload는 exact 정리하고 작은 원본만 보존한다.
+
+## A1 공통화 구현 / 로컬 검증
+
+Baseline4dedfd8 뒤 `pypi_installed_snapshot.go`로 기존 capture/verify와 metadata directory
+helpers를 옮겼다. Session은 이 원본 snapshot을 보유하고 기존 adoption 검사·NewUpgradeInput의
+실제 requirement·Resolve/Promote/Close를 그대로 사용한다. 두 inventory 함수는 기존 UpgradeInput
+wrapper를 유지하면서 private file-list helper를 공유한다. Source guard/전체 native proof·complete
+삭제·cache·record·CLI는 이 단위에 포함하지 않는다.
+
+고정 formatter로 비교한 capture/verify 핵심 본문은 local files의 snapshot 보유·return type과
+transaction 인자 치환 뒤 같다. Count는 같은1024 값의 UpgradeInputDistributionLimit을 공유한다.
+새 rootless0/65 metadata 수집·불변 복사·원본 변경 거부·취소·소유권 비생성을 확인했고 기존
+업데이트/retired tree/native RECORD/rollback 소비자는 canonical Quick111.420s를 통과했다.
+Format/security/docs/workflow와 전체 promotion/Bootstrap/Application Race132.410s도 PASS다.
+해당 Source/check/raw와 정확한 scope는 [로컬 영수증](./p1f-uv-original-snapshot-local-20261023.json)이
+소유한다. 완료한 검사 뒤 owned Go TMPDIR은0이며 별도 native 자원은 준비하지 않았다.
+
+A1의 IMPLEMENTED=YES/WIRED=YES(existing pip/UV 원본 guard), QUALIFIED=LOCAL ONLY,
+ACCEPTANCE_CLOSED=NO이며 MISSING은 같은 source의 실제 shared CI다. CI386 결과를 이
+후속 source에 전용하지 않는다. 다음은 검토한 A2 전체 원본 proof/source guard와 B/C/D의 나머지
+gap이며, whole guarded sync/P1은 아직 미완료다.

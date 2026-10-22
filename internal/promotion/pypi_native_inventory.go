@@ -45,6 +45,10 @@ type pypiNativeInventory struct {
 // A distribution is managed only when its exact METADATA has one matching
 // ledger owner. A payload file carrying the same name is not sufficient.
 func managedPyPIInventory(transaction *pypiVenvTransaction, input artifactpypi.UpgradeInput) (map[string]string, error) {
+	return managedPyPIInventoryFromMetadata(transaction, input.MetadataFiles())
+}
+
+func managedPyPIInventoryFromMetadata(transaction *pypiVenvTransaction, metadataFiles []artifactpypi.InstalledMetadataFile) (map[string]string, error) {
 	if _, err := pypiOriginalObjects(transaction); err != nil {
 		return nil, err
 	}
@@ -58,7 +62,7 @@ func managedPyPIInventory(transaction *pypiVenvTransaction, input artifactpypi.U
 		}
 	}
 	managed := map[string]string{}
-	for _, metadata := range input.MetadataFiles() {
+	for _, metadata := range metadataFiles {
 		name, version, ok := installedDistInfo(metadata.Directory)
 		if !ok {
 			return nil, errors.New("installed ownership metadata identity is invalid")
@@ -96,8 +100,12 @@ func pypiOriginalObjects(transaction *pypiVenvTransaction) (map[[2]uint64]string
 }
 
 func capturePyPINativeInventory(ctx context.Context, transaction *pypiVenvTransaction, input artifactpypi.UpgradeInput) (pypiNativeInventory, error) {
+	return capturePyPINativeInventoryFromMetadata(ctx, transaction, input.MetadataFiles())
+}
+
+func capturePyPINativeInventoryFromMetadata(ctx context.Context, transaction *pypiVenvTransaction, metadataFiles []artifactpypi.InstalledMetadataFile) (pypiNativeInventory, error) {
 	inventory := pypiNativeInventory{projects: map[string]*pypiNativeDistribution{}}
-	managed, err := managedPyPIInventory(transaction, input)
+	managed, err := managedPyPIInventoryFromMetadata(transaction, metadataFiles)
 	if err != nil {
 		return pypiNativeInventory{}, err
 	}
@@ -108,7 +116,7 @@ func capturePyPINativeInventory(ctx context.Context, transaction *pypiVenvTransa
 	claims := map[string]bool{}
 	var totalBytes int64
 	recordBytes, entries := 0, 0
-	for _, metadata := range input.MetadataFiles() {
+	for _, metadata := range metadataFiles {
 		if err := ctx.Err(); err != nil {
 			return pypiNativeInventory{}, err
 		}

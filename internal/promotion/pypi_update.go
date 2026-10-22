@@ -6,11 +6,8 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
-	"io"
 	"os"
-	"path/filepath"
 	"reflect"
-	"sort"
 	"strings"
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
@@ -43,10 +40,8 @@ type pypiUpdateSession struct {
 	install                    domain.InstallContext
 	input                      artifactpypi.UpgradeInput
 	transaction                *pypiVenvTransaction
-	directories                []string
-	metadata                   map[string]pypiFileSnapshot
+	original                   pypiInstalledSnapshot
 	managedVersions            map[string]string
-	emptyMetadata              map[string]map[string]os.FileInfo
 	nativeInventory            pypiNativeInventory
 	adopt                      bool
 	resolution                 domain.DependencyResolution
@@ -89,9 +84,8 @@ func (p *PyPIUpdatePreparation) BeginInstallUpdate(ctx context.Context, source d
 // The caller transfers its held transaction; capture and failure cleanup are
 // shared by explicit updates and installed-aware ordinary installation.
 func (p *PyPIUpdatePreparation) prepareInstallUpdate(ctx context.Context, requirement artifactpypi.UpgradeRequirement, install domain.InstallContext, adopt bool, transaction *pypiVenvTransaction) (result ports.InstallUpdateSession, resultErr error) {
-	plan := transaction.plan
 	var err error
-	s := &pypiUpdateSession{owner: p, install: install, transaction: transaction, metadata: map[string]pypiFileSnapshot{}, emptyMetadata: map[string]map[string]os.FileInfo{}}
+	s := &pypiUpdateSession{owner: p, install: install, transaction: transaction}
 	defer func() {
 		if resultErr != nil {
 			resultErr = errors.Join(resultErr, s.Close())
@@ -105,63 +99,11 @@ func (p *PyPIUpdatePreparation) prepareInstallUpdate(ctx context.Context, requir
 		}
 		return nil, ports.NewInstallUpdateFailure(code, errors.New("native venv ownership requires independent installed-footprint verification"))
 	}
-	s.directories, err = pypiUpgradeMetadataDirectories(plan.site)
+	s.original, err = capturePyPIInstalledSnapshot(transaction)
 	if err != nil {
-		return nil, ports.NewInstallUpdateFailure("UPDATE_ORIGINAL_STATE_UNSUPPORTED", err)
+		return nil, err
 	}
-	files := []artifactpypi.InstalledMetadataFile{}
-	total := 0
-	retiredBudget := pypiUpgradeDirectoryLimit
-	for _, name := range s.directories {
-		directory := filepath.Join(plan.site, name)
-		if err := transaction.freezeParents(directory); err != nil {
-			return nil, err
-		}
-		tree, empty, err := snapshotPyPIRetiredMetadata(directory, retiredBudget)
-		if err != nil {
-			return nil, err
-		}
-		if empty {
-			// The existing transaction removes obsolete owned files while
-			// retaining directories. A directory-only tree is no distribution;
-			// freeze every original identity and membership, never ownership.
-			for relative, before := range tree {
-				path := filepath.Join(directory, relative)
-				if err := transaction.freezeParents(path); err != nil {
-					return nil, err
-				}
-				if !sameRetiredMetadataDirectory(before, transaction.directories[path]) {
-					return nil, errors.New("retired metadata directory changed while freezing")
-				}
-			}
-			retiredBudget -= len(tree)
-			s.emptyMetadata[directory] = tree
-			continue
-		}
-		if err := rejectPyPIUpgradeDirectSource(directory); err != nil {
-			return nil, err
-		}
-		path := filepath.Join(directory, "METADATA")
-		snapshot, err := snapshotBoundedPromotionFile(path, 1<<20)
-		if err != nil {
-			return nil, err
-		}
-		body, err := readBoundedPromotionFile(path, 1<<20)
-		if err != nil {
-			return nil, err
-		}
-		total += len(body)
-		if total > 4<<20 {
-			return nil, errors.New("PyPI installed metadata exceeds upgrade input bound")
-		}
-		sum := sha256.Sum256(body)
-		if snapshot.Digest != hex.EncodeToString(sum[:]) {
-			return nil, errors.New("PyPI installed metadata changed while reading")
-		}
-		s.metadata[path] = snapshot
-		files = append(files, artifactpypi.InstalledMetadataFile{Directory: name, Body: body})
-	}
-	s.input, err = artifactpypi.NewUpgradeInput(requirement, files, sandbox.PinnedPythonRuntime().PythonVersion)
+	s.input, err = artifactpypi.NewUpgradeInput(requirement, s.original.metadataFiles(), sandbox.PinnedPythonRuntime().PythonVersion)
 	if err != nil {
 		return nil, ports.NewInstallUpdateFailure("UPDATE_ORIGINAL_STATE_UNSUPPORTED", err)
 	}
@@ -182,46 +124,6 @@ func (p *PyPIUpdatePreparation) prepareInstallUpdate(ctx context.Context, requir
 	return s, nil
 }
 
-// This bounds allocation as well as parsing. Legacy/editable metadata is not
-// silently omitted from the installed dependency constraints.
-func pypiUpgradeMetadataDirectories(site string) ([]string, error) {
-	file, err := os.Open(site)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-	entries, err := file.ReadDir(pypiUpgradeDirectoryLimit + 1)
-	if err != nil && err != io.EOF || len(entries) > pypiUpgradeDirectoryLimit {
-		return nil, errors.New("PyPI environment inventory exceeds supported bounds")
-	}
-	names := []string{}
-	for _, entry := range entries {
-		name := entry.Name()
-		if strings.HasSuffix(name, ".egg-info") || strings.HasSuffix(name, ".egg-link") {
-			return nil, errors.New("legacy or editable installed metadata is unsupported")
-		}
-		if !strings.HasSuffix(name, ".dist-info") {
-			continue
-		}
-		if !entry.IsDir() || entry.Type()&os.ModeSymlink != 0 {
-			return nil, errors.New("installed metadata directory is untrusted")
-		}
-		names = append(names, name)
-		if len(names) > 1024 {
-			return nil, errors.New("PyPI installed distribution count exceeds supported bounds")
-		}
-	}
-	sort.Strings(names)
-	return names, nil
-}
-
-func rejectPyPIUpgradeDirectSource(directory string) error {
-	if _, err := os.Lstat(filepath.Join(directory, "direct_url.json")); !errors.Is(err, os.ErrNotExist) {
-		return errors.New("installed direct-source or editable selection is unsupported")
-	}
-	return nil
-}
-
 func (s *pypiUpdateSession) Reference() domain.ArtifactReference {
 	return s.input.Requirement().Reference()
 }
@@ -230,34 +132,7 @@ func (s *pypiUpdateSession) verify(ctx context.Context) error {
 	if s.closed || s.promoted || ctx == nil {
 		return errors.New("PyPI upgrade original-state guard is unavailable")
 	}
-	if err := ctx.Err(); err != nil {
-		return err
-	}
-	if err := s.transaction.checkBefore(); err != nil {
-		return ports.NewInstallUpdateFailure("UPDATE_SOURCE_CHANGED", err)
-	}
-	names, err := pypiUpgradeMetadataDirectories(s.transaction.plan.site)
-	if err != nil || !reflect.DeepEqual(names, s.directories) {
-		return ports.NewInstallUpdateFailure("UPDATE_SOURCE_CHANGED", errors.New("installed distribution inventory changed"))
-	}
-	for directory, before := range s.emptyMetadata {
-		tree, empty, err := snapshotPyPIRetiredMetadata(directory, len(before))
-		if err != nil || !empty || len(tree) != len(before) {
-			return ports.NewInstallUpdateFailure("UPDATE_SOURCE_CHANGED", errors.New("retired metadata tree changed"))
-		}
-		for relative, original := range before {
-			if !sameRetiredMetadataDirectory(original, tree[relative]) {
-				return ports.NewInstallUpdateFailure("UPDATE_SOURCE_CHANGED", errors.New("retired metadata directory identity changed"))
-			}
-		}
-	}
-	for path, before := range s.metadata {
-		now, err := snapshotBoundedPromotionFile(path, 1<<20)
-		if err != nil || !os.SameFile(before.info, now.info) || before.Digest != now.Digest || before.Size != now.Size || before.Mode != now.Mode || rejectPyPIUpgradeDirectSource(filepath.Dir(path)) != nil {
-			return ports.NewInstallUpdateFailure("UPDATE_SOURCE_CHANGED", errors.New("installed dependency metadata changed"))
-		}
-	}
-	return ctx.Err()
+	return s.original.verify(ctx, s.transaction)
 }
 
 func (s *pypiUpdateSession) ResolveDependencies(ctx context.Context, reference domain.ArtifactReference, install domain.InstallContext) (domain.DependencyResolution, error) {
