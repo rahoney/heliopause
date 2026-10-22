@@ -204,6 +204,46 @@ original reverify·complete deletion/cache/Policy/CLI는 후속이다. Canonical
 - `commit` 마지막 publishedMetadata inode/body 검사와 directory sync는 empty 경로에서 별도로
   absence를 확인해야 한다. 검사를 단순 생략하거나 early-return하여 journal/cleanup을 우회하지 않는다.
 
+### B1 구현 전 감사 — complete-only file transaction
+
+Baseline1cf5781의 pypiVenvTransaction prepare/commit/rollback/journal·renameNoReplace는
+IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES(기존 merge 소비자/CI387)다. 기존 prepare의
+empty refusal과 선택 owner만 교체·나머지 owner 보존은 변경하지 않는다. Complete-only retirement/
+explicit empty는 NO/NO/NO/NO이며 MISSING은 아래 private 입구·metadata 부재 reconciliation과
+실패/기존 소비자 검증이다. 새 engine/ledger version/recovery CLI를 만들지 않는다.
+
+정확한 source는 pypi_venv_transaction.go의 prepare574/commit796이다. 기존 prepare/commit은
+legacy wrapper로 두고 private shared selection body에 complete mode를 전달한다. 새 private
+commitComplete는 실제 complete snapshot의 dependency-free 의미와 destination empty 여부가
+일치할 때만 empty를 허용한다. 이 method의 직접 호출은 controller 내부 계약이며 실제
+검역·set Policy·original/source guard·approved cache는 후속 Guard.Commit에서 별도로 필수다.
+
+Common prepare는 기존 output hash/size/inode/parent·unmanaged collision/owner validity를
+그대로 사용한다. Complete mode에서만 모든 proven current owner가 교체·제거 대상이다.
+Desired에 없는 current key를 obsolete로 계산하고, desired에 있으면 같은 scheme의 새 output을
+사용한다. Managed shared owner의 일부만 새 set에 남아도 전체 intent에서 old owners 모두가
+설명되어야 하며 새 desired의 exact owners/content만 남긴다. Legacy partial-shared refusal은
+유지한다. Native shared RECORD refusal·unknown/user file은 이 경로로 소유하지 않는다.
+
+Common commit의 backup/file publish/journal/rollback/cleanup을 공유한다. Explicit complete empty는
+metadata를 backup하되 next-metadata를 생성·publish하지 않고, 마지막에 실제 metadata absence를
+확인한다. Unknown stat/read error는 absence가 아니다. Empty version2 ownership file을 쓰거나
+readState의 기존 empty-v2 refusal을 완화하지 않는다. Empty metadata branch에서도 sync·reconcile·
+obsolete absence·retained file/inode 검증·backup cleanup을 우회하지 않는다. metadata가 필요 없는
+경로에서 .heliopause directory를 새로 만들지 않으며 기존 empty directories/user files는 보존한다.
+rename은 기존 no-replace confinement을 사용한다. Backup 뒤 외부 metadata가 나타나면 이를
+덮어쓰거나 삭제하지 않고, rollback 불능 시 journal/원본/guard를 보존하고 다음 mutation을 거부한다.
+
+새 단위 검증은 complete nonempty에서 unselected old files 삭제·새 exact owners와 user/cfg 보존,
+명시 empty에서 metadata 부재/readState 정상/다음 transaction 재진입, 처음부터 ownership 없는
+empty target에 controller directory 비생성, legacy empty 및 불일치 empty intent 거부다. Managed
+shared owner subset의 complete 처리와 legacy refusal을 구분한다. Metadata/sync/reconcile 각 fault의
+old bytes/inode/metadata 복원, 외부 metadata 경쟁 시 no-overwrite·primary error/retained recovery와
+다음 mutation 거부를 확인한다. 기존 venv/PyPI/UV/namespace/rollback tests와 canonical5·관련 전체
+Race를 실행한다. 두 번째 검토에서 backup-metadata/publishedMetadata 필드와 최종 body read,
+renameNoReplace·removeBackup·Close 책임을 실제 source와 대조했다. 실제 complete CLI/Policy/
+source guard가 연결되기 전 이 private transaction 기능만으로 P1 지원을 선언하지 않는다.
+
 ### C. 정확한 Python cache·Manifest/SBOM·offline 반입
 
 - Python 전용 ProjectCacheStaging adapter에서 전체 ALLOW와 every required recorded Evidence를
