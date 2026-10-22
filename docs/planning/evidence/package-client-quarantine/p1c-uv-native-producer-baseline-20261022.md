@@ -197,3 +197,43 @@ fixture의 Requires-Python 불일치는 합성 자료에서만 교정하고 부�
 별도 [최종 영수증](./p1c-native-output-ci373-20261022.json)에 연결했다. Same-tree native output
 세 시험·기존 Linux/CPU287.67s/정리는 PASS, macOS default6m/Required는 FAIL이다.
 이후 reader/cache 후보의 원격 성공이나 전체 CI 성공으로 쓰지 않는다.
+
+## Public native caller 연결 후보 — 검증 전
+
+uv_resolver.go는 기존 typed ports의 NewUVResolver/Linux factory에서 실제 native 선택과
+bindUVNativeSelection을 순차 연결한다. Source/request/stream capability·runtime pin과
+native tool bytes를 먼저 검사한다. Native compile stdin과 고정 pylock/sync 명령만 쓰고
+solver를 pip로 대체하지 않는다. Profile/volume/trace/admission은 C2 검증한 기존 구현을
+재사용하고 parent context/기존2m·128MiB output budget을 유지한다. Resource exhaustion은
+검역 실패이며 source budget을 늘려 정상으로 만들지 않는다.
+
+Container는 random session name/owner label과 성공한 absence query로 생성하고, 실제
+ID/name/image reference/label을 실행 전에 확인한다. 생성 stdout이 불확실해도 이름으로
+조회하되 다른 ID/owner·query 실패/모호한 inventory는 채택·삭제하지 않는다. Remove→trace
+collect→각 volume identity/attachment 확인·제거→policy close 뒤에만 unapproved native
+출력을 반환한다. Cleanup/trace 불확실이면 출력을 비워 독립 reader/graph 단계로 가지 않는다.
+독립 Python session도 정리가 끝나야 graph가 반환된다. No Host resolver fallback·새 Core port나
+새 CLI 지원 문구는 없다. 현재 caller IMPLEMENTED=YES(후보), WIRED=NO(app/guarded client),
+QUALIFIED=NO, ACCEPTANCE_CLOSED=NO이며 실제 public/HTTP qualification은 다음 acceptance다.
+
+Caller의 두 번째 검토에서 sync 전에 pylock의 source/형식/graph·declared byte budget을
+검사할 지점을 확인했다. Compile 직후 fixed /haa-site/pylock.toml 한 파일을 기존 bounded
+Docker tar transport로 읽고 ParseUVLock을 먼저 적용한다. 허용되지 않는 source/대안 수·
+버전·aggregate budget이면 sync/추가 wheel 다운로드를 하지 않는다. Sync 뒤 전체 output의
+lock bytes도 최초 snapshot과 같아야 한다. 같은 private transport를 두 실제 reader가 공유하고
+lock-only의 owner/mode/type/한 파일·EOF/padding/byte bound와 producer failure를 검사한다.
+Native metadata 탐색 자체는 기존 context/runtime/network 한도 안에 있으며 Policy를 대신하지 않는다.
+
+추가 lock-only reader/동등성의 canonical5·관련 Race16.610s와 실제 network-none 세 fixture
+(startup5.24s/query4.40s/compile-sync-collection5.04s·complete trace29/31/35)는 PASS다.
+이는 transport와 snapshot의 실제 검증이며 public native/HTTP 성공은 아니다.
+Public idna@3.11 단일 node와 requests@2.32.5의 다중 의존성은 기존 CI의 보호된 test-client
+설치·policy helper 재바인딩 이후 실행한다. 일반 go-test 임시 binary로 caller 인증을 우회하지
+않고, 첫 실패 입력 뒤 더 큰 graph를 반복하지 않는다. 조건 없는 기존 lifecycle step과
+누락 거부 validator에 연결하며 새 job/권한을 만들지 않는다. 실제 결과는 다음 CI로 확인한다.
+
+[Public caller 로컬 영수증](./p1c-public-caller-local-20261022.json)의 최종 canonical5는
+PASS다. Actual lock transport/동등성의 세 fixture와 constructor/refusal/cleanup·reader/
+기존 resolver의 Race16.610s를 연결했다. 완료 native workspace6,833항목688,406,687B는
+Root 참조·query errors0 확인 뒤 제거했다. Public/HTTP entry는 기존 보호된 CI client에
+연결했지만 아직 실제 실행 결과가 없으므로 qualification/CLI 지원을 닫지 않는다.

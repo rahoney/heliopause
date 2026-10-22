@@ -98,6 +98,13 @@ source9b0da57/checkout tree 일치, native startup3.24s/query3.13s/compile-sync-
 complete trace29/31/35와 기존 Linux/CPU287.67s·helper5wait0/정리를 확인했다. macOS는
 build94.05s PASS 뒤 default6m/Required FAIL이다. 이 결과를 이후 reader344a93d나 cache
 정렬 후보의 원격 qualification으로 전용하지 않는다. 새 후보 CI가 다음 확인 지점이다.
+Sourcef76c564를 push했고 CI374가 진행 중이다. 다음 public native UV caller와 독립 reader의
+순차 연결 후보를 구현했고 source/runtime/tool preflight·owned-container cleanup 회귀를
+검증한다. App/guarded install-upgrade-sync·CLI는 미연결이며 public/HTTP actual은 남는다.
+[Public caller 로컬 검증](./evidence/package-client-quarantine/p1c-public-caller-local-20261022.json)은
+canonical5·관련 Race16.610s와 lock-only preflight/snapshot actual 세 fixture를 통과했다.
+완료 native 자료688,406,687B는 제거했다. Public single/multi graph entry를 기존 CI의
+인증된 test-client 단계에 연결했고 다음 source CI가 실제 public/HTTP 완료 조건이다.
 
 
 

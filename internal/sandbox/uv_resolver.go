@@ -1,0 +1,296 @@
+package sandbox
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"strings"
+
+	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
+	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
+)
+
+// UVResolver uses native UV for selection and an independent isolated Python
+// reader for registry/archive binding. Neither step executes artifact code.
+type UVResolver struct{ reader *PyPIResolver }
+
+const uvResolverOwnerLabel = "io.heliopause.uv-resolver"
+
+func NewUVResolver(runner CommandRunner, endpoints NamedEndpointResolver, observer TraceObserver, probe func(context.Context) (PythonCapability, error), policy ResolverPolicyService) (*UVResolver, error) {
+	reader, err := NewPyPIResolver(runner, endpoints, observer, probe, policy)
+	if err != nil {
+		return nil, err
+	}
+	return newUVResolver(reader)
+}
+
+func newUVResolver(reader *PyPIResolver) (*UVResolver, error) {
+	if reader == nil || reader.runner == nil || reader.profile.Source() != artifactpypi.PublicPyPIProfile().Source() {
+		return nil, errors.New("uv resolver requires isolated public reader infrastructure")
+	}
+	runner := reader.runner
+	if admitted, ok := runner.(*admissionAwareCommandRunner); ok {
+		runner = admitted.runner
+	}
+	if _, ok := runner.(inputCommandRunner); !ok {
+		return nil, errors.New("uv resolver requires native stdin transport")
+	}
+	if _, ok := runner.(streamingDockerOutput); !ok {
+		return nil, errors.New("uv resolver requires bounded archive transport")
+	}
+	return &UVResolver{reader: reader}, nil
+}
+
+func NewLinuxUVResolverWithExecutorAndPolicy(executor TrustedExecutor, observer TraceObserver, policy ResolverPolicyService) (*UVResolver, error) {
+	reader, err := NewLinuxPyPIResolverWithExecutorAndPolicy(executor, observer, policy)
+	if err != nil {
+		return nil, err
+	}
+	return newUVResolver(reader)
+}
+
+func (r *UVResolver) Close() error {
+	if r == nil {
+		return nil
+	}
+	return r.reader.Close()
+}
+
+func (r *UVResolver) ResolveDependencies(ctx context.Context, reference domain.ArtifactReference, _ domain.InstallContext) (domain.DependencyResolution, error) {
+	if r == nil || r.reader == nil || ctx == nil || reference.Source() != artifactpypi.PublicPyPIProfile().Source() {
+		return domain.DependencyResolution{}, errors.New("uv resolution requires a public PyPI request")
+	}
+	if err := ctx.Err(); err != nil {
+		return domain.DependencyResolution{}, err
+	}
+	request, err := pypiRequirement(reference)
+	if err != nil {
+		return domain.DependencyResolution{}, err
+	}
+	native, err := r.resolveNativeSelection(ctx, reference, request)
+	if err != nil {
+		return domain.DependencyResolution{}, err
+	}
+	return r.reader.bindUVNativeSelection(ctx, reference, native)
+}
+
+func (r *UVResolver) resolveNativeSelection(ctx context.Context, reference domain.ArtifactReference, request string) (result uvNativeOutput, resultErr error) {
+	reader := r.reader
+	capability, err := reader.probe(ctx)
+	if err != nil {
+		return uvNativeOutput{}, uvReaderFailure{"uv native runtime probe failed", err}
+	}
+	if !capability.Available || capability.Runtime != PinnedPythonRuntime() {
+		return uvNativeOutput{}, errors.New("uv native runtime is unavailable")
+	}
+	platform, err := uvTargetPlatform(capability.Runtime)
+	if err != nil {
+		return uvNativeOutput{}, err
+	}
+	tool, err := prepareUVTool(ctx, reader.runner)
+	if err != nil {
+		return uvNativeOutput{}, err
+	}
+	addressesByName, err := reader.endpoints.Resolve(ctx, pypiResolverEndpoints)
+	if err != nil {
+		return uvNativeOutput{}, errors.New("uv resolver endpoint preflight failed")
+	}
+	addresses, hosts, err := resolverNetworkArguments(artifactpypi.PublicPyPIProfile(), addressesByName)
+	if err != nil {
+		return uvNativeOutput{}, errors.New("uv resolver endpoint preflight is unsafe")
+	}
+	policy, err := NewResolverNetworkPolicy(reader.runner, reader.policy)
+	if err != nil {
+		return uvNativeOutput{}, err
+	}
+	network, err := policy.Prepare(ctx, addresses)
+	if err != nil {
+		return uvNativeOutput{}, err
+	}
+	var runtimeVolume uvRuntimeVolume
+	var output closureVolume
+	var trace TraceReader
+	container := ""
+	name, owner := "", ""
+	createAttempted := false
+	defer func() {
+		var cleanupErr error
+		if createAttempted {
+			cleanup, cancel := resolverCleanupContext()
+			removeErr := removeOwnedUVResolverContainer(cleanup, reader.runner, name, owner, container)
+			cancel()
+			if removeErr != nil {
+				cleanupErr = uvReaderFailure{fmt.Sprintf("uv resolver container cleanup unproven name=%s", name), removeErr}
+			}
+			if trace != nil {
+				collect, done := context.WithTimeout(context.Background(), cleanupTimeout)
+				_, limitation, diagnostic := collectTraceDiagnostic(collect, trace)
+				done()
+				if limitation != "" {
+					cleanupErr = errors.Join(cleanupErr, fmt.Errorf("uv resolver observation is incomplete: %s", diagnostic))
+				}
+			}
+		}
+		if output.name != "" {
+			cleanup, cancel := resolverCleanupContext()
+			cleanupErr = errors.Join(cleanupErr, closeUVOutputVolume(cleanup, reader.runner, &output))
+			cancel()
+		}
+		if runtimeVolume.name != "" {
+			cleanup, cancel := resolverCleanupContext()
+			cleanupErr = errors.Join(cleanupErr, runtimeVolume.close(cleanup, reader.runner))
+			cancel()
+		}
+		cleanup, cancel := resolverCleanupContext()
+		cleanupErr = errors.Join(cleanupErr, policy.Close(cleanup))
+		cancel()
+		if cleanupErr != nil {
+			result = uvNativeOutput{}
+			resultErr = errors.Join(resultErr, cleanupErr)
+		}
+	}()
+	runtimeVolume, err = createUVRuntimeVolume(ctx, reader.runner)
+	if err != nil {
+		return uvNativeOutput{}, err
+	}
+	session, err := domain.NewSandboxSessionID()
+	if err != nil {
+		return uvNativeOutput{}, err
+	}
+	owner = session.String()
+	name = "haa-uv-resolver-" + owner
+	output, err = createClosureVolume(ctx, reader.runner, session.String()+"-uv-output", runtimeidentity.UVToolSHA256, artifactpypi.PublicPyPIProfile().ResourcePolicy().PromotionTmpfs())
+	if err != nil {
+		return uvNativeOutput{}, err
+	}
+	arguments, err := uvCreateArguments(network, hosts, runtimeVolume, output)
+	if err != nil {
+		return uvNativeOutput{}, err
+	}
+	listed, err := reader.runner.Output(ctx, "docker", "ps", "--all", "--quiet", "--no-trunc", "--filter", "name=^/"+name+"$")
+	if err != nil || len(listed) > 1024 || strings.TrimSpace(string(listed)) != "" {
+		return uvNativeOutput{}, errors.New("uv resolver name preflight is unavailable or nonempty")
+	}
+	arguments = append([]string{"create", "--name", name, "--label", uvResolverOwnerLabel + "=" + owner}, arguments[1:]...)
+	createAttempted = true
+	created, err := reader.runner.Output(ctx, "docker", arguments...)
+	if err != nil || !exactObservationContainerID(strings.TrimSpace(string(created))) {
+		return uvNativeOutput{}, uvReaderFailure{fmt.Sprintf("create uv resolver container identity unavailable name=%s", name), errors.Join(err, ctx.Err())}
+	}
+	container = strings.TrimSpace(string(created))
+	if err := verifyOwnedUVResolverContainer(ctx, reader.runner, name, owner, container); err != nil {
+		return uvNativeOutput{}, err
+	}
+	trace, err = startTrace(ctx, reader.observer, container, uvResolverProfile)
+	if err != nil {
+		return uvNativeOutput{}, errors.New("start uv resolver observer failed")
+	}
+	if _, err := reader.runner.Output(ctx, "docker", "start", container); err != nil {
+		return uvNativeOutput{}, errors.New("start uv resolver container failed")
+	}
+	if err := awaitMountAnchors(ctx, reader.observer, container); err != nil {
+		return uvNativeOutput{}, err
+	}
+	if err := awaitBoundaryHelper(ctx, reader.runner, container); err != nil {
+		return uvNativeOutput{}, err
+	}
+	if err := runtimeVolume.verifyTarget(ctx, reader.runner, container); err != nil {
+		return uvNativeOutput{}, err
+	}
+	if err := output.verifyContainerMount(ctx, reader.runner, container, false); err != nil {
+		return uvNativeOutput{}, err
+	}
+	if err := output.verifyAttachments(ctx, reader.runner, map[string]bool{container: false}); err != nil {
+		return uvNativeOutput{}, err
+	}
+	if err := tool.introduce(ctx, reader.runner, container); err != nil {
+		return uvNativeOutput{}, err
+	}
+	if err := runtimeVolume.verifyTarget(ctx, reader.runner, container); err != nil {
+		return uvNativeOutput{}, err
+	}
+	selection, cancel := context.WithTimeout(ctx, pypiResolverTimeout)
+	defer cancel()
+	common := []string{"--no-build", "--no-config", "--no-cache", "--no-python-downloads", "--no-managed-python", "--python", "/usr/local/bin/python", "--index-url", artifactpypi.PublicPyPIProfile().IndexURL()}
+	compile := append([]string{"pip", "compile", "-", "--format", "pylock.toml", "--output-file", pythonSitePath + "/pylock.toml", "--python-version", capability.Runtime.PythonVersion, "--python-platform", platform}, common...)
+	input := reader.runner.(inputCommandRunner)
+	if err := input.RunInput(selection, strings.NewReader(request+"\n"), "docker", boundaryInputExecArguments(container, boundaryLaunchMode, append([]string{uvToolGuestPath}, compile...)...)...); err != nil {
+		return uvNativeOutput{}, uvReaderFailure{"native uv compile failed", err}
+	}
+	lockSnapshot, err := readUVNativeLock(selection, reader.runner, container)
+	if err != nil {
+		return uvNativeOutput{}, err
+	}
+	if _, err := artifactpypi.ParseUVLock(reference, lockSnapshot, capability.Runtime.PythonVersion); err != nil {
+		return uvNativeOutput{}, err
+	}
+	sync := append([]string{"pip", "sync", pythonSitePath + "/pylock.toml", "--target", pythonSitePath + "/site", "--link-mode", "copy"}, common...)
+	if _, err := reader.runner.Output(selection, "docker", boundaryExecArguments(container, boundaryLaunchMode, append([]string{uvToolGuestPath}, sync...)...)...); err != nil {
+		return uvNativeOutput{}, uvReaderFailure{"native uv pylock materialization failed", err}
+	}
+	if err := output.verifyAttachments(selection, reader.runner, map[string]bool{container: false}); err != nil {
+		return uvNativeOutput{}, err
+	}
+	result, err = readUVNativeOutput(selection, reader.runner, container)
+	if err != nil {
+		return uvNativeOutput{}, err
+	}
+	if !bytes.Equal(result.lock, lockSnapshot) {
+		return uvNativeOutput{}, errors.New("uv native lock changed during materialization")
+	}
+	if err := output.verifyAttachments(selection, reader.runner, map[string]bool{container: false}); err != nil {
+		return uvNativeOutput{}, err
+	}
+	return result, nil
+}
+
+func removeOwnedUVResolverContainer(ctx context.Context, runner CommandRunner, name, owner, expectedID string) error {
+	if name != "haa-uv-resolver-"+owner || owner == "" {
+		return errors.New("uv resolver cleanup owner unavailable")
+	}
+	listed, err := runner.Output(ctx, "docker", "ps", "--all", "--quiet", "--no-trunc", "--filter", "name=^/"+name+"$")
+	if err != nil || len(listed) > 1024 {
+		return errors.New("uv resolver cleanup inventory unavailable")
+	}
+	ids := strings.Fields(string(listed))
+	if len(ids) == 0 && expectedID == "" {
+		return nil
+	}
+	if len(ids) != 1 || !exactObservationContainerID(ids[0]) || expectedID != "" && ids[0] != expectedID {
+		return errors.New("uv resolver cleanup identity differs")
+	}
+	if err := verifyOwnedUVResolverContainer(ctx, runner, name, owner, ids[0]); err != nil {
+		return err
+	}
+	_, err = runner.Output(ctx, "docker", "rm", "--force", ids[0])
+	return err
+}
+
+func verifyOwnedUVResolverContainer(ctx context.Context, runner CommandRunner, name, owner, id string) error {
+	if owner == "" || name != "haa-uv-resolver-"+owner || !exactObservationContainerID(id) {
+		return errors.New("uv resolver container identity unavailable")
+	}
+	body, err := runner.Output(ctx, "docker", "inspect", "--format", "{{json .}}", id)
+	var actual struct {
+		ID     string `json:"Id"`
+		Name   string
+		Config struct {
+			Image  string
+			Labels map[string]string
+		}
+	}
+	if err != nil || len(body) == 0 || len(body) > 32<<10 || json.Unmarshal(body, &actual) != nil || actual.ID != id || actual.Name != "/"+name || actual.Config.Image != pythonImageReference || actual.Config.Labels[uvResolverOwnerLabel] != owner {
+		return errors.New("uv resolver container ownership unproven")
+	}
+	return nil
+}
+
+func uvTargetPlatform(runtime PythonRuntime) (string, error) {
+	if runtime != PinnedPythonRuntime() || !strings.HasPrefix(runtime.PlatformTag, "manylinux_") || !strings.HasSuffix(runtime.PlatformTag, "_x86_64") {
+		return "", errors.New("uv native target platform is unsupported")
+	}
+	return "x86_64-" + strings.TrimSuffix(runtime.PlatformTag, "_x86_64"), nil
+}

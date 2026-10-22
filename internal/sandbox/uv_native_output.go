@@ -22,24 +22,62 @@ type uvNativeOutput struct {
 // readUVNativeOutput transports unapproved native data only. The caller must
 // authenticate the separately acquired archives before returning any graph.
 func readUVNativeOutput(ctx context.Context, runner CommandRunner, containerID string) (uvNativeOutput, error) {
+	return readUVNativeTar(ctx, runner, containerID, pythonSitePath+"/.", scanUVNativeOutput)
+}
+
+func readUVNativeLock(ctx context.Context, runner CommandRunner, containerID string) ([]byte, error) {
+	data, err := readUVNativeTar(ctx, runner, containerID, pythonSitePath+"/pylock.toml", scanUVNativeLock)
+	return data.lock, err
+}
+
+func readUVNativeTar(ctx context.Context, runner CommandRunner, containerID, guestPath string, scan func(io.Reader) (uvNativeOutput, error)) (uvNativeOutput, error) {
 	output, ok := runner.(streamingDockerOutput)
-	if !ok || ctx == nil || ctx.Err() != nil || !exactObservationContainerID(containerID) {
+	if !ok || ctx == nil || scan == nil || !exactObservationContainerID(containerID) || (guestPath != pythonSitePath+"/." && guestPath != pythonSitePath+"/pylock.toml") {
 		return uvNativeOutput{}, errors.New("uv native output transport is unavailable")
+	}
+	if err := ctx.Err(); err != nil {
+		return uvNativeOutput{}, err
 	}
 	reader, writer := io.Pipe()
 	commandResult := make(chan error, 1)
 	go func() {
-		err := output.RunOutput(ctx, writer, "docker", "cp", containerID+":"+pythonSitePath+"/.", "-")
+		err := output.RunOutput(ctx, writer, "docker", "cp", containerID+":"+guestPath, "-")
 		_ = writer.CloseWithError(err)
 		commandResult <- err
 	}()
-	data, scanErr := scanUVNativeOutput(reader)
+	data, scanErr := scan(reader)
 	_ = reader.CloseWithError(scanErr)
 	commandErr := <-commandResult
 	if err := errors.Join(scanErr, commandErr, ctx.Err()); err != nil {
 		return uvNativeOutput{}, fmt.Errorf("uv native output collection failed: %w", err)
 	}
 	return data, nil
+}
+
+func scanUVNativeLock(input io.Reader) (uvNativeOutput, error) {
+	if input == nil {
+		return uvNativeOutput{}, errors.New("uv native lock stream is missing")
+	}
+	bounded := &io.LimitedReader{R: input, N: uvNativeLockLimit + (16 << 10)}
+	archive := tar.NewReader(bounded)
+	header, err := archive.Next()
+	if err != nil || strings.TrimPrefix(header.Name, "./") != "pylock.toml" || (header.Typeflag != tar.TypeReg && header.Typeflag != 0) || header.Uid != 1000 || header.Gid != 1000 || header.Mode&^int64(0o777) != 0 || header.Mode&0o022 != 0 || header.Size < 1 || header.Size > uvNativeLockLimit {
+		return uvNativeOutput{}, errors.New("uv native lock file identity, mode or size is invalid")
+	}
+	body, err := io.ReadAll(archive)
+	if err != nil || int64(len(body)) != header.Size {
+		return uvNativeOutput{}, errors.New("uv native lock is truncated")
+	}
+	if _, err := archive.Next(); !errors.Is(err, io.EOF) {
+		return uvNativeOutput{}, errors.New("uv native lock tar has extra entries or is invalid")
+	}
+	if err := drainUVTarPadding(bounded); err != nil {
+		return uvNativeOutput{}, err
+	}
+	if bounded.N == 0 {
+		return uvNativeOutput{}, errors.New("uv native lock tar exceeds byte bound")
+	}
+	return uvNativeOutput{lock: body}, nil
 }
 
 func scanUVNativeOutput(input io.Reader) (uvNativeOutput, error) {
@@ -128,20 +166,8 @@ func scanUVNativeOutput(input io.Reader) (uvNativeOutput, error) {
 	}
 	// Consume the producer to completion; only bounded zero tar padding may
 	// follow the archive. A second archive is not part of this snapshot.
-	var padding [4096]byte
-	for {
-		n, err := bounded.Read(padding[:])
-		for _, value := range padding[:n] {
-			if value != 0 {
-				return uvNativeOutput{}, errors.New("uv native tar has trailing data")
-			}
-		}
-		if errors.Is(err, io.EOF) {
-			break
-		}
-		if err != nil {
-			return uvNativeOutput{}, err
-		}
+	if err := drainUVTarPadding(bounded); err != nil {
+		return uvNativeOutput{}, err
 	}
 	if bounded.N == 0 || len(result.lock) == 0 || len(controls) == 0 {
 		return uvNativeOutput{}, errors.New("uv native output is missing or exceeds bounds")
@@ -154,4 +180,22 @@ func scanUVNativeOutput(input io.Reader) (uvNativeOutput, error) {
 	}
 	sort.Slice(result.controls, func(i, j int) bool { return result.controls[i].DistInfo < result.controls[j].DistInfo })
 	return result, nil
+}
+
+func drainUVTarPadding(input io.Reader) error {
+	var padding [4096]byte
+	for {
+		n, err := input.Read(padding[:])
+		for _, value := range padding[:n] {
+			if value != 0 {
+				return errors.New("uv native tar has trailing data")
+			}
+		}
+		if errors.Is(err, io.EOF) {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+	}
 }

@@ -542,6 +542,7 @@ var uvIntegrationCommands = []string{
 	`uv_image="$(jq -er '.uv_image.reference' "$runtime_lock")"`,
 	`docker pull "$uv_image"`,
 	`HELOX_UV_NATIVE_RUNTIME=1 go test -tags=realcorpus -v -timeout=3m ./internal/sandbox -run '^TestUVActualIsolated(NativeStartup|EmptyTargetQuery|NativeLockCollection)$'`,
+	`HELOX_UV_PUBLIC_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestUVPublicNativeResolverIntegration$'`,
 }
 
 // The same ephemeral job cache and compiler flags must reach both the outer

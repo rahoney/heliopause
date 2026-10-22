@@ -203,3 +203,49 @@ func TestUVNativeOutputDiscardsOnlyExactEmptyAuxiliaryLock(t *testing.T) {
 		}
 	}
 }
+
+func TestUVNativeLockReaderRequiresOneBoundedOwnedFileAndProducerCompletion(t *testing.T) {
+	valid := testClosureTar(t, map[string][]byte{"pylock.toml": []byte("lock-version='1.0'\n")}, 1000)
+	for name, body := range map[string][]byte{
+		"complete":         valid,
+		"wrong owner":      testClosureTar(t, map[string][]byte{"pylock.toml": []byte("lock")}, 0),
+		"wrong path":       testClosureTar(t, map[string][]byte{"site/pylock.toml": []byte("lock")}, 1000),
+		"extra entry":      testClosureTar(t, map[string][]byte{"pylock.toml": []byte("lock"), "extra": []byte("x")}, 1000),
+		"empty lock":       testClosureTar(t, map[string][]byte{"pylock.toml": nil}, 1000),
+		"oversize lock":    testClosureTar(t, map[string][]byte{"pylock.toml": bytes.Repeat([]byte("x"), uvNativeLockLimit+1)}, 1000),
+		"truncated lock":   valid[:513],
+		"trailing archive": append(append([]byte(nil), valid...), valid...),
+	} {
+		t.Run(name, func(t *testing.T) {
+			runner := &uvOutputRunner{body: body}
+			lock, err := readUVNativeLock(context.Background(), runner, strings.Repeat("a", 64))
+			if (err == nil) != (name == "complete") {
+				t.Fatal("lock transport acceptance differs", err)
+			}
+			if err != nil && len(lock) != 0 {
+				t.Fatal("failed lock transport retained bytes")
+			}
+			if strings.Join(runner.call, " ") != "docker cp "+strings.Repeat("a", 64)+":"+pythonSitePath+"/pylock.toml -" {
+				t.Fatal("lock transport used wrong path")
+			}
+		})
+	}
+	cause := errors.New("producer failed after lock bytes")
+	runner := &uvOutputRunner{body: valid, err: cause}
+	if lock, err := readUVNativeLock(context.Background(), runner, strings.Repeat("a", 64)); !errors.Is(err, cause) || len(lock) != 0 {
+		t.Fatal("lock bytes replaced producer completion", err)
+	}
+	for _, header := range []tar.Header{
+		{Name: "pylock.toml", Mode: 0o666, Uid: 1000, Gid: 1000, Size: 1, Typeflag: tar.TypeReg},
+		{Name: "pylock.toml", Mode: 0o644, Uid: 1000, Gid: 1000, Typeflag: tar.TypeSymlink, Linkname: "elsewhere"},
+	} {
+		var buffer bytes.Buffer
+		writer := tar.NewWriter(&buffer)
+		if err := writer.WriteHeader(&header); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := scanUVNativeLock(bytes.NewReader(buffer.Bytes())); err == nil {
+			t.Fatal("unsafe lock header accepted")
+		}
+	}
+}

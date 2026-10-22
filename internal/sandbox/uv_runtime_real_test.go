@@ -79,6 +79,10 @@ func TestUVActualIsolatedNativeLockCollection(t *testing.T) {
 		if err := input.RunInput(ctx, strings.NewReader(requirement), "docker", boundaryInputExecArguments(id, boundaryLaunchMode, append([]string{uvToolGuestPath}, compile...)...)...); err != nil {
 			t.Fatal("native UV stdin compile failed", err)
 		}
+		lockSnapshot, err := readUVNativeLock(ctx, runner, id)
+		if err != nil {
+			t.Fatal("native UV bounded pre-materialization lock read failed", err)
+		}
 		sync := append([]string{"pip", "sync", pythonSitePath + "/pylock.toml", "--target", pythonSitePath + "/site", "--no-index", "--link-mode", "copy"}, common...)
 		if _, err := runner.Output(ctx, "docker", boundaryExecArguments(id, boundaryLaunchMode, append([]string{uvToolGuestPath}, sync...)...)...); err != nil {
 			t.Fatal("native UV pylock materialization failed", err)
@@ -86,6 +90,9 @@ func TestUVActualIsolatedNativeLockCollection(t *testing.T) {
 		data, err := readUVNativeOutput(ctx, runner, id)
 		if err != nil || len(data.controls) != 1 || data.controls[0].DistInfo != "haa_uv_probe-1.0.dist-info" {
 			t.Fatal("native UV output collection failed", err)
+		}
+		if !bytes.Equal(lockSnapshot, data.lock) {
+			t.Fatal("native UV materialization changed the lock snapshot")
 		}
 		reference, _ := artifactpypi.ParseReference("haa-uv-probe@1.0")
 		if _, err := artifactpypi.ParseUVLock(reference, data.lock, PinnedPythonRuntime().PythonVersion); err == nil {
