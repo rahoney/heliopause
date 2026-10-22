@@ -452,3 +452,20 @@ extension은 그대로 검사하고 UV는 정확한 wheel graph만 허용한다.
 publication으로 이어지지 않으며 transaction/cleanup이 primary cause를 덮지 않는다.
 Canonical format/quick/security/docs/workflow와 promotion 전체 Race를 먼저 수행한다.
 로컬 합성 materializer PASS를 actual native target update qualification으로 확대하지 않는다.
+
+
+### C3c2a 로컬 결과
+
+[최종 영수증](./p1c-managed-guard-local-20261022.json)은 canonical5와 promotion/application/
+artifact-pypi 전체 Race PASS를 연결한다. 기존 shared preparation에 venv discovery·selection
+controls/검증·graph extension 판정만 private 함수로 주입했고 pip/named validator body를
+유지했다. UV adapter는 세 intent/원본·delta·pylock, 실제 UV runtime과 wheel graph의
+name/version/URL/SHA를 확인하고 기존 held publication/rollback을 사용한다.
+
+새 fixture의 acquired/resolved artifact 타입 혼동으로 첫 test build가 실패했으며 corrected
+final Quick와 Race가 통과했다. 이 오류를 native 실행 실패로 기록하지 않는다. 대상과 trusted
+staging 중첩도 사전 거부한다. Task TMPDIR0이며 새 native Docker 자원은 만들지 않았다.
+IMPLEMENTED=YES / WIRED=YES(port), production CLI=NO / QUALIFIED=LOCAL ONLY /
+ACCEPTANCE_CLOSED=NO다. 다음은 공통 owner 추출 후보의 실제 pip/native/Required CI이며,
+그 뒤 ordinary installed-aware UV install·CLI UPDATE와 실제 대상 반입을 연결한다.
+Native UV adoption·complete/multi-root/empty sync와 P1 전체 acceptance는 남는다.

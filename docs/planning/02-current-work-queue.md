@@ -190,6 +190,7 @@ Guarded update 반입·CLI/native ownership·sync는 후속이며 P1 밖으로 �
 canonical5/관련 Race3개 PASS다. Native resolver/CI는 연결했고 다음은 실제 public/Required
 검증이다. Original metadata 한도와 selected graph 한도는 구분했고 actual native 성공은 아직 아니다.
 [CI378 종료](./evidence/package-client-quarantine/p1c-installed-producer-ci378-20261022.json)는 같은 전체 tree와 Required 포함10SUCCESS, 실제 native 세 intent19.60s/4controls, Linux51/CPU231.72s·helper5wait0/최종 confirmed cleanup와 macOS/Vulnerability를 확인했다. C3c1 네 상태는 모두 YES다. 다음 C3c2a는 기존 original snapshot/held transaction과 UV 선택 controls를 연결하는 managed guard이며, CLI 변경·native adoption·sync는 후속이다. 정확한 지도와 두 번째 검토는 C3 leaf를 따른다.
+[C3c2a 로컬 결과](./evidence/package-client-quarantine/p1c-managed-guard-local-20261022.json)는 canonical5와 promotion/application/artifact-pypi 전체 Race PASS다. Managed UV guard port와 exact controls/lock/graph·기존 반입/rollback 연결은 구현했으며, 실제 shared pip 소비자/Required CI와 production CLI·actual UV target update는 미완료다. 그 원격 검증 뒤 C3c2b binding을 진행한다.
 
 
 
