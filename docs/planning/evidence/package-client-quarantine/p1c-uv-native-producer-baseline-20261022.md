@@ -267,3 +267,21 @@ fresh canonical C++ 전체 및 canonical Quick/security/docs/workflow 뒤 새 �
 build300.099s/106 latch와 Quick/security/docs/workflow PASS를 연결한다. Canonical builder의
 완료 workroot 부재도 확인했다. 이것은 좁은 분류/부정 matrix 검증이며 새 public graph/HTTP
 성공은 아니다. CI375 실패를 유지하고 같은 수정 source의 새 원격 qualification을 확인한다.
+
+## C2 single-root producer qualification 종료
+
+Source35c0f2d의 [CI376 최종 결과](./p1c-public-ci376-20261022.json)는 같은 checkout tree와
+Required 포함10SUCCESS다. 실제 public idna@3.11은 nodes1/edges0, requests@2.32.5는
+nodes5/edges4를 반환했다. Native UV 선택과 독립 exact-release/whole archive·RECORD/
+Requires-Dist binding은22.75s에 완료됐고 authenticated CI client/typed policy를 유지했다.
+기존 startup/query/output complete29/31/35와 C++106, Linux49 top-level 통합·CPU295.93s,
+helper5wait0/최종 confirmed cleanup도 PASS다. Host activation·native 사용자 설치는 아니다.
+
+이 범위에서 producer는 IMPLEMENTED=YES / WIRED=YES(internal/CI) / QUALIFIED=YES /
+ACCEPTANCE_CLOSED=YES다. 기존 실패375와 로컬 한도는 보존한다. MacOS build86.314s/
+default envelope228.543s 이내도 통과했다. CI 출력의 Cargo hostile-denial 메시지는 해당
+negative fixtures의 PASS와 구분하며 정상 graph 실패로 합치지 않는다.
+
+P1 전체와 application/guarded install-upgrade-sync/CLI의 acceptance는 계속 NO다.
+다음은 [C3 guarded client 지도](./p1c-guarded-client-baseline-20261022.md)의 확인된 gap만
+구현하는 것이다. 기존 solver/parser/lifecycle을 다시 구현하거나 P2로 이동하지 않는다.

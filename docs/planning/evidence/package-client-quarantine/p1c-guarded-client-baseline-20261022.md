@@ -1,9 +1,9 @@
 # P1c C3 — guarded client 연결의 baseline audit
 
-최초 기준 sourceab54d4a, 후속 조사 기준35c0f2d. C2 public UV/HTTP qualification의 CI375는
-exact hosts read 분류 누락으로 FAIL이며 보완한 CI376을 확인 중이다. 이 문서는 다음
-acceptance gap의 읽기 전용 감사다.
-구현은 NOT_STARTED, M13-004/P1만 IN_PROGRESS이며 P2..P7로 이동하지 않는다.
+최초 기준 sourceab54d4a, 후속 조사 기준35c0f2d/문서948833a. C2 public UV/HTTP는
+[CI376](./p1c-public-ci376-20261022.json)의 실제 단일/다중 graph와10SUCCESS로 qualified다.
+이 문서는 다음 acceptance gap의 감사·수정 지도다. C3 제품 구현은 아직 NOT_STARTED이며,
+이제 아래 gap의 순차 구현을 시작한다. M13-004/P1만 IN_PROGRESS이고 P2..P7로 이동하지 않는다.
 
 Read: [P1c 지도](./p1c-uv-resolver-baseline-20261022.md),
 [C2 producer 지도](./p1c-uv-native-producer-baseline-20261022.md),
@@ -12,7 +12,7 @@ Read: [P1c 지도](./p1c-uv-resolver-baseline-20261022.md),
 
 | 책임 / 실제 위치 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
 | --- | --- | --- | --- | --- | --- |
-| Native UV graph — sandbox/uv_resolver.go + uv_resolver_reader.go | YES | YES(internal/CI), NO(app) | NO(CI375 FAIL) | NO | exact hosts read 보완·새 public actual/negative·실패 정리 |
+| Native UV graph — sandbox/uv_resolver.go + uv_resolver_reader.go | YES | YES(internal/CI), NO(app) | YES(CI376 public scope) | YES(single-root producer) | 기존 구현 재사용; app/guarded client 연결은 아래 별도 gap |
 | 신규 target/venv 반입 — promotion/pypi_promotion.go, pypi_venv_transaction.go | YES | YES(pip) | YES(existing scope) | YES(existing scope) | UV solver와 실제 installer 신원·frozen controls 연결 |
 | Guarded update selection — promotion/pypi_update.go ResolveDependencies | YES | YES(pip/PyTorch) | YES(existing scope) | YES(existing scope) | UV native retention/완전 graph 및 선택 증거 adapter |
 | Native 설치 enrollment — pypi_native_ownership.go oldWheel/proveNativePyPIWheelFootprint | YES | YES(pip) | YES(existing scope) | YES(existing scope) | 관측한 UV cfg/marker의 adapter; cache schema/생성 파일·entrypoint proof 및 actual enrollment |
