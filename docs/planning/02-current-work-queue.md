@@ -15,10 +15,30 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — native same-runtime self-quarantine update IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; actual signed rc6 normal/cancellations/fresh replay passed; channel scope remains
-Next action: P1 uv pip IN_PROGRESS — C2 public native producer QUALIFIED/ACCEPTANCE_CLOSED (CI376 ten SUCCESS); C3 guarded install-upgrade-sync/client routing is next; P2..P7 NOT_STARTED
+Next action: P1 uv pip IN_PROGRESS — C3b empty-venv CLI QUALIFIED/ACCEPTANCE_CLOSED (CI377 ten SUCCESS); C3c installed-aware install/upgrade and complete sync remain
+After P1: M13-004/G127 — Go 1.27.3 coordinated migration NOT_STARTED; must finish before P2
+After G127: P2 pnpm, then P3..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-22 순서 결정 — P1 완료 후 Go1.27.3, 그다음 P2
+
+사용자는 GO-2026-6809와 Go1.27.3 전환을 추가 요청하고 순서 판단을 위임했다.
+현재 source/CI/runtime/tool pin은 이미 보안 수정1.26.10이며 [CI377 최종 결과](./evidence/package-client-quarantine/p1c-guarded-cli-ci377-20261022.json)의
+Required/Vulnerability 포함10SUCCESS를 확인했다. 이 advisory의 미패치 source 복구와
+다음 Go 계열 전환을 구분한다. 기존 Host/preview를 자동 업데이트한 것은 아니다.
+
+| 순서 | 범위 / 상태 | 시작·완료 기준 |
+| --- | --- | --- |
+| 1 | P1 uv pip — IN_PROGRESS | C3b 빈 기존 venv 설치는 완료. C3c installed-aware 설치/업데이트·native ownership·complete/multi-root/empty sync와 P1 실제 qualification을 닫는다 |
+| 2 | M13-004/G127 Go1.27.3 — NOT_STARTED | P1 acceptance 뒤 [착수 감사·수정 지도·검증·두 번째 검토](./evidence/package-client-quarantine/go1273-migration-baseline-20261022.md)를 갱신하고 기존 maintenance plan/apply/verify로 별도 후보를 검증한다. Compiler/guest/tools/gVisor bundle·observer·CI/release/support tuple과 actual 소비자/플랫폼/CPU·세 CUDA/전환 경계를 확인 |
+| 3 | P2 pnpm → P3..P7 — NOT_STARTED | G127 qualification/acceptance 후 새 기준에서 확장을 재개한다. 전체 client 완료까지 Go 전환을 미루지 않음 |
+
+M13-004 하나만 IN_PROGRESS이며 G127을 동시에 착수하지 않는다. Go1.26은 공식 지원 중이고
+현재 취약점은1.26.10에서 수정되어 P1 기능 변화와 runtime 변화를 분리할 수 있는 경계가
+적절하다. 새 reachable advisory/지원 종료가 이 판단의 전제를 바꾸면 긴급 순서를 재평가한다.
+1.27.3은 전환 목표이며 현재 lock/workflow/Host SDK는 이 순서 기록에서 변경하지 않는다.
 
 ### 2026-10-21 owner scope — client expansion and full-name brand
 
@@ -155,6 +175,11 @@ CI 대기 중 C3 leaf에 C3c source 감사·metadata-only native 전송의 미�
 [후속 metadata-only 형식 조사](./evidence/package-client-quarantine/p1c-uv-metadata-only-format-20261022.json)는
 14개 native 입력과 원본 불변·Host 동일성·owned 자원 정리를 확인했다. 다음 UV 선택 입력은
 bounded inert METADATA로 구체화하며 gVisor/public/guarded update 성공으로 확대하지 않는다.
+[CI377 종료 확인](./evidence/package-client-quarantine/p1c-guarded-cli-ci377-20261022.json)은
+source8ec8de7/actual checkout334918f·동일 전체 tree와10SUCCESS다. 실제 UV CLI 설치25.50s,
+nonempty 반복 거부·target/Evidence 불변, Linux50/CPU283.72s/helper5wait0/final confirmed
+cleanup와 native macOS·Vulnerability를 통과했다. C3b 빈 venv 설치의 네 상태는 모두 YES다.
+현재 다음은 C3c installed-aware install/upgrade/native ownership·sync이며 P1 전체는 미완료다.
 
 
 

@@ -87,6 +87,10 @@ identity를 사용하되 명시 capability/보안 한도까지 사용자 설정�
 | P6 uvx·bunx·pipx run·pnpm dlx | P5 재사용, 각각 parser/runtime/selection adapters | 각 alias real end-to-end, forced runtime/backend·cache negatives | NOT_STARTED |
 | P7 통합 qualification/인계 | 모든 목표 command/옵션 지원표·remaining gaps 대조 | exact-source CI/실제 runtime·기존 소비자·docs/help·cleanup 모두 연결 | NOT_STARTED |
 
+2026-10-22 추가 요청의 Go1.27.3 전환은 P1 acceptance 뒤/P2 전에 수행한다.
+세부 순서·상태는 [Queue](./02-current-work-queue.md), 호환성·검증은
+[Go1.27.3 착수 지도](./evidence/package-client-quarantine/go1273-migration-baseline-20261022.md)가 소유한다.
+
 같이 계획하되 모든 도구를 한 commit에서 구현하지 않는다. 단계마다 의미 있는 한글 commit,
 경계별 evidence와 실제 미완료를 남긴다. 구현 중 새로운 invariant 변경 필요가 생기면 그
 항목을 구체화하고 승인 전 해당 변경은 수행하지 않는다. 명칭/버전/계정·public release는 별도다.

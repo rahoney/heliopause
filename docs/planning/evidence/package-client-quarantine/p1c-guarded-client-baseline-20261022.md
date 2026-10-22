@@ -357,3 +357,18 @@ UpgradeInput.MetadataFiles의 bounded inert METADATA만 전달하는 방향으�
 Exact owned containers3와 파생 image1을 --no-prune로 제거했고 Host 파일/image/container/
 bridge/service는 전후 동일했다. Root references0/query errors0 뒤 완료 작업 디렉터리와
 일회성 script3항목10,888B를 삭제했다. 작은 원본 결과/재현 source·정리 증거만 보존했다.
+
+## C3b 실제 CI377 qualification 종료
+
+[최종 증거](./p1c-guarded-cli-ci377-20261022.json)는 source8ec8de7와 actual checkout334918f의
+동일 전체 tree5ffc240 및 Required 포함10SUCCESS를 확인했다. 실제 installed authenticated
+bootstrap-test 안에서 UV 선택→전체 검사/ALLOW→staging→기존 offline installer→target 반입이
+25.50s에 성공했다. Manifest의 정확한 UV runtime, idna 파일·소유 기록과 cfg 불변을 확인했고,
+nonempty 두 번째 요청은 선택 이전 거부되며 target/Evidence가 불변이었다. Public UV20.05s,
+Linux50/CPU283.72s/helper5wait0/final confirmed cleanup, native macOS와 Vulnerability도 PASS다.
+
+C3b의 빈 기존 venv INSTALL은 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED 모두
+YES다. 앞 절의 native NOT_RUN/NO는 이 결과로 갱신한다. Installed-aware 설치/upgrade·native
+ownership·complete/multi-root/empty sync/P1 전체는 여전히 MISSING이며 C3c 착수 지도를 따른다.
+현재1.26.10 기준 P1을 닫은 뒤 [Go1.27.3 전환 계획](./go1273-migration-baseline-20261022.md)을
+P2 전에 수행한다. 순서·상태의 단일 owner는 Queue다.

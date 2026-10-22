@@ -193,10 +193,16 @@ deployment를 수행한다.
 | 13 | Current Work Queue | Complete | 실행 가능한 현재 작업과 우선순위 |
 | 14 | Implementation | Defined | 구현 진행 상태는 Current Work Queue가 소유 |
 
-2026-10-21 추가 요청: [client/runner 확장 설계](./docs/user-journey-cli-ia/09-package-client-quarantine.md)와
-[사전 감사·검증 계획](./docs/planning/20-package-client-quarantine-plan.md)에 uv·pnpm·Bun 및
-일회성 실행 전 검역을 함께 기록한다. P1 uv 자료 경계·공급 metadata 서명과 [격리된 고정 Python query](./docs/planning/evidence/package-client-quarantine/p1c-uv-resolver-baseline-20261022.md)를 로컬 검증했고 [CI372](./docs/planning/evidence/package-client-quarantine/p1c-query-ci372-20261022.json)의 Linux 재검증도 통과했다. [Cache 정렬 CI374](./docs/planning/evidence/package-client-quarantine/cache-alignment-ci374-20261022.json)는 native macOS·열 개 job을 통과했다. 이후 exact hosts read를 보완한 [CI376](./docs/planning/evidence/package-client-quarantine/p1c-public-ci376-20261022.json)은 Required 포함10SUCCESS와 실제 public idna/requests의 native UV 선택·독립 whole-archive graph 검증을 통과했다. C2 single-root producer만 qualified이며 guarded install/upgrade/sync와 client CLI 연결은 아직 미완료다. CI360에서 발견한 Go1.26.9 취약점의 1.26.10 패치는 별도 후보의 최종 로컬 검사를 통과했고 원격 qualification은 남아 있으며 production uv resolver·CLI는 아직 미연결이다. 기존 엔진을 재사용한다.
-CLI 강조 대상은 제품 풀네임이고 `helox`는 실행 명령이다. 현재 단일 active item은 유지한다.
+2026-10-21 추가 요청의 [client/runner 확장 설계](./docs/user-journey-cli-ia/09-package-client-quarantine.md)와
+[사전 감사·검증 계획](./docs/planning/20-package-client-quarantine-plan.md)은 기존 검역 엔진을
+재사용한다. [CI377](./docs/planning/evidence/package-client-quarantine/p1c-guarded-cli-ci377-20261022.json)의
+실제 빈 venv UV CLI 설치·원본 불변/반복 거부·Required10SUCCESS로 C3b를 닫았다.
+현재는 P1의 installed-aware 설치/업데이트·native ownership·sync가 남는다. 저장소·CI의
+Go1.26.10 보안 패치는 적용되어 있으며 broad CUDA qualification의 별도 한계는 유지한다.
+2026-10-22 요청한 [Go1.27.3 전환](./docs/planning/evidence/package-client-quarantine/go1273-migration-baseline-20261022.md)은
+P1 acceptance 다음/P2 이전에 검증한다. 구체 순서·상태는 Queue가 소유하며 현재 compiler/
+runtime·Host 설치는 변경하지 않는다. CLI 강조 대상은 제품 풀네임이고 `helox`는 실행 명령이다.
+현재 단일 active item은 M13-004다.
 
 ## Open Decisions
 
