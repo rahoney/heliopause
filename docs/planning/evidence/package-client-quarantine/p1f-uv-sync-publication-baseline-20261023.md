@@ -437,3 +437,24 @@ Race128.679s는 PASS다. [로컬 영수증](./p1f-uv-original-proof-local-202610
 wrapper는 WIRED=YES지만 actual complete guard caller는 아직 NO다. 새 all-original bridge는
 LOCAL ONLY/ACCEPTANCE_CLOSED=NO이며 fresh source/shared CI와 actual complete guard의
 연결·전체 원본 native qualification이 MISSING이다. 다음은 source/target guard와 B/C/D다.
+
+
+## B1 complete-only transaction / 로컬 검증
+
+사전 지도a511744 뒤 기존 prepare/commit을 legacy wrapper로 보존하고 private selection mode와
+commitComplete를 추가했다. Common journal/backup/publish/rollback/cleanup 본문을 공유하며
+complete에서만 proven old owners 전체를 교체·제거한다. Explicit empty는 metadata backup 뒤
+새 빈 v2 file을 쓰지 않고 실제 부재를 reconcile한다. 기존 readState/legacy empty refusal,
+partial-shared refusal·unmanaged collision/no-replace·recovery 경계를 유지한다.
+
+새 여섯 회귀 group은 제외 owner/script 정리·user/cfg 보존, empty metadata 부재/재진입,
+already-empty controller directory 비생성, 두 empty intent 불일치, 세 fault의 원본 bytes/inode
+복원, foreign metadata no-overwrite·primary cause/복구 보존/다음 mutation 거부와 whole shared-owner
+교체를 확인했다. Canonical format/Quick151.891s/security/docs/workflow와 관련 세 package 전체
+Race170.772s는 PASS다. [로컬 영수증](./p1f-uv-complete-transaction-local-20261023.json)이 exact
+source/check/raw·범위를 소유한다. 모든 검사 종료 뒤 owned Go TMPDIR0이며 별도 native 자원은 없다.
+
+B1 private transaction은 IMPLEMENTED=YES/legacy body WIRED=YES/QUALIFIED=LOCAL ONLY/
+ACCEPTANCE_CLOSED=NO다. Actual complete guard caller는 NO이고 fresh shared source CI와
+원본/source guard·검역/Policy·cache를 통한 실제 반입 연결이 MISSING이다. CI388의 앞 source1cf5781
+결과를 이 새 transaction에 전용하지 않는다. 다음은 A2c 원본 source/target guard와 C/D다.

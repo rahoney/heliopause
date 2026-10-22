@@ -572,7 +572,14 @@ func (t *pypiVenvTransaction) remove(path string) error {
 	return os.Remove(name)
 }
 func (t *pypiVenvTransaction) prepare(destinations []pypiDestination) (pypiVenvState, []pypiDestination, error) {
+	return t.prepareSelection(destinations, false, false)
+}
+
+func (t *pypiVenvTransaction) prepareSelection(destinations []pypiDestination, complete, dependencyFree bool) (pypiVenvState, []pypiDestination, error) {
 	desired := pypiVenvState{2, map[string]pypiDestination{}}
+	if complete && ((len(destinations) == 0) != dependencyFree) {
+		return desired, nil, errors.New("complete transaction empty intent differs from output")
+	}
 	t.outputs = map[string]pypiFileSnapshot{}
 	projects := map[string]string{}
 	finals := map[string]bool{}
@@ -607,7 +614,7 @@ func (t *pypiVenvTransaction) prepare(destinations []pypiDestination) (pypiVenvS
 		}
 		desired.Files[d.key()] = d
 	}
-	if len(destinations) == 0 {
+	if len(destinations) == 0 && !complete {
 		return desired, nil, errors.New("empty transaction")
 	}
 	obsolete := []pypiDestination{}
@@ -615,6 +622,7 @@ func (t *pypiVenvTransaction) prepare(destinations []pypiDestination) (pypiVenvS
 		anyReplaced, allReplaced := false, true
 		for _, owner := range old.owners() {
 			_, replaces := projects[owner.Distribution]
+			replaces = replaces || complete // Complete intent retires every proven old owner.
 			anyReplaced = anyReplaced || replaces
 			allReplaced = allReplaced && replaces
 		}
@@ -793,12 +801,23 @@ func (t *pypiVenvTransaction) appendJournal(value any) error {
 func (t *pypiVenvTransaction) journalIntent(action, path string) error {
 	return t.appendJournal(struct{ Action, Path string }{action, path})
 }
-func (t *pypiVenvTransaction) commit(destinations []pypiDestination) (resultErr error) {
-	desired, obsolete, err := t.prepare(destinations)
+func (t *pypiVenvTransaction) commit(destinations []pypiDestination) error {
+	return t.commitSelection(destinations, false, false)
+}
+
+// Only a guarded complete-project caller may retire every proven current owner.
+// This entry does not provide source, ownership, inspection or Policy approval.
+func (t *pypiVenvTransaction) commitComplete(destinations []pypiDestination, dependencyFree bool) error {
+	return t.commitSelection(destinations, true, dependencyFree)
+}
+
+func (t *pypiVenvTransaction) commitSelection(destinations []pypiDestination, complete, dependencyFree bool) (resultErr error) {
+	desired, obsolete, err := t.prepareSelection(destinations, complete, dependencyFree)
 	if err != nil {
 		return err
 	}
 	t.desired = desired
+	omitMetadata := complete && len(desired.Files) == 0
 	if err := t.step("before-mutation"); err != nil {
 		return err
 	}
@@ -896,8 +915,10 @@ func (t *pypiVenvTransaction) commit(destinations []pypiDestination) (resultErr 
 			return err
 		}
 	}
-	if err := t.createParents(filepath.Join(t.plan.root, ".heliopause")); err != nil {
-		return err
+	if !omitMetadata {
+		if err := t.createParents(filepath.Join(t.plan.root, ".heliopause")); err != nil {
+			return err
+		}
 	}
 	if err := t.step("metadata"); err != nil {
 		return err
@@ -921,33 +942,36 @@ func (t *pypiVenvTransaction) commit(destinations []pypiDestination) (resultErr 
 			return err
 		}
 	}
-	body, err := json.Marshal(desired)
-	if err != nil || len(body) > pypiVenvStateBound {
-		return errors.New("ownership metadata exceeds bound")
-	}
-	parent, metadataPath, err := t.openParent(filepath.Join(t.backup, "next-metadata"))
-	if err != nil {
-		return err
-	}
-	writeErr := writePromotionFile(metadataPath, body)
-	closeErr := parent.Close()
-	if err := errors.Join(writeErr, closeErr); err != nil {
-		return err
-	}
-	if err := t.journalIntent("publish-metadata", meta); err != nil {
-		return err
-	}
-	metadataSnapshot, err := snapshotPyPIFile(filepath.Join(t.backup, "next-metadata"))
-	if err != nil {
-		return err
-	}
-	t.publishedMetadata = &metadataSnapshot
-	if err := t.rename(filepath.Join(t.backup, "next-metadata"), meta); err != nil {
-		return err
-	}
-	t.metadataPublished = true
-	if err := t.persistLedger(); err != nil {
-		return err
+	var body []byte
+	if !omitMetadata {
+		body, err = json.Marshal(desired)
+		if err != nil || len(body) > pypiVenvStateBound {
+			return errors.New("ownership metadata exceeds bound")
+		}
+		parent, metadataPath, err := t.openParent(filepath.Join(t.backup, "next-metadata"))
+		if err != nil {
+			return err
+		}
+		writeErr := writePromotionFile(metadataPath, body)
+		closeErr := parent.Close()
+		if err := errors.Join(writeErr, closeErr); err != nil {
+			return err
+		}
+		if err := t.journalIntent("publish-metadata", meta); err != nil {
+			return err
+		}
+		metadataSnapshot, err := snapshotPyPIFile(filepath.Join(t.backup, "next-metadata"))
+		if err != nil {
+			return err
+		}
+		t.publishedMetadata = &metadataSnapshot
+		if err := t.rename(filepath.Join(t.backup, "next-metadata"), meta); err != nil {
+			return err
+		}
+		t.metadataPublished = true
+		if err := t.persistLedger(); err != nil {
+			return err
+		}
 	}
 	if err := t.step("sync"); err != nil {
 		return err
@@ -978,7 +1002,7 @@ func (t *pypiVenvTransaction) commit(destinations []pypiDestination) (resultErr 
 			return errors.New("published file inode drift")
 		}
 	}
-	if !t.publishedMetadata.matches(meta) {
+	if !omitMetadata && !t.publishedMetadata.matches(meta) {
 		return errors.New("published metadata inode drift")
 	}
 	for _, d := range obsolete {
@@ -995,9 +1019,15 @@ func (t *pypiVenvTransaction) commit(destinations []pypiDestination) (resultErr 
 			return errors.New("retained managed file drift")
 		}
 	}
-	actual, err := readBoundedPromotionFile(meta, pypiVenvStateBound)
-	if err != nil || !bytes.Equal(body, actual) {
-		return errors.New("ownership metadata reconciliation failed")
+	if omitMetadata {
+		if _, err := os.Lstat(meta); !errors.Is(err, os.ErrNotExist) {
+			return errors.New("empty complete ownership metadata is not absent")
+		}
+	} else {
+		actual, err := readBoundedPromotionFile(meta, pypiVenvStateBound)
+		if err != nil || !bytes.Equal(body, actual) {
+			return errors.New("ownership metadata reconciliation failed")
+		}
 	}
 	return nil
 }
