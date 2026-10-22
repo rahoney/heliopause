@@ -102,3 +102,11 @@ ci371-macos-failed.log와 ci371-macos-progress-facts.json이 소유한다.
 Local implementation의 canonical5·checker Race15.425s와 Darwin test compile1.776s는
 PASS다. [종료 상태/완료 gap 로컬 영수증](./macos-terminal-local-20261022.json)이 정확한
 source와 범위를 소유한다. 실제 macOS 원인 관측은 새 source의 native CI에서 확인한다.
+
+[CI372](./p1c-query-ci372-20261022.json)의 실제 첫 실패는 production build2m이며 default
+test는 도달하지 않았다. Terminal available=true/exited=false/exit-1·user230765ms/
+system108423ms가 관측됐다. 높은 CPU 사용은 그 build 명령의 관찰이며 이전 default
+6m 실패의 인과나 cache/SDK 세부 원인을 확정하지 않는다. Bootstrap default cache와
+checker child의 전용 cache, build trimpath/test 기본 flags가 다른 것은 source에서
+확인했지만 실제 native rebuild 비용은 아직 분리 관측하지 않았다. Timeout·coverage/
+prep 확대나 같은 입력 blind rerun은 하지 않는다.

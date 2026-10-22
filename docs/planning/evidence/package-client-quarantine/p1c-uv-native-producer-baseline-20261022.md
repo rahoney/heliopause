@@ -101,3 +101,58 @@ public source/parser 승인이나 gVisor/Policy 결과가 아니다. 실제 META
 import는 없다. uv_installed_controls.go는 기존 RFC822/WHEEL grammar와 SelectInstalledWheels를
 연결하고 전체 archive BindWheels 검증을 유지한다. Canonical5·관련 Race는 PASS다.
 Production resolver wiring/actual gVisor output mount·독립 archive reader는 계속 MISSING이다.
+
+## C2 named output 실제 mount와 compile first fault
+
+Native Go fixture의 새 named output /haa-site는 startup4.22s/query4.79s와 complete
+trace29/31을 통과했다. Host 전후 동일·container/volume/endpoint0·daemon waits[0,0]이다.
+Compile은 OPEN_RESULT_CLASSIFICATION_IMAGE/OCI_ROOT/flags557056에서 중단됐다.
+Executable hash는 /haa-runtime/uv와 일치하고 OTHER는 기존 UV의 공개 분류이므로
+새로운 임의 executable/clone 역할 실패로 해석하지 않는다. Raw uv-c2-volume-native-*가
+최초 입력·실패·완료한 정리를 소유한다.
+
+Locator hash fa06db656ccd9f7f는 /usr/lib/os-release와 일치한다. 이 일치 자체는 실행
+authority가 아니며 후보 경로 식별이다. 다음 후보는 기존 IsPinnedUVRuntimeRead의
+exact admitted UV root/CONTROL·current generation·소비한 첫 실행·active/무대기 guard와
+OCI root mount/flags557056을 유지한 채 이 경로만 data read로 검토한다. /etc·library
+prefix·다른 executable·쓰기·다른 profile은 추가하지 않는다. 기존 latch matrix에 해당
+path와 adjacent/alias/wrong mount·role·flags negative를 추가하고 fresh C++ 전체106 뒤
+동일 native fixture로 실제 첫 거부가 사라지는지 확인한다. 부분 성공은 전체 compile/
+sync/collector 완료나 production 지원으로 확대하지 않는다.
+
+해당 후보의 fresh C++106은298.785s PASS이며 actual startup4.03s/query4.37s도
+complete trace29/31이다. Native compile·sync는 모두0, trace35/4008B complete까지
+진행했으므로 이 입력의 exact os-release read 거부는 해소됐다. 다음 실패는 수집기의
+path/ownership/mode/count 공통 오류이며 아직 세부 필드를 확정하지 않았다. Raw
+uv-compile-osrelease-*는 Host 전후 동일·container/volume/endpoint0·waits[0,0]까지
+보존한다. 기존 기준을 바꾸기 전에 bounded scalar 진단으로 필드를 구분한다. 새로운
+collector 실패를 C++ 역할 확장 실패나 전체 설치 검역 성공으로 바꾸지 않는다.
+
+Bounded 진단 후보의 canonical5 뒤 actual은 entries4/uid1000/gid1000/mode0666/
+size0/중복false/정상경로·non-root/non-pylock에서 거부됐다. Owner나 observer 실패가
+아니며 native compile/sync0와 trace35 complete는 유지된다. 다음 좁은 후보는 native UV의
+보조 잠금 파일로 예상되는 site/.lock 하나에 한해 regular/size0/mode0666을 수집 후
+버리는 것이다. 실제 다음 입력으로 이 경로를 확인한다. 이 파일의 내용·모드·존재는
+selection·Policy·completion에 사용하지 않는다. /haa-site는 attested private named tmpfs,
+uid1000/mode0700·단일 확인된 attachment이며 artifact import는 없다. 다른 writable 파일,
+빈 파일의 다른 경로/타입·nonempty lock·특수 mode는 기존 거부를 유지한다. 인증된
+closure/promotion manifest의 mode 규칙을 이 보조 데이터 예외로 변경하지 않는다.
+
+## C2 native output 로컬 종료와 다음 gap
+
+[최종 영수증](./p1c-uv-native-output-local-20261022.json)의 actual startup4.10s/query4.25s/
+compile-sync-collection5.07s는 모두 PASS, complete trace29/31/35다. 실제 보조 lock이
+site/.lock임을 좁은 후보가 확인했고 selection/Policy/completion 자료로 쓰지 않았다.
+원본 local-source pylock은 production parser가 계속 거부한다. Canonical5·관련 Race7.919s와
+새 세 번째 native case의 CI selector/누락 거부를 검사했다. C++106의 새 후보는 exact
+os-release data read만 추가하며 generic Python/clone/network·기존 profile은 확장하지 않는다.
+
+Output volume/collector의 현재 감사: IMPLEMENTED=YES, WIRED=YES(native fixture·CI source),
+QUALIFIED=YES(local native only), ACCEPTANCE_CLOSED=NO(P1 전체). 네 완료 native workspace
+각6,833항목의 약2.75GB와 superseded observer/일회성26파일3,168,313B를 Root 참조·query
+errors0 확인 뒤 제거했다. 현재 qualified observer·source·고정 SDK/quality는 다음 소비자용이다.
+
+다음은 단일-root public PyPI native 선택과 isolated 독립 release JSON/archive data reader의
+실제 연결이다. 기존 pip/PyTorch setup/trace/cleanup의 필요한 구간만 공유하며 Policy/staging/
+promotion을 새 엔진으로 대체하지 않는다. 이 inert local wheel 시험을 public graph/설치
+검역으로 확대하지 않으며 upgrade/sync·CLI와 P2..P7은 계속 MISSING/NOT_STARTED다.

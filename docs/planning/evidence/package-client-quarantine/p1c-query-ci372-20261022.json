@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "source_commit": "e3665ea385d1f4fc1d151f45965cbf1389ac6f2f",
+  "source_tree": "f3b585b072af00bc8f5425b2ede9eface6d7d873",
+  "run_id": 39710312615,
+  "run_number": 372,
+  "status": "completed",
+  "conclusion": "failure",
+  "checkout": {
+    "sha": "a204fdff909df2313de0acbc7c76863049588e7c",
+    "tree": "f3b585b072af00bc8f5425b2ede9eface6d7d873",
+    "equals_source_tree": true
+  },
+  "jobs": [
+    {
+      "name": "Representative Wheel Corpus",
+      "id": 119599822031,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Security",
+      "id": 119599822286,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "gVisor Observer Helper",
+      "id": 119599822294,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "gVisor Linux Integration",
+      "id": 119599822296,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Vulnerability",
+      "id": 119599822312,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "macOS",
+      "id": 119599822359,
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "name": "Minimum Go",
+      "id": 119599822366,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Docs",
+      "id": 119599822384,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Quick",
+      "id": 119599822477,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Required",
+      "id": 119612167739,
+      "status": "completed",
+      "conclusion": "failure"
+    }
+  ],
+  "linux": {
+    "status": "PASS",
+    "native_startup": {
+      "seconds": 3.03,
+      "trace_events": 29,
+      "trace_bytes": 3306,
+      "complete": true
+    },
+    "native_empty_target_query": {
+      "seconds": 2.9,
+      "trace_events": 31,
+      "trace_bytes": 3551,
+      "complete": true
+    },
+    "existing_integration": "PASS",
+    "pytorch_cpu_full_seconds": 283.96,
+    "helper_waits": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "cleanup": {
+      "original": 0,
+      "helper_state": "CONFIRMED_STOPPED",
+      "helper_stop": 0,
+      "client_error": 0,
+      "client_restore": 0,
+      "restore_result": "NOT_REQUIRED"
+    },
+    "raw": "docs/github-logs/package-client-quarantine-20261021/ci372-linux.log"
+  },
+  "macos": {
+    "status": "FAIL",
+    "step": "production build",
+    "deadline_seconds": 120,
+    "default_tests": "NOT_REACHED",
+    "terminal": {
+      "available": true,
+      "exited": false,
+      "success": false,
+      "exit_code": -1,
+      "user_ms": 230765,
+      "system_ms": 108423
+    },
+    "cause": "context deadline exceeded",
+    "root_cause": "UNCONFIRMED; active compilation cost observed, not evidence of a default-test completion pipe hang",
+    "raw": "docs/github-logs/package-client-quarantine-20261021/ci372-macos-failed.log"
+  },
+  "scope": "C1c native query and existing Linux consumers passed remotely; no production UV resolver/CLI or C2 output qualification",
+  "required_pass": false,
+  "qualification_closed": false
+}

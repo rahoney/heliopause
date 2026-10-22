@@ -7054,15 +7054,16 @@ bool VerifyUVRuntimeReadBoundary() {
     anchor.mountpoint = mount; anchor.mount_class = strcmp(mount, "/") == 0 ? "oci-root" : "system";
     for (const char* path : {"/proc/99/maps", "/proc/99/environ", "/proc/sys/vm/other", "/proc/self/cgroup",
         "/proc/1/cgroup", "/proc/100/cgroup", "/proc/1/mountinfo", "/proc/100/mountinfo",
-        "/dev/zero", "/dev/urandom", "/sys/fs/cgroup/cpu/cpu.stat", "/usr/local/bin/python", "/usr/local/bin/pip", "/usr/local/lib/libpython3.14.so.1.0", "/usr/bin/dash", "/usr/local/bin/python3.14.evil"}) {
+        "/dev/zero", "/dev/urandom", "/sys/fs/cgroup/cpu/cpu.stat", "/usr/local/bin/python", "/usr/local/bin/pip", "/usr/local/lib/libpython3.14.so.1.0", "/usr/bin/dash", "/usr/local/bin/python3.14.evil",
+        "/usr/lib/os-release.evil", "/etc/os-release", "/usr/lib/../lib/os-release"}) {
       open.set_pathname(path); if (allowed()) return false;
     }
   }
   for (const char* path : {"/proc/sys/vm/overcommit_memory", "/proc/99/cgroup", "/proc/99/mountinfo",
-      "/sys/fs/cgroup/cpu/cpu.cfs_quota_us", "/sys/fs/cgroup/cpu/cpu.cfs_period_us", "/dev/null", "/usr/local/bin/python3.14"}) {
+      "/sys/fs/cgroup/cpu/cpu.cfs_quota_us", "/sys/fs/cgroup/cpu/cpu.cfs_period_us", "/dev/null", "/usr/local/bin/python3.14", "/usr/lib/os-release"}) {
     state = baseline;
     open.set_pathname(path);
-    const bool image = strcmp(path, "/usr/local/bin/python3.14") == 0;
+    const bool image = strcmp(path, "/usr/local/bin/python3.14") == 0 || strcmp(path, "/usr/lib/os-release") == 0;
     const std::string mountpoint = image ? "/" : (strcmp(path, "/dev/null") == 0 ? "/dev" :
         (HasPrefix(path, "/sys/") ? "/sys/fs/cgroup/cpu" : "/proc"));
     const std::string mount_class = image ? "oci-root" : "system";

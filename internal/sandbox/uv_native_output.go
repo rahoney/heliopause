@@ -66,9 +66,14 @@ func scanUVNativeOutput(input io.Reader) (uvNativeOutput, error) {
 		entries++
 		name := strings.TrimSuffix(strings.TrimPrefix(header.Name, "./"), "/")
 		root := name == "." || name == ""
-		if entries > maxEntries || header.Uid != 1000 || header.Gid != 1000 || header.Mode&^int64(0o777) != 0 || header.Mode&0o022 != 0 ||
+		// UV's empty auxiliary target lock is discarded. It carries neither
+		// selection data nor an installation/completion proof.
+		auxiliaryLock := name == "site/.lock" && header.Size == 0 && header.Mode == 0o666 &&
+			(header.Typeflag == tar.TypeReg || header.Typeflag == 0)
+		if entries > maxEntries || header.Uid != 1000 || header.Gid != 1000 || header.Mode&^int64(0o777) != 0 || (header.Mode&0o022 != 0 && !auxiliaryLock) ||
 			seen[name] || (!root && !validClosureDestination(name)) || header.Size < 0 {
-			return uvNativeOutput{}, errors.New("uv native path, ownership, mode or count is invalid")
+			return uvNativeOutput{}, fmt.Errorf("uv native path, ownership, mode or count is invalid: entries=%d uid=%d gid=%d mode=%o duplicate=%t root=%t lock=%t auxiliary_lock=%t path_valid=%t size=%d",
+				entries, header.Uid, header.Gid, header.Mode, seen[name], root, name == "pylock.toml", name == "site/.lock", root || validClosureDestination(name), header.Size)
 		}
 		seen[name] = true
 		if header.Typeflag == tar.TypeDir {

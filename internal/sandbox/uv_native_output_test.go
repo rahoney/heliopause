@@ -149,3 +149,57 @@ func TestUVNativeOutputRequiresProducerCompletion(t *testing.T) {
 		})
 	}
 }
+
+func TestUVNativeOutputDiscardsOnlyExactEmptyAuxiliaryLock(t *testing.T) {
+	for _, test := range []struct {
+		name     string
+		mode     int64
+		body     string
+		kind     byte
+		uid      int
+		accepted bool
+	}{
+		{"site/.lock", 0o666, "", tar.TypeReg, 1000, true},
+		{"site/.lock", 0o666, "x", tar.TypeReg, 1000, false},
+		{"site/.lock.other", 0o666, "", tar.TypeReg, 1000, false},
+		{"site/other", 0o666, "", tar.TypeReg, 1000, false},
+		{"site/.lock", 0o777, "", tar.TypeReg, 1000, false},
+		{"site/.lock", 0o666, "", tar.TypeSymlink, 1000, false},
+		{"site/.lock", 0o666, "", tar.TypeReg, 0, false},
+	} {
+		var buffer bytes.Buffer
+		writer := tar.NewWriter(&buffer)
+		reader := tar.NewReader(bytes.NewReader(testClosureTar(t, uvOutputFiles(), 1000)))
+		for {
+			header, err := reader.Next()
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := writer.WriteHeader(header); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := io.Copy(writer, reader); err != nil {
+				t.Fatal(err)
+			}
+		}
+		if err := writer.WriteHeader(&tar.Header{Name: test.name, Mode: test.mode, Size: int64(len(test.body)), Typeflag: test.kind, Linkname: "ignored", Uid: test.uid, Gid: test.uid}); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := io.WriteString(writer, test.body); err != nil {
+			t.Fatal(err)
+		}
+		if err := writer.Close(); err != nil {
+			t.Fatal(err)
+		}
+		data, err := scanUVNativeOutput(&buffer)
+		if (err == nil) != test.accepted {
+			t.Fatalf("auxiliary lock acceptance differs: %+v: %v", test, err)
+		}
+		if test.accepted && len(data.controls) != 1 {
+			t.Fatal("auxiliary lock changed control selection")
+		}
+	}
+}

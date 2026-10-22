@@ -540,7 +540,7 @@ func workflowJobIDs(contents string) []string {
 var uvIntegrationCommands = []string{
 	`uv_image="$(jq -er '.uv_image.reference' "$runtime_lock")"`,
 	`docker pull "$uv_image"`,
-	`HELOX_UV_NATIVE_RUNTIME=1 go test -tags=realcorpus -v -timeout=3m ./internal/sandbox -run '^TestUVActualIsolated(NativeStartup|EmptyTargetQuery)$'`,
+	`HELOX_UV_NATIVE_RUNTIME=1 go test -tags=realcorpus -v -timeout=3m ./internal/sandbox -run '^TestUVActualIsolated(NativeStartup|EmptyTargetQuery|NativeLockCollection)$'`,
 }
 
 var cargoIntegrationCommands = []string{

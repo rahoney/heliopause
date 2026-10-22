@@ -66,6 +66,17 @@ RFC822-WHEEL adapter의 canonical5·Race9.454s PASS를 확인했다. Guest-only 
 docker cp 실패는 별도 보존했고 두 probe의 소유 자원/완료 자료는 제거했다. 다음은 UV
 output volume의 실제 gVisor mount 연결과 typed-network native 선택·독립 data reader다.
 Production resolver/CLI는 아직 미연결이며 P1 acceptance는 열려 있다.
+[C1c CI372](./evidence/package-client-quarantine/p1c-query-ci372-20261022.json)는 sourcee3665ea와
+checkout tree 일치·remote startup3.03s/query2.90s·complete trace29/31, 기존 Linux/CPU283.96s와
+helper5wait0/정리를 확인했다. macOS는 default test 이전 production build2m에서
+exited=false/exit-1·CPU339188ms로 종료됐고 Required는 FAIL이다. 앞 default6m 실패의
+원인으로 합치지 않으며 전체 qualification·production UV 지원은 계속 미완료다.
+[C2 actual output 로컬 검증](./evidence/package-client-quarantine/p1c-uv-native-output-local-20261022.json)은
+named output의 startup4.10s/query4.25s/compile-sync-collection5.07s·complete trace29/31/35,
+canonical5·Race7.919s와 자원0/Host 불변을 확인했다. 세 번째 native case를 CI 필수 selector와
+누락 부정 시험에 연결했다. 완료 native 자료 약2.75GB/일회성26파일은 삭제했다.
+다음은 동일 P1c의 public PyPI native 선택·독립 isolated metadata/archive reader이며
+production resolver/guarded install-upgrade-sync·CLI와 전체 remote qualification은 남는다.
 
 
 

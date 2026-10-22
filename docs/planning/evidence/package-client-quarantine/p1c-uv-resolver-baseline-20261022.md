@@ -409,7 +409,9 @@ startup3.73s/query3.96s·각 complete trace29/31로 PASS다. 성공한 전용 da
 688,167,061B도 Root 참조·query errors0 확인 뒤 제거했다. 실제 자료 없는 [] 결과는
 조회 qualification이며 Artifact 선택/안전성 ALLOW가 아니다. 단계 감사는 query
 IMPLEMENTED=YES/WIRED=YES(native fixture·CI source)/QUALIFIED=YES(local query only)/
-ACCEPTANCE_CLOSED=NO(P1 전체)다. 새 source의 remote 소비자·macOS는 아직 남는다.
+ACCEPTANCE_CLOSED=NO(P1 전체)다. 후속 [CI372](./p1c-query-ci372-20261022.json)는 같은 tree의
+remote query/startup과 기존 Linux/CPU를 통과했다. macOS production build2m timeout/
+Required FAIL은 별도로 남는다. C2 native output/production resolver는 이 query 증거로 닫지 않는다.
 
 다음은 같은 P1c의 native selection/고정 data-reader·완전 archive/독립 metadata binding,
 기존 guarded promotion/upgrade/sync와 CLI의 MISSING만 구현한다. 기존 엔진을 대체하거나
