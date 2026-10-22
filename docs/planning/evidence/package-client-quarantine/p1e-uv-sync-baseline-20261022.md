@@ -361,3 +361,25 @@ sandbox/artifact Race가 PASS이며 새 same-source actual qualification이 MISS
 명시 empty requirements/pylock 다섯 사례를 연결했고 실제 실행은 새 후보 검증에서 확인한다.
 실제 source/target guard·기존 모든 native owner proof·complete cache/transaction·SKIP 보고·
 CLI는 C3e3이며 P1 전체와 Go1.27.3 순서는 유지한다.
+
+## CI385 최초 실패 / fixture CWD 교정 전 지도
+
+[실제 CI385](./p1e-uv-native-source-ci385-20261023.json)는 source6318a4c/same-tree의
+8SUCCESS/2FAIL다. 기존 public idna1node와 requests5node·4edge는 완료했지만 추가 helper의
+`../artifact/pypi/testdata/uv-0.13.4-requests.pylock.toml` 읽기가 ENOENT였다. Precompiled
+test binary는 caller의 repository cwd를 유지한다. 새 complete 다섯 사례는 실행 전이며
+UV CLI/CPU full도 미도달이다. Helper2 wait0/final original1 RESTORED는 확인했다.
+실제 native complete의 제품 실패/성공으로 해석하지 않는다. CI L04의 기존 Cargo
+package-subshell 해법을 이번 신규 consumer에 적용하지 않은 작성자의 실행 위치 가정 오류다.
+
+수정 전 지도: shared input 조립을 `uvPublicCompleteSourceCases`로 추출해 실제 native
+helper와 data-only `TestUVPublicCompleteSourceInputs`가 같은 코드를 사용한다. 이 코드를
+고정 compiler로 만든 한 binary의 repository cwd FAIL→sandbox package cwd PASS로
+대조한다. Fixture bytes와 고정 tool/runtime·observer·native 명령·시간 제한은 바꾸지 않는다.
+실제 workflow의 해당 public UV 호출을 기존 Cargo와 같은 package subshell로 감싼다.
+`scripts/check/workflow.go`는 기존 active lifecycle run/command 판정을 공유하며 두 실제
+fixture consumer의 정확한 package-subshell shape를 확인한다. Missing/commented/wrong/
+외부 cd·중복 호출을 부정 회귀로 거부한다. 임의 Bash 실행 의미 전체를 증명한다고 하지 않는다.
+Canonical profile과 같은 compiled data consumer/관련 tests를 확인한 뒤 fresh source CI에서
+실제 five cases와 공유 소비자를 검증한다. 파일 복제·skip·expected hash 재생성이나 임의
+Host 경로 탐색으로 입력을 찾아 성공시키지 않는다. C3e3 제품 source는 아직 미작성이다.
