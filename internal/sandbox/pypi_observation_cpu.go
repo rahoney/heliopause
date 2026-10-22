@@ -80,6 +80,35 @@ func (w *observationCPUWatch) sampleLocked(ctx context.Context, termination bool
 	return w.sampleAccountingLocked(ctx, termination, false)
 }
 
+// sampled distinguishes the existing counter-read failure code from a rejected
+// external outcome. It never grants completion or changes ledger validation.
+func (w *observationCPUWatch) finishUnit(ctx context.Context, evidence externalUnitEvidence) (sampled bool, resultErr error) {
+	if w == nil || ctx == nil || w.client == nil || w.ledger == nil {
+		return false, errors.New("python observation unit accounting is unavailable")
+	}
+	if err := ctx.Err(); err != nil {
+		return false, err
+	}
+	// Serialize the final counter read and acceptance with periodic/lifecycle
+	// samples. A completion timestamp must not precede an intervening sample.
+	w.sampleMu.Lock()
+	defer w.sampleMu.Unlock()
+	if !w.transition.IsZero() {
+		return false, errors.New("python observation unit accounting crossed a lifecycle transition")
+	}
+	readContext, cancel := context.WithTimeout(ctx, w.ledger.policy.pollInterval)
+	defer cancel()
+	lease, err := w.client.Read(readContext, w.transaction)
+	if err != nil {
+		return false, err
+	}
+	if err := readContext.Err(); err != nil {
+		return false, err
+	}
+	evidence.cumulativeCPUUsec = lease.UsageUsec
+	return true, w.ledger.finishUnit(evidence, time.Now())
+}
+
 func (w *observationCPUWatch) sampleAccountingLocked(ctx context.Context, termination, periodic bool) error {
 	readContext, cancel := context.WithTimeout(ctx, w.ledger.policy.pollInterval)
 	defer cancel()

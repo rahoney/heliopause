@@ -1,0 +1,226 @@
+{
+  "schema_version": 1,
+  "baseline": "2464f8f5b64471b8920b030de795932b624ff22c",
+  "scope": "controller unit final counter Read through existing finishUnit acceptance serialized by existing CPU watcher sample mutex; existing ledger rules unchanged",
+  "IMPLEMENTED": "YES",
+  "WIRED": "YES actual Python observation unit completion caller",
+  "QUALIFIED": "LOCAL ONLY",
+  "ACCEPTANCE_CLOSED": "NO",
+  "MISSING": [
+    "fresh exact-source CPU full/Linux/native macOS/Required",
+    "common CPU/cu126/cu130/cu132 actual qualification tracked independently"
+  ],
+  "source": [
+    {
+      "path": "internal/sandbox/pypi_observation_cpu.go",
+      "bytes": 10335,
+      "sha256": "1e576e9f6e51fc68d2356eefcdcc603c011b723e1aa9b8054edcdc3779aa6653"
+    },
+    {
+      "path": "internal/sandbox/pypi_trusted_transaction.go",
+      "bytes": 33999,
+      "sha256": "2f1042cf42b1a3314684551ae71ed815b9c3b4a23f9873b9eb901109a38bb733"
+    },
+    {
+      "path": "internal/sandbox/pypi_completion_cpu_test.go",
+      "bytes": 5502,
+      "sha256": "68e77654a4b3e9dbf986243357a9c0d391b6788f33762ccd8a0ab314b8f34f96"
+    }
+  ],
+  "unchanged_ledger": {
+    "path": "internal/sandbox/pypi_observation_transaction.go",
+    "bytes": 11803,
+    "sha256": "e5ea7a1c8333d56be22153270ea5e77839c95da9ea40c8fe6b22aaa05714a011"
+  },
+  "controlled_before_after": {
+    "before": {
+      "argv": [
+        "/tmp/haa-uv-runtime-0_e6zmn4/sdk/go/bin/go",
+        "test",
+        "-count=1",
+        "-run",
+        "^TestPythonCPUCompletionSerializesFinalReadAndAcceptance$",
+        "-v",
+        "./internal/sandbox"
+      ],
+      "exit": 1,
+      "seconds": 3.409,
+      "scope": "unchanged original final Read/finish semantics extracted into new helper, no serialization yet",
+      "test_sha256": "68e77654a4b3e9dbf986243357a9c0d391b6788f33762ccd8a0ab314b8f34f96"
+    },
+    "after": {
+      "argv": [
+        "/tmp/haa-uv-runtime-0_e6zmn4/sdk/go/bin/go",
+        "test",
+        "-count=1",
+        "-run",
+        "^TestPythonCPUCompletion",
+        "-v",
+        "./internal/sandbox"
+      ],
+      "exit": 0,
+      "seconds": 3.105,
+      "scope": "serialized final counter read/acceptance and same-poll deadline, no ledger rule changes",
+      "test_sha256": "68e77654a4b3e9dbf986243357a9c0d391b6788f33762ccd8a0ab314b8f34f96"
+    },
+    "scope": "before uses original final Read/finish semantics extracted without serialization, not an unmodified old checkout; barrier forces actual periodic core to accept101 before stale final100; same regression test digest",
+    "remote_boundary": "CI388 observed -149ns timestamp reversal with equal counter; exact original thread schedule not recorded. Controlled stale-counter read is the same uncoordinated producer boundary, not a claim to replay the original149ns scheduling."
+  },
+  "preserved": "sample order/counter monotonic refusal, sticky failure, CPU/poll/wall/reserve limits, external unit outcome/observer/drain/closure/coverage; Read/outcome error-code categories",
+  "new_negative_cases": [
+    "missing trusted Read",
+    "same-poll deadline",
+    "cancelled context",
+    "counter decrease",
+    "CPU reserve exhaustion",
+    "incomplete external observer evidence",
+    "required nonzero outcome",
+    "existing failed ledger",
+    "pending lifecycle transition"
+  ],
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.314,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-cpu-completion-corrected-format.json",
+        "bytes": 110,
+        "sha256": "5122e62481628ac49ccfe85fa118de730dd98c75241ef97b6122ed3fb33a7ab6"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-cpu-completion-corrected-format.log",
+        "bytes": 15,
+        "sha256": "cbab635caa4af27789acb643ed38578c7b167ae87f6dfa82f58695f115f28e17"
+      }
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 54.824,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-cpu-completion-corrected-quick.json",
+        "bytes": 110,
+        "sha256": "3676136e943c96f7c96ca61acae490db60013b8880e9a0a40888382b58fa8b39"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-cpu-completion-corrected-quick.log",
+        "bytes": 1354,
+        "sha256": "4acaff057f4ca7c2339b67c53e213b030619f4e4a9d7de35929bf9a62b62c04f"
+      }
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 7.08,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-cpu-completion-corrected-security.json",
+        "bytes": 111,
+        "sha256": "9cde91e995adfa6bbbe39a43365c4d2ecd466efa313f4910333c47cde56772f6"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-cpu-completion-corrected-security.log",
+        "bytes": 80,
+        "sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+      }
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.224,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-cpu-completion-corrected-docs.json",
+        "bytes": 108,
+        "sha256": "6000a973287cecd0a76fa54ff5d6d849dea5f8d92fe691411069693d7de343fb"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-cpu-completion-corrected-docs.log",
+        "bytes": 22,
+        "sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+      }
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.759,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source",
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-cpu-completion-corrected-workflow.json",
+        "bytes": 112,
+        "sha256": "7d22497849b9aca5df92e1d49607311845afb229f06c73c8c69be70dcf058586"
+      },
+      "raw": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/uv-cpu-completion-corrected-workflow.log",
+        "bytes": 1071,
+        "sha256": "9f629b0e9a8b7a67b85205621cf5b3b3942703b7b73de5cbbbe419f782d700d9"
+      }
+    }
+  ],
+  "race": {
+    "argv": [
+      "/tmp/haa-uv-runtime-0_e6zmn4/sdk/go/bin/go",
+      "test",
+      "-race",
+      "-count=1",
+      "./internal/sandbox/...",
+      "./internal/artifact/...",
+      "./internal/bootstrap",
+      "./internal/application"
+    ],
+    "exit": 0,
+    "seconds": 37.16,
+    "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+  },
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-cpu-completion-before-cpu.go.txt",
+      "bytes": 9632,
+      "sha256": "a862203194ec7276923cb987264de63d6b1dd138d80ee6379a2da06529be68f0"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-cpu-completion-before-caller.go.txt",
+      "bytes": 33999,
+      "sha256": "2f1042cf42b1a3314684551ae71ed815b9c3b4a23f9873b9eb901109a38bb733"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-cpu-completion-before-regression.json",
+      "bytes": 437,
+      "sha256": "ce556a078e134c5d3ed7c3fca858083060ce90337d3dc341b8ee9d3e444f76cf"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-cpu-completion-before-regression.log",
+      "bytes": 601,
+      "sha256": "b6618d8bd7bd669bcc823a998614db572e01ed250fae60a700a011743cd06fd0"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-cpu-completion-after-regression.json",
+      "bytes": 397,
+      "sha256": "76d4073c1f008ddf313c0029f7a8b169cea75c3923c8a4616acebe6b6a15b584"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-cpu-completion-after-regression.log",
+      "bytes": 1640,
+      "sha256": "a1bc0f43fef73d167b077f9aec13ee1f7ef5758d9b5dd5210c1bb44f90815624"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-cpu-completion-race.json",
+      "bytes": 313,
+      "sha256": "02f270f0e5721f5160f8004f569e2390c02df40666a87b0e99ff89ce3d97e840"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-cpu-completion-race.log",
+      "bytes": 682,
+      "sha256": "180b4fbb471667545df30c45340b7cb1174bd86f5c26905f51b7f13f2bfc3a76"
+    }
+  ],
+  "cleanup": {
+    "all_local_checks_completed": true,
+    "owned_go_tmpdir_entries": 0,
+    "manual_native_resources": "NONE; controlled test fixtures only; small repro/logs retained, active SDK/source/runtime/cache retained"
+  },
+  "not_qualified": "CI388 FAILURE is preserved; no new native CPU/CUDA full or actual guarded sync/publication/CLI/P1 acceptance in these local checks"
+}

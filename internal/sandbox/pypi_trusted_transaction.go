@@ -449,18 +449,17 @@ func (b *PythonDynamicBackend) executeTrustedTransaction(ctx context.Context, se
 		if err != nil || afterEvents < beforeEvents || afterBytes < beforeBytes {
 			return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_OBSERVER_FAILED")
 		}
-		cpuLease, err := b.resources.Read(runCtx, transaction.transaction)
-		if err != nil {
-			return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_ACCOUNTING_UNAVAILABLE")
-		}
-		if err := ledger.finishUnit(externalUnitEvidence{
+		sampled, outcomeErr := transaction.watch.finishUnit(runCtx, externalUnitEvidence{
 			unitID: unit.id, containerID: probe.id, terminalOutcome: outcome,
 			observerComplete: true, containerGone: true, cgroupDrained: true,
 			closureUnchanged: true, events: afterEvents - beforeEvents, bytes: afterBytes - beforeBytes,
-			cumulativeCPUUsec: cpuLease.UsageUsec,
-		}, time.Now()); err != nil {
+		})
+		if outcomeErr != nil {
+			if !sampled {
+				return pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_ACCOUNTING_UNAVAILABLE")
+			}
 			failed, failureErr := pythonIncomplete(sessionID, "M5_PYPI_DYNAMIC_OBSERVATION_INCOMPLETE")
-			return failed, errors.Join(failureErr, transaction.diagnostic("unit-outcome", err))
+			return failed, errors.Join(failureErr, transaction.diagnostic("unit-outcome", outcomeErr))
 		}
 	}
 	return domain.NewSandboxResult(sessionID, domain.SandboxCompleted, "", nil)

@@ -54,3 +54,23 @@ Read 중 sampleMu를 잡는 만큼 poll-bound context가 필수이며 lock 역�
 새 helper는 controller facts만 받으며 artifact token/stdout를 완료 증거로 쓰지 않는다. Existing
 ledger를 대체하거나 fail-closed invariants를 수정할 필요가 없다. 원본 실패/통제 재현/후속 full
 범위를 분리하고 완료한 temporary fixtures만 정리한다.
+
+
+## 로컬 교정과 검증
+
+기존 final Read/finish 의미를 helper로 옮긴 비직렬 before에서 같은 barrier test3.409s/exit1을
+확인했다. Final Read100이 대기하는 동안 실제 periodic accounting core가101을 먼저 수용하여
+stale final100을 거부했다. 새로운 arbitrary helper 값이나 clock tolerance로 통과시킨 것이 아니다.
+실제 remote는 equal counter의 -149ns 시각 역전이고 이 로컬 실험은 counter 순서 거부다. 같은
+비직렬 producer 경계를 입증하지만 원격의 정확한 두 thread 스케줄을 재현했다고 쓰지 않는다.
+
+같은 sampleMu로 final Read→기존 finishUnit을 묶고 그 critical section의 Read를 기존 poll
+한도에 묶었다. 기존 ledger owner bytes는1cf5781과 같고 새 unit caller는 Read 실패와 outcome 실패의
+기존 두 code를 유지한다. 동일 test SHA의 after3.105s/exit0과 새9개 부정 사례를 통과했다.
+Canonical format/Quick54.824s/security/docs/workflow와 전체 sandbox/artifact·Bootstrap/Application
+Race37.160s도 PASS다. [로컬 영수증](./p1f-cpu-unit-completion-local-20261023.json)이 exact sources,
+첫 실패·비교 범위·checks/raw를 소유한다. 모든 검사 뒤 owned Go TMPDIR0이며 별도 native
+자원은 없다. IMPLEMENTED/WIRED=YES, QUALIFIED=LOCAL ONLY/ACCEPTANCE_CLOSED=NO다.
+새 exact-source CPU/Linux/native macOS/Required와 공통 CPU/cu126/cu130/cu132 실제 검증이
+MISSING이다. 다른 profile의 성공과 과거 양의 지연의 인과로 확대하지 않는다. 이후에도 actual
+complete sync preparation/guard·approved cache/records/offline 반입·CLI/whole P1이 남는다.
