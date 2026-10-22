@@ -348,6 +348,14 @@ ACCEPTANCE_CLOSED=NO이며 MISSING은 같은 source의 실제 shared CI다. CI38
 후속 source에 전용하지 않는다. 다음은 검토한 A2 전체 원본 proof/source guard와 B/C/D의 나머지
 gap이며, whole guarded sync/P1은 아직 미완료다.
 
+## A1 실제 source qualification 종료 — CI387
+
+[CI387](./p1f-uv-original-snapshot-ci387-20261023.json)은 source36c6253과 actual checkout6bdfb7b의
+전체 treeb1cd59 일치/Required10SUCCESS다. 기존 Linux51·UV CLI194.13s·native installed
+update23.87s·complete source 다섯 사례51.40s/CPU269.59s/native macOS/취약점과 helper5wait0/
+original0 confirmed cleanup을 확인했다. A1의 네 상태는 해당 공통화 범위에서 YES이고 MISSING은
+없다. 후속 A2a/b source, actual complete target 반입/CLI/P1 전체 및 새 CUDA full로 확대하지 않는다.
+
 ## A2a identity 전제 / 로컬 검증
 
 사전 지도39e92ac 뒤 direct file-list helper의 다섯 부정 사례를 먼저 확인했다. Name/Version의
@@ -367,3 +375,25 @@ A2a IMPLEMENTED/WIRED는 shared inventory 범위에서 YES, QUALIFIED=LOCAL ONLY
 ACCEPTANCE_CLOSED=NO이며 같은 source의 shared CI가 MISSING이다. CI387은 앞 source36c6253의
 검증이므로 이 변경에 전용하지 않는다. All-original authentic old-wheel proof·actual source/target
 guard·complete publication/CLI 및 whole P1은 별도로 남으며 이 identity 검사로 소유권을 만들지 않는다.
+
+## A2b proof bridge / 로컬 검증
+
+기존 selectOwnership은 실제 선택 graph의 subject를 만드는 wrapper로 유지하고 기존 proof 핵심
+본문을 selectOwnershipSubjects에 공유했다. 새 selectAllOwnership은 실제 native inventory 전체를
+정렬해 같은 본문을 호출한다. 고정 formatter로 대조한 핵심 본문은 graph-node identity→subject
+project/source 치환 뒤 같다. 새 wrapper의 합성 subject 목록은 새로운 Artifact/primary graph가 아니다.
+개별 실제 old-wheel lookup·whole footprint/RECORD·cache absences·5m/format/cleanup은 유지한다.
+
+기존 synthetic writer의 default 이름/데이터/member 순서를 유지한 named helper로 서로 다른 실제
+archive 두 개를 구성했다. 같은 fixture에서 기존 선택 graph는 alpha 한 원본만 증명하고, 직접
+전체 inventory는 alpha와 제외된 beta 둘을 증명한다. Beta archive 치환은 전체 proof control을
+거부하며 두 원본의 cache namespace/declared hash·filename·files와 exact intake cleanup,
+HAA ownership/metadata 비생성도 확인했다. Fake ports/data-only unit 범위이며 public/native
+전체 원본 검증이라고 표현하지 않는다.
+
+Canonical format/Quick124.481s/security/docs/workflow 및 전체 promotion/Bootstrap/Application
+Race128.679s는 PASS다. [로컬 영수증](./p1f-uv-original-proof-local-20261023.json)이 source·body
+대조·checks와 정확한 범위를 소유한다. 모든 local 검사 뒤 owned Go TMPDIR0이다. Shared selected
+wrapper는 WIRED=YES지만 actual complete guard caller는 아직 NO다. 새 all-original bridge는
+LOCAL ONLY/ACCEPTANCE_CLOSED=NO이며 fresh source/shared CI와 actual complete guard의
+연결·전체 원본 native qualification이 MISSING이다. 다음은 source/target guard와 B/C/D다.

@@ -62,7 +62,33 @@ type pypiNativeEnrollmentSelection struct {
 	absentDirectories []string
 }
 
-func (e *pypiNativeEnrollment) selectOwnership(ctx context.Context, graph domain.LockedDependencyGraph, install domain.InstallContext, inventory pypiNativeInventory) (selection pypiNativeEnrollmentSelection, resultErr error) {
+type pypiNativeOwnershipSubject struct {
+	project string
+	source  domain.SourceID
+}
+
+func (e *pypiNativeEnrollment) selectOwnership(ctx context.Context, graph domain.LockedDependencyGraph, install domain.InstallContext, inventory pypiNativeInventory) (pypiNativeEnrollmentSelection, error) {
+	nodes := graph.Nodes()
+	subjects := make([]pypiNativeOwnershipSubject, 0, len(nodes))
+	for _, node := range nodes {
+		id := node.Artifact().Identity()
+		subjects = append(subjects, pypiNativeOwnershipSubject{id.Name(), id.Source()})
+	}
+	return e.selectOwnershipSubjects(ctx, subjects, install, inventory)
+}
+
+// Complete sync must prove original distributions excluded from the new graph.
+// This is still unapproved ownership data, never entry/set Policy or publication.
+func (e *pypiNativeEnrollment) selectAllOwnership(ctx context.Context, install domain.InstallContext, inventory pypiNativeInventory) (pypiNativeEnrollmentSelection, error) {
+	subjects := make([]pypiNativeOwnershipSubject, 0, len(inventory.projects))
+	for project := range inventory.projects {
+		subjects = append(subjects, pypiNativeOwnershipSubject{project, artifactpypi.PublicPyPIProfile().Source()})
+	}
+	sort.Slice(subjects, func(i, j int) bool { return subjects[i].project < subjects[j].project })
+	return e.selectOwnershipSubjects(ctx, subjects, install, inventory)
+}
+
+func (e *pypiNativeEnrollment) selectOwnershipSubjects(ctx context.Context, subjects []pypiNativeOwnershipSubject, install domain.InstallContext, inventory pypiNativeInventory) (selection pypiNativeEnrollmentSelection, resultErr error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
 	defer cancel()
 	defer func() {
@@ -83,15 +109,15 @@ func (e *pypiNativeEnrollment) selectOwnership(ctx context.Context, graph domain
 		}
 		return *runtime, nil
 	}
-	for _, node := range graph.Nodes() {
-		project := inventory.projects[node.Artifact().Identity().Name()]
+	for _, subject := range subjects {
+		project := inventory.projects[subject.project]
 		if project == nil {
 			continue
 		}
 		if err := ctx.Err(); err != nil {
 			return selection, err
 		}
-		if node.Artifact().Identity().Source() != artifactpypi.PublicPyPIProfile().Source() {
+		if subject.source != artifactpypi.PublicPyPIProfile().Source() {
 			return selection, errors.New("native source ownership cannot be redirected")
 		}
 		wheel, filename, digest, err := e.oldWheel(ctx, install, project)
