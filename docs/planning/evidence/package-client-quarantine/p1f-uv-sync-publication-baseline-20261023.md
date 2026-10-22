@@ -48,6 +48,10 @@ Domain/Application/Policy engine을 다시 만들거나 기존 구현을 교체�
 7. 현재 packageClientByID는 client당 첫 install descriptor를 반환한다. 같은 client의 sync를
    추가하면서 ID만으로 leaf를 찾으면 install에 잘못 연결될 수 있다. 실제 command path/operation을
    같은 descriptor에서 식별해야 한다.
+8. Python transaction의 기존 recovery는 rollback 불능 시 journal/원본을 보존하고 다음 mutation을
+   차단하는 경계다. persistLedger/verifyBackupJournal과 interrupted-transaction 검사가 있지만
+   journal을 읽어 자동 복원하는 Python recovery CLI/engine은 없다. Journal 존재를 복원 완료로
+   표기하거나 본체 self-update의 별도 durable recovery와 합치지 않는다.
 
 ## 수정 순서와 경계
 
@@ -105,6 +109,31 @@ false path/link/hash/ambiguous claim, UV update의 exact publication/rollback을
 위치를 확인했다. 위 세 전체 통합 미결정점은 A1 공통화의 입력이 아니며 A 나머지/B/C/D source
 착수 전 각 해당 지도를 더 좁힌다. 기존 기능 재구현이나 새 미래 Port를 추가하지 않는다.
 
+### A2 재검토 — 전체 old proof와 native 네 control 보존
+
+후속 guarded sync preparation은 한 요청 안에서 Begin/selection/Verify/Commit/Close를 연결한다.
+원본 전체 inventory를 고정하고 --adopt가 필요한 실제 native distribution이 있으면 새 선택에서
+빠질 프로젝트도 포함해 기존 old-wheel proof를 수행한다. 성공한 전체 proof의 destinations만
+transaction의 in-memory current ownership에 추가하며 on-disk metadata는 ALLOW/commit 전에
+바꾸지 않는다. 기존 cache namespace absence·file identity·owner overlap 검사를 공유한다.
+
+원본 controls는 기존 NewUVSyncOriginalControls의 네 항목과, native enrollment가 있을 때만
+기존 pypi-update-native-ownership.json의 정확한 proof 한 항목이다. Guard가 실제 생성한 proof와
+다른 body·중복·unknown control을 거부한다. Selection wrapper는 정확한 원본 네 항목만 native
+resolver에 전달하고 그 actual update의 원본/선택 context와 immutable source/intent/runtime,
+present selected lock을 검증한 뒤 같은 proof를 양쪽 controls에 더한다. 새 graph digest는 base
+graph digest와 정렬된 전체 selected control digest를 domain-separated canonical record로 bind한다.
+새 snapshot은 같은 실제 dependencies/context/source와 dependency-free 상태를 사용하고
+NewProjectDependencyUpdateFromSnapshot으로 감싼다. Native backend의 네-control protocol과
+기존 single/update 경로는 바꾸지 않는다.
+
+Managed old state와 전체 이전 파일의 identity는 held transaction/installed snapshot이 별도로
+소유한다. Source intent나 proof digest 하나를 삭제 권한으로 취급하지 않는다. Guard.Commit은
+이 요청의 실제 update/전체 controls·staged approved set·원본 guard 불변을 요구하고, complete
+update가 없는 CommitSnapshot 우회·repeated selection/commit·closed guard·다른 target을 거부한다.
+Proof 실패/취소·누락된 unselected native proof와 forged control/update를 mutation 전 부정 회귀로
+검증한다. 이는 A1 이후 해당 source 단위의 지도이며 전체 통합 검증 완료는 아니다.
+
 ### B. Complete-only transaction
 
 - 기존 `prepare/commit` 입구는 merge와 empty refusal을 유지한다. 새 private complete 입구만
@@ -142,6 +171,42 @@ false path/link/hash/ambiguous claim, UV update의 exact publication/rollback을
   목록을 Host UV/pip resolver에 넘기지 않는다. Empty에서는 가짜 wheel/materialization 없이 같은
   complete transaction을 사용한다. Staging은 Artifact를 실행하지 않는다.
 
+### C1 재검토 — 실제 control 원문과 record builder 입력
+
+StageProject가 받는 ProjectVerifiedSet에는 control body가 없으므로 digest에서 원문을 복원하지
+않는다. Request-scoped sync preparation이 실제 Resolve 결과를 한 번 보유하고, Python cache에
+읽기 전용 selected-update getter를 주입하는 위치를 사용한다. Getter는 frozen source/target을
+재검증하고 cache는 승인 set의 context/source/graph/dependencies/control digests와 실제 update가
+완전히 같은지 확인한다. 이 callback은 현재 cache/guard 소비자용 adapter-local 경계이며 새 Core
+Port나 guest completion authority가 아니다. 다른 요청의 update·호출 전/반복 선택을 거부한다.
+
+Record builder의 현재 필요한 입력은 ctx, 실제 OperationID, ProjectVerifiedSet, 실제 filename을
+가진 []domain.LockedDependency, []domain.DependencyEdge, 전체 selected control 원문과 고정
+runtime identity다. 반환은 manifest digest/document와 SBOM document다. 이 structural interface를
+promotion이 소유하고 evidence.Generator의 project method를 bootstrap에서 주입한다. 두 package가
+서로 import하지 않으며 evidence builder는 Domain 값만 읽는다. 이 단위의 source를 쓰기 전에
+함수/record bounds와 실제 empty/nonempty 소비 tests를 확정한다.
+
+OperationID는 positive sync 요청에서 한 번 생성하고 기존 NewProjectInspectService의
+newOperationID collaborator와 같은 요청의 record builder에 전달한다. 실제 inspection operation과
+기록이 같은 ID를 사용하며 ProjectVerifiedSet에 존재하지 않는 필드를 읽지 않는다. 기본 blank
+skip에는 이 operation/Run/Evidence를 만들지 않는다. Cache namespace의 기존 무작위 RunID handle은
+storage 이름이며 inspection Run 성공으로 표시하지 않는다.
+
+Filename은 실제 selected native lock에서 resolved URL/integrity와 유일하게 일치하는 wheel을
+선택하고 Intake filename record와 대조한다. Rehashed approved wheel의 metadata에서 기존
+marker/constraint normalization을 공유해 edges를 얻는다. 필요 parser helper는 실제 cache 소비자와
+함께 추가하며 독립 Simple 응답을 꾸며 만들어 기존 binder를 속이지 않는다. 기록용 node는
+ProjectDependencyNodeID/실제 filename을 가진 개별 LockedDependency 값이며 primary graph로
+조립하지 않는다. Manifest는 root 없는 project 형태와 dependency_free를 명시하고 기존 v1
+requested-primary builder/schema는 그대로 보존한다. Empty에서도 실제 set Policy·controls·target·
+runtime·operation을 기록하며 가짜 entry/Run을 생성하지 않는다.
+
+Cache load/commit은 고정 receipt digest를 먼저 확인하고 actual approval/evidence/artifact census·
+source/controls와 기록을 대조한다. 같은 request operation과 rehashed approved bytes로 record를
+재생성해 canonical document와 비교하는 검증을 사용한다. Report의 Manifest/SBOM 참조는 이
+검증된 결과에서만 가져오고 새 public operation-result schema를 만들지 않는다.
+
 ### D. Service·CLI·report와 실제 qualification
 
 - 기존 executeGuardedProjectUpdate를 호출하는 sync use case를 추가한다. 원본 guard→단일 선택→
@@ -160,6 +225,27 @@ false path/link/hash/ambiguous claim, UV update의 exact publication/rollback을
 - Bootstrap은 실제 현재 UV descriptor·source/target·record builder·existing inspection/runtime를
   연결한다. Client ID/source pin/runtime version을 곳곳에 별도로 추가하지 않는다.
 
+### D1 재검토 — static SKIP과 실제 guard의 시작 구분
+
+초기 CLI는 `helox uv pip sync <source-file>` 한 파일과 --target, --adopt,
+--allow-empty-requirements를 지원하는 범위로 좁힌다. Pylock filename 판정과 plain requirements의
+허용 filename/flag 조합은 CLI source 착수 직전 고정 tool의 실제 grammar와 대조해 확정한다.
+stdin/URL·여러 파일/include/range·다른 index/build를 지원한다고 광고하지 않는다.
+
+PreparePresentation은 문법·필수 값·bounded source parse를 먼저 수행한다. Preflight의 파일
+읽기는 transaction 원본 authority가 아니다. Positive 경로의 실제 guard가 같은 경로의 현재
+파일을 다시 검증·고정한 시점부터 selection/inspection/staging/commit까지 불변을 요구한다.
+Preflight와 guard를 같은 inode snapshot이라고 표기하지 않는다. Symlink/특수 파일·source/target
+alias와 변조의 정확한 거부는 실제 guard 소비 tests로 확인한다.
+
+기본 blank skip 때문에 runtime을 준비하지 않도록 descriptor의 현재 static action을 CLI의 공통
+사전 실행 지점에서 처리하는 위치를 사용한다. Bootstrap은 help 처리 뒤, commandRuntime보다
+먼저 이 hook을 한 번 호출한다. 실제 지원 blank를 다시 확인해 SKIP을 보고하며 positive이면
+일반 guarded binding으로 진행한다. Source read/parse 오류는 SKIP이 아니다. 이 처리에 별도
+SourceID·plugin·fake installer/inspection 또는 큰 source body의 annotation 저장을 만들지 않는다.
+기존 install descriptors에는 해당 action이 없다. --help와 invalid/blank 입력이 native/helper/
+mutation에 도달하지 않는 Bootstrap 회귀를 CLI source와 함께 검증한다.
+
 ## source 착수 전 남은 검토와 검증 계획
 
 이 지도만으로 C3e3 전체가 source-ready라고 선언하지 않는다. 첫 구현 전에 다음을 확정한다.
@@ -177,7 +263,8 @@ CLI·Bootstrap 테스트와 필요한 Race를 수행한다. 기존 single instal
 보존한다. 실제 qualification은 pinned native complete selection과 fresh inspection을 거쳐
 multi-root+closure, version 변경·기존 extra 삭제, same-set 새 Evidence, default blank skip,
 explicit empty 두 형식, 삭제할 native extra의 proof 거부/성공, source/target/control 변조,
-부분 publish/metadata/sync/reconcile 실패의 rollback·durable recovery, 취소/cleanup을 검증한다.
+부분 publish/metadata/sync/reconcile 실패의 rollback, rollback 불능 시 durable journal/원본 보존과
+다음 mutation 거부, 취소/cleanup을 검증한다. 새 자동 Python recovery engine은 만들지 않는다.
 Unknown query/정리 실패가 최초 오류를 덮지 않아야 한다. 같은 source Required/Linux/native macOS와
 기존 필수 소비자·CPU full을 확인한 뒤에만 complete sync/P1 acceptance를 판정한다.
 
