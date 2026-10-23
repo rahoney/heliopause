@@ -3,7 +3,65 @@
 계획 기준64122af. 2026-10-22 사용자는 GO-2026-6809를 확인하고 다음 Go 전환 대상으로
 1.27.3을 선호하며, 현재 client 작업과의 순서 판단·Queue 기록을 요청했다.
 
-## 현재 재개점 — cu126 최초 지연 조사
+## 현재 완료 판정 — G127 COMPLETE
+
+[누적 acceptance](./go1273-acceptance-20261024.json)는 동일095450d/whole tree0358c532의
+ordinary CI397·cu126 CI398·cu130 CI399·cu132 CI400 각각 Required 포함10SUCCESS를 연결한다.
+CPU265.94/282.74/187.93/255.20s와 CUDA1249.34/770.96/1004.39s, native Go27 macOS,
+observer106·모든 helper wait0/final confirmed cleanup을 확인했다. 마지막 CI400은55분 첫
+확인 뒤15분 연장 타이머에서 완료64m50s를 확인했다. 추가 push/rerun은 하지 않았다.
+
+로컬 기본 SDK·검사 도구5개·설치된 Go 실행파일7개는 모두 실제1.27.3이다. 보호 파일12개의
+bytes/UID/GID/mode, 실제 npm/pip 설치, 기존 owning-shell doctor와 confirmed-stop/readback,
+선택된 SDK의 기존 updater plan/apply/idempotent apply를 통과했다. Doctor의 Host 네 항목은
+정상이나 release-installation은 UNAVAILABLE/overall false를 유지한다. 영구 서비스 준비나
+공개 서명 릴리스로 확대하지 않는다.
+
+완료 사설 SDK·검증 cache·임시 실행기9,554,156,782 logical bytes를 참조0/조회 오류0 뒤
+삭제했다. 활성 SDK/tools/runtime·최종 source/candidate와 원본 runtime12/tool5/SDK의 복구
+백업은 보존한다. 자동 승인 검토가 원래 SDK 복구 백업까지 포함한 삭제를 실행 전에 거부했으며,
+안전한 대안에서 그 백업을 제외했다. 비활성 복구 백업을 active 구버전 혼용으로 분류하지 않는다.
+
+`IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES`, `MISSING=[]`.
+CI396과 local40m의 최초 실패·직접 원인 미확정은 유지한다. 아래 기록은 당시 시점의 이력이다.
+다음은 P2 pnpm 착수 감사이며 문서 전용 closure는095의 기능 bytes/modes를 보존한다.
+새 문서 HEAD Required나 main 병합·공개 배포 성공을 주장하지 않는다.
+
+## 이전 진단·타이머 이력 — 현재 판정은 위 완료 절 참조
+
+2026-10-24 03:15 KST의 실제50분 타이머 확인에서 새095450d의
+[CI397](https://github.com/rahoney/heliopause/actions/runs/39994940572)은 Required10SUCCESS다.
+Checkout6c3b16a4의 whole tree0358c532가 후보와 같고 Linux53/CPU265.94s·native Go27
+macOS·observer106·helper5wait0/final cleanup을 확인했다. 기존 progress port의 CPU 단계
+관측도 실제 연결됐다. [cu126 진단 CI398](https://github.com/rahoney/heliopause/actions/runs/39994974417)은
+8SUCCESS/Linux 진행 중이다. 원래80분 타이머의03:45 KST에 확인하며 새 push는 하지 않는다.
+새095 source·CLI/helper와 기존 strict bundle을 durable state에 준비하고 원본12·기본 도구/
+SDK 백업 및 기존 source/consumer guard를 확인했다. 준비 단계이며 설치·기본 SDK는 그대로다.
+
+03:45 KST의 실제80분 타이머 뒤 CI398도 Required10SUCCESS·Linux54/CPU282.74s/
+cu1261249.34s·native macOS/observer106·helper5wait0/final clean을 확인했다. Actual checkout은
+같은095다. 명시 준비102.997s, inspect→policy834.190s, stage→install11.345s,
+install→return162.813s의 실제 단계 경계를 확보했다. 기존396/별도local40m 실패와 직접 원인
+미확정은 유지하고 timing 기록이 과거 원인을 고쳤다고 주장하지 않는다. 한도·poll·coverage·
+production 알고리즘을 바꾸지 않은 새 실제 후보의 cu126 qualification이다.
+[cu130 CI399](https://github.com/rahoney/heliopause/actions/runs/40006284437)는 같은095의 첫 해당
+profile이며 PENDING이다. 이전 same profile75m18s와 현재 cu12671m38s를 근거로80분 타이머,
+05:08 KST 첫 확인을 잡았다. 이후 cu132와 controlled activation/retirement가 남는다.
+
+05:08 KST의 실제80분 타이머 뒤 CI399도 Required10SUCCESS·Linux54/CPU187.93s/
+cu130770.96s·native Go27 macOS/observer106·helper5wait0/final clean을 확인했다.
+Actual checkout은 같은095다. 전체 CI 실측은47m30s라 이전 same profile75m18s보다 짧았다.
+다음 [cu132 CI400](https://github.com/rahoney/heliopause/actions/runs/40017110559)의 첫 확인은
+최신47m30s, 이전 cu132 full878.63s와 현재 cu130 full770.96s의 차이 및 여유를 반영해
+55분/06:05 KST로 갱신했다. 아직 PENDING이며 설치·SDK 전환은 시작하지 않는다.
+
+06:05 KST의 실제55분 확인은8SUCCESS/Linux 진행 중이며 Required는 아직 생성 전이다.
+같은 run을 유지하고15분 연장/06:20 KST에 확인한다. SDK 선택 실행기·기존 doctor owning-shell
+실행기는 새 durable state에 준비했지만 실행하지 않았다. SDK 선택은 실제 네 run의 같은095/
+10SUCCESS, 기존 source/original/consumer guard와 old/new SDK 전체 inventory를 전제로 한다.
+Go27 SDK 선택 후 canonical bootstrap은 기존대로 정확한 source tool을 다시 설치하고 actual
+compiler를 검증하므로 버전 문자열만 같은 old binary를 재사용하지 않는다. Default tool cache의
+go-build/go-mod 경로는 checker가 직접 선택한다. Caller cache 환경변수로 바뀐다고 가정하지 않는다.
 
 [CI395](https://github.com/rahoney/heliopause/actions/runs/39957836809)는 c34365e와 같은 전체
 checkout tree252509fa에서 Required 포함10SUCCESS·actual Go1.27.3/Linux53/CPU278.97s·native
@@ -89,7 +147,7 @@ Race15.848s PASS를 확인했다. 최초 restricted executor의 기존 socket EP
 production/한도는 그대로다. 완료 local payload/임시 복제본17,647,185,607 logical bytes는
 참조·조회 오류0 확인 뒤 삭제했고 작은 control97개와 로그·stack·복원 증거만 보존했다.
 
-## 현재 검증 상태 — 로컬 완료, 원격·활성화 대기
+## 최초 source 반영 시점의 검증 상태 — 후속 결과는 위 재개점 참조
 
 [최종 로컬 결과](./go1273-local-qualification-20261023.json)는 baseline9670228의 기존
 두 frozen plan, 실제1.27.3 SDK·도구5개·Go image와 전체 gVisor member 신원을 연결한다.
@@ -110,9 +168,9 @@ source 파일만 Root에 반영했다. 현재 source/CI/quality/guest owner는1.
 SDK1.26.9·설치 CLI/runtime/services는 아직 전환하지 않았다. 완료 namespace 시험39,209,261B와
 긴 임시 경로는 참조0·조회 오류0 후 삭제했고 raw·실행파일 신원·launcher source를 보존했다.
 
-현재 `IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO`다.
-새 동일 후보의 실제 installed ecosystem/CPU·cu126/cu130/cu132/Required·native macOS와
-controlled activation/readback·구버전 owned retirement가 남는다. 한 후보로 push한 뒤 각 profile의
+당시 `IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO`로 기록했다.
+Source 반영 시점에는 새 동일 후보의 실제 installed ecosystem/CPU·cu126/cu130/cu132/Required·
+native macOS와 controlled activation/readback·구버전 owned retirement가 남았다. 각 profile의
 실측 시간으로 타이머 확인하며 P2는 이 acceptance까지 NOT_STARTED다. 아래 착수·실패 항목은
 당시 상태와 원본이며 현재 완료 판정은 이 절과 Queue를 따른다.
 

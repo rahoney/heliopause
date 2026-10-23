@@ -15,13 +15,24 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — native same-runtime self-quarantine update IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; actual signed rc6 normal/cancellations/fresh replay passed; channel scope remains
-Last completed substep: P1 client foundation + uv pip — COMPLETE / QUALIFIED / ACCEPTANCE_CLOSED; CI391/392/393/394 each ten SUCCESS
-Next action: M13-004/G127 — test-only bounded phase timing connected; canonical Quick/security/docs and focused Race PASS; one diagnostic candidate CI next; CI396 late/local40m failures preserved, original12 RESTORED; no product rewrite or budget change
-Current substep: M13-004/G127 — IN_PROGRESS; IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO; Host not activated; P2 waits
-After G127: P2 pnpm, then P3..P7 — NOT_STARTED
+Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
+Next action: M13-004/P2 — pnpm baseline audit, official exact-version/engine/schema/layout review, edit map and second review before code
+Current substep: M13-004/P2 — IN_PROGRESS (baseline/design only); support not advertised; implementation/qualification gaps remain
+After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-24 G127 완료·P2 인계
+
+[G127 누적 결과](./evidence/package-client-quarantine/go1273-acceptance-20261024.json)는
+같은095450d의 ordinary·cu126·cu130·cu132 각각 Required10SUCCESS와 실제 native macOS,
+observer106/helper 종료를 연결한다. 기본 SDK·quality tools5·설치 Go members7을1.27.3으로
+전환하고 보호12 metadata·실제 npm/pip·owned doctor/stop/readback 및 updater no-op을 확인했다.
+완료 사설 입력9.55GB를 삭제했고 운영 복구용 원본 SDK/runtime/tools는 보존했다. Release 설치는
+UNAVAILABLE이며 public release/main 병합을 의미하지 않는다. 과거396/local40m 실패는 보존한다.
+G127의 네 상태는 모두 YES/MISSING 없음이다. 다음 P2는 기존 구현 감사·공식 의미·수정 지도와
+두 번째 검토부터 시작하며 M13-004만 IN_PROGRESS다. 아래 날짜별 NO/PENDING은 당시 이력이다.
 
 ### 2026-10-24 G127 CI395 성공·CI396 cu126 지연 조사
 
