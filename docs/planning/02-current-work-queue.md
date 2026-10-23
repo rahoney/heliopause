@@ -16,7 +16,7 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — native same-runtime self-quarantine update IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; actual signed rc6 normal/cancellations/fresh replay passed; channel scope remains
 Last completed substep: P1 client foundation + uv pip — COMPLETE / QUALIFIED / ACCEPTANCE_CLOSED; CI391/392/393/394 each ten SUCCESS
-Next action: M13-004/G127 IN_PROGRESS — normalized target build/vet PASS; proven Staticcheck export-data incompatibility, exact2026.2 pin qualification then NEW frozen plan
+Next action: M13-004/G127 IN_PROGRESS — normalized target build/vet PASS; 2026.2 actual target still FAIL; exact2026.2.2 target scoped analysis and current canonical PASS; NEW cached target frozen qualification next
 Current substep: M13-004/G127 — IN_PROGRESS (quality-tool compatibility); isolated target SDK1.27.3 authenticated, Root pin1.26.10; Host not activated; must finish before P2
 After G127: P2 pnpm, then P3..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
@@ -28,7 +28,7 @@ Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten S
 모듈 형식 보완 뒤 NEW target plan은 bootstrap/build/test-build/vet까지 PASS지만 기존
 Staticcheck2026.1의 export decoder가 Go1.27 data version5를 읽지 못했다. 첫 실패를 보존했으며
 [수정 지도·공식 지원·두 번째 검토](./evidence/package-client-quarantine/go1273-migration-baseline-20261022.md)의
-방법으로2026.2 exact pin만 갱신했다. [Current SDK 로컬 결과](./evidence/package-client-quarantine/go1273-staticcheck-current-local-20261023.json)는 bootstrap·Quick56.004s/security/docs PASS다. 다음 NEW plan의 target 분석은 남는다. 다른 도구·검사 조건을 바꾸거나 아직 실행하지 않은
+방법으로2026.2 exact pin만 갱신했다. 이후 새 target에서 export data5/max4로 다시 거부되어 공식2026.2.2 patch가 실제1.27.3 source build/전체 offline analysis8.613s를 통과했다. Current SDK canonical과 새 target plan은 별도다. [Current SDK 로컬 결과](./evidence/package-client-quarantine/go1273-staticcheck-current-local-20261023.json)는 bootstrap·Quick56.004s/security/docs PASS다. 다음 NEW plan의 target 분석은 남는다. 다른 도구·검사 조건을 바꾸거나 아직 실행하지 않은
 gVisor/native/CPU/CUDA를 완료로 쓰지 않는다. 기존 두 frozen state를 수정하지 않고 새 baseline에서
 다음 plan을 만든다. 원격 CI는 최종 Go tuple 기능 경계로 묶고 실제 시간 기반 타이머를 사용한다.
 

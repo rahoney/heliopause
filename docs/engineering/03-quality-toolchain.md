@@ -262,8 +262,9 @@ Implementation and remaining stages follow the
 ## 4. Canonical local entrypoint
 
 2026-10-23 M13-004/G127은 실제 Go1.27.3 export data에서2026.1 decoder 오류를 확인하여
-현재 Staticcheck pin을2026.2(`v0.8.0`)로 갱신한다. 공식 release의 Go1.27 지원과
-module minimum1.26.0을 대조했으며 기존 exact source/checksum bootstrap·binary/compiler
+현재 Staticcheck pin을2026.2.2(`v0.8.2`, actual display `0.8.2`)로 갱신한다. 최초2026.2의
+계열 지원 선언만으로는 실제1.27.3 export data를 읽지 못했으며, 후속 공식 patch의 변경된
+export data 지원과 module minimum1.26.0을 대조했다. 기존 exact source/checksum bootstrap·binary/compiler
 검사를 유지한다. 신규 SA9010과 upstream 진단 변화(SA5011 비활성화 포함)를 검토했고
 프로젝트 suppression은 추가하지 않는다. 위 M0 선택은 역사 기록이며 현재 실행 pin은
 tools.lock이 소유한다. 실제 old/new SDK qualification·원본과 남은 작업은

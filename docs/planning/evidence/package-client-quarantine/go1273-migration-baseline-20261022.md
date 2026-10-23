@@ -267,3 +267,39 @@ bootstrap34.276s·실제 Go1.26.10 buildinfo·Quick56.004s/security4.591s/docs P
 현재 기준선의 분석·기존 tests는 통과했고 target1.27.3 analysis는 다음 NEW plan에서 검증한다.
 첫 실패 state의 전체 frozen bytes/modes·process/FD/maps/mount 참조0·조회 오류0을 확인한 뒤
 완료 payload4,103,892,746B를 retire했고 frozen plan/SDK inventory/원본은 보존했다.
+
+### 2026.2 실제 target 반증과 공식 patch 선택
+
+9694149의 새 plan98869da1/verification-1876054408은 bootstrap/build/vet PASS 뒤
+Staticcheck2026.2/v0.8.0의 decoder가 export data5/max4로 FAIL다. Current SDK PASS와
+공식 Go1.27 계열 지원을 actual1.27.3 지원으로 확대하지 않는다. 기존 권장 target 선택은
+superseded이며 첫 원본은 raw go1273-staticcheck20262-target-failure-20261023.json으로 보존했다.
+
+첫 검토에서2026.2 exact tag만 확인하고 후속 stable patch를 확인하지 못했다. 공식
+[최신 release2026.2.2](https://github.com/dominikh/go-tools/releases/tag/2026.2.2)는
+Go1.27.2의 변경된 export data 지원과 crash/진단 수정을 명시한다. 실제 release 목록과
+[go.mod](https://github.com/dominikh/go-tools/blob/2026.2.2/go.mod)의 floor1.26.0·x/tools0.51.0을
+대조했다. Latest 추종은 하지 않고 요청한 compatibility gap을 고치는 exact patch를 선택한다.
+
+추가 수정 전에 이미 authenticated target SDK와 보존한 checked source에서 외부 bin directory에
+exact2026.2.2만 checksum 검증/source build하여 offline 전체 분석을 먼저 실행한다. 기존
+canonical target profile의 첫 실패 후 원인을 좁히는 probe이며 configuration PASS로 기록하지 않는다.
+Frozen source/plan/기존 binary는 수정하지 않고 실제 display/buildinfo·소스 검사 전후 hash를 보존한다.
+성공한 경우 tools.lock의 Staticcheck version/expectedVersion과 support record만 patch로 갱신하고
+current bootstrap/Quick·보안·문서로 정상 기준선을 확인한다. Target SDK 새 canonical plan은 그 후다.
+두 번째 검토에서도 updater·guard·다른 도구·제품 의존성을 바꿀 필요는 없다.
+
+Raw go1273-staticcheck202622-target-probe-20261023.json의 actual Go1.27.3 exact patch install6.217s·
+display `staticcheck 2026.2.2 (0.8.2)`·buildinfo·offline full analysis8.613s가 PASS다.
+Frozen checked source의 전후 hash는 일치한다. 공식 latest stable endpoint도2026.2.2로
+재확인했으며 원본은 go1273-staticcheck202622-official-review-20261023.json에 보존했다.
+최종 선택/expectedVersion은 이 실제 출력으로 확정한다. Current bootstrap9.151s도 PASS다.
+다음 NEW frozen state의 quality cache는 같은 actual SDK의 준비 cache를 독립 파일로 복사해
+bootstrap 비용을 줄일 수 있다. Hardlink/symlink alias를 만들지 않고 transfer inventory와
+원본·목적지를 보존하며 canonical bootstrap·identity·module verify를 생략하지 않는다.
+Cache 재사용을 cold-cache qualification으로 표시하지 않는다.
+
+[Patch 로컬 결과](./go1273-staticcheck-patch-local-20261023.json)는2026.2 실패/반증과
+actual2026.2.2 target 전체 분석·current canonical Quick55.705s/security/docs를 연결한다.
+두 번째 완료 실패 state4,896,518,774B도 참조0/오류0·frozen bytes/modes 확인 후 정리했다.
+두 완료 state의 원본은 보존하고 아직 쓰는 target SDK·cache는 다음 후보 준비까지 유지한다.
