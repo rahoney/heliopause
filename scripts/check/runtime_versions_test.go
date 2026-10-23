@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -16,7 +17,7 @@ func runtimeOwnerFixture(t *testing.T) string {
 			t.Fatal(err)
 		}
 	}
-	for _, name := range []string{"go.mod", "scripts/runtimes.lock.json", "scripts/tools.lock.json", "scripts/version-support.lock.json", workflowRelativePath, securityWorkflowRelativePath, releaseWorkflowRelativePath, releasePublishWorkflowRelativePath} {
+	for _, name := range []string{"go.mod", "README.md", "scripts/runtimes.lock.json", "scripts/tools.lock.json", "scripts/version-support.lock.json", workflowRelativePath, securityWorkflowRelativePath, releaseWorkflowRelativePath, releasePublishWorkflowRelativePath} {
 		body, err := os.ReadFile(filepath.Join("../..", name))
 		if err != nil {
 			t.Fatal(err)
@@ -122,6 +123,7 @@ func TestRuntimeVersionOwnersAllowCoordinatedFutureGoInputs(t *testing.T) {
 		}
 	})
 	writeTestFile(t, filepath.Join(root, "go.mod"), "module example.test/fixture\n\ngo "+future+"\n")
+	writeTestFile(t, filepath.Join(root, "README.md"), fmt.Sprintf("# Fixture\n\n## Build\n\nHeliopause는 Go `%s` 이상이 필요하며, 개발·CI toolchain은 Go `%s`으로 고정한다.\n", future, future))
 	for _, path := range []string{workflowRelativePath, securityWorkflowRelativePath, releaseWorkflowRelativePath, releasePublishWorkflowRelativePath} {
 		body, err := os.ReadFile(filepath.Join(root, path))
 		if err != nil {

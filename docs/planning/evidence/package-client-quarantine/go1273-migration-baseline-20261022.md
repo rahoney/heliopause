@@ -125,11 +125,11 @@ Darwin 두 archive와 원본 metadata 신원은 local raw `go1273-official-sdk-d
 | 책임 / 실제 owner | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
 | --- | --- | --- | --- | --- | --- |
 | 기존 plan/apply/verify·공식 SDK/bootstrap·두 단계 gVisor capture·source 보호 | YES | YES | YES(existing scope) | YES(existing) | 재사용. 새 compiler의 실제 결과는 별도 |
-| README Build와 실제 Go owner의 자동 일치 | NO | NO | NO | NO | renderChanges/checkGoVersionConsistency에 명시 README 소비자 추가·old/current/future 거부 회귀 |
+| README Build와 실제 Go owner의 자동 일치 | YES | YES | YES(current1.26.10 local) | YES(consumer unit) | [로컬 회귀/기록](./go1273-readme-consumer-local-20261023.json); target1.27.3 qualification은 별도 |
 | Go1.27.3 SDK/OCI·pinned tools·gVisor/observer source compatibility | NO | NO | NO | NO | 실제 frozen 두 plan·target SDK/bootstrap·전체 bundle/observer capture/재현 |
 | 새 tuple의 전체 소비자·플랫폼·CPU/CUDA·activation/retirement | NO | NO | NO | NO | 새 source별 실제 qualification·설치/복구·old owned 참조0 확인 |
 
-README는 P1 종료에서 실제1.26.10 기준으로 수동 교정했다. 그러나 기존
+README는 P1 종료에서 실제1.26.10 기준으로 수동 교정했다. 착수 기준ab2a161의 기존
 `scripts/update-runtime/patch.go:renderChanges`의 Go branch는 go.mod/tools/workflows와 생성값만
 갱신하고 README를 읽지 않는다. `scripts/check/tools.go:checkGoVersionConsistency`도
 module/guest/tool만 검사한다. 이는 문서 소비자의 누락이며 기존 runtime binary가 혼용됐거나
@@ -149,6 +149,11 @@ Go1.27이 호환되지 않는다는 증거가 아니다. 기존 유지보수·�
    `scripts/check/tools_test.go`의 기존 mixed-SDK fixture도 README를 명시하고 stale minimum/
    stale toolchain/누락/중복·역사 문구 보존을 확인한다. 먼저 같은 negative test가 기존 checker에서
    실패함을 보존한 뒤 교정한다. Before/after 입력·최종 formatted source를 구분한다.
+   Indirect `scripts/check/runtime_versions_test.go:runtimeOwnerFixture/checkOwnerFixture`도 같은
+   consistency 검사를 소비한다. 새 README 입력을 baseline fixture에 복사하고 coordinated
+   future-Go positive fixture의 두 값도 함께 맞춘다. 최초 Quick65.172s/두 package Race22.648s는
+   이 fixture의 README 부재에서 실패했으며 제품 guard를 완화하지 않는다. 기존 negative의
+   error/assertion은 그대로 보존하고 fixture 준비 누락만 교정한다.
 4. 현1.26.10의 canonical format/Quick/security/docs/workflow와 두 tool package 회귀/Race를 실행해
    기존 정상 소비자를 보존한다. 이 단계는 Go target pin/runtime 동작을 바꾸지 않으므로 네
    product profile의 원격 CI를 다시 실행하지 않고 의미 있는 중간 commit만 보존한다.
@@ -171,3 +176,15 @@ linked-worktree VCS projection·quality cache isolation과 처음 발견한 READ
 UPG 기존 capture/verify는 이미 있어 재작성할 이유가 없다. 새 Go compatibility는 UNKNOWN이며
 old hash 재사용·경고 suppression·unknown input의 성공 처리·과거 지연 원인 확정은 금지한다.
 현재 target pin/source 구현은 아직 시작하지 않았다. 이 감사는 새 승인 관문을 만들지 않는다.
+
+
+### 첫 source 단위 로컬 종료 — target pin은 미변경
+
+[README 소비자 로컬 결과](./go1273-readme-consumer-local-20261023.json)는 같은 checker test SHA의
+before1.819s/7negative FAIL → after0.984s/PASS를 연결한다. 초기 전체 검사에서 발견한
+indirect runtimeOwnerFixture의 README 부재를 교정했고 기존 negative assertion은 유지했다.
+교정된 canonical5/Quick45.509s·두 도구 package 전체 Race25.424s는 PASS다. 실제 isolated
+plan/apply에서 Build의 두 값만 갱신하고 다른 section의 동일한 과거 문장을 보존했다.
+Same-version no-op·unknown/mixed/duplicate 거부와 기존 모든 component/owner 회귀도 유지했다.
+완료한 probe driver는 source/명령/원본 증거 연결 뒤 삭제했다. Go1.27.3 SDK/pin/Host 전환은
+아직 미실행이며 이 로컬 consumer qualification을 새 compiler 지원으로 확대하지 않는다.

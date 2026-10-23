@@ -33,7 +33,7 @@ owner는 하나이고, 다른 소비자는 그 값을 읽거나 검증 가능한
 
 | 대상 | 입력 owner / 현재 소비자 | 갱신 책임 |
 | --- | --- | --- |
-| HAA Go compiler | `scripts/runtimes.lock.json`의 `go_image.go_version`을 선택 버전 owner로 사용 | `go.mod` floor, tool `setupGo`, CI/release setup, guest tag/version/digest와 host SDK를 연결 |
+| HAA Go compiler | `scripts/runtimes.lock.json`의 `go_image.go_version`을 선택 버전 owner로 사용 | `go.mod` floor, README Build minimum/toolchain, tool `setupGo`, CI/release setup, guest tag/version/digest와 host SDK를 연결 |
 | Node/npm | runtime lock의 Node image와 bundled npm identity | Node tag/version과 실제 image contents 일치; resolver·probe·Promotion 공유 |
 | uv | runtime lock schema2의 uv_image/version/provenance/native tool identity | 공식 signed proof·전체 layer를 고정하고 offline plan/apply에서 재검증; Python ABI는 독립 유지 |
 | Python/pip | runtime lock의 Python image, pip와 ABI/platform target | interpreter·pip·wheel tags·Promotion·PyTorch 지원 tuple 영향을 함께 계산 |
@@ -57,6 +57,11 @@ Host Go archive의 platform/URL/size/SHA-256은 해당 Go 선택에 연결한 fr
 배포물 metadata로 둔다. 선택 버전의 owner는 runtime lock 하나로 유지하며,
 developer SDK 준비만을 위해 product runtime lock schema를 확장하지 않는다.
 새로운 독립 version lock을 만들지 않는다.
+
+README의 `Build` section에 있는 Go minimum/toolchain 문장도 선언된 소비자다.
+Go plan은 유일한 section/현재 두 값의 알려진 형식을 확인한 뒤 owner에서 파생해 갱신한다.
+Read-only consistency 검사는 README·module·guest·tools의 일치를 요구한다. 누락·중복·혼용·
+알 수 없는 문장은 거부하며 다른 section의 과거 버전과 qualification 원본은 수정하지 않는다.
 
 ### Quality tool의 실제 compiler 확인
 

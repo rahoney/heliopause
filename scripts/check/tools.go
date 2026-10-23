@@ -63,6 +63,34 @@ func (c *checker) checkGoVersionConsistency() error {
 			return errors.New("go version consistency: quality compiler must match go.mod")
 		}
 	}
+	body, err = os.ReadFile(filepath.Join(c.root, "README.md"))
+	if err != nil {
+		return fmt.Errorf("go version consistency: read README: %w", err)
+	}
+	return checkReadmeGoBuild(body, moduleVersion)
+}
+
+func checkReadmeGoBuild(body []byte, selected string) error {
+	const heading = "\n## Build\n"
+	text := string(body)
+	if strings.Count(text, heading) != 1 {
+		return errors.New("go version consistency: README must contain one Build section")
+	}
+	_, section, _ := strings.Cut(text, heading)
+	section, _, _ = strings.Cut(section, "\n## ")
+	expected := fmt.Sprintf("Heliopause는 Go `%s` 이상이 필요하며, 개발·CI toolchain은 Go `%s`으로 고정한다.", selected, selected)
+	fields := 0
+	for _, line := range strings.Split(section, "\n") {
+		if strings.HasPrefix(line, "Heliopause는 Go ") {
+			if line != expected {
+				return errors.New("go version consistency: README minimum/toolchain must match go.mod")
+			}
+			fields++
+		}
+	}
+	if fields != 1 {
+		return errors.New("go version consistency: README requires one known minimum/toolchain paragraph")
+	}
 	return nil
 }
 

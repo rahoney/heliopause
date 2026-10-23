@@ -175,6 +175,16 @@ func renderChanges(p plan, state string) ([]change, error) {
 		}
 		files[path] = body
 	}
+	if p.Component == "go" {
+		body, _, err := readRegular(p.Root, "README.md")
+		if err != nil {
+			return nil, err
+		}
+		files["README.md"], err = editReadmeGoBuild(body, p.Current, p.Version)
+		if err != nil {
+			return nil, err
+		}
+	}
 	if p.Version != p.Current && p.Component != "terraform" && p.Component != "github" {
 		if p.Component == "uv" {
 			if err := verifyFrozenUVSupply(p.Version, p.Metadata, state); err != nil {
@@ -332,6 +342,40 @@ func renderChanges(p plan, state string) ([]change, error) {
 		return nil, errors.New("same-version baseline has generated drift; reconcile it explicitly first")
 	}
 	return changes, nil
+}
+
+// Only the declared Build paragraph is a version consumer. Historical text in
+// other sections is preserved, including identical previous version sentences.
+func editReadmeGoBuild(body []byte, current, selected string) ([]byte, error) {
+	const heading = "\n## Build\n"
+	text := string(body)
+	if strings.Count(text, heading) != 1 {
+		return nil, errors.New("readme must contain one Build section")
+	}
+	before, section, _ := strings.Cut(text, heading)
+	contents, after, hasNext := strings.Cut(section, "\n## ")
+	paragraph := func(version string) string {
+		return fmt.Sprintf("Heliopause는 Go `%s` 이상이 필요하며, 개발·CI toolchain은 Go `%s`으로 고정한다.", version, version)
+	}
+	lines := strings.Split(contents, "\n")
+	fields := 0
+	for index, line := range lines {
+		if strings.HasPrefix(line, "Heliopause는 Go ") {
+			if line != paragraph(current) {
+				return nil, errors.New("readme Go minimum/toolchain differs from the selected baseline")
+			}
+			fields++
+			lines[index] = paragraph(selected)
+		}
+	}
+	if fields != 1 {
+		return nil, errors.New("readme requires one known Go minimum/toolchain paragraph")
+	}
+	result := before + heading + strings.Join(lines, "\n")
+	if hasNext {
+		result += "\n## " + after
+	}
+	return []byte(result), nil
 }
 
 func editReviews(body []byte, owners map[string]string, review []map[string]any) ([]byte, error) {

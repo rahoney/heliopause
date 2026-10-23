@@ -16,8 +16,8 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — native same-runtime self-quarantine update IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; actual signed rc6 normal/cancellations/fresh replay passed; channel scope remains
 Last completed substep: P1 client foundation + uv pip — COMPLETE / QUALIFIED / ACCEPTANCE_CLOSED; CI391/392/393/394 each ten SUCCESS
-Next action: M13-004/G127 IN_PROGRESS — baseline/second review updated; wire missing README Go consumer, then existing frozen plan/apply/verify for target1.27.3
-Current substep: M13-004/G127 — IN_PROGRESS (audit/README consumer gap); target compiler/pins not changed yet; must finish before P2
+Next action: M13-004/G127 IN_PROGRESS — README consumer LOCAL VERIFIED; clean baseline then existing frozen plan/apply/verify for target1.27.3
+Current substep: M13-004/G127 — IN_PROGRESS (exact target candidate preparation); target compiler/pins not changed yet; must finish before P2
 After G127: P2 pnpm, then P3..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -28,8 +28,8 @@ Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten S
 P1을7ce362b로 문서 종료했고 target Go1.27.3의 공식 release/advisory와 세 SDK archive metadata를
 재확인했다. [갱신된 감사·수정 지도·두 번째 검토](./evidence/package-client-quarantine/go1273-migration-baseline-20261022.md)를
 따른다. 기존 coordinator·SDK bootstrap·gVisor capture/verify는 재작성하지 않는다.
-README Build는 자동 renderer/consistency checker의 소비자에서 빠져 있었으므로 그 좁은 gap을
-먼저 회귀로 고정·보완한다. 이후 깨끗한 baseline에서 기존 두 frozen plan과 실제 target SDK/
+README Build의 자동 renderer/consistency 소비자 누락은 [같은 회귀/기존 소비자 검증](./evidence/package-client-quarantine/go1273-readme-consumer-local-20261023.json)으로
+보완했다. Canonical5/전체 두 도구 Race25.424s는 PASS이며 version owner·거부 조건은 유지했다. 이후 깨끗한 baseline에서 기존 두 frozen plan과 실제 target SDK/
 bundle·observer를 검증한다. 현재 pin/SDK는1.26.10이며 Host SDK/CLI·서비스는 변경하지 않았다.
 다음 단계의 P2..P7은 시작하지 않는다. 단일 active work item은 계속 M13-004다.
 
