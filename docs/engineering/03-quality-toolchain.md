@@ -270,6 +270,13 @@ export data 지원과 module minimum1.26.0을 대조했다. 기존 exact source/
 tools.lock이 소유한다. 실제 old/new SDK qualification·원본과 남은 작업은
 [G127 수정 지도](../planning/evidence/package-client-quarantine/go1273-migration-baseline-20261022.md)를 따른다.
 
+같은 G127의 target Quick PASS 뒤 gosecv2.28.0/v2.29.0의 export decoder 오류가 실제
+확인되어 gosec만v2.30.0으로 갱신한다. Actual GitHub API의 새 stable release·Go1.27.3
+지원·module floor1.26.0/Apache2.0과 exact source/checksum build를 대조했다. 실제 binary의
+display는 기존 `Version: dev`이므로 source module/buildinfo가v2.30.0 신원을 보존한다.
+기존 include/nosec 인자·규칙을 그대로 사용하며 AI/autofix 옵션을 활성화하지 않는다.
+기존 govulncheckv1.7.0은 target canonical vulnerability PASS라 유지한다.
+
 구현 단계에서 standard library만 사용하는 repository-owned check runner를 `scripts/check/`에 둔다.
 
 ```text

@@ -303,3 +303,48 @@ Cache 재사용을 cold-cache qualification으로 표시하지 않는다.
 actual2026.2.2 target 전체 분석·current canonical Quick55.705s/security/docs를 연결한다.
 두 번째 완료 실패 state4,896,518,774B도 참조0/오류0·frozen bytes/modes 확인 후 정리했다.
 두 완료 state의 원본은 보존하고 아직 쓰는 target SDK·cache는 다음 후보 준비까지 유지한다.
+
+### Target Quick 전체 통과 뒤 별도 gosec 호환성 gap
+
+ce6ec1c의 새 candidate는 canonical bootstrap/Quick가 PASS다. Staticcheck patch와 기존 기본
+tests의 실제 target 검증 범위가 닫혔다. 다음 security에서 gosecv2.28.0이 export data5/max4로
+실패했다. Summary Issues0은 import/type failure를 상쇄하지 않는다. 첫 plan/SDK/Quick/security
+원본은 raw go1273-gosec-target-failure-20261023.json이 보존한다.
+
+이 단계에서 govulncheckv1.7.0도 같은 frozen checked source/actual1.27.3의 기존 canonical
+vulnerability로 먼저 실행했고12.432s/PASS다. 따라서 최신 v1.8.0이 있어도 이 작업에서
+govulncheck pin을 바꾸지 않는다. 실패한 scanner와 정상 scanner를 구분한다.
+
+공식 [gosec latest v2.29.0](https://github.com/securego/gosec/releases/tag/v2.29.0)의
+Go1.27 지원·의존성 갱신과 [module](https://github.com/securego/gosec/blob/v2.29.0/go.mod)의
+Go1.25.0 floor/x-tools0.49.0을 대조했다. 실제 이 export 형식 지원은 별도 probe로 확인한다.
+외부 bin에 exact source/checksum build 후 기존 security.go의 동일 include/nosec 인자로
+전체 source를 검사한다. Frozen source hash 전후·binary output/module/compiler를 기록하며
+성공만으로 전체 configuration을 PASS로 바꾸지 않는다. Official latest·exact tag·license와
+새 진단/의존성 차이를 보존한다. 공급 graph는 quality 도구에 격리하고 AI 옵션은 켜지 않는다.
+
+성공하면 수정 위치는 기존 tools.lock의 gosec version/실측 expectedVersion과 support record
+한 개·engineering03의 현재 선택뿐이다. setupGo/current floor1.26.10·제품 dependency graph·
+다른 도구·기존 include/negative/보안 규칙은 유지한다. Current canonical bootstrap/Quick/security/
+docs를 확인해 한 단위로 commit하고 NEW frozen Go plan의 전체 검증으로 이어간다. 두 번째
+검토에서도 bootstrap/updater/보안 runner 재작성이나 warning suppression은 필요하지 않다.
+
+앞 v2.29.0 target probe는 source install33.168s 뒤 같은 export data5/max4로 FAIL6.018s다.
+따라서 Root pin은 바꾸지 않았다. Web latest 결과는v2.29.0이었으나 실제 GitHub API latest는
+2026-10-23 09:22:19UTC에 발표된v2.30.0을 반환했다. Cached web 조회를 actual latest로
+확정하지 않으며 raw go1273-gosec229-official-review의 응답 차이와 실패를 보존한다.
+공식 [v2.30.0](https://github.com/securego/gosec/releases/tag/v2.30.0)의 Go1.27.3/1.26.10
+업데이트·의존성/기존 G112/G402/G602 진단 수정과 exact tag를 추가 검토했다. 실제 raw와
+Go proxy의 go.mod 모두 floor1.26.0이며 Apache2.0이다. Raw go1273-gosec230-official-review가
+원본을 소유한다. 위 수정 범위/기존 규칙을 유지하고 이 exact version만 먼저 실제 probe한다.
+
+Exactv2.30.0의 actual1.27.3 source build43.522s/기존 display·buildinfo/동일 규칙 전체
+offline scan3.033s는 PASS376files/79,545lines/Issues0이며 frozen source 전후 hash도
+일치한다. Raw go1273-gosec230-target-probe가 이 좁은 경계를 소유한다. 같은 version의
+current SDK canonical bootstrap54.248s도 PASS다. 실패한 v2.29는 적용하지 않았고 정상
+govulncheck/다른 도구·제품 graph/기존 보안 규칙은 변경하지 않는다. 세 번째 완료 state의
+payload5,015,905,153B도 frozen source/참조0/조회 오류0 확인 후 retire했다. 작은 원본은 보존한다.
+
+[gosec 로컬 결과](./go1273-gosec-local-20261023.json)는 actualv2.30 target scan과 current
+SDK buildinfo·canonical Quick46.480s/security4.295s/docs PASS를 연결한다. 기존 scanner/
+규칙/제품 source는 유지했고 다음 NEW frozen plan으로 전체 target configuration을 확인한다.

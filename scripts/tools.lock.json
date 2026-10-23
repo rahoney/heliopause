@@ -11,7 +11,7 @@
     {
       "command": "gosec",
       "package": "github.com/securego/gosec/v2/cmd/gosec",
-      "version": "v2.28.0",
+      "version": "v2.30.0",
       "expectedVersion": "Version: dev\nGit tag: \nBuild date:",
       "versionArguments": ["-version"],
       "setupGo": "1.26.10"
