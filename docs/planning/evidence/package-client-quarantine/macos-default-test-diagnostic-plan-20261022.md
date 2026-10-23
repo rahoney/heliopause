@@ -179,7 +179,7 @@ GC/OS 압력·cache miss 또는 새 source 인과는 확정하지 않는다.
 ACCEPTANCE_CLOSED=NO다. Package progress는 NO/NO/NO/NO이며 MISSING은 다음 진단과 실제
 native 결과다. 기존 실행기·cache·validator·platform을 대체하지 않는다.
 
-정확한 수정 위치는 scripts/check/runner.go의 quickSteps/platformSteps 두 production build 호출이다.
+정확한 수정 위치는 scripts/check/runner.go의 foundationSteps(Quick)/platformSteps 두 production build 호출이다.
 고정 Go의 build -v만 추가한다. 같은 SDK help와 cmd/go/internal/work/exec.go의 BuildV 분기는
 package import path 출력이다. JSON parser·새 progress framework·-x/-work·환경/임시 경로/인자를
 추가하지 않는다. 기존1MiB bounded capture와 timeout의 partial stdout/stderr/error cause 보존을
@@ -192,3 +192,11 @@ package import path 출력이다. JSON parser·새 progress framework·-x/-work�
 security/docs/workflow/platform 및 기존 checker timeout/capture Race를 검사한다. Actual native
 source CI가 진단의 유효성과 macOS 완료 기준이며 로컬 cache 성공을 native cold 성능으로 쓰지
 않는다. 진단 추가를 빌드 timeout 원인 해결로 기록하지 않는다.
+
+
+[진행 출력 로컬 검증](./macos-build-progress-local-20261023.json)의 실제 두 호출은 -v만 추가했고
+기존 bounded partial capture·error cause를 재사용한다. Canonical format/Quick34.079s/security/
+docs/workflow/platform21.553s와 기존 checker 전체 Race22.786s는 PASS다. 모든 검사 종료 뒤
+owned Go TMPDIR0이며 새 native 자원은 없다. IMPLEMENTED/WIRED=YES/QUALIFIED=LOCAL ONLY/
+ACCEPTANCE_CLOSED=NO다. Native macOS/Required가 MISSING이며 내부 지연 원인은 미확정이다.
+로컬 platform은 기존 cache 결과이며 cold macOS 성능으로 비교하지 않는다.
