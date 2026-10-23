@@ -6,7 +6,7 @@
       "package": "honnef.co/go/tools/cmd/staticcheck",
       "version": "2026.2.2",
       "expectedVersion": "staticcheck 2026.2.2 (0.8.2)",
-      "setupGo": "1.26.10"
+      "setupGo": "1.27.3"
     },
     {
       "command": "gosec",
@@ -14,7 +14,7 @@
       "version": "v2.30.0",
       "expectedVersion": "Version: dev\nGit tag: \nBuild date:",
       "versionArguments": ["-version"],
-      "setupGo": "1.26.10"
+      "setupGo": "1.27.3"
     },
     {
       "command": "govulncheck",
@@ -23,7 +23,7 @@
       "expectedVersion": "Scanner: govulncheck@v1.7.0",
       "versionArguments": ["-version"],
       "versionMatch": "contains",
-      "setupGo": "1.26.10"
+      "setupGo": "1.27.3"
     },
     {
       "command": "gitleaks",
@@ -31,7 +31,7 @@
       "version": "v8.18.4",
       "expectedVersion": "8.18.4",
       "versionArguments": ["version"],
-      "setupGo": "1.26.10",
+      "setupGo": "1.27.3",
       "moduleSum": "h1:mWOfVGO8ksok21iOb7h4DZMcUxyvsol8l6o1uNOQxww=",
       "ldflags": "-s -w -X=github.com/zricethezav/gitleaks/v8/cmd.Version=8.18.4"
     },
@@ -41,7 +41,7 @@
       "version": "v1.7.12",
       "expectedVersion": "v1.7.12\n",
       "versionMatch": "contains",
-      "setupGo": "1.26.10"
+      "setupGo": "1.27.3"
     }
   ]
 }

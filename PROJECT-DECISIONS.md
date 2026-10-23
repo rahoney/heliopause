@@ -201,8 +201,10 @@ held guard·승인 cache·primary 없는 Manifest/SBOM·offline 반입과 CLI를
 전체 tree의 실제 complete/closure·기존 Linux/CPU/macOS와 Required10SUCCESS를 확인했다.
 같은 후보의 cu126/CI392·cu130/CI393·cu132/CI394도 각각 Required10SUCCESS다.
 [누적 qualification](./docs/planning/evidence/package-client-quarantine/p1-uv-acceptance-20261023.json)을
-확인해 P1은 `COMPLETE / QUALIFIED / ACCEPTANCE_CLOSED`다. 저장소·CI는 Go1.26.10 보안 패치 기준이고 README Build의
-과거1.26.9 표기를 현재 기준에 맞췄다. Host SDK나 runtime을 이 문서 변경으로 활성화하지 않는다.
+확인해 P1은 `COMPLETE / QUALIFIED / ACCEPTANCE_CLOSED`다. 그 뒤 Go1.27.3의
+[최종 로컬 검증·source 반영](./docs/planning/evidence/package-client-quarantine/go1273-local-qualification-20261023.json)을
+완료했다. 저장소·CI owner는1.27.3이며 새 원격 네 profile과 controlled activation/retirement는 남는다.
+Host SDK나 설치 runtime은 아직 활성화하지 않았다.
 요청한 [Go1.27.3 전환](./docs/planning/evidence/package-client-quarantine/go1273-migration-baseline-20261022.md)은
 P1 acceptance 다음/P2 이전에 검증한다. UV project는 P4이며 실행기와 다른 client의 지원은
 각 단계의 별도 acceptance를 따른다. CLI 강조 대상은 제품 풀네임이고 `helox`는 실행 명령이다.

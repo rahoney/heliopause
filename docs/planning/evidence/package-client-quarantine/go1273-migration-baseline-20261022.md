@@ -3,10 +3,37 @@
 계획 기준64122af. 2026-10-22 사용자는 GO-2026-6809를 확인하고 다음 Go 전환 대상으로
 1.27.3을 선호하며, 현재 client 작업과의 순서 판단·Queue 기록을 요청했다.
 
+## 현재 검증 상태 — 로컬 완료, 원격·활성화 대기
+
+[최종 로컬 결과](./go1273-local-qualification-20261023.json)는 baseline9670228의 기존
+두 frozen plan, 실제1.27.3 SDK·도구5개·Go image와 전체 gVisor member 신원을 연결한다.
+First capture419.733s와 최종 configuration7/388.785s가 PASS다. 독립 재빌드는 exact module
+acquisition의 TLS 실패를 보존한 뒤 해당 인증 fetch만 복구하여363.643s/PASS했고 six members와
+manifest가 byte-identical이다. Source reconstruction·whole lock·기존 strict verifier를 유지했으며
+pristine cold acquisition으로 주장하지 않는다. Observer236.438s/106PASS·0FAIL도 확인했다.
+Observer별 preparation 파일은 정상 cleanup 뒤라 NOT_CAPTURED이며 소급 생성하지 않는다.
+
+최종 standalone checked source의 vulnerability11.715s/fuzz78.659s/Linux platform150.720s/
+full Race224.671s가 PASS다. Platform 최초128.648s 실패는 긴 임시 경로의 Unix socket fixture였고
+기존 오답노트의 제한을 실행기에 반영하지 못했다. Source·한도는 유지하고 짧은 owned TMPDIR만
+교정했다. 별도 기존 namespace 설치·등록·복구13개와 Host 보호 파일 불변을 확인했다. 이는 기존
+서명 mock을 사용하는 filesystem/control 검사이며 실제 signed 설치 qualification은 아니다.
+
+2,081개 전체 추적 파일의 frozen before·checked after bytes/modes를 대조한 뒤 선언된10개
+source 파일만 Root에 반영했다. 현재 source/CI/quality/guest owner는1.27.3이며 global Host
+SDK1.26.9·설치 CLI/runtime/services는 아직 전환하지 않았다. 완료 namespace 시험39,209,261B와
+긴 임시 경로는 참조0·조회 오류0 후 삭제했고 raw·실행파일 신원·launcher source를 보존했다.
+
+현재 `IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO`다.
+새 동일 후보의 실제 installed ecosystem/CPU·cu126/cu130/cu132/Required·native macOS와
+controlled activation/readback·구버전 owned retirement가 남는다. 한 후보로 push한 뒤 각 profile의
+실측 시간으로 타이머 확인하며 P2는 이 acceptance까지 NOT_STARTED다. 아래 착수·실패 항목은
+당시 상태와 원본이며 현재 완료 판정은 이 절과 Queue를 따른다.
+
 ## 결정과 순서
 
-현재 저장소의 go.mod, runtime lock의 Go image, quality tools setupGo와 CI는 이미
-1.26.10이다. [CI377](./p1c-guarded-cli-ci377-20261022.json)은 실제1.26.10과 Vulnerability를
+착수 감사 당시 저장소의 go.mod, runtime lock의 Go image, quality tools setupGo와 CI는
+1.26.10이었다. [CI377](./p1c-guarded-cli-ci377-20261022.json)은 실제1.26.10과 Vulnerability를
 포함한 열 개 SUCCESS다. 이 사실은 기존 설치/preview binary를 자동 갱신했다는 뜻이 아니다.
 
 공식 [GO-2026-6809](https://pkg.go.dev/vuln/GO-2026-6809)는 crypto/x509.Certificate.Verify의

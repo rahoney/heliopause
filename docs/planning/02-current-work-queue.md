@@ -16,12 +16,26 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — native same-runtime self-quarantine update IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; actual signed rc6 normal/cancellations/fresh replay passed; channel scope remains
 Last completed substep: P1 client foundation + uv pip — COMPLETE / QUALIFIED / ACCEPTANCE_CLOSED; CI391/392/393/394 each ten SUCCESS
-Next action: M13-004/G127 IN_PROGRESS — normalized target build/vet PASS; 2026.2 actual target still FAIL; target canonical Quick PASS; security gosec2.28 decoder FAIL; govulncheck1.7 canonical PASS; actual Go1.27.3 configuration7 PASS; nogo minimal3-pin explicit test/private release/current canonical PASS; combined patch prepared; NEW frozen baseline next
-Current substep: M13-004/G127 — IN_PROGRESS (gVisor nogo compatibility after full configuration PASS); isolated target SDK1.27.3 authenticated, Root pin1.26.10; Host not activated; must finish before P2
+Next action: M13-004/G127 — final local configuration7/runtime reproduction/observer106/namespace13/vulnerability/fuzz/platform/full Race PASS; source owner1.27.3 adopted; batch remote Required/native/CPUthreeCUDA, then controlled activation and retirement
+Current substep: M13-004/G127 — IN_PROGRESS; IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO; Host not activated; P2 waits
 After G127: P2 pnpm, then P3..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-23 G127 최종 로컬 검증·source 반영
+
+[최종 로컬 결과](./evidence/package-client-quarantine/go1273-local-qualification-20261023.json)에서
+두 frozen plan·공식 SDK1.27.3·실제 도구5개·Go image·six-member strict 재현/manifest 일치·
+observer106·namespace13·configuration7·vulnerability/fuzz/Linux platform/full Race를 확인했다.
+최초 TLS acquisition/긴 TMPDIR fixture 실패와 수정 범위는 같은 영수증에 보존했다.
+전체2,081개 frozen 입력을 대조하고 선언된10파일만 source에 반영했으며 완료 namespace 시험
+payload는 삭제했다. 현재 owner1.27.3과 Host global SDK1.26.9/설치 runtime 역할을 구분한다.
+
+IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO다. MISSING은
+동일 최종 후보의 원격 installed ecosystem/CPUthreeCUDA·Required/native platform과 controlled
+activation/readback/old-owned retirement다. 한 번의 기능 후보 push와 실제 profile 시간 기반
+타이머로 확인한다. G127은 IN_PROGRESS, P2..P7은 NOT_STARTED이며 배포·main 병합은 별도다.
 
 ### 2026-10-23 G127 도구 호환성 — 최초 오류를 보존하고 최소 pin 갱신
 
