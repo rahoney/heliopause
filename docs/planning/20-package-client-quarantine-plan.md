@@ -97,6 +97,32 @@ identity를 사용하되 명시 capability/보안 한도까지 사용자 설정�
 
 ## 5. 검증 matrix와 자원 정리
 
+### 검증 실행 주기 — 2026-10-23 조정
+
+작은 구현 단위의 로컬 검증·중간 commit과 원격 push/CI 완료 대기를 분리한다.
+각 단위는 해당 canonical profile과 의미 있는 변경 경계의 회귀를 먼저 통과시키되,
+다음 구현이 이전 단위의 원격 결과에 의존하지 않으면 같은 P1 범위의 로컬 작업을 계속한다.
+이때 상태는 IMPLEMENTED/LOCAL VERIFIED이며 remote qualification/acceptance는 열어 둔다.
+
+남은 P1의 원격 checkpoint는 기본적으로 (1) actual source/target guard와 approved cache·records를
+연결한 backend 단위, (2) CLI와 실패·복원 사례까지 연결한 end-to-end 완료 후보로 묶는다.
+개별 helper나 문서 변경만으로 전체 원격 CI 대기를 반복하지 않는다. 중간 commit은 보존하고
+push를 묶으며, 최종 candidate에는 canonical Quick/security/docs/workflow와 관련 전체 Race 및
+필수 실제 소비자 검증을 수행한다. 문서만 바뀌면 docs/security를 적용하고 실행 코드 검사를
+근거 없이 반복하지 않는다. Workflow 자체·Required·timeout·coverage·보안 거부 조건은 유지한다.
+
+공통 observer/runtime/회계 변경, 로컬에서 확인할 수 없는 새 native 동작, 재현된 공통 회귀가
+다음 구현의 신뢰 전제를 막으면 해당 경계에서 원격 검증을 앞당긴다. 원인 미확정 실패에 같은
+입력 재실행을 반복하지 않고 최초 로그·source·환경을 고정한 뒤 가설과 수정 위치를 재검토한다.
+CI 대기 중에는 그 결과에 의존하지 않는 같은 item의 설계 검토·구현·문서 정리를 진행하며,
+실행 중인 후보를 새 push로 불필요하게 취소하지 않는다.
+
+CPU 완료 회계 수정의 cu126/cu130/cu132 actual은 P1 완료 후보에서 공통 코드의 동일성을
+확인해 모아 수행할 수 있다. 네 profile의 실제 qualification과 cleanup 전에는 P1 완료·승격을
+선언하지 않는다. 대표 CPU 성공으로 CUDA를 대체하거나 이후 Go 전환 검증과 합치지 않는다.
+완료한 시험 payload는 참조·정리 결과 확인 후 삭제하고 활성 재사용 cache는 해당 작업 종료까지
+유지한다. 검증 횟수나 시간의 감소율은 측정 전 보장하지 않는다.
+
 - Canonical format → quick (gofmt check/build/test build/vet/pinned Staticcheck/default tests)
   → security/docs. Runtime pin 변경이면 기존 runtime/release 관련 profile도 적용한다.
   Exact 필요한 profile 이름은 현재 scripts/check help/maintenance contract에서 확인한다.

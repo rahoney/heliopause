@@ -523,3 +523,13 @@ selection/guard와 C/D·whole P1이 MISSING이다. CI388 source1cf5781 결과와
 [CI388 최초 결과](./p1f-uv-original-proof-ci388-20261023.json)는 native UV/CLI 및 앞46개 Linux tests와
 다른8 prerequisites가 PASS지만 CPU full의 unit-completion timestamp reversal로 Linux/Required는
 FAIL이다. A2a/b의 전체 source qualification은 열려 있다. 다음은 [CPU 순서 수정 지도](./p1f-cpu-unit-completion-baseline-20261023.md)를 따른다. B1/A2c1 local 단위와 actual guarded sync/P1 전체는 별도로 남는다.
+
+## CI390 후속과 남은 구현의 검증 경계
+
+[CI390](./p1f-ci390-timed-confirmation-20261023.json)은 위 후속 단위와 CPU 순서 교정을 포함한
+source79e76dd의 Required/Linux/CPU/native macOS 성공을 확인했다. 이는 기존 소비자 회귀의
+통과이며 아직 연결하지 않은 actual complete guard/cache/CLI의 성공 증거가 아니다.
+다음 A2c2/C/D는 [조정한 검증 실행 주기](../../20-package-client-quarantine-plan.md#5-검증-matrix와-자원-정리)에
+따라 로컬 검증·중간 commit을 유지하고 backend 연결과 CLI end-to-end 단위로 원격 검증을 묶는다.
+공통 회계의 CUDA3 actual은 P1 완료 전 필수로 남는다. 위 과거 LOCAL ONLY/CI 대기 기록은
+당시 범위이며 최신 source 상태와 다음 action은 Queue를 따른다.
