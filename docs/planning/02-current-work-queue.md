@@ -30,11 +30,12 @@ Linux51/CPU297.93s, macOS 같은2m build 한도 안의 약59.17s/default test와
 앞 macOS timeout 내부 원인을 해결했다고 해석하지 않으며 actual complete sync/CLI·CUDA3와
 P1 acceptance는 미완료다. 이전 CI388/389 항목은 당시 실패 이력으로 보존한다.
 
-사용자 제안에 따라 [검증 실행 주기](./20-package-client-quarantine-plan.md#5-검증-matrix와-자원-정리)를
+기존 예방 규칙을 현재 P1에 적용한 [검증 실행 주기](./20-package-client-quarantine-plan.md#5-검증-matrix와-자원-정리)를
 적용한다. 다음은 P1f A2c2/C의 실제 guard·cache·records 연결이며 작은 helper별 원격 완료 대기를
 중단하고 backend 연결 및 CLI end-to-end 경계로 push/CI를 묶는다. 로컬 canonical/관련 회귀와
 중간 commit은 유지한다. CUDA3 actual은 P1 완료 후보에서 수행하며 미검증 상태로 완료·승격하지
 않는다. 새 공통 회귀나 native 선행조건이면 필요한 원격 검증을 먼저 수행한다.
+CI 실행 시 최근 같은 profile의 경과 시간으로 첫 확인 시각을 잡고 대기 도구로 확인한다.
 
 ### 2026-10-23 CI389 macOS build — 당시 결과
 
