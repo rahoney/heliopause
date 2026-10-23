@@ -580,3 +580,18 @@ native identity와 state owner/mode를 재검증한다. Same-version은 network0
 거부하고 기존 pin을 보존한다. 중단 후 재개·idempotence·변조 거부의
 [로컬 검증](../planning/evidence/package-client-quarantine/p2b2-pnpm-owner-local-20261024.json)은
 native 배포/설치·gVisor admission·제품 CLI 또는 새 원격 qualification 완료가 아니다.
+
+### pnpm native asset의 명시 출력
+
+```sh
+go run ./scripts/update-runtime materialize-pnpm --root /absolute/source \
+  --archive /absolute/acquired/pnpm-linux-x64.tar.gz \
+  --output /absolute/external-dist/pnpm-linux-amd64
+```
+
+유지보수 도구는 선택한 source의 schema3 PNPM owner와 production proof를 읽는다.
+전체 archive·내부 파일·ELF 검증이 끝난 pnpm regular bytes만 반환하고, 외부의 canonical
+자기 소유 보호 디렉터리에 새 파일/0555로 출력한다. Readback/hash·no-replace 게시·directory
+sync와 임시 이름 identity를 확인하며 기존 파일·symlink·foreign writable parent를 거부한다.
+Host에서 pnpm을 실행하거나 bundled dist 자료를 풀지 않는다. 성공은 native asset bytes의
+공급이며 릴리스 배포/NOTICE 연결·gVisor admission·제품 검역 지원 완료가 아니다.

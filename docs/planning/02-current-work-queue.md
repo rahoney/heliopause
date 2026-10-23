@@ -16,12 +16,21 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — native same-runtime self-quarantine update IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; actual signed rc6 normal/cancellations/fresh replay passed; channel scope remains
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2b2 — native materialization/distribution and exact admission; single owner/metadata/frozen maintenance locally verified; batch remote qualification later
+Next action: M13-004/P2b2 — notices owner/freeze, complete native distribution and exact admission; explicit native materialization locally verified; batch remote qualification later
 Current substep: M13-004/P2 — IN_PROGRESS; P2a offline supply LOCAL VERIFIED, P2b native supply/runtime gaps active; product support not yet advertised
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-24 P2b2 native 명시 출력 로컬 checkpoint
+
+[실제 출력 결과](./evidence/package-client-quarantine/p2b2-pnpm-materialize-local-20261024.json)는 같은 bounded parser의 native bytes 반환과
+선택한 source owner의 명시 외부 출력/no-replace·readback·0555/단일 링크를 검증했다.
+Quick29.766s/security/docs·관련 전체 Race21.186s 및 실제 official/변조 거부3.732s PASS다.
+초기 architecture 위반과 기존 TERM fixture 실패는 원본/교정 범위를 분리 보존했다.
+Native 배포에는 공식 LICENSE/제3자 고지 전달도 포함하여 전체11 asset/5native role로
+연결한다. 이 다음 배포·실제 admission과 전체 P2 qualification은 미완료다.
 
 ### 2026-10-24 P2b2 단일 owner·유지보수 로컬 checkpoint
 

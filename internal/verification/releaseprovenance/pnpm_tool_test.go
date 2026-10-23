@@ -142,6 +142,29 @@ func TestPNPMNativeArchiveStructuralBinding(t *testing.T) {
 	}
 }
 
+func TestPNPMReadToolRequiresCompleteArchiveBeforeReturningBytes(t *testing.T) {
+	r, archive := syntheticPNPMArchive(t, pnpmToolTestFiles(), nil)
+	tool, body, err := r.ReadToolArchive(context.Background(), archive)
+	if err != nil || !bytes.Equal(body, syntheticPNPMELF()) || tool.SHA256() != uvDigest(body) {
+		t.Fatalf("native bytes not bound to the archive: %v", err)
+	}
+	files := pnpmToolTestFiles()
+	files = append(files, pnpmTestFile{header: tar.Header{Name: "late-symlink", Typeflag: tar.TypeSymlink, Linkname: "/foreign"}})
+	r, archive = syntheticPNPMArchive(t, files, nil)
+	if _, body, err := r.ReadToolArchive(context.Background(), archive); err == nil || body != nil {
+		t.Fatal("native bytes escaped before a later invalid member was rejected")
+	}
+	r, archive = syntheticPNPMArchive(t, pnpmToolTestFiles(), []byte("unexpected trailing data"))
+	if _, body, err := r.ReadToolArchive(context.Background(), archive); err == nil || body != nil {
+		t.Fatal("native bytes escaped before trailing content was rejected")
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	if _, body, err := r.ReadToolArchive(ctx, archive); !errors.Is(err, context.Canceled) || body != nil {
+		t.Fatal("cancelled extraction exposed native bytes or lost the cause")
+	}
+}
+
 func TestPNPMNativeArchiveRefusals(t *testing.T) {
 	for _, name := range []string{"missing", "duplicate", "traversal", "absolute", "unexpected-root", "symlink", "hardlink-escape", "hardlink-forward", "hardlink-to-native", "native-mode", "data-mode", "elf", "machine", "loader", "load-bounds", "writable-exec", "trailing", "entry-budget"} {
 		t.Run(name, func(t *testing.T) {

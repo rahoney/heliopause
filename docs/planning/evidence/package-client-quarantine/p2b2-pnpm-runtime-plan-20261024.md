@@ -45,7 +45,7 @@ PNPM 항목만 추가하며 후속 Bun/pipx 등의 placeholder는 만들지 않�
   Host에서 pnpm을 실행하거나 archive를 그대로 파일시스템에 풀지 않는다. dist/node-gyp
   subtree를 설치·실행하지 않는다. 원래 archive UID1001을 Host 권한으로 승계하지 않는다.
 - 서명된 HAA release set의 Linux amd64 native asset/installed role에 pnpm을 연결한다.
-  Native current role set은 기존4에서5, 전체 asset producer는 기존9에서10으로 확대한다.
+  Native current role set은 기존4에서5, 전체 asset producer는 기존9에서11로 확대한다. Native pnpm과 별도 read-only 고지를 각각 포함한다.
   pnpm bytes는 upstream proof와 canonical native hash·HAA whole-set provenance에 함께 묶인다.
   설치와 업데이트는 기존 protected stage·record·lease·health·rollback/복구 안에서 처리한다.
 - Runtime image metadata는 새 v2에서 기존 exact5 images와 PNPM tool의 별도 record를 구분한다.
@@ -99,3 +99,40 @@ self-update나 공개 배포를 이 단계에 추가하지 않는다.
 구분하고 실제 동일 source와 profile을 연결한다. Helper/문서마다 full CI를 push하지 않으며
 실행한 CI는 해당 profile 실측·현재 시각으로 타이머를 잡고 확인한다. 마지막 consumer가 끝난
 테스트 payload/사설 image/volume/cache는 참조 부재와 실제 종료·보존 원본 확인 뒤 삭제한다.
+
+### Native 출력·배포의 두 번째 검토 후속
+
+실제 materialization consumer는 `ReadToolArchive`와 기존 조회가 같은 parser를 사용한다.
+모든 late member/trailing 검증이 끝난 native bytes만 반환하고, 명시 외부 owner-only parent의
+새 pnpm-linux-amd64에 readback/hash·0555·no-replace link·directory sync로 게시한다.
+유지보수 script는 제품 `runtimeidentity`를 import하지 않는다. 기존 selectedVersion/render처럼
+선택한 source의 runtime lock을 읽고 schema/정확한 PNPM 필드·고정 proof 경로·bounds를 확인한
+뒤 실제 provenance/archive/native 검증을 한다. 초기 compiled tuple import는 canonical
+architecture에서 거부됐으며 규칙을 확대하지 않는다. 실패 raw는 보존한다.
+
+배포 입력 추가 점검에서 고정 source91774e72의 [pnpm LICENSE](https://github.com/pnpm/pnpm/blob/91774e72a04d52ce61db06339696a433d383c764/pnpm/LICENSE)와
+[공식 제3자 고지](https://github.com/pnpm/pnpm/blob/91774e72a04d52ce61db06339696a433d383c764/pnpm/npm/pnpm/THIRD-PARTY-NOTICES.md)를 확인했다.
+Native binary만 넘기는 최초10-asset 안은 고지 전달이 빠져 배포 완료안으로 사용하지 않는다.
+Native5개는 유지하고 read-only 고지 asset 하나를 더해 전체11개로 연결한다.
+
+배포 단계의 추가 수정 지도(아직 미구현):
+
+- `pnpm_tool.notices`의 고정 path/hash와 production `tools/pnpm/NOTICE`가 고정 source의
+  두 원문을 소유한다. Generated/drift는 source binding과 bytes를 확인한다. Frozen PNPM
+  maintenance는 명시 NOTICE도 state metadata로 고정·render하고 새 source에 이전 고지를
+  재사용하지 못하게 한다. 조회 전용 verify-pnpm-release의 기존3파일 계약은 유지한다.
+- Native materialization 뒤 고지 출력은 같은 selected owner의 정확한 bytes만 0444로
+  공급한다. Manifest asset은 pnpm-linux-amd64(`pnpm`, linux/amd64)와
+  pnpm-NOTICE.txt(`release-metadata`, linux/amd64)다. 새 범위는 current11 assets를
+  완전히 요구하며 기존8/9 구조 읽기를 새 native 승인으로 바꾸지 않는다.
+- NativeUpdateFiles는 exact5 roles, 기존 metadata loop는 SBOM/runtime images/NOTICE3을
+  재사용한다. 따라서 wire payload는 기존6에서8, bootstrap subject는 기존7에서9다.
+  Installer의 선택·copy는 NOTICE에 metadata mode를 쓰고 executable로 취급하지 않는다.
+  Installed verification·rollback/recovery의 기존 metadata loop를 재사용하고 필요 없는
+  파일은 수정하지 않는다. Missing/misclassified/mutated notice도 current set에서 거부한다.
+- OS package는 pnpm/0555와 같은 고지/0444를 versioned payload 및 doc 경로에 담는다.
+  Workflow의 acquire→검증된 materialize→package→manifest/attestation 실제 순서와 독립
+  checker expectations를 함께 갱신한다. 부분 산출물은 정식 release로 게시하지 않는다.
+
+이는 현재 pnpm 배포의 구체 입력/복사 범위 보완이다. 새로운 signed release, 자동 runtime
+전환 또는 사용자 main merge 승인을 추가로 추정하지 않는다.
