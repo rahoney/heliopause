@@ -16,12 +16,25 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — native same-runtime self-quarantine update IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; actual signed rc6 normal/cancellations/fresh replay passed; channel scope remains
 Last completed substep: P1 client foundation + uv pip — COMPLETE / QUALIFIED / ACCEPTANCE_CLOSED; CI391/392/393/394 each ten SUCCESS
-Next action: M13-004/G127 — final local configuration7/runtime reproduction/observer106/namespace13/vulnerability/fuzz/platform/full Race PASS; source owner1.27.3 adopted; batch remote Required/native/CPUthreeCUDA, then controlled activation and retirement
+Next action: M13-004/G127 — CI395 ten SUCCESS; cu126 CI396 first positive sample-late FAILURE preserved, existing source/past-green/pressure reviewed; controlled local24GB diagnostic and confirmed-stop original restoration next; no blind rerun or budget change
 Current substep: M13-004/G127 — IN_PROGRESS; IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO; Host not activated; P2 waits
 After G127: P2 pnpm, then P3..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-24 G127 CI395 성공·CI396 cu126 지연 조사
+
+[최초 실패·정상본 대조](./evidence/package-client-quarantine/go1273-cu126-ci396-failure-20261024.json)를
+보존했다. CI395는 c34365e/같은 whole tree의 Required10SUCCESS·Linux53/CPU278.97/native
+macOS/observer106이다. 별도 cu126/CI396은 CPU263.98s·다른8jobs PASS지만 sample gap1.451s
+때문에 FAIL이며 Required도 FAIL이다. 정리 성공으로 원래 실패를 덮지 않는다.
+
+[현재 진단 지도·두 번째 검토](./evidence/package-client-quarantine/go1273-migration-baseline-20261022.md)를
+따라 기존 코드7개·normal cu126/CI392·오답노트를 대조했다. 같은 기존24GB WSL에서 허가된
+임시 재검증/복원을 수행하며 source/예산·poll·coverage는 유지한다. New pressure 관측은
+직접 인과 확정이나 SDK regression 단정이 아니다. G127 IN_PROGRESS/QUALIFIED=NO/
+ACCEPTANCE_CLOSED=NO, P2..P7 NOT_STARTED다. 영구 SDK/runtime activation은 미실행이다.
 
 ### 2026-10-23 G127 최종 로컬 검증·source 반영
 

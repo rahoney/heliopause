@@ -3,6 +3,51 @@
 계획 기준64122af. 2026-10-22 사용자는 GO-2026-6809를 확인하고 다음 Go 전환 대상으로
 1.27.3을 선호하며, 현재 client 작업과의 순서 판단·Queue 기록을 요청했다.
 
+## 현재 재개점 — cu126 최초 지연 조사
+
+[CI395](https://github.com/rahoney/heliopause/actions/runs/39957836809)는 c34365e와 같은 전체
+checkout tree252509fa에서 Required 포함10SUCCESS·actual Go1.27.3/Linux53/CPU278.97s·native
+macOS·observer106과 helper5wait0/final cleanup을 확인했다. 같은 c34365e의
+[cu126/CI396 최초 실패](./go1273-cu126-ci396-failure-20261024.json)는 별도로 보존한다.
+CPU263.98s와 다른8jobs는 PASS지만 cu126398.73s는 install 중 첫 sample gap1.450981725s가
+기존1s를 넘어 실패했다. Read962.750609ms+beforeRead488.230616ms+ledgerLock0.000500ms이며
+CPU46.403455/300s·wall잔여2350.539868s라 전체 예산 소진은 아니다. Client identity413.709ms와
+response548.849ms/server engine548.612ms로 지연 구간이 관측됐다. 뒤의 CANCELED/termination/
+PROFILE_LOOKUP_FAILURE를 첫 원인으로 바꾸지 않는다. Helper3wait0/final CONFIRMED_STOPPED/
+client_restore0/RESTORED가 original1을 보존했다.
+
+기존 ci/sandbox/evidence 오답노트와 실제 정상 cu126/CI392를 읽었고 관련 owner7개 source는
+byte-identical이다. 이번 MemAvailable 최저413,340KiB·Shmem 최대13,112,728KiB·direct reclaim/
+swap/PSI 증가는 실제 관측이다. 정상 CI392에도 pressure가 있었고 controller peak는 오히려
+더 높았으므로 Go27 heap 증가나 pressure만의 직접 인과를 단정하지 않는다. 음의149ns 순서
+경쟁의 재발로 합치거나 같은 입력의 full rerun·max gap/CPU/wall/coverage 완화를 하지 않는다.
+
+### 다음 진단의 baseline·방법과 두 번째 검토
+
+기존 read timing/OS sampler·UPG006의 temporary install/owning-shell helper/confirmed-stop
+restore는 IMPLEMENTED=YES/WIRED=YES다. 재작성하지 않는다. MISSING은 현재 late 지연의
+원인 분리와 같은 최종 tuple의 CUDA qualification이다. G127 QUALIFIED/ACCEPTANCE_CLOSED는
+계속 NO이며 P2..P7은 NOT_STARTED다. CI396을 green으로 재분류하지 않는다.
+
+현재 WSL의 실제 RAM 약23.47GiB/available 약21.33GiB와 기존 conservative 실행 owner의
+runtime4GiB+tmpfs12GiB+controller/OS2GiB를 대조했다. Resource owner source SHA는 과거 정상과
+같다. 기존 task operator의 capacity/원본12/consumer guard를 그대로 사용해 c34365e의 독립
+clean source에서 bootstrap.test를 빌드한다. 실제 설치·기본 SDK는 아직 원본이며 새 후보와
+원본은 영구 state에 준비했다. 이번은 승인된 임시 재검증·복원이고 영구 activation은 아니다.
+
+이 local diagnostic은 hosted 실행과 같은 환경의 재현이 아니다. Existing shell의 Go test
+환경에 `GODEBUG=gctrace=1`만 더해 GC 진단을 수집하며 GOGC/GOMEMLIMIT·artifact 환경·
+원장·신원·1s 최대 gap·CPU300s/wall40m/coverage/예산은 바꾸지 않는다. 원래 실행기 bytes와
+이 한 환경 delta·actual source/binary/최초 failure/pressure/cleanup을 기록한다. GC trace는
+진단이며 authority가 아니다. 진단 때문에 정밀한 timing 동등성을 주장하지 않는다.
+
+두 번째 검토: 원본 Root0400 백업·Root0600 journal, ordinary metadata read 계약과 runtime
+parent 준비를 대조했다. 기존 controller가 actual stopped/parent wait/client restore/후보12를
+검증한 뒤에만 원본을 복원하며 UNKNOWN 아래 강제 restore/rebind는 하지 않는다. Source나
+production 경로는 수정하지 않고 unproven 가설의 GC 강제·메모리 knob·보안 한도 변경을 하지
+않는다. 결과를 본 뒤 좁은 필요 수정 또는 실행 용량 disposition을 결정한다. 유료 runner,
+self-hosted 등록·외부 게시·상시 service 변경을 이 진단에서 추가하지 않는다.
+
 ## 현재 검증 상태 — 로컬 완료, 원격·활성화 대기
 
 [최종 로컬 결과](./go1273-local-qualification-20261023.json)는 baseline9670228의 기존
