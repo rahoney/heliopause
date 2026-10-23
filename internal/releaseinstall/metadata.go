@@ -90,11 +90,19 @@ func ValidateRuntimeImages(body []byte) error {
 			Verification string `json:"verification"`
 		} `json:"provenance"`
 		Images []image `json:"images"`
+		Tools  []struct {
+			Name     string `json:"name"`
+			Version  string `json:"tool_version"`
+			Platform string `json:"platform"`
+			Asset    string `json:"asset"`
+			SHA256   string `json:"sha256"`
+			Size     int64  `json:"size"`
+		} `json:"tools"`
 	}
 	if err := decodeReleaseMetadata(body, 1<<20, &value, nil); err != nil {
 		return err
 	}
-	if value.Schema != "helox.runtime-image-manifest/v1" || value.CustomGHCRImage == nil || *value.CustomGHCRImage || !metadataText(value.CustomImageDecision, 1024) || !value.Provenance.Required || !metadataText(value.Provenance.Verification, 1024) || len(value.Images) != 5 {
+	if value.Schema != "helox.runtime-image-manifest/v2" || value.CustomGHCRImage == nil || *value.CustomGHCRImage || !metadataText(value.CustomImageDecision, 1024) || !value.Provenance.Required || !metadataText(value.Provenance.Verification, 1024) || len(value.Images) != 5 || len(value.Tools) != 1 {
 		return errors.New("runtime image manifest contract is unsupported")
 	}
 	nodeVersion, _, _ := strings.Cut(strings.TrimPrefix(runtimeidentity.NodeImageReference, "node:"), "-slim@")
@@ -115,6 +123,10 @@ func ValidateRuntimeImages(body []byte) error {
 			return errors.New("runtime image identity differs from the active lock")
 		}
 		delete(expected, item.Name)
+	}
+	tool := value.Tools[0]
+	if tool.Name != "pnpm" || tool.Version != runtimeidentity.PNPMVersion || tool.Platform != "linux/amd64" || tool.Asset != "pnpm-linux-amd64" || tool.SHA256 != runtimeidentity.PNPMToolSHA256 || tool.Size != runtimeidentity.PNPMToolSize {
+		return errors.New("runtime native tool differs from the active lock")
 	}
 	return nil
 }

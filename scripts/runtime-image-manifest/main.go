@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-const manifestSchema = "helox.runtime-image-manifest/v1"
+const manifestSchema = "helox.runtime-image-manifest/v2"
 
 var (
 	digestPattern        = regexp.MustCompile(`^sha256:[0-9a-f]{64}$`)
@@ -47,6 +47,14 @@ type runtimeLock struct {
 		Architecture string `json:"architecture"`
 		Target       string `json:"target"`
 	} `json:"rust_image"`
+	PNPMTool struct {
+		Version      string `json:"pnpm_version"`
+		Architecture string `json:"architecture"`
+		Tool         struct {
+			SHA256 string `json:"sha256"`
+			Size   int64  `json:"size"`
+		} `json:"tool"`
+	} `json:"pnpm_tool"`
 }
 
 type runtimeImageManifest struct {
@@ -55,6 +63,16 @@ type runtimeImageManifest struct {
 	CustomImageDecision string              `json:"custom_image_decision"`
 	Provenance          provenanceContract  `json:"provenance"`
 	Images              []runtimeImageEntry `json:"images"`
+	Tools               []runtimeToolEntry  `json:"tools"`
+}
+
+type runtimeToolEntry struct {
+	Name     string `json:"name"`
+	Version  string `json:"tool_version"`
+	Platform string `json:"platform"`
+	Asset    string `json:"asset"`
+	SHA256   string `json:"sha256"`
+	Size     int64  `json:"size"`
 }
 
 type provenanceContract struct {
@@ -129,7 +147,7 @@ func run(arguments []string) error {
 }
 
 func buildManifest(lock runtimeLock) (runtimeImageManifest, error) {
-	if lock.SchemaVersion != 2 {
+	if lock.SchemaVersion != 3 {
 		return runtimeImageManifest{}, errors.New("runtime lock schema is unsupported")
 	}
 	nodeMatch := nodeReferencePattern.FindStringSubmatch(lock.NodeImage.Reference)
@@ -158,6 +176,10 @@ func buildManifest(lock runtimeLock) (runtimeImageManifest, error) {
 		return runtimeImageManifest{}, errors.New("uv upstream runtime image identity is invalid")
 	}
 	uvImage := runtimeImageEntry{Name: "uv", Reference: uv.Reference, Repository: "ghcr.io/astral-sh/uv", Digest: strings.TrimPrefix(uv.Reference, prefix), Version: uv.Version}
+	pnpm := lock.PNPMTool
+	if !versionPattern.MatchString(pnpm.Version) || pnpm.Architecture != "amd64" || !digestPattern.MatchString("sha256:"+pnpm.Tool.SHA256) || pnpm.Tool.Size <= 0 || pnpm.Tool.Size > 64<<20 {
+		return runtimeImageManifest{}, errors.New("pnpm native runtime tool identity is invalid")
+	}
 	return runtimeImageManifest{
 		Schema:              manifestSchema,
 		CustomGHCRImage:     false,
@@ -167,6 +189,7 @@ func buildManifest(lock runtimeLock) (runtimeImageManifest, error) {
 			Verification: "release candidate attestation must bind this manifest and each exact image reference",
 		},
 		Images: []runtimeImageEntry{node, python, goImage, rustImage, uvImage},
+		Tools:  []runtimeToolEntry{{Name: "pnpm", Version: pnpm.Version, Platform: "linux/amd64", Asset: "pnpm-linux-amd64", SHA256: pnpm.Tool.SHA256, Size: pnpm.Tool.Size}},
 	}, nil
 }
 

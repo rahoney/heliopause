@@ -1,12 +1,15 @@
 package main
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -29,8 +32,8 @@ func runtimeVersionOwners(root string, tools toolLock) (map[string]string, error
 	if err := json.Unmarshal(body, &lock); err != nil {
 		return nil, err
 	}
-	wantKeys := map[string]bool{"schema_version": true, "gvisor": true, "docker": true, "go_image": true, "rust_image": true, "node_image": true, "python_image": true, "python_sources": true, "bazel": true, "uv_image": true}
-	if len(lock) != len(wantKeys) || lock["schema_version"] != float64(2) {
+	wantKeys := map[string]bool{"schema_version": true, "gvisor": true, "docker": true, "go_image": true, "rust_image": true, "node_image": true, "python_image": true, "python_sources": true, "bazel": true, "uv_image": true, "pnpm_tool": true}
+	if len(lock) != len(wantKeys) || lock["schema_version"] != float64(3) {
 		return nil, errors.New("runtime version owners: missing or unsupported lock component")
 	}
 	for key := range lock {
@@ -43,6 +46,7 @@ func runtimeVersionOwners(root string, tools toolLock) (map[string]string, error
 		"Go": "go_image.go_version", "Docker": "docker.ci_engine_version",
 		"gVisor": "gvisor.release", "Bazel": "bazel.version", "Rust/Cargo": "rust_image.rust_version",
 		"uv": "uv_image.uv_version", "npm": "node_image.npm_version", "Python": "python_image.python_version", "pip": "python_image.pip_version",
+		"pnpm": "pnpm_tool.pnpm_version",
 	} {
 		value, err := runtimeOwnerString(lock, path)
 		if err != nil {
@@ -52,6 +56,9 @@ func runtimeVersionOwners(root string, tools toolLock) (map[string]string, error
 			return nil, fmt.Errorf("runtime version owners: invalid selected version for %s", component)
 		}
 		owners[component] = value
+	}
+	if err := checkPNPMProofFile(root, lock); err != nil {
+		return nil, err
 	}
 	node, err := runtimeOwnerString(lock, "node_image.reference")
 	if err != nil {
@@ -78,6 +85,33 @@ func runtimeVersionOwners(root string, tools toolLock) (map[string]string, error
 		owners[component] = tool.Version
 	}
 	return owners, nil
+}
+
+func checkPNPMProofFile(root string, lock map[string]any) error {
+	name, err := runtimeOwnerString(lock, "pnpm_tool.provenance.bundle_path")
+	if err != nil || name != "tools/pnpm/release-proof.json" {
+		return errors.New("pnpm production proof owner is missing or changed")
+	}
+	expected, err := runtimeOwnerString(lock, "pnpm_tool.provenance.bundle_sha256")
+	if err != nil {
+		return err
+	}
+	path := filepath.Join(root, filepath.FromSlash(name))
+	info, err := os.Lstat(path)
+	if err != nil || !info.Mode().IsRegular() || info.Size() <= 0 || info.Size() > 1<<20 {
+		return errors.New("pnpm production proof is unavailable or excessive")
+	}
+	file, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	body, readErr := io.ReadAll(io.LimitReader(file, (1<<20)+1))
+	closeErr := file.Close()
+	sum := sha256.Sum256(body)
+	if readErr != nil || closeErr != nil || int64(len(body)) != info.Size() || hex.EncodeToString(sum[:]) != expected {
+		return errors.New("pnpm production proof differs from its runtime owner")
+	}
+	return nil
 }
 
 func runtimeOwnerString(lock map[string]any, path string) (string, error) {
@@ -140,6 +174,7 @@ func checkRuntimeVersionOwners(root string, tools toolLock) error {
 // fixtures and the generated identity owner are deliberately distinct roles.
 func checkRuntimeLiteralOwners(root string) error {
 	image := regexp.MustCompile(`(?:^|[^A-Za-z0-9_])(node|python|golang|rust|ghcr\.io/astral-sh/uv):(?:[0-9]|latest)`)
+	pnpmArchive := regexp.MustCompile(`https://github\.com/pnpm/pnpm/releases/(?:download/(?:v[0-9]|latest)|latest/)`)
 	for _, directory := range []string{"cmd", "internal", "scripts"} {
 		err := filepath.WalkDir(filepath.Join(root, directory), func(path string, entry fs.DirEntry, walkErr error) error {
 			if walkErr != nil {
@@ -177,7 +212,7 @@ func checkRuntimeLiteralOwners(root string) error {
 				if relative == "scripts/check/workflow.go" && retiredRuntimeImagePolicyToken(value) {
 					return true
 				}
-				if image.MatchString(value) {
+				if image.MatchString(value) || pnpmArchive.MatchString(value) {
 					finding = fmt.Errorf("runtime version owners: unowned image literal in %s", relative)
 					return false
 				}

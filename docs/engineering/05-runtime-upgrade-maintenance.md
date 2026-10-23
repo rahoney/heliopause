@@ -516,9 +516,9 @@ Metadata 검증 이후 단일 UV pin·frozen maintenance와 [data-only 공급 �
 
 ### UV pin과 frozen maintenance plan
 
-Runtime lock schema2의 uv_image가 version·official amd64 reference·signed index/source/run·
+Runtime lock schema3의 uv_image가 version·official amd64 reference·signed index/source/run·
 bundle/config digest와 native path/size/hash의 유일한 입력이다. Generator와 support drift는
-이 owner를 사용한다. Runtime image manifest v1은 기존 네 이미지와 UV의 exact5를 기록하며
+이 owner를 사용한다. Runtime image manifest v2는 기존 네 이미지와 UV의 exact5 images 및 별도 pnpm tool record를 기록하며
 custom_ghcr_image=false는 HAA 소유 이미지를 새로 게시하지 않는다는 뜻이다.
 
 변경 계획은 다음과 같이 명시한 offline 공급만 사용한다. proof 디렉터리는 위 다섯 metadata
@@ -559,3 +559,24 @@ runtime 지원 승인이 아니다. Runtime/lock/layout·설치/업데이트의 
 ELF의 hash/size·declared shared libraries도 연결한다. Bundled dist 자료와 hardlink는 검증 후
 버리며 Host에 추출하지 않는다. Shared-library 목록과 runc 형식 관측은 실제 gVisor admission·
 제품 검역/설치 qualification이 아니다. [P2b1 결과](../planning/evidence/package-client-quarantine/p2b1-pnpm-native-local-20261024.json)가 정확한 입력·검증·정리 범위를 소유한다.
+
+### pnpm pin과 frozen maintenance plan
+
+Runtime lock schema3의 `pnpm_tool`이 공식 archive/native identity와 production proof 경로/hash의 단일 owner다.
+`tools/pnpm/release-proof.json`은 배포 입력이며 testdata를 production 공급으로 사용하지 않는다.
+현재 v2 runtime metadata는 exact5 images와 별도 PNPM native tool record를 확인한다.
+
+```sh
+go run ./scripts/update-runtime plan --root /absolute/clean-repo --state /absolute/new-state \
+  --component pnpm --version X.Y.Z --review /absolute/review.json \
+  --pnpm-proof /absolute/frozen-pnpm-proof
+go run ./scripts/update-runtime apply --root /absolute/clean-repo --state /absolute/new-state
+go run ./scripts/update-runtime verify --root /absolute/clean-repo --state /absolute/new-state
+```
+
+Proof 디렉터리는 위 offline 명령과 같은 세 파일이다. Plan은 작은 인증 metadata만 담고
+archive는 state/pnpm-supply에 owner-only로 고정한다. Render/apply는 전체 archive의 서명·hash·
+native identity와 state owner/mode를 재검증한다. Same-version은 network0이며 새 supply flag를
+거부하고 기존 pin을 보존한다. 중단 후 재개·idempotence·변조 거부의
+[로컬 검증](../planning/evidence/package-client-quarantine/p2b2-pnpm-owner-local-20261024.json)은
+native 배포/설치·gVisor admission·제품 CLI 또는 새 원격 qualification 완료가 아니다.

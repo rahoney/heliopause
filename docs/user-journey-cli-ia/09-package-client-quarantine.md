@@ -1,6 +1,6 @@
 # Package client / tool execution quarantine — 설계
 
-상태: **P1 UV pip 설치/업데이트·complete sync COMPLETE / QUALIFIED / ACCEPTANCE_CLOSED; P2..P7은 미착수**. 2026-10-21 사용자 요청으로
+상태: **P1 UV pip 설치/업데이트·complete sync COMPLETE / QUALIFIED / ACCEPTANCE_CLOSED; P2 pnpm 공급·runtime 연결 진행 중, P3..P7은 미착수**. 2026-10-21 사용자 요청으로
 uv pip·pnpm·Bun과 npx·uvx·bunx·pipx를 하나의 확장 범위로 계획한다.
 [실행 계획·baseline·수정 지도·재검토](../planning/20-package-client-quarantine-plan.md)가
 구현 순서와 검증을 소유한다. 기존 [업데이트 검역](./06-update-quarantine.md)을

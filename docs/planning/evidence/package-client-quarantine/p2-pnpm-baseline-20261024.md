@@ -167,3 +167,9 @@ virtual-store 경로는 underscore peer suffix로 달랐다. Manifest의 exact6�
 Policy/guarded promotion의 완료로 쓰지 않는다. P2b1은 LOCAL VERIFIED, 전체 P2는 미완료다.
 다음은 이 실제 bytes를 단일 runtime owner·maintenance·배포/공급·exact admission에 연결하는
 수정 지도와 두 번째 검토다. Prod CLI는 아직 지원하지 않는다.
+
+현재 다음 단계의 [단일 pin·maintenance·배포·admission 수정 지도](./p2b2-pnpm-runtime-plan-20261024.md)는
+실제 native asset와 이미지의 구분, existing role loop 재사용, tuple/rollback·기존 소비자와
+사전 두 번째 검토를 연결한다. 이 지도 작성으로 P2b2 구현·qualification을 완료한 것은 아니다.
+
+P2b2의 단일 owner·metadata·frozen maintenance 부분은 [로컬 checkpoint](./p2b2-pnpm-owner-local-20261024.json)로 검증했다. Native 배포·실제 admission과 전체 P2 acceptance는 계속 열려 있다.

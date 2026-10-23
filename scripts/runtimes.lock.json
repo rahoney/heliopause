@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "gvisor": {
     "release": "release-20260907.0",
     "commit": "7c6199801fd233d6d55309af4645d4746a077de7",
@@ -78,6 +78,26 @@
       "path": "/uv",
       "sha256": "de77a01a86452cc465a734257b5a2073d41115d1b8bbfe84ac636af53851b499",
       "size": 42544544
+    }
+  },
+  "pnpm_tool": {
+    "pnpm_version": "12.15.0",
+    "architecture": "amd64",
+    "archive": {
+      "url": "https://github.com/pnpm/pnpm/releases/download/v12.15.0/pnpm-linux-x64.tar.gz",
+      "sha256": "55b5ed0092bd11176c1669598e231ae52e7cedac59de6efd0d415730f37d0598",
+      "size": 25369328
+    },
+    "provenance": {
+      "source_commit": "91774e72a04d52ce61db06339696a433d383c764",
+      "workflow_run": "39583314875",
+      "bundle_path": "tools/pnpm/release-proof.json",
+      "bundle_sha256": "3036b73f86d7deaecd0901ee836b90460653c9f275efb0ae308d50e3f22d6089"
+    },
+    "tool": {
+      "path": "pnpm",
+      "sha256": "8cca52dc2aab0081ac153a3c7ad36224cd72b6d7cfea413746b7b97f6a3d8942",
+      "size": 57822504
     }
   },
   "python_sources": [

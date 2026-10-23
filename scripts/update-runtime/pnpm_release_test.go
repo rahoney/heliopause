@@ -18,7 +18,7 @@ func pnpmProofDirectory(t *testing.T) string {
 }
 
 func TestPNPMOfflineSupplyRejectsUnverifiedArchive(t *testing.T) {
-	for _, name := range []string{"relative", "missing", "wrong-bytes", "symlink-file", "symlink-directory", "oversize", "unknown-identity", "trailing-identity", "extra-argument"} {
+	for _, name := range []string{"relative", "missing", "wrong-bytes", "symlink-file", "symlink-directory", "oversize", "unknown-identity", "trailing-identity", "duplicate-identity", "extra-argument"} {
 		t.Run(name, func(t *testing.T) {
 			input := t.TempDir()
 			for _, file := range []string{"identity.json", "bundle.json"} {
@@ -62,6 +62,12 @@ func TestPNPMOfflineSupplyRejectsUnverifiedArchive(t *testing.T) {
 					t.Fatal(readErr)
 				}
 				err = os.WriteFile(filepath.Join(input, "identity.json"), append(body, []byte("\n{}")...), 0600)
+			case "duplicate-identity":
+				body, readErr := os.ReadFile(filepath.Join(input, "identity.json"))
+				if readErr != nil {
+					t.Fatal(readErr)
+				}
+				err = os.WriteFile(filepath.Join(input, "identity.json"), bytes.Replace(body, []byte(`"version":`), []byte(`"version":"0.0.1","version":`), 1), 0600)
 			case "extra-argument":
 				args = append(args, "unexpected")
 			}

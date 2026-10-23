@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"syscall"
 )
 
 // readFrozenSupplyFile bounds ordinary untrusted proof inputs before cryptographic verification.
@@ -32,4 +33,15 @@ func readFrozenSupplyFile(directory, name string, limit int64) ([]byte, error) {
 		return nil, errors.New("frozen supply read failed or changed")
 	}
 	return body, nil
+}
+
+func frozenSupplyOwned(info os.FileInfo, directory bool) bool {
+	owner, ok := info.Sys().(*syscall.Stat_t)
+	if !ok || owner.Uid != uint32(os.Geteuid()) {
+		return false
+	}
+	if directory {
+		return info.IsDir() && info.Mode().Perm() == 0700
+	}
+	return info.Mode().IsRegular() && info.Mode().Perm() == 0600
 }

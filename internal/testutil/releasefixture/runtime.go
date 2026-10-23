@@ -77,6 +77,8 @@ func BindCurrentRuntime(manifest, sbom, images []byte) (Materials, error) {
 	}
 	_, uvDigest, _ := strings.Cut(runtimeidentity.UVImageReference, "@")
 	im["images"] = append(entries, map[string]any{"name": "uv", "reference": runtimeidentity.UVImageReference, "repository": "ghcr.io/astral-sh/uv", "digest": uvDigest, "runtime_version": runtimeidentity.UVVersion})
+	im["schema"] = "helox.runtime-image-manifest/v2"
+	im["tools"] = []any{map[string]any{"name": "pnpm", "tool_version": runtimeidentity.PNPMVersion, "platform": "linux/amd64", "asset": "pnpm-linux-amd64", "sha256": runtimeidentity.PNPMToolSHA256, "size": runtimeidentity.PNPMToolSize}}
 	m["runtime_lock"] = map[string]any{"sha256": runtimeidentity.RuntimeLockSHA256, "gvisor_release": runtimeidentity.GVisorRelease, "gvisor_commit": runtimeidentity.GVisorCommit}
 	result := Materials{}
 	var err error

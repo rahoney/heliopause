@@ -37,6 +37,8 @@ func selectedVersion(root, component string) (string, error) {
 		key, versionKey = "rust_image", "rust_version"
 	case "uv":
 		key, versionKey = "uv_image", "uv_version"
+	case "pnpm":
+		key, versionKey = "pnpm_tool", "pnpm_version"
 	default:
 		return "", errors.New("unknown component")
 	}
@@ -190,11 +192,18 @@ func renderChanges(p plan, state string) ([]change, error) {
 			if err := verifyFrozenUVSupply(p.Version, p.Metadata, state); err != nil {
 				return nil, err
 			}
+		} else if p.Component == "pnpm" {
+			if err := verifyFrozenPNPMSupply(p.Version, p.Metadata, state); err != nil {
+				return nil, err
+			}
 		} else if err := validateMetadata(p.Component, p.Version, p.Metadata); err != nil {
 			return nil, err
 		}
 		key := map[string]string{"go": "go_image", "node": "node_image", "python": "python_image", "rust": "rust_image", "uv": "uv_image"}[p.Component]
 		replacements := map[string]any{"/" + key + "/reference": p.Metadata.Image}
+		if p.Component == "pnpm" {
+			replacements = map[string]any{}
+		}
 		owners := map[string]string{}
 		switch p.Component {
 		case "go":
@@ -225,6 +234,22 @@ func renderChanges(p plan, state string) ([]change, error) {
 			replacements["/uv_image/tool/sha256"] = u.ToolSHA256
 			replacements["/uv_image/tool/size"] = u.ToolSize
 			owners["uv"] = p.Version
+		case "pnpm":
+			u := p.Metadata.PNPM
+			replacements["/pnpm_tool/pnpm_version"] = p.Version
+			replacements["/pnpm_tool/architecture"] = "amd64"
+			replacements["/pnpm_tool/archive/url"] = "https://github.com/pnpm/pnpm/releases/download/v" + p.Version + "/pnpm-linux-x64.tar.gz"
+			replacements["/pnpm_tool/archive/sha256"] = u.Identity.ArchiveSHA256
+			replacements["/pnpm_tool/archive/size"] = u.ArchiveSize
+			replacements["/pnpm_tool/provenance/source_commit"] = u.Identity.SourceCommit
+			replacements["/pnpm_tool/provenance/workflow_run"] = u.Identity.WorkflowRun
+			replacements["/pnpm_tool/provenance/bundle_path"] = "tools/pnpm/release-proof.json"
+			replacements["/pnpm_tool/provenance/bundle_sha256"] = hash(u.Bundle)
+			replacements["/pnpm_tool/tool/path"] = "pnpm"
+			replacements["/pnpm_tool/tool/sha256"] = u.ToolSHA256
+			replacements["/pnpm_tool/tool/size"] = u.ToolSize
+			files["tools/pnpm/release-proof.json"] = u.Bundle
+			owners["pnpm"] = p.Version
 		case "rust":
 			replacements["/rust_image/rust_version"] = p.Version
 			owners["Rust/Cargo"] = p.Version

@@ -1,8 +1,6 @@
 package main
 
 import (
-	"bytes"
-	"context"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -24,29 +22,7 @@ func verifyPNPMRelease(args []string, out io.Writer) error {
 	if flags.NArg() != 0 || !filepath.IsAbs(*input) {
 		return errors.New("pnpm release proof requires an explicit absolute directory")
 	}
-	identityBody, err := readFrozenSupplyFile(*input, "identity.json", 4096)
-	if err != nil {
-		return err
-	}
-	var identity releaseprovenance.PNPMReleaseIdentity
-	decoder := json.NewDecoder(bytes.NewReader(identityBody))
-	decoder.DisallowUnknownFields()
-	if decoder.Decode(&identity) != nil || decoder.Decode(new(any)) != io.EOF {
-		return errors.New("pnpm release identity is invalid")
-	}
-	proof, err := readFrozenSupplyFile(*input, "bundle.json", 1<<20)
-	if err != nil {
-		return err
-	}
-	receipt, err := releaseprovenance.VerifyPNPMRelease(context.Background(), proof, identity)
-	if err != nil {
-		return err
-	}
-	archive, err := readFrozenSupplyFile(*input, "pnpm-linux-x64.tar.gz", 64<<20)
-	if err != nil {
-		return err
-	}
-	tool, err := receipt.VerifyToolArchive(context.Background(), archive)
+	supply, archive, err := readPNPMSupply(*input)
 	if err != nil {
 		return err
 	}
@@ -62,5 +38,5 @@ func verifyPNPMRelease(args []string, out io.Writer) error {
 		Bytes      int                                   `json:"archive_bytes"`
 		Invocation string                                `json:"invocation"`
 		Tool       nativeRecord                          `json:"tool"`
-	}{"helox.pnpm-release-supply/v2", receipt.Identity(), receipt.BundleSHA256(), len(archive), receipt.Invocation(), nativeRecord{tool.SHA256(), tool.Size(), tool.Libraries()}})
+	}{"helox.pnpm-release-supply/v2", supply.Identity, hash(supply.Bundle), len(archive), supply.Invocation, nativeRecord{supply.ToolSHA256, supply.ToolSize, supply.Libraries}})
 }

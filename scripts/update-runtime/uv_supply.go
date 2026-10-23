@@ -9,7 +9,6 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"syscall"
 
 	"github.com/rahoney/heliopause/internal/verification/releaseprovenance"
 )
@@ -128,12 +127,12 @@ func verifyFrozenUVSupply(version string, m metadata, state string) error {
 		return errors.New("frozen UV layer directory changed or is a symlink")
 	}
 	info, err := os.Lstat(directory)
-	if err != nil || !uvStateOwned(info, true) {
+	if err != nil || !frozenSupplyOwned(info, true) {
 		return errors.New("frozen UV state directory ownership or mode changed")
 	}
 	for _, layer := range receipt.Layers() {
 		info, err := os.Lstat(filepath.Join(directory, layer.SHA256+".tar.gz"))
-		if err != nil || !uvStateOwned(info, false) {
+		if err != nil || !frozenSupplyOwned(info, false) {
 			return errors.New("frozen UV layer ownership or mode changed")
 		}
 	}
@@ -150,15 +149,4 @@ func verifyFrozenUVSupply(version string, m metadata, state string) error {
 		return errors.New("frozen UV metadata differs from authenticated complete supply")
 	}
 	return nil
-}
-
-func uvStateOwned(info os.FileInfo, directory bool) bool {
-	owner, ok := info.Sys().(*syscall.Stat_t)
-	if !ok || owner.Uid != uint32(os.Geteuid()) {
-		return false
-	}
-	if directory {
-		return info.IsDir() && info.Mode().Perm() == 0700
-	}
-	return info.Mode().IsRegular() && info.Mode().Perm() == 0600
 }

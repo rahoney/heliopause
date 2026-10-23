@@ -125,6 +125,36 @@ func TestRuntimeLockRejectsUnboundUVSupply(t *testing.T) {
 	}
 }
 
+func TestRuntimeLockRejectsUnboundPNPMSupply(t *testing.T) {
+	base, err := readLock("runtimes.lock.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for name, mutate := range map[string]func(*runtimeLock){
+		"schema2":      func(l *runtimeLock) { l.SchemaVersion = 2 },
+		"version":      func(l *runtimeLock) { l.PNPMTool.Version = "0.0.1" },
+		"architecture": func(l *runtimeLock) { l.PNPMTool.Architecture = "arm64" },
+		"archive-url":  func(l *runtimeLock) { l.PNPMTool.Archive.URL = "https://example.invalid/pnpm.tar.gz" },
+		"archive-hash": func(l *runtimeLock) { l.PNPMTool.Archive.SHA256 = "" },
+		"archive-size": func(l *runtimeLock) { l.PNPMTool.Archive.Size = 64<<20 + 1 },
+		"source":       func(l *runtimeLock) { l.PNPMTool.Provenance.SourceCommit = "" },
+		"run":          func(l *runtimeLock) { l.PNPMTool.Provenance.WorkflowRun = "0" },
+		"bundle-path":  func(l *runtimeLock) { l.PNPMTool.Provenance.BundlePath = "testdata/bundle.json" },
+		"bundle-hash":  func(l *runtimeLock) { l.PNPMTool.Provenance.BundleSHA256 = "" },
+		"native-path":  func(l *runtimeLock) { l.PNPMTool.Tool.Path = "../pnpm" },
+		"native-hash":  func(l *runtimeLock) { l.PNPMTool.Tool.SHA256 = "" },
+		"native-size":  func(l *runtimeLock) { l.PNPMTool.Tool.Size = 0 },
+	} {
+		t.Run(name, func(t *testing.T) {
+			value := base
+			mutate(&value)
+			if err := validate(value); err == nil {
+				t.Fatal("unbound PNPM owner accepted")
+			}
+		})
+	}
+}
+
 func TestRuntimeLockRejectsInvalidPatchIdentity(t *testing.T) {
 	t.Parallel()
 	baseLock, err := readLock("runtimes.lock.json")

@@ -73,7 +73,7 @@ func main() {
 
 func run(args []string, out io.Writer) error {
 	if len(args) == 0 {
-		return errors.New("usage: update-runtime <plan|apply|verify> --root REPO --state EXTERNAL_DIR [--component go|node|python|rust|uv|terraform|github --version X.Y.Z --review JSON --gvisor-capture ABSOLUTE_CAPTURE_LOCK] [--go ABSOLUTE_TARGET_GO]; update-runtime capture-gvisor --help")
+		return errors.New("usage: update-runtime <plan|apply|verify> --root REPO --state EXTERNAL_DIR [--component go|node|python|rust|uv|pnpm|terraform|github --version X.Y.Z --review JSON --gvisor-capture ABSOLUTE_CAPTURE_LOCK] [--go ABSOLUTE_TARGET_GO]; update-runtime capture-gvisor --help")
 	}
 	if args[0] == "capture-gvisor" {
 		return captureGvisor(args[1:], out)
@@ -94,6 +94,7 @@ func run(args []string, out io.Writer) error {
 	gvisorCapture := fs.String("gvisor-capture", "", "explicit observed gVisor candidate lock and its capture receipt")
 	uvProof := fs.String("uv-proof", "", "absolute frozen upstream UV proof directory; only for changed uv version")
 	uvLayers := fs.String("uv-layers", "", "absolute complete UV layer directory; frozen into external state")
+	pnpmProof := fs.String("pnpm-proof", "", "absolute frozen PNPM identity/bundle/archive directory; only for changed pnpm version")
 	goPath := fs.String("go", "", "absolute target Go executable; verified against owner and official archive")
 	if err := fs.Parse(args[1:]); err != nil {
 		return err
@@ -135,6 +136,9 @@ func run(args []string, out io.Writer) error {
 		if (*uvProof != "" || *uvLayers != "") && *component != "uv" {
 			return errors.New("UV supply inputs require the uv component")
 		}
+		if *pnpmProof != "" && *component != "pnpm" {
+			return errors.New("PNPM supply input requires the pnpm component")
+		}
 		resolve := resolveMetadata
 		if *component == "uv" {
 			current, err := selectedVersion(absRoot, "uv")
@@ -146,6 +150,18 @@ func run(args []string, out io.Writer) error {
 			}
 			resolve = func(component, version string) (metadata, error) {
 				return freezeUVSupply(version, *uvProof, *uvLayers, absState)
+			}
+		}
+		if *component == "pnpm" {
+			current, err := selectedVersion(absRoot, "pnpm")
+			if err != nil {
+				return err
+			}
+			if *version == current && *pnpmProof != "" {
+				return errors.New("same-version pnpm preserves the existing supply; new inputs are refused")
+			}
+			resolve = func(component, version string) (metadata, error) {
+				return freezePNPMSupply(version, *pnpmProof, absState)
 			}
 		}
 		p, err := makePlanResolving(absRoot, absState, *component, *version, *review, resolve)
@@ -183,7 +199,7 @@ func run(args []string, out io.Writer) error {
 	if p.Root != absRoot || p.Schema != 2 || p.ID != planID(p) {
 		return errors.New("plan identity/root mismatch")
 	}
-	if *component != "" || *version != "" || *review != "" || *gvisorCapture != "" || *uvProof != "" || *uvLayers != "" {
+	if *component != "" || *version != "" || *review != "" || *gvisorCapture != "" || *uvProof != "" || *uvLayers != "" || *pnpmProof != "" {
 		return errors.New("apply/verify use frozen plan inputs only")
 	}
 	if args[0] == "apply" {
@@ -273,6 +289,8 @@ func qualification(component string) []string {
 		return []string{"quality-tool compiler/rebuild", "gVisor/observer rebuild", "installed npm/PyPI/GitHub/Go/Cargo/Terraform", "PyTorch CPU", "PyTorch cu126", "PyTorch cu130", "PyTorch cu132", "fresh Required/platform evidence", "verified activation/retirement"}
 	case "uv":
 		return []string{"signed upstream supply/native bytes", "uv pip resolve/install/upgrade/sync", "observer exact admission and pip/npm regression", "PyTorch CPU/CUDA common-runtime impact review", "fresh Required/platform evidence", "verified activation"}
+	case "pnpm":
+		return []string{"signed upstream archive/native bytes", "pnpm add/install/update peer graph and layout", "observer exact admission and npm/pip/uv regression", "PyTorch CPU/CUDA common-runtime impact review", "fresh Required/platform evidence", "verified activation/retirement"}
 	case "python":
 		return []string{"PyPI wheel/sdist/metadata/entry-point/promotion", "PyTorch CPU", "PyTorch cu126", "PyTorch cu130", "PyTorch cu132", "fresh Required/platform evidence", "verified activation"}
 	case "node":

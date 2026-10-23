@@ -17,7 +17,7 @@ func runtimeOwnerFixture(t *testing.T) string {
 			t.Fatal(err)
 		}
 	}
-	for _, name := range []string{"go.mod", "README.md", "scripts/runtimes.lock.json", "scripts/tools.lock.json", "scripts/version-support.lock.json", workflowRelativePath, securityWorkflowRelativePath, releaseWorkflowRelativePath, releasePublishWorkflowRelativePath} {
+	for _, name := range []string{"go.mod", "README.md", "tools/pnpm/release-proof.json", "scripts/runtimes.lock.json", "scripts/tools.lock.json", "scripts/version-support.lock.json", workflowRelativePath, securityWorkflowRelativePath, releaseWorkflowRelativePath, releasePublishWorkflowRelativePath} {
 		body, err := os.ReadFile(filepath.Join("../..", name))
 		if err != nil {
 			t.Fatal(err)
@@ -25,6 +25,47 @@ func runtimeOwnerFixture(t *testing.T) string {
 		writeTestFile(t, filepath.Join(root, name), string(body))
 	}
 	return root
+}
+
+func TestPNPMProductionProofCannotDrift(t *testing.T) {
+	for _, name := range []string{"missing", "changed", "symlink", "owner-path"} {
+		t.Run(name, func(t *testing.T) {
+			root := runtimeOwnerFixture(t)
+			proof := filepath.Join(root, "tools", "pnpm", "release-proof.json")
+			switch name {
+			case "missing":
+				if err := os.Remove(proof); err != nil {
+					t.Fatal(err)
+				}
+			case "changed":
+				if err := os.WriteFile(proof, []byte("changed"), 0600); err != nil {
+					t.Fatal(err)
+				}
+			case "symlink":
+				body, err := os.ReadFile(proof)
+				if err != nil {
+					t.Fatal(err)
+				}
+				other := filepath.Join(t.TempDir(), "other.json")
+				if err := os.WriteFile(other, body, 0600); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.Remove(proof); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.Symlink(other, proof); err != nil {
+					t.Fatal(err)
+				}
+			case "owner-path":
+				mutateVersionJSON(t, root, "runtimes.lock.json", func(l map[string]any) {
+					l["pnpm_tool"].(map[string]any)["provenance"].(map[string]any)["bundle_path"] = "testdata/bundle.json"
+				})
+			}
+			if err := checkOwnerFixture(root); err == nil {
+				t.Fatal("unowned production proof accepted")
+			}
+		})
+	}
 }
 
 func mutateVersionJSON(t *testing.T, root, name string, mutate func(map[string]any)) {
@@ -60,7 +101,7 @@ func checkOwnerFixture(root string) error {
 
 func TestRuntimeVersionOwnersRejectPartialOrUnownedUpdates(t *testing.T) {
 	t.Parallel()
-	for _, component := range []string{"Go", "Node", "npm", "uv", "Python", "pip", "Rust/Cargo", "Docker", "containerd", "Bazel", "gVisor", "Staticcheck", "gosec", "govulncheck", "Gitleaks", "Actionlint"} {
+	for _, component := range []string{"Go", "Node", "npm", "uv", "pnpm", "Python", "pip", "Rust/Cargo", "Docker", "containerd", "Bazel", "gVisor", "Staticcheck", "gosec", "govulncheck", "Gitleaks", "Actionlint"} {
 		t.Run(component, func(t *testing.T) {
 			t.Parallel()
 			root := runtimeOwnerFixture(t)

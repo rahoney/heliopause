@@ -49,20 +49,32 @@ func TestPassiveReleaseMetadataRejectsAmbiguityAndIdentitySubstitution(t *testin
 	imageChange := func(edit func(map[string]any)) []byte {
 		return mutate(images, func(m map[string]any) { edit(m["images"].([]any)[0].(map[string]any)) })
 	}
+	toolChange := func(edit func(map[string]any)) []byte {
+		return mutate(images, func(m map[string]any) { edit(m["tools"].([]any)[0].(map[string]any)) })
+	}
 	for name, body := range map[string][]byte{
-		"empty":              nil,
-		"unknown":            bytes.Replace(images, []byte(`"schema":`), []byte(`"other":1,"schema":`), 1),
-		"duplicate":          bytes.Replace(images, []byte(`"schema":`), []byte(`"schema":"wrong","schema":`), 1),
-		"trailing":           append(append([]byte(nil), images...), []byte(" null")...),
-		"custom":             mutate(images, func(m map[string]any) { m["custom_ghcr_image"] = true }),
-		"missing-custom":     mutate(images, func(m map[string]any) { delete(m, "custom_ghcr_image") }),
-		"missing-provenance": mutate(images, func(m map[string]any) { delete(m, "provenance") }),
-		"missing-image":      mutate(images, func(m map[string]any) { m["images"] = m["images"].([]any)[1:] }),
-		"duplicate-image":    mutate(images, func(m map[string]any) { list := m["images"].([]any); list[1] = list[0] }),
-		"wrong-reference":    imageChange(func(m map[string]any) { m["reference"] = "node:latest" }),
-		"wrong-repository":   imageChange(func(m map[string]any) { m["repository"] = "other" }),
-		"wrong-digest":       imageChange(func(m map[string]any) { m["digest"] = "sha256:bad" }),
-		"wrong-version":      imageChange(func(m map[string]any) { m["runtime_version"] = "0.0.0" }),
+		"empty":                 nil,
+		"unknown":               bytes.Replace(images, []byte(`"schema":`), []byte(`"other":1,"schema":`), 1),
+		"duplicate":             bytes.Replace(images, []byte(`"schema":`), []byte(`"schema":"wrong","schema":`), 1),
+		"trailing":              append(append([]byte(nil), images...), []byte(" null")...),
+		"custom":                mutate(images, func(m map[string]any) { m["custom_ghcr_image"] = true }),
+		"missing-custom":        mutate(images, func(m map[string]any) { delete(m, "custom_ghcr_image") }),
+		"missing-provenance":    mutate(images, func(m map[string]any) { delete(m, "provenance") }),
+		"missing-image":         mutate(images, func(m map[string]any) { m["images"] = m["images"].([]any)[1:] }),
+		"duplicate-image":       mutate(images, func(m map[string]any) { list := m["images"].([]any); list[1] = list[0] }),
+		"wrong-reference":       imageChange(func(m map[string]any) { m["reference"] = "node:latest" }),
+		"wrong-repository":      imageChange(func(m map[string]any) { m["repository"] = "other" }),
+		"wrong-digest":          imageChange(func(m map[string]any) { m["digest"] = "sha256:bad" }),
+		"wrong-version":         imageChange(func(m map[string]any) { m["runtime_version"] = "0.0.0" }),
+		"old-image-schema":      mutate(images, func(m map[string]any) { m["schema"] = "helox.runtime-image-manifest/v1" }),
+		"missing-native-tool":   mutate(images, func(m map[string]any) { delete(m, "tools") }),
+		"duplicate-native-tool": mutate(images, func(m map[string]any) { v := m["tools"].([]any); m["tools"] = append(v, v[0]) }),
+		"tool-name":             toolChange(func(m map[string]any) { m["name"] = "other" }),
+		"tool-version":          toolChange(func(m map[string]any) { m["tool_version"] = "0.0.1" }),
+		"tool-platform":         toolChange(func(m map[string]any) { m["platform"] = "linux/arm64" }),
+		"tool-asset":            toolChange(func(m map[string]any) { m["asset"] = "../pnpm" }),
+		"tool-hash":             toolChange(func(m map[string]any) { m["sha256"] = "bad" }),
+		"tool-size":             toolChange(func(m map[string]any) { m["size"] = 1 }),
 	} {
 		t.Run("images/"+name, func(t *testing.T) {
 			if err := ValidateRuntimeImages(body); err == nil {

@@ -3,7 +3,7 @@
 package runtimeidentity
 
 const (
-	RuntimeLockSHA256            = "80c14e139728d47b60a20cc8637b7f21f654556c380fcb425928eccabfd41d11"
+	RuntimeLockSHA256            = "02805aedd22b78a5b4fdf924c0afc0e901eac2ad5b525a4f5bdf0c1b1f1e56c3"
 	GVisorRelease                = "release-20260907.0"
 	GVisorCommit                 = "7c6199801fd233d6d55309af4645d4746a077de7"
 	GVisorSourceRepository       = "https://github.com/google/gvisor.git"
@@ -33,6 +33,16 @@ const (
 	UVConfigSHA256               = "bea3876c0cb2afb25f0858f8bff73a7b334c395064cbe1a84465c9218c799ab1"
 	UVToolPath                   = "/uv"
 	UVToolSHA256                 = "de77a01a86452cc465a734257b5a2073d41115d1b8bbfe84ac636af53851b499"
+	PNPMVersion                  = "12.15.0"
+	PNPMArchitecture             = "amd64"
+	PNPMArchiveURL               = "https://github.com/pnpm/pnpm/releases/download/v12.15.0/pnpm-linux-x64.tar.gz"
+	PNPMArchiveSHA256            = "55b5ed0092bd11176c1669598e231ae52e7cedac59de6efd0d415730f37d0598"
+	PNPMSourceCommit             = "91774e72a04d52ce61db06339696a433d383c764"
+	PNPMWorkflowRun              = "39583314875"
+	PNPMBundlePath               = "tools/pnpm/release-proof.json"
+	PNPMBundleSHA256             = "3036b73f86d7deaecd0901ee836b90460653c9f275efb0ae308d50e3f22d6089"
+	PNPMToolPath                 = "pnpm"
+	PNPMToolSHA256               = "8cca52dc2aab0081ac153a3c7ad36224cd72b6d7cfea413746b7b97f6a3d8942"
 	PythonImageReference         = "python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52"
 	PythonVersion                = "3.14.7"
 	PipVersion                   = "26.2.1"
@@ -51,6 +61,8 @@ const (
 	PyTorchCU130Version          = "2.14.0+cu130"
 	PyTorchCU132Version          = "2.14.0+cu132"
 	UVToolSize                   = 42544544
+	PNPMArchiveSize              = 25369328
+	PNPMToolSize                 = 57822504
 )
 
 type PythonSourceProfileLock struct {
