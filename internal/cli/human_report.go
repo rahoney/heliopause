@@ -324,6 +324,8 @@ func (p *presentation) stateLabel(state string) string {
 	switch state {
 	case "COMPLETED":
 		label = p.text("Completed", "완료")
+	case "SKIPPED":
+		label = p.text("Skipped", "건너뜀")
 	case "FAILED":
 		label = p.text("Failed", "실패")
 	case "INCOMPLETE":

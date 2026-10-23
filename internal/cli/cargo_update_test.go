@@ -112,6 +112,11 @@ func projectUpdateFactsForSource(t *testing.T, decision domain.Decision, sourceI
 		name, version, variant = "example.com/module", "v1.2.3", "module"
 		verification, inspection = "go-module-sumdb", "go-module-static"
 	}
+	if sourceID == "pypi" {
+		install, _ = domain.NewPythonVenvInstallContext(target)
+		name, version, variant = "packaging", "25.0", "wheel"
+		verification, inspection = "pypi-declared-sha256", "pypi-static-archive"
+	}
 	if sourceID == "terraform-registry" {
 		name, version, variant = "hashicorp_random", "3.7.2", "linux/amd64"
 		verification, inspection = "terraform-signed-package", "terraform-provider-static"

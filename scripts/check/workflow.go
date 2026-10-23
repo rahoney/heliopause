@@ -541,8 +541,10 @@ func workflowJobIDs(contents string) []string {
 // Their presence in comments, another job or a skipped step supplies no gate.
 const uvPublicResolverIntegrationCommand = `HELOX_UV_PUBLIC_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestUVPublicNativeResolverIntegration$'`
 const cargoSourceIntegrationCommand = `HELOX_CARGO_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxCargoSourceProjectSnapshotIntegration$'`
+const uvSyncCLIIntegrationCommand = `HELOX_UV_SYNC_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=12m -test.failfast -test.run '^TestLinuxUVSync(Complete|Closure)CLIIntegration$'`
 
 var uvIntegrationCommands = []string{
+	uvSyncCLIIntegrationCommand,
 	`HELOX_UV_PUBLIC_UPDATE_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestUVPublicNativeUpdateResolverIntegration$'`,
 	`HELOX_UV_INSTALL_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=6m -test.run '^TestLinuxUVInstallCLIIntegration$'`,
 	`uv_image="$(jq -er '.uv_image.reference' "$runtime_lock")"`,
@@ -653,7 +655,7 @@ func activeJobRunLines(contents, jobID, stepName string) ([][]string, error) {
 	return blocks, nil
 }
 
-// These two real consumers read tracked package fixtures. Require the same
+// These real consumers read tracked package fixtures. Require the same
 // narrow subshell shape as go test's package cwd, without changing later steps.
 // This validates this repository convention, not arbitrary Bash semantics.
 func validatePackageFixtureWorkingDirectories(contents string) []string {
@@ -661,6 +663,7 @@ func validatePackageFixtureWorkingDirectories(contents string) []string {
 	if err != nil {
 		return nil
 	}
+	scopes := map[string]string{uvPublicResolverIntegrationCommand: "internal/sandbox", cargoSourceIntegrationCommand: "internal/sandbox", uvSyncCLIIntegrationCommand: "internal/bootstrap"}
 	counts := map[string]int{}
 	for _, block := range blocks {
 		var lines []string
@@ -670,15 +673,15 @@ func validatePackageFixtureWorkingDirectories(contents string) []string {
 			}
 		}
 		for i := 2; i+1 < len(lines); i++ {
-			if lines[i-2] == "(" && lines[i-1] == "cd internal/sandbox" && lines[i+1] == ")" {
+			if directory := scopes[lines[i]]; directory != "" && lines[i-2] == "(" && lines[i-1] == "cd "+directory && lines[i+1] == ")" {
 				counts[lines[i]]++
 			}
 		}
 	}
 	var findings []string
-	for _, command := range []string{uvPublicResolverIntegrationCommand, cargoSourceIntegrationCommand} {
+	for _, command := range []string{uvPublicResolverIntegrationCommand, cargoSourceIntegrationCommand, uvSyncCLIIntegrationCommand} {
 		if counts[command] != 1 {
-			findings = append(findings, fmt.Sprintf("fixture integration requires one sandbox package subshell for %q", command))
+			findings = append(findings, fmt.Sprintf("fixture integration requires one matching package subshell for %q", command))
 		}
 	}
 	return findings

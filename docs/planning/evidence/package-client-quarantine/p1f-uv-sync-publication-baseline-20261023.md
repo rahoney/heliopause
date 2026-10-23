@@ -609,3 +609,61 @@ canonical5(Quick133.472s)와 관련5package 전체 Race142.011s는 PASS다.
 [로컬 영수증](./p1f-uv-sync-backend-local-20261023.json)이 exact Go inputs·원본·한계를 소유한다.
 IMPLEMENTED=YES/WIRED=YES(backend components)/QUALIFIED=LOCAL ONLY/ACCEPTANCE_CLOSED=NO다.
 Actual native sync 검역·Application/CLI·통합 실패/복원·CUDA3와 whole P1은 MISSING이며 D에서 연결한다.
+
+### D 연결 검토에서 확인한 의존성 일괄 검사 gap
+
+Backend7e1e4c6 이후 CLI 후보의 canonical6/관련5package Race30.789s는 PASS지만 실제 requests
+전체 검역을 실행한 증거는 아니다. 기존 ProjectInspectService는 inspectDependency로 각 wheel을
+개별 전달한다. 정상 pip의 InstallInspectService.inspectGraphAware와 PyPI CompositeInspector의
+InspectGraph는 all-acquire/verify→static-all→target별 closure를 사용한다. Rootless project에
+그 동작을 자동 적용한다고 본 초기 지도의 가정은 부정확했다. 현재 실제 native 실패를 관측한
+것으로 쓰지 않으며 native CI 전에 이 명백한 연결 누락을 회귀로 고정한다.
+
+새 private projectAwareInspection capability는 Domain snapshot/acquired map/reports만 받는다.
+Application은 source 형식을 분기하지 않고 이 실제 capability가 있을 때 기존 batch lifecycle을
+공유한다. 기존 inspectGraphAware의 acquire/verification·Run/Evidence/entry Policy·report coverage
+본문을 nodes+typed reports callback을 받는 helper로 추출해 같은 pip 소비자와 rootless 소비자가
+함께 사용한다. 기존 graph의 derivation/set Policy/diagnostics는 그대로 유지한다. Empty project는
+기존 zero-entry set Policy이며 fake primary/Run/graph를 만들지 않는다.
+
+PyPI CompositeInspector는 static-all/dynamic closure 본문을 nodes와 준비 callback으로 공유한다.
+기존 graph는 원래 edges/prerequisites를 그대로 전달한다. Project는 hash-verified static wheels의
+실제 Requires-Dist를 기존 artifact marker/constraint normalization으로 읽어 정확한 node/edge와
+각 target closure를 계산한다. Cache의 동일 record mapping을 공유하고 disconnected root를
+다른 패키지의 실행 fixture에 섞지 않는다. Project CLI는 검사 전용 추가 prerequisite 옵션을
+제공하지 않으므로 그 별도 공급 capability를 새로 만들지 않는다. Static finding/incomplete에서는
+어떤 동적 검사도 시작하지 않고 resource/coverage/Policy/거부 조건은 유지한다.
+
+두 번째 검토에서 기존 동작의 공통 본문과 wrapper 경계, whole-map coverage/Run 실패 종결·
+required verification 선행·정적 실패 후 dynamic0·closure 경계·missing dependency/constraint
+거부·CPU/기존 named pip 소비자를 대조했다. 먼저 같은 capability regression의 before FAIL을
+보존하고 교정 후 동일 test·기존 graph/일반 project tests·전체 관련 Race와 canonical을 검증한다.
+
+
+D actual 통합은 기존 Linux job에 별도 UV sync command 하나로 두 actual tests를 연결한다.
+기존 설치6m·job120m·Required 조합은 유지하고 새 두 시나리오의 각 context5m/합계 test12m를
+사용한다. Pinned go help testflag의 -failfast 의미를 확인해 새 command에만 -test.failfast를
+지정했고, 첫 actual 실패 뒤 나머지 큰 시나리오는 시작하지 않는다. Closure tracked fixture를
+읽는 bootstrap package cwd는 기존 validator의 실제 command/directory 대응으로 검사한다.
+
+### D 로컬 구현·두 번째 검토 결과 — actual native는 미완료
+
+Application의 guarded complete update, 한 operation의 bootstrap/cache/records, 중앙 client
+descriptor의 sync leaf와 source preflight·빈 입력 skip을 연결했다. EN/KO 설명과 나머지5언어의
+핵심 표현/영어 fallback, 기존 progress/project report를 재사용한다. 새 public schema나 primary를
+만들지 않는다. Actual 통합 두 시나리오와 fixture cwd/명령 validator도 같은 변경에 포함했다.
+
+기존 batch 본문과 normal pip wrapper를 대조한 두 번째 검토 뒤 capability 회귀의 같은
+pre-format test는 before1.033s FAIL(batch0/single1)→after1.563s PASS다. 최종 formatted test의
+hash는 별도로 기록한다. 정적 전체 실패·missing/unsatisfied dependency·불필요한 disconnected
+root의 closure 혼입·기존 graph/다른 project 소비자를 검사했다. 최종 canonical5/Quick47.175s,
+관련7package 전체 Race138.116s, platform compile21.973s와 실제 production binary의7언어
+help/blank human/JSON21cases3.240s는 PASS다. 최초 test package·requirements-only flag 오류와
+교정, source hashes·raw·정리 범위는 [CLI 로컬 영수증](./p1f-uv-sync-cli-local-20261023.json)에
+연결한다. 임시 binary/workroot43,581,079B를 제거하고 shared TMPDIR가 비었음을 확인했다.
+
+IMPLEMENTED=YES/WIRED=YES/QUALIFIED=LOCAL ONLY/ACCEPTANCE_CLOSED=NO다.
+Actual native positive complete-sync/closure·공통 Linux/CPU/macOS/Required와 세 CUDA가
+MISSING이다. Backend7e1e4c6과 이 CLI 변경을 묶어 한 번 push하며 개별 helper의 원격 재검사는
+추가하지 않는다. 기존 유사 CI 약44~48분에 새 두 native 시나리오를 고려해 첫 확인을 약55분으로
+잡고 실제 run/head와 시각을 기록한다. P1 완료 전에 다음 Go/P2를 착수하지 않는다.

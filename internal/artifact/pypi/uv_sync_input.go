@@ -8,6 +8,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 type UVSyncSourceFormat string
@@ -28,6 +29,12 @@ type UVSyncInput struct {
 	allowEmpty   bool
 	python       string
 	requirements []UpgradeRequirement
+}
+
+// ParsePinnedUVSyncInput provides command preflight with the same generated
+// Python identity used by native selection, without importing a runtime backend.
+func ParsePinnedUVSyncInput(format UVSyncSourceFormat, body []byte, allowEmpty bool) (UVSyncInput, error) {
+	return ParseUVSyncInput(format, body, allowEmpty, runtimeidentity.PythonVersion)
 }
 
 func ParseUVSyncInput(format UVSyncSourceFormat, body []byte, allowEmpty bool, python string) (UVSyncInput, error) {

@@ -247,16 +247,16 @@ func TestCompiledFixtureConsumersRequirePackageSubshell(t *testing.T) {
 	if findings := validatePackageFixtureWorkingDirectories(source); len(findings) != 0 {
 		t.Fatal(findings)
 	}
-	for _, command := range []string{uvPublicResolverIntegrationCommand, cargoSourceIntegrationCommand} {
-		scope := "          (\n            cd internal/sandbox\n            " + command + "\n          )"
+	for command, directory := range map[string]string{uvPublicResolverIntegrationCommand: "internal/sandbox", cargoSourceIntegrationCommand: "internal/sandbox", uvSyncCLIIntegrationCommand: "internal/bootstrap"} {
+		scope := "          (\n            cd " + directory + "\n            " + command + "\n          )"
 		if strings.Count(source, scope) != 1 {
 			t.Fatal("canonical fixture command has no unique package scope")
 		}
 		for name, replacement := range map[string]string{
 			"missing cd":        "          (\n            " + command + "\n          )",
-			"wrong cd":          strings.Replace(scope, "cd internal/sandbox", "cd internal/cli", 1),
-			"commented cd":      strings.Replace(scope, "cd internal/sandbox", "# cd internal/sandbox", 1),
-			"outside subshell":  "          cd internal/sandbox\n          (\n            " + command + "\n          )",
+			"wrong cd":          strings.Replace(scope, "cd "+directory, "cd internal/cli", 1),
+			"commented cd":      strings.Replace(scope, "cd "+directory, "# cd "+directory, 1),
+			"outside subshell":  "          cd " + directory + "\n          (\n            " + command + "\n          )",
 			"unscoped command":  "          " + command,
 			"commented command": strings.Replace(scope, command, "# "+command, 1),
 			"duplicate scope":   scope + "\n" + scope,

@@ -144,9 +144,11 @@ func PreparePresentation(root *cobra.Command, args []string) (string, error) {
 		root.Annotations = map[string]string{}
 	}
 	delete(root.Annotations, selectedPackageClientAnnotation)
+	delete(root.Annotations, selectedPackageClientOperationAnnotation)
 	if packageClient {
 		source = descriptor.route
 		root.Annotations[selectedPackageClientAnnotation] = string(descriptor.id)
+		root.Annotations[selectedPackageClientOperationAnnotation] = descriptor.path[len(descriptor.path)-1]
 	}
 	p.selfUpdate = source == "self-update"
 	p.localeExplicit = root.PersistentFlags().Changed("lang")
@@ -168,6 +170,18 @@ func PreparePresentation(root *cobra.Command, args []string) (string, error) {
 	goUpgrade, _ := command.Flags().GetBool("upgrade")
 	if p.output == "json" && ((source == "go" && !(command.CommandPath() == "helox go get" && goUpgrade)) || (source == "cargo" && command.CommandPath() != "helox cargo update") || (source == "terraform" && !goUpgrade) || source == "doctor") {
 		return "", errors.New("explicit JSON output is not available for this command")
+	}
+	if packageClient && descriptor.id == UVPipPackageClient && SelectedPackageClientOperation(root) == "sync" {
+		help, _ := command.Flags().GetBool("help")
+		if !help {
+			skip, err := prepareUVSyncSkip(command, command.Flags().Args())
+			if err != nil {
+				return "", err
+			}
+			if skip {
+				source = ""
+			}
+		}
 	}
 	return source, nil
 }

@@ -14,7 +14,7 @@ import (
 
 func TestGraphClosureUsesExactTransitiveMembersInNodeOrder(t *testing.T) {
 	graph, acquired := graphFixture(t)
-	closure, err := graphClosure(graph, graph.Primary(), acquired)
+	closure, err := graphClosureNodes(graph.Nodes(), graph.Edges(), graph.Primary(), acquired)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -33,7 +33,7 @@ func TestGraphClosureRejectsAcquiredIdentityMismatch(t *testing.T) {
 	wrongIdentity, _ := domain.NewResolvedArtifactIdentity(nodes[1].Artifact().Identity().Source(), "unlocked", "1.0", "wheel")
 	digest, _ := domain.NewSHA256Digest(strings.Repeat("f", 64))
 	acquired[nodes[1].Node()], _ = domain.NewAcquiredArtifactWithDeclaredIntegrity(wrongIdentity, digest, "intake:run_bbbbbbbbbbbbbbbbbbbbbbbbbb:wheel", 1, nodes[1].Artifact().DeclaredIntegrity())
-	if _, err := graphClosure(graph, graph.Primary(), acquired); err == nil {
+	if _, err := graphClosureNodes(graph.Nodes(), graph.Edges(), graph.Primary(), acquired); err == nil {
 		t.Fatal("identity-mismatched closure artifact accepted")
 	}
 }
@@ -44,7 +44,7 @@ func TestValidateRuntimeClosureFailsBeforeDynamicExecution(t *testing.T) {
 	for node, artifact := range acquired {
 		acquired[node], _ = domain.NewAcquiredArtifactWithDeclaredIntegrity(artifact.Identity(), artifact.Digest(), artifact.ContentHandle(), uint64(policy.MaxGraphCompressed())+1, mustDeclaredIntegrity(t, artifact))
 	}
-	closure, err := graphClosure(graph, graph.Primary(), acquired)
+	closure, err := graphClosureNodes(graph.Nodes(), graph.Edges(), graph.Primary(), acquired)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -52,7 +52,7 @@ func TestValidateRuntimeClosureFailsBeforeDynamicExecution(t *testing.T) {
 	for _, node := range graph.Nodes() {
 		states[node.Node()] = graphStaticState{dynamic: true}
 	}
-	if err := validateRuntimeClosure(context.Background(), closure, graph, states); err == nil {
+	if err := validateRuntimeClosureNodes(context.Background(), closure, graph.Nodes(), states); err == nil {
 		t.Fatal("oversized closure passed runtime preflight")
 	}
 }

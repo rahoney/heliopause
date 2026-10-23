@@ -92,17 +92,18 @@ type cargoUpdateEntry struct {
 }
 
 type cargoUpdateReport struct {
-	Schema         string             `json:"schema_version"`
-	Operation      string             `json:"operation"`
-	Status         string             `json:"operation_status"`
-	Promotion      string             `json:"promotion_status"`
-	Source         string             `json:"source_id"`
-	Selector       string             `json:"selector,omitempty"`
-	Graph          string             `json:"graph_digest,omitempty"`
-	DependencyFree bool               `json:"dependency_free"`
-	Entries        []cargoUpdateEntry `json:"entries"`
-	Policy         *machinePolicy     `json:"policy,omitempty"`
-	Error          *machineError      `json:"error,omitempty"`
+	Schema         string              `json:"schema_version"`
+	Operation      string              `json:"operation"`
+	Status         string              `json:"operation_status"`
+	Promotion      string              `json:"promotion_status"`
+	Source         string              `json:"source_id"`
+	Selector       string              `json:"selector,omitempty"`
+	Graph          string              `json:"graph_digest,omitempty"`
+	DependencyFree bool                `json:"dependency_free"`
+	Entries        []cargoUpdateEntry  `json:"entries"`
+	Policy         *machinePolicy      `json:"policy,omitempty"`
+	Error          *machineError       `json:"error,omitempty"`
+	VerifiedSet    *machineVerifiedSet `json:"verified_set,omitempty"`
 }
 
 func projectUpdatePolicy(decision domain.PolicyDecision) machinePolicy {
@@ -114,7 +115,12 @@ func writeCargoUpdateReport(output io.Writer, verified domain.ProjectVerifiedSet
 }
 
 func writeProjectUpdateReport(output io.Writer, verified domain.ProjectVerifiedSet, cause error, selector, source string) error {
+	return writeProjectUpdateReportWithRecords(output, verified, cause, selector, source, nil)
+}
+
+func writeProjectUpdateReportWithRecords(output io.Writer, verified domain.ProjectVerifiedSet, cause error, selector, source string, records *machineVerifiedSet) error {
 	report := cargoUpdateReport{Schema: "helox.project-update-result/v1", Operation: "UPDATE", Status: "FAILED", Promotion: "NOT_COMPLETED", Source: source, Selector: selector, Entries: []cargoUpdateEntry{}}
+	report.VerifiedSet = records
 	var inspected domain.InspectedProjectSet
 	var decision domain.PolicyDecision
 	if cause == nil && verified.Valid() {
@@ -165,7 +171,9 @@ func writeProjectUpdateReport(output io.Writer, verified domain.ProjectVerifiedS
 		policy = report.Policy.Decision
 	}
 	p.reportHeader("UPDATE", report.Status, policy, "")
-	if source == "go-proxy" {
+	if source == "pypi" {
+		p.line("%s %s", p.text("Python environment synchronization:", "Python 환경 동기화:"), p.stateLabel(report.Promotion))
+	} else if source == "go-proxy" {
 		p.line("%s %s", p.text("Dependency control update:", "의존성 설정 업데이트:"), p.stateLabel(report.Promotion))
 	} else if source == "terraform-registry" {
 		p.line("%s %s", p.text("Provider update:", "Provider 업데이트:"), p.stateLabel(report.Promotion))
@@ -176,7 +184,9 @@ func writeProjectUpdateReport(output io.Writer, verified domain.ProjectVerifiedS
 		p.line("%s %s", p.text("Selected package:", "선택한 패키지:"), safeTerminal(selector))
 	}
 	if inspected.Valid() {
-		if source == "go-proxy" {
+		if source == "pypi" {
+			p.line("%s %d", p.text("Inspected Python distributions:", "검사한 Python 패키지 수:"), len(report.Entries))
+		} else if source == "go-proxy" {
 			p.line("%s %d", p.text("Inspected modules:", "검사한 모듈 수:"), len(report.Entries))
 		} else if source == "terraform-registry" {
 			p.line("%s %d", p.text("Inspected providers:", "검사한 Provider 수:"), len(report.Entries))
@@ -208,6 +218,10 @@ func writeProjectUpdateReport(output io.Writer, verified domain.ProjectVerifiedS
 		p.renderChecks(checks)
 		p.renderReasons(decision.Reasons())
 	}
+	if records != nil {
+		p.line("Manifest: sha256:%s", records.ManifestID)
+		p.line("SBOM: %s", safeTerminal(records.SBOMHandle))
+	}
 	if report.Error != nil {
 		p.line("%s %s", p.text("Error:", "오류:"), report.Error.Code)
 		if report.Error.Code == "UPDATE_ADOPTION_REQUIRED" {
@@ -216,7 +230,9 @@ func writeProjectUpdateReport(output io.Writer, verified domain.ProjectVerifiedS
 		p.line("%s", p.text("The update is incomplete. Check the original project and any recovery state before retrying.", "업데이트 완료가 확인되지 않았습니다. 재실행 전에 원본 프로젝트와 복구 상태를 확인하세요."))
 		p.reportedError = true
 	}
-	if source == "go-proxy" {
+	if source == "pypi" {
+		p.line("%s", p.text("Every selected wheel was quarantined; only proven managed files may be replaced or removed.", "선택된 wheel 전체를 검역하며 소유권이 증명된 파일만 교체·제거합니다."))
+	} else if source == "go-proxy" {
 		p.line("%s", p.text("Build behavior is inspected separately with helox go build.", "빌드 동작은 helox go build에서 별도로 검사합니다."))
 	} else if source == "terraform-registry" {
 		p.line("%s", p.text("Provider installation checks do not attest RPC, plan/apply or cloud behavior.", "Provider 설치 검사는 RPC·plan/apply·클라우드 동작의 검증을 의미하지 않습니다."))

@@ -14,6 +14,7 @@ import (
 type PackageClientID string
 
 const selectedPackageClientAnnotation = "helox.selected-package-client"
+const selectedPackageClientOperationAnnotation = "helox.selected-package-client-operation"
 
 const (
 	PipPackageClient   PackageClientID = "pip"
@@ -40,16 +41,18 @@ type packageClientDescriptor struct {
 	parse                                        func(string, domain.SourceID) (domain.ArtifactReference, error)
 	flags                                        func(*cobra.Command)
 	upgrade                                      func(*cobra.Command, []string) (packageUpgradeMode, error)
+	examples                                     []string
 	flagText                                     map[string]packageClientParent
 }
 
-const uvPipInstallEnglish = "Inspect the complete public PyPI wheel set selected by UV before installing into an existing virtual environment for the pinned Python version.\n\nUse one package name or exact name==version (name@version is also accepted). Ordinary install retains compatible installed versions. --upgrade/-U updates the selected root and its dependencies; --upgrade-package <root> updates only that requested root unless a dependency change is needed. These two options cannot be combined. Existing selected files require verified HAA ownership or explicit --adopt with an update option. Native default public UV wheels are independently compared with the authentic old wheel before enrollment. Native generated scripts, compiled caches, cross-scheme and local/direct/VCS/build installs are unsupported. Other indexes, builds and sync are not available in this path. Every selected wheel is freshly inspected, including unchanged versions."
-const uvPipInstallKorean = "UV가 선택한 공개 PyPI wheel과 전체 의존성을 검사하고 고정된 Python 버전의 기존 가상환경에 설치합니다.\n\n패키지 이름 또는 정확한 name==version을 지정하세요(name@version도 가능). 일반 설치는 호환되는 기존 버전을 유지합니다. --upgrade/-U는 요청 패키지와 선택된 의존성을 갱신하고, --upgrade-package <root>는 필요할 때만 의존성을 변경하며 요청 패키지만 갱신합니다. 두 옵션을 함께 사용할 수 없고, <root>에는 요청한 패키지 이름만 지정할 수 있습니다. 선택된 기존 파일은 검증된 HAA 소유 기록이 필요합니다. 일반 UV 설치를 인계받으려면 업데이트 옵션과 --adopt를 함께 사용하세요. 기본 공개 wheel의 기존 파일을 공식 이전 wheel과 독립 대조한 뒤 소유권을 등록합니다. 일반 설치의 생성 스크립트·compiled cache·다른 scheme·local/direct/VCS/build, 다른 index와 sync는 아직 제공하지 않습니다. 같은 버전도 선택한 wheel 전체를 새로 검사합니다."
+const uvPipInstallEnglish = "Inspect the complete public PyPI wheel set selected by UV before installing into an existing virtual environment for the pinned Python version.\n\nUse one package name or exact name==version (name@version is also accepted). Ordinary install retains compatible installed versions. --upgrade/-U updates the selected root and its dependencies; --upgrade-package <root> updates only that requested root unless a dependency change is needed. These two options cannot be combined. Existing selected files require verified HAA ownership or explicit --adopt with an update option. Native default public UV wheels are independently compared with the authentic old wheel before enrollment. Native generated scripts, compiled caches, cross-scheme and local/direct/VCS/build installs are unsupported. Other indexes and builds are not available. Use uv pip sync for complete-file synchronization. Every selected wheel is freshly inspected, including unchanged versions."
+const uvPipInstallKorean = "UV가 선택한 공개 PyPI wheel과 전체 의존성을 검사하고 고정된 Python 버전의 기존 가상환경에 설치합니다.\n\n패키지 이름 또는 정확한 name==version을 지정하세요(name@version도 가능). 일반 설치는 호환되는 기존 버전을 유지합니다. --upgrade/-U는 요청 패키지와 선택된 의존성을 갱신하고, --upgrade-package <root>는 필요할 때만 의존성을 변경하며 요청 패키지만 갱신합니다. 두 옵션을 함께 사용할 수 없고, <root>에는 요청한 패키지 이름만 지정할 수 있습니다. 선택된 기존 파일은 검증된 HAA 소유 기록이 필요합니다. 일반 UV 설치를 인계받으려면 업데이트 옵션과 --adopt를 함께 사용하세요. 기본 공개 wheel의 기존 파일을 공식 이전 wheel과 독립 대조한 뒤 소유권을 등록합니다. 일반 설치의 생성 스크립트·compiled cache·다른 scheme·local/direct/VCS/build, 다른 index는 제공하지 않습니다. 같은 버전도 선택한 wheel 전체를 새로 검사합니다."
 
 func packageClientDescriptors() []packageClientDescriptor {
 	return []packageClientDescriptor{
 		{id: PipPackageClient, path: []string{"pip", "install"}, parents: []packageClientParent{{"Inspect and install PyPI distributions", "PyPI 배포 파일 검사·설치"}}, route: "pip", use: "install <project>[@<version>]", shortEN: "Install a PyPI distribution into the active virtual environment", shortKO: "Python 배포 파일과 의존성을 검사한 뒤 설치·업데이트(--upgrade/-U)합니다", longEN: pypiUpgradeDescriptionEnglish, longKO: pypiUpgradeDescriptionKorean, namedSources: true, validate: validatePyPIInstallArgs, parse: artifactpypi.ParseReferenceForSource, flags: configurePipInstallFlags, upgrade: pipPackageUpgradeMode},
 		{id: UVPipPackageClient, path: []string{"uv", "pip", "install"}, parents: []packageClientParent{{"Quarantine Python packages with UV", "UV로 Python 패키지를 검역합니다"}, {"Inspect and install public PyPI distributions with UV", "UV pip으로 공개 PyPI 파일을 검사·설치합니다"}}, route: "pypi", use: "install <project>[==<version>]", shortEN: "Quarantine and install a public PyPI wheel set selected by UV", shortKO: "UV가 선택한 공개 PyPI wheel과 의존성을 검역한 뒤 설치합니다", longEN: uvPipInstallEnglish, longKO: uvPipInstallKorean, validate: validateUVPipInstallArgs, validateRaw: validateUVPipRawArgs, parse: parseUVPipInstallReference, flags: configureUVPipInstallFlags, upgrade: uvPackageUpgradeMode, flagText: uvPipUpgradeFlagText},
+		{id: UVPipPackageClient, path: []string{"uv", "pip", "sync"}, parents: []packageClientParent{{"Quarantine Python packages with UV", "UV로 Python 패키지를 검역합니다"}, {"Inspect and install public PyPI distributions with UV", "UV pip으로 공개 PyPI 파일을 검사·설치합니다"}}, route: "pypi", use: "sync <source-file>", shortEN: "Quarantine a complete wheel set before synchronizing a virtual environment", shortKO: "전체 wheel 목록을 검역한 뒤 가상환경을 동기화합니다", longEN: uvPipSyncEnglish, longKO: uvPipSyncKorean, validate: validateUVPipSyncArgs, validateRaw: validateUVPipSyncRawArgs, flags: configureUVPipSyncFlags, flagText: uvPipSyncFlagText, examples: []string{"helox uv pip sync requirements.txt --target /absolute/path/venv", "helox uv pip sync pylock.toml --target /absolute/path/venv", "helox uv pip sync empty.txt --target /absolute/path/venv --allow-empty-requirements"}},
 	}
 }
 
@@ -60,9 +63,9 @@ func configurePipInstallFlags(command *cobra.Command) {
 	command.Flags().String("inspection-prerequisites", "", "Explicit pinned JSON for one inspection-only non-root leaf prerequisite; not installed into the target")
 }
 
-func packageClientByID(id PackageClientID) (packageClientDescriptor, bool) {
+func packageClientByOperation(id PackageClientID, operation string) (packageClientDescriptor, bool) {
 	for _, descriptor := range packageClientDescriptors() {
-		if descriptor.id == id {
+		if descriptor.id == id && descriptor.path[len(descriptor.path)-1] == operation {
 			return descriptor, true
 		}
 	}
@@ -110,6 +113,7 @@ func initializePackageClientCommands(root *cobra.Command) {
 		}
 		command := newStaticLeaf(descriptor.use, descriptor.shortEN, true)
 		command.Long, command.Args = descriptor.longEN, descriptor.validate
+		command.Example = strings.Join(descriptor.examples, "\n")
 		if descriptor.flags != nil {
 			descriptor.flags(command)
 		}
@@ -120,7 +124,11 @@ func initializePackageClientCommands(root *cobra.Command) {
 // PackageClientInstallCommand obtains the actual registered command from the
 // same descriptor used by preflight, help and binding.
 func PackageClientInstallCommand(root *cobra.Command, id PackageClientID) (*cobra.Command, error) {
-	descriptor, ok := packageClientByID(id)
+	return packageClientCommand(root, id, "install")
+}
+
+func packageClientCommand(root *cobra.Command, id PackageClientID, operation string) (*cobra.Command, error) {
+	descriptor, ok := packageClientByOperation(id, operation)
 	if root == nil || !ok {
 		return nil, errors.New("unsupported package client command")
 	}
@@ -129,6 +137,13 @@ func PackageClientInstallCommand(root *cobra.Command, id PackageClientID) (*cobr
 		return nil, errors.New("package client install command is not registered")
 	}
 	return command, nil
+}
+
+func SelectedPackageClientOperation(root *cobra.Command) string {
+	if root == nil {
+		return ""
+	}
+	return root.Annotations[selectedPackageClientOperationAnnotation]
 }
 
 func SelectedPackageClient(root *cobra.Command) PackageClientID {

@@ -23,11 +23,14 @@ type pythonPackageClient struct {
 }
 
 type pythonClientBindings struct {
-	installer              *application.InstallService
-	promoter               ports.Promotion
-	resolver, nativeLookup ports.DependencyResolver
-	intake                 ports.Artifact
-	intakeRoot             string
+	installer                 *application.InstallService
+	promoter                  ports.Promotion
+	resolver, nativeLookup    ports.DependencyResolver
+	intake                    ports.Artifact
+	intakeRoot                string
+	evidenceRoot, stagingRoot string
+	inspector                 ports.Inspection
+	evidence                  pythonClientEvidence
 }
 
 func pythonPackageClientFor(id cli.PackageClientID) (pythonPackageClient, error) {
@@ -71,6 +74,9 @@ func uvInstallDependencyResolver(goos, goarch string, executor sandbox.TrustedEx
 }
 
 func bindUVPipPackageClient(command *cobra.Command, bindings pythonClientBindings) error {
+	if cli.SelectedPackageClientOperation(command) == "sync" {
+		return bindUVPipSync(command, bindings)
+	}
 	promoter, ok := bindings.promoter.(*promotion.PyPIPromotion)
 	if !ok {
 		return errors.New("UV installation requires the existing Python transaction")

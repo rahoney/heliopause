@@ -226,7 +226,7 @@ func addPackageClientInstall(root *cobra.Command, id PackageClientID, installers
 	if root == nil || len(installers) == 0 {
 		return errors.New("pypi install command requires root and use case")
 	}
-	descriptor, ok := packageClientByID(id)
+	descriptor, ok := packageClientByOperation(id, "install")
 	if !ok {
 		return errors.New("unsupported package client binding")
 	}

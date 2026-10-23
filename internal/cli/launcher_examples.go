@@ -1,8 +1,15 @@
 package cli
 
+import "strings"
+
 // Examples are inert, reviewed command syntax. They are never passed to Execute,
 // a shell or a process. Help and validation come from the registered Cobra tree.
 func launcherExamples(path string) []string {
+	for _, descriptor := range packageClientDescriptors() {
+		if path == "helox "+strings.Join(descriptor.path, " ") && len(descriptor.examples) > 0 {
+			return append([]string(nil), descriptor.examples...)
+		}
+	}
 	switch path {
 	case "helox":
 		return []string{"helox --help", "helox config language auto", "helox doctor"}

@@ -260,12 +260,7 @@ func uvArchiveCandidates(packages []UVLockedPackage, python, root string, inputs
 			}
 			// Reuse metadata/marker normalization, not pip resolution or a fake pip
 			// report. These fields come only from the digest-validated wheel above.
-			metadata := pipInstall{Requested: item.Name == root}
-			metadata.DownloadInfo.URL = wheel.URL
-			metadata.DownloadInfo.ArchiveInfo.Hashes = map[string]string{"sha256": wheel.SHA256}
-			metadata.Metadata.Name, metadata.Metadata.Version = inspection.Project, inspection.Version
-			metadata.Metadata.RequiresPython, metadata.Metadata.RequiresDist = inspection.RequiresPython, inspection.RequiresDist
-			candidate, err = parseReportCandidate(metadata, PublicPyPIProfile(), python, nil)
+			candidate, err = candidateFromWheelMetadata(inspection, wheel.URL, wheel.SHA256, python, item.Name == root)
 			if err != nil {
 				return nil, err
 			}
@@ -364,4 +359,14 @@ func selectUVInstalledWheels(packages []UVLockedPackage, python string, body []b
 		}
 	}
 	return result, nil
+}
+
+// Both native selection and complete-project static preparation normalize real wheel metadata here.
+func candidateFromWheelMetadata(inspection WheelInspection, distributionURL, declaredSHA, python string, requested bool) (Candidate, error) {
+	metadata := pipInstall{Requested: requested}
+	metadata.DownloadInfo.URL = distributionURL
+	metadata.DownloadInfo.ArchiveInfo.Hashes = map[string]string{"sha256": declaredSHA}
+	metadata.Metadata.Name, metadata.Metadata.Version = inspection.Project, inspection.Version
+	metadata.Metadata.RequiresPython, metadata.Metadata.RequiresDist = inspection.RequiresPython, inspection.RequiresDist
+	return parseReportCandidate(metadata, PublicPyPIProfile(), python, nil)
 }

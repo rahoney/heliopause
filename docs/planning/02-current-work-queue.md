@@ -15,7 +15,7 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — native same-runtime self-quarantine update IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; actual signed rc6 normal/cancellations/fresh replay passed; channel scope remains
-Next action: P1 uv pip IN_PROGRESS — complete sync backend LOCAL VERIFIED; wire Application/CLI and actual end-to-end; batch remote qualification, CUDA3 required before P1 closure
+Next action: P1 uv pip IN_PROGRESS — complete sync Application/CLI and shared batch inspection LOCAL VERIFIED; push bundled candidate for actual end-to-end/common CI, then CUDA3 before P1 closure
 After P1: M13-004/G127 — Go 1.27.3 coordinated migration NOT_STARTED; must finish before P2
 After G127: P2 pnpm, then P3..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
@@ -24,12 +24,21 @@ Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten S
 
 ### 2026-10-23 CI390 확인과 검증 주기 조정
 
+[CLI·공통 batch 로컬 결과](./evidence/package-client-quarantine/p1f-uv-sync-cli-local-20261023.json)는
+complete sync의 Application/CLI/bootstrap·새 승인 records 리포트와 빈 입력 skip을 연결했다.
+기존 정상 pip의 batch lifecycle·static-all/대상별 closure를 재사용하여 rootless 의존성 전달
+누락을 교정했고 같은 pre-format test의 before FAIL/after PASS를 보존했다. 최종 canonical5,
+관련7package 전체 Race138.116s와 실제7언어 CLI21cases는 PASS다. 임시 CLI 바이너리43,581,079B와
+test payload를 정리했다. 실제 native complete/adopt/empty/closure 두 통합 시나리오는 기존 Linux
+job에 연결했으며 아직 실행 전이다. Backend와 CLI commit을 한 번의 원격 후보로 올린 뒤 실제
+native·공통 CI/Required와 세 CUDA를 확인한다. P1 acceptance는 열어 둔다.
+
 [Complete backend 로컬 결과](./evidence/package-client-quarantine/p1f-uv-sync-backend-local-20261023.json)는
 actual held source/target guard·전체 native 원본 proof 연결, 단일 complete 선택과 승인 cache·
 Manifest/SBOM·기존 offline publication을 검증했다. Canonical5와 관련5package 전체 Race142.011s
 PASS이며 empty 추출 회귀의 기존 정상 코드 대조·교정 및 최초 실패는 같은 영수증에 보존했다.
-Synthetic 거래 검증이며 실제 native 전체 검역·Application/CLI·CUDA3/P1은 미완료다.
-다음은 같은 P1의 D 연결이며 개별 helper별 새 원격 실행 없이 기능 경계로 검증을 묶는다.
+Synthetic 거래 검증이며 당시 실제 native 전체 검역·Application/CLI·CUDA3/P1은 미완료였다.
+이후 D 연결의 로컬 결과는 위 영수증을 따르며 개별 helper별 새 원격 실행 없이 기능 경계로 검증을 묶는다.
 
 [CI390 확인](./evidence/package-client-quarantine/p1f-ci390-timed-confirmation-20261023.json)은
 source79e76dd와 actual checkout의 전체 tree 일치·Required 포함10SUCCESS를 확인했다.
@@ -38,8 +47,8 @@ Linux51/CPU297.93s, macOS 같은2m build 한도 안의 약59.17s/default test와
 P1 acceptance는 미완료다. 이전 CI388/389 항목은 당시 실패 이력으로 보존한다.
 
 기존 예방 규칙을 현재 P1에 적용한 [검증 실행 주기](./20-package-client-quarantine-plan.md#5-검증-matrix와-자원-정리)를
-적용한다. 다음은 P1f A2c2/C의 실제 guard·cache·records 연결이며 작은 helper별 원격 완료 대기를
-중단하고 backend 연결 및 CLI end-to-end 경계로 push/CI를 묶는다. 로컬 canonical/관련 회귀와
+적용한다. P1f A2c2/C/D의 실제 guard·cache·records와 CLI를 연결했고 작은 helper별 원격 완료 대기를
+중단하고 backend 및 CLI end-to-end를 한 후보로 push/CI를 묶는다. 로컬 canonical/관련 회귀와
 중간 commit은 유지한다. CUDA3 actual은 P1 완료 후보에서 수행하며 미검증 상태로 완료·승격하지
 않는다. 새 공통 회귀나 native 선행조건이면 필요한 원격 검증을 먼저 수행한다.
 CI 실행 시 최근 같은 profile의 경과 시간으로 첫 확인 시각을 잡고 대기 도구로 확인한다.

@@ -420,7 +420,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err != nil {
 			return err
 		}
-		if err := pythonClient.bind(command, pythonClientBindings{installer: installer, promoter: promoter, resolver: resolver, nativeLookup: nativeLookupResolver, intake: intake, intakeRoot: filepath.Join(root, "intake")}); err != nil {
+		if err := pythonClient.bind(command, pythonClientBindings{installer: installer, promoter: promoter, resolver: resolver, nativeLookup: nativeLookupResolver, intake: intake, intakeRoot: filepath.Join(root, "intake"), evidenceRoot: filepath.Join(root, "evidence"), stagingRoot: filepath.Join(root, "staging"), inspector: inspection, evidence: evidence}); err != nil {
 			return err
 		}
 	}

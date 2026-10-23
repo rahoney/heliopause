@@ -170,6 +170,18 @@ func TestLauncherCancelledDiagnosisNeverDisplaysHealthy(t *testing.T) {
 }
 
 func TestLauncherExamplesUseRegisteredSyntax(t *testing.T) {
+	// Sync examples declare source files. Supply inert complete input fixtures,
+	// while still validating the actual displayed syntax without execution.
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Chdir(root)
+	for name, body := range map[string]string{"requirements.txt": "packaging==25.0\n", "empty.txt": "# explicit empty\n", "pylock.toml": "lock-version='1.0'\ncreated-by='uv'\nrequires-python='>=3.14'\npackages=[]\n"} {
+		if err := os.WriteFile(name, []byte(body), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
 	// The displayed pip examples explicitly require an active virtual
 	// environment. Supply that declared prerequisite without running Python.
 	t.Setenv("VIRTUAL_ENV", t.TempDir())
