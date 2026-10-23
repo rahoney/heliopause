@@ -16,6 +16,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 
 	artifactpypi "github.com/rahoney/heliopause/internal/artifact/pypi"
@@ -33,6 +34,7 @@ type originalProofArchive struct {
 type originalProofSetPorts struct {
 	root               string
 	entries            map[string]originalProofArchive
+	closeOriginal      func() error
 	corrupt            string
 	resolves, acquires []string
 }
@@ -169,8 +171,9 @@ func originalUVInventoryFixture(t *testing.T) (pypiVenvPlan, *pypiVenvTransactio
 	if err != nil {
 		t.Fatal(err)
 	}
+	p.closeOriginal = sync.OnceValue(transaction.close)
 	t.Cleanup(func() {
-		if err := transaction.close(); err != nil {
+		if err := p.closeOriginal(); err != nil {
 			t.Error(err)
 		}
 	})

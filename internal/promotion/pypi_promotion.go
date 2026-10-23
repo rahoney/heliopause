@@ -173,19 +173,8 @@ func (p *PyPIPromotion) promoteHeldVenv(ctx context.Context, stagedRoot string, 
 	if err != nil {
 		return domain.PromotedInstall{}, err
 	}
-	resourcePolicy := artifactpypi.ResourcePolicyFromContext(ctx)
-	if err := p.runner.Run(ctx, temporary, pypiPromotionArguments(temporary, resourcePolicy)); err != nil {
-		return domain.PromotedInstall{}, err
-	}
-	if err := relocateStagedSchemeRoots(temporary); err != nil {
-		return domain.PromotedInstall{}, err
-	}
-	output := filepath.Join(temporary, "site")
-	desired, err := validatedPyPIDestinations(output, expected, requirements, resourcePolicy.WheelLimits().MaxMetadata)
+	desired, err := p.materializePythonProject(ctx, temporary, requirements, expected)
 	if err != nil {
-		return domain.PromotedInstall{}, err
-	}
-	if err := ctx.Err(); err != nil {
 		return domain.PromotedInstall{}, err
 	}
 	if verify != nil {
@@ -274,19 +263,23 @@ func relocateStagedSchemeRoots(transactionRoot string) error {
 type pypiExpected struct{ name, version, digest string }
 
 func preparePyPIProject(project, stagedRoot string, bundle domain.VerifiedBundle) ([]byte, map[string]pypiExpected, error) {
-	wheels := filepath.Join(project, "wheels")
-	if err := os.Mkdir(wheels, 0o700); err != nil {
-		return nil, nil, err
-	}
 	if err := copyExactRecord(filepath.Join(stagedRoot, manifestFilename), filepath.Join(project, manifestFilename), bundle.ManifestDocument()); err != nil {
 		return nil, nil, err
 	}
 	if err := copyExactRecord(filepath.Join(stagedRoot, sbomFilename), filepath.Join(project, sbomFilename), bundle.SBOMDocument()); err != nil {
 		return nil, nil, err
 	}
+	return preparePythonWheels(project, filepath.Join(stagedRoot, "artifacts"), bundle.Set().Inspected().Graph().Nodes(), bundle.Set().Inspected().Inspections())
+}
+
+func preparePythonWheels(project, artifacts string, nodes []domain.LockedDependency, inspections []domain.DependencyInspection) ([]byte, map[string]pypiExpected, error) {
+	wheels := filepath.Join(project, "wheels")
+	if err := os.Mkdir(wheels, 0o700); err != nil {
+		return nil, nil, err
+	}
 	expected := map[string]pypiExpected{}
 	lines := make([]string, 0)
-	for _, node := range bundle.Set().Inspected().Graph().Nodes() {
+	for _, node := range nodes {
 		resolved := node.Artifact()
 		if resolved.Identity().Variant() == "sdist" {
 			continue
@@ -299,12 +292,19 @@ func preparePyPIProject(project, stagedRoot string, bundle domain.VerifiedBundle
 		if err != nil || projectName != resolved.Identity().Name() || version != resolved.Identity().Version() || expected[projectName].name != "" {
 			return nil, nil, errors.New("PyPI Promotion wheel filename is invalid or ambiguous")
 		}
-		inspection, ok := findInspection(bundle, node.Node())
+		var inspection domain.DependencyInspection
+		ok := false
+		for _, item := range inspections {
+			if item.Node() == node.Node() {
+				inspection, ok = item, true
+				break
+			}
+		}
 		if !ok || inspection.Artifact().Identity() != resolved.Identity() {
 			return nil, nil, errors.New("PyPI Promotion inspection binding is incomplete")
 		}
 		digest := inspection.Artifact().Digest().String()
-		source := filepath.Join(stagedRoot, "artifacts", digest+".whl")
+		source := filepath.Join(artifacts, digest+".whl")
 		if err := copyDigestFile(source, filepath.Join(wheels, filename), digest); err != nil {
 			return nil, nil, err
 		}
@@ -320,15 +320,6 @@ func preparePyPIProject(project, stagedRoot string, bundle domain.VerifiedBundle
 		return nil, nil, err
 	}
 	return requirements, expected, nil
-}
-
-func findInspection(bundle domain.VerifiedBundle, node domain.DependencyNodeID) (domain.DependencyInspection, bool) {
-	for _, item := range bundle.Set().Inspected().Inspections() {
-		if item.Node() == node {
-			return item, true
-		}
-	}
-	return domain.DependencyInspection{}, false
 }
 
 func validatePyPIOutput(site string, expected map[string]pypiExpected, requirements []byte, maxMetadata ...int64) error {
@@ -683,4 +674,24 @@ func readBoundedPromotionFile(filename string, limit int64) ([]byte, error) {
 		return nil, errors.New("promotion file exceeds metadata bound")
 	}
 	return body, nil
+}
+
+// Existing pip/UV installs and complete sync share the exact offline recipe and RECORD validator.
+func (p *PyPIPromotion) materializePythonProject(ctx context.Context, temporary string, requirements []byte, expected map[string]pypiExpected) ([]pypiDestination, error) {
+	resourcePolicy := artifactpypi.ResourcePolicyFromContext(ctx)
+	if err := p.runner.Run(ctx, temporary, pypiPromotionArguments(temporary, resourcePolicy)); err != nil {
+		return nil, err
+	}
+	if err := relocateStagedSchemeRoots(temporary); err != nil {
+		return nil, err
+	}
+	output := filepath.Join(temporary, "site")
+	desired, err := validatedPyPIDestinations(output, expected, requirements, resourcePolicy.WheelLimits().MaxMetadata)
+	if err != nil {
+		return nil, err
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	return desired, nil
 }

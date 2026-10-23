@@ -38,6 +38,40 @@ func (l UVProjectLock) Control() (domain.ProjectControlFile, error) {
 	return domain.NewProjectControlFile(UVSelectionLockControlName, l.body, true)
 }
 
+// SelectResolvedWheels matches the complete immutable selection to one exact
+// archive per real project. It neither acquires content nor grants approval.
+func (l UVProjectLock) SelectResolvedWheels(artifacts []domain.ResolvedArtifact) ([]UVLockedWheel, error) {
+	if len(l.body) == 0 || len(artifacts) != len(l.packages) {
+		return nil, errors.New("complete UV archive selection is unavailable")
+	}
+	byName := make(map[string]domain.ResolvedArtifact, len(artifacts))
+	for _, artifact := range artifacts {
+		id := artifact.Identity()
+		if id.Source() != PublicPyPIProfile().Source() || id.Variant() != "wheel" || byName[id.Name()].Identity().Name() != "" {
+			return nil, errors.New("complete UV archive identity is invalid or repeated")
+		}
+		byName[id.Name()] = artifact
+	}
+	result := make([]UVLockedWheel, 0, len(artifacts))
+	for _, project := range l.packages {
+		artifact, ok := byName[project.Name]
+		if !ok || artifact.Identity().Version() != project.Version {
+			return nil, errors.New("complete UV archive version differs from native lock")
+		}
+		matches := 0
+		for _, wheel := range project.Wheels {
+			if wheel.URL == artifact.AcquisitionLocator() && "sha256:"+wheel.SHA256 == artifact.DeclaredIntegrity() {
+				result = append(result, wheel)
+				matches++
+			}
+		}
+		if matches != 1 {
+			return nil, errors.New("complete UV archive URL or integrity differs from native lock")
+		}
+	}
+	return result, nil
+}
+
 func (l UVProjectLock) SelectInstalledWheelControls(controls []UVInstalledWheelControls, target WheelTarget) ([]UVLockedWheel, error) {
 	if len(l.body) == 0 {
 		return nil, errors.New("complete UV lock is unavailable")

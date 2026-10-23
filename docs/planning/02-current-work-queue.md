@@ -15,7 +15,7 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — native same-runtime self-quarantine update IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; actual signed rc6 normal/cancellations/fresh replay passed; channel scope remains
-Next action: P1 uv pip IN_PROGRESS — CI390 ten SUCCESS; actual guarded sync/backend integration, then CLI/end-to-end qualification; remote checks batched by functional boundary, CUDA3 required before P1 closure
+Next action: P1 uv pip IN_PROGRESS — complete sync backend LOCAL VERIFIED; wire Application/CLI and actual end-to-end; batch remote qualification, CUDA3 required before P1 closure
 After P1: M13-004/G127 — Go 1.27.3 coordinated migration NOT_STARTED; must finish before P2
 After G127: P2 pnpm, then P3..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
@@ -23,6 +23,13 @@ Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten S
 ```
 
 ### 2026-10-23 CI390 확인과 검증 주기 조정
+
+[Complete backend 로컬 결과](./evidence/package-client-quarantine/p1f-uv-sync-backend-local-20261023.json)는
+actual held source/target guard·전체 native 원본 proof 연결, 단일 complete 선택과 승인 cache·
+Manifest/SBOM·기존 offline publication을 검증했다. Canonical5와 관련5package 전체 Race142.011s
+PASS이며 empty 추출 회귀의 기존 정상 코드 대조·교정 및 최초 실패는 같은 영수증에 보존했다.
+Synthetic 거래 검증이며 실제 native 전체 검역·Application/CLI·CUDA3/P1은 미완료다.
+다음은 같은 P1의 D 연결이며 개별 helper별 새 원격 실행 없이 기능 경계로 검증을 묶는다.
 
 [CI390 확인](./evidence/package-client-quarantine/p1f-ci390-timed-confirmation-20261023.json)은
 source79e76dd와 actual checkout의 전체 tree 일치·Required 포함10SUCCESS를 확인했다.

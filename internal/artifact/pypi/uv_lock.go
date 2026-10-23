@@ -186,7 +186,28 @@ func (l UVLock) BindWheels(inputs []UVWheelInput, pages []SimpleProject, target 
 }
 
 func bindUVSelectedWheels(packages []UVLockedPackage, python, root string, inputs []UVWheelInput, pages []SimpleProject, target WheelTarget, limits WheelLimits) ([]Candidate, error) {
-	if len(inputs) != len(packages) || len(pages) != len(packages) {
+	if len(pages) != len(packages) {
+		return nil, errors.New("uv selected wheel set is incomplete")
+	}
+	candidates, err := uvArchiveCandidates(packages, python, root, inputs, target, limits)
+	if err != nil {
+		return nil, err
+	}
+	if len(packages) == 0 {
+		return candidates, nil
+	}
+	checked, err := CrossCheckReport(InstallationReport{candidates: candidates}, pages)
+	if err != nil {
+		return nil, err
+	}
+	if err := validateUVCandidateConstraints(checked, python); err != nil {
+		return nil, err
+	}
+	return checked, nil
+}
+
+func uvArchiveCandidates(packages []UVLockedPackage, python, root string, inputs []UVWheelInput, target WheelTarget, limits WheelLimits) ([]Candidate, error) {
+	if len(inputs) != len(packages) {
 		return nil, errors.New("uv selected wheel set is incomplete")
 	}
 	parts := strings.Split(python, ".")
@@ -254,29 +275,29 @@ func bindUVSelectedWheels(packages []UVLockedPackage, python, root string, input
 		}
 		candidates = append(candidates, candidate)
 	}
-	checked, err := CrossCheckReport(InstallationReport{candidates: candidates}, pages)
-	if err != nil {
-		return nil, err
-	}
-	versions := make(map[string]string, len(checked))
-	for _, candidate := range checked {
+	return candidates, nil
+}
+
+func validateUVCandidateConstraints(candidates []Candidate, python string) error {
+	versions := make(map[string]string, len(candidates))
+	for _, candidate := range candidates {
 		versions[candidate.project] = candidate.version
 		if candidate.requiresPython != "" {
 			requirement, err := ParseBoundedRequirement("python" + candidate.requiresPython)
 			if err != nil || !requirement.Satisfies(python) {
-				return nil, errors.New("uv wheel Python requirement is unsupported or unsatisfied")
+				return errors.New("uv wheel Python requirement is unsupported or unsatisfied")
 			}
 		}
 	}
-	for _, candidate := range checked {
+	for _, candidate := range candidates {
 		for _, constraint := range candidate.requirements {
 			requirement, err := ParseBoundedRequirement(constraint)
 			if err != nil || !requirement.Satisfies(versions[requirement.Project()]) {
-				return nil, errors.New("uv selected dependency constraint is unsupported or unsatisfied")
+				return errors.New("uv selected dependency constraint is unsupported or unsatisfied")
 			}
 		}
 	}
-	return checked, nil
+	return nil
 }
 
 // SelectInstalledWheels binds a bounded data-only snapshot read by the trusted

@@ -533,3 +533,79 @@ source79e76dd의 Required/Linux/CPU/native macOS 성공을 확인했다. 이는 
 따라 로컬 검증·중간 commit을 유지하고 backend 연결과 CLI end-to-end 단위로 원격 검증을 묶는다.
 공통 회계의 CUDA3 actual은 P1 완료 전 필수로 남는다. 위 과거 LOCAL ONLY/CI 대기 기록은
 당시 범위이며 최신 source 상태와 다음 action은 Queue를 따른다.
+
+## A2c2/C 구현 직전 연결 검토 — 2026-10-23
+
+기준c6362e3에서 A1/A2a/A2b/B1/A2c1 helper는 구현·기존 소비자 CI390 회귀 YES지만
+actual complete guard/cache/records/CLI의 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED는
+NO/NO/NO/NO다. 아래 연결만 추가하며 기존 transaction/inspection/Policy engine을 대체하지 않는다.
+
+Request-scoped UVSyncPreparation은 실제 source format/allow/adopt와 native resolver를 받으며
+UVSyncProjectPromotion이 같은 preparation과 Python project cache를 묶는다. Begin은 기존 venv transaction 하나와 installed/source witnesses를
+보유한다. Native metadata가 있으면 explicit adoption과 selectAllOwnership의 전체 proof가 필수다.
+기존 proof의 destinations·cache absences를 같은 held transaction에만 반영하고 disk ledger는
+변경하지 않는다. Resolver는 guard의 원본 controls를 대조하고 native 네 control만 전달한다.
+실제 결과의 source/context/dependency-free·lock의 전체 wheel URL/hash/version과 불변 controls를
+대조한 뒤 guard가 만든 proof를 양쪽 controls와 base graph+전체 control digests에 bind한다.
+선택·commit은 각각 한 번만 시도하며 CommitSnapshot 우회는 거부한다.
+
+Preparation의 ProjectLockUpdateResolver와 publication의 ProjectMutation/ProjectCacheStaging을
+request scope에서 연결한다. StageProject가 보유한 실제 selected update를 cache의 private staging 함수에 직접
+전달하므로 C1의 mutable callback 주입은 필요하지 않다. Cache는 그 update와 승인 snapshot의
+전체 값 일치를 확인한다. Domain/Application에 새 형식 분기나 가짜 primary를 추가하지 않는다.
+
+Record builder는 promotion 소유 structural method BuildProject(ctx, operation, set, actual nodes,
+edges, full controls, runtime)로 digest/Manifest/SBOM bytes를 반환하고 evidence.Generator를
+bootstrap에서 주입한다. Rootless project Manifest는 별도 helox.verified-project-manifest/v1이며
+dependency_free·actual operation/target/graph/runtime·각 Run/Evidence/entry와 set Policy를 포함한다.
+기존 requested-primary Manifest/SBOM helper 본문을 공유하되 기존 nonempty 조건은 유지한다.
+Project records는 각각32MiB, receipt는4MiB로 제한한다. Empty는 실제 positive set Policy와
+zero entries/edges를 기록하며 가짜 Run/entry를 만들지 않는다.
+
+Cache는 기존 LocalStaging.stageArtifact로 승인 wheel만 복사하고 intake filename과 실제 lock의
+유일한 URL/hash를 대조한다. Rehashed archive의 기존 Requires-Dist/marker normalization으로
+node/edge/constraint를 복원한다. Control 원문·승인/Evidence·전체 file census·record digests를
+sealed receipt에 묶고 open에서 재생성 대조한다. Offline pip arguments/RECORD validator는 기존
+본문을 재사용하고 complete commit만 분리한다. Empty는 materialization 없이 같은 transaction을
+사용한다. 실제 manifest/SBOM 참조는 검증한 cache에서만 반환한다.
+
+두 번째 검토에서 cache/guard의 순환 주입을 없애고 선택값을 직접 전달하는 위치, 전체 old proof와
+네 native control의 분리, commit 이전 source reverify, no-Policy/no-mutation 실패 경계를 확인했다.
+검증은 empty/managed/native-extra·source/metadata/cache/proof/controls drift·반복/foreign update·
+rollback/취소/cleanup과 기존 pip/UV의 관련 회귀다. Backend 연결 뒤 canonical/관련 전체 Race와
+원격 checkpoint를 수행하고 CLI/end-to-end·CUDA3 이전에는 whole P1을 완료로 쓰지 않는다.
+
+### D 구현 직전 CLI 검토
+
+CLI는 `uv pip sync <source-file>` 한 파일과 --target(또는 VIRTUAL_ENV), --adopt,
+--allow-empty-requirements만 받는다. `pylock.toml`/`pylock.*.toml`은 strict pylock으로,
+그 외 파일은 기존 bounded exact-pin requirements parser로 검증한다. Include·range·여러 파일·
+unknown/중복 옵션은 런타임 준비 전에 거부한다. Static preflight는4MiB regular/single-link와
+symlink 없는 ancestry를 확인해 nonblocking read하고 실제 guard가 source를 다시 고정한다.
+기본 blank requirements는 static command의 SKIPPED/NOT_PERFORMED 보고만 실행해 runtime/
+operation/Run/Evidence/Policy/target mutation을 만들지 않는다. Explicit empty는 정상 검역 경로다.
+
+기존 descriptor를 실제 client+leaf operation으로 조회해 install과 sync가 잘못 bind되지 않게 한다.
+Bootstrap은 같은 Python inspector/verifier/Evidence·native resolver/lookup을 명시적으로 재사용하고
+positive request에서 생성한 operation 하나를 project inspection과 cache 기록에 같이 전달한다.
+Application의 UVPipSyncService는 기존 executeGuardedProjectUpdate를 호출하는 좁은 소비자다.
+기존 helox.project-update-result/v1 presenter에 Python labels와 선택적 verified_set 기록 참조를
+추가하며 새 public schema/가짜 primary를 만들지 않는다. Blank SKIP에는 Policy/검사 항목을 넣지
+않는다. 기존 Cargo/Go/TF 보고와 EN/KO 설명·다른 언어 fallback, help/skip의 runtime0·부정 입력,
+positive empty/다중 root/동일 목록 fresh Evidence/삭제/변조·복원과 실제 CLI를 확인한다.
+
+### A2c2/C 로컬 결과
+
+UVSyncPreparation/UVSyncProjectPromotion과 PythonProjectCache는 기존 transaction·old-wheel proof·
+LocalStaging.stageArtifact·Evidence reader·offline pip/RECORD validator를 연결했다. 실제 held guard,
+제외될 native 원본의 전체 proof, source/metadata/cache/records drift·반복·취소·foreign snapshot 거부,
+exact nonempty/positive empty publication·rollback과 기존 소비자를 로컬에서 확인했다.
+ProjectRecords는 기존 archive/marker/constraint normalization을 공유하며 fake Simple/primary를
+만들지 않는다. 기존 Manifest entry/SBOM serialization을 공유하고 old nonempty 의미를 유지했다.
+
+첫 검사에서 test unused import·Staticcheck와 이후 empty 반환 경계 누락/fixture·socket 권한 실패를
+구분했다. CI390의 기존 empty 반환을 복원했고 해당 두 기존 회귀를 바꾸지 않았다. 교정 후보의
+canonical5(Quick133.472s)와 관련5package 전체 Race142.011s는 PASS다.
+[로컬 영수증](./p1f-uv-sync-backend-local-20261023.json)이 exact Go inputs·원본·한계를 소유한다.
+IMPLEMENTED=YES/WIRED=YES(backend components)/QUALIFIED=LOCAL ONLY/ACCEPTANCE_CLOSED=NO다.
+Actual native sync 검역·Application/CLI·통합 실패/복원·CUDA3와 whole P1은 MISSING이며 D에서 연결한다.
