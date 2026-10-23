@@ -30,7 +30,7 @@ func verifyUVImage(args []string, out io.Writer) error {
 	if err != nil || !info.IsDir() {
 		return errors.New("uv image proof directory is unavailable or a symlink")
 	}
-	read := func(name string, limit int64) ([]byte, error) { return readUVSupplyFile(*input, name, limit) }
+	read := func(name string, limit int64) ([]byte, error) { return readFrozenSupplyFile(*input, name, limit) }
 
 	identityBody, err := read("identity.json", 4096)
 	if err != nil {
@@ -92,30 +92,4 @@ func verifyUVImage(args []string, out io.Writer) error {
 		Role   string `json:"role"`
 		SHA256 string `json:"sha256"`
 	}{{"bundle", receipt.BundleSHA256()}, {"config", receipt.ConfigSHA256()}}, receipt.Invocation(), receipt.Layers(), tool})
-}
-
-func readUVSupplyFile(directory, name string, limit int64) ([]byte, error) {
-	info, err := os.Lstat(directory)
-	if err != nil || !info.IsDir() {
-		return nil, errors.New("uv supply directory is unavailable or a symlink")
-	}
-	location := filepath.Join(directory, name)
-	before, err := os.Lstat(location)
-	if err != nil || !before.Mode().IsRegular() || before.Size() <= 0 || before.Size() > limit {
-		return nil, errors.New("uv supply file is unavailable or exceeds bound")
-	}
-	file, err := os.Open(location)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-	after, err := file.Stat()
-	if err != nil || !os.SameFile(before, after) || after.Size() != before.Size() {
-		return nil, errors.New("uv supply file changed")
-	}
-	body, err := io.ReadAll(io.LimitReader(file, limit+1))
-	if err != nil || int64(len(body)) != before.Size() {
-		return nil, errors.New("uv supply read failed or changed")
-	}
-	return body, nil
 }

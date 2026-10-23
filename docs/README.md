@@ -100,6 +100,7 @@ Read:
 - [Client/runner 설계](./user-journey-cli-ia/09-package-client-quarantine.md)
 - [Baseline·수정 지도·버전 후보·검증·재검토](./planning/20-package-client-quarantine-plan.md)
 - P1 다음/P2 이전의 [Go1.27.3 전환 순서·착수 감사](./planning/evidence/package-client-quarantine/go1273-migration-baseline-20261022.md)
+- [P2 pnpm baseline·공급·runtime·graph·layout 수정 지도](./planning/evidence/package-client-quarantine/p2-pnpm-baseline-20261024.md)
 - 위 Artifact/CLI/Staging route와 아래 runtime maintenance 문서
 
 ### Runtime, 배포 또는 trusted tooling

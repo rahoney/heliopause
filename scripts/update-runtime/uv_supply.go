@@ -31,7 +31,7 @@ func freezeUVSupply(version, proof, layers, state string) (metadata, error) {
 		return metadata{}, errors.New("changed UV requires absolute --uv-proof and --uv-layers")
 	}
 	u := &uvSupplyMetadata{}
-	body, err := readUVSupplyFile(proof, "identity.json", 4096)
+	body, err := readFrozenSupplyFile(proof, "identity.json", 4096)
 	if err != nil {
 		return metadata{}, err
 	}
@@ -47,7 +47,7 @@ func freezeUVSupply(version, proof, layers, state string) (metadata, error) {
 	}{
 		{"bundle.json", 1 << 20, &u.Bundle}, {"index.json", 1 << 20, &u.Index}, {"manifest.json", 64 << 10, &u.Manifest}, {"config.json", 64 << 10, &u.Config},
 	} {
-		*file.target, err = readUVSupplyFile(proof, file.name, file.limit)
+		*file.target, err = readFrozenSupplyFile(proof, file.name, file.limit)
 		if err != nil {
 			return metadata{}, err
 		}
@@ -103,7 +103,7 @@ func readUVSupplyLayers(directory string, receipt releaseprovenance.UVImageRecei
 	var inputs []releaseprovenance.UVToolLayer
 	var bodies [][]byte
 	for _, layer := range receipt.Layers() {
-		body, err := readUVSupplyFile(directory, layer.SHA256+".tar.gz", layer.Size)
+		body, err := readFrozenSupplyFile(directory, layer.SHA256+".tar.gz", layer.Size)
 		if err != nil {
 			return nil, nil, err
 		}

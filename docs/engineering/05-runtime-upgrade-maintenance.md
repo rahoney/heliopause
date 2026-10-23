@@ -537,3 +537,20 @@ owner-only로 고정한다. Render/apply는 같은 파일의 owner/mode·경로�
 native identity를 다시 확인한다. 누락/변조/symlink/권한 변경은 거부하며 source를 재작성하거나
 live tag로 대체하지 않는다. 같은 버전은 supply flag를 거부하고 기존 pin/review를 유지한다.
 Canonical configuration 검증과 실제 UV sandbox/observer/CLI qualification은 별도다.
+
+### pnpm release 공급의 offline 검증
+
+현재 pnpm 유지보수 consumer는 다음 명령으로 **획득한 Linux amd64 archive**의 SHA-256과
+공식 build provenance를 함께 확인한다. 입력 디렉터리에는 identity.json(version, source_commit,
+workflow_run, archive_sha256), bundle.json 및 pnpm-linux-x64.tar.gz가 필요하다.
+
+```sh
+go run ./scripts/update-runtime verify-pnpm-release --input /absolute/frozen-pnpm-proof
+```
+
+고정된 pnpm repository/workflow/tag·Fulcio identity·SLSA source/run/subject와 기존 offline
+Sigstore root를 검증한다. 실제 upstream의 self-hosted build 조건은 pnpm 전용 정책에만
+적용하며 HAA/UV publisher 정책을 변경하지 않는다. 명령은 네트워크·archive 추출·Host 실행·
+runtime pin 변경·설치를 수행하지 않는다. 성공은 공급 bytes의 출처 확인이며 보안 검사·실제
+runtime 지원 승인이 아니다. Runtime/lock/layout·설치/업데이트의 남은 acceptance와 수정 순서는
+[P2 착수 지도](../planning/evidence/package-client-quarantine/p2-pnpm-baseline-20261024.md)를 따른다.

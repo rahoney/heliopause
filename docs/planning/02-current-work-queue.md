@@ -23,6 +23,15 @@ Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
 
+### 2026-10-24 P2 착수 감사·공급 검증 순서
++
++[P2 baseline·수정 지도·두 번째 검토](./evidence/package-client-quarantine/p2-pnpm-baseline-20261024.md)는
++기존 npm 검역·guard/transaction·typed descriptor·Sigstore owner를 재사용한다. 공식12.15.0의
++Rust native·lock/peer graph·tar integrity/revisions·설정 및 실제 upstream self-hosted signer를
++대조했다. 현재 P2a는 offline 공급 verifier/유지보수 consumer만 구현하며 runtime pin·CLI 지원은
++아직 추가하지 않는다. 전체 P2는 IMPLEMENTED=NO/WIRED=NO/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO,
++MISSING은 착수 지도의 supply/runtime/graph/layout/actual transaction·원격 qualification이다.
++
 ### 2026-10-24 G127 완료·P2 인계
 
 [G127 누적 결과](./evidence/package-client-quarantine/go1273-acceptance-20261024.json)는
