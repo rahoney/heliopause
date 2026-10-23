@@ -21,9 +21,9 @@ P1의 공통 검역·transaction 경계를 현재 검증된 compiler에서 닫�
 변화를 각각 비교할 수 있게 하고, 다음 client들은 새 검증 기준에서 시작한다.
 새 reachable 취약점이나 지원 종료가 이 대기 순서의 근거를 무효화하면 우선순위를 재평가한다.
 
-M13-004 하나만 IN_PROGRESS다. G127은 NOT_STARTED이며 이 문서는 compiler/image/lock/
-workflow 변경이나 SDK 다운로드·Host activation을 시작하지 않는다. 목표는1.27.3이며 실제
-착수 때 공식 release/advisory/지원과 공급 metadata를 재확인한다. 새 버전을 silent latest로
+M13-004 하나만 IN_PROGRESS다. 2026-10-23 P1 acceptance 뒤 G127 착수 감사를 시작했다.
+이 단계는 compiler/image/lock/workflow 변경이나 SDK 다운로드·Host activation을 시작하지
+않는다. 목표는1.27.3이며 아래 착수 감사의 공식 release/advisory/지원·공급 metadata를 따른다. 새 버전을 silent latest로
 채택하거나 예전 raw·fixture의 버전 문자열을 일괄 치환하지 않는다.
 
 Read: [기존 유지보수 설계](../../../engineering/05-runtime-upgrade-maintenance.md),
@@ -36,7 +36,7 @@ Read: [기존 유지보수 설계](../../../engineering/05-runtime-upgrade-maint
 | 책임 / 기존 위치 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
 | --- | --- | --- | --- | --- | --- |
 | 기존 update-runtime plan/apply/verify·capture·candidate 보호 | YES | YES | YES(existing maintenance scope) | YES(existing) | 재사용;1.27.3 후보의 actual 실행은 별도 |
-| 현재 Go1.26.10 source와 일반 Required CI | YES | YES | YES(CI377 scope) | YES(C3b scope) | 같은 source의 세 CUDA 전체 완료로 확대하지 않음; 기존 별도 한계는 보존 |
+| 현재 Go1.26.10 source와 공통 네 profile | YES | YES | YES(P1 candidate scope) | YES(P1) | ea287b2와 같은 전체 tree의 CI391/392/393/394 각10SUCCESS; Host 전환·과거 실패 원인은 별도 |
 | Go1.27.3 coordinated source/compiler/runtime/tool/bundle 전환 | NO | NO | NO | NO | 착수 metadata/SDK·frozen plan·compatibility·actual 전체 member 재현 |
 | Go1.27.3 실제 기존 ecosystem/CPU·세 CUDA/플랫폼/업데이트 경계 | NO | NO | NO | NO | 새 후보 canonical/actual runtime/remote Required와 tuple별 증거 |
 
@@ -97,3 +97,77 @@ Rollback/recovery가 아직 참조하는 실행 파일은 먼저 없애지 않�
 공유 사용자 cache/다른 프로젝트·불명확한 경로·global prune는 정리 범위에 포함하지 않는다.
 정리 후 남은 active SDK/tool/runtime identity, old 경로 부재와 설치·서비스 정상 readback을
 다시 확인하고 작은 증거만 남긴다. 현재 P1 작업 중인 active1.26.10 입력은 먼저 삭제하지 않는다.
+
+
+## 2026-10-23 실제 착수 감사·수정 지도·두 번째 검토
+
+시작 HEAD는 P1 문서 종료7ce362b이며 실행 코드의 qualification은 ea287b2/tree9ece0a2다.
+[P1 누적 결과](./p1-uv-acceptance-20261023.json)의 네 상태는 모두 YES/MISSING=[]다.
+현재 source Go/guest/tools/실제 사용 중인 qualification SDK는1.26.10이다. 새1.27.3 코드를
+아직 적용하지 않았고 Host 기본 SDK/CLI·서비스는 이 감사에서 변경하지 않는다.
+
+공식 [release history](https://go.dev/doc/devel/release)의1.27.3·1.26.10과
+[GO-2026-6809](https://pkg.go.dev/vuln/GO-2026-6809)의 fixed 범위를 재확인했다.
+[Go1.27 notes](https://go.dev/doc/go1.27)의 macOS13 최소, timer/GODEBUG·JSON 구현·gofmt/vet·
+compiler symbol 변화는 호환성 검증 입력이다. 신규 API·실험 옵션을 도입하거나 오류 조건을
+완화하지 않는다. 기존 macOS 계약에13 미만의 명시 support promise는 찾지 못했고 native CI의
+현재 OS 성공을 모든13+ minor 실행의 증거로 확대하지 않는다.
+
+공식 `https://go.dev/dl/?mode=json&include=all`의2026-10-23 08:49UTC 응답 SHA256은
+6b83804b8dd2d6052bb93cc03e4aba2ddee834f82c15f7bf8faacf5f91825950이다. 정확한 SDK1.27.3의
+Linux amd64 archive는70,588,678B/SHA256
+65efbc80fdc1fa2cd2631cad5b481777a68e8725f34e89f50fc6ac714e379b40다.
+Darwin 두 archive와 원본 metadata 신원은 local raw `go1273-official-sdk-discovery-20261023.json`이
+보존한다. Metadata 발견이며 SDK 실행·image adoption·실제 호환성 성공이 아니다.
+
+### 독립 gap 판정
+
+| 책임 / 실제 owner | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| 기존 plan/apply/verify·공식 SDK/bootstrap·두 단계 gVisor capture·source 보호 | YES | YES | YES(existing scope) | YES(existing) | 재사용. 새 compiler의 실제 결과는 별도 |
+| README Build와 실제 Go owner의 자동 일치 | NO | NO | NO | NO | renderChanges/checkGoVersionConsistency에 명시 README 소비자 추가·old/current/future 거부 회귀 |
+| Go1.27.3 SDK/OCI·pinned tools·gVisor/observer source compatibility | NO | NO | NO | NO | 실제 frozen 두 plan·target SDK/bootstrap·전체 bundle/observer capture/재현 |
+| 새 tuple의 전체 소비자·플랫폼·CPU/CUDA·activation/retirement | NO | NO | NO | NO | 새 source별 실제 qualification·설치/복구·old owned 참조0 확인 |
+
+README는 P1 종료에서 실제1.26.10 기준으로 수동 교정했다. 그러나 기존
+`scripts/update-runtime/patch.go:renderChanges`의 Go branch는 go.mod/tools/workflows와 생성값만
+갱신하고 README를 읽지 않는다. `scripts/check/tools.go:checkGoVersionConsistency`도
+module/guest/tool만 검사한다. 이는 문서 소비자의 누락이며 기존 runtime binary가 혼용됐거나
+Go1.27이 호환되지 않는다는 증거가 아니다. 기존 유지보수·검사기를 대체하지 않는다.
+
+### 첫 source 단위 — 누락된 README 소비자만 연결
+
+1. `scripts/update-runtime/patch.go`의 Go 렌더링에 README Build의 선언된 문장 두 Go 값을
+   추가한다. 버전은 기존 `p.Current`/`p.Version`에서 파생하며 새 version owner/lock/flag는
+   만들지 않는다. 유일한 Build section/현재 문장의 알려진 형식만 허용하고 missing/duplicate/
+   mixed baseline을 거부한다. 과거 문구·다른 section·기술명이 같다는 이유로 전역 치환하지 않는다.
+2. `scripts/check/tools.go`의 기존 consistency 검사에서 동일 README Build의 minimum/toolchain이
+   module·guest·tools와 맞는지 확인한다. 스캐너 권한·Policy·runtime input은 바꾸지 않는다.
+3. `scripts/update-runtime/update_test.go`의 기존 repository fixture에 실제 README를 포함하고
+   Go upgrade·same-version·stale/unknown input 테스트를 재사용한다. Renderer가 두 값만 갱신하고
+   다른 section의 historical 버전을 유지하며 malformed/duplicate/mixed field를 거부함을 확인한다.
+   `scripts/check/tools_test.go`의 기존 mixed-SDK fixture도 README를 명시하고 stale minimum/
+   stale toolchain/누락/중복·역사 문구 보존을 확인한다. 먼저 같은 negative test가 기존 checker에서
+   실패함을 보존한 뒤 교정한다. Before/after 입력·최종 formatted source를 구분한다.
+4. 현1.26.10의 canonical format/Quick/security/docs/workflow와 두 tool package 회귀/Race를 실행해
+   기존 정상 소비자를 보존한다. 이 단계는 Go target pin/runtime 동작을 바꾸지 않으므로 네
+   product profile의 원격 CI를 다시 실행하지 않고 의미 있는 중간 commit만 보존한다.
+   구현된 계약은 engineering05의 Go 소비자 목록에도 같은 코드 변경에서 반영한다.
+
+### 다음 source 단위 — 기존 coordinator로 정확한1.27.3 전환
+
+README 연결을 검증·commit한 깨끗한 baseline에서 현 SDK로 coordinator를 먼저 빌드한다.
+기존 `plan --component go --version 1.27.3 --review ...` → 첫 candidate apply/verify의 공식 SDK
+준비를 사용한다. 변경된 SDK를 ambient PATH나 자동 toolchain download로 대신하지 않는다.
+첫 candidate의 exact source/SDK/HAA patch로 `build-gvisor-runtime-bundle.sh --capture`와 observer를
+빌드한다. 그 실측 capture로 같은 baseline의 새 state/두 번째 frozen plan을 만든다. 첫 계획을
+사후 수정하지 않고, final candidate의 strict build/재현·canonical verify와 별도 vulnerability/fuzz/
+관련 Race를 검증한다. Current pinned tools는 먼저 실제 target SDK에서 확인하며 호환성 결함이
+확인된 도구만 공식 근거·별도 수정 지도로 갱신한다. Source generation과 native tuple·CPU/세 CUDA/
+플랫폼·설치/복구·retirement를 분리하고 최종 후보별 원격 push는 기능 경계로 묶는다.
+
+두 번째 검토에서 기존 구현·입력 신뢰·source cleanliness·전역 치환 금지·새 SDK bootstrap 순환,
+linked-worktree VCS projection·quality cache isolation과 처음 발견한 README gap을 대조했다.
+UPG 기존 capture/verify는 이미 있어 재작성할 이유가 없다. 새 Go compatibility는 UNKNOWN이며
+old hash 재사용·경고 suppression·unknown input의 성공 처리·과거 지연 원인 확정은 금지한다.
+현재 target pin/source 구현은 아직 시작하지 않았다. 이 감사는 새 승인 관문을 만들지 않는다.
