@@ -3,12 +3,12 @@
 package runtimeidentity
 
 const (
-	RuntimeLockSHA256            = "b96239f60c905b52d64b65aa308f71f607b9d12001e84398247329041b6af1fb"
+	RuntimeLockSHA256            = "e14d633eacfca0e55ba9b4089a7306547bbda7dd6f5c44302da393080347e929"
 	GVisorRelease                = "release-20260907.0"
 	GVisorCommit                 = "7c6199801fd233d6d55309af4645d4746a077de7"
 	GVisorSourceRepository       = "https://github.com/google/gvisor.git"
 	GVisorPatchPath              = "tools/gvisor/release-20260907.0.patch"
-	GVisorPatchSHA256            = "4e932cede0d3d1c8596346b06191c2aaed2f8974289d690ade1594948b7674f3"
+	GVisorPatchSHA256            = "588adad48ded6088468901ca6bfd09d24446884ecc0765abdb2be2ed2a7fb331"
 	GVisorBazelModuleLockSHA256  = "8402c7beb4baf2c666f4b78e400ea3f15514b56117598c2cb5411d6a35208d34"
 	GVisorBuilderImageRepository = "us-central1-docker.pkg.dev/gvisor-presubmit/gvisor-presubmit-images/default_x86_64"
 	GVisorBuilderImageTag        = "c48008cead6d6826"

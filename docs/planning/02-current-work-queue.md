@@ -16,8 +16,8 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — native same-runtime self-quarantine update IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; actual signed rc6 normal/cancellations/fresh replay passed; channel scope remains
 Last completed substep: P1 client foundation + uv pip — COMPLETE / QUALIFIED / ACCEPTANCE_CLOSED; CI391/392/393/394 each ten SUCCESS
-Next action: M13-004/G127 IN_PROGRESS — normalized target build/vet PASS; 2026.2 actual target still FAIL; target canonical Quick PASS; security gosec2.28 decoder FAIL; govulncheck1.7 canonical PASS; exact gosec2.30 target scan/current canonical PASS; NEW cached frozen configuration then actual gVisor capture
-Current substep: M13-004/G127 — IN_PROGRESS (gosec compatibility after actual target Quick PASS); isolated target SDK1.27.3 authenticated, Root pin1.26.10; Host not activated; must finish before P2
+Next action: M13-004/G127 IN_PROGRESS — normalized target build/vet PASS; 2026.2 actual target still FAIL; target canonical Quick PASS; security gosec2.28 decoder FAIL; govulncheck1.7 canonical PASS; actual Go1.27.3 configuration7 PASS; nogo minimal3-pin explicit test/private release/current canonical PASS; combined patch prepared; NEW frozen baseline next
+Current substep: M13-004/G127 — IN_PROGRESS (gVisor nogo compatibility after full configuration PASS); isolated target SDK1.27.3 authenticated, Root pin1.26.10; Host not activated; must finish before P2
 After G127: P2 pnpm, then P3..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS

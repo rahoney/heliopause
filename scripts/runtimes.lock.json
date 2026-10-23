@@ -6,7 +6,7 @@
     "source_repository": "https://github.com/google/gvisor.git",
     "patch": {
       "path": "tools/gvisor/release-20260907.0.patch",
-      "sha256": "4e932cede0d3d1c8596346b06191c2aaed2f8974289d690ade1594948b7674f3"
+      "sha256": "588adad48ded6088468901ca6bfd09d24446884ecc0765abdb2be2ed2a7fb331"
     },
     "build": {
       "bazel_module_lock_sha256": "8402c7beb4baf2c666f4b78e400ea3f15514b56117598c2cb5411d6a35208d34",

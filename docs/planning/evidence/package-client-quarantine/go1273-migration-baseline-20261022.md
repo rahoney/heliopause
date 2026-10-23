@@ -348,3 +348,74 @@ payload5,015,905,153B도 frozen source/참조0/조회 오류0 확인 후 retire�
 [gosec 로컬 결과](./go1273-gosec-local-20261023.json)는 actualv2.30 target scan과 current
 SDK buildinfo·canonical Quick46.480s/security4.295s/docs PASS를 연결한다. 기존 scanner/
 규칙/제품 source는 유지했고 다음 NEW frozen plan으로 전체 target configuration을 확인한다.
+
+### Target canonical7 PASS와 첫 gVisor nogo decoder 실패
+
+a82fb6c의 planf91963a9/verification-3384193493은 실제1.27.3 SDK로 bootstrap·Quick·security·
+workflow·release-gate·docs·freshness7개 모두 PASS419.983s다. Raw go1273-configuration-pass가
+full plan/SDK inventory/각 원본을 소유한다. 이 결과는 actual gVisor/runtime qualification이 아니다.
+동일 candidate의 canonical bundle capture382.193s는 Go stdlib/많은 package compile 뒤
+`//pkg/gohacks:gohacks`의 nogo importer가 internal/abi export data5를 maximum2로 읽어 FAIL다.
+원본 build/source preparation/MODULE·go.mod·전체 source diff는 raw
+go1273-gvisor-nogo-first-failure-20261023.json에 보존했다. Old 정상1.26.10 first/repro 로그에도
+`GOVERSION <source file src/go.mod>` 경고가 있으므로 이것을 새 첫 원인으로 쓰지 않는다.
+
+책임 owner는 upstream gVisor의 `tools/nogo/check/check.go:gcexportdata.Read`와 실제 Bazel
+`MODULE.bazel`의 x/tools 선언 minimum0.37.0과 upstream go.mod0.43.0에서 구성하는 resolved analyzer graph다. 선언 minimum을 실제 선택 버전으로 단정하지 않는다. 최초 binary의 resolved module version은 별도 수집되지 않았고 decoder maximum2 실패가 실제 근거다.
+HAA compiler owner/생성기·SDK 준비·현재 source pin/분석 규칙은 재작성하지 않는다. 기존
+정상1.26.10의 두 independent bundle·P1 네 profile은 보존하고 새 성공으로 전용하지 않는다.
+
+수정 전 좁은 실험: 보존한 첫 실패 source controls/diff를 기준으로 task build workspace의
+MODULE만 x/tools0.51.0과 그 명시 minimum x/mod0.41.0/x/sync0.23.0으로 조정한다. 이들은
+이미 exact source/checksum 검증과 actual1.27.3 scanner에서 사용한 module이며 공식 module
+요구를 대조한다. 원본 files·probe diff·module h1·선택 graph를 기록한다. 같은 pinned builder/
+SDK·원래 nogo가 실행되는 `//pkg/gohacks:gohacks` target으로 첫 실패를 먼저 검증한다.
+원래 HAA candidate/plan은 수정하지 않으며 cache 재사용 probe를 pristine full build로 쓰지 않는다.
+
+성공하면 기존 `tools/gvisor/release-20260907.0.patch`에 MODULE의 검증된 좁은 delta를 합쳐
+기존 runtime lock의 해당 patch hash와 generator만 갱신한다. 기존 SDK/upstream patch 보호·
+nogo/보안/analyzer 규칙은 유지한다. 새 analyzer closure가 실제 runtime 공용 module 선택도
+바꾸는지는 resolved graph/lock으로 확인하고 영향 범위를 그 결과로 기록한다. Current canonical
+check/patch preparation negatives와 exact source 복원·target focused/full build를 검증한 뒤 NEW
+baseline/two frozen plan을 진행한다. Old hash를 새 build에 붙이거나 build workroot 실험을
+완료된 runtime으로 승격하지 않는다. Honnef/IR 등 후속 실제 호환성 오류가 나오면 그 원본을
+보존하고 필요한 exact 지원 pin/API 수정만 별도 검토한다. 전체 gVisor release 교체는 하지 않는다.
+
+두 번째 검토: 기존 patch reconstruction·module-lock observed capture·두 계획·strict verifier가
+이 경로를 이미 지원한다. 새 configuration/별도 updater/컴파일러 literal 분산이 필요하지 않다.
+남은 acceptance는 실제 nogo 경계·최종 six-member 재현/observer·native/CPUthreeCUDA/platform·
+기존 설치/복구/retirement이며 P2는 계속 NOT_STARTED다.
+
+최초 scoped build7.943s는 일반 gohacks library의 cache hit일 뿐 nogo aspect를 실행하지
+않았다. 원본 해석과 log를 보존하고 probe1은 INSUFFICIENT로 교정했다. 기존
+`tools/defs.bzl:go_library`가 별도 `<name>_nogo` test를 생성함을 확인했으며 실제
+`//pkg/gohacks:gohacks_nogo`를 실행해 분석 경계를 검사한다. Library cache hit/exit0을
+export decoder 해결 근거로 사용하지 않는다. Root runtime patch는 아직 변경하지 않았다.
+
+Explicit nogo probe2는 실제 analyzer를 재빌드·386actions 경계/표준 library와 gohacks
+분석을 실행하고1/1 test PASS99.958s다. 실제 external x/tools의 go.mod도0.51.0 source를
+확인했다. Honnef0.5.1·보안 규칙·SDK patch를 바꾸지 않고 좁은 importer 경계만 검증했다.
+첫 records에서 MODULE minimum0.37을 actual selected처럼 쓴 해석은 원본 보존 후 교정했다.
+이후 전체 private release target을 같은 probe source/cache에서 실행해 후속 compile/link
+compatibility를 먼저 확인한다. 여전히 clean/frozen capture/전체 runtime qualification이 아니다.
+Resolved graph의 다른 common module 영향은 before/after diagnostics와 실제 repo metadata로
+대조하고, Root HAA patch 변경·새 frozen plan은 그 결과 뒤 수행한다.
+
+전체 private release probe200.290s는 PASS이며 실제 six outputs와 다섯 Go member의
+compiler1.27.3을 확인했다. Raw go1273-gvisor-nogo-private-release/private-members가
+cache 재사용·비정식 capture 한계를 명시한다. 검증된 MODULE 세 pin/hash delta만 기존
+HAA patch에 합치고 runtime lock의 patch SHA를 갱신한다. Generator/현재 SDK canonical
+format·Quick/security/docs와 기존 patch preparation·maintenance 회귀를 실행한다. 새
+Root patch 신원은 go1273-gvisor-nogo-patch-application에 기록한다. Standard warning과
+다른 resolved module diagnostics는 before/after 원본을 함께 보존하고 full clean runtime
+qualification을 미리 주장하지 않는다. 새 SDK first/final capture는 새 baseline에서 진행한다.
+
+[최소 nogo 수정 로컬 결과](./go1273-gvisor-nogo-local-20261023.json)는 기존 preparer의
+exact upstream+새 HAA patch 복원/current SDK 선택·canonical5/Quick140.137s와 보존된
+private Go1.27.3 실제 six outputs/trace4·nogo1/1을 연결한다. Source commit/SDK patch/
+Honnef와 analyzer 규칙은 유지했다. Graph 경고가 실제 출력된 첫 capture와 probe1을
+대조한 차이는 x/tools/mod/sync 세 개이며, cached full build의 경고 부재를 module 제거로
+해석하지 않는다. 전체 resolved graph 불변이나 fresh capture 완료를 주장하지 않는다.
+완료 private source/build/cache는 원본과 작은 검증된 upstream Git mirror만 남기고 참조0/
+조회 오류0/Docker bind mount0을 확인한 뒤 retire했다. 새 baseline의 first/final frozen
+plan·실제 전체 qualification과 기존 활성 SDK/CLI의 controlled 전환은 계속 남는다.
