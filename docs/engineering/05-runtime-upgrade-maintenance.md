@@ -554,3 +554,8 @@ Sigstore root를 검증한다. 실제 upstream의 self-hosted build 조건은 pn
 runtime pin 변경·설치를 수행하지 않는다. 성공은 공급 bytes의 출처 확인이며 보안 검사·실제
 runtime 지원 승인이 아니다. Runtime/lock/layout·설치/업데이트의 남은 acceptance와 수정 순서는
 [P2 착수 지도](../planning/evidence/package-client-quarantine/p2-pnpm-baseline-20261024.md)를 따른다.
+
+현재 pnpm 공급 명령의 v2 receipt는 인증한 전체 archive의 bounded tar 구조와 pnpm regular
+ELF의 hash/size·declared shared libraries도 연결한다. Bundled dist 자료와 hardlink는 검증 후
+버리며 Host에 추출하지 않는다. Shared-library 목록과 runc 형식 관측은 실제 gVisor admission·
+제품 검역/설치 qualification이 아니다. [P2b1 결과](../planning/evidence/package-client-quarantine/p2b1-pnpm-native-local-20261024.json)가 정확한 입력·검증·정리 범위를 소유한다.

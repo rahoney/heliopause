@@ -16,12 +16,20 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — native same-runtime self-quarantine update IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; actual signed rc6 normal/cancellations/fresh replay passed; channel scope remains
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2 — pnpm baseline audit, official exact-version/engine/schema/layout review, edit map and second review before code
-Current substep: M13-004/P2 — IN_PROGRESS (baseline/design only); support not advertised; implementation/qualification gaps remain
+Next action: M13-004/P2b2 — single pnpm runtime pin/maintenance/distribution and exact admission edit map; P2b1 archive/native and19 isolated format cases locally verified; batch remote qualification later
+Current substep: M13-004/P2 — IN_PROGRESS; P2a offline supply LOCAL VERIFIED, P2b native supply/runtime gaps active; product support not yet advertised
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-24 P2b1 native 공급·형식 로컬 검증
+
+[실제 결과](./evidence/package-client-quarantine/p2b1-pnpm-native-local-20261024.json)는 signed archive와
+regular native file identity, Quick117.599s/security/docs·전체 관련 Race19.732s PASS다. 고정 Node
+이미지의 network-none/read-only/non-root 환경19개 형식 관측과 정확한 Host 보존·완료 container/
+파생 image 정리를 확인했다. Product gVisor/Policy/transaction 지원을 의미하지 않는다. 다음은
+단일 pnpm runtime owner·유지보수·배포/공급·exact admission의 수정 지도와 두 번째 검토다.
 
 ### 2026-10-24 P2 착수 감사·공급 검증 순서
 +

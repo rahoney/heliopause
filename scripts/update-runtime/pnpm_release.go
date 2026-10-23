@@ -3,8 +3,6 @@ package main
 import (
 	"bytes"
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -48,9 +46,14 @@ func verifyPNPMRelease(args []string, out io.Writer) error {
 	if err != nil {
 		return err
 	}
-	sum := sha256.Sum256(archive)
-	if hex.EncodeToString(sum[:]) != identity.ArchiveSHA256 {
-		return errors.New("pnpm acquired archive differs from signed subject")
+	tool, err := receipt.VerifyToolArchive(context.Background(), archive)
+	if err != nil {
+		return err
+	}
+	type nativeRecord struct {
+		SHA256    string   `json:"sha256"`
+		Size      int64    `json:"size"`
+		Libraries []string `json:"libraries"`
 	}
 	return json.NewEncoder(out).Encode(struct {
 		Schema     string                                `json:"schema"`
@@ -58,5 +61,6 @@ func verifyPNPMRelease(args []string, out io.Writer) error {
 		Bundle     string                                `json:"bundle_sha256"`
 		Bytes      int                                   `json:"archive_bytes"`
 		Invocation string                                `json:"invocation"`
-	}{"helox.pnpm-release-supply/v1", receipt.Identity(), receipt.BundleSHA256(), len(archive), receipt.Invocation()})
+		Tool       nativeRecord                          `json:"tool"`
+	}{"helox.pnpm-release-supply/v2", receipt.Identity(), receipt.BundleSHA256(), len(archive), receipt.Invocation(), nativeRecord{tool.SHA256(), tool.Size(), tool.Libraries()}})
 }
