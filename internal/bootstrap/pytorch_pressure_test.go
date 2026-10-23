@@ -9,9 +9,69 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 	"time"
+
+	"github.com/rahoney/heliopause/internal/core/ports"
 )
+
+// Reuse display events for timing only. No payload, locator or download chunk
+// is logged; saturation drops diagnostics without changing the operation.
+func newPyTorchStageDiagnostic(emit func(string, time.Duration)) func(ports.Progress) {
+	started := time.Now()
+	var mu sync.Mutex
+	last, count := "", 0
+	return func(event ports.Progress) {
+		switch event.Stage {
+		case "qualification-prepare", "qualification-returned", "resolve", "download", "verify", "inspect", "policy", "manifest", "stage", "install", "operation-returned":
+		default:
+			return
+		}
+		mu.Lock()
+		defer mu.Unlock()
+		if event.Stage == last || count >= 128 {
+			return
+		}
+		last = event.Stage
+		count++
+		emit(event.Stage, time.Since(started))
+	}
+}
+
+func TestPyTorchStageDiagnosticBoundaries(t *testing.T) {
+	count := 0
+	ctx := ports.WithProgress(context.Background(), newPyTorchStageDiagnostic(func(stage string, elapsed time.Duration) {
+		count++
+		if stage != "download" || elapsed < 0 {
+			t.Errorf("unexpected diagnostic %q/%v", stage, elapsed)
+		}
+	}))
+	ports.ReportProgress(ctx, ports.Progress{Stage: "untrusted-locator"})
+	for i := range 1024 {
+		ports.ReportProgress(ctx, ports.Progress{Stage: "download", Current: int64(i), Unit: "untrusted-unit"})
+	}
+	if count != 1 {
+		t.Fatalf("repeated download diagnostics = %d, want 1", count)
+	}
+	var events []string
+	ctx = ports.WithProgress(context.Background(), newPyTorchStageDiagnostic(func(stage string, _ time.Duration) {
+		events = append(events, stage)
+	}))
+	var workers sync.WaitGroup
+	for range 8 {
+		workers.Go(func() {
+			for range 256 {
+				ports.ReportProgress(ctx, ports.Progress{Stage: "resolve"})
+				ports.ReportProgress(ctx, ports.Progress{Stage: "inspect"})
+			}
+		})
+	}
+	workers.Wait()
+	if len(events) != 128 {
+		t.Fatalf("bounded diagnostics = %d, want 128", len(events))
+	}
+}
 
 type pytorchPressureRecord struct {
 	AtUnixNS    int64             `json:"at_unix_ns"`

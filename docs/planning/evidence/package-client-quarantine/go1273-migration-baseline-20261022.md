@@ -48,6 +48,47 @@ production 경로는 수정하지 않고 unproven 가설의 GC 강제·메모리
 않는다. 결과를 본 뒤 좁은 필요 수정 또는 실행 용량 disposition을 결정한다. 유료 runner,
 self-hosted 등록·외부 게시·상시 service 변경을 이 진단에서 추가하지 않는다.
 
+### 2026-10-24 로컬 진단 종료와 다음 좁은 변경 검토
+
+기존 temporary install의 local-cu126-gctrace는 test40m timeout으로 실패했다. 첫 restore는
+살아 있는 installed consumer 때문에 거부됐고, 이후 독립 process/socket/FD 조회와 lock·
+exact inode 확인 뒤 task가 남긴 네 endpoint만 정리했다. 변경하지 않은 restore guard가
+통과했으며 원본12개의 bytes/SHA/UID/GID/mode와 최종 audit를 확인했다. Global SDK1.26.9와
+기본 도구는 유지한다. 실패 실행이나 첫 restore 실패를 성공으로 덮지 않는다.
+
+Timeout stack은 promotion이지만 journal birth는 종료 약115초 전이다. 전체40분이 그
+거래에서 소모됐다는 해석은 반증됐다. 실제16,122 destination layout의 inert-body commit은
+157.921s, retained1GB payload의 read-only snapshot은7.474s다. 둘 다 full qualification이
+아니다. 보존 파일 시각은 완료된 write의 시각이며 정확한 단계별 시작/종료는 NOT_CAPTURED다.
+원본은 raw go1273-local-cu126-timeout-analysis, phase-time-correction, phase-audit와
+confirmed-drain-recovery/final-original-readback 영수증을 따른다.
+
+Baseline: production pipeline·append-only journal·current ancestry guard와 progress port는
+IMPLEMENTED=YES/WIRED=YES다. 다시 구현하지 않는다. 현재 test의 단계 시각 진단은
+IMPLEMENTED=NO/WIRED=NO/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO이며 MISSING은 아래
+observer 연결과 로컬 검증·실제 다음 실행의 시각 증거다. G127 전체 완료 판정은 계속 NO다.
+
+수정 위치/방법: 기존 pytorch_pressure_test.go에 mutex로 직렬화한 bounded stage observer를
+두고 pytorch_linux_integration_test.go의 기존 context에 ports.WithProgress로 연결한다.
+Preparation start/end와 bootstrap return을 명시하고 기존 고정 stage의 전환·경과 시각만
+기록한다. Download chunk마다 log하지 않으며 unknown stage·외부 문자열·host path·payload는
+출력하지 않는다. 최대128개의 stage 전환 뒤에는 기록만 중지하고 검사는 계속한다.
+Production source·원장·resource·timeout·poll·coverage·성공 조건·복구 절차는 바꾸지 않는다.
+
+검증/두 번째 검토: non-TTY 기본 progress가 기존 context를 유지함을 presentation.go에서
+확인했다. 실제 port를 통해 unknown/반복/chunk/상한과 concurrent 호출을 검사하고 canonical
+Quick/security/docs 및 관련 Race를 한 번 묶는다. 기존 full profile은 모든 assertion을 유지한다.
+Cache 함수는 invocation마다 새 경로를 만들며 production intake에는 retained-download hit가
+없다. 이전 Evidence/ALLOW를 재사용하거나 새 cache 우회를 추가하지 않는다. 새 진단 후보의
+실제 실행은 원인 확인용이며 과거 CI396 원인 해결이나 G127 acceptance로 선결론하지 않는다.
+
+[진단 연결 로컬 결과](./go1273-phase-diagnostic-local-20261024.json)는 canonical format/
+Quick142.914s/security4.910s/docs0.225s와 실제 port 경로의 unknown/반복/상한·동시 호출
+Race15.848s PASS를 확인했다. 최초 restricted executor의 기존 socket EPERM 실패와
+짧은 owned TMPDIR·허가 환경 교정을 보존했다. 다음은 이 한 후보의 실제 시각 관측이며
+production/한도는 그대로다. 완료 local payload/임시 복제본17,647,185,607 logical bytes는
+참조·조회 오류0 확인 뒤 삭제했고 작은 control97개와 로그·stack·복원 증거만 보존했다.
+
 ## 현재 검증 상태 — 로컬 완료, 원격·활성화 대기
 
 [최종 로컬 결과](./go1273-local-qualification-20261023.json)는 baseline9670228의 기존

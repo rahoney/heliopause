@@ -16,7 +16,7 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — native same-runtime self-quarantine update IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; actual signed rc6 normal/cancellations/fresh replay passed; channel scope remains
 Last completed substep: P1 client foundation + uv pip — COMPLETE / QUALIFIED / ACCEPTANCE_CLOSED; CI391/392/393/394 each ten SUCCESS
-Next action: M13-004/G127 — CI395 ten SUCCESS; cu126 CI396 first positive sample-late FAILURE preserved, existing source/past-green/pressure reviewed; controlled local24GB diagnostic and confirmed-stop original restoration next; no blind rerun or budget change
+Next action: M13-004/G127 — test-only bounded phase timing connected; canonical Quick/security/docs and focused Race PASS; one diagnostic candidate CI next; CI396 late/local40m failures preserved, original12 RESTORED; no product rewrite or budget change
 Current substep: M13-004/G127 — IN_PROGRESS; IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO; Host not activated; P2 waits
 After G127: P2 pnpm, then P3..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
@@ -32,9 +32,17 @@ macOS/observer106이다. 별도 cu126/CI396은 CPU263.98s·다른8jobs PASS지�
 
 [현재 진단 지도·두 번째 검토](./evidence/package-client-quarantine/go1273-migration-baseline-20261022.md)를
 따라 기존 코드7개·normal cu126/CI392·오답노트를 대조했다. 같은 기존24GB WSL에서 허가된
-임시 재검증/복원을 수행하며 source/예산·poll·coverage는 유지한다. New pressure 관측은
+임시 재검증은40m timeout으로 실패했고 confirmed drain 뒤 원본12 복원을 확인했다.
+Journal은 종료 약115초 전에 시작되어 promotion 전체40분 지연 가설은 반증됐다. 정확한
+단계 시각 누락만 기존 progress port의 bounded test observer로 보완한다. 예산·poll·coverage는
+유지한다. New pressure 관측은
 직접 인과 확정이나 SDK regression 단정이 아니다. G127 IN_PROGRESS/QUALIFIED=NO/
 ACCEPTANCE_CLOSED=NO, P2..P7 NOT_STARTED다. 영구 SDK/runtime activation은 미실행이다.
+
+[단계 진단 로컬 검증](./evidence/package-client-quarantine/go1273-phase-diagnostic-local-20261024.json)은
+기존 progress port 연결과 bounded/unknown/동시 호출 Race·canonical Quick/security/docs PASS다.
+첫 socket EPERM은 실행 환경 교정과 함께 보존했다. 완료 local payload와 임시 clone 약17.65GB는
+참조0 확인 뒤 정리했다. 한 후보를 push하고 실제 단계 시각과 결과를 타이머로 확인한다.
 
 ### 2026-10-23 G127 최종 로컬 검증·source 반영
 
