@@ -16,12 +16,23 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — native same-runtime self-quarantine update IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; actual signed rc6 normal/cancellations/fresh replay passed; channel scope remains
 Last completed substep: P1 client foundation + uv pip — COMPLETE / QUALIFIED / ACCEPTANCE_CLOSED; CI391/392/393/394 each ten SUCCESS
-Next action: M13-004/G127 IN_PROGRESS — README consumer LOCAL VERIFIED; clean baseline then existing frozen plan/apply/verify for target1.27.3
-Current substep: M13-004/G127 — IN_PROGRESS (exact target candidate preparation); target compiler/pins not changed yet; must finish before P2
+Next action: M13-004/G127 IN_PROGRESS — first isolated1.27.3 bootstrap PASS; unchanged require grouping LOCAL VERIFIED, then NEW frozen plan/isolated SDK verification
+Current substep: M13-004/G127 — IN_PROGRESS (module-format compatibility); isolated target SDK1.27.3 authenticated, Root pin1.26.10; Host not activated; must finish before P2
 After G127: P2 pnpm, then P3..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-23 G127 첫 configuration 확인 — 모듈 형식만 보완
+
+첫 exact1.27.3 plan/apply와 공식 SDK 준비는 PASS이며 bootstrap도 PASS다. Quick은 Go1.27의
+require 블록 통합 형식에서 module drift를 탐지했다. [수정 지도·대조 결과](./evidence/package-client-quarantine/go1273-migration-baseline-20261022.md)의
+방법으로122개 require version/directness·기타 directive·go.sum 불변과 old/new tidy no-op을
+확인했다. [Current SDK canonical 검증](./evidence/package-client-quarantine/go1273-module-layout-local-20261023.json)의
+Quick48.866s/security/docs도 PASS다. Root floor1.26.10을 유지한 grouping만 반영했고 NEW
+baseline/plan을 만든다. 첫 plan/실패 원본은 보존한다. Host 개발 SDK의 실제 readback은1.26.9였으며 source/qualification
+SDK1.26.10·격리 target1.27.3과 역할을 구분한다. 기존 Host는 아직 전환하지 않았고 gVisor·전체
+target tuple qualification·coherent activation/old owned retirement는 미완료다.
 
 ### 2026-10-23 G127 착수 감사 — 기존 updater 재사용
 

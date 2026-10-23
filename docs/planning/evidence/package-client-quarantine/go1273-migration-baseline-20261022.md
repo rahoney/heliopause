@@ -188,3 +188,42 @@ plan/apply에서 Build의 두 값만 갱신하고 다른 section의 동일한 �
 Same-version no-op·unknown/mixed/duplicate 거부와 기존 모든 component/owner 회귀도 유지했다.
 완료한 probe driver는 source/명령/원본 증거 연결 뒤 삭제했다. Go1.27.3 SDK/pin/Host 전환은
 아직 미실행이며 이 로컬 consumer qualification을 새 compiler 지원으로 확대하지 않는다.
+
+
+### 첫1.27.3 실제 configuration 실패 — module 형식 경계
+
+90392d6의 첫 frozen plan21dc7b1e를 별도 candidate에 적용했다. 공식 archive의 SHA/size와
+전체 SDK inventory·실제 compiler1.27.3을 확인했고 bootstrap은 PASS다. Quick의 format/runtime
+lock/support freshness는 통과했으나 `checkModuleDrift`가 require 블록 차이를 거부했다.
+이는 [Go1.27 공식 tidy 변경](https://go.dev/doc/go1.27)의 duplicate require block 통합과 맞는다.
+새 language/API 실패나 Staticcheck analysis 성공으로 해석하지 않는다. Staticcheck 등 실제
+analysis·gVisor/native/전체 tuple qualification은 아직 남는다.
+
+첫 plan·SDK inventory·bootstrap/Quick 최초 로그는 local raw `go1273-first-*`와
+`go1273-first-module-drift-20261023.json`으로 원본 보존했다. 기존 frozen plan/journal은 고치지
+않고 이 실패 결과를 qualification 성공으로 사용하지 않는다.
+
+추가 수정 위치는 기존 `go.mod` 한 파일의 require 블록 형식이다. 유일한 Go directive는 현재
+Root pin1.26.10을 유지한다. 별도 private snapshot에서 실제 authenticated1.27.3 `go mod tidy`의
+결과를 만들고 exact122개 require의 path/version/directness·기타 directive와 go.sum 불변을
+기계 대조했다. 새 floor1.27.3에서 tidy 재실행이 no-op이며, 동일 정리 결과의 floor를현재
+1.26.10으로 유지했을 때 기존1.26.10의 `tidy -diff`도 PASS다. Raw
+`go1273-module-normalization-proposal-20261023.json`이 신원·입력·검증 범위를 소유한다.
+
+이 검증된 standard-tool 출력의 require grouping만 현재 baseline에 반영한다. 새 dependency
+version이나 Go1.27 전용 formatter/예외 코드를 추가하지 않으며 canonical module drift는 유지한다.
+Current SDK의 Quick/security/docs와 source diff를 확인해 baseline commit으로 보존한 뒤 NEW
+state/frozen plan을 생성한다. 변경된 HEAD를 예전 plan에 붙이거나 receipt를 수동 수정하지 않는다.
+실제 SDK/도구 호환성이나 전체 migration 완료는 그 후의 새 후보 검증으로만 판정한다.
+
+
+모듈 grouping 보완의 [current SDK 검증](./go1273-module-layout-local-20261023.json)은
+Quick48.866s/security/docs PASS다.122개 require/directness·기타 directive·go.sum은 유지했고
+Root Go floor는1.26.10이다. 완료한 private proposal clone과 driver는 결과·신원을 남긴 뒤
+삭제했다. 첫 frozen plan/SDK inventory/실패 원본은 별도 보존하며 다음 계획은 새 state를 쓴다.
+
+Host preflight에서 기본 개발 SDK의 실제 version은1.26.9였다. 이는 이 branch의 current
+qualification SDK1.26.10 및 격리된 target1.27.3과 다르며, source-only adoption과 Host 전환을
+구분해 기록한다. Local raw `go1273-host-sdk-before-20261023.json`이 exact configured/resolved
+경로·readback을 소유한다. 최종 전환은 Host의 실제 새 SDK/quality/runtime readback과 복구를
+확인해야 하며1.26.9/1.26.10의 old owned 경로·cache는 역할/마지막 참조를 확인하고 retire한다.
