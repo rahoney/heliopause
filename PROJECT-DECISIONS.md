@@ -194,15 +194,19 @@ deployment를 수행한다.
 | 14 | Implementation | Defined | 구현 진행 상태는 Current Work Queue가 소유 |
 
 2026-10-21 추가 요청의 [client/runner 확장 설계](./docs/user-journey-cli-ia/09-package-client-quarantine.md)와
-[사전 감사·검증 계획](./docs/planning/20-package-client-quarantine-plan.md)은 기존 검역 엔진을
-재사용한다. [CI377](./docs/planning/evidence/package-client-quarantine/p1c-guarded-cli-ci377-20261022.json)의
-실제 빈 venv UV CLI 설치·원본 불변/반복 거부·Required10SUCCESS로 C3b를 닫았다.
-[CI378](./docs/planning/evidence/package-client-quarantine/p1c-installed-producer-ci378-20261022.json)으로 installed-aware native producer도 검증했다. [CI379](./docs/planning/evidence/package-client-quarantine/p1c-managed-guard-ci379-20261022.json)의 공통 guard 회귀도 통과했다. [CI380](./docs/planning/evidence/package-client-quarantine/p1c-installed-cli-ci380-20261022.json)으로 installed-aware CLI5단계도 검증했다. [CI383](./docs/planning/evidence/package-client-quarantine/p1d-native-uv-ci383-20261023.json)의10SUCCESS로 bounded native UV 인계·재실행과 Linux/macOS/Required도 검증했다. [CI386](./docs/planning/evidence/package-client-quarantine/p1e-uv-native-source-ci386-20261023.json)으로 complete/multi-root/explicit-empty native 선택도 검증했다. [CI387](./docs/planning/evidence/package-client-quarantine/p1f-uv-original-snapshot-ci387-20261023.json)으로 기존 원본 metadata 공통화도 검증했다. 다음은 전체 original proof와 guarded sync 반입·CLI/P1 전체 qualification이다. 저장소·CI의
-Go1.26.10 보안 패치는 적용되어 있으며 broad CUDA qualification의 별도 한계는 유지한다.
-2026-10-22 요청한 [Go1.27.3 전환](./docs/planning/evidence/package-client-quarantine/go1273-migration-baseline-20261022.md)은
-P1 acceptance 다음/P2 이전에 검증한다. 구체 순서·상태는 Queue가 소유하며 현재 compiler/
-runtime·Host 설치는 변경하지 않는다. CLI 강조 대상은 제품 풀네임이고 `helox`는 실행 명령이다.
-현재 단일 active item은 M13-004다.
+[실행 계획](./docs/planning/20-package-client-quarantine-plan.md)은 기존 검역 엔진을 재사용한다.
+UV pip managed 설치·업데이트와 bounded native 인계에 이어 complete sync의 원본 전체 proof·
+held guard·승인 cache·primary 없는 Manifest/SBOM·offline 반입과 CLI를 연결했다.
+[CI391](./docs/planning/evidence/package-client-quarantine/p1f-uv-sync-cli-ci391-20261023.json)은 같은
+전체 tree의 실제 complete/closure·기존 Linux/CPU/macOS와 Required10SUCCESS를 확인했다.
+같은 후보의 cu126/CI392·cu130/CI393·cu132/CI394도 각각 Required10SUCCESS다.
+[누적 qualification](./docs/planning/evidence/package-client-quarantine/p1-uv-acceptance-20261023.json)을
+확인해 P1은 `COMPLETE / QUALIFIED / ACCEPTANCE_CLOSED`다. 저장소·CI는 Go1.26.10 보안 패치 기준이고 README Build의
+과거1.26.9 표기를 현재 기준에 맞췄다. Host SDK나 runtime을 이 문서 변경으로 활성화하지 않는다.
+요청한 [Go1.27.3 전환](./docs/planning/evidence/package-client-quarantine/go1273-migration-baseline-20261022.md)은
+P1 acceptance 다음/P2 이전에 검증한다. UV project는 P4이며 실행기와 다른 client의 지원은
+각 단계의 별도 acceptance를 따른다. CLI 강조 대상은 제품 풀네임이고 `helox`는 실행 명령이다.
+현재 단일 active item은 M13-004이며 구체 순서·상태는 [Queue](./docs/planning/02-current-work-queue.md)가 소유한다.
 
 ## Open Decisions
 

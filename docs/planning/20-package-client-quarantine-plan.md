@@ -2,7 +2,7 @@
 
 2026-10-21, baseline `72a90760bb3c46987642b5d0b3eda450a60310a0`.
 [설계](../user-journey-cli-ia/09-package-client-quarantine.md)가 기능·보안 경계를 소유한다.
-사전 설계 이후 P1의 native UV 선택·managed 설치/업데이트와 bounded native ownership을 CI383까지 실제 검증했다. Complete/multi-root/explicit-empty sync·실제 dependency closure와 whole P1 qualification은 남는다. 실제 범위는 Queue와 각 source 영수증을 따른다.
+P1의 native UV 선택·managed 설치/업데이트와 bounded native ownership에 이어 CI391에서 complete/multi-root/explicit-empty sync와 실제 dependency closure를 검증했다. 같은 후보의 CPU·cu126·cu130·cu132도 각각 Required 포함10SUCCESS이며 [누적 결과](./evidence/package-client-quarantine/p1-uv-acceptance-20261023.json)로 P1 acceptance를 닫았다. 실제 범위는 Queue와 각 source 영수증을 따른다.
 Queue의 M13-004만 IN_PROGRESS다. 한 확장 범위를 작은 검증 가능한 단계로 진행한다.
 
 ## 1. Repository baseline audit
@@ -29,7 +29,7 @@ non-draft/non-prerelease. [원본 관측 요약·URL·응답 digest](./evidence/
 
 | Component | 관측 최신 안정판 | 현재 HAA pin | 판단 |
 | --- | --- | --- | --- |
-| uv / uvx | 0.13.4 | 0.13.4 공급 pin | signed/native 공급·유지보수·actual native startup 로컬 검증; production resolver/CLI 미연결 |
+| uv / uvx | 0.13.4 | 0.13.4 | signed/native 공급·유지보수·production UV pip resolver/CLI actual qualification 완료; project/tool/uvx는 후속 단계 |
 | pnpm / dlx | 12.14.0 | 없음 | 후보, v12 alias/provisioning 의미 확인 필요 |
 | Bun / bunx | 1.4.3 | 없음 | 후보, Node/Bun 실행과 libc/CPU baseline 검증 필요 |
 | pipx | 1.18.4 | 없음 | 후보, exact 버전 backend/metadata 확인 필요 |
@@ -37,7 +37,7 @@ non-draft/non-prerelease. [원본 관측 요약·URL·응답 digest](./evidence/
 
 Python3.14.7/pip26.2.1/cp314·manylinux_2_36_x86_64와 기존 Python/Node/Rust image는
 유지한다. Baseline 이후 Go repository pin은 reachable 보안 patch1.26.10으로 갱신했고
-[독립 qualification](./evidence/package-client-quarantine/go12610-remote-status-20261021.json)은 진행 중이다. Host activation은 별도다. 첫 버전 관측 당시에는 API metadata만 읽었다. 이후 uv의 signed/native 공급·단일 pin·개발 유지보수와 [실제 data transport](./evidence/package-client-quarantine/p1b4-uv-provision-local-20261021.json)를 검증했고, production runtime/admission·CLI는 남는다.
+초기 [Go1.26.10 qualification의 실패·부분 성공](./evidence/package-client-quarantine/go12610-remote-status-20261021.json)은 당시 source 범위로 보존한다. 이후 현 P1 후보는 네 profile과 Required를 모두 통과했다. Host activation은 별도다. 첫 버전 관측은 API metadata였고, 후속 signed/native 공급·단일 pin·개발 유지보수·[data transport](./evidence/package-client-quarantine/p1b4-uv-provision-local-20261021.json)와 production UV pip runtime/admission·CLI actual 검증은 P1 누적 결과를 따른다.
 Registry dist-tag/PyPI release와 exact upstream tag, Node engines/Python Requires-Python,
 Bun libc/CPU 요구를 구현 진입 시 대조한다. 불일치/실패는 UNKNOWN으로 남기고 날짜를
 갱신한 공식 metadata부터 확인한다. 최신판을 지원 버전으로 미리 표시하지 않는다.
@@ -79,7 +79,7 @@ identity를 사용하되 명시 capability/보안 한도까지 사용자 설정�
 | 단계 | 시작 조건 / 수행 | 완료 조건 | 현재 |
 | --- | --- | --- | --- |
 | P0 설계/사전 검토 | 사용자 범위·기존 owner·공식 문서·버전 후보 대조 | 본 문서와 leaf, 재검토·canonical docs/security | COMPLETE — canonical docs/security PASS |
-| P1 client foundation + uv pip | exact uv runtime·좁은 descriptor, 기존 install/update 재사용 | actual uv install/upgrade/sync, 기존 pip/npm 회귀, 실패 불변·정리 | IN_PROGRESS — [P1a baseline](./evidence/package-client-quarantine/p1-uv-baseline-20261021.md) |
+| P1 client foundation + uv pip | exact uv runtime·좁은 descriptor, 기존 install/update 재사용 | actual uv install/upgrade/sync, 기존 pip/npm 회귀, 실패 불변·정리 | COMPLETE — [qualification/acceptance](./evidence/package-client-quarantine/p1-uv-acceptance-20261023.json); P1a baseline은 당시 감사 |
 | P2 pnpm | fixed resolver/lock/layout·공통 descriptor 재사용 | actual add/install/update/peer graph·link 공격·rollback | NOT_STARTED |
 | P3 Bun | fixed Bun resolver/layout/lifecycle | actual install/update·Node vs Bun runtime 요구 분리·회귀 | NOT_STARTED |
 | P4 uv project / persistent tools | uv add/sync/lock-upgrade, uv tool/pipx install·upgrade metadata·exposed scripts | project lock-only vs installed 상태, tool ownership/retired scripts/rollback | NOT_STARTED |
@@ -97,18 +97,18 @@ identity를 사용하되 명시 capability/보안 한도까지 사용자 설정�
 
 ## 5. 검증 matrix와 자원 정리
 
-### 검증 실행 주기 — 기존 예방 규칙의 현재 P1 적용
+### 검증 실행 주기 — 기존 예방 규칙의 P1 적용
 
 기존 `docs/M12_Required_Prevention_Rules.txt` §4·§5의 영향받은 검증만 반복/동일 감사 반복 금지와
 `docs/HAA_AI_작업_운영_참고문서_v0.5_2026-09-30.md` §15의 작은 수정별 full CI 반복 금지를
-현재 P1에 적용한다. 2026-10-23 기록은 새 원칙 도입이 아니라 기존 원칙의 실행 경계 보완이다.
+이번 P1에 적용했다. 2026-10-23 기록은 새 원칙 도입이 아니라 기존 원칙의 실행 경계 보완이다.
 
 작은 구현 단위의 로컬 검증·중간 commit과 원격 push/CI 완료 대기를 분리한다.
 각 단위는 해당 canonical profile과 의미 있는 변경 경계의 회귀를 먼저 통과시키되,
 다음 구현이 이전 단위의 원격 결과에 의존하지 않으면 같은 P1 범위의 로컬 작업을 계속한다.
 이때 상태는 IMPLEMENTED/LOCAL VERIFIED이며 remote qualification/acceptance는 열어 둔다.
 
-남은 P1의 원격 checkpoint는 기본적으로 (1) actual source/target guard와 approved cache·records를
+P1에서 적용한 원격 checkpoint는 기본적으로 (1) actual source/target guard와 approved cache·records를
 연결한 backend 단위, (2) CLI와 실패·복원 사례까지 연결한 end-to-end 완료 후보로 묶는다.
 개별 helper나 문서 변경만으로 전체 원격 CI 대기를 반복하지 않는다. 중간 commit은 보존하고
 push를 묶으며, 최종 candidate에는 canonical Quick/security/docs/workflow와 관련 전체 Race 및

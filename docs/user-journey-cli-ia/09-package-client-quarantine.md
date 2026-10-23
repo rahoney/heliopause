@@ -1,6 +1,6 @@
 # Package client / tool execution quarantine — 설계
 
-상태: **P1 managed UV 설치/업데이트·bounded native 인계는 qualified / complete sync·whole P1 qualification은 진행 예정**. 2026-10-21 사용자 요청으로
+상태: **P1 UV pip 설치/업데이트·complete sync COMPLETE / QUALIFIED / ACCEPTANCE_CLOSED; P2..P7은 미착수**. 2026-10-21 사용자 요청으로
 uv pip·pnpm·Bun과 npx·uvx·bunx·pipx를 하나의 확장 범위로 계획한다.
 [실행 계획·baseline·수정 지도·재검토](../planning/20-package-client-quarantine-plan.md)가
 구현 순서와 검증을 소유한다. 기존 [업데이트 검역](./06-update-quarantine.md)을
@@ -160,8 +160,8 @@ UV resolver의 독립 registry cross-check는 canonical project/version에서 �
 Response info identity와 모든 release file의 identity·URL·SHA256·size·Requires-Python·
 yanked를 기존 정규화 경계로 검증한다. 전체 프로젝트 Simple 응답을 잘라 놓고 그 API를
 검증했다고 주장하지 않는다. 기존4MiB/1024 file 한도와 public origin 제한을 유지한다.
-Pip/PyTorch의 현재 metadata 경로는 이 UV 경로와 별도로 유지된다. 이 자료 경계의
-구현은 실제 uv CLI/runtime/검역 지원 완료가 아니며 P1 baseline의 독립 상태를 따른다.
+Pip/PyTorch의 metadata 경로는 이 UV 경로와 별도로 유지된다. 자료 경계만의 구현과 실제
+CLI/runtime/검역 qualification을 구분하며, 현재 검증한 지원 범위는 §8을 따른다.
 
 
 ## 7. UV runtime 공급의 provenance 경계
@@ -177,7 +177,7 @@ SHA256과 유일한 linux/amd64 descriptor의 digest/size를 확인하고 child 
 전체 digest/size·version/source/revision·platform을 연결한다. 미검증 label·live tag·파일명만으로
 버전을 채택하지 않는다. OCI index64 entries/1MiB, manifest/config 각64KiB, gzip layer 최대4개·
 총 compressed64MiB의 UV 공급 한도이며 기존 artifact resource 정책을 넓히지 않는다.
-현재 offline 공급 영수증은 layer bytes/ABI·observer admission/Policy/activation 승인이 아니다.
+Metadata/서명 확인만으로 layer bytes/ABI·observer admission/Policy/activation을 승인하지 않는다.
 
 
 UV의 native 공급 자료 검증은 모든 signed layer의 compressed hash/size와 config diffID를
@@ -188,5 +188,30 @@ UV overwrite·whiteout·links/경로 우회는 거부한다. 도출한 native ha
 
 UV 공급의 version/image/provenance/native identity는 runtime lock schema2의 한 owner에서
 생성한다. Maintenance의 frozen plan은 source lock·support review·generated identity를 함께
-갱신하고 모든 layer를 적용 시 다시 검증한다. 이 pin 채택과 CLI 지원 완료는 별도이며
-현재 production uv invocation·격리 admission은 아직 미연결이다.
+갱신하고 모든 layer를 적용 시 다시 검증한다. Pin 채택과 실제 CLI/runtime 검증은 별개이며
+P1은 production UV 호출·격리 admission과 §8의 실제 검역 범위까지 확인했다. Host 활성화나
+uv project/tool/run의 지원으로 확대하지 않는다.
+
+## 8. P1에서 검증한 UV pip 지원 범위
+
+실제 지원은 Linux/WSL2 amd64의 고정 Python runtime·공개 PyPI wheel·기존 venv다.
+UV 버전·공급 bytes는 runtime lock의 단일 owner를 따르며 Host의 uv/pip를 대신 호출하지 않는다.
+[누적 실제 qualification](../planning/evidence/package-client-quarantine/p1-uv-acceptance-20261023.json)이
+정확한 소스·네 profile·정리와 한계를 연결한다.
+
+| 명령 | 허용 입력·옵션 | 검역·변경 의미 |
+| --- | --- | --- |
+| `helox uv pip install <name>` 또는 `<name>==<version>` | 정확한 `name@version`도 허용. `--target`의 절대 venv 경로 또는 활성 `VIRTUAL_ENV` | 호환되는 기존 버전을 유지하고 선택한 전체 wheel을 새로 검사 |
+| 위 install의 `--upgrade`/`-U` | 요청 root와 선택된 dependency 갱신 | 변경·동일 버전 모두 새 검사와 승인·held transaction을 거침 |
+| 위 install의 `--upgrade-package <root>` | 요청한 bare root 하나, `--upgrade`와 동시 사용 거부 | dependency는 필요한 경우만 변경하고 요청 root를 갱신 |
+| update 옵션과 `--adopt` | 지원하는 native UV 기본 공개 wheel 형식 | 기존 wheel의 독립 proof와 전체 소유권 검증 후 인계. 실패 시 기존 target 보존 |
+| `helox uv pip sync <source-file>` | 전체 dependency를 exact final version으로 나열한 requirements 또는 strict `pylock.toml`/`pylock.*.toml`; target 규칙은 install과 같음 | 모든 선택 wheel을 새로 검사하고 전체 승인 뒤 제외된 기존 owner를 제거. 사용자 파일 보존 |
+| sync의 `--adopt` | 목록에서 제외될 native 원본도 독립 proof 필요 | 일부 원본만 증명해 삭제 권한을 만들지 않음 |
+| sync의 `--allow-empty-requirements` | requirements 파일에만 허용 | 기본 blank skip과 구분해 명시 empty 전체 승인·기록·반입. 명시 empty pylock도 같은 승인 경로 |
+
+Sync의 기본 blank는 Run/Evidence/Policy/cache/target 변경 없이 SKIPPED/NOT_PERFORMED다.
+Source는 target·trusted 저장소 밖의 bounded regular single-link 파일이며 symlink·ancestry 변경·
+동시 source/target drift를 거부한다. Includes·범위·editable/local/VCS/direct URL·private index·
+sdist/build·임의 native flags와 system/global 설치는 이 P1 범위에 없다. Native 인계의 생성
+scripts·compiled caches·cross-scheme도 거부한다. 기존 다른 command의 지원을 축소하지 않는다.
+UV project는 P4이며 `uv run`과 tool/execution·다른 client의 실제 지원으로 확대하지 않는다.

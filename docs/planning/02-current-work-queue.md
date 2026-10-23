@@ -15,12 +15,30 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — native same-runtime self-quarantine update IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; actual signed rc6 normal/cancellations/fresh replay passed; channel scope remains
-Next action: P1 uv pip IN_PROGRESS — complete sync Application/CLI and shared batch inspection LOCAL VERIFIED; push bundled candidate for actual end-to-end/common CI, then CUDA3 before P1 closure
+Last completed substep: P1 client foundation + uv pip — COMPLETE / QUALIFIED / ACCEPTANCE_CLOSED; CI391/392/393/394 each ten SUCCESS
+Next action: M13-004/G127 — coordinated Go 1.27.3 baseline audit/edit map/second review before source changes
 After P1: M13-004/G127 — Go 1.27.3 coordinated migration NOT_STARTED; must finish before P2
 After G127: P2 pnpm, then P3..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-23 P1 COMPLETE — 실제 네 profile·문서 검증과 정리
+
+[누적 실제 결과](./evidence/package-client-quarantine/p1-uv-acceptance-20261023.json)는
+sourceea287b2/whole tree9ece0a2의 CI391·cu126/CI392·cu130/CI393·cu132/CI394를 연결한다.
+각 Required 포함10SUCCESS이며 기존 Linux/CPU/macOS와 helper5wait0/final cleanup을 확인했다.
+Complete103.23s/closure46.14s에서 동일 버전의 새 Run·records, 교체/제거·blank skip·두 explicit
+empty·제외 native 원본 proof/adopt·5wheel/SBOM5nodes·4edges를 검증했다.
+CUDA full은 cu1261244.38s/cu1301192.58s/cu132878.63s이며 각 실제 입력/소스·CPU와 분리했다.
+
+IMPLEMENTED=YES/WIRED=YES/QUALIFIED=YES/ACCEPTANCE_CLOSED=YES, MISSING=[]다.
+문서·보안 profile을 통과했고 같은 문서 후보를 마지막으로 확인해 기록한다. 다음은 G127의
+기존 구현/실제 입력 감사·수정 지도·두 번째 검토이며 P2는 G127 qualification까지 대기한다.
+중간 커밋을 보존한 한 번의 push 뒤 타이머로 확인했고 완료한 임시 CLI·검증 실행기와 test
+payload를 정리했다. Active SDK/runtime/source/cache는 G127의 실제 전환·복구·마지막 참조
+확인 뒤 retirement한다. 마지막 jobs 조회 ReadTimeout은 읽기 재조회로 복구했으며 CI 실패가 아니다.
+아래 단계별 로컬/원격 실패는 당시 관측으로 유지한다. M13-004만 IN_PROGRESS다.
 
 ### 2026-10-23 CI390 확인과 검증 주기 조정
 
@@ -30,7 +48,7 @@ complete sync의 Application/CLI/bootstrap·새 승인 records 리포트와 빈 
 누락을 교정했고 같은 pre-format test의 before FAIL/after PASS를 보존했다. 최종 canonical5,
 관련7package 전체 Race138.116s와 실제7언어 CLI21cases는 PASS다. 임시 CLI 바이너리43,581,079B와
 test payload를 정리했다. 실제 native complete/adopt/empty/closure 두 통합 시나리오는 기존 Linux
-job에 연결했으며 아직 실행 전이다. Backend와 CLI commit을 한 번의 원격 후보로 올린 뒤 실제
+job에 연결했으며 당시 아직 실행 전이었다. Backend와 CLI commit을 한 번의 원격 후보로 올린 뒤 실제
 native·공통 CI/Required와 세 CUDA를 확인한다. P1 acceptance는 열어 둔다.
 
 [Complete backend 로컬 결과](./evidence/package-client-quarantine/p1f-uv-sync-backend-local-20261023.json)는

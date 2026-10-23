@@ -667,3 +667,16 @@ Actual native positive complete-sync/closure·공통 Linux/CPU/macOS/Required와
 MISSING이다. Backend7e1e4c6과 이 CLI 변경을 묶어 한 번 push하며 개별 helper의 원격 재검사는
 추가하지 않는다. 기존 유사 CI 약44~48분에 새 두 native 시나리오를 고려해 첫 확인을 약55분으로
 잡고 실제 run/head와 시각을 기록한다. P1 완료 전에 다음 Go/P2를 착수하지 않는다.
+
+### D actual qualification 종료 — 네 profile·문서 검증
+
+[CI391 실제 결과](./p1f-uv-sync-cli-ci391-20261023.json)는 sourceea287b2와 같은 전체 tree의
+Required10SUCCESS·Linux53·CPU215.06s/macOS·helper5wait0/정리를 확인했다. Complete103.23s와
+closure46.14s에서 두 root·동일 목록 새 검사/records·교체/제거·기본 blank 무변경·두 explicit
+empty·제외 native 원본 proof/adopt와 실제5wheel/SBOM5nodes·4edges를 검증했다.
+같은 소스의 cu126/CI392·cu130/CI393·cu132/CI394도 각 Required10SUCCESS·Linux54/CPU·해당 CUDA
+full/macOS와 helper5wait0/final cleanup이다. [누적 qualification](./p1-uv-acceptance-20261023.json)이
+입력/소스·실제 실행·정리·남은 경계를 소유한다. 최종 문서·보안 검증과 재검토를 거쳐
+IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=YES, MISSING=[]로 P1을 닫았다.
+Runtime/Policy/거부·리소스 한도와 기존 named graph 소비자는 유지한다. 초기 지도/부분 성공의
+미완료 표시는 당시 상태로 보존하며 이 최종 결과를 다른 Go/runtime 후보에 전용하지 않는다.
