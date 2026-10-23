@@ -233,26 +233,31 @@ func TestUnknownReasonDoesNotInventExplanation(t *testing.T) {
 }
 
 func TestAnimatedProgressStopsOnCancellation(t *testing.T) {
-	var output, diagnostic bytes.Buffer
-	p := &presentation{out: &output, diagnostic: &diagnostic, output: "human", language: "ko", color: "never", progress: "always", diagnosticTTY: true, width: 24}
-	writer := &presentationWriter{Writer: &output, presentation: p}
-	original, cancel := context.WithCancel(context.Background())
-	ctx, finish := beginProgress(original, writer, false)
-	ports.ReportProgress(ctx, ports.Progress{Stage: "download", Current: 3, Total: 6, Unit: "bytes"})
-	cancel()
-	if err := finish(); err != nil {
-		t.Fatal(err)
-	}
-	before := diagnostic.String()
-	ports.ReportProgress(ctx, ports.Progress{Stage: "install"})
-	if diagnostic.String() != before {
-		t.Fatal("cancelled progress kept writing")
-	}
-	if !strings.Contains(before, "\x1b[2K") {
-		t.Fatal("terminal line not cleared")
-	}
-	if got := fitTerminal("한국어表示", 6); got != "한국어" {
-		t.Fatalf("wide terminal text was not bounded: %q", got)
+	for _, term := range []string{"xterm-256color", "dumb"} {
+		t.Run(term, func(t *testing.T) {
+			t.Setenv("TERM", term)
+			var output, diagnostic bytes.Buffer
+			p := &presentation{out: &output, diagnostic: &diagnostic, output: "human", language: "ko", color: "never", progress: "always", diagnosticTTY: true, width: 24}
+			writer := &presentationWriter{Writer: &output, presentation: p}
+			original, cancel := context.WithCancel(context.Background())
+			ctx, finish := beginProgress(original, writer, false)
+			ports.ReportProgress(ctx, ports.Progress{Stage: "download", Current: 3, Total: 6, Unit: "bytes"})
+			cancel()
+			if err := finish(); err != nil {
+				t.Fatal(err)
+			}
+			before := diagnostic.String()
+			ports.ReportProgress(ctx, ports.Progress{Stage: "install"})
+			if diagnostic.String() != before {
+				t.Fatal("cancelled progress kept writing")
+			}
+			if got := strings.Contains(before, "\x1b[2K"); got != (term != "dumb") {
+				t.Fatalf("terminal clear differs from TERM capability: %s %q", term, before)
+			}
+			if got := fitTerminal("한국어表示", 6); got != "한국어" {
+				t.Fatalf("wide terminal text was not bounded: %q", got)
+			}
+		})
 	}
 }
 
