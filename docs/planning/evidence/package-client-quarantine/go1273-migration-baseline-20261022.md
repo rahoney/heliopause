@@ -227,3 +227,43 @@ qualification SDK1.26.10 및 격리된 target1.27.3과 다르며, source-only ad
 구분해 기록한다. Local raw `go1273-host-sdk-before-20261023.json`이 exact configured/resolved
 경로·readback을 소유한다. 최종 전환은 Host의 실제 새 SDK/quality/runtime readback과 복구를
 확인해야 하며1.26.9/1.26.10의 old owned 경로·cache는 역할/마지막 참조를 확인하고 retire한다.
+
+### 두 번째 configuration 실패 — Staticcheck export data 호환성
+
+새 baseline fe225e8의 frozen plan ed2d463f/verification-841668246은 공식 SDK1.27.3의
+bootstrap·format·runtime/support·module drift/integrity·production/test build·architecture·
+workflow·go vet까지 PASS다. 다음 Staticcheck2026.1(v0.7.0)이 `cmp` 등의 export data
+version5를 maximum2 decoder로 읽지 못했다. Raw `go1273-staticcheck-incompatibility-20261023.json`은
+첫 오류와 각각의 원본 hash를 보존한다. 앞 module 형식 교정의 회귀나 새 runtime의 성공으로
+해석하지 않는다. 기존 frozen plan/SDK receipt는 변경하지 않는다.
+
+공식 [Staticcheck2026.2 release](https://github.com/dominikh/go-tools/releases/tag/2026.2)는
+Go1.27 지원과 module version v0.8.0을 명시한다. 해당 [go.mod](https://github.com/dominikh/go-tools/blob/2026.2/go.mod)의
+minimum은1.26.0으로 current1.26.10에서도 build 가능하다. MIT와 checksum 검증/source build를
+유지한다. 신규 SA9010과 기존 진단 변화·upstream SA5011 비활성화도 검토 대상이며 프로젝트의
+suppression은 추가하지 않는다. 이 공식 지원 선언만으로 actual analysis PASS를 주장하지 않는다.
+
+수정 지도: `scripts/tools.lock.json`의 Staticcheck version/expectedVersion만2026.2/
+`staticcheck 2026.2 (0.8.0)`으로 바꾸고 setupGo는 current1.26.10을 유지한다.
+`scripts/version-support.lock.json`의 해당 한 record만 실제 검토 날짜·release·이유로 갱신한다.
+Engineering03의 현재 도구 선택에 이 변경을 연결하고 historical M0/fixture의2026.1은 보존한다.
+기존 canonical bootstrap으로 exact module의 checksum·binary/compiler를 확인한 뒤 current
+SDK Quick/security/docs를 실행한다. 분석 결함이 실제 확인되지 않은 다른 도구는 갱신하지 않는다.
+로컬 검증/중간 commit 후 NEW state/plan으로 target SDK bootstrap·실제 analysis·전체 canonical을
+재검증한다. 완료한 실패 candidate/cache는 원본 보존·마지막 참조0 확인 후 retire한다.
+
+두 번째 검토: 기존 bootstrap·tool lock/지원표·Go coordinator가 이 선택을 이미 소비하므로 새
+tool updater/version owner/예외가 필요하지 않다. Exact release와 actual output을 대조하고
+새 Go pinned setup은 기존 Go renderer가 연결한다. 현재 후보에는 gVisor/native/CPU/CUDA 결과가
+없으며 그 검증·설치/복구·정리는 다음 동일 G127 범위에 남긴다.
+
+최초 current SDK bootstrap8.701s는 exact 새 release 설치 뒤 binary가 실제 출력한
+`staticcheck 2026.2 (0.8.0)`과 추정했던 `(v0.8.0)`의 차이를 strict identity 검사로 거부했다.
+Module version과 display 문자열을 구분해 expectedVersion만 actual output으로 교정한다.
+최초 원본 `go1273-staticcheck-baseline-bootstrap-20261023.*`는 보존하고 비교 검사를 완화하지 않는다.
+
+[Current SDK 로컬 결과](./go1273-staticcheck-current-local-20261023.json)는 exact2026.2의
+bootstrap34.276s·실제 Go1.26.10 buildinfo·Quick56.004s/security4.591s/docs PASS를 연결한다.
+현재 기준선의 분석·기존 tests는 통과했고 target1.27.3 analysis는 다음 NEW plan에서 검증한다.
+첫 실패 state의 전체 frozen bytes/modes·process/FD/maps/mount 참조0·조회 오류0을 확인한 뒤
+완료 payload4,103,892,746B를 retire했고 frozen plan/SDK inventory/원본은 보존했다.

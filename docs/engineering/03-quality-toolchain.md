@@ -261,6 +261,14 @@ Implementation and remaining stages follow the
 
 ## 4. Canonical local entrypoint
 
+2026-10-23 M13-004/G127은 실제 Go1.27.3 export data에서2026.1 decoder 오류를 확인하여
+현재 Staticcheck pin을2026.2(`v0.8.0`)로 갱신한다. 공식 release의 Go1.27 지원과
+module minimum1.26.0을 대조했으며 기존 exact source/checksum bootstrap·binary/compiler
+검사를 유지한다. 신규 SA9010과 upstream 진단 변화(SA5011 비활성화 포함)를 검토했고
+프로젝트 suppression은 추가하지 않는다. 위 M0 선택은 역사 기록이며 현재 실행 pin은
+tools.lock이 소유한다. 실제 old/new SDK qualification·원본과 남은 작업은
+[G127 수정 지도](../planning/evidence/package-client-quarantine/go1273-migration-baseline-20261022.md)를 따른다.
+
 구현 단계에서 standard library만 사용하는 repository-owned check runner를 `scripts/check/`에 둔다.
 
 ```text
