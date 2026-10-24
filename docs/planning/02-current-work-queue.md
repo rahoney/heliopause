@@ -16,8 +16,8 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — B4 remotely qualified by CI406; B5a/B5b1/B5b2/B5b3 backend named local PASS; native adoption/CLI/current backend remote qualification and whole P2 acceptance remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2 — CI407/e9ca85e backend+actual CI caller REMOTE_PENDING; first check2026-10-25 06:02:54 KST. B5c PNPM CLI LOCAL QUALIFIED; continue native source-proof enrollment baseline/edit-map review; whole P2 remains NO
-Current substep: M13-004/P2 — IN_PROGRESS; CI407/e9ca85e remote pending; B5c CLI LOCAL QUALIFIED; checkpoint then native adoption/source-proof audit; native adoption/whole P2 pending; support not yet advertised
+Next action: M13-004/P2 — CI407/e9ca85e backend+actual CI caller REMOTE_PENDING; first check2026-10-25 06:02:54 KST. B5c PNPM CLI committed a03ff13 LOCAL QUALIFIED; B5d native source-proof baseline/edit-map review IN_PROGRESS; whole P2 remains NO
+Current substep: M13-004/P2 — IN_PROGRESS; CI407/e9ca85e remote pending; B5c CLI committed a03ff13 LOCAL QUALIFIED; B5d native original ownership/source-proof audit IN_PROGRESS (source unchanged); native adoption/whole P2 pending; support not yet advertised
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -4988,3 +4988,7 @@ Darwin bootstrap/CLI compile6.736s도 PASS다. Helperwait0/Host 구성 보존 �
 501,366,905B 정리다. CLI actual의 고정 명령을 기존 CI project profile에 독립5분 호출로 추가했다.
 CI407/e9ca85e는 앞 backend만 포함하며 첫 확인06:02:54 KST 전 추가 조회/재push하지 않는다.
 Native payload 인계의 independent old-source proof가 다음이고 whole P2는 미완료다.
+
+현재 후속 [B5d native original ownership 감사](./evidence/package-client-quarantine/p2c5b5d-pnpm-native-ownership-plan-20261025.md)는
+guest store/UID 의미를 Host 원본 claim으로 대체하지 않는 분리와 기존 full source closure 재사용
+지도를 확정 중이다. Native proof source는 아직 수정하지 않았고 M13-004 하나만 IN_PROGRESS다.
