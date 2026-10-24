@@ -14,6 +14,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -30,6 +31,52 @@ func TestPNPMActualOfflineStoreFixture(t *testing.T) {
 	if os.Getenv("HELOX_PNPM_PUBLIC_METADATA_FIXTURE") != "1" {
 		t.Fatal("declare HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 for the authenticated metadata preparation stage")
 	}
+	for _, fixture := range pnpmOfflineFixtures() {
+		if !t.Run(fixture.name, func(t *testing.T) { qualifyPNPMOfflineFixture(t, fixture) }) {
+			t.FailNow()
+		}
+	}
+}
+
+type pnpmOfflineIdentity struct{ directory, name, version string }
+type pnpmOfflineLink struct{ name, target string }
+type pnpmOfflineFixture struct {
+	name, manifest, lockFixture string
+	specs                       []string
+	roots, snapshots            map[string]any
+	installed                   []pnpmOfflineIdentity
+	links                       []pnpmOfflineLink
+}
+
+// Explicit qualification inputs, never a general lock/layout codec.
+func pnpmOfflineFixtures() []pnpmOfflineFixture {
+	return []pnpmOfflineFixture{
+		{
+			name: "transitive", manifest: `{"dependencies":{"is-odd":"3.0.1"}}`,
+			specs:     []string{"is-odd@3.0.1", "is-number@6.0.0"},
+			roots:     map[string]any{"is-odd": map[string]string{"specifier": "3.0.1", "version": "3.0.1"}},
+			snapshots: map[string]any{"is-number@6.0.0": map[string]any{}, "is-odd@3.0.1": map[string]any{"dependencies": map[string]string{"is-number": "6.0.0"}}},
+			installed: []pnpmOfflineIdentity{{"is-odd@3.0.1", "is-odd", "3.0.1"}, {"is-number@6.0.0", "is-number", "6.0.0"}},
+			links:     []pnpmOfflineLink{{".pnpm/is-odd@3.0.1/node_modules/is-number", "../../is-number@6.0.0/node_modules/is-number"}},
+		},
+		{
+			name: "peer", manifest: `{"dependencies":{"react":"18.3.1","use-sync-external-store":"1.2.0"}}`,
+			specs:       []string{"react@18.3.1", "use-sync-external-store@1.2.0", "loose-envify@1.4.0", "js-tokens@4.0.0"},
+			lockFixture: "pnpm-v9-peer.synthetic.yaml",
+			installed:   []pnpmOfflineIdentity{{"react@18.3.1", "react", "18.3.1"}, {"use-sync-external-store@1.2.0_react@18.3.1", "use-sync-external-store", "1.2.0"}, {"loose-envify@1.4.0", "loose-envify", "1.4.0"}, {"js-tokens@4.0.0", "js-tokens", "4.0.0"}},
+			links: []pnpmOfflineLink{
+				{".pnpm/use-sync-external-store@1.2.0_react@18.3.1/node_modules/react", "../../react@18.3.1/node_modules/react"},
+				{".pnpm/react@18.3.1/node_modules/loose-envify", "../../loose-envify@1.4.0/node_modules/loose-envify"},
+				{".pnpm/loose-envify@1.4.0/node_modules/js-tokens", "../../js-tokens@4.0.0/node_modules/js-tokens"},
+				{"react", ".pnpm/react@18.3.1/node_modules/react"},
+				{"use-sync-external-store", ".pnpm/use-sync-external-store@1.2.0_react@18.3.1/node_modules/use-sync-external-store"},
+			},
+		},
+	}
+}
+
+func qualifyPNPMOfflineFixture(t *testing.T, fixture pnpmOfflineFixture) {
+	t.Helper()
 	withActualPNPMNativeRuntimePolicy(t, true, func(ctx context.Context, runner CommandRunner, container, network string) {
 		configured, err := runner.Output(ctx, "docker", "inspect", "--format", "{{json .Config.WorkingDir}}", container)
 		var workdir string
@@ -46,6 +93,31 @@ func TestPNPMActualOfflineStoreFixture(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+		var recipeBody []byte
+		var sourceBound artifactnpm.PNPMSelection
+		resolvedInputs := map[string]domain.ResolvedArtifact{}
+		if fixture.lockFixture != "" {
+			// Reuse the exact versioned parser fixture and its public-binding API.
+			_, file, _, ok := runtime.Caller(0)
+			if !ok {
+				t.Fatal("qualification source location unavailable")
+			}
+			recipeBody, err = os.ReadFile(filepath.Join(filepath.Dir(file), "..", "artifact", "npm", "testdata", fixture.lockFixture))
+			if err != nil {
+				t.Fatal("versioned peer fixture unavailable", err)
+			}
+			parsed, err := artifactnpm.ParsePNPMLock([]byte(fixture.manifest), recipeBody, runtimeidentity.PNPMVersion)
+			if err != nil {
+				t.Fatal("versioned peer fixture invalid", err)
+			}
+			sourceBound, err = source.BindPNPMLock(ctx, parsed)
+			if err != nil || !sourceBound.SourceBound() {
+				t.Fatal("exact peer metadata binding failed", err)
+			}
+			for _, resolved := range sourceBound.Artifacts() {
+				resolvedInputs[resolved.Identity().Name()+"@"+resolved.Identity().Version()] = resolved
+			}
+		}
 		packages := map[string]any{}
 		var fileSpecs []string
 		var input bytes.Buffer
@@ -56,14 +128,20 @@ func TestPNPMActualOfflineStoreFixture(t *testing.T) {
 		if err := archive.WriteHeader(&tar.Header{Name: "tmp", Typeflag: tar.TypeDir, Mode: 0700, Uid: 1000, Gid: 1000}); err != nil {
 			t.Fatal(err)
 		}
-		for _, spec := range []string{"is-odd@3.0.1", "is-number@6.0.0"} {
+		for _, spec := range fixture.specs {
 			ref, err := artifactnpm.ParseReference(spec)
 			if err != nil {
 				t.Fatal(err)
 			}
-			resolved, err := source.Resolve(ctx, ref)
-			if err != nil {
-				t.Fatal(err)
+			resolved, found := resolvedInputs[spec]
+			if !found {
+				if fixture.lockFixture != "" {
+					t.Fatal("exact fixture input was not source bound", spec)
+				}
+				resolved, err = source.Resolve(ctx, ref)
+				if err != nil {
+					t.Fatal(err)
+				}
 			}
 			run, err := domain.NewRunID()
 			if err != nil {
@@ -78,7 +156,7 @@ func TestPNPMActualOfflineStoreFixture(t *testing.T) {
 				t.Fatalf("fixture integrity failed: %v", err)
 			}
 			report, err := static.Inspect(ctx, acquired)
-			if err != nil || len(report.Findings()) != 0 {
+			if err != nil || len(report.Findings()) != 0 || report.Execution().Status() != domain.ExecutionCompleted {
 				t.Fatalf("fixture static admission failed: %v", err)
 			}
 			if acquired.SizeBytes() <= 0 || acquired.SizeBytes() > 4<<20 {
@@ -110,18 +188,21 @@ func TestPNPMActualOfflineStoreFixture(t *testing.T) {
 		if err := archive.Close(); err != nil {
 			t.Fatal(err)
 		}
-		// Deliberately explicit two-package fixture, not a second general codec.
+		// Explicit fixture data preserves registry source kind and full peer keys.
 		recipe, err := json.Marshal(map[string]any{
 			"lockfileVersion": "9.0",
 			"settings":        map[string]bool{"autoInstallPeers": true, "excludeLinksFromLockfile": false},
-			"importers":       map[string]any{".": map[string]any{"dependencies": map[string]any{"is-odd": map[string]string{"specifier": "3.0.1", "version": "3.0.1"}}}},
+			"importers":       map[string]any{".": map[string]any{"dependencies": fixture.roots}},
 			"packages":        packages,
-			"snapshots":       map[string]any{"is-number@6.0.0": map[string]any{}, "is-odd@3.0.1": map[string]any{"dependencies": map[string]string{"is-number": "6.0.0"}}},
+			"snapshots":       fixture.snapshots,
 		})
 		if err != nil {
 			t.Fatal(err)
 		}
-		manifest := pnpmTestControl(t, "package.json", `{"dependencies":{"is-odd":"3.0.1"}}`, true)
+		if len(recipeBody) != 0 {
+			recipe = recipeBody
+		}
+		manifest := pnpmTestControl(t, "package.json", fixture.manifest, true)
 		lock, err := domain.NewProjectControlFile("pnpm-lock.yaml", recipe, true)
 		if err != nil {
 			t.Fatal(err)
@@ -131,8 +212,10 @@ func TestPNPMActualOfflineStoreFixture(t *testing.T) {
 		if err != nil {
 			t.Fatal("public fixture graph invalid before metadata preparation", err)
 		}
-		bound, err := source.BindPNPMLock(ctx, parsed)
-		if err != nil || len(bound.Artifacts()) != 2 {
+		if !sourceBound.SourceBound() {
+			sourceBound, err = source.BindPNPMLock(ctx, parsed)
+		}
+		if err != nil || len(sourceBound.Artifacts()) != len(fixture.specs) {
 			t.Fatal("public fixture source binding failed before metadata preparation", err)
 		}
 		if err := copyPNPMProjectControls(ctx, runner, container, controls); err != nil {
@@ -149,7 +232,7 @@ func TestPNPMActualOfflineStoreFixture(t *testing.T) {
 				t.Fatal("introduced native archive differs from its verified digest")
 			}
 		}
-		t.Log("pnpm_offline_input_readback files=2 verified_digest=true")
+		t.Logf("pnpm_offline_input_readback files=%d verified_digest=true", len(fixture.specs))
 		// Store-add does not install a project. Its file resolver's directory
 		// must match the real process cwd used to open relative file locators.
 		storeArgs := []string{pnpmToolGuestPath, "--dir", "/", "store", "add", "--offline", "--ignore-scripts", "--ignore-pnpmfile", "--ignore-workspace", "--registry=https://registry.npmjs.org/", "--store-dir", pnpmProjectRoot + "/store", "--state-dir", pnpmProjectRoot + "/state", "--reporter=append-only"}
@@ -176,28 +259,35 @@ func TestPNPMActualOfflineStoreFixture(t *testing.T) {
 				t.Fatalf("frozen private control changed: %s %v", before.Name(), err)
 			}
 		}
-		for _, spec := range []struct{ name, version string }{{"is-odd", "3.0.1"}, {"is-number", "6.0.0"}} {
-			file := pnpmProjectDirectory + "/node_modules/.pnpm/" + spec.name + "@" + spec.version + "/node_modules/" + spec.name + "/package.json"
+		for _, spec := range fixture.installed {
+			file := pnpmProjectDirectory + "/node_modules/.pnpm/" + spec.directory + "/node_modules/" + spec.name + "/package.json"
 			body := readPNPMFixtureFile(t, ctx, runner.(streamingDockerOutput), container, file)
 			var identity struct{ Name, Version string }
 			if json.Unmarshal(body, &identity) != nil || identity.Name != spec.name || identity.Version != spec.version {
 				t.Fatal("native offline installed identity differs")
 			}
 		}
-		linkOutput := nativeToolArchiveOutput{limit: 64 << 10}
-		if err := runner.(streamingDockerOutput).RunOutput(ctx, &linkOutput, "docker", "cp", container+":"+pnpmProjectDirectory+"/node_modules/.pnpm/is-odd@3.0.1/node_modules/is-number", "-"); err != nil || linkOutput.failed {
-			t.Fatal("read native dependency link", err)
+		for _, expected := range fixture.links {
+			assertPNPMFixtureLink(t, ctx, runner.(streamingDockerOutput), container, expected)
 		}
-		links := tar.NewReader(bytes.NewReader(linkOutput.body))
-		link, err := links.Next()
-		if err != nil || link.Typeflag != tar.TypeSymlink || link.Name != "is-number" || link.Linkname != "../../is-number@6.0.0/node_modules/is-number" || link.Size != 0 {
-			t.Fatal("native dependency link differs from the exact fixture", err)
-		}
-		if _, err := links.Next(); err != io.EOF {
-			t.Fatal("native dependency link output has extra entries", err)
-		}
-		t.Log("pnpm_offline_store_fixture packages=2 controls_unchanged=true native_layout=isolated scripts=NOT_EXECUTED dynamic=NOT_EXECUTED Host_install=NOT_EXECUTED")
+		t.Logf("pnpm_offline_store_fixture case=%s packages=%d instances=%d links=%d controls_unchanged=true native_layout=isolated scripts=NOT_EXECUTED dynamic=NOT_EXECUTED Host_install=NOT_EXECUTED", fixture.name, len(fixture.specs), len(fixture.installed), len(fixture.links))
 	})
+}
+
+func assertPNPMFixtureLink(t *testing.T, ctx context.Context, runner streamingDockerOutput, container string, expected pnpmOfflineLink) {
+	t.Helper()
+	output := nativeToolArchiveOutput{limit: 64 << 10}
+	if err := runner.RunOutput(ctx, &output, "docker", "cp", container+":"+pnpmProjectDirectory+"/node_modules/"+expected.name, "-"); err != nil || output.failed {
+		t.Fatal("read native dependency link", err)
+	}
+	reader := tar.NewReader(bytes.NewReader(output.body))
+	link, err := reader.Next()
+	if err != nil || link.Typeflag != tar.TypeSymlink || link.Name != filepath.Base(expected.name) || link.Linkname != expected.target || link.Size != 0 {
+		t.Fatal("native dependency link differs from exact fixture", expected.name, err)
+	}
+	if _, err := reader.Next(); err != io.EOF {
+		t.Fatal("native dependency link output has extra entries", err)
+	}
 }
 
 func runPNPMFixtureCommand(t *testing.T, ctx context.Context, runner CommandRunner, container, stage string, args []string) {

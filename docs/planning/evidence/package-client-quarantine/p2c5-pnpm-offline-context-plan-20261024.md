@@ -234,3 +234,46 @@ wait0/CONFIRMED_STOPPED/original0/client_error0/client_restore0도 확인했다.
 연결·Host layout/promotion/CLI와 전체 P2 qualification은 아직 미완료다. 다음 B 착수 감사에서
 이 상태를 분리하고 기존 단일 npm backend는 유지한다. Completed namespace/진단 입력은
 마지막 소비 뒤 all-UID 참조/query errors0을 확인해 제거한다.
+
+## 8. A3 peer fixture — 착수 감사·수정 지도·두 번째 검토
+
+Baseline043cadf의 transitive A2는 IMPLEMENTED/WIRED=YES(test-only), LOCAL VERIFIED다.
+Peer offline fixture는 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=NO이며
+MISSING은 peer-qualified lock instance의 실제 directory/연결/identity·controls 보존이다.
+Production closure는 계속 네 항목 NO다. 기존 성공 fixture와 native helper를 다시 구현하지
+않고 같은 gated test를 명시한 fixture table로 공유한다. Read는 본 §1~7·P2c4 §2~5,
+공식91774e72 deps-path/dep_path_to_filename.rs와 그 tests다. 공식 이름 변환은 peer 괄호를
+underscore로 바꾸며 긴 경로·대소문자·ambiguous escape의 hash 규칙도 존재한다. A3의
+짧은 고정 fixture 기대값을 production의 범용 path codec으로 전용하지 않는다.
+
+변경은 pnpm_offline_fixture_real_test.go 하나다. 기존 transitive2와 별도 peer4
+(react18.3.1/use-sync-external-store1.2.0/loose-envify1.4.0/js-tokens4.0.0)를 같은 획득·SRI·
+static-all→source binding→native 준비→endpoint0→offline 설치 순서로 각각 fresh container에서
+확인한다. Fixture는 두 root·원래 peer constraint와 peer-qualified snapshot을 명시한다.
+각 실제 package.json의 name/version과 direct/transitive/peer symlink의 exact target을
+bounded Docker tar로 대조한다. 같은 archive 복수 peer instance와 lifecycle은 B의 필수
+후속이며 이 네 package의 성공만으로 닫지 않는다.
+
+두 번째 검토: helpers/실행 권한/observer25·early store 설정은 재사용하고 새 path allowlist,
+cache schema 작성, artifact 실행·Host 반입은 추가하지 않는다. 실패 시 첫 native 원인과
+complete trace/정리를 보존한다. Tagged build와 실제 두 case가 먼저 필요하며 test-only
+변경에는 formatter·Quick/security/docs를 묶어 적용한다. 이미 통과한 제품 전체 Race를
+소스 변화 없이 무조건 반복하지 않는다. 새 remote push/CI는 이 작은 primitive로 반복하지 않는다.
+
+A3 first14.682s에서 transitive7.35s는 PASS였으나 peer는 일반 Resolve의 전체 React
+packument 응답 한도에서 멈췄다. Peer archive/native fetch/install은 NOT_EXECUTED다.
+이는 앞 P2c에서 exact-version API로 해결한 조건을 fixture가 다시 일반 M2 API로 호출한
+누락이다. 기존 한도/Accept를 바꾸지 않는다. 이미 source binding actual을 통과한
+testdata/pnpm-v9-peer.synthetic.yaml을 그대로 읽고 ParsePNPMLock→BindPNPMLock의 exact
+조회로 얻은 ResolvedArtifact를 Acquire한다. Compiler source 위치를 사용해 CWD 의존 없이
+기존 versioned testdata를 재사용하며 파일 내용/metadata를 중복 생성하지 않는다.
+Fixture table에는 identity/실제 link 기대값만 남긴다. 일반 M2 Resolve 제품 경로는 불변이다.
+
+Exact fixture actual16.314s(두 subtest14.02s)는 transitive6.01s·peer8.01s 모두 PASS다.
+Peer4개의 SRI/static·introduced SHA·실제 identity/peer directory와 exact links5개, controls
+동일·endpoint0 뒤 offline frozen install을 확인했다. 두 session은 complete/금지 관찰0이며
+Host전체동일·Host native installation 부재/helperwait0/CONFIRMED_STOPPED/original0이다.
+Root scripts/아티팩트 lifecycle·Host installation은 실행하지 않았다. 작은 fixture는
+production closure나 같은 archive의 복수 peer instance 관찰 완료가 아니다.
+다음은 B의 정확한 producer/consumer 타입·static-all와 per-target coverage/수명 지도를
+작성하고 두 번째 검토한 뒤 남은 acceptance gap만 연결하는 순서다.

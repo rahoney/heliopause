@@ -16,7 +16,7 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — rc6/native4 same-runtime baseline IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; P2/native5 expansion locally verified only, guest/whole qualification and channel scope remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2c5 — A2 transitive native offline primitive LOCAL VERIFIED; peer fixture and production closure edit map next; transitive product dynamic INCOMPLETE; CI402/head940 ten SUCCESS; P2 acceptance NO
+Next action: M13-004/P2c5-B — A2/A3 transitive+peer offline primitive LOCAL VERIFIED; production static-all/frozen context/per-target edit map and second review next; product dynamic INCOMPLETE; CI402/head940 ten SUCCESS; P2 acceptance NO
 Current substep: M13-004/P2 — IN_PROGRESS; offline supply/native distribution LOCAL VERIFIED; exact guest admission and product graph/layout/CLI gaps active; support not yet advertised
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
@@ -74,6 +74,12 @@ P2c5-A2의 transitive2는 [로컬 결과](./evidence/package-client-quarantine/p
 설정을 고정해 default root probe를 피했고 제품 관찰기·권한은 유지했다. Peer fixture와
 production static-all/per-target closure가 다음 순서이며 새 실제 P2 검역 완료는 아니다.
 완료한 namespace·진단 자료는 참조/query error0 확인 뒤 삭제했고 작은 원본만 보존했다.
+
+이어 A3 [peer 실제 결과](./evidence/package-client-quarantine/p2c5-pnpm-peer-offline-local-20261024.json)에서
+기존 exact-version source API·versioned fixture를 재사용한 transitive6.01s/peer8.01s와
+peer4 identity·links5개/complete/금지0·Host불변/helperwait0를 확인했다. 일반 packument
+한도에서 멈춘 첫 준비 실패는 원본에 남겼다. Production closure는 아직 미구현이며 B의
+상세 수정 지도·두 번째 검토를 다음으로 진행한다. M13-004 하나만 IN_PROGRESS다.
 
 ### 2026-10-24 P2c2 actual public 선택·update/no-op 로컬 검증
 
