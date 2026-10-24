@@ -24,7 +24,14 @@ func uvCreateArguments(network string, hostArguments []string, volume uvRuntimeV
 }
 
 func closeUVOutputVolume(ctx context.Context, runner CommandRunner, volume *closureVolume) error {
-	if ctx == nil || runner == nil || volume == nil || volume.destination() != pythonSitePath || volume.verify(ctx, runner) != nil {
+	return closeWritableOutputVolume(ctx, runner, volume, pythonSitePath)
+}
+
+func closeWritableOutputVolume(ctx context.Context, runner CommandRunner, volume *closureVolume, destination string) error {
+	if destination != pythonSitePath && destination != pnpmProjectRoot {
+		return errors.New("unknown private output destination")
+	}
+	if ctx == nil || runner == nil || volume == nil || volume.destination() != destination || volume.verify(ctx, runner) != nil {
 		return errors.New("uv output volume cleanup identity is unavailable")
 	}
 	listed, err := runner.Output(ctx, "docker", "ps", "--all", "--no-trunc", "--filter", "volume="+volume.name, "--format", "{{.ID}}")

@@ -77,6 +77,14 @@ func checkWorkflow(root, relativePath string, validate func(string) []string) er
 	if relativePath == workflowRelativePath || relativePath == releaseWorkflowRelativePath {
 		findings = append(findings, validateRuntimeLockWorkflow(root, string(contents))...)
 	}
+	if relativePath == workflowRelativePath {
+		script, err := os.ReadFile(filepath.Join(root, "scripts", "ci-pnpm-runtime.sh"))
+		if err != nil {
+			findings = append(findings, "PNPM runtime qualification script is unavailable")
+		} else {
+			findings = append(findings, validatePNPMRuntimeScript(string(script))...)
+		}
+	}
 	if len(findings) != 0 {
 		return &checkFailure{class: findingFailure, step: "CI configuration", detail: strings.Join(findings, "\n")}
 	}
@@ -131,6 +139,7 @@ func validateCIWorkflow(contents, selectedGo string) []string {
 	findings = append(findings, validateGoWorkflowVersions(contents, selectedGo)...)
 	findings = append(findings, validateCargoIntegrationGates(contents)...)
 	findings = append(findings, validateLifecycleIntegrationCommands(contents, "UV", uvIntegrationCommands)...)
+	findings = append(findings, validateLifecycleIntegrationCommands(contents, "PNPM", []string{"bash scripts/ci-pnpm-runtime.sh"})...)
 	findings = append(findings, validatePackageFixtureWorkingDirectories(contents)...)
 	findings = append(findings, validateTerraformIntegrationGates(contents)...)
 	findings = append(findings, validateActiveJobCommands(contents, "gvisor-observer", "Build exact gVisor observer helper with Bazel", "gVisor observer SDK", []string{

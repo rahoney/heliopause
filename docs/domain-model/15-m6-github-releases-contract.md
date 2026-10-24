@@ -89,11 +89,16 @@ The raw ELF process remains ARTIFACT after its exact one-shot handoff. Read-only
 access to its own sandbox PID's cgroup/mountinfo and fixed sandbox CPU quota
 metadata, plus the sandbox's fixed `/proc/sys/kernel/osrelease` OS marker, is
 runtime input, never resource/completion authority. The locked OCI
-root may supply the fixed libm/libstdc++/libgcc_s ABI libraries alongside the
+root may supply the fixed libm/libstdc++/libgcc_s/librt/libpthread/libdl ABI libraries alongside the
 existing libc/loader inputs. Successful reads require the actual process
 generation, completed handoff, fixed mount class/point and exact paths or
 canonical library versions; they retain normalized runtime-access counts.
-Other PIDs, maps/environ, arbitrary proc/sys/library prefixes, writes, shadow
+The same completed ARTIFACT handoff may read only its own sandbox group PID's
+`maps` and the fixed `/proc/sys/vm/overcommit_memory`, both at flags557056
+through the system `/proc` anchor. This owner-approved
+Rust startup extension exposes neither Host memory nor another PID and keeps
+normalized access counts. Other PIDs, self aliases, environ/mem, unqualified VM
+metadata, arbitrary proc/sys/library prefixes, writes, shadow
 mounts and untrusted role/name claims gain no permission. Host namespaces,
 mounts and credentials remain unavailable; required observation and Policy
 checks still govern the complete operation.

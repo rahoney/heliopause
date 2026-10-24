@@ -8,38 +8,51 @@ import (
 	"strings"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
-	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 const uvRuntimeVolumeLabel = "io.heliopause.uv-runtime"
 const uvRuntimeToolLabel = "io.heliopause.uv-tool-sha256"
 const uvRuntimeVolumeOptions = "size=67108864,nosuid,nodev,uid=0,gid=0,mode=0755"
 
-// This volume holds only the fixed helper and authenticated native UV tool.
+// This shared volume holds only the fixed helper and one pinned native tool.
 // Docker knows its tmpfs mount, allowing data copy into the running gVisor
 // target. Artifact-owned Python closure volumes retain their separate owner.
-type uvRuntimeVolume struct {
+type nativeRuntimeVolume struct {
 	name, owner, createdAt, mountpoint string
+	kind                               nativeRuntimeToolKind
 }
 
-var errUVRuntimeVolume = errors.New("uv private runtime volume is unavailable or changed")
+var errNativeRuntimeVolume = errors.New("private native runtime volume is unavailable or changed")
+
+// Keep the qualified UV surface while PNPM uses the same owner protocol.
+type uvRuntimeVolume = nativeRuntimeVolume
+
+var errUVRuntimeVolume = errNativeRuntimeVolume
 
 func createUVRuntimeVolume(ctx context.Context, runner CommandRunner) (uvRuntimeVolume, error) {
-	if ctx == nil || runner == nil {
-		return uvRuntimeVolume{}, errUVRuntimeVolume
+	return createNativeRuntimeVolume(ctx, runner, nativeRuntimeUV)
+}
+func createPNPMRuntimeVolume(ctx context.Context, runner CommandRunner) (nativeRuntimeVolume, error) {
+	return createNativeRuntimeVolume(ctx, runner, nativeRuntimePNPM)
+}
+
+func createNativeRuntimeVolume(ctx context.Context, runner CommandRunner, kind nativeRuntimeToolKind) (nativeRuntimeVolume, error) {
+	spec, known := nativeRuntimeToolIdentity(kind)
+	if ctx == nil || runner == nil || !known {
+		return nativeRuntimeVolume{}, errUVRuntimeVolume
 	}
 	owner, err := domain.NewSandboxSessionID()
 	if err != nil {
-		return uvRuntimeVolume{}, errUVRuntimeVolume
+		return nativeRuntimeVolume{}, errUVRuntimeVolume
 	}
-	v := uvRuntimeVolume{name: "haa-uv-runtime-" + owner.String(), owner: owner.String()}
+	v := nativeRuntimeVolume{name: spec.volumePrefix + owner.String(), owner: owner.String(), kind: kind}
 	listed, err := runner.Output(ctx, "docker", "volume", "ls", "--quiet", "--filter", "name=^"+v.name+"$")
 	if err != nil || len(listed) > 1024 || strings.TrimSpace(string(listed)) != "" {
-		return uvRuntimeVolume{}, errUVRuntimeVolume
+		return nativeRuntimeVolume{}, errUVRuntimeVolume
 	}
 	created, createErr := runner.Output(ctx, "docker", "volume", "create", "--driver", "local",
 		"--opt", "type=tmpfs", "--opt", "device=tmpfs", "--opt", "o="+uvRuntimeVolumeOptions,
-		"--label", uvRuntimeVolumeLabel+"="+v.owner, "--label", uvRuntimeToolLabel+"="+runtimeidentity.UVToolSHA256, v.name)
+		"--label", spec.volumeLabel+"="+v.owner, "--label", spec.hashLabel+"="+spec.sha256, v.name)
 	verifyErr := v.verify(ctx, runner)
 	if createErr != nil || strings.TrimSpace(string(created)) != v.name || verifyErr != nil {
 		// A failed CREATE may have succeeded remotely. Remove only after the
@@ -47,13 +60,17 @@ func createUVRuntimeVolume(ctx context.Context, runner CommandRunner) (uvRuntime
 		cleanup, done := resolverCleanupContext()
 		defer done()
 		cleanupErr := v.close(cleanup, runner)
-		return uvRuntimeVolume{}, fmt.Errorf("uv runtime creation failed name=%s: %w", v.name, errors.Join(errUVRuntimeVolume, createErr, verifyErr, cleanupErr))
+		return nativeRuntimeVolume{}, fmt.Errorf("native runtime creation failed name=%s: %w", v.name, errors.Join(errUVRuntimeVolume, createErr, verifyErr, cleanupErr))
 	}
 	return v, nil
 }
 
-func (v *uvRuntimeVolume) verify(ctx context.Context, runner CommandRunner) error {
-	if v == nil || ctx == nil || runner == nil || v.owner == "" || v.name != "haa-uv-runtime-"+v.owner {
+func (v *nativeRuntimeVolume) verify(ctx context.Context, runner CommandRunner) error {
+	if v == nil {
+		return errNativeRuntimeVolume
+	}
+	spec, known := nativeRuntimeToolIdentity(v.kind)
+	if !known || ctx == nil || runner == nil || v.owner == "" || v.name != spec.volumePrefix+v.owner {
 		return errUVRuntimeVolume
 	}
 	body, err := runner.Output(ctx, "docker", "volume", "inspect", "--format", "{{json .}}", v.name)
@@ -62,7 +79,7 @@ func (v *uvRuntimeVolume) verify(ctx context.Context, runner CommandRunner) erro
 		actual.Name != v.name || actual.Driver != "local" || actual.Scope != "local" ||
 		actual.Mountpoint == "" || actual.CreatedAt == "" || len(actual.Options) != 3 ||
 		actual.Options["type"] != "tmpfs" || actual.Options["device"] != "tmpfs" || actual.Options["o"] != uvRuntimeVolumeOptions ||
-		actual.Labels[uvRuntimeVolumeLabel] != v.owner || actual.Labels[uvRuntimeToolLabel] != runtimeidentity.UVToolSHA256 ||
+		actual.Labels[spec.volumeLabel] != v.owner || actual.Labels[spec.hashLabel] != spec.sha256 ||
 		v.createdAt != "" && (v.createdAt != actual.CreatedAt || v.mountpoint != actual.Mountpoint) {
 		return errUVRuntimeVolume
 	}
@@ -70,14 +87,15 @@ func (v *uvRuntimeVolume) verify(ctx context.Context, runner CommandRunner) erro
 	return nil
 }
 
-func (v uvRuntimeVolume) mountArgument() (string, error) {
-	if v.owner == "" || v.name != "haa-uv-runtime-"+v.owner || v.createdAt == "" || v.mountpoint == "" {
+func (v nativeRuntimeVolume) mountArgument() (string, error) {
+	spec, known := nativeRuntimeToolIdentity(v.kind)
+	if !known || v.owner == "" || v.name != spec.volumePrefix+v.owner || v.createdAt == "" || v.mountpoint == "" {
 		return "", errUVRuntimeVolume
 	}
 	return "type=volume,source=" + v.name + ",target=/haa-runtime,volume-nocopy", nil
 }
 
-func (v *uvRuntimeVolume) verifyTarget(ctx context.Context, runner CommandRunner, id string) error {
+func (v *nativeRuntimeVolume) verifyTarget(ctx context.Context, runner CommandRunner, id string) error {
 	if !exactObservationContainerID(id) || v.verify(ctx, runner) != nil {
 		return errUVRuntimeVolume
 	}
@@ -123,7 +141,7 @@ func (v *uvRuntimeVolume) verifyTarget(ctx context.Context, runner CommandRunner
 	return nil
 }
 
-func (v *uvRuntimeVolume) close(ctx context.Context, runner CommandRunner) error {
+func (v *nativeRuntimeVolume) close(ctx context.Context, runner CommandRunner) error {
 	if v.verify(ctx, runner) != nil {
 		return errUVRuntimeVolume
 	}

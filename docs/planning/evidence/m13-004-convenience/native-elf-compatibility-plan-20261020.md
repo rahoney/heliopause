@@ -1,5 +1,10 @@
 # M13-004 — 실제 native ELF의 runtime 읽기 호환성 보완
 
+2026-10-24 추가: 아래 maps/vm 부정은 당시 baseline/qualification 범위다. 현재의
+사용자 승인 exact-self Rust 확장은 [M6 계약](../../../domain-model/15-m6-github-releases-contract.md)과
+[승인·관측 경계](../package-client-quarantine/p2b2-rust-artifact-runtime-decision-20261024.md)를 따른다.
+과거 raw/서명 fixture와 당시 결과를 바꾸지 않는다.
+
 기준 source는 a22aa12, 실제 official rc1/rc2다. 계획 문서 HEAD d76e0ca는
 제품 bytes를 바꾸지 않는다. 기존 M6 observer/classifier를 수정하며 새 검사 엔진이나
 본체 전용 검사 면제를 만들지 않는다. M13-004만 IN_PROGRESS다.

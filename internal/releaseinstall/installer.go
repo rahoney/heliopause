@@ -14,6 +14,8 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
+
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 const (
@@ -23,7 +25,7 @@ const (
 	installRecordName = "helox-install.json"
 	manifestSchema    = "helox.release-manifest/v1"
 	maxBundleFileSize = 1 << 30
-	SystemInstallRoot = "/usr/lib/heliopause"
+	SystemInstallRoot = runtimeidentity.NativeInstallRoot
 	SystemStagingRoot = "/var/lib/heliopause/install-staging"
 )
 

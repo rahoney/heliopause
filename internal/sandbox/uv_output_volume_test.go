@@ -30,7 +30,17 @@ func (r *uvOutputCloseRunner) Output(_ context.Context, _ string, args ...string
 }
 
 func TestUVOutputVolumeCleanupRejectsUnknownOrAttachedIdentity(t *testing.T) {
+	verifyPrivateOutputCleanup(t, false)
+}
+func TestPNPMOutputVolumeCleanupRejectsUnknownOrAttachedIdentity(t *testing.T) {
+	verifyPrivateOutputCleanup(t, true)
+}
+func verifyPrivateOutputCleanup(t *testing.T, pnpm bool) {
+	t.Helper()
 	volume := closureVolume{name: "haa-closure-output", transaction: "tx", manifestID: strings.Repeat("f", 64), createdAt: "fixed", mountpoint: "/owned/output", capacity: 128 << 20}
+	if pnpm {
+		volume.projectBuildDestination = pnpmProjectRoot
+	}
 	actual := dockerVolumeInspection{
 		Name: volume.name, Driver: "local", Scope: "local", Mountpoint: volume.mountpoint, CreatedAt: volume.createdAt,
 		Options: map[string]string{"type": "tmpfs", "device": "tmpfs", "o": volume.tmpfsOptions()},
@@ -55,7 +65,12 @@ func TestUVOutputVolumeCleanupRejectsUnknownOrAttachedIdentity(t *testing.T) {
 				runner.removeErr = cause
 			}
 			candidate := volume
-			err := closeUVOutputVolume(context.Background(), runner, &candidate)
+			var err error
+			if pnpm {
+				err = closePNPMProjectVolume(context.Background(), runner, &candidate)
+			} else {
+				err = closeUVOutputVolume(context.Background(), runner, &candidate)
+			}
 			if outcome == "complete" {
 				if err != nil || !runner.removed {
 					t.Fatal("verified idle volume not removed", err)

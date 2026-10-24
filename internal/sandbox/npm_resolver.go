@@ -292,6 +292,10 @@ func (r *NPMResolver) resolveDependencies(ctx context.Context, reference domain.
 }
 
 func npmCreateArguments(network string, hostArguments []string) []string {
+	return nodeResolverCreateArguments(network, hostArguments, []string{"--tmpfs", boundaryHelperMount})
+}
+
+func nodeResolverCreateArguments(network string, hostArguments, helperMount []string) []string {
 	arguments := []string{
 		"create", "--pull", "never", "--runtime", gVisorRuntimeName,
 		"--network", network,
@@ -303,8 +307,8 @@ func npmCreateArguments(network string, hostArguments []string) []string {
 		"--memory", "512m",
 		"--cpus", "1",
 		"--tmpfs", "/tmp:rw,noexec,nosuid,nodev,size=128m,uid=1000,gid=1000,mode=0700",
-		"--tmpfs", boundaryHelperMount,
 	}
+	arguments = append(arguments, helperMount...)
 	arguments = append(arguments, isolatedContainerEnvironmentArguments()...)
 	arguments = append(arguments, hostArguments...)
 	arguments = append(arguments, runtimeidentity.NodeImageReference, "/bin/sh", "-ceu", boundaryContainerCommand())

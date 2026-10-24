@@ -68,7 +68,7 @@ func newSelfUpdater(ctx context.Context, executor *hosttool.Executor, supervisor
 	if err != nil {
 		return nil, err
 	}
-	backend, err := sandbox.NewLinuxGitHubELFBackendWithExecutor(intakeRoot, executor, observer)
+	backend, err := sandbox.NewLinuxHeliopauseNativeBackendWithExecutor(intakeRoot, executor, observer)
 	if err != nil {
 		return nil, err
 	}

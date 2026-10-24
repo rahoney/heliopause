@@ -16,12 +16,64 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — rc6/native4 same-runtime baseline IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; P2/native5 expansion locally verified only, guest/whole qualification and channel scope remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2b2 — exact PNPM guest supply/admission and native startup/query/lock; complete native distribution locally verified; batch remote qualification at common boundary
+Next action: M13-004/P2b2 — native admission and CI helper LOCAL VERIFIED; finish whole-candidate checkpoint and batched remote Required/native/common qualification, then P2c graph/layout/CLI
 Current substep: M13-004/P2 — IN_PROGRESS; offline supply/native distribution LOCAL VERIFIED; exact guest admission and product graph/layout/CLI gaps active; support not yet advertised
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-24 P2b2 native admission과 실제 CI helper 로컬 검증
+
+[수정 지도](./evidence/package-client-quarantine/p2b2-pnpm-admission-plan-20261024.md)의
+exact PNPM Root/Node query demotion과 승인된 GHI own maps·실제 관측 VM 한 경로를 연결했다.
+보완17 C++110 latch40.735s PASS 및 실제 PNPM4/UV2/GHI1 전체28.532s PASS다.
+PNPM noargs의 Usage/exit2는 실패로 보존하고 자기 release member만 기존 고정 discard
+probe callback으로 --version을 검사한다. Generic GHI와 기존 native4/Policy는 유지한다.
+관련3package full Race22.297s와 최종 CI-connected canonical Quick34.137s/security4.723s/
+docs/workflow/release-gate/freshness는 PASS다. [로컬 결과](./evidence/package-client-quarantine/p2b2-pnpm-admission-local-20261024.json)가 범위를 소유한다.
+CI helper 자체의 별도 frozen 공식 archive 재생27.636s는 실제 PNPM4·기존 설치 거부와
+Root/temp 정리/daemon wait0/자원0/Host불변을 확인했다. Public HTTPS/hosted CI 성공을
+주장하지 않으며 실제 native 전체 qualified·signed whole update·P2c public graph/layout/CLI는
+미완료다. 완료된 namespace/Docker 시험 데이터·이전 바이너리944,957,519B를
+모든 UID 참조0/unknown0 뒤 제거했다. 현재 milestone/item은 바뀌지 않으며 M13-004 하나만 IN_PROGRESS다.
+
+### 2026-10-24 P2b2 M6 제한 변경 승인과 Node 역할 보완
+
+사용자는 [두 exact 읽기 변경안](./evidence/package-client-quarantine/p2b2-rust-artifact-runtime-decision-20261024.md)을 명시 승인했다. 이미 관측한 자기 guest PID maps만 먼저 적용하며
+overcommit은 해당 ARTIFACT first read 확인 전까지 계속 거부한다. 기존 다른 PID/environ/mem/
+Host/쓰기/network 거부를 유지한다. Node 기능 PASS와 generic CONTROL fallback의 역할 gap도
+분리했다. Test-only 새 Node matrix RED(기존108 PASS) 뒤 기존 UV creator 검증을 재사용한
+보완14의109 latch가 PASS다. Actual Node는 ARTIFACT/CLONE_CHILD/pinned image까지 확인했고
+immutable loader ABI 읽기를 같은 query guard 아래 연결하는 다음 검증을 진행한다.
+아래 승인 대기 문장은 당시 이력이며 현재는 승인된 범위의 구현·실제 검증 단계다.
+
+### 2026-10-24 P2b2 CONTROL lock와 M6 명시 계약 차이
+
+Actual 보완11의 PNPM CONTROL startup3.77s/empty lock3.82s·lock9·완전한 관찰/의심0와
+자원0/wait0/Host불변은 PASS다. 같은 입력의 Node child query는 입증하지 않았으며 다음
+명시 runtime.onFail=error 입력으로 확인한다. 독립 ARTIFACT5.19s는 기존 M6가 명시 거부한
+자기 maps 읽기에서 INCOMPLETE다. [구체 계약 변경안](./evidence/package-client-quarantine/p2b2-rust-artifact-runtime-decision-20261024.md)을 작성·두 번째 검토했지만
+maps/VM 예외는 미적용이며 승인 전에는 그 거부를 유지한다. 독립 CONTROL 검증은 계속하고
+M13-004만 IN_PROGRESS다. 전체 P2 qualification/배포·승격은 미완료다.
+
+### 2026-10-24 P2b2 exact guest startup 로컬 범위
+
+[Guest 지도](./evidence/package-client-quarantine/p2b2-pnpm-admission-plan-20261024.md)의
+고정 Root source·공통 UV/PNPM transport/volume·exact profile을 연결했다. Quick174.844s/
+security/docs·관련3package Race23.754s, 실제 source 정상+11거부와 C++108 latch가 PASS다.
+실제 PNPM --version3.69s는12.15.0/완전한 관찰·잔여0/wait0/Host불변으로 PASS다.
+최초 GNU/Rust read 실패와 fixture 교정 원본은 보존한다. 현재 offline empty lock/Node
+query와 독립 ARTIFACT lane·원격 경계가 남으며 P2 전체 QUALIFIED/ACCEPTANCE_CLOSED는 NO다.
+완료된 첫 transport/archive·시험 사본491,429,837B를 참조0/unknown0 뒤 삭제했다.
+
+### 2026-10-24 P2b2 actual guest 공급·admission 착수 감사
+
+[새 실제 소비자 지도](./evidence/package-client-quarantine/p2b2-pnpm-admission-plan-20261024.md)는
+기존 단일 pin/배포/설치와 UV/NPM helper·volume·observer를 재사용한다. 고정 Root 소유
+current PNPM 파일과 `/haa-runtime/pnpm` CONTROL을 연결하되 release ARTIFACT probe는
+독립 검증한다. 현재 이 actual runtime 범위는 IMPLEMENTED/WIRED/QUALIFIED/
+ACCEPTANCE_CLOSED 모두 NO이며 새 source 작성 전에 수정 지도와 두 번째 검토를 기록했다.
 
 ### 2026-10-24 P2b2 native 배포·기존 설치/복구 로컬 검증
 

@@ -99,6 +99,8 @@ constexpr char kProfileNPM[] = "npm-lifecycle";
 constexpr char kProfilePyPI[] = "pypi-wheel";
 constexpr char kProfileUVResolver[] = "uv-pip-resolver";
 constexpr char kUVToolPath[] = "/haa-runtime/uv";
+constexpr char kProfilePNPMResolver[] = "pnpm-resolver";
+constexpr char kPNPMToolPath[] = "/haa-runtime/pnpm";
 constexpr char kProfilePyTorchCPU[] = "pypi-wheel-pytorch-cpu";
 constexpr char kProfilePyTorchCU126[] = "pypi-wheel-pytorch-cu126";
 constexpr char kProfilePyTorchCU130[] = "pypi-wheel-pytorch-cu130";
@@ -181,6 +183,7 @@ enum class ProcessClass {
   kPython,
   kPip,
   kUV,
+  kPNPM,
   kNode,
   kNpm,
   kArtifact,
@@ -465,6 +468,10 @@ struct ProcessState {
     bool go_build_gcc_candidate = false;
     bool go_build_gcc_child_candidate = false;
     bool go_build_native_linker_candidate = false;
+    // One first exec of a kernel clone of the admitted PNPM driver. Its
+    // version-only Node query is ARTIFACT, never an expected CONTROL group.
+    bool pnpm_node_query_candidate = false;
+    bool pnpm_node_query_active = false;
   };
   bool bootstrap_active = true;
   bool bootstrap_group_set = false;
@@ -564,10 +571,11 @@ bool IsPinnedReadOnlyRootPath(const TopologyState* topology, const std::string& 
   return readonly_root && actual_root;
 }
 
-// The controller supplies and rehashes UV on a root-owned private tmpfs.
+// The controller supplies and rehashes the exact tool on a root-owned private tmpfs.
 // A path on an OCI layer or a nested/shadow mount is never this tool.
-bool IsUVToolImage(const TopologyState* topology, const std::string& path) {
-  if (path != kUVToolPath || topology == nullptr || !topology->sealed ||
+bool IsPrivateNativeToolImage(const TopologyState* topology, const std::string& path,
+                              const char* expected) {
+  if (path != expected || topology == nullptr || !topology->sealed ||
       !topology->snapshot_seen || topology->namespace_id == 0) return false;
   size_t expected_helpers = 0;
   for (const auto& mount : topology->expected) {
@@ -584,6 +592,14 @@ bool IsUVToolImage(const TopologyState* topology, const std::string& path) {
     else if (mount.mountpoint != "/" && IsAtOrBelowMountpoint(path, mount.mountpoint)) return false;
   }
   return expected_helpers == 1 && actual_helpers == 1;
+}
+
+bool IsUVToolImage(const TopologyState* topology, const std::string& path) {
+  return IsPrivateNativeToolImage(topology, path, kUVToolPath);
+}
+
+bool IsPNPMToolImage(const TopologyState* topology, const std::string& path) {
+  return IsPrivateNativeToolImage(topology, path, kPNPMToolPath);
 }
 
 struct ProfileRegistration {
@@ -630,9 +646,10 @@ bool HasExactCloneCreator(const ProcessState::GroupState& group, const ProcessSt
       creator->second.start_time_ns == group.clone_creator_group_start_time_ns;
 }
 
-bool HasExactUVQueryCreator(const gvisor::common::ContextData& context,
+bool HasExactNativeQueryCreator(const gvisor::common::ContextData& context,
                             const ProcessState::GroupState& group,
-                            const ProcessState& state) {
+                            const ProcessState& state, ProcessClass source_class) {
+  if (source_class != ProcessClass::kUV && source_class != ProcessClass::kPNPM) return false;
   if (group.role != ProcessState::Role::kArtifact ||
       group.provenance != ProcessState::Provenance::kCloneChild ||
       !context.is_exec_session() || group.root_eligible || !group.root_consumed ||
@@ -644,11 +661,23 @@ bool HasExactUVQueryCreator(const gvisor::common::ContextData& context,
   const auto expected = state.expected_groups.find(group.clone_creator_group_id);
   return parent.role == ProcessState::Role::kControl &&
       parent.provenance == ProcessState::Provenance::kDirectExecRoot &&
-      parent.current_image_class == ProcessClass::kUV && !parent.root_eligible &&
+      parent.current_image_class == source_class && !parent.root_eligible &&
       parent.root_consumed && parent.trusted_control_network_active &&
       !parent.demotion_pending && !parent.launch_target_pending && !parent.handoff_target_pending &&
       expected != state.expected_groups.end() && expected->second.start_time_ns == parent.start_time_ns &&
-      expected->second.process_class == ProcessClass::kUV;
+      expected->second.process_class == source_class;
+}
+
+bool HasExactUVQueryCreator(const gvisor::common::ContextData& context,
+                            const ProcessState::GroupState& group,
+                            const ProcessState& state) {
+  return HasExactNativeQueryCreator(context, group, state, ProcessClass::kUV);
+}
+
+bool HasExactPNPMQueryCreator(const gvisor::common::ContextData& context,
+                              const ProcessState::GroupState& group,
+                              const ProcessState& state) {
+  return HasExactNativeQueryCreator(context, group, state, ProcessClass::kPNPM);
 }
 
 // This grammar is the pinned UV's launcher, not arbitrary Python code. The
@@ -690,6 +719,16 @@ bool IsExactUVPythonQuery(const gvisor::sentry::ExecveInfo& message,
     else if (mount.mountpoint != "/" && IsAtOrBelowMountpoint(root, mount.mountpoint)) return false;
   }
   return expected_tmp == 1 && actual_tmp == 1;
+}
+
+bool IsExactPNPMNodeQuery(const gvisor::sentry::ExecveInfo& message,
+                          const TopologyState* topology) {
+  return message.binary_path() == "/usr/local/bin/node" &&
+      message.execfn() == message.binary_path() && message.argv_size() == 2 &&
+      (message.argv(0) == "node" || message.argv(0) == message.binary_path()) &&
+      message.argv(1) == "--version" &&
+      IsPinnedReadOnlyRootPath(topology, message.binary_path()) &&
+      IsPNPMToolImage(topology, kPNPMToolPath);
 }
 
 bool HasExactCargoResolverCreator(const gvisor::common::ContextData& context,
@@ -1357,6 +1396,7 @@ const char* ProcessClassName(ProcessClass process_class) {
     case ProcessClass::kPython: return "PYTHON";
     case ProcessClass::kPip: return "PIP";
     case ProcessClass::kUV: return "OTHER";
+    case ProcessClass::kPNPM: return "OTHER";
     case ProcessClass::kNode: return "NODE";
     case ProcessClass::kNpm: return "NPM";
     case ProcessClass::kGo: return "GO";
@@ -1403,6 +1443,7 @@ const char* NetworkProcessClassName(ProcessClass process_class) {
       return ProcessClassName(process_class);
     case ProcessClass::kCargo:
     case ProcessClass::kUV:
+    case ProcessClass::kPNPM:
     case ProcessClass::kCargoTar:
     case ProcessClass::kCargoRustc: return "OTHER";
     case ProcessClass::kSleep:
@@ -1491,6 +1532,7 @@ ProcessClass ProcessClassForPath(const std::string& path, const char* profile) {
   if (path == "/usr/bin/chmod" || path == "/bin/chmod" || path == "chmod") return ProcessClass::kChmod;
   if (profile == nullptr) return ProcessClass::kUnknown;
   if (strcmp(profile, kProfileUVResolver) == 0 && path == kUVToolPath) return ProcessClass::kUV;
+  if (strcmp(profile, kProfilePNPMResolver) == 0 && path == kPNPMToolPath) return ProcessClass::kPNPM;
   if (strcmp(profile, kProfileGoBuild) == 0 || strcmp(profile, kProfileCargoBuild) == 0) {
     if (path == "/haa-runtime/haa-boundary") return ProcessClass::kProjectBuildBoundary;
     if (path == "/usr/bin/setpriv") return ProcessClass::kProjectBuildSetpriv;
@@ -2084,6 +2126,8 @@ bool IsGitHubArtifactRuntimeRead(const gvisor::common::ContextData& context,
   if (anchor->mount_class == "system") {
     const std::string self = "/proc/" + std::to_string(context.thread_group_id());
     if (anchor->mountpoint == "/proc") {
+      if (flags == 557056 &&
+          (path == self + "/maps" || path == "/proc/sys/vm/overcommit_memory")) return true;
       return path == self + "/cgroup" || path == self + "/mountinfo" ||
           path == "/proc/sys/kernel/osrelease";
     }
@@ -2094,7 +2138,7 @@ bool IsGitHubArtifactRuntimeRead(const gvisor::common::ContextData& context,
   if (anchor->mount_class != "oci-root" || anchor->mountpoint != "/") return false;
   std::string library = path;
   if (HasPrefix(library, "/usr/lib/")) library = "/lib/" + library.substr(9);
-  for (const char* name : {"libm.so.6", "libstdc++.so.6", "libgcc_s.so.1"}) {
+  for (const char* name : {"libm.so.6", "libstdc++.so.6", "libgcc_s.so.1", "librt.so.1", "libpthread.so.0", "libdl.so.2"}) {
     if (MatchesLibraryNameOrVersion(library,
         (std::string("/lib/x86_64-linux-gnu/") + name).c_str())) return true;
   }
@@ -2207,6 +2251,21 @@ bool IsPinnedRuntimeRootRead(const gvisor::common::ContextData& context,
   return HasPrefix(normalized, kStdlibRoot);
 }
 
+// The exact version-only Node child remains ARTIFACT. Reuse only the
+// canonical immutable native-loader ABI, not npm scripts/configuration or
+// another process's authority. The first actual read was ld.so.cache/557056.
+bool IsPinnedPNPMNodeQueryRead(const gvisor::common::ContextData& context,
+                              const ProcessState& state, const std::string& path,
+                              uint64_t flags, const char* profile, const MountAnchor* anchor) {
+  if (profile == nullptr || strcmp(profile, kProfilePNPMResolver) != 0 ||
+      anchor == nullptr || anchor->mountpoint != "/" || anchor->mount_class != "oci-root" ||
+      flags != 557056) return false;
+  const auto* group = FindFilesystemGroup(context, state);
+  return group != nullptr && group->pnpm_node_query_active &&
+      group->current_image_class == ProcessClass::kNode &&
+      HasExactPNPMQueryCreator(context, *group, state) && IsExactPinnedLibraryRead(path);
+}
+
 // The query consumes only the immutable interpreter ABI/stdlib. It cannot
 // import installed artifact packages or confer CONTROL/network authority.
 bool IsPinnedUVPythonQueryRead(const gvisor::common::ContextData& context,
@@ -2238,6 +2297,39 @@ bool IsPinnedUVPythonQueryRead(const gvisor::common::ContextData& context,
       normalized == "/usr/local/lib/python3.14/site-packages") return true;
   if (HasPrefix(normalized, "/usr/local/lib/python3.14/site-packages/")) return false;
   return HasPrefix(normalized, "/usr/local/lib/python3.14/");
+}
+
+// Observed GNU/Rust startup inputs of the pinned PNPM ELF. This is not a
+// shared library grant for artifacts, descendants, UV or other profiles.
+bool IsPinnedPNPMRuntimeRead(const gvisor::common::ContextData& context,
+                            const ProcessState& state, const std::string& path,
+                            uint64_t flags, const char* profile, const MountAnchor* anchor) {
+  if (profile == nullptr || strcmp(profile, kProfilePNPMResolver) != 0 ||
+      anchor == nullptr || flags != 557056 ||
+      !context.is_exec_session() || context.parent_thread_group_id() != 0) return false;
+  const bool library = anchor->mountpoint == "/" && anchor->mount_class == "oci-root" &&
+      path == "/usr/lib/x86_64-linux-gnu/librt.so.1";
+  const bool proc_metadata = anchor->mountpoint == "/proc" && anchor->mount_class == "system" &&
+      (path == "/proc/" + std::to_string(context.thread_group_id()) + "/maps" ||
+       path == "/proc/sys/vm/overcommit_memory" || path == "/proc/sys/kernel/osrelease" ||
+       path == "/proc/" + std::to_string(context.thread_group_id()) + "/cgroup" ||
+       path == "/proc/" + std::to_string(context.thread_group_id()) + "/mountinfo");
+  const bool cpu_limits = anchor->mountpoint == "/sys/fs/cgroup/cpu" && anchor->mount_class == "system" &&
+      (path == "/sys/fs/cgroup/cpu/cpu.cfs_quota_us" || path == "/sys/fs/cgroup/cpu/cpu.cfs_period_us");
+  const bool online_cpus = anchor->mountpoint == "/sys" && anchor->mount_class == "system" &&
+      path == "/sys/devices/system/cpu/online";
+  const bool native_file = anchor->mountpoint == "/haa-runtime" && anchor->mount_class == "helper" &&
+      path == kPNPMToolPath;
+  const bool device_read = anchor->mountpoint == "/dev" && anchor->mount_class == "system" &&
+      (path == "/dev/urandom" || path == "/dev/null");
+  if (!library && !proc_metadata && !cpu_limits && !online_cpus && !native_file && !device_read) return false;
+  const auto* group = FindFilesystemGroup(context, state);
+  return group != nullptr && group->role == ProcessState::Role::kControl &&
+      group->provenance == ProcessState::Provenance::kDirectExecRoot &&
+      group->current_image_class == ProcessClass::kPNPM &&
+      FilesystemProcessClass(context, state) == ProcessClass::kPNPM &&
+      !group->root_eligible && group->root_consumed && group->trusted_control_network_active &&
+      !group->demotion_pending && !group->launch_target_pending && !group->handoff_target_pending;
 }
 
 bool IsPinnedUVRuntimeRead(const gvisor::common::ContextData& context,
@@ -2594,7 +2686,7 @@ bool IsPinnedProjectConfigurationRead(
 
 bool IsCanonicalBootstrapProfile(const char* profile) {
   return profile != nullptr &&
-      (strcmp(profile, kProfileUVResolver) == 0 || strcmp(profile, kProfileNPM) == 0 || strcmp(profile, kProfilePyPI) == 0 ||
+      (strcmp(profile, kProfilePNPMResolver) == 0 || strcmp(profile, kProfileUVResolver) == 0 || strcmp(profile, kProfileNPM) == 0 || strcmp(profile, kProfilePyPI) == 0 ||
        strcmp(profile, kProfilePyTorchCPU) == 0 ||
        strcmp(profile, kProfilePyTorchCU126) == 0 ||
        strcmp(profile, kProfilePyTorchCU130) == 0 ||
@@ -3041,10 +3133,12 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
     return FilesystemClass::kOutside;
   }
   if (IsGitHubArtifactRuntimeRead(message.context_data(), state, path,
-                                  message.flags(), profile, anchor)) {
+                                  message.flags(), profile, anchor) ||
+      IsPinnedPNPMNodeQueryRead(message.context_data(), state, path, message.flags(), profile, anchor)) {
     return FilesystemClass::kRuntimeRoot;
   }
   if (IsExactBootstrapHelperWrite(message.context_data(), state, path, message.flags()) ||
+      IsPinnedPNPMRuntimeRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
       IsPinnedUVRuntimeRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
       IsPinnedUVPythonQueryRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
       IsPinnedCargoResolverRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
@@ -3194,7 +3288,7 @@ bool ParseControlRecord(const char* payload, size_t size, ControlPeer* peer,
     const std::string& id = fields["container_id"]; const std::string& profile = fields["profile"];
     const std::string& topology = fields["expected_topology"]; const std::string& generation = fields["session_generation"];
     if (!ValidContainerID(id) || !ValidSessionGeneration(generation) ||
-        (profile != kProfileUVResolver && profile != kProfileNPM && profile != kProfilePyPI && profile != kProfilePyTorchCPU &&
+        (profile != kProfilePNPMResolver && profile != kProfileUVResolver && profile != kProfileNPM && profile != kProfilePyPI && profile != kProfilePyTorchCPU &&
          profile != kProfilePyTorchCU126 && profile != kProfilePyTorchCU130 &&
          profile != kProfilePyTorchCU132 && profile != kProfileGitHub && profile != kProfileTerraformProvider && profile != kProfileGoResolver &&
          profile != kProfileGoBuild && profile != kProfileCargoResolver && profile != kProfileCargoBuild) ||
@@ -3334,6 +3428,10 @@ bool ParseSentryClone(const char* payload, size_t payload_size,
       creator->second.role == ProcessState::Role::kControl &&
       creator->second.provenance == ProcessState::Provenance::kDirectExecRoot &&
       creator->second.current_image_class == ProcessClass::kUV;
+  state->groups.find(child_group)->second.pnpm_node_query_candidate =
+      creator->second.role == ProcessState::Role::kControl &&
+      creator->second.provenance == ProcessState::Provenance::kDirectExecRoot &&
+      creator->second.current_image_class == ProcessClass::kPNPM;
   // One kernel clone of the admitted build driver may execute one locked SDK
   // tool. Neither tool authority nor CONTROL/network privilege is inherited.
   state->groups.find(child_group)->second.go_build_tool_candidate = IsGoBuildDriverGroup(creator->second);
@@ -3604,6 +3702,9 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     new_direct_root = true;
   }
   group->second.runtime_cache_query = false;
+  const bool pnpm_query_candidate = group->second.pnpm_node_query_candidate;
+  group->second.pnpm_node_query_candidate = false;
+  group->second.pnpm_node_query_active = false;
   const bool uv_query_candidate = group->second.uv_python_query_candidate;
   group->second.uv_python_query_candidate = false;
   group->second.uv_python_query_active = false;
@@ -3652,6 +3753,12 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
   if (group->second.current_image_class == ProcessClass::kUV &&
       (!IsUVToolImage(topology, message.binary_path()) || message.execfn() != kUVToolPath ||
        message.argv_size() == 0 || message.argv(0) != kUVToolPath)) {
+    *reason = "PROCESS_PROVENANCE_UNKNOWN";
+    return false;
+  }
+  if (group->second.current_image_class == ProcessClass::kPNPM &&
+      (!IsPNPMToolImage(topology, message.binary_path()) || message.execfn() != kPNPMToolPath ||
+       message.argv_size() == 0 || message.argv(0) != kPNPMToolPath)) {
     *reason = "PROCESS_PROVENANCE_UNKNOWN";
     return false;
   }
@@ -3742,6 +3849,33 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
       message.binary_path() == kRustcBinary && message.execfn() == kRustcBinary &&
       ((message.argv_size() == 2 && message.argv(0) == kRustcBinary && message.argv(1) == "-vV") ||
        IsExactCargoRustcMetadataQuery(message));
+  if (strcmp(profile, kProfilePNPMResolver) == 0 &&
+      group->second.role == ProcessState::Role::kControl) {
+    auto query_group = group->second;
+    query_group.role = ProcessState::Role::kArtifact;
+    const bool exact_creator = HasExactPNPMQueryCreator(message.context_data(), query_group, candidate);
+    if (pnpm_query_candidate || exact_creator) {
+      const bool query = pnpm_query_candidate && exact_creator &&
+          candidate.expected_groups.find(group_id) == candidate.expected_groups.end() &&
+          IsExactPNPMNodeQuery(message, topology);
+      // Both a valid query and a rejected PNPM candidate lose CONTROL. A
+      // rejected exec cannot regain it through the generic helper fallback.
+      group->second.role = ProcessState::Role::kArtifact;
+      group->second.trusted_control_network_active = false;
+      group->second.pnpm_node_query_active = query;
+      if (query) group->second.current_image_class = ProcessClass::kNode;
+      candidate.expected_groups.erase(group_id);
+      ApplyExecCloexec(&candidate, group_id);
+      process_state->groups = candidate.groups;
+      process_state->expected_groups = candidate.expected_groups;
+      process_state->fd_states = candidate.fd_states;
+      if (query) return Send(output, *container_id, "process-exec-expected");
+      const Attribution attribution{"SENTRY_EXEC", nullptr, nullptr,
+          ProcessClassName(group->second.current_image_class), "ARTIFACT_ROLE", "ARTIFACT_GROUP"};
+      RecordUnexpectedExec(&process_state->first_unexpected_exec, snapshot, "ARTIFACT_ROLE", "ARTIFACT_GROUP");
+      return Send(output, *container_id, "process-exec-unexpected", nullptr, &attribution);
+    }
+  }
   if (strcmp(profile, kProfileUVResolver) == 0 && uv_query_candidate &&
       group->second.role == ProcessState::Role::kControl &&
       candidate.expected_groups.find(group_id) == candidate.expected_groups.end() &&

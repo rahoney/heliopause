@@ -17,7 +17,7 @@ func runtimeOwnerFixture(t *testing.T) string {
 			t.Fatal(err)
 		}
 	}
-	for _, name := range []string{"go.mod", "README.md", "tools/pnpm/release-proof.json", "tools/pnpm/NOTICE", "scripts/runtimes.lock.json", "scripts/tools.lock.json", "scripts/version-support.lock.json", workflowRelativePath, securityWorkflowRelativePath, releaseWorkflowRelativePath, releasePublishWorkflowRelativePath} {
+	for _, name := range []string{"go.mod", "README.md", "tools/pnpm/release-proof.json", "tools/pnpm/NOTICE", "scripts/ci-pnpm-runtime.sh", "scripts/runtimes.lock.json", "scripts/tools.lock.json", "scripts/version-support.lock.json", workflowRelativePath, securityWorkflowRelativePath, releaseWorkflowRelativePath, releasePublishWorkflowRelativePath} {
 		body, err := os.ReadFile(filepath.Join("../..", name))
 		if err != nil {
 			t.Fatal(err)

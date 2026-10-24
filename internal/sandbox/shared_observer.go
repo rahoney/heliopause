@@ -62,6 +62,10 @@ func observerExpectedTopology(profile string) ([]observerMountExpectation, bool)
 	tmp := observerMountExpectation{"/tmp", "workspace", "/", "tmpfs", false, true, true, false}
 	runtime := observerMountExpectation{"/haa-runtime", "helper", "/", "tmpfs", false, false, true, false}
 	switch profile {
+	case pnpmResolverProfile:
+		runtime.FSType, runtime.NoSUID = "9p", false
+		project := observerMountExpectation{pnpmProjectRoot, "workspace", "/tmp", "9p", false, false, false, false}
+		return []observerMountExpectation{root, tmp, project, runtime}, true
 	case uvResolverProfile:
 		// Named tmpfs is separately verified on the Host and exposed as 9p by
 		// the pinned runtime. Guest flags do not assert its Host tmpfs flags.

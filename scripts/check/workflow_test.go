@@ -162,6 +162,7 @@ func TestValidateCIWorkflowRejectsSecurityRegressions(t *testing.T) {
 	}
 
 	tests := map[string]string{
+		"PNPM runtime omitted":                         strings.Replace(string(contents), "bash scripts/ci-pnpm-runtime.sh", "# bash scripts/ci-pnpm-runtime.sh", 1),
 		"floating action":                              strings.Replace(string(contents), "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", "actions/checkout@main", 1),
 		"missing always":                               strings.Replace(string(contents), "    if: ${{ always() }}\n", "", 1),
 		"write token":                                  strings.Replace(string(contents), "  contents: read", "  contents: write", 1),
