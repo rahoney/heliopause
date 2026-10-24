@@ -1,10 +1,10 @@
 # P2c — pnpm selection·graph·layout 연결 지도
 
-Baseline `343f03f`, M13-004/P2만 진행한다. P2b2의 native admission은
-[LOCAL VERIFIED](./p2b2-pnpm-admission-local-20261024.json)이며 같은 source의 CI401
-`40054664786`이 실행 중이다. 첫 확인은 2026-10-24 12:23:29 KST이며 실제 deadline
-timer를 실행했다. 이 문서는 그 원격 결과에 의존하지 않는 parser/설계 작업부터 수행한다.
-새 push로 실행 중 후보를 취소하지 않는다. Bun 이후 단계는 시작하지 않는다.
+Baseline `343f03f`, M13-004/P2만 진행한다. P2b2 native admission은
+[CI401 ordinary qualification](./p2b2-pnpm-ci401-qualification-20261024.json)에서
+Required10SUCCESS·동일 whole tree·actual PNPM4/observer110/기존 소비자·정리를 확인했다.
+P2c1/e762 및 이후는 로컬 검증 범위이며 새 public graph/layout/CLI는 아직 미완료다.
+작은 helper마다 remote CI를 반복하지 않으며 Bun 이후 단계는 시작하지 않는다.
 
 Read: [전체 P2 감사](./p2-pnpm-baseline-20261024.md),
 [확장 계약](../../../user-journey-cli-ia/09-package-client-quarantine.md),
@@ -190,3 +190,63 @@ architecture checker Race도 통과했다. 최종 크기 bound fixture는 invali
 [P2c1 결과](./p2c-pnpm-selection-local-20261024.json)가 세부 범위를 소유한다.
 이는 bounded unapproved parser와 source binding의 로컬 검증이며 native public producer·
 Domain graph/HostInstallAction·layout/transaction/CLI는 아직 MISSING이다.
+
+## 6. 다음 P2c2 producer의 source 작성 전 수정 위치
+
+P2c1은 로컬 `e762bdc`로 보존했고 CI401을 취소할 push는 하지 않았다. 다음은
+`internal/sandbox/pnpm_resolver.go`의 실제 public native producer다. 아직 IMPLEMENTED/
+WIRED/QUALIFIED/ACCEPTANCE_CLOSED는 모두 NO다. 기존 offline fixture의 동작을 production
+public 완료로 표시하지 않는다.
+
+- Constructor는 기존 TrustedExecutor·TraceObserver·ResolverPolicyService 및 NPM의 고정
+  endpoint resolver를 받는다. 새 privilege helper operation/source interface는 만들지 않는다.
+  Capability probe·보호된 native source·Node image와 Root/runtime/project volumes는 기존
+  owner를 그대로 사용한다. 원래 npm/Python client를 PNPM이라고 바꾸지 않는다.
+- 기존 `pnpmCreateArguments`와 fixed Node environment를 사용한다. DNS preflight와
+  `npmNetworkArguments`·`ResolverNetworkPolicy.Prepare/Close` 및 service Create/Verify/Remove를 그대로 소비하며
+  registry HTTPS endpoint 집합만 허용한다. DNS/credential/ambient proxy fallback은 없다.
+- `artifact/npm`의 manifest 검증을 작은 public preflight로 노출해 native 실행 전에 적용한다.
+  Producer가 generated version을 전달한다. 기존 프로젝트의 pnpmfile/.npmrc/workspace나
+  ancestor config는 guest에 넘기지 않는다. 실제 native option 이름은 고정 source/help와
+  대조한 뒤 사용하며 ignore-scripts·workspace/config/runtime auto-selection 제약을 확인한다.
+- 입력/출력은 이미 qualified된 named project mount의 고정 controls만 bounded tar로
+  전달한다. Manifest와 lock 각각4MiB·regular UID1000·type/name/개수·trailing payload를
+  검사한다. Native add/install/update가 실제 바꾼 manifest와 specifier를 따로 수집하고,
+  install로 모든 intent를 대체하거나 npm update의 range 보존을 PNPM에 전용하지 않는다.
+- Container의 name/label/ID/generation attestation과 unknown create 결과 정리는 기존
+  UV의 `verifyOwnedUVResolverContainer`/`removeOwnedUVResolverContainer` 프로토콜을
+  대조한다. 필요하면 두 실제 native kind에만 기계적으로 공유하고 UV wrapper/거부는
+  유지한다. 새 범용 session framework를 만들지 않는다.
+- Operation 결과는 observer completeness·unexpected/outside/honeytoken/artifact network
+  거부와 container→trace→project/runtime volume→typed policy 정리를 모두 통과한 뒤에만
+  반환한다. 원래 실패/취소 원인을 보존하며 cleanup 불확실 시 output을 비운다.
+- 반환값은 여전히 unapproved native output/source-bound selection이다. Domain graph와
+  complete snapshot의 변환은 별도 검증한다. 특히 기존 M4 HostInstallAction을 lock 필드
+  부재만으로 false로 만들지 않는다. 자연어 Evidence summary를 다시 parsing하여 machine
+  authority를 만들지 않으며 exact version metadata와 실제 archive lifecycle 정보를 대조한다.
+
+첫 실제 public 대상은 single/transitive/peer이며 기존 npm/PyPI 성공 범위를 분리한다.
+고정 argv/input/cancellation·정리 negative를 로컬에서 먼저 닫고 actual runtime first-fault는
+exact role/path/flags 근거로만 보완한다. 최초 오류를 다음 cleanup으로 덮거나 broad CONTROL/
+Node/proc/library/network 예외로 해결하지 않는다. 이 producer를 public/Policy/CLI 완료로
+확대하지 않고 P2c3 layout/transaction, P2c4 CLI를 이어간다.
+
+P2c2의 첫 구현 단위는 `sandbox/pnpm_project_transport.go`다. 기존 gated PNPM lock/query
+fixture가 같은 production copy/read helpers를 실제 소비하도록 연결하고 중복 tar 처리를
+제거한다. 고정 두 파일·private project path·UID/GID1000·regular0600/0644·각4MiB와
+전체 tar overhead64KiB·trailing/extra/link/unknown/취소를 검증한다. Guest 파일을 Host에
+추출하지 않는다. 기존 real fixture는 mode까지 확인하지 않았으므로 새 strict transport의
+actual qualification은 아직 열려 있으며 과거 actual PASS를 전용하지 않는다.
+Public producer 자체와 typed network lifecycle은 이 다음이다.
+
+
+### P2c2 고정 control 전송 로컬 결과
+
+[고정 전송 결과](./p2c2-pnpm-control-transport-local-20261024.json)는 canonical Quick119.431s/
+security/docs와 실제 empty-lock·Node-query8.884s를 연결한다. Manifest와 lock 두 파일을
+같은 production helper로 읽고 명시 UID/GID1000·0600/0644·regular·한도/이름을 검증했다.
+두 daemon wait0·container/volume/socket0·Host12파일/image/bridge/service 동일이다.
+마지막 소비 후 모든 UID의 FD/maps/mount 참조와 query errors0 뒤 완료 workroot
+1,278,661,055B를 제거했다. Public network producer/Domain graph/layout/CLI는 아직 MISSING이다.
+Network policy에는 별도 Bind method가 없음을 실제 source에서 확인했다. 기존
+Prepare 내부 service Create/Verify와 Close 내부 Remove를 재사용하며 새 method를 만들지 않는다.

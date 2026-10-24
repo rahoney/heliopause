@@ -3,12 +3,10 @@
 package sandbox
 
 import (
-	"archive/tar"
 	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
-	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -19,8 +17,6 @@ import (
 	"github.com/rahoney/heliopause/internal/hosttool"
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
-
-const pnpmProjectDirectory = pnpmProjectRoot + "/project"
 
 func TestPNPMActualIsolatedNativeStartup(t *testing.T) {
 	withActualPNPMNativeRuntime(t, func(ctx context.Context, runner CommandRunner, id string) {
@@ -40,10 +36,6 @@ func TestPNPMActualIsolatedNodeQuery(t *testing.T) { runActualPNPMLockProbe(t, t
 func runActualPNPMLockProbe(t *testing.T, requireNode bool) {
 	t.Helper()
 	withActualPNPMNativeRuntime(t, func(ctx context.Context, runner CommandRunner, id string) {
-		input, ok := runner.(inputCommandRunner)
-		if !ok {
-			t.Fatal("PNPM input transport unavailable")
-		}
 		nodeVersion, _, valid := strings.Cut(strings.TrimPrefix(runtimeidentity.NodeImageReference, "node:"), "-slim@sha256:")
 		if !valid || nodeVersion == "" {
 			t.Fatal("unknown pinned Node image tag format")
@@ -56,21 +48,11 @@ func runActualPNPMLockProbe(t *testing.T, requireNode bool) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		var transport bytes.Buffer
-		archive := tar.NewWriter(&transport)
-		if err := archive.WriteHeader(&tar.Header{Name: "project/", Typeflag: tar.TypeDir, Mode: 0700, Uid: 1000, Gid: 1000}); err != nil {
+		control, err := domain.NewProjectControlFile("package.json", body, true)
+		if err != nil {
 			t.Fatal(err)
 		}
-		if err := archive.WriteHeader(&tar.Header{Name: "project/package.json", Typeflag: tar.TypeReg, Mode: 0600, Uid: 1000, Gid: 1000, Size: int64(len(body))}); err != nil {
-			t.Fatal(err)
-		}
-		if _, err := archive.Write(body); err != nil {
-			t.Fatal(err)
-		}
-		if err := archive.Close(); err != nil {
-			t.Fatal(err)
-		}
-		if err := input.RunInput(ctx, &transport, "docker", "cp", "--archive", "-", id+":"+pnpmProjectRoot); err != nil {
+		if err := copyPNPMProjectControls(ctx, runner, id, []domain.ProjectControlFile{control}); err != nil {
 			t.Fatal("PNPM empty input copy failed", err)
 		}
 		args := []string{pnpmToolGuestPath, "--dir", pnpmProjectDirectory, "install", "--offline", "--lockfile-only", "--ignore-scripts", "--ignore-workspace", "--store-dir", pnpmProjectRoot + "/store", "--state-dir", pnpmProjectRoot + "/state", "--reporter=silent"}
@@ -83,22 +65,15 @@ func runActualPNPMLockProbe(t *testing.T, requireNode bool) {
 		if !ok {
 			t.Fatal("PNPM bounded lock transport unavailable")
 		}
-		output := nativeToolArchiveOutput{limit: 64 << 10}
-		if err := streams.RunOutput(ctx, &output, "docker", "cp", id+":"+pnpmProjectDirectory+"/pnpm-lock.yaml", "-"); err != nil {
+		selected, err := readPNPMProjectControl(ctx, streams, id, "pnpm-lock.yaml")
+		if err != nil {
 			t.Fatal("PNPM lock read failed", err)
 		}
-		reader := tar.NewReader(bytes.NewReader(output.body))
-		h, err := reader.Next()
-		if err != nil || h.Name != "pnpm-lock.yaml" || h.Typeflag != tar.TypeReg || h.Uid != 1000 || h.Gid != 1000 || h.Size <= 0 || h.Size > 16<<10 {
-			t.Fatal("PNPM empty lock transport differs", err)
+		selectedManifest, err := readPNPMProjectControl(ctx, streams, id, "package.json")
+		if err != nil || !bytes.Equal(selectedManifest.Body(), body) {
+			t.Fatal("PNPM empty manifest changed or capture failed", err)
 		}
-		lock, err := io.ReadAll(reader)
-		if err != nil || int64(len(lock)) != h.Size {
-			t.Fatal("PNPM empty lock read failed", err)
-		}
-		if _, err := reader.Next(); err != io.EOF {
-			t.Fatal("PNPM lock transport has extra members", err)
-		}
+		lock := selected.Body()
 		if !bytes.Contains(lock, []byte("lockfileVersion: '9.0'")) || !bytes.Contains(lock, []byte("importers:")) {
 			t.Fatal("PNPM empty lock format differs", string(lock))
 		}

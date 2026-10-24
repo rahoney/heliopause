@@ -9,6 +9,7 @@ import (
 
 const pnpmResolverProfile = "pnpm-resolver"
 const pnpmProjectRoot = "/tmp/haa-pnpm-input"
+const pnpmProjectDirectory = pnpmProjectRoot + "/project"
 
 func createPNPMProjectVolume(ctx context.Context, runner CommandRunner, owner string) (closureVolume, error) {
 	return createInputVolume(ctx, runner, owner+"-pnpm-project", runtimeidentity.PNPMToolSHA256, 128<<20, false, projectBuildVolumeConfig{pnpmProjectRoot, false})

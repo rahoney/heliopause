@@ -1,0 +1,78 @@
+{
+  "baseline": "e762bdc8abad32a706450f0d840a94900732549b",
+  "status": "LOCAL VERIFIED fixed data transport only; public native selection/graph/layout/CLI remain MISSING",
+  "canonical": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.288,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 119.431,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 6.373,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.227,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    }
+  ],
+  "actual": {
+    "seconds": 8.884,
+    "cases": [
+      [
+        "TestPNPMActualIsolatedEmptyLock",
+        "4.65s"
+      ],
+      [
+        "TestPNPMActualIsolatedNodeQuery",
+        "4.18s"
+      ]
+    ],
+    "host_before_after_identical": true,
+    "daemon_waits": [
+      0,
+      0
+    ],
+    "remaining_containers": 0,
+    "remaining_volumes": 0,
+    "observer_endpoints_remaining": 0
+  },
+  "cleanup": 1278661055,
+  "scope": "same production helpers copy and read both manifest and lock; fixed names, UID/GID,0600/0644,regular types,4MiB,64KiB overhead,extra/trailing/link/unknown/cancel refusal; no Host extraction",
+  "source": [
+    {
+      "path": "internal/sandbox/pnpm_project_transport.go",
+      "sha256": "2207b23cecd50a57f9358221d17e464a5619337ddd38d717e342083d74f3ab6e"
+    },
+    {
+      "path": "internal/sandbox/pnpm_project_transport_test.go",
+      "sha256": "9b037844144d9546972be401c988924924ec9c112dc17e9d473e03bf44c383b5"
+    },
+    {
+      "path": "internal/sandbox/pnpm_runtime.go",
+      "sha256": "dbf8b7890636a97d2948aa7357f3fa9e730881048a026fb9b8fe1180df8e401a"
+    },
+    {
+      "path": "internal/sandbox/pnpm_runtime_real_test.go",
+      "sha256": "21fe23d8cbd6cdcd8da21f1ccf111f43c18a78e3d5180299f8fc626f70e2e148"
+    }
+  ],
+  "raw_owner": "docs/github-logs/package-client-quarantine-20261021",
+  "raw": [
+    "p2c2-pnpm-control-reviewed-*.{json,log}",
+    "p2c2-pnpm-control-actual-first.json",
+    "p2c2-pnpm-control-completed-runtime-cleanup.json"
+  ],
+  "initial_compile_failure": "p2c2-pnpm-control-transport-quick: new fixture make syntax, corrected before actual; not a runtime refusal"
+}

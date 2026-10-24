@@ -16,12 +16,38 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — rc6/native4 same-runtime baseline IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; P2/native5 expansion locally verified only, guest/whole qualification and channel scope remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2b2 — committed343f03f and pushed; CI401 native/common qualification pending (first timer check12:23KST); continue independent P2c1 bounded selection parser after audited plan
+Next action: M13-004/P2c2 — P2c1 locally committed e762bdc (not pushed); audited public native producer next; CI401 Required10SUCCESS confirmed; strict fixed control transport LOCAL VERIFIED/actual8.884s; public native producer next
 Current substep: M13-004/P2 — IN_PROGRESS; offline supply/native distribution LOCAL VERIFIED; exact guest admission and product graph/layout/CLI gaps active; support not yet advertised
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-24 CI401 ordinary native admission 확인과 P2c2 전송 검증
+
+실제 연장 타이머 뒤 [CI401 결과](./evidence/package-client-quarantine/p2b2-pnpm-ci401-qualification-20261024.json)를 확인했다.
+Head343f03f와 checkout093cba1의 전체tree e735b1ec가 같으며 Required 포함10SUCCESS다.
+새 PNPM actual4·observer110·기존 Linux47/CPU296.32s·native macOS와 helper5wait0/
+최종 CONFIRMED_STOPPED·client_error0·restore0을 확인했다. P2b2 ordinary guest admission의
+원격 gap만 닫는다. P2c1/e762와 이후 source는 로컬이며 native5 signed whole-update 및
+P2 graph/layout/transaction/CLI acceptance는 계속 열려 있다.
+P2c2 고정 project controls의 local Quick119.431s/security/docs PASS 뒤 같은 production
+transport를 소비하는 empty-lock/Node actual과 manifest·lock의 metadata/크기를 검증한다.
+새 fresh owned workroot의 actual8.884s도 PASS이며 [전송 결과](./evidence/package-client-quarantine/p2c2-pnpm-control-transport-local-20261024.json)로 범위를 연결했다.
+마지막 소비 뒤 참조/query errors0 확인 후1,278,661,055B를 제거했다.
+M13-004만 IN_PROGRESS이며 작은 helper별 원격 CI를 반복하지 않는다.
+
+### 2026-10-24 CI401 첫 타이머 확인과 P2c2 준비
+
+50분 실제 타이머가03:23:29.834UTC에 만료된 뒤 exact head343f03f의 run/jobs를 조회했다.
+Quick/observer/macOS/docs/security/vulnerability/corpus/minimum Go8개가 SUCCESS이고
+Linux integration/job120754864311은 아직 IN_PROGRESS다. Required는 Linux 결과를 기다린다.
+15분 연장 타이머의 다음 확인은 **2026-10-24 12:40:19 KST**다. 재push/재dispatch하지 않는다.
+P2c1은 전체2138files/tree 대조와 evidence-inclusive security/docs 뒤 로컬 `e762bdc`로
+커밋했다. 원격에는343만 있으며 P2c1의 원격 qualification을 주장하지 않는다.
+[P2c 지도 §6](./evidence/package-client-quarantine/p2c-pnpm-selection-plan-20261024.md#6-다음-p2c2-producer의-source-작성-전-수정-위치)의
+actual producer/preflight/typed network/정리와 Domain·HostInstallAction 남은 경계를
+확인하며 다음 source를 준비한다. M13-004만 IN_PROGRESS다.
 
 ### 2026-10-24 P2c1 bounded lock·독립 source binding 로컬 검증
 
