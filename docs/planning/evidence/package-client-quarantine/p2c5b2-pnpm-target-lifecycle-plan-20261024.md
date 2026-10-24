@@ -173,3 +173,9 @@ B3가 expected target의 inventory와 byte binding을 실행 전에 반드시 �
 포함하지 않는다. [B2 로컬 영수증](./p2c5b2-pnpm-target-local-20261024.json)이 실제 입력과
 검증 범위·작은 원본을 연결한다. 다음은 B3의 archive inventory/전체 layout·static-all/
 production prepare owner 수정 지도를 먼저 감사·재검토하는 순서다.
+
+후속 source1f410fd의 [CI404](./p2c5b3-pnpm-ci404-qualification-20261024.json)는 실제55분
+타이머 뒤 Required10SUCCESS/whole tree 일치·두 job의 새112 latch/PNPM4/기존 Linux57·
+CPU281.30s/native macOS/helper5wait0를 확인했다. B2 공용 observer의 ordinary 회귀를 닫는
+범위이며 target synthetic actual은 앞 local receipt를 유지한다. 전체 P2 acceptance와
+production full layout/prepare/aggregate는 계속 미완료다.

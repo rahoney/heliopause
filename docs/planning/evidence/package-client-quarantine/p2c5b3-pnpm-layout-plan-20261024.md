@@ -330,3 +330,16 @@ refs0/query errors0 뒤 삭제했다. [로컬 영수증](./p2c5b3b2b-pnpm-bin-lo
 Source-derived vector와 actual 범위를 연결한다. 다음에는 archive inventory/manifest bin과
 전체 frozen instances/edges·generated metadata를 함께 결합할 정확한 지도를 확정한다.
 CI404/1f410fd의19:30:18KST 실제 타이머는 그대로 유지한다.
+
+## 10. CI404 종료와 현재 수정 지도 경계
+
+[CI404](./p2c5b3-pnpm-ci404-qualification-20261024.json)는 source1f410fd/checkout31290a9의
+whole tree32123575·Required10SUCCESS를55분 타이머 뒤 확인했다. 새 C++112 latch와 기존
+PNPM4/Linux57·CPU281.30s/native macOS/helper5wait0/final0이 범위다. 이후 local5641ed6의
+layout envelope와442af68의 Node bin code 형식 검증은 이 remote에 포함되지 않는다.
+
+다음 full binder의 정확한 source 지도·metadata/bin/instance coverage 판정을 작성·재검토한
+뒤 구현한다. 현재 static inventory, unverified native envelope, exact dirname와 Node code
+format parser를 재사용하고 새 parser/Store/Domain Policy/기존 단일 Backend를 재작성하지
+않는다. 아직 full archive/file/edge/bin/metadata 값 결합·production prepare/static-all/
+per-instance aggregate·Host records/transaction/CLI는 MISSING이며 P2 acceptance는 NO다.
