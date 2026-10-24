@@ -83,6 +83,13 @@ func runActualPNPMLockProbe(t *testing.T, requireNode bool) {
 
 func withActualPNPMNativeRuntime(t *testing.T, operation func(context.Context, CommandRunner, string)) {
 	t.Helper()
+	withActualPNPMNativeRuntimePolicy(t, false, func(ctx context.Context, runner CommandRunner, container, _ string) {
+		operation(ctx, runner, container)
+	})
+}
+
+func withActualPNPMNativeRuntimePolicy(t *testing.T, online bool, operation func(context.Context, CommandRunner, string, string)) {
+	t.Helper()
 	if os.Geteuid() == 0 || os.Getenv("HELOX_PNPM_NATIVE_RUNTIME") != "1" {
 		t.Fatal("requires declared ordinary-user isolated PNPM runtime qualification")
 	}
@@ -137,9 +144,53 @@ func withActualPNPMNativeRuntime(t *testing.T, operation func(context.Context, C
 			t.Error(err)
 		}
 	}()
-	baseArguments, err := pnpmCreateArguments("none", nil, volume, project)
+	network := "none"
+	var hosts []string
+	if online {
+		addresses, err := (systemEndpointResolver{}).Resolve(ctx, []string{"registry.npmjs.org"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		hosts, err = npmNetworkArguments(addresses)
+		if err != nil {
+			t.Fatal(err)
+		}
+		policy, err := NewResolverNetworkPolicy(runner, integrationResolverPolicyService(t))
+		if err != nil {
+			t.Fatal(err)
+		}
+		network, err = policy.Prepare(ctx, addresses)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer func() {
+			cleanup, done := resolverCleanupContext()
+			defer done()
+			if err := policy.Close(cleanup); err != nil {
+				t.Error("PNPM metadata policy cleanup unproven", err)
+			}
+		}()
+	}
+	baseArguments, err := pnpmCreateArguments(network, hosts, volume, project)
 	if err != nil {
 		t.Fatal(err)
+	}
+	if online {
+		imageIndex := -1
+		for index, value := range baseArguments {
+			if value == runtimeidentity.NodeImageReference {
+				imageIndex = index
+				break
+			}
+		}
+		if imageIndex < 0 {
+			t.Fatal("pinned PNPM image is absent from fixed arguments")
+		}
+		withCache := append([]string{}, baseArguments[:imageIndex]...)
+		// The native config derives its default store before command overrides.
+		// Pin its early environment layer as well as the matching command flag.
+		withCache = append(withCache, "--env", "XDG_CACHE_HOME="+pnpmProjectRoot+"/cache", "--env", "TMPDIR="+pnpmProjectRoot+"/tmp", "--env", "PNPM_CONFIG_STORE_DIR="+pnpmProjectRoot+"/store")
+		baseArguments = append(withCache, baseArguments[imageIndex:]...)
 	}
 	arguments := append([]string{"create", "--name", name, "--label", "io.heliopause.pnpm-native=" + session.String()}, baseArguments[1:]...)
 	created, err := runner.Output(ctx, "docker", arguments...)
@@ -193,7 +244,7 @@ func withActualPNPMNativeRuntime(t *testing.T, operation func(context.Context, C
 	if err := volume.verifyTarget(ctx, runner, id); err != nil {
 		t.Fatal(err)
 	}
-	operation(ctx, runner, id)
+	operation(ctx, runner, id, network)
 }
 
 // The same pinned payload is deliberately inspected as ARTIFACT through the

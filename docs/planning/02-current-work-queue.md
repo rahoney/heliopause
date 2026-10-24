@@ -16,12 +16,22 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — rc6/native4 same-runtime baseline IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; P2/native5 expansion locally verified only, guest/whole qualification and channel scope remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2c4 — complete snapshot implemented; actual single quarantine ALLOW, transitive dynamic INCOMPLETE; audit frozen npm dependency/peer fixture before layout; CI402/head940 timer14:57:13KST; P2 acceptance NO
+Next action: M13-004/P2c5 — A2 transitive native offline primitive LOCAL VERIFIED; peer fixture and production closure edit map next; transitive product dynamic INCOMPLETE; CI402/head940 ten SUCCESS; P2 acceptance NO
 Current substep: M13-004/P2 — IN_PROGRESS; offline supply/native distribution LOCAL VERIFIED; exact guest admission and product graph/layout/CLI gaps active; support not yet advertised
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-24 CI402 ordinary checkpoint 확인
+
+실제55분 타이머 만료 뒤 [CI402 결과](./evidence/package-client-quarantine/p2c2-pnpm-ci402-qualification-20261024.json)를
+확인했다. Required 포함10SUCCESS이며 source940과 checkoutcab8183의 전체tree36c5d030이
+같다. PNPM 실제4개·두 job의 observer110·Linux job 전체57 top-level PASS/CPU294.69s·
+native macOS, helper5wait0/final CONFIRMED_STOPPED·original0/client_error0/client_restore0도
+확인했다. 이 ordinary checkpoint는 앞940 범위이며 새 public8 fixture의 미실행을 성공으로
+표시하거나 이후 로컬0f8/40d/C5 검증으로 전용하지 않는다. P2 qualification/acceptance는
+여전히 미완료이고 native offline dependency/peer context를 같은 M13-004에서 이어간다.
 
 ### 2026-10-24 P2c3 archive 설치 동작 사실 전달 착수
 
@@ -53,6 +63,17 @@ offline dynamic에서 M3_DYNAMIC_EXECUTION_FAILED/INCOMPLETE여서 수동 검토
 Host불변/정리·미실행 후속과 stale overlay 진단 NOT_EXECUTED를 보존했다.
 다음에는 npm에 존재하지 않는 frozen dependency/peer fixture의 정확한 연결 지도를 먼저
 작성·재검토하고 이 gap을 닫은 뒤 layout/transaction/CLI로 진행한다. M13-004만 IN_PROGRESS다.
+
+Snapshot은 로컬40d4e25로 보존했다. [P2c5-A native offline 착수 감사·수정 지도·두 번째 검토](./evidence/package-client-quarantine/p2c5-pnpm-offline-context-plan-20261024.md)를
+완료했고 먼저 fixed file-source recipe와 실제 pinned native 배치를 검증한다. 이것은 test
+prerequisite이며 production closure 인터페이스는 그 결과 뒤 정확히 확정한다. 현재 작은
+local commit 둘은 push하지 않았고402 후보도 유지한다.
+
+P2c5-A2의 transitive2는 [로컬 결과](./evidence/package-client-quarantine/p2c5-pnpm-offline-local-20261024.json)에서
+원래 observer25의 actual8.591s/complete/금지0·Host불변/helperwait0로 검증했다. 초기 store
+설정을 고정해 default root probe를 피했고 제품 관찰기·권한은 유지했다. Peer fixture와
+production static-all/per-target closure가 다음 순서이며 새 실제 P2 검역 완료는 아니다.
+완료한 namespace·진단 자료는 참조/query error0 확인 뒤 삭제했고 작은 원본만 보존했다.
 
 ### 2026-10-24 P2c2 actual public 선택·update/no-op 로컬 검증
 
