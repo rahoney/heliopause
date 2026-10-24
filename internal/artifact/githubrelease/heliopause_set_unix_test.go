@@ -51,6 +51,11 @@ func newReleaseSetFixture(t *testing.T, edit func(map[string]any)) *releaseSetFi
 	}
 	assets := f.metadata["assets"].([]any)
 	assets = append(assets, map[string]any{"name": "haa-release-installer-linux-amd64", "platform": "linux/amd64", "role": "release-installer"})
+	assets = append(assets, map[string]any{"name": "pnpm-linux-amd64", "platform": "linux/amd64", "role": "pnpm"}, map[string]any{"name": "pnpm-NOTICE.txt", "platform": "linux/amd64", "role": "release-metadata"})
+	noticeBody, noticeErr := os.ReadFile(filepath.Join("..", "..", "..", "tools", "pnpm", "NOTICE"))
+	if noticeErr != nil {
+		t.Fatal(noticeErr)
+	}
 	for _, raw := range assets {
 		item := raw.(map[string]any)
 		name := item["name"].(string)
@@ -62,6 +67,9 @@ func newReleaseSetFixture(t *testing.T, edit func(map[string]any)) *releaseSetFi
 			binary.LittleEndian.PutUint16(body[52:54], 64)
 			binary.LittleEndian.PutUint16(body[54:56], 56)
 			body = append(body, []byte(name)...)
+			if name == "pnpm-NOTICE.txt" {
+				body = noticeBody
+			}
 			f.files[name] = body
 			item["size"] = len(body)
 			item["sha256"] = fmt.Sprintf("%x", sha256.Sum256(body))
@@ -247,7 +255,7 @@ func TestHeliopauseSetConcurrentCopiesCloseAndUncertainOwnership(t *testing.T) {
 	}
 }
 
-func TestHeliopauseSetFreezesSevenMembersAndCleansOnlyOwnedAcquisitions(t *testing.T) {
+func TestHeliopauseSetFreezesNineMembersAndCleansOnlyOwnedAcquisitions(t *testing.T) {
 	f := newReleaseSetFixture(t, nil)
 	foreign := filepath.Join(f.client.intakeRoot, "unrelated")
 	if err := os.Mkdir(foreign, 0700); err != nil {
@@ -257,7 +265,7 @@ func TestHeliopauseSetFreezesSevenMembersAndCleansOnlyOwnedAcquisitions(t *testi
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(resolution.Graph().Nodes()) != 7 || len(resolution.Graph().Edges()) != 6 {
+	if len(resolution.Graph().Nodes()) != 9 || len(resolution.Graph().Edges()) != 8 {
 		t.Fatal("incomplete native/metadata set")
 	}
 	manifest, err := f.set.Manifest()
@@ -328,7 +336,16 @@ func TestHeliopauseSetRejectsSelectionAndBindingGapsWithoutPayloadPromotion(t *t
 		t.Run(name, func(t *testing.T) {
 			var edit func(map[string]any)
 			if name == "missing-installer" {
-				edit = func(m map[string]any) { assets := m["assets"].([]any); m["assets"] = assets[:len(assets)-1] }
+				edit = func(m map[string]any) {
+					assets := m["assets"].([]any)
+					kept := make([]any, 0, len(assets))
+					for _, raw := range assets {
+						if raw.(map[string]any)["name"] != "haa-release-installer-linux-amd64" {
+							kept = append(kept, raw)
+						}
+					}
+					m["assets"] = kept
+				}
 			}
 			if name == "set-byte-limit" {
 				edit = func(m map[string]any) {

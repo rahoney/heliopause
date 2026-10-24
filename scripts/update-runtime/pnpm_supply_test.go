@@ -4,8 +4,25 @@ import (
 	"bytes"
 	"errors"
 	"path/filepath"
+	"strings"
 	"testing"
 )
+
+func TestPNPMFrozenNoticesBindSourceAndRemainPassiveData(t *testing.T) {
+	source := strings.Repeat("a", 40)
+	body := []byte("PNPM upstream source: https://github.com/pnpm/pnpm/tree/" + source + "\n\nreviewed upstream license text\n")
+	if !validPNPMNotices(source, body) {
+		t.Fatal("valid source-bound notices refused")
+	}
+	for _, invalid := range [][]byte{nil, []byte("unbound license"), append(append([]byte(nil), body...), 0), append(append([]byte(nil), body...), 27), []byte(strings.Repeat("x", (64<<10)+1))} {
+		if validPNPMNotices(source, invalid) {
+			t.Fatal("unbounded or active control bytes accepted")
+		}
+	}
+	if validPNPMNotices(strings.Repeat("b", 40), body) {
+		t.Fatal("notices from another selected source accepted")
+	}
+}
 
 func TestPNPMNoopDoesNotAcquireSupply(t *testing.T) {
 	root, state := fixture(t)

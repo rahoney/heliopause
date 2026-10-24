@@ -48,8 +48,20 @@ func TestStrictReaderPreservesPublishedReleaseAndRequiresInstallerForUpdate(t *t
 	if err != nil {
 		t.Fatal(err)
 	}
+	if _, err := parsed.NativeUpdateFiles(); err == nil {
+		t.Fatal("historical installer-only set became current pnpm capable")
+	}
+	value.Assets = append(value.Assets, asset{"pnpm-linux-amd64", "linux/amd64", "pnpm", strings.Repeat("b", 64), 768}, asset{"pnpm-NOTICE.txt", "linux/amd64", "release-metadata", strings.Repeat("c", 64), 1024})
+	updated, err = json.Marshal(value)
+	if err != nil {
+		t.Fatal(err)
+	}
+	parsed, err = ParseReleaseManifest(updated)
+	if err != nil {
+		t.Fatal(err)
+	}
 	native, err := parsed.NativeUpdateFiles()
-	if err != nil || len(native) != 4 {
+	if err != nil || len(native) != 5 {
 		t.Fatalf("native=%v error=%v", native, err)
 	}
 	if len((ReleaseManifest{}).Files()) != 0 || (ReleaseManifest{}).WorkflowRun() != "" {

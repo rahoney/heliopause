@@ -22,7 +22,7 @@ func TestPNPMProductionMaterializationFromOfficialArchive(t *testing.T) {
 		t.Fatal(err)
 	}
 	output := filepath.Join(t.TempDir(), "pnpm-linux-amd64")
-	args := []string{"materialize-pnpm", "--root", root, "--archive", filepath.Join(input, "pnpm-linux-x64.tar.gz"), "--output", output}
+	args := []string{"materialize-pnpm", "--root", root, "--archive", filepath.Join(input, "pnpm-linux-x64.tar.gz"), "--output", output, "--notices-output", filepath.Join(filepath.Dir(output), "pnpm-NOTICE.txt")}
 	var report bytes.Buffer
 	if err := run(args, &report); err != nil {
 		t.Fatal(err)
@@ -43,6 +43,14 @@ func TestPNPMProductionMaterializationFromOfficialArchive(t *testing.T) {
 	if err != nil || !info.Mode().IsRegular() || info.Mode().Perm() != 0555 || info.Size() != pin.Tool.Size || hash(body) != pin.Tool.SHA256 || receipt.Schema != "helox.pnpm-native-asset/v1" || receipt.SHA256 != hash(body) || receipt.Size != int64(len(body)) {
 		t.Fatalf("production native identity or mode mismatch: %v %s", err, report.String())
 	}
+	noticeBody, err := os.ReadFile(args[8])
+	if err != nil || hash(noticeBody) != pin.Notices.SHA256 {
+		t.Fatal("production notice bytes were not copied")
+	}
+	noticeInfo, err := os.Lstat(args[8])
+	if err != nil || noticeInfo.Mode().Perm() != 0444 {
+		t.Fatal("notice was not passive read-only data")
+	}
 	before := info
 	owner, ok := info.Sys().(*syscall.Stat_t)
 	if !ok || owner.Uid != uint32(os.Geteuid()) || owner.Nlink != 1 {
@@ -57,7 +65,7 @@ func TestPNPMProductionMaterializationFromOfficialArchive(t *testing.T) {
 		t.Fatal("existing native asset identity changed")
 	}
 	entries, err := os.ReadDir(filepath.Dir(output))
-	if err != nil || len(entries) != 1 {
+	if err != nil || len(entries) != 2 {
 		t.Fatalf("materialization leaked another archive member or temporary file: %v", err)
 	}
 	// No execution: the host consumes only authenticated regular-file bytes.
@@ -65,6 +73,7 @@ func TestPNPMProductionMaterializationFromOfficialArchive(t *testing.T) {
 		t.Run(failure, func(t *testing.T) {
 			candidate := append([]string(nil), args...)
 			candidate[6] = filepath.Join(t.TempDir(), "pnpm-linux-amd64")
+			candidate[8] = filepath.Join(filepath.Dir(candidate[6]), "pnpm-NOTICE.txt")
 			if failure == "archive-digest" {
 				fake := filepath.Join(t.TempDir(), "changed.tar.gz")
 				file, err := os.OpenFile(fake, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)

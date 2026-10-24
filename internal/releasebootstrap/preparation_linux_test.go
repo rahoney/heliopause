@@ -85,7 +85,7 @@ func preparationFixture(t *testing.T) *sourceFixture {
 		t.Fatal(err)
 	}
 	f := &sourceFixture{files: map[string][]byte{}, proof: read("actual-signed-bundle.json")}
-	roles := map[string]string{"helox-linux-amd64": "helox", "haa_gvisor_observer-linux-amd64": "gvisor-observer", "haa-network-policy-helper-linux-amd64": "network-policy-helper", "haa-release-installer-linux-amd64": "release-installer"}
+	roles := map[string]string{"helox-linux-amd64": "helox", "haa_gvisor_observer-linux-amd64": "gvisor-observer", "haa-network-policy-helper-linux-amd64": "network-policy-helper", "haa-release-installer-linux-amd64": "release-installer", "pnpm-linux-amd64": "pnpm", "pnpm-NOTICE.txt": "release-metadata"}
 	hashes := func(body []byte) string { sum := sha256.Sum256(body); return hex.EncodeToString(sum[:]) }
 	assets := value["assets"].([]any)
 	seen := map[string]bool{}
@@ -94,6 +94,13 @@ func preparationFixture(t *testing.T) *sourceFixture {
 		name := asset["name"].(string)
 		if _, found := roles[name]; found {
 			body := []byte("bootstrap-fixture-" + name)
+			if name == "pnpm-NOTICE.txt" {
+				var err error
+				body, err = os.ReadFile(filepath.Join("..", "..", "tools/pnpm/NOTICE"))
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
 			f.files[name] = body
 			asset["sha256"] = hashes(body)
 			asset["size"] = len(body)
@@ -103,6 +110,13 @@ func preparationFixture(t *testing.T) *sourceFixture {
 	for name, role := range roles {
 		if !seen[name] {
 			body := []byte("bootstrap-fixture-" + name)
+			if name == "pnpm-NOTICE.txt" {
+				var err error
+				body, err = os.ReadFile(filepath.Join("..", "..", "tools/pnpm/NOTICE"))
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
 			f.files[name] = body
 			assets = append(assets, map[string]any{"name": name, "role": role, "platform": "linux/amd64", "sha256": hashes(body), "size": len(body)})
 		}
@@ -147,7 +161,7 @@ func TestOrdinaryPreparationExportsOnlyBoundFilesAndMakesNoInstallationGrant(t *
 		t.Fatal(err)
 	}
 	defer os.RemoveAll(result.Directory)
-	if len(result.Files) != 7 || len(result.Proofs) != 1 || result.Version != "v0.1.0" || result.ManifestSHA256 != f.manifest.SHA256() || f.closeCalls != 1 || f.opens != 7 {
+	if len(result.Files) != 9 || len(result.Proofs) != 1 || result.Version != "v0.1.0" || result.ManifestSHA256 != f.manifest.SHA256() || f.closeCalls != 1 || f.opens != 9 {
 		t.Fatal("incomplete preparation", result, f.closeCalls, f.opens)
 	}
 	info, err := os.Lstat(result.Directory)

@@ -28,7 +28,7 @@ func fixture(t *testing.T) (string, string) {
 	if err := os.MkdirAll(state, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	paths := []string{runtimeFile, supportFile, generatedFile, "tools/pnpm/release-proof.json", "README.md", "scripts/tools.lock.json", "scripts/generate-runtime-lock.go", "tools/gvisor-observer/BUILD", "go.mod", "go.sum", ".github/workflows/heliopause-ci.yml", ".github/workflows/heliopause-security.yml", ".github/workflows/heliopause-release-build.yml", ".github/workflows/heliopause-release-publish.yml"}
+	paths := []string{runtimeFile, supportFile, generatedFile, "tools/pnpm/release-proof.json", "tools/pnpm/NOTICE", "README.md", "scripts/tools.lock.json", "scripts/generate-runtime-lock.go", "tools/gvisor-observer/BUILD", "go.mod", "go.sum", ".github/workflows/heliopause-ci.yml", ".github/workflows/heliopause-security.yml", ".github/workflows/heliopause-release-build.yml", ".github/workflows/heliopause-release-publish.yml"}
 	for _, path := range paths {
 		body, err := os.ReadFile(filepath.Join(source, path))
 		if err != nil {

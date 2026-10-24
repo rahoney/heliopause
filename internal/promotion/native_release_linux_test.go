@@ -31,7 +31,7 @@ type nativePromotionFixture struct {
 	files    map[string][]byte
 }
 
-// This is a typed ALLOW/staging fixture, not signed native4 or sandbox evidence.
+// This is a typed ALLOW/staging fixture, not signed native5 or sandbox evidence.
 func newNativePromotionFixture(t *testing.T, kind string) nativePromotionFixture {
 	t.Helper()
 	root := realPromotionRoot(t)
@@ -50,12 +50,20 @@ func newNativePromotionFixture(t *testing.T, kind string) nativePromotionFixture
 		t.Fatal(err)
 	}
 	assets := append(record["assets"].([]any), map[string]any{"name": "haa-release-installer-linux-amd64", "platform": "linux/amd64", "role": "release-installer"})
+	assets = append(assets, map[string]any{"name": "pnpm-linux-amd64", "platform": "linux/amd64", "role": "pnpm"}, map[string]any{"name": "pnpm-NOTICE.txt", "platform": "linux/amd64", "role": "release-metadata"})
 	files := map[string][]byte{"helox-release-sbom.cdx.json": read("helox-release-sbom.cdx.json"), "helox-runtime-images.json": read("helox-runtime-images.json")}
 	for _, raw := range assets {
 		asset := raw.(map[string]any)
 		name := asset["name"].(string)
 		if asset["platform"] == "linux/amd64" && !strings.HasSuffix(name, ".deb") && !strings.HasSuffix(name, ".rpm") {
 			body := []byte("staged-native-only-" + name)
+			if name == "pnpm-NOTICE.txt" {
+				var err error
+				body, err = os.ReadFile(filepath.Join("..", "..", "tools/pnpm/NOTICE"))
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
 			sum := sha256.Sum256(body)
 			files[name] = body
 			asset["size"], asset["sha256"] = len(body), hex.EncodeToString(sum[:])
@@ -80,7 +88,15 @@ func newNativePromotionFixture(t *testing.T, kind string) nativePromotionFixture
 	}
 	sort.Strings(names)
 	source, _ := domain.NewSourceID("github-release")
-	primary, _ := domain.NewDependencyNodeID("helox-release-manifest.json")
+	nodeFor := func(name string) domain.DependencyNodeID {
+		sum := sha256.Sum256([]byte(name))
+		id, err := domain.NewDependencyNodeID("release-" + hex.EncodeToString(sum[:12]))
+		if err != nil {
+			t.Fatal(err)
+		}
+		return id
+	}
+	primary := nodeFor("helox-release-manifest.json")
 	nodes := []domain.LockedDependency{}
 	edges := []domain.DependencyEdge{}
 	inspections := []domain.DependencyInspection{}
@@ -94,7 +110,7 @@ func newNativePromotionFixture(t *testing.T, kind string) nativePromotionFixture
 		digest, _ := domain.NewSHA256Digest(hex.EncodeToString(sum[:]))
 		integrity := "sha256:" + digest.String()
 		resolved, _ := domain.NewResolvedArtifact(identity, "github-release://fixture/"+name, integrity)
-		node, _ := domain.NewDependencyNodeID(name)
+		node := nodeFor(name)
 		role := domain.DependencyTransitive
 		if node == primary {
 			role = domain.DependencyPrimary

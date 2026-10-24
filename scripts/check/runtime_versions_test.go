@@ -17,7 +17,7 @@ func runtimeOwnerFixture(t *testing.T) string {
 			t.Fatal(err)
 		}
 	}
-	for _, name := range []string{"go.mod", "README.md", "tools/pnpm/release-proof.json", "scripts/runtimes.lock.json", "scripts/tools.lock.json", "scripts/version-support.lock.json", workflowRelativePath, securityWorkflowRelativePath, releaseWorkflowRelativePath, releasePublishWorkflowRelativePath} {
+	for _, name := range []string{"go.mod", "README.md", "tools/pnpm/release-proof.json", "tools/pnpm/NOTICE", "scripts/runtimes.lock.json", "scripts/tools.lock.json", "scripts/version-support.lock.json", workflowRelativePath, securityWorkflowRelativePath, releaseWorkflowRelativePath, releasePublishWorkflowRelativePath} {
 		body, err := os.ReadFile(filepath.Join("../..", name))
 		if err != nil {
 			t.Fatal(err)
@@ -63,6 +63,46 @@ func TestPNPMProductionProofCannotDrift(t *testing.T) {
 			}
 			if err := checkOwnerFixture(root); err == nil {
 				t.Fatal("unowned production proof accepted")
+			}
+		})
+	}
+}
+
+func TestPNPMProductionNoticesCannotDrift(t *testing.T) {
+	for _, mode := range []string{"missing", "changed", "symlink", "size", "source"} {
+		t.Run(mode, func(t *testing.T) {
+			root := runtimeOwnerFixture(t)
+			path := filepath.Join(root, "tools/pnpm/NOTICE")
+			var lock map[string]any
+			body, err := os.ReadFile(filepath.Join(root, "scripts/runtimes.lock.json"))
+			if err != nil || json.Unmarshal(body, &lock) != nil {
+				t.Fatal("runtime fixture unavailable")
+			}
+			pin := lock["pnpm_tool"].(map[string]any)
+			switch mode {
+			case "missing":
+				err = os.Remove(path)
+			case "changed":
+				err = os.WriteFile(path, []byte("changed notices"), 0600)
+			case "symlink":
+				other := filepath.Join(t.TempDir(), "foreign")
+				if err = os.WriteFile(other, []byte("foreign"), 0600); err != nil {
+					t.Fatal(err)
+				}
+				if err = os.Remove(path); err != nil {
+					t.Fatal(err)
+				}
+				err = os.Symlink(other, path)
+			case "size":
+				pin["notices"].(map[string]any)["size"] = float64(1)
+			case "source":
+				pin["provenance"].(map[string]any)["source_commit"] = strings.Repeat("b", 40)
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := checkPNPMProofFile(root, lock); err == nil {
+				t.Fatal("unowned notices accepted")
 			}
 		})
 	}

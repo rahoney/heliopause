@@ -66,22 +66,27 @@ func (m ReleaseManifest) Files() []ReleaseFile {
 }
 
 // NativeUpdateFiles selects the complete approved Linux/amd64 native role set.
-// Historical releases lacking the separate installer fail closed.
+// Historical releases lacking any current native role or its notices fail closed.
 func (m ReleaseManifest) NativeUpdateFiles() ([]ReleaseFile, error) {
 	roles := map[string]string{
 		"helox-linux-amd64":                     "helox",
 		"haa_gvisor_observer-linux-amd64":       "gvisor-observer",
 		"haa-network-policy-helper-linux-amd64": "network-policy-helper",
 		"haa-release-installer-linux-amd64":     "release-installer",
+		"pnpm-linux-amd64":                      "pnpm",
 	}
+	notices := false
 	result := make([]ReleaseFile, 0, len(roles))
 	for _, item := range m.Files() {
+		if item.Name == "pnpm-NOTICE.txt" && item.Role == "release-metadata" && item.Platform == "linux/amd64" {
+			notices = true
+		}
 		role, found := roles[item.Name]
 		if found && item.Platform == "linux/amd64" && item.Role == role {
 			result = append(result, item)
 		}
 	}
-	if len(result) != len(roles) {
+	if len(result) != len(roles) || !notices {
 		return nil, errors.New("release does not contain the complete native update role set")
 	}
 	return result, nil
@@ -126,8 +131,10 @@ func ParseReleaseManifest(body []byte) (ReleaseManifest, error) {
 		"helox-linux-amd64.deb":                 {"linux/amd64", "os-package-deb"},
 		"helox-linux-amd64.rpm":                 {"linux/amd64", "os-package-rpm"},
 		"haa-release-installer-linux-amd64":     {"linux/amd64", "release-installer"},
+		"pnpm-linux-amd64":                      {"linux/amd64", "pnpm"},
+		"pnpm-NOTICE.txt":                       {"linux/amd64", "release-metadata"},
 	}
-	if len(value.Assets) != 8 && len(value.Assets) != 9 {
+	if len(value.Assets) != 8 && len(value.Assets) != 9 && len(value.Assets) != 11 {
 		return ReleaseManifest{}, errors.New("release asset set is incomplete")
 	}
 	seen := make(map[string]bool, len(value.Assets))
@@ -136,10 +143,16 @@ func ParseReleaseManifest(body []byte) (ReleaseManifest, error) {
 		if !found || seen[item.Name] || spec.platform != item.Platform || spec.role != item.Role || !validRecord(record{item.Name, item.SHA256, item.Size}, item.Name) {
 			return ReleaseManifest{}, errors.New("release asset binding is invalid or ambiguous")
 		}
+		if item.Name == "pnpm-NOTICE.txt" && item.Size > 64<<10 || item.Name == "pnpm-linux-amd64" && item.Size > 64<<20 {
+			return ReleaseManifest{}, errors.New("pnpm native or notice size exceeds its fixed role")
+		}
 		seen[item.Name] = true
 	}
+	if seen["pnpm-linux-amd64"] != seen["pnpm-NOTICE.txt"] || seen["pnpm-linux-amd64"] && !seen["haa-release-installer-linux-amd64"] {
+		return ReleaseManifest{}, errors.New("native pnpm and passive notices require the complete current release set")
+	}
 	for name := range want {
-		if name != "haa-release-installer-linux-amd64" && !seen[name] {
+		if name != "haa-release-installer-linux-amd64" && name != "pnpm-linux-amd64" && name != "pnpm-NOTICE.txt" && !seen[name] {
 			return ReleaseManifest{}, errors.New("release asset set is incomplete")
 		}
 	}

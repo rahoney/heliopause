@@ -3,7 +3,7 @@
 package runtimeidentity
 
 const (
-	RuntimeLockSHA256            = "02805aedd22b78a5b4fdf924c0afc0e901eac2ad5b525a4f5bdf0c1b1f1e56c3"
+	RuntimeLockSHA256            = "87b29d73031fcba90c58613df7063d8932281e784da6f22123684373c332c550"
 	GVisorRelease                = "release-20260907.0"
 	GVisorCommit                 = "7c6199801fd233d6d55309af4645d4746a077de7"
 	GVisorSourceRepository       = "https://github.com/google/gvisor.git"
@@ -43,6 +43,8 @@ const (
 	PNPMBundleSHA256             = "3036b73f86d7deaecd0901ee836b90460653c9f275efb0ae308d50e3f22d6089"
 	PNPMToolPath                 = "pnpm"
 	PNPMToolSHA256               = "8cca52dc2aab0081ac153a3c7ad36224cd72b6d7cfea413746b7b97f6a3d8942"
+	PNPMNoticesPath              = "tools/pnpm/NOTICE"
+	PNPMNoticesSHA256            = "df8cac4eb3aa5126532298814c75ec9fc2dab3248fef818b6317e7478abb7bd2"
 	PythonImageReference         = "python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52"
 	PythonVersion                = "3.14.7"
 	PipVersion                   = "26.2.1"
@@ -63,6 +65,7 @@ const (
 	UVToolSize                   = 42544544
 	PNPMArchiveSize              = 25369328
 	PNPMToolSize                 = 57822504
+	PNPMNoticesSize              = 3152
 )
 
 type PythonSourceProfileLock struct {

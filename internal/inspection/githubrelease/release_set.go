@@ -63,7 +63,7 @@ func (i *ReleaseSetInspector) Inspect(ctx context.Context, artifact domain.Acqui
 	if selected.Name == "" || selected.SHA256 != artifact.Digest().String() || uint64(selected.Size) != artifact.SizeBytes() {
 		return domain.InspectionReport{}, errors.New("release inspection subject is absent from the manifest")
 	}
-	if name == "helox-release-sbom.cdx.json" || name == "helox-runtime-images.json" {
+	if name == "helox-release-sbom.cdx.json" || name == "helox-runtime-images.json" || name == "pnpm-NOTICE.txt" {
 		return i.inspectMetadata(ctx, artifact, manifest)
 	}
 	native, err := manifest.NativeUpdateFiles()
@@ -82,6 +82,9 @@ func (i *ReleaseSetInspector) inspectMetadata(ctx context.Context, artifact doma
 	limit := int64(1 << 20)
 	if artifact.Identity().Variant() == "helox-release-sbom.cdx.json" {
 		limit = 8 << 20
+	}
+	if artifact.Identity().Variant() == "pnpm-NOTICE.txt" {
+		limit = 64 << 10
 	}
 	if artifact.SizeBytes() == 0 || artifact.SizeBytes() > uint64(limit) {
 		return i.invalidMetadata(artifact)
@@ -108,6 +111,8 @@ func (i *ReleaseSetInspector) inspectMetadata(ctx context.Context, artifact doma
 	}
 	if artifact.Identity().Variant() == "helox-release-sbom.cdx.json" {
 		err = releaseinstall.ValidateReleaseSBOM(body, manifest)
+	} else if artifact.Identity().Variant() == "pnpm-NOTICE.txt" {
+		err = releaseinstall.ValidatePNPMNotices(body)
 	} else {
 		err = releaseinstall.ValidateRuntimeImages(body)
 	}

@@ -20,7 +20,7 @@ func bundleFixture(t *testing.T) string {
 	buildNativeHeloxTest(t, binary)
 	assets := releaseAssets(t, root, binary)
 	lock := filepath.Join(t.TempDir(), "runtimes.lock.json")
-	if err := os.WriteFile(lock, []byte(`{"schema_version":3,"gvisor":{"release":"release-20260810.0","commit":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}`), 0o600); err != nil {
+	if err := os.WriteFile(lock, syntheticReleaseLock(t, assets), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	images := filepath.Join(root, imageFileName)
@@ -43,8 +43,8 @@ func TestVerifyBundleBindsPackagesAndExactFileSet(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(names) != 13 {
-		t.Fatalf("complete bundle has %d files, want 13", len(names))
+	if len(names) != 15 {
+		t.Fatalf("complete bundle has %d files, want 15", len(names))
 	}
 	for _, name := range []string{"haa-release-installer-linux-amd64", "helox-linux-amd64.deb", "helox-linux-amd64.rpm", manifestFileName, checksumFileName, sbomFileName, imageFileName} {
 		if !slices.Contains(names, name) {

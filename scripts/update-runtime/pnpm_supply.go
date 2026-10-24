@@ -9,6 +9,9 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/rahoney/heliopause/internal/verification/releaseprovenance"
 )
@@ -22,6 +25,7 @@ type pnpmSupplyMetadata struct {
 	ToolSHA256  string                                `json:"tool_sha256"`
 	ToolSize    int64                                 `json:"tool_size"`
 	Libraries   []string                              `json:"libraries"`
+	Notices     []byte                                `json:"notices,omitempty"`
 	Invocation  string                                `json:"invocation"`
 }
 
@@ -71,6 +75,10 @@ func freezePNPMSupply(version, input, state string) (metadata, error) {
 	if err != nil {
 		return metadata{}, err
 	}
+	u.Notices, err = readFrozenSupplyFile(input, "NOTICE", 64<<10)
+	if err != nil || !validPNPMNotices(u.Identity.SourceCommit, u.Notices) {
+		return metadata{}, errors.New("pnpm plan requires explicit source-bound notices")
+	}
 	if u.Identity.Version != version {
 		return metadata{}, errors.New("pnpm selected version and supply identity differ")
 	}
@@ -107,7 +115,7 @@ func freezePNPMSupply(version, input, state string) (metadata, error) {
 
 func verifyFrozenPNPMSupply(version string, m metadata, state string) error {
 	u := m.PNPM
-	if u == nil || u.Identity.Version != version || u.ArchiveSize <= 0 || u.ArchiveSize > 64<<20 {
+	if u == nil || !validPNPMNotices(u.Identity.SourceCommit, u.Notices) || u.Identity.Version != version || u.ArchiveSize <= 0 || u.ArchiveSize > 64<<20 {
 		return errors.New("frozen pnpm supply/version missing or excessive")
 	}
 	receipt, err := releaseprovenance.VerifyPNPMRelease(context.Background(), u.Bundle, u.Identity)
@@ -136,9 +144,24 @@ func verifyFrozenPNPMSupply(version string, m metadata, state string) error {
 	if err != nil {
 		return err
 	}
-	expected := &pnpmSupplyMetadata{Identity: receipt.Identity(), Bundle: u.Bundle, ArchiveSize: int64(len(archive)), ToolSHA256: tool.SHA256(), ToolSize: tool.Size(), Libraries: tool.Libraries(), Invocation: receipt.Invocation()}
+	expected := &pnpmSupplyMetadata{Identity: receipt.Identity(), Bundle: u.Bundle, ArchiveSize: int64(len(archive)), ToolSHA256: tool.SHA256(), ToolSize: tool.Size(), Libraries: tool.Libraries(), Invocation: receipt.Invocation(), Notices: append([]byte(nil), u.Notices...)}
 	if !reflect.DeepEqual(m, metadata{Architecture: "amd64", PNPM: expected}) {
 		return errors.New("frozen pnpm metadata differs from authenticated native supply")
 	}
 	return nil
+}
+
+// Notices are reviewed passive source data, not an archive-signature claim or
+// execution authority. The frozen plan binds their complete bytes and source.
+func validPNPMNotices(source string, body []byte) bool {
+	prefix := "PNPM upstream source: https://github.com/pnpm/pnpm/tree/" + source + "\n\n"
+	if len(body) <= len(prefix) || len(body) > 64<<10 || !utf8.Valid(body) || !strings.HasPrefix(string(body), prefix) {
+		return false
+	}
+	for _, value := range string(body) {
+		if unicode.IsControl(value) && value != '\n' && value != '\t' {
+			return false
+		}
+	}
+	return true
 }

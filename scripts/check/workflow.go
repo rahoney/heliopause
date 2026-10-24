@@ -325,6 +325,7 @@ func validateReleaseWorkflow(contents, selectedGo string) []string {
 		`CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -buildvcs=true -o "$dist/haa-release-installer-linux-amd64" ./cmd/haa-release-installer`,
 		`--asset "$dist/haa-release-installer-linux-amd64" \`,
 	})...)
+	findings = append(findings, validatePNPMReleaseSupply(contents)...)
 	for _, token := range []string{
 		"pull_request:", "pull_request_target:", "workflow_dispatch:", "schedule:", "contents: write", "packages: write", "secrets:",
 		"@main", "@master", "@latest", "ubuntu-latest", "actions/create-release", "gh release", "softprops/action-gh-release",
@@ -683,6 +684,51 @@ func validatePackageFixtureWorkingDirectories(contents string) []string {
 		if counts[command] != 1 {
 			findings = append(findings, fmt.Sprintf("fixture integration requires one matching package subshell for %q", command))
 		}
+	}
+	return findings
+}
+
+// Independent expected producer policy: no command presence or source-derived
+// expected list can stand in for the acquired->verified->packaged->bound order.
+func validatePNPMReleaseSupply(contents string) []string {
+	blocks, err := activeJobRunLines(contents, "build-and-attest", "Build deterministic native release assets")
+	if err != nil {
+		return nil
+	}
+	if len(blocks) != 1 {
+		return []string{"pnpm release supply requires one unconditional native build step"}
+	}
+	expected := []string{
+		`go run ./scripts/generate-runtime-lock.go -check`,
+		`pnpm_archive="$RUNNER_TEMP/helox-pnpm-linux-x64.tar.gz"`,
+		`pnpm_url="$(jq -er '.pnpm_tool.archive.url' scripts/runtimes.lock.json)"`,
+		`pnpm_size="$(jq -er '.pnpm_tool.archive.size' scripts/runtimes.lock.json)"`,
+		`curl --fail --show-error --silent --location --proto '=https' --proto-redir '=https' --connect-timeout 15 --max-time 120 --max-filesize "$pnpm_size" --output "$pnpm_archive" "$pnpm_url"`,
+		`go run ./scripts/update-runtime materialize-pnpm \`,
+		`--root "$GITHUB_WORKSPACE" \`,
+		`--archive "$pnpm_archive" \`,
+		`--output "$dist/pnpm-linux-amd64" \`,
+		`--notices-output "$dist/pnpm-NOTICE.txt"`,
+		`rm -- "$pnpm_archive"`,
+		`go run ./scripts/release-packages \`,
+		`go run ./scripts/release-manifest \`,
+		`--asset "$dist/pnpm-linux-amd64" \`,
+		`--asset "$dist/pnpm-NOTICE.txt" \`,
+	}
+	var findings []string
+	previous := -1
+	for _, command := range expected {
+		found, count := -1, 0
+		for i, line := range blocks[0] {
+			if line == command {
+				found = i
+				count++
+			}
+		}
+		if count != 1 || found <= previous {
+			findings = append(findings, "pnpm release supply requires ordered active command: "+command)
+		}
+		previous = found
 	}
 	return findings
 }

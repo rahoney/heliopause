@@ -2,6 +2,8 @@ package releaseinstall
 
 import (
 	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"io"
@@ -63,10 +65,17 @@ func ValidateReleaseSBOM(body []byte, manifest ReleaseManifest) error {
 	}
 	seen := map[string]bool{}
 	for _, item := range value.Components {
-		if item.Type != "library" || !metadataText(item.Name, 256) || !metadataText(item.Version, 128) || len(item.Properties) != 0 || seen[item.Name] {
+		if item.Type == "application" && item.Name == "pnpm" && item.Version == runtimeidentity.PNPMVersion && len(item.Properties) == 0 && !seen[item.Name] {
+			seen[item.Name] = true
+			continue
+		}
+		if item.Name == "pnpm" || item.Type != "library" || !metadataText(item.Name, 256) || !metadataText(item.Version, 128) || len(item.Properties) != 0 || seen[item.Name] {
 			return errors.New("release SBOM component is invalid or duplicated")
 		}
 		seen[item.Name] = true
+	}
+	if !seen["pnpm"] {
+		return errors.New("release SBOM lacks the current native pnpm component")
 	}
 	return nil
 }
@@ -91,12 +100,15 @@ func ValidateRuntimeImages(body []byte) error {
 		} `json:"provenance"`
 		Images []image `json:"images"`
 		Tools  []struct {
-			Name     string `json:"name"`
-			Version  string `json:"tool_version"`
-			Platform string `json:"platform"`
-			Asset    string `json:"asset"`
-			SHA256   string `json:"sha256"`
-			Size     int64  `json:"size"`
+			Name          string `json:"name"`
+			Version       string `json:"tool_version"`
+			Platform      string `json:"platform"`
+			Asset         string `json:"asset"`
+			SHA256        string `json:"sha256"`
+			Size          int64  `json:"size"`
+			NoticesAsset  string `json:"notices_asset"`
+			NoticesSHA256 string `json:"notices_sha256"`
+			NoticesSize   int64  `json:"notices_size"`
 		} `json:"tools"`
 	}
 	if err := decodeReleaseMetadata(body, 1<<20, &value, nil); err != nil {
@@ -125,7 +137,7 @@ func ValidateRuntimeImages(body []byte) error {
 		delete(expected, item.Name)
 	}
 	tool := value.Tools[0]
-	if tool.Name != "pnpm" || tool.Version != runtimeidentity.PNPMVersion || tool.Platform != "linux/amd64" || tool.Asset != "pnpm-linux-amd64" || tool.SHA256 != runtimeidentity.PNPMToolSHA256 || tool.Size != runtimeidentity.PNPMToolSize {
+	if tool.Name != "pnpm" || tool.Version != runtimeidentity.PNPMVersion || tool.Platform != "linux/amd64" || tool.Asset != "pnpm-linux-amd64" || tool.SHA256 != runtimeidentity.PNPMToolSHA256 || tool.Size != runtimeidentity.PNPMToolSize || tool.NoticesAsset != "pnpm-NOTICE.txt" || tool.NoticesSHA256 != runtimeidentity.PNPMNoticesSHA256 || tool.NoticesSize != runtimeidentity.PNPMNoticesSize {
 		return errors.New("runtime native tool differs from the active lock")
 	}
 	return nil
@@ -141,4 +153,14 @@ func metadataText(value string, maximum int) bool {
 		}
 	}
 	return true
+}
+
+// ValidatePNPMNotices accepts only the passive reviewed bytes bound by the
+// compiled current runtime owner. It grants no executable role.
+func ValidatePNPMNotices(body []byte) error {
+	sum := sha256.Sum256(body)
+	if int64(len(body)) != runtimeidentity.PNPMNoticesSize || len(body) > 64<<10 || !utf8.Valid(body) || hex.EncodeToString(sum[:]) != runtimeidentity.PNPMNoticesSHA256 || !strings.HasPrefix(string(body), "PNPM upstream source: https://github.com/pnpm/pnpm/tree/"+runtimeidentity.PNPMSourceCommit+"\n\n") {
+		return errors.New("pnpm passive notices differ from the current runtime owner")
+	}
+	return nil
 }

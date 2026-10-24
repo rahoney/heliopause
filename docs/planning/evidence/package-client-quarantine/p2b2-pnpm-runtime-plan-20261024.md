@@ -136,3 +136,18 @@ Native5개는 유지하고 read-only 고지 asset 하나를 더해 전체11개�
 
 이는 현재 pnpm 배포의 구체 입력/복사 범위 보완이다. 새로운 signed release, 자동 runtime
 전환 또는 사용자 main merge 승인을 추가로 추정하지 않는다.
+
+추가 실제 소비자 대조: inspection/githubrelease/release_set.go의 고정 metadata 분기와
+releaseactivation의 installed/stage/bootstrap source, releasebootstrap 준비의 metadata 검증에도
+NOTICE의 exact current source bytes 검증을 연결한다. Native pnpm은 SBOM의 별도 application
+component이며 Go build info로 위장하지 않는다. 합성 fixture만 현 tuple로 갱신한다.
+
+전체 published-set 호출 경로의 추가 대조에서 promotion/native_release_linux.go의 기존
+sealed7/selected6 고정 cardinality도 확인했다. 기존 held FD·exact footprint·close/journal/IPC
+절차를 재사용하고 current inspected9/selected8만 요구한다. native_release_linux_test 및
+cleanup fixture도 새 current member 집합을 따르며 과거 signed7 증거를 편집하지 않는다.
+이는 native 배포의 남은 wiring gap이며 guard 프로토콜 대체가 아니다.
+
+Producer의 최종 대조에서는 materialization 후 변경된 native/NOTICE가 source pin과
+엇갈린 채 manifest/SBOM에 묶이지 않도록 release-manifest가 두 실제 asset의 SHA/size를
+선택한 runtime owner와 독립 대조한다. Native Go buildinfo/metadata write 이전에 거부한다.

@@ -39,7 +39,7 @@ func TestNativePromotionCleanupKeepsRecordsAndRetainsUnknownPayload(t *testing.T
 			root := filepath.Join(f.root, "staging", f.bundle.ManifestID().String())
 			dir := filepath.Join(root, "artifacts")
 			entries, err := os.ReadDir(dir)
-			if err != nil || len(entries) != 7 {
+			if err != nil || len(entries) != 9 {
 				t.Fatal(entries, err)
 			}
 			asset := filepath.Join(dir, entries[0].Name())
@@ -87,7 +87,7 @@ func TestNativePromotionCleanupKeepsRecordsAndRetainsUnknownPayload(t *testing.T
 					t.Fatal("unknown directory removed", err)
 				}
 				if kind != "replaced-directory" {
-					if body, err := os.ReadDir(dir); err != nil || len(body) < 7 {
+					if body, err := os.ReadDir(dir); err != nil || len(body) < 9 {
 						t.Fatal("partial deletion before rejecting unknown", body, err)
 					}
 				}

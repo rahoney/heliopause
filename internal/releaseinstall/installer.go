@@ -224,6 +224,13 @@ func (i *Installer) validatedInput(ctx context.Context, request Request, existin
 		if err := ValidateRuntimeImages(images); err != nil {
 			return installationInput{}, err
 		}
+		notices, err := readRegular(filepath.Join(bundle, "pnpm-NOTICE.txt"))
+		if err != nil {
+			return installationInput{}, err
+		}
+		if err := ValidatePNPMNotices(notices); err != nil {
+			return installationInput{}, err
+		}
 	}
 	if err := ctx.Err(); err != nil {
 		return installationInput{}, err
@@ -291,6 +298,15 @@ func selectFiles(value manifest, goos, goarch string) ([]asset, error) {
 	if goos == "linux" && goarch == "amd64" {
 		want["haa_gvisor_observer-linux-amd64"] = "gvisor-observer"
 		want["haa-network-policy-helper-linux-amd64"] = "network-policy-helper"
+		for _, item := range value.Assets {
+			if item.Name == "pnpm-linux-amd64" || item.Name == "pnpm-NOTICE.txt" {
+				role := "pnpm"
+				if item.Name == "pnpm-NOTICE.txt" {
+					role = "release-metadata"
+				}
+				want[item.Name] = role
+			}
+		}
 		for _, item := range value.Assets {
 			if item.Name == "haa-release-installer-linux-amd64" {
 				want[item.Name] = "release-installer"
@@ -385,7 +401,11 @@ func activate(ctx context.Context, root, version string, manifestBody []byte, se
 		if err := ctx.Err(); err != nil {
 			return Result{}, err
 		}
-		if err := copyNew(filepath.Join(stage, item.Name), filepath.Join(bundle, item.Name), executableMode); err != nil {
+		mode := executableMode
+		if item.Role == "release-metadata" {
+			mode = metadataMode
+		}
+		if err := copyNew(filepath.Join(stage, item.Name), filepath.Join(bundle, item.Name), mode); err != nil {
 			return Result{}, errors.New("stage release asset")
 		}
 	}

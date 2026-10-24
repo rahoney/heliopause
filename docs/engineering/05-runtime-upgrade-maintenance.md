@@ -574,7 +574,7 @@ go run ./scripts/update-runtime apply --root /absolute/clean-repo --state /absol
 go run ./scripts/update-runtime verify --root /absolute/clean-repo --state /absolute/new-state
 ```
 
-Proof 디렉터리는 위 offline 명령과 같은 세 파일이다. Plan은 작은 인증 metadata만 담고
+조회 전용 offline 검증은 위 세 파일을 사용한다. 새 PNPM plan의 proof 디렉터리는 추가로 고정 source의 LICENSE/제3자 고지를 합친 `NOTICE`를 명시한다. Plan은 작은 인증 metadata만 담고
 archive는 state/pnpm-supply에 owner-only로 고정한다. Render/apply는 전체 archive의 서명·hash·
 native identity와 state owner/mode를 재검증한다. Same-version은 network0이며 새 supply flag를
 거부하고 기존 pin을 보존한다. 중단 후 재개·idempotence·변조 거부의
@@ -586,7 +586,8 @@ native 배포/설치·gVisor admission·제품 CLI 또는 새 원격 qualificati
 ```sh
 go run ./scripts/update-runtime materialize-pnpm --root /absolute/source \
   --archive /absolute/acquired/pnpm-linux-x64.tar.gz \
-  --output /absolute/external-dist/pnpm-linux-amd64
+  --output /absolute/external-dist/pnpm-linux-amd64 \
+  --notices-output /absolute/external-dist/pnpm-NOTICE.txt
 ```
 
 유지보수 도구는 선택한 source의 schema3 PNPM owner와 production proof를 읽는다.
@@ -595,3 +596,9 @@ go run ./scripts/update-runtime materialize-pnpm --root /absolute/source \
 sync와 임시 이름 identity를 확인하며 기존 파일·symlink·foreign writable parent를 거부한다.
 Host에서 pnpm을 실행하거나 bundled dist 자료를 풀지 않는다. 성공은 native asset bytes의
 공급이며 릴리스 배포/NOTICE 연결·gVisor admission·제품 검역 지원 완료가 아니다.
+
+현재 PNPM owner의 `notices`는 production `tools/pnpm/NOTICE`의 경로/hash/크기를 기록한다.
+Frozen maintenance는 source-bound 고지 bytes도 계획에 고정하고 source가 바뀔 때 이전 고지의
+재사용을 거부한다. 이는 reviewed passive source data이며 upstream archive 서명의 일부라고
+주장하지 않는다. Native asset은0555, 고지는0444로 출력하며 두 파일 모두 signed release set과
+OS package의 기존 설치/복구 범위에 포함한다. 전체 배포 qualification은 별도다.

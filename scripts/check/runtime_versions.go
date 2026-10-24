@@ -88,18 +88,33 @@ func runtimeVersionOwners(root string, tools toolLock) (map[string]string, error
 }
 
 func checkPNPMProofFile(root string, lock map[string]any) error {
-	name, err := runtimeOwnerString(lock, "pnpm_tool.provenance.bundle_path")
-	if err != nil || name != "tools/pnpm/release-proof.json" {
-		return errors.New("pnpm production proof owner is missing or changed")
+	if err := checkPNPMPinnedMetadata(root, lock, "pnpm_tool.provenance.bundle_path", "pnpm_tool.provenance.bundle_sha256", "tools/pnpm/release-proof.json"); err != nil {
+		return err
 	}
-	expected, err := runtimeOwnerString(lock, "pnpm_tool.provenance.bundle_sha256")
+	if err := checkPNPMPinnedMetadata(root, lock, "pnpm_tool.notices.path", "pnpm_tool.notices.sha256", "tools/pnpm/NOTICE"); err != nil {
+		return err
+	}
+	body, err := os.ReadFile(filepath.Join(root, "tools/pnpm/NOTICE"))
+	source, sourceErr := runtimeOwnerString(lock, "pnpm_tool.provenance.source_commit")
+	if err != nil || sourceErr != nil || len(body) > 64<<10 || lock["pnpm_tool"].(map[string]any)["notices"].(map[string]any)["size"] != float64(len(body)) || !strings.HasPrefix(string(body), "PNPM upstream source: https://github.com/pnpm/pnpm/tree/"+source+"\n\n") {
+		return errors.New("pnpm notices source binding differs from its runtime owner")
+	}
+	return nil
+}
+
+func checkPNPMPinnedMetadata(root string, lock map[string]any, pathKey, hashKey, fixedPath string) error {
+	name, err := runtimeOwnerString(lock, pathKey)
+	if err != nil || name != fixedPath {
+		return errors.New("pnpm pinned metadata owner is missing or changed")
+	}
+	expected, err := runtimeOwnerString(lock, hashKey)
 	if err != nil {
 		return err
 	}
 	path := filepath.Join(root, filepath.FromSlash(name))
 	info, err := os.Lstat(path)
 	if err != nil || !info.Mode().IsRegular() || info.Size() <= 0 || info.Size() > 1<<20 {
-		return errors.New("pnpm production proof is unavailable or excessive")
+		return errors.New("pnpm pinned metadata is unavailable or excessive")
 	}
 	file, err := os.Open(path)
 	if err != nil {
@@ -109,7 +124,7 @@ func checkPNPMProofFile(root string, lock map[string]any) error {
 	closeErr := file.Close()
 	sum := sha256.Sum256(body)
 	if readErr != nil || closeErr != nil || int64(len(body)) != info.Size() || hex.EncodeToString(sum[:]) != expected {
-		return errors.New("pnpm production proof differs from its runtime owner")
+		return errors.New("pnpm pinned metadata differs from its runtime owner")
 	}
 	return nil
 }

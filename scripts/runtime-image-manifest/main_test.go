@@ -203,6 +203,8 @@ func bindSyntheticPNPM(lock *runtimeLock) {
 	lock.PNPMTool.Architecture = "amd64"
 	lock.PNPMTool.Tool.SHA256 = strings.Repeat("e", 64)
 	lock.PNPMTool.Tool.Size = 768
+	lock.PNPMTool.Notices.SHA256 = strings.Repeat("f", 64)
+	lock.PNPMTool.Notices.Size = 1024
 }
 
 func TestManifestRequiresSeparateBoundedPNPMTool(t *testing.T) {

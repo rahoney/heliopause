@@ -35,7 +35,7 @@ func TestPNPMNativePublicationRefusesReplacementAndUnsafeParents(t *testing.T) {
 			case "missing-parent":
 				output = filepath.Join(parent, "missing", "pnpm-linux-amd64")
 			}
-			if err := publishPNPMAsset(output, []byte("verified-native-fixture")); err == nil {
+			if err := publishPNPMAsset(output, []byte("verified-native-fixture"), 0555); err == nil {
 				t.Fatal("unsafe publication succeeded")
 			}
 			body, err := os.ReadFile(foreign)
@@ -119,7 +119,7 @@ func TestPNPMMaterializationRejectsInvalidPathsBeforeWriting(t *testing.T) {
 	archive := filepath.Join(t.TempDir(), "pnpm-linux-x64.tar.gz")
 	for _, mode := range []string{"relative-root", "relative-archive", "relative-output", "source-output", "wrong-name", "extra-arg", "owner-drift"} {
 		t.Run(mode, func(t *testing.T) {
-			args := []string{"materialize-pnpm", "--root", root, "--archive", archive, "--output", output}
+			args := []string{"materialize-pnpm", "--root", root, "--archive", archive, "--output", output, "--notices-output", filepath.Join(filepath.Dir(output), "pnpm-NOTICE.txt")}
 			switch mode {
 			case "relative-root":
 				args[2] = "."

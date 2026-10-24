@@ -35,12 +35,20 @@ func wireFixture(t *testing.T) (wireRelease, map[string][]byte) {
 	}
 	assets := value["assets"].([]any)
 	assets = append(assets, map[string]any{"name": "haa-release-installer-linux-amd64", "platform": "linux/amd64", "role": "release-installer"})
+	assets = append(assets, map[string]any{"name": "pnpm-linux-amd64", "platform": "linux/amd64", "role": "pnpm"}, map[string]any{"name": "pnpm-NOTICE.txt", "platform": "linux/amd64", "role": "release-metadata"})
+	noticeBody, noticeErr := os.ReadFile(filepath.Join("..", "..", "tools", "pnpm", "NOTICE"))
+	if noticeErr != nil {
+		t.Fatal(noticeErr)
+	}
 	files := map[string][]byte{"helox-release-sbom.cdx.json": read("helox-release-sbom.cdx.json"), "helox-runtime-images.json": read("helox-runtime-images.json")}
 	for _, raw := range assets {
 		item := raw.(map[string]any)
 		name := item["name"].(string)
 		if item["platform"] == "linux/amd64" && !strings.HasSuffix(name, ".deb") && !strings.HasSuffix(name, ".rpm") {
 			body := []byte("wire-only-" + name)
+			if name == "pnpm-NOTICE.txt" {
+				body = noticeBody
+			}
 			sum := sha256.Sum256(body)
 			files[name] = body
 			item["sha256"] = hex.EncodeToString(sum[:])
@@ -78,7 +86,7 @@ func TestWireFreezesExactMembersWithoutGrantingApproval(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if decoded.manifest.SHA256() != release.manifest.SHA256() || len(decoded.files) != 6 {
+	if decoded.manifest.SHA256() != release.manifest.SHA256() || len(decoded.files) != 8 {
 		t.Fatal("wire metadata or role set changed")
 	}
 	for _, file := range decoded.files {

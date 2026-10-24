@@ -54,6 +54,10 @@ type runtimeLock struct {
 			SHA256 string `json:"sha256"`
 			Size   int64  `json:"size"`
 		} `json:"tool"`
+		Notices struct {
+			SHA256 string `json:"sha256"`
+			Size   int64  `json:"size"`
+		} `json:"notices"`
 	} `json:"pnpm_tool"`
 }
 
@@ -67,12 +71,15 @@ type runtimeImageManifest struct {
 }
 
 type runtimeToolEntry struct {
-	Name     string `json:"name"`
-	Version  string `json:"tool_version"`
-	Platform string `json:"platform"`
-	Asset    string `json:"asset"`
-	SHA256   string `json:"sha256"`
-	Size     int64  `json:"size"`
+	Name          string `json:"name"`
+	Version       string `json:"tool_version"`
+	Platform      string `json:"platform"`
+	Asset         string `json:"asset"`
+	SHA256        string `json:"sha256"`
+	Size          int64  `json:"size"`
+	NoticesAsset  string `json:"notices_asset"`
+	NoticesSHA256 string `json:"notices_sha256"`
+	NoticesSize   int64  `json:"notices_size"`
 }
 
 type provenanceContract struct {
@@ -177,7 +184,7 @@ func buildManifest(lock runtimeLock) (runtimeImageManifest, error) {
 	}
 	uvImage := runtimeImageEntry{Name: "uv", Reference: uv.Reference, Repository: "ghcr.io/astral-sh/uv", Digest: strings.TrimPrefix(uv.Reference, prefix), Version: uv.Version}
 	pnpm := lock.PNPMTool
-	if !versionPattern.MatchString(pnpm.Version) || pnpm.Architecture != "amd64" || !digestPattern.MatchString("sha256:"+pnpm.Tool.SHA256) || pnpm.Tool.Size <= 0 || pnpm.Tool.Size > 64<<20 {
+	if !versionPattern.MatchString(pnpm.Version) || pnpm.Architecture != "amd64" || !digestPattern.MatchString("sha256:"+pnpm.Tool.SHA256) || pnpm.Tool.Size <= 0 || pnpm.Tool.Size > 64<<20 || !digestPattern.MatchString("sha256:"+pnpm.Notices.SHA256) || pnpm.Notices.Size <= 0 || pnpm.Notices.Size > 64<<10 {
 		return runtimeImageManifest{}, errors.New("pnpm native runtime tool identity is invalid")
 	}
 	return runtimeImageManifest{
@@ -189,7 +196,7 @@ func buildManifest(lock runtimeLock) (runtimeImageManifest, error) {
 			Verification: "release candidate attestation must bind this manifest and each exact image reference",
 		},
 		Images: []runtimeImageEntry{node, python, goImage, rustImage, uvImage},
-		Tools:  []runtimeToolEntry{{Name: "pnpm", Version: pnpm.Version, Platform: "linux/amd64", Asset: "pnpm-linux-amd64", SHA256: pnpm.Tool.SHA256, Size: pnpm.Tool.Size}},
+		Tools:  []runtimeToolEntry{{Name: "pnpm", Version: pnpm.Version, Platform: "linux/amd64", Asset: "pnpm-linux-amd64", SHA256: pnpm.Tool.SHA256, Size: pnpm.Tool.Size, NoticesAsset: "pnpm-NOTICE.txt", NoticesSHA256: pnpm.Notices.SHA256, NoticesSize: pnpm.Notices.Size}},
 	}, nil
 }
 

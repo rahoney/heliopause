@@ -356,6 +356,13 @@ func readBootstrapSet(ctx context.Context) (nativeBootstrapSet, error) {
 	if err := releaseinstall.ValidateRuntimeImages(images); err != nil {
 		return set, errors.Join(ErrUntrusted, err)
 	}
+	notices, err := readProtected(ctx, filepath.Join(bootstrapDirectory, "pnpm-NOTICE.txt"), 64<<10)
+	if err != nil {
+		return set, err
+	}
+	if err := releaseinstall.ValidatePNPMNotices(notices); err != nil {
+		return set, errors.Join(ErrUntrusted, err)
+	}
 	configs, err := readNativeConfigSnapshots(ctx)
 	if err != nil {
 		return set, err

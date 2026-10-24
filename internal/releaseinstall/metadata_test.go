@@ -75,6 +75,10 @@ func TestPassiveReleaseMetadataRejectsAmbiguityAndIdentitySubstitution(t *testin
 		"tool-asset":            toolChange(func(m map[string]any) { m["asset"] = "../pnpm" }),
 		"tool-hash":             toolChange(func(m map[string]any) { m["sha256"] = "bad" }),
 		"tool-size":             toolChange(func(m map[string]any) { m["size"] = 1 }),
+		"tool-notices-missing":  toolChange(func(m map[string]any) { delete(m, "notices_asset") }),
+		"tool-notices-asset":    toolChange(func(m map[string]any) { m["notices_asset"] = "foreign.txt" }),
+		"tool-notices-hash":     toolChange(func(m map[string]any) { m["notices_sha256"] = "bad" }),
+		"tool-notices-size":     toolChange(func(m map[string]any) { m["notices_size"] = 1 }),
 	} {
 		t.Run("images/"+name, func(t *testing.T) {
 			if err := ValidateRuntimeImages(body); err == nil {
@@ -109,6 +113,21 @@ func TestPassiveReleaseMetadataRejectsAmbiguityAndIdentitySubstitution(t *testin
 	}
 	if err := ValidateReleaseSBOM(sbom, ReleaseManifest{}); err == nil {
 		t.Fatal("zero source accepted")
+	}
+}
+
+func TestPNPMPassiveNoticesRequireExactCurrentSourceBytes(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "..", "tools/pnpm/NOTICE"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := ValidatePNPMNotices(body); err != nil {
+		t.Fatal(err)
+	}
+	for _, changed := range [][]byte{nil, []byte("foreign notices"), append(append([]byte(nil), body...), 0)} {
+		if err := ValidatePNPMNotices(changed); err == nil {
+			t.Fatal("foreign or changed notices accepted")
+		}
 	}
 }
 

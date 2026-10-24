@@ -128,6 +128,11 @@ type runtimeLock struct {
 			SHA256 string `json:"sha256"`
 			Size   int64  `json:"size"`
 		} `json:"tool"`
+		Notices struct {
+			Path   string `json:"path"`
+			SHA256 string `json:"sha256"`
+			Size   int64  `json:"size"`
+		} `json:"notices"`
 	} `json:"pnpm_tool"`
 	PythonSources []struct {
 		Name              string   `json:"name"`
@@ -525,7 +530,7 @@ func validate(lock runtimeLock) error {
 		return errors.New("uv image, provenance or native tool identity is invalid")
 	}
 	pnpm := lock.PNPMTool
-	if !exactVersion.MatchString(pnpm.Version) || pnpm.Architecture != "amd64" || pnpm.Archive.URL != "https://github.com/pnpm/pnpm/releases/download/v"+pnpm.Version+"/pnpm-linux-x64.tar.gz" || !hex256.MatchString(pnpm.Archive.SHA256) || pnpm.Archive.Size <= 0 || pnpm.Archive.Size > 64<<20 || !regexp.MustCompile(`^[a-f0-9]{40}$`).MatchString(pnpm.Provenance.SourceCommit) || !regexp.MustCompile(`^[1-9][0-9]{0,19}$`).MatchString(pnpm.Provenance.WorkflowRun) || pnpm.Provenance.BundlePath != "tools/pnpm/release-proof.json" || !hex256.MatchString(pnpm.Provenance.BundleSHA256) || pnpm.Tool.Path != "pnpm" || !hex256.MatchString(pnpm.Tool.SHA256) || pnpm.Tool.Size <= 0 || pnpm.Tool.Size > 64<<20 {
+	if !exactVersion.MatchString(pnpm.Version) || pnpm.Architecture != "amd64" || pnpm.Archive.URL != "https://github.com/pnpm/pnpm/releases/download/v"+pnpm.Version+"/pnpm-linux-x64.tar.gz" || !hex256.MatchString(pnpm.Archive.SHA256) || pnpm.Archive.Size <= 0 || pnpm.Archive.Size > 64<<20 || !regexp.MustCompile(`^[a-f0-9]{40}$`).MatchString(pnpm.Provenance.SourceCommit) || !regexp.MustCompile(`^[1-9][0-9]{0,19}$`).MatchString(pnpm.Provenance.WorkflowRun) || pnpm.Provenance.BundlePath != "tools/pnpm/release-proof.json" || !hex256.MatchString(pnpm.Provenance.BundleSHA256) || pnpm.Tool.Path != "pnpm" || !hex256.MatchString(pnpm.Tool.SHA256) || pnpm.Tool.Size <= 0 || pnpm.Tool.Size > 64<<20 || pnpm.Notices.Path != "tools/pnpm/NOTICE" || !hex256.MatchString(pnpm.Notices.SHA256) || pnpm.Notices.Size <= 0 || pnpm.Notices.Size > 64<<10 {
 		return errors.New("pnpm archive, provenance or native tool identity is invalid")
 	}
 	if lock.GVisor.RuntimeBundle.Architecture != "amd64" || len(lock.GVisor.RuntimeBundle.Members) != 6 {
@@ -611,7 +616,7 @@ func render(lock runtimeLock, qualification map[string]string) []byte {
 		{"UVImageReference", lock.UVImage.Reference}, {"UVVersion", lock.UVImage.Version}, {"UVArchitecture", lock.UVImage.Architecture},
 		{"UVSourceCommit", lock.UVImage.Provenance.SourceCommit}, {"UVWorkflowRun", lock.UVImage.Provenance.WorkflowRun}, {"UVIndexSHA256", lock.UVImage.Provenance.IndexSHA256}, {"UVBundleSHA256", lock.UVImage.Provenance.BundleSHA256}, {"UVConfigSHA256", lock.UVImage.Provenance.ConfigSHA256}, {"UVToolPath", lock.UVImage.Tool.Path}, {"UVToolSHA256", lock.UVImage.Tool.SHA256},
 		{"PNPMVersion", lock.PNPMTool.Version}, {"PNPMArchitecture", lock.PNPMTool.Architecture}, {"PNPMArchiveURL", lock.PNPMTool.Archive.URL}, {"PNPMArchiveSHA256", lock.PNPMTool.Archive.SHA256},
-		{"PNPMSourceCommit", lock.PNPMTool.Provenance.SourceCommit}, {"PNPMWorkflowRun", lock.PNPMTool.Provenance.WorkflowRun}, {"PNPMBundlePath", lock.PNPMTool.Provenance.BundlePath}, {"PNPMBundleSHA256", lock.PNPMTool.Provenance.BundleSHA256}, {"PNPMToolPath", lock.PNPMTool.Tool.Path}, {"PNPMToolSHA256", lock.PNPMTool.Tool.SHA256},
+		{"PNPMSourceCommit", lock.PNPMTool.Provenance.SourceCommit}, {"PNPMWorkflowRun", lock.PNPMTool.Provenance.WorkflowRun}, {"PNPMBundlePath", lock.PNPMTool.Provenance.BundlePath}, {"PNPMBundleSHA256", lock.PNPMTool.Provenance.BundleSHA256}, {"PNPMToolPath", lock.PNPMTool.Tool.Path}, {"PNPMToolSHA256", lock.PNPMTool.Tool.SHA256}, {"PNPMNoticesPath", lock.PNPMTool.Notices.Path}, {"PNPMNoticesSHA256", lock.PNPMTool.Notices.SHA256},
 		{"PythonImageReference", lock.PythonImage.Reference}, {"PythonVersion", lock.PythonImage.PythonVersion}, {"PipVersion", lock.PythonImage.PipVersion},
 		{"GoImageReference", lock.GoImage.Reference}, {"GoVersion", lock.GoImage.GoVersion}, {"GoArchitecture", lock.GoImage.Architecture},
 		{"RustImageReference", lock.RustImage.Reference}, {"RustVersion", lock.RustImage.RustVersion}, {"RustArchitecture", lock.RustImage.Architecture}, {"RustTarget", lock.RustImage.Target},
@@ -626,6 +631,7 @@ func render(lock runtimeLock, qualification map[string]string) []byte {
 	}
 	fmt.Fprintf(&output, "\tUVToolSize = %d\n", lock.UVImage.Tool.Size)
 	fmt.Fprintf(&output, "\tPNPMArchiveSize = %d\n\tPNPMToolSize = %d\n", lock.PNPMTool.Archive.Size, lock.PNPMTool.Tool.Size)
+	fmt.Fprintf(&output, "\tPNPMNoticesSize = %d\n", lock.PNPMTool.Notices.Size)
 	output.WriteString(")\n\ntype PythonSourceProfileLock struct { Name, SourceID, IndexURL, IndexHost string; DistributionHosts, OwnedProjects []string }\n\nvar PythonSourceProfiles = map[string]PythonSourceProfileLock{\n")
 	for _, source := range lock.PythonSources {
 		fmt.Fprintf(&output, "%q: {Name: %q, SourceID: %q, IndexURL: %q, IndexHost: %q, DistributionHosts: %#v, OwnedProjects: %#v},\n", source.Name, source.Name, source.SourceID, source.IndexURL, source.IndexHost, source.DistributionHosts, source.OwnedProjects)

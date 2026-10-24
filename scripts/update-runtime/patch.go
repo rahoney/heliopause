@@ -248,6 +248,10 @@ func renderChanges(p plan, state string) ([]change, error) {
 			replacements["/pnpm_tool/tool/path"] = "pnpm"
 			replacements["/pnpm_tool/tool/sha256"] = u.ToolSHA256
 			replacements["/pnpm_tool/tool/size"] = u.ToolSize
+			replacements["/pnpm_tool/notices/path"] = "tools/pnpm/NOTICE"
+			replacements["/pnpm_tool/notices/sha256"] = hash(u.Notices)
+			replacements["/pnpm_tool/notices/size"] = len(u.Notices)
+			files["tools/pnpm/NOTICE"] = u.Notices
 			files["tools/pnpm/release-proof.json"] = u.Bundle
 			owners["pnpm"] = p.Version
 		case "rust":

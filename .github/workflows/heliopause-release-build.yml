@@ -51,6 +51,17 @@ jobs:
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -buildvcs=true -o "$dist/haa-network-policy-helper-linux-amd64" ./cmd/haa-network-policy-helper
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -buildvcs=true -o "$dist/haa-release-installer-linux-amd64" ./cmd/haa-release-installer
           scripts/build-gvisor-observer-release.sh "$dist/haa_gvisor_observer-linux-amd64"
+          go run ./scripts/generate-runtime-lock.go -check
+          pnpm_archive="$RUNNER_TEMP/helox-pnpm-linux-x64.tar.gz"
+          pnpm_url="$(jq -er '.pnpm_tool.archive.url' scripts/runtimes.lock.json)"
+          pnpm_size="$(jq -er '.pnpm_tool.archive.size' scripts/runtimes.lock.json)"
+          curl --fail --show-error --silent --location --proto '=https' --proto-redir '=https' --connect-timeout 15 --max-time 120 --max-filesize "$pnpm_size" --output "$pnpm_archive" "$pnpm_url"
+          go run ./scripts/update-runtime materialize-pnpm \
+            --root "$GITHUB_WORKSPACE" \
+            --archive "$pnpm_archive" \
+            --output "$dist/pnpm-linux-amd64" \
+            --notices-output "$dist/pnpm-NOTICE.txt"
+          rm -- "$pnpm_archive"
           go run ./scripts/runtime-image-manifest \
             --runtime-lock scripts/runtimes.lock.json \
             --output "$dist/helox-runtime-images.json"
@@ -85,6 +96,8 @@ jobs:
             --asset "$dist/haa_gvisor_observer-linux-amd64" \
             --asset "$dist/haa-network-policy-helper-linux-amd64" \
             --asset "$dist/haa-release-installer-linux-amd64" \
+            --asset "$dist/pnpm-linux-amd64" \
+            --asset "$dist/pnpm-NOTICE.txt" \
             --asset "$dist/helox-linux-amd64.deb" \
             --asset "$dist/helox-linux-amd64.rpm"
       - name: Attest release candidate provenance

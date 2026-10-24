@@ -24,7 +24,7 @@ func storeReleaseProof(ctx context.Context, release wireRelease, current Install
 	return storeCheckedProof(ctx, release.manifest.SHA256(), proof)
 }
 
-// The production caller above first uses the fixed SDK against all seven
+// The production caller above first uses the fixed SDK against all nine
 // subjects. This storage primitive grants no provenance or Policy authority.
 func storeCheckedProof(ctx context.Context, digest string, proof []byte) error {
 	if ctx == nil || os.Geteuid() != 0 || !sha256Text(digest) || len(proof) == 0 || len(proof) > 1<<20 {

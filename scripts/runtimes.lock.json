@@ -98,6 +98,11 @@
       "path": "pnpm",
       "sha256": "8cca52dc2aab0081ac153a3c7ad36224cd72b6d7cfea413746b7b97f6a3d8942",
       "size": 57822504
+    },
+    "notices": {
+      "path": "tools/pnpm/NOTICE",
+      "sha256": "df8cac4eb3aa5126532298814c75ec9fc2dab3248fef818b6317e7478abb7bd2",
+      "size": 3152
     }
   },
   "python_sources": [

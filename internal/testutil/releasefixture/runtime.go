@@ -50,6 +50,11 @@ func BindCurrentRuntime(manifest, sbom, images []byte) (Materials, error) {
 	if goProperties != 1 {
 		return Materials{}, errors.New("synthetic SBOM Go identity ambiguous")
 	}
+	components, ok := s["components"].([]any)
+	if !ok {
+		return Materials{}, errors.New("synthetic SBOM components missing")
+	}
+	s["components"] = append(components, map[string]any{"type": "application", "name": "pnpm", "version": runtimeidentity.PNPMVersion})
 	nodeVersion, _, _ := strings.Cut(strings.TrimPrefix(runtimeidentity.NodeImageReference, "node:"), "-slim@")
 	identities := map[string]struct{ reference, repository, version string }{
 		"node":   {runtimeidentity.NodeImageReference, "docker.io/library/node", nodeVersion},
@@ -78,7 +83,7 @@ func BindCurrentRuntime(manifest, sbom, images []byte) (Materials, error) {
 	_, uvDigest, _ := strings.Cut(runtimeidentity.UVImageReference, "@")
 	im["images"] = append(entries, map[string]any{"name": "uv", "reference": runtimeidentity.UVImageReference, "repository": "ghcr.io/astral-sh/uv", "digest": uvDigest, "runtime_version": runtimeidentity.UVVersion})
 	im["schema"] = "helox.runtime-image-manifest/v2"
-	im["tools"] = []any{map[string]any{"name": "pnpm", "tool_version": runtimeidentity.PNPMVersion, "platform": "linux/amd64", "asset": "pnpm-linux-amd64", "sha256": runtimeidentity.PNPMToolSHA256, "size": runtimeidentity.PNPMToolSize}}
+	im["tools"] = []any{map[string]any{"name": "pnpm", "tool_version": runtimeidentity.PNPMVersion, "platform": "linux/amd64", "asset": "pnpm-linux-amd64", "sha256": runtimeidentity.PNPMToolSHA256, "size": runtimeidentity.PNPMToolSize, "notices_asset": "pnpm-NOTICE.txt", "notices_sha256": runtimeidentity.PNPMNoticesSHA256, "notices_size": runtimeidentity.PNPMNoticesSize}}
 	m["runtime_lock"] = map[string]any{"sha256": runtimeidentity.RuntimeLockSHA256, "gvisor_release": runtimeidentity.GVisorRelease, "gvisor_commit": runtimeidentity.GVisorCommit}
 	result := Materials{}
 	var err error

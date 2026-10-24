@@ -14,14 +14,25 @@ Last completed work item: CLI-UX-003 — COMPLETE; source4cfe29e/CI352 ten SUCCE
 Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
-Active work item status: IN_PROGRESS — native same-runtime self-quarantine update IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; actual signed rc6 normal/cancellations/fresh replay passed; channel scope remains
+Active work item status: IN_PROGRESS — rc6/native4 same-runtime baseline IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; P2/native5 expansion locally verified only, guest/whole qualification and channel scope remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2b2 — notices owner/freeze, complete native distribution and exact admission; explicit native materialization locally verified; batch remote qualification later
-Current substep: M13-004/P2 — IN_PROGRESS; P2a offline supply LOCAL VERIFIED, P2b native supply/runtime gaps active; product support not yet advertised
+Next action: M13-004/P2b2 — exact PNPM guest supply/admission and native startup/query/lock; complete native distribution locally verified; batch remote qualification at common boundary
+Current substep: M13-004/P2 — IN_PROGRESS; offline supply/native distribution LOCAL VERIFIED; exact guest admission and product graph/layout/CLI gaps active; support not yet advertised
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-24 P2b2 native 배포·기존 설치/복구 로컬 검증
+
+[배포 경로 결과](./evidence/package-client-quarantine/p2b2-pnpm-distribution-local-20261024.json)는
+NOTICE의 source-bound owner/freeze, native+passive 출력, exact11 assets와 5native/3metadata의
+producer·검사·설치·bootstrap·sealed Promotion을 연결한다. Final product source의
+Quick119.521s·canonical6 및 관련13package 전체 Race146.917s PASS다. 뒤의 gated root fixture
+두 개만 교정한 [실제12 namespace 검증](./evidence/package-client-quarantine/p2b2-root-fixture-qualification-20261024.json)도 PASS이며 Host12files/images/bridge/service가 동일하다.
+완료 시험 바이너리6디렉터리219,678,968 logicalB를 참조0/unknown0 확인 뒤 제거했다.
+Guest PNPM 공급·exact gVisor admission/startup/query/lock가 다음이며 제품 CLI/새 signed
+release·원격 qualification은 미완료다. M13-004/P2b2만 IN_PROGRESS다.
 
 ### 2026-10-24 P2b2 native 명시 출력 로컬 checkpoint
 
