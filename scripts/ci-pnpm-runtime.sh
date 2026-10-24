@@ -1,7 +1,12 @@
 #!/bin/bash
 # Hosted-CI-only native supply; the payload runs only inside gVisor as UID1000.
 set -euo pipefail
-test "$#" = 0
+test "$#" -le 1
+pnpm_profile=${1:-sandbox}
+case "$pnpm_profile" in
+  sandbox|project) ;;
+  *) echo 'unsupported PNPM CI profile' >&2; exit 2 ;;
+esac
 test "$(id -u)" != 0
 test -n "${RUNNER_TEMP:-}"
 test "${RUNNER_TEMP:0:1}" = /
@@ -34,6 +39,12 @@ pnpm_root_created=1
 sudo -n install -d -m 0755 /usr/lib/heliopause/versions/v1.0.0-pnpm-ci
 sudo -n install -m 0555 "$pnpm_work/pnpm-linux-amd64" /usr/lib/heliopause/versions/v1.0.0-pnpm-ci/pnpm-linux-amd64
 sudo -n ln -s versions/v1.0.0-pnpm-ci /usr/lib/heliopause/current
+# The owning parent installed the matching tagged bootstrap client and started
+# its authenticated helper. This child never replaces a client or owns rebind.
+if [[ "$pnpm_profile" == project ]]; then
+  HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 HELOX_PNPM_INSTANCE_EXECUTION_FIXTURE=1 HELOX_PNPM_CACHE_INTEGRATION=1 HELOX_PNPM_PROJECT_TRANSACTION_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMPublic(ApprovedCache|ProjectTransaction)Integration$'
+  exit 0
+fi
 HELOX_PNPM_NATIVE_RUNTIME=1 go test -tags=realcorpus -v -timeout=3m ./internal/sandbox -run '^TestPNPMActual(Isolated(NativeStartup|EmptyLock|NodeQuery)|ReleaseArtifactProbe)$'
 # The parent lifecycle installed this realcorpus binary and owns the running
 # authenticated policy helper. Execute that exact client as the ordinary user.

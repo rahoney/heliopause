@@ -8,6 +8,8 @@ const pnpmProjectIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PU
 const pnpmControlledIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 HELOX_PNPM_INSTANCE_EXECUTION_FIXTURE=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMActualProductionInstanceExecution$/^controlled-(success|exit37|long-name)$'`
 const pnpmPublicQuarantineCommand = `HELOX_PNPM_PUBLIC_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMPublicNativeResolverIntegration$'`
 const pnpmSandboxTestBuildCommand = `go test -c -tags=realcorpus -o "$RUNNER_TEMP/helox-sandbox-test" ./internal/sandbox`
+const pnpmBootstrapTestBuildCommand = `go test -c -tags=realcorpus -o "$RUNNER_TEMP/helox-pnpm-project-test" ./internal/bootstrap`
+const pnpmBootstrapIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 HELOX_PNPM_INSTANCE_EXECUTION_FIXTURE=1 HELOX_PNPM_CACHE_INTEGRATION=1 HELOX_PNPM_PROJECT_TRANSACTION_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMPublic(ApprovedCache|ProjectTransaction)Integration$'`
 
 // Check the helper's concrete command binding, not arbitrary Bash semantics.
 // Bash syntax and the executed helper/cleanup are qualified separately.
@@ -32,6 +34,9 @@ func validatePNPMRuntimeScript(contents string) []string {
 		pnpmProjectIntegrationCommand,
 		pnpmControlledIntegrationCommand,
 		pnpmPublicQuarantineCommand,
+		pnpmBootstrapIntegrationCommand,
+		`test "$#" -le 1`,
+		`pnpm_profile=${1:-sandbox}`,
 	} {
 		if counts[command] != 1 {
 			findings = append(findings, "PNPM runtime helper requires one command: "+command)
@@ -55,7 +60,30 @@ func validatePNPMRuntimeScript(contents string) []string {
 	if scoped != 1 {
 		findings = append(findings, "PNPM controlled fixture requires one matching package subshell")
 	}
+	profileGuard := "case \"$pnpm_profile\" in\nsandbox|project) ;;\n*) echo 'unsupported PNPM CI profile' >&2; exit 2 ;;\nesac"
+	projectScope := "if [[ \"$pnpm_profile\" == project ]]; then\n" + pnpmBootstrapIntegrationCommand + "\nexit 0\nfi"
+	if strings.Count(strings.Join(active, "\n"), profileGuard) != 1 || strings.Count(strings.Join(active, "\n"), projectScope) != 1 {
+		findings = append(findings, "PNPM project profile requires its fixed argument guard and exclusive installed-client command")
+	}
 	return findings
+}
+
+func validatePNPMProjectClientOrder(contents string) []string {
+	blocks, err := activeJobRunLines(contents, "gvisor-integration", "Install pinned runtime and run lifecycle integration")
+	if err != nil {
+		return nil
+	}
+	sequence := strings.Join([]string{
+		"bash scripts/ci-pnpm-runtime.sh", pnpmBootstrapTestBuildCommand,
+		`haa_install_ci_client "$RUNNER_TEMP/helox-pnpm-project-test"`, "haa_start_policy_helper",
+		"bash scripts/ci-pnpm-runtime.sh project", `haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"`, "haa_start_policy_helper",
+	}, "\n")
+	for _, lines := range blocks {
+		if strings.Count(strings.Join(lines, "\n"), sequence) == 1 {
+			return nil
+		}
+	}
+	return []string{"PNPM project actual requires tagged bootstrap compile, protected client/helper and sandbox restoration in the owning lifecycle"}
 }
 
 func validatePNPMInspectionClientOrder(contents string) []string {

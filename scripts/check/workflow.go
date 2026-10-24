@@ -139,8 +139,9 @@ func validateCIWorkflow(contents, selectedGo string) []string {
 	findings = append(findings, validateGoWorkflowVersions(contents, selectedGo)...)
 	findings = append(findings, validateCargoIntegrationGates(contents)...)
 	findings = append(findings, validateLifecycleIntegrationCommands(contents, "UV", uvIntegrationCommands)...)
-	findings = append(findings, validateLifecycleIntegrationCommands(contents, "PNPM", []string{"bash scripts/ci-pnpm-runtime.sh"})...)
+	findings = append(findings, validateLifecycleIntegrationCommands(contents, "PNPM", []string{"bash scripts/ci-pnpm-runtime.sh", "bash scripts/ci-pnpm-runtime.sh project"})...)
 	findings = append(findings, validatePNPMInspectionClientOrder(contents)...)
+	findings = append(findings, validatePNPMProjectClientOrder(contents)...)
 	findings = append(findings, validatePackageFixtureWorkingDirectories(contents)...)
 	findings = append(findings, validateTerraformIntegrationGates(contents)...)
 	findings = append(findings, validateActiveJobCommands(contents, "gvisor-observer", "Build exact gVisor observer helper with Bazel", "gVisor observer SDK", []string{

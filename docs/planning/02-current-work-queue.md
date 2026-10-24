@@ -17,7 +17,7 @@ Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003
 Active work item status: IN_PROGRESS — B4 remotely qualified by CI406; B5a/B5b1/B5b2/B5b3 backend named local PASS; native adoption/CLI/current backend remote qualification and whole P2 acceptance remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Next action: M13-004/P2 — B5b3 guarded Application/target transaction/independent approval LOCAL QUALIFIED; wire its exact realcorpus client/actual consumer into existing CI, then continue CLI/native source-proof enrollment acceptance. CI406 covers earlier fd3506b only; whole P2 remains NO
-Current substep: M13-004/P2 — IN_PROGRESS; backend checkpoint and existing-CI consumer wiring audit next; CLI/native adoption/whole P2 pending; support not yet advertised
+Current substep: M13-004/P2 — IN_PROGRESS; B5b3 backend committed9adbfa5; B5b4 existing-CI consumer wiring LOCAL QUALIFIED; bundled remote checkpoint next; CLI/native adoption/whole P2 pending; support not yet advertised
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -4964,3 +4964,14 @@ Application 소비자를 연결한다. Canonical4/네 package 전체 Race135.126
 원본/state를 rollback한다. Foreign output/불확실 journal은 보존하고 재진입을 거부한다. Host 전후
 동일/helperwait0/정리를 확인했다. Native payload adoption/CLI/원격·whole P2는 미완료다.
 다음은 현재 CI actual consumer wiring과 CLI/독립 source-proof 인계 지도다. M13-004만 IN_PROGRESS다.
+
+### 2026-10-25 P2 B5b4 existing CI actual consumer local checkpoint
+
+[B5b4 결과](./evidence/package-client-quarantine/p2c5b5b4-pnpm-ci-consumer-local-20261025.json)는
+새 job 없이 기존 PNPM 공급의 고정 project profile과 owning parent의 tagged client/helper/복원을
+연결했다. Canonical5/Bash·checker full Race29.928s, 실제 CI script의 cache+final transaction
+197.220s와 helperwait0/Host 구성 불변/정리는 PASS다. 완료 전용 디렉터리6개947,906,618B는
+참조·query errors0와 정확한 inventory 확인 뒤 삭제했다. 처음 자기 열람 FD query의 거부와
+교정 재조회는 원본에 보존했다. 실제 원격 순서·Required는 미확인이다. Backend 단위를 한 번
+묶어 push하고 새 실행의 첫 확인은 최근54m32+새197s/준비 여유에 근거해 시작 약60분 후다.
+대기 중 같은 P2의 CLI/native source-proof 인계를 계속하며 M13-004 하나만 IN_PROGRESS다.
