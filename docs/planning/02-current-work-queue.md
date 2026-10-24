@@ -16,7 +16,7 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — rc6/native4 same-runtime baseline IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; P2/native5 expansion locally verified only, guest/whole qualification and channel scope remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2c5-B3 — B2 exact target command/lineage and synthetic transitive+peer normal/failure LOCAL VERIFIED; B3a inventory/B3b1 dirname codec LOCAL VERIFIED; B3b2 full layout/bin/metadata edit map next; production static-all/prepare remain; product dynamic INCOMPLETE; CI403/db464fd ten SUCCESS; P2 acceptance NO
+Next action: M13-004/P2c5-B3 — B2 exact target command/lineage and synthetic transitive+peer normal/failure LOCAL VERIFIED; B3b2a envelope LOCAL VERIFIED; bin code/metadata and expected archive+edge binding next; CI404/1f410fd PENDING; production static-all/prepare remain; product dynamic INCOMPLETE; CI403/db464fd ten SUCCESS; P2 acceptance NO
 Current substep: M13-004/P2 — IN_PROGRESS; offline supply/native distribution LOCAL VERIFIED; exact guest admission and product graph/layout/CLI gaps active; support not yet advertised
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
@@ -118,6 +118,26 @@ codec/관련 Race5.807s와 fresh actual20.659s의 transitive2/peer4 모든 insta
 PASS다. 두 전용 runtime bulk는 모두 refs/query errors0 뒤 삭제했다. Full layout byte/edge/
 bin/metadata verifier·production prepare/static-all/aggregate가 다음이며 P2 acceptance는 NO다.
 M13-004 하나만 IN_PROGRESS다.
+
+### 2026-10-24 B3b2a layout envelope 로컬 검증
+
+[B3 §8](./evidence/package-client-quarantine/p2c5b3-pnpm-layout-plan-20261024.md)은 bounded native
+입력 parser만 연결했다. Deprecated Xattrs/무제한 Copy 표기의 두 정적 점검 거부를
+PAXRecords/정확한 CopyN으로 교정했으며 security/Quick/docs·npm 전체 Race6.037s와
+actual21.319s의 original controls/identity/links·complete/금지0/Host불변/helperwait0를
+확인했다. 끝난 전용165,567,367B는 refs/query error0 뒤 삭제했다. 이 type에는 acquisition/
+Policy/실행 권한이 없고 전체 archive/edge/bin/metadata 검증은 남아 있다. 현재404 source는
+앞1f410fd이고55분 타이머19:30:18KST를 유지한다. M13-004 하나만 IN_PROGRESS다.
+
+### 2026-10-24 B2·B3a·B3b1 묶음 원격 qualification 시작
+
+로컬에서 검증한 세 commit83db86c/7ff0cab/1f410fd를 한 번 push했다. 최종 workflow.837s도
+PASS이며 CI404/run40082548666은 source1f410fd/tree32123575의 ordinary 후보다.
+최근402/403 실측53m11/51m17을 근거로55분 실제 타이머를 설정했고 첫 확인은
+2026-10-24 19:30:18KST(10:30:18UTC)다. 그 전에는 API 반복 조회·작은 변경 재push를 하지
+않는다. B2 공용 observer의 remote qualification은 PENDING이며 그 결과에 의존하지 않는
+B3b2 generated shim/hoist/metadata·전체 layout의 상세 지도와 로컬 작업을 계속한다.
+M13-004 하나만 IN_PROGRESS이고 전체 P2 acceptance는 NO다.
 
 ### 2026-10-24 CI403 묶음 checkpoint 확인
 

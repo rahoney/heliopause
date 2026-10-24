@@ -4,12 +4,9 @@ package sandbox
 
 import (
 	"archive/tar"
-	"bytes"
 	"context"
 	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
-	"io"
 	"os"
 	"strings"
 	"testing"
@@ -29,7 +26,7 @@ func TestPNPMActualLayoutInventoryFixture(t *testing.T) {
 		if !t.Run(fixture.name, func(t *testing.T) {
 			captured := false
 			qualifyPNPMOfflineFixture(t, fixture, func(ctx context.Context, runner CommandRunner, container string, controls []domain.ProjectControlFile) {
-				output := nativeToolArchiveOutput{limit: 16 << 20}
+				output := nativeToolArchiveOutput{limit: artifactnpm.PNPMLayoutArchiveLimit}
 				if err := runner.(streamingDockerOutput).RunOutput(ctx, &output, "docker", "cp", container+":"+pnpmProjectDirectory+"/node_modules", "-"); err != nil || output.failed {
 					t.Fatal("read bounded native layout shape", err)
 				}
@@ -41,27 +38,20 @@ func TestPNPMActualLayoutInventoryFixture(t *testing.T) {
 					Generated          string `json:",omitempty"`
 				}
 				var entries []entry
-				input := bytes.NewReader(output.body)
-				reader := tar.NewReader(input)
-				for {
-					header, err := reader.Next()
-					if err == io.EOF {
-						break
-					}
-					if err != nil || len(entries) >= 10000 || header.Size < 0 || header.Size > 16<<20 {
-						t.Fatal("native shape archive unreadable or over bound", err)
-					}
-					item := entry{Name: header.Name, Link: header.Linkname, Type: header.Typeflag, Mode: header.Mode, Size: header.Size, UID: header.Uid, GID: header.Gid}
-					if header.Typeflag == tar.TypeReg {
-						body, err := io.ReadAll(io.LimitReader(reader, (16<<20)+1))
-						if err != nil || int64(len(body)) != header.Size {
-							t.Fatal("native shape file read failed", err)
-						}
-						h := sha256.Sum256(body)
-						item.Digest = hex.EncodeToString(h[:])
+				parsed, err := artifactnpm.ParsePNPMLayoutArchive(ctx, output.body)
+				if err != nil {
+					t.Fatal("native layout envelope rejected", err)
+				}
+				for _, header := range parsed.Entries() {
+					item := entry{Name: header.Name, Link: header.Link, Type: header.Kind, Mode: header.Mode, Size: header.Size, UID: header.UID, GID: header.GID, Digest: header.Digest.String()}
+					if header.Kind == tar.TypeReg {
 						if header.Name == "node_modules/.modules.yaml" || header.Name == "node_modules/.pnpm/lock.yaml" || strings.Contains(header.Name, "/.bin/") {
-							if len(body) > 64<<10 {
+							if header.Size > 64<<10 {
 								t.Fatal("native generated shape exceeds bounded capture")
+							}
+							body, err := parsed.ReadFile(header.Name)
+							if err != nil {
+								t.Fatal("native generated shape file unavailable", err)
 							}
 							item.Generated = string(body)
 						}

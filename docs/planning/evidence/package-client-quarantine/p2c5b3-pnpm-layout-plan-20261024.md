@@ -206,3 +206,68 @@ edge/bin/metadata·여러 peer context의 동적 검역 완료로 확대하지 �
 삭제했다. [B3b1 로컬 결과](./p2c5b3b1-pnpm-codec-local-20261024.json)가 exact source와
 검증/정리 범위를 소유한다. B3b2에서는 관측한 generated shim/hoist/metadata를 검증할
 정확한 방식을 확정한 다음 full layout verifier를 구현한다. 관찰기와 기존 npm 실행은 불변이다.
+
+## 8. B3b2a — bounded layout tar envelope의 수정 지도/두 번째 검토
+
+Source1f410fd baseline에서 full layout verifier는 여전히 미구현이다. B3b0/1 gated test에만
+Docker tar reader가 있고 production에 동일한 envelope parser는 없다. 그 test의 ad hoc 순회를
+production의 format parser 한 곳으로 연결하여 실제 consumer를 만든다. 이것은 full graph/
+byte binding이 아니라 이후 검증에 필요한 **unverified input 해석** 단계다.
+
+1. artifact/npm/pnpm_layout_archive.go에 ParsePNPMLayoutArchive(ctx, bytes)와 immutable
+   PNPMLayoutArchive/entry를 추가한다. 고정 root node_modules, 총 raw200MiB/100,000 headers,
+   경로4KiB/개별 regular20MiB와 bounded known PAX path/linkpath/timestamps만 처리한다.
+   Native expected owner1000:1000, low permission bits만 수용하며 symlink의 표시 mode0777을
+   regular file의 실행 신뢰로 쓰지 않는다. Special/xattr/unknown PAX와 non-link의 linkname,
+   duplicate/canonical escape·외부 link·file/symlink parent, missing directory parent를 거부한다.
+2. 같은 immutable tar bytes에서 regular digest를 측정한다. Hardlink는 내부 regular bytes로
+   닫히는 bounded alias만 해석하고 foreign/missing/cycle·64hop 초과를 거부한다. Archive의
+   실제 file digest와 같다는 뜻이 아니며 이후 B3a expected inventory와 반드시 비교한다.
+   Symlink의 exact expected edge/target 존재는 전체 graph 검증에 남는다.
+3. Tar EOF 뒤 모든 padding이 zero인지 확인한다. Getter는 사본이며 ReadFile은 regular와
+   내부 hardlink의 bytes만 반환한다. 이 type에는 raw tar 실행/설치 API, ALLOW/Verified/Valid
+   의미나 source/acquired subject가 없다. Zero/missing/다른 kind ReadFile은 오류다.
+4. 기존 gated shape fixture가 이 parser를 실제 소비하고 기존 bounded JSON 관측/codec 경로
+   검사·A3 관찰/정리/Host 보존을 유지한다. Native output을 Host에 추출하지 않는다.
+
+두 번째 검토에서 parser와 full verifier를 구분하지 않으면 safe path/hash 측정만으로 실제
+archive/edge/bin 검증까지 닫혔다고 오인할 수 있음을 확인했다. 이 단계의 출력은 unverified
+format data이고 native shim/metadata/hoist authorization을 하지 않는다. 기존 B3a tarball
+scanner는 다른 package/ gzip 입력이므로 재사용해 Docker layout 형식으로 바꾸지 않는다.
+Adapter에 network/Policy/Sandbox 호출을 추가하지 않고 이 새 format parser를 한 곳에서
+소비한다. Full input binding/renderer/metadata 지도는 그 후 별도로 확정한다.
+
+정상 regular/directory/symlink와 실제와 같은 cross-package hardlink, immutable getters와
+잘못된 root/path/parent/link/owner/mode/size/PAX/type/duplicate/tar tail/cancel을 단위 검증한다.
+Canonical format/Quick/security/docs·npm artifact 전체 Race와 fresh native gated actual을
+확인한다. CI404 source는 바꾸지 않고55분 타이머19:30:18KST를 유지한다. 새 actual의 완료
+bulk도 refs/query errors0 뒤 삭제한다.
+
+### B3b2a 첫 검사와 표현 교정
+
+첫 Quick41.334s는 default tests/actual 전에 pinned Staticcheck의 SA1019로 실패했다.
+Go tar.Header.Xattrs는 deprecated이고 PAXRecords가 현재 표현이다. 기존 gomodule build
+input/output owner의 PAXRecords 처리를 대조했다. Unknown PAX 거부는 이미 있어서 생산
+코드의 중복 deprecated field 참조를 제거하고 xattr negative도 SCHILY.xattr.* PAX record로
+만든다. Gating 도구/거부 조건은 유지하며 전체 검증과 실제 native consumer는 아직 미실행이다.
+
+PAX 교정 뒤 Quick153.866s는 PASS였지만 security5.730s는 G110으로 실패했다. Header size와
+전체 raw 상한은 검사했으나 io.Copy 호출 자체가 payload 크기를 나타내지 않았다. 기존
+bounded tar 소비자의 CopyN 패턴처럼 이미 검증한 item.Size만 정확히 읽는다. 추가 permission/
+limit 확대나 scanner suppress는 없다. 이 변경은 security를 먼저 확인하고 최종 Quick/
+관련 Race·native actual로 검증한다. 앞 Quick을 수정 뒤 source의 성공으로 전용하지 않는다.
+
+### B3b2a 로컬 교정 검증과 다음 경계
+
+CopyN의 canonical security12.630s→Quick58.003s/docs.281s와 npm artifact 전체 Race6.037s는
+PASS다. Fresh actual21.319s/test18.54s는 production envelope parser가 native transitive/
+peer 전체 tar를 읽고 내부 hardlink와 원래 instance 경로2/4를 보존했다. 기존 controls/
+identity/links·complete/금지0·Host전체동일/helperwait0/final original0도 PASS다.
+이는 format input 해석의 로컬 검증이며 모든 bytes의 acquired archive binding/graph/bin/
+생성 metadata 승인·dynamic/Host 지원의 완료가 아니다.
+
+전용 runtime11files/165,567,367 logicalB는 refs0/query errors0 뒤 삭제했다.
+[로컬 영수증](./p2c5b3b2a-pnpm-envelope-local-20261024.json)이 원래 두 정적 점검 거부와
+교정 결과를 연결한다. CI404는 앞1f410fd/19:30:18KST 타이머를 계속 유지하고 새 parser의
+원격 검증으로 전용하지 않는다. 다음은 pinned Node bin shim의 전체 code/경로 검증과
+B3a inventory·frozen instances/edges를 이 envelope에 결합하는 상세 지도다.
