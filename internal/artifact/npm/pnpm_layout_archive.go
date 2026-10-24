@@ -51,6 +51,17 @@ type PNPMLayoutArchive struct {
 // ParsePNPMLayoutArchive reads one bounded, uncompressed node_modules tar
 // envelope without extracting content or following Host filesystem links.
 func ParsePNPMLayoutArchive(ctx context.Context, body []byte) (PNPMLayoutArchive, error) {
+	return parsePNPMTreeArchive(ctx, body, "node_modules")
+}
+
+// ParsePNPMInspectionPayloadArchive parses the fixed project root returned by
+// inspection-payload readback. It is unverified format data, not a native lock,
+// source binding or permission to execute. No caller-supplied root is accepted.
+func ParsePNPMInspectionPayloadArchive(ctx context.Context, body []byte) (PNPMLayoutArchive, error) {
+	return parsePNPMTreeArchive(ctx, body, "project")
+}
+
+func parsePNPMTreeArchive(ctx context.Context, body []byte, rootName string) (PNPMLayoutArchive, error) {
 	if ctx == nil || len(body) == 0 || len(body) > PNPMLayoutArchiveLimit {
 		return PNPMLayoutArchive{}, errPNPMLayoutArchive
 	}
@@ -80,7 +91,7 @@ func ParsePNPMLayoutArchive(ctx context.Context, body []byte) (PNPMLayoutArchive
 		if header.Typeflag == tar.TypeDir {
 			name = strings.TrimSuffix(name, "/")
 		}
-		if !validInventoryPath(name) || name != "node_modules" && !strings.HasPrefix(name, "node_modules/") {
+		if !validInventoryPath(name) || name != rootName && !strings.HasPrefix(name, rootName+"/") {
 			return PNPMLayoutArchive{}, errPNPMLayoutArchive
 		}
 		if _, exists := byName[name]; exists {
@@ -101,7 +112,7 @@ func ParsePNPMLayoutArchive(ctx context.Context, body []byte) (PNPMLayoutArchive
 			}
 			layout.files[name] = pnpmLayoutFile{start, start + int(copied)}
 		case tar.TypeLink:
-			if !validInventoryPath(item.Link) || !strings.HasPrefix(item.Link, "node_modules/") {
+			if !validInventoryPath(item.Link) || !strings.HasPrefix(item.Link, rootName+"/") {
 				return PNPMLayoutArchive{}, errPNPMLayoutArchive
 			}
 		case tar.TypeSymlink:
@@ -109,7 +120,7 @@ func ParsePNPMLayoutArchive(ctx context.Context, body []byte) (PNPMLayoutArchive
 				return PNPMLayoutArchive{}, errPNPMLayoutArchive
 			}
 			target := path.Join(path.Dir(name), item.Link)
-			if !validInventoryPath(target) || target != "node_modules" && !strings.HasPrefix(target, "node_modules/") {
+			if !validInventoryPath(target) || target != rootName && !strings.HasPrefix(target, rootName+"/") {
 				return PNPMLayoutArchive{}, errPNPMLayoutArchive
 			}
 		}
@@ -120,7 +131,7 @@ func ParsePNPMLayoutArchive(ctx context.Context, body []byte) (PNPMLayoutArchive
 	if len(layout.entries) == 0 || len(layout.body)-input.Len() < lastEntryEnd+1024 {
 		return PNPMLayoutArchive{}, errPNPMLayoutArchive
 	}
-	root, present := byName["node_modules"]
+	root, present := byName[rootName]
 	if !present || layout.entries[root].Kind != tar.TypeDir {
 		return PNPMLayoutArchive{}, errPNPMLayoutArchive
 	}

@@ -14,10 +14,10 @@ Last completed work item: CLI-UX-003 — COMPLETE; source4cfe29e/CI352 ten SUCCE
 Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
-Active work item status: IN_PROGRESS — rc6/native4 same-runtime baseline IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; P2/native5 expansion locally verified only, guest/whole qualification and channel scope remain
+Active work item status: IN_PROGRESS — Host memory recovered; restored B4b1 payload/parser canonical checks and npm/sandbox full Race PASS; fresh instance backend/whole P2 acceptance remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2c5-B4b — production native prepare B4a LOCAL VERIFIED: complete source/readback hashes, fixed budget and shared native owner, detach/endpoint0, restricted directory entry view, complete observation/cleanup before value; verified payload/fresh instance backend next, then static-all collection gate/aggregate and Host/CLI; CI404/1f410fd ten SUCCESS; product dynamic INCOMPLETE; P2 acceptance NO
-Current substep: M13-004/P2 — IN_PROGRESS; offline supply/native distribution LOCAL VERIFIED; exact guest admission and product graph/layout/CLI gaps active; support not yet advertised
+Next action: M13-004/P2c5-B4b2 — connect qualified minimal payload to fresh per-instance backend, then B4c static-all/aggregate and Host/CLI; CI404/1f410fd ten SUCCESS applies only to its old source; product dynamic INCOMPLETE; P2 acceptance NO
+Current substep: M13-004/P2 — IN_PROGRESS; B4b1 LOCAL QUALIFIED; fresh backend/whole qualification pending; support not yet advertised
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -178,6 +178,26 @@ order가 같은 key를 내는 직접 RED2.358s를 재현했고 string entry proj
 canonical Quick/security/전체 npm/sandbox Race24.805s가 PASS다. 원래 파일·code/path 검증과
 native 동작은 유지하며 [직렬화 교정](./evidence/package-client-quarantine/p2c5b4b-pnpm-fingerprint-local-20261024.json)을
 새 Artifact 실행 완료로 확대하지 않는다. 다음은 예정대로 verified payload와 fresh instance backend다.
+
+### 2026-10-24 B4b1 실행용 payload 재구성 착수 감사
+
+[Baseline audit·수정 지도·두 번째 검토](./evidence/package-client-quarantine/p2c5b4b1-pnpm-inspection-payload-plan-20261024.md)에서
+기존 bound layout/private manifest와 bounded parser를 재사용한다. Raw native whole tar/
+원본 user controls를 소개하지 않고 불필요 metadata를 제외하며 file bytes·link·공유 inode
+partition을 보존한 새 deterministic tar와 project 전체 readback을 구현한다. Node_modules와
+manifest만 검사해 root extra 설정 파일을 놓치지 않는다. 이어지는 fresh backend가 actual
+consumer이며 이번 renderer만으로 Artifact 실행/Host/CLI·전체 P2 완료를 표시하지 않는다.
+
+후속 source4개는 작성·format 확인했지만 Quick의 production build 두 번과 별도 focused
+command가 각각 timeout이었다. Unit 성공이나 source finding은 확인되지 않았다. Host에서
+codex PID1404의 RSS22,799,860KiB·MemAvailable534,648KiB·swap free0을 관측했으나 timeout의
+단독 원인으로 확정하지 않는다. 반복 build는 중단하고 미검증 WIP와 [정확한 재개 위치](./evidence/package-client-quarantine/p2c5b4b1-pnpm-inspection-payload-plan-20261024.md#6-2026-10-24-host-자원-차단과-재시작-인계)를
+보존한다. Host 자원을 회복한 뒤 같은 고정 검사·한도로 확인해야 해제할 수 있다.
+
+2026-10-25 재개 후 [B4b1 로컬 결과](./evidence/package-client-quarantine/p2c5b4b1-pnpm-inspection-payload-local-20261025.json)는
+동일한 보존 source의 canonical format/Quick/security/docs와 npm/sandbox 전체 Race25.352s를
+확인했다. Minimal payload·전체 readback과 공유 inode 의미를 검증했으며 production backend는
+다음 B4b2다. 과거 timeout/RSS 원인 미확정은 보존하고 전체 P2 acceptance NO를 유지한다.
 
 ### 2026-10-24 CI404 묶음 checkpoint 확인
 

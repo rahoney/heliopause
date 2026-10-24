@@ -31,7 +31,7 @@ func (f pnpmPreparationRoundTripper) RoundTrip(r *http.Request) (*http.Response,
 func pnpmPreparationInputFixture(t *testing.T, runtime string) (string, artifactnpm.PNPMInspectionInput, []artifactnpm.ArchiveInventory) {
 	t.Helper()
 	root := t.TempDir()
-	manifest := []byte(`{"dependencies":{"is-number":"6.0.0"}}`)
+	manifest := []byte(`{"scripts":{"install":"exit 99"},"config":{"private-example":"fixture"},"author":"fixture","dependencies":{"is-number":"6.0.0"}}`)
 	lockfile, err := os.ReadFile(filepath.Join("..", "artifact", "npm", "testdata", "pnpm-v9-single.synthetic.yaml"))
 	if err != nil {
 		t.Fatal(err)
