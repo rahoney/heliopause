@@ -77,7 +77,7 @@ func pnpmOfflineFixtures() []pnpmOfflineFixture {
 	}
 }
 
-func qualifyPNPMOfflineFixture(t *testing.T, fixture pnpmOfflineFixture, capture func(context.Context, CommandRunner, string, []domain.ProjectControlFile)) {
+func qualifyPNPMOfflineFixture(t *testing.T, fixture pnpmOfflineFixture, capture func(context.Context, CommandRunner, string, []domain.ProjectControlFile, artifactnpm.PNPMInspectionInput, []artifactnpm.ArchiveInventory)) {
 	t.Helper()
 	withActualPNPMNativeRuntimePolicy(t, true, func(ctx context.Context, runner CommandRunner, container, network string) {
 		configured, err := runner.Output(ctx, "docker", "inspect", "--format", "{{json .Config.WorkingDir}}", container)
@@ -98,6 +98,8 @@ func qualifyPNPMOfflineFixture(t *testing.T, fixture pnpmOfflineFixture, capture
 		var recipeBody []byte
 		var sourceBound artifactnpm.PNPMSelection
 		resolvedInputs := map[string]domain.ResolvedArtifact{}
+		acquiredInputs := map[domain.DependencyNodeID]domain.AcquiredArtifact{}
+		var inventories []artifactnpm.ArchiveInventory
 		if fixture.lockFixture != "" {
 			// Reuse the exact versioned parser fixture and its public-binding API.
 			_, file, _, ok := runtime.Caller(0)
@@ -157,10 +159,16 @@ func qualifyPNPMOfflineFixture(t *testing.T, fixture pnpmOfflineFixture, capture
 			if err != nil || verified.Outcome() != domain.VerificationVerified {
 				t.Fatalf("fixture integrity failed: %v", err)
 			}
-			report, err := static.Inspect(ctx, acquired)
+			inventory, report, err := static.InspectArchive(ctx, acquired)
 			if err != nil || len(report.Findings()) != 0 || report.Execution().Status() != domain.ExecutionCompleted {
 				t.Fatalf("fixture static admission failed: %v", err)
 			}
+			node, err := domain.ProjectDependencyNodeID(acquired.Identity())
+			if err != nil || !inventory.Matches(acquired) {
+				t.Fatal("fixture full static input unavailable", err)
+			}
+			acquiredInputs[node] = acquired
+			inventories = append(inventories, inventory)
 			if acquired.SizeBytes() <= 0 || acquired.SizeBytes() > 4<<20 {
 				t.Fatal("fixture archive exceeds its bound")
 			}
@@ -220,6 +228,22 @@ func qualifyPNPMOfflineFixture(t *testing.T, fixture pnpmOfflineFixture, capture
 		if err != nil || len(sourceBound.Artifacts()) != len(fixture.specs) {
 			t.Fatal("public fixture source binding failed before metadata preparation", err)
 		}
+		target, err := domain.NewInstallTarget(filepath.Join(t.TempDir(), "project"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		install, err := domain.NewNPMProjectInstallContext(target)
+		if err != nil {
+			t.Fatal(err)
+		}
+		frozen, err := sourceBound.InspectionContext(install, controls, PNPMResolverRuntimeIdentity())
+		if err != nil {
+			t.Fatal("fixture inspection context unavailable", err)
+		}
+		inspectionInput, err := frozen.BindAcquired(frozen.Snapshot(), acquiredInputs)
+		if err != nil {
+			t.Fatal("fixture complete acquired binding unavailable", err)
+		}
 		if err := copyPNPMProjectControls(ctx, runner, container, controls); err != nil {
 			t.Fatal(err)
 		}
@@ -274,7 +298,7 @@ func qualifyPNPMOfflineFixture(t *testing.T, fixture pnpmOfflineFixture, capture
 		}
 		t.Logf("pnpm_offline_store_fixture case=%s packages=%d instances=%d links=%d controls_unchanged=true native_layout=isolated scripts=NOT_EXECUTED dynamic=NOT_EXECUTED Host_install=NOT_EXECUTED", fixture.name, len(fixture.specs), len(fixture.installed), len(fixture.links))
 		if capture != nil {
-			capture(ctx, runner, container, controls)
+			capture(ctx, runner, container, controls, inspectionInput, inventories)
 		}
 	})
 }

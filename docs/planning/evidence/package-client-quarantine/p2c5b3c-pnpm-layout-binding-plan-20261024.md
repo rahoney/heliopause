@@ -151,3 +151,76 @@ per-instance 실행/관찰 aggregate, missing/duplicate/partial coverage 및 첫
 보안 사실 보존, long hashed dirname의 기존 @ locator gap, Host records/transaction/CLI와
 전체 P2 qualification은 남는다. 여기서 미확정 runner interface나 미래 client scaffold를
 만들지 않는다. IMPLEMENTED/WIRED 여부는 실제 source와 결과 뒤 갱신한다.
+
+## 5. 첫 actual의 누락 반증과 source 수정 전 경계 재검토
+
+첫 Quick42.964s는 새 test의 literal nil Context를 SA1012로 거부했다. 해당 비관용 호출을
+제거하고 실제 cancellation/cause 거부를 유지한 Quick117.370s/security12.250s와 전체 npm
+Race7.107s는 PASS다. 별도 realcorpus compile은 기존 InspectArchive의 반환 순서
+(inventory, report, error)를 새 caller가 뒤집은 연결 오류를 잡았다. 기존 producer는 바꾸지
+않고 caller를 교정했으며 이 첫 준비에는 native 실행이 없다. 빈 준비 디렉터리는 전체 UID
+참조/query errors0 뒤 삭제했다. 이 검사들을 아직 실제 전체 배치 성공으로 분류하지 않는다.
+
+Actual9.563s/test6.92s는 transitive의 원래 controls·identity·links/offline·complete 관찰과
+Host불변/helperwait0를 보존했지만 full binder가 거부했다. 앞 B3b0/B3b2b 원본 전체 목록의
+`node_modules/.pnpm-workspace-state-v1.json`을 이 edit map이 누락한 것이 확인됐다.
+문서의 “생성 file 두 개”는 **검사에 소비하는** 두 file만을 뜻하도록 정정한다. Unknown
+file을 일괄 허용하거나 fixture에서 몰래 삭제하여 이 실패를 성공으로 바꾸지 않는다.
+
+Pinned upstream91774e72의 workspace-state/src/lib.rs(6f583ccb), package-manager의
+install/workspace_state.rs(8753e958)/workspace_state/write.rs(56f48a19)를 Git blob으로
+대조했다. 이 세 번째 file은 pnpm의 다음 실행용 freshness cache이며 시간·filesystem stat·
+재검증 주장·설정/프로젝트 요약을 보존한다. HAA의 archive/graph/관찰 authority가 아니다.
+해당 cache schema와 정책을 HAA가 재구현할 이유가 없고 Artifact의 고정 npm lifecycle도
+이 cache를 소비하지 않는다. 따라서 다음처럼 **inspection payload에서 명시 폐기**한다.
+
+- 정확한 위 경로의 regular file 하나만 인지한다. 기존 owner/mode·envelope bound와
+  strict bounded JSON object/duplicate-key 검사를 적용한다. Alias/symlink·임의 다른 파일을
+  이 예외에 넣지 않는다. 그 cache 내부 settings/validation을 HAA가 검증했다고 주장하지 않는다.
+- BindLayout의 complete native entry accounting에는 이 file을 포함하되, 성공 결과의
+  Entries/ReadFile에서는 제거하고 digest에도 포함하지 않는다. Private native body를
+  복제하거나 raw tar 전달 API를 추가하지 않는다. Payload에는 cache가 존재하지 않으므로
+  native cache의 주장/경로/시간이 Artifact session이나 향후 Host 승격으로 전달되지 않는다.
+- 실제 검증에 소비하는 .modules.yaml과 virtual lock은 앞 §2.3의 정확한 검증을 유지한다.
+  미래 소개 owner는 이 둘도 실행에 불필요한 metadata로 복사하지 않는 앞 §4 경계를 따른다.
+- Unit은 cache 필수 coverage·잘못된 JSON·duplicate·alias·getter 부재와 cache의 timestamp/
+  임의 validation data 변화가 안전 fingerprint를 바꾸지 않음을 확인한다. Native cloned
+  input에도 malformed cache 거부와 성공 payload에서 cache 부재를 추가한다. Actual positive
+  실패 뒤 peer와 기존 negative는 미실행으로 두고, 교정 뒤 fresh 전체 시험으로만 닫는다.
+
+이 방법은 같은 immutable binder의 새 누락 경계를 구현하는 것이며 이미 구현된 native
+cache/Policy/producer를 대체하지 않는다. Unknown metadata의 무조건 신뢰, freshness를
+검역 완료 근거로 사용, native whole tar의 Artifact 이송은 계속 금지한다. 첫 actual과
+교정 전 source·실패 로그는 같은 raw owner에 보존한다.
+
+## 6. 교정 후보의 로컬 실제 결과와 다음 경계
+
+Cache 경계 교정의 Quick137.517s/security6.852s·npm artifact 전체 Race7.102s가 PASS다.
+Fresh actual17.553s/test15.07s는 transitive2 archives/2 instances와 peer4/4를 원본 Acquire/
+SRI/InspectArchive 전부에 대조했다. Self/consumer/private-hoist bin3개도 원본 manifest/
+regular target/full reviewed code에 결합했다. 동일 captured native input의 parser/binder
+변조7/8개는 모두 거부했고 negative마다 native 실행을 반복하지 않았다. Bound getters에
+native freshness cache가 없으며 private root manifest는 exact dependency/group만 보존한다.
+정상 source의 동일 LICENSE hardlink와 synthetic six-archive/seven-instance의 peer2개
+보존도 unit에서 확인한다. Root bin/scoped와 production execution 전체 qualification은
+이 두 public fixture 성공으로 닫지 않는다.
+
+두 actual의 complete observation·금지0·Host 전부 동일/helperwait0를 확인했다.
+첫 실패의 final original1과 교정 성공의 final original0을 각각 보존했다.
+첫 실패는 실패로 보존했고 그 runtime165,938,454B와 교정 성공 runtime166,000,518B를
+각각 all-UID reference0/query errors0 확인 뒤 삭제했다. 앞 literal nil/반환 순서 실패나
+처음 freshness cache 누락을 원격 CI404/전체 P2 성공으로 바꾸지 않는다.
+
+마지막 cache JSON 크기 상한 negative까지 포함한 동일 production source의 최종
+format.428s/Quick36.543s/security5.494s·전체 npm Race6.579s도 PASS다. 새 unit-only
+negative는 sandbox native binary에 포함되는 dependency package의 production bytes를
+바꾸지 않으므로 위 actual을 불필요하게 반복하지 않았다.
+
+[로컬 영수증](./p2c5b3c-pnpm-layout-binding-local-20261024.json)이 source·최종 canonical
+검사·raw 원본의 범위를 소유한다. Baseline audit의 이번 binding은 IMPLEMENTED=YES /
+WIRED=YES(actual fixture consumer) / QUALIFIED=YES(명시 local 범위) /
+ACCEPTANCE_CLOSED=NO(full P2)다. Production static-all/aggregate resource gate·metadata
+prepare owner의 정리 후 값 반환·fresh per-instance introduction/실제 관찰 aggregate,
+long hashed dirname locator·cache/provenance/Host records/transaction/CLI와 전체 P2는
+계속 MISSING이다. 다음에는 기존 PNPMResolver·Backend/단일 dynamic 정상 owner를 읽고
+재사용 가능한 symbol/수정 위치·각 first error/coverage 거부를 확정한 지도부터 이어간다.

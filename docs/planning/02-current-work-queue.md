@@ -16,7 +16,7 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — rc6/native4 same-runtime baseline IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; P2/native5 expansion locally verified only, guest/whole qualification and channel scope remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2c5-B3 — B2 exact target command/lineage and synthetic transitive+peer normal/failure LOCAL VERIFIED; B3b2a envelope/B3b2b full Node bin code LOCAL VERIFIED; B3c full inspection layout binding plan reviewed; implement missing binding; CI404/1f410fd ten SUCCESS; production static-all/prepare remain; product dynamic INCOMPLETE; CI403/db464fd ten SUCCESS; P2 acceptance NO
+Next action: M13-004/P2c5-B4 — B3c full acquired inventory/instance/edge/bin layout binding LOCAL VERIFIED; native freshness cache explicitly discarded after bounded JSON accounting; production static-all/prepare/fresh instance execution and aggregate exact edit map next; CI404/1f410fd ten SUCCESS; product dynamic INCOMPLETE; P2 acceptance NO
 Current substep: M13-004/P2 — IN_PROGRESS; offline supply/native distribution LOCAL VERIFIED; exact guest admission and product graph/layout/CLI gaps active; support not yet advertised
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
@@ -145,6 +145,15 @@ NO다. CI404 source는 앞1f410fd로 유지하고 새 push 없이19:30:18KST 타
 모든 peer instance·원본 file/edge/bin·생성 metadata를 확인하며 inspection 값은 Policy/Host
 승격 권한이 아니다. 기존 parser/단일 Backend를 다시 구현하지 않는다. 이후 native prepare/
 static-all/per-instance aggregate와 Host/CLI는 그대로 MISSING이며 M13-004 하나만 IN_PROGRESS다.
+
+후속 [로컬 결과](./evidence/package-client-quarantine/p2c5b3c-pnpm-layout-binding-local-20261024.json)의
+fresh actual17.553s는 transitive2/peer4 archives와 모든 instance/file/edge·원본 bin3개를
+검증하고 cloned native input 변조7/8개를 거부했다. 처음 누락된 native freshness cache는
+pinned source를 확인해 정확한 regular bounded JSON accounting 후 inspection payload/
+getters/digest에서 폐기했다. 첫 실패와 교정 source를 구분하고 original controls·complete
+관찰/금지0·Host불변/helperwait0를 보존했다. 끝난 두 runtime 총331,938,972B는 refs/query
+errors0 뒤 삭제했다. Production native prepare/static-all/fresh per-instance 실행/aggregate와
+Host/CLI는 아직 미완료이며, 다음 B4의 정확한 edit map부터 같은 M13-004에서 이어간다.
 
 ### 2026-10-24 CI404 묶음 checkpoint 확인
 

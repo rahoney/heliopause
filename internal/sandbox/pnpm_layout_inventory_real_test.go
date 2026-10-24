@@ -4,6 +4,7 @@ package sandbox
 
 import (
 	"archive/tar"
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/json"
@@ -17,8 +18,8 @@ import (
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
-// Shape observation only. No output of this fixture grants layout validation,
-// lifecycle completion, policy approval or Host installation authority.
+// Static layout binding only. No output grants lifecycle completion, policy
+// approval or Host installation authority.
 func TestPNPMActualLayoutInventoryFixture(t *testing.T) {
 	if os.Getenv("HELOX_PNPM_LAYOUT_INVENTORY_FIXTURE") != "1" {
 		t.Fatal("declare HELOX_PNPM_LAYOUT_INVENTORY_FIXTURE=1 for native layout shape observation")
@@ -26,7 +27,7 @@ func TestPNPMActualLayoutInventoryFixture(t *testing.T) {
 	for _, fixture := range pnpmOfflineFixtures() {
 		if !t.Run(fixture.name, func(t *testing.T) {
 			captured := false
-			qualifyPNPMOfflineFixture(t, fixture, func(ctx context.Context, runner CommandRunner, container string, controls []domain.ProjectControlFile) {
+			qualifyPNPMOfflineFixture(t, fixture, func(ctx context.Context, runner CommandRunner, container string, controls []domain.ProjectControlFile, input artifactnpm.PNPMInspectionInput, inventories []artifactnpm.ArchiveInventory) {
 				output := nativeToolArchiveOutput{limit: artifactnpm.PNPMLayoutArchiveLimit}
 				if err := runner.(streamingDockerOutput).RunOutput(ctx, &output, "docker", "cp", container+":"+pnpmProjectDirectory+"/node_modules", "-"); err != nil || output.failed {
 					t.Fatal("read bounded native layout shape", err)
@@ -44,6 +45,33 @@ func TestPNPMActualLayoutInventoryFixture(t *testing.T) {
 				if err != nil {
 					t.Fatal("native layout envelope rejected", err)
 				}
+				bound, err := input.BindLayout(ctx, inventories, parsed, pnpmProjectRoot+"/store")
+				if err != nil {
+					t.Fatal("native layout differs from complete acquired inputs", err)
+				}
+				if _, err := bound.ReadFile("node_modules/.pnpm-workspace-state-v1.json"); err == nil {
+					t.Fatal("derived native cache exposed in bound payload")
+				}
+				for _, entry := range bound.Entries() {
+					if entry.Name == "node_modules/.pnpm-workspace-state-v1.json" {
+						t.Fatal("derived native cache entry in bound payload")
+					}
+				}
+				instanceCount := 0
+				for _, subject := range input.Artifacts() {
+					instances, err := input.InstancesFor(subject)
+					if err != nil {
+						t.Fatal(err)
+					}
+					for _, instance := range instances {
+						if _, err := bound.Target(subject, instance.Key); err != nil {
+							t.Fatal("bound layout lost an exact acquired instance", err)
+						}
+						instanceCount++
+					}
+				}
+				t.Logf("pnpm_layout_binding archives=%d instances=%d digest=%s full_static_layout=VERIFIED dynamic=NOT_VERIFIED", len(inventories), instanceCount, bound.Digest().String())
+				checkPNPMLayoutMutations(t, ctx, input, inventories, parsed)
 				for _, header := range parsed.Entries() {
 					item := entry{Name: header.Name, Link: header.Link, Type: header.Kind, Mode: header.Mode, Size: header.Size, UID: header.UID, GID: header.GID, Digest: header.Digest.String()}
 					if header.Kind == tar.TypeReg {
@@ -73,7 +101,7 @@ func TestPNPMActualLayoutInventoryFixture(t *testing.T) {
 				if len(fixture.bins) != 0 && binCount != 3 {
 					t.Fatal("fixture did not reach the three independent bin locations", binCount)
 				}
-				t.Logf("pnpm_layout_bin_code shims=%d full_code_format=VERIFIED archive_bin_binding=NOT_VERIFIED", binCount)
+				t.Logf("pnpm_layout_bin_code shims=%d full_code_format=VERIFIED archive_bin_binding=VERIFIED", binCount)
 				if err := ctx.Err(); err != nil {
 					t.Fatal(err)
 				}
@@ -109,7 +137,7 @@ func TestPNPMActualLayoutInventoryFixture(t *testing.T) {
 						t.Fatal("native layout lacks the encoded snapshot manifest", name)
 					}
 				}
-				t.Logf("pnpm_layout_codec instances=%d source=original_controls path_mapping=VERIFIED full_layout=NOT_VERIFIED", len(directories))
+				t.Logf("pnpm_layout_codec instances=%d source=original_controls path_mapping=VERIFIED full_static_layout=VERIFIED", len(directories))
 				body, err := json.Marshal(entries)
 				if err != nil || len(body) > 1<<20 || len(entries) == 0 {
 					t.Fatal("native shape record unavailable or over bound", err)
@@ -124,4 +152,87 @@ func TestPNPMActualLayoutInventoryFixture(t *testing.T) {
 			t.FailNow()
 		}
 	}
+}
+
+// Each negative reuses the single captured native run. Only parser/binder data
+// changes; no mutated artifact is introduced or executed in a Sandbox.
+func checkPNPMLayoutMutations(t *testing.T, ctx context.Context, input artifactnpm.PNPMInspectionInput, inventories []artifactnpm.ArchiveInventory, original artifactnpm.PNPMLayoutArchive) {
+	t.Helper()
+	count := 0
+	for _, change := range []string{"payload", "missing", "extra", "edge", "bin", "metadata", "virtual-lock", "cache-json"} {
+		var output bytes.Buffer
+		writer := tar.NewWriter(&output)
+		mutated := change == "extra"
+		for _, entry := range original.Entries() {
+			header := tar.Header{Name: entry.Name, Typeflag: entry.Kind, Mode: entry.Mode, Uid: entry.UID, Gid: entry.GID, Size: entry.Size, Linkname: entry.Link}
+			var body []byte
+			if entry.Kind == tar.TypeReg {
+				var err error
+				body, err = original.ReadFile(entry.Name)
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
+			if !mutated {
+				switch {
+				case (change == "payload" || change == "missing") && strings.HasSuffix(entry.Name, "/package.json"):
+					mutated = true
+					if change == "missing" {
+						continue
+					}
+					body = append(body, '\n')
+				case change == "edge" && entry.Kind == tar.TypeSymlink:
+					header.Linkname += "-foreign"
+					mutated = true
+				case change == "bin" && strings.Contains(entry.Name, "/.bin/") && entry.Kind == tar.TypeReg:
+					body = append(body, []byte("\nprintf injected\n")...)
+					mutated = true
+				case change == "metadata" && entry.Name == "node_modules/.modules.yaml":
+					body = bytes.Replace(body, []byte("isolated"), []byte("hoisted"), 1)
+					mutated = true
+				case change == "virtual-lock" && entry.Name == "node_modules/.pnpm/lock.yaml":
+					body = bytes.Replace(body, []byte("sha512-"), []byte("sha512-A"), 1)
+					mutated = true
+				case change == "cache-json" && entry.Name == "node_modules/.pnpm-workspace-state-v1.json":
+					body = []byte("{invalid-json}")
+					mutated = true
+				}
+			}
+			if entry.Kind == tar.TypeReg {
+				header.Size = int64(len(body))
+			}
+			if err := writer.WriteHeader(&header); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := writer.Write(body); err != nil {
+				t.Fatal(err)
+			}
+		}
+		if change == "extra" {
+			if err := writer.WriteHeader(&tar.Header{Name: "node_modules/foreign", Typeflag: tar.TypeReg, Mode: 0o644, Uid: 1000, Gid: 1000, Size: 1}); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := writer.Write([]byte{'!'}); err != nil {
+				t.Fatal(err)
+			}
+		}
+		if err := writer.Close(); err != nil {
+			t.Fatal(err)
+		}
+		if !mutated {
+			if change == "bin" {
+				continue
+			}
+			t.Fatal("negative fixture failed to change its target", change)
+		}
+		parsed, err := artifactnpm.ParsePNPMLayoutArchive(ctx, output.Bytes())
+		if err != nil {
+			t.Fatal("negative failed before semantic binding", change, err)
+		}
+		if bound, err := input.BindLayout(ctx, inventories, parsed, pnpmProjectRoot+"/store"); err == nil || bound.Digest().String() != "" {
+			t.Fatal("mutated native data admitted", change)
+		}
+		count++
+	}
+	t.Logf("pnpm_layout_binding_negatives cases=%d no_new_native_run=true no_artifact_execution=true", count)
 }

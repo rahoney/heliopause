@@ -18,6 +18,7 @@ import (
 	"testing"
 	"time"
 
+	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/hosttool"
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
@@ -44,7 +45,7 @@ func TestPNPMActualTargetLifecycleFixture(t *testing.T) {
 		if !t.Run(fixture.name, func(t *testing.T) {
 			var nativeLayout []byte
 			var originalControls []domain.ProjectControlFile
-			qualifyPNPMOfflineFixture(t, fixture, func(ctx context.Context, runner CommandRunner, container string, controls []domain.ProjectControlFile) {
+			qualifyPNPMOfflineFixture(t, fixture, func(ctx context.Context, runner CommandRunner, container string, controls []domain.ProjectControlFile, _ artifactnpm.PNPMInspectionInput, _ []artifactnpm.ArchiveInventory) {
 				output := nativeToolArchiveOutput{limit: 16 << 20}
 				if err := runner.(streamingDockerOutput).RunOutput(ctx, &output, "docker", "cp", container+":"+pnpmProjectDirectory+"/node_modules", "-"); err != nil || output.failed {
 					t.Fatal("read bounded native fixture layout", err)
