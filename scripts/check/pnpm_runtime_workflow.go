@@ -11,6 +11,7 @@ const pnpmSandboxTestBuildCommand = `go test -c -tags=realcorpus -o "$RUNNER_TEM
 const pnpmBootstrapTestBuildCommand = `go test -c -tags=realcorpus -o "$RUNNER_TEMP/helox-pnpm-project-test" ./internal/bootstrap`
 const pnpmBootstrapIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 HELOX_PNPM_INSTANCE_EXECUTION_FIXTURE=1 HELOX_PNPM_CACHE_INTEGRATION=1 HELOX_PNPM_PROJECT_TRANSACTION_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMPublic(ApprovedCache|ProjectTransaction)Integration$'`
 const pnpmCLIIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 HELOX_PNPM_INSTANCE_EXECUTION_FIXTURE=1 HELOX_PNPM_PROJECT_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMProjectCLIIntegration$'`
+const pnpmOriginalIntegrationCommand = `HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 HELOX_PNPM_INSTANCE_EXECUTION_FIXTURE=1 HELOX_PNPM_NATIVE_ORIGINAL_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMNativeOriginalIntegration$'`
 
 // Check the helper's concrete command binding, not arbitrary Bash semantics.
 // Bash syntax and the executed helper/cleanup are qualified separately.
@@ -37,6 +38,7 @@ func validatePNPMRuntimeScript(contents string) []string {
 		pnpmPublicQuarantineCommand,
 		pnpmBootstrapIntegrationCommand,
 		pnpmCLIIntegrationCommand,
+		pnpmOriginalIntegrationCommand,
 		`test "$#" -le 1`,
 		`pnpm_profile=${1:-sandbox}`,
 	} {
@@ -63,7 +65,7 @@ func validatePNPMRuntimeScript(contents string) []string {
 		findings = append(findings, "PNPM controlled fixture requires one matching package subshell")
 	}
 	profileGuard := "case \"$pnpm_profile\" in\nsandbox|project) ;;\n*) echo 'unsupported PNPM CI profile' >&2; exit 2 ;;\nesac"
-	projectScope := "if [[ \"$pnpm_profile\" == project ]]; then\n" + pnpmBootstrapIntegrationCommand + "\n" + pnpmCLIIntegrationCommand + "\nexit 0\nfi"
+	projectScope := "if [[ \"$pnpm_profile\" == project ]]; then\n" + pnpmBootstrapIntegrationCommand + "\n" + pnpmCLIIntegrationCommand + "\n" + pnpmOriginalIntegrationCommand + "\nexit 0\nfi"
 	if strings.Count(strings.Join(active, "\n"), profileGuard) != 1 || strings.Count(strings.Join(active, "\n"), projectScope) != 1 {
 		findings = append(findings, "PNPM project profile requires its fixed argument guard and exclusive installed-client command")
 	}

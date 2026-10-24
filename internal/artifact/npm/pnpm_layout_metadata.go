@@ -62,6 +62,15 @@ func parsePNPMLayoutModules(input PNPMInspectionInput, layout PNPMLayoutArchive,
 	if storeRoot == "/" || !strings.HasPrefix(storeRoot, "/") || path.Clean(storeRoot) != storeRoot || !validInventoryPath(strings.TrimPrefix(storeRoot, "/")) {
 		return modules, errPNPMInspectionLayout
 	}
+	modules, err := parsePNPMLayoutModulesFormat(input, layout)
+	if err != nil || modules.StoreDir != storeRoot+"/v11" {
+		return pnpmLayoutModules{}, errPNPMInspectionLayout
+	}
+	return modules, nil
+}
+
+func parsePNPMLayoutModulesFormat(input PNPMInspectionInput, layout PNPMLayoutArchive) (pnpmLayoutModules, error) {
+	var modules pnpmLayoutModules
 	body, err := layout.ReadFile("node_modules/.modules.yaml")
 	if err != nil || strictControlJSON(body) != nil {
 		return modules, errPNPMInspectionLayout
@@ -80,7 +89,7 @@ func parsePNPMLayoutModules(input PNPMInspectionInput, layout PNPMLayoutArchive,
 	decoder.DisallowUnknownFields()
 	if decoder.Decode(&modules) != nil || modules.LayoutVersion != 5 || modules.NodeLinker != "isolated" ||
 		modules.PackageManager != "pnpm@"+input.context.selection.lock.version || modules.VirtualStoreDir != ".pnpm" ||
-		modules.VirtualStoreDirMaxLength != PNPMVirtualStoreDirMaxLength || modules.StoreDir != storeRoot+"/v11" ||
+		modules.VirtualStoreDirMaxLength != PNPMVirtualStoreDirMaxLength ||
 		!modules.Included.Dependencies || !modules.Included.DevDependencies || !modules.Included.OptionalDependencies ||
 		!slices.Equal(modules.HoistPattern, []string{"*"}) || len(modules.PublicHoistPattern) != 0 || len(modules.Skipped) != 0 || len(modules.AllowBuilds) != 0 || len(modules.PrunedAt) > 128 {
 		return pnpmLayoutModules{}, errPNPMInspectionLayout

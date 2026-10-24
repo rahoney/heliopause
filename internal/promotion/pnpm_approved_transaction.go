@@ -55,7 +55,7 @@ func (g *approvedPNPMProjectGuard) Commit(ctx context.Context, update domain.Pro
 		return err
 	}
 	defer func() { resultErr = errors.Join(resultErr, prepared.Close()) }()
-	profile := &pnpmProjectProfile{owner: g, prepared: prepared, retain: map[string]bool{}, approval: pnpmProjectApproval{Schema: 1, Cache: staged.ContentHandle(), CacheDigest: staged.Digest().String(), Approval: approval}}
+	profile := &pnpmProjectProfile{owner: g, prepared: prepared, retain: map[string]bool{}, approval: pnpmProjectApproval{Schema: 1, OriginalProof: g.originalProof, Cache: staged.ContentHandle(), CacheDigest: staged.Digest().String(), Approval: approval}}
 	for _, control := range update.SelectedControls() {
 		original := g.controlInfo[control.Name()]
 		if original == nil {

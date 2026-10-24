@@ -21,6 +21,7 @@ type PNPMProjectPromotion struct {
 	selectedCache                                  func(domain.ProjectDependencySnapshot) (*PNPMVerifiedCache, error)
 	checkpoint                                     func(string) error
 	published                                      *approvedPNPMProjectGuard
+	verifyOriginal                                 PNPMOriginalVerifier
 }
 
 func NewPNPMProjectPromotion(intake, evidence, cache, state string, reader ProjectEvidenceReader, operation domain.OperationID, selectedCache func(domain.ProjectDependencySnapshot) (*PNPMVerifiedCache, error)) (*PNPMProjectPromotion, error) {
@@ -49,6 +50,7 @@ func (p *PNPMProjectPromotion) PublishedRecords() (domain.ContentDigest, string,
 type pnpmMemberApproval struct{ Name, SHA256 string }
 type pnpmProjectApproval struct {
 	Schema             int
+	OriginalProof      string `json:",omitempty"`
 	Cache, CacheDigest string
 	Approval           pnpmCacheDocument
 	Members            []pnpmMemberApproval
@@ -71,6 +73,7 @@ type approvedPNPMProjectGuard struct {
 	closed, committed           bool
 	recordManifest              domain.ContentDigest
 	recordHandle                string
+	originalProof               string
 }
 
 func (p *PNPMProjectPromotion) Begin(ctx context.Context, install domain.InstallContext) (*approvedPNPMProjectGuard, error) {
@@ -167,7 +170,7 @@ func (p *PNPMProjectPromotion) begin(ctx context.Context, install domain.Install
 		if err != nil {
 			return nil, err
 		}
-		if len(g.originalState) == 0 {
+		if len(g.originalState) == 0 && (name == "haa" || !adopt || p.verifyOriginal == nil) {
 			return nil, errors.New("pnpm existing payload requires independently proven native adoption")
 		}
 		if name == "node_modules" {
@@ -187,6 +190,10 @@ func (p *PNPMProjectPromotion) begin(ctx context.Context, install domain.Install
 	}
 	if len(g.originalState) != 0 {
 		if err := g.verifyPrevious(ctx, adopt); err != nil {
+			return nil, err
+		}
+	} else if g.members["node_modules"] != nil {
+		if err := g.proveOriginal(ctx); err != nil {
 			return nil, err
 		}
 	}
@@ -259,6 +266,11 @@ func (g *approvedPNPMProjectGuard) verifyPrevious(ctx context.Context, adopt boo
 	if err != nil || !bytes.Equal(canonical, g.originalState) || doc.Schema != 1 || doc.Approval.Project+".json" != g.stateName || len(doc.Members) != 4 {
 		return errors.New("pnpm retained target approval is invalid")
 	}
+	if doc.OriginalProof != "" {
+		if _, err := domain.NewSHA256Digest(doc.OriginalProof); err != nil {
+			return err
+		}
+	}
 	if err := verifyPNPMRecordedApproval(ctx, g.owner.evidence, doc.Approval); err != nil {
 		return err
 	}
@@ -285,6 +297,7 @@ func (g *approvedPNPMProjectGuard) verifyPrevious(ctx context.Context, adopt boo
 		}
 	}
 	g.previous = &doc
+	g.originalProof = doc.OriginalProof
 	return nil
 }
 

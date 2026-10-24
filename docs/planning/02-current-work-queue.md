@@ -14,10 +14,10 @@ Last completed work item: CLI-UX-003 — COMPLETE; source4cfe29e/CI352 ten SUCCE
 Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
-Active work item status: IN_PROGRESS — backend/cache/records/private materialization/transaction remotely QUALIFIED by CI407; B5c user CLI named local PASS; native ownership proof/user CLI remote qualification and whole P2 acceptance remain
+Active work item status: IN_PROGRESS — backend/cache/records/private materialization/transaction remotely QUALIFIED by CI407; B5c user CLI named local PASS; native ownership/user CLI named local QUALIFIED; final whole-source remote/affected-profile qualification and P2 acceptance remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2 — CI407/e9ca85e backend+actual CI caller QUALIFIED (10 SUCCESS, same whole tree); B5c PNPM CLI committed a03ff13 LOCAL QUALIFIED; B5d native source-proof baseline/edit-map review IN_PROGRESS; whole P2 remains NO
-Current substep: M13-004/P2 — IN_PROGRESS; CI407/e9ca85e remote QUALIFIED;  B5c CLI committed a03ff13 LOCAL QUALIFIED; B5d native original ownership/source-proof audit IN_PROGRESS (source unchanged); native adoption/whole P2 pending; support not yet advertised
+Next action: M13-004/P2 — CI407/e9ca85e backend+actual CI caller QUALIFIED (10 SUCCESS, same whole tree); B5c PNPM CLI committed a03ff13 LOCAL QUALIFIED; B5d native original ownership and final CLI regressions LOCAL QUALIFIED; commit/remote and affected-profile qualification next; whole P2 remains NO
+Current substep: M13-004/P2 — IN_PROGRESS; CI407/e9ca85e remote QUALIFIED;  B5c CLI committed a03ff13 LOCAL QUALIFIED; B5d native original safe-copy proof actual3 cases LOCAL PASS; final CLI/npm regressions LOCAL QUALIFIED; remote and affected-profile qualification pending; whole P2 remains NO
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -4991,7 +4991,7 @@ Native payload 인계의 independent old-source proof가 다음이고 whole P2�
 
 현재 후속 [B5d native original ownership 감사](./evidence/package-client-quarantine/p2c5b5d-pnpm-native-ownership-plan-20261025.md)는
 guest store/UID 의미를 Host 원본 claim으로 대체하지 않는 분리와 기존 full source closure 재사용
-지도를 확정 중이다. Native proof source는 아직 수정하지 않았고 M13-004 하나만 IN_PROGRESS다.
+지도를 두 번째 검토한 뒤 native source-proof 경로를 연결했다. Guest parser의 UID/GID1000·caller store 계약은 유지하고 실제 Host owner의 별도 unverified view와 전체 closure를 재사용한다. 첫 engine Quick195.642s는 PASS이며 composed guard/source/rollback와 actual 검증은 진행 중이다. Native proof는 아직 QUALIFIED/ACCEPTANCE_CLOSED가 아니고 M13-004 하나만 IN_PROGRESS다.
 
 ### 2026-10-25 CI407 backend named remote qualification
 
@@ -5004,3 +5004,15 @@ native macOS Go1.27.3 build/default와 helper7wait0·final confirmed cleanup ori
 clientrestore0도 PASS다. Parent의 새 protected client rebind와 sandbox 복원 소비자 gap을 닫았다.
 전체10 decoded UTF8 logs를 보존·대조했다. 이 성공은 뒤 a03ff13 CLI와 native proof/whole P2를
 포함하지 않는다. 현재 B5d original source-proof audit를 계속하며 M13-004 하나만 IN_PROGRESS다.
+
+### 2026-10-25 P2 B5d independent native original ownership local qualification
+
+[B5d 결과](./evidence/package-client-quarantine/p2c5b5d-pnpm-native-ownership-local-20261025.json)는
+actual Host census/owner와 guest1000을 분리하고 독립 old public metadata/SRI/전체 archive·peer/
+instance/link/bin/file closure를 선택 전에 검증했다. Native first adoption은 새 clean inspected
+payload와 current Policy/records를 사용하며 원본 proof를 독립 state provenance로 기록한다.
+Native128.739s의 explicit add6→7/exact6 update/peer3사례·intended tamper/SRI/extra/implicit refusal와
+user files/actual records가 PASS다. Fixture owner/JSON expectation의 두 실패를 보존하고 test만
+교정했다. Canonical5/일곱 package Race157.139s/checker29.742s, final CLI9operation/npm actual·
+Darwin compile, helperwait0/Host 불변과6개 완료 runtime 정리도 결과에 연결했다. Whole P2는
+remote/영향받는 CPU·세CUDA와 최종 support acceptance 전까지 미완료다. M13-004 하나만 IN_PROGRESS다.

@@ -65,6 +65,32 @@ func (i PNPMInspectionInput) BindLayout(ctx context.Context, inventories []Archi
 	if err := checkPNPMVirtualLock(i, layout); err != nil {
 		return PNPMInspectionLayout{}, fmt.Errorf("%w: frozen virtual lock", err)
 	}
+	targets, err := i.checkLayoutFiles(ctx, bySubject, layout, modules, 1000, 1000, true)
+	if err != nil {
+		return PNPMInspectionLayout{}, err
+	}
+	// pnpm's freshness cache is neither inspection input nor execution data.
+	// Account for its exact native entry, then remove it from the bound payload.
+	layout, err = discardPNPMWorkspaceCache(layout)
+	if err != nil {
+		return PNPMInspectionLayout{}, err
+	}
+	manifest, err := pnpmInspectionManifest(i.context.selection.lock)
+	if err != nil {
+		return PNPMInspectionLayout{}, err
+	}
+	digest, err := pnpmInspectionLayoutDigest(i, layout, modules, manifest)
+	if err != nil {
+		return PNPMInspectionLayout{}, err
+	}
+	if err := ctx.Err(); err != nil {
+		return PNPMInspectionLayout{}, errors.Join(errPNPMInspectionLayout, err, context.Cause(ctx))
+	}
+	return PNPMInspectionLayout{i, layout, targets, digest, manifest}, nil
+}
+
+// Shared complete file closure; original Host views never become execution layouts.
+func (i PNPMInspectionInput) checkLayoutFiles(ctx context.Context, bySubject map[domain.AcquiredArtifact]ArchiveInventory, layout PNPMLayoutArchive, modules pnpmLayoutModules, uid, gid int, requireCache bool) (map[pnpmLayoutTarget]string, error) {
 	packages := map[string]PNPMLockedPackage{}
 	for _, pkg := range i.context.selection.lock.packages {
 		packages[pkg.Key] = pkg
@@ -73,7 +99,7 @@ func (i PNPMInspectionInput) BindLayout(ctx context.Context, inventories []Archi
 	for _, artifact := range i.artifacts {
 		inventory, present := bySubject[artifact]
 		if !present {
-			return PNPMInspectionLayout{}, errPNPMInspectionLayout
+			return nil, errPNPMInspectionLayout
 		}
 		inventoryByPackage[artifact.Identity().Name()+"@"+artifact.Identity().Version()] = inventory
 	}
@@ -104,13 +130,13 @@ func (i PNPMInspectionInput) BindLayout(ctx context.Context, inventories []Archi
 	physical := map[string]bool{}
 	for _, instance := range i.context.selection.lock.snapshots {
 		if err := ctx.Err(); err != nil {
-			return PNPMInspectionLayout{}, errors.Join(errPNPMInspectionLayout, err, context.Cause(ctx))
+			return nil, errors.Join(errPNPMInspectionLayout, err, context.Cause(ctx))
 		}
 		pkg, present := packages[instance.Package]
 		inventory, acquired := inventoryByPackage[instance.Package]
 		directory, err := PNPMInstanceDirectory(instance.Key)
 		if !present || !acquired || err != nil || physical[directory] {
-			return PNPMInspectionLayout{}, errPNPMInspectionLayout
+			return nil, errPNPMInspectionLayout
 		}
 		physical[directory] = true
 		root := "node_modules/.pnpm/" + directory + "/node_modules/" + pkg.Name
@@ -119,7 +145,7 @@ func (i PNPMInspectionInput) BindLayout(ctx context.Context, inventories []Archi
 		targets[pnpmLayoutTarget{inventory.artifact, instance.Key}] = root
 		declaredBins, err := pnpmInventoryBins(inventory)
 		if err != nil {
-			return PNPMInspectionLayout{}, err
+			return nil, err
 		}
 		bins[instance.Key] = declaredBins
 		binFiles := map[string]bool{}
@@ -132,7 +158,7 @@ func (i PNPMInspectionInput) BindLayout(ctx context.Context, inventories []Archi
 				requirement = pnpmLayoutRequirement{kind: tar.TypeDir}
 			}
 			if err := add(root+"/"+file.Path, requirement); err != nil {
-				return PNPMInspectionLayout{}, err
+				return nil, err
 			}
 		}
 	}
@@ -154,38 +180,42 @@ func (i PNPMInspectionInput) BindLayout(ctx context.Context, inventories []Archi
 	for _, instance := range i.context.selection.lock.snapshots {
 		root := roots[instance.Key]
 		if err := addBins(root+"/node_modules", instance.Key); err != nil {
-			return PNPMInspectionLayout{}, err
+			return nil, err
 		}
 		for name, dependency := range instance.Dependencies {
 			if err := addLink(moduleRoots[instance.Key]+"/"+name, roots[dependency]); err != nil {
-				return PNPMInspectionLayout{}, err
+				return nil, err
 			}
 			if err := addBins(root+"/node_modules", dependency); err != nil {
-				return PNPMInspectionLayout{}, err
+				return nil, err
 			}
 		}
 	}
 	for _, root := range i.context.selection.lock.roots {
 		if err := addLink("node_modules/"+root.Name, roots[root.Snapshot]); err != nil {
-			return PNPMInspectionLayout{}, err
+			return nil, err
 		}
 		if err := addBins("node_modules", root.Snapshot); err != nil {
-			return PNPMInspectionLayout{}, err
+			return nil, err
 		}
 	}
 	for key, names := range modules.HoistedDependencies {
 		for name := range names {
 			if err := addLink("node_modules/.pnpm/node_modules/"+name, roots[key]); err != nil {
-				return PNPMInspectionLayout{}, err
+				return nil, err
 			}
 			if err := addBins("node_modules/.pnpm/node_modules", key); err != nil {
-				return PNPMInspectionLayout{}, err
+				return nil, err
 			}
 		}
 	}
-	for _, name := range []string{"node_modules/.modules.yaml", "node_modules/.pnpm/lock.yaml", pnpmWorkspaceCachePath} {
+	metadataNames := []string{"node_modules/.modules.yaml", "node_modules/.pnpm/lock.yaml"}
+	if _, present := layout.files[pnpmWorkspaceCachePath]; requireCache || present {
+		metadataNames = append(metadataNames, pnpmWorkspaceCachePath)
+	}
+	for _, name := range metadataNames {
 		if err := add(name, pnpmLayoutRequirement{kind: tar.TypeReg, metadata: true}); err != nil {
-			return PNPMInspectionLayout{}, err
+			return nil, err
 		}
 	}
 	// Empty native build/bin directories are harmless only in these exact
@@ -198,12 +228,12 @@ func (i PNPMInspectionInput) BindLayout(ctx context.Context, inventories []Archi
 	for _, actual := range layout.entries {
 		if actual.Kind == tar.TypeDir && optionalDirectories[actual.Name] {
 			if err := add(actual.Name, pnpmLayoutRequirement{kind: tar.TypeDir}); err != nil {
-				return PNPMInspectionLayout{}, err
+				return nil, err
 			}
 		}
 	}
 	if len(wanted) != len(layout.entries) {
-		return PNPMInspectionLayout{}, fmt.Errorf("%w: entry coverage expected=%d observed=%d", errPNPMInspectionLayout, len(wanted), len(layout.entries))
+		return nil, fmt.Errorf("%w: entry coverage expected=%d observed=%d", errPNPMInspectionLayout, len(wanted), len(layout.entries))
 	}
 	directories := map[string]bool{}
 	for name, requirement := range wanted {
@@ -213,66 +243,49 @@ func (i PNPMInspectionInput) BindLayout(ctx context.Context, inventories []Archi
 	}
 	for _, actual := range layout.entries {
 		if err := ctx.Err(); err != nil {
-			return PNPMInspectionLayout{}, errors.Join(errPNPMInspectionLayout, err, context.Cause(ctx))
+			return nil, errors.Join(errPNPMInspectionLayout, err, context.Cause(ctx))
 		}
 		requirement, present := wanted[actual.Name]
-		if !present || !pnpmInspectionEntryMode(actual, requirement) {
-			return PNPMInspectionLayout{}, fmt.Errorf("%w: entry presence or mode %q", errPNPMInspectionLayout, actual.Name)
+		if !present || !pnpmLayoutEntryModeOwner(actual, requirement, uid, gid) {
+			return nil, fmt.Errorf("%w: entry presence or mode %q", errPNPMInspectionLayout, actual.Name)
 		}
 		if requirement.kind == tar.TypeDir {
 			if actual.Kind != tar.TypeDir {
-				return PNPMInspectionLayout{}, errPNPMInspectionLayout
+				return nil, errPNPMInspectionLayout
 			}
 			continue
 		}
 		if requirement.kind == tar.TypeSymlink {
 			if actual.Kind != tar.TypeSymlink || actual.Link != requirement.link {
-				return PNPMInspectionLayout{}, errPNPMInspectionLayout
+				return nil, errPNPMInspectionLayout
 			}
 			continue
 		}
 		file, regular := layout.files[actual.Name]
 		if !regular || actual.Kind != tar.TypeReg && actual.Kind != tar.TypeLink {
-			return PNPMInspectionLayout{}, errPNPMInspectionLayout
+			return nil, errPNPMInspectionLayout
 		}
 		if requirement.metadata {
 			if actual.Kind != tar.TypeReg {
-				return PNPMInspectionLayout{}, errPNPMInspectionLayout
+				return nil, errPNPMInspectionLayout
 			}
 			continue
 		}
 		if requirement.bin != "" {
 			if err := checkPNPMBoundBin(layout, actual.Name, requirement.bin, directories); err != nil {
-				return PNPMInspectionLayout{}, err
+				return nil, err
 			}
 			continue
 		}
 		if int64(file.end-file.start) != requirement.size || actual.Digest != requirement.digest {
-			return PNPMInspectionLayout{}, fmt.Errorf("%w: acquired payload %q", errPNPMInspectionLayout, actual.Name)
+			return nil, fmt.Errorf("%w: acquired payload %q", errPNPMInspectionLayout, actual.Name)
 		}
 	}
-	// pnpm's freshness cache is neither inspection input nor execution data.
-	// Account for its exact native entry, then remove it from the bound payload.
-	layout, err = discardPNPMWorkspaceCache(layout)
-	if err != nil {
-		return PNPMInspectionLayout{}, err
-	}
-	manifest, err := pnpmInspectionManifest(i.context.selection.lock)
-	if err != nil {
-		return PNPMInspectionLayout{}, err
-	}
-	digest, err := pnpmInspectionLayoutDigest(i, layout, modules, manifest)
-	if err != nil {
-		return PNPMInspectionLayout{}, err
-	}
-	if err := ctx.Err(); err != nil {
-		return PNPMInspectionLayout{}, errors.Join(errPNPMInspectionLayout, err, context.Cause(ctx))
-	}
-	return PNPMInspectionLayout{i, layout, targets, digest, manifest}, nil
+	return targets, nil
 }
 
-func pnpmInspectionEntryMode(actual PNPMLayoutEntry, wanted pnpmLayoutRequirement) bool {
-	if actual.UID != 1000 || actual.GID != 1000 || actual.Mode < 0 || actual.Mode > 0o777 {
+func pnpmLayoutEntryModeOwner(actual PNPMLayoutEntry, wanted pnpmLayoutRequirement, uid, gid int) bool {
+	if actual.UID != uid || actual.GID != gid || actual.Mode < 0 || actual.Mode > 0o777 {
 		return false
 	}
 	if wanted.kind == tar.TypeSymlink {

@@ -221,7 +221,7 @@ UV project는 P4이며 `uv run`과 tool/execution·다른 client의 실제 지�
 P2의 기존 단일 프로젝트 backend와 아래 명령은 named local 검증을 마쳤다.
 실제 source/검사·원격 상태는 [Queue](../planning/02-current-work-queue.md)와
 [B5c 검증 지도](../planning/evidence/package-client-quarantine/p2c5b5c-pnpm-cli-plan-20261025.md)가
-소유한다. Native/unmanaged 인계와 전체 P2 acceptance는 미완료다.
+소유한다. Native/unmanaged 인계의 bounded copy lane도 named local 검증을 마쳤으며 전체 P2 remote qualification·acceptance는 미완료다.
 
 | 명령·옵션 | 현재 입력과 동작 |
 | --- | --- |
@@ -229,7 +229,7 @@ P2의 기존 단일 프로젝트 backend와 아래 명령은 named local 검증�
 | `helox pnpm install` | 기존 package.json과 선택적인 일치하는 pnpm-lock.yaml을 사용. 명시한 empty도 전체 승인·records/transaction을 거침 |
 | `helox pnpm update [name]` | 기존 직접 의존성 이름 하나 또는 전체를 native PNPM으로 선택하고 manifest/lock/전체 payload를 함께 반영 |
 | `--target <directory>` | 기존 프로젝트 디렉터리. 생략하면 현재 디렉터리. Symlink ancestry·alias controls·중복/빈 인수 거부 |
-| `--adopt` | 독립 승인된 HAA 관리 payload를 검증하고 지원하는 기존 설정 변경을 명시적으로 등록. Manifest/lock 일치 등 입력 검사를 생략하지 않음 |
+| `--adopt` | 독립 승인된 HAA 관리 payload의 지원하는 설정 변경 또는 아래 원본 증명이 완료된 기존 PNPM 설치를 명시적으로 등록. Manifest/lock 일치 등 입력 검사를 생략하지 않음 |
 
 Linux amd64와 repository의 고정 PNPM runtime을 사용하며 source identity는 `npm`이다.
 선택된 모든 archive/peer instance를 검증·관찰하고 실제 Evidence/현재 Policy·frozen layout을
@@ -242,6 +242,13 @@ JSON install/add는 `helox.project-install-result/v1`의 `INSTALL`, update는 �
 구분하며 실제 Manifest/SBOM의 opaque record references를 제공한다. 영어/한국어 전체 문구와
 나머지 언어의 기존 결정적 English fallback을 유지한다. Help는 runtime/cache를 준비하지 않는다.
 
-일반 native PNPM payload의 인계는 독립 old archive/source proof가 연결될 때까지 거부한다.
+기존 native PNPM 인계는 원래 manifest·lock의 모든 public archive를 독립 취득하고 SRI와
+정적 inventory·전체 instance/edge/bin/file closure를 대조한다. 새 선택에서 제거할 원본도
+포함한다. 첫 lane은 고정 isolated 형식의 nonempty safe single-link copies다. Shared hardlink,
+unsafe mode·혼합 owner·추가/변조 파일·unknown namespace와 corrupt HAA state는 거부한다.
+Store 경로는 metadata 형식만 확인하고 외부 store를 열지 않는다. 원본 증명은 독립 state에
+기록하며 현재 검역·Policy나 새 승인 cache로 전용하지 않는다. 첫 인계에는 새 clean payload를
+반영한다. Native empty layout의 불명확한 metadata는 이 lane에서 미지원이며 기존 fresh/managed
+empty 경로는 유지한다. [B5d 지도](../planning/evidence/package-client-quarantine/p2c5b5d-pnpm-native-ownership-plan-20261025.md)가 named 검증 범위를 소유한다.
 새 target 생성·global/workspace·local/direct/VCS/다른 registry·임의 native 옵션과 실행 명령은
 이 검증 범위에 없다. pnpm dlx는 P6이며 이 CLI 연결로 지원 완료 표시하지 않는다.

@@ -62,6 +62,10 @@ func ParsePNPMInspectionPayloadArchive(ctx context.Context, body []byte) (PNPMLa
 }
 
 func parsePNPMTreeArchive(ctx context.Context, body []byte, rootName string) (PNPMLayoutArchive, error) {
+	return parsePNPMTreeArchiveOwner(ctx, body, rootName, 1000, 1000)
+}
+
+func parsePNPMTreeArchiveOwner(ctx context.Context, body []byte, rootName string, uid, gid int) (PNPMLayoutArchive, error) {
 	if ctx == nil || len(body) == 0 || len(body) > PNPMLayoutArchiveLimit {
 		return PNPMLayoutArchive{}, errPNPMLayoutArchive
 	}
@@ -84,7 +88,7 @@ func parsePNPMTreeArchive(ctx context.Context, body []byte, rootName string) (PN
 		if err != nil {
 			return PNPMLayoutArchive{}, errors.Join(errPNPMLayoutArchive, err)
 		}
-		if len(layout.entries) >= pnpmLayoutEntryLimit || !validPNPMLayoutHeader(header) {
+		if len(layout.entries) >= pnpmLayoutEntryLimit || !validPNPMLayoutHeaderOwner(header, uid, gid) {
 			return PNPMLayoutArchive{}, errPNPMLayoutArchive
 		}
 		name := header.Name
@@ -160,7 +164,11 @@ func parsePNPMTreeArchive(ctx context.Context, body []byte, rootName string) (PN
 }
 
 func validPNPMLayoutHeader(header *tar.Header) bool {
-	if header.Uid != 1000 || header.Gid != 1000 || header.Mode < 0 || header.Mode > 0o777 || header.Size < 0 || header.Size > ArchiveFileLimit {
+	return validPNPMLayoutHeaderOwner(header, 1000, 1000)
+}
+
+func validPNPMLayoutHeaderOwner(header *tar.Header, uid, gid int) bool {
+	if uid < 0 || gid < 0 || header.Uid != uid || header.Gid != gid || header.Mode < 0 || header.Mode > 0o777 || header.Size < 0 || header.Size > ArchiveFileLimit {
 		return false
 	}
 	if header.Typeflag != tar.TypeReg && header.Typeflag != tar.TypeDir && header.Typeflag != tar.TypeLink && header.Typeflag != tar.TypeSymlink {

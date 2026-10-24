@@ -68,12 +68,12 @@ func newPNPMProjectService(bindings pnpmProjectBindings, intent artifactnpm.PNPM
 		return nil, err
 	}
 	s := &pnpmProjectSession{bindings: bindings, intent: intent, selector: selector, operation: operation}
-	owner, err := promotion.NewPNPMProjectPromotion(bindings.intakeRoot, bindings.evidenceRoot, bindings.cacheRoot, bindings.stateRoot, bindings.store, operation, func(snapshot domain.ProjectDependencySnapshot) (*promotion.PNPMVerifiedCache, error) {
+	owner, err := promotion.NewPNPMProjectPromotionWithOriginalVerifier(bindings.intakeRoot, bindings.evidenceRoot, bindings.cacheRoot, bindings.stateRoot, bindings.store, operation, func(snapshot domain.ProjectDependencySnapshot) (*promotion.PNPMVerifiedCache, error) {
 		if s.cache == nil || !s.frozen.MatchesSnapshot(snapshot) {
 			return nil, errors.New("pnpm operation has no cache for this exact native selection")
 		}
 		return s.cache, nil
-	})
+	}, bindings.provePNPMOriginal)
 	if err != nil {
 		return nil, err
 	}

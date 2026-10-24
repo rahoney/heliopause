@@ -182,3 +182,25 @@ func TestPNPMControlledFixtureRequiresPackageSubshell(t *testing.T) {
 		})
 	}
 }
+
+func TestPNPMOriginalActualCannotLoseAuthenticatedCommandOrCoverage(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "ci-pnpm-runtime.sh"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	original := string(body)
+	for name, replacement := range map[string]string{
+		"comment":         "# " + pnpmOriginalIntegrationCommand,
+		"wrong-env":       strings.Replace(pnpmOriginalIntegrationCommand, "ORIGINAL_INTEGRATION=1", "ORIGINAL_INTEGRATION=0", 1),
+		"wrong-test":      strings.Replace(pnpmOriginalIntegrationCommand, "TestPNPMNativeOriginalIntegration", "TestMissingCLIIntegration", 1),
+		"wrong-client":    strings.Replace(pnpmOriginalIntegrationCommand, "/usr/libexec/heliopause/helox", "go test ./internal/bootstrap", 1),
+		"ignored-failure": pnpmOriginalIntegrationCommand + " || true",
+		"duplicate":       pnpmOriginalIntegrationCommand + "\n" + pnpmOriginalIntegrationCommand,
+	} {
+		t.Run(name, func(t *testing.T) {
+			if len(validatePNPMRuntimeScript(strings.Replace(original, pnpmOriginalIntegrationCommand, replacement, 1))) == 0 {
+				t.Fatal("Native original actual missing or untrusted execution accepted")
+			}
+		})
+	}
+}

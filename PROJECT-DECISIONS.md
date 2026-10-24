@@ -205,8 +205,7 @@ held guard·승인 cache·primary 없는 Manifest/SBOM·offline 반입과 CLI를
 [최종 로컬 검증·source 반영](./docs/planning/evidence/package-client-quarantine/go1273-local-qualification-20261023.json)을
 완료했고 [G127 누적 acceptance](./docs/planning/evidence/package-client-quarantine/go1273-acceptance-20261024.json)로
 동일 후보 네 CI·native platform과 coherent Host SDK/tools/runtime1.27.3 전환·readback·정리를
-확인했다. G127은 COMPLETE이며 운영 복구 백업은 보존한다. P2 pnpm의 backend·사용자 CLI는
-named local 검증을 마쳤고 다음은 native 설치 인계의 독립 원본 source proof와 전체 qualification이다.
+확인했다. G127은 COMPLETE이며 운영 복구 백업은 보존한다. P2 pnpm의 backend는 CI407의 named remote 검증을 마쳤고 사용자 CLI·native 설치 인계의 독립 원본 source proof도 named local 검증했다. 다음은 최종 전체 source의 remote·영향받는 profile qualification과 P2 acceptance다.
 요청한 [Go1.27.3 전환](./docs/planning/evidence/package-client-quarantine/go1273-migration-baseline-20261022.md)은
 P1 acceptance 다음/P2 이전에 검증한다. UV project는 P4이며 실행기와 다른 client의 지원은
 각 단계의 별도 acceptance를 따른다. CLI 강조 대상은 제품 풀네임이고 `helox`는 실행 명령이다.
