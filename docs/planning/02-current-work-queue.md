@@ -16,12 +16,25 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — rc6/native4 same-runtime baseline IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; P2/native5 expansion locally verified only, guest/whole qualification and channel scope remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2c2 — P2c1 locally committed e762bdc (not pushed); audited public native producer next; CI401 Required10SUCCESS confirmed; strict transport0b41c10 and native producer empty/fault LOCAL VERIFIED; actual public selection/binding next
+Next action: M13-004/P2c2 — P2c1 locally committed e762bdc (not pushed); audited public native producer next; CI401 Required10SUCCESS confirmed; strict transport0b41c10 and native producer empty/fault LOCAL VERIFIED; public native eight selections LOCAL VERIFIED; current-source checkpoint and Domain/HostInstallAction mapping next
 Current substep: M13-004/P2 — IN_PROGRESS; offline supply/native distribution LOCAL VERIFIED; exact guest admission and product graph/layout/CLI gaps active; support not yet advertised
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-24 P2c2 actual public 선택·update/no-op 로컬 검증
+
+[실제 public 결과](./evidence/package-client-quarantine/p2c2-pnpm-public-selection-local-20261024.json)는
+native single/transitive/peer/add, frozen install, selected/full update와 no-op8개를
+actual46.82s에서 독립 registry binding과 함께 확인했다. Range를 보존한6→7과 frozen/
+no-op의 두 control bytes 동일도 PASS다. C++25의110 matrix와 운영 보호12파일/images/
+networks/bridge/service/firewall 동일·canonical helper wait0/CONFIRMED_STOPPED를 확인했다.
+Native client 자체 notifier는 false이며 실제 public이 요구한 다섯 read만 exact PNPM
+CONTROL root/flags/mount에 한정했다. Archives/Policy·Domain graph/HostInstallAction·
+layout/transaction/CLI와 현재 후보 remote/whole P2 qualification은 미완료다.
+현재 checkpoint를 검증한 뒤 Domain·archive lifecycle 사실 전달의 실제 gap을 감사한다.
+M13-004만 IN_PROGRESS다.
 
 ### 2026-10-24 P2c2 native producer 경계 로컬 검증
 

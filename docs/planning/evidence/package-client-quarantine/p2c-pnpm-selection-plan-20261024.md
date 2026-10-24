@@ -340,3 +340,96 @@ Public actual fetch에 필요한 DNS/TLS read까지 완료됐다는 뜻은 아�
 자세한 input/source/실제 범위는 [producer boundary 결과](./p2c2-pnpm-producer-boundary-local-20261024.json)가 소유한다.
 선택 input/명령/cleanup producer의 bounded local 연결을 보존하고 다음은 실제 public
 single/transitive/peer의 typed policy와 independent registry binding이다.
+
+## 8. 다음 실제 public selection의 실행 전 검토
+
+Producer 경계는 로컬 cc64ebf로 보존했다. Public native 요청은 아직 IMPLEMENTED=YES(API),
+WIRED=NO(actual public 소비자), QUALIFIED=NO, ACCEPTANCE_CLOSED=NO다. 다음은
+`pnpm_resolver_real_test.go`의 별도 gated consumer이며 설치·승격을 실행하지 않는다.
+첫 single 실패 시 transitive/peer/add/update를 실행하지 않는다. Actual native controls를
+바로 기존 NewPublicResolver.BindPNPMLock에 연결해 실제 source identity/SRI를 독립 대조한다.
+HostInstallAction/Policy/graph/layout/CLI의 미완료는 유지한다.
+
+공개 HTTPS에는 이미 운영 설치된 Docker/typed network-policy helper의 canonical 흐름을
+사용한다. 새로운 private dockerd를 Host network에서 시작하지 않는다(과거 bridge 교란 금지).
+전용 mount namespace에서만 고정 PNPM data 설치 overlay·Root-owned test client의 fixed
+보호 경로 bind·동일 qualified observer bind를 준비한다. Host의 protected12 파일은 실제로
+교체하지 않는다. 같은 owning Bash의 ci-integration-cleanup.sh가 foreground sudo helper를
+시작하고 정확한 wait0/CONFIRMED_STOPPED를 확인한다. 기존 helper/consumer/socket이 있거나
+query가 불확실하면 새 작업을 시작하지 않는다. 시험은 ordinary UID1000이며 package bytes를
+Host에서 실행하지 않는다. Typed helper가 attested client를 인증하고 fixed registry IPv4/TLS만
+허용한 network를 만들고 제거한다. 임의 DNS/Host proxy/credential fallback은 없다.
+
+이 시험은 의도적으로 기존 Host Docker와 typed policy의 운영 경로를 소비한다. 전용 daemon을
+mount-only namespace에 띄웠던 과거 잘못된 fixture와 다르다. 전후 protected files/image/
+containers/bridge/service·iptables state와 helper/observer handles를 확인하며 정리 불확실 시
+primary를 유지하고 다음 요청/보호 파일 변경을 중단한다. Native first-fault는 payload 없는
+실제 role/path/flags/anchor와 기존 정상 owner부터 비교한다. 불필요한 notifier 권한을 되살리지
+않고 실제 registry 선택이 요구한 경로만 별도 검증한다. 완료된 public 시험 payload도 원본과
+작은 normalized evidence를 보존한 뒤 참조0/query errors0에서 제거한다.
+
+Public first9.477s에서 실제 single registry 선택은 notifier=false 상태에서도
+`/etc/nsswitch.conf`/557056·동일 exact PNPM CONTROL root에서 거부됐다. Transitive/peer/add는
+NOT_EXECUTED다. Owning helper wait0/CONFIRMED_STOPPED, 보호12파일/image/bridge/service/
+방화벽 동일과 Host native 미설치를 확인했다. Raw p2c2-pnpm-public-first가 원본을 소유한다.
+따라서 notifier 없는 empty 성공과 실제 registry 선택의 runtime 입력을 분리한다.
+앞19/20에서 이미 실제 읽기/guard matrix를 확인한 두 immutable DNS config(nsswitch,
+host.conf)만 같은 기존 guard에 재연결한다. 당시20의 source/test를 그대로 재사용하며
+일반 artifact/child/DNS fallback 권한은 늘리지 않는다. 두 정상 경로를 상호 negative로
+넣지 않고 alias·잘못된 role/profile/flag/mount negatives를 유지한다. 새 PUBLIC 실제 결과를
+확인하기 전에는20의 matrix PASS를 전체 public qualification으로 전용하지 않는다.
+
+Public DNS-config 재검증9.446s의 다음 first read는 fixed Docker system mount의
+`/etc/resolv.conf`/locator ba66dbef7df0a5a0·557056·동일 PNPM CONTROL root다. Nsswitch/host.conf
+수정의 반증이나 DNS egress 허용 사유가 아니다. 기존 Cargo의 exact system resolver-config
+경계를 참고하여 이 파일/동일 mount/read-only flag만 PNPM guard에 더한다. 다른 system
+파일·Host 경로·alias·쓰기와 실제 DNS UDP/TCP egress는 계속 허용하지 않는다. Root 파일/
+image/bridge/service/firewall 동일·helperwait0/정리와 첫 single 실패/후속 미실행은 원본
+p2c2-pnpm-public-dns-config가 소유한다. 대응하는 positive/negative 전체 matrix를 재검증한다.
+
+Resolver-config actual9.019s의 다음 read는 HAA가 --add-host로 고정한 Docker system
+`/etc/hosts`/locator ab0a49b3f5f1fd68·557056·동일 PNPM CONTROL root였다. Existing UV public
+hosts 경계(오답노트 sandbox L18)와 Cargo의 exact system config를 재사용하여 두 system
+파일 각각 자기 mount와 path가 같을 때만 읽도록 보완한다. Resolver config 읽기는 DNS
+egress 권한이 아니며 typed IP/TCP443 policy와 ARTIFACT·child·다른 profile·쓰기 거부를 유지한다.
+Raw p2c2-pnpm-public-resolver-config의 single 최초 거부/후속 미실행과 Host전체 동일/
+helperwait0/CONFIRMED_STOPPED는 독립 보존한다.
+
+Hosts-config actual9.415s는 다음 immutable OCI `/etc/gai.conf`(locator4ed561d866fb8230)/557056·
+동일 exact PNPM root에서 거부됐다. 기존 Cargo resolver의 address-selection config 한 경로와
+대조해 같은 immutable-root 집합에 이 파일만 추가한다. 첫 single 외 요청은 미실행이고
+Host전체 동일/helperwait0/정리는 p2c2-pnpm-public-hosts-config 원본으로 분리한다. 공용
+library/다른 `/etc` prefix나 ARTIFACT/Node child 권한을 확대하지 않는다.
+
+
+Actual address-config28.783s/네 native 요청26.48s가 single1/1/1, transitive2/2/1,
+peer4/4/2, add1/1/1 artifacts/instances/roots와 독립 public source binding으로 PASS다.
+Observer25의110 matrix·Host전체 동일/firewall동일·helperwait0/CONFIRMED_STOPPED이며
+archives/Policy·Domain graph/layout/transaction/CLI는 아직 미실행이다. 첫 통과의 source SHA와
+원본은 raw p2c2-pnpm-public-four-first-pass.json에 보존한다. 다음은 actual controls의 frozen
+install과 선택/full update/no-op이다. Seed update는 actual6 controls에서 테스트용으로 명시
+wide range를 만든 inert fixture이며 managed enrollment나 Host 설치 승인이 아니다.
+
+
+### Public selection 최종 로컬 결과
+
+[실제8개 결과](./p2c2-pnpm-public-selection-local-20261024.json)는 native single/transitive/peer/add,
+frozen install, selected/full update와 no-op을49.112s/actual46.82s에서 확인했다. 실제 native
+6→7 선택과 원래 wide range 보존, frozen/no-op의 manifest·lock bytes 동일 및 모든 선택의
+independent registry SRI/URL binding이 PASS다. Update seed는 명시 inert fixture이며 기존
+Host 설치/adoption이나 managed transaction qualification은 아니다. Typed helper의 정확한
+wait0/CONFIRMED_STOPPED·Host12파일/images/networks/bridge/service/iptables 동일도 확인했다.
+
+최종 runtime read 집합은 PNPM의 기존 exact root guard 안의 다섯 설정 파일뿐이다.
+C++25 전체110·실제 public8이 소비했으며 notifier는 계속 false다. Other profile/ARTIFACT/
+Node child/쓰기/alias 권한은 유지한다. 새로운 runtime/버전 pin·generic privilege operation은 없다.
+Current producer slice는 IMPLEMENTED/WIRED=YES, remote 현재 후보와 전체 P2는 아직
+QUALIFIED/ACCEPTANCE_CLOSED=NO다. 다음은 Domain complete snapshot/peer graph digest와
+구조화된 archive lifecycle 사실/HostInstallAction 전달이며 layout/transaction/CLI는 후속이다.
+
+
+최종 local canonical Quick28.930s/security4.586s/docs.212s/vulnerability13.197s도 PASS다.
+공개 시험의 마지막 소비 뒤 모든 UID 참조/query errors0과 helper·network 정리를 확인하고
+전용 namespace 데이터/이전 바이너리5경로199,531,986B를 제거했다. 고정 공식 supply와
+진행 중 P2의 공용 개발 cache만 유지한다. 새 source의 원격 ordinary checkpoint는 이 경계에서
+한 번 묶고, 그동안 Domain/구조화된 HostInstallAction 사실 전달의 감사·설계를 계속한다.

@@ -7326,11 +7326,11 @@ bool VerifyPNPMRuntimeReadBoundary() {
   for (const char* profile : {kProfileUVResolver, kProfileNPM, kProfileGitHub, kProfilePyPI, kProfilePyTorchCPU, kProfilePyTorchCU126, kProfilePyTorchCU130, kProfilePyTorchCU132, kProfileCargoResolver, kProfileGoResolver}) {
     if (IsPinnedPNPMRuntimeRead(*context, state, open.pathname(), open.flags(), profile, &anchor)) return false;
   }
-  for (const char* path : {"/lib/x86_64-linux-gnu/librt.so.1", "/usr/lib/x86_64-linux-gnu/librt.so.1.evil", "/usr/lib/x86_64-linux-gnu/../x86_64-linux-gnu/librt.so.1", "/proc/sys/vm/overcommit_memory.evil", "/proc/sys/vm/../vm/overcommit_memory", "/proc/sys/kernel/hostname", "/proc/sys/kernel/osrelease.evil", "/proc/sys/kernel/../kernel/osrelease", "/dev/random", "/dev/zero", "/dev/urandom.evil", "/dev/../dev/urandom", "/haa-runtime/uv", "/haa-runtime/pnpm.evil", "/haa-runtime/./pnpm", "/sys/devices/system/cpu/possible", "/sys/devices/system/cpu/online.evil", "/sys/devices/system/cpu/../cpu/online", "/sys/fs/cgroup/cpu/cpu.stat", "/sys/fs/cgroup/cpu/cpu.cfs_quota_us.evil", "/sys/fs/cgroup/cpu/../cpu/cpu.cfs_period_us", "/proc/self/mountinfo", "/proc/1/mountinfo", "/proc/100/mountinfo", "/proc/99/mountinfo.evil", "/proc/self/cgroup", "/proc/1/cgroup", "/proc/100/cgroup", "/proc/99/cgroup.evil", "/etc/hosts", "/etc/nsswitch.conf", "/etc/host.conf", "/etc/host.conf.evil", "/etc/../etc/host.conf", "/etc//host.conf", "/tmp/host.conf", "/etc/nsswitch.conf.evil", "/etc/../etc/nsswitch.conf", "/etc//nsswitch.conf", "/tmp/nsswitch.conf", "/proc/self/maps", "/proc/1/maps", "/proc/100/maps", "/proc/99/maps.evil", "/tmp/librt.so.1"}) {
+  for (const char* path : {"/lib/x86_64-linux-gnu/librt.so.1", "/usr/lib/x86_64-linux-gnu/librt.so.1.evil", "/usr/lib/x86_64-linux-gnu/../x86_64-linux-gnu/librt.so.1", "/proc/sys/vm/overcommit_memory.evil", "/proc/sys/vm/../vm/overcommit_memory", "/proc/sys/kernel/hostname", "/proc/sys/kernel/osrelease.evil", "/proc/sys/kernel/../kernel/osrelease", "/dev/random", "/dev/zero", "/dev/urandom.evil", "/dev/../dev/urandom", "/haa-runtime/uv", "/haa-runtime/pnpm.evil", "/haa-runtime/./pnpm", "/sys/devices/system/cpu/possible", "/sys/devices/system/cpu/online.evil", "/sys/devices/system/cpu/../cpu/online", "/sys/fs/cgroup/cpu/cpu.stat", "/sys/fs/cgroup/cpu/cpu.cfs_quota_us.evil", "/sys/fs/cgroup/cpu/../cpu/cpu.cfs_period_us", "/proc/self/mountinfo", "/proc/1/mountinfo", "/proc/100/mountinfo", "/proc/99/mountinfo.evil", "/proc/self/cgroup", "/proc/1/cgroup", "/proc/100/cgroup", "/proc/99/cgroup.evil", "/etc/hosts", "/etc/gai.conf.evil", "/etc//gai.conf", "/etc/../etc/gai.conf", "/tmp/gai.conf", "/etc/hosts.evil", "/etc//hosts", "/etc/../etc/hosts", "/tmp/hosts", "/etc/resolv.conf.evil", "/etc//resolv.conf", "/etc/../etc/resolv.conf", "/tmp/resolv.conf", "/etc/host.conf.evil", "/etc/../etc/host.conf", "/etc//host.conf", "/tmp/host.conf", "/etc/nsswitch.conf.evil", "/etc/../etc/nsswitch.conf", "/etc//nsswitch.conf", "/tmp/nsswitch.conf", "/proc/self/maps", "/proc/1/maps", "/proc/100/maps", "/proc/99/maps.evil", "/tmp/librt.so.1"}) {
     open.set_pathname(path); if (strcmp(path,exact_path)!=0 && allowed()) return false;
   }
   open.set_pathname(exact_path);
-  for (const char* mount : {"/", "/usr/lib", "/usr/lib/x86_64-linux-gnu", "/haa-runtime", "/proc", "/sys/fs/cgroup", "/sys/fs/cgroup/cpu/other", "/sys/devices/system/cpu"}) { anchor.mountpoint = mount; if (strcmp(mount,exact_mount)!=0 && allowed()) return false; }
+  for (const char* mount : {"/", "/etc/resolv.conf", "/etc/hosts", "/usr/lib", "/usr/lib/x86_64-linux-gnu", "/haa-runtime", "/proc", "/sys/fs/cgroup", "/sys/fs/cgroup/cpu/other", "/sys/devices/system/cpu"}) { anchor.mountpoint = mount; if (strcmp(mount,exact_mount)!=0 && allowed()) return false; }
   anchor.mountpoint = exact_mount;
   for (const char* mount_class : {"workspace", "system", "helper", "oci-root"}) { anchor.mount_class = mount_class; if (strcmp(mount_class,exact_class)!=0 && allowed()) return false; }
   anchor.mount_class = exact_class;
@@ -7355,6 +7355,11 @@ bool VerifyPNPMRuntimeReadBoundary() {
   };
   const ReadCase reads[] = {
     {"/usr/lib/x86_64-linux-gnu/librt.so.1", "/", "oci-root"},
+    {"/etc/nsswitch.conf", "/", "oci-root"},
+    {"/etc/host.conf", "/", "oci-root"},
+    {"/etc/gai.conf", "/", "oci-root"},
+    {"/etc/resolv.conf", "/etc/resolv.conf", "system"},
+    {"/etc/hosts", "/etc/hosts", "system"},
     {"/proc/99/maps", "/proc", "system"},
     {"/proc/sys/vm/overcommit_memory", "/proc", "system"},
     {"/proc/99/cgroup", "/proc", "system"},

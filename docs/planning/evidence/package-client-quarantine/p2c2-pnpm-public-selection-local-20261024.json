@@ -1,0 +1,207 @@
+{
+  "baseline": "cc64ebf7fb76f7eb043d3652493b9c5cc2d54413",
+  "scope": "LOCAL VERIFIED native public selection and independent metadata binding; no archives/Policy/Domain graph/layout/transaction/CLI qualification",
+  "slice_status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "NO",
+    "ACCEPTANCE_CLOSED": "NO"
+  },
+  "qualification_remaining": "remote current-source ordinary CI; whole P2 and product CLI remain separate",
+  "source": [
+    {
+      "path": "internal/sandbox/pnpm_public_resolver_real_test.go",
+      "sha256": "c3c732408b97401e516ed3d51d80a3506fb8b9c4fdefe152daaef793b5150aa9"
+    },
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "4a1c83164074ed24e8339d5476ac0d4dbc29a2918b22149aa14971a5247ee0ed"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "efc4d99b4ad53837dfb5128f67d44a28c47df128cc0879a978644c7284f99bcd"
+    }
+  ],
+  "runtime_lock": {
+    "path": "scripts/runtimes.lock.json",
+    "sha256": "87b29d73031fcba90c58613df7063d8932281e784da6f22123684373c332c550"
+  },
+  "actual": {
+    "wrapper_seconds": 49.112,
+    "test_seconds": 46.82,
+    "cases": [
+      {
+        "name": "single",
+        "seconds": 5.56
+      },
+      {
+        "name": "transitive",
+        "seconds": 5.62
+      },
+      {
+        "name": "peer",
+        "seconds": 7.48
+      },
+      {
+        "name": "add",
+        "seconds": 5.26
+      },
+      {
+        "name": "frozen-install",
+        "seconds": 5.05
+      },
+      {
+        "name": "selected-update",
+        "seconds": 5.69
+      },
+      {
+        "name": "update-no-op",
+        "seconds": 5.34
+      },
+      {
+        "name": "full-update",
+        "seconds": 5.48
+      }
+    ],
+    "updates": "inert actual-v6 seed with explicit >=6.0.0 <8.0.0 range; selected/full native update selected7.0.0, range preserved; repeated update and frozen install preserve both control bytes",
+    "source_bound_counts": [
+      {
+        "case": "single",
+        "artifacts": 1,
+        "instances": 1,
+        "roots": 1
+      },
+      {
+        "case": "transitive",
+        "artifacts": 2,
+        "instances": 2,
+        "roots": 1
+      },
+      {
+        "case": "peer",
+        "artifacts": 4,
+        "instances": 4,
+        "roots": 2
+      },
+      {
+        "case": "add",
+        "artifacts": 1,
+        "instances": 1,
+        "roots": 1
+      },
+      {
+        "case": "frozen-install",
+        "artifacts": 1,
+        "instances": 1,
+        "roots": 1
+      },
+      {
+        "case": "selected-update",
+        "artifacts": 1,
+        "instances": 1,
+        "roots": 1
+      },
+      {
+        "case": "update-no-op",
+        "artifacts": 1,
+        "instances": 1,
+        "roots": 1
+      },
+      {
+        "case": "full-update",
+        "artifacts": 1,
+        "instances": 1,
+        "roots": 1
+      }
+    ],
+    "helper_wait": 0,
+    "cleanup": "CONFIRMED_STOPPED / helper_stop0 / client_error0 / client_restore0 / no replacement required",
+    "host_protected_files_images_networks_bridge_service_iptables_unchanged": true,
+    "native_host_installation_absent": true,
+    "method": "mount namespace binds protected client/observer; installed Host Docker and canonical typed helper; no private daemon",
+    "forbidden_observations": "zero and complete trace required by producer before usable output"
+  },
+  "observer": {
+    "receipt": "p2b2-pnpm-startup-observer-25.json",
+    "latch_pass": 110,
+    "sha256": "87dac65ae24b1b536558aef4266bcacfd8ad90d8bdc86a6ec245137ee390bf27",
+    "new_exact_reads": [
+      "OCI root /etc/nsswitch.conf",
+      "OCI root /etc/host.conf",
+      "OCI root /etc/gai.conf",
+      "system exact mount /etc/resolv.conf",
+      "system exact mount /etc/hosts"
+    ],
+    "guard": "only PNPM CONTROL/DIRECT_EXEC_ROOT, flags557056, pinned current image/expected group, consumed root, active trusted-control network, no pending/demotion; other roles/profiles/writes/aliases remain denied"
+  },
+  "raw_owner": "docs/github-logs/package-client-quarantine-20261021",
+  "raw": [
+    {
+      "path": "p2c2-pnpm-public-update.json",
+      "sha256": "e3f06a8993f2760efea56276cb840cae28db3234155b42b354aab005e34ec850"
+    },
+    {
+      "path": "p2c2-pnpm-public-update-actual.log",
+      "sha256": "a2345a9e08687a12458393d8477a7c0c1e0a5f05510c4fcfc114341f8965c04d"
+    },
+    {
+      "path": "p2c2-pnpm-public-update-host-before.json",
+      "sha256": "afbc96ff30be157d01cfe4ead5c21a7d55d6a18cb1395d4db35b9a30912fbce1"
+    },
+    {
+      "path": "p2c2-pnpm-public-update-host-after.json",
+      "sha256": "afbc96ff30be157d01cfe4ead5c21a7d55d6a18cb1395d4db35b9a30912fbce1"
+    },
+    {
+      "path": "p2c2-pnpm-public-update-test-build.json",
+      "sha256": "caaa5a83a9b3e7acda4372334be1733074c4e73c6ec6fc805d8fc97295b1ac8d"
+    },
+    {
+      "path": "p2b2-pnpm-startup-observer-25.json",
+      "sha256": "0949461ffb32deb6237aecfba5c36919b6faded94a55b125856625f4b7353d75"
+    }
+  ],
+  "first_faults": [
+    "p2c2-pnpm-public-first",
+    "p2c2-pnpm-public-dns-config",
+    "p2c2-pnpm-public-resolver-config",
+    "p2c2-pnpm-public-hosts-config"
+  ],
+  "preflight_only_failure": "p2c2-pnpm-public-preflight-first.json; missing optional config is ABSENT, no actual started",
+  "remaining": [
+    "Domain complete snapshot/peer graph and structured HostInstallAction facts",
+    "native layout and transaction/rollback",
+    "CLI/factory/help and actual end-to-end",
+    "whole P2 remote/platform qualification",
+    "native5 signed whole-set self-update qualification"
+  ],
+  "canonical": [
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 28.93
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 4.586
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.212
+    },
+    {
+      "profile": "vulnerability",
+      "exit": 0,
+      "seconds": 13.197
+    }
+  ],
+  "completed_trial_cleanup": {
+    "raw": "p2c2-pnpm-public-completed-runtime-cleanup.json",
+    "logical_bytes": 199531986,
+    "removed_paths": 5,
+    "all_absent": true,
+    "references_and_query_errors": 0
+  }
+}

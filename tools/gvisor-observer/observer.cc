@@ -2308,7 +2308,11 @@ bool IsPinnedPNPMRuntimeRead(const gvisor::common::ContextData& context,
       anchor == nullptr || flags != 557056 ||
       !context.is_exec_session() || context.parent_thread_group_id() != 0) return false;
   const bool library = anchor->mountpoint == "/" && anchor->mount_class == "oci-root" &&
-      path == "/usr/lib/x86_64-linux-gnu/librt.so.1";
+      (path == "/usr/lib/x86_64-linux-gnu/librt.so.1" || path == "/etc/nsswitch.conf" ||
+       path == "/etc/host.conf" || path == "/etc/gai.conf");
+  const bool resolver_configuration = anchor->mount_class == "system" &&
+      (anchor->mountpoint == "/etc/resolv.conf" || anchor->mountpoint == "/etc/hosts") &&
+      path == anchor->mountpoint;
   const bool proc_metadata = anchor->mountpoint == "/proc" && anchor->mount_class == "system" &&
       (path == "/proc/" + std::to_string(context.thread_group_id()) + "/maps" ||
        path == "/proc/sys/vm/overcommit_memory" || path == "/proc/sys/kernel/osrelease" ||
@@ -2322,7 +2326,7 @@ bool IsPinnedPNPMRuntimeRead(const gvisor::common::ContextData& context,
       path == kPNPMToolPath;
   const bool device_read = anchor->mountpoint == "/dev" && anchor->mount_class == "system" &&
       (path == "/dev/urandom" || path == "/dev/null");
-  if (!library && !proc_metadata && !cpu_limits && !online_cpus && !native_file && !device_read) return false;
+  if (!library && !resolver_configuration && !proc_metadata && !cpu_limits && !online_cpus && !native_file && !device_read) return false;
   const auto* group = FindFilesystemGroup(context, state);
   return group != nullptr && group->role == ProcessState::Role::kControl &&
       group->provenance == ProcessState::Provenance::kDirectExecRoot &&
