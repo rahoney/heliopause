@@ -250,7 +250,7 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 		modulePath + "/internal/core/ports":    {},
 		modulePath + "/internal/application":   {},
 		modulePath + "/internal/policy":        {},
-		modulePath + "/internal/artifact/npm":  {},
+		modulePath + "/internal/artifact/npm":  {"go.yaml.in/yaml/v3": true},
 		modulePath + "/internal/artifact/pypi": {"github.com/pelletier/go-toml/v2": true},
 		modulePath + "/internal/artifact/githubrelease": {
 			"github.com/klauspost/compress/snappy": true,

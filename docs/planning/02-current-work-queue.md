@@ -16,12 +16,35 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — rc6/native4 same-runtime baseline IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; P2/native5 expansion locally verified only, guest/whole qualification and channel scope remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2b2 — native admission and CI helper LOCAL VERIFIED; finish whole-candidate checkpoint and batched remote Required/native/common qualification, then P2c graph/layout/CLI
+Next action: M13-004/P2b2 — committed343f03f and pushed; CI401 native/common qualification pending (first timer check12:23KST); continue independent P2c1 bounded selection parser after audited plan
 Current substep: M13-004/P2 — IN_PROGRESS; offline supply/native distribution LOCAL VERIFIED; exact guest admission and product graph/layout/CLI gaps active; support not yet advertised
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-24 P2c1 bounded lock·독립 source binding 로컬 검증
+
+[수정 지도와 결과](./evidence/package-client-quarantine/p2c-pnpm-selection-plan-20261024.md)는
+복수 root/peer instance 보존·strict bounded YAML·공개 source SRI/URL 대조를 연결한다.
+Final Quick116.395s/security/docs/vulnerability와 관련 전체 Race는 PASS다. 실제 public
+metadata single/peer1.623s도 PASS이며, packument 과대/버전 endpoint Accept406의 원본과
+기존 크기·timeout·origin 제한을 보존했다. 생성 pin의 version은 producer가 전달하고
+새 YAML 외부 import는 검토한 npm adapter에만 허용한다. Native public selection이나
+archive quarantine/Policy·Domain graph/HostInstallAction·layout/transaction/CLI 완료는
+아니다. 다음 P2c2 public producer를 정확한 owner/실행·정리 경계로 연결한다.
+CI401/head343f03f의 원격 결과와12:23:29KST 첫 확인 타이머는 계속 유지한다.
+
+### 2026-10-24 P2c1 독립 selection 착수와 CI401 타이머
+
+Native admission의 exact35경로/전체2128files·tree를 대조해 `343f03f`로 커밋하고 기존
+PR38 브랜치에 한 번 push했다. CI401/run40054664786·head343f03f는02:33:29UTC에
+등록됐다. 최근 ordinary397의46m38s를 근거로50분 타이머를 실행했고 첫 확인은
+**2026-10-24 12:23:29 KST**다. 조회를 짧게 반복하거나 같은 CI를 재dispatch하지 않는다.
+대기 중 [P2c 수정 지도](./evidence/package-client-quarantine/p2c-pnpm-selection-plan-20261024.md)의
+기존 parser/graph/transaction 감사와 공식 exact source·실제 형식 대조/두 번째 검토를
+먼저 완료했다. 현재 독립 P2c1 bounded unapproved lock parser부터 진행하며 hosted
+qualification과 전체 PNPM 지원/CLI 완료는 계속 열려 있다. M13-004만 IN_PROGRESS다.
 
 ### 2026-10-24 P2b2 native admission과 실제 CI helper 로컬 검증
 

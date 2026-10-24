@@ -106,6 +106,23 @@ Production trust material은 M13-003에서 실제 offline 검증한
 PATH executable로 대체하지 않는다. 원본 signed bundle/manifest는 committed
 M13 evidence를 그대로 읽어 회귀에 재사용하며 test용 signer/private key를 만들지 않는다.
 
+### M13-004 PNPM YAML consumer review
+
+PNPM v9의 nested importer/package/snapshot 구조를 자체 문자열 parser로 흉내 내지 않는다.
+기존 `go.yaml.in/yaml/v3 v3.0.4`를 `internal/artifact/npm`의 bounded unapproved lock
+parser에서만 추가 소비한다. Version은 현재 go.mod/go.sum에 이미 고정돼 있으며 새 module/
+전이 pin 변경은 없다. 고정 module의 README는 official YAML organization이 유지하는
+fork임을 설명하고 Go floor는1.16이다. LICENSE는 libyaml 포팅 파일의 MIT와 그 밖의
+Apache 부분을 구분하므로 기존 배포 license 검토 범위에 같은 의무를 유지한다.
+
+실제 필요성과 호출 위치·YAML node/depth/size, duplicate/alias/anchor/tag/unknown-field
+거부·독립 source binding의 경계는 [P2c 지도](../planning/evidence/package-client-quarantine/p2c-pnpm-selection-plan-20261024.md)가 소유한다.
+Architecture allowlist는 이 npm adapter의 exact YAML import만 추가한다. Core/Application,
+다른 unreviewed adapter와 runtimeidentity 내부 dependency 경계는 유지한다. Parser의
+version 인자는 producer가 generated current pin으로 전달하며 adapter가 ambient client나
+runtime을 선택하지 않는다. 새 production wiring의 reachable vulnerability와 실제 소비자
+검증은 최종 qualification에서 별도로 확인한다.
+
 ### M0-003 Cobra dependency review
 
 2026-08-12 KST에 Heliopause의 확정된 CLI framework를 처음 사용하는 시점의 공식 release와 module graph를 검토해 `github.com/spf13/cobra v1.10.2`를 product dependency로 고정한다.
