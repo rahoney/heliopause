@@ -55,7 +55,7 @@ B3b는 B1의 모든 instance/edge와 B3a inventory를 입력으로 native node_m
 dependency/peer/root links와 bin wrapper·허용 mode/owner 변환을 실제 output과 대조하여
 정확한 수정 지도를 **작성한 후** 구현한다. 단순 directory 이름/exit0은 identity가 아니다.
 동일 physical path로 둘 이상의 instance가 매핑되는 충돌·missing/extra/foreign entry와
-파일 내용 변경, symlink escape/hardlink/special file/owner·size 초과를 거부해야 한다.
+파일 내용 변경, symlink/hardlink escape·불명확한 alias/special file/owner·size 초과를 거부해야 한다.
 
 B3c는 qualified native volumes·typed network helper·fixed early store env와 기존
 store-add/fetch→detach/endpoint0→offline frozen ignore-scripts install을 production owner로
@@ -112,3 +112,97 @@ B3a는 IMPLEMENTED/WIRED(정적 producer)=YES, LOCAL VERIFIED다. Product static
 배치와 실제 prepare/aggregate의 WIRED·QUALIFIED·ACCEPTANCE_CLOSED는 NO다.
 [로컬 영수증](./p2c5b3a-pnpm-inventory-local-20261024.json)이 exact source와 각 범위를 소유한다.
 다음 B3b는 공식 dirname codec과 실제 native 전체 output을 대조하여 edit map을 구체화한다.
+
+## 6. B3b0 — 전체 layout의 실제 표현 확인, source 작성 전 감사/두 번째 검토
+
+Baseline7ff0cab8의 B3a는 정적 inventory producer만 연결했다. A3의 capture callback은 이미
+native controls/identity/links·endpoint0을 검사한 뒤 bounded Docker tar를 읽게 할 수 있다.
+전체 layout parser/verifier·production prepare는 IMPLEMENTED/WIRED/QUALIFIED/
+ACCEPTANCE_CLOSED=NO이며 아직 재사용할 구현이 없다.
+
+먼저 새 linux&&realcorpus gated fixture 한 개만 추가한다. A3의 transitive/peer 두 입력을
+그대로 사용하고 capture callback에서 전체 node_modules tar를16MiB까지 RAM에 읽는다.
+Header 경로/type/link/mode/UID/GID/size와 regular file SHA256을 escaped JSON으로 기록한다.
+생성 .modules.yaml/.pnpm/lock.yaml와 .bin wrapper의 bounded bytes만 표현 조사 자료로
+보존하며 일반 artifact body를 raw report에 복제하지 않는다. 읽기만 하며 Host extraction,
+script 실행·새 Policy/완료 authority·새 production interface는 없다. 원래 complete trace/
+typed helper·resource cleanup/Host 전체 불변 조건을 그대로 요구한다.
+
+공식91774e72 source의 dep_path_to_filename.rs/crypto-hash/lib.rs·tests와 modules-yaml/lib.rs를
+captured UTF8 bytes의 Git blob까지 대조했다. Max length 기본120이고 짧은 hash는 SHA256의
+앞32 hex다. 과거 구현의 MD5를 추정해 넣지 않는다. Scoped slash/peer parentheses 변환,
+uppercase/길이 초과 및 ambiguous non-registry escape의 hash input은 다른 분기다. 현재
+parser가 거부하는 file/URL source 지원을 이번 codec 조사로 넓히지 않는다. 형식 유지보수는
+이 pinned source와 native 실제 output을 함께 확인하고 collision을 별도로 거부해야 한다.
+
+두 번째 검토에서 Docker tar의 hardlink 표현·native mode/ownership 및 생성 metadata/bin
+bytes를 A3의 몇 identity/link 검사만으로 추정할 수 없음을 확인했다. 이 fixture의 성공은
+**표현 관측과 기존 prerequisite 유지**이며 full layout의 검증/무해성/Policy ALLOW가 아니다.
+관측 뒤에 exact allowlist·byte 비교·bin/metadata 처리와 부정 검증 지도를 먼저 확정한다.
+Fresh namespace·보호된 compiled test/client/동일 observer를 사용하고 종료 뒤 references/
+query errors0을 확인하여 전용 bulk를 삭제한다. CI403이나 B3a pure 검사로 이 actual을
+대체하지 않는다. 작은 조사 fixture만으로 remote CI를 추가하지 않는다.
+
+### B3b0 실제 결과와 계획 보완
+
+Actual21.937s/test19.19s는 transitive23 headers(regular11/dir9/symlink3), peer89 headers
+(regular56/dir25/symlink7/hardlink1)를 관측했다. 원래 controls/2·4 identity/1·5 links,
+complete/금지0·Host전체동일/helperwait0/final original0도 PASS다. 모든 owner는1000:1000,
+regular modes는0644/0755와 virtual lock0600, directories0755·symlink0777이었다.
+이 수는 두 explicit fixture의 관측값이며 일반 artifact allowlist가 아니다.
+
+Peer의 use-sync-external-store/LICENSE가 react/LICENSE를 가리키는 hardlink로 전송됐다.
+따라서 정상 native 전체 output에 대한 무조건 hardlink 거부 가정은 superseded다. 후속
+검증기는 양쪽 expected inventory의 size/digest/mode가 같은 이미 검증된 regular bytes로
+닫히는 alias만 처리해야 한다. Foreign/escape/cycle·unverified/다른 bytes alias는 거부하며
+hardlink라는 이유로 identity를 공유하거나 archive coverage를 줄이지 않는다.
+
+Default native는 private hoist link도 만들며 .modules.yaml은 현재 JSON/layout5·default120,
+.pnpm/lock.yaml은 frozen semantic lock이다. .bin은 단순 symlink가 아니라 Node shim script이며
+자기 package와 의존 consumer 위치에 생성된다. 이 body는 이름/마지막 target 주석만으로
+승인하면 안 된다. Full verifier 전에 pinned renderer와 hoist·generated metadata의 정확한
+허용/정규화 방식을 추가 검토한다. 다른 package 파일이 bin으로 실행 가능해지는 mode 변환도
+manifest bin/원래 content hash와 결합해야 한다. 관측 성공을 이 검증의 완료로 쓰지 않는다.
+
+전용 runtime11files/165,489,462 logicalB는 모든 UID refs0/query errors0 확인 뒤 삭제했다.
+작은 original log·derived shape/source receipt만 보존한다. [B3b0 결과](./p2c5b3b0-pnpm-shape-local-20261024.json)가
+실제 범위와 남은 작업을 소유한다.
+
+## 7. B3b1 — instance dirname codec의 정확한 수정 지도/두 번째 검토
+
+Artifact/npm의 pnpm_instance_path.go 한 곳에 현재 parser가 받는 registry-only snapshot
+key→virtual-store dirname 변환을 추가한다. pnpmPackageKey를 먼저 재사용하며 file/URL/
+workspace/alias와 invalid input은 거부한다. 공식 pre-escape/peer flatten과 ASCII case/120byte
+길이 분기, SHA256 앞32 hex를 따르며 별도 store/index를 만들지 않는다. Format constant120은
+한 곳에 두고 native .modules.yaml/실제 output과 비교한다. Hash는 path codec일 뿐 source
+authentication/Policy identity가 아니며 전체 layout은 모든 dirname 충돌을 별도로 거부한다.
+
+Unit tests는 pinned upstream의 plain/scoped/multiple·nested peers/build metadata vectors와
+현재 지원하는 uppercase version/긴 key의 독립 SHA256 vector·잘못된 source를 확인한다.
+Gated shape fixture에서 원래 controls를 ParsePNPMLock하고 모든 snapshot의 encoded path에
+실제 package.json header가 있음을 요구한다. 이는 path mapping 연결만 확인하며 전체
+file/edge/bin 검증을 대신하지 않는다. 같은 fresh native actual을 새 candidate로 확인한다.
+
+두 번째 검토에서 전체 PNPM source codec을 그대로 허용하면 현재 unsupported file/URL
+source가 우회 진입하므로 reviewed registry subset만 구현하기로 했다. Long name의 hash
+단축이 version separator @를 prefix 밖으로 밀어낼 수 있고 현재 B2 locator는 @를 요구한다.
+그런 입력의 lifecycle admission은 아직 미완료이며, 전체 layout의 byte binding 뒤 별도
+정확한 shape/negative·actual 검증 없이 observer 권한을 넓히지 않는다. Source drift·native
+client 변경은 pinned codec vectors와 actual layout 비교를 통해 fail-closed로 발견한다.
+
+Canonical format/Quick/security/docs·해당 npm 전체 Race와 tagged compile/native actual을
+검사한다. 기존 단일 npm/observer 권한은 그대로다. 작은 codec checkpoint만 remote push하지
+않으며 B2 이후 실제 prepare 연결 단위에서 묶는다. 끝난 namespace bulk는 다시 삭제한다.
+
+### B3b1 로컬 결과
+
+Canonical format.381s/Quick158.014s/security8.534s/docs.276s와 npm artifact 전체 Race5.807s는
+PASS다. Fresh actual20.659s/test17.98s도 원래 controls에서 읽은 transitive2/peer4의 모든
+instance dirname→실제 package.json 경로를 확인했다. 같은 native primitive의 원래 controls/
+identity/links·complete/금지0·Host전체동일/helperwait0/final original0도 유지했다. 전체 file/
+edge/bin/metadata·여러 peer context의 동적 검역 완료로 확대하지 않는다.
+
+종료 뒤 전용 runtime11files/165,519,505 logicalB를 모든 UID refs0/query errors0 확인 후
+삭제했다. [B3b1 로컬 결과](./p2c5b3b1-pnpm-codec-local-20261024.json)가 exact source와
+검증/정리 범위를 소유한다. B3b2에서는 관측한 generated shim/hoist/metadata를 검증할
+정확한 방식을 확정한 다음 full layout verifier를 구현한다. 관찰기와 기존 npm 실행은 불변이다.

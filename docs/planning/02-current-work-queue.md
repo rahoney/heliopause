@@ -16,7 +16,7 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — rc6/native4 same-runtime baseline IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; P2/native5 expansion locally verified only, guest/whole qualification and channel scope remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2c5-B3 — B2 exact target command/lineage and synthetic transitive+peer normal/failure LOCAL VERIFIED; B3a archive inventory LOCAL VERIFIED; B3b full layout edit map next; production static-all/prepare remain; product dynamic INCOMPLETE; CI403/db464fd ten SUCCESS; P2 acceptance NO
+Next action: M13-004/P2c5-B3 — B2 exact target command/lineage and synthetic transitive+peer normal/failure LOCAL VERIFIED; B3a inventory/B3b1 dirname codec LOCAL VERIFIED; B3b2 full layout/bin/metadata edit map next; production static-all/prepare remain; product dynamic INCOMPLETE; CI403/db464fd ten SUCCESS; P2 acceptance NO
 Current substep: M13-004/P2 — IN_PROGRESS; offline supply/native distribution LOCAL VERIFIED; exact guest admission and product graph/layout/CLI gaps active; support not yet advertised
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
@@ -108,6 +108,16 @@ static-all/aggregate와 공개 프로젝트 검역 연결은 B3에서 이어가�
 보존한다. 최종 Quick/security/docs·세 package 전체 Race26.274s, 실제 public
 is-number4/node-sass334 entries의 Acquire/SRI·원래 report/Evidence 일치도 PASS다. 전체 native layout/prepare/static-all/aggregate는 순차 후속이며 current product의
 transitive INCOMPLETE와 전체 P2 acceptance NO를 유지한다. M13-004 하나만 IN_PROGRESS다.
+
+### 2026-10-24 P2c5-B3b native 배치 형태와 dirname 연결
+
+[B3의 §6·§7](./evidence/package-client-quarantine/p2c5b3-pnpm-layout-plan-20261024.md#6-b3b0--전체-layout의-실제-표현-확인-source-작성-전-감사두-번째-검토)에서
+정상 native의 identical LICENSE hardlink·private hoist/생성 Node bin shim을 실제 확인했다.
+해시 없는 일반 hardlink 허용이나 bin 파일명만의 승인은 하지 않는다. B3b1의 official registry
+codec/관련 Race5.807s와 fresh actual20.659s의 transitive2/peer4 모든 instance 경로 비교도
+PASS다. 두 전용 runtime bulk는 모두 refs/query errors0 뒤 삭제했다. Full layout byte/edge/
+bin/metadata verifier·production prepare/static-all/aggregate가 다음이며 P2 acceptance는 NO다.
+M13-004 하나만 IN_PROGRESS다.
 
 ### 2026-10-24 CI403 묶음 checkpoint 확인
 
