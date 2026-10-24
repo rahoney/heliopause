@@ -172,6 +172,13 @@ Race26.466s도 PASS다. Raw0777 directory 관측은 unverified entry view에서 
 498,955,765B는 refs/query errors0 뒤 삭제했다. 이제 B4b의 검증 payload/fresh instance 실행과
 B4c static-all 수집 gate·실제 관찰 aggregate를 잇는다. Product dynamic과 전체 P2는 계속 미완료다.
 
+Payload 소개 전 검토에서 내부 layout fingerprint가 private Domain.ContentDigest를 직접 JSON
+marshal해 entry digest를{}로 생략하는 gap을 확인했다. 같은 길이의 두 유효한 Node search
+order가 같은 key를 내는 직접 RED2.358s를 재현했고 string entry projection/v2의 GREEN3.451s·
+canonical Quick/security/전체 npm/sandbox Race24.805s가 PASS다. 원래 파일·code/path 검증과
+native 동작은 유지하며 [직렬화 교정](./evidence/package-client-quarantine/p2c5b4b-pnpm-fingerprint-local-20261024.json)을
+새 Artifact 실행 완료로 확대하지 않는다. 다음은 예정대로 verified payload와 fresh instance backend다.
+
 ### 2026-10-24 CI404 묶음 checkpoint 확인
 
 실제55분 타이머 만료 뒤 [CI404 결과](./evidence/package-client-quarantine/p2c5b3-pnpm-ci404-qualification-20261024.json)를

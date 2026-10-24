@@ -190,3 +190,38 @@ QUALIFIED=YES(named local) / ACCEPTANCE_CLOSED=NO(full P2)다. 다음 B4b는 bou
 연결한다. 이어 B4c의 static-all **수집 중** 예산 gate/정확한 instance coverage·partial 사실
 보존 aggregate, hashed locator, provenance/cache/Host records/transaction/CLI와 full P2는
 계속 MISSING이다. Host 실행·Policy·새 remote CI·전체 PNPM 지원의 완료로 확대하지 않는다.
+
+## 8. B4b 소개 전 fingerprint 직렬화 검토
+
+Baseline97dff14에서 payload 경계의 실제 문맥 결합을 검토하면서 B3의
+pnpmInspectionLayoutDigest가 []PNPMLayoutEntry를 직접 JSON marshal하는 것을 확인했다.
+Domain.ContentDigest는 private value만 갖고 JSON/Text marshaler가 없다. 따라서 entry의
+파일 digest는 {}가 되고, 기존 acquired source digest·size/path/mode/link는 남지만 생성 bin의
+같은 길이 NODE_PATH 순서 차이는 fingerprint에 반영되지 않을 수 있다. Bound source byte/
+전체 code/경로 검사는 별도로 수행되므로 앞 actual을 실패로 바꾸지 않는다. 아직 이 값을
+소비하는 PNPM cache/Host publication·실제 Artifact 실행은 연결되지 않았다.
+
+먼저 기존 정상 four-instance fixture의 self bin에 실제 존재/허용되는 두 module directory를
+반대 순서로 넣은 **동일 길이·둘 다 유효한** code data를 만든다. 앞의 전체 template 검증과
+BindLayout 둘이 각각 성공하는지 확인한 뒤 서로 다른 digest를 요구해 직접 RED를 기록한다.
+초기 compile/format 실패를 RED로 대신하지 않는다.
+
+수정은 artifact/npm/pnpm_layout_binding_data.go 한 fingerprint owner의 explicit wire projection이다.
+각 entry의 이름/종류/size/mode/owner/link와 Digest.String()을 직렬화하고 internal schema를
+pnpm-inspection-layout/v2로 구분한다. 기존 정상 pnpm_project_snapshot.go의 string digest
+projection을 재사용하는 방식이다. Core ContentDigest에 전역 MarshalJSON을 추가하거나 다른
+결과/manifest schema를 변경하지 않는다. Timestamp 정규화/cache 폐기와 기존 검증은 유지한다.
+
+두 번째 검토: digest 생략은 key 문맥 결합 gap이며 source byte guard의 우회가 아니다. 같은
+길이 실제 허용 데이터의 충돌을 확인해야 하고 임의 잘못된 bin을 단순 error로 거부한 시험은
+그 증거가 아니다. 수정 뒤 동일 직접 회귀·전체 npm/sandbox Race·canonical Quick/security/docs를
+확인한다. Native 준비/기존 선택의 입력·명령/guard는 같으므로 이 serialization-only 수정에
+네이티브 시험 전체를 반복하거나 앞 성공을 새 Artifact 실행 완료로 전용하지 않는다.
+
+직접 RED2.358s는 두 유효한 bound layout이 같은 key를 내는 해당 assertion에 도달했다.
+Explicit entry wire/v2 뒤 동일 값의 GREEN3.451s와 format.748s/Quick147.455s/security15.640s·
+전체 npm/sandbox Race24.805s는 PASS다. 최종 회귀는 정확히 하나의 기존 bin이 실제로 바뀌고,
+두 body가 서로 다르되 길이가 같은지와 둘의 binding 성공도 별도로 요구한다. 기존 volatile
+timestamp/JSON format 변경에 대한 key 동일성 검사도 계속 통과한다. Core·native command·
+mode/source guard와 앞 실제 준비 owner는 바꾸지 않았다. [교정 영수증](./p2c5b4b-pnpm-fingerprint-local-20261024.json)이
+이 직렬화 한정 source·회귀·확인 범위를 소유하며 새 native 실행은 미실행이다.

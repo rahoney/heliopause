@@ -139,12 +139,24 @@ func pnpmInspectionLayoutDigest(input PNPMInspectionInput, layout PNPMLayoutArch
 		}
 	}
 	slices.SortFunc(entries, func(a, b PNPMLayoutEntry) int { return strings.Compare(a.Name, b.Name) })
+	// Domain digests deliberately have private fields. Project explicit string
+	// values here instead of silently marshaling each digest as an empty object.
+	type entryRecord struct {
+		Name, Link, Digest string
+		Kind               byte
+		Mode, Size         int64
+		UID, GID           int
+	}
+	records := make([]entryRecord, 0, len(entries))
+	for _, entry := range entries {
+		records = append(records, entryRecord{entry.Name, entry.Link, entry.Digest.String(), entry.Kind, entry.Mode, entry.Size, entry.UID, entry.GID})
+	}
 	document := struct {
 		Schema, Graph, Runtime string
 		Subjects               []subject
-		Entries                []PNPMLayoutEntry
+		Entries                []entryRecord
 		Manifest               json.RawMessage
-	}{"pnpm-inspection-layout/v1", input.context.snapshot.GraphDigest().String(), input.context.runtime, subjects, entries, manifest}
+	}{"pnpm-inspection-layout/v2", input.context.snapshot.GraphDigest().String(), input.context.runtime, subjects, records, manifest}
 	body, err := json.Marshal(document)
 	if err != nil {
 		return domain.ContentDigest{}, err

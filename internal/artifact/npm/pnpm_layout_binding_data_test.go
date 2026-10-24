@@ -222,3 +222,39 @@ func TestPNPMInspectionDirectoryRestrictionRemovesOnlyWriteBits(t *testing.T) {
 		t.Fatal("restriction changed an unsafe hardlink mode")
 	}
 }
+
+func TestPNPMLayoutFingerprintKeepsEqualLengthNodeSearchOrder(t *testing.T) {
+	f := fullInspectionLayoutFixture(t, false)
+	var previous string
+	var previousCode string
+	for _, value := range []string{"$basedir_abs/..:$basedir_abs/../../..", "$basedir_abs/../../..:$basedir_abs/.."} {
+		changed := f
+		changed.entries = append([]layoutTarTestEntry(nil), f.entries...)
+		matches := 0
+		for index := range changed.entries {
+			e := &changed.entries[index]
+			if e.header.Name != "node_modules/.pnpm/loose-envify@1.4.0/node_modules/loose-envify/node_modules/.bin/loose-envify" {
+				continue
+			}
+			block := "if [ -z \"$NODE_PATH\" ]; then\n  export NODE_PATH=\"" + value + "\"\nelse\n  export NODE_PATH=\"" + value + ":$NODE_PATH\"\nfi\n"
+			e.body = strings.Replace(e.body, "if [ -n \"$exe\" ]", block+"if [ -n \"$exe\" ]", 1)
+			e.header.Size = int64(len(e.body))
+			if !strings.Contains(e.body, block) || previousCode != "" && (previousCode == e.body || len(previousCode) != len(e.body)) {
+				t.Fatal("fixture did not change only equal-length Node search data")
+			}
+			previousCode = e.body
+			matches++
+		}
+		if matches != 1 {
+			t.Fatal("fixture did not change exactly one existing bin")
+		}
+		bound, err := changed.input.BindLayout(context.Background(), changed.inventories, changed.parse(t), "/tmp/haa-store")
+		if err != nil {
+			t.Fatal("valid equal-length Node search fixture rejected before fingerprint", err)
+		}
+		if previous != "" && previous == bound.Digest().String() {
+			t.Fatal("valid same-length Node search order collapsed to the same fingerprint")
+		}
+		previous = bound.Digest().String()
+	}
+}
