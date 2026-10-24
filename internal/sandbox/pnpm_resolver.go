@@ -34,6 +34,28 @@ func (s PNPMNativeSelection) Controls() []domain.ProjectControlFile {
 }
 func (s PNPMNativeSelection) Selection() artifactnpm.PNPMLock { return s.selection }
 
+// PNPMResolverRuntimeIdentity is derived solely from the reviewed runtime lock.
+func PNPMResolverRuntimeIdentity() string {
+	return "pnpm:" + runtimeidentity.PNPMVersion + ";tool-sha256:" + runtimeidentity.PNPMToolSHA256 + ";node-image:" + runtimeidentity.NodeImageReference + ";runtime-lock-sha256:" + runtimeidentity.RuntimeLockSHA256
+}
+
+// BindProjectSnapshot connects the producer's frozen controls and independently
+// authenticated registry metadata. The returned snapshot is still unapproved.
+func (s PNPMNativeSelection) BindProjectSnapshot(ctx context.Context, source *artifactnpm.Resolver, install domain.InstallContext) (domain.ProjectDependencySnapshot, error) {
+	if ctx == nil || source == nil || !install.Valid() || (install.Mode() != domain.InstallNewTarget && install.Mode() != domain.InstallNPMProject) {
+		return domain.ProjectDependencySnapshot{}, errors.New("pnpm public source binding is unavailable")
+	}
+	bound, err := source.BindPNPMLock(ctx, s.selection)
+	if err != nil {
+		return domain.ProjectDependencySnapshot{}, err
+	}
+	snapshot, err := bound.ProjectSnapshot(install, s.controls, PNPMResolverRuntimeIdentity())
+	if ctx.Err() != nil {
+		return domain.ProjectDependencySnapshot{}, errors.Join(err, ctx.Err())
+	}
+	return snapshot, err
+}
+
 func NewPNPMResolver(runner CommandRunner, endpoints EndpointResolver, observer TraceObserver, capability CapabilityProbe, policy ResolverPolicyService) (*PNPMResolver, error) {
 	if runner == nil || endpoints == nil || observer == nil || capability == nil || policy == nil {
 		return nil, errors.New("pnpm resolver infrastructure unavailable")

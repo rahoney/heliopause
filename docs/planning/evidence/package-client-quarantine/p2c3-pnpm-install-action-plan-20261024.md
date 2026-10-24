@@ -75,7 +75,11 @@ store hash와 manifest의 EvidenceReference로 추적되며 별도 JSON schema/A
 새 report/schema를 만들지 않는다. Single/acquired뿐 아니라 batch도 전달 위치에 포함했다.
 Fact 검증을 run 완료 이전에 배치하고 malformed archive에는 부정 사실을 만들지 않는다.
 M3 inspect-only ALLOW를 M4 Host 실행 권한으로 바꾸지 않으며 BLOCK 우선과 기존 fail-closed
-조건을 보존한다. Root project scripts는 PNPM 입력 preflight의 별도 거부이고 여기서 승인하지 않는다.
+조건을 보존한다. Root project scripts는 기존 원본 metadata로 보존하며 resolver의
+`--ignore-scripts`로 실행을 막는다. 입력에서 scripts 자체를 거부한다는 처음 설명은
+`samePNPMManifestMetadata`의 실제 보존 동작과 달라 수정했다. 이번 archive 사실은 acquired
+package를 대상으로 하며 사용자 project scripts를 실행하도록 승인하지 않는다. 후속
+PNPM promotion에서도 같은 원본 보존·ignore-scripts/실행0을 별도 검증한다.
 
 공식 pinned PNPM source `91774e72a04d52ce61db06339696a433d383c764`의
 `pnpm/crates/executor/src/lifecycle.rs`는 dependency 단계를 preinstall/install/postinstall로

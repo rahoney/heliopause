@@ -82,6 +82,11 @@ func TestPNPMLockPreservesRootsPeerInstancesAndMetadata(t *testing.T) {
 	if err != nil || len(lock.Packages()) != 6 || len(lock.Snapshots()) != 7 {
 		t.Fatalf("peer instances collapsed: packages=%d snapshots=%d error=%v", len(lock.Packages()), len(lock.Snapshots()), err)
 	}
+	bound, controls := pnpmSnapshotFixture(t, []byte(`{"dependencies":{"react":"18.3.1","use-sync-external-store":"1.2.0","bridge":"1.0.0"}}`), body)
+	snapshot, err := bound.ProjectSnapshot(pnpmSnapshotContext(t, "/tmp/haa-pnpm-multi-peer", true), controls, "fixture-runtime:pnpm")
+	if err != nil || len(snapshot.Dependencies()) != 6 || len(bound.Lock().Snapshots()) != 7 {
+		t.Fatalf("snapshot did not retain unique archives and both peer instances: %v", err)
+	}
 }
 
 func TestPNPMLockSelectionIsDeterministicAndCannotBeMutated(t *testing.T) {

@@ -16,7 +16,7 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — rc6/native4 same-runtime baseline IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; P2/native5 expansion locally verified only, guest/whole qualification and channel scope remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2c4 — structured archive HostInstallAction LOCAL VERIFIED; complete PNPM snapshot/peer graph digest mapping next; CI402/head940 waiting for14:57:13KST timer; layout/transaction/CLI remain
+Next action: M13-004/P2c4 — complete snapshot implemented; actual single quarantine ALLOW, transitive dynamic INCOMPLETE; audit frozen npm dependency/peer fixture before layout; CI402/head940 timer14:57:13KST; P2 acceptance NO
 Current substep: M13-004/P2 — IN_PROGRESS; offline supply/native distribution LOCAL VERIFIED; exact guest admission and product graph/layout/CLI gaps active; support not yet advertised
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
@@ -40,6 +40,19 @@ SRI/static/Store/true·false fact0.936s가 PASS다. 새 UNCONFIRMED code는 기�
 현재 입력과 범위를 소유한다. Remote402는 앞940 후보이므로 이번 source 성공으로 전용하지 않는다.
 다음은 unique archive coverage와 full peer wiring을 함께 묶는 complete snapshot이며
 전체 P2/Host 설치·CLI qualification은 계속 열려 있다.
+
+P2c3은 로컬0f8ddcc로 보존했고 push하지 않았다. [P2c4 수정 지도·두 번째 검토](./evidence/package-client-quarantine/p2c4-pnpm-project-snapshot-plan-20261024.md)를
+완료하여 기존 complete Domain과 parser/source binding을 재사용하는 snapshot 생산을 이어간다.
+Full peer instance·runtime/target/controls 결합과 explicit empty가 범위이며 native layout/
+records의 peer provenance·transaction/CLI는 후속 acceptance로 유지한다.
+
+후속 actual에서 native single/transitive의 snapshot과 single required3/refs4·M3/M4 ALLOW는
+확인했다. Transitive is-odd3은 integrity/static/action fact 정상이나 기존 single-artifact
+offline dynamic에서 M3_DYNAMIC_EXECUTION_FAILED/INCOMPLETE여서 수동 검토다.
+[P2c4 실제 결과·진단 범위](./evidence/package-client-quarantine/p2c4-pnpm-project-snapshot-plan-20261024.md#5-실제-연결의-첫-거부와-남은-gap)에
+Host불변/정리·미실행 후속과 stale overlay 진단 NOT_EXECUTED를 보존했다.
+다음에는 npm에 존재하지 않는 frozen dependency/peer fixture의 정확한 연결 지도를 먼저
+작성·재검토하고 이 gap을 닫은 뒤 layout/transaction/CLI로 진행한다. M13-004만 IN_PROGRESS다.
 
 ### 2026-10-24 P2c2 actual public 선택·update/no-op 로컬 검증
 

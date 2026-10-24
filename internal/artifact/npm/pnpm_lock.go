@@ -22,6 +22,7 @@ var errPNPMLock = errors.New("pnpm public lock selection is invalid or unsupport
 // Peer-qualified snapshots remain distinct from per-version package metadata.
 type PNPMLock struct {
 	valid     bool
+	version   string
 	roots     []PNPMLockedRoot
 	packages  []PNPMLockedPackage
 	snapshots []PNPMLockedSnapshot
@@ -98,7 +99,7 @@ func ParsePNPMLock(manifest, body []byte, expectedClientVersion string) (PNPMLoc
 	if !ok || len(importer.Optional) != 0 {
 		return PNPMLock{}, errPNPMLock
 	}
-	selection := PNPMLock{}
+	selection := PNPMLock{version: expectedClientVersion}
 	for _, group := range []struct {
 		name string
 		deps map[string]pnpmRootWire
