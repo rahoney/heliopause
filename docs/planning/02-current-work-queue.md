@@ -14,9 +14,9 @@ Last completed work item: CLI-UX-003 — COMPLETE; source4cfe29e/CI352 ten SUCCE
 Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
-Active work item status: IN_PROGRESS — B4b1/B4b2/B4c/B4d and B5a named local qualification PASS; CI405 first fixture cwd failure corrected locally; new remote and PNPM Host/CLI/whole P2 acceptance remain
+Active work item status: IN_PROGRESS — B4 production inspection/CI fixture caller remotely qualified by CI406; B5a/B5b1/B5b2 named local PASS; target transaction/independent approval/adoption/CLI and whole P2 acceptance remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2 — CI406/fd3506b RUNNING, first check 2026-10-25 03:40:25 KST; B5b1 actual-operation Manifest/SBOM/full-peer provenance LOCAL QUALIFIED; B5b2 private Host materialization LOCAL QUALIFIED; B5b3 existing transaction/independent approval audit next; Host extraction/independent approval/transaction/CLI and whole P2 acceptance remain NO
+Next action: M13-004/P2 — CI406/fd3506b ten SUCCESS, same whole checkout tree6307df79; B5b1 actual-operation Manifest/SBOM/full-peer provenance LOCAL QUALIFIED; B5b2 private Host materialization LOCAL QUALIFIED; B5b3 existing transaction/independent approval baseline audit IN_PROGRESS (source not yet changed); Host extraction/independent approval/transaction/CLI and whole P2 acceptance remain NO
 Current substep: M13-004/P2 — IN_PROGRESS; B4 production inspection LOCAL QUALIFIED; remote and Host/CLI pending; support not yet advertised
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
@@ -4936,3 +4936,16 @@ single-link copy이고 내부 symlink만 유지하며 전체 readback과 known-o
 arm64 compile24.130s, public peer4/empty의 실제 private Prepare/Verify/Close45.074s·Host 불변/
 helperwait0는 PASS다. 사용자 target은 부재이고 target commit/retained approval/adoption/CLI는
 미완료다. CI406은 앞 fd3506b에만 적용한다. M13-004 하나만 IN_PROGRESS다.
+
+### 2026-10-25 CI406 named remote checkpoint 확인
+
+실제55분 타이머 만료 뒤 [CI406 qualification](./evidence/package-client-quarantine/p2c5b-ci406-qualification-20261025.json)을
+확인했다. Required 포함10SUCCESS이고 모든 job checkoutaf56a507과 sourcefd3506b의 전체tree
+6307df7976c427324bca0a053234db6718339ee7/2,241files가 같다. 실제54m32다. 새 PNPM startup4/
+public project6·controlled3와 public native8/실제 Policy4·8entries, Linux top-level60/CPU290.84s,
+두 job observer112씩·native macOS Go1.27.3 build/default와 helper5wait0/final confirmed cleanup
+original0/client_error0/client_restore0를 확인했다. CI405 cwd 실패의 원격 소비자 gap을 닫았다.
+B5a source/default checks는 포함하지만 gated actual cache 소비자는 이 CI에서 실행하지 않았다.
+후속 local aa204f2/bcc316b와 target transaction/CLI·whole P2는 이 성공 범위 밖이다. 현재는
+[B5b3 기존 transaction 착수 감사](./evidence/package-client-quarantine/p2c5b5b3-pnpm-transaction-audit-20261025.md)를
+진행하며 original guard→선택 후 frozen context·독립 approval/rollback의 정확한 지도를 확정한다.
