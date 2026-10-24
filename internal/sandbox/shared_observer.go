@@ -492,6 +492,16 @@ func (o *SharedObserver) StartProfile(ctx context.Context, containerID, profile 
 	return o.startProfile(ctx, containerID, profile, nil)
 }
 
+// StartPNPMTargetLifecycleProfile admits only the fixed separately attested
+// project mount. Ordinary npm lifecycle callers retain their original topology.
+func (o *SharedObserver) StartPNPMTargetLifecycleProfile(ctx context.Context, containerID string) (TraceReader, error) {
+	topology, ok := pnpmTargetLifecycleExpectedTopology()
+	if !ok {
+		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	return o.startProfile(ctx, containerID, "npm-lifecycle", topology)
+}
+
 func (o *SharedObserver) StartGoBuildInputProfile(ctx context.Context, containerID string, readOnly bool, budget *observationTraceLedger) (TraceReader, error) {
 	if budget == nil {
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}

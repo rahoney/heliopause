@@ -4508,6 +4508,189 @@ bool VerifyBoundedClassificationSemantics() {
       strcmp(unexpected.reason, "PROCESS_PROVENANCE_UNKNOWN") == 0 && strcmp(unexpected.parent_relation, "UNTRACKED_PARENT") == 0;
 }
 
+TopologyState PNPMTargetLifecycleTestTopology() {
+  TopologyState topology;
+  topology.sealed = true; topology.snapshot_seen = true; topology.namespace_id = 99;
+  topology.expected = {
+      {"/", "oci-root", "/", "", true, false, false, false},
+      {"/tmp", "workspace", "/", "tmpfs", false, true, true, false},
+      {"/haa-runtime", "helper", "/", "tmpfs", false, false, true, false},
+      {kPNPMProjectMount, "workspace", "/tmp", "9p", false, false, false, false}};
+  topology.anchors.emplace(1, MountAnchor{1, "/", "oci-root"});
+  topology.anchors.emplace(2, MountAnchor{2, "/tmp", "workspace"});
+  topology.anchors.emplace(3, MountAnchor{3, "/haa-runtime", "helper"});
+  topology.anchors.emplace(4, MountAnchor{4, kPNPMProjectMount, "workspace"});
+  return topology;
+}
+
+bool VerifyPNPMTargetLifecycleShapeBoundary() {
+  const std::string prefix = std::string(kPNPMProjectMount) + "/project/node_modules/.pnpm/";
+  const std::string target = prefix + "is-odd@3.0.1/node_modules/is-odd";
+  for (const auto& path : {target, prefix + "@scope+package@1.2.3/node_modules/@scope/package",
+                         prefix + "use-sync-external-store@1.2.0_react@18.3.1/node_modules/use-sync-external-store"}) {
+    if (!ValidPNPMTargetLifecyclePath(path)) return false;
+  }
+  for (const auto& path : {std::string(""), std::string("/tmp/package"), prefix + "folder/node_modules/pkg",
+       prefix + "pkg@1/node_modules/../other", prefix + "pkg@1/node_modules/pkg/extra", prefix + "pkg@1/node_modules/@scope",
+       prefix + "pkg@1/node_modules/@/pkg", prefix + "pkg@1/node_modules/pkg ", prefix + "pkg@1/node_modules/pkg;id",
+       prefix + "pkg@1/node_modules/$(id)", prefix + "pkg@1/node_modules/pkg\\extra", prefix + "pkg@1/node_modules/pkg//extra",
+       prefix + "pkg@1/node_modules/.", prefix + "pkg@1/node_modules/..", prefix + std::string(512, 'a')}) {
+    if (ValidPNPMTargetLifecyclePath(path)) return false;
+  }
+  gvisor::sentry::ExecveInfo boundary;
+  boundary.set_binary_path(kBoundaryHelperPath); boundary.set_execfn(kBoundaryHelperPath);
+  for (const auto& value : {std::string(kBoundaryHelperPath), std::string(kLaunchMode), TestAdmissionNonce(350, 3500),
+        std::string("/bin/sh"), std::string("-ceu"), std::string(kPNPMTargetLifecycleCommand), std::string("helox-pnpm-target"), target}) boundary.add_argv(value);
+  const auto topology = PNPMTargetLifecycleTestTopology();
+  if (!IsExactPNPMTargetLifecycleBoundary(boundary, kProfileNPM, &topology)) return false;
+  if (IsExactPNPMTargetLifecycleBoundary(boundary, kProfilePNPMResolver, &topology) ||
+      IsExactPNPMTargetLifecycleBoundary(boundary, kProfilePyPI, &topology) ||
+      IsExactPNPMTargetLifecycleBoundary(boundary, kProfileNPM, nullptr)) return false;
+  for (int test = 0; test < 10; ++test) {
+    auto changed = topology;
+    switch (test) {
+      case 0: changed.sealed = false; break;
+      case 1: changed.snapshot_seen = false; break;
+      case 2: changed.namespace_id = 0; break;
+      case 3: changed.expected.pop_back(); changed.anchors.erase(4); break;
+      case 4: changed.expected.back().read_only = true; break;
+      case 5: changed.expected.back().filesystem_type = "tmpfs"; break;
+      case 6: changed.expected.back().mount_class = "helper"; break;
+      case 7: changed.anchors.erase(4); break;
+      case 8: changed.anchors.emplace(5, MountAnchor{5, target, "workspace"}); break;
+      case 9: changed.expected[0].read_only = false; break;
+    }
+    if (IsExactPNPMTargetLifecycleBoundary(boundary, kProfileNPM, &changed)) return false;
+  }
+  for (int index : {0, 1, 2, 3, 4, 5, 6, 7}) {
+    auto changed = boundary; changed.set_argv(index, "changed");
+    if (IsExactPNPMTargetLifecycleBoundary(changed, kProfileNPM, &topology)) return false;
+  }
+  auto extra = boundary; extra.add_argv("extra");
+  auto wrong_image = boundary; wrong_image.set_binary_path("/tmp/haa-boundary");
+  return !IsExactPNPMTargetLifecycleBoundary(extra, kProfileNPM, &topology) &&
+      !IsExactPNPMTargetLifecycleBoundary(wrong_image, kProfileNPM, &topology);
+}
+
+bool VerifyPNPMTargetLifecycleProductionPath() {
+  const auto topology = PNPMTargetLifecycleTestTopology();
+  const std::string target = std::string(kPNPMProjectMount) + "/project/node_modules/.pnpm/is-odd@3.0.1/node_modules/is-odd";
+  const std::string nonce = TestAdmissionNonce(350, 3500);
+  gvisor::common::ContextData root;
+  root.set_container_id(kThirtySecondID); root.set_thread_group_id(350); root.set_thread_group_start_time_ns(3500);
+  root.set_parent_thread_group_id(0); root.set_is_exec_session(true);
+  gvisor::sentry::ExecveInfo boundary;
+  *boundary.mutable_context_data() = root;
+  boundary.set_binary_path(kBoundaryHelperPath); boundary.set_execfn(kBoundaryHelperPath);
+  for (const auto& value : {std::string(kBoundaryHelperPath), std::string(kLaunchMode), nonce, std::string("/bin/sh"),
+       std::string("-ceu"), std::string(kPNPMTargetLifecycleCommand), std::string("helox-pnpm-target"), target}) boundary.add_argv(value);
+  auto demotion = boundary; demotion.set_binary_path(kSetprivPath); demotion.set_execfn(kSetprivPath); demotion.clear_argv();
+  for (const char* value : {kSetprivPath, "--reuid=1000", "--regid=1000", "--clear-groups", "--inh-caps=-all",
+       "--ambient-caps=-all", "--bounding-set=-all", "--no-new-privs", "--", "/bin/sh"}) demotion.add_argv(value);
+  auto shell = boundary; shell.set_binary_path("/usr/bin/dash"); shell.set_execfn("/bin/sh"); shell.clear_argv();
+  shell.add_argv("/bin/sh"); shell.add_argv("-ceu"); shell.add_argv(kPNPMTargetLifecycleCommand); shell.add_argv("helox-pnpm-target"); shell.add_argv(target);
+  gvisor::sentry::CloneInfo clone; *clone.mutable_context_data() = root;
+  clone.set_created_thread_group_id(351); clone.set_created_thread_start_time_ns(3510);
+  auto child = root; child.set_thread_group_id(351); child.set_thread_group_start_time_ns(3510); child.set_parent_thread_group_id(350);
+  gvisor::sentry::ExecveInfo npm; *npm.mutable_context_data() = child;
+  npm.set_binary_path(kNpmCLIPath); npm.set_execfn(kNpmPath); npm.add_argv(kNpmPath);
+  for (const char* value : {"--prefix", "/tmp/haa-pnpm-input/project", "rebuild", "--ignore-scripts=false", "--bin-links=false",
+       "--foreground-scripts", "--offline", "--no-update-notifier", "--workspaces=false", "--no-audit", "--no-fund", "--dangerously-allow-all-scripts"}) npm.add_argv(value);
+  npm.add_argv(target);
+  auto node = npm; node.set_binary_path(kNodePath); node.set_execfn(kNodePath); node.clear_argv(); node.add_argv("node"); node.add_argv(kNpmPath);
+  for (int n = 1; n < npm.argv_size(); ++n) node.add_argv(npm.argv(n));
+  int sockets[2]; if (socketpair(AF_UNIX, SOCK_DGRAM, 0, sockets) != 0) return false;
+  auto parse = [&](const gvisor::sentry::ExecveInfo& event, ProcessState* state, const char* kind,
+                   const char* expected_reason = "CLASS_MISMATCH", const char* expected_class = "NODE",
+                   const char* expected_parent = "TRACKED_GROUP") {
+    std::string payload, id; const char* reason = nullptr;
+    auto registration = TestProfileWithAdmission(kProfileNPM, kLaunchMode, nonce);
+    if (!event.SerializeToString(&payload)) return false;
+    const bool parsed = ParseSentryProcessAndClassify(payload.data(), payload.size(), sockets[0], &id, kProfileNPM, &registration, state, &reason, &topology);
+    if (!parsed) {
+      if (strcmp(kind, "REJECTED") != 0) fprintf(stderr, "PNPM target parse failed image=%s reason=%s\n", DiagnosticImageName(DiagnosticImageForPath(event.binary_path())), reason == nullptr ? "NONE" : reason);
+      return strcmp(kind, "REJECTED") == 0 && reason != nullptr && strcmp(reason, expected_reason) == 0;
+    }
+    if (strcmp(kind, "REJECTED") == 0) return ExpectUnexpectedProcessRecord(sockets[1], kThirtySecondID, "SENTRY_EXEC", expected_class, expected_reason, expected_parent);
+    return ExpectRecord(sockets[1], kThirtySecondID, kind);
+  };
+  auto baseline = [&](ProcessState* state) {
+    std::string payload, id; const char* reason = nullptr;
+    auto check = [](bool value, const char* step) { if (!value) fprintf(stderr, "PNPM target baseline failed step=%s\n", step); return value; };
+    return check(parse(boundary, state, "process-exec-expected"), "BOUNDARY") && check(state->groups.at(350).pnpm_target_lifecycle == target, "ROOT_TARGET") &&
+        check(parse(demotion, state, "process-exec-expected"), "DEMOTION") && check(parse(shell, state, "process-exec-expected"), "SHELL") &&
+        check(clone.SerializeToString(&payload) && ParseSentryClone(payload.data(), payload.size(), -1, &id, state, &reason), "CLONE") &&
+        check(state->groups.at(351).pnpm_target_lifecycle == target, "CHILD_TARGET") && check(parse(npm, state, "process-exec-expected"), "NPM") &&
+        check(state->groups.at(351).pnpm_target_npm_pending, "PENDING");
+  };
+  ProcessState valid; bool ok = baseline(&valid) && parse(node, &valid, "process-exec-expected") &&
+      !valid.groups.at(351).pnpm_target_npm_pending && valid.groups.at(351).pnpm_target_npm_consumed &&
+      valid.expected_groups.at(351).process_class == ProcessClass::kNode;
+  if (!ok) fprintf(stderr, "PNPM target positive production path failed\n");
+  // Every negative starts after the complete original boundary/clone/launcher.
+  for (int test = 0; ok && test < 15; ++test) {
+    ProcessState state; if (!baseline(&state)) { ok = false; break; }
+    auto changed = node;
+    switch (test) {
+      case 0: changed.set_argv(changed.argv_size()-1, std::string(kPNPMProjectMount)+"/project/node_modules/.pnpm/other@1/node_modules/other"); break;
+      case 1: changed.add_argv("extra"); break;
+      case 2: changed.set_argv(4, "install"); break;
+      case 3: changed.set_binary_path("/usr/bin/node"); break;
+      case 4: changed.set_execfn("/usr/bin/node"); break;
+      case 5: changed.mutable_context_data()->set_thread_group_start_time_ns(3511); break;
+      case 6: changed.mutable_context_data()->set_thread_group_id(999); break;
+      case 7: state.groups.at(351).role = ProcessState::Role::kArtifact; break;
+      case 8: state.groups.at(351).pnpm_target_npm_pending = false; break;
+      case 9: state.groups.at(351).pnpm_target_npm_consumed = true; break;
+      case 10: state.groups.at(350).start_time_ns++; break;
+      case 11: state.groups.at(350).current_image_class = ProcessClass::kNode; break;
+      case 12: state.groups.at(351).clone_creator_group_id = 999; break;
+      case 13: state.groups.at(350).pnpm_target_lifecycle.clear(); break;
+      case 14: state.groups.at(351).provenance = ProcessState::Provenance::kDirectExecRoot; break;
+    }
+    const char* expected_reason = test == 5 ? "PROCESS_IDENTITY_REUSED" :
+        test == 6 ? "PROCESS_PROVENANCE_UNKNOWN" : test == 7 ? "ARTIFACT_ROLE" : "CLASS_MISMATCH";
+    ok = parse(changed, &state, "REJECTED", expected_reason, test == 3 ? "OTHER" : "NODE", test == 7 ? "ARTIFACT_GROUP" : "TRACKED_GROUP");
+    if (!ok) fprintf(stderr, "PNPM target negative failed index=%d\n", test);
+  }
+  // The exact transition cannot consume a weakened control/creator state.
+  for (int test = 0; ok && test < 9; ++test) {
+    ProcessState state; if (!baseline(&state)) { ok = false; break; }
+    switch (test) {
+      case 0: state.groups.at(350).role = ProcessState::Role::kArtifact; break;
+      case 1: state.groups.at(350).provenance = ProcessState::Provenance::kCloneChild; break;
+      case 2: state.groups.at(351).root_eligible = true; break;
+      case 3: state.groups.at(351).root_consumed = false; break;
+      case 4: state.groups.at(351).trusted_control_network_active = true; break;
+      case 5: state.groups.at(351).demotion_pending = true; break;
+      case 6: state.groups.at(351).launch_target_pending = true; break;
+      case 7: state.groups.at(351).handoff_target_pending = true; break;
+      case 8: state.groups.at(351).clone_creator_group_start_time_ns++; break;
+    }
+    if (IsExactPNPMTargetNpmNodeTransition(node, kProfileNPM, 351, state.groups.at(351), state.expected_groups.at(351), state) ||
+        IsExactPNPMTargetNpmNodeTransition(node, kProfilePyPI, 351, state.groups.at(351), state.expected_groups.at(351), state)) {
+      fprintf(stderr, "PNPM target role/creator boundary failed index=%d\n", test); ok = false;
+    }
+  }
+  // Each required flag and the sole selector must survive the interpreter
+  // transition unchanged; omission cannot silently disable script coverage.
+  for (int index = 2; ok && index < node.argv_size(); ++index) {
+    for (bool remove : {false, true}) {
+      ProcessState state; if (!baseline(&state)) { ok = false; break; }
+      auto changed = node;
+      if (remove) changed.mutable_argv()->DeleteSubrange(index, 1);
+      else changed.set_argv(index, "changed");
+      if (!parse(changed, &state, "REJECTED")) {
+        fprintf(stderr, "PNPM target flag boundary failed index=%d remove=%d\n", index, remove ? 1 : 0);
+        ok = false; break;
+      }
+    }
+  }
+  // A successful interpreter transition does not re-arm itself.
+  ok = ok && parse(node, &valid, "REJECTED", "BOOTSTRAP_ENDED") && !valid.groups.at(351).pnpm_target_npm_pending;
+  close(sockets[0]); close(sockets[1]); return ok;
+}
+
 bool VerifyExactNpmNodeInterpreterTransition() {
   gvisor::common::ContextData context;
   context.set_container_id(kThirtyFirstID);
@@ -7781,6 +7964,8 @@ int main(int argc, char** argv) {
   const bool go_build_cc1_sdk_cgo = VerifyGoBuildGccChildBoundary(false, GoBuildGccChildFixture::kCc1SDKCgo);
   fprintf(stderr, "STARTING npm_node\n");
   const bool npm_node = VerifyExactNpmNodeInterpreterTransition();
+  const bool pnpm_target_shape = VerifyPNPMTargetLifecycleShapeBoundary();
+  const bool pnpm_target_production = VerifyPNPMTargetLifecycleProductionPath();
   fprintf(stderr, "STARTING open_result_negative\n");
   const bool open_result_negative_ok = running && VerifyOpenResultNegativeMatrix(output, remote, control);
   fprintf(stderr, "STARTING open_result_positive\n");
@@ -7818,7 +8003,7 @@ int main(int argc, char** argv) {
   const bool pnpm_runtime_admission = VerifyPNPMRuntimeAdmissionBoundary();
   const bool pnpm_runtime_read = VerifyPNPMRuntimeReadBoundary();
   const bool uv_runtime_read = VerifyUVRuntimeReadBoundary();
-  const bool passed = pnpm_node_query_read && pnpm_node_query && pnpm_runtime_read && pnpm_runtime_admission && uv_python_query && uv_runtime_read && uv_runtime_admission && github_artifact_runtime_read && terraform_profile && running && profile && profile_limits && record_boundaries && accessors && network && malformed_socket &&
+  const bool passed = pnpm_target_shape && pnpm_target_production && pnpm_node_query_read && pnpm_node_query && pnpm_runtime_read && pnpm_runtime_admission && uv_python_query && uv_runtime_read && uv_runtime_admission && github_artifact_runtime_read && terraform_profile && running && profile && profile_limits && record_boundaries && accessors && network && malformed_socket &&
       malformed_connect && unknown_fd && process && correlation && cloexec && delayed && concurrent_python_streams && roles &&
       oci_bootstrap && demotion && mismatch && dropped && topology_ok && nested_mounts && filesystem && cargo_runtime_read && cargo_self_maps_read && cargo_config_read && cargo_tar_read && cargo_entropy_read && cargo_ca_read && cargo_null_read && cargo_rustc_query && cargo_rustc_metadata && cargo_rustc_abi && cargo_rustc_zlib && cargo_rustc_overcommit && cargo_rustc_maps && cargo_rustc_statm && cargo_rustc_cgroup && go_runtime_read && go_build_config_read && go_build_handoff_read && cargo_build_handoff_read && cargo_build_pinned_target && cargo_build_driver_read && cargo_build_rustc_child && cargo_build_native_cc_child && cargo_build_collect2_child && cargo_build_lld_launcher && cargo_build_rust_lld && cargo_build_link_inputs && cargo_build_link_sdk && cargo_build_rust_c_abi && cargo_build_lld_entropy && cargo_build_program && cargo_build_program_abi && cargo_build_program_maps && cargo_build_program_query && cargo_build_program_null && cargo_build_config && go_build_runtime_read && go_build_creator_diagnostic && go_build_tool_child && go_build_cgo_gcc_creator && go_build_sdk_link_gcc && go_build_sdk_link_native && go_build_linker_resolver && go_build_cc1 && go_build_cc1_headers && go_build_as && go_build_collect2 && go_build_native_linker && go_build_linker_plugin && go_build_linker_null && go_build_linker_runtime && go_build_as_null && go_build_cc1_sdk_cgo && npm_node &&
       cargo_rustc_mountinfo && cargo_rustc_cpu_quota && cargo_rustc_sysroot_directory && cargo_dns_configuration && cargo_resolver_file && cargo_utc && cargo_cloexec_entropy && socketpair_diagnostic && kernel_socketpair && open_result_negative_ok && open_result_positive_ok && no_basename_trust_ok &&
@@ -7910,6 +8095,8 @@ int main(int argc, char** argv) {
       {"Go build assembler null device boundary", go_build_as_null},
       {"Go build CC1 readonly SDK Cgo input boundary", go_build_cc1_sdk_cgo},
       {"exact npm CLI-to-Node", npm_node},
+      {"PNPM target lifecycle shape and topology", pnpm_target_shape},
+      {"PNPM target lifecycle production lineage", pnpm_target_production},
       {"OPEN_RESULT negative matrix", open_result_negative_ok},
       {"OPEN_RESULT positive matrix", open_result_positive_ok},
       {"no-basename-trust", no_basename_trust_ok},

@@ -472,6 +472,11 @@ struct ProcessState {
     // version-only Node query is ARTIFACT, never an expected CONTROL group.
     bool pnpm_node_query_candidate = false;
     bool pnpm_node_query_active = false;
+    // Exact target from one admitted control boundary, inherited only through
+    // kernel-owned CONTROL clone lineage. It is not artifact/source authority.
+    std::string pnpm_target_lifecycle{};
+    bool pnpm_target_npm_pending = false;
+    bool pnpm_target_npm_consumed = false;
   };
   bool bootstrap_active = true;
   bool bootstrap_group_set = false;
@@ -1244,6 +1249,111 @@ bool IsExactNpmNodeTransition(const gvisor::sentry::ExecveInfo& message,
       group.npm_node_transition_pending &&
       expected.start_time_ns == context.thread_group_start_time_ns() &&
       expected.process_class == ProcessClass::kNpm && IsExactNpmNodeInterpreter(message);
+}
+
+// The exact Go producer command. Other npm entry points keep their original
+// argument predicates and cannot inherit this target from pathname/comm text.
+constexpr char kPNPMTargetLifecycleCommand[] = R"HAA(mkdir -p /tmp/.npm; HOME=/tmp npm_config_cache=/tmp/.npm npm_config_script_shell=/haa-runtime/haa-boundary npm --prefix /tmp/haa-pnpm-input/project rebuild --ignore-scripts=false --bin-links=false --foreground-scripts --offline --no-update-notifier --workspaces=false --no-audit --no-fund --dangerously-allow-all-scripts "$1")HAA";
+constexpr char kPNPMProjectMount[] = "/tmp/haa-pnpm-input";
+
+bool ValidPNPMTargetLifecyclePath(const std::string& path) {
+  const std::string prefix = std::string(kPNPMProjectMount) + "/project/node_modules/.pnpm/";
+  if (path.size() > kMaxTopologyMountpointBytes || !HasPrefix(path, prefix.c_str()) || !IsNormalizedAbsolutePath(path)) return false;
+  const std::string tail = path.substr(prefix.size());
+  const size_t split = tail.find("/node_modules/");
+  if (split == std::string::npos) return false;
+  const std::string slot = tail.substr(0, split);
+  const std::string name = tail.substr(split + strlen("/node_modules/"));
+  if (slot.size() < 2 || slot.find('@', 1) == std::string::npos || slot.find('/') != std::string::npos || name.empty()) return false;
+  for (unsigned char c : tail) {
+    if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') ||
+        c == '@' || c == '+' || c == '_' || c == '.' || c == '-' || c == '/') continue;
+    return false;
+  }
+  const size_t slash = name.find('/');
+  if (slash == std::string::npos) return name[0] != '@' && name != "." && name != "..";
+  return name[0] == '@' && slash > 1 && slash + 1 < name.size() &&
+      name.find('/', slash + 1) == std::string::npos && name.substr(slash + 1) != "." && name.substr(slash + 1) != "..";
+}
+
+bool HasExactPNPMTargetLifecycleMount(const TopologyState* topology, const std::string& target) {
+  if (topology == nullptr || !topology->sealed || !topology->snapshot_seen || topology->namespace_id == 0 ||
+      !ValidPNPMTargetLifecyclePath(target) || !IsPinnedReadOnlyRootPath(topology, kNpmCLIPath) ||
+      !IsPinnedReadOnlyRootPath(topology, kNodePath)) return false;
+  size_t expected = 0, actual = 0;
+  for (const auto& mount : topology->expected) {
+    if (mount.mountpoint == kPNPMProjectMount) {
+      if (mount.mount_class != "workspace" || mount.parent != "/tmp" || mount.filesystem_type != "9p" ||
+          mount.read_only || mount.noexec || mount.nosuid || mount.nodev) return false;
+      ++expected;
+    } else if (mount.mountpoint != "/" && mount.mountpoint != "/tmp" && IsAtOrBelowMountpoint(target, mount.mountpoint)) return false;
+  }
+  for (const auto& entry : topology->anchors) {
+    const auto& mount = entry.second;
+    if (mount.mountpoint == kPNPMProjectMount) {
+      if (mount.mount_class != "workspace") return false;
+      ++actual;
+    } else if (mount.mountpoint != "/" && mount.mountpoint != "/tmp" && IsAtOrBelowMountpoint(target, mount.mountpoint)) return false;
+  }
+  return expected == 1 && actual == 1;
+}
+
+bool IsExactPNPMTargetLifecycleBoundary(const gvisor::sentry::ExecveInfo& message,
+                                       const char* profile, const TopologyState* topology) {
+  return profile != nullptr && strcmp(profile, kProfileNPM) == 0 &&
+      message.binary_path() == kBoundaryHelperPath && message.execfn() == kBoundaryHelperPath &&
+      message.argv_size() == 8 && message.argv(0) == kBoundaryHelperPath &&
+      message.argv(1) == kLaunchMode && ValidAdmissionNonce(message.argv(2)) &&
+      message.argv(3) == "/bin/sh" && message.argv(4) == "-ceu" &&
+      message.argv(5) == kPNPMTargetLifecycleCommand && message.argv(6) == "helox-pnpm-target" &&
+      HasExactPNPMTargetLifecycleMount(topology, message.argv(7));
+}
+
+bool IsExactPNPMTargetLifecycleArguments(const gvisor::sentry::ExecveInfo& message,
+                                        int first, const std::string& target) {
+  static constexpr const char* args[] = {"--prefix", "/tmp/haa-pnpm-input/project", "rebuild",
+      "--ignore-scripts=false", "--bin-links=false", "--foreground-scripts", "--offline",
+      "--no-update-notifier", "--workspaces=false", "--no-audit", "--no-fund", "--dangerously-allow-all-scripts"};
+  const int count = static_cast<int>(sizeof(args) / sizeof(args[0]));
+  if (!ValidPNPMTargetLifecyclePath(target) || message.argv_size() != first + count + 1 || message.argv(first + count) != target) return false;
+  for (int i = 0; i < count; ++i) if (message.argv(first + i) != args[i]) return false;
+  return true;
+}
+
+bool HasExactPNPMTargetLifecycleCreator(const gvisor::common::ContextData& context,
+                                       const ProcessState::GroupState& group, const ProcessState& state) {
+  if (group.role != ProcessState::Role::kControl || group.provenance != ProcessState::Provenance::kCloneChild ||
+      group.pnpm_target_lifecycle.empty() || group.root_eligible || !group.root_consumed ||
+      group.trusted_control_network_active || group.demotion_pending || group.launch_target_pending ||
+      group.handoff_target_pending || !HasExactCloneCreator(group, state) || context.parent_thread_group_id() != group.clone_creator_group_id) return false;
+  const auto creator = state.groups.find(group.clone_creator_group_id);
+  return creator != state.groups.end() && creator->second.role == ProcessState::Role::kControl &&
+      creator->second.provenance == ProcessState::Provenance::kDirectExecRoot &&
+      creator->second.current_image_class == ProcessClass::kShell &&
+      creator->second.pnpm_target_lifecycle == group.pnpm_target_lifecycle;
+}
+
+bool MayArmExactPNPMTargetNpmTransition(const gvisor::sentry::ExecveInfo& message,
+                                       const char* profile, const ProcessState::GroupState& group,
+                                       const ProcessState& state) {
+  return profile != nullptr && strcmp(profile, kProfileNPM) == 0 && !group.pnpm_target_npm_pending &&
+      !group.pnpm_target_npm_consumed && HasExactPNPMTargetLifecycleCreator(message.context_data(), group, state) &&
+      message.binary_path() == kNpmCLIPath && message.execfn() == kNpmPath && message.argv_size() > 0 &&
+      message.argv(0) == kNpmPath && IsExactPNPMTargetLifecycleArguments(message, 1, group.pnpm_target_lifecycle);
+}
+
+bool IsExactPNPMTargetNpmNodeTransition(const gvisor::sentry::ExecveInfo& message,
+                                       const char* profile, int32_t group_id,
+                                       const ProcessState::GroupState& group, const ProcessState::ExpectedGroup& expected,
+                                       const ProcessState& state) {
+  const auto& context = message.context_data();
+  return profile != nullptr && strcmp(profile, kProfileNPM) == 0 && context.thread_group_id() == group_id &&
+      expected.start_time_ns == context.thread_group_start_time_ns() && expected.process_class == ProcessClass::kNpm &&
+      group.pnpm_target_npm_pending && !group.pnpm_target_npm_consumed &&
+      HasExactPNPMTargetLifecycleCreator(context, group, state) &&
+      message.binary_path() == kNodePath && message.execfn() == kNodePath && message.argv_size() > 1 &&
+      message.argv(0) == "node" && message.argv(1) == kNpmPath &&
+      IsExactPNPMTargetLifecycleArguments(message, 2, group.pnpm_target_lifecycle);
 }
 
 bool IsExactNpmVersionNodeInterpreter(const gvisor::sentry::ExecveInfo& message) {
@@ -3424,6 +3534,8 @@ bool ParseSentryClone(const char* payload, size_t payload_size,
       false, false, false, false, ProcessClass::kUnknown, ProcessState::OCIBootstrapStage::kNotOCI,
       creator->second.command_phase});
   state->groups.find(child_group)->second.current_image_class = creator->second.current_image_class;
+  if (creator->second.role == ProcessState::Role::kControl)
+    state->groups.find(child_group)->second.pnpm_target_lifecycle = creator->second.pnpm_target_lifecycle;
   state->groups.find(child_group)->second.executable_locator = creator->second.executable_locator;
   state->groups.find(child_group)->second.diagnostic_image_pinned = creator->second.diagnostic_image_pinned;
   state->groups.find(child_group)->second.cargo_rustc_query_candidate =
@@ -3703,6 +3815,8 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
       return false;
     }
     group = candidate.groups.find(group_id);
+    if (IsExactPNPMTargetLifecycleBoundary(message, profile, topology))
+      group->second.pnpm_target_lifecycle = message.argv(7);
     new_direct_root = true;
   }
   group->second.runtime_cache_query = false;
@@ -4030,6 +4144,8 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
     return Send(output, *container_id, "process-exec-expected");
   }
   if (group->second.role == ProcessState::Role::kArtifact) {
+    group->second.pnpm_target_lifecycle.clear();
+    group->second.pnpm_target_npm_pending = false;
     if (strcmp(profile,kProfileCargoBuild) == 0 && cargo_program_query_candidate &&
         group->second.current_image_class == ProcessClass::kCargoRustc &&
         message.binary_path() == kRustcBinary && message.execfn() == kRustcBinary &&
@@ -4186,10 +4302,15 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
       tracked_group != candidate.expected_groups.end() &&
       IsExactResolverLockGenerationNpmNodeTransition(message, profile, group_id, group->second,
                                                       tracked_group->second, candidate);
+  const bool exact_pnpm_target_npm_node_transition =
+      tracked_group != candidate.expected_groups.end() &&
+      IsExactPNPMTargetNpmNodeTransition(message, profile, group_id, group->second, tracked_group->second, candidate);
   if (exact_npm_node_transition || exact_npm_version_node_transition ||
-      exact_lock_generation_npm_node_transition) {
+      exact_lock_generation_npm_node_transition || exact_pnpm_target_npm_node_transition) {
     tracked_group->second.process_class = ProcessClass::kNode;
     group->second.npm_node_transition_pending = false;
+    group->second.pnpm_target_npm_pending = false;
+    group->second.pnpm_target_npm_consumed = exact_pnpm_target_npm_node_transition;
     group->second.lock_generation_npm_node_transition_pending = false;
     group->second.npm_version_node_transition_pending = false;
     group->second.npm_version_node_transition_consumed = exact_npm_version_node_transition;
@@ -4235,6 +4356,10 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
       MayArmExactLockGenerationNpmNodeTransition(message, profile, updated_group->second,
                                                   *process_state)) {
     updated_group->second.lock_generation_npm_node_transition_pending = true;
+  }
+  if (classification.expected && updated_group != process_state->groups.end() &&
+      MayArmExactPNPMTargetNpmTransition(message, profile, updated_group->second, *process_state)) {
+    updated_group->second.pnpm_target_npm_pending = true;
   }
   ApplyExecCloexec(process_state, group_id);
   if (classification.expected) return Send(output, *container_id, "process-exec-expected");

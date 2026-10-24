@@ -32,7 +32,7 @@ func TestPNPMActualOfflineStoreFixture(t *testing.T) {
 		t.Fatal("declare HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 for the authenticated metadata preparation stage")
 	}
 	for _, fixture := range pnpmOfflineFixtures() {
-		if !t.Run(fixture.name, func(t *testing.T) { qualifyPNPMOfflineFixture(t, fixture) }) {
+		if !t.Run(fixture.name, func(t *testing.T) { qualifyPNPMOfflineFixture(t, fixture, nil) }) {
 			t.FailNow()
 		}
 	}
@@ -75,7 +75,7 @@ func pnpmOfflineFixtures() []pnpmOfflineFixture {
 	}
 }
 
-func qualifyPNPMOfflineFixture(t *testing.T, fixture pnpmOfflineFixture) {
+func qualifyPNPMOfflineFixture(t *testing.T, fixture pnpmOfflineFixture, capture func(context.Context, CommandRunner, string, []domain.ProjectControlFile)) {
 	t.Helper()
 	withActualPNPMNativeRuntimePolicy(t, true, func(ctx context.Context, runner CommandRunner, container, network string) {
 		configured, err := runner.Output(ctx, "docker", "inspect", "--format", "{{json .Config.WorkingDir}}", container)
@@ -271,6 +271,9 @@ func qualifyPNPMOfflineFixture(t *testing.T, fixture pnpmOfflineFixture) {
 			assertPNPMFixtureLink(t, ctx, runner.(streamingDockerOutput), container, expected)
 		}
 		t.Logf("pnpm_offline_store_fixture case=%s packages=%d instances=%d links=%d controls_unchanged=true native_layout=isolated scripts=NOT_EXECUTED dynamic=NOT_EXECUTED Host_install=NOT_EXECUTED", fixture.name, len(fixture.specs), len(fixture.installed), len(fixture.links))
+		if capture != nil {
+			capture(ctx, runner, container, controls)
+		}
 	})
 }
 
