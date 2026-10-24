@@ -14,10 +14,10 @@ Last completed work item: CLI-UX-003 — COMPLETE; source4cfe29e/CI352 ten SUCCE
 Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
-Active work item status: IN_PROGRESS — B4 remotely qualified by CI406; B5a/B5b1/B5b2/B5b3 backend named local PASS; native adoption/CLI/current backend remote qualification and whole P2 acceptance remain
+Active work item status: IN_PROGRESS — backend/cache/records/private materialization/transaction remotely QUALIFIED by CI407; B5c user CLI named local PASS; native ownership proof/user CLI remote qualification and whole P2 acceptance remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2 — CI407/e9ca85e backend+actual CI caller REMOTE_PENDING; first check2026-10-25 06:02:54 KST. B5c PNPM CLI committed a03ff13 LOCAL QUALIFIED; B5d native source-proof baseline/edit-map review IN_PROGRESS; whole P2 remains NO
-Current substep: M13-004/P2 — IN_PROGRESS; CI407/e9ca85e remote pending; B5c CLI committed a03ff13 LOCAL QUALIFIED; B5d native original ownership/source-proof audit IN_PROGRESS (source unchanged); native adoption/whole P2 pending; support not yet advertised
+Next action: M13-004/P2 — CI407/e9ca85e backend+actual CI caller QUALIFIED (10 SUCCESS, same whole tree); B5c PNPM CLI committed a03ff13 LOCAL QUALIFIED; B5d native source-proof baseline/edit-map review IN_PROGRESS; whole P2 remains NO
+Current substep: M13-004/P2 — IN_PROGRESS; CI407/e9ca85e remote QUALIFIED;  B5c CLI committed a03ff13 LOCAL QUALIFIED; B5d native original ownership/source-proof audit IN_PROGRESS (source unchanged); native adoption/whole P2 pending; support not yet advertised
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -4992,3 +4992,15 @@ Native payload 인계의 independent old-source proof가 다음이고 whole P2�
 현재 후속 [B5d native original ownership 감사](./evidence/package-client-quarantine/p2c5b5d-pnpm-native-ownership-plan-20261025.md)는
 guest store/UID 의미를 Host 원본 claim으로 대체하지 않는 분리와 기존 full source closure 재사용
 지도를 확정 중이다. Native proof source는 아직 수정하지 않았고 M13-004 하나만 IN_PROGRESS다.
+
+### 2026-10-25 CI407 backend named remote qualification
+
+실제60분 타이머 만료 뒤 [CI407 결과](./evidence/package-client-quarantine/p2c5b-ci407-qualification-20261025.json)를
+확인했다. Required 포함10SUCCESS이고 e9ca85e와 모든 checkoutc4da8b10의 전체tree1833b892/
+2263files가 같다. 실제56m37다. 새 실제 cache peer/empty33.52s와 project transaction single/
+peer/empty115.83s·fresh records/independent approval/native install·repeat·add·update/기존 inode/
+0600·user files·root script 미실행을 확인했다. Linux top-level62/CPU280.90s·observer112씩/
+native macOS Go1.27.3 build/default와 helper7wait0·final confirmed cleanup original0/clienterror0/
+clientrestore0도 PASS다. Parent의 새 protected client rebind와 sandbox 복원 소비자 gap을 닫았다.
+전체10 decoded UTF8 logs를 보존·대조했다. 이 성공은 뒤 a03ff13 CLI와 native proof/whole P2를
+포함하지 않는다. 현재 B5d original source-proof audit를 계속하며 M13-004 하나만 IN_PROGRESS다.

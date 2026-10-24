@@ -64,3 +64,7 @@ adopt/old archive 변조·metadata identity 위조/추가·삭제·hardlink/esca
 rollback unknown의 정상·negative, actual public single/peer·기존 managed/fresh 소비자와 cleanup을
 확인한다. Canonical profiles/관련 전체 Race·source-bound actual 이전에는 COMPLETE로 표시하지
 않는다. CI407은 이 후속 source를 포함하지 않는다.
+
+후속 실제 타이머 확인에서 앞 e9ca85e/CI407은 같은 전체tree의 Required10SUCCESS와 cache/
+transaction·원복 소비자를 원격 검증했다. [CI407 범위](./p2c5b-ci407-qualification-20261025.json)를
+prerequisite로 사용하되 CLI와 이 native original proof는 별도 source·acceptance다.
