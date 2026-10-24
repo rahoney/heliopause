@@ -10,6 +10,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	"github.com/rahoney/heliopause/internal/core/domain"
@@ -21,18 +22,6 @@ type pnpmInspectionArchive struct {
 	subject domain.AcquiredArtifact
 	name    string
 	body    []byte
-}
-
-type pnpmArchiveContextReader struct {
-	context context.Context
-	reader  io.Reader
-}
-
-func (r pnpmArchiveContextReader) Read(body []byte) (int, error) {
-	if err := r.context.Err(); err != nil {
-		return 0, errors.Join(err, context.Cause(r.context))
-	}
-	return r.reader.Read(body)
 }
 
 // Freeze complete measured archives before any native tool/DNS/resource work.
@@ -77,48 +66,14 @@ func (i *DockerArtifactIntroducer) freezePNPMArchives(ctx context.Context, input
 	return archives, nil
 }
 
-func readPNPMIntakeArchive(ctx context.Context, root *os.Root, name string, subject domain.AcquiredArtifact) (body []byte, resultErr error) {
-	if ctx == nil || root == nil || subject.SizeBytes() == 0 || subject.SizeBytes() > artifactnpm.PNPMInspectionWorkspaceLimit {
+func readPNPMIntakeArchive(ctx context.Context, root *os.Root, name string, subject domain.AcquiredArtifact) ([]byte, error) {
+	parts := strings.Split(subject.ContentHandle(), ":")
+	if len(parts) != 3 || name != filepath.Join(parts[1], "tarball.tgz") {
 		return nil, errPNPMArchiveTransport
 	}
-	if err := ctx.Err(); err != nil {
-		return nil, errors.Join(errPNPMArchiveTransport, err, context.Cause(ctx))
-	}
-	parent := filepath.Dir(name)
-	beforeParent, err := root.Lstat(parent)
-	if err != nil || !beforeParent.IsDir() {
-		return nil, errPNPMArchiveTransport
-	}
-	before, err := root.Lstat(name)
-	if err != nil || !before.Mode().IsRegular() || before.Size() != int64(subject.SizeBytes()) {
-		return nil, errPNPMArchiveTransport
-	}
-	file, err := root.Open(name)
+	body, err := artifactnpm.ReadPNPMIntakeArchive(ctx, root, subject)
 	if err != nil {
-		return nil, errPNPMArchiveTransport
-	}
-	defer func() {
-		if err := file.Close(); err != nil {
-			body = nil
-			resultErr = errors.Join(resultErr, errPNPMArchiveTransport, err)
-		}
-	}()
-	opened, err := file.Stat()
-	if err != nil || !os.SameFile(before, opened) || !opened.Mode().IsRegular() || opened.Size() != before.Size() {
-		return nil, errPNPMArchiveTransport
-	}
-	body, err = io.ReadAll(io.LimitReader(pnpmArchiveContextReader{ctx, file}, int64(subject.SizeBytes())+1))
-	if err != nil || ctx.Err() != nil || uint64(len(body)) != subject.SizeBytes() {
-		return nil, errors.Join(errPNPMArchiveTransport, err, ctx.Err(), context.Cause(ctx))
-	}
-	hash := sha256.Sum256(body)
-	if hex.EncodeToString(hash[:]) != subject.Digest().String() {
-		return nil, errPNPMArchiveTransport
-	}
-	after, fileErr := root.Lstat(name)
-	afterParent, parentErr := root.Lstat(parent)
-	if fileErr != nil || parentErr != nil || !os.SameFile(before, after) || !after.Mode().IsRegular() || after.Size() != before.Size() || !os.SameFile(beforeParent, afterParent) || !afterParent.IsDir() {
-		return nil, errPNPMArchiveTransport
+		return nil, errors.Join(errPNPMArchiveTransport, err)
 	}
 	return body, nil
 }

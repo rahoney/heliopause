@@ -16,7 +16,7 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — B4b1/B4b2/B4c named local qualification PASS; bundled remote qualification and PNPM Host/CLI/whole P2 acceptance remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2 — checkpoint and bundle B4 production inspection for remote qualification; audit retained cache/provenance/Host records and transaction/CLI gaps while CI runs; no whole P2 support claim
+Next action: M13-004/P2 — CI405/7e966e7 RUNNING; first check 2026-10-25 02:32:37 KST (55min actual timer); B5a approved data cache LOCAL QUALIFIED; audit Host extraction/independent records and transaction/CLI gaps meanwhile; whole P2 acceptance NO
 Current substep: M13-004/P2 — IN_PROGRESS; B4 production inspection LOCAL QUALIFIED; remote and Host/CLI pending; support not yet advertised
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
@@ -219,6 +219,30 @@ public transitive2/peer4 실제49.087s, native8 선택·네 실제 Policy/Eviden
 각 실제 수명의 helperwait0/정리·Host 보존을 확인했고 Host 설치는 미수행이다. B4 production
 inspection의 named local scope만 닫고 묶음 remote와 PNPM cache/provenance/Host records·
 transaction/CLI를 이어간다. 같은 M13-004만 IN_PROGRESS이며 whole P2 acceptance는 NO다.
+
+[B5a baseline audit·수정 지도·두 번째 검토](./evidence/package-client-quarantine/p2c5b5a-pnpm-approved-staging-plan-20261025.md)를
+기록했다. 기존 stored Evidence reader와 source 재해시·sealed regular-file cache를 재사용해
+승인된 PNPM layout을 비실행 data tar로 stage하는 gap부터 진행한다. Symlink Host 추출과
+독립 retained approval/records·transaction·CLI는 다음 경계다. CI405의 frozen source는 유지한다.
+
+[B5a 로컬 결과](./evidence/package-client-quarantine/p2c5b5a-pnpm-approved-staging-local-20261025.json)는
+source 전체 재해시·실제 stored Evidence/expected instance·runtime/layout 결합과 비실행 data
+cache Stage/Open을 확인했다. Canonical checks·관련 six-package Race148.769s/추가9.823s,
+실제 public peer4/Evidence24와 explicit-empty data cache43.959s·helperwait0/Host 보존이 PASS다.
+Empty의 로그상 고정 true는 실제 coverage가 아니므로 scope correction과 conditional 표시를
+남겼다. B5a named local만 닫고 Host typed extraction·독립 retained approval/Manifest·SBOM·
+transaction·CLI는 계속 MISSING이다. CI405 결과를 기다리며 이 source는 아직 push하지 않는다.
+
+### 2026-10-25 B3 후속·B4 production inspection 묶음 원격 qualification
+
+최종 B4c7e966e7/tree d864b870·2,232개 전체 후보의 index/blob/disk/mode 일치를 확인하고
+로컬11개 commit을 기존 branch/Draft PR38에 한 번 push했다. CI405/run40112425913은
+2026-10-25 01:37:37 KST 시작·ordinary IN_PROGRESS다. 직전 CI40453m16을 근거로55분
+실제 타이머를 설정했고 첫 확인은02:32:37 KST다. 원본은 p2c5b4-ci405-initial-api와
+p2c5b4-ci405-timer-20261025.json이다. 그 전에는 반복 조회/재push하지 않는다. Required·
+실제 checkout·기존/new 소비자 결과 확인 전에는 remote qualification을 닫지 않는다.
+같은 item의 다음 PNPM cache/provenance/Host records·transaction·CLI baseline audit를
+이어가며 M13-004 하나만 IN_PROGRESS다. Whole P2 acceptance는 계속 NO다.
 
 ### 2026-10-24 CI404 묶음 checkpoint 확인
 

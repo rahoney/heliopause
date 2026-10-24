@@ -3,6 +3,7 @@ package npm
 import (
 	"context"
 	"errors"
+	"sync"
 
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	"github.com/rahoney/heliopause/internal/core/domain"
@@ -20,17 +21,20 @@ type PNPMInstanceExecutor interface {
 // PNPMProjectInspector retains frozen complete-project context beside the
 // source-neutral Inspection interface. It cannot silently inspect one primary.
 type PNPMProjectInspector struct {
-	frozen  artifactnpm.PNPMInspectionContext
-	static  *Inspector
-	prepare PNPMInspectionPreparer
-	execute PNPMInstanceExecutor
+	frozen    artifactnpm.PNPMInspectionContext
+	static    *Inspector
+	prepare   PNPMInspectionPreparer
+	execute   PNPMInstanceExecutor
+	handoffMu sync.Mutex
+	active    bool
+	prepared  artifactnpm.PNPMInspectionLayout
 }
 
 func NewPNPMProjectInspector(frozen artifactnpm.PNPMInspectionContext, static *Inspector, prepare PNPMInspectionPreparer, execute PNPMInstanceExecutor) (*PNPMProjectInspector, error) {
 	if !frozen.Valid() || static == nil || prepare == nil || execute == nil {
 		return nil, errors.New("pnpm project inspection requires frozen context and all consumers")
 	}
-	return &PNPMProjectInspector{frozen, static, prepare, execute}, nil
+	return &PNPMProjectInspector{frozen: frozen, static: static, prepare: prepare, execute: execute}, nil
 }
 func (i *PNPMProjectInspector) Inspect(context.Context, domain.AcquiredArtifact) (domain.InspectionReport, error) {
 	return domain.InspectionReport{}, errors.New("pnpm inspection requires the complete frozen project")
@@ -48,6 +52,15 @@ func (i *PNPMProjectInspector) InspectProject(ctx context.Context, snapshot doma
 	if i == nil || ctx == nil || i.static == nil || i.prepare == nil || i.execute == nil {
 		return nil, errors.New("pnpm project inspection is unavailable")
 	}
+	i.handoffMu.Lock()
+	if i.active {
+		i.handoffMu.Unlock()
+		return nil, errors.New("pnpm project inspector is already executing")
+	}
+	i.active = true
+	i.prepared = artifactnpm.PNPMInspectionLayout{}
+	i.handoffMu.Unlock()
+	defer func() { i.handoffMu.Lock(); i.active = false; i.handoffMu.Unlock() }()
 	input, err := i.frozen.BindAcquired(snapshot, acquired)
 	if err != nil {
 		return nil, err
@@ -134,7 +147,32 @@ func (i *PNPMProjectInspector) InspectProject(ctx context.Context, snapshot doma
 	if err := i.observeInstances(ctx, layout, states); err != nil {
 		return finish(err)
 	}
-	return finish(nil)
+	reports, err := finish(nil)
+	if err != nil || ctx.Err() != nil {
+		return reports, errors.Join(err, ctx.Err(), context.Cause(ctx))
+	}
+	i.handoffMu.Lock()
+	i.prepared = layout
+	i.handoffMu.Unlock()
+	return reports, nil
+}
+
+// PreparedLayoutFor exposes only this request's completely observed immutable
+// layout. Consumers still require actual recorded Evidence, Policy and bytes.
+func (i *PNPMProjectInspector) PreparedLayoutFor(snapshot domain.ProjectDependencySnapshot, acquired map[domain.DependencyNodeID]domain.AcquiredArtifact) (artifactnpm.PNPMInspectionLayout, error) {
+	if i == nil {
+		return artifactnpm.PNPMInspectionLayout{}, errors.New("pnpm completed layout is unavailable")
+	}
+	input, err := i.frozen.BindAcquired(snapshot, acquired)
+	if err != nil {
+		return artifactnpm.PNPMInspectionLayout{}, err
+	}
+	i.handoffMu.Lock()
+	defer i.handoffMu.Unlock()
+	if i.active || !i.prepared.MatchesInput(input) {
+		return artifactnpm.PNPMInspectionLayout{}, errors.New("pnpm completed layout does not match the exact request")
+	}
+	return i.prepared, nil
 }
 
 func (i *PNPMProjectInspector) observeInstances(ctx context.Context, layout artifactnpm.PNPMInspectionLayout, states []pnpmInspectionState) error {

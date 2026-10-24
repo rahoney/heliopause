@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	"github.com/rahoney/heliopause/internal/core/domain"
@@ -24,11 +25,15 @@ type pnpmProjectGateConsumer struct {
 	prepareCalls, executeCalls int
 	cause                      error
 	inventories                []artifactnpm.ArchiveInventory
+	onPrepare                  func()
 }
 
 func (f *pnpmProjectGateConsumer) PrepareInspection(_ context.Context, _ artifactnpm.PNPMInspectionInput, inventories []artifactnpm.ArchiveInventory) (artifactnpm.PNPMInspectionLayout, error) {
 	f.prepareCalls++
 	f.inventories = inventories
+	if f.onPrepare != nil {
+		f.onPrepare()
+	}
 	return artifactnpm.PNPMInspectionLayout{}, f.cause
 }
 func (f *pnpmProjectGateConsumer) ExecutePNPMInstance(context.Context, artifactnpm.PNPMInspectionLayout, domain.AcquiredArtifact, string) (domain.SandboxResult, error) {
@@ -100,7 +105,30 @@ func TestPNPMProjectStaticGateBeforeRuntimeAndPreservesFirstCause(t *testing.T) 
 				t.Fatal(err)
 			}
 			acquired := map[domain.DependencyNodeID]domain.AcquiredArtifact{node: subject}
+			if kind == "valid-static" {
+				consumer.onPrepare = func() {
+					attempt := make(chan error, 1)
+					go func() {
+						_, err := inspector.InspectProject(context.Background(), input.Context().Snapshot(), acquired)
+						attempt <- err
+					}()
+					select {
+					case err := <-attempt:
+						if err == nil {
+							t.Error("concurrent inspector execution admitted")
+						}
+					case <-time.After(5 * time.Second):
+						t.Fatal("concurrent inspector waited on the executing runtime")
+					}
+					if _, err := inspector.PreparedLayoutFor(input.Context().Snapshot(), acquired); err == nil {
+						t.Fatal("active inspector exposed a completed layout")
+					}
+				}
+			}
 			reports, err := inspector.InspectProject(context.Background(), input.Context().Snapshot(), acquired)
+			if _, handoffErr := inspector.PreparedLayoutFor(input.Context().Snapshot(), acquired); handoffErr == nil {
+				t.Fatal("failed/static-blocked inspection exposed a completed layout")
+			}
 			if len(reports) != 1 || consumer.executeCalls != 0 {
 				t.Fatal("failed gate lost report or executed", err)
 			}
