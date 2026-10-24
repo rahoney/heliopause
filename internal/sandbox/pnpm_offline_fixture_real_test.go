@@ -86,168 +86,12 @@ func qualifyPNPMOfflineFixture(t *testing.T, fixture pnpmOfflineFixture, capture
 			t.Fatal("fixed native container working directory differs", err)
 		}
 		t.Log("pnpm_offline_store_context process_cwd=/ store_command_dir=/")
-		intake := t.TempDir()
-		source, err := artifactnpm.NewPublicResolver(intake)
-		if err != nil {
-			t.Fatal(err)
-		}
-		static, err := inspectionnpm.NewInspector(intake)
-		if err != nil {
-			t.Fatal(err)
-		}
-		var recipeBody []byte
-		var sourceBound artifactnpm.PNPMSelection
-		resolvedInputs := map[string]domain.ResolvedArtifact{}
-		acquiredInputs := map[domain.DependencyNodeID]domain.AcquiredArtifact{}
-		var inventories []artifactnpm.ArchiveInventory
-		if fixture.lockFixture != "" {
-			// Reuse the exact versioned parser fixture and its public-binding API.
-			_, file, _, ok := runtime.Caller(0)
-			if !ok {
-				t.Fatal("qualification source location unavailable")
-			}
-			recipeBody, err = os.ReadFile(filepath.Join(filepath.Dir(file), "..", "artifact", "npm", "testdata", fixture.lockFixture))
-			if err != nil {
-				t.Fatal("versioned peer fixture unavailable", err)
-			}
-			parsed, err := artifactnpm.ParsePNPMLock([]byte(fixture.manifest), recipeBody, runtimeidentity.PNPMVersion)
-			if err != nil {
-				t.Fatal("versioned peer fixture invalid", err)
-			}
-			sourceBound, err = source.BindPNPMLock(ctx, parsed)
-			if err != nil || !sourceBound.SourceBound() {
-				t.Fatal("exact peer metadata binding failed", err)
-			}
-			for _, resolved := range sourceBound.Artifacts() {
-				resolvedInputs[resolved.Identity().Name()+"@"+resolved.Identity().Version()] = resolved
-			}
-		}
-		packages := map[string]any{}
-		var fileSpecs []string
-		var input bytes.Buffer
-		archive := tar.NewWriter(&input)
-		if err := archive.WriteHeader(&tar.Header{Name: "artifacts", Typeflag: tar.TypeDir, Mode: 0700, Uid: 1000, Gid: 1000}); err != nil {
-			t.Fatal(err)
-		}
-		if err := archive.WriteHeader(&tar.Header{Name: "tmp", Typeflag: tar.TypeDir, Mode: 0700, Uid: 1000, Gid: 1000}); err != nil {
-			t.Fatal(err)
-		}
-		for _, spec := range fixture.specs {
-			ref, err := artifactnpm.ParseReference(spec)
-			if err != nil {
-				t.Fatal(err)
-			}
-			resolved, found := resolvedInputs[spec]
-			if !found {
-				if fixture.lockFixture != "" {
-					t.Fatal("exact fixture input was not source bound", spec)
-				}
-				resolved, err = source.Resolve(ctx, ref)
-				if err != nil {
-					t.Fatal(err)
-				}
-			}
-			run, err := domain.NewRunID()
-			if err != nil {
-				t.Fatal(err)
-			}
-			acquired, err := source.Acquire(ctx, run, resolved)
-			if err != nil {
-				t.Fatal(err)
-			}
-			verified, err := (verificationnpm.IntegrityVerifier{}).Verify(ctx, acquired)
-			if err != nil || verified.Outcome() != domain.VerificationVerified {
-				t.Fatalf("fixture integrity failed: %v", err)
-			}
-			inventory, report, err := static.InspectArchive(ctx, acquired)
-			if err != nil || len(report.Findings()) != 0 || report.Execution().Status() != domain.ExecutionCompleted {
-				t.Fatalf("fixture static admission failed: %v", err)
-			}
-			node, err := domain.ProjectDependencyNodeID(acquired.Identity())
-			if err != nil || !inventory.Matches(acquired) {
-				t.Fatal("fixture full static input unavailable", err)
-			}
-			acquiredInputs[node] = acquired
-			inventories = append(inventories, inventory)
-			if acquired.SizeBytes() <= 0 || acquired.SizeBytes() > 4<<20 {
-				t.Fatal("fixture archive exceeds its bound")
-			}
-			body, err := os.ReadFile(filepath.Join(intake, run.String(), "tarball.tgz"))
-			if err != nil {
-				t.Fatal(err)
-			}
-			hash := sha256.Sum256(body)
-			if uint64(len(body)) != acquired.SizeBytes() || hex.EncodeToString(hash[:]) != acquired.Digest().String() {
-				t.Fatal("verified fixture bytes changed")
-			}
-			name := "artifacts/" + acquired.Digest().String() + ".tgz"
-			if err := archive.WriteHeader(&tar.Header{Name: name, Typeflag: tar.TypeReg, Mode: 0600, Uid: 1000, Gid: 1000, Size: int64(len(body))}); err != nil {
-				t.Fatal(err)
-			}
-			if _, err := archive.Write(body); err != nil {
-				t.Fatal(err)
-			}
-			integrity, present := acquired.DeclaredIntegrity()
-			if !present {
-				t.Fatal("fixture lost declared integrity")
-			}
-			packages[spec] = map[string]any{"resolution": map[string]string{"integrity": integrity}}
-			fileSpecs = append(fileSpecs, "file:"+pnpmProjectRoot+"/"+name)
-			t.Logf("pnpm_offline_input identity=%s bytes=%d sha256=%s", spec, len(body), acquired.Digest().String())
-		}
-		if err := archive.Close(); err != nil {
-			t.Fatal(err)
-		}
-		// Explicit fixture data preserves registry source kind and full peer keys.
-		recipe, err := json.Marshal(map[string]any{
-			"lockfileVersion": "9.0",
-			"settings":        map[string]bool{"autoInstallPeers": true, "excludeLinksFromLockfile": false},
-			"importers":       map[string]any{".": map[string]any{"dependencies": fixture.roots}},
-			"packages":        packages,
-			"snapshots":       fixture.snapshots,
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-		if len(recipeBody) != 0 {
-			recipe = recipeBody
-		}
-		manifest := pnpmTestControl(t, "package.json", fixture.manifest, true)
-		lock, err := domain.NewProjectControlFile("pnpm-lock.yaml", recipe, true)
-		if err != nil {
-			t.Fatal(err)
-		}
-		controls := []domain.ProjectControlFile{manifest, lock}
-		parsed, err := artifactnpm.ParsePNPMLock(manifest.Body(), lock.Body(), runtimeidentity.PNPMVersion)
-		if err != nil {
-			t.Fatal("public fixture graph invalid before metadata preparation", err)
-		}
-		if !sourceBound.SourceBound() {
-			sourceBound, err = source.BindPNPMLock(ctx, parsed)
-		}
-		if err != nil || len(sourceBound.Artifacts()) != len(fixture.specs) {
-			t.Fatal("public fixture source binding failed before metadata preparation", err)
-		}
-		target, err := domain.NewInstallTarget(filepath.Join(t.TempDir(), "project"))
-		if err != nil {
-			t.Fatal(err)
-		}
-		install, err := domain.NewNPMProjectInstallContext(target)
-		if err != nil {
-			t.Fatal(err)
-		}
-		frozen, err := sourceBound.InspectionContext(install, controls, PNPMResolverRuntimeIdentity())
-		if err != nil {
-			t.Fatal("fixture inspection context unavailable", err)
-		}
-		inspectionInput, err := frozen.BindAcquired(frozen.Snapshot(), acquiredInputs)
-		if err != nil {
-			t.Fatal("fixture complete acquired binding unavailable", err)
-		}
+		data := loadPNPMOfflineInputs(t, ctx, fixture)
+		controls, inspectionInput, inventories, fileSpecs := data.controls, data.inspection, data.inventories, data.fileSpecs
 		if err := copyPNPMProjectControls(ctx, runner, container, controls); err != nil {
 			t.Fatal(err)
 		}
-		if err := runner.(inputCommandRunner).RunInput(ctx, bytes.NewReader(input.Bytes()), "docker", "cp", "--archive", "-", container+":"+pnpmProjectRoot); err != nil {
+		if err := runner.(inputCommandRunner).RunInput(ctx, bytes.NewReader(data.archive), "docker", "cp", "--archive", "-", container+":"+pnpmProjectRoot); err != nil {
 			t.Fatal("fixture archive introduction failed", err)
 		}
 		for _, spec := range fileSpecs {
@@ -301,6 +145,181 @@ func qualifyPNPMOfflineFixture(t *testing.T, fixture pnpmOfflineFixture, capture
 			capture(ctx, runner, container, controls, inspectionInput, inventories)
 		}
 	})
+}
+
+type pnpmOfflineInputs struct {
+	intake      string
+	controls    []domain.ProjectControlFile
+	inspection  artifactnpm.PNPMInspectionInput
+	inventories []artifactnpm.ArchiveInventory
+	fileSpecs   []string
+	archive     []byte
+}
+
+// Both the original native primitive and production prepare use these exact
+// public fixture controls, metadata binding, Acquire, SRI and full inventory.
+// Loading inputs performs no native runtime operation.
+func loadPNPMOfflineInputs(t *testing.T, ctx context.Context, fixture pnpmOfflineFixture) pnpmOfflineInputs {
+	t.Helper()
+	intake := t.TempDir()
+	source, err := artifactnpm.NewPublicResolver(intake)
+	if err != nil {
+		t.Fatal(err)
+	}
+	static, err := inspectionnpm.NewInspector(intake)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var recipeBody []byte
+	var sourceBound artifactnpm.PNPMSelection
+	resolvedInputs := map[string]domain.ResolvedArtifact{}
+	acquiredInputs := map[domain.DependencyNodeID]domain.AcquiredArtifact{}
+	var inventories []artifactnpm.ArchiveInventory
+	if fixture.lockFixture != "" {
+		// Reuse the exact versioned parser fixture and its public-binding API.
+		_, file, _, ok := runtime.Caller(0)
+		if !ok {
+			t.Fatal("qualification source location unavailable")
+		}
+		recipeBody, err = os.ReadFile(filepath.Join(filepath.Dir(file), "..", "artifact", "npm", "testdata", fixture.lockFixture))
+		if err != nil {
+			t.Fatal("versioned peer fixture unavailable", err)
+		}
+		parsed, err := artifactnpm.ParsePNPMLock([]byte(fixture.manifest), recipeBody, runtimeidentity.PNPMVersion)
+		if err != nil {
+			t.Fatal("versioned peer fixture invalid", err)
+		}
+		sourceBound, err = source.BindPNPMLock(ctx, parsed)
+		if err != nil || !sourceBound.SourceBound() {
+			t.Fatal("exact peer metadata binding failed", err)
+		}
+		for _, resolved := range sourceBound.Artifacts() {
+			resolvedInputs[resolved.Identity().Name()+"@"+resolved.Identity().Version()] = resolved
+		}
+	}
+	packages := map[string]any{}
+	var fileSpecs []string
+	var input bytes.Buffer
+	archive := tar.NewWriter(&input)
+	if err := archive.WriteHeader(&tar.Header{Name: "artifacts", Typeflag: tar.TypeDir, Mode: 0700, Uid: 1000, Gid: 1000}); err != nil {
+		t.Fatal(err)
+	}
+	if err := archive.WriteHeader(&tar.Header{Name: "tmp", Typeflag: tar.TypeDir, Mode: 0700, Uid: 1000, Gid: 1000}); err != nil {
+		t.Fatal(err)
+	}
+	for _, spec := range fixture.specs {
+		ref, err := artifactnpm.ParseReference(spec)
+		if err != nil {
+			t.Fatal(err)
+		}
+		resolved, found := resolvedInputs[spec]
+		if !found {
+			if fixture.lockFixture != "" {
+				t.Fatal("exact fixture input was not source bound", spec)
+			}
+			resolved, err = source.Resolve(ctx, ref)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+		run, err := domain.NewRunID()
+		if err != nil {
+			t.Fatal(err)
+		}
+		acquired, err := source.Acquire(ctx, run, resolved)
+		if err != nil {
+			t.Fatal(err)
+		}
+		verified, err := (verificationnpm.IntegrityVerifier{}).Verify(ctx, acquired)
+		if err != nil || verified.Outcome() != domain.VerificationVerified {
+			t.Fatalf("fixture integrity failed: %v", err)
+		}
+		inventory, report, err := static.InspectArchive(ctx, acquired)
+		if err != nil || len(report.Findings()) != 0 || report.Execution().Status() != domain.ExecutionCompleted {
+			t.Fatalf("fixture static admission failed: %v", err)
+		}
+		node, err := domain.ProjectDependencyNodeID(acquired.Identity())
+		if err != nil || !inventory.Matches(acquired) {
+			t.Fatal("fixture full static input unavailable", err)
+		}
+		acquiredInputs[node] = acquired
+		inventories = append(inventories, inventory)
+		if acquired.SizeBytes() <= 0 || acquired.SizeBytes() > 4<<20 {
+			t.Fatal("fixture archive exceeds its bound")
+		}
+		body, err := os.ReadFile(filepath.Join(intake, run.String(), "tarball.tgz"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		hash := sha256.Sum256(body)
+		if uint64(len(body)) != acquired.SizeBytes() || hex.EncodeToString(hash[:]) != acquired.Digest().String() {
+			t.Fatal("verified fixture bytes changed")
+		}
+		name := "artifacts/" + acquired.Digest().String() + ".tgz"
+		if err := archive.WriteHeader(&tar.Header{Name: name, Typeflag: tar.TypeReg, Mode: 0600, Uid: 1000, Gid: 1000, Size: int64(len(body))}); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := archive.Write(body); err != nil {
+			t.Fatal(err)
+		}
+		integrity, present := acquired.DeclaredIntegrity()
+		if !present {
+			t.Fatal("fixture lost declared integrity")
+		}
+		packages[spec] = map[string]any{"resolution": map[string]string{"integrity": integrity}}
+		fileSpecs = append(fileSpecs, "file:"+pnpmProjectRoot+"/"+name)
+		t.Logf("pnpm_offline_input identity=%s bytes=%d sha256=%s", spec, len(body), acquired.Digest().String())
+	}
+	if err := archive.Close(); err != nil {
+		t.Fatal(err)
+	}
+	// Explicit fixture data preserves registry source kind and full peer keys.
+	recipe, err := json.Marshal(map[string]any{
+		"lockfileVersion": "9.0",
+		"settings":        map[string]bool{"autoInstallPeers": true, "excludeLinksFromLockfile": false},
+		"importers":       map[string]any{".": map[string]any{"dependencies": fixture.roots}},
+		"packages":        packages,
+		"snapshots":       fixture.snapshots,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(recipeBody) != 0 {
+		recipe = recipeBody
+	}
+	manifest := pnpmTestControl(t, "package.json", fixture.manifest, true)
+	lock, err := domain.NewProjectControlFile("pnpm-lock.yaml", recipe, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	controls := []domain.ProjectControlFile{manifest, lock}
+	parsed, err := artifactnpm.ParsePNPMLock(manifest.Body(), lock.Body(), runtimeidentity.PNPMVersion)
+	if err != nil {
+		t.Fatal("public fixture graph invalid before metadata preparation", err)
+	}
+	if !sourceBound.SourceBound() {
+		sourceBound, err = source.BindPNPMLock(ctx, parsed)
+	}
+	if err != nil || len(sourceBound.Artifacts()) != len(fixture.specs) {
+		t.Fatal("public fixture source binding failed before metadata preparation", err)
+	}
+	target, err := domain.NewInstallTarget(filepath.Join(t.TempDir(), "project"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	install, err := domain.NewNPMProjectInstallContext(target)
+	if err != nil {
+		t.Fatal(err)
+	}
+	frozen, err := sourceBound.InspectionContext(install, controls, PNPMResolverRuntimeIdentity())
+	if err != nil {
+		t.Fatal("fixture inspection context unavailable", err)
+	}
+	inspectionInput, err := frozen.BindAcquired(frozen.Snapshot(), acquiredInputs)
+	if err != nil {
+		t.Fatal("fixture complete acquired binding unavailable", err)
+	}
+	return pnpmOfflineInputs{intake: intake, controls: controls, inspection: inspectionInput, inventories: inventories, fileSpecs: fileSpecs, archive: input.Bytes()}
 }
 
 func assertPNPMFixtureLink(t *testing.T, ctx context.Context, runner streamingDockerOutput, container string, expected pnpmOfflineLink) {

@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"context"
 	"reflect"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -18,6 +19,20 @@ func TestPNPMRuntimeKeepsNodeBoundaryAndRejectsOtherToolAuthority(t *testing.T) 
 	args, err := pnpmCreateArguments("none", nil, volume, project)
 	if err != nil {
 		t.Fatal(err)
+	}
+	early, err := pnpmCreateArgumentsWithStore("none", nil, volume, project, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, value := range []string{"XDG_CACHE_HOME=" + pnpmProjectRoot + "/cache", "TMPDIR=" + pnpmProjectRoot + "/tmp", "PNPM_CONFIG_STORE_DIR=" + pnpmProjectRoot + "/store"} {
+		index := slices.Index(early, value)
+		if index <= 0 || early[index-1] != "--env" || slices.Contains(args, value) || slices.Contains(early[index+1:], value) {
+			t.Fatal("early store context missing, repeated or leaked into original selection", value)
+		}
+		early = slices.Delete(early, index-1, index+1)
+	}
+	if !slices.Equal(early, args) {
+		t.Fatal("early store changed unrelated native boundary")
 	}
 	old := npmCreateArguments("none", nil)
 	projectMount, err := project.mountArgument(false)

@@ -45,7 +45,7 @@ func TestPNPMActualLayoutInventoryFixture(t *testing.T) {
 				if err != nil {
 					t.Fatal("native layout envelope rejected", err)
 				}
-				bound, err := input.BindLayout(ctx, inventories, parsed, pnpmProjectRoot+"/store")
+				bound, err := input.BindLayout(ctx, inventories, parsed.RestrictDirectoryWrites(), pnpmProjectRoot+"/store")
 				if err != nil {
 					t.Fatal("native layout differs from complete acquired inputs", err)
 				}
@@ -229,7 +229,7 @@ func checkPNPMLayoutMutations(t *testing.T, ctx context.Context, input artifactn
 		if err != nil {
 			t.Fatal("negative failed before semantic binding", change, err)
 		}
-		if bound, err := input.BindLayout(ctx, inventories, parsed, pnpmProjectRoot+"/store"); err == nil || bound.Digest().String() != "" {
+		if bound, err := input.BindLayout(ctx, inventories, parsed.RestrictDirectoryWrites(), pnpmProjectRoot+"/store"); err == nil || bound.Digest().String() != "" {
 			t.Fatal("mutated native data admitted", change)
 		}
 		count++

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
@@ -12,7 +13,7 @@ const pnpmProjectRoot = "/tmp/haa-pnpm-input"
 const pnpmProjectDirectory = pnpmProjectRoot + "/project"
 
 func createPNPMProjectVolume(ctx context.Context, runner CommandRunner, owner string) (closureVolume, error) {
-	return createInputVolume(ctx, runner, owner+"-pnpm-project", runtimeidentity.PNPMToolSHA256, 128<<20, false, projectBuildVolumeConfig{pnpmProjectRoot, false})
+	return createInputVolume(ctx, runner, owner+"-pnpm-project", runtimeidentity.PNPMToolSHA256, artifactnpm.PNPMInspectionWorkspaceLimit, false, projectBuildVolumeConfig{pnpmProjectRoot, false})
 }
 
 func closePNPMProjectVolume(ctx context.Context, runner CommandRunner, volume *closureVolume) error {
@@ -22,6 +23,10 @@ func closePNPMProjectVolume(ctx context.Context, runner CommandRunner, volume *c
 // The pinned helper and private project mounts reuse the qualified Node boundary.
 // PNPM never inherits Python closure or artifact execution authority.
 func pnpmCreateArguments(network string, hostArguments []string, volume nativeRuntimeVolume, project closureVolume) ([]string, error) {
+	return pnpmCreateArgumentsWithStore(network, hostArguments, volume, project, false)
+}
+
+func pnpmCreateArgumentsWithStore(network string, hostArguments []string, volume nativeRuntimeVolume, project closureVolume, earlyStore bool) ([]string, error) {
 	if volume.kind != nativeRuntimePNPM {
 		return nil, errors.New("pnpm requires its own attested runtime volume")
 	}
@@ -36,7 +41,11 @@ func pnpmCreateArguments(network string, hostArguments []string, volume nativeRu
 	if err != nil {
 		return nil, err
 	}
-	return nodeResolverCreateArguments(network, hostArguments, []string{"--mount", mount, "--mount", projectMount,
+	extra := []string{"--mount", mount, "--mount", projectMount,
 		"--env", "NPM_CONFIG_MANAGE_PACKAGE_MANAGER_VERSIONS=false",
-		"--env", "PNPM_CONFIG_UPDATE_NOTIFIER=false"}), nil
+		"--env", "PNPM_CONFIG_UPDATE_NOTIFIER=false"}
+	if earlyStore {
+		extra = append(extra, "--env", "XDG_CACHE_HOME="+pnpmProjectRoot+"/cache", "--env", "TMPDIR="+pnpmProjectRoot+"/tmp", "--env", "PNPM_CONFIG_STORE_DIR="+pnpmProjectRoot+"/store")
+	}
+	return nodeResolverCreateArguments(network, hostArguments, extra), nil
 }

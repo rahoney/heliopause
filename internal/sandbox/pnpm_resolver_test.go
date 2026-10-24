@@ -174,3 +174,32 @@ func TestPNPMOwnedContainerCleanupCannotAdoptOtherNativeKind(t *testing.T) {
 		})
 	}
 }
+
+func TestPNPMSharedNativeScopePreservesCancellationBeforeSideEffects(t *testing.T) {
+	runner := &pnpmControlTransport{}
+	endpoints := &pnpmCountingEndpoints{}
+	probeCalls, supplyCalls, actionCalls := 0, 0, 0
+	resolver, err := NewPNPMResolver(runner, endpoints, &recordingObserver{}, func(context.Context) (Capability, error) {
+		probeCalls++
+		return Capability{Available: true}, nil
+	}, &recordingResolverPolicyService{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	resolver.prepare = func(context.Context) (*pnpmPreparedTool, error) {
+		supplyCalls++
+		return nil, errors.New("unexpected tool preparation")
+	}
+	ctx, cancel := context.WithCancelCause(context.Background())
+	cause := errors.New("caller canceled native work")
+	cancel(cause)
+	err = resolver.withNativeProject(ctx, true, func(context.Context, string, string, *closureVolume) error { actionCalls++; return nil })
+	if !errors.Is(err, context.Canceled) || !errors.Is(err, cause) || runner.calls != 0 || endpoints.calls != 0 || probeCalls != 0 || supplyCalls != 0 || actionCalls != 0 {
+		t.Fatal("canceled native scope lost its cause or performed work", err)
+	}
+	input := pnpmSelectionInputFixture(t, artifactnpm.PNPMInstall, "", `{}`)
+	output, err := resolver.SelectProject(ctx, input)
+	if !errors.Is(err, cause) || len(output.Controls()) != 0 || runner.calls != 0 || probeCalls != 0 {
+		t.Fatal("original selection bypassed the shared cancellation gate", err)
+	}
+}

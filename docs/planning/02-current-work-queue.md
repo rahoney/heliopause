@@ -16,7 +16,7 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — rc6/native4 same-runtime baseline IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; P2/native5 expansion locally verified only, guest/whole qualification and channel scope remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2c5-B4 — B3c full acquired inventory/instance/edge/bin layout binding LOCAL VERIFIED; native freshness cache explicitly discarded after bounded JSON accounting; production static-all/prepare/fresh instance execution and aggregate exact edit map next; CI404/1f410fd ten SUCCESS; product dynamic INCOMPLETE; P2 acceptance NO
+Next action: M13-004/P2c5-B4b — production native prepare B4a LOCAL VERIFIED: complete source/readback hashes, fixed budget and shared native owner, detach/endpoint0, restricted directory entry view, complete observation/cleanup before value; verified payload/fresh instance backend next, then static-all collection gate/aggregate and Host/CLI; CI404/1f410fd ten SUCCESS; product dynamic INCOMPLETE; P2 acceptance NO
 Current substep: M13-004/P2 — IN_PROGRESS; offline supply/native distribution LOCAL VERIFIED; exact guest admission and product graph/layout/CLI gaps active; support not yet advertised
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
@@ -163,6 +163,14 @@ logical footprint·재소개 bytes·network detach/실제 endpoint0·관찰/정�
 이어 verified payload의 최소 소개·fresh per-instance 실제 결과·partial 관찰/첫 오류 보존을
 연결한다. 단일 npm·Domain/Application의 기존 의미는 유지하며 이 문서만으로 새 구현/qualification을
 주장하지 않는다. M13-004 하나만 IN_PROGRESS이고 PNPM product dynamic/전체 P2는 미완료다.
+
+후속 B4a의 [로컬 결과](./evidence/package-client-quarantine/p2c5b4a-pnpm-production-prepare-local-20261024.json)는
+production prepare의 transitive2/peer4와 정리 응답 실패 시 bound 값 폐기·원래 cause 보존을
+actual28.999s로 확인했다. 기존 선택5개 회귀28.48s·최종 Quick/security/두 package 전체
+Race26.466s도 PASS다. Raw0777 directory 관측은 unverified entry view에서 write bits022만
+제거해 소개할 값에 결합하고 원래 file/link/mode guard는 유지했다. 끝난 시험33files/
+498,955,765B는 refs/query errors0 뒤 삭제했다. 이제 B4b의 검증 payload/fresh instance 실행과
+B4c static-all 수집 gate·실제 관찰 aggregate를 잇는다. Product dynamic과 전체 P2는 계속 미완료다.
 
 ### 2026-10-24 CI404 묶음 checkpoint 확인
 

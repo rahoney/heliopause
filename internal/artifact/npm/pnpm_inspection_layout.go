@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"path"
 	"slices"
 	"strings"
@@ -53,19 +54,16 @@ func (i PNPMInspectionInput) BindLayout(ctx context.Context, inventories []Archi
 	if !i.Valid() || len(i.artifacts) == 0 || len(inventories) != len(i.artifacts) || len(layout.entries) == 0 {
 		return PNPMInspectionLayout{}, errPNPMInspectionLayout
 	}
-	bySubject := make(map[domain.AcquiredArtifact]ArchiveInventory, len(inventories))
-	for _, inventory := range inventories {
-		if !inventory.Valid() || !slices.Contains(i.artifacts, inventory.artifact) {
-			return PNPMInspectionLayout{}, errPNPMInspectionLayout
-		}
-		if _, duplicate := bySubject[inventory.artifact]; duplicate {
-			return PNPMInspectionLayout{}, errPNPMInspectionLayout
-		}
-		bySubject[inventory.artifact] = inventory
+	bySubject, err := i.indexInventories(inventories)
+	if err != nil {
+		return PNPMInspectionLayout{}, err
 	}
 	modules, err := parsePNPMLayoutModules(i, layout, expectedStoreRoot)
-	if err != nil || checkPNPMVirtualLock(i, layout) != nil {
-		return PNPMInspectionLayout{}, errPNPMInspectionLayout
+	if err != nil {
+		return PNPMInspectionLayout{}, fmt.Errorf("%w: generated modules metadata", err)
+	}
+	if err := checkPNPMVirtualLock(i, layout); err != nil {
+		return PNPMInspectionLayout{}, fmt.Errorf("%w: frozen virtual lock", err)
 	}
 	packages := map[string]PNPMLockedPackage{}
 	for _, pkg := range i.context.selection.lock.packages {
@@ -205,7 +203,7 @@ func (i PNPMInspectionInput) BindLayout(ctx context.Context, inventories []Archi
 		}
 	}
 	if len(wanted) != len(layout.entries) {
-		return PNPMInspectionLayout{}, errPNPMInspectionLayout
+		return PNPMInspectionLayout{}, fmt.Errorf("%w: entry coverage expected=%d observed=%d", errPNPMInspectionLayout, len(wanted), len(layout.entries))
 	}
 	directories := map[string]bool{}
 	for name, requirement := range wanted {
@@ -219,7 +217,7 @@ func (i PNPMInspectionInput) BindLayout(ctx context.Context, inventories []Archi
 		}
 		requirement, present := wanted[actual.Name]
 		if !present || !pnpmInspectionEntryMode(actual, requirement) {
-			return PNPMInspectionLayout{}, errPNPMInspectionLayout
+			return PNPMInspectionLayout{}, fmt.Errorf("%w: entry presence or mode %q", errPNPMInspectionLayout, actual.Name)
 		}
 		if requirement.kind == tar.TypeDir {
 			if actual.Kind != tar.TypeDir {
@@ -250,7 +248,7 @@ func (i PNPMInspectionInput) BindLayout(ctx context.Context, inventories []Archi
 			continue
 		}
 		if int64(file.end-file.start) != requirement.size || actual.Digest != requirement.digest {
-			return PNPMInspectionLayout{}, errPNPMInspectionLayout
+			return PNPMInspectionLayout{}, fmt.Errorf("%w: acquired payload %q", errPNPMInspectionLayout, actual.Name)
 		}
 	}
 	// pnpm's freshness cache is neither inspection input nor execution data.

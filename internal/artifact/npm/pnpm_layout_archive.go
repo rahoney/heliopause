@@ -205,6 +205,20 @@ func (l PNPMLayoutArchive) Entries() []PNPMLayoutEntry {
 	return append([]PNPMLayoutEntry(nil), l.entries...)
 }
 
+// RestrictDirectoryWrites creates an unverified inspection view that removes
+// group/other directory write bits. It grants no permission, changes no file
+// bytes or links, and is not layout/source validation. Native raw headers stay
+// in the original value; only the restricted entries may be rendered later.
+func (l PNPMLayoutArchive) RestrictDirectoryWrites() PNPMLayoutArchive {
+	entries := l.Entries()
+	for index := range entries {
+		if entries[index].Kind == tar.TypeDir {
+			entries[index].Mode &^= 0o022
+		}
+	}
+	return PNPMLayoutArchive{l.body, entries, l.files}
+}
+
 // ReadFile copies unverified regular bytes, including a structurally closed
 // hardlink alias. Symlinks are not followed, and no Host file is opened.
 func (l PNPMLayoutArchive) ReadFile(name string) ([]byte, error) {

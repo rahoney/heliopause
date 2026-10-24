@@ -121,3 +121,72 @@ build/latches는 locator 변경 단위에 한 번 묶고 완료 bulk는 refs/que
 문서 전용/작은 helper마다 full remote CI를 반복하지 않는다. B4 production 실행 소비자가 닫히면
 묶음 push하고 직전 CI40453m16을 근거로55분 실제 timer를 둔다. 그 사이 독립 후속을 계속한다.
 이 문서 작성만으로 B4 구현/qualification이나 PNPM Host/CLI·전체 P2 완료를 표시하지 않는다.
+
+## 6. B4a 첫 결과와 directory 권한 축소의 source 작성 전 재검토
+
+공용 native scope/전체 입력 예산의 첫 Quick139.189s/security7.644s가 PASS다. Prepare 전송의
+첫 build10.771s는 nativeToolArchiveOutput.limit의 int64와 새 int 표현이 달라 실패했다.
+기존 타입과 맞춘 뒤 Quick131.369s/security6.796s는 PASS다. 실제 시험 전 실패이며 동작
+실패나 Source 검사 성공으로 재분류하지 않는다.
+
+첫 actual39.948s는 production transitive binding에서 거부됐고 정확한 entry는 미수집이다.
+Peer와 새 cleanup negative는 미실행이다. 독립된 기존 native selection의 positive와 command/
+cleanup·EOF 불완전·금지 관찰5개는 전부28.48s PASS다. 공용 scope source는 이후 변경하지
+않았으므로 진단 actual에서 이 다섯 시험을 반복하지 않는다. Host불변/helperwait0/final1을
+보존한 뒤 그 전용166,280,368B는 all-UID references0/query errors0 뒤 삭제했다.
+
+Diagnostic security는385.630s의 tool timeout이었다. 전후가 같은 원인이라는 증거는 없으나
+Host MemAvailable1,572,044KiB/swap free240KiB와 큰 memory/IO pressure를 관측했다.
+전역 변경·다른 process 종료·규칙/범위/시간 제한 완화 없이 도구 process의 GOMAXPROCS=2만
+적용한 같은 canonical security11.063s는 PASS다. 앞 timeout을 제품 finding 또는 수정 해결
+증거로 바꾸지 않는다. 이후 compile에도 같은 process 동시성만 명시했다.
+
+진단 actual27.973s는 transitive와 **검증된 bound 값 생성 뒤 실제 removal 응답 실패 시 값
+폐기/원래 cause/complete EOF**를 통과했다. Peer는 package directory 두 곳(react와
+use-sync-external-store)의 실제 mode0777로 거부됐다. 파일 bytes/owner/link 허용을 넓히지
+않는다. 첫 transitive 거부에도 같은 mode였다고 소급 단정하지 않는다. Pinned file_mode.rs의
+current_umask는 process-global umask를 잠시0으로 읽는 window를 명시하지만, 여기서는 이
+메커니즘의 직접 인과를 검증하지 않았다. Native directory mode 관측만 확정 사실이다.
+
+새 수정은 immutable unverified value의 `PNPMLayoutArchive.RestrictDirectoryWrites()`다.
+Native envelope의 정확한 directory entry에서 **022 bits만 제거**한 새 entry view를 만든다.
+Kind/owner/이름/링크/regular bytes·digest/나머지 mode bits는 바꾸지 않고 raw capture도 편집하지
+않는다. Decode된 body에서 directory payload는 없으며 raw tar 전달 API도 없다. Host/native
+filesystem chmod나 새 command/observer 예외를 추가하지 않는다. Native prepare가 이 view를
+BindLayout에 전달하고 B3 actual fixture도 같은 helper를 명시 소비한다. 기존 raw BindLayout의
+group/other write 거부는 그대로다. 결과 payload는 축소한 metadata로만 렌더해야 한다.
+
+두 번째 검토: 디렉터리 외 파일을 일반적으로 chmod하거나 privileged/owner/execute 불일치를
+보정하면 원래 guard를 우회한다. 이 helper는 directory의 쓰기 권한을 **제거만** 하므로 그런
+보정이 아니다. Unknown extra directory·타입 충돌·owner/특권 bits·regular/alias의 unsafe mode와
+모든 source file/edge/bin 검사는 뒤의 기존 envelope/binder가 계속 거부한다. 원본 mode/bytes는
+diagnostic raw에 남고 safety fingerprint는 실제 소개할 축소된 entry metadata에 결합한다.
+
+Unit은 raw0777 directory 거부→축소 view의 정상 full binding·raw getter 불변, bytes/link·mode
+추가0, regular/hardlink write와 missing owner bits의 지속 거부를 검증한다. 새 fresh actual에는
+production 두 public fixture·cleanup negative만 선택한다. Source 실측 관찰·첫 오류·Host불변/
+정리 조건을 유지하고 성공 전에는 전체 B4a/P2 완료를 표시하지 않는다.
+
+## 7. B4a named local qualification과 다음 작업
+
+권한 축소 view의 canonical format1.400s/Quick112.482s/security15.186s와 전체 npm·sandbox
+Race26.466s가 PASS다. 도구 process만 GOMAXPROCS=2이며 규칙/범위/기존 시간 제한·실제
+격리 예산은 변경하지 않았다. Fresh actual28.999s/test26.06s는 public transitive2/peer4의
+전체 원본/SRI/static inventory·네트워크 해제/endpoint0·native layout을 **production prepare**로
+검증했다. 반환 전에 실제 complete trace와 금지0·원래 controls·cleanup을 확인했다.
+첫 callback이 이미 만든 bound 값을 cleanup acknowledgement 실패가 폐기하고 같은 cause를
+보존하는 actual negative도 PASS다. 원본/source bytes나 mode guard를 느슨하게 하지 않았다.
+
+앞 actual의 기존 선택5개 회귀28.48s와 common scope source는 동일하다. Diagnostic labels와
+directory view는 그 선택 코드를 바꾸지 않았으며 이후 actual에서는 다섯 사례를 반복하지
+않았다. First39.948s/diagnostic27.973s의 실패와 부분 성공은 그대로 보존한다. 세 actual 모두
+Host전체동일/helperwait0/confirmed cleanup이며 실패 둘의 final1과 성공 final0을 구분한다.
+완료 runtime 총498,955,765B/33files는 각각 전체 UID 참조0/query errors0 뒤 삭제했다.
+
+[로컬 영수증](./p2c5b4a-pnpm-production-prepare-local-20261024.json)이 최종 source/원본/범위를
+소유한다. B4a metadata prepare는 IMPLEMENTED=YES / WIRED=YES(actual production consumer) /
+QUALIFIED=YES(named local) / ACCEPTANCE_CLOSED=NO(full P2)다. 다음 B4b는 bound Entries에서
+원본 controls·불필요 metadata를 제외한 새 payload를 만들고 fresh 실제 instance backend에
+연결한다. 이어 B4c의 static-all **수집 중** 예산 gate/정확한 instance coverage·partial 사실
+보존 aggregate, hashed locator, provenance/cache/Host records/transaction/CLI와 full P2는
+계속 MISSING이다. Host 실행·Policy·새 remote CI·전체 PNPM 지원의 완료로 확대하지 않는다.

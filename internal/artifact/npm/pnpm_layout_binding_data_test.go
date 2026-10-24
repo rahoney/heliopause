@@ -156,3 +156,69 @@ func TestPNPMInspectionLayoutCacheIsAccountedForButNeverIntroduced(t *testing.T)
 		})
 	}
 }
+
+func TestPNPMInspectionDirectoryRestrictionRemovesOnlyWriteBits(t *testing.T) {
+	f := fullInspectionLayoutFixture(t, false)
+	for index := range f.entries {
+		if f.entries[index].header.Typeflag == tar.TypeDir {
+			f.entries[index].header.Mode = 0o777
+		}
+	}
+	raw := f.parse(t)
+	if _, err := f.input.BindLayout(context.Background(), f.inventories, raw, "/tmp/haa-store"); err == nil {
+		t.Fatal("raw writable directories admitted")
+	}
+	restricted := raw.RestrictDirectoryWrites()
+	if _, err := f.input.BindLayout(context.Background(), f.inventories, restricted, "/tmp/haa-store"); err != nil {
+		t.Fatal("restricted inspection view rejected", err)
+	}
+	before, after := raw.Entries(), restricted.Entries()
+	for index, original := range before {
+		expected := original
+		if expected.Kind == tar.TypeDir {
+			expected.Mode &^= 0o022
+		}
+		if after[index] != expected || raw.Entries()[index] != original {
+			t.Fatal("restriction changed bytes, links, identity or original headers")
+		}
+		if original.Kind == tar.TypeReg {
+			a, err := raw.ReadFile(original.Name)
+			if err != nil {
+				t.Fatal(err)
+			}
+			b, err := restricted.ReadFile(original.Name)
+			if err != nil || string(a) != string(b) {
+				t.Fatal("restriction changed regular bytes", err)
+			}
+		}
+	}
+	for _, mode := range []int64{0o666, 0o555} {
+		changed := fullInspectionLayoutFixture(t, false)
+		for index := range changed.entries {
+			e := &changed.entries[index]
+			if mode == 0o666 && e.header.Typeflag == tar.TypeReg {
+				e.header.Mode = mode
+			}
+			if mode == 0o555 && e.header.Typeflag == tar.TypeDir {
+				e.header.Mode = mode
+			}
+		}
+		if _, err := changed.input.BindLayout(context.Background(), changed.inventories, changed.parse(t).RestrictDirectoryWrites(), "/tmp/haa-store"); err == nil {
+			t.Fatal("restriction repaired unsafe regular or missing owner permissions")
+		}
+	}
+	alias := fullInspectionLayoutFixture(t, false)
+	for index := range alias.entries {
+		e := &alias.entries[index]
+		if strings.HasSuffix(e.header.Name, "/react/LICENSE") {
+			e.header.Typeflag = tar.TypeLink
+			e.header.Linkname = "node_modules/.pnpm/use-sync-external-store@1.2.0_react@18.3.1/node_modules/use-sync-external-store/LICENSE"
+			e.header.Mode = 0o666
+			e.header.Size = 0
+			e.body = ""
+		}
+	}
+	if _, err := alias.input.BindLayout(context.Background(), alias.inventories, alias.parse(t).RestrictDirectoryWrites(), "/tmp/haa-store"); err == nil {
+		t.Fatal("restriction changed an unsafe hardlink mode")
+	}
+}
