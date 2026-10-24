@@ -350,6 +350,9 @@ func (l PNPMInspectionLayout) Target(artifact domain.AcquiredArtifact, instance 
 
 func (l PNPMInspectionLayout) Digest() domain.ContentDigest { return l.digest }
 
+// RuntimeIdentity binds execution to the runtime used by the frozen input.
+func (l PNPMInspectionLayout) RuntimeIdentity() string { return l.input.Context().RuntimeIdentity() }
+
 // InspectionManifest returns only private, frozen dependency data. User root
 // scripts/config/metadata stay in the controller-owned original controls.
 func (l PNPMInspectionLayout) InspectionManifest() []byte { return bytes.Clone(l.manifest) }

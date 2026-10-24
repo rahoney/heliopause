@@ -1264,7 +1264,14 @@ bool ValidPNPMTargetLifecyclePath(const std::string& path) {
   if (split == std::string::npos) return false;
   const std::string slot = tail.substr(0, split);
   const std::string name = tail.substr(split + strlen("/node_modules/"));
-  if (slot.size() < 2 || slot.find('@', 1) == std::string::npos || slot.find('/') != std::string::npos || name.empty()) return false;
+  bool hashed_slot = slot.size() == 120 && slot[87] == '_';
+  if (hashed_slot) {
+    for (size_t i = 88; i < slot.size(); ++i) {
+      const char c = slot[i];
+      if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f'))) { hashed_slot = false; break; }
+    }
+  }
+  if (slot.size() < 2 || slot.size() > 120 || (slot.find('@', 1) == std::string::npos && !hashed_slot) || slot.find('/') != std::string::npos || name.empty()) return false;
   for (unsigned char c : tail) {
     if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') ||
         c == '@' || c == '+' || c == '_' || c == '.' || c == '-' || c == '/') continue;

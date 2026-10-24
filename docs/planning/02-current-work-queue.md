@@ -14,10 +14,10 @@ Last completed work item: CLI-UX-003 — COMPLETE; source4cfe29e/CI352 ten SUCCE
 Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
-Active work item status: IN_PROGRESS — Host memory recovered; restored B4b1 payload/parser canonical checks and npm/sandbox full Race PASS; fresh instance backend/whole P2 acceptance remain
+Active work item status: IN_PROGRESS — B4b1/B4b2 named local qualification PASS; static-all/actual instance aggregate and Host/CLI/whole P2 acceptance remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2c5-B4b2 — connect qualified minimal payload to fresh per-instance backend, then B4c static-all/aggregate and Host/CLI; CI404/1f410fd ten SUCCESS applies only to its old source; product dynamic INCOMPLETE; P2 acceptance NO
-Current substep: M13-004/P2 — IN_PROGRESS; B4b1 LOCAL QUALIFIED; fresh backend/whole qualification pending; support not yet advertised
+Next action: M13-004/P2c5-B4c — audit and connect static-all collection budget, exact instance/session coverage and partial Evidence preservation; then Host/CLI; B4b2 canonical Go/Race, C++112 and public6/controlled3 actual PASS in separate scoped runs; CI404 applies only to its old source; P2 acceptance NO
+Current substep: M13-004/P2 — IN_PROGRESS; B4b1/B4b2 LOCAL QUALIFIED; B4c/whole qualification pending; support not yet advertised
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -198,6 +198,14 @@ codex PID1404의 RSS22,799,860KiB·MemAvailable534,648KiB·swap free0을 관측�
 동일한 보존 source의 canonical format/Quick/security/docs와 npm/sandbox 전체 Race25.352s를
 확인했다. Minimal payload·전체 readback과 공유 inode 의미를 검증했으며 production backend는
 다음 B4b2다. 과거 timeout/RSS 원인 미확정은 보존하고 전체 P2 acceptance NO를 유지한다.
+
+[B4b2의 착수 감사·수정 지도·두 번째 검토](./evidence/package-client-quarantine/p2c5b4b2-pnpm-instance-backend-plan-20261025.md)에
+따라 기존 fresh volume/target command/observer·partial 의심 사실 보존 helper를 연결했다.
+[B4b2 로컬 결과](./evidence/package-client-quarantine/p2c5b4b2-pnpm-instance-backend-local-20261025.json)는
+canonical Go/Race·C++112와 실제 public transitive2/peer4·controlled 정상/exit37, 별도 긴 이름
+실행까지 PASS다. 각 실행의 complete trace·최초 실패와 사실 보존·helperwait0/정리·Host 보존을
+확인했다. Named local consumer 범위만 닫고 B4c static-all/aggregate부터 이어간다. 전체 P2
+acceptance와 Host/CLI·remote qualification은 NO다.
 
 ### 2026-10-24 CI404 묶음 checkpoint 확인
 

@@ -4,6 +4,8 @@ import (
 	"errors"
 	"path"
 	"strings"
+
+	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 )
 
 const pnpmTargetLifecycleCommand = `mkdir -p /tmp/.npm; HOME=/tmp npm_config_cache=/tmp/.npm npm_config_script_shell=/haa-runtime/haa-boundary npm --prefix /tmp/haa-pnpm-input/project rebuild --ignore-scripts=false --bin-links=false --foreground-scripts --offline --no-update-notifier --workspaces=false --no-audit --no-fund --dangerously-allow-all-scripts "$1"`
@@ -16,7 +18,7 @@ func validPNPMTargetLifecyclePath(target string) bool {
 		return false
 	}
 	slot, name, found := strings.Cut(strings.TrimPrefix(target, prefix), "/node_modules/")
-	if !found || len(slot) < 2 || !strings.Contains(slot[1:], "@") || len(name) == 0 {
+	if !found || len(slot) < 2 || len(slot) > artifactnpm.PNPMVirtualStoreDirMaxLength || !strings.Contains(slot[1:], "@") && !pnpmHashedTargetSlot(slot) || len(name) == 0 {
 		return false
 	}
 	for _, value := range []string{slot, name} {
@@ -35,6 +37,19 @@ func validPNPMTargetLifecyclePath(target string) bool {
 		return !strings.HasPrefix(name, "@") && name != "." && name != ".."
 	}
 	return len(parts) == 2 && strings.HasPrefix(parts[0], "@") && len(parts[0]) > 1 && parts[1] != "" && parts[1] != "." && parts[1] != ".."
+}
+
+func pnpmHashedTargetSlot(slot string) bool {
+	const prefix = artifactnpm.PNPMVirtualStoreDirMaxLength - 33
+	if len(slot) != artifactnpm.PNPMVirtualStoreDirMaxLength || slot[prefix] != '_' {
+		return false
+	}
+	for _, char := range slot[prefix+1:] {
+		if !(char >= '0' && char <= '9' || char >= 'a' && char <= 'f') {
+			return false
+		}
+	}
+	return true
 }
 
 func pnpmTargetLifecycleExecArguments(container, target string) ([]string, error) {

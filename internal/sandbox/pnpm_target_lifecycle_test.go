@@ -5,6 +5,8 @@ import (
 	"slices"
 	"strings"
 	"testing"
+
+	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 )
 
 func TestPNPMTargetLifecycleUsesOnePositionalInstanceAndMatchingObserverCommand(t *testing.T) {
@@ -84,5 +86,23 @@ func TestPNPMTargetLifecycleTopologyPreservesOrdinaryNPMDefaults(t *testing.T) {
 	again, _ := observerExpectedTopology("npm-lifecycle")
 	if !again[0].ReadOnly {
 		t.Fatal("caller mutated ordinary profile")
+	}
+}
+
+func TestPNPMTargetLifecycleAcceptsOnlyReviewedLongCodecShape(t *testing.T) {
+	name := strings.Repeat("a", 130)
+	slot, err := artifactnpm.PNPMInstanceDirectory(name + "@1.0.0")
+	expected := strings.Repeat("a", 87) + "_69b8023e95a408229c8fe59943dd2497"
+	if err != nil || slot != expected || strings.Contains(slot, "@") {
+		t.Fatal("independent codec vector differs", slot, err)
+	}
+	prefix := pnpmProjectDirectory + "/node_modules/.pnpm/"
+	if _, err := pnpmTargetLifecycleExecArguments(strings.Repeat("a", 64), prefix+slot+"/node_modules/"+name); err != nil {
+		t.Fatal("bound long name rejected", err)
+	}
+	for _, bad := range []string{slot[:119], slot + "f", slot[:87] + "-" + slot[88:], slot[:88] + strings.ToUpper(slot[88:]), slot[:119] + "g"} {
+		if validPNPMTargetLifecyclePath(prefix + bad + "/node_modules/" + name) {
+			t.Fatal("malformed long hash locator admitted", bad)
+		}
 	}
 }

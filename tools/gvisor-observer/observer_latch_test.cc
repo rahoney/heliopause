@@ -4526,6 +4526,12 @@ TopologyState PNPMTargetLifecycleTestTopology() {
 bool VerifyPNPMTargetLifecycleShapeBoundary() {
   const std::string prefix = std::string(kPNPMProjectMount) + "/project/node_modules/.pnpm/";
   const std::string target = prefix + "is-odd@3.0.1/node_modules/is-odd";
+  const std::string hashed_slot = std::string(87, 'a') + "_69b8023e95a408229c8fe59943dd2497";
+  const std::string hashed_target = prefix + hashed_slot + "/node_modules/" + std::string(130, 'a');
+  if (!ValidPNPMTargetLifecyclePath(hashed_target)) return false;
+  for (const auto& slot : {hashed_slot.substr(0, 119), hashed_slot + "f", hashed_slot.substr(0, 87) + "-" + hashed_slot.substr(88), hashed_slot.substr(0, 119) + "g", hashed_slot.substr(0, 88) + "69B8023E95A408229C8FE59943DD2497"}) {
+    if (ValidPNPMTargetLifecyclePath(prefix + slot + "/node_modules/pkg")) return false;
+  }
   for (const auto& path : {target, prefix + "@scope+package@1.2.3/node_modules/@scope/package",
                          prefix + "use-sync-external-store@1.2.0_react@18.3.1/node_modules/use-sync-external-store"}) {
     if (!ValidPNPMTargetLifecyclePath(path)) return false;
@@ -4572,9 +4578,8 @@ bool VerifyPNPMTargetLifecycleShapeBoundary() {
       !IsExactPNPMTargetLifecycleBoundary(wrong_image, kProfileNPM, &topology);
 }
 
-bool VerifyPNPMTargetLifecycleProductionPath() {
+bool VerifyPNPMTargetLifecycleProductionPathForTarget(const std::string& target) {
   const auto topology = PNPMTargetLifecycleTestTopology();
-  const std::string target = std::string(kPNPMProjectMount) + "/project/node_modules/.pnpm/is-odd@3.0.1/node_modules/is-odd";
   const std::string nonce = TestAdmissionNonce(350, 3500);
   gvisor::common::ContextData root;
   root.set_container_id(kThirtySecondID); root.set_thread_group_id(350); root.set_thread_group_start_time_ns(3500);
@@ -4689,6 +4694,12 @@ bool VerifyPNPMTargetLifecycleProductionPath() {
   // A successful interpreter transition does not re-arm itself.
   ok = ok && parse(node, &valid, "REJECTED", "BOOTSTRAP_ENDED") && !valid.groups.at(351).pnpm_target_npm_pending;
   close(sockets[0]); close(sockets[1]); return ok;
+}
+
+bool VerifyPNPMTargetLifecycleProductionPath() {
+  const std::string prefix = std::string(kPNPMProjectMount) + "/project/node_modules/.pnpm/";
+  return VerifyPNPMTargetLifecycleProductionPathForTarget(prefix + "is-odd@3.0.1/node_modules/is-odd") &&
+      VerifyPNPMTargetLifecycleProductionPathForTarget(prefix + std::string(87, 'a') + "_69b8023e95a408229c8fe59943dd2497/node_modules/" + std::string(130, 'a'));
 }
 
 bool VerifyExactNpmNodeInterpreterTransition() {

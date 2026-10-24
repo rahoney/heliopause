@@ -30,23 +30,30 @@ func (f pnpmPreparationRoundTripper) RoundTrip(r *http.Request) (*http.Response,
 // bytes are inert data for intake/transport tests, not executable package data.
 func pnpmPreparationInputFixture(t *testing.T, runtime string) (string, artifactnpm.PNPMInspectionInput, []artifactnpm.ArchiveInventory) {
 	t.Helper()
+	return pnpmPreparationNamedInputFixture(t, runtime, "is-number")
+}
+
+func pnpmPreparationNamedInputFixture(t *testing.T, runtime, name string) (string, artifactnpm.PNPMInspectionInput, []artifactnpm.ArchiveInventory) {
+	t.Helper()
 	root := t.TempDir()
 	manifest := []byte(`{"scripts":{"install":"exit 99"},"config":{"private-example":"fixture"},"author":"fixture","dependencies":{"is-number":"6.0.0"}}`)
 	lockfile, err := os.ReadFile(filepath.Join("..", "artifact", "npm", "testdata", "pnpm-v9-single.synthetic.yaml"))
 	if err != nil {
 		t.Fatal(err)
 	}
+	manifest = bytes.ReplaceAll(manifest, []byte("is-number"), []byte(name))
+	lockfile = bytes.ReplaceAll(lockfile, []byte("is-number"), []byte(name))
 	lock, err := artifactnpm.ParsePNPMLock(manifest, lockfile, runtimeidentity.PNPMVersion)
 	if err != nil {
 		t.Fatal(err)
 	}
 	pkg := lock.Packages()[0]
-	metadata, err := json.Marshal(map[string]any{"name": pkg.Name, "version": pkg.Version, "dist": map[string]string{"tarball": "https://registry.npmjs.org/is-number/-/is-number-6.0.0.tgz", "integrity": pkg.Integrity}})
+	metadata, err := json.Marshal(map[string]any{"name": pkg.Name, "version": pkg.Version, "dist": map[string]string{"tarball": "https://registry.npmjs.org/" + name + "/-/" + name + "-6.0.0.tgz", "integrity": pkg.Integrity}})
 	if err != nil {
 		t.Fatal(err)
 	}
 	source, err := artifactnpm.NewResolver("https://registry.npmjs.org/", &http.Client{Transport: pnpmPreparationRoundTripper(func(r *http.Request) (*http.Response, error) {
-		if r.URL.Path != "/is-number/6.0.0" {
+		if r.URL.Path != "/"+name+"/6.0.0" {
 			t.Fatal("unexpected source request", r.URL.Path)
 		}
 		return &http.Response{StatusCode: http.StatusOK, Header: http.Header{"Content-Type": []string{"application/json"}}, Body: io.NopCloser(bytes.NewReader(metadata))}, nil
@@ -92,6 +99,7 @@ func pnpmPreparationInputFixture(t *testing.T, runtime string) (string, artifact
 		t.Fatal(err)
 	}
 	packageJSON := []byte(`{"name":"is-number","version":"6.0.0"}`)
+	packageJSON = bytes.ReplaceAll(packageJSON, []byte("is-number"), []byte(name))
 	manifestHash := sha256.Sum256(packageJSON)
 	manifestDigest, err := domain.NewSHA256Digest(hex.EncodeToString(manifestHash[:]))
 	if err != nil {

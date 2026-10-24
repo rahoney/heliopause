@@ -40,8 +40,46 @@ func pnpmPayloadTestTar(t *testing.T, files []pnpmPayloadTestFile) []byte {
 
 func pnpmBoundPayloadFixture(t *testing.T, shared bool) artifactnpm.PNPMInspectionLayout {
 	t.Helper()
-	_, input, inventories := pnpmPreparationInputFixture(t, PNPMResolverRuntimeIdentity())
+	layout, _ := pnpmBoundPayloadInputs(t, shared)
+	return layout
+}
+
+func pnpmBoundPayloadInputs(t *testing.T, shared bool) (artifactnpm.PNPMInspectionLayout, artifactnpm.PNPMInspectionInput) {
+	t.Helper()
+	return pnpmBoundPayloadScriptInputs(t, shared, nil)
+}
+
+// Controlled structural input only: supplied scripts are not public package bytes.
+func pnpmBoundPayloadScriptInputs(t *testing.T, shared bool, scripts map[string]string) (artifactnpm.PNPMInspectionLayout, artifactnpm.PNPMInspectionInput) {
+	t.Helper()
+	return pnpmBoundPayloadNamedScriptInputs(t, shared, "is-number", scripts)
+}
+
+func pnpmBoundPayloadNamedScriptInputs(t *testing.T, shared bool, name string, scripts map[string]string) (artifactnpm.PNPMInspectionLayout, artifactnpm.PNPMInspectionInput) {
+	t.Helper()
+	_, input, inventories := pnpmPreparationNamedInputFixture(t, PNPMResolverRuntimeIdentity(), name)
 	inventory := inventories[0]
+	if scripts != nil {
+		manifest, err := json.Marshal(map[string]any{"name": inventory.Artifact().Identity().Name(), "version": inventory.Artifact().Identity().Version(), "scripts": scripts})
+		if err != nil {
+			t.Fatal(err)
+		}
+		digest, err := pnpmPayloadSHA256(manifest)
+		if err != nil {
+			t.Fatal(err)
+		}
+		files := inventory.Entries()
+		for index := range files {
+			if files[index].Path == "package.json" {
+				files[index].Size = int64(len(manifest))
+				files[index].Digest = digest
+			}
+		}
+		inventory, err = artifactnpm.NewArchiveInventory(inventory.Artifact(), files, manifest)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
 	entries := inventory.Entries()
 	license := []byte("shared fixture license\n")
 	digest, err := pnpmPayloadSHA256(license)
@@ -109,7 +147,7 @@ func pnpmBoundPayloadFixture(t *testing.T, shared bool) artifactnpm.PNPMInspecti
 	if err != nil {
 		t.Fatal(err)
 	}
-	return bound
+	return bound, input
 }
 
 func pnpmPayloadFiles(t *testing.T, body []byte) []pnpmPayloadTestFile {
