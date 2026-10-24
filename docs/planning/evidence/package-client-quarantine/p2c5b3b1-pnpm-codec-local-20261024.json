@@ -1,0 +1,103 @@
+{
+  "schema": "helox.local-qualification/v1",
+  "work_item": "M13-004/P2c5-B3b1",
+  "baseline": "7ff0cab8f4dc92aab4d88fbe55d94193fc1b1efa",
+  "status": "LOCAL_VERIFIED_REGISTRY_INSTANCE_DIRNAME_ONLY",
+  "implemented": "YES_REGISTRY_ONLY_PATH_CODEC",
+  "wired": "YES_GATED_NATIVE_PATH_COMPARISON; NO_FULL_LAYOUT_OR_PRODUCT_PREPARE",
+  "qualified": "NO_FULL_P2",
+  "acceptance_closed": "NO_FULL_P2",
+  "source_files": [
+    {
+      "path": "internal/artifact/npm/pnpm_instance_path.go",
+      "sha256": "2a5af58c3c0f59cbfa1fadc989d7e2e50bb096dfd9bba1c4e01842d6dedfa2db"
+    },
+    {
+      "path": "internal/artifact/npm/pnpm_instance_path_test.go",
+      "sha256": "936726efe60419bbb3931233af0ca80987ac1caa5803cdc4ca8d775b24626e5f"
+    },
+    {
+      "path": "internal/sandbox/pnpm_layout_inventory_real_test.go",
+      "sha256": "85eeda7dd0abd0a55e944a244ba02dd68c2de0cb08a3e9800b35260772791bb8"
+    }
+  ],
+  "upstream_commit": "91774e72a04d52ce61db06339696a433d383c764",
+  "checks": {
+    "quick_seconds": 158.014,
+    "security_seconds": 8.534,
+    "docs_seconds": 0.276,
+    "npm_artifact_full_race_seconds": 5.807
+  },
+  "actual": {
+    "seconds": 20.659,
+    "test_seconds": 17.98,
+    "transitive_instances": 2,
+    "peer_instances": 4,
+    "all_expected_encoded_manifests_present": true,
+    "original_controls_and_identity_links_unchanged": true,
+    "trace_complete": true,
+    "forbidden_observations": 0,
+    "host_unchanged": true,
+    "helper_wait": 0,
+    "helper_state": "CONFIRMED_STOPPED",
+    "final_original": 0,
+    "full_layout_validated": false,
+    "dynamic_executed": false,
+    "policy_or_host_installation_executed": false
+  },
+  "cleanup": {
+    "logical_bytes": 165519505,
+    "files": 11,
+    "all_uid_references": 0,
+    "query_errors": 0,
+    "target_absent": true
+  },
+  "not_qualified": [
+    "all native file/edge/alias/bin/generated metadata byte verification",
+    "long hashed dirname without @ target lifecycle admission",
+    "production prepare/static-all/per-instance aggregate",
+    "Host transaction/records/CLI and full P2"
+  ],
+  "raw_evidence": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3b1-codec-first-format.json",
+      "sha256": "509ebd8340ed348324d3ae0a2f8b85425f2387c80a5c1d81ce73301cc4696996"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3b1-codec-first-quick.json",
+      "sha256": "1798b39a7e205475a995019a076df5b640a0e997c6e7b6e3cb689801ffb6de7c"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3b1-codec-first-security.json",
+      "sha256": "28ea7bf6ffbba73859b5646cb847ca0b2084dd8b505eb756d76ec278e08281ca"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3b1-codec-first-docs.json",
+      "sha256": "1970aa2ed6de909cd6d49502dd94aa1ad0f5acc861bf4583112f2a0ccca96940"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3b1-codec-full-race.json",
+      "sha256": "797af2c89b0770247cfd515e25f5a936f28b30ba253727cc7bdfab20cf89bd7b"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3b1-pnpm-layout-codec-runtime-preparation.json",
+      "sha256": "b64b7629cd979bd15d08b1f8a49e38551ef1643681d0ddf92d67f7ed096b0fc9"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3b1-pnpm-layout-codec.json",
+      "sha256": "a49c4f170d3e09feddabfbceaf5938074cf9001ffe183cca3c3382079bdfc6b6"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3b1-pnpm-layout-codec-actual.log",
+      "sha256": "bf2359fa70196f254df1e3de4f0cce9fe574cd9e971806b39c66f93774653d90"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3b1-pnpm-layout-codec-completed-runtime-cleanup.json",
+      "sha256": "87241149205e0e989b4b89448bdf97313ac9a29732cb7d3af5b6a07ad9fdb719"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2c5b3-pnpm-dirname-tests-upstream.rs",
+      "sha256": "37d22ccdd2935715d2a7605b0dd9453ce89feef4f678edac60cfd5e6760351d6"
+    }
+  ]
+}

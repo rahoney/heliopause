@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "baseline": "0fa2f853699049e6407b91db2cf6ad8a98446d42",
+  "scope": "diagnostic only; no deadline enlargement, skipping or native cause claim",
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.784,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/macos-progress-source"
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 160.571,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/macos-progress-source"
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 7.871,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/macos-progress-source"
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.219,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/macos-progress-source"
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.689,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/macos-progress-source"
+    }
+  ],
+  "targeted": [
+    {
+      "check": "race",
+      "exit": 0,
+      "seconds": 15.302,
+      "args": [
+        "test",
+        "-race",
+        "-timeout=2m",
+        "./scripts/check"
+      ],
+      "environment_overrides": {}
+    },
+    {
+      "check": "darwin-compile",
+      "exit": 0,
+      "seconds": 1.273,
+      "args": [
+        "test",
+        "-c",
+        "-o",
+        "/tmp/haa-uv-runtime-0_e6zmn4/tmp/macos-slow-root-check.test",
+        "./scripts/check"
+      ],
+      "environment_overrides": {
+        "GOOS": "darwin",
+        "GOARCH": "amd64",
+        "CGO_ENABLED": "0"
+      }
+    }
+  ],
+  "sources": [
+    {
+      "path": "scripts/check/go_test_capture.go",
+      "sha256": "699816ebfcaced1bfdbdc8d2a5e01f3c53d1f4f1415f515b7914a804284cbb85"
+    },
+    {
+      "path": "scripts/check/go_test_capture_test.go",
+      "sha256": "74a59076945daac8d6ba6d6767e0c9525720729b86a8bec949ef58e510fcdbcd"
+    }
+  ],
+  "native_result": "PENDING for this slow-root summary; CI369 existing progress diagnostic observed default6m timeout",
+  "ci369_mac_raw": "docs/github-logs/package-client-quarantine-20261021/ci369-macos.log",
+  "bounded_summary": {
+    "minimum_completed_ms": 1000,
+    "completed_root_entries": 8,
+    "active_entries": 128,
+    "active_display": 16,
+    "raw_bytes": 1048576
+  },
+  "completed_darwin_test_binary": "removed after reference/query error0; uv-inventory-completed-inputs-cleanup.json"
+}

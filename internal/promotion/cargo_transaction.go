@@ -19,6 +19,7 @@ type cargoProjectPlan struct {
 	rootInfo             os.FileInfo
 	members              map[string]os.FileInfo
 	controls             []domain.ProjectControlFile
+	lockOnly             bool
 	authorized           bool
 }
 
@@ -212,10 +213,18 @@ func (t *cargoProjectTransaction) prepareSelectedControls() error {
 			return errors.New("create selected Cargo control")
 		}
 		_, writeErr := f.Write(body)
+		var modeErr error
+		if t.plan.lockOnly {
+			if original := t.plan.members[name]; original != nil {
+				modeErr = f.Chmod(original.Mode().Perm())
+			} else {
+				modeErr = errors.New("cargo lock update original control is missing")
+			}
+		}
 		info, statErr := f.Stat()
 		syncErr := f.Sync()
 		closeErr := f.Close()
-		if writeErr != nil || statErr != nil || syncErr != nil || closeErr != nil {
+		if writeErr != nil || modeErr != nil || statErr != nil || syncErr != nil || closeErr != nil {
 			return errors.New("persist selected Cargo control")
 		}
 		t.selectedInfo[name] = info
@@ -262,6 +271,9 @@ func (t *cargoProjectTransaction) commit() (resultErr error) {
 		if err := t.publishApproval(); err != nil {
 			return t.fail(err)
 		}
+	}
+	if err := t.check("after-approval"); err != nil {
+		return t.fail(err)
 	}
 	if err := syncCargoTransactionRoot(t.boundary); err != nil {
 		return t.fail(errors.New("sync committed Cargo project"))
@@ -316,7 +328,7 @@ func (t *cargoProjectTransaction) backupCurrent() error {
 		if err != nil || !info.Mode().IsRegular() || info.Mode()&os.ModeSymlink != 0 {
 			return errors.New("inspect current Cargo transaction member")
 		}
-		if !os.SameFile(t.plan.members[name], info) {
+		if !os.SameFile(t.plan.members[name], info) || t.plan.members[name].Mode() != info.Mode() {
 			return errors.New("cargo transaction original member identity changed")
 		}
 		matched := false
@@ -328,6 +340,12 @@ func (t *cargoProjectTransaction) backupCurrent() error {
 		}
 		if controlErr != nil || !matched || !pypiSingleLink(info) {
 			return errors.New("cargo original control changed before backup")
+		}
+		if !t.replacesControl(name) {
+			if err := t.verifyRetainedControl(name); err != nil {
+				return err
+			}
+			continue
 		}
 		if err := renameRootNoReplace(t.boundary, name, filepath.Join(filepath.Base(t.backup), name)); err != nil {
 			return errors.New("backup current Cargo transaction member")
@@ -347,9 +365,6 @@ func (t *cargoProjectTransaction) publishWorkspace() error {
 		if err != nil || !info.Mode().IsRegular() || info.Mode()&os.ModeSymlink != 0 {
 			return errors.New("verified Cargo transaction output is unavailable")
 		}
-		if _, err := t.boundary.Lstat(name); !errors.Is(err, os.ErrNotExist) {
-			return errors.New("cargo transaction publication destination changed")
-		}
 		if !os.SameFile(t.selectedInfo[name], info) {
 			return errors.New("selected Cargo transaction member identity changed")
 		}
@@ -364,6 +379,15 @@ func (t *cargoProjectTransaction) publishWorkspace() error {
 			if controlErr != nil || !matched || !pypiSingleLink(info) {
 				return errors.New("cargo selected control changed before publication")
 			}
+		}
+		if !t.replacesControl(name) {
+			if err := t.verifyRetainedControl(name); err != nil {
+				return err
+			}
+			continue
+		}
+		if _, err := t.boundary.Lstat(name); !errors.Is(err, os.ErrNotExist) {
+			return errors.New("cargo transaction publication destination changed")
 		}
 		if err := t.boundary.Link(selected, name); err != nil {
 			return errors.New("publish verified Cargo transaction member")
@@ -487,9 +511,36 @@ func (t *cargoProjectTransaction) rollback() error {
 	return result
 }
 
+func (t *cargoProjectTransaction) replacesControl(name string) bool {
+	if !t.plan.lockOnly {
+		return true
+	}
+	return name == "Cargo.lock" && t.selectedHashes[name] != t.plan.cargoLock
+}
+
+func (t *cargoProjectTransaction) verifyRetainedControl(name string) error {
+	body, info, err := readGoTransactionControl(t.boundary, name)
+	original := t.plan.members[name]
+	if err != nil || original == nil || !pypiSingleLink(info) || !os.SameFile(original, info) || original.Mode() != info.Mode() || !original.ModTime().Equal(info.ModTime()) || sha256.Sum256(body) != t.selectedHashes[name] {
+		return errors.New("cargo retained control changed during lock update")
+	}
+	return nil
+}
+
 func (t *cargoProjectTransaction) check(phase string) error {
 	if t.checkpoint != nil {
-		return t.checkpoint(phase)
+		if err := t.checkpoint(phase); err != nil {
+			return err
+		}
+	}
+	if t.plan.lockOnly {
+		for _, name := range []string{"Cargo.toml", "Cargo.lock"} {
+			if !t.replacesControl(name) {
+				if err := t.verifyRetainedControl(name); err != nil {
+					return err
+				}
+			}
+		}
 	}
 	return nil
 }

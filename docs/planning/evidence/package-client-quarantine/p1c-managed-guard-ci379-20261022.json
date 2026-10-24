@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "run_id": 39764357201,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/39764357201",
+  "source_commit": "421764a0944c288c8a75a27fb84b2a077505952d",
+  "checkout": "7f3480c4e40d0c54a99f4d63e9c8643174f621a0",
+  "tree": "6e057bf5e9bf7bc306806dadf717fc4d8f7cedb1",
+  "source_and_checkout_tree_equal": true,
+  "conclusion": "success",
+  "jobs": [
+    {
+      "id": 119775998149,
+      "name": "gVisor Observer Helper",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119775998363,
+      "name": "Minimum Go",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119775998434,
+      "name": "Representative Wheel Corpus",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119775998436,
+      "name": "Docs",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119775998474,
+      "name": "Quick",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119775998509,
+      "name": "Vulnerability",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119775998585,
+      "name": "Security",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119775998587,
+      "name": "gVisor Linux Integration",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119775998714,
+      "name": "macOS",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119793785147,
+      "name": "Required",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "scope": "C3c2a shared Python guard extraction regression; actual UV managed target update/CLI binding still pending",
+  "linux_top_level_passes": 51,
+  "uv_native_update_seconds": 24.31,
+  "uv_public_seconds": 18.85,
+  "cpu_full_seconds": 277.12,
+  "compiler": "go1.26.10",
+  "macos": "PASS",
+  "vulnerability": "PASS",
+  "helpers_reaped": 5,
+  "helper_wait": 0,
+  "cleanup": "original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED",
+  "cuda_full": "NOT_RUN",
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci379-docs.log",
+      "bytes": 20463,
+      "sha256": "f00ad23bc180662140f5b198996ee6bb3366def2be2e07d0cb1f06840f917705"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci379-final-jobs.json",
+      "bytes": 13513,
+      "sha256": "9db00f37d76cedec6875e6a2e01ece1ddafff8f2098aba08e3110801a3764700"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci379-linux.log",
+      "bytes": 632336,
+      "sha256": "7db9dfce774a0dbd581ab8efa51503331237c238e1e468ba3b047f4a121a6964"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci379-macos.log",
+      "bytes": 21053,
+      "sha256": "8ecc10cea0f1b923983e09a842bff414b614bf906cc0fcc36d8334529161fc42"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci379-vulnerability.log",
+      "bytes": 21643,
+      "sha256": "2242922f5219589ccf7202bea4bee3f20f4cb2968d0a72b6db1d46a80b61849f"
+    }
+  ]
+}

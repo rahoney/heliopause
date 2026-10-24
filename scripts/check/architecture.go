@@ -86,7 +86,10 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 		modulePath + "/cmd/helox": {
 			modulePath + "/internal/bootstrap": true,
 		},
+		modulePath + "/cmd/haa-release-installer": {modulePath + "/internal/releaseactivation": true},
 		modulePath + "/internal/cli": {
+			modulePath + "/internal/core/ports":                 true,
+			modulePath + "/internal/artifact/githubrelease":     true,
 			modulePath + "/internal/application":                true,
 			modulePath + "/internal/artifact/cargo":             true,
 			modulePath + "/internal/artifact/gomodule":          true,
@@ -108,10 +111,18 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/artifact/pypi": true,
 		},
 		modulePath + "/internal/artifact/npm": {
+			modulePath + "/internal/core/ports":  true,
 			modulePath + "/internal/core/domain": true,
 		},
 		modulePath + "/internal/artifact/pypi": {
+			modulePath + "/internal/core/ports":      true,
 			modulePath + "/internal/core/domain":     true,
+			modulePath + "/internal/runtimeidentity": true,
+		},
+		modulePath + "/internal/artifact/githubrelease": {
+			modulePath + "/internal/core/ports":      true,
+			modulePath + "/internal/core/domain":     true,
+			modulePath + "/internal/releaseinstall":  true,
 			modulePath + "/internal/runtimeidentity": true,
 		},
 		modulePath + "/internal/artifact/gomodule": {
@@ -132,6 +143,27 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/verification/projectbuild": true,
 		},
 		modulePath + "/internal/verification/projectbuild": {modulePath + "/internal/core/domain": true},
+		modulePath + "/internal/verification/releaseprovenance": {
+			modulePath + "/internal/core/domain":                true,
+			modulePath + "/internal/verification/githubrelease": true,
+		},
+		modulePath + "/internal/releasebootstrap": {
+			modulePath + "/internal/core/ports": true, modulePath + "/internal/core/domain": true,
+			modulePath + "/internal/artifact/githubrelease": true, modulePath + "/internal/releaseinstall": true,
+			modulePath + "/internal/runtimeidentity": true, modulePath + "/internal/verification/releaseprovenance": true,
+		},
+		modulePath + "/internal/releaseinstall": {modulePath + "/internal/runtimeidentity": true},
+		modulePath + "/internal/releaseactivation": {
+			modulePath + "/internal/hosttool":                       true,
+			modulePath + "/internal/releaseinstall":                 true,
+			modulePath + "/internal/runtimeidentity":                true,
+			modulePath + "/internal/verification/releaseprovenance": true,
+		},
+		modulePath + "/internal/inspection/githubrelease": {
+			modulePath + "/internal/core/domain":    true,
+			modulePath + "/internal/core/ports":     true,
+			modulePath + "/internal/releaseinstall": true,
+		},
 		modulePath + "/internal/verification/cargo": {
 			modulePath + "/internal/artifact/cargo": true,
 			modulePath + "/internal/core/domain":    true,
@@ -159,8 +191,9 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/core/domain":   true,
 		},
 		modulePath + "/internal/inspection/npm": {
-			modulePath + "/internal/core/domain": true,
-			modulePath + "/internal/core/ports":  true,
+			modulePath + "/internal/artifact/npm": true,
+			modulePath + "/internal/core/domain":  true,
+			modulePath + "/internal/core/ports":   true,
 		},
 		modulePath + "/internal/inspection/pypi": {
 			modulePath + "/internal/artifact/pypi": true,
@@ -181,6 +214,11 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/runtimeidentity":            true,
 		},
 		modulePath + "/internal/promotion": {
+			modulePath + "/internal/releaseactivation":          true,
+			modulePath + "/internal/releaseinstall":             true,
+			modulePath + "/internal/core/ports":                 true,
+			modulePath + "/internal/artifact/githubrelease":     true,
+			modulePath + "/internal/artifact/npm":               true,
 			modulePath + "/internal/artifact/terraformprovider": true,
 			modulePath + "/internal/artifact/projectbuild":      true,
 			modulePath + "/internal/artifact/gomodule":          true,
@@ -191,24 +229,34 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 			modulePath + "/internal/sandbox":                    true,
 		},
 		modulePath + "/internal/runtimeidentity": {},
+		modulePath + "/internal/testutil/releasefixture": {
+			modulePath + "/internal/runtimeidentity": true,
+		},
 		modulePath + "/internal/testutil/fakeworkflow": {
 			modulePath + "/internal/core/domain": true,
 			modulePath + "/internal/core/ports":  true,
 		},
-		modulePath + "/scripts/check":          {},
-		modulePath + "/scripts/update-runtime": {},
+		modulePath + "/scripts/check": {},
+		modulePath + "/scripts/update-runtime": {
+			modulePath + "/internal/verification/releaseprovenance": true,
+		},
 	}
 	allowedExternalImports := map[string]map[string]bool{
 		modulePath + "/cmd/helox": {},
 		modulePath + "/internal/cli": {
+			"golang.org/x/sys/unix":  true,
 			"github.com/spf13/cobra": true,
 		},
 		modulePath + "/internal/core/domain":   {},
 		modulePath + "/internal/core/ports":    {},
 		modulePath + "/internal/application":   {},
 		modulePath + "/internal/policy":        {},
-		modulePath + "/internal/artifact/npm":  {},
-		modulePath + "/internal/artifact/pypi": {},
+		modulePath + "/internal/artifact/npm":  {"go.yaml.in/yaml/v3": true},
+		modulePath + "/internal/artifact/pypi": {"github.com/pelletier/go-toml/v2": true},
+		modulePath + "/internal/artifact/githubrelease": {
+			"github.com/klauspost/compress/snappy": true,
+			"golang.org/x/mod/semver":              true,
+		},
 		modulePath + "/internal/artifact/gomodule": {
 			"golang.org/x/mod/module":        true,
 			"golang.org/x/mod/modfile":       true,
@@ -222,7 +270,18 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 		modulePath + "/internal/inspection/projectbuild":    {},
 		modulePath + "/internal/verification/projectbuild":  {},
 		modulePath + "/internal/verification/gomodule":      {"golang.org/x/mod/sumdb": true},
-		modulePath + "/internal/verification/cargo":         {},
+		modulePath + "/internal/verification/releaseprovenance": {
+			"github.com/sigstore/sigstore-go/pkg/bundle":             true,
+			"github.com/sigstore/sigstore-go/pkg/fulcio/certificate": true,
+			"github.com/sigstore/sigstore-go/pkg/root":               true,
+			"github.com/sigstore/sigstore-go/pkg/verify":             true,
+			"golang.org/x/mod/semver":                                true,
+		},
+		modulePath + "/internal/releaseinstall":           {"golang.org/x/mod/semver": true},
+		modulePath + "/internal/releaseactivation":        {"golang.org/x/mod/semver": true, "golang.org/x/sys/unix": true},
+		modulePath + "/internal/releasebootstrap":         {},
+		modulePath + "/internal/inspection/githubrelease": {},
+		modulePath + "/internal/verification/cargo":       {},
 		modulePath + "/internal/verification/terraformprovider": {
 			"github.com/ProtonMail/go-crypto/openpgp/v2":     true,
 			"github.com/ProtonMail/go-crypto/openpgp/armor":  true,

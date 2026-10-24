@@ -1,0 +1,419 @@
+{
+  "scope": "M13-004/P2b2 pinned passive notices, complete native distribution and existing whole-set install/restore mechanics",
+  "baseline": "6f4acde",
+  "IMPLEMENTED": "YES \u2014 distribution/maintenance/metadata subset",
+  "WIRED": "YES \u2014 actual build/package/manifest/inspection/install/bootstrap/Promotion consumers",
+  "QUALIFIED": "NO \u2014 exact PNPM gVisor admission and remote qualification pending",
+  "ACCEPTANCE_CLOSED": "NO",
+  "local_status": "VERIFIED",
+  "current_contract": {
+    "assets": 11,
+    "bundle_files_including_metadata_checksums": 15,
+    "native_roles": 5,
+    "passive_metadata_members": 3,
+    "wire_payloads": 8,
+    "bootstrap_subjects_including_manifest": 9,
+    "inspected_members": 9,
+    "required_checks_and_evidence": 23,
+    "pnpm_version": "12.15.0",
+    "native_mode": "0555",
+    "notices_mode": "0444"
+  },
+  "notices": {
+    "path": "tools/pnpm/NOTICE",
+    "sha256": "df8cac4eb3aa5126532298814c75ec9fc2dab3248fef818b6317e7478abb7bd2",
+    "size": 3152,
+    "source_commit": "91774e72a04d52ce61db06339696a433d383c764",
+    "classification": "reviewed passive upstream MIT and third-party source notices; not an archive-signature claim"
+  },
+  "checks_before_namespace_fixture_corrections": [
+    {
+      "name": "p2b2-shipping-final-canonical-quick",
+      "exit": 0,
+      "seconds": 119.521,
+      "raw_ref": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2b2-shipping-final-canonical-quick.json",
+        "sha256": "e203bf86485adabea8feb35555c8890e7e3c08c9b52af9071b8d6ec32ac4eaec",
+        "storage": "local untracked raw; not remotely archived"
+      }
+    },
+    {
+      "name": "p2b2-shipping-final-canonical-security",
+      "exit": 0,
+      "seconds": 7.001,
+      "raw_ref": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2b2-shipping-final-canonical-security.json",
+        "sha256": "d7502f1654f36f7052002afc2ed54572a351c42d234a29a0dfa2c0e2c7215e9d",
+        "storage": "local untracked raw; not remotely archived"
+      }
+    },
+    {
+      "name": "p2b2-shipping-final-canonical-docs",
+      "exit": 0,
+      "seconds": 0.23,
+      "raw_ref": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2b2-shipping-final-canonical-docs.json",
+        "sha256": "b2a1b89ce6483ff3d238bc78e93441122680b69931956f5b7bcb99f061b17dd1",
+        "storage": "local untracked raw; not remotely archived"
+      }
+    },
+    {
+      "name": "p2b2-shipping-final-canonical-workflow",
+      "exit": 0,
+      "seconds": 0.682,
+      "raw_ref": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2b2-shipping-final-canonical-workflow.json",
+        "sha256": "7a0e4d0268eb9a09f42241473f0717ee30a568b99ace6f21ee167a859077dd3e",
+        "storage": "local untracked raw; not remotely archived"
+      }
+    },
+    {
+      "name": "p2b2-shipping-final-canonical-release-gate",
+      "exit": 0,
+      "seconds": 0.284,
+      "raw_ref": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2b2-shipping-final-canonical-release-gate.json",
+        "sha256": "bc0e180e0ae8f99efdf6ae67b49a640b717dd59c6edb330a628d14104230a37b",
+        "storage": "local untracked raw; not remotely archived"
+      }
+    },
+    {
+      "name": "p2b2-shipping-final-canonical-qualification-freshness",
+      "exit": 0,
+      "seconds": 0.12,
+      "raw_ref": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2b2-shipping-final-canonical-qualification-freshness.json",
+        "sha256": "131093a7527a17e2d64d45632779b44e9baf818b23f3ec5ccfe6c7b11c82828b",
+        "storage": "local untracked raw; not remotely archived"
+      }
+    },
+    {
+      "name": "p2b2-shipping-final-full-race",
+      "exit": 0,
+      "seconds": 146.917,
+      "raw_ref": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2b2-shipping-final-full-race.json",
+        "sha256": "43b65e2673a05c9d17d30f245cc7abf1f7cf3e089ec1a41ae28e122d4448d131",
+        "storage": "local untracked raw; not remotely archived"
+      }
+    },
+    {
+      "name": "p2b2-shipping-final-candidate-producer",
+      "exit": 0,
+      "seconds": 0.371,
+      "raw_ref": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2b2-shipping-final-candidate-producer.json",
+        "sha256": "e93acd9de8f790137947054dd323e662a5b046609a95ca977a026e68ffb9420a",
+        "storage": "local untracked raw; not remotely archived"
+      }
+    }
+  ],
+  "source_binding": {
+    "raw_freeze": {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2b2-shipping-source-freeze-20261024.json",
+      "sha256": "40ea2115001cb4063ee6c98d7b7f1b326d14098c25e71edbd736004bcac3efa9",
+      "storage": "local untracked raw; not remotely archived"
+    },
+    "unchanged_frozen_paths": 46,
+    "later_changes": [
+      "internal/releaseactivation/journal_namespace_linux_test.go",
+      "internal/releaseactivation/operation_namespace_linux_test.go"
+    ],
+    "later_scope": "only gated root namespace fixtures; production source bytes unchanged; actual12namespace checks qualified with final static binaries"
+  },
+  "actual_official_supply": {
+    "owner_focused_seconds": 6.089,
+    "frozen_plan_interruption_resume_seconds": 6.24,
+    "native_and_notices_materialization_seconds": 3.198,
+    "raw_refs": [
+      {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2b2-notices-owner-first-frozen.json",
+        "sha256": "ce11a96d618feacce0cdb5ee629d4da4d9c95e59150cc634b1f7256db2c4c9ae",
+        "storage": "local untracked raw; not remotely archived"
+      },
+      {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2b2-notices-owner-first-official.json",
+        "sha256": "90d7a6a198542b20c4dce0469d7596d0eb9f219fe913f9f481b4d2c3ad9e3d92",
+        "storage": "local untracked raw; not remotely archived"
+      }
+    ]
+  },
+  "negative_scope": [
+    "missing/ambiguous native role or notice set",
+    "notice hash/source/size and current runtime metadata substitution",
+    "native/notice asset mutation before producer metadata writes",
+    "commented/missing/unbounded/reordered build supply commands",
+    "incomplete inspections and unsigned whole set denied before promotion",
+    "held descriptor/staging substitution, cleanup unknown retention and original cause preservation"
+  ],
+  "first_failure_refs": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2b2-shipping-first-focused.json",
+      "sha256": "4dba22c4240e667a88d91310c3c8b4a4209a931a2edaa01e4bc9713cc661b898",
+      "storage": "local untracked raw; not remotely archived"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2b2-shipping-canonical-quick.json",
+      "sha256": "d53b23564bf5dee1a2d1f5f1793780271aceb21809041a1152d6a129d2a284c3",
+      "storage": "local untracked raw; not remotely archived"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2b2-shipping-promotion-connected-focused.json",
+      "sha256": "f86f6674520173b22c0d77f7abb57b9c8288a855af1a75d1e0559dcdbbbd9862",
+      "storage": "local untracked raw; not remotely archived"
+    }
+  ],
+  "root_fixture_evidence": "docs/planning/evidence/package-client-quarantine/p2b2-root-fixture-qualification-20261024.json",
+  "cleanup": {
+    "status": "COMPLETED",
+    "logical_bytes": 219678968,
+    "roots_removed": 6,
+    "references": 0,
+    "unknown_queries": 0,
+    "raw_ref": {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p2b2-distribution-completed-test-cleanup-20261024.json",
+      "sha256": "3bb7a6f718d390dc989b4a48eddb7ce10c44deeb527ce696423fa2753a7a8482",
+      "storage": "local untracked raw; not remotely archived"
+    },
+    "retained": "active official PNPM supply for the next guest consumer; shared active source/SDK/quality; operating rollback backups"
+  },
+  "source_files": [
+    {
+      "path": ".github/workflows/heliopause-release-build.yml",
+      "sha256": "42ab41227c816624526e1f4aa6e6fdb57e065fe8da396b8ccf99e1fc9cf462ee"
+    },
+    {
+      "path": "internal/artifact/githubrelease/heliopause_set_integration_unix_test.go",
+      "sha256": "2e6a2a5bd3cd30fdf033aa7da826acad53be2c5aeedde2eadca1fb2d0c48a39a"
+    },
+    {
+      "path": "internal/artifact/githubrelease/heliopause_set_unix_test.go",
+      "sha256": "ce3c557df0719f666d05085d5e3c7b8217468317fce7079da826dabb745618b7"
+    },
+    {
+      "path": "internal/inspection/githubrelease/release_set.go",
+      "sha256": "785bc0d2569fe791a37b07f9202e496e2cfeb43afc8039fe61c0accc49a6d454"
+    },
+    {
+      "path": "internal/promotion/native_release_cleanup_linux_test.go",
+      "sha256": "a8f950f8165b6686d85bd74bda503cb5af4aad46fa7ca173048c3aba42409deb"
+    },
+    {
+      "path": "internal/promotion/native_release_linux.go",
+      "sha256": "ec298a7d76ee3365f268a69d027eda1026a64beba74b886ebd068b0993b4df6b"
+    },
+    {
+      "path": "internal/promotion/native_release_linux_test.go",
+      "sha256": "00140d918db2be4f17988e016c9721858fb6711b9db299f68a5e766e4fb2d558"
+    },
+    {
+      "path": "internal/releaseactivation/bootstrap_files_linux.go",
+      "sha256": "ff271e84a28fc662c9f108ccc9310da364a96de2c09c6ca2abb5f2c46fe3494e"
+    },
+    {
+      "path": "internal/releaseactivation/installed_linux.go",
+      "sha256": "23db3d67e1baefdff564a8c9b4a79fc0c71944564090a94be5528a2fcbe7312a"
+    },
+    {
+      "path": "internal/releaseactivation/proof_linux.go",
+      "sha256": "9beace1e8e3299a6ce967a853f9b566aa3ce422ac24c307b1c581306554e2dac"
+    },
+    {
+      "path": "internal/releaseactivation/stage_linux.go",
+      "sha256": "ec958b50f6f850702b675cd1009306affbf6fef74a28c37f2b2adf8d5b5a9aac"
+    },
+    {
+      "path": "internal/releaseactivation/wire_linux.go",
+      "sha256": "8bfc885f23a56778a2e7899643751a00e61478209db95230d6934984448c223e"
+    },
+    {
+      "path": "internal/releaseactivation/wire_linux_test.go",
+      "sha256": "0bce86440489882f04671bf3911ac70c3d41038423e03808021c11e2a0ff0c1d"
+    },
+    {
+      "path": "internal/releasebootstrap/preparation_linux.go",
+      "sha256": "a0adbe30183657704dc1e39ed275e47960d4eb3744995f2c7e90a122252a6088"
+    },
+    {
+      "path": "internal/releasebootstrap/preparation_linux_test.go",
+      "sha256": "4eb76103d47d4cf2dfdf6a611811fc4fb0a64b81b408e98c4befd16fa02f6e11"
+    },
+    {
+      "path": "internal/releaseinstall/installer.go",
+      "sha256": "ede8eee16a359d9a7299e0349f77c3439807e0ecd84170cf4a6dd0b673f12082"
+    },
+    {
+      "path": "internal/releaseinstall/manifest.go",
+      "sha256": "cb757c753aed6bbb2a9e58e4427fe9a93f67562d9b47cef10f1c783c7648ab9c"
+    },
+    {
+      "path": "internal/releaseinstall/manifest_test.go",
+      "sha256": "b95a60eaa398f50b0959e096a056aac69ef069a44398070157dfeda7135bf5c3"
+    },
+    {
+      "path": "internal/releaseinstall/metadata.go",
+      "sha256": "2493c76ce0313625391daa1b06da9d936eb65afe8ef5da1c303f9c0bc106f82f"
+    },
+    {
+      "path": "internal/releaseinstall/metadata_test.go",
+      "sha256": "5d35391949431e732c33a0ff05d9a8f5aae54473e65f9265d65e668e2d55a7c1"
+    },
+    {
+      "path": "internal/releaseinstall/system_namespace_linux_test.go",
+      "sha256": "69b7eb00966e5edcf5818b7549afcf6100795b80e51e5c7fe31d9d11812c7bec"
+    },
+    {
+      "path": "internal/runtimeidentity/runtime_lock_gen.go",
+      "sha256": "d726e3af23245ea97d79c4a4c7521ffa3f82967e751f44992d0d3e818129ebd8"
+    },
+    {
+      "path": "internal/testutil/releasefixture/runtime.go",
+      "sha256": "48d62a5d5289e313ff1a8f2a6640b21ffa8179ad8b65590e63b2dae3512fd418"
+    },
+    {
+      "path": "scripts/check/runtime_versions.go",
+      "sha256": "344f4da4578c7051fd94cb4c4e4078811b3e278bd90e1445c7031fc5dc7d47fb"
+    },
+    {
+      "path": "scripts/check/runtime_versions_test.go",
+      "sha256": "0e27a20bca82bcdaefc585d1cf3dda2488a2bbd50aecabcee4ea1ea2d81a25ae"
+    },
+    {
+      "path": "scripts/check/workflow.go",
+      "sha256": "1d8198dd60328b7841ac0df64530e345d849ce334d8534ef8779f7c739f96486"
+    },
+    {
+      "path": "scripts/check/workflow_test.go",
+      "sha256": "41df46059b379d29b139c25d5b363f4ee362ba859a42b0ecf04a182f57a139a8"
+    },
+    {
+      "path": "scripts/generate-runtime-lock.go",
+      "sha256": "6dc7154a6d5f6353b054cfedefe2f7de2d8d3ed97387e3651a460d10aaed5eaf"
+    },
+    {
+      "path": "scripts/release-manifest/bundle_test.go",
+      "sha256": "64fb0de951197bbf0f6a47aa6ff48e29e272ea432171ac1d416cfd514e973649"
+    },
+    {
+      "path": "scripts/release-manifest/main.go",
+      "sha256": "9c773f2694ee4d708c19382e76cda3ba6b6cdcbd024dea289874eaf4ad57c170"
+    },
+    {
+      "path": "scripts/release-manifest/main_test.go",
+      "sha256": "27686088421f6eb6ed0b3a16fabd17cab5dc0575f713e3f8ca0d1a2da6c12540"
+    },
+    {
+      "path": "scripts/release-packages/main.go",
+      "sha256": "d1f838196a427a520cf13059567b85e89d62a957df3b030f0744c79641567ec8"
+    },
+    {
+      "path": "scripts/release-packages/main_test.go",
+      "sha256": "2ed12ba68fd3831173d9c52d69fc41af962caf43539f5aa2d0fc33af2e17f401"
+    },
+    {
+      "path": "scripts/runtime-image-manifest/main.go",
+      "sha256": "137af06848a3dffc26d063ddb8818b5d8723654aa12985238738357d22c3bbf8"
+    },
+    {
+      "path": "scripts/runtime-image-manifest/main_test.go",
+      "sha256": "2e311bfb052ee94b54659d489b94015318b219b37e98d46a40f309bed292a75b"
+    },
+    {
+      "path": "scripts/runtimes.lock.json",
+      "sha256": "87b29d73031fcba90c58613df7063d8932281e784da6f22123684373c332c550"
+    },
+    {
+      "path": "scripts/update-runtime/patch.go",
+      "sha256": "6298e7ea45eb110cb96f2b0ab4aff59bfaf2bd2cfcc589851e5ff29004cff302"
+    },
+    {
+      "path": "scripts/update-runtime/pnpm_materialize.go",
+      "sha256": "4f7b2e61ee4f5b63e705b2a279f48d79b9bdd3b1bb55fac255989a3b1b24791a"
+    },
+    {
+      "path": "scripts/update-runtime/pnpm_materialize_real_test.go",
+      "sha256": "cc48aa3ee5ca57976b053f13a7651b77cef7d2b604249975e3386b53aaa1e7e4"
+    },
+    {
+      "path": "scripts/update-runtime/pnpm_materialize_test.go",
+      "sha256": "757cf725c01ed66b73c42796b8551d32c6b190fa84380cb7a21f6acedc2026f8"
+    },
+    {
+      "path": "scripts/update-runtime/pnpm_supply.go",
+      "sha256": "e8a1b2445c10d7f646e09cc2a5c0232bd12c7a86e566ede55180057eb6133d33"
+    },
+    {
+      "path": "scripts/update-runtime/pnpm_supply_test.go",
+      "sha256": "0db9f4c530f9852c38d676eca1cbb951d05f8a462551455d1d1fb41b68c0b406"
+    },
+    {
+      "path": "scripts/update-runtime/update_test.go",
+      "sha256": "833dd2c77e91d384c6b133b7b8d3fc87b3ec4ee0c2b09231b70400cfc8552de0"
+    },
+    {
+      "path": "tools/pnpm/NOTICE",
+      "sha256": "df8cac4eb3aa5126532298814c75ec9fc2dab3248fef818b6317e7478abb7bd2"
+    },
+    {
+      "path": "internal/releaseactivation/journal_namespace_linux_test.go",
+      "sha256": "c54b8d935e2ece0bda4a59077f9d34b962d54b7f1e466c65efd0a2e98bcb2f7f"
+    },
+    {
+      "path": "internal/releaseactivation/operation_namespace_linux_test.go",
+      "sha256": "3a71355fbe37c0824ff7c58667041163e7da511cb7655244f15f96332de4ac55"
+    }
+  ],
+  "remaining": [
+    "exact read-only PNPM guest supply/observer admission and native startup/query/lock; separate ARTIFACT probe of the native release member must retain artifact constraints",
+    "public source graph/layout/install/update transaction and CLI",
+    "affected platform/ecosystem/Required remote qualification"
+  ],
+  "not_claimed": [
+    "new public release/tag/main merge",
+    "new signed native set end-to-end",
+    "Host installation activation",
+    "product PNPM CLI support"
+  ],
+  "final_checks": [
+    {
+      "name": "p2b2-distribution-final-fixtures-race",
+      "exit": 0,
+      "seconds": 5.368,
+      "raw_ref": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2b2-distribution-final-fixtures-race.json",
+        "sha256": "2478156e224a7a3e85797760a7aedf723df3c5a794313e43d7fb7940fcd1279c",
+        "storage": "local untracked raw; not remotely archived"
+      }
+    },
+    {
+      "name": "p2b2-distribution-final-candidate-quick",
+      "exit": 0,
+      "seconds": 138.491,
+      "raw_ref": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2b2-distribution-final-candidate-quick.json",
+        "sha256": "d39bf4e96a9eb75a069938cbe8050437eadda96f414087525e7bb231bd2bec76",
+        "storage": "local untracked raw; not remotely archived"
+      }
+    },
+    {
+      "name": "p2b2-distribution-final-candidate-docs",
+      "exit": 0,
+      "seconds": 0.242,
+      "raw_ref": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2b2-distribution-final-candidate-docs.json",
+        "sha256": "b318659790865289c85b08f86192169b024d6c74f98a14affd43076adb7f571a",
+        "storage": "local untracked raw; not remotely archived"
+      }
+    },
+    {
+      "name": "p2b2-distribution-final-candidate-security",
+      "exit": 0,
+      "seconds": 4.954,
+      "raw_ref": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p2b2-distribution-final-candidate-security.json",
+        "sha256": "1b3ba0ec5ff8bbe4fdd896adaab91938f466467ae94a4ffa0d373b6dc2e58f95",
+        "storage": "local untracked raw; not remotely archived"
+      }
+    }
+  ]
+}

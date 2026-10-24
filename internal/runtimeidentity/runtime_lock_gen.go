@@ -3,11 +3,12 @@
 package runtimeidentity
 
 const (
+	RuntimeLockSHA256            = "87b29d73031fcba90c58613df7063d8932281e784da6f22123684373c332c550"
 	GVisorRelease                = "release-20260907.0"
 	GVisorCommit                 = "7c6199801fd233d6d55309af4645d4746a077de7"
 	GVisorSourceRepository       = "https://github.com/google/gvisor.git"
 	GVisorPatchPath              = "tools/gvisor/release-20260907.0.patch"
-	GVisorPatchSHA256            = "4e932cede0d3d1c8596346b06191c2aaed2f8974289d690ade1594948b7674f3"
+	GVisorPatchSHA256            = "588adad48ded6088468901ca6bfd09d24446884ecc0765abdb2be2ed2a7fb331"
 	GVisorBazelModuleLockSHA256  = "8402c7beb4baf2c666f4b78e400ea3f15514b56117598c2cb5411d6a35208d34"
 	GVisorBuilderImageRepository = "us-central1-docker.pkg.dev/gvisor-presubmit/gvisor-presubmit-images/default_x86_64"
 	GVisorBuilderImageTag        = "c48008cead6d6826"
@@ -22,11 +23,33 @@ const (
 	ContainerdPackage            = "2.3.5-1~ubuntu.24.04~noble"
 	NodeImageReference           = "node:24.21.0-slim@sha256:713cfbf4a0ac19f40e1bb9919893e126b74a5c8cf5d0623c9f89515c8f74c6fa"
 	NodeNPMVersion               = "11.19.0"
+	UVImageReference             = "ghcr.io/astral-sh/uv:0.13.4@sha256:f0a9c230906ab004ce4786b6e0c60995e30b2bdf585c51377026838573720993"
+	UVVersion                    = "0.13.4"
+	UVArchitecture               = "amd64"
+	UVSourceCommit               = "7456b60bc6bc348e13e06e3691bf08e78d3aef54"
+	UVWorkflowRun                = "39441647119"
+	UVIndexSHA256                = "9f130421e930bfbdc563c00740466603f8723158e90297d07957c2294640262b"
+	UVBundleSHA256               = "39c24b19483ac2fba5fa0877ef6ad9a5f30fc1eb913375fcf2dba1de787ec835"
+	UVConfigSHA256               = "bea3876c0cb2afb25f0858f8bff73a7b334c395064cbe1a84465c9218c799ab1"
+	UVToolPath                   = "/uv"
+	UVToolSHA256                 = "de77a01a86452cc465a734257b5a2073d41115d1b8bbfe84ac636af53851b499"
+	PNPMVersion                  = "12.15.0"
+	PNPMArchitecture             = "amd64"
+	PNPMArchiveURL               = "https://github.com/pnpm/pnpm/releases/download/v12.15.0/pnpm-linux-x64.tar.gz"
+	PNPMArchiveSHA256            = "55b5ed0092bd11176c1669598e231ae52e7cedac59de6efd0d415730f37d0598"
+	PNPMSourceCommit             = "91774e72a04d52ce61db06339696a433d383c764"
+	PNPMWorkflowRun              = "39583314875"
+	PNPMBundlePath               = "tools/pnpm/release-proof.json"
+	PNPMBundleSHA256             = "3036b73f86d7deaecd0901ee836b90460653c9f275efb0ae308d50e3f22d6089"
+	PNPMToolPath                 = "pnpm"
+	PNPMToolSHA256               = "8cca52dc2aab0081ac153a3c7ad36224cd72b6d7cfea413746b7b97f6a3d8942"
+	PNPMNoticesPath              = "tools/pnpm/NOTICE"
+	PNPMNoticesSHA256            = "df8cac4eb3aa5126532298814c75ec9fc2dab3248fef818b6317e7478abb7bd2"
 	PythonImageReference         = "python:3.14.7-slim-bookworm@sha256:23c59390fc717bf09f9336908199a0ae75d9c4264bf296123f94ad772fea3b52"
 	PythonVersion                = "3.14.7"
 	PipVersion                   = "26.2.1"
-	GoImageReference             = "golang:1.26.9-bookworm@sha256:bcef992b77b1e2031aaaa51da75cebc32da8e9c182e12e633ea79023c79d9eff"
-	GoVersion                    = "1.26.9"
+	GoImageReference             = "golang:1.27.3-bookworm@sha256:fea12ba16096adec0f699ce1c4da2154d320450e56c1f63671f95d2a3551c77b"
+	GoVersion                    = "1.27.3"
 	GoArchitecture               = "amd64"
 	RustImageReference           = "rust:1.99.0-bookworm@sha256:59037199c44290f2befcdd58dcc540164763fc296950255aaefeef096a1866b0"
 	RustVersion                  = "1.99.0"
@@ -39,6 +62,10 @@ const (
 	PyTorchCU126Version          = "2.14.0+cu126"
 	PyTorchCU130Version          = "2.14.0+cu130"
 	PyTorchCU132Version          = "2.14.0+cu132"
+	UVToolSize                   = 42544544
+	PNPMArchiveSize              = 25369328
+	PNPMToolSize                 = 57822504
+	PNPMNoticesSize              = 3152
 )
 
 type PythonSourceProfileLock struct {
@@ -60,10 +87,10 @@ type GVisorBundleMemberLock struct {
 }
 
 var GVisorRuntimeBundleMembers = []GVisorBundleMemberLock{
-	{Path: "containerd-shim-runsc-v1", Size: 43763177, SHA512: "8743a12c2107e99f8b04ffb6f1e6c01a3a972753bcff993a4974eeaaf91e364f9fb21bd6bed3fed0b9ffa5e81eb1abdebdf794e5f5d60e5c0ee930006fca2579"},
-	{Path: "gvisor-bin/checkpointgofer", Size: 69307944, SHA512: "e746c256fc3ec7831fbb8a18c0c49bad2a12d9edadd460eb4ec7bdcc9639b89bf362cbb96a5ea9b88b8badd8827b8b8cb80ab7aaf066dd00f8231b3e46cbae75"},
+	{Path: "containerd-shim-runsc-v1", Size: 43865876, SHA512: "2bc7d8a01f9aa8bd496f855826d407b004842289ad9c29512063eeee23399eeb777748134caee7c948a870f1b9db424978b56d251b4a80649728e3936f4a9e69"},
+	{Path: "gvisor-bin/checkpointgofer", Size: 68249064, SHA512: "f1bb8ac5062e740fe06274034df3addd1a67afc5ee97321ea9b65a4032fdc2c750888bf5da569b75bba12f829e6c8ba079b8aff44c31fe06d441c36a28ecc271"},
 	{Path: "gvisor-bin/gvisor-sentry-prewarmer", Size: 1416, SHA512: "f0c131766303ca4733a4e42bd171d8ddf42a0a0087564605b3207b0f4c148d9ff355bad25e27d388c7c9cf06265160b3a02047ec195c035d9e8f428d8f608ce6"},
-	{Path: "gvisor-bin/gvisor_sentry", Size: 52220923, SHA512: "dc890b8b1b0b6d753dd8a979f5600faad0a10c65e833f01162690dcc469b1a3e0524226c57e58869c2666b84cf65b66f9d7029c7fdd303944f30cfb15268c337"},
-	{Path: "gvisor-bin/runsc-metric-server", Size: 53298557, SHA512: "796a98755d3ce02d1ba7d489dd054be10910f8ae79090fa04e1ed44e04730eb071c216f8b345aa0f40d9d2a3b8a2b9f272d5d3d7f5f73c1540391dcd2c3a93b3"},
-	{Path: "runsc", Size: 109851720, SHA512: "72cf15650a96bf9ec817138736d96e410b61f77db5d8e17f4ce84115ccfb6b2ce1db11bb06ec3da4c789ed6b8d361ec22983f948b91e1bf6300fa653b336ad05"},
+	{Path: "gvisor-bin/gvisor_sentry", Size: 51923536, SHA512: "2cce5e1dc72bc6a707f03d59d97dce3993937f18b04a3e850d7f36be74d560bd1cce8fa9e9011123bb470cdd3aded1e00d159c41eaad25ce2f6bf732aaa38cf7"},
+	{Path: "gvisor-bin/runsc-metric-server", Size: 53387149, SHA512: "9388f23322dea1b5e8e4489fb2ae98bedfc0c0d9654911f440062c1a9d51b6b70d39419209abe87d0b16deacf9f0405ca4463509768953a9590ee979086f0625"},
+	{Path: "runsc", Size: 110972712, SHA512: "805cc156ec6b56ba8da638472eb8ec0478de644a1380242de00ffdf531d4337c0095a440bc521b828c64d74349e101c4204f7249c2fb28d522b4869321a2477d"},
 }

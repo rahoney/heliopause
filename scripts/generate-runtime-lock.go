@@ -4,6 +4,8 @@ package main
 
 import (
 	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -28,6 +30,7 @@ var targetNamePattern = regexp.MustCompile(`\bname\s*=\s*["']([^"']+)["']`)
 var haaTokenPattern = regexp.MustCompile(`\bHAA_GVISOR_COMMIT\b`)
 
 type runtimeLock struct {
+	lockSHA256    string
 	SchemaVersion int `json:"schema_version"`
 	GVisor        struct {
 		Release          string `json:"release"`
@@ -89,6 +92,48 @@ type runtimeLock struct {
 			Platform    string `json:"platform"`
 		} `json:"target"`
 	} `json:"python_image"`
+	UVImage struct {
+		Reference    string `json:"reference"`
+		Version      string `json:"uv_version"`
+		Architecture string `json:"architecture"`
+		Provenance   struct {
+			SourceCommit string `json:"source_commit"`
+			WorkflowRun  string `json:"workflow_run"`
+			IndexSHA256  string `json:"index_sha256"`
+			BundleSHA256 string `json:"bundle_sha256"`
+			ConfigSHA256 string `json:"config_sha256"`
+		} `json:"provenance"`
+		Tool struct {
+			Path   string `json:"path"`
+			Size   int64  `json:"size"`
+			SHA256 string `json:"sha256"`
+		} `json:"tool"`
+	} `json:"uv_image"`
+	PNPMTool struct {
+		Version      string `json:"pnpm_version"`
+		Architecture string `json:"architecture"`
+		Archive      struct {
+			URL    string `json:"url"`
+			SHA256 string `json:"sha256"`
+			Size   int64  `json:"size"`
+		} `json:"archive"`
+		Provenance struct {
+			SourceCommit string `json:"source_commit"`
+			WorkflowRun  string `json:"workflow_run"`
+			BundlePath   string `json:"bundle_path"`
+			BundleSHA256 string `json:"bundle_sha256"`
+		} `json:"provenance"`
+		Tool struct {
+			Path   string `json:"path"`
+			SHA256 string `json:"sha256"`
+			Size   int64  `json:"size"`
+		} `json:"tool"`
+		Notices struct {
+			Path   string `json:"path"`
+			SHA256 string `json:"sha256"`
+			Size   int64  `json:"size"`
+		} `json:"notices"`
+	} `json:"pnpm_tool"`
 	PythonSources []struct {
 		Name              string   `json:"name"`
 		SourceID          string   `json:"source_id"`
@@ -415,7 +460,14 @@ func readLock(path string) (runtimeLock, error) {
 		return runtimeLock{}, err
 	}
 	defer file.Close()
-	decoder := json.NewDecoder(io.LimitReader(file, 64*1024))
+	body, err := io.ReadAll(io.LimitReader(file, 64*1024+1))
+	if err != nil {
+		return runtimeLock{}, err
+	}
+	if len(body) > 64*1024 {
+		return runtimeLock{}, errors.New("canonical lock exceeds size limit")
+	}
+	decoder := json.NewDecoder(bytes.NewReader(body))
 	decoder.DisallowUnknownFields()
 	var lock runtimeLock
 	if err := decoder.Decode(&lock); err != nil {
@@ -428,11 +480,13 @@ func readLock(path string) (runtimeLock, error) {
 	if err := validate(lock); err != nil {
 		return runtimeLock{}, err
 	}
+	sum := sha256.Sum256(body)
+	lock.lockSHA256 = hex.EncodeToString(sum[:])
 	return lock, nil
 }
 
 func validate(lock runtimeLock) error {
-	if lock.SchemaVersion != 1 || !release.MatchString(lock.GVisor.Release) || len(lock.GVisor.Commit) != 40 || !hex512.MatchString(lock.Bazel.SHA512) || !exactVersion.MatchString(lock.Bazel.Version) || !strings.HasPrefix(lock.GVisor.SourceRepository, "https://") || !strings.HasPrefix(lock.Bazel.URL, "https://") {
+	if lock.SchemaVersion != 3 || !release.MatchString(lock.GVisor.Release) || len(lock.GVisor.Commit) != 40 || !hex512.MatchString(lock.Bazel.SHA512) || !exactVersion.MatchString(lock.Bazel.Version) || !strings.HasPrefix(lock.GVisor.SourceRepository, "https://") || !strings.HasPrefix(lock.Bazel.URL, "https://") {
 		return errors.New("gVisor or Bazel identity is invalid")
 	}
 	if lock.GVisor.Patch.Path == "" || !strings.HasPrefix(lock.GVisor.Patch.Path, "tools/gvisor/") || !strings.HasSuffix(lock.GVisor.Patch.Path, ".patch") || strings.Contains(lock.GVisor.Patch.Path, "..") || !hex256.MatchString(lock.GVisor.Patch.SHA256) {
@@ -470,6 +524,14 @@ func validate(lock runtimeLock) error {
 	pythonTag := "cp" + pythonParts[0] + pythonParts[1]
 	if lock.PythonImage.Target.Interpreter != pythonTag || lock.PythonImage.Target.ABI != pythonTag || lock.PythonImage.Target.Platform != "manylinux_2_36_x86_64" {
 		return errors.New("python interpreter, ABI or platform does not match the image target")
+	}
+	uv := lock.UVImage
+	if !exactVersion.MatchString(uv.Version) || uv.Architecture != "amd64" || !regexp.MustCompile(`^ghcr.io/astral-sh/uv:`+regexp.QuoteMeta(uv.Version)+`@sha256:[a-f0-9]{64}$`).MatchString(uv.Reference) || !regexp.MustCompile(`^[a-f0-9]{40}$`).MatchString(uv.Provenance.SourceCommit) || !regexp.MustCompile(`^[1-9][0-9]{0,19}$`).MatchString(uv.Provenance.WorkflowRun) || !hex256.MatchString(uv.Provenance.IndexSHA256) || !hex256.MatchString(uv.Provenance.BundleSHA256) || !hex256.MatchString(uv.Provenance.ConfigSHA256) || uv.Tool.Path != "/uv" || uv.Tool.Size <= 0 || uv.Tool.Size > 64<<20 || !hex256.MatchString(uv.Tool.SHA256) {
+		return errors.New("uv image, provenance or native tool identity is invalid")
+	}
+	pnpm := lock.PNPMTool
+	if !exactVersion.MatchString(pnpm.Version) || pnpm.Architecture != "amd64" || pnpm.Archive.URL != "https://github.com/pnpm/pnpm/releases/download/v"+pnpm.Version+"/pnpm-linux-x64.tar.gz" || !hex256.MatchString(pnpm.Archive.SHA256) || pnpm.Archive.Size <= 0 || pnpm.Archive.Size > 64<<20 || !regexp.MustCompile(`^[a-f0-9]{40}$`).MatchString(pnpm.Provenance.SourceCommit) || !regexp.MustCompile(`^[1-9][0-9]{0,19}$`).MatchString(pnpm.Provenance.WorkflowRun) || pnpm.Provenance.BundlePath != "tools/pnpm/release-proof.json" || !hex256.MatchString(pnpm.Provenance.BundleSHA256) || pnpm.Tool.Path != "pnpm" || !hex256.MatchString(pnpm.Tool.SHA256) || pnpm.Tool.Size <= 0 || pnpm.Tool.Size > 64<<20 || pnpm.Notices.Path != "tools/pnpm/NOTICE" || !hex256.MatchString(pnpm.Notices.SHA256) || pnpm.Notices.Size <= 0 || pnpm.Notices.Size > 64<<10 {
+		return errors.New("pnpm archive, provenance or native tool identity is invalid")
 	}
 	if lock.GVisor.RuntimeBundle.Architecture != "amd64" || len(lock.GVisor.RuntimeBundle.Members) != 6 {
 		return errors.New("gVisor runtime bundle identity is invalid")
@@ -545,11 +607,16 @@ func render(lock runtimeLock, qualification map[string]string) []byte {
 	var output strings.Builder
 	output.WriteString("// Code generated by go run ./scripts/generate-runtime-lock.go; DO NOT EDIT.\n\npackage runtimeidentity\n\nconst (\n")
 	for _, item := range []struct{ name, value string }{
+		{"RuntimeLockSHA256", lock.lockSHA256},
 		{"GVisorRelease", lock.GVisor.Release}, {"GVisorCommit", lock.GVisor.Commit}, {"GVisorSourceRepository", lock.GVisor.SourceRepository},
 		{"GVisorPatchPath", lock.GVisor.Patch.Path}, {"GVisorPatchSHA256", lock.GVisor.Patch.SHA256}, {"GVisorBazelModuleLockSHA256", lock.GVisor.Build.BazelModuleLockSHA256},
 		{"GVisorBuilderImageRepository", lock.GVisor.Build.Builder.ImageRepository}, {"GVisorBuilderImageTag", lock.GVisor.Build.Builder.ImageTag}, {"GVisorBuilderImageDigest", lock.GVisor.Build.Builder.ImageDigest}, {"GVisorBuilderArchitecture", lock.GVisor.Build.Builder.Architecture},
 		{"BazelVersion", lock.Bazel.Version}, {"BazelLinuxX8664SHA512", lock.Bazel.SHA512},
 		{"DockerMinimumEngine", lock.Docker.MinimumEngine}, {"DockerCIEngine", lock.Docker.CIEngine}, {"DockerCEPackage", lock.Docker.CIUbuntu.DockerCE}, {"DockerCECLIPackage", lock.Docker.CIUbuntu.DockerCLI}, {"ContainerdPackage", lock.Docker.CIUbuntu.Containerd}, {"NodeImageReference", lock.NodeImage.Reference}, {"NodeNPMVersion", lock.NodeImage.NPMVersion},
+		{"UVImageReference", lock.UVImage.Reference}, {"UVVersion", lock.UVImage.Version}, {"UVArchitecture", lock.UVImage.Architecture},
+		{"UVSourceCommit", lock.UVImage.Provenance.SourceCommit}, {"UVWorkflowRun", lock.UVImage.Provenance.WorkflowRun}, {"UVIndexSHA256", lock.UVImage.Provenance.IndexSHA256}, {"UVBundleSHA256", lock.UVImage.Provenance.BundleSHA256}, {"UVConfigSHA256", lock.UVImage.Provenance.ConfigSHA256}, {"UVToolPath", lock.UVImage.Tool.Path}, {"UVToolSHA256", lock.UVImage.Tool.SHA256},
+		{"PNPMVersion", lock.PNPMTool.Version}, {"PNPMArchitecture", lock.PNPMTool.Architecture}, {"PNPMArchiveURL", lock.PNPMTool.Archive.URL}, {"PNPMArchiveSHA256", lock.PNPMTool.Archive.SHA256},
+		{"PNPMSourceCommit", lock.PNPMTool.Provenance.SourceCommit}, {"PNPMWorkflowRun", lock.PNPMTool.Provenance.WorkflowRun}, {"PNPMBundlePath", lock.PNPMTool.Provenance.BundlePath}, {"PNPMBundleSHA256", lock.PNPMTool.Provenance.BundleSHA256}, {"PNPMToolPath", lock.PNPMTool.Tool.Path}, {"PNPMToolSHA256", lock.PNPMTool.Tool.SHA256}, {"PNPMNoticesPath", lock.PNPMTool.Notices.Path}, {"PNPMNoticesSHA256", lock.PNPMTool.Notices.SHA256},
 		{"PythonImageReference", lock.PythonImage.Reference}, {"PythonVersion", lock.PythonImage.PythonVersion}, {"PipVersion", lock.PythonImage.PipVersion},
 		{"GoImageReference", lock.GoImage.Reference}, {"GoVersion", lock.GoImage.GoVersion}, {"GoArchitecture", lock.GoImage.Architecture},
 		{"RustImageReference", lock.RustImage.Reference}, {"RustVersion", lock.RustImage.RustVersion}, {"RustArchitecture", lock.RustImage.Architecture}, {"RustTarget", lock.RustImage.Target},
@@ -562,6 +629,9 @@ func render(lock runtimeLock, qualification map[string]string) []byte {
 	} {
 		fmt.Fprintf(&output, "\t%s = %q\n", item.name, qualification[item.profile])
 	}
+	fmt.Fprintf(&output, "\tUVToolSize = %d\n", lock.UVImage.Tool.Size)
+	fmt.Fprintf(&output, "\tPNPMArchiveSize = %d\n\tPNPMToolSize = %d\n", lock.PNPMTool.Archive.Size, lock.PNPMTool.Tool.Size)
+	fmt.Fprintf(&output, "\tPNPMNoticesSize = %d\n", lock.PNPMTool.Notices.Size)
 	output.WriteString(")\n\ntype PythonSourceProfileLock struct { Name, SourceID, IndexURL, IndexHost string; DistributionHosts, OwnedProjects []string }\n\nvar PythonSourceProfiles = map[string]PythonSourceProfileLock{\n")
 	for _, source := range lock.PythonSources {
 		fmt.Fprintf(&output, "%q: {Name: %q, SourceID: %q, IndexURL: %q, IndexHost: %q, DistributionHosts: %#v, OwnedProjects: %#v},\n", source.Name, source.Name, source.SourceID, source.IndexURL, source.IndexHost, source.DistributionHosts, source.OwnedProjects)

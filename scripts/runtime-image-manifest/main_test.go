@@ -9,7 +9,9 @@ import (
 )
 
 func TestBuildManifestBindsOfficialImmutableImages(t *testing.T) {
-	lock := runtimeLock{SchemaVersion: 1}
+	lock := runtimeLock{SchemaVersion: 3}
+	bindSyntheticUV(&lock)
+	bindSyntheticPNPM(&lock)
 	lock.RustImage.Reference = "rust:1.99.0-bookworm@sha256:" + strings.Repeat("d", 64)
 	lock.RustImage.RustVersion = "1.99.0"
 	lock.RustImage.Architecture = "amd64"
@@ -26,7 +28,7 @@ func TestBuildManifestBindsOfficialImmutableImages(t *testing.T) {
 	if err != nil {
 		t.Fatalf("buildManifest: %v", err)
 	}
-	if manifest.Schema != manifestSchema || manifest.CustomGHCRImage || !manifest.Provenance.Required || len(manifest.Images) != 4 {
+	if manifest.Schema != manifestSchema || manifest.CustomGHCRImage || !manifest.Provenance.Required || len(manifest.Images) != 5 {
 		t.Fatalf("manifest = %#v", manifest)
 	}
 	if manifest.Images[0].Repository != "docker.io/library/node" || manifest.Images[1].Repository != "docker.io/library/python" || manifest.Images[2].Repository != "docker.io/library/golang" || manifest.Images[3].Repository != "docker.io/library/rust" {
@@ -41,7 +43,17 @@ func TestRunRejectsMutableOrNonOfficialImages(t *testing.T) {
 	root := t.TempDir()
 	lockPath := filepath.Join(root, "runtimes.lock.json")
 	outputPath := filepath.Join(root, "runtime-images.json")
-	body := []byte(`{"schema_version":1,"go_image":{"reference":"golang:1.26.8-bookworm@sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc","go_version":"1.26.8","architecture":"amd64"},"node_image":{"reference":"node:latest","npm_version":"10.9.8"},"python_image":{"reference":"python:3.14.7-slim-bookworm@sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","python_version":"3.14.7","pip_version":"26.2.1"},"rust_image":{"reference":"rust:1.99.0-bookworm@sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd","rust_version":"1.99.0","architecture":"amd64","target":"x86_64-unknown-linux-gnu"}}`)
+	body := []byte(`{"schema_version":3,"go_image":{"reference":"golang:1.26.8-bookworm@sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc","go_version":"1.26.8","architecture":"amd64"},"node_image":{"reference":"node:latest","npm_version":"10.9.8"},"python_image":{"reference":"python:3.14.7-slim-bookworm@sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","python_version":"3.14.7","pip_version":"26.2.1"},"rust_image":{"reference":"rust:1.99.0-bookworm@sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd","rust_version":"1.99.0","architecture":"amd64","target":"x86_64-unknown-linux-gnu"}}`)
+	var input runtimeLock
+	if err := json.Unmarshal(body, &input); err != nil {
+		t.Fatal(err)
+	}
+	bindSyntheticUV(&input)
+	bindSyntheticPNPM(&input)
+	body, err := json.Marshal(input)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if err := os.WriteFile(lockPath, body, 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -54,7 +66,17 @@ func TestRunWritesNoOverwriteManifest(t *testing.T) {
 	root := t.TempDir()
 	lockPath := filepath.Join(root, "runtimes.lock.json")
 	outputPath := filepath.Join(root, "runtime-images.json")
-	body := []byte(`{"schema_version":1,"go_image":{"reference":"golang:1.26.8-bookworm@sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc","go_version":"1.26.8","architecture":"amd64"},"node_image":{"reference":"node:22.23.1-slim@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","npm_version":"10.9.8"},"python_image":{"reference":"python:3.14.7-slim-bookworm@sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","python_version":"3.14.7","pip_version":"26.2.1"},"rust_image":{"reference":"rust:1.99.0-bookworm@sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd","rust_version":"1.99.0","architecture":"amd64","target":"x86_64-unknown-linux-gnu"}}`)
+	body := []byte(`{"schema_version":3,"go_image":{"reference":"golang:1.26.8-bookworm@sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc","go_version":"1.26.8","architecture":"amd64"},"node_image":{"reference":"node:22.23.1-slim@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","npm_version":"10.9.8"},"python_image":{"reference":"python:3.14.7-slim-bookworm@sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","python_version":"3.14.7","pip_version":"26.2.1"},"rust_image":{"reference":"rust:1.99.0-bookworm@sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd","rust_version":"1.99.0","architecture":"amd64","target":"x86_64-unknown-linux-gnu"}}`)
+	var input runtimeLock
+	if err := json.Unmarshal(body, &input); err != nil {
+		t.Fatal(err)
+	}
+	bindSyntheticUV(&input)
+	bindSyntheticPNPM(&input)
+	body, err := json.Marshal(input)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if err := os.WriteFile(lockPath, body, 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -66,7 +88,7 @@ func TestRunWritesNoOverwriteManifest(t *testing.T) {
 	if err != nil || json.Unmarshal(encoded, &manifest) != nil {
 		t.Fatalf("read manifest: %v", err)
 	}
-	if manifest.Schema != manifestSchema || len(manifest.Images) != 4 {
+	if manifest.Schema != manifestSchema || len(manifest.Images) != 5 {
 		t.Fatalf("manifest = %#v", manifest)
 	}
 	if err := run([]string{"--runtime-lock", lockPath, "--output", outputPath}); err == nil {
@@ -137,7 +159,82 @@ func TestManifestRejectsMissingOrMismatchedRuntimeBindings(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(manifest.Images) != 4 || manifest.Images[0].Version != nodeVersion || manifest.Images[0].Version == pinned.NodeImage.NPMVersion || manifest.Images[3].Version != pinned.RustImage.RustVersion {
+	if len(manifest.Images) != 5 || manifest.Images[0].Version != nodeVersion || manifest.Images[0].Version == pinned.NodeImage.NPMVersion || manifest.Images[3].Version != pinned.RustImage.RustVersion {
 		t.Fatalf("runtime versions: %#v", manifest.Images)
+	}
+}
+
+func bindSyntheticUV(lock *runtimeLock) {
+	lock.UVImage.Reference = "ghcr.io/astral-sh/uv:0.1.2@sha256:" + strings.Repeat("e", 64)
+	lock.UVImage.Version = "0.1.2"
+	lock.UVImage.Architecture = "amd64"
+}
+
+func TestManifestRejectsOldSchemaAndMissingUV(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "runtimes.lock.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var pinned runtimeLock
+	if err := json.Unmarshal(body, &pinned); err != nil {
+		t.Fatal(err)
+	}
+	for name, mutate := range map[string]func(*runtimeLock){
+		"old schema": func(l *runtimeLock) { l.SchemaVersion = 1 },
+		"missing uv": func(l *runtimeLock) { l.UVImage.Reference = "" },
+		"wrong publisher": func(l *runtimeLock) {
+			l.UVImage.Reference = strings.Replace(l.UVImage.Reference, "astral-sh", "foreign", 1)
+		},
+		"wrong uv version":      func(l *runtimeLock) { l.UVImage.Version = "0.0.1" },
+		"wrong uv architecture": func(l *runtimeLock) { l.UVImage.Architecture = "arm64" },
+	} {
+		t.Run(name, func(t *testing.T) {
+			l := pinned
+			mutate(&l)
+			if _, err := buildManifest(l); err == nil {
+				t.Fatal("unbound UV supply accepted")
+			}
+		})
+	}
+}
+
+func bindSyntheticPNPM(lock *runtimeLock) {
+	lock.PNPMTool.Version = "1.2.3"
+	lock.PNPMTool.Architecture = "amd64"
+	lock.PNPMTool.Tool.SHA256 = strings.Repeat("e", 64)
+	lock.PNPMTool.Tool.Size = 768
+	lock.PNPMTool.Notices.SHA256 = strings.Repeat("f", 64)
+	lock.PNPMTool.Notices.Size = 1024
+}
+
+func TestManifestRequiresSeparateBoundedPNPMTool(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "runtimes.lock.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var pinned runtimeLock
+	if err := json.Unmarshal(body, &pinned); err != nil {
+		t.Fatal(err)
+	}
+	manifest, err := buildManifest(pinned)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(manifest.Images) != 5 || len(manifest.Tools) != 1 || manifest.Tools[0].Name != "pnpm" || manifest.Tools[0].SHA256 != pinned.PNPMTool.Tool.SHA256 {
+		t.Fatalf("native tool/image identity mixed: %+v", manifest)
+	}
+	for name, mutate := range map[string]func(*runtimeLock){
+		"missing":      func(l *runtimeLock) { l.PNPMTool.Version = "" },
+		"architecture": func(l *runtimeLock) { l.PNPMTool.Architecture = "arm64" },
+		"hash":         func(l *runtimeLock) { l.PNPMTool.Tool.SHA256 = "" },
+		"size":         func(l *runtimeLock) { l.PNPMTool.Tool.Size = 64<<20 + 1 },
+	} {
+		t.Run(name, func(t *testing.T) {
+			l := pinned
+			mutate(&l)
+			if _, err := buildManifest(l); err == nil {
+				t.Fatal("unbound native tool accepted")
+			}
+		})
 	}
 }

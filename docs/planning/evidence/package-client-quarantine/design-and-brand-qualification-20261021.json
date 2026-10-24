@@ -1,0 +1,71 @@
+{
+  "scope": "Design documents and local branded CLI preview only; new clients remain NOT_STARTED",
+  "baseline": "72a90760bb3c46987642b5d0b3eda450a60310a0",
+  "design_commit": "491a32d00a7245415c832c4ff723bfd5bff960e9",
+  "source": "1f2500e9fbed0f5b1b8ca298552806a96aab7546",
+  "tree": "ef8eeb878764f84fce54ae24c6df9616a722bb98",
+  "checks": {
+    "format": {
+      "exit": 0,
+      "seconds": 11.88
+    },
+    "quick": {
+      "exit": 0,
+      "seconds": 224.14
+    },
+    "security": {
+      "exit": 0,
+      "seconds": 7.24
+    },
+    "docs": {
+      "exit": 0,
+      "seconds": 0.21
+    }
+  },
+  "preview": {
+    "source": "1f2500e9fbed0f5b1b8ca298552806a96aab7546",
+    "sha256": "80492f14b2f31037a69dca220e0dcd554797c97fac4d88f5c6312d32835ddfc9",
+    "bytes": 42466955,
+    "pty_exit": 0,
+    "termios_restored": true
+  },
+  "actual_pty": {
+    "platform": "Linux / WSL2 amd64",
+    "geometries": [
+      [
+        100,
+        30
+      ],
+      [
+        59,
+        21
+      ],
+      [
+        20,
+        8
+      ],
+      [
+        44,
+        30
+      ],
+      [
+        80,
+        24
+      ],
+      [
+        112,
+        18
+      ]
+    ],
+    "navigation_and_usage": true,
+    "color_panel_and_no_color": true,
+    "installed_cli_unchanged": true
+  },
+  "limitations": [
+    "No new native macOS or remote CI run",
+    "No new package-client runtime support",
+    "Owner review remains pending; preview is not a registered trusted installation"
+  ],
+  "raw_directory": "docs/github-logs/owner-cli-review-20261021",
+  "cleanup_receipt": "docs/github-logs/owner-cli-review-20261021/fullname-cleanup.json"
+}

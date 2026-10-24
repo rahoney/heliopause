@@ -40,7 +40,18 @@ func (values *stringList) Set(value string) error {
 
 type runtimeLock struct {
 	SchemaVersion int `json:"schema_version"`
-	GVisor        struct {
+	PNPMTool      struct {
+		Version string `json:"pnpm_version"`
+		Tool    struct {
+			SHA256 string `json:"sha256"`
+			Size   int64  `json:"size"`
+		} `json:"tool"`
+		Notices struct {
+			SHA256 string `json:"sha256"`
+			Size   int64  `json:"size"`
+		} `json:"notices"`
+	} `json:"pnpm_tool"`
+	GVisor struct {
 		Release string `json:"release"`
 		Commit  string `json:"commit"`
 	} `json:"gvisor"`
@@ -167,14 +178,17 @@ func buildRelease(version, commit, workflowRun, runtimeLockPath, sbomPath, runti
 		return fmt.Errorf("read runtime lock: %w", err)
 	}
 	var lock runtimeLock
-	if err := json.Unmarshal(lockBody, &lock); err != nil || lock.SchemaVersion != 1 || lock.GVisor.Release == "" || !commitID.MatchString(lock.GVisor.Commit) {
+	if err := json.Unmarshal(lockBody, &lock); err != nil || lock.SchemaVersion != 3 || lock.GVisor.Release == "" || !commitID.MatchString(lock.GVisor.Commit) || !releaseVersion.MatchString("v"+lock.PNPMTool.Version) {
 		return errors.New("runtime lock is invalid")
 	}
 	assets, primary, err := collectAssets(assetPaths)
 	if err != nil {
 		return err
 	}
-	if err := writeSBOM(sbomPath, version, commit, primary); err != nil {
+	if err := checkPNPMAssetBindings(lock, assets); err != nil {
+		return err
+	}
+	if err := writeSBOM(sbomPath, version, commit, primary, lock.PNPMTool.Version); err != nil {
 		return err
 	}
 	sbom, err := fileRecord(sbomPath)
@@ -207,6 +221,15 @@ func buildRelease(version, commit, workflowRun, runtimeLockPath, sbomPath, runti
 	return writeNewFile(manifestPath, append(body, '\n'))
 }
 
+func checkPNPMAssetBindings(lock runtimeLock, assets []releaseAsset) error {
+	for _, asset := range assets {
+		if asset.Name == "pnpm-linux-amd64" && (asset.SHA256 != lock.PNPMTool.Tool.SHA256 || asset.Size != lock.PNPMTool.Tool.Size) || asset.Name == "pnpm-NOTICE.txt" && (asset.SHA256 != lock.PNPMTool.Notices.SHA256 || asset.Size != lock.PNPMTool.Notices.Size) {
+			return errors.New("pnpm release asset differs from its selected runtime owner")
+		}
+	}
+	return nil
+}
+
 func assetSpecs() map[string]struct {
 	platform string
 	role     string
@@ -221,6 +244,9 @@ func assetSpecs() map[string]struct {
 		"helox-darwin-arm64":                    {platform: "darwin/arm64", role: "helox"},
 		"haa_gvisor_observer-linux-amd64":       {platform: "linux/amd64", role: "gvisor-observer"},
 		"haa-network-policy-helper-linux-amd64": {platform: "linux/amd64", role: "network-policy-helper"},
+		"haa-release-installer-linux-amd64":     {platform: "linux/amd64", role: "release-installer"},
+		"pnpm-linux-amd64":                      {platform: "linux/amd64", role: "pnpm"},
+		"pnpm-NOTICE.txt":                       {platform: "linux/amd64", role: "release-metadata"},
 		"helox-linux-amd64.deb":                 {platform: "linux/amd64", role: "os-package-deb"},
 		"helox-linux-amd64.rpm":                 {platform: "linux/amd64", role: "os-package-rpm"},
 	}
@@ -257,7 +283,7 @@ func collectAssets(paths []string) ([]releaseAsset, string, error) {
 	return assets, primary, nil
 }
 
-func writeSBOM(path, version, commit, binary string) error {
+func writeSBOM(path, version, commit, binary, pnpmVersion string) error {
 	build, err := buildinfo.ReadFile(binary)
 	if err != nil || build.Main.Path == "" {
 		return errors.New("read native helox build information")
@@ -269,6 +295,7 @@ func writeSBOM(path, version, commit, binary string) error {
 		}
 		components = append(components, cyclonedxComponent{Type: "library", Name: dependency.Path, Version: dependency.Version})
 	}
+	components = append(components, cyclonedxComponent{Type: "application", Name: "pnpm", Version: pnpmVersion})
 	sort.Slice(components, func(left, right int) bool {
 		if components[left].Name == components[right].Name {
 			return components[left].Version < components[right].Version

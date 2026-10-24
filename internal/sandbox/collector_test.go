@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strconv"
 	"strings"
 	"testing"
@@ -336,11 +335,7 @@ func TestTraceBudgetsAreProfileBoundedAndFailClosed(t *testing.T) {
 }
 
 func TestPyTorchCPUHelperRecordLimitDoesNotUndercutCollectorBudget(t *testing.T) {
-	_, currentFile, _, ok := runtime.Caller(0)
-	if !ok {
-		t.Fatal("locate collector test source")
-	}
-	helperSource, err := os.ReadFile(filepath.Join(filepath.Dir(currentFile), "..", "..", "tools", "gvisor-observer", "observer.cc"))
+	helperSource, err := os.ReadFile(filepath.Join("..", "..", "tools", "gvisor-observer", "observer.cc"))
 	if err != nil {
 		t.Fatalf("read observer helper source: %v", err)
 	}

@@ -79,11 +79,21 @@ func (l *Launcher) StartObserver(ctx context.Context, remoteEndpoint, outputEndp
 	if err := verifyObserverBuildIdentity(ctx, current.path); err != nil {
 		return nil, err
 	}
+	return startObserverProcess(ctx, current.path, remoteEndpoint, outputEndpoint)
+}
+
+func startObserverProcess(ctx context.Context, path, remoteEndpoint, outputEndpoint string) (ObserverProcess, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	readinessRead, readinessWrite, err := os.Pipe()
 	if err != nil {
 		return nil, errors.New("create observer readiness channel")
 	}
-	command := exec.CommandContext(ctx, current.path, remoteEndpoint, outputEndpoint, "/run/heliopause-observer/haa-control.sock", "--ready-fd=3")
+	// The supervisor owns this long-lived child. Operation cancellation must
+	// reach its bounded Stop, rather than exec killing the receiver before it
+	// can retire its endpoints. Readiness still uses the operation context.
+	command := exec.Command(path, remoteEndpoint, outputEndpoint, "/run/heliopause-observer/haa-control.sock", "--ready-fd=3")
 	command.Env = []string{"LANG=C", "LC_ALL=C"}
 	command.ExtraFiles = []*os.File{readinessWrite}
 	if err := command.Start(); err != nil {

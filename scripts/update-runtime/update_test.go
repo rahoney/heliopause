@@ -28,7 +28,7 @@ func fixture(t *testing.T) (string, string) {
 	if err := os.MkdirAll(state, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	paths := []string{runtimeFile, supportFile, generatedFile, "scripts/tools.lock.json", "scripts/generate-runtime-lock.go", "tools/gvisor-observer/BUILD", "go.mod", "go.sum", ".github/workflows/heliopause-ci.yml", ".github/workflows/heliopause-security.yml", ".github/workflows/heliopause-release-build.yml", ".github/workflows/heliopause-release-publish.yml"}
+	paths := []string{runtimeFile, supportFile, generatedFile, "tools/pnpm/release-proof.json", "tools/pnpm/NOTICE", "README.md", "scripts/tools.lock.json", "scripts/generate-runtime-lock.go", "tools/gvisor-observer/BUILD", "go.mod", "go.sum", ".github/workflows/heliopause-ci.yml", ".github/workflows/heliopause-security.yml", ".github/workflows/heliopause-release-build.yml", ".github/workflows/heliopause-release-publish.yml"}
 	for _, path := range paths {
 		body, err := os.ReadFile(filepath.Join(source, path))
 		if err != nil {
@@ -166,7 +166,7 @@ func futurePlan(t *testing.T, root, state, component string) plan {
 }
 
 func TestSameVersionPlanAndApply(t *testing.T) {
-	for _, component := range []string{"go", "node", "python", "rust"} {
+	for _, component := range []string{"go", "node", "python", "rust", "uv"} {
 		t.Run(component, func(t *testing.T) {
 			root, state := fixture(t)
 			p := noopPlan(t, root, state, component)
@@ -218,7 +218,7 @@ func TestCoordinatedComponentFixtures(t *testing.T) {
 			}
 			want := []string{generatedFile, runtimeFile, supportFile}
 			if component == "go" {
-				want = []string{".github/workflows/heliopause-ci.yml", ".github/workflows/heliopause-release-build.yml", ".github/workflows/heliopause-release-publish.yml", ".github/workflows/heliopause-security.yml", "go.mod", generatedFile, runtimeFile, "scripts/tools.lock.json", supportFile}
+				want = []string{".github/workflows/heliopause-ci.yml", ".github/workflows/heliopause-release-build.yml", ".github/workflows/heliopause-release-publish.yml", ".github/workflows/heliopause-security.yml", "README.md", "go.mod", generatedFile, runtimeFile, "scripts/tools.lock.json", supportFile}
 			}
 			if !reflect.DeepEqual(paths, want) {
 				t.Fatalf("unexpected consumer inventory: %v", paths)

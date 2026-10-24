@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"io"
 	"os"
@@ -27,27 +28,67 @@ const (
 	MaxModuleFileBytes     = 64 << 20
 	MaxModuleExpandedBytes = 200 << 20
 	bundleHeader           = "HAA-GO-MODULE-1\n"
+	bundleRequiredHeader   = "HAA-GO-MODULE-2\n"
 )
 
 // Bundle binds the exact proxy .mod and .zip bytes in one acquired subject.
 // The length-delimited envelope is transport only; it grants no trust.
-type Bundle struct{ mod, zip []byte }
+type Bundle struct {
+	mod, zip []byte
+	required []RequiredModControl
+}
 
 func (b Bundle) Mod() []byte { return bytes.Clone(b.mod) }
 func (b Bundle) Zip() []byte { return bytes.Clone(b.zip) }
+func (b Bundle) RequiredMods() []RequiredModControl {
+	var result []RequiredModControl
+	for _, control := range b.required {
+		result = append(result, RequiredModControl{control.Version, bytes.Clone(control.Body)})
+	}
+	return result
+}
+
+type bundleControls struct {
+	Mod      []byte               `json:"mod"`
+	Required []RequiredModControl `json:"required_mods"`
+}
+
 func (b Bundle) ZipReader() (*zip.Reader, error) {
 	return zip.NewReader(bytes.NewReader(b.zip), int64(len(b.zip)))
 }
 
 func encodeBundle(mod, archive []byte) ([]byte, error) {
+	return encodeBundleWithRequiredMods(mod, archive, nil)
+}
+
+func encodeBundleWithRequiredMods(mod, archive []byte, required []RequiredModControl) ([]byte, error) {
 	if len(mod) == 0 || len(mod) > MaxModBytes || len(archive) == 0 || len(archive) > MaxZipBytes {
 		return nil, errors.New("go module intake exceeds content bounds")
 	}
-	body := make([]byte, len(bundleHeader)+8+len(mod)+len(archive))
-	copy(body, bundleHeader)
-	binary.BigEndian.PutUint64(body[len(bundleHeader):], uint64(len(mod)))
-	copy(body[len(bundleHeader)+8:], mod)
-	copy(body[len(bundleHeader)+8+len(mod):], archive)
+	control, header := mod, bundleHeader
+	if len(required) > 0 {
+		if len(required) > MaxRequiredModControls {
+			return nil, errors.New("required Go control count exceeds bound")
+		}
+		remaining := MaxModBytes - len(mod)
+		for _, control := range required {
+			if len(control.Body) == 0 || len(control.Body) > remaining {
+				return nil, errors.New("required Go controls exceed combined bound")
+			}
+			remaining -= len(control.Body)
+		}
+		var err error
+		control, err = json.Marshal(bundleControls{mod, required})
+		if err != nil || len(control) > MaxModBytes {
+			return nil, errors.New("combined Go control envelope exceeds bound")
+		}
+		header = bundleRequiredHeader
+	}
+	body := make([]byte, len(header)+8+len(control)+len(archive))
+	copy(body, header)
+	binary.BigEndian.PutUint64(body[len(header):], uint64(len(control)))
+	copy(body[len(header)+8:], control)
+	copy(body[len(header)+8+len(control):], archive)
 	return body, nil
 }
 
@@ -108,34 +149,46 @@ func ReadIntake(root string, artifact domain.AcquiredArtifact) (Bundle, error) {
 	if hex.EncodeToString(hash[:]) != artifact.Digest().String() {
 		return Bundle{}, errors.New("go module intake content changed")
 	}
-	if len(body) < len(bundleHeader)+8 || string(body[:len(bundleHeader)]) != bundleHeader {
+	if len(body) < len(bundleHeader)+8 {
 		return Bundle{}, errors.New("go module intake envelope is invalid")
+	}
+	header := string(body[:len(bundleHeader)])
+	if header != bundleHeader && header != bundleRequiredHeader {
+		return Bundle{}, errors.New("go module intake envelope version is invalid")
 	}
 	n := binary.BigEndian.Uint64(body[len(bundleHeader) : len(bundleHeader)+8])
 	start := uint64(len(bundleHeader) + 8)
 	if n == 0 || n > MaxModBytes || start+n >= uint64(len(body)) || uint64(len(body))-start-n > MaxZipBytes {
 		return Bundle{}, errors.New("go module intake envelope bounds are invalid")
 	}
-	return Bundle{mod: body[start : start+n], zip: body[start+n:]}, nil
+	bundle := Bundle{mod: body[start : start+n], zip: body[start+n:]}
+	if header == bundleRequiredHeader {
+		var controls bundleControls
+		decoder := json.NewDecoder(bytes.NewReader(bundle.mod))
+		decoder.DisallowUnknownFields()
+		if decoder.Decode(&controls) != nil {
+			return Bundle{}, errors.New("required Go control envelope is invalid")
+		}
+		canonical, err := json.Marshal(controls)
+		if err != nil || !bytes.Equal(canonical, bundle.mod) || len(controls.Mod) == 0 || len(controls.Required) == 0 || len(controls.Required) > MaxRequiredModControls {
+			return Bundle{}, errors.New("required Go control envelope is not canonical")
+		}
+		previous := ""
+		for _, control := range controls.Required {
+			if !validModuleVersion(artifact.Identity().Name(), control.Version) || control.Version <= previous || len(control.Body) == 0 || len(control.Body) > MaxModBytes {
+				return Bundle{}, errors.New("required Go envelope member is invalid")
+			}
+			previous = control.Version
+		}
+		bundle.mod, bundle.required = controls.Mod, controls.Required
+	}
+	return bundle, nil
 }
 
 // ParseIntegrity accepts only the normalized pair frozen by the resolver.
 func ParseIntegrity(value string) (archive, mod string, err error) {
-	a, m, ok := strings.Cut(value, ";go.mod=")
-	if !ok || !strings.HasPrefix(a, "h1=") {
-		return "", "", errors.New("go module integrity pair is invalid")
-	}
-	a = strings.TrimPrefix(a, "h1=")
-	if _, e := h1Digest(a); e != nil {
-		return "", "", e
-	}
-	if _, e := h1Digest(m); e != nil {
-		return "", "", e
-	}
-	if strings.ContainsAny(value, "\r\n\t ") {
-		return "", "", errors.New("go module integrity pair is not canonical")
-	}
-	return a, m, nil
+	archive, mod, _, err = parseModuleIntegrity(value)
+	return archive, mod, err
 }
 
 // HashBundle uses Go's h1 algorithm only after bounded ZIP validation. The

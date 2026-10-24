@@ -1,0 +1,141 @@
+package sandbox
+
+import (
+	"archive/tar"
+	"bytes"
+	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"errors"
+	"io"
+
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
+)
+
+type nativeRuntimeToolKind uint8
+
+const (
+	nativeRuntimeUV nativeRuntimeToolKind = iota
+	nativeRuntimePNPM
+)
+
+type nativeRuntimeToolSpec struct {
+	name, guestPath, sha256              string
+	size                                 int64
+	volumePrefix, volumeLabel, hashLabel string
+}
+
+func nativeRuntimeToolIdentity(kind nativeRuntimeToolKind) (nativeRuntimeToolSpec, bool) {
+	switch kind {
+	case nativeRuntimeUV:
+		return nativeRuntimeToolSpec{"uv", uvToolGuestPath, runtimeidentity.UVToolSHA256, runtimeidentity.UVToolSize, "haa-uv-runtime-", uvRuntimeVolumeLabel, uvRuntimeToolLabel}, true
+	case nativeRuntimePNPM:
+		return nativeRuntimeToolSpec{"pnpm", pnpmToolGuestPath, runtimeidentity.PNPMToolSHA256, runtimeidentity.PNPMToolSize, "haa-pnpm-runtime-", "io.heliopause.pnpm-runtime", "io.heliopause.pnpm-tool-sha256"}, true
+	default:
+		return nativeRuntimeToolSpec{}, false
+	}
+}
+
+var errNativeToolTransport = errors.New("immutable native tool transport is unavailable or changed")
+
+type nativeToolFileIdentity struct {
+	size   int64
+	sha256 string
+	mode   int64
+}
+
+// Exposing only Write prevents io.Copy/ReaderFrom from bypassing the complete
+// Docker tar transport bound, including extended headers and padding.
+type nativeToolArchiveOutput struct {
+	body   []byte
+	limit  int64
+	failed bool
+}
+
+func (w *nativeToolArchiveOutput) Write(body []byte) (int, error) {
+	if w.failed || int64(len(body)) > w.limit-int64(len(w.body)) {
+		w.failed = true
+		return 0, errNativeToolTransport
+	}
+	w.body = append(w.body, body...)
+	return len(body), nil
+}
+
+func readNativeToolFromContainer(ctx context.Context, runner streamingDockerOutput, container, path string, identity nativeToolFileIdentity, kind nativeRuntimeToolKind) ([]byte, error) {
+	spec, known := nativeRuntimeToolIdentity(kind)
+	validPath := path == spec.guestPath || kind == nativeRuntimeUV && path == runtimeidentity.UVToolPath
+	if ctx == nil || runner == nil || !known || !validPath || !exactObservationContainerID(container) || identity.size <= 0 || identity.size > 64<<20 {
+		return nil, errNativeToolTransport
+	}
+	output := nativeToolArchiveOutput{limit: identity.size + 64<<10}
+	if err := runner.RunOutput(ctx, &output, "docker", "cp", container+":"+path, "-"); err != nil || output.failed || ctx.Err() != nil {
+		return nil, errors.Join(errNativeToolTransport, err, ctx.Err())
+	}
+	return scanNativeToolTar(output.body, identity, kind)
+}
+
+func scanNativeToolTar(body []byte, identity nativeToolFileIdentity, kind nativeRuntimeToolKind) ([]byte, error) {
+	spec, known := nativeRuntimeToolIdentity(kind)
+	if !known || identity.size <= 0 || identity.size > 64<<20 || int64(len(body)) > identity.size+64<<10 {
+		return nil, errNativeToolTransport
+	}
+	input := bytes.NewReader(body)
+	archive := tar.NewReader(input)
+	header, err := archive.Next()
+	if err != nil || header.Name != spec.name && header.Name != "./"+spec.name || header.Typeflag != tar.TypeReg || header.Linkname != "" || header.Uid != 0 || header.Gid != 0 || header.Mode != identity.mode || header.Size != identity.size {
+		return nil, errNativeToolTransport
+	}
+	native, err := io.ReadAll(archive)
+	if err != nil || int64(len(native)) != identity.size {
+		return nil, errNativeToolTransport
+	}
+	digest := sha256.Sum256(native)
+	if hex.EncodeToString(digest[:]) != identity.sha256 {
+		return nil, errNativeToolTransport
+	}
+	if _, err := archive.Next(); err != io.EOF {
+		return nil, errNativeToolTransport
+	}
+	for _, value := range body[len(body)-input.Len():] {
+		if value != 0 {
+			return nil, errNativeToolTransport
+		}
+	}
+	return native, nil
+}
+
+func introduceNativeTool(ctx context.Context, runner CommandRunner, container string, kind nativeRuntimeToolKind, body []byte) error {
+	spec, known := nativeRuntimeToolIdentity(kind)
+	input, acceptsInput := runner.(inputCommandRunner)
+	output, streamsOutput := runner.(streamingDockerOutput)
+	if ctx == nil || !known || !acceptsInput || !streamsOutput || !exactObservationContainerID(container) || int64(len(body)) != spec.size {
+		return errNativeToolTransport
+	}
+	if err := ctx.Err(); err != nil {
+		return errors.Join(errNativeToolTransport, err)
+	}
+	digest := sha256.Sum256(body)
+	if hex.EncodeToString(digest[:]) != spec.sha256 {
+		return errNativeToolTransport
+	}
+	reader, writer := io.Pipe()
+	done := make(chan error, 1)
+	go func() {
+		archive := tar.NewWriter(writer)
+		err := archive.WriteHeader(&tar.Header{Name: spec.name, Typeflag: tar.TypeReg, Mode: 0555, Uid: 0, Gid: 0, Size: int64(len(body))})
+		if err == nil {
+			_, err = archive.Write(body)
+		}
+		err = errors.Join(err, archive.Close())
+		_ = writer.CloseWithError(err)
+		done <- err
+	}()
+	commandErr := input.RunInput(ctx, reader, "docker", "cp", "--archive", "-", container+":/haa-runtime")
+	_ = reader.CloseWithError(commandErr)
+	copyErr := <-done
+	if err := errors.Join(commandErr, copyErr, ctx.Err()); err != nil {
+		return errors.Join(errNativeToolTransport, err)
+	}
+	_, err := readNativeToolFromContainer(ctx, output, container, spec.guestPath, nativeToolFileIdentity{spec.size, spec.sha256, 0555}, kind)
+	return err
+}

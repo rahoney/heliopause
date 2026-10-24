@@ -35,6 +35,10 @@ func selectedVersion(root, component string) (string, error) {
 		key, versionKey = "python_image", "python_version"
 	case "rust":
 		key, versionKey = "rust_image", "rust_version"
+	case "uv":
+		key, versionKey = "uv_image", "uv_version"
+	case "pnpm":
+		key, versionKey = "pnpm_tool", "pnpm_version"
 	default:
 		return "", errors.New("unknown component")
 	}
@@ -173,12 +177,33 @@ func renderChanges(p plan, state string) ([]change, error) {
 		}
 		files[path] = body
 	}
-	if p.Version != p.Current && p.Component != "terraform" && p.Component != "github" {
-		if err := validateMetadata(p.Component, p.Version, p.Metadata); err != nil {
+	if p.Component == "go" {
+		body, _, err := readRegular(p.Root, "README.md")
+		if err != nil {
 			return nil, err
 		}
-		key := map[string]string{"go": "go_image", "node": "node_image", "python": "python_image", "rust": "rust_image"}[p.Component]
+		files["README.md"], err = editReadmeGoBuild(body, p.Current, p.Version)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if p.Version != p.Current && p.Component != "terraform" && p.Component != "github" {
+		if p.Component == "uv" {
+			if err := verifyFrozenUVSupply(p.Version, p.Metadata, state); err != nil {
+				return nil, err
+			}
+		} else if p.Component == "pnpm" {
+			if err := verifyFrozenPNPMSupply(p.Version, p.Metadata, state); err != nil {
+				return nil, err
+			}
+		} else if err := validateMetadata(p.Component, p.Version, p.Metadata); err != nil {
+			return nil, err
+		}
+		key := map[string]string{"go": "go_image", "node": "node_image", "python": "python_image", "rust": "rust_image", "uv": "uv_image"}[p.Component]
 		replacements := map[string]any{"/" + key + "/reference": p.Metadata.Image}
+		if p.Component == "pnpm" {
+			replacements = map[string]any{}
+		}
 		owners := map[string]string{}
 		switch p.Component {
 		case "go":
@@ -197,6 +222,38 @@ func renderChanges(p plan, state string) ([]change, error) {
 			replacements["/python_image/target/abi"] = abi
 			owners["Python"] = p.Version
 			owners["pip"] = p.Metadata.Bundled
+		case "uv":
+			u := p.Metadata.UV
+			replacements["/uv_image/uv_version"] = p.Version
+			replacements["/uv_image/architecture"] = "amd64"
+			replacements["/uv_image/provenance/source_commit"] = u.Identity.SourceCommit
+			replacements["/uv_image/provenance/workflow_run"] = u.Identity.WorkflowRun
+			replacements["/uv_image/provenance/index_sha256"] = u.Identity.IndexSHA256
+			replacements["/uv_image/provenance/bundle_sha256"] = hash(u.Bundle)
+			replacements["/uv_image/provenance/config_sha256"] = hash(u.Config)
+			replacements["/uv_image/tool/sha256"] = u.ToolSHA256
+			replacements["/uv_image/tool/size"] = u.ToolSize
+			owners["uv"] = p.Version
+		case "pnpm":
+			u := p.Metadata.PNPM
+			replacements["/pnpm_tool/pnpm_version"] = p.Version
+			replacements["/pnpm_tool/architecture"] = "amd64"
+			replacements["/pnpm_tool/archive/url"] = "https://github.com/pnpm/pnpm/releases/download/v" + p.Version + "/pnpm-linux-x64.tar.gz"
+			replacements["/pnpm_tool/archive/sha256"] = u.Identity.ArchiveSHA256
+			replacements["/pnpm_tool/archive/size"] = u.ArchiveSize
+			replacements["/pnpm_tool/provenance/source_commit"] = u.Identity.SourceCommit
+			replacements["/pnpm_tool/provenance/workflow_run"] = u.Identity.WorkflowRun
+			replacements["/pnpm_tool/provenance/bundle_path"] = "tools/pnpm/release-proof.json"
+			replacements["/pnpm_tool/provenance/bundle_sha256"] = hash(u.Bundle)
+			replacements["/pnpm_tool/tool/path"] = "pnpm"
+			replacements["/pnpm_tool/tool/sha256"] = u.ToolSHA256
+			replacements["/pnpm_tool/tool/size"] = u.ToolSize
+			replacements["/pnpm_tool/notices/path"] = "tools/pnpm/NOTICE"
+			replacements["/pnpm_tool/notices/sha256"] = hash(u.Notices)
+			replacements["/pnpm_tool/notices/size"] = len(u.Notices)
+			files["tools/pnpm/NOTICE"] = u.Notices
+			files["tools/pnpm/release-proof.json"] = u.Bundle
+			owners["pnpm"] = p.Version
 		case "rust":
 			replacements["/rust_image/rust_version"] = p.Version
 			owners["Rust/Cargo"] = p.Version
@@ -314,6 +371,40 @@ func renderChanges(p plan, state string) ([]change, error) {
 		return nil, errors.New("same-version baseline has generated drift; reconcile it explicitly first")
 	}
 	return changes, nil
+}
+
+// Only the declared Build paragraph is a version consumer. Historical text in
+// other sections is preserved, including identical previous version sentences.
+func editReadmeGoBuild(body []byte, current, selected string) ([]byte, error) {
+	const heading = "\n## Build\n"
+	text := string(body)
+	if strings.Count(text, heading) != 1 {
+		return nil, errors.New("readme must contain one Build section")
+	}
+	before, section, _ := strings.Cut(text, heading)
+	contents, after, hasNext := strings.Cut(section, "\n## ")
+	paragraph := func(version string) string {
+		return fmt.Sprintf("Heliopause는 Go `%s` 이상이 필요하며, 개발·CI toolchain은 Go `%s`으로 고정한다.", version, version)
+	}
+	lines := strings.Split(contents, "\n")
+	fields := 0
+	for index, line := range lines {
+		if strings.HasPrefix(line, "Heliopause는 Go ") {
+			if line != paragraph(current) {
+				return nil, errors.New("readme Go minimum/toolchain differs from the selected baseline")
+			}
+			fields++
+			lines[index] = paragraph(selected)
+		}
+	}
+	if fields != 1 {
+		return nil, errors.New("readme requires one known Go minimum/toolchain paragraph")
+	}
+	result := before + heading + strings.Join(lines, "\n")
+	if hasNext {
+		result += "\n## " + after
+	}
+	return []byte(result), nil
 }
 
 func editReviews(body []byte, owners map[string]string, review []map[string]any) ([]byte, error) {

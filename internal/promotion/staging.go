@@ -325,11 +325,21 @@ func walkPath(path string, allowMissing bool) error {
 }
 
 func writeRecord(directory, name string, document []byte) error {
+	return writeRecordFile(directory, name, document, true)
+}
+
+// Only for members of an unpublished private tree. Its owner must sync the
+// complete sealed tree before publication; this write alone is not durable.
+func writePrivateRecord(directory, name string, document []byte) error {
+	return writeRecordFile(directory, name, document, false)
+}
+
+func writeRecordFile(directory, name string, document []byte, syncFile bool) error {
 	file, err := os.OpenFile(filepath.Join(directory, name), os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
 	if err != nil {
 		return fmt.Errorf("create staged record: %w", err)
 	}
-	if _, err = file.Write(document); err == nil {
+	if _, err = file.Write(document); err == nil && syncFile {
 		err = file.Sync()
 	}
 	if closeErr := file.Close(); err == nil {

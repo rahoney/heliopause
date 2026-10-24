@@ -9,12 +9,611 @@
 ```text
 Current milestone: M13 — Production Release & Operations
 Milestone status: IN_PROGRESS — runtime maintenance main delivery COMPLETE
-Active work item: M13-003 — canonical release build and OS package qualification (approved C3 disposition)
-Active work item status: IN_PROGRESS — source CI325 ten SUCCESS; actual release qualification remains; QUALIFIED=NO / ACCEPTANCE_CLOSED=NO
-Predecessor: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
-Next work item: M13-004 — NOT_STARTED / awaiting M13-003 acceptance; concrete publication approval still required
+Active work item: M13-004 — installed self-quarantine update design and convenience channels
+Last completed work item: CLI-UX-003 — COMPLETE; source4cfe29e/CI352 ten SUCCESS
+Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
+Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
+Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
+Active work item status: IN_PROGRESS — rc6/native4 same-runtime baseline IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; P2/native5 expansion locally verified only, guest/whole qualification and channel scope remain
+Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
+Next action: M13-004/P2c5-B3 — B2 exact target command/lineage and synthetic transitive+peer normal/failure LOCAL VERIFIED; B3a inventory/B3b1 dirname codec LOCAL VERIFIED; B3b2 full layout/bin/metadata edit map next; production static-all/prepare remain; product dynamic INCOMPLETE; CI403/db464fd ten SUCCESS; P2 acceptance NO
+Current substep: M13-004/P2 — IN_PROGRESS; offline supply/native distribution LOCAL VERIFIED; exact guest admission and product graph/layout/CLI gaps active; support not yet advertised
+After P2: P3 Bun, then P4..P7 — NOT_STARTED
+Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-24 CI402 ordinary checkpoint 확인
+
+실제55분 타이머 만료 뒤 [CI402 결과](./evidence/package-client-quarantine/p2c2-pnpm-ci402-qualification-20261024.json)를
+확인했다. Required 포함10SUCCESS이며 source940과 checkoutcab8183의 전체tree36c5d030이
+같다. PNPM 실제4개·두 job의 observer110·Linux job 전체57 top-level PASS/CPU294.69s·
+native macOS, helper5wait0/final CONFIRMED_STOPPED·original0/client_error0/client_restore0도
+확인했다. 이 ordinary checkpoint는 앞940 범위이며 새 public8 fixture의 미실행을 성공으로
+표시하거나 이후 로컬0f8/40d/C5 검증으로 전용하지 않는다. P2 qualification/acceptance는
+여전히 미완료이고 native offline dependency/peer context를 같은 M13-004에서 이어간다.
+
+### 2026-10-24 P2c3 archive 설치 동작 사실 전달 착수
+
+[착수 감사·수정 지도·두 번째 검토](./evidence/package-client-quarantine/p2c3-pnpm-install-action-plan-20261024.md)에서
+기존 npm archive/graph M4/정규화 Evidence를 재사용하고 rootless npm의 사실 전달 gap만
+확인했다. 단일/acquired/batch 세 경로와 subject/check/저장 참조 결합, UNKNOWN·필요 동작의
+수동 검토가 이번 범위다. Layout/transaction/CLI·전체 P2 qualification은 계속 미완료다.
+앞 네 commit은 한 번 push했고 CI402/head940의55분 실제 타이머 첫 확인은14:57:13KST다.
+현재 source와 다음 local 구현을 섞어 성공을 주장하거나 재push로 실행을 취소하지 않는다.
+M13-004 하나만 IN_PROGRESS다.
+
+후속 구현은 single/acquired/batch와 exact subject/check/reference 결합을 연결했다.
+최종 Quick33.846s와 앞 관련 여섯 package Race5.283s, 실제 public archive 두 개의
+SRI/static/Store/true·false fact0.936s가 PASS다. 새 UNCONFIRMED code는 기존 다국어
+필수 검사 미완료 설명을 재사용한다. [로컬 결과](./evidence/package-client-quarantine/p2c3-pnpm-install-action-local-20261024.json)가
+현재 입력과 범위를 소유한다. Remote402는 앞940 후보이므로 이번 source 성공으로 전용하지 않는다.
+다음은 unique archive coverage와 full peer wiring을 함께 묶는 complete snapshot이며
+전체 P2/Host 설치·CLI qualification은 계속 열려 있다.
+
+P2c3은 로컬0f8ddcc로 보존했고 push하지 않았다. [P2c4 수정 지도·두 번째 검토](./evidence/package-client-quarantine/p2c4-pnpm-project-snapshot-plan-20261024.md)를
+완료하여 기존 complete Domain과 parser/source binding을 재사용하는 snapshot 생산을 이어간다.
+Full peer instance·runtime/target/controls 결합과 explicit empty가 범위이며 native layout/
+records의 peer provenance·transaction/CLI는 후속 acceptance로 유지한다.
+
+후속 actual에서 native single/transitive의 snapshot과 single required3/refs4·M3/M4 ALLOW는
+확인했다. Transitive is-odd3은 integrity/static/action fact 정상이나 기존 single-artifact
+offline dynamic에서 M3_DYNAMIC_EXECUTION_FAILED/INCOMPLETE여서 수동 검토다.
+[P2c4 실제 결과·진단 범위](./evidence/package-client-quarantine/p2c4-pnpm-project-snapshot-plan-20261024.md#5-실제-연결의-첫-거부와-남은-gap)에
+Host불변/정리·미실행 후속과 stale overlay 진단 NOT_EXECUTED를 보존했다.
+다음에는 npm에 존재하지 않는 frozen dependency/peer fixture의 정확한 연결 지도를 먼저
+작성·재검토하고 이 gap을 닫은 뒤 layout/transaction/CLI로 진행한다. M13-004만 IN_PROGRESS다.
+
+Snapshot은 로컬40d4e25로 보존했다. [P2c5-A native offline 착수 감사·수정 지도·두 번째 검토](./evidence/package-client-quarantine/p2c5-pnpm-offline-context-plan-20261024.md)를
+완료했고 먼저 fixed file-source recipe와 실제 pinned native 배치를 검증한다. 이것은 test
+prerequisite이며 production closure 인터페이스는 그 결과 뒤 정확히 확정한다. 현재 작은
+local commit 둘은 push하지 않았고402 후보도 유지한다.
+
+P2c5-A2의 transitive2는 [로컬 결과](./evidence/package-client-quarantine/p2c5-pnpm-offline-local-20261024.json)에서
+원래 observer25의 actual8.591s/complete/금지0·Host불변/helperwait0로 검증했다. 초기 store
+설정을 고정해 default root probe를 피했고 제품 관찰기·권한은 유지했다. Peer fixture와
+production static-all/per-target closure가 다음 순서이며 새 실제 P2 검역 완료는 아니다.
+완료한 namespace·진단 자료는 참조/query error0 확인 뒤 삭제했고 작은 원본만 보존했다.
+
+이어 A3 [peer 실제 결과](./evidence/package-client-quarantine/p2c5-pnpm-peer-offline-local-20261024.json)에서
+기존 exact-version source API·versioned fixture를 재사용한 transitive6.01s/peer8.01s와
+peer4 identity·links5개/complete/금지0·Host불변/helperwait0를 확인했다. 일반 packument
+한도에서 멈춘 첫 준비 실패는 원본에 남겼다. Production closure는 아직 미구현이며 B의
+상세 수정 지도·두 번째 검토를 다음으로 진행한다. M13-004 하나만 IN_PROGRESS다.
+
+[B의 착수 감사·B1 정확한 수정 지도/두 번째 검토](./evidence/package-client-quarantine/p2c5b-pnpm-production-context-plan-20261024.md)를
+작성했다. 기존 snapshot/source binding/project batch를 재사용하고 frozen snapshot과 acquired
+전체 집합·복수 peer instance를 잃지 않는 immutable 값을 먼저 연결한다. 이후 실제 lifecycle
+선택·격리·관찰 aggregate의 의미를 검증하며 미확정 runner 인터페이스를 앞서 만들지 않는다.
+
+B1 [로컬 결합 결과](./evidence/package-client-quarantine/p2c5b-pnpm-context-local-20261024.json)는
+same-digest 위조 snapshot·획득 누락/혼입과 다른 run 거부, six archives/seven peer instances
+보존·실제 producer wrapper 재사용을 확인했다. Canonical Quick/security/docs·관련 전체 Race는
+PASS다. 기존 단일 npm 실행/관찰기/Policy는 불변이며 실제 PNPM dynamic은 계속 미완료다.
+
+위 다섯 로컬 commit을 db464fd까지 한 번 push했다. Ordinary CI403/run40075179512가
+시작됐으며 직전402 실측53m11에 따라55분 실제 타이머의 첫 확인은17:37:12KST다.
+그 전에는 반복 조회·작은 변경 재push를 하지 않고 B2 설계/로컬 구현을 이어간다.
+
+[B2 정확한 수정 지도·검토·로컬 결과](./evidence/package-client-quarantine/p2c5b2-pnpm-target-lifecycle-plan-20261024.md)는
+기존 install 권한을 유지한 별도 target/topology·실제 clone lineage·one-shot과 C++112,
+transitive/peer의 synthetic positive/exit37·기존8 actual 회귀를 확인했다. Production layout/
+static-all/aggregate와 공개 프로젝트 검역 연결은 B3에서 이어가며 이 primitive를 ALLOW로
+표시하지 않는다. B2는 아직 원격403 source에 포함되지 않았다. 같은 M13-004만 IN_PROGRESS다.
+
+### 2026-10-24 P2c5-B3 archive/layout 착수 감사
+
+[B3 착수 감사·B3a 수정 지도·두 번째 검토](./evidence/package-client-quarantine/p2c5b3-pnpm-layout-plan-20261024.md)를
+완료했다. 기존 정적 tar 순회에 선택적 per-file inventory를 더하고 기존 Inspect 결과는
+보존한다. 최종 Quick/security/docs·세 package 전체 Race26.274s, 실제 public
+is-number4/node-sass334 entries의 Acquire/SRI·원래 report/Evidence 일치도 PASS다. 전체 native layout/prepare/static-all/aggregate는 순차 후속이며 current product의
+transitive INCOMPLETE와 전체 P2 acceptance NO를 유지한다. M13-004 하나만 IN_PROGRESS다.
+
+### 2026-10-24 P2c5-B3b native 배치 형태와 dirname 연결
+
+[B3의 §6·§7](./evidence/package-client-quarantine/p2c5b3-pnpm-layout-plan-20261024.md#6-b3b0--전체-layout의-실제-표현-확인-source-작성-전-감사두-번째-검토)에서
+정상 native의 identical LICENSE hardlink·private hoist/생성 Node bin shim을 실제 확인했다.
+해시 없는 일반 hardlink 허용이나 bin 파일명만의 승인은 하지 않는다. B3b1의 official registry
+codec/관련 Race5.807s와 fresh actual20.659s의 transitive2/peer4 모든 instance 경로 비교도
+PASS다. 두 전용 runtime bulk는 모두 refs/query errors0 뒤 삭제했다. Full layout byte/edge/
+bin/metadata verifier·production prepare/static-all/aggregate가 다음이며 P2 acceptance는 NO다.
+M13-004 하나만 IN_PROGRESS다.
+
+### 2026-10-24 CI403 묶음 checkpoint 확인
+
+실제55분 타이머08:37:12UTC 만료 뒤 [CI403 결과](./evidence/package-client-quarantine/p2c5b-pnpm-ci403-qualification-20261024.json)를
+확인했다. Source db464fd와 checkoutd5be7ee의 전체treeced85a91/2,173 files가 같고
+Required 포함10SUCCESS다. Observer110씩·PNPM 실제4·Linux job 전체57 top-level/
+CPU286.42s·native Go1.27.3 macOS와 helper5wait0/final original0 정리도 확인했다.
+실제 elapsed51m17이며 B2의 새 observer112/target primitive 검증으로 전용하지 않는다.
+다음 연결 단위를 로컬에서 계속 작업하고 작은 helper별 remote 재push는 하지 않는다.
+
+### 2026-10-24 P2c2 actual public 선택·update/no-op 로컬 검증
+
+[실제 public 결과](./evidence/package-client-quarantine/p2c2-pnpm-public-selection-local-20261024.json)는
+native single/transitive/peer/add, frozen install, selected/full update와 no-op8개를
+actual46.82s에서 독립 registry binding과 함께 확인했다. Range를 보존한6→7과 frozen/
+no-op의 두 control bytes 동일도 PASS다. C++25의110 matrix와 운영 보호12파일/images/
+networks/bridge/service/firewall 동일·canonical helper wait0/CONFIRMED_STOPPED를 확인했다.
+Native client 자체 notifier는 false이며 실제 public이 요구한 다섯 read만 exact PNPM
+CONTROL root/flags/mount에 한정했다. Archives/Policy·Domain graph/HostInstallAction·
+layout/transaction/CLI와 현재 후보 remote/whole P2 qualification은 미완료다.
+현재 checkpoint를 검증한 뒤 Domain·archive lifecycle 사실 전달의 실제 gap을 감사한다.
+M13-004만 IN_PROGRESS다.
+
+### 2026-10-24 P2c2 native producer 경계 로컬 검증
+
+[Producer 경계 결과](./evidence/package-client-quarantine/p2c2-pnpm-producer-boundary-local-20261024.json)는
+add/install/update 사전 입력·허용된 manifest 변경, 기존 UV/PNPM exact owner 공유와
+고정 lock-only command·전체 관찰/정리 후 결과 반환을 연결한다. Canonical Quick51.370s/
+security/docs와 실제 empty/fault5cases31.01s가 PASS다. 앞 native notifier의 불필요한
+registry 조회를 공식 source와 대조하여 false로 고정했고 임시 읽기 보완은 되돌렸다.
+Observer product/binary는 qualified17/CI401과 같고 추가 거부 matrix110도 PASS다.
+이는 fake/inert service의 closed-network 경계 검증이다. Actual public typed policy/HTTPS
+single/transitive/peer·independent binding이 다음이며 Domain/HostInstallAction·layout/
+transaction/CLI acceptance는 미완료다. M13-004 하나만 IN_PROGRESS다.
+
+### 2026-10-24 CI401 ordinary native admission 확인과 P2c2 전송 검증
+
+실제 연장 타이머 뒤 [CI401 결과](./evidence/package-client-quarantine/p2b2-pnpm-ci401-qualification-20261024.json)를 확인했다.
+Head343f03f와 checkout093cba1의 전체tree e735b1ec가 같으며 Required 포함10SUCCESS다.
+새 PNPM actual4·observer110·기존 Linux47/CPU296.32s·native macOS와 helper5wait0/
+최종 CONFIRMED_STOPPED·client_error0·restore0을 확인했다. P2b2 ordinary guest admission의
+원격 gap만 닫는다. P2c1/e762와 이후 source는 로컬이며 native5 signed whole-update 및
+P2 graph/layout/transaction/CLI acceptance는 계속 열려 있다.
+P2c2 고정 project controls의 local Quick119.431s/security/docs PASS 뒤 같은 production
+transport를 소비하는 empty-lock/Node actual과 manifest·lock의 metadata/크기를 검증한다.
+새 fresh owned workroot의 actual8.884s도 PASS이며 [전송 결과](./evidence/package-client-quarantine/p2c2-pnpm-control-transport-local-20261024.json)로 범위를 연결했다.
+마지막 소비 뒤 참조/query errors0 확인 후1,278,661,055B를 제거했다.
+M13-004만 IN_PROGRESS이며 작은 helper별 원격 CI를 반복하지 않는다.
+
+### 2026-10-24 CI401 첫 타이머 확인과 P2c2 준비
+
+50분 실제 타이머가03:23:29.834UTC에 만료된 뒤 exact head343f03f의 run/jobs를 조회했다.
+Quick/observer/macOS/docs/security/vulnerability/corpus/minimum Go8개가 SUCCESS이고
+Linux integration/job120754864311은 아직 IN_PROGRESS다. Required는 Linux 결과를 기다린다.
+15분 연장 타이머의 다음 확인은 **2026-10-24 12:40:19 KST**다. 재push/재dispatch하지 않는다.
+P2c1은 전체2138files/tree 대조와 evidence-inclusive security/docs 뒤 로컬 `e762bdc`로
+커밋했다. 원격에는343만 있으며 P2c1의 원격 qualification을 주장하지 않는다.
+[P2c 지도 §6](./evidence/package-client-quarantine/p2c-pnpm-selection-plan-20261024.md#6-다음-p2c2-producer의-source-작성-전-수정-위치)의
+actual producer/preflight/typed network/정리와 Domain·HostInstallAction 남은 경계를
+확인하며 다음 source를 준비한다. M13-004만 IN_PROGRESS다.
+
+### 2026-10-24 P2c1 bounded lock·독립 source binding 로컬 검증
+
+[수정 지도와 결과](./evidence/package-client-quarantine/p2c-pnpm-selection-plan-20261024.md)는
+복수 root/peer instance 보존·strict bounded YAML·공개 source SRI/URL 대조를 연결한다.
+Final Quick116.395s/security/docs/vulnerability와 관련 전체 Race는 PASS다. 실제 public
+metadata single/peer1.623s도 PASS이며, packument 과대/버전 endpoint Accept406의 원본과
+기존 크기·timeout·origin 제한을 보존했다. 생성 pin의 version은 producer가 전달하고
+새 YAML 외부 import는 검토한 npm adapter에만 허용한다. Native public selection이나
+archive quarantine/Policy·Domain graph/HostInstallAction·layout/transaction/CLI 완료는
+아니다. 다음 P2c2 public producer를 정확한 owner/실행·정리 경계로 연결한다.
+CI401/head343f03f의 원격 결과와12:23:29KST 첫 확인 타이머는 계속 유지한다.
+
+### 2026-10-24 P2c1 독립 selection 착수와 CI401 타이머
+
+Native admission의 exact35경로/전체2128files·tree를 대조해 `343f03f`로 커밋하고 기존
+PR38 브랜치에 한 번 push했다. CI401/run40054664786·head343f03f는02:33:29UTC에
+등록됐다. 최근 ordinary397의46m38s를 근거로50분 타이머를 실행했고 첫 확인은
+**2026-10-24 12:23:29 KST**다. 조회를 짧게 반복하거나 같은 CI를 재dispatch하지 않는다.
+대기 중 [P2c 수정 지도](./evidence/package-client-quarantine/p2c-pnpm-selection-plan-20261024.md)의
+기존 parser/graph/transaction 감사와 공식 exact source·실제 형식 대조/두 번째 검토를
+먼저 완료했다. 현재 독립 P2c1 bounded unapproved lock parser부터 진행하며 hosted
+qualification과 전체 PNPM 지원/CLI 완료는 계속 열려 있다. M13-004만 IN_PROGRESS다.
+
+### 2026-10-24 P2b2 native admission과 실제 CI helper 로컬 검증
+
+[수정 지도](./evidence/package-client-quarantine/p2b2-pnpm-admission-plan-20261024.md)의
+exact PNPM Root/Node query demotion과 승인된 GHI own maps·실제 관측 VM 한 경로를 연결했다.
+보완17 C++110 latch40.735s PASS 및 실제 PNPM4/UV2/GHI1 전체28.532s PASS다.
+PNPM noargs의 Usage/exit2는 실패로 보존하고 자기 release member만 기존 고정 discard
+probe callback으로 --version을 검사한다. Generic GHI와 기존 native4/Policy는 유지한다.
+관련3package full Race22.297s와 최종 CI-connected canonical Quick34.137s/security4.723s/
+docs/workflow/release-gate/freshness는 PASS다. [로컬 결과](./evidence/package-client-quarantine/p2b2-pnpm-admission-local-20261024.json)가 범위를 소유한다.
+CI helper 자체의 별도 frozen 공식 archive 재생27.636s는 실제 PNPM4·기존 설치 거부와
+Root/temp 정리/daemon wait0/자원0/Host불변을 확인했다. Public HTTPS/hosted CI 성공을
+주장하지 않으며 실제 native 전체 qualified·signed whole update·P2c public graph/layout/CLI는
+미완료다. 완료된 namespace/Docker 시험 데이터·이전 바이너리944,957,519B를
+모든 UID 참조0/unknown0 뒤 제거했다. 현재 milestone/item은 바뀌지 않으며 M13-004 하나만 IN_PROGRESS다.
+
+### 2026-10-24 P2b2 M6 제한 변경 승인과 Node 역할 보완
+
+사용자는 [두 exact 읽기 변경안](./evidence/package-client-quarantine/p2b2-rust-artifact-runtime-decision-20261024.md)을 명시 승인했다. 이미 관측한 자기 guest PID maps만 먼저 적용하며
+overcommit은 해당 ARTIFACT first read 확인 전까지 계속 거부한다. 기존 다른 PID/environ/mem/
+Host/쓰기/network 거부를 유지한다. Node 기능 PASS와 generic CONTROL fallback의 역할 gap도
+분리했다. Test-only 새 Node matrix RED(기존108 PASS) 뒤 기존 UV creator 검증을 재사용한
+보완14의109 latch가 PASS다. Actual Node는 ARTIFACT/CLONE_CHILD/pinned image까지 확인했고
+immutable loader ABI 읽기를 같은 query guard 아래 연결하는 다음 검증을 진행한다.
+아래 승인 대기 문장은 당시 이력이며 현재는 승인된 범위의 구현·실제 검증 단계다.
+
+### 2026-10-24 P2b2 CONTROL lock와 M6 명시 계약 차이
+
+Actual 보완11의 PNPM CONTROL startup3.77s/empty lock3.82s·lock9·완전한 관찰/의심0와
+자원0/wait0/Host불변은 PASS다. 같은 입력의 Node child query는 입증하지 않았으며 다음
+명시 runtime.onFail=error 입력으로 확인한다. 독립 ARTIFACT5.19s는 기존 M6가 명시 거부한
+자기 maps 읽기에서 INCOMPLETE다. [구체 계약 변경안](./evidence/package-client-quarantine/p2b2-rust-artifact-runtime-decision-20261024.md)을 작성·두 번째 검토했지만
+maps/VM 예외는 미적용이며 승인 전에는 그 거부를 유지한다. 독립 CONTROL 검증은 계속하고
+M13-004만 IN_PROGRESS다. 전체 P2 qualification/배포·승격은 미완료다.
+
+### 2026-10-24 P2b2 exact guest startup 로컬 범위
+
+[Guest 지도](./evidence/package-client-quarantine/p2b2-pnpm-admission-plan-20261024.md)의
+고정 Root source·공통 UV/PNPM transport/volume·exact profile을 연결했다. Quick174.844s/
+security/docs·관련3package Race23.754s, 실제 source 정상+11거부와 C++108 latch가 PASS다.
+실제 PNPM --version3.69s는12.15.0/완전한 관찰·잔여0/wait0/Host불변으로 PASS다.
+최초 GNU/Rust read 실패와 fixture 교정 원본은 보존한다. 현재 offline empty lock/Node
+query와 독립 ARTIFACT lane·원격 경계가 남으며 P2 전체 QUALIFIED/ACCEPTANCE_CLOSED는 NO다.
+완료된 첫 transport/archive·시험 사본491,429,837B를 참조0/unknown0 뒤 삭제했다.
+
+### 2026-10-24 P2b2 actual guest 공급·admission 착수 감사
+
+[새 실제 소비자 지도](./evidence/package-client-quarantine/p2b2-pnpm-admission-plan-20261024.md)는
+기존 단일 pin/배포/설치와 UV/NPM helper·volume·observer를 재사용한다. 고정 Root 소유
+current PNPM 파일과 `/haa-runtime/pnpm` CONTROL을 연결하되 release ARTIFACT probe는
+독립 검증한다. 현재 이 actual runtime 범위는 IMPLEMENTED/WIRED/QUALIFIED/
+ACCEPTANCE_CLOSED 모두 NO이며 새 source 작성 전에 수정 지도와 두 번째 검토를 기록했다.
+
+### 2026-10-24 P2b2 native 배포·기존 설치/복구 로컬 검증
+
+[배포 경로 결과](./evidence/package-client-quarantine/p2b2-pnpm-distribution-local-20261024.json)는
+NOTICE의 source-bound owner/freeze, native+passive 출력, exact11 assets와 5native/3metadata의
+producer·검사·설치·bootstrap·sealed Promotion을 연결한다. Final product source의
+Quick119.521s·canonical6 및 관련13package 전체 Race146.917s PASS다. 뒤의 gated root fixture
+두 개만 교정한 [실제12 namespace 검증](./evidence/package-client-quarantine/p2b2-root-fixture-qualification-20261024.json)도 PASS이며 Host12files/images/bridge/service가 동일하다.
+완료 시험 바이너리6디렉터리219,678,968 logicalB를 참조0/unknown0 확인 뒤 제거했다.
+Guest PNPM 공급·exact gVisor admission/startup/query/lock가 다음이며 제품 CLI/새 signed
+release·원격 qualification은 미완료다. M13-004/P2b2만 IN_PROGRESS다.
+
+### 2026-10-24 P2b2 native 명시 출력 로컬 checkpoint
+
+[실제 출력 결과](./evidence/package-client-quarantine/p2b2-pnpm-materialize-local-20261024.json)는 같은 bounded parser의 native bytes 반환과
+선택한 source owner의 명시 외부 출력/no-replace·readback·0555/단일 링크를 검증했다.
+Quick29.766s/security/docs·관련 전체 Race21.186s 및 실제 official/변조 거부3.732s PASS다.
+초기 architecture 위반과 기존 TERM fixture 실패는 원본/교정 범위를 분리 보존했다.
+Native 배포에는 공식 LICENSE/제3자 고지 전달도 포함하여 전체11 asset/5native role로
+연결한다. 이 다음 배포·실제 admission과 전체 P2 qualification은 미완료다.
+
+### 2026-10-24 P2b2 단일 owner·유지보수 로컬 checkpoint
+
+[로컬 결과](./evidence/package-client-quarantine/p2b2-pnpm-owner-local-20261024.json)는 schema3 owner/proof·생성 코드·drift,
+v2 metadata의 exact5 images+native tool, 명시 offline PNPM plan/apply/no-op을 연결한다.
+실제 공급물의 중단 후 재개·변조 거부와 Quick131.199s·관련 전체 Race42.209s 및 canonical
+security/docs/workflow/release-gate/freshness가 PASS다. Native 배포/admission·제품 명령은
+아직 미연결이며 전체 P2b2의 QUALIFIED/ACCEPTANCE_CLOSED는 NO다. 개별 helper CI 없이 다음
+배포·설치 역할 연결을 계속한다. Host 설치/서비스는 변경하지 않았다.
+
+### 2026-10-24 P2b1 native 공급·형식 로컬 검증
+
+[실제 결과](./evidence/package-client-quarantine/p2b1-pnpm-native-local-20261024.json)는 signed archive와
+regular native file identity, Quick117.599s/security/docs·전체 관련 Race19.732s PASS다. 고정 Node
+이미지의 network-none/read-only/non-root 환경19개 형식 관측과 정확한 Host 보존·완료 container/
+파생 image 정리를 확인했다. Product gVisor/Policy/transaction 지원을 의미하지 않는다. 다음은
+[단일 pnpm runtime owner·유지보수·배포/공급·exact admission 지도](./evidence/package-client-quarantine/p2b2-pnpm-runtime-plan-20261024.md)를 따라 공급 owner부터 연결한다.
+
+### 2026-10-24 P2 착수 감사·공급 검증 순서
++
++[P2 baseline·수정 지도·두 번째 검토](./evidence/package-client-quarantine/p2-pnpm-baseline-20261024.md)는
++기존 npm 검역·guard/transaction·typed descriptor·Sigstore owner를 재사용한다. 공식12.15.0의
++Rust native·lock/peer graph·tar integrity/revisions·설정 및 실제 upstream self-hosted signer를
++대조했다. 현재 P2a는 offline 공급 verifier/유지보수 consumer만 구현하며 runtime pin·CLI 지원은
++아직 추가하지 않는다. 전체 P2는 IMPLEMENTED=NO/WIRED=NO/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO,
++MISSING은 착수 지도의 supply/runtime/graph/layout/actual transaction·원격 qualification이다.
++
+### 2026-10-24 G127 완료·P2 인계
+
+[G127 누적 결과](./evidence/package-client-quarantine/go1273-acceptance-20261024.json)는
+같은095450d의 ordinary·cu126·cu130·cu132 각각 Required10SUCCESS와 실제 native macOS,
+observer106/helper 종료를 연결한다. 기본 SDK·quality tools5·설치 Go members7을1.27.3으로
+전환하고 보호12 metadata·실제 npm/pip·owned doctor/stop/readback 및 updater no-op을 확인했다.
+완료 사설 입력9.55GB를 삭제했고 운영 복구용 원본 SDK/runtime/tools는 보존했다. Release 설치는
+UNAVAILABLE이며 public release/main 병합을 의미하지 않는다. 과거396/local40m 실패는 보존한다.
+G127의 네 상태는 모두 YES/MISSING 없음이다. 다음 P2는 기존 구현 감사·공식 의미·수정 지도와
+두 번째 검토부터 시작하며 M13-004만 IN_PROGRESS다. 아래 날짜별 NO/PENDING은 당시 이력이다.
+
+### 2026-10-24 G127 CI395 성공·CI396 cu126 지연 조사
+
+[최초 실패·정상본 대조](./evidence/package-client-quarantine/go1273-cu126-ci396-failure-20261024.json)를
+보존했다. CI395는 c34365e/같은 whole tree의 Required10SUCCESS·Linux53/CPU278.97/native
+macOS/observer106이다. 별도 cu126/CI396은 CPU263.98s·다른8jobs PASS지만 sample gap1.451s
+때문에 FAIL이며 Required도 FAIL이다. 정리 성공으로 원래 실패를 덮지 않는다.
+
+[현재 진단 지도·두 번째 검토](./evidence/package-client-quarantine/go1273-migration-baseline-20261022.md)를
+따라 기존 코드7개·normal cu126/CI392·오답노트를 대조했다. 같은 기존24GB WSL에서 허가된
+임시 재검증은40m timeout으로 실패했고 confirmed drain 뒤 원본12 복원을 확인했다.
+Journal은 종료 약115초 전에 시작되어 promotion 전체40분 지연 가설은 반증됐다. 정확한
+단계 시각 누락만 기존 progress port의 bounded test observer로 보완한다. 예산·poll·coverage는
+유지한다. New pressure 관측은
+직접 인과 확정이나 SDK regression 단정이 아니다. G127 IN_PROGRESS/QUALIFIED=NO/
+ACCEPTANCE_CLOSED=NO, P2..P7 NOT_STARTED다. 영구 SDK/runtime activation은 미실행이다.
+
+[단계 진단 로컬 검증](./evidence/package-client-quarantine/go1273-phase-diagnostic-local-20261024.json)은
+기존 progress port 연결과 bounded/unknown/동시 호출 Race·canonical Quick/security/docs PASS다.
+첫 socket EPERM은 실행 환경 교정과 함께 보존했다. 완료 local payload와 임시 clone 약17.65GB는
+참조0 확인 뒤 정리했다. 한 후보를 push하고 실제 단계 시각과 결과를 타이머로 확인한다.
+
+### 2026-10-23 G127 최종 로컬 검증·source 반영
+
+[최종 로컬 결과](./evidence/package-client-quarantine/go1273-local-qualification-20261023.json)에서
+두 frozen plan·공식 SDK1.27.3·실제 도구5개·Go image·six-member strict 재현/manifest 일치·
+observer106·namespace13·configuration7·vulnerability/fuzz/Linux platform/full Race를 확인했다.
+최초 TLS acquisition/긴 TMPDIR fixture 실패와 수정 범위는 같은 영수증에 보존했다.
+전체2,081개 frozen 입력을 대조하고 선언된10파일만 source에 반영했으며 완료 namespace 시험
+payload는 삭제했다. 현재 owner1.27.3과 Host global SDK1.26.9/설치 runtime 역할을 구분한다.
+
+IMPLEMENTED=YES / WIRED=YES / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO다. MISSING은
+동일 최종 후보의 원격 installed ecosystem/CPUthreeCUDA·Required/native platform과 controlled
+activation/readback/old-owned retirement다. 한 번의 기능 후보 push와 실제 profile 시간 기반
+타이머로 확인한다. G127은 IN_PROGRESS, P2..P7은 NOT_STARTED이며 배포·main 병합은 별도다.
+
+### 2026-10-23 G127 도구 호환성 — 최초 오류를 보존하고 최소 pin 갱신
+
+모듈 형식 보완 뒤 NEW target plan은 bootstrap/build/test-build/vet까지 PASS지만 기존
+Staticcheck2026.1의 export decoder가 Go1.27 data version5를 읽지 못했다. 첫 실패를 보존했으며
+[수정 지도·공식 지원·두 번째 검토](./evidence/package-client-quarantine/go1273-migration-baseline-20261022.md)의
+방법으로2026.2 exact pin만 갱신했다. 이후 새 target에서 export data5/max4로 다시 거부되어 공식2026.2.2 patch가 실제1.27.3 source build/전체 offline analysis8.613s를 통과했다. Current SDK canonical과 새 target plan은 별도다. [Current SDK 로컬 결과](./evidence/package-client-quarantine/go1273-staticcheck-current-local-20261023.json)는 bootstrap·Quick56.004s/security/docs PASS다. 다음 NEW plan의 target 분석은 남는다. 다른 도구·검사 조건을 바꾸거나 아직 실행하지 않은
+gVisor/native/CPU/CUDA를 완료로 쓰지 않는다. 기존 두 frozen state를 수정하지 않고 새 baseline에서
+다음 plan을 만든다. 원격 CI는 최종 Go tuple 기능 경계로 묶고 실제 시간 기반 타이머를 사용한다.
+
+### 2026-10-23 G127 첫 configuration 확인 — 모듈 형식만 보완
+
+첫 exact1.27.3 plan/apply와 공식 SDK 준비는 PASS이며 bootstrap도 PASS다. Quick은 Go1.27의
+require 블록 통합 형식에서 module drift를 탐지했다. [수정 지도·대조 결과](./evidence/package-client-quarantine/go1273-migration-baseline-20261022.md)의
+방법으로122개 require version/directness·기타 directive·go.sum 불변과 old/new tidy no-op을
+확인했다. [Current SDK canonical 검증](./evidence/package-client-quarantine/go1273-module-layout-local-20261023.json)의
+Quick48.866s/security/docs도 PASS다. Root floor1.26.10을 유지한 grouping만 반영했고 NEW
+baseline/plan을 만든다. 첫 plan/실패 원본은 보존한다. Host 개발 SDK의 실제 readback은1.26.9였으며 source/qualification
+SDK1.26.10·격리 target1.27.3과 역할을 구분한다. 기존 Host는 아직 전환하지 않았고 gVisor·전체
+target tuple qualification·coherent activation/old owned retirement는 미완료다.
+
+### 2026-10-23 G127 착수 감사 — 기존 updater 재사용
+
+P1을7ce362b로 문서 종료했고 target Go1.27.3의 공식 release/advisory와 세 SDK archive metadata를
+재확인했다. [갱신된 감사·수정 지도·두 번째 검토](./evidence/package-client-quarantine/go1273-migration-baseline-20261022.md)를
+따른다. 기존 coordinator·SDK bootstrap·gVisor capture/verify는 재작성하지 않는다.
+README Build의 자동 renderer/consistency 소비자 누락은 [같은 회귀/기존 소비자 검증](./evidence/package-client-quarantine/go1273-readme-consumer-local-20261023.json)으로
+보완했다. Canonical5/전체 두 도구 Race25.424s는 PASS이며 version owner·거부 조건은 유지했다. 이후 깨끗한 baseline에서 기존 두 frozen plan과 실제 target SDK/
+bundle·observer를 검증한다. 현재 pin/SDK는1.26.10이며 Host SDK/CLI·서비스는 변경하지 않았다.
+다음 단계의 P2..P7은 시작하지 않는다. 단일 active work item은 계속 M13-004다.
+
+### 2026-10-23 P1 COMPLETE — 실제 네 profile·문서 검증과 정리
+
+[누적 실제 결과](./evidence/package-client-quarantine/p1-uv-acceptance-20261023.json)는
+sourceea287b2/whole tree9ece0a2의 CI391·cu126/CI392·cu130/CI393·cu132/CI394를 연결한다.
+각 Required 포함10SUCCESS이며 기존 Linux/CPU/macOS와 helper5wait0/final cleanup을 확인했다.
+Complete103.23s/closure46.14s에서 동일 버전의 새 Run·records, 교체/제거·blank skip·두 explicit
+empty·제외 native 원본 proof/adopt·5wheel/SBOM5nodes·4edges를 검증했다.
+CUDA full은 cu1261244.38s/cu1301192.58s/cu132878.63s이며 각 실제 입력/소스·CPU와 분리했다.
+
+IMPLEMENTED=YES/WIRED=YES/QUALIFIED=YES/ACCEPTANCE_CLOSED=YES, MISSING=[]다.
+문서·보안 profile을 통과했고 같은 문서 후보를 마지막으로 확인해 기록한다. 다음은 G127의
+기존 구현/실제 입력 감사·수정 지도·두 번째 검토이며 P2는 G127 qualification까지 대기한다.
+중간 커밋을 보존한 한 번의 push 뒤 타이머로 확인했고 완료한 임시 CLI·검증 실행기와 test
+payload를 정리했다. Active SDK/runtime/source/cache는 G127의 실제 전환·복구·마지막 참조
+확인 뒤 retirement한다. 마지막 jobs 조회 ReadTimeout은 읽기 재조회로 복구했으며 CI 실패가 아니다.
+아래 단계별 로컬/원격 실패는 당시 관측으로 유지한다. M13-004만 IN_PROGRESS다.
+
+### 2026-10-23 CI390 확인과 검증 주기 조정
+
+[CLI·공통 batch 로컬 결과](./evidence/package-client-quarantine/p1f-uv-sync-cli-local-20261023.json)는
+complete sync의 Application/CLI/bootstrap·새 승인 records 리포트와 빈 입력 skip을 연결했다.
+기존 정상 pip의 batch lifecycle·static-all/대상별 closure를 재사용하여 rootless 의존성 전달
+누락을 교정했고 같은 pre-format test의 before FAIL/after PASS를 보존했다. 최종 canonical5,
+관련7package 전체 Race138.116s와 실제7언어 CLI21cases는 PASS다. 임시 CLI 바이너리43,581,079B와
+test payload를 정리했다. 실제 native complete/adopt/empty/closure 두 통합 시나리오는 기존 Linux
+job에 연결했으며 당시 아직 실행 전이었다. Backend와 CLI commit을 한 번의 원격 후보로 올린 뒤 실제
+native·공통 CI/Required와 세 CUDA를 확인한다. P1 acceptance는 열어 둔다.
+
+[Complete backend 로컬 결과](./evidence/package-client-quarantine/p1f-uv-sync-backend-local-20261023.json)는
+actual held source/target guard·전체 native 원본 proof 연결, 단일 complete 선택과 승인 cache·
+Manifest/SBOM·기존 offline publication을 검증했다. Canonical5와 관련5package 전체 Race142.011s
+PASS이며 empty 추출 회귀의 기존 정상 코드 대조·교정 및 최초 실패는 같은 영수증에 보존했다.
+Synthetic 거래 검증이며 당시 실제 native 전체 검역·Application/CLI·CUDA3/P1은 미완료였다.
+이후 D 연결의 로컬 결과는 위 영수증을 따르며 개별 helper별 새 원격 실행 없이 기능 경계로 검증을 묶는다.
+
+[CI390 확인](./evidence/package-client-quarantine/p1f-ci390-timed-confirmation-20261023.json)은
+source79e76dd와 actual checkout의 전체 tree 일치·Required 포함10SUCCESS를 확인했다.
+Linux51/CPU297.93s, macOS 같은2m build 한도 안의 약59.17s/default test와 helper 정리는 PASS다.
+앞 macOS timeout 내부 원인을 해결했다고 해석하지 않으며 actual complete sync/CLI·CUDA3와
+P1 acceptance는 미완료다. 이전 CI388/389 항목은 당시 실패 이력으로 보존한다.
+
+기존 예방 규칙을 현재 P1에 적용한 [검증 실행 주기](./20-package-client-quarantine-plan.md#5-검증-matrix와-자원-정리)를
+적용한다. P1f A2c2/C/D의 실제 guard·cache·records와 CLI를 연결했고 작은 helper별 원격 완료 대기를
+중단하고 backend 및 CLI end-to-end를 한 후보로 push/CI를 묶는다. 로컬 canonical/관련 회귀와
+중간 commit은 유지한다. CUDA3 actual은 P1 완료 후보에서 수행하며 미검증 상태로 완료·승격하지
+않는다. 새 공통 회귀나 native 선행조건이면 필요한 원격 검증을 먼저 수행한다.
+CI 실행 시 최근 같은 profile의 경과 시간으로 첫 확인 시각을 잡고 대기 도구로 확인한다.
+
+### 2026-10-23 CI389 macOS build — 당시 결과
+
+[CI389](./evidence/package-client-quarantine/p1f-cpu-completion-ci389-20261023.json)은 CPU 회계 교정 source의 Linux/CPU full·뒤 네 소비자와 정리는 PASS다. macOS는 production build2m에서 timeout이고 default test는 미도달이다. [기존 macOS 진단 지도](./evidence/package-client-quarantine/macos-default-test-diagnostic-plan-20261022.md)의 bounded package progress 보완을 먼저 수행한다. 내부 지연 원인·새 source 인과와 전체 qualification은 미확정이다.
+
+### 2026-10-23 CI388 선행 회귀
+
+[최초 결과](./evidence/package-client-quarantine/p1f-uv-original-proof-ci388-20261023.json)의 native
+UV/CLI·46개 Linux 선행 tests·다른8 prerequisites는 PASS지만 CPU full의 unit-outcome 회계 시각
+역전으로 Linux/Required는 FAIL이다. 원본/복원을 보존했고 [수정 지도·두 번째 검토](./evidence/package-client-quarantine/p1f-cpu-unit-completion-baseline-20261023.md)를 먼저 따른다. [로컬 교정](./evidence/package-client-quarantine/p1f-cpu-unit-completion-local-20261023.json)의 same-test before FAIL→after PASS·canonical5/전체 관련 Race는 PASS이며 fresh source 실제 검증은 남는다.
+B1/A2c1 local 후보를 이 실패 실행에 포함하거나 기존 CUDA 양의 지연과 같은 원인으로 쓰지 않는다.
+
+### 2026-10-22 순서 결정 — P1 완료 후 Go1.27.3, 그다음 P2
+
+사용자는 GO-2026-6809와 Go1.27.3 전환을 추가 요청하고 순서 판단을 위임했다.
+현재 source/CI/runtime/tool pin은 이미 보안 수정1.26.10이며 [CI377 최종 결과](./evidence/package-client-quarantine/p1c-guarded-cli-ci377-20261022.json)의
+Required/Vulnerability 포함10SUCCESS를 확인했다. 이 advisory의 미패치 source 복구와
+다음 Go 계열 전환을 구분한다. 기존 Host/preview를 자동 업데이트한 것은 아니다.
+
+| 순서 | 범위 / 상태 | 시작·완료 기준 |
+| --- | --- | --- |
+| 1 | P1 uv pip — IN_PROGRESS | C3b 빈 기존 venv 설치는 완료. C3c installed-aware 설치/업데이트·native ownership·complete/multi-root/empty sync와 P1 실제 qualification을 닫는다 |
+| 2 | M13-004/G127 Go1.27.3 — NOT_STARTED | P1 acceptance 뒤 [착수 감사·수정 지도·검증·두 번째 검토](./evidence/package-client-quarantine/go1273-migration-baseline-20261022.md)를 갱신하고 기존 maintenance plan/apply/verify로 별도 후보를 검증한다. Compiler/guest/tools/gVisor bundle·observer·CI/release/support tuple과 actual 소비자/플랫폼/CPU·세 CUDA/전환 경계를 확인 |
+| 3 | P2 pnpm → P3..P7 — NOT_STARTED | G127 qualification/acceptance 후 새 기준에서 확장을 재개한다. 전체 client 완료까지 Go 전환을 미루지 않음 |
+
+M13-004 하나만 IN_PROGRESS이며 G127을 동시에 착수하지 않는다. Go1.26은 공식 지원 중이고
+현재 취약점은1.26.10에서 수정되어 P1 기능 변화와 runtime 변화를 분리할 수 있는 경계가
+적절하다. 새 reachable advisory/지원 종료가 이 판단의 전제를 바꾸면 긴급 순서를 재평가한다.
+1.27.3은 전환 목표이며 현재 lock/workflow/Host SDK는 이 순서 기록에서 변경하지 않는다.
+후속 요청에 따라 G127 완료 기준에는 실제 compiler/binary/bundle/설치 readback의 버전 일치와
+전환·복구 검증/마지막 참조 확인 뒤 구버전 owned SDK·cache·bundle·시험 자원의 정리를 포함한다.
+현재 P1의 active1.26.10 입력은 유지하며 역사 evidence의 버전 문자열을 실행 잔재로 삭제하지 않는다.
+
+### 2026-10-21 owner scope — client expansion and full-name brand
+
+CI386을 기다리는 동안 [C3e3 publication 감사·수정 지도](./evidence/package-client-quarantine/p1f-uv-sync-publication-baseline-20261023.md)를 추가했다. [CI386 종료](./evidence/package-client-quarantine/p1e-uv-native-source-ci386-20261023.json)는 같은 전체 tree/Required10SUCCESS와 실제 native 다섯 사례·기존 Linux51/UV CLI194.90s/CPU245.89s/native macOS·helper5wait0/정리를 확인했다. C3e2a/b의 네 상태는 해당 resolver 범위에서 YES다. 다음 A1은 기존 원본 metadata capture/verify와 inventory 공통화만 수행한다. Whole guarded sync/P1은 미완료이며 A2/C1/D1 지도와 각 후속 source 직전 검토를 따른다.
+
+M13-004만 IN_PROGRESS로 유지한다. [확장 계획](./20-package-client-quarantine-plan.md)은
+uv pip/project·pnpm·Bun·pipx 설치/업데이트와 npx·uvx·bunx·pipx run 등을 하나의
+범위로 설계하고 단계별 실제 검증 후 지원을 연다. 기존 검역 엔진은 재사용한다.
+설계·두 번째 검토 P0와 로컬 검사·preview 갱신을 완료했다. 실제 화면 결과는
+[풀네임 타이틀 보완 기록](./evidence/m13-004-convenience/owner-cli-review-20261021.md)을 따른다.
+사용자 계속 지시에 따라 [P1 uv baseline](./evidence/package-client-quarantine/p1-uv-baseline-20261021.md)의
+P1a native lock/선택 경계를 커밋b710b56으로 보존하고 CI360을 확인한다. 다음은
+[P1b runtime baseline](./evidence/package-client-quarantine/p1b-uv-runtime-baseline-20261021.md)의 metadata/native tool 공급은 [로컬 영수증](./evidence/package-client-quarantine/p1b-uv-tool-local-qualification-20261021.json)까지 확인했다. [Pin/maintenance 로컬 검증](./evidence/package-client-quarantine/p1b-uv-pin-local-qualification-20261021.json)도 actual CLI/canonical7 PASS다. 다음은 [cu126 회계 지연 조사](./evidence/package-client-quarantine/go12610-cu126-diagnostic-plan-20261021.md)와 UV production runtime 연결이다. P1은 IN_PROGRESS, P2~P7은 NOT_STARTED다.
+[Go1.26.10 보안 선행조건](./evidence/package-client-quarantine/go12610-security-baseline-20261021.md)을
+기존 유지보수 도구의 별도 candidate에서 [최종 로컬 검증](./evidence/package-client-quarantine/go12610-local-qualification-20261021.json)을 마쳤다. [원격 상태](./evidence/package-client-quarantine/go12610-remote-status-20261021.json)에서 같은 tree의 CI361 Required/CPU/native macOS PASS와 cu126 sample-late FAIL을 확인했다. cu132도 별도 full1054.68s·Required10SUCCESS이며 cu130의 Linux/full980.48s도 PASS이나 native production build2m timeout으로 Required는 FAIL이다. 새 진단 source270c7c8의 PR366 Required10SUCCESS·cu126 Linux/full1296.54s PASS를 확인했으나 manual native default-test timeout/Required FAIL이다. Go 전체 qualification은 미완료다. Host 설치·서비스는 유지한다.
+[P1b5 원격 결과](./evidence/package-client-quarantine/p1b5-uv-runtime-remote-20261022.json)는
+CI368의 신규 native UV3.25s·기존 Linux45/CPU259.85s PASS와 macOS default-test6m/
+Required FAIL을 구분한다. [P1c 수정 지도](./evidence/package-client-quarantine/p1c-uv-resolver-baseline-20261022.md)는
+native JSON이 delta-only임을 확인하고 기존 pip promotion identity/control과 multi-root
+sync 모델의 연결 gap을 기록했다. Production UV resolver/install-upgrade-sync/CLI는 아직
+미연결이다. [macOS 진단 지도](./evidence/package-client-quarantine/macos-default-test-diagnostic-plan-20261022.md)의
+bounded 진행/완료 root 요약은 기존 한도·process cause를 유지한다. Source66aa7e0의
+[CI370 최종 결과](./evidence/package-client-quarantine/p1c-baseline-ci370-20261022.json)는
+same-tree checkout/Required 포함10SUCCESS·native macOS와 Linux 기존45/native UV3.20s·
+CPU209.50s/정리를 확인했다. 과거 timeout 원인이나 이후 candidate qualification은 아니다.
+승인한 fixed read 후보는 커밋3623d1e/fresh C++105/startup4.09s PASS이며 offline
+inventory의 다음 최초 거부는 Python child libpython read다. [C1c 수정 지도](./evidence/package-client-quarantine/p1c-uv-resolver-baseline-20261022.md)의
+exact clone/creator·첫 query exec·ARTIFACT 역할·readonly ABI/stdlib 후보를 구현 중이다.
+초기 false exec-origin 전제는 실제 pinned kernel의 OriginExec 상속에 맞게 교정한다.
+Native 최소 empty-target query 검증은 아직 남고 전체 inventory 성공으로 확대하지 않는다.
+M13-004/P1만 IN_PROGRESS이며 production 지원/acceptance는 계속 미완료다.
+후속 [CI371](./evidence/package-client-quarantine/p1c-checkpoint-ci371-20261022.json)은
+source3623d1e/same tree의 Linux 기존45·UV3.67s/CPU196.37s/정리는 PASS, macOS
+47started/47finished·active0 뒤 default6m/Required FAIL이다. [종료 상태·완료 gap 진단](./evidence/package-client-quarantine/macos-terminal-local-20261022.json)은
+canonical5·Race15.425s/Darwin compile PASS이며 새 native는 남는다. C1c는 actual
+query 역할을 관측했고 ABI·VM/own maps·UTC와 UV parent의 exact Python image data
+read 후보를 C++106으로 검증 중이다. 개별 첫 거부·완료 자료 정리는 P1c 지도가 소유한다.
+C1c parent-image 후보의 fresh C++106/startup3.91s/query4.10s·complete trace31은 로컬
+PASS다. Whole-image inventory 진단은 초기 commit/raw로만 보존하고 실제로 통과한
+startup/empty-target 두 fixture만 CI에 연결한다. Source 정리 후 final replay도 startup3.73s/query3.96s·complete trace29/31로 PASS다.
+새 원격 qualification은 남는다. 다음 구현은 같은 P1c의 production native 선택/data-reader 연결이다.
+[C2 baseline/수정 지도](./evidence/package-client-quarantine/p1c-uv-native-producer-baseline-20261022.md)는
+기존 stdin admission·bounded tar와 isolated Python data reader를 재사용하는 단일-root
+producer의 실제 남은 작업을 분리한다. [C2 output 로컬 검증](./evidence/package-client-quarantine/p1c-uv-output-local-20261022.json)은
+native stdin→pylock→sync/list0과 named tmpfs의 bounded control transport, 새 collector/
+RFC822-WHEEL adapter의 canonical5·Race9.454s PASS를 확인했다. Guest-only /tmp의
+docker cp 실패는 별도 보존했고 두 probe의 소유 자원/완료 자료는 제거했다. 다음은 UV
+output volume의 실제 gVisor mount 연결과 typed-network native 선택·독립 data reader다.
+Production resolver/CLI는 아직 미연결이며 P1 acceptance는 열려 있다.
+[C1c CI372](./evidence/package-client-quarantine/p1c-query-ci372-20261022.json)는 sourcee3665ea와
+checkout tree 일치·remote startup3.03s/query2.90s·complete trace29/31, 기존 Linux/CPU283.96s와
+helper5wait0/정리를 확인했다. macOS는 default test 이전 production build2m에서
+exited=false/exit-1·CPU339188ms로 종료됐고 Required는 FAIL이다. 앞 default6m 실패의
+원인으로 합치지 않으며 전체 qualification·production UV 지원은 계속 미완료다.
+[C2 actual output 로컬 검증](./evidence/package-client-quarantine/p1c-uv-native-output-local-20261022.json)은
+named output의 startup4.10s/query4.25s/compile-sync-collection5.07s·complete trace29/31/35,
+canonical5·Race7.919s와 자원0/Host 불변을 확인했다. 세 번째 native case를 CI 필수 selector와
+누락 부정 시험에 연결했다. 완료 native 자료 약2.75GB/일회성26파일은 삭제했다.
+다음은 동일 P1c의 public PyPI native 선택·독립 isolated metadata/archive reader이며
+production resolver/guarded install-upgrade-sync·CLI와 전체 remote qualification은 남는다.
+Public producer의 다음 수정은 기존 PyPI/PyTorch lifecycle을 private session helper로
+공유하는 것이다. Native solver를 pip로 바꾸지 않고 독립 metadata/archive reader만 이
+세션을 재사용한다. 구체 지도/두 번째 검토는 C2 baseline에 있으며 새 후보 검증은 진행 중이다.
+기존 session 추출의 canonical5·관련 Race10.199s는 PASS다. Private 독립 archive reader와
+고정 replay/실패 회귀를 추가했고 다음 canonical 검증 및 실제 native producer 연결이 남는다.
+[독립 reader 로컬 검증](./evidence/package-client-quarantine/p1c-uv-reader-local-20261022.json)의
+canonical5·Race10.055s와 기존 parser를 통한 whole archive/graph replay가 PASS다. Metadata/
+archive mismatch·byte/stream·취소/cleanup/trace 실패의 graph 삭제와 임시 파일 제거도 확인했다.
+실제 Python HTTP 및 public native UV caller/guarded CLI는 아직 미연결·미검증이다.
+Reader source344a93d는 로컬 checkpoint로 보존했다. 반복된 macOS prerequisite에 대해
+[cache 입력 정렬의 baseline/수정 지도·두 번째 검토](./evidence/package-client-quarantine/macos-default-test-diagnostic-plan-20261022.md)를
+추가했다. Native CI373은 build PASS/default6m FAIL이며, 실제 cache root와 -trimpath
+action ID 분리를 확인했다. Scope/timeout·원인 판정은 유지한 채 이 불일치만 정렬한다.
+[Cache 입력 정렬 로컬 검사](./evidence/package-client-quarantine/macos-cache-alignment-local-20261022.json)는
+canonical6·checker Race36.760s·Darwin compile11.016s PASS다. Source lookup의 실제 비교를
+보존했고 완료 binary/operator7파일은 제거했다. 새 native macOS/전체 Required는 남는다.
+[CI373 최종 결과](./evidence/package-client-quarantine/p1c-native-output-ci373-20261022.json)는
+source9b0da57/checkout tree 일치, native startup3.24s/query3.13s/compile-sync-collection3.58s·
+complete trace29/31/35와 기존 Linux/CPU287.67s·helper5wait0/정리를 확인했다. macOS는
+build94.05s PASS 뒤 default6m/Required FAIL이다. 이 결과를 이후 reader344a93d나 cache
+정렬 후보의 원격 qualification으로 전용하지 않는다. 새 후보 CI가 다음 확인 지점이다.
+Sourcef76c564를 push했고 CI374가 진행 중이다. 다음 public native UV caller와 독립 reader의
+순차 연결 후보를 구현했고 source/runtime/tool preflight·owned-container cleanup 회귀를
+검증한다. App/guarded install-upgrade-sync·CLI는 미연결이며 public/HTTP actual은 남는다.
+[Public caller 로컬 검증](./evidence/package-client-quarantine/p1c-public-caller-local-20261022.json)은
+canonical5·관련 Race16.610s와 lock-only preflight/snapshot actual 세 fixture를 통과했다.
+완료 native 자료688,406,687B는 제거했다. Public single/multi graph entry를 기존 CI의
+인증된 test-client 단계에 연결했고 다음 source CI가 실제 public/HTTP 완료 조건이다.
+[CI374 종료](./evidence/package-client-quarantine/cache-alignment-ci374-20261022.json)는
+sourcef76c564/same checkout tree·Required 포함10SUCCESS다. macOS build55.562s와
+default test envelope171.294s 이내, Linux native 세 시험/기존 통합·CPU186.73s 및 정리가
+PASS다. Cache 정렬 후보의 native 완료를 확인했고 과거 모든 timeout의 원인은 단정하지 않는다.
+이후 public caller sourceab54d4a는 별도 push했으며 실제 public/HTTP·guarded CLI는 남는다.
+[Guarded client 다음 gap 감사](./evidence/package-client-quarantine/p1c-guarded-client-baseline-20261022.md)는
+기존 promotion/update/enrollment·bootstrap의 재사용 위치와 UV/multi-root gap을 분리했다.
+읽기 전용 baseline이며 구현은 시작하지 않았다. C2의 public actual 결과부터 확인한다.
+
+[CI375 첫 public 결과](./evidence/package-client-quarantine/p1c-public-ci375-20261022.json)는
+sourceab54d4a/same checkout tree에서 idna@3.11 native compile이 exact /etc/hosts의
+read 분류 누락으로 STREAM_FAULT였다. Required/Linux FAIL, 나머지8 prerequisite SUCCESS,
+helper wait0·confirmed stop/원래 client 복원은 확인했다. Public graph/독립 HTTP는
+미통과다. C2 leaf의 수정 지도·두 번째 검토에 따라 UV direct root의 exact system hosts
+읽기만 보완하고 전체 latch/canonical 및 새 actual public 입력으로 검증한다. C3 구현과
+P2..P7은 시작하지 않는다.
+
+C2의 새 CI376을 기다리는 동안 [native retention/empty/venv 형식 조사](./evidence/package-client-quarantine/p1c-uv-retention-format-20261022.json)를
+독립 data-only 범위로 수행했다. 기본/선택 upgrade의 기존 dep 유지, 전체 upgrade의 dep
+갱신, sync의 제외 항목/빈 집합 삭제와 uv venv의 version_info/생성 marker 차이를 확인했다.
+잘못 지정한 첫 empty output filename의 exit2는 operator 오류로 별도 보존했다.
+[C3 지도](./evidence/package-client-quarantine/p1c-guarded-client-baseline-20261022.md)에
+수정 위치와 두 번째 검토를 반영했으며 제품 구현은 NOT_STARTED다. Owned containers6/
+images2와 완료 자료3,143,502B는 제거했고 Host 전후 불변을 확인했다.
+
+[CI376 최종 결과](./evidence/package-client-quarantine/p1c-public-ci376-20261022.json)는
+source35c0f2d/same checkout tree·Required 포함10SUCCESS다. Native UV→독립 whole-archive
+binding은 idna1node/requests5node·4edge를22.75s에 반환했다. C++106/Linux49 통합과
+CPU295.93s/helper5wait0/final confirmed cleanup, native macOS도 PASS다. C2 single-root
+producer의 acceptance만 닫고 P1 전체/guarded client·CLI는 미완료로 유지한다. 다음은 C3
+지도의 기존 venv transaction/서비스 재사용과 client/source 분리 gap의 순차 구현이다.
+C3a는 resolve 전 venv guard를 획득하는 내부 신규 설치 준비 adapter를 시작한다.
+기존 Update의 per-request rebind와 transaction을 재사용하고, 배포된 distribution이 있는
+환경의 fresh solve는 거부한다. Installed-aware 선택/CLI는 후속 실제 연결 단계다.
+[C3a 로컬 checkpoint](./evidence/package-client-quarantine/p1c-prepared-install-local-20261022.json)는
+canonical5와 application 전체/관련 promotion·sandbox Race3개를 통과했다. 내부 준비 서비스와
+empty-venv guard를 구현했고 task TMPDIR는 비어 있다. Composition/CLI와 실제 target 반입은
+아직 미연결·미검증이다. 다음 C3b는 client/source descriptor와 실제 factory 연결이다.
+C3b 연결 구현을 시작한다. 실제 두 Python client만 descriptor와 factory에 등록하며 기존
+pip/PyTorch 동작과 lazy help를 유지한다. UV 신규 설치는 빈 기존 venv에 한정하고,
+installed bootstrap-test의 실제 검역·반입/비어 있지 않은 대상 거부를 기존 CI에 연결한다.
+[C3b 로컬 결과](./evidence/package-client-quarantine/p1c-guarded-cli-local-20261022.json)는
+canonical5와 CLI/bootstrap/application/promotion/checker 전체 Race PASS다. 실제 빈 venv
+UV CLI 연결은 IMPLEMENTED/WIRED YES, QUALIFIED/ACCEPTANCE_CLOSED NO이며 다음은
+같은 후보의 actual native CLI/Required CI다. 기존 설치·upgrade/native ownership·sync는 남는다.
+CI 대기 중 C3 leaf에 C3c source 감사·metadata-only native 전송의 미확정 지점·유한 조사와
+수정/회귀 지도를 기록했다. C3c code는 시작하지 않았으며 C3b actual CI 확인이 우선이다.
+[후속 metadata-only 형식 조사](./evidence/package-client-quarantine/p1c-uv-metadata-only-format-20261022.json)는
+14개 native 입력과 원본 불변·Host 동일성·owned 자원 정리를 확인했다. 다음 UV 선택 입력은
+bounded inert METADATA로 구체화하며 gVisor/public/guarded update 성공으로 확대하지 않는다.
+[CI377 종료 확인](./evidence/package-client-quarantine/p1c-guarded-cli-ci377-20261022.json)은
+source8ec8de7/actual checkout334918f·동일 전체 tree와10SUCCESS다. 실제 UV CLI 설치25.50s,
+nonempty 반복 거부·target/Evidence 불변, Linux50/CPU283.72s/helper5wait0/final confirmed
+cleanup와 native macOS·Vulnerability를 통과했다. C3b 빈 venv 설치의 네 상태는 모두 YES다.
+현재 다음은 C3c installed-aware install/upgrade/native ownership·sync이며 P1 전체는 미완료다.
+C3c1 native installed-aware producer를 시작한다. C3 leaf의 사전 감사·정확한 수정 지도·두 번째
+검토를 확인하고 strict delta/원본 metadata controls와 기존 UV native/독립 binder 연결만 구현한다.
+Guarded update 반입·CLI/native ownership·sync는 후속이며 P1 밖으로 이동하지 않는다.
+[C3c1 로컬 결과](./evidence/package-client-quarantine/p1c-installed-producer-local-20261022.json)는
+canonical5/관련 Race3개 PASS다. Native resolver/CI는 연결했고 다음은 실제 public/Required
+검증이다. Original metadata 한도와 selected graph 한도는 구분했고 actual native 성공은 아직 아니다.
+[CI378 종료](./evidence/package-client-quarantine/p1c-installed-producer-ci378-20261022.json)는 같은 전체 tree와 Required 포함10SUCCESS, 실제 native 세 intent19.60s/4controls, Linux51/CPU231.72s·helper5wait0/최종 confirmed cleanup와 macOS/Vulnerability를 확인했다. C3c1 네 상태는 모두 YES다. 다음 C3c2a는 기존 original snapshot/held transaction과 UV 선택 controls를 연결하는 managed guard이며, CLI 변경·native adoption·sync는 후속이다. 정확한 지도와 두 번째 검토는 C3 leaf를 따른다.
+[C3c2a 로컬 결과](./evidence/package-client-quarantine/p1c-managed-guard-local-20261022.json)는 canonical5와 promotion/application/artifact-pypi 전체 Race PASS다. Managed UV guard port와 exact controls/lock/graph·기존 반입/rollback 연결은 구현했으며, 실제 shared pip 소비자/Required CI와 production CLI·actual UV target update는 미완료다. 그 원격 검증 뒤 C3c2b binding을 진행한다.
+[CI379](./evidence/package-client-quarantine/p1c-managed-guard-ci379-20261022.json)의 same-tree10SUCCESS와 실제 공통 소비자·macOS·정리로 해당 원격 gap을 닫았다. C3 leaf의 C3c2b 사전 감사/수정 지도/두 번째 검토대로 일반 installed-aware 설치와 두 UV upgrade intent를 연결한다. Native UV ownership과 sync·P1 전체는 아직 미완료다.
+[C3c2b 로컬 결과](./evidence/package-client-quarantine/p1c-installed-cli-local-20261022.json)는 canonical5/전체 관련5package Race PASS다. 일반 installed-aware INSTALL과 --upgrade/-U·--upgrade-package의 UPDATE를 기존 guard/검역/반입에 연결했고 actual authenticated CLI5단계·부정 검사를 기존 CI에 추가했다. 다음은 같은 source의 실제 CLI/Required 확인이며 아직 native qualification 완료가 아니다.
+CI 대기 중 [native UV 형식 감사](./evidence/package-client-quarantine/p1d-native-uv-ownership-baseline-20261022.md)의 자체 wheel/loopback14명령과 정리를 확인했다. Native public/adoption 또는 현재 CLI qualification으로 전용하지 않으며 C3c2b 완료 뒤의 구현 gap에 반영한다.
+[CI380 종료](./evidence/package-client-quarantine/p1c-installed-cli-ci380-20261022.json)는 동일 tree/Required10SUCCESS와 실제 UV CLI5단계118.85s·Linux51/CPU293.60s·macOS·정리를 확인했다. C3c2b 네 상태는 YES다. 다음 C3d는 위 native UV 감사의 기존 old-wheel proof·namespace 보호·native fixture 검증을 재사용한다. Sync와 P1 전체는 미완료다.
+
+
+
+공개 채널 이름·publisher binding·PR38/main CI·배포는 기존 미완료로 남는다.
 
 ### Runtime upgrade maintenance — 2026-10-15 priority change
 
@@ -3001,8 +3600,12 @@ M12-005 feature freeze에서 수행한다. canonical lock 등록만으로 releas
 | --- | --- | --- | --- |
 | 1 | M13-001 | protected main/develop/tag/release environment/immutable release activation | COMPLETE |
 | 2 | M13-002 | `feature → develop → main` 실제 protected PR qualification | ACCEPTED_WITH_EXCEPTION — C3; actual missing-CLA NOT_TESTED / DEFERRED |
-| 3 | M13-003 | canonical release build·manifest·attestation·OS package assets | IN_PROGRESS — source CI PASS / actual release qualification |
-| 4 | M13-004 | npm·PyPI/pipx·Homebrew convenience publication | NOT_STARTED |
+| 3 | M13-003 | canonical release build·manifest·attestation·OS package assets | COMPLETE — protected v0.1.0 candidate qualification |
+| 3a | CLI-UX-001 | multilingual terminal progress and structured human results | COMPLETE — local source / installed CLI qualification |
+| 3b | CLI-UX-002 | OS preferred display-language auto | COMPLETE — native macOS/CI328 and local installed CLI PASS |
+| 3c | SEC-UPD-001 | guarded ecosystem update commands | COMPLETE — final sourcecdac/CI344 qualified |
+| 3d | CLI-UX-003 | branded interactive launcher | COMPLETE — source4cfe29e/CI352 ten SUCCESS |
+| 4 | M13-004 | installed self-quarantine update / convenience channels | IN_PROGRESS — self-quarantine core; channel names pending separately |
 | 5 | M13-005 | exact publication·clean Host bootstrap·doctor·cross-ecosystem smoke·quarantine | NOT_STARTED |
 
 ### M13-001 — protected repository activation
@@ -3262,35 +3865,260 @@ Detailed baseline, target-specific matrix, evidence custody and authorization
 boundaries: [qualification plan](./evidence/m13-002-protected-path/README.md).
 Release tags/publication and M13-003 implementation remain outside this task.
 
-### M13-003 — canonical release build and OS package preparation
+### M13-003 — canonical release build and OS packages
 
-Status: IN_PROGRESS — implementation wired, local checks and exact source CI325
-PASS; remaining actual release build/package qualification under approved C3.
+Status: COMPLETE. Audit: IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES /
+ACCEPTANCE_CLOSED=YES / MISSING=none within the build/package scope.
 Read: [M13 contract](./18-m13-production-release-operations-contract.md#m13-003--canonical-release-build-and-os-packages),
-[M10 distribution contract](./13-m10-verified-distribution-bootstrap-contract.md),
-[CI gate](../engineering/04-ci-quality-gate.md), directory/Architecture rules and
-current release build/publish/manifest/install consumers.
+[M10 distribution contract](./13-m10-verified-distribution-bootstrap-contract.md)
+and [CI gate](../engineering/04-ci-quality-gate.md).
 
-Audit: IMPLEMENTED=YES / WIRED=YES (source workflow) / QUALIFIED=NO /
-ACCEPTANCE_CLOSED=NO. Baseline audit preceded source edits. Existing native/helper/
-runtime/SBOM/installer responsibilities are reused. Actual deb/rpm bytes, metadata,
-permissions, reproducibility/negative tests, manifest exact set and native installer
-regressions PASS. Whole Quick/security/vulnerability/workflow/docs/release-gate and
-Linux platform checks PASS. Darwin cross-test compilation and actual native macOS
-CI PASS. PR37 source1ac1bf6 and checkout25c4b27 have the same whole tree3af3728;
-CI325/run39023951914 Required+9 prerequisites SUCCESS, Linux45 consumers/CPUfull
-192.25s/helper5wait0/final confirmed cleanup are verified from10 original logs.
+Existing native/helper/runtime/installer responsibilities were reused. Actual
+source CI325/326, approved PR37 ordinary merge, exact new main CI327 and separately
+approved protected v0.1.0 build/run39036210335 are verified. Manifest-first and all12
+actual-file attestations match exact source/tag/workflow/run; fixed-root offline
+positive and three negatives passed. Actual network-disabled Ubuntu/Rocky native
+package install/reinstall/remove, payload ownership/modes, unit guards, preserved
+caller config and truthful unavailable doctor passed. No booted Host or public
+publication success is inferred. Those remain M13-005 per the canonical contract;
+the preparation-era combined MISSING list is reconciled in the qualification report.
 
 Evidence: [baseline](./evidence/m13-003-release-build/baseline-20261017.md),
-[preparation result](./evidence/m13-003-release-build/preparation-20261017.md).
-MISSING: final C3 documentation/check delivery and reviewer-approved normal
-protected merge/new main CI; actual protected-source release build/attestation;
-clean-host OS install/lifecycle and exact publication qualification. A static
-release-gate PASS does not authorize a concrete tag or publication. C3 removes
-only the missing-CLA predecessor block within its explicit scope. Only M13-003 is
-IN_PROGRESS; M13-004/005 await its acceptance and their own baseline audits.
-Completed test/build roots and private caches are deleted after last use; original
-evidence, active runtime/rollback and shared SDK/modules are preserved.
+[preparation](./evidence/m13-003-release-build/preparation-20261017.md),
+[actual qualification](./evidence/m13-003-release-build/qualification-20261017.md)
+and [bound result](./evidence/m13-003-release-build/qualification-20261017.json).
+Actions candidate retention expires2026-10-24T13:29:00Z; later publication requires
+fresh exact-candidate availability/provenance checks, not a moved tag.
+Completed payloads/tools/containers/new images are removed; private check caches
+are removed after last use. Necessary evidence and existing shared/runtime files remain.
+
+### CLI-UX-001 — user-facing terminal remediation
+
+Status: COMPLETE — local source and installed development CLI qualification.
+IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES for the
+[terminal presentation contract](../user-journey-cli-ia/05-terminal-presentation.md).
+[Baseline](./evidence/m13-cli-ux/baseline-20261018.md) preserves the initial gaps;
+[qualification](./evidence/m13-cli-ux/qualification-20261018.md) owns the final
+checks, seven-language PTY cases, actual npm inspection/install/JSON/failure,
+protected local CLI activation/rollback and cleanup boundary. MISSING: none in
+this bounded item. Native macOS execution and full ecosystem/CUDA reruns are not
+claimed by local UX qualification. Inspection/Policy/exit codes are retained.
+Public v0.1.0 predates this UI source and was not retagged or republished.
+
+### Prepublication corrections — CLI-UX-002 then SEC-UPD-001
+
+User clarified that auto means OS display-language preference and that guarded
+updates are essential to protecting existing users from compromised new releases.
+[Baseline audit and order](./evidence/prepublication-gaps/baseline-20261018.md)
+precedes source changes. Existing inspection/Policy, transactions, settings and
+catalogs are reused; no replacement or new runtime/CI scaffold is justified.
+
+- SEC-UPD-001: COMPLETE. IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES /
+  ACCEPTANCE_CLOSED=YES / MISSING=none for the documented bounded coverage.
+  Final sourcecdac/CI344 ten SUCCESS, exact whole tree/native macOS/Linux45/
+  CPU291.84s/five helperwait0/final cleanup closes the added real-M6 regression.
+  [Cross-lane review](./evidence/update-quarantine/final-review-20261019.md) maps
+  each acceptance to existing owners and [normalized closure](./evidence/update-quarantine/ci344-closure.json).
+  Read [update quarantine contract](../user-journey-cli-ia/06-update-quarantine.md).
+- CLI-UX-002: COMPLETE. IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES /
+  ACCEPTANCE_CLOSED=YES / MISSING=none for the documented bounded OS-language scope.
+  Exact local source checks, WSL/PTY16 cases, installed auto/JSON inspect and
+  ordinary CI328 ten jobs including native macOS passed. [Qualification](./evidence/cli-os-language/qualification-20261018.md).
+  Read [OS-language correction](../user-journey-cli-ia/05-terminal-presentation.md#os-display-language-correction--cli-ux-002).
+
+The detailed plans, second review and CLI-UX-002 implementation are complete.
+On2026-10-18 the user authorized SEC-UPD-001 and deferred CLI-UX-003 until update
+acceptance. At activation only SEC-UPD-001 was IN_PROGRESS; ecosystems were implemented serially.
+Current acceptance is the table below;
+source-specific failures, checks and historical intermediate states belong to the
+linked qualification owners rather than duplicate progress narratives here.
+
+| Scoped update lane | IMPLEMENTED / WIRED / QUALIFIED / ACCEPTANCE_CLOSED | Evidence / remaining work |
+| --- | --- | --- |
+| npm | YES / YES / YES / YES | [Bounded npm qualification](./evidence/update-quarantine/npm-qualification-20261018.md), source29c58f0/CI330; actual native/managed consumers, restoration and cleanup |
+| Public PyPI managed venv | YES / YES / YES / YES | [Managed qualification](./evidence/update-quarantine/pypi-managed-qualification-20261019.md), sourcec93ce58/CI331; actual update/fresh no-op/refusals and bounded retired-metadata correction |
+| Bounded public-native PyPI enrollment | YES / YES / YES / YES | [Native qualification](./evidence/update-quarantine/pypi-native-qualification-20261019.md), source2e8844f/CI332 and separately scoped affected retirement regressions; authentic old wheel footprint, foreign-file protection and exact held transaction |
+| Named PyTorch managed venv, CPU/cu126/cu130/cu132 | YES / YES / YES / YES | [Final named qualification](./evidence/update-quarantine/pytorch-update-qualification-20261019.md), source306/CI336; all four actual version updates/fresh no-ops/unchanged refusals, confirmed helper stop/original restoration/postguards and completed data/operator cleanup |
+| Cargo lock update | YES / YES / YES / YES | [Reviewed audit](./evidence/update-quarantine/cargo-update-baseline-20261019.md) and [current qualification](./evidence/update-quarantine/cargo-update-qualification-20261019.md); source85ac4c1; final local checks and20 installed phases including old add/build, dependency-free/workspace, restoration and145.90MB cleanup PASS; CI338 ten SUCCESS; same checkout tree,36 related Go/Cargo/Terraform consumers, CPU277.12s/five helper wait0/final confirmed cleanup |
+| Scoped Go get -u | YES / YES / YES / YES | [Reviewed audit/plan](./evidence/update-quarantine/go-update-baseline-20261019.md) and [metadata/pruning amendment](./evidence/update-quarantine/go-mvs-metadata-correction-20261019.md) precede their sources. [Current qualification](./evidence/update-quarantine/go-update-qualification-20261019.md): sourcee00 canonical Quick206.98s/security10.79s/docs/Race129.57s and installed15 phases PASS, including Cobra metadata build65.14s and old grpc41-module get114.11s/download87.14s;212 new update/grpc Evidence, canonical restoration/postguards and568.85MB new trial cleanup. Earlier394 CI340 FAILED at pruned lower checksum membership. CI341 ten SUCCESS; actual checkout whole-tree equality/native macOS,36 existing Go/Cargo/Terraform consumers/CPU192.40s/five helperwait0/final confirmed cleanup; MISSING none for bounded Go scope |
+| Terraform project upgrade | YES / YES / YES / YES | [Pre-source audit](./evidence/update-quarantine/terraform-update-baseline-20261019.md) and [final qualification](./evidence/update-quarantine/terraform-update-qualification-20261019.md): sourcef882921 final canonical/related Race and signer-proof Race, actual16 phases/48 independent Evidence, restoration/postguards and718.98MB completed trial cleanup PASS. CI342 ten SUCCESS, exact checkout whole-tree/native macOS,36 existing Go/Cargo/Terraform consumers/CPU192.80s/five helperwait0/final confirmed cleanup. MISSING none for bounded Terraform scope |
+| GitHub managed replacement | YES / YES / YES / YES | Final lane; [independent baseline/edit map/second review](./evidence/update-quarantine/github-replacement-baseline-20261019.md) precedes sourcecb1f944. [Qualification](./evidence/update-quarantine/github-replacement-qualification-20261019.md): same-input Quick150.58s/security8.75s/docs/full related Race221.88s; actual18 GitHub calls49.06s/17 fresh success Evidence plus15 affected npm/PyPI/Cargo/Go/Terraform calls241.65s/32 fresh success Evidence PASS. Canonical helperwait0/original restoration/fresh guard and353343187B completed trial cleanup PASS. CI343 ten SUCCESS/exact tree/native macOS/Linux45/CPU267.82s/five helperwait0/final cleanup PASS. Final sourcecdac/CI344 ten SUCCESS/exact tree/native macOS/Linux45/CPU291.84s/five helperwait0/final cleanup closes the added M6 test/document scope; MISSING none. [Shared lock correction](./evidence/update-quarantine/transaction-lock-identity-correction-20261019.md) acceptance is closed |
+
+The qualified rows retain their source-specific bounded actual/CI scopes in the
+linked reports. Broader native named PyPI footprints remain unsupported. Go's
+original metadata/build failure and CI340 pruning failure stay historical; the
+reviewed amendment and final sourcee00/actual15 phases/CI341 close bounded Go only.
+
+SEC-UPD-001 acceptance is closed. The [final review](./evidence/update-quarantine/final-review-20261019.md)
+reconciles per-lane actual/negative evidence, real-M6 adverse-update coverage and
+sourcecdac/CI344 exact-source remote acceptance. Existing source/runtime/Policy
+limits are preserved. The [shared FD correction](./evidence/update-quarantine/transaction-lock-identity-correction-20261019.md)
+is also qualified. No completed local update test payload/cache/candidate/operator
+or restored binary backup remains; raw/normalized proofs and shared SDK tools remain.
+
+Follow-up CLI-UX-003 is COMPLETE at source4cfe29e/CI352; prior failures and narrower successes remain historical.
+SEC-UPD-001 has no remaining acceptance work. Main merge, permanent local CLI activation
+and publication remain separate; PR38 is draft/unmerged. Native commands outside
+helox are not transparently intercepted. Earlier source/checkpoint descriptions
+retain their original scope, superseded by the current acceptance table above.
+
+### CLI-UX-003 — branded interactive launcher
+
+Status: COMPLETE. IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES /
+ACCEPTANCE_CLOSED=YES. MISSING: none in this launcher scope. Source4cfe29e and
+actual checkoutf3d6816 share treef0f700a; CI352 has Required and nine prerequisites
+SUCCESS, including native macOS and Linux45 actual consumers/CPU/helper cleanup.
+[Qualification](./evidence/cli-launcher/qualification-20261020.md) owns the exact
+scope, historical failures and cleanup. The pre-source storage amendment preserves
+all limits, original scale tests and final real durable-publication barrier.
+The old CI351 exact slow test/cause remains UNKNOWN; a new success is not causal proof.
+Final documentation-only delivery is evaluated on its own exact head; raw receipts
+record that result without changing runtime qualification scope. Main merge,
+permanent installed CLI activation and publication remain separate; PR38 is draft.
+
+### M13-004 — convenience installation channels
+
+Current P1 substep: [C3c2b managed UV CLI](./evidence/package-client-quarantine/p1c-installed-cli-ci380-20261022.json) is qualified for fresh/retained/new-root install and the two upgrade modes. Source d1d4fdc/CI380 has10SUCCESS with the same whole checkout tree, actual five-step CLI and existing Linux/macOS consumers.
+[C3d native UV enrollment](./evidence/package-client-quarantine/p1d-native-uv-ownership-baseline-20261022.md) is qualified/closed in its bounded scope by [CI383 ten SUCCESS](./evidence/package-client-quarantine/p1d-native-uv-ci383-20261023.json). Native actual adoption/replay, existing Linux consumers and native macOS pass without budget/source-performance changes. Next is [C3e1 complete/multi-root/explicit-empty sync format and binding](./evidence/package-client-quarantine/p1e-uv-sync-baseline-20261022.md); audit/edit map/second review and [native plain input semantics](./evidence/package-client-quarantine/p1e-uv-sync-format-20261023.json) precede implementation. Whole P1 and P2..P7 remain incomplete/NOT_STARTED respectively.
+Cache-aligned [CI374](./evidence/package-client-quarantine/cache-alignment-ci374-20261022.json) passed native macOS and all10 jobs. Historical timeout causes are not universally confirmed; scope/deadlines remain unchanged.
+
+Status: IN_PROGRESS — self-update installation role and Linux/WSL2 amd64 scope approved on2026-10-20; official names pending only for channel wiring. CLI-UX-003, SEC-UPD-001 and CLI-UX-002 remain complete.
+Audit: IMPLEMENTED=NO / WIRED=NO / QUALIFIED=NO / ACCEPTANCE_CLOSED=NO for the
+complete channel scope. Existing verifier-gated native installer/doctor and release
+manifest/build/publish consumers are reused; their historical acceptance is retained.
+Read: [M13 convenience contract](./18-m13-production-release-operations-contract.md#m13-004--convenience-publication),
+[M10 trust contract](./13-m10-verified-distribution-bootstrap-contract.md), directory
+and Architecture rules, existing installer and workflow consumers.
+
+[Baseline and ordered plan](./evidence/m13-004-convenience/baseline-20261017.md)
+records each responsibility independently. MISSING: owner-approved official
+names, bounded verified native bootstrap wiring, npm/PyPI wrappers, reviewed
+Homebrew formula, protected OIDC/provenance publication wiring and channel-specific
+checks. On2026-10-18 the user reported both rahoney accounts/email/2FA/GitHub
+links complete. This closes account preparation only; publisher binding and all
+package names remain unconfirmed. No credentials are needed.
+
+2026-10-20 user priority: installed Heliopause must quarantine its next version;
+first bootstrap is separately verified. M13-004 is the sole active item. Its
+[new baseline/edit map/second review](./evidence/m13-004-convenience/self-update-20261020.md)
+and [product design proposal](../user-journey-cli-ia/07-self-update.md) precede source
+changes. Existing owners are reused. MISSING adds production release acquisition/
+attestation, frozen-set quarantine and protected installation lifecycle. The
+current user installer does not activate root-protected CLI/helpers. The proposed
+separate narrow installation role and initial Linux/amd64/same-runtime scope were
+approved by the owner on2026-10-20. The production provenance primitive is locally qualified as documented in
+[component evidence](./evidence/m13-004-convenience/provenance-qualification-20261020.md).
+Frozen discovery/public attestation/FD replay adapters are locally qualified in
+[acquisition evidence](./evidence/m13-004-convenience/acquisition-qualification-20261020.md).
+The actual public proof read and SDK verification pass; the replay regression uses
+the existing archive InspectService/Evidence/Policy, not native activation.
+The strict manifest reader and authenticity Verification Port are also locally
+qualified through existing InspectService/Evidence/Policy in
+[metadata evidence](./evidence/m13-004-convenience/metadata-qualification-20261020.md).
+The frozen native/metadata set now connects to the existing complete-set workflow
+as documented in [release-set evidence](./evidence/m13-004-convenience/release-set-qualification-20261020.md).
+Local source/staging and fail-closed SDK tests pass; an actual newly signed native
+target, public self-update caller and protected activation are still missing.
+The shared installer's fixed protected-copy mode and verified existing-version
+rollback are qualified locally in
+[copy evidence](./evidence/m13-004-convenience/protected-copy-qualification-20261020.md),
+including actual root/ordinary-user filesystem mechanics in disposable namespaces.
+Provenance was mocked there; RPC/lease/journal/service lifecycle remains next.
+Protected registration/proof reading and advisory runtime lease primitives are
+also locally checked in [reader evidence](./evidence/m13-004-convenience/activation-read-qualification-20261020.md).
+Actual stored v0.1 signature verifies offline; missing installer-role admission
+is correctly refused. Caller authentication, lifecycle wiring and new native4
+signed qualification remain missing.
+The old protected controller/kernel peer gate is locally checked in
+[peer evidence](./evidence/m13-004-convenience/activation-peer-qualification-20261020.md).
+Actual UID/GID/inode/pidfd negatives pass in isolated namespaces with a mocked
+installed crypto snapshot. Fixed payload RPC/staging and full lifecycle remain next.
+Bounded payload transfer and authenticated root-private staging are locally checked in
+[wire evidence](./evidence/m13-004-convenience/activation-wire-qualification-20261020.md).
+Actual root filesystem mechanics pass with mocked auth/positive crypto, and production
+SDK rejects the unsigned new set before root writes. Durable journal/service lifecycle,
+fixed RPC and public caller remain next. Durable root journal/config snapshots and
+persistent update/installer/exclusive runtime locks are locally checked in
+[journal evidence](./evidence/m13-004-convenience/activation-journal-qualification-20261020.md).
+Actual PREPARED writer and kernel lock mechanics pass; service/health/verified rollback,
+crash recovery and full RPC/caller remain missing. Fixed service/config/drain adapters
+are implemented and locally checked in
+[service evidence](./evidence/m13-004-convenience/activation-service-qualification-20261020.md).
+Actual process/socket and partial-config mechanics pass; real systemd/global drainage,
+full root transaction/recovery, authenticated helper RPC/health and public pipeline/CLI
+remain missing. Their [next source map](./evidence/m13-004-convenience/activation-lifecycle-plan-20261020.md)
+precedes source edits. Shared previous-version signature/member reading, mandatory root
+BundleVerifier, proof persistence and exact registration swap/restore are locally checked in
+[proof evidence](./evidence/m13-004-convenience/activation-proof-qualification-20261020.md).
+Actual old offline proof and existing reader/journal namespace regressions pass; actual new
+signed native4/full transaction/recovery/RPC/health/public command remain missing.
+Managed runtime/Doctor shared-lease wiring and the fixed inherited-channel ordinary-user
+health entry are locally checked in
+[health evidence](./evidence/m13-004-convenience/activation-health-qualification-20261020.md).
+Actual root→ordinary FD transfer/negative admission and production CLI flag denial pass;
+new signed native4 positive/full root transaction/recovery/RPC/public caller remain missing.
+The root transaction/recovery and actual fixed serve/recover helper now exist, with local
+[operation/socket/fault evidence](./evidence/m13-004-convenience/activation-operation-qualification-20261020.md).
+Actual root filesystem mechanics pass with crypto/service/health mocks; real signed
+native4/systemd/crash qualification remains open. Actual helper payload review also found
+[inert default-entry gaps](./evidence/m13-004-convenience/native-entry-plan-20261020.md),
+which are next before final public caller/producer/native-bootstrap wiring. Generic M6
+dynamic inspection is retained; helper assets are not exempted or relabeled as safe resources.
+Inert default/help entries and explicit network service consumers are now implemented and
+locally qualified in [native entry evidence](./evidence/m13-004-convenience/native-entry-qualification-20261020.md).
+The canonical pinned observer build/full latch and actual default/help/identity probes pass;
+actual newly signed complete-set quarantine/systemd activation remain open. Next are existing
+pipeline content-session binding, root client/Promotion, public self-update CLI and actual
+producer/native-bootstrap wiring.
+Per-request content binding now reuses the existing pipeline, with concurrent distinct-version
+isolation/unchanged base and non-ALLOW publication denial locally checked in
+[content-session evidence](./evidence/m13-004-convenience/content-session-qualification-20261020.md).
+Actual session factory/root client/Promotion/public CLI and native bootstrap remain missing.
+The exact sealed-set Promotion and fixed old-installer client now exist, with
+[local copy/codec/kernel endpoint evidence](./evidence/m13-004-convenience/native-client-qualification-20261020.md).
+Actual UID1000 endpoint validation passes in disposable namespaces; signed whole activation
+is still unqualified. Next are per-request source/session/cleanup and public command wiring,
+followed by the real helper producer/native bootstrap and signed/systemd/crash qualification.
+Explicit owned replay/staging payload retention is locally checked in
+[cleanup evidence](./evidence/m13-004-convenience/native-cleanup-qualification-20261020.md).
+Unknown payloads and final records are retained; the next actual session must call cleanup
+only after confirmed runtime drainage. [Session/CLI source map](./evidence/m13-004-convenience/session-cli-plan-20261020.md)
+records that wiring and the remaining public preflight/report gaps before implementation.
+The actual session factory and public `self-update --version vX.Y.Z` are now wired through
+the existing pipeline, with [local session/CLI evidence](./evidence/m13-004-convenience/session-cli-qualification-20261020.md).
+Exact-version admission, seven-language help/progress and truthful cleanup/recovery reporting
+pass locally; actual CLI tests reject this unmanaged development installation without runtime
+or acquisition changes. The actual helper asset producer/manifest/package payload is now locally qualified in
+[producer evidence](./evidence/m13-004-convenience/producer-qualification-20261020.md).
+Explicit registration of an independently verified, preinstalled native layout is locally
+qualified in [enrollment evidence](./evidence/m13-004-convenience/enrollment-qualification-20261020.md).
+The terminal cold-service recovery branch is locally checked in
+[cold recovery evidence](./evidence/m13-004-convenience/cold-recovery-qualification-20261020.md).
+Journal-bound system copy interruption cleanup is locally checked in
+[copy interruption evidence](./evidence/m13-004-convenience/copy-interruption-qualification-20261020.md).
+Fixed independently verified initial file preparation and known-source cleanup are locally
+checked in [native bootstrap evidence](./evidence/m13-004-convenience/native-bootstrap-qualification-20261020.md).
+Ordinary first acquisition/export and `bootstrap prepare --version vX.Y.Z` are now locally checked in
+[bootstrap acquisition evidence](./evidence/m13-004-convenience/bootstrap-acquisition-qualification-20261020.md).
+[Native installation handoff](../user-journey-cli-ia/08-native-bootstrap.md) records actual Root-copy
+independent verification, exact OS config/unit, register and ordinary health boundaries.
+Owner approved test tags/official signing builds on2026-10-20. The
+[signed lifecycle plan](./evidence/m13-004-convenience/signed-lifecycle-plan-20261020.md)
+fixes CI355 source a22aa12, first rc1 then rc2, unchanged tag protection and explicit retirement limits.
+Both approved rc tags now have successful official signing builds on exact source a22aa12.
+Rc1 signed13 independent verification and actual production Root SDK/file preparation pass locally;
+registration/health/systemd remain unqualified. The
+[disposable systemd fixture plan](./evidence/m13-004-convenience/native-systemd-fixture-plan-20261020.md)
+precedes that qualification without changing the Host installation or product trust gates.
+CURRENT MISSING: rc2 material qualification and actual complete-set caller acquisition, whole clean-host OS bootstrap/
+ordinary doctor and nominal quarantine, existing OS administrator authentication, actual
+systemd activation and crash/reboot qualification. Full self-update remains IN_PROGRESS and is not installed or publicly released.
+Package names block only name-dependent channels;
+account preparation is complete. No future channel placeholder executable/Port/job was added.
+SEC-UPD-001 and CLI-UX-003 stay COMPLETE; prior CLI-UX-001 scope remains historical.
+M13-005 remains NOT_STARTED. Account setup is not
+package publication approval; no registry upload, tap creation, Release draft or
+publish dispatch has occurred. Concrete publication remains separately reviewed.
 
 ### M12 baseline audit status
 
@@ -3843,3 +4671,90 @@ MISSING: 없음(이 작업의 기술 acceptance). CPU·cu126·cu130·cu132 각10
 문서 HEAD의 원격 Required 확인은 PR29와 외부 closure receipt가 소유한다.
 Reviewer merge·main CI가 전달에 남고, M13은 NOT_STARTED다. M13-001의 기존
 repository activation blocker도 해당 항목의 원래 해제 조건을 유지한다.
+
+2026-10-20 actual signed lifecycle: rc1/rc2 official builds and independent13-file
+verification passed. Disposable systemd base register/ordinary doctor/npm passed.
+Actual update retained rc1 with MANUAL_REVIEW/NOT_PERFORMED; native ELF runtime
+read classification gaps precede activation. The source audit/edit map/negative
+matrix and second review are in [native ELF plan](./evidence/m13-004-convenience/native-elf-compatibility-plan-20261020.md).
+No public Release, main merge, tag retarget or Host migration occurred.
+
+2026-10-20 native ELF compatibility closure (local): the two actual faults and
+additional sandbox OS marker are bounded in the existing classifier. Two RED
+checks, final103 canonical C++ latches, final Quick/security/docs, actual signed
+native4 independent required3/ALLOW, unchanged nominal npm and unmanaged update
+denial passed. [Signed/native qualification](./evidence/m13-004-convenience/signed-native-qualification-20261020.md)
+keeps original full update NOT_PERFORMED and the remaining fresh-signed
+activation/health/crash/reboot/authentication scope explicit. PR38 remains draft.
+
+2026-10-20 final source4ff6c89/[CI356](https://github.com/rahoney/heliopause/actions/runs/39416778306):
+Required+9 actual SUCCESS; full checkout tree/mode match, native macOS/C++103,
+Linux45 consumers/CPU293.82s, helper5 wait0/final confirmed cleanup verified in
+[remote receipt](./evidence/m13-004-convenience/signed-native-20261020/remote-ci.json).
+Completed trial containers/volume/images/payload/build/operator cleanup and Host
+preservation are in [cleanup receipt](./evidence/m13-004-convenience/signed-native-20261020/cleanup.json).
+[New signing proposal](./evidence/m13-004-convenience/signed-retest-plan-20261020.md)
+freezes rc3/rc4 to4ff6c89. The owner subsequently approved both trial tags;
+rc3 now points to that exact source and [official build39439522714](https://github.com/rahoney/heliopause/actions/runs/39439522714)
+is SUCCESS with actual base/register/doctor/npm PASS. rc4 was then created at
+the same source; [official build39442575693](https://github.com/rahoney/heliopause/actions/runs/39442575693) is SUCCESS. M13-004
+remains IN_PROGRESS; signed whole activation/recovery and channel names remain open.
+
+2026-10-21 health callback closure (source7fedaf3): actual rc3→rc4 reached
+required18/ALLOW but rolled back; old doctor/npm and actual OS-auth denial passed.
+The public CLI flag mismatch was corrected after documented review and RED4→
+GREEN semantic7. Local format/Quick/security/vulnerability/docs/related Race and
+[CI357](./evidence/m13-004-convenience/signed-native-20261020/health-cli-remote-ci.json)
+Required+9 actual SUCCESS passed; exact whole checkout tree/mode, native macOS,
+C++103/Linux45·CPU226.62s/helper5 wait0/final confirmed cleanup were verified.
+Completed downloads26/463,988,221B, rc4 guest/transport and one-shot operators
+were removed; qualified rc3 baseline was restored/checked and idle-stopped.
+Host originals/shared runtime remain unchanged. [Next exact target proposal](./evidence/m13-004-convenience/signed-target-plan-20261021.md)
+freezes only rc5 to7fedaf3 and awaits owner approval; no new ref yet. Whole
+successful activation/auth-positive/crash/reboot and channel names remain open.
+
+2026-10-21 approved rc5 execution supersedes that proposed-target state:
+[official build39456168381](https://github.com/rahoney/heliopause/actions/runs/39456168381)
+and exact13 independent offline/canonical checks passed. Actual normal rc3→rc5,
+OS password authentication and concurrent second-call refusal reached COMMITTED;
+candidate service SIGKILL rolled back. Root installer SIGKILL preserved VERIFYING
+across guest PID1 cold start; installed recover rolled back and re-execution committed.
+All corresponding ordinary doctor5/npm3 checks passed. Host kernel reboot/public
+Release were not performed. [Receipt](./evidence/m13-004-convenience/signed-native-20261020/rc5-qualification.json)
+also preserves the cancellation failure: old version kept but stale observer lock
+prevented the next inspection. [Reviewed correction](./evidence/m13-004-convenience/observer-cancellation-plan-20261021.md)
+targets the existing launcher's operation-context auto-kill, with actual child
+RED2→GREEN4. Corrected-source remote CI and actual signed caller cancellation remain
+open; M13-004 stays the sole IN_PROGRESS item. Completed rc5 downloads13/231,996,591B
+were deleted; only the needed qualified rc3 base is retained idle-stopped.
+
+2026-10-21 observer owner source closure: source4a8c278 has [CI358 receipt](./evidence/m13-004-convenience/signed-native-20261020/observer-remote-ci.json)
+Required+9 actual SUCCESS, all10 checkoutdacc156/tree6a81838 equality, native macOS/
+C++103/Linux45 actual PASS·CPU291.99s/helper5 wait0/final confirmed cleanup.
+Canonical local source checks and related owner Race passed; expanded Sandbox Race7
+preexisting failures remain separately recorded. Corrected actual signed caller is
+still MISSING. [One minimal rc6 input](./evidence/m13-004-convenience/signed-caller-plan-20261021.md)
+is frozen to source4a8c278; the owner approved this one ref and the reviewed tests
+on2026-10-21 with “이어가”. Execution is IN_PROGRESS; no creation success is assumed. PR38 stays
+draft. Completed rc5 payloads and operators are removed; only the necessary qualified
+rc3 baseline is retained idle. M13-004 alone remains IN_PROGRESS.
+
+2026-10-21 corrected signed caller closure: approved source4a8c278/tag rc6
+[official build39519718710](https://github.com/rahoney/heliopause/actions/runs/39519718710)
+and exact13 independent UID1000 offline/canonical verification passed.
+[Receipt](./evidence/m13-004-convenience/signed-native-20261020/rc6-qualification.json)
+connects actual rc3→rc6 required18/ALLOW→COMMITTED35.18s, corrected installed rc6
+acquisition/native dynamic handoff cancellation2.00s/6.25s with original failure
+preserved, unchanged current/registration/history/config and confirmed drain,
+next doctor5/npm3 ALLOW, then same actual signed set fresh whole replay30.90s
+required18/ALLOW→COMMITTED. Initial watcher runtime expectation failure is
+retained separately; no SIGINT was sent then and it is not cancellation PASS.
+Native same-runtime scope: IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES /
+ACCEPTANCE_CLOSED=YES / MISSING=none. Historical rc5 authentication/concurrency/
+service rollback/Root crash/guest cold recovery stays within its recorded scope.
+Completed download13, independent verifier and owned guest/image2/inner volume
+are removed; Host10/runtime6/shared images4 remain unchanged. Final documentation
+operators/cache are retired after their last consumer. No public Release, main
+merge, permanent Host migration, kernel reboot or new CUDA full was performed.
+M13-004 alone remains IN_PROGRESS for owner names/tap/formula and publisher
+bindings, bounded wrappers and channel qualification; M13-005 is NOT_STARTED.

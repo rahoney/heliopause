@@ -39,6 +39,21 @@ func TestNPMProjectInstallContextIsDistinctFromNewTarget(t *testing.T) {
 	}
 }
 
+func TestGitHubAssetContextPreservesNewTargetInvariant(t *testing.T) {
+	target, _ := domain.NewInstallTarget("/tmp/github-managed")
+	managed, err := domain.NewGitHubAssetInstallContext(target)
+	if err != nil || !managed.Valid() || managed.Mode() != domain.InstallGitHubAsset || managed.RequiresNewTarget() || managed.Target() != target {
+		t.Fatal(managed, err)
+	}
+	initial, _ := domain.NewInstallContext(target)
+	if !initial.RequiresNewTarget() || initial.Mode() != domain.InstallNewTarget {
+		t.Fatal("new-target semantics changed", initial)
+	}
+	if _, err := domain.NewGitHubAssetInstallContext(domain.InstallTarget{}); err == nil {
+		t.Fatal("empty target accepted")
+	}
+}
+
 func TestLockedDependencyGraphRejectsIncompleteOrUnsafeShape(t *testing.T) {
 	t.Parallel()
 	source := mustSource(t, "npm")

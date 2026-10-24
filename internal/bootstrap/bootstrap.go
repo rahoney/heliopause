@@ -24,6 +24,7 @@ import (
 	inspectionpypi "github.com/rahoney/heliopause/internal/inspection/pypi"
 	"github.com/rahoney/heliopause/internal/policy"
 	"github.com/rahoney/heliopause/internal/promotion"
+	"github.com/rahoney/heliopause/internal/releasebootstrap"
 	"github.com/rahoney/heliopause/internal/releaseinstall"
 	"github.com/rahoney/heliopause/internal/sandbox"
 	verificationgithub "github.com/rahoney/heliopause/internal/verification/githubrelease"
@@ -37,11 +38,36 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 	if err != nil {
 		return err
 	}
+	defer func() {
+		if resultErr != nil {
+			resultErr = cli.PresentRuntimeError(command, resultErr)
+		}
+	}()
+	if err := cli.SetLanguageDetector(command, func() ([]string, string, error) {
+		return hosttool.PreferredDisplayLanguages(ctx)
+	}); err != nil {
+		return err
+	}
 	command.SetArgs(args)
+	source, err := cli.PreparePresentation(command, args)
+	if err != nil {
+		return err
+	}
 	if helpRequested(args) {
 		return command.ExecuteContext(ctx)
 	}
-	if len(args) > 0 && args[0] == "doctor" {
+	if source == "" {
+		// Binding is inert. The launcher alone decides whether to request a
+		// diagnosis; opening help/settings must not resolve or prepare a runtime.
+		if err := cli.AddDoctor(command, doctorService{}); err != nil {
+			return err
+		}
+		return command.ExecuteContext(ctx)
+	}
+	if source == "config" {
+		return command.ExecuteContext(ctx)
+	}
+	if source == "doctor" {
 		root, rootErr := releaseinstall.DefaultRoot()
 		if rootErr != nil {
 			return rootErr
@@ -51,15 +77,59 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		}
 		return command.ExecuteContext(ctx)
 	}
+	if source == "bootstrap" {
+		if err := cli.AddBootstrapPreparation(command, releasebootstrap.New()); err != nil {
+			return err
+		}
+		return command.ExecuteContext(ctx)
+	}
+	if source == "self-update" {
+		if err := selfUpdatePlatform(); err != nil {
+			return err
+		}
+	}
+	pythonClient, err := pythonPackageClientFor(cli.SelectedPackageClient(command))
+	if err != nil {
+		return err
+	}
+	if err := pythonClient.checkPlatform(runtime.GOOS, runtime.GOARCH); err != nil {
+		return err
+	}
+	if source == "npm" || source == "pypi" || source == "pip" || source == "github" || source == "go" || source == "cargo" || source == "terraform" || source == "self-update" {
+		var closeRuntime func() error
+		ctx, closeRuntime, err = commandRuntime(ctx)
+		if err != nil {
+			if source == "self-update" {
+				return selfUpdateFailure(err)
+			}
+			return err
+		}
+		if closeRuntime != nil {
+			defer func() {
+				cleanupErr := closeRuntime()
+				cli.PresentFinalizationError(command, cleanupErr)
+				resultErr = errors.Join(resultErr, cleanupErr)
+			}()
+		}
+	}
 	var trustedExecutor *hosttool.Executor
+	if source == "self-update" {
+		if err := selfUpdateRuntime(ctx); err != nil {
+			return err
+		}
+	}
 	var observerSupervisor *sandbox.ObserverSupervisor
 	var processObserver sandbox.TraceObserver
-	if runtime.GOOS == "linux" && len(args) > 0 && (args[0] == "npm" || args[0] == "pypi" || args[0] == "pip" || args[0] == "github" || args[0] == "go" || args[0] == "cargo" || args[0] == "terraform") {
+	if runtime.GOOS == "linux" && source != "" && (source == "npm" || source == "pypi" || source == "pip" || source == "github" || source == "go" || source == "cargo" || source == "terraform" || source == "self-update") {
 		trustedExecutor, err = hosttool.NewSystem(ctx)
 		if err != nil {
 			return err
 		}
-		defer func() { resultErr = errors.Join(resultErr, trustedExecutor.Close()) }()
+		defer func() {
+			cleanupErr := trustedExecutor.Close()
+			cli.PresentFinalizationError(command, cleanupErr)
+			resultErr = errors.Join(resultErr, cleanupErr)
+		}()
 		launcher, launcherErr := hosttool.NewSystemObserverLauncher()
 		if launcherErr != nil {
 			return launcherErr
@@ -70,10 +140,15 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err != nil {
 			return err
 		}
+		observerSupervisor.SetDiagnosticWriter(cli.DiagnosticWriter(command))
 		processObserver = observerSupervisor.Observer()
-		defer func() { resultErr = errors.Join(resultErr, observerSupervisor.Close()) }()
+		defer func() {
+			cleanupErr := observerSupervisor.Close()
+			cli.PresentFinalizationError(command, cleanupErr)
+			resultErr = errors.Join(resultErr, cleanupErr)
+		}()
 	}
-	if len(args) > 0 && args[0] == "go" {
+	if source != "" && source == "go" {
 		if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" {
 			return errors.New("automatic Go Module resolution requires Linux amd64")
 		}
@@ -89,11 +164,14 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if resolverErr != nil {
 			return resolverErr
 		}
-		service, projectService, serviceErr := newGoModuleServices(resolver)
+		service, projectService, upgradeService, serviceErr := newGoModuleServices(resolver)
 		if serviceErr != nil {
 			return serviceErr
 		}
 		if err := cli.AddGoModuleGet(command, service); err != nil {
+			return err
+		}
+		if err := cli.AddGoModuleUpgrade(command, upgradeService); err != nil {
 			return err
 		}
 		if err := cli.AddGoModuleDownload(command, projectService); err != nil {
@@ -107,7 +185,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 			return err
 		}
 	}
-	if len(args) > 0 && args[0] == "cargo" {
+	if source != "" && source == "cargo" {
 		if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" {
 			return errors.New("automatic Cargo resolution requires Linux amd64")
 		}
@@ -123,7 +201,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if resolverErr != nil {
 			return resolverErr
 		}
-		service, buildService, serviceErr := newCargoServices(resolver, trustedExecutor, processObserver)
+		service, buildService, updateService, serviceErr := newCargoServices(resolver, trustedExecutor, processObserver)
 		if serviceErr != nil {
 			return serviceErr
 		}
@@ -133,20 +211,26 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err := cli.AddCargoBuild(command, buildService); err != nil {
 			return err
 		}
+		if err := cli.AddCargoUpdate(command, updateService); err != nil {
+			return err
+		}
 	}
-	if len(args) > 0 && args[0] == "terraform" {
+	if source != "" && source == "terraform" {
 		if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" {
 			return errors.New("automatic Terraform Provider installation requires Linux amd64")
 		}
-		service, serviceErr := newTerraformService(trustedExecutor, processObserver)
+		service, upgradeService, serviceErr := newTerraformServices(trustedExecutor, processObserver)
 		if serviceErr != nil {
 			return serviceErr
 		}
 		if err := cli.AddTerraformInit(command, service); err != nil {
 			return err
 		}
+		if err := cli.AddTerraformUpgrade(command, upgradeService); err != nil {
+			return err
+		}
 	}
-	if len(args) > 0 && args[0] == "npm" {
+	if source != "" && source == "npm" {
 		cacheRoot, err := os.UserCacheDir()
 		if err != nil {
 			return err
@@ -221,8 +305,27 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err := cli.AddNPMInstall(command, installer); err != nil {
 			return err
 		}
+		updateResolver, ok := dependencyResolver.(ports.DependencyUpdateResolver)
+		if !ok {
+			return errors.New("npm resolver lacks guarded update selection")
+		}
+		npmPromoter, ok := promoter.(*promotion.NPMPromotion)
+		if !ok {
+			return errors.New("npm Promotion lacks guarded update preparation")
+		}
+		preparation, err := promotion.NewNPMUpdatePreparation(npmPromoter, updateResolver)
+		if err != nil {
+			return err
+		}
+		updater, err := application.NewInstallUpdateService(installer, preparation)
+		if err != nil {
+			return err
+		}
+		if err := cli.AddNPMUpdate(command, updater); err != nil {
+			return err
+		}
 	}
-	if len(args) > 0 && (args[0] == "pypi" || args[0] == "pip") {
+	if source != "" && (source == "pypi" || source == "pip") {
 		cacheRoot, err := os.UserCacheDir()
 		if err != nil {
 			return err
@@ -257,17 +360,21 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err != nil {
 			return err
 		}
-		resolver, err := pypiInstallDependencyResolver(runtime.GOOS, runtime.GOARCH, trustedExecutor, processObserver)
+		resolver, err := pythonClient.resolver(runtime.GOOS, runtime.GOARCH, trustedExecutor, processObserver)
 		if err != nil {
 			return err
 		}
-		installCommand, _, err := command.Find([]string{"pip", "install"})
+		installCommand, err := cli.PackageClientInstallCommand(command, pythonClient.id)
 		if err != nil {
 			return err
 		}
 		readPrerequisite := func() (string, error) {
+			if installCommand.Flags().Lookup("inspection-prerequisites") == nil {
+				return "", nil
+			}
 			return installCommand.Flags().GetString("inspection-prerequisites")
 		}
+		nativeLookupResolver := resolver
 		inspection.WithInspectionPrerequisites(inspectionPrerequisiteLoader(readPrerequisite, resolver, intake))
 		resolver = prerequisiteCheckingResolver{resolver: resolver, read: readPrerequisite}
 		directArtifact, err := artifactpypi.NewGraphArtifact(resolver, intake)
@@ -285,7 +392,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err != nil {
 			return err
 		}
-		if runtime.GOOS == "linux" {
+		if runtime.GOOS == "linux" && pythonClient.derivation {
 			builder, factoryErr := sandbox.NewLinuxPyPISdistBuilderWithExecutor(filepath.Join(root, "intake"), trustedExecutor, processObserver)
 			if factoryErr != nil {
 				return factoryErr
@@ -313,17 +420,11 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err != nil {
 			return err
 		}
-		installers := map[string]cli.Installer{"pypi": installer}
-		for _, profile := range artifactpypi.AllSourceProfiles() {
-			if artifactpypi.IsPyTorchSource(profile.Source()) {
-				installers[profile.Source().String()] = pyTorchResourceInstaller{installer: installer, profile: profile}
-			}
-		}
-		if err := cli.AddPyPIInstallSources(command, installers); err != nil {
+		if err := pythonClient.bind(command, pythonClientBindings{installer: installer, promoter: promoter, resolver: resolver, nativeLookup: nativeLookupResolver, intake: intake, intakeRoot: filepath.Join(root, "intake"), evidenceRoot: filepath.Join(root, "evidence"), stagingRoot: filepath.Join(root, "staging"), inspector: inspection, evidence: evidence}); err != nil {
 			return err
 		}
 	}
-	if len(args) > 0 && args[0] == "github" {
+	if source != "" && source == "github" {
 		cacheRoot, err := os.UserCacheDir()
 		if err != nil {
 			return err
@@ -378,7 +479,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err != nil {
 			return err
 		}
-		promoter, err := promotion.NewGitHubReleasePromotion(filepath.Join(root, "staging"))
+		promoter, err := promotion.NewRecordedGitHubReleasePromotion(filepath.Join(root, "staging"), filepath.Join(root, "evidence"), filepath.Join(root, "github-installations"), evidence)
 		if err != nil {
 			return err
 		}
@@ -387,6 +488,26 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 			return err
 		}
 		if err := cli.AddGitHubReleaseInstall(command, artifactgithub.ParseReference, installer); err != nil {
+			return err
+		}
+		preparation, err := promotion.NewGitHubReleaseUpdatePreparation(promoter, artifact)
+		if err != nil {
+			return err
+		}
+		updater, err := application.NewInstallUpdateService(installer, preparation)
+		if err != nil {
+			return err
+		}
+		if err := cli.AddGitHubReleaseReplacement(command, updater); err != nil {
+			return err
+		}
+	}
+	if source == "self-update" {
+		updater, err := newSelfUpdater(ctx, trustedExecutor, observerSupervisor, processObserver)
+		if err != nil {
+			return err
+		}
+		if err := cli.AddSelfUpdate(command, updater); err != nil {
 			return err
 		}
 	}
@@ -460,6 +581,14 @@ func (r pythonSourceResolver) ResolveDependencies(ctx context.Context, reference
 	return domain.DependencyResolution{}, errors.New("selected Python source profile is unsupported")
 }
 
+func (r pythonSourceResolver) ResolveDependencyUpdate(ctx context.Context, reference domain.ArtifactReference, install domain.InstallContext, controls []domain.ProjectControlFile) (domain.DependencyResolution, error) {
+	resolver, ok := r.routes[reference.Source().String()].(ports.DependencyUpdateResolver)
+	if !ok {
+		return domain.DependencyResolution{}, errors.New("selected Python source does not support guarded upgrades")
+	}
+	return resolver.ResolveDependencyUpdate(ctx, reference, install, controls)
+}
+
 func installDependencyResolver(goos, goarch string, executor sandbox.TrustedExecutor, observer sandbox.TraceObserver) (ports.DependencyResolver, error) {
 	if goos == "linux" && goarch == "amd64" {
 		policyService, err := newSystemResolverPolicyAdapter()
@@ -473,11 +602,19 @@ func installDependencyResolver(goos, goarch string, executor sandbox.TrustedExec
 
 type unsupportedInstallResolver struct{}
 
+func (unsupportedInstallResolver) ResolveDependencyUpdate(context.Context, domain.ArtifactReference, domain.InstallContext, []domain.ProjectControlFile) (domain.DependencyResolution, error) {
+	return domain.DependencyResolution{}, errors.New("automatic npm update requires Linux amd64")
+}
+
 func (unsupportedInstallResolver) ResolveDependencies(context.Context, domain.ArtifactReference, domain.InstallContext) (domain.DependencyResolution, error) {
 	return domain.DependencyResolution{}, errors.New("automatic npm install requires Linux amd64")
 }
 
 type unsupportedPyPIInstallResolver struct{}
+
+func (unsupportedPyPIInstallResolver) ResolveDependencyUpdate(context.Context, domain.ArtifactReference, domain.InstallContext, []domain.ProjectControlFile) (domain.DependencyResolution, error) {
+	return domain.DependencyResolution{}, errors.New("automatic PyPI upgrade requires Linux amd64")
+}
 
 func (unsupportedPyPIInstallResolver) ResolveDependencies(context.Context, domain.ArtifactReference, domain.InstallContext) (domain.DependencyResolution, error) {
 	return domain.DependencyResolution{}, errors.New("automatic PyPI install requires Linux amd64")
@@ -486,8 +623,15 @@ func (unsupportedPyPIInstallResolver) ResolveDependencies(context.Context, domai
 type doctorService struct{ installRoot string }
 
 func (s doctorService) Diagnose(ctx context.Context) cli.DoctorReport {
-	installation := releaseinstall.CheckInstallation(s.installRoot)
-	checks := append([]cli.DoctorCheck{{Name: installation.Name, Healthy: installation.Healthy, Detail: installation.Detail}}, doctorHostChecks(ctx)...)
+	root := s.installRoot
+	if root == "" {
+		// Missing user configuration is an unavailable installation check,
+		// not a reason to prevent the interactive launcher from opening.
+		if resolved, err := releaseinstall.DefaultRoot(); err == nil {
+			root = resolved
+		}
+	}
+	checks := installationAndHostChecks(ctx, root)
 	healthy := true
 	for _, check := range checks {
 		healthy = healthy && check.Healthy

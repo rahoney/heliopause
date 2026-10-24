@@ -171,6 +171,10 @@ func (c *GoVerifiedCache) StageProject(ctx context.Context, set domain.ProjectVe
 		// Bound the complete next expansion before writing or extracting it.
 		totalBytes += uint64(len(bundle.Mod()) + len(bundle.Zip()) + 512)
 		totalFiles += len(entries) + 4
+		for _, control := range bundle.RequiredMods() {
+			totalBytes += uint64(len(control.Body))
+			totalFiles++
+		}
 		for _, entry := range entries {
 			totalBytes += entry.UncompressedSize64
 		}

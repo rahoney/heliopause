@@ -2,9 +2,12 @@ package main
 
 import (
 	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -90,6 +93,65 @@ func TestRuntimeLockRejectsUnknownFieldAndMissingPlatform(t *testing.T) {
 	lock.GVisor.RuntimeBundle.Architecture = "aarch64"
 	if err := validate(lock); err == nil {
 		t.Fatal("unexpected runtime bundle architecture was accepted")
+	}
+}
+
+func TestRuntimeLockRejectsUnboundUVSupply(t *testing.T) {
+	base, err := readLock("runtimes.lock.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for name, mutate := range map[string]func(*runtimeLock){
+		"old schema": func(l *runtimeLock) { l.SchemaVersion = 1 },
+		"foreign publisher": func(l *runtimeLock) {
+			l.UVImage.Reference = strings.Replace(l.UVImage.Reference, "astral-sh", "foreign", 1)
+		},
+		"different version":       func(l *runtimeLock) { l.UVImage.Version = "0.0.1" },
+		"missing source":          func(l *runtimeLock) { l.UVImage.Provenance.SourceCommit = "" },
+		"missing bundle":          func(l *runtimeLock) { l.UVImage.Provenance.BundleSHA256 = "" },
+		"missing index":           func(l *runtimeLock) { l.UVImage.Provenance.IndexSHA256 = "" },
+		"wrong architecture":      func(l *runtimeLock) { l.UVImage.Architecture = "arm64" },
+		"foreign path":            func(l *runtimeLock) { l.UVImage.Tool.Path = "/other" },
+		"oversize":                func(l *runtimeLock) { l.UVImage.Tool.Size = 64<<20 + 1 },
+		"missing native identity": func(l *runtimeLock) { l.UVImage.Tool.SHA256 = "" },
+	} {
+		t.Run(name, func(t *testing.T) {
+			l := base
+			mutate(&l)
+			if err := validate(l); err == nil {
+				t.Fatal("unbound UV supply accepted")
+			}
+		})
+	}
+}
+
+func TestRuntimeLockRejectsUnboundPNPMSupply(t *testing.T) {
+	base, err := readLock("runtimes.lock.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for name, mutate := range map[string]func(*runtimeLock){
+		"schema2":      func(l *runtimeLock) { l.SchemaVersion = 2 },
+		"version":      func(l *runtimeLock) { l.PNPMTool.Version = "0.0.1" },
+		"architecture": func(l *runtimeLock) { l.PNPMTool.Architecture = "arm64" },
+		"archive-url":  func(l *runtimeLock) { l.PNPMTool.Archive.URL = "https://example.invalid/pnpm.tar.gz" },
+		"archive-hash": func(l *runtimeLock) { l.PNPMTool.Archive.SHA256 = "" },
+		"archive-size": func(l *runtimeLock) { l.PNPMTool.Archive.Size = 64<<20 + 1 },
+		"source":       func(l *runtimeLock) { l.PNPMTool.Provenance.SourceCommit = "" },
+		"run":          func(l *runtimeLock) { l.PNPMTool.Provenance.WorkflowRun = "0" },
+		"bundle-path":  func(l *runtimeLock) { l.PNPMTool.Provenance.BundlePath = "testdata/bundle.json" },
+		"bundle-hash":  func(l *runtimeLock) { l.PNPMTool.Provenance.BundleSHA256 = "" },
+		"native-path":  func(l *runtimeLock) { l.PNPMTool.Tool.Path = "../pnpm" },
+		"native-hash":  func(l *runtimeLock) { l.PNPMTool.Tool.SHA256 = "" },
+		"native-size":  func(l *runtimeLock) { l.PNPMTool.Tool.Size = 0 },
+	} {
+		t.Run(name, func(t *testing.T) {
+			value := base
+			mutate(&value)
+			if err := validate(value); err == nil {
+				t.Fatal("unbound PNPM owner accepted")
+			}
+		})
 	}
 }
 
@@ -498,5 +560,39 @@ cc_binary(
 
 	if err := verifyObserverBuildCommit(build, canonical); err != nil {
 		t.Fatalf("expected build with comments and string parens to pass, got: %v", err)
+	}
+}
+
+func TestRuntimeLockDigestUsesCompleteBoundedInput(t *testing.T) {
+	body, err := os.ReadFile("runtimes.lock.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	lock, err := readLock("runtimes.lock.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	sum := sha256.Sum256(body)
+	if lock.lockSHA256 != hex.EncodeToString(sum[:]) {
+		t.Fatal("compiled lock digest differs from source bytes")
+	}
+	path := filepath.Join(t.TempDir(), "lock.json")
+	changed := append(append([]byte(nil), body...), '\n')
+	if err := os.WriteFile(path, changed, 0600); err != nil {
+		t.Fatal(err)
+	}
+	other, err := readLock(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if other.lockSHA256 == lock.lockSHA256 {
+		t.Fatal("raw lock byte change was ignored")
+	}
+	oversized := append(append([]byte(nil), body...), bytes.Repeat([]byte(" "), 64*1024+1-len(body))...)
+	if err := os.WriteFile(path, oversized, 0600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := readLock(path); err == nil {
+		t.Fatal("oversized lock prefix accepted")
 	}
 }

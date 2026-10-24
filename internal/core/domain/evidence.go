@@ -8,6 +8,13 @@ import (
 
 const maxEvidenceSummaryLength = 1024
 
+// Host install action facts describe a possible installation requirement;
+// they do not authorize execution or replace an inspection's Findings.
+const (
+	EvidenceHostInstallActionRequired    = "host-install-action-required"
+	EvidenceHostInstallActionNotRequired = "host-install-action-not-required"
+)
+
 // EvidenceID identifies one normalized Evidence fact. Its zero value is invalid.
 type EvidenceID struct{ value string }
 

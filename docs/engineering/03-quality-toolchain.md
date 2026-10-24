@@ -261,6 +261,22 @@ Implementation and remaining stages follow the
 
 ## 4. Canonical local entrypoint
 
+2026-10-23 M13-004/G127은 실제 Go1.27.3 export data에서2026.1 decoder 오류를 확인하여
+현재 Staticcheck pin을2026.2.2(`v0.8.2`, actual display `0.8.2`)로 갱신한다. 최초2026.2의
+계열 지원 선언만으로는 실제1.27.3 export data를 읽지 못했으며, 후속 공식 patch의 변경된
+export data 지원과 module minimum1.26.0을 대조했다. 기존 exact source/checksum bootstrap·binary/compiler
+검사를 유지한다. 신규 SA9010과 upstream 진단 변화(SA5011 비활성화 포함)를 검토했고
+프로젝트 suppression은 추가하지 않는다. 위 M0 선택은 역사 기록이며 현재 실행 pin은
+tools.lock이 소유한다. 실제 old/new SDK qualification·원본과 남은 작업은
+[G127 수정 지도](../planning/evidence/package-client-quarantine/go1273-migration-baseline-20261022.md)를 따른다.
+
+같은 G127의 target Quick PASS 뒤 gosecv2.28.0/v2.29.0의 export decoder 오류가 실제
+확인되어 gosec만v2.30.0으로 갱신한다. Actual GitHub API의 새 stable release·Go1.27.3
+지원·module floor1.26.0/Apache2.0과 exact source/checksum build를 대조했다. 실제 binary의
+display는 기존 `Version: dev`이므로 source module/buildinfo가v2.30.0 신원을 보존한다.
+기존 include/nosec 인자·규칙을 그대로 사용하며 AI/autofix 옵션을 활성화하지 않는다.
+기존 govulncheckv1.7.0은 target canonical vulnerability PASS라 유지한다.
+
 구현 단계에서 standard library만 사용하는 repository-owned check runner를 `scripts/check/`에 둔다.
 
 ```text
@@ -274,6 +290,7 @@ go run ./scripts/check <profile>
 - 필요한 tool과 version이 lock manifest와 project-specific tool cache에서 일치하는지 확인한다.
 - check profile은 repository source, module file 또는 config를 수정하지 않는다.
 - 각 단계에 timeout을 적용하고 첫 실패의 명령·분류·종료 상태를 secret 없이 표시한다.
+- timeout도 같은 bounded stdout/stderr collector의 부분 출력을 보존하고 원래 context cause를 유지한다. 부분 출력은 진단이며 검사 성공이나 timeout 원인 확정이 아니다.
 - scanner stdout/stderr를 무제한 buffering하지 않는다.
 - 외부 tool의 `no-fail` option으로 Quality Gate를 우회하지 않는다.
 - 여러 검사를 병렬 실행해 원인과 resource 사용이 불명확해지지 않도록 초기에는 순차 실행한다.

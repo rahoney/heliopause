@@ -100,13 +100,27 @@ func TestCorpusTargetRejectsEmptySelection(t *testing.T) {
 	}
 }
 
-func TestWorkflowParserIsToolOnlyDependency(t *testing.T) {
+func TestYAMLParserRequiresReviewedConsumer(t *testing.T) {
 	const module = "example.test/project"
+	for _, owner := range []string{"/internal/artifact/npm", "/scripts/update-runtime"} {
+		if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + owner, Imports: []string{"go.yaml.in/yaml/v3"}}}); len(findings) != 0 {
+			t.Fatal(findings)
+		}
+	}
+	for _, owner := range []string{"/internal/core/domain", "/internal/application", "/internal/inspection/npm"} {
+		if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + owner, Imports: []string{"go.yaml.in/yaml/v3"}}}); len(findings) == 0 {
+			t.Fatal("YAML leaked into unreviewed consumer", owner)
+		}
+	}
+	if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + "/internal/artifact/npm", Imports: []string{module + "/internal/runtimeidentity"}}}); len(findings) == 0 {
+		t.Fatal("parser acquired a runtime owner dependency")
+	}
+
 	if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + "/scripts/check", Imports: []string{"go.yaml.in/yaml/v3"}}}); len(findings) != 0 {
 		t.Fatal(findings)
 	}
 	if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + "/internal/artifact/pypi", Imports: []string{"go.yaml.in/yaml/v3"}}}); len(findings) == 0 {
-		t.Fatal("parser permitted in product path")
+		t.Fatal("parser permitted in unreviewed product path")
 	}
 }
 

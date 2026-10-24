@@ -42,11 +42,12 @@ func New(stdout, stderr io.Writer) (*cobra.Command, error) {
 			return err
 		}
 
-		return command.Help()
+		return runLauncherOrHelp(command)
 	}
 	command.SetOut(stdout)
 	command.SetErr(stderr)
 	initializeCommandTree(command)
+	attachPresentation(command, stdout, stderr)
 
 	return command, nil
 }
@@ -100,8 +101,18 @@ func AddDoctor(root *cobra.Command, doctor Doctor) error {
 	if command == nil {
 		return errors.New("doctor command is not registered")
 	}
+	presentationFor(root.OutOrStdout()).doctor = doctor
 	command.RunE = func(command *cobra.Command, _ []string) error {
 		report := doctor.Diagnose(contextOrBackground(command.Context()))
+		if p := presentationFor(command.OutOrStdout()); p.human() {
+			if err := p.renderDoctor(report); err != nil {
+				return err
+			}
+			if !report.Healthy {
+				return ExitError{Code: 1}
+			}
+			return nil
+		}
 		for _, check := range report.Checks {
 			status := "UNAVAILABLE"
 			if check.Healthy {
@@ -133,7 +144,7 @@ func AddGitHubReleaseInspect(root *cobra.Command, parser ReferenceParser, inspec
 			if err != nil {
 				return err
 			}
-			code, err := ExecuteInspect(contextOrBackground(command.Context()), inspector, request, true, command.OutOrStdout())
+			code, err := ExecuteInspect(contextOrBackground(command.Context()), inspector, request, machineOutput(command), command.OutOrStdout())
 			if err != nil {
 				return err
 			}
@@ -153,6 +164,12 @@ func AddGitHubReleaseInstall(root *cobra.Command, parser ReferenceParser, instal
 	}
 	if install := findLeaf(root, "github", "install"); install != nil {
 		install.RunE = func(command *cobra.Command, args []string) error {
+			if err := validateGitHubInstallArgs(command, args); err != nil {
+				return err
+			}
+			if replace, _ := command.Flags().GetBool("replace"); replace {
+				return errors.New("github replacement use case is not configured")
+			}
 			reference, err := parser(args[0])
 			if err != nil {
 				return err
@@ -173,7 +190,7 @@ func AddGitHubReleaseInstall(root *cobra.Command, parser ReferenceParser, instal
 			if err != nil {
 				return err
 			}
-			code, err := ExecuteInstall(contextOrBackground(command.Context()), installer, request, true, command.OutOrStdout())
+			code, err := ExecuteInstall(contextOrBackground(command.Context()), installer, request, machineOutput(command), command.OutOrStdout())
 			if err != nil {
 				return err
 			}
@@ -196,20 +213,44 @@ func AddPyPIInstall(root *cobra.Command, installer Installer) error {
 // AddPyPIInstallSources wires one bounded pip install command to the
 // canonical PyPI and named PyTorch source profiles.
 func AddPyPIInstallSources(root *cobra.Command, installers map[string]Installer) error {
+	return AddPyPIInstallSourcesAndUpdates(root, installers, nil)
+}
+
+// AddPyPIInstallSourcesAndUpdates binds native upgrade intent to the guarded
+// workflow, preserving the ordinary install path for all existing profiles.
+func AddPyPIInstallSourcesAndUpdates(root *cobra.Command, installers map[string]Installer, updaters map[string]Installer) error {
+	return addPackageClientInstall(root, PipPackageClient, installers, map[packageUpgradeMode]map[string]Installer{packageUpgradeRoot: updaters})
+}
+
+func addPackageClientInstall(root *cobra.Command, id PackageClientID, installers map[string]Installer, updaters map[packageUpgradeMode]map[string]Installer) error {
 	if root == nil || len(installers) == 0 {
 		return errors.New("pypi install command requires root and use case")
 	}
-	if installCommand := findLeaf(root, "pip", "install"); installCommand != nil {
+	descriptor, ok := packageClientByOperation(id, "install")
+	if !ok {
+		return errors.New("unsupported package client binding")
+	}
+	if installCommand, findErr := PackageClientInstallCommand(root, id); findErr == nil {
 		installCommand.RunE = func(command *cobra.Command, args []string) error {
-			source, err := command.Flags().GetString("source")
-			if err != nil {
+			if err := descriptor.validate(command, args); err != nil {
 				return err
+			}
+			source := "pypi"
+			var err error
+			if command.Flags().Lookup("source") != nil {
+				source, err = command.Flags().GetString("source")
+				if err != nil {
+					return err
+				}
 			}
 			if source == "" {
 				source = "pypi"
 			}
 			sourceID := artifactpypi.PublicPyPIProfile().Source()
 			if source != "pypi" {
+				if !descriptor.namedSources {
+					return errors.New("package client source is unsupported")
+				}
 				profileName := strings.TrimPrefix(source, "pytorch:")
 				if profileName == source {
 					return errors.New("pip source must be pypi or a named pytorch profile")
@@ -224,7 +265,7 @@ func AddPyPIInstallSources(root *cobra.Command, installers map[string]Installer)
 			if !ok || installer == nil {
 				return errors.New("selected Python source is unavailable on this Host")
 			}
-			reference, err := artifactpypi.ParseReferenceForSource(args[0], sourceID)
+			upgradeMode, err := descriptor.upgrade(command, args)
 			if err != nil {
 				return err
 			}
@@ -232,7 +273,7 @@ func AddPyPIInstallSources(root *cobra.Command, installers map[string]Installer)
 			if err != nil {
 				return err
 			}
-			installTarget, err := activePythonVenv(target)
+			installTarget, err := activePythonVenvForCommand(target, strings.Join(descriptor.path, " "))
 			if err != nil {
 				return err
 			}
@@ -240,11 +281,25 @@ func AddPyPIInstallSources(root *cobra.Command, installers map[string]Installer)
 			if err != nil {
 				return err
 			}
-			request, err := application.NewInstallRequest(reference, installContext)
+			var request application.InstallRequest
+			if upgradeMode != packageNoUpgrade {
+				installer = updaters[upgradeMode][sourceID.String()]
+				if installer == nil {
+					return errors.New("guarded upgrade is unavailable for the selected Python source")
+				}
+				adopt, _ := command.Flags().GetBool("adopt")
+				request, err = application.NewInstallUpdateRequest(sourceID, args[0], installContext, adopt)
+			} else {
+				reference, parseErr := descriptor.parse(args[0], sourceID)
+				if parseErr != nil {
+					return parseErr
+				}
+				request, err = application.NewInstallRequest(reference, installContext)
+			}
 			if err != nil {
 				return err
 			}
-			exitCode, operationErr := ExecuteInstall(contextOrBackground(command.Context()), installer, request, true, command.OutOrStdout())
+			exitCode, operationErr := ExecuteInstall(contextOrBackground(command.Context()), installer, request, machineOutput(command), command.OutOrStdout())
 			if operationErr != nil {
 				return operationErr
 			}
@@ -255,15 +310,19 @@ func AddPyPIInstallSources(root *cobra.Command, installers map[string]Installer)
 		}
 		return nil
 	}
-	return errors.New("pip install command is not registered")
+	return errors.New(strings.Join(descriptor.path, " ") + " command is not registered")
 }
 
 func activePythonVenv(target string) (domain.InstallTarget, error) {
+	return activePythonVenvForCommand(target, "pip install")
+}
+
+func activePythonVenvForCommand(target, command string) (domain.InstallTarget, error) {
 	if target == "" {
 		target = os.Getenv("VIRTUAL_ENV")
 	}
 	if target == "" {
-		return domain.InstallTarget{}, errors.New("pip install requires an active virtual environment")
+		return domain.InstallTarget{}, errors.New(command + " requires an active virtual environment")
 	}
 	value, err := domain.NewInstallTarget(target)
 	if err != nil {
@@ -365,7 +424,7 @@ func AddPyPIInspect(root *cobra.Command, inspector Inspector) error {
 			if err != nil {
 				return err
 			}
-			exitCode, operationErr := ExecuteInspect(contextOrBackground(command.Context()), inspector, request, true, command.OutOrStdout())
+			exitCode, operationErr := ExecuteInspect(contextOrBackground(command.Context()), inspector, request, machineOutput(command), command.OutOrStdout())
 			if operationErr != nil {
 				return operationErr
 			}
@@ -394,7 +453,7 @@ func AddNPMInspect(root *cobra.Command, inspector Inspector) error {
 			if err != nil {
 				return err
 			}
-			exitCode, operationErr := ExecuteInspect(contextOrBackground(command.Context()), inspector, request, true, command.OutOrStdout())
+			exitCode, operationErr := ExecuteInspect(contextOrBackground(command.Context()), inspector, request, machineOutput(command), command.OutOrStdout())
 			if operationErr != nil {
 				return operationErr
 			}
@@ -431,7 +490,7 @@ func AddNPMInstall(root *cobra.Command, installer Installer) error {
 			if err != nil {
 				return err
 			}
-			exitCode, operationErr := ExecuteInstall(contextOrBackground(command.Context()), installer, request, true, command.OutOrStdout())
+			exitCode, operationErr := ExecuteInstall(contextOrBackground(command.Context()), installer, request, machineOutput(command), command.OutOrStdout())
 			if operationErr != nil {
 				return operationErr
 			}
@@ -472,9 +531,16 @@ func AddGoModuleGet(root *cobra.Command, resolver GoModuleResolver) error {
 		if err != nil {
 			return err
 		}
-		resolution, err := resolver.Get(contextOrBackground(command.Context()), reference, installContext)
+		progressContext, finishProgress := beginProgress(contextOrBackground(command.Context()), command.OutOrStdout(), machineOutput(command))
+		defer func() { _ = finishProgress() }()
+		resolution, err := resolver.Get(progressContext, reference, installContext)
+		progressErr := finishProgress()
+		err = errors.Join(err, progressErr)
 		if err != nil {
 			return err
+		}
+		if p := presentationFor(command.OutOrStdout()); p.human() {
+			return p.renderProjectSummary(reference.Source().String(), "Modules", len(resolution.Graph().Nodes()), resolution.LockfileDigest().String())
 		}
 		_, err = fmt.Fprintf(command.OutOrStdout(), "Source: %s\nModules: %d\nLock digest: %s\n", reference.Source(), len(resolution.Graph().Nodes()), resolution.LockfileDigest())
 		return err
@@ -499,9 +565,16 @@ func AddGoModuleDownload(root *cobra.Command, resolver GoModuleProjectResolver) 
 		if err != nil {
 			return err
 		}
-		snapshot, err := resolver.Resolve(contextOrBackground(command.Context()), installContext)
+		progressContext, finishProgress := beginProgress(contextOrBackground(command.Context()), command.OutOrStdout(), machineOutput(command))
+		defer func() { _ = finishProgress() }()
+		snapshot, err := resolver.Resolve(progressContext, installContext)
+		progressErr := finishProgress()
+		err = errors.Join(err, progressErr)
 		if err != nil {
 			return err
+		}
+		if p := presentationFor(command.OutOrStdout()); p.human() {
+			return p.renderProjectSummary(snapshot.Source().String(), "Modules", len(snapshot.Dependencies()), snapshot.GraphDigest().String())
 		}
 		_, err = fmt.Fprintf(command.OutOrStdout(), "Source: %s\nModules: %d\nGraph digest: %s\n", snapshot.Source(), len(snapshot.Dependencies()), snapshot.GraphDigest())
 		return err
@@ -534,9 +607,16 @@ func AddCargoAdd(root *cobra.Command, resolver CargoResolver) error {
 		if err != nil {
 			return err
 		}
-		resolution, err := resolver.Resolve(contextOrBackground(command.Context()), reference, installContext)
+		progressContext, finishProgress := beginProgress(contextOrBackground(command.Context()), command.OutOrStdout(), machineOutput(command))
+		defer func() { _ = finishProgress() }()
+		resolution, err := resolver.Resolve(progressContext, reference, installContext)
+		progressErr := finishProgress()
+		err = errors.Join(err, progressErr)
 		if err != nil {
 			return err
+		}
+		if p := presentationFor(command.OutOrStdout()); p.human() {
+			return p.renderProjectSummary(reference.Source().String(), "Crates", len(resolution.Graph().Nodes()), resolution.LockfileDigest().String())
 		}
 		_, err = fmt.Fprintf(command.OutOrStdout(), "Source: %s\nCrates: %d\nLock digest: %s\n", reference.Source(), len(resolution.Graph().Nodes()), resolution.LockfileDigest())
 		return err
@@ -553,6 +633,12 @@ func AddTerraformInit(root *cobra.Command, resolver TerraformResolver) error {
 		return errors.New("terraform init command is not registered")
 	}
 	command.RunE = func(command *cobra.Command, args []string) error {
+		if err := validateTerraformInitArgs(command, args); err != nil {
+			return err
+		}
+		if upgrade, _ := command.Flags().GetBool("upgrade"); upgrade {
+			return errors.New("terraform upgrade service is unavailable")
+		}
 		reference, err := artifactterraform.ParseReference(args[0])
 		if err != nil {
 			return err
@@ -569,9 +655,16 @@ func AddTerraformInit(root *cobra.Command, resolver TerraformResolver) error {
 		if err != nil {
 			return err
 		}
-		result, err := resolver.Init(contextOrBackground(command.Context()), reference, installContext)
+		progressContext, finishProgress := beginProgress(contextOrBackground(command.Context()), command.OutOrStdout(), machineOutput(command))
+		defer func() { _ = finishProgress() }()
+		result, err := resolver.Init(progressContext, reference, installContext)
+		progressErr := finishProgress()
+		err = errors.Join(err, progressErr)
 		if err != nil {
 			return err
+		}
+		if p := presentationFor(command.OutOrStdout()); p.human() {
+			return p.renderProjectSummary(reference.Source().String(), "Providers", result.ProviderCount, result.Resolution.LockfileDigest().String())
 		}
 		_, err = fmt.Fprintf(command.OutOrStdout(), "Source: %s\nProviders: %d\nLock digest: %s\n", reference.Source(), result.ProviderCount, result.Resolution.LockfileDigest())
 		return err
@@ -596,23 +689,34 @@ func currentGoProjectContext() (domain.InstallContext, error) {
 }
 
 func initializeCommandTree(root *cobra.Command) {
+	root.AddCommand(newSelfUpdateCommand())
+	root.AddCommand(newBootstrapCommand())
 	root.AddCommand(&cobra.Command{Use: "doctor", Short: "Check installed release and trusted Host runtime readiness", Args: cobra.NoArgs, RunE: func(*cobra.Command, []string) error { return errors.New("doctor command is not configured") }})
 	npm := ensureNPMCommand(root)
 	npm.AddCommand(newStaticLeaf("inspect <package-reference>", "Inspect an npm package", false))
 	npm.AddCommand(newStaticLeaf("install <package-reference>", "Install an npm package into the current project", true))
+	npmUpdate := newStaticLeaf("update [package]", "Update an npm project after complete quarantine checks", true)
+	npmUpdate.Args = validateNPMUpdateArgs
+	npmUpdate.Long = npmUpdateDescriptionEnglish
+	npmUpdate.Flags().Bool("adopt", false, "Explicitly replace supported native project dependencies after full inspection")
+	npm.AddCommand(npmUpdate)
 	pypi := ensurePyPICommand(root)
 	pypi.AddCommand(newStaticLeaf("inspect <project>[@<version>]", "Inspect a PyPI distribution", false))
-	pip := ensurePipCommand(root)
-	pipInstall := newStaticLeaf("install <project>[@<version>]", "Install a PyPI distribution into the active virtual environment", true)
-	pipInstall.Flags().String("source", "pypi", pythonSourceHelp())
-	pipInstall.Flags().String("inspection-prerequisites", "", "Explicit pinned JSON for one inspection-only non-root leaf prerequisite; not installed into the target")
-	pip.AddCommand(pipInstall)
+	initializePackageClientCommands(root)
 	github := ensureGitHubCommand(root)
 	github.AddCommand(newStaticLeaf("inspect <owner>/<repo>@<tag>#<asset>", "Inspect a GitHub Release asset", false))
 	githubInstall := newStaticLeaf("install <owner>/<repo>@<tag>#<asset>", "Install a GitHub Release asset", true)
+	githubInstall.Args = validateGitHubInstallArgs
+	githubInstall.Long = githubReplacementDescriptionEnglish
+	githubInstall.Flags().Bool("replace", false, "Replace only a proven HAA-managed asset after fresh inspection; requires --target")
 	github.AddCommand(githubInstall)
 	goCommand := ensureGoCommand(root)
-	goCommand.AddCommand(newStaticLeaf("get <module>@<version>", "Resolve an exact public Go Module graph before transaction", false))
+	goGet := newStaticLeaf("get <module>[@<version>]", "Inspect exact or upgraded public Go Module dependencies", false)
+	goGet.Args = validateGoGetArgs
+	goGet.Long = goUpgradeDescriptionEnglish
+	goGet.Flags().BoolP("upgrade", "u", false, "Inspect the whole selected graph before upgrading one existing module and its imported dependencies")
+	goGet.Flags().Bool("adopt", false, "Explicitly enroll supported native or changed dependency controls with -u")
+	goCommand.AddCommand(goGet)
 	goCommand.AddCommand(newStaticLeaf("build <package>", "Build a Go project from the HAA-verified module cache", false))
 	goMod := &cobra.Command{Use: "mod", Short: "Resolve public Go Modules with the canonical proxy and SumDB"}
 	goMod.AddCommand(newStaticNoArgLeaf("download", "Resolve the current project's exact Go Module graph"))
@@ -620,8 +724,19 @@ func initializeCommandTree(root *cobra.Command) {
 	cargo := ensureCargoCommand(root)
 	cargo.AddCommand(newStaticLeaf("add <crate>@<version>", "Resolve and transactionally add a public crates.io crate", false))
 	cargo.AddCommand(newStaticNoArgLeaf("build", "Build a Cargo project from the HAA-verified crate cache"))
+	cargoUpdate := newStaticNoArgLeaf("update", "Inspect the complete selected crate graph before updating Cargo.lock")
+	cargoUpdate.Args = validateCargoUpdateArgs
+	cargoUpdate.Long = cargoUpdateDescriptionEnglish
+	cargoUpdate.Flags().StringArrayP("package", "p", nil, "Select one existing public crate by name or name@locked-version")
+	cargoUpdate.Flags().Bool("adopt", false, "Explicitly enroll supported native or changed project controls after full inspection")
+	cargo.AddCommand(cargoUpdate)
 	terraform := ensureTerraformCommand(root)
-	terraform.AddCommand(newStaticLeaf("init <namespace/type@version>", "Resolve an exact public Terraform Provider", false))
+	terraformInit := newStaticLeaf("init [namespace/type@version]", "Resolve exact or upgraded public Terraform Providers", false)
+	terraformInit.Args = validateTerraformInitArgs
+	terraformInit.Long = terraformUpgradeDescriptionEnglish
+	terraformInit.Flags().Bool("upgrade", false, "Inspect every required provider at its newest stable constrained version (native -upgrade supported)")
+	terraformInit.Flags().Bool("adopt", false, "Explicitly enroll supported providerless native or changed managed controls with -upgrade")
+	terraform.AddCommand(terraformInit)
 }
 
 func pythonSourceHelp() string {

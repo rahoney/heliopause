@@ -1,0 +1,311 @@
+{
+  "schema_version": 1,
+  "baseline": "8ec8de707c1b3a5f452edfb9a40d4f8e15db8354",
+  "scope": "C3c bounded native metadata-only installed-state and dry-run retention format probe; not production gVisor/public/Policy/guarded update qualification",
+  "native": {
+    "uv_version": "0.13.4",
+    "python_version": "3.14.7",
+    "uv_native_sha256": "de77a01a86452cc465a734257b5a2073d41115d1b8bbfe84ac636af53851b499",
+    "isolation": "runc/network-none/read-only/UID1000/no capabilities/no-new-privileges; inert synthetic wheels; no artifact imports"
+  },
+  "seconds": 11.847,
+  "cases": [
+    {
+      "case": "metadata-original-data",
+      "exit": 0
+    },
+    {
+      "case": "metadata-list",
+      "exit": 0,
+      "installed": [
+        {
+          "name": "haa-probe-dep",
+          "version": "1.0"
+        },
+        {
+          "name": "haa-probe-extra",
+          "version": "1.0"
+        },
+        {
+          "name": "haa-probe-root",
+          "version": "1.0"
+        }
+      ]
+    },
+    {
+      "case": "metadata-default",
+      "exit": 0,
+      "native_json": {
+        "schema": {
+          "version": "preview"
+        },
+        "changes": [
+          {
+            "name": "haa-probe-root",
+            "version": "1.0",
+            "action": "uninstalled"
+          },
+          {
+            "name": "haa-probe-root",
+            "version": "2.0",
+            "action": "installed"
+          }
+        ],
+        "dry_run": true
+      }
+    },
+    {
+      "case": "metadata-selected-upgrade",
+      "exit": 0,
+      "native_json": {
+        "schema": {
+          "version": "preview"
+        },
+        "changes": [
+          {
+            "name": "haa-probe-root",
+            "version": "1.0",
+            "action": "uninstalled"
+          },
+          {
+            "name": "haa-probe-root",
+            "version": "2.0",
+            "action": "installed"
+          }
+        ],
+        "dry_run": true
+      }
+    },
+    {
+      "case": "metadata-full-upgrade",
+      "exit": 0,
+      "native_json": {
+        "schema": {
+          "version": "preview"
+        },
+        "changes": [
+          {
+            "name": "haa-probe-dep",
+            "version": "1.0",
+            "action": "uninstalled"
+          },
+          {
+            "name": "haa-probe-dep",
+            "version": "2.0",
+            "action": "installed"
+          },
+          {
+            "name": "haa-probe-root",
+            "version": "1.0",
+            "action": "uninstalled"
+          },
+          {
+            "name": "haa-probe-root",
+            "version": "2.0",
+            "action": "installed"
+          }
+        ],
+        "dry_run": true
+      }
+    },
+    {
+      "case": "metadata-noop",
+      "exit": 0,
+      "native_json": {
+        "schema": {
+          "version": "preview"
+        },
+        "changes": [],
+        "dry_run": true
+      }
+    },
+    {
+      "case": "metadata-after-data",
+      "exit": 0
+    },
+    {
+      "case": "metadata-wheel-original-data",
+      "exit": 0
+    },
+    {
+      "case": "metadata-wheel-list",
+      "exit": 0,
+      "installed": [
+        {
+          "name": "haa-probe-dep",
+          "version": "1.0"
+        },
+        {
+          "name": "haa-probe-extra",
+          "version": "1.0"
+        },
+        {
+          "name": "haa-probe-root",
+          "version": "1.0"
+        }
+      ]
+    },
+    {
+      "case": "metadata-wheel-default",
+      "exit": 0,
+      "native_json": {
+        "schema": {
+          "version": "preview"
+        },
+        "changes": [
+          {
+            "name": "haa-probe-root",
+            "version": "1.0",
+            "action": "uninstalled"
+          },
+          {
+            "name": "haa-probe-root",
+            "version": "2.0",
+            "action": "installed"
+          }
+        ],
+        "dry_run": true
+      }
+    },
+    {
+      "case": "metadata-wheel-selected-upgrade",
+      "exit": 0,
+      "native_json": {
+        "schema": {
+          "version": "preview"
+        },
+        "changes": [
+          {
+            "name": "haa-probe-root",
+            "version": "1.0",
+            "action": "uninstalled"
+          },
+          {
+            "name": "haa-probe-root",
+            "version": "2.0",
+            "action": "installed"
+          }
+        ],
+        "dry_run": true
+      }
+    },
+    {
+      "case": "metadata-wheel-full-upgrade",
+      "exit": 0,
+      "native_json": {
+        "schema": {
+          "version": "preview"
+        },
+        "changes": [
+          {
+            "name": "haa-probe-dep",
+            "version": "1.0",
+            "action": "uninstalled"
+          },
+          {
+            "name": "haa-probe-dep",
+            "version": "2.0",
+            "action": "installed"
+          },
+          {
+            "name": "haa-probe-root",
+            "version": "1.0",
+            "action": "uninstalled"
+          },
+          {
+            "name": "haa-probe-root",
+            "version": "2.0",
+            "action": "installed"
+          }
+        ],
+        "dry_run": true
+      }
+    },
+    {
+      "case": "metadata-wheel-noop",
+      "exit": 0,
+      "native_json": {
+        "schema": {
+          "version": "preview"
+        },
+        "changes": [],
+        "dry_run": true
+      }
+    },
+    {
+      "case": "metadata-wheel-after-data",
+      "exit": 0
+    }
+  ],
+  "observed": [
+    "METADATA-only and METADATA+WHEEL targets both identify the same three original installed versions",
+    "default and root-only upgrade change root1 to root2 and retain dep1",
+    "full upgrade changes root1 to root2 and dep1 to dep2",
+    "dry-run same-version emits explicit empty changes",
+    "original metadata bytes remain unchanged in all dry-run cases; auxiliary lock excluded from payload comparison"
+  ],
+  "limitations": [
+    "public registry and native gVisor/admission transport remain to be qualified",
+    "preview JSON provides no archive URL/hash/edge authentication",
+    "native adoption/cache/entrypoint proof not tested",
+    "no production source or advertised update capability changed"
+  ],
+  "cleanup": {
+    "references": 0,
+    "query_errors": 0,
+    "removed": [
+      {
+        "path": "/tmp/haa-uv-runtime-0_e6zmn4/uv-metadata-only-discovery",
+        "entries": 2,
+        "regular_bytes": 0
+      },
+      {
+        "path": "/tmp/haa-uv-runtime-0_e6zmn4/uv-metadata-only-discovery.py",
+        "entries": 1,
+        "regular_bytes": 10888
+      }
+    ],
+    "native_cleanup": [
+      {
+        "container": "c85908e017a029e52aef94bc204804dbf9f999e43f0542d62c8ff5d24c294cb3",
+        "removed": true
+      },
+      {
+        "container": "6ef42655f13166ad3a74854001f735fdcd55dfae9054f4f00099be2e19d985e7",
+        "removed": true
+      },
+      {
+        "container": "78d48b08b8423991d71d9565ba996a554dd6c3f37ef7a021fbe1f9777023edf1",
+        "removed": true
+      },
+      {
+        "image": "sha256:6f76964966c1ac6d4cccf3241220579f89bb9396e9884ddc71be0d636423b54e",
+        "removed": true,
+        "no_prune": true
+      }
+    ],
+    "host_before_after_identical": true,
+    "operator_archive": {
+      "path": "/mnt/c/Users/GPC/OneDrive/06_Code-sandbox/Heliopause-Artifact-Airlock/docs/github-logs/package-client-quarantine-20261021/completed-uv-query-operators/uv-metadata-only-discovery.py",
+      "sha256": "137a8240307516f8113aa6711d48d22cd2f711c7d76ee6bffcaf8c18c98cda19"
+    }
+  },
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-metadata-only-discovery-result.json",
+      "sha256": "b832517783b562daec7deac97f2642de636d3ced68d15d8c6e450d52c478f373"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-metadata-only-completed-preflight.json",
+      "sha256": "4613ebaf0c3289e302c59acee0aee8374a6b84c82f8bc470fd55191b60e3d049"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/uv-metadata-only-completed-cleanup.json",
+      "sha256": "968789c4d464b9866afdddd29d9983d533aa9c305be7a1b93d295ee40d02112d"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/completed-uv-query-operators/uv-metadata-only-discovery.py",
+      "sha256": "137a8240307516f8113aa6711d48d22cd2f711c7d76ee6bffcaf8c18c98cda19"
+    }
+  ]
+}

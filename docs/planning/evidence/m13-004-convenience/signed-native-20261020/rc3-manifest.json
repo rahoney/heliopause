@@ -1,0 +1,86 @@
+{
+  "schema": "helox.release-manifest/v1",
+  "version": "v0.1.1-rc.3",
+  "source_commit": "4ff6c89234698d6fe0b6b5366f7605538e47b967",
+  "workflow_run": "https://github.com/rahoney/heliopause/actions/runs/39439522714",
+  "runtime_lock": {
+    "sha256": "0aad637569001429aa21568a8f02ca05bb8f3f5de533b75633f04b4ecb44b27d",
+    "gvisor_release": "release-20260907.0",
+    "gvisor_commit": "7c6199801fd233d6d55309af4645d4746a077de7"
+  },
+  "sbom": {
+    "name": "helox-release-sbom.cdx.json",
+    "sha256": "27118b321eef6e24f9ff0b4d06a0b11bcf984909ceb968efaaf525a25b03d329",
+    "size": 9908
+  },
+  "runtime_images": {
+    "name": "helox-runtime-images.json",
+    "sha256": "46c51901ca5f708517023eaede6c2c2717712224e32b883c16c9e02086ab1054",
+    "size": 1666
+  },
+  "assets": [
+    {
+      "name": "haa-network-policy-helper-linux-amd64",
+      "platform": "linux/amd64",
+      "role": "network-policy-helper",
+      "sha256": "025bfa3828a712ae27f568d51f9cd9bc246cb26fb9fc7020a36cf185c0378fa5",
+      "size": 7201108
+    },
+    {
+      "name": "haa-release-installer-linux-amd64",
+      "platform": "linux/amd64",
+      "role": "release-installer",
+      "sha256": "f7014fbd8e1c7c18ac22cfe90f326bfddb6c2d4ea15f6c744cc6a4f9ccdab38f",
+      "size": 27274678
+    },
+    {
+      "name": "haa_gvisor_observer-linux-amd64",
+      "platform": "linux/amd64",
+      "role": "gvisor-observer",
+      "sha256": "49d1b4fc8f0af4e48bf0ba24396f9efc1fbf647b926ad1c9b7eac34a4d2b18d0",
+      "size": 3089496
+    },
+    {
+      "name": "helox-darwin-amd64",
+      "platform": "darwin/amd64",
+      "role": "helox",
+      "sha256": "bcba270155bef9b90c6c87021fde1313b1bfeb684bc0dd970315c0d75e862a71",
+      "size": 20224928
+    },
+    {
+      "name": "helox-darwin-arm64",
+      "platform": "darwin/arm64",
+      "role": "helox",
+      "sha256": "307c00faa39340f4c48bdfb306c4291060058c64273217fe8bb9d07aa45a1844",
+      "size": 18726818
+    },
+    {
+      "name": "helox-linux-amd64",
+      "platform": "linux/amd64",
+      "role": "helox",
+      "sha256": "07156a62eba9395ee75980df304f9cf16cc6a6d3bee916e16fbc4dccbcb49119",
+      "size": 42450874
+    },
+    {
+      "name": "helox-linux-amd64.deb",
+      "platform": "linux/amd64",
+      "role": "os-package-deb",
+      "sha256": "a33cb8ad384a03c9842878ecee0c0b17958c39bf24d08d0fd17ac204c42487d4",
+      "size": 39928944
+    },
+    {
+      "name": "helox-linux-amd64.rpm",
+      "platform": "linux/amd64",
+      "role": "os-package-rpm",
+      "sha256": "16af7754bb238aa797417eaaec6e3988cb2ad032f34c593eba5f1034b6785f18",
+      "size": 39892714
+    },
+    {
+      "name": "helox-linux-arm64",
+      "platform": "linux/arm64",
+      "role": "helox",
+      "sha256": "512c1ed69d1d78e287e39031d8d60a1dee693ebf230a539e10eaf0c0f3da869c",
+      "size": 33189083
+    }
+  ]
+}

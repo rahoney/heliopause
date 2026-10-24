@@ -80,6 +80,21 @@ func (c *Client) Acquire(ctx context.Context, run domain.RunID, resolved domain.
 			return result, err
 		}
 	}
+	var required []RequiredModReference
+	if resolved.DeclaredIntegrity() != "" {
+		required, err = RequiredModReferences(resolved.DeclaredIntegrity())
+		if err != nil {
+			return result, err
+		}
+	}
+	if err := ValidateRequiredModReferences(resolved.Identity(), required); err != nil {
+		return result, err
+	}
+	if len(required) > 0 {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, 120*time.Second)
+		defer cancel()
+	}
 	modURL, err := ProxyURL(resolved.Identity().Name(), resolved.Identity().Version(), ".mod")
 	if err != nil {
 		return result, err
@@ -88,11 +103,33 @@ func (c *Client) Acquire(ctx context.Context, run domain.RunID, resolved domain.
 	if err != nil {
 		return result, err
 	}
+	var controls []RequiredModControl
+	remaining := int64(MaxModBytes - len(mod))
+	for _, ref := range required {
+		if remaining <= 0 {
+			return result, errors.New("required Go controls exceed combined bound")
+		}
+		endpoint, err := ProxyURL(resolved.Identity().Name(), ref.Version, ".mod")
+		if err != nil {
+			return result, err
+		}
+		body, err := c.read(ctx, endpoint, remaining)
+		if err != nil {
+			return result, err
+		}
+		remaining -= int64(len(body))
+		controls = append(controls, RequiredModControl{ref.Version, body})
+	}
 	archive, err := c.read(ctx, zipURL, MaxZipBytes)
 	if err != nil {
 		return result, err
 	}
-	body, err := encodeBundle(mod, archive)
+	var body []byte
+	if len(controls) == 0 {
+		body, err = encodeBundle(mod, archive)
+	} else {
+		body, err = encodeBundleWithRequiredMods(mod, archive, controls)
+	}
 	if err != nil {
 		return result, err
 	}

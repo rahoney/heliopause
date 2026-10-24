@@ -1,0 +1,720 @@
+{
+  "schema": "helox.m13.signed-native-qualification/v1",
+  "status": "PARTIAL; native ELF compatibility locally qualified, whole signed activation remains open",
+  "signed_source": "a22aa12202009ba21c7e379001d27f9ae2e58a60",
+  "versions": [
+    {
+      "tag": "v0.1.1-rc.1",
+      "source": "a22aa12202009ba21c7e379001d27f9ae2e58a60",
+      "workflow_run": 39402318182,
+      "archive": {
+        "artifact_id": 12256152023,
+        "archive_bytes": 231986834,
+        "archive_sha256": "dc21798ee7f272559d51de2d76e023158dc64e959084e69b4f51b6d78e4561a5",
+        "digest_matched_api": true,
+        "archive_deleted": true
+      },
+      "independent_subjects": [
+        {
+          "name": "haa-network-policy-helper-linux-amd64",
+          "exit": 0,
+          "seconds": 0.14,
+          "sha256": "dfab404038745513f1bb79c442cbf47e5a7b5a70660da86c66b24a020be6f2be"
+        },
+        {
+          "name": "haa-release-installer-linux-amd64",
+          "exit": 0,
+          "seconds": 0.25,
+          "sha256": "afaf1980a15c2c4f3550889ce7818070ed2e008804c8ac5680e7e04039f49e60"
+        },
+        {
+          "name": "haa_gvisor_observer-linux-amd64",
+          "exit": 0,
+          "seconds": 0.15,
+          "sha256": "c460d66ed2f527dbf5d9914fa56e2939129aa72eb6114e495935de5bb8ec4154"
+        },
+        {
+          "name": "helox-darwin-amd64",
+          "exit": 0,
+          "seconds": 0.17,
+          "sha256": "6137ea808e3f0e6e226066e9f27a1176c851d6a8d9fc9a8518b789e0dacdecef"
+        },
+        {
+          "name": "helox-darwin-arm64",
+          "exit": 0,
+          "seconds": 0.19,
+          "sha256": "39b8566c6abddbc57beef32729f0ac067e686928f4121fbac94c682804d1078e"
+        },
+        {
+          "name": "helox-linux-amd64",
+          "exit": 0,
+          "seconds": 0.41,
+          "sha256": "82e3209489bee41cc67f5af282c0ac15f56e76c613947482f2d830dcaaacb9ab"
+        },
+        {
+          "name": "helox-linux-amd64.deb",
+          "exit": 0,
+          "seconds": 0.4,
+          "sha256": "2f46e4d704c5e8cc55481b0d36a3e7e296b74791c39db518ad8f5a3ed6829124"
+        },
+        {
+          "name": "helox-linux-amd64.rpm",
+          "exit": 0,
+          "seconds": 0.25,
+          "sha256": "a0b3ddbe8637f5f1fc94cfe75474652968dce41070a9905d095f65d5cee449f9"
+        },
+        {
+          "name": "helox-linux-arm64",
+          "exit": 0,
+          "seconds": 0.35,
+          "sha256": "a3cc02595f757a70e90624614c934cc75a4aa51077cd3657b8bc082b52316ddd"
+        },
+        {
+          "name": "helox-release-checksums.txt",
+          "exit": 0,
+          "seconds": 0.1,
+          "sha256": "4d99d03d4afe721c2d6e7a49de4fecea3a40a53a1268a66e6a1274197b7dc129"
+        },
+        {
+          "name": "helox-release-manifest.json",
+          "exit": 0,
+          "seconds": 0.1,
+          "sha256": "5f538e439ff036d56d27ce74671c6e91fc6832696a6205c564fa18e3b536a5ed"
+        },
+        {
+          "name": "helox-release-sbom.cdx.json",
+          "exit": 0,
+          "seconds": 0.1,
+          "sha256": "69928c41f54bdc0601d2f67c84d14ec3db5d9fe9407d57d71007d6c5fae1e997"
+        },
+        {
+          "name": "helox-runtime-images.json",
+          "exit": 0,
+          "seconds": 0.1,
+          "sha256": "46c51901ca5f708517023eaede6c2c2717712224e32b883c16c9e02086ab1054"
+        }
+      ],
+      "public_materials": [
+        {
+          "file": "rc1-manifest.json",
+          "bytes": 2793,
+          "sha256": "5f538e439ff036d56d27ce74671c6e91fc6832696a6205c564fa18e3b536a5ed"
+        },
+        {
+          "file": "rc1-proof.sigstore.json",
+          "bytes": 13297,
+          "sha256": "0d2702c01538a53c7150d25b1b48dde6acbbd18118f2897a50d8422ca9b87c70"
+        }
+      ]
+    },
+    {
+      "tag": "v0.1.1-rc.2",
+      "source": "a22aa12202009ba21c7e379001d27f9ae2e58a60",
+      "workflow_run": 39405360601,
+      "archive": {
+        "artifact_id": 12257001211,
+        "archive_bytes": 231986826,
+        "archive_sha256": "f92a8a05d806bc65bdea3a0fd8f09204a13dc15ace0cd701999a03fcca9f8a08",
+        "digest_matched_api": true,
+        "archive_deleted": true
+      },
+      "independent_subjects": [
+        {
+          "name": "haa-network-policy-helper-linux-amd64",
+          "exit": 0,
+          "seconds": 0.14,
+          "sha256": "ef1c7ca4f4eddba294263ddb9c60b8245c08e6dfcc6f41d47b7f749caa3e3517"
+        },
+        {
+          "name": "haa-release-installer-linux-amd64",
+          "exit": 0,
+          "seconds": 0.29,
+          "sha256": "771a9d6d9851253508fc8b1dcf11e76224db142835314dd5839e777dd823ecc6"
+        },
+        {
+          "name": "haa_gvisor_observer-linux-amd64",
+          "exit": 0,
+          "seconds": 0.11,
+          "sha256": "c460d66ed2f527dbf5d9914fa56e2939129aa72eb6114e495935de5bb8ec4154"
+        },
+        {
+          "name": "helox-darwin-amd64",
+          "exit": 0,
+          "seconds": 0.22,
+          "sha256": "e3637864574ba897060bda1257bc36dab9b89ce71b2f971dcb99b21383687da9"
+        },
+        {
+          "name": "helox-darwin-arm64",
+          "exit": 0,
+          "seconds": 0.14,
+          "sha256": "2662e9615caafd761f2c7ec773002e6e4fd1f5ebbfd776542c38e964ab29bd3f"
+        },
+        {
+          "name": "helox-linux-amd64",
+          "exit": 0,
+          "seconds": 0.18,
+          "sha256": "60848c26fa2c8d92399ba34789253a9ad130a1a3abc2215765cfa5d395c1edd1"
+        },
+        {
+          "name": "helox-linux-amd64.deb",
+          "exit": 0,
+          "seconds": 0.39,
+          "sha256": "6545090a3606c3c62bee61fa1c5341a42cd356fb98ee05bb21940bacd0c13d13"
+        },
+        {
+          "name": "helox-linux-amd64.rpm",
+          "exit": 0,
+          "seconds": 0.18,
+          "sha256": "bb09f78b2045952b79f0f175b795a0387778119f5ac6988cb4cdc6c103d26b1f"
+        },
+        {
+          "name": "helox-linux-arm64",
+          "exit": 0,
+          "seconds": 0.19,
+          "sha256": "5e00376f843b7b5756d029a2122c18eed970401574dc561f100b98625b0839f8"
+        },
+        {
+          "name": "helox-release-checksums.txt",
+          "exit": 0,
+          "seconds": 0.1,
+          "sha256": "b7582e3b1e609108ab706d499242088a7cb45a908cbb0fcd3dc56668f8f10727"
+        },
+        {
+          "name": "helox-release-manifest.json",
+          "exit": 0,
+          "seconds": 0.1,
+          "sha256": "8815e92ff93356879424e0d32131cf46bf64b73cc5ed5821b32e0d19c5231219"
+        },
+        {
+          "name": "helox-release-sbom.cdx.json",
+          "exit": 0,
+          "seconds": 0.1,
+          "sha256": "370fcd368c80220ec12c87a813347c10823978566d459991ffdf2a5661b14f9c"
+        },
+        {
+          "name": "helox-runtime-images.json",
+          "exit": 0,
+          "seconds": 0.1,
+          "sha256": "46c51901ca5f708517023eaede6c2c2717712224e32b883c16c9e02086ab1054"
+        }
+      ],
+      "public_materials": [
+        {
+          "file": "rc2-manifest.json",
+          "bytes": 2793,
+          "sha256": "8815e92ff93356879424e0d32131cf46bf64b73cc5ed5821b32e0d19c5231219"
+        },
+        {
+          "file": "rc2-proof.sigstore.json",
+          "bytes": 13156,
+          "sha256": "510a8d3862c16f05ac146cc3684fd362a7af2e32ebf9d30ae64f9b6750cca38f"
+        }
+      ]
+    }
+  ],
+  "production_root_first_files": {
+    "status": "PASS",
+    "scope": "real signed rc1, real production helper/SDK/copy/own inode and ordinary access in private mount/net/pid namespaces; no service/start/register/health/reboot qualification",
+    "source": "a22aa12202009ba21c7e379001d27f9ae2e58a60",
+    "version": "v0.1.1-rc.1",
+    "manifest_sha256": "5f538e439ff036d56d27ce74671c6e91fc6832696a6205c564fa18e3b536a5ed",
+    "proof_sha256": "0d2702c01538a53c7150d25b1b48dde6acbbd18118f2897a50d8422ca9b87c70",
+    "cases": [
+      {
+        "case": "root-copy-independent-helox-release-manifest.json",
+        "exit": 0
+      },
+      {
+        "case": "root-copy-independent-haa-release-installer-linux-amd64",
+        "exit": 0
+      },
+      {
+        "case": "wrong-tag-source-proof",
+        "exit": 1,
+        "stdout": "",
+        "stderr": "haa-release-installer: SELF_UPDATE_PROTECTED_OPERATION_FAILED\n"
+      },
+      {
+        "case": "changed-cli-bytes",
+        "exit": 1,
+        "stdout": "",
+        "stderr": "haa-release-installer: SELF_UPDATE_PROTECTED_OPERATION_FAILED\n"
+      },
+      {
+        "case": "actual-signed-first-files",
+        "exit": 0,
+        "stdout": "native-files=PREPARED registration=PENDING health=UNVERIFIED\n",
+        "stderr": ""
+      },
+      {
+        "case": "actual-signed-same-intent-retry",
+        "exit": 0,
+        "stdout": "native-files=PREPARED registration=PENDING health=UNVERIFIED\n",
+        "stderr": ""
+      },
+      {
+        "case": "actual-ordinary-read-and-write-denial",
+        "exit": 0
+      },
+      {
+        "case": "unregistered-ordinary-runtime-refused",
+        "exit": 1,
+        "stdout": "",
+        "stderr": "helox: SELF_UPDATE_TRANSITION_OR_RECOVERY_REQUIRED\n"
+      }
+    ],
+    "registration": "PENDING",
+    "health": "UNVERIFIED",
+    "quarantine": "NOT_PERFORMED"
+  },
+  "host_identity_unchanged": true,
+  "actual_registered_base": {
+    "current": "versions/v0.1.1-rc.1",
+    "journal_present": false,
+    "registration": {
+      "schema": "helox.protected-installation/v1",
+      "management": "NATIVE",
+      "version": "v0.1.1-rc.1",
+      "manifest_sha256": "5f538e439ff036d56d27ce74671c6e91fc6832696a6205c564fa18e3b536a5ed",
+      "client_uid": 1000,
+      "client_gid": 1000
+    },
+    "files": [
+      {
+        "name": "haa-network-policy-helper-linux-amd64",
+        "mode": "0o555",
+        "uid": 0,
+        "gid": 0,
+        "bytes": 7201108,
+        "sha256": "dfab404038745513f1bb79c442cbf47e5a7b5a70660da86c66b24a020be6f2be"
+      },
+      {
+        "name": "haa-release-installer-linux-amd64",
+        "mode": "0o555",
+        "uid": 0,
+        "gid": 0,
+        "bytes": 27274678,
+        "sha256": "afaf1980a15c2c4f3550889ce7818070ed2e008804c8ac5680e7e04039f49e60"
+      },
+      {
+        "name": "haa_gvisor_observer-linux-amd64",
+        "mode": "0o555",
+        "uid": 0,
+        "gid": 0,
+        "bytes": 3084896,
+        "sha256": "c460d66ed2f527dbf5d9914fa56e2939129aa72eb6114e495935de5bb8ec4154"
+      },
+      {
+        "name": "helox-install.json",
+        "mode": "0o444",
+        "uid": 0,
+        "gid": 0,
+        "bytes": 120,
+        "sha256": "92f8fe93d2eec85735030c4cbd5717f22d3abfb1a1e52c75443dbf12f4c004fe"
+      },
+      {
+        "name": "helox-linux-amd64",
+        "mode": "0o555",
+        "uid": 0,
+        "gid": 0,
+        "bytes": 42450874,
+        "sha256": "82e3209489bee41cc67f5af282c0ac15f56e76c613947482f2d830dcaaacb9ab"
+      },
+      {
+        "name": "helox-release-manifest.json",
+        "mode": "0o444",
+        "uid": 0,
+        "gid": 0,
+        "bytes": 2793,
+        "sha256": "5f538e439ff036d56d27ce74671c6e91fc6832696a6205c564fa18e3b536a5ed"
+      },
+      {
+        "name": "helox-release-sbom.cdx.json",
+        "mode": "0o444",
+        "uid": 0,
+        "gid": 0,
+        "bytes": 9908,
+        "sha256": "69928c41f54bdc0601d2f67c84d14ec3db5d9fe9407d57d71007d6c5fae1e997"
+      },
+      {
+        "name": "helox-runtime-images.json",
+        "mode": "0o444",
+        "uid": 0,
+        "gid": 0,
+        "bytes": 1666,
+        "sha256": "46c51901ca5f708517023eaede6c2c2717712224e32b883c16c9e02086ab1054"
+      }
+    ],
+    "bootstrap_source_present": false,
+    "service_and_drain_queries": [
+      {
+        "args": [
+          "systemctl",
+          "show",
+          "haa-network-policy-helper.service",
+          "--property=Id,LoadState,FragmentPath,DropInPaths,NeedDaemonReload,User,Group,ActiveState,SubState,MainPID,ControlPID,ControlGroup,Result"
+        ],
+        "exit": 0,
+        "stdout": "MainPID=640\nControlPID=0\nResult=success\nControlGroup=/system.slice/haa-network-policy-helper.service\nUser=root\nGroup=root\nId=haa-network-policy-helper.service\nLoadState=loaded\nActiveState=active\nSubState=running\nFragmentPath=/etc/systemd/system/haa-network-policy-helper.service\nDropInPaths=\nNeedDaemonReload=no\n",
+        "stderr": ""
+      },
+      {
+        "args": [
+          "docker",
+          "ps",
+          "--all",
+          "--format",
+          "{{.Names}}"
+        ],
+        "exit": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "args": [
+          "systemctl",
+          "list-units",
+          "--all",
+          "--plain",
+          "--no-legend",
+          "--no-pager",
+          "--type=slice",
+          "--state=active,activating,deactivating,failed",
+          "haaobs*.slice"
+        ],
+        "exit": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    ],
+    "doctor_exit": 0,
+    "npm_policy": {
+      "decision": "ALLOW",
+      "id": "m3-npm-dynamic-inspect",
+      "version": 1,
+      "reasons": [
+        "M3_REQUIRED_CHECKS_COMPLETED"
+      ]
+    }
+  },
+  "original_signed_update": {
+    "exit": 10,
+    "policy": {
+      "decision": "MANUAL_REVIEW",
+      "id": "m4-npm-install-promotion",
+      "version": 1,
+      "reasons": [
+        "M4_DEPENDENCY_REVIEW_REQUIRED"
+      ]
+    },
+    "promotion_status": "NOT_PERFORMED",
+    "checks": [
+      {
+        "id": "release-authenticity",
+        "kind": "VERIFICATION",
+        "required": true,
+        "capability": "SUPPORTED",
+        "execution_status": "COMPLETED"
+      },
+      {
+        "id": "github-release-static",
+        "kind": "INSPECTION",
+        "required": true,
+        "capability": "SUPPORTED",
+        "execution_status": "COMPLETED"
+      },
+      {
+        "id": "github-release-elf-dynamic",
+        "kind": "INSPECTION",
+        "required": true,
+        "capability": "SUPPORTED",
+        "execution_status": "INCOMPLETE",
+        "limitation_code": "M6_DYNAMIC_EXECUTION_FAILED"
+      },
+      {
+        "id": "release-authenticity",
+        "kind": "VERIFICATION",
+        "required": true,
+        "capability": "SUPPORTED",
+        "execution_status": "COMPLETED"
+      },
+      {
+        "id": "github-release-static",
+        "kind": "INSPECTION",
+        "required": true,
+        "capability": "SUPPORTED",
+        "execution_status": "COMPLETED"
+      },
+      {
+        "id": "github-release-elf-dynamic",
+        "kind": "INSPECTION",
+        "required": true,
+        "capability": "SUPPORTED",
+        "execution_status": "INCOMPLETE",
+        "limitation_code": "M6_DYNAMIC_OBSERVER_FAILED"
+      },
+      {
+        "id": "release-authenticity",
+        "kind": "VERIFICATION",
+        "required": true,
+        "capability": "SUPPORTED",
+        "execution_status": "COMPLETED"
+      },
+      {
+        "id": "github-release-static",
+        "kind": "INSPECTION",
+        "required": true,
+        "capability": "SUPPORTED",
+        "execution_status": "COMPLETED"
+      },
+      {
+        "id": "release-authenticity",
+        "kind": "VERIFICATION",
+        "required": true,
+        "capability": "SUPPORTED",
+        "execution_status": "COMPLETED"
+      },
+      {
+        "id": "github-release-static",
+        "kind": "INSPECTION",
+        "required": true,
+        "capability": "SUPPORTED",
+        "execution_status": "COMPLETED"
+      },
+      {
+        "id": "github-release-elf-dynamic",
+        "kind": "INSPECTION",
+        "required": true,
+        "capability": "SUPPORTED",
+        "execution_status": "INCOMPLETE",
+        "limitation_code": "M6_DYNAMIC_OBSERVER_FAILED"
+      },
+      {
+        "id": "release-authenticity",
+        "kind": "VERIFICATION",
+        "required": true,
+        "capability": "SUPPORTED",
+        "execution_status": "COMPLETED"
+      },
+      {
+        "id": "github-release-static",
+        "kind": "INSPECTION",
+        "required": true,
+        "capability": "SUPPORTED",
+        "execution_status": "COMPLETED"
+      },
+      {
+        "id": "release-authenticity",
+        "kind": "VERIFICATION",
+        "required": true,
+        "capability": "SUPPORTED",
+        "execution_status": "COMPLETED"
+      },
+      {
+        "id": "github-release-static",
+        "kind": "INSPECTION",
+        "required": true,
+        "capability": "SUPPORTED",
+        "execution_status": "COMPLETED"
+      },
+      {
+        "id": "release-authenticity",
+        "kind": "VERIFICATION",
+        "required": true,
+        "capability": "SUPPORTED",
+        "execution_status": "COMPLETED"
+      },
+      {
+        "id": "github-release-static",
+        "kind": "INSPECTION",
+        "required": true,
+        "capability": "SUPPORTED",
+        "execution_status": "COMPLETED"
+      },
+      {
+        "id": "github-release-elf-dynamic",
+        "kind": "INSPECTION",
+        "required": true,
+        "capability": "SUPPORTED",
+        "execution_status": "INCOMPLETE",
+        "limitation_code": "M6_DYNAMIC_OBSERVER_FAILED"
+      }
+    ],
+    "public_release_transport": false
+  },
+  "compatibility_source": [
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "6503465b7c47342cd67d26595c2041eef26d8928cabe98435ff11a1fd852da54"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "351f9da010f7d30ede029f4f09768cb326f14494e40deaaedd863fb3648e4542"
+    },
+    {
+      "path": "docs/domain-model/15-m6-github-releases-contract.md",
+      "sha256": "7058dbd33f1eb64af6427c18befc261e9936e7db9e095363e7ec37d21e5cac1e"
+    }
+  ],
+  "compatibility_checks": [
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 36.91
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 5.53
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.21
+    }
+  ],
+  "canonical_cpp": {
+    "red": {
+      "exit": 1,
+      "seconds": 263.13,
+      "expected": "new compatibility latch rejects unchanged observer"
+    },
+    "os_marker_red": {
+      "exit": 1,
+      "seconds": 34.88
+    },
+    "final_green": {
+      "exit": 0,
+      "seconds": 35.43
+    },
+    "latches": 103,
+    "final_observer": "49d1b4fc8f0af4e48bf0ba24396f9efc1fbf647b926ad1c9b7eac34a4d2b18d0"
+  },
+  "actual_native_four": [
+    {
+      "asset": "helox-linux-amd64",
+      "exit": 0,
+      "policy": "ALLOW",
+      "checks": [
+        {
+          "id": "github-release-declared-sha256",
+          "status": "COMPLETED",
+          "limitation": null
+        },
+        {
+          "id": "github-release-static",
+          "status": "COMPLETED",
+          "limitation": null
+        },
+        {
+          "id": "github-release-elf-dynamic",
+          "status": "COMPLETED",
+          "limitation": null
+        }
+      ]
+    },
+    {
+      "asset": "haa-release-installer-linux-amd64",
+      "exit": 0,
+      "policy": "ALLOW",
+      "checks": [
+        {
+          "id": "github-release-declared-sha256",
+          "status": "COMPLETED",
+          "limitation": null
+        },
+        {
+          "id": "github-release-static",
+          "status": "COMPLETED",
+          "limitation": null
+        },
+        {
+          "id": "github-release-elf-dynamic",
+          "status": "COMPLETED",
+          "limitation": null
+        }
+      ]
+    },
+    {
+      "asset": "haa-network-policy-helper-linux-amd64",
+      "exit": 0,
+      "policy": "ALLOW",
+      "checks": [
+        {
+          "id": "github-release-declared-sha256",
+          "status": "COMPLETED",
+          "limitation": null
+        },
+        {
+          "id": "github-release-static",
+          "status": "COMPLETED",
+          "limitation": null
+        },
+        {
+          "id": "github-release-elf-dynamic",
+          "status": "COMPLETED",
+          "limitation": null
+        }
+      ]
+    },
+    {
+      "asset": "haa_gvisor_observer-linux-amd64",
+      "exit": 0,
+      "policy": "ALLOW",
+      "checks": [
+        {
+          "id": "github-release-declared-sha256",
+          "status": "COMPLETED",
+          "limitation": null
+        },
+        {
+          "id": "github-release-static",
+          "status": "COMPLETED",
+          "limitation": null
+        },
+        {
+          "id": "github-release-elf-dynamic",
+          "status": "COMPLETED",
+          "limitation": null
+        }
+      ]
+    }
+  ],
+  "unchanged_npm": {
+    "exit": 0,
+    "required_completed": 3,
+    "policy": {
+      "decision": "ALLOW",
+      "id": "m3-npm-dynamic-inspect",
+      "version": 1,
+      "reasons": [
+        "M3_REQUIRED_CHECKS_COMPLETED"
+      ]
+    }
+  },
+  "unmanaged_self_update": {
+    "exit": 1,
+    "code": "SELF_UPDATE_MANAGED_INSTALLATION_REQUIRED"
+  },
+  "limitations": [
+    "development compatibility observer is unsigned and fixture is unregistered",
+    "actual signed activation/administrator authorization/rollback/crash/reboot not qualified",
+    "fixture HTTPS transport is not actual public GitHub Release API publication",
+    "no new CUDA/native macOS qualification from local compatibility tests",
+    "no main merge, public Release or permanent Host migration"
+  ],
+  "raw_owner": "docs/github-logs/self-update-signed-20261020",
+  "independent_verifier": {
+    "version": "gh2.102.0",
+    "public_trusted_root": {
+      "file": "independent-trusted-root.jsonl",
+      "bytes": 34634,
+      "sha256": "65ca537f6ed8a47fd0e560c421baa1f6c1efb8b25fc200d8c5c02c0e92eb2b9c"
+    },
+    "credentials_required": false,
+    "offline_network_namespace": true,
+    "uid": 1000
+  },
+  "remote_ci": "remote-ci.json",
+  "completed_resource_cleanup": "cleanup.json"
+}

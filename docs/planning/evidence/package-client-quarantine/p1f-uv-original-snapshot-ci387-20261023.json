@@ -1,0 +1,169 @@
+{
+  "schema_version": 1,
+  "scope": "C3e3/A1 shared original metadata snapshot and inventory input wrappers; existing live pip/UV consumers only",
+  "source_commit": "36c62537134af47ba82e87c7beaf577090089f94",
+  "checkout": "6bdfb7b6df075df39a34d49e6be7d1476c6e71a9",
+  "tree": "b1cd59a824eaf7e5d11de66533ca56296f9b2525",
+  "source_checkout_full_tree_equal": true,
+  "run_id": 39838749196,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/39838749196",
+  "conclusion": "success",
+  "IMPLEMENTED": "YES",
+  "WIRED": "YES in existing original guards",
+  "QUALIFIED": "YES for A1 only",
+  "ACCEPTANCE_CLOSED": "YES for A1 only",
+  "MISSING": [],
+  "not_qualified_by_this_run": "Subsequent A2a rootless identity and A2b whole-original bridge changes; actual complete sync guard/publication/CLI and whole P1",
+  "jobs": [
+    {
+      "id": 120033868697,
+      "name": "Minimum Go",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 120033868975,
+      "name": "Quick",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 120033869162,
+      "name": "Representative Wheel Corpus",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 120033869200,
+      "name": "macOS",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 120033869203,
+      "name": "Docs",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 120033869211,
+      "name": "gVisor Observer Helper",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 120033869238,
+      "name": "Vulnerability",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 120033869249,
+      "name": "gVisor Linux Integration",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 120033869377,
+      "name": "Security",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 120056974981,
+      "name": "Required",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "linux_top_level_passes": 51,
+  "actual_uv_and_cpu": [
+    {
+      "name": "TestUVActualIsolatedNativeStartup",
+      "seconds": 4.65
+    },
+    {
+      "name": "TestUVActualIsolatedEmptyTargetQuery",
+      "seconds": 3.49
+    },
+    {
+      "name": "TestUVActualIsolatedNativeLockCollection",
+      "seconds": 3.85
+    },
+    {
+      "name": "TestUVPublicNativeResolverIntegration",
+      "seconds": 51.4
+    },
+    {
+      "name": "TestUVPublicNativeUpdateResolverIntegration",
+      "seconds": 23.87
+    },
+    {
+      "name": "TestLinuxUVInstallCLIIntegration",
+      "seconds": 194.13
+    },
+    {
+      "name": "TestLinuxPyTorchFullIntegration",
+      "seconds": 269.59
+    }
+  ],
+  "actual_native_complete_source_cases": [
+    "two-roots entries=2 dependency_free=false controls=4 runtime=uv:0.13.4;python:3.14.7;target:cp314/cp314/manylinux_2_36_x86_64;source:pypi",
+    "complete-closure entries=5 dependency_free=false controls=4 runtime=uv:0.13.4;python:3.14.7;target:cp314/cp314/manylinux_2_36_x86_64;source:pypi",
+    "missing-dependency independent_closure_rejected=true",
+    "explicit-empty-requirements entries=0 dependency_free=true controls=4 runtime=uv:0.13.4;python:3.14.7;target:cp314/cp314/manylinux_2_36_x86_64;source:pypi",
+    "explicit-empty-pylock entries=0 dependency_free=true controls=4 runtime=uv:0.13.4;python:3.14.7;target:cp314/cp314/manylinux_2_36_x86_64;source:pypi"
+  ],
+  "native_macos": "Go1.26.10 production build/default tests SUCCESS",
+  "cuda_full": "NOT RUN in this source workflow",
+  "helper_waits": [
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "final_cleanup": "cleanup: original=0 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=NOT_REQUIRED pid=311832",
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci387-linux.log",
+      "bytes": 632064,
+      "sha256": "a5148e735fd4384399f6fd47bace7b7288379de35f72f11703fb77823d8f0212"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci387-macos.log",
+      "bytes": 25991,
+      "sha256": "fa79df8a32bf3870d0c75a676114ab7110ebb86a7ac140aae3a50321b89fd9c0"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci387-docs.log",
+      "bytes": 19745,
+      "sha256": "824cd4e9578bfeb76b090ffd3998236176f3f422a6a9b2658330d27ab1561c61"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci387-vulnerability.log",
+      "bytes": 21642,
+      "sha256": "e7dd4e7e9c620cb28519f56f6cfa97277ae8e107a5927404d6155e8d200d1f1e"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci387-required.log",
+      "bytes": 22240,
+      "sha256": "60bfac307ce2e2ec23df29c050cecb4595a072982edc3209cef0dfa0a1691036"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci387-final-jobs.json",
+      "bytes": 13513,
+      "sha256": "eafb7bdd18cc4017d50a48c6407913202f82ab9435fd497198c5c13edb49001a"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci387-final-run.json",
+      "bytes": 14535,
+      "sha256": "2e99469e123e3849c4be4b395d42221b152cc5bd5e4adb0269b7cf85d5298120"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci387-checkout.json",
+      "bytes": 2850,
+      "sha256": "80bd27b4cd449d1003ad577ee78e68a15593f60cdffdaf6af583168d8d21c8eb"
+    }
+  ]
+}

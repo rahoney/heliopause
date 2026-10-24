@@ -14,6 +14,8 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
+
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 )
 
 const (
@@ -23,6 +25,8 @@ const (
 	installRecordName = "helox-install.json"
 	manifestSchema    = "helox.release-manifest/v1"
 	maxBundleFileSize = 1 << 30
+	SystemInstallRoot = runtimeidentity.NativeInstallRoot
+	SystemStagingRoot = "/var/lib/heliopause/install-staging"
 )
 
 var (
@@ -37,8 +41,8 @@ type BundleVerifier interface {
 	Verify(context.Context, string) error
 }
 
-// Request identifies the already-attested bundle and the user-owned install
-// root. Both paths must be canonical absolute paths.
+// Request identifies the already-attested bundle and versioned install root.
+// Both paths must be canonical absolute paths; system mode fixes both roots.
 type Request struct {
 	BundleDirectory string
 	InstallRoot     string
@@ -57,11 +61,27 @@ type Installer struct {
 	verifier BundleVerifier
 	goos     string
 	goarch   string
+	system   bool
 }
 
 // New creates an installer for the running platform.
 func New(verifier BundleVerifier) (*Installer, error) {
 	return newInstaller(verifier, runtime.GOOS, runtime.GOARCH)
+}
+
+// NewSystemInstaller is a copy/pointer primitive for the narrow privileged
+// installation adapter. It grants no IPC, Policy, lease or service authority.
+// Its target and staging roots are fixed; the mandatory verifier is retained.
+func NewSystemInstaller(verifier BundleVerifier) (*Installer, error) {
+	if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" || os.Geteuid() != 0 {
+		return nil, errors.New("protected release installation requires Linux amd64 root")
+	}
+	installer, err := newInstaller(verifier, "linux", "amd64")
+	if err != nil {
+		return nil, err
+	}
+	installer.system = true
+	return installer, nil
 }
 
 func newInstaller(verifier BundleVerifier, goos, goarch string) (*Installer, error) {
@@ -74,35 +94,165 @@ func newInstaller(verifier BundleVerifier, goos, goarch string) (*Installer, err
 // Install validates the release bundle before creating any install state. A
 // failed stage or activation preserves the prior current pointer.
 func (i *Installer) Install(ctx context.Context, request Request) (Result, error) {
-	if i == nil || i.verifier == nil || ctx == nil || ctx.Err() != nil {
-		return Result{}, errors.New("verified release installation is unavailable")
+	input, err := i.validatedInput(ctx, request, false)
+	if err != nil {
+		return Result{}, err
+	}
+	if err := i.ensureRoot(input.root); err != nil {
+		return Result{}, err
+	}
+	return activate(ctx, input.root, input.manifest.Version, input.body, input.files, input.bundle, i.system)
+}
+
+// ActivateExisting re-verifies an existing version in this installation before
+// using the same atomic pointer primitive. The lifecycle owner must hold its
+// original-state guard and confirm service drainage before invoking rollback.
+func (i *Installer) ActivateExisting(ctx context.Context, request Request) (Result, error) {
+	input, err := i.validatedInput(ctx, request, true)
+	if err != nil {
+		return Result{}, err
+	}
+	if err := i.ensureRoot(input.root); err != nil {
+		return Result{}, err
+	}
+	if err := ctx.Err(); err != nil {
+		return Result{}, err
+	}
+	if err := activateCurrent(input.root, input.manifest.Version); err != nil {
+		return Result{}, err
+	}
+	sum := sha256.Sum256(input.body)
+	return Result{Version: input.manifest.Version, InstallRoot: input.root, ActivePath: filepath.Join(input.root, "current"), ManifestSHA256: hex.EncodeToString(sum[:])}, nil
+}
+
+type installationInput struct {
+	bundle, root string
+	manifest     manifest
+	body         []byte
+	files        []asset
+}
+
+func (i *Installer) validatedInput(ctx context.Context, request Request, existing bool) (installationInput, error) {
+	if i == nil || i.verifier == nil || ctx == nil {
+		return installationInput{}, errors.New("verified release installation is unavailable")
+	}
+	if err := ctx.Err(); err != nil {
+		return installationInput{}, err
 	}
 	bundle, err := canonicalDirectory(request.BundleDirectory)
 	if err != nil {
-		return Result{}, errors.New("release bundle directory is invalid")
+		return installationInput{}, errors.New("release bundle directory is invalid")
 	}
 	root, err := canonicalAbsolute(request.InstallRoot)
 	if err != nil {
-		return Result{}, errors.New("release install root is invalid")
+		return installationInput{}, errors.New("release install root is invalid")
+	}
+	if existing && (filepath.Dir(bundle) != filepath.Join(root, "versions") || !versionPattern.MatchString(filepath.Base(bundle))) {
+		return installationInput{}, errors.New("rollback bundle is not an existing installation version")
+	}
+	if i.system {
+		if runtime.GOOS != "linux" || runtime.GOARCH != "amd64" || os.Geteuid() != 0 || root != SystemInstallRoot || (!existing && filepath.Dir(bundle) != SystemStagingRoot) {
+			return installationInput{}, errors.New("protected installation paths or caller are invalid")
+		}
+		if err := verifySystemDirectory(root, !existing); err != nil {
+			return installationInput{}, err
+		}
+		if err := verifySystemDirectory(filepath.Join(root, "versions"), !existing); err != nil {
+			return installationInput{}, err
+		}
+		if err := verifySystemDirectory(bundle, false); err != nil {
+			return installationInput{}, err
+		}
+		if err := verifySystemRegularFile(filepath.Join(bundle, manifestName)); err != nil {
+			return installationInput{}, err
+		}
+		info, err := os.Lstat(filepath.Join(bundle, manifestName))
+		if err != nil || info.Size() <= 0 || info.Size() > maximumManifestBytes {
+			return installationInput{}, errors.New("protected release manifest size is invalid")
+		}
 	}
 	if err := i.verifier.Verify(ctx, bundle); err != nil {
-		return Result{}, errors.New("release attestation verification failed")
+		return installationInput{}, errors.Join(errors.New("release attestation verification failed"), err, ctx.Err())
 	}
-	manifest, manifestBody, err := readManifest(bundle)
+	value, body, err := readManifest(bundle)
 	if err != nil {
-		return Result{}, err
+		return installationInput{}, err
 	}
-	selected, err := selectFiles(manifest, i.goos, i.goarch)
+	if existing && value.Version != filepath.Base(bundle) {
+		return installationInput{}, errors.New("rollback manifest differs from the existing version")
+	}
+	files, err := selectFiles(value, i.goos, i.goarch)
 	if err != nil {
-		return Result{}, err
+		return installationInput{}, err
 	}
-	if err := verifyBundleFiles(bundle, manifest, selected); err != nil {
-		return Result{}, err
+	var strict ReleaseManifest
+	if i.system {
+		strict, err = ParseReleaseManifest(body)
+		if err != nil {
+			return installationInput{}, err
+		}
+		if _, err := strict.NativeUpdateFiles(); err != nil {
+			return installationInput{}, err
+		}
+		for _, name := range append([]string{manifestName, sbomName, runtimeImagesName}, selectedNames(files)...) {
+			if err := verifySystemRegularFile(filepath.Join(bundle, name)); err != nil {
+				return installationInput{}, err
+			}
+		}
+		for _, file := range strict.Files() {
+			if file.Role == "release-metadata" {
+				info, err := os.Lstat(filepath.Join(bundle, file.Name))
+				if err != nil || info.Size() != file.Size {
+					return installationInput{}, errors.New("protected metadata size differs from its manifest")
+				}
+			}
+		}
 	}
-	if err := ensureInstallRoot(root); err != nil {
-		return Result{}, err
+	if err := verifyBundleFiles(bundle, value, files); err != nil {
+		return installationInput{}, err
 	}
-	return activate(root, manifest.Version, manifestBody, selected, bundle)
+	if i.system {
+		sbom, err := readRegular(filepath.Join(bundle, sbomName))
+		if err != nil {
+			return installationInput{}, err
+		}
+		if err := ValidateReleaseSBOM(sbom, strict); err != nil {
+			return installationInput{}, err
+		}
+		images, err := readRegular(filepath.Join(bundle, runtimeImagesName))
+		if err != nil {
+			return installationInput{}, err
+		}
+		if err := ValidateRuntimeImages(images); err != nil {
+			return installationInput{}, err
+		}
+		notices, err := readRegular(filepath.Join(bundle, "pnpm-NOTICE.txt"))
+		if err != nil {
+			return installationInput{}, err
+		}
+		if err := ValidatePNPMNotices(notices); err != nil {
+			return installationInput{}, err
+		}
+	}
+	if err := ctx.Err(); err != nil {
+		return installationInput{}, err
+	}
+	return installationInput{bundle, root, value, body, files}, nil
+}
+
+func selectedNames(files []asset) []string {
+	names := make([]string, len(files))
+	for index, file := range files {
+		names[index] = file.Name
+	}
+	return names
+}
+
+func (i *Installer) ensureRoot(root string) error {
+	if i.system {
+		return ensureDirectoryMode(root, 0755)
+	}
+	return ensureInstallRoot(root)
 }
 
 type manifest struct {
@@ -141,14 +291,8 @@ func readManifest(bundle string) (manifest, []byte, error) {
 	if err != nil {
 		return manifest{}, nil, errors.New("release manifest is unavailable")
 	}
-	var value manifest
-	if json.Unmarshal(body, &value) != nil || value.Schema != manifestSchema || !versionPattern.MatchString(value.Version) || !regexp.MustCompile(`^[0-9a-f]{40}$`).MatchString(value.SourceCommit) || value.WorkflowRun == "" || len(value.Assets) == 0 {
-		return manifest{}, nil, errors.New("release manifest is invalid")
-	}
-	if !validRuntimeLock(value.RuntimeLock) || !validRecord(value.SBOM, sbomName) || !validRecord(value.RuntimeImages, runtimeImagesName) {
-		return manifest{}, nil, errors.New("release manifest binding is invalid")
-	}
-	return value, body, nil
+	value, err := parseManifest(body)
+	return value, body, err
 }
 
 func selectFiles(value manifest, goos, goarch string) ([]asset, error) {
@@ -156,6 +300,21 @@ func selectFiles(value manifest, goos, goarch string) ([]asset, error) {
 	if goos == "linux" && goarch == "amd64" {
 		want["haa_gvisor_observer-linux-amd64"] = "gvisor-observer"
 		want["haa-network-policy-helper-linux-amd64"] = "network-policy-helper"
+		for _, item := range value.Assets {
+			if item.Name == "pnpm-linux-amd64" || item.Name == "pnpm-NOTICE.txt" {
+				role := "pnpm"
+				if item.Name == "pnpm-NOTICE.txt" {
+					role = "release-metadata"
+				}
+				want[item.Name] = role
+			}
+		}
+		for _, item := range value.Assets {
+			if item.Name == "haa-release-installer-linux-amd64" {
+				want[item.Name] = "release-installer"
+				break
+			}
+		}
 	}
 	selected := make([]asset, 0, len(want))
 	seen := make(map[string]bool, len(want))
@@ -191,16 +350,35 @@ func verifyBundleFiles(bundle string, value manifest, selected []asset) error {
 	return nil
 }
 
-func activate(root, version string, manifestBody []byte, selected []asset, bundle string) (Result, error) {
+func activate(ctx context.Context, root, version string, manifestBody []byte, selected []asset, bundle string, system bool) (Result, error) {
+	if err := ctx.Err(); err != nil {
+		return Result{}, err
+	}
+	directoryMode, metadataMode, executableMode := os.FileMode(0700), os.FileMode(0600), os.FileMode(0700)
+	if system {
+		directoryMode, metadataMode, executableMode = 0755, 0444, 0555
+	}
 	versions := filepath.Join(root, "versions")
-	if err := ensureDirectory(versions); err != nil {
+	if err := ensureDirectoryMode(versions, directoryMode); err != nil {
 		return Result{}, err
 	}
 	final := filepath.Join(versions, version)
 	if _, err := os.Lstat(final); !errors.Is(err, os.ErrNotExist) {
 		return Result{}, errors.New("release version already exists")
 	}
-	stage, err := os.MkdirTemp(versions, ".pending-")
+	var stage string
+	var err error
+	if system {
+		sum := sha256.Sum256(manifestBody)
+		name, nameErr := SystemCopyStageName(hex.EncodeToString(sum[:]))
+		if nameErr != nil {
+			return Result{}, nameErr
+		}
+		stage = filepath.Join(versions, name)
+		err = os.Mkdir(stage, 0700)
+	} else {
+		stage, err = os.MkdirTemp(versions, ".pending-")
+	}
 	if err != nil {
 		return Result{}, errors.New("create release installation stage")
 	}
@@ -214,31 +392,68 @@ func activate(root, version string, manifestBody []byte, selected []asset, bundl
 		return Result{}, errors.New("protect release installation stage")
 	}
 	for _, name := range []string{manifestName, sbomName, runtimeImagesName} {
-		if err := copyNew(filepath.Join(stage, name), filepath.Join(bundle, name), 0o600); err != nil {
+		if err := ctx.Err(); err != nil {
+			return Result{}, err
+		}
+		if err := copyNew(filepath.Join(stage, name), filepath.Join(bundle, name), metadataMode); err != nil {
 			return Result{}, errors.New("stage release metadata")
 		}
 	}
 	for _, item := range selected {
-		if err := copyNew(filepath.Join(stage, item.Name), filepath.Join(bundle, item.Name), 0o700); err != nil {
+		if err := ctx.Err(); err != nil {
+			return Result{}, err
+		}
+		mode := executableMode
+		if item.Role == "release-metadata" {
+			mode = metadataMode
+		}
+		if err := copyNew(filepath.Join(stage, item.Name), filepath.Join(bundle, item.Name), mode); err != nil {
 			return Result{}, errors.New("stage release asset")
 		}
 	}
 	manifestDigest := sha256.Sum256(manifestBody)
-	recordBody, err := json.MarshalIndent(struct {
-		Version        string `json:"version"`
-		ManifestSHA256 string `json:"manifest_sha256"`
-	}{Version: version, ManifestSHA256: hex.EncodeToString(manifestDigest[:])}, "", "  ")
-	if err != nil || writeNew(filepath.Join(stage, installRecordName), append(recordBody, '\n'), 0o600) != nil {
+	recordBody, err := installationRecord(version, manifestBody)
+	if err != nil || writeNew(filepath.Join(stage, installRecordName), recordBody, metadataMode) != nil {
 		return Result{}, errors.New("write release installation record")
+	}
+	if err := os.Chmod(stage, directoryMode); err != nil {
+		return Result{}, errors.New("protect committed release directory")
+	}
+	if err := ctx.Err(); err != nil {
+		return Result{}, err
 	}
 	if err := syncDirectory(stage); err != nil || os.Rename(stage, final) != nil || syncDirectory(versions) != nil {
 		return Result{}, errors.New("commit release installation")
 	}
 	cleanup = false
+	if err := ctx.Err(); err != nil {
+		return Result{}, err
+	}
 	if err := activateCurrent(root, version); err != nil {
 		return Result{}, err
 	}
 	return Result{Version: version, InstallRoot: root, ActivePath: filepath.Join(root, "current"), ManifestSHA256: hex.EncodeToString(manifestDigest[:])}, nil
+}
+
+// SystemCopyStageName binds only a basename to the durable manifest identity.
+// It grants no ownership or permission to delete an existing directory.
+func SystemCopyStageName(manifestSHA256 string) (string, error) {
+	if !digestPattern.MatchString(manifestSHA256) {
+		return "", errors.New("invalid system copy identity")
+	}
+	return ".pending-" + manifestSHA256, nil
+}
+
+func installationRecord(version string, manifestBody []byte) ([]byte, error) {
+	sum := sha256.Sum256(manifestBody)
+	body, err := json.MarshalIndent(struct {
+		Version        string `json:"version"`
+		ManifestSHA256 string `json:"manifest_sha256"`
+	}{version, hex.EncodeToString(sum[:])}, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+	return append(body, '\n'), nil
 }
 
 func activateCurrent(root, version string) error {
@@ -346,11 +561,15 @@ func canonicalDirectory(path string) (string, error) {
 func ensureInstallRoot(path string) error { return ensureDirectory(path) }
 
 func ensureDirectory(path string) error {
-	if err := os.MkdirAll(path, 0o700); err != nil {
+	return ensureDirectoryMode(path, 0700)
+}
+
+func ensureDirectoryMode(path string, mode os.FileMode) error {
+	if err := os.MkdirAll(path, mode); err != nil {
 		return errors.New("create release installation directory")
 	}
 	info, err := os.Lstat(path)
-	if err != nil || !info.IsDir() || info.Mode()&os.ModeSymlink != 0 || os.Chmod(path, 0o700) != nil {
+	if err != nil || !info.IsDir() || info.Mode()&os.ModeSymlink != 0 || os.Chmod(path, mode) != nil {
 		return errors.New("release installation directory is invalid")
 	}
 	return nil
@@ -398,6 +617,11 @@ func writeNew(path string, body []byte, mode os.FileMode) error {
 		return err
 	}
 	if _, err := file.Write(body); err != nil {
+		_ = file.Close()
+		_ = os.Remove(path)
+		return err
+	}
+	if err := file.Chmod(mode); err != nil {
 		_ = file.Close()
 		_ = os.Remove(path)
 		return err

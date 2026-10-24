@@ -16,9 +16,13 @@ type npmTransactionMember struct {
 
 func snapshotNPMTransactionMember(root string) (*npmTransactionMember, error) {
 	m := &npmTransactionMember{directories: map[string]os.FileInfo{}, files: map[string]pypiFileSnapshot{}}
+	var total int64
 	err := filepath.WalkDir(root, func(path string, entry os.DirEntry, err error) error {
 		if err != nil {
 			return err
+		}
+		if len(m.directories)+len(m.files) >= npmSnapshotEntryLimit {
+			return errors.New("npm transaction inventory exceeds bounds")
 		}
 		relative, err := filepath.Rel(root, path)
 		if err != nil {
@@ -32,7 +36,13 @@ func snapshotNPMTransactionMember(root string) (*npmTransactionMember, error) {
 			m.directories[relative] = info
 			return nil
 		}
-		m.files[relative], err = snapshotPyPIFile(path)
+		m.files[relative], err = snapshotNPMFile(path)
+		if err == nil {
+			total += m.files[relative].Size
+			if total > npmSnapshotTreeLimit {
+				return errors.New("npm transaction payload exceeds bounds")
+			}
+		}
 		return err
 	})
 	return m, err
@@ -56,7 +66,7 @@ func (m *npmTransactionMember) verify(root string) error {
 			if err != nil || !entry.IsDir() || !os.SameFile(before, info) || before.Mode() != info.Mode() || trustedExistingDirectory(path) != nil {
 				return errors.New("npm transaction directory changed")
 			}
-		} else if before, known := m.files[relative]; !known || !before.matches(path) {
+		} else if before, known := m.files[relative]; !known || !npmSnapshotMatches(before, path) {
 			return errors.New("npm transaction member changed or is foreign")
 		}
 		count++
@@ -120,6 +130,11 @@ func (m *npmTransactionMember) remove(path string) error {
 }
 
 func (t *npmProjectTransaction) verifyBoundaries() error {
+	if t.plan.updateGuard != nil {
+		if err := t.plan.updateGuard.verify(); err != nil {
+			return err
+		}
+	}
 	for path, before := range map[string]os.FileInfo{t.plan.root: t.plan.rootInfo, t.workspace: t.workspaceInfo, t.backup: t.backupInfo} {
 		info, err := os.Lstat(path)
 		if err != nil || before == nil || !info.IsDir() || !os.SameFile(before, info) || before.Mode() != info.Mode() || trustedExistingDirectory(path) != nil {

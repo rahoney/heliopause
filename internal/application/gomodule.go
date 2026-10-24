@@ -35,6 +35,43 @@ func (s *GoModuleGetService) Get(ctx context.Context, reference domain.ArtifactR
 	return executeProjectUpdate(ctx, reference, installContext, s.resolver, s.promoter, s.inspection, s.staging, "go-proxy", "Go", "get")
 }
 
+type GoModuleUpgradeService struct {
+	resolver   ports.ProjectDependencyUpgradeResolver
+	promoter   ports.ProjectMutation
+	inspection ProjectInspection
+	staging    ports.ProjectCacheStaging
+}
+
+func NewGoModuleUpgradeService(resolver ports.ProjectDependencyUpgradeResolver, promoter ports.ProjectMutation, inspection ProjectInspection, staging ports.ProjectCacheStaging) (*GoModuleUpgradeService, error) {
+	if resolver == nil || promoter == nil || inspection == nil || staging == nil {
+		return nil, errors.New("go upgrade requires guarded named selection, inspection and cache staging")
+	}
+	return &GoModuleUpgradeService{resolver, promoter, inspection, staging}, nil
+}
+
+func (s *GoModuleUpgradeService) Upgrade(ctx context.Context, install domain.InstallContext, selector string) (domain.ProjectVerifiedSet, error) {
+	if s == nil {
+		return domain.ProjectVerifiedSet{}, errors.New("go upgrade service is unavailable")
+	}
+	selected, err := executeGuardedProjectUpdate(ctx, install, s.promoter, s.inspection, s.staging, "go-proxy", "Go",
+		func(controls []domain.ProjectControlFile) (domain.ProjectDependencyUpdate, error) {
+			update, err := s.resolver.ResolveProjectDependencyUpgrade(ctx, install, controls, selector)
+			if err == nil && !update.HasRequestedResolution() {
+				return domain.ProjectDependencyUpdate{}, errors.New("go upgrade requires its actual requested module")
+			}
+			if err == nil {
+				graph := update.Resolution().Graph()
+				for _, node := range graph.Nodes() {
+					if node.Node() == graph.Primary() && node.Artifact().Identity().Name() != selector {
+						return domain.ProjectDependencyUpdate{}, errors.New("go upgrade resolver substituted the requested module")
+					}
+				}
+			}
+			return update, err
+		})
+	return selected.verified, err
+}
+
 // GoModuleProjectResolutionService is the application boundary for commands
 // that operate on the complete current project rather than one requested
 // module.

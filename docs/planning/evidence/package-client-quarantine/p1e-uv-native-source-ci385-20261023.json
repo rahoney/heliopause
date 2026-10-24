@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "run_id": 39822857085,
+  "url": "https://github.com/rahoney/heliopause/actions/runs/39822857085",
+  "source_commit": "6318a4c04270e8891486b406a9b54c426bc08774",
+  "checkout": "e470b15a3de0013abb168ffd59c359014f8b86bd",
+  "tree": "3617894d95b2233db4ed09388c014a32a7eba586",
+  "source_checkout_full_tree_equal": true,
+  "conclusion": "failure",
+  "jobs": [
+    {
+      "id": 119978385630,
+      "name": "Security",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119978385972,
+      "name": "Docs",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119978385988,
+      "name": "Quick",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119978386136,
+      "name": "Minimum Go",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119978386157,
+      "name": "gVisor Observer Helper",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119978386178,
+      "name": "macOS",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119978386197,
+      "name": "gVisor Linux Integration",
+      "status": "completed",
+      "conclusion": "failure"
+    },
+    {
+      "id": 119978386222,
+      "name": "Vulnerability",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119978386485,
+      "name": "Representative Wheel Corpus",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 119989108345,
+      "name": "Required",
+      "status": "completed",
+      "conclusion": "failure"
+    }
+  ],
+  "first_failure": "new complete-source integration helper assumed package cwd; the precompiled policy-registered test binary ran from repository cwd and could not open the tracked shared fixture",
+  "existing_public_native_graphs": [
+    {
+      "project": "idna",
+      "version": "3.11",
+      "nodes": 1
+    },
+    {
+      "project": "requests",
+      "version": "2.32.5",
+      "nodes": 5,
+      "edges": 4
+    }
+  ],
+  "actual_native_complete_five_cases": "NOT_REACHED: fixture read failed before their native execution",
+  "uv_installed_cli_and_cpu_full": "NOT_REACHED after first public-UV parent failure",
+  "helper_waits": [
+    0,
+    0
+  ],
+  "final_cleanup": "original=1 helper_state=CONFIRMED_STOPPED helper_stop=0 client_error=0 client_restore=0 restore_result=RESTORED pid=165747",
+  "QUALIFIED": "NO for new complete native source",
+  "ACCEPTANCE_CLOSED": "NO",
+  "MISSING": [
+    "test invocation package cwd and same compiled metadata-only consumer control",
+    "fresh actual complete-source/whole shared qualification"
+  ],
+  "raw": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci385-linux.log",
+      "bytes": 412301,
+      "sha256": "f24caaa62fad1dd653221e4dd9ee25903c4213466f450ac6db8030cf55cf1f2e"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci385-required.log",
+      "bytes": 22394,
+      "sha256": "4eb337e72d48b1bc3fc468a4a3c2c0aa42f6215b88140a6dfb0085aadfcb8386"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci385-docs.log",
+      "bytes": 20464,
+      "sha256": "30a6be6749efde1b9c6a81b5b078429d2e0f34aeec7efaadbdf43f60f776f95e"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/ci385-final-jobs.json",
+      "bytes": 13513,
+      "sha256": "a07c7c12c8efdfba5814f47e5e8ee3222280050e9faf5ee52a000ccb1549d8bd"
+    }
+  ]
+}

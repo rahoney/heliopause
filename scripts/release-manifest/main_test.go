@@ -15,7 +15,7 @@ func TestBuildReleaseProducesBoundManifestAndSBOM(t *testing.T) {
 	buildNativeHeloxTest(t, binary)
 	assets := releaseAssets(t, root, binary)
 	runtimeLock := filepath.Join(root, "runtimes.lock.json")
-	if err := os.WriteFile(runtimeLock, []byte(`{"schema_version":1,"gvisor":{"release":"release-20260810.0","commit":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}`), 0o600); err != nil {
+	if err := os.WriteFile(runtimeLock, syntheticReleaseLock(t, assets), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	sbomPath := filepath.Join(root, "helox-release-sbom.cdx.json")
@@ -33,7 +33,7 @@ func TestBuildReleaseProducesBoundManifestAndSBOM(t *testing.T) {
 	if err != nil || json.Unmarshal(body, &manifest) != nil {
 		t.Fatalf("read manifest: %v", err)
 	}
-	if manifest.Schema != manifestSchema || manifest.Version != "v1.2.3" || manifest.SourceCommit != strings.Repeat("b", 40) || manifest.WorkflowRun != workflowRun || len(manifest.Assets) != 8 {
+	if manifest.Schema != manifestSchema || manifest.Version != "v1.2.3" || manifest.SourceCommit != strings.Repeat("b", 40) || manifest.WorkflowRun != workflowRun || len(manifest.Assets) != 11 {
 		t.Fatalf("manifest = %#v", manifest)
 	}
 	if manifest.RuntimeLock.GVisorCommit != strings.Repeat("a", 40) || manifest.SBOM.Name != filepath.Base(sbomPath) || manifest.SBOM.SHA256 == "" {
@@ -58,7 +58,7 @@ func TestBuildReleaseRejectsIncompleteOrPreexistingOutput(t *testing.T) {
 	buildNativeHeloxTest(t, binary)
 	assets := releaseAssets(t, root, binary)
 	runtimeLock := filepath.Join(root, "runtimes.lock.json")
-	if err := os.WriteFile(runtimeLock, []byte(`{"schema_version":1,"gvisor":{"release":"release-20260810.0","commit":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}`), 0o600); err != nil {
+	if err := os.WriteFile(runtimeLock, syntheticReleaseLock(t, assets), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	workflowRun := "https://github.com/rahoney/heliopause/actions/runs/123"
@@ -102,6 +102,9 @@ func releaseAssets(t *testing.T, root, binary string) []string {
 		"helox-darwin-arm64",
 		"haa_gvisor_observer-linux-amd64",
 		"haa-network-policy-helper-linux-amd64",
+		"haa-release-installer-linux-amd64",
+		"pnpm-linux-amd64",
+		"pnpm-NOTICE.txt",
 		"helox-linux-amd64.deb",
 		"helox-linux-amd64.rpm",
 	}
@@ -119,4 +122,67 @@ func releaseAssets(t *testing.T, root, binary string) []string {
 		paths = append(paths, path)
 	}
 	return paths
+}
+
+// Synthetic owner bytes for producer mechanics; no upstream or runtime approval.
+func syntheticReleaseLock(t *testing.T, paths []string) []byte {
+	t.Helper()
+	var lock runtimeLock
+	lock.SchemaVersion = 3
+	lock.GVisor.Release = "release-20260810.0"
+	lock.GVisor.Commit = strings.Repeat("a", 40)
+	lock.PNPMTool.Version = "1.2.3"
+	for _, path := range paths {
+		switch filepath.Base(path) {
+		case "pnpm-linux-amd64":
+			record, err := fileRecord(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			lock.PNPMTool.Tool.SHA256 = record.SHA256
+			lock.PNPMTool.Tool.Size = record.Size
+		case "pnpm-NOTICE.txt":
+			record, err := fileRecord(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			lock.PNPMTool.Notices.SHA256 = record.SHA256
+			lock.PNPMTool.Notices.Size = record.Size
+		}
+	}
+	body, err := json.Marshal(lock)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return body
+}
+
+func TestPNPMReleaseAssetsMustMatchSelectedOwnerBeforeMetadataWrites(t *testing.T) {
+	for _, name := range []string{"pnpm-linux-amd64", "pnpm-NOTICE.txt"} {
+		t.Run(name, func(t *testing.T) {
+			root := t.TempDir()
+			binary := filepath.Join(root, "helox-linux-amd64")
+			if err := os.WriteFile(binary, []byte("not a Go binary; binding rejection must precede buildinfo"), 0600); err != nil {
+				t.Fatal(err)
+			}
+			assets := releaseAssets(t, root, binary)
+			lock := filepath.Join(root, "runtimes.lock.json")
+			if err := os.WriteFile(lock, syntheticReleaseLock(t, assets), 0600); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(filepath.Join(root, name), []byte("substituted after materialization"), 0600); err != nil {
+				t.Fatal(err)
+			}
+			sbom, manifest := filepath.Join(root, "sbom.json"), filepath.Join(root, "manifest.json")
+			err := buildRelease("v1.2.3", strings.Repeat("b", 40), "https://github.com/rahoney/heliopause/actions/runs/123", lock, sbom, filepath.Join(root, "images.json"), manifest, assets)
+			if err == nil || !strings.Contains(err.Error(), "pnpm release asset differs") {
+				t.Fatalf("missing source-owner rejection: %v", err)
+			}
+			for _, path := range []string{sbom, manifest} {
+				if _, err := os.Lstat(path); !os.IsNotExist(err) {
+					t.Fatal("substituted pnpm produced metadata")
+				}
+			}
+		})
+	}
 }

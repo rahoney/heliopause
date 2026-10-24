@@ -19,9 +19,12 @@ type npmProjectPlan struct {
 	packageJSON [32]byte
 	packageLock [32]byte
 	controls    map[string]pypiFileSnapshot
+	members     map[string]*npmTransactionMember
+	updateGuard *npmProjectGuard
 }
 
 type npmProjectGuard struct {
+	file *os.File
 	path string
 	info os.FileInfo
 }
@@ -33,20 +36,31 @@ func acquireNPMProjectGuard(root string) (npmProjectGuard, error) {
 		return npmProjectGuard{}, errors.New("npm project is already being mutated or lock is unavailable")
 	}
 	info, statErr := file.Stat()
-	if err := errors.Join(statErr, file.Close()); err != nil {
-		_ = os.Remove(path)
-		return npmProjectGuard{}, errors.New("close npm project transaction lock")
+	if statErr != nil {
+		return npmProjectGuard{}, errors.Join(errors.New("inspect npm project transaction lock"), statErr, file.Close())
 	}
-	return npmProjectGuard{path: path, info: info}, nil
+	return npmProjectGuard{path: path, info: info, file: file}, nil
 }
 
-func (g npmProjectGuard) release() error {
+func (g npmProjectGuard) verify() error {
 	if g.path == "" {
 		return errors.New("npm project transaction lock is unavailable")
 	}
 	now, err := os.Lstat(g.path)
 	if err != nil || g.info == nil || !os.SameFile(g.info, now) || now.Mode() != g.info.Mode() || !pypiSingleLink(now) {
 		return errors.New("npm project transaction lock changed")
+	}
+	return verifyPinnedMutationLock(g.file, g.info, now)
+}
+
+func (g npmProjectGuard) release() (resultErr error) {
+	defer func() {
+		if g.file != nil {
+			resultErr = errors.Join(resultErr, g.file.Close())
+		}
+	}()
+	if err := g.verify(); err != nil {
+		return err
 	}
 	if err := os.Remove(g.path); err != nil {
 		return errors.New("remove npm project transaction lock")
@@ -58,11 +72,11 @@ func freezeNPMProject(root string) (npmProjectPlan, error) {
 	if !filepath.IsAbs(root) || trustedExistingDirectory(root) != nil {
 		return npmProjectPlan{}, errors.New("npm project root is untrusted")
 	}
-	manifest, err := os.ReadFile(filepath.Join(root, "package.json"))
+	manifest, err := readBoundedPromotionFile(filepath.Join(root, "package.json"), 4<<20)
 	if err != nil || len(manifest) == 0 {
 		return npmProjectPlan{}, errors.New("npm project package.json is unavailable")
 	}
-	lock, err := os.ReadFile(filepath.Join(root, "package-lock.json"))
+	lock, err := readBoundedPromotionFile(filepath.Join(root, "package-lock.json"), 4<<20)
 	if err != nil || len(lock) == 0 {
 		return npmProjectPlan{}, errors.New("npm project package-lock.json is unavailable")
 	}
@@ -72,7 +86,7 @@ func freezeNPMProject(root string) (npmProjectPlan, error) {
 	}
 	controls := map[string]pypiFileSnapshot{}
 	for _, name := range []string{"package.json", "package-lock.json"} {
-		controls[name], err = snapshotPyPIFile(filepath.Join(root, name))
+		controls[name], err = snapshotNPMFile(filepath.Join(root, name))
 		if err != nil {
 			return npmProjectPlan{}, err
 		}
@@ -85,20 +99,39 @@ func freezeNPMProject(root string) (npmProjectPlan, error) {
 }
 
 func (p npmProjectPlan) verifyUnchanged() error {
+	if p.updateGuard != nil {
+		if err := p.updateGuard.verify(); err != nil {
+			return err
+		}
+	}
+	for name, before := range p.members {
+		path := filepath.Join(p.root, name)
+		if before == nil {
+			if _, err := os.Lstat(path); !errors.Is(err, os.ErrNotExist) {
+				return errors.New("npm original-state member appeared during update")
+			}
+		} else if err := before.verify(path); err != nil {
+			return errors.New("npm original-state payload changed during update")
+		}
+	}
+
 	current, err := freezeNPMProject(p.root)
 	if err != nil || !os.SameFile(p.rootInfo, current.rootInfo) || p.rootInfo.Mode() != current.rootInfo.Mode() || current.packageJSON != p.packageJSON || current.packageLock != p.packageLock {
 		return errors.New("npm project changed during transaction")
 	}
 	for name, before := range p.controls {
-		if !before.matches(filepath.Join(p.root, name)) {
+		if !npmSnapshotMatches(before, filepath.Join(p.root, name)) {
 			return errors.New("npm control identity changed")
 		}
+	}
+	if p.updateGuard != nil {
+		return p.updateGuard.verify()
 	}
 	return nil
 }
 
 func (p npmProjectPlan) verifyManagedOrEmpty() error {
-	body, err := os.ReadFile(filepath.Join(p.root, npmTransactionMetadata))
+	body, err := readBoundedPromotionFile(filepath.Join(p.root, npmTransactionMetadata), 130)
 	if err == nil {
 		want := hex.EncodeToString(p.packageJSON[:]) + ":" + hex.EncodeToString(p.packageLock[:])
 		if string(body) == want+"\n" {
@@ -136,7 +169,7 @@ func ensureNPMMetadataDirectory(root string) (string, error) {
 }
 
 func hasNPMDependencies(path string) bool {
-	body, err := os.ReadFile(path)
+	body, err := readBoundedPromotionFile(path, 4<<20)
 	if err != nil {
 		return true
 	}
@@ -157,7 +190,7 @@ func (p npmProjectPlan) privateWorkspace() (string, error) {
 		return "", errors.New("create npm private transaction workspace")
 	}
 	for _, name := range []string{"package.json", "package-lock.json"} {
-		body, readErr := os.ReadFile(filepath.Join(p.root, name))
+		body, readErr := readBoundedPromotionFile(filepath.Join(p.root, name), 4<<20)
 		if readErr != nil || os.WriteFile(filepath.Join(workspace, name), body, 0o600) != nil {
 			_ = os.RemoveAll(workspace)
 			return "", errors.New("copy npm transaction control files")
@@ -269,6 +302,9 @@ func (t *npmProjectTransaction) backupCurrent() error {
 	}
 	for _, name := range []string{"package.json", "package-lock.json", "node_modules", "haa"} {
 		source := t.target(name)
+		if err := t.verifyOriginalMember(name, source); err != nil {
+			return err
+		}
 		info, err := os.Lstat(source)
 		if errors.Is(err, os.ErrNotExist) && (name == "node_modules" || name == "haa") {
 			continue
@@ -291,8 +327,44 @@ func (t *npmProjectTransaction) backupCurrent() error {
 		}
 		t.moved[name] = true
 		t.before[name] = record
+		if t.plan.updateGuard != nil {
+			if err := record.verify(filepath.Join(t.backup, name)); err != nil {
+				return errors.New("npm original changed while being backed up")
+			}
+		}
 	}
 	return nil
+}
+
+// Updates must not replace their early inventory with a fresh post-inspection
+// baseline if another writer changes a member during the commit sequence.
+func (t *npmProjectTransaction) verifyOriginalMember(name, path string) error {
+	if t.plan.updateGuard == nil {
+		return nil
+	}
+	if err := t.plan.updateGuard.verify(); err != nil {
+		return err
+	}
+	if before, ok := t.plan.controls[name]; ok {
+		if !npmSnapshotMatches(before, path) {
+			return errors.New("npm original control changed before backup")
+		}
+		return nil
+	}
+	if name == "haa" {
+		name = ".heliopause"
+	}
+	before, known := t.plan.members[name]
+	if !known {
+		return errors.New("npm early transaction inventory is incomplete")
+	}
+	if before == nil {
+		if _, err := os.Lstat(path); !errors.Is(err, os.ErrNotExist) {
+			return errors.New("npm original member appeared before backup")
+		}
+		return nil
+	}
+	return before.verify(path)
 }
 
 func (t *npmProjectTransaction) publishWorkspace() error {
@@ -337,7 +409,7 @@ func (t *npmProjectTransaction) publishMetadata() error {
 	if err := writeNPMTransactionMetadata(directory, t.target("metadata"), []byte(value)); err != nil {
 		return err
 	}
-	snapshot, err := snapshotPyPIFile(t.target("metadata"))
+	snapshot, err := snapshotNPMFile(t.target("metadata"))
 	if err != nil {
 		return err
 	}

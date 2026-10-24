@@ -50,7 +50,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '1.26.9'
+          go-version: '1.27.3'
           check-latest: false
           cache: false
       - name: Prepare pinned module dependencies
@@ -79,7 +79,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '1.26.9'
+          go-version: '1.27.3'
           check-latest: false
           cache: false
       - name: Bootstrap pinned dependencies and tools
@@ -105,7 +105,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '1.26.9'
+          go-version: '1.27.3'
           check-latest: false
           cache: false
       - name: Run canonical Docs profile
@@ -127,7 +127,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '1.26.9'
+          go-version: '1.27.3'
           check-latest: false
           cache: false
       - name: Bootstrap pinned dependencies and tools
@@ -153,7 +153,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '1.26.9'
+          go-version: '1.27.3'
           check-latest: false
           cache: false
       - name: Bootstrap pinned dependencies and tools
@@ -179,18 +179,22 @@ jobs:
       - name: Set up minimum Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '1.26.9'
+          go-version: '1.27.3'
           check-latest: false
           cache: false
       - name: Bootstrap product modules
         env:
           HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-platform-tools
-        run: go run ./scripts/check bootstrap-modules
+          GOCACHE: ${{ runner.temp }}/heliopause-platform-tools/go-build
+          GOFLAGS: ''
+        run: go run -trimpath ./scripts/check bootstrap-modules
       - name: Run canonical platform profile offline
         shell: /bin/bash --noprofile --norc -e -u -o pipefail {0}
         env:
           HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-platform-tools
-        run: go run ./scripts/check platform
+          GOCACHE: ${{ runner.temp }}/heliopause-platform-tools/go-build
+          GOFLAGS: ''
+        run: go run -trimpath ./scripts/check platform
 
   macos:
     name: macOS
@@ -206,18 +210,22 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '1.26.9'
+          go-version: '1.27.3'
           check-latest: false
           cache: false
       - name: Bootstrap product modules
         env:
           HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-platform-tools
-        run: go run ./scripts/check bootstrap-modules
+          GOCACHE: ${{ runner.temp }}/heliopause-platform-tools/go-build
+          GOFLAGS: ''
+        run: go run -trimpath ./scripts/check bootstrap-modules
       - name: Run canonical platform profile offline
         shell: /bin/bash --noprofile --norc -e -u -o pipefail {0}
         env:
           HELOX_TOOL_CACHE: ${{ runner.temp }}/heliopause-platform-tools
-        run: go run ./scripts/check platform
+          GOCACHE: ${{ runner.temp }}/heliopause-platform-tools/go-build
+          GOFLAGS: ''
+        run: go run -trimpath ./scripts/check platform
 
   gvisor-observer:
     name: gVisor Observer Helper
@@ -245,7 +253,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '1.26.9'
+          go-version: '1.27.3'
           check-latest: false
           cache: false
       - name: Install pinned runtime and run lifecycle integration
@@ -261,6 +269,7 @@ jobs:
           python_image="$(jq -er '.python_image.reference' "$runtime_lock")"
           go_image="$(jq -er '.go_image.reference' "$runtime_lock")"
           rust_image="$(jq -er '.rust_image.reference' "$runtime_lock")"
+          uv_image="$(jq -er '.uv_image.reference' "$runtime_lock")"
           # The hosted runner's Azure mirror can stall before runtime setup.
           # Keep Ubuntu's signed sources; use its official HTTPS archive directly.
           test -f /etc/apt/apt-mirrors.txt
@@ -346,6 +355,7 @@ jobs:
           docker pull "$python_image"
           docker pull "$go_image"
           docker pull "$rust_image"
+          docker pull "$uv_image"
           scripts/build-gvisor-observer-release.sh "$RUNNER_TEMP/haa_gvisor_observer"
           sudo install -m 0755 "$RUNNER_TEMP/haa_gvisor_observer" /usr/libexec/heliopause/haa_gvisor_observer
 
@@ -369,6 +379,8 @@ jobs:
           docker info --format '{{json (index .Runtimes "runsc-trace")}}'
           go test -run='^$' -fuzz=FuzzDecodeHelperRecord -fuzztime=2s ./internal/sandbox
           HELOX_HOSTTOOL_INTEGRATION=1 go test -v -timeout=2m ./internal/hosttool -run TestLinuxTrustedHostExecutorIntegration
+          HELOX_UV_NATIVE_RUNTIME=1 go test -tags=realcorpus -v -timeout=3m ./internal/sandbox -run '^TestUVActualIsolated(NativeStartup|EmptyTargetQuery|NativeLockCollection)$'
+          bash scripts/ci-pnpm-runtime.sh
           HELOX_GVISOR_INTEGRATION=1 go test -timeout=5m ./internal/sandbox -run TestLinuxGVisorLifecycleIntegration
           HELOX_GITHUB_RELEASE_INTEGRATION=1 go test -timeout=5m ./internal/sandbox -run TestLinuxGitHubReleaseELFDynamicIntegration
           # The typed-helper ordinary-user path is exercised for both npm and pip.
@@ -397,6 +409,11 @@ jobs:
           haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"
           haa_start_policy_helper
           HELOX_PYTORCH_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.run '^TestLinuxPyTorchResolverIntegration$'
+          (
+            cd internal/sandbox
+            HELOX_UV_PUBLIC_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestUVPublicNativeResolverIntegration$'
+          )
+          HELOX_UV_PUBLIC_UPDATE_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestUVPublicNativeUpdateResolverIntegration$'
           HELOX_GO_RESOLVER_INTEGRATION=1 HELOX_GO_RESOLVER_PROJECT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxGo(IsolatedResolver|IsolatedProjectResolver|SourceProjectSnapshot|DependencyFreeProjectSnapshot)Integration$'
           # A compiled test binary keeps the caller's cwd; match go test's package cwd.
           (
@@ -408,6 +425,11 @@ jobs:
           haa_install_ci_client "$RUNNER_TEMP/helox-bootstrap-test"
           haa_start_policy_helper
           HELOX_NPM_INSPECT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestLinuxNPMInspectCLIIntegration$'
+          HELOX_UV_INSTALL_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=6m -test.run '^TestLinuxUVInstallCLIIntegration$'
+          (
+            cd internal/bootstrap
+            HELOX_UV_SYNC_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=12m -test.failfast -test.run '^TestLinuxUVSync(Complete|Closure)CLIIntegration$'
+          )
           HELOX_GO_RESOLVER_INTEGRATION=1 HELOX_GO_RESOLVER_PROJECT_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestLinuxGo(GetDownload|TransitiveGetDownload|DependencyFreeDownload)Integration$'
           HELOX_GO_BUILD_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=15m -test.run '^TestLinuxGo(DependencyFreeBuildCLI|PublicBuildCLI|TransitiveBuildCLI|InvalidTestdataBuildCLI|CgoBuildCLI|LibraryBuildCLI|MixedPackagesBuildCLI|MixedInvalidPackageBuildCLI|BuildSecurityCLI)Integration$'
           HELOX_CARGO_RESOLVER_INTEGRATION=1 HELOX_CARGO_ADD_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=10m -test.run '^TestLinuxCargo(Add|TransitiveAdd)Integration$'
@@ -478,7 +500,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '1.26.9'
+          go-version: '1.27.3'
           check-latest: false
           cache: false
       - name: Aggregate required job results

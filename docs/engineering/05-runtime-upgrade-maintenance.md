@@ -33,8 +33,9 @@ owner는 하나이고, 다른 소비자는 그 값을 읽거나 검증 가능한
 
 | 대상 | 입력 owner / 현재 소비자 | 갱신 책임 |
 | --- | --- | --- |
-| HAA Go compiler | `scripts/runtimes.lock.json`의 `go_image.go_version`을 선택 버전 owner로 사용 | `go.mod` floor, tool `setupGo`, CI/release setup, guest tag/version/digest와 host SDK를 연결 |
+| HAA Go compiler | `scripts/runtimes.lock.json`의 `go_image.go_version`을 선택 버전 owner로 사용 | `go.mod` floor, README Build minimum/toolchain, tool `setupGo`, CI/release setup, guest tag/version/digest와 host SDK를 연결 |
 | Node/npm | runtime lock의 Node image와 bundled npm identity | Node tag/version과 실제 image contents 일치; resolver·probe·Promotion 공유 |
+| uv | runtime lock schema2의 uv_image/version/provenance/native tool identity | 공식 signed proof·전체 layer를 고정하고 offline plan/apply에서 재검증; Python ABI는 독립 유지 |
 | Python/pip | runtime lock의 Python image, pip와 ABI/platform target | interpreter·pip·wheel tags·Promotion·PyTorch 지원 tuple 영향을 함께 계산 |
 | Rust/Cargo | runtime lock의 Rust image/version/target | resolver/build와 runtime image manifest의 누락 없는 연결 |
 | gVisor | runtime lock의 source commit·patch·builder·Bazel·bundle members | Go SDK 선택을 HAA Go owner에 연결하고 전체 bundle·observer를 재빌드 |
@@ -56,6 +57,11 @@ Host Go archive의 platform/URL/size/SHA-256은 해당 Go 선택에 연결한 fr
 배포물 metadata로 둔다. 선택 버전의 owner는 runtime lock 하나로 유지하며,
 developer SDK 준비만을 위해 product runtime lock schema를 확장하지 않는다.
 새로운 독립 version lock을 만들지 않는다.
+
+README의 `Build` section에 있는 Go minimum/toolchain 문장도 선언된 소비자다.
+Go plan은 유일한 section/현재 두 값의 알려진 형식을 확인한 뒤 owner에서 파생해 갱신한다.
+Read-only consistency 검사는 README·module·guest·tools의 일치를 요구한다. 누락·중복·혼용·
+알 수 없는 문장은 거부하며 다른 section의 과거 버전과 qualification 원본은 수정하지 않는다.
 
 ### Quality tool의 실제 compiler 확인
 
@@ -209,6 +215,12 @@ bounded safe extraction을 확인한 state-local SDK를 사용하며 전체 SDK 
 `--go`는 현재 Go 선택을 유지하는 요청의 명시 SDK 경로이며 새 Go에는 ambient SDK를 받지 않는다.
 Host 기본 SDK와 설치는 바꾸지 않는다. 각 `verification-*` directory의 logs/result와
 최신 `verification.json`을 남겨 첫 실패를 다음 실행으로 덮지 않는다.
+실제 checks는 각 attempt의 standalone Git projection에서 실행한다. 선택한 Go의
+VCS 탐색이 linked worktree의 .git file을 지나쳐 상위 저장소를 선택하는 것을 막는다.
+Exact baseline HEAD의 local shared clone에 frozen after bytes와 전체 modes를 적용하고
+checkCandidate로 원래 apply worktree와 checked source를 검사 전후 대조한다. 실제 경로는
+receipt의 checked_source에 기록한다. VCS stamping이나 canonical checks를 끄지 않으며
+원래 worktree·journal과 사용자 source는 그대로 유지한다.
 UPG-004 compiler 검사 연결 뒤 verify는 `state/quality-tools`의 독립 executable
 cache를 명시한다. Caller의 기본 `HELOX_TOOL_CACHE`·Go config/workspace/flags로
 후보 bootstrap이 active quality binaries를 덮어쓰지 않으며 cache/bin alias도 거부한다.
@@ -473,3 +485,120 @@ cache는 exact inventory 및 실제 proc/FD/maps/mount/container·operation-lock
 reviewer merge는 해당 owner의 남은 작업이다. 유지보수 branch를 검토 가능한 상태로
 전달하고 실제 reviewer merge/전달 CI와 새 M13 baseline 확인 전에는 보류 전의
 M13 CLEAN·승인 후보를 재사용하거나 M13 보류를 자동 해제하지 않는다.
+
+
+### UV 공급의 offline provenance 검증
+
+P1의 UV 후보는 채택 전에 다음 명시 단계로 검증한다. Runtime pin/실행·Host 설치를
+변경하지 않고, 같은 고정 Sigstore root로 upstream publisher와 OCI 자료 연결만 확인한다.
+
+```sh
+go run ./scripts/update-runtime verify-uv-image --input /absolute/frozen-uv-proof
+```
+
+디렉터리에는 identity.json(정확한 version/source_commit/workflow_run/index_sha256/
+manifest_sha256), bundle.json, index.json, manifest.json, config.json이 필요하다.
+Bundle은 GitHub의 해당 index digest attestation API 응답에서 bundle 객체만 보존한다.
+원본 OCI 세 파일은 reformat 없이 digest/size를 확인한 bytes다. 출력은 검증된 source·
+index/amd64·config·layer metadata의 영수증이며 layer bytes/실행 호환성/activation을
+승인하지 않는다. CLI 자체가 네트워크를 호출하거나 runtime을 다운로드하지 않는다.
+
+정책과 실제 서명 입력은 [P1b baseline](../planning/evidence/package-client-quarantine/p1b-uv-runtime-baseline-20261021.md)을
+따른다. HAA release signer 정책을 UV publisher로 확대하지 않는다. 현재 plan/apply의
+Metadata 검증 이후 단일 UV pin·frozen maintenance와 [data-only 공급 전달](../planning/evidence/package-client-quarantine/p1b4-uv-provision-local-20261021.json)까지 로컬 검증했다. Running runtime/admission과 production uv 명령은 미완료다.
+
+
+`verify-uv-image`에 `--layers /absolute/frozen-layers`를 추가하면 manifest 순서의 모든
+`<sha256>.tar.gz`를 확인해 UV native file까지 연결한다. Compressed digest/size·config
+ diffID·root ownership·정확한 reviewed layout와 bounded static amd64 ELF를 검증한다.
+출력은 `helox.uv-image-supply/v2`의 tool SHA256/size이며 실제 native startup·관찰기·Policy
+승인이 아니다. `--layers` 없는 기존 metadata-only 호출은 v1을 유지한다.
+
+### UV pin과 frozen maintenance plan
+
+Runtime lock schema3의 uv_image가 version·official amd64 reference·signed index/source/run·
+bundle/config digest와 native path/size/hash의 유일한 입력이다. Generator와 support drift는
+이 owner를 사용한다. Runtime image manifest v2는 기존 네 이미지와 UV의 exact5 images 및 별도 pnpm tool record를 기록하며
+custom_ghcr_image=false는 HAA 소유 이미지를 새로 게시하지 않는다는 뜻이다.
+
+변경 계획은 다음과 같이 명시한 offline 공급만 사용한다. proof 디렉터리는 위 다섯 metadata
+파일, layers 디렉터리는 검증된 모든 SHA256.tar.gz를 갖춰야 한다.
+
+```sh
+go run ./scripts/update-runtime plan --root /absolute/clean-repo --state /absolute/new-state \
+  --component uv --version X.Y.Z --review /absolute/review.json \
+  --uv-proof /absolute/frozen-proof --uv-layers /absolute/frozen-layers
+go run ./scripts/update-runtime apply --root /absolute/clean-repo --state /absolute/new-state
+go run ./scripts/update-runtime verify --root /absolute/clean-repo --state /absolute/new-state
+```
+
+Plan은 작은 proof bytes와 전체 layer descriptor를 묶고 실제 layer는 state/uv-supply에
+owner-only로 고정한다. Render/apply는 같은 파일의 owner/mode·경로와 모든 digest/diffID·
+native identity를 다시 확인한다. 누락/변조/symlink/권한 변경은 거부하며 source를 재작성하거나
+live tag로 대체하지 않는다. 같은 버전은 supply flag를 거부하고 기존 pin/review를 유지한다.
+Canonical configuration 검증과 실제 UV sandbox/observer/CLI qualification은 별도다.
+
+### pnpm release 공급의 offline 검증
+
+현재 pnpm 유지보수 consumer는 다음 명령으로 **획득한 Linux amd64 archive**의 SHA-256과
+공식 build provenance를 함께 확인한다. 입력 디렉터리에는 identity.json(version, source_commit,
+workflow_run, archive_sha256), bundle.json 및 pnpm-linux-x64.tar.gz가 필요하다.
+
+```sh
+go run ./scripts/update-runtime verify-pnpm-release --input /absolute/frozen-pnpm-proof
+```
+
+고정된 pnpm repository/workflow/tag·Fulcio identity·SLSA source/run/subject와 기존 offline
+Sigstore root를 검증한다. 실제 upstream의 self-hosted build 조건은 pnpm 전용 정책에만
+적용하며 HAA/UV publisher 정책을 변경하지 않는다. 명령은 네트워크·archive 추출·Host 실행·
+runtime pin 변경·설치를 수행하지 않는다. 성공은 공급 bytes의 출처 확인이며 보안 검사·실제
+runtime 지원 승인이 아니다. Runtime/lock/layout·설치/업데이트의 남은 acceptance와 수정 순서는
+[P2 착수 지도](../planning/evidence/package-client-quarantine/p2-pnpm-baseline-20261024.md)를 따른다.
+
+현재 pnpm 공급 명령의 v2 receipt는 인증한 전체 archive의 bounded tar 구조와 pnpm regular
+ELF의 hash/size·declared shared libraries도 연결한다. Bundled dist 자료와 hardlink는 검증 후
+버리며 Host에 추출하지 않는다. Shared-library 목록과 runc 형식 관측은 실제 gVisor admission·
+제품 검역/설치 qualification이 아니다. [P2b1 결과](../planning/evidence/package-client-quarantine/p2b1-pnpm-native-local-20261024.json)가 정확한 입력·검증·정리 범위를 소유한다.
+
+### pnpm pin과 frozen maintenance plan
+
+Runtime lock schema3의 `pnpm_tool`이 공식 archive/native identity와 production proof 경로/hash의 단일 owner다.
+`tools/pnpm/release-proof.json`은 배포 입력이며 testdata를 production 공급으로 사용하지 않는다.
+현재 v2 runtime metadata는 exact5 images와 별도 PNPM native tool record를 확인한다.
+
+```sh
+go run ./scripts/update-runtime plan --root /absolute/clean-repo --state /absolute/new-state \
+  --component pnpm --version X.Y.Z --review /absolute/review.json \
+  --pnpm-proof /absolute/frozen-pnpm-proof
+go run ./scripts/update-runtime apply --root /absolute/clean-repo --state /absolute/new-state
+go run ./scripts/update-runtime verify --root /absolute/clean-repo --state /absolute/new-state
+```
+
+조회 전용 offline 검증은 위 세 파일을 사용한다. 새 PNPM plan의 proof 디렉터리는 추가로 고정 source의 LICENSE/제3자 고지를 합친 `NOTICE`를 명시한다. Plan은 작은 인증 metadata만 담고
+archive는 state/pnpm-supply에 owner-only로 고정한다. Render/apply는 전체 archive의 서명·hash·
+native identity와 state owner/mode를 재검증한다. Same-version은 network0이며 새 supply flag를
+거부하고 기존 pin을 보존한다. 중단 후 재개·idempotence·변조 거부의
+[로컬 검증](../planning/evidence/package-client-quarantine/p2b2-pnpm-owner-local-20261024.json)은
+native 배포/설치·gVisor admission·제품 CLI 또는 새 원격 qualification 완료가 아니다.
+
+### pnpm native asset의 명시 출력
+
+```sh
+go run ./scripts/update-runtime materialize-pnpm --root /absolute/source \
+  --archive /absolute/acquired/pnpm-linux-x64.tar.gz \
+  --output /absolute/external-dist/pnpm-linux-amd64 \
+  --notices-output /absolute/external-dist/pnpm-NOTICE.txt
+```
+
+유지보수 도구는 선택한 source의 schema3 PNPM owner와 production proof를 읽는다.
+전체 archive·내부 파일·ELF 검증이 끝난 pnpm regular bytes만 반환하고, 외부의 canonical
+자기 소유 보호 디렉터리에 새 파일/0555로 출력한다. Readback/hash·no-replace 게시·directory
+sync와 임시 이름 identity를 확인하며 기존 파일·symlink·foreign writable parent를 거부한다.
+Host에서 pnpm을 실행하거나 bundled dist 자료를 풀지 않는다. 성공은 native asset bytes의
+공급이며 릴리스 배포/NOTICE 연결·gVisor admission·제품 검역 지원 완료가 아니다.
+
+현재 PNPM owner의 `notices`는 production `tools/pnpm/NOTICE`의 경로/hash/크기를 기록한다.
+Frozen maintenance는 source-bound 고지 bytes도 계획에 고정하고 source가 바뀔 때 이전 고지의
+재사용을 거부한다. 이는 reviewed passive source data이며 upstream archive 서명의 일부라고
+주장하지 않는다. Native asset은0555, 고지는0444로 출력하며 두 파일 모두 signed release set과
+OS package의 기존 설치/복구 범위에 포함한다. 전체 배포 qualification은 별도다.

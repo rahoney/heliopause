@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"sync"
@@ -33,6 +34,17 @@ type ObserverSupervisor struct {
 	failStop  bool
 	closeOnce sync.Once
 	closeErr  error
+}
+
+// SetDiagnosticWriter changes display-only attribution output. The observer's
+// ledger, required checks and Evidence are independent of this sink.
+func (s *ObserverSupervisor) SetDiagnosticWriter(writer io.Writer) {
+	if s == nil || s.observer == nil {
+		return
+	}
+	s.observer.mu.Lock()
+	defer s.observer.mu.Unlock()
+	s.observer.diagnostic = writer
 }
 
 // ObserverProcess is the supervisor's narrow helper lifecycle dependency.

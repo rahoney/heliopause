@@ -19,6 +19,30 @@ import (
 
 type goProjectMutationAdapter struct{ promoter *promotion.GoProjectPromotion }
 
+type goUpgradeMutationAdapter struct {
+	promoter *promotion.GoProjectPromotion
+	adopt    bool
+}
+
+func (a goUpgradeMutationAdapter) Begin(ctx context.Context, install domain.InstallContext) (ports.ProjectMutationGuard, error) {
+	return a.promoter.BeginUpgrade(ctx, install, a.adopt)
+}
+
+type goUpgradeService struct {
+	resolver   *sandbox.GoModuleResolver
+	promoter   *promotion.GoProjectPromotion
+	inspection application.ProjectInspection
+	cache      *promotion.GoVerifiedCache
+}
+
+func (s *goUpgradeService) Upgrade(ctx context.Context, install domain.InstallContext, selector string, adopt bool) (domain.ProjectVerifiedSet, error) {
+	service, err := application.NewGoModuleUpgradeService(s.resolver, goUpgradeMutationAdapter{s.promoter, adopt}, s.inspection, s.cache)
+	if err != nil {
+		return domain.ProjectVerifiedSet{}, err
+	}
+	return service.Upgrade(ctx, install, selector)
+}
+
 func (a goProjectMutationAdapter) Begin(ctx context.Context, install domain.InstallContext) (ports.ProjectMutationGuard, error) {
 	return a.promoter.Begin(ctx, install)
 }
@@ -65,45 +89,48 @@ func newGoModuleBuildService(executor sandbox.TrustedExecutor, observer sandbox.
 	return application.NewProjectBuildService(goProjectMutationAdapter{promoter}, verifier, inspector, evidence, policy.M3{}, domain.NewOperationID, domain.NewRunID)
 }
 
-func newGoModuleServices(resolver *sandbox.GoModuleResolver) (get *application.GoModuleGetService, download *application.GoModuleProjectResolutionService, resultErr error) {
+func newGoModuleServices(resolver *sandbox.GoModuleResolver) (get *application.GoModuleGetService, download *application.GoModuleProjectResolutionService, upgrade *goUpgradeService, resultErr error) {
 	cacheRoot, err := os.UserCacheDir()
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	root := filepath.Join(cacheRoot, "heliopause")
 	intakeRoot, evidenceRoot := filepath.Join(root, "intake"), filepath.Join(root, "evidence")
 	artifact, err := artifactgo.NewPublicClient(intakeRoot)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	verifier, err := verificationgo.NewIntegrityVerifier(intakeRoot)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	inspector, err := inspectiongo.NewStaticInspector(intakeRoot)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	evidence, err := local.NewStore(evidenceRoot)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	inspection, err := application.NewProjectInspectService(artifact, verifier, inspector, evidence, policy.M3{}, policy.M4{}, domain.NewOperationID, domain.NewRunID)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	cache, err := promotion.NewGoVerifiedCache(intakeRoot, evidenceRoot, filepath.Join(root, "go-verified-cache"), evidence)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	promoter, err := promotion.NewGoProjectPromotion(cache, filepath.Join(root, "go-projects"))
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	get, err = application.NewGoModuleGetService(resolver, goProjectMutationAdapter{promoter}, inspection, cache)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	download, err = application.NewGoModuleProjectResolutionService(resolver, goProjectMutationAdapter{promoter}, inspection, cache)
-	return get, download, err
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	return get, download, &goUpgradeService{resolver, promoter, inspection, cache}, nil
 }

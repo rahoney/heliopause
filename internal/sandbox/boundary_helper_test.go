@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"testing"
 )
@@ -181,11 +180,7 @@ func extractOCIBootstrapCommand(source []byte) (string, error) {
 }
 
 func TestObserverOCIBootstrapCommandMatchesBoundaryContainerCommand(t *testing.T) {
-	_, currentFile, _, ok := runtime.Caller(0)
-	if !ok {
-		t.Fatal("locate boundary helper test source")
-	}
-	source, err := os.ReadFile(filepath.Join(filepath.Dir(currentFile), "..", "..", "tools", "gvisor-observer", "observer.cc"))
+	source, err := os.ReadFile(filepath.Join("..", "..", "tools", "gvisor-observer", "observer.cc"))
 	if err != nil {
 		t.Fatalf("read observer source: %v", err)
 	}

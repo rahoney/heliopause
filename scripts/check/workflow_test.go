@@ -85,7 +85,17 @@ func TestValidateReleaseWorkflowRejectsSecurityRegressions(t *testing.T) {
 		"conditional package build":   strings.Replace(string(contents), "      - name: Build deterministic native release assets\n", "      - name: Build deterministic native release assets\n        if: false\n", 1),
 		"missing package build":       strings.Replace(string(contents), "go run ./scripts/release-packages", "echo skipped", 1),
 		"missing package identity":    strings.Replace(string(contents), "--asset \"$dist/helox-linux-amd64.deb\"", "--asset \"$dist/unbound.deb\"", 1),
-		"missing release gate":        strings.Replace(string(contents), "go run ./scripts/check release-gate", "echo skipped", 1),
+
+		"missing pnpm materialization":   strings.Replace(string(contents), "go run ./scripts/update-runtime materialize-pnpm", "echo skipped materialization", 1),
+		"commented pnpm materialization": strings.Replace(string(contents), "          go run ./scripts/update-runtime materialize-pnpm", "          # go run ./scripts/update-runtime materialize-pnpm", 1),
+		"missing pnpm native binding":    strings.Replace(string(contents), `--asset "$dist/pnpm-linux-amd64"`, `--asset "$dist/foreign-pnpm"`, 1),
+		"missing passive notices":        strings.Replace(string(contents), `--asset "$dist/pnpm-NOTICE.txt"`, `--asset "$dist/foreign-notices"`, 1),
+		"unbounded pnpm acquisition":     strings.Replace(string(contents), `--max-filesize "$pnpm_size"`, ``, 1),
+		"wrong pnpm production owner":    strings.Replace(string(contents), `--root "$GITHUB_WORKSPACE"`, `--root "$RUNNER_TEMP"`, 1),
+		"missing release gate":           strings.Replace(string(contents), "go run ./scripts/check release-gate", "echo skipped", 1),
+		"commented installer build":      strings.Replace(string(contents), `          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -buildvcs=true -o "$dist/haa-release-installer-linux-amd64"`, `          # CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -buildvcs=true -o "$dist/haa-release-installer-linux-amd64"`, 1),
+		"missing installer identity":     strings.Replace(string(contents), `--asset "$dist/haa-release-installer-linux-amd64"`, `--asset "$dist/unbound-installer"`, 1),
+		"echoed installer build":         strings.Replace(string(contents), `          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -buildvcs=true -o "$dist/haa-release-installer-linux-amd64"`, `          echo CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -buildvcs=true -o "$dist/haa-release-installer-linux-amd64"`, 1),
 	}
 	for name, fixture := range tests {
 		t.Run(name, func(t *testing.T) {
@@ -152,25 +162,39 @@ func TestValidateCIWorkflowRejectsSecurityRegressions(t *testing.T) {
 	}
 
 	tests := map[string]string{
-		"floating action":                             strings.Replace(string(contents), "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", "actions/checkout@main", 1),
-		"missing always":                              strings.Replace(string(contents), "    if: ${{ always() }}\n", "", 1),
-		"write token":                                 strings.Replace(string(contents), "  contents: read", "  contents: write", 1),
-		"moving macOS runner":                         strings.Replace(string(contents), "runs-on: macos-26-intel", "runs-on: macos-latest", 1),
-		"unpatched Go":                                strings.ReplaceAll(string(contents), "go-version: '"+selectedGoForTest(t)+"'", "go-version: '1.26.8'"),
-		"missing pinned Go image":                     strings.Replace(string(contents), `docker pull "$go_image"`, `echo skipped`, 1),
-		"Go build integration silently skipped":       strings.Replace(string(contents), "HELOX_GO_BUILD_CLI_INTEGRATION=1", "HELOX_GO_BUILD_CLI_INTEGRATION=0", 1),
-		"Go source integration silently skipped":      strings.ReplaceAll(string(contents), "HELOX_GO_RESOLVER_INTEGRATION=1", "HELOX_GO_RESOLVER_INTEGRATION=0"),
-		"missing pinned Rust image":                   strings.Replace(string(contents), `docker pull "$rust_image"`, `echo skipped`, 1),
-		"Cargo resolver integration silently skipped": strings.ReplaceAll(string(contents), "HELOX_CARGO_RESOLVER_INTEGRATION=1", "HELOX_CARGO_RESOLVER_INTEGRATION=0"),
-		"Cargo add integration silently skipped":      strings.Replace(string(contents), "HELOX_CARGO_ADD_INTEGRATION=1", "HELOX_CARGO_ADD_INTEGRATION=0", 1),
-		"Cargo build integration silently skipped":    strings.Replace(string(contents), "HELOX_CARGO_BUILD_CLI_INTEGRATION=1", "HELOX_CARGO_BUILD_CLI_INTEGRATION=0", 1),
-		"missing platform check":                      strings.ReplaceAll(string(contents), "run: go run ./scripts/check platform", "run: go test ./..."),
-		"missing CUDA single-selection guard":         strings.Replace(string(contents), "select at most one CUDA PyTorch qualification profile", "CUDA profiles unchecked", 1),
-		"missing CUDA strict freshness gate":          strings.Replace(string(contents), "go run ./scripts/check qualification-freshness", "echo skipped", 1),
-		"legacy CUDA profile":                         string(contents) + "\n# HELOX_PYTORCH_PROFILE=cu128\n",
-		"sidecar fallback":                            strings.Replace(string(contents), "--sidecar-usage-policy=STRICT", "--sidecar-usage-policy=LEGACY_DEPRECATED_SLOW_EMBEDDED_FALLBACK", 1),
-		"permissive sidecar download":                 strings.Replace(string(contents), "--download-sidecars=NEVER", "--download-sidecars=ALWAYS", 1),
-		"extra job":                                   string(contents) + "\n  security:\n    runs-on: ubuntu-24.04\n",
+		"PNPM runtime omitted":                         strings.Replace(string(contents), "bash scripts/ci-pnpm-runtime.sh", "# bash scripts/ci-pnpm-runtime.sh", 1),
+		"floating action":                              strings.Replace(string(contents), "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1", "actions/checkout@main", 1),
+		"missing always":                               strings.Replace(string(contents), "    if: ${{ always() }}\n", "", 1),
+		"write token":                                  strings.Replace(string(contents), "  contents: read", "  contents: write", 1),
+		"moving macOS runner":                          strings.Replace(string(contents), "runs-on: macos-26-intel", "runs-on: macos-latest", 1),
+		"unpatched Go":                                 strings.ReplaceAll(string(contents), "go-version: '"+selectedGoForTest(t)+"'", "go-version: '1.26.8'"),
+		"missing pinned Go image":                      strings.Replace(string(contents), `docker pull "$go_image"`, `echo skipped`, 1),
+		"Go build integration silently skipped":        strings.Replace(string(contents), "HELOX_GO_BUILD_CLI_INTEGRATION=1", "HELOX_GO_BUILD_CLI_INTEGRATION=0", 1),
+		"Go source integration silently skipped":       strings.ReplaceAll(string(contents), "HELOX_GO_RESOLVER_INTEGRATION=1", "HELOX_GO_RESOLVER_INTEGRATION=0"),
+		"missing pinned Rust image":                    strings.Replace(string(contents), `docker pull "$rust_image"`, `echo skipped`, 1),
+		"missing pinned UV image":                      strings.Replace(string(contents), `docker pull "$uv_image"`, `echo skipped`, 1),
+		"UV startup integration silently skipped":      strings.Replace(string(contents), "HELOX_UV_NATIVE_RUNTIME=1", "HELOX_UV_NATIVE_RUNTIME=0", 1),
+		"UV CLI installation silently skipped":         strings.Replace(string(contents), "HELOX_UV_INSTALL_CLI_INTEGRATION=1", "HELOX_UV_INSTALL_CLI_INTEGRATION=0", 1),
+		"UV installed-aware resolver silently skipped": strings.Replace(string(contents), "HELOX_UV_PUBLIC_UPDATE_RESOLVER_INTEGRATION=1", "HELOX_UV_PUBLIC_UPDATE_RESOLVER_INTEGRATION=0", 1),
+		"UV public resolver silently skipped":          strings.Replace(string(contents), "HELOX_UV_PUBLIC_RESOLVER_INTEGRATION=1", "HELOX_UV_PUBLIC_RESOLVER_INTEGRATION=0", 1),
+		"UV interpreter query silently omitted":        strings.Replace(string(contents), "(NativeStartup|EmptyTargetQuery|NativeLockCollection)", "(NativeStartup|NativeLockCollection)", 1),
+		"UV native output collection silently omitted": strings.Replace(string(contents), "(NativeStartup|EmptyTargetQuery|NativeLockCollection)", "(NativeStartup|EmptyTargetQuery)", 1),
+		"Cargo resolver integration silently skipped":  strings.ReplaceAll(string(contents), "HELOX_CARGO_RESOLVER_INTEGRATION=1", "HELOX_CARGO_RESOLVER_INTEGRATION=0"),
+		"Cargo add integration silently skipped":       strings.Replace(string(contents), "HELOX_CARGO_ADD_INTEGRATION=1", "HELOX_CARGO_ADD_INTEGRATION=0", 1),
+		"Cargo build integration silently skipped":     strings.Replace(string(contents), "HELOX_CARGO_BUILD_CLI_INTEGRATION=1", "HELOX_CARGO_BUILD_CLI_INTEGRATION=0", 1),
+		"missing platform check":                       strings.ReplaceAll(string(contents), "run: go run -trimpath ./scripts/check platform", "run: go test ./..."),
+		"untrimmed platform bootstrap":                 strings.Replace(string(contents), "run: go run -trimpath ./scripts/check bootstrap-modules", "run: go run ./scripts/check bootstrap-modules", 1),
+		"missing platform cache":                       strings.Replace(string(contents), "          GOCACHE: ${{ runner.temp }}/heliopause-platform-tools/go-build\n", "", 1),
+		"different platform cache":                     strings.Replace(string(contents), "GOCACHE: ${{ runner.temp }}/heliopause-platform-tools/go-build", "GOCACHE: ${{ runner.temp }}/other-go-build", 1),
+		"implicit platform flags":                      strings.Replace(string(contents), "          GOFLAGS: ''\n", "", 1),
+		"extra platform flags":                         strings.Replace(string(contents), "GOFLAGS: ''", "GOFLAGS: -race", 1),
+		"conditional platform profile":                 strings.Replace(string(contents), "        run: go run -trimpath ./scripts/check platform", "        if: false\n        run: go run -trimpath ./scripts/check platform", 1),
+		"missing CUDA single-selection guard":          strings.Replace(string(contents), "select at most one CUDA PyTorch qualification profile", "CUDA profiles unchecked", 1),
+		"missing CUDA strict freshness gate":           strings.Replace(string(contents), "go run ./scripts/check qualification-freshness", "echo skipped", 1),
+		"legacy CUDA profile":                          string(contents) + "\n# HELOX_PYTORCH_PROFILE=cu128\n",
+		"sidecar fallback":                             strings.Replace(string(contents), "--sidecar-usage-policy=STRICT", "--sidecar-usage-policy=LEGACY_DEPRECATED_SLOW_EMBEDDED_FALLBACK", 1),
+		"permissive sidecar download":                  strings.Replace(string(contents), "--download-sidecars=NEVER", "--download-sidecars=ALWAYS", 1),
+		"extra job":                                    string(contents) + "\n  security:\n    runs-on: ubuntu-24.04\n",
 	}
 	for name, fixture := range tests {
 		t.Run(name, func(t *testing.T) {
@@ -219,6 +243,39 @@ func TestCargoIntegrationRejectsSkippedOrSubstitutedOwner(t *testing.T) {
 				t.Fatal("inactive or duplicate Cargo gate accepted")
 			}
 		})
+	}
+}
+
+func TestCompiledFixtureConsumersRequirePackageSubshell(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "..", workflowRelativePath))
+	if err != nil {
+		t.Fatal(err)
+	}
+	source := string(body)
+	if findings := validatePackageFixtureWorkingDirectories(source); len(findings) != 0 {
+		t.Fatal(findings)
+	}
+	for command, directory := range map[string]string{uvPublicResolverIntegrationCommand: "internal/sandbox", cargoSourceIntegrationCommand: "internal/sandbox", uvSyncCLIIntegrationCommand: "internal/bootstrap"} {
+		scope := "          (\n            cd " + directory + "\n            " + command + "\n          )"
+		if strings.Count(source, scope) != 1 {
+			t.Fatal("canonical fixture command has no unique package scope")
+		}
+		for name, replacement := range map[string]string{
+			"missing cd":        "          (\n            " + command + "\n          )",
+			"wrong cd":          strings.Replace(scope, "cd "+directory, "cd internal/cli", 1),
+			"commented cd":      strings.Replace(scope, "cd "+directory, "# cd "+directory, 1),
+			"outside subshell":  "          cd " + directory + "\n          (\n            " + command + "\n          )",
+			"unscoped command":  "          " + command,
+			"commented command": strings.Replace(scope, command, "# "+command, 1),
+			"duplicate scope":   scope + "\n" + scope,
+		} {
+			t.Run(name+command, func(t *testing.T) {
+				fixture := strings.Replace(source, scope, replacement, 1)
+				if len(validateCIWorkflow(fixture, selectedGoForTest(t))) == 0 {
+					t.Fatal("incorrect fixture cwd scope accepted")
+				}
+			})
+		}
 	}
 }
 

@@ -1,0 +1,220 @@
+{
+  "schema_version": 1,
+  "baseline": "323f52cd3ac252125d9f95dccf79288b5372c3af",
+  "scope": "P1c C2 actual UV native stdin compile, pylock sync and bounded installed-control collection; no production public resolver or CLI",
+  "sources": [
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "599913889fb9bfa7f6cb3dd1f9fd26d8bb902608509725364b6deebc9f2babda"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "16532b8ebe49f938a236ad025e4d65cb2a91f14e44dfb61db58aafc4760dc195"
+    },
+    {
+      "path": "internal/sandbox/pypi_resolver.go",
+      "sha256": "1580f6b0ebcc2e45978487d48d836a6975703e26505fc508f1f538b833c76d87"
+    },
+    {
+      "path": "internal/sandbox/shared_observer.go",
+      "sha256": "af64aaedcea74bfa561423f1237ebb4acc585d7db6728121e59b4383a1e71551"
+    },
+    {
+      "path": "internal/sandbox/uv_runtime.go",
+      "sha256": "a2154c99d7e5f5c6e34e3d4542eab1f3c51feaf1d9d4fdc7c391c82024dd24cd"
+    },
+    {
+      "path": "internal/sandbox/uv_runtime_test.go",
+      "sha256": "a742c9dc037b9d877c47b08c1dcbc2902c5e2907c22aac4148bb6cf65ebc3b2d"
+    },
+    {
+      "path": "internal/sandbox/uv_output_volume_test.go",
+      "sha256": "2140c86a3ac579ac9dc64a0a92485c826d134ab5181ee86a12a75f56760bace3"
+    },
+    {
+      "path": "internal/sandbox/uv_runtime_real_test.go",
+      "sha256": "b4b7234dcb205c8646de0133f076636ad25bc96fe7a6611b1084a61cb1335a9b"
+    },
+    {
+      "path": "internal/sandbox/uv_native_output.go",
+      "sha256": "eed785cc3d6972a731b4d563c52b6a51de6f3efa4592847ab1683f0e670b5650"
+    },
+    {
+      "path": "internal/sandbox/uv_native_output_test.go",
+      "sha256": "c433cbcb7f135a9b9642a728b71f07379f9e66a59c70ae4fdbdcb632bddbb205"
+    },
+    {
+      "path": ".github/workflows/heliopause-ci.yml",
+      "sha256": "ec492c08935738b7b4950745fde6fffcbb5db5b9ea8082b60b12c08a6fa04737"
+    },
+    {
+      "path": "scripts/check/workflow.go",
+      "sha256": "1111088e54d755bf38b40878db1c64264ef931d153a1a3ee5cc3ee654ed529a4"
+    },
+    {
+      "path": "scripts/check/workflow_test.go",
+      "sha256": "9a8a604d6387757f3f8585f3cbd509321aee1707f8f3f804b096a681ff879c39"
+    }
+  ],
+  "cpp": {
+    "recipe": "scripts/build-gvisor-observer-release.sh",
+    "exit": 0,
+    "seconds": 298.785,
+    "latch_tests": 106,
+    "observer": {
+      "sha256": "ed1f1408bf6ca1eeb069f70fdb81dd439130319c835a551ea73f1b38c5dfdb33"
+    }
+  },
+  "checks": [
+    {
+      "profile": "format",
+      "exit": 0,
+      "seconds": 0.956,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "quick",
+      "exit": 0,
+      "seconds": 30.89,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "security",
+      "exit": 0,
+      "seconds": 5.387,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "docs",
+      "exit": 0,
+      "seconds": 0.218,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    },
+    {
+      "profile": "workflow",
+      "exit": 0,
+      "seconds": 0.706,
+      "source": "/tmp/haa-uv-runtime-0_e6zmn4/source"
+    }
+  ],
+  "race": {
+    "command": [
+      "test",
+      "-race",
+      "-count=1",
+      "-timeout=2m",
+      "-run",
+      "^Test(UVInstalledControls|UVNativeOutput|UVRuntime|UVOutputVolume)",
+      "./internal/artifact/pypi",
+      "./internal/sandbox"
+    ],
+    "exit": 0,
+    "seconds": 7.919
+  },
+  "native": {
+    "uid": 1000,
+    "runtime": "actual pinned gVisor",
+    "network": "none",
+    "engine": "29.8.1",
+    "test_exit": 0,
+    "test_seconds": 13.497,
+    "startup": {
+      "seconds": 4.1,
+      "trace_events": 29,
+      "trace_bytes": 3306,
+      "complete": true
+    },
+    "empty_target_query": {
+      "seconds": 4.25,
+      "trace_events": 31,
+      "trace_bytes": 3551,
+      "complete": true
+    },
+    "compile_sync_collection": {
+      "seconds": 5.07,
+      "controls": 1,
+      "lock_bytes": 616,
+      "trace_events": 35,
+      "trace_bytes": 4008,
+      "complete": true
+    },
+    "fixture": "inert local wheel; intentionally rejected by public-source ParseUVLock",
+    "artifact_code_executed": false,
+    "public_registry_or_policy_qualification": false,
+    "host_before_after_identical": true,
+    "remaining_containers": 0,
+    "remaining_volumes": 0,
+    "remaining_observer_endpoints": 0,
+    "daemon_waits": [
+      0,
+      0
+    ],
+    "raw": "docs/github-logs/package-client-quarantine-20261021/uv-output-aux-lock-actual.json"
+  },
+  "corrections": {
+    "uv_root_data_read": "only exact OCI /usr/lib/os-release flags557056 under existing consumed/active UV CONTROL root guards",
+    "collector_auxiliary_lock": "only regular empty site/.lock mode0666 uid/gid1000 is discarded; never a selection or completion proof",
+    "other_profiles_and_promotion_mode_policy_changed": false
+  },
+  "cleanup": {
+    "completed_native_workspaces": [
+      {
+        "targets": [
+          "/tmp/haa-uv-runtime-0_e6zmn4/c2-volume-native"
+        ],
+        "entries": 6833,
+        "unique_regular_logical_bytes": 688258325,
+        "references": 0,
+        "query_errors": 0,
+        "all_absent": true
+      },
+      {
+        "targets": [
+          "/tmp/haa-uv-runtime-0_e6zmn4/compile-osrelease"
+        ],
+        "entries": 6833,
+        "unique_regular_logical_bytes": 688257641,
+        "references": 0,
+        "query_errors": 0,
+        "all_absent": true
+      },
+      {
+        "targets": [
+          "/tmp/haa-uv-runtime-0_e6zmn4/output-mode-diagnostic"
+        ],
+        "entries": 6833,
+        "unique_regular_logical_bytes": 688261625,
+        "references": 0,
+        "query_errors": 0,
+        "all_absent": true
+      },
+      {
+        "targets": [
+          "/tmp/haa-uv-runtime-0_e6zmn4/output-aux-lock"
+        ],
+        "entries": 6833,
+        "unique_regular_logical_bytes": 688267466,
+        "references": 0,
+        "query_errors": 0,
+        "all_absent": true
+      }
+    ],
+    "retired_inputs": {
+      "files": 26,
+      "bytes": 3168313,
+      "references": 0,
+      "query_errors": 0,
+      "all_absent": true
+    }
+  },
+  "implemented": true,
+  "wired": "actual native fixture + unconditional three-case CI selector; production public resolver NO",
+  "qualified": "local native component, canonical5, related Race; same-candidate remote remains",
+  "acceptance_closed": false,
+  "missing": [
+    "public PyPI typed-network native UV producer",
+    "independent isolated exact-release metadata/archive reader and complete bound graph",
+    "guarded install/upgrade/sync, promotion controls and CLI",
+    "new source remote qualification; native macOS build/default timeout cause remains unconfirmed"
+  ]
+}

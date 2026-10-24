@@ -21,6 +21,11 @@
 - scanner, verifier와 sandbox runtime은 Port 뒤에서 별도 process·tool로 실행될 수 있다. 이를 별도 Heliopause service나 Go module로 취급하지 않는다.
 - gVisor observer helper와 privileged network helper는 서로 다른 trust/privilege
   boundary다. 하나의 범용 Host helper로 합치지 않는다.
+- 2026-10-20 사용자가 승인한 M13-004 본체 업데이트에는 별도의 좁은 설치 전용
+  privileged executable을 허용한다. 보호된 기존 controller가 검역한 공식 릴리스
+  세트의 고정 설치·활성화·복원만 소유하며, 기존 network helper에 설치 권한을
+  추가하지 않는다. 구체 계약은 [자체 업데이트](../user-journey-cli-ia/07-self-update.md)를
+  따른다. 범용 root command API, `sudo helox` 전체 실행과 setuid 본체는 허용하지 않는다.
 
 ### 목표 구조
 
@@ -71,6 +76,7 @@
 | Path | Responsibility | Must not own |
 | --- | --- | --- |
 | `cmd/helox` | process entrypoint; bootstrap 호출과 exit 처리 | workflow, 검사, Policy, Adapter 구현 |
+| `cmd/haa-release-installer` | 승인된 M13-004의 별도 installation-role process entry; fixed serve/recover와 검증·배치된 native 설치의 root-only register와 initial bootstrap-files, inert help/version | user-facing product CLI, 일반 root command/target/UID/service dispatch, Policy 재판정 |
 | `internal/bootstrap` | Composition Root; 구체 구현 생성·등록·wiring | business rule, 검사 해석, Policy rule |
 | `internal/cli` | Cobra command, 입력 변환, terminal/machine output | Adapter 직접 호출, 검사·판정 로직 |
 | `internal/application` | install·inspect·review use case와 workflow orchestration | 구체 npm/scanner/runtime/storage 구현 생성·참조 |
@@ -83,6 +89,8 @@
 | `internal/sandbox` | Linux 격리 backend Adapter, Session lifecycle와 raw Observation | Finding 해석, Policy Decision, Host Promotion |
 | `internal/runtimeidentity` | canonical runtime lock에서 생성한 immutable gVisor·Docker·Node·Python identity | lock 외 수동 runtime identity, Core/Application/Policy concern |
 | `internal/hosttool` | root-owned executable identity, minimal child environment와 verified local Docker endpoint를 소유하는 production Infrastructure executor | Core/Application/Policy, shell command 또는 Artifact 입력 기반 tool selection |
+| `internal/releaseactivation` | 승인된 M13-004 설치 역할의 protected registration/provenance·runtime lease·narrow installation lifecycle Adapter | Policy 재판정, 검역 우회, generic root command/임의 target·UID·service 선택 |
+| `internal/releasebootstrap` | ordinary 최초 공식 native 세트의 bounded 획득·offline provenance·owned file export; actual preparation Port | Root 작업, runtime 설치·quarantine/Policy 판정, user URL/credential/API origin 선택 |
 | `internal/evidence` | Evidence/Result/SBOM 저장 Adapter와 trusted writer | Finding 해석, Staging, Promotion |
 | `internal/promotion` | Staging과 trusted Promotion Adapter | Policy 재판정, 재검사, 자유로운 dependency resolve |
 | `internal/testutil` | 여러 package가 공유하는 test-only helper | production workflow 또는 Domain rule |

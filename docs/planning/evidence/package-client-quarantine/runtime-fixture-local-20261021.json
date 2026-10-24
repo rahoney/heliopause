@@ -1,0 +1,63 @@
+{
+  "baseline": "cdb9e9304d095258232ca9bea206e0c2ef427aee",
+  "scope": "unsigned file-mechanics fixtures use generated current runtime tuple; production and published signed evidence unchanged",
+  "checks": {
+    "format": {
+      "exit": 0,
+      "seconds": 0.49
+    },
+    "quick": {
+      "exit": 0,
+      "seconds": 27.61
+    },
+    "security": {
+      "exit": 0,
+      "seconds": 4.62
+    },
+    "docs": {
+      "exit": 0,
+      "seconds": 0.2
+    }
+  },
+  "files": [
+    {
+      "path": "internal/testutil/releasefixture/runtime.go",
+      "sha256": "1027291e40375af5c46b57fe032d5316bba63e23632dfba41f8650a8b0c70a16"
+    },
+    {
+      "path": "internal/artifact/githubrelease/heliopause_set_unix_test.go",
+      "sha256": "0f754a90e9d5ad56ea54649d433959e4c2c4e53fb8dd2c3fdb4798625db44a64"
+    },
+    {
+      "path": "internal/releasebootstrap/preparation_linux_test.go",
+      "sha256": "14f307884f69488bd8b95b79aab06ae68c09d3be0024c232b83ea0462372fcb0"
+    },
+    {
+      "path": "internal/releaseinstall/metadata_test.go",
+      "sha256": "91038496f2c2fd6c465222a0da9da21d5432cbfb199336aefdd7162f6f8c4806"
+    },
+    {
+      "path": "internal/releaseinstall/system_namespace_linux_test.go",
+      "sha256": "c26e4d64aa2f07cc12c7864e730335faed92f099990218faecb94a0034be19a9"
+    },
+    {
+      "path": "internal/releaseactivation/wire_linux_test.go",
+      "sha256": "0e5d9c71b5a1256724539976e0af04938b952aa7c321451dafa63c0a4cfe5674"
+    },
+    {
+      "path": "scripts/check/architecture.go",
+      "sha256": "f69f2828942fa4b746f43ba21007c09b1160385b2fb79014d486d1564d8be6ec"
+    }
+  ],
+  "historical_evidence_unchanged": true,
+  "preserved_boundaries": [
+    "real HAA provenance positive/unsigned substitution refusal",
+    "foreign runtime rejection before verifier and file open",
+    "source/staging-only and incomplete/authenticity set outcomes",
+    "private namespace and wire fixture binding; actual namespace qualification remains"
+  ],
+  "remaining": [
+    "new source frozen Go1.26.10 plan/whole verify",
+    "same final source vulnerability/remote CPU/CUDA qualification"
+  ]
+}

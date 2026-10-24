@@ -29,3 +29,33 @@ func (s *CargoAddService) Resolve(ctx context.Context, reference domain.Artifact
 	}
 	return executeProjectUpdate(ctx, reference, install, s.resolver, s.promoter, s.inspection, s.staging, "crates-io", "Cargo", "add")
 }
+
+// CargoUpdateService quarantines the whole selected lock graph. Enrollment
+// intent is supplied by the per-request mutation adapter before selection.
+type CargoUpdateService struct {
+	resolver   ports.ProjectLockUpdateResolver
+	promoter   ports.ProjectMutation
+	inspection ProjectInspection
+	staging    ports.ProjectCacheStaging
+}
+
+func NewCargoUpdateService(resolver ports.ProjectLockUpdateResolver, promoter ports.ProjectMutation, inspection ProjectInspection, staging ports.ProjectCacheStaging) (*CargoUpdateService, error) {
+	if resolver == nil || promoter == nil || inspection == nil || staging == nil {
+		return nil, errors.New("cargo update requires guarded lock selection, inspection and cache staging")
+	}
+	return &CargoUpdateService{resolver, promoter, inspection, staging}, nil
+}
+func (s *CargoUpdateService) Update(ctx context.Context, install domain.InstallContext, selector string) (domain.ProjectVerifiedSet, error) {
+	if s == nil {
+		return domain.ProjectVerifiedSet{}, errors.New("cargo update service is unavailable")
+	}
+	selected, err := executeGuardedProjectUpdate(ctx, install, s.promoter, s.inspection, s.staging, "crates-io", "Cargo",
+		func(controls []domain.ProjectControlFile) (domain.ProjectDependencyUpdate, error) {
+			update, err := s.resolver.ResolveProjectLockUpdate(ctx, install, controls, selector)
+			if err == nil && update.HasRequestedResolution() {
+				return domain.ProjectDependencyUpdate{}, errors.New("cargo update requires complete-project selection without a requested primary")
+			}
+			return update, err
+		})
+	return selected.verified, err
+}

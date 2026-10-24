@@ -9,8 +9,9 @@
 - 구현 언어: Go
 - CLI framework: Cobra
 - 현재 상태: M0–M11 qualification 및 post-qualification release hardening, M12-001~005 생태계 acceptance·전체 qualification·feature freeze와 M12-02 최종 red-team/fix gate 완료. PR29·PR30 merge와 main CI를 확인했고 M13-001 저장소 보호 설정 적용·재조회를 완료했다.
-- 완료 작업: M12·M12-02 및 보안 패치 전달, M13-001 — 저장소 보호 설정 (`COMPLETE`)
-- 현재 작업: M13-003 — canonical release build·OS package qualification (`IN_PROGRESS`). `.deb`·`.rpm`과 manifest 기반 검증 및 PR37 source CI325 전체 통과. 실제 릴리스 build·attestation·clean-host 설치 검증은 남아 있다.
+- 완료 작업: M12·M12-02 및 보안 패치 전달, M13-001 저장소 보호·M13-003 build/package 검증, CLI-UX-001·002 CLI 사용성·OS 언어 감지와 SEC-UPD-001 업데이트 검역 (`COMPLETE`)
+- 최근 완료: CLI-UX-003 대화형 시작 화면 (`COMPLETE`). 소스4cfe29e의 [CI352](https://github.com/rahoney/heliopause/actions/runs/39316007445)에서 macOS·Linux 실제 소비자·Required 포함 열 개 검사가 성공했다. [Qualification](docs/planning/evidence/cli-launcher/qualification-20261020.md)이 소스·복원·정리와 과거 실패의 범위를 연결한다. 기존 보안·파일 한도와 게시 전 전체 동기화를 유지했다. [업데이트 검역](docs/planning/evidence/update-quarantine/final-review-20261019.md)은 기존 여섯 생태계 범위에서 완료 상태다. PR38은 draft이며 main 병합·영구 CLI 활성화·공개 배포는 별도다.
+- 현재 작업: M13-004 `IN_PROGRESS`. 본체의 same-runtime 검역 업데이트는 [실제 서명 qualification](docs/planning/evidence/m13-004-convenience/signed-native-qualification-20261020.md)을 마쳤다. UV pip 설치·업데이트와 complete sync는 [CI391 실제 검증](docs/planning/evidence/package-client-quarantine/p1f-uv-sync-cli-ci391-20261023.json)과 [같은 후보의 CPU·세 CUDA qualification](docs/planning/evidence/package-client-quarantine/p1-uv-acceptance-20261023.json)을 모두 통과했다. P1은 `COMPLETE / QUALIFIED / ACCEPTANCE_CLOSED`이며 [Go1.27.3 전환](docs/planning/evidence/package-client-quarantine/go1273-acceptance-20261024.json)도 동일 후보의 네 CI와 로컬 SDK·도구·runtime 전환·정리까지 완료했다. 현재 P2 pnpm 착수 감사부터 진행하며 이후 Bun·프로젝트/실행기를 확장한다. 실제 지원 범위와 순서는 [확장 계획](docs/planning/20-package-client-quarantine-plan.md)과 [Queue](docs/planning/02-current-work-queue.md)를 따른다. 공식 채널 이름·publisher binding·main 병합·공개 배포는 별도이며 첫 정식 공개판 목표는 v1.0.0이다.
 - 선행 판정: M13-002는 [승인된 C3](docs/planning/18-m13-production-release-operations-contract.md#m13-002--protected-branch-qualification)에 따라 `ACCEPTED_WITH_EXCEPTION / QUALIFIED=NO / ACCEPTANCE_CLOSED=YES`다. 실제 missing-CLA는 `NOT_TESTED / DEFERRED`이며 최초 외부 기여 병합 전에 검증한다. 필수 CLA 보호·서명은 유지하고 구체적 merge·tag·publish는 별도 후보 검토를 따른다.
 - 유지보수 완료: `UPG-001..006 COMPLETE / QUALIFIED`, PR34/main CI320 전달 완료. 공개 attested release·상시 service·기존 full-Race 후속은 별도 범위로 유지한다.
 - 진행 상태의 canonical owner: [`docs/planning/02-current-work-queue.md`](docs/planning/02-current-work-queue.md)
@@ -29,7 +30,7 @@ Copyright License 및 Option Five 조건과 자동 CLA status check를 충족해
 
 ## Build
 
-Heliopause는 Go `1.26.9` 이상이 필요하며, 개발·CI toolchain은 Go `1.26.9`로 고정한다.
+Heliopause는 Go `1.27.3` 이상이 필요하며, 개발·CI toolchain은 Go `1.27.3`으로 고정한다.
 
 개발용 Go는 영구 경로 `$HOME/.local/go`의 단일 SDK를 사용하고 해당 `bin`을
 PATH에 둔다. `GOTOOLCHAIN=local`로 자동 SDK 추가 다운로드를 금지한다. 버전
@@ -69,7 +70,16 @@ npm/pip install은 기본적으로 현재 managed project 또는
 active virtual environment를 사용하며, `--target`은 고급 absolute destination
 override다. GitHub install은 기본 user bin destination 또는 새 `--target`을 사용한다.
 
+터미널에서는 사람용 결과를 기본 표시하고, 기존 npm/PyPI/GitHub 출력은
+파이프로 보내면 JSON을 유지한다. 언어 auto는 Windows/macOS 표시 언어를 우선하고 조회 불가 시 locale·영어로 대체하며, 저장하거나
+일회성으로 지정할 수 있다. 영어·한국어 전체 문구와 독일어·프랑스어·스페인어·
+브라질 포르투갈어·일본어 핵심 설명을 지원하고 누락 번역은 영어로 표시한다.
+[표시 계약](docs/user-journey-cli-ia/05-terminal-presentation.md)을 따른다.
+
 ```sh
+helox config language ko       # 저장; auto로 시스템 언어 복귀
+helox --lang en --help         # 이번 명령에만 적용
+helox --output json npm inspect is-number@7.0.0
 helox doctor
 
 helox npm inspect '<package>[@<version>]'

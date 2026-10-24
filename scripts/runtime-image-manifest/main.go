@@ -1,5 +1,5 @@
 // Command runtime-image-manifest emits the lock-owned runtime image contract.
-// It deliberately does not build or republish upstream Docker Official Images.
+// It does not build or republish upstream official images.
 package main
 
 import (
@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-const manifestSchema = "helox.runtime-image-manifest/v1"
+const manifestSchema = "helox.runtime-image-manifest/v2"
 
 var (
 	digestPattern        = regexp.MustCompile(`^sha256:[0-9a-f]{64}$`)
@@ -36,12 +36,29 @@ type runtimeLock struct {
 		PythonVersion string `json:"python_version"`
 		PipVersion    string `json:"pip_version"`
 	} `json:"python_image"`
+	UVImage struct {
+		Reference    string `json:"reference"`
+		Version      string `json:"uv_version"`
+		Architecture string `json:"architecture"`
+	} `json:"uv_image"`
 	RustImage struct {
 		Reference    string `json:"reference"`
 		RustVersion  string `json:"rust_version"`
 		Architecture string `json:"architecture"`
 		Target       string `json:"target"`
 	} `json:"rust_image"`
+	PNPMTool struct {
+		Version      string `json:"pnpm_version"`
+		Architecture string `json:"architecture"`
+		Tool         struct {
+			SHA256 string `json:"sha256"`
+			Size   int64  `json:"size"`
+		} `json:"tool"`
+		Notices struct {
+			SHA256 string `json:"sha256"`
+			Size   int64  `json:"size"`
+		} `json:"notices"`
+	} `json:"pnpm_tool"`
 }
 
 type runtimeImageManifest struct {
@@ -50,6 +67,19 @@ type runtimeImageManifest struct {
 	CustomImageDecision string              `json:"custom_image_decision"`
 	Provenance          provenanceContract  `json:"provenance"`
 	Images              []runtimeImageEntry `json:"images"`
+	Tools               []runtimeToolEntry  `json:"tools"`
+}
+
+type runtimeToolEntry struct {
+	Name          string `json:"name"`
+	Version       string `json:"tool_version"`
+	Platform      string `json:"platform"`
+	Asset         string `json:"asset"`
+	SHA256        string `json:"sha256"`
+	Size          int64  `json:"size"`
+	NoticesAsset  string `json:"notices_asset"`
+	NoticesSHA256 string `json:"notices_sha256"`
+	NoticesSize   int64  `json:"notices_size"`
 }
 
 type provenanceContract struct {
@@ -124,7 +154,7 @@ func run(arguments []string) error {
 }
 
 func buildManifest(lock runtimeLock) (runtimeImageManifest, error) {
-	if lock.SchemaVersion != 1 {
+	if lock.SchemaVersion != 3 {
 		return runtimeImageManifest{}, errors.New("runtime lock schema is unsupported")
 	}
 	nodeMatch := nodeReferencePattern.FindStringSubmatch(lock.NodeImage.Reference)
@@ -147,15 +177,26 @@ func buildManifest(lock runtimeLock) (runtimeImageManifest, error) {
 	if err != nil || lock.RustImage.Architecture != "amd64" || lock.RustImage.Target != "x86_64-unknown-linux-gnu" {
 		return runtimeImageManifest{}, errors.New("rust runtime image identity is invalid")
 	}
+	uv := lock.UVImage
+	prefix := "ghcr.io/astral-sh/uv:" + uv.Version + "@"
+	if !versionPattern.MatchString(uv.Version) || uv.Architecture != "amd64" || !strings.HasPrefix(uv.Reference, prefix) || !digestPattern.MatchString(strings.TrimPrefix(uv.Reference, prefix)) {
+		return runtimeImageManifest{}, errors.New("uv upstream runtime image identity is invalid")
+	}
+	uvImage := runtimeImageEntry{Name: "uv", Reference: uv.Reference, Repository: "ghcr.io/astral-sh/uv", Digest: strings.TrimPrefix(uv.Reference, prefix), Version: uv.Version}
+	pnpm := lock.PNPMTool
+	if !versionPattern.MatchString(pnpm.Version) || pnpm.Architecture != "amd64" || !digestPattern.MatchString("sha256:"+pnpm.Tool.SHA256) || pnpm.Tool.Size <= 0 || pnpm.Tool.Size > 64<<20 || !digestPattern.MatchString("sha256:"+pnpm.Notices.SHA256) || pnpm.Notices.Size <= 0 || pnpm.Notices.Size > 64<<10 {
+		return runtimeImageManifest{}, errors.New("pnpm native runtime tool identity is invalid")
+	}
 	return runtimeImageManifest{
 		Schema:              manifestSchema,
 		CustomGHCRImage:     false,
-		CustomImageDecision: "upstream immutable image is sufficient; no HAA-owned runtime configuration is required",
+		CustomImageDecision: "upstream official immutable images, including signed Astral uv supply; no HAA-owned image is published",
 		Provenance: provenanceContract{
 			Required:     true,
 			Verification: "release candidate attestation must bind this manifest and each exact image reference",
 		},
-		Images: []runtimeImageEntry{node, python, goImage, rustImage},
+		Images: []runtimeImageEntry{node, python, goImage, rustImage, uvImage},
+		Tools:  []runtimeToolEntry{{Name: "pnpm", Version: pnpm.Version, Platform: "linux/amd64", Asset: "pnpm-linux-amd64", SHA256: pnpm.Tool.SHA256, Size: pnpm.Tool.Size, NoticesAsset: "pnpm-NOTICE.txt", NoticesSHA256: pnpm.Notices.SHA256, NoticesSize: pnpm.Notices.Size}},
 	}, nil
 }
 
