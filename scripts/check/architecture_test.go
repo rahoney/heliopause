@@ -32,6 +32,22 @@ func TestValidateCurrentImports(t *testing.T) {
 	}
 }
 
+func TestNPMArchiveInventoryHasOnlyReviewedConsumerEdge(t *testing.T) {
+	const module = "example.test/project"
+	adapter := module + "/internal/artifact/npm"
+	if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + "/internal/inspection/npm", Imports: []string{adapter}}}); len(findings) != 0 {
+		t.Fatal("reviewed archive value edge rejected", findings)
+	}
+	for _, owner := range []string{"/internal/core/domain", "/internal/application", "/internal/policy"} {
+		if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + owner, Imports: []string{adapter}}}); len(findings) == 0 {
+			t.Fatal("archive type escaped adapter boundary", owner)
+		}
+	}
+	if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + "/internal/sandbox", Imports: []string{module + "/internal/inspection/npm"}}}); len(findings) == 0 {
+		t.Fatal("sandbox acquired a reverse inspection dependency")
+	}
+}
+
 func TestValidateCurrentImportsRejectsBoundaryShortcut(t *testing.T) {
 	t.Parallel()
 

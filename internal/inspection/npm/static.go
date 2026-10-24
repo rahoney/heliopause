@@ -14,14 +14,15 @@ import (
 	"path/filepath"
 	"strings"
 
+	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
 const (
-	decodedLimit  = 200 << 20
-	entryLimit    = 10000
-	fileLimit     = 20 << 20
-	manifestLimit = 1 << 20
+	decodedLimit  = artifactnpm.ArchiveDecodedLimit
+	entryLimit    = artifactnpm.ArchiveEntryLimit
+	fileLimit     = artifactnpm.ArchiveFileLimit
+	manifestLimit = artifactnpm.ArchiveManifestLimit
 )
 
 // Inspector reads only the controlled Intake root and never extracts an archive.
@@ -37,6 +38,10 @@ func NewInspector(intakeRoot string) (*Inspector, error) {
 
 // Inspect validates archive structure and package manifest without executing or extracting content.
 func (i *Inspector) Inspect(ctx context.Context, artifact domain.AcquiredArtifact) (domain.InspectionReport, error) {
+	return i.inspect(ctx, artifact, nil)
+}
+
+func (i *Inspector) inspect(ctx context.Context, artifact domain.AcquiredArtifact, capture *archiveCapture) (domain.InspectionReport, error) {
 	if ctx == nil {
 		return domain.InspectionReport{}, errors.New("context is required")
 	}
@@ -50,21 +55,42 @@ func (i *Inspector) Inspect(ctx context.Context, artifact domain.AcquiredArtifac
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
-	file, err := os.Open(path)
+	var file *os.File
+	if capture == nil {
+		file, err = os.Open(path)
+	} else {
+		file, err = i.openInventorySource(path)
+	}
 	if err != nil {
 		return domain.InspectionReport{}, fmt.Errorf("open controlled npm tarball: %w", err)
 	}
 	defer file.Close()
-	gzipReader, err := gzip.NewReader(file)
+	var input io.Reader = file
+	if capture != nil {
+		input, err = capture.input(file, artifact)
+		if err != nil {
+			return domain.InspectionReport{}, err
+		}
+	}
+	gzipReader, err := gzip.NewReader(input)
 	if err != nil {
 		return i.violationReport(artifact, "M2_ARCHIVE_INVALID", "npm tarball gzip structure is invalid.")
 	}
 	defer gzipReader.Close()
-	reader := tar.NewReader(io.LimitReader(gzipReader, decodedLimit+1))
+	var decoded io.Reader = io.LimitReader(gzipReader, decodedLimit+1)
+	if capture != nil {
+		decoded = capture.contents(gzipReader)
+	}
+	reader := tar.NewReader(decoded)
 	seen := map[string]bool{}
 	entries, manifests := 0, 0
 	lifecycle := []string{}
 	for {
+		if capture != nil {
+			if err := ctx.Err(); err != nil {
+				return domain.InspectionReport{}, err
+			}
+		}
 		header, nextErr := reader.Next()
 		if nextErr == io.EOF {
 			break
@@ -87,6 +113,7 @@ func (i *Inspector) Inspect(ctx context.Context, artifact domain.AcquiredArtifac
 		if header.Size > fileLimit {
 			return i.violationReport(artifact, "M2_ARCHIVE_LIMIT_EXCEEDED", "npm tarball file-size limit was exceeded.")
 		}
+		var manifest []byte
 		if name == "package/package.json" {
 			manifests++
 			if manifests != 1 {
@@ -101,10 +128,21 @@ func (i *Inspector) Inspect(ctx context.Context, artifact domain.AcquiredArtifac
 				return i.violationReport(artifact, "M2_MANIFEST_INVALID", "npm package manifest does not match the resolved artifact identity.")
 			}
 			lifecycle = keys
+			manifest = body
+		}
+		if capture != nil {
+			if err := capture.entry(ctx, header, name, reader, manifest); err != nil {
+				return domain.InspectionReport{}, fmt.Errorf("read npm inventory entry: %w", err)
+			}
 		}
 	}
 	if manifests != 1 {
 		return i.violationReport(artifact, "M2_MANIFEST_INVALID", "npm tarball must contain exactly one package manifest.")
+	}
+	if capture != nil {
+		if err := capture.finish(ctx, artifact); err != nil {
+			return domain.InspectionReport{}, err
+		}
 	}
 	summary := fmt.Sprintf("npm static archive inspection completed with %d entries.", entries)
 	if len(lifecycle) != 0 {

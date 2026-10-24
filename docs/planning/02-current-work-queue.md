@@ -16,7 +16,7 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — rc6/native4 same-runtime baseline IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; P2/native5 expansion locally verified only, guest/whole qualification and channel scope remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2c5-B3 — B2 exact target command/lineage and synthetic transitive+peer normal/failure LOCAL VERIFIED; production static-all/layout/prepare edit map next; product dynamic INCOMPLETE; CI403/db464fd ten SUCCESS; P2 acceptance NO
+Next action: M13-004/P2c5-B3 — B2 exact target command/lineage and synthetic transitive+peer normal/failure LOCAL VERIFIED; B3a archive inventory LOCAL VERIFIED; B3b full layout edit map next; production static-all/prepare remain; product dynamic INCOMPLETE; CI403/db464fd ten SUCCESS; P2 acceptance NO
 Current substep: M13-004/P2 — IN_PROGRESS; offline supply/native distribution LOCAL VERIFIED; exact guest admission and product graph/layout/CLI gaps active; support not yet advertised
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
@@ -100,6 +100,14 @@ PASS다. 기존 단일 npm 실행/관찰기/Policy는 불변이며 실제 PNPM d
 transitive/peer의 synthetic positive/exit37·기존8 actual 회귀를 확인했다. Production layout/
 static-all/aggregate와 공개 프로젝트 검역 연결은 B3에서 이어가며 이 primitive를 ALLOW로
 표시하지 않는다. B2는 아직 원격403 source에 포함되지 않았다. 같은 M13-004만 IN_PROGRESS다.
+
+### 2026-10-24 P2c5-B3 archive/layout 착수 감사
+
+[B3 착수 감사·B3a 수정 지도·두 번째 검토](./evidence/package-client-quarantine/p2c5b3-pnpm-layout-plan-20261024.md)를
+완료했다. 기존 정적 tar 순회에 선택적 per-file inventory를 더하고 기존 Inspect 결과는
+보존한다. 최종 Quick/security/docs·세 package 전체 Race26.274s, 실제 public
+is-number4/node-sass334 entries의 Acquire/SRI·원래 report/Evidence 일치도 PASS다. 전체 native layout/prepare/static-all/aggregate는 순차 후속이며 current product의
+transitive INCOMPLETE와 전체 P2 acceptance NO를 유지한다. M13-004 하나만 IN_PROGRESS다.
 
 ### 2026-10-24 CI403 묶음 checkpoint 확인
 

@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 	"time"
 
@@ -62,6 +63,10 @@ func TestPublicArchiveInstallActionFacts(t *testing.T) {
 			if err != nil || len(report.Findings()) != 0 {
 				t.Fatalf("static archive inspection: %v %v", report, err)
 			}
+			inventory, measured, err := inspector.InspectArchive(ctx, artifact)
+			if err != nil || !inventory.Matches(artifact) || len(inventory.Entries()) == 0 || !reflect.DeepEqual(report, measured) {
+				t.Fatal("public inventory lost measured subject or original static report", err)
+			}
 			store, err := local.NewStore(records)
 			if err != nil {
 				t.Fatal(err)
@@ -104,7 +109,7 @@ func TestPublicArchiveInstallActionFacts(t *testing.T) {
 			if err := json.Unmarshal(body, &saved); err != nil || saved.Kind != test.kind || saved.SHA256 != artifact.Digest().String() || saved.RecordSHA256 == "" {
 				t.Fatalf("stored fact lost: %v %v", saved, err)
 			}
-			t.Logf("public_archive identity=%s@%s bytes=%d sha256=%s kind=%s references=%d; dynamic/install not executed", artifact.Identity().Name(), artifact.Identity().Version(), artifact.SizeBytes(), artifact.Digest().String(), fact.Kind(), len(refs))
+			t.Logf("public_archive identity=%s@%s bytes=%d sha256=%s kind=%s references=%d inventory_entries=%d; dynamic/install not executed", artifact.Identity().Name(), artifact.Identity().Version(), artifact.SizeBytes(), artifact.Digest().String(), fact.Kind(), len(refs), len(inventory.Entries()))
 		})
 	}
 }
