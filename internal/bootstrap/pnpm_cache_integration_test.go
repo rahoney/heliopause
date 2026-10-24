@@ -5,6 +5,7 @@ package bootstrap
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
@@ -14,6 +15,7 @@ import (
 	"github.com/rahoney/heliopause/internal/application"
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/evidence"
 	"github.com/rahoney/heliopause/internal/evidence/local"
 	"github.com/rahoney/heliopause/internal/hosttool"
 	inspectionnpm "github.com/rahoney/heliopause/internal/inspection/npm"
@@ -129,7 +131,11 @@ func TestPNPMPublicApprovedCacheIntegration(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			quarantine, err := application.NewProjectInspectService(source, verificationnpm.IntegrityVerifier{}, inspector, store, policy.M3{}, policy.M4{}, domain.NewOperationID, domain.NewRunID)
+			operation, err := domain.NewOperationID()
+			if err != nil {
+				t.Fatal(err)
+			}
+			quarantine, err := application.NewProjectInspectService(source, verificationnpm.IntegrityVerifier{}, inspector, store, policy.M3{}, policy.M4{}, func() (domain.OperationID, error) { return operation, nil }, domain.NewRunID)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -137,7 +143,7 @@ func TestPNPMPublicApprovedCacheIntegration(t *testing.T) {
 			if err != nil || !approved.Valid() || len(approved.Inspected().Inspections()) != item.count {
 				t.Fatal("public inspection approval failed", err)
 			}
-			cache, err := promotion.NewPNPMVerifiedCache(intake, evidenceRoot, cacheRoot, frozen, store, inspector)
+			cache, err := promotion.NewPNPMVerifiedCache(intake, evidenceRoot, cacheRoot, frozen, store, inspector, evidence.Generator{}, operation)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -148,6 +154,46 @@ func TestPNPMPublicApprovedCacheIntegration(t *testing.T) {
 			data, err := cache.OpenProjectCache(ctx, staged)
 			if err != nil {
 				t.Fatal("read actual approved data", err)
+			}
+			records := filepath.Join(filepath.Dir(data), "records")
+			manifestBody, err := os.ReadFile(filepath.Join(records, "manifest.json"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			var recordManifest struct {
+				ManifestID string            `json:"manifest_id"`
+				Operation  string            `json:"operation_id"`
+				Entries    []json.RawMessage `json:"entries"`
+			}
+			if json.Unmarshal(manifestBody, &recordManifest) != nil || recordManifest.Operation != operation.String() || len(recordManifest.Entries) != item.count || recordManifest.ManifestID == "" {
+				t.Fatal("actual project Manifest lost operation/complete entries")
+			}
+			var provenance struct {
+				Schema, Operation, Manifest, Graph, Runtime, Layout string
+				Roots                                               []artifactnpm.PNPMLockedRoot
+				Packages                                            []artifactnpm.PNPMLockedPackage
+				Instances                                           []artifactnpm.PNPMLockedSnapshot
+			}
+			provenanceBody, err := os.ReadFile(filepath.Join(records, "pnpm-provenance.json"))
+			if err != nil || json.Unmarshal(provenanceBody, &provenance) != nil || provenance.Operation != operation.String() || provenance.Manifest != recordManifest.ManifestID || provenance.Graph != frozen.Snapshot().GraphDigest().String() || provenance.Runtime != frozen.RuntimeIdentity() {
+				t.Fatal("actual PNPM provenance binding failed", err)
+			}
+			wantLock, err := json.Marshal(struct {
+				Roots     []artifactnpm.PNPMLockedRoot
+				Packages  []artifactnpm.PNPMLockedPackage
+				Instances []artifactnpm.PNPMLockedSnapshot
+			}{frozen.Lock().Roots(), frozen.Lock().Packages(), frozen.Lock().Snapshots()})
+			gotLock, gotErr := json.Marshal(struct {
+				Roots     []artifactnpm.PNPMLockedRoot
+				Packages  []artifactnpm.PNPMLockedPackage
+				Instances []artifactnpm.PNPMLockedSnapshot
+			}{provenance.Roots, provenance.Packages, provenance.Instances})
+			if err != nil || gotErr != nil || !bytes.Equal(wantLock, gotLock) {
+				t.Fatal("actual native roots/packages/peer instances changed in provenance")
+			}
+			sbomBody, err := os.ReadFile(filepath.Join(records, "sbom.cdx.json"))
+			if err != nil || !json.Valid(sbomBody) || !bytes.Contains(sbomBody, []byte(recordManifest.ManifestID)) {
+				t.Fatal("actual SBOM lost Manifest binding", err)
 			}
 			for _, control := range selected.Controls() {
 				body, err := os.ReadFile(filepath.Join(data, control.Name()))
@@ -214,7 +260,7 @@ func TestPNPMPublicApprovedCacheIntegration(t *testing.T) {
 			if _, err := os.Lstat(target.String()); !os.IsNotExist(err) {
 				t.Fatal("staging created a Host project", err)
 			}
-			t.Logf("pnpm_approved_cache fixture=%s public_entries=%d stored_evidence_entries=%d native_layout_data=%t sealed=true drift_tested=%t Host_install=NOT_RUN", item.name, item.count, item.count, item.count != 0, item.count != 0)
+			t.Logf("pnpm_approved_cache fixture=%s public_entries=%d stored_evidence_entries=%d native_layout_data=%t sealed=true drift_tested=%t actual_operation_records=true full_native_provenance=true Host_install=NOT_RUN", item.name, item.count, item.count, item.count != 0, item.count != 0)
 		}) {
 			t.FailNow()
 		}

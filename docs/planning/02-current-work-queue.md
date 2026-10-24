@@ -16,7 +16,7 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — B4b1/B4b2/B4c/B4d and B5a named local qualification PASS; CI405 first fixture cwd failure corrected locally; new remote and PNPM Host/CLI/whole P2 acceptance remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2 — CI405/7e966e7 Linux+Required FAILED (compiled controlled fixture cwd ENOENT); B4d narrow caller correction/actual requalification LOCAL QUALIFIED; bundled next remote pending; B5a8a4ef5b approved data cache LOCAL QUALIFIED; Host extraction/independent records/transaction/CLI and whole P2 acceptance remain NO
+Next action: M13-004/P2 — CI406/fd3506b RUNNING, first check 2026-10-25 03:40:25 KST; B5b1 actual-operation Manifest/SBOM/full-peer provenance LOCAL QUALIFIED; B5b2 private Host materialization audit next; Host extraction/independent approval/transaction/CLI and whole P2 acceptance remain NO
 Current substep: M13-004/P2 — IN_PROGRESS; B4 production inspection LOCAL QUALIFIED; remote and Host/CLI pending; support not yet advertised
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
@@ -4915,3 +4915,13 @@ product/메모리 실패로 합치지 않는다. Helperwait0/CONFIRMED_STOPPED·
 package subshell로 고쳤다. Canonical5/Bash와 actual134.277s의 controlled3·public8/실제 검역4
 통과, Host 전후 동일/정리를 확인했다. B5a8a4는 이 실패 원격 source 이후이며 새 원격과 Host
 transaction/CLI·whole P2 acceptance는 열려 있다. 작은 수정별 재push 대신 이 단위를 묶어 전달한다.
+
+### 2026-10-25 P2 B5b1 actual-operation records local checkpoint
+
+[수정 지도·실제 결과](./evidence/package-client-quarantine/p2c5b5b1-pnpm-project-records-plan-20261025.md)에
+기존 Generator를 사용한 Manifest/SBOM과 손실 없는 native roots/packages/peer instances를 연결했다.
+실제 operation을 현재 ProjectInspectService와 같은 값으로 결합하고 schema2 receipt·현재 기록된
+Evidence/Policy·records 전체 bytes/mode/links를 Stage/Open에서 재검증한다. Canonical4/관련 세
+package 전체 Race216.546s, 실제 public peer4/empty records44.668s와 Host 불변/정리는 PASS다.
+첫 realcorpus 변수명 충돌 compile 실패는 test-only로 교정·보존했다. CI406은 앞 fd3506b이고
+Host extraction/independent retained state/transaction/adoption/CLI·whole P2 acceptance는 미완료다.

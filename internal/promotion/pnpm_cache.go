@@ -34,21 +34,23 @@ type PNPMVerifiedCache struct {
 	frozen                              artifactnpm.PNPMInspectionContext
 	evidence                            ProjectEvidenceReader
 	layout                              PNPMLayoutProvider
+	recordBuilder                       ProjectRecordBuilder
+	operation                           domain.OperationID
 	// An instance-local diagnostic can abort before the mandatory real sync.
 	beforeTreeSync func(string) error
 }
 
-func NewPNPMVerifiedCache(intake, evidence, cache string, frozen artifactnpm.PNPMInspectionContext, reader ProjectEvidenceReader, layout PNPMLayoutProvider) (*PNPMVerifiedCache, error) {
+func NewPNPMVerifiedCache(intake, evidence, cache string, frozen artifactnpm.PNPMInspectionContext, reader ProjectEvidenceReader, layout PNPMLayoutProvider, records ProjectRecordBuilder, operation domain.OperationID) (*PNPMVerifiedCache, error) {
 	roots := []string{intake, evidence, cache}
-	if !frozen.Valid() || reader == nil || layout == nil || !separateRoots(append(roots, frozen.Snapshot().Context().Target().String())) {
-		return nil, errors.New("pnpm cache requires frozen context and separate trusted roots")
+	if !frozen.Valid() || reader == nil || layout == nil || records == nil || operation.String() == "" || !separateRoots(append(roots, frozen.Snapshot().Context().Target().String())) {
+		return nil, errors.New("pnpm cache requires frozen context, actual operation, records and separate trusted roots")
 	}
 	for _, root := range roots {
 		if !filepath.IsAbs(root) || filepath.Clean(root) != root || root == "/" {
 			return nil, errors.New("pnpm cache roots must be canonical absolute paths")
 		}
 	}
-	return &PNPMVerifiedCache{intakeRoot: intake, evidenceRoot: evidence, cacheRoot: cache, frozen: frozen, evidence: reader, layout: layout}, nil
+	return &PNPMVerifiedCache{intakeRoot: intake, evidenceRoot: evidence, cacheRoot: cache, frozen: frozen, evidence: reader, layout: layout, recordBuilder: records, operation: operation}, nil
 }
 
 func pnpmCacheHash(body []byte) string { sum := sha256.Sum256(body); return hex.EncodeToString(sum[:]) }
@@ -143,6 +145,11 @@ func (c *PNPMVerifiedCache) StageProject(ctx context.Context, set domain.Project
 	if err := c.verifySources(ctx, input); err != nil {
 		return staged, err
 	}
+	material, err := c.projectRecords(ctx, set, doc)
+	if err != nil {
+		return staged, err
+	}
+	doc.Manifest = material.manifest.String()
 	if err := ctx.Err(); err != nil {
 		return staged, errors.Join(err, context.Cause(ctx))
 	}
@@ -182,6 +189,27 @@ func (c *PNPMVerifiedCache) StageProject(ctx context.Context, set domain.Project
 		}
 	}
 	if err := sealGoCacheTree(data); err != nil {
+		return staged, err
+	}
+	records := filepath.Join(temporary, "records")
+	if err := os.Mkdir(records, 0o700); err != nil {
+		return staged, err
+	}
+	for _, record := range []struct {
+		name string
+		body []byte
+	}{
+		{"manifest.json", material.document}, {"sbom.cdx.json", material.sbom}, {"pnpm-provenance.json", material.provenance},
+	} {
+		if err := writePrivateRecord(records, record.name, record.body); err != nil {
+			return staged, err
+		}
+	}
+	if err := sealGoCacheTree(records); err != nil {
+		return staged, err
+	}
+	doc.Records, err = projectCacheInventory(ctx, records, 4, pnpmProjectRecordsLimit, pnpmProjectRecordLimit, true)
+	if err != nil {
 		return staged, err
 	}
 	doc.Files, err = projectCacheInventory(ctx, data, 4, pnpmCacheDataLimit, artifactnpm.PNPMLayoutArchiveLimit, true)
@@ -237,6 +265,11 @@ func (c *PNPMVerifiedCache) OpenProjectCache(ctx context.Context, staged domain.
 	if err != nil {
 		return "", err
 	}
+	material, err := c.projectRecords(ctx, staged.Set(), expected)
+	if err != nil {
+		return "", err
+	}
+	expected.Manifest = material.manifest.String()
 	id, ok := strings.CutPrefix(staged.ContentHandle(), "project-cache:")
 	if !ok {
 		return "", errors.New("pnpm cache handle is invalid")
@@ -272,12 +305,32 @@ func (c *PNPMVerifiedCache) OpenProjectCache(ctx context.Context, staged domain.
 	if err != nil {
 		return "", err
 	}
+	expected.Records, err = projectCacheInventory(ctx, filepath.Join(rootName, "records"), 4, pnpmProjectRecordsLimit, pnpmProjectRecordLimit, true)
+	if err != nil {
+		return "", err
+	}
+	for _, record := range []struct {
+		name string
+		body []byte
+	}{
+		{"manifest.json", material.document}, {"sbom.cdx.json", material.sbom}, {"pnpm-provenance.json", material.provenance},
+	} {
+		found := false
+		for _, file := range expected.Records {
+			if file.Path == record.name && file.Kind == "file" && file.SHA256 == pnpmCacheHash(record.body) && file.Size == int64(len(record.body)) {
+				found = true
+			}
+		}
+		if !found {
+			return "", errors.New("pnpm cached records differ from current operation approval")
+		}
+	}
 	want, err := json.Marshal(expected)
 	if err != nil || !bytes.Equal(want, receipt) {
 		return "", errors.Join(errors.New("pnpm cache data or recorded approval changed"), err)
 	}
 	entries, err := os.ReadDir(rootName)
-	if err != nil || len(entries) != 2 || entries[0].Name() != "data" || entries[1].Name() != "receipt.json" {
+	if err != nil || len(entries) != 3 || entries[0].Name() != "data" || entries[1].Name() != "receipt.json" || entries[2].Name() != "records" {
 		return "", errors.Join(errors.New("pnpm cache contains a foreign member"), err)
 	}
 	if err := ctx.Err(); err != nil {

@@ -17,6 +17,7 @@ import (
 
 	artifactnpm "github.com/rahoney/heliopause/internal/artifact/npm"
 	"github.com/rahoney/heliopause/internal/core/domain"
+	"github.com/rahoney/heliopause/internal/evidence"
 	evidencelocal "github.com/rahoney/heliopause/internal/evidence/local"
 	inspectionnpm "github.com/rahoney/heliopause/internal/inspection/npm"
 	"github.com/rahoney/heliopause/internal/policy"
@@ -300,7 +301,11 @@ func newPNPMCacheFixture(t *testing.T, empty bool) pnpmCacheFixture {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fixture.cache, err = NewPNPMVerifiedCache(intake, evidenceRoot, cacheRoot, frozen, store, pnpmCacheLayoutFixture{layout: fixture.layout})
+	operation, err := domain.NewOperationID()
+	if err != nil {
+		t.Fatal(err)
+	}
+	fixture.cache, err = NewPNPMVerifiedCache(intake, evidenceRoot, cacheRoot, frozen, store, pnpmCacheLayoutFixture{layout: fixture.layout}, evidence.Generator{}, operation)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -308,7 +313,7 @@ func newPNPMCacheFixture(t *testing.T, empty bool) pnpmCacheFixture {
 }
 
 func TestPNPMApprovedDataCacheStagesWholeReceiptAndRejectsDrift(t *testing.T) {
-	for _, mutation := range []string{"normal", "archive", "control", "receipt", "extra-file", "extra-root", "mode", "symlink", "hardlink", "evidence", "missing-layout", "source"} {
+	for _, mutation := range []string{"normal", "archive", "control", "receipt", "extra-file", "extra-root", "mode", "symlink", "hardlink", "evidence", "missing-layout", "source", "manifest", "sbom", "provenance", "missing-record", "foreign-record", "operation"} {
 		t.Run(mutation, func(t *testing.T) {
 			f := newPNPMCacheFixture(t, false)
 			ctx := context.Background()
@@ -359,9 +364,12 @@ func TestPNPMApprovedDataCacheStagesWholeReceiptAndRejectsDrift(t *testing.T) {
 			}
 			file := filepath.Join(data, pnpmCacheArchiveName)
 			switch mutation {
-			case "archive", "control":
+			case "archive", "control", "manifest", "sbom", "provenance":
 				if mutation == "control" {
 					file = filepath.Join(data, "package.json")
+				}
+				if name := map[string]string{"manifest": "manifest.json", "sbom": "sbom.cdx.json", "provenance": "pnpm-provenance.json"}[mutation]; name != "" {
+					file = filepath.Join(filepath.Dir(data), "records", name)
 				}
 				if err := os.Chmod(file, 0o600); err != nil {
 					t.Fatal(err)
@@ -410,11 +418,83 @@ func TestPNPMApprovedDataCacheStagesWholeReceiptAndRejectsDrift(t *testing.T) {
 				if err := os.RemoveAll(filepath.Join(f.cache.evidenceRoot, f.run)); err != nil {
 					t.Fatal(err)
 				}
+			case "missing-record":
+				if err := os.Remove(filepath.Join(filepath.Dir(data), "records", "manifest.json")); err != nil {
+					t.Fatal(err)
+				}
+			case "foreign-record":
+				if err := os.WriteFile(filepath.Join(filepath.Dir(data), "records", "foreign"), []byte("foreign"), 0o444); err != nil {
+					t.Fatal(err)
+				}
+			case "operation":
+				f.cache.operation, err = domain.NewOperationID()
+				if err != nil {
+					t.Fatal(err)
+				}
 			}
 			if _, err := f.cache.OpenProjectCache(ctx, staged); err == nil {
 				t.Fatal("changed cache admitted", mutation)
 			}
 		})
+	}
+}
+
+type pnpmFailedRecordBuilder struct{ cause error }
+
+func (b pnpmFailedRecordBuilder) BuildProject(context.Context, domain.OperationID, domain.ProjectVerifiedSet, []domain.LockedDependency, []domain.DependencyEdge, []domain.ProjectControlFile, string) (domain.ContentDigest, []byte, []byte, error) {
+	return domain.ContentDigest{}, nil, nil, b.cause
+}
+
+func TestPNPMProjectRecordFailurePreventsAllCacheWrites(t *testing.T) {
+	f := newPNPMCacheFixture(t, false)
+	cause := errors.New("controlled Manifest generation failure")
+	f.cache.recordBuilder = pnpmFailedRecordBuilder{cause}
+	staged, err := f.cache.StageProject(context.Background(), f.set)
+	if !errors.Is(err, cause) || staged.Valid() {
+		t.Fatal("record failure lost cause or staged", err)
+	}
+	if _, err := os.Stat(f.cache.cacheRoot); !errors.Is(err, os.ErrNotExist) {
+		t.Fatal("record failure wrote cache", err)
+	}
+}
+
+func TestPNPMProjectRecordsBindActualOperationAndCompleteNativeContext(t *testing.T) {
+	for _, empty := range []bool{false, true} {
+		f := newPNPMCacheFixture(t, empty)
+		staged, err := f.cache.StageProject(context.Background(), f.set)
+		if err != nil {
+			t.Fatal(err)
+		}
+		data, err := f.cache.OpenProjectCache(context.Background(), staged)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var manifest struct {
+			ID        string            `json:"manifest_id"`
+			Operation string            `json:"operation_id"`
+			Entries   []json.RawMessage `json:"entries"`
+		}
+		body, err := os.ReadFile(filepath.Join(filepath.Dir(data), "records", "manifest.json"))
+		if err != nil || json.Unmarshal(body, &manifest) != nil || manifest.ID == "" || manifest.Operation != f.cache.operation.String() || len(manifest.Entries) != len(f.set.Inspected().Inspections()) {
+			t.Fatal("Manifest lost actual project binding", err)
+		}
+		var provenance pnpmProjectProvenance
+		body, err = os.ReadFile(filepath.Join(filepath.Dir(data), "records", "pnpm-provenance.json"))
+		if err != nil || json.Unmarshal(body, &provenance) != nil {
+			t.Fatal("provenance unavailable", err)
+		}
+		approval, _, err := f.cache.approval(context.Background(), f.set)
+		if err != nil {
+			t.Fatal(err)
+		}
+		want, err := json.Marshal(pnpmProjectProvenance{"helox.pnpm-project-provenance/v1", f.cache.operation.String(), manifest.ID, approval.Graph, approval.Runtime, approval.Layout, f.cache.frozen.Lock().Roots(), f.cache.frozen.Lock().Packages(), f.cache.frozen.Lock().Snapshots()})
+		if err != nil || !bytes.Equal(want, body) {
+			t.Fatal("complete native context changed", err)
+		}
+		body, err = os.ReadFile(filepath.Join(filepath.Dir(data), "records", "sbom.cdx.json"))
+		if err != nil || !json.Valid(body) || !bytes.Contains(body, []byte(manifest.ID)) {
+			t.Fatal("SBOM lost Manifest binding", err)
+		}
 	}
 }
 

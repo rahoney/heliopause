@@ -19,11 +19,13 @@ type pnpmCacheEntry struct {
 type pnpmCacheDocument struct {
 	Schema                          int
 	Graph, Project, Runtime, Layout string
+	Operation, Manifest             string
 	Policy                          string
 	PolicyVersion                   uint64
 	Controls                        []cacheFileRecord
 	Entries                         []pnpmCacheEntry
 	Files                           []cacheFileRecord
+	Records                         []cacheFileRecord
 	DependencyFree                  bool
 }
 type pnpmInstanceBinding struct{ Instance, Session, Layout, Runtime string }
@@ -48,7 +50,7 @@ func (c *PNPMVerifiedCache) approval(ctx context.Context, set domain.ProjectVeri
 	if err != nil {
 		return pnpmCacheDocument{}, input, err
 	}
-	doc := pnpmCacheDocument{Schema: 1, Graph: set.Inspected().Snapshot().GraphDigest().String(), Project: pnpmCacheHash([]byte(set.Inspected().Snapshot().Context().Target().String())), Runtime: c.frozen.RuntimeIdentity(), Policy: set.Decision().PolicyID(), PolicyVersion: set.Decision().Version(), DependencyFree: set.Inspected().Snapshot().DependencyFree()}
+	doc := pnpmCacheDocument{Schema: 2, Operation: c.operation.String(), Graph: set.Inspected().Snapshot().GraphDigest().String(), Project: pnpmCacheHash([]byte(set.Inspected().Snapshot().Context().Target().String())), Runtime: c.frozen.RuntimeIdentity(), Policy: set.Decision().PolicyID(), PolicyVersion: set.Decision().Version(), DependencyFree: set.Inspected().Snapshot().DependencyFree()}
 	for _, control := range c.frozen.Controls() {
 		doc.Controls = append(doc.Controls, cacheFileRecord{Path: control.Name(), Kind: "file", Size: int64(len(control.Body())), SHA256: control.Digest().String()})
 	}
