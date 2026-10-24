@@ -343,3 +343,7 @@ layout envelope와442af68의 Node bin code 형식 검증은 이 remote에 포함
 format parser를 재사용하고 새 parser/Store/Domain Policy/기존 단일 Backend를 재작성하지
 않는다. 아직 full archive/file/edge/bin/metadata 값 결합·production prepare/static-all/
 per-instance aggregate·Host records/transaction/CLI는 MISSING이며 P2 acceptance는 NO다.
+
+Full binding의 source 작성 전 감사·정확한 수정 지도와 두 번째 검토는
+[B3c leaf](./p2c5b3c-pnpm-layout-binding-plan-20261024.md)가 소유한다. 기존 format parser는
+재사용하고 이 inspection-only 결합을 Host publication/Policy 완료로 전용하지 않는다.

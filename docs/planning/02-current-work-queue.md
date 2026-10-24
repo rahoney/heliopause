@@ -16,7 +16,7 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — rc6/native4 same-runtime baseline IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; P2/native5 expansion locally verified only, guest/whole qualification and channel scope remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2c5-B3 — B2 exact target command/lineage and synthetic transitive+peer normal/failure LOCAL VERIFIED; B3b2a envelope/B3b2b full Node bin code LOCAL VERIFIED; expected archive+edge+metadata binding next; CI404/1f410fd ten SUCCESS; production static-all/prepare remain; product dynamic INCOMPLETE; CI403/db464fd ten SUCCESS; P2 acceptance NO
+Next action: M13-004/P2c5-B3 — B2 exact target command/lineage and synthetic transitive+peer normal/failure LOCAL VERIFIED; B3b2a envelope/B3b2b full Node bin code LOCAL VERIFIED; B3c full inspection layout binding plan reviewed; implement missing binding; CI404/1f410fd ten SUCCESS; production static-all/prepare remain; product dynamic INCOMPLETE; CI403/db464fd ten SUCCESS; P2 acceptance NO
 Current substep: M13-004/P2 — IN_PROGRESS; offline supply/native distribution LOCAL VERIFIED; exact guest admission and product graph/layout/CLI gaps active; support not yet advertised
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
@@ -137,6 +137,14 @@ Race6.168s와 actual18.382s의 세 Node shim/명시적 target·원래 관찰/Hos
 PASS다. 전용165,592,448B는 refs/query error0 뒤 삭제했다. 원본 archive의 bin/file/전체edge와
 metadata binding·production prepare/static-all/aggregate는 남아 있으며 전체 P2 acceptance는
 NO다. CI404 source는 앞1f410fd로 유지하고 새 push 없이19:30:18KST 타이머로 확인한다.
+
+### 2026-10-24 B3c 전체 inspection layout 결합 착수 감사
+
+[정확한 수정 지도·두 번째 검토](./evidence/package-client-quarantine/p2c5b3c-pnpm-layout-binding-plan-20261024.md)를
+작성했다. 기존 inventory/envelope/dirname/Node code 형식과 B1 input을 한 지점에서 결합한다.
+모든 peer instance·원본 file/edge/bin·생성 metadata를 확인하며 inspection 값은 Policy/Host
+승격 권한이 아니다. 기존 parser/단일 Backend를 다시 구현하지 않는다. 이후 native prepare/
+static-all/per-instance aggregate와 Host/CLI는 그대로 MISSING이며 M13-004 하나만 IN_PROGRESS다.
 
 ### 2026-10-24 CI404 묶음 checkpoint 확인
 
