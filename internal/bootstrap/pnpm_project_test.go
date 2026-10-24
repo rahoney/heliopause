@@ -10,6 +10,14 @@ import (
 )
 
 func TestPNPMProjectRequiresActualBindingsAndSelectedContext(t *testing.T) {
+	if err := pnpmProjectPlatform("linux", "amd64"); err != nil {
+		t.Fatal(err)
+	}
+	for _, target := range [][2]string{{"darwin", "amd64"}, {"linux", "arm64"}, {"windows", "amd64"}} {
+		if err := pnpmProjectPlatform(target[0], target[1]); err == nil {
+			t.Fatal("unsupported PNPM platform accepted", target)
+		}
+	}
 	if service, err := newPNPMProjectService(pnpmProjectBindings{}, artifactnpm.PNPMInstall, "", false); err == nil || service != nil {
 		t.Fatal("missing actual adapters accepted")
 	}

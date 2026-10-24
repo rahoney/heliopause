@@ -11,6 +11,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 	"github.com/spf13/cobra"
 )
 
@@ -177,6 +178,9 @@ func TestLauncherExamplesUseRegisteredSyntax(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Chdir(root)
+	if err := os.WriteFile("package.json", []byte(`{"dependencies":{"is-number":"6.0.0"}}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
 	for name, body := range map[string]string{"requirements.txt": "packaging==25.0\n", "empty.txt": "# explicit empty\n", "pylock.toml": "lock-version='1.0'\ncreated-by='uv'\nrequires-python='>=3.14'\npackages=[]\n"} {
 		if err := os.WriteFile(name, []byte(body), 0o600); err != nil {
 			t.Fatal(err)
@@ -197,8 +201,17 @@ func TestLauncherExamplesUseRegisteredSyntax(t *testing.T) {
 		}
 		for _, example := range launcherExamples(command.CommandPath()) {
 			args := strings.Fields(example)
+			// Bind the example's declared existing project to this inert fixture.
+			for index, arg := range args {
+				if arg == "/absolute/path/project" {
+					args[index] = root
+				}
+			}
 			fresh, err := New(io.Discard, io.Discard)
 			if err != nil {
+				t.Fatal(err)
+			}
+			if err := SetPNPMClientVersion(fresh, runtimeidentity.PNPMVersion); err != nil {
 				t.Fatal(err)
 			}
 			normalized, err := normalizeTerraformInitArgs(fresh, args[1:])

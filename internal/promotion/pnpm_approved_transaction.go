@@ -46,6 +46,10 @@ func (g *approvedPNPMProjectGuard) Commit(ctx context.Context, update domain.Pro
 	if err := verifyPNPMRecordedApproval(ctx, g.owner.evidence, approval); err != nil {
 		return err
 	}
+	manifest, err := domain.NewSHA256Digest(approval.Manifest)
+	if err != nil {
+		return err
+	}
 	prepared, err := cache.PrepareProject(ctx, staged)
 	if err != nil {
 		return err
@@ -104,6 +108,9 @@ func (g *approvedPNPMProjectGuard) Commit(ctx context.Context, update domain.Pro
 		return err
 	}
 	g.committed = true
+	g.recordManifest = manifest
+	g.recordHandle = staged.ContentHandle()
+	g.owner.published = g
 	return nil
 }
 

@@ -119,7 +119,17 @@ func writeProjectUpdateReport(output io.Writer, verified domain.ProjectVerifiedS
 }
 
 func writeProjectUpdateReportWithRecords(output io.Writer, verified domain.ProjectVerifiedSet, cause error, selector, source string, records *machineVerifiedSet) error {
+	return writeProjectMutationReportWithRecords(output, verified, cause, selector, source, records, false)
+}
+
+// The existing update callers preserve their schema and operation. The PNPM
+// install caller shares complete-set facts without manufacturing a primary.
+func writeProjectMutationReportWithRecords(output io.Writer, verified domain.ProjectVerifiedSet, cause error, selector, source string, records *machineVerifiedSet, installing bool) error {
 	report := cargoUpdateReport{Schema: "helox.project-update-result/v1", Operation: "UPDATE", Status: "FAILED", Promotion: "NOT_COMPLETED", Source: source, Selector: selector, Entries: []cargoUpdateEntry{}}
+	if installing {
+		report.Schema = "helox.project-install-result/v1"
+		report.Operation = "INSTALL"
+	}
 	report.VerifiedSet = records
 	var inspected domain.InspectedProjectSet
 	var decision domain.PolicyDecision
@@ -137,8 +147,14 @@ func writeProjectUpdateReportWithRecords(output io.Writer, verified domain.Proje
 		}
 		if code == "" {
 			code = "PROJECT_UPDATE_NOT_COMPLETED"
+			if installing {
+				code = "PROJECT_INSTALL_NOT_COMPLETED"
+			}
 		}
 		report.Error = &machineError{Code: code, Message: "Project update was not confirmed complete."}
+		if installing {
+			report.Error.Message = "Project installation was not confirmed complete."
+		}
 	}
 	var checks []domain.CheckExecution
 	if inspected.Valid() {
@@ -170,8 +186,14 @@ func writeProjectUpdateReportWithRecords(output io.Writer, verified domain.Proje
 	if report.Policy != nil {
 		policy = report.Policy.Decision
 	}
-	p.reportHeader("UPDATE", report.Status, policy, "")
-	if source == "pypi" {
+	p.reportHeader(report.Operation, report.Status, policy, "")
+	if source == "npm" {
+		label := p.text("Project update:", "프로젝트 업데이트:")
+		if installing {
+			label = p.text("Project installation:", "프로젝트 설치:")
+		}
+		p.line("%s %s", label, p.stateLabel(report.Promotion))
+	} else if source == "pypi" {
 		p.line("%s %s", p.text("Python environment synchronization:", "Python 환경 동기화:"), p.stateLabel(report.Promotion))
 	} else if source == "go-proxy" {
 		p.line("%s %s", p.text("Dependency control update:", "의존성 설정 업데이트:"), p.stateLabel(report.Promotion))
@@ -184,7 +206,9 @@ func writeProjectUpdateReportWithRecords(output io.Writer, verified domain.Proje
 		p.line("%s %s", p.text("Selected package:", "선택한 패키지:"), safeTerminal(selector))
 	}
 	if inspected.Valid() {
-		if source == "pypi" {
+		if source == "npm" {
+			p.line("%s %d", p.text("Inspected npm packages:", "검사한 npm 패키지 수:"), len(report.Entries))
+		} else if source == "pypi" {
 			p.line("%s %d", p.text("Inspected Python distributions:", "검사한 Python 패키지 수:"), len(report.Entries))
 		} else if source == "go-proxy" {
 			p.line("%s %d", p.text("Inspected modules:", "검사한 모듈 수:"), len(report.Entries))
@@ -227,10 +251,16 @@ func writeProjectUpdateReportWithRecords(output io.Writer, verified domain.Proje
 		if report.Error.Code == "UPDATE_ADOPTION_REQUIRED" {
 			p.line("%s", p.text("Explicit enrollment with --adopt is required for supported native or changed controls.", "지원하는 일반 설정이나 변경한 관리 설정을 등록하려면 --adopt를 명시해야 합니다."))
 		}
-		p.line("%s", p.text("The update is incomplete. Check the original project and any recovery state before retrying.", "업데이트 완료가 확인되지 않았습니다. 재실행 전에 원본 프로젝트와 복구 상태를 확인하세요."))
+		if installing {
+			p.line("%s", p.text("Installation is incomplete. Check the original project and any recovery state before retrying.", "설치 완료가 확인되지 않았습니다. 재실행 전에 원본 프로젝트와 복구 상태를 확인하세요."))
+		} else {
+			p.line("%s", p.text("The update is incomplete. Check the original project and any recovery state before retrying.", "업데이트 완료가 확인되지 않았습니다. 재실행 전에 원본 프로젝트와 복구 상태를 확인하세요."))
+		}
 		p.reportedError = true
 	}
-	if source == "pypi" {
+	if source == "npm" {
+		p.line("%s", p.text("Every selected package receives fresh quarantine, including unchanged versions.", "동일한 버전을 포함한 선택 패키지 전체를 새로 검역합니다."))
+	} else if source == "pypi" {
 		p.line("%s", p.text("Every selected wheel was quarantined; only proven managed files may be replaced or removed.", "선택된 wheel 전체를 검역하며 소유권이 증명된 파일만 교체·제거합니다."))
 	} else if source == "go-proxy" {
 		p.line("%s", p.text("Build behavior is inspected separately with helox go build.", "빌드 동작은 helox go build에서 별도로 검사합니다."))

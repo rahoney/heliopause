@@ -26,6 +26,7 @@ import (
 	"github.com/rahoney/heliopause/internal/promotion"
 	"github.com/rahoney/heliopause/internal/releasebootstrap"
 	"github.com/rahoney/heliopause/internal/releaseinstall"
+	"github.com/rahoney/heliopause/internal/runtimeidentity"
 	"github.com/rahoney/heliopause/internal/sandbox"
 	verificationgithub "github.com/rahoney/heliopause/internal/verification/githubrelease"
 	verificationnpm "github.com/rahoney/heliopause/internal/verification/npm"
@@ -36,6 +37,9 @@ import (
 func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultErr error) {
 	command, err := cli.New(stdout, stderr)
 	if err != nil {
+		return err
+	}
+	if err := cli.SetPNPMClientVersion(command, runtimeidentity.PNPMVersion); err != nil {
 		return err
 	}
 	defer func() {
@@ -88,12 +92,23 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 			return err
 		}
 	}
-	pythonClient, err := pythonPackageClientFor(cli.SelectedPackageClient(command))
-	if err != nil {
-		return err
+	var pythonClient pythonPackageClient
+	if source == "pypi" || source == "pip" {
+		pythonClient, err = pythonPackageClientFor(cli.SelectedPackageClient(command))
+		if err != nil {
+			return err
+		}
+		if err := pythonClient.checkPlatform(runtime.GOOS, runtime.GOARCH); err != nil {
+			return err
+		}
 	}
-	if err := pythonClient.checkPlatform(runtime.GOOS, runtime.GOARCH); err != nil {
-		return err
+	if cli.SelectedPackageClient(command) == cli.PNPMPackageClient {
+		if source != "npm" {
+			return errors.New("PNPM client requires the public npm source")
+		}
+		if err := pnpmProjectPlatform(runtime.GOOS, runtime.GOARCH); err != nil {
+			return err
+		}
 	}
 	if source == "npm" || source == "pypi" || source == "pip" || source == "github" || source == "go" || source == "cargo" || source == "terraform" || source == "self-update" {
 		var closeRuntime func() error
@@ -229,6 +244,12 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err := cli.AddTerraformUpgrade(command, upgradeService); err != nil {
 			return err
 		}
+	}
+	if source == "npm" && cli.SelectedPackageClient(command) == cli.PNPMPackageClient {
+		if err := bindPNPMProjectClient(command, trustedExecutor, processObserver); err != nil {
+			return err
+		}
+		return command.ExecuteContext(ctx)
 	}
 	if source != "" && source == "npm" {
 		cacheRoot, err := os.UserCacheDir()

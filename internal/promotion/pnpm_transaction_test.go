@@ -55,6 +55,9 @@ func TestPNPMTransactionCommitsIndependentApprovalAndRetainsNoopPayload(t *testi
 	if err != nil {
 		t.Fatal(err)
 	}
+	if _, _, _, ok := owner.PublishedRecords(); ok {
+		t.Fatal("records exposed before target publication")
+	}
 	if _, err := acquireNPMProjectGuard(g.install.Target().String()); err == nil {
 		t.Fatal("other npm client acquired the same target")
 	}
@@ -63,6 +66,10 @@ func TestPNPMTransactionCommitsIndependentApprovalAndRetainsNoopPayload(t *testi
 	}
 	if err := g.Close(); err != nil {
 		t.Fatal(err)
+	}
+	id, manifest, sbom, ok := owner.PublishedRecords()
+	if !ok || id.String() == "" || manifest != staged.ContentHandle()+":manifest.json" || sbom != staged.ContentHandle()+":sbom.cdx.json" {
+		t.Fatal("successful publication records missing")
 	}
 	target := f.cache.frozen.Snapshot().Context().Target().String()
 	code := filepath.Join(target, "node_modules/.pnpm/is-number@6.0.0/node_modules/is-number/package.json")
@@ -77,6 +84,9 @@ func TestPNPMTransactionCommitsIndependentApprovalAndRetainsNoopPayload(t *testi
 	g, err = owner.Begin(ctx, f.cache.frozen.Snapshot().Context())
 	if err != nil {
 		t.Fatal("reopen independently approved target", err)
+	}
+	if _, _, _, ok := owner.PublishedRecords(); ok {
+		t.Fatal("new request reused previous publication records")
 	}
 	noop, err := domain.NewProjectDependencyUpdateFromSnapshot(g.Controls(), f.cache.frozen.Controls(), f.cache.frozen.Snapshot())
 	if err != nil {
@@ -120,6 +130,9 @@ func TestPNPMTransactionRollsBackForwardPhaseFailures(t *testing.T) {
 			}
 			if err := g.Commit(ctx, update, staged); !errors.Is(err, cause) {
 				t.Fatal("phase failure lost original cause", err)
+			}
+			if _, _, _, ok := owner.PublishedRecords(); ok {
+				t.Fatal("failed transaction exposed publication records")
 			}
 			if err := g.Close(); err != nil {
 				t.Fatal(err)

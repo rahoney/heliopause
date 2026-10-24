@@ -20,6 +20,7 @@ type PNPMProjectPromotion struct {
 	operation                                      domain.OperationID
 	selectedCache                                  func(domain.ProjectDependencySnapshot) (*PNPMVerifiedCache, error)
 	checkpoint                                     func(string) error
+	published                                      *approvedPNPMProjectGuard
 }
 
 func NewPNPMProjectPromotion(intake, evidence, cache, state string, reader ProjectEvidenceReader, operation domain.OperationID, selectedCache func(domain.ProjectDependencySnapshot) (*PNPMVerifiedCache, error)) (*PNPMProjectPromotion, error) {
@@ -32,7 +33,17 @@ func NewPNPMProjectPromotion(intake, evidence, cache, state string, reader Proje
 			return nil, errors.New("pnpm mutation roots must be canonical")
 		}
 	}
-	return &PNPMProjectPromotion{intake, evidence, cache, state, reader, operation, selectedCache, nil}, nil
+	return &PNPMProjectPromotion{intakeRoot: intake, evidenceRoot: evidence, cacheRoot: cache, stateRoot: state, evidence: reader, operation: operation, selectedCache: selectedCache}, nil
+}
+
+// Successful publication records are controller-bound opaque cache references.
+// A target marker or a previous request cannot authorize a new completion.
+func (p *PNPMProjectPromotion) PublishedRecords() (domain.ContentDigest, string, string, bool) {
+	if p == nil || p.published == nil || !p.published.committed || p.published.recordManifest.String() == "" || p.published.recordHandle == "" {
+		return domain.ContentDigest{}, "", "", false
+	}
+	g := p.published
+	return g.recordManifest, g.recordHandle + ":manifest.json", g.recordHandle + ":sbom.cdx.json", true
 }
 
 type pnpmMemberApproval struct{ Name, SHA256 string }
@@ -58,6 +69,8 @@ type approvedPNPMProjectGuard struct {
 	currentStateInfo            os.FileInfo
 	previous                    *pnpmProjectApproval
 	closed, committed           bool
+	recordManifest              domain.ContentDigest
+	recordHandle                string
 }
 
 func (p *PNPMProjectPromotion) Begin(ctx context.Context, install domain.InstallContext) (*approvedPNPMProjectGuard, error) {
@@ -68,6 +81,9 @@ func (p *PNPMProjectPromotion) BeginUpgrade(ctx context.Context, install domain.
 }
 
 func (p *PNPMProjectPromotion) begin(ctx context.Context, install domain.InstallContext, adopt bool) (result *approvedPNPMProjectGuard, resultErr error) {
+	if p != nil {
+		p.published = nil
+	}
 	if ctx == nil || p == nil || !install.Valid() || install.Mode() != domain.InstallNPMProject || !separateRoots([]string{install.Target().String(), p.intakeRoot, p.evidenceRoot, p.cacheRoot, p.stateRoot}) {
 		return nil, errors.New("pnpm mutation requires an existing bounded project")
 	}

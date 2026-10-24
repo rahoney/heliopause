@@ -1,6 +1,6 @@
 # Package client / tool execution quarantine — 설계
 
-상태: **P1 UV pip 설치/업데이트·complete sync COMPLETE / QUALIFIED / ACCEPTANCE_CLOSED; P2 pnpm 공급·runtime 연결 진행 중, P3..P7은 미착수**. 2026-10-21 사용자 요청으로
+상태: **P1 UV pip 설치/업데이트·complete sync COMPLETE / QUALIFIED / ACCEPTANCE_CLOSED; P2 pnpm backend/CLI named local 검증, native 인계·전체 qualification 진행 중; P3..P7은 미착수**. 2026-10-21 사용자 요청으로
 uv pip·pnpm·Bun과 npx·uvx·bunx·pipx를 하나의 확장 범위로 계획한다.
 [실행 계획·baseline·수정 지도·재검토](../planning/20-package-client-quarantine-plan.md)가
 구현 순서와 검증을 소유한다. 기존 [업데이트 검역](./06-update-quarantine.md)을
@@ -215,3 +215,33 @@ Source는 target·trusted 저장소 밖의 bounded regular single-link 파일이
 sdist/build·임의 native flags와 system/global 설치는 이 P1 범위에 없다. Native 인계의 생성
 scripts·compiled caches·cross-scheme도 거부한다. 기존 다른 command의 지원을 축소하지 않는다.
 UV project는 P4이며 `uv run`과 tool/execution·다른 client의 실제 지원으로 확대하지 않는다.
+
+## 9. P2 PNPM의 현재 CLI 검증 범위
+
+P2의 기존 단일 프로젝트 backend와 아래 명령은 named local 검증을 마쳤다.
+실제 source/검사·원격 상태는 [Queue](../planning/02-current-work-queue.md)와
+[B5c 검증 지도](../planning/evidence/package-client-quarantine/p2c5b5c-pnpm-cli-plan-20261025.md)가
+소유한다. Native/unmanaged 인계와 전체 P2 acceptance는 미완료다.
+
+| 명령·옵션 | 현재 입력과 동작 |
+| --- | --- |
+| `helox pnpm add <spec>` | 공개 npm 패키지 이름·버전·범위 하나를 native PNPM으로 선택하고 전체 set을 새로 검역한 뒤 manifest/lock/설치를 함께 반영 |
+| `helox pnpm install` | 기존 package.json과 선택적인 일치하는 pnpm-lock.yaml을 사용. 명시한 empty도 전체 승인·records/transaction을 거침 |
+| `helox pnpm update [name]` | 기존 직접 의존성 이름 하나 또는 전체를 native PNPM으로 선택하고 manifest/lock/전체 payload를 함께 반영 |
+| `--target <directory>` | 기존 프로젝트 디렉터리. 생략하면 현재 디렉터리. Symlink ancestry·alias controls·중복/빈 인수 거부 |
+| `--adopt` | 독립 승인된 HAA 관리 payload를 검증하고 지원하는 기존 설정 변경을 명시적으로 등록. Manifest/lock 일치 등 입력 검사를 생략하지 않음 |
+
+Linux amd64와 repository의 고정 PNPM runtime을 사용하며 source identity는 `npm`이다.
+선택된 모든 archive/peer instance를 검증·관찰하고 실제 Evidence/현재 Policy·frozen layout을
+결합한다. Root project scripts는 보존하고 실행하지 않는다. 같은 버전도 새 operation으로
+검사하며 같은 content의 native payload와 controls는 기존 inode/mode를 보존한다. 실패하면
+원본/state를 rollback하며 불명확한 외부 파일과 recovery journal은 보존하고 재진입을 거부한다.
+
+JSON install/add는 `helox.project-install-result/v1`의 `INSTALL`, update는 기존
+`helox.project-update-result/v1`의 `UPDATE`를 사용한다. 검사·Policy와 실제 publication 상태를
+구분하며 실제 Manifest/SBOM의 opaque record references를 제공한다. 영어/한국어 전체 문구와
+나머지 언어의 기존 결정적 English fallback을 유지한다. Help는 runtime/cache를 준비하지 않는다.
+
+일반 native PNPM payload의 인계는 독립 old archive/source proof가 연결될 때까지 거부한다.
+새 target 생성·global/workspace·local/direct/VCS/다른 registry·임의 native 옵션과 실행 명령은
+이 검증 범위에 없다. pnpm dlx는 P6이며 이 CLI 연결로 지원 완료 표시하지 않는다.

@@ -45,6 +45,28 @@ func TestPNPMProjectProfileBindsActualConsumerAndRejectsInvalidInput(t *testing.
 	}
 }
 
+func TestPNPMCLIActualCannotLoseAuthenticatedCommandOrCoverage(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "ci-pnpm-runtime.sh"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	original := string(body)
+	for name, replacement := range map[string]string{
+		"comment":         "# " + pnpmCLIIntegrationCommand,
+		"wrong-env":       strings.Replace(pnpmCLIIntegrationCommand, "CLI_INTEGRATION=1", "CLI_INTEGRATION=0", 1),
+		"wrong-test":      strings.Replace(pnpmCLIIntegrationCommand, "TestPNPMProjectCLIIntegration", "TestMissingCLIIntegration", 1),
+		"wrong-client":    strings.Replace(pnpmCLIIntegrationCommand, "/usr/libexec/heliopause/helox", "go test ./internal/bootstrap", 1),
+		"ignored-failure": pnpmCLIIntegrationCommand + " || true",
+		"duplicate":       pnpmCLIIntegrationCommand + "\n" + pnpmCLIIntegrationCommand,
+	} {
+		t.Run(name, func(t *testing.T) {
+			if len(validatePNPMRuntimeScript(strings.Replace(original, pnpmCLIIntegrationCommand, replacement, 1))) == 0 {
+				t.Fatal("CLI actual missing or untrusted execution accepted")
+			}
+		})
+	}
+}
+
 func TestPNPMProjectActualRequiresMatchingClientAndParentRestoration(t *testing.T) {
 	body, err := os.ReadFile(filepath.Join("..", "..", workflowRelativePath))
 	if err != nil {

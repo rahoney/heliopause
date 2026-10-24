@@ -46,11 +46,20 @@ type pnpmProjectMutationAdapter struct {
 	adopt bool
 }
 
+type pnpmProjectService struct {
+	workflow *application.PNPMProjectService
+	promoter *promotion.PNPMProjectPromotion
+}
+
+func (s *pnpmProjectService) Apply(ctx context.Context, install domain.InstallContext) (domain.ProjectVerifiedSet, error) {
+	return s.workflow.Apply(ctx, install)
+}
+
 func (a pnpmProjectMutationAdapter) Begin(ctx context.Context, install domain.InstallContext) (ports.ProjectMutationGuard, error) {
 	return a.owner.BeginUpgrade(ctx, install, a.adopt)
 }
 
-func newPNPMProjectService(bindings pnpmProjectBindings, intent artifactnpm.PNPMSelectionIntent, selector string, adopt bool) (*application.PNPMProjectService, error) {
+func newPNPMProjectService(bindings pnpmProjectBindings, intent artifactnpm.PNPMSelectionIntent, selector string, adopt bool) (*pnpmProjectService, error) {
 	if bindings.source == nil || bindings.store == nil || bindings.static == nil || bindings.native == nil || bindings.prepare == nil || bindings.backend == nil {
 		return nil, errors.New("pnpm project requires the actual source, native runtime and inspection adapters")
 	}
@@ -68,7 +77,11 @@ func newPNPMProjectService(bindings pnpmProjectBindings, intent artifactnpm.PNPM
 	if err != nil {
 		return nil, err
 	}
-	return application.NewPNPMProjectService(s, pnpmProjectMutationAdapter{owner, adopt}, s, s)
+	workflow, err := application.NewPNPMProjectService(s, pnpmProjectMutationAdapter{owner, adopt}, s, s)
+	if err != nil {
+		return nil, err
+	}
+	return &pnpmProjectService{workflow, owner}, nil
 }
 
 func (s *pnpmProjectSession) ResolveProjectLockUpdate(ctx context.Context, install domain.InstallContext, controls []domain.ProjectControlFile, selector string) (domain.ProjectDependencyUpdate, error) {

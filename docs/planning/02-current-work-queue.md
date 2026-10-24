@@ -16,8 +16,8 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — B4 remotely qualified by CI406; B5a/B5b1/B5b2/B5b3 backend named local PASS; native adoption/CLI/current backend remote qualification and whole P2 acceptance remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2 — B5b3 guarded Application/target transaction/independent approval LOCAL QUALIFIED; wire its exact realcorpus client/actual consumer into existing CI, then continue CLI/native source-proof enrollment acceptance. CI406 covers earlier fd3506b only; whole P2 remains NO
-Current substep: M13-004/P2 — IN_PROGRESS; B5b3 backend committed9adbfa5; B5b4 existing-CI consumer wiring LOCAL QUALIFIED; bundled remote checkpoint next; CLI/native adoption/whole P2 pending; support not yet advertised
+Next action: M13-004/P2 — CI407/e9ca85e backend+actual CI caller REMOTE_PENDING; first check2026-10-25 06:02:54 KST. B5c PNPM CLI LOCAL QUALIFIED; continue native source-proof enrollment baseline/edit-map review; whole P2 remains NO
+Current substep: M13-004/P2 — IN_PROGRESS; CI407/e9ca85e remote pending; B5c CLI LOCAL QUALIFIED; checkpoint then native adoption/source-proof audit; native adoption/whole P2 pending; support not yet advertised
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -4975,3 +4975,16 @@ Application 소비자를 연결한다. Canonical4/네 package 전체 Race135.126
 교정 재조회는 원본에 보존했다. 실제 원격 순서·Required는 미확인이다. Backend 단위를 한 번
 묶어 push하고 새 실행의 첫 확인은 최근54m32+새197s/준비 여유에 근거해 시작 약60분 후다.
 대기 중 같은 P2의 CLI/native source-proof 인계를 계속하며 M13-004 하나만 IN_PROGRESS다.
+
+### 2026-10-25 P2 B5c PNPM production CLI local checkpoint
+
+[B5c 검증](./evidence/package-client-quarantine/p2c5b5c-pnpm-cli-local-20261025.json)에서 기존
+PNPM backend를 typed descriptor/preflight와 production Run에 연결했다. npm source와 client를
+분리하고 generated pin은 Bootstrap의 inert composition으로 전달한다. Actual CLI180.442s의
+9fresh operations(single/peer/empty, install/repeat/add/update/explicit managed-controls)와
+implicit/native-unproven refusal·원본 inode/0600/user files·실제 Manifest/SBOM을 확인했다.
+기존 npm inspect actual9.234s, final canonical5·five-package Race134.175s/checker Race30.325s,
+Darwin bootstrap/CLI compile6.736s도 PASS다. Helperwait0/Host 구성 보존 및 세 완료 디렉터리
+501,366,905B 정리다. CLI actual의 고정 명령을 기존 CI project profile에 독립5분 호출로 추가했다.
+CI407/e9ca85e는 앞 backend만 포함하며 첫 확인06:02:54 KST 전 추가 조회/재push하지 않는다.
+Native payload 인계의 independent old-source proof가 다음이고 whole P2는 미완료다.
