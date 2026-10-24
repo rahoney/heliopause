@@ -16,7 +16,7 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — rc6/native4 same-runtime baseline IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; P2/native5 expansion locally verified only, guest/whole qualification and channel scope remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2c5-B — A2/A3 transitive+peer offline primitive LOCAL VERIFIED; production static-all/frozen context/per-target edit map and second review next; product dynamic INCOMPLETE; CI402/head940 ten SUCCESS; P2 acceptance NO
+Next action: M13-004/P2c5-B2 — B1 frozen snapshot/acquired/peer binding LOCAL VERIFIED; actual target lifecycle/exact admission edit map next; product dynamic INCOMPLETE; CI402/head940 ten SUCCESS; P2 acceptance NO
 Current substep: M13-004/P2 — IN_PROGRESS; offline supply/native distribution LOCAL VERIFIED; exact guest admission and product graph/layout/CLI gaps active; support not yet advertised
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
@@ -80,6 +80,16 @@ production static-all/per-target closure가 다음 순서이며 새 실제 P2 �
 peer4 identity·links5개/complete/금지0·Host불변/helperwait0를 확인했다. 일반 packument
 한도에서 멈춘 첫 준비 실패는 원본에 남겼다. Production closure는 아직 미구현이며 B의
 상세 수정 지도·두 번째 검토를 다음으로 진행한다. M13-004 하나만 IN_PROGRESS다.
+
+[B의 착수 감사·B1 정확한 수정 지도/두 번째 검토](./evidence/package-client-quarantine/p2c5b-pnpm-production-context-plan-20261024.md)를
+작성했다. 기존 snapshot/source binding/project batch를 재사용하고 frozen snapshot과 acquired
+전체 집합·복수 peer instance를 잃지 않는 immutable 값을 먼저 연결한다. 이후 실제 lifecycle
+선택·격리·관찰 aggregate의 의미를 검증하며 미확정 runner 인터페이스를 앞서 만들지 않는다.
+
+B1 [로컬 결합 결과](./evidence/package-client-quarantine/p2c5b-pnpm-context-local-20261024.json)는
+same-digest 위조 snapshot·획득 누락/혼입과 다른 run 거부, six archives/seven peer instances
+보존·실제 producer wrapper 재사용을 확인했다. Canonical Quick/security/docs·관련 전체 Race는
+PASS다. 기존 단일 npm 실행/관찰기/Policy는 불변이며 실제 PNPM dynamic은 계속 미완료다.
 
 ### 2026-10-24 P2c2 actual public 선택·update/no-op 로컬 검증
 

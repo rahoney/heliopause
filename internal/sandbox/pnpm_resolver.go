@@ -42,18 +42,25 @@ func PNPMResolverRuntimeIdentity() string {
 // BindProjectSnapshot connects the producer's frozen controls and independently
 // authenticated registry metadata. The returned snapshot is still unapproved.
 func (s PNPMNativeSelection) BindProjectSnapshot(ctx context.Context, source *artifactnpm.Resolver, install domain.InstallContext) (domain.ProjectDependencySnapshot, error) {
+	frozen, err := s.BindInspectionContext(ctx, source, install)
+	return frozen.Snapshot(), err
+}
+
+// BindInspectionContext preserves the complete native wiring and controls for
+// the project's later static-all and closure-aware inspection consumers.
+func (s PNPMNativeSelection) BindInspectionContext(ctx context.Context, source *artifactnpm.Resolver, install domain.InstallContext) (artifactnpm.PNPMInspectionContext, error) {
 	if ctx == nil || source == nil || !install.Valid() || (install.Mode() != domain.InstallNewTarget && install.Mode() != domain.InstallNPMProject) {
-		return domain.ProjectDependencySnapshot{}, errors.New("pnpm public source binding is unavailable")
+		return artifactnpm.PNPMInspectionContext{}, errors.New("pnpm public source binding is unavailable")
 	}
 	bound, err := source.BindPNPMLock(ctx, s.selection)
 	if err != nil {
-		return domain.ProjectDependencySnapshot{}, err
+		return artifactnpm.PNPMInspectionContext{}, err
 	}
-	snapshot, err := bound.ProjectSnapshot(install, s.controls, PNPMResolverRuntimeIdentity())
+	frozen, err := bound.InspectionContext(install, s.controls, PNPMResolverRuntimeIdentity())
 	if ctx.Err() != nil {
-		return domain.ProjectDependencySnapshot{}, errors.Join(err, ctx.Err())
+		return artifactnpm.PNPMInspectionContext{}, errors.Join(err, ctx.Err())
 	}
-	return snapshot, err
+	return frozen, err
 }
 
 func NewPNPMResolver(runner CommandRunner, endpoints EndpointResolver, observer TraceObserver, capability CapabilityProbe, policy ResolverPolicyService) (*PNPMResolver, error) {

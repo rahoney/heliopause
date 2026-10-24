@@ -87,6 +87,28 @@ func TestPNPMLockPreservesRootsPeerInstancesAndMetadata(t *testing.T) {
 	if err != nil || len(snapshot.Dependencies()) != 6 || len(bound.Lock().Snapshots()) != 7 {
 		t.Fatalf("snapshot did not retain unique archives and both peer instances: %v", err)
 	}
+	frozen, err := bound.InspectionContext(snapshot.Context(), controls, "fixture-runtime:pnpm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	input, err := frozen.BindAcquired(snapshot, pnpmAcquiredInspectionFixture(t, frozen))
+	if err != nil {
+		t.Fatal(err)
+	}
+	total, shared := 0, 0
+	for _, artifact := range input.Artifacts() {
+		instances, err := input.InstancesFor(artifact)
+		if err != nil {
+			t.Fatal(err)
+		}
+		total += len(instances)
+		if artifact.Identity().Name() == "use-sync-external-store" {
+			shared = len(instances)
+		}
+	}
+	if total != 7 || shared != 2 {
+		t.Fatal("acquired context collapsed same-archive peer instances")
+	}
 }
 
 func TestPNPMLockSelectionIsDeterministicAndCannotBeMutated(t *testing.T) {

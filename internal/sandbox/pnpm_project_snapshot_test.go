@@ -36,10 +36,17 @@ func TestPNPMNativeSnapshotUsesExplicitEmptyControlsAndPreservesCancellation(t *
 	if err != nil || !snapshot.DependencyFree() || len(snapshot.ControlDigests()) != 2 {
 		t.Fatalf("explicit empty snapshot lost: %v", err)
 	}
+	frozen, err := selected.BindInspectionContext(context.Background(), source, install)
+	if err != nil || !frozen.Valid() || !frozen.MatchesSnapshot(snapshot) || frozen.RuntimeIdentity() != PNPMResolverRuntimeIdentity() || len(frozen.Controls()) != 2 {
+		t.Fatalf("producer did not bind the same frozen inspection context: %v", err)
+	}
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 	if _, err := selected.BindProjectSnapshot(ctx, source, install); !errors.Is(err, context.Canceled) {
 		t.Fatalf("cancellation lost: %v", err)
+	}
+	if frozen, err := selected.BindInspectionContext(ctx, source, install); !errors.Is(err, context.Canceled) || frozen.Valid() {
+		t.Fatalf("canceled producer returned a usable inspection context: %v", err)
 	}
 	for _, input := range []struct {
 		name    string
