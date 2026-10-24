@@ -363,38 +363,7 @@ func (p *PNPMPreparedProject) verifyBoundary() error {
 }
 
 func (p *PNPMPreparedProject) verifyEntry(ctx context.Context, name string) error {
-	for parent := path.Dir(name); parent != "."; parent = path.Dir(parent) {
-		before, known := p.entries[parent]
-		now, err := p.root.Lstat(parent)
-		if !known || err != nil || !before.info.IsDir() || !now.IsDir() || !os.SameFile(before.info, now) || before.info.Mode() != now.Mode() || !pnpmSameOwner(before.info, now) {
-			return errors.Join(errors.New("pnpm prepared ancestor directory changed"), err)
-		}
-	}
-	before, known := p.entries[name]
-	if !known {
-		return errors.New("pnpm prepared project contains a foreign member")
-	}
-	now, err := p.root.Lstat(name)
-	if err != nil || !os.SameFile(before.info, now) || before.info.Mode() != now.Mode() || !pnpmSameOwner(before.info, now) {
-		return errors.Join(errors.New("pnpm prepared project member identity changed"), err)
-	}
-	if now.Mode().IsRegular() {
-		body, err := readPNPMHostRegular(ctx, p.root, name, before.info, before.info.Size())
-		if err != nil {
-			return err
-		}
-		if pnpmCacheHash(body) != before.digest {
-			return errors.New("pnpm prepared project bytes changed")
-		}
-	} else if now.Mode()&os.ModeSymlink != 0 {
-		link, err := p.root.Readlink(name)
-		if err != nil || link != before.link || !pypiSingleLink(now) {
-			return errors.Join(errors.New("pnpm prepared internal link changed"), err)
-		}
-	} else if !now.IsDir() {
-		return errors.New("pnpm prepared project has a special file")
-	}
-	return nil
+	return verifyPNPMOwnedEntry(ctx, p.root, p.entries, name)
 }
 
 func (p *PNPMPreparedProject) Verify(ctx context.Context) error {

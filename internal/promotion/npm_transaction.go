@@ -14,6 +14,7 @@ const npmTransactionMetadata = ".heliopause/npm-transaction.json"
 // npmProjectPlan freezes the small project-control surface before any later
 // mutation. A changed or missing control file invalidates the transaction.
 type npmProjectPlan struct {
+	pnpm        *pnpmProjectProfile
 	root        string
 	rootInfo    os.FileInfo
 	packageJSON [32]byte
@@ -99,6 +100,9 @@ func freezeNPMProject(root string) (npmProjectPlan, error) {
 }
 
 func (p npmProjectPlan) verifyUnchanged() error {
+	if p.pnpm != nil {
+		return p.pnpm.verifyOriginal()
+	}
 	if p.updateGuard != nil {
 		if err := p.updateGuard.verify(); err != nil {
 			return err
@@ -256,7 +260,10 @@ func (t *npmProjectTransaction) commit() (resultErr error) {
 	if err := t.plan.verifyUnchanged(); err != nil {
 		return err
 	}
-	if err := syncTree(t.workspace); err != nil {
+	if err := t.syncWorkspace(); err != nil {
+		if t.plan.pnpm != nil {
+			return t.fail(err)
+		}
 		return errors.New("sync verified npm transaction workspace")
 	}
 	if err := t.backupCurrent(); err != nil {
@@ -265,7 +272,13 @@ func (t *npmProjectTransaction) commit() (resultErr error) {
 	if err := t.publishWorkspace(); err != nil {
 		return t.fail(err)
 	}
+	if err := t.phase("before-metadata"); err != nil {
+		return t.fail(err)
+	}
 	if err := t.publishMetadata(); err != nil {
+		return t.fail(err)
+	}
+	if err := t.phase("after-metadata"); err != nil {
 		return t.fail(err)
 	}
 	if err := syncDirectory(t.plan.root); err != nil {
@@ -273,6 +286,11 @@ func (t *npmProjectTransaction) commit() (resultErr error) {
 	}
 	for name, output := range t.outputs {
 		if err := output.verify(t.target(name)); err != nil {
+			return t.fail(err)
+		}
+	}
+	if t.plan.pnpm != nil {
+		if err := t.plan.pnpm.publishApproval(t); err != nil {
 			return t.fail(err)
 		}
 	}
@@ -287,6 +305,9 @@ func (t *npmProjectTransaction) commit() (resultErr error) {
 
 func (t *npmProjectTransaction) fail(cause error) error {
 	rollbackErr := t.rollback()
+	if t.plan.pnpm != nil {
+		rollbackErr = errors.Join(rollbackErr, t.plan.pnpm.rollbackApproval())
+	}
 	if rollbackErr != nil {
 		return errors.Join(cause, rollbackErr, errors.New("npm transaction rollback is incomplete; project is fail-closed"))
 	}
@@ -300,13 +321,19 @@ func (t *npmProjectTransaction) backupCurrent() error {
 	if err := t.verifyBoundaries(); err != nil {
 		return err
 	}
-	for _, name := range []string{"package.json", "package-lock.json", "node_modules", "haa"} {
+	for _, name := range t.memberNames() {
+		if err := t.phase("before-backup:" + name); err != nil {
+			return err
+		}
+		if t.retainMember(name) {
+			continue
+		}
 		source := t.target(name)
 		if err := t.verifyOriginalMember(name, source); err != nil {
 			return err
 		}
 		info, err := os.Lstat(source)
-		if errors.Is(err, os.ErrNotExist) && (name == "node_modules" || name == "haa") {
+		if errors.Is(err, os.ErrNotExist) && (name == "node_modules" || name == "haa" || t.plan.pnpm != nil && name == "pnpm-lock.yaml" && !t.plan.pnpm.owner.controls[1].Present()) {
 			continue
 		}
 		if err != nil || info.Mode()&os.ModeSymlink != 0 {
@@ -315,7 +342,7 @@ func (t *npmProjectTransaction) backupCurrent() error {
 		if ((name == "node_modules" || name == "haa") && !info.IsDir()) || (name != "node_modules" && name != "haa" && !info.Mode().IsRegular()) {
 			return errors.New("current npm transaction member has unsupported type")
 		}
-		record, err := snapshotNPMTransactionMember(source)
+		record, err := t.snapshotMember(name, source)
 		if err != nil {
 			return err
 		}
@@ -327,7 +354,10 @@ func (t *npmProjectTransaction) backupCurrent() error {
 		}
 		t.moved[name] = true
 		t.before[name] = record
-		if t.plan.updateGuard != nil {
+		if err := t.phase("after-backup:" + name); err != nil {
+			return err
+		}
+		if t.plan.updateGuard != nil || t.plan.pnpm != nil {
 			if err := record.verify(filepath.Join(t.backup, name)); err != nil {
 				return errors.New("npm original changed while being backed up")
 			}
@@ -339,6 +369,9 @@ func (t *npmProjectTransaction) backupCurrent() error {
 // Updates must not replace their early inventory with a fresh post-inspection
 // baseline if another writer changes a member during the commit sequence.
 func (t *npmProjectTransaction) verifyOriginalMember(name, path string) error {
+	if t.plan.pnpm != nil {
+		return t.plan.pnpm.verifyMember(name, path)
+	}
 	if t.plan.updateGuard == nil {
 		return nil
 	}
@@ -368,7 +401,14 @@ func (t *npmProjectTransaction) verifyOriginalMember(name, path string) error {
 }
 
 func (t *npmProjectTransaction) publishWorkspace() error {
-	for _, name := range []string{"package.json", "package-lock.json", "node_modules", "haa"} {
+	for _, name := range t.memberNames() {
+		if err := t.phase("before-publish:" + name); err != nil {
+			return err
+		}
+		if t.retainMember(name) {
+			t.outputs[name] = t.plan.pnpm.owner.members[name]
+			continue
+		}
 		if err := t.verifyBoundaries(); err != nil {
 			return err
 		}
@@ -380,7 +420,7 @@ func (t *npmProjectTransaction) publishWorkspace() error {
 		if err != nil || info.Mode()&os.ModeSymlink != 0 || ((name == "node_modules" || name == "haa") && !info.IsDir()) || (name != "node_modules" && name != "haa" && !info.Mode().IsRegular()) {
 			return errors.New("verified npm transaction output is unavailable")
 		}
-		record, err := snapshotNPMTransactionMember(source)
+		record, err := t.snapshotMember(name, source)
 		if err != nil {
 			return err
 		}
@@ -392,11 +432,20 @@ func (t *npmProjectTransaction) publishWorkspace() error {
 		}
 		t.published[name] = true
 		t.outputs[name] = record
+		if t.plan.pnpm != nil {
+			t.plan.pnpm.releaseWorkspaceMember(name)
+		}
+		if err := t.phase("after-publish:" + name); err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
 func (t *npmProjectTransaction) publishMetadata() error {
+	if t.plan.pnpm != nil {
+		return t.plan.pnpm.publishMarker(t)
+	}
 	directory, err := ensureNPMMetadataDirectory(t.plan.root)
 	if err != nil {
 		return err
@@ -442,7 +491,7 @@ func (t *npmProjectTransaction) rollback() error {
 		return err
 	}
 	var result error
-	for _, name := range []string{"haa", "node_modules", "package-lock.json", "package.json"} {
+	for _, name := range t.reverseMemberNames() {
 		if t.moved[name] {
 			if err := t.before[name].verify(filepath.Join(t.backup, name)); err != nil {
 				result = errors.Join(result, err)
@@ -469,10 +518,63 @@ func (t *npmProjectTransaction) rollback() error {
 
 func (t *npmProjectTransaction) target(name string) string {
 	if name == "metadata" {
+		if t.plan.pnpm != nil {
+			return filepath.Join(t.plan.root, ".heliopause/pnpm-transaction.json")
+		}
 		return filepath.Join(t.plan.root, npmTransactionMetadata)
 	}
 	if name == "haa" {
 		return filepath.Join(t.plan.root, ".heliopause")
 	}
 	return filepath.Join(t.plan.root, name)
+}
+
+func (t *npmProjectTransaction) memberNames() []string {
+	if t.plan.pnpm != nil {
+		return []string{"package.json", "pnpm-lock.yaml", "node_modules", "haa"}
+	}
+	return []string{"package.json", "package-lock.json", "node_modules", "haa"}
+}
+func (t *npmProjectTransaction) reverseMemberNames() []string {
+	if t.plan.pnpm != nil {
+		return []string{"haa", "node_modules", "pnpm-lock.yaml", "package.json"}
+	}
+	return []string{"haa", "node_modules", "package-lock.json", "package.json"}
+}
+func (t *npmProjectTransaction) phase(name string) error {
+	if t.plan.pnpm != nil {
+		return t.plan.pnpm.phase(name)
+	}
+	return nil
+}
+func (t *npmProjectTransaction) retainMember(name string) bool {
+	return t.plan.pnpm != nil && t.plan.pnpm.retain[name]
+}
+func (t *npmProjectTransaction) snapshotMember(name, location string) (*npmTransactionMember, error) {
+	if t.plan.pnpm != nil {
+		var m *npmTransactionMember
+		var err error
+		if location == t.target(name) {
+			m = t.plan.pnpm.owner.members[name]
+			if m == nil {
+				return nil, errors.New("pnpm original transaction member is unavailable")
+			}
+		} else {
+			m, err = t.plan.pnpm.workspaceMember(name, location)
+		}
+		if err != nil {
+			return nil, err
+		}
+		if m.pnpm != nil {
+			m.pnpm.boundary = t.verifyBoundaries
+		}
+		return m, nil
+	}
+	return snapshotNPMTransactionMember(location)
+}
+func (t *npmProjectTransaction) syncWorkspace() error {
+	if t.plan.pnpm != nil {
+		return t.plan.pnpm.prepared.Verify(t.plan.pnpm.owner.ctx)
+	}
+	return syncTree(t.workspace)
 }

@@ -14,10 +14,10 @@ Last completed work item: CLI-UX-003 — COMPLETE; source4cfe29e/CI352 ten SUCCE
 Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
-Active work item status: IN_PROGRESS — B4 production inspection/CI fixture caller remotely qualified by CI406; B5a/B5b1/B5b2 named local PASS; target transaction/independent approval/adoption/CLI and whole P2 acceptance remain
+Active work item status: IN_PROGRESS — B4 remotely qualified by CI406; B5a/B5b1/B5b2/B5b3 backend named local PASS; native adoption/CLI/current backend remote qualification and whole P2 acceptance remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2 — CI406/fd3506b ten SUCCESS, same whole checkout tree6307df79; B5b1 actual-operation Manifest/SBOM/full-peer provenance LOCAL QUALIFIED; B5b2 private Host materialization LOCAL QUALIFIED; B5b3 existing transaction/independent approval baseline audit IN_PROGRESS (source not yet changed); Host extraction/independent approval/transaction/CLI and whole P2 acceptance remain NO
-Current substep: M13-004/P2 — IN_PROGRESS; B4 production inspection LOCAL QUALIFIED; remote and Host/CLI pending; support not yet advertised
+Next action: M13-004/P2 — B5b3 guarded Application/target transaction/independent approval LOCAL QUALIFIED; wire its exact realcorpus client/actual consumer into existing CI, then continue CLI/native source-proof enrollment acceptance. CI406 covers earlier fd3506b only; whole P2 remains NO
+Current substep: M13-004/P2 — IN_PROGRESS; backend checkpoint and existing-CI consumer wiring audit next; CLI/native adoption/whole P2 pending; support not yet advertised
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -4947,5 +4947,20 @@ public project6·controlled3와 public native8/실제 Policy4·8entries, Linux t
 original0/client_error0/client_restore0를 확인했다. CI405 cwd 실패의 원격 소비자 gap을 닫았다.
 B5a source/default checks는 포함하지만 gated actual cache 소비자는 이 CI에서 실행하지 않았다.
 후속 local aa204f2/bcc316b와 target transaction/CLI·whole P2는 이 성공 범위 밖이다. 현재는
-[B5b3 기존 transaction 착수 감사](./evidence/package-client-quarantine/p2c5b5b3-pnpm-transaction-audit-20261025.md)를
-진행하며 original guard→선택 후 frozen context·독립 approval/rollback의 정확한 지도를 확정한다.
+[B5b3 기존 transaction 착수 감사](./evidence/package-client-quarantine/p2c5b5b3-pnpm-transaction-audit-20261025.md)의
+두 번째 검토와 edit map을 확정하고 기존 engine의 고정 PNPM profile·독립 retained approval,
+request-local application 연결을 구현 중이다. 첫 engine 범위 Quick162.799s는 PASS지만
+bootstrap 소비자 포함 첫 검사는 U1000으로 FAIL이며 actual은 미실행이다. Canonical/변조·rollback
+회귀와 실제 public 단일/peer/empty·fresh repeat/named update 및 기존 npm 소비자를 확인한다.
+Native adoption/CLI·whole P2 acceptance는 미완료이며 M13-004 하나만 IN_PROGRESS다.
+
+### 2026-10-25 P2 B5b3 guarded project transaction local checkpoint
+
+[B5b3 실제 결과](./evidence/package-client-quarantine/p2c5b5b3-pnpm-project-transaction-local-20261025.json)는
+기존 npm engine의 고정 PNPM profile·선택 전 원본 guard·독립 retained approval과 actual request-local
+Application 소비자를 연결한다. Canonical4/네 package 전체 Race135.126s, public single/peer/empty
+134.084s 및 기존 npm 실제6.243s가 PASS다. 별도 focused native update와 final fixture compile은
+영수증을 따른다. Same-content 재설치는 새 검사를 하며 inode/mode를 유지하고 단계별 실패는
+원본/state를 rollback한다. Foreign output/불확실 journal은 보존하고 재진입을 거부한다. Host 전후
+동일/helperwait0/정리를 확인했다. Native payload adoption/CLI/원격·whole P2는 미완료다.
+다음은 현재 CI actual consumer wiring과 CLI/독립 source-proof 인계 지도다. M13-004만 IN_PROGRESS다.

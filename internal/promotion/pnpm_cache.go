@@ -272,14 +272,20 @@ func (c *PNPMVerifiedCache) OpenProjectCache(ctx context.Context, staged domain.
 		return "", err
 	}
 	expected.Manifest = material.manifest.String()
-	id, ok := strings.CutPrefix(staged.ContentHandle(), "project-cache:")
+	return openPNPMApprovedCache(ctx, c.cacheRoot, staged.ContentHandle(), staged.Digest(), expected, &material)
+}
+
+// Retained callers supply controller-owned approval; current callers additionally
+// regenerate their records from the exact in-memory approved operation.
+func openPNPMApprovedCache(ctx context.Context, cacheRoot, handle string, digest domain.ContentDigest, expected pnpmCacheDocument, material *pnpmProjectRecords) (directory string, resultErr error) {
+	id, ok := strings.CutPrefix(handle, "project-cache:")
 	if !ok {
 		return "", errors.New("pnpm cache handle is invalid")
 	}
 	if _, err := domain.ParseRunID(id); err != nil {
 		return "", err
 	}
-	rootName := filepath.Join(c.cacheRoot, id)
+	rootName := filepath.Join(cacheRoot, id)
 	if err := trustedExistingDirectory(rootName); err != nil {
 		return "", err
 	}
@@ -294,7 +300,7 @@ func (c *PNPMVerifiedCache) OpenProjectCache(ctx context.Context, staged domain.
 		}
 	}()
 	receipt, info, err := readGoTransactionControl(root, "receipt.json")
-	if err != nil || info == nil || !pypiSingleLink(info) || info.Mode().Perm() != 0o444 || len(receipt) > pnpmCacheReceiptLimit || pnpmCacheHash(receipt) != staged.Digest().String() {
+	if err != nil || info == nil || !pypiSingleLink(info) || info.Mode().Perm() != 0o444 || len(receipt) > pnpmCacheReceiptLimit || pnpmCacheHash(receipt) != digest.String() {
 		return "", errors.Join(errors.New("pnpm cache receipt changed or is unavailable"), err)
 	}
 	var actual pnpmCacheDocument
@@ -311,22 +317,25 @@ func (c *PNPMVerifiedCache) OpenProjectCache(ctx context.Context, staged domain.
 	if err != nil {
 		return "", err
 	}
-	for _, record := range []struct {
-		name string
-		body []byte
-	}{
-		{"manifest.json", material.document}, {"sbom.cdx.json", material.sbom}, {"pnpm-provenance.json", material.provenance},
-	} {
-		found := false
-		for _, file := range expected.Records {
-			if file.Path == record.name && file.Kind == "file" && file.SHA256 == pnpmCacheHash(record.body) && file.Size == int64(len(record.body)) {
-				found = true
+	if material != nil {
+		for _, record := range []struct {
+			name string
+			body []byte
+		}{
+			{"manifest.json", material.document}, {"sbom.cdx.json", material.sbom}, {"pnpm-provenance.json", material.provenance},
+		} {
+			found := false
+			for _, file := range expected.Records {
+				if file.Path == record.name && file.Kind == "file" && file.SHA256 == pnpmCacheHash(record.body) && file.Size == int64(len(record.body)) {
+					found = true
+				}
+			}
+			if !found {
+				return "", errors.New("pnpm cached records differ from current operation approval")
 			}
 		}
-		if !found {
-			return "", errors.New("pnpm cached records differ from current operation approval")
-		}
 	}
+
 	want, err := json.Marshal(expected)
 	if err != nil || !bytes.Equal(want, receipt) {
 		return "", errors.Join(errors.New("pnpm cache data or recorded approval changed"), err)
