@@ -16,12 +16,30 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — rc6/native4 same-runtime baseline IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; P2/native5 expansion locally verified only, guest/whole qualification and channel scope remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2c2 — P2c1 locally committed e762bdc (not pushed); audited public native producer next; CI401 Required10SUCCESS confirmed; strict transport0b41c10 and native producer empty/fault LOCAL VERIFIED; public native eight selections LOCAL VERIFIED; current-source checkpoint and Domain/HostInstallAction mapping next
+Next action: M13-004/P2c4 — structured archive HostInstallAction LOCAL VERIFIED; complete PNPM snapshot/peer graph digest mapping next; CI402/head940 waiting for14:57:13KST timer; layout/transaction/CLI remain
 Current substep: M13-004/P2 — IN_PROGRESS; offline supply/native distribution LOCAL VERIFIED; exact guest admission and product graph/layout/CLI gaps active; support not yet advertised
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-24 P2c3 archive 설치 동작 사실 전달 착수
+
+[착수 감사·수정 지도·두 번째 검토](./evidence/package-client-quarantine/p2c3-pnpm-install-action-plan-20261024.md)에서
+기존 npm archive/graph M4/정규화 Evidence를 재사용하고 rootless npm의 사실 전달 gap만
+확인했다. 단일/acquired/batch 세 경로와 subject/check/저장 참조 결합, UNKNOWN·필요 동작의
+수동 검토가 이번 범위다. Layout/transaction/CLI·전체 P2 qualification은 계속 미완료다.
+앞 네 commit은 한 번 push했고 CI402/head940의55분 실제 타이머 첫 확인은14:57:13KST다.
+현재 source와 다음 local 구현을 섞어 성공을 주장하거나 재push로 실행을 취소하지 않는다.
+M13-004 하나만 IN_PROGRESS다.
+
+후속 구현은 single/acquired/batch와 exact subject/check/reference 결합을 연결했다.
+최종 Quick33.846s와 앞 관련 여섯 package Race5.283s, 실제 public archive 두 개의
+SRI/static/Store/true·false fact0.936s가 PASS다. 새 UNCONFIRMED code는 기존 다국어
+필수 검사 미완료 설명을 재사용한다. [로컬 결과](./evidence/package-client-quarantine/p2c3-pnpm-install-action-local-20261024.json)가
+현재 입력과 범위를 소유한다. Remote402는 앞940 후보이므로 이번 source 성공으로 전용하지 않는다.
+다음은 unique archive coverage와 full peer wiring을 함께 묶는 complete snapshot이며
+전체 P2/Host 설치·CLI qualification은 계속 열려 있다.
 
 ### 2026-10-24 P2c2 actual public 선택·update/no-op 로컬 검증
 

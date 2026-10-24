@@ -110,7 +110,25 @@ func (i *Inspector) Inspect(ctx context.Context, artifact domain.AcquiredArtifac
 	if len(lifecycle) != 0 {
 		summary += " Lifecycle script keys: " + strings.Join(lifecycle, ", ") + "."
 	}
-	return i.report(artifact, nil, summary)
+	report, err := i.report(artifact, nil, summary)
+	if err != nil {
+		return domain.InspectionReport{}, err
+	}
+	// Conservative M4 requirement: declaring a lifecycle action or shipping a
+	// root binding.gyp never grants Host execution after dynamic inspection.
+	kind := domain.EvidenceHostInstallActionNotRequired
+	if len(lifecycle) != 0 || seen["package/binding.gyp"] {
+		kind = domain.EvidenceHostInstallActionRequired
+	}
+	id, err := domain.NewEvidenceID("npm-host-install-action")
+	if err != nil {
+		return domain.InspectionReport{}, err
+	}
+	fact, err := domain.NewEvidence(id, report.Execution().ID(), artifact.Identity(), artifact.Digest(), kind, "npm archive Host install action requirement recorded.")
+	if err != nil {
+		return domain.InspectionReport{}, err
+	}
+	return domain.NewInspectionReport(report.Execution(), report.Findings(), append(report.Evidence(), fact))
 }
 
 func (i *Inspector) tarballPath(handle string) (string, error) {

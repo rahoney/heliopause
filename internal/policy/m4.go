@@ -58,6 +58,22 @@ func (M4) EvaluateProjectSet(set domain.InspectedProjectSet) (domain.PolicyDecis
 			return m4Decision(domain.DecisionBlock, "M4_DEPENDENCY_BLOCKED")
 		}
 	}
+	if set.Snapshot().Source().String() == "npm" {
+		unknown := false
+		for _, inspection := range set.Inspections() {
+			fact, known := inspection.HostInstallActionEvidence()
+			if !known || fact.CheckID().String() != "npm-static-archive" {
+				unknown = true
+				continue
+			}
+			if fact.Kind() == domain.EvidenceHostInstallActionRequired {
+				return m4Decision(domain.DecisionManualReview, "M4_HOST_LIFECYCLE_UNSUPPORTED")
+			}
+		}
+		if unknown {
+			return m4Decision(domain.DecisionManualReview, "M4_HOST_LIFECYCLE_UNCONFIRMED")
+		}
+	}
 	for _, inspection := range set.Inspections() {
 		if inspection.PolicyDecision().Decision() != domain.DecisionAllow {
 			return m4Decision(domain.DecisionManualReview, "M4_DEPENDENCY_REVIEW_REQUIRED")

@@ -91,22 +91,21 @@ func (s *InstallInspectService) inspectDependencyBatch(ctx context.Context, oper
 		if err != nil {
 			return failPending("POLICY_EVALUATION_FAILED", err)
 		}
+		record, err := newRecordedDependencyInspection(item.dependency.Node(), item.runID, item.artifact, checks, references, decision, evidence)
+		if err != nil {
+			return failPending("DEPENDENCY_INSPECTION_INVALID", err)
+		}
 		if err := item.run.FinalizeCompleted(decision); err != nil {
 			return failPending("RUN_FINALIZATION_FAILED", err)
 		}
 		item.finalized = true
-		item.references = references
 		item.decision = decision
-		item.checks = checks
+		item.inspection = record
 	}
 	inspections := make([]domain.DependencyInspection, 0, len(pending))
 	policyDiagnostics := make([]DependencyPolicyDiagnostic, 0, len(pending))
 	for _, item := range pending {
-		record, err := domain.NewDependencyInspection(item.dependency.Node(), item.runID, item.artifact, item.checks, item.references, item.decision)
-		if err != nil {
-			return nil, nil, nil, err
-		}
-		inspections = append(inspections, record)
+		inspections = append(inspections, item.inspection)
 		diagnostic, err := newDependencyPolicyDiagnostic(item.dependency, item.decision, reports[item.dependency.Node()].Findings())
 		if err != nil {
 			return nil, nil, nil, err

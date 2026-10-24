@@ -29,9 +29,8 @@ type pendingDependencyInspection struct {
 	run          *domain.InspectionRun
 	artifact     domain.AcquiredArtifact
 	verification domain.VerificationReport
-	references   []domain.EvidenceReference
 	decision     domain.PolicyDecision
-	checks       []domain.CheckExecution
+	inspection   domain.DependencyInspection
 	finalized    bool
 }
 
@@ -362,10 +361,14 @@ func (s *InstallInspectService) inspectAcquiredDependency(ctx context.Context, o
 	if err != nil {
 		return domain.DependencyInspection{}, failDependencyRun(run, "POLICY_EVALUATION_FAILED", err)
 	}
+	record, err := newRecordedDependencyInspection(dependency.Node(), runID, artifact, checks, references, decision, evidence)
+	if err != nil {
+		return domain.DependencyInspection{}, failDependencyRun(run, "DEPENDENCY_INSPECTION_INVALID", err)
+	}
 	if err := run.FinalizeCompleted(decision); err != nil {
 		return domain.DependencyInspection{}, failDependencyRun(run, "RUN_FINALIZATION_FAILED", err)
 	}
-	return domain.NewDependencyInspection(dependency.Node(), runID, artifact, checks, references, decision)
+	return record, nil
 }
 
 func (s *InstallInspectService) inspectDependency(ctx context.Context, operationID domain.OperationID, dependency domain.LockedDependency) (domain.DependencyInspection, DependencyPolicyDiagnostic, error) {
@@ -418,18 +421,26 @@ func (s *InstallInspectService) inspectDependency(ctx context.Context, operation
 	if err != nil {
 		return domain.DependencyInspection{}, DependencyPolicyDiagnostic{}, failDependencyRun(run, "POLICY_EVALUATION_FAILED", err)
 	}
+	record, err := newRecordedDependencyInspection(dependency.Node(), runID, artifact, checks, references, decision, evidence)
+	if err != nil {
+		return domain.DependencyInspection{}, DependencyPolicyDiagnostic{}, failDependencyRun(run, "DEPENDENCY_INSPECTION_INVALID", err)
+	}
 	if err := run.FinalizeCompleted(decision); err != nil {
 		return domain.DependencyInspection{}, DependencyPolicyDiagnostic{}, failDependencyRun(run, "RUN_FINALIZATION_FAILED", err)
-	}
-	record, err := domain.NewDependencyInspection(dependency.Node(), runID, artifact, checks, references, decision)
-	if err != nil {
-		return domain.DependencyInspection{}, DependencyPolicyDiagnostic{}, fmt.Errorf("construct dependency inspection record: %w", err)
 	}
 	diagnostic, err := newDependencyPolicyDiagnostic(dependency, decision, inspection.Findings())
 	if err != nil {
 		return domain.DependencyInspection{}, DependencyPolicyDiagnostic{}, err
 	}
 	return record, diagnostic, nil
+}
+
+func newRecordedDependencyInspection(node domain.DependencyNodeID, run domain.RunID, artifact domain.AcquiredArtifact, checks []domain.CheckExecution, references []domain.EvidenceReference, decision domain.PolicyDecision, evidence []domain.Evidence) (domain.DependencyInspection, error) {
+	record, err := domain.NewDependencyInspection(node, run, artifact, checks, references, decision)
+	if err != nil {
+		return domain.DependencyInspection{}, err
+	}
+	return record.WithHostInstallActionEvidence(evidence)
 }
 
 func lockedReference(artifact domain.ResolvedArtifact) (domain.ArtifactReference, error) {

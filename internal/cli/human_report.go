@@ -235,7 +235,7 @@ func (p *presentation) reason(code string) string {
 	switch code {
 	case "M1_REQUIRED_CHECKS_COMPLETED", "M3_REQUIRED_CHECKS_COMPLETED", "M6_REQUIRED_CHECKS_COMPLETED", "M4_VERIFIED_SET_COMPLETED", "M5_VERIFIED_SET_COMPLETED", "M6_VERIFIED_SET_COMPLETED":
 		return p.text("Required checks completed and policy allowed this operation.", "필수 검사가 완료되어 정책이 이번 작업을 허용했습니다.")
-	case "M1_REQUIRED_CHECK_INCOMPLETE", "M2_REQUIRED_CHECK_INCOMPLETE", "M3_REQUIRED_CHECK_INCOMPLETE", "M4_REQUIRED_CHECK_INCOMPLETE", "M5_REQUIRED_CHECK_INCOMPLETE", "M6_REQUIRED_CHECK_INCOMPLETE":
+	case "M1_REQUIRED_CHECK_INCOMPLETE", "M2_REQUIRED_CHECK_INCOMPLETE", "M3_REQUIRED_CHECK_INCOMPLETE", "M4_REQUIRED_CHECK_INCOMPLETE", "M4_HOST_LIFECYCLE_UNCONFIRMED", "M5_REQUIRED_CHECK_INCOMPLETE", "M6_REQUIRED_CHECK_INCOMPLETE":
 		return p.text("A required check was not completed; do not treat this as passed.", "필수 검사가 완료되지 않아 통과로 판단할 수 없습니다.")
 	case "M2_INTEGRITY_MISMATCH", "M3_INTEGRITY_MISMATCH", "M6_INTEGRITY_MISMATCH":
 		return p.text("Downloaded bytes do not match the expected integrity.", "다운로드한 파일이 기대한 무결성과 일치하지 않습니다.")
