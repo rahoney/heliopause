@@ -200,6 +200,12 @@ func pnpmManifestConstraints(body []byte, expectedClientVersion string) (map[str
 			return nil, errPNPMLock
 		}
 	}
+	if value, exists := fields["engines"]; exists {
+		var engines map[string]string
+		if json.Unmarshal(value, &engines) != nil || engines == nil || engines["runtime"] != "" {
+			return nil, errPNPMLock
+		}
+	}
 	groups := map[string]map[string]string{}
 	seen := map[string]bool{}
 	for _, name := range []string{"dependencies", "devDependencies"} {

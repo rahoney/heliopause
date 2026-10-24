@@ -250,3 +250,93 @@ security/docs와 실제 empty-lock·Node-query8.884s를 연결한다. Manifest�
 1,278,661,055B를 제거했다. Public network producer/Domain graph/layout/CLI는 아직 MISSING이다.
 Network policy에는 별도 Bind method가 없음을 실제 source에서 확인했다. 기존
 Prepare 내부 service Create/Verify와 Close 내부 Remove를 재사용하며 새 method를 만들지 않는다.
+
+## 7. Public producer 착수 전 실제 입력·공통 owner 재검토
+
+고정 전송은0b41c10으로 보존했다. 다음 public producer는 §6의 기존 gap이며 아직
+IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=NO다. 실제 source에는 network Bind가
+없으므로 Prepare 안의 service Create/Verify와 Close의 Remove만 소비한다.
+
+- `artifact/npm/pnpm_selection_input.go`: add/install/update intent·selector·frozen controls를
+  사전 검증하는 adapter-local value. 기존 manifest parser/PNPM lock parser를 재사용한다.
+  Install은 selector 없음, add는 한 public registry spec, selected update는 기존 직접 name만
+  받는다. 알 수 없는 control/중복/없어진 manifest·unsupported runtime/local/workspace는
+  tool·DNS·resource 생성 전에 거부한다. 생성 client pin을 인자로 받고 Core에 wire schema를
+  추가하지 않는다. Native output은 intent가 허용한 직접 dependency 변경 외의 manifest
+  필드/다른 dependency/group 변경을 거부하고 실제 output controls와 lock을 같이 보존한다.
+- `sandbox/native_resolver_container.go`: 이미 실제 UV에서 쓰는 정확한 name/owner/ID/image/
+  bounded inspect/unknown-create cleanup body만 UV·PNPM 두 native kind에 공유한다.
+  UV wrapper와 같은 error 문구·조건은 유지한다. 기존 session 전체를 재작성하지 않는다.
+- `sandbox/pnpm_resolver.go`: pinned capability/source→typed network→runtime/project volume→
+  owned container→observer/start/anchor/helper→tool/input→고정 lock-only command→bounded
+  manifest/lock→complete trace/금지 event0→역순 정리 순서다. Primary error와 cancel cause를
+  보존하고 identity/trace/정리 불확실 시 control/selection을 비운다. 새 public SourceID는 없다.
+- `pnpm_runtime.go`: 공용 Node 환경은 유지하고 PNPM 컨테이너에만 고정
+  `NPM_CONFIG_MANAGE_PACKAGE_MANAGER_VERSIONS=false`를 추가한다. Exact upstream의
+  pre_command/input.rs는 이 env의 false/0을 package-manager switch 거부로 읽는다.
+  같은 source의 runtime check는 engines.runtime/devEngines.runtime을 읽으므로 preflight는
+  unsupported runtime 선언을 거부한다. ignore-scripts·ignore-pnpmfile·ignore-workspace·
+  registry HTTPS·private store/state·lockfile-only는 실제 pinned help와 대조한 고정 argv다.
+  임의 config key나 추정 option을 전달하지 않는다. Install의 기존 lock은 frozen, 없는 lock은
+  no-frozen으로 생성한다. Update는 latest를 임의로 더하지 않고 native default 범위를 유지한다.
+
+공식 exact source의 pre_command/argv_plans/execute와 config_types는 source tree Git blob으로
+대조했다. 첫 tool capture의 한 terminal framing newline은 원본을 남긴 채 별도 decoded file로
+풀고 exact upstream blob과 검증했다. Raw p2c2-pnpm-preflight-upstream.json이 이를 소유한다.
+로컬 request/argv/unknown-create/foreign/취소/trace/정리 거부를 먼저 검증하고, 실제 public
+single/transitive/peer 뒤에만 source-bound selection으로 연결한다. 이 단위도 archive 검역·
+Domain graph/HostInstallAction·배치·transaction/CLI qualification을 대체하지 않는다.
+
+### 첫 actual producer 실패와 좁은 runtime read gap — 수정 전 재검토
+
+첫 actual boundary18.353s는 positive가 CONTROL/DIRECT_EXEC_ROOT·OCI root의
+flags557056/path locator d274fabda2980f22에서 STREAM_FAULT다. Exact FNV 대조는
+`/etc/nsswitch.conf`와 일치한다. Hash는 진단일 뿐 권한 근거가 아니다. 기존 Cargo의
+IsCargoResolverRuntimeRead는 같은 immutable OCI nsswitch 읽기를 이미 소비한다.
+PNPM의 IsPinnedPNPMRuntimeRead는 기존 exact role/launch/profile/current-image/network-active
+등 guard 아래 GNU startup paths만 소유하며 해당 읽기는 아직 없다. Implemented 기존 guard를
+대체하거나 공용 library/DNS 권한을 넓히지 않고 PNPM CONTROL의 이 OCI 파일·557056만
+실제 필요 범위로 더한다. ARTIFACT·child·다른 profile·Host·쓰기·alias는 계속 거부한다.
+
+기존 VerifyPNPMRuntimeReadBoundary에 positive 한 경로와 alias negatives를 먼저 더해
+동일 product의 RED를 확인하고, 그 predicate의 immutable-root 경로 집합만 수정한다.
+110 전체 latch와 실제 같은 producer를 대조한다. 해당 actual에서 나머지 네 negative의
+PASS는 먼저 난 runtime fault만으로도 성립하므로 의도한 injection 검증으로 인정하지 않는다.
+Fixture는 positive 실패 즉시 중단하고 command/cleanup/EOF injection이 실제 발동했는지
+독립 counter를 요구하도록 고친다. 첫 원본 p2c2-pnpm-producer-boundary-actual-first는 보존한다.
+Host 동일·containers/volumes/endpoints0·두 daemon wait0은 그 실패와 별도로 확인됐다.
+
+Nsswitch matrix는 product 불변의18에서109PASS/1FAIL, 좁은 보완19에서110PASS41.700s다.
+같은 actual의 다음 read는 `/etc/host.conf`·locator7b3aec1a4b03aee1/557056·동일
+CONTROL/DIRECT_EXEC_ROOT/immutable OCI root였다. 앞 nsswitch 수리의 반증이 아니라 다음
+독립 runtime 입력이다. 같은 Cargo owner의 exact DNS-config read와 대조하여 PNPM의
+같은 guard/path 집합에 이 파일만 더하고 alias/role/profile/쓰기 거부 matrix를 유지한다.
+수정된 fixture는 positive 첫 실패 뒤 즉시 멈췄으며 후속 negative는 NOT_EXECUTED다.
+Raw p2c2-pnpm-boundary-producer-reviewed가 최초 오류·Host불변/자원0/wait0을 소유한다.
+
+### 불필요한 native update-notifier 분리 — 권한 확대 전 대조
+
+공식 exact `cli_args/update_notifier.rs`는 install/add가 pnpm/latest를 background 조회하며
+update_notifier/CI/offline/prefer-offline이면 생략한다고 명시한다. config/env_overlay.rs는
+`PNPM_CONFIG_UPDATE_NOTIFIER`를 해당 boolean에 연결한다. Empty control 입력도 native 자체
+조회가 생길 수 있으므로 선택에 필요 없는 notifier를 PNPM 환경에서 명시 false로 고정한다.
+앞 nsswitch/host.conf 보완19/20의 matrix PASS는 해당 permission guard의 부분 검증일 뿐,
+그 permission이 public selection에 실제 필수라는 최종 입증은 아니다. 우선 production
+predicate를 qualified17/0b41과 동일하게 되돌리고 두 파일/alias는 거부 회귀로 둔다.
+Notifier-disabled actual과 baseline observer를 대조한 뒤 필요한 actual read만 다시 판단한다.
+추가 HTTP 조회를 위해 예외를 누적하지 않으며 원본18/19/20과 실제 두 실패는 보존한다.
+
+
+### Notifier 대조와 실제 producer 경계 결과
+
+공식 notifier/env-overlay의 exact Git blob을 확인하고 fixed env를 추가한 실제31.01s의
+positive와 command+cleanup/cleanup ACK/incomplete observation/forbidden observation
+네 negative 모두 PASS다. 각 negative의 injection counter도 정확한 도달을 요구했다.
+사용한 observer binary SHA는 qualified17/CI401과 같은279e4a3e이며 product observer.cc도
+0b41과 byte-identical이다. Empty의 앞 nsswitch 거부는 불필요한 notifier 조회를 끄는
+수정으로 피했고19/20의 임시 permission 보완은 최종 production에 남기지 않았다.
+Public actual fetch에 필요한 DNS/TLS read까지 완료됐다는 뜻은 아니다.
+최종 source Quick51.370s/security7.155s/docs.322s와110 latch48.470s는 PASS이며,
+자세한 input/source/실제 범위는 [producer boundary 결과](./p2c2-pnpm-producer-boundary-local-20261024.json)가 소유한다.
+선택 input/명령/cleanup producer의 bounded local 연결을 보존하고 다음은 실제 public
+single/transitive/peer의 typed policy와 independent registry binding이다.

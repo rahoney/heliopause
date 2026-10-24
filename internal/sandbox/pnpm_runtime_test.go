@@ -21,7 +21,7 @@ func TestPNPMRuntimeKeepsNodeBoundaryAndRejectsOtherToolAuthority(t *testing.T) 
 	}
 	old := npmCreateArguments("none", nil)
 	projectMount, err := project.mountArgument(false)
-	if err != nil || len(args) != len(old)+2 {
+	if err != nil || len(args) != len(old)+6 {
 		t.Fatal("changed Node execution boundary")
 	}
 	projectIndex := -1
@@ -35,6 +35,14 @@ func TestPNPMRuntimeKeepsNodeBoundaryAndRejectsOtherToolAuthority(t *testing.T) 
 		t.Fatal("project mount missing")
 	}
 	args = append(append([]string{}, args[:projectIndex]...), args[projectIndex+2:]...)
+	if args[projectIndex] != "--env" || args[projectIndex+1] != "NPM_CONFIG_MANAGE_PACKAGE_MANAGER_VERSIONS=false" {
+		t.Fatal("PNPM package-manager switching is not disabled")
+	}
+	args = append(args[:projectIndex], args[projectIndex+2:]...)
+	if args[projectIndex] != "--env" || args[projectIndex+1] != "PNPM_CONFIG_UPDATE_NOTIFIER=false" {
+		t.Fatal("PNPM background update notifier is not disabled")
+	}
+	args = append(args[:projectIndex], args[projectIndex+2:]...)
 	changes := 0
 	for i := range old {
 		if args[i] != old[i] {

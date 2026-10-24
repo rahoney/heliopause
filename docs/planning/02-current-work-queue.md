@@ -16,12 +16,24 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — rc6/native4 same-runtime baseline IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED YES; P2/native5 expansion locally verified only, guest/whole qualification and channel scope remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2c2 — P2c1 locally committed e762bdc (not pushed); audited public native producer next; CI401 Required10SUCCESS confirmed; strict fixed control transport LOCAL VERIFIED/actual8.884s; public native producer next
+Next action: M13-004/P2c2 — P2c1 locally committed e762bdc (not pushed); audited public native producer next; CI401 Required10SUCCESS confirmed; strict transport0b41c10 and native producer empty/fault LOCAL VERIFIED; actual public selection/binding next
 Current substep: M13-004/P2 — IN_PROGRESS; offline supply/native distribution LOCAL VERIFIED; exact guest admission and product graph/layout/CLI gaps active; support not yet advertised
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
+
+### 2026-10-24 P2c2 native producer 경계 로컬 검증
+
+[Producer 경계 결과](./evidence/package-client-quarantine/p2c2-pnpm-producer-boundary-local-20261024.json)는
+add/install/update 사전 입력·허용된 manifest 변경, 기존 UV/PNPM exact owner 공유와
+고정 lock-only command·전체 관찰/정리 후 결과 반환을 연결한다. Canonical Quick51.370s/
+security/docs와 실제 empty/fault5cases31.01s가 PASS다. 앞 native notifier의 불필요한
+registry 조회를 공식 source와 대조하여 false로 고정했고 임시 읽기 보완은 되돌렸다.
+Observer product/binary는 qualified17/CI401과 같고 추가 거부 matrix110도 PASS다.
+이는 fake/inert service의 closed-network 경계 검증이다. Actual public typed policy/HTTPS
+single/transitive/peer·independent binding이 다음이며 Domain/HostInstallAction·layout/
+transaction/CLI acceptance는 미완료다. M13-004 하나만 IN_PROGRESS다.
 
 ### 2026-10-24 CI401 ordinary native admission 확인과 P2c2 전송 검증
 

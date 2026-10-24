@@ -3,7 +3,6 @@ package sandbox
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -332,44 +331,11 @@ func uvNativeCommonArguments() []string {
 }
 
 func removeOwnedUVResolverContainer(ctx context.Context, runner CommandRunner, name, owner, expectedID string) error {
-	if name != "haa-uv-resolver-"+owner || owner == "" {
-		return errors.New("uv resolver cleanup owner unavailable")
-	}
-	listed, err := runner.Output(ctx, "docker", "ps", "--all", "--quiet", "--no-trunc", "--filter", "name=^/"+name+"$")
-	if err != nil || len(listed) > 1024 {
-		return errors.New("uv resolver cleanup inventory unavailable")
-	}
-	ids := strings.Fields(string(listed))
-	if len(ids) == 0 && expectedID == "" {
-		return nil
-	}
-	if len(ids) != 1 || !exactObservationContainerID(ids[0]) || expectedID != "" && ids[0] != expectedID {
-		return errors.New("uv resolver cleanup identity differs")
-	}
-	if err := verifyOwnedUVResolverContainer(ctx, runner, name, owner, ids[0]); err != nil {
-		return err
-	}
-	_, err = runner.Output(ctx, "docker", "rm", "--force", ids[0])
-	return err
+	return removeOwnedNativeResolverContainer(ctx, runner, name, owner, expectedID, nativeRuntimeUV)
 }
 
 func verifyOwnedUVResolverContainer(ctx context.Context, runner CommandRunner, name, owner, id string) error {
-	if owner == "" || name != "haa-uv-resolver-"+owner || !exactObservationContainerID(id) {
-		return errors.New("uv resolver container identity unavailable")
-	}
-	body, err := runner.Output(ctx, "docker", "inspect", "--format", "{{json .}}", id)
-	var actual struct {
-		ID     string `json:"Id"`
-		Name   string
-		Config struct {
-			Image  string
-			Labels map[string]string
-		}
-	}
-	if err != nil || len(body) == 0 || len(body) > 32<<10 || json.Unmarshal(body, &actual) != nil || actual.ID != id || actual.Name != "/"+name || actual.Config.Image != pythonImageReference || actual.Config.Labels[uvResolverOwnerLabel] != owner {
-		return errors.New("uv resolver container ownership unproven")
-	}
-	return nil
+	return verifyOwnedNativeResolverContainer(ctx, runner, name, owner, id, nativeRuntimeUV)
 }
 
 func uvTargetPlatform(runtime PythonRuntime) (string, error) {

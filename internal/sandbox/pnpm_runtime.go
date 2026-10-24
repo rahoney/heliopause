@@ -36,5 +36,7 @@ func pnpmCreateArguments(network string, hostArguments []string, volume nativeRu
 	if err != nil {
 		return nil, err
 	}
-	return nodeResolverCreateArguments(network, hostArguments, []string{"--mount", mount, "--mount", projectMount}), nil
+	return nodeResolverCreateArguments(network, hostArguments, []string{"--mount", mount, "--mount", projectMount,
+		"--env", "NPM_CONFIG_MANAGE_PACKAGE_MANAGER_VERSIONS=false",
+		"--env", "PNPM_CONFIG_UPDATE_NOTIFIER=false"}), nil
 }
