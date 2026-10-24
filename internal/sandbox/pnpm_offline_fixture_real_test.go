@@ -46,6 +46,7 @@ type pnpmOfflineFixture struct {
 	roots, snapshots            map[string]any
 	installed                   []pnpmOfflineIdentity
 	links                       []pnpmOfflineLink
+	bins                        map[string]string
 }
 
 // Explicit qualification inputs, never a general lock/layout codec.
@@ -63,6 +64,7 @@ func pnpmOfflineFixtures() []pnpmOfflineFixture {
 			name: "peer", manifest: `{"dependencies":{"react":"18.3.1","use-sync-external-store":"1.2.0"}}`,
 			specs:       []string{"react@18.3.1", "use-sync-external-store@1.2.0", "loose-envify@1.4.0", "js-tokens@4.0.0"},
 			lockFixture: "pnpm-v9-peer.synthetic.yaml",
+			bins:        map[string]string{"loose-envify": "loose-envify@1.4.0/node_modules/loose-envify/cli.js"},
 			installed:   []pnpmOfflineIdentity{{"react@18.3.1", "react", "18.3.1"}, {"use-sync-external-store@1.2.0_react@18.3.1", "use-sync-external-store", "1.2.0"}, {"loose-envify@1.4.0", "loose-envify", "1.4.0"}, {"js-tokens@4.0.0", "js-tokens", "4.0.0"}},
 			links: []pnpmOfflineLink{
 				{".pnpm/use-sync-external-store@1.2.0_react@18.3.1/node_modules/react", "../../react@18.3.1/node_modules/react"},

@@ -271,3 +271,62 @@ identity/links·complete/금지0·Host전체동일/helperwait0/final original0�
 교정 결과를 연결한다. CI404는 앞1f410fd/19:30:18KST 타이머를 계속 유지하고 새 parser의
 원격 검증으로 전용하지 않는다. 다음은 pinned Node bin shim의 전체 code/경로 검증과
 B3a inventory·frozen instances/edges를 이 envelope에 결합하는 상세 지도다.
+
+## 9. B3b2b — Node bin shim 전체 code 검증 지도/두 번째 검토
+
+Baseline5641ed6에는 bounded layout envelope만 있고 생성 shim 검증기는 없다.
+Pinned official sh.rs의 SH_SHIM_HEADER/SH_SHIM_PLATFORM·node exec block과 relocatable.rs의
+BASEDIR_ABS_PRELUDE를 독립적으로 조합했다. Data인 exact target relative path와 optional
+NODE_PATH block만 정규화한3,346B는 실제 세 shim 모두와 byte-identical이며 SHA256은
+64d69cfde5def2f7644e5ca92e1e669eaeb87bcbd30355f2c2cd9ac3b20bf2d7이다. 이름/주석 한 줄이
+아니라 나머지 **모든 code byte**를 같은 형식으로 제한할 수 있다. Source Git blobs/원본은
+동일 raw owner의 sh-renderer/shim-relocatable/linking-paths source가 소유한다.
+
+1. artifact/npm/pnpm_bin_shim.go 한 곳에 ParsePNPMNodeBinShim(bytes, shimPath,
+   expectedTarget)를 둔다. 현재 Node/no-extra-shebang-args 형식만 처리한다. 두 경로는
+   node_modules 안의 canonical safe ASCII path이며 relative target은 pure slash semantics로
+   계산한다. Expected target은 최종 binder가 **원본 archive manifest/bin과 검증된 file**에서
+   제공해야 한다. Native marker나 file basename은 source authority가 아니다.
+2. Optional NODE_PATH는 exact5line block 하나만 parse한다. 두 export의 값 일치, 최대32개
+   중복 없는 literal $basedir_abs/ 상대 path, node_modules 안의 module directory로만 제한한다.
+   반환 경로는 뒤 full binder가 실제 directory/정확한 허용 범위에 결합해야 한다. 외부/CWD/
+   shell substitution/quotes·다른 block·program/args는 거부한다.
+3. Block을 제외한 모든 bytes에서 **알려진 target의7개 위치**만 placeholder로 바꾼다.
+   정규화 전체 SHA256은 위 source-derived 형식 digest와 같아야 한다. 이 값은 단일 format
+   identity이고 artifact digest/Policy·CONTROL 권한이 아니다. Binary version/name 값을
+   여러 소비자에 박지 않으며 version은 기존 runtime lock에서만 온다. Native 형식 변경은
+   source audit·세 golden/native 회귀에서 발견하고 이 owner 하나를 갱신한다.
+4. Testdata normalized vector는 MIT인 동일 PNPM source로부터 도출하며 기존
+   tools/pnpm/NOTICE가 attribution/license owner다. Production binary에는 source script가
+   들어가지 않고 code identity digest와 format parser만 있다. Template script는 실행하지 않는다.
+5. Gated fixture의 명시적 fixture data에 expected bin target을 두고 실제 세 shim 전체를
+   이 parser로 확인한다. 이는 public fixture의 알려진 path/format 검증이며 full archive/
+   manifest binding 또는 lifecycle 실행 완료가 아니다. 기존 filename/marker에서 target을
+   읽어 자기 자신을 승인하는 방법은 사용하지 않는다.
+
+두 번째 검토에서 prefix hash/target 주석만 확인하거나 NODE_PATH를 임의 shell text로
+받으면 injected code를 놓칠 수 있음을 확인했다. Exact export block·safe path grammar와
+known target7회/나머지 전체 code byte identity를 모두 요구한다. Unknown runtime/args는
+현재 parser에서 거부하고 future full inspector에서 required unavailable/incomplete로
+설명해야 한다. Npm 기존 실행/관찰기/Host 권한은 그대로다. Full binder는 이 형식 확인과
+별개로 원본 archive의 bin target/header·모든 payload/edge와 metadata를 검증해야 한다.
+
+Unit negatives는 다른 expected target, missing/extra target occurrence, comment는 유지한
+exec 변조·code 삽입·다른 program/args, NODE_PATH 양쪽 불일치/중복/escape/substitution,
+unsafe/noncanonical path를 포함한다. Canonical format/Quick/security/docs·해당 npm Race와
+fresh native actual을 확인한다. CI404의55분 타이머19:30:18KST는 유지하고 새 push는 없다.
+
+### B3b2b 로컬 결과
+
+Canonical format.406s/security12.107s/Quick141.274s/docs.384s와 npm artifact 전체 Race6.168s는
+PASS다. Fresh actual18.382s/test15.87s는 public fixture의 own/private-hoist/dependency consumer
+세 Node shim 모두를 명시적 expected target에 대해 전체 code 형식으로 확인했다. 같은
+transitive/peer envelope·instance경로2/4·controls/identity/links·complete/금지0·Host불변/
+helperwait0/final original0도 PASS다. Native marker를 target authority로 사용하지 않았다.
+
+원본 archive의 bin 선언과 모든 graph/file binding을 수행한 것은 아니며 required dynamic/
+Policy·Host 설치를 실행하지 않았다. 전용 runtime11files/165,592,448 logicalB는 all-UID
+refs0/query errors0 뒤 삭제했다. [로컬 영수증](./p2c5b3b2b-pnpm-bin-local-20261024.json)이
+Source-derived vector와 actual 범위를 연결한다. 다음에는 archive inventory/manifest bin과
+전체 frozen instances/edges·generated metadata를 함께 결합할 정확한 지도를 확정한다.
+CI404/1f410fd의19:30:18KST 실제 타이머는 그대로 유지한다.

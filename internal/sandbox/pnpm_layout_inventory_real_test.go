@@ -8,6 +8,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"os"
+	"path"
 	"strings"
 	"testing"
 
@@ -38,6 +39,7 @@ func TestPNPMActualLayoutInventoryFixture(t *testing.T) {
 					Generated          string `json:",omitempty"`
 				}
 				var entries []entry
+				binCount := 0
 				parsed, err := artifactnpm.ParsePNPMLayoutArchive(ctx, output.body)
 				if err != nil {
 					t.Fatal("native layout envelope rejected", err)
@@ -54,10 +56,24 @@ func TestPNPMActualLayoutInventoryFixture(t *testing.T) {
 								t.Fatal("native generated shape file unavailable", err)
 							}
 							item.Generated = string(body)
+							if strings.Contains(header.Name, "/.bin/") {
+								target, expected := fixture.bins[path.Base(header.Name)]
+								if !expected {
+									t.Fatal("fixture has an unexpected bin command")
+								}
+								if _, err := artifactnpm.ParsePNPMNodeBinShim(body, header.Name, "node_modules/.pnpm/"+target); err != nil {
+									t.Fatal("native bin code differs from the reviewed full template", err)
+								}
+								binCount++
+							}
 						}
 					}
 					entries = append(entries, item)
 				}
+				if len(fixture.bins) != 0 && binCount != 3 {
+					t.Fatal("fixture did not reach the three independent bin locations", binCount)
+				}
+				t.Logf("pnpm_layout_bin_code shims=%d full_code_format=VERIFIED archive_bin_binding=NOT_VERIFIED", binCount)
 				if err := ctx.Err(); err != nil {
 					t.Fatal(err)
 				}
