@@ -37,6 +37,24 @@ func validatePNPMRuntimeScript(contents string) []string {
 			findings = append(findings, "PNPM runtime helper requires one command: "+command)
 		}
 	}
+	// Same fixed package-subshell convention as the UV/Cargo compiled consumers.
+	// Source fixture access belongs to this command, never the supply commands.
+	var active []string
+	for _, line := range strings.Split(contents, "\n") {
+		line = strings.TrimSpace(line)
+		if line != "" && !strings.HasPrefix(line, "#") {
+			active = append(active, line)
+		}
+	}
+	scoped := 0
+	for i := 2; i+1 < len(active); i++ {
+		if active[i] == pnpmControlledIntegrationCommand && active[i-2] == "(" && active[i-1] == "cd internal/sandbox" && active[i+1] == ")" {
+			scoped++
+		}
+	}
+	if scoped != 1 {
+		findings = append(findings, "PNPM controlled fixture requires one matching package subshell")
+	}
 	return findings
 }
 

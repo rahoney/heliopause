@@ -14,9 +14,9 @@ Last completed work item: CLI-UX-003 — COMPLETE; source4cfe29e/CI352 ten SUCCE
 Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
-Active work item status: IN_PROGRESS — B4b1/B4b2/B4c named local qualification PASS; bundled remote qualification and PNPM Host/CLI/whole P2 acceptance remain
+Active work item status: IN_PROGRESS — B4b1/B4b2/B4c/B4d and B5a named local qualification PASS; CI405 first fixture cwd failure corrected locally; new remote and PNPM Host/CLI/whole P2 acceptance remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2 — CI405/7e966e7 RUNNING; first check 2026-10-25 02:32:37 KST (55min actual timer); B5a approved data cache LOCAL QUALIFIED; audit Host extraction/independent records and transaction/CLI gaps meanwhile; whole P2 acceptance NO
+Next action: M13-004/P2 — CI405/7e966e7 Linux+Required FAILED (compiled controlled fixture cwd ENOENT); B4d narrow caller correction/actual requalification LOCAL QUALIFIED; bundled next remote pending; B5a8a4ef5b approved data cache LOCAL QUALIFIED; Host extraction/independent records/transaction/CLI and whole P2 acceptance remain NO
 Current substep: M13-004/P2 — IN_PROGRESS; B4 production inspection LOCAL QUALIFIED; remote and Host/CLI pending; support not yet advertised
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
@@ -4904,3 +4904,14 @@ operators/cache are retired after their last consumer. No public Release, main
 merge, permanent Host migration, kernel reboot or new CUDA full was performed.
 M13-004 alone remains IN_PROGRESS for owner names/tap/formula and publisher
 bindings, bounded wrappers and channel qualification; M13-005 is NOT_STARTED.
+
+### 2026-10-25 P2 CI405 최초 오류와 B4d 로컬 교정
+
+[실패 원본과 교정 범위](./evidence/package-client-quarantine/p2c5b4d-pnpm-ci-fixture-plan-20261025.md)의
+CI405/head7e·checkout5e2b42a는 같은 전체tree d864b870이다. Required/Linux FAIL·나머지8SUCCESS며
+startup4/public project6 뒤 새 compiled controlled fixture의 repository cwd ENOENT다. Native
+product/메모리 실패로 합치지 않는다. Helperwait0/CONFIRMED_STOPPED·original1/RESTORED다.
+동일 constructor의 data consumer에서 rootFAIL→packagePASS를 관측하고 해당 호출 하나만
+package subshell로 고쳤다. Canonical5/Bash와 actual134.277s의 controlled3·public8/실제 검역4
+통과, Host 전후 동일/정리를 확인했다. B5a8a4는 이 실패 원격 source 이후이며 새 원격과 Host
+transaction/CLI·whole P2 acceptance는 열려 있다. 작은 수정별 재push 대신 이 단위를 묶어 전달한다.
