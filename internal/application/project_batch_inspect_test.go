@@ -63,3 +63,79 @@ func TestProjectInspectionUsesCompleteProjectCapabilityBeforeSingleEntries(t *te
 		t.Fatal("project capability was bypassed", err, p.batches, p.singles)
 	}
 }
+
+type projectPartialFailurePorts struct {
+	*projectBatchInspectionPorts
+	providerErr, recordErr error
+	mode                   string
+	records, policies      int
+	retained               []domain.Evidence
+}
+
+func (p *projectPartialFailurePorts) InspectProject(ctx context.Context, snapshot domain.ProjectDependencySnapshot, acquired map[domain.DependencyNodeID]domain.AcquiredArtifact) (map[domain.DependencyNodeID]domain.InspectionReport, error) {
+	reports, err := p.projectBatchInspectionPorts.InspectProject(ctx, snapshot, acquired)
+	if err != nil {
+		return nil, err
+	}
+	if p.mode == "missing" {
+		for node := range reports {
+			delete(reports, node)
+			break
+		}
+	}
+	if p.mode == "foreign" {
+		var first domain.InspectionReport
+		for _, report := range reports {
+			first = report
+			break
+		}
+		for node := range reports {
+			reports[node] = first
+		}
+	}
+	return reports, p.providerErr
+}
+func (p *projectPartialFailurePorts) Record(ctx context.Context, run domain.RunID, facts []domain.Evidence) ([]domain.EvidenceReference, error) {
+	p.records++
+	p.retained = append(p.retained, facts...)
+	if p.recordErr != nil {
+		return nil, p.recordErr
+	}
+	return p.multiInspectionPorts.Record(ctx, run, facts)
+}
+func (p *projectPartialFailurePorts) Evaluate(input domain.PolicyInput) (domain.PolicyDecision, error) {
+	p.policies++
+	return (policy.M3{}).Evaluate(input)
+}
+func TestProjectProviderFailureRecordsExactFactsWithoutPolicyOrPartialApproval(t *testing.T) {
+	provider := errors.New("original project failure")
+	record := errors.New("controlled evidence store failure")
+	for _, mode := range []string{"exact", "missing", "foreign", "store-failure"} {
+		t.Run(mode, func(t *testing.T) {
+			graph := twoNodeGraph(t)
+			base := &projectBatchInspectionPorts{multiInspectionPorts: newMultiInspectionPorts(t, graph), t: t}
+			p := &projectPartialFailurePorts{projectBatchInspectionPorts: base, providerErr: provider, mode: mode}
+			if mode == "store-failure" {
+				p.recordErr = record
+			}
+			service, err := application.NewProjectInspectService(p, p, p, p, p, policy.M4{}, domain.NewOperationID, domain.NewRunID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			approved, err := service.InspectProject(context.Background(), inspectionProjectSnapshot(t, graph))
+			if !errors.Is(err, provider) || approved.Valid() || p.policies != 0 {
+				t.Fatal("failure cause or no-approval contract lost", err)
+			}
+			if mode == "missing" || mode == "foreign" {
+				if p.records != 0 {
+					t.Fatal("invalid facts were recorded")
+				}
+			} else if p.records != 2 || len(p.retained) != 4 {
+				t.Fatal("exact partial evidence lost", p.records)
+			}
+			if mode == "store-failure" && !errors.Is(err, record) {
+				t.Fatal("evidence failure lost original cause", err)
+			}
+		})
+	}
+}

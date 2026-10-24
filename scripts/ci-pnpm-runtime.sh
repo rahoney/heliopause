@@ -35,3 +35,8 @@ sudo -n install -d -m 0755 /usr/lib/heliopause/versions/v1.0.0-pnpm-ci
 sudo -n install -m 0555 "$pnpm_work/pnpm-linux-amd64" /usr/lib/heliopause/versions/v1.0.0-pnpm-ci/pnpm-linux-amd64
 sudo -n ln -s versions/v1.0.0-pnpm-ci /usr/lib/heliopause/current
 HELOX_PNPM_NATIVE_RUNTIME=1 go test -tags=realcorpus -v -timeout=3m ./internal/sandbox -run '^TestPNPMActual(Isolated(NativeStartup|EmptyLock|NodeQuery)|ReleaseArtifactProbe)$'
+# The parent lifecycle installed this realcorpus binary and owns the running
+# authenticated policy helper. Execute that exact client as the ordinary user.
+HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 HELOX_PNPM_INSTANCE_EXECUTION_FIXTURE=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMActualProductionProjectInspection$'
+HELOX_PNPM_NATIVE_RUNTIME=1 HELOX_PNPM_PUBLIC_METADATA_FIXTURE=1 HELOX_PNPM_INSTANCE_EXECUTION_FIXTURE=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMActualProductionInstanceExecution$/^controlled-(success|exit37|long-name)$'
+HELOX_PNPM_PUBLIC_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.timeout=5m -test.run '^TestPNPMPublicNativeResolverIntegration$'

@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+
+	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
 func TestPNPMInspectionWorkspaceChargesEveryPeerInstance(t *testing.T) {
@@ -54,5 +56,94 @@ func TestPNPMInspectionWorkspaceRequiresExactCompleteCoverage(t *testing.T) {
 	}
 	if err := (PNPMInspectionInput{}).CheckWorkspace(f.inventories); err == nil {
 		t.Fatal("zero input admitted")
+	}
+}
+
+func TestPNPMInspectionCollectionStopsAtFirstExcessAndStaysFailed(t *testing.T) {
+	f := fullInspectionLayoutFixture(t, true)
+	budget, err := f.input.BeginWorkspace()
+	if err != nil {
+		t.Fatal(err)
+	}
+	failed := false
+	for _, inventory := range f.inventories {
+		if inventory.Artifact().Identity().Name() == "use-sync-external-store" {
+			entries := inventory.Entries()
+			for part, size := range []int64{20 << 20, 20 << 20, 8 << 20} {
+				entries = append(entries, ArchiveEntry{Path: fmt.Sprintf("incremental-%d", part), Size: size, Mode: 0o644, Digest: layoutDigestFixture(t, []byte("synthetic size only"))})
+			}
+			inventory, err = NewArchiveInventory(inventory.Artifact(), entries, inventory.Manifest())
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := budget.Add(inventory); !errors.Is(err, errPNPMInspectionBudget) {
+				t.Fatal("peer expansion not rejected during collection", err)
+			}
+			failed = true
+			break
+		}
+		if err := budget.Add(inventory); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if !failed {
+		t.Fatal("excessive subject missing")
+	}
+	if err := budget.Add(f.inventories[0]); !errors.Is(err, errPNPMInspectionBudget) {
+		t.Fatal("failed collector reused", err)
+	}
+	if err := budget.Complete(); !errors.Is(err, errPNPMInspectionBudget) {
+		t.Fatal("failure lost", err)
+	}
+}
+
+func TestPNPMInspectionCollectionRequiresExactOnceOnlySubjects(t *testing.T) {
+	f := fullInspectionLayoutFixture(t, true)
+	budget, err := f.input.BeginWorkspace()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if budget.Complete() == nil {
+		t.Fatal("empty collection complete")
+	}
+	for _, inventory := range f.inventories {
+		if err := budget.Add(inventory); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := budget.Complete(); err != nil {
+		t.Fatal(err)
+	}
+	if err := budget.Add(f.inventories[0]); !errors.Is(err, errPNPMInspectionLayout) {
+		t.Fatal("duplicate accepted", err)
+	}
+	if budget.Complete() == nil {
+		t.Fatal("duplicate failure not sticky")
+	}
+	foreign := fullInspectionLayoutFixture(t, true)
+	budget, err = f.input.BeginWorkspace()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if budget.Add(foreign.inventories[0]) == nil {
+		t.Fatal("foreign run accepted")
+	}
+	var zero PNPMInspectionBudget
+	if zero.Add(f.inventories[0]) == nil || zero.Complete() == nil {
+		t.Fatal("zero collector accepted")
+	}
+}
+
+func TestPNPMInspectionCollectionChargesCompressedInputsBeforeStatic(t *testing.T) {
+	f := fullInspectionLayoutFixture(t, false)
+	original := f.input.artifacts[0]
+	// Explicit structural size fixture; no archive authenticity is asserted.
+	oversized, err := domain.NewAcquiredArtifact(original.Identity(), original.Digest(), original.ContentHandle(), PNPMInspectionWorkspaceLimit+1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	f.input.artifacts[0] = oversized
+	if _, err := f.input.BeginWorkspace(); !errors.Is(err, errPNPMInspectionBudget) {
+		t.Fatal("compressed total was deferred until after collection", err)
 	}
 }

@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/rahoney/heliopause/internal/core/domain"
 	"github.com/rahoney/heliopause/internal/core/ports"
@@ -69,6 +70,21 @@ func (s *InstallInspectService) inspectDependencyBatch(ctx context.Context, oper
 	ports.ReportProgress(ctx, ports.Progress{Stage: "inspect"})
 	reports, err := inspect(artifacts)
 	if err != nil {
+		// A provider may return bounded partial facts with its original failure.
+		// Record only exact complete report coverage; never evaluate Policy or
+		// construct an approved set on this path.
+		if len(reports) != 0 {
+			if reportErr := validateFailedDependencyReports(nodes, reports, byNode); reportErr != nil {
+				err = errors.Join(err, reportErr)
+			} else {
+				for _, item := range pending {
+					facts := append(item.verification.Evidence(), reports[item.dependency.Node()].Evidence()...)
+					if _, recordErr := s.evidence.Record(ctx, item.runID, facts); recordErr != nil {
+						err = errors.Join(err, recordErr)
+					}
+				}
+			}
+		}
 		return failPending("INSPECTION_PROVIDER_FAILED", err)
 	}
 	if err := validateDependencyReports(nodes, reports); err != nil {
@@ -113,4 +129,20 @@ func (s *InstallInspectService) inspectDependencyBatch(ctx context.Context, oper
 		policyDiagnostics = append(policyDiagnostics, diagnostic)
 	}
 	return inspections, reports, policyDiagnostics, nil
+}
+
+// A failed provider's facts still require the exact requested acquired subject.
+func validateFailedDependencyReports(nodes []domain.LockedDependency, reports map[domain.DependencyNodeID]domain.InspectionReport, pending map[domain.DependencyNodeID]*pendingDependencyInspection) error {
+	if err := validateDependencyReports(nodes, reports); err != nil {
+		return err
+	}
+	for _, node := range nodes {
+		subject := pending[node.Node()].artifact
+		for _, evidence := range reports[node.Node()].Evidence() {
+			if evidence.Identity() != subject.Identity() || evidence.Digest() != subject.Digest() {
+				return errors.New("failed inspection evidence has a foreign subject")
+			}
+		}
+	}
+	return nil
 }

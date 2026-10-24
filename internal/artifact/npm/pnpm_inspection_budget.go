@@ -41,43 +41,115 @@ func (i PNPMInspectionInput) CheckWorkspace(inventories []ArchiveInventory) erro
 	if err != nil {
 		return err
 	}
-	type footprint struct {
-		bytes   uint64
-		entries int
+	budget, err := i.BeginWorkspace()
+	if err != nil {
+		return err
 	}
-	byPackage := make(map[string]footprint, len(bySubject))
-	var charged uint64
-	uniqueEntries := 0
-	charge := func(amount uint64) bool {
-		if amount > PNPMInspectionWorkspaceLimit-charged {
-			return false
+	for _, inventory := range bySubject {
+		if err := budget.Add(inventory); err != nil {
+			return err
 		}
-		charged += amount
-		return true
 	}
-	for subject, inventory := range bySubject {
-		if !charge(subject.SizeBytes()) || len(inventory.entries) > pnpmLayoutEntryLimit-uniqueEntries {
-			return errPNPMInspectionBudget
+	return budget.Complete()
+}
+
+// PNPMInspectionBudget charges measured inventories during static collection.
+// It retains no archive payload and grants neither authenticity nor execution.
+// Any invalid addition permanently invalidates the collection.
+type PNPMInspectionBudget struct {
+	expected        map[domain.AcquiredArtifact]int
+	seen            map[domain.AcquiredArtifact]bool
+	charged         uint64
+	uniqueEntries   int
+	instanceEntries int
+	failure         error
+}
+
+// BeginWorkspace charges every compressed subject before archive collection.
+// Expanded bytes and logical peer copies are charged immediately by Add.
+func (i PNPMInspectionInput) BeginWorkspace() (*PNPMInspectionBudget, error) {
+	if !i.Valid() || len(i.artifacts) == 0 {
+		return nil, errPNPMInspectionLayout
+	}
+	budget := &PNPMInspectionBudget{expected: make(map[domain.AcquiredArtifact]int, len(i.artifacts)), seen: make(map[domain.AcquiredArtifact]bool, len(i.artifacts))}
+	byPackage := make(map[string]domain.AcquiredArtifact, len(i.artifacts))
+	for _, subject := range i.artifacts {
+		if !budget.charge(subject.SizeBytes()) {
+			return nil, errPNPMInspectionBudget
 		}
-		uniqueEntries += len(inventory.entries)
-		var expanded uint64
-		for _, entry := range inventory.entries {
-			if !entry.Directory {
-				if !charge(uint64(entry.Size)) {
-					return errPNPMInspectionBudget
-				}
-				expanded += uint64(entry.Size)
+		byPackage[subject.Identity().Name()+"@"+subject.Identity().Version()] = subject
+		budget.expected[subject] = 0
+	}
+	for _, instance := range i.context.selection.lock.snapshots {
+		subject, present := byPackage[instance.Package]
+		if !present {
+			return nil, errPNPMInspectionLayout
+		}
+		budget.expected[subject]++
+	}
+	for _, count := range budget.expected {
+		if count == 0 {
+			return nil, errPNPMInspectionLayout
+		}
+	}
+	return budget, nil
+}
+
+func (b *PNPMInspectionBudget) charge(amount uint64) bool {
+	if amount > PNPMInspectionWorkspaceLimit-b.charged {
+		return false
+	}
+	b.charged += amount
+	return true
+}
+
+// Add rejects a duplicate, foreign or excessive inventory before it is retained
+// by the caller. Failed counters cannot later attest complete coverage.
+func (b *PNPMInspectionBudget) Add(inventory ArchiveInventory) error {
+	if b == nil || b.expected == nil {
+		return errPNPMInspectionLayout
+	}
+	if b.failure != nil {
+		return b.failure
+	}
+	count, present := b.expected[inventory.artifact]
+	if !inventory.Valid() || !present || b.seen[inventory.artifact] {
+		b.failure = errPNPMInspectionLayout
+		return b.failure
+	}
+	entries := len(inventory.entries)
+	if entries > pnpmLayoutEntryLimit-b.uniqueEntries || entries > (pnpmLayoutEntryLimit-b.instanceEntries)/count {
+		b.failure = errPNPMInspectionBudget
+		return b.failure
+	}
+	b.uniqueEntries += entries
+	b.instanceEntries += entries * count
+	for _, entry := range inventory.entries {
+		if entry.Directory {
+			continue
+		}
+		// Charge the unique store plus each logical instance without overflow.
+		for copies := 0; copies <= count; copies++ {
+			if !b.charge(uint64(entry.Size)) {
+				b.failure = errPNPMInspectionBudget
+				return b.failure
 			}
 		}
-		byPackage[subject.Identity().Name()+"@"+subject.Identity().Version()] = footprint{expanded, len(inventory.entries)}
 	}
-	instanceEntries := 0
-	for _, instance := range i.context.selection.lock.snapshots {
-		footprint, present := byPackage[instance.Package]
-		if !present || footprint.entries > pnpmLayoutEntryLimit-instanceEntries || !charge(footprint.bytes) {
-			return errPNPMInspectionBudget
-		}
-		instanceEntries += footprint.entries
+	b.seen[inventory.artifact] = true
+	return nil
+}
+
+// Complete requires all exact subjects and no previous collection failure.
+func (b *PNPMInspectionBudget) Complete() error {
+	if b == nil || b.expected == nil {
+		return errPNPMInspectionLayout
+	}
+	if b.failure != nil {
+		return b.failure
+	}
+	if len(b.seen) != len(b.expected) {
+		return errPNPMInspectionLayout
 	}
 	return nil
 }

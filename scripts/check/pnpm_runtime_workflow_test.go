@@ -33,3 +33,33 @@ func TestPNPMRuntimeHelperKeepsSupplyAndActualCoverage(t *testing.T) {
 		t.Fatal("unverified PNPM supply accepted")
 	}
 }
+
+func TestPNPMInspectionCommandsCannotLoseProjectOrControlledCoverage(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "ci-pnpm-runtime.sh"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, command := range []string{pnpmProjectIntegrationCommand, pnpmControlledIntegrationCommand, pnpmPublicQuarantineCommand} {
+		for _, replacement := range []string{"# " + command, strings.Replace(command, "=1", "=0", 1), command + "\n" + command} {
+			if len(validatePNPMRuntimeScript(strings.Replace(string(body), command, replacement, 1))) == 0 {
+				t.Fatal("project/controlled execution omitted")
+			}
+		}
+	}
+	workflow, err := os.ReadFile(filepath.Join("..", "..", workflowRelativePath))
+	if err != nil {
+		t.Fatal(err)
+	}
+	original := string(workflow)
+	if findings := validatePNPMInspectionClientOrder(original); len(findings) != 0 {
+		t.Fatal(findings)
+	}
+	call := "          bash scripts/ci-pnpm-runtime.sh\n"
+	moved := strings.Replace(original, call, "", 1)
+	moved = strings.Replace(moved, "          "+pnpmSandboxTestBuildCommand, "          bash scripts/ci-pnpm-runtime.sh\n          "+pnpmSandboxTestBuildCommand, 1)
+	for _, candidate := range []string{moved, strings.Replace(original, pnpmSandboxTestBuildCommand, strings.Replace(pnpmSandboxTestBuildCommand, "-tags=realcorpus ", "", 1), 1), strings.Replace(original, call, "          # bash scripts/ci-pnpm-runtime.sh\n", 1)} {
+		if len(validatePNPMInspectionClientOrder(candidate)) == 0 {
+			t.Fatal("unprepared client identity accepted")
+		}
+	}
+}

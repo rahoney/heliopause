@@ -368,3 +368,42 @@ func TestPNPMInspectionLayoutInternalHardlinkAndVolatileMetadata(t *testing.T) {
 		t.Fatal("volatile formatting/time changed semantic context", err)
 	}
 }
+
+func TestPNPMInspectionLayoutMatchesWholeFrozenInput(t *testing.T) {
+	f := fullInspectionLayoutFixture(t, false)
+	bound, err := f.input.BindLayout(context.Background(), f.inventories, f.parse(t), "/tmp/haa-store")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bound.MatchesInput(f.input) || bound.MatchesInput(PNPMInspectionInput{}) || (PNPMInspectionLayout{}).MatchesInput(f.input) {
+		t.Fatal("own/zero input binding invalid")
+	}
+	foreign := fullInspectionLayoutFixture(t, false)
+	if bound.MatchesInput(foreign.input) {
+		t.Fatal("same graph from different acquired runs matched")
+	}
+	for _, change := range []string{"runtime", "controls"} {
+		changed := f.input
+		if change == "runtime" {
+			changed.context.runtime = "different-runtime"
+		} else {
+			controls := changed.context.snapshot.ControlDigests()
+			digest, err := domain.NewSHA256Digest(strings.Repeat("f", 64))
+			if err != nil {
+				t.Fatal(err)
+			}
+			controls[0], err = domain.NewProjectControlDigest(controls[0].Name(), digest)
+			if err != nil {
+				t.Fatal(err)
+			}
+			original := changed.context.snapshot
+			changed.context.snapshot, err = domain.NewProjectDependencySnapshot(original.Context(), original.Source(), controls, original.Dependencies(), original.GraphDigest())
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+		if bound.MatchesInput(changed) {
+			t.Fatal("foreign frozen input matched", change)
+		}
+	}
+}

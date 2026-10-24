@@ -348,6 +348,15 @@ func (l PNPMInspectionLayout) Target(artifact domain.AcquiredArtifact, instance 
 	return target, nil
 }
 
+// MatchesInput binds the whole prepared layout to the exact frozen snapshot,
+// runtime and acquired runs, rather than only checking a target's membership.
+func (l PNPMInspectionLayout) MatchesInput(input PNPMInspectionInput) bool {
+	return l.digest.String() != "" && l.input.Valid() && input.Valid() &&
+		l.input.context.MatchesSnapshot(input.context.Snapshot()) &&
+		l.input.context.RuntimeIdentity() == input.context.RuntimeIdentity() &&
+		slices.Equal(l.input.artifacts, input.artifacts)
+}
+
 func (l PNPMInspectionLayout) Digest() domain.ContentDigest { return l.digest }
 
 // RuntimeIdentity binds execution to the runtime used by the frozen input.

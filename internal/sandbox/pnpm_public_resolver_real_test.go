@@ -64,19 +64,11 @@ func TestPNPMPublicNativeResolverIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	dynamic, err := inspectionnpm.NewDynamicInspector(backend)
-	if err != nil {
-		t.Fatal(err)
-	}
-	inspector, err := inspectionnpm.NewCompositeInspector(static, dynamic)
+	prepare, err := NewPNPMInspectionPreparer(resolver, intake)
 	if err != nil {
 		t.Fatal(err)
 	}
 	store, err := local.NewStore(t.TempDir())
-	if err != nil {
-		t.Fatal(err)
-	}
-	quarantine, err := application.NewProjectInspectService(source, verificationnpm.IntegrityVerifier{}, inspector, store, policy.M3{}, policy.M4{}, domain.NewOperationID, domain.NewRunID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -94,10 +86,11 @@ func TestPNPMPublicNativeResolverIntegration(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		snapshot, err := selected.BindProjectSnapshot(ctx, source, install)
+		frozen, err := selected.BindInspectionContext(ctx, source, install)
 		if err != nil {
 			t.Fatalf("actual public binding %s failed: %v", name, err)
 		}
+		snapshot := frozen.Snapshot()
 		if !snapshot.Valid() || len(snapshot.Dependencies()) != artifacts || len(selected.Selection().Snapshots()) != instances || len(selected.Selection().Roots()) != roots || len(snapshot.ControlDigests()) != 2 || snapshot.GraphDigest().String() == "" {
 			t.Fatal("native instances/public source binding differ")
 		}
@@ -107,6 +100,14 @@ func TestPNPMPublicNativeResolverIntegration(t *testing.T) {
 		}
 		t.Logf("pnpm_public_native case=%s artifacts=%d instances=%d roots=%d source_bound=true snapshot_bound=true host_install=NOT_EXECUTED", name, artifacts, instances, roots)
 		if name == "single" || name == "transitive" || name == "peer" || name == "selected-update" {
+			inspector, err := inspectionnpm.NewPNPMProjectInspector(frozen, static, prepare, backend)
+			if err != nil {
+				t.Fatal(err)
+			}
+			quarantine, err := application.NewProjectInspectService(source, verificationnpm.IntegrityVerifier{}, inspector, store, policy.M3{}, policy.M4{}, domain.NewOperationID, domain.NewRunID)
+			if err != nil {
+				t.Fatal(err)
+			}
 			approved, err := quarantine.InspectProject(ctx, snapshot)
 			if err != nil {
 				var denied *application.ProjectPolicyFailure
@@ -126,17 +127,33 @@ func TestPNPMPublicNativeResolverIntegration(t *testing.T) {
 				t.Fatalf("actual PNPM snapshot quarantine failed case=%s: %v", name, err)
 			}
 			for _, entry := range approved.Inspected().Inspections() {
+				instanceCount := 0
+				for _, instance := range frozen.Lock().Snapshots() {
+					if instance.Package == entry.Artifact().Identity().Name()+"@"+entry.Artifact().Identity().Version() {
+						instanceCount++
+					}
+				}
+				if instanceCount == 0 {
+					t.Fatal("missing expected instances")
+				}
 				fact, known := entry.HostInstallActionEvidence()
-				if !known || fact.Kind() != domain.EvidenceHostInstallActionNotRequired || fact.Identity() != entry.Artifact().Identity() || fact.Digest() != entry.Artifact().Digest() || len(entry.Checks()) != 3 || len(entry.Evidence()) != 4 || entry.PolicyDecision().Decision() != domain.DecisionAllow {
+				if !known || fact.Kind() != domain.EvidenceHostInstallActionNotRequired || fact.Identity() != entry.Artifact().Identity() || fact.Digest() != entry.Artifact().Digest() || len(entry.Checks()) != 3+instanceCount || len(entry.Evidence()) != 4+2*instanceCount || entry.PolicyDecision().Decision() != domain.DecisionAllow {
 					t.Fatal("actual archive quarantine facts were lost")
 				}
+				required := 0
 				for _, check := range entry.Checks() {
-					if !check.Required() || check.Capability() != domain.CapabilitySupported || check.Status() != domain.ExecutionCompleted {
+					if check.Required() {
+						required++
+					}
+					if check.Capability() != domain.CapabilitySupported || check.Status() != domain.ExecutionCompleted {
 						t.Fatal("actual required quarantine check incomplete")
 					}
 				}
+				if required != 3 {
+					t.Fatal("required static/verification/lifecycle coverage lost")
+				}
 			}
-			t.Logf("pnpm_project_quarantine case=%s entries=%d checks_per_entry=3 evidence_per_entry=4 action_fact=NOT_REQUIRED policy=ALLOW host_install=NOT_EXECUTED", name, artifacts)
+			t.Logf("pnpm_project_quarantine case=%s entries=%d required_checks_per_entry=3 instance_facts=EXACT evidence=RECORDED action_fact=NOT_REQUIRED policy=ALLOW host_install=NOT_EXECUTED", name, artifacts)
 		}
 		return selected
 	}

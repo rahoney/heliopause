@@ -14,10 +14,10 @@ Last completed work item: CLI-UX-003 — COMPLETE; source4cfe29e/CI352 ten SUCCE
 Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
-Active work item status: IN_PROGRESS — B4b1/B4b2 named local qualification PASS; static-all/actual instance aggregate and Host/CLI/whole P2 acceptance remain
+Active work item status: IN_PROGRESS — B4b1/B4b2/B4c named local qualification PASS; bundled remote qualification and PNPM Host/CLI/whole P2 acceptance remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2c5-B4c — audit and connect static-all collection budget, exact instance/session coverage and partial Evidence preservation; then Host/CLI; B4b2 canonical Go/Race, C++112 and public6/controlled3 actual PASS in separate scoped runs; CI404 applies only to its old source; P2 acceptance NO
-Current substep: M13-004/P2 — IN_PROGRESS; B4b1/B4b2 LOCAL QUALIFIED; B4c/whole qualification pending; support not yet advertised
+Next action: M13-004/P2 — checkpoint and bundle B4 production inspection for remote qualification; audit retained cache/provenance/Host records and transaction/CLI gaps while CI runs; no whole P2 support claim
+Current substep: M13-004/P2 — IN_PROGRESS; B4 production inspection LOCAL QUALIFIED; remote and Host/CLI pending; support not yet advertised
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -206,6 +206,19 @@ canonical Go/Race·C++112와 실제 public transitive2/peer4·controlled 정상/
 실행까지 PASS다. 각 실행의 complete trace·최초 실패와 사실 보존·helperwait0/정리·Host 보존을
 확인했다. Named local consumer 범위만 닫고 B4c static-all/aggregate부터 이어간다. 전체 P2
 acceptance와 Host/CLI·remote qualification은 NO다.
+
+[B4c 착수 감사·수정 지도·두 번째 검토](./evidence/package-client-quarantine/p2c5b4c-pnpm-project-inspection-plan-20261025.md)를
+기록했다. 기존 complete workspace gate를 같은 charge owner의 incremental counter로 확장하고,
+이후 static-all/실제 instance별 Evidence와 오류 시 부분 사실 기록을 연결한다. Core의 미완료 check에
+final Finding을 붙이지 않으며 관찰 해석 완료와 required lifecycle coverage를 별도로 보존한다.
+
+[B4c 로컬 결과](./evidence/package-client-quarantine/p2c5b4c-pnpm-project-inspection-local-20261025.json)는
+수집 중 고정 예산·전체 frozen layout 결합·실제 Session coverage/partial facts와 실패 시 exact
+Evidence 기록을 연결했다. 최종 관련 네 package Race32.714s·canonical 검사/CI 호출 순서와
+public transitive2/peer4 실제49.087s, native8 선택·네 실제 Policy/Evidence 검역114.917s가 PASS다.
+각 실제 수명의 helperwait0/정리·Host 보존을 확인했고 Host 설치는 미수행이다. B4 production
+inspection의 named local scope만 닫고 묶음 remote와 PNPM cache/provenance/Host records·
+transaction/CLI를 이어간다. 같은 M13-004만 IN_PROGRESS이며 whole P2 acceptance는 NO다.
 
 ### 2026-10-24 CI404 묶음 checkpoint 확인
 
