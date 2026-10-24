@@ -50,6 +50,11 @@ type pnpmCacheFixture struct {
 // qualification is a separate bootstrap integration consumer.
 func newPNPMCacheFixture(t *testing.T, empty bool) pnpmCacheFixture {
 	t.Helper()
+	return newPNPMCacheFixtureWithAliases(t, empty, false)
+}
+
+func newPNPMCacheFixtureWithAliases(t *testing.T, empty, aliases bool) pnpmCacheFixture {
+	t.Helper()
 	root, err := filepath.EvalSymlinks(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
@@ -125,6 +130,17 @@ func newPNPMCacheFixture(t *testing.T, empty bool) pnpmCacheFixture {
 		if _, err := writer.Write(packageJSON); err != nil {
 			t.Fatal(err)
 		}
+		if aliases {
+			for _, name := range []string{"LICENSE", "COPY"} {
+				body := []byte("controlled shared license\n")
+				if err := writer.WriteHeader(&tar.Header{Name: "package/" + name, Typeflag: tar.TypeReg, Mode: 0o644, Size: int64(len(body))}); err != nil {
+					t.Fatal(err)
+				}
+				if _, err := writer.Write(body); err != nil {
+					t.Fatal(err)
+				}
+			}
+		}
 		if err := writer.Close(); err != nil {
 			t.Fatal(err)
 		}
@@ -170,6 +186,10 @@ func newPNPMCacheFixture(t *testing.T, empty bool) pnpmCacheFixture {
 		// Normative fixed native metadata and one package, with no ambient store.
 		module, _ := json.Marshal(map[string]any{"hoistedDependencies": map[string]any{}, "hoistPattern": []string{"*"}, "included": map[string]bool{"dependencies": true, "devDependencies": true, "optionalDependencies": true}, "layoutVersion": 5, "nodeLinker": "isolated", "packageManager": "pnpm@" + runtimeidentity.PNPMVersion, "pendingBuilds": []string{}, "prunedAt": "Sat, 24 Oct 2026 00:00:00 GMT", "publicHoistPattern": []string{}, "skipped": []string{}, "storeDir": "/tmp/haa-pnpm-input/store/v11", "virtualStoreDir": ".pnpm", "virtualStoreDirMaxLength": artifactnpm.PNPMVirtualStoreDirMaxLength, "allowBuilds": map[string]any{}})
 		bodies := map[string][]byte{"node_modules/.pnpm/is-number@6.0.0/node_modules/is-number/package.json": packageJSON, "node_modules/.modules.yaml": module, "node_modules/.pnpm/lock.yaml": lock, "node_modules/.pnpm-workspace-state-v1.json": []byte(`{}`)}
+		if aliases {
+			bodies["node_modules/.pnpm/is-number@6.0.0/node_modules/is-number/LICENSE"] = []byte("controlled shared license\n")
+			bodies["node_modules/.pnpm/is-number@6.0.0/node_modules/is-number/COPY"] = []byte("controlled shared license\n")
+		}
 		dirs := map[string]bool{}
 		var native bytes.Buffer
 		tarWriter := tar.NewWriter(&native)
@@ -189,7 +209,11 @@ func newPNPMCacheFixture(t *testing.T, empty bool) pnpmCacheFixture {
 			}
 		}
 		for name, body := range bodies {
-			emit(name, tar.TypeReg, body, "")
+			if aliases && strings.HasSuffix(name, "/COPY") {
+				emit(name, tar.TypeLink, nil, strings.TrimSuffix(name, "COPY")+"LICENSE")
+			} else {
+				emit(name, tar.TypeReg, body, "")
+			}
 			for dir := path.Dir(name); dir != "."; dir = path.Dir(dir) {
 				dirs[dir] = true
 			}

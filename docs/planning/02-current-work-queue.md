@@ -16,7 +16,7 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — B4b1/B4b2/B4c/B4d and B5a named local qualification PASS; CI405 first fixture cwd failure corrected locally; new remote and PNPM Host/CLI/whole P2 acceptance remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2 — CI406/fd3506b RUNNING, first check 2026-10-25 03:40:25 KST; B5b1 actual-operation Manifest/SBOM/full-peer provenance LOCAL QUALIFIED; B5b2 private Host materialization audit next; Host extraction/independent approval/transaction/CLI and whole P2 acceptance remain NO
+Next action: M13-004/P2 — CI406/fd3506b RUNNING, first check 2026-10-25 03:40:25 KST; B5b1 actual-operation Manifest/SBOM/full-peer provenance LOCAL QUALIFIED; B5b2 private Host materialization LOCAL QUALIFIED; B5b3 existing transaction/independent approval audit next; Host extraction/independent approval/transaction/CLI and whole P2 acceptance remain NO
 Current substep: M13-004/P2 — IN_PROGRESS; B4 production inspection LOCAL QUALIFIED; remote and Host/CLI pending; support not yet advertised
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
@@ -4925,3 +4925,14 @@ Evidence/Policy·records 전체 bytes/mode/links를 Stage/Open에서 재검증�
 package 전체 Race216.546s, 실제 public peer4/empty records44.668s와 Host 불변/정리는 PASS다.
 첫 realcorpus 변수명 충돌 compile 실패는 test-only로 교정·보존했다. CI406은 앞 fd3506b이고
 Host extraction/independent retained state/transaction/adoption/CLI·whole P2 acceptance는 미완료다.
+
+### 2026-10-25 P2 B5b2 private Host materialization local checkpoint
+
+[수정 지도·실제 결과](./evidence/package-client-quarantine/p2c5b5b2-pnpm-private-materialization-plan-20261025.md)에서
+sealed cache의 exact bytes/records를 private sibling으로 반출했다. Native hardlinks는 독립
+single-link copy이고 내부 symlink만 유지하며 전체 readback과 known-only cleanup을 확인했다.
+초기 inventory 뒤 bytes 변경 삭제 gap은 직접 RED5.485s→GREEN5.431s로 교정했다. Canonical4/
+최종 production 관련 세 package 전체 Race193.207s, final fixture focused Race10.693s·Darwin
+arm64 compile24.130s, public peer4/empty의 실제 private Prepare/Verify/Close45.074s·Host 불변/
+helperwait0는 PASS다. 사용자 target은 부재이고 target commit/retained approval/adoption/CLI는
+미완료다. CI406은 앞 fd3506b에만 적용한다. M13-004 하나만 IN_PROGRESS다.

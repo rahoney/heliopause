@@ -9,6 +9,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"syscall"
 	"testing"
 	"time"
 
@@ -212,6 +213,44 @@ func TestPNPMPublicApprovedCacheIntegration(t *testing.T) {
 			if len(entries) != want {
 				t.Fatal("data cache contains foreign files")
 			}
+			prepared, err := cache.PrepareProject(ctx, staged)
+			if err != nil {
+				t.Fatal("prepare private Host project", err)
+			}
+			private := prepared.Directory()
+			for _, control := range selected.Controls() {
+				body, err := os.ReadFile(filepath.Join(private, control.Name()))
+				if err != nil || !bytes.Equal(body, control.Body()) {
+					t.Fatal("private Host control bytes changed", err)
+				}
+			}
+			if err := filepath.WalkDir(private, func(name string, entry os.DirEntry, walkErr error) error {
+				if walkErr != nil {
+					return walkErr
+				}
+				if entry.Type().IsRegular() {
+					info, err := entry.Info()
+					if err != nil {
+						return err
+					}
+					identity, ok := info.Sys().(*syscall.Stat_t)
+					if !ok || identity.Nlink != 1 {
+						return errors.New("private Host file shares a foreign inode")
+					}
+				}
+				return nil
+			}); err != nil {
+				t.Fatal(err)
+			}
+			if err := prepared.Verify(ctx); err != nil {
+				t.Fatal("private Host readback", err)
+			}
+			if err := prepared.Close(); err != nil {
+				t.Fatal("private Host cleanup", err)
+			}
+			if _, err := os.Stat(private); !errors.Is(err, os.ErrNotExist) {
+				t.Fatal("private Host preparation retained after close", err)
+			}
 			if item.count != 0 {
 
 				acquired := map[domain.DependencyNodeID]domain.AcquiredArtifact{}
@@ -260,7 +299,7 @@ func TestPNPMPublicApprovedCacheIntegration(t *testing.T) {
 			if _, err := os.Lstat(target.String()); !os.IsNotExist(err) {
 				t.Fatal("staging created a Host project", err)
 			}
-			t.Logf("pnpm_approved_cache fixture=%s public_entries=%d stored_evidence_entries=%d native_layout_data=%t sealed=true drift_tested=%t actual_operation_records=true full_native_provenance=true Host_install=NOT_RUN", item.name, item.count, item.count, item.count != 0, item.count != 0)
+			t.Logf("pnpm_approved_cache fixture=%s public_entries=%d stored_evidence_entries=%d native_layout_data=%t sealed=true drift_tested=%t actual_operation_records=true full_native_provenance=true private_Host_prepared_verified_closed=true Host_install=NOT_RUN", item.name, item.count, item.count, item.count != 0, item.count != 0)
 		}) {
 			t.FailNow()
 		}

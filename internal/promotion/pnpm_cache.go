@@ -38,6 +38,8 @@ type PNPMVerifiedCache struct {
 	operation                           domain.OperationID
 	// An instance-local diagnostic can abort before the mandatory real sync.
 	beforeTreeSync func(string) error
+	// Diagnostic abort only; mandatory materialization readback is never skipped.
+	beforePrepareSync func(*PNPMPreparedProject) error
 }
 
 func NewPNPMVerifiedCache(intake, evidence, cache string, frozen artifactnpm.PNPMInspectionContext, reader ProjectEvidenceReader, layout PNPMLayoutProvider, records ProjectRecordBuilder, operation domain.OperationID) (*PNPMVerifiedCache, error) {
