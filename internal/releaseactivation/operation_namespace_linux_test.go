@@ -94,10 +94,15 @@ func operationReleaseFixture(t *testing.T, version string) (wireRelease, map[str
 	for _, raw := range value["assets"].([]any) {
 		asset := raw.(map[string]any)
 		name := asset["name"].(string)
-		if original, found := files[name]; found && asset["platform"] == "linux/amd64" {
-			payload := append(append([]byte(nil), original...), []byte("-"+version)...)
-			files[name] = payload
-			asset["sha256"], asset["size"] = bodySHA256(payload), len(payload)
+		// Only HAA programs change in this same-runtime update. Pinned
+		// upstream tools and passive notices retain their exact source bytes.
+		switch asset["role"] {
+		case "helox", "gvisor-observer", "network-policy-helper", "release-installer":
+			if original, found := files[name]; found && asset["platform"] == "linux/amd64" {
+				payload := append(append([]byte(nil), original...), []byte("-"+version)...)
+				files[name] = payload
+				asset["sha256"], asset["size"] = bodySHA256(payload), len(payload)
+			}
 		}
 	}
 	body, err = json.Marshal(value)
@@ -399,5 +404,5 @@ func TestRootActivationTransactionInDisposableNamespace(t *testing.T) {
 			}
 		})
 	}
-	t.Log("PASS scope: real root copy/pointer/config/registration/journal/locks and cleanup; crypto, old peer, systemd and compatibility health mocked; no signed native4 activation")
+	t.Log("PASS scope: real root copy/pointer/config/registration/journal/locks and cleanup; crypto, old peer, systemd and compatibility health mocked; no signed native5 activation")
 }

@@ -37,12 +37,12 @@ func TestProtectedJournalAndLocksInDisposableNamespace(t *testing.T) {
 	if err := syscall.Mount("", "/", "", syscall.MS_REC|syscall.MS_PRIVATE, ""); err != nil {
 		t.Fatal(err)
 	}
-	for _, path := range []string{"/var/lib", "/etc"} {
+	for _, path := range []string{"/var/lib", "/etc", "/usr/lib"} {
 		if err := syscall.Mount("tmpfs", path, "tmpfs", syscall.MS_NODEV|syscall.MS_NOSUID, "mode=0755,size=16777216"); err != nil {
 			t.Fatal(err)
 		}
 	}
-	for _, path := range []string{stateRoot, "/etc/heliopause", "/etc/systemd", "/etc/systemd/system"} {
+	for _, path := range []string{stateRoot, "/etc/heliopause", "/etc/systemd", "/etc/systemd/system", releaseinstall.SystemInstallRoot, filepath.Join(releaseinstall.SystemInstallRoot, "versions")} {
 		if err := os.Mkdir(path, 0755); err != nil {
 			t.Fatal(err)
 		}
