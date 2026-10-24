@@ -155,6 +155,15 @@ getters/digest에서 폐기했다. 첫 실패와 교정 source를 구분하고 o
 errors0 뒤 삭제했다. Production native prepare/static-all/fresh per-instance 실행/aggregate와
 Host/CLI는 아직 미완료이며, 다음 B4의 정확한 edit map부터 같은 M13-004에서 이어간다.
 
+### 2026-10-24 B4 production inspection 착수 감사
+
+[Baseline audit·정확한 edit map·두 번째 검토](./evidence/package-client-quarantine/p2c5b4-pnpm-production-inspection-plan-20261024.md)를
+작성했다. 먼저 기존 PNPMResolver의 수명 owner를 선택/준비가 재사용하고 complete input/
+logical footprint·재소개 bytes·network detach/실제 endpoint0·관찰/정리 뒤 값 반환을 연결한다.
+이어 verified payload의 최소 소개·fresh per-instance 실제 결과·partial 관찰/첫 오류 보존을
+연결한다. 단일 npm·Domain/Application의 기존 의미는 유지하며 이 문서만으로 새 구현/qualification을
+주장하지 않는다. M13-004 하나만 IN_PROGRESS이고 PNPM product dynamic/전체 P2는 미완료다.
+
 ### 2026-10-24 CI404 묶음 checkpoint 확인
 
 실제55분 타이머 만료 뒤 [CI404 결과](./evidence/package-client-quarantine/p2c5b3-pnpm-ci404-qualification-20261024.json)를
