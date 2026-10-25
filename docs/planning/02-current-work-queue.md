@@ -17,7 +17,7 @@ Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P3-B6c — named local whole native runtime/Evidence/Policy/CLI/native handoff QUALIFIED; hosted exact-source gate remains
 Next action: M13-004 — consume frozen CI413 at actual due2026-10-26 02:20:16KST; continue independent P4-A audited UV project input locally; no new push while it runs
-Current substep: M13-004/P4-A frozen UV virtual-project input/intent named local QUALIFIED; next native uv.lock/export baseline; frozen P3-B6c CI413 remains independent
+Current substep: M13-004/P4-B native uv.lock/target export reader named local QUALIFIED; next isolated native project consumer; frozen P3-B6c CI413 remains independent
 Acceptance audit: CI412 frozen7544 backend Required10SUCCESS, complete checkout tree match and logs confirmed by actual65m timer; later local7939092/74102c8/80bd2bd/58957ea/728f650 are outside that remote scope; historical CI411 macOS timeout cause remains unconfirmed
 Independent local next: P4-A UV project input baseline/edit map reviewed; implement only missing frozen input/intent boundary; final package-client support/failure matrix remains; no new source push while frozen hosted candidate runs
 P3 Bun: local named qualification closed / hosted CI413 pending; P4-A — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
@@ -5473,3 +5473,11 @@ Grouped source50fd3b2/tree d6a63ab/2475를 한 번 push하여 [CI413](https://gi
 ### 2026-10-26 P4-A frozen virtual project input local checkpoint
 
 [P4-A receipt](./evidence/package-client-quarantine/p4a-uv-project-input-local-20261026.json)의 canonical Quick43.181s/security8.911s/docs0.249s와 artifact/PyPI fullRace5.379s가 PASS다. Native offline 원본 형식/lock presence·runtime/intent replay·unknown schema/source/duplicate tamper 거부를 named 검증했다. Native uv.lock reader/target export·resolver/transaction/CLI·persistent tool은 미완료다. [최종 P2/P3 matrix](./evidence/package-client-quarantine/p2p3-final-matrix-20261026.md)는 기존 local/remote 범위와 CI413/현재 공통 observer의 남은 세 CUDA qualification을 구분한다. Timer due의 실제 결과를 확인하며 M13-004 하나로 계속한다.
+
+### 2026-10-26 P4-B native lock/export 착수 감사
+
+[P4-B map·두 번째 검토](./evidence/package-client-quarantine/p4b-native-uv-lock-plan-20261026.md)는 P4-A input과 P1 complete wheel parser를 재사용하며 native virtual root/public graph와 target export를 결합하는 MISSING만 추가한다. 실제 UV0.13.4 빈 lock과 exact upstream serializer를 대조했으며 synthetic 구조/actual native 의미를 구분한다. Native resolver/CLI/persistent tools·whole P4 acceptance는 열려 있고 CI413 frozen50fd를 취소하지 않는다.
+
+### 2026-10-26 P4-B native UV lock/export local checkpoint
+
+[Reader receipt](./evidence/package-client-quarantine/p4b-native-uv-lock-local-20261026.json)는 Quick202.858s/security12.989s/docs0.255s와 artifact/PyPI fullRace5.679s, actual empty native 원본·synthetic graph/export substitution negatives를 연결한다. 기존8 owner는 bytes 불변이다. Reader의 named 경계만 닫았으며 다음 isolated native project consumer/actual public nonempty export·독립 archive binding을 같은 M13-004에서 계속한다. CI413 timer·frozen50fd 원격 범위는 그대로 유지한다.
