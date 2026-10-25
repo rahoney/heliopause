@@ -96,7 +96,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		}
 	}
 	var pythonClient pythonPackageClient
-	if source == "pypi" || source == "pip" {
+	if (source == "pypi" || source == "pip") && cli.SelectedPackageClient(command) != cli.UVProjectPackageClient {
 		pythonClient, err = pythonPackageClientFor(cli.SelectedPackageClient(command))
 		if err != nil {
 			return err
@@ -118,6 +118,14 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 			return errors.New("bun client requires the public npm source")
 		}
 		if err := bunProjectPlatform(runtime.GOOS, runtime.GOARCH); err != nil {
+			return err
+		}
+	}
+	if cli.SelectedPackageClient(command) == cli.UVProjectPackageClient {
+		if source != "pypi" {
+			return errors.New("UV project requires the public PyPI source")
+		}
+		if err := uvPackageClientPlatform(runtime.GOOS, runtime.GOARCH); err != nil {
 			return err
 		}
 	}
@@ -266,6 +274,18 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 		if err := bindBunProjectClient(command, trustedExecutor, processObserver); err != nil {
 			return err
 		}
+		return command.ExecuteContext(ctx)
+	}
+	if source == "pypi" && cli.SelectedPackageClient(command) == cli.UVProjectPackageClient {
+		closeClient, err := bindUVProjectClient(command, trustedExecutor, processObserver)
+		if err != nil {
+			return err
+		}
+		defer func() {
+			cleanupErr := closeClient()
+			cli.PresentFinalizationError(command, cleanupErr)
+			resultErr = errors.Join(resultErr, cleanupErr)
+		}()
 		return command.ExecuteContext(ctx)
 	}
 	if source != "" && source == "npm" {

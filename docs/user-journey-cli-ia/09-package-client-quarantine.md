@@ -1,6 +1,6 @@
 # Package client / tool execution quarantine — 설계
 
-상태: **P1 UV pip COMPLETE; P2 pnpm/P3 Bun named local·hosted 검증, final profile matrix 미완료; P4 native project installed backend named local 검증, public CLI/native adoption/lock-only/tools 미완료; P5..P7 미착수**. 2026-10-21 사용자 요청으로
+상태: **P1 UV pip COMPLETE; P2 pnpm/P3 Bun named local·hosted 검증, final profile matrix 미완료; P4 public uv add/sync CLI named local 검증, native adoption/lock-only/tools 미완료; P5..P7 미착수**. 2026-10-21 사용자 요청으로
 uv pip·pnpm·Bun과 npx·uvx·bunx·pipx를 하나의 확장 범위로 계획한다.
 [실행 계획·baseline·수정 지도·재검토](../planning/20-package-client-quarantine-plan.md)가
 구현 순서와 검증을 소유한다. 기존 [업데이트 검역](./06-update-quarantine.md)을
@@ -275,3 +275,18 @@ source/SRI·전체 layout과 대조한 뒤 새 선택의 검역을 거친다. Sh
 empty의 검증 경로는 유지한다. Manifest/SBOM·actual operation records와 원본/state 보존은
 공통 transaction 계약을 사용한다. Global/workspace·다른 registry/local/VCS·임의 native 옵션과
 `bun run`/`bunx`/`bun x`는 이 설치·업데이트 검증 범위에 포함하지 않는다.
+
+## 현재 UV project installed lane
+
+[P4-I 로컬 검증](../planning/evidence/package-client-quarantine/p4i-uv-project-cli-local-20261026.json)의
+실제 source는 다음 범위다. 새 public release/installed binary 갱신이나 remote qualification을 뜻하지 않는다.
+
+| 항목 | 현재 지원 |
+| --- | --- |
+| 구문 | `helox uv add <name-or-requirement>`, `helox uv sync` |
+| 경로 | `--project` 또는 cwd; `--target` 또는 project/.venv의 기존 venv. Explicit target은 VIRTUAL_ENV보다 우선 |
+| 입력 | 단일 virtual pyproject/public PyPI wheel; bare 또는 PEP508 bounded version 조건; 이전 lock의 virtual root identity/Python 계약을 유지한 direct-dependency 편집 뒤 public uv.lock을 남긴 채 sync 가능 |
+| 반영 | current 전체 검사·Evidence·Policy 후 manifest/native lock/소유 환경 파일을 함께 commit·rollback; 같은 버전도 재검사; 명시 empty는 소유 파일을 제거하고 사용자 파일 보존 |
+| 출력 | `--output human/json`; auto는 terminal 여부를 따름. 성공 후 실제 Manifest/SBOM 참조 |
+| 실행 조건 | Linux amd64, fixed UV/Python 검사 runtime와 기존 venv; 기존 distribution은 HAA 소유권 필요 |
+| 남은 acceptance | native project adoption, distinct lock-only, persistent tools; 임의 native 옵션과 runtime provisioning은 이 installed lane에 없음 |

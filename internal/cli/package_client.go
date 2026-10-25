@@ -17,10 +17,11 @@ const selectedPackageClientAnnotation = "helox.selected-package-client"
 const selectedPackageClientOperationAnnotation = "helox.selected-package-client-operation"
 
 const (
-	PipPackageClient   PackageClientID = "pip"
-	UVPipPackageClient PackageClientID = "uv-pip"
-	PNPMPackageClient  PackageClientID = "pnpm"
-	BunPackageClient   PackageClientID = "bun"
+	PipPackageClient       PackageClientID = "pip"
+	UVPipPackageClient     PackageClientID = "uv-pip"
+	UVProjectPackageClient PackageClientID = "uv-project"
+	PNPMPackageClient      PackageClientID = "pnpm"
+	BunPackageClient       PackageClientID = "bun"
 )
 
 type packageUpgradeMode uint8
@@ -52,6 +53,8 @@ const uvPipInstallKorean = "UV가 선택한 공개 PyPI wheel과 전체 의존�
 
 func packageClientDescriptors() []packageClientDescriptor {
 	return []packageClientDescriptor{
+		{id: UVProjectPackageClient, path: []string{"uv", "add"}, parents: []packageClientParent{{"Quarantine Python packages with UV", "UV로 Python 패키지를 검역합니다"}}, route: "pypi", use: "add <name-or-requirement>", shortEN: "Quarantine and add a public dependency to a virtual project", shortKO: "공개 의존성 전체를 검역한 뒤 virtual project에 추가합니다", longEN: uvProjectEnglish, longKO: uvProjectKorean, validate: validateUVProjectArgs, validateRaw: validateUVProjectRawArgs, flags: configureUVProjectFlags, flagText: uvProjectFlagText, examples: []string{"helox uv add packaging==25.0", "helox uv add idna --project /absolute/path/project --target /absolute/path/venv"}},
+		{id: UVProjectPackageClient, path: []string{"uv", "sync"}, parents: []packageClientParent{{"Quarantine Python packages with UV", "UV로 Python 패키지를 검역합니다"}}, route: "pypi", use: "sync", shortEN: "Quarantine the complete virtual project before synchronizing its venv", shortKO: "Virtual project 전체를 검역한 뒤 가상환경을 동기화합니다", longEN: uvProjectEnglish, longKO: uvProjectKorean, validate: validateUVProjectArgs, validateRaw: validateUVProjectRawArgs, flags: configureUVProjectFlags, flagText: uvProjectFlagText, examples: []string{"helox uv sync", "helox uv sync --project /absolute/path/project --target /absolute/path/venv"}},
 		{id: BunPackageClient, path: []string{"bun", "add"}, parents: []packageClientParent{{"Quarantine project packages with Bun", "Bun으로 프로젝트 패키지를 검역합니다"}}, route: "npm", use: "add <package>[@<version-or-range>]", shortEN: "Quarantine and add a public npm package with Bun", shortKO: "Bun으로 공개 npm 패키지와 전체 의존성을 검역한 뒤 추가합니다", longEN: bunProjectEnglish, longKO: bunProjectKorean, validate: validateBunProjectArgs, validateRaw: validateBunProjectRawArgs, flags: configureBunProjectFlags, flagText: bunProjectFlagText, examples: []string{"helox bun add is-number@7.0.0", "helox bun add @scope/package --target /absolute/path/project"}},
 		{id: BunPackageClient, path: []string{"bun", "install"}, parents: []packageClientParent{{"Quarantine project packages with Bun", "Bun으로 프로젝트 패키지를 검역합니다"}}, route: "npm", use: "install", shortEN: "Quarantine the complete Bun project before installation", shortKO: "Bun 프로젝트 전체를 검역한 뒤 설치합니다", longEN: bunProjectEnglish, longKO: bunProjectKorean, validate: validateBunProjectArgs, validateRaw: validateBunProjectRawArgs, flags: configureBunProjectFlags, flagText: bunProjectFlagText, examples: []string{"helox bun install", "helox bun install --target /absolute/path/project"}},
 		{id: BunPackageClient, path: []string{"bun", "update"}, parents: []packageClientParent{{"Quarantine project packages with Bun", "Bun으로 프로젝트 패키지를 검역합니다"}}, route: "npm", use: "update [package-name]", shortEN: "Quarantine and update the complete Bun project", shortKO: "Bun 프로젝트의 선택 패키지 전체를 검역한 뒤 업데이트합니다", longEN: bunProjectEnglish, longKO: bunProjectKorean, validate: validateBunProjectArgs, validateRaw: validateBunProjectRawArgs, flags: configureBunProjectFlags, flagText: bunProjectFlagText, examples: []string{"helox bun update", "helox bun update is-number"}},

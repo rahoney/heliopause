@@ -181,6 +181,13 @@ func TestLauncherExamplesUseRegisteredSyntax(t *testing.T) {
 	if err := os.WriteFile("package.json", []byte(`{"dependencies":{"is-number":"6.0.0"}}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
+	if err := os.WriteFile("pyproject.toml", []byte("[project]\nname='haa-launcher-project'\nversion='0.1.0'\nrequires-python='=="+runtimeidentity.PythonVersion+"'\ndependencies=[]\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	venv := filepath.Join(root, ".venv")
+	if err := os.Mkdir(venv, 0o700); err != nil {
+		t.Fatal(err)
+	}
 	for name, body := range map[string]string{"requirements.txt": "packaging==25.0\n", "empty.txt": "# explicit empty\n", "pylock.toml": "lock-version='1.0'\ncreated-by='uv'\nrequires-python='>=3.14'\npackages=[]\n"} {
 		if err := os.WriteFile(name, []byte(body), 0o600); err != nil {
 			t.Fatal(err)
@@ -205,6 +212,9 @@ func TestLauncherExamplesUseRegisteredSyntax(t *testing.T) {
 			for index, arg := range args {
 				if arg == "/absolute/path/project" {
 					args[index] = root
+				}
+				if arg == "/absolute/path/venv" {
+					args[index] = venv
 				}
 			}
 			fresh, err := New(io.Discard, io.Discard)
