@@ -131,3 +131,36 @@ func TestCompleteProjectUpdateDoesNotInventOrRelaxRequestedPrimary(t *testing.T)
 		t.Fatal("zero update acquired validity")
 	}
 }
+
+func TestSnapshotUpdateBindsExplicitControlPresenceWithoutRelaxingOrdinaryConstructors(t *testing.T) {
+	snapshot, _ := projectApprovalFixture(t)
+	before, _ := NewProjectControlFile("lock", []byte("old"), true)
+	absent, _ := NewProjectControlFile("lock", nil, false)
+	digest, _ := NewProjectControlDigest(absent.Name(), absent.Digest())
+	snapshot.controls = []ProjectControlDigest{digest}
+	update, err := NewProjectDependencyUpdateFromSnapshotWithControlPresence([]ProjectControlFile{before}, []ProjectControlFile{absent}, snapshot)
+	if err != nil || !update.Valid() || update.HasRequestedResolution() || update.SelectedControls()[0].Present() {
+		t.Fatal("explicit absence lost", err)
+	}
+	if _, err := NewProjectDependencyUpdateFromSnapshot([]ProjectControlFile{before}, []ProjectControlFile{absent}, snapshot); err == nil {
+		t.Fatal("ordinary constructor accepted absent output")
+	}
+	for _, mode := range []string{"changed", "missing", "duplicate", "zero", "name"} {
+		after := []ProjectControlFile{absent}
+		switch mode {
+		case "changed":
+			after[0], _ = NewProjectControlFile("lock", []byte("changed"), true)
+		case "missing":
+			after = nil
+		case "duplicate":
+			after = append(after, absent)
+		case "zero":
+			after[0] = ProjectControlFile{}
+		case "name":
+			after[0], _ = NewProjectControlFile("foreign", nil, false)
+		}
+		if _, err := NewProjectDependencyUpdateFromSnapshotWithControlPresence([]ProjectControlFile{before}, after, snapshot); err == nil {
+			t.Fatal("invalid presence update accepted", mode)
+		}
+	}
+}

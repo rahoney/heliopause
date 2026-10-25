@@ -15,6 +15,8 @@ import (
 )
 
 type PNPMProjectPromotion struct {
+	client                                         npmProjectCacheClient
+	selectedBunCache                               func(domain.ProjectDependencySnapshot) (*BunVerifiedCache, error)
 	intakeRoot, evidenceRoot, cacheRoot, stateRoot string
 	evidence                                       ProjectEvidenceReader
 	operation                                      domain.OperationID
@@ -34,7 +36,7 @@ func NewPNPMProjectPromotion(intake, evidence, cache, state string, reader Proje
 			return nil, errors.New("pnpm mutation roots must be canonical")
 		}
 	}
-	return &PNPMProjectPromotion{intakeRoot: intake, evidenceRoot: evidence, cacheRoot: cache, stateRoot: state, evidence: reader, operation: operation, selectedCache: selectedCache}, nil
+	return &PNPMProjectPromotion{client: npmProjectCachePNPM, intakeRoot: intake, evidenceRoot: evidence, cacheRoot: cache, stateRoot: state, evidence: reader, operation: operation, selectedCache: selectedCache}, nil
 }
 
 // Successful publication records are controller-bound opaque cache references.
@@ -107,10 +109,10 @@ func (p *PNPMProjectPromotion) begin(ctx context.Context, install domain.Install
 	if err := g.rejectRecovery(); err != nil {
 		return nil, err
 	}
-	for _, name := range []string{"package.json", "pnpm-lock.yaml"} {
+	for _, name := range []string{"package.json", p.lockName()} {
 		body, info, err := readGoTransactionControl(guard.root, name)
 		present := true
-		if name == "pnpm-lock.yaml" && errors.Is(err, os.ErrNotExist) {
+		if name == p.lockName() && errors.Is(err, os.ErrNotExist) {
 			body, info, err, present = nil, nil, nil, false
 		}
 		if err != nil || present && (info == nil || !pypiSingleLink(info) || info.Mode()&^os.ModePerm != 0) {
@@ -271,27 +273,27 @@ func (g *approvedPNPMProjectGuard) verifyPrevious(ctx context.Context, adopt boo
 			return err
 		}
 	}
-	if err := verifyPNPMRecordedApproval(ctx, g.owner.evidence, doc.Approval); err != nil {
+	if err := g.owner.verifyRecordedApproval(ctx, doc.Approval); err != nil {
 		return err
 	}
 	digest, err := domain.NewSHA256Digest(doc.CacheDigest)
 	if err != nil {
 		return err
 	}
-	if _, err := openPNPMApprovedCache(ctx, g.owner.cacheRoot, doc.Cache, digest, doc.Approval, nil); err != nil {
+	if _, err := openNPMApprovedProjectCache(ctx, g.owner.cacheRoot, doc.Cache, digest, doc.Approval, nil, g.owner.client); err != nil {
 		return err
 	}
-	for index, name := range []string{"package.json", "pnpm-lock.yaml", "node_modules", "haa"} {
+	for index, name := range []string{"package.json", g.owner.lockName(), "node_modules", "haa"} {
 		if doc.Members[index].Name != name {
 			return errors.New("pnpm retained member coverage differs")
 		}
 		if _, err := domain.NewSHA256Digest(doc.Members[index].SHA256); err != nil {
 			return err
 		}
-		if adopt && (name == "package.json" || name == "pnpm-lock.yaml") {
+		if adopt && (name == "package.json" || name == g.owner.lockName()) {
 			continue
 		}
-		actual, err := npmPNPMMemberDigest(g.members[name])
+		actual, err := npmApprovedMemberDigest(g.owner.client, name, g.members[name], doc.Approval)
 		if err != nil || actual != doc.Members[index].SHA256 {
 			return errors.Join(errors.New("pnpm original owned target differs from independent approval"), err)
 		}

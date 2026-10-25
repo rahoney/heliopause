@@ -5345,3 +5345,20 @@ combined85.368s/helperwait0/Host 동일로 확인했다. 두 기존 body의 기�
 create/owner/census/readback/cleanup 전체 불변을 확인했다. Quick147.243s/security/docs와
 전체 promotion/bootstrap Race도 PASS다. Private materialization local subset만 닫혔고 target
 publication/retained ownership/CLI/native 인계·명시 Bun runtime/whole P3는 미완료다.
+
+[B5b2 target transaction 감사](./evidence/package-client-quarantine/p3b5b2-bun-target-transaction-plan-20261025.md)는
+74102c8의 private engine을 같은 target lock·independent state·backup/publish/rollback engine으로
+연결한다. Explicit absent selected lock은 별도 Domain snapshot constructor와 Bun fixed profile로
+보존하며 기존 PNPM guard를 유지한다. Native/unmanaged adoption은 계속 거부하고 typed
+Application/bootstrap의 실제 guarded Apply 소비자로 검증한다. CI412 타이머·frozen7544를
+유지하며 새 push 없이 같은 M13-004 하나의 로컬 작업을 계속한다.
+
+[B5b2 로컬 영수증](./evidence/package-client-quarantine/p3b5b2-bun-target-transaction-local-20261025.json)은
+typed Bun request-local guarded Apply와 independent state·backup/publish/rollback engine을 연결했다.
+실제 Bun/기존 PNPM single·peer4·empty 및 install/no-op/add6→7/selected update가 모두 PASS다.
+매번 fresh operation/Evidence/Policy·record, no-op control/payload inode·mode와 user 파일, Bun lock
+부재를 유지했다. Combined 실제 시간·helperwait0/Host 동일은 영수증에 기록했다. Quick216.022s/
+security/docs·Domain/Application/promotion/bootstrap 전체 Race231.114s도 PASS다. 첫 actual
+no-op 실패와 RED/GREEN을 보존하고 검역 handle binding을 제거하지 않은 전체 Host census
+비교로 보완했다. Local managed transaction만 닫혔으며 CLI/native ownership/명시 Bun runtime/
+remote·whole P3는 열려 있다. CI412 frozen7544의 타이머 확인과 독립 작업을 계속한다.

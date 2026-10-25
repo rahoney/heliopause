@@ -57,7 +57,7 @@ func (p *pnpmProjectProfile) workspaceMember(name, location string) (*npmTransac
 	if err := p.prepared.verifyBoundary(); err != nil {
 		return nil, err
 	}
-	if name == "package.json" || name == "pnpm-lock.yaml" {
+	if name == "package.json" || name == p.owner.owner.lockName() {
 		if err := p.prepared.verifyEntry(p.owner.ctx, prefix); err != nil {
 			return nil, err
 		}
@@ -119,10 +119,10 @@ func (p *pnpmProjectProfile) publishMarker(t *npmProjectTransaction) error {
 	if err := trustedExistingDirectory(directory); err != nil {
 		return err
 	}
-	if err := writeNPMTransactionMetadata(directory, filepath.Join(directory, "pnpm-transaction.json"), marker); err != nil {
+	if err := writeNPMTransactionMetadata(directory, filepath.Join(directory, p.owner.owner.markerName()), marker); err != nil {
 		return err
 	}
-	snapshot, err := snapshotNPMFile(filepath.Join(directory, "pnpm-transaction.json"))
+	snapshot, err := snapshotNPMFile(filepath.Join(directory, p.owner.owner.markerName()))
 	if err != nil {
 		return err
 	}
@@ -130,7 +130,7 @@ func (p *pnpmProjectProfile) publishMarker(t *npmProjectTransaction) error {
 	if member == nil || member.pnpm != nil {
 		return errors.New("pnpm transaction metadata inventory is unavailable")
 	}
-	member.files["pnpm-transaction.json"] = snapshot
+	member.files[p.owner.owner.markerName()] = snapshot
 	return syncDirectory(directory)
 }
 
@@ -157,7 +157,12 @@ func (p *pnpmProjectProfile) publishApproval(t *npmProjectTransaction) error {
 	}
 	p.approval.Members = nil
 	for _, name := range t.memberNames() {
-		digest, err := npmPNPMMemberDigest(t.outputs[name])
+		if p.absentSelected(name) {
+			if _, err := os.Lstat(t.target(name)); !errors.Is(err, os.ErrNotExist) {
+				return errors.New("absent selected output appeared")
+			}
+		}
+		digest, err := npmApprovedMemberDigest(p.owner.owner.client, name, t.outputs[name], p.approval.Approval)
 		if err != nil {
 			return err
 		}
@@ -200,7 +205,7 @@ func (g *approvedPNPMProjectGuard) writeState(body []byte, published *bool) (res
 	if err != nil {
 		return err
 	}
-	name := ".pnpm-approval-" + id.String()
+	name := "." + g.owner.clientPrefix() + "-approval-" + id.String()
 	f, err := g.state.OpenFile(name, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
 	if err != nil {
 		return err

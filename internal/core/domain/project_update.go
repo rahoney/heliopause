@@ -52,16 +52,22 @@ type ProjectDependencyUpdate struct {
 }
 
 func NewProjectDependencyUpdate(original, selected []ProjectControlFile, snapshot ProjectDependencySnapshot, resolution DependencyResolution) (ProjectDependencyUpdate, error) {
-	return newProjectDependencyUpdate(original, selected, snapshot, resolution, false)
+	return newProjectDependencyUpdate(original, selected, snapshot, resolution, false, false)
 }
 
 // NewProjectDependencyUpdateFromSnapshot binds a complete-project selection
 // without inventing a primary or relaxing the requested-primary constructor.
 func NewProjectDependencyUpdateFromSnapshot(original, selected []ProjectControlFile, snapshot ProjectDependencySnapshot) (ProjectDependencyUpdate, error) {
-	return newProjectDependencyUpdate(original, selected, snapshot, DependencyResolution{}, true)
+	return newProjectDependencyUpdate(original, selected, snapshot, DependencyResolution{}, true, false)
 }
 
-func newProjectDependencyUpdate(original, selected []ProjectControlFile, snapshot ProjectDependencySnapshot, resolution DependencyResolution, snapshotOnly bool) (ProjectDependencyUpdate, error) {
+// NewProjectDependencyUpdateFromSnapshotWithControlPresence preserves explicit absent outputs.
+// Ecosystem adapters still validate which controls may be absent.
+func NewProjectDependencyUpdateFromSnapshotWithControlPresence(original, selected []ProjectControlFile, snapshot ProjectDependencySnapshot) (ProjectDependencyUpdate, error) {
+	return newProjectDependencyUpdate(original, selected, snapshot, DependencyResolution{}, true, true)
+}
+
+func newProjectDependencyUpdate(original, selected []ProjectControlFile, snapshot ProjectDependencySnapshot, resolution DependencyResolution, snapshotOnly, controlPresence bool) (ProjectDependencyUpdate, error) {
 	if !snapshot.Valid() || (!snapshotOnly && (resolution.LockfileDigest() != snapshot.GraphDigest() || len(resolution.Graph().Nodes()) == 0)) || (snapshotOnly && (resolution.LockfileDigest().String() != "" || len(resolution.Graph().Nodes()) != 0)) || len(original) == 0 || len(original) > 32 || len(original) != len(selected) || len(selected) != len(snapshot.ControlDigests()) {
 		return ProjectDependencyUpdate{}, errors.New("project update requires matching complete selection")
 	}
@@ -71,7 +77,7 @@ func newProjectDependencyUpdate(original, selected []ProjectControlFile, snapsho
 	sort.Slice(after, func(i, j int) bool { return after[i].name < after[j].name })
 	controls := snapshot.ControlDigests()
 	for i := range before {
-		if before[i].name == "" || before[i].digest.String() == "" || before[i].name != after[i].name || !after[i].present || after[i].name != controls[i].Name() || after[i].digest != controls[i].Digest() || (i != 0 && before[i-1].name == before[i].name) {
+		if before[i].name == "" || before[i].digest.String() == "" || before[i].name != after[i].name || !controlPresence && !after[i].present || after[i].name != controls[i].Name() || after[i].digest != controls[i].Digest() || (i != 0 && before[i-1].name == before[i].name) {
 			return ProjectDependencyUpdate{}, errors.New("project update controls differ from selected snapshot")
 		}
 	}

@@ -333,7 +333,7 @@ func (t *npmProjectTransaction) backupCurrent() error {
 			return err
 		}
 		info, err := os.Lstat(source)
-		if errors.Is(err, os.ErrNotExist) && (name == "node_modules" || name == "haa" || t.plan.pnpm != nil && name == "pnpm-lock.yaml" && !t.plan.pnpm.owner.controls[1].Present()) {
+		if errors.Is(err, os.ErrNotExist) && (name == "node_modules" || name == "haa" || t.plan.pnpm != nil && name == t.plan.pnpm.owner.owner.lockName() && !t.plan.pnpm.owner.controls[1].Present()) {
 			continue
 		}
 		if err != nil || info.Mode()&os.ModeSymlink != 0 {
@@ -415,6 +415,18 @@ func (t *npmProjectTransaction) publishWorkspace() error {
 		source := filepath.Join(t.workspace, name)
 		if name == "haa" {
 			source = filepath.Join(t.workspace, ".heliopause")
+		}
+		if t.plan.pnpm != nil && t.plan.pnpm.absentSelected(name) {
+			if _, err := os.Lstat(source); !errors.Is(err, os.ErrNotExist) {
+				return errors.New("absent workspace output appeared")
+			}
+			if _, err := os.Lstat(t.target(name)); !errors.Is(err, os.ErrNotExist) {
+				return errors.New("absent target output appeared")
+			}
+			if err := t.phase("after-publish:" + name); err != nil {
+				return err
+			}
+			continue
 		}
 		info, err := os.Lstat(source)
 		if err != nil || info.Mode()&os.ModeSymlink != 0 || ((name == "node_modules" || name == "haa") && !info.IsDir()) || (name != "node_modules" && name != "haa" && !info.Mode().IsRegular()) {
@@ -519,7 +531,7 @@ func (t *npmProjectTransaction) rollback() error {
 func (t *npmProjectTransaction) target(name string) string {
 	if name == "metadata" {
 		if t.plan.pnpm != nil {
-			return filepath.Join(t.plan.root, ".heliopause/pnpm-transaction.json")
+			return filepath.Join(t.plan.root, ".heliopause", t.plan.pnpm.owner.owner.markerName())
 		}
 		return filepath.Join(t.plan.root, npmTransactionMetadata)
 	}
@@ -531,13 +543,13 @@ func (t *npmProjectTransaction) target(name string) string {
 
 func (t *npmProjectTransaction) memberNames() []string {
 	if t.plan.pnpm != nil {
-		return []string{"package.json", "pnpm-lock.yaml", "node_modules", "haa"}
+		return []string{"package.json", t.plan.pnpm.owner.owner.lockName(), "node_modules", "haa"}
 	}
 	return []string{"package.json", "package-lock.json", "node_modules", "haa"}
 }
 func (t *npmProjectTransaction) reverseMemberNames() []string {
 	if t.plan.pnpm != nil {
-		return []string{"haa", "node_modules", "pnpm-lock.yaml", "package.json"}
+		return []string{"haa", "node_modules", t.plan.pnpm.owner.owner.lockName(), "package.json"}
 	}
 	return []string{"haa", "node_modules", "package-lock.json", "package.json"}
 }
