@@ -15,9 +15,9 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4-K3 — public uv lock --upgrade/default+explicit project/current complete approval/distinct no-install result and existing add/sync CLI named local QUALIFIED; persistent tools remain
-Next action: M13-004 — persistent UV tool/pipx baseline/native metadata/runtime and exact pin review; then missing tool/execution acceptance; grouped final CI boundary retained
-Current substep: M13-004/P4-L persistent UV tool/pipx baseline/native schema/runtime/ownership review; UV project named local lanes qualified; tools not yet implemented
+Last completed substep: P4-L1 — actual UV/pipx receipts, strict inert parsers, command layout/link claims and distinct upgrade semantics named local QUALIFIED; public tools remain
+Next action: M13-004 — bind tool receipt commands to independently authenticated complete wheel graph; then missing runtime/ownership/public tools; grouped final CI boundary retained
+Current substep: M13-004/P4-L2 tool whole wheel/source/entrypoint binding; L1 named local qualified; runtime/supply/whole ownership/public tools remain open
 Acceptance audit: CI413 frozen50fd Required10SUCCESS; all10 checkout38e27d8 whole tree d6a63ab/2475 matches; actual75m due consumed17:20:16UTC; full10 decoded logs saved; historical CI411 timeout cause remains unconfirmed
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
@@ -5565,3 +5565,17 @@ Grouped source50fd3b2/tree d6a63ab/2475를 한 번 push하여 [CI413](https://gi
 ### 2026-10-26 P4-K3 public lock-only CLI checkpoint
 
 [K3 receipt](./evidence/package-client-quarantine/p4k3-uv-project-lock-cli-local-20261026.json)은 canonical Quick71.547s/security10.488s/docs0.253s·full CLI/Bootstrap Race29.145s와 actual252.100s PASS를 연결한다. Existing CLI169.25s의 일곱 성공/무단 인계 거부와 새 lock-only80.15s의 JSON·human/default/explicit project/current no-op·empty 네 요청이 PASS다. Lock update 완료와 installation NOT_REQUESTED를 분리하고 venv 부재에서도 동작하며 임의/active venv와 manifest identity·lock mode·user files를 보존한다. 공통 facts/render/preflight mapped body 동일성과 unsupported/unsafe original·완료 기록 부재 거부도 확인했다. NoSKIP/helperwait0/Host 동일이며 runtime/observer/K2 backend는 불변이다. Whole P4/remote는 미완료이고 같은 M13-004에서 persistent tools baseline을 계속한다. 새 push·CI는 없다.
+
+### 2026-10-26 P4-L persistent tool baseline 착수
+
+[P4-L baseline·수정 지도·두 번째 검토](./evidence/package-client-quarantine/p4l-persistent-tool-baseline-20261026.md)에서 기존 UV/PyPI/venv/current inspection/cache를 재사용하고 native tool metadata·exposed scripts·runtime 관계만 missing으로 판정했다. Official pipx release/PyPI1.18.4 후보는 discovery이며 새 pin·admission·지원이 아니다. Exact source/배포물 census와 별도 guest-native layout/interpreter lifecycle을 확인한 뒤 현재 gap만 구현한다. Runtime provisioning/global target/ambient backend·일반 trusted-control 예외는 추가하지 않는다. M13-004 하나만 IN_PROGRESS이고 새 push·CI는 없다.
+
+### 2026-10-26 P4-L1 native persistent tool receipt
+
+[Baseline·native facts](./evidence/package-client-quarantine/p4l-persistent-tool-baseline-20261026.md)와
+[L1 local receipt](./evidence/package-client-quarantine/p4l1-native-tool-receipt-local-20261026.json)를
+기록했다. Actual synthetic install/upgrade controls 네 개와 strict parser/layout/exposed-link claims,
+UV constraint 보존·pipx native constraint 제거를 구분한다. Canonical Quick/security/docs와 PyPI
+전체 Race가 PASS다. No native/Host execution·ownership·Policy authority를 parser에 주지 않는다.
+Public supply/admission/whole archive binding/atomic tools/CLI는 미완료이며 다음 L2를 계속한다.
+M13-004 하나만 IN_PROGRESS이고 작은 helper 단위 CI를 추가하지 않는다.

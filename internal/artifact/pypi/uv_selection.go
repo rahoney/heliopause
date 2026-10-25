@@ -210,10 +210,14 @@ func (s UVSelection) ValidateGraph(graph domain.LockedDependencyGraph) error {
 // Native JSON may reorder keys or whitespace, but duplicate keys at any of its
 // bounded schema levels must never silently override earlier selection data.
 func validateUVJSONKeys(body []byte) error {
+	return validateNativeJSONKeys(body, 4)
+}
+
+func validateNativeJSONKeys(body []byte, maxDepth int) error {
 	decoder := json.NewDecoder(bytes.NewReader(body))
 	var value func(int) error
 	value = func(depth int) error {
-		if depth > 4 {
+		if depth > maxDepth {
 			return errors.New("UV JSON nesting exceeds schema")
 		}
 		token, err := decoder.Token()
