@@ -16,10 +16,10 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P3-B5d — explicit Bun native original source proof and --adopt; named local qualification, source728f650
-Next action: M13-004/P3-B5f — Bun actual signal/crash/ENOSPC acceptance; explicit Bun Artifact runtime and final affected-profile qualification follow
-Current substep: M13-004/P3-B5e local wiring QUALIFIED; aggregate actual script519.694s/four top-level PASS/helperwait0/Host identical; hosted exact-source qualification pending grouped push
+Next action: M13-004/P3-B6 — audit explicit Bun Artifact runtime supply/admission and required coverage; grouped hosted project and final affected-profile qualification remain
+Current substep: M13-004/P3-B5f named local direct failures QUALIFIED; Bun+PNPM signal/crash15.560s/ENOSPC0.474s/promotion full Race153.066s; explicit Bun Artifact runtime audit follows
 Acceptance audit: CI412 frozen7544 backend Required10SUCCESS, complete checkout tree match and logs confirmed by actual65m timer; later local7939092/74102c8/80bd2bd/58957ea/728f650 are outside that remote scope; historical CI411 macOS timeout cause remains unconfirmed
-Independent local next: Bun typed transaction actual SIGINT/SIGKILL and bounded tmpfs ENOSPC; existing PNPM direct-failure harness reused; no live CI timer or extra helper push at this point
+Independent local next: explicit Bun Artifact runtime ownership/transport, exact execution/observer and whole inspection coverage; no live CI timer or extra helper push at this point
 P3 Bun: IN_PROGRESS (same M13-004 independent local); P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -5415,3 +5415,15 @@ helperwait0/Host 전체 동일·설치 root/공급 work 정리가 PASS다. Workf
 checker 전체 Race와 원래 default mode 기계 동일성을 확인했다. Local wiring만 닫혔으며
 hosted project/명시 Bun Artifact runtime/전체 P3 qualification은 미완료다. 같은 M13-004에서
 Bun actual SIGINT/SIGKILL·작은 tmpfs ENOSPC의 직접 acceptance를 다음으로 진행한다.
+
+[B5f Bun 직접 실패 감사](./evidence/package-client-quarantine/p3b5f-bun-failure-acceptance-plan-20261025.md)는
+637dada에서 실제 SIGINT/SIGKILL과1MiB tmpfs ENOSPC의 acceptance만 추가한다. 기존 Bun
+transaction/원본 source proof/Policy는 재사용하며 PNPM 직접 실패 회귀도 보존한다. Production
+engine은 변경하지 않고 아직 실제 결과 전까지 QUALIFIED/ACCEPTANCE_CLOSED로 올리지 않는다.
+
+[B5f 직접 실패 로컬 검증](./evidence/package-client-quarantine/p3b5f-bun-failure-local-20261025.json)은
+Bun·PNPM의 실제 SIGINT/SIGKILL Race15.560s/1MiB tmpfs ENOSPC0.474s·전체 promotion
+Race153.066s를 확인했다. 원본 bytes/inode/mode·cause/독립 state 미게시·crash lock/backup 보존·
+재진입 거부·FD0가 PASS다. Canonical Quick/security/docs·tagged compile/vet도 PASS이며
+production owner9개와 기존 PNPM qualification 파일은 baseline637dada와 같다. Named 세
+실패 acceptance만 닫혔으며 명시 Bun Artifact runtime·hosted/전체 P3는 다음으로 이어간다.

@@ -1,0 +1,125 @@
+{
+  "work_item": "M13-004/P3-B5f",
+  "baseline": "637dadadc950492b2c70765ec98fc64151aef34a",
+  "status": {
+    "IMPLEMENTED": "YES (existing transaction unchanged; direct failure consumers added)",
+    "WIRED": "YES (typed Bun fixture/factory and synchronized production checkpoints)",
+    "QUALIFIED": "YES (named local actual SIGINT/SIGKILL/ENOSPC; original PNPM consumers also PASS)",
+    "ACCEPTANCE_CLOSED": "YES (three direct-failure gaps only); NO (whole P3/remote)",
+    "MISSING": [
+      "explicit Bun Artifact runtime lane",
+      "hosted exact-source project qualification",
+      "final support and affected-profile matrix"
+    ]
+  },
+  "checks": [
+    {
+      "receipt": "p3b5f-first-quick.json",
+      "exit": 0,
+      "seconds": 80.876,
+      "receipt_sha256": "5bb8e9b151b26f2288ac2813a532cbca912f40c0f27e19ea3e6db499c39ac7af"
+    },
+    {
+      "receipt": "p3b5f-first-security.json",
+      "exit": 0,
+      "seconds": 10.097,
+      "receipt_sha256": "d56d26c2218de4dbb0f07a6cd4c31ade474b42139286df66212fa1aaf957b59f"
+    },
+    {
+      "receipt": "p3b5f-first-docs.json",
+      "exit": 0,
+      "seconds": 0.339,
+      "receipt_sha256": "9e848741a5a15d974aa866e3e14f99f9070cc7ac8512b601ec05d3aa6e76e253"
+    },
+    {
+      "receipt": "p3b5f-tagged-vet.json",
+      "exit": 0,
+      "seconds": 9.392,
+      "receipt_sha256": "ca7a1f2b0d1d3df97427b935c6bc2022e9a9b42c2cb0c12eabddecbafd419107"
+    },
+    {
+      "receipt": "p3b5f-process-race.json",
+      "exit": 0,
+      "seconds": 15.56,
+      "receipt_sha256": "3793d8a86c3d8c8e343fcb6875dcd2ce48404589af5b7e5627f443a5efba7fbd"
+    },
+    {
+      "receipt": "p3b5f-enospc-actual.json",
+      "exit": 0,
+      "seconds": 0.474,
+      "receipt_sha256": "e255d9eb62d698016a3afdc0d167fdea7668d4387869bcaa6494367a29bb46cf"
+    },
+    {
+      "receipt": "p3b5f-promotion-full-race.json",
+      "exit": 0,
+      "seconds": 153.066,
+      "receipt_sha256": "a8070819617ba575f3b51cf62b8e61ffa67bd4cf9cb46eca80a73fb449830766"
+    }
+  ],
+  "reuse": {
+    "test_adapters": [
+      {
+        "path": "internal/promotion/bun_failure_process_real_test.go",
+        "source_sha256": "1b9005d32e0f8d0a213a288abb4ec2acdfdd83001d738a628236def32fa1832f",
+        "normalized_harness_equal": true,
+        "original_consumer_unchanged": true
+      },
+      {
+        "path": "internal/promotion/bun_enospc_namespace_real_test.go",
+        "source_sha256": "2c930472c02990eb4170b9ae30e41f1b521fed73ed8d2a2a984cf87ad0c57729",
+        "normalized_harness_equal": true,
+        "original_consumer_unchanged": true
+      }
+    ],
+    "production_unchanged": [
+      {
+        "path": "internal/promotion/bun_transaction.go",
+        "sha256": "c8ced96581ca6527440d3ff5b6a4f6053b8c4a05c2385a9fc4225f854f9c8ac6"
+      },
+      {
+        "path": "internal/promotion/bun_original.go",
+        "sha256": "8f975c8429dc4e7282d8d8e6d6ed03b8195357dcbb459e08d84e55e37ed86c59"
+      },
+      {
+        "path": "internal/promotion/pnpm_transaction.go",
+        "sha256": "fef9360436e6ec3523eee51e2ec22d81f5147bc483d82ec4d5ebbc45900bd1d1"
+      },
+      {
+        "path": "internal/promotion/pnpm_transaction_profile.go",
+        "sha256": "0036bbf10fbfe61402952d5acd8cafef6ba9cc552dbaf0791881eb6aab1114f7"
+      },
+      {
+        "path": "internal/promotion/pnpm_approved_transaction.go",
+        "sha256": "ad12692cf3d49b37b5271dcc6b1fc115e442d84c65d433feac8e1cb6821f1248"
+      },
+      {
+        "path": "internal/promotion/pnpm_materialize.go",
+        "sha256": "18ba0dbae16eda167b130878ccc9fa7affc73cfb191cf5f796463a28a557482f"
+      },
+      {
+        "path": "internal/promotion/npm_transaction.go",
+        "sha256": "dc7e04d263ef9b992aaaffaf5fb7000bcaf4018a9ff61530bc8a8bc8233f4915"
+      },
+      {
+        "path": "internal/promotion/npm_transaction_member.go",
+        "sha256": "7701af875a1db15ed3e5fb41718c45a89bc41de7bcf63092f222f73f7ae8a6dc"
+      },
+      {
+        "path": "internal/promotion/go_transaction.go",
+        "sha256": "466ff2083f36165fa9a865d0996f4f7abb1045ec7a11805dfb887347e5316578"
+      }
+    ],
+    "scope": "exact client-adapter substitution only; actual direct failures have separate raw receipts"
+  },
+  "verified": [
+    "actual SIGINT after bun.lock publication retains context.Canceled and restores original manifest bytes/inode/mode; no independent state/records/temporary journal/guard",
+    "actual SIGKILL retains original backup/exclusive lock; new typed Bun Begin refuses before cache read without deleting recovery original",
+    "actual isolated1MiB tmpfs ENOSPC reaches independent approval write; original cause preserved, original inode/mode restored, partial files absent, task FDs0, filler removed and tmpfs unmounted",
+    "unchanged original PNPM signal/crash/ENOSPC consumers PASS in same candidate"
+  ],
+  "scope": "structural source/SRI fixture; actual static/local Evidence/cache/production transaction; does not claim public registry authentication/native selection or fresh dynamic Policy",
+  "default_inputs": "new source is linux && realcorpus; default source inputs unchanged",
+  "remote": "no new push or dispatch for this acceptance-only substep; source group awaits hosted whole-project qualification",
+  "raw_owner": "docs/github-logs/package-client-quarantine-20261021/",
+  "cleanup": "owned children exited; private namespace mounts ended and filler removed, task FD census0; exact binary copies retained pending reference audit"
+}
