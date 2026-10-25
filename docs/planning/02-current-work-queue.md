@@ -17,7 +17,7 @@ Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003
 Active work item status: IN_PROGRESS — backend/cache/records/private materialization/transaction remotely QUALIFIED by CI407; B5c user CLI named local PASS; native ownership/user CLI named local QUALIFIED; final whole-source remote/affected-profile qualification and P2 acceptance remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Next action: M13-004/P2 — source9410c2d CI408 ordinary/CI409 cu126 Required10SUCCESS each, all checkout whole trees equal; cu130 CI410 Required10SUCCESS; cu132 CI411 IN_PROGRESS (first timer13:22:46KST); keep active timer/turn and continue to P3 after P2 closure
-Current substep: M13-004/P2 — IN_PROGRESS; backend/production CLI/native original proof remote QUALIFIED by408/409; cu130 CI410 remote QUALIFIED; cu132411 final affected matrix and P2 acceptance remain; P3-A/B1 Bun signed ZIP/native data named local QUALIFIED in same M13-004; B2a candidate/native runc query named local QUALIFIED; B2b1 single owner/frozen maintenance named local QUALIFIED; next B2b2 release/installed tuple, remote source remains9410c2d
+Current substep: M13-004/P2 — IN_PROGRESS; backend/production CLI/native original proof remote QUALIFIED by408/409; cu130 CI410 remote QUALIFIED; cu132411 final affected matrix and P2 acceptance remain; P3-A/B1 Bun signed ZIP/native data named local QUALIFIED in same M13-004; B2a candidate/native runc query named local QUALIFIED; B2b1 single owner/frozen maintenance named local QUALIFIED; B2b2-A production materialization named local QUALIFIED; next B2b2-B complete release/installed tuple, remote source remains9410c2d
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -5090,3 +5090,17 @@ Same remote9410에서 마지막 필수 cu132411을 한 번 dispatch했고95분 �
 Active turn을 유지해 그 시각에 결과를 소비하며 Bun B2b2 로컬 작업을 이어간다. 작은 Bun
 단위로 push/CI를 만들지 않았고 그 local source를 이번 성공으로 전용하지 않는다. P2 전체
 acceptance/support는 cu132와 최종 matrix 전까지 열려 있다.
+
+P3-B2b2는 [release 공급·설치 tuple 지도](./evidence/package-client-quarantine/p3b2b2-bun-release-plan-20261025.md)의
+baseline/두 번째 검토 뒤 A production materializer부터 진행한다. Existing candidate/publisher/
+owner를 재사용하고 실제 complete release/installer tuple B는 그다음 연결한다. 원격411의
+95분 타이머는 유지하며 이 local 단위로 새 push/CI를 만들지 않는다.
+
+### 2026-10-25 P3-B2b2-A Bun production supply local checkpoint
+
+[생산용 출력](./evidence/package-client-quarantine/p3b2b2a-bun-production-local-20261025.json)은
+source owner의 signature/archive/native/notices를 다시 확인해 native0555/passive0444를 새
+외부 경로에만 게시했다. Canonical/관련 세 package 전체 Race·공식 생산 actual 및 기존
+frozen maintenance actual이 PASS다. 첫 realcorpus fixture-only compile 오류와 default
+profile의 정확한 제외 범위도 보존했다. 다음은 B2b2-B complete producer/installed tuple이다.
+Remote9410/cu132411 timer04:22:46UTC는 유지하고 이 local 단위는 push하지 않는다.

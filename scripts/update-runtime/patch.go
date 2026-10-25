@@ -26,26 +26,17 @@ func selectedVersion(root, component string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		fields, err := jsonSpans(body)
+		selected, err := selectedBunOwner(body)
 		if err != nil {
 			return "", err
 		}
-		expected := map[string]bool{}
-		for _, field := range []string{"", "/bun_version", "/architecture", "/runtime_image", "/archive", "/archive/url", "/archive/sha256", "/archive/size", "/publisher", "/publisher/fingerprint", "/publisher/checksums_path", "/publisher/checksums_sha256", "/source_commit_observed", "/tool", "/tool/path", "/tool/sha256", "/tool/size", "/notices", "/notices/path", "/notices/sha256", "/notices/size"} {
-			expected["/bun_tool"+field] = true
+		var owner struct {
+			Version string `json:"bun_version"`
 		}
-		count := 0
-		for path := range fields {
-			if path == "/bun_tool" || strings.HasPrefix(path, "/bun_tool/") {
-				if !expected[path] {
-					return "", errors.New("bun selected owner has an unknown or noncanonical field")
-				}
-				count++
-			}
+		if json.Unmarshal(selected, &owner) != nil || !validBunVersion(owner.Version) {
+			return "", errors.New("bun selected version is invalid")
 		}
-		if count != len(expected) {
-			return "", errors.New("bun selected owner fields are missing")
-		}
+		return owner.Version, nil
 	}
 	var lock map[string]any
 	if err := loadJSON(filepath.Join(root, runtimeFile), &lock); err != nil {

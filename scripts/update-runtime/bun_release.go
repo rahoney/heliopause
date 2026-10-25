@@ -86,14 +86,8 @@ func readBunSupply(input string, now time.Time) (bunVerifiedSupply, error) {
 	if decoder.Decode(&discovery) != nil || decoder.Decode(new(any)) != io.EOF {
 		return bunVerifiedSupply{}, errors.New("bun discovery JSON is invalid")
 	}
-	validVersion := len(discovery.Version) <= 64 && versionPattern.MatchString(discovery.Version)
-	for _, part := range strings.Split(discovery.Version, ".") {
-		if len(part) > 1 && part[0] == '0' {
-			validVersion = false
-		}
-	}
 	sourceCommit, decodeErr := hex.DecodeString(discovery.SourceCommitObserved)
-	if decodeErr != nil || len(sourceCommit) != 20 || hex.EncodeToString(sourceCommit) != discovery.SourceCommitObserved || !validVersion || discovery.ArchiveSize <= 0 || discovery.ArchiveSize > releaseprovenance.BunArchiveLimit {
+	if decodeErr != nil || len(sourceCommit) != 20 || hex.EncodeToString(sourceCommit) != discovery.SourceCommitObserved || !validBunVersion(discovery.Version) || discovery.ArchiveSize <= 0 || discovery.ArchiveSize > releaseprovenance.BunArchiveLimit {
 		return bunVerifiedSupply{}, errors.New("bun frozen discovery metadata is invalid")
 	}
 	signed, err := readFrozenSupplyFile(input, "SHASUMS256.txt.asc", 64<<10)
@@ -116,4 +110,16 @@ func readBunSupply(input string, now time.Time) (bunVerifiedSupply, error) {
 		return bunVerifiedSupply{}, err
 	}
 	return bunVerifiedSupply{discovery: discovery, checksum: receipt, tool: tool, native: native, archive: archive, signed: signed}, nil
+}
+
+func validBunVersion(version string) bool {
+	if len(version) > 64 || !versionPattern.MatchString(version) {
+		return false
+	}
+	for _, part := range strings.Split(version, ".") {
+		if len(part) > 1 && part[0] == '0' {
+			return false
+		}
+	}
+	return true
 }

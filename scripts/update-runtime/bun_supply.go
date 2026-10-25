@@ -72,7 +72,7 @@ func freezeBunSupply(version, input, state string) (metadata, error) {
 
 func verifyFrozenBunSupply(version string, m metadata, state string) error {
 	u := m.Bun
-	if u == nil || !versionPattern.MatchString(version) || u.Discovery.Version != version || !validBunNotices(u.Discovery.SourceCommitObserved, u.Notices) || u.Discovery.ArchiveSize <= 0 || u.Discovery.ArchiveSize > releaseprovenance.BunArchiveLimit {
+	if u == nil || !validBunVersion(version) || u.Discovery.Version != version || !validBunNotices(u.Discovery.SourceCommitObserved, u.Notices) || u.Discovery.ArchiveSize <= 0 || u.Discovery.ArchiveSize > releaseprovenance.BunArchiveLimit {
 		return errors.New("frozen bun supply/version is missing or excessive")
 	}
 	receipt, err := releaseprovenance.VerifyBunChecksums(context.Background(), u.Signed, u.Discovery.ArchiveSHA256, time.Now())
