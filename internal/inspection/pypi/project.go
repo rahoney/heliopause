@@ -12,7 +12,7 @@ import (
 // InspectProject supplies exact per-target closures without fabricating a
 // requested primary or broadening any native dynamic observation allowance.
 func (i *CompositeInspector) InspectProject(ctx context.Context, snapshot domain.ProjectDependencySnapshot, acquired map[domain.DependencyNodeID]domain.AcquiredArtifact) (map[domain.DependencyNodeID]domain.InspectionReport, error) {
-	if ctx == nil || !snapshot.Valid() || snapshot.Context().Mode() != domain.InstallPythonVenv || snapshot.Source() != artifactpypi.PublicPyPIProfile().Source() {
+	if ctx == nil || !snapshot.Valid() || (snapshot.Context().Mode() != domain.InstallPythonVenv && snapshot.Context().Mode() != domain.InstallPythonProjectControls) || snapshot.Source() != artifactpypi.PublicPyPIProfile().Source() {
 		return nil, errors.New("PyPI project inspection requires a complete public wheel snapshot")
 	}
 	if err := ctx.Err(); err != nil {

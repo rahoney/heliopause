@@ -100,7 +100,7 @@ func parseUVProjectOriginalControls(controls []domain.ProjectControlFile) (artif
 }
 
 func (r *UVProjectResolver) ResolveProjectLockUpdate(ctx context.Context, install domain.InstallContext, original []domain.ProjectControlFile, selector string) (domain.ProjectDependencyUpdate, error) {
-	if r == nil || r.native == nil || ctx == nil || selector != "" || !install.Valid() || install.Mode() != domain.InstallPythonVenv {
+	if r == nil || r.native == nil || ctx == nil || selector != "" || !install.Valid() || (install.Mode() != domain.InstallPythonVenv && install.Mode() != domain.InstallPythonProjectControls) {
 		return domain.ProjectDependencyUpdate{}, errors.New("UV project requires a frozen public virtual-project selection")
 	}
 	if err := ctx.Err(); err != nil {
@@ -109,6 +109,9 @@ func (r *UVProjectResolver) ResolveProjectLockUpdate(ctx context.Context, instal
 	input, err := parseUVProjectOriginalControls(original)
 	if err != nil {
 		return domain.ProjectDependencyUpdate{}, err
+	}
+	if install.Mode() == domain.InstallPythonProjectControls && input.Intent() != artifactpypi.UVProjectLockUpgrade {
+		return domain.ProjectDependencyUpdate{}, errors.New("UV project control-only context requires lock-upgrade intent")
 	}
 	var export artifactpypi.UVProjectExport
 	native, err := r.native.withUVNativeSession(ctx, func(ctx context.Context, session uvNativeSession) (uvNativeOutput, error) {

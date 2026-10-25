@@ -28,7 +28,7 @@ func uvProjectTestInput(t *testing.T, intent artifactpypi.UVProjectIntent) artif
 }
 
 func TestUVProjectResolverPreflightRejectsBeforeProbeNetworkAndTool(t *testing.T) {
-	for _, name := range []string{"nil context", "canceled", "selector", "missing", "duplicate", "runtime", "selected export", "malformed original lock", "invalid add selector"} {
+	for _, name := range []string{"nil context", "canceled", "selector", "missing", "duplicate", "runtime", "selected export", "malformed original lock", "invalid add selector", "control-only sync", "control-only add"} {
 		t.Run(name, func(t *testing.T) {
 			_, runner := uvReaderFixture(t)
 			endpoints := &uvCountingEndpoints{}
@@ -45,7 +45,7 @@ func TestUVProjectResolverPreflightRejectsBeforeProbeNetworkAndTool(t *testing.T
 				t.Fatal(err)
 			}
 			intent := artifactpypi.UVProjectSync
-			if name == "invalid add selector" {
+			if name == "invalid add selector" || name == "control-only add" {
 				intent = artifactpypi.UVProjectAdd
 			}
 			controls, err := NewUVProjectOriginalControls(uvProjectTestInput(t, intent))
@@ -79,7 +79,14 @@ func TestUVProjectResolverPreflightRejectsBeforeProbeNetworkAndTool(t *testing.T
 			if err != nil {
 				t.Fatal(err)
 			}
-			if result, err := resolver.ResolveProjectLockUpdate(ctx, uvSyncTestContext(t), controls, selector); err == nil || result.Valid() {
+			install := uvSyncTestContext(t)
+			if strings.HasPrefix(name, "control-only") {
+				install, err = domain.NewPythonProjectControlContext(install.Target())
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
+			if result, err := resolver.ResolveProjectLockUpdate(ctx, install, controls, selector); err == nil || result.Valid() {
 				t.Fatal("invalid project request accepted")
 			}
 			if probes != 0 || endpoints.calls != 0 || len(runner.calls) != 0 || len(runner.inputCalls) != 0 {

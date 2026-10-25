@@ -54,6 +54,28 @@ func TestGitHubAssetContextPreservesNewTargetInvariant(t *testing.T) {
 	}
 }
 
+func TestPythonProjectControlsAreDistinctFromVenvAndNewTarget(t *testing.T) {
+	target, err := domain.NewInstallTarget("/tmp/python-project")
+	if err != nil {
+		t.Fatal(err)
+	}
+	controls, err := domain.NewPythonProjectControlContext(target)
+	if err != nil || !controls.Valid() || controls.RequiresNewTarget() || controls.Target() != target || controls.Mode() != domain.InstallPythonProjectControls {
+		t.Fatal(controls, err)
+	}
+	venv, err := domain.NewPythonVenvInstallContext(target)
+	if err != nil || venv == controls || venv.Mode() != domain.InstallPythonVenv {
+		t.Fatal("project controls became installed venv", err)
+	}
+	initial, err := domain.NewInstallContext(target)
+	if err != nil || !initial.RequiresNewTarget() || initial == controls {
+		t.Fatal("new-target contract changed", err)
+	}
+	if _, err := domain.NewPythonProjectControlContext(domain.InstallTarget{}); err == nil {
+		t.Fatal("absent project root accepted")
+	}
+}
+
 func TestLockedDependencyGraphRejectsIncompleteOrUnsafeShape(t *testing.T) {
 	t.Parallel()
 	source := mustSource(t, "npm")

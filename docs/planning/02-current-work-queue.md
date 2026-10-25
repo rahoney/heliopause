@@ -17,7 +17,7 @@ Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P4-J — bounded native project --adopt/add/sync and legacy UV pip named local QUALIFIED; lock-only/tools remain
 Next action: M13-004 — baseline remaining native project adoption/distinct lock-only and persistent tools; continue actual missing acceptance; grouped final CI boundary retained
-Current substep: M13-004/P4-J named local COMPLETE; next P4-K distinct lock-only baseline; persistent tools pending
+Current substep: M13-004/P4-K2 original project guard/atomic native lock-only publication and workflow; K1 typed component locally qualified; public CLI/actual/tools pending
 Acceptance audit: CI413 frozen50fd Required10SUCCESS; all10 checkout38e27d8 whole tree d6a63ab/2475 matches; actual75m due consumed17:20:16UTC; full10 decoded logs saved; historical CI411 timeout cause remains unconfirmed
 Independent local next: P4 project/venv atomic transaction, ownership/CLI and persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
@@ -5549,3 +5549,11 @@ Grouped source50fd3b2/tree d6a63ab/2475를 한 번 push하여 [CI413](https://gi
 ### 2026-10-26 P4-J native project adoption checkpoint
 
 [Adoption receipt](./evidence/package-client-quarantine/p4j-uv-project-adoption-local-20261026.json)은 최종 canonical Quick59.770s/security9.813s/docs0.258s와 actual native add/sync129.885s·기존 UV pip184.466s를 연결한다. 기존 complete ownership/digest binder의 mapped body 동일성을 확인했고 unselected native original까지 authenticate한 뒤 current 전체 검사/Policy/원자 반영을 수행했다. Default 거부 무변경·seven controls/current records/user file 보존/noSKIP/helperwait0/Host 동일이다. 최초 full Race의 promotion 등 다섯 package는 PASS였고 기존 readiness fixture 경쟁만 실패했다. [독립 test-only 교정](./evidence/package-client-quarantine/p4j-readiness-race-correction-20261026.md) 뒤 전체 sandbox Race15.860s가 PASS이며 첫 실패는 보존한다. Whole P4/remote는 미완료이고 같은 M13-004에서 distinct lock-only를 계속한다. 새 push·CI는 없다.
+
+### 2026-10-26 P4-K distinct lock-only 착수
+
+[P4-K audit·map·두 번째 검토](./evidence/package-client-quarantine/p4k-uv-project-lock-only-plan-20261026.md)는 qualified native lock-upgrade와 complete 검사/cache를 재사용하고 project-controls 전용 context/원본 guard/lock 파일만의 publication·CLI를 연결한다. 기존 venv transaction을 가짜 plan으로 호출하거나 lock 반영을 설치 성공으로 표시하지 않는다. K1 mode/typed binding부터 시작하며 전체 public lock-only/tools/final profiles는 미완료다. M13-004 하나만 IN_PROGRESS이고 새 push·CI는 없다.
+
+### 2026-10-26 P4-K1 control-only typed component checkpoint
+
+[K1 receipt](./evidence/package-client-quarantine/p4k1-uv-project-control-mode-local-20261026.json)은 canonical Quick232.317s/security16.135s/docs0.256s·full affected Race250.827s PASS를 연결한다. Distinct project-controls context를 native lock-upgrade/독립 wheel 인증·전체 inspection/cache에 결합하고 venv approval·잘못된 intent 전용을 거부한다. 최초 두 fixture의 원본 lock 누락은 원본을 보존하고 교정했다. Public lock publication/CLI/actual과 whole P4는 미완료이며 같은 M13-004에서 K2 guard/transaction/workflow를 계속한다. Runtime/observer/권한·한도와 기존 installed 준비 경계는 불변이고 새 push·CI는 없다.

@@ -11,12 +11,15 @@ import (
 // ValidateUVProjectUpdate rechecks frozen native provenance at the approved
 // cache boundary. It grants no inspection, Evidence or Policy authority.
 func ValidateUVProjectUpdate(update domain.ProjectDependencyUpdate) error {
-	if !update.Valid() || update.HasRequestedResolution() || update.Snapshot().Context().Mode() != domain.InstallPythonVenv || update.Snapshot().Source() != artifactpypi.PublicPyPIProfile().Source() {
+	if !update.Valid() || update.HasRequestedResolution() || (update.Snapshot().Context().Mode() != domain.InstallPythonVenv && update.Snapshot().Context().Mode() != domain.InstallPythonProjectControls) || update.Snapshot().Source() != artifactpypi.PublicPyPIProfile().Source() {
 		return errors.New("UV project requires an exact complete public Python update")
 	}
 	input, err := parseUVProjectOriginalControls(update.OriginalControls())
 	if err != nil {
 		return err
+	}
+	if update.Snapshot().Context().Mode() == domain.InstallPythonProjectControls && input.Intent() != artifactpypi.UVProjectLockUpgrade {
+		return errors.New("UV project control-only update requires lock-upgrade intent")
 	}
 	selected := update.SelectedControls()
 	if len(selected) != 6 {

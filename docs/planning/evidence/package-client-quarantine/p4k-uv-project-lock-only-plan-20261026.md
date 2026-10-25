@@ -1,0 +1,57 @@
+# P4-K UV project lock-only 착수 감사
+
+M13-004의 다음 missing acceptance다. J qualification 중 기준 c1a7659와 현재 J source를
+읽어 사전 감사를 수행했다. Exact K baseline은 4c99452ba92e786d3b01091ac3081f7bcb5b69a3/treec7afae1cb0a8b000673635e2fcfb51af70aba6d7/2541 files다.
+J와 readiness 교정은 commit했고 K source 수정 전에 이 감사와 map을 확인했다. Read: Queue/plan20§5/client 설계09§1·4·P4 상태,
+Domain007 invariants, Contract003 invariants, Architecture008의 staging/identity/promotion,
+lessons INDEX/ci L06/artifact L15/sandbox L08/evidence L16 및 현재 실제 source.
+
+| 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| Native lock --upgrade/six controls/독립 공개 wheel binding | YES | YES(internal resolver) | YES(P4-E named native) | YES(named selection) | distinct Host control-only context |
+| Complete current inspection/Evidence/Policy/approved cache | YES | YES(venv lanes) | YES(P1/P4-F..J named) | YES(named installed lanes) | explicit project-controls context support |
+| Anchored project guard/bounded original snapshots/known backup cleanup | YES | YES(existing adapters) | YES(existing transaction consumers) | YES(named scopes) | UV single lock-file publication adapter |
+| Public uv lock --upgrade / venv-free lock-only publication | NO | NO | NO | NO | mode/guard/approved readback/atomic lock publication/CLI/actual/failure |
+| Persistent tools/temporary runners/final profile matrix | NO | NO | NO | NO | subsequent same M13-004 acceptance |
+
+## Exact map·두 번째 검토
+
+K1: Source-neutral Domain에 project control-only mutation mode를 명시하고 exact target을
+project root로 결합한다. 기존 PythonVenv/new target 의미는 그대로다. Native project
+resolver/update validator는 이 mode에서 lock-upgrade intent만 허용하고 generic complete
+wheel binder/inspection/cache에는 명시한 새 mode만 추가한다. UV pip/installed preparation은
+기존 venv mode를 계속 요구한다. Empty/fixed selection·context substitution 부정 회귀를
+함께 검증한다. 이 단계만으로 public lock-only 지원을 주장하지 않는다.
+
+K2: 새 UV control-only adapter는 기존 project transaction과 **같은 lock 이름**을 사용해
+상호 배제한다. Existing anchored guard/bounded single-link control reader/snapshots와
+known-member backup cleanup을 재사용한다. Go/Cargo adapter는 해당 생태계 grammar·상태
+파일을 강제하고 venv adapter는 실제 venv discovery/ownership을 요구하므로 잘못된
+mode나 가짜 venv plan으로 호출하지 않는다. 이 기존 구현들을 대체하지 않는다.
+
+Original pyproject/native lock의 identity/bytes/mode/presence를 고정하고 native selection을
+한 번만 실행한다. 선택 전체를 새 검사·Policy·cache/readback에 연결한 뒤 **uv.lock만**
+원자 반영한다. Manifest는 immutable input이며 .venv/installed ownership은 읽거나 변경하지
+않는다. 기존 유효한 uv.lock을 요구하는 lock-upgrade 입력 계약을 유지한다. User data를 보존하고
+rollback 불확실성/foreign backup은 원본과
+transaction lock을 남겨 다음 mutation을 막는다. Proof/old ALLOW는 승인 authority가 아니다.
+
+K3: `helox uv lock --upgrade`를 명시 descriptor/production binding에 연결한다. `--project`와
+cwd를 사용하고 target/adopt/임의 native 인수와 upgrade 생략을 runtime 준비 전에 거부한다.
+보고는 lock update 상태와 installation NOT_REQUESTED를 분리하고 실제 Manifest/SBOM을
+연결한다. 후속 sync는 다시 whole graph를 검사한다. Venv 부재/기존 임의 venv 보존,
+기존 lock의 upgrade/no-op/empty·현재 records/failure/rollback/collision과 absent lock의 사전 거부를 검증한다.
+
+두 번째 검토: source/role/runtime/observer/한도·Policy는 바꾸지 않는다. Native lock 선택과
+Host 파일 반영/설치 결과를 구분하고, controller-selected lock bytes만 반영하며 cache에서
+새 resolve나 artifact 실행을 하지 않는다. 기존 installed UV와 다른 client consumer의
+실제 영향 범위를 보존한다. Helper별 full CI는 없고 최종 영향 profile 경계는 plan20§5다.
+
+K1 최초 fixture 교정: strict lock-upgrade는 원본 lock을 요구한다. 새 시험이 absent lock으로
+입력을 구성해 parser에서 거부됐고 source mode 동작에 도달하지 않았다. 고정 empty-project
+원본 lock fixture를 제공하며 native grammar를 완화하지 않는다. 첫 canonical/Race 원본은
+p4k-control-mode-v1-*로 보존한다.
+
+K1은 [typed component receipt](./p4k1-uv-project-control-mode-local-20261026.json)의 canonical
+profiles/전체 affected Race를 통과했다. 새 mode의 native public application/CLI actual은
+미실행이며 전체 K 완료로 표시하지 않는다. K2 original guard/transaction/workflow가 다음이다.

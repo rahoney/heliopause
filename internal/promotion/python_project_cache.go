@@ -71,7 +71,7 @@ type pythonProjectMaterial struct {
 }
 
 func (c *PythonProjectCache) approval(ctx context.Context, set domain.ProjectVerifiedSet, update domain.ProjectDependencyUpdate) (pythonProjectReceipt, error) {
-	if ctx == nil || c == nil || !set.Valid() || !update.Valid() || update.HasRequestedResolution() || !reflect.DeepEqual(set.Inspected().Snapshot(), update.Snapshot()) || update.Snapshot().Source() != artifactpypi.PublicPyPIProfile().Source() || update.Snapshot().Context().Mode() != domain.InstallPythonVenv {
+	if ctx == nil || c == nil || !set.Valid() || !update.Valid() || update.HasRequestedResolution() || !reflect.DeepEqual(set.Inspected().Snapshot(), update.Snapshot()) || update.Snapshot().Source() != artifactpypi.PublicPyPIProfile().Source() || (update.Snapshot().Context().Mode() != domain.InstallPythonVenv && update.Snapshot().Context().Mode() != domain.InstallPythonProjectControls) {
 		return pythonProjectReceipt{}, errors.New("python cache requires the exact approved complete UV selection")
 	}
 	if err := ctx.Err(); err != nil {

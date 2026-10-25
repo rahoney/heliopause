@@ -1,0 +1,101 @@
+{
+  "work_item": "M13-004/P4-K1",
+  "baseline": "4c99452",
+  "status": {
+    "IMPLEMENTED": "YES (distinct control-only Host context)",
+    "WIRED": "YES (native project resolver, independent wheel binder, complete inspection, approved cache)",
+    "QUALIFIED": "YES (named local mode and consumers)",
+    "ACCEPTANCE_CLOSED": "YES (named typed component); NO (public lock-only operation)",
+    "MISSING": [
+      "original project guard/atomic lock-only publication/application/CLI/actual",
+      "persistent UV tool/pipx and temporary execution lanes",
+      "final affected-source/profile qualification"
+    ]
+  },
+  "checks": [
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4k-control-mode-v2-format.json",
+      "seconds": 0.673,
+      "sha256": "c887065723b4c473e29c170c170f82a9d690b390a1f27c462f1ea82ef6b0a769"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4k-control-mode-v2-quick.json",
+      "seconds": 232.317,
+      "sha256": "55cb1292e302bf227c72e4e3e90db4045bef7045d9d6244190fef43b80d9cd5f"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4k-control-mode-v2-security.json",
+      "seconds": 16.135,
+      "sha256": "aa359b2b6ecf653f0ae82bfed2b638c6051b31c0356cf77fcb1738c5f785133b"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4k-control-mode-v2-docs.json",
+      "seconds": 0.256,
+      "sha256": "ab2ece9b4cf61529adffd46374509bd01680629daceed85df515eae628b05373"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4k-control-mode-v2-full-affected-race.json",
+      "seconds": 250.827,
+      "sha256": "51f943cd87ba90a0c76e2fabd791c753e54e66624ea9a7a53c4dd60e931be873"
+    }
+  ],
+  "observed": [
+    "control-only mode differs from venv and new-target context; exact project target preserved",
+    "control-only resolver rejects add/sync intent before probe/network/native infrastructure",
+    "independent archive/source authentication and full current per-target closure/static-all/refusal preserved in new mode",
+    "complete control-only approval/cache/readback is allowed; venv approval substitution refused; no project/venv publication"
+  ],
+  "first_failure": "p4k-control-mode-v1-quick.json and p4k-control-mode-v1-full-affected-race.json; two new fixtures omitted required original uv.lock before reaching operation; corrected fixture only, parser grammar unchanged",
+  "actual_new_mode": "NOT_RUN; public application/CLI/native lock publication not yet wired",
+  "source": [
+    {
+      "path": "internal/core/domain/install.go",
+      "sha256": "a875abafddb35bead66956215555aa105dadf4e754aacd441e4954cc54c744dd"
+    },
+    {
+      "path": "internal/core/domain/install_test.go",
+      "sha256": "8906ff7cbd2af26faac37496d1f27c64123f75bc33236b3763ae3d5adde6ba26"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_project_lock.go",
+      "sha256": "3543ff65db8c14e65e68d97e5e445442f6d5e3b7a409dd744507a1efe0723f24"
+    },
+    {
+      "path": "internal/artifact/pypi/uv_project_lock_test.go",
+      "sha256": "8de802434853a7a89226f2fbe9bb877c6f1ca1b6a16dd1b842aed0b8cbcdf75d"
+    },
+    {
+      "path": "internal/inspection/pypi/project.go",
+      "sha256": "a31afcce544fd64c08fdbdb31086f72ab8222988bbf35c2fed92f5de39114128"
+    },
+    {
+      "path": "internal/inspection/pypi/project_test.go",
+      "sha256": "74811c33060a1e79cc224ae5029aebf8089e3ddcedef15fe2741db02d44e9e1d"
+    },
+    {
+      "path": "internal/promotion/python_project_cache.go",
+      "sha256": "9b905ef3716ff1581bc60eee77b3e7d6281c3ee1cf907556504e4112e912fd11"
+    },
+    {
+      "path": "internal/promotion/uv_project_lock_mode_test.go",
+      "sha256": "816d7085d5b08fed429ae1ff8657323a746fcca90ba615957985484ba387d114"
+    },
+    {
+      "path": "internal/sandbox/uv_project_resolver.go",
+      "sha256": "1961f348d7e1b2227d6703e89672168e11f53ee444df7f613fc0f8d090e9b3f8"
+    },
+    {
+      "path": "internal/sandbox/uv_project_resolver_test.go",
+      "sha256": "7fec845f3f6d41060defbe2e7b725e5af67442cbacb076d438d121958d3f4927"
+    },
+    {
+      "path": "internal/sandbox/uv_project_update.go",
+      "sha256": "1948d8e1033accd6b7f9ef70dd13279e1313c153925568e2ca4bfefcaaf09038"
+    },
+    {
+      "path": "internal/sandbox/uv_project_update_test.go",
+      "sha256": "84326fbb172e0904ab1d4d1810b3429c5e3a152c72e78c2be2a04a01adfad4a0"
+    }
+  ],
+  "remote": "NOT_RUN (plan20 section5 helper cadence)"
+}

@@ -71,6 +71,46 @@ func uvEmptyProjectUpdate(t *testing.T, original, selected []domain.ProjectContr
 	return update
 }
 
+func TestUVProjectControlOnlyUpdateRequiresLockUpgradeIntent(t *testing.T) {
+	for _, intent := range []artifactpypi.UVProjectIntent{artifactpypi.UVProjectSync, artifactpypi.UVProjectLockUpgrade} {
+		original, selected := uvEmptyProjectUpdateFixture(t)
+		input, err := artifactpypi.ParseUVProjectInput(original[0].Body(), selected[1].Body(), true, intent, "")
+		if err != nil {
+			t.Fatal(err)
+		}
+		original, err = NewUVProjectOriginalControls(input)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for i, c := range selected {
+			if c.Name() == artifactpypi.UVProjectIntentControl {
+				for _, o := range original {
+					if o.Name() == c.Name() {
+						selected[i] = o
+					}
+				}
+			}
+		}
+		base := uvEmptyProjectUpdate(t, original, selected)
+		controls, err := domain.NewPythonProjectControlContext(base.Snapshot().Context().Target())
+		if err != nil {
+			t.Fatal(err)
+		}
+		snapshot, err := domain.NewDependencyFreeProjectSnapshot(controls, base.Snapshot().Source(), base.Snapshot().ControlDigests(), base.Snapshot().GraphDigest())
+		if err != nil {
+			t.Fatal(err)
+		}
+		update, err := domain.NewProjectDependencyUpdateFromSnapshot(original, selected, snapshot)
+		if err != nil {
+			t.Fatal(err)
+		}
+		err = ValidateUVProjectUpdate(update)
+		if (err == nil) != (intent == artifactpypi.UVProjectLockUpgrade) {
+			t.Fatal("control-only intent boundary changed", intent, err)
+		}
+	}
+}
+
 func TestUVProjectUpdateRevalidatesNativeProvenance(t *testing.T) {
 	for _, name := range []string{"valid", "changed intent", "stale runtime", "changed manifest", "native lock", "raw export", "derived view", "missing controls"} {
 		t.Run(name, func(t *testing.T) {

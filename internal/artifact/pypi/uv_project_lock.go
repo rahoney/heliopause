@@ -83,7 +83,7 @@ func (l UVProjectLock) SelectInstalledWheelControls(controls []UVInstalledWheelC
 // Its snapshot is still unapproved. The caller must separately bind the actual
 // runtime, original guard and source intent before entry/set Policy/publication.
 func (l UVProjectLock) BindProject(install domain.InstallContext, controls []domain.ProjectControlFile, inputs []UVWheelInput, pages []SimpleProject, target WheelTarget, limits WheelLimits) (domain.ProjectDependencySnapshot, error) {
-	if len(l.body) == 0 || !install.Valid() || install.Mode() != domain.InstallPythonVenv || !utf8.ValidString(install.Target().String()) || !utf8.ValidString(target.Platform) || target.Platform == "" || len(controls) == 0 || len(controls) > 32 {
+	if len(l.body) == 0 || !install.Valid() || (install.Mode() != domain.InstallPythonVenv && install.Mode() != domain.InstallPythonProjectControls) || !utf8.ValidString(install.Target().String()) || !utf8.ValidString(target.Platform) || target.Platform == "" || len(controls) == 0 || len(controls) > 32 {
 		return domain.ProjectDependencySnapshot{}, errors.New("complete UV project context or controls are unavailable")
 	}
 	digests := make([]domain.ProjectControlDigest, 0, len(controls))

@@ -36,10 +36,11 @@ func (t InstallTarget) String() string { return t.value }
 type InstallMode string
 
 const (
-	InstallNewTarget   InstallMode = "NEW_TARGET"
-	InstallNPMProject  InstallMode = "NPM_PROJECT"
-	InstallPythonVenv  InstallMode = "PYTHON_VENV"
-	InstallGitHubAsset InstallMode = "GITHUB_MANAGED_ASSET"
+	InstallNewTarget             InstallMode = "NEW_TARGET"
+	InstallNPMProject            InstallMode = "NPM_PROJECT"
+	InstallPythonVenv            InstallMode = "PYTHON_VENV"
+	InstallPythonProjectControls InstallMode = "PYTHON_PROJECT_CONTROLS"
+	InstallGitHubAsset           InstallMode = "GITHUB_MANAGED_ASSET"
 )
 
 // InstallContext identifies either the M4 explicit new target or an M9 npm
@@ -74,6 +75,15 @@ func NewPythonVenvInstallContext(venvRoot InstallTarget) (InstallContext, error)
 	return InstallContext{target: venvRoot, mode: InstallPythonVenv}, nil
 }
 
+// NewPythonProjectControlContext selects only a project's control files.
+// It grants no venv discovery, package installation or artifact execution.
+func NewPythonProjectControlContext(projectRoot InstallTarget) (InstallContext, error) {
+	if projectRoot.value == "" {
+		return InstallContext{}, errors.New("python project control root is required")
+	}
+	return InstallContext{target: projectRoot, mode: InstallPythonProjectControls}, nil
+}
+
 // NewGitHubAssetInstallContext selects an explicitly managed standalone target.
 // The trusted original-state session must prove ownership before resolution.
 func NewGitHubAssetInstallContext(target InstallTarget) (InstallContext, error) {
@@ -87,7 +97,7 @@ func (c InstallContext) Target() InstallTarget   { return c.target }
 func (c InstallContext) Mode() InstallMode       { return c.mode }
 func (c InstallContext) RequiresNewTarget() bool { return c.mode == InstallNewTarget }
 func (c InstallContext) Valid() bool {
-	return c.target.value != "" && (c.mode == InstallNewTarget || c.mode == InstallNPMProject || c.mode == InstallPythonVenv || c.mode == InstallGitHubAsset)
+	return c.target.value != "" && (c.mode == InstallNewTarget || c.mode == InstallNPMProject || c.mode == InstallPythonVenv || c.mode == InstallPythonProjectControls || c.mode == InstallGitHubAsset)
 }
 
 // DependencyNodeID is an adapter-generated opaque identifier for one exact

@@ -28,11 +28,15 @@ func (r *projectClosureRunner) InspectWheelWithPlan(ctx context.Context, target 
 }
 
 func TestPyPICompleteProjectUsesPerTargetClosureAndStaticAllGate(t *testing.T) {
-	for _, mode := range []string{"complete", "missing-dependency", "unsatisfied", "static-invalid", "foreign-acquired"} {
+	for _, mode := range []string{"complete", "missing-dependency", "unsatisfied", "static-invalid", "foreign-acquired", "controls-complete", "controls-missing-dependency", "controls-unsatisfied", "controls-static-invalid", "controls-foreign-acquired"} {
 		t.Run(mode, func(t *testing.T) {
 			root := t.TempDir()
 			target, _ := domain.NewInstallTarget(filepath.Join(root, "venv"))
 			install, _ := domain.NewPythonVenvInstallContext(target)
+			if strings.HasPrefix(mode, "controls-") {
+				install, _ = domain.NewPythonProjectControlContext(target)
+				mode = strings.TrimPrefix(mode, "controls-")
+			}
 			dependency := "child>=1.0"
 			if mode == "unsatisfied" {
 				dependency = "child>=2.0"

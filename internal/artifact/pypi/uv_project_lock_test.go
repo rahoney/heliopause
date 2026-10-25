@@ -106,6 +106,37 @@ func TestUVCompleteProjectRequiresFullIndependentClosure(t *testing.T) {
 	}
 }
 
+func TestUVProjectControlContextRetainsIndependentWheelBinding(t *testing.T) {
+	for _, tamper := range []bool{false, true} {
+		single, inputs, pages := uvTestSelection(t, "")
+		project, err := ParseUVProjectLock(uvProjectBody(single.Packages()), "3.14.7")
+		if err != nil {
+			t.Fatal(err)
+		}
+		target, err := domain.NewInstallTarget("/tmp/control-only-project")
+		if err != nil {
+			t.Fatal(err)
+		}
+		controls, err := domain.NewPythonProjectControlContext(target)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if tamper {
+			inputs[0].Reader = bytes.NewReader(bytes.Repeat([]byte("x"), int(inputs[0].Size)))
+		}
+		result, err := project.BindProject(controls, uvProjectControls(t, project), inputs, pages, WheelTarget{"cp314", "cp314", "manylinux_2_36_x86_64"}, DefaultWheelLimits())
+		if tamper {
+			if err == nil {
+				t.Fatal("control-only operation bypassed whole archive authentication")
+			}
+			continue
+		}
+		if err != nil || result.Context() != controls || len(result.Dependencies()) != 2 {
+			t.Fatal("control-only selection lost context or closure", err)
+		}
+	}
+}
+
 func TestUVCompleteEmptyIsExplicitAndDoesNotRelaxSingleRoot(t *testing.T) {
 	body := uvProjectBody(nil)
 	project, err := ParseUVProjectLock(body, "3.14.7")
