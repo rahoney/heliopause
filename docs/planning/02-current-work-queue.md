@@ -5174,3 +5174,26 @@ Source/snapshot은 unapproved이고 archive/lifecycle/Policy/Host install은 수
 다음은 같은 M13-004에서 preflight typed selection과 Bun native install/add/update·frozen
 output의 연결이다. Layout/cache/transaction/CLI와 제한 밖 grammar/peer/platform 및 whole
 Bun acceptance는 열려 있고 새 push/CI는 없다. Remote9410 CI411 macOS/Required gate는 유지한다.
+
+B3b 중간 commit d1d3625/treec3e1a2fe·2361개 전체 후보 일치 뒤
+[B3c 연결 지도](./evidence/package-client-quarantine/p3b3c-bun-native-selection-plan-20261025.md)의
+baseline·기존 구현/정확한 수정 경로·두 번째 검토를 마쳤다. 고정 add/update help의 실제 격리
+조회도 종료/삭제까지 확인했으며, 같은 M13-004에서 typed native 선택 연결의 MISSING만 진행한다.
+
+### 2026-10-25 P3-B3c typed native Bun 선택 연결
+
+[B3c local receipt](./evidence/package-client-quarantine/p3b3c-bun-native-selection-local-20261025.json)는
+immutable install/add/update/frozen input을 고정 native owner와 independent source/snapshot에
+연결했다. 기존 scope/metadata 비교/HTTP/parser/Domain engine은 재사용했고 새로운 filesystem/
+network grant는 없다. 원본 observer250.792s/117latches·최종 Quick111.564s/전체 npm+sandbox
+Race59.056s/tagged vet2.825s/vulnerability16.694s가 PASS다.
+
+최종 native 선택9/source/snapshot57.54s와 실패 경계5/29.67s, 기존 PNPM boundary5/public8/
+quarantine4도 같은 observer/client139.641s/operator에서 PASS다. 두 owning helper는 wait0,
+최종 original0/CONFIRMED_STOPPED/stop0/client errors0·Host 전체 동일이다. 합성 constraint를
+가진 old6.0.0을 native frozen으로 읽은 뒤 selected/full update의 실제7.0.0을 확인했으며,
+unmanaged target adoption·archive 검사·Policy로 확대하지 않는다.
+
+다음은 같은 M13-004의 B4 exact native layout/lifecycle와 archive static-all/검역 연결이다.
+Cache/transaction/CLI와 제한 밖 package semantics·전체 Bun remote acceptance는 열려 있다.
+작은 helper별 push/CI는 시작하지 않았고 remote9410/CI411 macOS·Required gate는 유지한다.

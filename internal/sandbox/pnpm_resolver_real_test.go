@@ -19,14 +19,19 @@ import (
 type pnpmNativeFaultRunner struct {
 	CommandRunner
 	mode                         string
+	nativeTool                   string
 	cause                        error
 	commandFaults, cleanupFaults int
 }
 
 func (r *pnpmNativeFaultRunner) Output(ctx context.Context, name string, args ...string) ([]byte, error) {
+	tool := r.nativeTool
+	if tool == "" {
+		tool = pnpmToolGuestPath
+	}
 	if r.mode == "command and cleanup" {
 		for _, arg := range args {
-			if arg == pnpmToolGuestPath {
+			if arg == tool {
 				r.commandFaults++
 				return nil, r.cause
 			}

@@ -623,17 +623,49 @@ bool IsExactBunQuery(const gvisor::sentry::ExecveInfo& message) {
       (message.argv(1) == "--version" || message.argv(1) == "--revision");
 }
 
-// Fixed lock-only selection: no selector or user argv, no scripts or env files.
+bool IsBunPublicSelector(const std::string& value, bool allow_constraint) {
+  if (value.empty() || value.size() > 344) return false;
+  std::string name = value;
+  const auto at = value.rfind('@');
+  if (at != std::string::npos && at != 0) {
+    if (!allow_constraint || at + 1 == value.size() || value.size() - at - 1 > 128) return false;
+    name = value.substr(0, at);
+    for (size_t i = at + 1; i < value.size(); ++i) {
+      const char c = value[i];
+      if (!((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') ||
+            (c >= 'a' && c <= 'z') || std::string(".*~^<>=|+_ -").find(c) != std::string::npos)) return false;
+    }
+  }
+  if (name.empty() || name.size() > 214) return false;
+  auto segment = [](const std::string& part) {
+    if (part.empty() || !((part[0] >= 'a' && part[0] <= 'z') || (part[0] >= '0' && part[0] <= '9'))) return false;
+    for (const char c : part) if (!((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '.' || c == '_' || c == '-')) return false;
+    return true;
+  };
+  if (name[0] != '@') return segment(name);
+  const auto slash = name.find('/');
+  return slash != std::string::npos && segment(name.substr(1, slash-1)) && segment(name.substr(slash+1));
+}
+
+// Fixed lock-only selection shapes; the host typed input owns selector semantics.
+// Guest arguments cannot change registry/cache/linker, execute scripts or load env.
 bool IsExactBunProjectLockInstall(const gvisor::sentry::ExecveInfo& message) {
   static constexpr const char* expected[] = {kBunToolPath,
       "--cwd=/tmp/haa-bun-input/project", "install", "--lockfile-only", "--ignore-scripts",
       "--no-env-file", "--registry=https://registry.npmjs.org/",
       "--cache-dir=/tmp/haa-bun-input/cache", "--backend=copyfile", "--linker=hoisted",
       "--save-text-lockfile", "--no-progress", "--no-summary"};
+  constexpr int fixed_count = sizeof(expected)/sizeof(expected[0]);
   if (message.binary_path() != kBunToolPath || message.execfn() != kBunToolPath ||
-      message.argv_size() != static_cast<int>(sizeof(expected)/sizeof(expected[0]))) return false;
-  for (int i=0; i<message.argv_size(); ++i) if (message.argv(i) != expected[i]) return false;
-  return true;
+      message.argv_size() < fixed_count || message.argv_size() > fixed_count + 2) return false;
+  for (int i=0; i<fixed_count; ++i) if (i != 2 && message.argv(i) != expected[i]) return false;
+  const auto& intent = message.argv(2);
+  if (intent == "install") return message.argv_size() == fixed_count ||
+      (message.argv_size() == fixed_count+1 && message.argv(fixed_count) == "--frozen-lockfile");
+  if (intent != "add" && intent != "update") return false;
+  if (message.argv_size() == fixed_count) return intent == "update";
+  return message.argv_size() == fixed_count+2 && message.argv(fixed_count) == "--" &&
+      IsBunPublicSelector(message.argv(fixed_count+1), intent == "add");
 }
 
 struct ProfileRegistration {

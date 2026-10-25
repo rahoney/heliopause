@@ -7650,10 +7650,26 @@ bool VerifyBunProjectLockInstallShapeBoundary() {
   auto extra=message; extra.add_argv("--trust"); if (IsExactBunProjectLockInstall(extra)) return false;
   auto missing=message; missing.mutable_argv()->RemoveLast(); if (IsExactBunProjectLockInstall(missing)) return false;
   auto query=message; query.clear_argv(); query.add_argv(kBunToolPath); query.add_argv("--version");
-  return IsExactBunQuery(query) && !IsExactBunProjectLockInstall(query);
+  if (!IsExactBunQuery(query) || IsExactBunProjectLockInstall(query)) return false;
+  auto frozen=message; frozen.add_argv("--frozen-lockfile");
+  if (!IsExactBunProjectLockInstall(frozen)) return false;
+  for (const char* intent : {"add", "update"}) {
+    auto selected=message; selected.set_argv(2,intent);
+    if (IsExactBunProjectLockInstall(selected) != (strcmp(intent,"update")==0)) return false;
+    selected.add_argv("--"); selected.add_argv(strcmp(intent,"add")==0 ? "@scope/probe@^1.0.0" : "@scope/probe");
+    if (!IsExactBunProjectLockInstall(selected) || IsExactBunQuery(selected)) return false;
+    for (const char* bad : {"--eval", "../escape", "/tmp/pkg", "file:pkg", "https://evil.test/pkg", "npm:alias", "probe\nnext", "probe@", "@scope/", "UPPER"}) {
+      auto changed=selected; changed.set_argv(14,bad);
+      if (IsExactBunProjectLockInstall(changed)) return false;
+    }
+    if (strcmp(intent,"update")==0) { auto changed=selected; changed.set_argv(14,"probe@1.0.0"); if (IsExactBunProjectLockInstall(changed)) return false; }
+    for (int i=0;i<14;++i) { auto changed=selected; changed.set_argv(i,"foreign"); if (IsExactBunProjectLockInstall(changed)) return false; }
+    auto extra=selected; extra.add_argv("--trust"); if (IsExactBunProjectLockInstall(extra)) return false;
+  }
+  return true;
 }
 
-bool VerifyPrivateNativeRuntimeAdmissionBoundary(bool pnpm, bool bun = false, bool bun_project = false) {
+bool VerifyPrivateNativeRuntimeAdmissionBoundary(bool pnpm, bool bun = false, bool bun_project = false, const char* bun_intent = "install", bool frozen = false, bool selector = false) {
   const char* profile = bun ? (bun_project ? kProfileBunProjectResolver : kProfileBunResolver) : (pnpm ? kProfilePNPMResolver : kProfileUVResolver);
   const char* tool = bun ? kBunToolPath : (pnpm ? kPNPMToolPath : kUVToolPath);
   const ProcessClass tool_class = bun ? ProcessClass::kBun : (pnpm ? ProcessClass::kPNPM : ProcessClass::kUV);
@@ -7724,6 +7740,9 @@ bool VerifyPrivateNativeRuntimeAdmissionBoundary(bool pnpm, bool bun = false, bo
     event.add_argv(tool);
     if (bun_project) {
       for (const char* argument : {"--cwd=/tmp/haa-bun-input/project", "install", "--lockfile-only", "--ignore-scripts", "--no-env-file", "--registry=https://registry.npmjs.org/", "--cache-dir=/tmp/haa-bun-input/cache", "--backend=copyfile", "--linker=hoisted", "--save-text-lockfile", "--no-progress", "--no-summary"}) event.add_argv(argument);
+      event.set_argv(2,bun_intent);
+      if (frozen) event.add_argv("--frozen-lockfile");
+      if (selector) { event.add_argv("--"); event.add_argv(strcmp(bun_intent,"add")==0 ? "probe@^1.0.0" : "probe"); }
     } else event.add_argv("--version");
     context->set_process_name("uv");
     if (strcmp(scenario, "execfn") == 0) event.set_execfn("/tmp/uv");
@@ -8105,7 +8124,11 @@ int main(int argc, char** argv) {
   const bool bun_runtime_admission = VerifyPrivateNativeRuntimeAdmissionBoundary(false, true);
   const bool bun_query_read = VerifyBunQueryReadBoundary();
   const bool bun_project_read = VerifyBunQueryReadBoundary(kProfileBunProjectResolver);
-  const bool bun_project_admission = VerifyPrivateNativeRuntimeAdmissionBoundary(false, true, true);
+  const bool bun_project_admission = VerifyPrivateNativeRuntimeAdmissionBoundary(false, true, true) &&
+      VerifyPrivateNativeRuntimeAdmissionBoundary(false,true,true,"install",true,false) &&
+      VerifyPrivateNativeRuntimeAdmissionBoundary(false,true,true,"add",false,true) &&
+      VerifyPrivateNativeRuntimeAdmissionBoundary(false,true,true,"update",false,false) &&
+      VerifyPrivateNativeRuntimeAdmissionBoundary(false,true,true,"update",false,true);
   const bool bun_project_shape = VerifyBunProjectLockInstallShapeBoundary();
   const bool pnpm_runtime_read = VerifyPNPMRuntimeReadBoundary();
   const bool uv_runtime_read = VerifyUVRuntimeReadBoundary();
