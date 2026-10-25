@@ -55,7 +55,7 @@ func (l UVNativeProjectLock) ParseTargetExport(body []byte) (UVProjectExport, er
 	}
 	packages := make([]map[string]any, 0, len(*wire.Packages))
 	for _, item := range *wire.Packages {
-		if item.Index != "https://pypi.org/simple" || len(item.Wheels) == 0 || len(item.Wheels) > maxUVWheelAlternatives {
+		if !uvPublicProjectIndex(item.Index) || len(item.Wheels) == 0 || len(item.Wheels) > maxUVWheelAlternatives {
 			return UVProjectExport{}, errors.New("UV project export source or wheel count is unsupported")
 		}
 		original, hasSource := l.sources[item.Name]

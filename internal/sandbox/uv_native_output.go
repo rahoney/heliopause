@@ -34,7 +34,7 @@ func readUVNativeLock(ctx context.Context, runner CommandRunner, containerID str
 
 func readUVNativeTar(ctx context.Context, runner CommandRunner, containerID, guestPath string, scan func(io.Reader) (uvNativeOutput, error)) (uvNativeOutput, error) {
 	output, ok := runner.(streamingDockerOutput)
-	if !ok || ctx == nil || scan == nil || !exactObservationContainerID(containerID) || (guestPath != pythonSitePath+"/." && guestPath != pythonSitePath+"/pylock.toml") {
+	if !ok || ctx == nil || scan == nil || !exactObservationContainerID(containerID) || (guestPath != pythonSitePath+"/." && guestPath != pythonSitePath+"/pylock.toml" && !uvProjectControlPath(guestPath)) {
 		return uvNativeOutput{}, errors.New("uv native output transport is unavailable")
 	}
 	if err := ctx.Err(); err != nil {
@@ -57,13 +57,20 @@ func readUVNativeTar(ctx context.Context, runner CommandRunner, containerID, gue
 }
 
 func scanUVNativeLock(input io.Reader) (uvNativeOutput, error) {
+	return scanUVNamedControl(input, "pylock.toml")
+}
+
+func scanUVNamedControl(input io.Reader, name string) (uvNativeOutput, error) {
+	if name != "pylock.toml" && name != artifactpypi.UVProjectInputControl && name != artifactpypi.UVNativeLockControl {
+		return uvNativeOutput{}, errors.New("UV native control name is unsupported")
+	}
 	if input == nil {
 		return uvNativeOutput{}, errors.New("uv native lock stream is missing")
 	}
 	bounded := &io.LimitedReader{R: input, N: uvNativeLockLimit + (16 << 10)}
 	archive := tar.NewReader(bounded)
 	header, err := archive.Next()
-	if err != nil || strings.TrimPrefix(header.Name, "./") != "pylock.toml" || (header.Typeflag != tar.TypeReg && header.Typeflag != 0) || header.Uid != 1000 || header.Gid != 1000 || header.Mode&^int64(0o777) != 0 || header.Mode&0o022 != 0 || header.Size < 1 || header.Size > uvNativeLockLimit {
+	if err != nil || strings.TrimPrefix(header.Name, "./") != name || (header.Typeflag != tar.TypeReg && header.Typeflag != 0) || header.Uid != 1000 || header.Gid != 1000 || header.Mode&^int64(0o777) != 0 || header.Mode&0o022 != 0 || header.Size < 1 || header.Size > uvNativeLockLimit {
 		return uvNativeOutput{}, errors.New("uv native lock file identity, mode or size is invalid")
 	}
 	body, err := io.ReadAll(archive)
@@ -94,7 +101,11 @@ func scanUVNativeOutputWithInput(input io.Reader, expectedInput map[string][]byt
 // native lock must explicitly select no packages, and its private site must
 // contain no payload (the native empty auxiliary lock is not payload).
 func scanUVCompleteNativeOutput(input io.Reader, python string) (uvNativeOutput, error) {
-	result, err := scanUVNativeSelectionOutput(input, nil, true)
+	return scanUVCompleteNativeOutputWithInput(input, python, nil)
+}
+
+func scanUVCompleteNativeOutputWithInput(input io.Reader, python string, expected map[string][]byte) (uvNativeOutput, error) {
+	result, err := scanUVNativeSelectionOutput(input, expected, true)
 	if err != nil {
 		return uvNativeOutput{}, err
 	}
@@ -123,6 +134,8 @@ func scanUVNativeSelectionOutput(input io.Reader, expectedInput map[string][]byt
 		for name := range expectedInput {
 			if strings.HasPrefix(name, "original/") {
 				inputDirectories[path.Dir(name)] = true
+			} else if uvProjectControlPath(pythonSitePath + "/" + name) {
+				inputDirectories["project"] = true
 			}
 		}
 	}

@@ -88,7 +88,7 @@ func ParseUVNativeProjectLock(input UVProjectInput, body []byte) (UVNativeProjec
 			root = item
 			continue
 		}
-		if item.Source.Registry == nil || *item.Source.Registry != "https://pypi.org/simple" || item.Source.Virtual != nil || item.Metadata != nil || len(item.Wheels) == 0 || len(item.Wheels) > maxUVWheelAlternatives {
+		if item.Source.Registry == nil || !uvPublicProjectIndex(*item.Source.Registry) || item.Source.Virtual != nil || item.Metadata != nil || len(item.Wheels) == 0 || len(item.Wheels) > maxUVWheelAlternatives {
 			return UVNativeProjectLock{}, errors.New("native UV dependency source or metadata is unsupported")
 		}
 		wheels := make([]map[string]any, 0, len(item.Wheels))
@@ -120,6 +120,13 @@ func ParseUVNativeProjectLock(input UVProjectInput, body []byte) (UVNativeProjec
 		return UVNativeProjectLock{}, err
 	}
 	return UVNativeProjectLock{body: append([]byte(nil), body...), manifest: input.Body(), python: wire.Python, packages: parsed.Packages(), sources: sources}, nil
+}
+
+// UV preserves the configured public index's trailing slash; its default
+// spelling omits it. These are the only two existing-source representations.
+func uvPublicProjectIndex(value string) bool {
+	canonical := PublicPyPIProfile().IndexURL()
+	return value == canonical || value == strings.TrimSuffix(canonical, "/")
 }
 
 func validUVNativeArchiveMetadata(archive uvNativeArchive) bool {

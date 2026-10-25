@@ -54,6 +54,39 @@ func TestUVProjectExportPreservesActualNativeReplayAndStrictP1Reader(t *testing.
 	}
 }
 
+func TestUVProjectPublicIndexAcceptsOnlyExistingProfileRepresentations(t *testing.T) {
+	for _, value := range []string{"https://pypi.org/simple", "https://pypi.org/simple/"} {
+		if !uvPublicProjectIndex(value) {
+			t.Fatal("existing public index representation rejected", value)
+		}
+	}
+	for _, value := range []string{"https://pypi.org/simple//", "http://pypi.org/simple/", "https://pypi.org/simple/?q=x", "https://pypi.org/simple/#x", "https://user@pypi.org/simple/", "https://pypi.org:443/simple/", "https://example.org/simple/"} {
+		if uvPublicProjectIndex(value) {
+			t.Fatal("foreign or ambiguous index accepted", value)
+		}
+	}
+	lock, body := uvActualProjectExportReplay(t)
+	inputBody, err := os.ReadFile("testdata/uv-0.13.4-project-export-replay.pyproject.toml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	input, err := ParseUVProjectInput(inputBody, nil, false, UVProjectSync, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	control, err := lock.Control()
+	if err != nil {
+		t.Fatal(err)
+	}
+	native, err := ParseUVNativeProjectLock(input, bytes.ReplaceAll(control.Body(), []byte("https://pypi.org/simple"), []byte("https://pypi.org/simple/")))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := native.ParseTargetExport(bytes.ReplaceAll(body, []byte("https://pypi.org/simple"), []byte("https://pypi.org/simple/"))); err != nil {
+		t.Fatal("configured public native/export representation rejected", err)
+	}
+}
+
 func uvProjectExportBindingFixture(t *testing.T) (UVProjectExport, []UVWheelInput, []SimpleProject) {
 	t.Helper()
 	input, body, originalExport, inputs, pages := uvNativeProjectFixtureWithArchives(t)
