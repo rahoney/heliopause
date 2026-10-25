@@ -10,7 +10,7 @@ import (
 )
 
 func TestBunProjectRequiresActualBindingsAndSelectedContext(t *testing.T) {
-	if service, err := newBunProjectService(bunProjectBindings{}, artifactnpm.BunInstall, ""); err == nil || service != nil {
+	if service, err := newBunProjectService(bunProjectBindings{}, artifactnpm.BunInstall, "", false); err == nil || service != nil {
 		t.Fatal("missing actual adapters accepted")
 	}
 	s := &bunProjectSession{}

@@ -16,6 +16,7 @@ type BunProjectRequest struct {
 	Intent   artifactnpm.BunSelectionIntent
 	Selector string
 	Install  domain.InstallContext
+	Adopt    bool
 }
 type BunProjectOutcome struct {
 	Verified                   domain.ProjectVerifiedSet
@@ -41,21 +42,23 @@ func SetBunClientVersion(root *cobra.Command, version string) error {
 	return nil
 }
 
-const bunProjectEnglish = "Quarantine the complete public npm package set selected by Bun before installing it into one existing project. Use the current directory or --target. Add accepts one public package name or version/range; update optionally selects one existing root package. Every selected package is inspected again, including unchanged versions. Root project scripts are preserved and do not run.\n\nSupports the pinned Bun hoisted layout on Linux amd64 and Node-compatible package lifecycle inspection. Empty projects preserve an absent bun.lock. Updates require the complete HAA ownership record for the existing installed payload."
-const bunProjectKorean = "Bun이 선택한 공개 npm 패키지와 전체 의존성을 검역한 뒤 기존 프로젝트 하나에 설치합니다. 현재 디렉터리 또는 --target을 사용하세요. Add에는 공개 패키지 이름이나 버전·범위를 지정하고 update에는 기존 직접 의존성 이름 하나를 지정할 수 있습니다. 같은 버전도 선택한 패키지 전체를 새로 검사하며 프로젝트 자체의 script는 보존하고 실행하지 않습니다.\n\n고정 Bun의 hoisted 형식과 Linux amd64, Node 호환 package lifecycle 검사를 지원합니다. 빈 프로젝트에서는 bun.lock의 부재를 보존합니다. 기존 설치 업데이트에는 전체 HAA 소유 기록이 필요합니다."
+const bunProjectEnglish = "Quarantine the complete public npm package set selected by Bun before installing it into one existing project. Use the current directory or --target. Add accepts one public package name or version/range; update optionally selects one existing root package. Every selected package is inspected again, including unchanged versions. Root project scripts are preserved and do not run.\n\nSupports the pinned Bun hoisted layout on Linux amd64 and Node-compatible package lifecycle inspection. Empty projects preserve an absent bun.lock. Updates require the complete HAA ownership record for the existing installed payload. --adopt explicitly registers supported edited controls or a pinned hoisted install with safe independent file copies after checking every original file against its public source. Shared hardlinks, unknown files and corrupt HAA records are refused."
+const bunProjectKorean = "Bun이 선택한 공개 npm 패키지와 전체 의존성을 검역한 뒤 기존 프로젝트 하나에 설치합니다. 현재 디렉터리 또는 --target을 사용하세요. Add에는 공개 패키지 이름이나 버전·범위를 지정하고 update에는 기존 직접 의존성 이름 하나를 지정할 수 있습니다. 같은 버전도 선택한 패키지 전체를 새로 검사하며 프로젝트 자체의 script는 보존하고 실행하지 않습니다.\n\n고정 Bun의 hoisted 형식과 Linux amd64, Node 호환 package lifecycle 검사를 지원합니다. 빈 프로젝트에서는 bun.lock의 부재를 보존합니다. 기존 설치 업데이트에는 전체 HAA 소유 기록이 필요합니다. --adopt는 지원하는 설정 변경이나 고정 hoisted 형식의 독립 복사 파일을 명시적으로 등록하며 원래 파일 전체를 공개 source와 대조합니다. 공유 hardlink·알 수 없는 파일·손상된 HAA 기록은 거부합니다."
 
 var bunProjectFlagText = map[string]packageClientParent{
+	"adopt":  {"Explicitly register a source-verified existing install or supported edited controls", "원본이 검증된 기존 설치 또는 지원하는 설정 변경을 명시적으로 등록합니다"},
 	"target": {"Existing project directory (defaults to the current directory)", "기존 프로젝트 디렉터리(기본값: 현재 디렉터리)"},
 }
 
 func configureBunProjectFlags(command *cobra.Command) {
+	command.Flags().Bool("adopt", false, bunProjectFlagText["adopt"].en)
 	command.Flags().Lookup("target").Usage = bunProjectFlagText["target"].en
 }
 func validateBunProjectRawArgs(args []string) error {
 	counts := map[string]int{}
 	for _, arg := range args {
 		name, _, _ := strings.Cut(arg, "=")
-		if name == "--target" {
+		if name == "--target" || name == "--adopt" {
 			counts[name]++
 			if counts[name] > 1 {
 				return errors.New("bun project options must not repeat")
@@ -159,7 +162,11 @@ func readBunProjectRequest(command *cobra.Command, args []string) (request BunPr
 	if err != nil {
 		return request, err
 	}
-	return BunProjectRequest{intent, selector, install}, nil
+	adopt, err := command.Flags().GetBool("adopt")
+	if err != nil {
+		return request, err
+	}
+	return BunProjectRequest{intent, selector, install, adopt}, nil
 }
 
 func AddBunProject(root *cobra.Command, service BunProjectApplier) error {

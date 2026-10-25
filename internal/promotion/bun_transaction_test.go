@@ -360,7 +360,7 @@ func TestBunIndependentApprovalRejectsUntrustedRetainedMembers(t *testing.T) {
 				}
 			}
 			for _, adopt := range []bool{false, true} {
-				guard, err := owner.Begin(ctx, install)
+				guard, err := owner.BeginUpgrade(ctx, install, adopt)
 				if err == nil {
 					_ = guard.Close()
 					t.Fatal("untrusted retained state was accepted", mutation, adopt)
@@ -466,5 +466,52 @@ func TestBunEmptyTransactionPreservesAbsentLockAndReopens(t *testing.T) {
 	var saved pnpmProjectApproval
 	if json.Unmarshal(body, &saved) != nil || len(saved.Members) != 4 || saved.Members[1].Name != "bun.lock" || saved.Members[1].SHA256 != pnpmCacheHash([]byte("helox.npm-project-member/absent/v1")) {
 		t.Fatal("independent state lost explicit absence")
+	}
+}
+
+func TestBunExplicitEnrollmentOnlyAcceptsChangedControls(t *testing.T) {
+	f, owner, staged, update := bunTransactionFixture(t)
+	ctx := context.Background()
+	install := f.cache.frozen.Snapshot().Context()
+	g, err := owner.Begin(ctx, install)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := g.Commit(ctx, update, staged); err != nil {
+		t.Fatal(err)
+	}
+	if err := g.Close(); err != nil {
+		t.Fatal(err)
+	}
+	manifest := filepath.Join(install.Target().String(), "package.json")
+	body, err := os.ReadFile(manifest)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var doc map[string]json.RawMessage
+	if err := json.Unmarshal(body, &doc); err != nil {
+		t.Fatal(err)
+	}
+	doc["description"] = json.RawMessage(`"explicit local edit"`)
+	body, err = json.Marshal(doc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(manifest, body, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if g, err := owner.Begin(ctx, install); err == nil {
+		_ = g.Close()
+		t.Fatal("silent enrollment accepted")
+	}
+	g, err = owner.BeginUpgrade(ctx, install, true)
+	if err != nil {
+		t.Fatal("explicit controls enrollment rejected", err)
+	}
+	if string(g.Controls()[0].Body()) != string(body) {
+		t.Fatal("enrollment did not freeze current controls")
+	}
+	if err := g.Close(); err != nil {
+		t.Fatal(err)
 	}
 }

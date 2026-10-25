@@ -42,6 +42,7 @@ type bunProjectSession struct {
 }
 
 type bunProjectMutationAdapter struct {
+	adopt bool
 	owner *promotion.BunProjectPromotion
 }
 
@@ -55,10 +56,10 @@ func (s *bunProjectService) Apply(ctx context.Context, install domain.InstallCon
 }
 
 func (a bunProjectMutationAdapter) Begin(ctx context.Context, install domain.InstallContext) (ports.ProjectMutationGuard, error) {
-	return a.owner.Begin(ctx, install)
+	return a.owner.BeginUpgrade(ctx, install, a.adopt)
 }
 
-func newBunProjectService(bindings bunProjectBindings, intent artifactnpm.BunSelectionIntent, selector string) (*bunProjectService, error) {
+func newBunProjectService(bindings bunProjectBindings, intent artifactnpm.BunSelectionIntent, selector string, adopt bool) (*bunProjectService, error) {
 	if bindings.source == nil || bindings.store == nil || bindings.static == nil || bindings.native == nil || bindings.prepare == nil || bindings.backend == nil {
 		return nil, errors.New("bun project requires the actual source, native runtime and inspection adapters")
 	}
@@ -67,16 +68,16 @@ func newBunProjectService(bindings bunProjectBindings, intent artifactnpm.BunSel
 		return nil, err
 	}
 	s := &bunProjectSession{bindings: bindings, intent: intent, selector: selector, operation: operation}
-	owner, err := promotion.NewBunProjectPromotion(bindings.intakeRoot, bindings.evidenceRoot, bindings.cacheRoot, bindings.stateRoot, bindings.store, operation, func(snapshot domain.ProjectDependencySnapshot) (*promotion.BunVerifiedCache, error) {
+	owner, err := promotion.NewBunProjectPromotionWithOriginalVerifier(bindings.intakeRoot, bindings.evidenceRoot, bindings.cacheRoot, bindings.stateRoot, bindings.store, operation, func(snapshot domain.ProjectDependencySnapshot) (*promotion.BunVerifiedCache, error) {
 		if s.cache == nil || !s.frozen.MatchesSnapshot(snapshot) {
 			return nil, errors.New("bun operation has no cache for this exact native selection")
 		}
 		return s.cache, nil
-	})
+	}, bindings.proveBunOriginal)
 	if err != nil {
 		return nil, err
 	}
-	workflow, err := application.NewBunProjectService(s, bunProjectMutationAdapter{owner}, s, s)
+	workflow, err := application.NewBunProjectService(s, bunProjectMutationAdapter{owner: owner, adopt: adopt}, s, s)
 	if err != nil {
 		return nil, err
 	}

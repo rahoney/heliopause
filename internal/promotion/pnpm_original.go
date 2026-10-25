@@ -39,6 +39,9 @@ func (b *pnpmOriginalBuffer) Write(body []byte) (int, error) {
 }
 
 func (g *approvedPNPMProjectGuard) proveOriginal(ctx context.Context) error {
+	if g.owner.client == npmProjectCacheBun {
+		return g.proveBunOriginal(ctx)
+	}
 	if g.owner.verifyOriginal == nil || g.members["node_modules"] == nil || g.members["haa"] != nil || g.previous != nil || len(g.originalState) != 0 {
 		return errors.New("pnpm original native adoption requires its independent source verifier")
 	}
@@ -63,18 +66,26 @@ func (g *approvedPNPMProjectGuard) proveOriginal(ctx context.Context) error {
 	return nil
 }
 
-func (g *approvedPNPMProjectGuard) originalLayout(ctx context.Context) (result artifactnpm.PNPMOriginalLayout, resultErr error) {
+func (g *approvedPNPMProjectGuard) originalLayout(ctx context.Context) (artifactnpm.PNPMOriginalLayout, error) {
+	body, uid, gid, err := g.originalTransport(ctx)
+	if err != nil {
+		return artifactnpm.PNPMOriginalLayout{}, err
+	}
+	return artifactnpm.ParsePNPMOriginalLayout(ctx, body, uid, gid)
+}
+
+func (g *approvedPNPMProjectGuard) originalTransport(ctx context.Context) (transport []byte, uid, gid int, resultErr error) {
 	m := g.members["node_modules"].pnpm
 	if m == nil {
-		return result, errors.New("pnpm original census is unavailable")
+		return nil, 0, 0, errors.New("pnpm original census is unavailable")
 	}
 	owner, ok := m.entries["."].info.Sys().(*syscall.Stat_t)
 	if !ok {
-		return result, errors.New("pnpm original owner is unavailable")
+		return nil, 0, 0, errors.New("pnpm original owner is unavailable")
 	}
 	root, err := os.OpenRoot(g.memberPath("node_modules"))
 	if err != nil {
-		return result, err
+		return nil, 0, 0, err
 	}
 	defer func() { resultErr = errors.Join(resultErr, root.Close()) }()
 	var names []string
@@ -86,15 +97,15 @@ func (g *approvedPNPMProjectGuard) originalLayout(ctx context.Context) (result a
 	writer := tar.NewWriter(&buffer)
 	for _, name := range names {
 		if err := g.verifyPinned(); err != nil {
-			return result, err
+			return nil, 0, 0, err
 		}
 		if err := verifyPNPMOwnedEntry(ctx, root, m.entries, name); err != nil {
-			return result, err
+			return nil, 0, 0, err
 		}
 		entry := m.entries[name]
 		stat, ok := entry.info.Sys().(*syscall.Stat_t)
 		if !ok || stat.Uid != owner.Uid || stat.Gid != owner.Gid {
-			return result, errors.New("pnpm original has mixed ownership")
+			return nil, 0, 0, errors.New("pnpm original has mixed ownership")
 		}
 		header := &tar.Header{Name: "node_modules", Mode: int64(entry.info.Mode().Perm()), Uid: int(stat.Uid), Gid: int(stat.Gid), Typeflag: tar.TypeDir}
 		if name != "." {
@@ -104,24 +115,24 @@ func (g *approvedPNPMProjectGuard) originalLayout(ctx context.Context) (result a
 		if entry.info.Mode().IsRegular() {
 			body, err = readPNPMHostRegular(ctx, root, name, entry.info, artifactnpm.ArchiveFileLimit)
 			if err != nil || pnpmCacheHash(body) != entry.digest {
-				return result, errors.Join(errors.New("pnpm original changed during transport"), err)
+				return nil, 0, 0, errors.Join(errors.New("pnpm original changed during transport"), err)
 			}
 			header.Typeflag, header.Size = tar.TypeReg, int64(len(body))
 		} else if entry.info.Mode()&os.ModeSymlink != 0 {
 			header.Typeflag, header.Linkname = tar.TypeSymlink, entry.link
 		}
 		if err := writer.WriteHeader(header); err != nil {
-			return result, err
+			return nil, 0, 0, err
 		}
 		if _, err := writer.Write(body); err != nil {
-			return result, err
+			return nil, 0, 0, err
 		}
 	}
 	if err := writer.Close(); err != nil {
-		return result, err
+		return nil, 0, 0, err
 	}
 	if err := g.VerifyUnchanged(ctx); err != nil {
-		return result, err
+		return nil, 0, 0, err
 	}
-	return artifactnpm.ParsePNPMOriginalLayout(ctx, buffer.Bytes(), int(owner.Uid), int(owner.Gid))
+	return buffer.Bytes(), int(owner.Uid), int(owner.Gid), nil
 }

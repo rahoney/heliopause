@@ -5385,3 +5385,19 @@ cache와 target records·부재 lock/user 파일을 확인했다. Quick60.369s/s
 Race28.452s와 PNPM full preflight body 정규화 동일성이 PASS다. 현재 managed Node lane만
 닫혔으며 native original ownership/명시 Bun Artifact runtime·hosted caller/whole P3는 열려 있다.
 다음은 original full source proof를 거치는 explicit native 인계이며 작은 변경별 CI는 시작하지 않는다.
+
+[B5d native original ownership 감사](./evidence/package-client-quarantine/p3b5d-bun-native-ownership-plan-20261025.md)는
+58957ea의 managed CLI 다음에 explicit native 인계 gap만 연결한다. 기존 실제 Host census와
+per-entry transport, Bun full layout closure를 실제 UID/GID를 보존한 별도 original wrapper로
+재사용한다. Old 전체 공개 source proof는 ownership만 설명하며 새 선택의 검역/Policy는
+그대로다. Unknown/corrupt state를 native fallback으로 바꾸지 않고 PNPM 원본 경로도 보존한다.
+M13-004 하나만 IN_PROGRESS이며 이 단계의 actual/최종 qualification 전까지 완료로 표시하지 않는다.
+
+[B5d 로컬 영수증](./evidence/package-client-quarantine/p3b5d-bun-native-ownership-local-20261025.json)은
+Bun original 전체 source proof·실제 Host owner·explicit --adopt와 fresh current 검역을 연결했다.
+Native Bun3/기존 PNPM3 actual270.704s와 같은 binary의 managed CLI9/9 회귀366.181s가
+PASS다. Helperwait0/Host 전체 동일·원래 bytes/inode/user data 보존 거부·independent proof/state와
+현재 Policy/records를 확인했다. Guest1000 full binder/기존 pinned transport의 기계 동일성,
+Quick49.720s/security/docs·전체 관련 Race179.520s도 PASS다. 첫 test tuple/중복 helper 실패
+원본을 보존했다. Nonempty copied hoisted native subset만 닫혔으며 hosted project consumer/
+명시 Bun Artifact runtime·전체 P3/영향 profile qualification은 미완료다.

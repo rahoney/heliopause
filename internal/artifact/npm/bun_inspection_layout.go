@@ -48,6 +48,10 @@ func bunInstanceRoot(key string) (string, error) {
 // BindLayout requires the whole fixed copyfile/hoisted tree. A cache hit or
 // native name/version check cannot substitute for these source byte checks.
 func (i BunInspectionInput) BindLayout(ctx context.Context, inventories []ArchiveInventory, layout BunLayoutArchive) (BunInspectionLayout, error) {
+	return i.bindLayoutForOwner(ctx, inventories, layout, 1000, 1000)
+}
+
+func (i BunInspectionInput) bindLayoutForOwner(ctx context.Context, inventories []ArchiveInventory, layout BunLayoutArchive, uid, gid int) (BunInspectionLayout, error) {
 	if ctx == nil {
 		return BunInspectionLayout{}, errBunInspectionLayout
 	}
@@ -142,7 +146,7 @@ func (i BunInspectionInput) BindLayout(ctx context.Context, inventories []Archiv
 			return BunInspectionLayout{}, errors.Join(errBunInspectionLayout, err, context.Cause(ctx))
 		}
 		expected, present := wanted[actual.Name]
-		if !present || actual.Kind != expected.kind || actual.UID != 1000 || actual.GID != 1000 {
+		if !present || actual.Kind != expected.kind || actual.UID != uid || actual.GID != gid {
 			return BunInspectionLayout{}, errBunInspectionLayout
 		}
 		switch expected.kind {

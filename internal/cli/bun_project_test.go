@@ -232,7 +232,7 @@ func TestBunCLIHelpAndFailedPublication(t *testing.T) {
 		if err := root.Execute(); err != nil {
 			t.Fatal(err)
 		}
-		if !strings.Contains(out.String(), "bun.lock") || !strings.Contains(out.String(), "--target") || strings.Contains(out.String(), "--adopt") {
+		if !strings.Contains(out.String(), "bun.lock") || !strings.Contains(out.String(), "--target") || !strings.Contains(out.String(), "--adopt") {
 			t.Fatal("missing truthful project help", lang, out.String())
 		}
 	}

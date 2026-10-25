@@ -52,9 +52,12 @@ func TestBunProjectCLIIntegration(t *testing.T) {
 			if err := os.WriteFile(note, []byte("preserve user file\n"), 0o600); err != nil {
 				t.Fatal(err)
 			}
-			apply := func(operation, selector string) {
+			apply := func(operation, selector string, adopt bool) {
 				args := []string{"--lang", "ko", "--output", "json", "bun", operation, "--target", target}
 
+				if adopt {
+					args = append(args, "--adopt")
+				}
 				if selector != "" {
 					args = append(args, "--", selector)
 				}
@@ -131,7 +134,7 @@ func TestBunProjectCLIIntegration(t *testing.T) {
 					t.Fatal("reported SBOM differs from publication", err)
 				}
 			}
-			apply("install", "")
+			apply("install", "", false)
 			controlBefore, err := os.Lstat(manifest)
 			if err != nil {
 				t.Fatal(err)
@@ -143,7 +146,7 @@ func TestBunProjectCLIIntegration(t *testing.T) {
 					t.Fatal(err)
 				}
 			}
-			apply("install", "")
+			apply("install", "", false)
 			if fixture.entries == 0 {
 				if _, err := os.Lstat(filepath.Join(target, "bun.lock")); !os.IsNotExist(err) {
 					t.Fatal("empty CLI manufactured lock", err)
@@ -160,8 +163,8 @@ func TestBunProjectCLIIntegration(t *testing.T) {
 				}
 			}
 			if fixture.name == "single" {
-				apply("add", "is-number@7.0.0")
-				apply("update", "is-number")
+				apply("add", "is-number@7.0.0", false)
+				apply("update", "is-number", false)
 				body, err := os.ReadFile(filepath.Join(target, fixture.code))
 				if err != nil {
 					t.Fatal(err)
@@ -193,6 +196,7 @@ func TestBunProjectCLIIntegration(t *testing.T) {
 				if current, err := os.ReadFile(manifest); err != nil || !bytes.Equal(current, body) {
 					t.Fatal("rejected edited control was changed", err)
 				}
+				apply("install", "", true)
 			}
 			if body, err := os.ReadFile(note); err != nil || string(body) != "preserve user file\n" {
 				t.Fatal("unmanaged user file changed", err)
@@ -218,7 +222,7 @@ func TestBunProjectCLIIntegration(t *testing.T) {
 		t.Fatal(err)
 	}
 	var out, diagnostic bytes.Buffer
-	if err := bootstrap.Run(ctx, []string{"--lang", "en", "--output", "json", "bun", "install", "--target", native}, &out, &diagnostic); err == nil || !bytes.Contains(out.Bytes(), []byte(`"promotion_status":"NOT_COMPLETED"`)) {
+	if err := bootstrap.Run(ctx, []string{"--lang", "en", "--output", "json", "bun", "install", "--target", native, "--adopt"}, &out, &diagnostic); err == nil || !bytes.Contains(out.Bytes(), []byte(`"promotion_status":"NOT_COMPLETED"`)) {
 		t.Fatal("native adoption bypass accepted", err, out.String())
 	}
 	if body, err := os.ReadFile(foreign); err != nil || string(body) != "unproven native bytes" {

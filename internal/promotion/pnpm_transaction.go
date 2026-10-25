@@ -15,6 +15,7 @@ import (
 )
 
 type PNPMProjectPromotion struct {
+	verifyBunOriginal                              BunOriginalVerifier
 	client                                         npmProjectCacheClient
 	selectedBunCache                               func(domain.ProjectDependencySnapshot) (*BunVerifiedCache, error)
 	intakeRoot, evidenceRoot, cacheRoot, stateRoot string
@@ -172,7 +173,7 @@ func (p *PNPMProjectPromotion) begin(ctx context.Context, install domain.Install
 		if err != nil {
 			return nil, err
 		}
-		if len(g.originalState) == 0 && (name == "haa" || !adopt || p.verifyOriginal == nil) {
+		if len(g.originalState) == 0 && (name == "haa" || !adopt || !p.originalVerifierAvailable()) {
 			return nil, errors.New("pnpm existing payload requires independently proven native adoption")
 		}
 		if name == "node_modules" {

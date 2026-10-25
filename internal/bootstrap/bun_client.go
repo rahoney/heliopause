@@ -24,7 +24,7 @@ func bunProjectPlatform(goos, goarch string) error {
 type bunProjectCLIService struct{ bindings bunProjectBindings }
 
 func (s bunProjectCLIService) ApplyBun(ctx context.Context, request cli.BunProjectRequest) (outcome cli.BunProjectOutcome, resultErr error) {
-	service, err := newBunProjectService(s.bindings, request.Intent, request.Selector)
+	service, err := newBunProjectService(s.bindings, request.Intent, request.Selector, request.Adopt)
 	if err != nil {
 		return outcome, err
 	}

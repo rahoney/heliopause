@@ -110,7 +110,7 @@ func TestBunPublicProjectTransactionIntegration(t *testing.T) {
 			}
 			bindings := bunProjectBindings{intake, evidenceRoot, cacheRoot, stateRoot, source, store, static, native, prepare, backend}
 			apply := func(intent artifactnpm.BunSelectionIntent, selector string) (domain.ProjectVerifiedSet, string) {
-				service, err := newBunProjectService(bindings, intent, selector)
+				service, err := newBunProjectService(bindings, intent, selector, false)
 				if err != nil {
 					t.Fatal(err)
 				}
