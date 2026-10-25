@@ -1326,6 +1326,7 @@ constexpr char kPNPMTargetLifecycleCommand[] = R"HAA(mkdir -p /tmp/.npm; HOME=/t
 constexpr char kPNPMProjectMount[] = "/tmp/haa-pnpm-input";
 constexpr char kBunTargetProjectMount[] = "/tmp/haa-bun-input";
 constexpr char kBunTargetLifecycleCommand[] = R"HAA(mkdir -p /tmp/.npm; HOME=/tmp npm_config_cache=/tmp/.npm npm_config_script_shell=/haa-runtime/haa-boundary npm --prefix /tmp/haa-bun-input/project rebuild --ignore-scripts=false --bin-links=false --foreground-scripts --offline --no-update-notifier --workspaces=false --no-audit --no-fund --dangerously-allow-all-scripts "$1")HAA";
+constexpr char kBunRuntimeTargetLifecycleCommand[] = R"HAA(mkdir -p /tmp/.npm; PATH=/haa-runtime:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HOME=/tmp npm_config_cache=/tmp/.npm npm_config_script_shell=/haa-runtime/haa-boundary npm --prefix /tmp/haa-bun-input/project rebuild --ignore-scripts=false --bin-links=false --foreground-scripts --offline --no-update-notifier --workspaces=false --no-audit --no-fund --dangerously-allow-all-scripts "$1")HAA";
 
 bool ValidPNPMTargetLifecyclePath(const std::string& path) {
   const std::string prefix = std::string(kPNPMProjectMount) + "/project/node_modules/.pnpm/";
@@ -1417,6 +1418,26 @@ bool IsExactPNPMTargetLifecycleBoundary(const gvisor::sentry::ExecveInfo& messag
       HasExactNPMTargetLifecycleMount(topology, message.argv(7), false);
 }
 
+// The native runtime and fixed hoisted project are separately Host-attested.
+// This identifies only an image/ABI; it confers no CONTROL or network role.
+bool IsBunArtifactRuntimeImage(const TopologyState* topology, const std::string& path) {
+  if (!IsBunToolImage(topology, path) || !IsPinnedReadOnlyRootPath(topology, kNodePath) ||
+      !IsPinnedReadOnlyRootPath(topology, kNpmCLIPath)) return false;
+  size_t expected = 0, actual = 0;
+  for (const auto& mount : topology->expected) {
+    if (mount.mountpoint != kBunTargetProjectMount) continue;
+    if (mount.mount_class != "workspace" || mount.parent != "/tmp" || mount.filesystem_type != "9p" ||
+        mount.read_only || mount.noexec || mount.nosuid || mount.nodev) return false;
+    ++expected;
+  }
+  for (const auto& entry : topology->anchors) {
+    if (entry.second.mountpoint != kBunTargetProjectMount) continue;
+    if (entry.second.mount_class != "workspace") return false;
+    ++actual;
+  }
+  return expected == 1 && actual == 1;
+}
+
 bool IsExactBunTargetLifecycleBoundary(const gvisor::sentry::ExecveInfo& message,
                                        const char* profile, const TopologyState* topology) {
   return profile != nullptr && strcmp(profile, kProfileNPM) == 0 &&
@@ -1424,7 +1445,9 @@ bool IsExactBunTargetLifecycleBoundary(const gvisor::sentry::ExecveInfo& message
       message.argv_size() == 8 && message.argv(0) == kBoundaryHelperPath &&
       message.argv(1) == kLaunchMode && ValidAdmissionNonce(message.argv(2)) &&
       message.argv(3) == "/bin/sh" && message.argv(4) == "-ceu" &&
-      message.argv(5) == kBunTargetLifecycleCommand && message.argv(6) == "helox-bun-target" &&
+      (message.argv(5) == kBunTargetLifecycleCommand ||
+       (message.argv(5) == kBunRuntimeTargetLifecycleCommand && IsBunArtifactRuntimeImage(topology, kBunToolPath))) &&
+      message.argv(6) == "helox-bun-target" &&
       HasExactNPMTargetLifecycleMount(topology, message.argv(7), true);
 }
 
@@ -1789,6 +1812,7 @@ ProcessClass ProcessClassForPath(const std::string& path, const char* profile) {
     if (path == "/usr/local/go/pkg/tool/linux_amd64/cgo") return ProcessClass::kGoBuildCgo;
   }
   if (strcmp(profile, kProfileNPM) == 0) {
+    if (path == kBunToolPath) return ProcessClass::kBun;
     if (path == "/usr/local/bin/node" || path == "node") return ProcessClass::kNode;
     if (path == "/usr/local/bin/npm" || path == "npm") return ProcessClass::kNpm;
     if (path == "/usr/local/lib/node_modules/npm/bin/npm-cli.js") return ProcessClass::kNpm;
@@ -2537,6 +2561,37 @@ bool IsPinnedUVPythonQueryRead(const gvisor::common::ContextData& context,
 
 // Observed Bun1.4.4 startup reads for the admitted query or lock-only root.
 // Project-only data grants do not apply to the version/revision query profile.
+bool IsPinnedBunArtifactRuntimeRead(const gvisor::common::ContextData& context,
+                                  const ProcessState& state, const std::string& path,
+                                  uint64_t flags, const char* profile, const MountAnchor* anchor) {
+  if (profile == nullptr || strcmp(profile, kProfileNPM) != 0 || anchor == nullptr) return false;
+  const auto* group = FindFilesystemGroup(context, state);
+  if (group == nullptr || group->role != ProcessState::Role::kArtifact ||
+      group->provenance != ProcessState::Provenance::kCloneChild ||
+      group->current_image_class != ProcessClass::kBun || FilesystemProcessClass(context, state) != ProcessClass::kBun ||
+      group->root_eligible || !group->root_consumed || group->trusted_control_network_active ||
+      group->demotion_pending || group->launch_target_pending || group->handoff_target_pending ||
+      context.parent_thread_group_id() != group->clone_creator_group_id || !HasExactCloneCreator(*group, state) ||
+      state.expected_groups.find(context.thread_group_id()) != state.expected_groups.end()) return false;
+  // Fixed GNU loader inputs and exact self-startup reads already measured for
+  // this same native image. No resolver files, general proc/sys tree or writes.
+  if (anchor->mount_class == "oci-root" && anchor->mountpoint == "/" && path == "/" && flags == 622592) return true;
+  if (anchor->mount_class == "oci-root" && anchor->mountpoint == "/" && flags == 557056 &&
+      (IsExactPinnedLibraryRead(path) || path == "/usr/share/zoneinfo/Etc/UTC")) return true;
+  if (anchor->mount_class == "system" && anchor->mountpoint == "/proc") {
+    if (path == "/proc/sys/vm/overcommit_memory" || path == "/proc/sys/vm/mmap_min_addr") return flags == 32768;
+    if (path == "/proc/" + std::to_string(context.thread_group_id()) + "/statm") return flags == 32768;
+    return flags == 557056 && (path == "/proc/" + std::to_string(context.thread_group_id()) + "/maps" ||
+        path == "/proc/" + std::to_string(context.thread_group_id()) + "/cgroup");
+  }
+  if (anchor->mount_class == "system" && anchor->mountpoint == "/sys/fs/cgroup/memory" && flags == 557056) {
+    return path == "/sys/fs/cgroup/memory/memory.soft_limit_in_bytes" ||
+        path == "/sys/fs/cgroup/memory/memory.limit_in_bytes";
+  }
+  return anchor->mount_class == "system" && anchor->mountpoint == "/sys" &&
+      path == "/sys/devices/system/cpu/online" && flags == 557056;
+}
+
 bool IsPinnedBunRuntimeRead(const gvisor::common::ContextData& context,
                           const ProcessState& state, const std::string& path,
                           uint64_t flags, const char* profile, const MountAnchor* anchor) {
@@ -3403,6 +3458,7 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
     return FilesystemClass::kRuntimeRoot;
   }
   if (IsExactBootstrapHelperWrite(message.context_data(), state, path, message.flags()) ||
+      IsPinnedBunArtifactRuntimeRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
       IsPinnedBunRuntimeRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
       IsPinnedPNPMRuntimeRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
       IsPinnedUVRuntimeRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
@@ -4035,7 +4091,10 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
   if (group->second.current_image_class == ProcessClass::kBun &&
       (!IsBunToolImage(topology, message.binary_path()) ||
        !((strcmp(profile, kProfileBunResolver) == 0 && IsExactBunQuery(message)) ||
-         (strcmp(profile, kProfileBunProjectResolver) == 0 && IsExactBunProjectLockInstall(message))))) {
+         (strcmp(profile, kProfileBunProjectResolver) == 0 && IsExactBunProjectLockInstall(message)) ||
+         (strcmp(profile, kProfileNPM) == 0 && group->second.role == ProcessState::Role::kArtifact &&
+          IsBunArtifactRuntimeImage(topology, message.binary_path()) && message.execfn() == kBunToolPath &&
+          message.argv_size() > 0 && (message.argv(0) == kBunToolPath || message.argv(0) == "bun"))))) {
     *reason = "PROCESS_PROVENANCE_UNKNOWN";
     return false;
   }

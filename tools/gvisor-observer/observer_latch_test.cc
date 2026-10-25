@@ -7692,6 +7692,103 @@ bool VerifyBunQueryReadBoundary(const char* selected_profile = kProfileBunResolv
   return true;
 }
 
+bool VerifyBunArtifactRuntimeReadBoundary() {
+  ProcessState state;
+  gvisor::common::ContextData parent;
+  parent.set_container_id(kFirstID); parent.set_thread_group_id(98); parent.set_thread_group_start_time_ns(980);
+  if (!RegisterGroup(&state, parent, ProcessState::Role::kArtifact, ProcessState::Provenance::kCloneChild, false, true)) return false;
+  gvisor::syscall::Open open;
+  auto* context = open.mutable_context_data();
+  *context = parent; context->set_thread_group_id(99); context->set_thread_group_start_time_ns(990); context->set_parent_thread_group_id(98);
+  if (!RegisterGroup(&state, *context, ProcessState::Role::kArtifact, ProcessState::Provenance::kCloneChild, false, true)) return false;
+  state.groups[99].current_image_class = ProcessClass::kBun;
+  state.groups[99].clone_creator_group_id = 98; state.groups[99].clone_creator_group_start_time_ns = 980;
+  const ProcessState baseline = state;
+  struct Read { const char* path; const char* mount; const char* kind; uint64_t flags; };
+  for (const auto& read : std::vector<Read>{{"/","/","oci-root",622592},{"/etc/ld.so.cache","/","oci-root",557056},
+       {"/usr/lib/x86_64-linux-gnu/libc.so.6","/","oci-root",557056},
+       {"/proc/sys/vm/overcommit_memory","/proc","system",32768},
+       {"/proc/sys/vm/mmap_min_addr","/proc","system",32768},
+       {"/proc/99/statm","/proc","system",32768},
+       {"/sys/fs/cgroup/memory/memory.soft_limit_in_bytes","/sys/fs/cgroup/memory","system",557056},
+       {"/sys/fs/cgroup/memory/memory.limit_in_bytes","/sys/fs/cgroup/memory","system",557056},
+       {"/proc/99/maps","/proc","system",557056},{"/proc/99/cgroup","/proc","system",557056},
+       {"/sys/devices/system/cpu/online","/sys","system",557056},
+       {"/usr/share/zoneinfo/Etc/UTC","/","oci-root",557056}}) {
+    state = baseline; open.set_pathname(read.path); open.set_flags(read.flags);
+    MountAnchor anchor{10,read.mount,read.kind};
+    auto allowed = [&]() { return IsPinnedBunArtifactRuntimeRead(*context,state,open.pathname(),open.flags(),kProfileNPM,&anchor); };
+    if (!allowed() || ClassifyFilesystemOpen(open,state,kProfileNPM,&anchor)!=FilesystemClass::kHelperOnly || IsTrustedControlNetwork(*context,state)) return false;
+    for (uint64_t flags : {uint64_t{0},uint64_t{32768},uint64_t{557056},kOpenWriteOnly,kOpenReadWrite,kOpenCreate,kOpenAppend}) {
+      if (flags==read.flags) continue; open.set_flags(flags); if (allowed()) return false;
+    }
+    open.set_flags(read.flags);
+    for (const char* path : {"/proc/1/statm","/proc/100/statm","/proc/self/statm","/proc/100/maps","/proc/1/cgroup",
+         "/sys/fs/cgroup/memory/foreign/memory.limit_in_bytes","/etc/passwd","/etc/hosts","/dev/random"}) {
+      open.set_pathname(path); if (allowed()) return false;
+    }
+    open.set_pathname(read.path);
+    for (const char* profile : {kProfileBunResolver,kProfileBunProjectResolver,kProfilePNPMResolver,kProfileUVResolver,kProfileGitHub,kProfilePyPI,kProfileGoResolver}) {
+      if (IsPinnedBunArtifactRuntimeRead(*context,state,open.pathname(),open.flags(),profile,&anchor)) return false;
+    }
+    open.set_pathname(std::string(read.path)+".evil"); if (allowed()) return false; open.set_pathname(read.path);
+    anchor.mount_class="workspace"; if (allowed()) return false; anchor.mount_class=read.kind;
+    anchor.mountpoint="/foreign"; if (allowed()) return false; anchor.mountpoint=read.mount;
+    for (int scenario=0;scenario<13;++scenario) {
+      state=baseline; auto& group=state.groups[99];
+      switch(scenario) {
+        case 0: group.role=ProcessState::Role::kControl; break;
+        case 1: group.provenance=ProcessState::Provenance::kDirectExecRoot; break;
+        case 2: group.current_image_class=ProcessClass::kNode; break;
+        case 3: group.root_eligible=true; break;
+        case 4: group.root_consumed=false; break;
+        case 5: group.trusted_control_network_active=true; break;
+        case 6: group.demotion_pending=true; break;
+        case 7: group.launch_target_pending=true; break;
+        case 8: group.handoff_target_pending=true; break;
+        case 9: group.start_time_ns++; break;
+        case 10: state.groups[98].start_time_ns++; break;
+        case 11: group.clone_creator_group_id=97; break;
+        case 12: state.expected_groups[99]=ProcessState::ExpectedGroup{990,ProcessClass::kBun}; break;
+      }
+      if (allowed()) return false;
+    }
+  }
+  return true;
+}
+
+bool VerifyBunArtifactRuntimeImageAndCommandBoundary() {
+  auto topology=PNPMTargetLifecycleTestTopology(true);
+  topology.expected[2].filesystem_type="9p"; topology.expected[2].nosuid=false;
+  if (!IsBunArtifactRuntimeImage(&topology,kBunToolPath) || IsBunArtifactRuntimeImage(nullptr,kBunToolPath) ||
+      IsBunArtifactRuntimeImage(&topology,"/tmp/bun") || ProcessClassForPath(kBunToolPath,kProfileNPM)!=ProcessClass::kBun) return false;
+  gvisor::sentry::ExecveInfo boundary;
+  boundary.set_binary_path(kBoundaryHelperPath); boundary.set_execfn(kBoundaryHelperPath);
+  for (const auto& value : {std::string(kBoundaryHelperPath),std::string(kLaunchMode),TestAdmissionNonce(350,3500),
+       std::string("/bin/sh"),std::string("-ceu"),std::string(kBunRuntimeTargetLifecycleCommand),
+       std::string("helox-bun-target"),std::string(kBunTargetProjectMount)+"/project/node_modules/pkg"}) boundary.add_argv(value);
+  if (!IsExactBunTargetLifecycleBoundary(boundary,kProfileNPM,&topology)) return false;
+  const auto ordinary=PNPMTargetLifecycleTestTopology(true);
+  if (IsExactBunTargetLifecycleBoundary(boundary,kProfileNPM,&ordinary)) return false;
+  for(int scenario=0;scenario<9;++scenario) {
+    auto changed=topology;
+    switch(scenario) {
+      case 0: changed.sealed=false; break;
+      case 1: changed.snapshot_seen=false; break;
+      case 2: changed.expected[2].filesystem_type="tmpfs"; break;
+      case 3: changed.expected[0].read_only=false; break;
+      case 4: changed.expected.back().filesystem_type="tmpfs"; break;
+      case 5: changed.expected.back().noexec=true; break;
+      case 6: changed.anchors.erase(4); break;
+      case 7: changed.anchors.emplace(5,MountAnchor{5,kBunToolPath,"workspace"}); break;
+      case 8: changed.expected.back().mountpoint="/foreign"; break;
+    }
+    if(IsBunArtifactRuntimeImage(&changed,kBunToolPath) || IsExactBunTargetLifecycleBoundary(boundary,kProfileNPM,&changed))return false;
+  }
+  for(int i=0;i<boundary.argv_size();++i){auto changed=boundary;changed.set_argv(i,"foreign");if(IsExactBunTargetLifecycleBoundary(changed,kProfileNPM,&topology))return false;}
+  return true;
+}
+
 bool VerifyBunProjectLockInstallShapeBoundary() {
   gvisor::sentry::ExecveInfo message;
   message.set_binary_path(kBunToolPath); message.set_execfn(kBunToolPath);
@@ -8167,6 +8264,8 @@ int main(int argc, char** argv) {
   const bool npm_node = VerifyExactNpmNodeInterpreterTransition();
   const bool pnpm_target_shape = VerifyPNPMTargetLifecycleShapeBoundary();
   const bool pnpm_target_production = VerifyPNPMTargetLifecycleProductionPath();
+  const bool bun_artifact_reads = VerifyBunArtifactRuntimeReadBoundary();
+  const bool bun_artifact_image = VerifyBunArtifactRuntimeImageAndCommandBoundary();
   const bool bun_target_shape = VerifyBunTargetLifecycleShapeBoundary();
   const bool bun_target_production = VerifyBunTargetLifecycleProductionPath();
   fprintf(stderr, "STARTING open_result_negative\n");
@@ -8217,7 +8316,7 @@ int main(int argc, char** argv) {
   const bool bun_project_shape = VerifyBunProjectLockInstallShapeBoundary();
   const bool pnpm_runtime_read = VerifyPNPMRuntimeReadBoundary();
   const bool uv_runtime_read = VerifyUVRuntimeReadBoundary();
-  const bool passed = pnpm_target_shape && pnpm_target_production && pnpm_node_query_read && pnpm_node_query && pnpm_runtime_read && pnpm_runtime_admission && bun_runtime_admission && bun_query_read && bun_project_read && bun_project_admission && bun_project_shape && uv_python_query && uv_runtime_read && uv_runtime_admission && github_artifact_runtime_read && terraform_profile && running && profile && profile_limits && record_boundaries && accessors && network && malformed_socket &&
+  const bool passed = bun_artifact_reads && bun_artifact_image && pnpm_target_shape && pnpm_target_production && pnpm_node_query_read && pnpm_node_query && pnpm_runtime_read && pnpm_runtime_admission && bun_runtime_admission && bun_query_read && bun_project_read && bun_project_admission && bun_project_shape && uv_python_query && uv_runtime_read && uv_runtime_admission && github_artifact_runtime_read && terraform_profile && running && profile && profile_limits && record_boundaries && accessors && network && malformed_socket &&
       malformed_connect && unknown_fd && process && correlation && cloexec && delayed && concurrent_python_streams && roles &&
       oci_bootstrap && demotion && mismatch && dropped && topology_ok && nested_mounts && filesystem && cargo_runtime_read && cargo_self_maps_read && cargo_config_read && cargo_tar_read && cargo_entropy_read && cargo_ca_read && cargo_null_read && cargo_rustc_query && cargo_rustc_metadata && cargo_rustc_abi && cargo_rustc_zlib && cargo_rustc_overcommit && cargo_rustc_maps && cargo_rustc_statm && cargo_rustc_cgroup && go_runtime_read && go_build_config_read && go_build_handoff_read && cargo_build_handoff_read && cargo_build_pinned_target && cargo_build_driver_read && cargo_build_rustc_child && cargo_build_native_cc_child && cargo_build_collect2_child && cargo_build_lld_launcher && cargo_build_rust_lld && cargo_build_link_inputs && cargo_build_link_sdk && cargo_build_rust_c_abi && cargo_build_lld_entropy && cargo_build_program && cargo_build_program_abi && cargo_build_program_maps && cargo_build_program_query && cargo_build_program_null && cargo_build_config && go_build_runtime_read && go_build_creator_diagnostic && go_build_tool_child && go_build_cgo_gcc_creator && go_build_sdk_link_gcc && go_build_sdk_link_native && go_build_linker_resolver && go_build_cc1 && go_build_cc1_headers && go_build_as && go_build_collect2 && go_build_native_linker && go_build_linker_plugin && go_build_linker_null && go_build_linker_runtime && go_build_as_null && go_build_cc1_sdk_cgo && npm_node &&
       cargo_rustc_mountinfo && cargo_rustc_cpu_quota && cargo_rustc_sysroot_directory && cargo_dns_configuration && cargo_resolver_file && cargo_utc && cargo_cloexec_entropy && socketpair_diagnostic && kernel_socketpair && open_result_negative_ok && open_result_positive_ok && no_basename_trust_ok &&
@@ -8225,6 +8324,8 @@ int main(int argc, char** argv) {
       resolver_lock_generation_production_path && process_group_lifecycle && direct_exec_admission &&
 		admission_terminal_protocol && direct_exec_admission_bound && session_aware_control && exact_control_peer && control_peer_hup_live_admission && unaccepted_disconnect && pre_attribution_disconnect;
   const std::pair<const char*, bool> latches[] = {
+      {"Bun Artifact exact native runtime reads", bun_artifact_reads},
+      {"Bun Artifact native image and command boundary", bun_artifact_image},
       {"UV exact interpreter query boundary", uv_python_query},
       {"PNPM exact Node query boundary", pnpm_node_query},
       {"PNPM Node query ABI boundary", pnpm_node_query_read},

@@ -1,0 +1,161 @@
+{
+  "work_item": "M13-004/P3-B6b",
+  "baseline": "74fd3668ab77c30e3600ca223cf21918625c2ed6",
+  "status": {
+    "IMPLEMENTED": "YES (fixed native command/image and bounded Artifact ABI reads)",
+    "WIRED": "YES (explicit runtime backend); NO (whole inspector native capability)",
+    "QUALIFIED": "YES (named local canonical controlled JS/Node/PNPM boundary)",
+    "ACCEPTANCE_CLOSED": "YES (named execution boundary only); NO (whole P3/remote)",
+    "MISSING": [
+      "B6c whole inspector native runtime capability/Evidence/Policy integration",
+      "hosted exact-source end-to-end qualification",
+      "final support/failure and affected-profile matrix"
+    ]
+  },
+  "sources": [
+    {
+      "path": "internal/sandbox/bun_artifact_execution_real_test.go",
+      "mode": "100644",
+      "sha256": "6dc267fe45d4cd28e7f5b8414205cda5611e9c06062f4ce8fda08122d7e38a3e"
+    },
+    {
+      "path": "internal/sandbox/bun_artifact_runtime.go",
+      "mode": "100644",
+      "sha256": "7ccb3762d601dfc1ca359c6c45d77797c1ff8372dc658f20d204898d523572e8"
+    },
+    {
+      "path": "internal/sandbox/bun_artifact_runtime_test.go",
+      "mode": "100644",
+      "sha256": "ceb36f40933ea0a9e6432793d78a456ff7d4f1548a5ff487cd7c009bd1d362fa"
+    },
+    {
+      "path": "internal/sandbox/pnpm_instance_backend.go",
+      "mode": "100644",
+      "sha256": "403ad8e6570146d0b1f1dc1771bddf2713a71021785250535234cc1358d26585"
+    },
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "mode": "100644",
+      "sha256": "09583250526001efe617a7546de574d028794ac379eb9a32a45869fcf371df4d"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "mode": "100644",
+      "sha256": "ccaadf510fa1b9641449402b67291fe9833ed6a77e4502e28bae484ead318927"
+    }
+  ],
+  "checks": [
+    {
+      "receipt": "p3b6b-runtime-boundary-quick.json",
+      "exit": 0,
+      "seconds": 125.115,
+      "receipt_sha256": "56c248a1d1e0db5b830fcf3446685cff6108e172509ffcb7bf3308e85e5ee464"
+    },
+    {
+      "receipt": "p3b6b-final-source-security.json",
+      "exit": 0,
+      "seconds": 11.188,
+      "receipt_sha256": "f16e910d6119e448b43229b8219990c141c7f45703eefdf42b8857649b08322c"
+    },
+    {
+      "receipt": "p3b6b-final-source-docs.json",
+      "exit": 0,
+      "seconds": 0.329,
+      "receipt_sha256": "aa18d076aa04c16c7f7b2a0b8dd172d11146397322b6d1da268f5970bb52a8ac"
+    },
+    {
+      "receipt": "p3b6b-sandbox-full-race.json",
+      "exit": 0,
+      "seconds": 31.18,
+      "receipt_sha256": "9e5d97a68161097fd3eaf355ed3ccdb779e715dd0ad28c5306d52156eb5af3f2"
+    },
+    {
+      "receipt": "p3b6b-final-tagged-vet.json",
+      "exit": 0,
+      "seconds": 1.22,
+      "receipt_sha256": "41818ea3010940b968e599c11f2045b29dfa7153db26fabda144975c01f24ffd"
+    },
+    {
+      "receipt": "p3b6b-bun-artifact-observer-canonical-final.json",
+      "exit": 0,
+      "seconds": 242.161,
+      "receipt_sha256": "70fdfbd64992ab10ebe1e4027dd9332257778de5c4f1e39f02ab7b1619fe391c"
+    },
+    {
+      "receipt": "p3b6b-bun-execution-v8-result.json",
+      "exit": 0,
+      "seconds": 18.791,
+      "receipt_sha256": "b1bff44c71f1ac081b762ec2e210b42e9b13e7ae92103ba39741157b67ec58ee"
+    },
+    {
+      "receipt": "p3b6b-runtime-regression-v2-result.json",
+      "exit": 0,
+      "seconds": 116.551,
+      "receipt_sha256": "d590bebc34b0cdc30e44f23ef01efa01a8d6675fa4560cd2947793aa6794dabe"
+    }
+  ],
+  "actuals": [
+    {
+      "receipt": "p3b6b-bun-execution-v8-result.json",
+      "operator_seconds": 18.791,
+      "top_level_pass_seconds": {
+        "TestBunActualArtifactExecutionBoundary": 16.19
+      },
+      "no_skip": true,
+      "helper": "CONFIRMED_STOPPED wait=0",
+      "Host_before_after": "IDENTICAL"
+    },
+    {
+      "receipt": "p3b6b-runtime-regression-v2-result.json",
+      "operator_seconds": 116.551,
+      "top_level_pass_seconds": {
+        "TestBunPublicInstanceBackendIntegration": 28.73,
+        "TestBunPublicArtifactRuntimeSupplyIntegration": 39.09,
+        "TestPNPMActualProductionProjectInspection": 46.18
+      },
+      "no_skip": true,
+      "helper": "CONFIRMED_STOPPED wait=0",
+      "Host_before_after": "IDENTICAL"
+    }
+  ],
+  "canonical_observer": {
+    "receipt": "p3b6b-bun-artifact-observer-canonical-final.json",
+    "compiler_recipe": "UNMODIFIED scripts/build-gvisor-observer-release.sh; pinned SDK/compiler/image/Bazel",
+    "latches_pass": 121,
+    "latches_fail": 0,
+    "observer": {
+      "path": "/tmp/hpr-bx53162k/bun-artifact-observer-canonical-final",
+      "sha256": "2e22d9a1da5e736bc22156165875740906f2e0d9921b13fdb779f8152a80d8c4",
+      "size": 3141408
+    }
+  },
+  "execution": {
+    "Bun_version": "1.4.4",
+    "normal": "native Bun global/version JS completed with complete external observation",
+    "script_failure": "typed original ExitCode37 preserved, INCOMPLETE and no lifecycle-completed claim",
+    "attribution": "both cases retain exact2 ARTIFACT script/Bun process observations, no CONTROL/network authority",
+    "baseline_suspicious": "no FS/honeytoken/network baseline observation",
+    "Policy": "NOT_RUN; existing unexpected process MANUAL_REVIEW and FS/honeytoken BLOCK unchanged"
+  },
+  "runtime_read_boundary": "fixed protected Bun bytes, sealed native9p+fixed project topology, actual image/Artifact+clone creator/start/parent/root flags, exact open flags/mount/path; GNU ABI/self startup, root directory probe, mmap_min_addr, flat numeric memory limits and actual own statm; no arbitrary proc/sys/config/writes",
+  "first_failures": {
+    "initial": "p3b6b-first-assessment.json",
+    "next_reads": [
+      "p3b6b-v3-next-read-assessment.json",
+      "p3b6b-v4-next-read-assessment.json",
+      "p3b6b-v5-next-read-assessment.json",
+      "p3b6b-v6-next-read-assessment.json"
+    ],
+    "preserved": "all original logs/binaries/source; JS execution never substituted for complete observation",
+    "diagnostic": "frozen warm SDK retained exact toolchain/all121 latches; diagnostic success v7 was followed by final unmodified canonical242.161s and actual v8"
+  },
+  "check_reuse_scope": "Quick125.115s and sandbox full Race31.180s qualified unchanged default Go runtime/command code. Later changes were tagged actual-test assertions and exact CPP runtime reads/negative latches; final tagged compile/vet, full canonical121 and actual named consumers qualify those deltas. No repeated full CI for helper changes.",
+  "preserved": [
+    "runtime/source pins and limits",
+    "Node-only Bun/PNPM command and topology",
+    "M3 Policy and untrusted process observations",
+    "one-shot admission/role/clone semantics and no-network Artifact environment"
+  ],
+  "remote": "no new push/dispatch yet; grouped end-to-end checkpoint follows B6c whole wiring",
+  "scope": "controlled execution source/SRI fixture is not public archive authentication; actual public source regression has its separate named consumer; no Host publication or whole supported-feature claim"
+}

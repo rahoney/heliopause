@@ -208,7 +208,11 @@ func (b *Backend) executeNPMInstanceWithBunRuntime(ctx context.Context, kind nat
 	}
 	var command []string
 	if kind == nativeRuntimeBun {
-		command, err = bunTargetLifecycleExecArguments(container, target)
+		if native.name != "" {
+			command, err = bunRuntimeTargetLifecycleExecArguments(container, target)
+		} else {
+			command, err = bunTargetLifecycleExecArguments(container, target)
+		}
 	} else {
 		command, err = pnpmTargetLifecycleExecArguments(container, target)
 	}

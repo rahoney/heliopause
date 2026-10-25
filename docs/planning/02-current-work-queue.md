@@ -17,7 +17,7 @@ Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P3-B5d — explicit Bun native original source proof and --adopt; named local qualification, source728f650
 Next action: M13-004/P3-B6 — audit explicit Bun Artifact runtime supply/admission and required coverage; grouped hosted project and final affected-profile qualification remain
-Current substep: M13-004/P3-B6a native supply locally QUALIFIED; four fresh peer sessions42.09s and PNPM regression48.69s/helperwait0/Host identical; B6b explicit Bun Artifact execution/admission follows
+Current substep: M13-004/P3-B6b named local execution boundary QUALIFIED; canonical121/actual normal+typed exit37 and Bun/PNPM regression/helperwait0/Host identical; B6c whole inspector native capability next
 Acceptance audit: CI412 frozen7544 backend Required10SUCCESS, complete checkout tree match and logs confirmed by actual65m timer; later local7939092/74102c8/80bd2bd/58957ea/728f650 are outside that remote scope; historical CI411 macOS timeout cause remains unconfirmed
 Independent local next: explicit Bun Artifact runtime ownership/transport, exact execution/observer and whole inspection coverage; no live CI timer or extra helper push at this point
 P3 Bun: IN_PROGRESS (same M13-004 independent local); P4..P7 — NOT_STARTED
@@ -5439,3 +5439,15 @@ fixed tool 전체 readback과 별도 native/project ownership을 쓰는 peer4 fr
 resource 정리가 PASS다. Quick181.662s/sandbox 전체 Race24.570s/tagged vet·security/docs와
 기존 nil-runtime owner 기계 동일성도 PASS다. Node 명령은 그대로이며 명시 Bun Artifact
 실행/coverage·Policy/hosted·전체 P3는 B6b와 최종 qualification으로 계속한다.
+
+[B6b 명시 Bun 실행 감사](./evidence/package-client-quarantine/p3b6b-bun-artifact-execution-plan-20261025.md)는
+74fd366에서 실제 JS의 Bun global/version을 요구하는 controlled boundary부터 검사한다.
+Artifact process 관찰과 기존 M3 MANUAL_REVIEW/BLOCK 의미를 유지하고 불필요한 CONTROL/
+네트워크·broad FS 권한을 추가하지 않는다. Whole inspector/hosted qualification은 아직 열려 있다.
+
+[B6b 실제 Bun 실행 경계 검증](./evidence/package-client-quarantine/p3b6b-bun-artifact-execution-local-20261025.json)은
+최종 canonical242.161s/121 latches와 actual18.791s의 정상 JS 완전 관찰·typed exit37 보존을
+확인했다. 각 ARTIFACT process2·baseline FS/honeytoken/network0·helperwait0/Host 동일이다.
+같은 observer의 기존 Bun Node/native supply/PNPM full project actual116.551s도 PASS다.
+첫 loader/VM read 실패와 warm 진단을 보존했고 Policy/역할/네트워크·예산/버전은 유지했다.
+이 named 경계만 닫혔으며 B6c whole inspector native 경로/Evidence/Policy·hosted는 계속한다.

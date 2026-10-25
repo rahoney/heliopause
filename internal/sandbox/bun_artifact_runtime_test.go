@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"os"
 	"slices"
 	"strings"
 	"testing"
@@ -84,6 +85,11 @@ func (r *bunArtifactRuntimeRunner) Output(ctx context.Context, binary string, ar
 	if binary == "docker" && len(args) > 0 && args[0] == "ps" && slices.Contains(args, "volume="+r.native.Name) && r.nativeFault == "foreign-runtime" && r.active {
 		r.calls++
 		return []byte(strings.Repeat("e", 64)), nil
+	}
+	if binary == "docker" && len(args) > 0 && args[0] == "exec" && slices.Contains(args, bunRuntimeTargetLifecycleCommand) {
+		copy := slices.Clone(args)
+		copy[slices.Index(copy, bunRuntimeTargetLifecycleCommand)] = bunTargetLifecycleCommand
+		return r.pnpmInstanceRunner.Output(ctx, binary, copy...)
 	}
 	return r.pnpmInstanceRunner.Output(ctx, binary, args...)
 }
@@ -247,5 +253,33 @@ func TestBunArtifactRuntimeMountAndTopologyAreSeparate(t *testing.T) {
 	after, _ := bunTargetLifecycleExpectedTopology()
 	if changes != 1 || !slices.Equal(after, base) {
 		t.Fatal("legacy topology mutated")
+	}
+}
+
+func TestBunArtifactRuntimeCommandMatchesExactObserverBoundary(t *testing.T) {
+	target := bunProjectDirectory + "/node_modules/@scope/pkg"
+	args, err := bunRuntimeTargetLifecycleExecArguments(strings.Repeat("a", 64), target)
+	if err != nil || !slices.Contains(args, bunRuntimeTargetLifecycleCommand) || slices.Contains(args, bunTargetLifecycleCommand) || args[len(args)-1] != target {
+		t.Fatal("native runtime command selection differs", err)
+	}
+	if _, err := bunRuntimeTargetLifecycleExecArguments("unknown", target); err == nil {
+		t.Fatal("ambiguous native container")
+	}
+	body, err := os.ReadFile("../../tools/gvisor-observer/observer.cc")
+	if err != nil {
+		t.Fatal(err)
+	}
+	tokens, err := tokenizeCPPSource(body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var commands []string
+	for i := 0; i+7 < len(tokens); i++ {
+		if tokens[i].val == "constexpr" && tokens[i+1].val == "char" && tokens[i+2].val == "kBunRuntimeTargetLifecycleCommand" && tokens[i+3].val == "[" && tokens[i+4].val == "]" && tokens[i+5].val == "=" && tokens[i+6].typ == cppTokRaw && tokens[i+6].delim == "HAA" && tokens[i+7].val == ";" {
+			commands = append(commands, tokens[i+6].body)
+		}
+	}
+	if len(commands) != 1 || commands[0] != bunRuntimeTargetLifecycleCommand {
+		t.Fatal("Go and observer native command differ")
 	}
 }

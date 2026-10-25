@@ -13,9 +13,24 @@ type bunRuntimeTargetTraceObserver interface {
 	StartBunRuntimeTargetLifecycleProfile(context.Context, string) (TraceReader, error)
 }
 
+const bunRuntimeTargetLifecycleCommand = `mkdir -p /tmp/.npm; PATH=/haa-runtime:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HOME=/tmp npm_config_cache=/tmp/.npm npm_config_script_shell=/haa-runtime/haa-boundary npm --prefix /tmp/haa-bun-input/project rebuild --ignore-scripts=false --bin-links=false --foreground-scripts --offline --no-update-notifier --workspaces=false --no-audit --no-fund --dangerously-allow-all-scripts "$1"`
+
+func bunRuntimeTargetLifecycleExecArguments(container, target string) ([]string, error) {
+	args, err := bunTargetLifecycleExecArguments(container, target)
+	if err != nil {
+		return nil, err
+	}
+	for i := range args {
+		if args[i] == bunTargetLifecycleCommand {
+			args[i] = bunRuntimeTargetLifecycleCommand
+		}
+	}
+	return args, nil
+}
+
 // ExecuteBunRuntimeInstance supplies the pinned Bun image in a separately owned
-// lifecycle session. The current command still observes npm/Node lifecycle;
-// native Artifact execution and whole required coverage are separate consumers.
+// lifecycle session. Script-launched Bun remains an untrusted Artifact image;
+// whole required coverage and Policy are separate consumers.
 func (b *Backend) ExecuteBunRuntimeInstance(ctx context.Context, layout artifactnpm.BunInspectionLayout, subject domain.AcquiredArtifact, instance string) (domain.SandboxResult, error) {
 	return b.executeBunRuntimeInstance(ctx, layout, subject, instance, func(ctx context.Context) (nativeProjectTool, error) {
 		return prepareBunTool(ctx)
