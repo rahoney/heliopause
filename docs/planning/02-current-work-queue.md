@@ -15,11 +15,11 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4-J — bounded native project --adopt/add/sync and legacy UV pip named local QUALIFIED; lock-only/tools remain
-Next action: M13-004 — baseline remaining native project adoption/distinct lock-only and persistent tools; continue actual missing acceptance; grouped final CI boundary retained
-Current substep: M13-004/P4-K2 original project guard/atomic native lock-only publication and workflow; K1 typed component locally qualified; public CLI/actual/tools pending
+Last completed substep: P4-K2 — distinct native lock-only backend/guard/current whole approval/atomic publication and prior installed regression named local QUALIFIED; public CLI/tools remain
+Next action: M13-004 — public uv lock --upgrade CLI/actual; then persistent tools and remaining execution acceptance; grouped final CI boundary retained
+Current substep: M13-004/P4-K3 public lock-only command/preflight and distinct no-install report; K2 backend/actual locally qualified; tools pending
 Acceptance audit: CI413 frozen50fd Required10SUCCESS; all10 checkout38e27d8 whole tree d6a63ab/2475 matches; actual75m due consumed17:20:16UTC; full10 decoded logs saved; historical CI411 timeout cause remains unconfirmed
-Independent local next: P4 project/venv atomic transaction, ownership/CLI and persistent tools; final support/profile matrix open
+Independent local next: P4 public lock-only CLI and persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -5557,3 +5557,7 @@ Grouped source50fd3b2/tree d6a63ab/2475를 한 번 push하여 [CI413](https://gi
 ### 2026-10-26 P4-K1 control-only typed component checkpoint
 
 [K1 receipt](./evidence/package-client-quarantine/p4k1-uv-project-control-mode-local-20261026.json)은 canonical Quick232.317s/security16.135s/docs0.256s·full affected Race250.827s PASS를 연결한다. Distinct project-controls context를 native lock-upgrade/독립 wheel 인증·전체 inspection/cache에 결합하고 venv approval·잘못된 intent 전용을 거부한다. 최초 두 fixture의 원본 lock 누락은 원본을 보존하고 교정했다. Public lock publication/CLI/actual과 whole P4는 미완료이며 같은 M13-004에서 K2 guard/transaction/workflow를 계속한다. Runtime/observer/권한·한도와 기존 installed 준비 경계는 불변이고 새 push·CI는 없다.
+
+### 2026-10-26 P4-K2 lock-only approved publication checkpoint
+
+[K2 receipt](./evidence/package-client-quarantine/p4k2-uv-project-lock-publication-local-20261026.json)은 canonical Quick168.957s/security11.164s/docs0.258s·focused Race11.848s/full affected Race146.556s와 actual173.014s PASS를 연결한다. Actual 기존 installed5와 control-only3은 현재 전체 검사/Evidence·Policy·승인 cache/readback을 재사용하고 distinct project context로 uv.lock만 반영했다. Manifest identity/mode·user files·임의 venv는 보존하고 venv 부재에서도 동작한다. 네 ENOSPC 경계 원복/foreign 원본·backup 보존/동시 guard·recovery 재진입 거부와 noSKIP/helperwait0/Host 동일도 확인했다. Public CLI/whole P4/remote는 미완료이며 같은 M13-004에서 K3 명령·별도 no-install 결과를 연결한다. 새 push·CI는 없다.

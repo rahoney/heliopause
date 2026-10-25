@@ -55,3 +55,22 @@ p4k-control-mode-v1-*로 보존한다.
 K1은 [typed component receipt](./p4k1-uv-project-control-mode-local-20261026.json)의 canonical
 profiles/전체 affected Race를 통과했다. 새 mode의 native public application/CLI actual은
 미실행이며 전체 K 완료로 표시하지 않는다. K2 original guard/transaction/workflow가 다음이다.
+
+K2 exact baseline은 a0135e8cd798b99debdc848a007e1ddff3225dc8이다. 기존 anchored guard/reader/snapshot/known backup
+helpers를 재사용하고 새 control-only transaction·promotion과 실제 Application/Bootstrap
+factory를 연결한다. Backup 디렉터리도 held os.Root의 controller RunID 이름으로 생성해
+mutable absolute 경로를 다시 따라가지 않는다. 네 mutation boundary의 ENOSPC 원복과
+foreign published/backup·manifest drift/reentry·사전 취소·다른 mode·missing/symlink/hardlink
+거부를 확인한다. 설치 materializer나 기존 venv owner를 사용하지 않는다.
+
+K2 focused11.848s/Race PASS는 lock-only 실제 파일 반영과 네 경계 원복·unknown 원본
+보존/reentry 거부를 확인했다. Canonical Quick168.957s/security11.164s/docs0.258s도
+PASS다. Full affected Race와 actual native/project-current Policy는 별도로 진행한다.
+Native actual은 기존 installed 다섯 단계를 유지한 같은 test lifecycle 뒤 distinct
+lock-only 세 요청(venv 부재/current no-op/edited-empty)을 이어서 검증한다.
+
+K2는 [backend receipt](./p4k2-uv-project-lock-publication-local-20261026.json)의 full
+affected Race146.556s와 actual173.014s까지 PASS다. Installed5/control-only3의 원래
+관찰·현재 Policy·Host 복원을 확인했다. 새 실제 fixture만 추가한 default/production source
+불변 경계는 raw native-fixture-only-reuse-boundary가 소유한다. Public K3 명령과 no-install
+결과가 다음이며 전체 P4/원격 qualification은 계속 열려 있다.

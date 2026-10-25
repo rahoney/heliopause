@@ -25,8 +25,8 @@ func NewUVProjectService(resolver ports.ProjectLockUpdateResolver, promoter port
 }
 
 func (s *UVProjectService) Apply(ctx context.Context, install domain.InstallContext) (domain.ProjectVerifiedSet, error) {
-	if s == nil || !install.Valid() || install.Mode() != domain.InstallPythonVenv {
-		return domain.ProjectVerifiedSet{}, errors.New("UV project installation requires an existing Python venv")
+	if s == nil || !install.Valid() || (install.Mode() != domain.InstallPythonVenv && install.Mode() != domain.InstallPythonProjectControls) {
+		return domain.ProjectVerifiedSet{}, errors.New("UV project requires an existing Python venv or explicit project-controls context")
 	}
 	selected, err := executeGuardedProjectUpdate(ctx, install, s.promoter, s.inspection, s.staging, "pypi", "UV project", func(controls []domain.ProjectControlFile) (domain.ProjectDependencyUpdate, error) {
 		update, err := s.resolver.ResolveProjectLockUpdate(ctx, install, controls, "")

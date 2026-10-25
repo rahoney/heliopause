@@ -278,4 +278,5 @@ func TestUVPublicProjectApprovedPublicationIntegration(t *testing.T) {
 			t.FailNow()
 		}
 	}
+	qualifyUVProjectLockOnly(t, ctx, b, root)
 }
