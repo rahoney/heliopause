@@ -34,7 +34,7 @@ func (s pnpmSupplyFileInfo) Sys() any {
 
 func TestPNPMNativeSourceRequiresExactProtectedFileMetadata(t *testing.T) {
 	base := pnpmSupplyFileInfo{mode: 0555, size: runtimeidentity.PNPMToolSize, owner: syscall.Stat_t{Nlink: 1}}
-	if !pnpmPinnedFile(base) {
+	if !nativePinnedFile(base, runtimeidentity.PNPMToolSize) {
 		t.Fatal("valid structural Root file identity refused")
 	}
 	for _, mode := range []string{"uid", "gid", "writable", "special", "directory", "symlink", "hardlink", "size", "no-owner"} {
@@ -60,42 +60,42 @@ func TestPNPMNativeSourceRequiresExactProtectedFileMetadata(t *testing.T) {
 			case "no-owner":
 				info.missingOwner = true
 			}
-			if pnpmPinnedFile(info) {
+			if nativePinnedFile(info, runtimeidentity.PNPMToolSize) {
 				t.Fatal("foreign or mutable source file became a pinned tool")
 			}
 		})
 	}
-	if pnpmPinnedFile(nil) || pnpmRootCurrent(nil) || pnpmRootDirectory(nil) {
+	if nativePinnedFile(nil, runtimeidentity.PNPMToolSize) || nativeRootCurrent(nil) || nativeRootDirectory(nil) {
 		t.Fatal("unknown metadata admitted")
 	}
 	directory := base
 	directory.mode = os.ModeDir | 0755
-	if !pnpmRootDirectory(directory) {
+	if !nativeRootDirectory(directory) {
 		t.Fatal("owned protected directory refused")
 	}
 	directory.mode = os.ModeDir | 0775
-	if pnpmRootDirectory(directory) {
+	if nativeRootDirectory(directory) {
 		t.Fatal("shared writable directory admitted")
 	}
 	link := base
 	link.mode = os.ModeSymlink | 0777
-	if !pnpmRootCurrent(link) {
+	if !nativeRootCurrent(link) {
 		t.Fatal("owned current pointer refused")
 	}
 	link.owner.Uid = 1000
-	if pnpmRootCurrent(link) {
+	if nativeRootCurrent(link) {
 		t.Fatal("ordinary current pointer admitted")
 	}
 }
 
 func TestPNPMNativeCurrentPointerCannotEscapeVersions(t *testing.T) {
 	for _, valid := range []string{"versions/v1.0.0", "versions/v1.0.0-rc.1+build"} {
-		if !pnpmCurrentTarget(valid) {
+		if !nativeCurrentTarget(valid) {
 			t.Fatal("canonical bounded target refused", valid)
 		}
 	}
 	for _, invalid := range []string{"", "/versions/v1.0.0", "../versions/v1.0.0", "versions/../v1.0.0", "versions/v1.0.0/other", "versions/v1.0.0/..", "versions/v", "versions/v1.0.0\n", "versions/v1.0.0\\other", "versions/v" + strings.Repeat("x", 128)} {
-		if pnpmCurrentTarget(invalid) {
+		if nativeCurrentTarget(invalid) {
 			t.Fatal("unsafe current target admitted", invalid)
 		}
 	}

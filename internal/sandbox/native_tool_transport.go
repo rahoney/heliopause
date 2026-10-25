@@ -17,20 +17,25 @@ type nativeRuntimeToolKind uint8
 const (
 	nativeRuntimeUV nativeRuntimeToolKind = iota
 	nativeRuntimePNPM
+	nativeRuntimeBun
 )
 
 type nativeRuntimeToolSpec struct {
 	name, guestPath, sha256              string
 	size                                 int64
 	volumePrefix, volumeLabel, hashLabel string
+	installedName, volumeOptions         string
+	maxBytes                             int64
 }
 
 func nativeRuntimeToolIdentity(kind nativeRuntimeToolKind) (nativeRuntimeToolSpec, bool) {
 	switch kind {
 	case nativeRuntimeUV:
-		return nativeRuntimeToolSpec{"uv", uvToolGuestPath, runtimeidentity.UVToolSHA256, runtimeidentity.UVToolSize, "haa-uv-runtime-", uvRuntimeVolumeLabel, uvRuntimeToolLabel}, true
+		return nativeRuntimeToolSpec{"uv", uvToolGuestPath, runtimeidentity.UVToolSHA256, runtimeidentity.UVToolSize, "haa-uv-runtime-", uvRuntimeVolumeLabel, uvRuntimeToolLabel, "", uvRuntimeVolumeOptions, 64 << 20}, true
 	case nativeRuntimePNPM:
-		return nativeRuntimeToolSpec{"pnpm", pnpmToolGuestPath, runtimeidentity.PNPMToolSHA256, runtimeidentity.PNPMToolSize, "haa-pnpm-runtime-", "io.heliopause.pnpm-runtime", "io.heliopause.pnpm-tool-sha256"}, true
+		return nativeRuntimeToolSpec{"pnpm", pnpmToolGuestPath, runtimeidentity.PNPMToolSHA256, runtimeidentity.PNPMToolSize, "haa-pnpm-runtime-", "io.heliopause.pnpm-runtime", "io.heliopause.pnpm-tool-sha256", runtimeidentity.PNPMNativeAssetName, uvRuntimeVolumeOptions, 64 << 20}, true
+	case nativeRuntimeBun:
+		return nativeRuntimeToolSpec{"bun", bunToolGuestPath, runtimeidentity.BunToolSHA256, runtimeidentity.BunToolSize, "haa-bun-runtime-", "io.heliopause.bun-runtime", "io.heliopause.bun-tool-sha256", runtimeidentity.BunNativeAssetName, "size=134217728,nosuid,nodev,uid=0,gid=0,mode=0755", 128 << 20}, true
 	default:
 		return nativeRuntimeToolSpec{}, false
 	}
@@ -64,7 +69,7 @@ func (w *nativeToolArchiveOutput) Write(body []byte) (int, error) {
 func readNativeToolFromContainer(ctx context.Context, runner streamingDockerOutput, container, path string, identity nativeToolFileIdentity, kind nativeRuntimeToolKind) ([]byte, error) {
 	spec, known := nativeRuntimeToolIdentity(kind)
 	validPath := path == spec.guestPath || kind == nativeRuntimeUV && path == runtimeidentity.UVToolPath
-	if ctx == nil || runner == nil || !known || !validPath || !exactObservationContainerID(container) || identity.size <= 0 || identity.size > 64<<20 {
+	if ctx == nil || runner == nil || !known || !validPath || !exactObservationContainerID(container) || identity.size <= 0 || identity.size > spec.maxBytes {
 		return nil, errNativeToolTransport
 	}
 	output := nativeToolArchiveOutput{limit: identity.size + 64<<10}
@@ -76,7 +81,7 @@ func readNativeToolFromContainer(ctx context.Context, runner streamingDockerOutp
 
 func scanNativeToolTar(body []byte, identity nativeToolFileIdentity, kind nativeRuntimeToolKind) ([]byte, error) {
 	spec, known := nativeRuntimeToolIdentity(kind)
-	if !known || identity.size <= 0 || identity.size > 64<<20 || int64(len(body)) > identity.size+64<<10 {
+	if !known || identity.size <= 0 || identity.size > spec.maxBytes || int64(len(body)) > identity.size+64<<10 {
 		return nil, errNativeToolTransport
 	}
 	input := bytes.NewReader(body)

@@ -24,7 +24,7 @@ type nativeRuntimeVolume struct {
 
 var errNativeRuntimeVolume = errors.New("private native runtime volume is unavailable or changed")
 
-// Keep the qualified UV surface while PNPM uses the same owner protocol.
+// Keep the qualified UV surface while PNPM/Bun use the same owner protocol.
 type uvRuntimeVolume = nativeRuntimeVolume
 
 var errUVRuntimeVolume = errNativeRuntimeVolume
@@ -51,7 +51,7 @@ func createNativeRuntimeVolume(ctx context.Context, runner CommandRunner, kind n
 		return nativeRuntimeVolume{}, errUVRuntimeVolume
 	}
 	created, createErr := runner.Output(ctx, "docker", "volume", "create", "--driver", "local",
-		"--opt", "type=tmpfs", "--opt", "device=tmpfs", "--opt", "o="+uvRuntimeVolumeOptions,
+		"--opt", "type=tmpfs", "--opt", "device=tmpfs", "--opt", "o="+spec.volumeOptions,
 		"--label", spec.volumeLabel+"="+v.owner, "--label", spec.hashLabel+"="+spec.sha256, v.name)
 	verifyErr := v.verify(ctx, runner)
 	if createErr != nil || strings.TrimSpace(string(created)) != v.name || verifyErr != nil {
@@ -78,7 +78,7 @@ func (v *nativeRuntimeVolume) verify(ctx context.Context, runner CommandRunner) 
 	if err != nil || len(body) == 0 || len(body) > 16<<10 || json.Unmarshal(body, &actual) != nil ||
 		actual.Name != v.name || actual.Driver != "local" || actual.Scope != "local" ||
 		actual.Mountpoint == "" || actual.CreatedAt == "" || len(actual.Options) != 3 ||
-		actual.Options["type"] != "tmpfs" || actual.Options["device"] != "tmpfs" || actual.Options["o"] != uvRuntimeVolumeOptions ||
+		actual.Options["type"] != "tmpfs" || actual.Options["device"] != "tmpfs" || actual.Options["o"] != spec.volumeOptions ||
 		actual.Labels[spec.volumeLabel] != v.owner || actual.Labels[spec.hashLabel] != spec.sha256 ||
 		v.createdAt != "" && (v.createdAt != actual.CreatedAt || v.mountpoint != actual.Mountpoint) {
 		return errUVRuntimeVolume

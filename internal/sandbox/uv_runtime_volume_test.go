@@ -32,6 +32,9 @@ func (f *uvVolumeFake) Output(ctx context.Context, name string, args ...string) 
 		case "create":
 			v := dockerVolumeInspection{Name: args[len(args)-1], Driver: "local", Scope: "local", Mountpoint: "/owned", CreatedAt: "fixed", Options: map[string]string{"type": "tmpfs", "device": "tmpfs", "o": uvRuntimeVolumeOptions}, Labels: map[string]string{}}
 			for _, a := range args {
+				if options, ok := strings.CutPrefix(a, "o="); ok {
+					v.Options["o"] = options
+				}
 				if label, value, ok := strings.Cut(a, "="); ok && strings.HasPrefix(label, "io.heliopause.") {
 					v.Labels[label] = value
 				}
@@ -82,6 +85,10 @@ func TestUVRuntimeVolumeRejectsSubstitutionAndUnknownCleanup(t *testing.T) {
 
 func TestPNPMRuntimeVolumeRejectsSubstitutionAndUnknownCleanup(t *testing.T) {
 	verifyNativeVolumeBoundary(t, nativeRuntimePNPM)
+}
+
+func TestBunRuntimeVolumeRejectsSubstitutionAndUnknownCleanup(t *testing.T) {
+	verifyNativeVolumeBoundary(t, nativeRuntimeBun)
 }
 
 func verifyNativeVolumeBoundary(t *testing.T, kind nativeRuntimeToolKind) {
