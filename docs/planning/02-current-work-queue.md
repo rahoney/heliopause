@@ -5152,3 +5152,25 @@ archive 단일 member 오인은 원본을 보존했다. 권한은 Bun project �
 다음은 관측된 schema2/config1 parser와 독립 npm source/전체 instance binding이다. 아직
 public Bun resolver/layout/cache/transaction/CLI/whole Bun acceptance는 없고 macOS/Required
 원격 gate도 열려 있다. 작은 helper별 push/CI 없이 같은 M13-004 하나만 IN_PROGRESS로 계속한다.
+
+B3a 중간 commit b658670/tree6e100e8·2340개 전체 후보 일치를 확인했다. 다음
+[B3b parser/source 지도](./evidence/package-client-quarantine/p3b3b-bun-parser-source-plan-20261025.md)의
+baseline·정확한 수정 경로·두 번째 검토를 마쳤고, 첫 lexical JSONC subset의 MISSING부터 진행한다.
+Bun output/source binding을 Policy 또는 배포 지원으로 확대하지 않는다. 새 CI는 시작하지 않았다.
+
+### 2026-10-25 P3-B3b Bun parser·독립 npm source·snapshot
+
+[B3b local receipt](./evidence/package-client-quarantine/p3b3b-bun-source-local-20261025.json)는
+실제 schema2/config1 JSONC의 bounded parser, scoped instance/ancestor dependency·단일 matching
+peer와 전체 coverage, exact controls/runtime snapshot을 연결한 named local 범위다. 기존
+fetchMetadataBody/resolvedVersion을 재사용했으며 PNPM source는 변경하지 않았다. 이미 고정된
+semver3.5.0을 검토한 npm caller에서만 사용하고 version/checksum은 유지했다.
+
+최종 Quick101.552s/npm 전체 Race50.962s와 unchanged checker32.512s, vulnerability18.940s/
+tagged vet0.520s·실제 HTTPS metadata4cases1.172s가 PASS다. 실제 native manifest/lock bytes는
+그대로 frozen하고 source의 SRI·dependency/peer/bin을 대조했다. Generic empty-type의 직접
+RED14개와 교정·정상 공백 보존을 기록했으며 그 이전 green을 해당 타입 검증에 전용하지 않는다.
+Source/snapshot은 unapproved이고 archive/lifecycle/Policy/Host install은 수행하지 않았다.
+다음은 같은 M13-004에서 preflight typed selection과 Bun native install/add/update·frozen
+output의 연결이다. Layout/cache/transaction/CLI와 제한 밖 grammar/peer/platform 및 whole
+Bun acceptance는 열려 있고 새 push/CI는 없다. Remote9410 CI411 macOS/Required gate는 유지한다.

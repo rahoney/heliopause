@@ -678,3 +678,17 @@ Host path 전체를 일괄 제거할 필요는 없다. 작업 의미에 필요�
 - [x] exception·suppression 정책
 - [x] Security Review Checklist
 - [x] 13개 invariant
+
+### M13-004 Bun constraint consumer review
+
+Bun의 공개 lock constraints를 문자열 prefix나 자체 semver solver로 판정하지 않는다.
+기존 go.mod/go.sum의 `github.com/Masterminds/semver/v3 v3.5.0`을 npm adapter의 bounded
+Bun parser에서 추가 소비한다. 새 module/version/checksum은 없으며 direct 표기만 갱신한다.
+고정 cache의 MIT license·Go1.21 floor·README/SECURITY와 constraint/version source 및
+`go mod verify`의 전체 checksum 일치를 검토했다. Copyright/permission notice 의무를
+유지하며 module global coercion 또는 prerelease 설정을 바꾸지 않는다.
+
+[정확한 검토와 지원 subset](../planning/evidence/package-client-quarantine/p3b3b-bun-parser-source-plan-20261025.md)이
+소비 위치와 bounds·의미 비교/negative·vulnerability 검증을 소유한다. 전체 Bun/npm solver
+동등성, 현재 최신 버전 또는 upstream release note 확인을 주장하지 않는다. Architecture는
+npm exact import만 허용하며 다른 adapter/Core/Application으로 전파하지 않는다.

@@ -1,0 +1,1 @@
+{"name":"haa-bun-transitive","version":"0.0.0","private":true,"scripts":{"install":"exit 99"},"dependencies":{"is-odd":"3.0.1"}}

@@ -100,6 +100,19 @@ func TestCorpusTargetRejectsEmptySelection(t *testing.T) {
 	}
 }
 
+func TestBunConstraintParserRequiresReviewedConsumer(t *testing.T) {
+	const module = "example.test/project"
+	const dependency = "github.com/Masterminds/semver/v3"
+	if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + "/internal/artifact/npm", Imports: []string{dependency}}}); len(findings) != 0 {
+		t.Fatal(findings)
+	}
+	for _, owner := range []string{"/internal/core/domain", "/internal/application", "/internal/artifact/pypi", "/internal/inspection/npm"} {
+		if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + owner, Imports: []string{dependency}}}); len(findings) == 0 {
+			t.Fatal("constraint parser leaked into an unreviewed consumer", owner)
+		}
+	}
+}
+
 func TestYAMLParserRequiresReviewedConsumer(t *testing.T) {
 	const module = "example.test/project"
 	for _, owner := range []string{"/internal/artifact/npm", "/scripts/update-runtime"} {
