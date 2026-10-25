@@ -1,0 +1,197 @@
+{
+  "schema": "p3b2b1-bun-owner-maintenance-local/v1",
+  "baseline": "6e927b4b95d542948e4834182d6501f75f26060f",
+  "status": {
+    "IMPLEMENTED": "YES (single schema4 Bun owner and frozen maintenance)",
+    "WIRED": "YES (generator, drift/support, plan/apply/verify and current schema consumers)",
+    "QUALIFIED": "YES (named local owner/maintenance only)",
+    "ACCEPTANCE_CLOSED": "NO (B2b2 release/install and whole P3 remain)"
+  },
+  "scope": "Publisher-authenticated archive/native data and observed version/source identity remain distinct. Existing maintenance journal and generic current schema consumers reused; no Bun release tool tuple or installed guest admission yet.",
+  "source_inventory": [
+    {
+      "path": "scripts/runtimes.lock.json",
+      "sha256": "5592ab4e9b39e15c67aa9d05abf578a05b705e0c6ab992e22f80bd3c40f4ed4a"
+    },
+    {
+      "path": "scripts/version-support.lock.json",
+      "sha256": "2a27894625c2ed338fe815b0c23f7c61a7ed4b49604bf8b250a7bee7bb58632c"
+    },
+    {
+      "path": "scripts/generate-runtime-lock.go",
+      "sha256": "e4665aa6e9cf93e603dc6d92e7e94c38e3f9575fe941302caa5bd529893e14f2"
+    },
+    {
+      "path": "scripts/generate-runtime-lock_test.go",
+      "sha256": "07f2745615474cbcca618d96cb7159a4ccaf77793e279c6935b1da046775a3c5"
+    },
+    {
+      "path": "internal/runtimeidentity/runtime_lock_gen.go",
+      "sha256": "189cbaeae6c931ab656f33fd51698817dbe0b7520adac183b465c2f3c78bab87"
+    },
+    {
+      "path": "scripts/check/runtime_versions.go",
+      "sha256": "9b74afb71193ed0c39eb2e5324eab027ea93c985a34cb958e085e8643d71261d"
+    },
+    {
+      "path": "scripts/check/runtime_versions_test.go",
+      "sha256": "11d655f6762d1ac9d79abcb0850023e285b3cfdca297e18ecd50c6757d5091c8"
+    },
+    {
+      "path": "scripts/update-runtime/bun_release.go",
+      "sha256": "d9d560daa904afdc45d196b470a3dc3db70f263e20a49821d326f0d00f7150fb"
+    },
+    {
+      "path": "scripts/update-runtime/bun_supply.go",
+      "sha256": "319906f24b4e019b40881619ea930218c3639891475c3552b6246e8e8f8012cb"
+    },
+    {
+      "path": "scripts/update-runtime/bun_supply_test.go",
+      "sha256": "ab7f258ed6862a31f99a18d3c6c4bf36413704554d414ddb468dafc07f3f331d"
+    },
+    {
+      "path": "scripts/update-runtime/bun_supply_real_test.go",
+      "sha256": "c835a386f83a8d90aa0ee3a1f2b87387e0f3c12ec129d9a76473e5e42db6036b"
+    },
+    {
+      "path": "scripts/update-runtime/pnpm_materialize.go",
+      "sha256": "d1103b75f75f7332413127620ebf19f0931f28349df8b89973605c127c411f66"
+    },
+    {
+      "path": "scripts/update-runtime/main.go",
+      "sha256": "2ed4b0b8cec879d211527c0ca4359ba4d1e339e2479c16f6ac66b9407d59f8a0"
+    },
+    {
+      "path": "scripts/update-runtime/metadata.go",
+      "sha256": "eb37c86816085f75660284282e183c987bba5f7082f756a567e0d7385737f8c1"
+    },
+    {
+      "path": "scripts/update-runtime/patch.go",
+      "sha256": "48f4428eb7a22e9a59f3ec6d0e115b49578d45d04f031a0b891ab1387d5403ef"
+    },
+    {
+      "path": "scripts/update-runtime/apply.go",
+      "sha256": "b6c992f8153bc7ed2959c0115c160073639f73381517b4bec5c73103530368b1"
+    },
+    {
+      "path": "scripts/update-runtime/gvisor.go",
+      "sha256": "7b5e6865d384706544e0ab4d8c4f8c19634823a96e2f5b7ec7cd08b280ed4bc4"
+    },
+    {
+      "path": "scripts/release-manifest/main.go",
+      "sha256": "dd81f9ebfeffbf70ba4e708a9148c4170d5176974bb8bc01c10626a1e8863573"
+    },
+    {
+      "path": "scripts/release-manifest/main_test.go",
+      "sha256": "4f55a486fbadcca317aa8adcc0e72e5ebbcc5e5a64af4b9a65dc2c7c023e64ee"
+    },
+    {
+      "path": "scripts/update-runtime/update_test.go",
+      "sha256": "24c06e5d6011e60b127759b7691b4e92a11b1384aad37c3216b624fa55e9eb40"
+    },
+    {
+      "path": "scripts/runtime-image-manifest/main.go",
+      "sha256": "56aebd7db5b752d4660fa507b4352f40bf12b002e584ba988c6b0ea52ada2d94"
+    },
+    {
+      "path": "scripts/runtime-image-manifest/main_test.go",
+      "sha256": "d9aafffe1d4e7424b693435b41b2183dd31fc3c3683562aa89884ba01db0b061"
+    },
+    {
+      "path": "tools/bun/SHASUMS256.txt.asc",
+      "sha256": "e7247485e1d1271ba1975983742b26c34323ffbe1de6847f2205625f91c61e99"
+    },
+    {
+      "path": "tools/bun/NOTICE",
+      "sha256": "a0f11e407b59d3441f1bc0319fc705f1df0284caf64070f6ddbdfc0add228980"
+    }
+  ],
+  "checks": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p3b2b-bun-corrected-quick.json",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit": 0,
+      "seconds": 174.452,
+      "log_sha256": "a420528d421fd233f6047eb60b64f050f81fa1d9c90acaaaf27151394f263479"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p3b2b-bun-corrected-security.json",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit": 0,
+      "seconds": 13.436,
+      "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p3b2b-bun-corrected-docs.json",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit": 0,
+      "seconds": 0.234,
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    }
+  ],
+  "race": {
+    "path": "docs/github-logs/package-client-quarantine-20261021/p3b2b-bun-corrected-full-race.json",
+    "seconds": 69.257,
+    "command": [
+      "/home/winamp/.local/go/bin/go",
+      "test",
+      "-race",
+      "-count=1",
+      "./scripts",
+      "./scripts/update-runtime",
+      "./scripts/check",
+      "./scripts/runtime-image-manifest",
+      "./scripts/release-manifest",
+      "./internal/verification/releaseprovenance",
+      "-timeout",
+      "5m"
+    ]
+  },
+  "actual": {
+    "path": "docs/github-logs/package-client-quarantine-20261021/p3b2b-bun-frozen-maintenance-corrected.json",
+    "seconds": 10.496,
+    "scope": "official signed/native bytes freeze; synthetic previous version fixture; changed plan/interrupted apply/replay/tamper refusal; no old upstream release claim"
+  },
+  "first_failures": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p3b2b-bun-first-quick.json",
+      "cause": "Staticcheck ST1005 uppercase Bun error prefix; lowercase corrected"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p3b2b-first-actual-assessment.json",
+      "cause": "new routing condition sent Bun into PNPM verifier; corrected exact branch and native replacements-map selection"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p3b2b-bun-full-race.json",
+      "cause": "existing gVisor capture current-lock schema3 consumer omitted; source search also found release-manifest current schema consumer, both updated to4 while keeping bundle/compiler/release checks"
+    }
+  ],
+  "notices": {
+    "path": "tools/bun/NOTICE",
+    "source": "exact Bun source LICENSE.md inventory plus frozen source URL; passive data only",
+    "discovery_interpretation": "docs/github-logs/package-client-quarantine-20261021/p3b2b-bun-license-interpretation.json"
+  },
+  "missing": [
+    "B2b2 native Bun release materializer, manifest/package/installer/activation complete tuple",
+    "B2c exact gVisor observer role and actual startup/version/lock",
+    "native lock/graph/layout/current Policy/cache/records/transaction/CLI",
+    "whole Bun/P3 affected-source qualification and support closure"
+  ],
+  "ci": "No push/CI for this local unit; remote source9410 preserved. CI410 actual timer consumed65min with eight success/Linux pending; second timer02:46:17UTC remains active.",
+  "cleanup": "Frozen Bun input/current candidate/SDK/quality retained as immediate next-consumer inputs. All five Bun diagnostic task containers removed/absence confirmed; no general prune."
+}

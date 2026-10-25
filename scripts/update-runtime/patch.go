@@ -21,6 +21,32 @@ func selectedVersion(root, component string) (string, error) {
 	if component == "terraform" || component == "github" {
 		return "inspection-subject", nil
 	}
+	if component == "bun" {
+		body, _, err := readRegular(root, runtimeFile)
+		if err != nil {
+			return "", err
+		}
+		fields, err := jsonSpans(body)
+		if err != nil {
+			return "", err
+		}
+		expected := map[string]bool{}
+		for _, field := range []string{"", "/bun_version", "/architecture", "/runtime_image", "/archive", "/archive/url", "/archive/sha256", "/archive/size", "/publisher", "/publisher/fingerprint", "/publisher/checksums_path", "/publisher/checksums_sha256", "/source_commit_observed", "/tool", "/tool/path", "/tool/sha256", "/tool/size", "/notices", "/notices/path", "/notices/sha256", "/notices/size"} {
+			expected["/bun_tool"+field] = true
+		}
+		count := 0
+		for path := range fields {
+			if path == "/bun_tool" || strings.HasPrefix(path, "/bun_tool/") {
+				if !expected[path] {
+					return "", errors.New("bun selected owner has an unknown or noncanonical field")
+				}
+				count++
+			}
+		}
+		if count != len(expected) {
+			return "", errors.New("bun selected owner fields are missing")
+		}
+	}
 	var lock map[string]any
 	if err := loadJSON(filepath.Join(root, runtimeFile), &lock); err != nil {
 		return "", err
@@ -37,6 +63,8 @@ func selectedVersion(root, component string) (string, error) {
 		key, versionKey = "rust_image", "rust_version"
 	case "uv":
 		key, versionKey = "uv_image", "uv_version"
+	case "bun":
+		key, versionKey = "bun_tool", "bun_version"
 	case "pnpm":
 		key, versionKey = "pnpm_tool", "pnpm_version"
 	default:
@@ -196,12 +224,16 @@ func renderChanges(p plan, state string) ([]change, error) {
 			if err := verifyFrozenPNPMSupply(p.Version, p.Metadata, state); err != nil {
 				return nil, err
 			}
+		} else if p.Component == "bun" {
+			if err := verifyFrozenBunSupply(p.Version, p.Metadata, state); err != nil {
+				return nil, err
+			}
 		} else if err := validateMetadata(p.Component, p.Version, p.Metadata); err != nil {
 			return nil, err
 		}
 		key := map[string]string{"go": "go_image", "node": "node_image", "python": "python_image", "rust": "rust_image", "uv": "uv_image"}[p.Component]
 		replacements := map[string]any{"/" + key + "/reference": p.Metadata.Image}
-		if p.Component == "pnpm" {
+		if p.Component == "pnpm" || p.Component == "bun" {
 			replacements = map[string]any{}
 		}
 		owners := map[string]string{}
@@ -234,6 +266,27 @@ func renderChanges(p plan, state string) ([]change, error) {
 			replacements["/uv_image/tool/sha256"] = u.ToolSHA256
 			replacements["/uv_image/tool/size"] = u.ToolSize
 			owners["uv"] = p.Version
+		case "bun":
+			u := p.Metadata.Bun
+			replacements["/bun_tool/bun_version"] = p.Version
+			replacements["/bun_tool/architecture"] = "amd64"
+			replacements["/bun_tool/runtime_image"] = "node_image"
+			replacements["/bun_tool/archive/url"] = "https://github.com/oven-sh/bun/releases/download/bun-v" + p.Version + "/bun-linux-x64.zip"
+			replacements["/bun_tool/archive/sha256"] = u.Discovery.ArchiveSHA256
+			replacements["/bun_tool/archive/size"] = u.Discovery.ArchiveSize
+			replacements["/bun_tool/publisher/fingerprint"] = "F3DCC08A8572C0749B3E18888EAB4D40A7B22B59"
+			replacements["/bun_tool/publisher/checksums_path"] = "tools/bun/SHASUMS256.txt.asc"
+			replacements["/bun_tool/publisher/checksums_sha256"] = hash(u.Signed)
+			replacements["/bun_tool/source_commit_observed"] = u.Discovery.SourceCommitObserved
+			replacements["/bun_tool/tool/path"] = "bun"
+			replacements["/bun_tool/tool/sha256"] = u.ToolSHA256
+			replacements["/bun_tool/tool/size"] = u.ToolSize
+			replacements["/bun_tool/notices/path"] = "tools/bun/NOTICE"
+			replacements["/bun_tool/notices/sha256"] = hash(u.Notices)
+			replacements["/bun_tool/notices/size"] = len(u.Notices)
+			files["tools/bun/SHASUMS256.txt.asc"] = u.Signed
+			files["tools/bun/NOTICE"] = u.Notices
+			owners["Bun"] = p.Version
 		case "pnpm":
 			u := p.Metadata.PNPM
 			replacements["/pnpm_tool/pnpm_version"] = p.Version

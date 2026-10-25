@@ -130,7 +130,7 @@ func readPNPMMaterializationOwner(root string) (pnpmMaterializationOwner, error)
 		return pin, err
 	}
 	var schema int
-	if json.Unmarshal(lock["schema_version"], &schema) != nil || schema != 3 {
+	if json.Unmarshal(lock["schema_version"], &schema) != nil || schema != 4 {
 		return pin, errors.New("pnpm runtime owner schema is invalid")
 	}
 	selected := lock["pnpm_tool"]

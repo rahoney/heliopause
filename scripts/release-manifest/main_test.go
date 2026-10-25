@@ -128,7 +128,7 @@ func releaseAssets(t *testing.T, root, binary string) []string {
 func syntheticReleaseLock(t *testing.T, paths []string) []byte {
 	t.Helper()
 	var lock runtimeLock
-	lock.SchemaVersion = 3
+	lock.SchemaVersion = 4
 	lock.GVisor.Release = "release-20260810.0"
 	lock.GVisor.Commit = strings.Repeat("a", 40)
 	lock.PNPMTool.Version = "1.2.3"

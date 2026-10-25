@@ -26,6 +26,7 @@ type archive struct {
 	SHA256 string `json:"sha256"`
 }
 type metadata struct {
+	Bun          *bunSupplyMetadata  `json:"bun_supply,omitempty"`
 	PNPM         *pnpmSupplyMetadata `json:"pnpm_supply,omitempty"`
 	UV           *uvSupplyMetadata   `json:"uv_supply,omitempty"`
 	Image        string              `json:"image"`

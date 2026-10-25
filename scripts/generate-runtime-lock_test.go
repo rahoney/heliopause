@@ -596,3 +596,33 @@ func TestRuntimeLockDigestUsesCompleteBoundedInput(t *testing.T) {
 		t.Fatal("oversized lock prefix accepted")
 	}
 }
+
+func TestBunOwnerRejectsUnverifiedShapeAndBounds(t *testing.T) {
+	base, err := readLock("runtimes.lock.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for name, change := range map[string]func(*runtimeLock){
+		"schema3":         func(l *runtimeLock) { l.SchemaVersion = 3 },
+		"missing":         func(l *runtimeLock) { l.BunTool.Version = "" },
+		"architecture":    func(l *runtimeLock) { l.BunTool.Architecture = "arm64" },
+		"runtime":         func(l *runtimeLock) { l.BunTool.RuntimeImage = "python_image" },
+		"url":             func(l *runtimeLock) { l.BunTool.Archive.URL = "https://foreign.invalid/bun.zip" },
+		"archive-limit":   func(l *runtimeLock) { l.BunTool.Archive.Size = 64<<20 + 1 },
+		"publisher":       func(l *runtimeLock) { l.BunTool.Publisher.Fingerprint = strings.Repeat("A", 40) },
+		"proof-path":      func(l *runtimeLock) { l.BunTool.Publisher.ChecksumsPath = "../proof" },
+		"proof-hash":      func(l *runtimeLock) { l.BunTool.Publisher.ChecksumsSHA256 = "" },
+		"observed-source": func(l *runtimeLock) { l.BunTool.SourceCommitObserved = "unknown" },
+		"native-limit":    func(l *runtimeLock) { l.BunTool.Tool.Size = 128<<20 + 1 },
+		"native-path":     func(l *runtimeLock) { l.BunTool.Tool.Path = "../bun" },
+		"notice-path":     func(l *runtimeLock) { l.BunTool.Notices.Path = "tools/pnpm/NOTICE" },
+	} {
+		t.Run(name, func(t *testing.T) {
+			candidate := base
+			change(&candidate)
+			if validate(candidate) == nil {
+				t.Fatal("invalid Bun owner accepted")
+			}
+		})
+	}
+}

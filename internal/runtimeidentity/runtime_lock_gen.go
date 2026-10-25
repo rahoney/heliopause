@@ -3,7 +3,7 @@
 package runtimeidentity
 
 const (
-	RuntimeLockSHA256            = "87b29d73031fcba90c58613df7063d8932281e784da6f22123684373c332c550"
+	RuntimeLockSHA256            = "5592ab4e9b39e15c67aa9d05abf578a05b705e0c6ab992e22f80bd3c40f4ed4a"
 	GVisorRelease                = "release-20260907.0"
 	GVisorCommit                 = "7c6199801fd233d6d55309af4645d4746a077de7"
 	GVisorSourceRepository       = "https://github.com/google/gvisor.git"
@@ -37,6 +37,19 @@ const (
 	PNPMArchitecture             = "amd64"
 	PNPMArchiveURL               = "https://github.com/pnpm/pnpm/releases/download/v12.15.0/pnpm-linux-x64.tar.gz"
 	PNPMArchiveSHA256            = "55b5ed0092bd11176c1669598e231ae52e7cedac59de6efd0d415730f37d0598"
+	BunVersion                   = "1.4.4"
+	BunArchitecture              = "amd64"
+	BunRuntimeImage              = "node_image"
+	BunArchiveURL                = "https://github.com/oven-sh/bun/releases/download/bun-v1.4.4/bun-linux-x64.zip"
+	BunArchiveSHA256             = "bf8ccbfb2b0b80159e0f9a6d15c55317add8077534dbc6130a3edb52fccb395c"
+	BunPublisherFingerprint      = "F3DCC08A8572C0749B3E18888EAB4D40A7B22B59"
+	BunChecksumsPath             = "tools/bun/SHASUMS256.txt.asc"
+	BunChecksumsSHA256           = "e7247485e1d1271ba1975983742b26c34323ffbe1de6847f2205625f91c61e99"
+	BunSourceCommitObserved      = "38afee6c84fcf48c0edb2466aa4b27d287a59c30"
+	BunToolPath                  = "bun"
+	BunToolSHA256                = "10702245766b225e70bbf6235fd6b47214fd94b4760d00ffaed8ab0df57ac235"
+	BunNoticesPath               = "tools/bun/NOTICE"
+	BunNoticesSHA256             = "a0f11e407b59d3441f1bc0319fc705f1df0284caf64070f6ddbdfc0add228980"
 	PNPMSourceCommit             = "91774e72a04d52ce61db06339696a433d383c764"
 	PNPMWorkflowRun              = "39583314875"
 	PNPMBundlePath               = "tools/pnpm/release-proof.json"
@@ -66,6 +79,9 @@ const (
 	PNPMArchiveSize              = 25369328
 	PNPMToolSize                 = 57822504
 	PNPMNoticesSize              = 3152
+	BunArchiveSize               = 51794595
+	BunToolSize                  = 107308936
+	BunNoticesSize               = 14877
 )
 
 type PythonSourceProfileLock struct {

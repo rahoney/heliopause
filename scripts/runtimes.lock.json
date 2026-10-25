@@ -1,5 +1,5 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "gvisor": {
     "release": "release-20260907.0",
     "commit": "7c6199801fd233d6d55309af4645d4746a077de7",
@@ -103,6 +103,32 @@
       "path": "tools/pnpm/NOTICE",
       "sha256": "df8cac4eb3aa5126532298814c75ec9fc2dab3248fef818b6317e7478abb7bd2",
       "size": 3152
+    }
+  },
+  "bun_tool": {
+    "bun_version": "1.4.4",
+    "architecture": "amd64",
+    "runtime_image": "node_image",
+    "archive": {
+      "url": "https://github.com/oven-sh/bun/releases/download/bun-v1.4.4/bun-linux-x64.zip",
+      "sha256": "bf8ccbfb2b0b80159e0f9a6d15c55317add8077534dbc6130a3edb52fccb395c",
+      "size": 51794595
+    },
+    "publisher": {
+      "fingerprint": "F3DCC08A8572C0749B3E18888EAB4D40A7B22B59",
+      "checksums_path": "tools/bun/SHASUMS256.txt.asc",
+      "checksums_sha256": "e7247485e1d1271ba1975983742b26c34323ffbe1de6847f2205625f91c61e99"
+    },
+    "source_commit_observed": "38afee6c84fcf48c0edb2466aa4b27d287a59c30",
+    "tool": {
+      "path": "bun",
+      "sha256": "10702245766b225e70bbf6235fd6b47214fd94b4760d00ffaed8ab0df57ac235",
+      "size": 107308936
+    },
+    "notices": {
+      "path": "tools/bun/NOTICE",
+      "sha256": "a0f11e407b59d3441f1bc0319fc705f1df0284caf64070f6ddbdfc0add228980",
+      "size": 14877
     }
   },
   "python_sources": [

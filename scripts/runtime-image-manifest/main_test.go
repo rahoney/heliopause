@@ -9,7 +9,7 @@ import (
 )
 
 func TestBuildManifestBindsOfficialImmutableImages(t *testing.T) {
-	lock := runtimeLock{SchemaVersion: 3}
+	lock := runtimeLock{SchemaVersion: 4}
 	bindSyntheticUV(&lock)
 	bindSyntheticPNPM(&lock)
 	lock.RustImage.Reference = "rust:1.99.0-bookworm@sha256:" + strings.Repeat("d", 64)
@@ -43,7 +43,7 @@ func TestRunRejectsMutableOrNonOfficialImages(t *testing.T) {
 	root := t.TempDir()
 	lockPath := filepath.Join(root, "runtimes.lock.json")
 	outputPath := filepath.Join(root, "runtime-images.json")
-	body := []byte(`{"schema_version":3,"go_image":{"reference":"golang:1.26.8-bookworm@sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc","go_version":"1.26.8","architecture":"amd64"},"node_image":{"reference":"node:latest","npm_version":"10.9.8"},"python_image":{"reference":"python:3.14.7-slim-bookworm@sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","python_version":"3.14.7","pip_version":"26.2.1"},"rust_image":{"reference":"rust:1.99.0-bookworm@sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd","rust_version":"1.99.0","architecture":"amd64","target":"x86_64-unknown-linux-gnu"}}`)
+	body := []byte(`{"schema_version":4,"go_image":{"reference":"golang:1.26.8-bookworm@sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc","go_version":"1.26.8","architecture":"amd64"},"node_image":{"reference":"node:latest","npm_version":"10.9.8"},"python_image":{"reference":"python:3.14.7-slim-bookworm@sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","python_version":"3.14.7","pip_version":"26.2.1"},"rust_image":{"reference":"rust:1.99.0-bookworm@sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd","rust_version":"1.99.0","architecture":"amd64","target":"x86_64-unknown-linux-gnu"}}`)
 	var input runtimeLock
 	if err := json.Unmarshal(body, &input); err != nil {
 		t.Fatal(err)
@@ -66,7 +66,7 @@ func TestRunWritesNoOverwriteManifest(t *testing.T) {
 	root := t.TempDir()
 	lockPath := filepath.Join(root, "runtimes.lock.json")
 	outputPath := filepath.Join(root, "runtime-images.json")
-	body := []byte(`{"schema_version":3,"go_image":{"reference":"golang:1.26.8-bookworm@sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc","go_version":"1.26.8","architecture":"amd64"},"node_image":{"reference":"node:22.23.1-slim@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","npm_version":"10.9.8"},"python_image":{"reference":"python:3.14.7-slim-bookworm@sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","python_version":"3.14.7","pip_version":"26.2.1"},"rust_image":{"reference":"rust:1.99.0-bookworm@sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd","rust_version":"1.99.0","architecture":"amd64","target":"x86_64-unknown-linux-gnu"}}`)
+	body := []byte(`{"schema_version":4,"go_image":{"reference":"golang:1.26.8-bookworm@sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc","go_version":"1.26.8","architecture":"amd64"},"node_image":{"reference":"node:22.23.1-slim@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","npm_version":"10.9.8"},"python_image":{"reference":"python:3.14.7-slim-bookworm@sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","python_version":"3.14.7","pip_version":"26.2.1"},"rust_image":{"reference":"rust:1.99.0-bookworm@sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd","rust_version":"1.99.0","architecture":"amd64","target":"x86_64-unknown-linux-gnu"}}`)
 	var input runtimeLock
 	if err := json.Unmarshal(body, &input); err != nil {
 		t.Fatal(err)

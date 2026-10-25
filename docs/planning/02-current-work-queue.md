@@ -17,7 +17,7 @@ Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003
 Active work item status: IN_PROGRESS — backend/cache/records/private materialization/transaction remotely QUALIFIED by CI407; B5c user CLI named local PASS; native ownership/user CLI named local QUALIFIED; final whole-source remote/affected-profile qualification and P2 acceptance remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Next action: M13-004/P2 — source9410c2d CI408 ordinary/CI409 cu126 Required10SUCCESS each, all checkout whole trees equal; cu130 CI410 IN_PROGRESS and cu132 next; keep active timer/turn and continue to P3 after P2 closure
-Current substep: M13-004/P2 — IN_PROGRESS; backend/production CLI/native original proof remote QUALIFIED by408/409; cu130/cu132 final affected matrix and P2 acceptance remain; P3-A/B1 Bun signed ZIP/native data named local QUALIFIED in same M13-004; B2a candidate/native runc query named local QUALIFIED; next B2b single owner/maintenance, remote source remains9410c2d
+Current substep: M13-004/P2 — IN_PROGRESS; backend/production CLI/native original proof remote QUALIFIED by408/409; cu130/cu132 final affected matrix and P2 acceptance remain; P3-A/B1 Bun signed ZIP/native data named local QUALIFIED in same M13-004; B2a candidate/native runc query named local QUALIFIED; B2b1 single owner/frozen maintenance named local QUALIFIED; next B2b2 release/installed tuple, remote source remains9410c2d
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -5063,3 +5063,17 @@ P3-B2a는 [candidate audit·exact map·두 번째 검토](./evidence/package-cli
 verify5case/PNPM 회귀를 통과했다. 고정 Node image의 nonroot/network-none/read-only runc에서
 1.4.4/1.4.4+38afee6c8를 확인했고 exact task container3개는 제거/부재 확인했다. Runtime pin/
 release/installed role·gVisor admission은 다음 B2b/B2c다. 로컬 중간 commit은 push하지 않는다.
+
+P3-B2b는 [production runtime 착수 지도](./evidence/package-client-quarantine/p3b2b-bun-runtime-plan-20261025.md)로
+기존 owner/maintenance/release 소비자의 구현 상태를 감사했다. 먼저 exact publisher proof와
+공식 source/내장 notices 자료를 확인하고 schema4 단일 owner·기존 frozen updater gap만
+구현한다. B2a 로컬 commit6e927b4도 push하지 않았으며 remote source9410은 유지한다.
+
+### 2026-10-25 P3-B2b1 Bun owner/frozen maintenance local checkpoint
+
+[Schema4 owner와 유지보수](./evidence/package-client-quarantine/p3b2b1-bun-owner-local-20261025.json)는
+단일 publisher/archive/native/notices identity와 generated drift/support, 기존 journal의
+plan/apply/verify를 연결했다. Actual changed plan·중단 후 재개·재실행/고정 archive 변조 거부와
+canonical/관련 여섯 package full Race가 PASS다. 첫 source routing/빠진 capture schema/문구
+gate를 보존하고 교정했다. 다음은 B2b2 release/package/installer/activation complete tuple이다.
+Production Bun gVisor/CLI·전체 P3는 아직 열려 있고 remote9410/현재 CI410 timer를 유지한다.

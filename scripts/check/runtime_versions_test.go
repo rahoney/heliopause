@@ -17,7 +17,7 @@ func runtimeOwnerFixture(t *testing.T) string {
 			t.Fatal(err)
 		}
 	}
-	for _, name := range []string{"go.mod", "README.md", "tools/pnpm/release-proof.json", "tools/pnpm/NOTICE", "scripts/ci-pnpm-runtime.sh", "scripts/runtimes.lock.json", "scripts/tools.lock.json", "scripts/version-support.lock.json", workflowRelativePath, securityWorkflowRelativePath, releaseWorkflowRelativePath, releasePublishWorkflowRelativePath} {
+	for _, name := range []string{"go.mod", "README.md", "tools/pnpm/release-proof.json", "tools/pnpm/NOTICE", "tools/bun/SHASUMS256.txt.asc", "tools/bun/NOTICE", "scripts/ci-pnpm-runtime.sh", "scripts/runtimes.lock.json", "scripts/tools.lock.json", "scripts/version-support.lock.json", workflowRelativePath, securityWorkflowRelativePath, releaseWorkflowRelativePath, releasePublishWorkflowRelativePath} {
 		body, err := os.ReadFile(filepath.Join("../..", name))
 		if err != nil {
 			t.Fatal(err)
@@ -261,5 +261,46 @@ func TestGoSetupCannotUseFloatingOrAlternateSelectors(t *testing.T) {
 		if len(validateGoWorkflowVersions(fixture, selected)) == 0 {
 			t.Fatal("alternate/floating selector accepted")
 		}
+	}
+}
+
+func TestBunProductionProofCannotDrift(t *testing.T) {
+	for _, name := range []string{"missing", "changed", "symlink", "owner-path"} {
+		t.Run(name, func(t *testing.T) {
+			root := runtimeOwnerFixture(t)
+			proof := filepath.Join(root, "tools", "bun", "SHASUMS256.txt.asc")
+			switch name {
+			case "missing":
+				if err := os.Remove(proof); err != nil {
+					t.Fatal(err)
+				}
+			case "changed":
+				if err := os.WriteFile(proof, []byte("changed"), 0600); err != nil {
+					t.Fatal(err)
+				}
+			case "symlink":
+				body, err := os.ReadFile(proof)
+				if err != nil {
+					t.Fatal(err)
+				}
+				other := filepath.Join(t.TempDir(), "other.json")
+				if err := os.WriteFile(other, body, 0600); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.Remove(proof); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.Symlink(other, proof); err != nil {
+					t.Fatal(err)
+				}
+			case "owner-path":
+				mutateVersionJSON(t, root, "runtimes.lock.json", func(l map[string]any) {
+					l["bun_tool"].(map[string]any)["publisher"].(map[string]any)["checksums_path"] = "testdata/bundle.json"
+				})
+			}
+			if err := checkOwnerFixture(root); err == nil {
+				t.Fatal("unowned production proof accepted")
+			}
+		})
 	}
 }

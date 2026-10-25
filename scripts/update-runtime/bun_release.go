@@ -66,6 +66,8 @@ type bunVerifiedSupply struct {
 	checksum  releaseprovenance.BunChecksumReceipt
 	tool      releaseprovenance.BunToolReceipt
 	native    []byte
+	archive   []byte
+	signed    []byte
 }
 
 // readBunSupply is the common authenticated data reader for verification and
@@ -113,5 +115,5 @@ func readBunSupply(input string, now time.Time) (bunVerifiedSupply, error) {
 	if err != nil {
 		return bunVerifiedSupply{}, err
 	}
-	return bunVerifiedSupply{discovery, receipt, tool, native}, nil
+	return bunVerifiedSupply{discovery: discovery, checksum: receipt, tool: tool, native: native, archive: archive, signed: signed}, nil
 }

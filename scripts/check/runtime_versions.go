@@ -32,8 +32,8 @@ func runtimeVersionOwners(root string, tools toolLock) (map[string]string, error
 	if err := json.Unmarshal(body, &lock); err != nil {
 		return nil, err
 	}
-	wantKeys := map[string]bool{"schema_version": true, "gvisor": true, "docker": true, "go_image": true, "rust_image": true, "node_image": true, "python_image": true, "python_sources": true, "bazel": true, "uv_image": true, "pnpm_tool": true}
-	if len(lock) != len(wantKeys) || lock["schema_version"] != float64(3) {
+	wantKeys := map[string]bool{"schema_version": true, "gvisor": true, "docker": true, "go_image": true, "rust_image": true, "node_image": true, "python_image": true, "python_sources": true, "bazel": true, "uv_image": true, "pnpm_tool": true, "bun_tool": true}
+	if len(lock) != len(wantKeys) || lock["schema_version"] != float64(4) {
 		return nil, errors.New("runtime version owners: missing or unsupported lock component")
 	}
 	for key := range lock {
@@ -46,7 +46,7 @@ func runtimeVersionOwners(root string, tools toolLock) (map[string]string, error
 		"Go": "go_image.go_version", "Docker": "docker.ci_engine_version",
 		"gVisor": "gvisor.release", "Bazel": "bazel.version", "Rust/Cargo": "rust_image.rust_version",
 		"uv": "uv_image.uv_version", "npm": "node_image.npm_version", "Python": "python_image.python_version", "pip": "python_image.pip_version",
-		"pnpm": "pnpm_tool.pnpm_version",
+		"pnpm": "pnpm_tool.pnpm_version", "Bun": "bun_tool.bun_version",
 	} {
 		value, err := runtimeOwnerString(lock, path)
 		if err != nil {
@@ -58,6 +58,9 @@ func runtimeVersionOwners(root string, tools toolLock) (map[string]string, error
 		owners[component] = value
 	}
 	if err := checkPNPMProofFile(root, lock); err != nil {
+		return nil, err
+	}
+	if err := checkBunProofFile(root, lock); err != nil {
 		return nil, err
 	}
 	node, err := runtimeOwnerString(lock, "node_image.reference")
@@ -88,10 +91,10 @@ func runtimeVersionOwners(root string, tools toolLock) (map[string]string, error
 }
 
 func checkPNPMProofFile(root string, lock map[string]any) error {
-	if err := checkPNPMPinnedMetadata(root, lock, "pnpm_tool.provenance.bundle_path", "pnpm_tool.provenance.bundle_sha256", "tools/pnpm/release-proof.json"); err != nil {
+	if err := checkPinnedRuntimeMetadata(root, lock, "pnpm_tool.provenance.bundle_path", "pnpm_tool.provenance.bundle_sha256", "tools/pnpm/release-proof.json"); err != nil {
 		return err
 	}
-	if err := checkPNPMPinnedMetadata(root, lock, "pnpm_tool.notices.path", "pnpm_tool.notices.sha256", "tools/pnpm/NOTICE"); err != nil {
+	if err := checkPinnedRuntimeMetadata(root, lock, "pnpm_tool.notices.path", "pnpm_tool.notices.sha256", "tools/pnpm/NOTICE"); err != nil {
 		return err
 	}
 	body, err := os.ReadFile(filepath.Join(root, "tools/pnpm/NOTICE"))
@@ -102,10 +105,10 @@ func checkPNPMProofFile(root string, lock map[string]any) error {
 	return nil
 }
 
-func checkPNPMPinnedMetadata(root string, lock map[string]any, pathKey, hashKey, fixedPath string) error {
+func checkPinnedRuntimeMetadata(root string, lock map[string]any, pathKey, hashKey, fixedPath string) error {
 	name, err := runtimeOwnerString(lock, pathKey)
 	if err != nil || name != fixedPath {
-		return errors.New("pnpm pinned metadata owner is missing or changed")
+		return errors.New("runtime pinned metadata owner is missing or changed")
 	}
 	expected, err := runtimeOwnerString(lock, hashKey)
 	if err != nil {
@@ -114,7 +117,7 @@ func checkPNPMPinnedMetadata(root string, lock map[string]any, pathKey, hashKey,
 	path := filepath.Join(root, filepath.FromSlash(name))
 	info, err := os.Lstat(path)
 	if err != nil || !info.Mode().IsRegular() || info.Size() <= 0 || info.Size() > 1<<20 {
-		return errors.New("pnpm pinned metadata is unavailable or excessive")
+		return errors.New("runtime pinned metadata is unavailable or excessive")
 	}
 	file, err := os.Open(path)
 	if err != nil {
@@ -124,7 +127,7 @@ func checkPNPMPinnedMetadata(root string, lock map[string]any, pathKey, hashKey,
 	closeErr := file.Close()
 	sum := sha256.Sum256(body)
 	if readErr != nil || closeErr != nil || int64(len(body)) != info.Size() || hex.EncodeToString(sum[:]) != expected {
-		return errors.New("pnpm pinned metadata differs from its runtime owner")
+		return errors.New("runtime pinned metadata differs from its runtime owner")
 	}
 	return nil
 }
@@ -270,4 +273,23 @@ func validateGoWorkflowVersions(contents, selected string) []string {
 		findings = append(findings, "workflow has no owned Go setup")
 	}
 	return findings
+}
+
+// The source owner seals reviewed bytes; publisher authentication remains in
+// releaseprovenance and frozen maintenance, not in this read-only drift check.
+func checkBunProofFile(root string, lock map[string]any) error {
+	if err := checkPinnedRuntimeMetadata(root, lock, "bun_tool.publisher.checksums_path", "bun_tool.publisher.checksums_sha256", "tools/bun/SHASUMS256.txt.asc"); err != nil {
+		return err
+	}
+	if err := checkPinnedRuntimeMetadata(root, lock, "bun_tool.notices.path", "bun_tool.notices.sha256", "tools/bun/NOTICE"); err != nil {
+		return err
+	}
+	body, err := os.ReadFile(filepath.Join(root, "tools/bun/NOTICE"))
+	source, sourceErr := runtimeOwnerString(lock, "bun_tool.source_commit_observed")
+	bun, ok := lock["bun_tool"].(map[string]any)
+	notices, noticesOK := bun["notices"].(map[string]any)
+	if err != nil || sourceErr != nil || !ok || !noticesOK || len(body) > 64<<10 || notices["size"] != float64(len(body)) || !strings.HasPrefix(string(body), "Bun upstream source: https://github.com/oven-sh/bun/tree/"+source+"\n\n") {
+		return errors.New("bun passive notices source binding differs from its runtime owner")
+	}
+	return nil
 }
