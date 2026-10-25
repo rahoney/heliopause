@@ -81,7 +81,7 @@ identity를 사용하되 명시 capability/보안 한도까지 사용자 설정�
 | P0 설계/사전 검토 | 사용자 범위·기존 owner·공식 문서·버전 후보 대조 | 본 문서와 leaf, 재검토·canonical docs/security | COMPLETE — canonical docs/security PASS |
 | P1 client foundation + uv pip | exact uv runtime·좁은 descriptor, 기존 install/update 재사용 | actual uv install/upgrade/sync, 기존 pip/npm 회귀, 실패 불변·정리 | COMPLETE — [qualification/acceptance](./evidence/package-client-quarantine/p1-uv-acceptance-20261023.json); P1a baseline은 당시 감사 |
 | P2 pnpm | fixed resolver/lock/layout·공통 descriptor 재사용 | actual add/install/update/peer graph·link 공격·rollback | IN_PROGRESS — backend CI407 named remote QUALIFIED; CLI/native original ownership named local QUALIFIED; whole-source remote/affected-profile matrix and P2 acceptance pending |
-| P3 Bun | fixed Bun resolver/layout/lifecycle | actual install/update·Node vs Bun runtime 요구 분리·회귀 | NOT_STARTED |
+| P3 Bun | fixed Bun resolver/layout/lifecycle | actual install/update·Node vs Bun runtime 요구 분리·회귀 | IN_PROGRESS — A publisher checksums/actual zip named local QUALIFIED; runtime/lock/layout/CLI remain; same M13-004 local work while fixed P2 profiles finish |
 | P4 uv project / persistent tools | uv add/sync/lock-upgrade, uv tool/pipx install·upgrade metadata·exposed scripts | project lock-only vs installed 상태, tool ownership/retired scripts/rollback | NOT_STARTED |
 | P5 execution foundation + npx | full frozen set·entrypoint·sandbox run·output/exit/lifecycle 계약 | actual 정상/악성/취소/재다운로드 거부, stdout-only 우선; 생성 파일/TTY는 별도 acceptance | NOT_STARTED |
 | P6 uvx·bunx·pipx run·pnpm dlx | P5 재사용, 각각 parser/runtime/selection adapters | 각 alias real end-to-end, forced runtime/backend·cache negatives | NOT_STARTED |
@@ -129,6 +129,13 @@ CI 대기 중에는 그 결과에 의존하지 않는 같은 item의 설계 검�
 지정하면 우선한다. 기다림이 필요하면 실제 시계를 기준으로 clock.sleep 등 대기 도구를 사용하고
 짧은 상태 조회를 반복하지 않는다. 미완료면 남은 job·경과 시간에 따라 다음 확인 시각을 갱신한다.
 독립 작업을 진행한 시간도 경과에 포함하며 대화 종료 후 자동 재개를 약속하지 않는다.
+
+2026-10-25 사용자 후속 지시: 활성 연속 작업에서는 타이머 파일만 남기고 CI 대기로 응답을
+끝내지 않는다. 응답을 유지하고 실제 시계 대기 도구를 사용하여 정한 시각에 결과·원본 로그를
+확인한 뒤 다음 검증/구현으로 계속한다. 타이머의 DUE 기록은 결과 확인이나 작업 재개의 증거가
+아니다. 대기 중 결과에 의존하지 않는 같은 item의 설계·baseline audit·로컬 작업을 진행한다.
+짧은 API polling이나 작은 수정별 push/full CI 반복은 하지 않는다. 새 원격 실행은 위에서 정한
+구현 묶음/공통 동작 경계와 명시된 최종 profile qualification에만 사용한다.
 
 CPU 완료 회계 수정의 cu126/cu130/cu132 actual은 P1 완료 후보에서 공통 코드의 동일성을
 확인해 모아 수행할 수 있다. 네 profile의 실제 qualification과 cleanup 전에는 P1 완료·승격을

@@ -5,6 +5,24 @@ import (
 	"testing"
 )
 
+func TestBunCleartextCryptoHasOnlyReviewedCaller(t *testing.T) {
+	const module = "example.test/project"
+	imports := []string{"github.com/ProtonMail/go-crypto/openpgp/clearsign", "github.com/ProtonMail/go-crypto/openpgp/packet", "github.com/ProtonMail/go-crypto/openpgp/v2"}
+	if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + "/internal/verification/releaseprovenance", Imports: imports}}); len(findings) != 0 {
+		t.Fatal("reviewed Bun crypto edge rejected", findings)
+	}
+	for _, owner := range []string{"/internal/core/domain", "/internal/core/ports", "/internal/application", "/internal/policy", "/internal/cli", "/internal/sandbox", "/scripts/update-runtime"} {
+		if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + owner, Imports: imports}}); len(findings) == 0 {
+			t.Fatal("Bun crypto escaped reviewed verifier", owner)
+		}
+	}
+	for _, owner := range []string{"/internal/verification/releaseprovenance", "/internal/verification/terraformprovider"} {
+		if findings := validateCurrentImports(module, []packageMetadata{{ImportPath: module + owner, Imports: []string{"github.com/ProtonMail/go-crypto/openpgp/unreviewed"}}}); len(findings) == 0 {
+			t.Fatal("whole external crypto prefix was allowed", owner)
+		}
+	}
+}
+
 func TestValidateCurrentImports(t *testing.T) {
 	t.Parallel()
 

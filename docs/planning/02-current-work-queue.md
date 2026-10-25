@@ -16,8 +16,8 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — backend/cache/records/private materialization/transaction remotely QUALIFIED by CI407; B5c user CLI named local PASS; native ownership/user CLI named local QUALIFIED; final whole-source remote/affected-profile qualification and P2 acceptance remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2 — CI407/e9ca85e backend+actual CI caller QUALIFIED (10 SUCCESS, same whole tree); B5c PNPM CLI committed a03ff13 LOCAL QUALIFIED; B5d native original ownership and final CLI regressions LOCAL QUALIFIED; commit/remote and affected-profile qualification next; whole P2 remains NO
-Current substep: M13-004/P2 — IN_PROGRESS; CI407/e9ca85e remote QUALIFIED;  B5c CLI committed a03ff13 LOCAL QUALIFIED; B5d native original safe-copy proof actual3 cases LOCAL PASS; final CLI/npm regressions LOCAL QUALIFIED; remote and affected-profile qualification pending; whole P2 remains NO
+Next action: M13-004/P2 — source9410c2d CI408 ordinary/CI409 cu126 Required10SUCCESS each, all checkout whole trees equal; cu130 CI410 IN_PROGRESS and cu132 next; keep active timer/turn and continue to P3 after P2 closure
+Current substep: M13-004/P2 — IN_PROGRESS; backend/production CLI/native original proof remote QUALIFIED by408/409; cu130/cu132 final affected matrix and P2 acceptance remain; P3-A independent Bun supply baseline/edit-map in same M13-004; local implementation after second review, remote source remains9410c2d
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -5016,3 +5016,29 @@ user files/actual records가 PASS다. Fixture owner/JSON expectation의 두 실�
 교정했다. Canonical5/일곱 package Race157.139s/checker29.742s, final CLI9operation/npm actual·
 Darwin compile, helperwait0/Host 불변과6개 완료 runtime 정리도 결과에 연결했다. Whole P2는
 remote/영향받는 CPU·세CUDA와 최종 support acceptance 전까지 미완료다. M13-004 하나만 IN_PROGRESS다.
+
+### 2026-10-25 CI408/409 remote qualification과 연속 대기 교정
+
+[Source9410c2d 결과](./evidence/package-client-quarantine/p2c5b5d-ci408-409-qualification-20261025.json)는
+ordinary408/60m30와 cu126409/55m05 각각 Required10SUCCESS·전체2280파일 treee4ea86c 일치를
+확인했다. Final CLI9operation/native3·cache/transaction·observer112씩·CPU289.90/182.04s 및
+cu126927.76s/native macOS·helper7wait0/final confirmed clean이다. 두 timer는 DUE를 기록했지만
+응답을 종료해 후속 소비를 놓쳤다. 사용자 지시에 따라 확장 계획§5에 active turn+clock 대기와
+결과 확인 뒤 후속 구현 지속을 명시했다. 작은 수정별 full CI는 반복하지 않는다.
+
+남은 기존 필수 cu130은 같은9410 source의 CI410/run40150614641이며 첫 clock 확인은
+2026-10-25 11:31:10 KST다. 이후 cu132를 순차 검증하고 support/acceptance를 닫는다.
+대기 중 같은 M13-004의 P3 Bun baseline·공식 버전/형식/재사용 경계를 확인하고, P2 결과와
+독립적인 공급 검증은 두 번째 검토 뒤 로컬에서 진행한다. P2 source9410은 원격에서 고정하고
+P2 최종 acceptance 전 전체 지원 완료를 표시하지 않는다. 이는 새 병렬 work item이 아니다. M13-004만 IN_PROGRESS다.
+
+### 2026-10-25 P3-A Bun signed publisher supply local checkpoint
+
+같은 M13-004에서 P2 fixed9410의 cu130/132 대기와 독립적인 [Bun 공급 검증](./evidence/package-client-quarantine/p3a-bun-supply-local-20261025.json)을
+로컬 연결했다. [baseline/edit map/두 번째 검토](./evidence/package-client-quarantine/p3-bun-baseline-20261025.md) 뒤 기존 locked crypto와
+bounded reader를 사용했고 실제 공식 signed checksums·52MB zip을 검증했다. Publisher/archive만
+인증하며 version/source-build/실행/Policy를 승인하지 않는다. Canonical4/관련4package Race와
+새 reachable parser의 canonical vulnerability·actual5cases를 확인했다. 첫 import review와
+operator routing 오류를 보존했다. Runtime pin/새 Bun 설치·실행 지원은 아직 없다. 다음은 B의
+bounded ZIP/ELF·ABI/기존 native maintenance와 guest admission이다. 개별 공급 단위로 원격 CI를
+추가하지 않는다. M13-004 하나만 IN_PROGRESS이며 기존 profile timer를 active turn에서 소비한다.

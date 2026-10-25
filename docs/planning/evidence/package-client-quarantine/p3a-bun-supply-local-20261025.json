@@ -1,0 +1,274 @@
+{
+  "schema": "p3a-bun-publisher-supply-local/v1",
+  "baseline": "9410c2dfaf9334335ecbac5ee7c0faabe0a69a6b",
+  "status": {
+    "IMPLEMENTED": "YES (Bun pinned publisher checksums and offline exact archive command)",
+    "WIRED": "YES (verify-bun-release real command)",
+    "QUALIFIED": "YES (named local supply-only)",
+    "ACCEPTANCE_CLOSED": "NO (whole P3 native/runtime/lock/layout/CLI absent)"
+  },
+  "scope": "Authenticates Bun vendor signature and exact archive bytes only. No native executable parsing/execution, runtime pin/support, source build provenance or verified native version.",
+  "discovery": {
+    "path": "docs/github-logs/package-client-quarantine-20261021/p3-bun-frozen-discovery-20261025.json",
+    "bytes": 1731,
+    "sha256": "7947e745ad2dc93816bcd2e9a2cc59f79742e21b1f003e717a66f8275b427c05"
+  },
+  "source_inventory": [
+    {
+      "path": "internal/verification/releaseprovenance/bun_release.go",
+      "bytes": 7605,
+      "sha256": "596fb2a9a16f99111903b3321abf7065d9102f187c89a8366832551ef0147d01"
+    },
+    {
+      "path": "internal/verification/releaseprovenance/bun_release_test.go",
+      "bytes": 5194,
+      "sha256": "7dccf32e5e2d5201a15753fdd2276586857d05ebd3402c683c7245341052dca3"
+    },
+    {
+      "path": "internal/verification/releaseprovenance/keys/bun.asc",
+      "bytes": 636,
+      "sha256": "cf0ec54ad2f5b74f3b03d98b426d473bf45d6458bcacc60df6e5caaff8ffcaea"
+    },
+    {
+      "path": "internal/verification/releaseprovenance/testdata/bun-1.4.4/identity.json",
+      "bytes": 213,
+      "sha256": "c6543a36b3c4dcb34331747bac3582d6c79a2533a8ebff54b782a26ffbcdbc19"
+    },
+    {
+      "path": "internal/verification/releaseprovenance/testdata/bun-1.4.4/SHASUMS256.txt.asc",
+      "bytes": 3709,
+      "sha256": "e7247485e1d1271ba1975983742b26c34323ffbe1de6847f2205625f91c61e99"
+    },
+    {
+      "path": "scripts/update-runtime/bun_release.go",
+      "bytes": 3913,
+      "sha256": "df53a4d21a7852d511bb798ee393edceb131d6506e231b45b312781d80387112"
+    },
+    {
+      "path": "scripts/update-runtime/bun_release_test.go",
+      "bytes": 2783,
+      "sha256": "e52f7e14a371cabdbf8f2c375dd81c1cbe91d49bf7047e23e86d66b470bfdd9c"
+    },
+    {
+      "path": "scripts/update-runtime/main.go",
+      "bytes": 17451,
+      "sha256": "0df480cc53c33f0e6799ee6c2623efe6cf9aee25dfa60ece823a096fb77d860f"
+    },
+    {
+      "path": "scripts/check/architecture.go",
+      "bytes": 15408,
+      "sha256": "40a4e96dc11496cb032e8326123801d99fe5ccb23f053bee803fabc751d9e0a8"
+    },
+    {
+      "path": "scripts/check/architecture_test.go",
+      "bytes": 8112,
+      "sha256": "6bbeac81e9379e8d5b60fcd4588daa5431a308d5eeef716ba0debff4fc9999fe"
+    }
+  ],
+  "checks": [
+    {
+      "name": "p3a-bun-reviewed-format",
+      "seconds": 2.307,
+      "command": null,
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p3a-bun-reviewed-format.json",
+        "bytes": 1126,
+        "sha256": "92666424fbc6156bf126be325f9c18e28a5dd816f767f77a179d576f0cc52261"
+      }
+    },
+    {
+      "name": "p3a-bun-reviewed-quick",
+      "seconds": 165.936,
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p3a-bun-reviewed-quick.json",
+        "bytes": 308,
+        "sha256": "68e05090f64e89a4c5bbdc9f748217951601c75c5f82056b3fa09cded0e93e9c"
+      }
+    },
+    {
+      "name": "p3a-bun-reviewed-security",
+      "seconds": 11.613,
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p3a-bun-reviewed-security.json",
+        "bytes": 313,
+        "sha256": "ce44a20b250f30d95c08548b5cc0e1bb90e8d59945a60c2d933b4988bcd2d90a"
+      }
+    },
+    {
+      "name": "p3a-bun-reviewed-docs",
+      "seconds": 0.244,
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p3a-bun-reviewed-docs.json",
+        "bytes": 304,
+        "sha256": "7baeee58dea07400287777c85c019ae9933c0173542f0d76104ea74a233ec074"
+      }
+    },
+    {
+      "name": "p3a-bun-reviewed-race",
+      "seconds": 36.007,
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/verification/releaseprovenance",
+        "./internal/verification/terraformprovider",
+        "./scripts/update-runtime",
+        "./scripts/check",
+        "-timeout",
+        "5m"
+      ],
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p3a-bun-reviewed-race.json",
+        "bytes": 479,
+        "sha256": "cc381c64c49528d3160549dddbe740b871889aeada8b018178c7b33c54ec03c8"
+      }
+    },
+    {
+      "name": "p3a-bun-vulnerability-corrected-vulnerability",
+      "seconds": 15.497,
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "vulnerability"
+      ],
+      "receipt": {
+        "path": "docs/github-logs/package-client-quarantine-20261021/p3a-bun-vulnerability-corrected-vulnerability.json",
+        "bytes": 323,
+        "sha256": "06b9a3dab51ac2cc0e3bb5714c3a83488dcd9bfc4af52ef3b6721db5e31906a8"
+      }
+    }
+  ],
+  "actual": {
+    "receipt": {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p3a-bun-actual-result.json",
+      "bytes": 4874,
+      "sha256": "73c9e37997a7d6fee923f5b710ebae22ebcab6ec80fac561616d3500da7c39a6"
+    },
+    "official_output": {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p3a-bun-actual-official.stdout",
+      "bytes": 751,
+      "sha256": "b35c6e9acbc1b0115cdc5104a22d474b0ef401106aac7ebd7bfc1ea4ee28e0e2"
+    },
+    "cases": [
+      {
+        "name": "official",
+        "command": [
+          "/tmp/hpr-bx53162k/bun-supply-actual/verify",
+          "verify-bun-release",
+          "--input",
+          "/tmp/hpr-bx53162k/bun-supply-candidate"
+        ],
+        "exit": 0,
+        "seconds": 0.346,
+        "expected": "publisher checksum/actual archive match; native/build provenance flags remain false",
+        "stdout_sha256": "b35c6e9acbc1b0115cdc5104a22d474b0ef401106aac7ebd7bfc1ea4ee28e0e2",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "tampered-zip",
+        "command": [
+          "/tmp/hpr-bx53162k/bun-supply-actual/verify",
+          "verify-bun-release",
+          "--input",
+          "/tmp/hpr-bx53162k/bun-supply-actual/tamper"
+        ],
+        "exit": 1,
+        "seconds": 0.188,
+        "expected": "complete archive bytes differ",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "d87be193f523d66f53c39fcbc872fa3173c9ea3474b70717661e1230f17f6e2b"
+      },
+      {
+        "name": "tampered-signed-text",
+        "command": [
+          "/tmp/hpr-bx53162k/bun-supply-actual/verify",
+          "verify-bun-release",
+          "--input",
+          "/tmp/hpr-bx53162k/bun-supply-actual/bad-signed-text"
+        ],
+        "exit": 1,
+        "seconds": 0.027,
+        "expected": "signature did not verify",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "6f39107a6751e4841006556459a06ef3d17f83eb2d1ceca2635c3c9d4deaa7c1"
+      },
+      {
+        "name": "relative",
+        "command": [
+          "/tmp/hpr-bx53162k/bun-supply-actual/verify",
+          "verify-bun-release",
+          "--input",
+          "."
+        ],
+        "exit": 1,
+        "seconds": 0.021,
+        "expected": "explicit absolute directory",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "62609d4943d7fa1b7c890566e90f65f9f9096730a2a989a427149510ab7788e7"
+      },
+      {
+        "name": "missing",
+        "command": [
+          "/tmp/hpr-bx53162k/bun-supply-actual/verify",
+          "verify-bun-release",
+          "--input",
+          "/tmp/hpr-bx53162k/bun-supply-actual/missing"
+        ],
+        "exit": 1,
+        "seconds": 0.022,
+        "expected": "unavailable",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "bba51f8c927b493a04d0697055bafe5c7f8d070d7c5e3dcaa65b310f2eb74d4c"
+      }
+    ],
+    "seconds": 2.562
+  },
+  "crypto": "Pinned official full primary fingerprint F3DCC08A8572C0749B3E18888EAB4D40A7B22B59, current/historical key binding and signature validity, strong text-signature hash, exact single cleartext block; actual signed file fixture and entire52MB official zip match.",
+  "boundaries": [
+    "Existing locked go-crypto1.5.2 reused; no module version/graph change",
+    "Exact3 OpenPGP imports reviewed only at releaseprovenance; other layers and unknown subpackages still refused",
+    "Existing updater stable version validation reused; no extra semver import",
+    "Signed checksums do not sign a release version or source commit; native_version_verified=false and source_build_provenance_verified=false are explicit in actual output",
+    "No network, archive extraction, Bun process, runtime lock or provider/HAA/UV/PNPM signer policy changes in verifier command"
+  ],
+  "failures": [
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p3a-bun-first-quick.json",
+      "bytes": 307,
+      "sha256": "40f5822c24f4ea851a288f565fc178175b402c42613108ec6b3cfbdafb57a9ed"
+    },
+    {
+      "path": "docs/github-logs/package-client-quarantine-20261021/p3a-bun-vulnerability-routing-correction.json",
+      "bytes": 453,
+      "sha256": "80069959e7f56e03b5c7bf831f2356663be5c103e798eead423989782e43eec6"
+    }
+  ],
+  "remaining": [
+    "B ZIP/ELF and ABI, native/runtime maintenance/provision and admitted guest query",
+    "C native text lock public metadata/full graph binding",
+    "D/E context inspection, current Policy, cache/transaction/original proof/production Bun CLI",
+    "whole P3 end-to-end/affected qualification and support acceptance"
+  ],
+  "ci": "No new push/CI for this local supply unit. P2 fixed9410 CI410/cu130 pending then cu132 required; active timer/turn preserved.",
+  "cleanup": "Small operators/raw preserved. Authenticated supply data and current verifier binary retained as active input for immediate B; no process RSS cleanup claim."
+}

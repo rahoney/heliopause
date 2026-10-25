@@ -271,6 +271,10 @@ func validateCurrentImports(modulePath string, packages []packageMetadata) []str
 		modulePath + "/internal/verification/projectbuild":  {},
 		modulePath + "/internal/verification/gomodule":      {"golang.org/x/mod/sumdb": true},
 		modulePath + "/internal/verification/releaseprovenance": {
+			// Bun cleartext publisher signatures, reviewed with pinned go-crypto1.5.2.
+			"github.com/ProtonMail/go-crypto/openpgp/clearsign":      true,
+			"github.com/ProtonMail/go-crypto/openpgp/packet":         true,
+			"github.com/ProtonMail/go-crypto/openpgp/v2":             true,
 			"github.com/sigstore/sigstore-go/pkg/bundle":             true,
 			"github.com/sigstore/sigstore-go/pkg/fulcio/certificate": true,
 			"github.com/sigstore/sigstore-go/pkg/root":               true,
