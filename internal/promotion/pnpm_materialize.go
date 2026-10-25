@@ -91,10 +91,20 @@ func readPNPMHostRegular(ctx context.Context, root *os.Root, name string, before
 	return body, nil
 }
 
-func (c *PNPMVerifiedCache) hostEntries(ctx context.Context, staged domain.StagedProjectSet) (entries []pnpmHostEntry, resultErr error) {
+func (c *PNPMVerifiedCache) hostEntries(ctx context.Context, staged domain.StagedProjectSet) ([]pnpmHostEntry, error) {
 	data, err := c.OpenProjectCache(ctx, staged)
 	if err != nil {
 		return nil, err
+	}
+	return npmProjectHostEntries(ctx, data, staged.Digest(), c.frozen.Controls(), func(doc pnpmCacheDocument) (pnpmProjectRecords, error) {
+		return c.projectRecords(ctx, staged.Set(), doc)
+	}, npmProjectCachePNPM)
+}
+
+func npmProjectHostEntries(ctx context.Context, data string, digest domain.ContentDigest, controls []domain.ProjectControlFile, records func(pnpmCacheDocument) (pnpmProjectRecords, error), client npmProjectCacheClient) (entries []pnpmHostEntry, resultErr error) {
+	spec, known := npmProjectCacheIdentity(client)
+	if !known || records == nil {
+		return nil, errors.New("unknown project materialization client")
 	}
 	cache, err := os.OpenRoot(filepath.Dir(data))
 	if err != nil {
@@ -107,7 +117,7 @@ func (c *PNPMVerifiedCache) hostEntries(ctx context.Context, staged domain.Stage
 		}
 	}()
 	receipt, _, err := readGoTransactionControl(cache, "receipt.json")
-	if err != nil || pnpmCacheHash(receipt) != staged.Digest().String() {
+	if err != nil || pnpmCacheHash(receipt) != digest.String() {
 		return nil, errors.Join(errors.New("pnpm prepared cache receipt changed"), err)
 	}
 	var doc pnpmCacheDocument
@@ -170,10 +180,10 @@ func (c *PNPMVerifiedCache) hostEntries(ctx context.Context, staged domain.Stage
 		// An explicit empty project has no native tree; this directory is controller-owned.
 		entries = append(entries, pnpmHostEntry{name: "node_modules", kind: tar.TypeDir, mode: 0o755})
 	}
-	for _, control := range c.frozen.Controls() {
+	for _, control := range controls {
 		entries = append(entries, pnpmHostEntry{name: control.Name(), kind: tar.TypeReg, mode: 0o644, body: control.Body()})
 	}
-	material, err := c.projectRecords(ctx, staged.Set(), doc)
+	material, err := records(doc)
 	if err != nil {
 		return nil, err
 	}
@@ -184,7 +194,7 @@ func (c *PNPMVerifiedCache) hostEntries(ctx context.Context, staged domain.Stage
 	for _, record := range []struct {
 		name string
 		body []byte
-	}{{"manifest.json", material.document}, {"sbom.cdx.json", material.sbom}, {"pnpm-provenance.json", material.provenance}} {
+	}{{"manifest.json", material.document}, {"sbom.cdx.json", material.sbom}, {spec.provenanceName, material.provenance}} {
 		found := false
 		for _, file := range doc.Records {
 			if file.Path == record.name && file.Kind == "file" && file.Size == int64(len(record.body)) && file.SHA256 == pnpmCacheHash(record.body) {
@@ -206,7 +216,15 @@ func (c *PNPMVerifiedCache) PrepareProject(ctx context.Context, staged domain.St
 	if err != nil {
 		return nil, err
 	}
-	parentName := filepath.Dir(c.frozen.Snapshot().Context().Target().String())
+	return prepareNPMProject(ctx, c.frozen.Snapshot().Context().Target().String(), entries, c.beforePrepareSync, npmProjectCachePNPM)
+}
+
+func prepareNPMProject(ctx context.Context, target string, entries []pnpmHostEntry, beforePrepareSync func(*PNPMPreparedProject) error, client npmProjectCacheClient) (prepared *PNPMPreparedProject, resultErr error) {
+	spec, known := npmProjectCacheIdentity(client)
+	if !known {
+		return nil, errors.New("unknown private project client")
+	}
+	parentName := filepath.Dir(target)
 	if err := trustedExistingDirectory(parentName); err != nil {
 		return nil, err
 	}
@@ -236,7 +254,7 @@ func (c *PNPMVerifiedCache) PrepareProject(ctx context.Context, staged domain.St
 	if err != nil {
 		return nil, err
 	}
-	p.name = ".haa-pnpm-prepare-" + run.String()
+	p.name = ".haa-" + spec.prefix + "-prepare-" + run.String()
 	p.directory = filepath.Join(parentName, p.name)
 	if err := parent.Mkdir(p.name, 0o700); err != nil {
 		p.name = ""
@@ -265,8 +283,8 @@ func (c *PNPMVerifiedCache) PrepareProject(ctx context.Context, staged domain.St
 			}
 		}
 	}
-	if c.beforePrepareSync != nil {
-		if err := c.beforePrepareSync(p); err != nil {
+	if beforePrepareSync != nil {
+		if err := beforePrepareSync(p); err != nil {
 			return nil, err
 		}
 	}

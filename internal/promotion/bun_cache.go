@@ -28,6 +28,7 @@ type BunVerifiedCache struct {
 	recordBuilder                       BunProjectRecordBuilder
 	operation                           domain.OperationID
 	beforeTreeSync                      func(string) error
+	beforePrepareSync                   func(*BunPreparedProject) error
 }
 
 func NewBunVerifiedCache(intake, evidence, cache string, frozen artifactnpm.BunInspectionContext, reader ProjectEvidenceReader, layout BunLayoutProvider, records BunProjectRecordBuilder, operation domain.OperationID) (*BunVerifiedCache, error) {

@@ -5332,3 +5332,16 @@ Race158.098s와 canonical Quick/security/docs도 통과했다. 첫 fixture misma
 거부 원본을 보존하고 ordinary builder guard/present bytes를 유지했다. 다섯 공용 body의 PNPM
 정규화 동일성을 대조했다. Local cache subset은 닫혔으며 private materialization/transaction/CLI·
 명시 Bun runtime·remote/whole P3는 열려 있다. CI412 source7544를 취소하는 push는 하지 않는다.
+
+[B5b1 private materialization 감사](./evidence/package-client-quarantine/p3b5b1-bun-private-materialization-plan-20261025.md)는
+7939092의 cache를 현재 recorded approval 재확인 뒤 private sibling에 복원한다. 기존 PNPM
+Host entry/owned Prepare·Verify/Close body를 재사용하며 absent lock을 만들지 않는다. Target
+publication/retained ownership/CLI는 다음 단계다. M13-004 하나만 IN_PROGRESS이며 CI412
+7544 source·실제 타이머를 유지하고 새 push 없이 로컬 검증을 계속한다.
+
+[B5b1 로컬 영수증](./evidence/package-client-quarantine/p3b5b1-bun-private-materialization-local-20261025.json)은
+승인 Bun peer4/empty0의 private sibling·Verify/Close와 lock 부재 보존, 기존 PNPM 실제 소비자를
+combined85.368s/helperwait0/Host 동일로 확인했다. 두 기존 body의 기계 정규화 동일성과
+create/owner/census/readback/cleanup 전체 불변을 확인했다. Quick147.243s/security/docs와
+전체 promotion/bootstrap Race도 PASS다. Private materialization local subset만 닫혔고 target
+publication/retained ownership/CLI/native 인계·명시 Bun runtime/whole P3는 미완료다.

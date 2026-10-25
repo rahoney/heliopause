@@ -215,6 +215,33 @@ func TestBunPublicApprovedCacheIntegration(t *testing.T) {
 			if len(entries) != want {
 				t.Fatal("data cache contains foreign files")
 			}
+			prepared, err := cache.PrepareProject(ctx, staged)
+			if err != nil {
+				t.Fatal("prepare approved Bun private project", err)
+			}
+			private := prepared.Directory()
+			for _, control := range selected.Controls() {
+				name := filepath.Join(private, control.Name())
+				if !control.Present() {
+					if _, err := os.Lstat(name); !errors.Is(err, os.ErrNotExist) {
+						t.Fatal("absent private control manufactured", err)
+					}
+					continue
+				}
+				body, err := os.ReadFile(name)
+				if err != nil || !bytes.Equal(body, control.Body()) {
+					t.Fatal("private Bun controls changed", err)
+				}
+			}
+			if err := prepared.Verify(ctx); err != nil {
+				t.Fatal("private Bun readback", err)
+			}
+			if err := prepared.Close(); err != nil {
+				t.Fatal("private Bun cleanup", err)
+			}
+			if _, err := os.Lstat(private); !errors.Is(err, os.ErrNotExist) {
+				t.Fatal("private Bun retained after close", err)
+			}
 			if item.count != 0 {
 
 				acquired := map[domain.DependencyNodeID]domain.AcquiredArtifact{}
@@ -263,7 +290,7 @@ func TestBunPublicApprovedCacheIntegration(t *testing.T) {
 			if _, err := os.Lstat(target.String()); !os.IsNotExist(err) {
 				t.Fatal("staging created a Host project", err)
 			}
-			t.Logf("bun_approved_cache fixture=%s public_entries=%d stored_evidence_entries=%d native_layout_data=%t sealed=true drift_tested=%t actual_operation_records=true full_native_provenance=true Host_install=NOT_RUN", item.name, item.count, item.count, item.count != 0, item.count != 0)
+			t.Logf("bun_approved_cache fixture=%s public_entries=%d stored_evidence_entries=%d native_layout_data=%t sealed=true drift_tested=%t actual_operation_records=true full_native_provenance=true private_Host_prepared_verified_closed=true Host_install=NOT_RUN", item.name, item.count, item.count, item.count != 0, item.count != 0)
 		}) {
 			t.FailNow()
 		}
