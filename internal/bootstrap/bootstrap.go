@@ -42,6 +42,9 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 	if err := cli.SetPNPMClientVersion(command, runtimeidentity.PNPMVersion); err != nil {
 		return err
 	}
+	if err := cli.SetBunClientVersion(command, runtimeidentity.BunVersion); err != nil {
+		return err
+	}
 	defer func() {
 		if resultErr != nil {
 			resultErr = cli.PresentRuntimeError(command, resultErr)
@@ -107,6 +110,14 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 			return errors.New("PNPM client requires the public npm source")
 		}
 		if err := pnpmProjectPlatform(runtime.GOOS, runtime.GOARCH); err != nil {
+			return err
+		}
+	}
+	if cli.SelectedPackageClient(command) == cli.BunPackageClient {
+		if source != "npm" {
+			return errors.New("bun client requires the public npm source")
+		}
+		if err := bunProjectPlatform(runtime.GOOS, runtime.GOARCH); err != nil {
 			return err
 		}
 	}
@@ -247,6 +258,12 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) (resultEr
 	}
 	if source == "npm" && cli.SelectedPackageClient(command) == cli.PNPMPackageClient {
 		if err := bindPNPMProjectClient(command, trustedExecutor, processObserver); err != nil {
+			return err
+		}
+		return command.ExecuteContext(ctx)
+	}
+	if source == "npm" && cli.SelectedPackageClient(command) == cli.BunPackageClient {
+		if err := bindBunProjectClient(command, trustedExecutor, processObserver); err != nil {
 			return err
 		}
 		return command.ExecuteContext(ctx)

@@ -214,6 +214,9 @@ func TestLauncherExamplesUseRegisteredSyntax(t *testing.T) {
 			if err := SetPNPMClientVersion(fresh, runtimeidentity.PNPMVersion); err != nil {
 				t.Fatal(err)
 			}
+			if err := SetBunClientVersion(fresh, runtimeidentity.BunVersion); err != nil {
+				t.Fatal(err)
+			}
 			normalized, err := normalizeTerraformInitArgs(fresh, args[1:])
 			if err != nil {
 				t.Fatal(example, err)

@@ -74,9 +74,13 @@ func validatePNPMProjectArgs(command *cobra.Command, args []string) error {
 	return err
 }
 
-func readPNPMPreflightControl(root *os.Root, name string) (control domain.ProjectControlFile, resultErr error) {
+func readPNPMPreflightControl(root *os.Root, name string) (domain.ProjectControlFile, error) {
+	return readNPMProjectPreflightControl(root, name, "pnpm-lock.yaml", "pnpm")
+}
+
+func readNPMProjectPreflightControl(root *os.Root, name, lockName, client string) (control domain.ProjectControlFile, resultErr error) {
 	before, err := root.Lstat(name)
-	if name == "pnpm-lock.yaml" && errors.Is(err, os.ErrNotExist) {
+	if name == lockName && errors.Is(err, os.ErrNotExist) {
 		return domain.NewProjectControlFile(name, nil, false)
 	}
 	regular := func(info os.FileInfo) bool {
@@ -87,7 +91,7 @@ func readPNPMPreflightControl(root *os.Root, name string) (control domain.Projec
 		return ok && s.Nlink == 1
 	}
 	if err != nil || !regular(before) {
-		return control, errors.Join(errors.New("pnpm control must be bounded single-link regular content"), err)
+		return control, errors.Join(errors.New(client+" control must be bounded single-link regular content"), err)
 	}
 	f, err := root.OpenFile(name, os.O_RDONLY|syscall.O_NONBLOCK, 0)
 	if err != nil {
@@ -101,13 +105,13 @@ func readPNPMPreflightControl(root *os.Root, name string) (control domain.Projec
 	}()
 	opened, err := f.Stat()
 	if err != nil || !regular(opened) || !os.SameFile(before, opened) {
-		return control, errors.New("pnpm control changed while opening")
+		return control, errors.New(client + " control changed while opening")
 	}
 	body, readErr := io.ReadAll(io.LimitReader(f, artifactnpm.ProjectControlLimit+1))
 	after, statErr := f.Stat()
 	current, currentErr := root.Lstat(name)
 	if readErr != nil || statErr != nil || currentErr != nil || !regular(after) || !regular(current) || !os.SameFile(before, after) || !os.SameFile(before, current) || after.Mode() != before.Mode() || current.Mode() != before.Mode() || int64(len(body)) != before.Size() || after.Size() != before.Size() || current.Size() != before.Size() || !after.ModTime().Equal(before.ModTime()) || !current.ModTime().Equal(before.ModTime()) {
-		return control, errors.Join(errors.New("pnpm control changed during preflight"), readErr, statErr, currentErr)
+		return control, errors.Join(errors.New(client+" control changed during preflight"), readErr, statErr, currentErr)
 	}
 	return domain.NewProjectControlFile(name, body, true)
 }

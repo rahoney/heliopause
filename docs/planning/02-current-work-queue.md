@@ -5362,3 +5362,26 @@ security/docs·Domain/Application/promotion/bootstrap 전체 Race231.114s도 PAS
 no-op 실패와 RED/GREEN을 보존하고 검역 handle binding을 제거하지 않은 전체 Host census
 비교로 보완했다. Local managed transaction만 닫혔으며 CLI/native ownership/명시 Bun runtime/
 remote·whole P3는 열려 있다. CI412 frozen7544의 타이머 확인과 독립 작업을 계속한다.
+
+[CI412 backend qualification](./evidence/package-client-quarantine/p3b4de-bun-backend-ci412-20261025.json)은
+65분 실제 timer13:16:17UTC를 소비하고13:16:26에10SUCCESS를 확인했다. 모든 checkout0bae4d5의
+whole tree3b7dbd0/2423files가 frozen7544와 같고 전체 decoded logs10개/1,148,222B를 매 chunk
+readback·SHA로 보존했다. Linux67/observer119씩, Bun native9/경계5/whole quarantine2·현재
+recorded Evidence/Policy, 기존 PNPM CLI9·CPU288.90s·helper7wait0/final0와 native macOS가
+PASS다. 실제 전체 경과53m51이다. 과거 CI411 timeout 원인은 확정하지 않으며 이후 local
+cache7939092/private74102c8/transaction80bd2bd를 이 원격 결과에 전용하지 않는다.
+
+[B5c managed CLI 감사](./evidence/package-client-quarantine/p3b5c-bun-managed-cli-plan-20261025.md)는
+80bd2bd에서 남은 public caller를 연결한다. Bun add/install/update만 등록하고 npm source와
+Bun client를 분리하며 help/invalid args는 runtime/cache 없이 끝낸다. Native adoption/explicit
+Bun Artifact runtime/bunx는 별도 acceptance다. M13-004 하나만 IN_PROGRESS이고 작은 수정별
+새 CI 없이 같은 작업을 계속한다.
+
+[B5c 로컬 영수증](./evidence/package-client-quarantine/p3b5c-bun-managed-cli-local-20261025.json)은
+Bun add/install/update의 static preflight·고정 factory·실제 guarded workflow/report를 연결했다.
+실제 Bun CLI8 fresh operation170.52s/기존 PNPM9operation186.78s, 전체 operator 시간·helperwait0/
+Host 동일을 영수증에 기록했다. Single6→7/peer4/empty·반복 no-op inode/mode·현재 Evidence/Policy/
+cache와 target records·부재 lock/user 파일을 확인했다. Quick60.369s/security/docs·CLI/bootstrap
+Race28.452s와 PNPM full preflight body 정규화 동일성이 PASS다. 현재 managed Node lane만
+닫혔으며 native original ownership/명시 Bun Artifact runtime·hosted caller/whole P3는 열려 있다.
+다음은 original full source proof를 거치는 explicit native 인계이며 작은 변경별 CI는 시작하지 않는다.
