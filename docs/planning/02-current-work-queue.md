@@ -17,7 +17,7 @@ Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P3-B5d — explicit Bun native original source proof and --adopt; named local qualification, source728f650
 Next action: M13-004/P3-B6 — audit explicit Bun Artifact runtime supply/admission and required coverage; grouped hosted project and final affected-profile qualification remain
-Current substep: M13-004/P3-B5f named local direct failures QUALIFIED; Bun+PNPM signal/crash15.560s/ENOSPC0.474s/promotion full Race153.066s; explicit Bun Artifact runtime audit follows
+Current substep: M13-004/P3-B6a native supply locally QUALIFIED; four fresh peer sessions42.09s and PNPM regression48.69s/helperwait0/Host identical; B6b explicit Bun Artifact execution/admission follows
 Acceptance audit: CI412 frozen7544 backend Required10SUCCESS, complete checkout tree match and logs confirmed by actual65m timer; later local7939092/74102c8/80bd2bd/58957ea/728f650 are outside that remote scope; historical CI411 macOS timeout cause remains unconfirmed
 Independent local next: explicit Bun Artifact runtime ownership/transport, exact execution/observer and whole inspection coverage; no live CI timer or extra helper push at this point
 P3 Bun: IN_PROGRESS (same M13-004 independent local); P4..P7 — NOT_STARTED
@@ -5427,3 +5427,15 @@ Race153.066s를 확인했다. 원본 bytes/inode/mode·cause/독립 state 미게
 재진입 거부·FD0가 PASS다. Canonical Quick/security/docs·tagged compile/vet도 PASS이며
 production owner9개와 기존 PNPM qualification 파일은 baseline637dada와 같다. Named 세
 실패 acceptance만 닫혔으며 명시 Bun Artifact runtime·hosted/전체 P3는 다음으로 이어간다.
+
+[B6a runtime 공급 감사](./evidence/package-client-quarantine/p3b6a-bun-artifact-runtime-supply-plan-20261025.md)는
+386777d에서 기존 native tool/readback/volume owner를 별도 Artifact session에 연결한다.
+기존 Node 경로·CPP permissions·pin은 유지하며 실제 Bun 실행/admission과 whole coverage는
+그 뒤 B6b로 구분한다. Transport 성공을 명시 Bun 실행 완료로 쓰지 않는다.
+
+[B6a 로컬 공급 검증](./evidence/package-client-quarantine/p3b6a-bun-artifact-runtime-supply-local-20261025.json)은
+fixed tool 전체 readback과 별도 native/project ownership을 쓰는 peer4 fresh sessions42.09s와
+기존 PNPM full project48.69s를 확인했다. 전체 operator93.696s/helperwait0/Host 동일·owned
+resource 정리가 PASS다. Quick181.662s/sandbox 전체 Race24.570s/tagged vet·security/docs와
+기존 nil-runtime owner 기계 동일성도 PASS다. Node 명령은 그대로이며 명시 Bun Artifact
+실행/coverage·Policy/hosted·전체 P3는 B6b와 최종 qualification으로 계속한다.

@@ -47,9 +47,13 @@ func (b *Backend) ExecutePNPMInstance(ctx context.Context, layout artifactnpm.PN
 
 // Both typed callers validate their opaque layout before this resource owner.
 func (b *Backend) executeNPMInstance(ctx context.Context, kind nativeRuntimeToolKind, target string, payload pnpmInspectionPayload, startTrace func(context.Context, string) (TraceReader, error)) (domain.SandboxResult, error) {
+	return b.executeNPMInstanceWithBunRuntime(ctx, kind, target, payload, startTrace, nil)
+}
+
+func (b *Backend) executeNPMInstanceWithBunRuntime(ctx context.Context, kind nativeRuntimeToolKind, target string, payload pnpmInspectionPayload, startTrace func(context.Context, string) (TraceReader, error), prepare func(context.Context) (nativeProjectTool, error)) (domain.SandboxResult, error) {
 	spec, known := nativeProjectIdentity(kind)
 	validTarget := kind == nativeRuntimePNPM && validPNPMTargetLifecyclePath(target) || kind == nativeRuntimeBun && validBunTargetLifecyclePath(target)
-	if !known || !validTarget || payload.kind != kind || payload.layout.String() == "" || startTrace == nil {
+	if !known || !validTarget || payload.kind != kind || payload.layout.String() == "" || startTrace == nil || prepare != nil && kind != nativeRuntimeBun {
 		return domain.SandboxResult{}, errPNPMInstanceExecution
 	}
 	session, err := b.newSessionID()
@@ -57,6 +61,8 @@ func (b *Backend) executeNPMInstance(ctx context.Context, kind nativeRuntimeTool
 		return domain.SandboxResult{}, errors.Join(errPNPMInstanceExecution, err)
 	}
 	var project closureVolume
+	var native nativeRuntimeVolume
+	var tool nativeProjectTool
 	var container string
 	var trace TraceReader
 	finish := func(code string, cause error) (domain.SandboxResult, error) {
@@ -99,6 +105,17 @@ func (b *Backend) executeNPMInstance(ctx context.Context, kind nativeRuntimeTool
 				cause = errors.Join(cause, err)
 			}
 		}
+		if native.name != "" {
+			cleanup, done := resolverCleanupContext()
+			err := native.close(cleanup, b.runner)
+			done()
+			if err != nil {
+				if code == "" {
+					code = "M3_DYNAMIC_CLEANUP_FAILED"
+				}
+				cause = errors.Join(cause, err)
+			}
+		}
 		if code != "" {
 			result, err := domain.NewSandboxResult(session, domain.SandboxIncomplete, code, observations)
 			return result, errors.Join(errPNPMInstanceExecution, cause, err)
@@ -116,11 +133,24 @@ func (b *Backend) executeNPMInstance(ctx context.Context, kind nativeRuntimeTool
 	if !capability.Available {
 		return finish("M3_DYNAMIC_CAPABILITY_UNAVAILABLE", nil)
 	}
+	if prepare != nil {
+		tool, err = prepare(ctx)
+		if err != nil || tool == nil || tool.nativeKind() != nativeRuntimeBun {
+			return finish("M3_DYNAMIC_SETUP_FAILED", errors.Join(errBunToolSupply, err))
+		}
+		native, err = createNativeRuntimeVolume(ctx, b.runner, nativeRuntimeBun)
+		if err != nil {
+			return finish("M3_DYNAMIC_SETUP_FAILED", err)
+		}
+	}
 	project, err = createNativeProjectVolume(ctx, b.runner, session.String(), kind)
 	if err != nil {
 		return finish("M3_DYNAMIC_SETUP_FAILED", err)
 	}
 	args, err := npmInstanceCreateArguments(session, project, kind)
+	if err == nil && native.name != "" {
+		args, err = bunArtifactRuntimeCreateArguments(args, native)
+	}
 	if err != nil {
 		return finish("M3_DYNAMIC_SETUP_FAILED", err)
 	}
@@ -148,6 +178,17 @@ func (b *Backend) executeNPMInstance(ctx context.Context, kind nativeRuntimeTool
 	if err := awaitMountAnchors(run, b.observer, container); err != nil {
 		return finish("M3_DYNAMIC_OBSERVER_FAILED", err)
 	}
+	if native.name != "" {
+		if err := native.verifyTarget(run, b.runner, container); err != nil {
+			return finish("M3_DYNAMIC_SETUP_FAILED", err)
+		}
+		if err := tool.introduce(run, b.runner, container); err != nil {
+			return finish("M3_DYNAMIC_ARTIFACT_INTRODUCTION_FAILED", err)
+		}
+		if err := native.verifyTarget(run, b.runner, container); err != nil {
+			return finish("M3_DYNAMIC_SETUP_FAILED", err)
+		}
+	}
 	if err := project.verifyAttachments(run, b.runner, map[string]bool{container: false}); err != nil {
 		return finish("M3_DYNAMIC_SETUP_FAILED", err)
 	}
@@ -159,6 +200,11 @@ func (b *Backend) executeNPMInstance(ctx context.Context, kind nativeRuntimeTool
 	}
 	if err := project.verifyAttachments(run, b.runner, map[string]bool{container: false}); err != nil {
 		return finish("M3_DYNAMIC_SETUP_FAILED", err)
+	}
+	if native.name != "" {
+		if err := native.verifyTarget(run, b.runner, container); err != nil {
+			return finish("M3_DYNAMIC_SETUP_FAILED", err)
+		}
 	}
 	var command []string
 	if kind == nativeRuntimeBun {
