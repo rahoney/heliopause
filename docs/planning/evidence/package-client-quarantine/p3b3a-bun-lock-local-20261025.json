@@ -1,0 +1,250 @@
+{
+  "work_item": "M13-004/P3-B3a",
+  "baseline": "01a32b96fea39c86d7b0e9adf8f3353410871edd",
+  "status": {
+    "IMPLEMENTED": "YES (fixed raw native lock producer)",
+    "WIRED": "YES (private native qualification consumer; public selection/CLI not wired)",
+    "QUALIFIED": "YES (named local raw producer and shared PNPM regression)",
+    "ACCEPTANCE_CLOSED": "NO (whole Bun/P2 remote gate)",
+    "MISSING": [
+      "Bun parser and independent npm source/instance binding",
+      "public selection, exact native layout/lifecycle, cache/transaction/CLI",
+      "Bun end-to-end/affected-profile remote qualification",
+      "macOS/Required success on next meaningful checkpoint; no blind rerun of failed CI411"
+    ]
+  },
+  "scope": "Exact fixed Bun lock-only command and data controls; native output remains unapproved. No artifact/Policy/Host install support inferred. Same M13-004 continues.",
+  "sources": [
+    {
+      "path": "internal/sandbox/uv_runtime.go",
+      "sha256": "527a31b997bb30a06abf426fa023ab16a36a6f2181c919327389e123d2822eb3"
+    },
+    {
+      "path": "internal/sandbox/uv_output_volume_test.go",
+      "sha256": "61b2336c7307fb516063b55836b8c6baae7aaba0134378d5c0a1e119afaca9ba"
+    },
+    {
+      "path": "internal/sandbox/pypi_closure_volume.go",
+      "sha256": "beb4ad5de1b9faf02b2b50864e5bc552710c9e5ee0e94227ec4dc28810ed1179"
+    },
+    {
+      "path": "internal/sandbox/pnpm_native_scope.go",
+      "sha256": "16e1bcbf679883b2e86e0b9653f960fcbf887afbea5f557fa0be1305e8b04996"
+    },
+    {
+      "path": "internal/sandbox/native_project_scope.go",
+      "sha256": "6df1c603c392056ad0d50cf3490ee88b86ed7dd8dd55a97fb1f258a8b6a77e45"
+    },
+    {
+      "path": "internal/sandbox/native_project.go",
+      "sha256": "1bdc20d9f224504cffa54f01c92c28de5347cc0fa79a92f0f44199d23beab984"
+    },
+    {
+      "path": "internal/sandbox/native_project_test.go",
+      "sha256": "3f6280cb5b679d300695f6f119aed80e0dea7524651f22fb10a3f6ebf3916ad5"
+    },
+    {
+      "path": "internal/sandbox/native_resolver_container.go",
+      "sha256": "9f2d967e81d7f11bdcdf0aea7f6fc5513612a1fe22e886d47acb878ebb9b926e"
+    },
+    {
+      "path": "internal/sandbox/pnpm_tool_supply.go",
+      "sha256": "d167b428de7921ebdd6660600b41adf56960a352bad755e4ddbaf7e55286fa31"
+    },
+    {
+      "path": "internal/sandbox/bun_tool_supply.go",
+      "sha256": "d62c994d9cdb329ad598f2708f17dd9b590a7a6b317bebef08bd3c007c441bd5"
+    },
+    {
+      "path": "internal/sandbox/pnpm_project_transport.go",
+      "sha256": "c716f2be49727165cdd80c2851ce168e69ea34c9bde82c5ccc62df7ee09bad60"
+    },
+    {
+      "path": "internal/sandbox/native_project_controls.go",
+      "sha256": "dc459e72f8957eef7ba3c3cb357e135a811a33fc35a207629732e9df87efdfa6"
+    },
+    {
+      "path": "internal/sandbox/bun_project_controls.go",
+      "sha256": "8e76a88bf3731e8af510bb73fc78799c3dea53e6503a6ae907c95e4350fa5f9c"
+    },
+    {
+      "path": "internal/sandbox/bun_project_controls_test.go",
+      "sha256": "e80ed2eb8d1d7744524fa313fdfef779c2d7e0ea358e8fe2b7d6a66d6f75a5be"
+    },
+    {
+      "path": "internal/sandbox/bun_lock_native_real_test.go",
+      "sha256": "d806b6616dc7f5567046f525c17c8bf50b0953f0630266349a2b050a3d8d27f9"
+    },
+    {
+      "path": "tools/gvisor-observer/observer.cc",
+      "sha256": "d79a81c2f646e9fc1f01ce5b85e9b12c094764298c682ef736a463352f6dc589"
+    },
+    {
+      "path": "tools/gvisor-observer/observer_latch_test.cc",
+      "sha256": "c6a09e65eb5795e465b8ab96fc47b7e7b254079e7eb551e7125c08c130780310"
+    },
+    {
+      "path": "internal/sandbox/shared_observer.go",
+      "sha256": "3cb0c4cc68d8c87f8f027b40fbb37b7246ab90edb69750cb46ba289c3b141e08"
+    },
+    {
+      "path": "docs/planning/evidence/package-client-quarantine/p3b3-bun-lock-source-plan-20261025.md",
+      "sha256": "67bee970d86bfd424b8b8321d905c4042a6fe3e185d85cfd07802e4585d49ef4"
+    }
+  ],
+  "checks": [
+    {
+      "profile": "quick",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit": 0,
+      "seconds": 82.541,
+      "source": "/tmp/hpr-bx53162k/source",
+      "GOMAXPROCS": "2",
+      "log_sha256": "d413a33819806885c11e98fec36c208ce9188d2dacb962249d1fa080f41fbc5d"
+    },
+    {
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/sandbox",
+        "-timeout",
+        "5m"
+      ],
+      "exit": 0,
+      "seconds": 24.284,
+      "source": "/tmp/hpr-bx53162k/source",
+      "log_sha256": "caee066106cf6e633e02db870baae6277249f1cd6bc9beda212ff08077799bbc"
+    },
+    {
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "vet",
+        "-tags=realcorpus",
+        "./internal/sandbox"
+      ],
+      "exit": 0,
+      "seconds": 6.088,
+      "source": "/tmp/hpr-bx53162k/source",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "check_reuse": "Only C++ observer paths and docs changed after final volume-close Quick; all Go bytes remained unchanged. Actual test client remained byte-identical across v3..canonical (separate compile receipts). Default Quick includes pinned format/build/vet/Staticcheck/default tests; realcorpus tagged vet and full sandbox Race are separate.",
+  "observer": {
+    "command": [
+      "sh",
+      "scripts/build-gvisor-observer-release.sh",
+      "/tmp/hpr-bx53162k/bun-project-observer-canonical"
+    ],
+    "exit": 0,
+    "seconds": 249.527,
+    "source": "/tmp/hpr-bx53162k/source",
+    "sources": [
+      {
+        "path": "tools/gvisor-observer/observer.cc",
+        "sha256": "d79a81c2f646e9fc1f01ce5b85e9b12c094764298c682ef736a463352f6dc589"
+      },
+      {
+        "path": "tools/gvisor-observer/observer_latch_test.cc",
+        "sha256": "c6a09e65eb5795e465b8ab96fc47b7e7b254079e7eb551e7125c08c130780310"
+      },
+      {
+        "path": "scripts/runtimes.lock.json",
+        "sha256": "5592ab4e9b39e15c67aa9d05abf578a05b705e0c6ab992e22f80bd3c40f4ed4a"
+      }
+    ],
+    "log_sha256": "3c81b8fcba67e33a2e70c2043952a4e247a4adb8a3e16bd918af97dc781088ad",
+    "latches_pass": 117,
+    "latches_fail": 0,
+    "observer": {
+      "path": "/tmp/hpr-bx53162k/bun-project-observer-canonical",
+      "sha256": "046f5b35736a43f4550149fd6c8627e6b0b410f571411feb299194506cb450ea",
+      "size": 3126704
+    }
+  },
+  "actuals": [
+    {
+      "receipt": "p3b3a-bun-lock-canonical-result.json",
+      "operator_seconds": 29.615,
+      "test_seconds": 27.09,
+      "cases": 4,
+      "empty": "actual absent lock",
+      "nonempty_lock_sizes": [
+        350,
+        534,
+        1056
+      ],
+      "version": 2,
+      "config": 1,
+      "original_exit": 0,
+      "helper_wait": 0,
+      "host_identical": true
+    },
+    {
+      "receipt": "p3b3a-pnpm-regression-result.json",
+      "operator_seconds": 147.74,
+      "counts": {
+        "native_project_boundary": 5,
+        "pnpm_public_native case": 8,
+        "pnpm_project_quarantine case": 4
+      },
+      "original_exit": 0,
+      "helper_wait": 0,
+      "host_identical": true
+    }
+  ],
+  "sample_match": {
+    "source_log": "p3b3a-bun-lock-canonical-actual.log",
+    "cases": [
+      {
+        "name": "empty",
+        "same_manifest_and_lock_bytes_as_diagnostic": true,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size": 0
+      },
+      {
+        "name": "single",
+        "same_manifest_and_lock_bytes_as_diagnostic": true,
+        "sha256": "9950c54c33555f33a0144513408b074e94a766ec953a45be777a217efa7bda48",
+        "size": 350
+      },
+      {
+        "name": "transitive",
+        "same_manifest_and_lock_bytes_as_diagnostic": true,
+        "sha256": "120423a1ac3729fe91bbcd0c5c35e8d1a7d96263bf5ab76d7e0a35f3007ab95a",
+        "size": 534
+      },
+      {
+        "name": "peer",
+        "same_manifest_and_lock_bytes_as_diagnostic": true,
+        "sha256": "eadd5b3b9aefe42e018f609bcc87567307301c2d864909055491d85806beb7e0",
+        "size": 1056
+      }
+    ]
+  },
+  "mechanical_reuse": [
+    "p3b3a-pnpm-scope-mechanical-reuse.json",
+    "p3b3a-pnpm-input-mechanical-reuse.json"
+  ],
+  "first_failures": [
+    "p3b3a-bun-lock-first-result.json: fixed project volume constructor registration missing",
+    "p3b3a-bun-volume-reviewed-quick.json: writable volume close registration missing",
+    "p3b3a-bun-lock-v3..v10 actual: exact startup/DNS read gaps, original failures preserved",
+    "p3b3a-pnpm-regression-prepare-first-assessment.json: operator single-member archive assumption, no product launch"
+  ],
+  "diagnostic_cleanup": {
+    "receipt": "p3b3a-completed-diagnostic-cleanup.json",
+    "regular_bytes": 1623440562,
+    "references": 0,
+    "query_errors": 0,
+    "no_process_RSS_recovery_claim": true
+  },
+  "remote": "No push/CI for these helper changes; remote remains9410. Timer411 consumed actual failure. Continue Bun parser locally; bundle next meaningful backend/end-to-end checkpoint.",
+  "final_candidate_profiles": "Final format/security/docs records are p3b3a-bun-final-*.json; full index/disk/mode/tree record is p3b3a-bun-final-whole-candidate-20261025.json. Commit is conditional on those checks passing."
+}

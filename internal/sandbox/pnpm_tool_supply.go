@@ -37,3 +37,5 @@ func (p *pnpmPreparedTool) introduce(ctx context.Context, runner CommandRunner, 
 	}
 	return nil
 }
+
+func (*pnpmPreparedTool) nativeKind() nativeRuntimeToolKind { return nativeRuntimePNPM }

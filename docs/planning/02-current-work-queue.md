@@ -5134,3 +5134,21 @@ Bun [exact guest query](./evidence/package-client-quarantine/p3b2c2-bun-query-lo
 114latches/실제 version+revision/session complete와 Host 복원을 named local 검증했다. 다음은
 비어 있지 않은 Bun lock·독립 source/graph binding이며 P2의 macOS/Required와 전체 Bun
 qualification은 후속의 의미 있는 checkpoint까지 열린 상태다.
+
+### 2026-10-25 P3-B3a Bun actual raw lock / PNPM shared scope
+
+[B3a local receipt](./evidence/package-client-quarantine/p3b3a-bun-lock-local-20261025.json)는
+고정 Bun의 lock-only/raw controls와 기존 PNPM lifecycle을 private fixed-kind scope로 재사용한
+범위다. PNPM scope/input의 mechanical equality, 최종 Go Quick82.541s·전체 sandbox Race24.284s·
+tagged vet6.088s, 원본 observer release build249.527s/117latches가 PASS다. Canonical observer의
+actual Bun4case27.09s는 empty의 실제 lock 부재와 single350B/transitive534B/peer1056B,
+manifest 불변·complete census/observation/cleanup을 확인했다. 기존 PNPM의 actual boundary5,
+public selection8와 quarantine4도 같은 observer에서147.74s/operator·Host 전체 불변/helperwait0다.
+
+최초 volume 생성/종료 whitelist 누락과 exact startup/DNS read 거부·준비 operator의 공식
+archive 단일 member 오인은 원본을 보존했다. 권한은 Bun project 명령/경로/flags/역할에만
+한정했고 query/PNPM/UV/ARTIFACT/clone·unknown cleanup 계약은 유지한다. 완료한 진단 사본
+7개1,623,440,562B는 참조0/query errors0 뒤 정리했으며 RSS 회복으로 쓰지 않는다.
+다음은 관측된 schema2/config1 parser와 독립 npm source/전체 instance binding이다. 아직
+public Bun resolver/layout/cache/transaction/CLI/whole Bun acceptance는 없고 macOS/Required
+원격 gate도 열려 있다. 작은 helper별 push/CI 없이 같은 M13-004 하나만 IN_PROGRESS로 계속한다.

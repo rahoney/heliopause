@@ -37,3 +37,5 @@ func (p *bunPreparedTool) introduce(ctx context.Context, runner CommandRunner, c
 	}
 	return nil
 }
+
+func (*bunPreparedTool) nativeKind() nativeRuntimeToolKind { return nativeRuntimeBun }

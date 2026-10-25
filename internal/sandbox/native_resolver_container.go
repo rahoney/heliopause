@@ -9,6 +9,7 @@ import (
 )
 
 const pnpmResolverOwnerLabel = "io.heliopause.pnpm-resolver"
+const bunResolverOwnerLabel = "io.heliopause.bun-resolver"
 
 type nativeResolverOwner struct{ name, prefix, label, image string }
 
@@ -18,12 +19,14 @@ func nativeResolverOwnership(kind nativeRuntimeToolKind) (nativeResolverOwner, b
 		return nativeResolverOwner{"uv", "haa-uv-resolver-", uvResolverOwnerLabel, pythonImageReference}, true
 	case nativeRuntimePNPM:
 		return nativeResolverOwner{"pnpm", "haa-pnpm-resolver-", pnpmResolverOwnerLabel, nodeImageReference}, true
+	case nativeRuntimeBun:
+		return nativeResolverOwner{"bun", "haa-bun-resolver-", bunResolverOwnerLabel, nodeImageReference}, true
 	default:
 		return nativeResolverOwner{}, false
 	}
 }
 
-// Only the two compiled native resolver kinds share this owner protocol.
+// Only the compiled native resolver kinds share this owner protocol.
 // Unknown CREATE outcomes require a fresh successful inventory and attestation.
 func removeOwnedNativeResolverContainer(ctx context.Context, runner CommandRunner, name, owner, expectedID string, kind nativeRuntimeToolKind) error {
 	spec, ok := nativeResolverOwnership(kind)

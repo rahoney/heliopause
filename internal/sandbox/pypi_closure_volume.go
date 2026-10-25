@@ -66,7 +66,7 @@ func createInputVolume(ctx context.Context, runner CommandRunner, transaction, m
 	if ctx == nil || runner == nil || capacity <= 0 || len(manifestID) != 64 {
 		return closureVolume{}, errors.New("python closure volume configuration is invalid")
 	}
-	if len(project) > 1 || (len(project) == 1 && (goBuild || (project[0].destination != cargoBuildGuestInput && project[0].destination != cargoBuildGuestTarget && project[0].destination != pnpmProjectRoot) || project[0].executable != (project[0].destination == cargoBuildGuestTarget))) {
+	if len(project) > 1 || (len(project) == 1 && (goBuild || (project[0].destination != cargoBuildGuestInput && project[0].destination != cargoBuildGuestTarget && project[0].destination != pnpmProjectRoot && project[0].destination != bunProjectRoot) || project[0].executable != (project[0].destination == cargoBuildGuestTarget))) {
 		return closureVolume{}, errors.New("project volume mount contract is invalid")
 	}
 	name, err := closureVolumeName(transaction)

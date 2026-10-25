@@ -30,16 +30,22 @@ func (r *uvOutputCloseRunner) Output(_ context.Context, _ string, args ...string
 }
 
 func TestUVOutputVolumeCleanupRejectsUnknownOrAttachedIdentity(t *testing.T) {
-	verifyPrivateOutputCleanup(t, false)
+	verifyPrivateOutputCleanup(t, nativeRuntimeUV)
 }
 func TestPNPMOutputVolumeCleanupRejectsUnknownOrAttachedIdentity(t *testing.T) {
-	verifyPrivateOutputCleanup(t, true)
+	verifyPrivateOutputCleanup(t, nativeRuntimePNPM)
 }
-func verifyPrivateOutputCleanup(t *testing.T, pnpm bool) {
+func TestBunOutputVolumeCleanupRejectsUnknownOrAttachedIdentity(t *testing.T) {
+	verifyPrivateOutputCleanup(t, nativeRuntimeBun)
+}
+
+func verifyPrivateOutputCleanup(t *testing.T, kind nativeRuntimeToolKind) {
 	t.Helper()
 	volume := closureVolume{name: "haa-closure-output", transaction: "tx", manifestID: strings.Repeat("f", 64), createdAt: "fixed", mountpoint: "/owned/output", capacity: 128 << 20}
-	if pnpm {
+	if kind == nativeRuntimePNPM {
 		volume.projectBuildDestination = pnpmProjectRoot
+	} else if kind == nativeRuntimeBun {
+		volume.projectBuildDestination = bunProjectRoot
 	}
 	actual := dockerVolumeInspection{
 		Name: volume.name, Driver: "local", Scope: "local", Mountpoint: volume.mountpoint, CreatedAt: volume.createdAt,
@@ -66,8 +72,10 @@ func verifyPrivateOutputCleanup(t *testing.T, pnpm bool) {
 			}
 			candidate := volume
 			var err error
-			if pnpm {
+			if kind == nativeRuntimePNPM {
 				err = closePNPMProjectVolume(context.Background(), runner, &candidate)
+			} else if kind == nativeRuntimeBun {
+				err = closeWritableOutputVolume(context.Background(), runner, &candidate, bunProjectRoot)
 			} else {
 				err = closeUVOutputVolume(context.Background(), runner, &candidate)
 			}
