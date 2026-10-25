@@ -4508,18 +4508,19 @@ bool VerifyBoundedClassificationSemantics() {
       strcmp(unexpected.reason, "PROCESS_PROVENANCE_UNKNOWN") == 0 && strcmp(unexpected.parent_relation, "UNTRACKED_PARENT") == 0;
 }
 
-TopologyState PNPMTargetLifecycleTestTopology() {
+TopologyState PNPMTargetLifecycleTestTopology(bool bun = false) {
+  const char* project_mount = bun ? kBunTargetProjectMount : kPNPMProjectMount;
   TopologyState topology;
   topology.sealed = true; topology.snapshot_seen = true; topology.namespace_id = 99;
   topology.expected = {
       {"/", "oci-root", "/", "", true, false, false, false},
       {"/tmp", "workspace", "/", "tmpfs", false, true, true, false},
       {"/haa-runtime", "helper", "/", "tmpfs", false, false, true, false},
-      {kPNPMProjectMount, "workspace", "/tmp", "9p", false, false, false, false}};
+      {project_mount, "workspace", "/tmp", "9p", false, false, false, false}};
   topology.anchors.emplace(1, MountAnchor{1, "/", "oci-root"});
   topology.anchors.emplace(2, MountAnchor{2, "/tmp", "workspace"});
   topology.anchors.emplace(3, MountAnchor{3, "/haa-runtime", "helper"});
-  topology.anchors.emplace(4, MountAnchor{4, kPNPMProjectMount, "workspace"});
+  topology.anchors.emplace(4, MountAnchor{4, project_mount, "workspace"});
   return topology;
 }
 
@@ -4578,8 +4579,11 @@ bool VerifyPNPMTargetLifecycleShapeBoundary() {
       !IsExactPNPMTargetLifecycleBoundary(wrong_image, kProfileNPM, &topology);
 }
 
-bool VerifyPNPMTargetLifecycleProductionPathForTarget(const std::string& target) {
-  const auto topology = PNPMTargetLifecycleTestTopology();
+bool VerifyPNPMTargetLifecycleProductionPathForTarget(const std::string& target, bool bun = false) {
+  const auto topology = PNPMTargetLifecycleTestTopology(bun);
+  const char* command = bun ? kBunTargetLifecycleCommand : kPNPMTargetLifecycleCommand;
+  const char* label = bun ? "helox-bun-target" : "helox-pnpm-target";
+  const char* project_directory = bun ? "/tmp/haa-bun-input/project" : "/tmp/haa-pnpm-input/project";
   const std::string nonce = TestAdmissionNonce(350, 3500);
   gvisor::common::ContextData root;
   root.set_container_id(kThirtySecondID); root.set_thread_group_id(350); root.set_thread_group_start_time_ns(3500);
@@ -4588,18 +4592,18 @@ bool VerifyPNPMTargetLifecycleProductionPathForTarget(const std::string& target)
   *boundary.mutable_context_data() = root;
   boundary.set_binary_path(kBoundaryHelperPath); boundary.set_execfn(kBoundaryHelperPath);
   for (const auto& value : {std::string(kBoundaryHelperPath), std::string(kLaunchMode), nonce, std::string("/bin/sh"),
-       std::string("-ceu"), std::string(kPNPMTargetLifecycleCommand), std::string("helox-pnpm-target"), target}) boundary.add_argv(value);
+       std::string("-ceu"), std::string(command), std::string(label), target}) boundary.add_argv(value);
   auto demotion = boundary; demotion.set_binary_path(kSetprivPath); demotion.set_execfn(kSetprivPath); demotion.clear_argv();
   for (const char* value : {kSetprivPath, "--reuid=1000", "--regid=1000", "--clear-groups", "--inh-caps=-all",
        "--ambient-caps=-all", "--bounding-set=-all", "--no-new-privs", "--", "/bin/sh"}) demotion.add_argv(value);
   auto shell = boundary; shell.set_binary_path("/usr/bin/dash"); shell.set_execfn("/bin/sh"); shell.clear_argv();
-  shell.add_argv("/bin/sh"); shell.add_argv("-ceu"); shell.add_argv(kPNPMTargetLifecycleCommand); shell.add_argv("helox-pnpm-target"); shell.add_argv(target);
+  shell.add_argv("/bin/sh"); shell.add_argv("-ceu"); shell.add_argv(command); shell.add_argv(label); shell.add_argv(target);
   gvisor::sentry::CloneInfo clone; *clone.mutable_context_data() = root;
   clone.set_created_thread_group_id(351); clone.set_created_thread_start_time_ns(3510);
   auto child = root; child.set_thread_group_id(351); child.set_thread_group_start_time_ns(3510); child.set_parent_thread_group_id(350);
   gvisor::sentry::ExecveInfo npm; *npm.mutable_context_data() = child;
   npm.set_binary_path(kNpmCLIPath); npm.set_execfn(kNpmPath); npm.add_argv(kNpmPath);
-  for (const char* value : {"--prefix", "/tmp/haa-pnpm-input/project", "rebuild", "--ignore-scripts=false", "--bin-links=false",
+  for (const char* value : {"--prefix", project_directory, "rebuild", "--ignore-scripts=false", "--bin-links=false",
        "--foreground-scripts", "--offline", "--no-update-notifier", "--workspaces=false", "--no-audit", "--no-fund", "--dangerously-allow-all-scripts"}) npm.add_argv(value);
   npm.add_argv(target);
   auto node = npm; node.set_binary_path(kNodePath); node.set_execfn(kNodePath); node.clear_argv(); node.add_argv("node"); node.add_argv(kNpmPath);
@@ -4633,7 +4637,7 @@ bool VerifyPNPMTargetLifecycleProductionPathForTarget(const std::string& target)
       valid.expected_groups.at(351).process_class == ProcessClass::kNode;
   if (!ok) fprintf(stderr, "PNPM target positive production path failed\n");
   // Every negative starts after the complete original boundary/clone/launcher.
-  for (int test = 0; ok && test < 15; ++test) {
+  for (int test = 0; ok && test < 16; ++test) {
     ProcessState state; if (!baseline(&state)) { ok = false; break; }
     auto changed = node;
     switch (test) {
@@ -4652,6 +4656,7 @@ bool VerifyPNPMTargetLifecycleProductionPathForTarget(const std::string& target)
       case 12: state.groups.at(351).clone_creator_group_id = 999; break;
       case 13: state.groups.at(350).pnpm_target_lifecycle.clear(); break;
       case 14: state.groups.at(351).provenance = ProcessState::Provenance::kDirectExecRoot; break;
+      case 15: changed.set_argv(changed.argv_size()-1, std::string(kBunTargetProjectMount)+"/project/node_modules/other"); break;
     }
     const char* expected_reason = test == 5 ? "PROCESS_IDENTITY_REUSED" :
         test == 6 ? "PROCESS_PROVENANCE_UNKNOWN" : test == 7 ? "ARTIFACT_ROLE" : "CLASS_MISMATCH";
@@ -4700,6 +4705,59 @@ bool VerifyPNPMTargetLifecycleProductionPath() {
   const std::string prefix = std::string(kPNPMProjectMount) + "/project/node_modules/.pnpm/";
   return VerifyPNPMTargetLifecycleProductionPathForTarget(prefix + "is-odd@3.0.1/node_modules/is-odd") &&
       VerifyPNPMTargetLifecycleProductionPathForTarget(prefix + std::string(87, 'a') + "_69b8023e95a408229c8fe59943dd2497/node_modules/" + std::string(130, 'a'));
+}
+
+bool VerifyBunTargetLifecycleShapeBoundary() {
+  const std::string prefix = std::string(kBunTargetProjectMount) + "/project/node_modules/";
+  for (const auto& tail : {"pkg", "@scope/pkg", "pkg/node_modules/child", "@scope/pkg/node_modules/@other/child"}) {
+    const std::string target = prefix + tail;
+    if (!ValidBunTargetLifecyclePath(target) || ValidPNPMTargetLifecyclePath(target)) return false;
+    gvisor::sentry::ExecveInfo boundary;
+    boundary.set_binary_path(kBoundaryHelperPath); boundary.set_execfn(kBoundaryHelperPath);
+    for (const auto& value : {std::string(kBoundaryHelperPath), std::string(kLaunchMode), TestAdmissionNonce(350, 3500),
+         std::string("/bin/sh"), std::string("-ceu"), std::string(kBunTargetLifecycleCommand), std::string("helox-bun-target"), target}) boundary.add_argv(value);
+    const auto topology = PNPMTargetLifecycleTestTopology(true);
+    const auto pnpm_topology = PNPMTargetLifecycleTestTopology();
+    if (!IsExactBunTargetLifecycleBoundary(boundary, kProfileNPM, &topology) ||
+        IsExactPNPMTargetLifecycleBoundary(boundary, kProfileNPM, &topology) ||
+        IsExactBunTargetLifecycleBoundary(boundary, kProfileBunResolver, &topology) ||
+        IsExactBunTargetLifecycleBoundary(boundary, kProfileNPM, nullptr) ||
+        IsExactBunTargetLifecycleBoundary(boundary, kProfileNPM, &pnpm_topology)) return false;
+    for (int test = 0; test < 10; ++test) {
+      auto changed = topology;
+      switch (test) {
+        case 0: changed.sealed = false; break;
+        case 1: changed.snapshot_seen = false; break;
+        case 2: changed.namespace_id = 0; break;
+        case 3: changed.expected.pop_back(); changed.anchors.erase(4); break;
+        case 4: changed.expected.back().read_only = true; break;
+        case 5: changed.expected.back().filesystem_type = "tmpfs"; break;
+        case 6: changed.expected.back().mount_class = "helper"; break;
+        case 7: changed.anchors.erase(4); break;
+        case 8: changed.anchors.emplace(5, MountAnchor{5, target, "workspace"}); break;
+        case 9: changed.expected[0].read_only = false; break;
+      }
+      if (IsExactBunTargetLifecycleBoundary(boundary, kProfileNPM, &changed)) return false;
+    }
+    for (int index = 0; index < boundary.argv_size(); ++index) {
+      auto changed = boundary; changed.set_argv(index, "changed");
+      if (IsExactBunTargetLifecycleBoundary(changed, kProfileNPM, &topology)) return false;
+      changed = boundary; changed.mutable_argv()->DeleteSubrange(index, 1);
+      if (IsExactBunTargetLifecycleBoundary(changed, kProfileNPM, &topology)) return false;
+    }
+    auto extra = boundary; extra.add_argv("extra");
+    if (IsExactBunTargetLifecycleBoundary(extra, kProfileNPM, &topology)) return false;
+  }
+  for (const auto& tail : {"", "@scope", "@/pkg", "../pkg", "pkg/child", "pkg/node_modules", "pkg/node_modules/", "pkg//node_modules/child", "pkg;id", "$(id)", "pkg\\child", "pkg/node_modules/../child"}) {
+    if (ValidBunTargetLifecyclePath(prefix + tail)) return false;
+  }
+  return !ValidBunTargetLifecyclePath(prefix + std::string(512, 'a'));
+}
+
+bool VerifyBunTargetLifecycleProductionPath() {
+  const std::string prefix = std::string(kBunTargetProjectMount) + "/project/node_modules/";
+  return VerifyPNPMTargetLifecycleProductionPathForTarget(prefix + "pkg", true) &&
+      VerifyPNPMTargetLifecycleProductionPathForTarget(prefix + "@scope/pkg/node_modules/@other/child", true);
 }
 
 bool VerifyExactNpmNodeInterpreterTransition() {
@@ -8109,6 +8167,8 @@ int main(int argc, char** argv) {
   const bool npm_node = VerifyExactNpmNodeInterpreterTransition();
   const bool pnpm_target_shape = VerifyPNPMTargetLifecycleShapeBoundary();
   const bool pnpm_target_production = VerifyPNPMTargetLifecycleProductionPath();
+  const bool bun_target_shape = VerifyBunTargetLifecycleShapeBoundary();
+  const bool bun_target_production = VerifyBunTargetLifecycleProductionPath();
   fprintf(stderr, "STARTING open_result_negative\n");
   const bool open_result_negative_ok = running && VerifyOpenResultNegativeMatrix(output, remote, control);
   fprintf(stderr, "STARTING open_result_positive\n");
@@ -8256,6 +8316,8 @@ int main(int argc, char** argv) {
       {"exact npm CLI-to-Node", npm_node},
       {"PNPM target lifecycle shape and topology", pnpm_target_shape},
       {"PNPM target lifecycle production lineage", pnpm_target_production},
+      {"Bun target lifecycle shape and topology", bun_target_shape},
+      {"Bun target lifecycle production lineage", bun_target_production},
       {"OPEN_RESULT negative matrix", open_result_negative_ok},
       {"OPEN_RESULT positive matrix", open_result_positive_ok},
       {"no-basename-trust", no_basename_trust_ok},

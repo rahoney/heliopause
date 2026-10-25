@@ -204,7 +204,15 @@ func pnpmSyntheticTargetLifecycleArchive(t *testing.T, original []byte, controls
 }
 
 func withActualPNPMTargetLifecycle(t *testing.T, input []byte, expect pnpmTargetLifecycleExpectation) {
+	withActualNPMTargetLifecycle(t, input, expect, nativeRuntimePNPM)
+}
+
+func withActualNPMTargetLifecycle(t *testing.T, input []byte, expect pnpmTargetLifecycleExpectation, kind nativeRuntimeToolKind) {
 	t.Helper()
+	spec, known := nativeProjectIdentity(kind)
+	if !known {
+		t.Fatal("unknown fixture target layout")
+	}
 	wantFailure, wantEvents, wantArtifactExecs := expect.failure, expect.events, expect.artifactExecs
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
@@ -228,14 +236,14 @@ func withActualPNPMTargetLifecycle(t *testing.T, input []byte, expect pnpmTarget
 	if err != nil {
 		t.Fatal(err)
 	}
-	project, err := createPNPMProjectVolume(ctx, runner, session.String())
+	project, err := createNativeProjectVolume(ctx, runner, session.String(), kind)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer func() {
 		cleanup, done := resolverCleanupContext()
 		defer done()
-		if err := closePNPMProjectVolume(cleanup, runner, &project); err != nil {
+		if err := closeWritableOutputVolume(cleanup, runner, &project, spec.root); err != nil {
 			t.Error(err)
 		}
 	}()
@@ -282,13 +290,7 @@ func withActualPNPMTargetLifecycle(t *testing.T, input []byte, expect pnpmTarget
 			}
 		}
 	}()
-	observer, ok := supervisor.Observer().(interface {
-		StartPNPMTargetLifecycleProfile(context.Context, string) (TraceReader, error)
-	})
-	if !ok {
-		t.Fatal("exact target lifecycle observer unavailable")
-	}
-	trace, err = observer.StartPNPMTargetLifecycleProfile(ctx, id)
+	trace, err = startNPMTargetFixtureTrace(ctx, supervisor.Observer(), id, kind)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -301,7 +303,7 @@ func withActualPNPMTargetLifecycle(t *testing.T, input []byte, expect pnpmTarget
 	if err := awaitMountAnchors(ctx, supervisor.Observer(), id); err != nil {
 		t.Fatal(err)
 	}
-	if err := runner.(inputCommandRunner).RunInput(ctx, bytes.NewReader(input), "docker", "cp", "--archive", "-", id+":"+pnpmProjectRoot); err != nil {
+	if err := runner.(inputCommandRunner).RunInput(ctx, bytes.NewReader(input), "docker", "cp", "--archive", "-", id+":"+spec.root); err != nil {
 		t.Fatal("synthetic layout introduction failed", err)
 	}
 	mode, err := runner.Output(ctx, "docker", "inspect", "--format", "{{.HostConfig.NetworkMode}}", id)
@@ -325,7 +327,12 @@ func withActualPNPMTargetLifecycle(t *testing.T, input []byte, expect pnpmTarget
 		}
 	}
 	target := expect.target
-	command, err := pnpmTargetLifecycleExecArguments(id, target)
+	var command []string
+	if kind == nativeRuntimeBun {
+		command, err = bunTargetLifecycleExecArguments(id, target)
+	} else {
+		command, err = pnpmTargetLifecycleExecArguments(id, target)
+	}
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -346,7 +353,7 @@ func withActualPNPMTargetLifecycle(t *testing.T, input []byte, expect pnpmTarget
 		t.Logf("synthetic_target_stdout_qualification_only=%q", boundedPNPMTargetDiagnostic(output))
 		t.Fatal("synthetic target lifecycle failed", runErr)
 	}
-	events := readPNPMFixtureFile(t, ctx, runner.(streamingDockerOutput), id, pnpmProjectRoot+"/lifecycle-events")
+	events := readPNPMFixtureFile(t, ctx, runner.(streamingDockerOutput), id, spec.root+"/lifecycle-events")
 	if string(events) != wantEvents {
 		t.Fatal("target events are missing, duplicated or out of order", string(events))
 	}
@@ -358,4 +365,21 @@ func boundedPNPMTargetDiagnostic(body []byte) []byte {
 		return body[:4096]
 	}
 	return body
+}
+
+func startNPMTargetFixtureTrace(ctx context.Context, observer TraceObserver, id string, kind nativeRuntimeToolKind) (TraceReader, error) {
+	if kind == nativeRuntimeBun {
+		if typed, ok := observer.(interface {
+			StartBunTargetLifecycleProfile(context.Context, string) (TraceReader, error)
+		}); ok {
+			return typed.StartBunTargetLifecycleProfile(ctx, id)
+		}
+	} else if kind == nativeRuntimePNPM {
+		if typed, ok := observer.(interface {
+			StartPNPMTargetLifecycleProfile(context.Context, string) (TraceReader, error)
+		}); ok {
+			return typed.StartPNPMTargetLifecycleProfile(ctx, id)
+		}
+	}
+	return nil, errors.New("exact target lifecycle observer unavailable")
 }

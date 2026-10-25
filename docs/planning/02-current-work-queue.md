@@ -5261,3 +5261,17 @@ Quick170.358s/전체 sandbox Race23.229s와 Bun peer payload 전체 이송15.01s
 helper wait0/Host 동일로 PASS다. 원본 controls를 실행 manifest로 복사하지 않고 두 fixed kind
 사이 payload 혼용도 거부한다. 다음은 정확한 Bun instance의 lifecycle 명령/관찰기 연결이며
 Bun 실행·Policy/cache/transaction/CLI/remote acceptance는 계속 열린다.
+
+[B4d-b target lifecycle 감사](./evidence/package-client-quarantine/p3b4db-bun-target-lifecycle-plan-20261025.md)는
+da02f4e의 payload를 재사용한다. 먼저 Bun hoisted/nested/scoped 한 instance의 고정 npm/Node
+quarantine lifecycle과 별도 attested topology/creator·one-shot 경계를 실제 primitive로 확인한다.
+Bun executable이 필요한 script·production backend/whole inspection/Policy는 후속 범위다.
+M13-004 하나만 IN_PROGRESS이며 backend 묶음 외 새 CI는 시작하지 않는다.
+
+[B4d-b 로컬 영수증](./evidence/package-client-quarantine/p3b4db-bun-target-lifecycle-local-20261025.json)은
+Quick199.536s/전체 sandbox Race26.591s·원본 builder250.402s/119latches와 직렬 actual57.515s를
+연결한다. Bun shallow/nested-scoped 정상·exit37 네 case와 기존 PNPM target 회귀가 PASS다.
+ARTIFACT shell3/2·비대상0/complete trace를 유지하고 helper wait0/Host 전체 동일을 확인했다.
+첫 operator의 동시 compiler 간섭 실패는 원본으로 보존하며 compiler 종료/원상 복원 뒤 같은
+binary로 직렬 확인했다. 다음은 opaque Bun layout를 소비하는 production instance backend이며
+명시 Bun runtime·whole inspection/Policy/cache/transaction/CLI/remote는 계속 미완료다.

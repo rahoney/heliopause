@@ -509,6 +509,15 @@ func (o *SharedObserver) StartPNPMTargetLifecycleProfile(ctx context.Context, co
 	return o.startProfile(ctx, containerID, "npm-lifecycle", topology)
 }
 
+// StartBunTargetLifecycleProfile adds only the separately attested Bun project.
+func (o *SharedObserver) StartBunTargetLifecycleProfile(ctx context.Context, containerID string) (TraceReader, error) {
+	topology, ok := bunTargetLifecycleExpectedTopology()
+	if !ok {
+		return nil, observerFault{reason: "LIFECYCLE_ERROR"}
+	}
+	return o.startProfile(ctx, containerID, "npm-lifecycle", topology)
+}
+
 func (o *SharedObserver) StartGoBuildInputProfile(ctx context.Context, containerID string, readOnly bool, budget *observationTraceLedger) (TraceReader, error) {
 	if budget == nil {
 		return nil, observerFault{reason: "LIFECYCLE_ERROR"}

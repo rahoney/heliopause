@@ -1324,6 +1324,8 @@ bool IsExactNpmNodeTransition(const gvisor::sentry::ExecveInfo& message,
 // argument predicates and cannot inherit this target from pathname/comm text.
 constexpr char kPNPMTargetLifecycleCommand[] = R"HAA(mkdir -p /tmp/.npm; HOME=/tmp npm_config_cache=/tmp/.npm npm_config_script_shell=/haa-runtime/haa-boundary npm --prefix /tmp/haa-pnpm-input/project rebuild --ignore-scripts=false --bin-links=false --foreground-scripts --offline --no-update-notifier --workspaces=false --no-audit --no-fund --dangerously-allow-all-scripts "$1")HAA";
 constexpr char kPNPMProjectMount[] = "/tmp/haa-pnpm-input";
+constexpr char kBunTargetProjectMount[] = "/tmp/haa-bun-input";
+constexpr char kBunTargetLifecycleCommand[] = R"HAA(mkdir -p /tmp/.npm; HOME=/tmp npm_config_cache=/tmp/.npm npm_config_script_shell=/haa-runtime/haa-boundary npm --prefix /tmp/haa-bun-input/project rebuild --ignore-scripts=false --bin-links=false --foreground-scripts --offline --no-update-notifier --workspaces=false --no-audit --no-fund --dangerously-allow-all-scripts "$1")HAA";
 
 bool ValidPNPMTargetLifecyclePath(const std::string& path) {
   const std::string prefix = std::string(kPNPMProjectMount) + "/project/node_modules/.pnpm/";
@@ -1352,13 +1354,43 @@ bool ValidPNPMTargetLifecyclePath(const std::string& path) {
       name.find('/', slash + 1) == std::string::npos && name.substr(slash + 1) != "." && name.substr(slash + 1) != "..";
 }
 
-bool HasExactPNPMTargetLifecycleMount(const TopologyState* topology, const std::string& target) {
+bool ValidBunTargetLifecyclePath(const std::string& path) {
+  const std::string prefix = std::string(kBunTargetProjectMount) + "/project/node_modules/";
+  if (path.size() > kMaxTopologyMountpointBytes || !HasPrefix(path, prefix.c_str()) || !IsNormalizedAbsolutePath(path)) return false;
+  auto segment = [](const std::string& value) {
+    if (value.empty() || value == "." || value == "..") return false;
+    for (unsigned char c : value) if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+        (c >= '0' && c <= '9') || c == '_' || c == '.' || c == '-')) return false;
+    return true;
+  };
+  std::string tail = path.substr(prefix.size());
+  while (!tail.empty()) {
+    size_t slash = tail.find('/');
+    std::string name = tail.substr(0, slash);
+    if (name.empty()) return false;
+    if (name[0] == '@') {
+      if (!segment(name.substr(1)) || slash == std::string::npos) return false;
+      tail = tail.substr(slash + 1); slash = tail.find('/'); name = tail.substr(0, slash);
+    }
+    if (!segment(name)) return false;
+    if (slash == std::string::npos) return true;
+    tail = tail.substr(slash + 1);
+    constexpr char nested[] = "node_modules/";
+    if (!HasPrefix(tail, nested)) return false;
+    tail = tail.substr(sizeof(nested) - 1);
+  }
+  return false;
+}
+
+bool HasExactNPMTargetLifecycleMount(const TopologyState* topology, const std::string& target, bool bun) {
+  const char* project_mount = bun ? kBunTargetProjectMount : kPNPMProjectMount;
+
   if (topology == nullptr || !topology->sealed || !topology->snapshot_seen || topology->namespace_id == 0 ||
-      !ValidPNPMTargetLifecyclePath(target) || !IsPinnedReadOnlyRootPath(topology, kNpmCLIPath) ||
+      !(bun ? ValidBunTargetLifecyclePath(target) : ValidPNPMTargetLifecyclePath(target)) || !IsPinnedReadOnlyRootPath(topology, kNpmCLIPath) ||
       !IsPinnedReadOnlyRootPath(topology, kNodePath)) return false;
   size_t expected = 0, actual = 0;
   for (const auto& mount : topology->expected) {
-    if (mount.mountpoint == kPNPMProjectMount) {
+    if (mount.mountpoint == project_mount) {
       if (mount.mount_class != "workspace" || mount.parent != "/tmp" || mount.filesystem_type != "9p" ||
           mount.read_only || mount.noexec || mount.nosuid || mount.nodev) return false;
       ++expected;
@@ -1366,7 +1398,7 @@ bool HasExactPNPMTargetLifecycleMount(const TopologyState* topology, const std::
   }
   for (const auto& entry : topology->anchors) {
     const auto& mount = entry.second;
-    if (mount.mountpoint == kPNPMProjectMount) {
+    if (mount.mountpoint == project_mount) {
       if (mount.mount_class != "workspace") return false;
       ++actual;
     } else if (mount.mountpoint != "/" && mount.mountpoint != "/tmp" && IsAtOrBelowMountpoint(target, mount.mountpoint)) return false;
@@ -1382,7 +1414,18 @@ bool IsExactPNPMTargetLifecycleBoundary(const gvisor::sentry::ExecveInfo& messag
       message.argv(1) == kLaunchMode && ValidAdmissionNonce(message.argv(2)) &&
       message.argv(3) == "/bin/sh" && message.argv(4) == "-ceu" &&
       message.argv(5) == kPNPMTargetLifecycleCommand && message.argv(6) == "helox-pnpm-target" &&
-      HasExactPNPMTargetLifecycleMount(topology, message.argv(7));
+      HasExactNPMTargetLifecycleMount(topology, message.argv(7), false);
+}
+
+bool IsExactBunTargetLifecycleBoundary(const gvisor::sentry::ExecveInfo& message,
+                                       const char* profile, const TopologyState* topology) {
+  return profile != nullptr && strcmp(profile, kProfileNPM) == 0 &&
+      message.binary_path() == kBoundaryHelperPath && message.execfn() == kBoundaryHelperPath &&
+      message.argv_size() == 8 && message.argv(0) == kBoundaryHelperPath &&
+      message.argv(1) == kLaunchMode && ValidAdmissionNonce(message.argv(2)) &&
+      message.argv(3) == "/bin/sh" && message.argv(4) == "-ceu" &&
+      message.argv(5) == kBunTargetLifecycleCommand && message.argv(6) == "helox-bun-target" &&
+      HasExactNPMTargetLifecycleMount(topology, message.argv(7), true);
 }
 
 bool IsExactPNPMTargetLifecycleArguments(const gvisor::sentry::ExecveInfo& message,
@@ -1391,8 +1434,12 @@ bool IsExactPNPMTargetLifecycleArguments(const gvisor::sentry::ExecveInfo& messa
       "--ignore-scripts=false", "--bin-links=false", "--foreground-scripts", "--offline",
       "--no-update-notifier", "--workspaces=false", "--no-audit", "--no-fund", "--dangerously-allow-all-scripts"};
   const int count = static_cast<int>(sizeof(args) / sizeof(args[0]));
-  if (!ValidPNPMTargetLifecyclePath(target) || message.argv_size() != first + count + 1 || message.argv(first + count) != target) return false;
-  for (int i = 0; i < count; ++i) if (message.argv(first + i) != args[i]) return false;
+  const bool bun = ValidBunTargetLifecyclePath(target);
+  if ((!bun && !ValidPNPMTargetLifecyclePath(target)) || message.argv_size() != first + count + 1 || message.argv(first + count) != target) return false;
+  for (int i = 0; i < count; ++i) {
+    const char* expected = bun && i == 1 ? "/tmp/haa-bun-input/project" : args[i];
+    if (message.argv(first + i) != expected) return false;
+  }
   return true;
 }
 
@@ -3920,7 +3967,7 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
       return false;
     }
     group = candidate.groups.find(group_id);
-    if (IsExactPNPMTargetLifecycleBoundary(message, profile, topology))
+    if (IsExactPNPMTargetLifecycleBoundary(message, profile, topology) || IsExactBunTargetLifecycleBoundary(message, profile, topology))
       group->second.pnpm_target_lifecycle = message.argv(7);
     new_direct_root = true;
   }
