@@ -10,7 +10,13 @@ import (
 
 func uvNativeProjectFixture(t *testing.T) (UVProjectInput, []byte, UVProjectLock) {
 	t.Helper()
-	selected, _, _ := uvTestSelection(t, "child>=1.0")
+	input, body, export, _, _ := uvNativeProjectFixtureWithArchives(t)
+	return input, body, export
+}
+
+func uvNativeProjectFixtureWithArchives(t *testing.T) (UVProjectInput, []byte, UVProjectLock, []UVWheelInput, []SimpleProject) {
+	t.Helper()
+	selected, inputs, pages := uvTestSelection(t, "child>=1.0")
 	export, err := ParseUVProjectLock(uvProjectBody(selected.Packages()), "3.14.7")
 	if err != nil {
 		t.Fatal(err)
@@ -33,7 +39,7 @@ func uvNativeProjectFixture(t *testing.T) (UVProjectInput, []byte, UVProjectLock
 		body += "]\n"
 	}
 	body += "\n[[package]]\nname='haa-example'\nversion='0.1.0'\nsource={virtual='.'}\ndependencies=[{name='parent'}]\n[package.metadata]\nrequires-dist=[{name='parent',specifier='<2,>=1.0'}]\n"
-	return input, []byte(body), export
+	return input, []byte(body), export, inputs, pages
 }
 
 func TestUVNativeProjectLockLinksCompleteWheelExport(t *testing.T) {

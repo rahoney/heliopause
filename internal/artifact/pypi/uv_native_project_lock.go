@@ -18,8 +18,10 @@ import (
 // existing complete pylock export. Neither a declared edge nor this type
 // authenticates an archive or permits installation/build/execution.
 type UVNativeProjectLock struct {
-	body     []byte
-	packages []UVLockedPackage
+	body, manifest []byte
+	python         string
+	packages       []UVLockedPackage
+	sources        map[string]uvNativeArchive
 }
 
 type uvNativeArchive struct {
@@ -70,6 +72,7 @@ func ParseUVNativeProjectLock(input UVProjectInput, body []byte) (UVNativeProjec
 	}
 	byName := map[string]uvNativePackage{}
 	var root uvNativePackage
+	sources := map[string]uvNativeArchive{}
 	validationPackages := make([]map[string]any, 0, len(wire.Packages)-1)
 	for _, item := range wire.Packages {
 		name, err := NormalizeProjectName(item.Name)
@@ -99,6 +102,7 @@ func ParseUVNativeProjectLock(input UVProjectInput, body []byte) (UVNativeProjec
 			if err := validateUVNativeSdist(*item.Sdist, item.Name, item.Version); err != nil {
 				return UVNativeProjectLock{}, err
 			}
+			sources[item.Name] = *item.Sdist
 		}
 		validationPackages = append(validationPackages, map[string]any{"name": item.Name, "version": item.Version, "wheels": wheels})
 	}
@@ -115,7 +119,7 @@ func ParseUVNativeProjectLock(input UVProjectInput, body []byte) (UVNativeProjec
 	if err != nil {
 		return UVNativeProjectLock{}, err
 	}
-	return UVNativeProjectLock{append([]byte(nil), body...), parsed.Packages()}, nil
+	return UVNativeProjectLock{body: append([]byte(nil), body...), manifest: input.Body(), python: wire.Python, packages: parsed.Packages(), sources: sources}, nil
 }
 
 func validUVNativeArchiveMetadata(archive uvNativeArchive) bool {

@@ -29,11 +29,15 @@ native runtime 소비자와 ordinary CPU/full을 한 번 확인하는 현재 실
 첫 timer due에 run/head·각 status/conclusion·원본10logs·checkout whole tree를 확인한다.
 모든 job success를 확인하기 전에는 all green으로 쓰지 않는다.
 
-공통 observer의 Bun Artifact image/ABI read/strict negative 변경은 CPU와 세 CUDA
-소비자를 건드린다. 확장 계획§5와 기존 invariant에 따라 ordinary 성공 뒤 frozen 동일
-source에서 필요한 cu126/cu130/cu132를 각각 한 번 순차 검증한다. 이전9410 CUDA 성공과
+공통 observer의 Bun Artifact image/ABI read/strict negative 변경 뒤에는 관련 CPU·세 CUDA
+영향 범위를 모두 확인해야 한다. 기존 예방 규칙§4·§5와 운영 참고문서v0.5§15, 확장 계획§5를
+대조했다. 현재 CI413 ordinary native-runtime 묶음은 소비하되, 각 P4 parser와 다음 client/runner
+구현마다 세 CUDA full을 반복하지 않는다. 후속 공통 동작을 모은 최종 영향 source를 고정한
+checkpoint/P7에서 필요한 cu126/cu130/cu132를 각각 한 번 순차 검증하고, 그때까지 whole
+P2/P3 acceptance는 열어 둔다. 중간에 실제 공통 회귀나 다음 구현의 신뢰 전제를 막는 새
+native 동작이 입증되면 확장 계획§5에 따라 그 경계만 앞당긴다. 이전9410 CUDA 성공과
 현재121-latch 결과를 합쳐 최신 source의 full profile 성공이라고 주장하지 않는다.
-새 P4 helper commit으로 이 원격 후보를 취소하거나 각 helper별 CI를 실행하지 않는다.
+새 P4 helper commit으로 현재 원격 후보를 취소하거나 각 helper별 CI를 실행하지 않는다.
 각 profile 최근 실제 elapsed와 추가 Bun project519.694s/JS·준비 여유로 다음 실제 due를
 등록하고 active turn에서 결과를 소비한다. 실패하면 최초 exact logs/source를 보존하고
 원인/영향을 검토하며 같은 입력의 맹목적 재실행·timeout 확대를 하지 않는다.
