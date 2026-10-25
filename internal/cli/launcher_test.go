@@ -188,7 +188,7 @@ func TestLauncherExamplesUseRegisteredSyntax(t *testing.T) {
 	if err := os.Mkdir(venv, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	for name, body := range map[string]string{"requirements.txt": "packaging==25.0\n", "empty.txt": "# explicit empty\n", "pylock.toml": "lock-version='1.0'\ncreated-by='uv'\nrequires-python='>=3.14'\npackages=[]\n"} {
+	for name, body := range map[string]string{"requirements.txt": "packaging==25.0\n", "empty.txt": "# explicit empty\n", "pylock.toml": "lock-version='1.0'\ncreated-by='uv'\nrequires-python='>=3.14'\npackages=[]\n", "uv.lock": "version=1\nrevision=5\nrequires-python='==" + runtimeidentity.PythonVersion + "'\n[[package]]\nname='haa-launcher-project'\nversion='0.1.0'\nsource={virtual='.'}\n"} {
 		if err := os.WriteFile(name, []byte(body), 0o600); err != nil {
 			t.Fatal(err)
 		}

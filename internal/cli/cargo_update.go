@@ -124,7 +124,14 @@ func writeProjectUpdateReportWithRecords(output io.Writer, verified domain.Proje
 
 // The existing update callers preserve their schema and operation. The PNPM
 // install caller shares complete-set facts without manufacturing a primary.
-func writeProjectMutationReportWithRecords(output io.Writer, verified domain.ProjectVerifiedSet, cause error, selector, source string, records *machineVerifiedSet, installing bool) error {
+type projectMutationReportFacts struct {
+	report    cargoUpdateReport
+	inspected domain.InspectedProjectSet
+	decision  domain.PolicyDecision
+	checks    []domain.CheckExecution
+}
+
+func buildProjectMutationReport(verified domain.ProjectVerifiedSet, cause error, selector, source string, records *machineVerifiedSet, installing bool) projectMutationReportFacts {
 	report := cargoUpdateReport{Schema: "helox.project-update-result/v1", Operation: "UPDATE", Status: "FAILED", Promotion: "NOT_COMPLETED", Source: source, Selector: selector, Entries: []cargoUpdateEntry{}}
 	if installing {
 		report.Schema = "helox.project-install-result/v1"
@@ -177,6 +184,12 @@ func writeProjectMutationReportWithRecords(output io.Writer, verified domain.Pro
 			report.Entries = append(report.Entries, entry)
 		}
 	}
+	return projectMutationReportFacts{report, inspected, decision, checks}
+}
+
+func writeProjectMutationReportWithRecords(output io.Writer, verified domain.ProjectVerifiedSet, cause error, selector, source string, records *machineVerifiedSet, installing bool) error {
+	facts := buildProjectMutationReport(verified, cause, selector, source, records, installing)
+	report, inspected, decision, checks := facts.report, facts.inspected, facts.decision, facts.checks
 	p := presentationFor(output)
 	if !p.human() {
 		return json.NewEncoder(output).Encode(report)

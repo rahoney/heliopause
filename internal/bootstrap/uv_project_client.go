@@ -18,6 +18,22 @@ import (
 type uvProjectCLIService struct{ bindings uvProjectBindings }
 
 func (s uvProjectCLIService) ApplyUVProject(ctx context.Context, request cli.UVProjectRequest) (outcome cli.UVProjectOutcome, resultErr error) {
+	if request.Intent == artifactpypi.UVProjectLockUpgrade {
+		service, err := newUVProjectLockService(s.bindings, request.ProjectRoot)
+		if err != nil {
+			return outcome, err
+		}
+		outcome.Verified, err = service.Apply(ctx, request.Install)
+		if err != nil {
+			return outcome, err
+		}
+		id, manifest, sbom, ok := service.promoter.PublishedRecords()
+		if !ok {
+			return outcome, errors.New("UV lock completed without committed publication records")
+		}
+		outcome.ManifestID, outcome.ManifestHandle, outcome.SBOMHandle = id, manifest, sbom
+		return outcome, nil
+	}
 	service, err := newUVProjectService(s.bindings, request.ProjectRoot, request.Intent, request.Selector, request.Adopt)
 	if err != nil {
 		return outcome, err

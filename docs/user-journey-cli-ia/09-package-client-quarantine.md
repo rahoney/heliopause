@@ -1,6 +1,6 @@
 # Package client / tool execution quarantine — 설계
 
-상태: **P1 UV pip COMPLETE; P2 pnpm/P3 Bun named local·hosted 검증, final profile matrix 미완료; P4 public uv add/sync CLI와 bounded native adoption named local 검증, lock-only/tools 미완료; P5..P7 미착수**. 2026-10-21 사용자 요청으로
+상태: **P1 UV pip COMPLETE; P2 pnpm/P3 Bun named local·hosted 검증, final profile matrix 미완료; P4 public uv add/sync/lock --upgrade와 bounded native adoption named local 검증, persistent tools 미완료; P5..P7 미착수**. 2026-10-21 사용자 요청으로
 uv pip·pnpm·Bun과 npx·uvx·bunx·pipx를 하나의 확장 범위로 계획한다.
 [실행 계획·baseline·수정 지도·재검토](../planning/20-package-client-quarantine-plan.md)가
 구현 순서와 검증을 소유한다. 기존 [업데이트 검역](./06-update-quarantine.md)을
@@ -278,17 +278,19 @@ empty의 검증 경로는 유지한다. Manifest/SBOM·actual operation records�
 
 ## 현재 UV project installed lane
 
-[P4-I 로컬 검증](../planning/evidence/package-client-quarantine/p4i-uv-project-cli-local-20261026.json)의
-실제 source는 다음 범위다. 새 public release/installed binary 갱신이나 remote qualification을 뜻하지 않는다.
+[P4-K3 로컬 검증](../planning/evidence/package-client-quarantine/p4k3-uv-project-lock-cli-local-20261026.json)과
+아래 native 인계 검증의 현재 지원은 다음 범위다. 새 public release/installed binary 갱신이나 remote qualification을 뜻하지 않는다.
 
 | 항목 | 현재 지원 |
 | --- | --- |
-| 구문 | `helox uv add <name-or-requirement>`, `helox uv sync` |
-| 경로 | `--project` 또는 cwd; `--target` 또는 project/.venv의 기존 venv. Explicit target은 VIRTUAL_ENV보다 우선 |
+| 구문 | `helox uv add <name-or-requirement>`, `helox uv sync`, `helox uv lock --upgrade` |
+| 경로 | `--project` 또는 cwd. Add/sync는 --target 또는 project/.venv의 기존 venv이며 explicit target이 VIRTUAL_ENV보다 우선. Lock --upgrade는 project controls만 대상으로 하고 venv를 요구하지 않음 |
 | 입력 | 단일 virtual pyproject/public PyPI wheel; bare 또는 PEP508 bounded version 조건; 이전 lock의 virtual root identity/Python 계약을 유지한 direct-dependency 편집 뒤 public uv.lock을 남긴 채 sync 가능 |
-| 반영 | current 전체 검사·Evidence·Policy 후 manifest/native lock/소유 환경 파일을 함께 commit·rollback; 같은 버전도 재검사; 명시 empty는 소유 파일을 제거하고 사용자 파일 보존 |
+| 반영 | current 전체 검사·Evidence·Policy 후 add/sync는 manifest/native lock/소유 환경 파일을 함께 commit·rollback; 같은 버전도 재검사; 명시 empty는 소유 파일을 제거하고 사용자 파일 보존. Lock --upgrade는 기존 uv.lock만 반영하고 manifest와 환경 보존 |
 | 출력 | `--output human/json`; auto는 terminal 여부를 따름. 성공 후 실제 Manifest/SBOM 참조 |
-| 실행 조건 | Linux amd64, fixed UV/Python 검사 runtime와 기존 venv; 기존 distribution은 HAA 소유권 또는 명시 --adopt의 native UV 전체 인증 필요 |
-| 남은 acceptance | distinct lock-only, persistent tools; 임의 native 옵션과 runtime provisioning은 이 installed lane에 없음 |
+| 실행 조건 | Linux amd64/fixed UV·Python 검사 runtime. Add/sync는 기존 venv와 HAA 소유권 또는 명시 --adopt의 native UV 전체 인증 필요. Lock --upgrade는 기존 supported public uv.lock 필요; --target/adopt는 지원하지 않음 |
+| 남은 acceptance | persistent tools/최종 profile qualification; 임의 native 옵션과 runtime provisioning은 이 installed lane에 없음 |
 
 [P4-J native adoption](../planning/evidence/package-client-quarantine/p4j-uv-project-adoption-local-20261026.json)은 고정 native UV 공개 wheel 설치 전체의 명시 `--adopt`를 add/sync에 연결한다. Unselected 원본도 authentic old wheel과 대조하며 generated scripts/compiled caches/cross-scheme 출력·unknown source는 인계하지 않는다. Current 선택 전체는 다시 검사·승인하고 원본 proof는 records에만 결합한다. Marker/이전 ALLOW만으로 인계하거나 설치하지 않는다.
+
+[P4-K3 lock-only CLI](../planning/evidence/package-client-quarantine/p4k3-uv-project-lock-cli-local-20261026.json)는 `uv lock --upgrade`의 complete current 검역·cache readback 뒤 native lock만 갱신한다. Machine schema `helox.project-lock-update-result/v1`의 lock_update_status와 installation_status=NOT_REQUESTED를 구분하며 human에서도 설치 없음과 실제 Manifest/SBOM을 표시한다. 후속 sync는 선택 전체를 다시 검사한다.

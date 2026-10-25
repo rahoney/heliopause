@@ -74,3 +74,16 @@ affected Race146.556s와 actual173.014s까지 PASS다. Installed5/control-only3�
 관찰·현재 Policy·Host 복원을 확인했다. 새 실제 fixture만 추가한 default/production source
 불변 경계는 raw native-fixture-only-reuse-boundary가 소유한다. Public K3 명령과 no-install
 결과가 다음이며 전체 P4/원격 qualification은 계속 열려 있다.
+
+K3 exact baseline은 e9565ad7577b7eb81319f0b13a144c523bfd4120이다. Existing descriptor/preflight/current record gating와
+K2 factory를 재사용한다(IMPLEMENTED/WIRED/QUALIFIED=YES, named existing scope).
+Public lock 명령·no-install report는 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=NO,
+MISSING은 이 연결과 실제 CLI/거부 경로 검증이다. 기존 source preflight를 공용 함수로
+추출하고 current result facts 계산을 별도 renderer와 공유한다. 원래 판단 body의 mapped
+동일성 및 기존 add/sync/다른 project report 소비자를 검증한다. Reader의 descriptor close는
+source preflight 완료 시점이며 실제 held original guard는 K2가 다시 capture/유지한다.
+
+K3는 [public CLI receipt](./p4k3-uv-project-lock-cli-local-20261026.json)의 canonical/full
+CLI Race와 actual252.100s를 통과했다. Existing add/sync7와 lock-only4/current fresh approval·
+명시 no-install 결과·원본 보존/helperwait0/Host 동일을 확인했다. Named UV project lanes는
+locally qualified이며 persistent tools/whole P4와 최종 영향 profile은 별도다.

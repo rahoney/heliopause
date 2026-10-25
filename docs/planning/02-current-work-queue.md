@@ -15,11 +15,11 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4-K2 — distinct native lock-only backend/guard/current whole approval/atomic publication and prior installed regression named local QUALIFIED; public CLI/tools remain
-Next action: M13-004 — public uv lock --upgrade CLI/actual; then persistent tools and remaining execution acceptance; grouped final CI boundary retained
-Current substep: M13-004/P4-K3 public lock-only command/preflight and distinct no-install report; K2 backend/actual locally qualified; tools pending
+Last completed substep: P4-K3 — public uv lock --upgrade/default+explicit project/current complete approval/distinct no-install result and existing add/sync CLI named local QUALIFIED; persistent tools remain
+Next action: M13-004 — persistent UV tool/pipx baseline/native metadata/runtime and exact pin review; then missing tool/execution acceptance; grouped final CI boundary retained
+Current substep: M13-004/P4-L persistent UV tool/pipx baseline/native schema/runtime/ownership review; UV project named local lanes qualified; tools not yet implemented
 Acceptance audit: CI413 frozen50fd Required10SUCCESS; all10 checkout38e27d8 whole tree d6a63ab/2475 matches; actual75m due consumed17:20:16UTC; full10 decoded logs saved; historical CI411 timeout cause remains unconfirmed
-Independent local next: P4 public lock-only CLI and persistent tools; final support/profile matrix open
+Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -5561,3 +5561,7 @@ Grouped source50fd3b2/tree d6a63ab/2475를 한 번 push하여 [CI413](https://gi
 ### 2026-10-26 P4-K2 lock-only approved publication checkpoint
 
 [K2 receipt](./evidence/package-client-quarantine/p4k2-uv-project-lock-publication-local-20261026.json)은 canonical Quick168.957s/security11.164s/docs0.258s·focused Race11.848s/full affected Race146.556s와 actual173.014s PASS를 연결한다. Actual 기존 installed5와 control-only3은 현재 전체 검사/Evidence·Policy·승인 cache/readback을 재사용하고 distinct project context로 uv.lock만 반영했다. Manifest identity/mode·user files·임의 venv는 보존하고 venv 부재에서도 동작한다. 네 ENOSPC 경계 원복/foreign 원본·backup 보존/동시 guard·recovery 재진입 거부와 noSKIP/helperwait0/Host 동일도 확인했다. Public CLI/whole P4/remote는 미완료이며 같은 M13-004에서 K3 명령·별도 no-install 결과를 연결한다. 새 push·CI는 없다.
+
+### 2026-10-26 P4-K3 public lock-only CLI checkpoint
+
+[K3 receipt](./evidence/package-client-quarantine/p4k3-uv-project-lock-cli-local-20261026.json)은 canonical Quick71.547s/security10.488s/docs0.253s·full CLI/Bootstrap Race29.145s와 actual252.100s PASS를 연결한다. Existing CLI169.25s의 일곱 성공/무단 인계 거부와 새 lock-only80.15s의 JSON·human/default/explicit project/current no-op·empty 네 요청이 PASS다. Lock update 완료와 installation NOT_REQUESTED를 분리하고 venv 부재에서도 동작하며 임의/active venv와 manifest identity·lock mode·user files를 보존한다. 공통 facts/render/preflight mapped body 동일성과 unsupported/unsafe original·완료 기록 부재 거부도 확인했다. NoSKIP/helperwait0/Host 동일이며 runtime/observer/K2 backend는 불변이다. Whole P4/remote는 미완료이고 같은 M13-004에서 persistent tools baseline을 계속한다. 새 push·CI는 없다.
