@@ -19,15 +19,47 @@ func pnpmKeyDigest(value string) string {
 // A completed fact check means accepted observations were interpreted. Required
 // lifecycle coverage is separate and cannot be completed by these facts.
 func pnpmInstanceFacts(subject domain.AcquiredArtifact, instance string, layout artifactnpm.PNPMInspectionLayout, result domain.SandboxResult) (domain.InspectionReport, error) {
-	if result.SessionID().String() == "" {
-		return domain.InspectionReport{}, errors.New("pnpm instance has no actual session")
+	return npmProjectInstanceFacts(subject, instance, layout, result, projectInspectionPNPM)
+}
+
+type projectInspectionClient uint8
+
+const (
+	projectInspectionPNPM projectInspectionClient = iota + 1
+	projectInspectionBun
+)
+
+func projectInspectionPrefix(client projectInspectionClient) (string, error) {
+	switch client {
+	case projectInspectionPNPM:
+		return "pnpm", nil
+	case projectInspectionBun:
+		return "bun", nil
+	default:
+		return "", errors.New("unknown project inspection client")
 	}
-	summary, summaryErr := pnpmInstanceSummary(result)
+}
+
+type projectInstanceFactLayout interface {
+	Digest() domain.ContentDigest
+	RuntimeIdentity() string
+}
+
+func npmProjectInstanceFacts(subject domain.AcquiredArtifact, instance string, layout projectInstanceFactLayout, result domain.SandboxResult, client projectInspectionClient) (domain.InspectionReport, error) {
+	prefix, err := projectInspectionPrefix(client)
+	if err != nil {
+		return domain.InspectionReport{}, err
+	}
+
+	if result.SessionID().String() == "" {
+		return domain.InspectionReport{}, errors.New(prefix + " instance has no actual session")
+	}
+	summary, summaryErr := npmProjectInstanceSummary(result, client)
 	if summary == "" {
 		return domain.InspectionReport{}, summaryErr
 	}
 	key := pnpmKeyDigest(instance)
-	check, err := domain.NewCheckID("pnpm-instance-facts-" + key[:24])
+	check, err := domain.NewCheckID(prefix + "-instance-facts-" + key[:24])
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
@@ -35,11 +67,11 @@ func pnpmInstanceFacts(subject domain.AcquiredArtifact, instance string, layout 
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
-	observedID, err := domain.NewEvidenceID("pnpm-observations-" + key[:24])
+	observedID, err := domain.NewEvidenceID(prefix + "-observations-" + key[:24])
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
-	observed, err := domain.NewEvidence(observedID, check, subject.Identity(), subject.Digest(), "pnpm-instance-observations", summary)
+	observed, err := domain.NewEvidence(observedID, check, subject.Identity(), subject.Digest(), prefix+"-instance-observations", summary)
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
@@ -47,11 +79,11 @@ func pnpmInstanceFacts(subject domain.AcquiredArtifact, instance string, layout 
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
-	bindingID, err := domain.NewEvidenceID("pnpm-binding-" + key[:24])
+	bindingID, err := domain.NewEvidenceID(prefix + "-binding-" + key[:24])
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
-	bound, err := domain.NewEvidence(bindingID, check, subject.Identity(), subject.Digest(), "pnpm-instance-binding", string(binding))
+	bound, err := domain.NewEvidence(bindingID, check, subject.Identity(), subject.Digest(), prefix+"-instance-binding", string(binding))
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
@@ -68,26 +100,39 @@ func pnpmInstanceFacts(subject domain.AcquiredArtifact, instance string, layout 
 }
 
 func pnpmCoverageReport(subject domain.AcquiredArtifact, expected, attempted, completed int, failed bool) (domain.InspectionReport, error) {
-	check, err := domain.NewCheckID("pnpm-dynamic-lifecycle")
+	return npmProjectCoverageReport(subject, expected, attempted, completed, failed, projectInspectionPNPM)
+}
+
+func npmProjectCoverageReport(subject domain.AcquiredArtifact, expected, attempted, completed int, failed bool, client projectInspectionClient) (domain.InspectionReport, error) {
+	prefix, err := projectInspectionPrefix(client)
+	if err != nil {
+		return domain.InspectionReport{}, err
+	}
+	incomplete, notExecuted := "M13_PNPM_DYNAMIC_INCOMPLETE", "M13_PNPM_DYNAMIC_NOT_EXECUTED"
+	if client == projectInspectionBun {
+		incomplete, notExecuted = "M13_BUN_DYNAMIC_INCOMPLETE", "M13_BUN_DYNAMIC_NOT_EXECUTED"
+	}
+
+	check, err := domain.NewCheckID(prefix + "-dynamic-lifecycle")
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
 	status, code := domain.ExecutionCompleted, ""
 	if failed || completed != expected {
-		status, code = domain.ExecutionIncomplete, "M13_PNPM_DYNAMIC_INCOMPLETE"
+		status, code = domain.ExecutionIncomplete, incomplete
 		if attempted == 0 {
-			status, code = domain.ExecutionNotExecuted, "M13_PNPM_DYNAMIC_NOT_EXECUTED"
+			status, code = domain.ExecutionNotExecuted, notExecuted
 		}
 	}
 	execution, err := domain.NewCheckExecution(check, domain.CheckInspection, true, domain.CapabilitySupported, status, code)
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
-	id, err := domain.NewEvidenceID("pnpm-instance-coverage")
+	id, err := domain.NewEvidenceID(prefix + "-instance-coverage")
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
-	evidence, err := domain.NewEvidence(id, check, subject.Identity(), subject.Digest(), "pnpm-instance-coverage", fmt.Sprintf("expected=%d attempted=%d completed=%d", expected, attempted, completed))
+	evidence, err := domain.NewEvidence(id, check, subject.Identity(), subject.Digest(), prefix+"-instance-coverage", fmt.Sprintf("expected=%d attempted=%d completed=%d", expected, attempted, completed))
 	if err != nil {
 		return domain.InspectionReport{}, err
 	}
@@ -98,7 +143,12 @@ func pnpmCoverageReport(subject domain.AcquiredArtifact, expected, attempted, co
 // An unrepresentable full summary is still an operational failure. Retain only
 // the existing four suspicious interpretations in a bounded fallback, tied to
 // this actual Session; never drop accepted security facts or widen the ceiling.
-func pnpmInstanceSummary(result domain.SandboxResult) (string, error) {
+func npmProjectInstanceSummary(result domain.SandboxResult, client projectInspectionClient) (string, error) {
+	prefix, err := projectInspectionPrefix(client)
+	if err != nil {
+		return "", err
+	}
+
 	summary, original := result.ObservationSummary()
 	if original == nil {
 		return summary, nil
@@ -114,7 +164,7 @@ func pnpmInstanceSummary(result domain.SandboxResult) (string, error) {
 		Session           string            `json:"session"`
 		SummaryIncomplete bool              `json:"summary_incomplete"`
 		Suspicious        map[string]uint64 `json:"suspicious"`
-	}{"pnpm-partial-observations/v1", result.SessionID().String(), true, counts})
+	}{prefix + "-partial-observations/v1", result.SessionID().String(), true, counts})
 	if err != nil {
 		return "", errors.Join(original, err)
 	}

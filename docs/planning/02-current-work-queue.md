@@ -5288,3 +5288,17 @@ archive4의 exact instances4를 production backend의 fresh sessions4에서31.41
 기존 PNPM project2/4 sessions도45.02s가 PASS다. Whole readback/trace·cleanup 뒤 반환,
 helper wait0/Host 전체 동일을 확인했다. 다음은 전체 static/dynamic 집계·coverage·Policy
 연결이며 명시 Bun runtime/cache/transaction/CLI·remote qualification은 아직 미완료다.
+
+[B4d-d complete inspection 감사](./evidence/package-client-quarantine/p3b4dd-bun-project-inspection-plan-20261025.md)는
+e212fa4의 backend를 Bun typed Project Inspector에 연결한다. 모든 unique archive의 static gate와
+모든 logical instance의 실제 결과/coverage·정확한 prepared handoff를 기존 evidence/Policy 서비스에
+전달한다. PNPM adapter·판정 규칙은 유지하고 shared facts renderer를 닫힌 두 client로 재사용한다.
+실제 검역·기존 PNPM을 확인한 backend 묶음에서만 필요한 CI와 실제 타이머 확인을 수행한다.
+
+[B4d-d 로컬 영수증](./evidence/package-client-quarantine/p3b4dd-bun-project-inspection-local-20261025.json)은
+Quick149.369s/전체 inspection·sandbox Race24.431s와 actual160.202s를 연결한다. Bun transitive/
+peer source2/4·모든 instance2/4의 필수 integrity/static/lifecycle3·정확한 facts/기록된 evidence와
+entry/set Policy ALLOW(47.05s), exact prepared handoff/partial 거부가 PASS다. 기존 PNPM public
+선택8·검역4도110.56s/helper wait0/Host 전체 동일이다. Script-free Node-lane backend 검증이며
+명시 Bun runtime·Host 설치 승인이 아니다. 다음은 frozen Bun 공급/actual CI 연결 후 이 backend
+묶음의 원격 checkpoint이고, cache/transaction/CLI는 CI 대기 중 독립적으로 계속한다.
