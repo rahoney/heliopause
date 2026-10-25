@@ -15,11 +15,11 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4-E — native exact/bare add, manifest conservation and actual version-changing upgrade named local QUALIFIED; Host transaction/CLI/tools remain
-Next action: M13-004 — audit P4 project/venv atomic ownership/transaction and approved cache/records; CI413 recorded; group future pushes at backend/CLI boundaries
-Current substep: M13-004/P4-E native add/version-changing selection named local QUALIFIED; next project/venv transaction baseline; CI413 qualification recorded
+Last completed substep: P4-F — native project provenance/current Evidence·Policy/approved cache named local QUALIFIED; Host transaction/CLI/tools remain
+Next action: M13-004 — extend the existing held venv transaction to atomically publish native project controls, then ownership/CLI/tools; grouped final CI boundary retained
+Current substep: M13-004/P4-F native project approved cache named local QUALIFIED; next atomic transaction baseline; CI413 qualification recorded
 Acceptance audit: CI413 frozen50fd Required10SUCCESS; all10 checkout38e27d8 whole tree d6a63ab/2475 matches; actual75m due consumed17:20:16UTC; full10 decoded logs saved; historical CI411 timeout cause remains unconfirmed
-Independent local next: P4 project/venv transaction, approved cache/records/CLI and persistent tools; final support/profile matrix open
+Independent local next: P4 project/venv atomic transaction, ownership/CLI and persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -5509,3 +5509,11 @@ Grouped source50fd3b2/tree d6a63ab/2475를 한 번 push하여 [CI413](https://gi
 ### 2026-10-26 P4-E native add/version delta local checkpoint
 
 [Add/delta receipt](./evidence/package-client-quarantine/p4e-uv-project-add-local-20261026.json)의 Quick222.363s/security14.467s/docs0.282s·affected fullRace26.492s와 actual121.396s가 PASS다. Native add exact24.2→25.0·bare/기존 constraint 보존·두 roots와 native sync가 재검증한 old24.2에서 lock-upgrade25.0/manifest 불변을 확인했다. Seed constraint만 synthetic이며11 native selection requests/noSKIP/helperwait0/Host 동일이다. 기존11 owner는 bytes 불변이고 별도 새 CI는 없었다. Host atomic transaction/cache/records/CLI/tools·whole P4는 미완료이며 같은 M13-004에서 다음 audit를 계속한다.
+
+### 2026-10-26 P4-F native project cache 착수
+
+[P4-F audit·map·두 번째 검토](./evidence/package-client-quarantine/p4f-uv-project-cache-plan-20261026.md)에 따라 기존 complete Python inspection/current Evidence·Policy/cache를 재사용한다. Native original/selected provenance를 입구에서 재검증하는 adapter만 추가하며 Host atomic publication/CLI/tools는 미완료다. M13-004 하나로 계속하며 작은 helper별 새 CI는 실행하지 않는다.
+
+### 2026-10-26 P4-F native project approved cache local checkpoint
+
+[Cache receipt](./evidence/package-client-quarantine/p4f-uv-project-cache-local-20261026.json)은 canonical profiles/affected fullRace270.474s와 actual51.282s를 연결한다. Public two roots/explicit empty native selection부터 complete 검사/current Evidence·Policy·six-control Manifest/SBOM/cache readback과 approval 부재·Evidence 접근 실패·sealed cache 변조 거부가 PASS다. Helperwait0/Host 동일이며 Host target은 생성하지 않았다. 기존10 owner bytes 불변/새 push·CI 없음이다. 같은 M13-004에서 atomic control+venv transaction/ownership/CLI/tools를 계속한다.
