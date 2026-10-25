@@ -57,7 +57,12 @@ func (p *UVProjectPromotion) StageProject(ctx context.Context, set domain.Projec
 		return domain.StagedProjectSet{}, err
 	}
 	p.stageAttempted = true
-	cache, err := NewUVProjectCache(p.cache, update)
+	var cache *UVProjectCache
+	if p.guard.proof.Present() {
+		cache, err = newUVProjectCacheWithOriginalProof(p.cache, p.guard.baseSelected, update, p.guard.proof)
+	} else {
+		cache, err = NewUVProjectCache(p.cache, update)
+	}
 	if err != nil {
 		return domain.StagedProjectSet{}, err
 	}

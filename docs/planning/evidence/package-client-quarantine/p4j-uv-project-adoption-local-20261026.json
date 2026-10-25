@@ -1,0 +1,161 @@
+{
+  "work_item": "M13-004/P4-J",
+  "baseline": "c1a7659e9db71839aa3aa165fb82a25c1fde9382",
+  "status": {
+    "IMPLEMENTED": "YES",
+    "WIRED": "YES",
+    "QUALIFIED": "YES (named local bounded native project adoption)",
+    "ACCEPTANCE_CLOSED": "YES (named adoption); NO (whole P4)",
+    "MISSING": [
+      "distinct lock-only publication",
+      "persistent UV tool/pipx",
+      "grouped final affected-source/profile qualification in P7"
+    ]
+  },
+  "checks": [
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4j-project-adoption-v3-format.json",
+      "seconds": 0.66,
+      "sha256": "dc6c3a94125570458ff3ab427d8f22781d6deb3ab2a2c526074ddf3d975c2bec"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4j-project-adoption-v3-quick.json",
+      "seconds": 59.77,
+      "sha256": "92ce413f2441d8010d8302b648c07f2a734b8745cfa76989ecb6f1dec7c4540d"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4j-project-adoption-v3-security.json",
+      "seconds": 9.813,
+      "sha256": "e74c2f89b269120a195593a4b4bdedea44c0b22c8725ed7f96443cb734a442d0"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4j-project-adoption-v3-docs.json",
+      "seconds": 0.258,
+      "sha256": "c55f5189355e76f6f053252b6772d2988b60a88c3838de11442620b5c4f1a670"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4j-readiness-corrected-focused-race.json",
+      "seconds": 10.495,
+      "sha256": "5d58c8bae1a48d774368d12f26d7d0589ae57310da2e7acc971a3151a8d1f6c9"
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4j-readiness-corrected-full-sandbox-race.json",
+      "seconds": 15.86,
+      "sha256": "8dc35558c627cac79a2695986217daf0cdf7a70e47de6ebfb270a1fe28841c75"
+    }
+  ],
+  "full_affected_race": {
+    "receipt": "docs/github-logs/package-client-quarantine-20261021/p4j-project-adoption-v2-full-affected-race.json",
+    "exit": 1,
+    "passed_packages": [
+      "cli22.518s",
+      "bootstrap2.140s",
+      "promotion285.345s",
+      "artifact/pypi2.641s",
+      "application1.573s"
+    ],
+    "failure": "unchanged sandbox readiness fixture nonce slice race; corrected whole sandbox Race15.860s independently PASS; other package sources unchanged"
+  },
+  "actual": [
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4j-project-adoption-native-v1-result.json",
+      "seconds": 129.885,
+      "sha256": "60a398a1cd2361ea5f166040592f6558932ce6673cf549e8d8a7b54629137d69",
+      "host_before_after_identical": true,
+      "helper": "wait0/CONFIRMED_STOPPED/stop0/client_error0/client_restore0",
+      "no_skips": true
+    },
+    {
+      "receipt": "docs/github-logs/package-client-quarantine-20261021/p4j-project-adoption-uvsync-regression-v1-result.json",
+      "seconds": 184.466,
+      "sha256": "04792dfdd742b2f7b8e41fa282f08c9d975f8e8744282f5216819ba492509933",
+      "host_before_after_identical": true,
+      "helper": "wait0/CONFIRMED_STOPPED/stop0/client_error0/client_restore0",
+      "no_skips": true
+    }
+  ],
+  "observed": [
+    "genuine pinned UV0.13.4/Python3.14.7 native idna3.10 original17files; add and sync both default adoption refusal preserves original/Evidence",
+    "explicit adoption authenticates complete original including unselected idna; fresh packaging25 current checks/Evidence/Policy ALLOW; seven exact immutable controls",
+    "atomic native manifest/lock/venv publication; user data preserved; proof only records",
+    "same production-source existing UV pip complete sync/native-original regression PASS"
+  ],
+  "mechanical_reuse": "docs/github-logs/package-client-quarantine-20261021/p4j-original-ownership-mechanical-reuse.json",
+  "correction": "p4j-readiness-race-correction-20261026.md",
+  "source": [
+    {
+      "path": "internal/sandbox/direct_exec_admission_test.go",
+      "sha256": "97c14ce151289e6b6cc85bc3d9fb742d99d66b909a3e2c7a5d347e340047fe9b"
+    },
+    {
+      "path": "internal/promotion/uv_complete_ownership.go",
+      "sha256": "aaf1b9016043adef672a2fa6aea0535411f2933482f9e833fb5bcabdfe07cfe4"
+    },
+    {
+      "path": "internal/promotion/uv_sync.go",
+      "sha256": "e37c4c60287d16cb6a2b3e9207df5873166ff4617927d5e2cc50bfcd6af5eda8"
+    },
+    {
+      "path": "internal/promotion/uv_project_preparation.go",
+      "sha256": "0f6be75a9de39ac7cd4bca4256e85d1cf7d3c5abb482475b693e4cdda44feb00"
+    },
+    {
+      "path": "internal/promotion/uv_project_cache.go",
+      "sha256": "2889503273f393c38bad8c90d5779b400e2aafe0cdb9e284dac2f04f19811d29"
+    },
+    {
+      "path": "internal/promotion/uv_project_publication.go",
+      "sha256": "c9dceac159f49ab0adfa4a9cbeb495cdf24ddff166b0e476086e9761dffb2c9f"
+    },
+    {
+      "path": "internal/promotion/uv_project_proof_test.go",
+      "sha256": "be11c952c9828b88f547ae819acec00f7b095c4633104b5304d91012e3e4c0c9"
+    },
+    {
+      "path": "internal/promotion/uv_project_publication_test.go",
+      "sha256": "5fa7cf2307a96b53ecb52e712a1781b23f2540155701213b5033bc6995629417"
+    },
+    {
+      "path": "internal/bootstrap/uv_project.go",
+      "sha256": "79aec0b0a22bf09eb1fb34190fbcfbb04a828ea464f067c967c7f191085e4238"
+    },
+    {
+      "path": "internal/bootstrap/uv_project_client.go",
+      "sha256": "13f7a81586695bee204694eeea560e73c536f44a6e890a4652da83be9c2f75f1"
+    },
+    {
+      "path": "internal/bootstrap/uv_project_test.go",
+      "sha256": "a0fcfa5bc80adbf9af62504da20370a58b7e8965f86ea8656ee5d6c519de61bb"
+    },
+    {
+      "path": "internal/bootstrap/uv_project_publication_integration_test.go",
+      "sha256": "0b9ff144d340d4d5f698e751c3803fcd20b02e3832b653706f60d5c3a07c06e0"
+    },
+    {
+      "path": "internal/bootstrap/uv_project_adoption_integration_test.go",
+      "sha256": "139f8ab2493e874a0bb7b3af28ef1e163285efc1ef65f664832661c66b7ab83b"
+    },
+    {
+      "path": "internal/cli/uv_project.go",
+      "sha256": "dbf1f5bce5f88836f98bbd24dbbf76e3f85b37601ef59786fd9ce8ba23271481"
+    },
+    {
+      "path": "internal/cli/uv_project_test.go",
+      "sha256": "d96bba365e6476861fdfbdabfbcf6cf238cfafa28b318ef5c142c867d6a428a7"
+    }
+  ],
+  "unchanged_owners": [
+    "internal/application/uv_project.go",
+    "internal/artifact/pypi/uv_project_input.go",
+    "internal/sandbox/uv_project_resolver.go",
+    "internal/sandbox/uv_project_update.go",
+    "internal/promotion/python_project_cache.go",
+    "internal/promotion/python_project_output.go",
+    "internal/promotion/pypi_venv_transaction.go",
+    "internal/promotion/uv_project_transaction.go",
+    "tools/gvisor-observer/observer.cc",
+    "scripts/runtimes.lock.json",
+    ".github/workflows/heliopause-ci.yml"
+  ],
+  "remote": "NOT_RUN; helper-specific full CI omitted under plan20 section5; CI413 is preceding source50fd only"
+}

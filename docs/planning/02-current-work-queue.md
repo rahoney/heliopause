@@ -15,9 +15,9 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4-I — public uv add/sync CLI/default and explicit venv targets named local QUALIFIED; native adoption/lock-only/tools remain
+Last completed substep: P4-J — bounded native project --adopt/add/sync and legacy UV pip named local QUALIFIED; lock-only/tools remain
 Next action: M13-004 — baseline remaining native project adoption/distinct lock-only and persistent tools; continue actual missing acceptance; grouped final CI boundary retained
-Current substep: M13-004/P4-I public uv add/sync CLI named local QUALIFIED; next native adoption/lock-only/tools baseline; whole P4 pending
+Current substep: M13-004/P4-J named local COMPLETE; next P4-K distinct lock-only baseline; persistent tools pending
 Acceptance audit: CI413 frozen50fd Required10SUCCESS; all10 checkout38e27d8 whole tree d6a63ab/2475 matches; actual75m due consumed17:20:16UTC; full10 decoded logs saved; historical CI411 timeout cause remains unconfirmed
 Independent local next: P4 project/venv atomic transaction, ownership/CLI and persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
@@ -5541,3 +5541,11 @@ Grouped source50fd3b2/tree d6a63ab/2475를 한 번 push하여 [CI413](https://gi
 ### 2026-10-26 P4-I public UV project CLI checkpoint
 
 [CLI receipt](./evidence/package-client-quarantine/p4i-uv-project-cli-local-20261026.json)의 Quick43.517s/security8.958s/docs0.251s·full CLI/Bootstrap Race23.232s와 actual327.758s가 PASS다. New CLI168.49s는 add24.2→25.0/same-version/two roots/human cwd/default venv/edited-empty/no-op의 일곱 성공과 unowned 거부를 확인했고 기존 UV pip/native 인계156.66s도 PASS다. 별도 explicit target10.494s는 default .venv 부재/다른 VIRTUAL_ENV에서도 정확한 target과 Manifest를 확인했다. Same product source/noSKIP/helperwait0/Host 동일이며 기존18 owner는 불변이다. Native adoption/lock-only/tools와 전체 P4/remote는 미완료이며 같은 M13-004에서 다음 missing을 계속한다. 새 push·CI는 없다.
+
+### 2026-10-26 P4-J native project adoption 착수
+
+[P4-J audit·map·두 번째 검토](./evidence/package-client-quarantine/p4j-uv-project-adoption-plan-20261026.md)에 따라 기존 native UV complete ownership/source proof를 project guard에 연결한다. Native six controls는 유지하고 인증한 controller proof를 별도 immutable record로 결합하며 current 검사/Policy/원자 반영을 재실행한다. Core/runtime/observer 권한·한도는 불변이다. 같은 M13-004에서 진행하며 lock-only/tools·whole qualification은 미완료다. 완료 F/H/I 사본 다섯 개2,153,572,640 logicalB는 원본 hash/전체 proc 무참조·query errors0 뒤 정리했고 현재 environment와 SDK/cache/source/observer/supplies·원본은 보존했다. 새 push·CI는 없다.
+
+### 2026-10-26 P4-J native project adoption checkpoint
+
+[Adoption receipt](./evidence/package-client-quarantine/p4j-uv-project-adoption-local-20261026.json)은 최종 canonical Quick59.770s/security9.813s/docs0.258s와 actual native add/sync129.885s·기존 UV pip184.466s를 연결한다. 기존 complete ownership/digest binder의 mapped body 동일성을 확인했고 unselected native original까지 authenticate한 뒤 current 전체 검사/Policy/원자 반영을 수행했다. Default 거부 무변경·seven controls/current records/user file 보존/noSKIP/helperwait0/Host 동일이다. 최초 full Race의 promotion 등 다섯 package는 PASS였고 기존 readiness fixture 경쟁만 실패했다. [독립 test-only 교정](./evidence/package-client-quarantine/p4j-readiness-race-correction-20261026.md) 뒤 전체 sandbox Race15.860s가 PASS이며 첫 실패는 보존한다. Whole P4/remote는 미완료이고 같은 M13-004에서 distinct lock-only를 계속한다. 새 push·CI는 없다.

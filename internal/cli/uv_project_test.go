@@ -90,6 +90,10 @@ func TestUVProjectCLIRoutesAddSyncAndRendersActualRecordReferences(t *testing.T)
 				t.Run(operation+lang+output, func(t *testing.T) {
 					project := uvCLIProjectFixture(t)
 					args := []string{"--lang", lang, "--output", output, "uv", operation, "--project", project}
+					adopt := lang == "ko"
+					if adopt {
+						args = append(args, "--adopt")
+					}
 					selector := ""
 					if operation == "add" {
 						selector = "packaging==25.0"
@@ -115,7 +119,7 @@ func TestUVProjectCLIRoutesAddSyncAndRendersActualRecordReferences(t *testing.T)
 						t.Fatal("project request repeated or omitted")
 					}
 					request := recorder.requests[0]
-					if request.ProjectRoot != project || request.Selector != selector || request.Install.Target().String() != filepath.Join(project, ".venv") || request.Install.Mode() != domain.InstallPythonVenv {
+					if request.ProjectRoot != project || request.Selector != selector || request.Install.Target().String() != filepath.Join(project, ".venv") || request.Install.Mode() != domain.InstallPythonVenv || request.Adopt != adopt {
 						t.Fatal("project/venv request changed", request)
 					}
 					if output == "json" {
@@ -141,7 +145,7 @@ func TestUVProjectCLIRoutesAddSyncAndRendersActualRecordReferences(t *testing.T)
 }
 
 func TestUVProjectCLIRejectsUnsupportedInputBeforeComposition(t *testing.T) {
-	for _, name := range []string{"duplicate project", "duplicate target", "empty project", "empty target", "unknown option", "adopt", "sync argument", "missing add", "direct selector", "extra selector", "source overlap", "missing venv", "manifest symlink", "manifest hardlink", "manifest oversize", "unsupported manifest", "malformed lock"} {
+	for _, name := range []string{"duplicate project", "duplicate target", "empty project", "empty target", "unknown option", "duplicate adopt", "sync argument", "missing add", "direct selector", "extra selector", "source overlap", "missing venv", "manifest symlink", "manifest hardlink", "manifest oversize", "unsupported manifest", "malformed lock"} {
 		t.Run(name, func(t *testing.T) {
 			project := uvCLIProjectFixture(t)
 			args := []string{"uv", "sync", "--project", project}
@@ -158,8 +162,8 @@ func TestUVProjectCLIRejectsUnsupportedInputBeforeComposition(t *testing.T) {
 				args = append(args, "--target=")
 			case "unknown option":
 				args = append(args, "--index-url", "https://example.invalid")
-			case "adopt":
-				args = append(args, "--adopt")
+			case "duplicate adopt":
+				args = append(args, "--adopt", "--adopt=false")
 			case "sync argument":
 				args = append(args, "packaging")
 			case "missing add":

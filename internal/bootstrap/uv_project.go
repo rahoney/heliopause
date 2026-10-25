@@ -20,6 +20,7 @@ type uvProjectBindings struct {
 	evidence                            pythonClientEvidence
 	promoter                            *promotion.PyPIPromotion
 	resolver                            ports.ProjectLockUpdateResolver
+	nativeLookup                        ports.DependencyResolver
 }
 
 type uvProjectService struct {
@@ -31,7 +32,7 @@ func (s *uvProjectService) Apply(ctx context.Context, install domain.InstallCont
 	return s.workflow.Apply(ctx, install)
 }
 
-func newUVProjectService(b uvProjectBindings, root string, intent artifactpypi.UVProjectIntent, selector string) (*uvProjectService, error) {
+func newUVProjectService(b uvProjectBindings, root string, intent artifactpypi.UVProjectIntent, selector string, adopt bool) (*uvProjectService, error) {
 	operation, err := domain.NewOperationID()
 	if err != nil {
 		return nil, err
@@ -40,9 +41,15 @@ func newUVProjectService(b uvProjectBindings, root string, intent artifactpypi.U
 	if err != nil {
 		return nil, err
 	}
-	preparation, err := promotion.NewUVProjectPreparation(b.promoter, b.resolver, root, intent, selector, []string{b.intakeRoot, b.evidenceRoot, b.cacheRoot})
+	preparation, err := promotion.NewUVProjectPreparation(b.promoter, b.resolver, root, intent, selector, adopt, []string{b.intakeRoot, b.evidenceRoot, b.cacheRoot})
 	if err != nil {
 		return nil, err
+	}
+	if b.nativeLookup != nil {
+		preparation, err = preparation.WithNativeEnrollment(b.nativeLookup, b.intake, b.intakeRoot)
+		if err != nil {
+			return nil, err
+		}
 	}
 	promoter, err := promotion.NewUVProjectPromotion(preparation, cache)
 	if err != nil {

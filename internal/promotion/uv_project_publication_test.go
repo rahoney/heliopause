@@ -117,7 +117,7 @@ func newUVProjectPublicationFixture(t *testing.T) uvProjectPublicationFixture {
 		t.Fatal(err)
 	}
 	r := &uvProjectEmptyResolver{t: t}
-	preparation, err := NewUVProjectPreparation(&PyPIPromotion{stagingRoot: cacheRoot, goos: "linux", goarch: "amd64"}, r, root, artifactpypi.UVProjectSync, "", []string{intake, evidenceRoot, cacheRoot})
+	preparation, err := NewUVProjectPreparation(&PyPIPromotion{stagingRoot: cacheRoot, goos: "linux", goarch: "amd64"}, r, root, artifactpypi.UVProjectSync, "", false, []string{intake, evidenceRoot, cacheRoot})
 	if err != nil {
 		t.Fatal(err)
 	}

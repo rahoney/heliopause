@@ -17,6 +17,7 @@ type UVProjectRequest struct {
 	Intent      artifactpypi.UVProjectIntent
 	Selector    string
 	Install     domain.InstallContext
+	Adopt       bool
 }
 type UVProjectOutcome struct {
 	Verified                   domain.ProjectVerifiedSet
@@ -27,23 +28,25 @@ type UVProjectApplier interface {
 	ApplyUVProject(context.Context, UVProjectRequest) (UVProjectOutcome, error)
 }
 
-const uvProjectEnglish = "Quarantine the complete public PyPI wheel set selected by UV before adding a dependency or synchronizing one virtual project. Use the current directory or --project, and an existing pinned-runtime virtual environment selected by --target (defaults to project/.venv). Every selected wheel is inspected again, including unchanged versions. pyproject.toml, uv.lock and owned environment files are committed together; user files are preserved. Sync retires every proven unselected distribution, including an explicitly empty dependencies array. An edited manifest may retain its previous public uv.lock before resolution.\n\nSupports one virtual project on Linux amd64. Use a public name or PEP 508 version requirement for add. Workspaces, build projects, groups/extras/markers, local/VCS/direct sources, other indexes and arbitrary native options are unsupported. Existing installed distributions require HAA ownership. Native project adoption, lock-only changes, runtime provisioning and uv run are separate unsupported operations in this lane."
-const uvProjectKorean = "UV가 선택한 공개 PyPI wheel 전체를 검역한 뒤 virtual project에 의존성을 추가하거나 동기화합니다. 현재 디렉터리 또는 --project를 사용하며, --target의 기존 고정 runtime 가상환경을 대상으로 합니다(기본값: project/.venv). 같은 버전도 선택된 wheel 전체를 새로 검사합니다. pyproject.toml·uv.lock과 소유권이 확인된 환경 파일을 함께 반영하고 사용자 파일은 보존합니다. Sync는 선택에서 빠진 소유 패키지를 제거하며 명시적 빈 dependencies 배열도 지원합니다. Manifest를 편집했을 때 이전 공개 uv.lock을 남긴 채 새로 선택할 수 있습니다.\n\nLinux amd64의 단일 virtual project를 지원합니다. Add에는 공개 패키지 이름이나 PEP 508 버전 조건을 사용하세요. Workspace·build project·group/extra/marker·local/VCS/direct 출처·다른 index·임의 native 옵션은 지원하지 않습니다. 기존 설치 패키지에는 HAA 소유권이 필요합니다. Native project 인계·lock-only 변경·runtime 준비·uv run은 이 경로에서 지원하지 않습니다."
+const uvProjectEnglish = "Quarantine the complete public PyPI wheel set selected by UV before adding a dependency or synchronizing one virtual project. Use the current directory or --project, and an existing pinned-runtime virtual environment selected by --target (defaults to project/.venv). Every selected wheel is inspected again, including unchanged versions. pyproject.toml, uv.lock and owned environment files are committed together; user files are preserved. Sync retires every proven unselected distribution, including an explicitly empty dependencies array. An edited manifest may retain its previous public uv.lock before resolution.\n\nSupports one virtual project on Linux amd64. Use a public name or PEP 508 version requirement for add. Workspaces, build projects, groups/extras/markers, local/VCS/direct sources, other indexes and arbitrary native options are unsupported. Existing installed distributions require HAA ownership or explicit --adopt of the complete pinned native UV public-wheel inventory. Adoption excludes generated scripts, compiled caches and cross-scheme outputs. Lock-only changes, runtime provisioning and uv run are separate unsupported operations in this lane."
+const uvProjectKorean = "UV가 선택한 공개 PyPI wheel 전체를 검역한 뒤 virtual project에 의존성을 추가하거나 동기화합니다. 현재 디렉터리 또는 --project를 사용하며, --target의 기존 고정 runtime 가상환경을 대상으로 합니다(기본값: project/.venv). 같은 버전도 선택된 wheel 전체를 새로 검사합니다. pyproject.toml·uv.lock과 소유권이 확인된 환경 파일을 함께 반영하고 사용자 파일은 보존합니다. Sync는 선택에서 빠진 소유 패키지를 제거하며 명시적 빈 dependencies 배열도 지원합니다. Manifest를 편집했을 때 이전 공개 uv.lock을 남긴 채 새로 선택할 수 있습니다.\n\nLinux amd64의 단일 virtual project를 지원합니다. Add에는 공개 패키지 이름이나 PEP 508 버전 조건을 사용하세요. Workspace·build project·group/extra/marker·local/VCS/direct 출처·다른 index·임의 native 옵션은 지원하지 않습니다. 기존 설치 패키지에는 HAA 소유권 또는 --adopt를 통한 고정 native UV 공개 wheel 설치 전체의 인증이 필요합니다. 생성 script·compiled cache·cross-scheme 출력은 인계할 수 없습니다. Lock-only 변경·runtime 준비·uv run은 이 경로에서 지원하지 않습니다."
 
 var uvProjectFlagText = map[string]packageClientParent{
 	"project": {"Existing virtual project (defaults to current directory)", "기존 virtual project(기본값: 현재 디렉터리)"},
 	"target":  {"Existing pinned-runtime venv (defaults to project/.venv)", "기존 고정 runtime 가상환경(기본값: project/.venv)"},
+	"adopt":   {"Authenticate and adopt every existing native UV distribution", "기존 native UV 설치 전체를 인증하여 인계"},
 }
 
 func configureUVProjectFlags(command *cobra.Command) {
 	command.Flags().String("project", "", uvProjectFlagText["project"].en)
+	command.Flags().Bool("adopt", false, uvProjectFlagText["adopt"].en)
 	command.Flags().Lookup("target").Usage = uvProjectFlagText["target"].en
 }
 func validateUVProjectRawArgs(args []string) error {
 	counts := map[string]int{}
 	for _, arg := range args {
 		name, _, _ := strings.Cut(arg, "=")
-		if name == "--project" || name == "--target" {
+		if name == "--project" || name == "--target" || name == "--adopt" {
 			counts[name]++
 			if counts[name] > 1 {
 				return errors.New("UV project options must not repeat")
@@ -169,7 +172,11 @@ func readUVProjectRequest(command *cobra.Command, args []string) (request UVProj
 	if err != nil {
 		return request, err
 	}
-	return UVProjectRequest{project, intent, input.Selector(), install}, nil
+	adopt, err := command.Flags().GetBool("adopt")
+	if err != nil {
+		return request, err
+	}
+	return UVProjectRequest{ProjectRoot: project, Intent: intent, Selector: input.Selector(), Install: install, Adopt: adopt}, nil
 }
 
 func AddUVProject(root *cobra.Command, service UVProjectApplier) error {

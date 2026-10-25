@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"os"
 	"reflect"
 	"sort"
 	"strings"
@@ -105,47 +104,9 @@ func (p *UVSyncPreparation) Begin(ctx context.Context, install domain.InstallCon
 	if err != nil {
 		return nil, err
 	}
-	metadata := s.original.metadataFiles()
-	managed, err := managedPyPIInventoryFromMetadata(tx, metadata)
+	s.proof, err = prepareUVCompleteOwnership(ctx, tx, s.original, install, p.native, p.adopt, s.VerifyUnchanged)
 	if err != nil {
-		return nil, ports.NewInstallUpdateFailure("UPDATE_OWNERSHIP_INVALID", err)
-	}
-	if len(metadata) > len(managed) {
-		if !p.adopt {
-			return nil, ports.NewInstallUpdateFailure("UPDATE_ADOPTION_REQUIRED", errors.New("complete sync requires ownership of every original distribution"))
-		}
-		if p.native == nil {
-			return nil, ports.NewInstallUpdateFailure("UPDATE_ORIGINAL_STATE_UNSUPPORTED", errors.New("UV sync original enrollment collaborators are unavailable"))
-		}
-		inventory, err := capturePyPINativeInventoryFromMetadata(ctx, tx, metadata)
-		if err != nil {
-			return nil, ports.NewInstallUpdateFailure("UPDATE_ORIGINAL_STATE_UNSUPPORTED", err)
-		}
-		selection, err := p.native.selectAllOwnership(ctx, install, inventory)
-		if err != nil {
-			return nil, ports.NewInstallUpdateFailure("UPDATE_ORIGINAL_STATE_UNSUPPORTED", err)
-		}
-		if len(selection.destinations) == 0 || !selection.control.Present() {
-			return nil, errors.New("complete original ownership proof is missing")
-		}
-		for _, directory := range selection.absentDirectories {
-			if err := tx.freezeParents(directory); err != nil {
-				return nil, err
-			}
-			if _, err := os.Lstat(directory); !errors.Is(err, os.ErrNotExist) {
-				return nil, errors.New("UV sync original cache namespace appeared")
-			}
-		}
-		if err := s.VerifyUnchanged(ctx); err != nil {
-			return nil, err
-		}
-		for _, destination := range selection.destinations {
-			if _, exists := tx.current.Files[destination.key()]; exists {
-				return nil, errors.New("UV sync original proof overlaps another owner")
-			}
-			tx.current.Files[destination.key()] = destination
-		}
-		s.proof = selection.control
+		return nil, err
 	}
 	s.baseControls, err = sandbox.NewUVSyncOriginalControls(s.input)
 	if err != nil {
@@ -277,6 +238,10 @@ func validateUVSyncSelection(update domain.ProjectDependencyUpdate, install doma
 }
 
 func bindUVSyncProof(base domain.ProjectDependencySnapshot, controls []domain.ProjectControlFile) (domain.ProjectDependencySnapshot, error) {
+	return bindPythonOriginalProof(base, controls, "uv-sync-original-proof/v1")
+}
+
+func bindPythonOriginalProof(base domain.ProjectDependencySnapshot, controls []domain.ProjectControlFile, schema string) (domain.ProjectDependencySnapshot, error) {
 	digests := make([]domain.ProjectControlDigest, 0, len(controls))
 	for _, control := range controls {
 		digest, err := domain.NewProjectControlDigest(control.Name(), control.Digest())
@@ -294,7 +259,7 @@ func bindUVSyncProof(base domain.ProjectDependencySnapshot, controls []domain.Pr
 	body, err := json.Marshal(struct {
 		Schema, Base string
 		Controls     []binding
-	}{"uv-sync-original-proof/v1", base.GraphDigest().String(), parts})
+	}{schema, base.GraphDigest().String(), parts})
 	if err != nil {
 		return domain.ProjectDependencySnapshot{}, err
 	}

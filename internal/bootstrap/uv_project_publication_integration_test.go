@@ -135,7 +135,7 @@ func TestUVPublicProjectApprovedPublicationIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	b := uvProjectBindings{intakeRoot, evidenceRoot, cacheRoot, intake, inspector, store, promoter, resolver}
+	b := uvProjectBindings{intakeRoot, evidenceRoot, cacheRoot, intake, inspector, store, promoter, resolver, native}
 	seen := map[string]bool{}
 	for _, step := range []struct {
 		name     string
@@ -177,7 +177,7 @@ func TestUVPublicProjectApprovedPublicationIntegration(t *testing.T) {
 					t.Fatal(err)
 				}
 			}
-			service, err := newUVProjectService(b, project, step.intent, step.selector)
+			service, err := newUVProjectService(b, project, step.intent, step.selector, false)
 			if err != nil {
 				t.Fatal(err)
 			}

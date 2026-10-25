@@ -52,7 +52,7 @@ func TestUVProjectCompositionRejectsMissingCollaboratorsAndCanceledRequests(t *t
 			if err != nil {
 				t.Fatal(err)
 			}
-			b := uvProjectBindings{intakeRoot, evidenceRoot, cacheRoot, intake, inspector, store, promoter, native}
+			b := uvProjectBindings{intakeRoot, evidenceRoot, cacheRoot, intake, inspector, store, promoter, native, nil}
 			switch name {
 			case "intake":
 				b.intake = nil
@@ -65,7 +65,7 @@ func TestUVProjectCompositionRejectsMissingCollaboratorsAndCanceledRequests(t *t
 			case "resolver":
 				b.resolver = nil
 			}
-			service, err := newUVProjectService(b, root, artifactpypi.UVProjectSync, "")
+			service, err := newUVProjectService(b, root, artifactpypi.UVProjectSync, "", false)
 			if name != "canceled" && name != "missing target" {
 				if err == nil || service != nil {
 					t.Fatal("missing collaborator accepted")

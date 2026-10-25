@@ -18,7 +18,7 @@ import (
 type uvProjectCLIService struct{ bindings uvProjectBindings }
 
 func (s uvProjectCLIService) ApplyUVProject(ctx context.Context, request cli.UVProjectRequest) (outcome cli.UVProjectOutcome, resultErr error) {
-	service, err := newUVProjectService(s.bindings, request.ProjectRoot, request.Intent, request.Selector)
+	service, err := newUVProjectService(s.bindings, request.ProjectRoot, request.Intent, request.Selector, request.Adopt)
 	if err != nil {
 		return outcome, err
 	}
@@ -87,7 +87,7 @@ func bindUVProjectClient(command *cobra.Command, executor uvProjectExecutor, obs
 	if err != nil {
 		return nil, errors.Join(err, resolver.Close())
 	}
-	if err := cli.AddUVProject(command, uvProjectCLIService{uvProjectBindings{intakeRoot, evidenceRoot, cacheRoot, intake, inspector, store, promoter, resolver}}); err != nil {
+	if err := cli.AddUVProject(command, uvProjectCLIService{uvProjectBindings{intakeRoot, evidenceRoot, cacheRoot, intake, inspector, store, promoter, resolver, native}}); err != nil {
 		return nil, errors.Join(err, resolver.Close())
 	}
 	return resolver.Close, nil

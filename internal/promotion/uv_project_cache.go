@@ -13,6 +13,8 @@ import (
 type UVProjectCache struct {
 	cache  *PythonProjectCache
 	update domain.ProjectDependencyUpdate
+	base   domain.ProjectDependencyUpdate
+	proof  domain.ProjectControlFile
 }
 
 func NewUVProjectCache(cache *PythonProjectCache, update domain.ProjectDependencyUpdate) (*UVProjectCache, error) {
@@ -22,14 +24,53 @@ func NewUVProjectCache(cache *PythonProjectCache, update domain.ProjectDependenc
 	if err := sandbox.ValidateUVProjectUpdate(update); err != nil {
 		return nil, err
 	}
-	return &UVProjectCache{cache, update}, nil
+	return &UVProjectCache{cache: cache, update: update}, nil
+}
+
+func newUVProjectCacheWithOriginalProof(cache *PythonProjectCache, base, update domain.ProjectDependencyUpdate, proof domain.ProjectControlFile) (*UVProjectCache, error) {
+	c := &UVProjectCache{cache: cache, base: base, update: update, proof: proof}
+	if cache == nil {
+		return nil, errors.New("UV project requires the approved Python cache")
+	}
+	if err := c.validateUpdate(); err != nil {
+		return nil, err
+	}
+	return c, nil
+}
+
+func (c *UVProjectCache) validateUpdate() error {
+	if !c.proof.Present() {
+		if c.base.Valid() {
+			return errors.New("UV project original proof is missing")
+		}
+		return sandbox.ValidateUVProjectUpdate(c.update)
+	}
+	if c.proof.Name() != "pypi-update-native-ownership.json" {
+		return errors.New("UV project original proof has an unexpected identity")
+	}
+	if err := sandbox.ValidateUVProjectUpdate(c.base); err != nil {
+		return err
+	}
+	controls := append(c.base.SelectedControls(), c.proof)
+	snapshot, err := bindPythonOriginalProof(c.base.Snapshot(), controls, "uv-project-original-proof/v1")
+	if err != nil {
+		return err
+	}
+	expected, err := domain.NewProjectDependencyUpdateFromSnapshot(append(c.base.OriginalControls(), c.proof), controls, snapshot)
+	if err != nil {
+		return err
+	}
+	if !sameUVSyncUpdate(expected, c.update) {
+		return errors.New("UV project update differs from its authenticated original proof")
+	}
+	return nil
 }
 
 func (c *UVProjectCache) StageProject(ctx context.Context, set domain.ProjectVerifiedSet) (domain.StagedProjectSet, error) {
 	if c == nil || c.cache == nil {
 		return domain.StagedProjectSet{}, errors.New("UV project cache is unavailable")
 	}
-	if err := sandbox.ValidateUVProjectUpdate(c.update); err != nil {
+	if err := c.validateUpdate(); err != nil {
 		return domain.StagedProjectSet{}, err
 	}
 	return c.cache.stageProject(ctx, set, c.update)
@@ -46,7 +87,7 @@ func (c *UVProjectCache) openProject(ctx context.Context, staged domain.StagedPr
 	if c == nil || c.cache == nil {
 		return "", pythonProjectMaterial{}, errors.New("UV project cache is unavailable")
 	}
-	if err := sandbox.ValidateUVProjectUpdate(c.update); err != nil {
+	if err := c.validateUpdate(); err != nil {
 		return "", pythonProjectMaterial{}, err
 	}
 	return c.cache.openProject(ctx, staged, c.update)
