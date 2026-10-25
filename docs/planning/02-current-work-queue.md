@@ -16,8 +16,8 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P4-D — native empty/public single sync·lock-upgrade and existing UV pip named local QUALIFIED; CLI/Host transaction remain
-Next action: M13-004 — record CI413 exact-source/log qualification, then continue P4 native add/version-changing selection; group future pushes at backend/CLI boundaries
-Current substep: M13-004/P4-D empty/public single sync+lock-upgrade named local QUALIFIED; next native add/version-changing selection; CI413 actual Required10SUCCESS consumed, full source/log receipt follows
+Next action: M13-004 — continue P4 native add/version-changing selection; CI413 exact-source/log qualification recorded; group future pushes at backend/CLI boundaries
+Current substep: M13-004/P4-D empty/public single sync+lock-upgrade named local QUALIFIED; next native add/version-changing selection; CI413 exact-source/log named qualification recorded
 Acceptance audit: CI413 frozen50fd Required10SUCCESS; all10 checkout38e27d8 whole tree d6a63ab/2475 matches; actual75m due consumed17:20:16UTC; full10 decoded logs saved; historical CI411 timeout cause remains unconfirmed
 Independent local next: P4 native add/manifest mutation and version-changing lock-upgrade, then project/venv transaction/CLI and persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
@@ -5497,3 +5497,7 @@ Grouped source50fd3b2/tree d6a63ab/2475를 한 번 push하여 [CI413](https://gi
 ### 2026-10-26 P4-D native project selection local checkpoint
 
 [Selection receipt](./evidence/package-client-quarantine/p4d-uv-project-resolver-local-20261026.json)의 Quick112.172s/security14.172s/docs0.236s·affected fullRace27.681s가 PASS다. Same canonical121 actual116.337s는 project empty/single sync+lock-upgrade34.61s와 기존 UV pip79.18s/noSKIP/helperwait0/Host 동일을 확인했다. Native argv 충돌/filename/기존 public index spelling의 세 원인만 교정했고 권한/한도는 불변이다. 임시 진단은 제거했으며 version-changing delta·add/transaction/CLI/tools는 미완료다. 같은 M13-004에서 다음 missing을 계속한다. CI413은 실제02:20:16KST due에 Required10SUCCESS를 확인했고 전체 tree/원본10logs 대조를 별도 영수증으로 기록한다.
+
+### 2026-10-26 CI413 grouped Bun qualification과 실제 timer 소비
+
+[CI413 영수증](./evidence/package-client-quarantine/p3-grouped-bun-ci413-20261026.json)은 source50fd/tree d6a63ab/2475, 모든 checkout38e27d8와 base/source 부모의 일치·Required10SUCCESS를 확인했다. 실제75분 timer가17:20:16UTC/02:20:16KST에 조회했고 전체 경과 metadata는57m14다. Full decoded10logs1,123,173B/64chunks를 전부 readback했다. Observer121씩/Linux72top-level·Bun native9·경계5·whole2/JS정상·typed실패/CLI9/native원본3·PNPMCLI9/CPU232.73s·native macOS와 helper9wait0/final0을 확인했다. P4-A/B/C/D를 기다리는 동안 계속했고 새 push로 취소하지 않았다. 최신 P4 source와 최종 CPU·세CUDA matrix는 범위 밖이며 P7/final affected checkpoint까지 whole acceptance는 열어 둔다. 다음 native add/version-changing selection을 같은 M13-004에서 계속한다.

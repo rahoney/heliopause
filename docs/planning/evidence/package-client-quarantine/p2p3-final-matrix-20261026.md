@@ -7,16 +7,16 @@ CI job/승인 관문을 만들지 않는다. Canonical 지원 구문은 client �
 
 | 실제 acceptance | PNPM P2 | Bun P3 | 남은 확인 |
 | --- | --- | --- | --- |
-| 공개 native selection·독립 source/SRI·전체 static inventory/graph | CI408/409/410; CI411 Linux named 성공 | B3c/B4 actual named local·CI412 backend | CI413 whole current source의 원본 |
-| fresh 전체 physical instances·exact coverage·현재 recorded Evidence/Policy | 기존 whole backend 및 CLI 검증 | B6b 실제 Bun JS normal/typed37, B6c public2/4 whole current Policy | CI413 native JS/whole/project consumers |
-| 승인 cache·private output·guarded transaction | B5a/b·CI407 이후 | B5a/b·기존 shared owner 재사용 | CI413 whole current source |
-| add/install/selected update/full update/no-op/명시 empty | named local9operations·CI408 이후 | B5c/B6c named local9operations | CI413 hosted CLI/native lane |
-| native nonempty copy original source proof/명시 adoption | B5d source9410·CI408 이후 | B5d/B6c3cases·bounded ownership proof | CI413 hosted original lane |
+| 공개 native selection·독립 source/SRI·전체 static inventory/graph | CI408/409/410; CI411 Linux named 성공 | B3c/B4 actual named local·CI412 backend | CI413 named PASS; final affected-source profiles open |
+| fresh 전체 physical instances·exact coverage·현재 recorded Evidence/Policy | 기존 whole backend 및 CLI 검증 | B6b 실제 Bun JS normal/typed37, B6c public2/4 whole current Policy | CI413 native JS/whole/project consumers PASS |
+| 승인 cache·private output·guarded transaction | B5a/b·CI407 이후 | B5a/b·기존 shared owner 재사용 | CI413 whole current source PASS |
+| add/install/selected update/full update/no-op/명시 empty | named local9operations·CI408 이후 | B5c/B6c named local9operations | CI413 hosted CLI/native lane PASS |
+| native nonempty copy original source proof/명시 adoption | B5d source9410·CI408 이후 | B5d/B6c3cases·bounded ownership proof | CI413 hosted original lane PASS |
 | symlink/hardlink escape·foreign files·concurrent ownership·corrupt state | 기존 exact fixture/negative·failure leaf | typed Bun fixture 및 동일 guard source/negative | 신규 동작 gap 발견 시 해당 경계만 추가 |
 | actual SIGINT·SIGKILL·ENOSPC·rollback/재진입 | [P2 failure leaf](./p2c5b5e-pnpm-failure-local-20261025.json) | [P3 failure leaf](./p3b5f-bun-failure-local-20261025.json) | 이 named 경계는 검증됨; whole remote 결과에 전용하지 않음 |
-| failure cause·불완전 observation·cleanup/Host baseline | named actual 원본별 helperwait0/Host 동일 | B6b/B6c actual helperwait0/Host 동일 | CI413 full 원본·최종 helper/client 복원 |
-| native macOS CLI/build/default checks | CI412 성공, 과거411 timeout 원인 미확정 | CI412 backend까지, B5/B6 source는 CI413 대기 | CI413 macOS + Required |
-| CPU/full + observer canonical | 기존 qualified source 각 증거 | observer121 latches·B6b canonical/actual named local | CI413 current whole source CPU/full·121 |
+| failure cause·불완전 observation·cleanup/Host baseline | named actual 원본별 helperwait0/Host 동일 | B6b/B6c actual helperwait0/Host 동일 | CI413 full 원본/9helperwait0/final0 확인 |
+| native macOS CLI/build/default checks | CI412 성공, 과거411 timeout 원인 미확정 | CI412 backend까지, B5/B6 source CI413 named PASS | CI413 macOS + Required PASS |
+| CPU/full + observer canonical | 기존 qualified source 각 증거 | observer121 latches·B6b canonical/actual named local | CI413 CPU/full232.73s·121 PASS |
 | cu126/full | CI409 source9410 named remote success | 이후 공통 observer/native Bun source 미검증 | frozen current source 필수 영향 qualification |
 | cu130/full | CI410 source9410 named remote success | 이후 공통 observer/native Bun source 미검증 | frozen current source 필수 영향 qualification |
 | cu132/full | CI411 Linux 실제 성공, overall/macOS+Required 실패 | 이후 공통 observer/native Bun source 미검증 | frozen current source Required 포함 qualification |
@@ -24,10 +24,10 @@ CI job/승인 관문을 만들지 않는다. Canonical 지원 구문은 client �
 ## 상태와 실행 선택
 
 P2/P3 기존 기능은 IMPLEMENTED/WIRED=YES이며 위 named qualification을 보존한다.
-Whole P2/P3 ACCEPTANCE_CLOSED=NO다. CI413은 grouped backend/cache/transaction/CLI/
-native runtime 소비자와 ordinary CPU/full을 한 번 확인하는 현재 실행이다. Actual75분
-첫 timer due에 run/head·각 status/conclusion·원본10logs·checkout whole tree를 확인한다.
-모든 job success를 확인하기 전에는 all green으로 쓰지 않는다.
+Whole P2/P3 ACCEPTANCE_CLOSED=NO다. [CI413 qualification](./p3-grouped-bun-ci413-20261026.json)은 grouped backend/cache/transaction/CLI/native runtime과 ordinary CPU/full을 확인했다.
+실제75분 due17:20:16UTC에 Required10SUCCESS를 조회했고 모든 checkout38e27d8의 전체
+treed6a63ab/2475는 frozen source와 같다. Decoded10logs1,123,173B/64chunks를 전부
+readback했다. 새 P4 소스의 원격 성공이나 최종 support profile 완료로 확대하지 않는다.
 
 공통 observer의 Bun Artifact image/ABI read/strict negative 변경 뒤에는 관련 CPU·세 CUDA
 영향 범위를 모두 확인해야 한다. 기존 예방 규칙§4·§5와 운영 참고문서v0.5§15, 확장 계획§5를
