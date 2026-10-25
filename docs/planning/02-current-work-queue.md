@@ -16,10 +16,11 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — backend/cache/records/private materialization/transaction remotely QUALIFIED by CI407; B5c user CLI named local PASS; native ownership/user CLI named local QUALIFIED; final whole-source remote/affected-profile qualification and P2 acceptance remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2 — source9410c2d CI408 ordinary/CI409 cu126 Required10SUCCESS each, all checkout whole trees equal; cu130 CI410 Required10SUCCESS; cu132 CI411 IN_PROGRESS (first timer13:22:46KST); keep active timer/turn and continue to P3 after P2 closure
-Current substep: M13-004/P2 — IN_PROGRESS; backend/production CLI/native original proof remote QUALIFIED by408/409; cu130 CI410 remote QUALIFIED; cu132411 final affected matrix and P2 acceptance remain; P3-A/B1 Bun signed ZIP/native data named local QUALIFIED in same M13-004; B2a candidate/native runc query named local QUALIFIED; B2b1 single owner/frozen maintenance named local QUALIFIED; B2b2-A production materialization named local QUALIFIED; B2b2-B complete release/installed tuple named local QUALIFIED; B2c1 protected supply/transport named local QUALIFIED; next B2c2 exact gVisor runtime admission, remote source remains9410c2d
-Independent local next: P3-B2c1 protected installed supply/transport named local QUALIFIED; B2c2 exact observer/runtime startup remains; CI411 timer remains active
-After P2: P3 Bun, then P4..P7 — NOT_STARTED
+Next action: M13-004/P2 — source9410c2d CI408 ordinary/CI409 cu126 Required10SUCCESS each, all checkout whole trees equal; cu130 CI410 Required10SUCCESS; cu132 CI411 Linux PASS but macOS default-test6m timeout/Required FAILURE; timer consumed13:22:58KST/full10logs preserved; diagnose exact source; B5e direct failure acceptance closed; P3 Bun nonempty lock/source binding next; P3 Bun query named local QUALIFIED
+Current substep: M13-004/P2 — IN_PROGRESS; backend/production CLI/native original proof remote QUALIFIED by408/409; cu130 CI410 remote QUALIFIED; cu132411 Linux qualified but macOS/Required failure; B5e direct failure acceptance closed; macOS/Required and whole P2 acceptance remain; P3-A/B1 Bun signed ZIP/native data named local QUALIFIED in same M13-004; B2a candidate/native runc query named local QUALIFIED; B2b1 single owner/frozen maintenance named local QUALIFIED; B2b2-A production materialization named local QUALIFIED; B2b2-B complete release/installed tuple named local QUALIFIED; B2c1 protected supply/transport and B2c2 exact gVisor version/revision named local QUALIFIED; Bun lock/graph/layout/CLI remain, remote source remains9410c2d
+Acceptance audit: P2-B5e actual SIGINT/SIGKILL + final Race and1MiB tmpfs ENOSPC PASS; existing transaction unchanged; remaining P2 gate is successful macOS/Required after CI411 timeout
+Independent local next: P3-B2c1 protected installed supply/transport named local QUALIFIED; B2c2 exact observer/runtime version+revision named local QUALIFIED; nonempty lock format/graph remains; CI411 timer remains active
+P3 Bun: IN_PROGRESS (same M13-004 independent local); P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
@@ -5116,3 +5117,20 @@ Final canonical4와 관련 full Race의 통과한 여덟 package/마지막 세 a
 서명 release·whole P3는 미완료다. 다음 B2c installed Bun supply/guest volume·observer exact
 startup/version/lock admission을 같은 M13-004에서 계속한다. Remote9410/cu132411의
 04:22:46UTC 타이머와 실행 중 source는 유지하며 local Bun을 그 성공으로 전용하지 않는다.
+
+### 2026-10-25 CI411 timer 실제 확인과 남은 gate
+
+예정04:22:46UTC 뒤04:22:58UTC에 [CI411](./evidence/package-client-quarantine/p2c5b5d-ci411-observation-20261025.json)을
+확인했다. Source/all10checkout9410·whole treee4ea/2280files 동일이며 모든 decoded log를
+chunk readback으로 보존했다. Linux/cu132·PNPM9CLI/native3·observer112씩/Linux65와
+helper7wait0/최종 original0·CONFIRMED_STOPPED/stop0/client errors0는 PASS다. MacOS의
+default-test outer6분 timeout과 Required는 FAILURE여서 overall SUCCESS로 표시하지 않는다.
+정확한 remote 소스·active snapshot을 보존했으며 마지막 테스트 이름을 원인으로 단정하지
+않는다. 같은 source 무조건 재실행이나 작은 Bun commit push는 하지 않았다.
+
+[직접 실패 acceptance](./evidence/package-client-quarantine/p2c5b5e-pnpm-failure-local-20261025.json)의
+SIGINT/SIGKILL/Race·실제1MiB ENOSPC를 완료했고 production transaction은9410과 같다.
+Bun [exact guest query](./evidence/package-client-quarantine/p3b2c2-bun-query-local-20261025.json)는
+114latches/실제 version+revision/session complete와 Host 복원을 named local 검증했다. 다음은
+비어 있지 않은 Bun lock·독립 source/graph binding이며 P2의 macOS/Required와 전체 Bun
+qualification은 후속의 의미 있는 checkpoint까지 열린 상태다.
