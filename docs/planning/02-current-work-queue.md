@@ -16,11 +16,11 @@ Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / 
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
 Last completed substep: P3-B6c — named local whole native runtime/Evidence/Policy/CLI/native handoff QUALIFIED; hosted exact-source gate remains
-Next action: M13-004/P3 — push grouped Bun backend/cache/CLI/native runtime candidate once; register and consume actual elapsed-based hosted CI timer; continue independent matrix/P4 baseline while waiting
-Current substep: M13-004/P3-B6c local qualification closed; public2/4, CLI9/native3, current Evidence/Policy and Host/helper cleanup PASS; hosted JS command wired and canonical profiles/Race PASS
+Next action: M13-004 — consume frozen CI413 at actual due2026-10-26 02:20:16KST; continue independent P4-A audited UV project input locally; no new push while it runs
+Current substep: M13-004/P4-A frozen UV virtual-project input/intent named local QUALIFIED; next native uv.lock/export baseline; frozen P3-B6c CI413 remains independent
 Acceptance audit: CI412 frozen7544 backend Required10SUCCESS, complete checkout tree match and logs confirmed by actual65m timer; later local7939092/74102c8/80bd2bd/58957ea/728f650 are outside that remote scope; historical CI411 macOS timeout cause remains unconfirmed
-Independent local next: final package-client support/failure matrix and P4 uv project/persistent tool baseline; no new source push while frozen hosted candidate runs
-P3 Bun: IN_PROGRESS (same M13-004 independent local); P4..P7 — NOT_STARTED
+Independent local next: P4-A UV project input baseline/edit map reviewed; implement only missing frozen input/intent boundary; final package-client support/failure matrix remains; no new source push while frozen hosted candidate runs
+P3 Bun: local named qualification closed / hosted CI413 pending; P4-A — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
 ```
@@ -5465,3 +5465,11 @@ public transitive2/peer4의 현재 Evidence/Policy57.90s와 CLI9fresh199.72s/nat
 CPP는 불변이다. Workflow/Quick/security/docs·관련 네 package Race54.598s·checker Race
 35.595s와 hosted native JS exact caller 검증도 PASS다. 로컬 연결만 닫혔으며 중간 commit들을
 한 번 push해 exact-source hosted/timer를 확인하고 최종 지원/영향 matrix를 계속한다.
+
+### 2026-10-26 CI413 timer와 독립 P4-A 착수
+
+Grouped source50fd3b2/tree d6a63ab/2475를 한 번 push하여 [CI413](https://github.com/rahoney/heliopause/actions/runs/40209998926)이16:05:16UTC 시작했다. 최근53m51+추가 project519.694s와 여유를 반영한 실제75분 timer의 첫 due는17:20:16UTC/02:20:16KST다. Due와 실제 Required 결과 확인을 구분한다. [P4-A baseline·수정 지도·두 번째 검토](./evidence/package-client-quarantine/p4a-uv-project-baseline-20261026.md)를 확인하고 같은 M13-004에서 기존 UV pip owners를 재사용하는 frozen virtual-project input만 먼저 진행한다. P4 CLI/native resolver·persistent tools와 전체 P2/P3/P4 acceptance는 미완료다. 실행 중 source를 새 push로 취소하거나 작은 helper마다 full CI를 시작하지 않는다.
+
+### 2026-10-26 P4-A frozen virtual project input local checkpoint
+
+[P4-A receipt](./evidence/package-client-quarantine/p4a-uv-project-input-local-20261026.json)의 canonical Quick43.181s/security8.911s/docs0.249s와 artifact/PyPI fullRace5.379s가 PASS다. Native offline 원본 형식/lock presence·runtime/intent replay·unknown schema/source/duplicate tamper 거부를 named 검증했다. Native uv.lock reader/target export·resolver/transaction/CLI·persistent tool은 미완료다. [최종 P2/P3 matrix](./evidence/package-client-quarantine/p2p3-final-matrix-20261026.md)는 기존 local/remote 범위와 CI413/현재 공통 observer의 남은 세 CUDA qualification을 구분한다. Timer due의 실제 결과를 확인하며 M13-004 하나로 계속한다.
