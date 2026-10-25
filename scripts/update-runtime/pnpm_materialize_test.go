@@ -35,7 +35,7 @@ func TestPNPMNativePublicationRefusesReplacementAndUnsafeParents(t *testing.T) {
 			case "missing-parent":
 				output = filepath.Join(parent, "missing", "pnpm-linux-amd64")
 			}
-			if err := publishPNPMAsset(output, []byte("verified-native-fixture"), 0555); err == nil {
+			if err := publishNativeAsset(output, []byte("verified-native-fixture"), 0555); err == nil {
 				t.Fatal("unsafe publication succeeded")
 			}
 			body, err := os.ReadFile(foreign)

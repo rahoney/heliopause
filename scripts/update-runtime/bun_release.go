@@ -34,48 +34,11 @@ func verifyBunRelease(args []string, out io.Writer) error {
 	if flags.NArg() != 0 || !filepath.IsAbs(*input) {
 		return errors.New("bun supply verification requires an explicit absolute directory")
 	}
-	body, err := readFrozenSupplyFile(*input, "identity.json", 4096)
+	supply, err := readBunSupply(*input, time.Now())
 	if err != nil {
 		return err
 	}
-	if _, err := jsonSpans(body); err != nil {
-		return err
-	}
-	var discovery bunSupplyDiscovery
-	decoder := json.NewDecoder(bytes.NewReader(body))
-	decoder.DisallowUnknownFields()
-	if decoder.Decode(&discovery) != nil || decoder.Decode(new(any)) != io.EOF {
-		return errors.New("bun discovery JSON is invalid")
-	}
-	validVersion := len(discovery.Version) <= 64 && versionPattern.MatchString(discovery.Version)
-	for _, part := range strings.Split(discovery.Version, ".") {
-		if len(part) > 1 && part[0] == '0' {
-			validVersion = false
-		}
-	}
-	sourceCommit, decodeErr := hex.DecodeString(discovery.SourceCommitObserved)
-	if decodeErr != nil || len(sourceCommit) != 20 || hex.EncodeToString(sourceCommit) != discovery.SourceCommitObserved || !validVersion || discovery.ArchiveSize <= 0 || discovery.ArchiveSize > releaseprovenance.BunArchiveLimit {
-		return errors.New("bun frozen discovery metadata is invalid")
-	}
-	signed, err := readFrozenSupplyFile(*input, "SHASUMS256.txt.asc", 64<<10)
-	if err != nil {
-		return err
-	}
-	receipt, err := releaseprovenance.VerifyBunChecksums(context.Background(), signed, discovery.ArchiveSHA256, time.Now())
-	if err != nil {
-		return err
-	}
-	archive, err := readFrozenSupplyFile(*input, releaseprovenance.BunArchiveFilename, releaseprovenance.BunArchiveLimit)
-	if err != nil {
-		return err
-	}
-	if int64(len(archive)) != discovery.ArchiveSize {
-		return errors.New("bun archive size differs from frozen discovery")
-	}
-	tool, _, err := receipt.ReadToolArchive(context.Background(), archive)
-	if err != nil {
-		return err
-	}
+	discovery, receipt, tool := supply.discovery, supply.checksum, supply.tool
 	type nativeRecord struct {
 		ArchiveSHA256 string   `json:"archive_sha256"`
 		SHA256        string   `json:"sha256"`
@@ -96,4 +59,59 @@ func verifyBunRelease(args []string, out io.Writer) error {
 		NativeVersionVerified         bool               `json:"native_version_verified"`
 		SourceBuildProvenanceVerified bool               `json:"source_build_provenance_verified"`
 	}{nativeRecord{tool.ArchiveSHA256(), tool.SHA256(), tool.Size(), tool.Libraries()}, "helox.bun-release-supply/v2", discovery, releaseprovenance.BunPublisherFingerprint, receipt.SigningFingerprint(), receipt.SignedDocumentSHA256(), receipt.ChecksumsSHA256(), receipt.SignatureTime(), true, true, false, false})
+}
+
+type bunVerifiedSupply struct {
+	discovery bunSupplyDiscovery
+	checksum  releaseprovenance.BunChecksumReceipt
+	tool      releaseprovenance.BunToolReceipt
+	native    []byte
+}
+
+// readBunSupply is the common authenticated data reader for verification and
+// candidate output. Discovery version/source are not signed native/build proof.
+func readBunSupply(input string, now time.Time) (bunVerifiedSupply, error) {
+	body, err := readFrozenSupplyFile(input, "identity.json", 4096)
+	if err != nil {
+		return bunVerifiedSupply{}, err
+	}
+	if _, err := jsonSpans(body); err != nil {
+		return bunVerifiedSupply{}, err
+	}
+	var discovery bunSupplyDiscovery
+	decoder := json.NewDecoder(bytes.NewReader(body))
+	decoder.DisallowUnknownFields()
+	if decoder.Decode(&discovery) != nil || decoder.Decode(new(any)) != io.EOF {
+		return bunVerifiedSupply{}, errors.New("bun discovery JSON is invalid")
+	}
+	validVersion := len(discovery.Version) <= 64 && versionPattern.MatchString(discovery.Version)
+	for _, part := range strings.Split(discovery.Version, ".") {
+		if len(part) > 1 && part[0] == '0' {
+			validVersion = false
+		}
+	}
+	sourceCommit, decodeErr := hex.DecodeString(discovery.SourceCommitObserved)
+	if decodeErr != nil || len(sourceCommit) != 20 || hex.EncodeToString(sourceCommit) != discovery.SourceCommitObserved || !validVersion || discovery.ArchiveSize <= 0 || discovery.ArchiveSize > releaseprovenance.BunArchiveLimit {
+		return bunVerifiedSupply{}, errors.New("bun frozen discovery metadata is invalid")
+	}
+	signed, err := readFrozenSupplyFile(input, "SHASUMS256.txt.asc", 64<<10)
+	if err != nil {
+		return bunVerifiedSupply{}, err
+	}
+	receipt, err := releaseprovenance.VerifyBunChecksums(context.Background(), signed, discovery.ArchiveSHA256, now)
+	if err != nil {
+		return bunVerifiedSupply{}, err
+	}
+	archive, err := readFrozenSupplyFile(input, releaseprovenance.BunArchiveFilename, releaseprovenance.BunArchiveLimit)
+	if err != nil {
+		return bunVerifiedSupply{}, err
+	}
+	if int64(len(archive)) != discovery.ArchiveSize {
+		return bunVerifiedSupply{}, errors.New("bun archive size differs from frozen discovery")
+	}
+	tool, native, err := receipt.ReadToolArchive(context.Background(), archive)
+	if err != nil {
+		return bunVerifiedSupply{}, err
+	}
+	return bunVerifiedSupply{discovery, receipt, tool, native}, nil
 }

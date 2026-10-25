@@ -87,6 +87,9 @@ func run(args []string, out io.Writer) error {
 	if args[0] == "verify-pnpm-release" {
 		return verifyPNPMRelease(args[1:], out)
 	}
+	if args[0] == "materialize-bun-candidate" {
+		return materializeBunCandidate(args[1:], out)
+	}
 	if args[0] == "verify-bun-release" {
 		return verifyBunRelease(args[1:], out)
 	}

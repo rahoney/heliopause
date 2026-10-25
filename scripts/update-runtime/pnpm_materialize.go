@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"context"
-	"crypto/rand"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -11,7 +10,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"syscall"
 
 	"github.com/rahoney/heliopause/internal/verification/releaseprovenance"
 )
@@ -73,10 +71,10 @@ func materializePNPM(args []string, out io.Writer) error {
 	if _, err := os.Lstat(*noticesOutput); !errors.Is(err, os.ErrNotExist) {
 		return errors.New("pnpm notices output already exists or cannot be checked")
 	}
-	if err := publishPNPMAsset(*output, body, 0555); err != nil {
+	if err := publishNativeAsset(*output, body, 0555); err != nil {
 		return err
 	}
-	if err := publishPNPMAsset(*noticesOutput, notices, 0444); err != nil {
+	if err := publishNativeAsset(*noticesOutput, notices, 0444); err != nil {
 		return err
 	}
 	return json.NewEncoder(out).Encode(struct {
@@ -87,98 +85,6 @@ func materializePNPM(args []string, out io.Writer) error {
 		Size          int64  `json:"size"`
 		NoticesSHA256 string `json:"notices_sha256"`
 	}{"helox.pnpm-native-asset/v1", filepath.Base(*output), identity.Version, tool.SHA256(), tool.Size(), pin.Notices.SHA256})
-}
-
-func publishPNPMAsset(output string, body []byte, mode os.FileMode) error {
-	if mode != 0555 && mode != 0444 || len(body) == 0 {
-		return errors.New("pnpm asset mode or body is invalid")
-	}
-	parent := filepath.Dir(output)
-	canonical, err := filepath.EvalSymlinks(parent)
-	if err != nil || canonical != parent {
-		return errors.New("pnpm asset parent is unavailable or not canonical")
-	}
-	directory, err := os.OpenRoot(parent)
-	if err != nil {
-		return err
-	}
-	defer directory.Close()
-	before, err := directory.Stat(".")
-	if err != nil || !pnpmOutputDirectoryOwned(before) {
-		return errors.New("pnpm asset parent is not an owned protected directory")
-	}
-	if _, err := directory.Lstat(filepath.Base(output)); !errors.Is(err, os.ErrNotExist) {
-		return errors.New("pnpm native output already exists or cannot be checked")
-	}
-	temporary := ".pnpm-" + rand.Text()
-	file, err := directory.OpenFile(temporary, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-	created, err := file.Stat()
-	if err != nil {
-		return err
-	}
-	defer func() {
-		// A foreign replacement is never removed, even on failure.
-		if info, err := directory.Lstat(temporary); err == nil && os.SameFile(created, info) {
-			_ = directory.Remove(temporary)
-		}
-	}()
-	if count, err := file.Write(body); err != nil || count != len(body) {
-		return errors.Join(errors.New("pnpm native asset write was incomplete"), err)
-	}
-	if err := errors.Join(file.Chmod(mode), file.Sync()); err != nil {
-		return err
-	}
-	readback, err := directory.Open(temporary)
-	if err != nil {
-		return err
-	}
-	readInfo, statErr := readback.Stat()
-	readBody, readErr := io.ReadAll(io.LimitReader(readback, int64(len(body))+1))
-	closeErr := readback.Close()
-	if statErr != nil || readErr != nil || closeErr != nil || !os.SameFile(created, readInfo) || len(readBody) != len(body) || hash(readBody) != hash(body) {
-		return errors.New("pnpm native asset readback differs from the authenticated bytes")
-	}
-	current, err := os.Lstat(parent)
-	if err != nil || !os.SameFile(before, current) || !pnpmOutputDirectoryOwned(current) {
-		return errors.New("pnpm asset parent changed before publication")
-	}
-	staged, err := directory.Lstat(temporary)
-	if err != nil || !staged.Mode().IsRegular() || !os.SameFile(created, staged) {
-		return errors.New("pnpm temporary native asset changed")
-	}
-	// Link is atomic and refuses any existing destination. Both operands stay
-	// within the opened parent, including if its pathname is renamed.
-	if err := directory.Link(temporary, filepath.Base(output)); err != nil {
-		return err
-	}
-	published, err := directory.Lstat(filepath.Base(output))
-	if err != nil || !os.SameFile(created, published) || published.Mode().Perm() != mode || published.Size() != int64(len(body)) {
-		return errors.New("pnpm native asset publication changed")
-	}
-	if err := directory.Remove(temporary); err != nil {
-		return err
-	}
-	parentFile, err := directory.Open(".")
-	if err != nil {
-		return err
-	}
-	if err := errors.Join(parentFile.Sync(), parentFile.Close()); err != nil {
-		return err
-	}
-	current, err = os.Lstat(parent)
-	if err != nil || !os.SameFile(before, current) || !pnpmOutputDirectoryOwned(current) {
-		return errors.New("pnpm asset parent changed after publication")
-	}
-	return nil
-}
-
-func pnpmOutputDirectoryOwned(info os.FileInfo) bool {
-	owner, ok := info.Sys().(*syscall.Stat_t)
-	return ok && owner.Uid == uint32(os.Geteuid()) && info.IsDir() && info.Mode().Perm()&0022 == 0
 }
 
 // Maintenance reads the selected source owner rather than importing the
