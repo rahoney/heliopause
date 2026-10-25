@@ -2,7 +2,6 @@ package npm
 
 import (
 	"errors"
-	"slices"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
@@ -15,20 +14,10 @@ const PNPMInspectionWorkspaceLimit = 128 << 20
 var errPNPMInspectionBudget = errors.New("pnpm complete inspection input exceeds its fixed workspace budget")
 
 func (i PNPMInspectionInput) indexInventories(inventories []ArchiveInventory) (map[domain.AcquiredArtifact]ArchiveInventory, error) {
-	if !i.Valid() || len(i.artifacts) == 0 || len(inventories) != len(i.artifacts) {
+	if !i.Valid() {
 		return nil, errPNPMInspectionLayout
 	}
-	bySubject := make(map[domain.AcquiredArtifact]ArchiveInventory, len(inventories))
-	for _, inventory := range inventories {
-		if !inventory.Valid() || !slices.Contains(i.artifacts, inventory.artifact) {
-			return nil, errPNPMInspectionLayout
-		}
-		if _, duplicate := bySubject[inventory.artifact]; duplicate {
-			return nil, errPNPMInspectionLayout
-		}
-		bySubject[inventory.artifact] = inventory
-	}
-	return bySubject, nil
+	return indexNPMProjectInventories(i.artifacts, inventories, errPNPMInspectionLayout)
 }
 
 // CheckWorkspace admits only complete, exact static inputs and charges archive
@@ -56,7 +45,10 @@ func (i PNPMInspectionInput) CheckWorkspace(inventories []ArchiveInventory) erro
 // PNPMInspectionBudget charges measured inventories during static collection.
 // It retains no archive payload and grants neither authenticity nor execution.
 // Any invalid addition permanently invalidates the collection.
-type PNPMInspectionBudget struct {
+type PNPMInspectionBudget = npmInspectionBudget
+
+// npmInspectionBudget is the shared bounded accounting engine, not an approval.
+type npmInspectionBudget struct {
 	expected        map[domain.AcquiredArtifact]int
 	seen            map[domain.AcquiredArtifact]bool
 	charged         uint64
@@ -71,17 +63,25 @@ func (i PNPMInspectionInput) BeginWorkspace() (*PNPMInspectionBudget, error) {
 	if !i.Valid() || len(i.artifacts) == 0 {
 		return nil, errPNPMInspectionLayout
 	}
-	budget := &PNPMInspectionBudget{expected: make(map[domain.AcquiredArtifact]int, len(i.artifacts)), seen: make(map[domain.AcquiredArtifact]bool, len(i.artifacts))}
-	byPackage := make(map[string]domain.AcquiredArtifact, len(i.artifacts))
-	for _, subject := range i.artifacts {
+	instances := make([]string, 0, len(i.context.selection.lock.snapshots))
+	for _, instance := range i.context.selection.lock.snapshots {
+		instances = append(instances, instance.Package)
+	}
+	return beginNPMInspectionBudget(i.artifacts, instances)
+}
+
+func beginNPMInspectionBudget(artifacts []domain.AcquiredArtifact, instancePackages []string) (*npmInspectionBudget, error) {
+	budget := &PNPMInspectionBudget{expected: make(map[domain.AcquiredArtifact]int, len(artifacts)), seen: make(map[domain.AcquiredArtifact]bool, len(artifacts))}
+	byPackage := make(map[string]domain.AcquiredArtifact, len(artifacts))
+	for _, subject := range artifacts {
 		if !budget.charge(subject.SizeBytes()) {
 			return nil, errPNPMInspectionBudget
 		}
 		byPackage[subject.Identity().Name()+"@"+subject.Identity().Version()] = subject
 		budget.expected[subject] = 0
 	}
-	for _, instance := range i.context.selection.lock.snapshots {
-		subject, present := byPackage[instance.Package]
+	for _, instance := range instancePackages {
+		subject, present := byPackage[instance]
 		if !present {
 			return nil, errPNPMInspectionLayout
 		}
@@ -95,7 +95,7 @@ func (i PNPMInspectionInput) BeginWorkspace() (*PNPMInspectionBudget, error) {
 	return budget, nil
 }
 
-func (b *PNPMInspectionBudget) charge(amount uint64) bool {
+func (b *npmInspectionBudget) charge(amount uint64) bool {
 	if amount > PNPMInspectionWorkspaceLimit-b.charged {
 		return false
 	}
@@ -105,7 +105,7 @@ func (b *PNPMInspectionBudget) charge(amount uint64) bool {
 
 // Add rejects a duplicate, foreign or excessive inventory before it is retained
 // by the caller. Failed counters cannot later attest complete coverage.
-func (b *PNPMInspectionBudget) Add(inventory ArchiveInventory) error {
+func (b *npmInspectionBudget) Add(inventory ArchiveInventory) error {
 	if b == nil || b.expected == nil {
 		return errPNPMInspectionLayout
 	}
@@ -141,7 +141,7 @@ func (b *PNPMInspectionBudget) Add(inventory ArchiveInventory) error {
 }
 
 // Complete requires all exact subjects and no previous collection failure.
-func (b *PNPMInspectionBudget) Complete() error {
+func (b *npmInspectionBudget) Complete() error {
 	if b == nil || b.expected == nil {
 		return errPNPMInspectionLayout
 	}

@@ -5212,4 +5212,17 @@ acquire/SRI/static-all→전체 acquired 결합1.423s(archive0/1/2/4)가 PASS다
 단일 package primitive는 정확한 native payload4파일/원본 controls를 보존했으며 production
 gVisor/layout/lifecycle/Policy의 qualification은 아니다. 다음은 실제 hoisted/bin 표현과 그 전체
 archive binder·bounded cache envelope를 연결한다. 같은 M13-004만 IN_PROGRESS다.
+
+[B4b exact layout 지도](./evidence/package-client-quarantine/p3b4b-bun-layout-binding-plan-20261025.md)의
+baseline·실제 hoisted/bin 표현·기존 tar/budget 재사용 경계를 두 번째 검토했다. Script-free runc
+transitive/peer의59 native files와 정확한 bin link를 관측했으며 이 범위의 전체 archive binder만
+연결한다. Production gVisor/동적 lifecycle/Policy는 다음 gap이고 새 CI는 없다.
+
+B4b [전체 트리 결합 로컬 영수증](./evidence/package-client-quarantine/p3b4b-bun-layout-binding-local-20261025.json)은
+canonical Quick188.001s·npm/sandbox 전체 Race47.291s와 actual source/native-capture1.422s를
+확인한다. Transitive/peer의 archive2/4·entries11/63·전체 target 및 partial/bin substitution 거부가
+PASS다. Packing0664→HAA prepared0644의 최초 해석/거부를 보존하고 source022 축소만 exact view로
+대조한다. 앞 compile/SA1012·operator 준비 오류도 별도 원본으로 남겼다. 완료 복사본7곳의
+778,244,261B는0refs/query errors0 뒤 정리했다. 다음은 production bounded cache/offline prepare와
+gVisor lifecycle 관찰 연결이다. 전체 B4/Bun·macOS/Required remote acceptance는 열려 있다.
 작은 helper별 push/CI는 시작하지 않았고 remote9410/CI411 macOS·Required gate는 유지한다.
