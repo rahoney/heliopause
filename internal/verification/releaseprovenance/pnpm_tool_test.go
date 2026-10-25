@@ -37,7 +37,7 @@ func syntheticPNPMELF() []byte {
 	put64(96, uint64(len(body)))
 	put64(104, uint64(len(body)))
 	put64(112, 4096)
-	interp := []byte(pnpmGNUInterpreter + "\x00")
+	interp := []byte(gnuAMD64Interpreter + "\x00")
 	put32(120, 3)
 	put32(124, 4)
 	put64(128, 176)

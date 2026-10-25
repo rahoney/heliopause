@@ -72,10 +72,18 @@ func verifyBunRelease(args []string, out io.Writer) error {
 	if int64(len(archive)) != discovery.ArchiveSize {
 		return errors.New("bun archive size differs from frozen discovery")
 	}
-	if err := receipt.CheckArchive(context.Background(), archive); err != nil {
+	tool, _, err := receipt.ReadToolArchive(context.Background(), archive)
+	if err != nil {
 		return err
 	}
+	type nativeRecord struct {
+		ArchiveSHA256 string   `json:"archive_sha256"`
+		SHA256        string   `json:"sha256"`
+		Size          int64    `json:"size"`
+		Libraries     []string `json:"libraries"`
+	}
 	return json.NewEncoder(out).Encode(struct {
+		Tool                          nativeRecord       `json:"tool"`
 		Schema                        string             `json:"schema"`
 		Discovery                     bunSupplyDiscovery `json:"discovery"`
 		Publisher                     string             `json:"publisher_fingerprint"`
@@ -87,5 +95,5 @@ func verifyBunRelease(args []string, out io.Writer) error {
 		ArchiveBytesVerified          bool               `json:"archive_bytes_verified"`
 		NativeVersionVerified         bool               `json:"native_version_verified"`
 		SourceBuildProvenanceVerified bool               `json:"source_build_provenance_verified"`
-	}{"helox.bun-release-supply/v1", discovery, releaseprovenance.BunPublisherFingerprint, receipt.SigningFingerprint(), receipt.SignedDocumentSHA256(), receipt.ChecksumsSHA256(), receipt.SignatureTime(), true, true, false, false})
+	}{nativeRecord{tool.ArchiveSHA256(), tool.SHA256(), tool.Size(), tool.Libraries()}, "helox.bun-release-supply/v2", discovery, releaseprovenance.BunPublisherFingerprint, receipt.SigningFingerprint(), receipt.SignedDocumentSHA256(), receipt.ChecksumsSHA256(), receipt.SignatureTime(), true, true, false, false})
 }

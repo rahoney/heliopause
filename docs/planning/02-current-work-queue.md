@@ -17,7 +17,7 @@ Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003
 Active work item status: IN_PROGRESS — backend/cache/records/private materialization/transaction remotely QUALIFIED by CI407; B5c user CLI named local PASS; native ownership/user CLI named local QUALIFIED; final whole-source remote/affected-profile qualification and P2 acceptance remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Next action: M13-004/P2 — source9410c2d CI408 ordinary/CI409 cu126 Required10SUCCESS each, all checkout whole trees equal; cu130 CI410 IN_PROGRESS and cu132 next; keep active timer/turn and continue to P3 after P2 closure
-Current substep: M13-004/P2 — IN_PROGRESS; backend/production CLI/native original proof remote QUALIFIED by408/409; cu130/cu132 final affected matrix and P2 acceptance remain; P3-A independent Bun supply baseline/edit-map in same M13-004; local implementation after second review, remote source remains9410c2d
+Current substep: M13-004/P2 — IN_PROGRESS; backend/production CLI/native original proof remote QUALIFIED by408/409; cu130/cu132 final affected matrix and P2 acceptance remain; P3-A/B1 Bun signed ZIP/native data named local QUALIFIED in same M13-004; next B2a candidate materialization, remote source remains9410c2d
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -5042,3 +5042,12 @@ bounded reader를 사용했고 실제 공식 signed checksums·52MB zip을 검�
 operator routing 오류를 보존했다. Runtime pin/새 Bun 설치·실행 지원은 아직 없다. 다음은 B의
 bounded ZIP/ELF·ABI/기존 native maintenance와 guest admission이다. 개별 공급 단위로 원격 CI를
 추가하지 않는다. M13-004 하나만 IN_PROGRESS이며 기존 profile timer를 active turn에서 소비한다.
+
+### 2026-10-25 P3-B1 Bun ZIP/ELF local checkpoint
+
+[B1 native data](./evidence/package-client-quarantine/p3b1-bun-native-local-20261025.json)는
+signed complete ZIP→정확한 두 members/CRC·bounds→GNU ELF→native hash/size/libs를 연결했다.
+기존 PNPM ELF 조건은 기계적 대조로 보존했고 Quick/security/docs와 관련 네 package 전체
+Race·실제 offline5case가 PASS다. Native version/guest/production pin·전체 P3는 미완료다.
+다음은 기존 no-replace native publisher를 재사용하는 격리 query용 candidate 출력이다.
+P2 source9410/cu130410의11:31:10KST 타이머는 활성 turn에서 소비하며 작은 B1은 push하지 않는다.

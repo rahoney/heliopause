@@ -124,3 +124,50 @@ A는 IMPLEMENTED/WIRED/QUALIFIED=YES(named supply local), whole P3 ACCEPTANCE_CL
 다음 B에 필요한 실제 ZIP 형태는 두 entries, native107,308,936B다. File을 mode0600 data로 읽은
 readelf 진단은 ABI/guest execution qualification이 아니며 B의 정확한 수정 지도에서만 사용한다.
 Supply zip·active verifier와 SDK/quality/관찰기·원본은 후속 소비를 위해 유지한다.
+
+## B1 ZIP/ELF 착수 audit·exact map·두 번째 검토
+
+Baseline local378d1e1/tree6731714f5c0c95596a3f6ac1952f78bea197bbe0. Remote P2는9410 고정이다.
+A의 BunChecksumReceipt/CheckArchive는 IMPLEMENTED/WIRED/QUALIFIED=YES(named publisher data),
+Bun native ZIP/ELF reader는 NO/NO/NO/NO다. Existing PNPM ReadToolArchive/pnpmNativeELF는
+YES/YES/YES(named PNPM), Bun으로의 단순 qualification 전용은 NO다. MISSING은 complete signed
+ZIP→정확한 두 members/CRC/declared expansion bound→ELF→immutable native data receipt와
+실제 호출부/negative다. Runtime pin/provision/guest admission은 이후 B2에 남긴다.
+
+실제 signed ZIP은 bun-linux-x64/와 그 아래 bun 두 entries다. 0755 Unix directory/regular,
+extra UT/UX만 관측했으며 UID/GID는 untrusted data다. Native107,308,936B/SHA10702245766b225e70bbf6235fd6b47214fd94b4760d00ffaed8ab0df57ac235,
+ELF64 little-endian AMD64 EXEC, GNU loader/libc·pthread·dl·m와 GLIBC versions≤2.17을 data로
+측정했다. Mode0600 readelf 입력이며 Host에서 Bun을 실행하지 않았다. CPU/guest 호환성은
+NOT_QUALIFIED다. 검사 원본은 p3b-bun-zip-shape-first/native-static-discovery가 소유한다.
+
+- releaseprovenance/native_elf.go: 기존 pnpmNativeELF의 GNU x64 program-range/W^X/stack/
+  exact loader/imported library validation만 기계적으로 추출하고 pnpm_tool.go/test의 caller와
+  constant를 연결한다. 기존 조건을 삭제/완화하지 않는다. 실제 PNPM+Bun 두 소비자가 있다.
+- bun_tool.go: A receipt의 complete signature-bound checksum을 먼저 확인한 뒤 fixed ZIP
+  two-member structure/Unix mode·flags/known bounded extra fields·unique exact paths·압축/확장
+  64/128MiB와 CRC·ctx를 검사한다. Native slice와 immutable digest/size/libs만 반환한다.
+  Directory/file attributes를 Host owner로 복제하지 않는다. Invalid trailer/member/CRC 등의
+  unknown layout은 거부한다. No filesystem/execution/pin/Policy.
+- bun_tool_test.go: synthetic structural reader fixtures는 인증 자료가 아님을 명시하고 malformed
+  archive/member/special files/declared bounds/mode/flags/extra/CRC/ELF·취소를 검사한다. 실제
+  signed archive는 별도 offline dev command로 확인한다. PNPM 기존 소비자/negative도 재검증한다.
+- updater의 verify-bun-release는 새 actual Tool reader를 사용해 native data fingerprint/size/libs를
+  출력한다. Native version/build source/guest safety flags는 여전히 false다. 새 materializer/pin/
+  provider/CI scaffold를 이 B1에 만들지 않는다. Canonical/관련 Race/actual와 local checkpoint 뒤
+  기존 native maintenance의 B2 audit로 넘어간다. 작은 B1 commit마다 원격 push는 하지 않는다.
+
+두 번째 검토: signature exact bytes를 확인하기 전에 parse/expose하지 않는다. 단순 unzip/ELF
+성공은 current runtime/Policy authority가 아니며 NativeVersion을 symbol BUN_1.2에서 추정하지
+않는다. Source version1.4.4와 그 symbol은 서로 다른 metadata다. PNPM 검사나 글로벌 보안
+한도는 Bun을 위해 완화하지 않는다. Shared helper는 같은 기존 검사만 재사용하며 unknown
+library를 Host에서 로드하지 않는다. New runtime ABI/Role admission은 actual guest 이전까지
+미완료로 유지한다.
+
+B1 결과: shared GNU ELF function은 이름/오류 prefix만 바꾼 원문 대조가 동일하다. Go ZIP
+reader의 trailing transport 허용은 RED2.425s로 확인하고 exact EOCD closed boundary 뒤
+GREEN3.127s로 거부했다. 첫 utf8 compile 누락과 SA1012 invalid nil-context test 호출은
+원본을 보존하고 각각 import 복원/잘못된 caller 제거로 교정했다. Final Quick126.594s,
+security10.964s/docs0.237s·네 package full Race34.957s와 실제 official/tamper/경로5case
+3.555s가 PASS다. V2는 native107,308,936B의 hash/libs를 측정하며 runtime version/build
+proof flags는 false다. [B1 local receipt](./p3b1-bun-native-local-20261025.json)가 범위를
+소유한다. 다음은 B2a 격리 조회용 candidate materialization이며 production pin/전체 P3는 열려 있다.
