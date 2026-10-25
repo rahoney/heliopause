@@ -325,6 +325,7 @@ func (g pypiVenvGuard) release() (resultErr error) {
 
 // One guard, backup area and ledger cover all exact destinations.
 type pypiVenvTransaction struct {
+	project                                         *uvProjectFileTransaction
 	plan                                            pypiVenvPlan
 	guard                                           pypiVenvGuard
 	current                                         pypiVenvState
@@ -414,7 +415,19 @@ func beginPyPIVenvTransactionWithDiscovery(p pypiVenvPlan, discover func(string)
 	}
 	return t, nil
 }
-func (t *pypiVenvTransaction) close() error {
+func (t *pypiVenvTransaction) close() (resultErr error) {
+	if t.project != nil {
+		projectErr := t.project.guard.verify()
+		if projectErr != nil {
+			t.recovery = true
+		}
+		defer func() {
+			if resultErr != nil {
+				t.recovery = true
+			}
+			resultErr = errors.Join(resultErr, projectErr, t.project.close(t.recovery))
+		}()
+	}
 	// Uncertain recovery retains both the guard and the recovery directory.
 	if t.recovery {
 		err := t.guard.verify()
@@ -451,6 +464,11 @@ func (t *pypiVenvTransaction) freezeParents(path string) error {
 	return nil
 }
 func (t *pypiVenvTransaction) verifyIdentity() error {
+	if t.project != nil {
+		if err := t.project.guard.verify(); err != nil {
+			return err
+		}
+	}
 	if err := t.guard.verify(); err != nil {
 		return err
 	}
@@ -497,6 +515,11 @@ func (t *pypiVenvTransaction) checkBefore() error {
 // Check the fixed roots and the current file's ancestry at each mutation;
 // full directory-set reconciliation remains at freeze and completion.
 func (t *pypiVenvTransaction) verifyPathIdentity(path string) error {
+	if t.project != nil {
+		if err := t.project.guard.verify(); err != nil {
+			return err
+		}
+	}
 	if err := t.guard.verify(); err != nil {
 		return err
 	}
@@ -688,6 +711,7 @@ func (t *pypiVenvTransaction) persistLedger() error {
 			directories[path] = pypiFileSnapshot{Mode: info.Mode(), Device: dev, Inode: ino}
 		}
 		if err := t.appendJournal(struct {
+			Project           *uvProjectJournalControls `json:",omitempty"`
 			Root              string
 			Before            map[string]*pypiFileSnapshot
 			Current, Desired  pypiVenvState
@@ -695,7 +719,7 @@ func (t *pypiVenvTransaction) persistLedger() error {
 			Metadata          *pypiFileSnapshot
 			Directories       map[string]pypiFileSnapshot
 			AbsentDirectories map[string]bool
-		}{t.plan.root, t.before, t.current, t.desired, t.config, t.metadata, directories, t.absentDirectories}); err != nil {
+		}{t.projectJournal(), t.plan.root, t.before, t.current, t.desired, t.config, t.metadata, directories, t.absentDirectories}); err != nil {
 			return err
 		}
 	}
@@ -811,8 +835,19 @@ func (t *pypiVenvTransaction) commitComplete(destinations []pypiDestination, dep
 	return t.commitSelection(destinations, true, dependencyFree)
 }
 
-func (t *pypiVenvTransaction) commitSelection(destinations []pypiDestination, complete, dependencyFree bool) (resultErr error) {
+func (t *pypiVenvTransaction) commitSelection(destinations []pypiDestination, complete, dependencyFree bool) error {
+	if t.project != nil {
+		return errors.New("held project controls require explicit project publication")
+	}
+	return t.commitSelectionWithProject(destinations, complete, dependencyFree)
+}
+
+func (t *pypiVenvTransaction) commitSelectionWithProject(destinations []pypiDestination, complete, dependencyFree bool) (resultErr error) {
 	desired, obsolete, err := t.prepareSelection(destinations, complete, dependencyFree)
+	if err != nil {
+		return err
+	}
+	projectControls, err := t.prepareProjectControls()
 	if err != nil {
 		return err
 	}
@@ -863,6 +898,7 @@ func (t *pypiVenvTransaction) commitSelection(destinations []pypiDestination, co
 			return err
 		}
 	}
+	ordered = append(ordered, projectControls...)
 	sort.Slice(ordered, func(i, j int) bool { return ordered[i].key() < ordered[j].key() })
 	backups := append(append([]pypiDestination(nil), ordered...), obsolete...)
 	for _, d := range backups {
@@ -1029,12 +1065,17 @@ func (t *pypiVenvTransaction) commitSelection(destinations []pypiDestination, co
 			return errors.New("ownership metadata reconciliation failed")
 		}
 	}
+	// Controller private cleanup still belongs to the rollback boundary. Its
+	// failure must be observed before the deferred original backup disposal.
+	if t.project != nil {
+		return t.project.cleanup()
+	}
 	return nil
 }
 func (t *pypiVenvTransaction) syncDirectories() error {
 	paths := []string{}
 	for path := range t.directories {
-		if path == t.plan.root || pathWithin(t.plan.root, path) {
+		if path == t.plan.root || pathWithin(t.plan.root, path) || t.project != nil && path == t.project.root {
 			paths = append(paths, path)
 		}
 	}
