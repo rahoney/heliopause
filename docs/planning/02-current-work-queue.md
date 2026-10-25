@@ -14,12 +14,12 @@ Last completed work item: CLI-UX-003 — COMPLETE; source4cfe29e/CI352 ten SUCCE
 Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
-Active work item status: IN_PROGRESS — backend/cache/records/private materialization/transaction remotely QUALIFIED by CI407; B5c user CLI named local PASS; native ownership/user CLI named local QUALIFIED; final whole-source remote/affected-profile qualification and P2 acceptance remain
-Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
-Next action: M13-004/P2 — source9410c2d CI408 ordinary/CI409 cu126 Required10SUCCESS each, all checkout whole trees equal; cu130 CI410 Required10SUCCESS; cu132 CI411 Linux PASS but macOS default-test6m timeout/Required FAILURE; timer consumed13:22:58KST/full10logs preserved; diagnose exact source; B5e direct failure acceptance closed; P3 Bun nonempty lock/source binding next; P3 Bun query named local QUALIFIED
-Current substep: M13-004/P2 — IN_PROGRESS; backend/production CLI/native original proof remote QUALIFIED by408/409; cu130 CI410 remote QUALIFIED; cu132411 Linux qualified but macOS/Required failure; B5e direct failure acceptance closed; macOS/Required and whole P2 acceptance remain; P3-A/B1 Bun signed ZIP/native data named local QUALIFIED in same M13-004; B2a candidate/native runc query named local QUALIFIED; B2b1 single owner/frozen maintenance named local QUALIFIED; B2b2-A production materialization named local QUALIFIED; B2b2-B complete release/installed tuple named local QUALIFIED; B2c1 protected supply/transport and B2c2 exact gVisor version/revision named local QUALIFIED; Bun lock/graph/layout/CLI remain, remote source remains9410c2d
-Acceptance audit: P2-B5e actual SIGINT/SIGKILL + final Race and1MiB tmpfs ENOSPC PASS; existing transaction unchanged; remaining P2 gate is successful macOS/Required after CI411 timeout
-Independent local next: P3-B2c1 protected installed supply/transport named local QUALIFIED; B2c2 exact observer/runtime version+revision named local QUALIFIED; nonempty lock format/graph remains; CI411 timer remains active
+Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
+Last completed substep: P3-B5d — explicit Bun native original source proof and --adopt; named local qualification, source728f650
+Next action: M13-004/P3-B5f — Bun actual signal/crash/ENOSPC acceptance; explicit Bun Artifact runtime and final affected-profile qualification follow
+Current substep: M13-004/P3-B5e local wiring QUALIFIED; aggregate actual script519.694s/four top-level PASS/helperwait0/Host identical; hosted exact-source qualification pending grouped push
+Acceptance audit: CI412 frozen7544 backend Required10SUCCESS, complete checkout tree match and logs confirmed by actual65m timer; later local7939092/74102c8/80bd2bd/58957ea/728f650 are outside that remote scope; historical CI411 macOS timeout cause remains unconfirmed
+Independent local next: Bun typed transaction actual SIGINT/SIGKILL and bounded tmpfs ENOSPC; existing PNPM direct-failure harness reused; no live CI timer or extra helper push at this point
 P3 Bun: IN_PROGRESS (same M13-004 independent local); P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -5401,3 +5401,17 @@ PASS다. Helperwait0/Host 전체 동일·원래 bytes/inode/user data 보존 거
 Quick49.720s/security/docs·전체 관련 Race179.520s도 PASS다. 첫 test tuple/중복 helper 실패
 원본을 보존했다. Nonempty copied hoisted native subset만 닫혔으며 hosted project consumer/
 명시 Bun Artifact runtime·전체 P3/영향 profile qualification은 미완료다.
+
+[B5e hosted project 소비자 감사](./evidence/package-client-quarantine/p3b5e-bun-project-ci-plan-20261025.md)는
+728f650에서 기존 Bun 공급 body의 고정 project mode를 재사용해 cache/transaction/CLI/native
+original 실제 소비자를 연결한다. Parent workflow의 이미 컴파일한 bootstrap client/helper와
+그 뒤 sandbox 복원을 exact validator로 확인한다. 원래 native mode/PNPM 순서·jobs/Required/
+timeouts는 유지한다. 아직 새 push/CI는 없으며 같은 M13-004의 로컬 검증을 계속한다.
+
+[B5e 로컬 공급·연결 검증](./evidence/package-client-quarantine/p3b5e-bun-project-ci-local-20261025.json)은
+기존 fixed ZIP/materializer/설치·cleanup을 쓰는 project mode의 네 actual 검사를519.694s에
+마쳤다. Cache46.97s/transaction151.89s/CLI9fresh182.70s/native3cases124.28s, no-SKIP·
+helperwait0/Host 전체 동일·설치 root/공급 work 정리가 PASS다. Workflow/Quick/security/docs·
+checker 전체 Race와 원래 default mode 기계 동일성을 확인했다. Local wiring만 닫혔으며
+hosted project/명시 Bun Artifact runtime/전체 P3 qualification은 미완료다. 같은 M13-004에서
+Bun actual SIGINT/SIGKILL·작은 tmpfs ENOSPC의 직접 acceptance를 다음으로 진행한다.

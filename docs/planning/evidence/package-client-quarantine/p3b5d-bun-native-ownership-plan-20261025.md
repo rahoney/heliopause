@@ -68,3 +68,8 @@ Quick49.720s/security/docs·전체 npm/promotion/bootstrap/CLI Race179.520s와 n
 update, peer4의 original full proof·fresh current Policy와 원본 보존 거부를 확인했다. 최종
 managed CLI는 같은 v3 binary를 재사용하며 private Go1023개의 bytes/수정시각을 대조했다.
 CLI 회귀/전체 후보 고정 전까지 이 단계의 최종 closure는 진행 중이다.
+
+최종 [B5d local receipt](./p3b5d-bun-native-ownership-local-20261025.json)는 같은 v3 binary의
+Bun9/PNPM9 CLI 회귀366.181s와 Root/private2459개 전체 후보·canonical 최종 문서 검사를
+확인했다. Named local copied-hoisted native subset은 closed이며 hosted/명시 Bun runtime/
+whole P3는 별도다.

@@ -415,6 +415,11 @@ jobs:
           haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"
           haa_start_policy_helper
           bash scripts/ci-bun-runtime.sh
+          haa_install_ci_client "$RUNNER_TEMP/helox-pnpm-project-test"
+          haa_start_policy_helper
+          bash scripts/ci-bun-runtime.sh project
+          haa_install_ci_client "$RUNNER_TEMP/helox-sandbox-test"
+          haa_start_policy_helper
           HELOX_PYTORCH_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.run '^TestLinuxPyTorchResolverIntegration$'
           (
             cd internal/sandbox
