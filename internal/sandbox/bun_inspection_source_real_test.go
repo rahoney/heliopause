@@ -49,6 +49,12 @@ func TestBunPublicInspectionSourceInputs(t *testing.T) {
 // Reused by actual source/static and frozen native-layout consumers.
 func bunPublicInspectionInputs(t *testing.T, ctx context.Context, name string) (artifactnpm.BunInspectionInput, []artifactnpm.ArchiveInventory) {
 	t.Helper()
+	_, input, inventories := bunPublicInspectionInputsWithRoot(t, ctx, name)
+	return input, inventories
+}
+
+func bunPublicInspectionInputsWithRoot(t *testing.T, ctx context.Context, name string) (string, artifactnpm.BunInspectionInput, []artifactnpm.ArchiveInventory) {
+	t.Helper()
 	_, file, _, ok := runtime.Caller(0)
 	if !ok {
 		t.Fatal("versioned fixture source unavailable")
@@ -56,10 +62,6 @@ func bunPublicInspectionInputs(t *testing.T, ctx context.Context, name string) (
 	fixtures := filepath.Join(filepath.Dir(file), "..", "artifact", "npm", "testdata", "bun-lock")
 	intake := t.TempDir()
 	source, err := artifactnpm.NewPublicResolver(intake)
-	if err != nil {
-		t.Fatal(err)
-	}
-	static, err := inspectionnpm.NewInspector(intake)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -99,6 +101,16 @@ func bunPublicInspectionInputs(t *testing.T, ctx context.Context, name string) (
 		t.Fatal(err)
 	}
 	frozen, err := selected.InspectionContext(install, []domain.ProjectControlFile{manifestControl, lockControl}, BunResolverRuntimeIdentity())
+	if err != nil {
+		t.Fatal(err)
+	}
+	input, inventories := bunAcquireInspectionInputs(t, ctx, intake, source, frozen)
+	return intake, input, inventories
+}
+
+func bunAcquireInspectionInputs(t *testing.T, ctx context.Context, intake string, source *artifactnpm.Resolver, frozen artifactnpm.BunInspectionContext) (artifactnpm.BunInspectionInput, []artifactnpm.ArchiveInventory) {
+	t.Helper()
+	static, err := inspectionnpm.NewInspector(intake)
 	if err != nil {
 		t.Fatal(err)
 	}

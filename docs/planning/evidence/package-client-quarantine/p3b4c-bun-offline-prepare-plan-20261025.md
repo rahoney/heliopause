@@ -117,3 +117,32 @@ HELOX_BUN_CACHE_CORPUS로만 받는다. Native lookup index는 반환하지 않�
 member 전체만 원본과 대조한다. Global cache를 검증했다고 쓰지 않는다. Implied directory 구조도
 기존100000-entry ceiling으로 native 전에 제한한다. Production preparer/observer 작업은 이 단위
 뒤 같은 M13-004에서 계속하며 새 CI나 Runtime 권한은 이 data 단위에 추가하지 않는다.
+
+Production 연결의 현재 기준은1ea12d9b80f4948e7450e34e8d7f83c08c544e91/
+tree92110f8309312e408a4c7be3acebf4eca516518d·2390files다. Cache data/예산은 IMPLEMENTED/
+WIRED(named actual)/QUALIFIED(named local)=YES로 재사용하고, preparer와 추가 exact command
+shapes는 IMPLEMENTED/WIRED/QUALIFIED/ACCEPTANCE_CLOSED=NO다. 위 exact map의 이 MISSING만
+연결하며 기존 freeze/readback body는 Root kind parameter 외 기계 동일성을 확인한다.
+
+Actual 여러-version consumer는 기존 source/acquire/static 준비의 acquisition 하위 body를
+test-only helper로 옮겨 golden context와 실제 native selection context가 함께 사용한다.
+현재 static producer·원본 source 검사 의미를 유지하는 추출이며 다른 decoder를 추가하지 않는다.
+
+B4c-b 첫 실제 gVisor 소비자는 네 graph(single/transitive/peer/multiple-versions)의 source archive
+1/2/4/3과 whole layout6/11/63/17entries를 확인했다. 실제 여러-version selection에는 is-number
+6.0.0/7.0.0이 함께 있고 두 public controls는 원본 그대로다. Complete 및 command+cleanup,
+cleanup acknowledgement, incomplete/forbidden observation의5경계는 bound output 폐기와
+원래 cause를 확인했다. Diagnostic observer117latches/native74.101s·helper wait0/Host 전후
+동일은 named 범위이며 final 원본 observer builder와 영향받은 PNPM 소비자 확인 전 전체
+qualification으로 확대하지 않는다. FS/network grant는 추가하지 않았다.
+
+첫 canonical builder의 github.com DNS 제한 exit128과 Race의 unixgram bind EPERM은
+sandbox 환경 제한으로 보존했다. 동일 source/pinned command를 일반 사용자 권한으로
+해당 제한 밖에서 실행하며, 도구 교체나 source/runtime policy 완화로 통과시키지 않는다.
+
+최종 [B4c-b 로컬 영수증](./p3b4cb-bun-offline-prepare-local-20261025.json)은 원본 builder
+267.752s/117latches와 앞 actual 소비 observer의 완전한 byte 동일성을 연결한다. 기존 PNPM
+production prepare2·public selection8/검역4·실패경계5의173.946s/operator도 helper wait0/
+Host 전후 동일로 PASS다. 이 준비 단위는 IMPLEMENTED/WIRED/QUALIFIED(named local)=YES이며
+전체 B4/Bun acceptance는 NO다. Next는 exact instance lifecycle/runtime·static-all/aggregate/
+Policy 연결이고 cache/transaction/CLI·remote gate는 그대로 남는다.

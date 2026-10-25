@@ -5238,4 +5238,13 @@ Fresh public source archive2/4와 native member 전체를 대조하고 marker를
 검증을 주장하지 않는다. 두 expanded cache copies와 모든 logical placement를 같은128MiB
 ceiling에 청구하며 implied directories도 제한한다. Production preparer/observer 연결과 실제
 여러 version·lifecycle/Policy·cache/transaction/CLI/remote는 열려 있고 같은 M13-004에서 계속한다.
+
+B4c-b는1ea12d9의 cache data를 재사용해 production seed/cache/whole-project 준비와 두 exact
+observer argv shape를 연결한다. 기존 PNPM freeze/readback의 fixed-kind 추출을 대조했고 native
+명령 전 disconnect proof를 재사용한다. [B4c-b 로컬 영수증](./evidence/package-client-quarantine/p3b4cb-bun-offline-prepare-local-20261025.json)의
+Quick184.159s/전체 관련 Race57.353s·원본 builder267.752s/117latches와 actual Bun74.101s가
+네 graph·5실패 경계를 확인했다. 기존 PNPM production prepare2/public selection8·검역4/
+실패 경계5도173.946s/operator·helper wait0/Host 동일로 PASS다. Actual observer는 원본
+builder 산출물과 byte-identical이며 불필요하게 같은 실행을 반복하지 않았다. FS/network
+권한은 추가하지 않았다. 다음은 정확한 instance lifecycle/runtime·전체 검사/Policy 연결이다.
 작은 helper별 push/CI는 시작하지 않았고 remote9410/CI411 macOS·Required gate는 유지한다.

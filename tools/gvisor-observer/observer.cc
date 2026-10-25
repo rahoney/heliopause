@@ -647,7 +647,8 @@ bool IsBunPublicSelector(const std::string& value, bool allow_constraint) {
   return slash != std::string::npos && segment(name.substr(1, slash-1)) && segment(name.substr(slash+1));
 }
 
-// Fixed lock-only selection shapes; the host typed input owns selector semantics.
+// Fixed selection and script-free offline preparation shapes. The host typed
+// input owns selector/data semantics; neither preparation shape accepts argv.
 // Guest arguments cannot change registry/cache/linker, execute scripts or load env.
 bool IsExactBunProjectLockInstall(const gvisor::sentry::ExecveInfo& message) {
   static constexpr const char* expected[] = {kBunToolPath,
@@ -658,8 +659,15 @@ bool IsExactBunProjectLockInstall(const gvisor::sentry::ExecveInfo& message) {
   constexpr int fixed_count = sizeof(expected)/sizeof(expected[0]);
   if (message.binary_path() != kBunToolPath || message.execfn() != kBunToolPath ||
       message.argv_size() < fixed_count || message.argv_size() > fixed_count + 2) return false;
-  for (int i=0; i<fixed_count; ++i) if (i != 2 && message.argv(i) != expected[i]) return false;
+  const bool cache_seed = message.argv(1) == "--cwd=/tmp/haa-bun-input/seed";
+  const bool offline_install = !cache_seed && message.argv(3) == "--offline";
+  for (int i=0; i<fixed_count; ++i) {
+    if (i == 2 || (i == 1 && cache_seed) || (i == 3 && offline_install)) continue;
+    if (message.argv(i) != expected[i]) return false;
+  }
   const auto& intent = message.argv(2);
+  if (cache_seed || offline_install) return intent == "install" && message.argv_size() == fixed_count+1 &&
+      message.argv(fixed_count) == (cache_seed ? "--offline" : "--frozen-lockfile");
   if (intent == "install") return message.argv_size() == fixed_count ||
       (message.argv_size() == fixed_count+1 && message.argv(fixed_count) == "--frozen-lockfile");
   if (intent != "add" && intent != "update") return false;

@@ -26,8 +26,22 @@ type pnpmInspectionArchive struct {
 
 // Freeze complete measured archives before any native tool/DNS/resource work.
 // Only RunID-derived intake names are opened; Host names are never guest input.
-func (i *DockerArtifactIntroducer) freezePNPMArchives(ctx context.Context, input artifactnpm.PNPMInspectionInput) (archives []pnpmInspectionArchive, resultErr error) {
+func (i *DockerArtifactIntroducer) freezePNPMArchives(ctx context.Context, input artifactnpm.PNPMInspectionInput) ([]pnpmInspectionArchive, error) {
 	if i == nil || ctx == nil || !input.Valid() || len(input.Artifacts()) == 0 {
+		return nil, errPNPMArchiveTransport
+	}
+	return i.freezeNPMProjectArchives(ctx, input.Artifacts())
+}
+
+func (i *DockerArtifactIntroducer) freezeBunArchives(ctx context.Context, input artifactnpm.BunInspectionInput) ([]pnpmInspectionArchive, error) {
+	if i == nil || ctx == nil || !input.Valid() || len(input.Artifacts()) == 0 {
+		return nil, errPNPMArchiveTransport
+	}
+	return i.freezeNPMProjectArchives(ctx, input.Artifacts())
+}
+
+func (i *DockerArtifactIntroducer) freezeNPMProjectArchives(ctx context.Context, subjects []domain.AcquiredArtifact) (archives []pnpmInspectionArchive, resultErr error) {
+	if i == nil || ctx == nil || len(subjects) == 0 {
 		return nil, errPNPMArchiveTransport
 	}
 	if err := ctx.Err(); err != nil {
@@ -44,7 +58,7 @@ func (i *DockerArtifactIntroducer) freezePNPMArchives(ctx context.Context, input
 		}
 	}()
 	var total uint64
-	for _, subject := range input.Artifacts() {
+	for _, subject := range subjects {
 		if subject.Identity().Source().String() != "npm" || subject.Identity().Variant() != "tarball" || subject.SizeBytes() == 0 || subject.SizeBytes() > artifactnpm.PNPMInspectionWorkspaceLimit-total {
 			return nil, errPNPMArchiveTransport
 		}
@@ -123,11 +137,19 @@ func copyPNPMInspectionArchives(ctx context.Context, runner CommandRunner, conta
 }
 
 func verifyPNPMGuestArchive(ctx context.Context, runner streamingDockerOutput, container string, expected pnpmInspectionArchive) error {
+	return verifyNativeNPMGuestArchive(ctx, runner, container, nativeRuntimePNPM, expected)
+}
+
+func verifyNativeNPMGuestArchive(ctx context.Context, runner streamingDockerOutput, container string, kind nativeRuntimeToolKind, expected pnpmInspectionArchive) error {
+	spec, known := nativeProjectIdentity(kind)
+	if !known {
+		return errPNPMArchiveTransport
+	}
 	if ctx == nil || runner == nil || !exactObservationContainerID(container) || expected.subject.SizeBytes() == 0 || expected.subject.SizeBytes() > artifactnpm.PNPMInspectionWorkspaceLimit || expected.name != "artifacts/"+expected.subject.Digest().String()+".tgz" {
 		return errPNPMArchiveTransport
 	}
 	output := nativeToolArchiveOutput{limit: int64(expected.subject.SizeBytes()) + 64<<10}
-	if err := runner.RunOutput(ctx, &output, "docker", "cp", container+":"+pnpmProjectRoot+"/"+expected.name, "-"); err != nil || output.failed {
+	if err := runner.RunOutput(ctx, &output, "docker", "cp", container+":"+spec.root+"/"+expected.name, "-"); err != nil || output.failed {
 		return errors.Join(errPNPMArchiveTransport, err)
 	}
 	input := bytes.NewReader(output.body)
