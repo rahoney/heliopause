@@ -5225,4 +5225,17 @@ PASS다. Packing0664→HAA prepared0644의 최초 해석/거부를 보존하고 
 대조한다. 앞 compile/SA1012·operator 준비 오류도 별도 원본으로 남겼다. 완료 복사본7곳의
 778,244,261B는0refs/query errors0 뒤 정리했다. 다음은 production bounded cache/offline prepare와
 gVisor lifecycle 관찰 연결이다. 전체 B4/Bun·macOS/Required remote acceptance는 열려 있다.
+
+[B4c production offline 준비 baseline](./evidence/package-client-quarantine/p3b4c-bun-offline-prepare-plan-20261025.md)을
+현재8ffb0c9에서 읽고 native file-archive seed/cache 표현을 먼저 확인한다. Source archive의 SRI/static
+inventory와 기존 native scope/trace/cleanup을 유지하며 준비 출력만 whole binder에 연결한다.
+새 work item/CI를 만들지 않고 같은 M13-004의 실제 MISSING을 계속한다.
+
+B4c-a [cache 데이터 결합 영수증](./evidence/package-client-quarantine/p3b4ca-bun-cache-data-local-20261025.json)은
+canonical Quick191.832s·npm/sandbox 전체 Race50.203s와 actual frozen-cache1.571s를 확인한다.
+Fresh public source archive2/4와 native member 전체를 대조하고 marker를 제외한 registry data
+24,576/423,424B·partial 거부가 PASS다. Native lookup index는 authority가 아니고 전체 global cache
+검증을 주장하지 않는다. 두 expanded cache copies와 모든 logical placement를 같은128MiB
+ceiling에 청구하며 implied directories도 제한한다. Production preparer/observer 연결과 실제
+여러 version·lifecycle/Policy·cache/transaction/CLI/remote는 열려 있고 같은 M13-004에서 계속한다.
 작은 helper별 push/CI는 시작하지 않았고 remote9410/CI411 macOS·Required gate는 유지한다.

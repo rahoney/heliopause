@@ -33,6 +33,8 @@ func (c BunInspectionContext) Valid() bool {
 func (c BunInspectionContext) Snapshot() domain.ProjectDependencySnapshot { return c.snapshot }
 func (c BunInspectionContext) Lock() BunLock                              { return c.selection.Lock() }
 func (c BunInspectionContext) RuntimeIdentity() string                    { return c.runtime }
+func (c BunInspectionContext) ClientVersion() string                      { return c.selection.lock.version }
+
 func (c BunInspectionContext) Controls() []domain.ProjectControlFile {
 	return append([]domain.ProjectControlFile(nil), c.controls...)
 }

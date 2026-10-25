@@ -15,7 +15,7 @@ func TestBunWorkspaceChargesUniqueCacheAndEveryRepeatedInstance(t *testing.T) {
 				continue
 			}
 			entries := inventory.Entries()
-			for part, size := range []int64{20 << 20, 20 << 20, 8 << 20} {
+			for part, size := range []int64{20 << 20, 20 << 20} {
 				entries = append(entries, ArchiveEntry{Path: fmt.Sprintf("large-%d", part), Size: size, Mode: 0o644, Digest: layoutDigestFixture(t, []byte("synthetic budget only"))})
 			}
 			var err error
