@@ -104,6 +104,10 @@ type uvNativeSession struct {
 // Both actual native consumers share the fixed tool, network/observer and
 // volume lifecycle, including clearing output when any cleanup is unproven.
 func (r *UVResolver) withUVNativeSession(ctx context.Context, operation func(context.Context, uvNativeSession) (uvNativeOutput, error)) (result uvNativeOutput, resultErr error) {
+	return r.withUVNativeSessionForToolInstall(ctx, operation, false)
+}
+
+func (r *UVResolver) withUVNativeSessionForToolInstall(ctx context.Context, operation func(context.Context, uvNativeSession) (uvNativeOutput, error), toolInstall bool) (result uvNativeOutput, resultErr error) {
 	if r == nil || r.reader == nil || ctx == nil || operation == nil {
 		return uvNativeOutput{}, errors.New("uv native session is unavailable")
 	}
@@ -196,6 +200,9 @@ func (r *UVResolver) withUVNativeSession(ctx context.Context, operation func(con
 		return uvNativeOutput{}, err
 	}
 	arguments, err := uvCreateArguments(network, hosts, runtimeVolume, output)
+	if toolInstall && err == nil {
+		arguments, err = uvToolCreateArguments(arguments)
+	}
 	if err != nil {
 		return uvNativeOutput{}, err
 	}

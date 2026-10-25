@@ -2668,9 +2668,16 @@ bool IsPinnedUVRuntimeRead(const gvisor::common::ContextData& context,
       path == "/usr/local/bin/python3.14";
   const bool distribution_read = anchor->mount_class == "oci-root" && anchor->mountpoint == "/" &&
       path == "/usr/lib/os-release";
+  // Native tool discovery enumerates the fixed runtime PATH directories.
+  // These are exact immutable image directories, not prefix/file or execution
+  // grants. OpenResult supplies the resolved name (/bin and /sbin resolve into
+  // /usr); descendants, artifacts and other profiles keep their own rules.
+  const bool search_directory_read = anchor->mount_class == "oci-root" && anchor->mountpoint == "/" &&
+      (path == "/usr/local/sbin" || path == "/usr/local/bin" ||
+       path == "/usr/sbin" || path == "/usr/bin");
   const bool hosts_read = anchor->mount_class == "system" && anchor->mountpoint == "/etc/hosts" &&
       path == "/etc/hosts";
-  if (!proc_read && !quota_read && !null_read && !interpreter_read && !distribution_read && !hosts_read) return false;
+  if (!proc_read && !quota_read && !null_read && !interpreter_read && !distribution_read && !search_directory_read && !hosts_read) return false;
   const auto* group = FindFilesystemGroup(context, state);
   return group != nullptr && group->role == ProcessState::Role::kControl &&
       group->provenance == ProcessState::Provenance::kDirectExecRoot &&

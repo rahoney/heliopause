@@ -15,9 +15,9 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4-L2 — receipt commands bound to whole authenticated wheel/source/connected graph; strict pipx selected startup-surface gate named local QUALIFIED; public tools remain
-Next action: M13-004 — persistent UV tool native install/upgrade selection and original interpreter-query guard; then missing supply/ownership/public tools; grouped final CI boundary retained
-Current substep: M13-004/P4-L3 native persistent tool selection/runtime prequery boundary; L1/L2 named local qualified; whole ownership/public tools remain open
+Last completed substep: P4-L3 — fresh UV tool native install/whole source graph/receipt, no-command refusal and existing UV native regression named local QUALIFIED; public tools remain
+Next action: M13-004 — persistent tool explicit target/exposed-root guard, current approval/cache and atomic publication; then original upgrade/pipx/public CLI; grouped final CI boundary retained
+Current substep: M13-004/P4-L4 persistent tool existing target/command-root guard and current approval/publication baseline; L1/L2/L3 named local qualified
 Acceptance audit: CI413 frozen50fd Required10SUCCESS; all10 checkout38e27d8 whole tree d6a63ab/2475 matches; actual75m due consumed17:20:16UTC; full10 decoded logs saved; historical CI411 timeout cause remains unconfirmed
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
@@ -5588,3 +5588,13 @@ Quick/security/docs와 PyPI 전체 Race가 PASS이며 기존 nil collector 경�
 Pipx의 selected closure startup gate만 확인됐고 UV 기존 tool environment 조회도 Python -S를
 사용하지 않는 exact source 경로를 확인했다. Native query clearance/원본 ownership/public CLI
 증거로 확대하지 않으며 같은 M13-004의 L3 native selection/runtime 경계를 계속한다.
+
+### 2026-10-26 P4-L3 fresh native UV tool selection
+
+[L3 local](./evidence/package-client-quarantine/p4l3-uv-tool-native-install-local-20261026.json)과
+[baseline·최초 실패·runtime map](./evidence/package-client-quarantine/p4l-persistent-tool-baseline-20261026.md)을
+갱신했다. Canonical Go checks/전체 PyPI+Sandbox Race, 새 source의 canonical observer121latches와
+actual92.114s(tool15.88/기존 UV73.76)가 PASS이며 helperwait0/Host 동일이다. Native 선택과 독립
+전체 archive/source/receipt만 qualified이고 Policy/Host tool 설치·public CLI는 미완료다.
+다음 L4는 existing target·external command root guard와 current 승인/반입 범위만 감사한다.
+M13-004 하나만 IN_PROGRESS이고 grouped/final CI 경계를 유지한다.

@@ -7491,15 +7491,20 @@ bool VerifyUVRuntimeReadBoundary() {
         "/proc/1/cgroup", "/proc/100/cgroup", "/proc/1/mountinfo", "/proc/100/mountinfo",
         "/dev/zero", "/dev/urandom", "/sys/fs/cgroup/cpu/cpu.stat", "/usr/local/bin/python", "/usr/local/bin/pip", "/usr/local/lib/libpython3.14.so.1.0", "/usr/bin/dash", "/usr/local/bin/python3.14.evil",
         "/usr/lib/os-release.evil", "/etc/os-release", "/usr/lib/../lib/os-release",
+        "/usr/local/sbin/evil", "/usr/local/sbin.evil", "/usr/local//sbin", "/usr/local/./sbin",
+        "/usr/local/bin/../sbin", "/usr/bin/evil", "/bin", "/sbin", "/usr/local", "/usr",
         "/etc/hosts.evil", "/etc/resolv.conf", "/etc/../etc/hosts"}) {
       open.set_pathname(path); if (allowed()) return false;
     }
   }
   for (const char* path : {"/proc/sys/vm/overcommit_memory", "/proc/99/cgroup", "/proc/99/mountinfo",
-      "/sys/fs/cgroup/cpu/cpu.cfs_quota_us", "/sys/fs/cgroup/cpu/cpu.cfs_period_us", "/dev/null", "/usr/local/bin/python3.14", "/usr/lib/os-release", "/etc/hosts"}) {
+      "/sys/fs/cgroup/cpu/cpu.cfs_quota_us", "/sys/fs/cgroup/cpu/cpu.cfs_period_us", "/dev/null", "/usr/local/bin/python3.14", "/usr/lib/os-release", "/etc/hosts",
+      "/usr/local/sbin", "/usr/local/bin", "/usr/sbin", "/usr/bin"}) {
     state = baseline;
     open.set_pathname(path);
-    const bool image = strcmp(path, "/usr/local/bin/python3.14") == 0 || strcmp(path, "/usr/lib/os-release") == 0;
+    const bool image = strcmp(path, "/usr/local/bin/python3.14") == 0 || strcmp(path, "/usr/lib/os-release") == 0 ||
+        strcmp(path, "/usr/local/sbin") == 0 || strcmp(path, "/usr/local/bin") == 0 ||
+        strcmp(path, "/usr/sbin") == 0 || strcmp(path, "/usr/bin") == 0;
     const std::string mountpoint = image ? "/" : (strcmp(path, "/dev/null") == 0 ? "/dev" :
         (strcmp(path, "/etc/hosts") == 0 ? "/etc/hosts" : (HasPrefix(path, "/sys/") ? "/sys/fs/cgroup/cpu" : "/proc")));
     const std::string mount_class = image ? "oci-root" : "system";
@@ -7514,12 +7519,13 @@ bool VerifyUVRuntimeReadBoundary() {
     }
     open.set_flags(557056);
     for (const char* profile : {kProfileNPM, kProfilePyPI, kProfilePyTorchCPU, kProfilePyTorchCU126,
-        kProfilePyTorchCU130, kProfilePyTorchCU132, kProfileCargoResolver, kProfileGoResolver}) {
+        kProfilePyTorchCU130, kProfilePyTorchCU132, kProfileCargoResolver, kProfileGoResolver,
+        kProfilePNPMResolver, kProfileBunResolver, kProfileBunProjectResolver}) {
       // Existing profiles have their own authorized semantics; the UV-specific
       // predicate must never supply them a new grant.
       if (IsPinnedUVRuntimeRead(*context, state, open.pathname(), open.flags(), profile, &anchor)) return false;
     }
-    for (const char* mount : {"/", "/proc/sys", "/proc/99", "/sys/fs/cgroup", "/sys/fs/cgroup/cpu/x"}) { anchor.mountpoint = mount; if (mount != mountpoint && allowed()) return false; }
+    for (const char* mount : {"/", "/proc/sys", "/proc/99", "/sys/fs/cgroup", "/sys/fs/cgroup/cpu/x", "/usr/local/sbin", "/usr/local/bin", "/usr/sbin", "/usr/bin"}) { anchor.mountpoint = mount; if (mount != mountpoint && allowed()) return false; }
     for (const char* root : {"/proc", "/sys/fs/cgroup/cpu", "/dev", "/etc/hosts"}) {
       anchor.mountpoint = root;
       if (allowed() != (anchor.mountpoint == mountpoint)) return false;

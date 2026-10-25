@@ -135,6 +135,19 @@ func TestUVToolReceiptRejectsUnsupportedNativeClaims(t *testing.T) {
 	}
 }
 
+func TestUVToolReceiptActualExplicitPublicIndex(t *testing.T) {
+	body := nativeToolFixture(t, "uv-explicit-index.toml")
+	if _, err := ParseUVToolReceipt(body); err != nil {
+		t.Fatal("actual native public index recipe rejected", err)
+	}
+	for _, index := range []string{"https://evil.test/simple/", "http://pypi.org/simple/", "https://pypi.org/simple/?redirect=evil"} {
+		changed := bytes.ReplaceAll(body, []byte("https://pypi.org/simple/"), []byte(index))
+		if _, err := ParseUVToolReceipt(changed); err == nil {
+			t.Fatal("foreign native index accepted", index)
+		}
+	}
+}
+
 func TestPipxToolReceiptRejectsUnsupportedNativeClaims(t *testing.T) {
 	body := nativeToolFixture(t, "pipx-installed.json")
 	mutations := map[string]func(map[string]any){

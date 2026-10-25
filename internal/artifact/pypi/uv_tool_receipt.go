@@ -3,6 +3,7 @@ package pypi
 import (
 	"bytes"
 	"errors"
+	"strings"
 
 	"github.com/pelletier/go-toml/v2"
 )
@@ -22,6 +23,7 @@ type uvToolReceiptWire struct {
 		// Inert recipe data only. A later resolver must compare the exact recipe;
 		// these claims must never be forwarded as native arguments.
 		Options *struct {
+			IndexURL  string   `toml:"index-url"`
 			NoIndex   bool     `toml:"no-index"`
 			FindLinks []string `toml:"find-links"`
 			LinkMode  string   `toml:"link-mode"`
@@ -44,6 +46,9 @@ func ParseUVToolReceipt(body []byte) (ToolReceipt, error) {
 	}
 	if wire.Tool == nil || len(wire.Tool.Requirements) != 1 || !validToolAbsolutePath(wire.Tool.Python) {
 		return ToolReceipt{}, errors.New("UV tool requires one public root and explicit interpreter")
+	}
+	if wire.Tool.Options != nil && wire.Tool.Options.IndexURL != "" && wire.Tool.Options.IndexURL != PublicPyPIProfile().IndexURL() && wire.Tool.Options.IndexURL != strings.TrimSuffix(PublicPyPIProfile().IndexURL(), "/") {
+		return ToolReceipt{}, errors.New("UV tool receipt index is outside the public source profile")
 	}
 	root := wire.Tool.Requirements[0]
 	project, err := NormalizeProjectName(root.Name)

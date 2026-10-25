@@ -138,3 +138,81 @@ Tool install/upgrade의 get_environment → PythonEnvironment::from_root → Int
 확인했다. 따라서 위 UV static graph 성공을 native query clearance로 전용하지 않는다. 기존 환경
 조회 전 원본 whole inventory/startup surface와 runtime 역할을 별도 고정해야 한다. 원본
 p4l3-uv-interpreter-exact-sources-v1 및 environment-exact-v1이 source hash를 보존한다.
+
+## L3-A fresh UV native tool install 선택 지도·재검토
+
+L2 commit623925f/tree8de443062ef05001dc477606cfda38a6c3e9e7fb/2568을 기준으로 기존
+UV native session/network policy/runtime/observer/volume cleanup, independent archive reader가
+IMPLEMENTED/WIRED/QUALIFIED=YES인 점을 확인했다. Tool install native producer/output census와
+public whole graph/receipt 묶음은 NO다. 이 gap만 우선 구현하고 기존 target native upgrade query는
+별도 original guard가 준비되기 전 실행하지 않는다. Public install/upgrade CLI acceptance는 NO다.
+
+새 fresh install selector는 기존 UVResolver session을 사용한다. UV_TOOL_DIR/BIN_DIR는 고정 private
+output 아래 controller 값으로만 전달하고 Host 환경·설정·PATH·runtime provisioning을 사용하지
+않는다. Native uv tool install과 explicit pinned Python/no-build/no-config/no-managed-download/
+no-sources/copy를 사용하며 compile-bytecode는 false다. Native receipt, exposed links, runtime aliases,
+bounded site metadata 전체를 읽는다. Code/entrypoint는 실행하지 않고 native exit만으로 성공하지 않는다.
+
+설치된 exact metadata의 전체 version set을 기존 bounded inventory reader로 읽고 UV pip compile의
+pylock으로 내보낸다. 이는 native tool 선택을 다시 추론하는 resolver alias가 아니다. 모든 version을
+freeze하고 export와 native whole installed controls를 대조하며 source/archive/closure/receipt command는
+기존 L2와 independent reader로 확인한다. Export가 package/version/wheel 선택을 바꾸면 거부한다.
+Control·runtime·intent/census digest를 typed resolution과 결합하며 current Policy/Host 승인으로 표시하지 않는다.
+
+정적 runtime 경계: fresh private root에는 기존 tool 환경이 없으며 base Python만 조회한다. Exact
+create_venv는 Rust로 생성 뒤 interpreter.with_virtualenv를 사용한다. sync의 bytecode compilation은
+false이며 finalizer는 Rust SitePackages/entrypoint/receipt 작업이다. 원본은
+p4l3-uv-tool-install-runtime-sources-v1/environment-creation-sources-v1을 따른다. Existing 환경의
+get_environment/query는 -S가 없으므로 이번 fresh 경로와 구분한다. Post-install hook을 trusted
+CONTROL로 실행하는 예외나 observer pin 변경은 없다. 실제 native 회귀로 이 경계를 확인해야 한다.
+
+수정은 sandbox/uv_tool_output(전체 bounded tar census), uv_tool_resolver(fresh native producer와
+기존 source binder), 동일 package의 default/actual 회귀다. 기존 uvNativeOutput·transport·session
+본문을 바꾸지 않고 sibling adapter로 소비한다. Unknown path/type/link/mode/extra/truncated producer,
+바뀐 receipt/metadata/lock/누락 source에 결과를 남기지 않는다. 두 번째 검토에서도 original guard,
+whole approval/cache/transaction/CLI·pipx production supply는 MISSING으로 유지한다.
+
+L3 first actual: v1 local Quick221.774s/security13.479s/docs0.249s·전체 PyPI/Sandbox
+Race24.579s는 PASS였으나 actual6.515s 첫 tool request3.91s가 ATTRIBUTION_FAILURE로 실패했다.
+새 Docker exec --env prefix가 directExecOrigin grammar를 벗어난 것이 원인이다. 원본은
+p4l3-first-native-admission-assessment에 보존했다. Tool 전용 create 환경으로 옮겨 기존 direct
+exec/nonce/observer를 유지하고 nil/false 기존 session 본문을 대조한다. 기존 public UV actual은
+failfast로 미도달이며 교정 후 새 actual 전에는 해결·native tool 지원을 주장하지 않는다.
+
+### L3 native runtime directory boundary baseline
+
+v2 direct-exec 교정은 canonical Quick106.295/security12.656/docs0.264·전체 Race23.383s를
+통과했고 실제 nonce stage도 통과했다. 이어 actual7.182s/test4.66s가 UV의 OCI-root directory
+read에서 STREAM_FAULT였다. Pinned Python image의 data-only catalogue6611개를 중지 상태
+container(실행0)에서 읽어 locator2eaf681357327a9b가 /usr/local/sbin directory임을 확인했다.
+Raw first export의 image 목록 순서 비교 오류와 dot-path 정규화는 별도 assessment로 보존하고
+수정 catalogue·정렬 Host 전후 동일을 확인했다. Native 선택/Policy/반입 성공은 아니다.
+
+| 책임 | IMPLEMENTED | WIRED | QUALIFIED | ACCEPTANCE_CLOSED | MISSING |
+| --- | --- | --- | --- | --- | --- |
+| Pinned UV consumed direct CONTROL/runtime readonly read | YES | YES | YES(old UV lanes) | YES(named old lanes) | Tool의 고정 PATH directory enumeration만 추가 |
+| Fixed Python image canonical PATH directories | NO(new read) | NO | NO | NO | UV-only exact dir/flags/OCI anchor+identity 및 부정 latches/actual |
+| Other client/Artifact filesystem predicates | YES | YES | YES(named old scopes) | YES(named scopes) | 변경하지 않으며 기존 profile에 새 grant가 없는지 대조 |
+
+C++ IsPinnedUVRuntimeRead에 pinned PATH의 네 canonical directory(/usr/local/sbin,
+/usr/local/bin,/usr/sbin,/usr/bin)만 포함한다. /bin·/sbin은 고정 catalogue에서 각각
+usr/bin·usr/sbin symlink이며 final resolved pathname을 쓴다. 하위 file/prefix 전체·코드 실행·
+write 권한이나 다른 profile/clone/Artifact 예외를 추가하지 않는다. Existing UV runtime-read
+latch에 finite positive와 path/flag/anchor/profile/role/identity negative를 추가한다.
+기존 canonical builder로 새 observer를 만들고 실제 신규 tool과 기존 UV를 함께 확인한다.
+두 번째 검토: 새 directory read가 안전성·Artifact execution authority가 되지 않으며 unknown
+read는 여전히 실패한다. Final CPU/CUDA profiles와 public tools acceptance는 열려 있다.
+
+L3 named local 최종: v2 Quick106.295s/전체 PyPI+Sandbox Race23.383s와 v3 docs0.328s/
+security11.155s, unmodified canonical observer build227.363s/전체121latches가 PASS다.
+C++ 변경 뒤 실제 Go binary는 v2와 SHA/size가 같으며 compiled/runtime pin을 별도로 대조했다.
+Actual v3는92.114s이며 tool15.88s에서 cowsay6.1/1node/1command/4controls와 command 없는
+idna3.11의 결과 없는 거부, 기존 UV73.76s의 단일/전이/whole/누락·empty 회귀가 모두 PASS다.
+NoSKIP/helperwait0/Host protected snapshot 동일이다. [L3 receipt](./p4l3-uv-tool-native-install-local-20261026.json)가
+정확한 scope와 최초 두 실패를 소유하며 original upgrade/current Policy/Host tool 설치 완료는 아니다.
+
+Exact UV Shell::contains_path는 PATH의 각 directory를 same_file identity로 대조한다. Data-only
+catalogue와 이 exact source를 연결했으며 directory 하위 파일이나 실행을 허용하지 않는다.
+새 current canonical observer는 raw p4l3-uv-tool-directory-observer-canonical-v1.json이다.
+이후 actual operator는 이 source/binary를 사용해야 하며 옛 B6b source hash를 현재로 전용하지 않는다.
+다음은 L4의 명시 existing target·외부 command root를 함께 동결하는 guard/current 승인·반입 gap이다.
