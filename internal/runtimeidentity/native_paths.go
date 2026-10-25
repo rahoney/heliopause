@@ -5,3 +5,5 @@ package runtimeidentity
 const NativeInstallRoot = "/usr/lib/heliopause"
 
 const PNPMNativeAssetName = "pnpm-linux-" + PNPMArchitecture
+
+const BunNativeAssetName = "bun-linux-" + BunArchitecture

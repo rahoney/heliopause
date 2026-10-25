@@ -36,9 +36,14 @@ func wireFixture(t *testing.T) (wireRelease, map[string][]byte) {
 	assets := value["assets"].([]any)
 	assets = append(assets, map[string]any{"name": "haa-release-installer-linux-amd64", "platform": "linux/amd64", "role": "release-installer"})
 	assets = append(assets, map[string]any{"name": "pnpm-linux-amd64", "platform": "linux/amd64", "role": "pnpm"}, map[string]any{"name": "pnpm-NOTICE.txt", "platform": "linux/amd64", "role": "release-metadata"})
+	assets = append(assets, map[string]any{"name": "bun-linux-amd64", "platform": "linux/amd64", "role": "bun"}, map[string]any{"name": "bun-NOTICE.txt", "platform": "linux/amd64", "role": "release-metadata"})
 	noticeBody, noticeErr := os.ReadFile(filepath.Join("..", "..", "tools", "pnpm", "NOTICE"))
 	if noticeErr != nil {
 		t.Fatal(noticeErr)
+	}
+	bunNoticeBody, bunNoticeErr := os.ReadFile(filepath.Join("..", "..", "tools", "bun", "NOTICE"))
+	if bunNoticeErr != nil {
+		t.Fatal(bunNoticeErr)
 	}
 	files := map[string][]byte{"helox-release-sbom.cdx.json": read("helox-release-sbom.cdx.json"), "helox-runtime-images.json": read("helox-runtime-images.json")}
 	for _, raw := range assets {
@@ -48,6 +53,9 @@ func wireFixture(t *testing.T) (wireRelease, map[string][]byte) {
 			body := []byte("wire-only-" + name)
 			if name == "pnpm-NOTICE.txt" {
 				body = noticeBody
+			}
+			if name == "bun-NOTICE.txt" {
+				body = bunNoticeBody
 			}
 			sum := sha256.Sum256(body)
 			files[name] = body
@@ -86,7 +94,7 @@ func TestWireFreezesExactMembersWithoutGrantingApproval(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if decoded.manifest.SHA256() != release.manifest.SHA256() || len(decoded.files) != 8 {
+	if decoded.manifest.SHA256() != release.manifest.SHA256() || len(decoded.files) != 10 {
 		t.Fatal("wire metadata or role set changed")
 	}
 	for _, file := range decoded.files {

@@ -17,7 +17,7 @@ Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003
 Active work item status: IN_PROGRESS — backend/cache/records/private materialization/transaction remotely QUALIFIED by CI407; B5c user CLI named local PASS; native ownership/user CLI named local QUALIFIED; final whole-source remote/affected-profile qualification and P2 acceptance remain
 Last completed substep: G127 Go1.27.3 — COMPLETE / IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEPTANCE_CLOSED=YES
 Next action: M13-004/P2 — source9410c2d CI408 ordinary/CI409 cu126 Required10SUCCESS each, all checkout whole trees equal; cu130 CI410 Required10SUCCESS; cu132 CI411 IN_PROGRESS (first timer13:22:46KST); keep active timer/turn and continue to P3 after P2 closure
-Current substep: M13-004/P2 — IN_PROGRESS; backend/production CLI/native original proof remote QUALIFIED by408/409; cu130 CI410 remote QUALIFIED; cu132411 final affected matrix and P2 acceptance remain; P3-A/B1 Bun signed ZIP/native data named local QUALIFIED in same M13-004; B2a candidate/native runc query named local QUALIFIED; B2b1 single owner/frozen maintenance named local QUALIFIED; B2b2-A production materialization named local QUALIFIED; next B2b2-B complete release/installed tuple, remote source remains9410c2d
+Current substep: M13-004/P2 — IN_PROGRESS; backend/production CLI/native original proof remote QUALIFIED by408/409; cu130 CI410 remote QUALIFIED; cu132411 final affected matrix and P2 acceptance remain; P3-A/B1 Bun signed ZIP/native data named local QUALIFIED in same M13-004; B2a candidate/native runc query named local QUALIFIED; B2b1 single owner/frozen maintenance named local QUALIFIED; B2b2-A production materialization named local QUALIFIED; B2b2-B complete release/installed tuple named local QUALIFIED; next B2c exact gVisor runtime admission, remote source remains9410c2d
 After P2: P3 Bun, then P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -5104,3 +5104,14 @@ source owner의 signature/archive/native/notices를 다시 확인해 native0555/
 frozen maintenance actual이 PASS다. 첫 realcorpus fixture-only compile 오류와 default
 profile의 정확한 제외 범위도 보존했다. 다음은 B2b2-B complete producer/installed tuple이다.
 Remote9410/cu132411 timer04:22:46UTC는 유지하고 이 local 단위는 push하지 않는다.
+
+### 2026-10-25 P3-B2b2-B complete release/installed tuple local checkpoint
+
+[Bun 배포/설치 tuple](./evidence/package-client-quarantine/p3b2b2b-bun-release-local-20261025.json)은
+현재 Tool2/asset13/native6/wire10/export11과 exact source11subjects/required28을 연결했다.
+Final canonical4와 관련 full Race의 통과한 여덟 package/마지막 세 affected package를 정확히
+분리했고 actual12 namespace cases·보호 Host snapshot 보존 및 기존 PNPM 생산 회귀가 PASS다.
+완료 namespace 두 copies75,007,792B는0refs/query errors0 뒤 정리했다. Actual Bun guest/새
+서명 release·whole P3는 미완료다. 다음 B2c installed Bun supply/guest volume·observer exact
+startup/version/lock admission을 같은 M13-004에서 계속한다. Remote9410/cu132411의
+04:22:46UTC 타이머와 실행 중 source는 유지하며 local Bun을 그 성공으로 전용하지 않는다.

@@ -160,6 +160,13 @@ func readRecordedRelease(ctx context.Context, record registration) (InstalledRel
 	if err := releaseinstall.ValidatePNPMNotices(notices); err != nil {
 		return InstalledRelease{}, errors.Join(ErrUntrusted, err)
 	}
+	bunNotices, err := readProtected(ctx, filepath.Join(directory, "bun-NOTICE.txt"), 64<<10)
+	if err != nil {
+		return InstalledRelease{}, errors.Join(ErrUntrusted, err)
+	}
+	if err := releaseinstall.ValidateBunNotices(bunNotices); err != nil {
+		return InstalledRelease{}, errors.Join(ErrUntrusted, err)
+	}
 	proofs, err := readStoredProofs(ctx, manifest.SHA256())
 	if err != nil {
 		return InstalledRelease{}, err

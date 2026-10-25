@@ -52,9 +52,14 @@ func newReleaseSetFixture(t *testing.T, edit func(map[string]any)) *releaseSetFi
 	assets := f.metadata["assets"].([]any)
 	assets = append(assets, map[string]any{"name": "haa-release-installer-linux-amd64", "platform": "linux/amd64", "role": "release-installer"})
 	assets = append(assets, map[string]any{"name": "pnpm-linux-amd64", "platform": "linux/amd64", "role": "pnpm"}, map[string]any{"name": "pnpm-NOTICE.txt", "platform": "linux/amd64", "role": "release-metadata"})
+	assets = append(assets, map[string]any{"name": "bun-linux-amd64", "platform": "linux/amd64", "role": "bun"}, map[string]any{"name": "bun-NOTICE.txt", "platform": "linux/amd64", "role": "release-metadata"})
 	noticeBody, noticeErr := os.ReadFile(filepath.Join("..", "..", "..", "tools", "pnpm", "NOTICE"))
 	if noticeErr != nil {
 		t.Fatal(noticeErr)
+	}
+	bunNoticeBody, bunNoticeErr := os.ReadFile(filepath.Join("..", "..", "..", "tools", "bun", "NOTICE"))
+	if bunNoticeErr != nil {
+		t.Fatal(bunNoticeErr)
 	}
 	for _, raw := range assets {
 		item := raw.(map[string]any)
@@ -69,6 +74,9 @@ func newReleaseSetFixture(t *testing.T, edit func(map[string]any)) *releaseSetFi
 			body = append(body, []byte(name)...)
 			if name == "pnpm-NOTICE.txt" {
 				body = noticeBody
+			}
+			if name == "bun-NOTICE.txt" {
+				body = bunNoticeBody
 			}
 			f.files[name] = body
 			item["size"] = len(body)
@@ -255,7 +263,7 @@ func TestHeliopauseSetConcurrentCopiesCloseAndUncertainOwnership(t *testing.T) {
 	}
 }
 
-func TestHeliopauseSetFreezesNineMembersAndCleansOnlyOwnedAcquisitions(t *testing.T) {
+func TestHeliopauseSetFreezesElevenMembersAndCleansOnlyOwnedAcquisitions(t *testing.T) {
 	f := newReleaseSetFixture(t, nil)
 	foreign := filepath.Join(f.client.intakeRoot, "unrelated")
 	if err := os.Mkdir(foreign, 0700); err != nil {
@@ -265,7 +273,7 @@ func TestHeliopauseSetFreezesNineMembersAndCleansOnlyOwnedAcquisitions(t *testin
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(resolution.Graph().Nodes()) != 9 || len(resolution.Graph().Edges()) != 8 {
+	if len(resolution.Graph().Nodes()) != 11 || len(resolution.Graph().Edges()) != 10 {
 		t.Fatal("incomplete native/metadata set")
 	}
 	manifest, err := f.set.Manifest()

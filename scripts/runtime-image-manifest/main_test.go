@@ -12,6 +12,7 @@ func TestBuildManifestBindsOfficialImmutableImages(t *testing.T) {
 	lock := runtimeLock{SchemaVersion: 4}
 	bindSyntheticUV(&lock)
 	bindSyntheticPNPM(&lock)
+	bindSyntheticBun(&lock)
 	lock.RustImage.Reference = "rust:1.99.0-bookworm@sha256:" + strings.Repeat("d", 64)
 	lock.RustImage.RustVersion = "1.99.0"
 	lock.RustImage.Architecture = "amd64"
@@ -50,6 +51,7 @@ func TestRunRejectsMutableOrNonOfficialImages(t *testing.T) {
 	}
 	bindSyntheticUV(&input)
 	bindSyntheticPNPM(&input)
+	bindSyntheticBun(&input)
 	body, err := json.Marshal(input)
 	if err != nil {
 		t.Fatal(err)
@@ -73,6 +75,7 @@ func TestRunWritesNoOverwriteManifest(t *testing.T) {
 	}
 	bindSyntheticUV(&input)
 	bindSyntheticPNPM(&input)
+	bindSyntheticBun(&input)
 	body, err := json.Marshal(input)
 	if err != nil {
 		t.Fatal(err)
@@ -220,7 +223,7 @@ func TestManifestRequiresSeparateBoundedPNPMTool(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(manifest.Images) != 5 || len(manifest.Tools) != 1 || manifest.Tools[0].Name != "pnpm" || manifest.Tools[0].SHA256 != pinned.PNPMTool.Tool.SHA256 {
+	if len(manifest.Images) != 5 || len(manifest.Tools) != 2 || manifest.Tools[0].Name != "pnpm" || manifest.Tools[0].SHA256 != pinned.PNPMTool.Tool.SHA256 {
 		t.Fatalf("native tool/image identity mixed: %+v", manifest)
 	}
 	for name, mutate := range map[string]func(*runtimeLock){
@@ -228,6 +231,47 @@ func TestManifestRequiresSeparateBoundedPNPMTool(t *testing.T) {
 		"architecture": func(l *runtimeLock) { l.PNPMTool.Architecture = "arm64" },
 		"hash":         func(l *runtimeLock) { l.PNPMTool.Tool.SHA256 = "" },
 		"size":         func(l *runtimeLock) { l.PNPMTool.Tool.Size = 64<<20 + 1 },
+	} {
+		t.Run(name, func(t *testing.T) {
+			l := pinned
+			mutate(&l)
+			if _, err := buildManifest(l); err == nil {
+				t.Fatal("unbound native tool accepted")
+			}
+		})
+	}
+}
+
+func bindSyntheticBun(lock *runtimeLock) {
+	lock.BunTool.Version = "1.2.3"
+	lock.BunTool.Architecture = "amd64"
+	lock.BunTool.Tool.SHA256 = strings.Repeat("e", 64)
+	lock.BunTool.Tool.Size = 768
+	lock.BunTool.Notices.SHA256 = strings.Repeat("f", 64)
+	lock.BunTool.Notices.Size = 1024
+}
+
+func TestManifestRequiresSeparateBoundedBunTool(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "runtimes.lock.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var pinned runtimeLock
+	if err := json.Unmarshal(body, &pinned); err != nil {
+		t.Fatal(err)
+	}
+	manifest, err := buildManifest(pinned)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(manifest.Images) != 5 || len(manifest.Tools) != 2 || manifest.Tools[1].Name != "bun" || manifest.Tools[1].SHA256 != pinned.BunTool.Tool.SHA256 {
+		t.Fatalf("native tool/image identity mixed: %+v", manifest)
+	}
+	for name, mutate := range map[string]func(*runtimeLock){
+		"missing":      func(l *runtimeLock) { l.BunTool.Version = "" },
+		"architecture": func(l *runtimeLock) { l.BunTool.Architecture = "arm64" },
+		"hash":         func(l *runtimeLock) { l.BunTool.Tool.SHA256 = "" },
+		"size":         func(l *runtimeLock) { l.BunTool.Tool.Size = 128<<20 + 1 },
 	} {
 		t.Run(name, func(t *testing.T) {
 			l := pinned

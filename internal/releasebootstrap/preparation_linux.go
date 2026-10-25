@@ -69,8 +69,8 @@ func bootstrapFiles(manifest releaseinstall.ReleaseManifest) ([]releaseinstall.R
 			files = append(files, file)
 		}
 	}
-	if len(files) != 9 {
-		return nil, errors.New("native bootstrap requires nine exact subjects")
+	if len(files) != 11 {
+		return nil, errors.New("native bootstrap requires eleven exact subjects")
 	}
 	sort.Slice(files, func(i, j int) bool { return files[i].Name < files[j].Name })
 	return files, nil
@@ -238,6 +238,13 @@ func prepare(ctx context.Context, version string, deps preparationDependencies) 
 		return fail(ports.BootstrapProvenanceFailed, err)
 	}
 	if err := releaseinstall.ValidatePNPMNotices(notices); err != nil {
+		return fail(ports.BootstrapProvenanceFailed, err)
+	}
+	bunNotices, err := output.read("bun-NOTICE.txt", 64<<10)
+	if err != nil {
+		return fail(ports.BootstrapProvenanceFailed, err)
+	}
+	if err := releaseinstall.ValidateBunNotices(bunNotices); err != nil {
 		return fail(ports.BootstrapProvenanceFailed, err)
 	}
 	sum := sha256.Sum256(proof)

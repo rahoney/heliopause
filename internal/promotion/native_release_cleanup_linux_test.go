@@ -39,7 +39,7 @@ func TestNativePromotionCleanupKeepsRecordsAndRetainsUnknownPayload(t *testing.T
 			root := filepath.Join(f.root, "staging", f.bundle.ManifestID().String())
 			dir := filepath.Join(root, "artifacts")
 			entries, err := os.ReadDir(dir)
-			if err != nil || len(entries) != 9 {
+			if err != nil || len(entries) != 11 {
 				t.Fatal(entries, err)
 			}
 			asset := filepath.Join(dir, entries[0].Name())

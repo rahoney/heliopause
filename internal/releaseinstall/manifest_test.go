@@ -60,8 +60,20 @@ func TestStrictReaderPreservesPublishedReleaseAndRequiresInstallerForUpdate(t *t
 	if err != nil {
 		t.Fatal(err)
 	}
+	if _, err := parsed.NativeUpdateFiles(); err == nil {
+		t.Fatal("historical PNPM-only set became current Bun capable")
+	}
+	value.Assets = append(value.Assets, asset{"bun-linux-amd64", "linux/amd64", "bun", strings.Repeat("d", 64), 768}, asset{"bun-NOTICE.txt", "linux/amd64", "release-metadata", strings.Repeat("e", 64), 1024})
+	updated, err = json.Marshal(value)
+	if err != nil {
+		t.Fatal(err)
+	}
+	parsed, err = ParseReleaseManifest(updated)
+	if err != nil {
+		t.Fatal(err)
+	}
 	native, err := parsed.NativeUpdateFiles()
-	if err != nil || len(native) != 5 {
+	if err != nil || len(native) != 6 {
 		t.Fatalf("native=%v error=%v", native, err)
 	}
 	if len((ReleaseManifest{}).Files()) != 0 || (ReleaseManifest{}).WorkflowRun() != "" {
@@ -120,6 +132,49 @@ func TestStrictReaderRejectsAmbiguousMalformedAndUnboundMetadata(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			if _, err := ParseReleaseManifest(input); err == nil {
 				t.Fatal("invalid manifest accepted")
+			}
+		})
+	}
+}
+
+func TestBunNativePairKeepsHistoricalReadSeparateFromCurrentAdmission(t *testing.T) {
+	var value manifest
+	if err := json.Unmarshal(publishedManifest(t), &value); err != nil {
+		t.Fatal(err)
+	}
+	value.Assets = append(value.Assets, asset{"haa-release-installer-linux-amd64", "linux/amd64", "release-installer", strings.Repeat("a", 64), 123}, asset{"pnpm-linux-amd64", "linux/amd64", "pnpm", strings.Repeat("b", 64), 768}, asset{"pnpm-NOTICE.txt", "linux/amd64", "release-metadata", strings.Repeat("c", 64), 1024}, asset{"bun-linux-amd64", "linux/amd64", "bun", strings.Repeat("d", 64), 768}, asset{"bun-NOTICE.txt", "linux/amd64", "release-metadata", strings.Repeat("e", 64), 1024})
+	for _, name := range []string{"historical-pnpm", "missing-native", "missing-notices", "native-limit", "notice-limit", "notice-role"} {
+		t.Run(name, func(t *testing.T) {
+			candidate := value
+			candidate.Assets = append([]asset(nil), value.Assets...)
+			switch name {
+			case "historical-pnpm":
+				candidate.Assets = candidate.Assets[:len(candidate.Assets)-2]
+			case "missing-native":
+				candidate.Assets = append(candidate.Assets[:len(candidate.Assets)-2], candidate.Assets[len(candidate.Assets)-1])
+			case "missing-notices":
+				candidate.Assets = candidate.Assets[:len(candidate.Assets)-1]
+			case "native-limit":
+				candidate.Assets[len(candidate.Assets)-2].Size = 128<<20 + 1
+			case "notice-limit":
+				candidate.Assets[len(candidate.Assets)-1].Size = 64<<10 + 1
+			case "notice-role":
+				candidate.Assets[len(candidate.Assets)-1].Role = "bun"
+			}
+			body, err := json.Marshal(candidate)
+			if err != nil {
+				t.Fatal(err)
+			}
+			parsed, parseErr := ParseReleaseManifest(body)
+			if name == "historical-pnpm" {
+				if parseErr != nil {
+					t.Fatal("historical PNPM-only structure refused", parseErr)
+				}
+				if _, err := parsed.NativeUpdateFiles(); err == nil {
+					t.Fatal("historical set admitted as current")
+				}
+			} else if parseErr == nil {
+				t.Fatal("incomplete or excessive Bun pair accepted")
 			}
 		})
 	}

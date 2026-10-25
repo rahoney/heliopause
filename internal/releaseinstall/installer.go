@@ -233,6 +233,13 @@ func (i *Installer) validatedInput(ctx context.Context, request Request, existin
 		if err := ValidatePNPMNotices(notices); err != nil {
 			return installationInput{}, err
 		}
+		bunNotices, err := readRegular(filepath.Join(bundle, "bun-NOTICE.txt"))
+		if err != nil {
+			return installationInput{}, err
+		}
+		if err := ValidateBunNotices(bunNotices); err != nil {
+			return installationInput{}, err
+		}
 	}
 	if err := ctx.Err(); err != nil {
 		return installationInput{}, err
@@ -304,6 +311,15 @@ func selectFiles(value manifest, goos, goarch string) ([]asset, error) {
 			if item.Name == "pnpm-linux-amd64" || item.Name == "pnpm-NOTICE.txt" {
 				role := "pnpm"
 				if item.Name == "pnpm-NOTICE.txt" {
+					role = "release-metadata"
+				}
+				want[item.Name] = role
+			}
+		}
+		for _, item := range value.Assets {
+			if item.Name == "bun-linux-amd64" || item.Name == "bun-NOTICE.txt" {
+				role := "bun"
+				if item.Name == "bun-NOTICE.txt" {
 					role = "release-metadata"
 				}
 				want[item.Name] = role

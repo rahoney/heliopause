@@ -61,7 +61,7 @@ func releasePayloads(manifest releaseinstall.ReleaseManifest, manifestSize int64
 			files = append(files, file)
 		}
 	}
-	if len(files) != 8 || manifestSize <= 0 || manifestSize > 1<<20 {
+	if len(files) != 10 || manifestSize <= 0 || manifestSize > 1<<20 {
 		return nil, ErrProtocol
 	}
 	total := manifestSize

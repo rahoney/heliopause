@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"syscall"
 	"testing"
 	"time"
@@ -62,7 +63,7 @@ func TestProtectedCopyInDisposableNamespace(t *testing.T) {
 			t.Fatalf("system directory mode=%v error=%v", info, err)
 		}
 	}
-	for _, name := range []string{"helox-linux-amd64", "haa_gvisor_observer-linux-amd64", "haa-network-policy-helper-linux-amd64", "haa-release-installer-linux-amd64", "pnpm-linux-amd64", "pnpm-NOTICE.txt", manifestName, sbomName, runtimeImagesName, installRecordName} {
+	for _, name := range []string{"helox-linux-amd64", "haa_gvisor_observer-linux-amd64", "haa-network-policy-helper-linux-amd64", "haa-release-installer-linux-amd64", "pnpm-linux-amd64", "pnpm-NOTICE.txt", "bun-linux-amd64", "bun-NOTICE.txt", manifestName, sbomName, runtimeImagesName, installRecordName} {
 		path := filepath.Join(SystemInstallRoot, "versions", "v0.1.0", name)
 		info, err := os.Lstat(path)
 		if err != nil {
@@ -73,7 +74,7 @@ func TestProtectedCopyInDisposableNamespace(t *testing.T) {
 			t.Fatal("installed file is not exclusively root-owned")
 		}
 		want := os.FileMode(0555)
-		if name == manifestName || name == sbomName || name == runtimeImagesName || name == installRecordName || name == "pnpm-NOTICE.txt" {
+		if name == manifestName || name == sbomName || name == runtimeImagesName || name == installRecordName || (name == "pnpm-NOTICE.txt" || name == "bun-NOTICE.txt") {
 			want = 0444
 		}
 		if info.Mode().Perm() != want || info.Mode()&(os.ModeSetuid|os.ModeSetgid) != 0 {
@@ -158,7 +159,7 @@ func checkOrdinarySystemReader(t *testing.T) {
 	if os.Geteuid() != 1000 {
 		t.Fatal("reader was not dropped to an ordinary UID")
 	}
-	for _, name := range []string{"helox-linux-amd64", "haa_gvisor_observer-linux-amd64", "haa-network-policy-helper-linux-amd64", "haa-release-installer-linux-amd64", "pnpm-linux-amd64", "pnpm-NOTICE.txt", manifestName} {
+	for _, name := range []string{"helox-linux-amd64", "haa_gvisor_observer-linux-amd64", "haa-network-policy-helper-linux-amd64", "haa-release-installer-linux-amd64", "pnpm-linux-amd64", "pnpm-NOTICE.txt", "bun-linux-amd64", "bun-NOTICE.txt", manifestName} {
 		path := filepath.Join(SystemInstallRoot, "current", name)
 		if body, err := os.ReadFile(path); err != nil || len(body) == 0 {
 			t.Fatal("ordinary user cannot read protected payload", err)
@@ -204,7 +205,7 @@ func systemBundleFixture(t *testing.T, version, suffix string) string {
 	files := map[string][]byte{sbomName: sbom, runtimeImagesName: images}
 	value.SBOM = fileRecord(sbomName, sbom)
 	value.RuntimeImages = fileRecord(runtimeImagesName, images)
-	roles := map[string]string{"helox-linux-amd64": "helox", "haa_gvisor_observer-linux-amd64": "gvisor-observer", "haa-network-policy-helper-linux-amd64": "network-policy-helper", "haa-release-installer-linux-amd64": "release-installer", "pnpm-linux-amd64": "pnpm", "pnpm-NOTICE.txt": "release-metadata"}
+	roles := map[string]string{"helox-linux-amd64": "helox", "haa_gvisor_observer-linux-amd64": "gvisor-observer", "haa-network-policy-helper-linux-amd64": "network-policy-helper", "haa-release-installer-linux-amd64": "release-installer", "pnpm-linux-amd64": "pnpm", "pnpm-NOTICE.txt": "release-metadata", "bun-linux-amd64": "bun", "bun-NOTICE.txt": "release-metadata"}
 	for index, item := range value.Assets {
 		if _, found := roles[item.Name]; found {
 			body := []byte("copy-only-" + suffix + "-" + item.Name)
@@ -217,9 +218,9 @@ func systemBundleFixture(t *testing.T, version, suffix string) string {
 	}
 	for name, role := range roles {
 		body := []byte("copy-only-" + suffix + "-" + name)
-		if name == "pnpm-NOTICE.txt" {
+		if name == "pnpm-NOTICE.txt" || name == "bun-NOTICE.txt" {
 			var err error
-			body, err = os.ReadFile(filepath.Join("..", "..", "tools/pnpm/NOTICE"))
+			body, err = os.ReadFile(filepath.Join("..", "..", "tools", strings.TrimSuffix(name, "-NOTICE.txt"), "NOTICE"))
 			if err != nil {
 				t.Fatal(err)
 			}

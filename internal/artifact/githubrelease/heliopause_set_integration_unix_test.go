@@ -122,7 +122,7 @@ func TestHeliopauseSetUsesExistingCompleteWorkflowAndStopsBeforePromotion(t *tes
 			if err != nil {
 				t.Fatal(err)
 			}
-			if len(outcome.Inspection().Set().Inspections()) != 9 || sandbox.calls != 5 {
+			if len(outcome.Inspection().Set().Inspections()) != 11 || sandbox.calls != 6 {
 				t.Fatal("incomplete per-member inspection coverage")
 			}
 			checks, evidenceCount := 0, 0
@@ -137,13 +137,13 @@ func TestHeliopauseSetUsesExistingCompleteWorkflowAndStopsBeforePromotion(t *tes
 					}
 				}
 			}
-			// Five native members require three checks each; manifest and
-			// three passive metadata members require two checks each.
-			if checks != 23 {
-				t.Fatalf("required checks=%d, want 23", checks)
+			// Six native members require three checks each; manifest and
+			// four passive metadata members require two checks each.
+			if checks != 28 {
+				t.Fatalf("required checks=%d, want 28", checks)
 			}
 			if name == "source-and-staging-only" {
-				if outcome.Inspection().Decision().Decision() != domain.DecisionAllow || promoter.calls != 1 || outcome.Staged().Handle() == "" || evidenceCount != 23 {
+				if outcome.Inspection().Decision().Decision() != domain.DecisionAllow || promoter.calls != 1 || outcome.Staged().Handle() == "" || evidenceCount != 28 {
 					t.Fatal("existing complete-set staging was not reached")
 				}
 			} else {

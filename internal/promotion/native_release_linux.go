@@ -67,7 +67,7 @@ func (p *NativeReleasePromotion) Promote(ctx context.Context, staged domain.Stag
 		return result, releaseactivation.ErrUntrusted
 	}
 	inspections := bundle.Set().Inspected().Inspections()
-	if len(inspections) != 9 {
+	if len(inspections) != 11 {
 		return result, releaseactivation.ErrUntrusted
 	}
 	byName := map[string]domain.AcquiredArtifact{}
@@ -97,7 +97,7 @@ func (p *NativeReleasePromotion) Promote(ctx context.Context, staged domain.Stag
 			selected = append(selected, file)
 		}
 	}
-	if len(selected) != 8 {
+	if len(selected) != 10 {
 		return result, releaseactivation.ErrUntrusted
 	}
 	for _, file := range selected {

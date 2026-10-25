@@ -59,6 +59,18 @@ type runtimeLock struct {
 			Size   int64  `json:"size"`
 		} `json:"notices"`
 	} `json:"pnpm_tool"`
+	BunTool struct {
+		Version      string `json:"bun_version"`
+		Architecture string `json:"architecture"`
+		Tool         struct {
+			SHA256 string `json:"sha256"`
+			Size   int64  `json:"size"`
+		} `json:"tool"`
+		Notices struct {
+			SHA256 string `json:"sha256"`
+			Size   int64  `json:"size"`
+		} `json:"notices"`
+	} `json:"bun_tool"`
 }
 
 type runtimeImageManifest struct {
@@ -187,6 +199,10 @@ func buildManifest(lock runtimeLock) (runtimeImageManifest, error) {
 	if !versionPattern.MatchString(pnpm.Version) || pnpm.Architecture != "amd64" || !digestPattern.MatchString("sha256:"+pnpm.Tool.SHA256) || pnpm.Tool.Size <= 0 || pnpm.Tool.Size > 64<<20 || !digestPattern.MatchString("sha256:"+pnpm.Notices.SHA256) || pnpm.Notices.Size <= 0 || pnpm.Notices.Size > 64<<10 {
 		return runtimeImageManifest{}, errors.New("pnpm native runtime tool identity is invalid")
 	}
+	bun := lock.BunTool
+	if !versionPattern.MatchString(bun.Version) || bun.Architecture != "amd64" || !digestPattern.MatchString("sha256:"+bun.Tool.SHA256) || bun.Tool.Size <= 0 || bun.Tool.Size > 128<<20 || !digestPattern.MatchString("sha256:"+bun.Notices.SHA256) || bun.Notices.Size <= 0 || bun.Notices.Size > 64<<10 {
+		return runtimeImageManifest{}, errors.New("bun native runtime tool identity is invalid")
+	}
 	return runtimeImageManifest{
 		Schema:              manifestSchema,
 		CustomGHCRImage:     false,
@@ -196,7 +212,7 @@ func buildManifest(lock runtimeLock) (runtimeImageManifest, error) {
 			Verification: "release candidate attestation must bind this manifest and each exact image reference",
 		},
 		Images: []runtimeImageEntry{node, python, goImage, rustImage, uvImage},
-		Tools:  []runtimeToolEntry{{Name: "pnpm", Version: pnpm.Version, Platform: "linux/amd64", Asset: "pnpm-linux-amd64", SHA256: pnpm.Tool.SHA256, Size: pnpm.Tool.Size, NoticesAsset: "pnpm-NOTICE.txt", NoticesSHA256: pnpm.Notices.SHA256, NoticesSize: pnpm.Notices.Size}},
+		Tools:  []runtimeToolEntry{{Name: "pnpm", Version: pnpm.Version, Platform: "linux/amd64", Asset: "pnpm-linux-amd64", SHA256: pnpm.Tool.SHA256, Size: pnpm.Tool.Size, NoticesAsset: "pnpm-NOTICE.txt", NoticesSHA256: pnpm.Notices.SHA256, NoticesSize: pnpm.Notices.Size}, {Name: "bun", Version: bun.Version, Platform: "linux/amd64", Asset: "bun-linux-amd64", SHA256: bun.Tool.SHA256, Size: bun.Tool.Size, NoticesAsset: "bun-NOTICE.txt", NoticesSHA256: bun.Notices.SHA256, NoticesSize: bun.Notices.Size}},
 	}, nil
 }
 

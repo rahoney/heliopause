@@ -64,18 +64,23 @@ func ValidateReleaseSBOM(body []byte, manifest ReleaseManifest) error {
 		delete(expected, property.Name)
 	}
 	seen := map[string]bool{}
+	applications := map[string]string{"pnpm": runtimeidentity.PNPMVersion, "bun": runtimeidentity.BunVersion}
 	for _, item := range value.Components {
-		if item.Type == "application" && item.Name == "pnpm" && item.Version == runtimeidentity.PNPMVersion && len(item.Properties) == 0 && !seen[item.Name] {
+		if version, found := applications[item.Name]; found {
+			if item.Type != "application" || item.Version != version || len(item.Properties) != 0 || seen[item.Name] {
+				return errors.New("release SBOM native component is invalid or duplicated")
+			}
 			seen[item.Name] = true
+			delete(applications, item.Name)
 			continue
 		}
-		if item.Name == "pnpm" || item.Type != "library" || !metadataText(item.Name, 256) || !metadataText(item.Version, 128) || len(item.Properties) != 0 || seen[item.Name] {
+		if item.Type != "library" || !metadataText(item.Name, 256) || !metadataText(item.Version, 128) || len(item.Properties) != 0 || seen[item.Name] {
 			return errors.New("release SBOM component is invalid or duplicated")
 		}
 		seen[item.Name] = true
 	}
-	if !seen["pnpm"] {
-		return errors.New("release SBOM lacks the current native pnpm component")
+	if len(applications) != 0 {
+		return errors.New("release SBOM lacks current native components")
 	}
 	return nil
 }
@@ -90,6 +95,17 @@ func ValidateRuntimeImages(body []byte) error {
 		Digest     string `json:"digest"`
 		Version    string `json:"runtime_version"`
 	}
+	type nativeTool struct {
+		Name          string `json:"name"`
+		Version       string `json:"tool_version"`
+		Platform      string `json:"platform"`
+		Asset         string `json:"asset"`
+		SHA256        string `json:"sha256"`
+		Size          int64  `json:"size"`
+		NoticesAsset  string `json:"notices_asset"`
+		NoticesSHA256 string `json:"notices_sha256"`
+		NoticesSize   int64  `json:"notices_size"`
+	}
 	var value struct {
 		Schema              string `json:"schema"`
 		CustomGHCRImage     *bool  `json:"custom_ghcr_image"`
@@ -98,23 +114,13 @@ func ValidateRuntimeImages(body []byte) error {
 			Required     bool   `json:"required"`
 			Verification string `json:"verification"`
 		} `json:"provenance"`
-		Images []image `json:"images"`
-		Tools  []struct {
-			Name          string `json:"name"`
-			Version       string `json:"tool_version"`
-			Platform      string `json:"platform"`
-			Asset         string `json:"asset"`
-			SHA256        string `json:"sha256"`
-			Size          int64  `json:"size"`
-			NoticesAsset  string `json:"notices_asset"`
-			NoticesSHA256 string `json:"notices_sha256"`
-			NoticesSize   int64  `json:"notices_size"`
-		} `json:"tools"`
+		Images []image      `json:"images"`
+		Tools  []nativeTool `json:"tools"`
 	}
 	if err := decodeReleaseMetadata(body, 1<<20, &value, nil); err != nil {
 		return err
 	}
-	if value.Schema != "helox.runtime-image-manifest/v2" || value.CustomGHCRImage == nil || *value.CustomGHCRImage || !metadataText(value.CustomImageDecision, 1024) || !value.Provenance.Required || !metadataText(value.Provenance.Verification, 1024) || len(value.Images) != 5 || len(value.Tools) != 1 {
+	if value.Schema != "helox.runtime-image-manifest/v2" || value.CustomGHCRImage == nil || *value.CustomGHCRImage || !metadataText(value.CustomImageDecision, 1024) || !value.Provenance.Required || !metadataText(value.Provenance.Verification, 1024) || len(value.Images) != 5 || len(value.Tools) != 2 {
 		return errors.New("runtime image manifest contract is unsupported")
 	}
 	nodeVersion, _, _ := strings.Cut(strings.TrimPrefix(runtimeidentity.NodeImageReference, "node:"), "-slim@")
@@ -136,9 +142,16 @@ func ValidateRuntimeImages(body []byte) error {
 		}
 		delete(expected, item.Name)
 	}
-	tool := value.Tools[0]
-	if tool.Name != "pnpm" || tool.Version != runtimeidentity.PNPMVersion || tool.Platform != "linux/amd64" || tool.Asset != "pnpm-linux-amd64" || tool.SHA256 != runtimeidentity.PNPMToolSHA256 || tool.Size != runtimeidentity.PNPMToolSize || tool.NoticesAsset != "pnpm-NOTICE.txt" || tool.NoticesSHA256 != runtimeidentity.PNPMNoticesSHA256 || tool.NoticesSize != runtimeidentity.PNPMNoticesSize {
-		return errors.New("runtime native tool differs from the active lock")
+	expectedTools := map[string]nativeTool{
+		"pnpm": {Name: "pnpm", Version: runtimeidentity.PNPMVersion, Platform: "linux/amd64", Asset: "pnpm-linux-amd64", SHA256: runtimeidentity.PNPMToolSHA256, Size: runtimeidentity.PNPMToolSize, NoticesAsset: "pnpm-NOTICE.txt", NoticesSHA256: runtimeidentity.PNPMNoticesSHA256, NoticesSize: runtimeidentity.PNPMNoticesSize},
+		"bun":  {Name: "bun", Version: runtimeidentity.BunVersion, Platform: "linux/amd64", Asset: runtimeidentity.BunNativeAssetName, SHA256: runtimeidentity.BunToolSHA256, Size: runtimeidentity.BunToolSize, NoticesAsset: "bun-NOTICE.txt", NoticesSHA256: runtimeidentity.BunNoticesSHA256, NoticesSize: runtimeidentity.BunNoticesSize},
+	}
+	for _, tool := range value.Tools {
+		want, found := expectedTools[tool.Name]
+		if !found || tool != want {
+			return errors.New("runtime native tool differs from the active lock")
+		}
+		delete(expectedTools, tool.Name)
 	}
 	return nil
 }
@@ -161,6 +174,15 @@ func ValidatePNPMNotices(body []byte) error {
 	sum := sha256.Sum256(body)
 	if int64(len(body)) != runtimeidentity.PNPMNoticesSize || len(body) > 64<<10 || !utf8.Valid(body) || hex.EncodeToString(sum[:]) != runtimeidentity.PNPMNoticesSHA256 || !strings.HasPrefix(string(body), "PNPM upstream source: https://github.com/pnpm/pnpm/tree/"+runtimeidentity.PNPMSourceCommit+"\n\n") {
 		return errors.New("pnpm passive notices differ from the current runtime owner")
+	}
+	return nil
+}
+
+// ValidateBunNotices binds passive source inventory to its compiled owner.
+func ValidateBunNotices(body []byte) error {
+	sum := sha256.Sum256(body)
+	if int64(len(body)) != runtimeidentity.BunNoticesSize || len(body) > 64<<10 || !utf8.Valid(body) || hex.EncodeToString(sum[:]) != runtimeidentity.BunNoticesSHA256 || !strings.HasPrefix(string(body), "Bun upstream source: https://github.com/oven-sh/bun/tree/"+runtimeidentity.BunSourceCommitObserved+"\n\n") {
+		return errors.New("bun passive notices differ from the current runtime owner")
 	}
 	return nil
 }

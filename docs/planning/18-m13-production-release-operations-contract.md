@@ -269,6 +269,7 @@ Core assets:
 - gVisor observer helper
 - Linux network-policy helper
 - lock-pinned pnpm native client와 source-bound passive notices — [현재 P2 공급·배포 범위](./evidence/package-client-quarantine/p2b2-pnpm-runtime-plan-20261024.md); 실제 guest/제품 qualification과 구분
+- lock-pinned Bun native client와 source-bound passive notices — [현재 P3 공급·배포 범위](./evidence/package-client-quarantine/p3b2b2-bun-release-plan-20261025.md); 실제 gVisor/client qualification은 후속으로 유지
 - runtime-image manifest
 - release manifest
 - SBOM

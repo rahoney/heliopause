@@ -74,19 +74,20 @@ func (m ReleaseManifest) NativeUpdateFiles() ([]ReleaseFile, error) {
 		"haa-network-policy-helper-linux-amd64": "network-policy-helper",
 		"haa-release-installer-linux-amd64":     "release-installer",
 		"pnpm-linux-amd64":                      "pnpm",
+		"bun-linux-amd64":                       "bun",
 	}
-	notices := false
+	notices := map[string]bool{"pnpm-NOTICE.txt": false, "bun-NOTICE.txt": false}
 	result := make([]ReleaseFile, 0, len(roles))
 	for _, item := range m.Files() {
-		if item.Name == "pnpm-NOTICE.txt" && item.Role == "release-metadata" && item.Platform == "linux/amd64" {
-			notices = true
+		if _, expected := notices[item.Name]; expected && item.Role == "release-metadata" && item.Platform == "linux/amd64" {
+			notices[item.Name] = true
 		}
 		role, found := roles[item.Name]
 		if found && item.Platform == "linux/amd64" && item.Role == role {
 			result = append(result, item)
 		}
 	}
-	if len(result) != len(roles) || !notices {
+	if len(result) != len(roles) || !notices["pnpm-NOTICE.txt"] || !notices["bun-NOTICE.txt"] {
 		return nil, errors.New("release does not contain the complete native update role set")
 	}
 	return result, nil
@@ -133,8 +134,10 @@ func ParseReleaseManifest(body []byte) (ReleaseManifest, error) {
 		"haa-release-installer-linux-amd64":     {"linux/amd64", "release-installer"},
 		"pnpm-linux-amd64":                      {"linux/amd64", "pnpm"},
 		"pnpm-NOTICE.txt":                       {"linux/amd64", "release-metadata"},
+		"bun-linux-amd64":                       {"linux/amd64", "bun"},
+		"bun-NOTICE.txt":                        {"linux/amd64", "release-metadata"},
 	}
-	if len(value.Assets) != 8 && len(value.Assets) != 9 && len(value.Assets) != 11 {
+	if len(value.Assets) != 8 && len(value.Assets) != 9 && len(value.Assets) != 11 && len(value.Assets) != 13 {
 		return ReleaseManifest{}, errors.New("release asset set is incomplete")
 	}
 	seen := make(map[string]bool, len(value.Assets))
@@ -146,13 +149,19 @@ func ParseReleaseManifest(body []byte) (ReleaseManifest, error) {
 		if item.Name == "pnpm-NOTICE.txt" && item.Size > 64<<10 || item.Name == "pnpm-linux-amd64" && item.Size > 64<<20 {
 			return ReleaseManifest{}, errors.New("pnpm native or notice size exceeds its fixed role")
 		}
+		if item.Name == "bun-NOTICE.txt" && item.Size > 64<<10 || item.Name == "bun-linux-amd64" && item.Size > 128<<20 {
+			return ReleaseManifest{}, errors.New("bun native or notice size exceeds its fixed role")
+		}
 		seen[item.Name] = true
 	}
 	if seen["pnpm-linux-amd64"] != seen["pnpm-NOTICE.txt"] || seen["pnpm-linux-amd64"] && !seen["haa-release-installer-linux-amd64"] {
 		return ReleaseManifest{}, errors.New("native pnpm and passive notices require the complete current release set")
 	}
+	if seen["bun-linux-amd64"] != seen["bun-NOTICE.txt"] || seen["bun-linux-amd64"] && (!seen["pnpm-linux-amd64"] || !seen["haa-release-installer-linux-amd64"]) {
+		return ReleaseManifest{}, errors.New("native bun and passive notices require the complete current release set")
+	}
 	for name := range want {
-		if name != "haa-release-installer-linux-amd64" && name != "pnpm-linux-amd64" && name != "pnpm-NOTICE.txt" && !seen[name] {
+		if name != "haa-release-installer-linux-amd64" && name != "pnpm-linux-amd64" && name != "pnpm-NOTICE.txt" && name != "bun-linux-amd64" && name != "bun-NOTICE.txt" && !seen[name] {
 			return ReleaseManifest{}, errors.New("release asset set is incomplete")
 		}
 	}

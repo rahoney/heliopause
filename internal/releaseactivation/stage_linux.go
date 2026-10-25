@@ -119,6 +119,13 @@ func stageCheckedWire(ctx context.Context, reader io.Reader, peer *controllerPee
 	if err := releaseinstall.ValidatePNPMNotices(notices); err != nil {
 		return nil, errors.Join(ErrProtocol, err)
 	}
+	bunNotices, err := readProtected(ctx, filepath.Join(directory, "bun-NOTICE.txt"), 64<<10)
+	if err != nil {
+		return nil, errors.Join(ErrProtocol, err)
+	}
+	if err := releaseinstall.ValidateBunNotices(bunNotices); err != nil {
+		return nil, errors.Join(ErrProtocol, err)
+	}
 	if err := syncProtectedDirectory(directory); err != nil {
 		return nil, err
 	}

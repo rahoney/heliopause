@@ -31,7 +31,7 @@ type nativePromotionFixture struct {
 	files    map[string][]byte
 }
 
-// This is a typed ALLOW/staging fixture, not signed native5 or sandbox evidence.
+// This is a typed ALLOW/staging fixture, not signed native6 or sandbox evidence.
 func newNativePromotionFixture(t *testing.T, kind string) nativePromotionFixture {
 	t.Helper()
 	root := realPromotionRoot(t)
@@ -51,15 +51,16 @@ func newNativePromotionFixture(t *testing.T, kind string) nativePromotionFixture
 	}
 	assets := append(record["assets"].([]any), map[string]any{"name": "haa-release-installer-linux-amd64", "platform": "linux/amd64", "role": "release-installer"})
 	assets = append(assets, map[string]any{"name": "pnpm-linux-amd64", "platform": "linux/amd64", "role": "pnpm"}, map[string]any{"name": "pnpm-NOTICE.txt", "platform": "linux/amd64", "role": "release-metadata"})
+	assets = append(assets, map[string]any{"name": "bun-linux-amd64", "platform": "linux/amd64", "role": "bun"}, map[string]any{"name": "bun-NOTICE.txt", "platform": "linux/amd64", "role": "release-metadata"})
 	files := map[string][]byte{"helox-release-sbom.cdx.json": read("helox-release-sbom.cdx.json"), "helox-runtime-images.json": read("helox-runtime-images.json")}
 	for _, raw := range assets {
 		asset := raw.(map[string]any)
 		name := asset["name"].(string)
 		if asset["platform"] == "linux/amd64" && !strings.HasSuffix(name, ".deb") && !strings.HasSuffix(name, ".rpm") {
 			body := []byte("staged-native-only-" + name)
-			if name == "pnpm-NOTICE.txt" {
+			if name == "pnpm-NOTICE.txt" || name == "bun-NOTICE.txt" {
 				var err error
-				body, err = os.ReadFile(filepath.Join("..", "..", "tools/pnpm/NOTICE"))
+				body, err = os.ReadFile(filepath.Join("..", "..", "tools", strings.TrimSuffix(name, "-NOTICE.txt"), "NOTICE"))
 				if err != nil {
 					t.Fatal(err)
 				}

@@ -51,6 +51,17 @@ type runtimeLock struct {
 			Size   int64  `json:"size"`
 		} `json:"notices"`
 	} `json:"pnpm_tool"`
+	BunTool struct {
+		Version string `json:"bun_version"`
+		Tool    struct {
+			SHA256 string `json:"sha256"`
+			Size   int64  `json:"size"`
+		} `json:"tool"`
+		Notices struct {
+			SHA256 string `json:"sha256"`
+			Size   int64  `json:"size"`
+		} `json:"notices"`
+	} `json:"bun_tool"`
 	GVisor struct {
 		Release string `json:"release"`
 		Commit  string `json:"commit"`
@@ -178,17 +189,17 @@ func buildRelease(version, commit, workflowRun, runtimeLockPath, sbomPath, runti
 		return fmt.Errorf("read runtime lock: %w", err)
 	}
 	var lock runtimeLock
-	if err := json.Unmarshal(lockBody, &lock); err != nil || lock.SchemaVersion != 4 || lock.GVisor.Release == "" || !commitID.MatchString(lock.GVisor.Commit) || !releaseVersion.MatchString("v"+lock.PNPMTool.Version) {
+	if err := json.Unmarshal(lockBody, &lock); err != nil || lock.SchemaVersion != 4 || lock.GVisor.Release == "" || !commitID.MatchString(lock.GVisor.Commit) || !releaseVersion.MatchString("v"+lock.PNPMTool.Version) || !releaseVersion.MatchString("v"+lock.BunTool.Version) {
 		return errors.New("runtime lock is invalid")
 	}
 	assets, primary, err := collectAssets(assetPaths)
 	if err != nil {
 		return err
 	}
-	if err := checkPNPMAssetBindings(lock, assets); err != nil {
+	if err := checkNativeAssetBindings(lock, assets); err != nil {
 		return err
 	}
-	if err := writeSBOM(sbomPath, version, commit, primary, lock.PNPMTool.Version); err != nil {
+	if err := writeSBOM(sbomPath, version, commit, primary, lock.PNPMTool.Version, lock.BunTool.Version); err != nil {
 		return err
 	}
 	sbom, err := fileRecord(sbomPath)
@@ -221,10 +232,13 @@ func buildRelease(version, commit, workflowRun, runtimeLockPath, sbomPath, runti
 	return writeNewFile(manifestPath, append(body, '\n'))
 }
 
-func checkPNPMAssetBindings(lock runtimeLock, assets []releaseAsset) error {
+func checkNativeAssetBindings(lock runtimeLock, assets []releaseAsset) error {
 	for _, asset := range assets {
 		if asset.Name == "pnpm-linux-amd64" && (asset.SHA256 != lock.PNPMTool.Tool.SHA256 || asset.Size != lock.PNPMTool.Tool.Size) || asset.Name == "pnpm-NOTICE.txt" && (asset.SHA256 != lock.PNPMTool.Notices.SHA256 || asset.Size != lock.PNPMTool.Notices.Size) {
 			return errors.New("pnpm release asset differs from its selected runtime owner")
+		}
+		if asset.Name == "bun-linux-amd64" && (asset.SHA256 != lock.BunTool.Tool.SHA256 || asset.Size != lock.BunTool.Tool.Size) || asset.Name == "bun-NOTICE.txt" && (asset.SHA256 != lock.BunTool.Notices.SHA256 || asset.Size != lock.BunTool.Notices.Size) {
+			return errors.New("bun release asset differs from its selected runtime owner")
 		}
 	}
 	return nil
@@ -247,6 +261,8 @@ func assetSpecs() map[string]struct {
 		"haa-release-installer-linux-amd64":     {platform: "linux/amd64", role: "release-installer"},
 		"pnpm-linux-amd64":                      {platform: "linux/amd64", role: "pnpm"},
 		"pnpm-NOTICE.txt":                       {platform: "linux/amd64", role: "release-metadata"},
+		"bun-linux-amd64":                       {platform: "linux/amd64", role: "bun"},
+		"bun-NOTICE.txt":                        {platform: "linux/amd64", role: "release-metadata"},
 		"helox-linux-amd64.deb":                 {platform: "linux/amd64", role: "os-package-deb"},
 		"helox-linux-amd64.rpm":                 {platform: "linux/amd64", role: "os-package-rpm"},
 	}
@@ -283,7 +299,7 @@ func collectAssets(paths []string) ([]releaseAsset, string, error) {
 	return assets, primary, nil
 }
 
-func writeSBOM(path, version, commit, binary, pnpmVersion string) error {
+func writeSBOM(path, version, commit, binary, pnpmVersion, bunVersion string) error {
 	build, err := buildinfo.ReadFile(binary)
 	if err != nil || build.Main.Path == "" {
 		return errors.New("read native helox build information")
@@ -296,6 +312,7 @@ func writeSBOM(path, version, commit, binary, pnpmVersion string) error {
 		components = append(components, cyclonedxComponent{Type: "library", Name: dependency.Path, Version: dependency.Version})
 	}
 	components = append(components, cyclonedxComponent{Type: "application", Name: "pnpm", Version: pnpmVersion})
+	components = append(components, cyclonedxComponent{Type: "application", Name: "bun", Version: bunVersion})
 	sort.Slice(components, func(left, right int) bool {
 		if components[left].Name == components[right].Name {
 			return components[left].Version < components[right].Version

@@ -337,6 +337,7 @@ func validateReleaseWorkflow(contents, selectedGo string) []string {
 		`--asset "$dist/haa-release-installer-linux-amd64" \`,
 	})...)
 	findings = append(findings, validatePNPMReleaseSupply(contents)...)
+	findings = append(findings, validateBunReleaseSupply(contents)...)
 	for _, token := range []string{
 		"pull_request:", "pull_request_target:", "workflow_dispatch:", "schedule:", "contents: write", "packages: write", "secrets:",
 		"@main", "@master", "@latest", "ubuntu-latest", "actions/create-release", "gh release", "softprops/action-gh-release",
@@ -702,14 +703,7 @@ func validatePackageFixtureWorkingDirectories(contents string) []string {
 // Independent expected producer policy: no command presence or source-derived
 // expected list can stand in for the acquired->verified->packaged->bound order.
 func validatePNPMReleaseSupply(contents string) []string {
-	blocks, err := activeJobRunLines(contents, "build-and-attest", "Build deterministic native release assets")
-	if err != nil {
-		return nil
-	}
-	if len(blocks) != 1 {
-		return []string{"pnpm release supply requires one unconditional native build step"}
-	}
-	expected := []string{
+	return validateOrderedNativeReleaseSupply(contents, "pnpm", []string{
 		`go run ./scripts/generate-runtime-lock.go -check`,
 		`pnpm_archive="$RUNNER_TEMP/helox-pnpm-linux-x64.tar.gz"`,
 		`pnpm_url="$(jq -er '.pnpm_tool.archive.url' scripts/runtimes.lock.json)"`,
@@ -725,6 +719,32 @@ func validatePNPMReleaseSupply(contents string) []string {
 		`go run ./scripts/release-manifest \`,
 		`--asset "$dist/pnpm-linux-amd64" \`,
 		`--asset "$dist/pnpm-NOTICE.txt" \`,
+	})
+}
+
+func validateBunReleaseSupply(contents string) []string {
+	return validateOrderedNativeReleaseSupply(contents, "bun", []string{
+		`go run ./scripts/generate-runtime-lock.go -check`,
+		`bun_archive="$RUNNER_TEMP/helox-bun-linux-x64.zip"`,
+		`bun_url="$(jq -er '.bun_tool.archive.url' scripts/runtimes.lock.json)"`,
+		`bun_size="$(jq -er '.bun_tool.archive.size' scripts/runtimes.lock.json)"`,
+		`curl --fail --show-error --silent --location --proto '=https' --proto-redir '=https' --connect-timeout 15 --max-time 120 --max-filesize "$bun_size" --output "$bun_archive" "$bun_url"`,
+		`go run ./scripts/update-runtime materialize-bun --root "$GITHUB_WORKSPACE" --archive "$bun_archive" --output "$dist/bun-linux-amd64" --notices-output "$dist/bun-NOTICE.txt"`,
+		`rm -- "$bun_archive"`,
+		`go run ./scripts/release-packages \`,
+		`go run ./scripts/release-manifest \`,
+		`--asset "$dist/bun-linux-amd64" \`,
+		`--asset "$dist/bun-NOTICE.txt" \`,
+	})
+}
+
+func validateOrderedNativeReleaseSupply(contents, client string, expected []string) []string {
+	blocks, err := activeJobRunLines(contents, "build-and-attest", "Build deterministic native release assets")
+	if err != nil {
+		return nil
+	}
+	if len(blocks) != 1 {
+		return []string{client + " release supply requires one unconditional native build step"}
 	}
 	var findings []string
 	previous := -1
@@ -737,7 +757,7 @@ func validatePNPMReleaseSupply(contents string) []string {
 			}
 		}
 		if count != 1 || found <= previous {
-			findings = append(findings, "pnpm release supply requires ordered active command: "+command)
+			findings = append(findings, client+" release supply requires ordered active command: "+command)
 		}
 		previous = found
 	}

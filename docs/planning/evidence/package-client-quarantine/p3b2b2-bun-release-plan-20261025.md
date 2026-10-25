@@ -89,3 +89,46 @@ PNPM-only member compile 오류는 보존했다. 그 한 제외 파일만 수정
 source bytes 대조로 확인했으며 corrected realcorpus build/run과 최종 all-source format을
 검사한다. Production/default compiled code는 불변이다. 다음 B는 앞 complete producer/
 installed tuple 지도대로 진행하고 runtime gVisor/whole P3는 미완료다. 작은 A는 push하지 않는다.
+
+## B 착수 재검토 (A commit3eaeaa1)
+
+Producer의 Tools v2 array/SBOM/current native set과 설치 metadata를 함께 갱신한다. PNPM의
+기존 semantic release 순서 검사는 공용 ordered-command helper로 기계적으로 추출하고,
+Bun은 독립적인 expected command list를 추가한다. 두 실제 소비자의 같은 검사일 뿐
+source에서 기대값을 추출하거나 arbitrary shell을 지원하지 않는다. Native build step의
+Bun materializer는 한 줄의 exact command로 연결해 기존 PNPM multi-line argument census와
+혼동하지 않는다. 새 native counts10/export11의 wire/preparation 실제 소비자·current unsigned
+fixture만 갱신한다. 기존 historical signed 자료와 Root 1GiB/512MiB 예산은 유지한다.
+
+B 전체 기본 회귀에서 추가 확인: NativeReleasePromotion.Promote(native_release_linux.go)는
+same target/Policy ALLOW/manifest·stored Evidence·held descriptors를 검증한 뒤 기존9 inspections/
+8 selected files를 요구한다. Bun 두 actual members를 포함하는11/10으로만 갱신하며 다른
+Target/Unknown/동일성 guard는 유지한다. Domain/Application은 generic complete set 구현을
+재사용해 수정하지 않는다. Github release complete-set과 promotion의 unsigned fixture와
+producer releaseAssets helper가 PNPM-only여서 실패했다. 각각 Bun native/notices를 추가하고
+실제 graph11nodes/10edges·native sandbox6·required checks/Evidence28을 확인한다. 과거
+signed 자료를 바꾸거나 부분 집합을 현재 지원으로 인정하지 않는다. Raw first reviewed Quick은 유지한다.
+
+추가 actual inspection owner: internal/inspection/githubrelease/release_set.go는 frozen manifest의
+exact subject/digest/size 뒤 PNPM notices를 passive64KiB로 분류·검증한다. Bun notices에도
+동일한 fixed passive 분류와 ValidateBunNotices를 연결한다. Bun native는 기존 native inspector에
+남겨 필수 세 검사를 줄이지 않는다. 현재 완전한 집합은 native6×3 + (manifest+passive4)×2=28
+required checks다. 남은 producer test의 asset count11 기대값은 현재13으로 갱신한다.
+
+## B named local 결과
+
+[Complete release/installed tuple](./p3b2b2b-bun-release-local-20261025.json)은 Bun native/notices를
+현재 Tools2/SBOM/asset13과 실제 inspector/promotion/bootstrap/installer/activation에 연결했다.
+Native6·wire10/export11·source11subjects/required28을 유지하고 historical 자료 읽기와 현재
+admission을 구분한다. Final Quick109.377/security13.242/docs/workflow PASS, 이전 여덟 package
+full Race PASS와 마지막 세 affected whole package Race41.833s PASS를 실제 test dependency
+graph26variants로 구분해 기록했다. 첫 whole Race의 FAIL을 전체 PASS로 바꾸지 않는다.
+Separate mount/network namespace의 실제12cases와 protected Host snapshot 동일을 확인했다.
+이는 synthetic copy/activation protocol 자료이며 실제 Bun guest나 새 서명 release가 아니다.
+기존 PNPM official production도 schema4/current source에서6.347s PASS다. 최초 문법 삽입,
+누락된 current counts/unsigned fixture, passive Bun notice 분류와 producer 기대값을 각각 원본과
+함께 보존했다. 완료한 namespace copy/build 두 directories75,007,792B는0refs/query errors0
+뒤 exact owner/inode/hash로 정리했다. 첫 cleanup은 task 밖 namespace copy의 parent guard에서
+삭제 전 중단됐고 두 exact 부모만 구분해 교정했다. Active supply/SDK/quality/source/observer는
+보존한다. 다음 B2c는 설치된 공급/guest volume·정확한 gVisor startup/lock 역할이며 whole P3는
+열려 있다. Small local 단위로 원격 push/CI는 만들지 않는다.

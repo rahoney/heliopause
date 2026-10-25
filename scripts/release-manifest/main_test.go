@@ -33,7 +33,7 @@ func TestBuildReleaseProducesBoundManifestAndSBOM(t *testing.T) {
 	if err != nil || json.Unmarshal(body, &manifest) != nil {
 		t.Fatalf("read manifest: %v", err)
 	}
-	if manifest.Schema != manifestSchema || manifest.Version != "v1.2.3" || manifest.SourceCommit != strings.Repeat("b", 40) || manifest.WorkflowRun != workflowRun || len(manifest.Assets) != 11 {
+	if manifest.Schema != manifestSchema || manifest.Version != "v1.2.3" || manifest.SourceCommit != strings.Repeat("b", 40) || manifest.WorkflowRun != workflowRun || len(manifest.Assets) != 13 {
 		t.Fatalf("manifest = %#v", manifest)
 	}
 	if manifest.RuntimeLock.GVisorCommit != strings.Repeat("a", 40) || manifest.SBOM.Name != filepath.Base(sbomPath) || manifest.SBOM.SHA256 == "" {
@@ -105,6 +105,8 @@ func releaseAssets(t *testing.T, root, binary string) []string {
 		"haa-release-installer-linux-amd64",
 		"pnpm-linux-amd64",
 		"pnpm-NOTICE.txt",
+		"bun-linux-amd64",
+		"bun-NOTICE.txt",
 		"helox-linux-amd64.deb",
 		"helox-linux-amd64.rpm",
 	}
@@ -132,6 +134,7 @@ func syntheticReleaseLock(t *testing.T, paths []string) []byte {
 	lock.GVisor.Release = "release-20260810.0"
 	lock.GVisor.Commit = strings.Repeat("a", 40)
 	lock.PNPMTool.Version = "1.2.3"
+	lock.BunTool.Version = "1.2.3"
 	for _, path := range paths {
 		switch filepath.Base(path) {
 		case "pnpm-linux-amd64":
@@ -148,6 +151,20 @@ func syntheticReleaseLock(t *testing.T, paths []string) []byte {
 			}
 			lock.PNPMTool.Notices.SHA256 = record.SHA256
 			lock.PNPMTool.Notices.Size = record.Size
+		case "bun-linux-amd64":
+			record, err := fileRecord(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			lock.BunTool.Tool.SHA256 = record.SHA256
+			lock.BunTool.Tool.Size = record.Size
+		case "bun-NOTICE.txt":
+			record, err := fileRecord(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			lock.BunTool.Notices.SHA256 = record.SHA256
+			lock.BunTool.Notices.Size = record.Size
 		}
 	}
 	body, err := json.Marshal(lock)
@@ -181,6 +198,36 @@ func TestPNPMReleaseAssetsMustMatchSelectedOwnerBeforeMetadataWrites(t *testing.
 			for _, path := range []string{sbom, manifest} {
 				if _, err := os.Lstat(path); !os.IsNotExist(err) {
 					t.Fatal("substituted pnpm produced metadata")
+				}
+			}
+		})
+	}
+}
+
+func TestBunReleaseAssetsMustMatchSelectedOwnerBeforeMetadataWrites(t *testing.T) {
+	for _, name := range []string{"bun-linux-amd64", "bun-NOTICE.txt"} {
+		t.Run(name, func(t *testing.T) {
+			root := t.TempDir()
+			binary := filepath.Join(root, "helox-linux-amd64")
+			if err := os.WriteFile(binary, []byte("not a Go binary; binding rejection must precede buildinfo"), 0600); err != nil {
+				t.Fatal(err)
+			}
+			assets := releaseAssets(t, root, binary)
+			lock := filepath.Join(root, "runtimes.lock.json")
+			if err := os.WriteFile(lock, syntheticReleaseLock(t, assets), 0600); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(filepath.Join(root, name), []byte("substituted after materialization"), 0600); err != nil {
+				t.Fatal(err)
+			}
+			sbom, manifest := filepath.Join(root, "sbom.json"), filepath.Join(root, "manifest.json")
+			err := buildRelease("v1.2.3", strings.Repeat("b", 40), "https://github.com/rahoney/heliopause/actions/runs/123", lock, sbom, filepath.Join(root, "images.json"), manifest, assets)
+			if err == nil || !strings.Contains(err.Error(), "bun release asset differs") {
+				t.Fatalf("missing source-owner rejection: %v", err)
+			}
+			for _, path := range []string{sbom, manifest} {
+				if _, err := os.Lstat(path); !os.IsNotExist(err) {
+					t.Fatal("substituted bun produced metadata")
 				}
 			}
 		})

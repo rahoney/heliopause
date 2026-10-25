@@ -62,6 +62,12 @@ jobs:
             --output "$dist/pnpm-linux-amd64" \
             --notices-output "$dist/pnpm-NOTICE.txt"
           rm -- "$pnpm_archive"
+          bun_archive="$RUNNER_TEMP/helox-bun-linux-x64.zip"
+          bun_url="$(jq -er '.bun_tool.archive.url' scripts/runtimes.lock.json)"
+          bun_size="$(jq -er '.bun_tool.archive.size' scripts/runtimes.lock.json)"
+          curl --fail --show-error --silent --location --proto '=https' --proto-redir '=https' --connect-timeout 15 --max-time 120 --max-filesize "$bun_size" --output "$bun_archive" "$bun_url"
+          go run ./scripts/update-runtime materialize-bun --root "$GITHUB_WORKSPACE" --archive "$bun_archive" --output "$dist/bun-linux-amd64" --notices-output "$dist/bun-NOTICE.txt"
+          rm -- "$bun_archive"
           go run ./scripts/runtime-image-manifest \
             --runtime-lock scripts/runtimes.lock.json \
             --output "$dist/helox-runtime-images.json"
@@ -98,6 +104,8 @@ jobs:
             --asset "$dist/haa-release-installer-linux-amd64" \
             --asset "$dist/pnpm-linux-amd64" \
             --asset "$dist/pnpm-NOTICE.txt" \
+            --asset "$dist/bun-linux-amd64" \
+            --asset "$dist/bun-NOTICE.txt" \
             --asset "$dist/helox-linux-amd64.deb" \
             --asset "$dist/helox-linux-amd64.rpm"
       - name: Attest release candidate provenance

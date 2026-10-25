@@ -54,7 +54,7 @@ func BindCurrentRuntime(manifest, sbom, images []byte) (Materials, error) {
 	if !ok {
 		return Materials{}, errors.New("synthetic SBOM components missing")
 	}
-	s["components"] = append(components, map[string]any{"type": "application", "name": "pnpm", "version": runtimeidentity.PNPMVersion})
+	s["components"] = append(components, map[string]any{"type": "application", "name": "pnpm", "version": runtimeidentity.PNPMVersion}, map[string]any{"type": "application", "name": "bun", "version": runtimeidentity.BunVersion})
 	nodeVersion, _, _ := strings.Cut(strings.TrimPrefix(runtimeidentity.NodeImageReference, "node:"), "-slim@")
 	identities := map[string]struct{ reference, repository, version string }{
 		"node":   {runtimeidentity.NodeImageReference, "docker.io/library/node", nodeVersion},
@@ -83,7 +83,7 @@ func BindCurrentRuntime(manifest, sbom, images []byte) (Materials, error) {
 	_, uvDigest, _ := strings.Cut(runtimeidentity.UVImageReference, "@")
 	im["images"] = append(entries, map[string]any{"name": "uv", "reference": runtimeidentity.UVImageReference, "repository": "ghcr.io/astral-sh/uv", "digest": uvDigest, "runtime_version": runtimeidentity.UVVersion})
 	im["schema"] = "helox.runtime-image-manifest/v2"
-	im["tools"] = []any{map[string]any{"name": "pnpm", "tool_version": runtimeidentity.PNPMVersion, "platform": "linux/amd64", "asset": "pnpm-linux-amd64", "sha256": runtimeidentity.PNPMToolSHA256, "size": runtimeidentity.PNPMToolSize, "notices_asset": "pnpm-NOTICE.txt", "notices_sha256": runtimeidentity.PNPMNoticesSHA256, "notices_size": runtimeidentity.PNPMNoticesSize}}
+	im["tools"] = []any{map[string]any{"name": "pnpm", "tool_version": runtimeidentity.PNPMVersion, "platform": "linux/amd64", "asset": "pnpm-linux-amd64", "sha256": runtimeidentity.PNPMToolSHA256, "size": runtimeidentity.PNPMToolSize, "notices_asset": "pnpm-NOTICE.txt", "notices_sha256": runtimeidentity.PNPMNoticesSHA256, "notices_size": runtimeidentity.PNPMNoticesSize}, map[string]any{"name": "bun", "tool_version": runtimeidentity.BunVersion, "platform": "linux/amd64", "asset": runtimeidentity.BunNativeAssetName, "sha256": runtimeidentity.BunToolSHA256, "size": runtimeidentity.BunToolSize, "notices_asset": "bun-NOTICE.txt", "notices_sha256": runtimeidentity.BunNoticesSHA256, "notices_size": runtimeidentity.BunNoticesSize}}
 	m["runtime_lock"] = map[string]any{"sha256": runtimeidentity.RuntimeLockSHA256, "gvisor_release": runtimeidentity.GVisorRelease, "gvisor_commit": runtimeidentity.GVisorCommit}
 	result := Materials{}
 	var err error

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/rahoney/heliopause/internal/testutil/releasefixture"
@@ -144,4 +145,65 @@ func syntheticPassiveMetadata(t *testing.T) (ReleaseManifest, []byte, []byte) {
 		t.Fatal(err)
 	}
 	return manifest, materials.SBOM, materials.Images
+}
+
+func TestBunPassiveNoticesRequireExactCurrentSourceBytes(t *testing.T) {
+	body, err := os.ReadFile(filepath.Join("..", "..", "tools/bun/NOTICE"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := ValidateBunNotices(body); err != nil {
+		t.Fatal(err)
+	}
+	for _, changed := range [][]byte{nil, []byte("foreign notices"), append(append([]byte(nil), body...), 0)} {
+		if err := ValidateBunNotices(changed); err == nil {
+			t.Fatal("foreign or changed notices accepted")
+		}
+	}
+}
+
+// These current-runtime materials are deliberately unsigned. The committed
+// published files and actual signature tests retain their original bytes.
+
+func TestBunRuntimeToolCannotSubstitutePinnedIdentity(t *testing.T) {
+	for _, name := range []string{"version", "asset", "hash", "size", "notices-hash", "notices-size", "missing"} {
+		t.Run(name, func(t *testing.T) {
+			_, _, body := syntheticPassiveMetadata(t)
+			var value map[string]any
+			if err := json.Unmarshal(body, &value); err != nil {
+				t.Fatal(err)
+			}
+			tools := value["tools"].([]any)
+			if len(tools) != 2 {
+				t.Fatal("current tools missing")
+			}
+			bun := tools[1].(map[string]any)
+			if bun["name"] != "bun" {
+				t.Fatal("Bun fixture missing")
+			}
+			switch name {
+			case "version":
+				bun["tool_version"] = "0.0.1"
+			case "asset":
+				bun["asset"] = "pnpm-linux-amd64"
+			case "hash":
+				bun["sha256"] = strings.Repeat("0", 64)
+			case "size":
+				bun["size"] = bun["size"].(float64) + 1
+			case "notices-hash":
+				bun["notices_sha256"] = strings.Repeat("0", 64)
+			case "notices-size":
+				bun["notices_size"] = bun["notices_size"].(float64) + 1
+			case "missing":
+				value["tools"] = tools[:1]
+			}
+			changed, err := json.Marshal(value)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if ValidateRuntimeImages(changed) == nil {
+				t.Fatal("substituted or absent Bun tool accepted")
+			}
+		})
+	}
 }
