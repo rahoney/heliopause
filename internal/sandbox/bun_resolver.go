@@ -29,18 +29,28 @@ func BunResolverRuntimeIdentity() string {
 }
 
 func (s BunNativeSelection) BindProjectSnapshot(ctx context.Context, source *artifactnpm.Resolver, install domain.InstallContext) (domain.ProjectDependencySnapshot, error) {
-	if ctx == nil || source == nil || !install.Valid() || (install.Mode() != domain.InstallNewTarget && install.Mode() != domain.InstallNPMProject) {
-		return domain.ProjectDependencySnapshot{}, errors.New("bun public source binding unavailable")
-	}
-	bound, err := source.BindBunLock(ctx, s.selection)
+	frozen, err := s.BindInspectionContext(ctx, source, install)
 	if err != nil {
 		return domain.ProjectDependencySnapshot{}, err
 	}
-	snapshot, err := bound.ProjectSnapshot(install, s.controls, BunResolverRuntimeIdentity())
-	if ctx.Err() != nil {
-		return domain.ProjectDependencySnapshot{}, errors.Join(err, ctx.Err())
+	return frozen.Snapshot(), nil
+}
+
+// BindInspectionContext preserves native tree placements alongside the exact
+// independently source-bound snapshot. Archive inspection remains required.
+func (s BunNativeSelection) BindInspectionContext(ctx context.Context, source *artifactnpm.Resolver, install domain.InstallContext) (artifactnpm.BunInspectionContext, error) {
+	if ctx == nil || source == nil || !install.Valid() || (install.Mode() != domain.InstallNewTarget && install.Mode() != domain.InstallNPMProject) {
+		return artifactnpm.BunInspectionContext{}, errors.New("bun public source binding unavailable")
 	}
-	return snapshot, err
+	bound, err := source.BindBunLock(ctx, s.selection)
+	if err != nil {
+		return artifactnpm.BunInspectionContext{}, err
+	}
+	frozen, err := bound.InspectionContext(install, s.controls, BunResolverRuntimeIdentity())
+	if ctx.Err() != nil {
+		return artifactnpm.BunInspectionContext{}, errors.Join(err, ctx.Err(), context.Cause(ctx))
+	}
+	return frozen, err
 }
 
 func NewBunResolver(runner CommandRunner, endpoints EndpointResolver, observer TraceObserver, capability CapabilityProbe, policy ResolverPolicyService) (*BunResolver, error) {

@@ -5196,4 +5196,20 @@ unmanaged target adoption·archive 검사·Policy로 확대하지 않는다.
 
 다음은 같은 M13-004의 B4 exact native layout/lifecycle와 archive static-all/검역 연결이다.
 Cache/transaction/CLI와 제한 밖 package semantics·전체 Bun remote acceptance는 열려 있다.
+
+### 2026-10-25 P3-B4 native layout·lifecycle 착수
+
+[B4 baseline·첫 primitive 지도](./evidence/package-client-quarantine/p3b4-bun-layout-lifecycle-plan-20261025.md)는
+cc062c5의 typed selection/source를 재사용하고 아직 없는 Bun offline archive/cache·hoisted tree와
+lifecycle 검역 연결만 수행한다. 첫 단계는 fixed native의 network-none script-free 표현 조사다.
+PNPM store/layout의 재구현이나 가정 전용 없이 실제 입력/결과를 확인하고 production edit map을
+보완한다. M13-004 하나만 IN_PROGRESS이며 새 push/CI는 없다.
+
+B4a [frozen 검사 입력 로컬 영수증](./evidence/package-client-quarantine/p3b4a-bun-inspection-input-local-20261025.json)은
+기존 PNPM acquired 검사의 기계 이동·Bun typed context와 전체 instance 보존을 확인한다.
+Canonical Quick188.402s·npm/sandbox 전체 Race48.704s, 실제 공개 empty/single/transitive/peer
+acquire/SRI/static-all→전체 acquired 결합1.423s(archive0/1/2/4)가 PASS다. 별도 runc offline
+단일 package primitive는 정확한 native payload4파일/원본 controls를 보존했으며 production
+gVisor/layout/lifecycle/Policy의 qualification은 아니다. 다음은 실제 hoisted/bin 표현과 그 전체
+archive binder·bounded cache envelope를 연결한다. 같은 M13-004만 IN_PROGRESS다.
 작은 helper별 push/CI는 시작하지 않았고 remote9410/CI411 macOS·Required gate는 유지한다.

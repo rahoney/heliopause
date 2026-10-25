@@ -3,7 +3,6 @@ package npm
 import (
 	"errors"
 	"slices"
-	"strings"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
@@ -58,28 +57,9 @@ func (c PNPMInspectionContext) BindAcquired(snapshot domain.ProjectDependencySna
 	if !c.MatchesSnapshot(snapshot) || len(acquired) != len(snapshot.Dependencies()) {
 		return PNPMInspectionInput{}, errPNPMInspectionContext
 	}
-	artifacts := make([]domain.AcquiredArtifact, 0, len(acquired))
-	runs := map[domain.RunID]bool{}
-	for _, resolved := range snapshot.Dependencies() {
-		node, err := domain.ProjectDependencyNodeID(resolved.Identity())
-		if err != nil {
-			return PNPMInspectionInput{}, errPNPMInspectionContext
-		}
-		artifact, present := acquired[node]
-		declared, hasDeclared := artifact.DeclaredIntegrity()
-		observed, hasObserved := artifact.ObservedIntegrity()
-		parts := strings.Split(artifact.ContentHandle(), ":")
-		if !present || artifact.Identity() != resolved.Identity() || artifact.Digest().String() == "" || artifact.SizeBytes() == 0 ||
-			!hasDeclared || !hasObserved || declared != resolved.DeclaredIntegrity() || observed != declared ||
-			len(parts) != 3 || parts[0] != "intake" || parts[2] != "tarball" {
-			return PNPMInspectionInput{}, errPNPMInspectionContext
-		}
-		run, err := domain.ParseRunID(parts[1])
-		if err != nil || runs[run] {
-			return PNPMInspectionInput{}, errPNPMInspectionContext
-		}
-		runs[run] = true
-		artifacts = append(artifacts, artifact)
+	artifacts, err := bindNPMProjectAcquired(snapshot, acquired, errPNPMInspectionContext)
+	if err != nil {
+		return PNPMInspectionInput{}, err
 	}
 	return PNPMInspectionInput{c, artifacts}, nil
 }

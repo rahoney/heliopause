@@ -9,7 +9,9 @@ import (
 	"github.com/rahoney/heliopause/internal/core/domain"
 )
 
-func pnpmAcquiredInspectionFixture(t *testing.T, frozen PNPMInspectionContext) map[domain.DependencyNodeID]domain.AcquiredArtifact {
+func pnpmAcquiredInspectionFixture(t *testing.T, frozen interface {
+	Snapshot() domain.ProjectDependencySnapshot
+}) map[domain.DependencyNodeID]domain.AcquiredArtifact {
 	t.Helper()
 	result := map[domain.DependencyNodeID]domain.AcquiredArtifact{}
 	for _, resolved := range frozen.Snapshot().Dependencies() {
