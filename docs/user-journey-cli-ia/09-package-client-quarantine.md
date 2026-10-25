@@ -1,6 +1,6 @@
 # Package client / tool execution quarantine — 설계
 
-상태: **P1 UV pip COMPLETE / QUALIFIED / ACCEPTANCE_CLOSED; P2 pnpm backend/CLI/native·실제 실패 named 검증, 최종 whole qualification 미완료; P3 Bun cache/transaction/CLI/native 인계·명시 runtime 경계 named local 검증, whole native runtime 검사 연결 중; P4..P7 미착수**. 2026-10-21 사용자 요청으로
+상태: **P1 UV pip COMPLETE; P2 pnpm/P3 Bun named local·hosted 검증, final profile matrix 미완료; P4 native project installed backend named local 검증, public CLI/native adoption/lock-only/tools 미완료; P5..P7 미착수**. 2026-10-21 사용자 요청으로
 uv pip·pnpm·Bun과 npx·uvx·bunx·pipx를 하나의 확장 범위로 계획한다.
 [실행 계획·baseline·수정 지도·재검토](../planning/20-package-client-quarantine-plan.md)가
 구현 순서와 검증을 소유한다. 기존 [업데이트 검역](./06-update-quarantine.md)을

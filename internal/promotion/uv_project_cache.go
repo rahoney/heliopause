@@ -38,12 +38,16 @@ func (c *UVProjectCache) StageProject(ctx context.Context, set domain.ProjectVer
 // OpenProjectCache performs the existing receipt/current Evidence/whole-file
 // readback before returning data. It does not publish a Host environment.
 func (c *UVProjectCache) OpenProjectCache(ctx context.Context, staged domain.StagedProjectSet) (string, error) {
+	root, _, err := c.openProject(ctx, staged)
+	return root, err
+}
+
+func (c *UVProjectCache) openProject(ctx context.Context, staged domain.StagedProjectSet) (string, pythonProjectMaterial, error) {
 	if c == nil || c.cache == nil {
-		return "", errors.New("UV project cache is unavailable")
+		return "", pythonProjectMaterial{}, errors.New("UV project cache is unavailable")
 	}
 	if err := sandbox.ValidateUVProjectUpdate(c.update); err != nil {
-		return "", err
+		return "", pythonProjectMaterial{}, err
 	}
-	root, _, err := c.cache.openProject(ctx, staged, c.update)
-	return root, err
+	return c.cache.openProject(ctx, staged, c.update)
 }

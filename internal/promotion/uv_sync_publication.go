@@ -3,8 +3,6 @@ package promotion
 import (
 	"context"
 	"errors"
-	"os"
-	"path/filepath"
 	"reflect"
 
 	"github.com/rahoney/heliopause/internal/core/domain"
@@ -93,44 +91,17 @@ func (g *uvSyncPublicationGuard) Commit(ctx context.Context, update domain.Proje
 	if err := g.VerifyUnchanged(ctx); err != nil {
 		return err
 	}
-	var desired []pypiDestination
-	if !update.Snapshot().DependencyFree() {
-		temporary, err := os.MkdirTemp(g.transaction.plan.root, ".haa-pypi-work-")
-		if err != nil {
+	return withApprovedPythonProjectOutput(ctx, g.owner.promoter, g.transaction, root, material, staged, func(desired []pypiDestination) error {
+		if err := g.VerifyUnchanged(ctx); err != nil {
 			return err
 		}
-		defer func() {
-			if !g.transaction.recovery {
-				resultErr = errors.Join(resultErr, os.RemoveAll(temporary))
-			}
-		}()
-		if err := os.Chmod(temporary, 0o700); err != nil {
+		if err := g.transaction.commitComplete(desired, update.Snapshot().DependencyFree()); err != nil {
 			return err
 		}
-		if err := copyExactRecord(filepath.Join(root, manifestFilename), filepath.Join(temporary, manifestFilename), material.document); err != nil {
-			return err
-		}
-		if err := copyExactRecord(filepath.Join(root, sbomFilename), filepath.Join(temporary, sbomFilename), material.sbom); err != nil {
-			return err
-		}
-		requirements, expected, err := preparePythonWheels(temporary, filepath.Join(root, "artifacts"), material.nodes, staged.Set().Inspected().Inspections())
-		if err != nil {
-			return err
-		}
-		desired, err = g.owner.promoter.materializePythonProject(ctx, temporary, requirements, expected)
-		if err != nil {
-			return err
-		}
-	}
-	if err := g.VerifyUnchanged(ctx); err != nil {
-		return err
-	}
-	if err := g.transaction.commitComplete(desired, update.Snapshot().DependencyFree()); err != nil {
-		return err
-	}
-	g.committed = true
-	p.material = material
-	return nil
+		g.committed = true
+		p.material = material
+		return nil
+	})
 }
 
 // Records are exposed only after successful publication. Cache paths remain

@@ -92,7 +92,7 @@ func parseUVProjectOriginalControls(controls []domain.ProjectControlFile) (artif
 		return artifactpypi.UVProjectInput{}, errors.New("UV project selection intent is unsupported")
 	}
 	if body, present := input.NativeLock(); present {
-		if _, err := artifactpypi.ParseUVNativeProjectLock(input, body); err != nil {
+		if err := artifactpypi.ValidateUVProjectOriginalLock(input, body); err != nil {
 			return artifactpypi.UVProjectInput{}, err
 		}
 	}

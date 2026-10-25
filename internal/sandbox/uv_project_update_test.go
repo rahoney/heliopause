@@ -120,3 +120,30 @@ func TestUVProjectUpdateRevalidatesNativeProvenance(t *testing.T) {
 		t.Fatal("zero update accepted")
 	}
 }
+
+func TestUVProjectOriginalLockMayPrecedeEditedManifest(t *testing.T) {
+	manifest, err := os.ReadFile("../artifact/pypi/testdata/uv-0.13.4-empty-project.pyproject.toml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	lock, err := os.ReadFile("../artifact/pypi/testdata/uv-0.13.4-empty-project.uv.lock")
+	if err != nil {
+		t.Fatal(err)
+	}
+	manifest = bytes.ReplaceAll(manifest, []byte("dependencies = []"), []byte(`dependencies = ["packaging==25.0"]`))
+	input, err := artifactpypi.ParseUVProjectInput(manifest, lock, true, artifactpypi.UVProjectSync, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	controls, err := NewUVProjectOriginalControls(input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := parseUVProjectOriginalControls(controls)
+	if err != nil || !bytes.Equal(got.Body(), manifest) {
+		t.Fatal("historical original lock prevented edited manifest selection", err)
+	}
+	if _, err := artifactpypi.ParseUVNativeProjectLock(input, lock); err == nil {
+		t.Fatal("stale lock accepted as selected current result")
+	}
+}

@@ -15,9 +15,9 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4-G — project controls plus venv shared filesystem transaction named local QUALIFIED; native publication guard/CLI/tools remain
-Next action: M13-004 — connect held original venv ownership/native project selection and approved cache to shared atomic publication, then CLI/tools; grouped final CI boundary retained
-Current substep: M13-004/P4-G filesystem transaction named local QUALIFIED; next native project publication guard/CLI baseline; CI413 qualification recorded
+Last completed substep: P4-H — native project held ownership/current approval/atomic publication backend named local QUALIFIED; public CLI/native adoption/lock-only/tools remain
+Next action: M13-004 — wire public uv add/sync CLI to qualified native project backend, then native adoption/lock-only/tools; grouped final CI boundary retained
+Current substep: M13-004/P4-H installed backend named local QUALIFIED; next uv add/sync public CLI baseline; existing venv scope; native adoption/lock-only/tools pending
 Acceptance audit: CI413 frozen50fd Required10SUCCESS; all10 checkout38e27d8 whole tree d6a63ab/2475 matches; actual75m due consumed17:20:16UTC; full10 decoded logs saved; historical CI411 timeout cause remains unconfirmed
 Independent local next: P4 project/venv atomic transaction, ownership/CLI and persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
@@ -5525,3 +5525,11 @@ Grouped source50fd3b2/tree d6a63ab/2475를 한 번 push하여 [CI413](https://gi
 ### 2026-10-26 P4-G project controls/venv filesystem checkpoint
 
 [Filesystem receipt](./evidence/package-client-quarantine/p4g-uv-project-transaction-local-20261026.json)은 최종 canonical profiles·focused/full promotion Race를 연결한다. 정상/empty·기존 lock 부재/존재의 모든 failure 원복과 source drift·동시 guard·uncertain private data/recovery 보존이 PASS다. Fixture 부재 판정 오류와 새 wrapper의 late cleanup 순서를 구분했고 직접 RED의 동일 test source 교정 GREEN을 확인했다. Project controls는 wheel ownership에 포함하지 않고 같은 journal/rollback에 묶으며 cleanup도 backup 폐기 전 처리한다. 기존10 owner는 불변이다. Native publication guard/ownership/actual/CLI/lock-only/tools는 미완료이며 같은 M13-004에서 계속한다. 새 push·CI는 없다.
+
+### 2026-10-26 P4-H native project publication 착수
+
+[P4-H audit·map·두 번째 검토](./evidence/package-client-quarantine/p4h-uv-project-publication-plan-20261026.md)에 따라 기존 venv original snapshot/managed ownership·native selection/current inspection·Policy/cache와 G transaction을 하나의 held lifecycle로 연결한다. Runtime provisioning 없이 기존 venv를 대상으로 하고 unmanaged 원본은 거부한다. Native adoption/CLI/lock-only/tools는 별도 acceptance이며 같은 M13-004에서 진행한다. 새 push·CI는 없다.
+
+### 2026-10-26 P4-H native project installed backend checkpoint
+
+[Backend receipt](./evidence/package-client-quarantine/p4h-uv-project-publication-local-20261026.json)은 Quick292.784s/security15.138s/docs0.249s·focused/full affected Race25.544/283.054s와 actual318.313s를 연결한다. Project add24.2→25.0/same-version sync/two roots/edited-empty140.47s와 기존 UV pip sync/native original 인계175.04s가 모두 PASS다. Original stale public graph와 selected/current strict equality를 분리했고 새 default composition 계약도 확인했다. Whole inspection/current Evidence·Policy·승인 기록/원자 control+venv 반영/noSKIP/helperwait0/Host 동일이며 기존11 owner는 불변이다. Public CLI/native project adoption/lock-only/tools는 미완료이고 같은 M13-004에서 uv add/sync CLI를 계속한다. 새 push·CI는 없다.
