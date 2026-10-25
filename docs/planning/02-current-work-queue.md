@@ -5302,3 +5302,16 @@ entry/set Policy ALLOW(47.05s), exact prepared handoff/partial 거부가 PASS다
 선택8·검역4도110.56s/helper wait0/Host 전체 동일이다. Script-free Node-lane backend 검증이며
 명시 Bun runtime·Host 설치 승인이 아니다. 다음은 frozen Bun 공급/actual CI 연결 후 이 backend
 묶음의 원격 checkpoint이고, cache/transaction/CLI는 CI 대기 중 독립적으로 계속한다.
+
+[B4d-e backend CI 감사](./evidence/package-client-quarantine/p3b4de-bun-backend-ci-plan-20261025.md)는
+37fec98의 local whole quarantine backend를 frozen 공급/actual child로 기존 owning CI lifecycle에
+연결한다. Job/Required/timeout·기존 PNPM 전환은 유지하고 helper별 CI 없이 backend commits를
+묶는다. 원격 실행 시 실제 timer를 소비하고 대기 중 후속 cache/transaction/CLI를 계속한다.
+
+[B4d-e 로컬 영수증](./evidence/package-client-quarantine/p3b4de-bun-backend-ci-local-20261025.json)은
+workflow2.407s/Quick78.075s·전체 checker Race33.607s/vulnerability14.984s와 실제 CI script
+142.666s를 확인한다. 같은 script가 namespace 안에서 pinned 공급→native9/실패경계5/whole
+quarantine2를 실행하고 설치/work 정리·helper wait0/Host 전체 동일을 확인했다. 다음은 이
+backend local commits를 묶어 한 번 push하고 ordinary CI의 macOS/Required를 실제 timer로
+확인한다. 기다리는 동안 independent cache/transaction/CLI를 계속하며 전체 Bun acceptance는
+아직 닫지 않는다. Job/Required/기존 timeout·PNPM 전환과 runtime/Policy 권한은 유지한다.
