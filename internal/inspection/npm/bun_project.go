@@ -15,7 +15,7 @@ type BunInspectionPreparer interface {
 	PrepareInspection(context.Context, artifactnpm.BunInspectionInput, []artifactnpm.ArchiveInventory) (artifactnpm.BunInspectionLayout, error)
 }
 type BunInstanceExecutor interface {
-	ExecuteBunInstance(context.Context, artifactnpm.BunInspectionLayout, domain.AcquiredArtifact, string) (domain.SandboxResult, error)
+	ExecuteBunRuntimeInstance(context.Context, artifactnpm.BunInspectionLayout, domain.AcquiredArtifact, string) (domain.SandboxResult, error)
 }
 
 // BunProjectInspector retains frozen complete-project context beside the
@@ -184,7 +184,7 @@ func (i *BunProjectInspector) observeInstances(ctx context.Context, layout artif
 				return errors.Join(err, context.Cause(ctx))
 			}
 			state.attempted++
-			result, runErr := i.execute.ExecuteBunInstance(ctx, layout, state.subject, instance.Key)
+			result, runErr := i.execute.ExecuteBunRuntimeInstance(ctx, layout, state.subject, instance.Key)
 			runErr = errors.Join(runErr, ctx.Err(), context.Cause(ctx))
 			// Accepted partial facts remain evidence even when the same call failed.
 			facts, factErr := bunInstanceFacts(state.subject, instance.Key, layout, result)

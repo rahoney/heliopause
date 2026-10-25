@@ -1,6 +1,6 @@
 # Package client / tool execution quarantine — 설계
 
-상태: **P1 UV pip 설치/업데이트·complete sync COMPLETE / QUALIFIED / ACCEPTANCE_CLOSED; P2 pnpm backend/CLI/native 인계 검증, 마지막 macOS·실패 acceptance 진행 중; P3 Bun 공급·설치·격리 query named local 검증, client 미완료; P4..P7은 미착수**. 2026-10-21 사용자 요청으로
+상태: **P1 UV pip COMPLETE / QUALIFIED / ACCEPTANCE_CLOSED; P2 pnpm backend/CLI/native·실제 실패 named 검증, 최종 whole qualification 미완료; P3 Bun cache/transaction/CLI/native 인계·명시 runtime 경계 named local 검증, whole native runtime 검사 연결 중; P4..P7 미착수**. 2026-10-21 사용자 요청으로
 uv pip·pnpm·Bun과 npx·uvx·bunx·pipx를 하나의 확장 범위로 계획한다.
 [실행 계획·baseline·수정 지도·재검토](../planning/20-package-client-quarantine-plan.md)가
 구현 순서와 검증을 소유한다. 기존 [업데이트 검역](./06-update-quarantine.md)을
@@ -252,3 +252,26 @@ Store 경로는 metadata 형식만 확인하고 외부 store를 열지 않는다
 empty 경로는 유지한다. [B5d 지도](../planning/evidence/package-client-quarantine/p2c5b5d-pnpm-native-ownership-plan-20261025.md)가 named 검증 범위를 소유한다.
 새 target 생성·global/workspace·local/direct/VCS/다른 registry·임의 native 옵션과 실행 명령은
 이 검증 범위에 없다. pnpm dlx는 P6이며 이 CLI 연결로 지원 완료 표시하지 않는다.
+
+
+## 10. P3 Bun의 현재 설치·업데이트 검증 범위
+
+`helox bun add <spec>`, `helox bun install`, `helox bun update [name]`은 기존 프로젝트
+하나의 공개 npm 의존성 전체를 선택·검사하고 `package.json`/`bun.lock`/hoisted payload를
+함께 반영한다. `--target`과 `--adopt`의 명시 입력·소유권 원칙은 §4를 따르며 source는
+`npm`, client는 `bun`이다. 현재 구현은 Linux amd64의 고정 Bun·Node runtime과 native
+copyfile/hoisted 형식이다. Empty project는 실제 `bun.lock` 부재를 보존한다.
+
+선택된 archive 전체와 모든 물리 instance를 검사하며 project 자체의 script는 실행하지 않는다.
+Package lifecycle은 같은 고정 Node·Bun runtime을 격리 환경에서 사용한다. Runtime image가
+고정돼 있어도 Artifact의 실행/파일·네트워크 관찰은 기존 Policy에 그대로 반영한다. Native
+script의 종료0은 ALLOW나 Host 설치 완료를 뜻하지 않는다. Whole native 경로의 실제
+Evidence/Policy·CLI/native 인계 qualification은 [B6c 지도](../planning/evidence/package-client-quarantine/p3b6c-bun-whole-runtime-plan-20261025.md)와
+[Queue](../planning/02-current-work-queue.md)의 named local/remote 상태를 따른다.
+
+기존 Bun 설치의 첫 인계는 nonempty safe single-link copies의 모든 원본 파일을 독립 공개
+source/SRI·전체 layout과 대조한 뒤 새 선택의 검역을 거친다. Shared hardlink·mixed owner·
+변조/추가 파일·unknown/corrupt HAA state에는 native fallback이 없다. 기존 fresh/managed
+empty의 검증 경로는 유지한다. Manifest/SBOM·actual operation records와 원본/state 보존은
+공통 transaction 계약을 사용한다. Global/workspace·다른 registry/local/VCS·임의 native 옵션과
+`bun run`/`bunx`/`bun x`는 이 설치·업데이트 검증 범위에 포함하지 않는다.

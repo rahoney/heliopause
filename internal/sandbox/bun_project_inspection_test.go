@@ -36,7 +36,7 @@ func (f *bunProjectGateConsumer) PrepareInspection(_ context.Context, _ artifact
 	}
 	return artifactnpm.BunInspectionLayout{}, f.cause
 }
-func (f *bunProjectGateConsumer) ExecuteBunInstance(context.Context, artifactnpm.BunInspectionLayout, domain.AcquiredArtifact, string) (domain.SandboxResult, error) {
+func (f *bunProjectGateConsumer) ExecuteBunRuntimeInstance(context.Context, artifactnpm.BunInspectionLayout, domain.AcquiredArtifact, string) (domain.SandboxResult, error) {
 	f.executeCalls++
 	return domain.SandboxResult{}, errors.New("unexpected instance execution")
 }

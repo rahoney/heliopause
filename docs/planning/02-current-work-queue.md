@@ -15,11 +15,11 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P3-B5d — explicit Bun native original source proof and --adopt; named local qualification, source728f650
-Next action: M13-004/P3-B6 — audit explicit Bun Artifact runtime supply/admission and required coverage; grouped hosted project and final affected-profile qualification remain
-Current substep: M13-004/P3-B6b named local execution boundary QUALIFIED; canonical121/actual normal+typed exit37 and Bun/PNPM regression/helperwait0/Host identical; B6c whole inspector native capability next
+Last completed substep: P3-B6c — named local whole native runtime/Evidence/Policy/CLI/native handoff QUALIFIED; hosted exact-source gate remains
+Next action: M13-004/P3 — push grouped Bun backend/cache/CLI/native runtime candidate once; register and consume actual elapsed-based hosted CI timer; continue independent matrix/P4 baseline while waiting
+Current substep: M13-004/P3-B6c local qualification closed; public2/4, CLI9/native3, current Evidence/Policy and Host/helper cleanup PASS; hosted JS command wired and canonical profiles/Race PASS
 Acceptance audit: CI412 frozen7544 backend Required10SUCCESS, complete checkout tree match and logs confirmed by actual65m timer; later local7939092/74102c8/80bd2bd/58957ea/728f650 are outside that remote scope; historical CI411 macOS timeout cause remains unconfirmed
-Independent local next: explicit Bun Artifact runtime ownership/transport, exact execution/observer and whole inspection coverage; no live CI timer or extra helper push at this point
+Independent local next: final package-client support/failure matrix and P4 uv project/persistent tool baseline; no new source push while frozen hosted candidate runs
 P3 Bun: IN_PROGRESS (same M13-004 independent local); P4..P7 — NOT_STARTED
 Then: M13-005 — NOT_STARTED; concrete publication remains separate
 Runtime upgrade maintenance: UPG-001..006 COMPLETE; PR34 merged/main CI320 ten SUCCESS
@@ -5451,3 +5451,17 @@ Artifact process 관찰과 기존 M3 MANUAL_REVIEW/BLOCK 의미를 유지하고 
 같은 observer의 기존 Bun Node/native supply/PNPM full project actual116.551s도 PASS다.
 첫 loader/VM read 실패와 warm 진단을 보존했고 Policy/역할/네트워크·예산/버전은 유지했다.
 이 named 경계만 닫혔으며 B6c whole inspector native 경로/Evidence/Policy·hosted는 계속한다.
+
+[B6c whole native 경로 감사](./evidence/package-client-quarantine/p3b6c-bun-whole-runtime-plan-20261025.md)는
+9fbc981에서 기존 BunInstanceExecutor capability와 호출만 고정 native runtime 경로로
+강화한다. Static-all/정확한 coverage·Evidence/Policy·cache/transaction은 재사용하고 Node-only
+fallback은 추가하지 않는다. Whole public 검역·Bun CLI/native 실제 회귀를 확인한 뒤 기존
+중간 commit들을 한 번 push하고 실제 elapsed 근거 timer를 active turn에서 소비한다.
+
+[B6c whole native 연결 로컬 검증](./evidence/package-client-quarantine/p3b6c-bun-whole-runtime-local-20261025.json)은
+public transitive2/peer4의 현재 Evidence/Policy57.90s와 CLI9fresh199.72s/native original3cases
+135.92s를 확인했다. 각 helperwait0/Host 동일·원본/data/inode/records/empty lock 부재를
+유지했다. 기존 whole engine은 native capability 이름만 강화했고 Policy/cache/transaction/
+CPP는 불변이다. Workflow/Quick/security/docs·관련 네 package Race54.598s·checker Race
+35.595s와 hosted native JS exact caller 검증도 PASS다. 로컬 연결만 닫혔으며 중간 commit들을
+한 번 push해 exact-source hosted/timer를 확인하고 최종 지원/영향 matrix를 계속한다.

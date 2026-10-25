@@ -85,7 +85,7 @@ type bunSequenceExecutor struct {
 	calls   []string
 }
 
-func (f *bunSequenceExecutor) ExecuteBunInstance(_ context.Context, _ artifactnpm.BunInspectionLayout, _ domain.AcquiredArtifact, key string) (domain.SandboxResult, error) {
+func (f *bunSequenceExecutor) ExecuteBunRuntimeInstance(_ context.Context, _ artifactnpm.BunInspectionLayout, _ domain.AcquiredArtifact, key string) (domain.SandboxResult, error) {
 	f.calls = append(f.calls, key)
 	if f.after != nil {
 		f.after()

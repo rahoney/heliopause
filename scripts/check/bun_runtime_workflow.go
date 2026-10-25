@@ -4,6 +4,7 @@ import "strings"
 
 const bunNativeIntegrationCommand = `HELOX_BUN_NATIVE_RESOLVER_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=3m -test.run '^(TestBunPublicNativeResolverIntegration|TestBunActualNativeProjectSelectionBoundary)$'`
 const bunProjectQuarantineCommand = `HELOX_BUN_PROJECT_QUARANTINE=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestBunPublicProjectQuarantineIntegration$'`
+const bunArtifactExecutionCommand = `HELOX_BUN_ARTIFACT_EXECUTION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=3m -test.run '^TestBunActualArtifactExecutionBoundary$'`
 
 const bunApprovedProjectCommand = `HELOX_BUN_CACHE_INTEGRATION=1 HELOX_BUN_PROJECT_TRANSACTION_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestBunPublic(ApprovedCache|ProjectTransaction)Integration$'`
 const bunProjectCLICommand = `HELOX_BUN_PROJECT_CLI_INTEGRATION=1 /usr/libexec/heliopause/helox -test.v -test.failfast -test.timeout=5m -test.run '^TestBunProjectCLIIntegration$'`
@@ -33,13 +34,13 @@ func validateBunRuntimeScript(contents string) []string {
 		"sudo -n mkdir -m 0755 -- /usr/lib/heliopause",
 		`sudo -n install -m 0555 "$bun_work/bun-linux-amd64" /usr/lib/heliopause/versions/v1.0.0-bun-ci/bun-linux-amd64`,
 		"sudo -n ln -s versions/v1.0.0-bun-ci /usr/lib/heliopause/current",
-		bunNativeIntegrationCommand, bunProjectQuarantineCommand, bunApprovedProjectCommand, bunProjectCLICommand, bunOriginalProjectCommand,
+		bunNativeIntegrationCommand, bunProjectQuarantineCommand, bunArtifactExecutionCommand, bunApprovedProjectCommand, bunProjectCLICommand, bunOriginalProjectCommand,
 	} {
 		if counts[command] != 1 {
 			findings = append(findings, "Bun runtime helper requires one command: "+command)
 		}
 	}
-	scope := strings.Join([]string{"(", "cd internal/sandbox", bunNativeIntegrationCommand, bunProjectQuarantineCommand, ")"}, "\n")
+	scope := strings.Join([]string{"(", "cd internal/sandbox", bunNativeIntegrationCommand, bunProjectQuarantineCommand, bunArtifactExecutionCommand, ")"}, "\n")
 	if strings.Count(strings.Join(active, "\n"), scope) != 1 {
 		findings = append(findings, "Bun actual consumers require one matching package subshell")
 	}

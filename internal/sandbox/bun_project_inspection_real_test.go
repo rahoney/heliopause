@@ -127,7 +127,7 @@ func TestBunPublicProjectQuarantineIntegration(t *testing.T) {
 			if _, err := inspector.PreparedLayoutFor(snapshot, acquired); err == nil {
 				t.Fatal("partial request reused completed layout")
 			}
-			t.Logf("bun_project_quarantine fixture=%s archives=%d exact_instances=%d required_per_archive=3 facts=EXACT evidence=RECORDED entry_set_policy=ALLOW primary=NONE host_action=NOT_REQUIRED npm_Node_lane=true explicit_Bun_runtime/Host_install=NOT_EXERCISED", name, len(initial.Artifacts()), count)
+			t.Logf("bun_project_quarantine fixture=%s archives=%d exact_instances=%d required_per_archive=3 facts=EXACT evidence=RECORDED entry_set_policy=ALLOW primary=NONE host_action=NOT_REQUIRED pinned_Node_Bun_runtime_supply=true native_Bun_JS=SEPARATE_B6b_FIXTURE Host_install=NOT_EXERCISED", name, len(initial.Artifacts()), count)
 		}) {
 			return
 		}

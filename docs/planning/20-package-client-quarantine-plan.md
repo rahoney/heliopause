@@ -38,6 +38,10 @@ non-draft/non-prerelease. [원본 관측 요약·URL·응답 digest](./evidence/
 Python3.14.7/pip26.2.1/cp314·manylinux_2_36_x86_64와 기존 Python/Node/Rust image는
 유지한다. Baseline 이후 Go repository pin은 reachable 보안 patch1.26.10으로 갱신했고
 초기 [Go1.26.10 qualification의 실패·부분 성공](./evidence/package-client-quarantine/go12610-remote-status-20261021.json)은 당시 source 범위로 보존한다. 이후 현 P1 후보는 네 profile과 Required를 모두 통과했다. Host activation은 별도다. 첫 버전 관측은 API metadata였고, 후속 signed/native 공급·단일 pin·개발 유지보수·[data transport](./evidence/package-client-quarantine/p1b4-uv-provision-local-20261021.json)와 production UV pip runtime/admission·CLI actual 검증은 P1 누적 결과를 따른다.
+위 버전 표는2026-10-21 첫 감사 당시 관측이다. 이후 채택한 현재 PNPM/Bun pin은
+`scripts/runtimes.lock.json` 단일 owner와 각 qualification leaf를 따르며 당시의 “없음”을
+현재 미구현 상태로 해석하지 않는다.
+
 Registry dist-tag/PyPI release와 exact upstream tag, Node engines/Python Requires-Python,
 Bun libc/CPU 요구를 구현 진입 시 대조한다. 불일치/실패는 UNKNOWN으로 남기고 날짜를
 갱신한 공식 metadata부터 확인한다. 최신판을 지원 버전으로 미리 표시하지 않는다.
@@ -81,7 +85,7 @@ identity를 사용하되 명시 capability/보안 한도까지 사용자 설정�
 | P0 설계/사전 검토 | 사용자 범위·기존 owner·공식 문서·버전 후보 대조 | 본 문서와 leaf, 재검토·canonical docs/security | COMPLETE — canonical docs/security PASS |
 | P1 client foundation + uv pip | exact uv runtime·좁은 descriptor, 기존 install/update 재사용 | actual uv install/upgrade/sync, 기존 pip/npm 회귀, 실패 불변·정리 | COMPLETE — [qualification/acceptance](./evidence/package-client-quarantine/p1-uv-acceptance-20261023.json); P1a baseline은 당시 감사 |
 | P2 pnpm | fixed resolver/lock/layout·공통 descriptor 재사용 | actual add/install/update/peer graph·link 공격·rollback | IN_PROGRESS — backend CI407 named remote QUALIFIED; CLI/native original ownership named local QUALIFIED; whole-source remote/affected-profile matrix and P2 acceptance pending |
-| P3 Bun | fixed Bun resolver/layout/lifecycle | actual install/update·Node vs Bun runtime 요구 분리·회귀 | IN_PROGRESS — supply/runtime/release, typed native selection and parser/source/snapshot named local QUALIFIED; exact layout/lifecycle/quarantine/cache/transaction/CLI and whole remote acceptance remain |
+| P3 Bun | fixed Bun resolver/layout/lifecycle | actual install/update·Node vs Bun runtime 요구 분리·회귀 | IN_PROGRESS — native selection/source/layout/quarantine/cache/transaction/CLI/native ownership and explicit Bun Artifact boundary named local QUALIFIED; whole native runtime inspection/Evidence/Policy/CLI named local QUALIFIED; hosted and final support matrix pending |
 | P4 uv project / persistent tools | uv add/sync/lock-upgrade, uv tool/pipx install·upgrade metadata·exposed scripts | project lock-only vs installed 상태, tool ownership/retired scripts/rollback | NOT_STARTED |
 | P5 execution foundation + npx | full frozen set·entrypoint·sandbox run·output/exit/lifecycle 계약 | actual 정상/악성/취소/재다운로드 거부, stdout-only 우선; 생성 파일/TTY는 별도 acceptance | NOT_STARTED |
 | P6 uvx·bunx·pipx run·pnpm dlx | P5 재사용, 각각 parser/runtime/selection adapters | 각 alias real end-to-end, forced runtime/backend·cache negatives | NOT_STARTED |

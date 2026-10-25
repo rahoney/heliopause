@@ -19,6 +19,11 @@ func TestBunRuntimeSupplyAndActualConsumerBinding(t *testing.T) {
 		t.Fatal(findings)
 	}
 	for name, candidate := range map[string]string{
+		"missing-Bun-JS-env":         strings.Replace(original, "HELOX_BUN_ARTIFACT_EXECUTION=1 ", "", 1),
+		"commented-Bun-JS":           strings.Replace(original, bunArtifactExecutionCommand, "# "+bunArtifactExecutionCommand, 1),
+		"echoed-Bun-JS":              strings.Replace(original, bunArtifactExecutionCommand, "echo skipped", 1),
+		"ignored-Bun-JS-failure":     strings.Replace(original, bunArtifactExecutionCommand, bunArtifactExecutionCommand+" || true", 1),
+		"duplicate-Bun-JS":           strings.Replace(original, bunArtifactExecutionCommand, bunArtifactExecutionCommand+"\n"+bunArtifactExecutionCommand, 1),
 		"missing-native-env":         strings.Replace(original, "HELOX_BUN_NATIVE_RESOLVER_INTEGRATION=1 ", "", 1),
 		"missing-quarantine-env":     strings.Replace(original, "HELOX_BUN_PROJECT_QUARANTINE=1 ", "", 1),
 		"missing-materialize":        strings.Replace(original, "go run ./scripts/update-runtime materialize-bun", "echo skipped", 1),
