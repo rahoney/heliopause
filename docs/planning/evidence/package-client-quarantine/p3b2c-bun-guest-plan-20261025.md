@@ -48,3 +48,40 @@ security12.156s/docs와 전체 sandbox Race22.281s PASS를 소유한다. 실제 
 확인했다. 최초 Bun test의 mixed-case 환경변수 SKIP는 미실행으로 보존하고 uppercase 수정
 뒤 no-SKIP·actual107MB marker·11개 PASS를 요구했다. Default 검사의 입력과 별도 realcorpus
 검사의 범위를 구분한다. Product Bun gVisor startup/lock과 전체 P3는 아직 미완료다.
+
+## B2c2 exact query 착수 지도·두 번째 검토
+
+기준c9a6143은 Bun 공급/transport만 IMPLEMENTED/WIRED/QUALIFIED=YES(named local),
+ACCEPTANCE_CLOSED=NO(whole P3)다. 기존 Node boundary, direct-exec one-shot admission,
+observer canonical loader와 private native image topology는 구현돼 있다. Bun typed query
+container/observer role은 IMPLEMENTED=NO/WIRED=NO/QUALIFIED=NO/ACCEPTANCE_CLOSED=NO다.
+
+이번 gap은 network-none/read-only Node ABI에서 fixed Bun --version/--revision 두 query다.
+`bun_runtime.go`는 기존 Node create recipe와 Bun attested runtime volume만 사용한다.
+`shared_observer.go`는 Bun의 root/tmp/private9p helper topology를 선언한다. C++ observer는
+Bun profile/class/exact binary+execfn+argv0+두 query shape 및 canonical bootstrap 등록에만
+연결한다. 기존 native admission latch에 세 번째 실제 consumer를 추가하고 argv 변조도 거부한다.
+Bun child에게 Node query authority나 Python 원장·범용 script/임의 argv 권한을 주지 않는다.
+Runtime read grant는 기존 immutable loader를 우선 사용하고 실제 최초 거부 없이 다른 runtime의
+proc/CPU 예외를 복사하지 않는다. 공통 역할·CPU/시간/resource 한도는 그대로다.
+
+기존 real PNPM fixture의 canonical ordinary user·typed helper·observer start/trace/drain·
+mount-only protected installation operator를 재사용한다. Task test client/새 observer는 그
+namespace에만 bind하고 원래 client/helper 복원과 Host file/image/container/volume/network/
+firewall 상태 대조를 유지한다. Actual query 출력은 version diagnostic이며 Policy authority가 아니다.
+Empty bun.lock·graph/설치는 후속으로 남고 정확한 install help를 같은1.4.4 runc에서 먼저 관측했다.
+Canonical local/전체 sandbox Race와 모든 기존 observer latch를 확인하며 새 CI는 dispatch하지 않는다.
+
+## B2c2 named local 결과
+
+[Exact guest query](./p3b2c2-bun-query-local-20261025.json)는 Quick199.952s/security13.869s/
+docs와 전체 sandbox Race23.534s, 최종 canonical observer114개 latch/228.561s 및 실제
+gVisor query5.02s PASS를 소유한다. 처음 version 출력 뒤 overcommit32768 거부, 다음
+own PID/maps557056 거부를 각각 보존했고 Bun exact query/direct CONTROL에만 두 읽기를
+연결했다. 최종 version/revision·33events/session_complete와 helperwait0·original0/Host 동일을
+확인했다. PNPM/UV의 read 조건·다른 PID/flags/clone/artifact 권한은 바꾸지 않았다.
+
+동일1.4.4의 runc install help·빈 manifest 관측은 empty bun.lock을 삭제함을 보여줬다.
+빈 파일을 만들어 format 성공을 주장하지 않는다. 비어 있지 않은 실제 lock/source binding과
+선택·설치·lifecycle·CLI는 후속이다. CI411은 old9410의 Linux/cu132만 PASS, macOS/Required는
+실패이며 이 로컬 Bun source의 원격 증거가 아니다.

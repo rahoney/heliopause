@@ -101,6 +101,8 @@ constexpr char kProfileUVResolver[] = "uv-pip-resolver";
 constexpr char kUVToolPath[] = "/haa-runtime/uv";
 constexpr char kProfilePNPMResolver[] = "pnpm-resolver";
 constexpr char kPNPMToolPath[] = "/haa-runtime/pnpm";
+constexpr char kProfileBunResolver[] = "bun-resolver";
+constexpr char kBunToolPath[] = "/haa-runtime/bun";
 constexpr char kProfilePyTorchCPU[] = "pypi-wheel-pytorch-cpu";
 constexpr char kProfilePyTorchCU126[] = "pypi-wheel-pytorch-cu126";
 constexpr char kProfilePyTorchCU130[] = "pypi-wheel-pytorch-cu130";
@@ -184,6 +186,7 @@ enum class ProcessClass {
   kPip,
   kUV,
   kPNPM,
+  kBun,
   kNode,
   kNpm,
   kArtifact,
@@ -605,6 +608,18 @@ bool IsUVToolImage(const TopologyState* topology, const std::string& path) {
 
 bool IsPNPMToolImage(const TopologyState* topology, const std::string& path) {
   return IsPrivateNativeToolImage(topology, path, kPNPMToolPath);
+}
+
+bool IsBunToolImage(const TopologyState* topology, const std::string& path) {
+  return IsPrivateNativeToolImage(topology, path, kBunToolPath);
+}
+
+// These two native diagnostics are the only Bun commands admitted at this
+// stage. Host control chooses the arguments; guest names confer no authority.
+bool IsExactBunQuery(const gvisor::sentry::ExecveInfo& message) {
+  return message.binary_path() == kBunToolPath && message.execfn() == kBunToolPath &&
+      message.argv_size() == 2 && message.argv(0) == kBunToolPath &&
+      (message.argv(1) == "--version" || message.argv(1) == "--revision");
 }
 
 struct ProfileRegistration {
@@ -1514,6 +1529,7 @@ const char* ProcessClassName(ProcessClass process_class) {
     case ProcessClass::kPip: return "PIP";
     case ProcessClass::kUV: return "OTHER";
     case ProcessClass::kPNPM: return "OTHER";
+    case ProcessClass::kBun: return "OTHER";
     case ProcessClass::kNode: return "NODE";
     case ProcessClass::kNpm: return "NPM";
     case ProcessClass::kGo: return "GO";
@@ -1561,6 +1577,7 @@ const char* NetworkProcessClassName(ProcessClass process_class) {
     case ProcessClass::kCargo:
     case ProcessClass::kUV:
     case ProcessClass::kPNPM:
+    case ProcessClass::kBun:
     case ProcessClass::kCargoTar:
     case ProcessClass::kCargoRustc: return "OTHER";
     case ProcessClass::kSleep:
@@ -1650,6 +1667,7 @@ ProcessClass ProcessClassForPath(const std::string& path, const char* profile) {
   if (profile == nullptr) return ProcessClass::kUnknown;
   if (strcmp(profile, kProfileUVResolver) == 0 && path == kUVToolPath) return ProcessClass::kUV;
   if (strcmp(profile, kProfilePNPMResolver) == 0 && path == kPNPMToolPath) return ProcessClass::kPNPM;
+  if (strcmp(profile, kProfileBunResolver) == 0 && path == kBunToolPath) return ProcessClass::kBun;
   if (strcmp(profile, kProfileGoBuild) == 0 || strcmp(profile, kProfileCargoBuild) == 0) {
     if (path == "/haa-runtime/haa-boundary") return ProcessClass::kProjectBuildBoundary;
     if (path == "/usr/bin/setpriv") return ProcessClass::kProjectBuildSetpriv;
@@ -2416,6 +2434,26 @@ bool IsPinnedUVPythonQueryRead(const gvisor::common::ContextData& context,
   return HasPrefix(normalized, "/usr/local/lib/python3.14/");
 }
 
+// Actual Bun1.4.4 query reads: exact JSC overcommit metadata and its own maps.
+// The current Bun image can only be a checked direct --version/--revision query.
+bool IsPinnedBunQueryRead(const gvisor::common::ContextData& context,
+                          const ProcessState& state, const std::string& path,
+                          uint64_t flags, const char* profile, const MountAnchor* anchor) {
+  if (profile == nullptr || strcmp(profile, kProfileBunResolver) != 0 ||
+      anchor == nullptr || anchor->mountpoint != "/proc" || anchor->mount_class != "system" ||
+      !context.is_exec_session() || context.parent_thread_group_id() != 0) return false;
+  const bool overcommit = path == "/proc/sys/vm/overcommit_memory" && flags == 32768;
+  const bool own_maps = path == "/proc/" + std::to_string(context.thread_group_id()) + "/maps" && flags == 557056;
+  if (!overcommit && !own_maps) return false;
+  const auto* group = FindFilesystemGroup(context, state);
+  return group != nullptr && group->role == ProcessState::Role::kControl &&
+      group->provenance == ProcessState::Provenance::kDirectExecRoot &&
+      group->current_image_class == ProcessClass::kBun &&
+      FilesystemProcessClass(context, state) == ProcessClass::kBun &&
+      !group->root_eligible && group->root_consumed && group->trusted_control_network_active &&
+      !group->demotion_pending && !group->launch_target_pending && !group->handoff_target_pending;
+}
+
 // Observed GNU/Rust startup inputs of the pinned PNPM ELF. This is not a
 // shared library grant for artifacts, descendants, UV or other profiles.
 bool IsPinnedPNPMRuntimeRead(const gvisor::common::ContextData& context,
@@ -2807,7 +2845,7 @@ bool IsPinnedProjectConfigurationRead(
 
 bool IsCanonicalBootstrapProfile(const char* profile) {
   return profile != nullptr &&
-      (strcmp(profile, kProfilePNPMResolver) == 0 || strcmp(profile, kProfileUVResolver) == 0 || strcmp(profile, kProfileNPM) == 0 || strcmp(profile, kProfilePyPI) == 0 ||
+      (strcmp(profile, kProfileBunResolver) == 0 || strcmp(profile, kProfilePNPMResolver) == 0 || strcmp(profile, kProfileUVResolver) == 0 || strcmp(profile, kProfileNPM) == 0 || strcmp(profile, kProfilePyPI) == 0 ||
        strcmp(profile, kProfilePyTorchCPU) == 0 ||
        strcmp(profile, kProfilePyTorchCU126) == 0 ||
        strcmp(profile, kProfilePyTorchCU130) == 0 ||
@@ -3259,6 +3297,7 @@ FilesystemClass ClassifyFilesystemOpen(const gvisor::syscall::Open& message,
     return FilesystemClass::kRuntimeRoot;
   }
   if (IsExactBootstrapHelperWrite(message.context_data(), state, path, message.flags()) ||
+      IsPinnedBunQueryRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
       IsPinnedPNPMRuntimeRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
       IsPinnedUVRuntimeRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
       IsPinnedUVPythonQueryRead(message.context_data(), state, path, message.flags(), profile, anchor) ||
@@ -3409,7 +3448,7 @@ bool ParseControlRecord(const char* payload, size_t size, ControlPeer* peer,
     const std::string& id = fields["container_id"]; const std::string& profile = fields["profile"];
     const std::string& topology = fields["expected_topology"]; const std::string& generation = fields["session_generation"];
     if (!ValidContainerID(id) || !ValidSessionGeneration(generation) ||
-        (profile != kProfilePNPMResolver && profile != kProfileUVResolver && profile != kProfileNPM && profile != kProfilePyPI && profile != kProfilePyTorchCPU &&
+        (profile != kProfileBunResolver && profile != kProfilePNPMResolver && profile != kProfileUVResolver && profile != kProfileNPM && profile != kProfilePyPI && profile != kProfilePyTorchCPU &&
          profile != kProfilePyTorchCU126 && profile != kProfilePyTorchCU130 &&
          profile != kProfilePyTorchCU132 && profile != kProfileGitHub && profile != kProfileTerraformProvider && profile != kProfileGoResolver &&
          profile != kProfileGoBuild && profile != kProfileCargoResolver && profile != kProfileCargoBuild) ||
@@ -3884,6 +3923,11 @@ bool ParseSentryProcessAndClassify(const char* payload, size_t payload_size, int
   if (group->second.current_image_class == ProcessClass::kPNPM &&
       (!IsPNPMToolImage(topology, message.binary_path()) || message.execfn() != kPNPMToolPath ||
        message.argv_size() == 0 || message.argv(0) != kPNPMToolPath)) {
+    *reason = "PROCESS_PROVENANCE_UNKNOWN";
+    return false;
+  }
+  if (group->second.current_image_class == ProcessClass::kBun &&
+      (!IsBunToolImage(topology, message.binary_path()) || !IsExactBunQuery(message))) {
     *reason = "PROCESS_PROVENANCE_UNKNOWN";
     return false;
   }

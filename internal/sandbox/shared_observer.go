@@ -62,6 +62,9 @@ func observerExpectedTopology(profile string) ([]observerMountExpectation, bool)
 	tmp := observerMountExpectation{"/tmp", "workspace", "/", "tmpfs", false, true, true, false}
 	runtime := observerMountExpectation{"/haa-runtime", "helper", "/", "tmpfs", false, false, true, false}
 	switch profile {
+	case bunResolverProfile:
+		runtime.FSType, runtime.NoSUID = "9p", false
+		return []observerMountExpectation{root, tmp, runtime}, true
 	case pnpmResolverProfile:
 		runtime.FSType, runtime.NoSUID = "9p", false
 		project := observerMountExpectation{pnpmProjectRoot, "workspace", "/tmp", "9p", false, false, false, false}

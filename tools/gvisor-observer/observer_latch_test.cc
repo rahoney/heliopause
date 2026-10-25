@@ -7570,10 +7570,72 @@ bool VerifyPNPMRuntimeReadBoundary() {
   return true;
 }
 
-bool VerifyPrivateNativeRuntimeAdmissionBoundary(bool pnpm) {
-  const char* profile = pnpm ? kProfilePNPMResolver : kProfileUVResolver;
-  const char* tool = pnpm ? kPNPMToolPath : kUVToolPath;
-  const ProcessClass tool_class = pnpm ? ProcessClass::kPNPM : ProcessClass::kUV;
+bool VerifyBunQueryReadBoundary() {
+  ProcessState state;
+  gvisor::syscall::Open open;
+  auto* context = open.mutable_context_data();
+  context->set_container_id(kFirstID); context->set_thread_group_id(99);
+  context->set_thread_group_start_time_ns(990); context->set_parent_thread_group_id(0);
+  context->set_is_exec_session(true); context->set_process_name("renamed-bun");
+  if (!RegisterGroup(&state, *context, ProcessState::Role::kControl, ProcessState::Provenance::kDirectExecRoot, false, true)) return false;
+  state.groups[99].current_image_class = ProcessClass::kBun;
+  state.groups[99].trusted_control_network_active = true;
+  state.expected_groups[99] = ProcessState::ExpectedGroup{990, ProcessClass::kBun};
+  const ProcessState baseline = state;
+  struct ReadCase { const char* path; const char* mount; const char* mount_class; uint64_t flags; };
+  auto run = [&](const ReadCase& read) {
+  state = baseline;
+  const char* exact_path = read.path;
+  const char* exact_mount = read.mount;
+  const char* exact_class = read.mount_class;
+  open.set_pathname(exact_path); open.set_flags(read.flags);
+  MountAnchor anchor{10, exact_mount, exact_class};
+  auto allowed = [&]() { return IsPinnedBunQueryRead(*context, state, open.pathname(), open.flags(), kProfileBunResolver, &anchor); };
+  if (!allowed() || ClassifyFilesystemOpen(open, state, kProfileBunResolver, &anchor) != FilesystemClass::kHelperOnly) return false;
+  context->set_parent_thread_group_id(1); if (allowed()) return false;
+  context->set_parent_thread_group_id(0); context->set_is_exec_session(false); if (allowed()) return false;
+  context->set_is_exec_session(true);
+  for (uint64_t flags : {uint64_t{0}, uint64_t{32768}, uint64_t{557056}, kOpenWriteOnly, kOpenReadWrite, kOpenCreate, kOpenTruncate, kOpenAppend}) { if (flags == read.flags) continue; open.set_flags(flags); if (allowed()) return false; }
+  open.set_flags(read.flags);
+  for (const char* profile : {kProfilePNPMResolver, kProfileUVResolver, kProfileNPM, kProfileGitHub, kProfilePyPI, kProfilePyTorchCPU, kProfilePyTorchCU126, kProfilePyTorchCU130, kProfilePyTorchCU132, kProfileCargoResolver, kProfileGoResolver}) {
+    if (IsPinnedBunQueryRead(*context, state, open.pathname(), open.flags(), profile, &anchor)) return false;
+  }
+  for (const char* path : {"/lib/x86_64-linux-gnu/librt.so.1", "/usr/lib/x86_64-linux-gnu/librt.so.1.evil", "/usr/lib/x86_64-linux-gnu/../x86_64-linux-gnu/librt.so.1", "/proc/sys/vm/overcommit_memory.evil", "/proc/sys/vm/../vm/overcommit_memory", "/proc/sys/kernel/hostname", "/proc/sys/kernel/osrelease.evil", "/proc/sys/kernel/../kernel/osrelease", "/dev/random", "/dev/zero", "/dev/urandom.evil", "/dev/../dev/urandom", "/haa-runtime/uv", "/haa-runtime/pnpm.evil", "/haa-runtime/./pnpm", "/sys/devices/system/cpu/possible", "/sys/devices/system/cpu/online.evil", "/sys/devices/system/cpu/../cpu/online", "/sys/fs/cgroup/cpu/cpu.stat", "/sys/fs/cgroup/cpu/cpu.cfs_quota_us.evil", "/sys/fs/cgroup/cpu/../cpu/cpu.cfs_period_us", "/proc/self/mountinfo", "/proc/1/mountinfo", "/proc/100/mountinfo", "/proc/99/mountinfo.evil", "/proc/self/cgroup", "/proc/1/cgroup", "/proc/100/cgroup", "/proc/99/cgroup.evil", "/etc/hosts", "/etc/gai.conf.evil", "/etc//gai.conf", "/etc/../etc/gai.conf", "/tmp/gai.conf", "/etc/hosts.evil", "/etc//hosts", "/etc/../etc/hosts", "/tmp/hosts", "/etc/resolv.conf.evil", "/etc//resolv.conf", "/etc/../etc/resolv.conf", "/tmp/resolv.conf", "/etc/host.conf.evil", "/etc/../etc/host.conf", "/etc//host.conf", "/tmp/host.conf", "/etc/nsswitch.conf.evil", "/etc/../etc/nsswitch.conf", "/etc//nsswitch.conf", "/tmp/nsswitch.conf", "/proc/self/maps", "/proc/1/maps", "/proc/100/maps", "/proc/99/maps.evil", "/tmp/librt.so.1"}) {
+    open.set_pathname(path); if (strcmp(path,exact_path)!=0 && allowed()) return false;
+  }
+  open.set_pathname(exact_path);
+  for (const char* mount : {"/", "/etc/resolv.conf", "/etc/hosts", "/usr/lib", "/usr/lib/x86_64-linux-gnu", "/haa-runtime", "/proc", "/sys/fs/cgroup", "/sys/fs/cgroup/cpu/other", "/sys/devices/system/cpu"}) { anchor.mountpoint = mount; if (strcmp(mount,exact_mount)!=0 && allowed()) return false; }
+  anchor.mountpoint = exact_mount;
+  for (const char* mount_class : {"workspace", "system", "helper", "oci-root"}) { anchor.mount_class = mount_class; if (strcmp(mount_class,exact_class)!=0 && allowed()) return false; }
+  anchor.mount_class = exact_class;
+  for (int scenario = 0; scenario < 11; ++scenario) {
+    state = baseline; auto& group = state.groups[99];
+    switch (scenario) {
+      case 0: group.role = ProcessState::Role::kArtifact; break;
+      case 1: group.provenance = ProcessState::Provenance::kCloneChild; break;
+      case 2: group.current_image_class = ProcessClass::kPNPM; break;
+      case 3: group.root_eligible = true; break;
+      case 4: group.root_consumed = false; break;
+      case 5: group.trusted_control_network_active = false; break;
+      case 6: group.demotion_pending = true; break;
+      case 7: group.launch_target_pending = true; break;
+      case 8: group.handoff_target_pending = true; break;
+      case 9: group.start_time_ns++; break;
+      case 10: state.expected_groups[99].process_class = ProcessClass::kUnknown; break;
+    }
+    if (allowed()) return false;
+  }
+  return true;
+  };
+  const ReadCase reads[] = {{"/proc/sys/vm/overcommit_memory", "/proc", "system", 32768}, {"/proc/99/maps", "/proc", "system", 557056}};
+  for (const auto& read : reads) if (!run(read)) return false;
+  return true;
+}
+
+bool VerifyPrivateNativeRuntimeAdmissionBoundary(bool pnpm, bool bun = false) {
+  const char* profile = bun ? kProfileBunResolver : (pnpm ? kProfilePNPMResolver : kProfileUVResolver);
+  const char* tool = bun ? kBunToolPath : (pnpm ? kPNPMToolPath : kUVToolPath);
+  const ProcessClass tool_class = bun ? ProcessClass::kBun : (pnpm ? ProcessClass::kPNPM : ProcessClass::kUV);
   if (IsPythonProfile(profile) ||
       ProcessClassForPath(tool, profile) != tool_class ||
       ProcessClassForPath("uv", profile) != ProcessClass::kUnknown ||
@@ -7641,6 +7703,8 @@ bool VerifyPrivateNativeRuntimeAdmissionBoundary(bool pnpm) {
     event.add_argv(tool); event.add_argv("--version"); context->set_process_name("uv");
     if (strcmp(scenario, "execfn") == 0) event.set_execfn("/tmp/uv");
     if (strcmp(scenario, "argv0") == 0) event.set_argv(0, "uv");
+    if (strcmp(scenario, "argv1") == 0) event.set_argv(1, "run");
+    if (strcmp(scenario, "extra-arg") == 0) event.add_argv("file.js");
     const bool allowed_image = strcmp(scenario, "normal") == 0 || artifact;
     if (!allowed_image) return !parse();
     if (!parse()) return false;
@@ -7659,6 +7723,7 @@ bool VerifyPrivateNativeRuntimeAdmissionBoundary(bool pnpm) {
       "parent-shadow", "no-topology", "execfn", "argv0"}) {
     if (!run(scenario)) { fprintf(stderr, "%s admission scenario failed: %s\n", pnpm ? "PNPM" : "UV", scenario); passed = false; break; }
   }
+  if (bun && (!run("argv1") || !run("extra-arg"))) passed = false;
   close(output[0]); close(output[1]);
   return passed;
 }
@@ -8012,9 +8077,11 @@ int main(int argc, char** argv) {
   const bool pnpm_node_query_read = VerifyPNPMNodeQueryReadBoundary();
   const bool uv_runtime_admission = VerifyUVRuntimeAdmissionBoundary();
   const bool pnpm_runtime_admission = VerifyPNPMRuntimeAdmissionBoundary();
+  const bool bun_runtime_admission = VerifyPrivateNativeRuntimeAdmissionBoundary(false, true);
+  const bool bun_query_read = VerifyBunQueryReadBoundary();
   const bool pnpm_runtime_read = VerifyPNPMRuntimeReadBoundary();
   const bool uv_runtime_read = VerifyUVRuntimeReadBoundary();
-  const bool passed = pnpm_target_shape && pnpm_target_production && pnpm_node_query_read && pnpm_node_query && pnpm_runtime_read && pnpm_runtime_admission && uv_python_query && uv_runtime_read && uv_runtime_admission && github_artifact_runtime_read && terraform_profile && running && profile && profile_limits && record_boundaries && accessors && network && malformed_socket &&
+  const bool passed = pnpm_target_shape && pnpm_target_production && pnpm_node_query_read && pnpm_node_query && pnpm_runtime_read && pnpm_runtime_admission && bun_runtime_admission && bun_query_read && uv_python_query && uv_runtime_read && uv_runtime_admission && github_artifact_runtime_read && terraform_profile && running && profile && profile_limits && record_boundaries && accessors && network && malformed_socket &&
       malformed_connect && unknown_fd && process && correlation && cloexec && delayed && concurrent_python_streams && roles &&
       oci_bootstrap && demotion && mismatch && dropped && topology_ok && nested_mounts && filesystem && cargo_runtime_read && cargo_self_maps_read && cargo_config_read && cargo_tar_read && cargo_entropy_read && cargo_ca_read && cargo_null_read && cargo_rustc_query && cargo_rustc_metadata && cargo_rustc_abi && cargo_rustc_zlib && cargo_rustc_overcommit && cargo_rustc_maps && cargo_rustc_statm && cargo_rustc_cgroup && go_runtime_read && go_build_config_read && go_build_handoff_read && cargo_build_handoff_read && cargo_build_pinned_target && cargo_build_driver_read && cargo_build_rustc_child && cargo_build_native_cc_child && cargo_build_collect2_child && cargo_build_lld_launcher && cargo_build_rust_lld && cargo_build_link_inputs && cargo_build_link_sdk && cargo_build_rust_c_abi && cargo_build_lld_entropy && cargo_build_program && cargo_build_program_abi && cargo_build_program_maps && cargo_build_program_query && cargo_build_program_null && cargo_build_config && go_build_runtime_read && go_build_creator_diagnostic && go_build_tool_child && go_build_cgo_gcc_creator && go_build_sdk_link_gcc && go_build_sdk_link_native && go_build_linker_resolver && go_build_cc1 && go_build_cc1_headers && go_build_as && go_build_collect2 && go_build_native_linker && go_build_linker_plugin && go_build_linker_null && go_build_linker_runtime && go_build_as_null && go_build_cc1_sdk_cgo && npm_node &&
       cargo_rustc_mountinfo && cargo_rustc_cpu_quota && cargo_rustc_sysroot_directory && cargo_dns_configuration && cargo_resolver_file && cargo_utc && cargo_cloexec_entropy && socketpair_diagnostic && kernel_socketpair && open_result_negative_ok && open_result_positive_ok && no_basename_trust_ok &&
@@ -8027,6 +8094,8 @@ int main(int argc, char** argv) {
       {"PNPM Node query ABI boundary", pnpm_node_query_read},
       {"UV private tool admission boundary", uv_runtime_admission},
       {"PNPM private tool admission boundary", pnpm_runtime_admission},
+      {"Bun private tool and exact query admission boundary", bun_runtime_admission},
+      {"Bun exact query overcommit read boundary", bun_query_read},
       {"PNPM exact GNU startup read boundary", pnpm_runtime_read},
       {"UV exact native startup read boundary", uv_runtime_read},
       {"readiness", running}, {"pod-init profile", profile},
