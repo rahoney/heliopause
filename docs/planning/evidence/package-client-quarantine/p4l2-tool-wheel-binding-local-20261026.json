@@ -1,0 +1,91 @@
+{
+  "scope": "P4-L2 static tool receipt/whole archive/source/graph/console command binding",
+  "baseline": "b3e465593aa752e7b5f39e7170115bfa7a185e7c",
+  "implemented": "YES (named binder)",
+  "wired": "YES (actual receipt fixture/parser and authenticated wheel/source/graph consumers); NO (public native resolver/CLI)",
+  "qualified": "YES (named local canonical and whole PyPI Race)",
+  "acceptance_closed": "NO (whole persistent tools)",
+  "checks": [
+    {
+      "profile": "quick",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "quick"
+      ],
+      "exit": 0,
+      "seconds": 196.061,
+      "source": "/tmp/hpr-bx53162k/source",
+      "GOMAXPROCS": "2",
+      "log_sha256": "28229740026bc567377cfb97c37d5abbe55eec99ac7147de1de6b9f1c0695cac"
+    },
+    {
+      "profile": "security",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "security"
+      ],
+      "exit": 0,
+      "seconds": 12.985,
+      "source": "/tmp/hpr-bx53162k/source",
+      "GOMAXPROCS": "2",
+      "log_sha256": "d3dae0898e00d816824b7f35d13c0f66a31e70be6281c7b7b48f718831db8d4f"
+    },
+    {
+      "profile": "docs",
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "run",
+        "./scripts/check",
+        "docs"
+      ],
+      "exit": 0,
+      "seconds": 0.278,
+      "source": "/tmp/hpr-bx53162k/source",
+      "GOMAXPROCS": "2",
+      "log_sha256": "b8765c432904e48ab0b976bc0245263fe244088a73425c6d1d1da090f5dff4d9"
+    },
+    {
+      "command": [
+        "/home/winamp/.local/go/bin/go",
+        "test",
+        "-race",
+        "-count=1",
+        "./internal/artifact/pypi",
+        "-timeout",
+        "5m"
+      ],
+      "exit": 0,
+      "seconds": 5.834,
+      "source": "/tmp/hpr-bx53162k/source",
+      "log_sha256": "d4e17cd8ac6f160fb558777fb3d3b6bddf194456a584a11abd4927dcdb444915"
+    }
+  ],
+  "mechanical_reuse": "p4l2-wheel-collector-mechanical-reuse-v1.json",
+  "verified": [
+    "exact graph equality with existing UV BindWheels",
+    "whole transitive archive tamper rejection",
+    "independent source hash/coverage rejection",
+    "root/version/constraint mismatch rejection",
+    "main command missing/extra/case/extras/GUI/data-script rejection",
+    "dependency cannot substitute main commands; orphan/missing/incompatible graph rejected",
+    "pipx selected closure startup PTH/customization rejection including relocated purelib; nested ordinary module accepted"
+  ],
+  "limits": [
+    "synthetic archive/source fixture scope; no live public acquisition",
+    "no native call/Artifact execution/Policy/ownership/Host publication",
+    "pipx selected-wheel startup gate does not attest original environment or runtime admission",
+    "UV static graph binding is not a native interpreter-query clearance"
+  ],
+  "missing": [
+    "native install/upgrade runtime/prequery roles and selected output binding",
+    "held original complete target and command ownership",
+    "atomic tool receipt/environment/exposure publication",
+    "public CLI/current whole inspection/Policy/end-to-end",
+    "grouped/final profile qualification"
+  ],
+  "raw_owner": "docs/github-logs/package-client-quarantine-20261021"
+}

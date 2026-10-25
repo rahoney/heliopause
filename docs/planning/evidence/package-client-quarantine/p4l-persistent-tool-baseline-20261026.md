@@ -102,3 +102,39 @@ PyPI 전체 Race6.086s(test2.563s)가 PASS다. 실제 네 fixture·command 교�
 부정 schema/source/backend/path/duplicate 검증이며 public tool 지원 acceptance는 NO다.
 [최종 receipt](./p4l1-native-tool-receipt-local-20261026.json)가 정확한 검사 범위를 소유한다.
 다음 L2는 whole authenticated wheel/entrypoint binding이며 supply/runtime/transaction/CLI는 남는다.
+
+## L2 whole archive/source와 entrypoint binding 지도·재검토
+
+L1 commit b3e4655/treef4b2d9774c7f6431766d382d1d6cc40aa6b0fff7/2565를 기준으로 감사한다.
+기존 UVLock.BindWheels/bindUVSelectedWheels/uvArchiveCandidates·InspectWheel·CrossCheckReport·
+validateUVCandidateConstraints·BuildLockedGraph가 whole archive/source/closure를 구현·검증했다.
+새 gap은 이 검증과 실제 native tool receipt의 main package/version/command 집합을 연결하는
+것이다. 기존 graph/source parser를 다시 구현하거나 새 source/domain identity를 만들지 않는다.
+
+uvArchiveCandidates의 기존 본문은 private inspection collector에 그대로 두고 기존 호출자는
+nil collector로 유지한다. 새 ToolReceipt.BindWheels만 같은 검사에서 나온 root entrypoint와
+전체 installed surface를 소비한다. CrossCheckReport/constraints/BuildLockedGraph를 재사용해
+public source·전체 graph를 확인한 뒤에만 결과를 반환한다. Native receipt와 frozen root의
+project·version 제약, main wheel console entrypoints의 exact name set을 대조한다.
+
+Pipx post-install Python은 별도 trusted DATA-only role로 일반화할 수 없다. 초기 bounded
+metadata lane은 전체 authenticated closure에서 root .pth와 sitecustomize/usercustomize의
+module/package/extension 목적지를 거부한다. File suffix만 실행 역할로 추정하지 않고 기존
+installed location mapping·SchemeSite와 surface를 사용한다. 이 gate는 public runtime admission의
+대체가 아니며 hook-bearing tool 지원을 닫지 않는다. No target/native 실행·Policy 변경은 없다.
+
+두 번째 검토: orphan/누락 dependency·Simple 해시 불일치·전체 wheel 변조를 receipt로 덮지 않는다.
+Dependency가 같은 이름의 command를 제공해도 main package entrypoint를 대체할 수 없다.
+Collector는 immutable 검사 결과의 in-memory 소비에만 사용하며 기존 nil 경로의 본문·한도·
+순서를 보존한다. Actual native source/runtime/Host transaction qualification은 여전히 별도다.
+
+L2 named local 결과: canonical Quick196.061s/security12.985s/docs0.278s와 PyPI 전체
+Race5.834s(test2.569s)가 PASS다. [최종 receipt](./p4l2-tool-wheel-binding-local-20261026.json)가
+fixture/source/whole graph/command·startup gate의 정확한 범위를 소유한다. 기존 collector nil
+본문 보존은 p4l2-wheel-collector-mechanical-reuse-v1.json으로 대조했다.
+
+후속 runtime 정적 근거: exact UV interpreter.rs는 -I/-B/-c이며 -S를 사용하지 않는다고 명시한다.
+Tool install/upgrade의 get_environment → PythonEnvironment::from_root → Interpreter::query 경로도
+확인했다. 따라서 위 UV static graph 성공을 native query clearance로 전용하지 않는다. 기존 환경
+조회 전 원본 whole inventory/startup surface와 runtime 역할을 별도 고정해야 한다. 원본
+p4l3-uv-interpreter-exact-sources-v1 및 environment-exact-v1이 source hash를 보존한다.

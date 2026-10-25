@@ -207,6 +207,10 @@ func bindUVSelectedWheels(packages []UVLockedPackage, python, root string, input
 }
 
 func uvArchiveCandidates(packages []UVLockedPackage, python, root string, inputs []UVWheelInput, target WheelTarget, limits WheelLimits) ([]Candidate, error) {
+	return inspectUVArchiveCandidates(packages, python, root, inputs, target, limits, nil)
+}
+
+func inspectUVArchiveCandidates(packages []UVLockedPackage, python, root string, inputs []UVWheelInput, target WheelTarget, limits WheelLimits, collect func(WheelInspection) error) ([]Candidate, error) {
 	if len(inputs) != len(packages) {
 		return nil, errors.New("uv selected wheel set is incomplete")
 	}
@@ -263,6 +267,11 @@ func uvArchiveCandidates(packages []UVLockedPackage, python, root string, inputs
 			candidate, err = candidateFromWheelMetadata(inspection, wheel.URL, wheel.SHA256, python, item.Name == root)
 			if err != nil {
 				return nil, err
+			}
+			if collect != nil {
+				if err := collect(inspection); err != nil {
+					return nil, err
+				}
 			}
 		}
 		if matches != 1 {

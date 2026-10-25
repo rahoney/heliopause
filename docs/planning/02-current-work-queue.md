@@ -15,9 +15,9 @@ Predecessor: SEC-UPD-001 — IMPLEMENTED=YES / WIRED=YES / QUALIFIED=YES / ACCEP
 Protected-path disposition: M13-002 — ACCEPTED_WITH_EXCEPTION; QUALIFIED=NO / ACCEPTANCE_CLOSED=YES; missing-CLA NOT_TESTED / DEFERRED (C3)
 Prepublication prerequisites: CLI-UX-001, CLI-UX-002, SEC-UPD-001 and CLI-UX-003 COMPLETE
 Active work item status: IN_PROGRESS — P1 uv pip and G127 Go1.27.3 COMPLETE; P2 pnpm named backend/CLI/native/failure qualification recorded; P3 Bun cache/private/transaction/CLI/native ownership locally qualified; whole P2/P3 final acceptance remains
-Last completed substep: P4-L1 — actual UV/pipx receipts, strict inert parsers, command layout/link claims and distinct upgrade semantics named local QUALIFIED; public tools remain
-Next action: M13-004 — bind tool receipt commands to independently authenticated complete wheel graph; then missing runtime/ownership/public tools; grouped final CI boundary retained
-Current substep: M13-004/P4-L2 tool whole wheel/source/entrypoint binding; L1 named local qualified; runtime/supply/whole ownership/public tools remain open
+Last completed substep: P4-L2 — receipt commands bound to whole authenticated wheel/source/connected graph; strict pipx selected startup-surface gate named local QUALIFIED; public tools remain
+Next action: M13-004 — persistent UV tool native install/upgrade selection and original interpreter-query guard; then missing supply/ownership/public tools; grouped final CI boundary retained
+Current substep: M13-004/P4-L3 native persistent tool selection/runtime prequery boundary; L1/L2 named local qualified; whole ownership/public tools remain open
 Acceptance audit: CI413 frozen50fd Required10SUCCESS; all10 checkout38e27d8 whole tree d6a63ab/2475 matches; actual75m due consumed17:20:16UTC; full10 decoded logs saved; historical CI411 timeout cause remains unconfirmed
 Independent local next: P4 persistent tools; final support/profile matrix open
 P3 Bun: named hosted qualification CI413 PASS / whole acceptance OPEN; P4 — IN_PROGRESS under same M13-004; P5..P7 — NOT_STARTED
@@ -5579,3 +5579,12 @@ UV constraint 보존·pipx native constraint 제거를 구분한다. Canonical Q
 전체 Race가 PASS다. No native/Host execution·ownership·Policy authority를 parser에 주지 않는다.
 Public supply/admission/whole archive binding/atomic tools/CLI는 미완료이며 다음 L2를 계속한다.
 M13-004 하나만 IN_PROGRESS이고 작은 helper 단위 CI를 추가하지 않는다.
+
+### 2026-10-26 P4-L2 whole tool wheel binding
+
+[L2 local](./evidence/package-client-quarantine/p4l2-tool-wheel-binding-local-20261026.json)은 기존 whole
+archive/source/closure engine과 native receipt의 exact main command 집합을 연결했다. Canonical
+Quick/security/docs와 PyPI 전체 Race가 PASS이며 기존 nil collector 경로 본문도 대조했다.
+Pipx의 selected closure startup gate만 확인됐고 UV 기존 tool environment 조회도 Python -S를
+사용하지 않는 exact source 경로를 확인했다. Native query clearance/원본 ownership/public CLI
+증거로 확대하지 않으며 같은 M13-004의 L3 native selection/runtime 경계를 계속한다.
