@@ -1208,8 +1208,11 @@ func TestReadinessAuthorityAmbiguityDoesNotRetryPoisonedSession(t *testing.T) {
 }
 
 func TestReadinessRetriesOrdinaryFailureWithFreshAdmissionNonce(t *testing.T) {
+	var nonceMu sync.Mutex
 	var nonces []string
 	withAdmissionControl(t, func(listener *net.UnixConn, request admissionRequest) {
+		nonceMu.Lock()
+		defer nonceMu.Unlock()
 		switch request.Op {
 		case "profile":
 			_, _ = listener.Write(profileACK(request))
@@ -1236,6 +1239,8 @@ func TestReadinessRetriesOrdinaryFailureWithFreshAdmissionNonce(t *testing.T) {
 	if err := awaitBoundaryHelper(context.Background(), admissionAwareRunner(runner), containerID); err != nil {
 		t.Fatalf("ordinary readiness retry: %v", err)
 	}
+	nonceMu.Lock()
+	defer nonceMu.Unlock()
 	if len(runner.calls) != 2 || len(nonces) != 2 || nonces[0] == nonces[1] {
 		t.Fatalf("readiness admissions = %#v, calls=%#v", nonces, runner.calls)
 	}
