@@ -5248,3 +5248,16 @@ Quick184.159s/전체 관련 Race57.353s·원본 builder267.752s/117latches와 ac
 builder 산출물과 byte-identical이며 불필요하게 같은 실행을 반복하지 않았다. FS/network
 권한은 추가하지 않았다. 다음은 정확한 instance lifecycle/runtime·전체 검사/Policy 연결이다.
 작은 helper별 push/CI는 시작하지 않았고 remote9410/CI411 macOS·Required gate는 유지한다.
+
+[B4d instance lifecycle 지도](./evidence/package-client-quarantine/p3b4d-bun-instance-lifecycle-plan-20261025.md)는
+4420b48의 준비 구현을 재사용한다. 먼저 기존 PNPM payload renderer/readback을 두 typed layout에
+연결해 Bun 실행 세션용 최소 데이터의 전체 이송을 검증한다. 이후 exact instance lifecycle/
+Node·Bun runtime/whole coverage·Policy를 연결하며 아직 실행하지 않은 범위를 완료로 쓰지 않는다.
+같은 M13-004이고 작은 helper별 새 CI 없이 backend 묶음·실제 타이머 규칙을 유지한다.
+
+[B4d-a 로컬 영수증](./evidence/package-client-quarantine/p3b4da-bun-execution-payload-local-20261025.json)은
+Quick170.358s/전체 sandbox Race23.229s와 Bun peer payload 전체 이송15.01s를 확인한다.
+공유 body의 기존 PNPM project2/4 fresh dynamic sessions도47.53s·전체 operator65.119s/
+helper wait0/Host 동일로 PASS다. 원본 controls를 실행 manifest로 복사하지 않고 두 fixed kind
+사이 payload 혼용도 거부한다. 다음은 정확한 Bun instance의 lifecycle 명령/관찰기 연결이며
+Bun 실행·Policy/cache/transaction/CLI/remote acceptance는 계속 열린다.

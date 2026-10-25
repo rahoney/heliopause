@@ -23,6 +23,7 @@ type pnpmPayloadEntry struct {
 // Only this controller-owned renderer constructs a payload. It is not a native
 // archive, original project controls, Policy decision or Host publication.
 type pnpmInspectionPayload struct {
+	kind           nativeRuntimeToolKind
 	body           []byte
 	digest, layout domain.ContentDigest
 	entries        map[string]pnpmPayloadEntry
@@ -30,6 +31,23 @@ type pnpmInspectionPayload struct {
 }
 
 func preparePNPMInspectionPayload(ctx context.Context, layout artifactnpm.PNPMInspectionLayout) (pnpmInspectionPayload, error) {
+	return prepareNPMInspectionPayload(ctx, layout, nativeRuntimePNPM)
+}
+
+// Both callers supply an opaque, fully bound layout; no runtime implementation
+// or execution authority is exposed through these data getters.
+type npmInspectionPayloadLayout interface {
+	Digest() domain.ContentDigest
+	InspectionManifest() []byte
+	Entries() []artifactnpm.PNPMLayoutEntry
+	ReadFile(string) ([]byte, error)
+}
+
+func prepareNPMInspectionPayload(ctx context.Context, layout npmInspectionPayloadLayout, kind nativeRuntimeToolKind) (pnpmInspectionPayload, error) {
+	if _, ok := nativeProjectIdentity(kind); !ok {
+		return pnpmInspectionPayload{}, errPNPMInspectionPayload
+	}
+
 	if ctx == nil || layout.Digest().String() == "" || len(layout.Entries()) == 0 {
 		return pnpmInspectionPayload{}, errPNPMInspectionPayload
 	}
@@ -42,7 +60,7 @@ func preparePNPMInspectionPayload(ctx context.Context, layout artifactnpm.PNPMIn
 	}
 	selected := map[string]artifactnpm.PNPMLayoutEntry{}
 	for _, entry := range layout.Entries() {
-		if entry.Name == "node_modules/.modules.yaml" || entry.Name == "node_modules/.pnpm/lock.yaml" || entry.Name == "node_modules/.pnpm-workspace-state-v1.json" {
+		if kind == nativeRuntimePNPM && (entry.Name == "node_modules/.modules.yaml" || entry.Name == "node_modules/.pnpm/lock.yaml" || entry.Name == "node_modules/.pnpm-workspace-state-v1.json") {
 			continue
 		}
 		selected[entry.Name] = entry
@@ -51,7 +69,7 @@ func preparePNPMInspectionPayload(ctx context.Context, layout artifactnpm.PNPMIn
 	if err != nil {
 		return pnpmInspectionPayload{}, err
 	}
-	payload := pnpmInspectionPayload{layout: layout.Digest(), entries: map[string]pnpmPayloadEntry{}, groups: map[string]string{}}
+	payload := pnpmInspectionPayload{kind: kind, layout: layout.Digest(), entries: map[string]pnpmPayloadEntry{}, groups: map[string]string{}}
 	var output bytes.Buffer
 	writer := tar.NewWriter(&output)
 	emit := func(entry artifactnpm.PNPMLayoutEntry, logicalSize int64, body []byte) error {
@@ -278,6 +296,15 @@ func comparePNPMInspectionPayload(ctx context.Context, expected pnpmInspectionPa
 }
 
 func copyPNPMInspectionPayload(ctx context.Context, runner CommandRunner, container string, payload pnpmInspectionPayload) error {
+	return copyNPMInspectionPayload(ctx, runner, container, payload, nativeRuntimePNPM)
+}
+
+func copyNPMInspectionPayload(ctx context.Context, runner CommandRunner, container string, payload pnpmInspectionPayload, kind nativeRuntimeToolKind) error {
+	spec, known := nativeProjectIdentity(kind)
+	if !known || payload.kind != kind {
+		return errPNPMInspectionPayload
+	}
+
 	input, ok := runner.(inputCommandRunner)
 	_, streamOK := runner.(streamingDockerOutput)
 	if ctx == nil || !ok || !streamOK || !exactObservationContainerID(container) || len(payload.body) == 0 || len(payload.body) > artifactnpm.PNPMLayoutArchiveLimit || payload.layout.String() == "" {
@@ -290,13 +317,18 @@ func copyPNPMInspectionPayload(ctx context.Context, runner CommandRunner, contai
 	if err != nil || digest != payload.digest {
 		return errors.Join(errPNPMInspectionPayload, err)
 	}
-	if err := input.RunInput(ctx, bytes.NewReader(payload.body), "docker", "cp", "--archive", "-", container+":"+pnpmProjectRoot); err != nil {
+	if err := input.RunInput(ctx, bytes.NewReader(payload.body), "docker", "cp", "--archive", "-", container+":"+spec.root); err != nil {
 		return errors.Join(errPNPMInspectionPayload, err, ctx.Err(), context.Cause(ctx))
 	}
-	return verifyPNPMInspectionPayload(ctx, runner, container, payload)
+	return verifyNPMInspectionPayload(ctx, runner, container, payload, kind)
 }
 
-func verifyPNPMInspectionPayload(ctx context.Context, runner CommandRunner, container string, payload pnpmInspectionPayload) error {
+func verifyNPMInspectionPayload(ctx context.Context, runner CommandRunner, container string, payload pnpmInspectionPayload, kind nativeRuntimeToolKind) error {
+	spec, known := nativeProjectIdentity(kind)
+	if !known || payload.kind != kind {
+		return errPNPMInspectionPayload
+	}
+
 	stream, ok := runner.(streamingDockerOutput)
 	if ctx == nil || !ok || !exactObservationContainerID(container) || payload.digest.String() == "" {
 		return errPNPMInspectionPayload
@@ -305,7 +337,7 @@ func verifyPNPMInspectionPayload(ctx context.Context, runner CommandRunner, cont
 		return errors.Join(errPNPMInspectionPayload, err, context.Cause(ctx))
 	}
 	output := nativeToolArchiveOutput{limit: artifactnpm.PNPMLayoutArchiveLimit}
-	if err := stream.RunOutput(ctx, &output, "docker", "cp", container+":"+pnpmProjectDirectory, "-"); err != nil || output.failed {
+	if err := stream.RunOutput(ctx, &output, "docker", "cp", container+":"+spec.directory, "-"); err != nil || output.failed {
 		return errors.Join(errPNPMInspectionPayload, err, ctx.Err(), context.Cause(ctx))
 	}
 	actual, err := artifactnpm.ParsePNPMInspectionPayloadArchive(ctx, output.body)
